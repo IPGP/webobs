@@ -6,9 +6,9 @@ WebObs is an integrated web-based system for data monitoring and networks manage
 * routine data processing with dedicated automatic scripts for each technique, production of validated data outputs, static graphs on preset moving time intervals, possible e-mail alarms, sensors and station status based on data validity;
 * in the special case of seismology, a multichannel continuous stripchart associated with EarthWorm/SeisComP acquisition chain, event classification database, automatic shakemap reports, regional catalog with associated hypocenter maps. 
 
-## Present status for developpers
+## Present state of WeBObs
 
-WebObs codes are presently still in beta version sources and documentation. We hope to shortly move all codes on this github. If you are in a hurry please contact the project coordinator.
+WebObs is presently fully functional but the documentation is incomplete. We hope to shortly finish the main manual and move all codes on this github. If you are in a hurry, please contact the project coordinator.
 
 ## A) Installing WebObs \<version\> from its WebObs-\<version\>.tgz
 
@@ -76,7 +76,7 @@ and update the ETOPO parameters in the /etc/webobs.d/WEBOBS.rc file with the lin
 ## Authors
 
 ### Project coordination
-* **François Beauducel** - *Project design and supervision* - [beaudu](https://github.com/beaudu) - beauducel@ipgp.fr
+* **François Beauducel** - *Project designer and supervisor* - [beaudu](https://github.com/beaudu) - beauducel@ipgp.fr
 * **Didier Lafon** - *Software development* - lafon@ipgp.fr
 
 ### Contributors
