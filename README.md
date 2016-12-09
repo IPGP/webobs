@@ -10,7 +10,9 @@ WebObs is an integrated web-based system for data monitoring and networks manage
 
 WebObs is presently still in a beta-version, fully functional but the documentation is mostly incomplete. We hope to shortly finish the main user's manual and move all codes on this github. If you are in a hurry, please contact the project coordinator.
 
-## A) Installing WebObs \<version\> from its WebObs-\<version\>.tgz
+## Installation / upgrading
+
+### A) Installing WebObs \<version\> from its WebObs-\<version\>.tgz
 
 You create/choose your WebObs directory within which you will execute the setup process. We suggest /opt/webobs. This directory will contain both
 WebObs code AND WebObs data, and will be the DocumentRoot of the WebObs Apache's Virtual Host.
@@ -21,7 +23,7 @@ The system-wide /etc/webobs.d symbolic link will identify your WebObs 'active' (
 
 WebObs comes with pre-defined configuration files and pre-defined data objects as a starting point and for demonstration purposes.
 
-### Prerequisities
+#### Prerequisities
 
 Graph processes need Matlab compiler runtime 2011b. Download the installer adapted to your architecture in the WebObs directory, the setup will install it during the C) procedure. Or, place it in any local directory then run:
 ```sh
@@ -37,7 +39,7 @@ A number of programs and Perl modules are needed to run webobs. During the C) in
         libtext-multimarkdown-perl libswitch-perl libintl-perl
 ```
 
-## B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
+### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
 -----------------------------------------------------------
 
 The setup process is also used for upgrading an already installed WebObs.
@@ -50,7 +52,7 @@ It is recommended to stop any WebObs-related processes before upgrading.
 The 'differences report' will be displayed at the end of the upgrade process to help you apply required changes to configuration/data.
 
 
-## C) Procedure (for both A) and B) above)
+### C) Procedure (for both A) and B) above)
 
 With root privileges, in your target WebObs directory :
 
@@ -59,7 +61,7 @@ With root privileges, in your target WebObs directory :
         3) (re)start Apache
         4) launch the scheduler and postboard
 
-## D) Improve basemap database
+### D) Improving basemap database (optional)
 
 WebObs is distributed with ETOPO5 worldwide topographic data, and will automatically download SRTM data for detailed maps. To improve large scale maps resolution, you can download ETOPO1:
 ```sh
