@@ -6,9 +6,9 @@ WebObs is an integrated web-based system for data monitoring and networks manage
 * routine data processing with dedicated automatic scripts for each technique, production of validated data outputs, static graphs on preset moving time intervals, possible e-mail alarms, sensors and station status based on data validity;
 * in the special case of seismology, a multichannel continuous stripchart associated with EarthWorm/SeisComP acquisition chain, event classification database, automatic shakemap reports, regional catalog with associated hypocenter maps. 
 
-## Present state
+## Present state and availability
 
-WebObs is presently still in a beta-version, fully functional but the documentation is mostly incomplete. We hope to shortly finish the main user's manual and move all codes on this github. If you are in a hurry, please contact the project coordinator.
+WebObs is presently still in a beta-version, fully functional and used in a dozen observatories, but the documentation is mostly incomplete. We hope to shortly finish the main user's manual and move all codes on this github. If you are in a hurry, please contact the project coordinator and we will be happy to share the package and help you to install it.
 
 ## Installation / upgrading
 
@@ -91,6 +91,11 @@ and update the ETOPO parameters in the /etc/webobs.d/WEBOBS.rc file with the lin
 
 
 See also the list of active [contributors](https://github.com/IPGP/webobs/contributors).
+
+## References
+
+* Beauducel, F. (2006). Operational monitoring of French volcanoes: Recent advances in Guadeloupe. _Géosciences, Editions BRGM_, n°4, p 64-68, 2006. [Abstract](http://www.ipgp.fr/~beaudu/2006_Beauducel_Geosciences.html)
+* F. Beauducel, A. Bosson, F. Randriamora, C. Anténor-Habazac, A. Lemarchand, J-M Saurel, A. Nercessian, M-P Bouin, J-B de Chabalier, V. Clouard (2010). Recent advances in the Lesser Antilles observatories - Part 2 - WEBOBS: an integrated web-based system for monitoring and networks management. _Paper presented at European Geosciences Union General Assembly, Vienna, 2-7 May 2010._ [Abstract](http://www.ipgp.fr/~beaudu/2010_Beauducel_EGU.html)
 
 ## Copyright
 
