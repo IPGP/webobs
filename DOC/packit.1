@@ -1,0 +1,37 @@
+.\" Manpage for packit.
+.TH man 8 "13 May 2013" "1.0" "packit man page"
+.SH NAME
+packit \- creates a WebObs release package file. 
+.SH SYNOPSIS
+packit SVN-TAG-REPOSITORY
+.SH DESCRIPTION
+SVN-TAG-REPOSITORY being of the form <svn-repo-path>/webobs/tags/releasename,
+packit will create \fBWebObs-releasename.tgz\fP and its corresponding checksum files.
+
+packit first svn-export the requested releasename from svn repository to a local (current directory)
+WebObs-releasename directory from which it will 1) remove internal code and files not to be 
+distributed in final package and 2) creates, if possible, a list of perl required modules
+that could be used during the WebObs installation process. 
+
+.SH OPTIONS
+No command line option, but the SVN-TAG-REPOSITORY is required.
+.SH SEE ALSO
+fpm, tagit, install 
+.SH AUTHOR
+Didier Lafon
+.SH COPYRIGHT
+Webobs - 2012 - Institut de Physique du Globe Paris
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+

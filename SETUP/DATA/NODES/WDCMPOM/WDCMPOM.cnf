@@ -1,0 +1,16 @@
+=key|value
+NAME|"Morne Pois Sainte-Anne Martinique"
+ALIAS|MPOM
+FID|MPOM
+FDSN_NETWORK_CODE|
+VALID|1
+LAT_WGS84|14.447
+LON_WGS84|-60.8588
+ALTITUDE|50
+POS_DATE|2012-08-31
+POS_TYPE|0
+INSTALL_DATE|2012-08-31
+END_DATE|NA
+FILES_FEATURES|sensor\|receiver\|antenna\|power_supply\|monumentation\|transmission
+TRANSMISSION|6
+UTC_DATA|+0

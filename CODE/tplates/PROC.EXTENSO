@@ -1,0 +1,70 @@
+=key|value
+# Generic PROC template for superproc extenso
+# This PROC must be associated with the FORM "EXTENSO" which contains 
+# compatible data and needed complementary configuration files.
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/extenso.m for further information.
+
+NAME|Extensometry time series and vectors
+RAWDATA|
+URNDATA|
+TZ|-4
+URL|
+
+# lists of parameters (number of coma-separated rows must be consistent)
+TIMESCALELIST|10y,all
+DECIMATELIST|
+CUMULATELIST|
+DATESTRLIST|-1,-1
+MARKERSIZELIST|16,12
+LINEWIDTHLIST|2,1
+STATUSLIST|1,0
+# defines a reference date to use with 'ref' timescale in TIMESCALELIST
+REF_DATE|
+
+# additional summary graphs keywords (comma separated)
+SUMMARYLIST|VECTORS
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|
+SUBMIT_RESOURCE|myproc
+
+NODE_NAME|site
+NODE_MARKER|^
+NODE_RGB|1,0,0
+NODE_SIZE|10
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+MAP1_XYLIM|-61.66805,-61.65972,16.03889,16.04722
+
+# optional user-defined DEM (Arcinfo format, lat/lon)
+#DEM_FILE|
+#DEM_COPYRIGHT|
+DEM_TYPE|LATLON
+
+# file for background time referenced events 
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+PPI|100
+POSTSCRIPT|1
+EXPORTS|1
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+LOGO2_FILE|
+COPYRIGHT|Processing by Beauducel et al./IPGP
+COPYRIGHT2|
+
+# specific PROC's parameters
+FILTER_MAX_ERROR_MM|10
+ZONE1_NAME|Zone Nord
+ZONE1_NODELIST|FNW1,DUP1,DUP2,DUP3,FNO1
+ZONE2_NAME|Zone Sud-Est
+ZONE2_NODELIST|NAP1,F8J1,BLK1,LCX1,CSD1
+ZONE3_NAME|Zone Sud
+ZONE3_NODELIST|DOL1,DOL2,PEY1,F302,F303
+
+VECTORS_EXCLUDED_NODELIST|BAT0,HOU1
+VECTORS_ARROWSHAPE|.15,.1,.1,.04
+VECTORS_VELOCITY_SCALE|0
+VECTORS_MIN_SIZE_KM|.5
+VECTORS_MAX_XYRATIO|2

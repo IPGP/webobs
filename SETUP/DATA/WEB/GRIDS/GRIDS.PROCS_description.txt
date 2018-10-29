@@ -1,0 +1,1 @@
+This table presents the list of PROCS, i.e., groups of functional nodes associated to specific data and dedicated process. In the default WebObs package, we propose two examples of PROCS: graphs of GPS processing, and graphs of chemical waters analysis.

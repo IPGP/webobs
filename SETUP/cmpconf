@@ -1,0 +1,109 @@
+#!/bin/bash
+
+# compares templates conf files with current installed version (in /opt/webobs):
+#
+# author: F. Beauducel, IPGP/IRD
+# created: 2018-10-10
+# updated: 2018-10-26
+
+mydiff() {
+# Syntax: mydiff TEMPLATEFILE CONFFILE RELEASE [WRITEFLAG]
+#
+#	new keys are always written to standard output
+#	WRITEFLAG not empty makes writing to local CONFFILE also
+#	
+	if [[ -z "$4" ]]; then
+		CONF=/dev/null
+	else
+		CONF="$2"
+	fi
+	NEW=""
+	BANNER=""
+	>&2 echo -n "checking $2..."
+	# takes all keys from the template file
+	TPLATE=$(grep -v -E "^#" "$1" | grep -E "\w\|" | sed -E 's/\|.*$//g')
+	for k in $TPLATE; do
+		# if key does not exist (commented or not) in the user file
+		k2=$(grep -E "^[# ]*$k\|" $2)
+		if [[ -z $k2 ]]; then
+			if [[ -z $BANNER ]]; then
+				BANNER=1
+				echo "" | tee -a $CONF
+				echo "################################################################################" | tee -a $CONF
+				echo "# Upgrade to release $3 on $(date +'%A %F %T %Z')" | tee -a $CONF
+				echo "# New configuration keys for file $2" | tee -a $CONF
+				echo "" | tee -a $CONF
+			fi
+			# takes template line with previous line which can be a comment
+			k1=$(grep -E "^$k\|" -B 1 $1)
+			if [[ ${k1:0:1} == '#' ]]; then
+				# outputs default key value and its previous comment line
+				COM=1
+			else
+				COM=0
+			fi
+			grep -E "^$k\|" -B $COM $1 | tee -a $CONF
+			echo ""  | tee -a $CONF
+			NEW=1
+			>&2 echo -n " $k"
+		fi
+	done
+	if [[ ! -z $NEW ]]; then
+		echo "################################################################################" | tee -a $CONF
+		>&2 echo " are new keys."
+	else
+		>&2 echo " up to date!"
+	fi
+	# adds the filename in the list of updated files (for future check)
+	if [[ ! -z "$4" && ! -z $NEW ]]; then
+		echo "$2" >> $4
+	fi
+}
+
+TPLATEDIR=$(dirname $0)
+CONFDIR=$(readlink /etc/webobs.d)
+if [[ -z $1 ]]; then
+	RELREL=unknown
+else
+	RELREL=$1
+fi
+WRITE=$2
+
+
+# main configuration files
+for c in {WEBOBS.rc,GRIDMAPS.rc,LOCASTAT.rc,GRIDS.rc,NODES.rc,CLB.conf,Gazette.rc,Welcome.conf,menu.rc,scheduler.rc}; do
+	mydiff $TPLATEDIR/CONF/$c $CONFDIR/$c $RELREL $WRITE
+done
+
+# sefran3 (needs to check for main conf file)
+C=$(find $CONFDIR -maxdepth 1 -name SEFRAN3*.conf)
+for s in $C; do
+	if [[ ! -z $(grep -E "^CHANNEL_CONF\|" $s) ]]; then
+		mydiff $TPLATEDIR/CONF/SEFRAN3.conf $s $RELREL $WRITE
+	fi
+done
+
+# mc3 (needs to check for main conf file)
+C=$(find $CONFDIR -maxdepth 1 -name MC3*.conf)
+for s in $C; do
+	if [[ ! -z $(grep -E "^EVENT_CODES_CONF\|" $s) ]]; then
+		mydiff $TPLATEDIR/CONF/MC3.conf $s $RELREL $WRITE
+	fi
+done
+
+# procs (checks superproc)
+C=$(find $CONFDIR/PROCS -maxdepth 2 -name *.conf)
+for s in $C; do
+	P=$(grep -E "^SUBMIT_COMMAND\|" $s | cut -d " " -f 2 | tr '[:lower:]' '[:upper:]')
+	if [[ ! -z $P && -e "$TPLATEDIR/../CODE/tplates/PROC.$P" ]]; then
+		mydiff $TPLATEDIR/../CODE/tplates/PROC.$P $s $RELREL $WRITE
+	fi
+done
+
+# views
+C=$(find $CONFDIR/VIEWS -maxdepth 2 -name *.conf)
+for s in $C; do
+	if [[ ! -z $(grep -E "^NAME\|" $s) ]]; then
+		mydiff $TPLATEDIR/../CODE/tplates/VIEW.DEFAULT $s $RELREL $WRITE
+	fi
+done

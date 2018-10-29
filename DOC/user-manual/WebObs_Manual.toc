@@ -1,0 +1,185 @@
+\contentsline {chapter}{Introduction}{vii}{chapter*.2}
+\contentsline {chapter}{\numberline {1}Installation}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}Overview}{1}{section.1.1}
+\contentsline {section}{\numberline {1.2}System requirements}{1}{section.1.2}
+\contentsline {subsection}{\numberline {1.2.1}System and package}{1}{subsection.1.2.1}
+\contentsline {subsection}{\numberline {1.2.2}Software requirements}{2}{subsection.1.2.2}
+\contentsline {subsubsection}{Required installations}{2}{section*.3}
+\contentsline {subsubsection}{Bundled software}{2}{section*.4}
+\contentsline {section}{\numberline {1.3}Initial installation}{2}{section.1.3}
+\contentsline {section}{\numberline {1.4}Upgrades}{3}{section.1.4}
+\contentsline {section}{\numberline {1.5}qsys - query configuration}{3}{section.1.5}
+\contentsline {section}{\numberline {1.6}Configuration files syntax}{4}{section.1.6}
+\contentsline {section}{\numberline {1.7}\textbf {WebObs }tree}{5}{section.1.7}
+\contentsline {section}{\numberline {1.8}License}{6}{section.1.8}
+\contentsline {chapter}{\numberline {2}Reference}{7}{chapter.2}
+\contentsline {section}{\numberline {2.1}Overview}{7}{section.2.1}
+\contentsline {section}{\numberline {2.2}Nodes: Elementary WebObs Objects}{7}{section.2.2}
+\contentsline {subsection}{\numberline {2.2.1}Create, edit or delete a NODE}{8}{subsection.2.2.1}
+\contentsline {subsection}{\numberline {2.2.2}Names and codes}{9}{subsection.2.2.2}
+\contentsline {subsubsection}{Main code (ID)}{9}{section*.5}
+\contentsline {subsubsection}{Name}{9}{section*.6}
+\contentsline {subsubsection}{Alias (short name)}{9}{section*.7}
+\contentsline {subsubsection}{Type}{9}{section*.8}
+\contentsline {subsection}{\numberline {2.2.3}Lifetime and validity}{9}{subsection.2.2.3}
+\contentsline {subsubsection}{Start/end dates}{9}{section*.9}
+\contentsline {subsubsection}{Valid \MakeTextUppercase {node}}{9}{section*.10}
+\contentsline {subsection}{\numberline {2.2.4}Grids memberships}{9}{subsection.2.2.4}
+\contentsline {subsection}{\numberline {2.2.5}Geographic location}{9}{subsection.2.2.5}
+\contentsline {subsubsection}{WGS84 coordinates}{10}{section*.11}
+\contentsline {subsubsection}{Timestamp and type of coordinates}{10}{section*.12}
+\contentsline {subsubsection}{Google Maps API link}{10}{section*.13}
+\contentsline {subsubsection}{Google Earth KML link}{10}{section*.14}
+\contentsline {subsubsection}{Location map}{10}{section*.15}
+\contentsline {subsection}{\numberline {2.2.6}Transmission}{11}{subsection.2.2.6}
+\contentsline {subsubsection}{Type}{11}{section*.16}
+\contentsline {subsubsection}{Acquisition and repeaters}{11}{section*.17}
+\contentsline {subsection}{\numberline {2.2.7}Proc's parameters and data status}{11}{subsection.2.2.7}
+\contentsline {subsubsection}{Network code}{11}{section*.18}
+\contentsline {subsubsection}{Raw format}{11}{section*.19}
+\contentsline {subsubsection}{Raw data source}{11}{section*.20}
+\contentsline {subsubsection}{FID}{12}{section*.21}
+\contentsline {subsubsection}{FID\_*}{12}{section*.22}
+\contentsline {subsubsection}{Time zone}{12}{section*.23}
+\contentsline {subsubsection}{Acquisition period}{12}{section*.24}
+\contentsline {subsubsection}{Acquisition delay}{12}{section*.25}
+\contentsline {subsubsection}{Status and link to data}{12}{section*.26}
+\contentsline {subsubsection}{Channels parameters (calibration file)}{12}{section*.27}
+\contentsline {subsection}{\numberline {2.2.8}Features}{13}{subsection.2.2.8}
+\contentsline {subsubsection}{List of user-defined features}{13}{section*.28}
+\contentsline {subsubsection}{Node-features-nodes association list}{13}{section*.29}
+\contentsline {subsection}{\numberline {2.2.9}Installation, information and access}{13}{subsection.2.2.9}
+\contentsline {subsection}{\numberline {2.2.10}Photos, diagrams and associated documents}{13}{subsection.2.2.10}
+\contentsline {subsection}{\numberline {2.2.11}Project}{13}{subsection.2.2.11}
+\contentsline {subsection}{\numberline {2.2.12}Events}{13}{subsection.2.2.12}
+\contentsline {section}{\numberline {2.3}Grids: networks of nodes}{13}{section.2.3}
+\contentsline {subsection}{\numberline {2.3.1}Views}{14}{subsection.2.3.1}
+\contentsline {subsubsection}{\MakeTextUppercase {grid} name and attributes}{15}{section*.30}
+\contentsline {subsubsection}{\MakeTextUppercase {NODES} attributes}{15}{section*.31}
+\contentsline {subsubsection}{Digital Elevation Model (DEM)}{15}{section*.32}
+\contentsline {subsection}{\numberline {2.3.2}Procs}{15}{subsection.2.3.2}
+\contentsline {subsection}{\numberline {2.3.3}Forms}{16}{subsection.2.3.3}
+\contentsline {subsection}{\numberline {2.3.4}Project}{16}{subsection.2.3.4}
+\contentsline {subsection}{\numberline {2.3.5}Events}{16}{subsection.2.3.5}
+\contentsline {subsection}{\numberline {2.3.6}TMap: GRIDS diagram}{16}{subsection.2.3.6}
+\contentsline {section}{\numberline {2.4}Events Logging}{16}{section.2.4}
+\contentsline {section}{\numberline {2.5}Web pages}{17}{section.2.5}
+\contentsline {subsection}{\numberline {2.5.1}Main menu}{17}{subsection.2.5.1}
+\contentsline {subsection}{\numberline {2.5.2}Home page}{17}{subsection.2.5.2}
+\contentsline {subsection}{\numberline {2.5.3}Wiki pages}{17}{subsection.2.5.3}
+\contentsline {subsection}{\numberline {2.5.4}Tools pages}{17}{subsection.2.5.4}
+\contentsline {subsection}{\numberline {2.5.5}Application pages}{17}{subsection.2.5.5}
+\contentsline {chapter}{\numberline {3}Built-in applications}{19}{chapter.3}
+\contentsline {section}{\numberline {3.1}The Gazette}{19}{section.3.1}
+\contentsline {subsection}{\numberline {3.1.1}Overview}{19}{subsection.3.1.1}
+\contentsline {subsection}{\numberline {3.1.2}Configuration}{19}{subsection.3.1.2}
+\contentsline {subsection}{\numberline {3.1.3}Display/Edit Gazette}{20}{subsection.3.1.3}
+\contentsline {section}{\numberline {3.2}GRIDMAPS and LOCASTAT: maps of georeferenced nodes}{21}{section.3.2}
+\contentsline {subsection}{\numberline {3.2.1}Overview}{21}{subsection.3.2.1}
+\contentsline {subsection}{\numberline {3.2.2}GRIDMAPS}{21}{subsection.3.2.2}
+\contentsline {subsubsection}{Configuration}{21}{section*.33}
+\contentsline {subsubsection}{Activation}{22}{section*.34}
+\contentsline {subsection}{\numberline {3.2.3}LOCASTAT}{22}{subsection.3.2.3}
+\contentsline {section}{\numberline {3.3}SEFRAN3/MC3: seismic chart and bulletin}{23}{section.3.3}
+\contentsline {subsection}{\numberline {3.3.1}Overview}{23}{subsection.3.3.1}
+\contentsline {subsection}{\numberline {3.3.2}SEFRAN3 installation}{24}{subsection.3.3.2}
+\contentsline {subsubsection}{Configuration files}{24}{section*.35}
+\contentsline {subsubsection}{Activation}{26}{section*.36}
+\contentsline {subsection}{\numberline {3.3.3}MC3 configuration}{26}{subsection.3.3.3}
+\contentsline {subsection}{\numberline {3.3.4}Links with earthquake event catalogs}{29}{subsection.3.3.4}
+\contentsline {subsubsection}{SeisComP3}{29}{section*.37}
+\contentsline {subsubsection}{EarthWorm}{29}{section*.38}
+\contentsline {section}{\numberline {3.4}GENPLOT: generic time series}{29}{section.3.4}
+\contentsline {subsection}{\numberline {3.4.1}Overview}{29}{subsection.3.4.1}
+\contentsline {subsection}{\numberline {3.4.2}Configuration}{29}{subsection.3.4.2}
+\contentsline {subsubsection}{Time scales}{31}{section*.39}
+\contentsline {section}{\numberline {3.5}HYPOMAP: Earthquake hypocenter maps from seismic catalog}{31}{section.3.5}
+\contentsline {subsection}{\numberline {3.5.1}Overview}{31}{subsection.3.5.1}
+\contentsline {subsection}{\numberline {3.5.2}Configuration}{31}{subsection.3.5.2}
+\contentsline {section}{\numberline {3.6}HELICORDER: Seismic helicorder}{32}{section.3.6}
+\contentsline {subsection}{\numberline {3.6.1}Overview}{32}{subsection.3.6.1}
+\contentsline {subsection}{\numberline {3.6.2}Configuration}{32}{subsection.3.6.2}
+\contentsline {section}{\numberline {3.7}RSAM: Realtime Seismic Amplitude Measurement}{34}{section.3.7}
+\contentsline {subsection}{\numberline {3.7.1}Overview}{34}{subsection.3.7.1}
+\contentsline {subsection}{\numberline {3.7.2}Configuration}{34}{subsection.3.7.2}
+\contentsline {section}{\numberline {3.8}GNSS: GPS time series, vectors and modelling}{35}{section.3.8}
+\contentsline {subsection}{\numberline {3.8.1}Overview}{35}{subsection.3.8.1}
+\contentsline {subsection}{\numberline {3.8.2}Configuration}{35}{subsection.3.8.2}
+\contentsline {section}{\numberline {3.9}EXTENSO: Extensometry time series and vectors}{37}{section.3.9}
+\contentsline {subsection}{\numberline {3.9.1}Overview}{37}{subsection.3.9.1}
+\contentsline {subsection}{\numberline {3.9.2}Configuration}{37}{subsection.3.9.2}
+\contentsline {section}{\numberline {3.10}TILT: Tiltmetry time series, vectors and modelling}{38}{section.3.10}
+\contentsline {subsection}{\numberline {3.10.1}Overview}{38}{subsection.3.10.1}
+\contentsline {subsection}{\numberline {3.10.2}Configuration}{38}{subsection.3.10.2}
+\contentsline {section}{\numberline {3.11}METEO: meteorological time series}{40}{section.3.11}
+\contentsline {subsection}{\numberline {3.11.1}Overview}{40}{subsection.3.11.1}
+\contentsline {subsection}{\numberline {3.11.2}Configuration}{40}{subsection.3.11.2}
+\contentsline {section}{\numberline {3.12}WATERS: chemical analysis}{41}{section.3.12}
+\contentsline {subsection}{\numberline {3.12.1}Overview}{41}{subsection.3.12.1}
+\contentsline {subsection}{\numberline {3.12.2}Configuration}{41}{subsection.3.12.2}
+\contentsline {section}{\numberline {3.13}PROCS graph and data request}{42}{section.3.13}
+\contentsline {subsection}{\numberline {3.13.1}Overview}{42}{subsection.3.13.1}
+\contentsline {subsection}{\numberline {3.13.2}Description}{42}{subsection.3.13.2}
+\contentsline {subsection}{\numberline {3.13.3}Configuration}{43}{subsection.3.13.3}
+\contentsline {section}{\numberline {3.14}Data formats available for PROCS}{43}{section.3.14}
+\contentsline {subsection}{\numberline {3.14.1}Waveforms formats}{43}{subsection.3.14.1}
+\contentsline {subsubsection}{\{miniseed\}: miniSEED files}{44}{section*.40}
+\contentsline {subsubsection}{\{seedlink\}: SeedLink request}{44}{section*.41}
+\contentsline {subsubsection}{\{arclink\}: SeisComP3 ArcLink request}{44}{section*.42}
+\contentsline {subsubsection}{\{combined\}: SeisComP3 combined SeedLink/ArcLink request}{44}{section*.43}
+\contentsline {subsubsection}{\{fdsnws-dataselect\}: FDSN web-service dataselect request}{44}{section*.44}
+\contentsline {subsubsection}{\{winston\}: EarthWorm Winston wave server request}{44}{section*.45}
+\contentsline {subsection}{\numberline {3.14.2}Generic time series}{44}{subsection.3.14.2}
+\contentsline {subsubsection}{\{ascii\}: Generic ASCII text files}{44}{section*.46}
+\contentsline {subsubsection}{\{sql-table\}: SQL-table request}{45}{section*.47}
+\contentsline {subsubsection}{\{cr10xasc\}: Campbell Scientific CR10X ASCII files}{45}{section*.48}
+\contentsline {subsubsection}{\{t0a5\}: Campbell Scientific T0A5 ASCII files}{45}{section*.49}
+\contentsline {subsubsection}{\{porkyasc\}: USGS Porky ASCII files}{45}{section*.50}
+\contentsline {subsection}{\numberline {3.14.3}Quakes catalogs}{46}{subsection.3.14.3}
+\contentsline {subsubsection}{\{hyp71sum2k\}: Quake Hypo71 summary lines year 2000 compatible}{46}{section*.51}
+\contentsline {subsubsection}{\{fdsnws-event\}: Quake FDSN WebServices event request}{46}{section*.52}
+\contentsline {subsubsection}{\{scevtlog-xml\}: Quake SeisComP3-xml files}{46}{section*.53}
+\contentsline {subsection}{\numberline {3.14.4}GNSS solutions}{46}{subsection.3.14.4}
+\contentsline {subsubsection}{\{gipsy-tdp\}: JPL GIPSY-OASIS TDP files}{46}{section*.54}
+\contentsline {subsubsection}{\{globkval\}: MIT GAMIT-GLOBK VAL files}{46}{section*.55}
+\contentsline {subsection}{\numberline {3.14.5}Other specific formats}{47}{subsection.3.14.5}
+\contentsline {subsubsection}{\{teqc-qc\}: TEQC Rinex quality check}{47}{section*.56}
+\contentsline {subsubsection}{\{naqs-soh\}: NAQS State of Health}{47}{section*.57}
+\contentsline {subsubsection}{\{wodbform\}: WebObs database forms}{47}{section*.58}
+\contentsline {chapter}{\numberline {4}Administration}{49}{chapter.4}
+\contentsline {section}{\numberline {4.1}Users, Groups and Authorizations}{49}{section.4.1}
+\contentsline {subsection}{\numberline {4.1.1}Overview}{49}{subsection.4.1.1}
+\contentsline {subsection}{\numberline {4.1.2}Users table and Groups table}{49}{subsection.4.1.2}
+\contentsline {subsection}{\numberline {4.1.3}Resource tables}{50}{subsection.4.1.3}
+\contentsline {subsection}{\numberline {4.1.4}Managing Users and Authorizations}{50}{subsection.4.1.4}
+\contentsline {subsection}{\numberline {4.1.5}Developing with Users and Authorizations system}{50}{subsection.4.1.5}
+\contentsline {subsection}{\numberline {4.1.6}Adding a new user}{50}{subsection.4.1.6}
+\contentsline {section}{\numberline {4.2}PostBoard}{50}{section.4.2}
+\contentsline {subsection}{\numberline {4.2.1}Overview}{50}{subsection.4.2.1}
+\contentsline {subsection}{\numberline {4.2.2}Event names}{51}{subsection.4.2.2}
+\contentsline {subsection}{\numberline {4.2.3}Managing PostBoard Subscriptions}{51}{subsection.4.2.3}
+\contentsline {subsection}{\numberline {4.2.4}Developing with Notifications}{52}{subsection.4.2.4}
+\contentsline {section}{\numberline {4.3}Scheduler}{52}{section.4.3}
+\contentsline {subsection}{\numberline {4.3.1}Overview}{52}{subsection.4.3.1}
+\contentsline {subsection}{\numberline {4.3.2}Configuration and Tables}{53}{subsection.4.3.2}
+\contentsline {subsubsection}{JOBS TABLE}{53}{section*.59}
+\contentsline {subsubsection}{RESOURCE syntax}{53}{section*.60}
+\contentsline {subsubsection}{XEQ1, XEQ2, XEQ3 syntax}{53}{section*.61}
+\contentsline {subsubsection}{JOBS LOGS PATHS syntax}{53}{section*.62}
+\contentsline {subsection}{\numberline {4.3.3}Jobs selection and execution}{54}{subsection.4.3.3}
+\contentsline {subsubsection}{Command line submit syntax}{54}{section*.63}
+\contentsline {subsection}{\numberline {4.3.4}Scheduler manager}{54}{subsection.4.3.4}
+\contentsline {subsection}{\numberline {4.3.5}Scheduler runs}{55}{subsection.4.3.5}
+\contentsline {subsection}{\numberline {4.3.6}Scheduler status}{55}{subsection.4.3.6}
+\contentsline {subsection}{\numberline {4.3.7}Scheduler command line}{56}{subsection.4.3.7}
+\contentsline {section}{\numberline {4.4}WOC}{57}{section.4.4}
+\contentsline {subsection}{\numberline {4.4.1}Overview}{58}{subsection.4.4.1}
+\contentsline {chapter}{\numberline {5}Developments}{59}{chapter.5}
+\contentsline {section}{\numberline {5.1}Use PROC's output graphics facilities}{59}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}Graphs per time scale}{59}{subsection.5.1.1}
+\contentsline {subsection}{\numberline {5.1.2}Graphs per event}{60}{subsection.5.1.2}
+\contentsline {section}{\numberline {5.2}SUPERPROCS: Templates for applications development}{60}{section.5.2}
+\contentsline {subsection}{\numberline {5.2.1}Superprocs}{60}{subsection.5.2.1}
+\contentsline {subsubsection}{}{60}{section*.64}
+\contentsline {chapter}{Appendix}{61}{chapter*.65}
+\contentsline {chapter}{Acknowledgments}{65}{chapter*.66}

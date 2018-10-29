@@ -1,0 +1,285 @@
+
+/* rules/properties may be dynamically defined/overriden by perl-cgi */
+/* such modifications are marked with comment 'DYNAMIC <perl's code> */
+
+.noImage {
+	font-size:14pt;
+	font-style:italic;
+	font-weight:bold;
+	color: #CCCCCC;
+	text-align:center;
+	background-color: #F5F5F5;
+	border: solid 1px #AFAFAF;
+}
+
+#attente {
+    color: gray;
+    background: white;
+    margin: 0.5em;
+    padding: 0.5em;
+    font-size: 1.5em;
+    border: 1px solid gray;
+    position: float;
+}
+
+html,body {
+	padding: 0;
+	border-collapse: collapse;
+	border: 0;
+	margin: 1px;
+}
+
+img.voies-permanentes {
+	position: absolute;
+}
+img.voies-dynamiques {
+	display: block;
+	position: absolute;
+	z-index: 2;
+	left: 0;
+	top: 3;
+}
+
+table.sefran {
+	/*DYNAMIC margin-left: ${largeur_voies}px*/
+	display: block;			/*DL*/
+	position: absolute;		/*DL*/
+	left: 0px;
+}
+td.sefran, td.signals, td.bouton, td.rien, td.fin {
+	padding: 0;
+	margin: 0;
+	border-collapse: collapse;
+	border: 0;
+}
+td.bouton {
+	font-size: 1.5em;
+	font-weight: bold;
+}
+td.rien,td.fin {
+	color: white;
+	text-align:center;
+	padding: 1ex;
+	border: 1px solid white;
+	font-size: 15px;
+	white-space:nowrap;
+}
+td.rien div,td.fin div {
+	/*DYNAMIC width: ${largeur_image}px*/
+}
+td.rien {
+	background-color: lightgray;
+}
+td.recent {
+	background-color: white;
+	color: lightgray;
+}
+td.fin {
+	background-color: white;
+	color: lightblue;
+}
+.signals img {
+	border: 0;
+	border-bottom: 10px solid white;
+	/*DYNAMIC width: ${largeur_image}px*/
+	/*DYNAMIC height: ${hauteur_image}px*/
+}
+.signals map:hover img{
+	border-bottom: 10px solid lightblue;
+}
+div.keysbox {
+	display: block;
+	position: fixed;
+	z-index: 5;
+	top: 1px;
+	border: 2px solid #888888;
+	border-radius: 5px;
+	background-color: #DDD;
+	width: auto;
+	text-align: center;
+}
+div.keys {
+	display: none;
+	margin-bottom: 2px;
+}
+.keytitle {
+	background-color: #DDD;
+	margin: 2px;
+	border: none;
+	font-weight: bold;
+	text-align: left;
+}
+.keycap {
+	background-color: #FFFFFF;
+	padding: 0px 2px;
+	border: solid 2px #AFAFAF;
+	margin: 1px 1px 1px 1px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	font-weight: bold;
+}
+.mcbouton {
+    cursor:pointer;
+	display: inline-block;
+	margin: 3px 1px;
+}
+.mcbouton.greyed {
+	background-color: #BBBBBB;
+	cursor: default;
+}
+.mcbouton span.keycap.greyed { 
+	background-color: #BBBBBB;
+	color: #999999
+}
+.mcbouton span.keycap:hover {
+	text-decoration: none;
+	border-color: #649788;
+}
+.mcbouton span.keycap.greyed:hover {
+	text-decoration: none;
+	background-color: #BBBBBB;
+	color: #999999
+}
+
+.mcform {
+	display: block;
+	position: fixed;
+	z-index: 1;
+	right: 5;
+	top: 30px;
+	width: 400px;
+    margin: 0;
+    padding: 5;
+	background-color: lightgray;
+    border: solid 2px #AFAFAF;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.mctag {
+	display: block;
+	position: absolute;
+	top: 1px;
+	z-index: 1;
+	/*DYNAMIC opacity: $SEFRAN3{MC3_EVENT_OPACITY}*/
+	/*DYNAMIC filter:alpha(opacity=$opacityIE)*/
+}
+
+#eventStart {
+	display: block;
+	position: absolute;
+	z-index: 1;
+	left: -100;
+	top: 0;
+	padding: 0;
+	margin: 0;
+	border-collapse: collapse;
+	border: 0;
+	border-left: 1px solid black;
+	width: 0px;
+	/*DYNAMIC height: ${hauteur_image}px*/
+}
+#eventStart td {
+	color: white;
+	background-color: black;
+	padding: 0;
+	margin: 1;
+	border: 0;
+    font-size: 8px;
+}
+#eventEnd {
+	display: block;
+	position: absolute;
+	z-index: 1;
+	left: -100;
+	top: 0;
+	padding: 0;
+	margin: 0;
+	border-collapse: collapse;
+	border: 0;
+	border-left: 1px solid gray;
+	width: 0px;
+	/*DYNAMIC height: ${hauteur_image}px*/
+}
+#eventEnd td {
+	color: white;
+	background-color: gray;
+	padding: 0;
+	margin: 1;
+	border: 0;
+    font-size: 8px;
+}
+#eventSP {
+	display: block;
+	position: absolute;
+	z-index: 1;
+	left: -100;
+	top: 0;
+	padding: 0;
+	margin: 0;
+	border-collapse: collapse;
+	border: 0;
+	border-left: 1px solid DarkSlateGray;
+	width: 0px;
+	/*DYNAMIC height: ${hauteur_image}px*/
+}
+#eventSP td {
+	color: white;
+	background-color: DarkSlateGray;
+	padding: 0;
+	margin: 1;
+	border: 0;
+    font-size: 8px;
+}
+#crosshairUp {
+	display: inline-block; 
+	position: absolute;
+	/*left: -10px;*/
+	border: none; 
+	border-left: 1px solid black;
+	z-index: 1;
+	/*DYNAMIC top: ${pointer_dy}*/
+	/*DYNAMIC height: ${hauteur_image}px*/
+}
+#crosshairDown {
+	display: inline-block; 
+	position: absolute;
+	top: 0;
+	/*left: -10px;*/
+	border: none; 
+	border-left: 1px solid black;
+	z-index: 1;
+	/*DYNAMIC height: ${hauteur_image}px*/
+}
+input[type=submit] {
+    font-weight: bold;
+}
+
+#rtclock {
+	background: white;
+	border: 1px solid lightgray;
+}
+
+#Larrow {
+	z-index: 3;
+	position: fixed;
+	top: 0px; 
+	opacity: 0;
+	background: #EAE4CE url("/icons/arrow_left.png") no-repeat center center;
+	width: 50px;
+	height: 0px; left: 0px;
+	/*height to be computed at runtime*/
+}
+
+#Rarrow {
+	z-index: 3;
+	position: fixed;
+	top: 0px;
+	opacity: 0;
+	background: #EAE4CE url("/icons/arrow_right.png") no-repeat center center;
+	width: 50px;
+	height: 0px; left: 0px;
+	/*height and left to be computed at runtime*/
+}

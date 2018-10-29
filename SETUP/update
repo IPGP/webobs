@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "updating CODE from patch..."
+WOROOT=$(readlink /etc/webobs.d)
+rsync -av $(dirname $0)/../CODE/ $WOROOT/../CODE/
+echo "done."
+

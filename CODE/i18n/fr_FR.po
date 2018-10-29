@@ -1,0 +1,1279 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WebOBS 2.0\n"
+"Report-Msgid-Bugs-To: webobs@ovsg.univ-ag.fr\n"
+"POT-Creation-Date: 2007-05-25 09:10-0400\n"
+"PO-Revision-Date: 2016-04-20 11:21-0400\n"
+"Last-Translator: Francois Beauducel <beauducel@ipgp.fr>\n"
+"Language-Team: WebOBS Traduction fr <webobs-fr@ovsg.univ-ag.fr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Node"
+msgstr "Node"
+
+msgid "WebObs pages require JavaScript enabled"
+msgstr "Les pages WebObs n&eacute;cessitent l'activation de JavaScript"
+
+msgid "Node Configuration"
+msgstr "Configuration de Node"
+
+msgid "No grid context specified"
+msgstr "Contexte grid non spécifié"
+
+msgid "Could not open"
+msgstr "Impossible d'ouvrir"
+
+msgid "Could not read"
+msgstr "Impossible de lire"
+
+msgid "Could not access"
+msgstr "Impossible d'accéder à"
+
+msgid "Could not create"
+msgstr "Impossible de créer"
+
+msgid "Cannot upload to"
+msgstr "Dépôt impossible vers"
+
+msgid "is invalid"
+msgstr "est invalide"
+
+msgid "No output for"
+msgstr "Pas de données pour"
+
+msgid "new filename"
+msgstr "nouveau fichier"
+
+msgid "File is currently being edited"
+msgstr "Fichier en cours d'édition"
+
+msgid "by"
+msgstr "par"
+
+msgid "not found"
+msgstr "introuvable"
+
+msgid "not authorized"
+msgstr "non autorisé"
+
+msgid "unlink lockfile error"
+msgstr "erreur unlink lockfile"
+
+msgid "Not authorized"
+msgstr "Pas autorisé"
+
+msgid "Invalid resource name"
+msgstr "Ressource invalide"
+
+msgid "Not a fully qualified node name (gridtype.gridname.nodename)"
+msgstr "Identifiant de node incomplet (gridtype.gridname.nodename) "
+
+msgid "Not a valid GRID requested (NOT gridtype.gridname)"
+msgstr "Identifiant de grid incomplet (PAS gridtype.gridname) "
+
+msgid "No filename specified"
+msgstr "Fichier non spécifié"
+
+msgid "Editing"
+msgstr "Édition"
+
+msgid "Editing file"
+msgstr "Édition de"
+
+msgid "Creating"
+msgstr "Création"
+
+msgid "without date"
+msgstr "sans date"
+
+msgid "No date"
+msgstr "sans date"
+
+msgid "Event title (ATT: do not use | (pipe))"
+msgstr "Titre événement (ATT: ne pas utiliser de | (pipe))"
+
+msgid "Duplicate id"
+msgstr "id en double"
+
+msgid "Other people involved"
+msgstr "Autres intervenants"
+
+msgid "Name(s)"
+msgstr "Intervenant(s)"
+
+msgid "Event type"
+msgstr "Type événement"
+
+msgid "--- please select ---"
+msgstr "--- choisir svp ---"
+
+msgid "Select names of people involved (hold CTRL key for multiple selections)"
+msgstr "Choisir le(s) intervenant(s) (CTRL-key pour sélection multiple)"
+
+msgid "calibration data-fields definition"
+msgstr "définitions des champs de fichier calibration"
+
+msgid "calibration-files configuration"
+msgstr "configuration calibration"
+
+msgid "show/hide Loc"
+msgstr "(de)masque Loc"
+
+msgid "node configuration"
+msgstr "configuration de node"
+
+msgid "No node requested"
+msgstr "Pas de node spécifié"
+
+msgid "unknown"
+msgstr "inconnu"
+
+msgid "to create a node in"
+msgstr "de créer un node dans"
+
+msgid "Cannot edit a NODE outside of GRID context"
+msgstr "Impossible d'éditer un node hors d'un contexte grid"
+
+msgid "select"
+msgstr "choisir"
+
+msgid "a node from list"
+msgstr "un node dans la liste"
+
+msgid "at least one name"
+msgstr "au moins 1 nom"
+
+msgid "Purpose"
+msgstr "Objectifs"
+
+msgid "Domain"
+msgstr "Domaines"
+
+msgid "Graphs"
+msgstr "Graphes"
+
+msgid "Raw data"
+msgstr "Données"
+
+msgid "Project"
+msgstr "Projet"
+
+msgid "Networks"
+msgstr "Réseaux"
+
+msgid "Own."
+msgstr "Oper."
+
+msgid "Owner"
+msgstr "Opérateur"
+
+msgid "Time reference"
+msgstr "Fuseau de référence"
+
+msgid "Sampling Frequency"
+msgstr "Fréquence d'échantillonnage"
+
+msgid "Acquisition period"
+msgstr "Période d'acquisition"
+
+msgid "Access to data"
+msgstr "Accès aux données"
+
+msgid "Graphical routine"
+msgstr "Routine graphique"
+
+msgid "External link(s)"
+msgstr "Lien(s) externe(s)"
+
+msgid "Number of nodes"
+msgstr "Nombre de nodes"
+
+msgid "Associate existing node(s)"
+msgstr "Associer des nodes"
+
+msgid "Create a new node"
+msgstr "Créer un nouveau node"
+
+msgid "Do a"
+msgstr "Faire une"
+
+msgid "search"
+msgstr "recherche"
+
+msgid "within events"
+msgstr "dans les événements"
+
+msgid "List of"
+msgstr "Liste des"
+
+msgid "Datasheets"
+msgstr "Fiches"
+
+msgid "Valid"
+msgstr "Valides"
+
+msgid "Active"
+msgstr "Actives"
+
+msgid "Coordinates"
+msgstr "Coordonnées"
+
+msgid "Networks Codes"
+msgstr "Codes des Réseaux"
+
+msgid "Last Measurement"
+msgstr "Dernière Mesure"
+
+msgid "Sampl."
+msgstr "Échant."
+
+msgid "Last Data"
+msgstr "Dernière Donnée"
+
+msgid "Last status check on"
+msgstr "Dernier état effectué le"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "Lifetime"
+msgstr "Durée de vie"
+
+msgid "Started on"
+msgstr "Installé le"
+
+msgid "Ended on"
+msgstr "Desinstallé le "
+
+msgid "Start / Installation"
+msgstr "Début / Installation"
+
+msgid "End / Stop"
+msgstr "Fin / Arrêt"
+
+msgid "See also the following maps"
+msgstr "Voir aussi les cartes suivantes"
+
+msgid "Information"
+msgstr "Informations"
+
+msgid "References"
+msgstr "Bibliographie"
+
+msgid "Bibliography"
+msgstr "Bibliographie"
+
+msgid "Events"
+msgstr "Événements"
+
+msgid "Network"
+msgstr "Réseau"
+
+msgid "Parent Datasheet"
+msgstr "Fiche parente"
+
+msgid "{caract} of {station}"
+msgstr "{caract} de {station}"
+
+msgid "Begin - End"
+msgstr "Début - Fin"
+
+msgid "General Status"
+msgstr "État Général"
+
+msgid "ACTIVE"
+msgstr "ACTIVE"
+
+msgid "INACTIVE"
+msgstr "INACTIVE"
+
+msgid "Status"
+msgstr "État"
+
+msgid "Acquisition"
+msgstr "Acquisition"
+
+msgid "Graphics"
+msgstr "Graphes"
+
+msgid "Click to enlarge"
+msgstr "Cliquer pour agrandir"
+
+msgid "Location"
+msgstr "Localisation"
+
+msgid "Longitude"
+msgstr "Longitude"
+
+msgid "Latitude"
+msgstr "Latitude"
+
+msgid "Elevation"
+msgstr "Altitude"
+
+msgid "Positionning"
+msgstr "Positionnement"
+
+msgid "Geographic"
+msgstr "Géographique"
+
+msgid "East"
+msgstr "Est"
+
+msgid "North"
+msgstr "Nord"
+
+msgid "Location map"
+msgstr "Carte de localisation"
+
+msgid "Access"
+msgstr "Accès"
+
+msgid "Specifications"
+msgstr "Caractéristiques"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Time"
+msgstr "Heure"
+
+msgid "Channel No"
+msgstr "N° Voie"
+
+msgid "Channel Name"
+msgstr "Nom Voie"
+
+msgid "Unit"
+msgstr "Unité"
+
+msgid "S/N"
+msgstr "S/N"
+
+msgid "Channel Code"
+msgstr "Code Voie"
+
+msgid "Offset"
+msgstr "Offset"
+
+msgid "Calib. Fact."
+msgstr "Fact. Calib."
+
+msgid "Gain"
+msgstr "Gain"
+
+msgid "Min. Val."
+msgstr "Val. Min."
+
+msgid "Max. Val."
+msgstr "Val. Max."
+
+msgid "Azimuth"
+msgstr "Azimut"
+
+msgid "Photos"
+msgstr "Photos"
+
+msgid "Diagrams"
+msgstr "Schémas"
+
+msgid "Documents"
+msgstr "Documents"
+
+msgid "Edit..."
+msgstr "Modifier..."
+
+msgid "Remove..."
+msgstr "Supprimer..."
+
+msgid "Image {file}"
+msgstr "Image {file}"
+
+msgid "<b>Click for larger view</B><br>Image={image}<br>Size={dim}<br>Resolution={res}<br>Scaled down {scale} times"
+msgstr "<b>Cliquer pour agrandir</B><br>Image={image}<br>Dimensions={dim}<br>Resolution={res}<br>Affichage réduit par {scale}"
+
+msgid "Access to the"
+msgstr "Accès à la"
+
+msgid "Data bank"
+msgstr "Banque de données"
+
+msgid "ASCII data file(s)"
+msgstr "Fichier(s) ASCII de données validées"
+
+msgid "Access to raw data directory"
+msgstr "Accès au répertoire de données brutes"
+
+msgid "Access to routine graphs"
+msgstr "Accès aux graphes en routine"
+
+msgid "Sort by"
+msgstr "Trier par"
+
+msgid "Event"
+msgstr "Événement"
+
+msgid "Add a sub event..."
+msgstr "Ajouter un sous-événement"
+
+msgid "Title"
+msgstr "Titre"
+
+msgid "Content"
+msgstr "Contenu"
+
+msgid "Author(s)"
+msgstr "Auteur(s)"
+
+msgid "Copy"
+msgstr "Copier"
+
+msgid "or"
+msgstr "ou"
+
+msgid "Move"
+msgstr "Déplacer"
+
+msgid "to node"
+msgstr "vers le node"
+
+msgid "Notify"
+msgstr "Notifier"
+
+msgid "New node"
+msgstr "Nouveau Node"
+
+msgid "New event"
+msgstr "Nouvel événement"
+
+msgid "Datasheet"
+msgstr "Fiche"
+
+msgid "See full node"
+msgstr "Voir le node complet"
+
+msgid "Names and Codes"
+msgstr "Noms et Codes"
+
+msgid "Associated Grids"
+msgstr "Grids associés"
+
+msgid "Procs Parameters"
+msgstr "Paramètres de Proc"
+
+msgid "Searching for data, please wait"
+msgstr "Recherche des données, merci de patienter"
+
+msgid "Select a network"
+msgstr "Sélectionner un réseau"
+
+msgid "All networks"
+msgstr "Tous les réseaux"
+
+msgid "Start date"
+msgstr "Date début"
+
+msgid "End date"
+msgstr "Date fin"
+
+msgid "Start time"
+msgstr "Heure début"
+
+msgid "End time"
+msgstr "Heure fin"
+
+msgid "Word/Expression"
+msgstr "Mot/Expression"
+
+msgid "Select to match entire word"
+msgstr "Sélectionner pour limiter aux mots entiers"
+
+msgid "Entire word"
+msgstr "Mot entier"
+
+msgid "Select to match word case"
+msgstr "Sélectionner pour respecter la casse"
+
+msgid "Upper/lower case"
+msgstr "Majuscule/Minuscule"
+
+msgid "Select to display the entire text (not only fitting lines)"
+msgstr "Sélectionner pour afficher le texte complet (pas seulement les lignes correspondantes)"
+
+msgid "Display Entire text"
+msgstr "Afficher le texte complet"
+
+msgid "Include network description"
+msgstr "Inclure les descriptions de réseaux"
+
+msgid "Network info"
+msgstr "Infos réseaux"
+
+msgid "Include datasheet/station description"
+msgstr "Inclure les informations de fiches/stations"
+
+msgid "Sheet info"
+msgstr "Infos fiches"
+
+msgid "Include datasheet/station dated events"
+msgstr "Inclure les événements de fiches/stations"
+
+msgid "Sheet events"
+msgstr "Événements fiches"
+
+msgid "Search"
+msgstr "Recherche"
+
+msgid "Search in selected grids below"
+msgstr "Recherche dans les Grids cochés ci-dessous"
+
+msgid "Advanced Search"
+msgstr "Recherche avancée"
+
+msgid "check to select ALL for search"
+msgstr "cocher pour TOUT selecter pour recherche"
+
+msgid "check to select for search"
+msgstr "cocher pour recherche"
+
+msgid "Include description files"
+msgstr "Inclure fichiers descriptions"
+
+msgid "Include calibration file"
+msgstr "Inclure fichiers calibration"
+
+msgid "Include file/node dated events"
+msgstr "Inclure événements"
+
+msgid "Datasheet Configuration"
+msgstr "Configuration de fiche"
+
+msgid "Modification of"
+msgstr "Modification de"
+
+msgid "Creation/installation"
+msgstr "Création/installation"
+
+msgid "Geographic location"
+msgstr "Localisation géographique"
+
+msgid "Codes, alias and names"
+msgstr "Codes, alias et noms"
+
+msgid "Features"
+msgstr "Caractéristiques"
+
+msgid "Full name"
+msgstr "Nom & prénom"
+
+msgid "Birthday"
+msgstr "Date de naissance"
+
+msgid "E-mail address"
+msgstr "Adresse électronique"
+
+msgid "Login user name"
+msgstr "Nom d'utilisateur"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "Password again"
+msgstr "Mot de passe (confirmation)"
+
+msgid "Create a new individual account"
+msgstr "Demande de compte personnel"
+
+msgid "I do accept the terms of use"
+msgstr "J'accepte les conditions d'utilisation"
+
+msgid "Names and Description"
+msgstr "Noms et description"
+
+msgid "Lifetime and Validity"
+msgstr "Durée de vie et validité"
+
+msgid "Acquisition and Repeater"
+msgstr "Acquisition et relais"
+
+msgid "Repeaters Path"
+msgstr "Acquisition et relais"
+
+msgid "Valid Node"
+msgstr "Node valide"
+
+msgid "Select to define a project (ATT: only one project per node)"
+msgstr "Sélectioner pour définir un projet (ATT: 1 seul projet par node)"
+
+msgid "Move this event to another node"
+msgstr "Déplacer cet événement vers un autre node"
+
+msgid "currently selected people"
+msgstr "actuellement sélectionné(s)"
+
+msgid "Edit the node-features-nodes associations list"
+msgstr "Éditer la liste des associatiions node-feature-nodes"
+
+msgid "Send an e-mail to inform Webobs users"
+msgstr "Informer par e-mail les utilisateurs WebObs"
+
+msgid "Duplicate this event into another node"
+msgstr "Dupliquer cet événement dans un autre node"
+
+msgid "Select the target node"
+msgstr "Choisir le node cible"
+
+msgid "Check to mark node as valid"
+msgstr "Cocher pour marquer le node comme valide"
+
+msgid "Time zone (h)"
+msgstr "Fuseau horaire"
+
+msgid "Acquisition period (days)"
+msgstr "Période d'acquisition (jours)"
+
+msgid "Acquisition delay (days)"
+msgstr "Délai d'acquisition (jours)"
+
+msgid "help_creationstation_network"
+msgstr "Sélectioner le réseau concerné"
+
+msgid "help_creationstation_id"
+msgstr "Codage/ID de la fiche:<ul><li>4 caractères exactement (compléter éventuellement avec des 0)<li>ID unique pour le réseau concerné</ul>"
+
+msgid "help_creationstation_name"
+msgstr "Entrez le nom long de la fiche (champ libre pour affichage)"
+
+msgid "help_creationstation_alias"
+msgstr "Le champ ALIAS est le code/nom court donné à la fiche (préférablement unique au sein du réseau) mais n'est pas fonctionnel"
+
+msgid "help_creationstation_fid"
+msgstr "Le champ FID correspond à un code/identifiant utilisé dans le traitement des données (fonctionnel)"
+
+msgid "help_creationstation_fdsn"
+msgstr "Code officiel de l'International Federation of Digital Seismograph Network (FDSN/IRIS)"
+
+msgid "help_creationstation_lat"
+msgstr "Latitude de la station (WGS84, degrés décimaux OU deg/minOU deg/min/sec- les 3 champs seront pris en compte)"
+
+msgid "help_creationstation_lon"
+msgstr "Longitude de la station (WGS84, degrés décimaux OU deg/min OU deg/min/sec- les 3 champs seront pris en compte)"
+
+msgid "help_creationstation_alt"
+msgstr "Altitude de la station (m)"
+
+msgid "help_creationstation_pos_type"
+msgstr "Type de positionnement sur le site"
+
+msgid "help_creationstation_tele_type"
+msgstr "Type de transmission pour la station"
+
+msgid "help_creationstation_tele_acq"
+msgstr "Entrez le code ID (7 caract.) des Éventuels relais et de la station d'acquisition, séparés par une virgule, dans l'ordre de la station vers l'acquisition"
+
+msgid "help_creationstation_spec"
+msgstr "Entrez les mots clés sans accent ou caractères spéciaux et séparés par une virgule"
+
+msgid "Language selection"
+msgstr "Choix de la langue"
+
+msgid "The current language is NAME_OF_GETTEXT_LANGUAGE. Please select your preferred language:"
+msgstr "La langue actuelle est le français. Merci de choisir votre langue préférée :"
+
+msgid "hebdo_long_date_format"
+msgstr "%A %-d %B %Y <i>(jour %j, sem %V)</i>"
+
+msgid "hebdo_date_format"
+msgstr "%A %-d %B %Y"
+
+msgid "from"
+msgstr "du"
+
+msgid "to"
+msgstr "au"
+
+msgid "Today"
+msgstr "Aujourd'hui"
+
+msgid "Tomorrow"
+msgstr "Demain"
+
+msgid "Yesterday"
+msgstr "Hier"
+
+msgid "This Week"
+msgstr "Cette semaine"
+
+msgid "This Month"
+msgstr "Ce mois-ci"
+
+msgid "To be coming"
+msgstr "À venir"
+
+msgid "from and after"
+msgstr "à partir du"
+
+msgid "all events since"
+msgstr "tous les événements depuis le"
+
+msgid "all year"
+msgstr "toute l'année"
+
+msgid "by type"
+msgstr "par type"
+
+msgid "by date"
+msgstr "par date"
+
+msgid "calendar"
+msgstr "calendrier"
+
+msgid "week"
+msgstr "sem"
+
+msgid "All"
+msgstr "Tout"
+
+msgid "Time interval"
+msgstr "Période"
+
+msgid "hebdo_help_time_interval"
+msgstr "Sélectionner l\\'intervalle"
+
+msgid "Type of event"
+msgstr "Type d'événement"
+
+msgid "hebdo_help_type_event"
+msgstr "Sélectionner le type d\\'événement"
+
+msgid "Delete this event"
+msgstr "Supprimer cet événement"
+
+msgid "Presentation"
+msgstr "Présentation"
+
+msgid "hebdo_help_presentation"
+msgstr "Sélectionner le type de présentation"
+
+msgid "Filter keyword"
+msgstr "Filtre"
+
+msgid "hebdo_help_filter"
+msgstr "Filtrer un mot (expression régulière)"
+
+msgid "Who"
+msgstr "Qui"
+
+msgid "Subject"
+msgstr "Objet"
+
+msgid "Place"
+msgstr "Lieu"
+
+msgid "hebdo_weekday_first_letter"
+msgstr "Lu,Ma,Me,Je,Ve,Sa,Di"
+
+msgid "Holiday"
+msgstr "FÉRIÉ"
+
+msgid "Enter"
+msgstr "Entrer"
+
+# dl: for javascript (alert/confirm/...)
+#
+
+msgid "Are you sure ?"
+msgstr "Êtes-vous sûr ?"
+
+msgid "This event will be removed."
+msgstr "Cet \\u00e9v\\u00e9nement va \\u00eatre \\u00e9ffac\\u00e9."
+
+msgid "Enter an event type"
+msgstr "Entrer un type \\u00e9v\\u00e9nement"
+
+msgid "Enter a name"
+msgstr "Entrer un nom"
+
+msgid "Enter consistent dates"
+msgstr "Entrer des dates coh\\u00e9rentes"
+
+msgid "Enter consistent days"
+msgstr "Entrer des jours coh\\u00e9rents"
+
+msgid "Enter consistent months"
+msgstr "Entrer des mois coh\\u00e9rents"
+
+msgid "Confirm your request ?"
+msgstr "Confirmez-vous votre demande ?"
+
+msgid "to be deleted"
+msgstr "va \\u00eatre supprim\\u00e9"
+
+#
+# end dl for javascript
+
+msgid "Upload a new file"
+msgstr "Upload fichier vers serveur"
+
+msgid "Avoid special characters and spaces in filename"
+msgstr "Eviter les caractères spéiaux et espaces dans les noms de fichier"
+
+msgid "new event"
+msgstr "nouvel événement"
+
+msgid "User logged"
+msgstr "utilisateur identifié"
+
+msgid "level"
+msgstr "niveau"
+
+msgid "Editing event #"
+msgstr "Edition évènement n° "
+
+msgid "Add a new event"
+msgstr "Ajout de nouvel évènement"
+
+msgid "Edition of the file"
+msgstr "Edition du fichier"
+
+msgid "Display"
+msgstr "Afficher"
+
+msgid "Add"
+msgstr "Ajouter"
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Submit"
+msgstr "Soumettre"
+
+msgid "Editor"
+msgstr "Éditeur"
+
+msgid "Show/Hide MC events"
+msgstr "Masquer/afficher les événements MC"
+
+msgid "Interval"
+msgstr "Intervalle"
+
+msgid "Reference"
+msgstr "Référence"
+
+msgid "Real-time refresh every"
+msgstr "Temps réel, rafraîchissement: "
+
+msgid "Increase speed"
+msgstr "Augmente vitesse"
+
+msgid "Decrease speed"
+msgstr "Diminue vitesse"
+
+msgid "Base speed"
+msgstr "Vitesse de base"
+
+msgid "Click to see miniseed file"
+msgstr "Cliquer pour voir le fichier miniseed"
+
+msgid "Sorry, there is no more data available for this request:"
+msgstr "Désolé, plus de données disponibles pour cette requête:"
+
+msgid "Operator"
+msgstr "Opérateur"
+
+msgid "Update"
+msgstr "Modification"
+
+msgid "Input"
+msgstr "Saisie"
+
+msgid "Hide"
+msgstr "Cacher"
+
+msgid "Restore"
+msgstr "Restaurer"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "Remove"
+msgstr "Supprimer"
+
+msgid "Erase"
+msgstr "Effacer"
+
+msgid "identified by"
+msgstr "identifié par"
+
+msgid "not validated by operator (automatique)"
+msgstr "non validé par opérateur (automatique)"
+
+msgid "your name"
+msgstr "votre nom"
+
+msgid "Station of first arrival"
+msgstr "Station de première arrivée"
+
+msgid "Select station or click on first phase of signal"
+msgstr "Sélectionnez la station ou cliquez sur la première phase du signal"
+
+msgid "Seconds"
+msgstr "Secondes"
+
+msgid "Duration"
+msgstr "Durée"
+
+msgid "Number of events"
+msgstr "Nombre d'événements"
+
+msgid "Distance according to indicated S-P"
+msgstr "Distance selon le S-P indiqué"
+
+msgid "Magnitude according to indicated duration and distance"
+msgstr "Magnitude selon la durée et la distance indiquées"
+
+msgid "Max amplitude"
+msgstr "Amplitude maximale"
+
+msgid "Overscale duration"
+msgstr "Durée de saturation"
+
+msgid "not overscale"
+msgstr "non saturé"
+
+msgid "Visit"
+msgstr "Consulter"
+
+msgid "Comment"
+msgstr "Commentaire"
+
+msgid "Create a new SeisComp ID"
+msgstr "Créer un nouvel ID dans SeisComP"
+
+msgid "Print signal"
+msgstr "Impression du signal"
+
+msgid "Continue with this window"
+msgstr "Poursuivre sur cette fenêtre"
+
+msgid "Modify"
+msgstr "Modifier"
+
+msgid "Validate"
+msgstr "Valider"
+
+msgid "miniSEED file"
+msgstr "fichier miniSEED"
+
+msgid "Sefran channels"
+msgstr "Composantes Sefran"
+
+msgid "SeedLink/ArcLink all available channels (!)"
+msgstr "SeedLink/ArcLink: tous les canaux disponibles (!)"
+
+msgid "Sefran stations (all components)"
+msgstr "Stations Sefran (toutes composantes)"
+
+msgid "Click on first arrival or select station"
+msgstr "Cliquez sur la première arrivée ou sélectionnez la station"
+
+msgid "Click on first arrival or enter seconds"
+msgstr "Cliquez sur la première arrivée ou entrez les secondes"
+
+msgid "Click on End of signal or enter duration"
+msgstr "Cliquez sur la fin du signal ou entrez la durée"
+
+msgid "Enter number of events"
+msgstr "Entrez le nombre d'évènements"
+
+msgid "Select amplitude"
+msgstr "Choisissez une amplitude"
+
+msgid "Enter overscale duration"
+msgstr "Entrez la durée de saturation"
+
+msgid "Event not flagged OVERSCALE"
+msgstr "L'événement n'est pas indiqué saturé"
+
+msgid "Event type is unknown/undetermined. Validate as is ?" 
+msgstr "Type d'événement inconnu/indéterminé. Valider tel quel ?"
+
+msgid "You cannot validate an event of type AUTO"
+msgstr "Vous ne pouvez pas valider un évènement de type AUTO"
+
+msgid "ATT: Do you want PERMANENTLY erase this event from"
+msgstr "ATT: Voulez-vous supprimer DÉFINITIVEMENT cet événement de"
+
+msgid "Do you want to hide this event from"
+msgstr "Voulez-vous cacher cet événement de"
+
+msgid "Do you want to restore this event in"
+msgstr "Voulez-vous rétablir cet événement dans"
+
+msgid "Click to start input Main Courante"
+msgstr "Cliquez pour lancer la saisie Main Courante"
+
+msgid "1st click"
+msgstr "1er clic"
+
+msgid "2nd click"
+msgstr "2nd clic"
+
+msgid "first arrival"
+msgstr "première arrivée"
+
+msgid "end of signal"
+msgstr "fin du signal"
+
+
+# formulaireCREATION_STATION.pl
+
+msgid "help_creationstation_valid_check"
+msgstr "Select to indicate a valid data sheet"
+
+msgid "help_creationstation_proc_tz"
+msgstr "Enter the time zone of data, in hours from UT (ex: +0)"
+
+msgid "help_creationstation_proc_acqrate"
+msgstr "Enter the acquisition period in days, simple arithmetics allowed (ex: 1/86400 for 1 second)"
+
+msgid "help_creationstation_proc_acqdelay"
+msgstr "Enter the acquisition delay in days, simple arithmetics allowed (ex: 1/24 for 1 hour)"
+
+
+
+# formCLB.pl
+
+msgid "help_clb_date"
+msgstr "Date d&rsquo;installation/modification (début de validité des paramètres)"
+
+msgid "help_clb_hour"
+msgstr "Heure d&rsquo;installation/modification (début de validité des paramètres)"
+
+msgid "help_clb_chnb"
+msgstr "Numéro de canal (non éditable)"
+
+msgid "help_clb_chname"
+msgstr "Nom du capteur (champ libre)"
+
+msgid "help_clb_unit"
+msgstr "Unité physique (champ libre)"
+
+msgid "help_clb_sn"
+msgstr "Numéro de série/identifiant (champ libre)"
+
+msgid "help_clb_chcode"
+msgstr "Identifiant du canal pour traitement (champ libre)"
+
+msgid "help_clb_offset"
+msgstr "Offset à appliquer aux données calibrées (valeur numérique)"
+
+msgid "help_clb_factor"
+msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique)"
+
+msgid "help_clb_gain"
+msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique)"
+
+msgid "help_clb_minvalue"
+msgstr "Valeur numérique minimale des données brutes (filtre)"
+
+msgid "help_clb_maxvalue"
+msgstr "Valeur numérique maximale des données brutes (filtre)"
+
+msgid "help_clb_azimuth"
+msgstr "Orientation horizontale du capteur (degrés Nord, valeur numérique)"
+
+msgid "help_clb_latitude"
+msgstr "Position du capteur en latitude nord (degrés décimaux)"
+
+msgid "help_clb_longitude"
+msgstr "Position du capteur en longitude est (degrés décimaux)"
+
+msgid "help_clb_elevation"
+msgstr "Altitude du capteur (en mètres)"
+
+msgid "help_clb_depth"
+msgstr "Profondeur du capteur (en mètres, positif vers le bas)"
+
+msgid "help_clb_sf"
+msgstr "Fréquence d&rsquo;échantillonnage (en hertz)"
+
+msgid "help_clb_dyn"
+msgstr "Dynamique du numériseur (en bits)"
+
+msgid "help_clb_lc"
+msgstr "Location code (SEED dataless)"
+
+# formulaireHEBDO.pl
+
+msgid "help_hebdo_select_nodate"
+msgstr "Tick to create entry without date"
+
+msgid "help_hebdo_select_type"
+msgstr "Select event TYPE"
+
+msgid "help_hebdo_select_names"
+msgstr "Select the names of those involved (Hold CTRL to select multiple names)"
+
+msgid "help_hebdo_select_external"
+msgstr "Enter names of EXTERNAL people"
+
+# gazette
+
+msgid "gzt_fmt_long_date"
+msgstr "%A %-d %B %Y <i>(jour %j, sem %V)</i>"
+
+msgid "gzt_fmt_date"
+msgstr "%A %-d %B %Y"
+
+msgid "gzt_fmt_long_week"
+msgstr "Semaine %V, %G"
+
+msgid "gzt_fmt_long_year"
+msgstr "Ann&eacute;e %Y"
+
+msgid "until"
+msgstr "jusqu'&agrave;"
+
+msgid "since"
+msgstr "depuis"
+
+msgid "list by date"
+msgstr "liste par date"
+
+msgid "list by category"
+msgstr "liste par cat&eacute;gorie"
+
+msgid "Filter"
+msgstr "Filtre"
+
+msgid "Category"
+msgstr "Cat&eacute;gorie"
+
+msgid "No match found"
+msgstr "Aucun article trouv&eacute;"
+
+msgid "from now on"
+msgstr "&#192; partir d'aujourd'hui"
+
+msgid "saved as"
+msgstr "sauvegard&eacute; sous"
+
+msgid "not saved"
+msgstr "non sauvegard&eacute;"
+
+msgid "Calendar"
+msgstr "Calendrier"
+
+msgid "News"
+msgstr "Actu"
+
+msgid "Single Day"
+msgstr "Calendrier Jour"
+
+msgid "List by dates"
+msgstr "Liste par Dates"
+
+msgid "List by categories"
+msgstr "Liste par Cat&eacute;gories"
+
+msgid "All year"
+msgstr "Toute l' ann&eacute;e"
+
+msgid "From today"
+msgstr "&#192; partir d'aujourd'hui"
+
+msgid "Until today"
+msgstr "Jusqu'&agrave; aujourd'hui"
+
+msgid "Shortcuts"
+msgstr "Raccourcis"
+
+msgid "choose a preset period"
+msgstr "choisir une p&eacute;riode"
+
+msgid "Create Article"
+msgstr "Cr&eacute;er un article"
+
+msgid "Gazette Today"
+msgstr "Gazette du Jour"
+
+msgid "Edit Gazette"
+msgstr "Modification Gazette"
+
+msgid "category"
+msgstr "cat&eacute;gorie"
+
+msgid "Other(s)"
+msgstr "Autre(s)"
+
+msgid "Choose one"
+msgstr "une seule"
+
+msgid "Ctrl for multiple"
+msgstr "Ctrl pour +ieurs"
+
+msgid "names list"
+msgstr "liste noms"
+
+msgid "last DB update"
+msgstr "mise &agrave; jour"
+
+msgid "failed opening holidays definitions"
+msgstr "echec acc&egrave; aux d&eacute;finitions jours f&eacute;ri&eacute;s"
+
+msgid "invalid project name"
+msgstr "nom projet invalide"
+
+msgid "invalid for action"
+msgstr "invalide pour action"
+
+msgid "invalid event object"
+msgstr "objet event invalide"
+
+msgid "No or invalid action"
+msgstr "action manquante ou invalide"
+
+msgid "article removed from Gazette"
+msgstr "article supprim&eacute; de la Gazette"
+
+msgid "Create Event"
+msgstr "Cr&eacute;ation &Eacute;v&eacute;nement"
+
+msgid "Creation Projet"
+msgstr "Cr&eacute;ation Projet"
+
+msgid "Edit Event"
+msgstr "&Eacute;dition &Eacute;v&eacute;nement"
+
+msgid "Edit Project"
+msgstr "&Eacute;dition Projet"
+
+msgid "Successful"
+msgstr "Succ&egrave;s"
+
+msgid "written to Gazette"
+msgstr "enregistr&eacute; dans la Gazette"
+
+msgid "FAILED"
+msgstr "ECHEC"
+
+msgid "on going"
+msgstr "en cours"
+
+msgid "string"
+msgstr "texte"
+
+# showGRID.pl
+
+msgid "help_node_sampling"
+msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsquo;&eacute;chantillons valides au cours de la derni&egrave;re p&eacute;riode de temps, compar&eacute; &agrave; l&rsquo;acquisition th&eacute;orique"
+
+msgid "help_node_status"
+msgstr "Status (en %): existence d&rsquo;&eacute;chantillons valides dans le dernier d&eacute;lai d&rsquo;acquisition pour tous les canaux"

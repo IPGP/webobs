@@ -1,0 +1,75 @@
+#!/bin/bash
+
+woconf() {
+	# internal: (re)-loads WEBOBS.rc as the set of bash variables WO__*
+	unset $(/usr/bin/env | egrep '^WO__' | /usr/bin/cut -d= -f1)
+	oIFS=${IFS}; IFS=$'\n'
+	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'WO__'))
+	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+	IFS=${oIFS}
+}
+
+woconf;
+savedpid=$(cat ${WO__ROOT_LOGS}/postboard.pid 2>/dev/null)
+savedpid=${savedpid:=0}
+
+case "$1" in
+	start)
+		if [[ $savedpid -ne 0 ]]; then 
+			echo "marked as already started, pid $savedpid"
+		else
+			cd /etc/webobs.d/../CODE/cgi-bin
+			if [ -n "${WO__POSTBOARD_ERROR_FILE}" ]; then
+				# Don't use eval as it would fork a new process not monitored by systemd
+				perl postboard.pl $WO__POSTBOARD_CMD_OPTS 2> $WO__POSTBOARD_ERROR_FILE &
+			else
+				perl postboard.pl $WO__POSTBOARD_CMD_OPTS &
+			fi
+			echo
+		fi
+		;;
+	stop)
+		if [[ $savedpid -ne 0 ]]; then
+			kill -s SIGTERM $savedpid 
+		fi
+		;;
+	status)
+		if [[ $savedpid -ne 0 ]]; then
+			statusts=$(date +'%F %T (%z)')
+			statusps=($(ps -o user,start_time,cmd --no-headers -p $savedpid))
+			if [[ ${#statusps[@]} > 0 ]]; then
+				echo "STATTIME=${statusts}"
+				echo "STARTED=${statusps[1]}"
+				echo "PID=${savedpid}"
+				echo "USER=${statusps[0]}"
+				# ATT: may get Permission denied on /proc/<pid>
+				# so can't really tell wether fifo and log are opened
+				statusfifo=($(lsof -p $savedpid | grep FIFO))
+				if [[ ${#statusfifo[@]} > 0 ]]; then
+					echo "FIFO=${statusfifo[8]}"
+				fi
+				statuslog=($(lsof -p $savedpid | grep "${WO__ROOT_LOGS}/postboard.log"))
+				if [[ ${#statuslog[@]} > 0 ]]; then
+					echo "LOG=${statuslog[8]}" 
+				fi
+			else 
+				echo "POSTBOARD NOT RUNNING but has saved pid=$savedpid"
+			fi
+		fi
+		;;
+	kill)
+		if [[ $savedpid -ne 0 ]]; then
+			kill -9 $savedpid
+			rm -f ${WO__ROOT_LOGS}/postboard.pid >/dev/null 2>&1
+		fi
+		;;
+	notify)
+		echo "msg=" $2
+		;;
+	*)
+		echo "Usage: $0 {start|stop|status|kill}"
+		exit 1
+esac
+
+exit 0
+

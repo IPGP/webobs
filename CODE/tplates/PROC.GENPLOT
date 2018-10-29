@@ -1,0 +1,122 @@
+=key|value
+# Generic PROC template
+# It can be used for instance with superproc genplot (generic time series).
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/genplot.m for further information.
+
+# long name of the PROC
+NAME|Generic time series
+# proc TYPE and OWNER
+TYPE|
+OWNCODE|?
+# default raw data format (might be overwritten in each node)
+RAWFORMAT|
+# raw data path (might be overwritten in each node)
+RAWDATA|$WEBOBS{ROOT_RAWD}/myproc
+# URN link to data 
+URNDATA|/rawdata/myproc
+# additionnal URL
+URL|
+# time zone for outputs
+TZ|0
+
+# lists of parameters (number of comma-separated rows must be consistent)
+# TIMESCALELIST valid suffix: h (hour), d (day), w (week), m (month), y (year)
+# TIMESCALELIST reserved words are: all (all available data), ref (reference date until now)
+TIMESCALELIST|24h,01y
+DECIMATELIST|1,1
+CUMULATELIST|1,1
+DATESTRLIST|-1,-1
+MARKERSIZELIST|6,2
+LINEWIDTHLIST|2,1
+STATUSLIST|1,0
+# defines a reference date to use with 'ref' timescale in TIMESCALELIST
+REF_DATE|
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} genplot $SELFREF -
+SUBMIT_RESOURCE|myproc
+
+# list of keys editable in requests
+REQUEST_KEYLIST|NAME
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# --- node parameters
+NODE_NAME|node
+NODE_SIZE|10
+NODE_RGB|Red
+NODE_FONTSIZE|10
+NODE_MARKER|s
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# file for background time referenced events 
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+# --- page format and outputs
+# optional paper size width,height in inches
+PAPER_SIZE|
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+# landscape format for all outputs
+LANDSCAPE|NO
+# maximum number of subplots in a standard page height
+PAGE_MAX_SUBPLOT|8
+# makes a PDF file for each graph (in addition to PNG, EPS and JPG thumbnail)
+PDFOUTPUT|NO
+# main logo file
+LOGO_FILE|$WEBOBS{LOGO_DEFAULT}
+LOGO_HEIGHT|$WEBOBS{LOGO_HEIGHT}
+# main copyright
+COPYRIGHT|MyProc
+# optional secondary logo file
+LOGO2_FILE|
+LOGO2_HEIGHT|$WEBOBS{LOGO_HEIGHT}
+# optional secondary copyright
+COPYRIGHT2|
+# events file to plot in the background of each graph
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+# exports text data files
+EXPORTS|YES
+
+# --- data processing and plot
+# removes data picks using median filter (% of min/max values)
+PICKS_CLEAN_PERCENT|0
+# replaces flat signal (two consecutive identical values) by NaN
+FLAT_IS_NAN|NO
+# applies a median filter to the data
+MEDIAN_FILTER_SAMPLES|0
+# superimpose a moving average on N samples
+MOVING_AVERAGE_SAMPLES|0
+# set to YES to plot continuous line ignoring gaps
+CONTINUOUS_PLOT|NO
+# set Y-axis with a log scale
+YLOGSCALE|NO
+
+# --- per node graphs
+# coma separated list of channels to plot (default is all channels)
+NODE_CHANNELS|
+# graph title
+PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
+# line style
+PERNODE_LINESTYLE|-
+# set to YES to substract the first data value in all plots
+PERNODE_RELATIVE|NO
+
+# --- summary graph (all nodes together)
+# comment this key to not plot the summary graph
+SUMMARYLIST|
+# coma separated list of channels to plot (default is all channels)
+SUMMARY_CHANNELS|
+# graph title
+SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
+# line style
+SUMMARY_LINESTYLE|-
+# set to YES to substract the first data value in all plots
+SUMMARY_RELATIVE|NO
+

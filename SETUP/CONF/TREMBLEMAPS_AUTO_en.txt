@@ -1,0 +1,6 @@
+A $quake_strength (magnitude {\bf $quake_magnitude} on the Richter scale) has been recorded on $long_date_local $time_local
+(local time) and identified as {\bf $quake_type} origin. The epicentre is located at {\bf $epicentral} $azimuth from
+{\bf$city}, $quake_depth depth (hypocentral distance about $hypocentral). This earthquake may has 
+produced, in the closest areas, a mean ground acceleration estimated to {\bf $pga mg} (*),
+corresponding to a macroseismic intensity of {\bf $msk} ($long_msk). However, according to the soil conditions,
+intensities may have reached locally {\bf $msk_max} ($long_msk_max).

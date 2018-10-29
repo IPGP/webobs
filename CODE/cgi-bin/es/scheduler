@@ -1,0 +1,76 @@
+#!/bin/bash
+
+woconf() {
+	# internal: (re)-loads WEBOBS.rc as the set of bash variables WO__*
+	# + (re)-loads WO_CONF_SCHEDULER as bash variabls SC__* 
+	unset $(/usr/bin/env | egrep '^WO__' | /usr/bin/cut -d= -f1)
+	oIFS=${IFS}; IFS=$'\n'
+	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'WO__'))
+	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'SC__' 'CONF_SCHEDULER'))
+	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+	IFS=${oIFS}
+}
+
+woconf;
+savedpid=$(cat ${WO__ROOT_LOGS}/scheduler.pid 2>/dev/null)
+savedpid=${savedpid:=0}
+schedudp="/dev/udp/127.0.0.1/${SC__PORT}"
+listeng=$(netstat -aln | grep -c ${SC__PORT} 2>/dev/null)
+holdon="Pls wait..."
+
+
+case "$1" in
+	start)
+		if [[ $savedpid -ne 0 ]]; then 
+			echo "marked as already started, pid $savedpid"
+		else
+			cd /etc/webobs.d/../CODE/cgi-bin
+			perl scheduler.pl -v &
+			echo
+		fi
+		;;
+	status)
+		if [[ $savedpid -ne 0 && $listeng -eq 1 ]]; then
+			exec 3<>${schedudp}; echo ${holdon}; echo "cmd stat" >&3; rarr=($(timeout 3 cat <&3)); printf -- '%s\n' "${rarr[@]}" 
+			exec 3>&-
+		fi
+		;;
+	runq)
+		if [[ $savedpid -ne 0 && $listeng -eq 1 ]]; then
+			exec 3<>${schedudp}; echo ${holdon}; echo "cmd runq" >&3; rarr=($(timeout 3 cat <&3)); printf -- '%s\n' "${rarr[@]}" 
+			exec 3>&-
+		fi
+		;;
+	jobq)
+		if [[ $savedpid -ne 0 && $listeng -eq 1 ]]; then
+			exec 3<>${schedudp}; echo ${holdon}; echo "cmd jobq" >&3; rarr=($(timeout 3 cat <&3)); printf -- '%s\n' "${rarr[@]}" 
+			exec 3>&-
+		fi
+		;;
+	stop)
+		if [[ $savedpid -ne 0 && $listeng -eq 1 ]]; then
+			exec 3<>${schedudp}; echo ${holdon}; echo "cmd stop" >&3; echo $(timeout 3 cat <&3) 
+			exec 3>&-
+		fi
+		;;
+	kill)
+		if [[ $savedpid -ne 0 ]]; then
+			kill -9 $savedpid
+			rm -f ${WO__ROOT_LOGS}/scheduler.pid >/dev/null 2>&1
+		fi
+		;;
+	submit)
+		if [[ $savedpid -ne 0 && $listeng -eq 1 ]]; then
+			shift
+				exec 3<>${schedudp}; echo ${holdon}; echo "job" "$@" >&3; echo $(timeout 3 cat <&3)
+				exec 3>&-
+		fi
+		;;
+	*)
+		echo "Usage: $0 {status|runq|jobq|submit|start|stop|kill}"
+		exit 1
+esac
+
+exit 0
+

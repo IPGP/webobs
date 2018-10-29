@@ -1,0 +1,12 @@
+#!/bin/bash
+
+
+
+# watch for Matlab crash...
+PROG='com.mathworks.fatalexit.FatalExitFrame'
+PS=`ps aux | grep -v grep | grep "$PROG" | awk '{print $2}'`
+if [ -n "$PS" ]; then
+        kill $PS
+        echo "SEFRAN3: killing $PROG (PID $PS)..."
+fi
+

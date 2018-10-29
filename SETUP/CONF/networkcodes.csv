@@ -1,0 +1,4 @@
+# This file will overwrite and/or expand the FDSN official code list (CODE/etc/fdsncodes.csv)
+#
+# Network Code,Network Name
+XX,'Our local network name'

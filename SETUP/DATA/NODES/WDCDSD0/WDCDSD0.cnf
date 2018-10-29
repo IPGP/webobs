@@ -1,0 +1,16 @@
+=key|value
+NAME|"La Désirade (Guadeloupe)"
+ALIAS|DSD0
+FID|DSD0
+FDSN_NETWORK_CODE|
+VALID|1
+LAT_WGS84|16.31277
+LON_WGS84|-61.06605
+ALTITUDE|272
+POS_DATE|NA
+POS_TYPE|0
+INSTALL_DATE|2010-12-29
+END_DATE|NA
+FILES_FEATURES|sensor\|receiver\|antenna\|power_supply\|monumentation\|transmission
+TRANSMISSION|6,GSBACQ0
+UTC_DATA|+0

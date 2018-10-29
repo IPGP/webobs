@@ -1,0 +1,48 @@
+.\" Manpage for scheduler.
+.TH man 8 "18 Sep 2013" "1.0" "scheduler shell man page"
+.SH NAME
+scheduler \- command line interface to scheduler.pl process. 
+.SH SYNOPSIS
+$ shells/scheduler command
+.SH COMMANDS
+One of { start | pause | resume | status | runq | jobq | submit | stop | kill } 
+
+\fBstart\fP  : starts the scheduler's (scheduler.pl) process in background
+               if not already started.
+
+\fBpause\fP  : temporarily prevents scheduler from executing jobs 
+
+\fBresume\fP : resumes operations after 'pause' 
+
+\fBstatus\fP : queries the scheduler's status  
+
+\fBsubmit\fP : submit a job for immediate execution, as specified with an additional argument:  
+               - 'jid=N' to request execution of job's N (as defined in table 'jobs') 
+               - "XEQ1:'launch text',XEQ2:'routine text',XEQ3:'a1 a2',...." as inline job definition
+
+\fBstop\fP   : gracefully stops the scheduler's (scheduler.pl) process
+
+\fBkill\fP   : 'stop' didn't do any good ? try brute force 'kill'
+
+.SH OPTIONS
+n/a
+.SH SEE ALSO
+n/a 
+.SH AUTHOR
+Didier Lafon
+.SH COPYRIGHT
+Webobs - 2012 - Institut de Physique du Globe Paris
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+

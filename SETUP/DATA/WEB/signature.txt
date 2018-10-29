@@ -1,0 +1,8 @@
+<h6>(c) WEBOBS / Institut de physique du globe de Paris<br>
+All information included in this site should not be used without written permission.<br>
+<script type="text/javascript">
+<!--
+document.write("Last update: " + document.lastModified);
+//-->
+</script>
+</h6>

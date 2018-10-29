@@ -1,0 +1,36 @@
+=key|value
+
+# title for default "all grids" display (listGRIDS.pl)
+SHOW_GRIDS_TITLE|Grids
+
+# grids table options
+SHOW_TYPE|Y
+SHOW_OWNER|Y
+
+# nodes table options
+DEFAULT_COORDINATES|latlon
+DEFAULT_NODES_FILTER|all
+DEFAULT_PROJECT_FILTER|on
+
+
+# ===== do not edit below this line =====
+# (parameters only for backward compatibily purpose)
+
+CGI_SHOW_GRID|showGRID.pl
+CGI_SHOW_GRIDS|listGRIDS.pl
+
+PATH_GRIDS|$WEBOBS{ROOT_DATA}/GRIDS
+
+SPATH_INTERVENTIONS|INTERVENTIONS
+SPATH_PHOTOS|PHOTOS
+SPATH_DOCUMENTS|DOCUMENTS
+SPATH_SCHEMES|SCHEMAS
+SPATH_FEATURES|FEATURES
+SPATH_THUMBNAILS|THUMBNAILS
+
+PATH_EVENTGRID_TRASH|$WEBOBS{ROOT_DATA}/trash/EVNTRASH
+
+DESCRIPTION_SUFFIX|_description.txt
+PROTOCOLE_SUFFIX|_protocole.txt
+BIBLIO_SUFFIX|_bibliography.txt
+

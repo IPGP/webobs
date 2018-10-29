@@ -1,0 +1,163 @@
+/* Gazette display body style */
+div.banner {
+	display: inline-block;
+	float: left; 
+	width: 100%; 
+	background-color: lightgrey;
+	padding-top: 5px; padding-left: 5px;
+}
+div.thepage {
+	display: inline-block;
+	width: 100%;
+	clear: both; 
+	margin-top:10px;
+	/*margin-bottom: 400px;*/
+}
+
+/* Gazette articles-page styles */
+.gzt-cal {
+	table-layout: fixed;
+	width: 100%;
+	border-width: 0px;
+	border-collapse: separate;
+	margin-bottom: 8px;
+	padding: 2px;
+}
+.gzt-cal.even { background-color: none }
+.gzt-cal.odd  { background-color: none }
+
+.gzt-cal th {
+	border: solid 3px #666666;
+	height: 18pt;
+	text-align: center;
+	font-size: 10pt;
+	font-weight: bold;
+	color: grey;
+	background-color: lightgrey;
+}
+
+div.gzt-tip {
+	position: absolute;
+	border: 2px solid grey;
+	background-color: lightgrey;
+	color: black;
+	padding: 2px 4px 2px 4px;
+	text-align: left;
+	z-index: 1000;
+	font-size: 7pt;
+}
+.gzt-cal td {
+	font-size: 8pt;
+	border: thin solid black;
+	padding: 0px;
+	height: 13pt;
+	text-align: center;
+}
+.gzt-cal td.gzt-emptytd {
+	border: none;
+	color: transparent;
+	background-color: transparent;
+}
+.gzt-cal td.gzt-calweekhead {
+	border: none;
+	font-size: 11pt; text-align: left;
+	font-style: italic;
+	font-weight: bold;
+	color: #FF6666;
+}
+th.gzt-calweekvert {
+	/*float: left;*/ 
+	width: 18px; 
+	background-color: transparent;
+	transform: rotate(270deg) translateX(-65px);
+	font-size: 14px; font-weight: bolder; font-style: italic;
+	color: rgb(255, 102, 102); 
+	border: none;
+}
+.gzt-cal th.holidays {
+	border: solid 3px #FF6666;
+}
+.gzt-cal th.today {
+	background-color: #FFaaaa;
+}
+.gzt-cal td:hover {
+	color: grey;
+	cursor: pointer;
+}
+.gzt-list {
+	font-size: 8pt;
+}
+table.gzt-dump {
+	width: 100%;
+}
+div.gzt-tiptitle {
+	background-color: white;
+	padding: 2px;
+	color: black;
+	font-weight: bold;
+}
+div.gzt-tiptext {
+}
+.gzt-tleft  { float: left; }
+.gzt-tright { float: right; }
+
+span.gzt-pnbar {
+	cursor: pointer;
+}
+div.gzt-pndiv {
+	font-size: small;
+	font-weight: bold; 
+	margin-bottom:7px; 
+	color: #309060;
+}
+
+#ovly { 
+	display: none;
+	position: fixed;
+	top:0px; left:0px; width:100%; height:100%; 
+	text-align:center; vertical-align:middle;
+	opacity: 0.4;
+	background-color:#000000;
+	z-index: 10000;
+}
+
+.overlay_form {
+	position: absolute;
+	border: 3px solid gray;
+	border-radius: 5px;
+	padding: 10px;
+	background: #FFFFEE;
+	width: 540px;
+	height: auto;
+	opacity: 1;
+	z-index: 10001;
+}
+.overlay_form label{
+	display: inline-block;
+	font-weight: bold;
+	text-align: right;
+	width:100px;
+	vertical-align: top;
+}
+.overlay_form .small{
+	color: #666666;
+	display:block;
+	font-size: x-small;
+	font-weight: lighter;
+	text-align:right;
+	width:100px;
+}
+.overlay_form input[type=text], .overlay_form select{
+	padding:4px 2px;
+	border:solid 1px #aacfe4;
+	width:300px;
+	margin:2px 0 15px 10px;
+	vertical-align: top;
+}
+.overlay_form p {
+	background: #EAE4CE;
+	width: 100%;
+	height: 20px;
+	padding: 5px 0 5px 2px;
+	float: left;
+}

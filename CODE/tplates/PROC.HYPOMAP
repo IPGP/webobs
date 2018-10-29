@@ -1,0 +1,118 @@
+=key|value
+# Generic PROC template for superproc hypomap
+# Superformat is 'quakes': see readfmtdata_quakes.m for compatible RAWFORMAT defined
+# in associated NODE's RAWFORMAT field 
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/hypomap.m for further information.
+
+# long name of the PROC
+NAME|Earthquake hypocenter maps from seismic catalog
+# proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
+RAWFORMAT|quakes
+TYPE|
+OWNCODE|?
+# raw data path
+RAWDATA|
+# URN link to data 
+URNDATA|
+# time zone for outputs
+TZ|0
+# additionnal URL
+URL|
+
+# lists of parameters (number of comma-separated rows must be consistent)
+# TIMESCALELIST valid suffix: h (hour), d (day), w (week), m (month), y (year)
+TIMESCALELIST|01y,10y,all
+DATESTRLIST|-1,-1,-1
+MARKERSIZELIST|5,3,2
+# defines a reference date to use with 'ref' timescale in TIMESCALELIST
+REF_DATE|
+
+# additional summary graphs keywords (comma separated)
+SUMMARYLIST|Antilles,Guadeloupe,Martinique
+#SUMMARYLIST|Soufriere
+SUMMARY_CHANNELS|
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} hypomap $SELFREF -
+SUBMIT_RESOURCE|hypomap
+
+# list of keys editable in requests
+REQUEST_KEYLIST|NAME,SUMMARYLIST,LATLIM,LONLIM,MAGLIM,DEPLIM,PLOT_BG_ALL,BUBBLE_PLOT
+
+# node parameters
+NODE_NAME|node
+NODE_SIZE|10
+NODE_RGB|1,0,0
+NODE_FONTSIZE|10
+NODE_MARKER|o
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+# value = 1 to produce EPS graphs
+POSTSCRIPT|1
+# value = 1 to export text data files
+EXPORTS|1
+# main logo file
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+# secondary logo file
+LOGO2_FILE|
+# main copyright
+COPYRIGHT|IPGP
+# secondary copyright
+COPYRIGHT2|
+
+# --- proc specific parameters
+# for catalog data request
+EVENTTYPE_EXCLUDED_LIST|not existing,not locatable,outside of network interest,sonic boom,duplicate,other event
+EVENTSTATUS_EXCLUDED_LIST|automatic
+EVENTCOMMENT_EXCLUDED_REGEXP|AUTOMATIC
+SC3_LISTEVT|
+LATLIM|13,19
+LONLIM|-64,-58
+MAGLIM|3,10
+DEPLIM|-10,300
+MSKLIM|1,12
+GAPLIM|0,360
+RMSLIM|0,1
+ERHLIM|0,100
+ERZLIM|0,100
+NPHLIM|3,Inf
+CLALIM|0,4
+QUALITY_FILTER|0.7
+# for graph
+MARKER_LINEWIDTH|1
+PLOT_BG_ALL|.3
+DEM_OPT|'WaterMark',2,'FontSize',7
+SHAPE_FILE|$WEBOBS{PATH_DATA_SHAPE}/antilles_faults.bln
+#STATIONS_GRID|VIEW.
+# Hypocenters without individual circle line (1 yes, 0 no)
+BUBBLE_PLOT|1
+
+# -- Maps of areas: duplicate MAP_areaname_* keys to make specific maps
+MAP_Area1_TITLE|Area1 - Lesser Antilles
+# map limits: lon0,lat0,width (in degree) or former lon1,lon2,lat1,lat2 (in degree)
+MAP_Area1_XYLIM|-61,16,6
+# magnitude limits (for size scale only, not a filter)
+MAP_Area1_MAGLIM|3,7
+# depth limits (for color scale only, not a filter)
+MAP_Area1_DEPLIM|-2,200
+# 1 or 2 optional profile(s)
+# Profile 1 (bottom): center latitude, center longitude, azimuth (degree North), lateral distance (km), depth (km)
+MAP_Area1_PROFILE1|-61.4651,16.5138,55,100,200
+# Profile 2 (right): same parameters as profile1, but drawn on the right side of the map
+# Colormap used: must specify the number of colors
+MAP_Area1_COLORMAP|jet(256)
+# Color reference for markers: 'depth' (default) or 'time'
+MAP_Area1_COLORREF|time
+# Optional time plot: give a list of parameters (versus time) ==> alpha version not fully functional
+#MAP_Area1_TIMEPLOT|latitude,longitude,depth,magnitude,profile1,profile2
+

@@ -1,0 +1,131 @@
+#!/bin/ksh
+# 
+# --------------------------------------------------------
+# Demarrage de VNC pour les utilisateurs references
+# ----------------- Didier Mallarino ---------------------
+# --------------------------------------------------------
+# ------------------- RCS Header -------------------------
+# $Header: /root/OVSG/RCS/startvnc,v 1.1 2004/01/14 13:23:09 root Exp $ 
+# $Revision: 1.1 $
+# $Author: root $
+# --------------------------------------------------------
+#
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# set -x 
+
+# Liste des utilisateurs recenses
+configFile="/usr/local/vnc/vncusers"
+
+# Traite les parametres en entree
+case "$1" in
+  start)
+     action="start"
+  ;;
+  stop)
+     action="stop"
+  ;;
+  restart)
+     action="restart"
+  ;;
+  *)
+     echo "Usage: $0 {start|stop|restart} (username)"
+     exit 1
+esac
+
+# Recupere le user sinon, prend le whoami
+if [ "$2" = "" ] 
+then
+  user=`whoami`
+elif [ "$2" = "all" ]
+then
+  listeUsers=`cat ${configFile} | grep -v "#" | awk '{print $1}'`
+  for u in ${listeUsers}
+  do
+    $0 $action $u
+  done
+  exit
+else
+  user=$2
+fi
+
+# Recupere le display associe a l'utilisateur concerne
+dispUser=`cat $configFile | grep ${user} | grep -v "#" | awk '{print $2}'`
+if [ "$dispUser" = "" ]
+then
+  echo "ERROR: L'utilisateur $user n'est pas referencé par cet outil."
+  echo "Contactez votre administrateur système préféré"
+  RETVAL=1
+  exit
+fi
+
+# Teste si Xvnc est deja demarre pour cet user
+# et dans ce cas recupere le pid et le display 
+echo "Searching Xvnc process for ${user}"
+pid=`ps -fu ${user} | grep Xvnc | grep -v grep | awk '{print $2}'`
+disp=`ps -fu ${user} | grep Xvnc | grep -v grep | awk '{print $9}'`
+disp=${disp##*:}
+echo $pid","$disp
+
+realLockFile="/tmp/.X"${disp}"-lock"
+realX11File="/tmp/.X11-unix/X"${disp}
+theoricalLockFile="/tmp/.X"${dispUser}"-lock"
+theoricalX11File="/tmp/.X11-unix/X"${dispUser}
+
+anotherUserOnDisp=`ps -eaf | grep -v ${user} | grep Xvnc | grep -v grep | grep " :${dispUser} " | awk '{print $1}'`
+
+# ls -ial $realLockFile $realX11File
+# ls -ial $theoricalLockFile $theoricalX11File
+# echo $user $pid $disp $dispUser
+# echo $anotherUserOnDisp
+
+RETVAL=0
+
+# See how we were called.
+case "$action" in
+  start)
+        if [ "$pid" = "" ]
+        then
+          if [ "$anotherUserOnDisp"  = "" ]
+          then
+            rm -f $theoricalLockFile $theoricalX11File
+            local geometry=`cat ${configFile} | grep -v "#" | grep ${user} | awk '{print $3}'`
+            [[ "${geometry}" = "1280x1024" ]]  && geometry="1280x1024"
+            [[ "${geometry}" = "1600x1200" ]]  && geometry="1600x1200"
+            [[ "${geometry}" = "" ]] && geometry="1024x768"
+            echo -n "Starting VNC services for user ${user} (:${dispUser}): avec la resolution ${geometry}"
+            su -l ${user} -c "vncserver :${dispUser} -geometry ${geometry} -name X-VNC"
+            RETVAL=$?
+            geometry=""
+          else
+            echo "ERROR: $anotherUserOnDisp curently use the ${dispUser} display with VNC services"
+            RETVAL=1
+            exit 1
+          fi
+        else
+          echo "ERROR: VNC Services alreay started for ${user} using :${disp} display"
+          echo "ERROR: Use restart option if you need it"
+          RETVAL=1
+          exit 1
+        fi
+  ;;
+  stop)
+        if [ "$pid" != "" ]
+        then
+          echo -n "Shutting down VNC services user ${user} (:${dispUser}): "
+          su -l -c "vncserver -kill :${dispUser}" ${user} 
+          RETVAL=$?
+        else
+          echo "ERROR: VNC Services not found for this user"
+          RETVAL=1
+          exit 1
+        fi
+  ;;
+  restart)
+        $0 stop $user
+        $0 start $user
+        RETVAL=$?
+esac
+
+exit $RETVAL

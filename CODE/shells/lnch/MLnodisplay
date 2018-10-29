@@ -1,0 +1,5 @@
+#!/bin/bash
+#
+export MATLABPATH=/data1/webobs/CODE/matlab
+export LANG=fr_FR.ISO8859-1
+matlab -nodisplay $@

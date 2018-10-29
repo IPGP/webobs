@@ -1,0 +1,16 @@
+=key|value
+NAME|"Îlet Lapin, Caravelle (Martinique)"
+ALIAS|ILAM
+FID|ILAM
+FDSN_NETWORK_CODE|
+VALID|1
+LAT_WGS84|14.77450
+LON_WGS84|-60.87530
+ALTITUDE|38
+POS_DATE|2012-08-31
+POS_TYPE|0
+INSTALL_DATE|2012-08-31
+END_DATE|NA
+FILES_FEATURES|sensor\|receiver\|antenna\|power_supply\|monumentation\|transmission
+TRANSMISSION|6
+UTC_DATA|+0

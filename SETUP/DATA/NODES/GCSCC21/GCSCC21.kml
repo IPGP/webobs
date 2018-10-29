@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://earth.google.com/kml/2.0">
+<Placemark>
+<name>CC : "2ème Chute du Carbet"</name>
+<description>Soufrière Hot Springs (ID DEV: GCSCC21)</description>
+<open>1</open>
+<styleUrl>root://styleMaps#default+nicon=0x304+hicon=0x314</styleUrl>
+<Point><coordinates>-61.64470,16.04380,605</coordinates></Point>
+</Placemark>
+</kml>

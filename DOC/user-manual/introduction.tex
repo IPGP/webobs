@@ -1,0 +1,17 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Introduction}
+
+Seismological and Volcanological observatories have common needs and often common practical problems for multi disciplinary data monitoring applications. In fact, access to integrated data in real-time and estimation of measurements uncertainties are keys for an efficient interpretation and decision making. But instruments variety, data sampling, heterogeneity of acquisition systems lead to difficulties that may hinder crisis management. Since early 2001, we faced this problem in the Guadeloupe volcanological observatory and we developed an operational system that attempts to answer these questions in the context of a pluri-instrumental observatory. Based on a single computer server, open source scripts (Perl, Bash, Matlab with compiled binaries, Octave, Python) and a Web interface (Apache), the system named \webobs proposes:
+\begin{itemize}
+	\item  an extended database for networks management, stations and sensors (maps, station file with log history, technical characteristics, meta-data, photos and associated documents);
+	\item web-form interfaces for manual data input/editing and export (like geochemical analysis, repetition deformation measurements, ...);
+	\item routine data processing with dedicated automatic scripts for each technique, production of validated data outputs, static graphs on preset moving time intervals, possible e-mail alarms;
+	\item acquisition processes, stations and individual sensors status automatic check for technical control.
+\end{itemize}
+
+In the special case of seismology, \webobs includes a digital stripchart multichannel continuous seismogram compatible with international standards (SEED) associated with EarthWorm~\footnote{see \url{http://www.isti.com/products/earthworm/}} and SeisComP3~\footnote{see \url{http://www.seiscomp3.org/}} event database, event classification database, automatic shakemaps and regional catalog with associated hypocenter maps accessed through a user request form.
+
+This system leads to a real-time Internet access for integrated monitoring and becomes a strong support for scientists and technicians exchange, and is widely open to interdisciplinary real-time modeling. At the time of this document, it has been set up in different observatories where it is used as one of the main operational tool: Guadeloupe, Martinique (Lesser Antilles), La Réunion (Indian Ocean), Java (Indonesia), and Paris (France).
+

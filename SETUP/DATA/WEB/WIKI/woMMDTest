@@ -1,0 +1,60 @@
+//Legacy WebOb's wiki markup cheatsheet//
+
+**Headings:**
+== H2 ==
+=== H3 ===
+==== H4 ====
+
+**Emphasis:**
+// italics //
+** bold **
+__ underlined __
+"" quote ""
+
+**Horizontal rule:**
+----
+
+**bullet lists:**
+- item 1
+- item 2
+
+**numerical lists:**
+# item,
+# item.
+
+**Links:**
+html: [external link]{http://www.ipgp.fr} show Node: {{GCSBCM1}}
+
+
+**Automatic link to system files for admins:**
+name.{rc or conf} are tagged as links to CONF/, eg. WEBOBS.rc   
+name.{pl or pm} are tagged as links to CODE/cgi-bin, eg. showNODE.pl
+
+
+**Tables:**
+||{{{../icons/ipgp/logo_OVS.png}}}||col2...||col3...||
+||col1... ||col2...||col3...||
+
+
+**Include HTML**
+valid html tags, eg. <span style="background-color: #18587D; color: white">HTML colored span</span>
+
+
+**Images:**
+{{{/icons/refresh.png}}}
+
+
+**Include wiki file:**
+%%WIKI/ABOUTinclude.wiki%%
+
+**webobs drawer:**
+~~drawer title:
+contents line1<br>
+contents line2<br>
+contents line3~~
+
+this line and line below should be handled as
++ a paragraph.
+
+but not this
+and this.

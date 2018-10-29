@@ -1,0 +1,25 @@
+<H3>Note Explicative</H3>
+<P>La Main Courante contient les informations de premier ordre sur l'activité
+sismique, résultats du prédépouillement manuel réalisé au moins une fois
+par jour à partir des sismogrammes.</P>
+<P> Archivée sous forme de fichiers textes mensuels, la banque de donnée comprend les champs suivants:</P>
+<UL>
+<LI><B>Md et distance hypocentrale (km) :</B> la magnitude de durée Md n'est pas très précise mais elle a l'avantage d'être facile à estimer. Elle est calculée sur base de la durée du signal et de la distance hypocentrale issue de la valeur de S-P. On considère que cette méthode de calcul est valable pour des distances hypocentrales inférieures à 400 km. Pour les séismes volcaniques, S-P est souvent trop faible pour être mesurable. Nous utilisons alors une distance hypocentrale nulle pour estimer la magnitude, ce qui reste valable pour des distances inférieures à 10 km.</LI>
+<LI><B>Date et Heure :</B> en TU, estimé sur la station de première arrivée.</LI>
+<LI><B>Sta1 :</B> station de première arrivée. Affichée en gras si seule cette station voit l'événement (séisme local).</LI>
+<LI><B>Nombre d'Événements :</B> comptés sur l'intervalle des fichiers transférés.</LI>
+<LI><B>Type :</B> identification de l'origine du signal (tectonique, volcanique, téléséisme, ...). Voir le tableau ci-dessus.</LI>
+<LI><B>Amplitude :</B> amplitude maximale du signal sur la station de première arrivée (faible, moyen, fort, saturé). Si l'amplitude est saturée, la durée totale de saturation sur la composante verticale de la station de première arrivée est indiquée (en s).</LI>
+<LI><B>Durée du Signal :</B> durée de la coda estimée sur la station de première arrivée (unité en secondes, minutes ou heures).</LI>
+<LI><B>S-P :</B> la différence entre les temps d'arrivée des ondes P et des ondes S est utilisée pour estimer la distance hypocentrale (approximativement 8 fois la différence S-P en secondes). Une fois connue la distance hypocentrale, il est possible d'estimer la magnitude de durée (Md) en utilisant la durée de la coda mesurée sur la même station sismologique.</LI>
+<LI><B>Signal:</B> lien vers les données brutes au format miniSEED (interrogation du serveur ArcLink).</LI>
+<LI><B>SefraN :</B> lien vers l'image du SEFRAN. L'icône varie suivant l'amplitude du signal.</LI>
+<LI><B>Opérateur :</B> initiales de l'opérateur ayant identifié l'événement.</LI>
+<LI><B>Commentaire</B></LI>
+<LI><B>Localisation :</B> si le seisme a ete localisé, la distance épicentrale et la direction par rapport à la commune la plus proche
+apparaissent. Les informations de localisation et une simulation B3 sont affichées lorsque la souris passe sur le texte.</LI>
+<LI><B>Magnitude :</B> valeur de magnitude calculée lors de la localisation.</LI>
+<LI><B>MSK :</B> valeur d'intensité maximale (sur base des témoignages reçus), à partir de II.</LI>
+<LI><B>B<sup>3</sup> :</B> simulation B-Cube (rapport automatique), lorsque l'intensité théorique du séisme atteint au moins II dans l'une des communes.</LI>
+
+</UL>

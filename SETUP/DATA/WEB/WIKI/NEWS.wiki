@@ -1,0 +1,4 @@
+TITRE|News
+WebObs: created by wedit  
+
+Enter some news here...

@@ -1,0 +1,18 @@
+# Configuration file for seismic intensities macros
+# Special characters must be encoded ISO (not UTF8)
+#
+# Author: F. Beauducel, IPGP / WEBOBS
+# Date: 2009-02-19
+#
+=key|lw|name|human|damages
+1|.1|not felt|Not felt|none
+2|.25|weak|Weak|none
+3|.5|weak|Weak|none
+4|1|Light|Light|none
+5|1.5|Moderate|Moderate|Very light
+6|2|Strong|Strong|Light
+7|2.5|Very strong|Very strong|Moderate
+8|3|Severe|Severe|Mod./Heavy
+9|3.5|Violent|Violent|Heavy
+10|4|Extreme|Extreme|Very Heavy
+11|5|Extreme|Extreme|Very Heavy

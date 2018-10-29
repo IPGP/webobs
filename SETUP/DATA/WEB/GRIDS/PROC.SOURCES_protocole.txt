@@ -1,0 +1,51 @@
+<H4>Analyses physico-chimiques</H4>
+<blockquote>
+ <li>5 mesures sur site : température de l'air, température de la source, pH, conductivité électrique, débit 
+ <li>8 concentrations ioniques : Na+, K+, Mg++, Ca++, F-, Cl-, HCO3-, SO4-- 
+ <li>3 calculs : bilan ionique, rapport Cl-/SO4-- et HCO3-/SO4-- 
+</blockquote>
+
+<H4>Thermomètres Tynitag</H4>
+</blockquote>
+ <li>1 composante : température 
+ <li>Note : ce système de mesure automatique a été testé en 1999 et 2000. Suite à des problèmes techniques, il a été momentanément mis en veille. 
+</blockquote>
+
+<H4>Analyses en laboratoire</H4>
+<H5>Réserve alcaline R</H5>
+<blockquote>
+ <li>pH<sub>i</sub> = pH initial ; 
+ <li>pH<sub>f</sub> = pH final ; 
+ <li>V<sub>0</sub> = volume de l'échantillon ; 
+ <li>V = volume de HCl ; 
+ <li>N = normalité de HCl ; 
+
+<li>R = ((V x N) - (V<sub>0</sub> + V).10<sup>-pHf</sup>)/V<sub>0</sub>
+</blockquote>
+
+<H5>Dosages de Na+, K+, Mg++, Ca++, SO4--</H5>
+<blockquote>
+Lecture du chromatogramme.
+</blockquote>
+
+<H5>Dosages des Cl-</H5>
+<blockquote>
+ <li>V<sub>0</sub> = volume de l'échantillon ; 
+ <li>V = volume de solution AgNO3 ; 
+ <li>N = normalité de AgNO3 ; 
+
+<li>[Cl-] = (V x N)/V<sub>0</sub>
+</blockquote>
+
+<H5>Bilan Ionique B.I.</H5>
+<blockquote>
+Le bilan ionique B.I. (%) est calculé à partir des concentrations des ions :
+
+B.I. (en %) = 100 x (<big><big><font face="Symbol">S</font></big></big>cations - <big><big><font face="Symbol">S</font></big></big>anions) / <big><big><font face="Symbol">S</font></big></big> (cations + anions)
+</blockquote>
+
+<H5>Rapports Cl-/SO4-- et HCO3-/SO4--</H5>
+<blockquote>
+Deux rapports sont calculés à partir des concentrations.
+</blockquote>
+

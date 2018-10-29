@@ -1,0 +1,199 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WebOBS 2.0\n"
+"Report-Msgid-Bugs-To: webobs@ovsg.univ-ag.fr\n"
+"POT-Creation-Date: 2007-05-25 09:10-0400\n"
+"PO-Revision-Date: 2009-10-19 17:00-0400\n"
+"Last-Translator: Alexis Bosson <alexis.bosson@ovsg.univ-ag.fr>\n"
+"Language-Team: WebOBS Traduction en <webobs-en@ovsg.univ-ag.fr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Hello world"
+msgstr "Hello, all the big world !"
+
+msgid "The current language is NAME_OF_GETTEXT_LANGUAGE. Please select your preferred language:"
+msgstr "The current language is English. Please select your preferred language:"
+
+msgid "hebdo_long_date_format"
+msgstr "%A %B %-d, %Y <i>(day %j, week %V)</i>"
+
+msgid "hebdo_date_format"
+msgstr "%A %B %-d, %Y"
+
+msgid "hebdo_weekday_first_letter"
+msgstr "Mo,Tu,We,Th,Fr,Sa,Su"
+
+msgid "Own."
+msgstr "Oper."
+
+msgid "Owner"
+msgstr "Operator"
+
+# formulaireCREATION_STATION.pl
+
+msgid "help_creationstation_valid_check"
+msgstr "Select to indicate a valid data sheet"
+
+msgid "help_creationstation_network"
+msgstr "Select the network"
+
+msgid "help_creationstation_id"
+msgstr "Code/ID of the data sheet:<ul><li>4 characters needed (complete eventually with 0)<li>ID is unique inside one network<li>no modification allowed after creation</ul>"
+
+msgid "help_creationstation_name"
+msgstr "Enter the full name of this node (free string for display purpose)"
+
+msgid "help_creationstation_alias"
+msgstr "The ALIAS is the short name/code given to the node (it should be unique inside the network for display purpose), but it is not functionnal"
+
+msgid "help_creationstation_type"
+msgstr "The TYPE is a short description of the node which complements the full name (e.g., main equipment model)"
+
+msgid "help_creationstation_fid"
+msgstr "The FID fields correspond to identification code(s) that could be used in data processing, so it is functionnal"
+
+msgid "help_creationstation_rawformat"
+msgstr "Select RAWFORMAT in the list (default is associated PROC's RAWFORMAT key value)"
+
+msgid "help_creationstation_rawdata"
+msgstr "Enter RAWDATA path (default is associated PROC's RAWDATA key value)"
+
+msgid "help_creationstation_fdsn"
+msgstr "Official code of the International Federation of Digital Seismograph Network (FDSN/IRIS)"
+
+msgid "help_creationstation_lat"
+msgstr "Latitude of the station (WGS84, decimal degree OR deg/min OR deg/min/sec - the 3 fields will be used)"
+
+msgid "help_creationstation_lon"
+msgstr "Longitude of the station (WGS84, decimal degree OR deg/min OR deg/min/sec - the 3 fields will be used)"
+
+msgid "help_creationstation_alt"
+msgstr "Elevation of the station (m, asl)"
+
+msgid "help_creationstation_pos_type"
+msgstr "Type of positioning"
+
+msgid "help_creationstation_tele_type"
+msgstr "Type of data transmission"
+
+msgid "help_creationstation_tele_acq"
+msgstr "Enter the station IDs of repeater(s) and acquisition stations, coma or space-delimited, in the order from station to acquisition"
+
+msgid "help_creationstation_proc_tz"
+msgstr "Enter the time zone of data, in hours from UT (ex: +0)"
+
+msgid "help_creationstation_proc_acqrate"
+msgstr "Enter the acquisition period in days, simple arithmetics allowed (ex: 1/86400 for 1 second)"
+
+msgid "help_creationstation_proc_acqdelay"
+msgstr "Enter the acquisition delay in days, simple arithmetics allowed (ex: 1/24 for 1 hour)"
+
+msgid "help_creationstation_chanlist"
+msgstr "Select the channels associated to the proc (hold ctrl/cmd key for multiple selection)"
+
+msgid "help_creationstation_spec"
+msgstr "Enter the features keywords list, coma delimited. Spaces are allowed. Please use short names and avoid special characters."
+
+
+# formCLB.pl
+
+msgid "help_clb_date"
+msgstr "Date of install/update (starting date of parameters validity)"
+
+msgid "help_clb_hour"
+msgstr "Hour of install/update (starting time of parameters validity)"
+
+msgid "help_clb_chnb"
+msgstr "Channel number (not editable)"
+
+msgid "help_clb_chname"
+msgstr "Channel name (free string)"
+
+msgid "help_clb_unit"
+msgstr "Physical unit (free string)"
+
+msgid "help_clb_sn"
+msgstr "Serial number of identification (free string)"
+
+msgid "help_clb_chcode"
+msgstr "Channel code used by PROC (free string but functional)"
+
+msgid "help_clb_offset"
+msgstr "Offset to apply after calibration (numerical value)"
+
+msgid "help_clb_factor"
+msgstr "Multiplying factor to apply on raw data (numerical value)"
+
+msgid "help_clb_gain"
+msgstr "Gain multiplying factor to apply on raw data (numerical value)"
+
+msgid "help_clb_minvalue"
+msgstr "Minimum value of raw data (filtering)"
+
+msgid "help_clb_maxvalue"
+msgstr "Maximum value of raw data (filtering)"
+
+msgid "help_clb_azimuth"
+msgstr "Horizontal orientation (azimuth) of the sensor (degree from North, clockwize)"
+
+msgid "help_clb_latitude"
+msgstr "Latitude position of the sensor (degree North)"
+
+msgid "help_clb_longitude"
+msgstr "Longitude position of the sensor (degree East)"
+
+msgid "help_clb_elevation"
+msgstr "Elevation of the sensor (in meters)"
+
+msgid "help_clb_depth"
+msgstr "Deep of the sensor (in meters, positive downward)"
+
+msgid "help_clb_sf"
+msgstr "Sampling frequency (in hertz)"
+
+msgid "help_clb_dyn"
+msgstr "Digitizer dynamic range (in bit)"
+
+msgid "help_clb_lc"
+msgstr "Location code (SEED dataless)"
+
+
+
+# formulaireHEBDO.pl
+
+msgid "help_hebdo_select_nodate"
+msgstr "Tick to create entry without date"
+
+msgid "help_hebdo_select_type"
+msgstr "Select event TYPE"
+
+msgid "help_hebdo_select_names"
+msgstr "Select the names of those involved (Hold CTRL to select multiple names)"
+
+msgid "help_hebdo_select_external"
+msgstr "Enter names of EXTERNAL people"
+
+# gazette
+
+msgid "gzt_fmt_long_date"
+msgstr "%A, %B %-d %Y <i>(day %j, week %V)</i>"
+
+msgid "gzt_fmt_date"
+msgstr "%A, %B %-d %Y"
+
+msgid "gzt_fmt_long_week"
+msgstr "Week %V, %G"
+
+msgid "gzt_fmt_long_year"
+msgstr "Year %Y"
+
+# showGRID.pl
+
+msgid "help_node_sampling"
+msgstr "Sampling rate performance (in %):  number of valid samples over the last time period, compared to theoretical acquisition period"
+
+msgid "help_node_status"
+msgstr "Status (in %): existence of valid samples in the last time delay for all channels"

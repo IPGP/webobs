@@ -1,0 +1,10 @@
+<OL>
+<LI><B>Barat, A., 1986.</B> Étude du rôle des eaux souteraines dans le mécanisme des éruptions phréatiques. Application à la Montagne Pelée de Martinique et à la Soufrière de Guadeloupe, Document BRGM, n° 115. 
+<LI><B>Benauges S., 1981.</B> Étude géochimique et isotopique des eaux de rivière, sources froides et sources chaudes, aux abords du volcan de la Soufrière,Guadeloupe, Thèse de doctorat 3ème cycle, Univ. Paris VI, 91 pp. 
+<LI><B>Bigot S. et Hammouya G., 1987.</B> Surveillance hydrogéochimique de la Soufrière de Guadeloupe, 1979-1985 : diminution d'activité ou confinement? C. R. Acad. Sci. Paris, II,  304, 757-760. 
+<LI><B>Bigot S., Boudon G., Semet M.P. et Hammouya G., 1994.</B> Traçage chimique de la circulation des eaux souterraines sur le volcan de la Grande Découverte (la Soufrière), Guadeloupe. C. R. Acad. Sc. Paris, II, 318, 1215-1221. 
+<LI><B>Brombach, T., Marini, L., Hunziker, J.C., 2000.</B> Geochemistry of the thermal springs and fumaroles of Basse-Terre Island, Guadeloupe, Lesser Antilles. Bull. Volcanol., 61, 477-490. 
+<LI><B>Jérémie J.J.,</B> Thèse. 
+<LI><B>Pascaline H., 1980.</B> Géochimie des roches et des eaux de sources chaudes du massif de la Soufrière de Guadeloupe. Petites Antilles. Thèse de 3ème cycle, Univ. Paris Sud, Orsay, 150 pp.  
+<LI><B>Zlotnicki J., M. Feuillard, and G. Hammouya, 1994.</B> Water circulations on la Soufrière volcano (Guadeloupe, Lesser Antilles) : May-December 1992 seismovolcanic crisis. Renew of volcanic activity ? J. Geomagn. Geoelectr., 46, 797-813. 
+</OL>

@@ -1,0 +1,108 @@
+=key|value
+# Helicorder PROC template
+# Makes helicorders from node channels, using "events" output type.
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/helicorder.m for further information.
+
+# long name of the PROC
+NAME|Helicorder
+# proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
+TYPE|
+OWNCODE|?
+RAWFORMAT|
+# raw data path
+RAWDATA|
+# URN link to data 
+URNDATA|/rawdata/myproc
+# time zone for outputs
+TZ|0
+# additionnal URL
+URL|
+
+# lists of parameters (number of comma-separated rows must be consistent)
+# TIMESCALELIST valid suffix: h (hour), d (day), w (week), m (month), y (year)
+TIMESCALELIST|02d
+DECIMATELIST|1
+CUMULATELIST|1
+DATESTRLIST|-1
+LINEWIDTHLIST|1
+MARKERSIZELIST|4
+STATUSLIST|1
+# defines a reference date to use with 'ref' timescale in TIMESCALELIST
+REF_DATE|
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} helicorder $SELFREF -
+SUBMIT_RESOURCE|helicorder
+
+# list of keys editable in requests
+REQUEST_KEYLIST|NAME,HELICORDER_DURATION_DAYS,HELICORDER_TURNS,HELICORDER_SCALE,HELICORDER_PAPER_COLOR,HELICORDER_PAPER_COLOR,HELICORDER_YTICK_HOURS,HELICORDER_RADIUS,HELICORDER_TREND
+
+# node parameters
+NODE_NAME|node
+NODE_SIZE|10
+NODE_RGB|1,0,0
+NODE_FONTSIZE|10
+NODE_MARKER|o
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# file for background time referenced events 
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+# landscape format for all outputs
+LANDSCAPE|Y
+# value = 1 to produce EPS graphs
+POSTSCRIPT|1
+# value = 1 to export text data files
+EXPORTS|1
+# main logo file
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+# secondary logo file
+LOGO2_FILE|
+# main copyright
+COPYRIGHT|MyProc
+# secondary copyright
+COPYRIGHT2|
+
+#STREAM_CHANNEL_SELECTOR|HHZ
+#DATALINK_DELAY_SECONDS|600
+
+# --- proc's specific parameters
+# main duration for a single graph
+HELICORDER_DURATION_DAYS|1
+# number of turns per duration
+HELICORDER_TURNS|24*2
+# vertical scale (relative to the signal standard deviation)
+HELICORDER_SCALE|100
+# background paper color (accepts html names, see CODE/matlab/htm2rgb.m)
+HELICORDER_PAPER_COLOR|#0F0F0F
+# trace color or color list
+#HELICORDER_TRACE_COLOR|black,red,mediumblue,green
+HELICORDER_TRACE_COLOR|whitesmoke
+# ytick labels
+HELICORDER_YTICK_HOURS|2
+# galvanometer rotation effect (use 0 to unset)
+HELICORDER_RADIUS|1
+# traces trend effect
+HELICORDER_TREND|N
+# vertical time direction
+HELICORDER_TOPDOWN|N
+
+# --- data processing
+# removes data picks using median filter (% of min/max values)
+PICKS_CLEAN_PERCENT|0
+
+# replaces flat signal (two consecutive identical values) by NaN
+FLAT_IS_NAN|NO
+
+# applies a median filter to the data
+MEDIAN_FILTER_SAMPLES|0

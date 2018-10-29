@@ -1,0 +1,37 @@
+=key|value
+
+# --- wide-scale left frame
+FRAME0_WIDTH_KM|100
+
+# intermediate-scale middle-top frame
+FRAME1_WIDTH_KM|30
+FRAME1_SCALE_KM|10
+
+# --- intermediate-scale middle-bottom frame
+FRAME2_WIDTH_KM|5
+FRAME2_SCALE_KM|2
+FRAME2_RESAMPLING|200
+
+# --- high-resolution right frame (in UTM)
+FRAME3_WIDTH_KM|1.5
+FRAME3_SCALE_KM|.5
+FRAME3_RESAMPLING|400
+FRAME3_SRTM1|NO
+
+# --- optional user-defined DEM frame (right) => applies to all nodes
+# DEM grid filename (ArcInfo format)
+FRAME3_DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+FRAME3_DEM_TYPE|UTM
+COPYRIGHT2|MyDEM
+
+DPI|80
+LINEWIDTH|1.5
+COLORMAP|landcolor
+COLOR_LIGHTENING|1.2
+LIGHT_AZIMUTH|-45
+LIGHT_CONTRAST|1
+SEACOLOR|[0.7,0.9,1]
+
+PLOT_TRANSMISSION|Y
+

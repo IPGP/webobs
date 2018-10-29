@@ -1,0 +1,271 @@
+#!/usr/bin/perl -w
+#---------------------------------------------------------------
+# ------------- WEBOBS -----------------------------------
+# seiscomp2mc.pl
+# ------
+# Usage: see included help
+#
+# 
+# Author: Francois Beauducel
+# Created: 2012-04-26
+# Updated: 2012-04-27
+
+
+use strict;
+use XML::Simple;
+use XML::LibXML;
+use Data::Dumper;
+
+# ----------------------------------------------------
+use readConf;
+my %WEBOBS = readConfFile;
+
+my $mc3 = $WEBOBS{MC3_DEFAULT_CONF};
+
+
+if (@ARGV > 0) {
+	if (!($ARGV[0] =~ /update|check|dump/)) {
+		print "$0: '$ARGV[0]' invalid command.\n";
+		exit(1);
+	}
+}
+
+if (@ARGV == 0) {
+	print 	"NAME\n\tWEBOBS - SeisComP to MC3 seismic bulletin\n\n",
+		"SYNOPSIS\n\tseiscomp2mc COMMAND [OPTIONS]\n\n",
+		"DESCRIPTION\n",
+		"\tThe script checks new events in QuakeML SeisComP database and updates\n",
+		"\tif necessary the MC3 database by creating new events entries. List of\n",
+		"\tavailable commands and options:\n\n",
+		"\tupdate\n",
+		"\t\tUpdates MC3 database.\n",
+		"\tcheck\n",
+		"\t\tchecks MC3 database (read only).\n",
+		"\tdump\n",
+		"\t\tchecks + displays full XML dumper of events (read only).\n",
+		"\t-f=MC3NAME\n",
+		"\t\tSpecifies MC3 conf name. Default is MC3_DEFAULT_CONF in WEBOBS.conf.\n",
+		"\nAUTHOR\n\tFrancois Beauducel, IPGP <beauducel\@ipgp.fr>\n\n"
+		;
+	exit(0);
+}
+
+my $commandline = "$0 ".join(" ",@ARGV);
+my $arg = shift;
+
+if (grep(/-f=/,$arg)) {
+	$mc3 = join('',grep(/-f=/,$arg));
+	$mc3 =~ s/-f=//;
+}
+
+my %MC3 = readConfFile("$mc3.conf");
+my $oper = $MC3{SC3_USER};
+
+# gets the list of last events
+my @last = sort(qx(find $MC3{SC3_EVENTS_ROOT} -maxdepth 4 -name "$MC3{SC3_EVENTS_NAME}" -mtime -$MC3{SC3_UPDATE_DAYS}));
+chomp(@last);
+
+# checks if events exist in MC database
+for (@last) {
+	my $name = $_;
+	$name =~ s/$MC3{SC3_EVENTS_ROOT}\///;
+	my ($evt_y,$evt_m,$evt_d,$evt_id) = split(/\//,$name);
+	my $fullname = "$_/$evt_id.last.xml";
+
+	my $mc_file = "$MC3{ROOT}/$evt_y/$MC3{PATH_FILES}/MC_${evt_y}${evt_m}.txt";
+	my @lines = qx(grep "$evt_id" $mc_file|xargs echo -n);
+
+	if (@lines) {
+		# event's ID already exists in MC: do nothing (for the moment...)
+	} else {
+
+		# -------------------------------------------------------------------------
+		# event seems new: updates MC file
+
+		my $parser = XML::Simple->new( KeepRoot => 1 );
+		my $doc = $parser->XMLin($fullname);
+		print "--- $fullname ---\n";
+
+		if ($arg =~ /dump/) {
+			print Dumper($doc);
+		}
+		my $event = $doc->{seiscomp}->{EventParameters};
+
+		# --- searchs first station arrival (using "origin:stationMagnitude")
+		my $evt_mag;
+		my @stationMagnitude;
+		foreach (@{$event->{origin}->{stationMagnitude}}) {
+			push(@stationMagnitude,
+				"$_->{amplitudeID}|$_->{magnitude}->{value}|"
+				."$_->{waveformID}->{networkCode}."
+				."$_->{waveformID}->{stationCode}."
+				."$_->{waveformID}->{locationCode}."
+				."$_->{waveformID}->{channelCode}"
+			);
+		}
+		my $evt_unique = 0;
+		if (scalar(@stationMagnitude) == 1) {
+			$evt_unique = 1;
+		}
+		# sorting amplitudeID = chronological order
+		@stationMagnitude = sort(@stationMagnitude);
+		my ($evt_ampID,$evt_smag,$evt_scode) = split(/\|/,$stationMagnitude[0]);
+		print "station amplitudeID = $evt_ampID\n";
+		print "station code = $evt_scode\n";
+		print "station magnitude = $evt_smag\n";
+		print "station unique = $evt_unique\n";
+
+		# --- finds first station amplitude (using "amplitude")
+		my $evt_amp;
+		my $evt_pickID;
+		foreach (@{$event->{amplitude}}) {
+			if ($evt_ampID =~ /$_->{publicID}/) {
+				$evt_amp = $_->{amplitude}->{value};
+				print "station amplitude = $evt_amp\n";
+				$evt_pickID = $_->{pickID};
+				print "station pickID = $evt_pickID\n";
+			}
+		}
+
+		# --- finds first pick (using "pick")
+		my $evt_pick;
+		my $evt_sdate;
+		my $evt_stime;
+		foreach (@{$event->{pick}}) {
+			if ($evt_pickID =~ /$_->{publicID}/) {
+				$evt_pick = $_->{time}->{value};
+				print "station pick time = $evt_pick\n";
+				$evt_sdate = substr($evt_pick,0,10);
+				$evt_stime = substr($evt_pick,11,11);
+			}
+		}
+
+		# --- finds first station phase and distance (using "origin:arrival")
+		my $evt_pha;
+		my $evt_dist;
+		foreach (@{$event->{origin}->{arrival}}) {
+			if ($evt_pickID =~ /$_->{pickID}/) {
+				$evt_pha = $_->{phase};
+				$evt_dist = ($_->{distance})*111;
+				print "station phase = $evt_pha\n";
+				print "station distance = $evt_dist\n";
+			}
+		}
+
+		# --- computes S-P and duration from distance and magnitude
+		my $evt_SP = sprintf("%1.2f",$evt_dist/8);
+		print "station S-P = $evt_SP\n";
+		my $evt_dur = sprintf("%1.2f",10 ** (($evt_smag - $evt_dist*0.0035 + 0.87)/2));
+		print "station duration = $evt_dur\n";
+
+		# --- get other origin parameters
+		my $evt_lat = $event->{origin}->{latitude}->{value};
+		print "origin latitude = $evt_lat\n";
+		my $evt_lon = $event->{origin}->{longitude}->{value};
+		print "origin longitude = $evt_lon\n";
+		my $evt_dep = $event->{origin}->{depth}->{value};
+		print "origin depth = $evt_dep\n";
+		my $evt_time = $event->{origin}->{time}->{value};
+		print "origin time = $evt_time\n";
+
+		# --- finds preferred origin magnitude
+		my $magnitudeID = $event->{event}->{preferredMagnitudeID};
+		foreach (@{$event->{origin}->{magnitude}}) {
+			if ($_->{publicID} eq $magnitudeID) {
+				$evt_mag = $_->{magnitude}->{value};
+				print "origin magnitude = $evt_mag\n";
+			}
+		}
+
+		my $lockFile = "/tmp/.$mc3.lock";
+
+		if ($arg =~ /update/) {
+			# --- checks lock file
+			if (-e $lockFile) {
+				my $lockWho = qx(cat $lockFile | xargs echo -n);
+				die "WEBOBS: MC is presently edited by $lockWho ...";
+			} else {
+				my $retLock = qx(echo "$oper" > $lockFile);
+			}
+		}
+
+		my $mc_id;
+
+		# --- reads MC file
+		my @lignes;
+		if (-e $mc_file)  {
+			print "Reading $mc_file ...";
+			open(FILE, "<$mc_file") || Quit($lockFile," Problem to read $mc_file\n");
+			while(<FILE>) { push(@lignes,$_); }
+			close(FILE);
+			print "imported.\n";
+
+			# Creation d'un backup
+			#my $fileMCTrtBckp = $fileMC.".backup";
+			#open(FILE, ">$fileMCTrtBckp") || Quit($lockFile," Probleme sur le fichier $fileMCTrtBckp\n");
+			#print FILE @lignes;
+			#close(FILE);
+			#print "<P><B>Copie de sauvegarde:</B> $fileMCTrtBckp</P>\n";
+
+			# --- calculates the new ID
+			my $max = 0;
+			for (@lignes) {
+				($mc_id) = split(/\|/,$_);
+				if (abs($mc_id) > $max) {
+					$max = abs($mc_id);
+				}
+			}
+			$mc_id = $max + 1;
+		} else {
+			if ($arg =~ /update/) {
+				qx(mkdir -p `dirname $mc_file`);
+				open(FILE, ">$mc_file") || Quit($lockFile,"Problem to create new file $mc_file\n");
+				print FILE ("");
+				close(FILE);
+				$mc_id = 1;
+			}
+		}
+
+		print "New event has ID $mc_id\n";
+
+		# --- outputs for MC
+		my $newline = "$mc_id|$evt_sdate|$evt_stime|AUTO|WEAK|$evt_dur|s|0|1|$evt_SP|$evt_scode|$evt_unique||$evt_id||$oper||\n";
+		print "$newline";
+
+
+
+		if ($arg =~ /update/) {
+			push(@lignes,$newline);
+			@lignes = sort Sort_date_with_id(@lignes);
+
+			open(FILE, ">$mc_file") || Quit($lockFile,"Problem with file $mc_file !\n");
+			print FILE @lignes;
+			close(FILE);
+
+			# --- deletes lock file
+			if (-e $lockFile) {
+				unlink $lockFile;
+			}
+		}
+	}
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub Sort_date_with_id ($$) {
+        my ($c,$d) = @_;
+        # removes the first field (ID)
+        $c =~ s/^[\-0-9]+\|//;
+        $d =~ s/^[\-0-9]+\|//;
+        return $d cmp $c;
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub Quit 
+{
+	if (-e $_[0]) {
+		unlink $_[0];
+	}
+	die "WEBOBS: $_[1]";
+}
+
+

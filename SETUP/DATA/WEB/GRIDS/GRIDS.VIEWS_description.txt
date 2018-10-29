@@ -1,0 +1,1 @@
+This table presents the list of VIEWS, i.e., groups of nodes. In the default WebObs package, we propose two examples of VIEWS: a network of GNSS/GPS stations, and a list of hot spring sites.

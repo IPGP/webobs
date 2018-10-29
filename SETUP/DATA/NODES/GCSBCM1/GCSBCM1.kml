@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://earth.google.com/kml/2.0">
+<Placemark>
+<name>BCM/EV : "Bains Chauds Matouba"</name>
+<description>Soufrière Hot Springs (ID DEV: GCSBCM1)</description>
+<open>1</open>
+<styleUrl>root://styleMaps#default+nicon=0x304+hicon=0x314</styleUrl>
+<Point><coordinates>-61.67430,16.05006,1055</coordinates></Point>
+</Placemark>
+</kml>

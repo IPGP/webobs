@@ -1,0 +1,85 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Developments}
+
+
+
+% ==================================================================
+\section{Use PROC's output graphics facilities}
+
+To display PROC's output graphics and data, \webobs uses a script named \wofile{/cgi-bin/showOUTG.pl} that can be used with external data. Products must be images in PNG format, with a thumbnail in JPG format and optional EPS and TXT files. The script proposes two different display formats:
+\begin{enumerate}
+\item per time scales: each image corresponds to a preset moving time window;
+\item per dated events: each image is associated to a timestamp (date and time).
+\end{enumerate}
+
+First, you must create a new PROC using the web interface with name MYPROC for example, and from any template (choose Generic time series for instance). Then you will have to name and store image files by respecting some rules explained below. Note that all files must be readable by the apache user (in \webobs automatic processes, the files are owned by the \webobs owner and group-readable).
+
+% -----------------------------------------------------------------
+\subsection{Graphs per time scale}
+
+To display graphs per time scale, the PROC must define the minimum following keys:
+
+\begin{lstlisting}[title=MYPROC.conf]
+=key|value
+NAME|My PROC title
+TIMESCALELIST|ts1,ts2,ts3
+SUMMARYLIST|SUMMARYA,SUMMARYB
+\end{lstlisting}
+
+\wocmd{ts1}, \wocmd{ts2}, \wocmd{ts3} are 2-letter minimum length time scale keys (at least one key is needed, see Table \ref{timescales} for valid keys and syntax). \wocmd{SUMMARYA} and \wocmd{SUMMARYB} are optional short names for additional summary graphs (all nodes). You may also associate NODES to this PROC if you want to show some per-node graphs. The outputs must be named and placed as:
+
+\hspace{15pt}\wofile{/opt/webobs/OUTG/PROC.MYPROC/graphs/SUMMARY\{A,B\}\_\{ts1,ts2,ts3\}.\{png,jpg,eps\}}
+
+where \wofile{.png} are the full resolution images, and \wofile{.jpg} files (same name as .png) are the thumbnails. These two files are mandatory. Optional \wofile{.eps} extension containing a vectorial image will give access to it through a link.
+
+If you want to show individual associated node graphs, for instance from \wokey{NODEID1}, you name the files as:
+
+\hspace{15pt}\wofile{/opt/webobs/OUTG/PROC.MYPROC/graphs/nodeid1\_\{ts1,ts2,ts3\}.\{png,jpg,eps\}}
+
+Note the NODE's ID must be written in lower case in the filename. \wofile{.eps} extension file is optional.
+
+You can have one data export file for each summary and node output. The files must be placed as:
+
+\hspace{15pt}\wofile{/opt/webobs/OUTG/PROC.MYPROC/exports/\{SUMMARY*,nodeid1\}\_\{ts1,ts2,ts3\}.txt}
+
+
+If the \webobs has been installed and configured by changing the default root path and subdirectories, you might look into \wofile{/etc/webobs.d/WEBOBS.rc} for the following variables to define the paths:
+
+\hspace{15pt}\wofile{\$WEBOBS\{\wokey{ROOT\_OUTG}\}/PROC.MYPROC/\$WEBOBS\{\wokey{PATH\_OUTG\_GRAPHS}\}}
+
+\hspace{15pt}\wofile{\$WEBOBS\{\wokey{ROOT\_OUTG}\}/PROC.MYPROC/\$WEBOBS\{\wokey{PATH\_OUTG\_EXPORTS}\}}
+
+
+
+% -----------------------------------------------------------------
+\subsection{Graphs per event}
+
+To display graphs per event, the PROC must define only one key:
+
+\begin{lstlisting}[title=MYPROC.conf]
+=key|value
+NAME|My PROC title
+\end{lstlisting}
+
+for the page title.
+
+Events must be referenced to a date (year, month, day) and will be presented sorted by month in one page per year, showing the image thumbnails. One event can contain multiple images that will be shown together as thumbnails when clicking on it. The last display level is the full scale image itself. There is no rule for eventID and images filenames (excepted the file extensions):
+
+\hspace{15pt}\wofile{/opt/webobs/OUTG/PROC.MYPROC/events/YYYY/MM/DD/eventID1/*.\{png,jpg,eps,pdf,txt\}}
+
+But it is better to use self-explanatory filenames since it will be displayed as popup windows on mouse over the thumbnails. Optional extensions \wofile{.eps}, \wofile{.pdf} and \wofile{.txt} will give access to supplementary files through links. You must also define at least one preferred image to be display as thumbnail on the main page, by creating a symbolic link to the \wofile{.jpg} file. The link basename has no importance but the extension.
+
+\hspace{15pt}\wofile{/opt/webobs/OUTG/PROC.MYPROC/events/YYYY/MM/DD/eventID1/link.jpg $\to$ maineventimage.jpg}
+
+
+% ==================================================================
+\section{SUPERPROCS: Templates for applications development}
+
+% -----------------------------------------------------------------
+\subsection{Superprocs}
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{}

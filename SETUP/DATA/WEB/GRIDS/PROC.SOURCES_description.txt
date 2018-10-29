@@ -1,0 +1,7 @@
+Le massif volcanique de la Soufrière constitue un relief donnant naissance à des précipitations abondantes (entre 8 et 11 mètres de pluies annuelles). Les eaux météoritiques s'infiltrent facilement dans les roches volcaniques et alimentent les nappes phréatiques qui jouent le rôle d'intégrateur dans les processus de transfert d'éléments résultant de l'activité du volcan (CO<sub>2</sub>, SO<sub>2</sub>, H<sub>2</sub>S, HCl, halogénures alcalins...). Ces éléments traversent les nappes phréatiques, véritable couvercle de l'édifice, et passent en partie en solution.
+
+Les modifications de la composition chimique des sources issues de ces nappes phréatiques constituent des indicateurs dont l'étude permet de suivre l'évolution de l'activité du volcan. La surveillance hydrogéochimique repose sur les mesures de paramètres physico-chimiques mesurés in situ (pH, température, conductivité, débit), ainsi que sur les analyses chimiques d'un échantillonnage régulier de sources selectionnées.
+
+Pour interpréter correctement le suivi hydrogéochimique, celui-ci doit être corrélé avec la météorologie saisonnière et ponctuelle, la phénomenologie hydrothermale et l'activité géophysique (sismologie, déformations, magnétotellurique, forages).
+
+Les données sont accessibles par l'interface de <A href='/cgi-bin/showEAUX.pl?node={SOURCES}'>Banque de données de chimie des eaux</A>.

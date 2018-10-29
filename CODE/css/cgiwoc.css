@@ -1,0 +1,16 @@
+#wrapper {
+	overflow: auto;
+	background-color: #333333; 
+	color: white; 
+	font-family: monospace;
+	font-size: 11px;
+}
+
+#Qry {
+	/*width: 100%; */
+	border: 0px solid #666666; 
+	background-color: #333333;
+	color: #eeee77;
+	outline: 0;
+}
+

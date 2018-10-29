@@ -1,0 +1,15 @@
+<h3>WebObs - Terms Of Use</h3>
+<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque blandit ultrices mattis. Nulla facilisi. 
+Aliquam lacus massa, dapibus eu vehicula in, viverra et elit. Vivamus id eros vulputate, hendrerit turpis at, suscipit nunc. 
+Ut feugiat dolor id sapien tincidunt faucibus. Mauris porta lobortis elit, vitae fermentum diam auctor non. 
+Nullam sit amet mollis elit. Phasellus consequat ipsum bibendum, sollicitudin eros sit amet, mattis est. Proin ut sem sed augue blandit pulvinar.
+</p>
+<p>
+Etiam vitae sodales ipsum. Nulla facilisi. Cras vehicula fermentum justo, in cursus justo ullamcorper sed. 
+Etiam id sapien mattis, consectetur lectus in, molestie arcu. 
+Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam eget urna quam. 
+Proin metus lectus, ultrices vitae velit sed, pulvinar malesuada augue. Nunc egestas nec arcu eget faucibus. 
+Nunc pharetra leo nec mauris iaculis lacinia. Proin nunc tellus, sodales sed dignissim quis, pretium quis diam. 
+In auctor convallis scelerisque. Maecenas bibendum fermentum aliquam. Suspendisse tincidunt eleifend odio id porttitor.
+</p>

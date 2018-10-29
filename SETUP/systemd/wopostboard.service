@@ -1,0 +1,15 @@
+[Unit]
+Description=WebObs Postboard
+After=local-fs.target remote-fs.target
+
+[Service]
+Type=forking
+ExecStart=/opt/webobs/CODE/shells/postboard start
+ExecStop=/opt/webobs/CODE/shells/postboard stop
+PIDFile=/opt/webobs/LOGS/postboard.pid
+User=wo
+UMask=0002
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,16 @@
+=key|value
+NAME|"Morne Bigot (Martinique)"
+ALIAS|BIM0
+FID|BIM0
+FDSN_NETWORK_CODE|
+VALID|1
+LAT_WGS84|14.51800
+LON_WGS84|-61.06600
+ALTITUDE|391
+POS_DATE|2012-06-18
+POS_TYPE|2
+INSTALL_DATE|2012-06-18
+END_DATE|NA
+FILES_FEATURES|sensor\|receiver\|antenna\|power_supply\|monumentation\|transmission
+TRANSMISSION|6
+UTC_DATA|+0

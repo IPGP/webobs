@@ -1,0 +1,280 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WebOBS 2.0\n"
+"Report-Msgid-Bugs-To: webobs@ovsg.univ-ag.fr\n"
+"POT-Creation-Date: 2007-05-25 09:10-0400\n"
+"PO-Revision-Date: 2009-10-19 17:00-0400\n"
+"Last-Translator: Alexis Bosson <alexis.bosson@ovsg.univ-ag.fr>\n"
+"Language-Team: WebOBS Traduction fr <webobs-fr@ovsg.univ-ag.fr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Hello world"
+msgstr "Bonjour, le monde !"
+
+# afficheRESEAUX.pl
+msgid "Purpose"
+msgstr "Objectifs"
+
+msgid "Project"
+msgstr "Projet"
+
+msgid "Networks"
+msgstr "RÃ©seaux"
+
+msgid "Owner"
+msgstr "Op&eacute;rateur"
+
+msgid "Time reference"
+msgstr "Fuseau de r&eacute;f&eacute;rence"
+
+msgid "Sampling Frequency"
+msgstr "Fr&eacute;quence d'&eacute;chantillonnage"
+
+msgid "Acquisition period"
+msgstr "P&eacute;riode d'acquisition"
+
+msgid "Number of"
+msgstr "Nombre de"
+
+msgid "Add a new file"
+msgstr "Ajouter une nouvelle fiche"
+
+msgid "Do a"
+msgstr "Faire une"
+
+msgid "search"
+msgstr "recherche"
+
+msgid "into the events"
+msgstr "dans les &eacute;v&eacute;nements"
+
+msgid "List of"
+msgstr "Liste des"
+
+msgid "Networks Codes"
+msgstr "Codes des R&eacute;seaux"
+
+msgid "Last Measurement"
+msgstr "Derni&egrave;re Mesure"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "Start / Installation"
+msgstr "D&eacute;but / Installation"
+
+msgid "End / Stop"
+msgstr "Fin / Arr&ecirc;t"
+
+msgid "See also the following maps"
+msgstr "Voir aussi les cartes suivantes"
+
+msgid "Information"
+msgstr "Informations"
+
+msgid "References"
+msgstr "Bibliographie"
+
+
+# afficheSTATION.pl
+msgid "Events"
+msgstr "ÃvÃ©nements"
+
+msgid "Network"
+msgstr "RÃ©seau"
+
+msgid "Parent File"
+msgstr "Fiche parente"
+
+msgid "{caract} of {station}"
+msgstr "{caract} de {station}"
+
+msgid "Begin - End"
+msgstr "DÃ©but - Fin"
+
+msgid "General Status"
+msgstr "Ãtat GÃ©nÃ©ral"
+
+msgid "ACTIVE"
+msgstr "ACTIVE"
+
+msgid "INACTIVE"
+msgstr "INACTIVE"
+
+msgid "Status"
+msgstr "Ãtat"
+
+msgid "Acquisition"
+msgstr "Acquisition"
+
+msgid "Graphics"
+msgstr "Graphes"
+
+msgid "Click to enlarge"
+msgstr "Cliquer pour agrandir"
+
+msgid "Location"
+msgstr "Localisation"
+
+msgid "Longitude"
+msgstr "Longitude"
+
+msgid "Latitude"
+msgstr "Latitude"
+
+msgid "Elevation"
+msgstr "Altitude"
+
+msgid "Positionning"
+msgstr "Positionnement"
+
+msgid "Geographic"
+msgstr "G&eacute;ographique"
+
+msgid "East"
+msgstr "Est"
+
+msgid "North"
+msgstr "Nord"
+
+msgid "Location map"
+msgstr "Carte de localisation"
+
+msgid "Access"
+msgstr "Acc&egrave;s"
+
+msgid "Specifications"
+msgstr "CaractÃ©ristiques"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Time"
+msgstr "Heure"
+
+msgid "Channel No"
+msgstr "NÂ° Voie"
+
+msgid "Channel Name"
+msgstr "Nom Voie"
+
+msgid "Unit"
+msgstr "UnitÃ©"
+
+msgid "S/N"
+msgstr "S/N"
+
+msgid "Channel Code"
+msgstr "Code Voie"
+
+msgid "Offset"
+msgstr "Offset"
+
+msgid "Calib. Fact."
+msgstr "Fact. Ãtal."
+
+msgid "Gain"
+msgstr "Gain"
+
+msgid "Min. Val."
+msgstr "Val. Min."
+
+msgid "Max. Val."
+msgstr "Val. Max."
+
+msgid "Azimuth"
+msgstr "Azimut"
+
+msgid "Photos"
+msgstr "Photos"
+
+msgid "Diagrams"
+msgstr "SchÃ©mas"
+
+msgid "Documents"
+msgstr "Documents"
+
+msgid "Edit..."
+msgstr "Modifier..."
+
+msgid "Remove..."
+msgstr "Supprimer..."
+
+msgid "Image {file}"
+msgstr "Image {file}"
+
+msgid "<b>Click for larger view</B><br>Image={image}<br>Size={dim}<br>Resolution={res}<br>Scaled down {scale} times"
+msgstr "<b>Cliquer pour agrandir</B><br>Image={image}<br>Dimensions={dim}<br>Resolution={res}<br>Affichage rÃÂ©duit par {scale}"
+
+# searchSTATIONS.pl
+msgid "Searching for data, please wait"
+msgstr "Recherche des donn&eacute;es, merci de patienter"
+
+msgid "Select a network"
+msgstr "S&eacute;lectionner un r&eacute;seau"
+
+msgid "All the networks"
+msgstr "Tous les r&eacute;seaux"
+
+msgid "Starting date"
+msgstr "Date d&eacute;but"
+
+msgid "Ending date"
+msgstr "Date fin"
+
+msgid "Word/Expression"
+msgstr "Mot/Expression"
+
+msgid "Select to match entire word"
+msgstr "S&eacute;lectionner pour limiter aux mots entiers"
+
+msgid "Entire word"
+msgstr "Mot entier"
+
+msgid "Select to match word case"
+msgstr "S&eacute;lectionner pour respecter la casse"
+
+msgid "Upper/lower case"
+msgstr "Majuscule/Minuscule"
+
+msgid "Select to display the entire text (not only fitting lines)"
+msgstr "S&eacute;lectionner pour afficher le texte complet (pas seulement les lignes correspondantes)"
+
+msgid "Display Entire text"
+msgstr "Afficher le texte complet"
+
+msgid "Include network description"
+msgstr "Inclure les descriptions de r&eacute;seaux"
+
+msgid "Network info"
+msgstr "Infos r&eacute;seaux"
+
+msgid "Include file/station description"
+msgstr "Inclure les informations de fiches/stations"
+
+msgid "File info"
+msgstr "Infos fiches"
+
+msgid "Include file/station dated events"
+msgstr "Inclure les &eacute;v&eacute;nements de fiches/stations"
+
+msgid "File events"
+msgstr "&Eacute;v&eacute;nements fiches"
+
+msgid "Include calibration file"
+msgstr "Inclure les fichiers de calibration"
+
+msgid "Search"
+msgstr "Recherche"
+
+#
+msgid "Language selection"
+msgstr "Choix de la langue"
+
+msgid "The current language is NAME_OF_GETTEXT_LANGUAGE. Please select your preferred language:"
+msgstr "La langue actuelle est le franÃ§ais. Merci de choisir votre langue prÃ©fÃ©rÃ©e :"
+
+# vi:enc=utf-8:

@@ -1,0 +1,22 @@
+#wrapper {
+	overflow: scroll;
+	background-color: #333333; 
+	color: white; 
+	font-family: monospace;
+	font-size: 11px;
+	height: 500px;
+}
+
+#logname {
+	overflow:auto;
+	background-color: palegoldenrod;
+	color: black;
+	font-family: monospace;
+	font-size: 12px;
+	padding-bottom: 5px;
+}
+
+.butfloat {
+	float: right;
+	margin-top: 2px;
+}

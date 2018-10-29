@@ -1,0 +1,168 @@
+#!/bin/bash
+
+woconf() {
+	# internal: (re)-loads WEBOBS.rc as the set of bash variables WO__*
+	# + (re)-loads WO_CONF_SCHEDULER as bash variabls SC__* 
+	unset $(/usr/bin/env | egrep '^WO__' | /usr/bin/cut -d= -f1)
+	oIFS=${IFS}; IFS=$'\n'
+	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'WO__'))
+	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'SC__' 'CONF_SCHEDULER'))
+	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+	IFS=${oIFS}
+}
+
+woconf;
+savedpid=0; running=0; cantalk2=0;
+savedpid=$(cat ${WO__ROOT_LOGS}/scheduler.pid 2>/dev/null)
+if [[ ${savedpid} -ne 0 && $(ps -p${savedpid} -opid --no-headers) -eq ${savedpid} ]]; then running=1; fi
+listening=$(netstat -uln | grep -c "${SC__PORT}" 2>/dev/null)
+if [[ ${running} -eq 1 && ${listening} -eq 1 ]]; then cantalk2=1; fi
+
+#schedudp="/dev/udp/127.0.0.1/${SC__PORT}"
+holdon="Please wait..."
+
+case "$1" in
+	start)
+		if [[ ${running} -eq 1 ]]; then echo "scheduler already started, pid $savedpid"; exit 1; fi
+		if [[ ${savedpid} -ne 0 && ${running} -eq 0 ]]; then echo "won't start: scheduler.pid says $savedpid and $savedpid not running"; exit 1; fi
+		cd /etc/webobs.d/../CODE/cgi-bin
+		if [ -n "${SC__ERROR_FILE}" ]; then
+			# Don't use eval as it will fork a new process not monitored by systemd
+			perl scheduler.pl $SC__CMD_OPTS 2> $SC__ERROR_FILE &
+		else
+			perl scheduler.pl $SC__CMD_OPTS &
+		fi
+		echo
+		;;
+	status)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			#oIFS=${IFS}; IFS=$'\n'; exec 3<>${schedudp}; echo ${holdon}; echo "cmd stat" >&3; rarr=$(timeout 3 cat <&3); echo "${rarr}"; IFS=${oIFS} 
+			#exec 3>&-
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd stat"'
+		#else
+		#	echo "scheduler not running or not listening"
+		fi
+		;;
+	ps)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			ps -p ${savedpid} -osid --no-headers | xargs ps -H -o pid,pgrp,etime,pcpu,pmem,vsize,cmd -s
+		fi
+		;;
+	qs)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd qs"'
+		fi
+		;;
+	runq)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd runq"'
+		fi
+		;;
+	jobq)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd jobq"'
+		fi
+		;;
+	verbose)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd verbose"'
+		fi
+		;;
+	quiet)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd quiet"'
+		fi
+		;;
+	stop)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd stop"'
+		fi
+		;;
+	pause)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd pause"'
+		fi
+		;;
+	resume)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd resume"'
+		fi
+		;;
+	flog)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd flog"'
+		fi
+		;;
+	kill)
+		if [[ $savedpid -ne 0 ]]; then
+			kill -9 $savedpid
+			rm -f ${WO__ROOT_LOGS}/scheduler.pid >/dev/null 2>&1
+		fi
+		;;
+	submit)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			shift
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"job $@\""
+		fi
+		;;
+	killjob)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			shift
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"killjob $@\""
+		fi
+		;;
+	enq)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			shift
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"enq $@\""
+		fi
+		;;
+	deq)
+		if [[ ${cantalk2} -eq 1 ]]; then
+			shift
+			echo $holdon
+			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"deq $@\""
+		fi
+		;;
+	*)
+		echo "Usage: $0 {enq|deq|flog|jobq|kill|pause|ps|qs|quiet|resume|runq|start|status|stop|submit|killjob|verbose}"
+		echo "       start          start, if not already active"
+		echo "       stop           stop, waiting for active kids to end"
+		echo "       pause          hold execution (suspend jobs processing)"
+		echo "       resume         resume execution"
+		echo "       kill           forced stop, not recommended"
+		echo "       verbose        log verbosity"
+		echo "       quiet          log verbosity"
+		echo "       status         display status/indicators/settings"
+		echo "       qs             display summary internal queues (jobq,runq,*miss,enqs)"
+		echo "       jobq           display jobQ"
+		echo "       runq           display runQ"
+		echo "       ps             display executing processes (active kids trees)"
+		echo "       flog           force log backup and cleanup"
+		echo "       enq            enq (lock) scheduler's resource(s): enq {resource | resource1+...+resourceN}"
+		echo "       deq            deq (free) scheduler's resource(s): deq {resource | resource1+...+resourceN}"
+		echo "       submit         place a job on the jobQ, requiring additional arg:"
+		echo "                      1) jid=n   where n is the job's id from the jobs definition table"
+		echo "                   or 2) keyword:value{,keyword:value,...}   where"
+		echo "                         keyword in [XEQ1,XEQ2,XEQ3,MAXSYSLOAD,LOGPATH,RES,UID]\n"
+		echo "       killjob        kill a job process, requiring additional arg: kid=. Note that"
+		echo "                      job outputs and temporary files might remain and must be checked.\n"
+		exit 1
+esac
+
+exit 0
+

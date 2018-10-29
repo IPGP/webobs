@@ -1,0 +1,6 @@
+Un $quake_strength (magnitude $quake_mag_type = {\bf $quake_magnitude} \pm $quake_mag_error) a été détecté le $long_date_local à $time_local
+(heure locale) par un traitement automatique. L'épicentre approximatif serait situé à {\bf $epicentral} $azimuth de
+{\bf$city}, à $quake_depth de profondeur (soit une distance hypocentrale d'environ $hypocentral). Ce séisme a pu
+générer, dans les zones concernées les plus proches, une accélération moyenne du sol correspondant à
+une intensité macrosismique entre {\bf $msk} ($long_msk) et {\bf $msk_max} ($long_msk_max).
+{\bf Attention ces informations n'ont pas encore été validées par un sismologue.}

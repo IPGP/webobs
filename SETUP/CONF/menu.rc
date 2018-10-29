@@ -1,0 +1,30 @@
+=key|value
+
+NAVIGATION|$WEBOBS{ROOT_CONF}/menunav.html
+NAV_ADMIN|$WEBOBS{ROOT_CONF}/MENUS/+ADMIN
+NAV_DUTY|$WEBOBS{ROOT_CONF}/MENUS/+DUTY
+NAV_OBSERVER|$WEBOBS{ROOT_CONF}/MENUS/+OBSERVER
+NAV_VISITOR|$WEBOBS{ROOT_CONF}/MENUS/+VISITOR
+# add below any sub-menu (group or user) here to be able to edit it from
+# web interface using /cgi-bin/xedit.pl?fs=FILE_MENU(NAV_*)
+
+
+# following LOGO_* are interpreted as a 3rows x Ncolumns matrix (N logos):
+# IMAGES | logo-1-img    ; ..... ; logo-N-img
+# URLS   | logo-1-href   ; ..... ; logo-N-href
+# TITLES | logo-1-imgalt ; ..... ; logo-N-imgalt
+
+#LOGO_IMAGES|/icons/ipgp/logo_WOVS.png;/icons/ipgp/logo_IPGP_C80.png
+#LOGO_URLS|/cgi-bin/index.pl;http://www.ipgp.fr
+#LOGO_TITLES|Welcome Page WEBOBS;IPGP
+
+LOGO_IMAGES|/icons/ipgp/logo_WOVS.png
+LOGO_URLS|/cgi-bin/index.pl
+LOGO_TITLES|Welcome Page WEBOBS
+
+WELCOME|/cgi-bin/Welcome.pl 
+SIGNATURE|$WEBOBS{PATH_DATA_WEB}/signature.txt 
+
+# uncomment this line to add a "Log Out" link that attempts to reset the navigator's Apache authentication
+# using a workaround: will re-login as non-existent "logout" user (experimental)
+#CLEAR_AUTHENTICATION_CACHE|logout

@@ -1,0 +1,37 @@
+#
+# bash template including minimum req. for webobs
+#
+# your online doc for this shell follows:
+
+usage() {
+	echo $0 is my name
+	echo that's all I know
+}
+
+TEMP=`getopt -o vdm: --long verbose,debug,memory:,debugfile:,minheap:,maxheap: \
+             -n $0 -- "$@"`
+if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+VERBOSE=false
+DEBUG=false
+MEMORY=
+DEBUGFILE=
+JAVA_MISC_OPT=
+while true; do
+  case "$1" in
+    -h | --help ) usage; exit 1; 
+    -v | --verbose ) VERBOSE=true; shift ;;
+    -d | --debug ) DEBUG=true; shift ;;
+    -m | --memory ) MEMORY="$2"; shift 2 ;;
+    --debugfile ) DEBUGFILE="$2"; shift 2 ;;
+    --minheap )
+      JAVA_MISC_OPT="$JAVA_MISC_OPT -XX:MinHeapFreeRatio=$2"; shift 2 ;;
+    --maxheap )
+      JAVA_MISC_OPT="$JAVA_MISC_OPT -XX:MaxHeapFreeRatio=$2"; shift 2 ;;
+    -- ) shift; break ;;
+    * ) break ;;
+  esac
+done
+

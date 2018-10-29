@@ -1,0 +1,39 @@
+.\" Manpage for fpm.
+.TH man 8 "13 May 2013" "1.0" "fpm man page"
+.SH NAME
+fpm \- find perl modules required by WebObs cgi-bins
+.SH SYNOPSIS
+fpm CGIDIR
+.SH DESCRIPTION
+fpm will scan CGIDIR directory of WebObs perl scripts, with the help of \fBscandeps.pl\fP, 
+to statically discover the perl modules needed by perl scripts (mainly cgi-bin): ie. 
+scandeps with option -R (Only show dependencies found in the files listed and do not recurse).
+
+Output from fpm will be located in CGIDIR itself as \fBout-scandeps\fP and \fBout-scandeps-p\fP 
+files. out-scandeps will be used as a reference list by the WebObs installation 
+procedure (install). 
+
+scandeps.pl has been found available in	perl-Module-ScanDeps (rpm) and 
+libmodule-scandeps-perl (deb).
+.SH OPTIONS
+No option, but the CGIDIR full path must be supplied.
+.SH SEE ALSO
+scandeps.pl, install 
+.SH AUTHOR
+Francois Beauducel, Didier Lafon
+.SH COPYRIGHT
+Webobs - 2012 - Institut de Physique du Globe Paris
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+

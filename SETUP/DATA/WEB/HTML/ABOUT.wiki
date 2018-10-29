@@ -1,0 +1,89 @@
+TITRE|About WebObs...
+~~Introduction:
+<p>Seismological and Volcanological observatories have common needs and often common practical problems for multi disciplinary data monitoring applications.
+<p>Access to integrated data in real-time and estimation of measurements uncertainties are keys for an efficient interpretation, but instruments variety, heterogeneity of data sampling and acquisition systems lead to difficulties that may hinder crisis management. 
+<p>In Guadeloupe observatory, we have developed in the last years an operational system, WebObs, that attempts to answer the questions in the context of a pluri-instrumental observatory. 
+<p>Based on a single computer server, open source scripts (Matlab, Perl, Bash) and a Web interface, the system proposes:
+- an extended database for networks management, stations and sensors (maps, station file with log history, technical characteristics, meta-data, photos and associated documents);
+- html-form interfaces for manual data input/editing and export (like geochemical analysis, some of the deformation measurements, ...);
+- routine data processing with dedicated automatic scripts for each technique, production of validated data outputs, static graphs on preset moving time intervals, and possible e-mail alarms;
+- computers, acquisition processes, stations and individual sensors status automatic check with simple criteria (files update and signal quality), displayed as synthetic pages for technical control.			
+<p>In the special case of seismology, WebObs includes a digital stripchart multichannel continuous seismogram associated with EarthWorm acquisition chain, 
+event classification database, location scripts, automatic shakemaps and regional catalog with associated hypocenter maps accessed through a user request form.			
+<p>This system leads to a real-time Internet access for integrated monitoring and becomes a strong support for scientists and technicians exchange, 
+ and is widely open to interdisciplinary real-time modeling. It has been set up at Martinique observatory, Montserrat Volcanological Observatory, and the geomagnetic observatory of Addis Abeba in Ethiopia. 
+~~
+
+~~Basic concepts:
+=== 2.1 NODES ===
+A **NODE** is the central WO element associated with following attributes:
+- a long name, a short name (ALIAS) and optional code (FID),
+- a date of start, a date of end (both optional),
+- an optional type (short string),
+- an optional location (latitude, longitude, elevation),
+- a location map (graph), Google Maps and Google Earth links,
+- optional text contents for "informations", "installation" and "access",
+- an optional sensor description associated with a calibration table (see below),
+- a list of user-defined features (also free text contents)
+- attached documents, photos and diagrams,
+- a project,
+- events log associated with date and operator list,
+- a list of associated **VIEWS** and/or **PROCS**,
+- a validity flag.
+Examples of what a **NODE** can be:
+- an instrumental station or a part of it,
+- a site for data sampling or measurement,
+- a site of any interest,
+- a mobile equipment, an instrument, a building, a vehicule, ...
+- a journal board, an event description (e.g. an historical earthquake), ...
+In the specific case of instrumental station, a calibration table is attached to the **NODE** sensors that describes each channel characteristics and history:
+- date and time of validity
+- channel number, name, unit, code, S/N, offset, factor, gain, min/max values, azimuth, latitude, longitude, elevation, depth,
+=== 2.2 GRIDS: VIEWS and PROCS ===
+A **GRID** is a group of **NODES**. Each **NODE** can be associated to one or multiple **GRIDS**. **GRIDS** are presented through a specific page with:
+- purpose (text content),
+- specifications: operator owner, number of **NODES**, type,
+- list of **NODES**: a complete table with alias, names, location, start/end dates, type, ...
+- location map (if **NODES** have location coordinates),
+- informations (text content),
+- references (text content),
+- a graphical representation of **NODES** links with associated **GRIDS**.
+There is two kind of **GRIDS**:
+- A **VIEW** is a list of **NODES** we simply want to group to be seen or accessed together,
+- A **PROC** is a list of **NODES** associated to a common data processing that produces outputs (graphs and/or elaborated data), and/or optional editable data **FORMS**.
+=== 2.3 FORMS ===
+A **FORM** is a web interface for manual data input/display/edit. A form is an optional tool of a **PROC** that defines associated **NODES**.
+~~
+
+~~Technical documentation:
+=== Wiki pages edition ===
+Most of text contents in WO accepts a "Wiki" syntax for basic text formatting: nodes events, features and description, grids (views/procs) description page, and any wiki page created by user.
+
+A text that can be in **bold**, //italic// or __underlined__.
+
+A bullet list:
+- item,
+- item \
+  with continuation line,
+- item.
+
+A numerical list:
+# item 1,
+# item 2.
+
+A horizontal rule: 
+----
+Different levels of titles:
+<H2>Title 2</H2>
+===Title 3 ===
+====Title 4====
+An [external link]{http://www.ipgp.fr}
+""A highlighted citation""
+A table:
+||{{{../icons/ipgp/logo_OVS.png}}}||A cell...||an other cell||
+||how is it ...||to add a new row||or is it a \
+ new table ?||
+
+The wiki text can also include any <span style="background-color: #18587D; color: white">HTML code</span>,
+as well as including another wiki file: %%WIKI/ABOUTinclude.wiki%%
+~~

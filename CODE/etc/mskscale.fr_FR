@@ -1,0 +1,18 @@
+# Configuration file for seismic intensities macros
+# Special characters must be encoded ISO (not UTF8)
+#
+# Author: F. Beauducel, IPGP / WEBOBS
+# Date: 2009-02-19
+#
+=key|lw|name|human|damages
+1|.1|non ressentie|non ressenti|aucun
+2|.25|rarement ressentie|très faible|aucun
+3|.5|faiblement ressentie|faible|aucun
+4|1|largement ressentie|légère|aucun
+5|1.5|secousse forte|modérée|très légers
+6|2|dégâts légers potentiels|forte|légers
+7|2.5|dégâts potentiels|très forte|modérés
+8|3|dégâts importants potentiels|sévère|importants
+9|3.5|destructions potentielles|violente|destructions
+10|4|destructions importantes potentielles|extrême|généralisés
+11|5|catastrophe potentielle||

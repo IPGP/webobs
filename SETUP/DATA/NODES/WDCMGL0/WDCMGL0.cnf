@@ -1,0 +1,16 @@
+=key|value
+NAME|"Marie Galante (Guadeloupe)"
+ALIAS|MGL0
+FID|MGL0
+FDSN_NETWORK_CODE|WI
+VALID|1
+LAT_WGS84|15.94935
+LON_WGS84|-61.28223
+ALTITUDE|159
+POS_DATE|2012-09-06
+POS_TYPE|0
+INSTALL_DATE|2012-09-12
+END_DATE|NA
+FILES_FEATURES|sensor\|receiver\|antenna\|power_supply\|monumentation\|transmission
+TRANSMISSION|6
+UTC_DATA|+0

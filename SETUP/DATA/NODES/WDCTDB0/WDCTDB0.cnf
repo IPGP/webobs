@@ -1,0 +1,16 @@
+=key|value
+NAME|"Terre-de-Bas, Les Saintes (Guadeloupe)"
+ALIAS|TDB0
+FID|TDB0
+FDSN_NETWORK_CODE|
+VALID|1
+LAT_WGS84|15.84900
+LON_WGS84|-61.63600
+ALTITUDE|159
+POS_DATE|2012-09-17
+POS_TYPE|1
+INSTALL_DATE|2012-09-25
+END_DATE|NA
+FILES_FEATURES|sensor\|receiver\|antenna\|power_supply\|monumentation\|transmission
+TRANSMISSION|6
+UTC_DATA|+0

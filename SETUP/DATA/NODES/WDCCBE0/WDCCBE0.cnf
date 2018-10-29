@@ -1,0 +1,16 @@
+=key|value
+NAME|"Capesterre-Belle-Eau (Guadeloupe)"
+ALIAS|CBE0
+FID|CBE0
+FDSN_NETWORK_CODE|
+VALID|1
+LAT_WGS84|16.06710
+LON_WGS84|-61.61120
+ALTITUDE|370
+POS_DATE|2012-09-17
+POS_TYPE|0
+INSTALL_DATE|2012-09-25
+END_DATE|NA
+FILES_FEATURES|sensor\|receiver\|antenna\|power_supply\|monumentation\|transmission
+TRANSMISSION|6
+UTC_DATA|+0

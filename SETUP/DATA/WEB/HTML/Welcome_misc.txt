@@ -1,0 +1,1 @@
+<A href="/awstats/awstats.pl" title="statistiques d'acces au site"><IMG src="/icons-webobs/awstats_logo6.png" border="0"></A>

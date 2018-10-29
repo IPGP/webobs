@@ -1,0 +1,85 @@
+=key|value
+# Generic PROC template for superproc gasvolc
+# This PROC must be associated with the FORM "GAZ" which contains compatible data and needed complementary configuration files.
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/volcgas.m for further information.
+
+
+# long name of the PROC
+NAME|Volcanic gas analysis
+
+# proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
+TYPE|
+OWNCODE|?
+TZ|0
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# lists of parameters (number of comma-separated rows must be consistent)
+TIMESCALELIST|10y,50y,all
+DECIMATELIST|
+CUMULATELIST|
+DATESTRLIST|10,10,-1
+MARKERSIZELIST|4,2,2
+LINEWIDTHLIST|1,.5,.1
+STATUSLIST|1,0,0
+# defines a reference date to use with 'ref' timescale in TIMESCALELIST
+REF_DATE|
+
+SUMMARYLIST|
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} volcgas $SELFREF -
+SUBMIT_RESSOURCE|volcgas
+
+# list of keys editable in requests
+REQUEST_KEYLIST|NAME,MAJORS_TYPE,MAJORS_MAX_N2,NODE_CHANNELS,SUMMARY_CHANNELS
+
+# node parameters
+NODE_NAME|fumarole
+NODE_SIZE|8
+NODE_RGB|1,0,0
+NODE_FONTSIZE|10
+NODE_MARKER|s
+
+# file for background time referenced events 
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+# landscape format for all outputs
+LANDSCAPE|N
+# set outputs
+POSTSCRIPT|Y
+PDFOUTPUT|N
+SVGOUTPUT|N
+EXPORTS|Y
+# main logo file
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+# secondary logo file
+LOGO2_FILE|
+# main copyright
+COPYRIGHT|MyProc
+# secondary copyright
+COPYRIGHT2|
+
+# --- proc's specific parameters
+# channels selection: Tf,pH,flux,Rn,type,H2,He,CO,CH4,N2,H2S,Ar,CO2,SO2,O2,d13C,d18O,S/C
+
+# definition of majors elements channels
+MAJORS_LIST|6,7,8,9,10,11,12,13,14,15,18
+# selection sampling type (to display major elements)
+MAJORS_TYPE|P2O5
+# major elements filter with maximum N2 content
+MAJORS_MAX_N2|10
+# for individual node's graph
+NODE_CHANNELS|1,,2,,3,11,,13,,18,,16,,
+# for summary graph
+SUMMARY_CHANNELS|1,,2,18,16
+

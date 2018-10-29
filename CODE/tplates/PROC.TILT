@@ -1,0 +1,110 @@
+=key|value
+# Generic PROC template for superproc tilt
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/tilt.m for further information.
+
+# long name of the PROC
+NAME|Tiltmetry time series, vectors and modelling
+# proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
+TYPE|
+OWNCODE|?
+RAWFORMAT|
+# raw data path
+RAWDATA|
+# URN link to data 
+#URNDATA|/rawdata/myproc
+# time zone for outputs
+TZ|+0
+# additionnal URL
+URL|
+
+# lists of parameters (number of comma-separated rows must be consistent)
+# TIMESCALELIST valid suffix: h (hour), d (day), w (week), m (month), y (year)
+TIMESCALELIST|24h,01w
+DECIMATELIST|1,1
+CUMULATELIST|1,1
+DATESTRLIST|-1,-1
+MARKERSIZELIST|6,3
+LINEWIDTHLIST|1,1
+STATUSLIST|1,0
+# defines a reference date to use with 'ref' timescale in TIMESCALELIST
+REF_DATE|
+
+# additional summary graphs keywords (comma separated)
+SUMMARYLIST|VECTORS,MODELLING
+SUMMARY_CHANNELS|1,2,3
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} tilt $SELFREF -
+SUBMIT_RESOURCE|myproc
+
+# list of keys editable in requests
+REQUEST_KEYLIST|NAME,VECTORS_EXCLUDED_NODELIST,MODELLING_EXCLUDED_NODELIST
+
+# node parameters
+NODE_NAME|station
+NODE_SIZE|10
+NODE_RGB|1,0,0
+NODE_FONTSIZE|10
+NODE_MARKER|o
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# file for background time referenced events 
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+COPYRIGHT|Processing by Beauducel et al./IPGP
+LOGO2_FILE|
+COPYRIGHT2|
+
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+# value = 1 to produce EPS graphs
+POSTSCRIPT|1
+# value = 1 to export text data files
+EXPORTS|1
+
+
+PICKS_CLEAN_PERCENT|0
+FLAT_IS_NAN|NO
+# applies a median filter to the data
+MEDIAN_FILTER_SAMPLES|0
+TREND_ERROR_MODE|1
+
+# defines the channels
+TILTX_CHANNEL|1
+TILTY_CHANNEL|2
+TEMPERATURE_CHANNEL|3
+TILT_TARGET_LATLON|
+
+PERNODE_TEMPERATURE_BACKGROUND|N
+PERNODE_TEMPERATURE_COLOR|1,.7,.7
+
+MOTION_EXCLUDED_NODELIST|
+MOTION_MIN_SIZE_KM|10
+MOTION_MAX_XYRATIO|1.5
+MOTION_TIME_COLORMAP|jet(256)
+MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'interp','legend'
+MOTION_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
+
+VECTORS_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
+VECTORS_EXCLUDED_NODELIST|
+VECTORS_DEM_OPT|'watermark',2,'interp','legend'
+VECTORS_VELOCITY_SCALE|
+VECTORS_MIN_SIZE_KM|10
+VECTORS_MAX_XYRATIO|1.5
+VECTORS_ARROWSHAPE|.1,.1,.08,.02
+
+MODELLING_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
+MODELLING_EXCLUDED_NODELIST|
+MODELLING_MAX_DEPTH|5000
+MODELLING_BORDERS|2500
+MODELLING_GRID_SIZE|100
+MODELLING_SIGMAS|1

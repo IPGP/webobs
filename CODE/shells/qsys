@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# exit 0 : OK
+# exit 1 : WebObs configuration error (not found, mismatch, etc...)
+# exit 2 : some WebObs processes are not started (scheduler, postboard, apache)
+
+# ---- valid WebObs architecture ?
+WOPTR=$(readlink -f /etc/webobs.d)
+if [[ ! (-d "${WOPTR}" && -f "${WOPTR}/WEBOBS.rc") ]]; then 
+	echo "no WebObs configuration found at /etc/webobs.d"
+	exit 1
+fi
+WODIR=$(dirname ${WOPTR})
+if [[ ! (-d "${WODIR}" && -d "${WODIR}/CODE" && -d "${WODIR}/DATA") ]]; then 
+	echo "no valid WebObs directory found at /etc/webobs.d"
+	exit 1
+fi
+WOOWNER=$(stat -c %U[%G] ${WOPTR})
+
+echo "Please wait...gathering information..."
+
+# ---- export WEBOBS.rc variables
+unset $(/usr/bin/env | egrep '^WO__' | /usr/bin/cut -d= -f1)
+oIFS=${IFS}; IFS=$'\n'
+LEXP=($(perl ${WODIR}/CODE/cgi-bin/exposerc.pl '=' 'WO__'))
+for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+IFS=${oIFS}
+
+# ---- http reachable
+STATHTTP=$(wget -qS -O- -T1 ${WO__ROOT_URL} 2>&1 | sed -n -E 's/[ ]*Server: (.*)/running on \1/gp')
+# ---- scheduler query status
+STATSCHD=$(${WODIR}/CODE/shells/scheduler status | sed -n -E 's/STARTED=(.*)/running since \1/gp')
+# ---- postboard status
+STATPBRD=$(${WODIR}/CODE/shells/postboard status | sed -n -E 's/STARTED=(.*)/running since \1/gp')
+
+# ---- build report
+bla="\n"
+bla=${bla}"       Id: ${WO__WEBOBS_ID}\n"
+bla=${bla}"  Version: ${WO__VERSION}\n\n"
+bla=${bla}"    Owner: ${WOOWNER}\n"
+bla=${bla}"     Root: ${WODIR}\n"
+bla=${bla}"   Config: ${WOPTR}/WEBOBS.rc\n"
+bla=${bla}"     Logs: ${WO__ROOT_LOGS}\n\n"
+bla=${bla}"      MCR: ${WO__PATH_MCR:-undefined}\n"
+bla=${bla}"  Rawdata: ${WO__ROOT_RAWD:-undefined}\n"
+bla=${bla}"   Sefran: ${WO__SEFRAN_ROOT:-undefined}\n\n"
+bla=${bla}"     HTTP: ${WO__ROOT_URL}\n"
+bla=${bla}"           ${WO__ROOT_VHST}\n"
+bla=${bla}"           ${STATHTTP:=not responding}\n\n"
+bla=${bla}"Scheduler: ${STATSCHD:=not running}\n"
+bla=${bla}"PostBoard: ${STATPBRD:=not running}\n\n"
+bla=${bla}"qsys run $(date +'%F %T')\n"
+
+# ---- display report
+ll=100
+clear
+paste ${WODIR}/CODE/icons/ipgp/logo_ascii.txt  <(printf "$bla") | sed "s/\(.\{$ll\}\).\+$/\1.../"
+
+echo
+if [[ ${STATHTTP:0:3} == "not" || ${STATSCHD:0:3} == "not" || ${STATPBRD:0:3} == "not"  ]]; then exit 2; fi
+exit 0

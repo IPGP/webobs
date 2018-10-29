@@ -1,0 +1,1461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ns0:inventory xmlns:ns0="http://geofon.gfz-potsdam.de/ns/Inventory/1.0/">
+	<ns0:network archive="OVPF" code="PF" description="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" end="" institutions="" netClass="p" publicID="Network/PF" region="" restricted="false" shared="true" start="1980-01-01T00:00:00.0000Z" type="BB">
+		<ns0:remark />
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="CAS" country="" description="CAS  " elevation="155.0" end="" latitude="-21.18025" longitude="55.827777" place="" publicID="Station#20120227100834.886061.574" restricted="false" shared="true" start="2005-09-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="155.0" end="" latitude="-21.18025" longitude="55.827777" publicID="SensorLocation#20120227100834.886475.575" start="2005-09-01T12:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHN" datalogger="Datalogger#20120227100834.886711.576" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="63411700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227100834.889224.585" sensorChannel="1" sensorSerialNumber="yyyy" shared="false" start="2005-09-01T12:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="EHE" datalogger="Datalogger#20120227100834.886711.576" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="63411700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227100834.887737.580" sensorChannel="2" sensorSerialNumber="yyyy" shared="false" start="2005-09-01T12:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120227100834.886711.576" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="63411700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227100834.8908.590" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2005-09-01T12:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="BOR" country="" description="Station Sismologique de Cratere Bory" elevation="2540.0" end="" latitude="-21.246547" longitude="55.706887" place="Station Sismologique de Cratere Bory" publicID="Station/PF/BOR/1989-01-01T00:00:00.0000Z" restricted="false" shared="true" start="1989-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="2540.0" end="" latitude="-21.246882" longitude="55.706053" publicID="SensorLocation#20120119110404.16626.70" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHN" datalogger="Datalogger#20120119110404.1655.65" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="24749700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110404.171192.94" sensorChannel="1" sensorSerialNumber="yyyy" shared="false" start="2004-07-01T16:05:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="EHE" datalogger="Datalogger#20120119110404.164015.60" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="197997000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110404.166832.73" sensorChannel="2" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110404.169967.87" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="98998600.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110404.174681.110" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2004-01-26T16:36:00.0000Z" />
+			</ns0:sensorLocation>
+			<ns0:sensorLocation code="00" elevation="2540.0" end="" latitude="-21.246882" longitude="55.706053" publicID="SensorLocation#20120119110404.163667.59" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHN" datalogger="Datalogger#20120119110404.1655.65" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="30212000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110404.168562.81" sensorChannel="1" sensorSerialNumber="yyyy" shared="false" start="2004-07-01T16:05:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="EHE" datalogger="Datalogger#20120119110404.1655.65" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="30212000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110404.165871.68" sensorChannel="2" sensorSerialNumber="yyyy" shared="false" start="2004-07-01T16:05:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110404.1655.65" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="30212000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110404.172926.102" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2004-07-01T16:05:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="FLR" country="" description="Station Sismologique de Flanc Est" elevation="1947.0" end="" latitude="-21.240742" longitude="55.732887" place="Station Sismologique de Flanc Est" publicID="Station/PF/FLR/2011-01-01T00:00:00.0000Z" restricted="false" shared="true" start="2011-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="1947.0" end="" latitude="-21.240742" longitude="55.732887" publicID="SensorLocation#20120119110144.718751.722" start="2011-01-01T00:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHZ" datalogger="Datalogger#20120119110430.239539.452" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="822829000.0" gainFrequency="0.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110430.243682.460" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2011-04-05T09:45:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110430.239539.452" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="823668000.0" gainFrequency="0.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110430.242486.457" sensorChannel="1" sensorSerialNumber="yyyy" shared="false" start="2011-04-05T09:45:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="HHE" datalogger="Datalogger#20120119110430.239539.452" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="824507000.0" gainFrequency="0.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110430.240532.454" sensorChannel="2" sensorSerialNumber="yyyy" shared="false" start="2011-04-05T09:45:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="PER" country="" description="Station Sismologique du Piton de l&apos;eau" elevation="2085.0" end="" latitude="-21.185282" longitude="55.685837" place="Station Sismologique du Piton de l&apos;eau" publicID="Station/PF/PER/1989-01-01T00:00:00.0000Z" restricted="false" shared="true" start="1989-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="2085.0" end="" latitude="-21.185722" longitude="55.686033" publicID="SensorLocation#20120119110415.142109.241" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110415.142453.242" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="24764700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110415.14291.244" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="EOL" country="" description="Station Sismologique des Eoliennes" elevation="150.0" end="" latitude="-21.159726" longitude="55.812917" place="Station Sismologique des Eoliennes" publicID="Station#20120227100836.603716.592" restricted="false" shared="true" start="2004-09-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="150.0" end="" latitude="-21.159722" longitude="55.812916" publicID="SensorLocation#20120227100836.604122.593" start="2005-09-01T12:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHN" datalogger="Datalogger#20120227100836.604346.594" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="63411700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227100836.606937.603" sensorChannel="1" sensorSerialNumber="yyyy" shared="false" start="2005-09-01T12:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="EHE" datalogger="Datalogger#20120227100836.604346.594" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="63411700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227100836.605383.598" sensorChannel="2" sensorSerialNumber="yyyy" shared="false" start="2005-09-01T12:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120227100836.604346.594" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="63411700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227100836.608484.608" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2005-09-01T12:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="CRA" country="" description="Crac" elevation="998.0" end="" latitude="-21.22336" longitude="55.75783" place="Crac" publicID="Station/PF/CRA/2011-05-16T00:00:00.0000Z" restricted="false" shared="true" start="2011-05-16T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="998.0" end="" latitude="-21.22336" longitude="55.75783" publicID="SensorLocation#20120119110139.469449.636" start="2011-05-16T00:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHZ" datalogger="Datalogger#20120119110426.869104.354" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="820405000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110426.873903.362" sensorChannel="0" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110426.869104.354" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="822922000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110426.872061.359" sensorChannel="1" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="HHE" datalogger="Datalogger#20120119110426.869104.354" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="813694000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110426.870142.356" sensorChannel="2" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="GBS" country="" description="Grandes pentes coulee 1943 bas" elevation="471.0" end="" latitude="-21.27387" longitude="55.77934" place="Grandes pentes coulee 1943 bas" publicID="Station/PF/GBS/2011-05-16T00:00:00.0000Z" restricted="false" shared="true" start="2011-05-16T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="471.0" end="" latitude="-21.27387" longitude="55.77934" publicID="SensorLocation#20120119110142.764571.690" start="2011-05-16T00:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHZ" datalogger="Datalogger#20120119110433.037447.483" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="822922000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110433.042326.491" sensorChannel="0" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110433.037447.483" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="821244000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110433.040458.488" sensorChannel="1" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="HHE" datalogger="Datalogger#20120119110433.037447.483" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="814533000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110433.038499.485" sensorChannel="2" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="FJS" country="" description="Station Sismologique de Faujas" elevation="2123.0" end="" latitude="-21.229493" longitude="55.72229" place="Station Sismologique de Faujas" publicID="Station/PF/FJS/2011-01-01T00:00:00.0000Z" restricted="false" shared="true" start="2011-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="2123.0" end="" latitude="-21.229493" longitude="55.72229" publicID="SensorLocation#20120119110138.293845.623" start="2011-01-01T00:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHZ" datalogger="Datalogger#20120119110429.099649.413" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="821151000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110429.102299.421" sensorChannel="0" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110429.099649.413" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="816957000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110429.101286.418" sensorChannel="1" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="HHE" datalogger="Datalogger#20120119110429.099649.413" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="822829000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110429.100234.415" sensorChannel="2" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="BOB" country="" description="Station Sismologique de Bois Blanc" elevation="67.0" end="" latitude="-21.199183" longitude="55.8232" place="Station Sismologique de Bois Blanc" publicID="Station#20120227100833.664196.556" restricted="false" shared="true" start="2004-09-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="67.0" end="" latitude="-21.199183" longitude="55.8232" publicID="SensorLocation#20120227100833.665095.557" start="2005-09-01T12:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHN" datalogger="Datalogger#20120227100833.665635.558" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="63411700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227100833.712156.567" sensorChannel="1" sensorSerialNumber="yyyy" shared="false" start="2005-09-01T12:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="EHE" datalogger="Datalogger#20120227100833.665635.558" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="63411700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227100833.710308.562" sensorChannel="2" sensorSerialNumber="yyyy" shared="false" start="2005-09-01T12:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120227100833.665635.558" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="63411700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227100833.713779.572" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2005-09-01T12:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="HDL" country="" description="Station Sismologique de Hubert Delisle" elevation="242.0" end="" latitude="-21.250727" longitude="55.79059" place="Station Sismologique de Hubert Delisle" publicID="Station/PF/HDL/2011-01-01T00:00:00.0000Z" restricted="false" shared="true" start="2011-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="242.0" end="" latitude="-21.250727" longitude="55.79059" publicID="SensorLocation#20120119110139.997612.643" start="2011-01-01T00:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHZ" datalogger="Datalogger#20120119110435.178504.562" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="834571000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110435.181236.570" sensorChannel="0" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110435.178504.562" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="842959000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110435.180188.567" sensorChannel="1" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="HHE" datalogger="Datalogger#20120119110435.178504.562" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="855540000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110435.179119.564" sensorChannel="2" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="RMR" country="" description="Station Sismologique de roche merveilleuse" elevation="1475.0" end="" latitude="-21.123712" longitude="55.478348" place="Station Sismologique de roche merveilleuse" publicID="Station/PF/RMR/1998-11-05T00:00:00.0000Z" restricted="false" shared="true" start="1998-11-05T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="1475.0" end="" latitude="-21.123776" longitude="55.478495" publicID="SensorLocation#20120119110416.406362.262" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110416.406633.263" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="23972200.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110416.406966.265" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="RVL" country="" description="Station Sismologique de Rivals Ouest" elevation="2110.0" end="" latitude="-21.255894" longitude="55.700522" place="Station Sismologique de Rivals Ouest" publicID="Station/PF/RVL/2011-01-01T00:00:00.0000Z" restricted="false" shared="true" start="2011-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="2110.0" end="" latitude="-21.255894" longitude="55.700522" publicID="SensorLocation#20120119110137.186212.610" start="2011-01-01T00:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHZ" datalogger="Datalogger#20120119110439.925208.638" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="818635000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110439.930099.646" sensorChannel="0" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110439.925208.638" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="821151000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110439.928219.643" sensorChannel="1" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="HHE" datalogger="Datalogger#20120119110439.925208.638" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="816957000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110439.926255.640" sensorChannel="2" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="PCR" country="" description="Station Sismologique de la Plaine des Cafres" elevation="1540.0" end="" latitude="-21.208773" longitude="55.571613" place="Station Sismologique de la Plaine des Cafres" publicID="Station/PF/PCR/1989-01-01T00:00:00.0000Z" restricted="false" shared="true" start="1989-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="1540.0" end="" latitude="-21.208751" longitude="55.571528" publicID="SensorLocation#20120119110414.289034.233" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110414.28945.234" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="90.0" end="" flags="CG" format="Steim2" gain="24764700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110414.289961.236" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110414.28945.234" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="38947000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110414.291032.239" sensorChannel="1" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="NSR" country="" description="Station Sismologique de Nez Coupe de Sainte Rose" elevation="2035.0" end="" latitude="-21.206937" longitude="55.723429" place="Station Sismologique de Nez Coupe de Sainte Rose" publicID="Station/PF/NSR/2002-02-14T00:00:00.0000Z" restricted="false" shared="true" start="2002-02-14T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="2035.0" end="" latitude="-21.206879" longitude="55.723376" publicID="SensorLocation#20120119110412.460744.199" start="2002-09-10T09:42:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110412.46098.200" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="90.0" end="" flags="CG" format="Steim2" gain="24764700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110412.461279.202" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2002-09-10T09:42:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="TXR" country="" description="Station Sismologique de piton textor" elevation="2150.0" end="" latitude="-21.187453" longitude="55.634599" place="Station Sismologique de piton textor" publicID="Station/PF/TXR/1996-10-07T00:00:00.0000Z" restricted="false" shared="true" start="1996-10-07T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="2150.0" end="" latitude="-21.187401" longitude="55.635029" publicID="SensorLocation#20120119110419.006154.307" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110419.006552.308" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="24764700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110419.00687.310" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="GPN" country="" description="Grandes Pentes Nord" elevation="1413.0" end="" latitude="-21.23979" longitude="55.75247" place="Grandes Pentes Nord" publicID="Station/PF/GPN/2011-05-16T00:00:00.0000Z" restricted="false" shared="true" start="2011-05-16T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="1413.0" end="" latitude="-21.23979" longitude="55.75247" publicID="SensorLocation#20120119110141.011147.660" start="2011-05-16T00:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHZ" datalogger="Datalogger#20120119110433.783916.494" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="827116000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110433.788797.502" sensorChannel="0" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110433.783916.494" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="820405000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110433.786901.499" sensorChannel="1" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="HHE" datalogger="Datalogger#20120119110433.783916.494" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="829633000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110433.784954.496" sensorChannel="2" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="FOR" country="" description="Station Sismologique de Chateau Fort" elevation="2049.0" end="" latitude="-21.261867" longitude="55.718708" place="Station Sismologique de Chateau Fort" publicID="Station/PF/FOR/2011-01-01T00:00:00.0000Z" restricted="false" shared="true" start="2011-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="2049.0" end="" latitude="-21.261867" longitude="55.718708" publicID="SensorLocation#20120119110143.477105.703" start="2011-01-01T00:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHZ" datalogger="Datalogger#20120119110432.125627.472" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="817796000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110432.130478.480" sensorChannel="0" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110432.125627.472" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="825345000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110432.128613.477" sensorChannel="1" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="HHE" datalogger="Datalogger#20120119110432.125627.472" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="821990000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110432.1267.474" sensorChannel="2" sensorSerialNumber="yyyy" shared="true" start="2011-01-01T00:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="PBR" country="" description="Station Sismologique du Piton des Basaltes" elevation="2422.0" end="" latitude="-21.217401" longitude="55.654496" place="Station Sismologique du Piton des Basaltes" publicID="Station/PF/PBR/1989-01-01T00:00:00.0000Z" restricted="false" shared="true" start="1989-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="2440.0" end="" latitude="-21.213063" longitude="55.654372" publicID="SensorLocation#20120119110413.069851.223" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110413.071861.228" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="98998600.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110413.072526.231" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2004-01-26T12:01:00.0000Z" />
+			</ns0:sensorLocation>
+			<ns0:sensorLocation code="00" elevation="2440.0" end="" latitude="-21.213063" longitude="55.654372" publicID="SensorLocation#20120119110413.064656.209" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHN" datalogger="Datalogger#20120119110413.065052.210" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="120848000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110413.067471.217" sensorChannel="1" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="EHE" datalogger="Datalogger#20120119110413.065052.210" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="120848000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110413.065784.213" sensorChannel="2" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110413.065052.210" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="120848000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110413.069125.221" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="DSO" country="" description="Station Sismologique de Dolomieu Sud Ouest" elevation="2517.0" end="" latitude="-21.248613" longitude="55.71405" place="Station Sismologique de Dolomieu Sud Ouest" publicID="Station/PF/DSO/2007-05-29T00:00:00.0000Z" restricted="false" shared="true" start="2007-05-29T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="2517.0" end="" latitude="-21.248613" longitude="55.71405" publicID="SensorLocation#20120119110407.55817.112" start="2007-06-01T12:24:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110407.558398.113" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="90.0" end="" flags="CG" format="Steim2" gain="30212000000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110407.558806.116" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2007-06-01T12:24:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="GPS" country="" description="Grandes Pentes Sud" elevation="1004.0" end="" latitude="-21.26741" longitude="55.76162" place="Grandes Pentes Sud" publicID="Station/PF/GPS/2011-05-16T00:00:00.0000Z" restricted="false" shared="true" start="2011-05-16T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="1004.0" end="" latitude="-21.26741" longitude="55.76162" publicID="SensorLocation#20120119110144.04808.711" start="2011-05-16T00:00:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHZ" datalogger="Datalogger#20120119110434.428524.506" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="831310000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110434.43179.514" sensorChannel="0" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110434.428524.506" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="814533000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110434.430183.511" sensorChannel="1" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="HHE" datalogger="Datalogger#20120119110434.428524.506" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="823761000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110434.429119.508" sensorChannel="2" sensorSerialNumber="yyyy" shared="true" start="2011-05-16T00:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="LCR" country="" description="Station Sismologique de la crete" elevation="660.0" end="" latitude="-21.337251" longitude="55.667021" place="Station Sismologique de la crete" publicID="Station/PF/LCR/1989-01-01T00:00:00.0000Z" restricted="false" shared="true" start="1989-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="660.0" end="" latitude="-21.338057" longitude="55.66724" publicID="SensorLocation#20120119110411.513311.183" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110411.5137.184" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="24764700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110411.514197.186" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="MAT" country="" description="Grandes pentes coulee 1943 bas" elevation="471.0" end="" latitude="-21.27387" longitude="55.77934" place="Grandes pentes coulee 1943 bas" publicID="Station#20120227113707.827114.762" restricted="false" shared="true" start="2011-05-16T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="00" elevation="471.0" end="" latitude="-21.27387" longitude="55.77934" publicID="SensorLocation#20120227113707.827776.763" start="2011-05-16T00:00:00.0000Z">
+				<ns0:stream azimuth="270.0" clockSerialNumber="" code="HHZ" datalogger="Datalogger#20120227113707.82812.764" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="822922000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227113707.833323.772" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2011-05-16T00:00:00.0000Z" />
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120227113707.82812.764" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="821244000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227113707.831372.769" sensorChannel="1" sensorSerialNumber="yyyy" shared="false" start="2011-05-16T00:00:00.0000Z" />
+				<ns0:stream azimuth="90.0" clockSerialNumber="" code="HHE" datalogger="Datalogger#20120227113707.82812.764" dataloggerChannel="2" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="814533000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120227113707.829268.766" sensorChannel="2" sensorSerialNumber="yyyy" shared="false" start="2011-05-16T00:00:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="NTR" country="" description="Station Sismologique de Nez Coupe du Tremblet" elevation="1900.0" end="" latitude="-21.283316" longitude="55.737383" place="Station Sismologique de Nez Coupe du Tremblet" publicID="Station/PF/NTR/1989-01-01T00:00:00.0000Z" restricted="false" shared="true" start="1989-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="1900.0" end="" latitude="-21.28304" longitude="55.737732" publicID="SensorLocation#20120119110412.795943.204" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110412.796291.205" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="90.0" end="" flags="CG" format="Steim2" gain="25458100.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110412.796732.207" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="PHR" country="" description="Station Sismologique du Piton Hubert" elevation="2280.0" end="" latitude="-21.253808" longitude="55.669025" place="Station Sismologique du Piton Hubert" publicID="Station/PF/PHR/1989-01-01T00:00:00.0000Z" restricted="false" shared="true" start="1989-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="2280.0" end="" latitude="-21.250725" longitude="55.668217" publicID="SensorLocation#20120119110415.516937.246" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110415.517176.247" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="90.0" end="" flags="CG" format="Steim2" gain="30212000000.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110415.51761.250" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="RER" country="" description="Station Sismologique de Riviere de l&apos;Est" elevation="834.0" end="" latitude="-21.168637" longitude="55.741618" place="Station Sismologique de Riviere de l&apos;Est" publicID="Station/PF/RER/1989-01-01T00:00:00.0000Z" restricted="false" shared="true" start="1989-01-01T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="834.0" end="" latitude="-21.170875" longitude="55.740365" publicID="SensorLocation#20120119110416.146447.257" start="2001-10-26T15:47:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="HHN" datalogger="Datalogger#20120119110416.146769.258" dataloggerChannel="1" dataloggerSerialNumber="xxxx" depth="0.0" dip="0.0" end="" flags="CG" format="Steim2" gain="55130500.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110416.147171.260" sensorChannel="1" sensorSerialNumber="yyyy" shared="false" start="2001-10-26T15:47:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+		<ns0:station affiliation="OBS VOLCANOLOGIQUE DU PITON DE LA FOURNAISE" archive="OVPF" archiveNetworkCode="" code="PJR" country="" description="Station Sismologique de piece jeanne" elevation="800.0" end="" latitude="-21.231387" longitude="55.399555" place="Station Sismologique de piece jeanne" publicID="Station/PF/PJR/2006-04-28T00:00:00.0000Z" restricted="false" shared="true" start="2006-04-28T00:00:00.0000Z" type="">
+			<ns0:remark />
+			<ns0:sensorLocation code="90" elevation="800.0" end="" latitude="-21.229627" longitude="55.399184" publicID="SensorLocation#20120119110415.886833.252" start="2006-04-28T09:38:00.0000Z">
+				<ns0:stream azimuth="0.0" clockSerialNumber="" code="EHZ" datalogger="Datalogger#20120119110415.887078.253" dataloggerChannel="0" dataloggerSerialNumber="xxxx" depth="0.0" dip="-90.0" end="" flags="CG" format="Steim2" gain="24764700.0" gainFrequency="1.0" gainUnit="M/S" restricted="false" sampleRateDenominator="1" sampleRateNumerator="100" sensor="Sensor#20120119110415.887388.255" sensorChannel="0" sensorSerialNumber="yyyy" shared="false" start="2006-04-28T09:38:00.0000Z" />
+			</ns0:sensorLocation>
+		</ns0:station>
+	</ns0:network>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="CRA.2011.136.100HZ" digitizerManufacturer="" digitizerModel="" gain="419430.0" maxClockDrift="0.0025" name="CRA.2011.136.100HZ" publicID="Datalogger#20120119110426.869104.354" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain />
+			<ns0:digitalFilterChain>ResponseFIR#20120119110426.873187.361</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="PBR.2004.026.100HZ" digitizerManufacturer="" digitizerModel="" gain="1000000.0" maxClockDrift="0.0025" name="PBR.2004.026.100HZ" publicID="Datalogger#20120119110413.071861.228" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110413.07213.229</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain>ResponsePAZ#20120119110413.072287.230</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2004-01-26T12:01:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="BOR.2001.299.100HZ" digitizerManufacturer="" digitizerModel="" gain="1000000.0" maxClockDrift="0.0025" name="BOR.2001.299.100HZ" publicID="Datalogger#20120119110404.164015.60" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110404.173581.104</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain>ResponsePAZ#20120119110404.173663.105</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="2004-01-26T12:00:59.0000Z" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="2004-01-26T12:00:59.0000Z" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="HDL.2011.001.100HZ" digitizerManufacturer="" digitizerModel="" gain="419430.0" maxClockDrift="0.0025" name="HDL.2011.001.100HZ" publicID="Datalogger#20120119110435.178504.562" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain />
+			<ns0:digitalFilterChain>ResponseFIR#20120119110435.180829.569</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="BOB.2005.244.25600HZ" digitizerManufacturer="" digitizerModel="" gain="1048580.0" maxClockDrift="0.0025" name="BOB.2005.244.25600HZ" publicID="Datalogger#20120227100833.665635.558" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120227100833.713669.571</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain>ResponseFIR#20120227100833.712916.569 ResponseFIR#20120227100833.713096.570</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="1048580.0" gainFrequency="1.0" serialNumber="xxxx" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="1048580.0" gainFrequency="1.0" serialNumber="xxxx" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="1048580.0" gainFrequency="1.0" serialNumber="xxxx" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="FLR.2011.095.100HZ" digitizerManufacturer="" digitizerModel="" gain="419430.0" maxClockDrift="0.0025" name="FLR.2011.095.100HZ" publicID="Datalogger#20120119110430.239539.452" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain />
+			<ns0:digitalFilterChain>ResponseFIR#20120119110430.243286.459</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-04-05T09:45:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-04-05T09:45:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-04-05T09:45:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="GBS.2011.136.100HZ" digitizerManufacturer="" digitizerModel="" gain="419430.0" maxClockDrift="0.0025" name="GBS.2011.136.100HZ" publicID="Datalogger#20120119110433.037447.483" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain />
+			<ns0:digitalFilterChain>ResponseFIR#20120119110433.041607.490</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="NTR.2001.299.100HZ" digitizerManufacturer="" digitizerModel="" gain="819.2" maxClockDrift="0.0025" name="NTR.2001.299.100HZ" publicID="Datalogger#20120119110412.796291.205" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110412.79656.206</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain />
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="819.2" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="PER.2001.299.100HZ" digitizerManufacturer="" digitizerModel="" gain="819.2" maxClockDrift="0.0025" name="PER.2001.299.100HZ" publicID="Datalogger#20120119110415.142453.242" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110415.142738.243</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain />
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="819.2" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="EOL.2005.244.25600HZ" digitizerManufacturer="" digitizerModel="" gain="1048580.0" maxClockDrift="0.0025" name="EOL.2005.244.25600HZ" publicID="Datalogger#20120227100836.604346.594" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120227100836.608378.607</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain>ResponseFIR#20120227100836.607674.605 ResponseFIR#20120227100836.607845.606</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="1048580.0" gainFrequency="1.0" serialNumber="xxxx" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="1048580.0" gainFrequency="1.0" serialNumber="xxxx" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="1048580.0" gainFrequency="1.0" serialNumber="xxxx" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="CAS.2005.244.25600HZ" digitizerManufacturer="" digitizerModel="" gain="1048580.0" maxClockDrift="0.0025" name="CAS.2005.244.25600HZ" publicID="Datalogger#20120227100834.886711.576" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120227100834.890662.589</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain>ResponseFIR#20120227100834.889917.587 ResponseFIR#20120227100834.890079.588</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="1048580.0" gainFrequency="1.0" serialNumber="xxxx" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="1048580.0" gainFrequency="1.0" serialNumber="xxxx" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="1048580.0" gainFrequency="1.0" serialNumber="xxxx" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="BOR.2004.026.100HZ" digitizerManufacturer="" digitizerModel="" gain="1000000.0" maxClockDrift="0.0025" name="BOR.2004.026.100HZ" publicID="Datalogger#20120119110404.169967.87" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110404.174467.108</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain>ResponsePAZ#20120119110404.174552.109</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="2004-01-26T16:35:59.0000Z" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2004-01-26T12:01:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="2004-07-01T16:04:59.0000Z" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2004-01-26T12:01:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="LCR.2001.299.100HZ" digitizerManufacturer="" digitizerModel="" gain="819.2" maxClockDrift="0.0025" name="LCR.2001.299.100HZ" publicID="Datalogger#20120119110411.5137.184" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110411.514002.185</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain />
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="819.2" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="TXR.2001.299.100HZ" digitizerManufacturer="" digitizerModel="" gain="819.2" maxClockDrift="0.0025" name="TXR.2001.299.100HZ" publicID="Datalogger#20120119110419.006552.308" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110419.00675.309</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain />
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="819.2" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="PHR.2001.299.100HZ" digitizerManufacturer="" digitizerModel="" gain="1000000.0" maxClockDrift="0.0025" name="PHR.2001.299.100HZ" publicID="Datalogger#20120119110415.517176.247" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110415.517365.248</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain>ResponsePAZ#20120119110415.517464.249</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="RMR.2001.299.100HZ" digitizerManufacturer="" digitizerModel="" gain="819.2" maxClockDrift="0.0025" name="RMR.2001.299.100HZ" publicID="Datalogger#20120119110416.406633.263" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110416.406839.264</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain />
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="819.2" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="NSR.2002.253.100HZ" digitizerManufacturer="" digitizerModel="" gain="819.2" maxClockDrift="0.0025" name="NSR.2002.253.100HZ" publicID="Datalogger#20120119110412.46098.200" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110412.461164.201</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain />
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="819.2" gainFrequency="1.0" serialNumber="xxxx" start="2002-09-10T09:42:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="BOR.2004.183.100HZ" digitizerManufacturer="" digitizerModel="" gain="1000000.0" maxClockDrift="0.0025" name="BOR.2004.183.100HZ" publicID="Datalogger#20120119110404.1655.65" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110404.170985.92</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain>ResponsePAZ#20120119110404.171065.93</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2004-07-01T16:05:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2004-07-01T16:05:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2004-07-01T16:05:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="PJR.2006.118.100HZ" digitizerManufacturer="" digitizerModel="" gain="819.2" maxClockDrift="0.0025" name="PJR.2006.118.100HZ" publicID="Datalogger#20120119110415.887078.253" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110415.88727.254</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain />
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="819.2" gainFrequency="1.0" serialNumber="xxxx" start="2006-04-28T09:38:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="MAT.2011.136.100HZ" digitizerManufacturer="" digitizerModel="" gain="419430.0" maxClockDrift="0.0025" name="MAT.2011.136.100HZ" publicID="Datalogger#20120227113707.82812.764" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain />
+			<ns0:digitalFilterChain>ResponseFIR#20120227113707.832599.771</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="GPN.2011.136.100HZ" digitizerManufacturer="" digitizerModel="" gain="419430.0" maxClockDrift="0.0025" name="GPN.2011.136.100HZ" publicID="Datalogger#20120119110433.783916.494" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain />
+			<ns0:digitalFilterChain>ResponseFIR#20120119110433.788055.501</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="FOR.2011.001.100HZ" digitizerManufacturer="" digitizerModel="" gain="419430.0" maxClockDrift="0.0025" name="FOR.2011.001.100HZ" publicID="Datalogger#20120119110432.125627.472" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain />
+			<ns0:digitalFilterChain>ResponseFIR#20120119110432.129757.479</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="FJS.2011.001.100HZ" digitizerManufacturer="" digitizerModel="" gain="419430.0" maxClockDrift="0.0025" name="FJS.2011.001.100HZ" publicID="Datalogger#20120119110429.099649.413" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain />
+			<ns0:digitalFilterChain>ResponseFIR#20120119110429.101905.420</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="PCR.2001.299.100HZ" digitizerManufacturer="" digitizerModel="" gain="819.2" maxClockDrift="0.0025" name="PCR.2001.299.100HZ" publicID="Datalogger#20120119110414.28945.234" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110414.290931.238</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain />
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="819.2" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="819.2" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="DSO.2007.152.100HZ" digitizerManufacturer="" digitizerModel="" gain="1000000.0" maxClockDrift="0.0025" name="DSO.2007.152.100HZ" publicID="Datalogger#20120119110407.558398.113" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110407.558576.114</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain>ResponsePAZ#20120119110407.558669.115</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2007-06-01T12:24:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="RVL.2011.001.100HZ" digitizerManufacturer="" digitizerModel="" gain="419430.0" maxClockDrift="0.0025" name="RVL.2011.001.100HZ" publicID="Datalogger#20120119110439.925208.638" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain />
+			<ns0:digitalFilterChain>ResponseFIR#20120119110439.929374.645</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="PBR.2001.299.100HZ" digitizerManufacturer="" digitizerModel="" gain="1000000.0" maxClockDrift="0.0025" name="PBR.2001.299.100HZ" publicID="Datalogger#20120119110413.065052.210" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110413.070402.224</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain>ResponsePAZ#20120119110413.070597.225</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="2004-01-26T12:00:59.0000Z" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="1000000.0" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="GPS.2011.136.100HZ" digitizerManufacturer="" digitizerModel="" gain="419430.0" maxClockDrift="0.0025" name="GPS.2011.136.100HZ" publicID="Datalogger#20120119110434.428524.506" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain />
+			<ns0:digitalFilterChain>ResponseFIR#20120119110434.431165.513</ns0:digitalFilterChain>
+		</ns0:decimation>
+		<ns0:calibration channel="0" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="1" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="2" end="" gain="419430.0" gainFrequency="1.0" serialNumber="xxxx" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:datalogger clockManufacturer="" clockModel="" clockType="" description="RER.2001.299.100HZ" digitizerManufacturer="" digitizerModel="" gain="819.2" maxClockDrift="0.0025" name="RER.2001.299.100HZ" publicID="Datalogger#20120119110416.146769.258" recorderManufacturer="" recorderModel="">
+		<ns0:remark />
+		<ns0:decimation sampleRateDenominator="1" sampleRateNumerator="100">
+			<ns0:analogueFilterChain>ResponsePAZ#20120119110416.147014.259</ns0:analogueFilterChain>
+			<ns0:digitalFilterChain />
+		</ns0:decimation>
+		<ns0:calibration channel="1" end="" gain="819.2" gainFrequency="1.0" serialNumber="xxxx" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:datalogger>
+	<ns0:sensor description="GEOTECH" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="GEOTECH" name="PCR.2001.299.HN90" publicID="Sensor#20120119110414.291032.239" response="ResponsePAZ#20120119110414.291217.240" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="190.213" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="TXR.2001.299.HZ90" publicID="Sensor#20120119110419.00687.310" response="ResponsePAZ#20120119110419.007065.311" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="CRA.2011.136.HZ00" publicID="Sensor#20120119110426.873903.362" response="ResponsePAZ#20120119110426.874224.363" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="1956.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="BOR.2004.183.HN90" publicID="Sensor#20120119110404.171192.94" response="ResponsePAZ#20120119110404.17137.95" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2004-07-01T16:05:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="CAS.2005.244.HE00" publicID="Sensor#20120227100834.887737.580" response="ResponsePAZ#20120227100834.887935.581" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="BOB.2005.244.HN00" publicID="Sensor#20120227100833.712156.567" response="ResponsePAZ#20120227100833.712367.568" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="BOB.2005.244.HE00" publicID="Sensor#20120227100833.710308.562" response="ResponsePAZ#20120227100833.710628.563" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="GPS.2011.136.HE00" publicID="Sensor#20120119110434.429119.508" response="ResponsePAZ#20120119110434.429323.509" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="1964.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="PHR.2001.299.HZ90" publicID="Sensor#20120119110415.51761.250" response="ResponsePAZ#20120119110415.5178.251" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="PJR.2006.118.HZ90" publicID="Sensor#20120119110415.887388.255" response="ResponsePAZ#20120119110415.887581.256" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2006-04-28T09:38:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="HDL.2011.001.HN00" publicID="Sensor#20120119110435.180188.567" response="ResponsePAZ#20120119110435.180362.568" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="2009.77" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="HDL.2011.001.HZ00" publicID="Sensor#20120119110435.181236.570" response="ResponsePAZ#20120119110435.181415.571" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="1989.77" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="CRA.2011.136.HE00" publicID="Sensor#20120119110426.870142.356" response="ResponsePAZ#20120119110426.870486.357" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="1940.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="GPS.2011.136.HZ00" publicID="Sensor#20120119110434.43179.514" response="ResponsePAZ#20120119110434.432063.515" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="1982.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="RVL.2011.001.HZ00" publicID="Sensor#20120119110439.930099.646" response="ResponsePAZ#20120119110439.930419.647" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="1951.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="PBR.2001.299.HN00" publicID="Sensor#20120119110413.067471.217" response="ResponsePAZ#20120119110413.067815.218" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="PBR.2004.026.HZ90" publicID="Sensor#20120119110413.072526.231" response="ResponsePAZ#20120119110413.072867.232" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2004-01-26T12:01:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="FJS.2011.001.HN00" publicID="Sensor#20120119110429.101286.418" response="ResponsePAZ#20120119110429.101459.419" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="1947.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="FOR.2011.001.HZ00" publicID="Sensor#20120119110432.130478.480" response="ResponsePAZ#20120119110432.130831.481" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="1949.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="GBS.2011.136.HE00" publicID="Sensor#20120119110433.038499.485" response="ResponsePAZ#20120119110433.038885.486" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="1942.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="FOR.2011.001.HE00" publicID="Sensor#20120119110432.1267.474" response="ResponsePAZ#20120119110432.127048.475" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="1959.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="GPN.2011.136.HN00" publicID="Sensor#20120119110433.786901.499" response="ResponsePAZ#20120119110433.787222.500" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="1956.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="GEOTECH" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="GEOTECH" name="RER.2001.299.HN90" publicID="Sensor#20120119110416.147171.260" response="ResponsePAZ#20120119110416.147438.261" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="130.959" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="GBS.2011.136.HN00" publicID="Sensor#20120119110433.040458.488" response="ResponsePAZ#20120119110433.040778.489" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="1958.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="EOL.2005.244.HE00" publicID="Sensor#20120227100836.605383.598" response="ResponsePAZ#20120227100836.605581.599" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="BOB.2005.244.HZ00" publicID="Sensor#20120227100833.713779.572" response="ResponsePAZ#20120227100833.71399.573" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="MAT.2011.136.HZ00" publicID="Sensor#20120227113707.833323.772" response="ResponsePAZ#20120227113707.833644.773" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="1962.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="BOR.2004.183.HN00" publicID="Sensor#20120119110404.168562.81" response="ResponsePAZ#20120119110404.168742.82" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2004-07-01T16:05:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="PER.2001.299.HZ90" publicID="Sensor#20120119110415.14291.244" response="ResponsePAZ#20120119110415.143207.245" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="BOR.2004.026.HZ90" publicID="Sensor#20120119110404.174681.110" response="ResponsePAZ#20120119110404.174851.111" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2004-01-26T16:36:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+		<ns0:calibration channel="0" end="2004-01-26T16:35:59.0000Z" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2004-01-26T12:01:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="LCR.2001.299.HZ90" publicID="Sensor#20120119110411.514197.186" response="ResponsePAZ#20120119110411.514552.187" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="PCR.2001.299.HZ90" publicID="Sensor#20120119110414.289961.236" response="ResponsePAZ#20120119110414.290309.237" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="HDL.2011.001.HE00" publicID="Sensor#20120119110435.179119.564" response="ResponsePAZ#20120119110435.179324.565" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="2039.77" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="EOL.2005.244.HN00" publicID="Sensor#20120227100836.606937.603" response="ResponsePAZ#20120227100836.607136.604" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="NSR.2002.253.HZ90" publicID="Sensor#20120119110412.461279.202" response="ResponsePAZ#20120119110412.461469.203" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2002-09-10T09:42:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="FJS.2011.001.HE00" publicID="Sensor#20120119110429.100234.415" response="ResponsePAZ#20120119110429.100434.416" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="1961.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="NTR.2001.299.HZ90" publicID="Sensor#20120119110412.796732.207" response="ResponsePAZ#20120119110412.797028.208" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="MAT.2011.136.HN00" publicID="Sensor#20120227113707.831372.769" response="ResponsePAZ#20120227113707.831696.770" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="1958.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="BOR.2001.299.HE90" publicID="Sensor#20120119110404.166832.73" response="ResponsePAZ#20120119110404.167012.74" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="GPN.2011.136.HE00" publicID="Sensor#20120119110433.784954.496" response="ResponsePAZ#20120119110433.785304.497" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="1978.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="FLR.2011.095.HN00" publicID="Sensor#20120119110430.242486.457" response="ResponsePAZ#20120119110430.242801.458" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="1963.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-04-05T09:45:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="GBS.2011.136.HZ00" publicID="Sensor#20120119110433.042326.491" response="ResponsePAZ#20120119110433.042673.492" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="1962.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="GPS.2011.136.HN00" publicID="Sensor#20120119110434.430183.511" response="ResponsePAZ#20120119110434.430408.512" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="1942.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="PBR.2001.299.HE00" publicID="Sensor#20120119110413.065784.213" response="ResponsePAZ#20120119110413.066125.214" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="BOR.2004.183.HZ00" publicID="Sensor#20120119110404.172926.102" response="ResponsePAZ#20120119110404.173104.103" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2004-07-01T16:05:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="MAT.2011.136.HE00" publicID="Sensor#20120227113707.829268.766" response="ResponsePAZ#20120227113707.829675.767" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="1942.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="EOL.2005.244.HZ00" publicID="Sensor#20120227100836.608484.608" response="ResponsePAZ#20120227100836.608678.609" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="FJS.2011.001.HZ00" publicID="Sensor#20120119110429.102299.421" response="ResponsePAZ#20120119110429.10247.422" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="1957.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="RMR.2001.299.HZ90" publicID="Sensor#20120119110416.406966.265" response="ResponsePAZ#20120119110416.407177.266" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="FLR.2011.095.HZ00" publicID="Sensor#20120119110430.243682.460" response="ResponsePAZ#20120119110430.243854.461" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="1961.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-04-05T09:45:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="RVL.2011.001.HN00" publicID="Sensor#20120119110439.928219.643" response="ResponsePAZ#20120119110439.928538.644" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="1957.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="CAS.2005.244.HN00" publicID="Sensor#20120227100834.889224.585" response="ResponsePAZ#20120227100834.889416.586" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="DSO.2007.152.HZ90" publicID="Sensor#20120119110407.558806.116" response="ResponsePAZ#20120119110407.558992.117" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2007-06-01T12:24:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="FLR.2011.095.HE00" publicID="Sensor#20120119110430.240532.454" response="ResponsePAZ#20120119110430.240852.455" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="1965.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-04-05T09:45:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="BOR.2004.183.HE00" publicID="Sensor#20120119110404.165871.68" response="ResponsePAZ#20120119110404.166053.69" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2004-07-01T16:05:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="RVL.2011.001.HE00" publicID="Sensor#20120119110439.926255.640" response="ResponsePAZ#20120119110439.926644.641" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="2" end="" gain="1947.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="PBR.2001.299.HZ00" publicID="Sensor#20120119110413.069125.221" response="ResponsePAZ#20120119110413.06946.222" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2001-10-26T15:47:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="FOR.2011.001.HN00" publicID="Sensor#20120119110432.128613.477" response="ResponsePAZ#20120119110432.128932.478" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="1967.78" gainFrequency="1.0" serialNumber="yyyy" start="2011-01-01T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="GPN.2011.136.HZ00" publicID="Sensor#20120119110433.788797.502" response="ResponsePAZ#20120119110433.789121.503" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="1972.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="CMG" highFrequency="" lowFrequency="" manufacturer="GURALP" model="CMG" name="CRA.2011.136.HN00" publicID="Sensor#20120119110426.872061.359" response="ResponsePAZ#20120119110426.872376.360" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="1" end="" gain="1962.0" gainFrequency="1.0" serialNumber="yyyy" start="2011-05-16T00:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:sensor description="Marck" highFrequency="" lowFrequency="" manufacturer="Seismometer" model="Marck" name="CAS.2005.244.HZ00" publicID="Sensor#20120227100834.8908.590" response="ResponsePAZ#20120227100834.891064.591" type="" unit="M/S">
+		<ns0:remark />
+		<ns0:calibration channel="0" end="" gain="120.948" gainFrequency="1.0" serialNumber="yyyy" start="2005-09-01T12:00:00.0000Z">
+			<ns0:remark />
+		</ns0:calibration>
+	</ns0:sensor>
+	<ns0:responseFIR correction="4.1607" decimationFactor="1" delay="4.1607" gain="1.0" name="GPN.00.HHZ.2011.136.stage_3" numberOfCoefficients="65" publicID="ResponseFIR#20120119110433.788055.501" symmetry="A">
+		<ns0:coefficients>-7.01862e-10 2.57791e-09 1.05627e-08 1.38851e-08 -3.3252e-08 -1.09905e-07 -8.07416e-08 3.22664e-07 2.64288e-07 1.06677e-07 -1.25103e-06 2.24187e-07 7.04206e-07 1.37628e-06 -4.64812e-06 8.7398e-06 -1.51246e-05 2.53029e-05 -3.85647e-05 5.15277e-05 -5.61805e-05 3.80757e-05 2.4378e-05 -0.000158366 0.000392175 -0.000746049 0.00121864 -0.00177052 0.0023074 -0.00266617 0.00259604 -0.00177876 -8.94756e-05 0.00325516 -0.00767579 0.012782 -0.0171387 0.0187973 -0.0184698 0.0127882 -0.00236608 -0.0124829 0.0297771 -0.0462333 0.0575793 -0.0593383 0.0476806 -0.0209313 -0.0192712 0.0670548 -0.111447 0.13548 -0.114313 0.0387967 0.0707588 -0.202903 0.257181 -0.122033 -0.260836 0.517383 0.568809 0.164429 0.0133968 0.000150107 1.31549e-11</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="50.0" decimationFactor="2" delay="50.0" gain="1.0" name="BOB.00.EHZ.2005.244.stage_5" numberOfCoefficients="51" publicID="ResponseFIR#20120227100833.713096.570" symmetry="B">
+		<ns0:coefficients>-3.0967e-06 -2.94187e-05 -9.79035e-05 -0.00016222 -9.99283e-05 0.000120533 0.000261672 2.525e-05 -0.000410075 -0.000366483 0.000375892 0.000853738 -3.04906e-05 -0.00127548 -0.000910431 0.00127596 0.00215042 -0.00046129 -0.00333575 -0.00140852 0.00376857 0.00419175 -0.00264137 -0.0071971 -0.000643638 0.00917875 0.00608097 -0.00857334 -0.0127328 0.00397998 0.0186155 0.00520222 -0.0209287 -0.0181525 0.0166574 0.0322263 -0.0034639 -0.0429283 -0.0193155 0.0442837 0.0497625 -0.0293996 -0.0825606 -0.00933633 0.107491 0.0816138 -0.103051 -0.204092 -3.12053e-05 0.39021 0.589621</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="5.999872" decimationFactor="128" delay="5.999872" gain="1.0" name="BOB.00.EHZ.2005.244.stage_4" numberOfCoefficients="7" publicID="ResponseFIR#20120227100833.712916.569" symmetry="B">
+		<ns0:coefficients>0.000244141 0.00292969 0.0161133 0.0537109 0.12085 0.193359 0.225586</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="50.0" decimationFactor="2" delay="50.0" gain="1.0" name="CAS.00.EHZ.2005.244.stage_5" numberOfCoefficients="51" publicID="ResponseFIR#20120227100834.890079.588" symmetry="B">
+		<ns0:coefficients>-3.0967e-06 -2.94187e-05 -9.79035e-05 -0.00016222 -9.99283e-05 0.000120533 0.000261672 2.525e-05 -0.000410075 -0.000366483 0.000375892 0.000853738 -3.04906e-05 -0.00127548 -0.000910431 0.00127596 0.00215042 -0.00046129 -0.00333575 -0.00140852 0.00376857 0.00419175 -0.00264137 -0.0071971 -0.000643638 0.00917875 0.00608097 -0.00857334 -0.0127328 0.00397998 0.0186155 0.00520222 -0.0209287 -0.0181525 0.0166574 0.0322263 -0.0034639 -0.0429283 -0.0193155 0.0442837 0.0497625 -0.0293996 -0.0825606 -0.00933633 0.107491 0.0816138 -0.103051 -0.204092 -3.12053e-05 0.39021 0.589621</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="5.999872" decimationFactor="128" delay="5.999872" gain="1.0" name="CAS.00.EHZ.2005.244.stage_4" numberOfCoefficients="7" publicID="ResponseFIR#20120227100834.889917.587" symmetry="B">
+		<ns0:coefficients>0.000244141 0.00292969 0.0161133 0.0537109 0.12085 0.193359 0.225586</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="4.1607" decimationFactor="1" delay="4.1607" gain="1.0" name="GBS.00.HHZ.2011.136.stage_3" numberOfCoefficients="65" publicID="ResponseFIR#20120119110433.041607.490" symmetry="A">
+		<ns0:coefficients>-7.01862e-10 2.57791e-09 1.05627e-08 1.38851e-08 -3.3252e-08 -1.09905e-07 -8.07416e-08 3.22664e-07 2.64288e-07 1.06677e-07 -1.25103e-06 2.24187e-07 7.04206e-07 1.37628e-06 -4.64812e-06 8.7398e-06 -1.51246e-05 2.53029e-05 -3.85647e-05 5.15277e-05 -5.61805e-05 3.80757e-05 2.4378e-05 -0.000158366 0.000392175 -0.000746049 0.00121864 -0.00177052 0.0023074 -0.00266617 0.00259604 -0.00177876 -8.94756e-05 0.00325516 -0.00767579 0.012782 -0.0171387 0.0187973 -0.0184698 0.0127882 -0.00236608 -0.0124829 0.0297771 -0.0462333 0.0575793 -0.0593383 0.0476806 -0.0209313 -0.0192712 0.0670548 -0.111447 0.13548 -0.114313 0.0387967 0.0707588 -0.202903 0.257181 -0.122033 -0.260836 0.517383 0.568809 0.164429 0.0133968 0.000150107 1.31549e-11</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="4.1607" decimationFactor="1" delay="4.1607" gain="1.0" name="RVL.00.HHZ.2011.001.stage_3" numberOfCoefficients="65" publicID="ResponseFIR#20120119110439.929374.645" symmetry="A">
+		<ns0:coefficients>-7.01862e-10 2.57791e-09 1.05627e-08 1.38851e-08 -3.3252e-08 -1.09905e-07 -8.07416e-08 3.22664e-07 2.64288e-07 1.06677e-07 -1.25103e-06 2.24187e-07 7.04206e-07 1.37628e-06 -4.64812e-06 8.7398e-06 -1.51246e-05 2.53029e-05 -3.85647e-05 5.15277e-05 -5.61805e-05 3.80757e-05 2.4378e-05 -0.000158366 0.000392175 -0.000746049 0.00121864 -0.00177052 0.0023074 -0.00266617 0.00259604 -0.00177876 -8.94756e-05 0.00325516 -0.00767579 0.012782 -0.0171387 0.0187973 -0.0184698 0.0127882 -0.00236608 -0.0124829 0.0297771 -0.0462333 0.0575793 -0.0593383 0.0476806 -0.0209313 -0.0192712 0.0670548 -0.111447 0.13548 -0.114313 0.0387967 0.0707588 -0.202903 0.257181 -0.122033 -0.260836 0.517383 0.568809 0.164429 0.0133968 0.000150107 1.31549e-11</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="5.999872" decimationFactor="128" delay="5.999872" gain="1.0" name="EOL.00.EHZ.2005.244.stage_4" numberOfCoefficients="7" publicID="ResponseFIR#20120227100836.607674.605" symmetry="B">
+		<ns0:coefficients>0.000244141 0.00292969 0.0161133 0.0537109 0.12085 0.193359 0.225586</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="50.0" decimationFactor="2" delay="50.0" gain="1.0" name="EOL.00.EHZ.2005.244.stage_5" numberOfCoefficients="51" publicID="ResponseFIR#20120227100836.607845.606" symmetry="B">
+		<ns0:coefficients>-3.0967e-06 -2.94187e-05 -9.79035e-05 -0.00016222 -9.99283e-05 0.000120533 0.000261672 2.525e-05 -0.000410075 -0.000366483 0.000375892 0.000853738 -3.04906e-05 -0.00127548 -0.000910431 0.00127596 0.00215042 -0.00046129 -0.00333575 -0.00140852 0.00376857 0.00419175 -0.00264137 -0.0071971 -0.000643638 0.00917875 0.00608097 -0.00857334 -0.0127328 0.00397998 0.0186155 0.00520222 -0.0209287 -0.0181525 0.0166574 0.0322263 -0.0034639 -0.0429283 -0.0193155 0.0442837 0.0497625 -0.0293996 -0.0825606 -0.00933633 0.107491 0.0816138 -0.103051 -0.204092 -3.12053e-05 0.39021 0.589621</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="4.1607" decimationFactor="1" delay="4.1607" gain="1.0" name="HDL.00.HHZ.2011.001.stage_3" numberOfCoefficients="65" publicID="ResponseFIR#20120119110435.180829.569" symmetry="A">
+		<ns0:coefficients>-7.01862e-10 2.57791e-09 1.05627e-08 1.38851e-08 -3.3252e-08 -1.09905e-07 -8.07416e-08 3.22664e-07 2.64288e-07 1.06677e-07 -1.25103e-06 2.24187e-07 7.04206e-07 1.37628e-06 -4.64812e-06 8.7398e-06 -1.51246e-05 2.53029e-05 -3.85647e-05 5.15277e-05 -5.61805e-05 3.80757e-05 2.4378e-05 -0.000158366 0.000392175 -0.000746049 0.00121864 -0.00177052 0.0023074 -0.00266617 0.00259604 -0.00177876 -8.94756e-05 0.00325516 -0.00767579 0.012782 -0.0171387 0.0187973 -0.0184698 0.0127882 -0.00236608 -0.0124829 0.0297771 -0.0462333 0.0575793 -0.0593383 0.0476806 -0.0209313 -0.0192712 0.0670548 -0.111447 0.13548 -0.114313 0.0387967 0.0707588 -0.202903 0.257181 -0.122033 -0.260836 0.517383 0.568809 0.164429 0.0133968 0.000150107 1.31549e-11</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="4.1607" decimationFactor="1" delay="4.1607" gain="1.0" name="CRA.00.HHZ.2011.136.stage_3" numberOfCoefficients="65" publicID="ResponseFIR#20120119110426.873187.361" symmetry="A">
+		<ns0:coefficients>-7.01862e-10 2.57791e-09 1.05627e-08 1.38851e-08 -3.3252e-08 -1.09905e-07 -8.07416e-08 3.22664e-07 2.64288e-07 1.06677e-07 -1.25103e-06 2.24187e-07 7.04206e-07 1.37628e-06 -4.64812e-06 8.7398e-06 -1.51246e-05 2.53029e-05 -3.85647e-05 5.15277e-05 -5.61805e-05 3.80757e-05 2.4378e-05 -0.000158366 0.000392175 -0.000746049 0.00121864 -0.00177052 0.0023074 -0.00266617 0.00259604 -0.00177876 -8.94756e-05 0.00325516 -0.00767579 0.012782 -0.0171387 0.0187973 -0.0184698 0.0127882 -0.00236608 -0.0124829 0.0297771 -0.0462333 0.0575793 -0.0593383 0.0476806 -0.0209313 -0.0192712 0.0670548 -0.111447 0.13548 -0.114313 0.0387967 0.0707588 -0.202903 0.257181 -0.122033 -0.260836 0.517383 0.568809 0.164429 0.0133968 0.000150107 1.31549e-11</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="4.1607" decimationFactor="1" delay="4.1607" gain="1.0" name="MAT.00.HHZ.2011.136.stage_3" numberOfCoefficients="65" publicID="ResponseFIR#20120227113707.832599.771" symmetry="A">
+		<ns0:coefficients>-7.01862e-10 2.57791e-09 1.05627e-08 1.38851e-08 -3.3252e-08 -1.09905e-07 -8.07416e-08 3.22664e-07 2.64288e-07 1.06677e-07 -1.25103e-06 2.24187e-07 7.04206e-07 1.37628e-06 -4.64812e-06 8.7398e-06 -1.51246e-05 2.53029e-05 -3.85647e-05 5.15277e-05 -5.61805e-05 3.80757e-05 2.4378e-05 -0.000158366 0.000392175 -0.000746049 0.00121864 -0.00177052 0.0023074 -0.00266617 0.00259604 -0.00177876 -8.94756e-05 0.00325516 -0.00767579 0.012782 -0.0171387 0.0187973 -0.0184698 0.0127882 -0.00236608 -0.0124829 0.0297771 -0.0462333 0.0575793 -0.0593383 0.0476806 -0.0209313 -0.0192712 0.0670548 -0.111447 0.13548 -0.114313 0.0387967 0.0707588 -0.202903 0.257181 -0.122033 -0.260836 0.517383 0.568809 0.164429 0.0133968 0.000150107 1.31549e-11</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="4.1607" decimationFactor="1" delay="4.1607" gain="1.0" name="FLR.00.HHZ.2011.095.stage_3" numberOfCoefficients="65" publicID="ResponseFIR#20120119110430.243286.459" symmetry="A">
+		<ns0:coefficients>-7.01862e-10 2.57791e-09 1.05627e-08 1.38851e-08 -3.3252e-08 -1.09905e-07 -8.07416e-08 3.22664e-07 2.64288e-07 1.06677e-07 -1.25103e-06 2.24187e-07 7.04206e-07 1.37628e-06 -4.64812e-06 8.7398e-06 -1.51246e-05 2.53029e-05 -3.85647e-05 5.15277e-05 -5.61805e-05 3.80757e-05 2.4378e-05 -0.000158366 0.000392175 -0.000746049 0.00121864 -0.00177052 0.0023074 -0.00266617 0.00259604 -0.00177876 -8.94756e-05 0.00325516 -0.00767579 0.012782 -0.0171387 0.0187973 -0.0184698 0.0127882 -0.00236608 -0.0124829 0.0297771 -0.0462333 0.0575793 -0.0593383 0.0476806 -0.0209313 -0.0192712 0.0670548 -0.111447 0.13548 -0.114313 0.0387967 0.0707588 -0.202903 0.257181 -0.122033 -0.260836 0.517383 0.568809 0.164429 0.0133968 0.000150107 1.31549e-11</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="4.1607" decimationFactor="1" delay="4.1607" gain="1.0" name="GPS.00.HHZ.2011.136.stage_3" numberOfCoefficients="65" publicID="ResponseFIR#20120119110434.431165.513" symmetry="A">
+		<ns0:coefficients>-7.01862e-10 2.57791e-09 1.05627e-08 1.38851e-08 -3.3252e-08 -1.09905e-07 -8.07416e-08 3.22664e-07 2.64288e-07 1.06677e-07 -1.25103e-06 2.24187e-07 7.04206e-07 1.37628e-06 -4.64812e-06 8.7398e-06 -1.51246e-05 2.53029e-05 -3.85647e-05 5.15277e-05 -5.61805e-05 3.80757e-05 2.4378e-05 -0.000158366 0.000392175 -0.000746049 0.00121864 -0.00177052 0.0023074 -0.00266617 0.00259604 -0.00177876 -8.94756e-05 0.00325516 -0.00767579 0.012782 -0.0171387 0.0187973 -0.0184698 0.0127882 -0.00236608 -0.0124829 0.0297771 -0.0462333 0.0575793 -0.0593383 0.0476806 -0.0209313 -0.0192712 0.0670548 -0.111447 0.13548 -0.114313 0.0387967 0.0707588 -0.202903 0.257181 -0.122033 -0.260836 0.517383 0.568809 0.164429 0.0133968 0.000150107 1.31549e-11</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="4.1607" decimationFactor="1" delay="4.1607" gain="1.0" name="FJS.00.HHZ.2011.001.stage_3" numberOfCoefficients="65" publicID="ResponseFIR#20120119110429.101905.420" symmetry="A">
+		<ns0:coefficients>-7.01862e-10 2.57791e-09 1.05627e-08 1.38851e-08 -3.3252e-08 -1.09905e-07 -8.07416e-08 3.22664e-07 2.64288e-07 1.06677e-07 -1.25103e-06 2.24187e-07 7.04206e-07 1.37628e-06 -4.64812e-06 8.7398e-06 -1.51246e-05 2.53029e-05 -3.85647e-05 5.15277e-05 -5.61805e-05 3.80757e-05 2.4378e-05 -0.000158366 0.000392175 -0.000746049 0.00121864 -0.00177052 0.0023074 -0.00266617 0.00259604 -0.00177876 -8.94756e-05 0.00325516 -0.00767579 0.012782 -0.0171387 0.0187973 -0.0184698 0.0127882 -0.00236608 -0.0124829 0.0297771 -0.0462333 0.0575793 -0.0593383 0.0476806 -0.0209313 -0.0192712 0.0670548 -0.111447 0.13548 -0.114313 0.0387967 0.0707588 -0.202903 0.257181 -0.122033 -0.260836 0.517383 0.568809 0.164429 0.0133968 0.000150107 1.31549e-11</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responseFIR correction="4.1607" decimationFactor="1" delay="4.1607" gain="1.0" name="FOR.00.HHZ.2011.001.stage_3" numberOfCoefficients="65" publicID="ResponseFIR#20120119110432.129757.479" symmetry="A">
+		<ns0:coefficients>-7.01862e-10 2.57791e-09 1.05627e-08 1.38851e-08 -3.3252e-08 -1.09905e-07 -8.07416e-08 3.22664e-07 2.64288e-07 1.06677e-07 -1.25103e-06 2.24187e-07 7.04206e-07 1.37628e-06 -4.64812e-06 8.7398e-06 -1.51246e-05 2.53029e-05 -3.85647e-05 5.15277e-05 -5.61805e-05 3.80757e-05 2.4378e-05 -0.000158366 0.000392175 -0.000746049 0.00121864 -0.00177052 0.0023074 -0.00266617 0.00259604 -0.00177876 -8.94756e-05 0.00325516 -0.00767579 0.012782 -0.0171387 0.0187973 -0.0184698 0.0127882 -0.00236608 -0.0124829 0.0297771 -0.0462333 0.0575793 -0.0593383 0.0476806 -0.0209313 -0.0192712 0.0670548 -0.111447 0.13548 -0.114313 0.0387967 0.0707588 -0.202903 0.257181 -0.122033 -0.260836 0.517383 0.568809 0.164429 0.0133968 0.000150107 1.31549e-11</ns0:coefficients>
+		<ns0:remark />
+	</ns0:responseFIR>
+	<ns0:responsePAZ gain="190.213" gainFrequency="1.0" name="PCR.2001.299.HN90" normalizationFactor="1.04896" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110414.291217.240" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-0.898258,0.0) (-1.758,0.0)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1.0" gainFrequency="1.0" name="PHR.90.EHZ.2001.299.stage_6" normalizationFactor="0.999999" normalizationFrequency="1.0" numberOfPoles="1" numberOfZeros="1" publicID="ResponsePAZ#20120119110415.517464.249" type="D">
+		<ns0:zeros>(1.0,0.0)</ns0:zeros>
+		<ns0:poles>(0.999999,0.0)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="TXR.2001.299.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110419.007065.311" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="PHR.2001.299.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110415.5178.251" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1956.0" gainFrequency="1.0" name="CRA.2011.136.HZ00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110426.874224.363" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="BOR.2004.183.HN90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110404.17137.95" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="0.5" gainFrequency="1.0" name="BOB.00.EHZ.2005.244.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120227100833.713669.571" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="CAS.2005.244.HE00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120227100834.887935.581" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="250.0" gainFrequency="1.0" name="LCR.90.EHZ.2001.299.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110411.514002.185" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1964.0" gainFrequency="1.0" name="GPS.2011.136.HE00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110434.429323.509" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="PJR.2006.118.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110415.887581.256" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="0.5" gainFrequency="1.0" name="CAS.00.EHZ.2005.244.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120227100834.890662.589" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="2009.77" gainFrequency="1.0" name="HDL.2011.001.HN00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110435.180362.568" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1940.0" gainFrequency="1.0" name="CRA.2011.136.HE00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110426.870486.357" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="0.25" gainFrequency="1.0" name="BOR.90.EHZ.2001.299.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110404.173581.104" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1982.0" gainFrequency="1.0" name="GPS.2011.136.HZ00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110434.432063.515" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1.0" gainFrequency="1.0" name="BOR.90.EHZ.2001.299.stage_5" normalizationFactor="0.999999" normalizationFrequency="1.0" numberOfPoles="1" numberOfZeros="1" publicID="ResponsePAZ#20120119110404.173663.105" type="D">
+		<ns0:zeros>(1.0,0.0)</ns0:zeros>
+		<ns0:poles>(0.999999,0.0)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="250.0" gainFrequency="1.0" name="NSR.90.EHZ.2002.253.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110412.461164.201" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1.0" gainFrequency="1.0" name="PBR.90.EHZ.2004.026.stage_5" normalizationFactor="0.999999" normalizationFrequency="1.0" numberOfPoles="1" numberOfZeros="1" publicID="ResponsePAZ#20120119110413.072287.230" type="D">
+		<ns0:zeros>(1.0,0.0)</ns0:zeros>
+		<ns0:poles>(0.999999,0.0)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="250.0" gainFrequency="1.0" name="TXR.90.EHZ.2001.299.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110419.00675.309" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="BOB.2005.244.HE00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120227100833.710628.563" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1947.78" gainFrequency="1.0" name="FJS.2011.001.HN00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110429.101459.419" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1949.78" gainFrequency="1.0" name="FOR.2011.001.HZ00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110432.130831.481" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="250.0" gainFrequency="1.0" name="DSO.90.EHZ.2007.152.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110407.558576.114" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1942.0" gainFrequency="1.0" name="GBS.2011.136.HE00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110433.038885.486" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="0.25" gainFrequency="1.0" name="BOR.90.EHN.2004.183.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110404.170985.92" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1.0" gainFrequency="1.0" name="DSO.90.EHZ.2007.152.stage_6" normalizationFactor="0.999999" normalizationFrequency="1.0" numberOfPoles="1" numberOfZeros="1" publicID="ResponsePAZ#20120119110407.558669.115" type="D">
+		<ns0:zeros>(1.0,0.0)</ns0:zeros>
+		<ns0:poles>(0.999999,0.0)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1.0" gainFrequency="1.0" name="BOR.90.EHN.2004.183.stage_5" normalizationFactor="0.999999" normalizationFrequency="1.0" numberOfPoles="1" numberOfZeros="1" publicID="ResponsePAZ#20120119110404.171065.93" type="D">
+		<ns0:zeros>(1.0,0.0)</ns0:zeros>
+		<ns0:poles>(0.999999,0.0)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1959.78" gainFrequency="1.0" name="FOR.2011.001.HE00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110432.127048.475" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1956.0" gainFrequency="1.0" name="GPN.2011.136.HN00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110433.787222.500" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1958.0" gainFrequency="1.0" name="GBS.2011.136.HN00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110433.040778.489" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="EOL.2005.244.HE00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120227100836.605581.599" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="BOB.2005.244.HZ00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120227100833.71399.573" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1962.0" gainFrequency="1.0" name="MAT.2011.136.HZ00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120227113707.833644.773" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="BOR.2004.183.HN00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110404.168742.82" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="PER.2001.299.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110415.143207.245" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="BOR.2004.026.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110404.174851.111" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="LCR.2001.299.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110411.514552.187" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="514.0" gainFrequency="1.0" name="RER.90.HHN.2001.299.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110416.147014.259" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1989.77" gainFrequency="1.0" name="HDL.2011.001.HZ00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110435.181415.571" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="PCR.2001.299.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110414.290309.237" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="BOR.2001.299.HE90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110404.167012.74" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="0.5" gainFrequency="1.0" name="EOL.00.EHZ.2005.244.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120227100836.608378.607" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="EOL.2005.244.HN00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120227100836.607136.604" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="250.0" gainFrequency="1.0" name="PHR.90.EHZ.2001.299.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110415.517365.248" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="NSR.2002.253.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110412.461469.203" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1961.78" gainFrequency="1.0" name="FJS.2011.001.HE00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110429.100434.416" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="NTR.2001.299.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110412.797028.208" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1958.0" gainFrequency="1.0" name="MAT.2011.136.HN00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120227113707.831696.770" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="130.959" gainFrequency="1.0" name="RER.2001.299.HN90" normalizationFactor="1.04896" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110416.147438.261" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-0.898258,0.0) (-1.758,0.0)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="257.0" gainFrequency="1.0" name="NTR.90.EHZ.2001.299.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110412.79656.206" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="PBR.2004.026.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110413.072867.232" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1978.0" gainFrequency="1.0" name="GPN.2011.136.HE00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110433.785304.497" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="250.0" gainFrequency="1.0" name="PJR.90.EHZ.2006.118.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110415.88727.254" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1963.78" gainFrequency="1.0" name="FLR.2011.095.HN00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110430.242801.458" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-1005.31,0.0) (-502.655,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1962.0" gainFrequency="1.0" name="GBS.2011.136.HZ00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110433.042673.492" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1942.0" gainFrequency="1.0" name="GPS.2011.136.HN00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110434.430408.512" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="PBR.2001.299.HZ00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110413.06946.222" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="2039.77" gainFrequency="1.0" name="HDL.2011.001.HE00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110435.179324.565" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="PBR.2001.299.HE00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110413.066125.214" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="BOR.2004.183.HZ00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110404.173104.103" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="RMR.2001.299.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110416.407177.266" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1.0" gainFrequency="1.0" name="PBR.90.EHZ.2004.026.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110413.07213.229" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1942.0" gainFrequency="1.0" name="MAT.2011.136.HE00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120227113707.829675.767" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1.0" gainFrequency="1.0" name="BOR.90.EHZ.2004.026.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110404.174467.108" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1.0" gainFrequency="1.0" name="BOR.90.EHZ.2004.026.stage_5" normalizationFactor="0.999999" normalizationFrequency="1.0" numberOfPoles="1" numberOfZeros="1" publicID="ResponsePAZ#20120119110404.174552.109" type="D">
+		<ns0:zeros>(1.0,0.0)</ns0:zeros>
+		<ns0:poles>(0.999999,0.0)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="250.0" gainFrequency="1.0" name="PER.90.EHZ.2001.299.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110415.142738.243" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="EOL.2005.244.HZ00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120227100836.608678.609" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1957.78" gainFrequency="1.0" name="FJS.2011.001.HZ00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110429.10247.422" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="250.0" gainFrequency="1.0" name="PCR.90.HHN.2001.299.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110414.290931.238" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1961.78" gainFrequency="1.0" name="FLR.2011.095.HZ00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110430.243854.461" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-1005.31,0.0) (-502.655,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1957.78" gainFrequency="1.0" name="RVL.2011.001.HN00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110439.928538.644" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="CAS.2005.244.HN00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120227100834.889416.586" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="BOB.2005.244.HN00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120227100833.712367.568" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="DSO.2007.152.HZ90" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110407.558992.117" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1965.78" gainFrequency="1.0" name="FLR.2011.095.HE00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110430.240852.455" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-1005.31,0.0) (-502.655,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="BOR.2004.183.HE00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110404.166053.69" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1947.78" gainFrequency="1.0" name="RVL.2011.001.HE00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110439.926644.641" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="242.0" gainFrequency="1.0" name="RMR.90.EHZ.2001.299.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110416.406839.264" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1.0" gainFrequency="1.0" name="PBR.90.EHZ.2001.299.stage_2" normalizationFactor="1.0" normalizationFrequency="1.0" numberOfPoles="0" numberOfZeros="0" publicID="ResponsePAZ#20120119110413.070402.224" type="A">
+		<ns0:zeros />
+		<ns0:poles />
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1.0" gainFrequency="1.0" name="PBR.90.EHZ.2001.299.stage_5" normalizationFactor="0.999999" normalizationFrequency="1.0" numberOfPoles="1" numberOfZeros="1" publicID="ResponsePAZ#20120119110413.070597.225" type="D">
+		<ns0:zeros>(1.0,0.0)</ns0:zeros>
+		<ns0:poles>(0.999999,0.0)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1967.78" gainFrequency="1.0" name="FOR.2011.001.HN00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110432.128932.478" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1951.78" gainFrequency="1.0" name="RVL.2011.001.HZ00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110439.930419.647" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1972.0" gainFrequency="1.0" name="GPN.2011.136.HZ00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110433.789121.503" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="PBR.2001.299.HN00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120119110413.067815.218" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="1962.0" gainFrequency="1.0" name="CRA.2011.136.HN00" normalizationFactor="571572000.0" normalizationFrequency="1.0" numberOfPoles="5" numberOfZeros="2" publicID="ResponsePAZ#20120119110426.872376.360" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-502.655,0.0) (-1005.31,0.0) (-1130.97,0.0) (-0.0740159,0.0740159) (-0.0740159,-0.0740159)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+	<ns0:responsePAZ gain="120.948" gainFrequency="1.0" name="CAS.2005.244.HZ00" normalizationFactor="1.37972" normalizationFrequency="1.0" numberOfPoles="2" numberOfZeros="2" publicID="ResponsePAZ#20120227100834.891064.591" type="A">
+		<ns0:zeros>(0.0,0.0) (0.0,0.0)</ns0:zeros>
+		<ns0:poles>(-4.33452,-4.54866) (-4.33452,4.54866)</ns0:poles>
+		<ns0:remark />
+	</ns0:responsePAZ>
+</ns0:inventory>

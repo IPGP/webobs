@@ -1,0 +1,71 @@
+=key|value
+# Generic PROC template for superproc waters
+# This PROC must be associated with the FORM "EAUX" which contains compatible
+# data and needed complementary configuration files.
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/waters.m for further information.
+
+
+# long name of the PROC
+NAME|Waters chemical analysis
+
+# proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
+TYPE|
+OWNCODE|?
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+TZ|0
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# lists of parameters (number of comma-separated rows must be consistent)
+TIMESCALELIST|10y,50y,all
+DECIMATELIST|
+CUMULATELIST|
+DATESTRLIST|10,10,10
+MARKERSIZELIST|4,2,2
+LINEWIDTHLIST|1,.5,.1
+STATUSLIST|1,0,0
+# defines a reference date to use with 'ref' timescale in TIMESCALELIST
+REF_DATE|
+
+SUMMARYLIST|
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} waters $SELFREF -
+SUBMIT_RESSOURCE|waters
+
+# list of keys editable in requests
+REQUEST_KEYLIST|NAME
+
+# node parameters
+NODE_NAME|spring
+NODE_SIZE|15
+NODE_RGB|0,1,1
+NODE_FONTSIZE|10
+NODE_MARKER|s
+
+# file for background time referenced events 
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+# landscape format for all outputs
+LANDSCAPE|N
+# value = 1 to produce EPS graphs
+POSTSCRIPT|1
+# value = 1 to export text data files
+EXPORTS|1
+# main logo file
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+# secondary logo file
+LOGO2_FILE|
+# main copyright
+COPYRIGHT|MyProc
+# secondary copyright
+COPYRIGHT2|

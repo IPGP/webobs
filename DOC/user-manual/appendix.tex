@@ -1,0 +1,231 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Appendix}
+
+% ==================================================================
+
+\begin{table}[htp]
+\caption{Data raw formats for PROCS}
+\lstinputlisting{../../CODE/etc/rawformats.conf}
+\label{rawformats}
+\end{table}
+
+
+% ==================================================================
+\begin{table}[htp]
+\caption{Time scale keys (\textit{x} is an integer).}
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Key} & \textbf{Time scale}\\
+\hline
+x\texttt{s}  & x seconds\\
+x\texttt{n}  & x minutes\\
+x\texttt{h}  & x hours\\
+x\texttt{d}  & x days\\
+x\texttt{w}  & x weeks\\
+x\texttt{m}  & x months\\
+x\texttt{y}  & x years\\
+x\texttt{l}  & last x data\\
+\texttt{r}x  & reference to date \wokey{REFx\_DATE}\\
+\texttt{all}  & all data\\
+\hline
+\end{tabular}
+\end{center}
+\label{timescales}
+\end{table}
+
+% ==================================================================
+\begin{table}[htp]
+\caption{Marker type list}
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Symbol} & \textbf{Marker}\\
+\hline
+\texttt{.}  & Point\\
+\texttt{+}  & Plus sign\\
+\texttt{*}  & Asterisk\\
+\texttt{x}  & Cross\\
+\texttt{o}  & Circle\\
+\texttt{s}  & Square\\
+\texttt{d}  & Diamond (vertical rhombus)\\
+\texttt{\textasciicircum} & Upward-pointing triangle\\
+\texttt{v}  & Downward-pointing triangle\\
+\texttt{\textgreater} & Right-pointing triangle\\
+\texttt{\textless} & Left-pointing triangle\\
+\texttt{p}  & Five-pointed star (pentagram)\\
+\texttt{h}  & Six-pointed star (hexagram)\\
+\hline
+\end{tabular}
+\end{center}
+\label{markertype}
+\end{table}
+
+
+% ==================================================================
+\begin{table}[htp]
+\caption{Line Style list}
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Symbol} & \textbf{Line style}\\
+\hline
+\texttt{-}  & Solid line\\
+\texttt{--}  & Dashed line\\
+\texttt{:}  & Dotted line\\
+\texttt{-.}  & Dash-dot line\\
+\hline
+\end{tabular}
+\end{center}
+\label{markertype}
+\end{table}
+
+
+% ==================================================================
+\begin{table}[htp]
+\caption{Some basic R,G,B colors}
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{R,G,B} & \textbf{Color}\\
+\hline
+\texttt{0,0,0}  & Black\\
+\texttt{1,1,1}  & White\\
+\texttt{1,0,0}  & Red\\
+\texttt{0,1,0}  & Green\\
+\texttt{0,0,1}  & Blue\\
+\texttt{1,1,0}  & Yellow\\
+\texttt{1,0,1}  & Magenta\\
+\texttt{0,1,1}  & Cyan\\
+\hline
+\end{tabular}
+\end{center}
+\label{rgbcolors}
+\end{table}
+
+
+% ==================================================================
+\begin{table}[htp]
+\caption{Some built-in colormaps}
+\begin{center}
+\setlength{\fboxsep}{1pt}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Name} & \textbf{Description}\\
+\hline
+\texttt{jet}  & \fbox{\includegraphics[width=3cm]{figures/jet.png}}\\
+\texttt{hsv}  & \fbox{\includegraphics[width=3cm]{figures/hsv.png}}\\
+\texttt{landcolor}  & \fbox{\includegraphics[width=3cm]{figures/landcolor.png}}\\
+\texttt{seacolor}  & \fbox{\includegraphics[width=3cm]{figures/seacolor.png}}\\
+\texttt{white}  & \fbox{\includegraphics[width=3cm]{figures/white.png}}\\
+\texttt{gray}  & \fbox{\includegraphics[width=3cm]{figures/gray.png}}\\
+\texttt{hot}  & \fbox{\includegraphics[width=3cm]{figures/hot.png}}\\
+\texttt{cool}  & \fbox{\includegraphics[width=3cm]{figures/cool.png}}\\
+\texttt{bone}  & \fbox{\includegraphics[width=3cm]{figures/bone.png}}\\
+\texttt{pink}  & \fbox{\includegraphics[width=3cm]{figures/pink.png}}\\
+\texttt{copper}  & \fbox{\includegraphics[width=3cm]{figures/copper.png}}\\
+\texttt{spring}  & \fbox{\includegraphics[width=3cm]{figures/spring.png}}\\
+\texttt{summer}  & \fbox{\includegraphics[width=3cm]{figures/summer.png}}\\
+\texttt{autumn}  & \fbox{\includegraphics[width=3cm]{figures/autumn.png}}\\
+\texttt{winter}  & \fbox{\includegraphics[width=3cm]{figures/winter.png}}\\
+\hline
+\end{tabular}
+\end{center}
+\label{colormaps}
+\end{table}
+
+
+% ==================================================================
+\begin{table}[htp]
+\caption{Date string format list. ``Datenum'' column indicates if the format is valid for date/time string as key value}
+\begin{center}
+\begin{tabular}{|c|c|l|l|l|}
+\hline
+\textbf{Number} & \textbf{Datenum} & \textbf{String} & \textbf{Example} & \textbf{Comment}\\
+\hline
+\texttt{-1}		&		& automatic					&	& default value\\
+\texttt{0}		& OK	& 'dd-mmm-yyyy HH:MM:SS'	& 01-Mar-2000 15:45:17	&\\
+\texttt{1}		& OK	& 'dd-mmm-yyyy'				& 01-Mar-2000	&\\
+\texttt{2}		&		& 'mm/dd/yy'				& 03/01/00	&\\
+\texttt{3}		&		& 'mmm'						& Mar	&\\
+\texttt{4}		&		& 'm'						& M	&\\
+\texttt{5}		&		& 'mm'						& 03	&\\
+\texttt{6}		&		& 'mm/dd'					& 03/01	&\\
+\texttt{7}		&		& 'dd'						& 01	&\\
+\texttt{8}		&		& 'ddd'						& Wed	&\\
+\texttt{9}		&		& 'd'						& W	&\\
+\texttt{10}		&		& 'yyyy'					& 2000	&\\
+\texttt{11}		&		& 'yy'						& 00	&\\
+\texttt{12}		&		& 'mmmyy'					& Mar00	&\\
+\texttt{13}		&		& 'HH:MM:SS'				& 15:45:17	&\\
+\texttt{14}		&		& 'HH:MM:SS PM'				& 3:45:17 PM	&\\
+\texttt{15}		&		& 'HH:MM'					& 15:45	&\\
+\texttt{16}		&		& 'HH:MM PM'				& 3:45 PM	&\\
+\texttt{17}		&		& 'QQ-YY'					& Q1-96	&\\
+\texttt{18}		&		& 'QQ'						& Q1	&\\
+\texttt{19}		&		& 'dd/mm'					& 01/03	&\\
+\texttt{20}		&		& 'dd/mm/yy'				& 01/03/00	&\\
+\texttt{21}		&		& 'mmm.dd,yyyy HH:MM:SS'	& Mar.01,2000 15:45:17	&\\
+\texttt{22}		&		& 'mmm.dd,yyyy'				& Mar.01,2000	&\\
+\texttt{23}		& OK	& 'mm/dd/yyyy'				& 03/01/2000	&\\
+\texttt{24}		&		& 'dd/mm/yyyy'				& 01/03/2000	&\\
+\texttt{25}		&		& 'yy/mm/dd'				& 00/03/01	&\\
+\texttt{26}		&		& 'yyyy/mm/dd'				& 2000/03/01	&\\
+\texttt{27}		&		& 'QQ-YYYY'					& Q1-1996	&\\
+\texttt{28}		&		& 'mmmyyyy'					& Mar2000	&\\
+\texttt{29}		& OK	& 'yyyy-mm-dd'				& 2000-03-01	& ISO 8601\\
+\texttt{30}		& OK	& 'yyyymmddTHHMMSS'			& 20000301T154517	& ISO 8601\\
+\texttt{31}		& OK	& 'yyyy-mm-dd HH:MM:SS'		& 2000-03-01 15:45:17	&\\
+\hline
+\end{tabular}
+\end{center}
+\label{datestr}
+\end{table}
+
+% ==================================================================
+
+\begin{table}
+\caption{Suggestion for NODE ID code: \texttt{\textbf{N D T S S S S}}}
+\begin{center}
+\begin{tabular}{|c|c|l|}
+\hline
+\textbf{Letter} & \textbf{Code} & \textbf{Comment}\\
+\hline
+\texttt{N} = Network         & \texttt{I}	&	IPGP\\
+      			             & \texttt{G}	&	OVSG\\
+      			             & \texttt{M}	&	OVMP\\
+      			             & \texttt{R}	&	OVPF\\
+      			             & \texttt{P}	&	PVMBG\\
+\hline
+\texttt{D} = Domain          & \texttt{S}	&	Seismology\\
+      			             & \texttt{D}	&	Deformations\\
+      			             & \texttt{G}	&	Geophysics\\
+      			             & \texttt{C}	&	Chemistry\\
+      			             & \texttt{I}	&	Imagery\\
+      			             & \texttt{M}	&	Meteorology\\
+      			             & \texttt{P}	&	Phenomenology\\
+      			             & \texttt{A}	&	Acquisition\\
+\hline
+\texttt{DT} = Technique      & \texttt{SB}	&	Broad-band\\
+      			             & \texttt{SZ}	&	Short-period\\
+      			             & \texttt{DC}	&	Continuous GPS\\
+      			             & \texttt{DT}	&	Tilmetry\\
+      			             & \texttt{DD}	&	Distancemetry\\
+      			             & \texttt{DE}	&	Extensometry\\
+      			             & \texttt{GM}	&	Magnetometry\\
+      			             & \texttt{GE}	&	Electric\\
+      			             & \texttt{CS}	&	Hot Springs Analysis\\
+      			             & \texttt{CG}	&	Gas Analysis\\
+      			             & \texttt{CD}	&	DOAS\\
+      			             & \texttt{MW}	&	Weather station\\
+      			             & \texttt{PJ}	&	Journal Phenomenology\\
+      			             & \texttt{PE}	&	Eruption\\
+      			             & \texttt{AT}	&	Transmission\\
+      			             & \texttt{AB}	&	Buildings\\
+\hline
+\end{tabular}
+\end{center}
+\label{nodeidcodes}
+\end{table}

@@ -1,0 +1,44 @@
+
+#register_form {
+	/*
+	border: 3px solid gray;
+	border-radius: 5px;
+	*/
+	padding: 10px;
+	background: #FFFFEE;
+	width: 420px;
+	height: auto;
+}
+#register_form label{
+	display:block;
+	font-weight:bold;
+	text-align:right;
+	width:180px;
+	float:left;
+}
+#register_form .small{
+	color: #666666;
+	display:block;
+	font-size: x-small;
+	font-weight: lighter;
+	text-align:right;
+	width:180px;
+}
+#register_form input[type=text], 
+#register_form input[type=password], 
+#register_form input[type=checkbox]
+{
+	float:left;
+	padding:4px 2px;
+	border:solid 1px #aacfe4;
+	width:200px;
+	margin:2px 0 15px 10px;
+}
+#register_form p {
+	background: #EAE4CE;
+	width: 100%;
+	height: 20px;
+	margin: 10px 0px 0px 2px;
+	padding: 5px 0 5px 2px;
+	/*float: left;*/
+}

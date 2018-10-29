@@ -1,0 +1,120 @@
+=key|value
+# RSAM PROC template
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/rsam.m for further information.
+
+# long name of the PROC
+NAME|Realtime Seismic Amplitude Measurement
+# proc TYPE and OWNER
+TYPE|
+OWNCODE|?
+# default raw data format (might be overwritten in each node)
+RAWFORMAT|
+# raw data path (might be overwritten in each node)
+RAWDATA|
+# URN link to data 
+URNDATA|/rawdata/myproc
+# additionnal URL
+URL|
+# time zone for outputs
+TZ|0
+
+# lists of parameters (number of comma-separated rows must be consistent)
+# TIMESCALELIST valid suffix: h (hour), d (day), w (week), m (month), y (year)
+TIMESCALELIST|04h,24h
+DECIMATELIST|1,1
+CUMULATELIST|1,1
+DATESTRLIST|-1,-1
+MARKERSIZELIST|2,1
+LINEWIDTHLIST|.2,.1
+STATUSLIST|1,0
+REF_DATE|2017-07-13 12:00:00
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} rsam $SELFREF -
+SUBMIT_RESOURCE|rsam
+
+# list of keys editable in requests
+REQUEST_KEYLIST|NAME,REF_DATE
+
+# --- node parameters
+NODE_NAME|node
+NODE_SIZE|10
+NODE_RGB|Red
+NODE_FONTSIZE|10
+NODE_MARKER|s
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+#DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+DEM_SRTM1|Y
+
+# file for background time referenced events 
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+# --- page format and outputs
+# optional paper size width,height in inches
+PAPER_SIZE|
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+# landscape format for all outputs
+LANDSCAPE|NO
+# maximum number of subplots in a standard page height
+PAGE_MAX_SUBPLOT|8
+# makes a PDF file for each graph (in addition to PNG, EPS and JPG thumbnail)
+PDFOUTPUT|NO
+# main logo file
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+# main copyright
+COPYRIGHT|Processing by Taisne et al./IPGP/EOS
+# optional secondary logo file
+LOGO2_FILE|
+# optional secondary copyright
+COPYRIGHT2|
+# events file to plot in the background of each graph
+#EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+# exports text data files
+#EXPORTS|YES
+
+# --- data processing and plot
+# removes data picks using median filter (% of min/max values)
+PICKS_CLEAN_PERCENT|0
+# replaces flat signal (two consecutive identical values) by NaN
+FLAT_IS_NAN|NO
+# applies a median filter to the data
+MEDIAN_FILTER_SAMPLES|0
+# superimpose a moving average on N samples
+MOVING_AVERAGE_SAMPLES|12*60
+# set to YES to plot continuous line ignoring gaps
+CONTINUOUS_PLOT|NO
+# set Y-axis with a log scale
+YLOGSCALE|YES
+
+# --- per node graphs
+# graph title
+PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
+# line style
+PERNODE_LINESTYLE|-
+
+# --- summary graph (all nodes together)
+# comment this key to not plot the summary graph
+SUMMARYLIST|SOURCEMAP
+
+# coma separated list of channels to plot (default is all channels)
+SUMMARY_CHANNELS|1
+# graph title
+SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
+# line style
+SUMMARY_LINESTYLE|-
+
+# --- source mapping
+# number of maps will be N*N (allowed values are 1,2,3 or 4)
+SOURCEMAP_N|3
+SOURCEMAP_COLORMAP|jet
+SOURCEMAP_COLORMAP_ALPHA|0,1
+SOURCEMAP_CAXIS|0,2e-5
+SOURCEMAP_PLOT_MAX|Y

@@ -1,0 +1,24 @@
+#!/bin/bash
+. "$(dirname "$0")"/readconf
+
+export LANG=fr_FR.ISO8859-1
+
+if [ $# -eq 0 ]; then
+	echo "Syntax: $0 run_proc.sh [arg1] [arg2]"
+	exit 0 
+fi
+	
+PROC=$2
+MCC=$1
+LOCK="/tmp/.$PROC-lock"
+
+cd $WEBOBS_RACINE_TOOLS_MATLAB
+if [ ! -e $LOCK ]
+then
+	touch $LOCK
+	echo "$WEBOBS_RACINE_MATLAB_MCC/$MCC $WEBOBS_MATLAB_MCC_ROOT $PROC $3 $4 $5" | sh
+	rm -f $LOCK
+else
+	echo "$LOCK exists. Cannot launch $1" >&2
+fi
+

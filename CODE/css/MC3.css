@@ -1,0 +1,19 @@
+.AutoLoc
+{
+        background: #F6CECE;	
+	color: gray;
+}
+
+/* imported from mc3.pl */
+th { font-size:8pt; border-width:0px; }
+td { font-size:8pt; border-width:0px; text-align:center }
+#attente {
+	display: block;
+	color: gray;
+	background: white;
+	margin: 0.5em;
+	padding: 0.5em;
+	font-size: 1.5em;
+	border: 1px solid gray;
+}
+

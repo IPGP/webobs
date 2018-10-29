@@ -1,0 +1,111 @@
+\documentclass[10pt]{book}
+\usepackage[margin=2cm]{geometry}        
+\geometry{a4paper}    
+\usepackage[utf8]{inputenc}
+%\usepackage[T1]{fontenc}
+\usepackage[parfill]{parskip}  
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{natbib}
+\usepackage{gensymb}
+\usepackage[overload]{textcase}
+\usepackage{longtable}
+
+\usepackage[usenames,dvipsnames]{color}
+\definecolor{snow}{gray}{0.98}
+
+\usepackage{listings}
+\lstset{
+basicstyle=\scriptsize\ttfamily\color{BrickRed}\bfseries,
+frame=single,
+backgroundcolor=\color{snow},
+moredelim=[l][\color{black}]{|},
+moredelim=[l][\color{black}]{:},
+moredelim=[l][\color{Aquamarine}]{=key|},
+moredelim=[l][\itshape\color{NavyBlue}]{\#},
+}
+
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\usepackage[colorlinks=true, pdfstartview=FitV, linkcolor=blue, 
+            citecolor=blue, urlcolor=blue]{hyperref}
+
+%\includeonly{Chapter1}
+
+\renewcommand*{\familydefault}{\sfdefault}
+
+% ------ local variables
+\newcommand{\release}{2.0.0}
+\newcommand{\releasename}{v2.0.0}
+\newcommand{\releasedate}{October 2018}
+\newcommand{\webobs}{\textbf{WebObs }}
+\newcommand{\wo}[1]{\MakeTextUppercase{#1}}
+\newcommand{\wofile}[1]{\small\textbf{#1}}
+\newcommand{\wokey}[1]{\small\texttt{#1}}
+\newcommand{\wocmd}[1]{\textbf{#1}}
+
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{exercise}{Exercise}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+\newtheorem{warning}{Warning}
+
+\def\grad{ \mbox{grad}}
+\def\curl{ \mbox{curl}}
+\def\div{ \mbox{div}}
+\def\U{\ensuremath {\cal U}}
+\def\S{\ensuremath {\cal S}}
+\def\V{\ensuremath {\cal V}}
+\def\R{\ensuremath {\cal R}}
+\def\tr{\ensuremath {\mbox{tr}}}
+
+
+
+% ------------------- Title and Author -----------------------------
+\title{
+	\includegraphics[height=3cm]{figures/logo_WebObs_C413.png}\quad
+	\includegraphics[height=3cm]{figures/LogoIPGP_petit.png}\quad
+	%\includegraphics[height=2.5cm]{figures/LogoPRES.png}\quad
+	%\includegraphics[height=2.5cm]{figures/logo_p7.png}\quad
+	%\includegraphics[height=2.5cm]{figures/CNRSfilaire-grand.jpg}
+	\\[4cm]
+	{\Huge \textbf{\webobs: An integrated web-based system for networks management and data monitoring in observatories}\\[.5cm]
+\huge User and Administration Manual}\\[3cm]}
+\author{\textit{François Beauducel and Didier Lafon}\\Institut de Physique du Globe de Paris Observatories\\}
+\date{Release \releasename, \releasedate}
+\begin{document}
+
+
+% ==================================================================
+\frontmatter
+
+\maketitle
+\tableofcontents
+\include{introduction}
+
+% ==================================================================
+\mainmatter
+
+\include{chapter1}
+\include{chapter2}
+\include{chapter3}
+\include{chapter4}
+\include{chapter5}
+
+% ==================================================================
+\backmatter
+
+\include{appendix}
+\include{acknowledgment}
+\bibliographystyle{plain}
+\bibliography{references}
+
+
+\end{document}
+\end
+

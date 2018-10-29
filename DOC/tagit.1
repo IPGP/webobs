@@ -1,0 +1,38 @@
+.\" Manpage for tagit.
+.TH man 8 "13 May 2013" "1.0" "tagit man page"
+.SH NAME
+tagit \- creates a WebObs release tag in WebObs svn repository. 
+.SH SYNOPSIS
+tagit SVN-REPOSITORY  RELEASE-NAME
+.SH DESCRIPTION
+SVN-REPOSITORY being of the form <svn-repo-path>/webobs, and RELEASE-NAME the name of 
+the release, tagit will svn-tag the trunk at HEAD (ie. 
+svn-create <svn-repo-path>/webobs/tags/release-name).
+This is from such a tag that \fBpackit\fP procedure will create a WebObs package file.
+
+Suggested form of release-name is \fBtype-major.minor.build\fP
+
+eg:  alpha-1.0.0  ,  beta-1.1.0  ,  rc-1.1.1  (ga-1.1.1) ...
+
+.SH OPTIONS
+No command line option, but the SVN-REPOSITORY and RELEASE-NAME are required.
+.SH SEE ALSO
+fpm, packit, install 
+.SH AUTHOR
+Didier Lafon
+.SH COPYRIGHT
+Webobs - 2012 - Institut de Physique du Globe Paris
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+

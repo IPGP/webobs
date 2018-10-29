@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://earth.google.com/kml/2.0">
+<Placemark>
+<name>BJB/BJ : "Bains Jaunes"</name>
+<description>Soufrière Hot Springs (ID DEV: GCSBJN1)</description>
+<open>1</open>
+<styleUrl>root://styleMaps#default+nicon=0x304+hicon=0x314</styleUrl>
+<Point><coordinates>-61.67014,16.03471,981</coordinates></Point>
+</Placemark>
+</kml>

@@ -1,0 +1,892 @@
+#!/bin/bash
+
+# Installs or upgrades WebObs. To be executed from a WebObs package untarred directory, 
+# located within your target WebObs directory aka 'WebObs root' and/or 'WebObs (Apache) DocumentRoot'.
+# ----------------------------------------------------------------------------------------
+#    setup must be called as < webobs-root/untarred-package/SETUP/setup >
+# ---------------------------------------------------------------------------------------
+# setup will create (or upgrade release of) your target WebObs root structure: 
+#
+#    webobs-root/
+#        WebObs-releasename/
+#           CODE/
+#           DOC/
+#           SETUP/
+#        CODE -> WebObs-releasename/CODE
+#        DOC -> WebObs-releasename/DOC
+#        CONF/
+#        DATA/
+#        OUTG/
+#        OUTR/
+#        WebObs-releasename.tgz
+
+# showstoppers ? --------------------------------------------------------------
+# -----------------------------------------------------------------------------
+if [[ $(id -u) != 0 ]]; then
+	echo 'Need to have root privileges. Bye'
+	exit 64
+fi
+
+P=`dirname $0`
+if ! [[ -e $P/dutils.sh ]]; then
+	echo 'Missing dutils.sh. Bye'
+	exit 64
+fi
+
+# helpers ---------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+. $P/dutils.sh
+
+# show them what we can do
+usage() {
+	echo 
+	echo "$0 will setup WebObs" 
+	echo "Usage: $0  [OPTION]..." 
+	echo 
+	echo 'Options:'
+	echo ' -f, --force         show but ignore errors'
+	echo ' -q, --quiet         be less verbose'
+	echo ' -h, --help          this help text'
+	echo 
+	exit 1
+}
+
+# check for last cmd error; print $1 and exit on error, unless --force
+errexit() {
+	myrc=$?
+	if [ $myrc != 0 ] ; then 
+		echo -n "error $myrc $1. "
+		if ${FORCE}; then echo "Ignoring..."; else echo "Bye."; exit 64; fi
+	fi
+}
+
+# echo message, depending on verbosity
+verbosecho() {
+	if ${VERBOSE}; then echo "$@"; fi
+}
+
+# activate webobs
+activateWO() {
+	echo "activating ${DOCROOT} - ${RELREL} as Production WebObs"
+	if [[ -L /etc/webobs.d ]]; then rm /etc/webobs.d ;fi
+	ln -s ${DOCROOT}/CONF /etc/webobs.d 
+	errexit "activating ${DOCROOT} - ${RELREL} as Production WebObs"
+}
+
+# here we go --------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
+YEARNOW=$(date "+%Y")
+
+# default options 
+VERBOSE=true
+FORCE=false
+DEPMISS=false
+LOCMISS=false
+
+# parse requested options
+ARGS=`getopt -o "hqf" -l "help,quiet,force" -n "$0" -- "$@"`
+if [ $? -ne 0 ]; then exit 1; fi
+eval set -- "$ARGS"
+while true; do
+	case "$1" in
+
+		-h|--help)
+			usage; exit 0
+			shift;;
+							  
+		-q|--quiet)
+			VERBOSE=false
+			shift;;
+											   
+		-f|--force)
+			FORCE=true
+			shift;;
+											   
+		-w|--webobs)
+			if [ -n "$2" ]; then
+				TGZ=$2	
+			fi
+			shift 2;;
+
+		--)
+			shift
+			break;;
+	esac
+done
+
+# 
+
+clear
+echo "WebObs Setup $(date +'%A %F %T %Z')"
+echo 
+
+# discover system -------------------------------------------------------------
+# -----------------------------------------------------------------------------
+SYS_OS=`uname -s`
+SYS_REV=`uname -r`
+SYS_MACH=`uname -m`
+if [ "${SYS_OS}" = "Linux" ] ; then
+	SYS_KERNEL=`uname -r`
+	PSEUDO=$(lsb_release -a 2>/dev/null| grep -E -i 'descr' | sed 's/description:\t*//i')
+	if [ -f /etc/redhat-release ] ; then
+		SYS_DIST='RedHat'
+	elif [ -f /etc/debian_version ] ; then
+		SYS_DIST='Debian'
+	elif [ -f /etc/SuSE-release ] ; then
+		SYS_DIST='SuSE'
+	fi
+	SYS_STR="${SYS_OS} ${SYS_DIST} ${SYS_REV} ${PSEUDO} ${SYS_KERNEL} ${SYS_MACH}"
+elif [ "${SYS_OS}" = "Darwin" ] ; then
+	SYS_DIST='Darwin'
+	SYS_ARCH=`uname -m`
+	SYS_STR="${SYS_OS} ${SYS_REV}(${SYS_ARCH} `uname -v`)"
+	SYS_ALIASES=0;
+	U=$(which sfind); if [[ ! -z $U ]]; then alias find=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	if [[ -e /opt/local/bin/grep ]] ; then alias grep='/opt/local/bin/grep'; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which gcp); if [[ ! -z $U ]]; then alias cp=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which ghead); if [[ ! -z $U ]]; then alias head=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which greadlink); if [[ ! -z $U ]]; then alias readlink=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which gsed); if [[ ! -z $U ]] ; then alias sed=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which gtr); if [[ ! -z $U ]] ; then alias tr=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which gdate); if [[ ! -z $U ]] ; then alias date=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which gstat); if [[ ! -z $U ]] ; then alias stat=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which gsort); if [[ ! -z $U ]] ; then alias sort=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	SYS_ALIASES=`echo ${SYS_ALIASES}|bc`
+	if [[ ${SYS_ALIASES} != 10 ]]; then 
+		echo "${SYS_OS} - missing some MacPorts (GNU-*) and/or grep/sfind commands. Bye."
+		exit 64;
+	fi
+	shopt -s expand_aliases
+else 
+	echo "Unsupported system '${SYS_OS}. Bye."
+	exit 64
+fi
+echo 'System = ' ${SYS_STR}
+echo
+
+# where are we ? is this run an upgrade or a fresh install ? which release do we
+# come from, which one are we going to ? and all sorts of existential issues ---
+# -------------------------------------------------------------------------------
+
+# find out target directory stuff, based on how we got called
+RELBASE=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
+RELBASE=${RELBASE%%/SETUP}
+RELREL=$(basename ${RELBASE})
+DOCROOT=$(dirname ${RELBASE})
+if ! [[ -d ${RELBASE}/CODE && -d ${RELBASE}/SETUP && -d ${RELBASE}/DOC ]];then
+	echo "**** $0 not in a valid WebObs package structure. Bye."
+	exit 64
+fi
+# determine the destination binaries directory from architecture
+case "${SYS_MACH}" in  
+	*64) AMCR="glnxa64"; ABIN="linux-64" ;; 
+	*)   AMCR="glnx86"; ABIN="linux-32" ;;
+esac
+# do we have a MCR installer zip file downloaded for this architecture in DOCROOT ?
+# looking like eg. MCR_R2011b_glnxa64_installer.zip
+# (sets MCRZIP for a future -n test)
+#MCRZIP=$(find ${DOCROOT} -maxdepth 1 -name 'MCR_*_'${AMCR}'_installer.zip' -print -quit)
+MCRZIP=$(find ${DOCROOT} -maxdepth 1 -name 'MCR_*_'${AMCR}'_installer.zip' -print)
+
+# does ${DOCROOT} appear already setup for this or another release ?
+if [[ -d ${DOCROOT}/CONF && -d ${DOCROOT}/DATA && -L ${DOCROOT}/CODE ]]; then
+	PREVBASE=$(readlink -e ${DOCROOT}/CODE)
+	PREVREL=${PREVBASE%/*}; PREVREL=${PREVREL##*/}
+	PREVOWN=($(stat -c '%U %G' ${DOCROOT}/CONF))
+	SETUPTYPE="upgrade"; SETUPTARGET="${DOCROOT} from ${PREVREL} to ${RELREL}"
+	USERID=${PREVOWN[0]}
+	USERGID=${PREVOWN[1]}
+else
+	SETUPTYPE="install"; SETUPTARGET="${RELREL} to ${DOCROOT}"
+fi
+# do we already have a production WebObs (ie. pointed to by /etc/webobs.d) ?
+if [[ -L /etc/webobs.d ]]; then    
+	OPERLINK=$(readlink -e /etc/webobs.d);
+	OPERROOT=${OPERLINK%%/CONF}
+	OPERBASE=$(readlink -e ${OPERROOT}/CODE)
+	OPERREL=${OPERBASE%/*}; OPERREL=${OPERREL##*/}
+	echo "/etc/webobs.d -> Production WebObs [${OPERLINK}] at release ${OPERREL}"
+fi
+
+# last U-turn before highway ! ------------------------------------------------
+# -----------------------------------------------------------------------------
+echo
+echo "setup will ${SETUPTYPE} ${SETUPTARGET}"
+echo
+if [[ ${DOCROOT} == ${OPERROOT} ]]; then 
+	echo "Working with your Production WebObs directory ..."
+	echo "you should consider STOPPING the WebObs Apache virtual host,";
+	echo "and any WebObs running processes before proceeding ... ";
+	echo
+fi
+if ! $(confirm "Confirm setup [y/N] ? ") ; then echo "Aborted." ; exit 64; fi
+
+umask 0002
+
+# get Apache's owner and configuration stuff ----------------------------------
+# -----------------------------------------------------------------------------
+if [[ ${SYS_DIST} == 'RedHat' ]]; then
+	APACHE_VARS="/etc/sysconfig/httpd"
+	N_APACHE="httpd"
+	DIRC_APACHE=$(find /etc/httpd/ -type d -name conf.d)
+	USER_APACHE=($( ps -eo   user,group,cmd | grep httpd | grep -v root | grep -v grep | head -1 ))
+	if [[ -z $USER_APACHE ]]; then
+		USER_APACHE=($(sed -n -e 's/^user \(.*\)$/\1/pi' -e 's/^group \(.*\)$/\1/pi' /etc/httpd/conf/httpd.conf))
+	fi
+	APP_APACHE=$(httpd -v 2>/dev/null);
+fi
+if [[ ${SYS_DIST} == 'Debian' ]]; then
+	APACHE_VARS="/etc/apache2/envvars"
+	N_APACHE="apache2"
+	DIRC_APACHE=$(find /etc/apache2 -type d -name sites-available)
+	DIRE_APACHE=$(find /etc/apache2 -type d -name sites-enabled)
+	USER_APACHE=($( ps -eo user,group,cmd | grep apache | grep -v root | grep -v grep | head -1 ))
+	if [[ -z $USER_APACHE ]]; then
+		USER_APACHE=($(sed -n -e 's/.*apache_run_user=\(.*\)$/\1/pi' -e 's/.*apache_run_group=\(.*\)$/\1/pi' ${APACHE_VARS}))
+	fi
+	APP_APACHE=$(apache2 -v 2>/dev/null);
+fi
+if [[ ${SYS_DIST} == 'SuSE' ]]; then
+	APACHE_VARS="/etc/sysconfig/httpd"
+	N_APACHE="apache2"
+	DIRC_APACHE=$(find /etc/apache2 -type d -name conf.d)
+	USER_APACHE=($( ps -eo user,group,cmd | grep apache | grep -v root | grep -v grep | head -1 ))
+	if [[ -z $USER_APACHE ]]; then
+		USER_APACHE=($(sed -n -e 's/.*apache_run_user=\(.*\)$/\1/pi' -e 's/.*apache_run_group=\(.*\)$/\1/pi' ${APACHE_VARS}))
+	fi
+	APP_APACHE=$(httpd -v 2>/dev/null);
+fi
+if [[ ${SYS_DIST} == 'Darwin' ]]; then
+	APACHE_VARS="/etc/apache2/envvars"
+	USER_APACHE=_www
+	N_APACHE="httpd"
+	DIRC_APACHE="/etc/apache2/other"
+	APP_APACHE=$(apachectl -v 2>/dev/null);
+fi
+APP_APACHE_VER=$(expr "$APP_APACHE" : '^Server version: Apache.\([. 0123456789]*\)');
+APACHE_CONFMODEL="apache.conf";
+if [[ ! -z $APP_APACHE_VER ]];then
+	[  "2.4" = $(echo -e "2.4\n$APP_APACHE_VER" | sort -V | head -n1) ] && APACHE_CONFMODEL="apache24.conf";
+fi
+
+# Soft Dependencies -----------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+# 1) grab versions or simply existence
+# could add [ rpm -qa | grep xxx   --or-- dpkg --get-selections | grep xxx ]
+echo    'Gathering main software dependencies info ...'
+echo    'Perl...';        APP_PERL=$(perl -e 'print "$^V"' 2>/dev/null)
+echo -n 'Python...';      APP_PYTHON="$(which python)"
+echo -n 'Sqlite...';      APP_SQLITE=$(sqlite3 -version 2>/dev/null)
+echo -n 'ImageMagick...'; APP_IMAGICK=$(convert --version 2>/dev/null)
+echo -n 'Mutt...';        APP_MUTT=$(mutt -v 2>/dev/null | head -1 )
+echo -n 'Xvfb...';        APP_XVFB="$(which Xvfb 2>/dev/null)"
+echo -n 'gawk...';        APP_GAWK="$(which gawk 2>/dev/null)"
+echo -n 'Apache...';
+# APP_APACHE: see above in "Apache's ... configuration stuff" 
+echo -n 'htpasswd...';    APP_HTPASSWD="$(which htpasswd 2>/dev/null)"
+echo 'done.'
+echo
+
+# 2) recommend (or run) installation(s) of missing(not detected) dependencies
+# can set DEPMISS=true to block installation
+if [[ -z "${APP_PERL}" ]] ; then DEPMISS=true; echo '**** need Perl install'; 
+else 
+	# some more checkings for PERL modules (not blocking install)
+	verbosecho "Perl ${APP_PERL}"
+	if [[ -f ${RELBASE}/CODE/cgi-bin/out-scandeps ]]; then
+		echo -n "Scanning installed perl modules vs cgi-bin requirements ... "
+		# load module xxx (perl -Mxxx), append to notinst if not loadable
+		notinst=()
+		while read mname; do 
+			#perl -M${mname} -le "\$mname=\"${mname}.pm\";\$mname=~s#::#/#g;print \"  \$mname => \$INC{\$mname}\";" 2>/dev/null || notinst=("${notinst[@]}" ${mname}); 
+			perl -M${mname} -le "\$mname=\"${mname}.pm\";\$mname=~s#::#/#g;" 2>/dev/null || notinst=("${notinst[@]}" ${mname}); 
+		done< ${RELBASE}/CODE/cgi-bin/out-scandeps	
+		echo "done."
+		# print notinst list
+		if [[ ${#notinst[@]} != 0 ]]; then
+			echo "some required perl modules might not be installed, please check:"
+			for t in "${notinst[@]}"; do
+				# there could be added the linux distro's package containing module !
+				# (eg. yum search module (or yum provides) OR apt-file search module
+				echo "  " ${t}
+			done
+		fi
+	else
+		echo "missing out-scandeps - skipping perl modules checkings"
+	fi
+fi
+if [[ -z "${APP_SQLITE}" ]]  ; then DEPMISS=true; echo '**** need Sqlite3 install'; else verbosecho "Sqlite ${APP_SQLITE}";fi
+if [[ -z "${APP_IMAGICK}" ]] ; then DEPMISS=true; echo '**** need ImageMagick install'; else verbosecho "ImageMagick ${APP_IMAGICK}";fi
+if [[ -z "${APP_APACHE}" ]]  ; then DEPMISS=true; echo '**** need Apache install'; else verbosecho "Apache ${APP_APACHE}";fi
+if [[ -z "${APP_HTPASSWD}" ]]  ; then DEPMISS=true; echo '**** need htpasswd install'; else verbosecho "Apache ${APP_HTPASSWD}";fi
+if [[ -z "${APP_PYTHON}" ]]  ; then echo '**** could not detect Python'; else verbosecho "Python ${APP_PYTHON}";fi
+if [[ -z "${APP_MUTT}" ]]    ; then echo '**** could not detect Mutt Mail User Agent'; fi
+if [[ -z "${APP_XVFB}" ]]  ; then echo '**** could not detect Xvfb'; fi
+if [[ -z "${APP_GAWK}" ]]  ; then echo '**** could not detect gawk'; fi
+
+# 3) dependencies summary 
+if ${DEPMISS}; then 
+	echo '**** Please install required packages'
+	echo "Done."
+	exit 64
+fi
+echo
+
+# Locale dependencies ---------------------------------------------------------
+# -----------------------------------------------------------------------------
+echo 'checking for Locale support'
+lsloc=($(ls ${RELBASE}/CODE/i18n/locales))
+echo "i18n support for ${lsloc[@]}" 
+for l in "${lsloc[@]}"; do
+	if ! [[ $(locale -a | grep -c "^${l}$" ) -ne 0 ]]; then 
+		echo ${l} not in locale -a; 
+		LOCMISS=true
+	fi
+done
+if ${LOCMISS}; then
+	echo '**** Please check for locale(s) reported above'
+fi
+echo
+
+# webobs user -----------------------------------------------------------------
+# -----------------------------------------------------------------------------
+if [[ ${SETUPTYPE} == "install" ]]; then
+	USERID=$(readkbn "Enter WebObs userid (default will be wo): ")
+	if [[ -z ${USERID} ]];then
+		USERID="wo"
+	else
+		if [[ $(id ${USERID} 2>/dev/null) ]]; then 
+			echo "${USERID} already exists"
+		else
+			rcmd="useradd -r -U ${USERID}"
+			if $(confirmy "Confirm create WebObs user (${rcmd}) [Y/n] ? ") ; then 
+				${rcmd}
+				errexit "creating user ${USERID}"
+			fi
+		fi
+		USERGID=$(id -n -g ${USERID})
+	fi
+	USERMAIL=$(readkbn "Enter WebObs user email address (default: ${USERID}@localhost): ")
+	if [[ -z ${USERMAIL} ]]; then
+		USERMAIL="${USERID}@localhost"
+	fi
+fi
+echo "WebObs user: ${USERID} , group: ${USERGID}, email: ${USERMAIL}"
+echo
+
+# setup (new) CODE and DOC paths, wether install or upgrade     
+# symlinks from DOCROOT to RELBASE code and doc
+# -----------------------------------------------------------------------------
+echo "(re)defining symlinks to CODE and DOC"
+verbosecho "ln -s ${RELBASE}/CODE ${DOCROOT}/CODE"
+rm -f ${DOCROOT}/CODE 
+ln -s ${RELBASE}/CODE ${DOCROOT}/CODE
+errexit "in defining symlink to CODE"
+verbosecho "ln -s ${RELBASE}/DOC ${DOCROOT}/DOC"
+rm -f ${DOCROOT}/DOC 
+ln -s ${RELBASE}/DOC ${DOCROOT}/DOC
+errexit "in defining symlink to DOC"
+echo
+
+# CONF/ setup -----------------------------------------------------------------
+# -----------------------------------------------------------------------------
+REPORT=${DOCROOT}/SETUP.CONF.README
+cp ${RELBASE}/README ${REPORT}
+if [[ -d ${DOCROOT}/CONF ]]; then
+	# when there already exists a ${DOCROOT}/CONF, show delta with new release:
+	echo "checking for changes to the existing ${DOCROOT}/CONF"
+
+	# 1) update version tag in target WEBOBS.rc, from new release's one
+	NEWVERSION=$(grep -E 'VERSION\|' ${RELBASE}/SETUP/CONF/WEBOBS.rc)
+	errexit "fetching ${RELBASE}/CONF/WEBOBS.rc version string"
+	verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc"
+	perl -p -i -w -e "s/^VERSION\|.*$/${NEWVERSION}/g" ${DOCROOT}/CONF/WEBOBS.rc
+	errexit "updating ${DOCROOT}/CONF/WEBOBS.rc version"
+
+	# 2) create the report file 'SETUP.CONF.README'
+	#cp ${RELBASE}/README ${REPORT}
+	#printf "%-100s\n\n" "Upgrade to ${RELREL} on $(date +'%A %F %T %Z')" >>${DOCROOT}/SETUP.CONF.README 
+	#printf "%-100s\n\n" "Upgrade to ${RELREL} on $(date +'%A %F %T %Z')" >>${DOCROOT}/SETUP.CONF.README.diffs
+	#printf "%-100s\n" "use the following as a guide to view/apply changes to your configurations."  >>${DOCROOT}/SETUP.CONF.README.diffs
+	#printf "%-100s\n\n" "following lines may be truncated: edit files rather than copy/paste from here." >>${DOCROOT}/SETUP.CONF.README.diffs
+
+	# 3) do the diff for all configuration files, report to 'SETUP.CONF.README'  
+	verbosecho "checking for updates to configuration files"
+	#printf "%s\n" "Changes to configuration files:" >>${DOCROOT}/SETUP.CONF.README
+	#${RELBASE}/SETUP/cmpcnf ${DOCROOT}/CONF ${RELBASE}/SETUP/CONF 1>>${DOCROOT}/SETUP.CONF.README 2>>${DOCROOT}/SETUP.CONF.README.diffs
+	
+	if $(confirmy "Automatically update and check all your configuration files (recommanded) [Y/n] ?"); then
+		WRITE=${DOCROOT}/SETUP.CONF.updated
+		> ${WRITE}
+	else
+		echo "!! new possible keys will be logged into the report file ${REPORT}."
+		echo "!! Please read them all carefully and update your configuration files."
+	fi
+	${RELBASE}/SETUP/cmpconf ${RELREL} ${WRITE} >> ${REPORT}
+	printf "\n" >>${REPORT}
+	if [[ ! -z ${WRITE} && -s ${WRITE} && -t 1 ]]; then
+		oIFS=${IFS}; IFS=$'\n'
+		CONFUP=($(cat ${WRITE}))
+		IFS=${oIFS}
+		if [[ ${#CONFUP[@]} != 0 ]]; then
+			if $(confirmy "Edit each of the ${#CONFUP[@]} updated configuration files [Y/n] ?"); then
+				for conf in "${CONFUP[@]}"; do
+					L=$(grep -n "Upgrade to release ${RELREL} " -m 1 $conf | cut -f1 -d:)
+					vim +$L $conf
+				done
+			fi
+		fi
+	fi
+
+
+	# 4) do a diff for apache conf, report to 'SETUP.CONF.README'
+	#verbosecho "checking for updates to apache virtualhost configuration"
+	#VHOST=$(sed -n 's/ROOT_VHST|\(.*\)/\1/p' ${DOCROOT}/CONF/WEBOBS.rc) 
+	#if [[ -z ${VHOST} ]]; then
+	#	VHOST=$(readkbn "Enter the current apache VirtualHost configuration filename ")
+	#fi
+	#if [[ -f ${VHOST} ]]; then
+	#	#echo "${VHOST} vs ${RELBASE}/SETUP/${APACHE_CONFMODEL}" >>${DOCROOT}/SETUP.CONF.README
+	#	${RELBASE}/SETUP/cmpcnf ${VHOST} ${RELBASE}/SETUP/${APACHE_CONFMODEL} >>${DOCROOT}/SETUP.CONF.README
+	#else
+	#	verbosecho "not checking for apache config updates: [${VHOST}] couldn't be found"
+	#	#echo "not comparing apache configs: [${VHOST}] couldn't be found" >>${DOCROOT}/SETUP.CONF.README
+	#fi
+	#printf "\n" >>$REPORT
+
+	# 5) compare updates to SQL databases 
+	# file *.db | grep 'SQLite' | sed 's/\(.*\):.*/\1/'   # list all valid db filenames 
+	verbosecho "checking for updates to SQL databases"
+	if [[ -z $(sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db 'PRAGMA table_info("users");' | grep VALIDITY) ]]; then
+		verbosecho "adding a VALIDITY field in WEBOBSUSERS.db"
+		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS.sql
+	fi
+
+	mkdir tmp
+	cd tmp
+		echo " " >>${REPORT}
+		echo "Changes to databases schema:" >>${REPORT}
+		${RELBASE}/SETUP/createdb-WEBOBSJOBS >/dev/null 
+		${RELBASE}/SETUP/cmpsql ${DOCROOT}/CONF/WEBOBSJOBS.db WEBOBSJOBS.db >>${REPORT}
+		${RELBASE}/SETUP/createdb-WEBOBSUSERS dummy >/dev/null
+		${RELBASE}/SETUP/cmpsql ${DOCROOT}/CONF/WEBOBSUSERS.db WEBOBSUSERS.db >>${REPORT}
+		${RELBASE}/SETUP/createdb-WEBOBSDOMAINS >/dev/null
+		${RELBASE}/SETUP/cmpsql ${DOCROOT}/CONF/WEBOBSDOMAINS.db WEBOBSDOMAINS.db >>${REPORT}
+	cd -
+	rm -rf tmp
+
+	
+else
+	MIGRATION=$(confirm "Do you want to migrate some old (pre-2012) WebObs stuff [y/N] ?")
+
+	# need to initialize a new CONF/ directory
+	echo "setting up new ${DOCROOT}/CONF from default configuration"
+	verbosecho "creating ${DOCROOT}/CONF"
+	rm -rf ${DOCROOT}/CONF
+	mkdir -p ${DOCROOT}/CONF
+	errexit "creating ${DOCROOT}/CONF"
+
+	verbosecho "copying ${RELBASE}/SETUP/CONF/* to ${DOCROOT}/CONF"
+	#FB-was: cp -ar ${RELBASE}/SETUP/CONF/* ${DOCROOT}/CONF
+	cp -a ${RELBASE}/SETUP/CONF/* ${DOCROOT}/CONF
+	errexit "copying ${RELBASE}/SETUP/CONF/* to ${DOCROOT}/CONF"
+
+	verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallDocumentRoot+WebObsIdentification)"
+	WEBOBSID=$(readkbn "Enter your WebObs Identification string  ")
+	if [[ -z ${WEBOBSID} ]]; then
+		WEBOBSID="${YEARNOW}"
+	fi
+	sed -i -e "s=\${InstallYear\}=${YEARNOW}=g" ${DOCROOT}/CONF/WEBOBS.rc
+	sed -i -e "s=\${WebObsIdentification\}=${WEBOBSID}=g" ${DOCROOT}/CONF/WEBOBS.rc
+	sed -i -e "s=\${InstallDocumentRoot\}=${DOCROOT}=g" ${DOCROOT}/CONF/WEBOBS.rc
+	errexit "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallDocumentRoot)"
+
+	verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc (SLINKTOOL_PRGM)"
+	sed -i -e "s=^SLINKTOOL_PRGM|.*$=SLINKTOOL_PRGM|\${ROOT_CODE}/bin/${ABIN}/slinktool=g" ${DOCROOT}/CONF/WEBOBS.rc
+
+	verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc (XML2_PRGM)"
+	sed -i -e "s=^XML2_PRGM|.*$=XML2_PRGM|\${ROOT_CODE}/bin/${ABIN}/xml2=g" ${DOCROOT}/CONF/WEBOBS.rc
+
+	verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc (PATH_MCC)"
+	sed -i -e "s=^PATH_MCC|.*$=PATH_MCC|\${ROOT_CODE}/matlab/bin/${ABIN}=g" ${DOCROOT}/CONF/WEBOBS.rc
+
+	# create SQLite DataBases of CONF/  
+	cd ${DOCROOT}/CONF
+		verbosecho "creating WEBOBSJOBS.db"
+		${RELBASE}/SETUP/createdb-WEBOBSJOBS
+
+		verbosecho "creating WEBOBSUSERS.db"
+		#[FB-was:]opr="${RELBASE}/SETUP/CONF/OPERATORS.conf"
+		opr=""
+		if $MIGRATION ; then
+			if $(confirm "Do you want to import your own OPERATORS/USERS file [y/N] ? ") ; then
+				opr=$(readkbn "Enter its filename ")
+			fi
+		fi
+		${RELBASE}/SETUP/createdb-WEBOBSUSERS ${USERID} ${USERMAIL} ${opr};
+
+		verbosecho "creating WEBOBSDOMAINS.db"
+		${RELBASE}/SETUP/createdb-WEBOBSDOMAINS
+	cd -
+
+fi
+# update FDSN network codes
+if $(confirm "Do you want to update the FDSN network codes [y/N] ? ") ; then
+	wget http://www.fdsn.org/networks/?type=csv -O ${DOCROOT}/CODE/etc/fdsncodes.csv
+fi
+echo
+
+# webobs htpasswd -------------------------------------------------------------
+# -----------------------------------------------------------------------------
+if [[ ${SETUPTYPE} == "install" ]]; then
+		if $MIGRATION ; then
+			if $(confirm "Do you want to copy your own htpasswd file [y/N] ? ") ; then
+				htu=$(readkbn "Enter its full path/filename ")
+				if [[ -f ${htu} ]] ; then
+					cp -a ${htu} ${DOCROOT}/CONF/htpasswd
+					errexit "copying ${htu} to ${DOCROOT}/CONF/htpasswd"
+				fi
+			fi
+		fi
+		if [[ -f ${DOCROOT}/CONF/htpasswd ]]; then OPTHTP=""; else OPTHTP="-c"; fi
+		verbosecho "running htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID} "
+		htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID}
+		errexit "htpasswd'ing ${DOCROOT}/CONF/htpasswd"
+	echo
+fi
+
+# DATA/ setup -----------------------------------------------------------------
+# -----------------------------------------------------------------------------
+if [[ -d ${DOCROOT}/DATA ]]; then
+	# when there already exists a ${DOCROOT}/DATA, show delta with new release
+	echo "checking for default files missing in existing ${DOCROOT}/DATA"
+	echo "" >>${REPORT}
+	echo "DATA/ missing default files:" >>${REPORT}
+	# list files of new-release's DATA not in target's DATA
+	diff -qr ${RELBASE}/SETUP/DATA ${DOCROOT}/DATA | grep "Only in ${RELBASE}" >>${REPORT}
+	echo "" >>${REPORT}
+else
+	# need to initialize a new DATA/ directory 
+	echo "setting up ${DOCROOT}/DATA from default data"
+	verbosecho "creating ${DOCROOT}/DATA"
+	rm -rf ${DOCROOT}/DATA
+	mkdir -p ${DOCROOT}/DATA
+	errexit "creating ${DOCROOT}/DATA"
+	NEWVERSION=$(grep -E 'VERSION\|' ${RELBASE}/SETUP/CONF/WEBOBS.rc)
+	NEWVERSION=${NEWVERSION##\VERSION|}
+
+	verbosecho "copying ${RELBASE}/SETUP/DATA/* to ${DOCROOT}/DATA"
+	#FB-was: cp -r ${RELBASE}/SETUP/DATA/* ${DOCROOT}/DATA
+	cp -a ${RELBASE}/SETUP/DATA/* ${DOCROOT}/DATA
+	errexit "copying default data to ${DOCROOT}/DATA"
+
+fi
+# special case: Gazette DB
+if [[ ! -f ${DOCROOT}/DATA/DB/Gazette.db ]];then
+	cd ${DOCROOT}/CONF
+		verbosecho "creating Gazette.db"
+		hebdo=""
+		if $MIGRATION ; then
+			if $(confirm "Do you want to import the local HEBDO.DAT file [y/N] ? ") ; then
+				#hebdo=$(readkbn "Enter its filename ")
+				hebdo=${DOCROOT}/DATA/DB/HEBDO.DAT
+				gazetteconf=Gazette_categories.conf
+				if [[ ! -f ${gazetteconf} ]]; then
+					cp -a ${RELBASE}/SETUP/CONF/${gazetteconf} .
+				fi
+				gazetterc=Gazette.rc
+				if [[ ! -f ${gazetterc} ]]; then
+					cp -a ${RELBASE}/SETUP/CONF/${gazetterc} .
+				fi
+			fi
+		fi
+		${RELBASE}/SETUP/createdb-WEBOBSGAZETTE ${DOCROOT}/DATA/DB/Gazette.db ${hebdo}
+		chown ${USER_APACHE[0]}:${USER_APACHE[1]} ${DOCROOT}/DATA/DB/Gazette.db
+	cd -
+fi
+echo
+
+# LOGS/ setup -----------------------------------------------------------------
+# -----------------------------------------------------------------------------
+echo "making sure ${DOCROOT}/LOGS is created"
+mkdir -p ${DOCROOT}/LOGS 
+errexit "creating ${DOCROOT}/LOGS"
+
+# OUTG/ and OUTR/ setup -------------------------------------------------------
+# -----------------------------------------------------------------------------
+if [[ ! -d ${DOCROOT}/OUTG ]]; then
+	echo "creating ${DOCROOT}/OUTG"
+	mkdir -p ${DOCROOT}/OUTG
+	errexit "creating ${DOCROOT}/OUTG"
+	if [[ -d ${RELBASE}/SETUP/OUTG ]]; then
+		echo "setting up ${DOCROOT}/OUTG from default"
+		#FB-was: cp -r ${RELBASE}/SETUP/OUTG/* ${DOCROOT}/OUTG
+		cp -a ${RELBASE}/SETUP/OUTG/* ${DOCROOT}/OUTG
+		errexit "populating ${DOCROOT}/OUTG"
+	fi
+fi
+
+if [[ ! -d ${DOCROOT}/OUTR ]]; then
+	echo "creating ${DOCROOT}/OUTR"
+	mkdir -p ${DOCROOT}/OUTR
+	errexit "creating ${DOCROOT}/OUTR"
+fi
+
+# Apache http server stuff ------------------------------------------------------
+# find out apache's user and group from running apache or, if not, conf file
+# set up where to drop our virtual host configuration:
+# RedHat: /etc/httpd/conf.d/  ...  Debian: /etc/apache2/sites-available/ 
+# -------------------------------------------------------------------------------
+if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine Apache stuff [y/N] ? ") == true ]]; then
+	echo "Updating Apache setup"
+	if [[ ${#USER_APACHE[@]} == 0 ]]; then 
+		echo "**** Could not figure out who is the Apache user. Bye."
+		exit 64
+	fi
+	if [[ -z ${DIRC_APACHE} ]]; then
+		echo "**** Could not find a place to drop WebObs Apache vhost configuration. Bye."
+		exit 64
+	fi
+	verbosecho "Apache user/group = ${USER_APACHE[0]}/${USER_APACHE[1]}, config dir = ${DIRC_APACHE}"
+
+	# create/update Apache VirtualHost configuration
+	if [[ $(confirmy "Updating Apache will force ${DOCROOT}, release ${RELREL}, to become your Production WebObs. OK [Y/n] ? ") == true ]]; then
+		ACTIVATEWO="FORCED"
+		SITE="webobs" 
+		SSITE=${SITE}
+		DN=$(hostname -f)
+		SN="${SITE}.${DN#*.}"
+		if [[ ${SYS_DIST} == 'RedHat' ]]; then SITE=${SITE}.conf ; fi
+		if [[ -f ${DIRC_APACHE}/${SITE} ]]; then 
+			echo "Backing up existing ${DIRC_APACHE}/${SITE} to ${DOCROOT}/${SITE}.setup.backup"
+			cp -a ${DIRC_APACHE}/${SITE} ${DOCROOT}/${SITE}.setup.backup
+			errexit "Backing up existing ${DIRC_APACHE}/${SITE}"
+		fi
+		VARLOG=$(readkbn "Enter vhost log files prefix (default: /var/log/${N_APACHE}/${SSITE}): ")
+		if [[ -z ${VARLOG} ]]; then
+			VARLOG="/var/log/${N_APACHE}/${SSITE}"
+		fi
+		verbosecho "creating ${DIRC_APACHE}/${SITE}"
+		sed -e "s=\${DOCROOT}=${DOCROOT}=g" -e "s=\${SRVNAME}=${SN}=g" -e "s=\${VARLOG}=${VARLOG}=g" ${RELBASE}/SETUP/${APACHE_CONFMODEL} >${DIRC_APACHE}/${SITE}
+		errexit "creating ${DIRC_APACHE}/${SITE}"
+
+		verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallVirtualHost,InstallUrl)"
+		sed -i -e "s=\${InstallVirtualHost\}=${DIRC_APACHE}/${SITE}=g" -e "s=\${InstallUrl\}=http://${SN}=g" ${DOCROOT}/CONF/WEBOBS.rc
+		errexit "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallVirtualHost,InstallUrl)"
+
+		if [[ ${SYS_DIST} == 'Debian' ]]; then
+			verbosecho "enabling ${SITE}: ln -sf ${DIRC_APACHE}/${SITE} ${DIRE_APACHE}/${SITE}"
+			ln -sf ${DIRC_APACHE}/${SITE} ${DIRE_APACHE}/${SITE}.conf
+			errexit "enabling ${SITE}: symlink to ${DIRC_APACHE}/${SITE}"
+		fi
+		echo "Apache VirtualHost ${SN} configured in ${DIRC_APACHE}/${SITE}"
+		echo
+	else
+		echo "Warning: Apache vhost configuration not updated"
+		echo
+	fi
+fi
+
+# best effort to create the 'non-DocumenRoot' structures ----------------------
+# (sefran output/data directory is one example of such structure)
+# -----------------------------------------------------------------------------
+if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other than DocumentRoot [y/N] ? ") == true ]]; then
+	SEFRANROOT=$(readkbn "Enter SEFRAN output+data directory: ")
+	if [[ "${SEFRANROOT}" == "" && ! -z ${USERID} ]]; then 
+		if [[ -f "/home/${USERID}" ]]; then SEFRANROOT="/home/${USERID}/sefranroot"; fi
+	fi
+	if [[ "${SEFRANROOT}" != "" ]]; then
+		echo "making sure ${SEFRANROOT} is created"
+		mkdir -p ${SEFRANROOT}
+		errexit "creating ${SEFRANROOT}"
+		ln -sf ${SEFRANROOT} ${DOCROOT}/sefran
+		errexit "creating symbolic link to ${SEFRANROOT}"
+		SEFRANROOT=$(readlink -f ${SEFRANROOT})
+		sed -i -e "s=\${InstallSefranRoot\}=${SEFRANROOT}=g" ${DOCROOT}/CONF/WEBOBS.rc
+		errexit "updating WEBOBS.rc for ${SEFRANROOT}"
+		if [[ -f ${DIRC_APACHE}/${SITE} ]]; then
+			sed -i -e "s=\${SEFRANROOT\}=${SEFRANROOT}=g" ${DIRC_APACHE}/${SITE} 
+			errexit "updating Apache config for ${SEFRANROOT}"
+		fi
+	fi
+	if ! [[ -d ${SEFRANROOT} ]]; then 
+		echo "Warning: didn't create SEFRAN output+data directory ${SEFRANROOT}"  
+		SEFRANROOT=""
+	fi
+	echo
+
+	RAWDATA=$(readkbn "Enter RAW DATA directory: ")
+	if [[ "${RAWDATA}" == "" && ! -z ${USERID} ]]; then
+		if [[ -f "/home/${USERID}" ]]; then RAWDATA="/home/${USERID}/rawdata"; fi
+	fi
+	if [[ "${RAWDATA}" != "" ]]; then
+		echo "making sure ${RAWDATA} is created"
+		mkdir -p ${RAWDATA}
+		errexit "creating ${RAWDATA}"
+		ln -sf ${RAWDATA} ${DOCROOT}/rawdata
+		errexit "creating symbolic link to ${RAWDATA}"
+		RAWDATA=$(readlink -f ${RAWDATA})
+		sed -i -e "s=\${InstallRawdata\}=${RAWDATA}=g" ${DOCROOT}/CONF/WEBOBS.rc
+		errexit "updating WEBOBS.rc for ${RAWDATA}"
+		if [[ -f ${DIRC_APACHE}/${SITE} ]]; then
+			sed -i -e "s=\${RAWDATA\}=${RAWDATA}=g" ${DIRC_APACHE}/${SITE}
+			errexit "updating Apache config for ${RAWDATA}"
+		fi
+	fi
+	echo
+fi
+
+# If a Matlab MCR installer zip is present in DOCROOT: install MCR ------------
+# Update WEBOBS.rc corresponding path
+# -----------------------------------------------------------------------------
+if [[ -n ${MCRZIP} ]]; then
+	if $(confirmy "Do you want to install Matlab Compiler Runtime '${MCRZIP}' [Y/n] ? ") ; then
+		MCRDIR=$(readkbn "Enter MCR directory (defaults to ${DOCROOT}/MCR): ")
+		if [[ "${MCRDIR}" == "" ]]; then MCRDIR="${DOCROOT}/MCR"; fi
+		mkdir -p ${MCRDIR}
+		errexit "creating ${MCRDIR}"
+		echo "unzipping ${MCRZIP}"
+		unzip -qq -o -d /tmp/MCR.webobs ${MCRZIP}
+		errexit "unzipping ${MCRZIP}"
+		#printf "destinationFolder=${MCRDIR}\noutputFile=${MCRDIR}/installer.webobs.log\nmode=automated\nargreeToLicense=yes" >${MCRDIR}/installer_input.webobs
+		printf "destinationFolder=${MCRDIR}\noutputFile=${MCRDIR}/installer.webobs.log\nmode=silent\n" >${MCRDIR}/installer_input.webobs
+		errexit "creating ${MCRDIR}/installer_input.webobs"
+		echo "starting MCR install procedure"
+		/tmp/MCR.webobs/install -inputFile ${MCRDIR}/installer_input.webobs
+		errexit "running MCR install procedure - ${MCRDIR}/installer.webobs.log may help"
+		#[FB-was] realMCRDIR=$(sed -n '/Installation folder:/{n;p}' ${MCRDIR}/installer.webobs.log)
+		#[FB-was] if [[ ${realMCRDIR} == "" ]]; then echo "*** Please verify PATH_MCR in ${DOCROOT}/CONF/WEBOBS.rc: it couldn't be determined automatically"; fi 
+		realMCRDIR=${MCRDIR}/v716
+		sed -i -e "s=^PATH_MCR|.*$=PATH_MCR|${realMCRDIR}=g" ${DOCROOT}/CONF/WEBOBS.rc
+		echo "*** Please verify PATH_MCR in ${DOCROOT}/CONF/WEBOBS.rc" 
+		errexit "updating PATH_MCR"
+		if $(confirm "MCR now installed - delete '${MCRZIP}' [y/N] ? ") ; then rm ${MCRZIP}; fi
+	fi
+	echo
+fi
+
+# FINALIZE 
+# -----------------------------------------------------------------------------
+
+# 1) required chmod, chown, group assignments etc .... 
+echo
+if [[ -z ${USERID} || -z ${USERGID} ]]; then
+	USERID=${PREVOWN[0]}
+	USERGID=${PREVOWN[1]}
+fi
+if [[ -z  ${USERID} || -z ${USERGID} || -z ${USER_APACHE[0]} ]]; then
+	echo "can't even try changing owners, groups or mods because of missing uid|gid|apacheid"
+else
+	if [[ ${SETUPTYPE} == "install" || $(confirm "Reassess groups, owners and mods [y/N] ? ") == true ]]; then
+		owner="chown -R ${USERID}:${USERGID} ${DOCROOT}/CONF ${DOCROOT}/LOGS ${DOCROOT}/DATA ${DOCROOT}/OUTG ${DOCROOT}/OUTR ${SEFRANROOT}"
+		cmode="chmod -R 775 ${DOCROOT}/CONF ${DOCROOT}/LOGS ${DOCROOT}/DATA ${DOCROOT}/OUTG ${DOCROOT}/OUTR ${SEFRANROOT}"
+		emode="chmod ug+s ${DOCROOT}/OUTR"
+
+		group="usermod -a -G ${USERGID} ${USER_APACHE[0]}"
+		macgroup="dscl . append /Groups/staff GroupMembership ${USER_APACHE[0]}"
+		sgid="chmod -R g+s ${DOCROOT}/CONF ${DOCROOT}/DATA ${SEFRANROOT}"
+
+		action="changing CONF,LOGS,DATA,OUTx access rights"
+		if $(confirmy "Confirm ${action}: ${cmode} [Y/n] ? "); then 
+			verbosecho "${action}"
+			${cmode}
+			errexit "${action}"
+		fi
+
+		action="changing CONF,LOGS,DATA,OUTx ownership"
+		if $(confirmy "Confirm ${action}: ${owner} [Y/n] ? "); then 
+			verbosecho "${action}"
+			${owner}
+			errexit "${action}"
+		fi
+
+		action="changing OUTR execution mode"
+		if $(confirmy "Confirm ${action}: ${emode} [Y/n] ? "); then 
+			verbosecho "${action}"
+			${emode}
+			errexit "${action}"
+		fi
+
+		action="adding group ${USERGID} to apache user" 
+		if [ "${SYS_OS}" != "Darwin" ] ;then
+			if $(confirmy "Confirm ${action}: ${group} [Y/n] ? "); then 
+				verbosecho "${action}"
+				${group}
+				errexit "${action}"
+			fi
+		else
+			if $(confirmy "Confirm ${action}: ${macgroup} [Y/n] ? "); then 
+				verbosecho "${action}"
+				${macgroup}
+				errexit "${action}"
+			fi
+		fi
+
+		action="* setgid on CONF/ and DATA/" 
+		if $(confirmy "Confirm ${action}: ${sgid} [Y/n] ? "); then 
+			verbosecho "${action}"
+			${sgid}
+			errexit "${action}"
+		fi
+
+		umsk="umask 002"
+		if ! [[ $(grep "$umsk" ${APACHE_VARS}) ]]; then 
+			action="* preparing apache umask"
+			if $(confirmy "Confirm ${action}: echo ${umsk} >>${APACHE_VARS} [Y/n] ? "); then
+				verbosecho "${action}"
+				echo ${umsk} >>${APACHE_VARS}
+				errexit "${action}"
+			fi
+		fi
+
+		echo
+	fi
+fi
+
+# 2) show ${DOCROOT}/SETUP.CONF.README
+if [[ -f ${REPORT} ]]; then less ${REPORT}; fi
+
+# 2-a) optionnaly 'vimdiff' the configuration files updates if any
+#oIFS=${IFS}; IFS=$'\n'
+#CONFDIFFS=($(sed -n -e 's/Files \(.*\) and \(.*\) differ/vimdiff \1 \2/p' ${DOCROOT}/SETUP.CONF.README))
+#IFS=${oIFS}
+#echo
+#if [[ ${#CONFDIFFS[@]} != 0 ]];then
+#	if [[ $(confirmy "Want to vimdiff each of the ${#CONFDIFFS[@]} configuration updates found [Y/n] ? ") == true ]]; then
+#		for item in "${CONFDIFFS[@]}";do $item; done	
+#	fi
+#fi
+
+# 3) 'activate' this release if needed
+echo
+if   [[ ${ACTIVATEWO} == "FORCED" ]]; then activateWO;
+elif [[ ${SETUPTYPE} == "install" ]]; then
+	ACTIVATEWO="YES"
+	if [[ ${OPERROOT} && ${DOCROOT} != ${OPERROOT} ]]; then 
+		if [[ $(confirm "Have this install replace current Production [y/N] ? ") == false ]]; then
+			ACTIVATEWO="NO"
+		fi
+	fi
+	if [[ ${ACTIVATEWO} == "YES" ]]; then activateWO; fi
+fi
+
+# Insert this 'installation' event in Gazette
+GAZETTENOW=$(date -u "+%F %T")
+GAZETTED=${GAZETTENOW:0:10}; GAZETTET=${GAZETTENOW:11:5}
+sqlite3 ${DOCROOT}/DATA/DB/Gazette.db "insert into Gazette values(null,'${GAZETTED}','${GAZETTET}','${GAZETTED}','${GAZETTET}','Misc','!','','','Setup ${NEWVERSION}','${GAZETTENOW}','!');"
+
+echo
+echo "---- calling webobs system status (qsys)"
+${DOCROOT}/CODE/shells/qsys
+qsysrc=$?
+echo
+echo "setup [ ${SETUPTYPE} ${SETUPTARGET} ] completed"
+if [[ $qsysrc == 1 ]]; then
+	echo "qsys is reporting configuration issues"
+fi 
+if [[ $qsysrc == 2 ]]; then
+	echo "activating WebObs requires that you (re)start Apache, WebObs scheduler and WebObs postboard"
+fi
+echo

@@ -1,0 +1,178 @@
+#!/bin/bash
+P=`dirname $0`
+. ${P}/dutils.sh
+
+# can be run for fresh installation or within a legacy Webobs migration
+# can be run any time after linux dependencies installation
+# current directory (pwd) MUST be the target webob's CONF/ directory
+
+# webobs user passed as 1st argument, defaults to 'webobs'
+# webobs email address passed as 2nd argument, defaults to 'user@localhost'
+# legacy 'OPERATORS.conf' input filename passed as 3rd argument, defaults to none
+# Format of 'OPERATORS.conf'
+#    id|fullname|6|login|email||0
+
+echo [$*]
+
+if [ $# -ge 1 ]; then US=$1; else US='webobs'; fi
+if [ $# -ge 2 ]; then UA=$2; else UA="$US@localhost"; fi
+if [ $# -ge 3 ]; then IN=$3; fi
+
+if [[ ! -f $IN ]]
+then
+	echo "File $IN not found: no legacy data will be imported."
+	L=false
+else 
+	L=true
+	if ! $(confirm "confirm using data from $IN [y/n] ? ") ; then
+		echo "OK, no legacy will be imported."
+		L=false
+	fi
+fi
+
+echo [${US} - ${IN}]
+
+# create the new tables
+echo "Creating users,groups,auth*,notifications tables ..."
+sqlite3 WEBOBSUSERS.db <<EOF
+BEGIN TRANSACTION;
+drop table if exists users;
+create table users (UID text NOT NULL UNIQUE, FULLNAME text NOT NULL, LOGIN text NOT NULL UNIQUE, EMAIL text, VALIDITY text NOT NULL default 'Y');
+drop table if exists authprocs;
+create table authprocs (UID text NOT NULL, RESOURCE text NOT NULL, AUTH int NOT NULL DEFAULT 1, unique(UID,RESOURCE,AUTH));
+drop table if exists authviews;
+create table authviews (UID text NOT NULL, RESOURCE text NOT NULL, AUTH int NOT NULL DEFAULT 1, unique(UID,RESOURCE,AUTH));
+drop table if exists authforms;
+create table authforms (UID text NOT NULL, RESOURCE text NOT NULL, AUTH int NOT NULL DEFAULT 1, unique(UID,RESOURCE,AUTH));
+drop table if exists authwikis;
+create table authwikis (UID text NOT NULL, RESOURCE text NOT NULL, AUTH int NOT NULL DEFAULT 1, unique(UID,RESOURCE,AUTH));
+drop table if exists authmisc;
+create table authmisc (UID text NOT NULL, RESOURCE text NOT NULL, AUTH int NOT NULL DEFAULT 1, unique(UID,RESOURCE,AUTH));
+drop table if exists groups;
+create table groups (GID text NOT NULL, UID text NOT NULL, unique(GID,UID));
+drop table if exists notifications;
+create table notifications (EVENT text NOT NULL, 
+                            VALIDITY NOT NULL default 'Y', 
+							UID text default '-', 
+							MAILSUBJECT text default '-', 
+							MAILATTACH text default '-', 
+							ACTION text default '-' ) ;
+
+COMMIT;
+EOF
+
+# now populate tables with default values 
+echo "Populating auth*,groups,notifications tables with defaults ..."
+sqlite3 WEBOBSUSERS.db <<EOF
+BEGIN TRANSACTION;
+
+-- default users : guest and webobs owner 
+insert into users values ('?','- Guest -','guest','','Y');
+insert into users values ('!','WebObs Owner','${US}','${US}@localhost','Y');
+
+-- default groups : make webobs owner belong to all of these groups,
+-- just to make sure groups table gets initialized ;-)
+insert into groups values ('+VISITOR','!')  ;
+insert into groups values ('+VISITOR','?')  ;  
+insert into groups values ('+OBSERVER','!') ;
+insert into groups values ('+DUTY','!')     ;
+insert into groups values ('+ADMIN','!')    ;
+
+-- default authorizations
+insert into authprocs values ('!','MC',4);
+insert into authprocs values ('!','CGPSWI',4);
+insert into authprocs values ('!','SOURCES',4);
+insert into authviews values ('!','CGPSWI',4);
+insert into authviews values ('!','SOURCES',4);
+
+insert into authmisc values ('!','CLB',4);
+insert into authmisc values ('!','NODES',4);
+insert into authmisc values ('!','users',4);
+
+insert into authprocs values ('+VISITOR','*',1);
+insert into authviews values ('+VISITOR','*',1);
+insert into authforms values ('+VISITOR','*',1);
+insert into authwikis values ('+VISITOR','*',1);
+insert into authmisc  values ('+VISITOR','*',1);
+
+insert into authprocs values ('+OBSERVER','*',1);
+insert into authviews values ('+OBSERVER','*',2);
+insert into authforms values ('+OBSERVER','*',2);
+insert into authwikis values ('+OBSERVER','*',2);
+insert into authmisc  values ('+OBSERVER','*',2);
+
+insert into authprocs values ('+DUTY','*',2);
+insert into authviews values ('+DUTY','*',2);
+insert into authforms values ('+DUTY','*',2);
+insert into authwikis values ('+DUTY','*',2);
+insert into authmisc  values ('+DUTY','*',2);
+
+insert into authprocs values ('+ADMIN','*',4);
+insert into authviews values ('+ADMIN','*',4);
+insert into authforms values ('+ADMIN','*',4);
+insert into authwikis values ('+ADMIN','*',4);
+insert into authmisc  values ('+ADMIN','*',4);
+
+insert into notifications values('eventnode','Y','!','webobs node event','-','-');
+insert into notifications values('submitrc.','Y','!','-','-','-');
+insert into notifications values('formreq.','Y','!','your graph request is ready','-','-');
+insert into notifications values('feltquake.','Y','!','an earthquake has been felt','-','-');
+insert into notifications values('register.warning','Y','!','new user registration','-','-');
+
+insert into notifications (EVENT,UID,MAILSUBJECT) values('scheduler.warning','!','scheduler warning');
+insert into notifications (EVENT,UID,MAILATTACH) values('scheduler.critical','!','pp/ff.txt');
+
+create trigger deluid after delete on users for each row
+begin 
+  delete from groups where uid = OLD.uid; 
+  delete from authviews where uid = OLD.uid; 
+  delete from authprocs where uid = OLD.uid; 
+  delete from authforms where uid = OLD.uid; 
+  delete from authwikis where uid = OLD.uid; 
+  delete from authmisc  where uid = OLD.uid; 
+  delete from notifications where uid = OLD.uid; 
+end;
+
+create trigger delgid after delete on groups for each row 
+when (select count(*) from groups where gid=OLD.gid) == 0 
+begin 
+  delete from authviews where uid = OLD.gid;
+  delete from authprocs where uid = OLD.gid; 
+  delete from authforms where uid = OLD.gid; 
+  delete from authwikis where uid = OLD.gid; 
+  delete from authmisc  where uid = OLD.gid; 
+  delete from notifications where uid = OLD.gid; 
+end;
+
+COMMIT;
+EOF
+# create a temporary table 'tmpusers' to import legacy user definitions
+# but not importing users '!' nor '?'
+if $L ; then
+echo "Populating users,auth* tables from ${IN} ..."
+sed -e '/^$/d;' -e '/^#/d;' ${IN} >/tmp/createdb-operators
+sqlite3 WEBOBSUSERS.db <<EOF
+drop table if exists tmpusers;
+create table tmpusers (UID text NOT NULL, FULLNAME text NOT NULL, USERLEVEL integer NOT NULL, LOGIN text NOT NULL, EMAIL text ,BIRTHDAY date, NOTIFY integer DEFAULT 0, PRIMARY KEY(UID,LOGIN));
+.separator |
+.import /tmp/createdb-operators  tmpusers
+delete from tmpusers where UID in ('?','!');
+
+-- all users into users table  
+insert into users select UID, FULLNAME, LOGIN, EMAIL, 'Y' FROM tmpusers;
+-- all userlevel 1 and 2 users are in +VISITOR group
+insert into groups select '+VISITOR',UID from tmpusers where userlevel = 1 or userlevel = 2;
+-- all userlevel 3 users are in +OBSERVER group
+insert into groups select '+OBSERVER',UID from tmpusers where userlevel = 3;
+-- all userlevel 4 are in +DUTY group
+insert into groups select '+DUTY',UID from tmpusers where userlevel = 4;
+-- all userlevel 5 and 6 are in +ADMIN group
+insert into groups select '+ADMIN',UID from tmpusers where userlevel >= 5;
+
+drop table if exists tmpusers;
+EOF
+fi
+
+
+echo "Done."
+exit 0

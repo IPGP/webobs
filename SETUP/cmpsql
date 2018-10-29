@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Compare two sqlite databases schema
+# intended to compare an operationnal database schema against what it would be like if
+# just created with package's setup.
+# This is *not* a strict compare ! just diff 'ddl' definitions   
+
+if [ $# -lt 2 ]; then
+	echo "Usage: `basename $0` db1 db2"
+	exit 1
+fi
+
+if [[ -f $1 && -f $2 ]]; then
+	diffopt="-y --expand-tabs --suppress-common-lines"
+	#DL-was: difflst=$(diff $diffopt <(sqlite3 $1 '.schema' | tr -t -s '\t\n' '  ' | sed -e 's/;/;\n/g' | sed -e 's/^ *//') \
+	#DL-was:              <(sqlite3 $2 '.schema' | tr -t -s '\t\n' '  ' | sed -e 's/;/;\n/g' | sed -e 's/^ *//') )
+	sqlite3 $1 '.schema' | tr -t -s '\t\n' '  ' | sed -e 's/;/;\n/g' | sed -e 's/^ *//' >cmpsql.s1
+	sqlite3 $2 '.schema' | tr -t -s '\t\n' '  ' | sed -e 's/;/;\n/g' | sed -e 's/^ *//' >cmpsql.s2
+	difflst=$(diff $diffopt cmpsql.s1 cmpsql.s2)
+	if [[ ${#difflst} -gt 0 ]]; then
+		echo $1 'vs' $2 'schema differ'
+		#echo ${difflst}
+	else
+		echo $1 'vs' $2 'schema match'
+	fi
+else
+	echo "`basename $0` couldn't find db(s)" ; 
+	exit 1;
+fi

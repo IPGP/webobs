@@ -1,0 +1,41 @@
+=key|value
+
+NAME|Networks
+# --- basemap options
+# paper size (maximum width/height)
+PAPERSIZE_INCHES|10
+# density (in pixels per inch) for PostScript to PNG convertion
+DPI|100
+# basemap DEM rendering options (see CODE/matlab/dem.m documentation)
+LINEWIDTH|1.5
+LANDCOLORMAP|landcolor
+SEACOLORMAP|seacolor
+COLOR_LIGHTENING|2
+LIGHT_AZIMUTH|-45
+LIGHT_CONTRAST|1
+
+# oversampling in case of too small image
+OVERSAMPLING|500
+
+# minimum size of map around NODES
+MIN_SIZE_KM|1
+
+# maximum X/Y ratio in case of automatic sizing around NODES
+MAX_XYRATIO|1.5
+BORDER_ADD|0.1
+DEM_SRTM1|N
+
+# --- contour lines
+CONTOURLINES|Y
+CONTOURLINES_RGB|.5,.5,.5
+CONTOURLINES_MINOR_LINEWIDTH|.1
+CONTOURLINES_MAJOR_LINEWIDTH|1
+CONTOURLINES_LABEL|Y
+
+# adds transmission lines between NODES (if defined)
+PLOT_TRANSMISSION|Y
+
+# list of GRID keys available for edit in request
+REQUEST_GRID_KEYLIST|NODE_SIZE,NODE_RGB,NODE_FONTSIZE,NODE_MARKER
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} gridmaps -
+SUBMIT_RESOURCE|gridmaps

@@ -1,0 +1,542 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Reference}
+
+% ==================================================================
+\section{Overview}
+
+\includegraphics[width=\textwidth]{figures/webobs_diagram.pdf}
+
+% ==================================================================
+\section{Nodes: Elementary WebObs Objects}
+
+A \wo{node} is the central \webobs element associated with following attributes:
+
+\begin{itemize}
+\item    a long name (\wo{name}) and short name (\wo{alias});
+\item    an optional short description (\wo{type});
+\item    a lifetime period with start and end dates (both optional);
+\item    an optional location (latitude, longitude, elevation) associated with a location map (graph), Google Maps and Google Earth links;
+\item	 optional functional parameters: data code (\wo{FID}), network code (\wo{FDSN}), data format (\wo{RAWFORMAT}) and source (\wo{RAWDATA}), time zone (\wo{TZ}), acquisition period and delay;	 
+
+\item    optional text contents for "informations", "installation" and "access";
+\item    an optional sensor description associated with a calibration table of channels parameters;
+\item    a list of user-defined features (also free text contents);
+\item    attached documents, photos and diagrams;
+\item    a project;
+\item    events log associated with date and operator list;
+\item    a list of associated grids (\wo{views} and/or \wo{procs}, see \ref{grids});
+\item    a validity flag (for admin users).
+\end{itemize}
+
+Examples of what a \wo{node} can be:
+\begin{itemize}
+\item    an instrumental station or a part of it,
+\item    a site or place for data sampling or measurement,
+\item    a place of any interest,
+\item    a mobile equipment, an instrument, a building, a vehicle, ...
+\item    a journal board, an event description (e.g. an historical earthquake), ...
+\end{itemize}
+
+In the specific case of instrumental station, a calibration table is attached to the \wo{node} sensors that describes each channel characteristics and history:
+
+\begin{itemize}
+\item    date and time of validity;
+\item    channel number, name, unit, code, S/N, offset, factor, gain, min/max values, azimuth, latitude, longitude, elevation, depth, sampling frequency, dynamic, location code.
+\end{itemize}
+
+\lstinputlisting[title=\wofile{NODES.rc}]{../../SETUP/CONF/NODES.rc}
+
+% -----------------------------------------------------------------
+\subsection{Create, edit or delete a NODE}
+
+Modifying \wo{node} is possible only through a \wo{grid} (see next section \ref{grids}). Creation of new \wo{node} or edition of an existing \wo{node} deserves to \wo{users} with edit level for the associated \wo{grid}. Deletion of a \wo{node} is reserved to administrator level \wo{users}.
+
+
+% -----------------------------------------------------------------
+\subsection{Names and codes}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Main code (ID)}
+
+Each \wo{node} has a unique ID code in \webobs. The code can be any string of characters, but it is recommended to use a comprehensive and rational code (see appendix \ref{nodeidcodes}) when creating a new \wo{node}. Attribution of this unique code deserves to \wo{users} with administrator level when creating a new \wo{node}. It cannot be modified after.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Name}
+
+The long NAME of a \wo{node} is used for display purposes in tables and graphs. It cannot be empty. The NAME is displayed in the main GRID's table in front of the corresponding \wo{node}.
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Alias (short name)}
+
+The ALIAS is the short name of a \wo{node}, used for display purposes in table and graphs. It cannot be empty. The ALIAS is displayed in the main GRID's table in front of the corresponding \wo{node}.
+
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Type}
+
+The TYPE of a \wo{node} is an optional free string that will be used for any short description of the \wo{node}. The TYPE is displayed in the main GRID's table in front of the corresponding \wo{node}.
+
+
+% -----------------------------------------------------------------
+\subsection{Lifetime and validity}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Start/end dates}
+
+Start and end dates of a \wo{node} define the period of activity of this \wo{node}. Both or any of these two dates can be undefined or incompletely defined, while respecting the ISO 8601 standard: Date values are ordered from the most to the least significant: year, month and day; any number of values may be dropped from any of the date representations, but in the order from the least to the most significant. For example, 1976 and 2005-04 are both reduced precision valid dates.
+
+The lifetime of a \wo{node} has potential impact on processes that use this \wo{node} or associated data.
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Valid \wo{node}}
+
+Independently of the lifetime period, a \wo{node} can be valid or invalid. When invalid, a \wo{node} is simply ignored by most of the \webobs processes and invisible for standard \wo{users}. Nevertheless, if a \wo{user} has an administrator level , he will be able to see an invalid \wo{node} in the lists and tables.
+
+
+
+% -----------------------------------------------------------------
+\subsection{Grids memberships}
+
+A \wo{node} can be associated with one or more \wo{grids}. See section \ref{grids}.
+
+% -----------------------------------------------------------------
+\subsection{Geographic location}
+
+\includegraphics[width=\textwidth]{figures/NODE_location.png}
+
+A \wo{node} can be georeferenced using latitude, longitude and elevation coordinates on Earth. When a \wo{node} has valid coordinates defined, a location map will be automatically built (see below and section \ref{locastat}), and it will appear on associated GRID's maps (see section \ref{grids}).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{WGS84 coordinates}
+
+Latitude and longitude must be in the WGS84 geodetic reference system, and expressed in decimal form, using negative value for southern latitude and western longitude. Use the dot as decimal point (not coma).
+
+In the \wo{node}'s display page, coordinates are presented in different formats: DDD.ddddd (decimal degrees), DDD\degree MM.mmm' (degrees and decimal minutes) and DDD\degree MM'SS.s" (degrees, minutes and decimal secondes).
+
+The coordinates are displayed in the main GRID's table in front of the corresponding \wo{node}. Also, the Universal Transverse Mercator (UTM) projection is computed and displayed in the \wo{node}'s page.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Timestamp and type of coordinates}
+
+This optional information provides the timestamp (date) of coordinates, and a type of positioning from a list.
+
+\lstinputlisting[title=\wofile{POSITIONtypes.conf}]{../../SETUP/CONF/POSITIONtypes.conf}
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Google Maps API link}
+
+Link to Google Maps API is available if the \wo{node} has coordinates. The link will open a pop-up window. This functionality is associated with some variables in the main configuration file \wofile{WEBOBS.rc}:
+
+\begin{lstlisting}[title=\wofile{WEBOBS.rc} (excerpt)]
+CGI_GOOGLE_MAPS|googleMAPS.pl
+GOOGLE_MAPS_LINK|1
+GOOGLE_MAPS_API|http://maps.google.com/maps?file=api
+GOOGLE_MAPS_API_KEY
+GOOGLE_MAPS_LINK_INFO|See with Google Maps (ATTENTION: error ~20 m)
+GOOGLE_MAPS_ICON|/icons/gdot.png
+GOOGLE_MAPS_TYPE|G_HYBRID_MAP
+GOOGLE_MAPS_WIDTH_VALUE|500
+GOOGLE_MAPS_HEIGHT_VALUE|500
+GOOGLE_MAPS_ZOOM_VALUE|17
+\end{lstlisting}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Google Earth KML link}
+
+Link to Google Earth KML file is available if the \wo{node} has coordinates. The link will download a local KML file, which may be open with local application Google Earth (if installed). This functionality is associated with some variables in the main configuration file \wofile{WEBOBS.rc}:
+
+\begin{lstlisting}[title=\wofile{WEBOBS.rc} (excerpt)]
+GOOGLE_EARTH_LINK|1
+GOOGLE_EARTH_LINK_INFO|KML file for Google Earth (ATTENTION: error ~20 m)
+IMAGE_LOGO_GOOGLE_EARTH|/icons/google/google_earth.gif
+\end{lstlisting}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Location map}
+
+A location map with 4 different scales is automatically made and updated by LOCASTAT application (see section \ref{locastat} for associated parameters), using the coordinates of the \wo{node}.
+
+
+% -----------------------------------------------------------------
+\subsection{Transmission}
+
+When a \wo{node} represents, for instance, an instrumental station with data transmission, the type of transmission can defined using a reference list (below) and other \wo{node}s can be defined as intermediate repeaters or final acquisition point.
+
+The transmission chain is displayed with dynamic links to associated \wo{node}s. It appears also on the location map (see section \ref{locastat}) and the \wo{grid} maps (see section \ref{gridmaps}).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Type}
+
+Type of transmission is defined in a list of transmission type associated with plot line style, width and color.
+
+\lstinputlisting[title=\wofile{TRANStypes.conf}]{../../SETUP/CONF/TRANStypes.conf}
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Acquisition and repeaters}
+
+The transmission chain is described by defining a list of \wo{node}'s ID, from station to acquisition.
+
+
+% -----------------------------------------------------------------
+\subsection{Proc's parameters and data status}
+
+When associated with a \wo{proc} (see section \ref{procs}), data from a \wo{node} is used to produce outputs. Several additional parameters must be defined for this.
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Network code}
+
+A \wo{node} can be associated with a standard network code, from the International Federation of Digital Seismograph Networks (FDSN)~\footnote{see \url{http://www.fdsn.org/}}. This is mostly the case for permanent seismological stations. This code is mandatory when using Arclink or Seedlink data requests (see sections \ref{seedlink} and \ref{arclink}).
+
+The list of network codes is also described at IRIS~\footnote{see \url{http://www.iris.edu/ds/nodes/dmc/services/network-codes/}}.
+
+The official FDSN codes list can be overwritten using a local configuration file \wofile{CONF/networkcodes.csv}.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Raw format}
+
+A list of possible data format that overwrites, if selected, the \texttt{RAWFORMAT} parameter in the PROC/*.conf. This allows to associate different data format/source to the NODEs associated to a single PROC.
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Raw data source}
+
+A free text string that overwrites, if not blank, the \texttt{RAWDATA} parameter in the PROC/*.conf. This allows to associate different data format/source to the NODEs associated to a single PROC.
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{FID}
+
+A FID code is a short string which may contain a functional code (or a coma-separated list of codes) that will be used by associated PROCs. For example, it can be the official station code for a seismic station or a GNSS receiver, while the data files will contain this code. It is generally set to the same string as the ALIAS.
+
+Some \wo{procs} are able to deal with a coma-separated list, as gnss: this allows to define multiple codes pointing to different data, and associate them to a single station.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{FID\_*}
+
+Some \wo{procs} may need several codes or parameters to process a \wo{node}. It is possible to define specific parameters with the prefix \wo{FID\_}: they will be listed and editable below the main FID. Creation/edit of a \wo{FID\_SUBNAME} is reserved to \wo{users} with administrator level.
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Time zone}
+
+Time zone is the offset delay from UTC, expressed in hours. Examples: $+0$ is UTC, $-4$ is Lesser Antilles time.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Acquisition period}
+
+Acquisition period defines the normal time interval between two data sample, expressed in days. Examples: \texttt{1/24} corresponds to 1 sample per hour, \texttt{1/86400} is 1 Hz sampling. This value might be used to compute average acquisition performance rating (see below).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Acquisition delay}
+
+This value defines the maximum delay allowed between the last available data and the present time, expressed in days. This delay is used to determine the \wo{node}'s status (see below).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Status and link to data}
+
+If the associated \wo{proc} is set to compute the \wo{node} status, the following information is displayed:
+\begin{itemize}
+\item last status check timestamp;
+\item sampling rate performance (in \%): number of valid samples over the last time period, compared to theoretical acquisition period (see above);
+\item status (in \%): existence of valid samples in the last time delay for all channels.
+\end{itemize}
+
+The status informations are displayed in the main GRID's table in front of the corresponding \wo{node}.
+
+If the associated \wo{proc} produces output graphs, direct links to each outputs are available.
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Channels parameters (calibration file)}
+\label{clb}
+
+\includegraphics[width=\textwidth]{figures/CLB_table.png}
+
+For most of \wo{procs}, it is mandatory to define a list of data channels. This can be done through a ``calibration file'' that contains description and detailed parameters of the \wo{node}'s data channels: date and time of validity, name, unit, S/N, functional code, gain and multiplier factors, offset, min/max values, sensor azimuth, location and depth, sampling frequency, digital dynamic and ``location code'' (SEED standard). Each channel must have one or more series of parameters. 
+
+The date and time of validity applies until real-time or next line of parameters for this channel number.
+
+Each \wo{proc} might be associated to a selection of channels. Active channels appear in bold font, while inactive appear in gray.
+
+% -----------------------------------------------------------------
+\subsection{Features}
+
+Each \wo{node} can have user-defined features which are free text contents (HTML and Wiki syntax allowed) that appear in the main table as a series of table cells.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{List of user-defined features}
+
+Feature name is limited to short names and must avoid special characters. Edit the list of features to be displayed using the \wo{node} configuration form. Features with void content won't be displayed for \wo{users} without edit or admin rights.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Node-features-nodes association list}
+
+It is possible to associate a \wo{node}'s feature to an other \wo{node} as its feature's children. An automatic link will be displayed in the feature's table cell before the text content of the feature. In the children \wo{node} page, the parent feature will appear with automatic name "feature of" and a link to the parent \wo{node}.
+
+Configuring the node2node association list is made by editing a configuration file containing a 3-field definition (pipe delimited):
+
+\begin{lstlisting}[title=\wofile{nodes2nodes.rc} (excerpt)]
+PARENT_NODEID|featurename|CHILDREN_NODEID
+\end{lstlisting}
+
+
+% -----------------------------------------------------------------
+\subsection{Installation, information and access}
+
+These 3 fields are free-length text content. Wiki syntax allowed.
+
+% -----------------------------------------------------------------
+\subsection{Photos, diagrams and associated documents}
+
+Three different types of documents can be uploaded and associated to a \wo{node}:
+\begin{itemize}
+\item Photos: any JPEG file that will be displayed as thumbnail with a link to full screen mode;
+\item Diagrams: any image or picture file (JPEG, GIF, PNG, PDF, ...) that will be displayed as thumbnail with a link to the full resolution image;
+\item Documents: any file (PDF, DOC, TXT, ...) that will be downloadable and sometimes displayed through the navigator.
+\end{itemize}
+
+
+% -----------------------------------------------------------------
+\subsection{Project}
+
+A \wo{node} may have one (and only one) \wo{Project} description: a free-length text file, accepting Wiki syntax. Project is a special \wo{Event}, see \wo{Events logging} for
+a description of Project.
+
+% -----------------------------------------------------------------
+\subsection{Events}
+
+A \wo{node} can have events:  free-length text files with timestamp. An event can include one or more sub-events (children).
+Event files  accept the Wiki syntax. See \wo{Events logging} section (\ref{events_logging}) for a description of Nodes and Grids events.
+
+
+% ==================================================================
+\section{Grids: networks of nodes}
+\label{grids}
+
+A \wo{grid} is a group of \wo{nodes}. Each \wo{node} can be associated to one or multiple \wo{grids}. There is two kind of \wo{grids}:
+
+\begin{itemize}
+\item    A \wo{view} is a list of \wo{nodes} we simply want to group to be seen or accessed together,
+\item    A \wo{proc} is a list of \wo{nodes} associated to a common data processing that produces outputs (graphs and/or elaborated data), and/or optional editable data FORMS.
+\end{itemize}
+
+\wo{grids} are presented through a sorted table allowing access to dedicated page for each \wo{grid} with:
+\begin{itemize}
+\item    purpose (text content);
+\item    specifications: operator owner, number of \wo{nodes}, type, optional external link;
+\item    list of \wo{nodes}: a complete table with alias, names, location, start/end dates, type, project, status (for active \wo{proc}); ...
+\item    an interactive location map (if \wo{nodes} have location coordinates);
+\item    informations (text content);
+\item    references (text content);
+\item    a graphical representation of \wo{nodes} links with associated \wo{grids}.
+\end{itemize}
+
+Text content sections are editable with Wiki syntax possibilities.
+
+%\includegraphics[width=\textwidth]{figures/PROC_GEOSCOPE_map.png}
+
+
+\lstinputlisting[title=\wofile{GRIDS.rc}]{../../SETUP/CONF/GRIDS.rc}
+
+
+% -----------------------------------------------------------------
+\subsection{Views}
+\label{views}
+
+A \wo{view} is a simple group of NODES. To create a new \wo{view}, go to any \wo{GRID} table page (menu GRIDS, VIEWS or PROCS) and click on the edit icon in the Name header of table, enter an unique short name and click Edit. This will open the \wo{grid} configuration editor. The form allows to freely edit the parameters file (key/value pairs), to select the Domain and to associate/disassociate \wo{nodes}.
+
+\lstinputlisting[title=\wofile{VIEW.DEFAULT} template]{../../CODE/tplates/VIEW.DEFAULT}
+
+All the following parameters are valid for \wo{grids}, that is any \wo{view} or \wo{proc} (see the next section).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{\wo{grid} name and attributes}
+\begin{itemize}
+
+\item \wokey{NAME}: Character string for the \wo{grid} long name. This name will appear in the \wo{grid} page and maps of \wo{nodes}.
+
+\item \wokey{OWNCODE}: Character string for the \wo{grid}'s owner name. This name will be displayed in the \wo{grids} tables and \wo{grid} summary, if \wokey{SHOW\_OWNER} key is true in \wofile{GRIDS.rc}. For backward compatibility, the key might contains a short code with corresponding long names in \wofile{CONF/OWNERS.conf}.
+
+%\lstinputlisting[title=\wofile{OWNERS.conf} template]{../../SETUP/CONF/OWNERS.conf}
+
+\item \wokey{TYPE}: Character string giving a short attribute to the \wo{grid}, if \wokey{SHOW\_TYPE} key is true in \wofile{GRIDS.rc}.
+
+\item \wokey{URL}: Optional URL related to the \wo{grid}. Any valid URL is allowed, e.g. an external web link.
+
+\item \wokey{COPYRIGHT}: Optional character string for the copyright of the \wo{grid}.
+
+\end{itemize}
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{\wo{NODES} attributes}
+\begin{itemize}
+
+\item \wokey{NODE\_NAME}: Short name of a generic \wo{node}. This name will be used instead of ``node'' in tables and maps.
+
+\item \wokey{NODE\_MARKER}: Type of marker used to plot \wo{nodes} on maps. See valid markers in table \ref{markertype}.
+
+\item \wokey{NODE\_SIZE}: Size of the \wo{node} marker for maps (in points).
+
+\item \wokey{NODE\_RGB}: Color of the \wo{node} marker for maps: it can be a color name string (see \wofile{CODE/matlab/htm2rgb.m} for a list of standard colors), or a vector of 3 scalars (red,green,blue), each value between 0 and 1.
+
+\item \wokey{NODE\_FONTSIZE}: If not empty, font size to display \wo{node}'s alias names on maps besides the marker.
+
+\end{itemize}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Digital Elevation Model (DEM)}
+
+By default, \webobs will use SRTM/ETOPO global topographic database to plot maps of \wo{nodes}. It is possible for each \wo{grid} to define a specific DEM which might be more accurate or more appropriate to make maps.
+\begin{itemize}
+
+\item \wokey{DEM\_FILE}: is not empty, must be an absolute path filename. The file must be in Arcinfo format using latitude/longitude coordinates and elevations in meters, by default.
+
+\item \wokey{DEM\_TYPE}: when set to \wokey{UTM}, considers the file in UTM projection (eastern/northern coordinates). The conversion might take some time for large DEM, so latitude/longitude DEM is still preferred.
+
+\item \wokey{DEM\_FORCED}: by default, if the area to be plotted is larger than the user DEM limits, the DEM will be ignored. When set to \wokey{YES}, this option forces the use of user DEM. This might lead to NaN gray areas on the map.
+
+\item \wokey{DEM\_COPYRIGHT}: optional character string for DEM copyright.
+
+\item \wokey{DEM\_SRTM1}: if no user defined DEM is set nor valid, set to \wokey{YES} to use SRTM1 (30m resolution) DEM instead of default SRTM3 (90m).
+
+\end{itemize}
+
+The standard behavior of \webobs for DEM loading is, by order of priority:
+\begin{enumerate}
+
+\item use of user defined DEM if set and valid;
+
+\item if \wokey{DEM\_SRTM1} is true and number or tiles does not exceed \wokey{SRTM1\_MAX\_TILES} value in \wofile{WEBOBS.rc} (default is 4 tiles), then loading SRTM1 30m resolution DEM;
+
+\item if number or tiles does not exceed \wokey{SRTM\_MAX\_TILES} value in \wofile{WEBOBS.rc} (default is 25 tiles), then loading SRTM3 90m resolution DEM;
+
+\item if ETOPO1 database has been properly installed and configured (see \wokey{PATH\_DATA\_DEM\_ETOPO} in \wofile{WEBOBS.rc}), then use of ETOPO1 1.8km resolution global DEM;
+
+\item last, use of ETOPO5 9km resolution DEM (included in the \webobs distribution).
+
+\end{enumerate}
+
+
+% -----------------------------------------------------------------
+\subsection{Procs}
+\label{procs}
+
+A \wo{proc} is a list of \wo{nodes} that are associated to a specific and common data processing called \wo{superproc}. It has the same basic parameters as \wo{views} (see previous section \ref{views}) plus additional settings that depend on the process you want to achieve. \webobs proposes some built-in \wo{superprocs} (see chapter \ref{builtin}), each of them are specific. There is on default \wo{superproc} called 'genplot' which is a simple plot of time series data (see section \ref{genplot}).
+
+To create a new \wo{proc}, go to any \wo{GRID} table page (menu GRIDS, VIEWS or PROCS) and click on the edit icon in the Name header of table, select ``PROC: Generic time series'' in the Grid type list, enter an unique short name and click Edit. This will open the \wo{proc} configuration editor. The form allows to freely edit the parameters file (key/value pairs), to select the Domain, optional \wo{form} and to associate/disassociate \wo{nodes}.
+
+
+% -----------------------------------------------------------------
+\subsection{Forms}
+\label{forms}
+
+A \wo{form} is a web interface for manual data input, edit, display and export. A \wo{form} is an optional tool of a \wo{proc} that defines a specific database format that contains data from associated \wo{nodes}. Some \wo{superprocs} are working specifically with \wo{form} databases.
+
+% -----------------------------------------------------------------
+\subsection{Project}
+
+A \wo{grid} may have one (and only one) \wo{Project} description: a free-length text file, accepting Wiki syntax. Project is a special \wo{Event}, see \wo{Events logging} for
+a description of Project.
+
+% -----------------------------------------------------------------
+\subsection{Events}
+
+A \wo{grid} can have events:  free-length text files with timestamp. An event can include one or more sub-events (children).
+Event files  accept the Wiki syntax. See \wo{Events logging} section for a description of Nodes and Grids events.
+
+% -----------------------------------------------------------------
+\subsection{TMap: GRIDS diagram}
+\label{tmap}
+
+\includegraphics[width=0.8\textwidth]{figures/PROC_CGPSOVSG_tmap.png}
+
+
+% ==================================================================
+\section{Events Logging}
+\label{events_logging}
+
+Nodes and Grids can have \wo{EVENT}. These events are free timestamped text files (Wifi syntax being supported), editable by users 
+having at least Write authorization on the corresponding Node or Grid. Events live in specific repositories (known as INTERVENTIONS),
+and are managed thru functions of 
+the CODE/cgi-bin/WebObs/Events.pm module and CODE/cgi-bin/vedit.pl . Their filenames reflect both their Node or Grid membership and their timestamp. 
+
+An event may also have attached images (PHOTOS) and/or sub-events: both are collectively referred to as \wo{event extensions}. 
+Subevents are themselves events, thus building up a tree structure for each event.
+
+\begin{lstlisting}[title=Events base directories (interventions)]
+$GRIDS{PATH_GRIDS}/gridtype/gridname/$GRIDS{SPATH_INTERVENTIONS}/
+$NODES{PATH_NODES}/nodename/$NODES{SPATH_INTERVENTIONS}/
+\end{lstlisting}
+
+\begin{lstlisting}[title=Events 'trash' directories (for deleted events)]
+$NODES{PATH_EVENTNODE_TRASH}
+$GRIDS{PATH_EVENTGRID_TRASH}
+\end{lstlisting}
+
+\begin{lstlisting}[title=Events files and extensions naming conventions]
+event_file       :=  event.txt
+event_extensions :=  event/
+event            :=  name_YYYY-MM-DD_HH-MM{_v}  |  name_YYYY-MM-DD_NA{_v}  
+name             :=  { gridname | nodename }
+v                :=  so-called version number (automatically generated to make event name unique)
+NA               :=  "NA" for unknown/undefined HH-MM
+\end{lstlisting}
+
+\begin{lstlisting}[title=Special event file: the Project]
+only one allowed per Node or Grid :
+
+project_file     :=  name_Projet.txt
+\end{lstlisting}
+
+\begin{lstlisting}[title=Unfolded example for node NODEA INTERVENTIONS]
+$NODES{PATH_NODES}/NODEA/$NODES{SPATH_INTERVENTIONS}/
+	NODEA_Projet.txt
+	NODEA_2001-01-01_20-00.txt         Event 2001-01-01_20-00 file
+	NODEA_2001-01-01_20-00/            Event 2001-01-01_20-00 extensions
+		PHOTOS/                            Event 2001-01-01_20-00 photos 
+			*.[jpg,pdf]                         
+			THUMBNAILS/                         
+		NODEA_2002-02-02_02-02.txt         subEvent 2002-02-02_02-02
+		NODEA_2002-02-02_02-02/            subEvent 2002-02-02_02-02 extensions
+			PHOTOS/                             subEvent 2002-02-02_02-02 photos
+				*.[jpg,pdf]                         
+				THUMBNAILS                          
+			NODEA_2003-03-03_03-03.txt         subsubEvent 2003-03-03_03-03
+			NODEA_2010-02-02_22-30.txt         Event 2010-02-02_22-30
+\end{lstlisting}
+
+
+
+% ==================================================================
+\section{Web pages}
+
+
+
+% -----------------------------------------------------------------
+\subsection{Main menu}
+
+
+% -----------------------------------------------------------------
+\subsection{Home page}
+
+
+% -----------------------------------------------------------------
+\subsection{Wiki pages}
+
+
+% -----------------------------------------------------------------
+\subsection{Tools pages}
+
+
+% -----------------------------------------------------------------
+\subsection{Application pages}
+
+

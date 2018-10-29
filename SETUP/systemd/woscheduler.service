@@ -1,0 +1,15 @@
+[Unit]
+Description=WebObs Scheduler
+After=local-fs.target remote-fs.target
+
+[Service]
+Type=forking
+ExecStart=/opt/webobs/CODE/shells/scheduler start
+ExecStop=/opt/webobs/CODE/shells/scheduler stop
+PIDFile=/opt/webobs/LOGS/scheduler.pid
+User=wo
+UMask=0002
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,222 @@
+#!/bin/bash
+
+# can be run any time after installation, current directory MUST be webobs' CONF/
+# required argument 1 = Gazette DB full path
+# optional argument 2 = legacy HEBDO file full path
+# creates Gazette DB and optionaly populate it with legacy HEBDO file.
+
+echo [$*]
+
+L=false
+if [ $# -lt 1 ]; then echo "missing arg"; exit 1; fi
+GAZETTEDB=$1
+#[FBnote:] this variable is mandatory also when not importing legacy HEBDO...
+dbusers=WEBOBSUSERS.db
+if [ $# -eq 2 ]; then 
+	if [[ ! -f $2 ]]; then
+		echo "$2 file not found, no legacy data will be imported."
+	else 
+		L=true
+		oIFS=${IFS}; IFS=$'\n'
+		LEXP=($(perl ../CODE/cgi-bin/exposerc.pl '=' 'WO__'))
+		for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+		LEXP=($(perl ../CODE/cgi-bin/exposerc.pl '=' 'HEBDO__' 'HEBDO_CONF'))
+		for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+		#hebdo=$HEBDO__FILE_NAME
+		hebdo=$2
+		types=$HEBDO__FILE_TYPE_EVENEMENTS
+		dbusers=$WO__SQL_DB_USERS
+	fi
+fi
+
+GAZETTECNT=0
+GAZETTENOW=$(date -u "+%F %T")
+
+# create the new table
+# --------------------
+echo "Creating gazette DB/table ($GAZETTEDB)..."
+sqlite3 $GAZETTEDB <<EOF
+BEGIN TRANSACTION;
+drop table if exists gazette;
+create table gazette (
+	ID integer primary key, 
+	STARTDATE text(10), 
+	STARTTIME text(10), 
+	ENDDATE text(10), 
+	ENDTIME text(10), 
+	CATEGORY text, 
+	UID text,
+	OTHERS text,
+	PLACE text,
+	SUBJECT text,
+	LASTUPD datetime default current_timestamp, 
+	LASTUPDUID text default '!'
+);
+create unique index if not exists uniquegazette on gazette (STARTDATE,STARTTIME,ENDDATE,ENDTIME,CATEGORY,UID,OTHERS,PLACE,SUBJECT) ;
+COMMIT;
+EOF
+
+
+# Do migration from legacy HEBDO.DAT file
+# IMPLIES that we also have HEBDO% definitions in authmisc
+# --------------------------------------------------------
+if $L ; then
+	echo "Migrating former type keys of HEBDO ..."
+
+	sed -i 's/|Astreinte|/|Duty|/' $hebdo
+	sed -i 's/|Absence|/|Holiday|/' $hebdo
+	sed -i 's/|Terrain|/|Field|/' $hebdo
+	sed -i 's/|Missions|/|Mission|/' $hebdo
+	sed -i 's/|[Rr].*union|/|Meeting|/' $hebdo
+	sed -i 's/|Vulgarisation|/|Outreach|/' $hebdo
+	sed -i 's/|Enseignement|/|Teaching|/' $hebdo
+	sed -i 's/|Visiteurs|/|Visitor|/' $hebdo
+	sed -i 's/|Stage|/|Training|/' $hebdo
+	sed -i 's/|Batiment|/|Building|/' $hebdo
+	sed -i 's/|Divers|/|Misc|/' $hebdo
+
+	# sqlite's import function have troubles with double quotes.
+	sed -i 's/"/-%-/g' $hebdo
+
+	sed -i 's/^ToutReseaux/#ToutReseaux/' $types
+	sed -i 's/^Tout|/ALL|/' $types
+	sed -i 's/^Reseaux/Event/' $types
+	sed -i 's/^Astreinte/Duty/' $types
+	sed -i 's/^Absence/Holiday/' $types
+	sed -i 's/^Terrain/Field/' $types
+	sed -i 's/^Missions/Mission/' $types
+	sed -i 's/^Reunion/Meeting/' $types
+	sed -i 's/^Vulgarisation/Outreach/' $types
+	sed -i 's/^Enseignement/Teaching/' $types
+	sed -i 's/^Visiteurs/Visitor/' $types
+	sed -i 's/^Stage/Training/' $types
+	sed -i 's/^Batiment/Building/' $types
+	sed -i 's/^Divers/Misc/' $types
+
+	sqlite3 $dbusers <<EOF
+BEGIN TRANSACTION;
+update authmisc set RESOURCE='HEBDOALL' where RESOURCE='HEBDOTout';
+update authmisc set RESOURCE='HEBDOEvent' where RESOURCE='HEBDOReseaux';
+update authmisc set RESOURCE='HEBDODuty' where RESOURCE='HEBDOAstreinte';
+update authmisc set RESOURCE='HEBDOHoliday' where RESOURCE='HEBDOAbsence';
+update authmisc set RESOURCE='HEBDOField' where RESOURCE='HEBDOTerrain';
+update authmisc set RESOURCE='HEBDOMission' where RESOURCE='HEBDOMissions';
+update authmisc set RESOURCE='HEBDOMeeting' where RESOURCE='HEBDOReunion';
+update authmisc set RESOURCE='HEBDOOutreach' where RESOURCE='HEBDOVulgarisation';
+update authmisc set RESOURCE='HEBDOTeaching' where RESOURCE='HEBDOEnseignement';
+update authmisc set RESOURCE='HEBDOVisitor' where RESOURCE='HEBDOVisiteurs';
+update authmisc set RESOURCE='HEBDOTraining' where RESOURCE='HEBDOStage';
+update authmisc set RESOURCE='HEBDOBuilding' where RESOURCE='HEBDOBatiment';
+update authmisc set RESOURCE='HEBDOMisc' where RESOURCE='HEBDODivers';
+COMMIT;
+EOF
+
+	echo "Importing legacy $2 ..."
+	# 1) HEBDO.DB => /tmp/createdb-gazette with conversion to utf8 and some sanity checks
+	tmpcs=$(file -i $2 | sed "s/.*charset=\(.*\)$/\1/")
+	iconv -f $tmpcs -t utf8 $2 | awk -F '|' '{if(NF==10){print $0} else{print "#"$0}}' >/tmp/createdb-gazette
+	# 2) remove blank lines, comment lines, non-numeric id (1st field) lines
+	# and append each line with new fields lastupd and lastupduid 
+	sed -i -e '/^$/d;' -e '/^#/d;' -e '/^[^0-9]*|/d' -e "s/$/|${GAZETTENOW}|!/" /tmp/createdb-gazette
+	# 3) populate the new Gazette.db
+	sqlite3 $GAZETTEDB <<EOF
+.separator |
+.import /tmp/createdb-gazette gazette
+update gazette set subject=replace(subject,'-%-','"');
+update gazette set others=replace(others,'-%-','"');
+EOF
+	# 4) copy HEBDO_ authorizations as GAZETTE_ and add new 'Event'
+	echo "Creating GAZETTE* authorizations from existing HEBDO* ..."
+	sqlite3 $dbusers <<EOF
+BEGIN TRANSACTION;
+delete from "authmisc" where resource in ("HEBDOReseaux","HEBDOToutReseaux","HEBDONODES","HEBDOALLnNODES");
+delete from "authmisc" where resource like 'GAZETTE%';
+insert into "authmisc" select uid,'GAZETTE'||substr(resource,6,length(resource)),auth from authmisc where resource like 'HEBDO%';
+insert into "authmisc" values('?','GAZETTEEvent',1);
+--delete from "authmisc" where resource like 'HEBDO%';
+COMMIT;
+EOF
+	# 
+	echo
+	GAZETTECNT=$(sqlite3 $GAZETTEDB 'select count(*) from Gazette;' 2>&1)
+	echo "imported $GAZETTECNT rows"
+else
+# not a migration: needs default authorizations 
+# ---------------------------------------------
+	echo "Creating authorizations defaults ..."
+	sqlite3 $dbusers <<EOF
+BEGIN TRANSACTION;
+delete from "authmisc" where resource like 'GAZETTE%';
+insert into "authmisc" values('?','GAZETTE',1);
+insert into "authmisc" values('?','GAZETTEALL',1);
+--insert into "authmisc" values('?','GAZETTEDuty',1);
+--insert into "authmisc" values('?','GAZETTEMission',1);
+--insert into "authmisc" values('?','GAZETTEHoliday',1);
+insert into "authmisc" values('?','GAZETTEField',1);
+insert into "authmisc" values('?','GAZETTEMeeting',1);
+insert into "authmisc" values('?','GAZETTEMedia',1);
+insert into "authmisc" values('?','GAZETTEOutreach',1);
+insert into "authmisc" values('?','GAZETTETeaching',1);
+insert into "authmisc" values('?','GAZETTEVisitors',1);
+insert into "authmisc" values('?','GAZETTETraining',1);
+insert into "authmisc" values('?','GAZETTEMisc',1);
+insert into "authmisc" values('?','GAZETTEEvent',1);
+COMMIT;
+EOF
+fi
+# populate Gazette.db with eventnodes if any
+# ------------------------------------------
+if [[ -d /etc/webobs.d/../DATA/NODES/ && -d /etc/webobs.d/GRIDS2NODES/ ]];then
+	evi=0
+	for fullevnode in /etc/webobs.d/../DATA/NODES/*/INTERVENTIONS/*txt; do
+		if [[ ! -f $fullevnode ]]; then continue; fi;
+		baseevnode=$(basename $fullevnode);
+		baseevnode=${baseevnode%.*};
+		arrevnode=(${baseevnode//_/ })
+		if [[ "${arrevnode[1]}" == "Projet" ]]; then continue; fi
+		nodegrids=$(ls -d /etc/webobs.d/GRIDS2NODES/VIEW*${arrevnode[0]}* 2>/dev/null)
+		if [[ "${nodegrids}" == "" ]]; then
+			nodegrids=$(ls -d /etc/webobs.d/GRIDS2NODES/PROC*${arrevnode[0]}* 2>/dev/null)
+		fi
+		if [[ "${nodegrids}" == "" ]]; then continue; fi
+		arrevnode[2]="${arrevnode[2]/-/:}"
+		arrevnode[2]="${arrevnode[2]/NA/ }"
+		nodegrid=$(basename ${nodegrids})
+
+		evtitle=$(head -1 $fullevnode)
+		if [[ $(expr index "${evtitle}" '|') != 0 ]]; then
+			evsub=${evtitle#*|}
+			evuid=${evtitle%|*}
+		else
+			evsub=''
+			evuid='!'
+		fi
+		if [[ "${arrevnode[3]}" != "" ]];then evsub="(v${arrevnode[3]}) ${evsub}"; fi
+		#evdbrows[${evi}]="insert into Gazette values(null,'${arrevnode[1]}','${arrevnode[2]}','${arrevnode[1]}','','Event','${evuid}','','${nodegrid}','${evsub//\'/\'\'}','${GAZETTENOW}','!');"
+		evsub=$(echo $evsub | sed "s/'/''/g")
+		evdbrows[${evi}]="insert into Gazette values(null,'${arrevnode[1]}','${arrevnode[2]}','${arrevnode[1]}','','Event','${evuid}','','${nodegrid}','${evsub}','${GAZETTENOW}','!');"
+		evi=${evi}+1
+	done
+	printf "%s\n" "${evdbrows[@]}" > /tmp/createdb-gazette_insertlegacyevents.txt
+	sqlite3 $GAZETTEDB < /tmp/createdb-gazette_insertlegacyevents.txt
+	echo "inserted ${#evdbrows[@]} events"
+fi
+
+# summary
+# -------
+
+GAZETTED=${GAZETTENOW:0:10}; GAZETTET=${GAZETTENOW:11:5}
+sqlite3 $GAZETTEDB "insert into Gazette values(null,'${GAZETTED}','${GAZETTET}','${GAZETTED}','${GAZETTET}','Misc','!','','','Build Gazette DB','${GAZETTENOW}','!');"
+GAZETTEAUTH=$(sqlite3 $dbusers 'select resource from authmisc where resource like "GAZETTE%" order by 1;')
+echo -n "authorizations  : "
+for x in $GAZETTEAUTH; do echo -n "'"$x"' "; done; echo
+GAZETTECATDEF=$(sed -e '/^[#=]/d' -e'/^$/d' -e 's/|.*$//' Gazette_categories.conf | sort)
+echo -n "conf categories : "
+for x in $GAZETTECATDEF; do echo -n "'"$x"' "; done; echo
+GAZETTECATDB=$(sqlite3 $GAZETTEDB 'select distinct category from gazette order by 1;')
+echo -n "db categories   : "
+for x in $GAZETTECATDB; do echo -n "'"$x"' "; done; echo
+
+echo
+echo "Done."
+exit 0

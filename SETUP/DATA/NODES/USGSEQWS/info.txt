@@ -1,0 +1,1 @@
+This NODE points to the worldwide earthquake catalog of USGS, using standard FDSN web-service request protocol. This NODE can be associated to any PROC using the 'quake' format, like HYPOMAP or TREMBLEMAPS.

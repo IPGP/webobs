@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# compare two CONF directories
+# - summary (diff -q) is written to stdout
+# - details (diff side-by-side) results are written to stderr
+
+mydiff() {
+	local diffopt="-y --suppress-common-lines --ignore-all-space"
+	if a=$(grep -E '^=key\|.*' $1) && b=$(grep -E '^=key\|.*' $2); then
+		diff ${diffopt} <(sed -e 's/^[ \t#]*//; /^$/d' $1 | sort)  <( sed -e 's/^[ \t#]*//; /^$/d' $2 | sort) 1>&2
+	else
+		diff ${diffopt} $1 $2 1>&2
+	fi
+}
+
+if [ $# -lt 2 ]; then
+	echo "Usage: `basename $0` path1 path2"
+	exit 1
+fi
+me=$$;
+meout=$(readlink -f /proc/${me}/fd/1); meerr=$(readlink -f /proc/${me}/fd/2);
+pathtype=""
+if [[ -d $1 && -d $2 ]]; then
+	pathtype="dir"
+	while read w1 w2 w3 w4 w5 ;do
+		echo "______________________________________________________________________" 1>&2
+		if [[ "${w1} ${w2} ${w3}" == "Only in $2:" ]];then
+			echo "* NEW" ${w1} ${w2} ${w3} ${w4} ${w5}
+		else
+			echo ${w1} ${w2} ${w3} ${w4} ${w5}
+		fi
+		if [[ "$meout" != "$meerr" ]]; then echo ${w1} ${w2} ${w3} ${w4} ${w5} >&2 ; fi
+		if [[ ${w1} == "Files" ]]; then 
+			mydiff ${w2} ${w4} ; 
+		fi
+	done < <(env LANG=C diff -qr $1 $2 | grep -Ev '(\.svn|GRIDS2FORMS|GRIDS2NODES)' | grep -E '\.conf|\.rc|\.cnf')
+fi
+if [[ -f $1 && -f $2 ]]; then
+	pathtype="file"
+	u=$(diff -q $1 $2)
+	if [[ ${#u} != 0 ]];then 
+		echo "______________________________________________________________________" 1>&2
+		echo ${u}
+		if [[ "$meout" != "$meerr" ]]; then echo ${u} 1>&2 ;fi
+		mydiff $1 $2
+	fi
+fi
+if [[ "X$pathtype" == "X" ]]; then echo "`basename $0` arguments types don't match" ; exit 1; fi  

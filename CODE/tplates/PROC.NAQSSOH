@@ -1,0 +1,75 @@
+=key|value
+# Generic PROC template for superproc naqssohplot
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/naqssohplot.m for further information.
+
+# long name of the PROC
+NAME|Naqs SOH time series
+
+# proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
+TYPE|
+OWNCODE|?
+
+RAWFORMAT|naqs-soh
+# raw data path
+RAWDATA|$WEBOBS{ROOT_RAWD}/Sismologie/NaqsSOH
+# URN link to data 
+URNDATA|/rawdata/Sismologie/NaqsSOH
+# time zone for outputs
+TZ|0
+# additionnal URL
+URL|
+
+# lists of parameters (number of comma-separated rows must be consistent)
+# see timescales.conf for a list of valid keys in TIMESCALELIST
+TIMESCALELIST|07d,30d,01y,10y,all
+DECIMATELIST|1,10,100,1000,1000
+CUMULATELIST|1,1,1,1,1
+DATESTRLIST|1,1,10,10,-1
+MARKERSIZELIST|6,2,2,1,1
+LINEWIDTHLIST|1,1,1,1,1
+STATUSLIST|1,0,0,0,0
+# defines a reference date to use with 'ref' timescale in TIMESCALELIST
+REF_DATE|
+
+# additional summary graphs keywords (comma separated)
+#SUMMARYLIST|
+#SUMMARY_CHANNELS|
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} naqssoh $SELFREF -
+SUBMIT_RESOURCE|naqssoh
+
+# node parameters
+NODE_NAME|node
+NODE_SIZE|2
+NODE_RGB|1,0,0
+NODE_FONTSIZE|10
+NODE_MARKER|o
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# file for background time referenced events 
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+# value = 1 to produce EPS graphs
+POSTSCRIPT|1
+# value = 1 to export text data files
+EXPORTS|0
+# main logo file
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+# secondary logo file
+LOGO2_FILE|
+# main copyright
+COPYRIGHT|OVSM/IPGP
+# secondary copyright
+COPYRIGHT2|
+

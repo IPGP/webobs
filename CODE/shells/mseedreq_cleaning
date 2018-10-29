@@ -1,0 +1,7 @@
+#!/bin/bash
+. "$(dirname "$0")"/readconf
+
+# cleaning of mseed downloaded files (created by slinktool.pl)
+find $WO__SLINKTOOL_TMP_DIR -type f -name `echo "$WO__SLINKTOOL_TEMPLATE" | sed 's/X.*/\*/'` -mtime +1 -exec rm {} \;
+
+

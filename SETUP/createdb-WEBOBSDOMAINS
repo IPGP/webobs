@@ -1,0 +1,38 @@
+#!/bin/bash
+P=`dirname $0`
+. $P/dutils.sh
+
+# can be run for fresh installation or within a legacy Webobs migration
+# current directory (pwd) MUST be the target webob's CONF/ directory 
+
+echo "Creating/populating domains tables ..."
+sqlite3 WEBOBSDOMAINS.db <<EOF
+BEGIN TRANSACTION;
+
+drop table if exists domains;
+create table domains (CODE text NOT NULL, OOA integer NOT NULL, NAME text NOT NULL, MARKER NOT NULL, PRIMARY KEY(CODE));
+INSERT INTO "domains" VALUES('S',1,'Seismology','o');
+INSERT INTO "domains" VALUES('D',2,'Deformations','^');
+INSERT INTO "domains" VALUES('C',3,'Geochemistry','s');
+INSERT INTO "domains" VALUES('G',4,'Geophysics','>');
+INSERT INTO "domains" VALUES('I',5,'Imagery','v');
+INSERT INTO "domains" VALUES('P',6,'Phenomenology','<');
+INSERT INTO "domains" VALUES('M',7,'Meteorology','d');
+INSERT INTO "domains" VALUES('T',8,'Transmissions','p');
+INSERT INTO "domains" VALUES('A',9,'Observatory','p');
+
+drop table if exists grids2domains;
+create table grids2domains (TYPE text NOT NULL, NAME text NOT NULL, DCODE text NOT NULL, FOREIGN KEY(DCODE) REFERENCES domains(CODE));
+INSERT INTO "grids2domains" VALUES('PROC','SOURCES','C');
+INSERT INTO "grids2domains" VALUES('VIEW','CGPSWI','D');
+INSERT INTO "grids2domains" VALUES('PROC','CGPSWI','D');
+INSERT INTO "grids2domains" VALUES('PROC','GEOSCOPE','S');
+INSERT INTO "grids2domains" VALUES('PROC','HYPOINDO','S');
+INSERT INTO "grids2domains" VALUES('PROC','HYPOWI','S');
+
+COMMIT;
+EOF
+
+echo "Done."
+exit 0
+

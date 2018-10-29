@@ -1,0 +1,21 @@
+<li><a href="/cgi-bin/wpage.pl?file=HTML/ABOUT.wiki">+ADMIN</a>
+   <ul>
+*       <li><a href="/html/cgiwoc.html">WOC</a></li>
+*       <li><a href="#">Jobs Scheduler</a>
+*          <ul>
+*             <li><a href="/cgi-bin/schedulerMgr.pl">Manager</a></li>
+*             <li><a href="/cgi-bin/schedulerRuns.pl">Runs</a></li>
+*         </ul>
+*       </li>
+*       <li><a href="#">Admin Editors</a>
+*         <ul>
+*             <li><a href="/cgi-bin/usersMgr.pl">Users Admin</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU(NAVIGATION)">Menu Edit</a></li>
+*             <li><a href="/cgi-bin/wdir.pl?dir=HTML">Html contents</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=GRIDMAPS">GRIDMAPS.rc</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=LOCASTAT">LOCASTAT.rc</a></li>
+*         </ul>
+*       </li>
+*      <li><a href="../DOC/mods.html">Doc Modules</a></li>
+   </ul>
+</li>

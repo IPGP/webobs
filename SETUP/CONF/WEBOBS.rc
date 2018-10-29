@@ -1,0 +1,296 @@
+=key|value
+
+VERSION|nd
+
+# ---- site and non-site roots ---------------- 
+# ---------------------------------------------
+ROOT_SITE|${InstallDocumentRoot}
+ROOT_VHST|${InstallVirtualHost}
+ROOT_URL|${InstallUrl}
+ROOT_RAWD|${InstallRawdata}
+
+ROOT_CONF|${ROOT_SITE}/CONF
+ROOT_DATA|${ROOT_SITE}/DATA
+ROOT_CODE|${ROOT_SITE}/CODE
+ROOT_OUTG|${ROOT_SITE}/OUTG
+ROOT_OUTR|${ROOT_SITE}/OUTR
+ROOT_WWW|${ROOT_SITE}/WWW
+ROOT_LOGS|${ROOT_SITE}/LOGS
+
+# might indicate here a path for additional data preprocessor
+ROOT_PREPROCESSOR|
+
+# ---- Grid System paths----------------------- 
+# ---------------------------------------------
+PATH_VIEWS|${ROOT_CONF}/VIEWS
+PATH_PROCS|${ROOT_CONF}/PROCS
+PATH_FORMS|${ROOT_CONF}/FORMS
+CONF_NODES|${ROOT_CONF}/NODES.rc
+CONF_GRIDS|${ROOT_CONF}/GRIDS.rc
+# also found in NODES.rc !
+PATH_NODES|${ROOT_DATA}/NODES
+PATH_GRIDS2NODES|${ROOT_CONF}/GRIDS2NODES
+PATH_GRIDS2FORMS|${ROOT_CONF}/GRIDS2FORMS
+
+FILE_OWNERS|${ROOT_CONF}/OWNERS.conf
+
+PATH_TMP_APACHE|/tmp
+PATH_TMP_WEBOBS|/tmp/webobs
+
+# ---- Site DATA paths ------------------------
+# ---------------------------------------------
+PATH_DATA_DB|${ROOT_DATA}/DB
+PATH_DATA_WEB|${ROOT_DATA}/WEB
+PATH_DATA_MATLAB|${ROOT_DATA}/MATLAB
+PATH_DATA_DEM|${ROOT_DATA}/DEM
+PATH_DATA_SHAPE|${ROOT_DATA}/SHAPE
+
+PATH_USERS_WIKI|${PATH_DATA_WEB}/WIKI
+PATH_USERS_HTML|${PATH_DATA_WEB}/HTML
+PATH_GRIDS_DOCS|${PATH_DATA_WEB}/GRIDS
+
+# ---- Site WWW paths ------------------------
+# ---------------------------------------------
+PATH_WWW_HTML|${ROOT_WWW}/html
+PATH_WWW_HTML_MAPS|${PATH_WWW_HTML}/sites/maps
+
+# ---- Site customization ---------------------
+# ---------------------------------------------
+WEBOBS_ID|${WebObsIdentification}
+BIG_BANG|${InstallYear}
+LOCALE|en_US
+WEBOBS_TITLE|WEBOBS ${WebObsIdentification}
+COPYRIGHT|WEBOBS / IPGP
+FILE_DAYSOFF|${ROOT_CONF}/Holidays.conf
+LANGUAGE_LIST|en_US:English\|fr_FR:Fran&ccedil;ais
+LIEU_VILLE|Paris
+LIEU_DEPARTEMENT|Paris
+TERMSOFUSE|${ROOT_DATA}/WEB/terms.txt
+EVENTS_TO_GAZETTE|ALL
+EVENTS_GAZETTE_DELETE|YES
+
+# Uncomment this line to disable MultiMarkDown facilities for all 'wiki' contents
+#WIKI_MMD|NO
+
+# Set to YES to add logs (in PROC's outputs)
+DEBUG|NO
+
+# ---- site OUTG, grids subtrees      ---------
+# ---------------------------------------------
+PATH_OUTG_DATA|data
+PATH_OUTG_MAPS|maps
+PATH_OUTG_GRAPHS|graphs
+PATH_OUTG_EXPORT|exports
+PATH_OUTG_EVENTS|events
+OUTG_STALENODES_DISPO|
+
+# ---- Jobs scheduler -------------------------
+# ---------------------------------------------
+CONF_SCHEDULER|${ROOT_CONF}/scheduler.rc 
+
+# ---- Apache's aliases -----------------------
+# ---------------------------------------------
+URN_CGI|/cgi-bin
+URN_CSS|/css
+URN_HTML|/html
+URN_NODES|/nodes
+URN_ICONS|/icons
+URN_JS|/js
+URN_SEFRAN|/sefran
+URN_RAWD|/rawdata
+
+# ---- HTML/PAGE ------------------------------
+# ---------------------------------------------
+FILE_HTML_CSS|css/WEBOBS.css
+FILE_HTML_WMCSS|css/wm2.css
+FILE_MENU|${ROOT_CONF}/menu.rc
+
+# ---- USERS DataBase--------------------------
+# ---------------------------------------------
+SQL_DB_USERS|${ROOT_CONF}/WEBOBSUSERS.db
+SQL_TABLE_USERS|users
+SQL_TABLE_AUTHPROCS|authprocs
+SQL_TABLE_AUTHVIEWS|authviews
+SQL_TABLE_AUTHFORMS|authforms
+SQL_TABLE_AUTHWIKIS|authwikis
+SQL_TABLE_AUTHMISC|authmisc
+SQL_TABLE_GROUPS|groups
+SQL_DB_USERS_AUTOREGISTER|Y
+
+# ---- Notifications/postboard -----------------
+# ---------------------------------------------
+SQL_DB_POSTBOARD|${SQL_DB_USERS}
+SQL_TABLE_NOTIFICATIONS|notifications
+POSTBOARD_NPIPE|/tmp/WEBOBSNP
+POSTBOARD_CMD_OPTS|-v
+POSTBOARD_ERROR_FILE|${ROOT_LOGS}/postboard_error.log
+POSTBOARD_MAILER|mutt
+POSTBOARD_MAILER_OPTS|-nx -e 'set charset="iso-8859-1"'
+POSTBOARD_MAILER_DEFSUBJECT|WebObs notification
+
+# ---- DOMAINS DataBase -----------------------
+# ---------------------------------------------
+SQL_DOMAINS|${ROOT_CONF}/WEBOBSDOMAINS.db
+SQL_TABLE_DOMAINS|domains
+SQL_TABLE_GRIDS|grids2domains
+
+# ---- Internalization ------------------------
+# ---------------------------------------------
+ROOT_I18N|${ROOT_SITE}/CODE/i18n
+
+# ---- Additional configurations --------------
+# ---------------------------------------------
+HEBDO_CONF|${ROOT_CONF}/HEBDO.conf
+GAZETTE_CONF|${ROOT_CONF}/Gazette.rc
+WELCOME_CONF|${ROOT_CONF}/Welcome.conf
+CLB_CONF|${ROOT_CONF}/CLB.conf
+LOCASTAT|${ROOT_CONF}/LOCASTAT.rc
+GRIDMAPS|${ROOT_CONF}/GRIDMAPS.rc
+
+# ---- CGIs -----------------------------------
+# ---------------------------------------------
+CGI_UPLOAD|formUPLOAD.pl
+CGI_UPLOAD_POST|postUPLOAD.pl
+
+# ---- External resources ---------------------
+# ---------------------------------------------
+PLOTERUP_FILE|${ROOT_CONF}/ERUPTIONS_SHM.conf
+MAP_EXTENSION_ORDER|ANT,GUA,SBT,SOU,DOM
+
+PATH_MCR|/usr/local/MATLAB/MATLAB_Compiler_Runtime/v716
+PATH_MCC|${ROOT_CODE}/matlab/bin/linux-64
+
+# ---- Graphs requests    ---------------------
+# ---------------------------------------------
+REQ_PPI_LIST|75,100,150,300,600
+REQ_MARKERSIZE_LIST|1,2,4,6,10,15,20
+REQ_LINEWIDTH_LIST|0.1,0.25,0.5,1,1.5,2,3
+
+# CGPS/GAMIT process -------------------------
+# ---------------------------------------------
+ITRF_YEAR|2005
+GAMIT_FINAL_DELAY_DAYS|24
+
+# Sefran3 / Main Courante 3 ------------------
+# ---------------------------------------------
+SEFRAN_ROOT|${InstallSefranRoot}
+SEFRAN_ROOT_ALIAS|/sefran
+
+SEFRAN3_DEFAULT_NAME|SEFRAN3
+SEFRAN3_MCC|run_sefran3.sh
+MC3_DEFAULT_NAME|MC3
+
+CGI_SEFRAN3|sefran3.pl
+CGI_MC3|mc3.pl
+
+PATH_SOURCE_SISMO_GUA|iaspei1
+PATH_SOURCE_SISMO_GUX|iaspei2
+PATH_SOURCE_SISMO_MIX|SUDS2
+PATH_SOURCE_SISMO_GWA|SUDS2
+SISMOCP_PATH_FTP|${ROOT_RAWD}/Sismologie/CourtePeriode
+SISMOCP_PATH_FTP_URN|${URN_RAWD}/Sismologie/CourtePeriode
+SISMOCP_MAX_TRAITES|720
+SISMORESS_PATH_FTP|${ROOT_RAWD}/Sismologie/B3/ressentis
+RACINE_SIGNAUX_SISMO|/ipgp/continu/sismo
+WEB_RACINE_SIGNAUX|
+
+# --- executables ----------------------------
+# ---------------------------------------------
+PRGM_MATLAB|/usr/local/bin/matlab -nojvm -display :9
+PRGM_MATLAB_NODISPLAY|/usr/local/bin/matlab -nojvm -nodisplay
+PRGM_GS|/usr/bin/gs
+#PRGM_CONVERT|/usr/bin/convert
+PRGM_CONVERT|env LD_LIBRARY_PATH='' /usr/bin/convert
+CONVERT_COLORSPACE|-colorspace sRGB
+PRGM_IDENTIFY|/usr/bin/identify
+
+# Earth tide prediction program GOTIC2, downloadable at http://www.miz.nao.ac.jp/staffs/nao99/index_En.html
+PRGM_GOTIC2|/opt/nao99b/gotic2/gotic2
+
+PRGM_PS2PDF|/usr/bin/ps2pdf
+PRGM_SUD2MAT|${ROOT_CODE}/bin/sud2mat0
+PRGM_SUD2MAT2|${ROOT_CODE}/bin/sud2mat
+PRGM_ALARM|perl -e "alarm shift @ARGV; exec @ARGV"
+
+WINSTON_JAVA|${ROOT_CODE}/bin/java/winston-bin.jar
+
+XML2_PRGM|${ROOT_CODE}/bin/linux-64/xml2
+#XML2_PRGM|/usr/bin/xml2
+SLINKTOOL_PRGM|${ROOT_CODE}/bin/linux-64/slinktool
+ARCLINKFETCH_PRGM|env LD_LIBRARY_PATH='' ${ROOT_CODE}/bin/arclinkfetch/bin/arclink_fetch_wrapper --max 180
+#ARCLINKFETCH_PRGM|env LD_LIBRARY_PATH='' ${ROOT_CODE}/bin/arclinkfetch/bin/arclink_fetch
+MSEED2SAC_PRGM|${ROOT_CODE}/bin/linux-64/mseed2sac
+MSEEDREQ_TMP_DIR|/tmp
+MSEEDREQ_TEMPLATE|mseedreq_XXXXX
+MSEEDREQ_CGI|mseedreq.pl
+MSEED_FILE_EXT|msd
+
+# --- launchers for scheduler ----------------
+# ---------------------------------------------
+JOB_MCC|${PATH_MCC}/run_mcc
+JOB_MLNODISPLAY|env MATLABPATH=${ROOT_CODE}/matlab LANG=${LOCALE}.ISO-8859-1 matlab -nodisplay
+JOB_MLXVFB|env MATLABPATH=${ROOT_CODE}/matlab LANG=${LOCALE}.ISO-8859-1 xvfb-run -a --server-args="-screen 0 1024x768x16" matlab -nodesktop -nosplash
+JOB_MCNODISPLAY|cd ${ROOT_CODE}/matlab;env LANG=${LOCALE}.ISO-8859-1 ${PATH_MCC}
+JOB_MCXVFB|cd ${ROOT_CODE}/matlab;env LANG=${LOCALE}.ISO-8859-1 xvfb-run -a --server-args="-screen 0 1024x768x16" ${PATH_MCC}
+
+# xedit.pl options --------------------------------------
+XEDIT_ETHEME|ambiance      # codemirror theme when editing
+XEDIT_BTHEME|neat          # codemirror theme when browsing
+XEDIT_VMODE|vim            # automatically enter vim mode or not (any other value)
+
+# Nagios -------------------------------------
+NAGIOS_SEND_NSCA|send_nsca -H 127.0.0.1 -c /etc/send_nsca.cfg
+NAGIOS_OK|0
+NAGIOS_WARNING|1
+NAGIOS_CRITICAL|2
+NAGIOS_UNKNOWN|3
+
+# Google Earth --------------------------------
+GOOGLE_EARTH_LINK|1
+GOOGLE_EARTH_LINK_INFO|KML file for Google Earth (ATTENTION: error ~20 m)
+IMAGE_LOGO_GOOGLE_EARTH|/icons/google/google_earth.gif
+
+# Google Maps ---------------------------------
+CGI_GOOGLE_MAPS|googleMAPS.pl
+GOOGLE_MAPS_LINK|1
+GOOGLE_MAPS_API|https://maps.google.com/maps?file=api
+# NOTE: API key can be obtained at http://code.google.com/apis/maps/signup.html entering domain address 
+GOOGLE_MAPS_API_KEY|
+GOOGLE_MAPS_LINK_INFO|See with Google Maps (ATTENTION: error ~20 m)
+GOOGLE_MAPS_ICON|/icons/gdot.png
+GOOGLE_MAPS_TYPE|G_HYBRID_MAP
+GOOGLE_MAPS_WIDTH_VALUE|800
+GOOGLE_MAPS_HEIGHT_VALUE|600
+GOOGLE_MAPS_ZOOM_VALUE|17
+
+# Digital Elevation Models --------------------
+# ---------------------------------------------
+DEM_OVERSAMPLING|500
+# SRTM data are automatically downloaded
+PATH_DATA_DEM_SRTM|${PATH_DATA_DEM}/SRTM
+PATH_DATA_DEM_SRTM1|${PATH_DATA_DEM}/SRTM1
+SRTM_COPYRIGHT|DEM: SRTM/NASA
+SRTM_MAX_TILES|25
+SRTM1_MAX_TILES|4
+# ETOPO Global Relief Data: can be downloaded at http://www.ngdc.noaa.gov/mgg/global/global.html (.bin and .hdr)
+PATH_DATA_DEM_ETOPO|${PATH_DATA_DEM}/ETOPO
+ETOPO_NAME|etopo5
+ETOPO_COPYRIGHT|DEM: ETOPO5 NGDC/NOOA
+
+# IGN ----------------------------------------
+IGN_MAPI_LINK|0
+IGN_MAPI_LINK_URL|
+IGN_MAPI_LINK_INFO|IGN Aerial photographies
+IMAGE_LOGO_IGN_MAPI|/icons/logo_IGN16x16.png
+
+# Geodetic transforms ------------------------
+# ---------------------------------------------
+UTM_LOCAL|${ROOT_CONF}/UTM.rc
+
+# MKGRAPH ------------------------------------
+# ---------------------------------------------
+MKGRAPH_VALUE_PPI|100
+MKGRAPH_THUMBNAIL_HEIGHT|112
+LOGO_DEFAULT|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+LOGO_HEIGHT|0.04
+

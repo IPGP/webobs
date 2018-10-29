@@ -1,0 +1,410 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<head>
+<link rel="stylesheet" type="text/css" href="/css/WEBOBS.css">
+<style>.withPOD {color: green; cursor: pointer} caption {padding-bottom: 5px}</style>
+<style>.withMAN {color: green; cursor: pointer} caption {padding-bottom: 5px}</style>
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/jquery.tablesorter.js"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$("td.withPOD").click(function(index) {
+			var u = $(this)[0].textContent.replace(/[\r\n]/gm,"");
+			window.open('/cgi-bin/viewPOD.pl?pod='+u);	
+		});
+		$("td.withMAN").click(function(index) {
+			var u = $(this)[0].textContent.replace(/[\r\n]/gm,"");
+			window.open('/cgi-bin/viewMAN.pl?man='+u);	
+		});
+		$("tr").hover( 
+			function () {
+				$(this).css('backgroundColor','#dddddd');
+			}, 
+			function () {
+				$(this).css('backgroundColor','#ffffff');
+			}
+		);
+		$("#modscgi").tablesorter();
+		$("#funscgi").tablesorter();
+	});
+</script>
+<title>Didier-Mods-FollowUp</title>
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+<META HTTP-EQUIV="EXPIRES" CONTENT="0">
+<style>
+	h1               {color: #6060ff}
+	h2               {text-decoration: underline; color: #6060ff}
+	p                {font-size: 10px; font-weight: normal; color: black;}
+    caption          {font-size: 10px; font-weight: bold; color: black; text-align: left; }
+	.new		     {background-color: #30ff30;}
+	.rep		     {background-color: #20aa20;}
+	.del		     {background-color: #dd3020;}
+	.mov		     {background-color: #EEEE90;}
+	.mod		     {background-color: #80EE80;}
+	.sam		     {background-color: #D0D0D0;}
+	.ptr		     {background-color: #E0F4E0; font-weight: bold;}
+	.pts		     {background-color: #E0F4E0;}
+	.wip		     {background-color: #8080EE;}
+	ul, li           {font-size: 10px; font-weight: normal; color: black;}
+	th               {background-color: gray; color: black}
+	td, tr           {vertical-align: top}
+</style>
+</head>
+<BODY>
+<DIV ID=wikiDiv style=width:100%>
+<br>
+<h1>New WebObs - Change Summary</h1>
+[<a href="#MODSCGI">cgi - modules summary</a>]&nbsp;[<a href="#FUNSCGI">>cgi - functions summary</a>]<br>
+[<a href="#MODPERL">perl summary</a>]<br>
+[<a href="#MODSJS">JavaScript summary</a>]&nbsp;[<a href="#MODSCSS">>CSS summary</a>]<br>
+[<a href="#MODSMAT">matlab - modules summary</a>]<br>
+[<a href="#MODSBASH">bash - modules summary</a>]<br>
+<hr>
+
+<a name="MODSCGI"></a>
+<h2>WebObs CGIs changes: modules summary</h2>
+<table  id="modscgi" class="tablesorter">
+<caption>Disp: <span class="new">N=new</span>, <span class="rep">R=replaced/modified</span>, <span class="del">D=dropped</span></caption>
+<thead><tr><th>Disp<th>Legacy<th>New<th>clientHas? on ?</tr></thead>
+<tbody>
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">Accueil.pl              <td>Read on authwikis.HEBDO
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">showOUTP.pl             <td>Read on authprocs.$PROCName
+<tr><td class="rep">R<td>afficheBOJAP.pl         <td class="withPOD">showBOJAP.pl            <td>Read on authforms.BOJAP<br>
+<tr><td class="rep">R<td>afficheDISTANCE.pl      <td class="withPOD">showDISTANCE.pl               
+<tr><td class="rep">R<td>afficheEAUX.pl          <td class="withPOD">showEAUX.pl             <td>Read on authforms.EAUX<br>
+                                                                                                 Edit on authforms.EAUX<br> 
+<tr><td class="rep">R<td>afficheEXTENSO.pl       <td class="withPOD">showEXTENSO.pl	         <td>Read on authforms.EXTENSO<br>
+                                                                                                 Edit on authforms.EXTENSO<br>
+<tr><td class="tbd">-<td>afficheFISSURO.pl       <td>                 
+<tr><td class="rep">R<td>afficheGAZ.pl           <td class="withPOD">showGAZ.pl              <td>Read on authforms.GAZ<br>                 
+                                                                                                 Edit on authforms.GAZ<br> 
+<tr><td class="rep">R<td>afficheHEBDO.pl         <td class="withPOD">showHEBDO.pl            <td>Read on authprocs.HEBDO$_<br>
+                                                                                                 ($_ = one of EVENTS types)
+<tr><td class="tbd">-<td>afficheMC.pl            <td>                
+<tr><td class="rep">R<td>affichePLUVIO.pl        <td class="withPOD">showEAUX.pl             <td>Read on authforms.PLUVIO<br> 
+                                                                                                 Edit on authforms.PLUVIO<br>
+<tr><td class="rep">R<td>afficheRESEAUX.pl       <td class="withPOD">showGRID.pl             <td>Read on authprocs|authviews.$GRIDName<br>
+                                                                                                 Edit on authprocs|authviews.$GRIDName<br>
+																								 Adm  on authprocs|authviews.$GRIDName<br>
+																								 Read on authprocs|authviews.SEEINVALIDNODES
+<tr><td class="rep">R<td>afficheRESEAUX.pl       <td class="withPOD">showGRIDS.pl            <td>
+<tr><td class="tbd">-<td>afficheSEFRAN.pl        <td>                
+<tr><td class="tbd">-<td>afficheSISMOBUL.pl      <td>                
+<tr><td class="rep">R<td>afficheSTATION.plN      <td class="withPOD">showNODE.pl             <td>Read on authprocs|authviews.$GRIDName<br>
+                                                                                                 Edit on authprocs|authviews.$GRIDName
+<tr><td class="tbd">-<td>afficheSUDS2.pl         <td>                
+<tr><td class="tbd">-<td>afficheSUDS.pl          <td>                
+<tr><td class="del">D<td>checkIP.pm              <td>                
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">cgiwoc.pl
+<tr><td class="del">D<td>editMC3-devel.pl        <td>                
+<tr><td class="tbd">-<td>editMC3.pl              <td>                
+<tr><td class="new">N<td>editMIU.pl              <td class="withPOD">editMIU.pl              <td>Read on caller's $r1.caller's $r2 or authmisc.EDITFILES<br>
+                                                                                                 Edit on caller's $r1.caller's $r2 or authmisc.EDITFILES
+<tr><td class="rep">R<td>editTXT.pl              <td class="withPOD">editTXT.pl              <td>Read on caller's $r1.caller's $r2<br>
+                                                                                                 Edit on caller's $r1.caller's $r2               
+<tr><td class="del">D<td>effaceHEBDO.pl          <td>                
+<tr><td class="rep">R<td>effaceINTERVENTIONS_STATIONS.pl <td class="withPOD">postEVENTNODE.pl 
+<tr><td class="tbd">-<td>effaceMC2.pl            <td>                
+<tr><td class="tbd">-<td>effaceMC.pl             <td>                
+<tr><td class="rep">R<td>formulaireBOJAP.pl      <td class="withPOD">formBOJAP.pl            <td>Edit on authforms.BOJAP    
+<tr><td class="rep">R<td>formulaireCLB.pl        <td class="withPOD">formCLB.pl              <td>Edit on authmisc.CLB
+<tr><td class="new">N<td>                        <td class="withPOD">postCLB.pl              <td>Edit on authmisc.CLB
+<tr><td class="rep">R<td>formulaireCREATION_STATION.pl <td class="withPOD">formNODE.pl       <td>Edit on authprocs|authviews.$GRIDName<br>
+                                                                                                 Adm  on authprocs|authviews.$GRIDName<br>
+																								 Adm  on authmisc.NODES
+<tr><td class="rep">R<td>formulaireDISTANCE.pl   <td class="withPOD">formDISTANCE.pl         <td>Edit on authforms.DISTANCE                
+<tr><td class="rep">R<td>formulaireEAUX.pl       <td class="withPOD">formEAUX.pl             <td>Edit on authforms.EAUX                
+<tr><td class="rep">R<td>formulaireEXTENSO.pl    <td class="withPOD">formEXTENSO.pl          <td>Edit on authforms.EXTENSO
+<tr><td class="new">N<td>part of formulaireEXTENSO.pl <td class="withPOD">postEXTENSO.pl     <td>Edit on authforms.EXTENSO
+                                                     
+<tr><td class="tbd">-<td>formulaireFISSURO.pl    <td>                
+<tr><td class="rep">R<td>formulaireGAZ.pl        <td class="withPOD">formGAZ.pl              <td>Edit on authforms.GAZ
+<tr><td class="rep">R<td>formulaireHEBDO.pl      <td class="withPOD">formHEBDO.pl            <td>Edit on authprocs.HEBDO$_<br>
+                                                                                                 ($_ = one of EVENTS types)
+<tr><td class="tbd">-<td>formulaireInscription.pl <td>               
+<tr><td class="rep">R<td>formulaireINTERVENTIONS_STATIONS.pl<td class="withPOD">formEVENTNODE.pl            <td>     
+<tr><td class="del">D<td>formulaireMC2.pl        <td>                
+<tr><td class="del">D<td>formulaireMC.pl         <td>                
+<tr><td class="rep">R<td>formulairePLUVIO.pl     <td class="withPOD">formPLUVIO.pl           <td>Read on authforms.PLUVIO<br>                
+                                                                                                 Edit on authforms.PLUVIO<br>                
+<tr><td class="tbd">-<td>formulaireREQUETE.pl    <td>                
+<tr><td class="rep">R<td>formulaireUPLOAD.pl     <td class="withPOD">formUPLOAD.pl           <td>Edit on authviews.$view<br>
+                                                                                                 Edit on authprocs.$proc
+<tr><td class="del">D<td>frameMC2.pl             <td>                
+<tr><td class="del">D<td>frameMC.pl              <td>                
+<tr><td class="tbd">-<td>france_antilles.pl      <td>                
+<tr><td class="tbd">-<td>fusionSUDS.pl           <td>                
+<tr><td class="rep">R<td>googleMAPS.pl           <td class="withPOD">googleMAPS.pl
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">Hebdo.pm                <td>Read on authprocs.HEBDO$_<br> 
+																								 Edit on authwikis.HEBDO$_<br>
+                                                                                                 Edit on authwiki.HEBDO<br>
+																								 ($_ = one of EVENTS types)
+<tr><td class="rep">R<td>i18n.pm                 <td>*see WebObs/
+<tr><td class="rep">R<td>IGN.pm                  <td>*see WebObs/                
+<tr><td class="rep">R<td>index.pl                <td>                                        <td>Adm on authmisc.*
+<tr><td class="tbd">-<td>mailInfo_OVPF.pl        <td>                
+<tr><td class="tbd">-<td>mail_info.pl            <td>                
+<tr><td class="tbd">-<td>mc2Zandets.pl           <td>                
+<tr><td class="del">D<td>mc3-devel.pl            <td>                
+<tr><td class="del">D<td>mc3_OVPF.pl             <td>                
+<tr><td class="tbd">-<td>mc3.pl                  <td>                
+<tr><td class="del">D<td>menu.pl                 <td>                
+<tr><td class="tbd">-<td>MicroTime.pm            <td>                
+<tr><td class="tbd">-<td>mseedreq.pl             <td>                
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">nsearch.pl
+<tr><td class="rep">R<td>presenteTEXTE.pl        <td class="withPOD">wikiPage.pl
+<tr><td class="tbd">-<td>QML.pm                  <td>                
+<tr><td class="rep">R<td>readConf.pm             <td>*see WebObs/
+<tr><td class="del">D<td>readGraph.pm            <td>*see WebObs/
+<tr><td class="rep">R<td>readJoursFeries.pm      <td>*see WebObs/
+<tr><td class="rep">-<td>searchSTATIONS.pl       <td>*see showGRIDS.pl + nsearch.pl                
+<tr><td class="tbd">-<td>sefran3.pl              <td>                
+<tr><td class="tbd">-<td>seiscomp2mc.pl          <td>                
+<tr><td class="tbd">-<td>seiscomp2mc.pl.simple   <td>                
+<tr><td class="tbd">-<td>sel_lang.pl             <td>                
+<tr><td class="tbd">-<td>sendSMS.pl              <td>                
+<tr><td class="tbd">-<td>testqml.pl              <td>                
+<tr><td class="tbd">-<td>traceLog.pm             <td>                
+<tr><td class="rep">R<td>traitementBOJAP.pl      <td class="withPOD">postBOJAP.pl                 
+<tr><td class="rep">R<td>traitementCREATION_STATION.pl <td class="withPOD">postNODE.pl       <td>Edit on authprocs|authviews.$GRIDName
+<tr><td class="rep">R<td>traitementDISTANCE.pl   <td class="withPOD">postDISTANCE.pl    
+<tr><td class="rep">R<td>traitementEAUX.pl       <td class="withPOD">postEAUX.pl                
+<tr><td class="rep">R<td>traitementGAZ.pl        <td class="withPOD">postGAZ.pl                 
+<tr><td class="rep">R<td>traitementHEBDO.pl      <td class="withPOD">postHEBDO.pl
+<tr><td class="tbd">-<td>traitementInscription.pl                
+<tr><td class="rep">R<td>traitementINTERVENTIONS_STATIONS.pl <td class="withPOD">postEVENTNODE.pl     
+<tr><td class="tbd">-<td>traitementMC2.pl        <td>                
+<tr><td class="tbd">-<td>traitementMC.pl         <td>                
+<tr><td class="rep">R<td>traitementPLUVIO.pl     <td class="withPOD">postPLUVIO.pl             <td>Edit on authforms.PLUVIO                
+<tr><td class="rep">R<td>traitementTXT.pl		 <td>postTXT.pl                        
+<tr><td class="rep">R<td>traitementUPLOAD.pl     <td class="withPOD">postUPLOAD.pl
+<tr><td class="tbd">-<td>version.pl              <td>                
+<tr><td class="rep">R<td>Webobs.pm               <td>WebObs/ 
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">WebObs/MathUtils.pm
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">WebObs/Suds.pm
+<tr><td class="new">N<td>&nbsp;                  <td>WebObs/i18n.pm
+<tr><td class="new">N<td>&nbsp;                  <td>WebObs/Wiki.pm                          <td>Adm on authmisc.CONFIG
+<tr><td class="new">N<td>&nbsp;                  <td>WebObs/Dates.pm
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">WebObs/Config.pm
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">WebObs/Users.pm
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">WebObs/Grids.pm
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">WebObs/Utils.pm
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">WebObs/Form.pm
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">WebObs/IGN.pm
+<tr><td>
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">../../DOC/FORMmodel.pod <td>
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">../../DOC/FORMmodel.pod <td>
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">../../DOC/FORMmodel.pod <td>
+</tbody>
+</table>
+
+<!-- ========================================================================================== -->
+<a name="FUNSCGI"></a>
+<h2>WebObs CGIs changes: functions summary </h2>
+<table id='funscgi' class='tablesorter'>
+<caption>Disp: <span class="new">N=new</span>, <span class="rep">R=replaced/mofified</span>, <span class="del">D=dropped</span></caption>
+<thead><tr><th>Disp<th colspan=2>Legacy<th colspan=2>New</tr></thead>
+<tbody>
+<tr><td class="del">D<td>afficheHEBDO.pl      <td>sub afficheHebdo      <td>     
+<tr><td class="rep">R<td>afficheHEBDO.pl      <td>sub lundi             <td>WebObs::Dates::lundi	
+<tr><td class="rep">R<td>afficheHEBDO.pl      <td>sub afficheCalendar   <td>WebObs::Dates::Calendar
+<tr><td class="rep">R<td>afficheHEBDO.pl      <td>sub weton             <td>WebObs::Dates::weton
+<tr><td class="tbd">-<td>afficheMC.pl         <td>sub affiche           <td>            
+<tr><td class="del">D<td>afficheRESEAUX.pl    <td>sub round             <td>          
+<tr><td class="del">D<td>checkIP.pm           <td>sub checkIP           <td>              
+<tr><td class="tbd">-<td>editMC3-devel.pl     <td>sub Quit              <td>            
+<tr><td class="tbd">-<td>editMC3.pl           <td>sub Quit              <td>                 
+<tr><td class="new">N<td>&nbsp;               <td>&nbsp;                <td>Hebdo::Params
+<tr><td class="new">N<td>&nbsp;               <td>&nbsp;                <td>Hebdo::Option
+<tr><td class="new">N<td>&nbsp;               <td>&nbsp;                <td>Hebdo::Dates 
+<tr><td class="new">N<td>&nbsp;               <td>&nbsp;                <td>Hebdo::Html  
+<tr><td class="tbd">-<td>i18n.pm              <td>sub cherche_langue    <td>WebObs::i18n::cherche_langue
+<tr><td class="tbd">-<td>i18n.pm              <td>sub aff_langues       <td>WebObs::i18n::aff_langue
+<tr><td class="del">D<td>i18n.pm              <td>sub u2l               <td>                    
+<tr><td class="del">D<td>i18n.pm              <td>sub l2u               <td>                    
+<tr><td class="new">N<td>&nbsp;               <td>&nbsp;                <td>WebObs::IGN::setUTMLOCAL                 
+<tr><td class="rep">R<td>IGN.pm               <td>sub ign0001           <td>WebObs::IGN::ign0001                 
+<tr><td class="rep">R<td>IGN.pm               <td>sub ign0009           <td>WebObs::IGN::ign0009                 
+<tr><td class="rep">R<td>IGN.pm               <td>sub ign0012           <td>WebObs::IGN::ign0012                 
+<tr><td class="rep">R<td>IGN.pm               <td>sub ign0013b          <td>WebObs::IGN::ign0013b               
+<tr><td class="rep">R<td>IGN.pm               <td>sub ign0021           <td>WebObs::IGN::ign0021      
+<tr><td class="rep">R<td>IGN.pm               <td>sub ign0025           <td>WebObs::IGN::ign0025      
+<tr><td class="rep">R<td>IGN.pm               <td>sub ign0026           <td>WebObs::IGN::ign0026      
+<tr><td class="rep">R<td>IGN.pm               <td>sub ign0028           <td>WebObs::IGN::ign0028      
+<tr><td class="rep">R<td>IGN.pm               <td>sub ign0030           <td>WebObs::IGN::ign0030      
+<tr><td class="rep">R<td>IGN.pm               <td>sub ign0052           <td>WebObs::IGN::ign0052      
+<tr><td class="rep">R<td>IGN.pm               <td>sub geo2utm           <td>WebObs::IGN::geo2utm      
+<tr><td class="rep">R<td>IGN.pm               <td>sub geo2utml          <td>WebObs::IGN::geo2utml     
+<tr><td class="rep">R<td>IGN.pm               <td>sub utmwgs            <td>WebObs::IGN::utmwgs       
+<tr><td class="rep">R<td>IGN.pm               <td>sub utm               <td>WebObs::IGN::utm          
+<tr><td class="tbd">-<td>MicroTime.pm         <td>sub gettimeofday      <td> 
+<tr><td class="tbd">-<td>MicroTime.pm         <td>sub difftime          <td> 
+<tr><td class="tbd">-<td>mseedreq.pl          <td>sub trim              <td>  
+<tr><td class="tbd">-<td>QML.pm               <td>sub qmlorigin         <td>      
+<tr><td class="tbd">-<td>QML.pm               <td>sub findvalues        <td>      
+<tr><td class="tbd">-<td>QML.pm               <td>sub findvalue         <td>      
+<tr><td class="tbd">-<td>QML.pm               <td>sub findnode          <td>      
+<tr><td class="rep">R<td>readConf.pm          <td>sub readConfFile      <td>*see WebObs::Config
+<tr><td class="rep">R<td>readGraph.pm         <td>sub readGraphFile	    <td>*see WebObs::Grids
+<tr><td class="rep">R<td>readJoursFeries.pm   <td>sub readFeries		<td>WebObs::Dates::readFeries     
+<tr><td class="tbd">-<td>sefran3.pl           <td>sub mcinfo            <td>   
+<tr><td class="tbd">-<td>seiscomp2mc.pl       <td>sub Sort_date_with_id <td>
+<tr><td class="tbd">-<td>seiscomp2mc.pl       <td>sub Quit              <td>
+<tr><td class="tbd">-<td>traceLog.pm          <td>sub traceLog          <td>  
+<tr><td class="new">N<td>woc.pl               <td>-                     <td>called from woc.pl/cgiwoc.pl<br> Available woc commands:<br> 
+                                                                                                             %WEBOBS, -%WEBOBS, %OWNERS, %DISCP, %USERS,<br>
+                                                                                                             dbuser, newuser, deluser, grant, auth,<br> 
+																											 %NODES, proc, form, view, node, nodegrids, nodedev, statnodes<br>
+																											 dbjobs, dbruns<br>
+																											 dd, ddxref<br>
+																											 readcfg, sys, !, =, help, quit
+<tr><td class="rep">R<td>Webobs.pm            <td>sub readFile          <td>WebObs::Config::readFile
+<tr><td class="rep">R<td>Webobs.pm            <td>sub readCfgFile       <td>WebObs::Config::readCfgFile
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Config::xreadFile
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Config::notify
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Config::webobs_cgi_msg   
+<tr><td class="del">D<td>Webobs.pm            <td>sub readKeyFile       <td>   
+<tr><td class="rep">R<td>Webobs.pm            <td>sub readUser          <td>*see WebObs::Users
+<tr><td class="rep">R<td>Webobs.pm            <td>sub readOperFile      <td>*see WebObs::Users
+<tr><td class="rep">R<td>Webobs.pm            <td>sub readUsers         <td>*see WebObs::Users
+<tr><td class="rep">R<td>Webobs.pm            <td>sub htmlspecialchars  <td>WebObs::Utils::htmlspecialchars
+<tr><td class="rep">R<td>Webobs.pm            <td>sub genereNomFiche    <td>WebObs::Grids::getNodeString
+<tr><td class="rep">R<td>Webobs.pm            <td>sub trim              <td>WebObs::Utils::trim
+<tr><td class="rep">R<td>Webobs.pm            <td>sub ltrim             <td>WebObs::Utils::ltrim
+<tr><td class="rep">R<td>Webobs.pm            <td>sub rtrim             <td>WebObs::Utils::rtrim
+<tr><td class="rep">R<td>Webobs.pm            <td>sub demain            <td>WebObs::Suds::demain
+<tr><td class="rep">R<td>Webobs.pm            <td>sub minute_suivante   <td>WebObs::Suds::minute_suivante
+<tr><td class="rep">R<td>Webobs.pm            <td>sub dateFichierSuds   <td>WebObs::Suds::dateFichierSuds
+<tr><td class="rep">R<td>Webobs.pm            <td>sub fichiersSudsSuivants<td>WebObs::Suds::fichiersSudsSuivants
+<tr><td class="rep">R<td>Webobs.pm            <td>sub fusion_suds       <td>WebObs::Suds::fusion_suds
+<tr><td class="rep">R<td>Webobs.pm            <td>sub imagesSudsMC      <td>WebObs::Suds::imagesSudsMC
+<tr><td class="rep">R<td>Webobs.pm            <td>sub fichierSudsImage  <td>WebObs::Suds::fichierSudsImage
+<tr><td class="rep">R<td>Webobs.pm            <td>sub fichiersSuds      <td>WebObs::Suds::fichiersSuds
+<tr><td class="rep">R<td>Webobs.pm            <td>sub infosSuds         <td>WebObs::Suds::infosSuds
+<tr><td class="rep">R<td>Webobs.pm            <td>sub imageVoiesSefran  <td>WebObs::Suds::imageVoiesSefran
+<tr><td class="rep">R<td>Webobs.pm            <td>sub imagesSuds2MC     <td>WebObs::Suds::imagesSuds2MC
+<tr><td class="rep">R<td>Webobs.pm            <td>sub fichierSuds2Image <td>WebObs::Suds::fichierSuds2Image
+<tr><td class="rep">R<td>Webobs.pm            <td>sub fichiersSuds2     <td>WebObs::Suds::fichiersSuds2
+<tr><td class="rep">R<td>Webobs.pm            <td>sub infosSuds2        <td>WebObs::Suds::infosSuds2
+<tr><td class="rep">R<td>Webobs.pm            <td>sub imageVoiesSefran2 <td>WebObs::Suds::imageVoiesSefran2
+<tr><td class="rep">R<td>Webobs.pm            <td>sub tri_date_avec_id  <td>WebObs::Utils::tri_date_avec_id
+<tr><td class="rep">R<td>Webobs.pm            <td>sub romain            <td>WebObs::Utils::romain
+<tr><td class="rep">R<td>Webobs.pm            <td>sub boussole          <td>WebObs::Utils::boussole
+<tr><td class="rep">R<td>Webobs.pm            <td>sub pga2msk           <td>WebObs::Utils::pga2msk
+<tr><td class="rep">R<td>Webobs.pm            <td>sub attenuation       <td>WebObs::Utils::attenuation
+<tr><td class="rep">R<td>Webobs.pm            <td>sub readConfStation   <td>WebObs::Grids::readNode
+<tr><td class="rep">R<td>Webobs.pm            <td>sub nomOperateur      <td>WebObs::Users::userName
+<tr><td class="del">D<td>Webobs.pm            <td>sub testOper          <td> 
+<tr><td class="rep">R<td>Webobs.pm            <td>sub codeFDSN          <td>WebObs::Grids::codeFDSN 
+<tr><td class="rep">R<td>Webobs.pm            <td>sub parentEvents      <td>WebObs::Grids::parentEvents
+<tr><td class="rep">R<td>Webobs.pm            <td>sub txt2htm           <td>WebObs::Wiki::wiki2html
+<tr><td class="rep">R<td>Webobs.pm            <td>sub url2target        <td>WebObs::Utils::url2target
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Grids::readProc 
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Grids::readView
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Grids::readNode
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Grids::listViewNames
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Grids::listProcNames
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Grids::listNodeNames
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Grids::listValidNodeNames
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Grids::listNodeGrids
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Grids::listGridNodes
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Grids::normNode
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Users::userListAuth 
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Users::userHasAuth 
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Users::userMaxAuth
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Users::clientHasRead 
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Users::clientHasEdit 
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Users::clientHasAdm 
+<tr><td class="new">N<td>&nbsp;               <td> &nbsp;               <td>WebObs::Users::clientMaxAuth  
+</tbody>
+</table>
+
+<!-- ========================================================================================== -->
+<a name="MODSPERL"></a>
+<h2>WebObs Perl summary</h2>
+<table>
+<caption>Disp: <span class="new">N=new</span>, <span class="rep">R=replaced/mofified</span>, <span class="del">D=dropped</span></caption>
+<tr><th>Disp<th>Legacy<th>New<th>comments</tr>
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">woc.pl                  <td>Console Admin+Debugger tool
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">scheduler.pl            <td>Jobs scheduler 
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">jobq.pl                 <td>Submit a command to a running scheduler.pl
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">postboard.pl            <td>dispatcher for the 'notification' system
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">notify.pl               <td>perl send to postboard (using WebObs::Config::notify)
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">exposerc.pl             <td>perl return %WEBOBS variables for bash usage 
+<tr><td>
+<tr><td class="new">N<td>&nbsp;                  <td>woc.py                                       
+<tr><td class="new">N<td>&nbsp;                  <td>pyWebObs/Config.py
+<tr><td class="new">N<td>&nbsp;                  <td>pyWebObs/Grids.py
+<tr><td>
+<tr><td class="new">N<td>&nbsp;                  <td class="withPOD">../../SETUP/M2G.pm
+</table>
+
+<!-- ========================================================================================== -->
+<a name="MODSJS"></a>
+<h2>WebObs JavaScript changes summary</h2>
+<table>
+<caption>Disp: <span class="new">N=new</span>, <span class="rep">R=replaced/mofified</span>, <span class="del">D=dropped</span></caption>
+<tr><th>Disp<th>Legacy<th>New<th>comments</tr>
+<tr><td class="new"><td>&nbsp;<td>cgiwoc.js<td>cgiwoc.pl html page utilities 
+<tr><td class="new"><td>&nbsp;<td>wm.js<td>window manager for index.pl: site's html page control 
+<tr><td class="new"><td>&nbsp;<td>htmlFormsUtils.js<td>utilities for FORMs pages  
+<tr><td class="new"><td>&nbsp;<td>markitup/<td>markitup package for user files editor  
+</table>
+
+<!-- ========================================================================================== -->
+<a name="MODSCSS"></a>
+<h2>WebObs CSSs changes summary</h2>
+<table>
+<caption>Disp: <span class="new">N=new</span>,  <span class="rep">R=replaced/mofified</span>, <span class="del">D=dropped</span></caption>
+<tr><th>Disp<th>Legacy<th>New<th>comments</tr>
+<tr><td class="rep"><td>WEBOBS.css<td><td>
+<tr><td class="new"><td>&nbsp;<td>cgiwoc.css<td>
+<tr><td class="new"><td>&nbsp;<td>transit.css<td>
+<tr><td class="new"><td>&nbsp;<td>wm2.css<td>
+<tr><td class="new"><td>&nbsp;<td>viewpod.css<td>
+</table>
+
+
+<!-- ========================================================================================== -->
+<a name="MODSMAT"></a>
+<h2>WebObs MATLABs changes: modules summary</h2>
+<table>
+<caption>Disp: <span class="new">N=new</span>, <span class="rep">R=replaced/mofified</span>, <span class="del">D=dropped</span></caption>
+<tr><th>Disp<th>Legacy<th>New<th>comments</tr>
+<tr><td><td><td><td>
+<tr><td class="new">N<td>gamit.m     <td>DLgamit.m     <td>
+<tr><td class="rep">R<td>mketat.m    <td>mketat.m      <td>
+<tr><td class="rep">R<td>mkexport.m  <td>DLmkexport.m  <td>
+<tr><td class="rep">R<td>mkgraph.m   <td>DLmkgraph.m   <td>
+<tr><td class="rep">R<td>plotevent.m <td>plotevent.m  <td>
+<tr><td class="new">N<td>            <td>readcfg.m    <td>
+<tr><td class="new">N<td>            <td>readproc.m   <td>
+<tr><td class="new">N<td>            <td>readview.m   <td>
+<tr><td class="new">N<td>            <td>readnode.m   <td>
+<tr><td class="new">N<td>            <td>readnodes.m  <td>
+<tr><td class="new">N<td>            <td>structcat.m  <td>
+<tr><td class="rep">R<td>timescales.m<td>timescales.m <td>
+<tr><td class="rep">R<td>readst.m    <td>readXst.m    <td>
+<tr><td class="del"> <td>htmgraph.m  <td>             <td>
+</table>
+
+<!-- ========================================================================================== -->
+<a name="MODSBASH"></a>
+<h2>WebObs BASHs changes: modules summary</h2>
+<table>
+<caption>Disp: <span class="new">N=new</span>, <span class="rep">R=replaced/mofified</span>, <span class="del">D=dropped</span></caption>
+<tr><th>Disp<th>Legacy<th>New<th>comments</tr>
+<tr><td><td><td><td>
+<tr><td class="new">N<td>&nbsp;      <td>SETUP/dutils.sh                      <td>
+<tr><td class="new">N<td>&nbsp;      <td class="withMAN">PACK/fpm             <td>
+<tr><td class="new">N<td>&nbsp;      <td class="withMAN">PACK/tagit           <td>
+<tr><td class="new">N<td>&nbsp;      <td class="withMAN">PACK/packit          <td>
+<tr><td class="new">N<td>&nbsp;      <td class="withMAN">SETUP/install        <td>
+<tr><td class="new">N<td>&nbsp;      <td>SETUP/createdb-WEBOBSDOMAINS
+<tr><td class="new">N<td>&nbsp;      <td>SETUP/createdb-WEBOBSJOBS
+<tr><td class="new">N<td>&nbsp;      <td>SETUP/createdb-WEBOBSUSERS
+</table>
+<hr>
+
+</BODY>
+</HTML>

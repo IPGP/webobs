@@ -1,0 +1,5 @@
+
+$ cat WEBOBS.conf | grep '\|' | egrep -o '^[^\|]+' | grep -v -E '^[# ]' > ~/listkeys
+
+$ cd ~/webobs/trunk/CODE/cgi-bin
+$ while read line; do echo "*** $line\n"; grep $line *.pl; done < ~/listkeys

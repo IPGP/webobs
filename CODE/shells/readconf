@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# WEBOBS main configuration file (WEBOBS.rc) utilities, to be used from WEBOBS release 'SETUP/setup'.
+# Helps with changing/adding configuration file entries (ie. key|value lines)
+# To be sourced once at beginning of the 'WEBOBS configuration upgrade process' 
+# Apply changes to /etc/webobs.d/WEBOBS.rc or user specified configuration file. 
+# Internally uses a 'bash-variables' view of WEBOBS.rc perl's hash (thru exposerc.pl)
+
+woconf() {
+	# internal: (re)-loads WEBOBS.rc as the set of bash variables WO__webobskeys
+	unset $(/usr/bin/env | egrep '^WO__' | /usr/bin/cut -d= -f1)
+	oIFS=${IFS}; IFS=$'\n'
+	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'WO__'))
+	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+	IFS=${oIFS}
+}
+
+# unconditionnaly sets WEBOBS.rc as WO__* env variables when this script is loaded
+woconf;

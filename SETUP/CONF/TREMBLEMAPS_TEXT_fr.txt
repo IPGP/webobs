@@ -1,0 +1,6 @@
+Un $quake_strength (magnitude $quake_mag_type = {\bf $quake_magnitude} \pm $quake_mag_error) a été enregistré le $long_date_local à $time_local
+(heure locale) et identifié de type {\bf $quake_type}. L'épicentre a été localisé à {\bf $epicentral} $azimuth de
+{\bf$city}, à $quake_depth de profondeur (soit une distance hypocentrale d'environ $hypocentral). Ce séisme a pu
+générer, dans les zones concernées les plus proches, une accélération moyenne du sol de {\bf $pga mg} (*),
+correspondant à une intensité macrosismique {\bf $msk} ($long_msk). Suivant le type de sols, les 
+intensités peuvent cependant avoir atteint localement l'intensité {\bf $msk_max} ($long_msk_max).

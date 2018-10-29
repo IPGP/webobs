@@ -1,0 +1,4 @@
+Un $quake_strength (magnitude {\bf $quake_magnitude} sur l'Échelle de Richter) a été enregistré le $long_date_local à $time_local
+(heure locale) et identifié de type {\bf $quake_type}. L'épicentre a été localisé à {\bf $epicentral} $azimuth de
+{\bf$city}, à $quake_depth de profondeur (soit une distance hypocentrale d'environ $hypocentral). Les témoignages 
+reccueillis à l'observatoire permettent d'établir que ce séisme a été ressenti. $additional_text

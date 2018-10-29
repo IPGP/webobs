@@ -1,0 +1,83 @@
+=key|value
+# Generic PROC template for superproc afm
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/afm.m for further information.
+
+
+# long name of the PROC
+NAME|AFM time series
+
+# raw data path
+RAWDATA|$WEBOBS{ROOT_RAWD}/afm
+RAWFORMAT|porkyasc
+
+# URN link to data 
+URNDATA|$WEBOBS{URN_RAWD}/afm
+
+# optional user-defined DEM (Arcinfo format, lat/lon)
+DEM|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
+
+# time zone for outputs
+TZ|0
+
+# additionnal URL
+URL|
+
+# lists of parameters (number of coma-separated rows must be consistent)
+TIMESCALELIST|24h,07d,30d,01y,all
+DECIMATELIST|1,1,6,12,30
+CUMULATELIST|1/24,1/24,1/24,1,1
+DATESTRLIST|-1,-1,-1,-1,-1
+MARKERSIZELIST|6,3,4,3,3
+LINEWIDTHLIST|1,.5,.1,.1,.1
+STATUSLIST|1,0,0,0,0
+# defines a reference date to use with 'ref' timescale in TIMESCALELIST
+REF_DATE|
+
+# additional summary graphs keywords (comma separated)
+#SUMMARYLIST|
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} afm $SELFREF -
+SUBMIT_RESOURCE|afm
+
+# list of keys editable in requests
+REQUEST_KEYLIST|PLUVIO_THRESHOLD
+
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+# node name
+NODENAME|node
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+
+# landscape format for all outputs
+LANDSCAPE|N
+
+# value = 1 to produce EPS graphs
+POSTSCRIPT|1
+
+# value = 1 to export text data files
+EXPORTS|1
+
+# main logo file
+LOGO_FILE|
+
+# secondary logo file
+LOGO2_FILE|
+
+# main copyright
+COPYRIGHT|
+
+# secondary copyright
+COPYRIGHT2|
+
+# --------------------------------------------------------------------
+# specific proc's parameters
+
+ALARM_FILE|${RAWDATA}/AFMALARM.DAT
+ALARM_TZ|0
+PLUVIO_THRESHOLD|3700
