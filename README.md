@@ -8,7 +8,7 @@ WebObs is an integrated web-based system for data monitoring and networks manage
 
 ## Present state and availability
 
-WebObs is presently still in a beta-version, fully functional and used in a dozen observatories, but the documentation is mostly incomplete. We hope to shortly finish the main user's manual and move all codes on this github. If you are in a hurry, please contact the project coordinator and we will be happy to share the package and help you to install it.
+WebObs is presently fully functional and used in a dozen observatories, but the documentation is mostly incomplete. We hope to shortly finish the main user's manual. If you are in a hurry, please contact the project coordinator and we will be happy to help you to install it. 
 
 ## Installation / upgrading
 
@@ -83,7 +83,7 @@ and update the ETOPO parameters in the /etc/webobs.d/WEBOBS.rc file with the lin
 
 ### Contributors
 
-* **Xavier Béguin** - beguin@ipgp.fr
+* **Xavier Béguin** - xbeguin@ntu.edu.sg
 * **Patrice Boissier** - [PBoissier](https://github.com/PBoissier) - boissier@ipgp.fr
 * **Alexis Bosson** - bosson@ipgp.fr
 * **Didier Mallarino**
@@ -99,7 +99,7 @@ See also the list of active [contributors](https://github.com/IPGP/webobs/contri
 
 ## Copyright
 
-WebObs - 2012-2016 - Institut de Physique du Globe Paris
+WebObs - 2012-2018 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
