@@ -4,7 +4,7 @@
 #
 # author: F. Beauducel, IPGP/IRD
 # created: 2018-10-10
-# updated: 2018-10-26
+# updated: 2018-10-30
 
 mydiff() {
 # Syntax: mydiff TEMPLATEFILE CONFFILE RELEASE [WRITEFLAG]
@@ -42,7 +42,7 @@ mydiff() {
 			else
 				COM=0
 			fi
-			grep -E "^$k\|" -B $COM $1 | tee -a $CONF
+			grep -E "^$k\|" -B $COM -m 1 $1 | tee -a $CONF
 			echo ""  | tee -a $CONF
 			NEW=1
 			>&2 echo -n " $k"

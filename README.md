@@ -12,6 +12,9 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 
 ## Installation / upgrading
 
+To run WebObs you need to install the package which contains a setup script that will set all configuration files. Installing WebObs is not a classical make from sources. A part of it requires the free Matlab runtime library because package contains some compiled binaries.
+
+
 ### A) Installing WebObs \<version\> from its WebObs-\<version\>.tgz
 
 You create/choose your WebObs directory within which you will execute the setup process. We suggest /opt/webobs. This directory will contain both

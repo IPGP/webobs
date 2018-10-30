@@ -79,8 +79,6 @@ LOGO2_FILE|
 LOGO2_HEIGHT|$WEBOBS{LOGO_HEIGHT}
 # optional secondary copyright
 COPYRIGHT2|
-# events file to plot in the background of each graph
-EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 # exports text data files
 EXPORTS|YES
 
