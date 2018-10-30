@@ -12,7 +12,9 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 
 ## Installation / upgrading
 
-To run WebObs you need to install the package which contains a setup script that will set all configuration files. Installing WebObs is not a classical make from sources. A part of it requires the free Matlab runtime library because package contains some compiled binaries.
+To run WebObs you need to install the package which contains a setup script that will set all configuration files. Installing WebObs is not a classical compilation from sources with 'make'. A part of it requires the free Matlab runtime library, because package contains some compiled binaries.
+
+Download the latest package file and runtime at [WebObs page](http://www.ipgp.fr/~beaudu/webobs.html).
 
 
 ### A) Installing WebObs \<version\> from its WebObs-\<version\>.tgz
@@ -59,7 +61,7 @@ The 'differences report' will be displayed at the end of the upgrade process to 
 
 With root privileges, in your target WebObs directory :
 
-        1) execute  " tar xf WebObs-<version>.tgz "
+        1) execute  " tar xf WebObs-<version>.tar.gz "
         2) execute  " WebObs-<version>/SETUP/setup "
         3) (re)start Apache
         4) launch the scheduler and postboard
