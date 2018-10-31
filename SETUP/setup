@@ -318,7 +318,14 @@ else
 	fi
 fi
 if [[ -z "${APP_SQLITE}" ]]  ; then DEPMISS=true; echo '**** need Sqlite3 install'; else verbosecho "Sqlite ${APP_SQLITE}";fi
-if [[ -z "${APP_IMAGICK}" ]] ; then DEPMISS=true; echo '**** need ImageMagick install'; else verbosecho "ImageMagick ${APP_IMAGICK}";fi
+if [[ -z "${APP_IMAGICK}" ]] ; then
+	DEPMISS=true
+	echo '**** need ImageMagick install';
+else 
+	verbosecho "ImageMagick ${APP_IMAGICK}";
+	${RELBASE}/SETUP/testconvert
+	if [ $? -ne 0 ]; then DEPMISS=true; fi
+fi
 if [[ -z "${APP_APACHE}" ]]  ; then DEPMISS=true; echo '**** need Apache install'; else verbosecho "Apache ${APP_APACHE}";fi
 if [[ -z "${APP_HTPASSWD}" ]]  ; then DEPMISS=true; echo '**** need htpasswd install'; else verbosecho "Apache ${APP_HTPASSWD}";fi
 if [[ -z "${APP_PYTHON}" ]]  ; then echo '**** could not detect Python'; else verbosecho "Python ${APP_PYTHON}";fi

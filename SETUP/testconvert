@@ -1,0 +1,22 @@
+#!/bin/bash
+SETUPDIR=$(dirname $0)
+
+echo "Testing image conversion using the 'convert' command..."
+
+test=0
+for fmt in png jpg pdf; do
+	printf "   Encapsulated postscript (eps) to $fmt..."
+	convert ${SETUPDIR}/test-image.eps ${SETUPDIR}/test-image.$fmt
+	rc=$?
+	if [ $rc == 0 ]; then
+		echo "ok."
+	else
+		echo "failed!"
+	fi
+	test=$(($test + $rc))
+done
+if [ $test != 0 ]; then
+	echo "**** Problem with convert. Please check your ImageMagick policy for PS/EPS/PDF formats."
+	echo "(comment some lines in /etc/ImageMagick/policy.xml might solve the problem...)"
+fi
+exit $test
