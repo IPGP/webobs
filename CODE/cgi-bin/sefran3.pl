@@ -39,6 +39,7 @@ use strict;
 use warnings;
 use Time::Local;
 use File::Basename;
+use List::Util qw(first);
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
@@ -344,11 +345,15 @@ if (!$date) {
 	#my $last_mc = qx(y=\$(find $MC3{ROOT} -maxdepth 1 -name "????" | sort | tail -n1);find \$y/$MC3{PATH_FILES} -maxdepth 1 -name '*.txt' |sort -r|head -n 2|xargs grep -vhE '(^-|\\|AUTO\\|)'|sed -nr "$SEFRAN3{DISPLAY_LAST_MC}s/^[0-9]+\\|([0-9]{4}-[0-9]{2}-[0-9]{2}\\|[0-9]{2}):.*/\\1/p" | xargs echo -n);
 	my $last_mc = qx(y=\$(find $MC3{ROOT} -maxdepth 1 -name "????" | sort | tail -n1);find \$y/$MC3{PATH_FILES} -maxdepth 1 -name '*.txt' |sort -r|head -n 2|xargs grep -vhE '(^-|\\|AUTO\\|)'|sed -nE "$SEFRAN3{DISPLAY_LAST_MC}s/^[0-9]+\\|([0-9]{4}-[0-9]{2}-[0-9]{2}\\|[0-9]{2}):.*/\\1/p" | xargs echo -n);
 	my $dt = 0;
+	my $last_mn;
+	my $lmn;
 
 	# what's the last minute-image ? searches for it and computes realtime delta
 	my $last_d = qx(y=\$(find $SEFRAN3{ROOT} -maxdepth 1 -name "????" | sort | tail -n1);find \$y -maxdepth 1| sort | tail -n1 | xargs echo -n);
 	if ($last_d) {
-		my @lm = split(/,/,qx/find $last_d -name "??????????????.png"|sort|tail -n1|xargs basename|awk '{print substr(\$1,11,2)","substr(\$1,9,2)","substr(\$1,7,2)","substr(\$1,5,2)","substr(\$1,1,4)}'/);
+		$last_mn = qx/find $last_d -name "??????????????.png"|sort|tail -n1/;
+		$lmn = basename($last_mn);
+		my @lm = (substr($lmn,10,2),substr($lmn,8,2),substr($lmn,6,2),substr($lmn,4,2),substr($lmn,0,4));
 		$dt = (timegm(gmtime) - timegm(0,$lm[0],$lm[1],$lm[2],$lm[3]-1,$lm[4]-1900) - 60);
 	}
 
@@ -464,12 +469,18 @@ if (!$date) {
 		my @stream_server = split(/\n/,$Q);
 
 		# read statistics
-		my @stats = readFile("$SEFRAN3{PATH_TMP}/$SEFRAN3{CHANNEL_STAT}");
+		my @stat_streams = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:streams]" $last_mn/);
+		my @stat_offset = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:offset]" $last_mn/);
+		my @stat_median = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:median]" $last_mn/);
+		my @stat_rate = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:rate]" $last_mn/);
+		my @stat_sampling = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:sampling]" $last_mn/);
+		my @stat_drms = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:drms]" $last_mn/);
+		my @stat_asymetry = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:asymetry]" $last_mn/);
 
 		print "<TABLE style=\"padding:2\"><TR><TH rowspan=2>#</TH>",
 			"<TH rowspan=2>Alias</TH><TH rowspan=2>Channel</TH><TH rowspan=2>Calibration<br>(count/(m/s))</TH>",
-			"<TH rowspan=2>Offset</TH><TH rowspan=2>Peak-Peak<br>(m/s)</TH>",
-			"<TH colspan=6>Signal statistics</TH><TH colspan=4>SeedLink server $SEFRAN3{SEEDLINK_SERVER}</TH><TH rowspan=2>Status</TH></TR>",
+			"<TH rowspan=2>Filter</TH><TH rowspan=2>Peak-Peak<br>(m/s)</TH>",
+			"<TH colspan=6>Signal statistics on last image<BR>$lmn</TH><TH colspan=4>SeedLink server $SEFRAN3{SEEDLINK_SERVER}</TH><TH rowspan=2>Status</TH></TR>",
 			"<TR><TH colspan=2>Offset<br>(&mu;m/s)</TH><TH>Asym.</TH><TH>RMS&Delta;<br>(&mu;m/s)</TH><TH>Acq.<br>(%)</TH><TH>Samp.<br>(Hz)</TH>",
 			"<TH>Oldest data</TH><TH>Last data</TH><TH>Buffer</TH><TH>&Delta;T</TH></TR>\n";
 		for (@channels) {
@@ -478,26 +489,25 @@ if (!$date) {
 			$color =~ s/"//;
 			my ($net,$sta,$loc,$cha) = split(/\./,$codes);
 			my @chan = grep(/$net *$sta *$loc *$cha/,@stream_server);
-			my @stat = grep(/$codes/,@stats);
+			my $idx = first { $stat_streams[$_] eq $codes } 0..$#stat_streams;
 
 			print "<TR><TD style=\"text-align:right\">$i.</TD>",
 				"<TD class=\"code\" style=\"color:$color\">$alias</TD><TD class=\"code\">$codes</TD>",
 				"<TD style=\"text-align:center\">$calib</TD><TD style=\"text-align:center\">$offset</TD><TD style=\"text-align:center\">$pp</TD>";
 
 			my $ch_nagios = 3; # Nagios 'UNKNOWN' value
-			if (@stat && $stat[0] !~ /NaN NaN NaN NaN NaN NaN/) {
-				my ($ch_code,$ch_median,$ch_offset,$ch_drms,$ch_asym,$ch_samp,$ch_rate) = split(/\s+/,$stat[0]);
+			if ($idx ge 0) {
 				my ($status_offset,$status_noise) = (1,1);
-				if (abs($ch_offset) < $SEFRAN3{STATUS_OFFSET_WARNING}) { $status_offset = 0; }
-				elsif (abs($ch_offset) > $SEFRAN3{STATUS_OFFSET_CRITICAL}) { $status_offset = 2; }
-				if ($ch_drms != 0 && ($ch_drms/$calib) < $SEFRAN3{STATUS_NOISE_WARNING}) { $status_noise = 0; }
-				elsif ($ch_drms == 0 || ($ch_drms/$calib) > $SEFRAN3{STATUS_NOISE_CRITICAL}) { $status_noise = 2; }
-				printf("<TD style=\"text-align:right\" ".($status_offset == 0 ? "":"class=\"status-".($status_offset == 1 ? "warning":"critical")."\"").">%1.4f</TD>",1e6*$ch_median/$calib);
-				printf("<TD style=\"text-align:right\" ".($status_offset == 0 ? "":"class=\"status-".($status_offset == 1 ? "warning":"critical")."\"").">%2.0f</TD>",100*$ch_offset);
-				printf("<TD style=\"text-align:right\">%2.0f</TD>",100*$ch_asym);
-				printf("<TD style=\"text-align:right\" ".($status_noise == 0 ? "":"class=\"status-".($status_noise == 1 ? "warning":"critical")."\"").">%1.4f</TD>",1e6*$ch_drms/$calib);
-				printf("<TD style=\"text-align:right\">%1.0f</TD>",100*$ch_samp);
-				printf("<TD style=\"text-align:center\">%g</TD>",$ch_rate);
+				if (abs($stat_offset[$idx]) < $SEFRAN3{STATUS_OFFSET_WARNING}) { $status_offset = 0; }
+				elsif (abs($stat_offset[$idx]) > $SEFRAN3{STATUS_OFFSET_CRITICAL}) { $status_offset = 2; }
+				if ($stat_drms[$idx] != 0 && ($stat_drms[$idx]/$calib) < $SEFRAN3{STATUS_NOISE_WARNING}) { $status_noise = 0; }
+				elsif ($stat_drms[$idx] == 0 || ($stat_drms[$idx]/$calib) > $SEFRAN3{STATUS_NOISE_CRITICAL}) { $status_noise = 2; }
+				printf("<TD style=\"text-align:right\" ".($status_offset == 0 ? "":"class=\"status-".($status_offset == 1 ? "warning":"critical")."\"").">%1.4f</TD>",1e6*$stat_median[$idx]/$calib);
+				printf("<TD style=\"text-align:right\" ".($status_offset == 0 ? "":"class=\"status-".($status_offset == 1 ? "warning":"critical")."\"").">%2.0f%</TD>",100*$stat_offset[$idx]);
+				printf("<TD style=\"text-align:right\">%2.0f%</TD>",100*$stat_asymetry[$idx]);
+				printf("<TD style=\"text-align:right\" ".($status_noise == 0 ? "":"class=\"status-".($status_noise == 1 ? "warning":"critical")."\"").">%1.4f</TD>",1e6*$stat_drms[$idx]/$calib);
+				printf("<TD style=\"text-align:right\">%1.0f</TD>",100*$stat_sampling[$idx]);
+				printf("<TD style=\"text-align:center\">%g</TD>",$stat_rate[$idx]);
 				if ($status_offset == 0 && $status_noise == 0) {
 					$ch_nagios = 0; # Nagios 'OK' value
 				} elsif ($status_offset == 2 || $status_noise == 2) {
@@ -546,7 +556,7 @@ if (!$date) {
 	print "<P>Sefran3 configuration file: <B>$s3</B></P>\n";
 	print "<P>Channels parameters file: <B>$SEFRAN3{CHANNEL_CONF}</B></P>\n";
 	print "<P>Update window: <B>$SEFRAN3{UPDATE_HOURS} h</B></P>\n";
-	print "<P>ArcLink server: ".($SEFRAN3{ARCLINK_SERVER} ne "" ? "<B>$SEFRAN3{ARCLINK_SERVER}</B> (delay = <B>$SEFRAN3{ARCLINK_DELAY_HOURS} h</B>)":"Not configured.")."</P>\n";
+	print "<P>Datasource: ".($SEFRAN3{DATASOURCE} ne "" ? "<B>$SEFRAN3{DATASOURCE}</B>":"Not configured.")."</P>\n";
 	print "<P>Broom wagon: ".($SEFRAN3{BROOMWAGON_ACTIVE} ? ("<B>Active</B> (delay = <B>$SEFRAN3{BROOMWAGON_DELAY_HOURS} h</B>,"
 		."update window = <B>$SEFRAN3{BROOMWAGON_UPDATE_HOURS} h</B>, "
 		."maximum dead channels = <B>$SEFRAN3{BROOMWAGON_MAX_DEAD_CHANNELS}</B>, "

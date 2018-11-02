@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2018-03-29
+%	Updated: 2018-11-02
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -48,7 +48,7 @@ maximages = field2num(SEFRAN3,'MAX_IMAGES_IN_RUN',10);
 
 % SeedLink and ArcLink servers
 fmsd = sprintf('%s/mseed.tmp',ptmp); % temporary miniseed file
-rtdelay = field2num(SEFRAN3,'SEEDLINK_DELAY_SECONDS',5); % Real-time delay (in seconds)
+rtdelay = field2num(SEFRAN3,'LATENCY_SECONDS',field2num('SEEDLINK_DELAY_SECONDS',5)); % Real-time latency delay (in seconds)
 rtmax = field2num(SEFRAN3,'ARCLINK_DELAY_HOURS',12); % Delay needed for  request, if possible (in hours)
 rtsource = field2str(SEFRAN3,'SEEDLINK_SERVER');
 rtformat = 'seedlink';
@@ -114,7 +114,7 @@ fclose(fid);
 sfr = C{2};
 nchan = length(sfr);
 % C{3} = calibration factor (numeric)
-% C{4} = filter: offset value (in counts) or 'median','trend','sp1','sp2','sp5','sp10'
+% C{4} = filter: offset value (in counts) or 'median','trend','spN','lpN,F','hpN,F','bpN,FL,FH'
 % C{5} = peak-to-peak amplitude (numeric)
 % C{6} = RGB color string (hexa form #RRGGBB)
 scol = htm2rgb(C{6});
@@ -251,8 +251,12 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						'HorizontalAlignment','center','VerticalAlignment','top','FontSize',7,'Fontweight','Bold','Color','k');
 				end
 				%chan_drawn = 0;
-				stats = cell(1,nchan);
-				samps = repmat({''},[1,nchan]);
+				tag_stat_rate = repmat({''},[1,nchan]);
+				tag_stat_samp = repmat({''},[1,nchan]);
+				tag_stat_medi = repmat({''},[1,nchan]);
+				tag_stat_offs = repmat({''},[1,nchan]);
+				tag_stat_drms = repmat({''},[1,nchan]);
+				tag_stat_asym = repmat({''},[1,nchan]);
 				for n = 1:nchan
 					c = textscan(sfr{n},'%s','Delimiter','.:'); % splits Network, Station, LocId and Channel codes
 					k = find(~cellfun('isempty',regexp(channel_list,sprintf('%s.*%s.*%s.*%s',c{1}{1},c{1}{2},c{1}{3},c{1}{4}))));
@@ -275,32 +279,17 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						ch_drms = std(diff(channel_data));
 						%FB-was: ch_samp = length(find(channel_time >= t0 & channel_time < (t0 + xlim(2))))/(60*channel_rate);
 						ch_samp = length(find(channel_time >= t0 & channel_time < t1))/(60*channel_rate);
-						samps{n} = sprintf('%1.5f',ch_samp);
+
 						% filtering
-						if ~isnan(str2double(C{4}{n}))
-							% removes constant value
-							ds = channel_data - str2double(C{4}{n});
-						else
-							switch C{4}{n}
-							case {'trend','sp10','sp5','sp2','sp1'}
-								% spline filter (removes linear trend or spline from decimated segments)
-								if strcmp(C{4}(n),'trend')
-									spn = 2;
-								else
-									spn = 60/str2double(C{4}{n}(3:end)) + 1;
-								end
-								ds = linfilter(channel_time,channel_data,spn,channel_rate);
-							otherwise
-								% median filter (removes median value)
-								ds = channel_data - ch_median;
-							end
-						end
+						ds = filtsignal(channel_time,channel_data,channel_rate,C{4}{n});
 
 						% calibrates and normalizes signal
 						ds = ds/str2double(C{3}{n})/str2double(C{5}{n});
+
 						% clips signal (forces saturation)
 						ds = min(ds,.5);
 						ds = max(ds,-.5);
+
 						% ... finally plots the signal
 						plotregsamp(channel_time - t0,ds - (n - .5)*hsig,'LineWidth',lw,'Color',scol(n,:))
 					else
@@ -311,7 +300,12 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						ch_samp = 0;
 						channel_rate = NaN;
 					end
-					stats{n} = sprintf('%s %g %g %g %g %g %g',sfr{n},ch_median,ch_offset,ch_drms,ch_asym,ch_samp,channel_rate);
+					tag_stat_rate{n} = sprintf('%1.5f',channel_rate);
+					tag_stat_samp{n} = sprintf('%1.5f',ch_samp);
+					tag_stat_medi{n} = sprintf('%1.5f',ch_median);
+					tag_stat_offs{n} = sprintf('%1.5f',ch_offset);
+					tag_stat_drms{n} = sprintf('%1.5f',ch_drms);
+					tag_stat_asym{n} = sprintf('%1.5f',ch_asym);
 				end
 
 				hold off
@@ -326,7 +320,12 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					sprintf('-set sefran3:streams "%s" ',strjoin(sfr',',')), ...
 					sprintf('-set sefran3:gains "%s" ',strjoin(C{3}',',')), ...
 					sprintf('-set sefran3:amplitudes "%s" ',strjoin(C{5}',',')), ...
-					sprintf('-set sefran3:sampling "%s" ',strjoin(samps,',')), ...
+					sprintf('-set sefran3:rate "%s" ',strjoin(tag_stat_rate,',')), ...
+					sprintf('-set sefran3:sampling "%s" ',strjoin(tag_stat_samp,',')), ...
+					sprintf('-set sefran3:median "%s" ',strjoin(tag_stat_medi,',')), ...
+					sprintf('-set sefran3:offset "%s" ',strjoin(tag_stat_offs,',')), ...
+					sprintf('-set sefran3:drms "%s" ',strjoin(tag_stat_drms,',')), ...
+					sprintf('-set sefran3:asymetry "%s" ',strjoin(tag_stat_asym,',')), ...
 				];
 
 				% prints image
@@ -450,15 +449,6 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 			end
 			fprintf('done.\n');
 		end
-	end
-
-	% writes statistics
-	if any(mdone)
-		f = sprintf('%s/%s',SEFRAN3.PATH_TMP,SEFRAN3.CHANNEL_STAT);
-		fid = fopen(f,'wt');
-		fprintf(fid,'%s\n',stats{:});
-		fclose(fid);
-		fprintf('%s: %s updated (statistics).\n',wofun,f);
 	end
 
 	if isempty(hdone)
