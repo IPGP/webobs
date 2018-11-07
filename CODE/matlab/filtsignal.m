@@ -3,22 +3,28 @@ function y = filtsignal(t,x,r,f)
 % 	Y=FILTSIGNAL(T,X,SAMPRATE,FILTERNAME) processes vector signal X(T), 
 %	supposing a sampling rate SAMPRATE (in Hz), using filter string name
 %	FILTERNAME:
-%	            [X]: constant offset value [X] (in count)
-%	         median: median value correction (formerly 'auto')
-%	          trend: linear detrend correction
-%	          sp[X]: spline filter using [X] seconds interval points ([X] is integer)
-%	[ft][fn][N],[F]: filter type [ft], name [fn], order [N] and cutoff frequency [F]
-%	                 - [ft] is 'lp' (lowpass), 'hp' (highpass) or 'bp' (bandpass)
-%	                 - [fn] is 'bu' (Butterworth)
-%	                 - [N] is a positive integer
-%	                 - [F] is frequency (in Hz), use [FL,FH] for 'bp' type
+%	                [X]: constant offset value [X] (in count)
+%	             median: median value correction (formerly 'auto')
+%	              trend: linear detrend correction
+%	              sp[X]: spline filter using [X] seconds interval points
+%	                     ([X] is a positive integer)
+%	[ft][fn][N],[F],[A]: filter type [ft], name [fn], order [N], cutoff
+%	                     frequency [F] and attenuation [A]
+%	                     - [ft] is 'lp' (lowpass), 'hp' (highpass), 
+%	                       'bp' (bandpass) or 'bs' (bandstop);
+%	                     - [fn] is 'bu' (Butterworth), 'be' (Bessel),
+%	                       'c1' or 'c2' (Chebyshev type I or II);
+%	                     - [N] is a positive integer;
+%	                     - [F] is frequency (in Hz), use [FL,FH] for 'bp' 
+%	                       and 'bs' type;
+%	                     - [A] is attenuation (in dB) for Chebyshev only.
 %	
 %	and returns filtered signal Y, same length as original X.
 %
 %	Examples:
 %		filtsignal(t,d,100,'sp5')
 %		filtsignal(t,d,125,'hpbu3,0.2')
-%		filtsignal(t,d,100,'bpbu2,0.05,0.5')
+%		filtsignal(t,d,100,'bpbe2,0.05,0.5')
 %
 %
 %	Author: F. Beauducel / WEBOBS
@@ -59,39 +65,54 @@ else
 			ok = 0;
 		end
 
-	case {'lp','hp','bp'}
+	case {'lp','hp','bp','bs'}
+		p = str2double(split(f(5:end),','));
+
+		% number of parameters must equal 2 + 1 for band* + 1 for cheby*
+		if any(isnan(p)) || (length(p) ~= (2 + strcmpi(f(1),'b') + strcmpi(f(3),'c')))
+			ok = 0;
+		end
+		if strcmpi(f(1),'b')
+			w = p(2:3)/(r/2); % band* : 2-element vector for frequency
+		else
+			w = p(2)/(r/2); % low/highpass
+		end
+		if any(w) > 1
+			ok = 0;
+		end
+
 		switch lower(f(3:4))
 		case 'bu'
+			% Butterworth
 			fn = @butter;
+			arg = { p(1) , w };
+		case 'be'
+			% Bessel
+			fn = @besself;
+			arg = { p(1) , w };
+		case 'c1'
+			% Chebyshev I
+			fn = @cheby1;
+			arg = { p(1) , w , p(end) };
+		case 'c2'
+			% Chebyshev II
+			fn = @cheby2;
+			arg = { p(1) , w , p(end) };
 		otherwise
 			ok = 0;
 		end
-		p = str2double(split(f(5:end),','));
 
 		switch lower(f(1:2))
-		case 'lp'
-			% lowpass Butterworth filter
-			if ok && length(p) == 2 && all(~isnan(p))
-				[b,a] = fn(p(1),p(2)/(r/2));
-			else
-				ok = 0;
-			end
 		case 'hp'
-			% highpass Butterworth filter
-			if ok && length(p) == 2 && all(~isnan(p))
-				[b,a] = fn(p(1),p(2)/(r/2),'high');
-			else
-				ok = 0;
-			end
-		case 'bp'
-			% bandpass Butterworth filter
-			if ok && length(p) == 3 && all(~isnan(p))
-				[b,a] = fn(p(1),p(2:3)/(r/2));
-			else
-				ok = 0;
-			end
+			% highpass filter
+			arg = cat(2,arg,'high');
+		case 'bs'
+			% bandstop filter
+			arg = cat(2,arg,'stop');
 		end
+
 		if ok
+			[b,a] = fn(arg{:});
 			y = filter(b,a,xm);
 		end
 		
@@ -102,5 +123,5 @@ end
 
 if ~ok
 	y = xm;
-	fprintf('*** Warning: unvalid filter "%s". Keeps original signal... ***\n',fn);
+	fprintf('*** Warning: unvalid filter "%s". Keeps original signal... ***\n',f);
 end

@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2018-11-02
+%	Updated: 2018-11-07
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -507,7 +507,7 @@ t1 = t0 + 1/1440;
 sfr = C{2};
 nchan = length(sfr);
 % vector of added seconds for each channel
-dt0 = ~cellfun(@isempty,regexp(C{4},'^[lhb]p...*'))*field2num(SEFRAN3,'FILTER_EXTRA_SECONDS',0)/86400;
+dt0 = ~cellfun(@isempty,regexp(C{4},'^(lp|hp|bp|bs)...*'))*field2num(SEFRAN3,'FILTER_EXTRA_SECONDS',0)/86400;
 
 switch dataformat
 % =============================================================================
