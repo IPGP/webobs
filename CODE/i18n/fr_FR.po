@@ -254,6 +254,15 @@ msgstr "Début / Installation"
 msgid "End / Stop"
 msgstr "Fin / Arrêt"
 
+msgid "Parameters"
+msgstr "Paramètres"
+
+msgid "Data"
+msgstr "Données"
+
+msgid "Channels"
+msgstr "Canaux"
+
 msgid "See also the following maps"
 msgstr "Voir aussi les cartes suivantes"
 
@@ -565,6 +574,24 @@ msgstr "Codes, alias et noms"
 
 msgid "Features"
 msgstr "Caractéristiques"
+
+msgid "Feature"
+msgstr "Caractéristique"
+
+msgid "Sensor/data outcome"
+msgstr "Influence capteur/données"
+
+msgid "Notebook Nb"
+msgstr "Cahier N°"
+
+msgid "Forward to notebook"
+msgstr "Renvoi au cahier"
+
+msgid "Start date & time"
+msgstr "Date & heure début"
+
+msgid "End date & time"
+msgstr "Date & heure fin"
 
 msgid "Full name"
 msgstr "Nom & prénom"

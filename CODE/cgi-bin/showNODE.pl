@@ -328,7 +328,7 @@ if (uc($GRIDType) eq 'PROC') {
 	my (@glist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/$NODENameLower"."_*.png";
 	my (@dlist) = glob "$OUTG/$WEBOBS{PATH_OUTG_EXPORT}/$NODENameLower"."_*.txt";
 
-	print "<TR><TD valign=\"top\"><B>$__{Data}</B></TH><TD>";
+	print "<TR><TD valign=\"top\"><B>$__{'Data'}</B></TH><TD>";
 	if ($OUTG ne "" && $NODE{VALID} && ($GRID{'URLDATA'} ne "" || $GRID{'FORM'} ne "" || $#glist >= 0 || $#dlist >= 0)) {
 		print "<TABLE><TR><TD style=\"border:0\">";
 		if ($GRID{'FORM'} ne "") {
@@ -380,14 +380,15 @@ if (uc($GRIDType) eq 'PROC') {
 	my @carCLB;
 	@carCLB = readCfgFile($clbFile) if (-s $clbFile != 0);
 	print "<TR><TD valign=\"top\" width=\"10%\"><B>";
+	my $txt = $__{'Channels'};
 	if ($editOK) {
 		if ($#carCLB >= 0) {
-			print "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$NODEName\">Channels</A>";
+			print "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$NODEName\">$txt</A>";
 		} else {
-			print "<A href=\"#\" onclick=\"askChanNb();\$(this).closest('form').submit();\"><B>Channels</B></A>";
+			print "<A href=\"#\" onclick=\"askChanNb();\$(this).closest('form').submit();\"><B>$txt</B></A>";
 		}
 	} else {
-		print "Channels";
+		print "$txt";
 	}
 	print "</B></TD><TD>";
 	if ($#carCLB >= 0) {

@@ -11,7 +11,7 @@ use WebObs::Events
 =head1 DESCRIPTION
 
 B<WebObs' events> are timestamped text files associated to Nodes or Grids. They are 
-created/updated/deleted by authorized users. They contain a title line and free wiki text lines.
+created/updated/deleted by authorized users. They contain a header line and free wiki text lines.
 Their filenames reflect both their Node or Grid membership and their timestamp. 
 
 Each B<event> may also have attached images and/or B<subevents>: both are collectively referred to as B<event extensions>. 
@@ -41,18 +41,18 @@ B<WebObs' events> live in B<dedicated directories> of nodes and/or grids:  B<INT
 	Unfolded example for node NODEA events:
 		$NODES{PATH_NODES}/NODEA/$NODES{SPATH_INTERVENTIONS}/
 			NODEA_Projet.txt
-			NODEA_2001-01-01_20-00.txt         Event 2001-01-01_20-00 file
-			NODEA_2001-01-01_20-00/            Event 2001-01-01_20-00 extensions
-				PHOTOS/                            Event 2001-01-01_20-00 photos 
+			NODEA_2001-01-01_20-00.txt         Event 2001-01-01 20:00 file
+			NODEA_2001-01-01_20-00/            Event 2001-01-01 20:00 extensions
+				PHOTOS/                            Event 2001-01-01 20:00 photos 
 					*.[jpg,pdf]                         
 					THUMBNAILS/                         
-				NODEA_2002-02-02_02-02.txt         subEvent 2002-02-02_02-02
-				NODEA_2002-02-02_02-02/            subEvent 2002-02-02_02-02 extensions
-					PHOTOS/                             subEvent 2002-02-02_02-02 photos
+				NODEA_2002-02-02_02-02.txt         subEvent 2002-02-02 02:02
+				NODEA_2002-02-02_02-02/            subEvent 2002-02-02 02:02 extensions
+					PHOTOS/                             subEvent 2002-02-02 02:02 photos
 						*.[jpg,pdf]                         
 						THUMBNAILS                          
-					NODEA_2003-03-03_03-03.txt          subsubEvent 2003-03-03_03-03
-			NODEA_2010-02-02_22-30.txt         Event 2010-02-02_22-30
+					NODEA_2003-03-03_03-03.txt          subsubEvent 2003-03-03 03:03
+			NODEA_2010-02-02_22-30.txt         Event 2010-02-02 22:30
 
 =cut
 
@@ -111,6 +111,46 @@ sub struct {
 		return ($obj[0],$obj[1],$obj[1],"$GRIDS{PATH_GRIDS}/$obj[0]/$obj[1]/$GRIDS{SPATH_INTERVENTIONS}","$GRIDS{PATH_EVENTGRID_TRASH}","G");
 	}
 	return undef;	
+}
+
+# -------------------------------------------------------------------------------------------
+
+=pod 
+
+=head2 headersplit
+
+headersplit(header) decodes header string and returns elements:
+
+	[0] = user UID (array)
+	[1] = title
+	[2] = end date & time
+	[3] = feature
+	[4] = outcome flag
+	[5] = notebook number
+	[6] = notebook forward flag
+
+=cut 
+
+sub headersplit {
+	my ($title,$date2,$time2,$feature,$outcome,$notebook,$notebookfwd) = "";
+	# event metadata are stored in the header line of file as pipe-separated fields:
+	# 	UID1[+UID2+...]|title|enddatetime|feature|outcome|notebook|notebookfwd
+	my @header = split(/\|/,$_[0]);
+	my $pipes = () = $header[0] =~ /\|/g; # count the number of pipes
+	my @UIDs = split(/\+/,$header[0]);
+	if ($pipes > 1 && $pipes < 6) {
+		$title = join("\|",@header[1..$#header]); # rare case of a former header with unescaped pipe in the title...
+	} else {
+		$title = $header[1] if ($#header > 0);
+		($date2,$time2) = split(/ /,$header[2]) if ($#header > 1);
+		$feature = $header[3] if ($#header > 2);
+		$outcome = $header[4] if ($#header > 3);
+		$notebook = $header[5] if ($#header > 4);
+		$notebookfwd = $header[6] if ($#header > 5);
+	}
+	$title =~ s/\"/\'\'/g;
+	
+	return (\@UIDs,$title,$date2,$time2,$feature,$outcome,$notebook,$notebookfwd);	
 }
 
 # -------------------------------------------------------------------------------------------
@@ -238,7 +278,7 @@ editYN indicates wether current viewing client has authorization to edit events 
 sub eventsShow {
 	return undef if (@_ != 3);
 	my ($sortedBy, $objectname, $editOK) = @_;
-	return undef if ($sortedBy !~ /events|date/i);
+	return undef if ($sortedBy !~ /events|date|feature/i);
 
 	my ($GRIDType, $GRIDName, $NODEName, $path, $trash) = struct($objectname);
 	return undef if (!defined($GRIDType));
@@ -246,7 +286,7 @@ sub eventsShow {
 	my @list;
 
 	eventsTree(\@list, $path)   if ($sortedBy =~ /events/i);
-	eventsChrono(\@list, $path) if ($sortedBy =~ /date/i);
+	eventsChrono(\@list, $path) if ($sortedBy =~ /date|feature/i);
 
 	$html .= "<UL>\n";
 	my $currentIndent = 0;
@@ -254,9 +294,10 @@ sub eventsShow {
 		(my $relevt = $evt) =~ s/$path\/// ;   # evt = full path to event file; relevt = relative path to event file
 		(my $extevt = $evt) =~ s/\.txt//;      # extevt = full path to event extensions directory
 		(my $relextevt = $extevt) =~ s/$path\/// ;   # relextevt = relative path to event extensions directory
-		my ($EVTobj,$EVTdate,$EVTtime,$EVTver) = split(/_/,basename($extevt));
-		$EVTtime =~ s/-/:/;
-		$EVTtime =~ s/NA//;
+		my ($obj,$date,$time,$ver) = split(/_/,basename($extevt));
+		$time =~ s/-/:/;
+		$time =~ s/NA//;
+
 		my @file = readFile($evt);
 		#DL-beforeMMD # ignore blank lines and LF
 		#DL-beforeMMD @file = grep(!/^$/, @file);
@@ -266,10 +307,15 @@ sub eventsShow {
 		if ($file[0] !~ /\|/) {            # if firstline doesn't look like 'something|someotherthing'
 			unshift(@file,"|untitled\n");  # force our own default (add a line)
 		}
-		my @firstline = split(/\|/,$file[0]);
-		my @users = split(/\+/,$firstline[0]); 
+		my ($people,$title,$date2,$time2,$feature,$outcome,$notebook,$notebookfwd) = headersplit($file[0]);
+		my @users = @$people;
 		my $EVTusers = join(", ",WebObs::Users::userName(@users));
-		my $EVTtitle = ($#firstline > 0) ? ucfirst($firstline[1]) : "NA" ;
+		$EVTusers = "<I>($EVTusers)</I> " if ($EVTusers ne "");
+		my $EVTtitle = "<B>".ucfirst($title)."</B>";
+		my $EVTdate = "$date $time".($date eq $date2 ? ($time eq $time2 || $time2 eq "" ? "":" &rarr; $time2"):" &rarr; $date2 $time2");
+		my $EVTver = (defined($ver)) ? " v$ver" : "";
+		my $EVToutcome = ($outcome > 0 ? "<IMG src=\"/icons/attention.gif\" border=0 onMouseOut=\"nd()\" onMouseOver=\"overlib('Potential outcome on sensor/data',CAPTION,'Warning')\">":"");
+		my $EVTinfo = ucfirst($feature).($notebook > 0 ? " • $__{Notebook} # $notebook".($notebookfwd > 0 ? " ($__{forward})":""):"");
 
 		# remaining lines = event text contents
 		shift(@file);
@@ -302,15 +348,13 @@ sub eventsShow {
 		}
 
 		# event header
-		$EVTver = (defined($EVTver)) ? " v$EVTver" : "";
 		$html .= "<LI class=\"Event\"><P class=\"titleEvent\">";
-		$html .= "$EVTdate $EVTtime$EVTver" if ($sortedBy =~ /date/i);
-		$html .= "<B>$EVTtitle</B>";
-		$html .= " $EVTdate $EVTtime$EVTver" if ($sortedBy =~ /events/i);
-		$html .= " <I>($EVTusers)</I>" if ($EVTusers ne "");
-		$html .= " $EVTedit</P>\n";
+		$html .= "$EVTdate $EVTtitle $EVTusers " if ($sortedBy =~ /date|feature/i);
+		$html .= "$EVTtitle $EVTdate $EVTusers " if ($sortedBy =~ /events/i);
+		$html .= "$EVToutcome $EVTedit</P>\n";
 		# event body
 		$html .= "<P class=\"subEvent\">".parents($path,$relextevt)."</P>\n";
+		$html .= "<P class=\"subEvent\">$EVTinfo</P>\n" if ($EVTinfo ne "");
 		$html .= "<BLOCKQUOTE class=\"contentEvent\">$EVTphotos$EVTtext</BLOCKQUOTE></LI>\n";
 	}
 	$html .= "</UL>\n";
@@ -530,11 +574,11 @@ __END__
 
 =head1 AUTHOR
 
-Didier Lafon
+Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2015 - Institut de Physique du Globe Paris
+Webobs - 2012-2018 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

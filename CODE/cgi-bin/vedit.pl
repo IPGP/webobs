@@ -87,6 +87,7 @@ use strict;
 use warnings;
 use Time::Piece;
 use File::Basename;
+use Switch;
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
@@ -128,6 +129,12 @@ my @oper   = $cgi->param('oper');
 my $contents = $QryParm->{'contents'} || "";
 my $date   = $QryParm->{'date'} || "";
 my $time   = $QryParm->{'time'} || "";
+my $date2  = $QryParm->{'date2'} || "";
+my $time2  = $QryParm->{'time2'} || "";
+my $feature= $QryParm->{'feature'} || "";
+my $outcome= $QryParm->{'outcome'} || "0";
+my $notebook= $QryParm->{'notebook'} || "000";
+my $notebookfwd= $QryParm->{'notebookfwd'} || "0";
 my $metain = $QryParm->{'meta'} || "";     # add MMD
 my $conv   = $cgi->param('conv')  || "0";  # add MMD
 $contents = "$metain$contents";            # add MMD
@@ -143,9 +150,30 @@ if ($action =~ /upd|new|del|save/i) {
 			if ( $action =~ /upd|del/i && $evpath !~ /.*\.txt$/i) { die "\"$evpath\" $__{'invalid for action'} $action" }
 			if ( $action =~ /upd|del/i && !-f "$evbase/$evpath") { die "\"$evpath\" $__{'not found'}" }
 			if ( $action =~ /new/i && -f "$evbase/$evpath" ) { $action = 'upd' } # new on existing: force upd !
-		} else { die "$__{'Not authorized'}" }
-	} else { die "$__{'invalid event object'}"; }
-} else { die "$__{'No or invalid action'}"; }
+		} else {
+			die "$__{'Not authorized'}";
+		}
+	} else {
+		die "$__{'invalid event object'}";
+	}
+} else {
+	die "$__{'No or invalid action'}";
+}
+
+my $objectfullname;
+my %NODE;
+my %GRID;
+# object if a node (gridtype.gridname.nodename)
+if ($object =~ /^.*\..*\..*$/) {
+	my %S = readNode($NODEName);
+	%NODE = %{$S{$NODEName}};
+	$objectfullname = "<B>$NODE{ALIAS}: $NODE{NAME}</B> <I>($NODE{TYPE})</I>";
+# ... or a grid (gridtype.gridname)
+} else {
+	my %S = readGrid($object);
+	%GRID = %{$S{$object}};
+	$objectfullname = "<B>$GRID{NAME}</B>";
+}
 
 # ---------------------------------------------------------------------------------------
 # ---- action 'save' : process submit button of previously displayed event's form
@@ -162,8 +190,9 @@ if ($action =~ /save/i ) {
 	# extract the event's file name from $evpath and make sure the path exists
 	my $evname = ($evpath =~ /.*\.txt$/) ? basename($evpath) : "";
 
-	my $tline = join("+",@oper)."|$titre\n";
+	my $tline = join("+",@oper)."|$titre";
 	if (!$isProject) {
+		$tline .= "|$date2 $time2|$feature|$outcome|$notebook|$notebookfwd";
 		# now build an event's file name from form's elements
 		$time =~ s/:/-/;
 		my $formname = "$NODEName\_$date\_$time.txt";
@@ -199,7 +228,7 @@ if ($action =~ /save/i ) {
 			$contents = "WebObs: converted with wiki2MMD\n\n$contents";
 		}
 		$contents =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
-		push(@lines,$tline);
+		push(@lines,$tline."\n");
 		push(@lines,$contents);
 		print FILE @lines;
 		close(FILE);
@@ -257,12 +286,14 @@ if ($action =~ /new/i ) {
 	if (!$isProject) { 
 		$date = $today->strftime('%Y-%m-%d');
 		$time = $today->strftime('%H:%M');
-		$pagetitle = "$__{'Create Event'} for $NODEName";
+		$date2 = $date;
+		$time2 = $time;
+		$pagetitle = "$__{'Create Event'}";
 		# fool parents() with a pseudo (xx) evntname if needed 
 		$parents = WebObs::Events::parents($evbase, "$evpath/xx") if ($evpath ne "" && $parents eq "");
 		$s2g = ( $GazetteWhat eq "ALL" ) ? 1 : 0;
 	} else {
-		$pagetitle = "$__{'Create Project'} for $NODEName";
+		$pagetitle = "$__{'Create Project'}";
 	}
 	$meta = "WebObs: created by vedit  \n\n" if ($mmd ne 'NO');         # add MMD
 }
@@ -277,23 +308,20 @@ if ($action =~ /upd/i ) {
 		($name,$date,$time,$version) = split(/_/,basename($fname));
 		$time =~ s/-/:/;
 		$time =~ s/NA//;
-		$pagetitle = "$__{'Edit Event'} [$date $time $version] for $NODEName";
+		$pagetitle = "$__{'Edit Event'} [$date $time $version]";
 		$s2g = ( $GazetteWhat eq "ALL" ) ? 1 : 0;
 	} else {
-		$pagetitle = "$__{'Edit Project'} for $NODEName";
+		$pagetitle = "$__{'Edit Project'}";
 	}
+
+	# event metadata are stored in the header line of file as pipe-separated fields:
+	# 	UID1[+UID2+...]|title|enddatetime|feature|outcome|notebook|notebookfwd
+	#	event text content
+	#	...
 	@lines = readFile("$evbase/$evpath");
 	chomp(@lines);
-	if (index($lines[0],"|") >= 0) {
-		my @pLigne = split(/\|/,$lines[0]);
-		@peopleIDs = split(/\+/,$pLigne[0]);
-		if ($#pLigne > 0) {
-			$titre = $pLigne[1];
-			$titre =~ s/\"/\'\'/g;
-		}
-	} else {
-		@peopleIDs = split(/\+/,$lines[0]);
-	}
+	(my $people,$titre,$date2,$time2,$feature,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
+	@peopleIDs = @$people;
 	shift(@lines);
 	$contents = join("\n",@lines);
 	($contents, $meta) = WebObs::Wiki::stripMDmetadata($contents);
@@ -355,6 +383,14 @@ if (!$isProject) {
 		holidays: $wodp_holidays,
 		//onpicked: function(i) { \$('input#date').val().replace(/,.*\$/,''); },
 	});
+	\$('input#date2').wodp({
+		icon: true,
+		//range: {from: min, to: max},
+		days: $wodp_d2,
+		months: $wodp_m,
+		holidays: $wodp_holidays,
+		//onpicked: function(i) { \$('input#date2').val().replace(/,.*\$/,''); },
+	});
 });
 
 function postform() {
@@ -363,6 +399,9 @@ function postform() {
 	\$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
 	if (!form.date.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date.style.background='red';};
 	if (form.time.value == '') {form.time.value = 'NA';}
+	if (form.date2.value != '' && !form.date2.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date2.style.background='red';};
+	if (form.date2.value == '') {form.date2.value = form.date.value;}
+	if (form.time2.value == '') {form.time2.value = form.time.value;}
 	if (form.oper.value == '') {bad=true; form.oper.style.background='red';}
 	if (form.titre.value == '') {bad=true; form.titre.style.background='red';}
 	form.s2g.value = $s2g;
@@ -424,21 +463,36 @@ print "<!-- overLIB (c) Erik Bosrup -->
 <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
 <DIV ID=\"helpBox\"></DIV>";
 print "<A NAME=\"MYTOP\"></A>";
-print "\n<h3>$pagetitle";
+print "\n<H2>$objectfullname</H2><H3>$pagetitle";
 print "<br><small>$parents</small>" if ($parents ne "");
-print "</h3>";
+print "</H3>";
 print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
-	print "<table><tr>";
-	print "<td style=\"vertical-align: top; border: none;\">";
+	print "<TABLE><TR>";
+	print "<TD style=\"vertical-align: top; border: none;\">";
 	if (!$isProject) {
-		print "<b>$__{'Date'}: </b><input size=\"10\" name=\"date\" id=\"date\" value=\"$date\">";
-		print "<b style=\"margin-left: 30px\">$__{'Time'}: </b><input size=\"5\" name=\"time\" id=\"time\" value=\"$time\"><br><br>";
+		print "<LABEL style=\"width:80px\" for=\"date\">$__{'Start date & time'}: </LABEL><INPUT size=\"10\" name=\"date\" id=\"date\" value=\"$date\"> ";
+		print "<INPUT size=\"5\" name=\"time\" id=\"time\" value=\"$time\"><br><br>\n";
+		print "<LABEL style=\"width:80px\" for=\"date2\">$__{'End date & time'}: </LABEL><INPUT size=\"10\" name=\"date2\" id=\"date2\" value=\"$date2\"> ";
+		print "<INPUT size=\"5\" name=\"time2\" id=\"time\" value=\"$time2\"><br><br>\n";
 	}
-	print "<b>$__{'Title'}:</b><input type=\"text\" name=\"titre\" id=\"titre\" value=\"$titre\" size=\"50\"><br><br>";
-	print "<b>$__{Notify} (email)</b><input type=\"checkbox\" name=\"notify\" value=\"OK\""
-	 	 ." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Send an e-mail to inform Webobs users'}')\">";
-	print "<td style=\"text-align: right; vertical-align: top; border: none;\">";
-	print "<b>$__{'Author(s)'}:</b><select id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\" 
+	print "<LABEL style=\"width:80px\" for=\"titre\">$__{'Title'}:</LABEL><INPUT type=\"text\" name=\"titre\" id=\"titre\" value=\"$titre\" size=\"80\"><br><br>\n";
+	# only for node's event
+	if ($object =~ /^.*\..*\..*$/) {
+		print "<LABEL style=\"width:80px\" for=\"feature\">$__{Feature}:</LABEL><SELECT id=\"feature\" name=\"feature\" size=\"0\">";
+		my @features = ("",split(/[,\|]/,$NODE{FILES_FEATURES}));
+		push(@features,$feature) if !(@features =~ $feature); # adds current feature if not in the list
+		foreach (@features) {
+			print "<OPTION value=\"$_\" ".($_ eq $feature ? "selected":"").">".ucfirst($_)."</OPTION>\n";
+		}
+		print "</SELECT><BR><BR>\n";
+		print "<B>$__{'Sensor/data outcome'}: </B><INPUT type=\"checkbox\" name=\"outcome\" value=\"1\"".($outcome ? "checked":"").">";
+		if ($NODES{EVENTNODE_NOTEBOOK} eq "YES") {
+			print "<B style=\"margin-left:20px\">$__{'Notebook Nb'}: </B><INPUT type=\"text\" size=\"3\" name=\"notebook\" value=\"$notebook\">";
+			print "<B style=\"margin-left:20px\">$__{'Forward to notebook'}: </B><INPUT type=\"checkbox\" name=\"notebookfwd\" value=\"1\" ".($notebookfwd ? "checked":"").">";
+		}
+	}
+	print "</TD>\n<TD style=\"text-align: right; vertical-align: top; border: none;\">";
+	print "<B>$__{'Author(s)'}: </B><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\" 
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved (hold CTRL key for multiple selections)'}')\">\n";
 	my @logins = sort grep { $USERS{$_}{VALIDITY} eq 'Y'} keys(%USERS);   # first, ordered valid logins
 	push(@logins, sort grep { $USERS{$_}{VALIDITY} ne 'Y'} keys(%USERS)); # then ordered invalid logins
@@ -449,15 +503,17 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 		}
 		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME}</option>\n";
 	}
-	print "</select>";
-	print "<tr><td style=\"vertical-align: top; border: none;\" colspan=2>";
+	print "</SELECT></TR>\n";
+	print "<TR><TD style=\"vertical-align: top; border: none;\" colspan=2>";
 	print "<P><TEXTAREA id=\"markItUp\" class=\"markItUp\" rows=\"11\" cols=\"80\" name=\"contents\" dataformatas=\"plaintext\">$contents</TEXTAREA></P>";
 	print "<P style=\"background-color: #ffffee\">";
 		print "<input type=\"button\" name=\"lien\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 		if (length($meta) == 0 && $mmd ne 'NO') {
 			print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
 		}
-		print "<input type=\"button\" value=\"$__{'Submit'}\" onClick=\"postform();\">";
+		print "<input type=\"button\" style=\"font-weight:bold\" value=\"$__{'Submit'}\" onClick=\"postform();\">";
+		print "<B style=\"margin-left:20px\">$__{Notify} (email)</B><input type=\"checkbox\"".($NODES{EVENTNODE_NOTIFY_DEFAULT} eq "YES" ? " checked":"")." name=\"notify\" value=\"OK\""
+			." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Send an e-mail to inform Webobs users'}')\">";
 		print "<input type=\"hidden\" name=\"action\" value=\"save\">";
 		print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
 		print "<input type=\"hidden\" name=\"event\" value=\"$evpath\">";
@@ -465,7 +521,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 		print "<input type=\"hidden\" name=\"conv\" value=\"0\">";
 		print "<input type=\"hidden\" name=\"meta\" value=\"$meta\">\n";
 	print "</P>";
-	print "</table>";
+	print "</TABLE>";
 print "</FORM>\n";
 		
 print "\n</BODY>\n</HTML>\n";
@@ -506,12 +562,10 @@ sub notify {
 	my $msg = '';
 
 	if ($object =~ /^.*\..*\..*$/) {
-		my %S = readNode($NODEName);
-		my %NODE = %{$S{$NODEName}};
 		my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
 
 		$msg .= "$__{'New event'} WebObs-$WEBOBS{WEBOBS_ID}.\n\n";
-		$msg .= "$__{'Node'}: $NODE{ALIAS}: $NODE{NAME}\n";
+		$msg .= "$__{'Node'}: {$NODEName} $NODE{ALIAS}: $NODE{NAME} ($NODE{TYPE})\n";
 		$msg .= "$__{'Grids'}: @{$allNodeGrids{$NODEName}}\n";
 		$msg .= "$__{'Date'}: $date $time\n";
 		$msg .= "$__{'Author(s)'}: $names\n";
@@ -521,7 +575,7 @@ sub notify {
 		$msg .= "\n";
 	} else {  # act as $etype = "G"
 		$msg .= "$__{'New event'} WebObs-$WEBOBS{WEBOBS_ID}.\n\n";
-		$msg .= "$__{'Grid'}: $GRIDType.$GRIDName\n";
+		$msg .= "$__{'Grid'}: {$GRIDType.$GRIDName} $GRID{NAME}\n";
 		$msg .= "$__{'Date'}: $date $time\n";
 		$msg .= "$__{'Author(s)'}: $names\n";
 		$msg .= "$__{'Title'}: $titre\n\n";
@@ -542,7 +596,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2016 - Institut de Physique du Globe Paris
+Webobs - 2012-2018 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
