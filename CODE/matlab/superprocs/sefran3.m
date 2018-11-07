@@ -114,7 +114,7 @@ fclose(fid);
 sfr = C{2};
 nchan = length(sfr);
 % C{3} = calibration factor (numeric)
-% C{4} = filter: offset value (in counts) or 'median','trend','spN','lpN,F','hpN,F','bpN,FL,FH'
+% C{4} = filter: offset value (in counts) or 'median','trend','spN','lpbuN,F','hpbuN,F','bpbuN,FL,FH'
 % C{5} = peak-to-peak amplitude (numeric)
 % C{6} = RGB color string (hexa form #RRGGBB)
 scol = htm2rgb(C{6});
@@ -506,6 +506,8 @@ aluser = field2str(SEFRAN3,'ARCLINK_USER','sefran3','notempty');
 t1 = t0 + 1/1440;
 sfr = C{2};
 nchan = length(sfr);
+% vector of added seconds for each channel
+dt0 = ~cellfun(@isempty,regexp(C{4},'^[lhb]p...*'))*field2num(SEFRAN3,'FILTER_EXTRA_SECONDS',0)/86400;
 
 switch dataformat
 % =============================================================================
@@ -550,9 +552,14 @@ case 'seedlink'
 				streams = sprintf('%s,%s',streams,s);
 			end
 		end
+		if any(~cellfun(@isempty,regexp(C{4},'^[lhb]p...*')))
+			dt = dt0;
+		else
+			dt = 0;
+		end
 		% makes SeedLink request and save to temporary miniseed file
 		s = wosystem(sprintf('%s -d -o %s -S "%s" -tw %d,%d,%d,%d,%d,%d:%g,%d,%d,%d,%d,%g %s', ...
-			slinktool,fmsd,streams,datevec(t0),datevec(t1),datasource),SEFRAN3);
+			slinktool,fmsd,streams,datevec(t0-max(dt0)),datevec(t1),datasource),SEFRAN3);
 	else
 		fprintf('%s: ** WARNING ** SEEDLINK server %s at %s has no channel available !\n',wofun,datasource,datestr(t1));
 	end
@@ -569,7 +576,7 @@ case 'arclink'
 	fid = fopen(freq,'wt');
 	for n = 1:length(sfr)
 		c = textscan(sfr{n},'%s','Delimiter','.:'); % splits Network, Station, Loc and Channel codes
-		fprintf(fid,'%d,%d,%d,%d,%d,%g %d,%d,%d,%d,%d,%g %s %s %s %s\n',datevec(t0),datevec(t1),c{1}{1},c{1}{2},c{1}{4},c{1}{3});
+		fprintf(fid,'%d,%d,%d,%d,%d,%g %d,%d,%d,%d,%d,%g %s %s %s %s\n',datevec(t0-dt0(n)),datevec(t1),c{1}{1},c{1}{2},c{1}{4},c{1}{3});
 	end
 	fclose(fid);
 	% makes ArcLink request and save to temporary miniseed file
@@ -586,7 +593,7 @@ case 'fdsnws-dataselect'
 		fmsdchan = sprintf('%s/mseed%d.tmp',ptmp,n); % temporary miniseed file for channel n
 		c = textscan(sfr{n},'%s','Delimiter','.:'); % splits NET, STA, LOC, CHA codes
 		% builds request line for dataselect WebService
-		wsreq = sprintf('starttime=%04d-%02d-%02dT%02d:%02d:%02.0f&endtime=%04d-%02d-%02dT%02d:%02d:%02.0f&net=%s&sta=%s&loc=%s&cha=%s',datevec(t0),datevec(t1),c{1}{1},c{1}{2},c{1}{3},c{1}{4});
+		wsreq = sprintf('starttime=%04d-%02d-%02dT%02d:%02d:%02.0f&endtime=%04d-%02d-%02dT%02d:%02d:%02.0f&net=%s&sta=%s&loc=%s&cha=%s',datevec(t0-dt0(n)),datevec(t1),c{1}{1},c{1}{2},c{1}{3},c{1}{4});
 		wosystem(sprintf('wget -nv -O %s "%s%s"',fmsdchan,datasource,wsreq),SEFRAN3);
 	end
 	wosystem(sprintf('cat %s/mseed{1..%d}.tmp > %s',ptmp,length(sfr),fmsd));
