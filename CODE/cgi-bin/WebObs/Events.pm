@@ -512,13 +512,13 @@ sub deleteit {
 	if (@_ == 3 && $_[2] =~ /.*\.txt$/) {
 		my ($evbase, $evtrash, $evpath) = @_;
 		qx(/bin/mkdir -p $evtrash 2>&1); # make sure root trash exists
-		qx(/bin/mv -t "$evtrash/" "$evbase/$evpath" 2>&1);
+		qx(/bin/mv "$evbase/$evpath" "$evtrash/" 2>&1);
 		return "$__{'Could not move event to trash'} , $?" if ($? != 0);
 		$evpath =~ s/\.txt$//;           # event extensions dir
 		my $evname = basename($evpath);  # event extensions dir name
 		if (-e "$evbase/$evpath/") {
 			qx(mkdir -p "$evtrash/$evname/" 2>&1);
-			qx(/bin/mv -t "$evtrash/$evname/" "$evbase/$evpath/" 2>&1);
+			qx(/bin/mv "$evbase/$evpath/" "$evtrash/$evname/" 2>&1);
 			if ($? != 0) { 
 				# extensions dir move failed, try reverting *txt move
 				# move $evname.txt -> back to $evbase/.../ 

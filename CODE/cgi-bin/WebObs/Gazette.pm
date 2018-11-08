@@ -600,7 +600,8 @@ sub setArticle {
 =head2 setEventArticle
 
 Insert or replace an 'Event' category article in DB. 
-Required arguments are the Event's objectname, filename, title and usernames string to build the article fields.
+Required arguments are the Event's objectname, filename, title, usernames string and end date_time
+to build the article fields.
 setEventArticle will then use setArticle().  
 Also refer to vedit.pl for Event management considerations.
 
@@ -611,10 +612,11 @@ Also refer to vedit.pl for Event management considerations.
 =cut
 
 sub setEventArticle {
-	return 0 if (@_ != 4);
-	my ($object, $evname, $titre, $oper) = @_;
+	return 0 if (@_ != 5);
+	my ($object, $evname, $titre, $oper,$eve) = @_;
 	(my $evp = $evname) =~ s/\.txt//;
 	my ($en,$ed,$et,$ev) = split(/_/,basename($evp));
+	my ($ed2,$et2) = split(/_/,$eve);
 	$et = ($et eq "NA") ? "" : $et;
 	$et =~ s/-/:/;
 	$titre = "(v$ev) $titre" if (defined($ev));
@@ -623,8 +625,8 @@ sub setEventArticle {
 				 "null",
 				 $ed,
 				 $et,
-				 $ed,
-				 '',
+				 $ed2,
+				 $et2,
 				 "Event",
 				 $oper,
 				 '',

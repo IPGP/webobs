@@ -24,8 +24,7 @@ There's only one B<Project> associated to a grid or node: B<base-path/projectNam
 
 =head1 VEDIT-GAZETTE BEHAVIOR
 
-WebObs::Gazette::setArticle is 
-used by vedit 'new' action, based on the $WEBOBS{EVENTS_TO_GAZETTE} settings. 
+WebObs::Gazette::setArticle is used by vedit 'new' action, based on the $WEBOBS{EVENTS_TO_GAZETTE} settings. 
 WebObs::Gazette::delEventArticle is used by vedit 'del' action, based on $WEBOBS{EVENTS_GAZETTE_DELETE} settings.
 
 	$WEBOBS{EVENTS_TO_GAZETTE}|ALL       # ALL    = insert all created events into Gazette (= default)
@@ -537,7 +536,7 @@ sub htmlMsgOK {
 			$rcd = WebObs::Gazette::delEventArticle($object,$target);
 			$msg .= "\n+ ".basename($target)." $__{'removed from Gazette'}" if ($rcd != 0);
 		}
-		$rcd = WebObs::Gazette::setEventArticle($object,$target,$titre,join('+',@oper));
+		$rcd = WebObs::Gazette::setEventArticle($object,$target,$titre,join('+',@oper),$date2."_".$time2);
 		$msg .= "+ ".basename($target)." $__{'written to Gazette'}\n" if ($rcd =~ /1 row.*/);
 	}
 	if ( $notify eq 'OK' ) { 
