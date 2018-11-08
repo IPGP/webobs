@@ -1,9 +1,35 @@
 function [a,b,c,d] = besself(n,w,varargin)
+%BESSELF Bessel analog filter design.
+%	[B,A] = BESSELF(N,WO) returns the transfer function coefficients of an
+%	Nth-order lowpass analog Bessel filter, where WO is the angular frequency
+%	up to which the filter's group delay is approximately constant. Larger 
+%	values of N produce a group delay that better approximates a constant up
+%	to WO.
+%
+%	[B,A] = BESSELF(N,WO,FTYPE) designs a lowpass, highpass, bandpass, or
+%	bandstop analog Bessel filter, depending on the value of FTYPE and the
+%	number of elements of WO. The resulting bandpass and bandstop designs 
+%	are of order 2N. FTYPE can be:
+%		'low' is lowpass, default if WO is scalar,
+%		'high' is highpass, WO must be scalar,
+%		'bandpass' is bandpass, default if WO is a two-element vector,
+%		'stop' is bandstop, WO must be a two-element vector.
+%
+%	[Z,P,K] = BESSELF(...) returns its zeros, poles, and gain.
+%
+%	[A,B,C,D] = BESSELF(...) returns the matrices that specify its
+%	state-space representation.
+
+%
+%	References:
+%		Proakis & Manolakis (1992). Digital Signal Processing. New York:
+%		Macmillan Publishing Company.
+
+
 % Copyright (C) 1999 Paul Kienzle <pkienzle@users.sf.net>
 % Copyright (C) 2003 Doug Stewart <dastew@sympatico.ca>
 % Copyright (C) 2009 Thomas Sailer <t.sailer@alumni.ethz.ch >
 % Copyrigth (C) 2018 Francois Beauducel <beauducel@ipgp.fr>
-
 %
 % This program is free software: you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -18,37 +44,6 @@ function [a,b,c,d] = besself(n,w,varargin)
 % You should have received a copy of the GNU General Public License
 % along with this program; see the file COPYING. If not, see
 % <https://www.gnu.org/licenses/>.
-
-% -*- texinfo -*-
-% @deftypefn  {Function File} {[@var{b}, @var{a}] =} besself (@var{n}, @var{w})
-% @deftypefnx {Function File} {[@var{b}, @var{a}] =} besself (@var{n}, @var{w}, 'high')
-% @deftypefnx {Function File} {[@var{z}, @var{p}, @var{g}] =} besself (@dots{})
-% @deftypefnx {Function File} {[@var{a}, @var{b}, @var{c}, @var{d}] =} besself (@dots{})
-% @deftypefnx {Function File} {[@dots{}] =} besself (@dots{}, 'z')
-% Generate a Bessel filter.
-% Default is a Laplace space (s) filter.
-%
-% [b,a] = besself(n, Wc)
-%    low pass filter with cutoff pi*Wc radians
-%
-% [b,a] = besself(n, Wc, 'high')
-%    high pass filter with cutoff pi*Wc radians
-%
-% [z,p,g] = besself(...)
-%    return filter as zero-pole-gain rather than coefficients of the
-%    numerator and denominator polynomials.
-%
-% [...] = besself(...,'z')
-%     return a discrete space (Z) filter, W must be less than 1.
-%
-% [a,b,c,d] = besself(...)
-%  return  state-space matrices
-%
-% References:
-%
-% Proakis & Manolakis (1992). Digital Signal Processing. New York:
-% Macmillan Publishing Company.
-% @end deftypefn
 
 
 if (nargin > 4 || nargin < 2 || nargout > 4 || nargout < 2)

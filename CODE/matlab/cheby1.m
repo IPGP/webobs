@@ -1,4 +1,27 @@
 function  [a,b,c,d] = cheby1(n,rp,w,varargin)
+%CHEBY1 Chebyshev Type I filter design.
+%	[B,A] = CHEBY1(N,RP,WP) returns the transfer function coefficients of an
+%	Nth-order lowpass digital Chebyshev Type I filter with normalized passband
+%	edge frequency WP and RP decibels of peak-to-peak passband ripple.
+%
+%	[B,A] = CHEBY1(N,RP,WP,FTYPE) designs a lowpass, highpass, bandpass, or
+%	bandstop filter, depending on the value of FTYPE and the number of 
+%	elements of WP. The resulting bandpass and bandstop designs are of order
+%	2N. FTYPE can be:
+%		'low' is lowpass, default if WP is scalar,
+%		'high' is highpass, WP must be scalar,
+%		'bandpass' is bandpass, default if WP is a two-element vector,
+%		'stop' is bandstop, WP must be a two-element vector.
+%
+%	[Z,P,K] = CHEBY1(...) returns its zeros, poles, and gain.
+%
+%	[A,B,C,D] = CHEBY1(...) returns the matrices that specify its state-space
+%	representation.
+%
+%	[...] = CHEBY1(...,'s') designs a lowpass, highpass, bandpass, or bandstop
+%	analog Chebyshev Type I filter with passband edge angular frequency WP and 
+%	RP decibels of passband ripple.
+
 
 % Copyright (C) 1999 Paul Kienzle <pkienzle@users.sf.net>
 % Copyright (C) 2003 Doug Stewart <dastew@sympatico.ca>

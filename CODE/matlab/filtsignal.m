@@ -29,7 +29,7 @@ function y = filtsignal(t,x,r,f)
 %
 %	Author: F. Beauducel / WEBOBS
 % 	Created: 2018-11-01 in Yogyakarta (Indonesia)
-% 	Updated: 2018-11-07
+% 	Updated: 2018-11-08
 
 
 ok = 1;
@@ -93,11 +93,11 @@ else
 		case 'c1'
 			% Chebyshev I
 			fn = @cheby1;
-			arg = { p(1) , w , p(end) };
+			arg = { p(1) , p(end) , w };
 		case 'c2'
 			% Chebyshev II
 			fn = @cheby2;
-			arg = { p(1) , w , p(end) };
+			arg = { p(1) , p(end) , w };
 		otherwise
 			ok = 0;
 		end

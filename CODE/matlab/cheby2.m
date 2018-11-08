@@ -1,4 +1,34 @@
 function [a,b,c,d] = cheby2(n,rs,w,varargin)
+%CHEBY2 Chebyshev Type I filter design.
+%	[B,A] = CHEBY2(N,RS,WP) returns the transfer function coefficients of an
+%	Nth-order lowpass digital Chebyshev Type II filter with normalized 
+%	passband edge frequency WP and RS decibels of stopband attenuation down
+%	from the peak passband value.
+%
+%	[B,A] = CHEBY2(N,RP,WP,FTYPE) designs a lowpass, highpass, bandpass, or
+%	bandstop filter, depending on the value of FTYPE and the number of 
+%	elements of WP. The resulting bandpass and bandstop designs are of order
+%	2N. FTYPE can be:
+%		'low' is lowpass, default if WP is scalar,
+%		'high' is highpass, WP must be scalar,
+%		'bandpass' is bandpass, default if WP is a two-element vector,
+%		'stop' is bandstop, WP must be a two-element vector.
+%
+%	[Z,P,K] = CHEBY2(...) returns its zeros, poles, and gain.
+%
+%	[A,B,C,D] = CHEBY2(...) returns the matrices that specify its state-space
+%	representation.
+%
+%	[...] = CHEBY2(...,'s') designs a lowpass, highpass, bandpass, or bandstop
+%	analog Chebyshev Type II filter with stopband edge angular frequency WP and 
+%	RS decibels of stopband attenuation.
+%
+%
+%	References:
+%		Parks & Burrus (1987). Digital Filter Design. New York:
+%		John Wiley & Sons, Inc.
+
+
 % Copyright (C) 1999 Paul Kienzle <pkienzle@users.sf.net>
 % Copyright (C) 2003 Doug Stewart <dastew@sympatico.ca>
 % Copyrigth (C) 2018 Francois Beauducel <beauducel@ipgp.fr>
@@ -17,43 +47,6 @@ function [a,b,c,d] = cheby2(n,rs,w,varargin)
 % along with this program; see the file COPYING. If not, see
 % <https://www.gnu.org/licenses/>.
 
-% -*- texinfo -*-
-% @deftypefn  {Function File} {[@var{b}, @var{a}] =} cheby2 (@var{n}, @var{rs}, @var{wc})
-% @deftypefnx {Function File} {[@var{b}, @var{a}] =} cheby2 (@var{n}, @var{rs}, @var{wc}, 'high')
-% @deftypefnx {Function File} {[@var{b}, @var{a}] =} cheby2 (@var{n}, @var{rs}, [@var{wl}, @var{wh}])
-% @deftypefnx {Function File} {[@var{b}, @var{a}] =} cheby2 (@var{n}, @var{rs}, [@var{wl}, @var{wh}], 'stop')
-% @deftypefnx {Function File} {[@var{z}, @var{p}, @var{g}] =} cheby2 (@dots{})
-% @deftypefnx {Function File} {[@var{a}, @var{b}, @var{c}, @var{d}] =} cheby2 (@dots{})
-% @deftypefnx {Function File} {[@dots{}] =} cheby2 (@dots{}, 's')
-% Generate a Chebyshev type II filter with @var{rs} dB of stopband attenuation.
-%
-% [b, a] = cheby2(n, Rs, Wc)
-%    low pass filter with cutoff pi*Wc radians
-%
-% [b, a] = cheby2(n, Rs, Wc, 'high')
-%    high pass filter with cutoff pi*Wc radians
-%
-% [b, a] = cheby2(n, Rs, [Wl, Wh])
-%    band pass filter with edges pi*Wl and pi*Wh radians
-%
-% [b, a] = cheby2(n, Rs, [Wl, Wh], 'stop')
-%    band reject filter with edges pi*Wl and pi*Wh radians
-%
-% [z, p, g] = cheby2(...)
-%    return filter as zero-pole-gain rather than coefficients of the
-%    numerator and denominator polynomials.
-%
-% [...] = cheby2(...,'s')
-%     return a Laplace space filter, W can be larger than 1.
-%
-% [a,b,c,d] = cheby2(...)
-%  return  state-space matrices
-%
-% References:
-%
-% Parks & Burrus (1987). Digital Filter Design. New York:
-% John Wiley & Sons, Inc.
-% @end deftypefn
 
 
 if (nargin > 5 || nargin < 3 || nargout > 4)
