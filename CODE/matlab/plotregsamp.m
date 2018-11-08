@@ -7,10 +7,11 @@ function hout = plotregsamp(t,d,varargin)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-09-24
+%	Updated: 2018-11-07
 
 tol = 1.5;
 ddt = diff(t);
-dt = median(ddt);
+dt = mode(ddt);
 
 holdflag = ishold;
 

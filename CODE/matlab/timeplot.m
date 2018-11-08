@@ -5,7 +5,7 @@ function varargout=timeplot(t,d,samp,varargin)
 %	where time interval is more than 150%.
 %
 %	TIMEPLOT(T,D) or TIMEPLOT(T,D,[],...) will guess the sampling rate
-%	automatically (using median value of time interval).
+%	automatically (using most frequent value of time interval).
 %
 %	TIMEPLOT(T,D,0) will force a continuous plot.
 %
@@ -14,7 +14,7 @@ function varargout=timeplot(t,d,samp,varargin)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2015-08-25 in Yogyakarta, Indonesia
-%	Updated: 2018-04-20
+%	Updated: 2018-11-07
 
 if nargin < 2
 	error('Not enough input argument.')
@@ -28,7 +28,7 @@ end
 
 if isempty(samp) || isnan(samp) || ~isnumeric(samp)
 	% guess the sampling rate
-	samp = median(dt);
+	samp = mode(dt);
 end
 
 if samp > 0
