@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2018-11-07
+%	Updated: 2018-11-09
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -48,7 +48,7 @@ maximages = field2num(SEFRAN3,'MAX_IMAGES_IN_RUN',10);
 
 % SeedLink and ArcLink servers
 fmsd = sprintf('%s/mseed.tmp',ptmp); % temporary miniseed file
-rtdelay = field2num(SEFRAN3,'LATENCY_SECONDS',field2num('SEEDLINK_DELAY_SECONDS',5)); % Real-time latency delay (in seconds)
+rtdelay = field2num(SEFRAN3,'LATENCY_SECONDS',field2num(SEFRAN3,'SEEDLINK_DELAY_SECONDS',5)); % Real-time latency delay (in seconds)
 rtmax = field2num(SEFRAN3,'ARCLINK_DELAY_HOURS',12); % Delay needed for  request, if possible (in hours)
 rtsource = field2str(SEFRAN3,'SEEDLINK_SERVER');
 rtformat = 'seedlink';
