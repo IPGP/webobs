@@ -8,7 +8,7 @@ function y = filtsignal(t,x,r,f)
 %	              trend: linear detrend correction
 %	              sp[X]: spline filter using [X] seconds interval points
 %	                     ([X] is a positive integer)
-%	[ft][fn][N],[F],[A]: filter type [ft], name [fn], order [N], cutoff
+%	[ft][fn][N],[F],[S]: filter type [ft], name [fn], order [N], cutoff
 %	                     frequency [F] and attenuation [A]
 %	                     - [ft] is 'lp' (lowpass), 'hp' (highpass), 
 %	                       'bp' (bandpass) or 'bs' (bandstop);
@@ -17,7 +17,8 @@ function y = filtsignal(t,x,r,f)
 %	                     - [N] is a positive integer;
 %	                     - [F] is frequency (in Hz), use [FL,FH] for 'bp' 
 %	                       and 'bs' type;
-%	                     - [A] is attenuation (in dB) for Chebyshev only.
+%	                     - [S] is stopband attenuation/ripple (in dB)
+%	                       for Chebyshev only.
 %	
 %	and returns filtered signal Y, same length as original X.
 %
