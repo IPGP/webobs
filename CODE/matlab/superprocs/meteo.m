@@ -55,7 +55,7 @@ function DOUT=meteo(varargin)
 %
 %   Authors: F. Beauducel + S. Acounis / WEBOBS, IPGP
 %   Created: 2001-07-04
-%   Updated: 2017-08-02
+%   Updated: 2018-11-09
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -210,7 +210,7 @@ for n = 1:length(N)
 		end
 		set(gca,'XLim',tlim,'FontSize',8)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('%s %s (%s)',C.nm{6},hcum,C.un{6}))
+		ylabel(sprintf('%s %s (%s)',C.nm{i_rain},hcum,C.un{i_rain}))
 
 		% Wind rose (histogram of azimuths)
 		h = subplot(length(node_chan) + 5,2+gxy,[1 3+gxy]);
