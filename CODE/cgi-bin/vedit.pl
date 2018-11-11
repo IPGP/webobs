@@ -131,6 +131,7 @@ my $time   = $QryParm->{'time'} || "";
 my $date2  = $QryParm->{'date2'} || "";
 my $time2  = $QryParm->{'time2'} || "";
 my $feature= $QryParm->{'feature'} || "";
+my $channel= $QryParm->{'channel'} || "";
 my $outcome= $QryParm->{'outcome'} || "0";
 my $notebook= $QryParm->{'notebook'} || "000";
 my $notebookfwd= $QryParm->{'notebookfwd'} || "0";
@@ -191,7 +192,7 @@ if ($action =~ /save/i ) {
 
 	my $tline = join("+",@oper)."|$titre";
 	if (!$isProject) {
-		$tline .= "|$date2 $time2|$feature|$outcome|$notebook|$notebookfwd";
+		$tline .= "|$date2 $time2|$feature|$channel|$outcome|$notebook|$notebookfwd";
 		# now build an event's file name from form's elements
 		$time =~ s/:/-/;
 		my $formname = "$NODEName\_$date\_$time.txt";
@@ -314,12 +315,12 @@ if ($action =~ /upd/i ) {
 	}
 
 	# event metadata are stored in the header line of file as pipe-separated fields:
-	# 	UID1[+UID2+...]|title|enddatetime|feature|outcome|notebook|notebookfwd
+	# 	UID1[+UID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
 	#	event text content
 	#	...
 	@lines = readFile("$evbase/$evpath");
 	chomp(@lines);
-	(my $people,$titre,$date2,$time2,$feature,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
+	(my $people,$titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
 	@peopleIDs = @$people;
 	shift(@lines);
 	$contents = join("\n",@lines);
@@ -484,10 +485,32 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 			print "<OPTION value=\"$_\" ".($_ eq $feature ? "selected":"").">".ucfirst($_)."</OPTION>\n";
 		}
 		print "</SELECT><BR><BR>\n";
+		# only if node associated to a proc and calibration file defined
+		my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
+		if ($GRIDType eq "PROC" && -s $clbFile != 0) {
+			print "<LABEL style=\"width:80px\" for=\"channel\">$__{'Channel'}: </LABEL>";
+			my @carCLB   = readCfgFile($clbFile);
+			# make a list of available channels and label them with last Chan. + Loc. codes
+			my %chan;
+			for (@carCLB) {
+				my (@chpCLB) = split(/\|/,$_);
+				$chan{$chpCLB[2]} = "$chpCLB[2]: $chpCLB[3] ($chpCLB[6] $chpCLB[19])";
+			}
+			print "<SELECT name=\"channel\" size=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_nodeevent_channel}')\" id=\"channel\">";
+			for (("",sort(keys(%chan)))) {
+				print "<option".($_ eq $channel ? " selected":"")." value=\"$_\">".($_ eq "" ? "":$chan{$_})."</option>\n";
+			}
+			print "</SELECT><BR><BR>\n";
+		} else {
+			print "<INPUT type=\"hidden\" name=\"channel\" value=\"$channel\">\n";
+		}
 		print "<B>$__{'Sensor/data outcome'}: </B><INPUT type=\"checkbox\" name=\"outcome\" value=\"1\"".($outcome ? "checked":"").">";
 		if ($NODES{EVENTNODE_NOTEBOOK} eq "YES") {
 			print "<B style=\"margin-left:20px\">$__{'Notebook Nb'}: </B><INPUT type=\"text\" size=\"3\" name=\"notebook\" value=\"$notebook\">";
 			print "<B style=\"margin-left:20px\">$__{'Forward to notebook'}: </B><INPUT type=\"checkbox\" name=\"notebookfwd\" value=\"1\" ".($notebookfwd ? "checked":"").">";
+		} else {
+			print "<INPUT type=\"hidden\" name=\"notebook\" value=\"$notebook\">\n";
+			print "<INPUT type=\"hidden\" name=\"notebookfwd\" value=\"$notebookfwd\">\n";
 		}
 	}
 	print "</TD>\n<TD style=\"text-align: right; vertical-align: top; border: none;\">";

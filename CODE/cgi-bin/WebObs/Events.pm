@@ -119,22 +119,23 @@ sub struct {
 
 =head2 headersplit
 
-headersplit(header) decodes header string and returns elements:
+headersplit(header) decodes header string and returns an array of elements:
 
 	[0] = user UID (array)
 	[1] = title
 	[2] = end date & time
 	[3] = feature
-	[4] = outcome flag
-	[5] = notebook number
-	[6] = notebook forward flag
+	[4] = channel
+	[5] = outcome flag
+	[6] = notebook number
+	[7] = notebook forward flag
 
 =cut 
 
 sub headersplit {
-	my ($title,$date2,$time2,$feature,$outcome,$notebook,$notebookfwd) = "";
+	my ($title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = "";
 	# event metadata are stored in the header line of file as pipe-separated fields:
-	# 	UID1[+UID2+...]|title|enddatetime|feature|outcome|notebook|notebookfwd
+	# 	UID1[+UID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
 	my @header = split(/\|/,$_[0]);
 	my $pipes = () = $header[0] =~ /\|/g; # count the number of pipes
 	my @UIDs = split(/\+/,$header[0]);
@@ -144,13 +145,14 @@ sub headersplit {
 		$title = $header[1] if ($#header > 0);
 		($date2,$time2) = split(/ /,$header[2]) if ($#header > 1);
 		$feature = $header[3] if ($#header > 2);
-		$outcome = $header[4] if ($#header > 3);
-		$notebook = $header[5] if ($#header > 4);
-		$notebookfwd = $header[6] if ($#header > 5);
+		$channel = $header[4] if ($#header > 3);
+		$outcome = $header[5] if ($#header > 4);
+		$notebook = $header[6] if ($#header > 5);
+		$notebookfwd = $header[7] if ($#header > 6);
 	}
 	$title =~ s/\"/\'\'/g;
 	
-	return (\@UIDs,$title,$date2,$time2,$feature,$outcome,$notebook,$notebookfwd);	
+	return (\@UIDs,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd);	
 }
 
 # -------------------------------------------------------------------------------------------
@@ -307,7 +309,7 @@ sub eventsShow {
 		if ($file[0] !~ /\|/) {            # if firstline doesn't look like 'something|someotherthing'
 			unshift(@file,"|untitled\n");  # force our own default (add a line)
 		}
-		my ($people,$title,$date2,$time2,$feature,$outcome,$notebook,$notebookfwd) = headersplit($file[0]);
+		my ($people,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = headersplit($file[0]);
 		my @users = @$people;
 		my $EVTusers = join(", ",WebObs::Users::userName(@users));
 		$EVTusers = "<I>($EVTusers)</I> " if ($EVTusers ne "");
@@ -315,7 +317,9 @@ sub eventsShow {
 		my $EVTdate = "$date $time".($date eq $date2 ? ($time eq $time2 || $time2 eq "" ? "":" &rarr; $time2"):" &rarr; $date2 $time2");
 		my $EVTver = (defined($ver)) ? " v$ver" : "";
 		my $EVToutcome = ($outcome > 0 ? "<IMG src=\"/icons/attention.gif\" border=0 onMouseOut=\"nd()\" onMouseOver=\"overlib('Potential outcome on sensor/data',CAPTION,'Warning')\">":"");
-		my $EVTinfo = ucfirst($feature).($notebook > 0 ? " • $__{Notebook} # $notebook".($notebookfwd > 0 ? " ($__{forward})":""):"");
+		my $EVTinfo = ucfirst($feature);
+		$EVTinfo .= ($channel ne "" ? " • $__{Channel} $channel":"");
+		$EVTinfo .= ($notebook > 0 ? " • $__{Notebook} # $notebook".($notebookfwd > 0 ? " ($__{forward})":""):"");
 
 		# remaining lines = event text contents
 		shift(@file);
