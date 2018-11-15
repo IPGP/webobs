@@ -98,7 +98,7 @@ function DOUT=gnss(varargin)
 %
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2018-08-27
+%   Updated: 2018-11-14
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -750,14 +750,24 @@ for r = 1:length(P.GTABLE)
 		modelopt.msigp = erf(modelopt.msig/sqrt(2));
 
 		% center coordinates
-		lat0 = mean(minmax(geo(kn,1)));
-		lon0 = mean(minmax(geo(kn,2)));
+		if numel(targetll) == 2 && all(~isnan(targetll))
+			latlim = minmax([geo(kn,1);targetll(1)]);
+			lonlim = minmax([geo(kn,2);targetll(2)]);
+		else
+			latlim = minmax(geo(kn,1));
+			lonlim = minmax(geo(kn,2));
+		end
+
+		lat0 = mean(latlim);
+		lon0 = mean(lonlim);
+		targetll = [lat0,lon0];
+		wid = max(diff(latlim)*degm,diff(lonlim)*degm*cosd(lat0)) + bm;
 
 		ysta = (geo(kn,1) - lat0)*degm;
 		xsta = (geo(kn,2) - lon0)*degm*cosd(lat0);
 		zsta = geo(kn,3);
 
-		wid = max(diff(minmax(xsta)),diff(minmax(ysta))) + bm;
+		%wid = max(diff(minmax(xsta)),diff(minmax(ysta))) + bm
 
 		% loads SRTM DEM for basemap
 		DEM = loaddem(WO,[lon0 + wid/degm*cosd(lat0)*[-.6,.6],lat0 + wid/degm*[-.6,.6]]);
@@ -773,15 +783,9 @@ for r = 1:length(P.GTABLE)
 		[xx,yy,zz] = meshgrid(xlim,ylim,zlim);
 
 		% station coordinates relative to target and target relative to network center
-		if numel(targetll) == 2
-			xs = xsta - (targetll(2) - lon0)*degm*cosd(lat0);
-			ys = ysta - (targetll(1) - lat0)*degm;
-			modelopt.targetxy = (targetll([2,1]) - [lon0,lat0]).*[cosd(lat0),1]*degm;
-		else
-			xs = xsta;
-			ys = ysta;
-			modelopt.targetxy = [0,0];
-		end
+		xs = xsta - (targetll(2) - lon0)*degm*cosd(lat0);
+		ys = ysta - (targetll(1) - lat0)*degm;
+		modelopt.targetxy = (targetll([2,1]) - [lon0,lat0]).*[cosd(lat0),1]*degm;
 		
 	end
 
