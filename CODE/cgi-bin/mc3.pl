@@ -570,7 +570,7 @@ if ($QryParm->{'dump'} eq 'cum') {
 	$dumpFile = "${mc3}_dump_daily_total.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
 	push(@csv,"#Daily histogram counted from ".(($start_datetime)->strftime('%F %H:00:00'))."\n");
-	push(@csv,"#YYYY-mm-dd Daily_Total(#);Daily_Energy(ergs)\n");
+	push(@csv,"#YYYY-mm-dd Daily_Total(#);Daily_Moment(N.m)\n");
 }
 
 # ---- Filter events based on selection criteria ------------------------------
@@ -823,7 +823,7 @@ foreach (@finalLignes) {
 				my $M0 = 0;
 				my $km = 0;
 				if ($orig[8]) {
-					$M0 = 10**(1.5*$orig[8] - 3); # unit = 10^18 dyn.cm
+					$M0 = 10**(1.5*$orig[8] + 9.1); # unit = N.m
 					$stat_m{$type}[$kd] += $M0;
 					$stat_mh{$type}[$kh] += $M0;
 					$km = int($orig[8]*10);
@@ -873,7 +873,7 @@ foreach (@stat_t) {
 		$daily_moment += ($stat_m{$_}[$i] ? $stat_m{$_}[$i]:0);
 	}
 	if ($QryParm->{'dump'} eq 'cum') {
-		push(@csv,sprintf("%s;%d;%g\n",$_,$daily_count,1e18*$daily_moment));
+		push(@csv,sprintf("%s;%d;%g\n",$_,$daily_count,$daily_moment));
 	}
 	$total += $daily_count;
 	$i++;
