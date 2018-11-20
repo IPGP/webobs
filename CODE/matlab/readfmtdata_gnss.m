@@ -37,7 +37,7 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2018-08-09
+%	Updated: 2018-11-19
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -60,7 +60,7 @@ case 'globkval'
 		for nn = lfid(:)'
 			nfid = strtrim(nn{:});
 			for c = {'E','N','U'}
-				wosystem(sprintf('sed -n "/^%s_.PS to %s/,/^Wmean/p" %s | sed -e "/^Wmean.*$/d;/^%s_.PS.*$/d;/^\\s*$/d" | sort > %s/%s_%s.dat',nfid,c{:},fraw,nfid,F.ptmp,nfid,c{:}),P);
+				wosystem(sprintf('sed -n "/^%s_.PS to %s/,/^Wmean/p" %s | sed -e "/^Wmean.*$/d;/^%s_.PS.*$/d;/^\\s*$/d" | sort -k1 -k2 -k3 -k4 -k5 -n > %s/%s_%s.dat',nfid,c{:},fraw,nfid,F.ptmp,nfid,c{:}),P);
 			end
 			% concatenates to a single file
 			wosystem(sprintf('paste %s/%s_?.dat >> %s',F.ptmp,nfid,fdat),P);

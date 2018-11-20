@@ -64,7 +64,7 @@ function DOUT=gnss(varargin)
 %	    MODELLING_COLOR_SHADING|0.8
 %	    MODELLING_APRIORI_HSTD_KM|10
 %	    MODELLING_SOURCE_TYPE|mogi
-%	    MODELLING_APRIORI_SIGMAS_KM|0
+%	    MODELLING_APRIORI_HSTD_KM|0
 %	    MODELLING_PCDM_ITERATIONS|5
 %	    MODELLING_PCDM_RANDOM_SAMPLING|200000
 %	    MODELLING_PCDM_NU|0.25
@@ -756,12 +756,12 @@ for r = 1:length(P.GTABLE)
 		else
 			latlim = minmax(geo(kn,1));
 			lonlim = minmax(geo(kn,2));
+			targetll = [mean(latlim),mean(lonlim)];
 		end
 
 		lat0 = mean(latlim);
 		lon0 = mean(lonlim);
-		targetll = [lat0,lon0];
-		wid = max(diff(latlim)*degm,diff(lonlim)*degm*cosd(lat0)) + bm;
+		wid = max(diff(latlim)*degm,diff(lonlim)*degm*cosd(lat0)) + bm
 
 		ysta = (geo(kn,1) - lat0)*degm;
 		xsta = (geo(kn,2) - lon0)*degm*cosd(lat0);
@@ -769,8 +769,8 @@ for r = 1:length(P.GTABLE)
 
 		%wid = max(diff(minmax(xsta)),diff(minmax(ysta))) + bm
 
-		% loads SRTM DEM for basemap
-		DEM = loaddem(WO,[lon0 + wid/degm*cosd(lat0)*[-.6,.6],lat0 + wid/degm*[-.6,.6]]);
+		% loads SRTM DEM for basemap (with 10% extra borders)
+		DEM = loaddem(WO,[lon0 + wid/(degm*cosd(lat0))*[-.6,.6],lat0 + wid/degm*[-.6,.6]]);
 
 		% makes model space
 		xlim = linspace(-wid/2,wid/2,rr);
