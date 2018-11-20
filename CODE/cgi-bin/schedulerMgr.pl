@@ -222,7 +222,7 @@ my $ilinks = "[ ";
 $ilinks .= "<a href=\#STATUS\>Status</a>";
 $ilinks .= " | <a href=\#JOBSDEFS\>Jobs Definitions</a>";
 $ilinks .= " | <a href=\"/cgi-bin/schedulerRuns.pl\">Runs</a>";
-$ilinks .= " | <a href=\"/cgi-bin/schedulerMgr.pl\"><img src=\"/icons/refresh.png\">";
+$ilinks .= " | <a href=\"/cgi-bin/schedulerMgr.pl\"><img src=\"/icons/refresh.png\"></a>";
 $ilinks .= " ]";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks</P>";
 
