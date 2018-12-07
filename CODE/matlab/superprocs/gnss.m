@@ -98,7 +98,7 @@ function DOUT=gnss(varargin)
 %
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2018-11-20
+%   Updated: 2018-12-07
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
