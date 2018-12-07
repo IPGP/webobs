@@ -98,7 +98,7 @@ function DOUT=gnss(varargin)
 %
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2018-11-14
+%   Updated: 2018-11-20
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -279,6 +279,12 @@ for r = 1:length(P.GTABLE)
 			V.node_name = N(n).NAME;
 			V.node_alias = N(n).ALIAS;
 			k = D(n).G(r).k;
+		
+			% filter the data
+			if ~isnan(maxerror)
+				D(n).d(D(n).e>maxerror,:) = NaN;
+			end
+
 			if ~isempty(k) && ~all(isnan(D(n).d(k,i)))
 				k1 = k(find(~isnan(D(n).d(k,i)),1));
 				dk = cleanpicks(D(n).d(k,i) - D(n).d(k1,i),picksclean);
@@ -393,11 +399,6 @@ for r = 1:length(P.GTABLE)
 		V.node_alias = N(n).ALIAS;
 		V.last_data = datestr(D(n).tfirstlast(2));
 		nx = length(D(n).CLB.nm);
-		
-		% filter the data
-		if ~isnan(maxerror)
-			D(n).d(D(n).e>maxerror,:) = NaN;
-		end
 
 
 		figure, clf, orient tall
@@ -608,7 +609,7 @@ for r = 1:length(P.GTABLE)
 	summary = 'VECTORS';
 	if any(strcmp(P.SUMMARYLIST,summary))
 
-		figure, set(gcf,'PaperPosition',[0,0,get(gcf,'PaperSize')]);
+		figure, orient tall
 		
 		P.GTABLE(r).GTITLE = varsub(vectors_title,V);
 		P.GTABLE(r).INFOS = {' ',' ', ...
@@ -761,7 +762,7 @@ for r = 1:length(P.GTABLE)
 
 		lat0 = mean(latlim);
 		lon0 = mean(lonlim);
-		wid = max(diff(latlim)*degm,diff(lonlim)*degm*cosd(lat0)) + bm
+		wid = max(diff(latlim)*degm,diff(lonlim)*degm*cosd(lat0)) + bm;
 
 		ysta = (geo(kn,1) - lat0)*degm;
 		xsta = (geo(kn,2) - lon0)*degm*cosd(lat0);
@@ -878,7 +879,11 @@ for r = 1:length(P.GTABLE)
 		end
 		hold off
 		set(gca,'XLim',minmax(xlim),'YLim',minmax(ylim), ...
-			'Position',[0.01,pos(2),pos(3) + pos(1) - 0.01,pos(4)],'XTick',[],'YTick',[])
+			'Position',[0.01,pos(2),pos(3) + pos(1) - 0.01,pos(4)],'YAxisLocation','right','FontSize',6)
+		if max(abs([xlim,ylim])) >= 1e4
+			tickfactor(1e-3)
+		end
+		xlabel(sprintf('Origin (0,0) is lon {\\bf%g E}, lat {\\bf%g N}',lon0,lat0),'FontSize',8)
 
 		% Z-Y profile
 		axes('position',[0.68,pos(2),0.3,pos(4)])
@@ -902,6 +907,9 @@ for r = 1:length(P.GTABLE)
 		plot(max(max(zdem,[],3),[],2)',ylim,'-k')
 		hold off
 		set(gca,'XLim',minmax(zlim),'YLim',minmax(ylim),'XDir','reverse','XAxisLocation','top','YAxisLocation','right','YTick',[],'FontSize',6)
+		if max(abs(zlim)) >= 1e4
+			tickfactor(1e-3)
+		end
 
 		% X-Z profile
 		axes('position',[0.01,0.11,0.6142,0.3])
@@ -925,6 +933,9 @@ for r = 1:length(P.GTABLE)
 		plot(xlim,max(max(zdem,[],3),[],1),'-k')
 		hold off
 		set(gca,'XLim',minmax(xlim),'YLim',minmax(zlim),'YAxisLocation','right','XTick',[],'FontSize',6)
+		if max(abs(zlim)) >= 1e4
+			tickfactor(1e-3)
+		end
 
 		if strcmp(modelling_coloref,'srcpdf')
 			polarmap(256,.5);
