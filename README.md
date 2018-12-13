@@ -88,11 +88,11 @@ and update the ETOPO parameters in the /etc/webobs.d/WEBOBS.rc file with the lin
 
 ### Contributors
 
-* **Xavier Béguin** - xbeguin@ntu.edu.sg
+* **Xavier Béguin** - [XavierBeguin](https://github.com/XavierBeguin) - xbeguin@ntu.edu.sg
 * **Patrice Boissier** - [PBoissier](https://github.com/PBoissier) - boissier@ipgp.fr
 * **Alexis Bosson** - bosson@ipgp.fr
 * **Didier Mallarino**
-* **Jean-Marie Saurel** - [ovsm-dev](https://github.com/ovsm-dev) - saurel@ipgp.fr
+* **Jean-Marie Saurel** - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel) - saurel@ipgp.fr
 
 
 See also the list of active [contributors](https://github.com/IPGP/webobs/contributors).
