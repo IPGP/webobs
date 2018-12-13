@@ -17,8 +17,6 @@ A \wo{node} is the central \webobs element associated with following attributes:
 \item    an optional short description (\wo{type});
 \item    a lifetime period with start and end dates (both optional);
 \item    an optional location (latitude, longitude, elevation) associated with a location map (graph), Google Maps and Google Earth links;
-\item	 optional functional parameters: data code (\wo{FID}), network code (\wo{FDSN}), data format (\wo{RAWFORMAT}) and source (\wo{RAWDATA}), time zone (\wo{TZ}), acquisition period and delay;	 
-
 \item    optional text contents for "informations", "installation" and "access";
 \item    an optional sensor description associated with a calibration table of channels parameters;
 \item    a list of user-defined features (also free text contents);
@@ -26,7 +24,12 @@ A \wo{node} is the central \webobs element associated with following attributes:
 \item    a project;
 \item    events log associated with date and operator list;
 \item    a list of associated grids (\wo{views} and/or \wo{procs}, see \ref{grids});
-\item    a validity flag (for admin users).
+\item    a validity flag (for admin users);
+\item	 optional functional parameters when the \wo{node} is associated to a \wo{proc}: data code (\wo{FID}), network code (\wo{FDSN}), data format (\wo{RAWFORMAT}) and source (\wo{RAWDATA}), time zone (\wo{TZ}), acquisition period and delay, and a calibration file that describes each channel characteristics and history:
+	\begin{itemize}
+	\item    date and time of validity;
+	\item    channel number, name, unit, code, S/N, offset, factor, gain, min/max values, azimuth, latitude, longitude, elevation, depth, sampling frequency, dynamic, location code.
+	\end{itemize}
 \end{itemize}
 
 Examples of what a \wo{node} can be:
@@ -38,12 +41,6 @@ Examples of what a \wo{node} can be:
 \item    a journal board, an event description (e.g. an historical earthquake), ...
 \end{itemize}
 
-In the specific case of instrumental station, a calibration table is attached to the \wo{node} sensors that describes each channel characteristics and history:
-
-\begin{itemize}
-\item    date and time of validity;
-\item    channel number, name, unit, code, S/N, offset, factor, gain, min/max values, azimuth, latitude, longitude, elevation, depth, sampling frequency, dynamic, location code.
-\end{itemize}
 
 \lstinputlisting[title=\wofile{NODES.rc}]{../../SETUP/CONF/NODES.rc}
 
@@ -220,7 +217,7 @@ Some \wo{procs} are able to deal with a coma-separated list, as gnss: this allow
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{FID\_*}
 
-Some \wo{procs} may need several codes or parameters to process a \wo{node}. It is possible to define specific parameters with the prefix \wo{FID\_}: they will be listed and editable below the main FID. Creation/edit of a \wo{FID\_SUBNAME} is reserved to \wo{users} with administrator level.
+Some raw formats may need additional codes or parameters to process data from the \wo{node}. It is possible to define specific parameters with the prefix \wo{FID\_}: they will be listed and editable below the main FID. Creation/edit of a \wo{FID\_SUBNAME} is reserved to \wo{users} with administrator level.
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -297,23 +294,34 @@ These 3 fields are free-length text content. Wiki syntax allowed.
 
 Three different types of documents can be uploaded and associated to a \wo{node}:
 \begin{itemize}
-\item Photos: any JPEG file that will be displayed as thumbnail with a link to full screen mode;
-\item Diagrams: any image or picture file (JPEG, GIF, PNG, PDF, ...) that will be displayed as thumbnail with a link to the full resolution image;
-\item Documents: any file (PDF, DOC, TXT, ...) that will be downloadable and sometimes displayed through the navigator.
+	\item Photos: any JPEG file that will be displayed as thumbnail with a link to full screen mode;
+	\item Diagrams: any image or picture file (JPEG, GIF, PNG, PDF, ...) that will be displayed as thumbnail with a link to the full resolution image;
+	\item Documents: any file (PDF, DOC, TXT, ...) that will be downloadable and sometimes displayed through the navigator.
 \end{itemize}
 
 
 % -----------------------------------------------------------------
 \subsection{Project}
 
-A \wo{node} may have one (and only one) \wo{Project} description: a free-length text file, accepting Wiki syntax. Project is a special \wo{Event}, see \wo{Events logging} for
-a description of Project.
+A \wo{node} may have one (and only one) \wo{Project} description: a free-length text file, accepting MultiMarkDown syntax, a list of users and possible associated photos. Project is a special \wo{Event} without date.
 
 % -----------------------------------------------------------------
 \subsection{Events}
 
-A \wo{node} can have events:  free-length text files with timestamp. An event can include one or more sub-events (children).
-Event files  accept the Wiki syntax. See \wo{Events logging} section (\ref{events_logging}) for a description of Nodes and Grids events.
+A \wo{node} can be associated to dated events. A \wo{node} event has following characteristics:
+\begin{itemize}
+	\item start date and time;
+	\item end date \& time;
+	\item a title;
+	\item a content of free-length text,
+	\item author(s) from the list of \webobs users;
+	\item selected feature (from the node's feature list);
+	\item sensor/data outcome flag;
+	\item notebook number (optional);
+	\item notebook forward flag (optional);
+	\item associated photos (image files).
+\end{itemize}
+An event can include one or more sub-events (children). Event files  accept the MultiMarkDown syntax. See \wo{Events logging} section (\ref{events_logging}) for a description of Nodes and Grids events coding.
 
 
 % ==================================================================
