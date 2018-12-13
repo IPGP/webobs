@@ -191,7 +191,7 @@ for n = 1:length(N)
 
 					kk = find(~isnan(dk));
 					if length(kk) > 2 && ~isempty(k1)
-						lr = wls(tk(kk)-t(k1),dk(kk));
+						lr = polyfit(tk(kk)-t(k1),dk(kk),1);
 						lre(i,:) = [lr(1),std(dk(kk) - polyval(lr,tk(kk)-t(k1)))/diff(tlim)];
 						hold on
 						plot(tlim,polyval(lr,tlim - t(k1)),'--k','LineWidth',.2)
@@ -239,7 +239,7 @@ for n = 1:length(N)
 
 					kk = find(~isnan(dk));
 					if length(kk) > 2 && ~isempty(k1)
-						lr = wls(tk(kk)-t(k1),dk(kk));
+						lr = polyfit(tk(kk)-t(k1),dk(kk),1);
 						lre(i,:) = [lr(1),std(dk(kk) - polyval(lr,tk(kk)-t(k1)))/diff(tlim)];
 						hold on
 						plot(tlim,polyval(lr,tlim - t(k1)),'--k','LineWidth',.2)
@@ -337,20 +337,9 @@ for r = 1:length(P.GTABLE)
 				% computes yearly trends (in µrad/day)
 				kk = find(~isnan(dk));
 				if i < 3 && length(kk) > 2
-					[b,stdx] = wls(tk(kk)-tk(1),dk(kk));
+					b = polyfit(tk(kk)-tk(1),dk(kk),1);
 					tr(n,ii) = b(1);
-					% different modes for error estimation
-					switch terrmod
-					case 2
-						tre(n,ii) = std(dk(kk) - polyval(b,tk(kk)-tk(1)))/diff(tlim);
-					case 3
-						cc = corrcoef(tk(kk)-tk(1),dk(kk));
-						r2 = sqrt(abs(cc(2)));
-						tre(n,ii) = stdx(1)/r2;
-						fprintf('%s: R = %g\n',N(n).ALIAS,r2);
-					otherwise
-						tre(n,ii) = 10*stdx(1);
-					end
+					tre(n,ii) = std(dk(kk) - polyval(b,tk(kk)-tk(1)))/diff(tlim);
 					% all errors are adjusted with sampling completeness factor
 					acq = 1;
 					if N(n).ACQ_RATE > 0
