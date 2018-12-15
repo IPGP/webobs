@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2018-08-23
+%	Updated: 2018-12-15
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -314,6 +314,8 @@ case 'scevtlog-xml'
 		eventNode = sc3ml.getElementsByTagName('EventParameters').item(0);
 		c{evt,1} = char(eventNode.getElementsByTagName('event').item(0).getAttributes().item(0).getTextContent);
 		childList = eventNode.getElementsByTagName('event').item(0).getChildNodes;
+		preferredOriginID = '';
+		preferredMagnitudeID = '';
 		for child = 0:childList.getLength - 1
 			switch  char(childList.item(child).getNodeName)
 			case 'type'
