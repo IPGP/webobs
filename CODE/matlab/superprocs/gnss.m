@@ -63,8 +63,9 @@ function DOUT=gnss(varargin)
 %	    MODELLING_COLORMAP|jet(512)
 %	    MODELLING_COLOR_SHADING|0.8
 %	    MODELLING_APRIORI_HSTD_KM|10
-%	    MODELLING_SOURCE_TYPE|mogi
+%	    MODELLING_SOURCE_TYPE|isotropic
 %	    MODELLING_APRIORI_HSTD_KM|0
+%	    MODELLING_MINERROR_MM|5
 %	    MODELLING_PCDM_ITERATIONS|5
 %	    MODELLING_PCDM_RANDOM_SAMPLING|200000
 %	    MODELLING_PCDM_NU|0.25
@@ -98,7 +99,7 @@ function DOUT=gnss(varargin)
 %
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2018-12-07
+%   Updated: 2018-12-29
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -172,15 +173,16 @@ bm = field2num(P,'MODELLING_BORDERS',5000);
 rr = field2num(P,'MODELLING_GRID_SIZE',51);
 modelling_cmap = field2num(P,'MODELLING_COLORMAP',jet(512));
 modelling_colorshading = field2num(P,'MODELLING_COLOR_SHADING',0.8);
-% color reference for model space: 'pdf' (default) or 'srcpdf' (source volume sign x pdf)
-modelling_coloref = lower(field2str(P,'MODELLING_COLORREF','pdf'));
+% color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
+modelling_coloref = lower(field2str(P,'MODELLING_COLORREF','volpdf'));
 modelling_title = field2str(P,'MODELLING_TITLE','{\fontsize{14}{\bf$name - Source modelling} ($timescale)}');
 
-modelling_source_type = field2str(P,'MODELLING_SOURCE_TYPE','Mogi');
+modelling_source_type = field2str(P,'MODELLING_SOURCE_TYPE','isotropic');
 % a priori horizontal error around the target (in STD, km), 0 or NaN = no a priori
 modelopt.horizonly = isok(P,'MODELLING_HORIZONTAL_ONLY');
 modelopt.apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 modelopt.msig = field2num(P,'MODELLING_SIGMAS',1);
+modelopt.minerror = field2num(P,'MODELLING_MINERROR_MM',5);
 
 % MODELLING pCDM parameters (see invpcdm.m)
 % number of iterations (adjusting the parameter's limits)
@@ -820,11 +822,10 @@ for r = 1:length(P.GTABLE)
 		end
 
 		mhor = max(mm,[],3);
-		if strcmp(modelling_coloref,'srcpdf')
-			mm = sign(vv).*mm;
-			clim = max(mhor(:))*(ws/500)^.5*[-1,1];
+		if strcmp(modelling_coloref,'volpdf')
+			clim = [-1,1]*max(mhor(:))*(ws/500)^.5;
 		else
-			clim = [min(mhor(:)),max(mhor(:))*(ws/500)^.5];
+			clim = [0,max(mhor(:))*(ws/500)^.5];
 			%clim = [min(mhor(:)),max(mhor(:))];
 			%clim = minmax(mm);
 			if diff(clim)<=0
@@ -851,13 +852,19 @@ for r = 1:length(P.GTABLE)
 
 		subplot(5,3,[1,2,4,5,7,8]);
 		pos = get(gca,'Position');
-		imagesc(xlim,ylim,squeeze(max(mm,[],3)));axis xy;caxis(clim)
+		[mmm,imm] = max(mm,[],3);
+		if strcmp(modelling_coloref,'volpdf')
+			imagesc(xlim,ylim,squeeze(mmm.*rsign(vv(imm))))
+		else
+			imagesc(xlim,ylim,squeeze(mmm))
+		end
+		axis xy; caxis(clim);
+		%pcolor(xlim,ylim,squeeze(max(vv,[],3)));shading flat
 		hold on
 		[~,h] = contour(xlim,ylim,zdem,0:200:maxz);
 		set(h,'Color',.3*[1,1,1],'LineWidth',.1);
 		[~,h] = contour(xlim,ylim,zdem,0:1000:maxz);
 		set(h,'Color',.3*[1,1,1],'LineWidth',.75);
-		%pcolor(xlim,ylim,squeeze(max(vv,[],3)));shading flat
 		target(xsta,ysta,stasize)
 		if ~isnan(vmax)
 			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
@@ -880,14 +887,20 @@ for r = 1:length(P.GTABLE)
 		hold off
 		set(gca,'XLim',minmax(xlim),'YLim',minmax(ylim), ...
 			'Position',[0.01,pos(2),pos(3) + pos(1) - 0.01,pos(4)],'YAxisLocation','right','FontSize',6)
-		if max(abs([xlim,ylim])) >= 1e4
+		if max(abs([xlim,ylim,zlim])) >= 1e4
 			tickfactor(1e-3)
 		end
 		xlabel(sprintf('Origin (0,0) is lon {\\bf%g E}, lat {\\bf%g N}',lon0,lat0),'FontSize',8)
 
 		% Z-Y profile
 		axes('position',[0.68,pos(2),0.3,pos(4)])
-		imagesc(zlim,ylim,squeeze(max(mm,[],2)));axis xy;caxis(clim)
+		[mmm,imm] = max(mm,[],2);
+		if strcmp(modelling_coloref,'volpdf')
+			imagesc(zlim,ylim,squeeze(mmm.*rsign(vv(imm))))
+		else
+			imagesc(zlim,ylim,squeeze(mmm))
+		end
+		axis xy; caxis(clim);
 		%pcolor(zlim,ylim,squeeze(max(vv,[],2)));shading flat
 		hold on
 		target(zsta,ysta,stasize)
@@ -907,13 +920,19 @@ for r = 1:length(P.GTABLE)
 		plot(max(max(zdem,[],3),[],2)',ylim,'-k')
 		hold off
 		set(gca,'XLim',minmax(zlim),'YLim',minmax(ylim),'XDir','reverse','XAxisLocation','top','YAxisLocation','right','YTick',[],'FontSize',6)
-		if max(abs(zlim)) >= 1e4
+		if max(abs([xlim,ylim,zlim])) >= 1e4
 			tickfactor(1e-3)
 		end
 
 		% X-Z profile
 		axes('position',[0.01,0.11,0.6142,0.3])
-		imagesc(xlim,zlim,fliplr(rot90(squeeze(max(mm,[],1)),-1)));axis xy;caxis(clim)
+		[mmm,imm] = max(mm,[],1);
+		if strcmp(modelling_coloref,'volpdf')
+			imagesc(xlim,zlim,fliplr(rot90(squeeze(mmm.*rsign(vv(imm))),-1)))
+		else
+			imagesc(xlim,zlim,fliplr(rot90(squeeze(mmm),-1)))
+		end
+		axis xy; caxis(clim);
 		%pcolor(xlim,zlim,fliplr(rot90(squeeze(max(vv,[],1)),-1)));shading flat
 		hold on
 		target(xsta,zsta,stasize)
@@ -933,12 +952,12 @@ for r = 1:length(P.GTABLE)
 		plot(xlim,max(max(zdem,[],3),[],1),'-k')
 		hold off
 		set(gca,'XLim',minmax(xlim),'YLim',minmax(zlim),'YAxisLocation','right','XTick',[],'FontSize',6)
-		if max(abs(zlim)) >= 1e4
+		if max(abs([xlim,ylim,zlim])) >= 1e4
 			tickfactor(1e-3)
 		end
 
-		if strcmp(modelling_coloref,'srcpdf')
-			polarmap(256,.5);
+		if strcmp(modelling_coloref,'volpdf')
+			polarmap(modelling_cmap,modelling_colorshading);
 		else
 			shademap(modelling_cmap,modelling_colorshading)
 		end
@@ -978,9 +997,9 @@ for r = 1:length(P.GTABLE)
 		axis([0,1,0,1]); axis off
 
 		axes('position',[0.73,.16,.23,.01])
-		if strcmp(modelling_coloref,'srcpdf')
+		if strcmp(modelling_coloref,'volpdf')
 			imagesc(linspace(-1,1,256),[0;1],repmat(linspace(0,1,256),2,1))
-			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{'High Deflate','Low','High Inflate'},'TickDir','out','FontSize',8)
+			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{'High (Deflate)','Low','High (Inflate)'},'TickDir','out','FontSize',8)
 		else
 			imagesc(linspace(0,1,256),[0;1],repmat(linspace(0,1,256),2,1))
 			set(gca,'XTick',[0,1],'YTick',[],'XTickLabel',{'Low','High'},'TickDir','out','FontSize',8)
