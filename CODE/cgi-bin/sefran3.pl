@@ -352,9 +352,11 @@ if (!$date) {
 	my $last_d = qx(y=\$(find $SEFRAN3{ROOT} -maxdepth 1 -name "????" | sort | tail -n1);find \$y -maxdepth 1| sort | tail -n1 | xargs echo -n);
 	if ($last_d) {
 		$last_mn = qx/find $last_d -name "??????????????.png"|sort|tail -n1/;
-		$lmn = basename($last_mn);
-		my @lm = (substr($lmn,10,2),substr($lmn,8,2),substr($lmn,6,2),substr($lmn,4,2),substr($lmn,0,4));
-		$dt = (timegm(gmtime) - timegm(0,$lm[0],$lm[1],$lm[2],$lm[3]-1,$lm[4]-1900) - 60);
+		if ($last_mn) {
+			$lmn = basename($last_mn);
+			my @lm = (substr($lmn,10,2),substr($lmn,8,2),substr($lmn,6,2),substr($lmn,4,2),substr($lmn,0,4));
+			$dt = (timegm(gmtime) - timegm(0,$lm[0],$lm[1],$lm[2],$lm[3]-1,$lm[4]-1900) - 60);
+		}
 	}
 
 	# titre et heure courante
