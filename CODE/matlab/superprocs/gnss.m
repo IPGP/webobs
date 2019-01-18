@@ -59,7 +59,7 @@ function DOUT=gnss(varargin)
 %	    MODELLING_BORDERS|5000
 %	    MODELLING_GRID_SIZE|100
 %	    MODELLING_SIGMAS|1
-%	    MODELLING_COLORREF|pdf
+%	    MODELLING_COLORREF|volpdf
 %	    MODELLING_COLORMAP|jet(512)
 %	    MODELLING_COLOR_SHADING|0.8
 %	    MODELLING_APRIORI_HSTD_KM|10
@@ -83,6 +83,7 @@ function DOUT=gnss(varargin)
 %	    MODELLING_PCDM_NEW_LIMIT_EXTEND|1
 %	    MODELLING_PCDM_SUPPLEMENTARY_GRAPHS|N
 %	    MODELLING_PLOT_BEST|N
+%	    MODELLING_PLOT_RESIDUAL|Y
 %	    MODELLING_TITLE|{\fontsize{14}{\bf$name - Source modelling} ($timescale)}
 %	    MODELTIME_PERIOD_DAY|30,0
 %	    MODELTIME_SAMPLING_DAY|2
@@ -97,9 +98,9 @@ function DOUT=gnss(varargin)
 %	    $ref_node_alias = reference node alias
 %
 %
-%   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié / WEBOBS, IPGP
+%   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié, Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2018-12-29
+%   Updated: 2019-01-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -118,6 +119,8 @@ timelog(procmsg,1);
 G = cat(1,D.G);
 
 border = .1;
+modarrcol = [1,0,0]; % color of model arrows
+resarrcol = [0,.8,0]; % color of residual arrows
 
 % PROC's parameters
 fontsize = field2num(P,'FONTSIZE',7);
@@ -126,6 +129,7 @@ picksclean = field2num(P,'PICKS_CLEAN_PERCENT',1);
 terrmod = field2num(P,'TREND_ERROR_MODE',1);
 trendmindays = field2num(P,'TREND_MIN_DAYS',1);
 plotbest = isok(P,'MODELLING_PLOT_BEST');
+plotresidual = isok(P,'MODELLING_PLOT_RESIDUAL',1);
 targetll = field2num(P,'GNSS_TARGET_LATLON');
 velref = field2num(P,'VELOCITY_REF',[0,0,0]);
 velrefdate = field2num(P,'VELOCITY_REF_ORIGIN_DATE','2000-01-01');
@@ -869,7 +873,12 @@ for r = 1:length(P.GTABLE)
 		if ~isnan(vmax)
 			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
 			ellipse(xsta + vsc*d(:,1),ysta + vsc*d(:,2),vsc*d(:,4),vsc*d(:,5),'LineWidth',.2,'Clipping','on')
-			arrows(xsta,ysta,vsc*ux,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor','r','FaceColor','r','Clipping','off')
+			arrows(xsta,ysta,vsc*ux,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref, ...
+				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
+			if plotresidual
+				arrows(xsta,ysta,vsc*(d(:,1)-ux),vsc*(d(:,2)-uy),arrowshapemod,'Cartesian','Ref',arrowref, ...
+					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
+			end
 		end
 		if modelopt.apriori_horizontal > 0
 			plot(repmat(modelopt.targetxy(1),1,2),ylim([1,end]),':k')
@@ -907,7 +916,12 @@ for r = 1:length(P.GTABLE)
 		if ~isnan(vmax)
 			arrows(zsta,ysta,vsc*d(:,3),vsc*d(:,2),arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
 			ellipse(zsta + vsc*d(:,3),ysta + vsc*d(:,2),vsc*d(:,6),vsc*d(:,5),'LineWidth',.2,'Clipping','on')
-			arrows(zsta,ysta,vsc*uz,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor','r','FaceColor','r','Clipping','off')
+			arrows(zsta,ysta,vsc*uz,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref, ...
+				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
+			if plotresidual
+				arrows(zsta,ysta,vsc*(d(:,3)-uz),vsc*(d(:,2)-uy),arrowshapemod,'Cartesian','Ref',arrowref, ...
+					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
+			end
 		end
 		if plotbest
 			switch lower(modelling_source_type)
@@ -939,7 +953,12 @@ for r = 1:length(P.GTABLE)
 		if ~isnan(vmax)
 			arrows(xsta,zsta,vsc*d(:,1),vsc*d(:,3),arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
 			ellipse(xsta + vsc*d(:,1),zsta + vsc*d(:,3),vsc*d(:,4),vsc*d(:,6),'LineWidth',.2,'Clipping','on')
-			arrows(xsta,zsta,vsc*ux,vsc*uz,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor','r','FaceColor','r','Clipping','off')
+			arrows(xsta,zsta,vsc*ux,vsc*uz,arrowshapemod,'Cartesian','Ref',arrowref, ...
+				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
+			if plotresidual
+				arrows(xsta,zsta,vsc*(d(:,1)-ux),vsc*(d(:,3)-uz),arrowshapemod,'Cartesian','Ref',arrowref, ...
+					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
+			end
 		end
 		if plotbest
 			switch lower(modelling_source_type)
@@ -993,10 +1012,11 @@ for r = 1:length(P.GTABLE)
 				sprintf('\\DeltaV = {\\bf%+g Mm^3} \\in [%+g , %+g]',roundsd([vv(k),ev],2)));
 		end
 		info = cat(2,info,sprintf('misfit = {\\bf%g mm}',roundsd(mm0,2)));
-		text(0,1,info,'HorizontalAlignment','left','VerticalAlignment','top')
+		text(0,1.1,info,'HorizontalAlignment','left','VerticalAlignment','top')
 		axis([0,1,0,1]); axis off
 
-		axes('position',[0.73,.16,.23,.01])
+		% - probability colorscale
+		axes('position',[0.73,.19,.23,.01])
 		if strcmp(modelling_coloref,'volpdf')
 			imagesc(linspace(-1,1,256),[0;1],repmat(linspace(0,1,256),2,1))
 			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{'High (Deflate)','Low','High (Inflate)'},'TickDir','out','FontSize',8)
@@ -1006,7 +1026,8 @@ for r = 1:length(P.GTABLE)
 		end
 		title('Model Probability','FontSize',10)
 
-		axes('position',[0.68,0.10,0.3,0.03])
+		% - data/model arrows scale
+		axes('position',[0.68,0.11,0.3,0.03])
 		dxl = diff(xlim([1,end]))*0.3/0.6142;
 		dyl = diff(ylim([1,end]))*0.03/0.3;
 		hold on
@@ -1015,8 +1036,13 @@ for r = 1:length(P.GTABLE)
 			arrows(dxl/2,dyl,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
 			text(dxl/2 + vsc*vlegend/2,dyl,sprintf('{\\bf%g mm}',vlegend),'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8)
 			%ellipse(xsta + vsc*d(:,1),zsta + vsc*d(:,3),vsc*d(:,4),vsc*d(:,6),'LineWidth',.2,'Clipping','on')
-			arrows(dxl/2,dyl/2,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor','r','FaceColor','r','Clipping','off')
+			arrows(dxl/2,dyl/2,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
 			text([dxl/2,dxl/2],[dyl,dyl/2],{'data   ','model   '},'HorizontalAlignment','right')
+			if plotresidual
+				arrows(dxl/2,0,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref, ...
+					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
+				text(dxl/2,0,'residual   ','HorizontalAlignment','right')
+			end
 		end
 		axis off
 		hold off
@@ -1043,6 +1069,7 @@ for r = 1:length(P.GTABLE)
 			else
 				mtlabel{m} = 't_0 ref.';
 			end
+			M(m).mtp = mtp;
 			M(m).t = fliplr(tlim(2):-dt:tlim(1));
 			fprintf('%s: computing %d models (%s @ %g day) ',wofun,length(M(m).t),mtlabel{m},dt);
 
@@ -1244,8 +1271,13 @@ for r = 1:length(P.GTABLE)
 		if isok(P.GTABLE(r),'EXPORTS')
 			rcode2 = sprintf('%s_%s',proc,summary);
 			E.t = M(1).t;
-			E.d = [cat(2,M.d),cat(2,M.e)];
-			E.header = repmat({'X','Y','Z','dV','dD','s_X','s_Y','s_Z','s_dV','s_dD'},1,length(M));
+			n = size(M(1).d,2);
+			E.d = nan(size(M(1).d,1),length(M)*size(M(1).d,2)*2);
+			for m = 1:length(M)
+				k = (m-1)*n*2 + (1:2*n);
+				E.d(:,k) = cat(2,M(m).d,M(m).e);
+				E.header(k) = strcat({'X','Y','Z','dV','dD','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%g',M(m).mtp));
+			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(rcode2));
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
