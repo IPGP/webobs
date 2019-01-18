@@ -9,6 +9,7 @@ ExecStop=/opt/webobs/CODE/shells/postboard stop
 PIDFile=/opt/webobs/LOGS/postboard.pid
 User=wo
 UMask=0002
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

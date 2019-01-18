@@ -16,6 +16,7 @@
 #        DOC -> WebObs-releasename/DOC
 #        CONF/
 #        DATA/
+#        LOGS/
 #        OUTG/
 #        OUTR/
 #        WebObs-releasename.tgz
@@ -71,6 +72,20 @@ activateWO() {
 	if [[ -L /etc/webobs.d ]]; then rm /etc/webobs.d ;fi
 	ln -s ${DOCROOT}/CONF /etc/webobs.d 
 	errexit "activating ${DOCROOT} - ${RELREL} as Production WebObs"
+}
+
+perlmod_installed() {
+   perl -le 'exit not eval "require $ARGV[0];"' $1;
+}
+
+woperlmod_system_install () {
+  # install webobs modules in the system
+  eval $(perl -V:installsitelib)
+  mkdir -p $installsitelib
+  for m in WebObs $(cd $RELBASE/CODE/cgi-bin; echo *.pm)
+  do
+    ln -s $RELBASE/CODE/cgi-bin/$m $installsitelib/$m
+  done
 }
 
 # here we go --------------------------------------------------------------------
@@ -280,6 +295,7 @@ echo    'Perl...';        APP_PERL=$(perl -e 'print "$^V"' 2>/dev/null)
 echo -n 'Python...';      APP_PYTHON="$(which python)"
 echo -n 'Sqlite...';      APP_SQLITE=$(sqlite3 -version 2>/dev/null)
 echo -n 'ImageMagick...'; APP_IMAGICK=$(convert --version 2>/dev/null)
+echo -n 'Ghostscript...'; APP_GHOSTSCRIPT=$(ghostscript --version 2>/dev/null)
 echo -n 'Mutt...';        APP_MUTT=$(mutt -v 2>/dev/null | head -1 )
 echo -n 'Xvfb...';        APP_XVFB="$(which Xvfb 2>/dev/null)"
 echo -n 'gawk...';        APP_GAWK="$(which gawk 2>/dev/null)"
@@ -297,32 +313,34 @@ else
 	verbosecho "Perl ${APP_PERL}"
 	if [[ -f ${RELBASE}/CODE/cgi-bin/out-scandeps ]]; then
 		echo -n "Scanning installed perl modules vs cgi-bin requirements ... "
-		# load module xxx (perl -Mxxx), append to notinst if not loadable
+		# test module presence (using perlmod_installed defined above), append to notinst if not loadable
 		notinst=()
 		while read mname; do 
-			#perl -M${mname} -le "\$mname=\"${mname}.pm\";\$mname=~s#::#/#g;print \"  \$mname => \$INC{\$mname}\";" 2>/dev/null || notinst=("${notinst[@]}" ${mname}); 
-			perl -M${mname} -le "\$mname=\"${mname}.pm\";\$mname=~s#::#/#g;" 2>/dev/null || notinst=("${notinst[@]}" ${mname}); 
+			perlmod_installed ${mname} || notinst[${#notinst[@]}]="${mname}"
 		done< ${RELBASE}/CODE/cgi-bin/out-scandeps	
 		echo "done."
 		# print notinst list
 		if [[ ${#notinst[@]} != 0 ]]; then
-			echo "some required perl modules might not be installed, please check:"
+			echo
+			echo "**** Warning: some required perl modules could not be found, please check:"
 			for t in "${notinst[@]}"; do
 				# there could be added the linux distro's package containing module !
 				# (eg. yum search module (or yum provides) OR apt-file search module
 				echo "  " ${t}
 			done
+			echo
 		fi
 	else
 		echo "missing out-scandeps - skipping perl modules checkings"
 	fi
 fi
 if [[ -z "${APP_SQLITE}" ]]  ; then DEPMISS=true; echo '**** need Sqlite3 install'; else verbosecho "Sqlite ${APP_SQLITE}";fi
-if [[ -z "${APP_IMAGICK}" ]] ; then
+if [[ -z "${APP_IMAGICK}" || -z "${APP_GHOSTSCRIPT}" ]] ; then
 	DEPMISS=true
-	echo '**** need ImageMagick install';
+	echo '**** need ImageMagick and Ghostscript install';
 else 
 	verbosecho "ImageMagick ${APP_IMAGICK}";
+	verbosecho "Ghostscript ${APP_GHOSTSCRIPT}";
 	${RELBASE}/SETUP/testconvert
 	if [ $? -ne 0 ]; then DEPMISS=true; fi
 fi
@@ -335,11 +353,31 @@ if [[ -z "${APP_GAWK}" ]]  ; then echo '**** could not detect gawk'; fi
 
 # 3) dependencies summary 
 if ${DEPMISS}; then 
-	echo '**** Please install required packages'
+	echo '**** Please install the above mentioned required software and run this script again.'
 	echo "Done."
 	exit 64
 fi
 echo
+
+# Webobs perl modules system-wide installation --------------------------------
+# -----------------------------------------------------------------------------
+if ! perlmod_installed "WebObs::Config"; then
+  echo "WebObs perl modules don't seem to be installed system-wide."
+  perl -e "exit not grep(/^\.$/, @INC);" \
+    || echo "**** You MUST install these modules system-wide for the WebObs CGI scripts to work!"
+else
+  echo "Some WebObs perl modules seem to already be installed system-wide (re-installing won't hurt)."
+fi
+eval $(perl -V:installsitelib)
+if $(confirmy "(Re)install WebObs perl modules system-wide (using symlinks) [Y/n] ? ")
+then  # Note: this won't do any harm if the links already exist
+  echo "Creating symlinks to perl modules in $installsitelib:"
+  mkdir -vp $installsitelib
+  for m in "WebObs" $(cd $RELBASE/CODE/cgi-bin; echo *.pm); do
+    ln -vsf $RELBASE/CODE/cgi-bin/$m $installsitelib/$m
+  done
+  echo
+fi
 
 # Locale dependencies ---------------------------------------------------------
 # -----------------------------------------------------------------------------
