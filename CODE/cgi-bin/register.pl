@@ -48,7 +48,8 @@ set_message(\&webobs_cgi_msg);
 # ---- webobs stuff
 # -----------------
 use WebObs::Config;
-use WebObs::Users qw(%USERS clientHasRead clientHasEdit clientHasAdm);
+use WebObs::Users qw(%USERS clientHasRead clientHasEdit clientHasAdm
+					 htpasswd_update htpasswd_display);
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 
@@ -58,17 +59,15 @@ if ( $cgi->param('action') eq "reg" ) {
 	my $fullname = $cgi->param('name')  || 	'';
 	my $login    = $cgi->param('login') || '';
 	my $pswd     = $cgi->param('pass')  || '';
-	#my $pswd2    = $cgi->param('pass2') || '';
 	my $mailaddr = $cgi->param('mail')  || '';
 	my $terms    = $cgi->param('conditions') || '';
-	my $msg      = "Your request will be processed asap. A mail will be sent to $mailaddr for confirmation.";
+	my $msg      = "Your request will be processed asap. An administrator should notify you on $mailaddr for confirmation.";
 	
-	$login =~ s/(["' ()\$#\\])/\\$1/g;
-	$pswd  =~ s/(["' ()\$#\\])/\\$1/g;
-	my $encpswd = `/usr/bin/htpasswd -nsb $login $pswd`;
-	# remove the two new lines htpasswd adds after its result.
-	chomp $encpswd; chomp $encpswd;
-
+  # Note: $login and $pswd are not used in a shell,
+  # they don't need escaping or sanitisation here.
+  my $encpswd = htpasswd_display($login, $pswd);
+  # Escape $login for SQL
+  $login =~ s/(["' ()\$#\\])/\\$1/g;
 
 	if (open(FILE,">>$WEBOBS{PATH_DATA_DB}/reglog")) { 
 		print FILE "$fullname|$login|$mailaddr|$encpswd\n";
@@ -84,22 +83,30 @@ if ( $cgi->param('action') eq "reg" ) {
 			my $rv = 0;
 			my $nu = 1;
 			# if UID already exists, add a suffix number... 
-			while ($rv eq 0) {
-				my $q = "insert into $WEBOBS{SQL_TABLE_USERS} values(\'$UID\',\'$fullname\',\'$login\',\'$mailaddr\',\'N\')";
-				$rv = $dbh->do($q);
-				$rv = 0 if ($rv == 0E0); 
-				if ($rv eq 0) {
+			while (not $rv) {
+				# Use a bound query to let DBI do the escaping (avoid security problems)
+				my $q = "insert into $WEBOBS{SQL_TABLE_USERS} values(?, ?, ?, ?, 'N')";
+				my $sth = $dbh->prepare($q);
+				$rv = $sth->execute($UID, $fullname, $login, $mailaddr);
+				if (not $rv) {
 					$nu++;
 					$UID .= $nu;
+				}
+				if ($nu == 100) {
+					# Something else is wrong here
+					# TODO: do the whole thing differently (test UID instead of bruce-forced inserts?)
+					print STDERR "register.pl error: unable to insert user after 100 tries. "
+						."UID='$UID' fullname='$fullname' login='$login' mailaddr='$mailaddr'\n";
+					# Don't use die as it would display plain text HTML
+					print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+					print "Unable to insert user after 100 tries. Giving up.";
+					exit 99;
 				}
 			}
 			$dbh->disconnect();
 
-			# gives an htaccess to the new user !
-			if (open(FILE,">>$WEBOBS{ROOT_CONF}/htpasswd")) {
-				print FILE "\n$encpswd\n";
-				close FILE;
-			} else {
+			# gives an access to the new user !
+			if (htpasswd_update($login, $pswd) != 0) {
 				$msg = "Couldn't register htpasswd ($!). Please inform administrator.";
 			}
 
@@ -151,6 +158,11 @@ print <<EOSCRIPT;
 			 document.form.pass.focus();
 			 return false;
 		  }
+		  if (document.form.pass.value.length < $WEBOBS{'HTPASSWORD_MIN_LENGTH'}) {
+			 alert('Sorry, your password must be at least $WEBOBS{'HTPASSWORD_MIN_LENGTH'} characters long!');
+			 document.form.pass.focus();
+			 return false;
+		  }
 		  if (document.form.pass.value != document.form.pass2.value) {
 			 alert('Passwords differ. ');
 			 document.form.pass.focus();
@@ -181,6 +193,12 @@ print <<EOSCRIPT;
 		}
 		</SCRIPT>
 EOSCRIPT
+	my $pass_restriction;
+    if ($WEBOBS{'HTPASSWORD_MIN_LENGTH'}) {
+		$pass_restriction = "At least $WEBOBS{'HTPASSWORD_MIN_LENGTH'} characters";
+	} else {
+		$pass_restriction = "Please choose a strong password";
+	}
 	print "</head>\n";
 		print "<body>\n";
 			print "<img src=\"/icons/ipgp/logo_IPGP_C110.png\"><img src=\"/icons/ipgp/logo_WebObs_C110.png\">";
@@ -204,7 +222,7 @@ EOSCRIPT
 				  "<input type=\"text\" name=\"name\" maxlength=\"30\" value=\"\"/><br/>\n",
 				  "<label>$__{'Login user name'}:<span class=\"small\">Short lowercase single word</span></label>",
 				  "<input type=\"text\" name=\"login\" maxlength=\"10\" value=\"\"/><br/>\n",
-				  "<label>$__{'Password'}:<span class=\"small\">no restriction (!)</span></label>",
+				  "<label>$__{'Password'}:<span class=\"small\">$pass_restriction</span></label>",
 				  "<input type=\"password\" name=\"pass\" value=\"\"/><br/>\n",
 				  "<label>$__{'Password again'}:<span class=\"small\"></span></label>",
 				  "<input type=\"password\" name=\"pass2\" value=\"\"/><br/>\n",
@@ -230,11 +248,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Lafon, François Beauducel
+Didier Lafon, François Beauducel, Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2018 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
