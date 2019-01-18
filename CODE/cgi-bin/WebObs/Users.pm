@@ -1,4 +1,6 @@
 package WebObs::Users;
+use Carp;
+use IPC::Open3;
 
 =head1 NAME
 
@@ -86,7 +88,7 @@ use constant ADMAUTH  => 4;
 require Exporter;
 @ISA        = qw(Exporter);
 @EXPORT     = qw(%USERS %USERIDS $CLIENT READAUTH EDITAUTH ADMAUTH);
-@EXPORT_OK  = qw(refreshUsers allUsers clientHasRead clientHasEdit clientHasAdm clientIsValid listRNames userListGroup);
+@EXPORT_OK  = qw(refreshUsers allUsers clientHasRead clientHasEdit clientHasAdm clientIsValid listRNames userListGroup htpasswd_update htpasswd_verify htpasswd_display);
 $VERSION    = "1.00";
 
 refreshUsers();
@@ -457,6 +459,120 @@ sub clientIsValid {
 	return userIsValid(user=>$CLIENT);
 }
 
+
+=pod
+
+=head2 htpasswd
+
+Calls the 'htpasswd' command specified by $WEBOBS{PRGM_HTPASSWD} with the
+provided arguments (used by htpasswd_update dna htpasswd_verify).
+Returns the error code of the 'htpasswd' command (0 for success, or a positive
+error code otherwise).
+
+=cut
+
+sub htpasswd {
+	# Calls the htpasswd command with the provided command line
+	# options, login, and password.
+	# Arguments: (options, arg1, arg2, ..., password, output_ref)
+	# Returns the htpasswd exit code: 0 for success, > 0 otherwise.
+	my $htpw_opts = "-i".shift;  # force -i to read the password from stdin
+	my $output_ref = pop;  # reference where to store the output
+	my $pass = pop;  # the password to pass via stdin (the last argument)
+	my @htpw_args = @_;  # other arguments
+
+	# Note: use a list for command arguments to avoid using a shell
+	my @cmd = ($WEBOBS{PRGM_HTPASSWD}, $htpw_opts, @htpw_args);
+	carp "info: executing command '".join(" ", @cmd)."'\n";
+
+	# Important: use IPC:Open3 to pass the password to stdin to the
+	# htpasswd command to avoid it being visible by other users.
+	my ($child_in, $child_out, $child_err);
+	my $pid = open3($child_in, $child_out, $child_err, @cmd);
+	print $child_in $pass;
+	close $child_in;  # end the subprocess
+
+	# Read all the output to $$output_ref
+	$$output_ref = do { local $/; <$child_out>; };
+
+	# Wait for the child to avoid zombies
+	waitpid($pid, 0);
+	return $? >> 8;
+}
+
+
+=head2 htpasswd_update
+
+Updates or adds a user password in the $WEBOBS{'HTTP_PASSWORD_FILE'} file used
+by the web server for authentication.  Returns 0 for success, or a positive
+error code otherwise.
+
+=cut
+
+sub _get_htpasswd_encryption_opt {
+	# Auxiliary function that returns the htpasswd option to use according to
+	# the encryption format chosen in the configuration.
+	if (lc($WEBOBS{'HTPASSWD_ENCRYPTION'}) eq "bcrypt") {
+		return "B";
+	}
+	# $WEBOBS{'HTPASSWD_ENCRYPTION'} is "md5" or anything
+	return "m";
+}
+
+sub htpasswd_update {
+	# Adds or update a login/password in the htpasswd file.
+	# Returns 0 if success, non-zero otherwise.
+	my $login = shift;  # the login to create
+	my $pass = shift;  # the new password to set
+	my $htpw_opt = _get_htpasswd_encryption_opt();  # options for htpasswd
+	my $output;  # a reference for the output
+	# Call htpasswd with the selected option
+	return htpasswd($htpw_opt, $WEBOBS{'HTTP_PASSWORD_FILE'}, $login, $pass, \$output);
+}
+
+
+=head2 htpasswd_verify
+
+Verifies the password of a user in the $WEBOBS{'HTTP_PASSWORD_FILE'} file.
+
+=cut
+
+sub htpasswd_verify {
+    # Calls the htpasswd command to verify the login/password.
+	# Returns 0 if success, non-zero otherwise.
+	my $login = shift;
+	my $pass = shift;
+
+	my $output;  # a reference for the output
+	return htpasswd("v", $WEBOBS{'HTTP_PASSWORD_FILE'}, $login, $pass, \$output);
+}
+
+
+=head2 htpasswd_display
+
+Displays the line that should be added to the $WEBOBS{'HTTP_PASSWORD_FILE'}
+file.
+
+=cut
+
+sub htpasswd_display {
+	# Calls the htpasswd command to display the line that should be added to
+	# the htpasswd file. Returns the output of the command.
+	my $login = shift;
+	my $pass = shift;
+
+	my $htpw_opts = "n"._get_htpasswd_encryption_opt();
+	my $output;  # a reference for the output
+	my $rc = htpasswd($htpw_opts, $login, $pass, \$output);
+	my @lines = split(/\n/, $output);
+	if ($rc != 0 or not @lines) {
+		return "[error while executing $WEBOBS{'HTTP_PASSWORD_FILE'}]";
+	}
+	# Returns the fist line of the output
+	return $lines[0];
+}
+
+
 1;
 
 __END__
@@ -465,7 +581,7 @@ __END__
 
 =head1 AUTHOR
 
-Francois Beauducel, Didier Lafon
+Francois Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
@@ -485,4 +601,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-				
