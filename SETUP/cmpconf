@@ -61,7 +61,7 @@ mydiff() {
 }
 
 TPLATEDIR=$(dirname $0)
-CONFDIR=$(readlink /etc/webobs.d)
+CONFDIR=$(readlink -e $TPLATEDIR/../../CONF)
 if [[ -z $1 ]]; then
 	RELREL=unknown
 else

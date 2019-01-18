@@ -703,8 +703,8 @@ sub LEAVE {
 		$PAUSED = 2;   
 		logit("$$ requested to stop, waiting for kid(s) to end ..."); 
 		while ( REAPER() != 0 ) { sleep(1); UDPS() } ; 
-		logit("$$ stopped");
-		notifyit("scheduler.critical|$$|scheduler stopped"); 
+		logit("$$ is shutting down as requested");
+		notifyit("scheduler.critical|$$|scheduler is shutting down as requested."); 
 		myexit(0);
 	}
 }

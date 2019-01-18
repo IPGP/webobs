@@ -9,6 +9,7 @@ ExecStop=/opt/webobs/CODE/shells/scheduler stop
 PIDFile=/opt/webobs/LOGS/scheduler.pid
 User=wo
 UMask=0002
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
