@@ -10,7 +10,7 @@ function status = mkexport(WO,f,E,G);
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2018-09-27
+%	Updated: 2019-01-18
 
 
 ptmp = sprintf('%s/%s',WO.PATH_TMP_WEBOBS,G.SELFREF);
@@ -60,7 +60,7 @@ if fid > 0
 		sfmt = '%02.f';
 	else
 		sfmt = '%06.3f';
-		tv(:,6) = ceil(tv(:,6)*1e3)*1e3;
+		tv(:,6) = ceil(tv(:,6)*1e3)/1e3;
 	end
 	fprintf(fid,['%4d %02d %02d %02d %02d ',sfmt,sprintf(' %s',E.fmt{:}),'\n'],[tv,E.d]');
 

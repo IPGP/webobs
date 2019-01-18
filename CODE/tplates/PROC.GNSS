@@ -134,6 +134,8 @@ MODELLING_APRIORI_HSTD_KM|0
 MODELLING_MINERROR_MM|5
 # indicates the best source solution on graph
 MODELLING_PLOT_BEST|Y
+# adds residual arrows (data - model)
+MODELLING_PLOT_RESIDUAL|Y
 # number of sigma (STD) to compute uncertainty intervals for best model
 MODELLING_SIGMAS|1
 # color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
