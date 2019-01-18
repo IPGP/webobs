@@ -37,6 +37,20 @@ FILE_OWNERS|${ROOT_CONF}/OWNERS.conf
 PATH_TMP_APACHE|/tmp
 PATH_TMP_WEBOBS|/tmp/webobs
 
+# Authentication file for the web server
+HTTP_PASSWORD_FILE|${ROOT_CONF}/htpasswd
+# Minium length for user password
+HTPASSWORD_MIN_LENGTH|8
+# Whether to allow users to change their own password
+ALLOW_HTPASSWORD_CHANGE|1
+# Path to the htpasswd command
+PRGM_HTPASSWD|/usr/bin/htpasswd
+# Encryption format to use when creating/updating passwords:
+# "md5" for option -m or "bcrypt" for option -B to htpasswd.
+# "md5" is more portable while "bcrypt" is even more secure.
+HTPASSWD_ENCRYPTION|md5
+
+
 # ---- Site DATA paths ------------------------
 # ---------------------------------------------
 PATH_DATA_DB|${ROOT_DATA}/DB
