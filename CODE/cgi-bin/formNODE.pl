@@ -258,11 +258,13 @@ function postIt()
 
 	if (\$(\"#theform\").hasChanged()) {
 		document.formulaire.node.value = document.formulaire.node.value + document.formulaire.nodename.value.toUpperCase();
-		var fidx = document.getElementById("fidx").getElementsByTagName("div");
-		for (var i=0; i<fidx.length; i++) {
-			if (document.formulaire.rawformat.value == "" || fidx[i].id.indexOf(document.formulaire.rawformat.value + "-") == -1) {
-				var nested = document.getElementById("input-" + fidx[i].id);
-				nested.parentNode.removeChild(nested);
+		if (document.getElementById("fidx")) {
+			var fidx = document.getElementById("fidx").getElementsByTagName("div");
+			for (var i=0; i<fidx.length; i++) {
+				if (document.formulaire.rawformat.value == "" || fidx[i].id.indexOf(document.formulaire.rawformat.value + "-") == -1) {
+					var nested = document.getElementById("input-" + fidx[i].id);
+					nested.parentNode.removeChild(nested);
+				}
 			}
 		}
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
