@@ -884,7 +884,7 @@ if ($date) {
 		}
 
 		# lien USGS
-		my $ocl = "<A href=\"$MC3{USGS_URL}\" target=\"_blank\"><B>USGS</B>";
+		my $ocl = "<A href=\"$MC3{USGS_URL}\" target=\"_blank\"><B>USGS</B></A>";
 		$ocl = $MC3{VISIT_LINK} if (defined($MC3{VISIT_LINK}));
 		print "&nbsp;<I>&rarr; $__{'Visit'} $ocl</I></P>\n";
 
@@ -1016,7 +1016,7 @@ frameMC2.pl and formulaireMC2.pl [2004-2009] by Didier Mallarino, Francois Beaud
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

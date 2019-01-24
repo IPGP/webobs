@@ -36,6 +36,12 @@ duree=
 amplitude= 
  see valid key values in AMPLITUDES_CONF conf file
 
+ampoper= 
+ amplitude operator
+ le = less or equal to
+ eq = equal (default)
+ ge = greater or equal to
+
 located= 
  selection events to be shown. Optional, default to 0, show all events.
  0 show all events.
@@ -66,6 +72,9 @@ graph=
 
 slt= 
  use local time zone for date/time selection and statistics (from SELECT_LOCAL_TZ)
+
+newts=
+ select events newer than edit/create timestamp (format yyyymmdd)
 
 dump=
  bul event bulletin as .csv file
@@ -177,13 +186,15 @@ $QryParm->{'d2'}        ||= "";
 $QryParm->{'h2'}        ||= "23";
 $QryParm->{'type'}      ||= "";
 $QryParm->{'duree'}     ||= "";
-$QryParm->{'amplitude'} ||= "";
+$QryParm->{'amplitude'} ||= "ALL";
+$QryParm->{'ampoper'}   ||= "eq";
 $QryParm->{'located'}   ||= "";
 $QryParm->{'locstatus'}  //= $MC3{DISPLAY_LOCATION_STATUS_DEFAULT};
 $QryParm->{'hideloc'}   //= !$MC3{DISPLAY_LOCATION_DEFAULT};
 $QryParm->{'obs'}       ||= "";
 $QryParm->{'graph'}     ||= "movsum";
 $QryParm->{'slt'}       ||= "$MC3{DEFAULT_SELECT_LOCAL}";
+$QryParm->{'newts'}     ||= "";
 $QryParm->{'dump'}      ||= "";
 $QryParm->{'trash'}     ||= "";
 
@@ -279,10 +290,13 @@ for (@Durations) {
 # ---- Load Amplitudes --------------------------------------------------------
 #
 my @amplitudes = readCfgFile("$MC3{AMPLITUDES_CONF}");
-my %nomAmp;
+my %namAmp;
+my %valAmp;
+my %opeAmp = ( 'le' => '&le;', 'eq' => '=', 'ge' => '&ge;' );
 for (@amplitudes) {
         my ($key,$nam,$val) = split(/\|/,$_);
-        $nomAmp{$key} = $nam;
+        $namAmp{$key} = $nam;
+        $valAmp{$key} = $val;
 }
 
 # ---- Load No location SC3 types ----------------------------------------------
@@ -380,13 +394,17 @@ if ($QryParm->{'dump'} eq "") {
 	$html .= "</select>\n";
 
 	# ----- selection box AMPLITUDE
-	$html .= " &nbsp;&nbsp; Amplitude: <select name=\"amplitude\" size=\"1\">"
-		."<option selected value=\"ALL\">--</option>";
-	for (@amplitudes) {
-		my ($key,$val) = split(/\|/,$_);
-		$html .= "<OPTION".($key eq $QryParm->{'amplitude'} ? " selected":"")." value=\"$key\">$val</OPTION>\n";
+	$html .= " &nbsp;&nbsp; Amplitude: <SELECT name=\"ampoper\" size=\"1\">";
+	for (keys(%opeAmp)) {
+		$html .= "<OPTION".($_ eq $QryParm->{'ampoper'} ? " selected":"")." value=\"$_\">$opeAmp{$_}</OPTION>";
 	}
-	$html .= "</select>\n<br>";
+	$html .= "</SELECT><SELECT name=\"amplitude\" size=\"1\">"
+		."<OPTION selected value=\"ALL\">--</OPTION>";
+	for (@amplitudes) {
+		my ($key,$nam,$val) = split(/\|/,$_);
+		$html .= "<OPTION".($key eq $QryParm->{'amplitude'} ? " selected":"")." value=\"$key\">$nam</OPTION>\n";
+	}
+	$html .= "</SELECT>\n<br>";
 
 	# ----- selection box OBSERVATION
 	my $msg = "Regular expression";
@@ -573,7 +591,7 @@ if ($QryParm->{'dump'} eq 'cum') {
 	push(@csv,"#YYYY-mm-dd Daily_Total(#);Daily_Moment(N.m)\n");
 }
 
-# ---- Filter events based on selection criteria ------------------------------
+# ---- Filter events based on selection criteria: use of grep on the data line (fast!) ------------------------------
 
 	# Filter out trashed event (except for Administrators)
 	# 
@@ -587,7 +605,7 @@ if ($QryParm->{'dump'} eq 'cum') {
 	}
 	# Filter on amplitude
 	# 
-	if (($QryParm->{'amplitude'} ne "") && ($QryParm->{'amplitude'} ne "ALL")) {
+	if (($QryParm->{'ampoper'} eq "eq") && ($QryParm->{'amplitude'} ne "") && ($QryParm->{'amplitude'} ne "ALL")) {
 		@lignes = grep(/\|$QryParm->{'amplitude'}\|/, @lignes)
 	}
 	# Filter on observations
@@ -617,6 +635,7 @@ foreach my $line (@lignes) {
 				     month => $evt_date_elem[1], 
 				     day => $evt_date_elem[2],
 				     hour => $evt_hour_elem[0]);
+	my $evt_amp = $valAmp{$amplitude};
 	my $lat;
 	my $lon;
 	my $dep;
@@ -634,8 +653,10 @@ foreach my $line (@lignes) {
 	#XB-was: if (($date le $dateEnd && $date ge $dateStart) 
 	#XB-was: && ($QryParm->{'duree'} eq "" || $QryParm->{'duree'} eq "NA" || $QryParm->{'duree'} eq "ALL" || $duree_s >= $QryParm->{'duree'})
 	if ($evt_date ge $start_datetime && $evt_date le $end_datetime 
-		&& ($QryParm->{'duree'} ~~ ["", "NA", "ALL"] || $duree_s >= $QryParm->{'duree'}
-		|| length($qml) > 2)) {
+		&& ($QryParm->{'duree'} ~~ ["", "NA", "ALL"] || $duree_s >= $QryParm->{'duree'} || length($qml) > 2)
+		&& ($QryParm->{'amplitude'} ~~ ["", "ALL"] || $QryParm->{'ampoper'} eq 'eq'
+			|| ($QryParm->{'ampoper'} eq 'le' && $evt_amp <= $valAmp{$QryParm->{'amplitude'}})
+		        || ($QryParm->{'ampoper'} eq 'ge' && $evt_amp >= $valAmp{$QryParm->{'amplitude'}}))) {
 		# do not display location informations
 		if ($QryParm->{'hideloc'} == 1 || $MC3{SC3_EVENTS_ROOT} eq "") {
 			for (keys %QML) {
@@ -1245,7 +1266,7 @@ for (@finalLignes) {
 
 		# --- type of event
 		$html .= "<td".($types{$type}{Color} ? " style=\"color:$types{$type}{Color}\"":"")."><b>$typeAff</b></td>";
-		my $amplitude_texte = ($amplitude ? (($amplitude eq "Sature" || $amplitude eq "OVERSCALE") ? "<b>$nomAmp{$amplitude}</b> ($duree_sat s)" : "$nomAmp{$amplitude}"):"");
+		my $amplitude_texte = ($amplitude ? (($amplitude eq "Sature" || $amplitude eq "OVERSCALE") ? "<b>$namAmp{$amplitude}</b> ($duree_sat s)" : "$namAmp{$amplitude}"):"");
 		my $amplitude_img = "/icons/signal_amplitude_".lc($amplitude).".png";
 		$html .= "<td nowrap>$amplitude_texte</td>";
 
@@ -1558,7 +1579,7 @@ Francois Beauducel, Didier Mallarino, Alexis Bosson, Jean-Marie Saurel, Patrice 
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2018 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
