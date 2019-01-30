@@ -100,7 +100,7 @@ function DOUT=gnss(varargin)
 %
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié, Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-01-17
+%   Updated: 2019-01-30
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -854,13 +854,14 @@ for r = 1:length(P.GTABLE)
 		arrowref = vsc*vmax/2;
 		maxz = max(zdem(:));
 
+		% X-Y top view
 		subplot(5,3,[1,2,4,5,7,8]);
 		pos = get(gca,'Position');
 		[mmm,imm] = max(mm,[],3);
 		if strcmp(modelling_coloref,'volpdf')
-			imagesc(xlim,ylim,squeeze(mmm.*rsign(vv(imm))))
+			imagesc(xlim,ylim,mmm.*sign(index3d(vv,imm,3)))
 		else
-			imagesc(xlim,ylim,squeeze(mmm))
+			imagesc(xlim,ylim,mmm)
 		end
 		axis xy; caxis(clim);
 		%pcolor(xlim,ylim,squeeze(max(vv,[],3)));shading flat
@@ -905,7 +906,7 @@ for r = 1:length(P.GTABLE)
 		axes('position',[0.68,pos(2),0.3,pos(4)])
 		[mmm,imm] = max(mm,[],2);
 		if strcmp(modelling_coloref,'volpdf')
-			imagesc(zlim,ylim,squeeze(mmm.*rsign(vv(imm))))
+			imagesc(zlim,ylim,squeeze(mmm.*sign(index3d(vv,imm,2))))
 		else
 			imagesc(zlim,ylim,squeeze(mmm))
 		end
@@ -942,7 +943,7 @@ for r = 1:length(P.GTABLE)
 		axes('position',[0.01,0.11,0.6142,0.3])
 		[mmm,imm] = max(mm,[],1);
 		if strcmp(modelling_coloref,'volpdf')
-			imagesc(xlim,zlim,fliplr(rot90(squeeze(mmm.*rsign(vv(imm))),-1)))
+			imagesc(xlim,zlim,fliplr(rot90(squeeze(mmm.*sign(index3d(vv,imm,1))),-1)))
 		else
 			imagesc(xlim,zlim,fliplr(rot90(squeeze(mmm),-1)))
 		end
@@ -1326,3 +1327,27 @@ end
 if ~hd
 	hold off
 end
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function y = index3d(x,id3,dim)
+% returns elements of multidimensional matrix x given by index matrix id3 in 
+% the dimension dim. id3 comes from [y,id3] = max(x,[],dim); so y and id3 have
+% one dimension less than x.
+
+sz = size(x);
+idx = 1:numel(id3);
+
+switch dim
+case 1
+	[j,k] = ind2sub(sz([2,3]),idx);
+	y = x(sub2ind(sz,id3(:),j(:),k(:)));
+case 2
+	[i,k] = ind2sub(sz([1,3]),idx);
+	y = x(sub2ind(sz,i(:),id3(:),k(:)));
+case 3
+	[i,j] = ind2sub(sz([1,2]),idx);
+	y = x(sub2ind(sz,i(:),j(:),id3(:)));
+end
+y = reshape(y,size(id3));
