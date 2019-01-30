@@ -70,6 +70,7 @@ Process "Main Courante" editor form
 use strict;
 use warnings;
 use Time::Local;
+use POSIX qw(strftime);
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
@@ -241,9 +242,10 @@ if ($id_evt_modif) {
 # In case of add/modify/trash: new data line is written, in other case definitive delete
 #
 if ($delete < 2) {
+	my $timestamp = strftime "%Y%m%dT%H%M%S", gmtime;
 	my $chaine = "$id_evt|$anneeEvnt-$moisEvnt-$jourEvnt|$heureEvnt:$minEvnt:$secEvnt"
 		."|$typeEvnt|$amplitudeEvnt|$dureeEvnt|$uniteEvnt|$dureeSatEvnt|$nbrEvnt|$smoinsp|$stationEvnt|$arrivee"
-		."|$fileNameSUDS|$idSC3|$imageSEFRAN|$operator|$comment";
+		."|$fileNameSUDS|$idSC3|$imageSEFRAN|$operator/$timestamp|$comment";
 	push(@lignes, u2l($chaine));
 }
 
@@ -462,7 +464,7 @@ frameMC2.pl and formulaireMC2.pl [2004-2009] by Didier Mallarino, Francois Beaud
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
