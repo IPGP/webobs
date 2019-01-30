@@ -445,7 +445,7 @@ if (!$date) {
 							if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1) {
 								my $deb_evt = 1 + int($SEFRAN3{HOURLY_WIDTH}*($MC{minute}/60 + $MC{second}/3600));
 								my $dur_evt = 1 + int(0.5 + $SEFRAN3{HOURLY_WIDTH}*$MC{duration}*$duration_s{$MC{unit}}/3600);	
-								print "<DIV class=\"mctag\"  onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{timestamp}',BGCOLOR,'$types{$MC{type}}{Color}',FGCOLOR,'#EEEEEE',WIDTH,250)\"",
+								print "<DIV class=\"mctag\"  onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{firstarrival}',BGCOLOR,'$types{$MC{type}}{Color}',FGCOLOR,'#EEEEEE',WIDTH,250)\"",
 									" style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$SEFRAN3{HOURLY_HEIGHT};left:$deb_evt;cursor:pointer\" onClick=\"window.open('$prog$MC{edit}')\">",
 									"</DIV>\n";
 							}
@@ -721,7 +721,7 @@ if ($date) {
 			}
 			my $dur_evt = 1 + int(0.5 + $largeur_image*$MC{duration}*$duration_s{$MC{unit}}/60);
 			if ($MC{id} != $id) {
-				print "<DIV class=\"mctag\" style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$hauteur_image;left:$deb_evt;cursor:pointer\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{timestamp}',WIDTH,250)\"",
+				print "<DIV class=\"mctag\" style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$hauteur_image;left:$deb_evt;cursor:pointer\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{firstarrival}',WIDTH,250)\"",
 					" onClick=\"window.open('$prog$MC{edit}')\"></DIV>\n";
 			} else {
 				my $dlstripes = "background: repeating-linear-gradient(120deg, white, white 7px, $types{$MC{type}}{Color} 7px, $types{$MC{type}}{Color} 14px);";
@@ -937,9 +937,10 @@ sub mcinfo
 {
 	my %MC;
 
-	($MC{id},$MC{date},$MC{time},$MC{type},$MC{amplitude},$MC{duration},$MC{unit},$MC{overscale},$MC{amount},$MC{s_minus_p},$MC{station},$MC{unique},$MC{sefran},$MC{qml},$MC{image},$MC{operator},$MC{comment}) = split(/\|/,$_[0]);
+	($MC{id},$MC{date},$MC{time},$MC{type},$MC{amplitude},$MC{duration},$MC{unit},$MC{overscale},$MC{amount},$MC{s_minus_p},$MC{station},$MC{unique},$MC{sefran},$MC{qml},$MC{image},$MC{signature},$MC{comment}) = split(/\|/,$_[0]);
 
-	$MC{timestamp} = "$MC{date} $MC{time} UT";
+	($MC{operator},$MC{timestamp}) = split('/',$MC{signature});
+	$MC{firstarrival} = "$MC{date} $MC{time} UT";
 	$MC{duration} ||= 10;
 
 	my $comment = htmlspecialchars(l2u($MC{comment}));
