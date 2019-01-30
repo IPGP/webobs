@@ -41,6 +41,8 @@ Other server's parameters are taken from WEBOBS and SEFRAN3 configuration files.
  ds=duration
   signal duration in seconds, in place of t2=
 
+ NOTE: SS must be an integer value.
+
 =cut
 
 use strict;
@@ -82,8 +84,51 @@ $s3 ||= $WEBOBS{SEFRAN3_DEFAULT_NAME};
 my $s3conf = "$WEBOBS{ROOT_CONF}/$s3.conf";
 my %SEFRAN3 = readCfg("$s3conf") if (-f "$s3conf");
 
-# ---- calculates Arclink limit from server time
-my $limit = qx(date -u -d "$SEFRAN3{ARCLINK_DELAY_HOURS} hour ago" +"\%Y,\%m,\%d,\%H,\%M,\%S" | xargs echo -n);
+# ---- data source parameters (or former variables by default)
+my $alsrv = $SEFRAN3{ARCLINK_SERVER};
+my $slsrv =  $SEFRAN3{SEEDLINK_SERVER};
+my $delay = $SEFRAN3{ARCLINK_DELAY_HOURS};
+my $aluser = $SEFRAN3{ARCLINK_USER};
+my @datasrc = split(/;/,$SEFRAN3{DATASOURCE});
+my $sltos = $SEFRAN3{SEEDLINK_SERVER_TIMEOUT_SECONDS};
+my $slprgm = "$WEBOBS{PRGM_ALARM} ".($sltos > 0 ? $sltos:"5")." $WEBOBS{SLINKTOOL_PRGM}";
+
+# ---- calculates time limit to choose which protocol to use
+$delay = $datasrc[2] if ($#datasrc eq 2);
+$delay = 0 if ($delay eq "" || $delay < 0);
+my $limit = qx(date -u -d "$delay hour ago" +"\%Y,\%m,\%d,\%H,\%M,\%S" | xargs echo -n);
+if ($limit lt $t1) {
+	$method = 'SeedLink';
+	if ($#datasrc eq 2) {
+		if ($datasrc[0] =~ /^slink:/) {
+			($slsrv = $datasrc[0]) =~ s/slink:\/\///g;
+		}
+		if ($datasrc[0] =~ /^arclink:/) {
+			my @prot = split(/\?user=/,$datasrc[0]);
+			($alsrv = $prot[0]) =~ s/arclink:\/\///g;
+			if ($#prot > 0) {
+				$aluser = $prot[1];
+			}
+			$method = 'ArcLink';
+		}
+	}
+} else {
+	$method = 'ArcLink';
+	if ($#datasrc eq 2) {
+		if ($datasrc[1] =~ /^arclink:/) {
+			my @prot = split(/\?user=/,$datasrc[1]);
+			($alsrv = $prot[0]) =~ s/arclink:\/\///g;
+			if ($#prot > 0) {
+				$aluser = $prot[1];
+			}
+		}
+		if ($datasrc[1] =~ /^slink:/) {
+			($slsrv = $datasrc[1]) =~ s/slink:\/\///g;
+			$method = 'SeedLink';
+		}
+	}
+}
+
 
 # ---- decodes date and time
 my ($y1,$m1,$d1,$h1,$n1,$s1) = split(/,/,$t1);
@@ -110,10 +155,9 @@ if ($S) {
 }
 
 # ---- decides which method to use
-if ($SEFRAN3{ARCLINK_SERVER} eq "" || $limit lt $t1) {
+if ($method eq "SeedLink") {
 	# SeedLink request
-	$method = 'SeedLink';
-	$host = $SEFRAN3{SEEDLINK_SERVER};
+	$host = $slsrv;
 	my $Q = qx($WEBOBS{SLINKTOOL_PRGM} -Q $host);
 	my @stream_server = split(/\n/,$Q);
 	my @streams;
@@ -130,7 +174,7 @@ if ($SEFRAN3{ARCLINK_SERVER} eq "" || $limit lt $t1) {
 	my $date2 = sprintf("%d/%02d/%02d %02d:%02d:%02.0f",$y2,$m2,$d2,$h2,$n2,$s2);
 
 	for (@stream_list) {
-		my ($net,$sta,$loc,$cha) = split(/\./,$_);
+		my ($net,$sta,$loc,$cha) = split(/[\.:]/,$_);
 		my @chan = grep(/$net *$sta *$loc *$cha/,@stream_server);
 
 		if (@chan) {
@@ -145,7 +189,7 @@ if ($SEFRAN3{ARCLINK_SERVER} eq "" || $limit lt $t1) {
 			}
 		}
 	}
-	my $command = "$WEBOBS{SLINKTOOL_PRGM} -S \"".join(',',@streams)."\" -tw $t1:$t2 -o $tmpfile $host";
+	my $command = "$slprgm -S \"".join(',',@streams)."\" -tw $t1:$t2 -o $tmpfile $host";
 	if (@streams) {
 		qx($command);
 	}
@@ -153,8 +197,8 @@ if ($SEFRAN3{ARCLINK_SERVER} eq "" || $limit lt $t1) {
 
 } else {
 	# ArcLink request
-	$method = 'ArcLink';
-	$host = $SEFRAN3{ARCLINK_SERVER};
+	$host = $alsrv;
+	$aluser = "wo" if ($aluser eq "");
 	my ($fh, $reqfile) = tempfile($reqtemplate, DIR => $tmpdir);
 	my @streams;
 
@@ -172,7 +216,7 @@ if ($SEFRAN3{ARCLINK_SERVER} eq "" || $limit lt $t1) {
 	print FILE @streams;
 	close(FILE);
 
-	my $command = "$WEBOBS{ARCLINKFETCH_PRGM} -u $SEFRAN3{ARCLINK_USER} -a $host -o $tmpfile $reqfile";
+	my $command = "$WEBOBS{ARCLINKFETCH_PRGM} -u $aluser -a $alsrv -o $tmpfile $reqfile";
 	qx($command);
 	qx(rm -f $reqfile);
 	$datafile .= '_arclink';
@@ -228,7 +272,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
