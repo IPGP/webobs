@@ -20,7 +20,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %	List of formats selectable by users must be set in CODE/etc/rawformats.conf
 %
 %
-%	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
+%	Authors: Fran?ois Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
 %	Updated: 2018-07-29
 
@@ -92,6 +92,9 @@ else
 
 		case {'meteofrance'}
 			D(n) = readfmtdata_meteofrance(WO,P,N(n),F);
+
+        case {'mc3'}
+			D(n) = readfmtdata_mc3(WO,P,N(n),F);
 
 		otherwise
 			fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);
