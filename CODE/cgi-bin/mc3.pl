@@ -583,7 +583,7 @@ my @ligneTitre;
 if ($QryParm->{'dump'} eq 'bul') {
 	$dumpFile = "${mc3}_dump_bulletin.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
-	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Magnitude;Longitude;Latitude;Depth;Type;File;Valid;Projection;Operator\n");
+	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;Longitude;Latitude;Depth;Type;File;Valid;Projection;Operator;Timestamp\n");
 }
 if ($QryParm->{'dump'} eq 'cum') {
 	$dumpFile = "${mc3}_dump_daily_total.csv";
@@ -755,8 +755,8 @@ foreach my $line (@lignes) {
 			|| $QryParm->{'hideloc'} == 1 ) {
 			if ($QryParm->{'dump'} eq 'bul') {
 				push(@csv,join('',split(/-/,$date))." ".join('',split(/:/,$heure)).";"
-					."$nombre;$duree_s;$mag;$lon;$lat;$dep;$type;$qml;"
-					.($mod eq 'manual' ? "1":"0").";WGS84;$signature\n");
+					."$nombre;$duree_s;$amplitude;$mag;$lon;$lat;$dep;$type;$qml;"
+					.($mod eq 'manual' ? "1":"0").";WGS84;$operator;$timestamp\n");
 			#FB-was:} elsif ($QryParm->{'dump'} eq "") {
 			} else {
 				push(@finalLignes,$line);
