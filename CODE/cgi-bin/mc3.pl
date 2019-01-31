@@ -36,6 +36,12 @@ duree=
 amplitude= 
  see valid key values in AMPLITUDES_CONF conf file
 
+ampoper= 
+ amplitude operator
+ le = less or equal to
+ eq = equal (default)
+ ge = greater or equal to
+
 located= 
  selection events to be shown. Optional, default to 0, show all events.
  0 show all events.
@@ -66,6 +72,9 @@ graph=
 
 slt= 
  use local time zone for date/time selection and statistics (from SELECT_LOCAL_TZ)
+
+newts=
+ select events newer than edit/create timestamp (format ISO yyyymmddTHHMMSS UTC only)
 
 dump=
  bul event bulletin as .csv file
@@ -177,13 +186,15 @@ $QryParm->{'d2'}        ||= "";
 $QryParm->{'h2'}        ||= "23";
 $QryParm->{'type'}      ||= "";
 $QryParm->{'duree'}     ||= "";
-$QryParm->{'amplitude'} ||= "";
+$QryParm->{'amplitude'} ||= "ALL";
+$QryParm->{'ampoper'}   ||= "eq";
 $QryParm->{'located'}   ||= "";
 $QryParm->{'locstatus'}  //= $MC3{DISPLAY_LOCATION_STATUS_DEFAULT};
 $QryParm->{'hideloc'}   //= !$MC3{DISPLAY_LOCATION_DEFAULT};
 $QryParm->{'obs'}       ||= "";
 $QryParm->{'graph'}     ||= "movsum";
 $QryParm->{'slt'}       ||= "$MC3{DEFAULT_SELECT_LOCAL}";
+$QryParm->{'newts'}     ||= "";
 $QryParm->{'dump'}      ||= "";
 $QryParm->{'trash'}     ||= "";
 
@@ -279,10 +290,13 @@ for (@Durations) {
 # ---- Load Amplitudes --------------------------------------------------------
 #
 my @amplitudes = readCfgFile("$MC3{AMPLITUDES_CONF}");
-my %nomAmp;
+my %namAmp;
+my %valAmp;
+my %opeAmp = ( 'le' => '&le;', 'eq' => '=', 'ge' => '&ge;' );
 for (@amplitudes) {
         my ($key,$nam,$val) = split(/\|/,$_);
-        $nomAmp{$key} = $nam;
+        $namAmp{$key} = $nam;
+        $valAmp{$key} = $val;
 }
 
 # ---- Load No location SC3 types ----------------------------------------------
@@ -380,13 +394,17 @@ if ($QryParm->{'dump'} eq "") {
 	$html .= "</select>\n";
 
 	# ----- selection box AMPLITUDE
-	$html .= " &nbsp;&nbsp; Amplitude: <select name=\"amplitude\" size=\"1\">"
-		."<option selected value=\"ALL\">--</option>";
-	for (@amplitudes) {
-		my ($key,$val) = split(/\|/,$_);
-		$html .= "<OPTION".($key eq $QryParm->{'amplitude'} ? " selected":"")." value=\"$key\">$val</OPTION>\n";
+	$html .= " &nbsp;&nbsp; Amplitude: <SELECT name=\"ampoper\" size=\"1\">";
+	for (keys(%opeAmp)) {
+		$html .= "<OPTION".($_ eq $QryParm->{'ampoper'} ? " selected":"")." value=\"$_\">$opeAmp{$_}</OPTION>";
 	}
-	$html .= "</select>\n<br>";
+	$html .= "</SELECT><SELECT name=\"amplitude\" size=\"1\">"
+		."<OPTION selected value=\"ALL\">--</OPTION>";
+	for (@amplitudes) {
+		my ($key,$nam,$val) = split(/\|/,$_);
+		$html .= "<OPTION".($key eq $QryParm->{'amplitude'} ? " selected":"")." value=\"$key\">$nam</OPTION>\n";
+	}
+	$html .= "</SELECT>\n<br>";
 
 	# ----- selection box OBSERVATION
 	my $msg = "Regular expression";
@@ -432,6 +450,7 @@ if ($QryParm->{'dump'} eq "") {
 	# ----- Hidden fields + button(s)
 	$html .= "<INPUT type=\"hidden\" name=\"mc\" value=\"$mc3\">\n"
 		."<INPUT type=\"hidden\" name=\"dump\" value=\"\">\n"
+		."<INPUT type=\"hidden\" name=\"newts\" value=\"$QryParm->{'newts'}\">\n"
 		#."<INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"document.formulaire.reset()\">"
 		."<INPUT type=\"button\" value=\"$__{'Display'}\" onClick=\"display()\">"
 		."</TH></TR></TABLE>\n"
@@ -564,7 +583,7 @@ my @ligneTitre;
 if ($QryParm->{'dump'} eq 'bul') {
 	$dumpFile = "${mc3}_dump_bulletin.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
-	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Magnitude;Longitude;Latitude;Depth;Type;File;Valid;Projection;Operator\n");
+	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;Longitude;Latitude;Depth;Type;File;Valid;Projection;Operator;Timestamp\n");
 }
 if ($QryParm->{'dump'} eq 'cum') {
 	$dumpFile = "${mc3}_dump_daily_total.csv";
@@ -573,7 +592,7 @@ if ($QryParm->{'dump'} eq 'cum') {
 	push(@csv,"#YYYY-mm-dd Daily_Total(#);Daily_Moment(N.m)\n");
 }
 
-# ---- Filter events based on selection criteria ------------------------------
+# ---- Filter events based on selection criteria: use of grep on the data line (fast!) ------------------------------
 
 	# Filter out trashed event (except for Administrators)
 	# 
@@ -587,7 +606,7 @@ if ($QryParm->{'dump'} eq 'cum') {
 	}
 	# Filter on amplitude
 	# 
-	if (($QryParm->{'amplitude'} ne "") && ($QryParm->{'amplitude'} ne "ALL")) {
+	if (($QryParm->{'ampoper'} eq "eq") && ($QryParm->{'amplitude'} ne "") && ($QryParm->{'amplitude'} ne "ALL")) {
 		@lignes = grep(/\|$QryParm->{'amplitude'}\|/, @lignes)
 	}
 	# Filter on observations
@@ -608,8 +627,10 @@ my %QML;
 foreach my $line (@lignes) {
 	$l++;
 	my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,
-	    $nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$operateur,
-	    $comment,$origin) = split(/\|/,$line);
+	    $nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$signature,
+	    $comment) = split(/\|/,$line);
+	my ($operator,$timestamp) = split("/",$signature);
+    	my $origin;
 	my $duree_s = ($duree ? $duree*$duration_s{$unite}:"");
 	my @evt_date_elem = split(/-/,$date);
 	my @evt_hour_elem = split(/:/,$heure);
@@ -617,25 +638,19 @@ foreach my $line (@lignes) {
 				     month => $evt_date_elem[1], 
 				     day => $evt_date_elem[2],
 				     hour => $evt_hour_elem[0]);
-	my $lat;
-	my $lon;
-	my $dep;
-	my $mag;
-	my $mty;
-	my $cod;
-	my $dat;
-	my $pha;
-	my $qua;
-	my $mod;
-	my $sta;
-	my $mth;
-	my $mdl;
-	my $typ;
+	my $evt_amp = $valAmp{$amplitude};
+	# default timestamp for old data is event date
+	$timestamp = join('',@evt_date_elem)."T".join('',@evt_hour_elem) if ($timestamp eq "");
+	my ($lat,$lon,$dep,$mag,$mty,$cod,$dat,$pha,$qua,$mod,$sta,$mth,$mdl,$typ);
 	#XB-was: if (($date le $dateEnd && $date ge $dateStart) 
 	#XB-was: && ($QryParm->{'duree'} eq "" || $QryParm->{'duree'} eq "NA" || $QryParm->{'duree'} eq "ALL" || $duree_s >= $QryParm->{'duree'})
 	if ($evt_date ge $start_datetime && $evt_date le $end_datetime 
-		&& ($QryParm->{'duree'} ~~ ["", "NA", "ALL"] || $duree_s >= $QryParm->{'duree'}
-		|| length($qml) > 2)) {
+		&& ($QryParm->{'duree'} ~~ ["", "NA", "ALL"] || $duree_s >= $QryParm->{'duree'} || length($qml) > 2)
+		&& ($QryParm->{'amplitude'} ~~ ["", "ALL"] || $QryParm->{'ampoper'} eq 'eq'
+			|| ($QryParm->{'ampoper'} eq 'le' && $evt_amp <= $valAmp{$QryParm->{'amplitude'}})
+		        || ($QryParm->{'ampoper'} eq 'ge' && $evt_amp >= $valAmp{$QryParm->{'amplitude'}}))
+		&& ($QryParm->{'newts'} eq "" || $timestamp ge $QryParm->{'newts'})
+	) {
 		# do not display location informations
 		if ($QryParm->{'hideloc'} == 1 || $MC3{SC3_EVENTS_ROOT} eq "") {
 			for (keys %QML) {
@@ -651,7 +666,7 @@ foreach my $line (@lignes) {
                        } else {
                                $origin = '';
                        }
-			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$operateur|$comment|$origin";
+			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$signature|$comment|$origin";
 		}
 		# ID FDSNWS case: request QuakeML file by FDSN webservice
 		elsif ($qml =~ /:\/\//) {
@@ -679,7 +694,7 @@ foreach my $line (@lignes) {
                        } else {
                                $origin = '';
                        }
-			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$operateur|$comment|$origin";
+			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$signature|$comment|$origin";
 		}
 		# Old suds ID case :
 		elsif (length($qml) < 3 && $HYPO_USE_FMT0_PATH) {
@@ -720,7 +735,7 @@ foreach my $line (@lignes) {
 				}
 				$mod = 'manual';
 				$origin = "$id;$dat;$lat;$lon;$dep;$pha;$mod;;$mag;$mty;Hypo71;;$cod";
-				$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$operateur|$comment|$origin";
+				$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$signature|$comment|$origin";
 			}
 		}
 
@@ -740,8 +755,8 @@ foreach my $line (@lignes) {
 			|| $QryParm->{'hideloc'} == 1 ) {
 			if ($QryParm->{'dump'} eq 'bul') {
 				push(@csv,join('',split(/-/,$date))." ".join('',split(/:/,$heure)).";"
-					."$nombre;$duree_s;$mag;$lon;$lat;$dep;$type;$qml;"
-					.($mod eq 'manual' ? "1":"0").";WGS84;$operateur\n");
+					."$nombre;$duree_s;$amplitude;$mag;$lon;$lat;$dep;$type;$qml;"
+					.($mod eq 'manual' ? "1":"0").";WGS84;$operator;$timestamp\n");
 			#FB-was:} elsif ($QryParm->{'dump'} eq "") {
 			} else {
 				push(@finalLignes,$line);
@@ -802,7 +817,7 @@ my $stat_max_duration = 0;
 my $stat_max_magnitude = 0;
 foreach (@finalLignes) {
 	if ( $_ ne "" ) {
-		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$operateur,$comment,$origin) = split(/\|/,$_);
+		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$signature,$comment,$origin) = split(/\|/,$_);
 		if (!$nombre) { $nombre = 1; }
 		my $time =  timegm(substr($heure,6,2),substr($heure,3,2),substr($heure,0,2),substr($date,8,2),substr($date,5,2)-1,substr($date,0,4)-1900);
 		my $duree_s = ($duree ? $duree*$duration_s{$unite}:0);
@@ -1030,7 +1045,8 @@ $html .= "</tr>";
 # 
 for (@finalLignes) {
 	if ( $_ ne "") {
-		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$operateur,$comment,$origin) = split(/\|/,$_);
+		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$signature,$comment,$origin) = split(/\|/,$_);
+		my ($operator,$timestamp) = split("/",$signature);
 		my ($evt_annee4,$evt_mois,$evt_jour,$suds_jour,$suds_heure,$suds_minute,$suds_seconde,$suds_reseau) = split;
 		my $diriaspei;
 		my $suds_continu;
@@ -1188,7 +1204,7 @@ for (@finalLignes) {
 		# mise en evidence du filtre et pop-up
 		my $typeAff = ($types{$type}{Name} ? $types{$type}{Name}:"");
 		my $imageCAPTION = "$date $heure UT";
-		my $imagePOPUP = "$typeAff $duree s $code - $comment [$operateur]";
+		my $imagePOPUP = "$typeAff $duree s $code - $comment [$operator]";
 		if ($QryParm->{'obs'} ne "") {
 			#if (grep(/$QryParm->{'obs'}/i,$type)) {
 			#	$typeAff =~ s/($QryParm->{'obs'})/<span $search>$1<\/span>/ig;
@@ -1201,7 +1217,7 @@ for (@finalLignes) {
 			}
 		}
 		my $tc = $type;
-		if ($operateur eq $MC3{SC3_USER}) { $tc = "AUTO"; }
+		if ($operator eq $MC3{SC3_USER}) { $tc = "AUTO"; }
 
 		$html .= "<TR".($id_evt < 0 ? " class=\"node-disabled\"":"")." style=\"background-color:$types{$tc}{BgColor}\">";
 
@@ -1209,7 +1225,7 @@ for (@finalLignes) {
 		$html .= "<TD nowrap>";
 		if ($editURL ne "") {
 			my $msg = "View...";
-			if ( (($operateur eq "" || $operateur eq $CLIENT) && (clientHasEdit(type=>"authprocs",name=>"MC") ||clientHasEdit(type=>"authprocs",name=>"$mc3"))) || (clientHasAdm(type=>"authprocs",name=>"MC") || clientHasAdm(type=>"authprocs",name=>"$mc3")) ) {
+			if ( (($operator eq "" || $operator eq $CLIENT) && (clientHasEdit(type=>"authprocs",name=>"MC") ||clientHasEdit(type=>"authprocs",name=>"$mc3"))) || (clientHasAdm(type=>"authprocs",name=>"MC") || clientHasAdm(type=>"authprocs",name=>"$mc3")) ) {
 				$msg = "Edit...";
 			}
 			$html .= "<a href=\"$editURL\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$msg',WIDTH,50)\" target=\"_blank\">"
@@ -1250,7 +1266,7 @@ for (@finalLignes) {
 
 		# --- type of event
 		$html .= "<td".($types{$type}{Color} ? " style=\"color:$types{$type}{Color}\"":"")."><b>$typeAff</b></td>";
-		my $amplitude_texte = ($amplitude ? (($amplitude eq "Sature" || $amplitude eq "OVERSCALE") ? "<b>$nomAmp{$amplitude}</b> ($duree_sat s)" : "$nomAmp{$amplitude}"):"");
+		my $amplitude_texte = ($amplitude ? (($amplitude eq "Sature" || $amplitude eq "OVERSCALE") ? "<b>$namAmp{$amplitude}</b> ($duree_sat s)" : "$namAmp{$amplitude}"):"");
 		my $amplitude_img = "/icons/signal_amplitude_".lc($amplitude).".png";
 		$html .= "<td nowrap>$amplitude_texte</td>";
 
@@ -1305,7 +1321,7 @@ for (@finalLignes) {
 		}
 
 		# --- operator
-		$html .= "</td><td>$operateur</td>";
+		$html .= "</td><td>$operator</td>";
 
 		# --- comment
 		$html .= "<td style=\"text-align:left;\"><i>$comment</i></td>";
@@ -1406,7 +1422,7 @@ for (@finalLignes) {
 					# Print a link to remove the B3 file, only if no filter is in use and only for the last 10 lines
 					#if ($end_datetime->truncate(to => 'day') == $today
 					if ($nbLignesRetenues <= 10
-					    and ( (($operateur eq "" || $operateur eq $CLIENT)
+					    and ( (($operator eq "" || $operator eq $CLIENT)
 						  && (clientHasEdit(type=>"authprocs",name=>"MC") || clientHasEdit(type=>"authprocs",name=>"$mc3")))
 						  || (clientHasAdm(type=>"authprocs",name=>"MC") || clientHasAdm(type=>"authprocs",name=>"$mc3")) )  ) {
 						$html .= qq{&nbsp; <a href="/cgi-bin/deleteB3.pl?b3=$nomB3[$ii]/$link&amp;mc=$mc3" title="Rebuild the B³ report" target="_blank" >x</a>};
@@ -1563,7 +1579,7 @@ Francois Beauducel, Didier Mallarino, Alexis Bosson, Jean-Marie Saurel, Patrice 
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2018 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

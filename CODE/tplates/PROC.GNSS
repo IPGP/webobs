@@ -126,7 +126,7 @@ MODELLING_EXCLUDED_NODELIST|
 MODELLING_HORIZONTAL_ONLY|1
 # recomputes relative velocities before modelling (instead of vectors results)
 MODELLING_FORCE_RELATIVE|N
-# modelling source: isotropic or pcdm
+# modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
 MODELLING_SOURCE_TYPE|isotropic
 # a priori horizontal error around the target or grid center (in STD, km), 0 = no a priori
 MODELLING_APRIORI_HSTD_KM|0

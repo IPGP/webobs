@@ -445,7 +445,7 @@ if (!$date) {
 							if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1) {
 								my $deb_evt = 1 + int($SEFRAN3{HOURLY_WIDTH}*($MC{minute}/60 + $MC{second}/3600));
 								my $dur_evt = 1 + int(0.5 + $SEFRAN3{HOURLY_WIDTH}*$MC{duration}*$duration_s{$MC{unit}}/3600);	
-								print "<DIV class=\"mctag\"  onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{timestamp}',BGCOLOR,'$types{$MC{type}}{Color}',FGCOLOR,'#EEEEEE',WIDTH,250)\"",
+								print "<DIV class=\"mctag\"  onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{firstarrival}',BGCOLOR,'$types{$MC{type}}{Color}',FGCOLOR,'#EEEEEE',WIDTH,250)\"",
 									" style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$SEFRAN3{HOURLY_HEIGHT};left:$deb_evt;cursor:pointer\" onClick=\"window.open('$prog$MC{edit}')\">",
 									"</DIV>\n";
 							}
@@ -721,7 +721,7 @@ if ($date) {
 			}
 			my $dur_evt = 1 + int(0.5 + $largeur_image*$MC{duration}*$duration_s{$MC{unit}}/60);
 			if ($MC{id} != $id) {
-				print "<DIV class=\"mctag\" style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$hauteur_image;left:$deb_evt;cursor:pointer\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{timestamp}',WIDTH,250)\"",
+				print "<DIV class=\"mctag\" style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$hauteur_image;left:$deb_evt;cursor:pointer\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{firstarrival}',WIDTH,250)\"",
 					" onClick=\"window.open('$prog$MC{edit}')\"></DIV>\n";
 			} else {
 				my $dlstripes = "background: repeating-linear-gradient(120deg, white, white 7px, $types{$MC{type}}{Color} 7px, $types{$MC{type}}{Color} 14px);";
@@ -884,7 +884,7 @@ if ($date) {
 		}
 
 		# lien USGS
-		my $ocl = "<A href=\"$MC3{USGS_URL}\" target=\"_blank\"><B>USGS</B>";
+		my $ocl = "<A href=\"$MC3{USGS_URL}\" target=\"_blank\"><B>USGS</B></A>";
 		$ocl = $MC3{VISIT_LINK} if (defined($MC3{VISIT_LINK}));
 		print "&nbsp;<I>&rarr; $__{'Visit'} $ocl</I></P>\n";
 
@@ -937,9 +937,10 @@ sub mcinfo
 {
 	my %MC;
 
-	($MC{id},$MC{date},$MC{time},$MC{type},$MC{amplitude},$MC{duration},$MC{unit},$MC{overscale},$MC{amount},$MC{s_minus_p},$MC{station},$MC{unique},$MC{sefran},$MC{qml},$MC{image},$MC{operator},$MC{comment}) = split(/\|/,$_[0]);
+	($MC{id},$MC{date},$MC{time},$MC{type},$MC{amplitude},$MC{duration},$MC{unit},$MC{overscale},$MC{amount},$MC{s_minus_p},$MC{station},$MC{unique},$MC{sefran},$MC{qml},$MC{image},$MC{signature},$MC{comment}) = split(/\|/,$_[0]);
 
-	$MC{timestamp} = "$MC{date} $MC{time} UT";
+	($MC{operator},$MC{timestamp}) = split('/',$MC{signature});
+	$MC{firstarrival} = "$MC{date} $MC{time} UT";
 	$MC{duration} ||= 10;
 
 	my $comment = htmlspecialchars(l2u($MC{comment}));
@@ -1016,7 +1017,7 @@ frameMC2.pl and formulaireMC2.pl [2004-2009] by Didier Mallarino, Francois Beaud
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
