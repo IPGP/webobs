@@ -28,6 +28,12 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: extract from tdp_final output file (grep "STA [XYZ]" lines)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
+%	format 'gipsyx'
+%		type: JPL/GipsyX GNSS .tdp results ITRF08
+%		filename: P.RAWDATA/FID/YYYY/FID/YYYY-MM-DD.FID.tdp*
+%		data format: extract from SmoothFinal.tdp output file (grep "Station.SSSS.State.pos.[XYZ]" lines)
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
 %	format 'usgs-rneu'
 %		type: USGS GPS results ITRF08
 %		filename/url: P.RAWDATA (use $FID to point the right file/url)
@@ -37,7 +43,7 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2018-11-19
+%	Updated: 2019-01-30
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -98,7 +104,7 @@ case 'globkval'
 	%D.ITRF_YEAR = itrf;
 
 % -----------------------------------------------------------------------------
-case {'gipsy','gipsy-tdp'}
+case {'gipsy','gipsy-tdp','gipsyx'}
 
 	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
 	wosystem(sprintf('rm -f %s',fdat),P);
@@ -106,10 +112,22 @@ case {'gipsy','gipsy-tdp'}
 	orbits = {'tdp','tdp.qlR','tdp.ultra'};
 	tv = datevec(F.datelim);
 	ylim = tv(1:2);
-	
+
 	% loop on potential list of dataIDs
 	for nn = 1:length(lfid)	
 		nfid = strtrim(lfid{nn});
+
+		switch F.fmt
+		case 'gipsyx'
+			grepstr = ['State.Pos.',nfid,'.'];
+			awkstr = '$1,$3,$4';
+			kmfact = 1;
+		otherwise
+			grepstr = 'STA ';
+			awkstr = '$1,$3,$4';
+			kmfact = 1000;
+		end
+	
 		if any(isnan(ylim))
 			% gets the list of existing year directories
 			Z = dir(sprintf('%s/%s/',F.raw{nn},nfid));
@@ -123,8 +141,8 @@ case {'gipsy','gipsy-tdp'}
 			fprintf('.');
 			for o = 1:length(orbits)	% loop on orbits
 				for c = {'X','Y','Z'}	% loop on components
-					wosystem(sprintf('grep -sh "STA %s" %s/%s/%4d/*.%s | awk ''{print $1,$3,$4,%d}'' >> %s/%s.%s', ...
-						c{1},F.raw{nn},nfid,y,orbits{o},o-1,F.ptmp,nfid,c{1}),P);
+					wosystem(sprintf('grep -sh "%s%s" %s/%s/%4d/*.%s | awk ''{print %s,%d}'' >> %s/%s.%s', ...
+						grepstr,c{1},F.raw{nn},nfid,y,orbits{o},awkstr,o-1,F.ptmp,nfid,c{1}),P);
 				end
 			end
 		end
@@ -144,7 +162,7 @@ case {'gipsy','gipsy-tdp'}
 		% converts GPS J2000 time to datenum
 		t = dd(:,1)/86400 + datenum(2000,1,1,12,0,0);
 		% converts cartesian geocentric (X,Y,Z) to UTM, estimating errors
-		[enu,e] = cart2utm(dd(:,[2,6,10])*1000,dd(:,[3,7,11])*1000);
+		[enu,e] = cart2utm(dd(:,[2,6,10])*kmfact,dd(:,[3,7,11])*kmfact);
 		d = [enu,dd(:,4)];
 		% minimum decent error is 1 mm (!)
 		e(e<1e-3) = 1e-3;
