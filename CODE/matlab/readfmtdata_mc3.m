@@ -19,7 +19,7 @@ function [D,P] = readfmtdata_mc3(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2019-01-21, in Paris (France)
-%	Updated: 
+%	Updated: 2019-02-01
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -59,17 +59,8 @@ MC3 = readcfg(WO,sprintf('/etc/webobs.d/%s.conf',N.FID));
 MC3TYPES = readcfg(WO,MC3.EVENT_CODES_CONF);
 MC3DURATIONS = readcfg(WO,MC3.DURATIONS_CONF);
 
-if isfield(MC3,'P_WAVE_VELOCITY')
-    Pvel = str2double(MC3.P_WAVE_VELOCITY);
-else
-    Pvel = 6;
-end
-
-if isfield(MC3,'VP_VS_RATIO')
-    VpVs = str2double(MC3.VP_VS_RATIO);
-else
-    VpVs = 1.75;
-end
+Pvel = field2num(MC3,'P_WAVE_VELOCITY',6);
+VpVs = field2num(MC3,'VP_VS_RATIO',1.75);
 
 % =============================================================================
 % reads MC3 for the corresponding years
