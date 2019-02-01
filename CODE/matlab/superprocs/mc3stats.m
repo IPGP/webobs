@@ -109,10 +109,10 @@ else
     samp_int = 10/1440;
 end
 
-t_rate = floor(min(min(P.DATELIST{:}))):samp_int:ceil(P.NOW);
+t_rate = floor(min([P.DATELIST{:}])):samp_int:ceil(P.NOW);
 rate = interp1(t_rt,rt,t_rate);
 k = find(~isnan(rate));
-rate(isnan(rate)) = rate(k(1));
+rate(isnan(rate(1:k(1)))) = rate(k(1));
 
 
 % --- LTA/STA swarm detector on seismic rate
@@ -144,7 +144,7 @@ thresh = field2num(P,'SWARM_DETECTOR_THRESH',2.5);
 rate_lta = zeros(1,length(rate));
 % If first rate data is already a swarm value, initialize lta to a low value
 if rate(1) > 20
-    rate_lta(1) = 20/tresh;
+    rate_lta(1) = 20/thresh;
 else
     rate_lta(1) = rate(1);
 end
@@ -205,28 +205,32 @@ energy_catalog(k) = seismic_energy(d(k,8),'kanamori');
 % --- Swarm statistics
 % If swarms were found, update the statistics table
 if find(swarms_datelim)
-    n_swarms = size(swarms_datelim);
+    n_swarms = size(swarms_datelim,1);
     % Init all 7 statistics :   number of events in swarm
     %                           inter-swarm time
     %                           swarm moment from MC
-    %                           swarm energy from MC
     %                           swarm moment from catalog
+    %                           swarm energy from MC
     %                           swarm energy from catalog
     %                           percentage of events in the catalog
-    swarms_statistics = nan(length(n_swarms(1)),6);
-    swarms_x = nan(length(n_swarms(1)),4);
-    swarms_y = nan(length(n_swarms(1)),4);
+    swarms_statistics = nan(n_swarms,6);
+    swarms_x = nan(4,n_swarms);
+    swarms_y = nan(4,n_swarms);
     % Inter-swarm time
     swarms_statistics(2:n_swarms,2) = [swarms_datelim(2:end,1)-swarms_datelim(1:end-1,2)];
-    for i = 1:n_swarms(1)
+    for i = 1:n_swarms
         % Finds events between start and end of the swarm
         k = find(t_rt>=swarms_datelim(i,1) & t_rt<=swarms_datelim(i,2));
         if ~isempty(k)
             swarms_statistics(i,1) = length(k);
-            swarms_statistics(i,3) = sum(moment_MC(~isnan(moment_MC(k))));
-            swarms_statistics(i,4) = sum(energy_MC(~isnan(energy_MC(k))));
-            swarms_statistics(i,5) = sum(moment_catalog(~isnan(moment_catalog(k))));
-            swarms_statistics(i,6) = sum(energy_catalog(~isnan(energy_catalog(k))));
+            vals = moment_MC(k);
+            swarms_statistics(i,3) = sum(vals(~isnan(vals)))/10^6;
+            vals = moment_catalog(k);
+            swarms_statistics(i,4) = sum(vals(~isnan(vals)))/10^6;
+            vals = energy_MC(k);
+            swarms_statistics(i,5) = sum(vals(~isnan(vals)))/10^6;
+            vals = energy_catalog(k);
+            swarms_statistics(i,6) = sum(vals(~isnan(vals)))/10^6;
         end
         % Finds events between start and end of swarm and in the catalog (with a catalog magnitude)
         k = find(~isnan(d(k,8)));
@@ -234,45 +238,79 @@ if find(swarms_datelim)
             swarms_statistics(i,7) = 100*length(k)/swarms_statistics(i,1);
         end
         % Create swarm boxes for plot
-        swarms_x(i,:) = [swarms_datelim(i,1);swarms_datelim(i,2);swarms_datelim(i,2);swarms_datelim(i,1)];
-        swarms_y(i,:) = [min(rt);min(rt);max(rt);max(rt)];  
+        swarms_x(:,i) = [swarms_datelim(i,1);swarms_datelim(i,2);swarms_datelim(i,2);swarms_datelim(i,1)];
     end
 end
 
+ylim = [10.^floor(log10(min(rt))) 10.^ceil(log10(max(rt)))];
+swarms_y(1:2,:) = ylim(1);
+swarms_y(3:4,:) = ylim(2);
 
 % ====================================================================================================
 % Make the graphs
 
 for r = 1:length(P.GTABLE)
 
+    k = D(n).G(r).k;
+    ke = D(n).G(r).ke;
+    tlim = D(n).G(r).tlim;
+    tk = t(k);
+    energy_MCk = energy_MC(k);
+    energy_catalogk = energy_catalog(k);
+    
     summary='SWARM';
     if any(strcmp(P.SUMMARYLIST,summary))
+        stitre = sprintf('%s - Seismic rate and swarms',P.NAME);
+        P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+
+    	P.GTABLE(r).INFOS = {sprintf('Last event: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),'dd/mm/yy: N.evts|NRJ MC|NRJ loc|% loc'};
+        kk=find(swarms_datelim(:,2)>tlim(1));
+        sw_dt = swarms_datelim(kk,:);
+        sw_stats = swarms_statistics(kk,:);
+        if size(sw_dt,1)>0
+            for i = 1:size(sw_dt,1)
+            	P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('{\\bf%s}: %d | %.1f | %.1f | %.1f',datestr(sw_dt(i,1),20),sw_stats(i,1),sw_stats(i,5),sw_stats(i,6),sw_stats(i,7))}];
+    	    end
+    	end
+    	
     	figure, clf, orient tall
     	
-    	h = subplot(2,1,1); extaxes
+    	subplot(2,1,1); extaxes
         fill(swarms_x,swarms_y,'r')
         hold on
-        plot(t_rate,rate,'k')
-        plot(t_rate,rate_lta.*thresh,'b')
+        plot(t_rate,rate,'k','LineWidth',P.GTABLE(r).LINEWIDTH);
+        plot(t_rate,rate_lta.*thresh,'b','LineWidth',P.GTABLE(r).LINEWIDTH);
         hold off
-        set(gca,'YScale','log')
-        datetick('x','dd/mm/yy');
-        ylabel('evts/day');
-        title('Instant seismicity rate')
+        set(gca,'YScale','log');
+        set(gca,'XLim',tlim,'YLim',ylim,'FontSize',8);
+        datetick2('x',P.GTABLE(r).DATESTR);
+        ylabel('Seismic rate (evts/day)');
 
         subplot(2,1,2); extaxes
-        k = find(~isnan(energy_MC));
-        semilogy(t(k),cumsum(energy_MC(k)),'r');
+        kk = find(~isnan(energy_MCk));
+        plot(tk(kk),cumsum(energy_MCk(kk)),'r','LineWidth',P.GTABLE(r).LINEWIDTH);
         hold on
-        semilogy(t(k),cumsum(energy_catalog(k)),'k')
+        kk = find(~isnan(energy_catalogk));
+        plot(tk(kk),cumsum(energy_catalogk(kk)),'k','LineWidth',P.GTABLE(r).LINEWIDTH);
         hold off
-        datetick('x','dd/mm/yy');
+        set(gca,'YScale','log');
+        set(gca,'XLim',tlim,'FontSize',8);
+        datetick2('x',P.GTABLE(r).DATESTR);
         xlabel('date');
         ylabel('Cumulated energy (MJ)');
         legend('MainCourante','catalog');
         legend('boxoff');
         legend('location','southeast');
+
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		close
+
+        E.t = sw_dt(:,1);
+        E.d = [datevec(sw_dt(:,2)),sw_stats];
+        E.header = {'yyyy','mm','dd','HH','MM','SS','N.evts','Inter-event time(Day)','Moment-MC(MJ)','Moment-loc(MJ)','NRJ-MC(MJ)','NRJ-loc(MJ)','Located(%)'};
+        E.fmt = {'%4d','%02d','%02d','%02d','%02d','%02d','%d','%.1f','%.1f','%.1f','%.1f','%.1f','%03.0f'};
+        E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
+        mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
     end
 
 %    summary='GUTENBERG-RICHTER';
