@@ -866,10 +866,10 @@ foreach (@finalLignes) {
 		}
 		if ($types{$type}{asVT} && $duree_s > $stat_max_duration) {
 			my $dist;
-			if (defined($MC3{P_WAVE_VELOCITY})) {my $Pvel=$MC3{P_WAVE_VELOCITY}}
-			else {my $Pvel=6}
-			if (defined($MC3{VP_VS_RATIO})) {my $VpVs=$MC3{VP_VS_RATIO}}
-			else {my $VpVs=1.75}
+			my $Pvel = 6;
+			$Pvel = $MC3{P_WAVE_VELOCITY} if (defined $MC3{P_WAVE_VELOCITY});
+			my $VpVs = 1.75;
+			$VpVs = $MC3{VP_VS_RATIO} if (defined $MC3{VP_VS_RATIO});
 			if ($s_moins_p ne "NA" && $s_moins_p ne "") {
 				# $dist = 8*$s_moins_p;
     			$dist = $Pvel*$s_moins_p/($VpVs-1);
