@@ -19,7 +19,7 @@ function N=readnodes(WO,grids,tlim,valid);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-23
-%   Updated: 2017-08-22
+%   Updated: 2019-02-07
 
 if nargin < 2
 	error('No few input arguments')
@@ -53,9 +53,9 @@ for i = 1:length(grids)
 		% avoid duplicates
 		if isempty(N) || ~any(ismember(nodefullid{3},cat(1,{N.ID})))
 			NN = readnode(WO,X(j).name,NODES);
-			if (~valid | NN.VALID) ...
-				& (isnan(tlim(1)) | isnan(NN.END_DATE) | NN.END_DATE >= tlim(1)) ...
-				& (isnan(tlim(2)) | isnan(NN.INSTALL_DATE) | NN.INSTALL_DATE <= tlim(2))
+			if ~isempty(NN) && (~valid || NN.VALID) ...
+				&& (isnan(tlim(1)) || isnan(NN.END_DATE) || NN.END_DATE >= tlim(1)) ...
+				&& (isnan(tlim(2)) || isnan(NN.INSTALL_DATE) || NN.INSTALL_DATE <= tlim(2))
 				k = k + 1;
 				if isempty(N)
 					N = NN;
