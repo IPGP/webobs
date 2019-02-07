@@ -263,6 +263,9 @@ msgstr "Données"
 msgid "Channels"
 msgstr "Canaux"
 
+msgid "Channel"
+msgstr "Canal"
+
 msgid "See also the following maps"
 msgstr "Voir aussi les cartes suivantes"
 
@@ -437,6 +440,9 @@ msgstr "Contenu"
 msgid "Author(s)"
 msgstr "Auteur(s)"
 
+msgid "Remote Operator(s)"
+msgstr "Opérateur(s) distant(s)"
+
 msgid "Copy"
 msgstr "Copier"
 
@@ -577,6 +583,9 @@ msgstr "Caractéristiques"
 
 msgid "Feature"
 msgstr "Caractéristique"
+
+msgid "Sensor"
+msgstr "Capteur"
 
 msgid "Sensor/data outcome"
 msgstr "Influence capteur/données"
@@ -1304,3 +1313,65 @@ msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsqu
 
 msgid "help_node_status"
 msgstr "Status (en %): existence d&rsquo;&eacute;chantillons valides dans le dernier d&eacute;lai d&rsquo;acquisition pour tous les canaux"
+
+# vsearch.pl
+
+msgid "Grid Name"
+msgstr "Grid/Réseau"
+
+msgid "Node Alias"
+msgstr "Alias/Site"
+
+msgid "Node Feature"
+msgstr "Caractéristique"
+
+msgid "Author"
+msgstr "Auteur"
+
+msgid "Remote Operator"
+msgstr "Opérateur distant"
+
+msgid "Start Date"
+msgstr "Date de début"
+
+msgid "End Date"
+msgstr "Date de fin"
+
+msgid "Event Title"
+msgstr "Titre d'événement"
+
+msgid "Comment/Observation"
+msgstr "Observations"
+
+msgid "Notebook #"
+msgstr "N° de cahier"
+
+msgid "Sensor Outcome"
+msgstr "Influence sur la mesure"
+
+msgid "Start Date - increasing"
+msgstr "Dates décroissantes"
+
+msgid "Start Date - decreasing"
+msgstr "Dates croissantes"
+
+msgid "Search Node Events"
+msgstr "Recherche d'événements"
+
+msgid "Search for"
+msgstr "Chercher"
+
+msgid "in"
+msgstr "dans"
+
+msgid "OR"
+msgstr "OU"
+
+msgid "AND"
+msgstr "ET"
+
+msgid "sorted by"
+msgstr "trié par"
+
+msgid "max diplayed"
+msgstr "max affiché"

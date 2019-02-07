@@ -116,27 +116,28 @@ my $GazetteDel  = (defined($WEBOBS{EVENTS_GAZETTE_DELETE})) ? $WEBOBS{EVENTS_GAZ
 my $isProject = 0;
 my $QryParm   = $cgi->Vars;
 
-my $action = $QryParm->{'action'} || "";
-my $notify = $QryParm->{'notify'} || "";
-my $object = $QryParm->{'object'} || "";
+my $action      = $QryParm->{'action'} || "";
+my $notify      = $QryParm->{'notify'} || "";
+my $object      = $QryParm->{'object'} || "";
 my ($GRIDType, $GRIDName, $NODEName, $evbase, $evtrash) = WebObs::Events::struct(trim($object));
-my $evpath = $QryParm->{'event'}  || "";
-my $s2g    = 0;
+my $evpath      = $QryParm->{'event'}  || "";
+my $s2g         = 0;
 my $send2Gazette = $QryParm->{'s2g'} || 0;
-my $titre  = $QryParm->{'titre'} || "";
-my @oper   = $cgi->param('oper');
-my $contents = $QryParm->{'contents'} || "";
-my $date   = $QryParm->{'date'} || "";
-my $time   = $QryParm->{'time'} || "";
-my $date2  = $QryParm->{'date2'} || "";
-my $time2  = $QryParm->{'time2'} || "";
-my $feature= $QryParm->{'feature'} || "";
-my $channel= $QryParm->{'channel'} || "";
-my $outcome= $QryParm->{'outcome'} || "0";
-my $notebook= $QryParm->{'notebook'} || "000";
-my $notebookfwd= $QryParm->{'notebookfwd'} || "0";
-my $metain = $QryParm->{'meta'} || "";     # add MMD
-my $conv   = $cgi->param('conv')  || "0";  # add MMD
+my $titre       = $QryParm->{'titre'} || "";
+my @oper        = $cgi->param('oper');
+my @roper       = $cgi->param('roper');
+my $contents    = $QryParm->{'contents'} || "";
+my $date        = $QryParm->{'date'} || "";
+my $time        = $QryParm->{'time'} || "";
+my $date2       = $QryParm->{'date2'} || "";
+my $time2       = $QryParm->{'time2'} || "";
+my $feature     = $QryParm->{'feature'} || "";
+my $channel     = $QryParm->{'channel'} || "";
+my $outcome     = $QryParm->{'outcome'} || "0";
+my $notebook    = $QryParm->{'notebook'} || "000";
+my $notebookfwd = $QryParm->{'notebookfwd'} || "0";
+my $metain      = $QryParm->{'meta'} || "";     # add MMD
+my $conv        = $cgi->param('conv')  || "0";  # add MMD
 $contents = "$metain$contents";            # add MMD
 my $meta;                                  # add MMD
 my $mmd = $WEBOBS{WIKI_MMD} || 'YES';        # add MMD
@@ -190,7 +191,7 @@ if ($action =~ /save/i ) {
 	# extract the event's file name from $evpath and make sure the path exists
 	my $evname = ($evpath =~ /.*\.txt$/) ? basename($evpath) : "";
 
-	my $tline = join("+",@oper)."|$titre";
+	my $tline = join("+",@oper)."/".join("+",@roper)."|$titre";
 	if (!$isProject) {
 		$tline .= "|$date2 $time2|$feature|$channel|$outcome|$notebook|$notebookfwd";
 		# now build an event's file name from form's elements
@@ -274,7 +275,8 @@ my @lines;
 my $today = new Time::Piece;
 my $name = my $version = "";
 $date = $time = $titre = $contents = "";
-my @peopleIDs;
+my @authorUIDs;
+my @remoteUIDs;
 $contents = "";
 my $parents = WebObs::Events::parents($evbase, $evpath);
 
@@ -320,8 +322,9 @@ if ($action =~ /upd/i ) {
 	#	...
 	@lines = readFile("$evbase/$evpath");
 	chomp(@lines);
-	(my $people,$titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
-	@peopleIDs = @$people;
+	(my $authors, my $remotes,$titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
+	@authorUIDs = @$authors;
+	@remoteUIDs = @$remotes;
 	shift(@lines);
 	$contents = join("\n",@lines);
 	($contents, $meta) = WebObs::Wiki::stripMDmetadata($contents);
@@ -402,7 +405,11 @@ function postform() {
 	if (form.date2.value != '' && !form.date2.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date2.style.background='red';};
 	if (form.date2.value == '') {form.date2.value = form.date.value;}
 	if (form.time2.value == '') {form.time2.value = form.time.value;}
-	if (form.oper.value == '') {bad=true; form.oper.style.background='red';}
+	if (form.oper.value == '' && form.roper.value == '') {
+		bad=true;
+		form.oper.style.background='red';
+		form.roper.style.background='red';
+	}
 	if (form.titre.value == '') {bad=true; form.titre.style.background='red';}
 	form.s2g.value = $s2g;
 	if (bad) {
@@ -488,7 +495,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 		# only if node associated to a proc and calibration file defined
 		my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
 		if ($GRIDType eq "PROC" && -s $clbFile != 0) {
-			print "<LABEL style=\"width:80px\" for=\"channel\">$__{'Channel'}: </LABEL>";
+			print "<LABEL style=\"width:80px\" for=\"channel\">$__{'Sensor'}: </LABEL>";
 			my @carCLB   = readCfgFile($clbFile);
 			# make a list of available channels and label them with last Chan. + Loc. codes
 			my %chan;
@@ -513,20 +520,33 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 			print "<INPUT type=\"hidden\" name=\"notebookfwd\" value=\"$notebookfwd\">\n";
 		}
 	}
-	print "</TD>\n<TD style=\"text-align: right; vertical-align: top; border: none;\">";
-	print "<B>$__{'Author(s)'}: </B><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\" 
+	print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
+	print "<B>$__{'Author(s)'}: </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\" 
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved (hold CTRL key for multiple selections)'}')\">\n";
 	my @logins = sort grep { $USERS{$_}{VALIDITY} eq 'Y'} keys(%USERS);   # first, ordered valid logins
 	push(@logins, sort grep { $USERS{$_}{VALIDITY} ne 'Y'} keys(%USERS)); # then ordered invalid logins
 	for my $ulogin (@logins) {
 		my $sel = "";
-		if ("@peopleIDs" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
+		if ("@authorUIDs" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
+			$sel = 'selected';
+		}
+		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME}</option>\n";
+	}
+	print "</SELECT>\n";
+	print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
+	print "<B>$__{'Remote Operator(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\" 
+      onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved remotely (hold CTRL key for multiple selections)'}')\">\n";
+	my @logins = sort grep { $USERS{$_}{VALIDITY} eq 'Y'} keys(%USERS);   # first, ordered valid logins
+	push(@logins, sort grep { $USERS{$_}{VALIDITY} ne 'Y'} keys(%USERS)); # then ordered invalid logins
+	for my $ulogin (@logins) {
+		my $sel = "";
+		if ("@remoteUIDs" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
 			$sel = 'selected';
 		}
 		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME}</option>\n";
 	}
 	print "</SELECT></TR>\n";
-	print "<TR><TD style=\"vertical-align: top; border: none;\" colspan=2>";
+	print "<TR><TD style=\"vertical-align: top; border: none;\" colspan=3>";
 	print "<P><TEXTAREA id=\"markItUp\" class=\"markItUp\" rows=\"11\" cols=\"80\" name=\"contents\" dataformatas=\"plaintext\">$contents</TEXTAREA></P>";
 	print "<P style=\"background-color: #ffffee\">";
 		print "<input type=\"button\" name=\"lien\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";

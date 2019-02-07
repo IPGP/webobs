@@ -321,7 +321,7 @@ sub listNodeGrids {
 	#my $filterS = $KWARGS{node} ? $KWARGS{node} : '';
 	my $filterS = $KWARGS{node} ? $KWARGS{node} : undef;
 
-    my @s = listNodeNames($filterS);
+	my @s = listNodeNames($filterS);
 	my $g = "$WEBOBS{PATH_GRIDS2NODES}/";
 	my %rs;
 	foreach (@s) { 
@@ -331,7 +331,39 @@ sub listNodeGrids {
 	return %rs;
 }
 
-=pod 
+=pod
+
+=head2 listNameGrids
+
+ %H = listNameGrids
+
+returns a hash of grid names:
+
+ print $H{VIEW.GPSWI};      # maybe "GPS Network West-Indies"
+ print $H{PROC.SOURCES};    # maybe "Hot Springs Water Analysis"
+
+=cut
+
+sub listNameGrids {
+	my %rs;
+	my $n;
+	my %tmp;
+	my @V = listViewNames;
+	foreach (@V) {
+		$n = "VIEW.$_";
+		%tmp = readCfg("$WEBOBS{PATH_VIEWS}/$_/$_.conf");
+		$rs{$n} = $tmp{'NAME'};
+	}
+	my @P = listProcNames;
+	foreach (@P) {
+		$n = "PROC.$_";
+		%tmp = readCfg("$WEBOBS{PATH_PROCS}/$_/$_.conf");
+		$rs{$n} = $tmp{'NAME'};
+	}
+	return %rs;
+}
+
+=pod
 
 =head2 listGridNodes
 
@@ -591,7 +623,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

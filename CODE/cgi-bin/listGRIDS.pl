@@ -51,6 +51,8 @@ use WebObs::Wiki;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 
+my $me = $ENV{SCRIPT_NAME};
+
 my %GRID;
 my %G;
 my $GRIDName = my $GRIDType = my $RESOURCE = "";
@@ -117,21 +119,21 @@ print "</H1>\n";
 
 # ---- Subtitle menu to other domains/grids displays
 #
-print "<P>»» [ All";
-print " ".($subsetType ne 'all' || $subsetDomain ne '' ? "<A href=\"/cgi-bin/listGRIDS.pl\">Grids</A>":"<B>Grids</B>");
-print " | ".($subsetType ne 'proc' || $subsetDomain ne '' ? "<A href=\"/cgi-bin/listGRIDS.pl?type=proc\">Procs</A>":"<B>Procs</B>");
-print " | ".($subsetType ne 'view' || $subsetDomain ne '' ? "<A href=\"/cgi-bin/listGRIDS.pl?type=view\">Views</A>":"<B>Views</B>");
+print "<P>»» [ <A href=\"/cgi-bin/vsearch.pl\"><IMG src=\"/icons/search.png\" border=0 title=\"Search node's events\"></A> All";
+print " ".($subsetType ne 'all' || $subsetDomain ne '' ? "<A href=\"$me\">Grids</A>":"<B>Grids</B>");
+print " | ".($subsetType ne 'proc' || $subsetDomain ne '' ? "<A href=\"$me?type=proc\">Procs</A>":"<B>Procs</B>");
+print " | ".($subsetType ne 'view' || $subsetDomain ne '' ? "<A href=\"$me?type=view\">Views</A>":"<B>Views</B>");
 if ($subsetDomain eq '') {
 	print " - Domains:";
 	for (@domains) {
 		my ($dc,$dn) = split(/\|/,$_);
-		print " ".($_ ne $domains[0] ? "| ":"")."<A href=\"/cgi-bin/listGRIDS.pl?domain=$dc&type=$subsetType\">$dn</A>";
+		print " ".($_ ne $domains[0] ? "| ":"")."<A href=\"$me?domain=$dc&type=$subsetType\">$dn</A>";
 	}
 } else {
 	print " - $DOMAINS{$subsetDomain}{NAME}";
-	print " ".($subsetType ne 'all' ? "<A href=\"/cgi-bin/listGRIDS.pl?domain=$subsetDomain\">Grids</A>":"<B>Grids</B>");
-	print " | ".($subsetType ne 'proc' ? "<A href=\"/cgi-bin/listGRIDS.pl?domain=$subsetDomain&type=proc\">Procs</A>":"<B>Procs</B>");
-	print " | ".($subsetType ne 'view' ? "<A href=\"/cgi-bin/listGRIDS.pl?domain=$subsetDomain&type=view\">Views</A>":"<B>Views</B>");
+	print " ".($subsetType ne 'all' ? "<A href=\"$me?domain=$subsetDomain\">Grids</A>":"<B>Grids</B>");
+	print " | ".($subsetType ne 'proc' ? "<A href=\"$me?domain=$subsetDomain&type=proc\">Procs</A>":"<B>Procs</B>");
+	print " | ".($subsetType ne 'view' ? "<A href=\"$me?domain=$subsetDomain&type=view\">Views</A>":"<B>Views</B>");
 }
 print " ]</P>";
 
@@ -189,7 +191,7 @@ print "<div id=\"noscrolldiv\">";
 			if ( $domrows > 0 ) {
 				print "<TR>";
 				#print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\">$dn <sup>($dc)</sup></h2>";
-				print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\"><A href=\"/cgi-bin/listGRIDS.pl?domain=$dc&type=$subsetType\">$dn</A></h2>" if ($subsetDomain eq "");
+				print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\"><A href=\"$me?domain=$dc&type=$subsetType\">$dn</A></h2>" if ($subsetDomain eq "");
 				if ( $np > 0 ) {
 					for $p (@procs) {
 						my ($dp,$vp) = split(/\|/,$p);
