@@ -121,24 +121,29 @@ sub struct {
 
 headersplit(header) decodes header string and returns an array of elements:
 
-	[0] = user UID (array)
-	[1] = title
-	[2] = end date & time
-	[3] = feature
-	[4] = channel
-	[5] = outcome flag
-	[6] = notebook number
-	[7] = notebook forward flag
+	[0] = author UID (array)
+	[1] = remote operator UID (array)
+	[2] = title
+	[3] = end date & time
+	[4] = feature
+	[5] = channel
+	[6] = outcome flag
+	[7] = notebook number
+	[8] = notebook forward flag
 
 =cut 
 
 sub headersplit {
 	my ($title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = "";
+	my @UIDs;
+	my @RUIDs;
 	# event metadata are stored in the header line of file as pipe-separated fields:
-	# 	UID1[+UID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
+	# 	UID1[+UID2+...][/RUID1[+RUID2+...]]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
 	my @header = split(/\|/,$_[0]);
 	my $pipes = () = $header[0] =~ /\|/g; # count the number of pipes
-	my @UIDs = split(/\+/,$header[0]);
+	my @people = split("/",$header[0]);
+	@UIDs = split(/\+/,$people[0]);
+	@RUIDs = split(/\+/,$people[1]) if ($#people > 0);
 	if ($pipes > 1 && $pipes < 6) {
 		$title = join("\|",@header[1..$#header]); # rare case of a former header with unescaped pipe in the title...
 	} else {
@@ -152,7 +157,7 @@ sub headersplit {
 	}
 	$title =~ s/\"/\'\'/g;
 	
-	return (\@UIDs,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd);	
+	return (\@UIDs,\@RUIDs,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd);	
 }
 
 # -------------------------------------------------------------------------------------------
@@ -309,10 +314,14 @@ sub eventsShow {
 		if ($file[0] !~ /\|/) {            # if firstline doesn't look like 'something|someotherthing'
 			unshift(@file,"|untitled\n");  # force our own default (add a line)
 		}
-		my ($people,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = headersplit($file[0]);
-		my @users = @$people;
-		my $EVTusers = join(", ",WebObs::Users::userName(@users));
-		$EVTusers = "<I>($EVTusers)</I> " if ($EVTusers ne "");
+		my ($author,$remote,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = headersplit($file[0]);
+		my @authors = @$author;
+		my @remotes = @$remote;
+		my $EVTusers = join(", ",WebObs::Users::userName(@authors));
+		my $EVTroper = join(", ",WebObs::Users::userName(@remotes));
+		if ($EVTusers ne "" || $EVTroper ne "") {
+			$EVTusers = "<I>(".($EVTusers ne "" ? $EVTusers:"").($EVTroper ne "" ? " / $EVTroper":"").")</I>";
+		}
 		my $EVTtitle = "<B>".ucfirst($title)."</B>";
 		my $EVTdate = "$date $time".($date eq $date2 ? ($time eq $time2 || $time2 eq "" ? "":" &rarr; $time2"):" &rarr; $date2 $time2");
 		my $EVTver = (defined($ver)) ? " v$ver" : "";
@@ -582,7 +591,7 @@ Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2018 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
