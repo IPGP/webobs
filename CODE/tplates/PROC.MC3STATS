@@ -1,0 +1,113 @@
+=key|value
+# Generic PROC template for superproc mc3stats
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/mc3stats.m for further information.
+
+# long name of the PROC
+NAME|Main Courante statistics
+# proc TYPE and OWNER
+TYPE|
+OWNCODE|?
+# default raw data format (might be overwritten in each node)
+RAWFORMAT|mc3
+# raw data path (might be overwritten in each node)
+RAWDATA|$WEBOBS{ROOT_RAWD}/myproc
+# URN link to data 
+URNDATA|
+# additionnal URL
+URL|
+# time zone for outputs
+TZ|0
+
+# lists of parameters (number of comma-separated rows must be consistent)
+# TIMESCALELIST valid suffix: h (hour), d (day), w (week), m (month), y (year)
+# TIMESCALELIST reserved words are: all (all available data), ref (reference date until now)
+TIMESCALELIST|24h,01y
+DECIMATELIST|1,1
+CUMULATELIST|1,1
+DATESTRLIST|-1,-1
+MARKERSIZELIST|6,2
+LINEWIDTHLIST|2,1
+STATUSLIST|1,0
+# defines a reference date to use with 'ref' timescale in TIMESCALELIST
+REF_DATE|
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} mc3stats $SELFREF -
+SUBMIT_RESOURCE|myproc
+
+# list of keys editable in requests
+REQUEST_KEYLIST|NAME
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# --- node parameters
+NODE_NAME|node
+NODE_SIZE|10
+NODE_RGB|Red
+NODE_FONTSIZE|10
+NODE_MARKER|s
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# file for background time referenced events 
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+# --- page format and outputs
+# optional paper size width,height in inches
+PAPER_SIZE|
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+# landscape format for all outputs
+LANDSCAPE|NO
+# maximum number of subplots in a standard page height
+PAGE_MAX_SUBPLOT|8
+# makes a PDF file for each graph (in addition to PNG, EPS and JPG thumbnail)
+PDFOUTPUT|NO
+# main logo file
+LOGO_FILE|$WEBOBS{LOGO_DEFAULT}
+LOGO_HEIGHT|$WEBOBS{LOGO_HEIGHT}
+# main copyright
+COPYRIGHT|MyProc
+# optional secondary logo file
+LOGO2_FILE|
+LOGO2_HEIGHT|$WEBOBS{LOGO_HEIGHT}
+# optional secondary copyright
+COPYRIGHT2|
+# exports text data files
+EXPORTS|YES
+
+# --------------------------------------------------------------------
+# specific proc's parameters
+
+# --- graphs to plot, possible values :
+#  SWARM               : swarm detection on seismic rate
+SUMMARYLIST|SWARM
+
+# --- data selection
+# Main Courante event types to read
+MC_EVENTTYPES_LIST|
+# catalog events filtering out (remove catalog informations for matching events)
+EVENTTYPE_EXCLUDED_LIST|
+EVENTSTATUS_EXCLUDED_LIST|
+EVENTCOMMENT_EXCLUDED_REGEXP|
+
+# --- SWARM graph parameters
+# seismic rate formulae : aki or classic
+SEISMIC_RATE|aki
+# number of consecutive events needed to calculate an event rate point
+SEISMIC_RATE_NUM_EVENTS|50
+# re-sampling interval for seismic rate (ie, resolution of swarm detection)
+SEISMIC_RATE_SAMPLING_INTERVAL|10m
+# event swarm detector long term caracteristics time period
+SWARM_DETECTOR_LTA|60d
+# STA/LTA threshold ratio to detect an event swarm
+SWARM_DETECTOR_THRESH|2.5
+# minimum duration of a detected event swarm to be considered valid
+SWARM_MIN_DURATION|12h
+
+
