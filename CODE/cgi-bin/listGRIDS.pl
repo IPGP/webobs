@@ -119,7 +119,7 @@ print "</H1>\n";
 
 # ---- Subtitle menu to other domains/grids displays
 #
-print "<P>»» [ <A href=\"/cgi-bin/vsearch.pl\"><IMG src=\"/icons/search.png\" border=0 title=\"Search node's events\"></A> All";
+print "<P>»» [ <A href=\"/cgi-bin/vsearch.pl\"><IMG src=\"/icons/rsearch.png\" border=0 title=\"Search node's events\"></A> All";
 print " ".($subsetType ne 'all' || $subsetDomain ne '' ? "<A href=\"$me\">Grids</A>":"<B>Grids</B>");
 print " | ".($subsetType ne 'proc' || $subsetDomain ne '' ? "<A href=\"$me?type=proc\">Procs</A>":"<B>Procs</B>");
 print " | ".($subsetType ne 'view' || $subsetDomain ne '' ? "<A href=\"$me?type=view\">Views</A>":"<B>Views</B>");
