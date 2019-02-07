@@ -1,0 +1,31 @@
+table
+{
+	border-collapse: collapse;
+/*	background: white;*/
+}
+td, th
+{
+	font-size: 8pt;
+	border-width: 2px;
+	border-color: #FFFFFF;
+	border-style: solid;
+	padding: 3px;
+	text-align: center;
+}
+th
+{
+	color: #777777;
+	background-color: #DDDDDD;
+}
+.sr1 {
+        background-color: #EEFF5E;
+}
+.sr2 {
+        background-color: #FFD367;
+}
+.td0 {
+	background-color: #EEEEEE;
+}
+.td1 {
+	background-color: #DDDDDD;
+}
