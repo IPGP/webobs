@@ -6,7 +6,7 @@ vsearch.pl
 
 =head1 SYNOPSIS
 
-http://..../vsearch.pl?str=text&in=category&lop=[AND|OR]&str2=text&in2=category&sort=category&max=maxres&from=firstresnb
+http://..../vsearch.pl?target=type.grid[.node]&str=text&in=category&lop=[AND|OR]&str2=text&in2=category&sort=category&max=maxres&from=firstresnb
 
 =head1 DESCRIPTION
 
@@ -14,6 +14,10 @@ Search for a B<text string> into node events, selecting one B<category> and sort
 See WebObs/Events.pm for a description of the events-directories structures.
 
 =over 
+
+=item B<target=type.grid[.node]>
+
+When specified, search events only into a single grid (proc or view) or single node.
 
 =item B<str=search text string>
 
@@ -101,14 +105,15 @@ my $me = $ENV{SCRIPT_NAME};
 my $query = $ENV{QUERY_STRING};
 my $QryParm   = $cgi->Vars;
 
-my $str    = $QryParm->{'str'}  || "";
-my $in     = $QryParm->{'in'}   || $NODES{EVENT_SEARCH_DEFAULT};
-my $lop    = $QryParm->{'lop'}  || "AND";
-my $str2   = $QryParm->{'str2'} || "";
-my $in2    = $QryParm->{'in2'}  || $NODES{EVENT_SEARCH_DEFAULT2};
-my $sort   = $QryParm->{'sort'} || "startdatedec";
-my $max    = $QryParm->{'max'} || "15";
-my $from   = $QryParm->{'from'} || "1";
+my $target = $QryParm->{'target'} || "";
+my $str    = $QryParm->{'str'}    || "";
+my $in     = $QryParm->{'in'}     || $NODES{EVENT_SEARCH_DEFAULT};
+my $lop    = $QryParm->{'lop'}    || "AND";
+my $str2   = $QryParm->{'str2'}   || "";
+my $in2    = $QryParm->{'in2'}    || $NODES{EVENT_SEARCH_DEFAULT2};
+my $sort   = $QryParm->{'sort'}   || "startdatedec";
+my $max    = $QryParm->{'max'}    || "15";
+my $from   = $QryParm->{'from'}   || "1";
 
 # predefined lists
 my @catlist = split(/,/,$NODES{EVENT_SEARCH_CATEGORY_LIST});
@@ -125,7 +130,9 @@ my %category = (
 	"notebook"  => $__{'Notebook #'},
 	"outcome"   => $__{'Sensor Outcome'},
 );
+# removes category notebook if option is not set
 delete $category{"notebook"} if ($NODES{EVENTNODE_NOTEBOOK} ne "YES");
+
 my %catdisplay;
 foreach my $n (0..$#catlist) {
 	if (defined $category{$catlist[$n]}) {
@@ -154,14 +161,11 @@ my @events;
 my @lines;
 my ($evfname,$node,$date1,$time1,$version);
 
-# default command is all events...
-my $basefind = "find $WEBOBS{PATH_NODES}/*/$NODES{SPATH_INTERVENTIONS} \\( -name \"*.txt\" -a ! -name \"*_Projet.txt\" \\)";
-
 if ($str ne "") {
-	@events1 = searchEvents($basefind,$str,$in);
+	@events1 = searchEvents($target,$str,$in);
 }
 if ($str2 ne "") {
-	@events2 = searchEvents($basefind,$str2,$in2);
+	@events2 = searchEvents($target,$str2,$in2);
 	if ($lop eq "OR") {
 		# simply appends the two requests
 		push(@events1,@events2);
@@ -319,10 +323,13 @@ foreach(@finalevents) {
 	shift(@lines);
 	my $comment = wiki2html(join("",@lines));
 	my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
-	my $alias = $N{ALIAS};
+	my @alias;
+	foreach (@{$NG{$node}}) {
+		push(@alias,"<A href=\"/cgi-bin/showNODE.pl?node=$_.$node#$evrel\" title=\"$_.$node\">$N{ALIAS}</A>");
+	}
 	my @grids;
 	foreach (@{$NG{$node}}) {
-		push(@grids,"<A href=\"/cgi-bin/showGRID.pl?grid=$_\" title=\"$_\">$G{$_}</A>");
+		push(@grids,"<A href=\"/cgi-bin/showGRID.pl?grid=$_\" title=\"$_\"><small>{$_}</small> $G{$_}</A>");
 	}
 	my @nodes;
 	foreach(@{$NG{$node}}) {
@@ -334,8 +341,7 @@ foreach(@finalevents) {
 	# highlights results
 	if ($str ne "") {
 		$authors =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "author");
-		$remotes =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "remotes");
-		$alias =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "alias");
+		$remotes =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "remote");
 		$feature =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "feature");
 		$date1 =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "startdate");
 		$date2 =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "enddate");
@@ -344,8 +350,7 @@ foreach(@finalevents) {
 	}
 	if ($str2 ne "") {
 		$authors =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "author");
-		$remotes =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "remotes");
-		$alias =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "alias");
+		$remotes =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "remote");
 		$feature =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "feature");
 		$date1 =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "startdate");
 		$date2 =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "enddate");
@@ -354,13 +359,15 @@ foreach(@finalevents) {
 	}
 
 	print "<TR>";
-	print "<TD $tds>".join("<BR>",@nodes)."</TD>";
+	#[FB]: possibility to display all edit links (procs and views)
+	#print "<TD $tds>".join("<BR>",@nodes)."</TD>";
+	print "<TD $tds>".join("<BR>",$nodes[0])."</TD>";
 
 	foreach (sort(keys(%catdisplay))) {
 		my ($n,$k) = split(/\|/,$_);
 		switch ($k) {
 			case "grid"      { print "<TD $tds nowrap>".join("<BR>",@grids)."</TD>" }
-			case "alias"     { print "<TD $tds title=\"$N{NAME}\">$alias</TD>" }
+			case "alias"     { print "<TD $tds title=\"$N{NAME}\">".join("<BR>",@alias)."</TD>" }
 			case "feature"   { print "<TD $tds nowrap>$feature</TD>" }
 			case "author"    { print "<TD $tds nowrap>$authors</TD>" }
 			case "remote"    { print "<TD $tds nowrap>$remotes</TD>" }
@@ -386,14 +393,20 @@ print "\n</BODY>\n</HTML>\n";
 # this function uses external commands (find, grep, awk ...) to get the list of
 # requested events following the search criteria
 sub searchEvents {
-	my ($base,$str,$in) = @_;
+	my ($target,$str,$in) = @_;
 	my $struc = uc($str);
+	my ($GRIDType,$GRIDName,$NodeID) = split(/\./,$target);
+
 	my @evt;
 	my $cmd;
 
+	# default command is all events...
+	my $node = ($NodeID eq "" ? "*":$NodeID);
+	my $base = "find $WEBOBS{PATH_NODES}/$node/$NODES{SPATH_INTERVENTIONS} \\( -name \"*.txt\" -a ! -name \"*_Projet.txt\" \\)";
+
 	# alias will look for $str in the node's ALIAS and NAME configuration
 	if ($in eq "alias") {
-		$cmd = "find $WEBOBS{PATH_NODES}/* -name \"*.cnf\" | xargs awk -F'|' '\$1 ~ /^ALIAS|NAME\$/ && toupper(\$2) ~ /$struc/ { print FILENAME }' | awk -F'/[^/]*\$' '{ print \$1 \"/$NODES{SPATH_INTERVENTIONS}\" }' | xargs find | grep \".txt\$\" | grep -v \"_Projet.txt\"";
+		$cmd = "find $WEBOBS{PATH_NODES}/$node -name \"*.cnf\" | xargs awk -F'|' '\$1 ~ /^ALIAS|NAME\$/ && toupper(\$2) ~ /$struc/ { print FILENAME }' | awk -F'/[^/]*\$' '{ print \$1 \"/$NODES{SPATH_INTERVENTIONS}\" }' | xargs find | grep \".txt\$\" | grep -v \"_Projet.txt\"";
 	}
 	# grid will look for $str in the grid's NAME configuration
 	if ($in eq "grid") {
@@ -403,7 +416,7 @@ sub searchEvents {
 		if ($#GRIDlist < 0) {
 			$cmd = "";
 		} else {
-			$cmd = "find -L $WEBOBS{PATH_GRIDS2NODES} \\( ! -name \"*_Projet.txt\" -a -name \"*.txt\" -a -path \"*$NODES{SPATH_INTERVENTIONS}*\" -a \\( -path \"*".join('*" -o -path "*',@GRIDlist)."*\" \\) \\)";
+			$cmd = "find -L $WEBOBS{PATH_GRIDS2NODES} \\( ! -name \"*_Projet.txt\" -a -name \"*.txt\" -a -path \"$node/$NODES{SPATH_INTERVENTIONS}*\" -a \\( -path \"*".join('*" -o -path "*',@GRIDlist)."*\" \\) \\)";
 		}
 	}
 	# startdate will look for $str in event's start date
@@ -411,7 +424,7 @@ sub searchEvents {
 		my $s = $str;
 		$s =~ s/:/-/;
 		$s =~ s/ /_/;
-		$cmd = "find $WEBOBS{PATH_NODES}/*/$NODES{SPATH_INTERVENTIONS} \\( -name \"*.txt\" -a -name \"*$s*\" -a ! -name \"*_Projet.txt\" \\)";
+		$cmd = "find $WEBOBS{PATH_NODES}/$node/$NODES{SPATH_INTERVENTIONS} \\( -name \"*.txt\" -a -name \"*$s*\" -a ! -name \"*_Projet.txt\" \\)";
 	}
 	# author and remote will look for $str in author's full names
 	if ($in eq "author" || $in eq "remote") {

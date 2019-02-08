@@ -494,7 +494,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 		print "</SELECT><BR><BR>\n";
 		# only if node associated to a proc and calibration file defined
 		my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
-		if ($GRIDType eq "PROC" && -s $clbFile != 0) {
+		if (-s $clbFile != 0) {
 			print "<LABEL style=\"width:80px\" for=\"channel\">$__{'Sensor'}: </LABEL>";
 			my @carCLB   = readCfgFile($clbFile);
 			# make a list of available channels and label them with last Chan. + Loc. codes
