@@ -361,6 +361,7 @@ sub eventsShow {
 		}
 
 		# event header
+		$html .= "<A name=\"$relevt\"></A>";
 		$html .= "<LI class=\"Event\"><P class=\"titleEvent\">";
 		$html .= "$EVTdate $EVTtitle $EVTusers " if ($sortedBy =~ /date|feature/i);
 		$html .= "$EVTtitle $EVTdate $EVTusers " if ($sortedBy =~ /events/i);
