@@ -306,12 +306,14 @@ foreach(@finalevents) {
 	($node,$date1,$time1,$version) = split(/_/,basename($fname));
 	$time1 =~ s/-/:/;
 	$time1 =~ s/NA//;
+
+	# checks attached photos
 	my @attach;
 	my $dp = $evfname;
 	$dp =~ s/\.txt/\/PHOTOS/g;
 	if (-d $dp) {
 		opendir my $dh, $dp;
-		@attach = readdir $dh;
+		@attach = grep {!/^\./} readdir $dh;
 		closedir $dh;
 	}
 
@@ -379,7 +381,7 @@ foreach(@finalevents) {
 			case "outcome"   { print "<TD $tds>".($outcome > 0 ? "<IMG src=\"/icons/attention.gif\" border=0 title=\"Potential outcome on sensor/data\">":"")."</TD>" }
 		}
 	}
-	print "<TD $tds>".($#attach > -1 ? "<IMG src=\"/icons/attach.png\" border=0 title=\"$#attach attached document(s)\">":"")."</TD>";
+	print "<TD $tds>".($#attach > 0 ? "<IMG src=\"/icons/attach.png\" border=0 title=\"$#attach attached document(s)\">":"")."</TD>";
 	print "</TR>\n";
 	$n = ($n + 1) % 2;
 }
