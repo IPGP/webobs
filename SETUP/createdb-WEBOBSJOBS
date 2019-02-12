@@ -36,11 +36,11 @@ create table runs (
 COMMIT;
 INSERT INTO JOBS VALUES('locastat','Y','locastat','\$WEBOBS{JOB_MCC} locastat','','',3600,0.8,'locastat',0);
 INSERT INTO JOBS VALUES('gridmaps','Y','gridmaps','\$WEBOBS{JOB_MCC} gridmaps','','',3600,0.8,'gridmaps',0);
-INSERT INTO JOBS VALUES('sefran','Y','sefran3','\$WEBOBS{JOB_MCC} sefran3','','',600,0.8,'sefran3',0);
-INSERT INTO JOBS VALUES('geoscope','Y','geoscope','\$WEBOBS{JOB_MCC} genplot','GEOSCOPE','',600,0.8,'geoscope',0);
-INSERT INTO JOBS VALUES('hypoindo','Y','hypoindo','\$WEBOBS{JOB_MCC} hypomap','HYPOINDO','"01y"',3600,0.8,'hypoindo',0);
-INSERT INTO JOBS VALUES('hypoindo_all','Y','hypoindo','\$WEBOBS{JOB_MCC} hypomap','HYPOINDO','"10y,all"',86400,0.8,'hypoindo',0);
-INSERT INTO JOBS VALUES('hypowi','Y','hypowi','\$WEBOBS{JOB_MCC} hypomap','HYPOWI','',3600,0.8,'hypowi',0);
+INSERT INTO JOBS VALUES('sefran','N','sefran3','\$WEBOBS{JOB_MCC} sefran3','','',600,0.8,'sefran3',0);
+INSERT INTO JOBS VALUES('geoscope','N','geoscope','\$WEBOBS{JOB_MCC} genplot','GEOSCOPE','',600,0.8,'geoscope',0);
+INSERT INTO JOBS VALUES('hypoindo','N','hypoindo','\$WEBOBS{JOB_MCC} hypomap','HYPOINDO','"01y"',3600,0.8,'hypoindo',0);
+INSERT INTO JOBS VALUES('hypoindo_all','N','hypoindo','\$WEBOBS{JOB_MCC} hypomap','HYPOINDO','"10y,all"',86400,0.8,'hypoindo',0);
+INSERT INTO JOBS VALUES('hypowi','N','hypowi','\$WEBOBS{JOB_MCC} hypomap','HYPOWI','',3600,0.8,'hypowi',0);
 --INSERT INTO JOBS VALUES('sefran3','N','','\$WEBOBS{JOB_MLXVFB} ','-r "sefran3;exit(0)"','',600,0.7,'sefran3',0);
 --INSERT INTO JOBS VALUES('CGPSWI','N','gamit','\$WEBOBS{JOB_MLNODISPLAY} ','-r "gamit(''CGPSWI'');exit(0)"','',86400,0.7,'gamit',0);
 --INSERT INTO JOBS VALUES('test-10-300','N','','\$WEBOBS{ROOT_CODE}/cgi-bin/jobtester.pl ','10','',300,0.7,'tester',0);
