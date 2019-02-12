@@ -411,8 +411,8 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 				errexit "creating user ${USERID}"
 			fi
 		fi
-		USERGID=$(id -n -g ${USERID})
 	fi
+	USERGID=$(id -n -g ${USERID})
 	USERMAIL=$(readkbn "Enter WebObs user email address (default: ${USERID}@localhost): ")
 	if [[ -z ${USERMAIL} ]]; then
 		USERMAIL="${USERID}@localhost"
