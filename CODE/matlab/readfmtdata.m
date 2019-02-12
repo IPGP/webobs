@@ -22,7 +22,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: Fran?ois Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2018-07-29
+%	Updated: 2019-02-12
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -63,7 +63,7 @@ else
 		case {'miniseed','seedlink','arclink','combined','fdsnws-dataselect'}
 			D(n) = readfmtdata_miniseed(WO,P,N(n),F);
 
-		case {'globkval','gipsy','gipsy-tdp','usgs-rneu'}
+		case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu'}
 			D(n) = readfmtdata_gnss(WO,P,N(n),F);
 
 		case {'hyp71sum2k','fdsnws-event','scevtlog-xml'}
