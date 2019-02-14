@@ -601,7 +601,7 @@ for r = 1:length(P.GTABLE)
 			% exports baseline data for reference n
 			if isok(P.GTABLE(r),'EXPORTS')
 				E.title = sprintf('%s: ref. %s',P.GTABLE(r).GTITLE,N(n).ALIAS);
-				mkexport(WO,sprintf('%s_%s_%s',summary,N(n).ALIAS,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+				mkexport(WO,sprintf('%s_%s_%s',summary,N(n).FID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 			end
 		end
 
