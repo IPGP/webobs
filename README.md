@@ -39,9 +39,11 @@ Graph processes need Matlab compiler runtime 2011b. Download the installer adapt
 A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, install them using the following packages:
 ```sh
      sudo apt-get install apache2 apache2-utils sqlite3 imagemagick mutt xvfb
-     sudo apt-get install graphviz libdatetime-perl libdate-calc-perl \
-        libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
+     sudo apt-get install graphviz net-tools libdatetime-perl libdate-calc-perl \
+        libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
         libtext-multimarkdown-perl libswitch-perl libintl-perl
+     sudo locale-gen fr_FR en_US
+     sudo a2enmod cgid
 ```
 
 ### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
@@ -65,6 +67,16 @@ With root privileges, in your target WebObs directory :
         2) execute  " WebObs-<version>/SETUP/setup "
         3) (re)start Apache
         4) launch the scheduler and postboard
+
+For Debian/Ubuntu users, here is a way to install permanently active scheduler and postboard:
+
+```sh
+     sudo cp /opt/webobs/WebObs-<version>/SETUP/systemd/wo* /etc/systemd/system/
+     sudo systemctl enable woscheduler.service
+     sudo systemctl enable wopostboard.service
+     sudo systemctl start woscheduler.service
+     sudo systemctl start wopostboard.service
+```
 
 ### D) Improving basemap database (optional)
 
