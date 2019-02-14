@@ -4,7 +4,14 @@ function N=readnode(WO,nodefullid,NODES);
 %	every field key and corresponding value from the node .cnf 
 %	configuration file. NODEFULLID syntax is 'GRIDtype.GRIDname.ID'.
 %
-%	Specific PROC's parameters (like FID, CHANNEL_LIST) will be filtered
+%	Specific PROC's parameters (like FIDs, CHANNEL_LIST) will be filtered
+%	following the calling PROC.
+%
+%	Some specific treatments are applied:
+%		- numerical parameters are converted to scalar or vectors,
+%		- dates are converted to datenum,
+%		- UTC_DATA is converted from hours to days,
+%		- ALIAS underscores are escaped (\_) for display purpose.
 %
 %	Some additional keys are also added:
 %	          ID: self reference
@@ -18,7 +25,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2017-10-06
+%   Updated: 2019-02-14
 
 
 if ~exist('NODES','var')
@@ -66,6 +73,8 @@ N.TIMESTAMP = X.datenum;
 N.INSTALL_DATE = field2num(N,'INSTALL_DATE');
 N.END_DATE = field2num(N,'END_DATE');
 N.POS_DATE = field2num(N,'POS_DATE');
+
+N.ALIAS = strrep(field2str(N,'ALIAS'),'_','\_');
 
 N.CHANNEL_LIST = field2str(N,'CHANNEL_LIST');
 
