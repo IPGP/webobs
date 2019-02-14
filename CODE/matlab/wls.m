@@ -5,7 +5,7 @@ function [b,s] = wls(x,y,w)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: ?
-%	Updated: 2017-10-05
+%	Updated: 2019-02-13
 
 
 if nargin < 3
@@ -14,6 +14,8 @@ end
 X = [x(:),ones(size(x(:)))];
 [b,s,mse] = lscov(X,y(:),w(:));
 %s = s/sqrt(mse);
+
+s(isinf(s)) = NaN;
 
 %S = sum(w);
 %Sx = sum(w.*x);

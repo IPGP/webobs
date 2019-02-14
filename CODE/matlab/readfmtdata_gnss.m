@@ -119,7 +119,7 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 
 		switch F.fmt
 		case 'gipsyx'
-			grepstr = ['State.Pos.',nfid,'.'];
+			grepstr = [nfid,'.State.Pos.'];
 			awkstr = '$1,$3,$4';
 			kmfact = 1;
 		otherwise
