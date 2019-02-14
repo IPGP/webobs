@@ -9,11 +9,11 @@ function y = isok(x,f,v)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-08-17
-%	Updated: 2017-08-27
+%	Updated: 2019-02-14
 
 
-okstrings = {'y','yes','ok','on'};
-notokstrings = {'n','no','ko','off'};
+okstrings = {'y','yes','ok','on','oui','ya','si'};
+notokstrings = {'n','no','ko','off','non','tidak'};
 if nargin < 3
 	v = false;
 end

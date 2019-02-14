@@ -117,6 +117,9 @@ my $from   = $QryParm->{'from'}   || "1";
 
 # predefined lists
 my @catlist = split(/,/,$NODES{EVENT_SEARCH_CATEGORY_LIST});
+if ($#catlist < 0) {
+	@catlist = split(/,/,"grid,alias,feature,author,remote,startdate,title,comment,notebook,outcome");
+}
 my %category = (
 	"grid"      => $__{'Grid Name'},
 	"alias"     => $__{'Node Alias'},
