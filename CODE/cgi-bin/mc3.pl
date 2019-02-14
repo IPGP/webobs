@@ -262,14 +262,14 @@ if ($start_datetime gt $end_datetime) {
 	($start_datetime, $end_datetime) = ($end_datetime, $start_datetime);
 }
 
-#$QryParm->{'y1'} = $start_datetime->year;
-#$QryParm->{'m1'} = $start_datetime->month;
-#$QryParm->{'d1'} = $start_datetime->day;
-#$QryParm->{'h1'} = $start_datetime->hour;
-#$QryParm->{'y2'} = $end_datetime->year;
-#$QryParm->{'m2'} = $end_datetime->month;
-#$QryParm->{'d2'} = $end_datetime->day;
-#$QryParm->{'h2'} = $end_datetime->hour;
+$QryParm->{'y1'} = $start_datetime->year;
+$QryParm->{'m1'} = $start_datetime->month;
+$QryParm->{'d1'} = $start_datetime->day;
+$QryParm->{'h1'} = $start_datetime->hour;
+$QryParm->{'y2'} = $end_datetime->year;
+$QryParm->{'m2'} = $end_datetime->month;
+$QryParm->{'d2'} = $end_datetime->day;
+$QryParm->{'h2'} = $end_datetime->hour;
 
 # ---- Load Event Codes -------------------------------------------------------
 #
