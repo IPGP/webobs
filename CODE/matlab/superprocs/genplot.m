@@ -47,7 +47,7 @@ function DOUT=genplot(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2014-07-13
-%	Updated: 2019-02-15
+%	Updated: 2017-11-07
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -147,7 +147,7 @@ for n = 1:length(N)
 		tlabel(tlim,P.GTABLE(r).TZ)
 
 		% title, status and additional information
-		P.GTABLE(r).GTITLE = varsub(pernode_title,V,'tex');
+		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 		P.GTABLE(r).INFOS = {''};
 		if ~isempty(k)
@@ -191,7 +191,7 @@ if isfield(P,'SUMMARYLIST')
 		if any(isnan(tlim))
 			tlim = minmax(cat(1,D.tfirstlast));
 		end
-		P.GTABLE(r).GTITLE = varsub(summary_title,V,'tex');
+		P.GTABLE(r).GTITLE = varsub(summary_title,V);
 		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 		P.GTABLE(r).INFOS = {''};
 

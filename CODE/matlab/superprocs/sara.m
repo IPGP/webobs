@@ -177,7 +177,7 @@ for n = 1:length(N)
 		plotevent(P.EVENTS_FILE)
 
 		% title, status and additional information
-		P.GTABLE(r).GTITLE = varsub(pernode_title,V,'tex');
+		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 		P.GTABLE(r).INFOS = {''};
 		if ~isempty(k)
@@ -220,7 +220,7 @@ if isfield(P,'SUMMARYLIST')
 		if any(isnan(tlim))
 			tlim = minmax(cat(1,D.tfirstlast));
 		end
-		P.GTABLE(r).GTITLE = varsub(summary_title,V,'tex');
+		P.GTABLE(r).GTITLE = varsub(summary_title,V);
 		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 		P.GTABLE(r).INFOS = {''};
 
@@ -460,7 +460,7 @@ if isfield(P,'SUMMARYLIST')
 			if any(isnan(tlim))
 				tlim = minmax(cat(1,D.tfirstlast));
 			end
-			P.GTABLE(r).GTITLE = varsub(sara_title,V,'tex');
+			P.GTABLE(r).GTITLE = varsub(sara_title,V);
 			P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 			P.GTABLE(r).INFOS = {''};
 
