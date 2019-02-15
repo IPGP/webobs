@@ -17,8 +17,8 @@ for k = fieldnames(V)'
 	s = regexprep(s,['\$',k{:},'\>'],V.(k{:}));	% $keyword (must be word isolated)
 	s = regexprep(s,['\${',k{:},'}'],V.(k{:}));	% ${keyword}
 end
+s = regexprep(s,'_','\\_'); % must reescape underscores...
 if nargin > 2 && strcmpi(opt,'tex')
-	s = regexprep(s,'_','\\_'); % must re-escape underscores...
 	s = regexprep(s,'é','\\''e');
 	s = regexprep(s,'è','\\`e');
 	s = regexprep(s,'ê','\\^e');

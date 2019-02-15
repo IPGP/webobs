@@ -348,7 +348,7 @@ for r = 1:length(P.GTABLE)
 
 	tlabel(tlim,P.GTABLE(r).TZ,'FontSize',fontsize)
     
-	P.GTABLE(r).GTITLE = varsub(summary_title,V,'tex');
+	P.GTABLE(r).GTITLE = varsub(summary_title,V);
 	P.GTABLE(r).INFOS = {sprintf('Referential: {\\bf%s}',itrf),sprintf('  E {\\bf%+g} mm/yr\n  N {\\bf%+g} mm/yr\n  U {\\bf%+g} mm/yr',velref)};
 	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 	close
@@ -415,7 +415,7 @@ for r = 1:length(P.GTABLE)
 		tlim = D(n).G(r).tlim;
     
 		% title and status
-		P.GTABLE(r).GTITLE = varsub(pernode_title,V,'tex');
+		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 		P.GTABLE(r).INFOS = {''};
 
@@ -543,7 +543,7 @@ for r = 1:length(P.GTABLE)
 			set(gcf,'PaperSize',[p(1),p(2)*length(kr)/pagestanum])
 		end
 		orient tall
-		P.GTABLE(r).GTITLE = varsub(baselines_title,V,'tex');
+		P.GTABLE(r).GTITLE = varsub(baselines_title,V);
 
 		for nn = 1:length(B)
 			n = B(nn).kr;

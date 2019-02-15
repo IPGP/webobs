@@ -168,7 +168,7 @@ for n = 1:length(N)
 					'FontSize',fontsize,'Clipping','off')
 
 				% title, status and additional information
-				P.GTABLE(r).GTITLE = varsub(htitle,V,'tex');
+				P.GTABLE(r).GTITLE = varsub(htitle,V);
 				P.GTABLE(r).GSTATUS = [P.NOW,D(n).G(r).last,D(n).G(r).samp];
 				P.GTABLE(r).INFOS = {''};
 				if ~isempty(k)

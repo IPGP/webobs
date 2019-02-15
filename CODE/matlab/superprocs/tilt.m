@@ -153,7 +153,7 @@ for n = 1:length(N)
     
 		% title and status
 		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
-		stitre = varsub(pernode_title,V,'tex');
+		stitre = varsub(pernode_title,V);
 		P.GTABLE(r).GTITLE = stitre;
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 		P.GTABLE(r).INFOS = {''};
@@ -298,7 +298,7 @@ for r = 1:length(P.GTABLE)
 	
 	V.name = P.NAME;
 	V.timescale = timescales(P.GTABLE(r).TIMESCALE);
-	P.GTABLE(r).GTITLE = varsub(summary_title,V,'tex');
+	P.GTABLE(r).GTITLE = varsub(summary_title,V);
 	if P.GTABLE(r).STATUS
 		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 	end
@@ -394,7 +394,7 @@ for r = 1:length(P.GTABLE)
 		xyr = cosd(mean(ylim));
 
 		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
-		stitre = varsub(vectors_title,V,'tex');
+		stitre = varsub(vectors_title,V);
 		P.GTABLE(r).GTITLE = stitre;
 
 		% scale is adjusted to maximum horizontal vector or error amplitude (in µrad/day)
@@ -544,7 +544,7 @@ for r = 1:length(P.GTABLE)
 			kn = 1:length(N);
 		end
 		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
-		stitre = varsub(modelling_title,V,'tex');
+		stitre = varsub(modelling_title,V);
 		P.GTABLE(r).GTITLE = stitre;
 
 		nn = length(kn);
