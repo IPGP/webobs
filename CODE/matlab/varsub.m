@@ -16,8 +16,12 @@ function s = varsub(s,V,opt)
 for k = fieldnames(V)'
 	s = regexprep(s,['\$',k{:},'\>'],V.(k{:}));	% $keyword (must be word isolated)
 	s = regexprep(s,['\${',k{:},'}'],V.(k{:}));	% ${keyword}
+	% keeps escaped underscores
+	if ~isempty(strfind(V.(k{:}),'\_'))
+		s = strrep(s,'_','\_');
+	end
 end
-s = regexprep(s,'_','\\_'); % must reescape underscores...
+
 if nargin > 2 && strcmpi(opt,'tex')
 	s = regexprep(s,'é','\\''e');
 	s = regexprep(s,'è','\\`e');
