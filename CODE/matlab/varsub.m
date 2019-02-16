@@ -11,15 +11,15 @@ function s = varsub(s,V,opt)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2017-01-25, in Yogyakarta, Indonesia
-%	Updated: 2019-02-15
+%	Updated: 2019-02-16
 
 for k = fieldnames(V)'
-	s = regexprep(s,['\$',k{:},'\>'],V.(k{:}));	% $keyword (must be word isolated)
-	s = regexprep(s,['\${',k{:},'}'],V.(k{:}));	% ${keyword}
 	% keeps escaped underscores
 	if ~isempty(strfind(V.(k{:}),'\_'))
-		s = strrep(s,'_','\_');
+		V.(k{:}) = strrep(V.(k{:}),'\_','\\_');
 	end
+	s = regexprep(s,['\$',k{:},'\>'],V.(k{:}));	% $keyword (must be word isolated)
+	s = regexprep(s,['\${',k{:},'}'],V.(k{:}));	% ${keyword}
 end
 
 if nargin > 2 && strcmpi(opt,'tex')
