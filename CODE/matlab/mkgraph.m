@@ -15,7 +15,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2019-02-13
+%	Updated: 2019-02-16
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -84,8 +84,8 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 	else
 		uid = '';
 	end
-	ss = [G.GTITLE,{sprintf('%s\\copyright %s, %s%s',uid,G.COPYRIGHT,datestr(now,'yyyy'),cpr2)}];
-	text(.5,1,strrep(ss,'()',''),'HorizontalAlignment','center','VerticalAlignment','top','FontSize',8);
+	ss = [{''},strrep(G.GTITLE,'()',''),{sprintf('%s\\copyright %s, %s%s',uid,G.COPYRIGHT,datestr(now,'yyyy'),cpr2)}];
+	text(.5,1,ss,'HorizontalAlignment','center','VerticalAlignment','top','FontSize',8);
 
 	% --- footer
 	% display text from cell G.INFOS on a 4-row table

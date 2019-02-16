@@ -8,13 +8,9 @@ function y = rf(x)
 %
 %	Author: F. Beauducel, IPGP
 %	Created: 1996 in Paris, France
-%	Updated: 2017-02-01
+%	Updated: 2019-02-16
 
 y = x;
-
-if size(x,1) == 1
-	x = x';
-end
 
  for n = 1:size(x,2)
 	k = find(~isnan(x(:,n)));

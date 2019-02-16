@@ -5,8 +5,10 @@ function y = rstd(x,dim)
 %   standard deviation of each column, excluding any NaN values.
 %
 %   See also RMEAN, MEAN, STD.
-
-%   (c) F. Beauducel, OVSG 2001.
+%
+%   Author: F. Beauducel / OVSG / WEBOBS
+%   Created: 2001
+%   Updated: 2019-02-16
 
 if length(size(x)) > 2
 	error('RMEAN works only for vectors or matrices.')
@@ -19,7 +21,6 @@ end
 if nargin < 2
 	dim = 1;
 end
-if size(x,1) == 1, x = x'; end
 
 switch dim
 case 1
