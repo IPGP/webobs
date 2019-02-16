@@ -1,17 +1,19 @@
 function y=rdecim(x,r)
 %RDECIM Real decimation.
-%   RDECIM(X,R) returns vector or matrix X decimated by average of R elements.
-%   NaN values are excluded if exist.
+%   RDECIM(X,R) decimates each column of matrix X of size MxN and returns a 
+%   matrix of size (M/R)xN, where each element is the average of R elements of
+%   X column. NaN values are excluded if exist.
 %
 %   See also RMEAN.
 %   
 %   Author: F. Beauducel, WEBOBS/IPGP
 %   Created: 2002
-%   Updated: 2015-08-24
+%   Updated: 2019-02-16
 
-if size(x,1) == 1
-	x = x';
-end
+% to reproduce the former behavior of Matlab...
+%if size(x,1) == 1
+%	x = x';
+%end
 r = round(r);
 if r > 1
 	y = zeros(ceil(size(x,1)/r),size(x,2));
