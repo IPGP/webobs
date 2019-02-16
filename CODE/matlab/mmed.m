@@ -11,7 +11,7 @@ function y = mmed(x,n)
 %
 %	Author: F. Beauducel, IPGP
 %	Created: 2018-01-23 in Yogyakarta, Indonesia
-%	Updated: 2018-01-23
+%	Updated: 2019-02-16
 
 if nargin < 2
 	error('MMED requires at least 2 input arguments.')
@@ -21,10 +21,6 @@ if numel(n) > 2 || any(n) < 1
 	error('N argument must be a positive integer or 2-element integers.')
 end
 
-% transposes line vector
-if size(x,1) == 1
-	x = x';
-end
 m = size(x,1);
 
 % inits the output

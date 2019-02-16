@@ -5,10 +5,11 @@ function y = rmax(x)
 %   maximum of each column, excluding any NaN values.
 %
 %   See also MAX, RSUM, RSTD, RMEAN.
+%
+%   Author: F. Beauducel / OVSG / WEBOBS
+%   Created: 2002
+%   Updated: 2019-02-16
 
-%   (c) F. Beauducel, OVSG 2002.
-
-if size(x,1) == 1, x = x'; end
 for i = 1:size(x,2)
     k = find(~isnan(x(:,i)));
     if length(k) == 0

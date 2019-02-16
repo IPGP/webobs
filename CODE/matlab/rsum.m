@@ -7,17 +7,17 @@ function y = rsum(x,dim)
 %	RSUM(X,2) computes the sum of each row (along dimension 2).
 %
 %   See also SUM, RSTD, RMEAN.
-
-%   Author: F. Beauducel, OVSG.
-%	Created: 2001
-%	Updated: 2015-07-31
+%
+%   Author: F. Beauducel / OVSG / WEBOBS
+%   Created: 2001
+%   Updated: 2019-02-16
 
 if nargin < 2
 	dim = 1;
 end
 
 % Matlab's habit: line vector is processed as colum vector
-if dim == 2 || size(x,1) == 1
+if dim == 2
 	x = x';
 	y = nan(size(x,2),1);
 else

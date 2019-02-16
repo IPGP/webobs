@@ -30,43 +30,10 @@
 %   MOVSUM(...) without output arguments produces a plot of the results.
 %
 %	Author: François Beauducel <beauducel@ipgp.fr>
-%		Institut de Physique du Globe de Paris
+%		Institut de Physique du Globe de Paris / WEBOBS
 %	Created: 2005
-%	Updated: 2010-10-10
+%	Updated: 2019-02-16
 %
-
-%	Development history:
-%		[2005]
-%			- first operational routine
-%
-%		[2010-10-06]
-%			- makes advanced script with input argument check, help and
-%			plot. 
-%
-%	Copyright (c) 2005-2010, François Beauducel, covered by BSD License.
-%	All rights reserved.
-%
-%	Redistribution and use in source and binary forms, with or without 
-%	modification, are permitted provided that the following conditions are 
-%	met:
-%
-%	   * Redistributions of source code must retain the above copyright 
-%	     notice, this list of conditions and the following disclaimer.
-%	   * Redistributions in binary form must reproduce the above copyright 
-%	     notice, this list of conditions and the following disclaimer in 
-%	     the documentation and/or other materials provided with the distribution
-%	                           
-%	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-%	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-%	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-%	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-%	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-%	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-%	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-%	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-%	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-%	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
-%	POSSIBILITY OF SUCH DAMAGE.
 
 error(nargchk(2,4,nargin));
 
@@ -82,9 +49,6 @@ switch nargin
 		if ~isnumeric(n) | numel(n) ~= 1 | n < 0 | mod(n,1) ~= 0
 			error('N argument must be a scalar positive integer.')
 		end
-		if size(x,1) == 1
-			x = x';
-		end
 		t = (1:size(x,1))';
 		xc = x;
 
@@ -93,9 +57,6 @@ switch nargin
 		t = varargin{1};
 		x = varargin{2};
 		n = varargin{3};
-		if size(x,1) == 1
-			x = x';
-		end
 		if ~isnumeric(t) | ~isnumeric(x) | size(t,1) ~= size(x,1)
 			error('T and X must be numeric with same number of rows.')
 		end
@@ -119,9 +80,6 @@ switch nargin
 		x = varargin{2};
 		dtx = varargin{3};
 		dty = varargin{4};
-		if size(x,1) == 1
-			x = x';
-		end
 		if ~isnumeric(t) | ~isnumeric(x) | size(t,1) ~= size(x,1)
 			error('T and X must be numeric with same number of rows.')
 		end

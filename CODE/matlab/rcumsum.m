@@ -8,8 +8,8 @@ function y = rcumsum(x)
 %
 %	Author: F. Beauducel, IPGP
 %	Created: 2004
+%	Updated: 2019-02-16
 
-if size(x,1) == 1, x = x'; end
 y = x;
 for i = 1:size(x,2)
 	k = find(~isnan(x(:,i)));
