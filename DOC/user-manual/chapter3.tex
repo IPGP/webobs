@@ -277,7 +277,19 @@ GENPLOT will produce, for each time scale:
 \item one summary graph combining all \wo{nodes} on each channel subplot using different colors.
 \end{itemize}
 
-The plotted channels for the per-node and summary graphs are both configurable. Also the titles and line and marker style. The line width and marker size can be different for each time scale. 
+The plotted channels for the per-node and summary graphs are both configurable
+using respectively \wo{NODE\_CHANNELS} and \wo{SUMMARY\_CHANNELS}. Titles and
+line and marker style can also be configured:
+\begin{itemize}
+\item set \wo{PERNODE\_TITLE} and/or \wo{SUMMARY\_TITLE} to customize the title;
+\item set \wo{PERNODE\_LINESTYLE} and/or \wo{SUMMARY\_LINESTYLE} to one of the
+  values defined in tables \ref{markertype} and \ref{linestyle} to choose
+  between drawing markers or line and define their style;
+\item the line width and marker size can be different for each time scale using
+  respectively \wo{LINEWIDTHLIST} and \wo{MARKERSIZELIST}, that should both
+  define a size to use (in \texttt{pt}) for each of the timescales defined in
+  \wo{TIMESCALELIST}.
+\end{itemize}
 
 % -----------------------------------------------------------------
 \subsection{Configuration}
