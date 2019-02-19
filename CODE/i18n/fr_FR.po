@@ -188,6 +188,9 @@ msgstr "Routine graphique"
 msgid "External link(s)"
 msgstr "Lien(s) externe(s)"
 
+msgid "External link"
+msgstr "Lien externe"
+
 msgid "Number of nodes"
 msgstr "Nombre de nodes"
 
