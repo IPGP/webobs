@@ -185,57 +185,60 @@ $htmlcontents = "<A NAME=\"CARACTERISTIQUES\"></A>";
 $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#specID');\">&nbsp;&nbsp;"; 
 	$htmlcontents .= "$__{'Specifications'}&nbsp;$go2top";
 	$htmlcontents .= "</div><div id=\"specID\">";
-		# should 'nodes' be called differently (than 'nodes'!) ? 
-		my $snm = defined($GRID{NODE_NAME}) ? $GRID{NODE_NAME} : "$__{'node'}";
-		$htmlcontents .= "<UL>";
-		# -----------
-		$htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$GRID{DOMAIN}\"><B>$DOMAINS{$GRID{DOMAIN}}{NAME}</B></A></LI>\n"; 
-		# -----------
-		if ($showOwnr && defined($GRID{OWNCODE})) { 
-			$htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n" 
-		} 
-		# -----------
-		$htmlcontents .= "<LI>\"$snm\" : <B>$nbNodes</B>";
-		if ($admOK) { 
-			$htmlcontents .= " [ "
-				."<A href=\"/cgi-bin/formGRID.pl?grid=$grid\">$__{'Associate existing node(s)'}</A> | "
-				."<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\">$__{'Create a new node'}</A> "
-				."]";
+	# should 'nodes' be called differently (than 'nodes'!) ? 
+	my $snm = defined($GRID{NODE_NAME}) ? $GRID{NODE_NAME} : "$__{'node'}";
+	$htmlcontents .= "<UL>";
+	# -----------
+	$htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$GRID{DOMAIN}\"><B>$DOMAINS{$GRID{DOMAIN}}{NAME}</B></A></LI>\n"; 
+	# -----------
+	if ($showOwnr && defined($GRID{OWNCODE})) { 
+		$htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n" 
+	} 
+	# -----------
+	$htmlcontents .= "<LI>\"$snm\" : <B>$nbNodes</B>";
+	if ($admOK) { 
+		$htmlcontents .= " [ "
+			."<A href=\"/cgi-bin/formGRID.pl?grid=$grid\">$__{'Associate existing node(s)'}</A> | "
+			."<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\">$__{'Create a new node'}</A> "
+			."]";
+	}
+	$htmlcontents   .= "</LI>";
+	if ($showType) { $htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n" }
+	# -----------
+	# 'old' ddb-key superseeded: use FORM (FORMS) definitions instead!  
+	if (defined($GRID{'FORM'})) {
+		my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
+		if (%FORM) {
+			my $urnData = (defined($FORM{'CGI_SHOW'})) ? "/cgi-bin/$FORM{'CGI_SHOW'}?node={$GRIDName}" : "";
+			my $txtData = (defined($FORM{'TITLE'})) ? $FORM{'TITLE'} : "";
+			$htmlcontents .= "<LI>Associated FORM: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
 		}
-		$htmlcontents   .= "</LI>";
-		if ($showType) { $htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n" }
-		# -----------
-		# 'old' ddb-key superseeded: use FORM (FORMS) definitions instead!  
-		if (defined($GRID{'FORM'})) {
-			my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
-			if (%FORM) {
-				my $urnData = (defined($FORM{'CGI_SHOW'})) ? "/cgi-bin/$FORM{'CGI_SHOW'}?node={$GRIDName}" : "";
-				my $txtData = (defined($FORM{'TITLE'})) ? $FORM{'TITLE'} : "";
-				$htmlcontents .= "<LI>Associated FORM: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
-			}
-		} 
-		# -----------
-		if (defined($GRID{URNDATA})) {
-			my $urnData = "$GRID{URNDATA}";
-			$htmlcontents .= "<LI>$__{'Access to data {RAWDATA}'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
-		} 
-		# -----------
-		my $urn = '';
-		if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" ) { 
-			my $ext = $GRID{TIMESCALELIST};
-			$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
-			$htmlcontents .= "<LI>$__{'Graphical routine'}: <B><A href=\"$urn\">$GRIDName</A></B> ($ext)</LI>\n";
-		} elsif ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" ) { 
-			$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName&ts=events";
-			$htmlcontents .= "<LI>$__{'Graphical routine'}: <B><A href=\"$urn\">$GRIDName</A></B> (events)</LI>\n";
-		} 
-		# -----------
-		if (defined($GRID{URL})) {
-			my $txt = $GRID{URL};
-			$txt =~ s/^(.*),(.*)/ <a href=\"$2\">$1<\/a>/g;
-			$htmlcontents .= "<LI>$__{'External link(s)'}: <B>$txt</B></LI>\n";
-		} 
-		$htmlcontents .= "</UL>\n";
+	} 
+	# -----------
+	if (defined($GRID{URNDATA})) {
+		my $urnData = "$GRID{URNDATA}";
+		$htmlcontents .= "<LI>$__{'Access to data {RAWDATA}'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
+	} 
+	# -----------
+	my $urn = '';
+	if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" ) { 
+		my $ext = $GRID{TIMESCALELIST};
+		$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
+		$htmlcontents .= "<LI>$__{'Graphical routine'}: <B><A href=\"$urn\">$GRIDName</A></B> ($ext)</LI>\n";
+	} elsif ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" ) { 
+		$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName&ts=events";
+		$htmlcontents .= "<LI>$__{'Graphical routine'}: <B><A href=\"$urn\">$GRIDName</A></B> (events)</LI>\n";
+	} 
+	# -----------
+	if (defined($GRID{URL})) {
+		my @links = split(/;/,$GRID{URL});
+		foreach (@links) {
+			my @txt = split(/,/,$_);
+			push(@txt,$txt[0]) if (index($_, ",") == -1);
+			$htmlcontents .= "<LI>$__{'External link'}: <B><A href=\"$txt[1]\" target=\"_blank\">$txt[0]<\/A></B></LI>\n";
+		}
+	} 
+	$htmlcontents .= "</UL>\n";
 	$htmlcontents .= "</div></div>";
 print $htmlcontents;
 
