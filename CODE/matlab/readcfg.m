@@ -43,7 +43,7 @@ function X=readcfg(varargin);
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2018-10-19
+%   Updated: 2019-02-19
 
 if nargin > 0 && isstruct(varargin{1})
 	WO = varargin{1};
@@ -229,6 +229,31 @@ for i = 1:length(keys)
 			end
 			if ~isempty(strfind(X.(keys{i}),'${'))
 				fprintf('WEBOBS{readcfg}: ** WARNING ** key %s contains undefined variable "%s"\n',keys{i},X.(keys{i}));
+			end
+		end
+	end
+	% for NODE's config, associated PROC's parameters are in substructures like N.PROC.name.key
+	if strcmp(keys{i},'PROC') && isstruct(X.PROC)
+		proc = fieldnames(X.PROC);
+		for p = 1:length(proc)
+			keyp = fieldnames(X.PROC.(proc{p}))
+			for k = 1:length(keyp)
+				if ~isempty(X.PROC.(proc{p}).(keyp{k}))
+					s = regexp(X.PROC.(proc{p}).(keyp{k}),pat,'tokens');
+					if ~isempty(s)
+						for j = 1:length(s)
+							if nargin < 3
+								if isfield(X,s{j}{:})
+									X.PROC.(proc{p}).(keyp{k}) = regexprep(X.PROC.(proc{p}).(keyp{k}),['\${' s{j}{:} '}'],regexprep(X.(s{j}{:}),'\${','\\${'));
+								end
+							else
+								if isfield(W,s{j}{:})
+									X.PROC.(proc{p}).(keyp{k}) = regexprep(X.PROC.(proc{p}).(keyp{k}),['\$WEBOBS{' s{j}{:} '}'],regexprep(W.(s{j}{:}),'\${','\\${'));
+								end
+							end
+						end
+					end
+				end
 			end
 		end
 	end
