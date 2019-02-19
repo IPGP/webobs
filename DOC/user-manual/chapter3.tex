@@ -282,13 +282,17 @@ using respectively \wo{NODE\_CHANNELS} and \wo{SUMMARY\_CHANNELS}. Titles and
 line and marker style can also be configured:
 \begin{itemize}
 \item set \wo{PERNODE\_TITLE} and/or \wo{SUMMARY\_TITLE} to customize the title;
-\item set \wo{PERNODE\_LINESTYLE} and/or \wo{SUMMARY\_LINESTYLE} to one of the
-  values defined in tables \ref{markertype} and \ref{linestyle} to choose
-  between drawing markers or line and define their style;
+\item set \wo{PERNODE\_LINESTYLE} and/or \wo{SUMMARY\_LINESTYLE} to a line specification string, a combination of two components:
+	\begin{itemize}
+		\item a line type (see possible values in table \ref{linestyle}),
+		\item a marker symbol type (see possible values in table \ref{markertype}),
+	\end{itemize}
+ to choose between drawing markers and/or line and define their style; note you might specify a marker only with no line, then only the markers are plotted;
 \item the line width and marker size can be different for each time scale using
   respectively \wo{LINEWIDTHLIST} and \wo{MARKERSIZELIST}, that should both
   define a size to use (in \texttt{pt}) for each of the timescales defined in
-  \wo{TIMESCALELIST}.
+  \wo{TIMESCALELIST}, coma separated values;
+\item colors are chosen automatically by the proc: for the summary graph it will be one color per node, for the per-node graph it will be one color per channel.
 \end{itemize}
 
 % -----------------------------------------------------------------
