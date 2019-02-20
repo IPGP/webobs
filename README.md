@@ -36,10 +36,10 @@ Graph processes need Matlab compiler runtime 2011b. Download the installer adapt
      sudo ./install -mode silent
 ```
 
-A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, install them using the following packages:
+A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:
 ```sh
-     sudo apt-get install apache2 apache2-utils sqlite3 imagemagick mutt xvfb
-     sudo apt-get install graphviz net-tools libdatetime-perl libdate-calc-perl \
+     sudo apt-get install apache2 apache2-utils sqlite3 imagemagick mutt xvfb \
+        graphviz net-tools libdatetime-perl libdate-calc-perl \
         libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
         libtext-multimarkdown-perl libswitch-perl libintl-perl
      sudo locale-gen fr_FR en_US
@@ -116,7 +116,7 @@ See also the list of active [contributors](https://github.com/IPGP/webobs/contri
 
 ## Copyright
 
-WebObs - 2012-2018 - Institut de Physique du Globe Paris
+WebObs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
