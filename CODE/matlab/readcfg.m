@@ -187,9 +187,6 @@ if length(df{1}) <= 2 && mode==0
 	end
 end
 
-fprintf('read.\n');
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -236,7 +233,7 @@ for i = 1:length(keys)
 	if strcmp(keys{i},'PROC') && isstruct(X.PROC)
 		proc = fieldnames(X.PROC);
 		for p = 1:length(proc)
-			keyp = fieldnames(X.PROC.(proc{p}))
+			keyp = fieldnames(X.PROC.(proc{p}));
 			for k = 1:length(keyp)
 				if ~isempty(X.PROC.(proc{p}).(keyp{k}))
 					s = regexp(X.PROC.(proc{p}).(keyp{k}),pat,'tokens');
