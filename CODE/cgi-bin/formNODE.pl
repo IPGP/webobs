@@ -64,7 +64,7 @@ if ( $GRIDType ne "" && $GRIDName ne "" ) {
 		%allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
 		if ("$GRIDType.$GRIDName" ~~ @{$allNodeGrids{$NODEName}}) {
 			my %G;
-			my %S = readNode($NODEName);
+			my %S = readNode($NODEName,"nowovsub");
 			%NODE = %{$S{$NODEName}};
 			if (%NODE) {
 				if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }

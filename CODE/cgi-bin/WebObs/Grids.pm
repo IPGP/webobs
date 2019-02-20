@@ -193,7 +193,8 @@ sub readGrid {
 
 =head2 readNode
 
-Reads one or more 'nodes' configurations into a HoH. 
+Reads one or more 'nodes' configurations into a HoH. Option "nowovsub" will 
+avoid WEBOBS.rc variable substitution.
 
 Internally uses WebObs::listNodeNames.
 
@@ -202,7 +203,7 @@ Internally uses WebObs::listNodeNames.
 sub readNode {
 	my %ret;
 	for my $f (listNodeNames($_[0])) {
-		my %tmp = readCfg("$NODES{PATH_NODES}/$f/$f.cnf","escape");
+		my %tmp = readCfg("$NODES{PATH_NODES}/$f/$f.cnf","escape",@_[1..$#_]);
 		#FB-legacy: if TYPE not defined and old type.txt exists, loads it
 		if (!$tmp{TYPE}) {
 			my $typ = "$NODES{PATH_NODES}/$f/type.txt";

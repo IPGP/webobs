@@ -250,6 +250,7 @@ sub readCfg
 	my $fn   = $_[0];
 	my $sort = grep( /^sorted$/, @_[1..$#_] );
 	my $escape = grep ( /^escape$/, @_[1..$#_] );
+	my $nowovsub = grep ( /^nowovsub$/, @_[1..$#_] );
 	my $id = 0;
 	my (@df, @wrk, $i, $l, %H, @A);
 	my @fraw = readFile($fn);
@@ -284,8 +285,10 @@ sub readCfg
 		no warnings "uninitialized";
 		for my $key (keys %H) { $H{$key} =~ s/[\$][\{](.*?)[\}]/$H{$1}/g; }
 		# need two passes, last one also handling %WEBOBS substitution  
-		for my $key (keys %H) { $H{$key} =~ s/[\$][\{](.*?)[\}]/$H{$1}/g; 
-								$H{$key} =~ s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g;}	
+		for my $key (keys %H) {
+			$H{$key} =~ s/[\$][\{](.*?)[\}]/$H{$1}/g; 
+			if (!$nowovsub) { $H{$key} =~ s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g; }
+		}	
 		use warnings;
 		return %H; 
 	}
