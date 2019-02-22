@@ -43,7 +43,7 @@ function X=readcfg(varargin);
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2019-02-19
+%   Updated: 2019-02-22
 
 if nargin > 0 && isstruct(varargin{1})
 	WO = varargin{1};
@@ -187,6 +187,7 @@ if length(df{1}) <= 2 && mode==0
 	end
 end
 
+fprintf('read.\n');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
