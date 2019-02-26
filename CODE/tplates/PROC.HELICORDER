@@ -13,6 +13,7 @@ RAWFORMAT|
 RAWDATA|
 # URN link to data 
 URNDATA|/rawdata/myproc
+
 # time zone for outputs
 TZ|0
 # additionnal URL
@@ -52,6 +53,7 @@ DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
 # DEM coordinate system: UTM or LATLON
 DEM_TYPE|LATLON
 DEM_COPYRIGHT|
+DEM_SRTM1|N
 
 # file for background time referenced events 
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf

@@ -32,7 +32,7 @@ SUMMARYLIST|
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} waters $SELFREF -
-SUBMIT_RESSOURCE|waters
+SUBMIT_RESOURCE|waters
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME
