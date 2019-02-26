@@ -11,7 +11,10 @@ RAWFORMAT|gipsy
 RAWDATA|$WEBOBS{ROOT_RAWD}/gipsy
 URNDATA|$WEBOBS{URN_RAWD}/gipsy
 
-TZ|+0
+# time zone for outputs
+TZ|0
+
+# additionnal external link(s): TEXT1,URL1;TEXT2,URL2;...
 URL|
 
 # lists of parameters (number of comma-separated rows must be consistent)
@@ -30,10 +33,16 @@ SUMMARYLIST|VECTORS,BASELINES,MODELLING,MODELTIME
 
 # for scheduler requests
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} gnss $SELFREF -
-SUBMIT_RESSOURCE|gipsy
+SUBMIT_RESOURCE|gipsy
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,SUMMARYLIST,VECTORS_RELATIVE
+
+DEM_SRTM1|N
+# optional user-defined DEM (Arcinfo format, lat/lon)
+#DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
+#DEM_TYPE|LATLON
+#DEM_COPYRIGHT|DEM: myDEM
 
 # file for background time referenced events 
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
@@ -46,11 +55,6 @@ LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 LOGO2_FILE|
 COPYRIGHT|Processing by Beauducel et al./IPGP
 COPYRIGHT2|
-
-#DEM_FILE|$WEBOBS{PATH_DATA_DEM}/myarcinfodem.grd
-DEM_TYPE|UTM
-DEM_COPYRIGHT|DEM: myDEM
-DEM_SRTM1|N
 
 NODE_NAME|station
 NODE_MARKER|o
@@ -115,7 +119,7 @@ VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 VECTORS_TITLE|{\fontsize{14}{\bf${NAME} - Velocity vectors} ($timescale)}
 VECTORS_MIN_SIZE_KM|10
 VECTORS_MAX_XYRATIO|1.5
-VECTORS_ARROWSHAPE|.1,.1,.08,.02
+VECTORS_ARROWSHAPE|.15,.15,.12,.03
 
 # defines a main target (latitude,longitude coordinates)
 GNSS_TARGET_LATLON|

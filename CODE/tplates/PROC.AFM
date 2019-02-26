@@ -13,13 +13,16 @@ RAWFORMAT|porkyasc
 # URN link to data 
 URNDATA|$WEBOBS{URN_RAWD}/afm
 
+DEM_SRTM1|N
 # optional user-defined DEM (Arcinfo format, lat/lon)
-DEM|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
+#DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
+#DEM_TYPE|LATLON
+#DEM_COPYRIGHT|DEM: myDEM
 
 # time zone for outputs
 TZ|0
 
-# additionnal URL
+# additionnal external link(s): TEXT1,URL1;TEXT2,URL2;...
 URL|
 
 # lists of parameters (number of coma-separated rows must be consistent)

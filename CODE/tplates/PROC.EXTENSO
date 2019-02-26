@@ -38,10 +38,17 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 
 MAP1_XYLIM|-61.66805,-61.65972,16.03889,16.04722
 
+DEM_SRTM1|N
 # optional user-defined DEM (Arcinfo format, lat/lon)
-#DEM_FILE|
-#DEM_COPYRIGHT|
-DEM_TYPE|LATLON
+#DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
+#DEM_TYPE|LATLON
+#DEM_COPYRIGHT|DEM: myDEM
+
+# time zone for outputs
+TZ|0
+
+# additionnal external link(s): TEXT1,URL1;TEXT2,URL2;...
+URL|
 
 # file for background time referenced events 
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
