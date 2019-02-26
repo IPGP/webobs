@@ -10,10 +10,10 @@ function status = mkexport(WO,f,E,G);
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2019-01-18
+%	Updated: 2019-02-26
 
 
-ptmp = sprintf('%s/%s',WO.PATH_TMP_WEBOBS,G.SELFREF);
+ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,G.SELFREF,randname(16));
 wosystem(sprintf('mkdir -p %s',ptmp));
 
 %DL p = WO.PATH_OUTPUT_MATLAB;
