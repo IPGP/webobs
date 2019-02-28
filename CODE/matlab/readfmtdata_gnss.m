@@ -43,7 +43,7 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2019-02-12
+%	Updated: 2019-02-27
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -146,7 +146,8 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 				end
 			end
 		end
-		s = wosystem(sprintf('paste %s/%s.{X,Y,Z} >> %s',F.ptmp,nfid,fdat),P);
+		%s = wosystem(sprintf('paste %s/%s.{X,Y,Z} >> %s',F.ptmp,nfid,fdat),P);
+		s = wosystem(sprintf('paste %s/%s.? >> %s',F.ptmp,nfid,fdat),P);
 		if s
 			fprintf('%s: ** WARNING ** no data found!\n',wofun);
 		end

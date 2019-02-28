@@ -6,16 +6,19 @@ function tickfactor(f,a)
 %
 %	Author: François Beauducel, IPGP/WEBOBS
 %	Created: 2018-12-07 in Yogyakarta (Indonesia)
+%	Updated: 2019-02-28
 
-xt = get(gca,'XTick');
-xtl = get(gca,'XTickLabel');
-yt = get(gca,'YTick');
-ytl = get(gca,'YTickLabel');
+if nargin > 0 && f ~= 1
+	xt = get(gca,'XTick');
+	xtl = get(gca,'XTickLabel');
+	yt = get(gca,'YTick');
+	ytl = get(gca,'YTickLabel');
 
-if ~isempty(xt) && ~isempty(xtl) && (nargin < 2 || strcmpi(a,'x'))
-	set(gca,'XTick',xt,'XTickLabel',strtrim(cellstr(num2str(xt'*f))))
-end
+	if ~isempty(xt) && ~isempty(xtl) && (nargin < 2 || strcmpi(a,'x'))
+		set(gca,'XTick',xt,'XTickLabel',strtrim(cellstr(num2str(xt'*f))))
+	end
 
-if ~isempty(yt) && ~isempty(ytl) && (nargin < 2 || strcmpi(a,'y'))
-	set(gca,'YTick',yt,'YTickLabel',strtrim(cellstr(num2str(yt'*f))))
+	if ~isempty(yt) && ~isempty(ytl) && (nargin < 2 || strcmpi(a,'y'))
+		set(gca,'YTick',yt,'YTickLabel',strtrim(cellstr(num2str(yt'*f))))
+	end
 end
