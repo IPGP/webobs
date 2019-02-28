@@ -583,7 +583,7 @@ my @ligneTitre;
 if ($QryParm->{'dump'} eq 'bul') {
 	$dumpFile = "${mc3}_dump_bulletin.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
-	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;Longitude;Latitude;Depth;Type;File;Valid;Projection;Operator;Timestamp\n");
+	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;Longitude;Latitude;Depth;Type;File;Valid;Projection;Operator;Timestamp;ID\n");
 }
 if ($QryParm->{'dump'} eq 'cum') {
 	$dumpFile = "${mc3}_dump_daily_total.csv";
@@ -756,7 +756,8 @@ foreach my $line (@lignes) {
 			if ($QryParm->{'dump'} eq 'bul') {
 				push(@csv,join('',split(/-/,$date))." ".join('',split(/:/,$heure)).";"
 					."$nombre;$duree_s;$amplitude;$mag;$lon;$lat;$dep;$type;$qml;"
-					.($mod eq 'manual' ? "1":"0").";WGS84;$operator;$timestamp\n");
+					.($mod eq 'manual' ? "1":"0").";WGS84;$operator;$timestamp;"
+					.substr($date,0,7)."#$id_evt\n");
 			#FB-was:} elsif ($QryParm->{'dump'} eq "") {
 			} else {
 				push(@finalLignes,$line);
@@ -1300,8 +1301,8 @@ for (@finalLignes) {
 		#	$html .= "<img src=\"/icons/nofile.gif\" title=\"Pas de fichier\">";
 		#} elsif ($seedlink) {
 			# [FXB] AJOUTER &all=1 lorsque le serveur ArcLink acceptera les wildcards...
-		$html .= "<a href=\"$mseedreq&s3=$suds&t1=$begin&ds=$durmseed\" onMouseOut=\"nd()\" onMouseOver=\"overlib('miniSEED file',WIDTH,110)\"><img src=\"/icons/"
-			.($mod[0] && $mod[0] eq "manual" ? "signal_pointe.png":"signal_non_pointe.png")."\" border=\"0\"></a>";
+		$html .= "<A href=\"$mseedreq&s3=$suds&t1=$begin&ds=$durmseed\" target=\"_blank\" onMouseOut=\"nd()\" onMouseOver=\"overlib('miniSEED file',WIDTH,110)\"><IMG src=\"/icons/"
+			.($mod[0] && $mod[0] eq "manual" ? "signal_pointe.png":"signal_non_pointe.png")."\" border=\"0\"></A>";
 		#} else {
 		#	$html .= "<span style=\"font-size:6pt\">($suds)</span>";
 		#}
@@ -1529,11 +1530,13 @@ function effaceFiltre()
 
 function dumpData(d) {
 	document.formulaire.dump.value = d;
+	document.formulaire.setAttribute("target", "_blank");
 	document.formulaire.submit();
 }
 
 function display() {
 	document.formulaire.dump.value = "";
+	document.formulaire.setAttribute("target", "");
 	document.formulaire.submit();
 }
 
