@@ -100,7 +100,7 @@ function DOUT=gnss(varargin)
 %
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié, Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-01-30
+%   Updated: 2019-02-28
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -229,7 +229,7 @@ pcdm.newlimit_edge_ratio = field2num(P,'MODELLING_PCDM_NEW_LIMIT_EDGE_RATIO',20)
 pcdm.newlimit_extend = field2num(P,'MODELLING_PCDM_NEW_LIMIT_EXTEND',1);
 % option to export supplementary graphs (intermediate results per iteration)
 pcdm.supplementary_graphs = isok(P,'MODELLING_PCDM_SUPPLEMENTARY_GRAPHS');
-
+tickfactorlim = 5e3; % above 5 km width/depth axis will be in km
 
 % MODELTIME parameters
 modeltime_period = field2num(P,'MODELTIME_PERIOD_DAY');
@@ -254,7 +254,9 @@ if numel(velref)==3 && ~all(velref==0)
 	for n = 1:length(N)
 		t0 = velrefdate;
 		for c = 1:3
-			D(n).d(:,c) = D(n).d(:,c) - polyval([velref(c)/365250,0],D(n).t - t0);
+			if size(D(n).d,2) >= c
+				D(n).d(:,c) = D(n).d(:,c) - polyval([velref(c)/365250,0],D(n).t - t0);
+			end
 		end
 	end
 end
@@ -783,6 +785,13 @@ for r = 1:length(P.GTABLE)
 		xlim = linspace(-wid/2,wid/2,rr);
 		ylim = xlim;
 		zlim = linspace(-maxdep,roundsd(double(max(DEM.z(:))),2,'ceil'),rr);
+		if max(abs([xlim,ylim,zlim])) >= tickfactorlim
+			distunit = 'km';
+			distfactor = 1e-3;
+		else
+			distunit = 'm';
+			distfactor = 1;
+		end
 
 		[xdem,ydem] = meshgrid(xlim,ylim);
 		zdem = interp2((DEM.lon-lon0)*degm*cosd(lat0),(DEM.lat-lat0)*degm,double(DEM.z),xdem,ydem);
@@ -821,8 +830,14 @@ for r = 1:length(P.GTABLE)
 		case 'pcdm'
 			[mm,vv,k,mm0,ux,uy,uz,ez,ev,ws,pbest] = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,pcdm);
 			wbest = wid/20;
+			if numel(pcdm.random_sampling) == 1
+				nmodels = pcdm.random_sampling*pcdm.iterations;
+			else
+				nmodels = sum(pcdm.random_sampling);
+			end
 		otherwise
 			[mm,vv,k,mm0,ux,uy,uz,ez,ev,ws] = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
+			nmodels = numel(mm);
 		end
 
 		mhor = max(mm,[],3);
@@ -842,7 +857,7 @@ for r = 1:length(P.GTABLE)
 		%	%vmax = rmax([abs(complex(d(:,1),d(:,2)));abs(complex(d(:,4),d(:,5)))/2]);
 		%	vmax = rmax(abs(reshape(d(:,1:2),1,[])))/2;
 		%else
-			vmax = rmax(abs(reshape(d(:,1:3),1,[])))/2;
+			vmax = rmax(abs(reshape(d(:,1:3),[],1)))/2;
 		%end
 		vsc = .25*min([diff(minmax(xlim)),diff(minmax(ylim)),diff(minmax(zlim))])/vmax;
 
@@ -872,7 +887,7 @@ for r = 1:length(P.GTABLE)
 		set(h,'Color',.3*[1,1,1],'LineWidth',.75);
 		target(xsta,ysta,stasize)
 		if ~isnan(vmax)
-			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
+			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
 			ellipse(xsta + vsc*d(:,1),ysta + vsc*d(:,2),vsc*d(:,4),vsc*d(:,5),'LineWidth',.2,'Clipping','on')
 			arrows(xsta,ysta,vsc*ux,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref, ...
 				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
@@ -897,10 +912,8 @@ for r = 1:length(P.GTABLE)
 		hold off
 		set(gca,'XLim',minmax(xlim),'YLim',minmax(ylim), ...
 			'Position',[0.01,pos(2),pos(3) + pos(1) - 0.01,pos(4)],'YAxisLocation','right','FontSize',6)
-		if max(abs([xlim,ylim,zlim])) >= 1e4
-			tickfactor(1e-3)
-		end
-		xlabel(sprintf('Origin (0,0) is lon {\\bf%g E}, lat {\\bf%g N}',lon0,lat0),'FontSize',8)
+		tickfactor(distfactor)
+		xlabel(sprintf('Origin (0,0) is lon {\\bf%g E}, lat {\\bf%g N} - Distances in %s',lon0,lat0,distunit),'FontSize',8)
 
 		% Z-Y profile
 		axes('position',[0.68,pos(2),0.3,pos(4)])
@@ -915,7 +928,7 @@ for r = 1:length(P.GTABLE)
 		hold on
 		target(zsta,ysta,stasize)
 		if ~isnan(vmax)
-			arrows(zsta,ysta,vsc*d(:,3),vsc*d(:,2),arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
+			arrows(zsta,ysta,vsc*d(:,3),vsc*d(:,2),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
 			ellipse(zsta + vsc*d(:,3),ysta + vsc*d(:,2),vsc*d(:,6),vsc*d(:,5),'LineWidth',.2,'Clipping','on')
 			arrows(zsta,ysta,vsc*uz,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref, ...
 				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
@@ -935,9 +948,7 @@ for r = 1:length(P.GTABLE)
 		plot(max(max(zdem,[],3),[],2)',ylim,'-k')
 		hold off
 		set(gca,'XLim',minmax(zlim),'YLim',minmax(ylim),'XDir','reverse','XAxisLocation','top','YAxisLocation','right','YTick',[],'FontSize',6)
-		if max(abs([xlim,ylim,zlim])) >= 1e4
-			tickfactor(1e-3)
-		end
+		tickfactor(distfactor)
 
 		% X-Z profile
 		axes('position',[0.01,0.11,0.6142,0.3])
@@ -952,7 +963,7 @@ for r = 1:length(P.GTABLE)
 		hold on
 		target(xsta,zsta,stasize)
 		if ~isnan(vmax)
-			arrows(xsta,zsta,vsc*d(:,1),vsc*d(:,3),arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
+			arrows(xsta,zsta,vsc*d(:,1),vsc*d(:,3),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
 			ellipse(xsta + vsc*d(:,1),zsta + vsc*d(:,3),vsc*d(:,4),vsc*d(:,6),'LineWidth',.2,'Clipping','on')
 			arrows(xsta,zsta,vsc*ux,vsc*uz,arrowshapemod,'Cartesian','Ref',arrowref, ...
 				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
@@ -972,9 +983,7 @@ for r = 1:length(P.GTABLE)
 		plot(xlim,max(max(zdem,[],3),[],1),'-k')
 		hold off
 		set(gca,'XLim',minmax(xlim),'YLim',minmax(zlim),'YAxisLocation','right','XTick',[],'FontSize',6)
-		if max(abs([xlim,ylim,zlim])) >= 1e4
-			tickfactor(1e-3)
-		end
+		tickfactor(distfactor)
 
 		if strcmp(modelling_coloref,'volpdf')
 			polarmap(modelling_cmap,modelling_colorshading);
@@ -982,13 +991,13 @@ for r = 1:length(P.GTABLE)
 			shademap(modelling_cmap,modelling_colorshading)
 		end
 
-		% legend
+		% legends
+		% - model parameters
 		subplot(5,3,[12,15])
-		info = {'   {\itTime span}:', ...
-			sprintf('{\\bf%s}',datestr(tlim(1),'yyyy-mm-dd HH:MM')), ...
-			sprintf('{\\bf%s}',datestr(tlim(2),'yyyy-mm-dd HH:MM')), ...
-			'', ...
+		info = { ...
+			' ', ...
 			sprintf('model type = {\\bf%s}',modelling_source_type), ...
+			sprintf('number of models : {\\bf%s}',num2tex(nmodels)), ...
 		};
 		if modelopt.horizonly
 			info = cat(2,info,'misfit mode = {\bfhorizontal only}');
@@ -999,13 +1008,14 @@ for r = 1:length(P.GTABLE)
 			%'', ... %sprintf('width = {\\bf%g m}',roundsd(2*ws,1)), ...
 			%sprintf('grid size = {\\bf%g^3 nodes}',rr), ...
 			%sprintf('trend error mode = {\\bf%d}',terrmod), ...
-		info = cat(2,info,' ',sprintf('   {\\itBest sources (%1.1f%%)}:',modelopt.msigp*100));
+		info = cat(2,info,' ',sprintf('   {\\itBest source (%1.1f%%)}:',modelopt.msigp*100));
 		switch lower(modelling_source_type)
 		case 'pcdm'
 			info = cat(2,info, ...
 				sprintf('depth = {\\bf%1.1f km} \\in [%1.1f , %1.1f]',pbest(3),-fliplr(ez)/1e3), ...
 				sprintf('\\DeltaV = {\\bf%+g Mm^3} \\in [%+g , %+g]',roundsd([pbest(7)*1e3,ev],2)), ...
 				sprintf('A = {\\bf%1.2f} / B = {\\bf%1.2f}',pbest(8:9)), ...
+				sprintf('shape = {\\bf%s}',pcdmdesc(pbest(8),pbest(9))), ....
 				sprintf('\\OmegaX = {\\bf%+2.0f\\circ} / \\OmegaY = {\\bf%+2.0f\\circ} / \\OmegaZ = {\\bf%+2.0f\\circ}',pbest(4:6)));
 		otherwise
 			info = cat(2,info, ...
@@ -1013,11 +1023,11 @@ for r = 1:length(P.GTABLE)
 				sprintf('\\DeltaV = {\\bf%+g Mm^3} \\in [%+g , %+g]',roundsd([vv(k),ev],2)));
 		end
 		info = cat(2,info,sprintf('misfit = {\\bf%g mm}',roundsd(mm0,2)));
-		text(0,1.1,info,'HorizontalAlignment','left','VerticalAlignment','top')
+		text(-0.1,1.1,info,'HorizontalAlignment','left','VerticalAlignment','top')
 		axis([0,1,0,1]); axis off
 
 		% - probability colorscale
-		axes('position',[0.73,.19,.23,.01])
+		axes('position',[0.33,.05,.25,.015])
 		if strcmp(modelling_coloref,'volpdf')
 			imagesc(linspace(-1,1,256),[0;1],repmat(linspace(0,1,256),2,1))
 			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{'High (Deflate)','Low','High (Inflate)'},'TickDir','out','FontSize',8)
@@ -1028,21 +1038,21 @@ for r = 1:length(P.GTABLE)
 		title('Model Probability','FontSize',10)
 
 		% - data/model arrows scale
-		axes('position',[0.68,0.11,0.3,0.03])
+		axes('position',[0.67,0.05,0.3,0.03])
 		dxl = diff(xlim([1,end]))*0.3/0.6142;
 		dyl = diff(ylim([1,end]))*0.03/0.3;
 		hold on
 		if ~isnan(arrowref)
 			vlegend = roundsd(vmax/2,1);
-			arrows(dxl/2,dyl,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
+			arrows(dxl/2,dyl,vsc*vlegend,0,1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
 			text(dxl/2 + vsc*vlegend/2,dyl,sprintf('{\\bf%g mm}',vlegend),'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8)
 			%ellipse(xsta + vsc*d(:,1),zsta + vsc*d(:,3),vsc*d(:,4),vsc*d(:,6),'LineWidth',.2,'Clipping','on')
 			arrows(dxl/2,dyl/2,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
-			text([dxl/2,dxl/2],[dyl,dyl/2],{'data   ','model   '},'HorizontalAlignment','right')
+			text([dxl/2,dxl/2],[dyl,dyl/2],{'data   ','model   '},'HorizontalAlignment','right','FontSize',8)
 			if plotresidual
 				arrows(dxl/2,0,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref, ...
 					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
-				text(dxl/2,0,'residual   ','HorizontalAlignment','right')
+				text(dxl/2,0,'residual   ','HorizontalAlignment','right','FontSize',8)
 			end
 		end
 		axis off
@@ -1050,7 +1060,10 @@ for r = 1:length(P.GTABLE)
 		set(gca,'XLim',[0,dxl],'YLim',[0,dyl])
 
 		P.GTABLE(r).GTITLE = varsub(modelling_title,V);
-		P.GTABLE(r).INFOS = {''};
+		P.GTABLE(r).INFOS = {'{\itTime span}:', ...
+			sprintf('     {\\bf%s}',datestr(tlim(1),'yyyy-mm-dd HH:MM')), ...
+			sprintf('     {\\bf%s}',datestr(tlim(2),'yyyy-mm-dd HH:MM')), ...
+			' '};
 		OPT.FIXEDPP = true;
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
 		close
