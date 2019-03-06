@@ -58,6 +58,7 @@ function DOUT=gnss(varargin)
 %	    MODELLING_MAX_DEPTH|8000
 %	    MODELLING_BORDERS|5000
 %	    MODELLING_GRID_SIZE|100
+%	    MODELLING_MISFITNORM|L1
 %	    MODELLING_SIGMAS|1
 %	    MODELLING_COLORREF|volpdf
 %	    MODELLING_COLORMAP|jet(512)
@@ -66,6 +67,7 @@ function DOUT=gnss(varargin)
 %	    MODELLING_SOURCE_TYPE|isotropic
 %	    MODELLING_APRIORI_HSTD_KM|0
 %	    MODELLING_MINERROR_MM|5
+%	    MODELLING_MINERROR_PERCENT|1
 %	    MODELLING_PCDM_ITERATIONS|5
 %	    MODELLING_PCDM_RANDOM_SAMPLING|200000
 %	    MODELLING_PCDM_NU|0.25
@@ -100,7 +102,7 @@ function DOUT=gnss(varargin)
 %
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié, Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-02-28
+%   Updated: 2019-03-01
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -187,6 +189,8 @@ modelopt.horizonly = isok(P,'MODELLING_HORIZONTAL_ONLY');
 modelopt.apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 modelopt.msig = field2num(P,'MODELLING_SIGMAS',1);
 modelopt.minerror = field2num(P,'MODELLING_MINERROR_MM',5);
+modelopt.minerrorrel = field2num(P,'MODELLING_MINERROR_PERCENT',1);
+modelopt.misfitnorm = field2str(P,'MODELLING_MISFITNORM','L1');
 
 % MODELLING pCDM parameters (see invpcdm.m)
 % number of iterations (adjusting the parameter's limits)
@@ -842,11 +846,12 @@ for r = 1:length(P.GTABLE)
 
 		mhor = max(mm,[],3);
 		if strcmp(modelling_coloref,'volpdf')
-			clim = [-1,1]*max(mhor(:))*(ws/500)^.5;
+			%clim = [-1,1]*max(mhor(:))*(ws/500)^.5;
+			clim = [-1,1]*max(mm(:));
 		else
-			clim = [0,max(mhor(:))*(ws/500)^.5];
+			%clim = [0,max(mhor(:))*(ws/500)^.5];
 			%clim = [min(mhor(:)),max(mhor(:))];
-			%clim = minmax(mm);
+			clim = minmax(mm);
 			if diff(clim)<=0
 				clim = [0,1];
 			end
@@ -998,6 +1003,7 @@ for r = 1:length(P.GTABLE)
 			' ', ...
 			sprintf('model type = {\\bf%s}',modelling_source_type), ...
 			sprintf('number of models : {\\bf%s}',num2tex(nmodels)), ...
+			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
 		};
 		if modelopt.horizonly
 			info = cat(2,info,'misfit mode = {\bfhorizontal only}');
