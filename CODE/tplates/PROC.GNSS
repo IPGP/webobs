@@ -47,8 +47,12 @@ DEM_SRTM1|N
 # file for background time referenced events 
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 
+PAPER_SIZE|8,11
 PPI|100
 LANDSCAPE|N
+PLOT_GRID|N
+
+FONTSIZE|8
 POSTSCRIPT|1
 EXPORTS|1
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
@@ -69,9 +73,6 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 # --------------------------------------------------------------------
 # specific proc's parameters
 
-PLOT_GRID|N
-PAPERSIZE|8,11
-FONTSIZE|8
 
 # maximum error on position (in m) before excluding the data from graphs and calculations
 FILTER_MAX_ERROR_M|1
@@ -133,10 +134,13 @@ MODELLING_HORIZONTAL_ONLY|Y
 MODELLING_FORCE_RELATIVE|N
 # modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
 MODELLING_SOURCE_TYPE|isotropic
+# misfit norm calculation: 'L1' (default) or 'L2'
+MODELLING_MISFITNORM|L1
 # a priori horizontal error around the target or grid center (in STD, km), 0 = no a priori
 MODELLING_APRIORI_HSTD_KM|0
-# set a minimum error on displacements to avoid NaN PDF when misfit is too high
+# set a minimum error on displacements, absolute (mm) and relative (%) to avoid NaN PDF when misfit is too high
 MODELLING_MINERROR_MM|5
+MODELLING_MINERROR_PERCENT|1
 # indicates the best source solution on graph
 MODELLING_PLOT_BEST|Y
 # adds residual arrows (data - model)
