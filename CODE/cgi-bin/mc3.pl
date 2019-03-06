@@ -1226,11 +1226,14 @@ for (@finalLignes) {
 		$html .= "<TD nowrap>";
 		if ($editURL ne "") {
 			my $msg = "View...";
-			if ( (($operator eq "" || $operator eq $CLIENT) && (clientHasEdit(type=>"authprocs",name=>"MC") ||clientHasEdit(type=>"authprocs",name=>"$mc3"))) || (clientHasAdm(type=>"authprocs",name=>"MC") || clientHasAdm(type=>"authprocs",name=>"$mc3")) ) {
+			my $ico = "view.png";
+			if ( (($operator eq "" || $operator eq $CLIENT || $type eq "AUTO")
+				&& (clientHasEdit(type=>"authprocs",name=>"MC") ||clientHasEdit(type=>"authprocs",name=>"$mc3"))) || (clientHasAdm(type=>"authprocs",name=>"MC") || clientHasAdm(type=>"authprocs",name=>"$mc3")) ) {
 				$msg = "Edit...";
+				$ico = "modif.png";
 			}
 			$html .= "<a href=\"$editURL\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$msg',WIDTH,50)\" target=\"_blank\">"
-				."<IMG src=\"/icons/modif.png\" style=\"border:0;margin:2\"></a>";
+				."<IMG src=\"/icons/$ico\" style=\"border:0;margin:2\"></a>";
 		} else { $html .= "&nbsp;" }
 		$html .= "</TD>";
 		my $tmp = "$evt_annee4$evt_mois";
@@ -1269,6 +1272,9 @@ for (@finalLignes) {
 		$html .= "<td".($types{$type}{Color} ? " style=\"color:$types{$type}{Color}\"":"")."><b>$typeAff</b></td>";
 		my $amplitude_texte = ($amplitude ? (($amplitude eq "Sature" || $amplitude eq "OVERSCALE") ? "<b>$namAmp{$amplitude}</b> ($duree_sat s)" : "$namAmp{$amplitude}"):"");
 		my $amplitude_img = "/icons/signal_amplitude_".lc($amplitude).".png";
+		if (! -e "$WEBOBS{ROOT_CODE}/$amplitude_img" ) {
+			$amplitude_img = "/icons/signal_amplitude_.png";
+		}
 		$html .= "<td nowrap>$amplitude_texte</td>";
 
 		# --- duree

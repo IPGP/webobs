@@ -759,7 +759,7 @@ if ($date) {
 
 		my $modif = 0;
 
-		if (($userLevel == 2 && ($operateur eq "" || $operateur eq $USERS{$CLIENT}{UID})) || $userLevel == 4 ) {
+		if (($userLevel == 2 && ($operateur eq "" || $operateur eq $USERS{$CLIENT}{UID} || $type_evt eq "AUTO")) || $userLevel == 4 ) {
 			$modif = 1;
 		}
 		# --- mcform: formulaire Main Courante
