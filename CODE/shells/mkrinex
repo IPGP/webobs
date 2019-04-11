@@ -39,7 +39,6 @@ do
 done
 
 wildcard="*.m??"
-#rawfiles=$(ls $tmpdir/$wildcard)
 rawfiles=$(find $tmpdir -name "$wildcard" | sort )
 navfiles="$rawfiles"
 teqcfmt="-lei mdb"
