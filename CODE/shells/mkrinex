@@ -14,7 +14,8 @@
 tmpdir=$(mktemp -d /tmp/mkrinex.XXXXXXXXXX)
 
 zipdir=$1
-zipfiles=$(ls $1/*.zip $1/*.m??)
+#zipfiles=$(ls $1/*.zip $1/*.m??)
+zipfiles=$(find $1 -name "*.zip" -o -name "*.m??" | sort)
 #echo "** zipfiles = $zipfiles"
 
 outdir=$2
@@ -38,7 +39,8 @@ do
 done
 
 wildcard="*.m??"
-rawfiles=$(ls $tmpdir/$wildcard)
+#rawfiles=$(ls $tmpdir/$wildcard)
+rawfiles=$(find $tmpdir -name "$wildcard" | sort )
 navfiles="$rawfiles"
 teqcfmt="-lei mdb"
 # no mdb files... try rinex!
