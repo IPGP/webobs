@@ -439,6 +439,7 @@ echo
 # -----------------------------------------------------------------------------
 REPORT=${DOCROOT}/SETUP.CONF.README
 cp ${RELBASE}/README ${REPORT}
+cp ${RELBASE}/release-notes.md ${DOCROOT}
 if [[ -d ${DOCROOT}/CONF ]]; then
 	# when there already exists a ${DOCROOT}/CONF, show delta with new release:
 	echo "checking for changes to the existing ${DOCROOT}/CONF"
@@ -451,6 +452,7 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	errexit "updating ${DOCROOT}/CONF/WEBOBS.rc version"
 
 	# 2) create the report file 'SETUP.CONF.README'
+	rm -f ${DOCROOT}/SETUP.CONF.*
 	#cp ${RELBASE}/README ${REPORT}
 	#printf "%-100s\n\n" "Upgrade to ${RELREL} on $(date +'%A %F %T %Z')" >>${DOCROOT}/SETUP.CONF.README 
 	#printf "%-100s\n\n" "Upgrade to ${RELREL} on $(date +'%A %F %T %Z')" >>${DOCROOT}/SETUP.CONF.README.diffs
