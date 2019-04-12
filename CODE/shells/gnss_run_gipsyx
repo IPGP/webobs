@@ -15,13 +15,13 @@
 #          Domerapi/WebObs Project
 # Created: 2014-01-29 at BPPTKG, Yogyakarta (Indonesia) for Gipsy-Oasis version
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia) for GipsyX version
-# Updated: 2019-02-25
+# Updated: 2019-04-11
 
 if [ $# -lt 2 ]; then
 	echo "       Syntax: gnss_run_gipsyx CONF DAYS [STATION] [-force]"
 	echo "  Description: runs the automatic GNSS process from raw files to position solution"
 	echo "    Arguments:"
-	echo "           CONF = configuration filename, e.g., /etc/webobs.rc/gnss_run_gipsyx.rc"
+	echo "           CONF = configuration filename, e.g., /etc/webobs.d/gnss_run_gipsyx.rc"
 	echo "           DAYS = number of days to process (from today)"
 	echo "        STATION = station code or station list with double quotes (default = all nodes associated with $GRID)"
 	echo "         -force = forces the process despite existence of final results"
