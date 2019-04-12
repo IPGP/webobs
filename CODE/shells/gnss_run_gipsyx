@@ -88,7 +88,8 @@ for station in $NODES; do
 			# makes Rinex daily file from raw data (see mkrinex script)
 			DIR="$FROM/$sta/$ymd"
 			rinex="$tmpdir/rinex"
-			if [ "$(ls -A $DIR)" ]; then
+			#if [ "$(ls -A $DIR)" ]; then
+			if [ -d "$DIR" ]; then
 				rm -rf $tmpdir/*
 				echo "$PROGDIR/mkrinex $DIR $rinex $TEQCOPTIONS -O.mn \"$sta\" -O.mo \"$sta\" -O.rt \"$receiver\" -O.at \"$antenna\""
 				$PROGDIR/mkrinex $DIR $rinex $TEQCOPTIONS -O.mn \"$sta\" -O.mo \"$sta\" -O.rt \"$receiver\" -O.at \"$antenna\"
