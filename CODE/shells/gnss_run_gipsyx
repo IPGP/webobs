@@ -15,7 +15,7 @@
 #          Domerapi/WebObs Project
 # Created: 2014-01-29 at BPPTKG, Yogyakarta (Indonesia) for Gipsy-Oasis version
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia) for GipsyX version
-# Updated: 2019-04-11
+# Updated: 2019-04-12
 
 if [ $# -lt 2 ]; then
 	echo "       Syntax: gnss_run_gipsyx CONF DAYS [STATION] [-force]"
@@ -70,10 +70,17 @@ for station in $NODES; do
 	sta=${station//[$'\t\r\n ']}
 	echo "*** Processing files from station $sta for the last $DAYS days"
 
+	# looks in node's parameters for possible antenna and receiver (will overwrite rinex header)
 	ID=$(echo "$NODESTABLE" | awk "/$sta/ {print \$1}")
 	receiver=$(grep -h "FID_RECEIVER|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
 	antenna=$(grep -h "FID_ANTENNA|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
-	echo "ID = $ID - receiver = $receiver - antenna = $antenna"
+	echo "ID = $ID - receiver = '$receiver' - antenna = '$antenna'"
+	if [ ! -z "$receiver" ]; then
+		receiver=" -O.rt \"$receiver\""
+	fi
+	if [ ! -z "$antenna" ]; then
+		antenna=" -O.at \"$antenna\""
+	fi
 
 	for ymd in $DAYLIST; do
 		year=${ymd:0:4}
@@ -91,8 +98,8 @@ for station in $NODES; do
 			#if [ "$(ls -A $DIR)" ]; then
 			if [ -d "$DIR" ]; then
 				rm -rf $tmpdir/*
-				echo "$PROGDIR/mkrinex $DIR $rinex $TEQCOPTIONS -O.mn \"$sta\" -O.mo \"$sta\" -O.rt \"$receiver\" -O.at \"$antenna\""
-				$PROGDIR/mkrinex $DIR $rinex $TEQCOPTIONS -O.mn \"$sta\" -O.mo \"$sta\" -O.rt \"$receiver\" -O.at \"$antenna\"
+				echo "$PROGDIR/mkrinex $DIR $rinex $TEQCOPTIONS -O.mn \"$sta\" -O.mo \"$sta\" $receiver $antenna"
+				$PROGDIR/mkrinex $DIR $rinex $TEQCOPTIONS -O.mn \"$sta\" -O.mo \"$sta\" $receiver $antenna
 
 				# makes GipsyX processing
 				tdp="$tmpdir/smoothFinal.tdp"
