@@ -1,5 +1,5 @@
 function [D,P] = readfmtdata_mc3(WO,P,N,F)
-%READFMTDATA_MC subfunction of readfmtdata.m
+%READFMTDATA_MC3 subfunction of readfmtdata.m
 %	
 %	From proc P, node N and options F returns data D.
 %	See READFMTDATA function for details.
@@ -19,7 +19,7 @@ function [D,P] = readfmtdata_mc3(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2019-01-21, in Paris (France)
-%	Updated: 2019-02-01
+%	Updated: 2019-04-22
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -55,9 +55,18 @@ end
 
 % =============================================================================
 % reads MC3 configuration
-MC3 = readcfg(WO,sprintf('/etc/webobs.d/%s.conf',N.FID));
+conf = sprintf('/etc/webobs.d/%s.conf',N.FID);
+if exist(conf,'file')
+	MC3 = readcfg(WO,conf);
+else
+	error('%s: MC3 configuration file {%s:FID} "%s" does not exists.',wofun,N.ID,N.FID);
+end
 MC3TYPES = readcfg(WO,MC3.EVENT_CODES_CONF);
-MC3DURATIONS = readcfg(WO,MC3.DURATIONS_CONF);
+% durations conf is a former file format without '=key' header: it cannot be read with readcfg
+ss = textscan(fileread(MC3.DURATIONS_CONF),'%s%s%n','CommentStyle','#','Delimiter','|');
+for i = 1:length(ss{1})
+	MC3DURATIONS.(ss{1}{i}) = ss{3}(i);
+end
 
 Pvel = field2num(MC3,'P_WAVE_VELOCITY',6);
 VpVs = field2num(MC3,'VP_VS_RATIO',1.75);
@@ -65,14 +74,14 @@ VpVs = field2num(MC3,'VP_VS_RATIO',1.75);
 % =============================================================================
 % reads MC3 for the corresponding years
 fdat = sprintf('%s/mc3.dat',F.ptmp);
-tv=datevec(F.datelim);
+tv = datevec(F.datelim);
 s = wosystem(sprintf('sed ''/^$/d'' %s/{%d..%d}/files/%s??????.txt > %s',MC3.ROOT,tv(:,1),MC3.FILE_PREFIX,fdat),P);
 if s==0
     mc3 = readdatafile(fdat,17,'CommentStyle',''); % reads all events (trash included)
     k = find(cellfun(@str2num,mc3(:,1))>=0); % remove trash entries
     fprintf(' found %d valid mc3 entries, removed %d trash events.\n',size(k,1),size(mc3,1)-size(k,1));
     mc3 = mc3(k,:);
-    fprintf(' found %d mc3 events.\n',sum(cellfun(@str2num,mc3(:,9))));
+    fprintf(' found %d mc3 events (including multiple).\n',sum(cellfun(@str2num,mc3(:,9))));
     Nmc3 = size(mc3,1);
     k=cellfun(@isempty,mc3); % search empty strings and replace by NaN
     k(:,1:5)=false; % only work on columns 6 to 10
@@ -101,7 +110,7 @@ if s==0
     
     for k = 1:length(t)
         % duration in seconds
-        d(k,2) = cellfun(@str2num,mc3(k,6)) * str2double(MC3DURATIONS.(mc3{k,7}).Sec);
+        d(k,2) = cellfun(@str2num,mc3(k,6)) * MC3DURATIONS.(mc3{k,7});
         % hypocentral distance
         if ~isnan(d(k,3))
             dist = Pvel*d(k,3)/(VpVs-1);
@@ -128,8 +137,9 @@ if s==0
 end
 
 % =============================================================================
-% read scevtlog-xml catalog format
+% reads scevtlog-xml catalog format
 % search entries matching scevetlog-xml format
+fprintf('%s: reads associated scevtlog-xml catalog... ',wofun);
 k = find(~cellfun(@isempty,regexp(mc3(:,14),'[0-9]{4}/[0-9]{2}/[0-9]{2}/.+')));
 if ~isempty(k)
     SC3 = F;
@@ -140,21 +150,25 @@ if ~isempty(k)
     Pquake = P;
 %     Pquake.SC3_LISTEVT = strjoin(sc3ids(4,:),',');
     D = readfmtdata_quake(WO,Pquake,N,SC3);
+    x = 0;
     for kk = 1:length(k)
         j = find(~cellfun(@isempty,strfind(D.c(:,1),char(sc3ids(4,kk)))));
         if ~isempty(j)
             d(k(kk),5:16) = D.d(j(1),:);
             c(k(kk),2:7) = D.c(j(1),:);
             e(k(kk)) = e(j(1));
+	    x = x + 1;
         end
     end
     clear D;
     clear SC3;
 end
+fprintf('done (%d events found).\n',x);
 
 % =============================================================================
-% read fdsnws-event catalog format
+% reads fdsnws-event catalog format
 % search entries matching fdsnws-event format
+fprintf('%s: reads associated fdsnws-event catalog... ',wofun);
 k = find(~cellfun(@isempty,regexp(mc3(:,14),'://')));
 if ~isempty(k)
     qmlids = cellfun(@(x)regexp(x,'://','split'),mc3(k,14),'UniformOutput',false);
@@ -171,18 +185,21 @@ if ~isempty(k)
         FDSNWS.raw = {sprintf('%s?',FDSNWS.raw{1}{1})};
         FDSNWS.fmt = 'fdsnws-event';
         D = readfmtdata_quake(WO,P,N,FDSNWS);
-        for kk = 1:length(k)
+        x = 0;
+	for kk = 1:length(k)
 	        j = find(~cellfun(@isempty,strfind(D.c(:,1),char(qmlids(kk,2)))));
 	        if ~isempty(j)
 	            d(k(kk),5:16) = D.d(j(1),:);
 	            c(k(kk),2:7) = D.c(j(1),:);
 	            e(k(kk)) = e(j(1));
+		    x = x + 1;
 	        end
         end
         clear FDSNWS;
         clear D;
     end
 end
+fprintf('done (%d events found).\n',x);
 
 % =============================================================================
 % applies the quality filters (1 = good, 0 = not good)

@@ -64,8 +64,6 @@ PAPER_SIZE|
 PPI|100
 # landscape format for all outputs
 LANDSCAPE|NO
-# maximum number of subplots in a standard page height
-PAGE_MAX_SUBPLOT|8
 # makes a PDF file for each graph (in addition to PNG, EPS and JPG thumbnail)
 PDFOUTPUT|NO
 # main logo file
@@ -102,7 +100,7 @@ SEISMIC_RATE|aki
 # number of consecutive events needed to calculate an event rate point
 SEISMIC_RATE_NUM_EVENTS|50
 # re-sampling interval for seismic rate (ie, resolution of swarm detection)
-SEISMIC_RATE_SAMPLING_INTERVAL|10m
+SEISMIC_RATE_SAMPLING_INTERVAL|10n
 # event swarm detector long term caracteristics time period
 SWARM_DETECTOR_LTA|60d
 # STA/LTA threshold ratio to detect an event swarm

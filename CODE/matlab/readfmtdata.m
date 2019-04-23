@@ -93,7 +93,7 @@ else
 		case {'meteofrance'}
 			D(n) = readfmtdata_meteofrance(WO,P,N(n),F);
 
-        case {'mc3'}
+		case {'mc3'}
 			D(n) = readfmtdata_mc3(WO,P,N(n),F);
 
 		otherwise

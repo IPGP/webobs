@@ -33,15 +33,15 @@ function DOUT=mc3stats(varargin)
 %           EVENTCOMMENT_EXCLUDED_REGEXP|
 %           SEISMIC_RATE|
 %           SEISMIC_RATE_NUM_EVENTS|50
-%           SEISMIC_RATE_SAMPLING_INTERVAL|10m
+%           SEISMIC_RATE_SAMPLING_INTERVAL|10n
 %           SWARM_DETECTOR_LTA|60d
 %           SWARM_DETECTOR_THRESH|2.5
 %           SWARM_MIN_DURATION|12h
 %
 %
-%	Authors: J.-M. Saurel / WEBOBS, IPGP
+%	Authors: J.-M. Saurel and F. Beauducel / WEBOBS, IPGP
 %	Created: 2019-01-31
-%	Updated:
+%	Updated: 2019-04-22
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -74,10 +74,17 @@ e = e(k,:);
 % at this stage, only one Node
 n = 1;
 
-% ====================================================================================================
-% --- Seismic rate calculation, swarm detection and statistics
+% PROC's parameters
 n_evts = field2num(P,'SEISMIC_RATE_NUM_EVENTS',50);
 rate_type = field2str(P,'SEISMIC_RATE','classic'); 
+samp_int = field2num(P,'SEISMIC_RATE_SAMPLING_INTERVAL',10/1440);
+detect_LTA = field2num(P,'SWARM_DETECTOR_LTA',60);
+swarm_min_dur = field2num(P,'SWARM_MIN_DURATION',12/24);
+thresh = field2num(P,'SWARM_DETECTOR_THRESH',2.5);
+
+
+% ====================================================================================================
+% --- Seismic rate calculation, swarm detection and statistics
 
 rt = nan(1+length(t)-n_evts,1);
 t_rt = nan(1+length(t)-n_evts,1);
@@ -99,47 +106,15 @@ end
 
 
 % --- Seismic rate interpolation
-if isfield(P,'SEISMIC_RATE_SAMPLING_INTERVAL')
-    SR.TIMESCALELIST = P.SEISMIC_RATE_SAMPLING_INTERVAL;
-    SR.NOW = now;
-    SR = timescales(SR);
-    samp_int = SR.DATELIST{1}(2) - SR.DATELIST{1}(1); 
-    clear SR;
-else
-    samp_int = 10/1440;
-end
-
-t_rate = floor(min([P.DATELIST{:}])):samp_int:ceil(P.NOW);
+%[FBwas:] t_rate = floor(min([P.DATELIST{:}])):samp_int:ceil(P.NOW);
+t_rate = floor(P.DATELIM(1)):samp_int:ceil(P.DATELIM(2));
 rate = interp1(t_rt,rt,t_rate);
 k = find(~isnan(rate));
 rate(isnan(rate(1:k(1)))) = rate(k(1));
 
 
-% --- LTA/STA swarm detector on seismic rate
-if isfield(P,'SWARM_DETECTOR_LTA')
-    SW.TIMESCALELIST = P.SWARM_DETECTOR_LTA;
-    SW.NOW = now;
-    SW = timescales(SW);
-    detect_LTA = SW.DATELIST{1}(2) - SW.DATELIST{1}(1); 
-    clear SW;
-else
-    detect_LTA = 60;
-end
-
-if isfield(P,'SWARM_MIN_DURATION')
-    SW.TIMESCALELIST = P.SWARM_MIN_DURATION;
-    SW.NOW = now;
-    SW = timescales(SW);
-    swarm_min_dur = SW.DATELIST{1}(2) - SW.DATELIST{1}(1); 
-    clear SW;
-else
-    swarm_min_dur = 12/24;
-end
-
 % LtaFilt initialization
 C4 = 1-exp(-2*pi*samp_int/detect_LTA);
-% EventThresh
-thresh = field2num(P,'SWARM_DETECTOR_THRESH',2.5);
 
 rate_lta = zeros(1,length(rate));
 % If first rate data is already a swarm value, initialize lta to a low value
@@ -246,6 +221,7 @@ ylim = [10.^floor(log10(min(rt))) 10.^ceil(log10(max(rt)))];
 swarms_y(1:2,:) = ylim(1);
 swarms_y(3:4,:) = ylim(2);
 
+
 % ====================================================================================================
 % Make the graphs
 
@@ -275,35 +251,36 @@ for r = 1:length(P.GTABLE)
     	
     	figure, clf, orient tall
     	
-    	subplot(2,1,1); extaxes
-        fill(swarms_x,swarms_y,'r')
+    	subplot(4,1,1:2); extaxes
+        fill(swarms_x,swarms_y,'r','FaceColor',[1,.5,.5],'EdgeColor','none')
         hold on
         plot(t_rate,rate,'k','LineWidth',P.GTABLE(r).LINEWIDTH);
-        plot(t_rate,rate_lta.*thresh,'b','LineWidth',P.GTABLE(r).LINEWIDTH);
+        plot(t_rate,rate_lta.*thresh,'Color',[.1,.3,.6],'LineWidth',P.GTABLE(r).LINEWIDTH);
         hold off
         set(gca,'YScale','log');
         set(gca,'XLim',tlim,'YLim',ylim,'FontSize',8);
         datetick2('x',P.GTABLE(r).DATESTR);
         ylabel('Seismic rate (evts/day)');
 
-        subplot(2,1,2); extaxes
+        subplot(4,1,3:4); extaxes
         kk = find(~isnan(energy_MCk));
-        plot(tk(kk),cumsum(energy_MCk(kk)),'r','LineWidth',P.GTABLE(r).LINEWIDTH);
+        plot(tk(kk),cumsum(energy_MCk(kk)),'Color',[.8,0,0],'LineWidth',P.GTABLE(r).LINEWIDTH);
         hold on
         kk = find(~isnan(energy_catalogk));
-        plot(tk(kk),cumsum(energy_catalogk(kk)),'k','LineWidth',P.GTABLE(r).LINEWIDTH);
+        plot(tk(kk),cumsum(energy_catalogk(kk)),'Color',[.3,.6,0],'LineWidth',P.GTABLE(r).LINEWIDTH);
         hold off
         set(gca,'YScale','log');
         set(gca,'XLim',tlim,'FontSize',8);
         datetick2('x',P.GTABLE(r).DATESTR);
-        xlabel('date');
         ylabel('Cumulated energy (MJ)');
         legend('MainCourante','catalog');
         legend('boxoff');
         legend('location','southeast');
+	tlabel(tlim,P.GTABLE(r).TZ)
+	tlabel(tlim,P.GTABLE(r).TZ)
 
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
-		close
+	mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+	close
 
         E.t = sw_dt(:,1);
         E.d = [datevec(sw_dt(:,2)),sw_stats];

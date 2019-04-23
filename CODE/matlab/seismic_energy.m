@@ -14,17 +14,17 @@ function y=seismic_energy(x,law)
 %
 %   Author: J.M. Saurel, WEBOBS/IPGP
 %   Created: 2019-01-36, Paris, France
-%   Updated:
+%   Updated: 2019-04-22
 
 if nargin < 2
-    law = 'kanamori';
+	law = 'kanamori';
 end
 
 switch lower(law)
 	case 'kanamori'
-        y = 10.^(4.8+1.5.*x);
+		y = 10.^(4.8+1.5.*x);
 	case 'feuillard80'
-        y = 10.^(2.4+2.14.*x-0.054.*x.^2);
+		y = 10.^(2.4+2.14.*x-0.054.*x.^2);
 	otherwise
 		error('unknown law %s.',law);
 end

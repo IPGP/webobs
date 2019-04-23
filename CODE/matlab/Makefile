@@ -6,7 +6,7 @@ MCCmac := /Applications/MATLAB_R2011b.app/bin/mcc
 OPT32 := -glnx86
 SRC := .
 
-allprocs: genplot gnss meteo waters afm jerk hypomap tremblemaps extenso naqssohplot music3c tilt volcgas raingauge helicorder rsam sara
+allprocs: genplot gnss meteo waters afm jerk hypomap tremblemaps extenso naqssohplot music3c tilt volcgas raingauge helicorder rsam sara mc3stats
 allmaps: locastat gridmaps gnss hypomap tremblemaps extenso tilt rsam
 all: locastat gridmaps sefran3 allprocs clean
 
