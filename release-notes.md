@@ -6,7 +6,7 @@ This document contains install/upgrade summary and specific instructions for use
 The lastest release has many improvements, new features and bug fixes.
 **Upgrade is recommended for all WebObs administrators**.
 
-Sections with `!!` prefix must be carefully read and followed in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
+Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
 
 ## v2.1.2 (April, 2019)
@@ -38,10 +38,12 @@ rights to the associated grid), to display the grid or the node's page.
 
 ### All procs
 
-1. Fix a bug making any proc crashes when there was only 1 single data
+1. PROC page now offers a link to edit events file(s) if defined in configuration. If you experience error like *permission denied* you might have to change the file rights for Apache user.
+
+2. Fix a bug making any proc crashes when there was only 1 single data
 sample in a timescale.
 
-2. NODE alias that contains an undercore character is now written 
+3. NODE alias that contains an undercore character is now written 
 normally in the graphs title or label (no TeX interpretation as 
 subscribe position for the next character). TeX formatting is still 
 possible in the graph title, any channel, NODE or PROC names. To display an underscore character in these strings, you must escape it (`\_`).
@@ -61,6 +63,9 @@ In the MC table, a new *View* icon indicates now that user can only view an even
 	of the reserved type **AUTO**. They are still NOT allowed to modify other
 	types of event, excepted if they own the event itself.
 
+### New superproc mc3stats
+
+This new alpha-version superproc reads seismic catologs from Main Courante and plot some elaborated statistics. The PROC must be associated to a catalog NODE with FID as MC3_NAME. Undocumented yet.
 
 ### Superproc gnss
 
