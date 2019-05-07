@@ -439,16 +439,15 @@ unset value won't filter any event.
 
 ###Gazette
 
-In order to limit the long list of users (that must includes unvalid users)
-when creating a new event, new key in Gazette.rc:
+In order to limit the long list of users (that might include unvalid users)
+when creating a new event, a new key in Gazette.rc:
 
 ```
-ACTIVE_GID|DUTY
+ACTIVE_GID|+DUTY
 ```	
-will display only users in the +DUTY group.
+will display only users in the +DUTY group (valid or not).
 
-`!!`	Former behavior is still active: without `ACTIVE_GID` key, only the active
-users will be listed.
+`!!`	To keep the former behavior (i.e., display only the valid users), you must comment or empty this key.
 
 
 -----------------------------------------------
