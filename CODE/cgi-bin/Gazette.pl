@@ -248,13 +248,15 @@ print "<body>\n";
 #DL-was:my %USERNAMES; $USERNAMES{$USERS{$_}{UID}}=$USERS{$_}{FULLNAME}  foreach (keys(%USERS)) ;
 #DL-was:my $selusers = ""; map { $selusers .= "<option value=\"$_\">$USERNAMES{$_}</option>" } sort keys(%USERNAMES);
 # build valid and invalid user-names arrays
-my %VUSERNAMES; my %IUSERNAMES;
+my %VUSERNAMES;
+my %IUSERNAMES;
 foreach (keys(%USERS)) {
 	my @grp = WebObs::Users::userListGroup($_);
-	if ($USERS{$_}{VALIDITY} eq "Y" && ($GAZETTE{ACTIVE_GID} eq "" || grep {$_ eq $GAZETTE{ACTIVE_GID}} @grp)) {
-		$VUSERNAMES{$USERS{$_}{UID}}=$USERS{$_}{FULLNAME}
+	if ($GAZETTE{ACTIVE_GID} ne "" && (grep {$_ eq $GAZETTE{ACTIVE_GID}} @grp) 
+		|| ($GAZETTE{ACTIVE_GID} eq "" && $USERS{$_}{VALIDITY} eq "Y")) {
+		$VUSERNAMES{$USERS{$_}{UID}} = $USERS{$_}{FULLNAME}
 	} else {
-		$IUSERNAMES{$USERS{$_}{UID}}=$USERS{$_}{FULLNAME}
+		$IUSERNAMES{$USERS{$_}{UID}} = $USERS{$_}{FULLNAME}
 	}
 }
 #DL-was:my $selusers = ""; map { $selusers .= "<option value=\"$_\">$VUSERNAMES{$_}</option>" } sort keys(%VUSERNAMES);
