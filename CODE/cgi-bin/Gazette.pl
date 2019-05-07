@@ -251,7 +251,7 @@ print "<body>\n";
 my %VUSERNAMES; my %IUSERNAMES;
 foreach (keys(%USERS)) {
 	my @grp = WebObs::Users::userListGroup($_);
-	if ($USERS{$_}{VALIDITY} eq "Y" && (!defined($GAZETTE{ACTIVE_GID}) || grep(@grp,$GAZETTE{ACTIVE_GID}))) {
+	if ($USERS{$_}{VALIDITY} eq "Y" && ($GAZETTE{ACTIVE_GID} eq "" || grep {$_ eq $GAZETTE{ACTIVE_GID}} @grp)) {
 		$VUSERNAMES{$USERS{$_}{UID}}=$USERS{$_}{FULLNAME}
 	} else {
 		$IUSERNAMES{$USERS{$_}{UID}}=$USERS{$_}{FULLNAME}
