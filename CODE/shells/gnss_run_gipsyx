@@ -15,7 +15,7 @@
 #          Domerapi/WebObs Project
 # Created: 2014-01-29 at BPPTKG, Yogyakarta (Indonesia) for Gipsy-Oasis version
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia) for GipsyX version
-# Updated: 2019-04-12
+# Updated: 2019-05-09
 
 if [ $# -lt 2 ]; then
 	echo "       Syntax: gnss_run_gipsyx CONF DAYS [STATION] [-force]"
@@ -45,8 +45,8 @@ ORBITS=( "flinn" "ql" "ultra" )
 
 # gets the nodes parameters from WebObs
 PROC="/etc/webobs.d/GRIDS2NODES/$GRID"
-NODES=$(grep -h ".*FID|" $PROC.*/*.cnf|sed -E "s/.*FID\|//")
-NODESTABLE=$(grep -H "^.*FID|" $PROC.*/*.cnf|sed -E "s/.*\///"|sed -E "s/\.cnf:.*FID\|/\ /")
+NODES=$(grep -h "^$GRID\.FID|" $PROC.*/*.cnf|sed -E "s/.*FID\|//")
+NODESTABLE=$(grep -H "^$GRID\.FID|" $PROC.*/*.cnf|sed -E "s/.*\///"|sed -E "s/\.cnf:.*FID\|/\ /")
 
 DAYS=$2
 DAYLIST=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago" +%Y/%m/%d;done)
@@ -72,8 +72,8 @@ for station in $NODES; do
 
 	# looks in node's parameters for possible antenna and receiver (will overwrite rinex header)
 	ID=$(echo "$NODESTABLE" | awk "/$sta/ {print \$1}")
-	receiver=$(grep -h "FID_RECEIVER|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
-	antenna=$(grep -h "FID_ANTENNA|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
+	receiver=$(grep -h "^$GRID\.FID_RECEIVER|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
+	antenna=$(grep -h "^$GRID\.FID_ANTENNA|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
 	echo "ID = $ID - receiver = '$receiver' - antenna = '$antenna'"
 	if [ ! -z "$receiver" ]; then
 		receiver=" -O.rt \"$receiver\""
