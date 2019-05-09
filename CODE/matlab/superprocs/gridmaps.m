@@ -23,7 +23,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2017-08-02
+%   Updated: 2019-05-09
 
 
 WO = readcfg;
@@ -210,7 +210,9 @@ for g = 1:length(grids)
 		else
 			pimg = sprintf('%s/%s/%s',outd,grids{g},WO.PATH_OUTG_MAPS);
 		end
-		wosystem(sprintf('mkdir -p %s; rm -f %s/*',pimg,pimg));
+
+		wosystem(sprintf('mkdir -p %s',pimg));
+		delete(sprintf('%s/*',pimg));
 
 		geo = NN(g).geo;
 		ka = NN(g).ka;
@@ -336,7 +338,7 @@ for g = 1:length(grids)
 				xylim = [get(gca,'XLim'),get(gca,'YLim')];
 
 				% copyright
-				copyright = sprintf('{\\bf\\copyright %s} - {%s} - %s / %s',WO.COPYRIGHT,grids{g},demcopyright,datestr(now,0));
+				copyright = sprintf('{\\bf\\copyright %s} - {%s} - %s / %s',WO.COPYRIGHT,strrep(grids{g},'_','\_'),demcopyright,datestr(now,0));
 				axes('Position',[pos(1),0,pos(3),pos(2)])
 				axis([0,1,0,1]); axis off
 				text(.5,0,copyright,'Color',.4*[1,1,1],'FontSize',9,'HorizontalAlignment','center','VerticalAlignment','bottom')
