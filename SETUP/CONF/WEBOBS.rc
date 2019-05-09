@@ -80,8 +80,11 @@ LANGUAGE_LIST|en_US:English\|fr_FR:Fran&ccedil;ais
 LIEU_VILLE|Paris
 LIEU_DEPARTEMENT|Paris
 TERMSOFUSE|${ROOT_DATA}/WEB/terms.txt
+
+# Grids and nodes events options
 EVENTS_TO_GAZETTE|ALL
 EVENTS_GAZETTE_DELETE|YES
+EVENTS_ACTIVE_GID|+ADMIN,+DUTY
 
 # Uncomment this line to disable MultiMarkDown facilities for all 'wiki' contents
 #WIKI_MMD|NO
