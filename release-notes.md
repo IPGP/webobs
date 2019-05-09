@@ -9,7 +9,7 @@ The lastest release has many improvements, new features and bug fixes.
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
 
-## v2.1.2 (April, 2019)
+## v2.1.2a (May, 2019)
 
 ### Node's events
 
@@ -448,6 +448,8 @@ ACTIVE_GID|+DUTY
 will display only users in the +DUTY group (valid or not).
 
 `!!`	To keep the former behavior (i.e., display only the valid users), you must comment or empty this key.
+
+`!!`  NOTE: This functionality has been fixed in v2.1.2a.
 
 
 -----------------------------------------------

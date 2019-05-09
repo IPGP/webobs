@@ -116,6 +116,9 @@ function openPopup(el,id) {
 			form.STARTTIME.value = d.STARTTIME;
 			form.ENDDATE.value = d.ENDDATE;
 			form.ENDTIME.value = d.ENDTIME;
+			form.OTHERS.innerHTML =  d.OTHERS; form.OTHERS.value = form.OTHERS.innerHTML;
+			form.PLACE.innerHTML = d.PLACE; form.PLACE.value = form.PLACE.innerHTML;
+			form.SUBJECT.innerHTML = d.SUBJECT; form.SUBJECT.value = form.SUBJECT.innerHTML;
 			$("option",form.CATEGORY).prop("selected", false);
 			$('option[value='+d.CATEGORY+']',form.CATEGORY).prop("selected",true);
 			$.each(gazette_usrI, function(val,text) {$('#overlay_form_article #UID').append( $('<option></option>').val(val).html("<i>"+text+"</i>") ) });
@@ -123,9 +126,6 @@ function openPopup(el,id) {
 			//d.UID.split('+').forEach(function(item) { $('option[value='+item+']',form.UID).prop("selected",true)});
 			d.UID.split('+').forEach(function(item) { $('option[value="'+item+'"]',form.UID).prop("selected",true)});
 			$('#overlay_form_article #UID option:selected').prependTo('#overlay_form_article #UID'); //move all selected to top of list
-			form.OTHERS.innerHTML =  d.OTHERS; form.OTHERS.value = form.OTHERS.innerHTML;
-			form.PLACE.innerHTML  =  d.PLACE; form.PLACE.value = form.PLACE.innerHTML;
-			form.SUBJECT.innerHTML = d.SUBJECT; form.SUBJECT.value = form.SUBJECT.innerHTML;
 		});
 		$('#overlay_form_article #sendbutton').before('<input type="button" id="delbutton" style="margin-right: 40px;" value="'+gazette_remove_text+'" onclick="delPopup('+id+'); return false;">');
 	} else { // creating a new article
