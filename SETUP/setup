@@ -474,6 +474,7 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	${RELBASE}/SETUP/cmpconf ${RELREL} ${WRITE} >> ${REPORT}
 	printf "\n" >>${REPORT}
 	if [[ ! -z ${WRITE} && -s ${WRITE} && -t 1 ]]; then
+
 		oIFS=${IFS}; IFS=$'\n'
 		CONFUP=($(cat ${WRITE}))
 		IFS=${oIFS}
@@ -740,9 +741,9 @@ fi
 # (sefran output/data directory is one example of such structure)
 # -----------------------------------------------------------------------------
 if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other than DocumentRoot [y/N] ? ") == true ]]; then
-	SEFRANROOT=$(readkbn "Enter SEFRAN output+data directory: ")
+	SEFRANROOT=$(readkbn "Enter SEFRAN output+data directory (default will be /home/${USERID}/sefran): ")
 	if [[ "${SEFRANROOT}" == "" && ! -z ${USERID} ]]; then 
-		if [[ -f "/home/${USERID}" ]]; then SEFRANROOT="/home/${USERID}/sefranroot"; fi
+		if [[ -d "/home/${USERID}" ]]; then SEFRANROOT="/home/${USERID}/sefran"; fi
 	fi
 	if [[ "${SEFRANROOT}" != "" ]]; then
 		echo "making sure ${SEFRANROOT} is created"
@@ -764,9 +765,9 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other
 	fi
 	echo
 
-	RAWDATA=$(readkbn "Enter RAW DATA directory: ")
+	RAWDATA=$(readkbn "Enter RAW DATA directory (default will be /home/${USERID}/rawdata): ")
 	if [[ "${RAWDATA}" == "" && ! -z ${USERID} ]]; then
-		if [[ -f "/home/${USERID}" ]]; then RAWDATA="/home/${USERID}/rawdata"; fi
+		if [[ -d "/home/${USERID}" ]]; then RAWDATA="/home/${USERID}/rawdata"; fi
 	fi
 	if [[ "${RAWDATA}" != "" ]]; then
 		echo "making sure ${RAWDATA} is created"
@@ -826,6 +827,12 @@ fi
 if [[ -z  ${USERID} || -z ${USERGID} || -z ${USER_APACHE[0]} ]]; then
 	echo "can't even try changing owners, groups or mods because of missing uid|gid|apacheid"
 else
+	if [[ ! -z ${WRITE} ]]; then
+		MENUS=${DOCROOT}/CONF/MENUS
+		chown -R ${USERID}:${USERGID} ${MENUS}
+		chmod -R 775 ${MENUS}
+		chmod -R g+s ${MENUS}
+	fi
 	if [[ ${SETUPTYPE} == "install" || $(confirm "Reassess groups, owners and mods [y/N] ? ") == true ]]; then
 		owner="chown -R ${USERID}:${USERGID} ${DOCROOT}/CONF ${DOCROOT}/LOGS ${DOCROOT}/DATA ${DOCROOT}/OUTG ${DOCROOT}/OUTR ${SEFRANROOT}"
 		cmode="chmod -R 775 ${DOCROOT}/CONF ${DOCROOT}/LOGS ${DOCROOT}/DATA ${DOCROOT}/OUTG ${DOCROOT}/OUTR ${SEFRANROOT}"
