@@ -107,3 +107,19 @@ for s in $C; do
 		mydiff $TPLATEDIR/../CODE/tplates/VIEW.DEFAULT $s $RELREL $WRITE
 	fi
 done
+
+# group/user menus
+>&2 echo "checking group/user menus..."
+if [[ ! -z "$WRITE" ]]; then
+	mkdir -p $CONFDIR/MENUS
+fi
+for m in {+ADMIN,+DUTY,+OBSERVER,+VISITOR}; do
+	if [[ ! -f "$CONFDIR/MENUS/$m" ]]; then
+		if [[ ! -z "$WRITE" ]]; then
+			cp "$TPLATEDIR/CONF/MENUS/$m" "$CONFDIR/MENUS/"
+			>&2 echo " default group menu $CONFDIR/MENUS/$m has been created."
+		else
+			>&2 echo " inexisting group menu $CONFDIR/MENUS/$m ..."
+		fi
+	fi
+done

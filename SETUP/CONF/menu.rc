@@ -1,10 +1,6 @@
 =key|value
 
 NAVIGATION|$WEBOBS{ROOT_CONF}/menunav.html
-NAV_ADMIN|$WEBOBS{ROOT_CONF}/MENUS/+ADMIN
-NAV_DUTY|$WEBOBS{ROOT_CONF}/MENUS/+DUTY
-NAV_OBSERVER|$WEBOBS{ROOT_CONF}/MENUS/+OBSERVER
-NAV_VISITOR|$WEBOBS{ROOT_CONF}/MENUS/+VISITOR
 # add below any sub-menu (group or user) here to be able to edit it from
 # web interface using /cgi-bin/xedit.pl?fs=FILE_MENU(NAV_*)
 
