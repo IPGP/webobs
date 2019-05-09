@@ -6,13 +6,18 @@ CATEGORIES_FILE|$WEBOBS{ROOT_CONF}/Gazette_categories.conf
 BANG|2001
 TITLE|Gazette 
 FUTURE_YEARS|2
-ACTIVE_GID|+DUTY
+
+# defines group(s) of "active" users available for new events
+ACTIVE_GID|+ADMIN,+DUTY
+
 EMPTY_SELECTION_MSG|No match found
 CALENDAR_WEEKNUMBER|VERTICAL
 SHOW_BYDATE_ONGOING|TEXT
 CALENDAR_TRUNCLENGTH|25
   
+# DEFAULT_VIEW values: calendar, datelist or categorylist
 DEFAULT_VIEW|calendar
+# DEFAULT_DATE values: today, tomorrow, yesterday, allyear, thisweek
 DEFAULT_DATE|thisweek
+# see CATEGORIES_FILE for available keys
 DEFAULT_CATEGORY|
-

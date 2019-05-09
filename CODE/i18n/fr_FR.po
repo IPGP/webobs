@@ -1234,11 +1234,11 @@ msgstr "Jusqu'&agrave; aujourd'hui"
 msgid "Shortcuts"
 msgstr "Raccourcis"
 
-msgid "choose a preset period"
-msgstr "choisir une p&eacute;riode"
+msgid "or choose a preset period"
+msgstr "ou choisir une p&eacute;riode"
 
-msgid "Create Article"
-msgstr "Cr&eacute;er un article"
+msgid "Create New Event"
+msgstr "Nouvel Événement"
 
 msgid "Gazette Today"
 msgstr "Gazette du Jour"

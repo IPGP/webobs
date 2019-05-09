@@ -252,8 +252,8 @@ my %VUSERNAMES;
 my %IUSERNAMES;
 foreach (keys(%USERS)) {
 	my @grp = WebObs::Users::userListGroup($_);
-	if ($GAZETTE{ACTIVE_GID} ne "" && (grep {$_ eq $GAZETTE{ACTIVE_GID}} @grp) 
-		|| ($GAZETTE{ACTIVE_GID} eq "" && $USERS{$_}{VALIDITY} eq "Y")) {
+	my %gid = map { $_ => 1 } split(/,/,$GAZETTE{ACTIVE_GID});
+	if ((%gid && grep { $gid{$_} } @grp) || (!%gid && $USERS{$_}{VALIDITY} eq "Y")) {
 		$VUSERNAMES{$USERS{$_}{UID}} = $USERS{$_}{FULLNAME}
 	} else {
 		$IUSERNAMES{$USERS{$_}{UID}} = $USERS{$_}{FULLNAME}
@@ -297,8 +297,8 @@ FIN
 # ---- JavaScript inits 
 my $jscat   = "{".join(',',map { " \"$_\": \"$QCAT{$_}\"" } keys(%QCAT))."}";
 #DL-was:my $jsnames = "{".join(',',map { " \"$_\": \"$USERNAMES{$_}\"" } keys(%USERNAMES))."}";
-my $jsnames  = "{".join(',',map { " \"$_\": \"$VUSERNAMES{$_}\"" } sort keys(%VUSERNAMES))."}";
-my $jsnamesI = "{".join(',',map { " \"$_\": \"$IUSERNAMES{$_}\"" } sort keys(%IUSERNAMES))."}";
+my $jsnames  = "{".join(',',map { " \"$_\": \"$VUSERNAMES{$_} ($_)\"" } sort keys(%VUSERNAMES))."}";
+my $jsnamesI = "{".join(',',map { " \"$_\": \"$IUSERNAMES{$_} ($_)\"" } sort keys(%IUSERNAMES))."}";
 my $clickcreate = ($QryParm->{create} =~ /yes/i) ? "\$('input#create').click();" : "";
 
 print <<"FIN";
@@ -326,12 +326,12 @@ print "<A NAME=\"MYTOP\"></A>";
 print "<div id=\"banner\" class=\"banner\">\n";
 	print "<table width=\"100%\">";
 	print "<tr>";
-		print "<td style=\"width: 25%; border: none; text-align: left; vertical-align: top\">";
+		print "<td style=\"width:15%; border: none; text-align: right; vertical-align: middle\">";
 		print "<FORM name=\"gztform\" id=\"gztform\" action=\"/cgi-bin/Gazette.pl\" method=\"get\">";
-		print "$__{'Date(s)'}: <input class=\"wodp\" size=\"21\" value=\"$QryParm->{'gdate'}\" name=\"gdate\" id=\"gdate\"/>";
+		print "<label style=\"width:80px;font-weight:bold\" for=\"gdate\">$__{'Date(s)'}:</label> <input class=\"wodp\" size=\"25\" value=\"$QryParm->{'gdate'}\" name=\"gdate\" id=\"gdate\"/></p>";
 		# following 'shortcuts' values MUST MATCH those used/processed in Gazette.js,function shortcuts()
-		print "<br>$__{'Shortcuts'}:  <select id=\"gcr\" name=\"gcr\" size=\"1\" onchange=\"shortcuts(this.value,'input#gdate');\">";
-			print "<option style=\"font-style: italic;\" value=\"dummy\" selected>$__{'choose a preset period'}</option>";
+		print "<p><select id=\"gcr\" name=\"gcr\" size=\"1\" onchange=\"shortcuts(this.value,'input#gdate');\">";
+			print "<option style=\"font-style: italic;\" value=\"dummy\" selected> - $__{'or choose a preset period'} - </option>";
 			print "<option value=\"today\">$__{'Today'}</option>";
 			print "<option value=\"tomorrow\">$__{'Tomorrow'}</option>";
 			print "<option value=\"yesterday\">$__{'Yesterday'}</option>";
@@ -339,10 +339,9 @@ print "<div id=\"banner\" class=\"banner\">\n";
 			print "<option value=\"all\">$__{'All'}</option>";
 			print "<option value=\"toEnd\">$__{'From today'}</option>";
 			print "<option value=\"fromStart\">$__{'Until today'}</option>";
-		print "</select>\n";
-
-		print "<td style=\"width: 25%; border: none; text-align: left; vertical-align: top\">";
-		print "$__{'Presentation'}:<select id=\"gview\" name=\"gview\" size=\"1\" >";
+		print "</select></p></td>\n";
+		print "<td style=\"border: none; text-align: center; vertical-align: middle\">";
+		print "<label style=\"width:80px;font-weight:bold\" for=\"gview\">$__{'Presentation'}:</label> <select id=\"gview\" name=\"gview\" size=\"1\" >";
 		for my $i ('calendar','dateList','categoryList','ical') { # only these and ordered my way, not keys(%prez) perl's way
     		if ("$i" eq "$QryParm->{'gview'}") { print "<option selected value=$i>$prez{$i}</option>"; } 
     		else                              { print "<option value=$i>$prez{$i}</option>"; }
@@ -353,22 +352,22 @@ print "<div id=\"banner\" class=\"banner\">\n";
 			if ("stats" eq "$QryParm->{'gview'}") { print "<option selected value=stats>$prez{stats}</option>"; } 
 			else                                { print "<option value='stats'>$prez{stats}</option>"; }
 		}
-		print "</select>\n";
-		print "<br>";
-		print "$__{'Category'}:<select id=\"gcategory\" name=\"gcategory\" size=\"1\">";
+		print "</select></td>\n";
+		print "<td style=\"border: none; text-align: center; vertical-align: middle\">";
+		print "<label style=\"width:80px;font-weight:bold\" for=\"gcategory\">$__{'Category'}:</label> <select id=\"gcategory\" name=\"gcategory\" size=\"1\">";
 		my $selected='';
 		for (sort keys %GAZETTECAT) {
 			$selected = ("$_" eq "$QryParm->{'gcategory'}" ? "selected" : ""); 
 			print "<option $selected value=$_>$GAZETTECAT{$_}{Name}</option>";
 		}
-		print "</select>\n";
-		print "<br>";
-		print "$__{'Filter'}:<input id=\"gfilter\" name=\"gfilter\" value=\"$QryParm->{'gfilter'}\">";
+		print "</select></td>\n";
+		print "<td style=\"border: none; text-align: center; vertical-align: middle\">";
+		print "<label style=\"width:80px;font-weight:bold\" for=\"gfilter\">$__{'Filter'}:</label> <input id=\"gfilter\" name=\"gfilter\" size=\"30\" value=\"$QryParm->{'gfilter'}\">";
 		print "</FORM>\n";
 
 		if ($createOK) {
 			print "<td style=\"border: none; text-align: right; vertical-align: center\">";
-			print "<input id=\"create\" type=\"button\" value=\"$__{'Create Article'}\" onclick=\"openPopup(this,-1); return false;\" />";
+			print "<input id=\"create\" type=\"button\" style=\"font-weight:bold\" value=\"$__{'Create New Event'}\" onclick=\"openPopup(this,-1); return false;\" />";
 		}
 
 	print "</table>";

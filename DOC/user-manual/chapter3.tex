@@ -31,6 +31,12 @@ The \wo{GAZETTE} is defined by a configuration file,
 whose location is pointed to by the main WebObs configuration variable
 GAZETTE\_CONF.
 
+\begin{lstlisting}[title=\wofile{WEBOBS.rc} (excerpt)]
+GAZETTE_CONF|${ROOT_CONF}/Gazette.rc
+\end{lstlisting}
+
+\lstinputlisting[title=\wofile{Gazette.rc}]{../../SETUP/CONF/Gazette.rc}
+
 Among other parameters, GAZETTE\_CONF file points to the Gazette DataBase (DB\_NAME)
 and the Gazette categories definitions (CATEGORIES\_FILE).
 
@@ -39,11 +45,6 @@ category, plus one generic resource representing all categories. These resources
 belong to the authorization 'misc' type (authmisc table), and are identified as  
 "GAZETTE\textit{categoryKey}"  (eg. GAZETTEMissions, GAZETTEField). 
 
-\begin{lstlisting}[title=\wofile{WEBOBS.rc} (excerpt)]
-GAZETTE_CONF|${ROOT_CONF}/Gazette.rc
-\end{lstlisting}
-
-\lstinputlisting[title=\wofile{Gazette.rc}]{../../SETUP/CONF/Gazette.rc}
 
 \lstinputlisting[title=\wofile{Gazette\_categories.conf}]{../../SETUP/CONF/Gazette_categories.conf}
 
@@ -79,7 +80,8 @@ be displayed:
 	\end{itemize}
 \end{itemize}
 
-The banner also displays a 'Create Article' button to trigger the edition of a new article.
+The banner also displays a 'Create Article' button to trigger the edition of a new article. The form allows to edit the fields for the new event. Note the list of author names is limited to valid users (see section \ref{usertable}) or to any users in the group defined by \wokey{ACTIVE\_GID} configuration key.
+
 
 Note: 'Event' category is not editable through html interface.
 

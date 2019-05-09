@@ -52,6 +52,7 @@ the USERS TABLE further defines a USER with the following information:
 \item   FULLNAME, the user's name
 \item   UID, a short identification string, usually the user's name initials, to be used for access-rights and other functionnal needs
 \item   EMAIL, the email address (somebody@somewhere) used by the \webobs POSTBOARD system,
+\item   VALIDITY, to determine if the user is able to access some resource or not.
 \end{itemize}
 
 Two special UIDs are reserved for system use: 
@@ -74,7 +75,7 @@ The fully qualified name of a \webobs RESOURCE is \textbf{resourceType.resourceN
 There are five (5) resourceType tables: \textbf{authviews}, \textbf{authprocs}, \textbf{authforms}, \textbf{authwikis} corresponding to the base \webobs objects 
 and \textbf{authmisc} for any additional, unclassified, resourceNames definitions. They are already populated with resourceNames related to \webobs built-in tools and applications.
 
-The special resourceName "\textbf{*}" stands for "all resourceNames of this resourceType".
+The special resourceName '\textbf{*}' stands for ``all resourceNames of this resourceType''.
 
 resourceNames are strings, defined and documented by the developers of the \webobs tools or applications.
 
@@ -94,6 +95,7 @@ SQL_TABLE_AUTHFORMS|authforms
 SQL_TABLE_AUTHWIKIS|authwikis
 SQL_TABLE_AUTHMISC|authmisc
 SQL_TABLE_GROUPS|groups
+SQL_DB_USERS_AUTOREGISTER|YES
 \end{lstlisting}
 
 % -----------------------------------------------------------------
@@ -118,8 +120,12 @@ Registration of a new user is done in 3 steps:
 
 \begin{enumerate}
 \item new user must fill the form (see screenshot \ref{regform}) by connecting to WebObs interface and click 'Cancel' when asked to login. The data (with encrypted password) will be stored as a new pipe-separated line in the file \wofile{DATA/DB/reglog} and an e-mail will be sent to user and \webobs owner;
-\item using Users Admin interface, administrator adds the user (see section \ref{usertable});
-\item add manually the encrypted password as a new line to the file \wofile{CONF/htpasswd}; this activates the Apache user.
+\item two alternatives depending on the value of \wokey{SQL\_DB\_USERS\_AUTOREGISTER} key:
+	\begin{enumerate}
+		\item if 'YES', then the new user will be automatically added in the database with validity 'N' and without any associated group. UID is made from initials of the full name, if necessary adding suffix number. The encrypted password will be automatically added into \wofile{CONF/htpasswd} apache file;
+		\item if 'NO', administrator must add the user manually using Users Admin interface (see section \ref{usertable}), and add manually the encrypted password as a new line into the file \wofile{CONF/htpasswd};
+	\end{enumerate}
+\item for both alternatives, administrator must validate the new user, eventually modify its UID, and associate it to a group or add specific resource access authorization. This step must be conducted with care since it gives an access (or edit/admin) to all or part of \webobs resources.
 \end{enumerate}
 
 

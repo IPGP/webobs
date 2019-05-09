@@ -523,27 +523,37 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
 	print "<B>$__{'Author(s)'}: </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\" 
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved (hold CTRL key for multiple selections)'}')\">\n";
-	my @logins = sort grep { $USERS{$_}{VALIDITY} eq 'Y'} keys(%USERS);   # first, ordered valid logins
-	push(@logins, sort grep { $USERS{$_}{VALIDITY} ne 'Y'} keys(%USERS)); # then ordered invalid logins
+	# makes a list of active (and inactive) users
+	my @alogins;
+	my @ilogins;
+	foreach (sort keys(%USERS)) {
+		my @grp = WebObs::Users::userListGroup($_);
+		my %gid = map { $_ => 1 } split(/,/,$WEBOBS{EVENTS_ACTIVE_GID});
+		if ((%gid && grep { $gid{$_} } @grp) || (!%gid && $USERS{$_}{VALIDITY} eq "Y")) {
+			push(@alogins,$_);
+		} else {
+			push(@ilogins,$_);
+		}
+	}
+	my @logins = @alogins;
+	push(@logins,@ilogins) if (!$action =~ /new/i); # adds inactive users
 	for my $ulogin (@logins) {
 		my $sel = "";
 		if ("@authorUIDs" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
 			$sel = 'selected';
 		}
-		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME}</option>\n";
+		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME} ($USERS{$ulogin}{UID})</option>\n";
 	}
 	print "</SELECT>\n";
 	print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
 	print "<B>$__{'Remote Operator(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\" 
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved remotely (hold CTRL key for multiple selections)'}')\">\n";
-	my @logins = sort grep { $USERS{$_}{VALIDITY} eq 'Y'} keys(%USERS);   # first, ordered valid logins
-	push(@logins, sort grep { $USERS{$_}{VALIDITY} ne 'Y'} keys(%USERS)); # then ordered invalid logins
 	for my $ulogin (@logins) {
 		my $sel = "";
 		if ("@remoteUIDs" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
 			$sel = 'selected';
 		}
-		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME}</option>\n";
+		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME} ($USERS{$ulogin}{UID})</option>\n";
 	}
 	print "</SELECT></TR>\n";
 	print "<TR><TD style=\"vertical-align: top; border: none;\" colspan=3>";

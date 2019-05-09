@@ -11,12 +11,41 @@
 *         <ul>
 *             <li><a href="/cgi-bin/usersMgr.pl">Users Admin</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF/WEBOBS.rc">WEBOBS.rc</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU(NAVIGATION)">Menu Edit</a></li>
-*             <li><a href="/cgi-bin/wdir.pl?dir=HTML">Html contents</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU(NAVIGATION)">Main Menu Edit</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BADMIN">+ADMIN Group Menu Edit</a></li
+*             <li><a href="/cgi-bin/wdir.pl?dir=HTML">Html Contents</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=WELCOME_CONF">Welcome.conf</a></li>
+*             <li><hr></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=GRIDMAPS">GRIDMAPS.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=LOCASTAT">LOCASTAT.rc</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=UTM_LOCAL">UTM.rc</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF_GRIDS">GRIDS.rc</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES">NODES.rc</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_TELE)">TRANStypes.conf</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/events_World.conf">events_World.conf</a></li>
 *         </ul>
 *       </li>
+*       <li><a href="#">Gazette Editors</a>
+*         <ul>
+*           <li><a href="/cgi-bin/Gazette.pl?create=yes">Create New Event</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=GAZETTE_CONF">Gazette.rc</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=GAZETTE_CONF(CATEGORIES_FILE)">Gazette Categories</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=FILE_DAYSOFF">Days Off Calendar</a></li>
+*        </ul>
+*      </li>
+*       <li><a href="#">Sefran/MC Editors</a>
+*         <ul>
+*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/SEFRAN3.conf">SEFRAN3.conf</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/SEFRAN3_Channels.conf">SEFRAN3_Channels.conf</a></li>
+*           <li><hr></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/MC3.conf">MC3.conf</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/MC3_Codes.conf">MC3_Codes.conf</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/MC3_Amplitudes.conf">MC3_Amplitudes.conf</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/MC3_Durations.conf">MC3_Durations.conf</a></li>
+*        </ul>
+*      </li>
 *      <li><a href="../DOC/mods.html">Doc Modules</a></li>
+*      <li><hr></li>
+       <li><a href="/cgi-bin/changepassword.pl">Change your password</a></li>
    </ul>
 </li>
