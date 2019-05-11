@@ -51,7 +51,9 @@ my @reqlist;
 my @reqs;
 my $table;
 
+my $myself = "/cgi-bin/".basename($0);
 my %SCHED = readCfg($WEBOBS{CONF_SCHEDULER});
+my $QryParm = $cgi->Vars;
 
 map (push(@reqlist,$_), qx(find $WEBOBS{ROOT_OUTR} -type d -mindepth 1 -maxdepth 1));
 chomp(@reqlist);
@@ -82,6 +84,8 @@ print "<h2>$pagetitle</h2>";
 print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ Forms: "
 ."<a href=\"/cgi-bin/formREQ.pl\"><b>Procs</b></a> | "
 ."<a href=\"/cgi-bin/formGRIDMAPS.pl\"><b>Gridmaps</b></a> | "
+."Users: "
+.($QryParm->{'usr'} eq "all" ? "<a href=\"$myself\"><b>$CLIENT</b></a> | all":"$CLIENT | <a href=\"$myself?usr=all\"><b>all</b></a>")." | "
 ."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'>"
 ." ]</P>";
 
@@ -95,7 +99,7 @@ for (reverse sort @reqlist) {
 	my $date2 = qx(grep "^DATE2|" $dir/REQUEST.rc | sed -e "s/DATE2|//");
 	my (@procs) = grep {-d} glob("$dir/{PROC.*,GRIDMAPS}");
 	my $rowspan = scalar(@procs)+1;
-	if ($user eq $CLIENT || WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$_")) {
+	if ($user eq $CLIENT || (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$_") && $QryParm->{'usr'} eq "all")) {
 		if (length($date)==8 && length($time)==6) {
 			$date = substr($date,0,4)."-".substr($date,4,2)."-".substr($date,6,2);
 			$time = substr($time,0,2).":".substr($time,2,2).":".substr($time,4,2);
@@ -111,7 +115,7 @@ for (reverse sort @reqlist) {
 			if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"$proc") || $_ eq "GRIDMAPS") {
 				$table .= "<TD align=center>$_</TD>"
 					."<TD align=center><A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A></TD>";
-				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$_%';");
+				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
 				if ($rreq eq "") {
 					$table .= "<TD></TD>";
 				} else {
