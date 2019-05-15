@@ -20,7 +20,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2018-05-30
+%	Updated: 2019-05-12
 
 
 proc = varargin{1};
@@ -229,6 +229,8 @@ end
 % summary list
 if isfield(P,'SUMMARYLIST')
 	P.SUMMARYLIST = split(P.SUMMARYLIST,',');
+else
+	P.SUMMARYLIST = {''};
 end
 
 if nargin > 2 && isempty(P.GTABLE)
@@ -251,7 +253,7 @@ end
 if nargout > 1
 	N = readnodes(WO,P.SELFREF,P.DATELIM);
 	% list of complete node's FID (expands multiple FIDs)
-	P.FID_LIST = split(char(strcat({N.FID},{','}))',',');
+	%[FB-was] P.FID_LIST = split(char(strcat({N.FID},{','}))',',');
 end
 
 if nargout > 2

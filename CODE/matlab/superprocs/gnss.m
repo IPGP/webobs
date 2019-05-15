@@ -26,6 +26,7 @@ function DOUT=gnss(varargin)
 %       GNSS will use PROC's parameters from .conf file. Specific paramaters are:
 %           FILTER_MAX_ERROR_M|1
 %           PICKS_CLEAN_PERCENT|0
+%	    COMPONENT_NAMELIST|Eastern,Northern,Vertical
 %	    TREND_ERROR_MODE|1
 %	    TREND_MIN_DAYS|2
 %	    VELOCITY_REF|0,0,0
@@ -33,8 +34,13 @@ function DOUT=gnss(varargin)
 %	    GNSS_TARGET_LATLON|
 %	    PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name - ${ITRF_REF}} ($timescale)}
 %	    PERNODE_LINESTYLE|o
+%	    PERNODE_COMPONENT_OFFSET_M|0.01
+%	    PERNODE_TIMEZOOM|
 %	    SUMMARY_LINESTYLE|o
 %	    SUMMARY_TITLE|{\fontsize{14}{\bf${NAME} - ${ITRF_REF}} ($timescale)}
+%	    SUMMARY_STATION_OFFSET_M|0.01
+%	    SUMMARY_COMPONENT_OFFSET_M|0.01
+%	    SUMMARY_TIMEZOOM|
 %	    BASELINES_NODEPAIRS|
 %	    BASELINES_EXCLUDED_NODELIST|
 %	    BASELINES_REF_NODELIST|
@@ -43,6 +49,8 @@ function DOUT=gnss(varargin)
 %	    BASELINES_UNIT|m
 %	    BASELINES_YLABEL|$ref_node_alias (${BASELINES_UNIT})
 %	    BASELINES_LINESTYLE|o-
+%	    BASELINES_REF_OFFSET_M|0.01
+%	    BASELINES_TIMEZOOM|
 %	    VECTORS_EXCLUDED_NODELIST|
 %	    VECTORS_RELATIVE|Y
 %	    VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
@@ -102,7 +110,7 @@ function DOUT=gnss(varargin)
 %
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié, Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-03-01
+%   Updated: 2019-05-15
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -139,15 +147,20 @@ itrf = field2str(P,'ITRF_REF','ITRF');
 if numel(velref)==3 && ~all(velref==0)
 	itrf = 'local ref.';
 end
-
+cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Northern,Relative Vertical'),',');
 
 % PERNODE graphs parameters 
 pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','o');
 pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $node_name - $itrf} ($timescale)}');
+pernode_timezoom = field2num(P,'PERNODE_TIMEZOOM',0);
+pernode_cmpoff = field2num(P,'PERNODE_COMPONENT_OFFSET_M',0.01);
 
 % SUMMARY parameters 
 summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','o');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name - $itrf} ($timescale)}');
+summary_timezoom = field2num(P,'SUMMARY_TIMEZOOM',0);
+summary_staoff = field2num(P,'SUMMARY_STATION_OFFSET_M',0.01);
+summary_cmpoff = field2num(P,'PERNODE_COMPONENT_OFFSET_M',0.01);
 
 % VECTORS parameters
 vrelmode = isok(P,'VECTORS_RELATIVE');
@@ -170,6 +183,9 @@ baselines_linestyle = field2str(P,'BASELINES_LINESTYLE','o-');
 baselines_title = field2str(P,'BASELINES_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
 baselines_ylabel = field2str(P,'BASELINES_YLABEL','$ref_node_alias ($baselines_unit)');
 baselines_unit = field2str(P,'BASELINES_UNIT','m');
+baselines_refoff = field2num(P,'BASELINES_REF_OFFSET_M',0.01);
+baselines_staoff = field2num(P,'BASELINES_STATION_OFFSET_M',0.01);
+baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 
 % MODELLING parameters
 modelling_force_relative = isok(P,'MODELLING_FORCE_RELATIVE');
@@ -265,6 +281,12 @@ if numel(velref)==3 && ~all(velref==0)
 	end
 end
 
+% filter the data at once
+for n = 1:length(N)
+	if ~isnan(maxerror)
+		D(n).d(D(n).e>maxerror,:) = NaN;
+	end
+end
 
 for r = 1:length(P.GTABLE)
 
@@ -281,27 +303,22 @@ for r = 1:length(P.GTABLE)
 	% --- Summary plot: time series
 	figure, clf, orient tall
 
+	n0 = length(N) - 1;
+
+	% station offset
+	staoffset = ((0:n0) - n0/2)*summary_staoff;
+
+	% to make a synthetic figure we must build a new matrix of processed data first...
+	X = repmat(struct('t',[],'d',[],'w',[]),length(N),1);
 	for i = 1:3
-		subplot(6,1,(i-1)*2+(1:2)), extaxes(gca,[.08,.04])
-		hold on
 		aliases = [];
 		ncolors = [];
 		for n = 1:length(N)
-			
-			V.node_name = N(n).NAME;
-			V.node_alias = N(n).ALIAS;
-			k = D(n).G(r).k;
-		
-			% filter the data
-			if ~isnan(maxerror)
-				D(n).d(D(n).e>maxerror,:) = NaN;
-			end
 
+			k = D(n).G(r).k;
 			if ~isempty(k) && ~all(isnan(D(n).d(k,i)))
-				k1 = k(find(~isnan(D(n).d(k,i)),1));
-				dk = cleanpicks(D(n).d(k,i) - D(n).d(k1,i),picksclean);
+				dk = cleanpicks(D(n).d(k,i) - rmedian(D(n).d(k,i)),picksclean);
 				tk = D(n).t(k);
-				plotorbit(tk,dk,D(n).d(k,4),summary_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(n));
 
 				% computes yearly trends (in mm/yr)
 				kk = find(~isnan(dk));
@@ -326,33 +343,29 @@ for r = 1:length(P.GTABLE)
 						tre(n,i) = tre(n,i)/sqrt(acq);
 					end
 				end
-				%tki = linspace(tk(1),tk(end));
-				%dki = interp1(tk,dk,tki,'cubic');
-				%plot(tki,dki,'-','Color',scolor(n),'LineWidth',.1)
+				X(n).t = tk;
+				X(n).d(:,i) = dk + staoffset(n);
+				if i == 3
+					X(n).w = D(n).d(k,4);
+				end
+
 				aliases = cat(2,aliases,{N(n).ALIAS});
 				ncolors = cat(2,ncolors,n);
 			end
 		end
-		hold off
-		set(gca,'XLim',tlim,'FontSize',fontsize)
-		box on
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Relative %s (%s)',D(n).CLB.nm{i},D(n).CLB.un{i}))
-		if isok(P,'PLOT_GRID')
-			grid on
+	end
+	for n = 1:length(N)
+		if isempty(X(n).d)
+			X(n).d = nan(0,3);
 		end
-		
-		% legend: station aliases
-		ylim = get(gca,'YLim');
-		nl = length(aliases);
-		for n = 1:nl
-			text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
-				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
-		end
-		set(gca,'YLim',ylim);
 	end
 
-	tlabel(tlim,P.GTABLE(r).TZ,'FontSize',fontsize)
+	% makes the plot
+	smartplot(X,tlim,P.GTABLE(r),summary_linestyle,fontsize,cmpnames,summary_cmpoff,aliases,ncolors,zeros(1,length(N)),summary_timezoom);
+
+	if isok(P,'PLOT_GRID')
+		grid on
+	end
     
 	P.GTABLE(r).GTITLE = varsub(summary_title,V);
 	P.GTABLE(r).INFOS = {sprintf('Referential: {\\bf%s}',itrf),sprintf('  E {\\bf%+g} mm/yr\n  N {\\bf%+g} mm/yr\n  U {\\bf%+g} mm/yr',velref)};
@@ -426,51 +439,37 @@ for r = 1:length(P.GTABLE)
 		P.GTABLE(r).INFOS = {''};
 
 		% loop for Relative Eastern, Northern, and Up components with error bars (in m)
-		lre = nan(nx,2);
+		X = repmat(struct('t',[],'d',[],'e',[],'w',[]),1+vrelmode,1);
 		for i = 1:3
-			subplot(6,1,(i-1)*2+(1:2)), extaxes(gca,[.08,.04])
 			if ~isempty(k) && any(~isnan(D(n).d(k,i)))
 				tk = D(n).t(k);
-				k1 = k(find(~isnan(D(n).d(k,i)),1));
-				dk = cleanpicks(D(n).d(k,i)-D(n).d(k1,i),picksclean);
-				plotorbit(tk,[dk,D(n).e(k,i)],D(n).d(k,4),pernode_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(1));
-				hold on
+				dk = cleanpicks(D(n).d(k,i)-rmedian(D(n).d(k,i)),picksclean);
+				X(1).t = tk;
+				X(1).d(:,i) = dk;
+				X(1).e(:,i) = D(n).e(k,i);
 				if vrelmode
-					dk = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
-					plotorbit(tk,[dk,D(n).e(k,i)],D(n).d(k,4),pernode_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(3));
+					X(2).t = tk;
+					X(2).d(:,i) = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
+					X(2).e(:,i) = D(n).e(k,i);
 				end
-
-				kk = find(~isnan(dk));
-				if length(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays
-					lr = wls(tk(kk)-tlim(1),dk(kk),1./D(n).e(k(kk),i).^2);
-					%lre(i,:) = [lr(1),stdx(1)]*365.25*1e3;
-					lre(i,:) = [lr(1),std(dk(kk) - polyval(lr,tk(kk)-tlim(1)))/diff(tlim)]*365.25*1e3;
-					plot(tlim,polyval(lr,tlim - tlim(1)),'--k','LineWidth',.2)
-				end
-				hold off
-			end
-			set(gca,'XLim',tlim,'FontSize',fontsize)
-			datetick2('x',P.GTABLE(r).DATESTR)
-			ylabel(sprintf('Relative %s (%s)',D(n).CLB.nm{i},D(n).CLB.un{i}))
-			if isempty(D(n).d) || all(isnan(D(n).d(k,i)))
-				nodata(tlim)
-			end
-
-			% legend for vrelmode
-			if i==1 && vrelmode
-				ly = get(gca,'YLim');
-				text(tlim(1) + diff(tlim)/3,ly(2),'original','Color',scolor(1), ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',7,'FontWeight','bold')
-				text(tlim(1) + diff(tlim)*2/3,ly(2),sprintf('relative (%s)',mode),'Color',scolor(3), ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',7,'FontWeight','bold')
-			end
-
-			if isok(P,'PLOT_GRID')
-				grid on
 			end
 		end
+		if vrelmode
+			aliases = {'original',sprintf('relative (%s)',mode)};
+			ncolors = [1,3];
+			ndtrend = [0,1];
+		else
+			aliases = {''};
+			ncolors = 1;
+			ndtrend = 1;
+		end
 
-		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',fontsize)
+		% makes the plot
+		lre = smartplot(X,tlim,P.GTABLE(r),pernode_linestyle,fontsize,cmpnames,pernode_cmpoff,aliases,ncolors,ndtrend,pernode_timezoom,trendmindays);
+
+		if isok(P,'PLOT_GRID')
+			grid on
+		end
 
 		if ~isempty(k)
 			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),' (min|moy|max)',' ',' '};
@@ -513,7 +512,8 @@ for r = 1:length(P.GTABLE)
 
 	% --- Baselines time series
 	summary = 'BASELINES';
-	if isfield(P,'SUMMARYLIST') && any(strcmp(P.SUMMARYLIST,summary))
+	if any(strcmp(P.SUMMARYLIST,summary))
+		% builds a structure B containing indexes of each node pairs 
 		if isfield(P,'BASELINES_NODEPAIRS') && ~isempty(P.BASELINES_NODEPAIRS)
 			pairgraphs = split(P.BASELINES_NODEPAIRS,';');
 			for nn = 1:length(pairgraphs)
@@ -526,6 +526,8 @@ for r = 1:length(P.GTABLE)
 				end
 			end
 		end
+		% former behavior: will plot all possible pairs combinations,
+		% eventually using only specific reference stations
 		if ~exist('B','var')
 			if isfield(P,'BASELINES_EXCLUDED_NODELIST')
 				kn = find(~ismemberlist({N.FID},split(P.BASELINES_EXCLUDED_NODELIST,',')));
@@ -551,12 +553,14 @@ for r = 1:length(P.GTABLE)
 		orient tall
 		P.GTABLE(r).GTITLE = varsub(baselines_title,V);
 
+		% builds the structure X for smartplot: X(n).d(:,i) where
+		%   n = destination node and i = reference node
+		X = repmat(struct('t',[],'d',[],'e',[],'w',[]),length(N),1);
+		aliases = cell(1,length(N));
+		ncolors = ones(size(aliases));
+		refnames = cell(1,length(B));
 		for nn = 1:length(B)
 			n = B(nn).kr;
-			subplot(length(B)*2,1,(nn-1)*2+(1:2)), extaxes(gca,[.08,.04])
-			hold on
-			aliases = [];
-			ncolors = [];
 			k = D(n).G(r).k;
 			tk = D(n).t(k);
 			V.ref_node_alias = N(n).ALIAS;
@@ -574,35 +578,21 @@ for r = 1:length(P.GTABLE)
 					dk = cleanpicks(sqrt(sum((interp1(D(n2).t(k2),D(n2).d(k2,1:2),tk,'nearest') - D(n).d(k,1:2)).^2,2)),picksclean);
 					dk = dk/siprefix(baselines_unit,'m');
 					dk0 = rmean(dk);
-					plotorbit(tk,dk - dk0,D(n).d(k,4),baselines_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(n2));
-					aliases = cat(2,aliases,{sprintf('%s',N(n2).ALIAS)});
-					ncolors = cat(2,ncolors,n2);
-
 					E.d = cat(2,E.d,dk);
 					E.header = cat(2,E.header,{sprintf('%s-%s_(%s)',N(n).ALIAS,N(n2).ALIAS,baselines_unit)});
+
+					X(n2).t = D(n2).t(k2);
+					dd = sqrt(sum((D(n2).d(k2,1:2) - interp1(tk,D(n).d(k,1:2),D(n2).t(k2),'nearest')).^2,2));
+					if isempty(X(n2).d)
+						X(n2).d = nan(size(X(n2).t,1),length(B));
+					end
+					X(n2).d(:,nn) = dd - rmedian(dd);
+					
+					aliases{n2} = sprintf('%s',N(n2).ALIAS);
+					ncolors(n2) = n2;
 				end
 			end
-			hold off
-			set(gca,'XLim',tlim,'FontSize',fontsize)
-			box on
-			datetick2('x',P.GTABLE(r).DATESTR)
-			if nn < length(B)
-				set(gca,'XTickLabel',[]);
-			end
-			%ylabel(sprintf('%s (%s)',N(n).ALIAS,D(n).CLB.un{1}))
-			ylabel(varsub(baselines_ylabel,V))
-			if isok(P,'PLOT_GRID')
-				grid on
-			end
-			
-			% legend
-			ylim = get(gca,'YLim');
-			nl = length(aliases);
-			for ll = 1:nl
-				text(tlim(1)+ll*diff(tlim)/(nl+1),ylim(2),aliases(ll),'Color',scolor(ncolors(ll)), ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
-			end
-			set(gca,'YLim',ylim);
+			refnames{nn} = varsub(baselines_ylabel,V);
 
 			% exports baseline data for reference n
 			if isok(P.GTABLE(r),'EXPORTS')
@@ -611,7 +601,12 @@ for r = 1:length(P.GTABLE)
 			end
 		end
 
-		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',fontsize)
+		% makes the plot
+		smartplot(X,tlim,P.GTABLE(r),baselines_linestyle,fontsize,refnames,baselines_staoff,aliases,ncolors,zeros(1,length(N)),baselines_timezoom);
+
+		if isok(P,'PLOT_GRID')
+			grid on
+		end
 	    
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
@@ -625,7 +620,7 @@ for r = 1:length(P.GTABLE)
 		
 		P.GTABLE(r).GTITLE = varsub(vectors_title,V);
 		P.GTABLE(r).INFOS = {' ',' ', ...
-			sprintf('Referential: {\\bf%s}',itrf),sprintf('  E {\\bf%+g} mm/yr\n  N {\\bf%+g} mm/yr\n  U {\\bf%+g} mm/yr',velref),' ',' ', ...
+			sprintf('Referential: {\\bf%s}',itrf),sprintf('  E {\\bf%+g} mm/yr\n  N {\\bf%+g} mm/yr\n  U {\\bf%+g} mm/yr',velref), ...
 			sprintf('Network mean velocity (%s):',itrf) ...
 		};
 		for i = 1:3
@@ -1316,36 +1311,6 @@ if nargout > 0
 	DOUT = D;
 end
 
-
-
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function h = plotorbit(t,d,orb,lst,lwd,mks,col)
-% plots time series with optional error bars (if size(d,2)>1) and watermark colors for orbits > 1
-hd = ishold;
-
-plot(t,d(:,1),lst,'LineWidth',lwd,'Color',col,'MarkerSize',mks,'MarkerFaceColor',col)
-hold on
-
-if size(d,2) > 1
-	set(gca,'Ylim',get(gca,'YLim'))	% freezes Y axis (error bars can overflow)
-	plot(repmat(t,[1,2])',(repmat(d(:,1),[1,2])+d(:,2)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1])
-end
-
-% overwrites not-final orbits
-for o = 1:2
-	kk = find(orb==o);
-	if ~isempty(kk)
-		l = o*2;
-		wcol = col/l + 1 - 1/l;
-		plot(t(kk),d(kk,1),lst,'LineWidth',lwd,'MarkerSize',mks,'Color',wcol,'MarkerFaceColor',wcol)
-	end
-end
-
-if ~hd
-	hold off
-end
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

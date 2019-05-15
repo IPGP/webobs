@@ -92,10 +92,20 @@ VELOCITY_REF_ORIGIN_DATE|2000-01-01
 # PERNODE graphs
 PERNODE_LINESTYLE|o
 PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name - ${ITRF_REF}} ($timescale)}
+# adds a secondary graph time-zoomed for the most recent data (fraction of timescale)
+PERNODE_TIMEZOOM|
+# offset between components (in m)
+PERNODE_COMPONENT_OFFSET_M|0.01
 
 # SUMMARY graphs
 SUMMARY_LINESTYLE|o
 SUMMARY_TITLE|{\fontsize{14}{\bf${NAME} - ${ITRF_REF}} ($timescale)}
+# offset between stations for summary graphs (in m)
+SUMMARY_STATION_OFFSET_M|0.01
+# adds a secondary graph time-zoomed for the most recent data (fraction of timescale)
+SUMMARY_TIMEZOOM|
+# offset between components (in m)
+SUMMARY_COMPONENT_OFFSET_M|0.01
 
 # BASELINES graphs
 # - default behavior: all pairs of nodes, with possible node exclusion and/or node reference list
@@ -107,6 +117,10 @@ BASELINES_TITLE|{\fontsize{14}{\bf${NAME} - Baselines} ($timescale)}
 BASELINES_UNIT|mm
 BASELINES_YLABEL|$ref_node_alias (${BASELINES_UNIT})
 BASELINES_LINESTYLE|.-
+# offset between references (in m)
+BASELINES_REF_OFFSET_M|0.01
+# adds a secondary graph time-zoomed for the most recent data (fraction of timescale)
+BASELINES_TIMEZOOM|
 
 # VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|

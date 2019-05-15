@@ -53,7 +53,7 @@ end
 % reads .cnf main conf file
 N = readcfg(WO,f);
 
-% replaces PROC's parameters (if exist)
+% replaces PROC's parameters (PROC.name.* if exist)
 if strcmpi(gridtype,'PROC') && isfield(N,'PROC') && isstruct(N.PROC) && isfield(N.PROC,gridname)
 	pf = fieldnames(N.PROC.(gridname));
 	for n = 1:length(pf)
