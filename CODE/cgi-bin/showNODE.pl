@@ -231,7 +231,7 @@ if (uc($GRIDType) eq 'VIEW' || uc($GRIDType) eq 'PROC') {
 }
 print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> ]</P>";
 
-my %CLBS = readCfg($WEBOBS{CLB_CONF});
+my %CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 
 print "<FORM name=form id=\"theform\" action=\"/cgi-bin/$CLBS{CGI_FORM}\">"
 	."<INPUT type=\"hidden\" name=\"nbc\" value=\"3\">"
