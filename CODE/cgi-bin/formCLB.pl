@@ -36,6 +36,7 @@ use WebObs::Users qw(%USERS $CLIENT clientHasRead clientHasEdit clientHasAdm);
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
+use WebObs::Wiki;
 use Locale::TextDomain('webobs');
 
 set_message(\&webobs_cgi_msg);
@@ -60,9 +61,9 @@ if (clientHasEdit(type=>"authmisc",name=>"CLB")) {
 		my %S = readNode($QryParm->{'node'});
 		%NODE = %{$S{$QryParm->{'node'}}};
 		if (%NODE) {
-			%CLBS = readCfg($WEBOBS{CLB_CONF});
+			%CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 			if (%CLBS) {
-				@clbNote  = readFile($CLBS{NOTES});
+				@clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
 				@fieldCLB = readCfg($CLBS{FIELDS_FILE});
 				if (@fieldCLB) {
 					$fileDATA = "$NODES{PATH_NODES}/$QryParm->{'node'}/$QryParm->{'node'}.clb";
@@ -81,10 +82,14 @@ my $titre2 = "$NODE{ALIAS}: $NODE{NAME} [$QryParm->{'node'}]";
 		
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
-my $anneeActuelle = strftime('%Y',@tod);
+my $todayyear = strftime('%Y',@tod);
 my $today = strftime('%F',@tod);
+my $firstyear = $WEBOBS{BIG_BANG};
+if ($NODE{INSTALL_DATE} ne "") {
+	$firstyear = substr($NODE{INSTALL_DATE},0,4);
+}
 
-my @anneeListe  = ($CLBS{BANG}..$anneeActuelle);
+my @anneeListe  = ($firstyear..$todayyear);
 my @moisListe   = ('01'..'12');
 my @jourListe   = ('01'..'31');
 my @heureListe  = ('00'..'23');
@@ -262,10 +267,10 @@ print "<TR><TD style=\"border:0\" colspan=2>
 		<input type=radio name=action value=duplicate checked> <B>Duplicate</B> (add a new line)<BR>
 		<input type=radio name=action value=delete>            <B>Delete</B> (remove a line)<BR>";
 
-print "<TD style=\"border:0\" colspan=".(@fieldCLB-7)."><P style=\"text-align:center\">";
+print "<TD style=\"border:0\" colspan=".(@fieldCLB-7)."><P style=\"text-align:right\">";
 print "<input type=\"button\" onClick=\"CLBshowhide();\" value=\"$__{'show/hide Loc'}\">";
 print "<input type=\"button\" name=lien onClick=\"history.go(-1);\" value=\"$__{'Cancel'}\">";
-print "<input type=\"button\" value=\"$__{'Submit'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\">";
+print "<input type=\"button\" value=\"$__{'Submit'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\"> ";
 
 print "</P></TD></TR></TABLE></FORM>";
 
@@ -278,11 +283,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
+Didier Mallarino, François Beauducel, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
