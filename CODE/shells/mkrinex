@@ -8,14 +8,14 @@
 #
 # Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
 # Created: 2014-01-12
-# Updated: 2016-03-10
+# Updated: 2019*05*21
 
 
 tmpdir=$(mktemp -d /tmp/mkrinex.XXXXXXXXXX)
 
 zipdir=$1
 #zipfiles=$(ls $1/*.zip $1/*.m??)
-zipfiles=$(find $1 -name "*.zip" -o -name "*.m??" | sort)
+zipfiles=$(find $1 -name "*.zip" -o -name "*.m??" -o -name "*.??o" | sort)
 #echo "** zipfiles = $zipfiles"
 
 outdir=$2
