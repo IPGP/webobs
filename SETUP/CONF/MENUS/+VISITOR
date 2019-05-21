@@ -1,0 +1,8 @@
+<!--- empty this file to remove it from the menu --->
+<li><a href="#"><i>+VISITOR</i></a>
+   <ul>
+      <li><br>&nbsp; Add your +VISITOR group favorites here...<br></br></li>
+      <li><hr></li>
+      <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BVISITOR">Edit this Menu</a></li>
+   </ul>
+</li>
