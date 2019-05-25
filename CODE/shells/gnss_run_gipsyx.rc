@@ -5,13 +5,17 @@
 # Created: 2019-02-25
 
 # prepares GIPSY processing
-. /home/wo/GipsyX-1.0/rc_GipsyX.sh
+source /home/wo/GipsyX-1.1/rc_GipsyX.sh
 
 # grid that contains the station list (nodes)
 GRID=PROC.GIPSYX
 
 # base directory that contains the raw data
 FROM=/home/wo/rawdata/GNSS
+
+# directory structure of the raw data (will be evaluated using eval...)
+# valid variables are: $FID, $sta (lowercase FID), $yyyy, $yy, $mm, $dd, $doy
+FMT='$FROM/$FID/$yyyy/$mm/$dd'
 
 # base directory for output results
 DEST=/home/wo/GNSS/gipsyx
