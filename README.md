@@ -1,8 +1,6 @@
 ![image alt <](CODE/icons/ipgp/logo_WebObs_C110.png) 
 
-# WebObs	
-
- WebObs is an integrated web-based system for data monitoring and networks management. Seismological and volcanological observatories have common needs and often common practical problems for multi disciplinary data monitoring applications. In fact, access to integrated data in real-time and estimation of uncertainties are keys for an efficient interpretation, but instruments variety, heterogeneity of data sampling and acquisition systems lead to difficulties that may hinder crisis management. In the Guadeloupe observatory, we have developed in the last 15 years an operational system that attempts to answer the questions in the context of a pluri-instrumental observatory. Based on a single computer server, open source scripts (with few binaries) and a Web interface, the system proposes:
+WebObs is an integrated web-based system for data monitoring and networks management. Seismological and volcanological observatories have common needs and often common practical problems for multi disciplinary data monitoring applications. In fact, access to integrated data in real-time and estimation of uncertainties are keys for an efficient interpretation, but instruments variety, heterogeneity of data sampling and acquisition systems lead to difficulties that may hinder crisis management. In the Guadeloupe observatory, we have developed in the last 15 years an operational system that attempts to answer the questions in the context of a pluri-instrumental observatory. Based on a single computer server, open source scripts (with few binaries) and a Web interface, the system proposes:
  
 - an extended database for networks management, stations and sensors (maps, station file with log history, technical characteristics, meta-data, photos and associated documents);	
 - a web-form interfaces for manual data input/editing and export (like geochemical analysis, some of the deformation measurements, ...);
@@ -37,34 +35,33 @@ WebObs comes with pre-defined configuration files and pre-defined data objects a
 Graph processes need Matlab compiler runtime 2011b. Download the installer adapted to your architecture in the WebObs directory, the setup will install it during the C) procedure. Or, place it in any local directory then run:	
  
 ```sh
-  unzip MCR_<version>_installer.zip	
-  sudo ./install -mode silent	
+unzip MCR_<version>_installer.zip	
+sudo ./install -mode silent	
 ```	
 
 A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:	
 
 ```sh
-  sudo apt-get install apache2 apache2-utils sqlite3 imagemagick mutt xvfb \	
-     graphviz net-tools libdatetime-perl libdate-calc-perl \	
-     libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \	
-     libtext-multimarkdown-perl libswitch-perl libintl-perl	
-  sudo locale-gen fr_FR en_US	
-  sudo a2enmod cgid	
+sudo apt-get install apache2 apache2-utils sqlite3 imagemagick mutt xvfb \
+   graphviz net-tools libdatetime-perl libdate-calc-perl \
+   libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
+   libtext-multimarkdown-perl libswitch-perl libintl-perl
+sudo locale-gen fr_FR en_US
+sudo a2enmod cgid	
 ```	
 
-### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz	
------------------------------------------------------------	
+### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
 
-The setup process is also used for upgrading an already installed WebObs.	
+The setup process is also used for upgrading an already installed WebObs.
 
-`setup`, when 'upgrading' will activate new WebObs code AND only report the data/configuration differences that it can detect between your customized installation and what the new version would installed from scratch.	
+`setup`, when 'upgrading' will activate new WebObs code AND only report the data/configuration differences that it can detect between your customized installation and what the new version would installed from scratch.
 
 It is recommended to stop any WebObs-related processes before upgrading.
 
 Configuration files will be updaded and displayed/editabled at the end of the upgrade process to help you apply required changes to configuration/data.
 
 
-### C) Procedure (for both A) and B) above)	
+### C) Procedure (for both A) and B) above)
 
 With root privileges, in your target WebObs directory:
 
@@ -76,27 +73,27 @@ With root privileges, in your target WebObs directory:
 For Debian/Ubuntu users, here is a way to install permanently active scheduler and postboard:	
 
 ```sh
-     sudo cp /opt/webobs/WebObs-<version>/SETUP/systemd/wo* /etc/systemd/system/
-     sudo systemctl enable woscheduler.service
-     sudo systemctl enable wopostboard.service
-     sudo systemctl start woscheduler.service
-     sudo systemctl start wopostboard.service
+sudo cp /opt/webobs/WebObs-<version>/SETUP/systemd/wo* /etc/systemd/system/
+sudo systemctl enable woscheduler.service
+sudo systemctl enable wopostboard.service
+sudo systemctl start woscheduler.service
+sudo systemctl start wopostboard.service
 ```
 
-### D) Improving basemap database (optional)	
+### D) Improving basemap database (optional)
 
- WebObs is distributed with ETOPO5 worldwide topographic data, and will automatically download SRTM data for detailed maps. To improve large scale maps resolution, you can download ETOPO1:
+WebObs is distributed with ETOPO5 worldwide topographic data, and will automatically download SRTM data for detailed maps. To improve large scale maps resolution, you can download ETOPO1:
  
 ```sh
-     curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip -o /tmp/etopo.zip	
-     unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip
+curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip -o /tmp/etopo.zip
+unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip
 ```	
 
 and update the ETOPO parameters in the /etc/webobs.d/WEBOBS.rc file with the lines:
 
 ```	
-     ETOPO_NAME|etopo1_bed_g_i2	
-     ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
+ETOPO_NAME|etopo1_bed_g_i2	
+ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 ```	
 
 ## Authors	
