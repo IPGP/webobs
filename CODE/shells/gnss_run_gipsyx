@@ -3,7 +3,7 @@
 #
 #	Dependencies:
 #		- teqc (3rd party binary www.unavco.org, must be in $PATH)
-#		- mkrinex (WebObs script located in the same directory)
+#		- raw2rinex (WebObs script located in the same directory)
 #		- a WebObs grid for node's list and parameters (defined in
 #		  the configuration file) that must be defined for each node:
 #		               FID: station/marker code name
@@ -15,7 +15,7 @@
 #          Domerapi/WebObs Project
 # Created: 2014-01-29 at BPPTKG, Yogyakarta (Indonesia) for Gipsy-Oasis version
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia) for GipsyX version
-# Updated: 2019-05-09
+# Updated: 2019-05-24
 
 if [ $# -lt 2 ]; then
 	echo "       Syntax: gnss_run_gipsyx CONF DAYS [STATION] [-force]"
@@ -48,8 +48,12 @@ PROC="/etc/webobs.d/GRIDS2NODES/$GRID"
 NODES=$(grep -h "^$GRID\.FID|" $PROC.*/*.cnf|sed -E "s/.*FID\|//")
 NODESTABLE=$(grep -H "^$GRID\.FID|" $PROC.*/*.cnf|sed -E "s/.*\///"|sed -E "s/\.cnf:.*FID\|/\ /")
 
+if [ -z "$FMT" ]; then
+	FMT='$FROM/$FID/$yyyy/$mm/$dd'
+fi
+
 DAYS=$2
-DAYLIST=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago" +%Y/%m/%d;done)
+DAYLIST=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago" +"%Y/%m/%d";done)
 
 if [ "$3" != "" ]
 then
@@ -67,11 +71,11 @@ echo "*** GipsyX / WebObs $GRID GNSS File Processing ***"
 
 for station in $NODES; do
 	# cleans the string !
-	sta=${station//[$'\t\r\n ']}
-	echo "*** Processing files from station $sta for the last $DAYS days"
+	FID=${station//[$'\t\r\n ']}
+	echo "*** Processing files from station $FID for the last $DAYS days"
 
 	# looks in node's parameters for possible antenna and receiver (will overwrite rinex header)
-	ID=$(echo "$NODESTABLE" | awk "/$sta/ {print \$1}")
+	ID=$(echo "$NODESTABLE" | awk "/$FID/ {print \$1}")
 	receiver=$(grep -h "^$GRID\.FID_RECEIVER|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
 	antenna=$(grep -h "^$GRID\.FID_ANTENNA|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
 	echo "ID = $ID - receiver = '$receiver' - antenna = '$antenna'"
@@ -83,23 +87,29 @@ for station in $NODES; do
 	fi
 
 	for ymd in $DAYLIST; do
-		year=${ymd:0:4}
-		month=${ymd:5:2}
-		day=${ymd:8:2}
-		res="$DEST/$sta/$year/$year-$month-$day.$sta"
+		yyyy=${ymd:0:4}
+		mm=${ymd:5:2}
+		dd=${ymd:8:2}
+		res="$DEST/$FID/$yyyy/$yyyy-$mm-$dd.$FID"
 		gipsyres="$res.tdp"
 		gipsylog="$res.log"
 		if [[ $FORCE == 0 && -s "$gipsyres" ]]; then 
 			echo "   file $gipsyres [flinn] already exists..."
 		else
-			# makes Rinex daily file from raw data (see mkrinex script)
-			DIR="$FROM/$sta/$ymd"
+			# additional variables
+			doy=$(date -d "$ymd" +"%j")
+			sta=$(echo $FID | tr '[:upper:]' '[:lower:]')
+			RAW=$(eval "echo $FMT")
+			#RAW="$FROM/$FID/$ymd"
+
 			rinex="$tmpdir/rinex"
-			#if [ "$(ls -A $DIR)" ]; then
-			if [ -d "$DIR" ]; then
+			#if [ "$(ls -A $RAW)" ]; then
+			#if [ -e "$RAW" ]; then
+			if [ ! -z "$(ls -Ad $RAW 2>/dev/null)" ]; then
 				rm -rf $tmpdir/*
-				echo "$PROGDIR/mkrinex $DIR $rinex $TEQCOPTIONS -O.mn \"$sta\" -O.mo \"$sta\" $receiver $antenna"
-				$PROGDIR/mkrinex $DIR $rinex $TEQCOPTIONS -O.mn \"$sta\" -O.mo \"$sta\" $receiver $antenna
+				echo "$PROGDIR/raw2rinex \"$RAW\" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
+				# makes Rinex daily file from raw data (see raw2rinex script)
+				$PROGDIR/raw2rinex "$RAW" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna
 
 				# makes GipsyX processing
 				tdp="$tmpdir/smoothFinal.tdp"
@@ -116,7 +126,7 @@ for station in $NODES; do
 						eval $cmd
 						rc=$?
 						if [[ $rc == 0 && -s $tdp ]]; then
-							mkdir -p "$DEST/$sta/$year"
+							mkdir -p "$DEST/$FID/$yyyy"
 							rm -f $gipsyres.*
 							grep ".State.Pos.[XYZ]" $tdp | tail -n3 > $gipsyres
 							echo "   ==> $gipsyres written."
@@ -132,7 +142,7 @@ for station in $NODES; do
 				mv -f gd2e.log $gipsylog
 				gzip -f $gipsylog
 			else
-				echo "   $DIR is empty (no data to process)."
+				echo "   no data to process in $RAW."
 			fi
 		fi
 	done

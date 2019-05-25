@@ -1,0 +1,143 @@
+#!/bin/bash
+# Syntax: raw2rinex input output [teqcoptions]
+# Description: GNSS raw data files convertion to daily RINEX
+# Arguments:
+#	input		Directory or filename of raw data (Leica, Trimble, Rinex) zipped of not
+#	output		Either output directory to write rinex (must exist), or any output rinex filename
+#	teqcoptions	Any options to add (example: -O.dec 30 -O.rt "receiver" -O.at "antenna")
+#
+# Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
+# Created: 2014-01-12
+# Updated: 2019-05-25
+
+if [ $# -lt 2 ]; then
+	echo "raw2rinex input output"
+	exit 0;
+fi
+
+tmpdir=$(mktemp -d /tmp/raw2rinex.XXXXXXXXXX)
+
+rawdir=$1
+if [ -d "$rawdir" ]; then
+	files=$(find $rawdir -type f)
+else
+	files=$(ls $rawdir 2>/dev/null)
+fi
+
+#echo "** files = $files"
+
+outdir=$2
+
+if [ "$#" -ge 3 ]
+then
+	shift
+	shift
+	teqcopt=$@
+fi
+
+# --- copy and uncompress files in a temporary directory
+for f in $files
+do
+	# unzip (-o option is mandatory to avoid prompting in some circumstances !)
+	if [[ $f == *".zip" ]]; then
+		unzip -oq $f -d $tmpdir
+	else
+		cp -L $f $tmpdir/
+	fi
+
+done
+
+# --- try rinex files
+wc="*.??o"
+rf=$(find $tmpdir -name "$wc" | sort )
+if [ ! -z "$rf" ]; then
+	echo "   ==> found some Rinex files in $rawdir: Proceeding..."
+	wildcard=$wc
+	rawfiles=$rf
+	navfiles=$(find $tmpdir -name "*.??n" | sort )
+	teqcfmt=""
+fi
+
+# --- try Hatanaka files
+rf=$(find $tmpdir -name "*.??d.Z" -o -name "*.??d" | sort )
+if [ ! -z "$rf" ]; then
+	echo "   ==> found some Hatanaka files in $rawdir: Proceeding..."
+	# must convert ??d to ??o
+	for f in $rf; do
+		if [[ $f == *".Z" ]]; then
+			gunzip $f
+			f=${f%.*}
+		fi
+		CRX2RNX $f
+	done
+	wildcard="*.??o"
+	rawfiles=$(find $tmpdir -name "$wildcard" | sort )
+	navfiles=""
+	teqcfmt=""
+fi
+# try Leica mdb...
+wc="*.m??"
+rf=$(find $tmpdir -name "$wc" | sort )
+if [ ! -z "$rf" ]; then
+	echo "   ==> found some Leica files in $rawdir: Proceeding..."
+	wildcard=$wc
+	rawfiles=$rf
+	navfiles="$rawfiles"
+	teqcfmt="-lei mdb"
+fi
+
+# try Trimble T02...
+wc="*.T02"
+rf=$(find $tmpdir -name "$wc" | sort )
+if [ ! -z "$rf" ]; then
+	echo "   ==> found some Trimble files in $rawdir: Proceeding..."
+	# must convert T02 to dat
+	for f in $rf; do
+		runpkr00 -d $f
+	done
+	wildcard="*.dat"
+	rawfiles=$(find $tmpdir -name "$wildcard" | sort )
+	navfiles="$rawfiles"
+	teqcfmt=""
+fi
+
+if [ -z "$rawfiles" ]; then
+	echo "no valid GNSS file found in $1... abort."
+	exit
+fi
+
+
+tmprnx=$tmpdir/rinex
+tmpnav=$tmpdir/nav
+
+# --- converts rawfiles to single daily Rinex
+echo "teqc $teqcfmt $teqcopt $tmpdir/$wildcard > $tmprnx"
+teqc $teqcfmt $teqcopt $tmpdir/$wildcard > $tmprnx
+
+# case A: output directory specified => archiving rinex with proper names (obs and nav)
+if [ -d $outdir ]; then
+	# gets the station code from the filename
+	for f in $rawfiles; do
+		#echo $f
+		mdbfile=$(basename $f)
+		code=${mdbfile:0:4}
+		rinex=$outdir/${mdbfile:0:8}
+	done
+	code=$(echo $code | tr '[:lower:]' '[:upper:]')
+	starttime=$(teqc +meta $tmprnx | grep "start date" | sed -e 's/.*: //' | sed -e 's/[ \t]*//')
+	yy=${starttime:2:2}
+	echo "   cp -f $tmprnx ${rinex}.${yy}o"
+	cp -f $tmprnx ${rinex}.${yy}o
+	if [ ! -z "$navfiles" ]; then
+		teqc ${teqcfmt}n $teqcopt $navfiles > $tmpnav
+		echo "   cp -f $tmpnav ${rinex}.${yy}n"
+		cp -f $tmpnav ${rinex}.${yy}n
+	fi
+# case B: output file specified => write the rinex using given filename
+else
+	echo "   cp -f $tmprnx $outdir"
+	cp -f $tmprnx $outdir
+fi
+
+rm -rf $tmpdir
+
