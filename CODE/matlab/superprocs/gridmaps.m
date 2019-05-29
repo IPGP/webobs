@@ -23,7 +23,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2019-05-09
+%   Updated: 2019-05-23
 
 
 WO = readcfg;
@@ -310,7 +310,7 @@ for g = 1:length(grids)
 			% writes node names
 			if nodefont > 0
 				k = find(isinto(geo(kn,2),xlim) & isinto(geo(kn,1),ylim));
-				textlabel(geo(kn(k),2),geo(kn(k),1),cat(1,{N(kn(k)).ALIAS}),'FontSize',nodefont,'FontWeight','bold')
+				smarttext(geo(kn(k),2),geo(kn(k),1),cat(1,{N(kn(k)).ALIAS}),'FontSize',nodefont,'FontWeight','bold')
 			end
 
 			% makes figure and basemap
@@ -429,36 +429,3 @@ end
 timelog(procmsg,2)
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [dlat,dlon] = ll2lim(lat,lon,minkm,maxxy,border)
-% Determines X-Y limits of the map from NODE's coordinates
-% 	[DLAT,DLON]=LL2LIM(...)
-% 	XYLIM=LL2LIM(...)
-
-dlat = [min(lat),max(lat)];
-lat0 = mean(dlat);
-if diff(dlat) < minkm/degkm
-	dlat = lat0 + [-.5,.5]*minkm/degkm;
-end
-dlon = [min(lon),max(lon)];
-lon0 = mean(dlon);
-if diff(dlon) < minkm/degkm(lat0)
-	dlon = lon0 + [-.5,.5]*minkm/degkm(lat0);
-end
-% adjusts to respect maximum XY ratio
-if maxxy*diff(dlon)/cosd(lat0) < diff(dlat)
-	dlon = lon0 + [-.5,.5]*diff(dlat)/cosd(lat0)/maxxy;
-end
-if maxxy*diff(dlat) < diff(dlon)*cosd(lat0)
-	dlat = lat0 + [-.5,.5]*diff(dlon)*cosd(lat0)/maxxy;
-end
-
-% adds borders in %
-dlon = dlon + diff(dlon)*border*[-1,1]/cosd(lat0);
-dlat = dlat + diff(dlat)*border*[-1,1];
-
-% outputs xylim
-if nargout == 1
-	dlat = [dlon,dlat];
-end
