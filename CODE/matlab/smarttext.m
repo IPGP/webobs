@@ -1,18 +1,18 @@
-function varargout=textlabel(x,y,s,varargin)
-%TEXTLABEL Optimized text labelling
-%	TEXTLABEL(LON,LAT,S) adds the text string S to (LON,LAT) location, as 
+function varargout=smarttext(x,y,s,varargin)
+%SMARTTEXT Optimized text labelling
+%	SMARTTEXT(LON,LAT,S) adds the text string S to (LON,LAT) location, as 
 %	the function TEXT does in 2-D. If LON and LAT are vectors and S an 
-%	array of strings, TEXTLABEL will optimize the text position and alignment, 
+%	array of strings, SMARTTEXT will optimize the text position and alignment, 
 %	trying to minimize text overlapping. LON and LAT must be in degree.
 %
-%	TEXTLABEL(...,param1,value1,param2,value2,...) specifies additionnal 
+%	SMARTTEXT(...,param1,value1,param2,value2,...) specifies additionnal 
 %	properties of the text using parameter/value pairs. See TEXT 
 %	documentation for further information.
 %
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-05-27, in Yogyakarta, Indonesia
-%	Updated: 2017-08-29
+%	Updated: 2019-05-29
 
 hh = [];
 
@@ -25,6 +25,9 @@ if ischar(s)
 end
 
 m = numel(x);
+% adds random µm to all latitudes to avoid overlaping nodes
+y = y + rand(size(y))*1e-11;
+
 for n = 1:m
 	if m==1
 		az = 180;
