@@ -72,13 +72,13 @@ echo "*** GipsyX / WebObs $GRID GNSS File Processing ***"
 for station in $NODES; do
 	# cleans the string !
 	FID=${station//[$'\t\r\n ']}
-	echo "*** Processing files from station $FID for the last $DAYS days"
+	echo "\n*** Processing files from station $FID for the last $DAYS days"
 
 	# looks in node's parameters for possible antenna and receiver (will overwrite rinex header)
 	ID=$(echo "$NODESTABLE" | awk "/$FID/ {print \$1}")
 	receiver=$(grep -h "^$GRID\.FID_RECEIVER|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
 	antenna=$(grep -h "^$GRID\.FID_ANTENNA|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
-	echo "ID = $ID - receiver = '$receiver' - antenna = '$antenna'"
+	echo "ID = $ID - receiver = '$receiver' - antenna = '$antenna' (will use rinex header if empty)"
 	if [ ! -z "$receiver" ]; then
 		receiver=" -O.rt \"$receiver\""
 	fi
