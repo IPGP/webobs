@@ -8,7 +8,7 @@
 #
 # Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
 # Created: 2014-01-12
-# Updated: 2019-05-25
+# Updated: 2019-06-09
 
 if [ $# -lt 2 ]; then
 	echo "raw2rinex input output"
@@ -51,7 +51,7 @@ done
 wc="*.??o"
 rf=$(find $tmpdir -name "$wc" | sort )
 if [ ! -z "$rf" ]; then
-	echo "   ==> found some Rinex files in $rawdir: Proceeding..."
+	echo "   Found some Rinex files in $rawdir: proceeding..."
 	wildcard=$wc
 	rawfiles=$rf
 	navfiles=$(find $tmpdir -name "*.??n" | sort )
@@ -61,7 +61,7 @@ fi
 # --- try Hatanaka files
 rf=$(find $tmpdir -name "*.??d.Z" -o -name "*.??d" | sort )
 if [ ! -z "$rf" ]; then
-	echo "   ==> found some Hatanaka files in $rawdir: Proceeding..."
+	echo "   Found some Hatanaka files in $rawdir: proceeding..."
 	# must convert ??d to ??o
 	for f in $rf; do
 		if [[ $f == *".Z" ]]; then
@@ -79,7 +79,7 @@ fi
 wc="*.m??"
 rf=$(find $tmpdir -name "$wc" | sort )
 if [ ! -z "$rf" ]; then
-	echo "   ==> found some Leica files in $rawdir: Proceeding..."
+	echo "   Found some Leica files in $rawdir: proceeding..."
 	wildcard=$wc
 	rawfiles=$rf
 	navfiles="$rawfiles"
@@ -90,7 +90,7 @@ fi
 wc="*.T02"
 rf=$(find $tmpdir -name "$wc" | sort )
 if [ ! -z "$rf" ]; then
-	echo "   ==> found some Trimble files in $rawdir: Proceeding..."
+	echo "   Found some Trimble files in $rawdir: proceeding..."
 	# must convert T02 to dat
 	for f in $rf; do
 		runpkr00 -d $f
@@ -102,7 +102,7 @@ if [ ! -z "$rf" ]; then
 fi
 
 if [ -z "$rawfiles" ]; then
-	echo "no valid GNSS file found in $1... abort."
+	echo "No valid GNSS file found in $1... abort."
 	exit
 fi
 
@@ -111,7 +111,9 @@ tmprnx=$tmpdir/rinex
 tmpnav=$tmpdir/nav
 
 # --- converts rawfiles to single daily Rinex
-echo "teqc $teqcfmt $teqcopt $tmpdir/$wildcard > $tmprnx"
+if [ ! -z $VERBOSE ]; then
+	echo "teqc $teqcfmt $teqcopt $tmpdir/$wildcard > $tmprnx"
+fi
 teqc $teqcfmt $teqcopt $tmpdir/$wildcard > $tmprnx
 
 # case A: output directory specified => archiving rinex with proper names (obs and nav)
@@ -130,12 +132,16 @@ if [ -d $outdir ]; then
 	cp -f $tmprnx ${rinex}.${yy}o
 	if [ ! -z "$navfiles" ]; then
 		teqc ${teqcfmt}n $teqcopt $navfiles > $tmpnav
-		echo "   cp -f $tmpnav ${rinex}.${yy}n"
+		if [ ! -z $VERBOSE ]; then
+			echo "   cp -f $tmpnav ${rinex}.${yy}n"
+		fi
 		cp -f $tmpnav ${rinex}.${yy}n
 	fi
 # case B: output file specified => write the rinex using given filename
 else
-	echo "   cp -f $tmprnx $outdir"
+	if [ ! -z $VERBOSE ]; then
+		echo "   cp -f $tmprnx $outdir"
+	fi
 	cp -f $tmprnx $outdir
 fi
 
