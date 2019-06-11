@@ -15,7 +15,7 @@
 #          Domerapi/WebObs Project
 # Created: 2014-01-29 at BPPTKG, Yogyakarta (Indonesia) for Gipsy-Oasis version
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia) for GipsyX version
-# Updated: 2019-05-24
+# Updated: 2019-06-09
 
 if [ $# -lt 2 ]; then
 	echo "       Syntax: gnss_run_gipsyx CONF DAYS [STATION] [-force]"
@@ -72,7 +72,8 @@ echo "*** GipsyX / WebObs $GRID GNSS File Processing ***"
 for station in $NODES; do
 	# cleans the string !
 	FID=${station//[$'\t\r\n ']}
-	echo "\n*** Processing files from station $FID for the last $DAYS days"
+	echo ""
+	echo "*** Processing files from station $FID for the last $DAYS days"
 
 	# looks in node's parameters for possible antenna and receiver (will overwrite rinex header)
 	ID=$(echo "$NODESTABLE" | awk "/$FID/ {print \$1}")
@@ -107,9 +108,11 @@ for station in $NODES; do
 			#if [ -e "$RAW" ]; then
 			if [ ! -z "$(ls -Ad $RAW 2>/dev/null)" ]; then
 				rm -rf $tmpdir/*
-				echo "$PROGDIR/raw2rinex \"$RAW\" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
 				# makes Rinex daily file from raw data (see raw2rinex script)
 				$PROGDIR/raw2rinex "$RAW" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna
+				if [[ ! -z $VERBOSE || $? != 0 ]]; then
+					echo "$PROGDIR/raw2rinex \"$RAW\" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
+				fi
 
 				# makes GipsyX processing
 				tdp="$tmpdir/smoothFinal.tdp"
@@ -122,19 +125,19 @@ for station in $NODES; do
 						break
 					else
 						cmd="gd2e.py -rnxFile $rinex -GNSSproducts $orbit $GIPSYOPTIONS > gd2e.log 2>&1"
-						echo "   $cmd"
 						eval $cmd
 						rc=$?
 						if [[ $rc == 0 && -s $tdp ]]; then
 							mkdir -p "$DEST/$FID/$yyyy"
 							rm -f $gipsyres.*
 							grep ".State.Pos.[XYZ]" $tdp | tail -n3 > $gipsyres
-							echo "   ==> $gipsyres written."
-							if [ "$orbit" != "flinn" ]; then
+							echo "   ==> $gipsyres [$orbit] written."
+							if [[ "$orbit" != "flinn" ]]; then
 								mv $gipsyres $gipsyres.$orbit
 							fi 
 							break
 						else
+							echo "   $cmd"
 							echo "   ** WARNING: Problem to process gd2e... May be orbit $orbit not yet available?"
 						fi
 					fi
