@@ -6,11 +6,12 @@ function status = mkexport(WO,f,E,G);
 %	   E.header = headers (cell of strings)
 %	   E.fmt = format printf (cell of strings)
 %	   E.title = title (string)
+%	   E.infos = multi-line comments (cell of strings)
 %	in the file F.txt using PROCS parameters defined in structure G.
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2019-02-26
+%	Updated: 2019-06-10
 
 
 ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,G.SELFREF,randname(16));
@@ -40,7 +41,15 @@ if fid > 0
 	fprintf(fid,'# PROC: {%s} %s\n',G.SELFREF,G.NAME);
 	fprintf(fid,'# TITLE: %s\n',E.title);
 	fprintf(fid,'# FILENAME: %s.txt\n',f);
+	if ~isnan(G.DATE1) && ~isnan(G.DATE2)
+		fprintf(fid,'# TIMESPAN: from %s to %s\n',datestr(G.DATE1),datestr(G.DATE2)); 
+	end
 	fprintf(fid,'#\n'); 
+	if isfield(E,'infos')
+		for i = 1:length(E.infos)
+			fprintf(fid,'#   %s\n',E.infos{i}); 
+		end
+	end
 	[s,w] = wosystem('echo "$(whoami)@$(hostname)"','chomp');
 	if ~s
 		fprintf(fid,'#\n# CREATED: %s by %s\n',datestr(now),w); 
