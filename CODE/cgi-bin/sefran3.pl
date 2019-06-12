@@ -76,7 +76,7 @@ my $voies_classiques = $cgi->url_param('va');
 my $reglette = $cgi->url_param('rg');
 my $date   = $cgi->url_param('date');
 my $high   = $cgi->url_param('high');
-my $sx     = $cgi->url_param('sx') || 0;
+my $sx     = $cgi->url_param('sx') // 0;
 my $replay = $cgi->url_param('replay');
 
 # ---- analysis (depouillement) mode ?

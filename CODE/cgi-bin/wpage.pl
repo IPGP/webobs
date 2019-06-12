@@ -60,8 +60,8 @@ my $titre="";
 my $html;
 
 my $QryParm   = $cgi->Vars;
-my $file = $QryParm->{'file'} || "";
-my $css  = $QryParm->{'css'} || "";
+my $file = $QryParm->{'file'} // "";
+my $css  = $QryParm->{'css'}  // "";
 
 if ($file ne "") {
 	$absfile = "$WEBOBS{PATH_DATA_WEB}/$file";

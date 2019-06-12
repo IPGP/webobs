@@ -105,15 +105,15 @@ my $me = $ENV{SCRIPT_NAME};
 my $query = $ENV{QUERY_STRING};
 my $QryParm   = $cgi->Vars;
 
-my $target = $QryParm->{'target'} || "";
-my $str    = $QryParm->{'str'}    || "";
-my $in     = $QryParm->{'in'}     || $NODES{EVENT_SEARCH_DEFAULT};
-my $lop    = $QryParm->{'lop'}    || "AND";
-my $str2   = $QryParm->{'str2'}   || "";
-my $in2    = $QryParm->{'in2'}    || $NODES{EVENT_SEARCH_DEFAULT2};
-my $sort   = $QryParm->{'sort'}   || "startdatedec";
-my $max    = $QryParm->{'max'}    || "15";
-my $from   = $QryParm->{'from'}   || "1";
+my $target = $QryParm->{'target'} // "";
+my $str    = $QryParm->{'str'}    // "";
+my $in     = $QryParm->{'in'}     // $NODES{EVENT_SEARCH_DEFAULT};
+my $lop    = $QryParm->{'lop'}    // "AND";
+my $str2   = $QryParm->{'str2'}   // "";
+my $in2    = $QryParm->{'in2'}    // $NODES{EVENT_SEARCH_DEFAULT2};
+my $sort   = $QryParm->{'sort'}   // "startdatedec";
+my $max    = $QryParm->{'max'}    // "15";
+my $from   = $QryParm->{'from'}   // "1";
 
 # predefined lists
 my @catlist = split(/,/,$NODES{EVENT_SEARCH_CATEGORY_LIST});
@@ -151,7 +151,7 @@ my %sortlist = (
 my @maxlist = ("15","50","100");
 @maxlist = split(/,/,$NODES{EVENT_SEARCH_MAXDISPLAY_LIST}) if ($NODES{EVENT_SEARCH_MAXDISPLAY_LIST} ne "");
 
-my $mmd = $WEBOBS{WIKI_MMD} || 'YES';        # add MMD
+my $mmd = $WEBOBS{WIKI_MMD} // 'YES';        # add MMD
 
 my $pagetitle = $__{'Search Node Events'};
 

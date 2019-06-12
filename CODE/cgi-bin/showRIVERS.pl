@@ -135,7 +135,7 @@ my $day  = strftime('%d',@tod);
 my $month  = strftime('%m',@tod); 
 my $year = strftime('%Y',@tod);
 my $endDate = strftime('%F',@tod);
-my $delay = $FORM->conf('DEFAULT_DAYS') || 30;
+my $delay = $FORM->conf('DEFAULT_DAYS') // 30;
 my $startDate = qx(date -d "$delay days ago" +%F);
 chomp($startDate);
 my ($y1,$m1,$d1) = split(/-/,$startDate);
@@ -176,17 +176,17 @@ my @rap;
 my $nbRap = 0;
 my @rapCalc;
 
-$QryParm->{'y1'}       ||= $y1; 
-$QryParm->{'m1'}       ||= $m1; 
-$QryParm->{'d1'}       ||= $d1; 
-$QryParm->{'y2'}       ||= $year; 
-$QryParm->{'m2'}       ||= $month; 
-$QryParm->{'d2'}       ||= $day; 
-$QryParm->{'node'}     ||= "All"; 
-$QryParm->{'sio2'}     ||= ""; 
-$QryParm->{'organiques'} ||= ""; 
-$QryParm->{'affiche'}  ||= ""; 
-$QryParm->{'unite'}    ||= "ppm"; 
+$QryParm->{'y1'}         //= $y1; 
+$QryParm->{'m1'}         //= $m1; 
+$QryParm->{'d1'}         //= $d1; 
+$QryParm->{'y2'}         //= $year; 
+$QryParm->{'m2'}         //= $month; 
+$QryParm->{'d2'}         //= $day; 
+$QryParm->{'node'}       //= "All"; 
+$QryParm->{'sio2'}       //= ""; 
+$QryParm->{'organiques'} //= ""; 
+$QryParm->{'affiche'}    //= ""; 
+$QryParm->{'unite'}      //= "ppm"; 
 if   ($QryParm->{'unite'} eq "ppm") {$unite = "ppm = mg/l"}
 else                                {$unite = "mmol/l"}
 $startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'}";

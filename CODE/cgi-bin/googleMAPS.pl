@@ -58,9 +58,9 @@ my @nodes;
 #
 my $grid   = $cgi->url_param('grid');
 my $fiches = $cgi->url_param('nodes');
-my $width  = $cgi->url_param('width')  || $WEBOBS{GOOGLE_MAPS_WIDTH_VALUE};
-my $height = $cgi->url_param('height') || $WEBOBS{GOOGLE_MAPS_HEIGHT_VALUE};
-my $today  = $cgi->url_param('today')  || qx(date +\%Y-\%m-\%d);
+my $width  = $cgi->url_param('width')  // $WEBOBS{GOOGLE_MAPS_WIDTH_VALUE};
+my $height = $cgi->url_param('height') // $WEBOBS{GOOGLE_MAPS_HEIGHT_VALUE};
+my $today  = $cgi->url_param('today')  // qx(date +\%Y-\%m-\%d);
 chomp($today);
 
 my $GRIDName  = my $GRIDType  = my $NODEName = my $msk = "";

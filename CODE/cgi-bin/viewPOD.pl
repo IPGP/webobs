@@ -9,7 +9,7 @@ use Pod::Html;
 use WebObs::Config;
 
 my $cgi = new CGI;
-my $pod = $cgi->param('pod') || '';
+my $pod = $cgi->param('pod') // '';
 
 if ($pod) {
     my $fname = scan4($pod);

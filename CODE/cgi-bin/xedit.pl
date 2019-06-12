@@ -86,9 +86,9 @@ use Locale::TextDomain('webobs');
 set_message(\&webobs_cgi_msg);
 
 my @lignes;
-my $XEtheme = $WEBOBS{XEDIT_ETHEME} || "ambiance";
-my $XBtheme = $WEBOBS{XEDIT_BTHEME} || "neat";
-my $Vmode   = $WEBOBS{XEDIT_VMODE} || "vim";
+my $XEtheme = $WEBOBS{XEDIT_ETHEME} // "ambiance";
+my $XBtheme = $WEBOBS{XEDIT_BTHEME} // "neat";
+my $Vmode   = $WEBOBS{XEDIT_VMODE}  // "vim";
 
 my $mode = "cmwocfg";
 
@@ -96,11 +96,11 @@ my $mode = "cmwocfg";
 #
 my $me = $ENV{SCRIPT_NAME}; 
 my $QryParm   = $cgi->Vars;
-my $fs     = $QryParm->{'fs'} || "";
-my $action = $QryParm->{'action'} || "edit";
-my $txt    = $QryParm->{'txt'} || "";
-my $TS0    = $QryParm->{'ts0'} || "";
-my $fbrowse= $QryParm->{'browse'} || 0;
+my $fs     = $QryParm->{'fs'}     // "";
+my $action = $QryParm->{'action'} // "edit";
+my $txt    = $QryParm->{'txt'}    // "";
+my $TS0    = $QryParm->{'ts0'}    // "";
+my $fbrowse= $QryParm->{'browse'} // 0;
 
 my $absfile ="";
 my $relfile ="";

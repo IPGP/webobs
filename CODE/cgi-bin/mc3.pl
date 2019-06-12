@@ -159,8 +159,8 @@ set_message(\&webobs_cgi_msg);
 # ---- 1st parse query parameters for configuration file and debug option -----
 #
 my $QryParm  = $cgi->Vars;
-$QryParm->{'debug'}     ||= ""; 
-$QryParm->{'mc'}        ||= $WEBOBS{MC3_DEFAULT_NAME}; 
+$QryParm->{'debug'}     //= ""; 
+$QryParm->{'mc'}        //= $WEBOBS{MC3_DEFAULT_NAME}; 
 
 # ---- read in configuration + info files -------------------------------------
 #
@@ -176,27 +176,27 @@ my @infoTexte  = readFile("$MC3{NOTES}");
 
 # ---- parse remainder of query parameters ------------------------------------
 #
-$QryParm->{'y1'}        ||= "";
-$QryParm->{'m1'}        ||= "";
-$QryParm->{'d1'}        ||= "";
-$QryParm->{'h1'}        ||= "00";
-$QryParm->{'y2'}        ||= "";
-$QryParm->{'m2'}        ||= "";
-$QryParm->{'d2'}        ||= "";
-$QryParm->{'h2'}        ||= "23";
-$QryParm->{'type'}      ||= "";
-$QryParm->{'duree'}     ||= "";
-$QryParm->{'amplitude'} ||= "ALL";
-$QryParm->{'ampoper'}   ||= "eq";
-$QryParm->{'located'}   ||= "";
+$QryParm->{'y1'}        //= "";
+$QryParm->{'m1'}        //= "";
+$QryParm->{'d1'}        //= "";
+$QryParm->{'h1'}        //= "00";
+$QryParm->{'y2'}        //= "";
+$QryParm->{'m2'}        //= "";
+$QryParm->{'d2'}        //= "";
+$QryParm->{'h2'}        //= "23";
+$QryParm->{'type'}      //= "";
+$QryParm->{'duree'}     //= "";
+$QryParm->{'amplitude'} //= "ALL";
+$QryParm->{'ampoper'}   //= "eq";
+$QryParm->{'located'}   //= "";
 $QryParm->{'locstatus'}  //= $MC3{DISPLAY_LOCATION_STATUS_DEFAULT};
 $QryParm->{'hideloc'}   //= !$MC3{DISPLAY_LOCATION_DEFAULT};
-$QryParm->{'obs'}       ||= "";
-$QryParm->{'graph'}     ||= "movsum";
-$QryParm->{'slt'}       ||= "$MC3{DEFAULT_SELECT_LOCAL}";
-$QryParm->{'newts'}     ||= "";
-$QryParm->{'dump'}      ||= "";
-$QryParm->{'trash'}     ||= "";
+$QryParm->{'obs'}       //= "";
+$QryParm->{'graph'}     //= "movsum";
+$QryParm->{'slt'}       //= "$MC3{DEFAULT_SELECT_LOCAL}";
+$QryParm->{'newts'}     //= "";
+$QryParm->{'dump'}      //= "";
+$QryParm->{'trash'}     //= "";
 
 # ---- DateTime inits ---------------------------------------------------------
 #

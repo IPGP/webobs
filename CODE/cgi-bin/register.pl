@@ -56,11 +56,11 @@ use Locale::TextDomain('webobs');
 # ---- called for 'process form' (POST request, action=reg) ?
 # -----------------------------------------------------------
 if ( $cgi->param('action') eq "reg" ) {
-	my $fullname = $cgi->param('name')  || 	'';
-	my $login    = $cgi->param('login') || '';
-	my $pswd     = $cgi->param('pass')  || '';
-	my $mailaddr = $cgi->param('mail')  || '';
-	my $terms    = $cgi->param('conditions') || '';
+	my $fullname = $cgi->param('name')  // 	'';
+	my $login    = $cgi->param('login') // '';
+	my $pswd     = $cgi->param('pass')  // '';
+	my $mailaddr = $cgi->param('mail')  // '';
+	my $terms    = $cgi->param('conditions') // '';
 	my $msg      = "Your request will be processed asap. An administrator should notify you on $mailaddr for confirmation.";
 	
   # Note: $login and $pswd are not used in a shell,

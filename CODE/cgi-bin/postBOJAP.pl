@@ -108,31 +108,31 @@ my $today = qx(date -I); chomp($today);
 
 # ---- Recuperation des donnees du formulaire
 # 
-my $annee1  = $cgi->param('annee1') || "";
-my $mois1   = $cgi->param('mois1') || "";
-my $jour1   = $cgi->param('jour1') || "";
-my $hr1     = $cgi->param('hr1') || "";
-my $mn1     = $cgi->param('mn1') || "";
-my $annee2  = $cgi->param('annee2') || "";
-my $mois2   = $cgi->param('mois2') || "";
-my $jour2   = $cgi->param('jour2') || "";
-my $hr2     = $cgi->param('hr2') || "";
-my $mn2     = $cgi->param('mn2') || "";
-my $site    = $cgi->param('site') || "";
-my $rem     = $cgi->param('rem') || "";
-my $cCl     = $cgi->param('cCl') || "";
-my $cCO2    = $cgi->param('cCO2') || "";
-my $cSO4    = $cgi->param('cSO4') || "";
-my $m1      = $cgi->param('m1') || "";
-my $m2      = $cgi->param('m2') || "";
-my $m3      = $cgi->param('m3') || "";
-my $m4      = $cgi->param('m4') || "";
-my $h2o     = $cgi->param('h2o') || "";
-my $koh     = $cgi->param('koh') || "";
+my $annee1  = $cgi->param('annee1') // '';
+my $mois1   = $cgi->param('mois1')  // '';
+my $jour1   = $cgi->param('jour1')  // '';
+my $hr1     = $cgi->param('hr1')    // '';
+my $mn1     = $cgi->param('mn1')    // '';
+my $annee2  = $cgi->param('annee2') // '';
+my $mois2   = $cgi->param('mois2')  // '';
+my $jour2   = $cgi->param('jour2')  // '';
+my $hr2     = $cgi->param('hr2')    // '';
+my $mn2     = $cgi->param('mn2')    // '';
+my $site    = $cgi->param('site')   // '';
+my $rem     = $cgi->param('rem')    // '';
+my $cCl     = $cgi->param('cCl')    // '';
+my $cCO2    = $cgi->param('cCO2')   // '';
+my $cSO4    = $cgi->param('cSO4')   // '';
+my $m1      = $cgi->param('m1')     // '';
+my $m2      = $cgi->param('m2')     // '';
+my $m3      = $cgi->param('m3')     // '';
+my $m4      = $cgi->param('m4')     // '';
+my $h2o     = $cgi->param('h2o')    // '';
+my $koh     = $cgi->param('koh')    // '';
 
-my $oper    = $cgi->param('oper') || "";
-my $val     = $cgi->param('val')  || "";
-my $idTraite = $cgi->param('id') || "";
+my $oper    = $cgi->param('oper')   // '';
+my $val     = $cgi->param('val')    // '';
+my $idTraite = $cgi->param('id')    // '';
 
 my $date1 = $annee1."-".$mois1."-".$jour1;
 if ($hr1 ne "") { $hr1 = $hr1.":".$mn1; }

@@ -57,9 +57,9 @@ use Locale::TextDomain('webobs');
 #
 my @tod = localtime(); 
 my $QryParm = $cgi->Vars;
-my $typeDoc = $QryParm->{'doc'} || "";
-my $object  = $QryParm->{'object'} || "";
-my $event   = $QryParm->{'event'} || "";
+my $typeDoc = $QryParm->{'doc'}    // "";
+my $object  = $QryParm->{'object'} // "";
+my $event   = $QryParm->{'event'}  // "";
 
 # ---- validate target subir (doc=) and http-client authorizations
 #

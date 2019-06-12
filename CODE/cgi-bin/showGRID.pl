@@ -51,10 +51,10 @@ my $GRIDName  = my $GRIDType = my $RESOURCE = "";
 
 my $QryParm   = $cgi->Vars;
 my @GID = split(/[\.\/]/, trim($QryParm->{'grid'})); 
-$QryParm->{'nodes'}    ||= $GRIDS{DEFAULT_NODES_FILTER};
-$QryParm->{'coord'}    ||= $GRIDS{DEFAULT_COORDINATES};
-$QryParm->{'projet'}   ||= $GRIDS{DEFAULT_PROJECT_FILTER};
-$QryParm->{'sortby'}   ||= "event";  
+$QryParm->{'nodes'}    //= $GRIDS{DEFAULT_NODES_FILTER};
+$QryParm->{'coord'}    //= $GRIDS{DEFAULT_COORDINATES};
+$QryParm->{'projet'}   //= $GRIDS{DEFAULT_PROJECT_FILTER};
+$QryParm->{'sortby'}   //= "event";  
 
 if (scalar(@GID) == 2) {
 	($GRIDType, $GRIDName) = @GID;

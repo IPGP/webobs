@@ -75,21 +75,21 @@ my @lignes;
 
 my $me = $ENV{SCRIPT_NAME}; 
 my $QryParm   = $cgi->Vars;
-my $node   = $QryParm->{'node'} || "";
-my $file   = $QryParm->{'file'} || "";
-my $action = $QryParm->{'action'} || "edit";
-my $txt    = $QryParm->{'txt'} || "";
-my $TS0    = $QryParm->{'ts0'} || "";
-my $metain = $QryParm->{'meta'} || "";
-my $conv   = $cgi->param('conv')  || "0";
-my $encode   = $cgi->param('encode')  || "utf8";
+my $node   = $QryParm->{'node'}       // "";
+my $file   = $QryParm->{'file'}       // "";
+my $action = $QryParm->{'action'}     // "edit";
+my $txt    = $QryParm->{'txt'}        // "";
+my $TS0    = $QryParm->{'ts0'}        // "";
+my $metain = $QryParm->{'meta'}       // "";
+my $conv   = $cgi->param('conv')      // "0";
+my $encode   = $cgi->param('encode')  // "utf8";
 $txt = "$metain$txt";
 my @NID = split(/[\.\/]/, trim($QryParm->{'node'}));
 
 my $GRIDName = my $GRIDType = my $NODEName = "";
 my $absfile ="";
 my $editOK = my $admOK = 0;
-my $mmd = $WEBOBS{WIKI_MMD} || 'YES';
+my $mmd = $WEBOBS{WIKI_MMD} // 'YES';
 my $MDMeta = ($mmd ne 'NO') ? "WebObs: created by nedit  " : "";
 
 # ---- see what file has to be edited, and corresponding authorization for client

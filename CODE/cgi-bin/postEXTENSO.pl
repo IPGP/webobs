@@ -90,7 +90,7 @@ my $heure;
 
 # Recuperation des donnees du formulaire
 # - - - - - - - - - - - - - - - - - - - - - - - - -
-my $idTraite = $cgi->param('id') || "";
+my $idTraite = $cgi->param('id') // '';
 my $annee    = $cgi->param('annee');
 my $mois     = $cgi->param('mois');
 my $jour     = $cgi->param('jour');

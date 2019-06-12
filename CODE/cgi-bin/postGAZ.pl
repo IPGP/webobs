@@ -152,7 +152,7 @@ my $rem   = $cgi->param('rem');
 
 my $val    = $cgi->param('val');
 my $oper   = $cgi->param('oper');
-my $idTraite = $cgi->param('id') || "";
+my $idTraite = $cgi->param('id') // '';
 my $delete = $cgi->param('delete');
 
 my $date   = $annee."-".$mois."-".$jour;

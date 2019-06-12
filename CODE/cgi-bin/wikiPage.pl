@@ -45,7 +45,7 @@ my @lines;
 my $editor;
 
 my $QryParm   = $cgi->Vars;
-my $file = $QryParm->{'file'} || "";
+my $file = $QryParm->{'file'} // "";
 
 
 my $bfn = basename($file);

@@ -65,11 +65,11 @@ my @tod = localtime();
 my $QryParm   = $cgi->Vars;
 #FB-was: my @GID = split(/[\.\/]/, trim($QryParm->{'grid'})); 
 my ($GRIDType,$GRIDName) = split(/[\.\/]/, trim($QryParm->{'grid'})); 
-my $text = $cgi->param('text') || "";
-my $domain  = $cgi->param('domain') || "";
-my $form  = $cgi->param('form') || "";
-my $TS0 = $cgi->param('ts0') || 0;
-my $delete = $cgi->param('delete') || 0;
+my $text = $cgi->param('text')      // '';
+my $domain  = $cgi->param('domain') // '';
+my $form  = $cgi->param('form')     // '';
+my $TS0 = $cgi->param('ts0')        // 0;
+my $delete = $cgi->param('delete')  // 0;
 my @SELs = $cgi->param('SELs');
 
 my $file;

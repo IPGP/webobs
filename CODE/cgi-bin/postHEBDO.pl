@@ -50,11 +50,11 @@ my $heureDepart = $cgi->param('heureDepart');
 my $minDepart   = $cgi->param('minuteDepart');
 my $heureFin    = $cgi->param('heureFin');
 my $minFin      = $cgi->param('minuteFin');
-my $dateNA      = $cgi->param('dateNA') || "";
+my $dateNA      = $cgi->param('dateNA') // "";
 my $typeEvnt    = $cgi->param('typeEvenement');
 my $comment     = $cgi->param('commentEvenement');
 my $lieuEvnt    = $cgi->param('lieuEvenement');
-my $idTraite    = $cgi->param('id') || "";
+my $idTraite    = $cgi->param('id') // "";
 my $timeDepart  = "";
 my $timeFin     = "";
 

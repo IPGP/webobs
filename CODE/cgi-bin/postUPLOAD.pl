@@ -68,10 +68,10 @@ use Locale::TextDomain('webobs');
 my $progress = "";
 my @tod = localtime(); 
 my $QryParm = $cgi->Vars;
-my $typeDoc = $QryParm->{'doc'} || "";
-my $object  = $QryParm->{'object'} || "";
-my $event   = $QryParm->{'event'} || "";
-my $nb      = $QryParm->{'nb'} || 0;
+my $typeDoc = $QryParm->{'doc'}    // "";
+my $object  = $QryParm->{'object'} // "";
+my $event   = $QryParm->{'event'}  // "";
+my $nb      = $QryParm->{'nb'}     // 0;
 
 # ---- validate target subir (doc=) and http-client authorizations
 #

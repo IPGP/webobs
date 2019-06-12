@@ -67,10 +67,10 @@ my @lignes;
 #
 my $me = $ENV{SCRIPT_NAME}; 
 my $QryParm   = $cgi->Vars;
-my $fs     = $QryParm->{'fs'} || "";
-my $action = $QryParm->{'action'} || "edit";
-my $txt    = $QryParm->{'txt'} || "";
-my $TS0    = $QryParm->{'ts0'} || "";
+my $fs     = $QryParm->{'fs'} // "";
+my $action = $QryParm->{'action'} // "edit";
+my $txt    = $QryParm->{'txt'} // "";
+my $TS0    = $QryParm->{'ts0'} // "";
 
 my $absfile ="";
 my $relfile ="";

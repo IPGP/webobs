@@ -7,7 +7,7 @@ use File::Find;
 use WebObs::Config;
 
 my $cgi = new CGI;
-my $mfile = $cgi->param('mfile') || '';
+my $mfile = $cgi->param('mfile') // '';
 
 print $cgi->header(-type=>'text/plain',-charset=>'utf-8');
 if ($mfile) {

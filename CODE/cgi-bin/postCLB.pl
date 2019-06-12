@@ -47,7 +47,7 @@ my $Ctod  = time();  my @tod  = localtime($Ctod);
 my $today = strftime('%F',@tod);
 
 my $QryParm = $cgi->Vars;
-$QryParm->{'node'}   ||= "";
+$QryParm->{'node'}   //= "";
 
 # ---- can we ? should we ? do we have all we need ? 
 #

@@ -105,30 +105,30 @@ my %FDSN = WebObs::Grids::codesFDSN();
 
 # ---- initialize user input variables -----------------------
 #      Name and codes
-my $usrValid     = $NODE{VALID} || 0;
-my $usrName      = $NODE{NAME}  || ""; $usrName =~ s/\"//g;
-my $usrAlias     = $NODE{ALIAS} || "";
-my $usrType      = $NODE{TYPE}  || "";
-my $features     = $NODE{FILES_FEATURES} || "$__{'sensor'}";
+my $usrValid     = $NODE{VALID} // 0;
+my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
+my $usrAlias     = $NODE{ALIAS};
+my $usrType      = $NODE{TYPE};
+my $features     = $NODE{FILES_FEATURES} // "$__{'sensor'}";
 #      proc parameters
-my $usrFDSN      = $NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} || $NODE{FDSN_NETWORK_CODE};
-my $usrUTC       = $NODE{"$GRIDType.$GRIDName.UTC_DATA"}          || $NODE{UTC_DATA};
-my $usrACQ       = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"}          || $NODE{ACQ_RATE};
-my $usrDLY       = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"}        || $NODE{LAST_DELAY};
-my $usrDataFile  = $NODE{"$GRIDType.$GRIDName.FID"}               || $NODE{FID};
+my $usrFDSN      = $NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} // $NODE{FDSN_NETWORK_CODE};
+my $usrUTC       = $NODE{"$GRIDType.$GRIDName.UTC_DATA"}          // $NODE{UTC_DATA};
+my $usrACQ       = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"}          // $NODE{ACQ_RATE};
+my $usrDLY       = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"}        // $NODE{LAST_DELAY};
+my $usrDataFile  = $NODE{"$GRIDType.$GRIDName.FID"}               // $NODE{FID};
 my @usrFID       = grep { $_ =~ /$GRIDType\.$GRIDName\.FID_|^FID_/ } keys(%NODE);
-my $usrRAWFORMAT = $NODE{"$GRIDType.$GRIDName.RAWFORMAT"}         || $NODE{RAWFORMAT};
-my $usrRAWDATA   = $NODE{"$GRIDType.$GRIDName.RAWDATA"}           || $NODE{RAWDATA}; $usrRAWDATA =~ s/\"/&quot;/g;
-my $usrCHAN      = $NODE{"$GRIDType.$GRIDName.CHANNEL_LIST"}      || $NODE{CHANNEL_LIST};
+my $usrRAWFORMAT = $NODE{"$GRIDType.$GRIDName.RAWFORMAT"}         // $NODE{RAWFORMAT};
+my $usrRAWDATA   = $NODE{"$GRIDType.$GRIDName.RAWDATA"}           // $NODE{RAWDATA}; $usrRAWDATA =~ s/\"/&quot;/g;
+my $usrCHAN      = $NODE{"$GRIDType.$GRIDName.CHANNEL_LIST"}      // $NODE{CHANNEL_LIST};
 #      Geographical position
-my $usrLat       = $NODE{LAT_WGS84} || "";
+my $usrLat       = $NODE{LAT_WGS84};
 my $usrLatN      = ($usrLat >= 0 ? "N":"S");
 $usrLat =~ s/^-//g; # computes the absolute value but avoiding the use of locale
-my $usrLon       = $NODE{LON_WGS84} || "";
+my $usrLon       = $NODE{LON_WGS84};
 my $usrLonE = ($usrLon >= 0 ? "E":"W");
 $usrLon =~ s/^-//g;
-my $usrAlt       = $NODE{ALTITUDE}  || "";
-my $usrTypePos   = $NODE{POS_TYPE}  || "";
+my $usrAlt       = $NODE{ALTITUDE};
+my $usrTypePos   = $NODE{POS_TYPE};
 #      Transmission
 my ($usrTrans,@usrTele) = split(/,| |\|/,$NODE{TRANSMISSION});
 if ($usrTrans eq "NA") { $usrTrans = "0"; }
@@ -137,15 +137,15 @@ my $usrYearE = my $usrYearC = my $usrYearP = "";
 my $usrMonthE = my $usrMonthC = my $usrMonthP = "";
 my $usrDayE = my $usrDayC = my $usrDayP = my $date = ""; 
 #      install date = (the one defined or "" if NA) OR today
-$date            = $NODE{INSTALL_DATE} || strftime('%Y-%m-%d',@tod);
+$date            = $NODE{INSTALL_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
 ($usrYearC,$usrMonthC,$usrDayC) = split(/-/,$date);
 #      end date = (the one defined or "" if NA) OR ""
-$date            = $NODE{END_DATE} || "";
+$date            = $NODE{END_DATE};
 if ($date eq "NA") { $date = "" }
 ($usrYearE,$usrMonthE,$usrDayE) = split(/-/,$date);
 #      positionning date = (the one defined or "" if NA) OR today
-$date            = $NODE{POS_DATE} || strftime('%Y-%m-%d',@tod);
+$date            = $NODE{POS_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
 ($usrYearP,$usrMonthP,$usrDayP) = split(/-/,$date);
 
@@ -153,8 +153,8 @@ if ($date eq "NA") { $date = "" }
 my @allNodes = qx(/bin/ls $NODES{PATH_NODES});
 chomp(@allNodes);
 
-my $infoFile   = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}" || "";
-my $accessFile = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_PHOTOS}" || "";
+my $infoFile   = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}" // "";
+my $accessFile = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_PHOTOS}" // "";
 
 # ---- Things to populate select dropdown fields 
 my $anneeActuelle = strftime('%Y',@tod);
@@ -189,28 +189,6 @@ function postIt()
    document.formulaire.alias.focus();
    return false;
   }
-/*FB-was:
- if(document.formulaire.data.value == "") {
-   alert("FID: Please enter at least one character");
-   document.formulaire.data.focus();
-   return false;
-  }
- if(document.formulaire.latwgs84.value == "" || isNaN(document.formulaire.latwgs84.value)) {
-   alert("LATITUDE: Please enter a number");
-   document.formulaire.latwgs84.focus();
-   return false;
-  }
- if(document.formulaire.lonwgs84.value == "" || isNaN(document.formulaire.lonwgs84.value)) {
-   alert("LONGITUDE: Please enter a number");
-   document.formulaire.lonwgs84.focus();
-   return false;
-  }
- if(document.formulaire.altitude.value == "" || isNaN(document.formulaire.altitude.value)) {
-   alert("ELEVATION: Please enter a number");
-   document.formulaire.altitude.focus();
-   return false;
-  }
-*/
  if(document.formulaire.latwgs84.value != "" && (isNaN(document.formulaire.latwgs84.value) || document.formulaire.latwgs84.value < 0 || document.formulaire.latwgs84.value > 90)) {
    alert("LATITUDE: Please enter a positive number between 0 and +90, use S for southern latitude, or leave blank");
    document.formulaire.latwgs84.focus();

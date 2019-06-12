@@ -151,7 +151,7 @@ my $d31   = $cgi->param('d31');
 my $v31   = $cgi->param('v31');
 my $oper  = $cgi->param('oper');
 my $val   = $cgi->param('val');
-my $idTraite = $cgi->param('id') || "";
+my $idTraite = $cgi->param('id') // "";
 
 # tampon date et oprateur
 my $stamp = "[$today $oper]";
