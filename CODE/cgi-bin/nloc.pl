@@ -52,7 +52,7 @@ my $cgi = new CGI;
 
 my $grid   = $cgi->url_param('grid');
 my $nodes = $cgi->url_param('nodes');
-my $today  = $cgi->url_param('today')  || qx(date +\%Y-\%m-\%d);
+my $today  = $cgi->url_param('today')  // qx(date +\%Y-\%m-\%d);
 chomp($today);
 my $format  = $cgi->url_param('format');
 my $coord  = $cgi->url_param('coord');

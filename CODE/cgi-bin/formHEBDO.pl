@@ -65,7 +65,7 @@ my @People=("");
 # get & parse the http query string (url-param)
 # -------------------------------------------------
 my $QryParm = $cgi->Vars;
-my $id = $QryParm->{'id'} ||= "";
+my $id = $QryParm->{'id'} //= "";
 
 # -------------------------------------------------
 my $message;

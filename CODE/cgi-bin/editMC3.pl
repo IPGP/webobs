@@ -99,7 +99,7 @@ my $s3       = $cgi->url_param('s3');
 my $mc3      = $cgi->url_param('mc');
 my $id_evt_modif = $cgi->param('id_evt');
 my $date     = $cgi->param('date');
-my $delete   = $cgi->param('effaceEvenement') || 0;
+my $delete   = $cgi->param('effaceEvenement') // 0;
 my $operator     = $cgi->param('nomOperateur');
 my $dateEvnt = $cgi->param('dateEvenement');
 my ($anneeEvnt,$moisEvnt,$jourEvnt,$heureEvnt,$minEvnt) = split(/-|:|\ /,$dateEvnt);
@@ -121,7 +121,7 @@ my $dateCourante=$anneeEvnt."-".$moisEvnt."-".$jourEvnt;
 my $nbrEvnt  =  $cgi->param('nombreEvenement');
 my $smoinsp  =  $cgi->param('smoinsp');
 my $imageSEFRAN =  $cgi->param('imageSEFRAN');
-my $newSC3   = $cgi->param('newSC3event') || 0;
+my $newSC3   = $cgi->param('newSC3event') // 0;
 
 # compatibility with MC2
 my $idSC3     = $cgi->param('files');

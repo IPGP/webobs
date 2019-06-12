@@ -95,9 +95,9 @@ my $today = new Time::Piece;
 
 # ---- query management parms with defaults
 my $QryParm = $cgi->Vars;
-$QryParm->{'getid'}     ||= "";
-$QryParm->{'setid'}     ||= "";
-$QryParm->{'delid'}     ||= "";
+$QryParm->{'getid'}     //= "";
+$QryParm->{'setid'}     //= "";
+$QryParm->{'delid'}     //= "";
 
 # ------------------------------------------------------------------
 # ---- special requests before querying/displaying gazette rows
@@ -124,12 +124,12 @@ $setmsg = "<span>".$today->strftime('%Y-%m-%d %H:%M:%S')." $__{'last DB update'}
 # ------------------------------------------------------------------
 
 # ---- query select/display parms with defaults
-$QryParm->{'gview'}     ||= $GAZETTE{DEFAULT_VIEW};
-$QryParm->{'gdate'}     ||= $GAZETTE{DEFAULT_DATE};
-$QryParm->{'gcategory'} ||= $GAZETTE{DEFAULT_CATEGORY} ||= 'ALL';
-$QryParm->{'gfilter'}   ||= "";
-$QryParm->{'wodpdesc'}  ||= "";
-$QryParm->{'create'}    ||= "";
+$QryParm->{'gview'}     //= $GAZETTE{DEFAULT_VIEW};
+$QryParm->{'gdate'}     //= $GAZETTE{DEFAULT_DATE};
+$QryParm->{'gcategory'} //= $GAZETTE{DEFAULT_CATEGORY} //= 'ALL';
+$QryParm->{'gfilter'}   //= "";
+$QryParm->{'wodpdesc'}  //= "";
+$QryParm->{'create'}    //= "";
 
 # ---- convert gdate keywords to their wodp-compatible date/range expression
 # ---- keywords are a subset of those handled by Gazette.js function shortcuts()
@@ -153,8 +153,8 @@ elsif ($QryParm->{'gdate'} =~ /currWeek|thisweek/i) {
 }
 
 # ---- some defaults if needed for Gazette configuration
-my $titrePage = $GAZETTE{TITLE} || "Gazette";
-my $empty = $__{$GAZETTE{EMPTY_SELECTION_MSG}} || $__{"Empty"};
+my $titrePage = $GAZETTE{TITLE} // "Gazette";
+my $empty = $__{$GAZETTE{EMPTY_SELECTION_MSG}} // $__{"Empty"};
 my $mindate = $GAZETTE{BANG};
 my $maxdate = ($GAZETTE{FUTURE_YEARS} + $today->year);
 

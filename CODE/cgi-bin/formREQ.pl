@@ -321,9 +321,9 @@ print "<TR>";
 	print "</fieldset>";
 
 	my %datestr = readCfg("$WEBOBS{ROOT_CODE}/etc/dateformats.conf");
-	my @ppis = split(',',$WEBOBS{REQ_PPI_LIST} ||= '75,100,150,300,600');
-	my @marks = split(',',$WEBOBS{REQ_MARKERSIZE_LIST} ||= '1,2,4,6,10,15,20');
-	my @linew = split(',',$WEBOBS{REQ_LINEWIDTH_LIST} ||= '0.1,0.25,0.5,1,1.5,2,3');
+	my @ppis = split(',',$WEBOBS{REQ_PPI_LIST} //= '75,100,150,300,600');
+	my @marks = split(',',$WEBOBS{REQ_MARKERSIZE_LIST} //= '1,2,4,6,10,15,20');
+	my @linew = split(',',$WEBOBS{REQ_LINEWIDTH_LIST} //= '0.1,0.25,0.5,1,1.5,2,3');
 
 	print "<fieldset><legend>$__{'Output parameters'}</legend>"; 
   	print "<TABLE>";

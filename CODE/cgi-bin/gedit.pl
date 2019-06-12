@@ -78,13 +78,13 @@ my @lignes;
 
 my $me = $ENV{SCRIPT_NAME}; 
 my $QryParm   = $cgi->Vars;
-my $grid   = $QryParm->{'grid'} || "";
-my $file   = $QryParm->{'file'} || "";
-my $action = $QryParm->{'action'} || "edit";
-my $txt    = $QryParm->{'txt'} || "";
-my $TS0    = $QryParm->{'ts0'} || "";
-my $metain = $QryParm->{'meta'} || "";
-my $conv   = $cgi->param('conv')  || "0";
+my $grid   = $QryParm->{'grid'}   // "";
+my $file   = $QryParm->{'file'}   // "";
+my $action = $QryParm->{'action'} // "edit";
+my $txt    = $QryParm->{'txt'}    // "";
+my $TS0    = $QryParm->{'ts0'}    // "";
+my $metain = $QryParm->{'meta'}   // "";
+my $conv   = $cgi->param('conv')  // "0";
 $txt = "$metain$txt";
 
 my @GID    = split(/[\.\/]/, trim($QryParm->{'grid'}));
@@ -93,7 +93,7 @@ my $name = "$GRIDType.$GRIDName$file";
 
 my $absfile ="";
 my $editOK = my $admOK = 0;
-my $mmd = $WEBOBS{WIKI_MMD} || 'YES';
+my $mmd = $WEBOBS{WIKI_MMD} // 'YES';
 my $MDMeta = ($mmd ne 'NO' ? "WebObs: created by gedit  " : "");
 
 # ---- see what file has to be edited, and corresponding authorization for client

@@ -131,7 +131,7 @@ use Locale::TextDomain('webobs');
 
 # ---- Above all we need a fully-qualified NODE from an authorized client
 #
-my $delete = $cgi->param('delete') || 0;
+my $delete = $cgi->param('delete') // 0;
 my $GRIDName  = my $GRIDType  = my $NODEName = "";
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($cgi->param('node')));
 if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
@@ -166,40 +166,40 @@ if ($delete) {
 # ---- What are we supposed to do ?: find it out in the query string 
 #
 my $QryParm   = $cgi->Vars;    # used later; todo: replace cgi->param's below
-my $acqr      = $cgi->param('acqr')        ||''; 
-my $utcd      = $cgi->param('utcd')        ||''; 
-my $ldly      = $cgi->param('ldly')        ||''; 
-my $anneeD    = $cgi->param('anneeDepart') ||'';
-my $moisD     = $cgi->param('moisDepart')  ||'';
-my $jourD     = $cgi->param('jourDepart')  ||'';
-my $anneeE    = $cgi->param('anneeEnd')    ||'';
-my $moisE     = $cgi->param('moisEnd')     ||'';
-my $jourE     = $cgi->param('jourEnd')     ||'';
-my $validite  = $cgi->param('valide')      ||'';
-my $alias     = $cgi->param('alias')       ||'';
-my $type      = $cgi->param('type')        ||'';
-my $data      = $cgi->param('data')        ||'';
-my $rawformat = $cgi->param('rawformat')   ||'';
-my $rawdata   = $cgi->param('rawdata')     ||'';
-my @chanlist  = $cgi->param('chanlist');
-my $name      = $cgi->param('fullName')    ||'';
-my $fdsn      = $cgi->param('fdsn')        ||'';
-my $latN      = $cgi->param('latwgs84n')   ||'';
-my $lat       = $cgi->param('latwgs84')    ||'';
-my $latmin    = $cgi->param('latwgs84min') ||'';
-my $latsec    = $cgi->param('latwgs84sec') ||'';
-my $lonE      = $cgi->param('lonwgs84e')   ||'';
-my $lon       = $cgi->param('lonwgs84')    ||'';
-my $lonmin    = $cgi->param('lonwgs84min') ||'';
-my $lonsec    = $cgi->param('lonwgs84sec') ||'';
-my $alt       = $cgi->param('altitude')    ||'';
-my $anneeP    = $cgi->param('anneeMesure') ||'';
-my $moisP     = $cgi->param('moisMesure')  ||'';
-my $jourP     = $cgi->param('jourMesure')  ||'';
-my $typePos   = $cgi->param('typePos')     ||'';
-my $features  = $cgi->param('features')    ||''; 
-my $typeTrans = $cgi->param('typeTrans')   ||'';
-my $typeTele  = $cgi->param('tele')        ||'';
+my $acqr      = $cgi->param('acqr')        // ''; 
+my $utcd      = $cgi->param('utcd')        // ''; 
+my $ldly      = $cgi->param('ldly')        // ''; 
+my $anneeD    = $cgi->param('anneeDepart') // '';
+my $moisD     = $cgi->param('moisDepart')  // '';
+my $jourD     = $cgi->param('jourDepart')  // '';
+my $anneeE    = $cgi->param('anneeEnd')    // '';
+my $moisE     = $cgi->param('moisEnd')     // '';
+my $jourE     = $cgi->param('jourEnd')     // '';
+my $validite  = $cgi->param('valide')      // '';
+my $alias     = $cgi->param('alias')       // '';
+my $type      = $cgi->param('type')        // '';
+my $data      = $cgi->param('data')        // '';
+my $rawformat = $cgi->param('rawformat')   // '';
+my $rawdata   = $cgi->param('rawdata')     // '';
+my @chanlist  = $cgi->param('chanlist')    // '';
+my $name      = $cgi->param('fullName')    // '';
+my $fdsn      = $cgi->param('fdsn')        // '';
+my $latN      = $cgi->param('latwgs84n')   // '';
+my $lat       = $cgi->param('latwgs84')    // '';
+my $latmin    = $cgi->param('latwgs84min') // '';
+my $latsec    = $cgi->param('latwgs84sec') // '';
+my $lonE      = $cgi->param('lonwgs84e')   // '';
+my $lon       = $cgi->param('lonwgs84')    // '';
+my $lonmin    = $cgi->param('lonwgs84min') // '';
+my $lonsec    = $cgi->param('lonwgs84sec') // '';
+my $alt       = $cgi->param('altitude')    // '';
+my $anneeP    = $cgi->param('anneeMesure') // '';
+my $moisP     = $cgi->param('moisMesure')  // '';
+my $jourP     = $cgi->param('jourMesure')  // '';
+my $typePos   = $cgi->param('typePos')     // '';
+my $features  = $cgi->param('features')    // ''; 
+my $typeTrans = $cgi->param('typeTrans')   // '';
+my $typeTele  = $cgi->param('tele')        // '';
 if ($typeTele ne "") { $typeTrans = "$typeTrans,$typeTele"; }
 my @SELs      = $cgi->param('SELs');
 

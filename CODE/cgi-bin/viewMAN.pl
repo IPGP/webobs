@@ -21,7 +21,7 @@ use File::Find;
 use WebObs::Config;
 
 my $cgi = new CGI;
-my $man = $cgi->param('man') || '';
+my $man = $cgi->param('man') // '';
 $man = $man.".1";
 $man =~ s/^.*\//..\/..\/DOC\//g;
 

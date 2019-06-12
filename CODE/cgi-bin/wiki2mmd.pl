@@ -23,13 +23,13 @@ use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
 use WebObs::Config;
 use WebObs::Wiki;
 
-my $mmd = $WEBOBS{WIKI_MMD} || 'YES';
+my $mmd = $WEBOBS{WIKI_MMD} // 'YES';
 if ($mmd eq 'NO') {
 	print "Can't convert, configuration says WIKI_MMD|NO\n"; exit;
 }
 
 
-my $file   = $ARGV[0] || "";
+my $file   = $ARGV[0] // "";
 my $txt    = "";
 my $titre  = "";
 my @lines;

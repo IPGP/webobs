@@ -76,8 +76,8 @@ if (defined($WEBOBS{WELCOME_CONF})) {
 	%APARMS = readCfg("$WEBOBS{WELCOME_CONF}");
 	if (!%APARMS) { die "Couldn't read $WEBOBS{WELCOME_CONF}" }
 } else { die "No WELCOME-PAGE configuration defined $WEBOBS{WELCOME_CONF}" }
-my $DN = $APARMS{DAYNIGHT} || "NO";
-my $HW = $APARMS{HELLOWORLD} || $__{'Hello World'};
+my $DN = $APARMS{DAYNIGHT} // "NO";
+my $HW = $APARMS{HELLOWORLD} // $__{'Hello World'};
 
 # ---- prepare timezones area, a view of other interesting places datetime 
 my $tz_old = $ENV{TZ};
@@ -138,8 +138,8 @@ if (open(FILE, "<$WEBOBS{FILE_DAYSOFF}")) {
 my $calendar = "<input id=\"d0\" class=\"wodp\" type=\"text\"/>";
 
 # ---- prepare an inline view of today's Gazette articles 
-my $gview = $APARMS{GAZETTE_VIEW} || 'categorylist';
-my $empty = $__{$GAZETTE{EMPTY_SELECTION_MSG}} || $__{"Empty"};
+my $gview = $APARMS{GAZETTE_VIEW} // 'categorylist';
+my $empty = $__{$GAZETTE{EMPTY_SELECTION_MSG}} // $__{"Empty"};
 my @gazette = WebObs::Gazette::Show(view=>$gview,from=>$today->strftime('%Y-%m-%d'));
 @gazette = ("<h3>$empty</h3>") if (!@gazette);
 

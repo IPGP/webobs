@@ -131,7 +131,7 @@ my $d20    = $cgi->param('d20');
 my $oper   = $cgi->param('oper');
 my $rem    = $cgi->param('rem');
 my $val    = $cgi->param('val');
-my $idTraite = $cgi->param('id') || "";
+my $idTraite = $cgi->param('id') // "";
 
 my $date   = "$annee-$mois-$jour";
 my $heure  = "$hr:$mn";

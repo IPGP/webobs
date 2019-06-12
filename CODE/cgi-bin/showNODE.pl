@@ -135,14 +135,14 @@ my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
 my %FDSN     = WebObs::Grids::codesFDSN();
 
 # parameters linked to a proc
-my $fdsn = trim($NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} || $NODE{FDSN_NETWORK_CODE});
-my $fid = $NODE{"$GRIDType.$GRIDName.FID"} || $NODE{FID};
+my $fdsn = trim($NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} // $NODE{FDSN_NETWORK_CODE});
+my $fid = $NODE{"$GRIDType.$GRIDName.FID"} // $NODE{FID};
 my $fids=""; grep {$_ =~ /$GRIDType\.$GRIDName\.FID_|^FID_/ && ($fids .= "$_: <B>$NODE{$_}</B> - ") } (keys(%NODE));  $fids =~ s/- $|$GRIDType\.$GRIDName\.//g;
-my $rawformat = $NODE{"$GRIDType.$GRIDName.RAWFORMAT"} || $NODE{RAWFORMAT};
-my $rawdata = $NODE{"$GRIDType.$GRIDName.RAWDATA"} || $NODE{RAWDATA};
-my $acqrate = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"} || $NODE{ACQ_RATE};
-my $acqdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"} || $NODE{LAST_DELAY};
-my $chanlist = $NODE{"$GRIDType.$GRIDName.CHANNEL_LIST"} || $NODE{CHANNEL_LIST};
+my $rawformat = $NODE{"$GRIDType.$GRIDName.RAWFORMAT"} // $NODE{RAWFORMAT};
+my $rawdata = $NODE{"$GRIDType.$GRIDName.RAWDATA"} // $NODE{RAWDATA};
+my $acqrate = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"} // $NODE{ACQ_RATE};
+my $acqdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"} // $NODE{LAST_DELAY};
+my $chanlist = $NODE{"$GRIDType.$GRIDName.CHANNEL_LIST"} // $NODE{CHANNEL_LIST};
 
 my $statusDB = $NODES{SQL_DB_STATUS};
 if ($statusDB eq "") { $statusDB = "$WEBOBS{PATH_DATA_DB}/NODESSTATUS.db" };
@@ -152,13 +152,13 @@ if (-e $statusDB) {
 	chomp($statusNODE);
 }
 
-$GRID{UTM_LOCAL} ||= '';
+$GRID{UTM_LOCAL} //= '';
 #my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
 my %UTM =  %WebObs::IGN::UTM;
 
 # ---- sort interventions by date / event stuff  -----------------------------------
 #
-$QryParm->{'sortby'} ||= "event";  
+$QryParm->{'sortby'} //= "event";  
 my $sortBy = $QryParm->{'sortby'};
 
 #OLD:# NOTE [FB]: comment trier @listeFileInterventions suivant basename(@listeFileInterventions) ??
@@ -333,7 +333,7 @@ if (uc($GRIDType) eq 'PROC') {
 		print "<TABLE><TR><TD style=\"border:0\">";
 		if ($GRID{'FORM'} ne "") {
 			%FORM = readCfg("$WEBOBS{PATH_FORMS}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
-			my $txt = $FORM{TITLE} || "$__{'Data bank'}";
+			my $txt = $FORM{TITLE} // "$__{'Data bank'}";
 			my $url = "/cgi-bin/$FORM{CGI_SHOW}"; 
 			print "$__{'Form'}: <A href=\"$url?site=$NODEName\"><B>$txt</B></A><BR>";
 		}

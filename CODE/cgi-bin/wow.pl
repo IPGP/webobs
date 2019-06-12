@@ -97,7 +97,7 @@ dump WEBOBS.rc contents as $WEBOBS{name}=value , where name(s) match filter.
 
 sub do_webobs {
 	my @out;
-	my $regexp = $_[0] || ".*";
+	my $regexp = $_[0] // ".*";
 	push(@out, $cgi->header(-type=>'text/html', -attachment=>"$attachFn.txt", -charset=>'utf-8') );
 	my @L = grep {/$regexp/} sort (keys(%WebObs::Config::WEBOBS));
 	map { push(@out, "\$WEBOBS{$_}=$WebObs::Config::WEBOBS{$_}\n") } @L;
@@ -120,7 +120,7 @@ dump GRIDS.rc contents as $GRIDS{name}=value , where name(s) match filter
 
 sub do_grids {
 	my @out;
-	my $regexp = $_[0] || ".*";
+	my $regexp = $_[0] // ".*";
 	push(@out, $cgi->header(-type=>'text/html', -attachment=>"$attachFn.txt", -charset=>'utf-8') );
 	my @L = grep {/$regexp/} sort (keys(%WebObs::Grids::GRIDS));
 	map { push(@out, "\$GRIDS{$_}=$WebObs::Grids::GRIDS{$_}\n") } @L;

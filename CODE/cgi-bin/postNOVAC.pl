@@ -139,7 +139,7 @@ my $spectrometerError = $cgi->param('spectrometerError');
 my $scatteringError = $cgi->param('scatteringError');
 my $windError = $cgi->param('windError');
 my $nbValidScans = $cgi->param('nbValidScans');
-my $idTraite = $cgi->param('id') || "";
+my $idTraite = $cgi->param('id') // "";
 my $delete = $cgi->param('delete');
 
 my $date   = $annee."-".$mois."-".$jour;

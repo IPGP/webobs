@@ -189,9 +189,9 @@ sub print_secondary {
 
 ##---- Main script
 
-my $current_password = $cgi->param('current_password') || "";
-my $new_password  = $cgi->param('new_password') || "";
-my $new_password2 = $cgi->param('new_password2') || "";
+my $current_password = $cgi->param('current_password') // "";
+my $new_password  = $cgi->param('new_password')        // "";
+my $new_password2 = $cgi->param('new_password2')       // "";
 
 
 # If ALLOW_HTPASSWORD_CHANGE is not set to 1 in WEBOBS.rc,

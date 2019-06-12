@@ -199,7 +199,7 @@ for (@last) {
 		chomp(@event);
 
 		# --- gets event type
-		my $evt_type = findvalue('/type=',\@event) || '';
+		my $evt_type = findvalue('/type=',\@event) // '';
 		print "event type = $evt_type\n";
 		if (grep(/^$evt_type$/,@blacklist_types)) {
 			print "Warning: Event type '$evt_type' is blacklisted!\n";
@@ -225,7 +225,7 @@ for (@last) {
 			print "origin longitude = ".($evt_lon ? "$evt_lon":"")."\n";
 
 			# --- gets origin:methodID
-			my $evt_mcID = findvalue('/methodID=',\@origin) || '';
+			my $evt_mcID = findvalue('/methodID=',\@origin) // '';
 			print "origin methodID (MCID) = $evt_mcID\n";
 			my $mcIDname = (split(/\//,$evt_mcID))[-3];
 			my $mcIDym = (split(/\//,$evt_mcID))[-2];
@@ -283,13 +283,13 @@ for (@last) {
 			my $evt_pick = $tab[0];
 			my @pick = findnode('/pick',"/time/value=$evt_pick",\@event);
 			my $evt_pickID = findvalue('/\@publicID=',\@pick);
-			my $evt_sdate = substr($evt_pick,0,10) || '';
-			my $evt_stime = substr($evt_pick,11,11) || '';
+			my $evt_sdate = substr($evt_pick,0,10) // '';
+			my $evt_stime = substr($evt_pick,11,11) // '';
 			$evt_stime =~ s/[A-Z]/0/g; # sometimes time value is "2012-05-07T18:46:53.7Z"
-			my $NET = findvalue('/waveformID/@networkCode=',\@pick) || '';
-			my $STA = findvalue('/waveformID/@stationCode=',\@pick) || '';
-			my $LOC = findvalue('/waveformID/@locationCode=',\@pick) || '';
-			my $CHA = findvalue('/waveformID/@channelCode=',\@pick) || '';
+			my $NET = findvalue('/waveformID/@networkCode=',\@pick) // '';
+			my $STA = findvalue('/waveformID/@stationCode=',\@pick) // '';
+			my $LOC = findvalue('/waveformID/@locationCode=',\@pick) // '';
+			my $CHA = findvalue('/waveformID/@channelCode=',\@pick) // '';
 			my $evt_scode = "$NET.$STA.$LOC.$CHA";
 			print "station pickID = $evt_pickID\n";
 			print "station time = $evt_pick\n";

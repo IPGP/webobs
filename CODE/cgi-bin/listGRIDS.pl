@@ -58,8 +58,8 @@ my %G;
 my $GRIDName = my $GRIDType = my $RESOURCE = "";
 
 my $QryParm  = $cgi->Vars;
-my $subsetDomain = $QryParm->{'domain'}   || "";
-my $subsetType   = lc($QryParm->{'type'}) || 'all';
+my $subsetDomain = $QryParm->{'domain'}   // "";
+my $subsetType   = lc($QryParm->{'type'}) // 'all';
    $subsetType   = 'all' if ( $subsetType ne 'proc' && $subsetType ne 'view');
 
 my $showType = (defined($GRIDS{SHOW_TYPE}) && ($GRIDS{SHOW_TYPE} eq 'N')) ? 0 : 1;
