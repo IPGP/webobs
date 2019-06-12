@@ -15,7 +15,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2019-02-16
+%	Updated: 2019-05-23
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -238,24 +238,32 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function h = plotlogo(f,rh,pos)
-%PLOTLOGO plots logo image.
+%PLOTLOGO plots logo image(s).
 %	PLOTLOGO(LOGO_FILE,LOGO_HEIGHT,PAPERPOSITION,POS)
 
 h = [];
 ha = gca;
 pp = get(gcf,'PaperPosition');
 
-if ~isempty(f) && exist(f,'file')
-	try
-		A = imread(f);
-		isz = size(A);
-		lgh = rh*pp(3)/pp(4);
-		lgw = lgh*isz(2)*pp(4)/isz(1)/pp(3);
-		h = axes('Position',[strcmp(pos,'right')*(1-lgw),1-lgh,lgw,lgh],'Visible','off');
-		image(A)
-		axis off
-	catch
-		fprintf('WEBOBS{mkgraph:plotlogo}: ** WARNING ** Cannot read image file "%s".\n',f);
+if ~isempty(f)
+	ff = split(f,',');
+	pos0 = 0;
+	for i = 1:length(ff)
+		if exist(ff{i},'file')
+			try
+				A = imread(ff{i});
+				isz = size(A);
+				lgh = rh*pp(3)/pp(4);
+				lgw = lgh*isz(2)*pp(4)/isz(1)/pp(3);
+				posx = pos0 + strcmp(pos,'right')*(1-lgw);
+				h = axes('Position',[posx,1-lgh,lgw,lgh],'Visible','off');
+				image(A)
+				axis off
+				pos0 = pos0 + (lgw + 0.005)*(1 - 2*strcmp(pos,'right'));
+			catch
+				fprintf('WEBOBS{mkgraph:plotlogo}: ** WARNING ** Cannot read image file "%s".\n',ff{i});
+			end
+		end
 	end
 end
 
