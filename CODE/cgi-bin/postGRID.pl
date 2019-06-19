@@ -170,7 +170,7 @@ htmlMsgOK("postGRID: $QryParm->{'grid'} updated");
 # --- return information when OK 
 sub htmlMsgOK {
  	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] successfully !\n";
+	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
 }
 
 # --- return information when not OK

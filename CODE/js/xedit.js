@@ -60,8 +60,8 @@ function xeditstatus() {
 
 function postform() {
 	editor.save();
-    $.post(XCB.ME, $('#theform').serialize(), function(data) {
-		   alert(data);
+	$.post(XCB.ME, $('#theform').serialize(), function(data) {
+		   if (data != '') alert(data);
 		   history.go(-1);
    	});
 }

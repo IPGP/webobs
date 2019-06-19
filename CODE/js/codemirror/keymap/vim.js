@@ -3774,7 +3774,7 @@
         cm.openNotification('<span style="color: red">' + text + '</span>',
                             {bottom: true, duration: 5000});
       } else {
-        alert(text);
+        if (text != '') alert(text);
       }
     }
     function makePrompt(prefix, desc) {

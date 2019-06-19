@@ -417,7 +417,7 @@ function postform() {
 		return false;
 	}
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-		 alert(\$(\"<div/>\").html(data).text());
+		 if (data != '') alert(\$(\"<div/>\").html(data).text());
        	 location.href = document.referrer;	   
    	});
 }
@@ -598,7 +598,7 @@ sub htmlMsgOK {
 		$msg .= "+ Notify error $t" if ( $t > 0);
 	}
  	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$msg\n";
+	print "$msg\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
 }
 sub htmlMsgNotOK {
  	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');

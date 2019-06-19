@@ -167,6 +167,7 @@ GRIDMAPS|${ROOT_CONF}/GRIDMAPS.rc
 # ---------------------------------------------
 CGI_UPLOAD|formUPLOAD.pl
 CGI_UPLOAD_POST|postUPLOAD.pl
+CGI_CONFIRM_SUCCESSFUL|NO
 
 # ---- External resources ---------------------
 # ---------------------------------------------

@@ -6,7 +6,7 @@ showGRID.pl
 
 =head1 SYNOPSIS
 
-http://..../showGRID.pl?grid=gridtype.gridname[,nodes=][,coord=][,projet=]
+http://..../showGRID.pl?grid=gridtype.gridname[,nodes=][,coord=][,project=][,procparam=]
 
 =head1 DESCRIPTION
 
@@ -51,10 +51,12 @@ my $GRIDName  = my $GRIDType = my $RESOURCE = "";
 
 my $QryParm   = $cgi->Vars;
 my @GID = split(/[\.\/]/, trim($QryParm->{'grid'})); 
-$QryParm->{'nodes'}    //= $GRIDS{DEFAULT_NODES_FILTER};
-$QryParm->{'coord'}    //= $GRIDS{DEFAULT_COORDINATES};
-$QryParm->{'projet'}   //= $GRIDS{DEFAULT_PROJECT_FILTER};
-$QryParm->{'sortby'}   //= "event";  
+my $usrNodes = $QryParm->{'nodes'}     ||= $GRIDS{DEFAULT_NODES_FILTER};
+my $usrCoord = $QryParm->{'coord'}     ||= $GRIDS{DEFAULT_COORDINATES};
+my $usrProject = $QryParm->{'project'}   ||= $GRIDS{DEFAULT_PROJECT_FILTER};
+my $usrProcparam = $QryParm->{'procparam'} ||= $GRIDS{DEFAULT_PROCPARAM_FILTER};
+my $usrSortby = $QryParm->{'sortby'}    ||= "event";  
+my $usrMap = $QryParm->{'map'};
 
 if (scalar(@GID) == 2) {
 	($GRIDType, $GRIDName) = @GID;
@@ -80,6 +82,7 @@ if (scalar(@GID) == 2) {
 # ---- good, passed all checkings above 
 #
 my $grid = "$GRIDType.$GRIDName";
+my $isProc = ($GRIDType eq "PROC" ? '1':'0');
 my $myself = "/cgi-bin/".basename($0)."?grid=$grid";
 my $GRIDNameLower = lc($GRIDName);
 my $nbNodes = scalar(@{$GRID{NODESLIST}});
@@ -104,7 +107,7 @@ my $txt;
 my $go2top = "&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 
 # ---- Nodes status ---------------------
-my $overallStatus = "OK";
+my $overallStatus = 1;
 my $statusDB = $NODES{SQL_DB_STATUS};
 if ($statusDB eq "") { $statusDB = "$WEBOBS{PATH_DATA_DB}/NODESSTATUS.db" };
 my @statusNODES;
@@ -113,7 +116,7 @@ if (-e $statusDB) {
 	chomp(@statusNODES);
 }
 if (scalar(@statusNODES) == 0) {	
-	$overallStatus = "NOK";
+	$overallStatus = 0;
 } 
 
 # ---- Start HTML page 
@@ -151,12 +154,12 @@ $ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{
 if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
 	$ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml')\" title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
 }
-$ilinks .= " | <A href=\"#CARACTERISTIQUES\">$__{Specifications}</A>";
-$ilinks .= " | <A href=\"#CARTES\">$__{'Location'}</A>";
-$ilinks .= " | <A href=\"#INFORMATIONS\">$__{'Information'}</A>";
+$ilinks .= " | <A href=\"#SPECS\">$__{Specifications}</A>";
+$ilinks .= " | <A href=\"#MAPS\">$__{'Location'}</A>";
+$ilinks .= " | <A href=\"#INFO\">$__{'Information'}</A>";
 $ilinks .= " | <A href=\"#PROJECT\">$__{'Project'}</A>";
 $ilinks .= " | <A href=\"#EVENTS\">$__{'Events'}</A>";
-$ilinks .= " | <A href=\"#BIBLIO\">$__{'References'}</A>";
+$ilinks .= " | <A href=\"#REF\">$__{'References'}</A>";
 $ilinks .= " ]";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks";
 
@@ -181,7 +184,7 @@ print $htmlcontents;
 # ---- GRID's characteristics 
 #
 print "<BR>";
-$htmlcontents = "<A NAME=\"CARACTERISTIQUES\"></A>";
+$htmlcontents = "<A NAME=\"SPECS\"></A>";
 $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#specID');\">&nbsp;&nbsp;"; 
 	$htmlcontents .= "$__{'Specifications'}&nbsp;$go2top";
 	$htmlcontents .= "</div><div id=\"specID\">";
@@ -195,7 +198,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		$htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n" 
 	} 
 	# -----------
-	$htmlcontents .= "<LI>\"$snm\" : <B>$nbNodes</B>";
+	$htmlcontents .= "<LI>$__{'Node(s)'}: <B>$nbNodes</B> \"$snm\"";
 	if ($admOK) { 
 		$htmlcontents .= " [ "
 			."<A href=\"/cgi-bin/formGRID.pl?grid=$grid\">$__{'Associate existing node(s)'}</A> | "
@@ -205,48 +208,54 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	$htmlcontents   .= "</LI>";
 	if ($showType) { $htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n" }
 	# -----------
-	# 'old' ddb-key superseeded: use FORM (FORMS) definitions instead!  
-	if (defined($GRID{'FORM'})) {
-		my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
-		if (%FORM) {
-			my $urnData = (defined($FORM{'CGI_SHOW'})) ? "/cgi-bin/$FORM{'CGI_SHOW'}?node={$GRIDName}" : "";
-			my $txtData = (defined($FORM{'TITLE'})) ? $FORM{'TITLE'} : "";
-			$htmlcontents .= "<LI>Associated FORM: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
-		}
-	} 
-	# -----------
-	if (defined($GRID{URNDATA})) {
-		my $urnData = "$GRID{URNDATA}";
-		$htmlcontents .= "<LI>$__{'Access to data {RAWDATA}'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
-	} 
-	# -----------
-	my $urn = '';
-	if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" ) { 
-		my $ext = $GRID{TIMESCALELIST};
-		$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
-		$htmlcontents .= "<LI>$__{'Graphical routine'}: <B><A href=\"$urn\">$GRIDName</A></B> ($ext)</LI>\n";
-	} elsif ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" ) { 
-		$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName&ts=events";
-		$htmlcontents .= "<LI>$__{'Graphical routine'}: <B><A href=\"$urn\">$GRIDName</A></B> (events)</LI>\n";
-	} 
-	# -----------
-	if (defined($GRID{EVENTS_FILE})) {
-		$htmlcontents .= "<LI>$__{'Events File(s)'}:";
-		foreach (split(/,/,$GRID{EVENTS_FILE})) {
-			my $evtFile = basename("$_");
-			my $dir = dirname("$_");
-			my $loc = "";
-			$loc = "DATA" if ($dir =~ /^$WEBOBS{ROOT_DATA}/);
-			$loc = "CONF" if ($dir =~ /^$WEBOBS{ROOT_CONF}/);
-			# will be editable only if located in DATA/ or CONF/ (xedit policy)
-			if ($loc ne "" && $editOK == 1) {
-				$htmlcontents .= " <B><A href=\"/cgi-bin/xedit.pl?fs=$loc/$evtFile\">$loc/$evtFile</A></B>";
-			} else {
-				$htmlcontents .= " <B>$evtFile</B>";
+	# only for PROCs
+	if ($isProc) {
+		# 'old' ddb-key superseeded: use FORM (FORMS) definitions instead!  
+		if (defined($GRID{'FORM'})) {
+			my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
+			if (%FORM) {
+				my $urnData = (defined($FORM{'CGI_SHOW'})) ? "/cgi-bin/$FORM{'CGI_SHOW'}?node={$GRIDName}" : "";
+				my $txtData = (defined($FORM{'TITLE'})) ? $FORM{'TITLE'} : "";
+				$htmlcontents .= "<LI>Associated FORM: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
 			}
-		}
-		$htmlcontents .= "</LI>\n";
-	} 
+		} 
+		# -----------
+		$htmlcontents .= "<LI>$__{'Default data format'}: <B>$GRID{RAWFORMAT}</B></LI>\n";
+		$htmlcontents .= "<LI>$__{'Default data source'}: <B>$GRID{RAWDATA}</B></LI>\n";
+		# -----------
+		if (defined($GRID{URNDATA})) {
+			my $urnData = "$GRID{URNDATA}";
+			$htmlcontents .= "<LI>$__{'Access to rawdata'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
+		} 
+		# -----------
+		my $urn = '';
+		if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" ) { 
+			$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
+			my $outg = join(', ',map {$_ = "<A href=\"$urn&amp;ts=$_\"><B>$_</B></A>"} split(/,/,$GRID{TIMESCALELIST}));
+			$htmlcontents .= "<LI>$__{'Graphical routine'}: <B>$GRIDName</B> $outg</LI>\n";
+		} elsif ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" ) { 
+			$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName&ts=events";
+			$htmlcontents .= "<LI>$__{'Graphical routine'}: <B>$GRIDName</B> <A href=\"$urn\">events</A></LI>\n";
+		} 
+		# -----------
+		if (defined($GRID{EVENTS_FILE})) {
+			$htmlcontents .= "<LI>$__{'Events File(s)'}:";
+			foreach (split(/,/,$GRID{EVENTS_FILE})) {
+				my $evtFile = basename("$_");
+				my $dir = dirname("$_");
+				my $loc = "";
+				$loc = "DATA" if ($dir =~ /^$WEBOBS{ROOT_DATA}/);
+				$loc = "CONF" if ($dir =~ /^$WEBOBS{ROOT_CONF}/);
+				# will be editable only if located in DATA/ or CONF/ (xedit policy)
+				if ($loc ne "" && $editOK == 1) {
+					$htmlcontents .= " <B><A href=\"/cgi-bin/xedit.pl?fs=$loc/$evtFile\">$loc/$evtFile</A></B>";
+				} else {
+					$htmlcontents .= " <B>$evtFile</B>";
+				}
+			}
+			$htmlcontents .= "</LI>\n";
+		} 
+	}
 	# -----------
 	if (defined($GRID{URL})) {
 		my @links = split(/;/,$GRID{URL});
@@ -265,43 +274,59 @@ print $htmlcontents;
 # ---- first, submenu line for selections (list Active nodes, All,..., Coordinates type, etc....)
 #
 print "<BR>";
-$htmlcontents = "<A NAME=\"STATIONS\"></A>";
+$htmlcontents = "<A name=\"NODES\"></A>";
 $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#nodesID');\">&nbsp;&nbsp;"; 
 	$htmlcontents .= "$__{'List of'} $snm(s)&nbsp;$go2top";
 	$htmlcontents .= "</div><div id=\"nodesID\">";
 
 		$htmlcontents .= "<P class=\"subTitleMenu\" style=\"margin-left: 5px\">";
 
+		my $procParm = '';
+		if ($isProc) {
+			$procParm = "&amp;procparam=$usrProcparam";
+		}
+
+		# -- Nodes list submenu Nodes
 		$htmlcontents .= "$__{'Nodes'} [ ";
-		if ($QryParm->{'nodes'} eq "active") {
+		if ($usrNodes eq "active") {
 			$htmlcontents .= "<B>$__{'Active'}</B>" ;
 		} else {
-			$htmlcontents .= "<A href=\"$myself&amp;nodes=active&amp;coord=$QryParm->{'coord'}&amp;projet=$QryParm->{'projet'}&amp;#STATIONS\">$__{'Active'}</A>";
+			$htmlcontents .= "<A href=\"$myself&amp;nodes=active&amp;coord=$usrCoord&amp;project=$usrProject&amp;$procParm#NODES\">$__{'Active'}</A>";
 		}
 		if ( $seeInvOK ) {
-			$htmlcontents .= " | ".($QryParm->{'nodes'} eq "valid" ? "<B>$__{'Valid'}</B>":"<A href=\"$myself&amp;?coord=$QryParm->{'coord'}&amp;projet=$QryParm->{'projet'}&amp;nodes=valid#STATIONS\">$__{'Valid'}</A>");
+			$htmlcontents .= " | ".($usrNodes eq "valid" ? "<B>$__{'Valid'}</B>":"<A href=\"$myself&amp;?coord=$usrCoord&amp;project=$usrProject&amp;nodes=valid$procParm#NODES\">$__{'Valid'}</A>");
 		}
-		$htmlcontents .= " | ".($QryParm->{'nodes'} eq "all" ? "<B>$__{'All'}</B>":"<A href=\"$myself&amp;coord=$QryParm->{'coord'}&amp;projet=$QryParm->{'projet'}&amp;nodes=all#STATIONS\">$__{'All'}</A>")." ] ";
+		$htmlcontents .= " | ".($usrNodes eq "all" ? "<B>$__{'All'}</B>":"<A href=\"$myself&amp;coord=$usrCoord&amp;project=$usrProject&amp;nodes=all$procParm#NODES\">$__{'All'}</A>")." ] ";
 
+		# -- Nodes list submenu Coordinates
 		$htmlcontents .= "- $__{Coordinates} [ "
-				.($QryParm->{'coord'} eq "latlon" ? "<B>Lat/Lon</B>":"<A href=\"$myself&amp;projet=$QryParm->{'projet'}&amp;nodes=$QryParm->{'nodes'}&amp;coord=latlon#STATIONS\">Lat/Lon</A>")." | "
-				.($QryParm->{'coord'} eq "utm"    ? "<B>UTM</B>":"<A href=\"$myself&amp;projet=$QryParm->{'projet'}&amp;nodes=$QryParm->{'nodes'}&amp;coord=utm#STATIONS\">UTM</A>");
+				.($usrCoord eq "latlon" ? "<B>Lat/Lon</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=latlon$procParm#NODES\">Lat/Lon</A>")." | "
+				.($usrCoord eq "utm"    ? "<B>UTM</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=utm$procParm#NODES\">UTM</A>");
 		if (defined($GRID{UTM_LOCAL}) && -e $GRID{UTM_LOCAL} ) {
-			$htmlcontents .= " | ".($QryParm->{'coord'} eq "local" ? "<B>$localCS</B>":"<A href=\"$myself&amp;projet=$QryParm->{'projet'}&amp;nodes=$QryParm->{'nodes'}&amp;coord=local#STATIONS\">$localCS</A>");
+			$htmlcontents .= " | ".($usrCoord eq "local" ? "<B>$localCS</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=local$procParm#NODES\">$localCS</A>");
 		}
 		$htmlcontents .= " | "
-				.($QryParm->{'coord'} eq "xyz"    ? "<B>XYZ</B>":"<A href=\"$myself&amp;projet=$QryParm->{'projet'}&amp;nodes=$QryParm->{'nodes'}&amp;coord=xyz#STATIONS\">XYZ</A>");
+				.($usrCoord eq "xyz"    ? "<B>XYZ</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=xyz$procParm#NODES\">XYZ</A>");
 		$htmlcontents .= " ] - $__{Export} [";
-		$htmlcontents .= " <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=txt&amp;coord=$QryParm->{'coord'}&amp;nodes=$QryParm->{'nodes'}')\" title=\"Exports TXT file\">TXT</A> |";
-		$htmlcontents .= " <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=csv&amp;coord=$QryParm->{'coord'}&amp;nodes=$QryParm->{'nodes'}')\" title=\"Exports CSV file\">CSV</A>";
+		$htmlcontents .= " <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=txt&amp;coord=$usrCoord&amp;nodes=$usrNodes')\" title=\"Exports TXT file\">TXT</A> |";
+		$htmlcontents .= " <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=csv&amp;coord=$usrCoord&amp;nodes=$usrNodes')\" title=\"Exports CSV file\">CSV</A>";
 		if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
-			$htmlcontents .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml&amp;nodes=$QryParm->{'nodes'}')\" title=\"Exports KML file\">KML</A>";
+			$htmlcontents .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml&amp;nodes=$usrNodes')\" title=\"Exports KML file\">KML</A>";
 		}
 		$htmlcontents .= " ] ";
+
+		# -- Nodes list submenu Proc paramaters
+		if ($isProc) {
+			$htmlcontents .= "- $__{'Proc parameters'} [ "
+				.($usrProcparam eq "on"  ? "<B>On</B>" :"<A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=$usrProject&amp;procparam=on#NODES\">On</A>")." | "
+				.($usrProcparam ne "on" ? "<B>Off</B>":"<A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=$usrProject&amp;procparam=off#NODES\">Off</A>")." ] ";
+		}
+
+		# -- Nodes list submenu Project
 		if ( $CLIENT ne 'guest' ) {
 			$htmlcontents .= "- $__{Project} [ "
-					.($QryParm->{'projet'} eq "on"  ? "<B>On</B>" :"<A href=\"$myself&amp;nodes=$QryParm->{'nodes'}&amp;coord=$QryParm->{'coord'}&amp;projet=on#STATIONS\">On</A>")." | "
-					.($QryParm->{'projet'} eq "off" ? "<B>Off</B>":"<A href=\"$myself&amp;nodes=$QryParm->{'nodes'}&amp;coord=$QryParm->{'coord'}&amp;projet=off#STATIONS\">Off</A>")." ] ";
+					.($usrProject eq "on"  ? "<B>On</B>" :"<A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=on$procParm#NODES\">On</A>")." | "
+					.($usrProject eq "off" ? "<B>Off</B>":"<A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=off$procParm#NODES\">Off</A>")." ] ";
 		}
 		$htmlcontents .= "</P>\n";
 
@@ -315,24 +340,42 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		#$htmlcontents .= "<TABLE width=\"100%\" style=\"margin-left: 5px\">";
 		$htmlcontents .= "<TABLE width=\"100%\">";
 		$htmlcontents .= "<TR>";
-			$htmlcontents .= ($editOK ? "<TH width=\"14px\"></TH>":"")."<TH>$__{'Alias'}</TH><TH>$__{'Name'}</TH>";
-			if ($QryParm->{'coord'} eq "utm") {
+			$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2></TH>":"")
+				."<TH rowspan=2>$__{'Alias'}</TH>"
+				."<TH rowspan=2>$__{'Name'}</TH>"
+				."<TH colspan=3>$__{'Coordinates'}</TH>"
+				."<TH colspan=2>$__{'Lifetime and Validity'}"
+				."<TH rowspan=2>$__{'Type'}</TH>";
+			if ($CLIENT ne 'guest') {
+				$htmlcontents .= "<TH rowspan=2>$__{'Nb Evnt'}</TH>";
+				if ($usrProject eq "on") {
+					$htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>";
+				}
+			}
+			if ($usrProcparam eq 'on') {
+				$htmlcontents .= "<TH colspan=2>$__{'Proc Parameters'}</TH>";
+			}
+			if ($overallStatus) {
+				$htmlcontents .= "<TH colspan=3>$__{'Proc Status'}</TH>";
+			}
+			$htmlcontents .= "</TR>\n<TR>";
+			if ($usrCoord eq "utm") {
 				$htmlcontents .= "<TH>UTM Eastern (m)</TH><TH>UTM Northern (m)</TH><TH>$__{'Elev.'} (m)</TH>";
-			} elsif ($QryParm->{'coord'} eq "local") {
+			} elsif ($usrCoord eq "local") {
 				$htmlcontents .= "<TH>Local TM Eastern (m)</TH><TH>Local TM Northern (m)</TH><TH>$__{'Elev.'} (m)</TH>";
-			} elsif ($QryParm->{'coord'} eq "xyz") {
+			} elsif ($usrCoord eq "xyz") {
 				$htmlcontents .= "<TH>X (m)</TH><TH>Y (m)</TH><TH>Z (m)</TH>";
 			} else {
 				$htmlcontents .= "<TH>$__{'Lat.'} (WGS84)</TH><TH>$__{'Lon.'} (WGS84)</TH><TH>$__{'Elev.'} (m)</TH>";
 			}
-			$htmlcontents .= "<TH>$__{'Start / Installation'}</TH><TH>$__{'End / Stop'}</TH><TH>$__{'Type'}</TH>";
-			if ($CLIENT ne 'guest') {
-				$htmlcontents .= "<TH>$__{'Nb Evnt'}</TH>";
-				if ($QryParm->{'projet'} eq "on") {
-					$htmlcontents .= "<TH>$__{'Project'}</TH>";
-				}
+			$htmlcontents .= "<TH>$__{'Start / Installation'}</TH><TH>$__{'End / Stop'}</TH>";
+			if ($usrProcparam eq 'on') {
+				$htmlcontents .= "<TH>$__{'FID'}</TH>"
+					."<TH>$__{'RAWFORMAT'}</TH>";
 			}
-			if ( $overallStatus eq "OK" ) { $htmlcontents .= "<TH>$__{'Last Data'} (TZ $GRID{TZ})</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>"; }
+			if ($overallStatus) {
+				$htmlcontents .= "<TH>$__{'Last Data'} (TZ $GRID{TZ})</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
+			}
 		$htmlcontents .= "</TR>\n";
 
 		for (@{$GRID{NODESLIST}}) {
@@ -348,7 +391,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				# is VALID ? do we display INVALID ?
 				if ($NODE{VALID} == 0) {
 					$tcolor="node-disabled";
-					if ($QryParm->{'nodes'} eq "valid" || !$seeInvOK) {
+					if ($usrNodes eq "valid" || !$seeInvOK) {
 						$nbNonValides++;
 						$displayNode = 0;
 					}
@@ -360,7 +403,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				# is NOT active if already 'ended' OR not yet 'installed' ? do we display ?
 				if ($NODE{VALID} && ($NODE{END_DATE} ne "NA" && $NODE{END_DATE} lt $today) || ($NODE{INSTALL_DATE} ne "NA" && $NODE{INSTALL_DATE} gt $today)) {
 					$tcolor="node-inactive";
-					if ($QryParm->{'nodes'} eq "active") {
+					if ($usrNodes eq "active") {
 						$displayNode = 0;
 					}
 				}
@@ -380,15 +423,15 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 					my $lat = sprintf("%.5f",$NODE{LAT_WGS84});
 					my $lon = sprintf("%.5f",$NODE{LON_WGS84});
 					my $alt = sprintf("%.0f",$NODE{ALTITUDE});
-					if ($QryParm->{'coord'} eq "utm") {
+					if ($usrCoord eq "utm") {
 						($lat,$lon) = geo2utm($lat,$lon);
 						$lat = sprintf("%.0f",$lat);
 						$lon = sprintf("%.0f",$lon);
-					} elsif ($QryParm->{'coord'} eq "local") {
+					} elsif ($usrCoord eq "local") {
 						($lat,$lon) = geo2utml($lat,$lon);
 						$lat = sprintf("%.0f",$lat);
 						$lon = sprintf("%.0f",$lon);
-					} elsif ($QryParm->{'coord'} eq "xyz") {
+					} elsif ($usrCoord eq "xyz") {
 						($lat,$lon,$alt) = geo2cart($lat,$lon,$alt);
 						$lat = sprintf("%.0f",$lat);
 						$lon = sprintf("%.0f",$lon);
@@ -410,7 +453,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				}
 
 				# Node's type
-				$htmlcontents .= "<TD>$NODE{TYPE}</TD>";
+				$htmlcontents .= "<TD align=\"center\">$NODE{TYPE}</TD>";
 
 				# #Interventions and Project file 
 				if ( $CLIENT ne 'guest' ) { 
@@ -418,7 +461,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 					my $pathInter="$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";
 					my $nbInter  = qx(/usr/bin/find $pathInter -name "$NODEName*.txt" | wc -l);
 					$htmlcontents .= "<TD align=center>$nbInter</TD>";
-					if ($QryParm->{'projet'} eq "on") {
+					if ($usrProject eq "on") {
 						my $fileProjName = $NODEName."_Projet.txt";
 						my $fileProj = "$pathInter/$fileProjName";
 						if ((-e $fileProj) && (-s $fileProj)) {
@@ -447,41 +490,45 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 					}
 				}
 
+				# Node's proc parameters
+				if ($usrProcparam eq 'on') {
+					$htmlcontents .= "<TD align=\"center\">".($NODE{"$grid.FID"} ? $NODE{"$grid.FID"}:$NODE{FID})."</TD>"
+						."<TD align=\"center\">".($NODE{"$grid.RAWFORMAT"} ? $NODE{"$grid.RAWFORMAT"}:($NODE{RAWFORMAT} ? $NODE{RAWFORMAT}:$GRID{RAWFORMAT}))."</TD>";
+				}
+
 				# NODE's status 
-				if ( $CLIENT ne 'guest' ) {
-					if ($overallStatus eq "OK" ) {
-						my @tmpStState = grep(/$grid\.$NODEName/,@statusNODES);
-						my @stState = split(/\|/,$tmpStState[$#tmpStState]);
-						if ($#stState >= 0) {
-							my $bgcolEt = "";
-							my $bgcolA = "";
-							# $stState[1] (Node status)
-							if ($stState[1] == $NODES{STATUS_STANDBY_VALUE}) { $bgcolEt = "status-standby"; $stState[1] = "$__{Standby}"; }
-							elsif ($stState[1] < $NODES{STATUS_THRESHOLD_CRITICAL}) {
-								$stState[1] .= " %";
-								if ($GRID{"TYPE"} eq "M") { $bgcolEt = "status-manual"; } else { $bgcolEt = "status-critical"; }
-							}
-							elsif ($stState[1] >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolEt="status-ok"; $stState[1] .= " %"; }
-							else { $bgcolEt = "status-warning"; $stState[1] .= " %"; }
-							if (($stState[1] eq "%") || ($stState[1] eq ""))  { $bgcolEt = ""; $stState[1] = " " }
-							# $stState[2] (Acquisition status)
-							if ($stState[2]  == $NODES{STATUS_STANDBY_VALUE}) { $bgcolA = "status-standby"; $stState[2] = "$__{Standby}"; }
-							elsif ($stState[2] < $NODES{STATUS_THRESHOLD_CRITICAL}) { $bgcolA = "status-critical"; $stState[2] .= " %"; }
-							elsif ($stState[2] >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolA = "status-ok"; $stState[2] .= " %"; }
-							else { $bgcolA = "status-warning"; $stState[2] .= " %"; }
-							if (($stState[2] eq " %") || ($stState[2] eq "")) { $bgcolA = ""; $stState[2] = " " }
-							# $stState[3..5] (Date, Time and TZ of last measurement)
-							# Display 
-							$htmlcontents .= "<TD align=\"center\" nowrap>$stState[3]</TD>\n"; # Date de l'analyse de l'etat
-							if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
-								$htmlcontents .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stState[2]</B></TD>"
-										."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stState[1]</B></TD>";
-							} else {
-								$htmlcontents .= "<TD align=\"center\" colspan=\"2\"><I>$__{'Stopped'}</I></TD>";
-							}
-						} else {
-							$htmlcontents .= "<TD colspan=\"3\"> </TD>";
+				if ($overallStatus) {
+					my @tmpStState = grep(/$grid\.$NODEName/,@statusNODES);
+					my @stState = split(/\|/,$tmpStState[$#tmpStState]);
+					if ($#stState >= 0) {
+						my $bgcolEt = "";
+						my $bgcolA = "";
+						# $stState[1] (Node status)
+						if ($stState[1] == $NODES{STATUS_STANDBY_VALUE}) { $bgcolEt = "status-standby"; $stState[1] = "$__{Standby}"; }
+						elsif ($stState[1] < $NODES{STATUS_THRESHOLD_CRITICAL}) {
+							$stState[1] .= " %";
+							if ($GRID{"TYPE"} eq "M") { $bgcolEt = "status-manual"; } else { $bgcolEt = "status-critical"; }
 						}
+						elsif ($stState[1] >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolEt="status-ok"; $stState[1] .= " %"; }
+						else { $bgcolEt = "status-warning"; $stState[1] .= " %"; }
+						if (($stState[1] eq "%") || ($stState[1] eq ""))  { $bgcolEt = ""; $stState[1] = " " }
+						# $stState[2] (Acquisition status)
+						if ($stState[2]  == $NODES{STATUS_STANDBY_VALUE}) { $bgcolA = "status-standby"; $stState[2] = "$__{Standby}"; }
+						elsif ($stState[2] < $NODES{STATUS_THRESHOLD_CRITICAL}) { $bgcolA = "status-critical"; $stState[2] .= " %"; }
+						elsif ($stState[2] >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolA = "status-ok"; $stState[2] .= " %"; }
+						else { $bgcolA = "status-warning"; $stState[2] .= " %"; }
+						if (($stState[2] eq " %") || ($stState[2] eq "")) { $bgcolA = ""; $stState[2] = " " }
+						# $stState[3..5] (Date, Time and TZ of last measurement)
+						# Display 
+						$htmlcontents .= "<TD align=\"center\" nowrap>$stState[3]</TD>\n"; # Date de l'analyse de l'etat
+						if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
+							$htmlcontents .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stState[2]</B></TD>"
+									."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stState[1]</B></TD>";
+						} else {
+							$htmlcontents .= "<TD align=\"center\" colspan=\"2\"><I>$__{'Stopped'}</I></TD>";
+						}
+					} else {
+						$htmlcontents .= "<TD colspan=\"3\"> </TD>";
 					}
 				}
 				$htmlcontents .= "</TR>\n".(!$displayNode ? "-->":"");
@@ -505,10 +552,10 @@ if (opendir(my $dh, $MAPpath)) {
 	closedir($dh);
 }
 
-my $mapfile = $grid."_map".$QryParm->{'map'};
+my $mapfile = $grid."_map".$usrMap;
 if  ( -e "$MAPpath/$mapfile.png" ) {
 	print "<BR>";
-	print "<A NAME=\"CARTES\"></A>";
+	print "<A NAME=\"MAPS\"></A>";
 	print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#mapID');\">&nbsp;&nbsp;"; 
 	print "$__{'Location'}&nbsp;$go2top";
 	print "</div><div id=\"mapID\">";
@@ -519,12 +566,12 @@ if  ( -e "$MAPpath/$mapfile.png" ) {
 		if ("$mapfile.png" eq $_) {
 			print "<B>MAP$v[2]</B> ";
 		} else {
-			print "<A href=\"$myself&amp;nodes=$QryParm->{'nodes'}&amp;coord=$QryParm->{'coord'}&amp;projet=$QryParm->{'projet'}&amp;map=$v[2]#CARTES\">MAP$v[2]</A> ";
+			print "<A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=$usrProject&amp;map=$v[2]$procParm#MAPS\">MAP$v[2]</A> ";
 		}
 	}
 	print " ] - Export [ <A href=\"$MAPurn/$mapfile.png\">PNG</A> | <A href=\"$MAPurn/$mapfile.eps\">EPS</A>";
 	if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
-		print " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml&amp;nodes=$QryParm->{'nodes'}')\" title=\"Exports KML file\">KML</A>";
+		print " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml&amp;nodes=$usrNodes')\" title=\"Exports KML file\">KML</A>";
 	}
 	print " ] </P>\n";
 	print "<P style=\"text-align: center\"><IMG SRC=\"$MAPurn/$mapfile.png\" border=\"0\" usemap=\"#map\"></P>\n";
@@ -545,7 +592,7 @@ if (-e $fileProtocole) {
 	@protocole = readFile($fileProtocole);
 }
 print "<BR>";
-print "<A name=\"INFORMATIONS\"></A>\n";
+print "<A name=\"INFO\"></A>\n";
 $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#infoID');\">&nbsp;&nbsp;"; 
 	$htmlcontents .= "$__{'Information'}";
 	if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{PROTOCOLE_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
@@ -569,16 +616,15 @@ print "</div></div>";
 # 
 (my $myself   = $ENV{REQUEST_URI}) =~ s/&_.*$//g ; # how I got called 
 $myself       =~ s/\bsortby(\=[^&]*)?(&|$)//g ;    # same but sortby= and _= removed
-my $sortBy = $QryParm->{'sortby'};
 
 print "<BR><A name=\"EVENTS\"></A>\n";
 print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#eventID');\">&nbsp;&nbsp;"; 
 print "$__{'Events'}";
 if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&object=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 print "&nbsp;$go2top</div><div id=\"eventID\"><BR>";
-print "&nbsp;$__{'Sort by'} [ ".($sortBy ne "event" ? "<A href=\"$myself&amp;sortby=event#EVENTS\">$__{'Event'}</A>":"<B>$__{'Event'}</B>")." | "
-	.($sortBy ne "date" ? "<A href=\"$myself&amp;sortby=date#EVENTS\">$__{'Date'}</A>":"<B>$__{'Date'}</B>")." ]<BR>\n";
-my $htmlEvents = ($sortBy =~ /event/i) ? eventsShow("events","$GRIDType.$GRIDName", $editOK) : eventsShow("date","$GRIDType.$GRIDName", $editOK);
+print "&nbsp;$__{'Sort by'} [ ".($usrSortby ne "event" ? "<A href=\"$myself&amp;sortby=event#EVENTS\">$__{'Event'}</A>":"<B>$__{'Event'}</B>")." | "
+	.($usrSortby ne "date" ? "<A href=\"$myself&amp;sortby=date#EVENTS\">$__{'Date'}</A>":"<B>$__{'Date'}</B>")." ]<BR>\n";
+my $htmlEvents = ($usrSortby =~ /event/i) ? eventsShow("events","$GRIDType.$GRIDName", $editOK) : eventsShow("date","$GRIDType.$GRIDName", $editOK);
 print $htmlEvents;
 print "</div></div>";
 
@@ -592,7 +638,7 @@ if (-e $fileBib) {
 	@bib = readFile($fileBib);
 }
 print "<BR>";
-print "<A name=\"BIBLIO\"></A>\n";
+print "<A name=\"REF\"></A>\n";
 $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#bibID');\">&nbsp;&nbsp;"; 
 	$htmlcontents .= "$__{'References'}";
 	if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{BIBLIO_SUFFIX}&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
@@ -614,7 +660,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

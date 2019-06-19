@@ -138,7 +138,7 @@ function delete_grid()
 	if ( confirm(\"$__{'The GRID will be deleted (but not associated nodes). Are you sure ?'}\") ) {
 		document.formulaire.delete.value = 1;
 		\$.post(\"/cgi-bin/postGRID.pl\", \$(\"#theform\").serialize(), function(data) {
-			alert(data);
+			if (data != '') alert(data);
 			location.href = document.referrer;	   
 		});
 	} else {
@@ -151,7 +151,7 @@ function verif_formulaire()
 		document.formulaire.SELs[i].selected = true;
 	}
 	\$.post(\"/cgi-bin/postGRID.pl\", \$(\"#theform\").serialize(), function(data) {
-		alert(data);
+		if (data != '') alert(data);
 		location.href = document.referrer;	   
 	});
 }

@@ -356,8 +356,8 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 
 # --- return information when OK 
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] successfully !\n";
+	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
 	exit;
 }
 
