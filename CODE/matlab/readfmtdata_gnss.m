@@ -108,6 +108,7 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 
 	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
 	wosystem(sprintf('rm -f %s',fdat),P);
+	%delete(sprintf('%s/*'));
 	lfid = split(N.FID,',');
 	orbits = {'tdp','tdp.ql*','tdp.ultra'};
 	tv = datevec(F.datelim);
@@ -178,6 +179,9 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 
 % -----------------------------------------------------------------------------
 case 'usgs-rneu'
+	% format example
+	%#yyyymmdd yyyy.yyyy rE  rN    rU    orb eE  eN  eU
+	% 20120501 2012.3322 3.3 -79.2 -19.6 rrr 3.5 5.8 16.0 -0.2535 Agung.20120501.stacov.point-2017/10/02-13:45:58
 
 	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
 	wosystem(sprintf('rm -f %s',fdat),P);
@@ -218,6 +222,50 @@ case 'usgs-rneu'
 	end
 
 % -----------------------------------------------------------------------------
+case 'sbe37-ascii'
+	% format example
+	%#yyyy-mm-dd HH:MM:SS.sssss dZ
+	% 2019-05-04 04:36:01.036800 0.06866830537842324
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		if exist(fraw,'file')
+			wosystem(sprintf('cat %s | sed -E "s/([0-9])\\-/\\1 /g;s/:/ /g" >> %s',fraw,fdat),P);
+		else
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+	dataerror = field2num(N,'FID_DATA_ERROR',0,'notempty');
+	datadecim = field2num(N,'FID_DATA_DECIMATE',1,'notempty');
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = datenum(dd(:,1:6));
+		d = [nan(size(dd,1),2),dd(:,7),zeros(size(dd,1),1)];
+		e = repmat([1,1,dataerror],size(dd,1),1);
+		if datadecim > 1
+			t = decim(t,datadecim);
+			d = decim(d,datadecim);
+			e = decim(e,datadecim);
+			fprintf('%d data imported (have been decimated by %d).\n',length(t),datadecim);
+		else
+			fprintf('%d data imported.\n',size(dd,1));
+		end
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
+
+% -----------------------------------------------------------------------------
 otherwise
 	fprintf('%s: ** WARNING ** unknown format "%s" for node %s!\n',wofun,F.fmt,N.ID);
 end
@@ -227,7 +275,7 @@ D.t = t - N.UTC_DATA;
 D.d = d;
 D.e = e;
 
-if N.CLB.nx ~= 4
+if N.CLB.nx ~= 4 || isempty(t)
 	D.CLB.nx = 4;
 	D.CLB.nm = {'Eastern','Northern','Vertical','Orbit'};
 	D.CLB.un = {'m','m','m',''};
