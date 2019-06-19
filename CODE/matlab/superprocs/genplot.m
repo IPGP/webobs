@@ -21,8 +21,8 @@ function DOUT=genplot(varargin)
 %       channels and display names and units.
 %
 %       In addition to each single node graph, a summary graph with all nodes can
-%       be set with 'SUMMARYLIST|' parameter. Default is all channels, but selection
-%       can be made with following option:
+%       be set with 'SUMMARYLIST|SUMMARY' parameter. Default is all channels, but
+%       selection can be made with following option:
 %          SUMMARY_CHANNELS|1,,4,3
 %       using coma-separated channel number list, and optional multiple comas to extend
 %       the previous subplot height in proportion to others. In the example the first
@@ -30,11 +30,14 @@ function DOUT=genplot(varargin)
 %       the second (channel 4) and third subplot (channel 3).
 %
 %       Other specific paramaters are:
-%           NODE_CHANNELS|
+%           PERNODE_CHANNELS|
 %           PAGE_MAX_SUBPLOT|8
+%           PLOT_GRID|YES
 %           YLOGSCALE|NO
 %           PICKS_CLEAN_PERCENT|0
+%           PICKS_CLEAN_STD|0
 %           FLAT_IS_NAN|NO
+%           MEDIAN_FILTER_SAMPLES|0
 %           MOVING_AVERAGE_SAMPLES|10
 %           CONTINUOUS_PLOT|NO
 %	    PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
@@ -47,7 +50,7 @@ function DOUT=genplot(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2014-07-13
-%	Updated: 2017-11-07
+%	Updated: 2019-05-21
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -77,7 +80,7 @@ for n = 1:length(N)
 
 	C = D(n).CLB;
 	nx = C.nx;
-	GN = graphstr(field2str(P,'NODE_CHANNELS',sprintf('%d,',1:nx),'notempty'));
+	GN = graphstr(field2str(P,'PERNODE_CHANNELS',sprintf('%d,',1:nx),'notempty'));
 	V.node_name = N(n).NAME;
 	V.node_alias = N(n).ALIAS;
 	V.last_data = datestr(D(n).tfirstlast(2));
@@ -157,7 +160,10 @@ for n = 1:length(N)
 					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},roundsd([rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i))],5))}];
 			end
 		end
-		
+		if isok(P,'PLOT_GRID')
+			grid on
+		end
+
 		% makes graph
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
@@ -177,7 +183,7 @@ end
 % ====================================================================================================
 % Graphs for all the proc nodes
 
-if isfield(P,'SUMMARYLIST')
+if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 	G = cat(1,D.G);
 	C = cat(1,D.CLB);
 	nx = max(cat(1,C.nx));
@@ -254,6 +260,9 @@ if isfield(P,'SUMMARYLIST')
 
 		tlabel(xlim,P.GTABLE(r).TZ)
 	    
+		if isok(P,'PLOT_GRID')
+			grid on
+		end
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
 	end
