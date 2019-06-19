@@ -179,8 +179,14 @@ msgstr "Fréquence d'échantillonnage"
 msgid "Acquisition period"
 msgstr "Période d'acquisition"
 
-msgid "Access to data"
-msgstr "Accès aux données"
+msgid "Default data format"
+msgstr "Format de données par défaut"
+
+msgid "Default data source"
+msgstr "Source de données par défaut"
+
+msgid "Access to rawdata"
+msgstr "Accès aux données brutes"
 
 msgid "Graphical routine"
 msgstr "Routine graphique"
