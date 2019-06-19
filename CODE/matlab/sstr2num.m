@@ -10,11 +10,11 @@ function x=sstr2num(s)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2015-01-01
-%	Updated: 2017-08-21
+%	Updated: 2019*05*17
 
 if strcmpi(s,'NaN') || isempty(s)
 	x = NaN;
 else
 	% replaces any non-numeric characters before evaluating string
-	x = str2num(regexprep(s,'[^\d\.+-\/\*eE,;:\ \(\)pi]',''));
+	x = str2num(regexprep(s,'[^\d\.+-\/\*eE,;:''\ \(\)\[\]pi]',''));
 end

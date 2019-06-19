@@ -5,9 +5,12 @@ function c = split(s,d)
 %
 %	SPLIT(S,D) uses any character in string D as a possible delimiter.
 %
+%	Any escaped delimiter character (preceeded by \) in the string will not
+%	be splitted.
+%
 %	Author: François BEAUDUCEL, IPGP
 %	Created: 2009-10-09
-%	Updated: 2014-12-16
+%	Updated: 2019-05-16
 
 
 if nargin < 1
@@ -22,6 +25,9 @@ if ~ischar(d)
 	error('D must be a string of delimiter character(s).')
 end
 
+% unit separator ASCII character
+us = char(31);
+
 if iscell(s)
 	ss = s;
 else
@@ -34,11 +40,16 @@ for i = 1:length(ss)
 	if isempty(ss{i})
 		c{i} = '';
 	else
+		% replaces escaped delimiters
+		ss{i} = strrep(ss{i},['\',d],us);
 		c(i) = textscan(ss{i},'%s','Delimiter',d);
 	end
 end	
 
 if ~iscell(s)
 	c = c{:}';
+	c = strrep(c,us,d);
+else
+	c = strrep(c{:},us,d);
 end
 
