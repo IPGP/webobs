@@ -23,7 +23,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2019-05-23
+%   Updated: 2019-06-15
 
 
 WO = readcfg;
@@ -107,13 +107,17 @@ if isfield(P,'LANDCOLORMAP') && exist(P.LANDCOLORMAP,'file')
 else
 	cmap = landcolor.^1.3;
 end
-if isfield(P,'SEACOLORMAP') && exist(P.SEACOLORMAP,'file')
-	sea = eval(P.SEACOLORMAP);
+seaflat = repmat([0.7,0.9,1],[2,1]);
+if isfield(P,'SEACOLORMAP')
+	try
+		sea = eval(P.SEACOLORMAP);
+	catch
+		sea = seaflat;
+	end
 else
-	sea = repmat([0.7,0.9,1],[2,1]);
+	sea = seaflat;
 end
-demoptions = {'Interp','Lake','Azimuth',laz,'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair,'latlon','legend','axisequal','manual'};
-
+demoptions = {'Interp','Lake','LakeZmin',0,'Azimuth',laz,'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair,'latlon','legend','axisequal','manual'};
 
 % loads all needed grid's parameters & associated nodes
 for g = 1:length(grids)
@@ -262,7 +266,7 @@ for g = 1:length(grids)
 					% empirical ratio between horizontal extent and elevation interval (dz)
 					rzh = dz/min(diff(x([1,end]))*cosd(mean(dlat)),diff(y([1,end])))/degkm/4e2;
 					dz0 = tickscale([zmin,zmax],rzh);
-					dz0(ismember(0,dz0)) = [];	% eliminates 0 value
+					dz0(ismember(0,dz0)) = [];	% eliminates 0 value in minor ticks
 					dz1 = tickscale([zmin,zmax],rzh*5);
 					dz1(ismember(dz1,dz0)) = [];	% eliminates minor ticks in major ticks
 					if isfield(P,'CONTOURLINES_RGB')
@@ -270,12 +274,16 @@ for g = 1:length(grids)
 					else
 						clrgb = [0,0,0];
 					end
-					[~,h] = contour(x,y,z,[0,0,dz1],'-','Color',clrgb);
-					set(h,'LineWidth',lwminor);
-					[cs,h] = contour(x,y,z,[0,0,dz0],'-','Color',clrgb);
-					set(h,'LineWidth',lwmajor);
-					if ~isempty(dz0) && isok(P,'CONTOURLINES_LABEL')
-						clabel(cs,h,dz0,'Color',clrgb,'FontSize',7,'FontWeight','bold','LabelSpacing',288)
+					if ~isempty(dz1)
+						[~,h] = contour(x,y,z,dz1,'-','Color',clrgb);
+						set(h,'LineWidth',lwminor);
+					end
+					if ~isempty(dz0)
+						[cs,h] = contour(x,y,z,dz0,'-','Color',clrgb);
+						set(h,'LineWidth',lwmajor);
+						if isok(P,'CONTOURLINES_LABEL')
+							clabel(cs,h,dz0,'Color',clrgb,'FontSize',7,'FontWeight','bold','LabelSpacing',288)
+						end
 					end
 				end
 
@@ -297,19 +305,18 @@ for g = 1:length(grids)
 
 			% plots active nodes
 			if ~isempty(ka)
-				target(geo(ka,2),geo(ka,1),nodesize,nodecolor,nodetype)
+				k = find(isinto(geo(ka,2),dlon) & isinto(geo(ka,1),dlat));
+				target(geo(ka(k),2),geo(ka(k),1),nodesize,nodecolor,nodetype)
 			end
 			% plots inactive nodes
 			if ~isempty(k0)
-				target(geo(k0,2),geo(k0,1),nodesize,nodecolor,nodetype,2)
+				k = find(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
+				target(geo(k0(k),2),geo(k0(k),1),nodesize,nodecolor,nodetype,2)
 			end
-
-			xlim = get(gca,'XLim');
-			ylim = get(gca,'YLim');
 
 			% writes node names
 			if nodefont > 0
-				k = find(isinto(geo(kn,2),xlim) & isinto(geo(kn,1),ylim));
+				k = find(isinto(geo(kn,2),dlon) & isinto(geo(kn,1),dlat));
 				smarttext(geo(kn(k),2),geo(kn(k),1),cat(1,{N(kn(k)).ALIAS}),'FontSize',nodefont,'FontWeight','bold')
 			end
 

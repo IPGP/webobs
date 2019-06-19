@@ -39,6 +39,7 @@ psrtm1 = field2str(WO,'PATH_DATA_DEM_SRTM1');
 srtm1max = field2num(WO,'SRTM1_MAX_TILES',4);
 oversamp = field2num(WO,'DEM_OVERSAMPLING',500);
 srtm1 = false;
+etopo = false;
 if nargin > 2
 	srtm1 = isok(OPT,'DEM_SRTM1');
 	srtmmax = field2num(OPT,'SRTM_MAX_TILES',srtmmax);
@@ -94,6 +95,7 @@ if ~userdem
 		DEM = ibil(sprintf('%s/%s',WO.PATH_DATA_DEM_ETOPO,WO.ETOPO_NAME),xylim);
 		DEM.z = double(DEM.z);
 		DEM.COPYRIGHT = field2str(WO,'ETOPO_COPYRIGHT','DEM: ETOPO/NOOA');
+		etopo = true;
 	else
 		fprintf('%s: loading SRTM data for area lat (%g,%g) lon (%g,%g)...\n',wofun,dlat,dlon);
 		if srtm1 && exist(psrtm1,'dir') && n <= srtm1max
@@ -105,6 +107,19 @@ if ~userdem
 		DEM.z(DEM.z==-32768) = NaN;
 		DEM.COPYRIGHT = field2str(WO,'SRTM_COPYRIGHT','DEM: SRTM/NASA');
 	end
+
+	% adds bathymetry from ETOPO for SRTM offshore areas
+	if ~userdem && ~etopo
+		k = find(DEM.z==0);
+		if ~isempty(k)
+			% loads ETOPO1 with +/- 2 minutes of extra borders
+			E = ibil(sprintf('%s/%s',WO.PATH_DATA_DEM_ETOPO,WO.ETOPO_NAME),xylim + 2/60*[-1,1,-1,1]);
+			[xx,yy] = meshgrid(DEM.lon,DEM.lat);
+			DEM.z(k) = min(floor(interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear')),0);
+			DEM.COPYRIGHT = sprintf('%s + ETOPO/NOOA',DEM.COPYRIGHT);
+		end
+	end
+
 end
 
 % if too low resolution, oversamples...
