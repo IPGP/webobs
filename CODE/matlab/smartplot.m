@@ -47,7 +47,7 @@ function lre = smartplot(X,tlim,G,linestyle,fontsize,chnames,choffset,ndalias,nd
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 2019-05-15
+%	Updated: 2019-06-19
 
 
 zoom = double(isinto(timezoom,[0,1],'exclude'));
@@ -61,10 +61,15 @@ for ii = 0:zoom
 		tlim = [-timezoom*diff(tlim),0] + tlim(2);
 		alld = alld(isinto(cat(1,X.t),tlim),:);
 	end
-	gmin = rmin(alld);
-	gmax = rmax(alld);
-	gmin(isnan(gmin)) = 0;
-	gmax(isnan(gmax)) = 0;
+	if ~isempty(alld)
+		gmin = min(alld);
+		gmax = max(alld);
+		gmin(isnan(gmin)) = 0;
+		gmax(isnan(gmax)) = 0;
+	else
+		gmin = zeros(1,nx);
+		gmax = zeros(1,nx);
+	end
 
 	% component offset (relative to first component median value)
 	cmpoffset = zeros(1,nx);
@@ -89,7 +94,11 @@ for ii = 0:zoom
 				plotorbit(X(n).t,d,X(n).w,linestyle,G.LINEWIDTH,G.MARKERSIZE,scolor(ndcolor(n)));
 				kk = find(~isnan(d(:,1)));
 				if ndtrend(n) && length(kk) >= 2 && diff(minmax(X(n).t(kk))) >= trendmindays
-					lr = wls(X(n).t(kk)-tlim(1),d(kk,1),1./d(kk,2).^2);
+					if size(d,1) > 1 && all(d(kk,2)~=0)
+						lr = wls(X(n).t(kk)-tlim(1),d(kk,1),1./d(kk,2).^2);
+					else
+						lr = wls(X(n).t(kk)-tlim(1),d(kk,1),ones(size(d(kk,1))));
+					end
 					lre(i,:) = [lr(1),std(d(kk,1) - polyval(lr,X(n).t(kk)-tlim(1)))/diff(tlim)]*365.25*1e3;
 					plot(tlim,polyval(lr,tlim - tlim(1)),'--k','LineWidth',.2)
 				end
@@ -97,8 +106,12 @@ for ii = 0:zoom
 		end
 	end
 	hold off
-	set(gca,'XLim',tlim,'YLim',[cmpoffset(end)+gmin(end)-choffset/2,gmax(1)+choffset/2],'FontSize',fontsize, ...
-		'YTickLabel',[]);
+	if nx > 0
+		set(gca,'YLim',[cmpoffset(end)+gmin(end)-abs(choffset)/2,gmax(1)+abs(choffset)/2])
+	else
+		set(gca,'YLim',0.01 + 3*abs(choffset)*[-1,1]);
+	end
+	set(gca,'XLim',tlim,'FontSize',fontsize,'YTickLabel',[]);
 	box on
 
 	% --- legends
@@ -131,11 +144,13 @@ for ii = 0:zoom
 
 	hold off
 
-	% node aliases
-	nl = length(ndalias);
+	% node aliases (not empty elements only)
+	ka = find(~cellfun(@isempty,ndalias));
+	nl = length(ka);
+	fs = fontsize*max(min(50/length(strjoin(ndalias)),1),0.5);
 	for n = 1:nl
-		text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),ndalias(n),'Color',scolor(ndcolor(n)), ...
-			'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
+		text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),ndalias(ka(n)),'Color',scolor(ndcolor(ka(n))), ...
+			'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',fs,'FontWeight','bold')
 	end
 	set(gca,'YLim',ylim);
 
