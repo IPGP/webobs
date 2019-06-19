@@ -598,6 +598,13 @@ end
 % --- Process lighting
 
 if dz > 0
+	% first check if colormaps have the minimum required size
+	if size(csea,1) < 2
+		csea = repmat(csea,256,1);
+	end
+	if size(cland,1) < 2
+		cland = repmat(cland,256,1);
+	end
 	% builds the colormap: concatenates seacolor and landcolor around 0
 	% after interpolation to have exactly one color level per meter.
 	if ~isempty(csea)
