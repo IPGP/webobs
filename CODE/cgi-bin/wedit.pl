@@ -191,7 +191,7 @@ print "Content-type: text/html; charset=utf-8
 function verif_formulaire()
 {
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-		   alert(data);
+		   if (data != '') alert(data);
        	   location.href = document.referrer;	   
    	});
 }
@@ -257,7 +257,7 @@ print "\n</BODY>\n</HTML>\n";
 #
 sub htmlMsgOK {
  	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] updated successfully !\n";
+	print "$_[0] updated successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
 }
 sub htmlMsgNotOK {
  	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');

@@ -246,7 +246,7 @@ function postIt()
 			}
 		}
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
-		     alert(data);
+		     if (data != '') alert(data);
 		     location.href = document.referrer; })
 		  .fail( function() { 
 		     alert( \"postNode couldn't execute\" ); 

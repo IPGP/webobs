@@ -256,6 +256,7 @@ print "\n</BODY>\n</HTML>\n";
 #
 sub htmlMsgOK {
  	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	#[FBnote: does not suppress alert() window...] print "$_[0] updated successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
 	print "$_[0] updated successfully !\n";
 }
 sub htmlMsgNotOK {
@@ -271,7 +272,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2016 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
