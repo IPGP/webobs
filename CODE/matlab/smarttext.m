@@ -1,5 +1,5 @@
 function varargout=smarttext(x,y,s,varargin)
-%SMARTTEXT Optimized text labelling
+%SMARTTEXT Optimized text labelling in lat/lon
 %	SMARTTEXT(LON,LAT,S) adds the text string S to (LON,LAT) location, as 
 %	the function TEXT does in 2-D. If LON and LAT are vectors and S an 
 %	array of strings, SMARTTEXT will optimize the text position and alignment, 
@@ -9,10 +9,12 @@ function varargout=smarttext(x,y,s,varargin)
 %	properties of the text using parameter/value pairs. See TEXT 
 %	documentation for further information.
 %
+%	SMARTTEXT uses function GREATCIRCLE to compute azimuth and distances.
+%
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-05-27, in Yogyakarta, Indonesia
-%	Updated: 2019-05-29
+%	Updated: 2019-06-16
 
 hh = [];
 
@@ -25,7 +27,8 @@ if ischar(s)
 end
 
 m = numel(x);
-% adds random µm to all latitudes to avoid overlaping nodes
+% adds random µm to all coordinates to avoid overlaping nodes
+x = x + rand(size(x))*1e-11;
 y = y + rand(size(y))*1e-11;
 
 for n = 1:m
@@ -36,8 +39,9 @@ for n = 1:m
 		[~,k] = sort(greatcircle(y(n),x(n),y,x));
 		k2 = k(2:min(3,m));
 		% computes mean azimuth
-		[~,~,~,bear] = greatcircle(mean(y(k2)),mean(x(k2)),y(n),x(n),2);
-		az = mod(bear(1) + 360,360);
+		[~,~,~,bear1] = greatcircle(y(k2(1)),x(k2(1)),y(n),x(n),2);
+		[~,~,~,bear2] = greatcircle(y(k2(2)),x(k2(2)),y(n),x(n),2);
+		az = mod((bear1(1) + bear2(1))/2 + 360,360);
 	end
 
 	switch 45*round(az/45)
