@@ -13,7 +13,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %	               header of data file
 %	Specific node's FID_* key:
 %		FID_PREPROCESSOR: script name of the filter, located at ROOT_PREPROCESSOR directory in WEBOBS.rc
-%		                  (default is dsv_default)
+%		                  (default is dsv_generic)
 %		          FID_FS: field separator character (default is semi-colon). Note that blank is always
 %		                  considered as separator; successive blanks count for one.
 %		    FID_TIMECOLS: index vector of columns defining date&time (default is 6 first columns with

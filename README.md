@@ -65,10 +65,10 @@ Configuration files will be updaded and displayed/editabled at the end of the up
 
 With root privileges, in your target WebObs directory:
 
-1. execute  " tar xf WebObs-<version>.tar.gz "
-2. execute  " WebObs-<version>/SETUP/setup "
-3. (re)start Apache	
-4. launch the scheduler and postboard	
+1. execute  `tar xf WebObs-<version>.tar.gz`
+2. execute  `WebObs-<version>/SETUP/setup`
+3. (re)start Apache
+4. launch the scheduler and postboard
 
 For Debian/Ubuntu users, here is a way to install permanently active scheduler and postboard:	
 
@@ -89,7 +89,7 @@ curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_regist
 unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip
 ```	
 
-and update the ETOPO parameters in the /etc/webobs.d/WEBOBS.rc file with the lines:
+and update the ETOPO parameters in the `/etc/webobs.d/WEBOBS.rc` file with the lines:
 
 ```	
 ETOPO_NAME|etopo1_bed_g_i2	
@@ -99,32 +99,31 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 ## Authors	
 
 ### Project coordination	
-* **François Beauducel** - *Project designer and supervisor* - [beaudu](https://github.com/beaudu) - beauducel@ipgp.fr	
-* **Didier Lafon** - *Software development* - lafon@ipgp.fr	
+* **François Beauducel** - *Project designer and supervisor* - [beaudu](https://github.com/beaudu) - beauducel@ipgp.fr
+* **Didier Lafon** - *Software development* - lafon@ipgp.fr
 
 ### Contributors	
 
- * **Xavier Béguin** - [XavierBeguin](https://github.com/XavierBeguin) - xbeguin@ntu.edu.sg	
+* **Xavier Béguin** - [XavierBeguin](https://github.com/XavierBeguin) - xbeguin@ntu.edu.sg	
 * **Patrice Boissier** - [PBoissier](https://github.com/PBoissier) - boissier@ipgp.fr	
 * **Alexis Bosson** - bosson@ipgp.fr	
 * **Didier Mallarino**	
-* **Jean-Marie Saurel** - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel) - saurel@ipgp.fr	
+* **Jean-Marie Saurel** - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel) - saurel@ipgp.fr
 
-
- See also the list of active [contributors](https://github.com/IPGP/webobs/contributors).	
+See also the list of active [contributors](https://github.com/IPGP/webobs/contributors).	
 
 ## References	
 
- * Beauducel, F. (2006). Operational monitoring of French volcanoes: Recent advances in Guadeloupe. _Géosciences, Editions BRGM_, n°4, p 64-68, 2006. [Abstract](http://www.ipgp.fr/~beaudu/2006_Beauducel_Geosciences.html)	
+* Beauducel, F. (2006). Operational monitoring of French volcanoes: Recent advances in Guadeloupe. _Géosciences, Editions BRGM_, n°4, p 64-68, 2006. [Abstract](http://www.ipgp.fr/~beaudu/2006_Beauducel_Geosciences.html)	
 * F. Beauducel, A. Bosson, F. Randriamora, C. Anténor-Habazac, A. Lemarchand, J-M Saurel, A. Nercessian, M-P Bouin, J-B de Chabalier, V. Clouard (2010). Recent advances in the Lesser Antilles observatories - Part 2 - WEBOBS: an integrated web-based system for monitoring and networks management. _Paper presented at European Geosciences Union General Assembly, Vienna, 2-7 May 2010._ [Abstract](http://www.ipgp.fr/~beaudu/2010_Beauducel_EGU.html)	
 
 ## Copyright	
 
- WebObs - 2012-2019 - Institut de Physique du Globe Paris	
+WebObs - 2012-2019 - Institut de Physique du Globe Paris
 
- This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.	
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
- This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.	
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.	
+You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.	
 

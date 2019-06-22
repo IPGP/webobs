@@ -11,7 +11,7 @@ SHOW_OWNER|Y
 DEFAULT_COORDINATES|latlon
 DEFAULT_NODES_FILTER|all
 DEFAULT_PROJECT_FILTER|on
-
+DEFAULT_PROCPARAM_FILTER|on
 
 # ===== do not edit below this line =====
 # (parameters only for backward compatibily purpose)

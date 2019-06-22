@@ -9,7 +9,39 @@ The lastest release has many improvements, new features and bug fixes.
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
 
-## v2.1.2a (May, 2019)
+## v2.1.2a (June, 2019)
+
+###WEBOBS.rc
+
+`!!` Default behavior does not show anymore a confirm 'alert' window if the action has succeed. For example, when editing a NODE or GRID configuration. If administrator wants the former behavior, he must set this new key:
+
+```
+CGI_CONFIRM_SUCCESSFUL|YES
+```
+
+###Events (Gazette, GRIDS and NODES)
+
+Fix and improve of active group functionality in the Gazette (introduced in v2.0.0) and propagate to GRIDS and NODES events.
+
+`!!` In order to limit the long list of users (that might include non-valid users) when creating a new event, new keys in `Gazette.rc`:
+
+```
+ACTIVE_GID|+ADMIN,+DUTY
+```	
+and in `WEBOBS.rc`:
+ 
+```
+EVENTS_ACTIVE_GID|+ADMIN,+DUTY
+```
+
+will display only users in the +ADMIN or +DUTY groups (valid or not), for new event in the gazette and in grids/nodes, respectively. Comment or empty these keys to keep the former behavior, i.e., display only the valid users.
+
+As a reminder, once an event is created, editing it will allow selection of all existing users (list of valid first followed by invalid).
+
+
+### Default group menus
+
+`!!` Default additionnal menus will be added at upgrade if they do not exist yet for groups +ADMIN, +DUTY, +OBSERVER and +VISITOR. They contain usefull links for specific management. A menu is visible only by users associated to the corresponding group. Each menu can be modified or even removed by emptying it at edition.
 
 ### Node's events
 
@@ -48,6 +80,13 @@ normally in the graphs title or label (no TeX interpretation as
 subscribe position for the next character). TeX formatting is still 
 possible in the graph title, any channel, NODE or PROC names. To display an underscore character in these strings, you must escape it (`\_`).
 
+4. Calibration file configuration has been moved from local config to the code distribution. The following are not used anymore and can be deleted:
+	- file `CONF/CLB.conf`,
+	- file `CONF/CLBFields.conf`,
+	- key parameter `CLB_CONF` in `WEBOBS.rc`,
+	- file `formule_calibration.html` in the HTML contents.
+
+5. Multiple logos can be defined using coma-separated filenames in `LOGO_FILE` and `LOGO2_FILE` parameters. Logos with be horizontaly appended with same height.
 
 ### Sefran/MC
 
@@ -69,10 +108,13 @@ This new alpha-version superproc reads seismic catologs from Main Courante and p
 
 ### Superproc gnss
 
-1. New GNSS data format `gipsyx` to read outputs from GipsyX 3rd party
+
+1. `!!` `SUMMARYLIST` must now contain the keyword `SUMMARY` in the list of summary graphs to make the synthetic all node time series graph. In the former behavior, this summary graph was always made by default.
+
+2. New GNSS data format `gipsyx` to read outputs from GipsyX 3rd party
 software (see also next section).
 
-2. `!!`	New key to select the misfit L-norm:
+3. `!!`	New key to select the misfit L-norm:
 
 	```
 MODELLING_MISFITNORM|L1
@@ -80,7 +122,7 @@ MODELLING_MISFITNORM|L1
 which is L1-norm by default. To preserve the previous L2-norm in active
 proc, this must be changed to `L2`.
 
-3. `!!`	New key to limit numerical effets:
+4. `!!`	New key to limit numerical effets:
 
 	```
 MODELLING_MINERROR_PERCENT|1
@@ -89,17 +131,56 @@ which set a minimum relative error of 1% (default) for each data before
 computing the inverse problem. This is especially useful when there is 
 a large number of stations (more than 10) and/or for long period of time
 (more than 1 year). To get the exact previous behavior, this must be changed to `0`.
-	
-4. Some fixes and improved modelling graphic outputs.
 
+5. New keys to configure improved rendering of summary, pernode and baselines graphs:
+
+	```
+COMPONENT_NAMELIST|Relative Eastern,Relative Northern,Relative Vertical
+PERNODE_COMPONENT_OFFSET_M|0.01
+PERNODE_TIMEZOOM|
+SUMMARY_STATION_OFFSET_M|0.01
+SUMMARY_COMPONENT_OFFSET_M|0.01
+SUMMARY_TIMEZOOM|
+BASELINES_REF_OFFSET_M|0.01
+BASELINES_TIMEZOOM|
+```
+The `_TIMEZOOM` keys might contain a fraction number (between 0 and 1) which will produce a secondary subplot with a time zoom on the most recent data. For example, set `0.1` will make a zoom on the last 10% of data.
+
+6. New key to configure the background basemap options for vectors:
+
+	```
+VECTORS_DEM_OPT|'watermark',3,'interp','legend'
+```
+The list of options can be any valid parameters for `CODE/matlab/dem.m` function, such as changing the colormap and lighting effects.
+
+7. Some fixes and improved modelling graphic outputs.
+
+
+### superproc genplot
+
+For consistency, two updates have been made in genplot superproc configuration, that might require administrators attention when upgrading.
+
+1. `!!` The key `NODE_CHANNELS` has been renamed `PERNODE_CHANNELS` for consistency. Automatic update of any proc configuration will add the following:
+
+	```
+PERNODE_CHANNELS|${NODE_CHANNELS}
+```
+so the former configuration should be kept. A good administrator practice is to replace the value manually and delete the obsolete `NODE_CHANNELS` key.
+
+2. `!!` The key `SUMMARYLIST` must now be set to:
+
+	```
+SUMMARYLIST|SUMMARY
+```
+to make the summary graph. Empty or commented parameter will lead to no summary graph. The former behavior was to activate the summary graph as the `SUMMARYLIST` key existed, even empty.
 
 ### GNSS GipsyX scripts
 
-New bash shell script and configuration file `gnss_run_gipsyx ` that uses
-3rd party programs JPL/GipsyX and Unavco/teqc to process GNSS rawdata 
-and to produce PPP solutions in readable files architecture and names 
+New bash shell scripts and configuration file `gnss_run_gipsyx ` and `raw2rinex` that use 3rd party programs JPL/GipsyX and Unavco/teqc to process GNSS rawdata 
+and to produce PPP daily solutions in readable files architecture and names 
 for the new WebObs `gipsyx` data format and superproc gnss.
 
+Presently the raw formats accepted are *Leica*, *Trimble* and *Rinex* (standard or Hatanaka), eventually zipped, as daily or hourly files in subdirectories of any architecture using a combination of year, month, day, doy and station code. Multiple files for one day are concatenated.
 
 ## v2.1.1 (January, 2019)
 
