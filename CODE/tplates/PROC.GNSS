@@ -7,9 +7,9 @@
 
 # long name of the PROC
 NAME|GNSS time series, vectors and modelling
-RAWFORMAT|gipsy
-RAWDATA|$WEBOBS{ROOT_RAWD}/gipsy
-URNDATA|$WEBOBS{URN_RAWD}/gipsy
+RAWFORMAT|gipsyx
+RAWDATA|$WEBOBS{ROOT_RAWD}/gipsyx
+URNDATA|$WEBOBS{URN_RAWD}/gipsyx
 
 # time zone for outputs
 TZ|0
@@ -23,17 +23,17 @@ DECIMATELIST|
 CUMULATELIST|
 DATESTRLIST|-1,-1
 MARKERSIZELIST|3,1
-LINEWIDTHLIST|1,.1
+LINEWIDTHLIST|2,.5
 STATUSLIST|1,0
 # defines a reference date to use with 'ref' timescale in TIMESCALELIST
 REF_DATE|
 
-# summary graphs
-SUMMARYLIST|VECTORS,BASELINES,MODELLING,MODELTIME
+# summary graphs available: SUMMARY,VECTORS,BASELINES,MODELLING,MODELTIME
+SUMMARYLIST|SUMMARY,VECTORS,BASELINES
 
 # for scheduler requests
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} gnss $SELFREF -
-SUBMIT_RESOURCE|gipsy
+SUBMIT_RESOURCE|gipsyx
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,SUMMARYLIST,VECTORS_RELATIVE
@@ -43,6 +43,10 @@ DEM_SRTM1|N
 #DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
 #DEM_TYPE|LATLON
 #DEM_COPYRIGHT|DEM: myDEM
+
+# additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
+#MAP1_XYLIM|
+#MAP2_XYLIM|
 
 # file for background time referenced events 
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
@@ -57,7 +61,7 @@ POSTSCRIPT|1
 EXPORTS|1
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 LOGO2_FILE|
-COPYRIGHT|Processing by Beauducel et al./IPGP
+COPYRIGHT|
 COPYRIGHT2|
 
 NODE_NAME|station
@@ -89,23 +93,26 @@ ITRF_REF|ITRF08
 VELOCITY_REF|0,0,0
 VELOCITY_REF_ORIGIN_DATE|2000-01-01
 
+# component names used as Y-label for SUMMARY and PERNODE graphs (use '\ ' to avoid word splitting)
+COMPONENT_NAMELIST|Relative Eastern,Relative Northern,Relative Vertical
+
 # PERNODE graphs
 PERNODE_LINESTYLE|o
-PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name - ${ITRF_REF}} ($timescale)}
-# adds a secondary graph time-zoomed for the most recent data (fraction of timescale)
+PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name - $velref} ($timescale)}
+# adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 PERNODE_TIMEZOOM|
 # offset between components (in m)
 PERNODE_COMPONENT_OFFSET_M|0.01
 
 # SUMMARY graphs
 SUMMARY_LINESTYLE|o
-SUMMARY_TITLE|{\fontsize{14}{\bf${NAME} - ${ITRF_REF}} ($timescale)}
-# offset between stations for summary graphs (in m)
-SUMMARY_STATION_OFFSET_M|0.01
-# adds a secondary graph time-zoomed for the most recent data (fraction of timescale)
+SUMMARY_TITLE|{\fontsize{14}{\bf${NAME} - $velref} ($timescale)}
+# adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 SUMMARY_TIMEZOOM|
 # offset between components (in m)
 SUMMARY_COMPONENT_OFFSET_M|0.01
+# offset between stations (in m)
+SUMMARY_STATION_OFFSET_M|0.01
 
 # BASELINES graphs
 # - default behavior: all pairs of nodes, with possible node exclusion and/or node reference list
@@ -113,13 +120,17 @@ BASELINES_EXCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
 # - fixed pairs: REF1,STA1;REF2,STA1,STA2,STA5
 BASELINES_NODEPAIRS|
+# interpolation method between nodes: linear or nearest
+BASELINES_INTERP_METHOD|linear
 BASELINES_TITLE|{\fontsize{14}{\bf${NAME} - Baselines} ($timescale)}
 BASELINES_UNIT|mm
-BASELINES_YLABEL|$ref_node_alias (${BASELINES_UNIT})
-BASELINES_LINESTYLE|.-
+BASELINES_YLABEL|Ref.\ $ref_node_alias (${BASELINES_UNIT})
+BASELINES_LINESTYLE|-
 # offset between references (in m)
-BASELINES_REF_OFFSET_M|0.01
-# adds a secondary graph time-zoomed for the most recent data (fraction of timescale)
+BASELINES_REF_OFFSET_M|0.001
+# offset between stations (in m)
+BASELINES_STATION_OFFSET_M|0.01
+# adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 BASELINES_TIMEZOOM|
 
 # VECTORS: excluding NODES from graphs and calculations
@@ -131,8 +142,10 @@ VECTORS_RELATIVE|N
 # - E,N,U: sets fixed offset values (in mm/yr)
 VECTORS_VELOCITY_REF|
 VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
+# background map parameters (see CODE/matlab/dem.m for available options)
+VECTORS_DEM_OPT|'watermark',3,'interp','legend','seacolor',[0.7,0.9,1]
 VECTORS_TITLE|{\fontsize{14}{\bf${NAME} - Velocity vectors} ($timescale)}
-VECTORS_MIN_SIZE_KM|10
+VECTORS_MIN_SIZE_KM|5
 VECTORS_MAX_XYRATIO|1.5
 VECTORS_ARROWSHAPE|.15,.15,.12,.03
 
@@ -167,13 +180,14 @@ MODELLING_COLORMAP|jet(256)
 MODELLING_COLOR_SHADING|0.8
 MODELLING_MAX_DEPTH|8000
 MODELLING_BORDERS|5000
-MODELLING_GRID_SIZE|51
+MODELLING_GRID_SIZE|50
 MODELLING_TITLE|{\fontsize{14}{\bf${NAME} - Source modelling} ($timescale)}
 
 # specific pCDM parameters for MODELLING
 MODELLING_PCDM_ITERATIONS|5
 MODELLING_PCDM_RANDOM_SAMPLING|100000
 MODELLING_PCDM_NU|0.25
+MODELLING_PCDM_DVLIM|-1e7,1e7
 MODELLING_PCDM_ALIM|0,1
 MODELLING_PCDM_BLIM|0,1
 MODELLING_PCDM_OXLIM|-45,45
