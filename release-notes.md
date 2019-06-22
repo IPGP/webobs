@@ -19,6 +19,14 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 CGI_CONFIRM_SUCCESSFUL|YES
 ```
 
+All maps using SRTM DEM is now able to merge bathymetry data grom ETOPO. To activate it, modify the key in `WEBOBS.rc` :
+
+```
+ETOPO_SRTM_MERGE|YES
+```
+This option might need a minimum of RAM.
+
+
 ###Events (Gazette, GRIDS and NODES)
 
 Fix and improve of active group functionality in the Gazette (introduced in v2.0.0) and propagate to GRIDS and NODES events.

@@ -26,7 +26,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2017-08-02
+%	Updated: 2019-06-22
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -38,6 +38,7 @@ srtmmax = field2num(WO,'SRTM_MAX_TILES',25);
 psrtm1 = field2str(WO,'PATH_DATA_DEM_SRTM1');
 srtm1max = field2num(WO,'SRTM1_MAX_TILES',4);
 oversamp = field2num(WO,'DEM_OVERSAMPLING',500);
+mergeetopo = isok(WO,'ETOPO_SRTM_MERGE');
 srtm1 = false;
 etopo = false;
 if nargin > 2
@@ -109,7 +110,7 @@ if ~userdem
 	end
 
 	% adds bathymetry from ETOPO for SRTM offshore areas
-	if ~userdem && ~etopo
+	if mergeetopo && ~userdem && ~etopo
 		k = find(DEM.z==0);
 		if ~isempty(k)
 			% loads ETOPO1 with +/- 2 minutes of extra borders
