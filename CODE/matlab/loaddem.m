@@ -38,6 +38,7 @@ srtmmax = field2num(WO,'SRTM_MAX_TILES',25);
 psrtm1 = field2str(WO,'PATH_DATA_DEM_SRTM1');
 srtm1max = field2num(WO,'SRTM1_MAX_TILES',4);
 oversamp = field2num(WO,'DEM_OVERSAMPLING',500);
+maxwidth = field2num(WO,'DEM_MAX_WIDTH',1201);
 mergeetopo = isok(WO,'ETOPO_SRTM_MERGE');
 srtm1 = false;
 etopo = false;
@@ -107,6 +108,14 @@ if ~userdem
 		DEM.z = double(DEM.z);
 		DEM.z(DEM.z==-32768) = NaN;
 		DEM.COPYRIGHT = field2str(WO,'SRTM_COPYRIGHT','DEM: SRTM/NASA');
+	end
+
+	% limits the size of DEMs to avoir memory problems
+	n = ceil(sqrt(numel(DEM.z))/maxwidth);
+	if n > 1
+		DEM.lat = DEM.lat(1:n:end);
+		DEM.lon = DEM.lon(1:n:end);
+		DEM.z = DEM.z(1:n:end,1:n:end);
 	end
 
 	% adds bathymetry from ETOPO for SRTM offshore areas
