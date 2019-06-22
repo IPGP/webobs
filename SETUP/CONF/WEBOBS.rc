@@ -283,6 +283,7 @@ GOOGLE_MAPS_ZOOM_VALUE|17
 # Digital Elevation Models --------------------
 # ---------------------------------------------
 DEM_OVERSAMPLING|500
+DEM_MAX_WIDTH|1201
 # SRTM data are automatically downloaded
 PATH_DATA_DEM_SRTM|${PATH_DATA_DEM}/SRTM
 PATH_DATA_DEM_SRTM1|${PATH_DATA_DEM}/SRTM1
