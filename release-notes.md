@@ -19,17 +19,17 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 CGI_CONFIRM_SUCCESSFUL|YES
 ```
 
-All maps using SRTM DEM is now able to merge bathymetry data from ETOPO. To activate it, modify the key in `WEBOBS.rc` :
+All maps using SRTM DEM is now able to merge bathymetry data from ETOPO. Since this might require a minimum of RAM it is possible to disactivate it with the following key in `WEBOBS.rc` :
 
 ```
-ETOPO_SRTM_MERGE|YES
+ETOPO_SRTM_MERGE|NO
 ```
-This option might need a minimum of RAM. To avoid memory issues a new key is defined:
+Also, to avoid memory issues with maps, a new key is defined:
 
 ```
 DEM_MAX_WIDTH|1201
 ```
-to automatically decimate any maps before a plot.
+to automatically decimate any DEM before a plot. The parameter defines the square root of maximum total number of pixels (default corresponds to 1 SRTM3 tile).
 
 
 ###Events (Gazette, GRIDS and NODES)

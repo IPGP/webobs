@@ -14,7 +14,7 @@ function varargout=smarttext(x,y,s,varargin)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-05-27, in Yogyakarta, Indonesia
-%	Updated: 2019-06-16
+%	Updated: 2019-06-23
 
 hh = [];
 
@@ -37,11 +37,17 @@ for n = 1:m
 	else
 		% looks for the 2 nearest neighbors
 		[~,k] = sort(greatcircle(y(n),x(n),y,x));
-		k2 = k(2:min(3,m));
-		% computes mean azimuth
-		[~,~,~,bear1] = greatcircle(y(k2(1)),x(k2(1)),y(n),x(n),2);
-		[~,~,~,bear2] = greatcircle(y(k2(2)),x(k2(2)),y(n),x(n),2);
-		az = mod((bear1(1) + bear2(1))/2 + 360,360);
+		if length(k) > 1
+			k2 = k(2:min(3,m));
+			% computes mean azimuth
+			[~,~,~,bear1] = greatcircle(y(k2(1)),x(k2(1)),y(n),x(n),2);
+			if length(k2) > 1
+				[~,~,~,bear2] = greatcircle(y(k2(2)),x(k2(2)),y(n),x(n),2);
+				az = mod((bear1(1) + bear2(1))/2 + 360,360);
+			else
+				az = bear1(1);
+			end
+		end
 	end
 
 	switch 45*round(az/45)

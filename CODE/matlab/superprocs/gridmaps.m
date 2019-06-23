@@ -23,7 +23,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2019-06-15
+%   Updated: 2019-06-23
 
 
 WO = readcfg;
@@ -404,6 +404,20 @@ for g = 1:length(grids)
 							txt = unicode2native(regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"',''),'utf-8');
 							txt = regexprep(char(txt),'''','\\''');
 							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
+						end
+					end
+				end
+				% plots other maps limits
+				for smap = 2:size(maps,1)
+					if smap ~= m
+						x = round(ims(1)*((axp(3)*(maps{smap,2}(1:2) - xylim(1))/diff(xylim(1:2)) + axp(1))));
+						y = round(ims(2) - ims(2)*((axp(4)*(maps{smap,2}(3:4) - xylim(3))/diff(xylim(3:4)) + axp(2))));
+						lnk = sprintf('/cgi-bin/showGRID.pl?grid=%s&map=%d#MAPS',grids{gg},smap-1);
+						txt = sprintf('click to zoom on %s',maps{smap,1});
+						if html
+							fprintf(fid,'<AREA href="%s" title="%s" shape=rect coords="%d,%d,%d,%d">\n',lnk,txt,x(1),y(1),x(2),y(2));
+						else
+							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'')" shape=rect coords="%d,%d,%d,%d">\n',lnk,txt,x(1),y(1),x(2),y(2));
 						end
 					end
 				end
