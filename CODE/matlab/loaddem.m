@@ -26,7 +26,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2019-06-22
+%	Updated: 2019-06-23
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -39,7 +39,7 @@ psrtm1 = field2str(WO,'PATH_DATA_DEM_SRTM1');
 srtm1max = field2num(WO,'SRTM1_MAX_TILES',4);
 oversamp = field2num(WO,'DEM_OVERSAMPLING',500);
 maxwidth = field2num(WO,'DEM_MAX_WIDTH',1201);
-mergeetopo = isok(WO,'ETOPO_SRTM_MERGE');
+mergeetopo = isok(WO,'ETOPO_SRTM_MERGE',1);
 srtm1 = false;
 etopo = false;
 if nargin > 2
