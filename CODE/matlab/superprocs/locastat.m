@@ -62,7 +62,7 @@ convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
 feclair = field2num(P,'COLOR_LIGHTENING',1.2);
 laz = field2num(P,'LIGHT_AZIMUTH',-45);
 lct = field2num(P,'LIGHT_CONTRAST',1);
-sea = repmat(field2num(P,'SEACOLOR','[0.7,0.9,1]'),[2,1]);
+sea = field2num(P,'SEACOLOR','[0.7,0.9,1]','notempty');
 fcmap = field2str(P,'COLORMAP','landcolor');
 if exist(fcmap,'file')
 	cmap = str2num(fcmap);
