@@ -305,6 +305,8 @@ if ($action =~ /new/i ) {
 # (object,event)
 #
 if ($action =~ /upd/i ) {
+	no strict 'refs';
+
 	if (!$isProject) {
 		my ($fname,$ft) = split(/\./,basename($evpath));
 		($name,$date,$time,$version) = split(/_/,basename($fname));
@@ -322,7 +324,7 @@ if ($action =~ /upd/i ) {
 	#	...
 	@lines = readFile("$evbase/$evpath");
 	chomp(@lines);
-	(my $authors, my $remotes,$titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
+	(my $authors, my $remotes, my $titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
 	@authorUIDs = @$authors;
 	@remoteUIDs = @$remotes;
 	shift(@lines);
