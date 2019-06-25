@@ -9,7 +9,7 @@ The lastest release has many improvements, new features and bug fixes.
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
 
-## v2.1.2a (June, 2019)
+## v2.1.2b (June, 2019)
 
 ###WEBOBS.rc
 

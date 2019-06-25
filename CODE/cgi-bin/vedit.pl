@@ -275,8 +275,6 @@ my @lines;
 my $today = new Time::Piece;
 my $name = my $version = "";
 $date = $time = $titre = $contents = "";
-my @authorUIDs;
-my @remoteUIDs;
 $contents = "";
 my $parents = WebObs::Events::parents($evbase, $evpath);
 
@@ -324,9 +322,9 @@ if ($action =~ /upd/i ) {
 	#	...
 	@lines = readFile("$evbase/$evpath");
 	chomp(@lines);
-	(my $authors, my $remotes,$titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
-	@authorUIDs = @$authors;
-	@remoteUIDs = @$remotes;
+	(my $authors,my $remotes,$titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
+	@oper = @$authors;
+	@roper = @$remotes;
 	shift(@lines);
 	$contents = join("\n",@lines);
 	($contents, $meta) = WebObs::Wiki::stripMDmetadata($contents);
@@ -541,7 +539,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	push(@logins,@ilogins) if (!$action =~ /new/i); # adds inactive users
 	for my $ulogin (@logins) {
 		my $sel = "";
-		if ("@authorUIDs" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
+		if ("@oper" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
 			$sel = 'selected';
 		}
 		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME} ($USERS{$ulogin}{UID})</option>\n";
@@ -552,7 +550,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved remotely (hold CTRL key for multiple selections)'}')\">\n";
 	for my $ulogin (@logins) {
 		my $sel = "";
-		if ("@remoteUIDs" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
+		if ("@roper" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
 			$sel = 'selected';
 		}
 		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME} ($USERS{$ulogin}{UID})</option>\n";
