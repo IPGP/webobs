@@ -101,7 +101,7 @@ Process NODE Update or Create from formNODE submitted info
  typeTrans=
  TRANSMISSION|  configuration value - string type
 
- typeTele=
+ pathTrans=
  TRANSMISSION|  configuration value component - string 
 
  SELs=
@@ -199,7 +199,7 @@ my $jourP     = $cgi->param('jourMesure')  // '';
 my $typePos   = $cgi->param('typePos')     // '';
 my $features  = $cgi->param('features')    // ''; 
 my $typeTrans = $cgi->param('typeTrans')   // '';
-my $typeTele  = $cgi->param('tele')        // '';
+my $typeTele  = $cgi->param('pathTrans')   // '';
 if ($typeTele ne "") { $typeTrans = "$typeTrans,$typeTele"; }
 my @SELs      = $cgi->param('SELs');
 

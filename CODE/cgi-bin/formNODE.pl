@@ -270,9 +270,9 @@ function maj_rawformat() {
 
 function maj_transmission() {
 	if (document.formulaire.typeTrans.value==0) {
-		document.getElementById("acqrel").style.display="none";
+		document.getElementById("pathTrans").style.display="none";
 	} else {
-		document.getElementById("acqrel").style.display="block";
+		document.getElementById("pathTrans").style.display="block";
 	}
 }
 
@@ -533,9 +533,9 @@ print "<TR>";
 	}
 	print "</SELECT><BR>";
 
-	# --- Acq. + Repeater 
-	print "<DIV id=\"acqrel\" style=\"display:none\"><LABEL for=\"acqrel\">$__{'Repeaters Path'}: </LABEL>"; 
-	print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_acq}')\" name=\"acqrel\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
+	# --- Transmission path (acquisition + repeater list) 
+	print "<DIV id=\"pathTrans\" style=\"display:none\"><LABEL for=\"pathTrans\">$__{'Repeaters Path'}: </LABEL>"; 
+	print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_acq}')\" name=\"pathTrans\" size=\"40\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
 	print "</FIELDSET>";
 
 	# --- Procs parameters
