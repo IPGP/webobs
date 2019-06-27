@@ -303,8 +303,6 @@ if ($action =~ /new/i ) {
 # (object,event)
 #
 if ($action =~ /upd/i ) {
-	no strict 'refs';
-
 	if (!$isProject) {
 		my ($fname,$ft) = split(/\./,basename($evpath));
 		($name,$date,$time,$version) = split(/_/,basename($fname));
@@ -526,17 +524,17 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	# makes a list of active (and inactive) users
 	my @alogins;
 	my @ilogins;
-	foreach (sort keys(%USERS)) {
-		my @grp = WebObs::Users::userListGroup($_);
+	for my $uid (sort keys(%USERS)) {
+		my @grp = WebObs::Users::userListGroup($uid);
 		my %gid = map { $_ => 1 } split(/,/,$WEBOBS{EVENTS_ACTIVE_GID});
 		if ((%gid && grep { $gid{$_} } @grp) || (!%gid && $USERS{$_}{VALIDITY} eq "Y")) {
-			push(@alogins,$_);
+			push(@alogins,$uid);
 		} else {
-			push(@ilogins,$_);
+			push(@ilogins,$uid);
 		}
 	}
 	my @logins = @alogins;
-	push(@logins,@ilogins) if (!$action =~ /new/i); # adds inactive users
+	push(@logins,@ilogins) if (!($action =~ /new/i)); # adds inactive users
 	for my $ulogin (@logins) {
 		my $sel = "";
 		if ("@oper" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
