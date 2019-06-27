@@ -71,7 +71,7 @@ WRITE=$2
 
 
 # main configuration files
-for c in {WEBOBS.rc,GRIDMAPS.rc,LOCASTAT.rc,GRIDS.rc,NODES.rc,CLB.conf,Gazette.rc,Welcome.conf,menu.rc,scheduler.rc}; do
+for c in {WEBOBS.rc,GRIDMAPS.rc,LOCASTAT.rc,GRIDS.rc,NODES.rc,Gazette.rc,Welcome.conf,menu.rc,scheduler.rc}; do
 	mydiff $TPLATEDIR/CONF/$c $CONFDIR/$c $RELREL $WRITE
 done
 
