@@ -84,7 +84,7 @@ woperlmod_system_install () {
   mkdir -p $installsitelib
   for m in WebObs $(cd $RELBASE/CODE/cgi-bin; echo *.pm)
   do
-    ln -s $RELBASE/CODE/cgi-bin/$m $installsitelib/$m
+    ln -s $RELBASE/CODE/cgi-bin/$m $installsitelib/
   done
 }
 
@@ -374,7 +374,7 @@ then  # Note: this won't do any harm if the links already exist
   echo "Creating symlinks to perl modules in $installsitelib:"
   mkdir -vp $installsitelib
   for m in "WebObs" $(cd $RELBASE/CODE/cgi-bin; echo *.pm); do
-    ln -vsf $RELBASE/CODE/cgi-bin/$m $installsitelib/$m
+    ln -vsf $RELBASE/CODE/cgi-bin/$m $installsitelib/
   done
   echo
 fi
