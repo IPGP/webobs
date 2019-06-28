@@ -134,23 +134,14 @@ headersplit(header) decodes header string and returns an array of elements:
 =cut 
 
 sub headersplit {
-	my $title;
-	my $date2;
-	my $time2;
-	my $feature;
-	my $channel;
-	my $outcome;
-	my $notebook;
-	my $notebookfwd;
-	my @UIDs;
-	my @RUIDs;
+	my ($title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = "";
 	# event metadata are stored in the header line of file as pipe-separated fields:
 	# 	UID1[+UID2+...][/RUID1[+RUID2+...]]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
 	my $pipes = $_[0] =~ tr/\|//; # count the number of pipes in header
 	my @header = split(/\|/,$_[0]); # splits pipe-separated arguments
 	my @people = split(/\//,$header[0]); # splits authors and remotes (forward slash separator)
-	@UIDs = split(/\+/,$people[0]); # array of authors
-	@RUIDs = split(/\+/,$people[1]) if ($#people > 0); # array of remotes
+	my @UIDs = split(/\+/,$people[0]); # array of authors
+	my @RUIDs = split(/\+/,$people[1]) if ($#people > 0); # array of remotes
 	if ($pipes > 1 && $pipes < 6) {
 		$title = join("\|",@header[1..$#header]); # rare case of a former header with unescaped pipe in the title...
 	} else {
