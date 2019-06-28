@@ -80,10 +80,9 @@ perlmod_installed() {
 
 woperlmod_system_install () {
   # install webobs modules in the system
-  eval $(perl -V:installsitelib)
+  local installsitelib="$1"
   mkdir -p $installsitelib
-  for m in WebObs $(cd $RELBASE/CODE/cgi-bin; echo *.pm)
-  do
+  for m in "WebObs" $(cd $RELBASE/CODE/cgi-bin; echo *.pm); do
     ln -s $RELBASE/CODE/cgi-bin/$m $installsitelib/
   done
 }
@@ -368,14 +367,11 @@ if ! perlmod_installed "WebObs::Config"; then
 else
   echo "Some WebObs perl modules seem to already be installed system-wide (re-installing won't hurt)."
 fi
-eval $(perl -V:installsitelib)
 if $(confirmy "(Re)install WebObs perl modules system-wide (using symlinks) [Y/n] ? ")
 then  # Note: this won't do any harm if the links already exist
+  eval $(perl -V:installsitelib)
   echo "Creating symlinks to perl modules in $installsitelib:"
-  mkdir -vp $installsitelib
-  for m in "WebObs" $(cd $RELBASE/CODE/cgi-bin; echo *.pm); do
-    ln -vsf $RELBASE/CODE/cgi-bin/$m $installsitelib/
-  done
+  woperlmod_system_install $installsitelib
   echo
 fi
 
