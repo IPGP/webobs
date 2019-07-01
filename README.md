@@ -104,7 +104,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 
 ### Contributors	
 
-* **Xavier Béguin** - [XavierBeguin](https://github.com/XavierBeguin) - xbeguin@ntu.edu.sg	
+* **Xavier Béguin** - [XavierBeguin](https://github.com/XavierBeguin) - beguin@ipgp.fr
 * **Patrice Boissier** - [PBoissier](https://github.com/PBoissier) - boissier@ipgp.fr	
 * **Alexis Bosson** - bosson@ipgp.fr	
 * **Didier Mallarino**	
