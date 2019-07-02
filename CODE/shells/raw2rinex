@@ -11,7 +11,7 @@
 # Updated: 2019-06-09
 
 if [ $# -lt 2 ]; then
-	echo "raw2rinex input output"
+	echo "raw2rinex input output [teqc options]"
 	exit 0;
 fi
 
