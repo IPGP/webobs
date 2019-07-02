@@ -15,7 +15,7 @@
 #          Domerapi/WebObs Project
 # Created: 2014-01-29 at BPPTKG, Yogyakarta (Indonesia) for Gipsy-Oasis version
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia) for GipsyX version
-# Updated: 2019-06-09
+# Updated: 2019-07-01
 
 if [ $# -lt 2 ]; then
 	echo "       Syntax: gnss_run_gipsyx CONF DAYS [STATION] [-force]"
@@ -37,6 +37,7 @@ source "$1" || {
 }
 
 tmpdir=$(mktemp -d /tmp/gipsyx.XXXXXXXXXX)
+rinex="$tmpdir/rinex"
 
 PWD=$(pwd)
 PROGDIR=$( cd "$( dirname "$0" )" && pwd )
@@ -52,8 +53,9 @@ if [ -z "$FMT" ]; then
 	FMT='$FROM/$FID/$yyyy/$mm/$dd'
 fi
 
+TODAY=$(date -u +"%Y/%m/%d")
 DAYS=$2
-DAYLIST=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago" +"%Y/%m/%d";done)
+DAYLIST=$(for d in $(seq $DAYS -1 0);do date -u -d "$d day ago" +"%Y/%m/%d";done)
 
 if [ "$3" != "" ]
 then
@@ -79,7 +81,7 @@ for station in $NODES; do
 	ID=$(echo "$NODESTABLE" | awk "/$FID/ {print \$1}")
 	receiver=$(grep -h "^$GRID\.FID_RECEIVER|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
 	antenna=$(grep -h "^$GRID\.FID_ANTENNA|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
-	echo "ID = $ID - receiver = '$receiver' - antenna = '$antenna' (will use rinex header if empty)"
+	echo "   WO ID = $ID - receiver = '$receiver' - antenna = '$antenna' (will use rinex header if empty)"
 	if [ ! -z "$receiver" ]; then
 		receiver=" -O.rt \"$receiver\""
 	fi
@@ -88,7 +90,10 @@ for station in $NODES; do
 	fi
 
 	for ymd in $DAYLIST; do
+		doy=$(date -d "$ymd" +"%j")
+		sta=$(echo $FID | tr '[:upper:]' '[:lower:]')
 		yyyy=${ymd:0:4}
+		year=$yyyy
 		mm=${ymd:5:2}
 		dd=${ymd:8:2}
 		res="$DEST/$FID/$yyyy/$yyyy-$mm-$dd.$FID"
@@ -97,21 +102,40 @@ for station in $NODES; do
 		if [[ $FORCE == 0 && -s "$gipsyres" ]]; then 
 			echo "   file $gipsyres [flinn] already exists..."
 		else
-			# additional variables
-			doy=$(date -d "$ymd" +"%j")
-			sta=$(echo $FID | tr '[:upper:]' '[:lower:]')
+			# path of raw data: eval() will replace any variables in $FMT (from .rc)
 			RAW=$(eval "echo $FMT")
-			#RAW="$FROM/$FID/$ymd"
-
-			rinex="$tmpdir/rinex"
-			#if [ "$(ls -A $RAW)" ]; then
-			#if [ -e "$RAW" ]; then
 			if [ ! -z "$(ls -Ad $RAW 2>/dev/null)" ]; then
 				rm -rf $tmpdir/*
 				# makes Rinex daily file from raw data (see raw2rinex script)
 				$PROGDIR/raw2rinex "$RAW" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna
 				if [[ ! -z $VERBOSE || $? != 0 ]]; then
 					echo "$PROGDIR/raw2rinex \"$RAW\" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
+				fi
+
+				# real-time case: makes a 24h window from yesterday+today data
+				if [[ "$REALTIME" == "Y" && "$ymd" == "$TODAY" ]]; then
+					yesterday=$(date -u -d "1 day ago" +"%Y/%m/%d")
+					doy=$(date -d "$yesterday" +"%j")
+					yyyy=${yesterday:0:4}
+					mm=${yesterday:5:2}
+					dd=${yesterday:8:2}
+					RAW2=$(eval "echo $FMT")
+					rinex1=$tmpdir/rinex1
+					rinex2=$tmpdir/rinex2
+					echo "   Real-time case: Appending $yesterday and $TODAY to process 24h of data."
+					$PROGDIR/raw2rinex "$RAW2" $rinex1 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna
+					if [[ ! -z $VERBOSE || $? != 0 ]]; then
+						echo "$PROGDIR/raw2rinex \"$RAW2\" $rinex1 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
+					fi
+					endwindow=$(date -u +"%Y%m%d%H%M%S")
+					mv $rinex $rinex2
+					if [[ ! -z $VERBOSE || $? != 0 ]]; then
+						echo "   mv $rinex $rinex2"
+					fi
+					teqc -phc +quiet -e $endwindow -dh 24 $rinex1 $rinex2 > $rinex
+					if [[ ! -z $VERBOSE || $? != 0 ]]; then
+						echo "   teqc -phc +quiet -e $endwindow -dh 24 $rinex1 $rinex2 > $rinex"
+					fi
 				fi
 
 				# makes GipsyX processing
@@ -128,10 +152,10 @@ for station in $NODES; do
 						eval $cmd
 						rc=$?
 						if [[ $rc == 0 && -s $tdp ]]; then
-							mkdir -p "$DEST/$FID/$yyyy"
+							mkdir -p "$DEST/$FID/$year"
 							rm -f $gipsyres.*
 							grep ".State.Pos.[XYZ]" $tdp | tail -n3 > $gipsyres
-							echo "   ==> $gipsyres [$orbit] written."
+							echo "==> $gipsyres [$orbit] written."
 							if [[ "$orbit" != "flinn" ]]; then
 								mv $gipsyres $gipsyres.$orbit
 							fi 
@@ -153,4 +177,6 @@ done
 
 echo "*************************************"
 
-rm -rf $tmpdir
+if [ -z $DEBUG ]; then 
+	rm -rf $tmpdir
+fi
