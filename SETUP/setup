@@ -410,6 +410,7 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 	fi
 	USERGID=$(id -n -g ${USERID})
 	USERMAIL=$(readkbn "Enter WebObs user email address (default: ${USERID}@localhost): ")
+	USERHOME=$(eval "echo ~$USERID")
 	if [[ -z ${USERMAIL} ]]; then
 		USERMAIL="${USERID}@localhost"
 	fi
@@ -737,9 +738,9 @@ fi
 # (sefran output/data directory is one example of such structure)
 # -----------------------------------------------------------------------------
 if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other than DocumentRoot [y/N] ? ") == true ]]; then
-	SEFRANROOT=$(readkbn "Enter SEFRAN output+data directory (default will be /home/${USERID}/sefran): ")
+	SEFRANROOT=$(readkbn "Enter SEFRAN output+data directory (default will be $USERHOME/sefran): ")
 	if [[ "${SEFRANROOT}" == "" && ! -z ${USERID} ]]; then 
-		if [[ -d "/home/${USERID}" ]]; then SEFRANROOT="/home/${USERID}/sefran"; fi
+		if [[ -d "$USERHOME" ]]; then SEFRANROOT="$USERHOME/sefran"; fi
 	fi
 	if [[ "${SEFRANROOT}" != "" ]]; then
 		echo "making sure ${SEFRANROOT} is created"
@@ -761,9 +762,9 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other
 	fi
 	echo
 
-	RAWDATA=$(readkbn "Enter RAW DATA directory (default will be /home/${USERID}/rawdata): ")
+	RAWDATA=$(readkbn "Enter RAW DATA directory (default will be $USERHOME/rawdata): ")
 	if [[ "${RAWDATA}" == "" && ! -z ${USERID} ]]; then
-		if [[ -d "/home/${USERID}" ]]; then RAWDATA="/home/${USERID}/rawdata"; fi
+		if [[ -d "$USERHOME" ]]; then RAWDATA="$USERHOME/rawdata"; fi
 	fi
 	if [[ "${RAWDATA}" != "" ]]; then
 		echo "making sure ${RAWDATA} is created"
