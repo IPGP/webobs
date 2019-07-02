@@ -26,7 +26,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2019-06-23
+%	Updated: 2019-07-01
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -123,7 +123,7 @@ if ~userdem
 		k = find(DEM.z==0);
 		if ~isempty(k)
 			% loads ETOPO1 with +/- 2 minutes of extra borders
-			E = ibil(sprintf('%s/%s',WO.PATH_DATA_DEM_ETOPO,WO.ETOPO_NAME),xylim + 2/60*[-1,1,-1,1]);
+			E = ibil(sprintf('%s/%s',WO.PATH_DATA_DEM_ETOPO,WO.ETOPO_NAME),xylim + 5/60*[-1,1,-1,1]);
 			[xx,yy] = meshgrid(DEM.lon,DEM.lat);
 			DEM.z(k) = min(floor(interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear')),0);
 			DEM.COPYRIGHT = sprintf('%s + ETOPO/NOOA',DEM.COPYRIGHT);
