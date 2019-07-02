@@ -43,11 +43,21 @@ A number of programs and Perl modules are needed to run webobs. During the C) in
 
 ```sh
 sudo apt-get install apache2 apache2-utils sqlite3 imagemagick mutt xvfb \
-   graphviz net-tools libdatetime-perl libdate-calc-perl \
+   curl gawk graphviz net-tools libdatetime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
    libtext-multimarkdown-perl libswitch-perl libintl-perl
+```
+
+Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `FR_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
+
+```sh
 sudo locale-gen fr_FR en_US
-sudo a2enmod cgid	
+```	
+
+Also you need to activate CGI module for Apache:
+
+```sh
+sudo a2enmod cgid
 ```	
 
 ### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
