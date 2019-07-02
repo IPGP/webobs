@@ -83,6 +83,7 @@ if (scalar(@GID) == 2) {
 #
 my $grid = "$GRIDType.$GRIDName";
 my $isProc = ($GRIDType eq "PROC" ? '1':'0');
+$usrProcparam = '' if !$isProc;
 my $myself = "/cgi-bin/".basename($0)."?grid=$grid";
 my $GRIDNameLower = lc($GRIDName);
 my $nbNodes = scalar(@{$GRID{NODESLIST}});
