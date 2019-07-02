@@ -1,7 +1,8 @@
 <TABLE width="100%" border="0"><TR><TD width="180" style="border:0"><IMG src="/icons/ipgp/logo_OVS.png"></TD>
 <TD style="border:0">
-<H1>WebObs: 2012-2016 beta version</H1>
+<H1>WebObs: <An integrated web-based system for data monitoring and networks management.</H1>
 <P><B>Institut de Physique du Globe de Paris</B><BR>
 1 rue Jussieu - 75238 Paris<BR>
 Contact: <A href="mailto:beauducel@ipgp.fr">beauducel@ipgp.fr</A></P>
+<P>To change this content, go to menu +ADMIN -> Admin Editors -> Html Contents</P>
 </TD></TR></TABLE>
