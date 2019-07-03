@@ -14,7 +14,7 @@ function varargout=smarttext(x,y,s,varargin)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-05-27, in Yogyakarta, Indonesia
-%	Updated: 2019-06-23
+%	Updated: 2019-07-02
 
 hh = [];
 
@@ -76,7 +76,7 @@ for n = 1:m
 		opt = {'VerticalAlignment','middle','HorizontalAlignment','right'};
 		ss = {[s{n},' '],'',''};
 	otherwise
-		opt = [];
+		opt = {};
 		ss = s{n};
 	end
 

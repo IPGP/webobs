@@ -23,7 +23,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2019-06-23
+%   Updated: 2019-07-02
 
 
 WO = readcfg;
@@ -264,7 +264,7 @@ for g = 1:length(grids)
 					zmax = max(z(:));
 					dz = double(zmax - zmin);
 					% empirical ratio between horizontal extent and elevation interval (dz)
-					rzh = dz/min(diff(x([1,end]))*cosd(mean(dlat)),diff(y([1,end])))/degkm/4e2;
+					rzh = min(1,dz/min(diff(x([1,end]))*cosd(mean(dlat)),diff(y([1,end])))/degkm/4e2);
 					dz0 = tickscale([zmin,zmax],rzh);
 					dz0(ismember(0,dz0)) = [];	% eliminates 0 value in minor ticks
 					dz1 = tickscale([zmin,zmax],rzh*5);
@@ -274,11 +274,11 @@ for g = 1:length(grids)
 					else
 						clrgb = [0,0,0];
 					end
-					if ~isempty(dz1)
+					if length(dz1) > 1 
 						[~,h] = contour(x,y,z,dz1,'-','Color',clrgb);
 						set(h,'LineWidth',lwminor);
 					end
-					if ~isempty(dz0)
+					if length(dz0) > 1
 						[cs,h] = contour(x,y,z,dz0,'-','Color',clrgb);
 						set(h,'LineWidth',lwmajor);
 						if isok(P,'CONTOURLINES_LABEL')

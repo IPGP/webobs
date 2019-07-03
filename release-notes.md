@@ -9,7 +9,7 @@ The lastest release has many improvements, new features and bug fixes.
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
 
-## v2.1.2b (June, 2019)
+## v2.1.2c (July, 2019)
 
 ###WEBOBS.rc
 
@@ -120,7 +120,6 @@ In the MC table, a new *View* icon indicates now that user can only view an even
 This new alpha-version superproc reads seismic catologs from Main Courante and plot some elaborated statistics. The PROC must be associated to a catalog NODE with FID as MC3_NAME. Undocumented yet.
 
 ### Superproc gnss
-
 
 1. `!!` `SUMMARYLIST` must now contain the keyword `SUMMARY` in the list of summary graphs to make the synthetic all node time series graph. In the former behavior, this summary graph was always made by default.
 

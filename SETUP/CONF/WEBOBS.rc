@@ -294,8 +294,8 @@ SRTM1_MAX_TILES|4
 PATH_DATA_DEM_ETOPO|${PATH_DATA_DEM}/ETOPO
 ETOPO_NAME|etopo5
 ETOPO_COPYRIGHT|DEM: ETOPO5 NGDC/NOOA
-# merges SRTM with ETOPO bathymetry (may need some RAM)
-ETOPO_SRTM_MERGE|YES
+# merges SRTM with ETOPO bathymetry (needs ETOPO1)
+ETOPO_SRTM_MERGE|NO
 
 # IGN ----------------------------------------
 IGN_MAPI_LINK|0
