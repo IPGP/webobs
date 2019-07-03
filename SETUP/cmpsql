@@ -10,18 +10,36 @@ if [ $# -lt 2 ]; then
 	exit 1
 fi
 
+normalize_schema() {
+    sqlite3 $1 '.schema' | tr -d '\n' | awk '
+        BEGIN { RS=";"; ORS=";\n" }
+        /TABLE sqlite_sequence/ { next }
+        {
+            # Remove duplicate blanks and tabs
+            gsub(/[\t ]+/, " ")
+            # Change "X(" to "X (" and "X)" to "X )"
+            $0=gensub(/([^ ])(\(|\))/, "\\1 \\2", "g");
+            # Print the line (using ORS)
+            print
+        }'
+}
+
 if [[ -f $1 && -f $2 ]]; then
 	diffopt="-y --expand-tabs --suppress-common-lines"
-	#DL-was: difflst=$(diff $diffopt <(sqlite3 $1 '.schema' | tr -t -s '\t\n' '  ' | sed -e 's/;/;\n/g' | sed -e 's/^ *//') \
-	#DL-was:              <(sqlite3 $2 '.schema' | tr -t -s '\t\n' '  ' | sed -e 's/;/;\n/g' | sed -e 's/^ *//') )
-	sqlite3 $1 '.schema' | tr -t -s '\t\n' '  ' | sed -e 's/;/;\n/g' | sed -e 's/^ *//' >cmpsql.s1
-	sqlite3 $2 '.schema' | tr -t -s '\t\n' '  ' | sed -e 's/;/;\n/g' | sed -e 's/^ *//' >cmpsql.s2
+	normalize_schema $1 > cmpsql.s1
+	normalize_schema $2 > cmpsql.s2
 	difflst=$(diff $diffopt cmpsql.s1 cmpsql.s2)
 	if [[ ${#difflst} -gt 0 ]]; then
-		echo $1 'vs' $2 'schema differ'
-		#echo ${difflst}
+		echo "WARNING: Found different schemas in $1 and $2"
+		echo "Please investigate visually"
+        echo "(Hint: this is the output of 'sqlite3 <dbfile> .schema')"
+		echo -e "\n--- Schema for $1:"
+		sqlite3 $1 '.schema' | grep -v 'TABLE sqlite_sequence'
+		echo -e "\n--- Schema for $2:"
+		sqlite3 $2 '.schema' | grep -v 'TABLE sqlite_sequence'
+		echo
 	else
-		echo $1 'vs' $2 'schema match'
+		echo "Success: found identical schemas in $1 and $2"
 	fi
 else
 	echo "`basename $0` couldn't find db(s)" ; 
