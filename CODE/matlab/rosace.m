@@ -9,10 +9,11 @@ function varargout=rosace(th,rh,varargin)
 %
 %	Author: F. Beauducel, OVSG-IPGP
 %	Created: 2001-2002 in Guadeloupe (FWI)
-%	Modified: 2017-06-07
+%	Updated: 2019-07-03
 
-m = rmax(rmax(rh));
-if isnan(m) | ~m
+% computes the maximum value for scaling
+m = rmax(rh(:));
+if isempty(m) || isnan(m) || m == 0
     m = .1;
 end
 m2 = m*cos(pi/4);
