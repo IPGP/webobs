@@ -588,15 +588,19 @@ case 'arclink'
 % =============================================================================
 case 'fdsnws-dataselect'
 	% delete previous temporary file
-	wosystem(sprintf('rm -f %s/mseed*.tmp',ptmp),SEFRAN3);
+	wosystem(sprintf('rm -f %s/postfile.tmp',ptmp),SEFRAN3);
+    fpost = sprintf('%s/postfile.tmp',ptmp); % temporary POST file
+    fid = fopen(fpost,'w');
 	for n = 1:length(sfr)
-		fmsdchan = sprintf('%s/mseed%d.tmp',ptmp,n); % temporary miniseed file for channel n
 		c = textscan(sfr{n},'%s','Delimiter','.:'); % splits NET, STA, LOC, CHA codes
-		% builds request line for dataselect WebService
-		wsreq = sprintf('starttime=%04d-%02d-%02dT%02d:%02d:%02.0f&endtime=%04d-%02d-%02dT%02d:%02d:%02.0f&net=%s&sta=%s&loc=%s&cha=%s',datevec(t0-dt0(n)),datevec(t1),c{1}{1},c{1}{2},c{1}{3},c{1}{4});
-		wosystem(sprintf('wget -nv -O %s "%s%s"',fmsdchan,datasource,wsreq),SEFRAN3);
+		if isempty(c{1}{3}) % if empty location code, replace with '--'
+		    c{1}{3} = '--';
+	    end
+		% builds request line for dataselect WebService POST file
+		fprintf(fid,'%s %s %s %s %04d-%02d-%02dT%02d:%02d:%02.0f %04d-%02d-%02dT%02d:%02d:%02.0f\n',c{1}{1},c{1}{2},c{1}{3},c{1}{4},datevec(t0-dt0(n)),datevec(t1));
 	end
-	wosystem(sprintf('cat %s/mseed{1..%d}.tmp > %s',ptmp,length(sfr),fmsd));
+	% request the data
+	wosystem(sprintf('wget -nv -O %s --post-file %s "%s"',fmsd,fpost,datasource),SEFRAN3);
 
 % =============================================================================
 case 'miniseed'
