@@ -183,7 +183,7 @@ if ~isempty(k)
         else
             FDSNWS.raw = split({MC3.FDSNWS_EVENTS_URL},'?');
         end
-        FDSNWS.raw = {sprintf('%s?',FDSNWS.raw{1}{1})};
+        FDSNWS.raw = {sprintf('%s?',FDSNWS.raw{1})};
         FDSNWS.fmt = 'fdsnws-event';
         D = readfmtdata_quake(WO,P,N,FDSNWS);
 	for kk = 1:length(k)
