@@ -217,7 +217,12 @@ case 'fdsnws-event'
 				tt(evt) = datenum(char(eventNode.getElementsByTagName('time').item(0).getElementsByTagName('value').item(0).getTextContent),'yyyy-mm-ddTHH:MM:SS.FFF');
 				dd(evt,1) = str2double(eventNode.getElementsByTagName('latitude').item(0).getElementsByTagName('value').item(0).getTextContent);
 				dd(evt,2) = str2double(eventNode.getElementsByTagName('longitude').item(0).getElementsByTagName('value').item(0).getTextContent);
-				dd(evt,3) = str2double(eventNode.getElementsByTagName('depth').item(0).getElementsByTagName('value').item(0).getTextContent) / 1000;
+				if eventNode.getElementsByTagName('depth').getLength
+					dd(evt,3) = str2double(eventNode.getElementsByTagName('depth').item(0).getElementsByTagName('value').item(0).getTextContent) / 1000;
+					if eventNode.getElementsByTagName('depth').item(0).getElementsByTagName('uncertainty').getLength
+						dd(evt,8) = str2double(eventNode.getElementsByTagName('depth').item(0).getElementsByTagName('uncertainty').item(0).getTextContent) / 1000;
+					end
+				end
 				if eventNode.getElementsByTagName('magnitude').getLength
 					dd(evt,4) = str2double(eventNode.getElementsByTagName('magnitude').item(0).getElementsByTagName('mag').item(0).getElementsByTagName('value').item(0).getTextContent);
 					if eventNode.getElementsByTagName('magnitude').item(0).getElementsByTagName('type').getLength
@@ -248,9 +253,6 @@ case 'fdsnws-event'
 					if eventNode.getElementsByTagName('originUncertainty').item(0).getElementsByTagName('horizontalUncertainty').getLength
 						dd(evt,7) = str2double(eventNode.getElementsByTagName('originUncertainty').item(0).getElementsByTagName('horizontalUncertainty').item(0).getTextContent) / 1000;
 					end
-				end
-				if eventNode.getElementsByTagName('depth').item(0).getElementsByTagName('uncertainty').getLength
-					dd(evt,8) = str2double(eventNode.getElementsByTagName('depth').item(0).getElementsByTagName('uncertainty').item(0).getTextContent) / 1000;
 				end
 			end
 			t = [t;tt];
