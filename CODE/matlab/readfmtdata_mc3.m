@@ -140,6 +140,7 @@ end
 % reads scevtlog-xml catalog format
 % search entries matching scevetlog-xml format
 fprintf('%s: reads associated scevtlog-xml catalog... ',wofun);
+x = 0;
 k = find(~cellfun(@isempty,regexp(mc3(:,14),'[0-9]{4}/[0-9]{2}/[0-9]{2}/.+')));
 if ~isempty(k)
     SC3 = F;
@@ -150,7 +151,6 @@ if ~isempty(k)
     Pquake = P;
 %     Pquake.SC3_LISTEVT = strjoin(sc3ids(4,:),',');
     D = readfmtdata_quake(WO,Pquake,N,SC3);
-    x = 0;
     for kk = 1:length(k)
         j = find(~cellfun(@isempty,strfind(D.c(:,1),char(sc3ids(4,kk)))));
         if ~isempty(j)
@@ -169,6 +169,7 @@ fprintf('done (%d events found).\n',x);
 % reads fdsnws-event catalog format
 % search entries matching fdsnws-event format
 fprintf('%s: reads associated fdsnws-event catalog... ',wofun);
+x = 0;
 k = find(~cellfun(@isempty,regexp(mc3(:,14),'://')));
 if ~isempty(k)
     qmlids = cellfun(@(x)regexp(x,'://','split'),mc3(k,14),'UniformOutput',false);
@@ -182,10 +183,9 @@ if ~isempty(k)
         else
             FDSNWS.raw = split({MC3.FDSNWS_EVENTS_URL},'?');
         end
-        FDSNWS.raw = {sprintf('%s?',FDSNWS.raw{1}{1})};
+        FDSNWS.raw = {sprintf('%s?',FDSNWS.raw{1})};
         FDSNWS.fmt = 'fdsnws-event';
         D = readfmtdata_quake(WO,P,N,FDSNWS);
-        x = 0;
 	for kk = 1:length(k)
 	        j = find(~cellfun(@isempty,strfind(D.c(:,1),char(qmlids(kk,2)))));
 	        if ~isempty(j)
