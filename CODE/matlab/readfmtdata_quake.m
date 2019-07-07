@@ -137,7 +137,7 @@ case 'hyp71sum2k'
 			end
 			if ~isempty(magtype)
 				k = find(strcmp(c(:,2),'M'));
-				c(k,2) = rempat({magtype},length(k),1);
+				c(k,2) = repmat({magtype},length(k),1);
 			end
 
 			fprintf('done (%d/%d events imported).\n',length(t),size(dd,1));
@@ -268,7 +268,7 @@ case 'fdsnws-event'
 	end
 	if ~isempty(magtype)
 		k = find(isempty(c(:,2)));
-		c(k,2) = rempat({magtype},length(k),1);
+		c(k,2) = repmat({magtype},length(k),1);
 	end
 	fprintf(' done (%d events).\n',length(t));
 
@@ -390,7 +390,7 @@ case 'scevtlog-xml'
 		end
 		if ~isempty(magtype)
 			k = find(isempty(c(:,2)));
-			c(k,2) = rempat({magtype},length(k),1);
+			c(k,2) = repmat({magtype},length(k),1);
 		end
 		[t,kk] = sort(t(k,1));
 		d = d(k(kk),:);
@@ -416,7 +416,7 @@ e = double( (isnan(d(:,5)) | isinto(d(:,5),P.GAPLIM)) ...
 );
 
 % filters or purge invalid event types or status
-if ~isempty(extypes) || ~isempty(exstatus)
+if ~isempty(t) && (~isempty(extypes) || ~isempty(exstatus))
 	if isok(P,'PURGE_EXCLUDED_EVENT')
 		k = find(ismemberlist(c(:,3),extypes) | ismemberlist(c(:,5),exstatus));
 		if ~isempty(k)
