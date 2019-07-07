@@ -76,7 +76,7 @@ for c in {WEBOBS.rc,GRIDMAPS.rc,LOCASTAT.rc,GRIDS.rc,NODES.rc,Gazette.rc,Welcome
 done
 
 # sefran3 (needs to check for main conf file)
-C=$(find $CONFDIR -maxdepth 1 -name SEFRAN3*.conf)
+C=$(find $CONFDIR -maxdepth 1 -name 'SEFRAN3*.conf')
 for s in $C; do
 	if [[ ! -z $(grep -E "^CHANNEL_CONF\|" $s) ]]; then
 		mydiff $TPLATEDIR/CONF/SEFRAN3.conf $s $RELREL $WRITE
@@ -84,7 +84,7 @@ for s in $C; do
 done
 
 # mc3 (needs to check for main conf file)
-C=$(find $CONFDIR -maxdepth 1 -name MC3*.conf)
+C=$(find $CONFDIR -maxdepth 1 -name 'MC3*.conf')
 for s in $C; do
 	if [[ ! -z $(grep -E "^EVENT_CODES_CONF\|" $s) ]]; then
 		mydiff $TPLATEDIR/CONF/MC3.conf $s $RELREL $WRITE
@@ -92,7 +92,7 @@ for s in $C; do
 done
 
 # procs (checks superproc)
-C=$(find $CONFDIR/PROCS -maxdepth 2 -name *.conf)
+C=$(find $CONFDIR/PROCS -maxdepth 2 -name '*.conf')
 for s in $C; do
 	P=$(grep -E "^SUBMIT_COMMAND\|" $s | cut -d " " -f 2 | tr '[:lower:]' '[:upper:]')
 	if [[ ! -z $P && -e "$TPLATEDIR/../CODE/tplates/PROC.$P" ]]; then
@@ -101,7 +101,7 @@ for s in $C; do
 done
 
 # views
-C=$(find $CONFDIR/VIEWS -maxdepth 2 -name *.conf)
+C=$(find $CONFDIR/VIEWS -maxdepth 2 -name '*.conf')
 for s in $C; do
 	if [[ ! -z $(grep -E "^NAME\|" $s) ]]; then
 		mydiff $TPLATEDIR/../CODE/tplates/VIEW.DEFAULT $s $RELREL $WRITE
