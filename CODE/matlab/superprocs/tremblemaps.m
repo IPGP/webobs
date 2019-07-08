@@ -40,7 +40,7 @@ function DOUT=tremblemaps(varargin)
 %       	LOCALE|fr_FR
 %		AREA|la Guadeloupe et Îles du Nord
 %		MAP_XYLIM|
-%		MAP_LANDONLY|1
+%		MAP_LANDONLY|Y
 %		MAP_INSET_EPIMAX|0
 %		MAP_DEM_OPT|'LandColor',.8*ones(2,3),'SeaColor',white,'Contrast',1,'LCut',0.01
 %		EPICENTER_PLOT_OPT|'p','MarkerSize',12,'MarkerEdgeColor','r','MarkerFaceColor','w','LineWidth',1.5
@@ -120,7 +120,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2018-04-23
+%	Updated: 2019-07-08
 
 
 WO = readcfg;
@@ -148,6 +148,9 @@ e = cat(1,D.e);
 t = t - P.TZ/24;
 
 demopt = field2cell(P,'MAP_DEM_OPT');
+if isok(P,'MAP_LANDONLY',1)
+	P.ETOPO_SRTM_MERGE = 'N';
+end
 
 % colormap options
 cmap = field2num(P,'COLORMAP',jet(256));
@@ -252,7 +255,7 @@ for n = 1:length(t)
 		%end
 
 		% removes all symbolic links
-		wosystem(sprintf('rm -f %s/b3*',pdat),P);
+		wosystem(sprintf('rm -f %s/b3*',pdat),P,'warning');
 
 		% determines if a report is needed (felt event)
 		if forced > 0 || ( msk(k1,2) >= mskmin && (str2double(P.FELTOTHERPLACES_OK) > 0 || strcmp(CITIES.region(k1),region)) )
@@ -706,8 +709,8 @@ for n = 1:length(t)
 
 	% purge event (remove symbolic link)
 	if e(n) < 0 && exist(sprintf('%s/b3.jpg',pdat),'file')
-		wosystem(sprintf('rm -f %s/b3*',pdat),P);
-		wosystem(sprintf('mv -f %s/%s.txt{,.purged}',pdat,fnam),P);
+		wosystem(sprintf('rm -f %s/b3*',pdat),P,'warning');
+		wosystem(sprintf('mv -f %s/%s.txt{,.purged}',pdat,fnam),P,'warning');
 		fprintf('%s: ** WARNING ** event %s has been purged.\n',wofun,pdat);
 	end
 
@@ -764,7 +767,7 @@ A = repmat(interp1(linspace(0,1,length(amap)),amap,inorm),[1,1,3]);
 % adds intensity color to shaded relief
 I.tot = I.rgb.*(1 - A) + I.msk.*A;
 %I.tot = I.rgb./2 + I.msk./2;
-if isok(P,'MAP_LANDONLY')
+if isok(P,'MAP_LANDONLY',1)
 	k = (repmat(I.z,[1,1,3])<=0);
 	I.tot(k) = I.rgb(k);
 end

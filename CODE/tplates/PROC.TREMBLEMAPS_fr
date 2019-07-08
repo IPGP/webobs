@@ -78,12 +78,13 @@ COLORMAP_ALPHA|0,1
 
 # use this to fix map limits (otherwise map is automatic from epicenter and region)
 #MAP_XYLIM|-64,-59.7,14.25,18.4
-MAP_LANDONLY|1
+# limits lighted relief to land
+MAP_LANDONLY|Y
 # set a value in km to add a zoom inset map when nearest city from epicenter is < MAP_INSET_EPIMAX km
 MAP_INSET_EPIMAX|0
 # see CODE/matlab/dem.m for options
-#MAP_DEM_OPT|'LandColor',.8*ones(256,3),'SeaColor',white,'Contrast',0
-MAP_DEM_OPT|'LandColor',.8*ones(256,3),'SeaColor',white,'Contrast',1,'LCut',0.01
+#MAP_DEM_OPT|'LandColor',.8*ones(256,3),'SeaColor',white(256),'Contrast',0
+MAP_DEM_OPT|'LandColor',.8*ones(256,3),'SeaColor',white(256),'Contrast',1,'LCut',0.01
 EPICENTER_PLOT_OPT|'p','MarkerSize',12,'MarkerEdgeColor','r','MarkerFaceColor','w','LineWidth',1.5
 FELT_MSK_MIN|1.5
 FELT_FORCED|0

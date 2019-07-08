@@ -19,6 +19,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %	   DEM_COPYRIGHT: user's copyright string
 %	      DEM_FORCED: Y or YES to force the use of user's DEM even if it
 %	                  doesn't cover the entire requested area
+%	ETOPO_SRTM_MERGE: Y to force ETOPO+SRTM merge, overwrites WEBOBS.rc
 %
 %	If OPT.DEM_FILE does not exist or user's DEM does not cover the entire 
 %	requested area XYLIM, then SRTM/ETOPO data are returned instead.
@@ -26,7 +27,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2019-07-01
+%	Updated: 2019-07-08
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -46,6 +47,7 @@ if nargin > 2
 	srtm1 = isok(OPT,'DEM_SRTM1');
 	srtmmax = field2num(OPT,'SRTM_MAX_TILES',srtmmax);
 	srtm1max = field2num(OPT,'SRTM1_MAX_TILES',srtm1max);
+	mergeetopo = isok(OPT,'ETOPO_SRTM_MERGE',mergeetopo);
 end
 
 % makes SRTM directories
