@@ -160,7 +160,7 @@ sub Show {
 			# identify week (iso notation)
 			if ($calweekn eq "VERTICAL") {
 				push(@html,"<tr>\n");
-				push(@html,"<th class=\"gzt-calweekvert\" rowspan=\"0\">".$w->strftime('%G-w%V')."</th>");
+				push(@html,"<th class=\"gzt-calweekvert\">".$w->strftime('%G-w%V')."</th>");
 				$caltr = "<tr><td style=\"border: none;\"></td>\n";
 			} else {
 				push(@html,'<tr><td class="gzt-calweekhead" colspan="7">'.$w->strftime('%G-w%V').'</td></tr>');
