@@ -226,7 +226,7 @@ end
 
 % remove catalog values for invalid event types or status
 if ~isempty(extypes) || ~isempty(exstatus)
-    k = find(ismemberlist(c(:,4),extypes) & ismemberlist(c(:,6),exstatus));
+    k = find(~ismemberlist(c(:,4),extypes) & ~ismemberlist(c(:,6),exstatus));
     fprintf('%s: filtering event types "%s"...\n',wofun,strjoin(extypes,', '));
     fprintf('%s: filtering event status "%s"...\n',wofun,strjoin(exstatus,', '));
     if length(t) ~= length(k)
