@@ -299,7 +299,11 @@ if ($QryParm->{'ts'} eq 'map') {
 	$depth = length($depth); # $depth is number of "/" in the g= argument
 	
 	# lists all files
-	(@plist) = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
+	if ($QryParm->{'g'} == "lastevent") {
+		@plist = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/lastevent/*.jpg";
+	} else {
+		@plist = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
+	}
 	# target directory contains multiple files: displays existing thumbnails
 	if ($#plist > 1) {
 		my $month0 = "";
