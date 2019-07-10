@@ -53,7 +53,13 @@ table.jobsdefs {
 	text-align: left;
 	width: 100%;
 }
-table.jobsdefs td.tdlock { background: #ddd;}
+table.jobsdefs tr:hover td.tdlock,
+table.jobsdefs td.tdlock {
+	background: #ddd;
+}
+table.jobsdefs tr:hover td {
+	background: #eee;
+}
 
 table.jobsruns {
     border: 1px solid #FFFFFF;
@@ -61,6 +67,9 @@ table.jobsruns {
     border-collapse: collapse;
 	text-align: left;
 	width: 100%;
+}
+table.jobsruns tr:hover td {
+	background: #eee;
 }
 
 .smanlegend {
