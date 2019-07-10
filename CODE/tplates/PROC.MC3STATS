@@ -88,7 +88,7 @@ SUMMARYLIST|SWARM
 
 # --- data selection
 # Main Courante event types to read
-MC_EVENTTYPES_LIST|
+MC_EVENTTYPE_LIST|
 # catalog events filtering out (remove catalog informations for matching events)
 EVENTTYPE_EXCLUDED_LIST|
 EVENTSTATUS_EXCLUDED_LIST|
