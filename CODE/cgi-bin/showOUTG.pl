@@ -299,7 +299,7 @@ if ($QryParm->{'ts'} eq 'map') {
 	$depth = length($depth); # $depth is number of "/" in the g= argument
 	
 	# lists all files
-	if ($QryParm->{'g'} == "lastevent") {
+	if ($QryParm->{'g'} eq "lastevent") {
 		@plist = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/lastevent/*.jpg";
 	} else {
 		@plist = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
