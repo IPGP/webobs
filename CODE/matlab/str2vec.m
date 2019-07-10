@@ -4,6 +4,11 @@ function v=str2vec(s)
 %
 %	Author: F. Beauducel
 %	Created: 2015-03-01
+%	Updated: 2019-07-09
 
-v = textscan(s,'%s','Delimiter',',');
-v = str2double(v{:}');
+if ~isempty(s)
+	v = textscan(s,'%s','Delimiter',',');
+	v = str2double(v{:}');
+else
+	v = [];
+end
