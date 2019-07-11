@@ -149,6 +149,8 @@ if [ "${SYS_OS}" = "Linux" ] ; then
 		SYS_DIST='Debian'
 	elif [ -f /etc/SuSE-release ] ; then
 		SYS_DIST='SuSE'
+		echo "WARNING: SuSE support seems broken in this script and the proposed configuration "
+		echo "will most likely fail; you should closely check your configuration files afterwards."
 	fi
 	SYS_STR="${SYS_OS} ${SYS_DIST} ${SYS_REV} ${PSEUDO} ${SYS_KERNEL} ${SYS_MACH}"
 elif [ "${SYS_OS}" = "Darwin" ] ; then
@@ -253,15 +255,15 @@ fi
 if [[ ${SYS_DIST} == 'Debian' ]]; then
 	APACHE_VARS="/etc/apache2/envvars"
 	N_APACHE="apache2"
-	DIRC_APACHE=$(find /etc/apache2 -type d -name sites-available)
-	DIRE_APACHE=$(find /etc/apache2 -type d -name sites-enabled)
-	USER_APACHE=($( ps -eo user,group,cmd | grep apache | grep -v root | grep -v grep | head -1 ))
-	if [[ -z $USER_APACHE ]]; then
-		USER_APACHE=($(sed -n -e 's/.*apache_run_user=\(.*\)$/\1/pi' -e 's/.*apache_run_group=\(.*\)$/\1/pi' ${APACHE_VARS}))
-	fi
+	DIRC_APACHE="/etc/apache2/sites-available"
+	DIRE_APACHE="/etc/apache2/sites-enabled"
+	USER_APACHE=($(source /etc/apache2/envvars 2> /dev/null; echo $APACHE_RUN_USER $APACHE_RUN_GROUP))
 	APP_APACHE=$(apache2 -v 2>/dev/null);
 fi
 if [[ ${SYS_DIST} == 'SuSE' ]]; then
+	# This really needs heavy checks and seems mostly wrong: on SuSE,
+	# the apache binary is named http-something and user and group are defined
+	# in /etc/apache2/uid.conf using the "user" and "group" directives.
 	APACHE_VARS="/etc/sysconfig/httpd"
 	N_APACHE="apache2"
 	DIRC_APACHE=$(find /etc/apache2 -type d -name conf.d)
@@ -699,11 +701,10 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine Apache stuff [y/N
 	# create/update Apache VirtualHost configuration
 	if [[ $(confirmy "Updating Apache will force ${DOCROOT}, release ${RELREL}, to become your Production WebObs. OK [Y/n] ? ") == true ]]; then
 		ACTIVATEWO="FORCED"
-		SITE="webobs" 
+		SITE="webobs.conf"
 		SSITE=${SITE}
 		DN=$(hostname -f)
 		SN="${SITE}.${DN#*.}"
-		if [[ ${SYS_DIST} == 'RedHat' ]]; then SITE=${SITE}.conf ; fi
 		if [[ -f ${DIRC_APACHE}/${SITE} ]]; then 
 			echo "Backing up existing ${DIRC_APACHE}/${SITE} to ${DOCROOT}/${SITE}.setup.backup"
 			cp -a ${DIRC_APACHE}/${SITE} ${DOCROOT}/${SITE}.setup.backup
@@ -723,7 +724,7 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine Apache stuff [y/N
 
 		if [[ ${SYS_DIST} == 'Debian' ]]; then
 			verbosecho "enabling ${SITE}: ln -sf ${DIRC_APACHE}/${SITE} ${DIRE_APACHE}/${SITE}"
-			ln -sf ${DIRC_APACHE}/${SITE} ${DIRE_APACHE}/${SITE}.conf
+			ln -sf ${DIRC_APACHE}/${SITE} ${DIRE_APACHE}/${SITE}
 			errexit "enabling ${SITE}: symlink to ${DIRC_APACHE}/${SITE}"
 		fi
 		echo "Apache VirtualHost ${SN} configured in ${DIRC_APACHE}/${SITE}"
