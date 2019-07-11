@@ -46,6 +46,7 @@ usage() {
 	echo 
 	echo 'Options:'
 	echo ' -f, --force         show but ignore errors'
+	echo ' -x, --expert-mode   ignore detected missing software'
 	echo ' -q, --quiet         be less verbose'
 	echo ' -h, --help          this help text'
 	echo 
@@ -97,9 +98,10 @@ VERBOSE=true
 FORCE=false
 DEPMISS=false
 LOCMISS=false
+EXPERT_MODE=${EXPERT_MODE:-0}
 
 # parse requested options
-ARGS=`getopt -o "hqf" -l "help,quiet,force" -n "$0" -- "$@"`
+ARGS=`getopt -o "hqfx" -l "help,quiet,force,expert-mode" -n "$0" -- "$@"`
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
 while true; do
@@ -122,6 +124,10 @@ while true; do
 				TGZ=$2	
 			fi
 			shift 2;;
+
+		-x|--expert-mode)
+			EXPERT_MODE=1
+			shift;;
 
 		--)
 			shift
@@ -354,9 +360,21 @@ if [[ -z "${APP_GAWK}" ]]  ; then echo '**** could not detect gawk'; fi
 
 # 3) dependencies summary 
 if ${DEPMISS}; then 
-	echo '**** Please install the above mentioned required software and run this script again.'
-	echo "Done."
-	exit 64
+	if [ $EXPERT_MODE != 1 ]; then
+		echo '**** Please install the above mentioned required software and run this script again.'
+		echo "Done."
+		exit 64
+	else
+		echo -e '\n**** Some required software were detected missing (see above), but expert mode is enabled.'
+		echo '     Only continue if you know what you are doing.'
+		read -p'     Are you sure you want to continue anyway ? [y/N] ' ans
+		if [ "$ans" = "y" ]; then
+			echo 'OK, continuing at your own risks.'
+		else
+			echo 'OK, aborting. Please install missing software and run this script again.'
+			exit 64
+		fi
+	fi
 fi
 echo
 
@@ -369,7 +387,7 @@ if ! perlmod_installed "WebObs::Config"; then
 else
   echo "Some WebObs perl modules seem to already be installed system-wide (re-installing won't hurt)."
 fi
-if $(confirmy "(Re)install WebObs perl modules system-wide (using symlinks) [Y/n] ? ")
+if $(confirmy "Install WebObs perl modules system-wide (using symlinks) [Y/n] ? ")
 then  # Note: this won't do any harm if the links already exist
   eval $(perl -V:installsitelib)
   echo "Creating symlinks to perl modules in $installsitelib:"
@@ -473,7 +491,6 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	${RELBASE}/SETUP/cmpconf ${RELREL} ${WRITE} >> ${REPORT}
 	printf "\n" >>${REPORT}
 	if [[ ! -z ${WRITE} && -s ${WRITE} && -t 1 ]]; then
-
 		oIFS=${IFS}; IFS=$'\n'
 		CONFUP=($(cat ${WRITE}))
 		IFS=${oIFS}
