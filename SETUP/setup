@@ -83,7 +83,7 @@ woperlmod_system_install () {
   local installsitelib="$1"
   mkdir -p $installsitelib
   for m in "WebObs" $(cd $RELBASE/CODE/cgi-bin; echo *.pm); do
-    ln -vsf $RELBASE/CODE/cgi-bin/$m $installsitelib/
+    ln -vsf $DOCROOT/CODE/cgi-bin/$m $installsitelib/
   done
 }
 
