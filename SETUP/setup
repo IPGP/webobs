@@ -701,33 +701,33 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine Apache stuff [y/N
 	# create/update Apache VirtualHost configuration
 	if [[ $(confirmy "Updating Apache will force ${DOCROOT}, release ${RELREL}, to become your Production WebObs. OK [Y/n] ? ") == true ]]; then
 		ACTIVATEWO="FORCED"
-		SITE="webobs.conf"
-		SSITE=${SITE}
+		VHOST_CONF="webobs.conf"
+		LOG_FILENAME=${VHOST_CONF%.conf}
 		DN=$(hostname -f)
-		SN="${SITE}.${DN#*.}"
-		if [[ -f ${DIRC_APACHE}/${SITE} ]]; then 
-			echo "Backing up existing ${DIRC_APACHE}/${SITE} to ${DOCROOT}/${SITE}.setup.backup"
-			cp -a ${DIRC_APACHE}/${SITE} ${DOCROOT}/${SITE}.setup.backup
-			errexit "Backing up existing ${DIRC_APACHE}/${SITE}"
+		SN="webobs.${DN#*.}"
+		if [[ -f ${DIRC_APACHE}/$VHOST_CONF ]]; then
+			echo "Backing up existing ${DIRC_APACHE}/$VHOST_CONF to ${DOCROOT}/$VHOST_CONF.setup.backup"
+			cp -a ${DIRC_APACHE}/$VHOST_CONF ${DOCROOT}/$VHOST_CONF.setup.backup
+			errexit "Backing up existing ${DIRC_APACHE}/$VHOST_CONF"
 		fi
-		VARLOG=$(readkbn "Enter vhost log files prefix (default: /var/log/${N_APACHE}/${SSITE}): ")
+		VARLOG=$(readkbn "Enter vhost log files prefix (default: /var/log/${N_APACHE}/$LOG_FILENAME): ")
 		if [[ -z ${VARLOG} ]]; then
-			VARLOG="/var/log/${N_APACHE}/${SSITE}"
+			VARLOG="/var/log/${N_APACHE}/$LOG_FILENAME"
 		fi
-		verbosecho "creating ${DIRC_APACHE}/${SITE}"
-		sed -e "s=\${DOCROOT}=${DOCROOT}=g" -e "s=\${SRVNAME}=${SN}=g" -e "s=\${VARLOG}=${VARLOG}=g" ${RELBASE}/SETUP/${APACHE_CONFMODEL} >${DIRC_APACHE}/${SITE}
-		errexit "creating ${DIRC_APACHE}/${SITE}"
+		verbosecho "creating ${DIRC_APACHE}/$VHOST_CONF"
+		sed -e "s=\${DOCROOT}=${DOCROOT}=g" -e "s=\${SRVNAME}=${SN}=g" -e "s=\${VARLOG}=${VARLOG}=g" ${RELBASE}/SETUP/${APACHE_CONFMODEL} >${DIRC_APACHE}/$VHOST_CONF
+		errexit "creating ${DIRC_APACHE}/$VHOST_CONF"
 
 		verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallVirtualHost,InstallUrl)"
-		sed -i -e "s=\${InstallVirtualHost\}=${DIRC_APACHE}/${SITE}=g" -e "s=\${InstallUrl\}=http://${SN}=g" ${DOCROOT}/CONF/WEBOBS.rc
+		sed -i -e "s=\${InstallVirtualHost\}=${DIRC_APACHE}/$VHOST_CONF=g" -e "s=\${InstallUrl\}=http://${SN}=g" ${DOCROOT}/CONF/WEBOBS.rc
 		errexit "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallVirtualHost,InstallUrl)"
 
 		if [[ ${SYS_DIST} == 'Debian' ]]; then
-			verbosecho "enabling ${SITE}: ln -sf ${DIRC_APACHE}/${SITE} ${DIRE_APACHE}/${SITE}"
-			ln -sf ${DIRC_APACHE}/${SITE} ${DIRE_APACHE}/${SITE}
-			errexit "enabling ${SITE}: symlink to ${DIRC_APACHE}/${SITE}"
+			verbosecho "enabling $VHOST_CONF: ln -sf ${DIRC_APACHE}/$VHOST_CONF ${DIRE_APACHE}/$VHOST_CONF"
+			ln -sf ${DIRC_APACHE}/$VHOST_CONF ${DIRE_APACHE}/$VHOST_CONF
+			errexit "enabling $VHOST_CONF: symlink to ${DIRC_APACHE}/$VHOST_CONF"
 		fi
-		echo "Apache VirtualHost ${SN} configured in ${DIRC_APACHE}/${SITE}"
+		echo "Apache VirtualHost ${SN} configured in ${DIRC_APACHE}/$VHOST_CONF"
 		echo
 	else
 		echo "Warning: Apache vhost configuration not updated"
@@ -752,8 +752,8 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other
 		SEFRANROOT=$(readlink -f ${SEFRANROOT})
 		sed -i -e "s=\${InstallSefranRoot\}=${SEFRANROOT}=g" ${DOCROOT}/CONF/WEBOBS.rc
 		errexit "updating WEBOBS.rc for ${SEFRANROOT}"
-		if [[ -f ${DIRC_APACHE}/${SITE} ]]; then
-			sed -i -e "s=\${SEFRANROOT\}=${SEFRANROOT}=g" ${DIRC_APACHE}/${SITE} 
+		if [[ -f ${DIRC_APACHE}/$VHOST_CONF ]]; then
+			sed -i -e "s=\${SEFRANROOT\}=${SEFRANROOT}=g" ${DIRC_APACHE}/$VHOST_CONF
 			errexit "updating Apache config for ${SEFRANROOT}"
 		fi
 	fi
@@ -776,8 +776,8 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other
 		RAWDATA=$(readlink -f ${RAWDATA})
 		sed -i -e "s=\${InstallRawdata\}=${RAWDATA}=g" ${DOCROOT}/CONF/WEBOBS.rc
 		errexit "updating WEBOBS.rc for ${RAWDATA}"
-		if [[ -f ${DIRC_APACHE}/${SITE} ]]; then
-			sed -i -e "s=\${RAWDATA\}=${RAWDATA}=g" ${DIRC_APACHE}/${SITE}
+		if [[ -f ${DIRC_APACHE}/$VHOST_CONF ]]; then
+			sed -i -e "s=\${RAWDATA\}=${RAWDATA}=g" ${DIRC_APACHE}/$VHOST_CONF
 			errexit "updating Apache config for ${RAWDATA}"
 		fi
 	fi
