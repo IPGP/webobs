@@ -6,7 +6,7 @@ seiscomp2mc3.pl
 
 =head1 SYNOPSIS
 
- $ perl seiscomp2mc3.pl { update | check | dumper } [-f mc3-name]
+ $ perl seiscomp2mc3.pl { update | check | dumper } [-f mc3-name] [-n sefran3-name]
 
 =head1 DESCRIPTION
 
@@ -24,6 +24,9 @@ dumper
 
 An optional argument ( -f ) may specify the MC3 configuration file to be used. It 
 defaults to $WEBOBS{ROOT_CONF}/$WEBOBS{MC3_DEFAULT_NAME}.conf
+
+An optional argument ( -n ) may specify the SEFRAN3 name to be used. It 
+defaults to $WEBOBS{SEFRAN3_DEFAULT_NAME}
 
 =head1 DEPENDENCIES
 
@@ -52,6 +55,7 @@ setlocale(LC_NUMERIC,'C');
 
 # ---- default MC3 configuration
 my $mc3 = $WEBOBS{MC3_DEFAULT_NAME};
+my $sefran3_name = $WEBOBS{SEFRAN3_DEFAULT_NAME};
 
 # Maximum difference between the dates of an event in SC3 and MC3 to update MC3 (seconds)
 my $max_dts_sc3_mc3 = 90;
@@ -71,6 +75,8 @@ if (@ARGV == 0) {
 		"\t\tchecks and dumps XML tree (read only).\n",
 		"\t-f MC3NAME\n",
 		"\t\tSpecifies MC3 conf name. Default is MC3_DEFAULT_NAME in WEBOBS.conf.\n",
+		"\t-n SEFRAN3 name\n",
+		"\t\tSpecifies SEFRAN3 name to use as reference. Default is SEFRAN3_DEFAULT_NAME in WEBOBS.conf.\n",
 		"\n\tFrancois Beauducel, IPGP <beauducel\@ipgp.fr>\n\n"
 		;
 	exit(0);
@@ -96,6 +102,17 @@ if (@ARGV > 0) {
 			}
 		} else {
 			print "invalid -f option\n";
+			exit(1);
+		}
+	}	
+	if ( $opt =~ /-n/ ) {
+		$opt = shift;
+		if ( $opt ) {
+			$sefran3_name = $opt;
+			print "-n option $sefran3_name\n";
+			$opt = shift || '';
+		} else {
+			print "invalid -n option\n";
 			exit(1);
 		}
 	}	
@@ -383,7 +400,7 @@ for (@last) {
 				# --- outputs for MC
 				if ($newID > 0) {
 					$mc_id = $maxID + 1;
-					my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1||$evt_scode|$evt_unique||$evt_y/$evt_m/$evt_d/$evt_id||$oper|\n";
+					my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1||$evt_scode|$evt_unique|$sefran3_name|$evt_y/$evt_m/$evt_d/$evt_id||$oper|\n";
 					print "$newline\n";
 					push(@lignes,$newline);
 				}
