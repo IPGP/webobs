@@ -14,6 +14,8 @@ Edit (create/update) a GRID specified by its fully qualified name, ie. gridtype.
 
 When creating a new GRID (if name does not exist), formGRID starts editing from a predefined template file for the gridtype: filename $WEBOBS{ROOT_CODE}/tplates/<gridtype>_DEFAULT or specific template identified by gridtype.template argument.
 
+To create a new GRID, user must have Admin rights for all VIEWS or PROCS. To update an existing GRID, user must have Edit rights for the concerned GRID.
+
 =head1 QUERY-STRING 
 
 grid=gridtype.gridname
@@ -86,7 +88,7 @@ if (scalar(@GID) == 2) {
 		$template = "$WEBOBS{ROOT_CODE}/tplates/$GRIDType.DEFAULT";
 	}
 	if ( -e "$file" ) {
-		if ( WebObs::Users::clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
+		if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
 			@rawfile = readFile($file);
 			$fileTS0 = (stat($file))[9] ;
 			$editOK = 1;
