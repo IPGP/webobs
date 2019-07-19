@@ -20,7 +20,9 @@ use File::Basename;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 require Exporter;
 @ISA     = qw(Exporter);
-@EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim rtrim tri_date_avec_id romain boussole pga2msk attenuation txt2htm url2target);
+@EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
+            rtrim tri_date_avec_id romain boussole pga2msk attenuation txt2htm
+            url2target checkParam);
 $VERSION = "1.00";
 
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -245,6 +247,86 @@ sub url2target
 	} else {
 		return "_blank";
 	}
+}
+
+
+# -------------------------------------------------------------------------------------------------
+
+=pod
+
+=head2
+
+Check that a value matches a pattern, otherwise die with an error message. This
+should be used to check CGI parameters security.
+
+Examples:
+
+	# Pass a scalar parameter:
+	my $param = checkParam($q->param('myparam'), qr/^[0-9A-Za-z_-]+i$/", "myparam");
+
+	# This is actually the same as:
+	my $param = checkParam(scalar($q->param('myparam')), qr/^[0-9A-Za-z_-]+$/", "myparam");
+
+	# A list of param should be passed by reference:
+	my $param = checkParam([$q->param('myparam')], qr/^[\w_-]+$/, "myparamlist");
+
+	# The param name is only used in the error message and is optional
+	my $param = checkParam($q->param('myparam'), qr/^[0-9]*$/);
+
+Notes:
+
+- Remember to always match the whole string in the regular expression, i.e.
+expression should ALWAYS start with "^" and end with "$" (unless you really
+know what you are doing, otherwise the check will be useless and your security
+will be at risk).
+
+- also remember to use a regular expression that match the empty string if your
+parameter is allowed to be empty (in which you will usually provide a default
+value).  In the following example, the default value "default" will never be
+set and an error will be raised if no value are provided for the CGI parameter
+'myparam':
+	my $param = checkParam($q->param('myparam'), qr/^[0-9]+$/) // "default";
+Use this instead:
+	my $param = checkParam($q->param('myparam'), qr/^[0-9]*$/) // "default";
+
+=cut
+
+sub checkParam ($$;$) {
+	# Parameters:
+	#
+	# $value (string or ARRAY ref, in a forced scalar context):
+	#   The values to test. If an array ref, all elements of the array must
+	#   match the pattern. Note: this cannot be a constant (e.g. 1, or "str")
+	# $pattern (regex pattern):
+	#   The pattern to test the value against (should match the whole value
+	#   from start to end of string). Should ALWAYS match the whole string
+	#   (qr/^...$/), or it would completely defeat the security check.
+	# $param_name (string), optional:
+	#   The error message to use with die of value does not match
+	#
+	# Exception:
+	#   Dies with $error_msg if $value does not match pattern.
+	# Returns:
+	#   $value
+	#
+	my $value = shift;
+	my $pattern = shift;
+	my $param_name = shift // '';
+	my $error_msg;
+	my $want_array = ref($value) eq "ARRAY" ? 1 : 0;
+	my @values = $want_array ? @$value : ($value);
+	return unless defined $value;
+
+	if ($param_name) {
+		$error_msg = "Error: bad value for parameter '$param_name', cannot continue.";
+	} else {
+		$error_msg = "Error: bad parameter value, cannot continue.";
+	}
+
+	for my $v (@values) {
+		die $error_msg unless ($v =~ $pattern);
+	}
+	return $want_array ? @values : $value;
 }
 
 
