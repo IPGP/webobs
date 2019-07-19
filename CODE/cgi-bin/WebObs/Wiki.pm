@@ -123,6 +123,8 @@ sub stripMDmetadata {
 		my %hash = @head;                                   # ...
 		return ($txt,"") if (!keys %hash || !$hash{WebObs}); # no keys or no WebObs key = no metadata
 		return ($tail, "$head\n\n");
+	} else {
+		return ('', '');
 	}
 }
 
