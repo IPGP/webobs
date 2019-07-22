@@ -46,33 +46,51 @@ use WebObs::Utils;
 use WebObs::i18n;
 
 # ---- misc inits
-# 
+#
 set_message(\&webobs_cgi_msg);
-my @tod = localtime();
-my $QryParm   = $cgi->Vars;
-my $type = trim($QryParm->{'type'});
-my $grid = trim($QryParm->{'grid'});
-my @GID = split(/[\.\/]/, $grid); 
+my $gridConfFile;       # file name of the grid's configuration file
+my $gridConfFileMtime;  # last modification time of the config file
+my $editOK  = 0;        # 1 if the user is allowed to edit the grid
+my $newG    = 0;        # 1 if we are creating a new grid
+my @rawfile;            # raw content of the configuration file
+my $GRIDType = "";      # grid type ("PROC" or "VIEW")
+my $GRIDName = "";      # name of the grid
+my %GRID;               # structure describing the grid
+my $domain;             # the domain of the grid
+my $template;           # the template for a new grid
+my %FORMS;              # titles of existing forms
+my $form = "";          # the form ID of the grid (if any)
+my %gridnodeslist;      # IDs of nodes associated with the grid
 
-my $fileTS0;
-my $file;
-my $editOK  = 0;
-my $newG    = 0;
-my @rawfile;
-my $GRIDName = my $GRIDType = my $RESOURCE = "";
-my %GRID;
-my $domain;
-my $template;
-my %FORMS;
-my @lf =  qx(ls $WEBOBS{PATH_FORMS});
-chomp(@lf);
-for my $f (@lf) {
+# Read and check CGI parameters
+my $type = checkParam($cgi->param('type'),
+			qr{^((VIEW|PROC)(\.|/)[a-zA-Z0-9_]+)?$}, 'type') // "";
+my $grid = checkParam($cgi->param('grid'),
+			qr{^(VIEW|PROC)(\.|/)[a-zA-Z0-9_]+$}, 'grid');
+my @GID = split(/[\.\/]/, $grid);
+
+
+# Read the list of all forms
+opendir my $formDH, $WEBOBS{PATH_FORMS}
+	or die "Could read form list from '$WEBOBS{PATH_FORMS}': $!\n";
+my @ALL_FORMS = grep(!/^\./ && -d "$WEBOBS{PATH_FORMS}/$_", readdir($formDH));
+close($formDH)
+	or die "Could read form list from '$WEBOBS{PATH_FORMS}': $!\n";
+
+# Load form titles into %FORMS
+for my $f (@ALL_FORMS) {
 	my $F = new WebObs::Form("$f");
 	$FORMS{"$f"} = $F->conf('TITLE');
 }
-my $form;
-my @gridnodeslist;
-my @NL = map(basename($_), qx(ls -d $NODES{PATH_NODES}/*) );  chomp(@NL);
+
+# Read the list of all nodes
+opendir my $nodeDH, $NODES{PATH_NODES}
+	or die "Could read node list from '$NODES{PATH_NODES}': $!\n";
+my @ALL_NODES = sort grep(!/^\./ && -d "$NODES{PATH_NODES}/$_",
+						  readdir($nodeDH));
+close($nodeDH)
+	or die "Could read node list from '$NODES{PATH_NODES}': $!\n";
+
 
 # ---- see what we've been called for and what the client is allowed to do
 # ---- init general-use variables on the way and quit if something's wrong
@@ -80,17 +98,21 @@ my @NL = map(basename($_), qx(ls -d $NODES{PATH_NODES}/*) );  chomp(@NL);
 if (scalar(@GID) == 2) {
 	@GID = map { uc($_) } @GID;
 	($GRIDType, $GRIDName) = @GID;
-	if ($GRIDType eq 'VIEW') { $file = "$WEBOBS{PATH_VIEWS}/$GRIDName/$GRIDName.conf"; }	
-	if ($GRIDType eq 'PROC') { $file = "$WEBOBS{PATH_PROCS}/$GRIDName/$GRIDName.conf"; }
+	if ($GRIDType eq 'VIEW') {
+		$gridConfFile = "$WEBOBS{PATH_VIEWS}/$GRIDName/$GRIDName.conf";
+	}
+	if ($GRIDType eq 'PROC') {
+		$gridConfFile = "$WEBOBS{PATH_PROCS}/$GRIDName/$GRIDName.conf";
+	}
 	if ($type ne '') {
 		$template = "$WEBOBS{ROOT_CODE}/tplates/$type";
 	} else {
 		$template = "$WEBOBS{ROOT_CODE}/tplates/$GRIDType.DEFAULT";
 	}
-	if ( -e "$file" ) {
+	if ( -e "$gridConfFile" ) {
 		if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
-			@rawfile = readFile($file);
-			$fileTS0 = (stat($file))[9] ;
+			@rawfile = readFile($gridConfFile);
+			$gridConfFileMtime = (stat($gridConfFile))[9] ;
 			$editOK = 1;
 		}
 		if (uc($GRIDType) eq 'VIEW') { %GRID = readView($GRIDName) };
@@ -98,9 +120,9 @@ if (scalar(@GID) == 2) {
 	}
 	else {
 		if ( WebObs::Users::clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"*")) {
-			$file = $template;
-			@rawfile = readFile($file);
-			$fileTS0 = (stat($file))[9] ;
+			$gridConfFile = $template;
+			@rawfile = readFile($gridConfFile);
+			$gridConfFileMtime = (stat($gridConfFile))[9] ;
 			$editOK = 1;
 			$newG = 1;
 		}
@@ -112,15 +134,15 @@ if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
 if (!$newG) {
 	%GRID = %{$GRID{$GRIDName}};
 	$domain = $GRID{'DOMAIN'};
-	$form = $GRID{'FORM'} if ($GRIDType eq "PROC");
-	@gridnodeslist = @{$GRID{'NODESLIST'}};
+	$form = $GRID{'FORM'} || '' if ($GRIDType eq "PROC");
+	# Build a hash to efficiently test the presence of a node ID later
+	%gridnodeslist = map(($_ => 1), @{$GRID{'NODESLIST'}});
 }
 
 # ---- good, passed all checkings above 
 #
 # ---- start HTML
 #
-#FB-was:my $text = join("\n",@rawfile);
 my $text = l2u(join("",@rawfile));
 my $titrePage = "$__{'Editing'} grid";
 if ( $newG == 1 ) { $titrePage = "$__{'Creating'} new grid" }
@@ -168,7 +190,7 @@ function verif_formulaire()
 ";
 
 print "<FORM id=\"theform\" name=\"formulaire\" action=\"\">";
-print "<input type=\"hidden\" name=\"ts0\" value=\"$fileTS0\">\n";
+print "<input type=\"hidden\" name=\"ts0\" value=\"$gridConfFileMtime\">\n";
 print "<input type=\"hidden\" name=\"grid\" value=\"$grid\">\n";
 print "<input type=\"hidden\" name=\"delete\" value=\"0\">\n";
 
@@ -199,7 +221,11 @@ print "<FIELDSET><LEGEND>Associated nodes</LEGEND>";
 print "<TABLE border=\"0\" cellpadding=\"3\" cellspacing=\"0\" width=\"100%\">";
 print "<TR><TD>";
 print "<SELECT name=\"INs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%\">";
-for (@NL) { if (! (($_) ~~ @gridnodeslist) ) { print "<option value=\"$_\">$_</option>\n" } }
+for my $nodeId (@ALL_NODES) { 
+	if (!exists $gridnodeslist{$nodeId}) {
+		print "<option value=\"$nodeId\">$nodeId</option>\n";
+	}
+}
 print "</SELECT></td>";
 print "<TD align=\"center\" valign=\"middle\">";
 print "<INPUT type=\"Button\" value=\"Add >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.INs,document.formulaire.SELs)\"><br>";
@@ -208,7 +234,9 @@ print "<INPUT type=\"Button\" value=\"<< Remove\" style=\"width:100px\" onClick=
 print "</TD>";
 print "<TD>";
 print "<SELECT name=\"SELs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%;font-weight:bold\">";
-for (@{$GRID{NODESLIST}}) { print "<option value=\"$_\">$_</option>"; }
+for my $nodeId (sort @{$GRID{NODESLIST}}) {
+	print "<option value=\"$nodeId\">$nodeId</option>";
+}
 print "</SELECT></td>";
 print "</TR>";
 print "</TABLE>";

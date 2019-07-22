@@ -114,8 +114,8 @@ sub procs {
 # get nodes of a PROC of this FORM, returned as a hash of their NAME, ALIAS and FID 
 sub nodes {
 	my ($self, $proc) = @_;
-	die "no proc requested" if (!defined($proc));
-	die "$proc not in ".$self->{_name} if !($proc ~~ [ map "$_", keys(%{$self->{_procs}})] ) ;
+	die "no proc requested" unless defined($proc);
+	die "$proc not in ".$self->{_name} unless exists($self->{_procs}{$proc});
 	my %L = listGridNodes(grid=>"PROC.$proc", valid=>1);
 	return %L;
 }
