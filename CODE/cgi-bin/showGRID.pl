@@ -18,13 +18,13 @@ use strict;
 use warnings;
 
 $|=1;
-use Time::Local;
 use File::Basename;
-use Data::Dumper;
 use CGI;
-my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
+use File::Copy qw(copy);
+use File::Find qw(find);
 use Image::Info qw(image_info dim);
+use POSIX qw(strftime);
 
 use WebObs::Config;
 use WebObs::Grids;
@@ -40,32 +40,39 @@ use Locale::TextDomain('webobs');
 # ---- see what we've been called for and what the client is allowed to do
 # ---- init general-use variables on the way and quit if something's wrong
 #
+my $cgi = new CGI;
 set_message(\&webobs_cgi_msg);
-my $htmlcontents = "";
-my $editOK   = 0;
-my $admOK    = 0;
-my $seeInvOK = 0;
-my %GRID;
-my %G;
-my $GRIDName  = my $GRIDType = my $RESOURCE = "";
+my $htmlcontents = "";  # HTML page that will be returned to the browser
+my $editOK   = 0;       # 1 if the user is allowed to edit the grid 
+my $admOK    = 0;       # 1 if the user has admin rights in the grid
+my $seeInvOK = 0;       # 1 if the user is allowed to see invalid nodes
+my $GRIDType = "";      # grid type ("PROC" or "VIEW")
+my $GRIDName = "";      # name of the grid
+my %GRID;               # structure describing the grid
 
-my $QryParm   = $cgi->Vars;
-my @GID = split(/[\.\/]/, trim($QryParm->{'grid'})); 
-my $usrNodes = $QryParm->{'nodes'}     ||= $GRIDS{DEFAULT_NODES_FILTER};
-my $usrCoord = $QryParm->{'coord'}     ||= $GRIDS{DEFAULT_COORDINATES};
-my $usrProject = $QryParm->{'project'}   ||= $GRIDS{DEFAULT_PROJECT_FILTER};
-my $usrProcparam = $QryParm->{'procparam'} ||= $GRIDS{DEFAULT_PROCPARAM_FILTER};
-my $usrSortby = $QryParm->{'sortby'}    ||= "event";  
-my $usrMap = $QryParm->{'map'};
+my @GID = split(/[\.\/]/, trim(checkParam($cgi->param('grid'),
+			qr{^(VIEW|PROC)(\.|/)|[a-zA-Z0-9]+$}, "grid") // ''));
+my $usrNodes = checkParam($cgi->param('nodes'), qr/^[a-zA-Z]*$/, 'nodes')
+			// $GRIDS{DEFAULT_NODES_FILTER};
+my $usrCoord = checkParam($cgi->param('coord'), qr/^[a-zA-Z]*$/, 'coord')
+			// $GRIDS{DEFAULT_COORDINATES};
+my $usrProject = checkParam($cgi->param('project'), qr/^(on|off)?$/, 'project')
+			// $GRIDS{DEFAULT_PROJECT_FILTER};
+my $usrProcparam = checkParam($cgi->param('procparam'),
+							  qr/^(on|off)?$/, 'procparam')
+			// $GRIDS{DEFAULT_PROCPARAM_FILTER};
+my $usrSortby = checkParam($cgi->param('sortby'), qr/^[a-z]*$/, 'sortby')
+			// "event";
+my $usrMap = checkParam($cgi->param('map'), qr/^[0-9]*$/, 'map') // '';
 
 if (scalar(@GID) == 2) {
 	($GRIDType, $GRIDName) = @GID;
+	my %G;
 	if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
 	elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
 	if (%G) {
 		%GRID = %{$G{$GRIDName}} ;
 		if ( WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
-			$RESOURCE = "auth".lc($GRIDType)."s/$GRIDName";
 			if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
 				$editOK = 1;
 			}
@@ -85,36 +92,41 @@ my $grid = "$GRIDType.$GRIDName";
 my $isProc = ($GRIDType eq "PROC" ? '1':'0');
 $usrProcparam = '' if !$isProc;
 my $myself = "/cgi-bin/".basename($0)."?grid=$grid";
-my $GRIDNameLower = lc($GRIDName);
 my $nbNodes = scalar(@{$GRID{NODESLIST}});
 
-my $fileProjet = "";
-my $afficheStations = "OK";
 my $titrePage = "";
-my $spanDis;
 my $editCGI = "/cgi-bin/gedit.pl";
 
 $GRID{UTM_LOCAL} ||= '';
 my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
 my $localCS = $UTM{GEODETIC_DATUM_LOCAL_NAME};
 
-my $showType = (defined($GRIDS{SHOW_TYPE}) && ($GRIDS{SHOW_TYPE} eq 'N') || ($GRID{TYPE} eq "")) ? 0 : 1;
-my $showOwnr = (defined($GRIDS{SHOW_OWNER}) && ($GRIDS{SHOW_OWNER} eq 'N') || ($GRID{OWNCODE} eq "")) ? 0 : 1;
+my $showType = (defined($GRIDS{SHOW_TYPE})
+				&& ($GRIDS{SHOW_TYPE} eq 'N')
+				|| (defined($GRID{TYPE}) && $GRID{TYPE} eq ""))
+				? 0 : 1;
+my $showOwnr = (defined($GRIDS{SHOW_OWNER})
+				&& ($GRIDS{SHOW_OWNER} eq 'N')
+				|| (defined($GRID{OWNCODE}) && $GRID{OWNCODE} eq ""))
+				? 0 : 1;
 
-my $today = qx(/bin/date +\%Y-\%m-\%d);
-chomp($today);
+my $today = strftime("%Y-%m-%d", localtime);
 
-my $txt;
 my $go2top = "&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 
 # ---- Nodes status ---------------------
 my $overallStatus = 1;
-my $statusDB = $NODES{SQL_DB_STATUS};
-if ($statusDB eq "") { $statusDB = "$WEBOBS{PATH_DATA_DB}/NODESSTATUS.db" };
+my $statusDB = $NODES{SQL_DB_STATUS} || "$WEBOBS{PATH_DATA_DB}/NODESSTATUS.db";
 my @statusNODES;
 if (-e $statusDB) {
-	@statusNODES = qx(sqlite3 $statusDB "select * from status where NODE like '%$grid%';");
-	chomp(@statusNODES);
+	my $dbh = DBI->connect("dbi:SQLite:$statusDB", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+		}) || die "Error connecting to $statusDB: $DBI::errstr";
+	@statusNODES = $dbh->selectall_array(
+			"select * from status where NODE like ? order by UPDATED asc",
+			undef, "%$grid%");
 }
 if (scalar(@statusNODES) == 0) {	
 	$overallStatus = 0;
@@ -169,7 +181,9 @@ print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks";
 my @desc;
 my $fileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName"."$GRIDS{DESCRIPTION_SUFFIX}";
 my $legacyfileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDName"."$GRIDS{DESCRIPTION_SUFFIX}";
-if (-e $legacyfileDesc) { qx(cp $legacyfileDesc $fileDesc) }
+if (-e $legacyfileDesc) { 
+	copy($legacyfileDesc, $fileDesc);
+}
 if (-e $fileDesc) { 
 	@desc = readFile($fileDesc);
 }
@@ -207,7 +221,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			."]";
 	}
 	$htmlcontents   .= "</LI>";
-	if ($showType) { $htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n" }
+	if ($showType) { $htmlcontents .= "<LI>$__{'Type'}: <B>".($GRID{TYPE} // "")."</B></LI>\n" }
 	# -----------
 	# only for PROCs
 	if ($isProc) {
@@ -221,8 +235,10 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			}
 		} 
 		# -----------
-		$htmlcontents .= "<LI>$__{'Default data format'}: <B>$GRID{RAWFORMAT}</B></LI>\n";
-		$htmlcontents .= "<LI>$__{'Default data source'}: <B>$GRID{RAWDATA}</B></LI>\n";
+		$htmlcontents .= "<LI>$__{'Default data format'}: <B>"
+							.($GRID{RAWFORMAT} // '')."</B></LI>\n";
+		$htmlcontents .= "<LI>$__{'Default data source'}: <B>"
+							.($GRID{RAWDATA} // '')."</B></LI>\n";
 		# -----------
 		if (defined($GRID{URNDATA})) {
 			my $urnData = "$GRID{URNDATA}";
@@ -454,14 +470,16 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				}
 
 				# Node's type
-				$htmlcontents .= "<TD align=\"center\">$NODE{TYPE}</TD>";
+				$htmlcontents .= "<TD align=\"center\">".($NODE{TYPE} // "")."</TD>";
 
 				# #Interventions and Project file 
 				if ( $CLIENT ne 'guest' ) { 
 					my $textProj = "";
 					my $pathInter="$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";
-					my $nbInter  = qx(/usr/bin/find $pathInter -name "$NODEName*.txt" | wc -l);
-					$htmlcontents .= "<TD align=center>$nbInter</TD>";
+					my @interventions  = glob("$pathInter/$NODEName*.txt");
+					my $nbInter  = 0;
+					find(sub { $nbInter++ if /^$NODEName.*\.txt$/ }, $pathInter);
+					$htmlcontents .= "<TD align=center>".scalar(@interventions)."</TD>";
 					if ($usrProject eq "on") {
 						my $fileProjName = $NODEName."_Projet.txt";
 						my $fileProj = "$pathInter/$fileProjName";
@@ -475,7 +493,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 								my $noms = join(", ",WebObs::Users::userName(@listeNoms));
 								my $titre = $pLigne[1];
 								shift(@proj);
-								if ($titre ne "") {
+								if (defined($titre) && $titre ne "") {
 									$textProj = "<b>$titre</b>";
 								}
 								if ($noms ne "") {
@@ -493,38 +511,43 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 
 				# Node's proc parameters
 				if ($usrProcparam eq 'on') {
-					$htmlcontents .= "<TD align=\"center\">".($NODE{"$grid.FID"} ? $NODE{"$grid.FID"}:$NODE{FID})."</TD>"
-						."<TD align=\"center\">".($NODE{"$grid.RAWFORMAT"} ? $NODE{"$grid.RAWFORMAT"}:($NODE{RAWFORMAT} ? $NODE{RAWFORMAT}:$GRID{RAWFORMAT}))."</TD>";
+					$htmlcontents .= "<TD align=\"center\">"
+						.($NODE{"$grid.FID"} ? $NODE{"$grid.FID"} : $NODE{FID})."</TD>"
+						."<TD align=\"center\">"
+						.($NODE{"$grid.RAWFORMAT"} ?  $NODE{"$grid.RAWFORMAT"}
+							: ($NODE{RAWFORMAT} ?
+								$NODE{RAWFORMAT} : ($GRID{RAWFORMAT} // '')))
+						."</TD>";
 				}
 
 				# NODE's status 
 				if ($overallStatus) {
-					my @tmpStState = grep(/$grid\.$NODEName/,@statusNODES);
-					my @stState = split(/\|/,$tmpStState[$#tmpStState]);
-					if ($#stState >= 0) {
+					# Get the latest updated state for the node and print the information
+					my $stState = (grep($_->[0] eq "$grid.$NODEName", @statusNODES))[-1];
+					if (defined($stState)) {
 						my $bgcolEt = "";
 						my $bgcolA = "";
-						# $stState[1] (Node status)
-						if ($stState[1] == $NODES{STATUS_STANDBY_VALUE}) { $bgcolEt = "status-standby"; $stState[1] = "$__{Standby}"; }
-						elsif ($stState[1] < $NODES{STATUS_THRESHOLD_CRITICAL}) {
-							$stState[1] .= " %";
-							if ($GRID{"TYPE"} eq "M") { $bgcolEt = "status-manual"; } else { $bgcolEt = "status-critical"; }
+						# $stState->[1] (Node status)
+						if ($stState->[1] == $NODES{STATUS_STANDBY_VALUE}) { $bgcolEt = "status-standby"; $stState->[1] = "$__{Standby}"; }
+						elsif ($stState->[1] < $NODES{STATUS_THRESHOLD_CRITICAL}) {
+							$stState->[1] .= " %";
+							if (defined($GRID{"TYPE"}) && $GRID{"TYPE"} eq "M") { $bgcolEt = "status-manual"; } else { $bgcolEt = "status-critical"; }
 						}
-						elsif ($stState[1] >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolEt="status-ok"; $stState[1] .= " %"; }
-						else { $bgcolEt = "status-warning"; $stState[1] .= " %"; }
-						if (($stState[1] eq "%") || ($stState[1] eq ""))  { $bgcolEt = ""; $stState[1] = " " }
-						# $stState[2] (Acquisition status)
-						if ($stState[2]  == $NODES{STATUS_STANDBY_VALUE}) { $bgcolA = "status-standby"; $stState[2] = "$__{Standby}"; }
-						elsif ($stState[2] < $NODES{STATUS_THRESHOLD_CRITICAL}) { $bgcolA = "status-critical"; $stState[2] .= " %"; }
-						elsif ($stState[2] >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolA = "status-ok"; $stState[2] .= " %"; }
-						else { $bgcolA = "status-warning"; $stState[2] .= " %"; }
-						if (($stState[2] eq " %") || ($stState[2] eq "")) { $bgcolA = ""; $stState[2] = " " }
-						# $stState[3..5] (Date, Time and TZ of last measurement)
+						elsif ($stState->[1] >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolEt="status-ok"; $stState->[1] .= " %"; }
+						else { $bgcolEt = "status-warning"; $stState->[1] .= " %"; }
+						if (($stState->[1] eq "%") || ($stState->[1] eq ""))  { $bgcolEt = ""; $stState->[1] = " " }
+						# $stState->[2] (Acquisition status)
+						if ($stState->[2]  == $NODES{STATUS_STANDBY_VALUE}) { $bgcolA = "status-standby"; $stState->[2] = "$__{Standby}"; }
+						elsif ($stState->[2] < $NODES{STATUS_THRESHOLD_CRITICAL}) { $bgcolA = "status-critical"; $stState->[2] .= " %"; }
+						elsif ($stState->[2] >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolA = "status-ok"; $stState->[2] .= " %"; }
+						else { $bgcolA = "status-warning"; $stState->[2] .= " %"; }
+						if (($stState->[2] eq " %") || ($stState->[2] eq "")) { $bgcolA = ""; $stState->[2] = " " }
+						# $stState->[3..5] (Date, Time and TZ of last measurement)
 						# Display 
-						$htmlcontents .= "<TD align=\"center\" nowrap>$stState[3]</TD>\n"; # Date de l'analyse de l'etat
+						$htmlcontents .= "<TD align=\"center\" nowrap>$stState->[3]</TD>\n"; # Date de l'analyse de l'etat
 						if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
-							$htmlcontents .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stState[2]</B></TD>"
-									."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stState[1]</B></TD>";
+							$htmlcontents .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stState->[2]</B></TD>"
+									."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stState->[1]</B></TD>";
 						} else {
 							$htmlcontents .= "<TD align=\"center\" colspan=\"2\"><I>$__{'Stopped'}</I></TD>";
 						}
@@ -588,7 +611,9 @@ if  ( -e "$MAPpath/$mapfile.png" ) {
 my $fileProtocole = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName"."$GRIDS{PROTOCOLE_SUFFIX}";
 my $legacyfileProtocole = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDName"."$GRIDS{PROTOCOLE_SUFFIX}";
 my @protocole = ("");
-if (-e $legacyfileProtocole) { qx(cp $legacyfileProtocole $fileProtocole) }
+if (-e $legacyfileProtocole) { 
+	copy($legacyfileProtocole, $fileProtocole);
+}
 if (-e $fileProtocole) { 
 	@protocole = readFile($fileProtocole);
 }
@@ -615,8 +640,8 @@ print "</div></div>";
     
 # ---- Events / interventions
 # 
-(my $myself   = $ENV{REQUEST_URI}) =~ s/&_.*$//g ; # how I got called 
-$myself       =~ s/\bsortby(\=[^&]*)?(&|$)//g ;    # same but sortby= and _= removed
+($myself = $ENV{REQUEST_URI}) =~ s/&_.*$//g ; # how I got called 
+$myself  =~ s/\bsortby(\=[^&]*)?(&|$)//g ;    # same but sortby= and _= removed
 
 print "<BR><A name=\"EVENTS\"></A>\n";
 print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#eventID');\">&nbsp;&nbsp;"; 
@@ -634,7 +659,9 @@ print "</div></div>";
 my $fileBib = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName"."$GRIDS{BIBLIO_SUFFIX}";
 my $legacyfileBib = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDName"."$GRIDS{BIBLIO_SUFFIX}";
 my @bib = ("");
-if (-e $legacyfileBib) { qx(cp $legacyfileBib $fileBib) }
+if (-e $legacyfileBib) { 
+	copy($legacyfileBib, $fileBib);
+}
 if (-e $fileBib) { 
 	@bib = readFile($fileBib);
 }

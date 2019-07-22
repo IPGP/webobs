@@ -274,7 +274,6 @@ my $selgrps = ""; map { $selgrps .= "<option>$_</option>" } @qrs;
 my $qusers  = "select u.UID,FULLNAME,LOGIN,EMAIL,VALIDITY,group_concat(GID) AS groups";
 $qusers .= " from $WEBOBS{SQL_TABLE_USERS} u left join $WEBOBS{SQL_TABLE_GROUPS} g on (u.uid = g.uid)";
 $qusers .= " group by u.uid order by u.uid";
-print STDERR "SQL=$qusers";
 @qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qusers");
 chomp(@qrs);
 my $dusers='';

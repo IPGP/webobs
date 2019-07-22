@@ -138,11 +138,11 @@ sub allUsers {
 	my $tablename = $WEBOBS{SQL_TABLE_USERS};
 	$USERS_LFN = "DB $dbname (".(stat($dbname))[9].") TABLE $tablename";
 
-	$dbh = DBI->connect( "dbi:SQLite:".$dbname,"","")
-		or die "DB error connecting to ".$dbname.": ".DBI->errstr;
-
-	$dbh->{PrintError} = 1; 
-	$dbh->{RaiseError} = 1; 
+	$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+		}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
 	$sql = "SELECT * FROM $tablename" ; 
 	$sth = $dbh->prepare($sql);
@@ -174,10 +174,11 @@ sub listRNames {
 	if (grep /^$KWARGS{type}$/i , @validtbls) {
 		my $dbname    = $WEBOBS{SQL_DB_USERS};
 
-		$dbh = DBI->connect( "dbi:SQLite:".$dbname,"","")
-			or die "DB error connecting to ".$dbname.": ".DBI->errstr;
-		$dbh->{PrintError} = 1; 
-		$dbh->{RaiseError} = 1;
+		$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+			'AutoCommit' => 1,
+			'PrintError' => 1,
+			'RaiseError' => 1,
+			}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
 		$sql = "SELECT distinct(resource) FROM $KWARGS{type}" ; 
 		$sth = $dbh->prepare($sql);
@@ -229,11 +230,11 @@ sub userListGroup {
 		my $dbname    = $WEBOBS{SQL_DB_USERS};
 		my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
 
-		$dbh = DBI->connect( "dbi:SQLite:".$dbname,"","")
-			or die "DB error connecting to ".$dbname.": ".DBI->errstr;
-
-		$dbh->{PrintError} = 1; 
-		$dbh->{RaiseError} = 1; 
+		$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+			'AutoCommit' => 1,
+			'PrintError' => 1,
+			'RaiseError' => 1,
+			}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
 		$sql  = "SELECT GID";
 		$sql .= " FROM $tblgroups"; 
@@ -268,11 +269,11 @@ sub userListAuth {
 		my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
 		for my $tblauth (@validtbls) {
 
-			$dbh = DBI->connect( "dbi:SQLite:".$dbname,"","")
-				or die "DB error connecting to ".$dbname.": ".DBI->errstr;
-
-			$dbh->{PrintError} = 1; 
-			$dbh->{RaiseError} = 1; 
+			$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+				'AutoCommit' => 1,
+				'PrintError' => 1,
+				'RaiseError' => 1,
+				}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
 			$sql  = "SELECT $tblauth.RESOURCE, $tblauth.AUTH";
 			$sql .= " FROM $tblusers,$tblauth"; 
@@ -319,11 +320,11 @@ sub userHasAuth {
 		my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
 		my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
 
-		$dbh = DBI->connect( "dbi:SQLite:".$dbname,"","")
-			or die "DB error connecting to ".$dbname.": ".DBI->errstr;
-
-		$dbh->{PrintError} = 1; 
-		$dbh->{RaiseError} = 1; 
+		$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+			'AutoCommit' => 1,
+			'PrintError' => 1,
+			'RaiseError' => 1,
+			}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
 		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}'");
 		if ($validuser eq 'Y') {
@@ -367,11 +368,11 @@ sub userMaxAuth {
 		my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
 		my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
 
-		$dbh = DBI->connect( "dbi:SQLite:".$dbname,"","")
-			or die "DB error connecting to ".$dbname.": ".DBI->errstr;
-
-		$dbh->{PrintError} = 1; 
-		$dbh->{RaiseError} = 1; 
+		$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+			'AutoCommit' => 1,
+			'PrintError' => 1,
+			'RaiseError' => 1,
+			}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
 		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}'");
 		if ($validuser eq 'Y') {
@@ -409,11 +410,11 @@ sub userIsValid {
 	my $dbname    = $WEBOBS{SQL_DB_USERS};
 	my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
 
-	$dbh = DBI->connect( "dbi:SQLite:".$dbname,"","")
-		or die "DB error connecting to ".$dbname.": ".DBI->errstr;
-
-	$dbh->{PrintError} = 1; 
-	$dbh->{RaiseError} = 1; 
+	$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+		}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
 	my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}'");
 	if ($validuser eq 'Y') { $rc = 1 }
@@ -465,7 +466,7 @@ sub clientIsValid {
 =head2 htpasswd
 
 Calls the 'htpasswd' command specified by $WEBOBS{PRGM_HTPASSWD} with the
-provided arguments (used by htpasswd_update dna htpasswd_verify).
+provided arguments (used by htpasswd_update and htpasswd_verify).
 Returns the error code of the 'htpasswd' command (0 for success, or a positive
 error code otherwise).
 

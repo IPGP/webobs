@@ -34,12 +34,11 @@ use strict;
 use warnings;
 
 $|=1;
+use CGI;
 use Time::Local;
 use File::Basename;
-use Data::Dumper;
-use CGI;
-my $cgi = new CGI;
-use CGI::Carp qw(fatalsToBrowser);
+use File::Copy qw(copy);
+use POSIX qw(strftime);
 use Switch;
 
 use WebObs::Config;
@@ -51,26 +50,83 @@ use WebObs::Wiki;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 
+my $cgi = new CGI;
+use CGI::Carp qw(fatalsToBrowser);
+
 my $me = $ENV{SCRIPT_NAME};
 
 my %GRID;
 my %G;
 my $GRIDName = my $GRIDType = my $RESOURCE = "";
 
-my $QryParm  = $cgi->Vars;
-my $subsetDomain = $QryParm->{'domain'}   // "";
-my $subsetType   = lc($QryParm->{'type'}) // 'all';
-   $subsetType   = 'all' if ( $subsetType ne 'proc' && $subsetType ne 'view');
+my $subsetDomain = checkParam(scalar($cgi->param('domain')), qr/^[a-zA-Z0-9_-]*$/, "domain")  // "";
+my $subsetType = checkParam(scalar($cgi->param('type')), qr/^[a-zA-Z0-9_-]*$/, "type") // "all";
+   $subsetType = 'all' if ( $subsetType ne 'proc' && $subsetType ne 'view');
+my $wantViews = ($subsetType eq 'all' || $subsetType eq 'view') ? 1 : 0;
+my $wantProcs = ($subsetType eq 'all' || $subsetType eq 'proc') ? 1 : 0;
 
 my $showType = (defined($GRIDS{SHOW_TYPE}) && ($GRIDS{SHOW_TYPE} eq 'N')) ? 0 : 1;
 my $showOwnr = (defined($GRIDS{SHOW_OWNER}) && ($GRIDS{SHOW_OWNER} eq 'N')) ? 0 : 1;
 
-my $today = qx(/bin/date +\%Y-\%m-\%d);
-chomp($today);
+my $today = strftime("%Y-%m-%d", localtime);
 
 my $htmlcontents = "";
 my $editOK   = 0;
 my $descGridType = my $descGridName = my $descLegacy = "";
+
+
+# Open an SQLite connection to the domains database
+sub connectDbDomains {
+	return DBI->connect("dbi:SQLite:$WEBOBS{SQL_DOMAINS}", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+		}) || die "Error connecting to $WEBOBS{SQL_DOMAINS}: $DBI::errstr";
+}
+
+sub getDomains {
+	# Return the (code, name) tuples from the domains table.
+	# A domain code can be provided to only fetch this domain.
+	# Returns a reference to list of array references.
+	my $dbh = shift;
+	my $domain = shift // '';
+	my $where = '';
+	my @bind_values = ();
+	if ($domain) {
+		$where = "where CODE = ?";
+		push @bind_values, $domain;
+	}
+	my $q = "select CODE, NAME from $WEBOBS{SQL_TABLE_DOMAINS} $where order by OOA";
+	return $dbh->selectall_arrayref($q, undef, @bind_values);
+}
+
+sub getDomainGrids {
+	# Return the list of names of grids from the grids2domains table
+	# for the provided type ('PROC' or 'VIEW') and domain code.
+	# Returns a reference to a list of grid names.
+	my $dbh = shift;
+	my $type = shift;
+	my $domain_code = shift;
+	my $q = "select NAME from $WEBOBS{SQL_TABLE_GRIDS} "
+			."where TYPE = ? and DCODE = ? order by name";
+	return $dbh->selectcol_arrayref($q, { 'Columns' => [1] },
+									$type, $domain_code);
+}
+
+sub getDomainProcs {
+	# Return the list of procs for a domain using getDomainGrids
+	my $dbh = shift;
+	my $domain_code = shift;
+	return getDomainGrids($dbh, 'PROC', $domain_code);
+}
+
+sub getDomainViews {
+	# Return the list of views for a domain using getDomainGrids
+	my $dbh = shift;
+	my $domain_code = shift;
+	return getDomainGrids($dbh, 'VIEW', $domain_code);
+}
+
 
 if ($subsetDomain ne '') {
 	$descGridType = 'DOMAIN';
@@ -84,15 +140,22 @@ if ($subsetDomain ne '') {
 	}
 }
 
-# gets the domains list
-my $Wclause = ($subsetDomain ne "") ? " where CODE = '$subsetDomain' " : " "; 
-my @domains = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select CODE,NAME from $WEBOBS{SQL_TABLE_DOMAINS} $Wclause order by OOA");
-chomp(@domains);
-
 # edition is allowed only if the user has edit authorization for ALL grids (views and procs)
 if ( WebObs::Users::clientHasEdit(type=>"authviews",name=>"*") && WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*")) {
 	$editOK = 1
 };
+
+# Regroup all database queries here for optimisation
+my $dbh = connectDbDomains();
+my $domains = getDomains($dbh, $subsetDomain);
+my %domainProcs = map(($_->[0] => []), @$domains);
+my %domainViews = map(($_->[0] => []), @$domains);
+for my $d (@$domains) {
+	my ($code, $name) = @$d;
+	push @{$domainProcs{$code}}, @{getDomainProcs($dbh, $code)} if $wantProcs;
+	push @{$domainViews{$code}}, @{getDomainViews($dbh, $code)} if $wantViews;
+}
+$dbh->disconnect();
 
 # ---- Start HTML page 
 #
@@ -124,11 +187,8 @@ print " ".($subsetType ne 'all' || $subsetDomain ne '' ? "<A href=\"$me\">Grids<
 print " | ".($subsetType ne 'proc' || $subsetDomain ne '' ? "<A href=\"$me?type=proc\">Procs</A>":"<B>Procs</B>");
 print " | ".($subsetType ne 'view' || $subsetDomain ne '' ? "<A href=\"$me?type=view\">Views</A>":"<B>Views</B>");
 if ($subsetDomain eq '') {
-	print " - Domains:";
-	for (@domains) {
-		my ($dc,$dn) = split(/\|/,$_);
-		print " ".($_ ne $domains[0] ? "| ":"")."<A href=\"$me?domain=$dc&type=$subsetType\">$dn</A>";
-	}
+	print " - Domains: ";
+	print join(" | ", map("<A href=\"$me?domain=$_->[0]&type=$subsetType\">$_->[1]</A>", @$domains));
 } else {
 	print " - $DOMAINS{$subsetDomain}{NAME}";
 	print " ".($subsetType ne 'all' ? "<A href=\"$me?domain=$subsetDomain\">Grids</A>":"<B>Grids</B>");
@@ -146,7 +206,7 @@ printdesc('Purpose','DESCRIPTION',$descGridType,$descGridName,$descLegacy);
 #
 print "<div id=\"noscrolldiv\">";
 	my $d = my $p = my $v = 0;
-	if ( $#domains >= 0) {
+	if (@$domains) {
 
 		# ---- The invisible-until-triggered-by-js popups ;-)
 		print "<a name=\"popupY\"></a>";
@@ -169,35 +229,31 @@ print "<div id=\"noscrolldiv\">";
 		print "<TH>Type</TH>"  if ($showType);
 		print "<TH>Owner</TH>" if ($showOwnr);
 		print "<TH>Graphs</TH>";
-		print "<TH>Raw Data</TH>" if ($subsetType eq 'all' || $subsetType eq 'proc');
+		print "<TH>Raw Data</TH>" if ($wantProcs);
 		print "</TR>\n";
-		for $d (@domains) {
-			my ($dc,$dn) = split(/\|/,$d);
+		for my $d (@$domains) {
+			my ($dc, $dn) = @$d;
 			my @procs;
-			if ($subsetType eq 'all' || $subsetType eq 'proc') {
-				@procs = qx(sqlite3 $WEBOBS{SQL_DOMAINS} \"select TYPE,NAME from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'PROC' and DCODE = '$dc' order by name\");
-				chomp(@procs);
-				@procs = grep {my @gna=split(/\|/,$_); WebObs::Users::clientHasRead(type=>"authprocs",name=>$gna[1])} @procs;
+			if ($wantProcs) {
+				@procs = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_),
+                              @{$domainProcs{$dc}});
 			}
 			my $np = scalar(@procs);
 			my @views;
-			if ($subsetType eq 'all' || $subsetType eq 'view') {
-				@views = qx(sqlite3 $WEBOBS{SQL_DOMAINS} \"select TYPE,NAME from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'VIEW' and DCODE = '$dc' order by name\");
-				chomp(@views);
-				@views = grep {my @gna=split(/\|/,$_); WebObs::Users::clientHasRead(type=>"authviews",name=>$gna[1])} @views;
+			if ($wantViews) {
+				@views = grep(WebObs::Users::clientHasRead(type=>"authviews", name=>$_),
+                              @{$domainViews{$dc}});
 			}
 			my $nv = scalar(@views);
 			my $domrows = $np+$nv;
 			if ( $domrows > 0 ) {
 				print "<TR>";
-				#print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\">$dn <sup>($dc)</sup></h2>";
 				print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\"><A href=\"$me?domain=$dc&type=$subsetType\">$dn</A></h2>" if ($subsetDomain eq "");
 				if ( $np > 0 ) {
-					for $p (@procs) {
-						my ($dp,$vp) = split(/\|/,$p);
+					for my $vp (@procs) {
 						my %G = readProc($vp);
 						if (%G) {
-							print "<TR>" if ($p ne $procs[0]);
+							print "<TR>" if ($vp ne $procs[0]);
 							print "<TD style=\"text-align: center\">PROC</TD>" if ($subsetType ne "");
 							print "<TD><a href='#popupY' title=\"$__{'Find text in Proc'}\" onclick='srchopenPopup(\"+PROC.$vp\");return false'><img class='ic' src='/icons/search.png'></a>";
 							print     "<a href='/cgi-bin/gvTransit.pl?grid=PROC.$vp')><img src=\"/icons/tmap.png\"></a>";
@@ -208,8 +264,13 @@ print "<div id=\"noscrolldiv\">";
 							if (defined($G{$vp}{NODE_NAME})) { printf ("%s%s","$G{$vp}{NODE_NAME}",scalar(@{$G{$vp}{NODESLIST}})>1?"s":"") }
 							else                            { printf ("node%s",scalar(@{$G{$vp}{NODESLIST}})>1?"s":"") }
 							print "</TD>";
-							print "<TD>$G{$vp}{TYPE}</TD>"  if ($showType);
-							print "<TD>".(defined($OWNRS{$G{$vp}{OWNCODE}}) ? $OWNRS{$G{$vp}{OWNCODE}}:$G{$vp}{OWNCODE})."</TD>"  if ($showOwnr);
+							print "<TD>".(defined($G{$vp}{TYPE}) ? $G{$vp}{TYPE} : "")
+									."</TD>"  if ($showType);
+							print "<TD>".(defined($G{$vp}{OWNCODE}) ?
+										  (defined($OWNRS{$G{$vp}{OWNCODE}})
+										   ? $OWNRS{$G{$vp}{OWNCODE}}
+										   : $G{$vp}{OWNCODE}) : "")
+									."</TD>"  if ($showOwnr);
 							if ( -d "$WEBOBS{ROOT_OUTG}/PROC.$vp/$WEBOBS{PATH_OUTG_GRAPHS}" ) {
 								print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vp\"><IMG border=\"0\" alt=\"$vp\" SRC=\"/icons/visu.png\"></A>";
 							} elsif ( -d "$WEBOBS{ROOT_OUTG}/PROC.$vp/$WEBOBS{PATH_OUTG_EVENTS}" ) {
@@ -220,10 +281,12 @@ print "<div id=\"noscrolldiv\">";
 							if (defined($G{$vp}{FORM}) && $G{$vp}{FORM} ne '') {
 								my %F = readCfg("$WEBOBS{PATH_FORMS}/$G{$vp}{FORM}/$G{$vp}{FORM}.conf");
 								print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?node={$vp}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
-							} else { 
+							} else {
 								if (defined($G{$vp}{URNDATA}) && $G{$vp}{URNDATA} ne '') {
-									print "<A HREF=\"$G{$vp}{URNDATA}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/data.png\"></A>";
-								} 
+									print "<A HREF=\"$G{$vp}{URNDATA}\"><IMG border=\"0\" alt=\""
+											.(defined($G{$vp}{FORM}) ? $G{$vp}{FORM} : "")
+											."\" SRC=\"/icons/data.png\"></A>";
+								}
 							}
 							print "</TD>";
 						}
@@ -231,11 +294,10 @@ print "<div id=\"noscrolldiv\">";
 					}
 				}
 				if ( $nv > 0 ) {
-					for $v (@views) {
-						my ($dv,$vn) = split(/\|/,$v);
+					for my $vn (@views) {
 						my %G = readView($vn);
 						if (%G) {
-							print "<TR>" if ($np > 0 || $v ne $views[0]);
+							print "<TR>" if ($np > 0 || $vn ne $views[0]);
 							print "<TD style=\"text-align: center\">VIEW</TD>";
 							print "<TD><a href='#popupY' title=\"$__{'Find text in View'}\" onclick='srchopenPopup(\"+VIEW.$vn\");return false'><img class='ic' src='/icons/search.png'></a>";
 							print     "<a href='/cgi-bin/gvTransit.pl?grid=VIEW.$vn')><img src=\"/icons/tmap.png\"></a>";
@@ -244,13 +306,18 @@ print "<div id=\"noscrolldiv\">";
 							print "<TD>".scalar(@{$G{$vn}{NODESLIST}})."&nbsp;";
 							if (defined($G{$vn}{NODE_NAME})) { printf ("%s%s","$G{$vn}{NODE_NAME}",scalar(@{$G{$vn}{NODESLIST}})>1?"s":"") } 
 							else                            { printf ("node%s",scalar(@{$G{$vn}{NODESLIST}})>1?"s":"") }
-							print "<TD>$G{$vn}{TYPE}</TD>"  if ($showType);
-							print "<TD>".(defined($OWNRS{$G{$vn}{OWNCODE}}) ? $OWNRS{$G{$vn}{OWNCODE}}:$G{$vn}{OWNCODE})."</TD>"  if ($showOwnr);
+							print "<TD>".(defined($G{$vn}{TYPE}) ?  $G{$vn}{TYPE} : "")."</TD>"  
+									if ($showType);
+							print "<TD>".(defined($G{$vn}{OWNCODE})  ?
+										  (defined($OWNRS{$G{$vn}{OWNCODE}}) 
+										   ? $OWNRS{$G{$vn}{OWNCODE}}
+										   : $G{$vn}{OWNCODE}) : "")
+									."</TD>"  if ($showOwnr);
 							if ( -d "$WEBOBS{ROOT_OUTG}/VIEW.$vn/$WEBOBS{PATH_OUTG_MAPS}" ) {
 								print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=VIEW.$vn\"><IMG border=\"0\" alt=\"$vn\" SRC=\"/icons/visu.png\"></A>";
 							} else { print "<TD>&nbsp;" }
 							print "</TD>";
-							if ($subsetType eq 'all' || $subsetType eq 'proc') {
+							if ($wantProcs) {
 								print "<TD style=\"background-color: #EEEEDD\"></TD>";
 							}
 						}
@@ -291,7 +358,9 @@ sub printdesc {
 	my $fileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$type.$name$suffix";
 	if ($_[4] ne '' &&  ! -e $fileDesc) {
 		my $legacyfileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$_[4]$suffix";
-		if (-e $legacyfileDesc) { qx(cp $legacyfileDesc $fileDesc) }
+		if (-e $legacyfileDesc) {
+			copy($legacyfileDesc, $fileDesc);
+		}
 	}
 	if (defined($_[5])) {
 		$go2top = "&nbsp;&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
@@ -315,12 +384,11 @@ sub printdesc {
 sub geditpopup {
 	# prepares a list of grid's templates
 	my @tplates;
-	#FB-was: my @tmp = qx(ls $WEBOBS{ROOT_CODE}/tplates/{VIEW,PROC}.*);
-	my @tmp = qx(ls $WEBOBS{ROOT_CODE}/tplates/VIEW.* $WEBOBS{ROOT_CODE}/tplates/PROC.*);
-	chomp(@tmp);
-	foreach (@tmp) {
-		my $t = $_;
-		my %G = readCfg($t);
+	my @tmp = glob("$WEBOBS{ROOT_CODE}/tplates/{VIEW,PROC}.*");
+	foreach my $t (@tmp) {
+		my @conf = readCfg($t);
+		next if (@conf == 1);  # readCfg returns [0] if the file is empty
+		my %G = @conf;
 		$t =~ s/$WEBOBS{ROOT_CODE}\/tplates\///;
 		my ($gt,$gn) = split(/\./,$t);
 		push(@tplates,"$gt|$gn|".u2l($G{NAME}));
