@@ -164,8 +164,8 @@ $QryParm->{'mc'}        //= $WEBOBS{MC3_DEFAULT_NAME};
 
 # ---- read in configuration + info files -------------------------------------
 #
-my %MC3        = readCfg("$WEBOBS{ROOT_CONF}/$QryParm->{'mc'}.conf");
 my $mc3        = $QryParm->{'mc'};
+my %MC3        = readCfg("$WEBOBS{ROOT_CONF}/$mc3.conf");
 
 # ---- check client's authorization(s) ----------------------------------------
 #
@@ -307,7 +307,17 @@ my @nolocation_types = split(/,/,$MC3{SC3_EVENT_TYPES_NOLOCATION});
 if ($QryParm->{'dump'} eq "") {
 
 	$html .= "<H1>$MC3{TITLE}</H1><P>";
-	$html .= "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ <A href=\"#Note\">Notes</A> | <A href=\"/cgi-bin/$WEBOBS{CGI_SEFRAN3}?header=1\">Sefran3</A> ]</P>";
+	$html .= "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ Associated Sefran3: ";
+	# adds links to all associated Sefran
+	my @Sefran = qx(grep -H -E 'MC3_NAME\\|$mc3\$' /etc/webobs.d/SEFRAN3*.conf);
+	my @SefranLinks;
+	for my $s3 (@Sefran) {
+		chomp $s3;
+		$s3 =~ s/^.*webobs\.d\///g;
+		$s3 =~ s/\.conf.*//g;
+		push(@SefranLinks, "<A href=\"/cgi-bin/$WEBOBS{CGI_SEFRAN3}?header=1&s3=$s3&mc3=$mc3\"><B>$s3</B></A>");
+	}
+	$html .= join(" | ",@SefranLinks)." - <A href=\"#Note\">Notes</A> ]</P>";
 
 	$html .= "<FORM name=\"formulaire\" action=\"/cgi-bin/$WEBOBS{CGI_MC3}\" method=\"get\">"
 		."<TABLE width=\"100%\" style=\"border:1 solid darkgray\"><TR>";
