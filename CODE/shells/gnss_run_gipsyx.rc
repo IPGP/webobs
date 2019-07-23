@@ -7,8 +7,10 @@
 # prepares GIPSY processing
 source /home/wo/GipsyX-1.1/rc_GipsyX.sh
 
-# grid that contains the station list (nodes)
-GRID=PROC.GIPSYX
+# grid of a local WebObs that contains the station list (nodes)
+#GRID=PROC.GIPSYX
+# ... or default list of station codes (space separated)
+NODES=
 
 # base directory that contains the raw data
 FROM=/home/wo/rawdata/GNSS
