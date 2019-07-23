@@ -72,10 +72,10 @@ my @GID = split(/[\.\/]/, $grid);
 
 # Read the list of all forms
 opendir my $formDH, $WEBOBS{PATH_FORMS}
-	or die "Could read form list from '$WEBOBS{PATH_FORMS}': $!\n";
+	or die "Problem opening form list from '$WEBOBS{PATH_FORMS}': $!\n";
 my @ALL_FORMS = grep(!/^\./ && -d "$WEBOBS{PATH_FORMS}/$_", readdir($formDH));
-close($formDH)
-	or die "Could read form list from '$WEBOBS{PATH_FORMS}': $!\n";
+closedir($formDH)
+	or die "Problem closing form list from '$WEBOBS{PATH_FORMS}': $!\n";
 
 # Load form titles into %FORMS
 for my $f (@ALL_FORMS) {
@@ -85,11 +85,11 @@ for my $f (@ALL_FORMS) {
 
 # Read the list of all nodes
 opendir my $nodeDH, $NODES{PATH_NODES}
-	or die "Could read node list from '$NODES{PATH_NODES}': $!\n";
+	or die "Problem opening node list from '$NODES{PATH_NODES}': $!\n";
 my @ALL_NODES = sort grep(!/^\./ && -d "$NODES{PATH_NODES}/$_",
 						  readdir($nodeDH));
-close($nodeDH)
-	or die "Could read node list from '$NODES{PATH_NODES}': $!\n";
+closedir($nodeDH)
+	or die "Problem closing node list from '$NODES{PATH_NODES}': $!\n";
 
 
 # ---- see what we've been called for and what the client is allowed to do
