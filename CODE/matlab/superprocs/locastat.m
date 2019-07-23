@@ -4,7 +4,8 @@ function locastat(sta)
 %	georeferenced nodes. The condition for map automatic update is one of
 %	the following:
 %   	- no existing map (new node),
-%   	- node configuration file timestamp newer than map file timestamp.
+%   	- node configuration file timestamp newer than map file timestamp,
+%   	- map file timestamp older than LOCASTAT release date.
 %
 %   LOCASTAT(STA) uses string or cell array of string STA as list of 
 %	node IDs (or part of ID) to build or re-build. Use STA='*' to force
@@ -17,7 +18,10 @@ function locastat(sta)
 
 %   Author: F. Beauducel/WEBOBS, IPGP
 %   Created: 2007-05-15
-%   Updated: 2017-09-05
+%   Updated: 2019-07-23
+
+% this will force update of all maps older than this date
+forceupdate = datenum(2019,7,23);
 
 WO = readcfg;
 
@@ -57,6 +61,7 @@ dxsc3 = d3*15;
 r3 = field2num(P,'FRAME3_RESAMPLING',400);	
 dpi = field2num(P,'DPI',80);
 lw = field2num(P,'LINEWIDTH',1.5);
+bw = 0.7; % border width in % of height for frame 0
 convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
 
 feclair = field2num(P,'COLOR_LIGHTENING',1.2);
@@ -69,7 +74,8 @@ if exist(fcmap,'file')
 else
 	cmap = landcolor.^1.3;
 end
-demoptions = {'Interp','Azimuth',laz,'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair};
+demoptions = {'Interp','Azimuth',laz,'Contrast',lct,'ZCut',0, ...
+	'LandColor',cmap,'SeaColor',sea,'Watermark',feclair,'AxisEqual','off'};
 
 pcart = 0.05;		% height of the bottom banner (in fraction of image)
 blanc = .95*[1,1,1];	% near white (to avoid automatic replacement)
@@ -118,6 +124,7 @@ grids = [strcat('VIEW.',{GV(~strncmp({GV.name},{'.'},1) & cat(2,GV.isdir)).name}
 N = readnodes(WO,grids);
 
 geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84)];
+alt = cat(1,N.ALTITUDE);
 utm = ll2utm(geo);
 % selects georeferenced nodes only
 k = find(all(~isnan(geo),2) & any(geo,2));
@@ -136,11 +143,13 @@ for i = 1:length(k)
 	
 	% conditions to make (or remake) the map (at least one of the following):
 	%	- map file does not exist
-	%	- NODE is explicitely in the list STA
+	%	- NODE is explicitely in the list of argument STA
 	%	- map file timestamp is older than NODE's timestamp
-	%	- STA='*' (forced) 
+	%	- map file timestamp is older than forceupdate (release)
+	%	- STA='*' (forced)
 	
-	if ((~exist(fimg,'file') || timg <= N(ki).TIMESTAMP) && nargin < 1) || any(ismember(upper(sta),N(ki).ID)) || any(strcmp(sta,'*'))
+	if (nargin < 1 && (~exist(fimg,'file') || timg <= N(ki).TIMESTAMP) || timg < forceupdate) ...
+	   || any(ismember(upper(sta),N(ki).ID)) || any(strcmp(sta,'*'))
 		fprintf('%s: Updating location map for %s: %s [%s] ... ',wofun,N(ki).ALIAS,N(ki).NAME,N(ki).ID)
 
 		lonkm = degkm(geo(ki,1));	% valeur du degré de longitude à cette latitude (en km)
@@ -159,8 +168,8 @@ for i = 1:length(k)
 		set(gcf,'PaperUnits','Inches','PaperSize',[10,5*(1+pcart)],'PaperPosition',[0,0,10,5*(1+pcart)],'Color',[1,1,1])
 		
 		% ----- low-resolution map (frame n°0)
-		axes('Position',[0.01,pcart/(1+pcart)+.01,.25,1-pcart/(1+pcart)-.02]);
-		dem(D.lon,D.lat,D.z,'LatLon','FontSize',8,demoptions{:})
+		axes('Position',[0.01+bw/100,pcart/(1+pcart)+2*bw/100+0.01,0.25-bw/100-0.01,1-pcart/(1+pcart)-3*bw/100-0.01]);
+		dem(D.lon,D.lat,D.z,'LatLon','FontSize',8,'BorderWidth',bw,demoptions{:})
 		
 		hold on
 		if trans, plottrans(WO,N(ki)); end
@@ -170,10 +179,10 @@ for i = 1:length(k)
 		hold off
 		
 		% ---- mid-resolution map (frame n°1)
-		ax1 = axes('Position',[.255,(.5+pcart)/(1+pcart),.25,.5/(1+pcart)]);
+		ax1 = axes('Position',[.255,(.5+pcart)/(1+pcart)+.01,.24,.5/(1+pcart)-0.01]);
 		kx = find(D.lon >= xy1(1) & D.lon <= xy1(2));
 		ky = find(D.lat >= xy1(3) & D.lat <= xy1(4));
-		dem(D.lon(kx),D.lat(ky),D.z(ky,kx),'latlon','BorderWidth',.1,'FontSize',0,demoptions{:})
+		dem(D.lon(kx),D.lat(ky),D.z(ky,kx),'latlon','BorderWidth',0,'FontSize',0,demoptions{:})
 		set(gca,'XTick',[],'YTick',[])
 		hold on
 		
@@ -390,6 +399,7 @@ for i = 1:length(k)
 		ky = find(y3 >= (utm(ki,2) - d3*1e3/2) & y3 <= (utm(ki,2) + d3*1e3/2));
 		axes('Position',[.5,pcart/(1+pcart),.5,1-pcart/(1+pcart)]);
 		zmax = max(max(z3(ky,kx)));
+		znode = NaN;
 		if ~isempty(kx) & ~isempty(ky)
 			dem(x3(kx),y3(ky),z3(ky,kx),demoptions{:}); axis off
 			hold on
@@ -413,6 +423,7 @@ for i = 1:length(k)
 			text(xe,ye,sprintf('%g m',xsc3*1e3),'Color',blanc,'Fontsize',14,'FontWeight','bold', ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom')
 			hold off
+			znode = interp2(x3(kx),y3(ky),z3(ky,kx),utm(ki,1),utm(ki,2));
 		else
 			axis off
 		end
@@ -423,19 +434,18 @@ for i = 1:length(k)
 		hold off
 		
 		% ---- copyright (cartouche bas)
-		copyright = sprintf('{\\bf\\copyright %s} - %s / %s',WO.COPYRIGHT,demcopyright,datestr(now,0));
+		message = sprintf(' {\\bf%s}  \\copyright %s - %s / %s ',N(ki).ID,WO.COPYRIGHT,demcopyright,datestr(now,0));
 		axes('Position',[0,0,1,pcart/(1+pcart)]); axis([0,1,0,1]); axis off
-		%text(0,.5,[{P.COPYRIGHT1};{sprintf('%s - F. Beauducel',datestr(now,1))}],'FontSize',10)
-		text(.5,.5,copyright,'FontSize',10,'HorizontalAlignment','center')
+		text(0,.5,message,'FontSize',9,'HorizontalAlignment','left')
 		if ign
 			%text(1,.5,{'BD ORTHO \copyright IGN - Paris - 2004';'Reproduction interdite';'Licence n° 06 CUI-dom 0100 '}, ...
 			text(1,.5,{'BD ORTHO \copyright IGN - Paris - 2004'}, ...
-				'HorizontalAlignment','right','FontSize',10)
+				'HorizontalAlignment','right','FontSize',9)
 		end
-		if demflag
-			text(1,.5,sprintf('\\copyright %s  ',demcopyright), ...
-				'HorizontalAlignment','right','FontSize',10)
-		end
+		ztxt = sprintf(' Alt = %g m (from DEM: %1.0f m) ',alt(ki),znode);
+		text(1,.5,ztxt,'FontSize',9,'HorizontalAlignment','right')
+
+		% ---- exports figure
 		ftmp = sprintf('%s/locastat',ptmp);
 		print(gcf,'-depsc2','-loose','-painters',sprintf('%s.ps',ftmp));
 		wosystem(sprintf('%s %s -density %dx%d %s.ps %s.png',WO.PRGM_CONVERT,convertopt,dpi,dpi,ftmp,ftmp));
