@@ -43,7 +43,7 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2019-02-27
+%	Updated: 2019-07-25
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -188,7 +188,7 @@ case 'usgs-rneu'
 	for a = 1:length(F.raw)
 		fraw = F.raw{a};
 		if strncmpi('http',fraw,4)
-			s = wosystem(sprintf('curl "%s" | awk ''{print $1,$3,$4,$5,$6,$7,$8,$9}'' | sed -e ''s/rrr/0/g;s/ppp/1/g'' >> %s',fraw,fdat),P);
+			s = wosystem(sprintf('/usr/bin/curl "%s" | awk ''{print $1,$3,$4,$5,$6,$7,$8,$9}'' | sed -e ''s/rrr/0/g;s/ppp/1/g'' >> %s',fraw,fdat),P);
 			if s ~= 0
 				break;
 			end

@@ -10,13 +10,13 @@ if size(d,2) > 1
 	plot(repmat(t,[1,2])',(repmat(d(:,1),[1,2])+d(:,2)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1])
 end
 
-% overwrites not-final orbits
+% overwrites non-final orbits
 for o = 1:2
 	kk = find(orb==o);
 	if ~isempty(kk)
 		l = o*2;
 		wcol = col/l + 1 - 1/l;
-		plot(t(kk),d(kk,1),lst,'LineWidth',lwd,'MarkerSize',mks,'Color',wcol,'MarkerFaceColor',wcol)
+		timeplot(t(kk),d(kk,1),[],lst,'LineWidth',lwd,'MarkerSize',mks,'Color',wcol,'MarkerFaceColor',wcol)
 	end
 end
 

@@ -8,6 +8,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %		OPT.IMAPS : creates companion html map file for interactive graph
 %		OPT.TYPES : adds a list of symbols on the upper plot
 %		OPT.FIXEDPP : do not change initial paper size
+%		OPT.INFOLINES : specifies the number of lines for INFOS footer (default is 4)
 %
 %	Attention: MKGRAPH needs external program "convert" (from ImageMagick package) to produce 
 %	PNG images. Binary location can be defined in PRGM_CONVERT variable in WEBOBS.rc.
@@ -15,7 +16,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2019-05-23
+%	Updated: 2019-07-23
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -92,12 +93,16 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 
 	ht = [];
 	pt = .01;
-	for i = 1:4:length(G.INFOS)
+	nl = 4;
+	if nargin > 3
+		nl = field2num(OPT,'INFOLINES',4);
+	end
+	for i = 1:nl:length(G.INFOS)
 		if ~isempty(ht)
 			et = get(ht,'Extent');
 			pt = et(1) + et(3) + .05;
 		end
-		st = [G.INFOS(i:min([i+3,length(G.INFOS)])),{' '}];
+		st = [G.INFOS(i:min([i+nl-1,length(G.INFOS)])),{' '}];
 		ht = text(pt,0,st,'HorizontalAlignment','left','VerticalAlignment','bottom','FontSize',8);
 	end
 	if isfield(G,'INFOS2')
@@ -157,7 +162,7 @@ wosystem(sprintf('mkdir -p %s',pout))
 
 % creates the main EPS image
 fprintf('%s: exporting %s/%s.eps ...',wofun,ptmp,f);
-print(gcf,'-depsc','-painters','-loose',sprintf('%s/%s.eps',ptmp,f));
+print(gcf,'-depsc','-loose','-painters',sprintf('%s/%s.eps',ptmp,f));
 fprintf(' done.\n');
 
 % converts to PNG
@@ -195,27 +200,33 @@ if ~isempty(I)
 	ims = [IM.Width IM.Height];
 	fid = fopen(sprintf('%s/%s.map',ptmp,f),'wt');
 	for g = 1:length(I)
-		xlim = [get(I(g).gca,'XLim'),get(I(g).gca,'YLim')];
-		axp = get(I(g).gca,'Position');
+		set(I(g).gca,'Units','normalized');
+		axp = plotboxpos(I(g).gca);
+		xylim = [get(I(g).gca,'XLim'),get(I(g).gca,'YLim')];
+		if strcmp(get(I(g).gca,'XDir'),'reverse')
+			xylim(1:2) = xylim([2,1]);
+		end
 		if strcmp(get(I(g).gca,'YDir'),'reverse')
-			xlim(3:4) = xlim([4,3]);
+			xylim(3:4) = xylim([4,3]);
 		end
 		% reverse loop to make most recent events on top layer
 		for n = size(I(g).d,1):-1:1
 			if ~isempty(I(g).l{n})
-				lnk = sprintf('wolbsrc="%s"',I(g).l{n});
+				lnk = sprintf(' wolbsrc="%s"',I(g).l{n});
 			else
 				lnk = '';
 			end
-			x = round(ims(1)*((axp(3)*(I(g).d(n,1) - xlim(1))/diff(xlim(1:2)) + axp(1))));
-			y = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,2) - xlim(3))/diff(xlim(3:4)) + axp(2))));
+			x = round(ims(1)*((axp(3)*(I(g).d(n,1) - xylim(1))/diff(xylim(1:2)) + axp(1))));
+			y = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,2) - xylim(3))/diff(xylim(3:4)) + axp(2))));
+
 			if size(I(g).d,2) < 4
-				r = ceil(I(g).d(n,3));
-				fprintf(fid,'<AREA %s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=circle coords="%d,%d,%d">\n',lnk,I(g).s{n},x,y,r);
+				% r is given in points
+				r = ceil(I(g).d(n,3)*G.PPI/72);
+				fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=circle coords="%d,%d,%d">\n',lnk,I(g).s{n},x,y,r);
 			else
-				x2 = round(ims(1)*((axp(3)*(I(g).d(n,3) - xlim(1))/diff(xlim(1:2)) + axp(1))));
-				y2 = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,4) - xlim(3))/diff(xlim(3:4)) + axp(2))));
-				fprintf(fid,'<AREA %s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=rect coords="%d,%d,%d,%d">\n',lnk,I(g).s{n},x,y,x2,y2);
+				x2 = round(ims(1)*((axp(3)*(I(g).d(n,3) - xylim(1))/diff(xylim(1:2)) + axp(1))));
+				y2 = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,4) - xylim(3))/diff(xylim(3:4)) + axp(2))));
+				fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=rect coords="%d,%d,%d,%d">\n',lnk,I(g).s{n},x,y,x2,y2);
 			end
 		end
 	end
