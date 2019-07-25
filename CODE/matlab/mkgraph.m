@@ -16,7 +16,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2019-07-23
+%	Updated: 2019-07-25
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -192,7 +192,7 @@ end
 
 % --- Creates optional interactive MAP (html map)
 if nargin > 3 && isfield(OPT,'IMAP')
-	I = cat(1,I,OPT.IMAP);
+	I = cat(2,I,OPT.IMAP);
 end
 
 if ~isempty(I)
