@@ -284,7 +284,7 @@ if ($QryParm->{'ts'} eq 'map') {
 		print "<A href=\"$MAPurn/$mapname.eps\"><IMG alt=\"$mapname.eps\" src=\"/icons/feps.png\"></A><BR>\n";
 	}
 	if  ( -e "$MAPpath/$mapname.png" ) {
-		print "<IMG style=\"margin-bottom: 15px; background-color: beige; padding: 5px\" src=\"$MAPurn/$mapname.png\" usemap=\"#map\"><BR>\n";
+		print "<IMG style=\"margin-bottom: 15px; background-color: beige;\" src=\"$MAPurn/$mapname.png\" usemap=\"#map\"><BR>\n";
 		if (-e "$MAPpath/$mapname.map") {
 			@htmlarea = readFile("$MAPpath/$mapname.map");
 			print "<map name=\"map\">@htmlarea</map>\n";
@@ -442,7 +442,7 @@ if ($QryParm->{'ts'} eq 'map') {
 			$g =~ s/^$/SUMMARY/;
 			if ($g eq $QryParm->{'g'}) {
 				print "$addlinks<BR>" if ($QryParm->{'header'} ne 'no');
-				print "<IMG style=\"margin-bottom: 15px; background-color: beige; padding: 5px\" src=\"$urn\" usemap=\"#map\"><BR>";
+				print "<IMG style=\"margin-bottom: 15px; margin-top: 5 px; background-color: beige;\" src=\"$urn\" usemap=\"#map\"><BR>";
 				if (-e "$map") {
 					my @htmlarea = readFile("$map");
 					print "<map name=\"map\">@htmlarea</map>\n";
