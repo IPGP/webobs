@@ -551,22 +551,3 @@ yy = linspace(yp(1),yp(2),500);
 pl = (xx - prof(1))*degkm(prof(2))*cosd(90-prof(3)) + (yy - prof(2))*degkm*sind(90-prof(3));
 pz = interp2(DEM.lon,DEM.lat,-DEM.z/1e3,xx,yy);
 
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function dd = dtick(dlim)
-%DTICK Tick intervals
-
-m = 10^floor(log10(abs(dlim)));
-p = ceil(abs(dlim)/m);
-if p <= 1
-	dd = .1*m;
-elseif p == 2
-	dd = .2*m;
-elseif p <= 5
-	dd = .5*m;
-else
-	dd = m;
-end
-
-dd = sign(dlim)*dd;
