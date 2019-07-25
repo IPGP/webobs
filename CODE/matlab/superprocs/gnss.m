@@ -23,9 +23,11 @@ function DOUT=gnss(varargin)
 %           Channel 3 = Elevation (m)
 %           Channel 4 = Orbit (-)
 %
-%       GNSS will use PROC's parameters from .conf file. See CODE/tplates/PROC.GNSS template file for details.
+%       GNSS will use PROC's parameters from .conf file. See CODE/tplates/PROC.GNSS
+%       template file for a list of all parameters with comments.
 %
-%	Any of the *_TITLE keys may contain any local key (e.g. ${NAME}) and a list of internal variables that will be substituted in the text strings:
+%	Any of the *_TITLE keys may contain any local key (e.g. ${NAME}) and a list
+%	of internal variables that will be substituted in the text strings:
 %	    $node_name      = node long name
 %	    $node_alias     = node alias
 %	    $timescale      = time scale string (e.g. '1 year')
@@ -34,9 +36,10 @@ function DOUT=gnss(varargin)
 %	    $itrf           = velocity reference string
 %
 %
-%   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié, Jean-Marie Saurel / WEBOBS, IPGP
+%   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
+%            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-06-17
+%   Updated: 2019-07-25
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -122,6 +125,7 @@ bm = field2num(P,'MODELLING_BORDERS',5000);
 rr = field2num(P,'MODELLING_GRID_SIZE',51);
 modelling_cmap = field2num(P,'MODELLING_COLORMAP',jet(512));
 modelling_colorshading = field2num(P,'MODELLING_COLOR_SHADING',0.8);
+modelling_topo_rgb = field2num(P,'MODELLING_TOPO_RGB',.5*[1,1,1]);
 % color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
 modelling_coloref = lower(field2str(P,'MODELLING_COLORREF','volpdf'));
 modelling_title = field2str(P,'MODELLING_TITLE','{\fontsize{14}{\bf$name - Source modelling} ($timescale)}');
@@ -186,6 +190,11 @@ modeltime_sampling = field2num(P,'MODELTIME_SAMPLING_DAY');
 modeltime_max = field2num(P,'MODELTIME_MAX_MODELS',100);
 modeltime_maxmisfit = field2num(P,'MODELTIME_MAX_MISFIT_M',1);
 modeltime_title = field2str(P,'MODELTIME_TITLE','{\fontsize{14}{\bf$name - Source best model timeline} ($timescale)}');
+modeltime_flowrate = isok(P,'MODELTIME_FLOWRATE',1);
+modeltime_map_period = field2num(P,'MODELTIME_MAP_PERIODLIST',modeltime_period,'notempty');
+modeltime_marker_linewidth = field2num(P,'MODELTIME_MARKER_LINEWIDTH',1);
+modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',jet(256));
+modeltime_markersize = field2num(P,'MODELTIME_MARKERSIZE',50);
 
 
 geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
@@ -573,7 +582,8 @@ for r = 1:length(P.GTABLE)
 		
 		P.GTABLE(r).GTITLE = varsub(vectors_title,V);
 		P.GTABLE(r).INFOS = {' ',' ', ...
-			sprintf('Referential: {\\bf%s}',itrf),sprintf('  E {\\bf%+g} mm/yr\n  N {\\bf%+g} mm/yr\n  U {\\bf%+g} mm/yr',velref), ...
+			sprintf('Referential: {\\bf%s}',itrf),sprintf('   E {\\bf%+g} mm/yr\n   N {\\bf%+g} mm/yr\n   U {\\bf%+g} mm/yr',velref), ...
+			' ', ...
 			sprintf('Network mean velocity (%s):',itrf) ...
 		};
 		for i = 1:3
@@ -623,14 +633,14 @@ for r = 1:length(P.GTABLE)
 		% adds distance from target
 		if length(targetll) > 1
 			pos = get(gca,'position');
-			set(gca,'position',[pos(1),1-pos(4),pos(3:4)]);
+			set(gca,'position',[pos(1),1-pos(4)-0.02,pos(3:4)]);
 
 			hold on
 			[xx,yy] = meshgrid(DEM.lon,DEM.lat);
 			DEM.dist = greatcircle(targetll(1),targetll(2),yy,xx);
 			[c,h] = contour(DEM.lon,DEM.lat,DEM.dist,'k');
-			set(h,'Color',darkgray,'LineWidth',.1);
-			clabel(c,h,'FontSize',8,'Color',darkgray);
+			set(h,'Color',modelling_topo_rgb,'LineWidth',.1);
+			clabel(c,h,'FontSize',8,'Color',modelling_topo_rgb);
 			hold off
 		end
 		
@@ -685,7 +695,7 @@ for r = 1:length(P.GTABLE)
 		% adds subplot amplitude vs distance
 		if length(targetll) > 1
 			pos = get(gca,'position');
-			axes('Position',[.5,.07,.45,pos(2)])
+			axes('Position',[.5,.05,.45,pos(2)-0.02])
 			plot(0,0)
 			hold on
 			sta_dist = greatcircle(targetll(1),targetll(2),geo(knv,1),geo(knv,2));
@@ -705,10 +715,8 @@ for r = 1:length(P.GTABLE)
 		end
 		
 
-		rcode2 = sprintf('%s_%s',proc,summary);
-		OPT.FIXEDPP = true;
 		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
 		close
 
 		% exports data
@@ -719,7 +727,7 @@ for r = 1:length(P.GTABLE)
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,:)];
 			E.header = {'Latitude','Longitude','Altitude','E_velocity(mm/yr)','N_Velocity(mm/yr)','Up_Velocity(mm/yr)','dEv(mm/yr)','dNv(mm/yr)','dUv(mm/yr)'};
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(rcode2));
+			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
 	end
@@ -764,10 +772,9 @@ for r = 1:length(P.GTABLE)
 		DEM = loaddem(WO,[lon0 + wid/(degm*cosd(lat0))*[-.6,.6],lat0 + wid/degm*[-.6,.6]]);
 
 		% makes model space
-		xlim = linspace(-wid/2,wid/2,rr);
-		ylim = xlim;
+		mlim = linspace(-wid/2,wid/2,rr);
 		zlim = linspace(-maxdep,roundsd(double(max(DEM.z(:))),2,'ceil'),rr);
-		if max(abs([xlim,ylim,zlim])) >= tickfactorlim
+		if max(abs([mlim,mlim,zlim])) >= tickfactorlim
 			distunit = 'km';
 			distfactor = 1e-3;
 		else
@@ -775,10 +782,10 @@ for r = 1:length(P.GTABLE)
 			distfactor = 1;
 		end
 
-		[xdem,ydem] = meshgrid(xlim,ylim);
+		[xdem,ydem] = meshgrid(mlim);
 		zdem = interp2((DEM.lon-lon0)*degm*cosd(lat0),(DEM.lat-lat0)*degm,double(DEM.z),xdem,ydem);
 
-		[xx,yy,zz] = meshgrid(xlim,ylim,zlim);
+		[xx,yy,zz] = meshgrid(mlim,mlim,zlim);
 
 		% station coordinates relative to target and target relative to network center
 		xs = xsta - (targetll(2) - lon0)*degm*cosd(lat0);
@@ -845,7 +852,7 @@ for r = 1:length(P.GTABLE)
 		%else
 			vmax = rmax(abs(reshape(d(:,1:3),[],1)))/2;
 		%end
-		vsc = .25*min([diff(minmax(xlim)),diff(minmax(ylim)),diff(minmax(zlim))])/vmax;
+		vsc = .25*min([diff(minmax(mlim)),diff(minmax(mlim)),diff(minmax(zlim))])/vmax;
 
 		% --- plots the results
 		figure, orient tall
@@ -860,17 +867,17 @@ for r = 1:length(P.GTABLE)
 		pos = get(gca,'Position');
 		[mmm,imm] = max(mm,[],3);
 		if strcmp(modelling_coloref,'volpdf')
-			imagesc(xlim,ylim,mmm.*sign(index3d(vv,imm,3)))
+			imagesc(mlim,mlim,mmm.*sign(index3d(vv,imm,3)))
 		else
-			imagesc(xlim,ylim,mmm)
+			imagesc(mlim,mlim,mmm)
 		end
 		axis xy; caxis(clim);
-		%pcolor(xlim,ylim,squeeze(max(vv,[],3)));shading flat
+		%pcolor(mlim,mlim,squeeze(max(vv,[],3)));shading flat
 		hold on
-		[~,h] = contour(xlim,ylim,zdem,0:200:mmz(2));
-		set(h,'Color',.3*[1,1,1],'LineWidth',.1);
-		[~,h] = contour(xlim,ylim,zdem,[0:1000:mmz(2),0:-1000:mmz(1)]);
-		set(h,'Color',.3*[1,1,1],'LineWidth',.75);
+		[~,h] = contour(mlim,mlim,zdem,0:200:mmz(2));
+		set(h,'Color',modelling_topo_rgb,'LineWidth',.1);
+		[~,h] = contour(mlim,mlim,zdem,[0:1000:mmz(2),0:-1000:mmz(1)]);
+		set(h,'Color',modelling_topo_rgb,'LineWidth',.75);
 		target(xsta,ysta,stasize)
 		if ~isnan(vmax)
 			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
@@ -883,8 +890,8 @@ for r = 1:length(P.GTABLE)
 			end
 		end
 		if modelopt.apriori_horizontal > 0
-			plot(repmat(modelopt.targetxy(1),1,2),ylim([1,end]),':k')
-			plot(xlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
+			plot(repmat(modelopt.targetxy(1),1,2),mlim([1,end]),':k')
+			plot(mlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 		end
 		%axis equal; axis tight
 		if plotbest && ~isnan(mm0)
@@ -896,7 +903,7 @@ for r = 1:length(P.GTABLE)
 			end
 		end
 		hold off
-		set(gca,'XLim',minmax(xlim),'YLim',minmax(ylim), ...
+		set(gca,'XLim',minmax(mlim),'YLim',minmax(mlim), ...
 			'Position',[0.01,pos(2),pos(3) + pos(1) - 0.01,pos(4)],'YAxisLocation','right','FontSize',6)
 		tickfactor(distfactor)
 		xlabel(sprintf('Origin (0,0) is lon {\\bf%g E}, lat {\\bf%g N} - Distances in %s',lon0,lat0,distunit),'FontSize',8)
@@ -905,12 +912,12 @@ for r = 1:length(P.GTABLE)
 		axes('position',[0.68,pos(2),0.3,pos(4)])
 		[mmm,imm] = max(mm,[],2);
 		if strcmp(modelling_coloref,'volpdf')
-			imagesc(zlim,ylim,squeeze(mmm.*sign(index3d(vv,imm,2))))
+			imagesc(zlim,mlim,squeeze(mmm.*sign(index3d(vv,imm,2))))
 		else
-			imagesc(zlim,ylim,squeeze(mmm))
+			imagesc(zlim,mlim,squeeze(mmm))
 		end
 		axis xy; caxis(clim);
-		%pcolor(zlim,ylim,squeeze(max(vv,[],2)));shading flat
+		%pcolor(zlim,mlim,squeeze(max(vv,[],2)));shading flat
 		hold on
 		target(zsta,ysta,stasize)
 		if ~isnan(vmax)
@@ -931,21 +938,21 @@ for r = 1:length(P.GTABLE)
 				plot(zz(k),yy(k),'pk','MarkerSize',10,'LineWidth',2)
 			end
 		end
-		plot(max(max(zdem,[],3),[],2)',ylim,'-k')
+		plot(max(max(zdem,[],3),[],2)',mlim,'-k')
 		hold off
-		set(gca,'XLim',minmax(zlim),'YLim',minmax(ylim),'XDir','reverse','XAxisLocation','top','YAxisLocation','right','YTick',[],'FontSize',6)
+		set(gca,'XLim',minmax(zlim),'YLim',minmax(mlim),'XDir','reverse','XAxisLocation','top','YAxisLocation','right','YTick',[],'FontSize',6)
 		tickfactor(distfactor)
 
 		% X-Z profile
 		axes('position',[0.01,0.11,0.6142,0.3])
 		[mmm,imm] = max(mm,[],1);
 		if strcmp(modelling_coloref,'volpdf')
-			imagesc(xlim,zlim,fliplr(rot90(squeeze(mmm.*sign(index3d(vv,imm,1))),-1)))
+			imagesc(mlim,zlim,fliplr(rot90(squeeze(mmm.*sign(index3d(vv,imm,1))),-1)))
 		else
-			imagesc(xlim,zlim,fliplr(rot90(squeeze(mmm),-1)))
+			imagesc(mlim,zlim,fliplr(rot90(squeeze(mmm),-1)))
 		end
 		axis xy; caxis(clim);
-		%pcolor(xlim,zlim,fliplr(rot90(squeeze(max(vv,[],1)),-1)));shading flat
+		%pcolor(mlim,zlim,fliplr(rot90(squeeze(max(vv,[],1)),-1)));shading flat
 		hold on
 		target(xsta,zsta,stasize)
 		if ~isnan(vmax)
@@ -966,9 +973,9 @@ for r = 1:length(P.GTABLE)
 				plot(xx(k),zz(k),'pk','MarkerSize',10,'LineWidth',2)
 			end
 		end
-		plot(xlim,max(max(zdem,[],3),[],1),'-k')
+		plot(mlim,max(max(zdem,[],3),[],1),'-k')
 		hold off
-		set(gca,'XLim',minmax(xlim),'YLim',minmax(zlim),'YAxisLocation','right','XTick',[],'FontSize',6)
+		set(gca,'XLim',minmax(mlim),'YLim',minmax(zlim),'YAxisLocation','right','XTick',[],'FontSize',6)
 		tickfactor(distfactor)
 		xlabel(refstring)
 
@@ -996,6 +1003,8 @@ for r = 1:length(P.GTABLE)
 			%'', ... %sprintf('width = {\\bf%g m}',roundsd(2*ws,1)), ...
 			%sprintf('grid size = {\\bf%g^3 nodes}',rr), ...
 			%sprintf('trend error mode = {\\bf%d}',terrmod), ...
+			%sprintf('depth = {\\bf%1.1f km} \\in [%1.1f , %1.1f]',pbest(3),-fliplr(ez)/1e3), ...
+			%sprintf('\\DeltaV = {\\bf%+g Mm^3} \\in [%+g , %+g]',roundsd([pbest(7)*1e3,ev],2)), ...
 		if ~isnan(mm0) 
 			info = cat(2,info,' ',sprintf('   {\\itBest source (%1.1f%%)}:',modelopt.msigp*100));
 			[e0,n0,z0] = ll2utm(lat0,lon0);
@@ -1004,8 +1013,9 @@ for r = 1:length(P.GTABLE)
 				[lats,lons] = utm2ll(e0+pbest(1)*1e3,n0+pbest(2)*1e3,z0);
 				info = cat(2,info, ...
 					sprintf('lat/lon = {\\bf%g N / %g E}',lats,lons), ...
-					sprintf('depth = {\\bf%1.1f km} \\in [%1.1f , %1.1f]',pbest(3),-fliplr(ez)/1e3), ...
-					sprintf('\\DeltaV = {\\bf%+g Mm^3} \\in [%+g , %+g]',roundsd([pbest(7)*1e3,ev],2)), ...
+					sprintf('depth = {\\bf%1.1f km} \\pm %g km',pbest(3),roundsd(abs(diff(ez)/1e3/2),2)), ...
+					sprintf('\\DeltaV = {\\bf%+g Mm^3} \\pm %g Mm^3',roundsd([pbest(7)*1e3,abs(diff(ev))/2],2)), ...
+					sprintf('(Flow Rate = %+g m^3/s)',roundsd(pbest(7)*1e9/diff(tlim)/86400,2)), ...
 					sprintf('A = {\\bf%1.2f} / B = {\\bf%1.2f}',pbest(8:9)), ...
 					sprintf('shape = {\\bf%s}',pcdmdesc(pbest(8),pbest(9))), ....
 					sprintf('\\OmegaX = {\\bf%+2.0f\\circ} / \\OmegaY = {\\bf%+2.0f\\circ} / \\OmegaZ = {\\bf%+2.0f\\circ}',pbest(4:6)));
@@ -1013,8 +1023,9 @@ for r = 1:length(P.GTABLE)
 				[lats,lons] = utm2ll(e0+xx(k),n0+yy(k),z0);
 				info = cat(2,info, ...
 					sprintf('lat/lon = {\\bf%g N / %g E}',lats,lons), ...
-					sprintf('depth = {\\bf%1.1f km} \\in [%1.1f , %1.1f]',-[zz(k),fliplr(ez)]/1e3), ...
-					sprintf('\\DeltaV = {\\bf%+g Mm^3} \\in [%+g , %+g]',roundsd([vv(k),ev],2)));
+					sprintf('depth = {\\bf%1.1f km} \\pm %g km',[-zz(k),roundsd(abs(diff(ez))/2,2)]/1e3), ...
+					sprintf('\\DeltaV = {\\bf%+g Mm^3} \\pm %g Mm^3',roundsd([vv(k),abs(diff(ev))/2],2)), ...
+					sprintf('(Flow Rate = %+g m^3/s)',roundsd(vv(k)*1e6/diff(tlim)/86400,2)));
 			end
 			info = cat(2,info,sprintf('misfit = {\\bf%g mm}',roundsd(mm0,2)));
 		else
@@ -1036,8 +1047,8 @@ for r = 1:length(P.GTABLE)
 
 		% - data/model arrows scale
 		axes('position',[0.67,0.05,0.3,0.03])
-		dxl = diff(xlim([1,end]))*0.3/0.6142;
-		dyl = diff(ylim([1,end]))*0.03/0.3;
+		dxl = diff(mlim([1,end]))*0.3/0.6142;
+		dyl = diff(mlim([1,end]))*0.03/0.3;
 		hold on
 		if ~isnan(arrowref)
 			vlegend = roundsd(vmax/2,1);
@@ -1061,9 +1072,8 @@ for r = 1:length(P.GTABLE)
 			sprintf('     {\\bf%s}',datestr(tlim(1),'yyyy-mm-dd HH:MM')), ...
 			sprintf('     {\\bf%s}',datestr(tlim(2),'yyyy-mm-dd HH:MM')), ...
 			' '};
-		OPT.FIXEDPP = true;
 		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true))
 		close
 
 		% exports data
@@ -1093,7 +1103,7 @@ for r = 1:length(P.GTABLE)
 					};
 				end
 			end
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(rcode2));
+			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
 
@@ -1113,7 +1123,11 @@ for r = 1:length(P.GTABLE)
 				mtlabel{m} = 't_0 ref.';
 			end
 			M(m).mtp = mtp;
-			M(m).t = fliplr(tlim(2):-dt:tlim(1));
+			
+			M(m).t = (fliplr(tlim(2):-dt:tlim(1)))';
+			% last time must contain data
+			tlast = max(max(cat(1,D.tfirstlast)));
+			M(m).t(M(m).t > tlast) = [];
 			fprintf('%s: computing %d models (%s @ %g day) ',wofun,length(M(m).t),mtlabel{m},dt);
 
 			% initiates the model result matrix
@@ -1210,80 +1224,239 @@ for r = 1:length(P.GTABLE)
 				end
 			end
 
+			% converts vv into Q (volumetric flux) in m3/s)
+			if modeltime_flowrate
+				M(m).d(:,4) = M(m).d(:,4)*1e6/modeltime_period(m)/86400;
+				M(m).e(:,4) = M(m).d(:,4)*1e6/modeltime_period(m)/86400;
+				vtype = 'Flow rate';
+				vunit = 'm^3/s';
+			else
+				vtype = '\DeltaV';
+				vunit = 'm^3';
+			end
 			% puts NaN where vv is NaN (no model)
 			M(m).d((isnan(M(m).d(:,4)) | M(m).e(:,5) > 1e3*modeltime_maxmisfit),:) = NaN;
+			M(m).vmedian = median(M(m).d(:,4));
+			M(m).vmax = max(M(m).d(:,4));
+			M(m).vmin = min(M(m).d(:,4));
 
 			fprintf(' done!\n');
 		end
 
 		figure, orient tall
 
-		% volume variation (moving)
-		subplot(10,1,1:4), extaxes(gca,[.08,.04])
+		% -- volumetric flow rate from volume variation (moving)
+		subplot(10,1,1:3), extaxes(gca,[.08,.04])
 		
+		% adjusts unit
+		vmaxs = max(abs(cat(1,M.vmedian)));
+		if vmaxs > 0.5e6
+			vfactor = 1e6;
+			vunit = ['M',vunit];
+		else
+			vfactor = 1;
+		end
+
 		plot(tlim,[0,0],'-k','LineWidth',1)
 		hold on
 		for m = 1:length(M)
 			col = scolor(m);
-			errorbar(M(m).t,M(m).d(:,4),M(m).e(:,4),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
-			plotorbit(M(m).t,M(m).d(:,4),M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
-			%plot(M(m).t,M(m).d(:,4),'o-','Color',col,'MarkerFaceColor',col, ...
-			%	'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).MARKERSIZE/5)
+			errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
+			plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
 		end
 		hold off
-		text(tlim(2),0,{'',' \rightarrow Inflation'},'rotation',90,'Color','k', ...
-			'HorizontalAlignment','left','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
-		text(tlim(2),0,{'','Deflation \leftarrow '},'rotation',90,'Color','k', ...
-			'HorizontalAlignment','right','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
+		ylim = get(gca,'YLim');
+		if ylim(2) > 0
+			text(tlim(2),0,{'',' \rightarrow Inflation'},'rotation',90,'Color','k', ...
+				'HorizontalAlignment','left','VerticalAlignment','middle','Fontsize',8,'FontWeight','bold')
+		end
+		if ylim(1) < 0
+			text(tlim(2),0,{'','Deflation \leftarrow '},'rotation',90,'Color','k', ...
+				'HorizontalAlignment','right','VerticalAlignment','middle','Fontsize',8,'FontWeight','bold')
+		end
 		set(gca,'XLim',tlim,'FontSize',fontsize)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('{Moving \Delta}V (Mm^3)')
+		ylabel(['Source ',vtype,' (',vunit,')'])
 
 		% legend for periods
-		ylim = get(gca,'YLim');
 		for m = 1:length(M)
 			text(tlim(1)+m*diff(tlim)/(length(M)+1),ylim(2),mtlabel{m},'Color',scolor(m), ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8,'FontWeight','bold')
 		end
 		set(gca,'YLim',ylim);
 
-		% depth
-		subplot(10,1,5:6), extaxes(gca,[.08,.04])
+		% -- depth
+		subplot(10,1,4:5), extaxes(gca,[.08,.04])
 		plot(tlim,[0,0],'-k','LineWidth',1)
 		hold on
 		for m = 1:length(M)
 			col = scolor(m);
 			errorbar(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
 			plotorbit(M(m).t,M(m).d(:,3)/1e3,M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
-			%plot(M(m).t,M(m).d(:,3)/1e3,'o-','Color',col,'MarkerFaceColor',col, ...
-			%	'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).MARKERSIZE/5)
 		end
 		hold off
 		set(gca,'XLim',tlim,'FontSize',fontsize,'YLim',minmax(zz)/1e3)
 		datetick2('x',P.GTABLE(r).DATESTR)
 		ylabel('Source Elevation (km asl)')
+		pos = get(gca,'Position');
 
-		% displacements module
-		subplot(10,1,7:10), extaxes(gca,[.08,.04])
-		plot(tlim,[0,0],'-k','LineWidth',1)
+		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',fontsize)
+
+		% -- 3D map
+		[~,plist] = ismember(modeltime_map_period,modeltime_period);
+		vlim = minmax(abs(cat(1,M(plist).vmax,M(plist).vmin)),'finite')/vfactor;
+
+		set(gcf,'PaperUnits','inches');
+		ppos = get(gcf,'PaperPosition');
+		prxy = ppos(4)/ppos(3);
+		mpos = [pos(1),.18,.3*prxy,.3];
+
+		% X-Y top view
+		axes('Position',mpos)
 		hold on
-		for m = 1:length(M)
+		[~,h] = contour(mlim,mlim,zdem,0:200:mmz(2));
+		set(h,'Color',modelling_topo_rgb,'LineWidth',.1);
+		[~,h] = contour(mlim,mlim,zdem,[0:1000:mmz(2),0:-1000:mmz(1)]);
+		set(h,'Color',modelling_topo_rgb,'LineWidth',.75);
+		plot(xsta,ysta,'^k','MarkerSize',4,'MarkerFaceColor','k')
+		for m = plist
 			col = scolor(m);
-			errorbar(M(m).t,M(m).d(:,5),M(m).e(:,5),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
-			plotorbit(M(m).t,M(m).d(:,5),M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
-			%plot(M(m).t,M(m).d(:,5),'o-','Color',col,'MarkerFaceColor',col, ...
-			%	'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).MARKERSIZE/5)
+			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
+			scatter(M(m).d(:,1),M(m).d(:,2),mks,'MarkerEdgeColor',col,'LineWidth',modeltime_marker_linewidth)
+			scatter(M(m).d(:,1),M(m).d(:,2),mks,M(m).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
 		end
 		hold off
-		text(tlim(2),0,{'',' \rightarrow Inflation'},'rotation',90,'Color','k', ...
-			'HorizontalAlignment','left','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
-		text(tlim(2),0,{'','Deflation \leftarrow'},'rotation',90,'Color','k', ...
-			'HorizontalAlignment','right','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
-		set(gca,'XLim',tlim,'FontSize',fontsize)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Displ. Amplitude (mm)')
+		set(gca,'XLim',minmax(mlim),'YLim',minmax(mlim),'XTickLabels',[],'FontSize',6);
+		tickfactor(distfactor)
+		ylabel(sprintf('Distances in %s',distunit))
+		box on
+		colormap(modeltime_cmap)
+		caxis(tlim)
+		nimap = 1;
+		for m = plist
+			IMAP(nimap).d = [M(m).d(:,1),M(m).d(:,2),sqrt(mks/pi)+modeltime_marker_linewidth/2];
+			IMAP(nimap).gca = gca;
+			IMAP(nimap).s = cell(size(M(m).t));
+			IMAP(nimap).l = cell(size(M(m).t));
+			for n = 1:length(IMAP(nimap).s)
+				IMAP(nimap).s{n} = sprintf('''%g km<br>%s = %g %s'',CAPTION,''%s (%s)''', ...
+					roundsd(M(m).d(n,3)/1e3,2),vtype,roundsd(M(m).d(n,4)/vfactor,2), ...
+					regexprep(vunit,'\^3','<sup>3</sup>'),datestr(M(m).t(n),'dd-mmm-yyyy'),mtlabel{m});
+			end
+			nimap = nimap + 1;
+		end
 
-		% volume variation (cumulative normalized)
+		% Z-Y profile view
+		axes('Position',[mpos(1)+mpos(3),mpos(2),.15*prxy,mpos(4)])
+		plot(max(max(zdem,[],3),[],2)',mlim,'-','Color',modelling_topo_rgb)
+		hold on
+		%plot(zsta,ysta,'^k','MarkerSize',stasize,'MarkerFaceColor','k')
+		for m = plist
+			col = scolor(m);
+			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
+			scatter(M(m).d(:,3),M(m).d(:,2),mks,'MarkerEdgeColor',col,'LineWidth',modeltime_marker_linewidth)
+			scatter(M(m).d(:,3),M(m).d(:,2),mks,M(m).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
+		end
+		hold off
+		set(gca,'XLim',minmax(zlim),'YLim',minmax(mlim),'XDir','reverse','YTickLabels',[],'YAxisLocation','right','FontSize',6);
+		tickfactor(distfactor)
+		xlabel(sprintf('Depth (%s)',distunit))
+		box on
+		colormap(modeltime_cmap)
+		caxis(tlim)
+		for m = plist
+			IMAP(nimap).d = [M(m).d(:,3),M(m).d(:,2),sqrt(mks/pi)+modeltime_marker_linewidth/2];
+			IMAP(nimap).gca = gca;
+			IMAP(nimap).s = IMAP(mod(nimap-1,length(plist))+1).s; % uses the labels for X-Y top view
+			IMAP(nimap).l = cell(size(M(m).t));
+			nimap = nimap + 1;
+		end
+
+		% X-Z profile view
+		axes('Position',[mpos(1),mpos(2)-.15,mpos(3),.15])
+		plot(mlim,max(max(zdem,[],3),[],1),'-','Color',modelling_topo_rgb)
+		hold on
+		%plot(xsta,zsta,'^k','MarkerSize',stasize,'MarkerFaceColor','k')
+		for m = plist
+			col = scolor(m);
+			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
+			scatter(M(m).d(:,1),M(m).d(:,3),mks,'MarkerEdgeColor',col,'LineWidth',modeltime_marker_linewidth)
+			scatter(M(m).d(:,1),M(m).d(:,3),mks,M(m).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
+		end
+		hold off
+		set(gca,'XLim',minmax(mlim),'YLim',minmax(zlim),'FontSize',6);
+		tickfactor(distfactor)
+		ylabel(sprintf('Depth (%s)',distunit))
+		box on
+		colormap(modeltime_cmap)
+		caxis(tlim)
+		for m = plist
+			IMAP(nimap).d = [M(m).d(:,1),M(m).d(:,3),sqrt(mks/pi)+modeltime_marker_linewidth/2];
+			IMAP(nimap).gca = gca;
+			IMAP(nimap).s = IMAP(mod(nimap-1,length(plist))+1).s; % uses the labels for X-Y top view
+			IMAP(nimap).l = cell(size(M(m).t));
+			nimap = nimap + 1;
+		end
+
+
+		% legend
+		axes('position',[pos(1)+.73,0.07,0.17,0.4]);
+		
+		% color scale (depth or time)
+		wsc = 0.1;
+		x = 0.22;
+		y = linspace(0,.5,length(modeltime_cmap));
+		tscale = linspace(tlim(1),tlim(2),length(modeltime_cmap));
+		ddt = dtick(diff(tscale([1,end])));
+		ttick = (ddt*ceil(tscale(1)/ddt)):ddt:tscale(end);
+		patch(x + repmat(wsc*[0;1;1;0],[1,length(modeltime_cmap)]), ...
+			[repmat(y,[2,1]);repmat(y + diff(y(1:2)),[2,1])], ...
+		repmat(tscale,[4,1]), ...
+			'EdgeColor','flat','LineWidth',.1,'FaceColor','flat','clipping','off')
+		hold on
+		colormap(modeltime_cmap)
+		caxis(tlim)
+		patch(x + wsc*[0,1,1,0],[0,0,.5,.5],'k','FaceColor','none','Clipping','off')
+		patch(x + wsc*[0,.5,1],[.5,.52,.5],'k','EdgeColor','none','FaceColor','k','Clipping','off')
+		stick = datestr(ttick');
+		text(x - .05,.25,{'{\bfTime}',''},'HorizontalAlignment','center','rotation',90,'FontSize',8)
+		text(x + 1.3*wsc + zeros(size(ttick)),.5*(ttick - tscale(1))/diff(tscale([1,end])),stick, ...
+			'HorizontalAlignment','left','VerticalAlignment','middle','FontSize',6)
+		% volume scale
+		x = .2 + zeros(size(vlim));
+		y = .95 - .05*(vlim-vlim(1))/diff(vlim);
+		scatter(x,y,(vlim - vlim(1))/diff(vlim)*modeltime_markersize + 2,'MarkerEdgeColor','k','LineWidth',modeltime_marker_linewidth)
+		text(x + .15,y,num2str(roundsd(vlim',2)),'FontSize',7)
+		text(.1,1,['{\bf',vtype,'} (',vunit,')'],'HorizontalAlignment','left','FontSize',8)
+		hold off
+
+		set(gca,'XLim',[0,1],'YLim',[0,1])
+		axis off
+
+		% -- displacements module
+		%subplot(10,1,6:7), extaxes(gca,[.08,.04])
+		%plot(tlim,[0,0],'-k','LineWidth',1)
+		%hold on
+		%for m = 1:length(M)
+		%	col = scolor(m);
+		%	errorbar(M(m).t,M(m).d(:,5),M(m).e(:,5),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
+		%	plotorbit(M(m).t,M(m).d(:,5),M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
+		%end
+		%hold off
+		%ylim = get(gca,'YLim');
+		%if ylim(2) > 0
+		%	text(tlim(2),0,{'',' \rightarrow Inflation'},'rotation',90,'Color','k', ...
+		%		'HorizontalAlignment','left','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
+		%end
+		%if ylim(1) < 0
+		%	text(tlim(2),0,{'','Deflation \leftarrow'},'rotation',90,'Color','k', ...
+		%		'HorizontalAlignment','right','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
+		%end
+		%set(gca,'XLim',tlim,'FontSize',fontsize)
+		%datetick2('x',P.GTABLE(r).DATESTR)
+		%ylabel('Displ. Amplitude (mm)')
+
+		% -- volume variation (cumulative normalized)
 		%subplot(10,1,8:10), extaxes(gca,[.08,.04])
 		
 		%plot(tlim,[0,0],'-k','LineWidth',1)
@@ -1303,20 +1476,22 @@ for r = 1:length(P.GTABLE)
 		%datetick2('x',P.GTABLE(r).DATESTR)
 		%ylabel('Absolute pressure source (experimental)')
 
+		axes('Position',[0,0,1,1])
+		axis off
+		twarning = {'{\bfWarning:} This graph is experimental. Use results with caution.', ...
+			'Processing and modelling by Beauducel et al./IPGP',' '};
+		text(.99,.01,twarning,'HorizontalAlignment','right','VerticalAlignment','bottom','FontSize',8)
 
-		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',fontsize)
 	    
 		P.GTABLE(r).GTITLE = varsub(modeltime_title,V);
 		P.GTABLE(r).GSTATUS = [];
-		P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS, ...
-			'{\bfWarning:} This graph is experimental. Use results with caution.', ...
-			'Processing and modelling by Beauducel et al./IPGP',' '];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		P.GTABLE(r).INFOS = {' '};
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('IMAP',IMAP,'FIXEDPP',true))
 		close
+		clear IMAP
 
 		% exports data
 		if isok(P.GTABLE(r),'EXPORTS')
-			rcode2 = sprintf('%s_%s',proc,summary);
 			E.t = M(1).t;
 			n = size(M(1).d,2);
 			E.d = nan(size(M(1).d,1),length(M)*size(M(1).d,2)*2);
@@ -1325,7 +1500,7 @@ for r = 1:length(P.GTABLE)
 				E.d(:,k) = cat(2,M(m).d,M(m).e);
 				E.header(k) = strcat({'X','Y','Z','dV','dD','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%g',M(m).mtp));
 			end
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(rcode2));
+			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			E.info = {};
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end

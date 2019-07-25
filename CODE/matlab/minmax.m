@@ -1,6 +1,5 @@
-function y=minmax(x,n)
+function y=minmax(varargin)
 %MINMAX	Generalized median filter.
-%
 %	Y=MINMAX(X) returns a 2 element vector Y = [min(X) max(X)]. Minimum and
 %	maximum values of X(:) are computed after excluding any NaN values.
 %
@@ -8,6 +7,11 @@ function y=minmax(x,n)
 %	value of X(:), e.g., it sorts elements of X then interpolates at 
 %	(100*N) % rank position. N can be scalar, vector or matrix, so Y will 
 %	have the same size as N.
+%
+%	MINMAX(...,'linear') returns linear interpolation into values of X.
+%
+%	MINMAX(...,'finite') returns minimum and maximum of X using only finite
+%	values (-Inf and Inf ignored).
 %
 %	Examples:
 %
@@ -26,20 +30,23 @@ function y=minmax(x,n)
 %		MINMAX(X,[0.01 0.99]) is a convenient way to compute automatic 
 %		scale of X when samples are noisy, since it filters the 1% elements
 %		with extreme values. It may be used for color scaling with CAXIS or
-%		for	plot scaling with set(gca,'YLim',...).
+%		for plot scaling with set(gca,'YLim',...).
 %
 %	See also MIN, MAX and MEDIAN.
 %
 %	Author: François Beauducel <beauducel@ipgp.fr>
-%	Created: 1996
-%	Updated: 2013-02-27
+%	Created: 1996, in Paris (France)
+%	Updated: 2019-07-25
 
-%	Copyright (c) 2013, François Beauducel, covered by BSD License.
+%	Copyright (c) 2019, François Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %
 %	Revision history:
 %
+%	[2019-07-25]
+%		- adds options
+%	
 %	[2013-02-27]
 %		- works with X scalar
 %
@@ -70,30 +77,43 @@ if nargin < 1
 	error('Not enough input arguments.');
 end
 
-if nargin > 2
-	error('Too many input arguments');
-end
-
-if any(~isnumeric(x))
+if any(~isnumeric(varargin{1}))
 	error('X must be numeric.')
+else
+	x = varargin{1};
 end
 
-if nargin < 2
-	n = [0 1];
-else
-	if any(~isnumeric(n)) | any(n < 0 | n > 1)
-		error('N must contain values between 0 and 1.')
+n = [0 1];
+if nargin > 1
+	if all(isnumeric(varargin{2}))
+		n = varargin{2};
+		if any(~isnumeric(n)) || any(n < 0 | n > 1)
+			error('N must contain values between 0 and 1.')
+		end
 	end
 end
 
+if nargin < 3
+	opt = 'nearest';
+else
+	if any(strcmpi(varargin,'nearest'))
+		opt = 'linear';
+	end
+end
 
+% removes NaN values
 x = x(~isnan(x));
+
+% removes Inf values
+if any(strcmpi(varargin,'finite'))
+	x = x(isfinite(x));
+end
 
 if isempty(x)
 	y = nan(size(n));
 elseif length(x) == 1
 	y = x*ones(size(n));
 else
-	y = interp1(sort(x),n*(length(x)-1) + 1);
+	y = interp1(sort(x),n*(length(x)-1) + 1,opt);
 end
 
