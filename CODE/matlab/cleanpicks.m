@@ -11,7 +11,7 @@ function y = cleanpicks(x,F)
 %
 %	Author: F. Beauducel <beauducel@ipgp.fr> / WEBOBS
 %	Created: 2013-03-07
-%	Updated: 2019-05-21
+%	Updated: 2019-07-25
 
 filter1 = 'PICKS_CLEAN_PERCENT';
 filter2 = 'PICKS_CLEAN_STD';
@@ -30,7 +30,9 @@ end
 y = x;
 
 % removes linear trend
-x = detrend(x);
+if length(x) > 1
+	x = detrend(x);
+end
 
 % --- median min/max filter
 if n < 0 || n >= 100
