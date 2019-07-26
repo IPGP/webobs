@@ -96,7 +96,7 @@ VELOCITY_REF_ORIGIN_DATE|2000-01-01
 # component names used as Y-label for SUMMARY and PERNODE graphs (use '\ ' to avoid word splitting)
 COMPONENT_NAMELIST|Relative Eastern,Relative Northern,Relative Vertical
 
-# PERNODE graphs
+# --- PERNODE graphs
 PERNODE_LINESTYLE|o
 PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name - $velref} ($timescale)}
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
@@ -104,7 +104,7 @@ PERNODE_TIMEZOOM|
 # offset between components (in m)
 PERNODE_COMPONENT_OFFSET_M|0.01
 
-# SUMMARY graphs
+# --- SUMMARY graphs
 SUMMARY_LINESTYLE|o
 SUMMARY_TITLE|{\fontsize{14}{\bf${NAME} - $velref} ($timescale)}
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
@@ -114,7 +114,7 @@ SUMMARY_COMPONENT_OFFSET_M|0.01
 # offset between stations (in m)
 SUMMARY_STATION_OFFSET_M|0.01
 
-# BASELINES graphs
+# --- BASELINES graphs
 # - default behavior: all pairs of nodes, with possible node exclusion and/or node reference list
 BASELINES_EXCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
@@ -133,7 +133,7 @@ BASELINES_STATION_OFFSET_M|0.01
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 BASELINES_TIMEZOOM|
 
-# VECTORS: excluding NODES from graphs and calculations
+# --- VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|
 VECTORS_RELATIVE|N
 # VECTORS: if VECTORS_RELATIVE is Y, substracts a reference vector in VECTORS_VELOCITY_REF:
@@ -152,7 +152,7 @@ VECTORS_ARROWSHAPE|.15,.15,.12,.03
 # defines a main target (latitude,longitude coordinates)
 GNSS_TARGET_LATLON|
 
-# MODELLING graph
+# --- MODELLING graph
 # excluding NODES from graphs and calculations
 MODELLING_EXCLUDED_NODELIST|
 # ignores vertical component
@@ -174,6 +174,8 @@ MODELLING_PLOT_BEST|Y
 MODELLING_PLOT_RESIDUAL|Y
 # number of sigma (STD) to compute uncertainty intervals for best model
 MODELLING_SIGMAS|1
+# RGB color for topo/bathy basemap
+MODELLING_TOPO_RGB|.5,.5,.5
 # color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
 MODELLING_COLORREF|volpdf
 MODELLING_COLORMAP|jet(256)
@@ -202,8 +204,8 @@ MODELLING_PCDM_NEW_LIMIT_EDGE_RATIO|20
 MODELLING_PCDM_NEW_LIMIT_EXTEND|1
 MODELLING_PCDM_SUPPLEMENTARY_GRAPHS|N
 
-# MODELTIME: defines the moving periods, minimum sampling, maximum models 
-# [NOTE] MODELTIME uses MODELLING parameters but always an isotropic source
+# --- MODELTIME: defines the moving periods, minimum sampling, maximum models 
+# [NOTE] MODELTIME uses all MODELLING parameters but forces an isotropic source
 MODELTIME_PERIOD_DAY|30,15
 MODELTIME_SAMPLING_DAY|2
 MODELTIME_MAX_MODELS|50
@@ -211,5 +213,5 @@ MODELTIME_FLOWRATE|Y
 MODELTIME_MAP_PERIODLIST|
 MODELTIME_MARKER_LINEWIDTH|1
 MODELTIME_COLORMAP|jet(256)
-MODELTIME_MARKERSIZE|50
+MODELTIME_MARKERSIZE|10
 MODELTIME_TITLE|{\fontsize{14}{\bf$name - Source best model timeline} ($timescale)}

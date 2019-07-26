@@ -39,7 +39,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-07-25
+%   Updated: 2019-07-26
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -194,7 +194,7 @@ modeltime_flowrate = isok(P,'MODELTIME_FLOWRATE',1);
 modeltime_map_period = field2num(P,'MODELTIME_MAP_PERIODLIST',modeltime_period,'notempty');
 modeltime_marker_linewidth = field2num(P,'MODELTIME_MARKER_LINEWIDTH',1);
 modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',jet(256));
-modeltime_markersize = field2num(P,'MODELTIME_MARKERSIZE',50);
+modeltime_markersize = pi*(field2num(P,'MODELTIME_MARKERSIZE',10,'notempty')/2)^2; % scatter needs marker size as a surface (πr²)
 
 
 geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
@@ -1250,7 +1250,7 @@ for r = 1:length(P.GTABLE)
 		
 		% adjusts unit
 		vmaxs = max(abs(cat(1,M.vmedian)));
-		if vmaxs > 0.5e6
+		if isfinite(vmaxs) && vmaxs > 0.5e6
 			vfactor = 1e6;
 			vunit = ['M',vunit];
 		else
@@ -1339,9 +1339,10 @@ for r = 1:length(P.GTABLE)
 			IMAP(nimap).s = cell(size(M(m).t));
 			IMAP(nimap).l = cell(size(M(m).t));
 			for n = 1:length(IMAP(nimap).s)
-				IMAP(nimap).s{n} = sprintf('''%g km<br>%s = %g %s'',CAPTION,''%s (%s)''', ...
+				IMAP(nimap).s{n} = sprintf('''%g km<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
 					roundsd(M(m).d(n,3)/1e3,2),vtype,roundsd(M(m).d(n,4)/vfactor,2), ...
-					regexprep(vunit,'\^3','<sup>3</sup>'),datestr(M(m).t(n),'dd-mmm-yyyy'),mtlabel{m});
+					regexprep(vunit,'\^3','<sup>3</sup>'),roundsd(M(m).e(n,5),2), ...
+					datestr(M(m).t(n),'dd-mmm-yyyy'),mtlabel{m});
 			end
 			nimap = nimap + 1;
 		end
