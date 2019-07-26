@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2019-07-10
+%	Updated: 2019-07-26
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -389,7 +389,6 @@ case 'scevtlog-xml'
 			& (isnan(d(:,2))  | isinto(d(:,2),P.LONLIM)) ...
 			& (isnan(d(:,3))  | isinto(d(:,3),P.DEPLIM)) ...
 			& (isnan(d(:,4))  | isinto(d(:,4),P.MAGLIM)) ...
-			& (isnan(d(:,11)) | isinto(d(:,11),P.MSKLIM)) ...
 		);
 		if ~isnan(magerr)
 			d(isnan(d(:,12)),12) = magerr;

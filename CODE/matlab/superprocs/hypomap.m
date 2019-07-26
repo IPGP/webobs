@@ -246,7 +246,7 @@ for m = 1:length(summarylist)
 		else
 			scatter(dk(:,2),dk(:,1),mks,mkc,'fill','MarkerEdgeColor','k','LineWidth',linewidth)
 		end
-			IMAP(1).d = [dk(:,2),dk(:,1),sqrt(mks/pi)+1];
+		IMAP(1).d = [dk(:,2),dk(:,1),sqrt(mks/pi)+1];
 		IMAP(1).gca = gca;
 		IMAP(1).s = cell(size(tk));
 		IMAP(1).l = ck(:,6);
