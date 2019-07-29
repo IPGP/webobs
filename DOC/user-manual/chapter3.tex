@@ -49,7 +49,7 @@ belong to the authorization 'misc' type (authmisc table), and are identified as
 \lstinputlisting[title=\wofile{Gazette\_categories.conf}]{../../SETUP/CONF/Gazette_categories.conf}
 
 The \wo{GAZETTE} also includes holidays definitions that can be adapted to any country using 
-a specifications file pointed to by FILE\_DAYSOFF in the main WebObs configuration WEBOBS.rc .
+a specifications file pointed to by \wokey{FILE\_DAYSOFF} in the main WebObs configuration WEBOBS.rc .
 
 \begin{lstlisting}[title=\wofile{WEBOBS.rc} (excerpt)]
 FILE_DAYSOFF|${ROOT_CONF}/Holidays.conf
@@ -88,6 +88,7 @@ Note: 'Event' category is not editable through html interface.
 Developer's note: A Gazette display html code can also be imported into other pages using the WebObs/Gazette.pm 
 Show function. See description in Gazette.pm perldoc and Welcome.pl page as an example.
 
+\newpage
 % ==================================================================
 \section{GRIDMAPS and LOCASTAT: maps of georeferenced nodes}
 
@@ -100,7 +101,7 @@ Any \wo{node} may be associated with a location with geographic coordinates. A \
 \subsection{GRIDMAPS}
 \label{gridmaps}
 
-When a \wo{node} is associated to a \wo{grid}, \webobs will automatically produce maps indicating these \wo{nodes}.
+When a \wo{node} is associated to a \wo{grid}, \webobs will automatically produce maps with these georefenced \wo{nodes}. Background basemap will be an illuminated elevation model of the area, using SRTM, ETOPO or user-defined DEM (see section \ref{dem} for DEM policy).
 
 \begin{figure}
 \includegraphics[height=.6\textwidth]{figures/PROC_CGPSWI_map.png}
@@ -151,6 +152,30 @@ The map contains 4 maps at different scales, all centered on the \wo{node} posit
 \lstinputlisting[title=\wofile{LOCASTAT.rc}]{../../SETUP/CONF/LOCASTAT.rc}
 
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Activation}
+
+LOCASTAT is set by default when installing \webobs. It should be active at the first scheduler start. Parameters are as follows:
+
+\begin{tabular}{rl}
+\textbf{jid:}      & locastat \\
+\textbf{res:}      & locastat \\
+\textbf{xeq1:}     & \$WEBOBS\{JOB\_MCC\} locastat \\
+\textbf{interval:} & 3600 \\
+\textbf{logpath:}  & locastat \\
+\textbf{valid:}    & Y \\
+\end{tabular}
+
+You may check if it runs correctly in the Scheduler Runs page (see Section \ref{scheduler}).
+
+% -----------------------------------------------------------------
+\subsection{DEM basemaps}
+
+GRIDMAPS and LOCASTAT will use automatic mapping with the same standards and options as for \wo{grids} maps, i.e., using either SRTM3, SRTM1, ETOPO5, ETOPO1 worldwide elevation data or user-defined DEM file. See section \ref{dem} for details.
+
+%	MAP_DEM_OPT|'LandColor',.8*ones(256,3),'SeaColor',white,'Contrast',1,'LCut',0.01
+
+\newpage
 % ==================================================================
 \section{SEFRAN3/MC3: seismic chart and bulletin}
 
@@ -259,6 +284,7 @@ Further options are available to access all display possibilities. See \wocmd{pe
 
 
 
+\newpage
 % ==================================================================
 \section{GENPLOT: generic time series}
 \label{genplot}
@@ -266,35 +292,105 @@ Further options are available to access all display possibilities. See \wocmd{pe
 % -----------------------------------------------------------------
 \subsection{Overview}
 
-GENPLOT is the default superproc to plot time series from any source of data, particularly the time series formats (see section \ref{timeseries}). GENPLOT is able to produce graphics and text outputs from data channels of associated NODES. All the outputs will be processed for a list of preset time scales, which can be any of the following:
-\begin{itemize}
-\item a fixed duration (expressed in hour, day, week, month or year) until the present time (moving window);
-\item a window from a reference date until present time (extending window);
-\item all available data.
-\end{itemize}
-
-GENPLOT will produce, for each time scale:
+GENPLOT is the default superproc to plot time series from any source of data, particularly the time series formats (see section \ref{timeseries}). GENPLOT is able to produce graphics and text outputs from any data channels of associated NODES for a list of preset time scales and two types of graphs:
 \begin{itemize}
 \item one graph per \wo{node} showing separated subplot for each selected channel;
-\item one summary graph combining all \wo{nodes} on each channel subplot using different colors.
+\item one summary graph combining all \wo{nodes} on each channel subplot using different colors. This graph is activated by setting \wokey{SUMMARYLIST} parameter to the keyword \wokey{SUMMARY} (this is the default). To remove the summary graph just empty or comment the parameter.
 \end{itemize}
 
-The plotted channels for the per-node and summary graphs are both configurable
-using respectively \wo{NODE\_CHANNELS} and \wo{SUMMARY\_CHANNELS}. Titles and
-line and marker style can also be configured:
+GENPLOT and all other superprocs have the same configuration parameters of a standard \wo{view}, mainly for the \wo{proc}'s name, \wo{nodes} options and DEM parameters (see section \ref{views}). Additional parameters are specific to each superproc, but most of the GENPLOT parameters below will apply also to other superprocs.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Data source, format and timezone}
+
+The generic behavior of superprocs is to set a global data source and format for all associated \wo{nodes} using:
 \begin{itemize}
-\item set \wo{PERNODE\_TITLE} and/or \wo{SUMMARY\_TITLE} to customize the title;
-\item set \wo{PERNODE\_LINESTYLE} and/or \wo{SUMMARY\_LINESTYLE} to a line specification string, a combination of two components:
+\item \wokey{RAWFORMAT} keyword (see table \ref{rawformats});
+\item \wokey{RAWDATA} full path or web-service url (depending on each format).
+\end{itemize}
+
+This global \wo{proc} data source can be overwritten by any individual \wo{node}'s data source (see section \ref{nodeprocparam}), so a \wo{proc} is able to deal with different data formats for each of its associated \wo{nodes}.
+
+The timezone of the raw data must be defined in each of the \wo{node}'s configuration (see section \ref{nodeprocparam}) otherwise it will be considered as GMT by default (TZ=0). The \wo{proc} will then display and export the data using the GENPLOT parameter applying to all \wo{nodes} and outputs:
+\begin{itemize}
+\item \wokey{TZ} in hours (default is 0 for GMT).
+\end{itemize}
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Preset time scales (real-time moving windows)}
+
+Time scales are defined by the \wokey{TIMESCALELIST} parameter that contains coma-separated codes as defined by table \ref{timescales}, which can be one of the following:
+\begin{itemize}
+\item a fixed duration expressed in hour, day, week, month or year as a moving window ending at the present time;
+\item a variable duration from a fixed reference date until the present time (extending window);
+\item all available data, from the first to the last (adapted window for each NODE).
+\end{itemize}
+
+These preset time scales will produce graphs with moving time limits that will be automatically updated by the scheduler (see section \ref{scheduler}). To make specific graphs from selected dates and times limits, use the manual \wo{procs} graph and data request form (see section \ref{procrequest}).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Channel selection}
+
+Each associated \wo{node} must have a calibration file that defines all channel parameters (see section \ref{clb}).
+By default, all available channels are plotted in the per-node and summary graphs, but selection can be made using respectively \wokey{PERNODE\_CHANNELS} and \wokey{SUMMARY\_CHANNELS} parameters and coma-separated channel number list, as defined in the calibration file (\wofile{Ch. Nb}). Setting optional multiple comas to extend the previous subplot height in proportion to others. Example:
+
+\begin{lstlisting}
+PERNODE_CHANNELS|1,2,3,4
+SUMMARY_CHANNELS|1,,4,2
+\end{lstlisting}
+
+sets the channels 1 to 4 (from top to bottom) with equal subplot size for each per-node plot, and the channels 1, 4 and 2 for the summary plot, but the first subplot (channel 1) will be double-height compared to the second (channel 4) and third subplots (channel 2).
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Data filtering}
+
+Some filters can be applied to the whole set of data:
+\begin{itemize}
+	\item \wokey{FLAT\_IS\_NAN} set to \wokey{YES} replaces flat signal, i.e. two consecutive strictly identical values, by Not-a-Number (NaN which disappear from graph); this is useful to detect some sensor/digitizer anomaly;
+	\item \wokey{PICKS\_CLEAN\_PERCENT} removes data picks using a threshold as \% of min/max of the data values after linear detrend;
+	\item \wokey{PICKS\_CLEAN\_STD} removes data picks using a threshold as a multiple of standard deviation of data around the mean value after linear detrend;
+	\item \wokey{MEDIAN\_FILTER\_SAMPLES} applies a moving median filter on a number of data samples. A value of \wokey{3} makes a robust filter to remove individual spikes, without affecting too much the data;
+	\item \wokey{DECIMATELIST} defines a decimation factor for each timescale (coma-separated values, default is 1); the decimation will use average of data samples (no other filtering);
+	\item \wokey{MOVING\_FILTER\_SAMPLES} keeps the original data but add an additional plot with a moving average, using the same color but lighter.
+\end{itemize}
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Graphical options}
+
+Titles, labels, line and marker style and other page settings can also be configured:
+\begin{itemize}
+	\item set \wokey{PERNODE\_TITLE} and/or \wokey{SUMMARY\_TITLE} to customize the title; string can contain some TeX commands, any of the \wo{proc} variables (e.g. \wokey{\$\{NAME\}}) and a list of internal variables that will be substituted in the text strings:
+	\begin{itemize}
+		\item \wokey{\$node\_name} = node long name (for pernode plots),
+		\item \wokey{\$node\_alias} = node alias (for pernode plots),
+		\item \wokey{\$timescale} = time scale string (e.g. '1 year'),
+		\item \wokey{\$last\_data} = last data date and time string.
+	\end{itemize}	
+	\item set \wokey{PERNODE\_LINESTYLE} and/or \wokey{SUMMARY\_LINESTYLE} to a line specification string, a combination of two components:
 	\begin{itemize}
 		\item a line type (see possible values in table \ref{linestyle}),
 		\item a marker symbol type (see possible values in table \ref{markertype}),
 	\end{itemize}
  to choose between drawing markers and/or line and define their style; note you might specify a marker only with no line, then only the markers are plotted;
-\item the line width and marker size can be different for each time scale using
-  respectively \wo{LINEWIDTHLIST} and \wo{MARKERSIZELIST}, that should both
-  define a size to use (in \texttt{pt}) for each of the timescales defined in
-  \wo{TIMESCALELIST}, coma separated values;
-\item colors are chosen automatically by the proc: for the summary graph it will be one color per node, for the per-node graph it will be one color per channel.
+	\item the line width and marker size can be different for each time scale using respectively \wokey{LINEWIDTHLIST} and \wokey{MARKERSIZELIST}, that should both define a size to use (in \texttt{pt}) for each of the timescales defined in
+  \wokey{TIMESCALELIST}, coma separated values;
+	\item colors are chosen automatically: for the summary graph it will be one color per node, for the per-node graph it will be one color per channel;
+	\item \wokey{CONTINUOUS\_PLOT} set to \wokey{YES} will join all data points by a line (if linestyle contains a line component), while the default is to show gaps where two data points are separated more than 1.5 times the acquisition period (if this parameter is set in the \wo{node}'s configuration);
+	\item \wokey{PLOT\_GRID} adds grid lines to all axis;
+	\item \wokey{YLOGSCALE} set to \wokey{YES} will make all Y-axis logarithmic;
+	\item \wokey{EVENTS\_FILE} set a filename (or a coma-separated list of filenames) containing a list of time-referenced events that will be plotted in the background of each graph (see example below).
+
+	\lstinputlisting[title=\wofile{Events file example}]{../../SETUP/CONF/events_World.conf}
+
+	\item \wokey{PAGESIZE} sets the page width and height in inches (default is \wokey{8.5,11} for usletter) for PostScript image output;
+	\item \wokey{PPI} sets the point-per-inch resolution to convert the EPS in PNG raster images (default is 100 so standard image outputs are 800$\times$1100 pixels); 
+	\item \wokey{PAGES\_MAX\_SUBPLOT} will extend the page height if the number of subplots exceeds this value (default is 8), to avoid shrinky graphs; 
+	\item a logo can be added to the page at upper-left corner using \wokey{LOGO\_FILE} (full path of image, default is a \webobs logo defined by \wokey{LOGO\_DEFAULT} in \wofile{WEBOBS.rc}) and \wokey{LOGO\_HEIGHT} (a fraction of page's height, default is 0.04, i.e., 4\%). The aspect ratio of image will be preserved. It is also possible to set a second logo that will be plotted at upper-right corner using \wokey{LOGO2\_FILE} and \wokey{LOGO2\_HEIGHT}; \wokey{LOGO\_FILE} and \wokey{LOGO2\_FILE} might contain a list of coma separated filenames so images will be horizontally appended from left to right, with same height;
+	\item two copyrights strings can be set using \wokey{COPYRIGHT} and \wokey{COPYRIGHT2} (some TeX allowed). They will appear below the graph title;
+	\item \wokey{DISPLAY\_AUTOREFRESH\_SECONDS} sets the time delay for web browser autorefresh of the \wo{proc}'s output graph pages. Note that a dedicated icon is available in all graphs submenu to refresh manually if necessary.
 \end{itemize}
 
 % -----------------------------------------------------------------
@@ -304,11 +400,8 @@ Some parameter keys of GENPLOT are common for all \wo{procs} and \wo{grids} so a
 
 \lstinputlisting[title=\wofile{GENPLOT template}]{../../CODE/tplates/PROC.DEFAULT}
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Time scales}
 
-
-
+\newpage
 % ==================================================================
 \section{HYPOMAP: Earthquake hypocenter maps from seismic catalog}
 
@@ -351,20 +444,124 @@ Some parameter keys of RSAM are common for all \wo{procs} and \wo{grids} so are 
 \lstinputlisting[title=\wofile{RSAM template}]{../../CODE/tplates/PROC.RSAM}
 
 
+\newpage
 % ==================================================================
 \section{GNSS: GPS time series, vectors and modelling}
+
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figures/gnss_overview.png}
+\caption{Example of overview graph page created by a proc GNSS.}
+\end{figure}
 
 % -----------------------------------------------------------------
 \subsection{Overview}
 
+GNSS is a superproc dedicated to displacement data from global navigation satellite systems processing for instance solutions from Gispy, Gamit/Globk, ... It handles local velocity referential, some data filtering, and produces following graphs (summary graphs activated by setting \wokey{SUMMARYLIST} to the appropriated keyword list, coma separated), for each timescale:
+\begin{itemize}
+\item default is one graph per \wo{node} showing time series of the 3 component displacements (East, North and Up);
+\item one summary graph \wokey{SUMMARY} as time series combining all \wo{nodes} on the 3 component subplots;
+\item one summary graph \wokey{BASELINES} as time series computing 1-D distance variation between a selection of node pairs;
+\item one summary graph \wokey{VECTORS} as map of velocity vectors and amplitude vs. distance optional graph;
+\item one summary graph \wokey{MODELLING} showing the potential source of deformation, estimating the location, volume variation / flux rate and source shape as result of point-source inversion in elastic medium (source type is isotropic or complex source);
+\item one experimental summary graph \wokey{MODELTIME} showing time series of model sources and time location evolution.
+\end{itemize}
+
+
 % -----------------------------------------------------------------
 \subsection{Configuration}
 
-Some parameter keys of GNSS are common for all \wo{procs} and \wo{grids} so are identical with the \wo{view} configuration (see section \ref{views}).
+Some parameter keys of GNSS are common for all \wo{procs} and \wo{grids} so are identical with the \wo{view} configuration (see section \ref{views}) and genplot \wo{proc} configuration (see section \ref{genplot}).
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Data format}
+
+Following generic behavior of superprocs, data source and format can be set for all associated \wo{nodes} using \wokey{RAWDATA} and \wokey{RAWFORMAT} keywords (see section \ref{rawformats}), or overwritten for any individual \wo{node}. The GNSS superproc needs a particular data structure which is:
+\begin{itemize}
+\item Channel 1: Eastern coordinate UTM (in meters)
+\item Channel 2: Northern coordinate UTM (m)
+\item Channel 3: Elevation or altitude coordinate (m)
+\item Channel 4: Orbit type (0 for final, 1 for rapid, 2 for ultra)
+\end{itemize}
+
+The GNSS superformat built-in formats returns this data structure (see section \ref{gnssformats}).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Preset time scales (real-time moving windows)}
+
+Time scales are defined as for GENPLOT superproc (see section \ref{genplot}).
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Data filtering}
+
+Some filters can be applied to the whole set of data:
+\begin{itemize}
+	\item \wokey{PICKS\_CLEAN\_PERCENT} removes data picks using a threshold as \% of min/max of the data values after linear detrend;
+	\item \wokey{PICKS\_CLEAN\_STD} removes data picks using a threshold as a multiple of standard deviation of data around the mean value after linear detrend;
+\end{itemize}
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Generic graphical options}
+
+Other page settings can also be configured:
+\begin{itemize}
+	\item the line width and marker size can be different for each time scale using respectively \wokey{LINEWIDTHLIST} and \wokey{MARKERSIZELIST}, that should both define a size to use (in \texttt{pt}) for each of the timescales defined in
+  \wokey{TIMESCALELIST}, coma separated values;
+	\item colors are chosen automatically: for the summary graph it will be one color per node, for the per-node graph it will be one color per channel;
+	\item \wokey{PLOT\_GRID} adds grid lines to all axis;
+	\item \wokey{EVENTS\_FILE} set a filename (or a coma-separated list of filenames) containing a list of time-referenced events that will be plotted in the background of each graph (see section \ref{genplot}).
+	\item \wokey{PAGESIZE} sets the page width and height in inches (default is \wokey{8.5,11} for usletter) for PostScript image output;
+	\item \wokey{PPI} sets the point-per-inch resolution to convert the EPS in PNG raster images (default is 100 so standard image outputs are 800$\times$1100 pixels); 
+	\item \wokey{PAGES\_MAX\_SUBPLOT} will extend the page height if the number of subplots exceeds this value (default is 8), to avoid shrinky graphs; 
+	\item a logo can be added to the page at upper-left corner using \wokey{LOGO\_FILE} (full path of image, default is a \webobs logo defined by \wokey{LOGO\_DEFAULT} in \wofile{WEBOBS.rc}) and \wokey{LOGO\_HEIGHT} (a fraction of page's height, default is 0.04, i.e., 4\%). The aspect ratio of image will be preserved. It is also possible to set a second logo that will be plotted at upper-right corner using \wokey{LOGO2\_FILE} and \wokey{LOGO2\_HEIGHT}; \wokey{LOGO\_FILE} and \wokey{LOGO2\_FILE} might contain a list of coma separated filenames so images will be horizontally appended from left to right, with same height;
+	\item two copyrights strings can be set using \wokey{COPYRIGHT} and \wokey{COPYRIGHT2} (some TeX allowed). They will appear below the graph title;
+	\item \wokey{DISPLAY\_AUTOREFRESH\_SECONDS} sets the time delay for web browser autorefresh of the \wo{proc}'s output graph pages. Note that a dedicated icon is available in all graphs submenu to refresh manually if necessary.
+\end{itemize}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth,page=1]{figures/gnss_superproc.pdf}
+\caption{\textbf{GNSS superproc SUMMARY graph.} Example of summary graph where the raw coordinates are plotted in a local referential defined by the 3-component vector of velocities \wokey{VELOCITY\_REF} (coma-separated, in mm/yr). All nodes (stations) are plotted for each component, using default color order, and possible watermark effect for the last data with non-final orbits. Line and marker type is set by \wokey{SUMMARY\_LINESTYLE} (see tables \ref{markertype} and \ref{linestyle}) and error bars are not plotted. Stations time series are shifted by \wokey{SUMMARY\_STATION\_OFFSET\_M} (in m) from their median value, overlaps are allowed. Each component is separated by an offset of \wokey{SUMMARY\_COMPONENT\_OFFSET\_M} (in m) that separates min and max data between components (no overlap if the offset is positive). Title is defined by \wokey{SUMMARY\_TITLE} string (some variables and TeX allowed). Y-label is defined by \wokey{COMPONENT\_NAMELIST} key containing the 3 coma-separated strings for East, North and Vertical components respectively (some variables and TeX allowed).}
+\label{gnss_summary}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth,page=2]{figures/gnss_superproc.pdf}
+\caption{\textbf{GNSS superproc PERNODE graph.} Example of per-node graph that will be plotted for all nodes (stations). In this example, we use \wokey{VECTORS\_RELATIVE} key as \wokey{Y} so original data (in blue) are corrected by a global velocity trend to make final relative components (in red). \wokey{VECTORS\_VELOCITY\_REF} is set to automatic (empty) so the global trend is computed as the network velocity mean including all station velocities but \wokey{VECTORS\_EXCLUDED\_NODELIST}. Line and marker type is set by \wokey{PERNODE\_LINESTYLE} (see tables \ref{markertype} and \ref{linestyle}) and error bars as also plotted. Each component is separated by an offset of \wokey{PERNODE\_COMPONENT\_OFFSET\_M} (in m). Title is defined by \wokey{PERNODE\_TITLE} string (some variables and TeX allowed). Additional subtitle may contain last data and node status if the timescale is selected in \wokey{STATUSLIST}. Y-label is defined by \wokey{COMPONENT\_NAMELIST} key containing the 3 coma-separated strings for East, North and Vertical components respectively (some variables and TeX allowed).}
+\label{gnss_pernode}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth,page=3]{figures/gnss_superproc.pdf}
+\caption{\textbf{GNSS superproc BASELINES graph.} Example of baselines made using \wokey{BASELINES\_NODEPAIRS} key as \wokey{PSA1,AMC0,AGAL,CRA2;TAR1,ABG0,AMC0;SOUF,HOUE}, i.e., baselines relative to 3 separated reference stations: \wofile{PSA1} to \wofile{AMC0}, \wofile{AGAL} and \wofile{CRA2}; \wofile{TAR1} to \wofile{ABG0} and \wofile{AMC0}; and \wofile{SOUF} to \wofile{HOUE}. Line and marker type is set by \wokey{BASELINES\_LINESTYLE} (here the default solid line \wokey{-}, see tables \ref{markertype} and \ref{linestyle}). Colors are the default color-order assigned to destination stations (identical to other graphs). Stations time series are shifted by \wokey{BASELINES\_STATION\_OFFSET\_M} (in m) from their median value, overlaps are allowed. Each reference station subplot is separated by an offset of \wokey{BASELINES\_REF\_OFFSET\_M} (in m) that separates min and max data between each subplot (no overlap if the offset is positive). Title is defined by \wokey{BASELINES\_TITLE} string (some variables and TeX allowed). Y-label is defined by \wokey{VECTORS\_YLABEL} string (some variables and TeX allowed).}
+\label{gnss_baselines}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth,page=4]{figures/gnss_superproc.pdf}
+\caption{\textbf{GNSS superproc VECTORS graph.} Velocity vectors are drawn using default colors for each node and \wokey{VECTORS\_ARROWSHAPE} parameters to define the arrow shape relative to the legend arrow size (see table \ref{arrowshape}). End-arrow numbers indicate the vertical component values. Map limits are computed as follows: A) automatic box surrounding all stations and vectors including error ellipses; B) eventually extended to fit the \wokey{VECTORS\_MIN\_SIZE\_KM} minimum size and/or to respect the \wokey{VECTORS\_MAX\_XYRATIO} size ratio between width and height (default is \wokey{1} to force a square map); C) finally extended by 10\% borders. Background map uses SRTM by default or user-defined DEM if specified and does cover the whole needed area. Title is defined by \wokey{VECTORS\_TITLE} string (some TeX allowed).}
+\label{gnss_vectors}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth,page=5]{figures/gnss_superproc.pdf}
+\caption{\textbf{GNSS superproc MODELLING graph.} Displacement vectors are drawn for all stations with error ellipses (in black), best model vectors are plotted in red, and optionally residuals vectors in green (if \wokey{MODELLING\_PLOT\_RESIDUAL} is set to \wokey{Y}). 3-D model space limits are computed as follows: A) automatic box surrounding all stations; B) extension of horizontal limits of \wokey{MODELLING\_BORDERS} (in m) and extension of vertical depth to \wokey{MODELLING\_MAX\_DEPTH} (in m below sea level). The topography is using SRTM3 exclusively. Model space grid has the cubed \wokey{MODELLING\_GRID\_SIZE} elements (here $100^3$). Analytical point-source model type is \wokey{MODELLING\_SOURCE\_TYPE} (default \wokey{isotropic}). Misfit norm is \wokey{MODELLING\_MISFIT\_NORM} (default \wokey{L1}). Estimations of best source model parameter uncertainties are \wokey{MODELLING\_SIGMAS} sigma (default $1\sigma$ = 68.3\%). Colormap used for model probability image is \wokey{MODELLING\_COLORREF} type (default \wokey{volpdf}), \wokey{MODELLING\_COLORMAP} colormap (default \wokey{jet}, see table \ref{colormaps}) with a shading factor of \wokey{MODELLING\_COLOR\_SHADING} (default \wokey{0.8}). Title is defined by \wokey{MODELLING\_TITLE} string (some TeX allowed). }
+\label{gnss_modelling}
+\end{figure}
 
 \lstinputlisting[title=\wofile{GNSS template}]{../../CODE/tplates/PROC.GNSS}
 
 
+\newpage
 % ==================================================================
 \section{EXTENSO: Extensometry time series and vectors}
 
@@ -421,10 +618,10 @@ Some parameter keys of WATERS are common for all \wo{procs} and \wo{grids} so ar
 \lstinputlisting[title=\wofile{WATERS template}]{../../CODE/tplates/PROC.WATERS}
 
 
-
+\newpage
 % ==================================================================
 \section{PROCS graph and data request}
-
+\label{procrequest}
 % -----------------------------------------------------------------
 \subsection{Overview}
 
@@ -671,13 +868,13 @@ Reads a files architecture created by the SeisComP3 scevtlog module. \wokey{RAWD
 
 % -----------------------------------------------------------------
 \subsection{GNSS solutions}
-
+\label{gnssformats}
 These are specific formats for PROCS dedicated to positioning data from GNSS (Global Network Satellite Systems) like GPS or GLONASS. These formats returns preset channels: Eastern, Northern, Vertical and Orbit type.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\{gipsy-tdp\}: JPL GIPSY-OASIS TDP files}
+\subsubsection{\{gipsy\}: JPL GIPSY-OASIS TDP files}
 
-TDP (Time Dependant Parameter) files results of the JPL GIPSY-OASIS processing in IRTF. The format uses only the position part of the data: \wocmd{Time   Dinit   Dfinal error STA c ssss} where Time is GPS date in seconds past J2000, \wocmd{c} is the component in geocentric referential, \wocmd{ssss} the station name. \wokey{P.RAWDATA} contains the path root directory where daily solutions files are stores in a subdirectory structure as \wofile{FID/YYYY/FID/YYYY-MM-DD.FID.tdp*}.
+TDP (Time Dependant Parameter) files results of the JPL GIPSY-OASIS processing in IRTF. The format uses only the position part of the data: \wocmd{Time   Dinit   Dfinal error STA c ssss} where Time is GPS date in seconds past J2000, \wocmd{c} is the component in geocentric referential, \wocmd{ssss} the station name. \wokey{RAWDATA} contains the path root directory where daily solutions files are stores in a subdirectory structure as \wofile{FID/YYYY/FID/YYYY-MM-DD.FID.tdp*}.
 
 \begin{lstlisting}[language={},title=GIPSY-OASIS TDP format example]
  476712000.0000   1797.11460400000       1797.11463384421      9.751E-07  STA Z   ABD0
@@ -685,11 +882,25 @@ TDP (Time Dependant Parameter) files results of the JPL GIPSY-OASIS processing i
  476712000.0000   2920.34971800000       2920.34975977472      1.377E-06  STA X   ABD0
 \end{lstlisting}
 
+Non-final orbits are coded using additional file extension \wofile{*.tdp.qlR} for rapid orbits, \wofile{*.tdp.ultra} for ultra orbits.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{\{gipsyx\}: JPL GipsyX TDP files}
+
+TDP (Time Dependant Parameter) files results of the JPL GipsyX processing in IRTF. The format uses only the position part of the data: \wocmd{Time   Dinit   Dfinal error ssss.State.Pos.c} where Time is GPS date in seconds past J2000, \wocmd{c} is the component in geocentric referential, \wocmd{ssss} the station name. \wokey{RAWDATA} contains the path root directory where daily solutions files are stores in a subdirectory structure as \wofile{FID/YYYY/FID/YYYY-MM-DD.FID.tdp*}.
+
+\begin{lstlisting}[language={},title=GipsyX TDP format example]
+ 613482900 -1.272247348200000e+06 -1.272245892239674e+06  1.052583883237580e-03 .Station.GLOR.State.Pos.Z
+ 613482900  4.591963170400000e+06  4.591962844942605e+06  3.727601983103848e-03 .Station.GLOR.State.Pos.Y
+ 613482900  4.238487354600000e+06  4.238485753608068e+06  3.355552475393279e-03 .Station.GLOR.State.Pos.X
+\end{lstlisting}
+
+Non-final orbits are coded using additional file extension \wofile{*.tdp.qlR} for rapid orbits, \wofile{*.tdp.ultra} for ultra orbits. This extension comes from bash script \wofile{gnss\_run\_gipsyx}.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{\{globkval\}: MIT GAMIT-GLOBK VAL files}
 
-Single file output of Gamit-GlobK processing in ITRF referencing. \wokey{P.RAWDATA} defines the full path filename of the .VAL result file which contains solution timeseries for each component and each station.
+Single file output of Gamit-GlobK processing in ITRF referencing. \wokey{RAWDATA} defines the full path filename of the .VAL result file which contains solution timeseries for each component and each station.
 
 \begin{lstlisting}[language={},title=GAMIT-GLOBK VAL format example]
  Combination of ALL networks
