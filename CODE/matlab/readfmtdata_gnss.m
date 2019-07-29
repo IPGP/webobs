@@ -43,7 +43,7 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2019-07-25
+%	Updated: 2019-07-26
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -277,7 +277,7 @@ D.e = e;
 
 if N.CLB.nx ~= 4 || isempty(t)
 	D.CLB.nx = 4;
-	D.CLB.nm = {'Eastern','Northern','Vertical','Orbit'};
+	D.CLB.nm = {'E','N','U','Orbit'};
 	D.CLB.un = {'m','m','m',''};
 else
 	[D.d,D.CLB] = calib(D.t,D.d,N.CLB);
