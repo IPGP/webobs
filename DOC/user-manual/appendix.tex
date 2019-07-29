@@ -7,14 +7,15 @@
 
 \begin{table}[htp]
 \caption{Data raw formats for PROCS}
-\lstinputlisting{../../CODE/etc/rawformats.conf}
 \label{rawformats}
+\lstinputlisting{../../CODE/etc/rawformats.conf}
 \end{table}
 
 
 % ==================================================================
 \begin{table}[htp]
 \caption{Time scale keys (\textit{x} is an integer).}
+\label{timescales}
 \begin{center}
 \begin{tabular}{|c|l|}
 \hline
@@ -33,12 +34,12 @@ x\texttt{l}  & last x data\\
 \hline
 \end{tabular}
 \end{center}
-\label{timescales}
 \end{table}
 
 % ==================================================================
 \begin{table}[htp]
 \caption{Marker type list}
+\label{markertype}
 \begin{center}
 \begin{tabular}{|c|l|}
 \hline
@@ -60,13 +61,13 @@ x\texttt{l}  & last x data\\
 \hline
 \end{tabular}
 \end{center}
-\label{markertype}
 \end{table}
 
 
 % ==================================================================
 \begin{table}[htp]
 \caption{Line Style list}
+\label{linestyle}
 \begin{center}
 \begin{tabular}{|c|l|}
 \hline
@@ -79,13 +80,13 @@ x\texttt{l}  & last x data\\
 \hline
 \end{tabular}
 \end{center}
-\label{linestyle}
 \end{table}
 
 
 % ==================================================================
 \begin{table}[htp]
 \caption{Some basic R,G,B colors}
+\label{rgbcolors}
 \begin{center}
 \begin{tabular}{|c|l|}
 \hline
@@ -102,13 +103,13 @@ x\texttt{l}  & last x data\\
 \hline
 \end{tabular}
 \end{center}
-\label{rgbcolors}
 \end{table}
 
 
 % ==================================================================
 \begin{table}[htp]
 \caption{Some built-in colormaps}
+\label{colormaps}
 \begin{center}
 \setlength{\fboxsep}{1pt}
 \begin{tabular}{|c|l|}
@@ -133,13 +134,13 @@ x\texttt{l}  & last x data\\
 \hline
 \end{tabular}
 \end{center}
-\label{colormaps}
 \end{table}
 
 
 % ==================================================================
 \begin{table}[htp]
 \caption{Date string format list. ``Datenum'' column indicates if the format is valid for date/time string as key value}
+\label{datestr}
 \begin{center}
 \begin{tabular}{|c|c|l|l|l|}
 \hline
@@ -181,13 +182,42 @@ x\texttt{l}  & last x data\\
 \hline
 \end{tabular}
 \end{center}
-\label{datestr}
+\end{table}
+
+
+% ==================================================================
+\begin{table}[htp]
+\caption{TeX stream modifiers and main escape characters allowed in titles and labels when specified, in addition to standard Greek letters and mathematical symbols.}
+\label{texcommands}
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{TeX Modifier} & \textbf{Comment}\\
+\hline
+\texttt{\^}  & Superscript or exponent (use braces for more than 1 character)\\
+\texttt{\_}  & Subscript (use braces for more than 1 character)\\
+\texttt{$\backslash$bf}  & Bold font\\
+\texttt{$\backslash$it}  & Italic font\\
+\texttt{$\backslash$rm}  & Normal font\\
+\texttt{$\backslash$fontname\{fontname\}}  & Specify the name of the font family to use\\
+\texttt{$\backslash$fontsize\{fontsize\}}  & Specify the font size in FontUnits\\
+\texttt{$\backslash$color(colorSpec)}  & Specify color for succeeding characters\\
+\hline
+\texttt{$\backslash$backslash}  & backslash character\\
+\texttt{$\backslash$\{} or \texttt{$\backslash$lbrace}  & left brace character\\
+\texttt{$\backslash$\}} or \texttt{$\backslash$rbrace}  & right brace character\\
+\texttt{$\backslash$\_}  & underscore (low line) character\\
+\texttt{$\backslash$\^} or \texttt{$\backslash$hat}  & hat character\\
+\hline
+\end{tabular}
+\end{center}
 \end{table}
 
 % ==================================================================
 
 \begin{table}
 \caption{Suggestion for NODE ID code: \texttt{\textbf{N D T S S S S}}}
+\label{nodeidcodes}
 \begin{center}
 \begin{tabular}{|c|c|l|}
 \hline
@@ -224,6 +254,28 @@ x\texttt{l}  & last x data\\
       			             & \texttt{PE}	&	Eruption\\
       			             & \texttt{AT}	&	Transmission\\
       			             & \texttt{AB}	&	Buildings\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+% ==================================================================
+
+\begin{table}
+\caption{\wokey{\_ARROWSHAPE} key's parameter syntax is a 4-element vector of scalars, coma separated = \wokey{HEADW,HEADL,HEADI,LINEW}. Values are ratios relative to the length of reference scale legend arrow equals 1 (see \wofile{CODE/matlab/arrows.m} for further details).}
+\label{arrowshape}
+\begin{center}
+\begin{tabular}{|c|c|l|}
+\hline
+\textbf{Parameter} & \textbf{Default value} & \textbf{Comment}\\
+\hline
+\texttt{HEADW}	& 0.15	& arrow's head width\\
+\hline
+\texttt{HEADL}	& 0.15	& arrow's head length\\
+\hline
+\texttt{HEADI}	& 0.12	& arrow's head inside length\\
+\hline
+\texttt{LINEW}	& 0.03	& arrow's line width\\
 \hline
 \end{tabular}
 \end{center}

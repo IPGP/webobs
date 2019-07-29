@@ -182,7 +182,7 @@ The transmission chain is described by defining a list of \wo{node}'s ID, from s
 
 % -----------------------------------------------------------------
 \subsection{Proc's parameters and data status}
-
+\label{nodeprocparam}
 When associated with a \wo{proc} (see section \ref{procs}), data from a \wo{node} is used to produce outputs. Several additional parameters must be defined for this.
 
 
@@ -302,11 +302,13 @@ Three different types of documents can be uploaded and associated to a \wo{node}
 
 % -----------------------------------------------------------------
 \subsection{Project}
+\label{projectnode}
 
 A \wo{node} may have one (and only one) \wo{Project} description: a free-length text file, accepting MultiMarkDown syntax, a list of users and possible associated photos. Project is a special \wo{Event} without date.
 
 % -----------------------------------------------------------------
 \subsection{Events}
+\label{eventnode}
 
 A \wo{node} can be associated to dated events. A \wo{node} event has following characteristics:
 \begin{itemize}
@@ -337,10 +339,11 @@ A \wo{grid} is a group of \wo{nodes}. Each \wo{node} can be associated to one or
 
 \wo{grids} are presented through a sorted table allowing access to dedicated page for each \wo{grid} with:
 \begin{itemize}
+\item    domain: a category used to group similar \wo{grids};
 \item    purpose (text content);
 \item    specifications: operator owner, number of \wo{nodes}, type, optional external link;
 \item    list of \wo{nodes}: a complete table with alias, names, location, start/end dates, type, project, status (for active \wo{proc}); ...
-\item    an interactive location map (if \wo{nodes} have location coordinates);
+\item    an interactive location map (if at least one \wo{node} is georeferenced);
 \item    informations (text content);
 \item    references (text content);
 \item    a graphical representation of \wo{nodes} links with associated \wo{grids}.
@@ -353,12 +356,29 @@ Text content sections are editable with Wiki syntax possibilities.
 
 \lstinputlisting[title=\wofile{GRIDS.rc}]{../../SETUP/CONF/GRIDS.rc}
 
+% -----------------------------------------------------------------
+\subsection{Domains}
+\label{domains}
+
+A \wo{domain} is a generic category that is used to group \wo{grids} together: in the \wo{grid}'s table presentation and in most of the page links between \wo{grids} and \wo{nodes}. By default, \wo{domains} are defined as a list of standard scientific methods as used in volcanological observatories: Seismology, Deformations, Geochemistry, Imagery, ... but these categories can be changed to better fit the \webobs needs. For example, if the \webobs has to handle multiple targets (like volcanoes), you might want to make the \wo{domains} as a list of these targets.
+
+Changes to \wo{domains} list can be done by administrator by editing the sqlite database. New domains can be easily added by inserting an entry into the \wokey{domains} table. To remove an existing \wo{domain}, you must remove any \wo{grid} associated to this \wo{domain} first (this can be done using the GUI of \wo{grid} configuration editor), then delete manually the entry in the database. 
+
+\begin{lstlisting}[title=\wofile{WEBOBS.rc} (excerpt)]
+SQL_DOMAINS|${ROOT_CONF}/WEBOBSDOMAINS.db
+SQL_TABLE_DOMAINS|domains
+SQL_TABLE_GRIDS|grids2domains
+\end{lstlisting}
+
+
 
 % -----------------------------------------------------------------
 \subsection{Views}
 \label{views}
 
-A \wo{view} is a simple group of NODES. To create a new \wo{view}, go to any \wo{GRID} table page (menu GRIDS, VIEWS or PROCS) and click on the edit icon in the Name header of table, enter an unique short name and click Edit. This will open the \wo{grid} configuration editor. The form allows to freely edit the parameters file (key/value pairs), to select the Domain and to associate/disassociate \wo{nodes}.
+A \wo{view} is a simple group of NODES.
+
+To create a new \wo{view}, go to any \wo{GRID} table page (menu GRIDS, VIEWS or PROCS) and click on the edit icon in the Name header of table, enter an unique short name and click Edit. This will open the \wo{grid} configuration editor. The form allows to freely edit the parameters file (key/value pairs), to select the Domain and to associate/disassociate \wo{nodes}.
 
 \lstinputlisting[title=\wofile{VIEW.DEFAULT} template]{../../CODE/tplates/VIEW.DEFAULT}
 
@@ -401,36 +421,21 @@ All the following parameters are valid for \wo{grids}, that is any \wo{view} or 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Digital Elevation Model (DEM)}
+\label{dem}
 
-By default, \webobs will use SRTM/ETOPO global topographic database to plot maps of \wo{nodes}. It is possible for each \wo{grid} to define a specific DEM which might be more accurate or more appropriate to make maps.
-\begin{itemize}
-
-\item \wokey{DEM\_FILE}: is not empty, must be an absolute path filename. The file must be in Arcinfo format using latitude/longitude coordinates and elevations in meters, by default.
-
-\item \wokey{DEM\_TYPE}: when set to \wokey{UTM}, considers the file in UTM projection (eastern/northern coordinates). The conversion might take some time for large DEM, so latitude/longitude DEM is still preferred.
-
-\item \wokey{DEM\_FORCED}: by default, if the area to be plotted is larger than the user DEM limits, the DEM will be ignored. When set to \wokey{YES}, this option forces the use of user DEM. This might lead to NaN gray areas on the map.
-
-\item \wokey{DEM\_COPYRIGHT}: optional character string for DEM copyright.
-
-\item \wokey{DEM\_SRTM1}: if no user defined DEM is set nor valid, set to \wokey{YES} to use SRTM1 (30m resolution) DEM instead of default SRTM3 (90m).
-
-\end{itemize}
-
-The standard behavior of \webobs for DEM loading is, by order of priority:
+For any \wo{view} or \wo{proc} that needs topographic data, \webobs will use either SRTM3, SRTM1, ETOPO5, ETOPO1 or user-defined DEM file. SRTM tiles will be downloaded automatically from internet, as needed by the PROC, and stored in the \wokey{PATH\_DATA\_DEM} local directory (see \wofile{WEBOBS.rc}). ETOPO5 is available in the \webobs package offline. ETOPO1 must be downloaded manually from the web. The selection between these different sources respects the following policy:
 \begin{enumerate}
 
-\item use of user defined DEM if set and valid;
+\item SRTM3 is the default, 90m resolution worldwide DEM, available through $1\times1^o$ tiles. It is convenient for any maps from about 20km to 500km width. \wofile{WEBOBS.rc} defines a limit of \wokey{SRTM\_MAX\_TILES} as maximum amount of tiles to avoid memory issues (default is 25). If the covered area needs more than this limit, it will switch automatically to ETOPO with a warning in the logs.
 
-\item if \wokey{DEM\_SRTM1} is true and number or tiles does not exceed \wokey{SRTM1\_MAX\_TILES} value in \wofile{WEBOBS.rc} (default is 4 tiles), then loading SRTM1 30m resolution DEM;
+\item SRTM1, a 30m resolution DEM can be activated setting \wokey{DEM\_SRTM1} to \wokey{Y} in the PROC's configuration file. Each tile is $1\times1^o$ and 9 times bigger than SRTM3. This is convenient for smaller areas less than 20km width. \wofile{WEBOBS.rc} defines a limit of \wokey{SRTM1\_MAX\_TILES} maximum amount of tiles to avoid memory issues (default is 4). If the covered area needs more than this limit, it will switch automatically to SRTM3 with a warning in the logs.
 
-\item if number or tiles does not exceed \wokey{SRTM\_MAX\_TILES} value in \wofile{WEBOBS.rc} (default is 25 tiles), then loading SRTM3 90m resolution DEM;
+\item if SRTM3 or SRTM1 limits are exceeded for any large area, \webobs will use ETOPO worldwide DEM with bathymetry. ETOPO5 is 5 arc-min resolution (about 9km) which is convenient for maps greater than 2,000km width. If ETOPO1 has been installed (which is recommended at installation), it offers 1 arc-min resolution (about 1.8km) which is convenient for maps width greater than 500km. So with SRTM and ETOPO1 installed, most situations will produce nice basemaps.
 
-\item if ETOPO1 database has been properly installed and configured (see \wokey{PATH\_DATA\_DEM\_ETOPO} in \wofile{WEBOBS.rc}), then use of ETOPO1 1.8km resolution global DEM;
-
-\item last, use of ETOPO5 9km resolution DEM (included in the \webobs distribution).
+\item if the area is less than about 5km width, even SRTM1 is not enough to produce decent maps. In that case it is more appropriate to use a local DEM file (in ArcInfo ascii format, elevation values in meters) that can be defined in the PROC's configuration file with \wokey{DEM\_FILE} as full path of the file, and \wokey{DEM\_TYPE} as \wokey{LATLON} (preferred) or \wokey{UTM} (might takes more time). If this DEM does not cover the whole area, the PROC will switch automatically to SRTM/ETOPO data. Nevertheless, it is possible to force the use of your local DEM by setting \wokey{DEM\_FORCED} to \wokey{Y} but when the area exceeds the DEM data, map will be surrounded by gray zones where there is no data available. A last option \wokey{DEM\_COPYRIGHT} allows to specify the DEM copyright.
 
 \end{enumerate}
+
 
 
 % -----------------------------------------------------------------
@@ -441,24 +446,14 @@ A \wo{proc} is a list of \wo{nodes} that are associated to a specific and common
 
 To create a new \wo{proc}, go to any \wo{GRID} table page (menu GRIDS, VIEWS or PROCS) and click on the edit icon in the Name header of table, select ``PROC: Generic time series'' in the Grid type list, enter an unique short name and click Edit. This will open the \wo{proc} configuration editor. The form allows to freely edit the parameters file (key/value pairs), to select the Domain, optional \wo{form} and to associate/disassociate \wo{nodes}.
 
-
-% -----------------------------------------------------------------
-\subsection{Forms}
 \label{forms}
 
 A \wo{form} is a web interface for manual data input, edit, display and export. A \wo{form} is an optional tool of a \wo{proc} that defines a specific database format that contains data from associated \wo{nodes}. Some \wo{superprocs} are working specifically with \wo{form} databases.
 
 % -----------------------------------------------------------------
-\subsection{Project}
+\subsection{Events and Projects}
 
-A \wo{grid} may have one (and only one) \wo{Project} description: a free-length text file, accepting Wiki syntax. Project is a special \wo{Event}, see \wo{Events logging} for
-a description of Project.
-
-% -----------------------------------------------------------------
-\subsection{Events}
-
-A \wo{grid} can have events:  free-length text files with timestamp. An event can include one or more sub-events (children).
-Event files  accept the Wiki syntax. See \wo{Events logging} section for a description of Nodes and Grids events.
+A \wo{grid} can have events and project like for \wo{nodes}: see sections \ref{nodeevent} and \ref{nodeproject}.
 
 % -----------------------------------------------------------------
 \subsection{TMap: GRIDS diagram}
@@ -471,10 +466,7 @@ Event files  accept the Wiki syntax. See \wo{Events logging} section for a descr
 \section{Events Logging}
 \label{events_logging}
 
-Nodes and Grids can have \wo{EVENT}. These events are free timestamped text files (Wifi syntax being supported), editable by users 
-having at least Write authorization on the corresponding Node or Grid. Events live in specific repositories (known as INTERVENTIONS),
-and are managed thru functions of 
-the CODE/cgi-bin/WebObs/Events.pm module and CODE/cgi-bin/vedit.pl . Their filenames reflect both their Node or Grid membership and their timestamp. 
+Nodes and Grids can have \wo{EVENT}. These events are free timestamped text files (Wifi syntax being supported), editable by users having at least Write authorization on the corresponding \wo{Node} or \wo{Grid}. Events live in specific repositories (known as INTERVENTIONS), and are managed through functions of the \wofile{CODE/cgi-bin/WebObs/Events.pm} module and \wofile{CODE/cgi-bin/vedit.pl}. Their filenames reflect both their Node or Grid membership and their timestamp. 
 
 An event may also have attached images (PHOTOS) and/or sub-events: both are collectively referred to as \wo{event extensions}. 
 Subevents are themselves events, thus building up a tree structure for each event.
