@@ -4,15 +4,39 @@
 This document contains install/upgrade summary and specific instructions for users and administrators.
 
 The lastest release has many improvements, new features and bug fixes.
-**Upgrade is recommended for all WebObs administrators**.
+**Upgrade is recommended for all WebObs administrators**. For known issues, please take a look to [https://github.com/IPGP/webobs/issues](https://github.com/IPGP/webobs/issues) and do not hesitate to submit any problem with this release.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
 
+## v2.1.3 (July, 2019)
+
+###`!!`Security update
+This release introduces important improvements in CGI security, in particular register.pl which is not protected by password, but also other scripts now checking input parameters to avoid irregular/unwanted actions.
+
+###Locastat
+NODE's location maps now include an altitude value from DEM interpolation, written in the map's comment that may be compared to NODE's altitude given in the configuration.
+
+###MC3
+Sub-menu of seismic bulletin MC3 page now have link(s) to any Sefran3 associated to the displayed MC3. Formerly, it was only a link to the default Sefran3.
+
+###Superproc gnss
+1. Improvements of MODELTIME summary graph:
+	- source volume variation is now expressed as a flux rate in m^3/s
+	- additional map with profiles show time evolution of the best sources in space for any subset of time periods
+	- source models are not computed if there is no data for the most recent time of integration period
+
+2. Improvement of VECTORS summary graph: a subplot shows vector amplitude vs. distance from target (if defined).
+3. Improvement of MODELLING summary graph:
+	- errors on depth and volume variation are calculated as +/- scalar value (and not interval)
+	- flow rate is calculated in addition to volume variation
+
+###Others
+Some other bug fixes and minor improvements.
+
 ## v2.1.2c (July, 2019)
 
 ###WEBOBS.rc
-
 `!!` Default behavior does not show anymore a confirm 'alert' window if the action has succeed. For example, when editing a NODE or GRID configuration. If administrator wants the former behavior, he must set this new key:
 
 ```
@@ -22,7 +46,7 @@ CGI_CONFIRM_SUCCESSFUL|YES
 All maps using SRTM DEM is now able to merge bathymetry data from ETOPO. Since this might require a minimum of RAM it is possible to disactivate it with the following key in `WEBOBS.rc` :
 
 ```
-ETOPO_SRTM_MERGE|NO
+ETOPO_SRTM_MERGE|N
 ```
 Also, to avoid memory issues with maps, a new key is defined:
 
