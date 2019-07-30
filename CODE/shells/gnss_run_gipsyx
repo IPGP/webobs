@@ -24,9 +24,12 @@ if [ $# -lt 2 ]; then
 	echo "    Arguments:"
 	echo "           CONF = configuration filename, e.g., /etc/webobs.d/gnss_run_gipsyx.rc"
 	echo "           DAYS = number of days to process (from today)"
-	echo "        STATION = station code or station list with double quotes"
+	echo "    Optionnal Arguments:"
+
+	echo "       -s = station code or station list with double quotes"
 	echo "                  default is all nodes associated with local WebObs $GRID"
 	echo "                  or a list of nodes $NODES in .rc"
+	echo "          -d yyyy/mm/dd,yyyy/mm/dd = choose days to start process, the DAYS argument can still be used to process previous days from the selected ones, for instance gnss_run_gipsyx CONF 1 -d 2017/03/17,2018/08/05 will compute  2017/03/17, 2017/03/16, 2018/08/05 and 2018/08/04"
 	echo "         -force = forces the process despite existence of final results"
 	echo ""
 	exit 0;
@@ -62,16 +65,39 @@ TODAY=$(date -u +"%Y/%m/%d")
 DAYS=$2
 DAYLIST=$(for d in $(seq $DAYS -1 0);do date -u -d "$d day ago" +"%Y/%m/%d";done)
 
-if [ "$3" != "" ]; then
-	NODES="$3"
-fi
+# boolean for forcing process (default value doesn't force)
+FORCE=0
 
-if [ "$4" == "-force" ]
-then
-	FORCE=1
-else
-	FORCE=0
-fi
+# Optionnal parameters
+for (( i=1; i<=$#; i++)); do
+
+    case ${!i} in
+
+        -force) 
+        declare FORCE=1
+        echo "Force computation despites final orbits are already exist";;
+
+        -s) 
+        j=$((i+1))
+        IFS=' ' read -ra arrayStation <<< "${!j}"
+        declare NODES=${arrayStation[@]};;
+
+	-d)
+        k=$((i+1))
+        IFS=',' read -ra arrayDay <<< "${!k}"
+        declare STARTDAYS=${arrayDay[@]}
+        DAYLIST= $()
+        for start in $STARTDAYS;do
+                declare L=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago $start" +%Y/%m/%d;done)
+                DAYLIST=("${DAYLIST[@]}" "${L[@]}")     
+        done
+        DAYLIST=($(printf "%s\n" "${DAYLIST[@]}" | sort -u | tr '\n' ' '))
+        declare DAYLIST=${DAYLIST[@]} #converting to proper format
+        ;;
+        
+        esac
+done
+
 
 echo "*** GipsyX / WebObs $GRID GNSS File Processing ***"
 
