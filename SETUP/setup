@@ -528,18 +528,19 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS.sql
 	fi
 
-	mkdir tmp
-	cd tmp
-		echo " " >>${REPORT}
-		echo "Changes to databases schema:" >>${REPORT}
-		${RELBASE}/SETUP/createdb-WEBOBSJOBS >/dev/null 
-		${RELBASE}/SETUP/cmpsql ${DOCROOT}/CONF/WEBOBSJOBS.db WEBOBSJOBS.db >>${REPORT}
-		${RELBASE}/SETUP/createdb-WEBOBSUSERS dummy >/dev/null
-		${RELBASE}/SETUP/cmpsql ${DOCROOT}/CONF/WEBOBSUSERS.db WEBOBSUSERS.db >>${REPORT}
-		${RELBASE}/SETUP/createdb-WEBOBSDOMAINS >/dev/null
-		${RELBASE}/SETUP/cmpsql ${DOCROOT}/CONF/WEBOBSDOMAINS.db WEBOBSDOMAINS.db >>${REPORT}
-	cd -
-	rm -rf tmp
+	db_temp_dir="tmp-$$-$RANDOM"
+	mkdir $db_temp_dir || exit 1
+	cd $db_temp_dir
+	echo " " >>$REPORT
+	echo "Changes to databases schema:" >>$REPORT
+	$RELBASE/SETUP/createdb-WEBOBSJOBS >/dev/null
+	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSJOBS.db WEBOBSJOBS.db >>$REPORT
+	$RELBASE/SETUP/createdb-WEBOBSUSERS dummy >/dev/null
+	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSUSERS.db WEBOBSUSERS.db >>$REPORT
+	$RELBASE/SETUP/createdb-WEBOBSDOMAINS >/dev/null
+	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSDOMAINS.db WEBOBSDOMAINS.db >>$REPORT
+	cd ..
+	rm -rf $db_temp_dir
 
 	
 else
