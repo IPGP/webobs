@@ -3,7 +3,6 @@
 # Compare two sqlite databases schema
 # intended to compare an operationnal database schema against what it would be like if
 # just created with package's setup.
-# This is *not* a strict compare ! just diff 'ddl' definitions   
 
 if [ $# -lt 2 ]; then
 	echo "Usage: `basename $0` db1 db2"
@@ -11,17 +10,11 @@ if [ $# -lt 2 ]; then
 fi
 
 normalize_schema() {
-    sqlite3 $1 '.schema' | tr -d '\n' | awk '
-        BEGIN { RS=";"; ORS=";\n" }
-        /TABLE sqlite_sequence/ { next }
-        {
-            # Remove duplicate blanks and tabs
-            gsub(/[\t ]+/, " ")
-            # Change "X(" to "X (" and "X)" to "X )"
-            $0=gensub(/([^ ])(\(|\))/, "\\1 \\2", "g");
-            # Print the line (using ORS)
-            print
-        }'
+    local dbfile="$1"
+    for f in $(sqlite3 $dbfile "select name from sqlite_master where type='table' and name!='sqlite_sequence' order by name")
+    do
+        sqlite3 $dbfile "select '$f', ti.name, ti.type, ti.\"notnull\", ti.dflt_value, ti.pk from pragma_table_info('$f') as ti"
+    done
 }
 
 if [[ -f $1 && -f $2 ]]; then
