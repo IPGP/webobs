@@ -10,11 +10,16 @@ if [ $# -lt 2 ]; then
 fi
 
 normalize_schema() {
-    local dbfile="$1"
-    for f in $(sqlite3 $dbfile "select name from sqlite_master where type='table' and name!='sqlite_sequence' order by name")
-    do
-        sqlite3 $dbfile "select '$f', ti.name, ti.type, ti.\"notnull\", ti.dflt_value, ti.pk from pragma_table_info('$f') as ti"
-    done
+	local dbfile="$1"
+	for f in $(sqlite3 $dbfile "select name from sqlite_master where type='table' and name!='sqlite_sequence' order by name")
+	do
+		# Print table info
+		sqlite3 $dbfile "select '$f', ti.name, ti.type, ti.\"notnull\", ti.dflt_value, ti.pk from pragma_table_info('$f') as ti"
+		# Print index info
+		sqlite3 $dbfile "select '$f', ii.name, ii.\"unique\", ii.origin, ii.partial from pragma_index_list('users') as ii"
+		# Print triggers
+		sqlite3 $dbfile "select '$f', type, rootpage, sql from sqlite_master where type='trigger' and tbl_name='$f'"
+	done
 }
 
 if [[ -f $1 && -f $2 ]]; then
