@@ -18,6 +18,14 @@
 #          Domerapi/WebObs Project, 2014.
 # Updated: 2019-07-23
 
+#Check lock file
+LOCKFILE=/tmp/gnss_run_gipsyx.txt
+if [ -e ${LOCKFILE} ] && kill -0 `cat ${LOCKFILE}`; then
+	 echo "already running"
+	  exit
+fi
+
+# Helper 
 if [ $# -lt 2 ]; then
 	echo "       Syntax: gnss_run_gipsyx CONF DAYS [STATION] [-force]"
 	echo "  Description: runs the automatic GNSS process from raw files to position solution"
@@ -31,6 +39,7 @@ if [ $# -lt 2 ]; then
 	echo "                  or a list of nodes $NODES in .rc"
 	echo "          -d yyyy/mm/dd,yyyy/mm/dd = choose days to start process, the DAYS argument can still be used to process previous days from the selected ones, for instance gnss_run_gipsyx CONF 1 -d 2017/03/17,2018/08/05 will compute  2017/03/17, 2017/03/16, 2018/08/05 and 2018/08/04"
 	echo "         -force = forces the process despite existence of final results"
+	echo "		-lock = creates a lock file to prevent multiple process of gnss_run_gipsyx"
 	echo ""
 	exit 0;
 fi
@@ -94,6 +103,11 @@ for (( i=1; i<=$#; i++)); do
         DAYLIST=($(printf "%s\n" "${DAYLIST[@]}" | sort -u | tr '\n' ' '))
         declare DAYLIST=${DAYLIST[@]} #converting to proper format
         ;;
+
+	-lock)
+	# make sure the lockfile is removed when we exit and then claim it
+	trap "rm -f ${LOCKFILE}; exit" INT TERM EXIT
+	echo $$ > ${LOCKFILE}
         
         esac
 done
@@ -212,3 +226,5 @@ echo "*************************************"
 if [ -z $DEBUG ]; then 
 	rm -rf $tmpdir
 fi
+
+rm -f ${LOCKFILE}
