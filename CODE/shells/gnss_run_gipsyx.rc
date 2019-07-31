@@ -3,14 +3,18 @@
 # please copy to /etc/webobs.rc/, rename and edit to your needs.
 #
 # Created: 2019-02-25
+# Updated: 2019-07-31
 
-# prepares GIPSY processing
-source /home/wo/GipsyX-1.1/rc_GipsyX.sh
+# prepares GIPSYX processing
+source /home/wo/GipsyX-1.2/rc_GipsyX.sh
 
 # grid of a local WebObs that contains the station list (nodes)
 #GRID=PROC.GIPSYX
 # ... or default list of station codes (space separated)
 NODES=
+
+# base directory to store local orbits (optional)
+ORBITSDIR=/home/wo/GNSS/JPL_Local_Orbits
 
 # base directory that contains the raw data
 FROM=/home/wo/rawdata/GNSS
