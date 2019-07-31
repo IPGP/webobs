@@ -58,7 +58,7 @@ rinex="$tmpdir/rinex"
 PWD=$(pwd)
 PROGDIR=$( cd "$( dirname "$0" )" && pwd )
 
-#ORBITS=( "flinn" "ql" "ultra" )
+ORBITS=( "flinn" "ql" "ultra" )
 
 # gets the nodes parameters from WebObs
 if [ "$GRID" != "" ]; then
