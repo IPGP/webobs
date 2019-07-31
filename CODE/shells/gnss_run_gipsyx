@@ -4,6 +4,7 @@
 #	Dependencies:
 #		- teqc (3rd party binary www.unavco.org, must be in $PATH)
 #		- raw2rinex (WebObs script located in the same directory)
+#		- download_orbit (WebObs script located in the same directory)
 #		- a WebObs grid for node's list and parameters (defined in
 #		  the configuration file) that must be defined for each node:
 #		               FID: station/marker code name
@@ -27,18 +28,18 @@ fi
 
 # Helper 
 if [ $# -lt 2 ]; then
-	echo "       Syntax: gnss_run_gipsyx CONF DAYS [STATION] [-force]"
-	echo "  Description: runs the automatic GNSS process from raw files to position solution"
+	echo "		Syntax: gnss_run_gipsyx CONF DAYS [STATION] [-force]"
+	echo "		Description: runs the automatic GNSS process from raw files to position solution"
 	echo "    Arguments:"
-	echo "           CONF = configuration filename, e.g., /etc/webobs.d/gnss_run_gipsyx.rc"
-	echo "           DAYS = number of days to process (from today)"
+	echo "          CONF = configuration filename, e.g., /etc/webobs.d/gnss_run_gipsyx.rc"
+	echo "		DAYS = number of days to process (from today)"
 	echo "    Optionnal Arguments:"
 
-	echo "       -s = station code or station list with double quotes"
-	echo "                  default is all nodes associated with local WebObs $GRID"
+	echo "		-s = station code or station list with double quotes"
+	echo "			default is all nodes associated with local WebObs $GRID"
 	echo "                  or a list of nodes $NODES in .rc"
 	echo "          -d yyyy/mm/dd,yyyy/mm/dd = choose days to start process, the DAYS argument can still be used to process previous days from the selected ones, for instance gnss_run_gipsyx CONF 1 -d 2017/03/17,2018/08/05 will compute  2017/03/17, 2017/03/16, 2018/08/05 and 2018/08/04"
-	echo "         -force = forces the process despite existence of final results"
+	echo "          -force = forces the process despite existence of final results"
 	echo "		-lock = creates a lock file to prevent multiple process of gnss_run_gipsyx"
 	echo ""
 	exit 0;
@@ -57,7 +58,7 @@ rinex="$tmpdir/rinex"
 PWD=$(pwd)
 PROGDIR=$( cd "$( dirname "$0" )" && pwd )
 
-ORBITS=( "flinn" "ql" "ultra" )
+#ORBITS=( "flinn" "ql" "ultra" )
 
 # gets the nodes parameters from WebObs
 if [ "$GRID" != "" ]; then
@@ -84,7 +85,7 @@ for (( i=1; i<=$#; i++)); do
 
         -force) 
         declare FORCE=1
-        echo "Force computation despites final orbits are already exist";;
+        echo "Force computation despites final orbits already exist";;
 
         -s) 
         j=$((i+1))
@@ -136,15 +137,19 @@ for station in $NODES; do
 	fi
 
 	for ymd in $DAYLIST; do
+
 		doy=$(date -d "$ymd" +"%j")
 		sta=$(echo $FID | tr '[:upper:]' '[:lower:]')
 		yyyy=${ymd:0:4}
 		year=$yyyy
 		mm=${ymd:5:2}
 		dd=${ymd:8:2}
+
+		# setting paths
 		res="$DEST/$FID/$yyyy/$yyyy-$mm-$dd.$FID"
 		gipsyres="$res.tdp"
 		gipsylog="$res.log"
+
 		if [[ $FORCE == 0 && -s "$gipsyres" ]]; then 
 			echo "   file $gipsyres [flinn] already exists..."
 		else
@@ -188,13 +193,37 @@ for station in $NODES; do
 				tdp="$tmpdir/smoothFinal.tdp"
 				cd $tmpdir
 
+
+				
 				# makes a loop for different orbits precision: from Final to Ultra
 				for orbit in "${ORBITS[@]}" ; do
-					if [[ $orbit == ${ORBITS[1]} && -s $gipsyres.$orbit ]]; then
+					if [[ $orbit == "ql" && -s $gipsyres.$orbit && $FORCE == 0 ]]; then
 						echo "   file $gipsyres [$orbit] already exists..."
 						break
 					else
-						cmd="gd2e.py -rnxFile $rinex -GNSSproducts $orbit $GIPSYOPTIONS > gd2e.log 2>&1"
+
+						if [ "$ORBITSDIR" != "" ]; then #running Gipsy from local orbit
+
+							case $orbit in
+	
+								flinn)
+								declare product="Final";;
+								ql)
+								declare product="Rapid";;
+								ultra)
+								declare product="Ultra";;
+							esac
+							
+							# calling download_orbit
+							$PROGDIR/download_orbit 0 $ORBITSDIR -o $product -d $ymd $DOWNLOAD_OPTIONS
+							
+							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITSDIR/$product $GIPSYOPTIONS > gd2e.log 2>&1"
+
+						else #running Gipsy from direct download
+							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $orbit $GIPSYOPTIONS > gd2e.log 2>&1"
+						fi
+
+						echo "$cmd"
 						eval $cmd
 						rc=$?
 						if [[ $rc == 0 && -s $tdp ]]; then
