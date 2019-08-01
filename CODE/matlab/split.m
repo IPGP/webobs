@@ -10,7 +10,7 @@ function c = split(s,d)
 %
 %	Author: François BEAUDUCEL, IPGP
 %	Created: 2009-10-09
-%	Updated: 2019-05-16
+%	Updated: 2019-08-01
 
 
 if nargin < 1
@@ -40,16 +40,15 @@ for i = 1:length(ss)
 	if isempty(ss{i})
 		c{i} = '';
 	else
-		% replaces escaped delimiters
+		% substitutes escaped delimiters
 		ss{i} = strrep(ss{i},['\',d],us);
 		c(i) = textscan(ss{i},'%s','Delimiter',d);
+		% puts back escaped delimiters
+		c{i} = strrep(c{i},us,d);
 	end
 end	
 
 if ~iscell(s)
 	c = c{:}';
-	c = strrep(c,us,d);
-else
-	c = strrep(c{:},us,d);
 end
 
