@@ -17,7 +17,7 @@
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia)
 #          Based on Gipsy-Oasis version by Francois BEAUDUCEL (IPGP) and Ahmad Ali FAHMI (IRD),
 #          Domerapi/WebObs Project, 2014.
-# Updated: 2019-07-23
+# Updated: 2019-08-01
 
 #Check lock file
 LOCKFILE=/tmp/gnss_run_gipsyx.txt
@@ -217,14 +217,14 @@ for station in $NODES; do
 							# calling download_orbit
 							$PROGDIR/download_orbit 0 $ORBITSDIR -o $product -d $ymd $DOWNLOAD_OPTIONS
 							
-							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITSDIR/$product $GIPSYOPTIONS > gd2e.log 2>&1"
+							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITSDIR/$product $GIPSYOPTIONS"
 
 						else #running Gipsy from direct download
-							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $orbit $GIPSYOPTIONS > gd2e.log 2>&1"
+							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $orbit $GIPSYOPTIONS"
 						fi
 
-						echo "$cmd"
-						eval $cmd
+						echo "   $cmd"
+						error=$($cmd 2>&1 1> gd2e.log)
 						rc=$?
 						if [[ $rc == 0 && -s $tdp ]]; then
 							mkdir -p "$DEST/$FID/$year"
@@ -236,8 +236,9 @@ for station in $NODES; do
 							fi 
 							break
 						else
-							echo "   $cmd"
 							echo "   ** WARNING: Problem to process gd2e... May be orbit $orbit not yet available?"
+							msg=$(echo "$error" | grep -E "KeyError|GNSSproducts")
+                                                        echo "   ** ERROR: $msg"
 						fi
 					fi
 				done

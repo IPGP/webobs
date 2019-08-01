@@ -8,7 +8,7 @@
 #
 # Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
 # Created: 2014-01-12
-# Updated: 2019-06-09
+# Updated: 2019-08-01
 
 if [ $# -lt 2 ]; then
 	echo "raw2rinex input output [teqc options]"
@@ -65,10 +65,10 @@ if [ ! -z "$rf" ]; then
 	# must convert ??d to ??o
 	for f in $rf; do
 		if [[ $f == *".Z" ]]; then
-			gunzip $f
+			gunzip -f $f
 			f=${f%.*}
 		fi
-		CRX2RNX $f
+		CRX2RNX $f -f
 	done
 	wildcard="*.??o"
 	rawfiles=$(find $tmpdir -name "$wildcard" | sort )
