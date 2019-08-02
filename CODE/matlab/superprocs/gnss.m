@@ -39,7 +39,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-07-26
+%   Updated: 2019-07-31
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -67,6 +67,8 @@ maxerror = field2num(P,'FILTER_MAX_ERROR_M',NaN);
 terrmod = field2num(P,'TREND_ERROR_MODE',1);
 trendmindays = field2num(P,'TREND_MIN_DAYS',1);
 plotbest = isok(P,'MODELLING_PLOT_BEST');
+plotbest_col = field2num(P,'MODELLING_PLOT_BEST_COLOR',.5*ones(1,3));
+plotbest_opt = {'p','MarkerSize',15,'LineWidth',1};
 plotresidual = isok(P,'MODELLING_PLOT_RESIDUAL',1);
 targetll = field2num(P,'GNSS_TARGET_LATLON');
 velref = field2num(P,'VELOCITY_REF',[0,0,0]);
@@ -138,6 +140,7 @@ modelopt.msig = field2num(P,'MODELLING_SIGMAS',1);
 modelopt.minerror = field2num(P,'MODELLING_MINERROR_MM',5);
 modelopt.minerrorrel = field2num(P,'MODELLING_MINERROR_PERCENT',1);
 modelopt.misfitnorm = field2str(P,'MODELLING_MISFITNORM','L1');
+modelopt.multi = field2num(P,'MODELLING_MULTIPLE_SOURCES',1,'notempty');
 
 % MODELLING pCDM parameters (see invpcdm.m)
 % number of iterations (adjusting the parameter's limits)
@@ -761,6 +764,7 @@ for r = 1:length(P.GTABLE)
 		lat0 = mean(latlim);
 		lon0 = mean(lonlim);
 		wid = max(diff(latlim)*degm,diff(lonlim)*degm*cosd(lat0)) + bm;
+		wbest = wid/20;
 
 		ysta = (geo(kn,1) - lat0)*degm;
 		xsta = (geo(kn,2) - lon0)*degm*cosd(lat0);
@@ -817,12 +821,39 @@ for r = 1:length(P.GTABLE)
 		% --- computes the model !
 		switch lower(modelling_source_type)
 		case 'pcdm'
-			[mm,vv,k,mm0,ux,uy,uz,ez,ev,ws,pbest] = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,pcdm);
-			wbest = wid/20;
-			vv0 = pbest(7)*1e6; % best dV in m3
-			ev = ev*1e6;
-			if isnan(mm0)
-				pbest = nan(size(pbest));
+			M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,pcdm);
+			if length(M) > 1 && M(end).m0 < M(1).m0
+				[mm,imm] = max(cat(4,M.mm),[],4);
+				% volume for maximum probability
+				vv = M(1).vv;
+				for m = 2:length(M)
+					vv(imm==m)=M(m).vv(imm==m);
+				end
+				m0 = cat(1,M.m0);
+				ux = sum(cat(2,M.ux),2);
+				uy = sum(cat(2,M.uy),2);
+				uz = sum(cat(2,M.uz),2);
+				ez = cat(1,M.ez);
+				ws = cat(1,M.ws);
+				ev = cat(1,M.ev)*1e6;
+				pbest = cat(1,M.pbest);
+				vv0 = pbest(:,7)*1e6; % best dV in m3
+			else
+				M = M(1);
+				mm = M.mm;
+				vv = M.vv;
+				m0 = M.m0;
+				ux = M.ux;
+				uy = M.uy;
+				uz = M.uz;
+				ez = M.ez;
+				ws = M.ws;
+				ev = M.ev*1e6;
+				pbest = M.pbest;
+				vv0 = pbest(7)*1e6; % best dV in m3
+				if isnan(m0)
+					pbest = nan(size(pbest));
+				end
 			end
 			if numel(pcdm.random_sampling) == 1
 				nmodels = pcdm.random_sampling*pcdm.iterations;
@@ -830,14 +861,42 @@ for r = 1:length(P.GTABLE)
 				nmodels = sum(pcdm.random_sampling);
 			end
 		otherwise
-			[mm,vv,k,mm0,ux,uy,uz,ez,ev,ws] = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
-			vv0 = vv(k)*1e6; % best dV in m3
-			ev = ev*1e6;
+			M = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
+			if length(M) > 1 && M(end).m0 < M(1).m0
+				[mm,imm] = max(cat(4,M.mm),[],4);
+				% volume for maximum probability
+				vv = M(1).vv;
+				for m = 2:length(M)
+					vv(imm==m)=M(m).vv(imm==m);
+				end
+				m0 = cat(1,M.m0);
+				ux = sum(cat(2,M.ux),2);
+				uy = sum(cat(2,M.uy),2);
+				uz = sum(cat(2,M.uz),2);
+				ez = cat(1,M.ez);
+				ws = cat(1,M.ws);
+				ev = cat(1,M.ev)*1e6;
+				pbest = cat(1,M.pbest);
+				vv0 = pbest(:,4)*1e6; % best dV in m3
+			else
+				M = M(1);
+				mm = M.mm;
+				vv = M.vv;
+				m0 = M.m0;
+				ux = M.ux;
+				uy = M.uy;
+				uz = M.uz;
+				ez = M.ez;
+				ws = M.ws;
+				ev = M.ev*1e6;
+				pbest = M.pbest;
+				vv0 = pbest(4)*1e6; % best dV in m3
+			end
 			nmodels = numel(mm);
 		end
 		% adjusts unit for volume variation
 		vunit = 'm^3';
-		if isfinite(vv0) && vv0 > 0.5e6
+		if all(isfinite(vv0)) && any(abs(vv0) > 0.5e6)
 			vfactor = 1e6;
 			vunit = ['M',vunit];
 		else
@@ -906,12 +965,12 @@ for r = 1:length(P.GTABLE)
 			plot(mlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 		end
 		%axis equal; axis tight
-		if plotbest && ~isnan(mm0)
+		if plotbest && any(~isnan(m0))
 			switch lower(modelling_source_type)
 			case 'pcdm'
-				plotpcdm([xx(k),yy(k),zz(k),pbest([4:6,8,9])],wbest,'xy');
+				plotpcdm(pbest(:,[1:6,8,9]),wbest,'xy','EdgeColor',plotbest_col);
 			otherwise
-				plot(xx(k),yy(k),'pk','MarkerSize',10,'LineWidth',2)
+				plot(pbest(:,1),pbest(:,2),plotbest_opt{:},'MarkerEdgeColor',plotbest_col)
 			end
 		end
 		hold off
@@ -942,12 +1001,12 @@ for r = 1:length(P.GTABLE)
 					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
 			end
 		end
-		if plotbest && ~isnan(mm0)
+		if plotbest && any(~isnan(m0))
 			switch lower(modelling_source_type)
 			case 'pcdm'
-				plotpcdm([xx(k),yy(k),zz(k),pbest([4:6,8,9])],wbest,'zy');
+				plotpcdm(pbest(:,[1:6,8,9]),wbest,'zy','EdgeColor',plotbest_col);
 			otherwise
-				plot(zz(k),yy(k),'pk','MarkerSize',10,'LineWidth',2)
+				plot(pbest(:,3),pbest(:,2),plotbest_opt{:},'MarkerEdgeColor',plotbest_col)
 			end
 		end
 		plot(max(max(zdem,[],3),[],2)',mlim,'-k')
@@ -977,12 +1036,12 @@ for r = 1:length(P.GTABLE)
 					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
 			end
 		end
-		if plotbest && ~isnan(mm0)
+		if plotbest && any(~isnan(m0))
 			switch lower(modelling_source_type)
 			case 'pcdm'
-				plotpcdm([xx(k),yy(k),zz(k),pbest([4:6,8,9])],wbest,'xz');
+				plotpcdm(pbest(:,[1:6,8,9]),wbest,'xz','EdgeColor',plotbest_col);
 			otherwise
-				plot(xx(k),zz(k),'pk','MarkerSize',10,'LineWidth',2)
+				plot(pbest(:,1),pbest(:,3),plotbest_opt{:},'MarkerEdgeColor',plotbest_col)
 			end
 		end
 		plot(mlim,max(max(zdem,[],3),[],1),'-k')
@@ -999,10 +1058,14 @@ for r = 1:length(P.GTABLE)
 
 		% legends
 		% - model parameters
-		subplot(5,3,[12,15])
+		axes('position',[0.68,0.11,0.3,0.3])
+		src_multi = '';
+		if modelopt.multi > 1
+			src_multi = sprintf('\\times %d',modelopt.multi);
+		end
 		info = { ...
 			' ', ...
-			sprintf('model type = {\\bf%s}',modelling_source_type), ...
+			sprintf('model type = {\\bf%s%s}',modelling_source_type,src_multi), ...
 			sprintf('number of models : {\\bf%s}',num2tex(nmodels)), ...
 			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
 		};
@@ -1012,39 +1075,67 @@ for r = 1:length(P.GTABLE)
 		if modelopt.apriori_horizontal > 0
 			info = cat(2,info,sprintf('a priori horiz. STD = {\\bf%g km}',modelopt.apriori_horizontal));
 		end
-			%'', ... %sprintf('width = {\\bf%g m}',roundsd(2*ws,1)), ...
-			%sprintf('grid size = {\\bf%g^3 nodes}',rr), ...
-			%sprintf('trend error mode = {\\bf%d}',terrmod), ...
-			%sprintf('depth = {\\bf%1.1f km} \\in [%1.1f , %1.1f]',pbest(3),-fliplr(ez)/1e3), ...
-			%sprintf('\\DeltaV = {\\bf%+g Mm^3} \\in [%+g , %+g]',roundsd([pbest(7)*1e3,ev],2)), ...
-		% displays info for best model
-		if ~isnan(mm0) 
-			info = cat(2,info,' ',sprintf('   {\\itBest source (%1.1f%%)}:',modelopt.msigp*100));
+		% displays info for best model(s)
+		if any(~isnan(m0)) 
+			%info = cat(2,info,' ',sprintf('   {\\itBest source (%1.1f%%)}:',modelopt.msigp*100));
 			[e0,n0,z0] = ll2utm(lat0,lon0);
 			switch lower(modelling_source_type)
 			case 'pcdm'
-				[lats,lons] = utm2ll(e0+pbest(1)*1e3,n0+pbest(2)*1e3,z0);
-				info = cat(2,info, ...
-					sprintf('lat/lon = {\\bf%g N / %g E}',lats,lons), ...
-					sprintf('depth = {\\bf%1.1f \\pm %g km}',pbest(3),roundsd(abs(diff(ez)/1e3/2),2)), ...
-					sprintf('\\DeltaV = {\\bf%+g \\pm %g %s}',roundsd([vv0,abs(diff(ev))/2]/vfactor,2),vunit), ...
-					sprintf('(Flow Rate = %+g m^3/s)',roundsd(vv0/diff(tlim)/86400,2)), ...
-					sprintf('A = {\\bf%1.2f} / B = {\\bf%1.2f}',pbest(8:9)), ...
-					sprintf('shape = {\\bf%s}',pcdmdesc(pbest(8),pbest(9))), ....
-					sprintf('\\OmegaX = {\\bf%+2.0f\\circ} / \\OmegaY = {\\bf%+2.0f\\circ} / \\OmegaZ = {\\bf%+2.0f\\circ}',pbest(4:6)));
+				bstab = {''; ...
+					'lat N'; ...
+					'lon E'; ...
+					'depth (km)'; ...
+					sprintf('\\DeltaV (%s)',vunit); ...
+					sprintf('{\\itQ} (m^3/s)'); ...
+					'A'; ...
+					'B'; ...
+					'shape'; ...
+					'\OmegaX'; ...
+					'\OmegaY'; ...
+					'\OmegaZ'; ...
+					'misfit (mm)'};
+				[lats,lons] = utm2ll(e0+pbest(:,1),n0+pbest(:,2),z0);
+				for m = 1:length(M)
+					bstab{1,m+1} = sprintf('Source #%d',m);
+					bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
+					bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
+					bstab{4,m+1} = sprintf('{\\bf%1.1f \\pm %g}',[-pbest(m,3),roundsd(abs(diff(ez(m,:)))/2,2)]/1e3);
+					bstab{5,m+1} = sprintf('{\\bf%+g \\pm %g}',roundsd([vv0(m),abs(diff(ev(m,:)))/2]/vfactor,2));
+					bstab{6,m+1} = sprintf('%+g',roundsd(vv0(m)/diff(tlim)/86400,2));
+					bstab{7,m+1} = sprintf('{\\bf%1.2f}',pbest(m,8));
+					bstab{8,m+1} = sprintf('{\\bf%1.2f}',pbest(m,9));
+					bstab{9,m+1} = sprintf('{\\bf%s}',pcdmdesc(pbest(m,8),pbest(m,9)));
+					bstab{10,m+1} = sprintf('{\\bf%+2.0f\\circ}',pbest(m,4));
+					bstab{11,m+1} = sprintf('{\\bf%+2.0f\\circ}',pbest(m,5));
+					bstab{12,m+1} = sprintf('{\\bf%+2.0f\\circ}',pbest(m,6));
+					bstab{13,m+1} = sprintf('{\\bf%g}',roundsd(m0(m),2));
+				end
+				rowlim = [.7,.1];
 			otherwise
-				[lats,lons] = utm2ll(e0+xx(k),n0+yy(k),z0);
-				info = cat(2,info, ...
-					sprintf('lat/lon = {\\bf%g N / %g E}',lats,lons), ...
-					sprintf('depth = {\\bf%1.1f \\pm %g km}',[-zz(k),roundsd(abs(diff(ez))/2,2)]/1e3), ...
-					sprintf('\\DeltaV = {\\bf%+g \\pm %g %s}',roundsd([vv0,abs(diff(ev))/2]/vfactor,2),vunit), ...
-					sprintf('(Flow Rate = %+g m^3/s)',roundsd(vv0/diff(tlim)/86400,2)));
+				bstab = {''; ...
+					'lat N'; ...
+					'lon E'; ...
+					'depth (km)'; ...
+					sprintf('\\DeltaV (%s)',vunit); ...
+					sprintf('{\\itQ} (m^3/s)'); ...
+					'misfit (mm)'};
+				[lats,lons] = utm2ll(e0+pbest(:,1),n0+pbest(:,2),z0);
+				for m = 1:length(M)
+					bstab{1,m+1} = sprintf('Source #%d',m);
+					bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
+					bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
+					bstab{4,m+1} = sprintf('{\\bf%1.1f \\pm %g}',[-pbest(m,3),roundsd(abs(diff(ez(m,:)))/2,2)]/1e3);
+					bstab{5,m+1} = sprintf('{\\bf%+g \\pm %g}',roundsd([vv0(m),abs(diff(ev(m,:)))/2]/vfactor,2));
+					bstab{6,m+1} = sprintf('%+g',roundsd(vv0(m)/diff(tlim)/86400,2));
+					bstab{7,m+1} = sprintf('{\\bf%g}',roundsd(m0(m),2));
+				end
+				rowlim = [.7,.3];
 			end
-			info = cat(2,info,sprintf('misfit = {\\bf%g mm}',roundsd(mm0,2)));
+			plottable(bstab,[.25,.5,.85],rowlim,'rcc','FontSize',8)
 		else
-			info = cat(2,info,'   No source found.');
+			info = cat(2,info,' ','   No source found.');
 		end
-		text(-0.1,1.1,info,'HorizontalAlignment','left','VerticalAlignment','top')
+		text(0,1.1,info,'HorizontalAlignment','left','VerticalAlignment','top','FontSize',8)
 		axis([0,1,0,1]); axis off
 
 		% - probability colorscale
@@ -1095,25 +1186,30 @@ for r = 1:length(P.GTABLE)
 			E.d = [geo(kn,:),d,ux,uy,uz];
 			E.header = {'Latitude','Longitude','Altitude','E_obs(mm)','N_obs(mm)','Up_obs(mm)','dE(mm)','dN(mm)','dU(mm)', ...
 				                                      'E_mod(mm)','N_mod(mm)','Up_mod(mm)'};
-			if ~isnan(mm0)
+			if any(~isnan(m0))
+				E.infos = {''};
 				switch lower(modelling_source_type)
 				case 'pcdm'
-					E.infos = { ...
-						'Best pCDM model:', ...
-						sprintf('latitude / longitude = %g N / %g E',lats,lons), ...
-						sprintf('depth = %1.1f km in [%1.1f , %1.1f]',pbest(3),-fliplr(ez)/1e3), ...
-						sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0,ev],2)), ...
-						sprintf('A = %1.2f / B = %1.2f',pbest(8:9)), ...
-						sprintf('shape = %s',pcdmdesc(pbest(8),pbest(9))), ....
-						sprintf('OmegaX = %+2.0f / OmegaY = %+2.0f / OmegaZ = %+2.0f',pbest(4:6)), ...
-					};
+					for m = 1:length(M)
+						E.infos = cat(2,E.infos, ...
+							sprintf('Best pCDM model #%d:',m), ...
+							sprintf('latitude / longitude = %g N / %g E',lats(m),lons(m)), ...
+							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',pbest(m,3),-fliplr(ez(m,:))/1e3), ...
+							sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
+							sprintf('A = %1.2f / B = %1.2f',pbest(m,8:9)), ...
+							sprintf('shape = %s',pcdmdesc(pbest(m,8),pbest(m,9))), ...
+							sprintf('OmegaX = %+2.0f / OmegaY = %+2.0f / OmegaZ = %+2.0f',pbest(m,4:6)), ...
+							' ');
+					end
 				otherwise
-					E.infos = { ...
-						'Best isotropic model:', ...
-						sprintf('latitude / longitude = %g N / %g E',lats,lons), ...
-						sprintf('depth = %1.1f km in [%1.1f , %1.1f]',-[zz(k),fliplr(ez)]/1e3), ...
-						sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0,ev],2)), ...
-					};
+					for m = 1:length(M)
+						E.infos = cat(2,E.infos, ...
+							sprintf('Best isotropic model #%d:',m), ...
+							sprintf('latitude / longitude = %g N / %g E',lats(m),lons(m)), ...
+							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',-[pbest(m,3),fliplr(ez(m,:))]/1e3), ...
+							sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
+							' ');
+					end
 				end
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
@@ -1221,14 +1317,13 @@ for r = 1:length(P.GTABLE)
 				d = d*diff(wlim)/365.25;
 
 				% --- computes the model !
-				[mm,vv,kb,mm0,ux,uy,uz,ez,ev,ws] = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
-
-				M(m).d(w,:) = [xx(kb),yy(kb),zz(kb),vv(kb),sign(vv(kb))*mean(sqrt(ux.^2+uy.^2+uz.^2))];
-				M(m).e(w,:) = [ws,ws,diff(ez),diff(ev),mm0];
+				MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,'quiet');
+				M(m).d(w,:) = [MM(1).pbest(1:4),sign(MM(1).pbest(4))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
+				M(m).e(w,:) = [MM(1).ws,MM(1).ws,diff(MM(1).ez),diff(MM(1).ev),MM(1).m0];
 				M(m).o(w,1) = max(tro); % model worst orbit
 
 				if isok(P,'DEBUG')
-					fprintf('\n%s,%s: %+g Mm3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([vv(kb),zz(kb)/1e3],3));
+					fprintf('\n%s,%s: %+g Mm3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM.pbest(4),MM.pbest(3)/1e3],3));
 					if modrelforced
 						fprintf(' / relative mode forced by (%g,%g)',mvv(1:2));
 					end

@@ -161,6 +161,8 @@ MODELLING_HORIZONTAL_ONLY|Y
 MODELLING_FORCE_RELATIVE|N
 # modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
 MODELLING_SOURCE_TYPE|isotropic
+# models the residuals with a secondary source (EXPERIMENTAL)
+MODELLING_MULTIPLE_SOURCES|1
 # misfit norm calculation: 'L1' (default) or 'L2'
 MODELLING_MISFITNORM|L1
 # a priori horizontal error around the target or grid center (in STD, km), 0 = no a priori
