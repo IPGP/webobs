@@ -47,7 +47,7 @@ function lre = smartplot(X,tlim,G,linestyle,fontsize,chnames,choffset,ndalias,nd
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 2019-06-19
+%	Updated: 2019-08-06
 
 
 zoom = double(isinto(timezoom,[0,1],'exclude'));
@@ -62,8 +62,8 @@ for ii = 0:zoom
 		alld = alld(isinto(cat(1,X.t),tlim),:);
 	end
 	if ~isempty(alld)
-		gmin = min(alld);
-		gmax = max(alld);
+		gmin = min(alld,1);
+		gmax = max(alld,1);
 		gmin(isnan(gmin)) = 0;
 		gmax(isnan(gmax)) = 0;
 	else
