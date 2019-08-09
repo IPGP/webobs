@@ -27,7 +27,7 @@ function DOUT=mc3stats(varargin)
 %           OMORI
 %
 %       Other specific paramaters are:
-%           MC_EVENTTYPES_LIST|
+%           MC_EVENTTYPE_LIST|
 %           EVENTTYPE_EXCLUDED_LIST|
 %           EVENTSTATUS_EXCLUDED_LIST|
 %           EVENTCOMMENT_EXCLUDED_REGEXP|
