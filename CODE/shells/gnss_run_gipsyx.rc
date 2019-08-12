@@ -32,9 +32,6 @@ GIPSYOPTIONS="-runType PPP"
 # teqc options
 TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -C2 -O.-obs C2 -O.-obs C5 -O.dec 10s -max_rx_SVs 30"
 
-# Local repository of orbits (leave blank if unused)
-ORBITSDIR=""
-
 # download_orbit options
 DOWNLOAD_OPTIONS="-r 30"
 
