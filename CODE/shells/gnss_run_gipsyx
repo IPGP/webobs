@@ -216,6 +216,10 @@ for station in $NODES; do
 							
 							# calling download_orbit
 							$PROGDIR/download_orbit 0 $ORBITSDIR -o $product -d $ymd $DOWNLOAD_OPTIONS
+
+							if [ ! -e "$ORBITSDIR/$product/$yyyy/$yyyy-$mm-$dd.eo.gz" ]; then
+                                                                continue # if download not successfull go to next orbit
+                                                        fi
 							
 							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITSDIR/$product $GIPSYOPTIONS"
 
