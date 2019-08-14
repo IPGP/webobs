@@ -34,6 +34,7 @@ use strict;
 use warnings;
 
 $|=1;
+use Cwd qw(abs_path);
 use Time::Local;
 use File::Basename;
 use CGI;
@@ -91,6 +92,17 @@ $QryParm->{'g'}        ||= '';
 $QryParm->{'refresh'}  ||= $GRID{DISPLAY_AUTOREFRESH_SECONDS};
 
 if ($GRIDType eq 'VIEW' && $QryParm->{'ts'} eq '') { $QryParm->{'ts'} = 'map' }
+
+if ($QryParm->{'g'} =~ s!^lastevent(\b|$)!!) {
+	# "^lastevent" was removed from 'g':
+	# replace it with the directory the 'lastevent' symlink links to.
+	my $lastevent_dir = abs_path("$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/lastevent");
+	# Remove ^$OUTG/events/ from the path to only keep "yyyy/mm/dd/eventid"
+	$lastevent_dir =~ s!^$OUTG/.*?/!!;
+	# Replace 'g' with this link and append the remaining of the original 'g', if any
+	# (so that both g=lastevent and g=lastevent/b3 work).
+	$QryParm->{'g'} = $lastevent_dir.$QryParm->{'g'};
+}
 
 # ---- initialize 'timescales' definitions
 my %TIMESCALES = (
@@ -299,11 +311,8 @@ if ($QryParm->{'ts'} eq 'map') {
 	$depth = length($depth); # $depth is number of "/" in the g= argument
 	
 	# lists all files
-	if ($QryParm->{'g'} eq "lastevent") {
-		@plist = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/lastevent/*.jpg";
-	} else {
-		@plist = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
-	}
+	@plist = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
+
 	# target directory contains multiple files: displays existing thumbnails
 	if ($#plist > 1) {
 		my $month0 = "";
