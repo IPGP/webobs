@@ -35,3 +35,8 @@ TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -C2 -O.-obs C2 -O.-obs C5 -O.dec 10s
 # download_orbit options
 DOWNLOAD_OPTIONS="-r 30"
 
+# realtime processing (put "Y" if wanted)
+REALTIME="" 
+# data delay for realtime processing
+DATA_DELAY="5 min"
+
