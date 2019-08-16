@@ -17,7 +17,7 @@
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia)
 #          Based on Gipsy-Oasis version by Francois BEAUDUCEL (IPGP) and Ahmad Ali FAHMI (IRD),
 #          Domerapi/WebObs Project, 2014.
-# Updated: 2019-08-01
+# Updated: 2019-07-23
 
 #Check lock file
 LOCKFILE=/tmp/gnss_run_gipsyx.txt
@@ -165,27 +165,51 @@ for station in $NODES; do
 
 				# real-time case: makes a 24h window from yesterday+today data
 				if [[ "$REALTIME" == "Y" && "$ymd" == "$TODAY" ]]; then
+					
+					rinex1=$tmpdir/rinex1 # 2 days ago
+					rinex2=$tmpdir/rinex2 # yesterday
+					rinex3=$tmpdir/rinex3 # today
+					
+					declare ORBITS=( "ultra" ) #reaffect orbit value because only ultra can be used for realtime
+
 					yesterday=$(date -u -d "1 day ago" +"%Y/%m/%d")
-					doy=$(date -d "$yesterday" +"%j")
-					yyyy=${yesterday:0:4}
-					mm=${yesterday:5:2}
-					dd=${yesterday:8:2}
-					RAW2=$(eval "echo $FMT")
-					rinex1=$tmpdir/rinex1
-					rinex2=$tmpdir/rinex2
-					echo "   Real-time case: Appending $yesterday and $TODAY to process 24h of data."
-					$PROGDIR/raw2rinex "$RAW2" $rinex1 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna
+					two_days_ago=$(date -u -d "2 day ago" +"%Y/%m/%d")
+					echo "   Real-time case: Appending $two_days_ago, $yesterday and $TODAY to process 30h of data."
+
+					# converting yesterday rinex
+                                        doy=$(date -d "$yesterday" +"%j")
+                                        yyyy=${yesterday:0:4}
+                                        mm=${yesterday:5:2}
+                                        dd=${yesterday:8:2}
+                                        RAW2=$(eval "echo $FMT")
+					echo "$RAW2"
+					$PROGDIR/raw2rinex "$RAW2" $rinex2 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna
 					if [[ ! -z $VERBOSE || $? != 0 ]]; then
-						echo "$PROGDIR/raw2rinex \"$RAW2\" $rinex1 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
+						echo "$PROGDIR/raw2rinex \"$RAW2\" $rinex2 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
 					fi
-					endwindow=$(date -u +"%Y%m%d%H%M%S")
-					mv $rinex $rinex2
+					
+
+					#converting 2 days ago rinex
+		                        doy=$(date -d "$two_days_ago" +"%j")
+                                        yyyy=${two_days_ago:0:4}
+                                        mm=${two_days_ago:5:2}
+                                        dd=${two_days_ago:8:2}
+                                        RAW1=$(eval "echo $FMT")
+					echo "$RAW1"
+                                        $PROGDIR/raw2rinex "$RAW1" $rinex1 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna
+                                        if [[ ! -z $VERBOSE || $? != 0 ]]; then
+                                                echo "$PROGDIR/raw2rinex \"$RAW1\" $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
+                                        fi
+
+					mv $rinex $rinex3 #already converted rinex for today
 					if [[ ! -z $VERBOSE || $? != 0 ]]; then
 						echo "   mv $rinex $rinex2"
-					fi
-					teqc -phc +quiet -e $endwindow -dh 24 $rinex1 $rinex2 > $rinex
+					fi                 
+                                        
+					endwindow=$(date -u -d "$DATA_DELAY ago" +"%Y%m%d%H%M%S")
+					teqc -phc +quiet -e $endwindow -dh 30 $rinex1 $rinex2 $rinex3 > $rinex
 					if [[ ! -z $VERBOSE || $? != 0 ]]; then
-						echo "   teqc -phc +quiet -e $endwindow -dh 24 $rinex1 $rinex2 > $rinex"
+						echo "   teqc -phc +quiet -e $endwindow -dh 30 $rinex1 $rinex2 $rinex3 > $rinex"
 					fi
 				fi
 
@@ -218,17 +242,17 @@ for station in $NODES; do
 							$PROGDIR/download_orbit 0 $ORBITSDIR -o $product -d $ymd $DOWNLOAD_OPTIONS
 
 							if [ ! -e "$ORBITSDIR/$product/$yyyy/$yyyy-$mm-$dd.eo.gz" ]; then
-                                                                continue # if download not successfull go to next orbit
-                                                        fi
-							
-							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITSDIR/$product $GIPSYOPTIONS"
+								continue # if download not successfull go to next orbit
+							fi
+
+							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITSDIR/$product $GIPSYOPTIONS > gd2e.log 2>&1"
 
 						else #running Gipsy from direct download
-							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $orbit $GIPSYOPTIONS"
+							cmd="gd2e.py -rnxFile $rinex -GNSSproducts $orbit $GIPSYOPTIONS > gd2e.log 2>&1"
 						fi
 
-						echo "   $cmd"
-						error=$($cmd 2>&1 1> gd2e.log)
+						echo "$cmd"
+						eval $cmd
 						rc=$?
 						if [[ $rc == 0 && -s $tdp ]]; then
 							mkdir -p "$DEST/$FID/$year"
@@ -240,9 +264,8 @@ for station in $NODES; do
 							fi 
 							break
 						else
+							echo "   $cmd"
 							echo "   ** WARNING: Problem to process gd2e... May be orbit $orbit not yet available?"
-							msg=$(echo "$error" | grep -E "KeyError|GNSSproducts")
-                                                        echo "   ** ERROR: $msg"
 						fi
 					fi
 				done
