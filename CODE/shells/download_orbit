@@ -82,7 +82,7 @@ for day in $DAYLIST; do
 
 	for orbit in "${ORBIT[@]}"; do
 
-		if [ ! -e "$DEST/$orbit/$year/$year-$month-$day.eo.gz" ]; then
+		if [[ ! -e "$DEST/$orbit/$year/$year-$month-$day.eo.gz" || "$orbit" == "Ultra" ]]; then
 
 			echo "Downloading orbit $orbit for $day-$month-$year"
 
