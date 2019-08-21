@@ -33,10 +33,10 @@ SEFRAN3 = readcfg(WO,sprintf('/etc/webobs.d/%s.conf',name));
 % determines mode (real-time or force) and creates temporary path
 if nargin < 2
 	force = 0;
-	ptmp = field2str(SEFRAN3,'PATH_TMP_WEBOBS','/tmp/sefran3'); % temporary path
+	ptmp = field2str(SEFRAN3,'PATH_TMP','/tmp/sefran3'); % temporary path
 else
 	force = 1;
-	ptmp = sprintf('%s/force',field2str(SEFRAN3,'PATH_TMP_WEBOBS','/tmp/sefran3')); % different temporary path to avoid (too much) conflicts with real-time
+	ptmp = sprintf('%s/force',field2str(SEFRAN3,'PATH_TMP','/tmp/sefran3')); % different temporary path to avoid (too much) conflicts with real-time
 end
 wosystem(sprintf('mkdir -p %s',ptmp),SEFRAN3);
 
