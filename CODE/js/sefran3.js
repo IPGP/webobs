@@ -259,7 +259,7 @@ function flypointit(event,click) {
 function maj_formulaire() {
 	var dte0 = new Date(MECB.MINUTE.getTime());
 	var duration;
-	if (MECB.FORM.secondeEvenement.value!="") {
+	if (MECB.FORM.secondeEvenement.value!="" && MECB.FORM.secondeEvenement.value >= 0 && MECB.FORM.secondeEvenement.value < 60) {
 		date = MECB.FORM.dateEvenement.value;
 		sec = parseFloat(MECB.FORM.secondeEvenement.value);
 		dte1 = new Date(date.substr(0,4),date.substr(5,2)-1,date.substr(8,2),date.substr(11,2),date.substr(14,2),0);
@@ -268,7 +268,7 @@ function maj_formulaire() {
 	MECB.FORM.nomOperateur.style.backgroundColor = MECB.COLORS[(MECB.FORM.nomOperateur.value != "")];
 	MECB.FORM.nombreEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.nombreEvenement.value != "" && ! isNaN(MECB.FORM.nombreEvenement.value) && MECB.FORM.nombreEvenement.value != 0)];
 	MECB.FORM.dateEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.dateEvenement.value != "")];
-	MECB.FORM.secondeEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.secondeEvenement.value != "")];
+	MECB.FORM.secondeEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.secondeEvenement.value != "" && MECB.FORM.secondeEvenement.value >= 0 && MECB.FORM.secondeEvenement.value < 60)];
 	if (MECB.FORM.secondeEvenement.value!="") {
 		pos_x = Math.round((dte1.getTime() + sec*1000 - dte0.getTime())*SCB.WIDTH/60000 + SCB.PPI);                 	
 		$('#eventStart').css({ 'left': pos_x, 'visibility': 'visible' });
@@ -344,7 +344,7 @@ function verif_formulaire() {
         MECB.FORM.stationEvenement.focus();
         return false;
     }
-	if (MECB.FORM.secondeEvenement.value == "") { 
+	if (MECB.FORM.secondeEvenement.value == "" || MECB.FORM.secondeEvenement.value < 0 || MECB.FORM.secondeEvenement.value >= 60) { 
         alert(MECB.MSGS['secevt']);
         MECB.FORM.secondeEvenement.focus(); 
         return false;
