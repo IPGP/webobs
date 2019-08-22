@@ -116,9 +116,11 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 		superproc = ST(2).file;
 		w1 = wosystem('echo "$(whoami)@$(hostname)"','chomp','print');
 		% gets the updated date of superproc's code... (note: mkgraph is always called by a superproc)
-		[s,w2] = wosystem(sprintf('grep "Updated:" superprocs/%s | sed -e ''s/^.*Updated: //g''',superproc),'chomp');
+		[s,w2] = wosystem(sprintf('grep "Updated:" superprocs/%s',superproc),'chomp');
 		if s
-			w2 = '';
+			w2 = 'no source';
+		else
+			w2 = regexprep(w2,'.*Updated: ','');
 		end
 		text(1,0,sprintf('%s / %s - %s - %s %+02d - %s (%s) / WebObs project (Beauducel et al., 2001-%s)  ', ...
 			G.SELFREF,f,w1,datestr(G.NOW),G.TZ,superproc,w2,datestr(now,'yyyy')), ...
