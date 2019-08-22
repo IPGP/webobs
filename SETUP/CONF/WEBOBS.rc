@@ -34,7 +34,12 @@ PATH_GRIDS2FORMS|${ROOT_CONF}/GRIDS2FORMS
 
 FILE_OWNERS|${ROOT_CONF}/OWNERS.conf
 
+# Directory for temporary files used by some CGI scripts
+# (it must exist and the web server user must be able to write)
 PATH_TMP_APACHE|/tmp
+
+# Directory for temporary files used by PROCS and SEFRAN
+# (it must be writable by the user used by the scheduler)
 PATH_TMP_WEBOBS|/tmp/webobs
 
 # Authentication file for the web server
