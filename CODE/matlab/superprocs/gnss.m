@@ -39,7 +39,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-07-31
+%   Updated: 2019-08-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -144,47 +144,47 @@ modelopt.multi = field2num(P,'MODELLING_MULTIPLE_SOURCES',1,'notempty');
 
 % MODELLING pCDM parameters (see invpcdm.m)
 % number of iterations (adjusting the parameter's limits)
-pcdm.iterations = field2num(P,'MODELLING_PCDM_ITERATIONS',5);
+PCDM.iterations = field2num(P,'MODELLING_PCDM_ITERATIONS',5);
 % number of random samples: scalar or list for each iteration
-pcdm.random_sampling = field2num(P,'MODELLING_PCDM_RANDOM_SAMPLING',200000);
+PCDM.random_sampling = field2num(P,'MODELLING_PCDM_RANDOM_SAMPLING',200000);
 % elastic parameter (Poisson's ratio) nu
-pcdm.nu = field2num(P,'MODELLING_PCDM_NU',0.25);
+PCDM.nu = field2num(P,'MODELLING_PCDM_NU',0.25);
 % dV parameter limits: total volume variation (in m3)
-pcdm.dvlim = field2num(P,'MODELLING_PCDM_DVLIM',[-1e7,1e7]);
+PCDM.dvlim = field2num(P,'MODELLING_PCDM_DVLIM',[-1e7,1e7]);
 % A parameter limits: horizontal over total volume variation ratio
 % A = dVZ/(dVX+dVY+dVZ)
 % 	0 = vertical (dyke or pipe following B value)
 % 	1 = horizontal (sill)
 % 	1/3 = isotrop if B = 0.5
-pcdm.alim = field2num(P,'MODELLING_PCDM_ALIM',[0,1]);
+PCDM.alim = field2num(P,'MODELLING_PCDM_ALIM',[0,1]);
 % B parameter limits: vertical volume variation ratio
 % B = dVY/(dVX+dVY)
 % 	0 = dyke if A = 0, dyke+sill otherwise
 % 	1 = dyke if A = 0, dyke+sill otherwise
 % 	0.5 = isotrop if A = 1/3, pipe if A = 0
-pcdm.blim = field2num(P,'MODELLING_PCDM_BLIM',[0,1]);
+PCDM.blim = field2num(P,'MODELLING_PCDM_BLIM',[0,1]);
 % OmegaX parameter limits: rotation angle around X axis (West-East)
-pcdm.oxlim = field2num(P,'MODELLING_PCDM_OXLIM',[-45,45]);
+PCDM.oxlim = field2num(P,'MODELLING_PCDM_OXLIM',[-45,45]);
 % OmegaY parameter limits: rotation angle around Y axis (South-North)
-pcdm.oylim = field2num(P,'MODELLING_PCDM_OYLIM',[-45,45]);
+PCDM.oylim = field2num(P,'MODELLING_PCDM_OYLIM',[-45,45]);
 % OmegaZ parameter limits: rotation angle around Z axis (Bottom-Up)
-pcdm.ozlim = field2num(P,'MODELLING_PCDM_OZLIM',[-45,45]);
+PCDM.ozlim = field2num(P,'MODELLING_PCDM_OZLIM',[-45,45]);
 % number of bins for probability vs parameter map (heatmap)
-pcdm.heatmap_grid = field2num(P,'MODELLING_PCDM_HEATMAP_GRID',50);
+PCDM.heatmap_grid = field2num(P,'MODELLING_PCDM_HEATMAP_GRID',50);
 % graphical parameter for heatmaps
-pcdm.heatmap_saturation = field2num(P,'MODELLING_PCDM_HEATMAP_SATURATION',0.4);
+PCDM.heatmap_saturation = field2num(P,'MODELLING_PCDM_HEATMAP_SATURATION',0.4);
 % number of bins used to smooth the maximum probability curve
-pcdm.heatmap_smooth_span = field2num(P,'MODELLING_PCDM_HEATMAP_SMOOTH_SPAN',5);
+PCDM.heatmap_smooth_span = field2num(P,'MODELLING_PCDM_HEATMAP_SMOOTH_SPAN',5);
 % polynomial degree to smooth the maximum probability curve
-pcdm.heatmap_smooth_degree = field2num(P,'MODELLING_PCDM_HEATMAP_SMOOTH_DEGREE',1);
+PCDM.heatmap_smooth_degree = field2num(P,'MODELLING_PCDM_HEATMAP_SMOOTH_DEGREE',1);
 % minimum number of models to compute maximum probability curve
-pcdm.newlimit_threshold = field2num(P,'MODELLING_PCDM_NEW_THRESHOLD',2);
+PCDM.newlimit_threshold = field2num(P,'MODELLING_PCDM_NEW_THRESHOLD',2);
 % tolerance ratio to extend the edge limits
-pcdm.newlimit_edge_ratio = field2num(P,'MODELLING_PCDM_NEW_LIMIT_EDGE_RATIO',20);
+PCDM.newlimit_edge_ratio = field2num(P,'MODELLING_PCDM_NEW_LIMIT_EDGE_RATIO',20);
 % factor of extension (from the previous interval) when reaching an edge
-pcdm.newlimit_extend = field2num(P,'MODELLING_PCDM_NEW_LIMIT_EXTEND',1);
+PCDM.newlimit_extend = field2num(P,'MODELLING_PCDM_NEW_LIMIT_EXTEND',1);
 % option to export supplementary graphs (intermediate results per iteration)
-pcdm.supplementary_graphs = isok(P,'MODELLING_PCDM_SUPPLEMENTARY_GRAPHS');
+PCDM.supplementary_graphs = isok(P,'MODELLING_PCDM_SUPPLEMENTARY_GRAPHS');
 tickfactorlim = 5e3; % above 5 km width/depth axis will be in km
 
 % MODELTIME parameters
@@ -821,7 +821,7 @@ for r = 1:length(P.GTABLE)
 		% --- computes the model !
 		switch lower(modelling_source_type)
 		case 'pcdm'
-			M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,pcdm);
+			M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,PCDM);
 			if length(M) > 1 && M(end).m0 < M(1).m0
 				[mm,imm] = max(cat(4,M.mm),[],4);
 				% volume for maximum probability
@@ -855,10 +855,10 @@ for r = 1:length(P.GTABLE)
 					pbest = nan(size(pbest));
 				end
 			end
-			if numel(pcdm.random_sampling) == 1
-				nmodels = pcdm.random_sampling*pcdm.iterations;
+			if numel(PCDM.random_sampling) == 1
+				nmodels = PCDM.random_sampling*PCDM.iterations;
 			else
-				nmodels = sum(pcdm.random_sampling);
+				nmodels = sum(PCDM.random_sampling);
 			end
 		otherwise
 			M = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
@@ -1066,7 +1066,7 @@ for r = 1:length(P.GTABLE)
 		info = { ...
 			' ', ...
 			sprintf('model type = {\\bf%s%s}',modelling_source_type,src_multi), ...
-			sprintf('number of models : {\\bf%s}',num2tex(nmodels)), ...
+			sprintf('model space = {\\bf%s}',num2tex(nmodels)), ...
 			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
 		};
 		if modelopt.horizonly
@@ -1077,7 +1077,7 @@ for r = 1:length(P.GTABLE)
 		end
 		% displays info for best model(s)
 		if any(~isnan(m0)) 
-			%info = cat(2,info,' ',sprintf('   {\\itBest source (%1.1f%%)}:',modelopt.msigp*100));
+			%info = cat(2,info,' ',sprintf('   {\\itLeast bad source (%1.1f%%)}:',modelopt.msigp*100));
 			[e0,n0,z0] = ll2utm(lat0,lon0);
 			switch lower(modelling_source_type)
 			case 'pcdm'
@@ -1192,7 +1192,7 @@ for r = 1:length(P.GTABLE)
 				case 'pcdm'
 					for m = 1:length(M)
 						E.infos = cat(2,E.infos, ...
-							sprintf('Best pCDM model #%d:',m), ...
+							sprintf('Least bad pCDM model #%d:',m), ...
 							sprintf('latitude / longitude = %g N / %g E',lats(m),lons(m)), ...
 							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',pbest(m,3),-fliplr(ez(m,:))/1e3), ...
 							sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
@@ -1204,7 +1204,7 @@ for r = 1:length(P.GTABLE)
 				otherwise
 					for m = 1:length(M)
 						E.infos = cat(2,E.infos, ...
-							sprintf('Best isotropic model #%d:',m), ...
+							sprintf('Least bad isotropic model #%d:',m), ...
 							sprintf('latitude / longitude = %g N / %g E',lats(m),lons(m)), ...
 							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',-[pbest(m,3),fliplr(ez(m,:))]/1e3), ...
 							sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
@@ -1434,7 +1434,7 @@ for r = 1:length(P.GTABLE)
 			scatter(M(m).d(:,1),M(m).d(:,2),mks,M(m).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
 		end
 		hold off
-		set(gca,'XLim',minmax(mlim),'YLim',minmax(mlim),'XTickLabels',[],'FontSize',6);
+		set(gca,'XLim',minmax(mlim),'YLim',minmax(mlim),'XTickLabel',[],'FontSize',6);
 		tickfactor(distfactor)
 		ylabel(sprintf('Distances in %s',distunit))
 		box on
@@ -1467,7 +1467,7 @@ for r = 1:length(P.GTABLE)
 			scatter(M(m).d(:,3),M(m).d(:,2),mks,M(m).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
 		end
 		hold off
-		set(gca,'XLim',minmax(zlim),'YLim',minmax(mlim),'XDir','reverse','YTickLabels',[],'YAxisLocation','right','FontSize',6);
+		set(gca,'XLim',minmax(zlim),'YLim',minmax(mlim),'XDir','reverse','YTickLabel',[],'YAxisLocation','right','FontSize',6);
 		tickfactor(distfactor)
 		xlabel(sprintf('Depth (%s)',distunit))
 		box on
