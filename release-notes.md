@@ -4,39 +4,46 @@
 This document contains install/upgrade summary and specific instructions for users and administrators.
 
 The lastest release has many improvements, new features and bug fixes.
-**Upgrade is recommended for all WebObs administrators**. For known issues, please take a look to [https://github.com/IPGP/webobs/issues](https://github.com/IPGP/webobs/issues) and do not hesitate to submit any problem with this release.
+**Upgrade is recommended for all WebObs administrators**. For known issues, please take a look to [github.com/IPGP/webobs/issues](https://github.com/IPGP/webobs/issues) and do not hesitate to submit any problem with this release.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
 
-## v2.1.3 (July, 2019)
+## v2.1.3b (August, 2019)
 
-###`!!`Security update
+### `!!`Security update
 This release introduces important improvements in CGI security, in particular register.pl which is not protected by password, but also other scripts now checking input parameters to avoid irregular/unwanted actions.
 
-###Locastat
+### Locastat
 NODE's location maps now include an altitude value from DEM interpolation, written in the map's comment that may be compared to NODE's altitude given in the configuration.
 
-###MC3
+### Sefran/MC
 Sub-menu of seismic bulletin MC3 page now have link(s) to any Sefran3 associated to the displayed MC3. Formerly, it was only a link to the default Sefran3.
 
-###Superproc gnss
+Fixed an issue when event seconds are out of range (<0 or >=60).
+
+The SEFRAN3 configuration key `PATH_TMP` (in `SEFRAN3.conf`) is now obsolete. Each sefran will use temporary path defined as `$PATH_TMP_WEBOBS/sefran3/SEFRAN3_NAME` where `$PATH_TMP_WEBOBS` is general temporary path defined in `WEBOBS.rc` and `SEFRAN3_NAME` is the unique name of the Sefran.
+
+
+### Superproc gnss
 1. Improvements of MODELTIME summary graph:
 	- source volume variation is now expressed as a flux rate in m^3/s
 	- additional map with profiles show time evolution of the best sources in space for any subset of time periods
 	- source models are not computed if there is no data for the most recent time of integration period
 
 2. Improvement of VECTORS summary graph: a subplot shows vector amplitude vs. distance from target (if defined).
+ 
 3. Improvement of MODELLING summary graph:
 	- errors on depth and volume variation are calculated as +/- scalar value (and not interval)
 	- flow rate is calculated in addition to volume variation
+	- pCDM source type is now about a hundred times faster than previous versions
 
-###Others
+### Others
 Some other bug fixes and minor improvements.
 
 ## v2.1.2c (July, 2019)
 
-###WEBOBS.rc
+### WEBOBS.rc
 `!!` Default behavior does not show anymore a confirm 'alert' window if the action has succeed. For example, when editing a NODE or GRID configuration. If administrator wants the former behavior, he must set this new key:
 
 ```
@@ -56,7 +63,7 @@ DEM_MAX_WIDTH|1201
 to automatically decimate any DEM before a plot. The parameter defines the square root of maximum total number of pixels (default corresponds to 1 SRTM3 tile).
 
 
-###Events (Gazette, GRIDS and NODES)
+### Events (Gazette, GRIDS and NODES)
 
 Fix and improve of active group functionality in the Gazette (introduced in v2.0.0) and propagate to GRIDS and NODES events.
 
@@ -273,26 +280,26 @@ them.
 	- Timestamp (inserted after Operator)
 
 
-###Superformat quakes
+### Superformat quakes
 
 Solves a problem with `scevtlog-xml` format when some data don't have 
 preferred magnitude. This affects all quake-compatible superprocs, in
 particular hypomap and tremblemaps.
 	
 	
-###Setup
+### Setup
 
 Multiple fixes and improvements in installation.
 
 
-###user registration
+### user registration
 
 Fix register security issues and add possibility to change password.
 
 
 ## v2.1.0 (December, 2018)
 
-###Sefran3
+### Sefran3
 
 1. New filtering possibility for individual channels, lowpass, highpass
 or bandpass. See `SETUP/CONF/SEFRAN3_Channels.conf` for syntax.
@@ -348,7 +355,7 @@ EVENTNODE_NOTIFY_DEFAULT|YES
 
 ## v2.0.0 (October, 2018)
 
-###Setup upgrade
+### Setup upgrade
 
 When upgrading WebObs, the vimdiff of configuration files has been replaced
 by a smarter tool: it detects automatically new keys between templates and
@@ -359,7 +366,7 @@ These operations can be refused by admin. In any case, the `SETUP.CONF.README`
 file will contain the list of all new keys with explicit headers.
 
 
-###Scheduler
+### Scheduler
 
 1. **New kill job command**
 
@@ -384,7 +391,7 @@ file will contain the list of all new keys with explicit headers.
         valid  N
 ```
 
-###New users auto-registration
+### New users auto-registration
 
 Possibility to activate an auto-registering for new users, in `WEBOBS.rc`:
 
@@ -408,7 +415,7 @@ file must be deleted first. Any valid login in htpasswd without a
 corresponding WebObs user will give a direct access with user *Guest*.
 	
 
-###All superprocs
+### All superprocs
 
 1. **New behavior for NODE's FID_x keys**
 
@@ -445,7 +452,7 @@ an external gawk preprocessor. See readfmtdata_dsv.m.
 SVGOUTPUT|Y
 ```
 
-###Superproc GNSS
+### Superproc GNSS
 
 1. **Bug fixes**
 
@@ -541,7 +548,7 @@ be accessed by https:// now:
 USGS_URL|https://earthquake.usgs.gov/earthquakes/map
 ```
 
-###Superprocs hypomap and tremblemaps / quake data format
+### Superprocs hypomap and tremblemaps / quake data format
 
 New filter (in addition to event type and status) applying on the 'comment'
 field of event which corresponds to MC3 type if the catalog NODE has been
@@ -554,7 +561,7 @@ The filter is using case-insensitive regular expression pattern. Empty or
 unset value won't filter any event.
 
 
-###Gazette
+### Gazette
 
 In order to limit the long list of users (that might include unvalid users)
 when creating a new event, a new key in Gazette.rc:
