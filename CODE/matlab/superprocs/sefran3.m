@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2018-11-09
+%	Updated: 2019-08-22
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -30,13 +30,14 @@ if nargin < 1
 end
 SEFRAN3 = readcfg(WO,sprintf('/etc/webobs.d/%s.conf',name));
 
+ptmp = sprintf('%s/sefran3/%s',WO.PATH_TMP_WEBOBS,name); % temporary path
+
 % determines mode (real-time or force) and creates temporary path
 if nargin < 2
 	force = 0;
-	ptmp = field2str(SEFRAN3,'PATH_TMP','/tmp/sefran3'); % temporary path
 else
 	force = 1;
-	ptmp = sprintf('%s/force',field2str(SEFRAN3,'PATH_TMP','/tmp/sefran3')); % different temporary path to avoid (too much) conflicts with real-time
+	ptmp = [ptmp,'/force']; % different temporary path to avoid (too much) conflicts with real-time
 end
 wosystem(sprintf('mkdir -p %s',ptmp),SEFRAN3);
 
