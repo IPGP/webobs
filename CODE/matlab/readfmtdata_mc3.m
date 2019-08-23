@@ -19,7 +19,7 @@ function [D,P] = readfmtdata_mc3(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2019-01-21, in Paris (France)
-%	Updated: 2019-04-22
+%	Updated: 2019-08-23
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -179,9 +179,11 @@ if ~isempty(k)
     for i = 1:length(fdsnws_src)    % iterate over different fdsnws-event servers
         FDSNWS = F;
         if ~isempty(fdsnws_src{i})
-            FDSNWS.raw = split({MC3.(sprintf('FDSNWS_EVENTS_URL_%s',fdsnws_src{i}))},'?');
+            %[FBwas:]FDSNWS.raw = split({MC3.(sprintf('FDSNWS_EVENTS_URL_%s',fdsnws_src{i}))},'?');
+            FDSNWS.raw = split(MC3.(['FDSNWS_EVENTS_URL_',fdsnws_src{i}]),'?');
         else
-            FDSNWS.raw = split({MC3.FDSNWS_EVENTS_URL},'?');
+            %[FBwas:]FDSNWS.raw = split({MC3.FDSNWS_EVENTS_URL},'?');
+            FDSNWS.raw = split(MC3.FDSNWS_EVENTS_URL,'?');
         end
         FDSNWS.raw = {sprintf('%s?',FDSNWS.raw{1})};
         FDSNWS.fmt = 'fdsnws-event';
