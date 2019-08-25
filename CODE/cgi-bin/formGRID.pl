@@ -234,8 +234,10 @@ print "<INPUT type=\"Button\" value=\"<< Remove\" style=\"width:100px\" onClick=
 print "</TD>";
 print "<TD>";
 print "<SELECT name=\"SELs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%;font-weight:bold\">";
-for my $nodeId (sort @{$GRID{NODESLIST}}) {
-	print "<option value=\"$nodeId\">$nodeId</option>";
+if (!$newG) {
+	for my $nodeId (sort @{$GRID{NODESLIST}}) {
+		print "<option value=\"$nodeId\">$nodeId</option>";
+	}
 }
 print "</SELECT></td>";
 print "</TR>";

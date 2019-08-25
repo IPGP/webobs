@@ -197,7 +197,7 @@ if ($delete == 1) {
 	my $dir = dirname($gridConfFile);
 	my $rmtree_errors;
 	rmtree($dir, {'safe' => 1, 'error' => \$rmtree_errors});
-	if ($rmtree_errors) {
+	if ($rmtree_errors  && @$rmtree_errors) {
 		htmlMsgNotOK("postGRID couldn't delete directory $dir");
 		print STDERR "postGRID.pl: unable to delete directory $dir: "
 			.join(", ", @$rmtree_errors)."\n";
