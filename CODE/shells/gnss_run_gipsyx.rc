@@ -3,7 +3,7 @@
 # please copy to /etc/webobs.rc/, rename and edit to your needs.
 #
 # Created: 2019-02-25
-# Updated: 2019-07-31
+# Updated: 2019-08-25
 
 # prepares GIPSYX processing
 source /home/wo/GipsyX-1.2/rc_GipsyX.sh
@@ -30,7 +30,7 @@ DEST=/home/wo/GNSS/gipsyx
 GIPSYOPTIONS="-runType PPP"
 
 # teqc options
-TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -C2 -O.-obs C2 -O.-obs C5 -O.dec 10s -max_rx_SVs 30"
+TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -C2 -O.-obs C2 -O.-obs C5 -O.dec 10s -max_rx_SVs 30 -n_GLONASS 27"
 
 # download_orbit options
 DOWNLOAD_OPTIONS="-r 30"
