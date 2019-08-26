@@ -159,7 +159,7 @@ software (see also next section).
 
 3. `!!`	New key to select the misfit L-norm:
 
-	```
+```
 MODELLING_MISFITNORM|L1
 ```
 which is L1-norm by default. To preserve the previous L2-norm in active
@@ -167,7 +167,7 @@ proc, this must be changed to `L2`.
 
 4. `!!`	New key to limit numerical effets:
 
-	```
+```
 MODELLING_MINERROR_PERCENT|1
 ```
 which set a minimum relative error of 1% (default) for each data before
@@ -177,7 +177,7 @@ a large number of stations (more than 10) and/or for long period of time
 
 5. New keys to configure improved rendering of summary, pernode and baselines graphs:
 
-	```
+```
 COMPONENT_NAMELIST|Relative Eastern,Relative Northern,Relative Vertical
 PERNODE_COMPONENT_OFFSET_M|0.01
 PERNODE_TIMEZOOM|
@@ -191,7 +191,7 @@ The `_TIMEZOOM` keys might contain a fraction number (between 0 and 1) which wil
 
 6. New key to configure the background basemap options for vectors:
 
-	```
+```
 VECTORS_DEM_OPT|'watermark',3,'interp','legend'
 ```
 The list of options can be any valid parameters for `CODE/matlab/dem.m` function, such as changing the colormap and lighting effects.
@@ -205,14 +205,14 @@ For consistency, two updates have been made in genplot superproc configuration, 
 
 1. `!!` The key `NODE_CHANNELS` has been renamed `PERNODE_CHANNELS` for consistency. Automatic update of any proc configuration will add the following:
 
-	```
+```
 PERNODE_CHANNELS|${NODE_CHANNELS}
 ```
 so the former configuration should be kept. A good administrator practice is to replace the value manually and delete the obsolete `NODE_CHANNELS` key.
 
 2. `!!` The key `SUMMARYLIST` must now be set to:
 
-	```
+```
 SUMMARYLIST|SUMMARY
 ```
 to make the summary graph. Empty or commented parameter will lead to no summary graph. The former behavior was to activate the summary graph as the `SUMMARYLIST` key existed, even empty.
@@ -231,7 +231,7 @@ Presently the raw formats accepted are *Leica*, *Trimble* and *Rinex* (standard 
 
 1. `!!` New default color scheme for modelling plots
 
-	```
+```
 MODELLING_COLORREF|volpdf
 ```
 combining the source volume sign and probability using a mirror shading
@@ -248,7 +248,7 @@ to high probability, no volume indication excepted for best model. To reuse the 
 To avoid numerical problems in modelling, there is now a minimum error
 on absolute displacements with a new key:
 
-	```
+```
 MODELLING_MINERROR_MM|5
 ```
 
@@ -306,7 +306,7 @@ or bandpass. See `SETUP/CONF/SEFRAN3_Channels.conf` for syntax.
 
 2. New key in SEFRAN3.conf file:
 
-	```
+```
 FILTER_EXTRA_SECONDS|0
 ```	
 fixes the number of added seconds of signal before the minute beginning
@@ -316,7 +316,7 @@ to avoid filter border effects.
 the image metadata itself. Temporary external file defined by the key
 in SEFRAN3.conf:
 
-	```
+```
 CHANNEL_STAT|sefran_chan.dat
 ```
 is now obsolete and can be deleted.
@@ -384,7 +384,7 @@ file will contain the list of all new keys with explicit headers.
 
 	When creating a new job, default values will apply for some fields:
 
-	```
+```
          xeq1  $WEBOBS{JOB_MCC} genplot
      interval  3600
    maxsysload  0.8
@@ -448,7 +448,7 @@ an external gawk preprocessor. See readfmtdata_dsv.m.
 
 	New experimental export of images in SVG format. Set to any proc:
 
-	```
+```
 SVGOUTPUT|Y
 ```
 
@@ -465,7 +465,7 @@ value in baseline (`LINEWIDTHLIST`).
 velocity vector E,N,U (mm/yr) as a constant trend substracted to all 
 data before any other processing:
 
-	```
+```
 VELOCITY_REF|0,0,0
 VELOCITY_REF_ORIGIN_DATE|2000-01-01
 ```
@@ -485,7 +485,7 @@ displayed now correspond to the residual trend of the node.
 
 	New baselines configuration available to set any pairs of nodes:
 
-	```
+```
 BASELINES_NODEPAIRS|
 ```
 defining a list of reference node and their target nodes, in the format:
@@ -496,7 +496,7 @@ semicolon separated.
 defined: as a reminder, all possible pairs of nodes are plotted, with optional 
 node(s) exclusion list and/or optional node(s) reference list:
 
-	```
+```
 BASELINES_EXCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
 ```
@@ -505,7 +505,7 @@ BASELINES_REF_NODELIST|
 
 	A new option
 
-	```
+```
 VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 ```	
 setting that default is relative for horizontal components only when 
@@ -520,7 +520,7 @@ relative mode is active (`VECTORS_RELATIVE|Y`) in auto mode (`VECTORS_VELOCITY_R
 and statistics) in MC3. But the data and graphs always remain in UTC !
 New keys to add in any `MC3.conf`:
 
-	```
+```
 SELECT_LOCAL_TZ|-4
 DEFAULT_SELECT_LOCAL|N
 ```
@@ -538,13 +538,13 @@ managed by the following resource names for users/groups:
 	New key defining the full html link code for external catalog event check
 when editing an event in MC3:
 
-	```
+```
 VISIT_LINK|<A href="http://www.emsc-csem.org/Earthquake/" target="_blank"><B>EMSC</B></A>
 ```	
 which might replace the former USGS_URL key. Note that USGS catalog must
 be accessed by https:// now:
 
-	```
+```
 USGS_URL|https://earthquake.usgs.gov/earthquakes/map
 ```
 
