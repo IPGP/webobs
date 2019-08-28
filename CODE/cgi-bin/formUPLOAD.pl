@@ -107,7 +107,7 @@ if ($typeDoc ne "SPATH_INTERVENTIONS") {
 die "$__{'Do not know where to upload'}" if ( $pathTarget eq "" );
 $thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}";
 make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down THUMBNAILS exist
-(my $urnTarget  = $pathTarget) =~ s/$WEBOBS{ROOT_SITE}/../g;
+(my $urnTarget  = $pathTarget) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
 my @listeTarget = <$pathTarget/*.*> ;
 
 # ---- start HTML to display/process input form
@@ -199,14 +199,13 @@ print "<form id=\"theform\" name=\"formulaire\" action=\"\" ENCTYPE=\"multipart/
 		my ( $name, $path, $extension ) = fileparse ( $_, '\..*' );
 		my $urn  = "$urnTarget/$name$extension";
 		my $turn = "$urnTarget/$thumbnailsPath/$name$extension";
-		(my $urnTarget  = $pathTarget) =~ s/$WEBOBS{ROOT_SITE}/../g;
 		my $file = "$pathTarget/$name$extension";
 		print "<TD style='border:none; border-right: 1px solid gray' align=center valign=top>";
 		print "<A href=\"$urn\">";
 		my $th = makeThumbnail( $file, "x$NODES{THUMBNAILS_PIXV}", "$pathTarget/$thumbnailsPath","$NODES{THUMBNAILS_EXT}");
 		if ( $th ne "" ) { 
-			(my $turn = $th) =~ s/$WEBOBS{ROOT_SITE}/../g;
-			print "<IMG src=\"$turn\"/>" 
+			(my $turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
+			print "<IMG src=\"$turn\"/>";
 		} 
 		print "</A>";
 		print "<P>$name$extension<BR/>";
