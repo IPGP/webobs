@@ -104,7 +104,7 @@ $QryParm->{'day2'}    ||= "01";
 my $resultOK = 0;
 my $scanlist = 1;
 my $grepopt  = "-s ";
-my %CLBS     = readCfg($WEBOBS{CLB_CONF});
+my %CLBS     = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 my @fieldCLB = readCfg($CLBS{FIELDS_FILE});
 my @clbNote  = readFile($CLBS{NOTES});
 

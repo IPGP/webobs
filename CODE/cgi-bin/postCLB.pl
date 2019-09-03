@@ -57,7 +57,7 @@ if (clientHasEdit(type=>"authmisc",name=>"CLB")) {
 		%NODE = %{$S{$QryParm->{'node'}}};
 		if (%NODE) {
 			$fileDATA = "$NODES{PATH_NODES}/$QryParm->{'node'}/$QryParm->{'node'}.clb";
-			%CLBS = readCfg($WEBOBS{CLB_CONF});
+			%CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 			if (%CLBS) {
 				@fieldCLB = readCfg($CLBS{FIELDS_FILE});
 				if (@fieldCLB) {
