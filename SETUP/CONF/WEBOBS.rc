@@ -138,7 +138,7 @@ SQL_TABLE_AUTHWIKIS|authwikis
 SQL_TABLE_AUTHMISC|authmisc
 SQL_TABLE_GROUPS|groups
 SQL_DB_USERS_AUTOREGISTER|Y
-REGISTRATION_LOGFILE|${ROOT_DATA}/DB/reglog
+REGISTRATION_LOGFILE|${PATH_DATA_DB}/reglog
 
 # ---- Notifications/postboard -----------------
 # ---------------------------------------------
