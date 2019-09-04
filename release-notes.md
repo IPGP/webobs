@@ -9,7 +9,7 @@ The lastest release has many improvements, new features and bug fixes.
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
 
-## v2.1.3c (August, 2019)
+## v2.1.3e (September, 2019)
 
 ### `!!`Security update
 This release introduces important improvements in CGI security, in particular register.pl which is not protected by password, but also other scripts now checking input parameters to avoid irregular/unwanted actions.
