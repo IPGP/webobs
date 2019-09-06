@@ -450,10 +450,10 @@ sub photoStrip {
 	my $ret = "<DIV style='width: auto; overflow-x: auto; overflow-y: hidden'><TABLE><TR><TD>";
 	foreach(@_) {
 		my ( $name, $path ) = fileparse ( $_ );
-		(my $urnpath  = $path) =~ s/$WEBOBS{ROOT_SITE}/../g;
+		(my $urnpath  = $path) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
 		my $thumb = makeThumbnail( "$path/$name", "x$NODES{THUMBNAILS_PIXV}", "$path/THUMBNAILS","$NODES{THUMBNAILS_EXT}");
 		if ( $thumb ne "" ) {
-			(my $turn = $thumb) =~ s/$WEBOBS{ROOT_SITE}/../g;
+			(my $turn = $thumb) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
 			my $olmsg = htmlspecialchars(__x("<b>Click to enlarge</B><br><i>Image=</i>{image}",image=>$name));
 			$ret .= "<img wolbset=\"EVPHOTOS\" wolbsrc=\"$urnpath/$name\" src=\"$turn\" onMouseOut=\"nd()\" onmouseover=\"overlib('$olmsg')\" border=\"0\" alt=\"".__x('Image {file}',file=>$urnpath."/".$name)."\">\n";
 		}
