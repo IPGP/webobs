@@ -55,9 +55,9 @@ locstatus=
  2 show auto only.
 
 hideloc= 
- show locations. Optional, defaults to DISPLAY_LOCATION_DEFAULT variable from MC3 conf
- 0 don't parse (and show, quicker) locations.
- 1 parse and show, if available, locations.
+ hide locations. Optional, defaults to !DISPLAY_LOCATION_DEFAULT variable from MC3 conf
+ 0 parse and show, if available, locations.
+ 1 don't parse (and show, quicker) locations.
 
 obs= 
  regular expression for data filtering
