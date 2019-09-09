@@ -55,9 +55,9 @@ locstatus=
  2 show auto only.
 
 hideloc= 
- show locations. Optional, defaults to DISPLAY_LOCATION_DEFAULT variable from MC3 conf
- 0 don't parse (and show, quicker) locations.
- 1 parse and show, if available, locations.
+ hide locations. Optional, defaults to !DISPLAY_LOCATION_DEFAULT variable from MC3 conf
+ 0 parse and show, if available, locations.
+ 1 don't parse (and show, quicker) locations.
 
 obs= 
  regular expression for data filtering
@@ -593,7 +593,7 @@ my @ligneTitre;
 if ($QryParm->{'dump'} eq 'bul') {
 	$dumpFile = "${mc3}_dump_bulletin.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
-	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;Longitude;Latitude;Depth;Type;File;Valid;Projection;Operator;Timestamp;ID\n");
+	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;Longitude;Latitude;Depth;Type;File;LocMode;LocType;Projection;Operator;Timestamp;ID\n");
 }
 if ($QryParm->{'dump'} eq 'cum') {
 	$dumpFile = "${mc3}_dump_daily_total.csv";
@@ -681,29 +681,30 @@ foreach my $line (@lignes) {
 		# ID FDSNWS case: request QuakeML file by FDSN webservice
 		elsif ($qml =~ /:\/\//) {
 			my ($fdsnws_src,$evt_id) = split(/:\/\//,$qml);
-		        my $fdsnws_url = "";
+			my $fdsnws_url = "";
 			my $fdsnws_detail = "";
 			if (defined($MC3{FDSNWS_EVENTS_URL})) {
-			        $fdsnws_url = $MC3{FDSNWS_EVENTS_URL};
+				$fdsnws_url = $MC3{FDSNWS_EVENTS_URL};
 				($fdsnws_url,$fdsnws_detail) = split(/\?/,$fdsnws_url);
 				$fdsnws_url = $fdsnws_url."?";
 			}
-                        if (length($fdsnws_src) > 0) {
-                                my $varname = "FDSNWS_EVENTS_URL_$fdsnws_src";
-                                $fdsnws_url = "$MC3{$varname}";
+			if (length($fdsnws_src) > 0) {
+				my $varname = "FDSNWS_EVENTS_URL_$fdsnws_src";
+				$fdsnws_url = "$MC3{$varname}";
 				($fdsnws_url,$fdsnws_detail) = split(/\?/,$fdsnws_url);
 				$fdsnws_url = $fdsnws_url."?";
 				$varname = "FDSNWS_EVENTS_DETAIL_$fdsnws_src";
 				if (defined($MC3{$varname})) {
 					$fdsnws_detail = $MC3{$varname};
 				}
-                        }
+			}
 			%QML = qmlfdsn("${fdsnws_url}&format=xml&eventid=$evt_id");
-                       if (%QML) {
-                               $origin = "$evt_id;$QML{time};$QML{latitude};$QML{longitude};$QML{depth};$QML{phases};$QML{mode};$QML{status};$QML{magnitude};$QML{magtype};$QML{method};$QML{model};$QML{type}";
-                       } else {
-                               $origin = '';
-                       }
+			if (%QML) {
+				$QML{type} = "not locatable" if ($QML{type} eq ""); 
+				$origin = "$evt_id;$QML{time};$QML{latitude};$QML{longitude};$QML{depth};$QML{phases};$QML{mode};$QML{status};$QML{magnitude};$QML{magtype};$QML{method};$QML{model};$QML{type}";
+			} else {
+				$origin = '';
+			}
 			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$signature|$comment|$origin";
 		}
 		# Old suds ID case :
@@ -766,7 +767,8 @@ foreach my $line (@lignes) {
 			if ($QryParm->{'dump'} eq 'bul') {
 				push(@csv,join('',split(/-/,$date))." ".join('',split(/:/,$heure)).";"
 					."$nombre;$duree_s;$amplitude;$mag;$lon;$lat;$dep;$type;$qml;"
-					.($mod eq 'manual' ? "1":"0").";WGS84;$operator;$timestamp;"
+					#.($mod eq 'manual' ? "1":"0").";WGS84;$operator;$timestamp;"
+					."$mod".($sta == "" ? "":" ($sta)").";$typ;WGS84;$operator;$timestamp;"
 					.substr($date,0,7)."#$id_evt\n");
 			#FB-was:} elsif ($QryParm->{'dump'} eq "") {
 			} else {

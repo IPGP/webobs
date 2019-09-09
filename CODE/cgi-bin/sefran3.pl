@@ -68,6 +68,7 @@ my $mc3    = $cgi->url_param('mc');
 my $id     = $cgi->url_param('id');
 my $header = $cgi->url_param('header');
 my $status = $cgi->url_param('status');
+my $trash  = $cgi->url_param('trash');
 my $ref    = $cgi->url_param('ref');
 my $yref   = $cgi->url_param('yref');
 my $mref   = $cgi->url_param('mref');
@@ -398,8 +399,9 @@ if (!$date) {
 			for ("01".."31") { print "<OPTION value=\"$_\"".($_ eq $dref ? " selected":"").">$_</OPTION>\n"; }
 			print "</SELECT> <INPUT type=button value=\"Display\" onClick=\"submit()\">"; 
 		print "</SPAN>";
-		print "<INPUT type=checkbox name=\"header\" value=\"1\"".($header ? " checked":"")." onClick=\"submit()\"/> Header ";
-		print "<INPUT type=checkbox name=\"status\" value=\"1\"".($status ? " checked":"")." onClick=\"submit()\"/> Status";
+		print " <INPUT type=checkbox name=\"header\" value=\"1\"".($header ? " checked":"")." onClick=\"submit()\"/>".$__{'Header'};
+		print " <INPUT type=checkbox name=\"status\" value=\"1\"".($status ? " checked":"")." onClick=\"submit()\"/>".$__{'Status'};
+		print " <INPUT type=checkbox name=\"trash\" value=\"1\"".($trash ? " checked":"")." onClick=\"submit()\"/>".$__{'Trash'};
 		print "</FORM>";
 	print "</TH></TR>";
 	print "</TABLE>";
@@ -442,7 +444,7 @@ if (!$date) {
 						my @mc_liste = split(/\n/,qx(awk -F'|' '\$2 == "$dd" && substr(\$3,1,2) == "$hh" {printf "\%s\\n",\$0}' $f));
 						for (reverse @mc_liste) {
 							my %MC = mcinfo($_);
-							if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1) {
+							if (($MC{id} > 0 || ($userLevel >= 2 && $trash == 1)) && $userLevel >= 1) {
 								my $deb_evt = 1 + int($SEFRAN3{HOURLY_WIDTH}*($MC{minute}/60 + $MC{second}/3600));
 								my $dur_evt = 1 + int(0.5 + $SEFRAN3{HOURLY_WIDTH}*$MC{duration}*$duration_s{$MC{unit}}/3600);	
 								print "<DIV class=\"mctag\"  onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{firstarrival}',BGCOLOR,'$types{$MC{type}}{Color}',FGCOLOR,'#EEEEEE',WIDTH,250)\"",
