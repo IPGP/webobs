@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 =head1 NAME
 
@@ -10,22 +10,22 @@ seiscomp2mc3.pl
 
 =head1 DESCRIPTION
 
-seiscomp2mc3 checks new events in QuakeML SeisComP database and, when necessary, updates 
-the MC3 database by creating new events entries. seiscomp2mc3 requires a command: 
+seiscomp2mc3 checks new events in QuakeML SeisComP database and, when necessary, updates
+the MC3 database by creating new events entries. seiscomp2mc3 requires a command:
 
 update
   Updates MC3 database
 
-check 
+check
  checks MC3 database (read only)
 
 dumper
  checks and dumps XML tree (read only)
 
-An optional argument ( -f ) may specify the MC3 configuration file to be used. It 
+An optional argument ( -f ) may specify the MC3 configuration file to be used. It
 defaults to $WEBOBS{ROOT_CONF}/$WEBOBS{MC3_DEFAULT_NAME}.conf
 
-An optional argument ( -n ) may specify the SEFRAN3 name to be used. It 
+An optional argument ( -n ) may specify the SEFRAN3 name to be used. It
 defaults to $WEBOBS{SEFRAN3_DEFAULT_NAME}
 
 =head1 DEPENDENCIES
@@ -39,14 +39,14 @@ use strict;
 use strict;
 use warnings;
 use FindBin;
-use lib $FindBin::Bin; 
+use lib $FindBin::Bin;
 use POSIX;
 
 use WebObs::Config;
 use QML;
 # Date parsing library
 use DateTime::Format::Strptime;
- 
+
 # ---- create files with group permissions from the parent directory
 umask 002;
 
@@ -60,7 +60,7 @@ my $sefran3_name = $WEBOBS{SEFRAN3_DEFAULT_NAME};
 # Maximum difference between the dates of an event in SC3 and MC3 to update MC3 (seconds)
 my $max_dts_sc3_mc3 = 90;
 
-# ---- help text when no arguments   
+# ---- help text when no arguments
 if (@ARGV == 0) {
 	print "WebObs SeisComP to MC3 seismic bulletin\n\n",
 		"Usage: $0 COMMAND [OPTIONS]\n\n",
@@ -93,9 +93,9 @@ if (@ARGV > 0) {
 	my $opt = shift || '';
 	if ( $opt =~ /-f/ ) {
 		$opt = shift;
-		if ( $opt ) { 
-			if ( -e "$WEBOBS{ROOT_CONF}/$opt.conf" ) { 
-				$mc3 = $opt; 
+		if ( $opt ) {
+			if ( -e "$WEBOBS{ROOT_CONF}/$opt.conf" ) {
+				$mc3 = $opt;
 			} else {
 				print "'$opt' does not exists\n";
 				exit(1);
@@ -104,7 +104,7 @@ if (@ARGV > 0) {
 			print "invalid -f option\n";
 			exit(1);
 		}
-	}	
+	}
 	if ( $opt =~ /-n/ ) {
 		$opt = shift;
 		if ( $opt ) {
@@ -115,7 +115,7 @@ if (@ARGV > 0) {
 			print "invalid -n option\n";
 			exit(1);
 		}
-	}	
+	}
 }
 
 # ---- read config
@@ -286,7 +286,7 @@ for (@last) {
 				$evt_dur = sprintf("%1.2f",10 ** (($evt_smag - $evt_dist*0.0035 + 0.87)/2));
 				print "station duration = $evt_dur\n";
 				if ($evt_dur == 0) {
-					$evt_dur = ''; 
+					$evt_dur = '';
 				}
 			} else {
 				print "* Warning: no duration!\n";
@@ -400,7 +400,7 @@ for (@last) {
 				# --- outputs for MC
 				if ($newID > 0) {
 					$mc_id = $maxID + 1;
-					my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1||$evt_scode|$evt_unique|$sefran3_name|$evt_y/$evt_m/$evt_d/$evt_id||$oper|\n";
+					my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1|$evt_SP|$evt_scode|$evt_unique|$sefran3_name|$evt_y/$evt_m/$evt_d/$evt_id||$oper|\n";
 					print "$newline\n";
 					push(@lignes,$newline);
 				}
@@ -463,7 +463,7 @@ sub Sort_date_with_id ($$) {
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
-sub Quit 
+sub Quit
 {
 	if (-e $_[0]) {
 		unlink $_[0];
@@ -497,4 +497,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
