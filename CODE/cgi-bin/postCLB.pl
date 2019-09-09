@@ -62,11 +62,11 @@ if (clientHasEdit(type=>"authmisc",name=>"CLB")) {
 				@fieldCLB = readCfg($CLBS{FIELDS_FILE});
 				if (@fieldCLB) {
 					$fileDATA = "$NODES{PATH_NODES}/$QryParm->{'node'}/$QryParm->{'node'}.clb";
-				} else { htmlMsgNotOK("Couldn't read the calibration-files data-fields definition.") } 
-			} else { htmlMsgNotOK("Couldn't read the calibration-files configuration.") }
-		} else { die "Couldn't get $QryParm->{'node'} node configuration." }
-	} else { htmlMsgNotOK("no node specified. ") }
-} else { htmlMsgNotOK("You can't edit calibration files !") }
+				} else { htmlMsgNotOK("Couldn't read the calibration-files data-fields definition."); exit 1; }
+			} else { htmlMsgNotOK("Couldn't read the calibration-files configuration."); exit 1; }
+		} else { htmlMsgNotOK("Couldn't get $QryParm->{'node'} node configuration."); exit 1; }
+	} else { htmlMsgNotOK("no node specified. "); exit 1; }
+} else { htmlMsgNotOK("You can't edit calibration files !"); exit 1; }
 
 my $nb      = $cgi->param('nb');
 my $nbc     = $cgi->param('nbc');
@@ -161,9 +161,11 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 	} else {
 		close(FILE);
 		htmlMsgNotOK("postCLB couldn't backup $fileDATA ");
+		exit 1;
 	}
 } else {
 	htmlMsgNotOK("postCLB opening r/w - $!");
+	exit 1;
 }
 
 # --- return information when OK 

@@ -39,7 +39,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-08-13
+%   Updated: 2019-09-09
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -132,9 +132,9 @@ modelling_topo_rgb = field2num(P,'MODELLING_TOPO_RGB',.5*[1,1,1]);
 modelling_coloref = lower(field2str(P,'MODELLING_COLORREF','volpdf'));
 modelling_title = field2str(P,'MODELLING_TITLE','{\fontsize{14}{\bf$name - Source modelling} ($timescale)}');
 
-modelling_source_type = field2str(P,'MODELLING_SOURCE_TYPE','isotropic');
-% a priori horizontal error around the target (in STD, km), 0 or NaN = no a priori
+modelling_source_type = field2str(P,'MODELLING_SOURCE_TYPE','isotropic','notempty');
 modelopt.horizonly = isok(P,'MODELLING_HORIZONTAL_ONLY');
+% a priori horizontal error around the target (in STD, km), 0 or NaN = no a priori
 modelopt.apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 modelopt.msig = field2num(P,'MODELLING_SIGMAS',1);
 modelopt.minerror = field2num(P,'MODELLING_MINERROR_MM',5);
@@ -1068,6 +1068,7 @@ for r = 1:length(P.GTABLE)
 			sprintf('model type = {\\bf%s%s}',modelling_source_type,src_multi), ...
 			sprintf('model space = {\\bf%s}',num2tex(nmodels)), ...
 			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
+			sprintf('uncertainty = {\\bf%g \\sigma (%1.1f%%)}',modelopt.msig,modelopt.msigp*100), ...
 		};
 		if modelopt.horizonly
 			info = cat(2,info,'misfit mode = {\bfhorizontal only}');
@@ -1099,9 +1100,18 @@ for r = 1:length(P.GTABLE)
 					bstab{1,m+1} = sprintf('Source #%d',m);
 					bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
 					bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
-					bstab{4,m+1} = sprintf('{\\bf%1.1f \\pm %g}',[-pbest(m,3),roundsd(abs(diff(ez(m,:)))/2,2)]/1e3);
-					bstab{5,m+1} = sprintf('{\\bf%+g \\pm %g}',roundsd([vv0(m),abs(diff(ev(m,:)))/2]/vfactor,2));
-					bstab{6,m+1} = sprintf('%+g',roundsd(vv0(m)/diff(tlim)/86400,2));
+					if plotbest
+						bstab{4,m+1} = sprintf('{\\bf%g \\pm %g}', ...
+							roundsd(-pbest(m,3)/1e3,2),roundsd(abs(diff(ez(m,:)))/2e3,1));
+						bstab{5,m+1} = sprintf('{\\bf%+g \\pm %g}', ...
+							roundsd(vv0(m)/vfactor,2),roundsd(abs(diff(ev(m,:)))/2/vfactor,1));
+						bstab{6,m+1} = sprintf('%+g \\pm %g',roundsd(vv0(m)/diff(tlim)/86400,2), ...
+							roundsd(abs(diff(ev(m,:)))/2/diff(tlim)/86400,1));
+					else
+						bstab{4,m+1} = sprintf('{\\bf%g} to {\\bf%g}',roundsd(minmax(-ez(m,:)/1e3),2));
+						bstab{5,m+1} = sprintf('{\\bf%+g} to {\\bf%+g}',roundsd(minmax(ev(m,:)/vfactor),2));
+						bstab{6,m+1} = sprintf('%+g to %+g',roundsd(minmax(ev(m,:)/diff(tlim)/86400),2));
+					end
 					bstab{7,m+1} = sprintf('{\\bf%1.2f}',pbest(m,8));
 					bstab{8,m+1} = sprintf('{\\bf%1.2f}',pbest(m,9));
 					bstab{9,m+1} = sprintf('{\\bf%s}',pcdmdesc(pbest(m,8),pbest(m,9)));
@@ -1124,9 +1134,18 @@ for r = 1:length(P.GTABLE)
 					bstab{1,m+1} = sprintf('Source #%d',m);
 					bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
 					bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
-					bstab{4,m+1} = sprintf('{\\bf%1.1f \\pm %g}',[-pbest(m,3),roundsd(abs(diff(ez(m,:)))/2,2)]/1e3);
-					bstab{5,m+1} = sprintf('{\\bf%+g \\pm %g}',roundsd([vv0(m),abs(diff(ev(m,:)))/2]/vfactor,2));
-					bstab{6,m+1} = sprintf('%+g',roundsd(vv0(m)/diff(tlim)/86400,2));
+					if plotbest
+						bstab{4,m+1} = sprintf('{\\bf%g \\pm %g}', ...
+							roundsd(-pbest(m,3)/1e3,2),roundsd(abs(diff(ez(m,:)))/2e3,1));
+						bstab{5,m+1} = sprintf('{\\bf%+g \\pm %g}', ...
+							roundsd(vv0(m)/vfactor,2),roundsd(abs(diff(ev(m,:)))/2/vfactor,1));
+						bstab{6,m+1} = sprintf('%+g',roundsd(vv0(m)/diff(tlim)/86400,2));
+					else
+						bstab{4,m+1} = sprintf('{\\bf%g} to {\\bf%g}',roundsd(minmax(-ez(m,:)/1e3),2));
+						bstab{5,m+1} = sprintf('{\\bf%+g} to {\\bf%+g}', ...
+							roundsd(minmax(ev(m,:)/vfactor),2));
+						bstab{6,m+1} = sprintf('%+g to %+g',roundsd(minmax(ev(m,:)/diff(tlim)/86400),2));
+					end
 					bstab{7,m+1} = sprintf('{\\bf%g}',roundsd(m0(m),2));
 				end
 				rowlim = [.7,.3];

@@ -117,18 +117,18 @@ my $go2top = "&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 # ---- Nodes status ---------------------
 my $overallStatus = 1;
 my $statusDB = $NODES{SQL_DB_STATUS} || "$WEBOBS{PATH_DATA_DB}/NODESSTATUS.db";
-my @statusNODES;
+my $statusNODES;
 if (-e $statusDB) {
 	my $dbh = DBI->connect("dbi:SQLite:$statusDB", "", "", {
 		'AutoCommit' => 1,
 		'PrintError' => 1,
 		'RaiseError' => 1,
 		}) || die "Error connecting to $statusDB: $DBI::errstr";
-	@statusNODES = $dbh->selectall_array(
+	$statusNODES = $dbh->selectall_arrayref(
 			"select * from status where NODE like ? order by UPDATED asc",
 			undef, "%$grid%");
 }
-if (scalar(@statusNODES) == 0) {	
+if (@$statusNODES == 0) {
 	$overallStatus = 0;
 } 
 
@@ -523,7 +523,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				# NODE's status 
 				if ($overallStatus) {
 					# Get the latest updated state for the node and print the information
-					my $stState = (grep($_->[0] eq "$grid.$NODEName", @statusNODES))[-1];
+					my $stState = (grep($_->[0] eq "$grid.$NODEName", @$statusNODES))[-1];
 					if (defined($stState)) {
 						my $bgcolEt = "";
 						my $bgcolA = "";

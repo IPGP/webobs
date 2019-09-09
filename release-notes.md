@@ -9,7 +9,7 @@ The lastest release has many improvements, new features and bug fixes.
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
 
-## v2.1.3c (August, 2019)
+## v2.1.3f (September, 2019)
 
 ### `!!`Security update
 This release introduces important improvements in CGI security, in particular register.pl which is not protected by password, but also other scripts now checking input parameters to avoid irregular/unwanted actions.
@@ -22,8 +22,20 @@ Sub-menu of seismic bulletin MC3 page now have link(s) to any Sefran3 associated
 
 Fixed an issue when event seconds are out of range (<0 or >=60).
 
+In the Sefran hourly thumbnails page, added a new checkbox to display/hide trash events, available for Edit/Admin level users only.
+
 The SEFRAN3 configuration key `PATH_TMP` (in `SEFRAN3.conf`) is now obsolete. Each sefran will use temporary path defined as `$PATH_TMP_WEBOBS/sefran3/SEFRAN3_NAME` where `$PATH_TMP_WEBOBS` is general temporary path defined in `WEBOBS.rc` and `SEFRAN3_NAME` is the unique name of the Sefran.
 
+`!!` Export "Events bulletin" CSV file now have the following colums:
+
+```
+#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;Longitude;Latitude;Depth;Type;File;LocMode;LocType;Projection;Operator;Timestamp;ID
+```
+
+The former **Valid** column (0 = automatic, 1 = manual) has been replaced by columns:
+
+* **LocMode:** concatenating `manual` or `automatic` with optional `(confirmed)` information from SC3,
+* **LocType:** located event type (like `earthquake` or `not locatable` from SC3).
 
 ### Superproc gnss
 1. Improvements of MODELTIME summary graph:
@@ -34,9 +46,10 @@ The SEFRAN3 configuration key `PATH_TMP` (in `SEFRAN3.conf`) is now obsolete. Ea
 2. Improvement of VECTORS summary graph: a subplot shows vector amplitude vs. distance from target (if defined).
  
 3. Improvement of MODELLING summary graph:
-	- errors on depth and volume variation are calculated as +/- scalar value (and not interval)
-	- flow rate is calculated in addition to volume variation
-	- pCDM source type is now about a hundred times faster than previous versions
+	- depth and volume variation are displayed as best value +/- uncertainty if `MODELLING_PLOTBEST` is true; if not, it displays only interval values that contain ± `MODELLING_SIGMAS` of the best models;
+	- flow rate (in m3/s) is calculated in addition to volume variation;
+	- volume variation unit is adjusted automatically (m3 or Mm3);
+	- pCDM source type is now about a hundred times faster than previous versions.
 
 ### Others
 Some other bug fixes and minor improvements.

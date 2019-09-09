@@ -294,6 +294,9 @@ sub readCfg
 		use warnings;
 		return %H; 
 	}
+	# Use an explicit return in case $fn is undefined or the file is empty
+	# (otherwise an implicit return would return [0]).
+	return;
 }
 
 =pod
