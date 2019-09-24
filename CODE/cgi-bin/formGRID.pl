@@ -205,14 +205,14 @@ print "<TABLE><TR><TD style=\"border:0\">";
 print "<P><TEXTAREA class=\"editfmono\" id=\"tarea\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$text</TEXTAREA></P></TD>\n";
 print "<TD style=\"border:0;vertical-align:top\">";
 print "<FIELDSET><LEGEND>Domain</LEGEND><P><select name=\"domain\" size=\"1\">\n";
-for (keys %DOMAINS) {
+for (sort(keys(%DOMAINS))) {
 	print "<option value=\"$_\"".($domain eq $_ ? " selected":"").">{$_}: $DOMAINS{$_}{NAME}</option>\n";
 }
 print "</select></P></FIELDSET>\n";
 if ($GRIDType eq "PROC") {
 	print "<FIELDSET><LEGEND>Form</LEGEND><P><select name=\"form\" size=\"1\">\n";
 	print "<option value=\"\"> --- none --- </option>\n";
-	for (keys(%FORMS)) {
+	for (sort(keys(%FORMS))) {
 		print "<option value=\"$_\"".($form eq $_ ? " selected":"").">{$_}: $FORMS{$_}</option>\n";
 	}
 	print "</select></P></FIELDSET>\n";
