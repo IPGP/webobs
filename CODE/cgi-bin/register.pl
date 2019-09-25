@@ -69,7 +69,7 @@ my $cgi = new CGI;
 set_message(\&webobs_cgi_msg);
 
 
-# ---- useful subroutine
+# ---- useful subroutines
 
 sub send_ajax_content {
 # Send Ajax response (as text/plain) for the dialog box show to the user
@@ -77,6 +77,17 @@ sub send_ajax_content {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
 	print "$msg";
 }
+
+sub uid_exists {
+	# Returns 1 if the provided UID exists in the database, 0 otherwise
+	my $dbh = shift;
+	my $uid = shift;
+	my $q = "select UID from $WEBOBS{SQL_TABLE_USERS} where UID = ?";
+	my $row = $dbh->selectrow_arrayref($q, undef, $uid);
+	return 1 if $row;
+	return 0;
+}
+
 
 # List of accepted characters for the password for display to the user
 # (should reflect the regex in javascript and checkParam call below)
@@ -132,44 +143,50 @@ if ($action eq "reg") {
 	close $reg_file or die "Could not write to registration file";
 
 	if ($autoregister) {
-		# Creation of the user requested
+		# Autoregistration is enabled: we insert a disabled user into the
+		# database (she/he won't be able to see/do anything until an admin
+		# changes the user validity to 'Y')
 
-		# Create the UID as first letters from full name
-		my $UID = "";
-		for (split(/ |-/, $fullname)) {
-			$UID .= uc(substr($_,0,1));
-		}
 		my $dbh = DBI->connect("dbi:SQLite:$WEBOBS{SQL_DB_USERS}", "", "", {
 			'AutoCommit' => 1,
 			'PrintError' => 1,
 			'RaiseError' => 1,
 			}) or die "Error connecting to $WEBOBS{SQL_DB_USERS}: $DBI::errstr" ;
-		my $rv = 0;  # initial value for the loop
-		my $nu = 1;  # number of tries
-		# if UID already exists, add a suffix number...
-		while (not $rv) {
-			# Use a bound query to let DBI do the escaping (avoid security problems)
-			my $q = "insert into $WEBOBS{SQL_TABLE_USERS} values(?, ?, ?, ?, 'N')";
-			my $sth = $dbh->prepare($q);
-			$rv = $sth->execute($UID, $fullname, $login, $mailaddr);
-			if (not $rv) {
-				$nu++;
-				$UID .= $nu;
-			}
+
+		# Create the default UID as first letters from full name
+		my $DEFAULT_UID = "";
+		for (split(/ |-/, $fullname)) {
+			$DEFAULT_UID .= uc(substr($_,0,1));
+		}
+		# We try to use the default UID as UID
+		my $UID = $DEFAULT_UID;
+		# If UID already exists, add a suffix number until we find an available UID
+		my $nu = 1;  # number of tries and potential UID suffix
+		while (uid_exists($dbh, $UID)) {
 			if ($nu == 100) {
-				# Something else is wrong here
-				# TODO: do the whole thing differently (test UID instead of bruce-forced inserts?)
-				print STDERR "register.pl error: unable to insert user after 100 tries. "
+				# Something is seriously wrong here
+				print STDERR "register.pl error: unable to find an UID after 100 tries "
 					."UID='$UID' fullname='$fullname' login='$login' mailaddr='$mailaddr'\n";
 				# Don't use die as it would display plain text HTML
-				print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-				print "Unable to insert user after 100 tries. Giving up.";
+				send_ajax_content("Unable to register your request (no available UID), "
+									."please contact the administrator.");
 				exit 99;
 			}
+			$nu++;
+			$UID = $DEFAULT_UID.$nu;
 		}
+		# Insert the new user in the database (will raise an exception on database error)
+		# Use a bound query to let DBI do the escaping (to avoid security problems)
+		my $q = "insert into $WEBOBS{SQL_TABLE_USERS} values(?, ?, ?, ?, 'N')";
+		my $sth = $dbh->prepare($q);
+		# Note: there is a (very) slight chance of race condition if someone
+		# made a registration request for a user with the same UID in the last
+		# microseconds since we last called uid_exists(), but IMO handling this
+		# rarest case is not worth the complexity.
+		$sth->execute($UID, $fullname, $login, $mailaddr);
 		$dbh->disconnect();
 
-		# give an access to the new user
+		# Give an access to the new user
 		if (htpasswd_update($login, $passwd) != 0) {
 			send_ajax_content("Couldn't update htpasswd."
 								." Please inform the administrator.");
