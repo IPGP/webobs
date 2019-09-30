@@ -583,7 +583,7 @@ print "<TR>";
 				$chan{$chpCLB[2]} = "$chpCLB[3] ($chpCLB[6] $chpCLB[19])";
 			}
 			print "<SELECT name=\"chanlist\" multiple size=\"5\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_chanlist}')\" id=\"chanlist\">";
-			for (sort(keys(%chan))) {
+			for (sort{ $a <=> $b } (keys(%chan))) {
 				print "<option".($_ ~~ @select || !defined($usrCHAN) ? " selected":"")." value=\"$_\">"."$_: $chan{$_}</option>\n";
 			}
 			print "</SELECT>";
