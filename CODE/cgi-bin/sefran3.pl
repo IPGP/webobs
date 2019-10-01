@@ -441,14 +441,35 @@ if (!$date) {
 					# recupere les evenements dans la MC
 					$f = "$MC3{ROOT}/$da/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$da$dm.txt";
 					if (-f $f) {
-						my @mc_liste = split(/\n/,qx(awk -F'|' '\$2 == "$dd" && substr(\$3,1,2) == "$hh" {printf "\%s\\n",\$0}' $f));
+						my @mc_liste = split(/\n/,qx(awk -F'|' '{ d=1;if(\$7=="mn") d=60;if(\$7=="h") d=3600;if(\$7=="d") d=86400;} \$2=="$dd" && (substr(\$3,1,2)=="$hh" || (substr(\$3,1,2)<$hh && substr(\$3,1,2)+substr(\$3,3,2)/60+(substr(\$3,5,2)+\$6*d)/3600 >= $hh)) {printf "\%s\\n",\$0}' $f));
+						#my @mc_liste = split(/\n/,qx(awk -F'|' '\$2 == "$dd" && substr(\$3,1,2) == "$hh" {printf "\%s\\n",\$0}' $f));
 						for (reverse @mc_liste) {
 							my %MC = mcinfo($_);
 							if (($MC{id} > 0 || ($userLevel >= 2 && $trash == 1)) && $userLevel >= 1) {
-								my $deb_evt = 1 + int($SEFRAN3{HOURLY_WIDTH}*($MC{minute}/60 + $MC{second}/3600));
-								my $dur_evt = 1 + int(0.5 + $SEFRAN3{HOURLY_WIDTH}*$MC{duration}*$duration_s{$MC{unit}}/3600);	
-								print "<DIV class=\"mctag\"  onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{firstarrival}',BGCOLOR,'$types{$MC{type}}{Color}',FGCOLOR,'#EEEEEE',WIDTH,250)\"",
-									" style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$SEFRAN3{HOURLY_HEIGHT};left:$deb_evt;cursor:pointer\" onClick=\"window.open('$prog$MC{edit}')\">",
+								# event start and duration expressed in hour
+								my $h0 = $MC{minute}/60 + $MC{second}/3600;
+								my $dh = $MC{duration}*$duration_s{$MC{unit}}/3600;	
+								# event start and duration expressed in pixels
+								my $deb_evt = 2 + int($SEFRAN3{HOURLY_WIDTH}*$h0);
+								my $dur_evt = 1 + int(0.5 + $SEFRAN3{HOURLY_WIDTH}*$dh);	
+								# case A: event starts in the current hour
+								if ($MC{hour} eq $hh) {
+									# case A1: event duration exceeds current hour
+									if ($deb_evt + $dur_evt > $SEFRAN3{HOURLY_WIDTH}) {
+										$dur_evt = $SEFRAN3{HOURLY_WIDTH} - $deb_evt + 2;
+									}
+								# case B: event has started in a previous hour
+								} else {
+									$deb_evt = 2;
+									# case B1: more than 3 hours overlap = full width
+									if ($h0 + $dh > $hh - $MC{hour} + 1) {
+										$dur_evt = $SEFRAN3{HOURLY_WIDTH};
+									} else {
+										$dur_evt = $SEFRAN3{HOURLY_WIDTH}*($h0 + $dh - ($hh-$MC{hour}));
+									}
+								}
+								print "<DIV class=\"mctag\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{firstarrival}',BGCOLOR,'$types{$MC{type}}{Color}',FGCOLOR,'#EEEEEE',WIDTH,250)\" onClick=\"window.open('$prog$MC{edit}')\"",
+									" style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$SEFRAN3{HOURLY_HEIGHT};left:$deb_evt;cursor:pointer\">",
 									"</DIV>\n";
 							}
 						}
