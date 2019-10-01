@@ -1,6 +1,10 @@
 =key|value
 
 VERSION|nd
+WEBOBS_ID|${WebObsIdentification}
+BIG_BANG|${InstallYear}
+WEBOBS_TITLE|WEBOBS ${WEBOBS_ID}
+COPYRIGHT|${WEBOBS_TITLE} / IPGP
 
 # ---- site and non-site roots ---------------- 
 # ---------------------------------------------
@@ -75,11 +79,7 @@ PATH_WWW_HTML_MAPS|${PATH_WWW_HTML}/sites/maps
 
 # ---- Site customization ---------------------
 # ---------------------------------------------
-WEBOBS_ID|${WebObsIdentification}
-BIG_BANG|${InstallYear}
 LOCALE|en_US
-WEBOBS_TITLE|WEBOBS ${WEBOBS_ID}
-COPYRIGHT|${WEBOBS_TITLE} / IPGP
 FILE_DAYSOFF|${ROOT_CONF}/Holidays.conf
 LANGUAGE_LIST|en_US:English\|fr_FR:Fran&ccedil;ais
 LIEU_VILLE|Paris
