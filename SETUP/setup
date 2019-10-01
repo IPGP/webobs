@@ -559,7 +559,8 @@ else
 	errexit "copying ${RELBASE}/SETUP/CONF/* to ${DOCROOT}/CONF"
 
 	verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallDocumentRoot+WebObsIdentification)"
-	WEBOBSID=$(readkbn "Enter your WebObs Identification string  ")
+	WEBOBSID=$(readkbn "Enter your WebObs Identification string (short/alphanumeric only)  ")
+	WEBOBSID=$(echo "$WEBOBSID"|sed -e 's/[^a-zA-Z0-9_\-]/_/g')
 	if [[ -z ${WEBOBSID} ]]; then
 		WEBOBSID="${YEARNOW}"
 	fi
