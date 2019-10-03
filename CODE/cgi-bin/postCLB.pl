@@ -113,7 +113,6 @@ for ("1"..$nb) {
 		$modify = 1;
 	}
 }
-
 if ($nbc > $maxc) { 
 	for (($maxc+1)..$nbc) {
 		my $s = $today;
@@ -134,7 +133,6 @@ if ($nbc > $maxc) {
 }
 
 # stamp (date and staff)
-my $today  = qx(date -I); chomp($today);
 my $stamp  = "[$today $USERS{$CLIENT}{UID}]";      
 my $entete = "# WebObs - $WEBOBS{WEBOBS_ID} : calibration file $QryParm->{'node'}\n# $stamp\n";
 
