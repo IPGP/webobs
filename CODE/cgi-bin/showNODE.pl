@@ -137,7 +137,9 @@ my %FDSN     = WebObs::Grids::codesFDSN();
 # parameters linked to a proc
 my $fdsn = trim($NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} // $NODE{FDSN_NETWORK_CODE});
 my $fid = $NODE{"$GRIDType.$GRIDName.FID"} // $NODE{FID};
-my $fids=""; grep {$_ =~ /$GRIDType\.$GRIDName\.FID_|^FID_/ && ($fids .= "$_: <B>$NODE{$_}</B> - ") } (keys(%NODE));  $fids =~ s/- $|$GRIDType\.$GRIDName\.//g;
+my $fids = join(" - ", map { my $v; ($v = $_) =~ s/$GRIDType\.$GRIDName\.//;
+                             "$v: <B>$NODE{$_}</B> "; }
+                            sort grep(/$GRIDType\.$GRIDName\.FID_|^FID_/, keys(%NODE)));
 my $rawformat = $NODE{"$GRIDType.$GRIDName.RAWFORMAT"} // $NODE{RAWFORMAT};
 my $rawdata = $NODE{"$GRIDType.$GRIDName.RAWDATA"} // $NODE{RAWDATA};
 my $acqrate = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"} // $NODE{ACQ_RATE};
