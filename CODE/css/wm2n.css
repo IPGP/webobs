@@ -98,6 +98,7 @@ ul.sub_menu                 { box-shadow: 3px 5px 3px #555555; border-radius: 5p
 ul.dropdown ul 				{ width: 160px; visibility: hidden; position: absolute; top: 100%; left: 0; }
 ul.dropdown ul li 			{ font-weight: normal; background: #D3A8A2; color: #000; 
 							  float: none; }
+ul.dropdown ul li:first-child:hover,
 ul.dropdown ul li:first-child {border-radius: 0px 5px 0px 0px}							  
 ul.dropdown ul li a			{ border-right: none; width: 100%; display: inline-block; }
 ul.dropdown ul li:hover     { background: #EDCCC0;  border-radius: 0px;	}     
