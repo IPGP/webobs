@@ -120,12 +120,12 @@ for (reverse sort @reqlist) {
 					$table .= "<TD></TD>";
 				} else {
 					my ($rcmd,$rc) = split(/|/,$rreq);
-					if ($rc eq "") {
-						$table .= "<TD align=center bgcolor=orange>wait...</TD>";
-					} elsif ($rc == 0) {
+					if ($rc eq "0") {
 						$table .= "<TD align=center bgcolor=green>OK</TD>";
-					} else {
+					} elsif ($rc > 0) {
 						$table .= "<TD align=center bgcolor=red>error</TD>";
+					} else {
+						$table .= "<TD align=center bgcolor=orange>wait...</TD>";
 					}
 				}
 			}
