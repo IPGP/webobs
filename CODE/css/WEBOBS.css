@@ -618,6 +618,9 @@ tr.advsearch {
 .CLBshowhide {
 	background-color: #EEEEEE;
 }
+.CLBtable tr:hover td {
+	background-color: #E3E3E3;
+}
 
 table.welcome {
 	border: none;

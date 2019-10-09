@@ -201,7 +201,7 @@ print "<P>@clbNote</P>\n";
 print "<FORM name=formulaire id=\"theform\" action=\"\">";
 print "<input type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">",
       "<input type=\"hidden\" name=\"nb\" value=\"$nb\">\n\n",	
-	  "<TABLE width=\"100%\" style=\"border:0\" onMouseOver=\"calc()\">",
+	  "<TABLE class=\"CLBtable\" width=\"100%\" style=\"border:0\" onMouseOver=\"calc()\">",
 	  "<TR>";
 		for (0..($#fieldCLB)) {
 			if ($_ >= 12 && $_ <= 16) { $c = ' class="CLBshowhide"' } else { $c = ''} 
