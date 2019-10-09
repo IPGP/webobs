@@ -42,6 +42,14 @@ use Locale::TextDomain('webobs');
 set_message(\&webobs_cgi_msg);
 $ENV{LANG} = $WEBOBS{LOCALE};
 
+# --- subroutine
+
+sub sort_clb_lines {
+	# Sort the list of lines of the calibration file by date, time,
+	# and channel number, using a numerical sort for the latter.
+	$a->[0] cmp $b->[0] || $a->[1] cmp $b->[1] || $a->[2] <=> $b->[2];
+}
+
 # ---- inits and checkings   
 my %NODE;
 my %CLBS;
@@ -68,7 +76,7 @@ if (clientHasEdit(type=>"authmisc",name=>"CLB")) {
 				if (@fieldCLB) {
 					$fileDATA = "$NODES{PATH_NODES}/$QryParm->{'node'}/$QryParm->{'node'}.clb";
 					if ((-s $fileDATA) != 0) {
-						@donnees = readCfgFile($fileDATA);
+						@donnees = map { my @e = split /\|/; \@e; } readCfgFile($fileDATA);
 					} else { $nouveau = 1; @newChan = (1..$QryParm->{'nbc'})}
 				} else { die "$__{'Could not read'} $__{'calibration data-fields definition'}" } 
 			} else { die "$__{'Could not read'} $__{'calibration-files configuration'}" }
@@ -134,10 +142,10 @@ for (@newChan) {
 		elsif ($_ == 15) { $s .= "|".$NODE{ALTITUDE}; }
 		else { $s .= "|".$fieldCLB[$_][1]; }
 	}
-	push(@donnees,$s);
+	my @s = split(/\|/, $s);
+	push(@donnees, \@s);
 }
-$nb = $#donnees + 1;
-@donnees = sort(@donnees);
+$nb = @donnees;  # number of elements in @donnees
 
 # ---- now inject some js code
 #
@@ -147,7 +155,7 @@ function verif_formulaire()
 	var i;
 	var j;
 	var v;
-	for (i=1;i<=".($#donnees+1).";i++) {
+	for (i=1;i<=".scalar(@donnees).";i++) {
 		for (j=1;j<=".($#fieldCLB-1).";j++) {
 			eval('v = document.formulaire.v' + i + '_' + j + '.value');
 			if (v.indexOf(\"#\") != -1) {
@@ -175,7 +183,7 @@ function calc()
 
 	if (document.formulaire.nbc.value != document.formulaire.nbc.defaultValue) ok = 0;
 
-	for (i=1;i<=".($#donnees+1).";i++) {
+	for (i=1;i<=".scalar(@donnees).";i++) {
 		if (eval('document.formulaire.s' + i + '.value') != '') ok = 0;
 	}
 	if (ok) document.formulaire.submit.value = 'Valider';
@@ -203,13 +211,13 @@ print "</TR>\n";
 
 my $i    = 0;
 my $nbc  = 0;
-for (@donnees) {
+
+for my $line (sort sort_clb_lines @donnees) {
 	$i++;
 	print "<TR>";
 	
-	my (@d) = split(/\|/,$_);
-	my (@date) = split(/-/,$d[0]);
-	my (@heure) = split(/:/,$d[1]);
+	my (@date) = split(/-/, $line->[0]);
+	my (@heure) = split(/:/, $line->[1]);
 	print "<TD nowrap onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[0][3]}')\"><select name=\"y$i\" size=\"$fieldCLB[0][0]\">";
 	for (@anneeListe) {
 		my $sel = "";
@@ -243,14 +251,14 @@ for (@donnees) {
 	}
 	print "</select></TD>\n";
 	print "<TD nowrap><input type=checkbox name=\"s$i\" onChange=\"calc()\">
-		<input name=\"v".$i."_1\" readonly value=\"$d[2]\" size=\"$fieldCLB[2][0]\" style=\"font-weight:bold;background-color:#E0E0E0;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[2][3]}')\">";
-	if ($d[2] > $nbc) {
-		$nbc = $d[2];
+		<input name=\"v".$i."_1\" readonly value=\"$line->[2]\" size=\"$fieldCLB[2][0]\" style=\"font-weight:bold;background-color:#E0E0E0;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[2][3]}')\">";
+	if ($line->[2] > $nbc) {
+		$nbc = $line->[2];
 	}
-	for ("2"..($#fieldCLB-1)) {
-		my $j = $_;
+	for my $j ("2"..($#fieldCLB-1)) {
 		if ($j >= 11 && $j <= 15) { $c = ' class="CLBshowhide"' } else { $c = ''} 
-		print "<TD$c onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[$_+1][3]}')\"><input name=\"v".$i."_".$j."\" value=\"$d[$j+1]\" size=\"$fieldCLB[$_+1][0]\"></TD>\n";
+		print "<TD$c onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[$j+1][3]}')\"><input name=\"v".$i."_".$j
+				."\" value=\"".($line->[$j+1] // '')."\" size=\"$fieldCLB[$j+1][0]\"></TD>\n";
 	}
 }
 print "</TR><TR<TD style=\"border:0\">&nbsp;</TD></TR>\n";
