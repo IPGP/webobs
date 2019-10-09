@@ -188,11 +188,20 @@ if (!$ref) {
 	($yref,$mref,$dref) = split('/',strftime('%Y/%m/%d',gmtime(timegm(0,0,0,1,$mref-1,$yref-1900) + $day0*86400)));
 	$limit = 24 if ($limit < 24);
 }
+# builds the list of dates and loads associated MC events over the period (+ 1 day)
 my @dates;
-for (0 .. ($SEFRAN3{DISPLAY_DAYS}-1)) {
-	push(@dates,strftime('%Y-%m-%d',gmtime(timegm(0,0,0,$dref,$mref-1,$yref-1900) - $_*86400)));
+my @mclist;
+for (0 .. $SEFRAN3{DISPLAY_DAYS}) {
+	my $ymd = strftime('%Y-%m-%d',gmtime(timegm(0,0,0,$dref,$mref-1,$yref-1900) - $_*86400));
+	push(@dates,$ymd) if ($_ < $SEFRAN3{DISPLAY_DAYS});
+	my $f = "$MC3{ROOT}/".substr($ymd,0,4)."/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}".substr($ymd,0,4).substr($ymd,5,2).".txt";
+	if (-f $f) {
+		my @mcday = split(/\n/,qx(awk -F'|' '\$2=="$ymd" {printf "\%s\\n",\$0}' $f));
+		push(@mclist,@mcday);
+	}
 }
 my @listeHeures = reverse('00'..'23');
+
 
 # ---- some display setups
 #
@@ -438,14 +447,14 @@ if (!$date) {
 						print "<TD style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px\" class=\"noImage\"><DIV style=\"position:relative;height:100%\">no image";
 					}
 
-					# recupere les evenements dans la MC
-					$f = "$MC3{ROOT}/$da/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$da$dm.txt";
-					if (-f $f) {
-						my @mc_liste = split(/\n/,qx(awk -F'|' '{ d=1;if(\$7=="mn") d=60;if(\$7=="h") d=3600;if(\$7=="d") d=86400;} \$2=="$dd" && (substr(\$3,1,2)=="$hh" || (substr(\$3,1,2)<$hh && substr(\$3,1,2)+substr(\$3,3,2)/60+(substr(\$3,5,2)+\$6*d)/3600 >= $hh)) {printf "\%s\\n",\$0}' $f));
-						#my @mc_liste = split(/\n/,qx(awk -F'|' '\$2 == "$dd" && substr(\$3,1,2) == "$hh" {printf "\%s\\n",\$0}' $f));
-						for (reverse @mc_liste) {
-							my %MC = mcinfo($_);
-							if (($MC{id} > 0 || ($userLevel >= 2 && $trash == 1)) && $userLevel >= 1) {
+					# plots MC events over sefran
+					for (reverse @mclist) {
+						my %MC = mcinfo($_);
+						if (($MC{id} > 0 || ($userLevel >= 2 && $trash == 1)) && $userLevel >= 1) {
+							# event start and end expressed in days
+							my $d0 = $MC{year}*10000 + $MC{month}*100 + $MC{day} + $MC{hour}/24 + $MC{minute}/1440 + $MC{second}/86400;
+							my $d1 = $d0 + $MC{duration}*$duration_s{$MC{unit}}/86400;
+							if ($d0 < $ddd + ($hh+1)/24 && $d1 >= $ddd + $hh/24) {
 								# event start and duration expressed in hour
 								my $h0 = $MC{minute}/60 + $MC{second}/3600;
 								my $dh = $MC{duration}*$duration_s{$MC{unit}}/3600;	
