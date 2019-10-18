@@ -1,6 +1,6 @@
 function [D,P] = readfmtdata_mc3(WO,P,N,F)
 %READFMTDATA_MC3 subfunction of readfmtdata.m
-%	
+%
 %	From proc P, node N and options F returns data D.
 %	See READFMTDATA function for details.
 %
@@ -17,7 +17,7 @@ function [D,P] = readfmtdata_mc3(WO,P,N,F)
 %		node calibration: none
 %
 %
-%	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
+%	Authors: Fran?ois Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2019-01-21, in Paris (France)
 %	Updated: 2019-08-23
 
@@ -107,7 +107,7 @@ if s==0
     e = nan(length(t),1);
     d(:,1) = cellfun(@str2num,mc3(:,1));
     d(:,3) = cellfun(@str2num,mc3(:,10));
-    
+
     for k = 1:length(t)
         % duration in seconds
         d(k,2) = cellfun(@str2num,mc3(k,6)) * MC3DURATIONS.(mc3{k,7});
@@ -205,12 +205,10 @@ fprintf('done (%d events found).\n',x);
 
 % =============================================================================
 % applies the quality filters (1 = good, 0 = not good)
-e = double( (isnan(d(:,9)) | isinto(d(:,9),P.GAPLIM)) ...
-	& (isnan(d(:,10))  | isinto(d(:,10),P.RMSLIM)) ...
-	& (isnan(d(:,11))  | isinto(d(:,11),P.ERHLIM)) ...
-	& (isnan(d(:,12))  | isinto(d(:,12),P.ERZLIM)) ...
-	& (isnan(d(:,13))  | isinto(d(:,13),P.NPHLIM)) ...
-	& (isnan(d(:,14)) | isinto(d(:,14),P.CLALIM)) ...
+e = double(	isinto(d(:,5),P.LATLIM) ...
+	& isinto(d(:,6),P.LONLIM) ...
+	& isinto(d(:,7),P.DEPLIM) ...
+	& isinto(d(:,8),P.MAGLIM) ...
 );
 
 % select on MC event type
@@ -224,7 +222,7 @@ if ~isempty(incMCtypes)
         c = c(k,:);
         e = e(k,1);
     end
-end    
+end
 
 % remove catalog values for invalid event types or status
 if ~isempty(extypes) || ~isempty(exstatus)
@@ -248,9 +246,7 @@ t = t - N.UTC_DATA;
 D.t = t + P.TZ/24;
 D.d = d;
 D.c = c;
-D.e = e;   
+D.e = e;
 D.CLB.nx = 16;
 D.CLB.nm = {'MC_eventID','MC_Duration','MC_S-P','MC_Magnitude','Latitude','Longitude','Depth','Magnitude','Azimuthal Gap', 'RMS','ErH','ErZ','Phase Count','Quality','EMS98','ErMag'};
-D.CLB.un = {'','s','s','','°','°','km','','°','s','km','km','','','',''};
-
-
+D.CLB.un = {'','s','s','','?','?','km','','?','s','km','km','','','',''};

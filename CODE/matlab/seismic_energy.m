@@ -1,6 +1,6 @@
 function y=seismic_energy(x,law)
-%SEISMIC_ENERGY magnitude to seismic energy in N.m conversion equations.
-%	SEISMIC_ENERGY(MAGNITUDE) returns seismic energy in N.m for magnitude
+%SEISMIC_ENERGY magnitude to seismic energy in J conversion equations.
+%	SEISMIC_ENERGY(MAGNITUDE) returns seismic energy in J for magnitude
 %   according to Kanamori law
 %
 %	SEISMIC_ENERGY(MAGNITUDE,LAW) specifies the law for magnitude to energy 
