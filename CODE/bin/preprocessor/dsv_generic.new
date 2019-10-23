@@ -1,0 +1,105 @@
+#!/usr/bin/gawk -f
+#
+# Default preprocessor filter for 'dsv' data format, called by
+# readfmtdata_dsv.m.
+#
+# The script takes stdin for input data stream and outputs processed data
+# to stdout. It needs several arguments:
+#
+#	    node_id : the WebObs node ID
+#	         fs : field separator in input data
+#	header_line : number of uncommented header lines to be discarded
+#	   limit_nf : number of fields on the output. Lines that don't have that
+#	              number of fields will be discarded (0 will not filter
+#	              the number of fields)
+#
+# General behavior:
+# 	- lines starting with # or % are discarded (comments)
+# 	- header lines are counted outside comments and discarded
+# 	- characters / : \t and - (except for negative numbers) are
+# 	  always considered as field separator
+# 	- space is also a separator, but consecutive spaces are trimed
+# 	- empty fields will be replaced by NaN
+# 	- the number of fields (as possibly enforced by limit_nf) is counted after
+# 	  all additional separators have been applied
+#
+#
+# Authors: Xavier Béguin (EOS), François Beauducel (IPGP) / WEBOBS
+# Created: 2018-06-18
+# Updated: 2019-10-22
+
+BEGIN {
+	# Read input parameters
+
+	# The id of the node, not used in this script
+	node_id = ARGV[1]
+	# Input field separator
+	FS = ARGV[2]
+	# Number of header lines to ignore
+	header_line = ARGV[3]
+	# Fixed number of fields for a valid line
+	# (0 forces a minimum of 3)
+	test_fields = ARGV[4]
+
+	# Tell awk to not consider the above input parameters as input files
+	for (i=1; i < 5; i++) {
+		delete ARGV[i]
+	}
+
+	# Set the output field separator
+	OFS = ";"
+}
+
+# Remove any comment and updates FNR
+/^[#%].*/ { FNR--; next }
+
+# Ignore header lines
+FNR <= header_line { next }
+
+# Make replacements to split the timestamp parts into their own fields
+# and replace FS by OFS
+{
+	# Replace '-' after a digit by FS
+	# This is intended to split the timestamp parts into different fields
+	$0 = gensub(/([0-9])-/, "\\1" FS, "g");
+	# Replace letter 'T' by FS for ISO date format yyyy-mm-ddThh:mm
+	$0 = gensub(/([0-9])T([0-9])/, "\\1" FS "\\2","g");
+
+	# Reduce multiple spaces
+	gsub(/ +/, " ")
+
+	# Replace '/', ':', tabs, blanks by FS
+	# (to further split the timestamp into parts)
+	gsub(/[\/:\t ]/, FS)
+	# Alternative: also consider OFS as a field separator
+	#gsub(sprintf("[/:\t %s]", OFS), FS)
+
+	# Clean up field values
+	for(i=1; i <= NF; i++) {
+		# Trim spaces
+		gsub(/^ +| +$/, "", $i)
+		# Remove any non-numerical character
+		gsub(/[^0-9eE.+-]/, "", $i)
+		# Replace fields that are empty or with no digit by NaN
+		gsub(/^[\seE.-]*$/, "NaN", $i)
+	}
+
+	# Force substitution of all FS occurences by OFS
+	# (this will update $0 and NF)
+	$1 = $1
+}
+
+# If a number of fields is provided, it is supposed to reflect the number
+# of fields in _output_, including the number of timestamp fields.
+# If it's not 0, NF must be strictly equal to it.
+test_fields && NF != test_fields { next }
+
+# If no number of fields is provided, we require at least 3 fields:
+# the minimal timestamp is "yyyy ddd" and at least one value
+!test_fields && NF < 3 { next }
+
+# Print the result
+{
+	# Print result line (with OFS) to stdout
+	print $0
+}
