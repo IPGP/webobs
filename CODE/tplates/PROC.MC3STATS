@@ -11,7 +11,7 @@ OWNCODE|?
 RAWFORMAT|mc3
 # raw data path (might be overwritten in each node)
 RAWDATA|$WEBOBS{ROOT_RAWD}/myproc
-# URN link to data 
+# URN link to data
 URNDATA|
 # additionnal URL
 URL|
@@ -54,7 +54,7 @@ DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
 DEM_TYPE|LATLON
 DEM_COPYRIGHT|
 
-# file for background time referenced events 
+# file for background time referenced events
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 
 # --- page format and outputs
@@ -93,9 +93,18 @@ MC_EVENTTYPE_LIST|
 EVENTTYPE_EXCLUDED_LIST|
 EVENTSTATUS_EXCLUDED_LIST|
 EVENTCOMMENT_EXCLUDED_REGEXP|
+# Located events filtering out (remove all events that doesn't satisfy the filters)
+# NaN are filtered out
+LATLIM|13,19
+LONLIM|-64,-58
+DEPLIM|-10,200
+MAGLIM|3,10
+# Activate the filtering
+QUALITY_FILTER|N
+
 
 # --- SWARM graph parameters
-# seismic rate formulae : aki or classic
+# seismic rate formulae : aki, classic, movtimewindow
 SEISMIC_RATE|aki
 # number of consecutive events needed to calculate an event rate point
 SEISMIC_RATE_NUM_EVENTS|50
@@ -104,8 +113,13 @@ SEISMIC_RATE_SAMPLING_INTERVAL|10n
 # event swarm detector long term caracteristics time period
 SWARM_DETECTOR_LTA|60d
 # STA/LTA threshold ratio to detect an event swarm
+# Comment or use a value < 0 to deactivate LTA and swarm detection
 SWARM_DETECTOR_THRESH|2.5
 # minimum duration of a detected event swarm to be considered valid
 SWARM_MIN_DURATION|12h
-
-
+# seismic rate graph Y logscale
+RATE_YLOGSCALE|NO
+# Cumulative graph Y logscale
+CUMULATE_YLOGSCALE|NO
+# Cumulative graph value (NRJ,MOMENT,EVENTS)
+CUMULATE_PLOT|MOMENT
