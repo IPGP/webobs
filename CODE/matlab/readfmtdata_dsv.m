@@ -28,7 +28,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2018-09-22
+%	Updated: 2018-10-24
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -43,7 +43,7 @@ if nf > 0
 else
 	nftest = 0;
 end
-timecols = field2num(N,'FID_TIMECOLS',[]);
+timecols = field2num(N,'FID_TIMECOLS',[],'notempty');
 % Input field separator
 fs = field2str(N,'FID_FS',';','notempty');
 header = field2num(N,'FID_HEADERLINES',1,'notempty');
