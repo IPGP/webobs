@@ -9,7 +9,7 @@ function [x,y,z] = igrd(fn)
 %
 %	Author: François Beauducel, IPG Paris.
 %	Created: 1996
-%	Updated: 2018-07-31
+%	Updated: 2019-10-16
 %
 %	References:
 %	   Golden Software Surfer, http://www.goldensoftware.com/
@@ -90,7 +90,7 @@ elseif strfind(line,'ncols')
 	end
 	sz(1) = str2double(s{1}{v});
 
-	for i = 1:5
+	for i = 1:6
 		line = fgets(fid);
 		s = textscan(line,cf);
 		if isscalar(s{v})
@@ -102,9 +102,15 @@ elseif strfind(line,'ncols')
 			case {'yllcorner','yllcenter','yll'}
 				ym(1) = s{v};
 			case 'cellsize'
-				cs = s{v};
+				csx = s{v};
+				csy = s{v};
+			case 'dx'
+				csx = s{v};
+			case 'dy'
+				csy = s{v};
 			case 'nodata_value'
 				ndv = s{v};
+				break
 			otherwise
 				warning('"%s" (=%g) header unknown.\n',s{x}{:},s{v})
 			end
@@ -113,8 +119,8 @@ elseif strfind(line,'ncols')
 			fseek(fid,-length(line),'cof');
 		end
 	end
-	xm(2) = xm(1) + (sz(1)-1)*cs;
-	ym(2) = ym(1) + (sz(2)-1)*cs;	% note the reverse order of Y-axis vector
+	xm(2) = xm(1) + (sz(1)-1)*csx;
+	ym(2) = ym(1) + (sz(2)-1)*csy;	% note the reverse order of Y-axis vector
 	z = flipud(fscanf(fid, '%f', sz)');	% transform needed because Z values are sorted rowwise
     
 elseif strfind(l,'CDF')
