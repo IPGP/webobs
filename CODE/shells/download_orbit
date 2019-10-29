@@ -8,7 +8,7 @@
 
 if [ $# -lt 2 ]; then
 	echo "       Syntax: download_orbit DAYS DEST [options]"
-	echo "  Description: downloads best avalaible orbit for chosen dates from the JPL secured web server (see https://sideshow.jpl.nasa.gov/pub/JPL_GNSS_Products)"
+	echo "  Description: downloads best avalaible orbit for chosen dates from the JPL ftp (see ftp://sideshow.jpl.nasa.gov/pub/JPL_GNSS_Products)"
 	echo "  Arguments:"
 	echo "           DAYS = number of days to process (from start day)"
 	echo "           DEST = directory where orbits shall be saved"
@@ -90,9 +90,9 @@ for day in $DAYLIST; do
 
 
 			if [ $verbose == "TRUE" ]; then
-				wget -N -P $DEST/$orbit/$year -r -l1 -nd https://sideshow.jpl.nasa.gov/pub/JPL_GNSS_Products/$orbit/$year/ -A $year-$month-$day*
+				wget -N -P $DEST/$orbit/$year "ftp://sideshow.jpl.nasa.gov/pub/JPL_GNSS_Products/$orbit/$year/$year-$month-$day*" 
 			else
-				wget -q -N -P $DEST/$orbit/$year -r -l1 -nd https://sideshow.jpl.nasa.gov/pub/JPL_GNSS_Products/$orbit/$year/ -A $year-$month-$day*
+				wget -q -N -P $DEST/$orbit/$year "ftp://sideshow.jpl.nasa.gov/pub/JPL_GNSS_Products/$orbit/$year/$year-$month-$day*"
 			fi
 
 		
