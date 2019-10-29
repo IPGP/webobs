@@ -19,7 +19,7 @@ function h = plotbln(c,s,l,r)
 
 %	Author: F. Beauducel, OVSG-IPGP
 %	Created: 2004
-%	Updated: 2014-12-01
+%	Updated: 2019-10-24
 
 if nargin < 2
 	s = .8*[1 1 1];
@@ -37,10 +37,14 @@ i = 1;
 while i > 0
 	n = [n;[i+1 i+c(2,i) c(1,i)]];
 	i = i + c(2,i) + 1;
-	if i > length(c), i = -1; end
+	if i > length(c)
+		i = -1;
+	end
 end
 
-if ~isempty(get(gcf,'Children')) axis(axis), end
+if ~isempty(get(gcf,'Children'))
+	axis(axis)
+end
 
 hd = ishold;
 hold on
@@ -49,10 +53,14 @@ j = flipud(j);
 hh = [];
 for i = 1:size(n,1)
 	k = n(j(i),1):n(j(i),2);
-	if isempty(l) | length(find(l == n(j(i),3)))
+	if isempty(l) || any(l == n(j(i),3))
 		hh = [hh;plot(c(1,k),c(2,k),'Color',s,'LineWidth',r*n(j(i),3))];
 	end
 end
 
-if ~hd, hold off, end
-if nargout, h = hh; end
+if ~hd
+	hold off
+end
+if nargout
+	h = hh;
+end
