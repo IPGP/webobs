@@ -2,9 +2,11 @@ function h = plotorbit(t,d,orb,lst,lwd,mks,col)
 % plots time series with optional error bars (if size(d,2)>1) and watermark colors for orbits > 1
 hd = ishold;
 
-plot(t,d(:,1),lst,'LineWidth',lwd,'Color',col,'MarkerSize',mks,'MarkerFaceColor',col)
+% plots data
+timeplot(t,d(:,1),[],lst,'LineWidth',lwd,'Color',col,'MarkerSize',mks,'MarkerFaceColor',col)
 hold on
 
+% plots error bars
 if size(d,2) > 1
 	set(gca,'Ylim',get(gca,'YLim'))	% freezes Y axis (error bars can overflow)
 	plot(repmat(t,[1,2])',(repmat(d(:,1),[1,2])+d(:,2)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1])

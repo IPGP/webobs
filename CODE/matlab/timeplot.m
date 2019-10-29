@@ -14,7 +14,7 @@ function varargout=timeplot(t,d,samp,varargin)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2015-08-25 in Yogyakarta, Indonesia
-%	Updated: 2018-11-07
+%	Updated: 2019-10-23
 
 if nargin < 2
 	error('Not enough input argument.')
@@ -26,7 +26,7 @@ if nargin < 3
 	samp = [];
 end
 
-if isempty(samp) || isnan(samp) || ~isnumeric(samp)
+if ~isempty(dt) && (isempty(samp) || isnan(samp) || ~isnumeric(samp))
 	% guess the sampling rate
 	samp = mode(dt);
 end
