@@ -323,7 +323,7 @@ for(@lignes) {
 		$modif = "<a href=\"/cgi-bin/".$FORM->conf('CGI_FORM')."?id=$id\"><img src=\"/icons/modif.png\" title=\"Editer...\" border=0></a>";
 		$efface = "<img src=\"/icons/no.png\" title=\"Effacer...\" onclick=\"checkRemove($id)\">";
 
-		$texte = $texte."<TR>";
+		$texte = $texte."<TR ".($id < 1 ? "class=\"node-disabled\"":"").">";
 		if ($clientAuth > 1) {
 			$texte = $texte."<TD nowrap>$modif</TD>";
 		}

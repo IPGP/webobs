@@ -89,7 +89,6 @@ my %debits   = readCfg($FORM->path."/".$FORM->conf('FILE_DEBITS'));
 $ENV{LANG} = $WEBOBS{LOCALE};
 
 # ----
-my $sel_type = "-";
 my ($sel_site,$sel_tFum,$sel_pH,$sel_debit,$sel_Rn,$sel_type,$sel_H2,$sel_He,$sel_CO,$sel_CH4,$sel_N2,$sel_H2S,$sel_Ar,$sel_CO2,$sel_SO2,$sel_O2,$sel_d13C,$sel_d18O,$sel_rem);
 $sel_site=$sel_tFum=$sel_pH=$sel_debit=$sel_Rn=$sel_type=$sel_H2=$sel_He=$sel_CO=$sel_CH4=$sel_N2=$sel_H2S=$sel_Ar=$sel_CO2=$sel_SO2=$sel_O2=$sel_d13C=$sel_d18O=$sel_rem = "";
 
@@ -103,49 +102,83 @@ my @minuteListe= ("",'00'..'59');
 # ---- Debut de l'affichage HTML
 #
 print "Content-type: text/html\n\n";
-print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
 
-print "<html><head>
+print <<__EOD__;
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
 <title>$titrePage</title>\n
-<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n</head>\n
-<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n
-<script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
-<script language=\"javascript\" type=\"text/javascript\" src=\"/js/comma2point.js\"></script>
-<script type=\"text/javascript\">
+<link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">\n</head>\n
+<meta http-equiv="content-type" content="text/html; charset=utf-8">\n
+<script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
+<script type="text/javascript">
 <!--
+
+function nicb()
+{
+}
+
+function suppress(level)
+{
+		var str = '@{[ $FORM->conf('TITLE') ]} ?';
+		if (level > 1) {
+				if (!confirm('$__{'WARNING: do you want PERMANENTLY remove this record from '}' + str)) {
+						return false;
+				}
+		} else {
+				if (document.formulaire.id.value > 0) {
+						if (!confirm('$__{'Do you want to remove this record from '}' + str)) {
+								return false;
+						}
+				} else {
+						if (!confirm('$__{'Do you want to restore this record in '}' + str)) {
+								return false;
+						}
+				}
+		}
+		document.formulaire.delete.value = level;
+	submit();
+}
 
 function verif_formulaire()
 {
-	if(document.formulaire.site.value == \"\") {
-		alert(\"Veuillez spécifier le site de prélèvement!\");
+	if(document.formulaire.site.value == "") {
+		alert("Veuillez spécifier le site de prélèvement!");
 		document.formulaire.site.focus();
 		return false;
 	}
-	if(document.formulaire.type.value == \"\") {
-		alert(\"Veuillez entrer un type d'ampoule!\");
+	if(document.formulaire.type.value == "") {
+		alert("Veuillez entrer un type d'ampoule!");
 		document.formulaire.type.focus();
 		return false;
 	}
-    \$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
-	   //var contents = \$( data ).find( '#contents' ).text(); 
-	   alert(data);
-	   document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
-	   }
-	);
+	submit();
 }
 
 function calc()
 {
 }
-window.captureEvents(Event.KEYDOWN);
-window.onkeydown = nicb();
+
+function submit()
+{
+	\$.post("/cgi-bin/@{[ $FORM->conf('CGI_POST') ]}", \$("#theform").serialize(), function(data) {
+	   //var contents = \$( data ).find( '#contents' ).text();
+	   alert(data);
+	   document.location="/cgi-bin/@{[ $FORM->conf('CGI_SHOW') ]}";
+	   }
+	);
+}
+
+//window.captureEvents(Event.KEYDOWN);
+//window.onkeydown = nicb();
+
 //-->
 </script>
 
 </head>
-<body style=\"background-color:#E0E0E0\" onLoad=\"calc()\">";
+<body style="background-color:#E0E0E0">
 
-print <<"FIN";
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <script language="JavaScript" src="/js/overlib/overlib.js"></script>
 <!-- overLIB (c) Erik Bosrup -->
@@ -159,14 +192,14 @@ function stopRKey(evt) {
 }
 document.onkeypress = stopRKey;
 </script>
-FIN
+__EOD__
 
 # ---- read data file 
 # 
 my $message = "Saisie de nouvelles donn&eacute;es";
 my @ligne;
 my $ptr='';
-my $fts-1;
+my $fts=1;
 my ($id,$date,$heure,$site,$tFum,$pH,$debit,$Rn,$type,$H2,$He,$CO,$CH4,$N2,$H2S,$Ar,$CO2,$SO2,$O2,$d13C,$d18O,$rem,$val) = split(/\|/,$_);
 if (defined($QryParm->{id})) {
 	($ptr, $fts) = $FORM->data($QryParm->{id});
@@ -201,17 +234,29 @@ if (defined($QryParm->{id})) {
 	} else { $QryParm->{id} = ""; $val = "" ;}
 }
 
-print "<TABLE width=\"100%\"><TR><TD style=\"border:0\">
-<H1>$titrePage</H1>\n<H2>$message</H2>
-</TD><TD style=\"border:0; text-align:right\">";
-print "</TD></TR></TABLE>";
+print "<H1>$titrePage</H1>\n<H2>$message</H2>\n";
 
 print "<FORM name=formulaire id=\"theform\" action=\"\">";
-if ($QryParm->{id} ne "") {
-   print "<input type=\"hidden\" name=\"id\" value=\"$QryParm->{id}\">";
-}
+print "<input type=\"hidden\" name=\"oper\" value=\"$USERS{$CLIENT}{UID}\">\n";
+print "<input type=\"hidden\" name=\"delete\" value=\"\">\n";
+print "<TABLE width=\"100%\">";
 
-print "<input type=\"hidden\" name=\"oper\" value=\"$CLIENT\">\n";
+if ($QryParm->{id} ne "") {
+	print "<TR><TD style=\"border:0\"><HR>";
+	print "<input type=\"hidden\" name=\"id\" value=\"$QryParm->{id}\">";
+	if ($val ne "") {
+		print "<P><B>Information de saisie:</B> $val
+		<INPUT type=hidden name=val value=\"$val\"></P>";
+	}
+	print "<INPUT type=\"button\" value=\"".($id < 0 ? "Reset" : "$__{'Remove'}")."\" onClick=\"suppress(1);\">";
+	if (clientHasAdm(type=>"authforms", name=>"GAZ")) {
+		print "<INPUT type=\"button\" value=\"$__{'Erase'}\" onClick=\"suppress(2);\">";
+	}
+	print "<HR></TD></TR>";
+
+}
+print "</TABLE>";
+
 
 print "<TABLE style=border:0 onMouseOver=\"calc()\">";
 print "<TR>";
@@ -310,10 +355,6 @@ print "</TD>";
 print "<TR>";
 print "<TD style=border:0 colspan=2>";
 	print "<B>Observations</B> : <BR><input size=80 name=rem value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter la phénoménologie (dépôts, couleur, etc...)')\"><BR>";
-	if ($val ne "") {
-		print "<BR><B>Information de saisie:</B> $val
-		<INPUT type=hidden name=val value=\"$val\"></P>";
-	}
 print "</TR><TR>";
 print "<TD style=border:0 colspan=2>";
 print "<P style=\"margin-top:20px;text-align:center\">";
