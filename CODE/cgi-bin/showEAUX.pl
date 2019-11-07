@@ -405,7 +405,7 @@ for(@lignes) {
 		$tzp = $cLi_mmol + $cNa_mmol + $cK_mmol + 2*$cMg_mmol + 2*$cCa_mmol;
 		if ($tzp != 0) { $tzp += $cH_mmol; }
 		$tzn = $cF_mmol + $cCl_mmol + $cBr_mmol + $cNO3_mmol + 2*$cSO4_mmol + $cHCO3_mmol;
-		if (($tzp != 0) && ($tzn != 0)) { $nicb = 100*($tzp - $tzn)/$tzp; }
+		if (($tzp != 0) && ($tzn != 0)) { $nicb = 100*($tzp - $tzn)/($tzp + $tzn); }
 		
 		for (@rapports) {
 			my ($num,$den,$nrp) = split(/\|/,$_);
