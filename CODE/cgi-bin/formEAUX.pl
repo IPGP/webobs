@@ -134,7 +134,7 @@ function nicb()
 		   + formulaire.cHCO3.value/$GMOL{HCO3}
 		   + 1e-3*formulaire.cI.value/$GMOL{I};
 	formulaire.cH.value = hydrogene.toFixed(2);
-	nicb = 100*(cations - anions)/cations;
+	nicb = 100*(cations - anions)/(cations + anions);
 	//pHcalcule=-(Math.log((anions - cations_chromato)/1000))/Math.log(10);
 	//document.getElementById(\"pHcalcule\").innerHTML = \"<i>pour NICB=0%, pH=\</i>\" + pHcalcule.toFixed(2);
 	//document.getElementById(\"pHcalcule\").style.background = \"#EEEEEE\";
