@@ -8,6 +8,44 @@ The lastest release has many improvements, new features and bug fixes.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
+## v2.1.4 (December 2019)
+
+### Superproc GNSS
+1. New summary graph `MOTION` that can be added to `SUMMARYLIST` showing the displacement particles in a 4-D plot. New variables are:
+
+	```
+MOTION_EXCLUDED_NODELIST|
+MOTION_MAFILTER|10
+MOTION_SCALE_MM|0
+MOTION_MIN_SIZE_KM|10
+MOTION_COLORMAP|jet(256)
+MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'interp'
+MOTION_TITLE|{\fontsize{14}{\bf${NAME} - Motion} ($timescale)}
+MOTION_TARGET_INCLUDED|Y
+```
+
+	`MAFILTER` is a moving-average filter with default 10 samples.
+	
+	`MOTION_SCALE_MM` can be used to fix the displacement scale corresponding to 30% of the map width (default `0` is automatic).
+
+2. The target (defined by `GNSS_TARGET_LATLON` coordinates) is systematically included in the summary graphs `MODELLING` and `MODELTIME`. It is possible to add it into `VECTORS` and `MOTION` summary graphs with new variables:
+
+	```
+	VECTORS_TARGET_INCLUDED|Y
+	MOTION_TARGET_INCLUDED|Y
+```
+
+3. The graphs per node can include a principal component analysis subplot by setting a negative value for key:
+
+	`PERNODE_TIMEZOOM|-1`
+	
+	with some options:
+	
+	```
+	PERNODE_PCA_COLOR|0.3,0.6,0
+	PERNODE_PCA_MAFILTER|10
+```
+
 
 ## v2.1.3f (September, 2019)
 
