@@ -100,6 +100,7 @@ lwminor = field2num(P,'CONTOURLINES_MINOR_LINEWIDTH',.1);
 lwmajor = field2num(P,'CONTOURLINES_MAJOR_LINEWIDTH',1);
 convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
 feclair = field2num(P,'COLOR_LIGHTENING',.5);
+zcut = field2num(P,'ZCUT',0.1);
 laz = field2num(P,'LIGHT_AZIMUTH',45);
 lct = field2num(P,'LIGHT_CONTRAST',1);
 if isfield(P,'LANDCOLORMAP') && exist(P.LANDCOLORMAP,'file')
@@ -117,7 +118,7 @@ if isfield(P,'SEACOLORMAP')
 else
 	sea = seaflat;
 end
-demoptions = {'Interp','Lake','LakeZmin',0,'Azimuth',laz,'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair,'latlon','legend','axisequal','manual'};
+demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz,'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair,'latlon','legend','axisequal','manual'};
 
 % loads all needed grid's parameters & associated nodes
 for g = 1:length(grids)
