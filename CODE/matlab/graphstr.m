@@ -4,7 +4,7 @@ function X = graphstr(s)
 %	with fields:
 %	   X(n).chan : channel number for graph n
 %	   X(n).size : size of the graph n (positive integer)
-%	   X(n).type : vector of graph type string
+%	   X(n).type : vector of graph type string (not functional)
 %	   X(n).subplot : cell of arguments for the subplot function.
 %
 %	Examples:
@@ -17,26 +17,31 @@ function X = graphstr(s)
 %
 %	Authors: F. Beauducel / WEBOBS, IPGP
 %	Created: 2016-08-05, in Paris (France)
-%	Updated: 2016-08-17
+%	Updated: 2019-08-24
 
 
 % splits the graphs (coma separated)
-x = split(s,',');
-k = find(~cellfun(@isempty,x));
-ng = length(k);
+x = split(regexprep(s,'[^0-9,]',''),',');
 
-k = [k,length(x)+1];
+if ~isempty(x)
+	k = find(~cellfun(@isempty,x));
+	ng = length(k);
 
-for n = 1:ng
-	X(n).chan = str2num(regexprep(x{k(n)},'[^0-9]',''));
-	X(n).size = k(n+1) - k(n);
-	X(n).type = regexprep(x{k(n)},'[0-9]','');
-end
+	k = [k,length(x)+1];
 
-% set the subplot arguments
-tot = sum(cat(1,X.size));
-sp = 0;
-for n = 1:ng
-	X(n).subplot = {tot,1,sp + (1:X(n).size)};
-	sp = sum(cat(1,X(1:n).size));
+	for n = 1:ng
+		X(n).chan = str2num(x{k(n)});
+		X(n).size = k(n+1) - k(n);
+		X(n).type = regexprep(x{k(n)},'[0-9]','');
+	end
+
+	% set the subplot arguments
+	tot = sum(cat(1,X.size));
+	sp = 0;
+	for n = 1:ng
+		X(n).subplot = {tot,1,sp + (1:X(n).size)};
+		sp = sum(cat(1,X(1:n).size));
+	end
+else
+	X = [];
 end
