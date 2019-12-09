@@ -27,7 +27,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2019-07-08
+%	Updated: 2019-11-06
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -109,7 +109,7 @@ if ~userdem
 		end
 		DEM.z = double(DEM.z);
 		DEM.z(DEM.z==-32768) = NaN;
-		DEM.COPYRIGHT = field2str(WO,'SRTM_COPYRIGHT','DEM: SRTM/NASA');
+		DEM.COPYRIGHT = field2str(WO,'SRTM_COPYRIGHT','DEM: SRTM+ETOPO');
 	end
 
 	% limits the size of DEMs to avoir memory problems
