@@ -11,9 +11,10 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ## v2.1.4 (December 2019)
 
 ### Superproc GNSS
+
 1. New summary graph `MOTION` that can be added to `SUMMARYLIST` showing the displacement particles in a 4-D plot. New variables are:
 
-	```
+```
 MOTION_EXCLUDED_NODELIST|
 MOTION_MAFILTER|10
 MOTION_SCALE_MM|0
@@ -30,7 +31,7 @@ MOTION_TARGET_INCLUDED|Y
 
 2. The target (defined by `GNSS_TARGET_LATLON` coordinates) is systematically included in the summary graphs `MODELLING` and `MODELTIME`. It is possible to add it into `VECTORS` and `MOTION` summary graphs with new variables:
 
-	```
+```
 	VECTORS_TARGET_INCLUDED|Y
 	MOTION_TARGET_INCLUDED|Y
 ```
@@ -41,7 +42,7 @@ MOTION_TARGET_INCLUDED|Y
 	
 	with some options:
 	
-	```
+```
 	PERNODE_PCA_COLOR|0.3,0.6,0
 	PERNODE_PCA_MAFILTER|10
 ```
