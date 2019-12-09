@@ -36,14 +36,14 @@ end
 t = sprintf('KEY%d',N.TRANSMISSION.TYPE);
 if any(strcmpi(varargin,'utm'))
 	[x,y] = ll2utm(y,x);
-	h1 = plot(x,y,'LineStyle',T.(t).style,'LineWidth',str2num(T.(t).width),'Color',str2num(T.(t).rgb));
+	h1 = plot(x,y,'LineStyle',T.(t).style,'LineWidth',str2num(T.(t).width),'Color',str2num(T.(t).rgb),'Clipping','on');
 else
 	for n = 2:length(x)
 		[lat,lon] = greatcircle(y(n-1),x(n-1),y(n),x(n),10);
-		h1 = plot(lon,lat,'LineStyle',T.(t).style,'LineWidth',str2num(T.(t).width),'Color',str2num(T.(t).rgb));
+		h1 = plot(lon,lat,'LineStyle',T.(t).style,'LineWidth',str2num(T.(t).width),'Color',str2num(T.(t).rgb),'Clipping','on');
 	end
 end
 
-h2 = plot(x(2:end),y(2:end),'p','MarkerFaceColor','w','MarkerEdgeColor','k','MarkerSize',s);
+h2 = plot(x(2:end),y(2:end),'p','MarkerFaceColor','w','MarkerEdgeColor','k','MarkerSize',s,'Clipping','on');
 
 h = [h1,h2];
