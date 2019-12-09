@@ -127,10 +127,12 @@ if (-e $statusDB) {
 	$statusNODES = $dbh->selectall_arrayref(
 			"select * from status where NODE like ? order by UPDATED asc",
 			undef, "%$grid%");
-}
-if (@$statusNODES == 0) {
+	if (@$statusNODES == 0) {
+		$overallStatus = 0;
+	} 
+} else {
 	$overallStatus = 0;
-} 
+}
 
 # ---- Start HTML page 
 #
