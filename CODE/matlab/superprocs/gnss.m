@@ -39,7 +39,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-10-28
+%   Updated: 2019-12-05
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -113,6 +113,7 @@ vectors_demopt = field2cell(P,'VECTORS_DEM_OPT','watermark',3,'interp','legend',
 vectors_shape = field2shape(P,'VECTORS_SHAPE_FILE');
 
 % BASELINES parameters
+baselines_horizonly = isok(P,'BASELINES_HORIZONTAL_ONLY');
 pagestanum = field2num(P,'BASELINES_PAGE_STA_NUM',10);
 baselines_interp_method = field2str(P,'BASELINES_INTERP_METHOD',{'linear','nearest'});
 baselines_linestyle = field2str(P,'BASELINES_LINESTYLE','o-');
@@ -267,8 +268,6 @@ for r = 1:length(P.GTABLE)
 	% to make a synthetic figure we must build a new matrix of processed data first...
 	X = repmat(struct('t',[],'d',[],'w',[]),length(N),1);
 	for i = 1:3
-		aliases = [];
-		ncolors = [];
 		for n = 1:length(N)
 
 			k = D(n).G(r).k;
@@ -305,8 +304,9 @@ for r = 1:length(P.GTABLE)
 					X(n).w = D(n).d(k,4);
 				end
 			end
-			aliases = cat(2,aliases,{N(n).ALIAS});
-			ncolors = cat(2,ncolors,n);
+			X(n).nam = N(n).ALIAS;
+			X(n).rgb = scolor(n);
+			X(n).trd = 1;
 		end
 	end
 	for n = 1:length(N)
@@ -319,7 +319,7 @@ for r = 1:length(P.GTABLE)
 	summary = 'SUMMARY';
 	if any(strcmp(P.SUMMARYLIST,summary))
 		figure, clf, orient tall
-		smartplot(X,tlim,P.GTABLE(r),summary_linestyle,fontsize,cmpnames,summary_cmpoff,aliases,ncolors,zeros(1,length(N)),summary_timezoom);
+		smartplot(X,tlim,P.GTABLE(r),summary_linestyle,fontsize,cmpnames,summary_cmpoff,summary_timezoom,trendmindays);
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
@@ -358,7 +358,7 @@ for r = 1:length(P.GTABLE)
 			mode = 'fixed';
 		else
 			[kvref,knref] = ismember(split(vref,','),{N.FID});
-			if all(kvref);
+			if ~isempty(vref) && all(kvref);
 				mode = vref;
 				if length(knref) > 1
 					voffset = rsum(tr(knref,:)./tre(knref,:))./rsum(1./tre(knref,:));
@@ -393,7 +393,7 @@ for r = 1:length(P.GTABLE)
 		% renames main variables for better lisibility...
 		k = D(n).G(r).k;
 		ke = D(n).G(r).ke;
-		tlim = D(n).G(r).tlim;
+		%tlim = D(n).G(r).tlim;
     
 		% title and status
 		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
@@ -423,13 +423,16 @@ for r = 1:length(P.GTABLE)
 			end
 		end
 		if vrelmode
-			aliases = {'original',sprintf('relative (%s)',mode)};
-			ncolors = [1,3];
-			ndtrend = [0,1];
+			X(1).nam = 'original';
+			X(1).rgb = scolor(1);
+			X(1).trd = 0;
+			X(2).nam = sprintf('relative (%s)',mode);
+			X(2).rgb = scolor(3);
+			X(2).trd = 1;
 		else
-			aliases = {''};
-			ncolors = 1;
-			ndtrend = 1;
+			X(1).nam = '';
+			X(1).rgb = scolor(1);
+			X(1).trd = 1;
 		end
 		for i = 1:length(X)
 			if isempty(X(i).d)
@@ -438,7 +441,7 @@ for r = 1:length(P.GTABLE)
 		end
 
 		% makes the plot
-		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),pernode_linestyle,fontsize,cmpnames,pernode_cmpoff,aliases,ncolors,ndtrend,pernode_timezoom,trendmindays);
+		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),pernode_linestyle,fontsize,cmpnames,pernode_cmpoff,pernode_timezoom,trendmindays);
 		if ~isempty(rev)
 			axes('Position',[.8,.02,.18,.07])
 			plotcube([0,0,0],eye(3),[0,0,0],{'E','N','U'}), hold on
@@ -493,6 +496,13 @@ for r = 1:length(P.GTABLE)
 	% --- Baselines time series
 	summary = 'BASELINES';
 	if any(strcmp(P.SUMMARYLIST,summary))
+
+		if baselines_horizonly
+			ib = 1:2;
+		else
+			ib = 1:3;
+		end
+
 		% builds a structure B containing indexes of each node pairs 
 		if isfield(P,'BASELINES_NODEPAIRS') && ~isempty(P.BASELINES_NODEPAIRS)
 			pairgraphs = split(P.BASELINES_NODEPAIRS,';');
@@ -565,7 +575,7 @@ for r = 1:length(P.GTABLE)
 				[~,kk] = unique(D(n2).t(k2));	% mandatory for interp1
 				k2 = k2(kk);
 				if n2 ~= n && ~isempty(k) && length(k2)>1
-					dk = cleanpicks(sqrt(sum((interp1(D(n2).t(k2),D(n2).d(k2,1:2),tk,baselines_interp_method) - D(n).d(k,1:2)).^2,2)),P);
+					dk = cleanpicks(sqrt(sum((interp1(D(n2).t(k2),D(n2).d(k2,ib),tk,baselines_interp_method) - D(n).d(k,ib)).^2,2)),P);
 					dk = dk/siprefix(baselines_unit,'m');
 					dk0 = rmean(dk);
 					E.d = cat(2,E.d,dk);
@@ -573,15 +583,15 @@ for r = 1:length(P.GTABLE)
 
 					X(n2).t = D(n2).t(k2);
 					[tk1,kk] = unique(tk);	% mandatory for interp1
-					dd = sqrt(sum((D(n2).d(k2,1:2) - interp1(tk1,D(n).d(k(kk),1:2),D(n2).t(k2),baselines_interp_method)).^2,2));
+					dd = sqrt(sum((D(n2).d(k2,ib) - interp1(tk1,D(n).d(k(kk),ib),D(n2).t(k2),baselines_interp_method)).^2,2));
 					if isempty(X(n2).d)
 						X(n2).d = nan(size(X(n2).t,1),length(B));
 					end
 					X(n2).d(:,nn) = dd - rmedian(dd) + staoffset(nn2);
 					X(n2).w = D(n2).d(k2,4);
-					
-					aliases{n2} = sprintf('%s',N(n2).ALIAS);
-					ncolors(n2) = n2;
+					X(n2).nam = sprintf('%s',N(n2).ALIAS);
+					X(n2).rgb = scolor(n2);
+					X(n2).trd = 1;
 				end
 			end
 			refnames{nn} = varsub(baselines_ylabel,V);
@@ -595,7 +605,7 @@ for r = 1:length(P.GTABLE)
 		end
 
 		% makes the plot
-		smartplot(X,tlim,P.GTABLE(r),baselines_linestyle,fontsize,refnames,baselines_refoff,aliases,ncolors,zeros(1,length(N)),baselines_timezoom);
+		smartplot(X,tlim,P.GTABLE(r),baselines_linestyle,fontsize,refnames,baselines_refoff,baselines_timezoom,trendmindays);
 
 		if isok(P,'PLOT_GRID')
 			grid on
@@ -1443,7 +1453,7 @@ for r = 1:length(P.GTABLE)
 	% --- Modelling in time
 	summary = 'MODELTIME';
 	if any(strcmp(P.SUMMARYLIST,summary))
-		dt = max(modeltime_sampling,length(modeltime_period)*round(diff(tlim)/modeltime_max));
+		dt = max(modeltime_sampling,ceil(length(modeltime_period)*diff(tlim)/modeltime_max));
 
 		mtlabel = cell(1,length(modeltime_period));
 		for m = 1:length(modeltime_period)
@@ -1556,8 +1566,13 @@ for r = 1:length(P.GTABLE)
 
 			% converts vv into Q (volumetric flux) in m3/s)
 			if modeltime_flowrate
-				M(m).d(:,4) = M(m).d(:,4)*1e6/modeltime_period(m)/86400;
-				M(m).e(:,4) = M(m).d(:,4)*1e6/modeltime_period(m)/86400;
+				if modeltime_period(m) == 0
+					dtf = (M(m).t - tlim(1))*86400;
+				else
+					dtf = modeltime_period(m)*86400;
+				end
+				M(m).d(:,4) = M(m).d(:,4)*1e6./dtf;
+				M(m).e(:,4) = M(m).d(:,4)*1e6./dtf;
 				vtype = 'Flow rate';
 				vunit = 'm^3/s';
 			else
