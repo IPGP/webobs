@@ -28,8 +28,8 @@ STATUSLIST|1,0
 # defines a reference date to use with 'ref' timescale in TIMESCALELIST
 REF_DATE|
 
-# summary graphs available: SUMMARY,VECTORS,BASELINES,MODELLING,MODELTIME
-SUMMARYLIST|SUMMARY,VECTORS,BASELINES
+# summary graphs available: SUMMARY,VECTORS,MOTION,BASELINES,MODELLING,MODELTIME
+SUMMARYLIST|SUMMARY,VECTORS,MOTION,BASELINES
 
 # for scheduler requests
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} gnss $SELFREF -
@@ -79,12 +79,12 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 
 
 # maximum error on position (in m) before excluding the data from graphs and calculations
-FILTER_MAX_ERROR_M|1
+FILTER_MAX_ERROR_M|0.05
 
 PICKS_CLEAN_PERCENT|0
 TREND_ERROR_MODE|1
 # minimum time window (in days) needed to compute a trend
-TREND_MIN_DAYS|1
+TREND_MIN_DAYS|2
 
 # ITRF reference (this is a string displayed on graph title, not functional)
 ITRF_REF|ITRF08
@@ -99,10 +99,10 @@ COMPONENT_NAMELIST|Relative Eastern,Relative Northern,Relative Vertical
 # --- PERNODE graphs
 PERNODE_LINESTYLE|o
 PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name - $velref} ($timescale)}
-# adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
-PERNODE_TIMEZOOM|
 # offset between components (in m)
 PERNODE_COMPONENT_OFFSET_M|0.01
+# adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
+PERNODE_TIMEZOOM|
 
 # --- SUMMARY graphs
 SUMMARY_LINESTYLE|o
@@ -115,10 +115,12 @@ SUMMARY_COMPONENT_OFFSET_M|0.01
 SUMMARY_STATION_OFFSET_M|0.01
 
 # --- BASELINES graphs
+# ignores vertical component
+BASELINES_HORIZONTAL_ONLY|Y
 # - default behavior: all pairs of nodes, with possible node exclusion and/or node reference list
 BASELINES_EXCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
-# - fixed pairs: REF1,STA1;REF2,STA1,STA2,STA5
+# - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
 BASELINES_NODEPAIRS|
 # interpolation method between nodes: linear or nearest
 BASELINES_INTERP_METHOD|linear
@@ -137,10 +139,10 @@ BASELINES_TIMEZOOM|
 VECTORS_EXCLUDED_NODELIST|
 VECTORS_RELATIVE|N
 # VECTORS: if VECTORS_RELATIVE is Y, substracts a reference vector in VECTORS_VELOCITY_REF:
-# - void (default): automatic mean velocity (average vector of all NODES)
+# - 'auto' (default): automatic mean velocity (average vector of all NODES)
 # - NODE's FID name or list of NODES: use the velocity vector (or mean velocity vector)
 # - E,N,U: sets fixed offset values (in mm/yr)
-VECTORS_VELOCITY_REF|
+VECTORS_VELOCITY_REF|auto
 VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 # background map parameters (see CODE/matlab/dem.m for available options)
 VECTORS_DEM_OPT|'watermark',3,'interp','legend','seacolor',[0.7,0.9,1]
@@ -148,9 +150,20 @@ VECTORS_TITLE|{\fontsize{14}{\bf${NAME} - Velocity vectors} ($timescale)}
 VECTORS_MIN_SIZE_KM|5
 VECTORS_MAX_XYRATIO|1.5
 VECTORS_ARROWSHAPE|.15,.15,.12,.03
+VECTORS_TARGET_INCLUDED|Y
 
 # defines a main target (latitude,longitude coordinates)
 GNSS_TARGET_LATLON|
+
+# --- MOTION summary graph
+MOTION_EXCLUDED_NODELIST|
+MOTION_MAFILTER|10
+MOTION_SCALE_MM|0
+MOTION_MIN_SIZE_KM|10
+MOTION_COLORMAP|jet(256)
+MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'interp'
+MOTION_TITLE|{\fontsize{14}{\bf${NAME} - Motion} ($timescale)}
+MOTION_TARGET_INCLUDED|Y
 
 # --- MODELLING graph
 # excluding NODES from graphs and calculations
