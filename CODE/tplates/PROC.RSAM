@@ -94,6 +94,11 @@ CONTINUOUS_PLOT|NO
 # set Y-axis with a log scale
 YLOGSCALE|YES
 
+# --- alarm
+ALARM_THRESHOLD_LEVEL|1e-5
+ALARM_COLOR|IndianRed
+NOTIFY_EVENT|rsamalert.
+
 # --- per node graphs
 # graph title
 PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
