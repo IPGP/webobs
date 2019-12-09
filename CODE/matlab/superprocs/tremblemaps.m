@@ -120,7 +120,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2019-07-08
+%	Updated: 2019-12-05
 
 
 WO = readcfg;
@@ -156,7 +156,7 @@ end
 cmap = field2num(P,'COLORMAP',jet(256));
 amap = field2num(P,'COLORMAP_ALPHA',[0,1]);
 
-forced = field2num(P,'FELT_FORCED',0);
+forced = isok(P,'FELT_FORCED',0);
 mskmin = field2num(P,'FELT_MSK_MIN',2);
 citiesdisplaylist = field2num(P,'CITIES_DISPLAY_LIST',0);
 
