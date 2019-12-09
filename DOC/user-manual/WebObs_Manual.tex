@@ -12,6 +12,9 @@
 \usepackage{gensymb}
 \usepackage[overload]{textcase}
 \usepackage{longtable}
+\usepackage{datenumber}
+\usepackage{calc}
+%\usepackage{numprint}
 
 \usepackage[usenames,dvipsnames]{color}
 \definecolor{snow}{gray}{0.98}
@@ -37,15 +40,22 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 \renewcommand*{\familydefault}{\sfdefault}
 
 % ------ local variables
-\newcommand{\release}{2.1.3f}
-\newcommand{\releasename}{v2.1.3f}
-\newcommand{\releasedate}{September 8, 2019}
+\newcommand{\release}{2.1.4}
+\newcommand{\releasename}{v2.1.4}
+\newcommand{\releasedate}{December 9, 2019}
 \newcommand{\webobs}{\textbf{WebObs }}
 \newcommand{\wo}[1]{\MakeTextUppercase{#1}}
 \newcommand{\wofile}[1]{\small{\textbf{#1}}}
 \newcommand{\wokey}[1]{\small{	\texttt{#1}}}
 \newcommand{\wocmd}[1]{\textbf{#1}}
 
+\newcounter{dateone}\newcounter{datetwo}
+\newcommand{\yeartiltoday}[3]{
+\setmydatenumber{dateone}{\the\year}{\the\month}{\the\day}
+\setmydatenumber{datetwo}{#1}{#2}{#3}
+\addtocounter{dateone}{-\thedatetwo}
+\setcounter{dateone}{(\value{dateone}*100/36525)}\thedateone
+}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}[theorem]{Corollary}
@@ -79,8 +89,9 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 \huge User and Administration Manual}\\[3cm]}
 \author{\textit{François Beauducel and Didier Lafon}\\Institut de Physique du Globe de Paris Observatories\\}
 \date{Release \releasename, \releasedate}
-\begin{document}
 
+
+\begin{document}
 
 % ==================================================================
 \frontmatter
