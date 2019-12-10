@@ -39,7 +39,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-12-05
+%   Updated: 2019-12-09
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -817,8 +817,13 @@ for r = 1:length(P.GTABLE)
 		for nn = 1:length(knv)
 			n = knv(nn);
 			k = isinto(D(n).t,tlim);
-			X(nn).t = D(n).t(k);
-			X(nn).d = mavr(rf(D(n).d(k,1:3)),motion_filter);
+			if ~isempty(k)
+				X(nn).t = D(n).t(k);
+				X(nn).d = mavr(rf(D(n).d(k,1:3)),motion_filter);
+			else
+				X(nn).t = [];
+				X(nn).d = [];
+			end
 		end
 		alldata = cat(1,X.d);
 		dlim3 = minmax(alldata(:,3));
