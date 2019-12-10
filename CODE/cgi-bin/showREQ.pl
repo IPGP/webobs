@@ -116,10 +116,11 @@ for (reverse sort @reqlist) {
 				$table .= "<TD align=center>$_</TD>"
 					."<TD align=center><A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A></TD>";
 				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
+				chomp($rreq);
 				if ($rreq eq "") {
 					$table .= "<TD></TD>";
 				} else {
-					my ($rcmd,$rc) = split(/|/,$rreq);
+					my ($rcmd,$rc) = split(/\|/,$rreq);
 					if ($rc eq "0") {
 						$table .= "<TD align=center bgcolor=green>OK</TD>";
 					} elsif ($rc > 0) {
