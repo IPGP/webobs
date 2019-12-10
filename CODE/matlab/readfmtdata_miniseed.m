@@ -23,6 +23,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %		server: P.RAWDATA (host:port)
 %		needed in WEBOBS.rc:
 %		     WO.SLINKTOOL_PRGM|${ROOT_CODE}/bin/linux-32/slinktool
+%		     WO.PRGM_ALARM|perl -e "alarm shift @ARGV; exec @ARGV"
 %
 %	format 'arclink'
 %		type: ArcLink request (using arclink_fetch)
@@ -36,6 +37,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %		server: P.RAWDATA (seedlinkhost:seedlinkport;arclinkhost:arclinkport;delayhours)
 %		needed in WEBOBS.rc:
 %		     WO.SLINKTOOL_PRGM|${ROOT_CODE}/bin/linux-32/slinktool
+%		     WO.PRGM_ALARM|perl -e "alarm shift @ARGV; exec @ARGV"
 %		     WO.ARCLINKFETCH_PRGM|env LD_LIBRARY_PATH='' /usr/local/bin/arclink_fetch
 %
 %	format 'fdsnws-dataselect'
@@ -45,7 +47,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2018-05-27
+%	Updated: 2019-12-10
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -79,6 +81,8 @@ datalinkdelay = field2num(P,'DATALINK_DELAY_SECONDS',0);
 fdat = sprintf('%s/%s.msd',F.ptmp,N.ID);
 tv = floor(datevec(F.datelim - datalinkdelay/86400)');	% floor() is needed to avoid second 60 due to round
 
+% add an alarm to slinktool to avoid freezing...
+slinktool = sprintf('%s %g %s',WO.PRGM_ALARM,field2num(P,'SEEDLINK_SERVER_TIMEOUT_SECONDS',5,'notempty'),WO.SLINKTOOL_PRGM);
 
 % =============================================================================
 % selects the method to read data
@@ -91,7 +95,10 @@ case 'seedlink'
 	% takes former proc's parameter P.SEEDLINK_SERVER if defined, otherwise RAWDATA
 	slsrv = field2str(P,'SEEDLINK_SERVER',F.raw{1},'notempty');
 
-	wosystem(sprintf('%s -S %s -s "%s" -tw %d,%d,%d,%d,%d,%1.0f:%d,%d,%d,%d,%d,%1.0f -o %s %s',WO.SLINKTOOL_PRGM,netsta,strjoin(cha_list,' '),tv,fdat,slsrv),P);
+	s = wosystem(sprintf('%s -S %s -s "%s" -tw %d,%d,%d,%d,%d,%1.0f:%d,%d,%d,%d,%d,%1.0f -o %s %s',slinktool,netsta,strjoin(cha_list,' '),tv,fdat,slsrv),P,'warning');
+	if s
+		delete(fdat);
+	end
 
 
 % -----------------------------------------------------------------------------
@@ -124,7 +131,10 @@ case 'combined'
 	end
 	if (P.NOW - F.datelim(1)) < delay/24 || length(lserv) < 2
 		% seedlink request
-		wosystem(sprintf('%s -S %s_%s -s "%s" -tw %d,%d,%d,%d,%d,%1.0f:%d,%d,%d,%d,%d,%1.0f -o %s %s',WO.SLINKTOOL_PRGM,N.FDSN_NETWORK_CODE,N.FID,strjoin(cha_list,' '),tv,fdat,lserv{1}),P);
+		s = wosystem(sprintf('%s -S %s_%s -s "%s" -tw %d,%d,%d,%d,%d,%1.0f:%d,%d,%d,%d,%d,%1.0f -o %s %s',slinktool,N.FDSN_NETWORK_CODE,N.FID,strjoin(cha_list,' '),tv,fdat,lserv{1}),P,'warning');
+		if s
+			delete(fdat);
+		end
 	else
 		% builds request file for arclink (arclink_fetch format)
 		freq = sprintf('%s/req.txt',F.ptmp);
@@ -183,13 +193,13 @@ if exist(fdat,'file')
 		F.datelim = minmax(cat(1,X.t));
 		P.DATELIM = F.datelim - N.UTC_DATA + P.TZ/24;
 	end
-	[~,D.CLB] = calib(F.datelim(2),nan(1,N.CLB.nx),N.CLB);
+	[~,CLB] = calib(F.datelim(2),nan(1,N.CLB.nx),N.CLB);
 	M = repmat(struct('t',[],'d',[]),N.CLB.nx,1);
-	for c = 1:D.CLB.nx
-		if isempty(D.CLB.cd{c})
-			fprintf('%s: ** WARNING ** no Channel code defined for node %s channel "%s" (calibration file)!\n',wofun,N.ID,D.CLB.nm{c});
+	for c = 1:CLB.nx
+		if isempty(CLB.cd{c})
+			fprintf('%s: ** WARNING ** no Channel code defined for node %s channel "%s" (calibration file)!\n',wofun,N.ID,CLB.nm{c});
 		end
-		fullchannelname = sprintf('%s:%s:%s:%s',N.FDSN_NETWORK_CODE,N.FID,D.CLB.lc{c},D.CLB.cd{c});
+		fullchannelname = sprintf('%s:%s:%s:%s',N.FDSN_NETWORK_CODE,N.FID,CLB.lc{c},CLB.cd{c});
 		i = find(strcmp(chlist,fullchannelname));
 		if ~isempty(i)
 			k = I(i).XBlockIndex;
@@ -228,3 +238,7 @@ D.d = d;
 [D.d,D.CLB] = calib(D.t,D.d,N.CLB);
 D.t = D.t + P.TZ/24;
 
+if isok(P,'DEBUG')
+	D
+	D.CLB
+end
