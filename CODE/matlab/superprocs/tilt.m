@@ -30,40 +30,13 @@ function DOUT=tilt(varargin)
 %	components.
 %	
 %
-%       TILT will use PROC's parameters from .conf file. Specific paramaters are:
-%           PICKS_CLEAN_PERCENT|0
-%	    MEDIAN_FILTER_SAMPLES|10
-%           FLAT_IS_NAN|YES
-%	    TREND_ERROR_MODE|1
-%	    PERNODE_TEMPERATURE_BACKGROUND|N
-%	    PERNODE_TEMPERATURE_COLOR|1,.7,.7
-%	    TILT_TARGET_LATLON|-7.54144,110.44574
-%	    MOTION_EXCLUDED_NODELIST|
-%	    MOTION_MIN_SIZE_KM|10
-%	    MOTION_MAX_XYRATIO|1.5
-%	    MOTION_TIME_COLORMAP|jet(256)
-%	    MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'interp','legend'
-%	    MOTION_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
-%	    VECTORS_EXCLUDED_NODELIST|
-%	    VECTORS_VELOCITY_SCALE|
-%	    VECTORS_MIN_SIZE_KM|10
-%	    VECTORS_MAX_XYRATIO|1.5
-%	    VECTORS_ARROWSHAPE|.1,.1,.08,.02
-%	    VECTORS_DEM_OPT|'watermark',2,'interp','legend'
-%	    VECTORS_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
-%	    MODELLING_EXCLUDED_NODELIST|
-%	    MODELLING_MODULE_ONLY|0
-%	    MODELLING_MAX_DEPTH|8000
-%	    MODELLING_BORDERS|5000
-%	    MODELLING_GRID_SIZE|100
-%	    MODELLING_SIGMAS|1
-%	    MODELLING_PLOT_BEST|N
-%	    MODELLING_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
+%       TILT will use PROC's parameters from .conf file. Specific paramaters are described in the
+%       template CODE/tplate/PROC.TILT
 %
 %
 %   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet, V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
 %   Created: 2015-08-24 in Yogyakarta, Indonesia
-%   Updated: 2018-04-23
+%   Updated: 2019-12-12
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -90,34 +63,54 @@ darkgray = ones(1,3)*.1;
 debug = isok(P,'DEBUG');
 ixyt = [field2num(P,'TILTX_CHANNEL',1),field2num(P,'TILTY_CHANNEL',2),field2num(P,'TEMPERATURE_CHANNEL',3)];
 terrmod = field2num(P,'TREND_ERROR_MODE',1);
-targetlatlon = field2num(P,'TILT_TARGET_LATLON');
-velscale = field2num(P,'VECTORS_VELOCITY_SCALE',0);
-minkm = field2num(P,'VECTORS_MIN_SIZE_KM',10);
-maxxy = field2num(P,'VECTORS_MAX_XYRATIO',1.5);
-arrowshape = field2num(P,'VECTORS_ARROWSHAPE',[.1,.1,.08,.02]);
-vectors_title = field2str(P,'VECTORS_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
-vectors_demopt = field2cell(P,'VECTORS_DEM_OPT','watermark',2,'interp','legend');
-maxdep = field2num(P,'MODELLING_MAX_DEPTH',8e3);	% depth limit (m)
-bm = field2num(P,'MODELLING_BORDERS',5000);
-rr = field2num(P,'MODELLING_GRID_SIZE',51);
-msig = field2num(P,'MODELLING_SIGMAS',1);
-plotbest = isok(P,'MODELLING_PLOT_BEST');
-moduleonly = isok(P,'MODELLING_MODULE_ONLY');
+targetll = field2num(P,'TILT_TARGET_LATLON');
 pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','-');
 pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}');
 pernode_temperature_bg = isok(P,'PERNODE_TEMPERATURE_BACKGROUND');
 pernode_temperature_col = field2num(P,'PERNODE_TEMPERATURE_COLOR',.7*ones(1,3));
 summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
+velscale = field2num(P,'VECTORS_VELOCITY_SCALE',0);
+minkm = field2num(P,'VECTORS_MIN_SIZE_KM',10);
+maxxy = field2num(P,'VECTORS_MAX_XYRATIO',1.5);
+arrowshape = field2num(P,'VECTORS_ARROWSHAPE',[.1,.1,.08,.02]);
+vectors_title = field2str(P,'VECTORS_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
+vectors_demopt = field2cell(P,'VECTORS_DEM_OPT','watermark',2,'interp','legend');
+vectors_topo_rgb = field2num(P,'VECTORS_TOPO_RGB',.5*[1,1,1]);
+vectors_shape = field2shape(P,'VECTORS_SHAPE_FILE');
+% MOTION parameters
+%MOTION_EXCLUDED_NODELIST|
+motion_filter = field2num(P,'MOTION_MAFILTER',10);
+motion_scale = field2num(P,'MOTION_SCALE_RAD',0);
+motion_minkm = field2num(P,'MOTION_MIN_SIZE_KM',10);
+motion_colormap = field2num(P,'MOTION_COLORMAP',jet(64));
+motion_demopt = field2cell(P,'MOTION_DEM_OPT','colormap',.5*ones(64,3),'watermark',2,'interp');
+motion_title = field2str(P,'MOTION_TITLE','{\fontsize{14}{\bf$name - Motion} ($timescale)}');
+
+maxdep = field2num(P,'MODELLING_MAX_DEPTH',8e3);	% depth limit (m)
+bm = field2num(P,'MODELLING_BORDERS',5000);
+rr = field2num(P,'MODELLING_GRID_SIZE',51);
+msig = field2num(P,'MODELLING_SIGMAS',1);
+plotbest = isok(P,'MODELLING_PLOT_BEST');
+moduleonly = isok(P,'MODELLING_MODULE_ONLY');
 modelling_title = field2str(P,'MODELLING_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
 
 geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
 
 for n = 1:length(N)
 
+	% adds 2 more columns to matrix d: north and east components (for the moment, takes only the last azimuth values)
+	azr = 90 - D(n).CLB.az(ixyt(1));
+	azt = 90 - D(n).CLB.az(ixyt(2));
+	% radial-tangential unitary vectors
+	RT = [cosd(azr) sind(azr);
+	      cosd(azt) sind(azt)];
+	xy = inv(RT) * D(n).d(:,ixyt(1:2))';
+	D(n).d = [D(n).d,xy'];
+	
 	% in "target mode", adds 2 more columns to data matrix: radial and tangential 
-	if length(targetlatlon) > 1
-		%[lat,lon,dist,bear] = greatcircle(geo(n,1),geo(n,2),targetlatlon(1),targetlatlon(2),2);
+	if length(targetll) > 1
+		%[lat,lon,dist,bear] = greatcircle(geo(n,1),geo(n,2),targetll(1),targetll(2),2);
 		%D(n).d = [D(n).d,];
 	end
 	
@@ -138,12 +131,11 @@ for n = 1:length(N)
 	for r = 1:length(P.GTABLE)
 
 		figure
-		if pernode_temperature_bg
-
+		%if pernode_temperature_bg
 			% reduces paper height
-			ps = get(gcf,'PaperSize');
-			set(gcf,'PaperSize',[ps(1),ps(2)*0.7])
-		end
+		%	ps = get(gcf,'PaperSize');
+		%	set(gcf,'PaperSize',[ps(1),ps(2)*0.8])
+		%end
 		orient tall
 
 		% renames main variables for better lisibility...
@@ -177,7 +169,7 @@ for n = 1:length(N)
 						[tk,dk] = treatsignal(t(k),d(k,i),P.GTABLE(r).DECIMATE,P);
 					end
 					kreal = find(~isnan(dk) & ~isnan(dkt));
-					rxy = corrcoef(dk(kreal),dkt(kreal));
+					rxy = corrcoef(detrend(dk(kreal)),detrend(dkt(kreal)));
 					tsign = sign(rxy(2));
 					[ax,h1,h2] = plotyy(tk,dk,tkt,dkt*tsign,'timeplot');
 					set(h1,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',scolor(i));
@@ -259,10 +251,11 @@ for n = 1:length(N)
 
 		if ~isempty(k) && ~isempty(k1)
 			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),' (min|moy|max)',' ',' '};
-			for i = ixyt
-				drel = d(k1,i)*(i<3);
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.3f %s} (%+1.3f | %+1.3f | %+1.3f) - Trend = {\\bf%+1.3f \\pm %1.3f %s/day}', ...
-					i, C.nm{i},d(ke,i)-drel,C.un{i},rmin(d(k,i)-drel),rmean(d(k,i)-drel),rmax(d(k,i)-drel),lre(i,:),C.un{i})}];
+			for ii = 1:length(ixyt)
+				i = ixyt(ii);
+				drel = d(k1,i)*(ii<3);
+				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.2f %s} (%+1.2f | %+1.2f | %+1.2f) - Trend = {\\bf%+1.2f \\pm %1.2f %s/day}', ...
+					ii, C.nm{i},d(ke,i)-drel,C.un{i},rmin(d(k,i)-drel),rmean(d(k,i)-drel),rmax(d(k,i)-drel),lre(i,:),C.un{i})}];
 			end
 		end
 		
@@ -307,11 +300,15 @@ for r = 1:length(P.GTABLE)
 	tre = nan(length(N),2); % trends error (탍ad/day)
 
 
-	% --- Time series graph
+	% --- Time series graph converted to orthogonal NS-EW components
 	figure, clf, orient tall
 
 	for ii = 1:3
-		i = ixyt(ii);
+		if ii < 3
+			i = ii + 3;
+		else	
+			i = ixyt(ii);
+		end
 		subplot(6,1,(ii-1)*2+(1:2)), extaxes(gca,[.07,0])
 		hold on
 		aliases = [];
@@ -331,12 +328,13 @@ for r = 1:length(P.GTABLE)
 				if isok(P,'CONTINUOUS_PLOT')
 					samp = 0;
 				else
-					samp = D(n).CLB.sf(i);
+					%samp = D(n).CLB.sf(i);
+					samp = N(n).ACQ_RATE;
 				end
 				timeplot(tk,dk,samp,summary_linestyle,'Color',scolor(n),'MarkerSize',P.GTABLE(r).MARKERSIZE/10)
-				% computes yearly trends (in 탍ad/day)
+				% computes daily trends (in 탍ad/day)
 				kk = find(~isnan(dk));
-				if i < 3 && length(kk) > 2
+				if ii < 3 && length(kk) > 2
 					b = polyfit(tk(kk)-tk(1),dk(kk),1);
 					tr(n,ii) = b(1);
 					tre(n,ii) = std(dk(kk) - polyval(b,tk(kk)-tk(1)))/diff(tlim);
@@ -361,7 +359,14 @@ for r = 1:length(P.GTABLE)
 		set(gca,'XLim',tlim,'FontSize',fontsize)
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('%s%s (%s)',rel,D(n).CLB.nm{i},D(n).CLB.un{i}))
+		switch ii
+			case 1
+				ylabel(sprintf('%sTilt X (탍ad)',rel))
+			case 2
+				ylabel(sprintf('%sTilt Y (탍ad)',rel))
+			case 3
+				ylabel(sprintf('%s%s (%s)',rel,D(n).CLB.nm{i},D(n).CLB.un{i}))
+		end
 		
 		% legend: station aliases
 		ylim = get(gca,'YLim');
@@ -378,40 +383,161 @@ for r = 1:length(P.GTABLE)
 	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 	close
 
+	% --- Motion map
+	summary = 'MOTION';
+	if any(strcmp(P.SUMMARYLIST,summary))
+
+		figure, orient tall
+
+		P.GTABLE(r).GTITLE = varsub(motion_title,V);
+		P.GTABLE(r).INFOS = {'{\itTime span}:', ...
+			sprintf('     {\\bf%s}',datestr(tlim(1),'yyyy-mm-dd HH:MM')), ...
+			sprintf('     {\\bf%s}',datestr(tlim(2),'yyyy-mm-dd HH:MM')), ...
+			' '};
+
+		% Selects nodes
+		if isfield(P,'MOTION_EXCLUDED_NODELIST')
+			knv = find(~ismemberlist({N.FID},split(P.MOTION_EXCLUDED_NODELIST,',')));
+		else
+			knv = 1:length(N);
+		end
+
+		if numel(targetll) == 2
+			latlim = minmax([geo(knv,1);targetll(1)]);
+			lonlim = minmax([geo(knv,2);targetll(2)]);
+		else
+			latlim = minmax(geo(knv,1));
+			lonlim = minmax(geo(knv,1));
+		end
+		xyr = cosd(mean(latlim));
+
+		% makes 3-D vectors
+		clear X
+		for nn = 1:length(knv)
+			n = knv(nn);
+			k = isinto(D(n).t,tlim);
+			if ~isempty(k)
+				X(nn).t = D(n).t(k);
+				X(nn).d = mavr(rf(D(n).d(k,4:5)),motion_filter);
+			else
+				X(nn).t = [];
+				X(nn).d = [];
+			end
+		end
+		alldata = cat(1,X.d);
+
+		% scale is adjusted to maximum relative tilt (in 탍ad)
+		if isempty(motion_scale) || ~(motion_scale > 0)
+			mscale = max([diff(minmax(alldata(:,1))),diff(minmax(alldata(:,2)))]);
+		end
+		vscale = roundsd(mscale,1);
+		vsc = .3*max([diff(latlim),diff(lonlim)*xyr,minkm/degkm])/mscale; % scale in degree/m
+
+		% --- X-Y view with background map
+		axes('position',[0.04,.1,.95,.8]);
+		ha = plot(geo(knv,2),geo(knv,1),'k.');
+		hold on
+		if isok(P,'MOTION_TARGET_INCLUDED',1) && numel(targetll) == 2
+			ha = [ha;plot(targetll(2),targetll(1),'k.','MarkerSize',.1)];
+		end
+		% plots motion displacements first
+		for nn = 1:length(knv)
+			n = knv(nn);
+			h = scatter(geo(n,2) + X(nn).d(:,1)*vsc*xyr,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
+			ha = cat(1,ha,h);
+		end
+		colormap(motion_colormap)
+		caxis(tlim)
+		% fixes the axis
+		axis tight
+		axl = axis;
+		
+		% determines X-Y limits of the map
+		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),motion_minkm,1,border);
+
+		set(gca,'XLim',xlim,'YLim',ylim);
+
+		% loads DEM (P may contain user's defined DEM)
+		DEM = loaddem(WO,[xlim,ylim],P);
+
+		dem(DEM.lon,DEM.lat,DEM.z,'latlon','Position','northwest',motion_demopt{:})
+
+		% plots stations
+		%target(geo(knv,2),geo(knv,1),7);
+
+		% plots shapes
+		if ~isempty(vectors_shape)
+			h = plotbln(vectors_shape,.4*ones(1,3),[],.5);
+			set(h,'Clipping','on')
+		end
+
+		% puts motion particles on top
+		h = get(gca,'Children');
+		ko = find(ismember(h,ha),1);
+		set(gca,'Children',[ha;h(1:ko-1)])
+		
+		% displacement legend
+		alim = get(gca,'YLim');
+		xsc = xlim(1) + [0,vscale*vsc*xyr];
+		ysc = repmat(alim(1)-diff(alim)/20,1,2);
+		plot(xsc,ysc,'-k','Linewidth',2,'Clipping','off')
+		text(mean(xsc),ysc(1),sprintf('%g 탍ad',vscale),'Clipping','off', ...
+			'HorizontalAlignment','center','VerticalAlignment','top','FontWeight','bold')
+		hold off
+
+		% time legend
+		axes('position',[.4,0.1,0.5,0.15]);
+		timecolorbar(0,0,.8,.15,tlim,motion_colormap,10,45)
+		set(gca,'XLim',[0,1],'YLim',[0,1])
+		axis off		
+
+		P.GTABLE(r).GSTATUS = [];
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
+		close
+	end
 
 	% --- Vectors map
 	summary = 'VECTORS';
 	if isfield(P,'SUMMARYLIST') && any(strcmp(P.SUMMARYLIST,summary))
+
 		if isfield(P,'VECTORS_EXCLUDED_NODELIST')
-			kn = find(~ismemberlist({N.FID},split(P.VECTORS_EXCLUDED_NODELIST,',')));
+			knv = find(~ismemberlist({N.FID},split(P.VECTORS_EXCLUDED_NODELIST,',')));
 		else
-			kn = 1:length(N);
+			knv = 1:length(N);
 		end
-		figure, set(gcf,'PaperPosition',[0,0,get(gcf,'PaperSize')]);
+		if isok(P,'VECTORS_TARGET_INCLUDED') && numel(targetll) == 2
+			latlim = minmax([geo(knv,1);targetll(1)]);
+			lonlim = minmax([geo(knv,2);targetll(2)]);
+		else
+			latlim = minmax(geo(knv,1));
+			lonlim = minmax(geo(knv,1));
+		end
+		xyr = cosd(mean(latlim));
 
-		% latitude extent of network and xy ratio
-		ylim = minmax(geo(kn,1));
-		xyr = cosd(mean(ylim));
+		figure, orient tall
+		
+		P.GTABLE(r).GTITLE = varsub(vectors_title,V);
 
-		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
-		stitre = varsub(vectors_title,V);
-		P.GTABLE(r).GTITLE = stitre;
-
-		% scale is adjusted to maximum horizontal vector or error amplitude (in 탍ad/day)
+		% scale is adjusted to maximum horizontal vector or error amplitude (in mm/yr)
 		if velscale > 0
 			vmax = velscale;
 		else
-			vmax = rmax([abs(complex(tr(kn,1),tr(kn,2)));abs(complex(tre(kn,1),tre(kn,2)))/2]);
+			vmax = rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]);
 		end
 		vscale = roundsd(vmax,1);
-		vsc = .25*max(diff(ylim),minkm/degkm)/vmax;
+		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,minkm/degkm])/vmax;
 
-		ha = plot(geo(kn,2),geo(kn,1),'k.');  extaxes(gca,[.04,.08])
+		ha = plot(geo(knv,2),geo(knv,1),'k.');  extaxes(gca,[.04,.08])
 		hold on
+
+		if isok(P,'VECTORS_TARGET_INCLUDED',1) && numel(targetll) == 2
+			ha = [ha;plot(targetll(2),targetll(1),'k.','MarkerSize',.1)];
+		end
+
 		% plots velocity vectors first
-		for nn = 1:length(kn)
-			n = kn(nn);
-			if ~any(isnan([vsc,vmax])) && ~any(isnan(tr(n,:)))
+		for nn = 1:length(knv)
+			n = knv(nn);
+			if ~any(isnan([vsc,vmax])) && ~any(isnan(tr(n,1:2)))
 				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1)/xyr,vsc*tr(n,2),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
 				ha = cat(1,ha,h);
 			end
@@ -421,27 +547,7 @@ for r = 1:length(P.GTABLE)
 		axl = axis;
 		
 		% determines X-Y limits of the map
-		dlat = axl(3:4);
-		lat0 = mean(axl(3:4));
-		if diff(axl(3:4)) < minkm/degkm
-			dlat = lat0 + [-.5,.5]*minkm/degkm;
-		end
-		dlon = axl(1:2);
-		lon0 = mean(dlon);
-		if diff(dlon) < minkm/degkm(lat0)
-			dlon = lon0 + [-.5,.5]*minkm/degkm(lat0);
-		end
-		% adjusts to respect maximum XY ratio
-		if maxxy*diff(dlon)/cosd(lat0) < diff(dlat)
-			dlon = lon0 + [-.5,.5]*diff(dlat)*cosd(lat0)/maxxy;
-		end
-		if maxxy*diff(dlat) < diff(dlon)*cosd(lat0)
-			dlat = lat0 + [-.5,.5]*diff(dlon)/cosd(lat0)/maxxy;
-		end
-
-		% adds borders in %
-		xlim = dlon + diff(dlon)*border*[-1,1]/cosd(lat0);
-		ylim = dlat + diff(dlat)*border*[-1,1];
+		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),minkm,maxxy,border);
 
 		set(gca,'XLim',xlim,'YLim',ylim);
 
@@ -449,32 +555,38 @@ for r = 1:length(P.GTABLE)
 		DEM = loaddem(WO,[xlim,ylim],P);
 
 		dem(DEM.lon,DEM.lat,DEM.z,'latlon',vectors_demopt{:})
-		
-		% adds distance from target
-		if length(targetlatlon) > 1
-			hold on
-			[xx,yy] = meshgrid(DEM.lon,DEM.lat);
-			DEM.dist = greatcircle(targetlatlon(1),targetlatlon(2),yy,xx);
-			[c,h] = contour(DEM.lon,DEM.lat,DEM.dist,'k');
-			set(h,'Color',darkgray,'LineWidth',.1);
-			clabel(c,h,'FontSize',8,'Color',darkgray);
-			hold off
-		end
-
 		text(xlim(2),ylim(2)+.01*diff(ylim),DEM.COPYRIGHT,'HorizontalAlignment','right','VerticalAlignment','bottom','Interpreter','none','FontSize',6)
 
+		% adds distance from target
+		if numel(targetll) == 2
+			pos = get(gca,'position');
+			set(gca,'position',[pos(1),1-pos(4)-0.02,pos(3:4)]);
+
+			[xx,yy] = meshgrid(DEM.lon,DEM.lat);
+			DEM.dist = greatcircle(targetll(1),targetll(2),yy,xx);
+			[c,h] = contour(DEM.lon,DEM.lat,DEM.dist,'k');
+			set(h,'Color',vectors_topo_rgb,'LineWidth',.1);
+			clabel(c,h,'FontSize',8,'Color',vectors_topo_rgb);
+		end
+		
 		% plots stations
-		target(geo(kn,2),geo(kn,1),7);
+		target(geo(knv,2),geo(knv,1),7);
+
+		% plots shapes
+		if ~isempty(vectors_shape)
+			h = plotbln(vectors_shape,.4*ones(1,3),[],.5);
+			set(h,'Clipping','on')
+		end
 
 		% puts arrows on top
 		h = get(gca,'Children');
-		ko = find(h == ha(1));
-		set(gca,'Children',[ha;h(1:ko)])
+		ko = find(ismember(h,ha),1);
+		set(gca,'Children',[ha;h(1:ko-1)])
 		
-		% plots error ellipse, vertical component and station name
-		for nn = 1:length(kn)
-			n = kn(nn);
-			if ~isnan(any(tr(n,:)))
+		% plots error ellipse and station name
+		for nn = 1:length(knv)
+			n = knv(nn);
+			if ~isnan(any(tr(n,1:2)))
 				h = ellipse(geo(n,2) + vsc*tr(n,1)/xyr,geo(n,1) + vsc*tr(n,2),vsc*tre(n,1)/xyr,vsc*tre(n,2), ...
 					'EdgeColor',scolor(n),'LineWidth',.2,'Clipping','on');
 				ha = cat(1,ha,h);
@@ -485,30 +597,33 @@ for r = 1:length(P.GTABLE)
 			else
 				stn = {N(n).ALIAS,'',''};
 			end
+			% station name
 			text(geo(n,2),geo(n,1),stn,'FontSize',7,'FontWeight','bold', ...
 				'VerticalAlignment','Middle','HorizontalAlignment','Center')
 		end
 
 		% plots legend scale
 		xsc = xlim(1);
-		ysc = ylim(1) - .05*diff(ylim);
+		ysc = ylim(2) + .04*diff(ylim);
 		lsc = vscale*vsc;
 		arrows(xsc,ysc,lsc,90,arrowshape*vmax/vscale,'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc+1.1*lsc,ysc,sprintf('%g 탍ad/day',vscale),'FontWeight','bold')
 
+
 		hold off
 
-		% adds plot amplitude vs distance
-		if length(targetlatlon) > 1
-			axes('Position',[.08,.03,.4,.1])
+		% adds subplot amplitude vs distance
+		if numel(targetll) == 2
+			pos = get(gca,'position');
+			axes('Position',[.5,.05,.45,pos(2)-0.02])
 			plot(0,0)
 			hold on
-			sta_dist = greatcircle(targetlatlon(1),targetlatlon(2),geo(kn,1),geo(kn,2));
-			sta_amp = sqrt(sum(tr(:,1:2).^2,2));
-			sta_err = sqrt(sum(tre(:,1:2).^2,2));
-			for nn = 1:length(kn)
-				n = kn(nn);
-				errorbar(sta_dist(nn),sta_amp(nn),sta_err(nn),'.','MarkerSize',15,'Color',scolor(n))
+			sta_dist = greatcircle(targetll(1),targetll(2),geo(knv,1),geo(knv,2));
+			sta_amp = sqrt(rsum(tr(knv,1:2).^2,2));
+			sta_err = sqrt(rsum(tre(knv,1:2).^2,2));
+			for nn = 1:length(knv)
+				n = knv(nn);
+				errorbar(sta_dist(nn),sta_amp(nn),sta_err(nn),'.','MarkerSize',15,'Color',scolor(n),'LineWidth',0.1)
 			end
 			hold off
 			set(gca,'FontSize',8)
@@ -516,20 +631,20 @@ for r = 1:length(P.GTABLE)
 				set(gca,'YLim',[0,max(sta_amp+sta_err)])
 			end
 			xlabel('Distance from target (km)')
-			ylabel('Tilt amplitude (탍ad)')
+			ylabel('Tilt amplitude (탍ad/day)')
 		end
+		
 
-		rcode2 = sprintf('%s_%s',proc,summary);
-		OPT.FIXEDPP = true;
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		P.GTABLE(r).GSTATUS = [];
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
 		close
 
 		% exports data
 		if isok(P.GTABLE(r),'EXPORTS')
-			E.t = max(cat(1,D(kn).tfirstlast),[],2);
-			E.d = [geo(kn,:),tr(kn,:),tre(kn,1:2)];
+			E.t = max(cat(1,D(knv).tfirstlast),[],2);
+			E.d = [geo(knv,:),tr(knv,:),tre(knv,1:2)];
 			E.header = {'Latitude','Longitude','Altitude','E_tilt(탍ad/day)','N_Tilt(탍ad/day)','dEt(탍ad/day)','dNt(탍ad/day)'};
-			E.title = sprintf('%s {%s}',stitre,upper(rcode2));
+			E.title = sprintf('%s {%s}',stitre,upper(sprintf('%s_%s',proc,summary)));
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
 	end
