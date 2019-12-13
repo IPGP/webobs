@@ -57,6 +57,20 @@ NODE_RGB|Red
 NODE_FONTSIZE|10
 NODE_MARKER|s
 
+# set to YES to use SRTM1 30m resolution tiles
+DEM_SRTM1|NO
+
+# optional user-defined DEM (Arcinfo format, lat/lon) overwriting SRTM/ETOPO default
+#DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
+#DEM_TYPE|LATLON
+#DEM_COPYRIGHT|DEM: myDEM
+
+# additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
+#MAP1_XYLIM|
+#MAP2_XYLIM|
+# do not show node alias in zoom map(s)
+NODE_SUBMAP_ALIAS|N
+
 # file for background time referenced events 
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 

@@ -53,6 +53,12 @@ DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
 DEM_TYPE|LATLON
 DEM_COPYRIGHT|
 
+# additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
+#MAP1_XYLIM|
+#MAP2_XYLIM|
+# do not show node alias in zoom map(s)
+NODE_SUBMAP_ALIAS|N
+
 # graphical density for PNG outputs (in pixel per inches)
 PPI|100
 # landscape format for all outputs

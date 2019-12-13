@@ -47,6 +47,8 @@ DEM_SRTM1|N
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
+# do not show node alias in zoom map(s)
+NODE_SUBMAP_ALIAS|N
 
 # file for background time referenced events 
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
