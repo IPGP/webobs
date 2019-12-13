@@ -16,7 +16,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2019-12-05
+%	Updated: 2019-12-12
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -79,7 +79,7 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 		cpr2 = '';
 	end
 	% for request, print the user ID
-	if isfield(G,'UID')
+	if ~isok(G,'ANONYMOUS') && isfield(G,'UID')
 		[s,w] = wosystem(sprintf('sqlite3 %s "select FULLNAME from users where UID = ''%s''"|tr -d "\\n"|iconv -f UTF-8 -t ISO_8859-1',WO.SQL_DB_USERS,G.UID));
 		uid = sprintf('Request by %s [%s] ',w,G.UID);
 	else
