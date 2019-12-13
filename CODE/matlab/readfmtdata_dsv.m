@@ -7,7 +7,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %	         type: delimiter-separated values text file, date & time 
 %	               reference and data columns, all numeric
 %	    P.RAWDATA: full path and filename(s) using bash wildcard facilities
-%	               (may includes $FID and $yyyy variables) 
+%	               (may includes $FID, $yyyy, $mm, $dd or $doy variables) 
 %	  data format: date&time;data1;data2; ... ;dataN (semi-colon, coma or space separated values)
 %	node channels: if no calibration file defined, will use the first line 
 %	               header of data file
@@ -28,7 +28,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2018-10-24
+%	Updated: 2019-12-12
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -67,11 +67,45 @@ end
 if ~isempty(regexpi(F.raw{1},'\$yyyy'))
 	Y = dir(regexprep(F.raw{1},'\$yyyy.*$','*'));
 	years = str2num(cat(1,Y(~ismember({Y.name},{'.','..'})' & cat(1,Y.isdir)).name))';
-	for y = years
-		if (isnan(P.DATELIM(1)) || datenum(y,12,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(y,1,1) <= P.DATELIM(2))
-			fraw = regexprep(F.raw{1},'\$yyyy',num2str(y),'ignorecase');
-			wosystem(sprintf('cat %s | %s %s \\%s %d %d >> %s', ...
-				fraw, preprocessor, N.ID, fs, header, nftest, fdat), P);
+	for yyyy = years
+		if (isnan(P.DATELIM(1)) || datenum(yyyy,12,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,1) <= P.DATELIM(2))
+			if ~isempty(regexpi(F.raw{1},'\$mm'))
+				for mm = 1:12
+					if (isnan(P.DATELIM(1)) || datenum(yyyy,mm,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,1) <= P.DATELIM(2))
+						if ~isempty(regexpi(F.raw{1},'\$dd'))
+							for dd = 1:31
+								if (isnan(P.DATELIM(1)) || datenum(yyyy,mm,dd) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,dd) <= P.DATELIM(2))
+									fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
+									fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
+									fraw = regexprep(fraw,'\$dd',sprintf('%02d',dd),'ignorecase');
+									wosystem(sprintf('cat %s | %s %s \\%s %d %d >> %s', ...
+										fraw, preprocessor, N.ID, fs, header, nftest, fdat), P);
+								end
+							end
+						else
+							fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
+							fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
+							wosystem(sprintf('cat %s | %s %s \\%s %d %d >> %s', ...
+								fraw, preprocessor, N.ID, fs, header, nftest, fdat), P);
+						end
+					end
+				end
+			else
+				if ~isempty(regexpi(F.raw{1},'\$doy'))
+					for doy = 1:366
+						if (isnan(P.DATELIM(1)) || datenum(yyyy,1,doy) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,doy) <= P.DATELIM(2))
+							fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
+							fraw = regexprep(fraw,'\$doy',sprintf('%03d',doy),'ignorecase');
+							wosystem(sprintf('cat %s | %s %s \\%s %d %d >> %s', ...
+								fraw, preprocessor, N.ID, fs, header, nftest, fdat), P);
+						end
+					end
+				else
+					fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
+					wosystem(sprintf('cat %s | %s %s \\%s %d %d >> %s', ...
+						fraw, preprocessor, N.ID, fs, header, nftest, fdat), P);
+				end
+			end
 			fprintf('.');
 		end
 	end
