@@ -119,6 +119,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 * **Alexis Bosson** - bosson@ipgp.fr	
 * **Didier Mallarino** - 	
 * **Jean-Marie Saurel** - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel) - saurel@ipgp.fr
+* **Philippe Catherine** - [CPS97410](https://github.com/CPS97410) - caterine@ipgp.fr
 
 See also the list of active [contributors](https://github.com/IPGP/webobs/contributors).	
 
