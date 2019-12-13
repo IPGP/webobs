@@ -117,7 +117,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 * **Xavier Béguin** - [XavierBeguin](https://github.com/XavierBeguin) - beguin@ipgp.fr
 * **Patrice Boissier** - [PBoissier](https://github.com/PBoissier) - boissier@ipgp.fr	
 * **Alexis Bosson** - bosson@ipgp.fr	
-* **Didier Mallarino**	
+* **Didier Mallarino** - 	
 * **Jean-Marie Saurel** - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel) - saurel@ipgp.fr
 
 See also the list of active [contributors](https://github.com/IPGP/webobs/contributors).	
