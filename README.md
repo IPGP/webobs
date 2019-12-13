@@ -120,6 +120,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 * **Didier Mallarino** - 	
 * **Jean-Marie Saurel** - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel) - saurel@ipgp.fr
 * **Christophe Brunet** - - [BrunetChristophe](https://github.com/BrunetChristophe/webobs) - brunet@ipgp.fr
+* **Philippe Catherine** - [CPS97410](https://github.com/CPS97410) - caterine@ipgp.fr
 See also the list of active [contributors](https://github.com/IPGP/webobs/contributors).	
 
 ## References	
