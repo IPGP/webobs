@@ -30,7 +30,7 @@ STATUSLIST|1,0
 REF_DATE|
 
 # additional summary graphs keywords (comma separated)
-SUMMARYLIST|VECTORS,MODELLING
+SUMMARYLIST|VECTORS
 SUMMARY_CHANNELS|1,2,3
 
 # execution command (for runproc shell)
@@ -70,7 +70,7 @@ PPI|100
 POSTSCRIPT|1
 # value = 1 to export text data files
 EXPORTS|1
-
+PAPER_SIZE|8,11
 
 PICKS_CLEAN_PERCENT|0
 FLAT_IS_NAN|NO
@@ -88,19 +88,24 @@ PERNODE_TEMPERATURE_BACKGROUND|N
 PERNODE_TEMPERATURE_COLOR|1,.7,.7
 
 MOTION_EXCLUDED_NODELIST|
+MOTION_MAFILTER|1
+MOTION_SCALE_RAD|0
 MOTION_MIN_SIZE_KM|10
-MOTION_MAX_XYRATIO|1.5
-MOTION_TIME_COLORMAP|jet(256)
-MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'interp','legend'
-MOTION_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
+MOTION_COLORMAP|jet(64)
+MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'interp'
+MOTION_TITLE|{\fontsize{14}{\bf$name - Motion} ($timescale)}
 
 VECTORS_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
 VECTORS_EXCLUDED_NODELIST|
 VECTORS_DEM_OPT|'watermark',2,'interp','legend'
 VECTORS_VELOCITY_SCALE|
+VECTORS_TARGET_INCLUDED|Y
 VECTORS_MIN_SIZE_KM|10
 VECTORS_MAX_XYRATIO|1.5
 VECTORS_ARROWSHAPE|.1,.1,.08,.02
+VECTORS_TOPO_RGB|
+VECTORS_SHAPE_FILE|
+
 
 MODELLING_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
 MODELLING_EXCLUDED_NODELIST|
