@@ -79,6 +79,7 @@ progress, end, and/or results:
 	POSTSCRIPT|
 	PDFOUTPUT|
 	EXPORTS|
+	ANONYMOUS|
 	ORIGIN|
 	UID|
 	PROC.procname.key|  (optional, as many as given by formREQ.pl)
@@ -169,6 +170,7 @@ if ( (open REQ, ">$reqfn") ) {
 	print REQ "POSTSCRIPT|".$QryParm->{'postscript'}."\n";
 	print REQ "PDFOUTPUT|".$QryParm->{'pdfoutput'}."\n";
 	print REQ "EXPORTS|".$QryParm->{'exports'}."\n";
+	print REQ "ANONYMOUS|".$QryParm->{'anonymous'}."\n";
 	print REQ "ORIGIN|".$QryParm->{'origin'}."\n";
 	print REQ "UID|".$USERS{$CLIENT}{UID}."\n";
 	foreach (grep { /^PROC./ } keys(%$QryParm)) { print REQ "$_|".u2l($QryParm->{$_})."\n" }
@@ -258,7 +260,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

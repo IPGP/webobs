@@ -80,6 +80,7 @@ Parameters:
 	PDFOUTPUT
 	POSTSCRIPT
 	EXPORTS
+	ANONYMOUS
 
 =cut
 
@@ -368,6 +369,9 @@ print "<TR>";
 	#	EXPORTS|
 		print "<label style=\"width:80px\" for=\"exports\">$__{'Exports'}:</label>";
 		print "<input id=\"exports\" name=\"exports\" type=\"checkbox\" value=\"1\"".($REQDFLT{EXPORTS}==1 ? " checked":"")."><BR>&nbsp;<BR>";
+	#	ANONYMOUS|
+		print "<label style=\"width:80px\" for=\"anonymous\">$__{'Anonymous'}:</label>";
+		print "<input id=\"anonymous\" name=\"anonymous\" type=\"checkbox\" value=\"1\"".($REQDFLT{ANONYMOUS}==1 ? " checked":"")."><BR>&nbsp;<BR>";
 		print "</TD>";
 
 	print "</TR>";
@@ -415,7 +419,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
