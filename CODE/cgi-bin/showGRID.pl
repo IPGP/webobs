@@ -37,7 +37,7 @@ use WebObs::i18n;
 use WebObs::IGN;
 use Locale::TextDomain('webobs');
 
-# ---- see what we've been called for and what the client is allowed to do
+
 # ---- init general-use variables on the way and quit if something's wrong
 #
 my $cgi = new CGI;
@@ -211,6 +211,8 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	# -----------
 	$htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$GRID{DOMAIN}\"><B>$DOMAINS{$GRID{DOMAIN}}{NAME}</B></A></LI>\n"; 
 	# -----------
+	$htmlcontents .= "<LI>$__{'Grid code'}: <B>$grid</B></LI>\n";
+        # -----------
 	if ($showOwnr && defined($GRID{OWNCODE})) { 
 		$htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n" 
 	} 
