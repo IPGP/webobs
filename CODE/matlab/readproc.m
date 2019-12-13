@@ -20,7 +20,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2019-05-12
+%	Updated: 2019-12-11
 
 
 proc = varargin{1};
@@ -56,7 +56,7 @@ P.TZ = field2num(P,'TZ',0);
 P.NOW = tnow + P.TZ/24;
 P.BANG = datenum(field2num(P,'BANG',str2num(WO.BIG_BANG)),1,1);
 P.PPI = field2num(P,'PPI',field2num(WO,'MKGRAPH_VALUE_PPI',100));
-P.PAPER_SIZE = field2str(P,'PAPER_SIZE','');
+P.PAPER_SIZE = field2str(P,'PAPER_SIZE','8,11');
 P.PLOT_GRID = field2str(P,'PLOT_GRID','NO');
 P.PDFOUTPUT = field2str(P,'PDFOUTPUT','NO');
 P.SVGOUTPUT = field2str(P,'SVGOUTPUT','NO');
