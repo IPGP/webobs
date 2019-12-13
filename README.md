@@ -126,6 +126,7 @@ See also the list of active [contributors](https://github.com/IPGP/webobs/contri
 
 * Beauducel, F. (2006). Operational monitoring of French volcanoes: Recent advances in Guadeloupe. _Géosciences, Editions BRGM_, n°4, p 64-68, 2006. [Abstract](http://www.ipgp.fr/~beaudu/2006_Beauducel_Geosciences.html)	
 * F. Beauducel, A. Bosson, F. Randriamora, C. Anténor-Habazac, A. Lemarchand, J-M Saurel, A. Nercessian, M-P Bouin, J-B de Chabalier, V. Clouard (2010). Recent advances in the Lesser Antilles observatories - Part 2 - WEBOBS: an integrated web-based system for monitoring and networks management. _Paper presented at European Geosciences Union General Assembly, Vienna, 2-7 May 2010._ [Abstract](http://www.ipgp.fr/~beaudu/2010_Beauducel_EGU.html)	
+*  François Beauducel, Didier Lafon, Xavier Béguin, Jean-Marie Saurel, Alexis Bosson, Didier Mallarino, Patrice Boissier, Christophe Brunet, Arnaud Lemarchand, Christian Anténor-Habazac, Alexandre Nercessian, Ahmad Ali Fahmi (2019), WebObs: The volcano observatories missing link between research and real-time monitoring, submitted to *Frontiers in Earth Science, section Volcanology*.
 
 ## Copyright	
 
