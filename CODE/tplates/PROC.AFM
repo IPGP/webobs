@@ -13,11 +13,26 @@ RAWFORMAT|porkyasc
 # URN link to data 
 URNDATA|$WEBOBS{URN_RAWD}/afm
 
-DEM_SRTM1|N
-# optional user-defined DEM (Arcinfo format, lat/lon)
+# node parameters (for display and maps)
+NODE_NAME|node
+NODE_MARKER|^
+NODE_SIZE|15
+NODE_RGB|red
+NODE_FONTSIZE|12
+
+# set to YES to use SRTM1 30m resolution tiles
+DEM_SRTM1|NO
+
+# optional user-defined DEM (Arcinfo format, lat/lon) overwriting SRTM/ETOPO default
 #DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
 #DEM_TYPE|LATLON
 #DEM_COPYRIGHT|DEM: myDEM
+
+# additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
+#MAP1_XYLIM|
+#MAP2_XYLIM|
+# do not show node alias in zoom map(s)
+NODE_SUBMAP_ALIAS|N
 
 # time zone for outputs
 TZ|0
@@ -47,9 +62,6 @@ SUBMIT_RESOURCE|afm
 REQUEST_KEYLIST|PLUVIO_THRESHOLD
 
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
-
-# node name
-NODENAME|node
 
 # auto refresh of graphic display
 DISPLAY_AUTOREFRESH_SECONDS|3600

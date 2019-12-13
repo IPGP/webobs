@@ -32,17 +32,24 @@ NODE_NAME|site
 NODE_MARKER|^
 NODE_RGB|1,0,0
 NODE_SIZE|10
+NODE_FONTSIZE|8
 
-# auto refresh of graphic display
-DISPLAY_AUTOREFRESH_SECONDS|3600
+# set to YES to use SRTM1 30m resolution tiles
+DEM_SRTM1|NO
 
-MAP1_XYLIM|-61.66805,-61.65972,16.03889,16.04722
-
-DEM_SRTM1|N
-# optional user-defined DEM (Arcinfo format, lat/lon)
+# optional user-defined DEM (Arcinfo format, lat/lon) overwriting SRTM/ETOPO default
 #DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
 #DEM_TYPE|LATLON
 #DEM_COPYRIGHT|DEM: myDEM
+
+# additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
+#MAP1_XYLIM|
+#MAP2_XYLIM|
+# do not show node alias in zoom map(s)
+NODE_SUBMAP_ALIAS|N
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
 
 # time zone for outputs
 TZ|0

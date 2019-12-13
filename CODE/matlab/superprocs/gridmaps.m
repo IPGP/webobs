@@ -20,10 +20,24 @@ function gridmaps(grids,outd,varargin)
 %   resolution DEM can be defined into each grid configuration files, in 
 %   ArcInfo format.
 %   
+%   GRIDMAPS uses variables defined in CONF/GRIDMAPS.rc and the following 
+%   variables from the grid's configuration:
+%   	NODE_NAME|
+%	NODE_MARKER|
+%	NODE_RGB|
+%	NODE_SIZE|
+%	NODE_FONTSIZE|
+%	NODE_SUBMAP_ALIAS|
+%	MAP1_XYLIM|
+%	DEM_SRTM1|
+%	DEM_FILE|
+%	DEM_TYPE|
+%	DEM_COPYRIGHT|
 %
-%   Author: F. Beauducel, WEBOBS/IPGP
+%
+%   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2019-07-02
+%   Updated: 2019-12-13
 
 
 WO = readcfg;
@@ -184,6 +198,7 @@ for g = 1:length(grids)
 	nodesize = field2num(G,'NODE_SIZE',15,'notempty');
 	nodecolor = field2num(G,'NODE_RGB',[1,0,0],'notempty');
 	nodefont = field2num(G,'NODE_FONTSIZE',0,'notempty');
+	nodesubmapalias = isok(G,'NODE_SUBMAP_ALIAS');
 
 	% looks for supplementary maps (MAP*_XYLIM|LON1,LON2,LAT1,LAT2 keys)
 	if merge
@@ -315,9 +330,14 @@ for g = 1:length(grids)
 				target(geo(k0(k),2),geo(k0(k),1),nodesize,nodecolor,nodetype,2)
 			end
 
-			% writes node names
+			% writes node names for current map but excluded other maps
 			if nodefont > 0
-				k = find(isinto(geo(kn,2),dlon) & isinto(geo(kn,1),dlat));
+				k = isinto(geo(kn,2),dlon) & isinto(geo(kn,1),dlat);
+				if any(k) && ~nodesubmapalias
+					for mm = (m+1):size(maps,1)
+						k = k & ~(isinto(geo(kn,2),maps{mm,2}(1:2)) & isinto(geo(kn,1),maps{mm,2}(3:4)));
+					end
+				end
 				smarttext(geo(kn(k),2),geo(kn(k),1),cat(1,{N(kn(k)).ALIAS}),'FontSize',nodefont,'FontWeight','bold')
 			end
 

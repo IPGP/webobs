@@ -10,7 +10,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ## v2.1.4 (December 2019)
 
-### Superproc GNSS
+### Superproc gnss
 
 1. New summary graph `MOTION` that can be added to `SUMMARYLIST` showing the displacement particles in a 4-D plot. New variables are:
 
@@ -25,9 +25,7 @@ MOTION_TITLE|{\fontsize{14}{\bf${NAME} - Motion} ($timescale)}
 MOTION_TARGET_INCLUDED|Y
 ```
 
-	`MAFILTER` is a moving-average filter with default 10 samples.
-	
-	`MOTION_SCALE_MM` can be used to fix the displacement scale corresponding to 30% of the map width (default `0` is automatic).
+`MAFILTER` is a moving-average filter with default 10 samples. `MOTION_SCALE_MM` can be used to fix the displacement scale corresponding to 30% of the map width (default `0` is automatic).
 
 2. The target (defined by `GNSS_TARGET_LATLON` coordinates) is systematically included in the summary graphs `MODELLING` and `MODELTIME`. It is possible to add it into `VECTORS` and `MOTION` summary graphs with new variables:
 
@@ -46,6 +44,38 @@ MOTION_TARGET_INCLUDED|Y
 	PERNODE_PCA_COLOR|0.3,0.6,0
 	PERNODE_PCA_MAFILTER|10
 ```
+
+### Superproc tilt
+
+Component azimuth from calibration file are now taken into account. Pernode graphs are still showing original components, but summary graphs are using projected components in an orthogonal NS-EW referential.
+
+New summary graph MOTION showing spatial time evolution of tilt at each station. Associated variables are:
+
+```
+SUMMARYLIST|MOTION
+MOTION_EXCLUDED_NODELIST|
+MOTION_MAFILTER|
+MOTION_SCALE_RAD|
+MOTION_MIN_SIZE_KM|
+MOTION_COLORMAP|
+MOTION_DEM_OPT|
+MOTION_TITLE|
+```
+
+
+### Gridmaps
+
+New default behavior for multiple grid maps: node alias are not shown in submaps defined by `MAP1_XYLIM`, `MAP2_XYLIM`, ... Previous behavior can be retrieved using variable:
+
+```
+	NODE_SUBMAP_ALIAS|Y
+``` 
+
+### Proc requests
+
+A new option "Anonymous" is available to remove the subtitle with user's name in the produced graphs.
+
+A bug has been fixed in the request results table to show correctly the job status (wait..., ok or error).
 
 
 ## v2.1.3f (September, 2019)
