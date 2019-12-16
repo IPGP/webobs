@@ -152,13 +152,13 @@ my $nodefile = "$nodepath/$NODEName.cnf";
 #
 if ($delete) {
 	# NOTE: this removes the node directory and association to grids, but not any reference to it in other nodes...
-	my @rc;
-	@rc = qx(/bin/mkdir -p $NODES{PATH_NODE_TRASH});
-	@rc = qx(/bin/mv $nodepath $NODES{PATH_NODE_TRASH}/);
-	if ( $? == 0 ) {
-		qx(/bin/rm $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName);
+	mkdir $NODES{PATH_NODE_TRASH};
+	system("rm -rf $NODES{PATH_NODE_TRASH}/$NODEName");
+	if (system("/bin/mv $nodepath $NODES{PATH_NODE_TRASH}/") == 0) {
+		unlink glob "$WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName";
+		#system("/bin/rm -f $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName");
 	} else {
-		htmlMsgNotOK("postNODE couldn't move directory $nodepath to trash [$rc[0]]");
+		htmlMsgNotOK("postNODE couldn't move directory $nodepath to trash... [$!]");
 	}
 	htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n deleted");
 }
