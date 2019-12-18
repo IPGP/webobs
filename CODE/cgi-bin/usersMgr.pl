@@ -299,11 +299,11 @@ for (@qrs) {
 	if ($dusers_uid eq "!" || $dusers_uid eq "?" ) {
 		$dusers .= "<tr id=\"$dusersId\"><td class=\"tdlock\">";
 		$dusers .= "<td class=\"tdlock\">";
-		$dusers .= "<td class=\"tdlock\">$dusers_uid</td><td class=\"tdlock\">$dusers_fullname</td><td class=\"tdlock\">$dusers_login</td><td class=\"tdlock\">$dusers_email</td><td class=\"tdlock\">$dusers_validity</td><td class=\"tdlock\">$dusers_groups</td></tr>\n";
+		$dusers .= "<td class=\"tdlock\">$dusers_uid</td><td class=\"tdlock\">$dusers_fullname</td><td class=\"tdlock\">$dusers_login</td><td class=\"tdlock\">$dusers_email</td><td class=\"tdlock\">$dusers_groups</td><td class=\"tdlock\">$dusers_validity</td></tr>\n";
 	} else {
 		$dusers .= "<tr id=\"$dusersId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"openPopupUser($dusersId,'$WEBOBS{SQL_TABLE_USERS}');return false\"><img title=\"edit user\" src=\"/icons/modif.png\"></a>";
 		$dusers .= "<td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"postDeleteUser($dusersId);return false\"><img title=\"delete user\" src=\"/icons/no.png\"></a>";
-		$dusers .= "<td>$dusers_uid</td><td nowrap>$dusers_fullname</td><td>$dusers_login</td><td>$dusers_email</td><td>$dusers_validity</td><td>$dusers_groups</td></tr>\n";
+		$dusers .= "<td>$dusers_uid</td><td nowrap>$dusers_fullname</td><td>$dusers_login</td><td>$dusers_email</td><td>$dusers_groups</td><td>$dusers_validity</td></tr>\n";
 	}
 }
 
@@ -491,7 +491,7 @@ Identifications&nbsp;$go2top
 				<table class="dusers">
 				<thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupUser(-1);return false"><img title="define a new user" src="/icons/modif.png"></a>
 				<th style=\"width:12px\" class="tdlock">&nbsp;
-				<th>Uid</th><th>Name</th><th>Login</th><th>Email</th><th>V</th><th>Groups</th>
+				<th>Uid</th><th>Name</th><th>Login</th><th>Email</th><th>Groups</th><th>Valid</th>
 				</tr></thead>
 				<tbody>
 				$dusers
