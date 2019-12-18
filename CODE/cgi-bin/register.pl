@@ -240,12 +240,14 @@ __EOD__
 my @charte = readFile("$WEBOBS{TERMSOFUSE}");
 
 my $pass_restriction;
+my $pass_minlength = 0;
 if ($WEBOBS{'HTPASSWORD_MIN_LENGTH'}) {
-	$pass_restriction = "At least $WEBOBS{'HTPASSWORD_MIN_LENGTH'} characters";
+	$pass_minlength = $WEBOBS{'HTPASSWORD_MIN_LENGTH'};
+	$pass_restriction = "At least $pass_minlength characters";
 } else {
-	$pass_restriction = "Please choose a strong password";
+	$pass_restriction = "Any characters";
 }
-$pass_restriction .= ", including <br>special characters: $passwd_accepted_chars";
+$pass_restriction .= ", including:<br> <b>$passwd_accepted_chars</b>";
 
 
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
@@ -279,8 +281,8 @@ print <<__EOD__;
 		  if (document.form.pass.value == "") {
 			 errors.push(['you must choose a password', document.form.pass]);
 		  }
-		  else if (document.form.pass.value.length < $WEBOBS{'HTPASSWORD_MIN_LENGTH'}) {
-			 errors.push(['your password must be at least $WEBOBS{'HTPASSWORD_MIN_LENGTH'} characters long', document.form.pass]);
+		  else if (document.form.pass.value.length < $pass_minlength) {
+			 errors.push(['your password must be at least $pass_minlength characters long', document.form.pass]);
 		  }
 		  // Unicode classes are not supported on all browsers
 		  //else if (/^[\\p{Letter}!\\?=_#%@\\/()_=-]+]*\$/.document.form.pass.value) {
@@ -319,6 +321,9 @@ print <<__EOD__;
 		</script>
 	</head>
 		<body>
+			<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+			<script language="JavaScript" src="/js/overlib/overlib.js"></script>
+			<!-- overLIB (c) Erik Bosrup -->
 			<img src="$WEBOBS{'LOGO_DEFAULT'}">
 			<h2>Access to $WEBOBS{WEBOBS_TITLE}</h2>
 			<fieldset>
@@ -346,8 +351,8 @@ print <<__EOD__;
 			  <input type="text" name="name" maxlength="30" value=""/><br/>
 			  <label>$__{'Login user name'}:<span class="small">Short lowercase single word</span></label>
 			  <input type="text" name="login" maxlength="10" value=""/><br/>
-			  <label>$__{'Password'}:<span class="small">$pass_restriction</span></label>
-			  <input type="password" name="pass" value=""/><br/>
+			  <label>$__{'Password'}:<span class="small">Please choose a strong password</span></label>
+			  <input onmouseout="nd()" onmouseover="overlib('$pass_restriction',CAPTION,'Please choose a strong password!')" type="password" name="pass" value=""/><br/>
 			  <label>$__{'Password again'}:<span class="small"></span></label>
 			  <input type="password" name="pass2" value=""/><br/>
 			  <label>$__{'Email address'}:<span class="small">Valid e-mail needed</span></label>
