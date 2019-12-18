@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2019-07-26
+%	Updated: 2019-12-17
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -454,10 +454,18 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 	MC3TYPES = readcfg(WO,MC3.EVENT_CODES_CONF);
 	tv = datevec(t);
 	tv1 = datevec(t + 1/1440); % next minute
-	% reads MC3 for the corresponding years
+	% reads MC3 for the corresponding months
 	fdat = sprintf('%s/mc3.dat',F.ptmp);
-	s = wosystem(sprintf('sed ''/^$/d'' %s/{%d..%d}/files/%s??????.txt > %s',MC3.ROOT,tv([1,end],1),MC3.FILE_PREFIX,fdat),P);
-	if s==0
+	if exist(fdat,'file')
+		delete(fdat)
+	end
+	% loops on the months as linear vector ym = year*12 + month-1
+	for ym = (tv(1,1)*12 + tv(1,2) - 1):(tv(end,1)*12 + tv(end,2) - 1)
+		y = floor(ym/12); % retrieves the year
+		m = mod(ym,12) + 1; % retrieves the month
+		s = wosystem(sprintf('sed ''/^$/d'' %s/%d/files/%s%d%02d.txt >> %s',MC3.ROOT,y,MC3.FILE_PREFIX,y,m,fdat),P);
+	end
+	if exist(fdat,'file') 
 		mc3 = readdatafile(fdat,17,'CommentStyle',''); % reads all events (trash included)
 		fprintf('%s: associating %s event types and images ...',wofun,N.FID_MC3);
 		nsc3 = 0;
