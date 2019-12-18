@@ -25,8 +25,10 @@ DATESTRLIST|-1,-1
 MARKERSIZELIST|3,1
 LINEWIDTHLIST|2,.5
 STATUSLIST|1,0
-# defines a reference date to use with 'ref' timescale in TIMESCALELIST
-REF_DATE|
+# defines a reference date to use with 'r01' timescale in TIMESCALELIST
+REF01_DATE|2000-01-01
+# year and month timescales use true durations
+TIMESCALE_TRUEVALUE|Y
 
 # summary graphs available: SUMMARY,VECTORS,MOTION,BASELINES,MODELLING,MODELTIME
 SUMMARYLIST|SUMMARY,VECTORS,MOTION,BASELINES

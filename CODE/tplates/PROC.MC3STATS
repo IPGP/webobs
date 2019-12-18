@@ -28,8 +28,10 @@ DATESTRLIST|-1,-1
 MARKERSIZELIST|6,2
 LINEWIDTHLIST|2,1
 STATUSLIST|1,0
-# defines a reference date to use with 'ref' timescale in TIMESCALELIST
-REF_DATE|
+# defines a reference date to use with 'r01' timescale in TIMESCALELIST
+REF01_DATE|2000-01-01
+# year and month timescales use true durations
+TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} mc3stats $SELFREF -

@@ -26,8 +26,10 @@ DATESTRLIST|-1,-1
 MARKERSIZELIST|6,3
 LINEWIDTHLIST|1,1
 STATUSLIST|1,0
-# defines a reference date to use with 'ref' timescale in TIMESCALELIST
-REF_DATE|
+# defines a reference date to use with 'r01' timescale in TIMESCALELIST
+REF01_DATE|2000-01-01
+# year and month timescales use true durations
+TIMESCALE_TRUEVALUE|Y
 
 # additional summary graphs keywords (comma separated)
 SUMMARYLIST|VECTORS
@@ -111,7 +113,6 @@ VECTORS_MAX_XYRATIO|1.5
 VECTORS_ARROWSHAPE|.1,.1,.08,.02
 VECTORS_TOPO_RGB|
 VECTORS_SHAPE_FILE|
-
 
 MODELLING_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
 MODELLING_EXCLUDED_NODELIST|

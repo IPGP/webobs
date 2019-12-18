@@ -24,8 +24,10 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 # lists of parameters (number of comma-separated rows must be consistent)
 # TIMESCALELIST valid suffix: h (hour), d (day), w (week), m (month), y (year)
 TIMESCALELIST|01y
-# defines a reference date to use with 'ref' timescale in TIMESCALELIST
-REF_DATE|
+# defines a reference date to use with 'r01' timescale in TIMESCALELIST
+REF01_DATE|2000-01-01
+# year and month timescales use true durations
+TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} tremblemaps $SELFREF -

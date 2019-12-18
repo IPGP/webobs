@@ -24,8 +24,10 @@ URL|
 TIMESCALELIST|01y,10y,all
 DATESTRLIST|-1,-1,-1
 MARKERSIZELIST|5,3,2
-# defines a reference date to use with 'ref' timescale in TIMESCALELIST
-REF_DATE|
+# defines a reference date to use with 'r01' timescale in TIMESCALELIST
+REF01_DATE|2000-01-01
+# year and month timescales use true durations
+TIMESCALE_TRUEVALUE|Y
 
 # additional summary graphs keywords (comma separated)
 SUMMARYLIST|Area1
