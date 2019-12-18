@@ -25,6 +25,10 @@ DATESTRLIST|-1
 MARKERSIZELIST|4
 LINEWIDTHLIST|1
 STATUSLIST|1
+# defines a reference date to use with 'r01' timescale in TIMESCALELIST
+REF01_DATE|2000-01-01
+# year and month timescales use true durations
+TIMESCALE_TRUEVALUE|Y
 
 #SUMMARYLIST|
 
