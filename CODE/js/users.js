@@ -30,6 +30,14 @@ function openPopupUser(ux) {
 		form.login.value = $("td",ux)[4].textContent;
 		form.email.value = $("td",ux)[5].textContent;
 		form.valid.value = $("td",ux)[6].textContent;
+		var listgids = $("td",ux)[7].textContent.split(',');
+		$('#overlay_form_user #gid option').each(function() { 
+			$(this).removeProp('selected');
+			if (jQuery.inArray( this.value, listgids ) != -1) { $(this).prop('selected',true) }
+		});
+		$('label[for=gid]').css('display','block');
+		$(form.gid).css('display','block');
+		form.OLDgid.value = $("td",ux)[7].textContent;
 		form.action.value = "update";
 	} else { // inserting a new user
 		form.uid.value = "";

@@ -166,6 +166,21 @@ if ($QryParm->{'action'} eq 'update') {
 	$$refMsgColor  = ($rows == 1) ? "green" : "red";
 	#$$refMsg  .= " - <i>$q</i>";
 }
+# ---- process (execute) sql update table 'groups' after user insert or update
+# ----------------------------------------------------------------------------
+if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $QryParm->{'tbl'} eq "user") {
+	my @gids = $cgi->param('gid');
+	my $q0 = "insert into $WEBOBS{SQL_TABLE_GROUPS} values (\'+++\',\'$QryParm->{'uid'}\')";
+	my $q1 = "delete from $WEBOBS{SQL_TABLE_GROUPS} WHERE UID=\'$QryParm->{'uid'}\' AND GID != \'+++\'";
+	my @values = map { "('$_',\'$QryParm->{'uid'}\')" } @gids ;
+	my $q2 = "insert or replace into $WEBOBS{SQL_TABLE_GROUPS} VALUES ".join(',',@values);
+	my $q3 = "delete from $WEBOBS{SQL_TABLE_GROUPS} WHERE UID=\'$QryParm->{'uid'}\' AND GID = \'+++\'";
+	my $rows = dbuow($q0,$q1,$q2,$q3);
+	$userMsg  .= ($rows >= 1) ? "  having updated $WEBOBS{SQL_TABLE_GROUPS} " : "  failed to update $WEBOBS{SQL_TABLE_GROUPS}"; 
+	$userMsg  .= " $lastDBIerrstr";
+	$userMsgColor  = ($rows >= 1) ? "green" : "red";
+	#$userMsg  .= " - <i>$q1 * $q2</i>";
+}
 # ---- process (execute) sql update table 'groups' 
 # ----------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'updgrp') {
@@ -288,7 +303,7 @@ for (@qrs) {
 	} else {
 		$dusers .= "<tr id=\"$dusersId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"openPopupUser($dusersId,'$WEBOBS{SQL_TABLE_USERS}');return false\"><img title=\"edit user\" src=\"/icons/modif.png\"></a>";
 		$dusers .= "<td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"postDeleteUser($dusersId);return false\"><img title=\"delete user\" src=\"/icons/no.png\"></a>";
-		$dusers .= "<td>$dusers_uid</td><td nowrap>$dusers_fullname</td><td>$dusers_login</td><td>$dusers_email</td><td>$dusers_validity</td><td class=\"tdlock\">$dusers_groups</td></tr>\n";
+		$dusers .= "<td>$dusers_uid</td><td nowrap>$dusers_fullname</td><td>$dusers_login</td><td>$dusers_email</td><td>$dusers_validity</td><td>$dusers_groups</td></tr>\n";
 	}
 }
 
@@ -432,6 +447,7 @@ Identifications&nbsp;$go2top
 	<input type="hidden" name="action" value="">
 	<input type="hidden" name="tbl" value="">
 	<input type="hidden" name="OLDuid" value="">
+	<input type="hidden" name="OLDgid" value="">
 	<p><b><i>Edit user definition</i></b></p>
 	<label>Uid:<span class="small">WebObs userid</span></label>
 	<input type="text" name="uid" value=""/><br/>
@@ -441,6 +457,9 @@ Identifications&nbsp;$go2top
 	<input type="text" name="login" value=""/><br/>
 	<label>Email:<span class="small">mail address</span></label>
 	<input type="text" name="email" value=""/><br/>
+	<label for="gid">Gid(s):<span class="small">group id(s)<br>Ctrl for multiple</span></label>
+	<!--<input type="text" name="gid" id="gid" value=""/><br/>-->
+	<select name="gid" id="gid" size="5" multiple>$selgrps</select><br/> 
 	<label>Validity:<span class="small">Y or N</span></label>
 	<input type="text" name="valid" value=""/><br/>
 	<p style="margin: 0px; text-align: center">
@@ -704,11 +723,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Lafon
+Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
