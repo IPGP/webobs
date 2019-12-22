@@ -77,6 +77,12 @@ A new option "Anonymous" is available to remove the subtitle with user's name in
 
 A bug has been fixed in the request results table to show correctly the job status (wait..., ok or error).
 
+### Administration
+
+1. User's form now allows edition of associated group(s). Associated users in group edition form is still allowed.
+
+2. New tool to edit domains: creation, edition, grid association.
+
 
 ## v2.1.3f (September, 2019)
 
