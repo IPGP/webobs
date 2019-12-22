@@ -39,7 +39,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-12-09
+%   Updated: 2019-12-22
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -1048,6 +1048,8 @@ for r = 1:length(P.GTABLE)
 				ux = M.ux;
 				uy = M.uy;
 				uz = M.uz;
+				ex = M.ex;
+				ey = M.ey;
 				ez = M.ez;
 				ws = M.ws;
 				ev = M.ev*1e6;
@@ -1075,6 +1077,8 @@ for r = 1:length(P.GTABLE)
 				ux = sum(cat(2,M.ux),2);
 				uy = sum(cat(2,M.uy),2);
 				uz = sum(cat(2,M.uz),2);
+				ex = cat(1,M.ex);
+				ey = cat(1,M.ey);
 				ez = cat(1,M.ez);
 				ws = cat(1,M.ws);
 				ev = cat(1,M.ev)*1e6;
@@ -1088,6 +1092,8 @@ for r = 1:length(P.GTABLE)
 				ux = M.ux;
 				uy = M.uy;
 				uz = M.uz;
+				ex = M.ex;
+				ey = M.ey;
 				ez = M.ez;
 				ws = M.ws;
 				ev = M.ev*1e6;
@@ -1430,7 +1436,8 @@ for r = 1:length(P.GTABLE)
 					for m = 1:length(M)
 						E.infos = cat(2,E.infos, ...
 							sprintf('Least bad pCDM model #%d:',m), ...
-							sprintf('latitude / longitude = %g N / %g E',lats(m),lons(m)), ...
+							sprintf('latitude = %g N in [%+g , %+g] km',lats(m), roundsd(ey(m,:)/1e3,2)), ...
+							sprintf('longitude = %g E in [%+g , %+g]',lons(m), roundsd(ex(m,:)/1e3,2)), ...
 							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',pbest(m,3),-fliplr(ez(m,:))/1e3), ...
 							sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
 							sprintf('A = %1.2f / B = %1.2f',pbest(m,8:9)), ...
@@ -1442,7 +1449,8 @@ for r = 1:length(P.GTABLE)
 					for m = 1:length(M)
 						E.infos = cat(2,E.infos, ...
 							sprintf('Least bad isotropic model #%d:',m), ...
-							sprintf('latitude / longitude = %g N / %g E',lats(m),lons(m)), ...
+							sprintf('latitude = %g N in [%+g , %+g] km',lats(m), roundsd(ey(m,:)/1e3,2)), ...
+							sprintf('longitude = %g E in [%+g , %+g] km',lons(m), roundsd(ex(m,:)/1e3,2)), ...
 							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',-[pbest(m,3),fliplr(ez(m,:))]/1e3), ...
 							sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
 							' ');
