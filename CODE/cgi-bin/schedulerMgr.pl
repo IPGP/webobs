@@ -56,6 +56,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use DBI;
 use IO::Socket;
 use WebObs::Config;
+use WebObs::Users;
 $|=1;
 
 set_message(\&webobs_cgi_msg);
@@ -77,6 +78,13 @@ my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
 
 # ---- any reasons why we couldn't go on ?
 # ----------------------------------------
+if ( ! WebObs::Users::clientHasRead(type=>"authmisc",name=>"scheduler")) {
+	die "You are not authorized" ;
+}
+my $editOK = my $admOK = 0;
+$admOK  = 1 if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"scheduler"));
+$editOK = 1 if (WebObs::Users::clientHasEdit(type=>"authmisc",name=>"scheduler"));
+
 if (defined($WEBOBS{ROOT_LOGS})) {
 	# if ( -f "$WEBOBS{ROOT_LOGS}/$schedLog" ) {
 		if (defined($WEBOBS{CONF_SCHEDULER}) && -e $WEBOBS{CONF_SCHEDULER} ) {
@@ -115,14 +123,14 @@ my $jobsdefsMsg='';
 my $jobsdefsMsgColor='black';
 #DBcols: JID, VALIDITY, RES, XEQ1, XEQ2, XEQ3, RUNINTERVAL, MAXSYSLOAD, LOGPATH, LASTSTRTS
 
-if ($QryParm->{'action'} eq 'insert') {
+if ($admOK && $QryParm->{'action'} eq 'insert') {
 	# query-string must contain all required DB columns values for an sql insert
 	my $q = "insert into jobs values(\'$QryParm->{'jid'}\',\'$QryParm->{'validity'}\',\'$QryParm->{'res'}\',\'$QryParm->{'xeq1'}\',\'$QryParm->{'xeq2'}\',\'$QryParm->{'xeq3'}\',$QryParm->{'runinterval'},$QryParm->{'maxsysload'},\'$QryParm->{'logpath'}\',0)";
 	my $rows = dbu($q);
 	$jobsdefsMsg  = ($rows == 1) ? "  having inserted new job " : "  failed to insert new job ";  # $jobsdefsMsg .= $q;
 	$jobsdefsMsgColor  = ($rows == 1) ? "green" : "red";
 }
-if ($QryParm->{'action'} eq 'update') {
+if ($editOK && $QryParm->{'action'} eq 'update') {
 	# query-string must contain all required DB columns values for an sql update
 	my $q = "update jobs set JID=\'$QryParm->{'newjid'}\', VALIDITY=\'$QryParm->{'validity'}\', RES=\'$QryParm->{'res'}\', XEQ1=\'$QryParm->{'xeq1'}\', XEQ2=\'$QryParm->{'xeq2'}\', XEQ3=\'$QryParm->{'xeq3'}\', RUNINTERVAL=$QryParm->{'runinterval'}, MAXSYSLOAD=$QryParm->{'maxsysload'}, LOGPATH=\'$QryParm->{'logpath'}\' where jid=\"$QryParm->{'jid'}\"";
 	my $rows = dbu($q);
@@ -130,7 +138,7 @@ if ($QryParm->{'action'} eq 'update') {
 	$jobsdefsMsg .= "jid $QryParm->{'jid'} ";   # $jobsdefsMsg .= $q;
 	$jobsdefsMsgColor  = ($rows == 1) ? "green" : "red";
 }
-if ($QryParm->{'action'} eq 'delete') {
+if ($admOK && $QryParm->{'action'} eq 'delete') {
 	# query-string must contain the JID to be deleted from DB
 	my $rows = dbu("delete from jobs where jid=\"$QryParm->{'jid'}\"");
 	$jobsdefsMsg  = ($rows == 1) ? "  having deleted " : "  failed to delete ";
@@ -200,10 +208,14 @@ for (@qrs) {
 	$dlstrun = strftime("%Y-%m-%d %H:%M:%S", localtime(int($dlstrun)));
 	$jobsdefsCount++; $jobsdefsId="jdef".$jobsdefsCount ;
 	$jobsdefsCountValid++ if ($dvalid eq 'Y');
-	$jobsdefs .= "<tr id=\"$jobsdefsId\" class=\"".($dvalid eq 'Y' ? "jobsactive":"jobsinactive")."\"><td class=\"ic tdlock\"><a href=\"#JOBSDEFS\" onclick=\"openPopup($jobsdefsId);return false\"><img title=\"edit job\" src=\"/icons/modif.png\"></a>";
-	$jobsdefs .= "<td class=\"ic tdlock\"><a href=\"#\" onclick=\"postDelete($jobsdefsId);return false\"><img title=\"delete job\" src=\"/icons/no.png\"></a>";
-	$jobsdefs .= "<td class=\"ic tdlock\"><a href=\"#\" onclick=\"postSubmit($jobsdefsId);return false\"><img title=\"submit job\" src=\"/icons/submits.png\"></a>";
-	$jobsdefs .= "<td>$djid<td>$dvalid<td>$dres<td>$xeq1<td>$xeq2<td>$dxeq3<td>$dintv<td>$dmaxs<td>$dlogp<td class=\"tdlock\">$dlstrun</tr>\n";
+	$jobsdefs .= "<tr id=\"$jobsdefsId\" class=\"".($dvalid eq 'Y' ? "jobsactive":"jobsinactive")."\"><td class=\"ic tdlock\">";
+	# edition
+	$jobsdefs .= "<a href=\"#JOBSDEFS\" onclick=\"openPopup($jobsdefsId);return false\"><img title=\"edit job\" src=\"/icons/modif.png\"></a>" if ($editOK);
+	$jobsdefs .= "</td><td class=\"ic tdlock\">";
+	# delete
+	$jobsdefs .= "<a href=\"#\" onclick=\"postDelete($jobsdefsId);return false\"><img title=\"delete job\" src=\"/icons/no.png\"></a>" if ($admOK);
+	$jobsdefs .= "</td><td class=\"ic tdlock\"><a href=\"#\" onclick=\"postSubmit($jobsdefsId);return false\"><img title=\"submit job\" src=\"/icons/submits.png\"></a></td>";
+	$jobsdefs .= "<td>$djid</td><td>$dvalid</td><td>$dres</td><td>$xeq1</td><td>$xeq2</td><td>$dxeq3</td><td>$dintv</td><td>$dmaxs</td><td>$dlogp</td><td class=\"tdlock\">$dlstrun</td></tr>\n";
 }
 
 print "</head>";
@@ -279,10 +291,19 @@ Jobs definitions&nbsp;<A href="#MYTOP"><img src="/icons/go2top.png"></A>
 	<div class="jobsdefs-container">
 		<div class="jobsdefs">
 			<table class="jobsdefs">
-		    <thead><tr><th class="ic tdlock"><a href="#JOBSDEFS" onclick="openPopup(-1);return false"><img title="define a new job" src="/icons/modif.png"></a>
-			<th class="ic tdlock">&nbsp;
-			<th class="ic tdlock">&nbsp;
-			<th>jid<th>V<th>res<th>xeq1<th>xeq2<th>xeq3<th>interval<th>load&le;<th>logpath<th class="tdlock">laststart
+			<thead><tr><th class="ic tdlock">
+EOPAGE
+
+if ($admOK) {
+	print "<a href=\"#JOBSDEFS\" onclick=\"openPopup(-1);return false\"><img title=\"define a new job\" src=\"/icons/modif.png\"></a>"
+} else {
+	print "&nbsp;";
+}
+print "</th><th class=\"ic tdlock\">&nbsp;</th>";
+print "</th><th class=\"ic tdlock\">&nbsp;</th>";
+
+print <<"EOPAGE";
+			<th>jid</th><th>V</th><th>res</th><th>xeq1</th><th>xeq2</th><th>xeq3</th><th>interval</th><th>load&le;</th><th>logpath</th><th class="tdlock">laststart</th>
 			</tr></thead>
 			<tbody>
 			$jobsdefs
@@ -302,11 +323,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Lafon
+Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
