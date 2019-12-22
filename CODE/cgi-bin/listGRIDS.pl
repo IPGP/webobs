@@ -218,7 +218,13 @@ print "<div id=\"noscrolldiv\">";
 		print "\n<CENTER><TABLE WIDTH=\"90%\" id=\"gtable\" style=\"vertical-align: top\">\n";
 
 		print "<TR>";
-		print "<TH>Domain</TH>" if ($subsetDomain eq "");
+		if ($subsetDomain eq "") {
+			print "<TH>";
+			if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"*")) {
+				print "&nbsp;<a href='/cgi-bin/gridsMgr.pl' title=\"$__{'Edit/Create a Domain'}\"><img class='ic' src='/icons/modif.png'></a>&nbsp;&nbsp;&nbsp;";
+			}
+			print "Domain</TH>";
+		}
 		print "<TH>Grid</TH>" if ($subsetType ne "");
 		print "<TH><a href='#popupY' title=\"$__{'Find text in Grids'}\" onclick='srchopenPopup(\"*ALL\");return false'><img class='ic' src='/icons/search.png'></a>";
 		if (WebObs::Users::clientHasAdm(type=>"authviews",name=>"*") && WebObs::Users::clientHasAdm(type=>"authprocs",name=>"*") ) { 
