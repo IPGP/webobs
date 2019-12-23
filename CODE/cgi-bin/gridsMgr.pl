@@ -117,7 +117,7 @@ if ($QryParm->{'action'} eq 'update') {
 	$$refMsgColor  = ($rows == 1) ? "green" : "red";
 	#$$refMsg  .= " - <i>$q</i>";
 }
-# ---- process (execute) sql update table 'groups' after user insert or update
+# ---- process (execute) sql update table 'grids2domains' after user insert or update
 # ----------------------------------------------------------------------------
 if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $QryParm->{'tbl'} eq "domain") {
 	my @grids = $cgi->param('grid');
