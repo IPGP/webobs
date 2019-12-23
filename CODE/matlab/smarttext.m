@@ -14,7 +14,7 @@ function varargout=smarttext(x,y,s,varargin)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-05-27, in Yogyakarta, Indonesia
-%	Updated: 2019-07-02
+%	Updated: 2019-12-23
 
 hh = [];
 
@@ -40,9 +40,9 @@ for n = 1:m
 		if length(k) > 1
 			k2 = k(2:min(3,m));
 			% computes mean azimuth
-			[~,~,~,bear1] = greatcircle(y(k2(1)),x(k2(1)),y(n),x(n),2);
+			[~,~,~,bear1] = greatcircle(y(n),x(n),y(k2(1)),x(k2(1)),2);
 			if length(k2) > 1
-				[~,~,~,bear2] = greatcircle(y(k2(2)),x(k2(2)),y(n),x(n),2);
+				[~,~,~,bear2] = greatcircle(y(n),x(n),y(k2(2)),x(k2(2)),2);
 				az = mod((bear1(1) + bear2(1))/2 + 360,360);
 			else
 				az = bear1(1);
@@ -50,8 +50,8 @@ for n = 1:m
 		end
 	end
 
-	switch 45*round(az/45)
-	case {0,360} % north
+	switch mod(45*round((az+180)/45),360)
+	case 0  % north
 		opt = {'VerticalAlignment','middle','HorizontalAlignment','center'};
 		ss = {s{n},'',''};
 	case 45 % northeast
@@ -79,7 +79,6 @@ for n = 1:m
 		opt = {};
 		ss = s{n};
 	end
-
 
 	h = text(x(n),y(n),ss,opt{:},varargin{:});
 	hh = cat(1,hh,h);
