@@ -11,7 +11,10 @@ function h=arrows(x,y,l,az,varargin)
 %	ARROWS(...,SHAPE) uses relative ratios SHAPE = [HEADW,HEADL,HEADI,LINEW]
 %	to adjust head width HEADW, head length HEADL, head inside length HEADI,
 %	and segment line width LINEW for an arrow length of 1 (default is 
-%	SHAPE = [1,0.25,0.25,0.5]).
+%	SHAPE = [1,0.25,0.25,0.5]). Arrow shape supposes an equal XY aspect 
+%	ratio (axis equal). To take into account a different ratio, adds it as a
+%	last element of SHAPE = [...,XYRATIO]. For example, if the plot is in 
+%	longitude/latitude degrees, you might use XYRATIO = cosd(latitude).
 %
 %	ARROWS(X,Y,U,V,...,'Cartesian') uses arrows cartesian components U,V
 %	instead of length/azimuth. This is an equivalent of QUIVER(X,Y,U,V,0).
@@ -38,7 +41,6 @@ function h=arrows(x,y,l,az,varargin)
 %
 %	Notes:
 %
-%	- Arrow shape supposes an equal aspect ratio (axis equal).
 %	- To define an arrow without segment line, set HEADI = 1, LINEW = 0,
 %	  and adjust other shape parameters, e.g., a triangle is defined by
 %	  SHAPE = [0.5,1,1,0], while a "wind arrow" is [1,1.5,1,0]
@@ -50,9 +52,9 @@ function h=arrows(x,y,l,az,varargin)
 %
 %	Author: Francois Beauducel <beauducel@ipgp.fr>
 %	Created: 1995-02-03
-%	Updated: 2013-03-13
+%	Updated: 2019-12-24
 
-%	Copyright (c) 2013, François Beauducel, covered by BSD License.
+%	Copyright (c) 2019, François Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without 
@@ -87,16 +89,18 @@ end
 
 if nargin > 4 & isnumeric(varargin{1})
 	shape = varargin{1}(:)';
-	if numel(shape) ~= 4
-		error('SHAPE argument must be a 4-scalar vector.')
+	if all(numel(shape) ~= [4,5])
+		error('SHAPE argument must be a 4 or 5-scalar vector.')
 	end
-
 	% this adjusts head drawing for HEADI = 0 and LINEW > 0
 	shape(3) = max(shape(3),shape(4)*shape(2)/shape(1));
+	if numel(shape) < 5
+		shape(5) = 1;
+	end
 
 	varargin = varargin(2:end);
 else
-	shape = [1 .25 .25 .5];
+	shape = [1 .25 .25 .5 1];
 end
 
 [s,cart,varargin] = checkparam(varargin,'cartesian','option');
@@ -132,10 +136,10 @@ if refl
 	if size(l,1) == 1
 		l = repmat(l,[m,n]);
 	end
-	s = refl*(1./l(1,:)')*shape;
+	s = refl*(1./l(1,:)')*shape(1:4);
 	s(isinf(s)) = 0;	% because 0-length arrows produced Inf shape elements...
 else
-	s = repmat(shape,[n,1]);
+	s = repmat(shape(1:4),[n,1]);
 end
 
 v0 = zeros(n,1);
@@ -145,7 +149,7 @@ fx = [s(:,4)*[.5 -.5 -.5] s(:,1)*[-.5 0 .5] s(:,4)*[.5 .5]]';
 fy = [v0 v0 (1 - s(:,3)) (1 - s(:,2)) v1 (1 - s(:,2)) (1 - s(:,3)) v0]';
 
 % the beauty of this script: a single patch command to draw all the arrows !
-hh = patch(-fx.*l.*cos(az) + fy.*l.*sin(az) + x,fx.*l.*sin(az) + fy.*l.*cos(az) + y,'k',varargin{:});
+hh = patch((-fx.*l.*cos(az) + fy.*l.*sin(az))/shape(5) + x,fx.*l.*sin(az) + fy.*l.*cos(az) + y,'k',varargin{:});
 
 	
 if nargout > 0

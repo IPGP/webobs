@@ -39,7 +39,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-12-22
+%   Updated: 2019-12-24
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -306,7 +306,7 @@ for r = 1:length(P.GTABLE)
 			end
 			X(n).nam = N(n).ALIAS;
 			X(n).rgb = scolor(n);
-			X(n).trd = 1;
+			X(n).trd = 0;
 		end
 	end
 	for n = 1:length(N)
@@ -658,7 +658,7 @@ for r = 1:length(P.GTABLE)
 		for nn = 1:length(knv)
 			n = knv(nn);
 			if ~any(isnan([vsc,vmax])) && ~any(isnan(tr(n,1:2)))
-				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1)/xyr,vsc*tr(n,2),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
+				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1)/xyr,vsc*tr(n,2),[arrowshape,xyr],'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
 				ha = cat(1,ha,h);
 			end
 		end
@@ -737,7 +737,7 @@ for r = 1:length(P.GTABLE)
 		xsc = xlim(1);
 		ysc = ylim(2) + .04*diff(ylim);
 		lsc = vscale*vsc;
-		arrows(xsc,ysc,lsc,90,arrowshape*vmax/vscale,'FaceColor','none','LineWidth',1,'Clipping','off');
+		arrows(xsc,ysc,lsc,90,[arrowshape*vmax/vscale,xyr],'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc+1.1*lsc,ysc,sprintf('%g mm/yr',vscale),'FontWeight','bold')
 
 
@@ -831,6 +831,8 @@ for r = 1:length(P.GTABLE)
 		% scale is adjusted to maximum relative displacements (in m)
 		if isempty(motion_scale) || ~(motion_scale > 0)
 			mscale = max([diff(minmax(alldata(:,1))),diff(minmax(alldata(:,2))),diff(minmax(alldata(:,3)))]);
+		else
+			mscale = motion_scale/1e3;
 		end
 		vscale = roundsd(mscale,1);
 		vsc = .3*max([diff(latlim),diff(lonlim)*xyr,minkm/degkm])/mscale; % scale in degree/m
@@ -846,7 +848,7 @@ for r = 1:length(P.GTABLE)
 		% plots motion displacements first
 		for nn = 1:length(knv)
 			n = knv(nn);
-			h = scatter(geo(n,2) + X(nn).d(:,1)*vsc*xyr,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
+			h = scatter(geo(n,2) + X(nn).d(:,1)*vsc/xyr,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
 			ha = cat(1,ha,h);
 		end
 		colormap(motion_colormap)
@@ -903,16 +905,16 @@ for r = 1:length(P.GTABLE)
 		axes('Position',[pos(1),pos(2)-0.18,pos(3),.17])
 		plot(xlim,[0,0],'-k','LineWidth',.1)
 		hold on
-		plot(repmat(geo(knv,2),1,2)',repmat([dlim3(2),0]*vsc*xyr,length(X),1)','-k','LineWidth',.1)
+		plot(repmat(geo(knv,2),1,2)',repmat([dlim3(2),0]*vsc/xyr,length(X),1)','-k','LineWidth',.1)
 		% plots motion displacements first
 		for nn = 1:length(knv)
 			n = knv(nn);
-			scatter(geo(n,2) + X(nn).d(:,1)*vsc*xyr,X(nn).d(:,3)*vsc*xyr,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
+			scatter(geo(n,2) + X(nn).d(:,1)*vsc/xyr,X(nn).d(:,3)*vsc/xyr,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
 		end
 		box on
 		apos = get(gca,'Position');
-		xyf = (diff(xlim)/apos(3)/ppos(3))/(diff(dlim3)*vsc*xyr/apos(4)/ppos(4));
-		set(gca,'XLim',xlim,'YLim',vsc*xyr*(dlim3(2)-[diff(dlim3)*xyf 0]),'XTick',[],'YTick',[])
+		xyf = (diff(xlim)/apos(3)/ppos(3))/(diff(dlim3)*vsc/xyr/apos(4)/ppos(4));
+		set(gca,'XLim',xlim,'YLim',vsc/xyr*(dlim3(2)-[diff(dlim3)*xyf 0]),'XTick',[],'YTick',[])
 		colormap(motion_colormap)
 		caxis(tlim)
 
