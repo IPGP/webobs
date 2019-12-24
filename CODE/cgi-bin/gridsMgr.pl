@@ -48,7 +48,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use DBI;
 use IO::Socket;
 use WebObs::Config;
-use WebObs::Users;
+use WebObs::Grids;
 $|=1;
 
 set_message(\&webobs_cgi_msg);
@@ -185,17 +185,20 @@ Gscriptname = \"$ENV{SCRIPT_NAME}\"; // required by grids.js
 </head>
 EOHEADER
 
-# ---- build users and groups 'select dropdowns contents' 
+# ---- build grids 'select dropdowns contents' 
 # -----------------------------------------------------------------------------
-my $qugrids  = "select distinct(TYPE || '.' || NAME) from $WEBOBS{SQL_TABLE_GRIDS} order by NAME";
-@qrs   = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "$qugrids");
-chomp(@qrs);
-my $selgrids = ""; map { $selgrids .= "<option>$_</option>" } @qrs; 
+#[FBnote:] listing grids from grids2domains table does not see orphan grids
+#my $qugrids  = "select distinct(TYPE || '.' || NAME) from $WEBOBS{SQL_TABLE_GRIDS} order by NAME";
+#@qrs   = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "$qugrids");
+#chomp(@qrs);
+#my $selgrids = ""; map { $selgrids .= "<option>$_</option>" } @qrs; 
 
-my $qugrps  = "select distinct(GID) from $WEBOBS{SQL_TABLE_GROUPS} order by gid";
-@qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qugrps");
-chomp(@qrs);
-my $selgrps = ""; map { $selgrps .= "<option>$_</option>" } @qrs;  
+# get all existing GRIDs
+my @T;
+push(@T, map({"VIEW.$_"} sort(WebObs::Grids::listViewNames())));
+push(@T, map({"PROC.$_"} sort(WebObs::Grids::listProcNames())));
+my $selgrids = ""; map { $selgrids .= "<option>$_</option>" } @T; 
+
 
 # ---- build 'domains' table result rows 
 # -----------------------------------------------------------------------------

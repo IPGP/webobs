@@ -254,7 +254,7 @@ my $dbh = connectDbDomains();
 my ($q, $rows);
 $q = "delete from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = ? and NAME = ?";
 $rows = $dbh->do($q, undef, $GRIDType, $GRIDName);
-if (!$rows || $rows == 0) {
+if (!$rows) {
 	htmlMsgDBError($dbh, "postGRID.pl: unable to delete grid"
 						." $GRIDType.$GRIDName for update");
 	exit;
