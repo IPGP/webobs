@@ -18,7 +18,7 @@ function positionPopup(){
 	});
 }
 function openPopupDomain(ux) {
-	// ux  ==  domain' html-table row id OR -1 for a new user
+	// ux  ==  domain' html-table row id OR -1 for a new domain
 	if (arguments.length <= 0 ) { return; } // noop if no ux
 	var form = $('#overlay_form_domain')[0];
 	if (ux != -1) { // editing an existing domain: populate popup from its table row TDs
@@ -38,7 +38,7 @@ function openPopupDomain(ux) {
 		$(form.gid).css('display','block');
 		form.OLDgrid.value = $("td",ux)[6].textContent;
 		form.action.value = "update";
-	} else { // inserting a new user
+	} else { // inserting a new domain
 		form.code.value = "";
 		form.code.readOnly = false;
 		form.code.style.backgroundColor = "";
