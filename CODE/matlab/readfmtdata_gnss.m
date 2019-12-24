@@ -40,10 +40,16 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: ascii
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
+%	format 'ies-yneu'
+%		type: IES GPS results relative
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: ascii
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2019-07-26
+%	Updated: 2019-12-24
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -213,6 +219,48 @@ case 'usgs-rneu'
 		t = datenum(ty,tm,td,12,0,0);	% date is YYYYMMDD and we force time to 12:00:00
 		d = [dd(:,[3,2,4])/1e3,dd(:,5)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
 		e = dd(:,[7,6,8])/1e3;
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
+
+% -----------------------------------------------------------------------------
+case 'ies-yneu'
+	% format example
+	% Time dN eN dE eE dU eU
+	% 2008.65846986 -0.00502209 0.00647 0.193237 0.01492 0.0314239 0.01846
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		cmd0 = sprintf('awk ''{ if (NR!=1) {print}}'' >> %s',fdat);
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('/usr/bin/curl "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		elseif exist(fraw,'file')
+			% extracts necessary data and replaces orbit with 0 (rrr) and 1 (ppp)
+			wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+		else
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = datenum(dd(:,1),1,1,0,0,0);	% date is decimal year
+		d = [dd(:,[2,4,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
+		e = dd(:,[3,5,7]);
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
