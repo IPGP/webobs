@@ -27,7 +27,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2019-11-06
+%	Updated: 2019-12-24
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -96,7 +96,7 @@ if ~userdem
 	n = (abs(diff(floor(dlon))) + 1)*(abs(diff(floor(dlat))) + 1);
 	if n > srtmmax || min(dlat) < -60 || max(dlat) > 59
 		fprintf('%s: loading ETOPO data for area lat (%g,%g) lon (%g,%g)...\n',wofun,dlat,dlon);
-		DEM = ibil(sprintf('%s/%s',WO.PATH_DATA_DEM_ETOPO,WO.ETOPO_NAME),xylim);
+		DEM = ibil(sprintf('%s/%s',WO.PATH_DATA_DEM_ETOPO,WO.ETOPO_NAME),xylim + 5/60*[-1,1,-1,1]);
 		DEM.z = double(DEM.z);
 		DEM.COPYRIGHT = field2str(WO,'ETOPO_COPYRIGHT','DEM: ETOPO/NOOA');
 		etopo = true;
