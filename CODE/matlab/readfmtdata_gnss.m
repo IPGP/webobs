@@ -225,6 +225,8 @@ case 'usgs-rneu'
 		t = datenum(ty,tm,td,12,0,0);	% date is YYYYMMDD and we force time to 12:00:00
 		d = [dd(:,[3,2,4])/1e3,dd(:,5)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
 		e = dd(:,[7,6,8])/1e3;
+		% minimum decent error is 1 mm (!)
+		e(e<1e-3) = 1e-3;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -267,6 +269,8 @@ case 'ies-neu'
 		t = datenum(dd(:,1),1,1,0,0,0);	% date is decimal year
 		d = [dd(:,[4,2,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
 		e = dd(:,[5,3,7]);
+		% minimum decent error is 1 mm (!)
+		e(e<1e-3) = 1e-3;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -309,6 +313,57 @@ case 'ogc-neu'
 		t = datenum(dd(:,2),dd(:,3),dd(:,4),12,0,0);	% here we force time to noon
 		d = [dd(:,[6,5,7]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
 		e = dd(:,[9,8,10]);
+		% minimum decent error is 1 mm (!)
+		e(e<1e-3) = 1e-3;
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
+
+% -----------------------------------------------------------------------------
+case 'ingv-gps'
+	% format example
+	% Point Name,Easting,E error,Northing,N error,Latitude,E error,Longitude,N error,Height,h error
+	% CAP,494784.181,0.001,4177299.935,0.001,"37°44'34.71321""N",0.001,"14°56'26.87473""E",0.001,1922.295,0.001
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		[s,w] = wosystem(sprintf('/bin/ls -1 %s',F.raw{a}),P);
+		datafiles = split(w,'\n');
+		for r = 1:length(datafiles)
+			fraw = datafiles{r};
+			year = regexprep(fraw,{'@etna.*','.*etna'},'');
+			cmd0 = sprintf('awk -F'','' ''$1=="%s" && $2!="" {print "%s",$2,$4,$10,$3,$5,$11}'' >> %s',N.FID,year,fdat);
+			if strncmpi('http',fraw,4)
+				s  = wosystem(sprintf('/usr/bin/curl "%s" | %s',fraw,cmd0),P);
+				if s ~= 0
+					break;
+				end
+			else
+				s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+			end
+			if s ~= 0
+				fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			end
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = datenum(dd(:,1),1,1);	% here we force time to January 1st!
+		d = [dd(:,2:4),zeros(size(dd,1),1)];
+		e = dd(:,5:7);
+		% minimum decent error is 1 mm (!)
+		e(e<1e-3) = 1e-3;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
