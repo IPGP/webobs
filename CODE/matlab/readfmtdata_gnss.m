@@ -40,8 +40,14 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: ascii
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
-%	format 'ies-yneu'
+%	format 'ies-neu'
 %		type: IES GPS results relative
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: ascii
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
+%	format 'ogc-neu'
+%		type: OGC GPS results relative
 %		filename/url: P.RAWDATA (use $FID to point the right file/url)
 %		data format: ascii
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
@@ -228,7 +234,7 @@ case 'usgs-rneu'
 	end
 
 % -----------------------------------------------------------------------------
-case 'ies-yneu'
+case 'ies-neu'
 	% format example
 	% Time dN eN dE eE dU eU
 	% 2008.65846986 -0.00502209 0.00647 0.193237 0.01492 0.0314239 0.01846
@@ -244,7 +250,7 @@ case 'ies-yneu'
 				break;
 			end
 		elseif exist(fraw,'file')
-			% extracts necessary data and replaces orbit with 0 (rrr) and 1 (ppp)
+			% extracts necessary data
 			wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
 		else
 			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
@@ -259,8 +265,50 @@ case 'ies-yneu'
 	end
 	if ~isempty(dd)
 		t = datenum(dd(:,1),1,1,0,0,0);	% date is decimal year
-		d = [dd(:,[2,4,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
-		e = dd(:,[3,5,7]);
+		d = [dd(:,[4,2,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
+		e = dd(:,[5,3,7]);
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
+
+% -----------------------------------------------------------------------------
+case 'ogc-neu'
+	% format example
+	% # Date      YYYY MM DD      n(m)       e(m)       u(m)      Sn(m)      Se(m)      Su(m)
+	% 2011.49589  2011 07 01   -0.10894   -0.08866   -0.10751    0.00089    0.00122    0.00214
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		cmd0 = sprintf('awk ''/^[^#]/ {print}'' >> %s',fdat);
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('/usr/bin/curl "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = datenum(dd(:,2),dd(:,3),dd(:,4),12,0,0);	% here we force time to noon
+		d = [dd(:,[6,5,7]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		e = dd(:,[9,8,10]);
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
