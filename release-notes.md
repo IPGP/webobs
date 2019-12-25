@@ -65,7 +65,7 @@ MOTION_TITLE|
 
 ### Gridmaps
 
-New default behavior for multiple grid maps: node alias are not shown in submaps defined by `MAP1_XYLIM`, `MAP2_XYLIM`, ... Previous behavior can be retrieved using variable:
+New default behavior for multiple grid maps: node aliases located into submaps defined by `MAP1_XYLIM`, `MAP2_XYLIM`, ...  are not shown in the main map and any previous submap. This can be used to avoid text overlap with node swarms. Former behavior can be retrieved using following variable in the grid's configuration:
 
 ```
 	NODE_SUBMAP_ALIAS|Y
@@ -81,7 +81,7 @@ A bug has been fixed in the request results table to show correctly the job stat
 
 1. User's form now allows edition of associated group(s). Associated users in group edition form is still allowed.
 
-2. New tool to edit domains: creation, edition, grid association.
+2. New tool to edit domains: creation, edition, and grid association.
 
 
 ## v2.1.3f (September, 2019)
