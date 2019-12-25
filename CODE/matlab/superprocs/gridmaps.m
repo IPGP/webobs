@@ -112,6 +112,7 @@ dpi = field2num(P,'DPI',100);
 %lw = field2num(P,'LINEWIDTH',.1);
 lwminor = field2num(P,'CONTOURLINES_MINOR_LINEWIDTH',.1);
 lwmajor = field2num(P,'CONTOURLINES_MAJOR_LINEWIDTH',1);
+zerolevel = isok(P,'CONTOURLINES_ZERO_LEVEL',0);
 convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
 feclair = field2num(P,'COLOR_LIGHTENING',.5);
 zcut = field2num(P,'ZCUT',0.1);
@@ -282,9 +283,11 @@ for g = 1:length(grids)
 					% empirical ratio between horizontal extent and elevation interval (dz)
 					rzh = min(1,dz/min(diff(x([1,end]))*cosd(mean(dlat)),diff(y([1,end])))/degkm/4e2);
 					dz0 = tickscale([zmin,zmax],rzh);
-					dz0(ismember(0,dz0)) = [];	% eliminates 0 value in minor ticks
+					if ~zerolevel
+						dz0(ismember(dz0,0)) = [];	% eliminates 0 value in major ticks
+					end
 					dz1 = tickscale([zmin,zmax],rzh*5);
-					dz1(ismember(dz1,dz0)) = [];	% eliminates minor ticks in major ticks
+					dz1(ismember(dz1,dz0)) = [];	% eliminates major ticks in minor ticks
 					if isfield(P,'CONTOURLINES_RGB')
 						clrgb = eval(sprintf('[%s]',P.CONTOURLINES_RGB));
 					else

@@ -137,7 +137,7 @@ function varargout = readhgt(varargin)
 %	Acknowledgments: Yves Gaudemer, Jinkui Zhu, Greg
 %
 %	Created: 2012-04-22 in Paris, France
-%	Updated: 2019-05-20
+%	Updated: 2019-12-25
 
 %	Copyright (c) 2019, François Beauducel, covered by BSD License.
 %	All rights reserved.
