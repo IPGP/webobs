@@ -383,7 +383,7 @@ else
 							tmp = tempname;
 							mkdir(tmp)
 							ftmp = sprintf('%s/%s%s.hgt.zip',tmp,slat,slon);
-							[s,w] = system(sprintf('wget -O %s %s%s',ftmp,url,ff));
+							[s,w] = system(sprintf('wget --no-check-certificate -O %s %s%s',ftmp,url,ff));
 							if s
 								disp(w)
 							end
