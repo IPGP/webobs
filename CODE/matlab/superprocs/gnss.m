@@ -551,7 +551,7 @@ for r = 1:length(P.GTABLE)
 
 		% builds the structure X for smartplot: X(n).d(:,i) where
 		%   n = destination node and i = reference node
-		X = repmat(struct('t',[],'d',[],'e',[],'w',[]),length(N),1);
+		X = repmat(struct('t',[],'d',[],'e',[],'w',[],'nam',[]),length(N),1);
 		aliases = cell(1,length(N));
 		ncolors = ones(size(aliases));
 		refnames = cell(1,length(B));
@@ -658,7 +658,7 @@ for r = 1:length(P.GTABLE)
 		for nn = 1:length(knv)
 			n = knv(nn);
 			if ~any(isnan([vsc,vmax])) && ~any(isnan(tr(n,1:2)))
-				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1)/xyr,vsc*tr(n,2),[arrowshape,xyr],'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
+				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1),vsc*tr(n,2),[arrowshape,xyr],'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
 				ha = cat(1,ha,h);
 			end
 		end
@@ -738,7 +738,7 @@ for r = 1:length(P.GTABLE)
 		ysc = ylim(2) + .04*diff(ylim);
 		lsc = vscale*vsc;
 		arrows(xsc,ysc,lsc,90,[arrowshape*vmax/vscale,xyr],'FaceColor','none','LineWidth',1,'Clipping','off');
-		text(xsc+1.1*lsc,ysc,sprintf('%g mm/yr',vscale),'FontWeight','bold')
+		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g mm/yr',vscale),'FontWeight','bold')
 
 
 		hold off
@@ -826,13 +826,19 @@ for r = 1:length(P.GTABLE)
 			end
 		end
 		alldata = cat(1,X.d);
-		dlim3 = minmax(alldata(:,3));
+		if ~isempty(alldata)
+			dlim3 = minmax(alldata(:,3));
+		else
+			dlim3 = [0,1];
+		end
 
 		% scale is adjusted to maximum relative displacements (in m)
-		if isempty(motion_scale) || ~(motion_scale > 0)
+		if ~isempty(alldata) && (isempty(motion_scale) || ~(motion_scale > 0))
 			mscale = max([diff(minmax(alldata(:,1))),diff(minmax(alldata(:,2))),diff(minmax(alldata(:,3)))]);
-		else
+		elseif motion_scale > 0
 			mscale = motion_scale/1e3;
+		else
+			mscale = 1;
 		end
 		vscale = roundsd(mscale,1);
 		vsc = .3*max([diff(latlim),diff(lonlim)*xyr,minkm/degkm])/mscale; % scale in degree/m
@@ -848,8 +854,10 @@ for r = 1:length(P.GTABLE)
 		% plots motion displacements first
 		for nn = 1:length(knv)
 			n = knv(nn);
-			h = scatter(geo(n,2) + X(nn).d(:,1)*vsc/xyr,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
-			ha = cat(1,ha,h);
+			if ~isempty(X(nn).d)
+				h = scatter(geo(n,2) + X(nn).d(:,1)*vsc/xyr,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
+				ha = cat(1,ha,h);
+			end
 		end
 		colormap(motion_colormap)
 		caxis(tlim)
@@ -891,7 +899,9 @@ for r = 1:length(P.GTABLE)
 		% plots motion displacements first
 		for nn = 1:length(knv)
 			n = knv(nn);
-			scatter(X(nn).d(:,3)*vsc,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
+			if ~isempty(X(nn).d)
+				scatter(X(nn).d(:,3)*vsc,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
+			end
 		end
 		box on
 		hold off
@@ -909,7 +919,9 @@ for r = 1:length(P.GTABLE)
 		% plots motion displacements first
 		for nn = 1:length(knv)
 			n = knv(nn);
-			scatter(geo(n,2) + X(nn).d(:,1)*vsc/xyr,X(nn).d(:,3)*vsc/xyr,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
+			if ~isempty(X(nn).d)
+				scatter(geo(n,2) + X(nn).d(:,1)*vsc/xyr,X(nn).d(:,3)*vsc/xyr,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
+			end
 		end
 		box on
 		apos = get(gca,'Position');
