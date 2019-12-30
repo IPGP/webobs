@@ -642,6 +642,10 @@ if ($date) {
 			$date_nbm = $MC3{WINDOW_LENGTH_MINUTE};
 		}
 		$date_deb = 0;
+		$date_prec = strftime('%Y%m%d%H%M',gmtime(timegm(0,$Mc,$Hc,$dc,$mc-1,$Yc-1900)-60));
+		$dprec = strftime('Jump to %Y-%m-%d <b>%H:%M</b>',gmtime(timegm(0,$Mc,$Hc,$dc,$mc-1,$Yc-1900)-60));
+		$date_suiv = strftime('%Y%m%d%H%M',gmtime(timegm(0,$Mc,$Hc,$dc,$mc-1,$Yc-1900)+60));
+		$dsuiv = strftime('Jump to %Y-%m-%d <b>%H:%M</b>',gmtime(timegm(0,$Mc,$Hc,$dc,$mc-1,$Yc-1900)+60));
 	} else {
 		$date_deb = -1;
 		$date_nbm = 61;
@@ -665,11 +669,9 @@ if ($date) {
 			print "<span class=\"mcbouton\" onClick=\"zoom_1();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Base speed'} (1:1)')\"><SPAN class=\"keycap\">=</SPAN></span>";
 			print "<span class=\"mcbouton\" onClick=\"zoom_out();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Decrease speed'} (&divide;2)')\"><SPAN class=\"keycap\">&minus;</SPAN></span>";
 			print "<span class=\"mcbouton\" onClick=\"shrinkmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide MC events'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/mctag.png\" style=\"vertical-align:middle\"></SPAN></span>";
-			if (!$dep) {
-				print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_prec&sx=1'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dprec')\"><SPAN class=\"keycap\">&larr;</SPAN></span>";
-				print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_suiv'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dsuiv')\"><SPAN class=\"keycap\">&rarr;</SPAN></span>";
-			}
-			print "<span class=\"mcbouton\" onClick=\"quit();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Quit'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/cancel.png\" style=\"vertical-align:middle\"></SPAN></span>";
+			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_prec'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dprec')\"><SPAN class=\"keycap\">&larr;</SPAN></span>";
+			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_suiv'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dsuiv')\"><SPAN class=\"keycap\">&rarr;</SPAN></span>";
+			print "<span class=\"mcbouton\" onClick=\"quit();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Quit this event without saving changes'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/cancel.png\" style=\"vertical-align:middle\"></SPAN></span>";
 		print "</div>";
 	print "</div>";
 
@@ -862,7 +864,7 @@ if ($date) {
 
 		# date et heure de premiere arrivee
 		print "<P>Date, HH:MM : <SELECT name=\"dateEvenement\" size=\"1\">";
-		for ($i = 0; $i <= $MC3{WINDOW_LENGTH_MINUTE}; $i++) {
+		for ($i = -1; $i <= $MC3{WINDOW_LENGTH_MINUTE}; $i++) {
 			my $dd = strftime('%Y-%m-%d %H:%M',gmtime(timegm(0,$Mc,$Hc,$dc,$mc-1,$Yc-1900) + $i*60));
 			print "<OPTION value=\"$dd\"".($dd eq $date_evt ? " selected":"").">$dd</OPTION>\n";
 		}
