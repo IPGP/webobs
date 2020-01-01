@@ -490,7 +490,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2018 - Institut de Physique du Globe Paris
+WebObs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

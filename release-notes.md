@@ -8,7 +8,11 @@ The lastest release has many improvements, new features and bug fixes.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
-## v2.1.4 (December 2019)
+## v2.1.4b (January 2020)
+
+### Sefran
+
+In the event editing window, two new buttons in the control left upper menu allow to scroll back or forward the signal window of one minute.
 
 ### Superproc gnss
 
