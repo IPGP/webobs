@@ -39,7 +39,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-12-24
+%   Updated: 2019-12-31
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -1033,6 +1033,8 @@ for r = 1:length(P.GTABLE)
 		% computes absolute displacement in mm (from velocity in mm/yr)
 		d = d*diff(tlim)/365.25;
 
+		modelopt.verbose = '';
+		d(:,4:6) = adjerrors(d,modelopt);
 
 		% --- computes the model !
 		switch lower(modelling_source_type)
@@ -1481,6 +1483,21 @@ for r = 1:length(P.GTABLE)
 	summary = 'MODELTIME';
 	if any(strcmp(P.SUMMARYLIST,summary))
 		dt = max(modeltime_sampling,ceil(length(modeltime_period)*diff(tlim)/modeltime_max));
+			%sprintf('model type = {\\bf%s%s}',modelling_source_type,src_multi), ...
+			%sprintf('model space = {\\bf%s}',num2tex(nmodels)), ...
+		info = { ...
+			' ', ...
+			sprintf('model type = {\\bfisotropic}'), ...
+			sprintf('model space = {\\bf%s}',num2tex(numel(mm))), ...
+			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
+			sprintf('uncertainty = {\\bf%g \\sigma (%1.1f%%)}',modelopt.msig,modelopt.msigp*100), ...
+		};
+		if modelopt.horizonly
+			info = cat(2,info,'misfit mode = {\bfhorizontal only}');
+		end
+		if modelopt.apriori_horizontal > 0
+			info = cat(2,info,sprintf('a priori horiz. STD = {\\bf%g km}',modelopt.apriori_horizontal));
+		end
 
 		mtlabel = cell(1,length(modeltime_period));
 		for m = 1:length(modeltime_period)
@@ -1514,7 +1531,7 @@ for r = 1:length(P.GTABLE)
 				% computes trends (mm/yr)
 				tr = nan(length(kn),3); % trends per station per component
 				tre = nan(length(kn),3); % trends error per station per component
-				tro = 2*ones(length(kn),1); % inits to worst orbit per station
+				tro = zeros(length(kn),1); % inits to best orbit per station
 				for j = 1:length(kn)
 					n = kn(j);
 					k = find(isinto(D(n).t,wlim));
@@ -1530,9 +1547,10 @@ for r = 1:length(P.GTABLE)
 								tr(j,i) = b(1)*365.25*1e3;
 								tre(j,i) = stdx(1)*365.25*1e3;
 							end
-							% sets a better orbit only if there is enough data
-							if D(n).t(D(n).G(r).ke) >= M(m).t(w)
-								tro(j) = max(D(n).d(k,4));
+							% sets a lor orbit if there is not enough data
+							%if D(n).t(D(n).G(r).ke) >= M(m).t(w)
+							if (D(n).t(ke) + 1) < M(m).t(w)
+								tro(j) = 2;
 							end
 						end
 					end
@@ -1574,9 +1592,11 @@ for r = 1:length(P.GTABLE)
 				end
 				% computes absolute displacement in mm (from velocity in mm/yr)
 				d = d*diff(wlim)/365.25;
+				modelopt.verbose = 'quiet';
+				d(:,4:6) = adjerrors(d,modelopt);
 
 				% --- computes the model !
-				MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,'quiet');
+				MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
 				M(m).d(w,:) = [MM(1).pbest(1:4),sign(MM(1).pbest(4))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
 				M(m).e(w,:) = [MM(1).ws,MM(1).ws,diff(MM(1).ez),diff(MM(1).ev),MM(1).m0];
 				M(m).o(w,1) = max(tro); % model worst orbit
@@ -1789,38 +1809,27 @@ for r = 1:length(P.GTABLE)
 
 
 		% legend
-		axes('position',[pos(1)+.73,0.07,0.17,0.4]);
+		axes('position',[mpos(1)+mpos(3),0.07,pos(3)-mpos(3),0.4]);
 		
-		% time color scale
-		wsc = 0.1;
-		x = 0.22;
-		y = linspace(0,.5,length(modeltime_cmap));
-		tscale = linspace(tlim(1),tlim(2),length(modeltime_cmap));
-		ddt = dtick(diff(tscale([1,end])));
-		ttick = (ddt*ceil(tscale(1)/ddt)):ddt:tscale(end);
-		patch(x + repmat(wsc*[0;1;1;0],[1,length(modeltime_cmap)]), ...
-			[repmat(y,[2,1]);repmat(y + diff(y(1:2)),[2,1])], ...
-		repmat(tscale,[4,1]), ...
-			'EdgeColor','flat','LineWidth',.1,'FaceColor','flat','clipping','off')
+		text(.6,1,info,'HorizontalAlignment','left','VerticalAlignment','top','FontSize',8)
 		hold on
-		colormap(modeltime_cmap)
-		caxis(tlim)
-		patch(x + wsc*[0,1,1,0],[0,0,.5,.5],'k','FaceColor','none','Clipping','off')
-		patch(x + wsc*[0,.5,1],[.5,.52,.5],'k','EdgeColor','none','FaceColor','k','Clipping','off')
-		stick = datestr(ttick');
-		text(x - .05,.25,{'{\bfTime}',''},'HorizontalAlignment','center','rotation',90,'FontSize',8)
-		text(x + 1.3*wsc + zeros(size(ttick)),.5*(ttick - tscale(1))/diff(tscale([1,end])),stick, ...
-			'HorizontalAlignment','left','VerticalAlignment','middle','FontSize',6)
+
 		% volume scale
 		x = .2 + zeros(size(vlim));
-		y = .95 - .05*(vlim-vlim(1))/diff(vlim);
+		y = .1 - .05*(vlim-vlim(1))/diff(vlim);
 		scatter(x,y,(vlim - vlim(1))/diff(vlim)*modeltime_markersize + 2,'MarkerEdgeColor','k','LineWidth',modeltime_marker_linewidth)
-		text(x + .15,y,num2str(roundsd(vlim',2)),'FontSize',7)
-		text(.1,1,['{\bf',vtype,'} (',vunit,')'],'HorizontalAlignment','left','FontSize',8)
+		text(x + .05,y,num2str(roundsd(vlim',2)),'FontSize',7)
+		text(.15,.15,['{\bf',vtype,'} (',vunit,')'],'HorizontalAlignment','left','FontSize',8)
 		hold off
 
 		set(gca,'XLim',[0,1],'YLim',[0,1])
 		axis off
+
+		% time color scale
+		axes('position',[.8,0.06,0.17,0.3]);
+		timecolorbar(.1,0,.15,.8,tlim,modeltime_cmap,8)
+		set(gca,'XLim',[0,1],'YLim',[0,1])
+		axis off		
 
 		% -- displacements module
 		%subplot(10,1,6:7), extaxes(gca,[.08,.04])
@@ -1910,6 +1919,30 @@ if nargout > 0
 	DOUT = D;
 end
 
+
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function e = adjerrors(d,opt)
+% avoiding numerical problem with pdf due to low errors
+e = d(:,4:6);
+emin = abs(d(:,1:3))*opt.minerrorrel/100;
+k = (e < emin | isnan(d(:,1:3)) | isnan(e));
+if any(k)
+	e(k) = emin(k);
+	if ~strcmpi(opt.verbose,'quiet')
+		fprintf('---> %d data errors have been increased to %g%%.\n',sum(k(:)),opt.minerrorrel);
+	end
+end
+% forces a minimum relative error
+k = (e<opt.minerror);
+if any(k)
+	e(k) = opt.minerror; % forces a minimum absolute error
+	if ~strcmpi(opt.verbose,'quiet')
+		fprintf('---> %d data errors have been set to %g mm.\n',sum(k(:)),opt.minerror);
+	end
+end
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
