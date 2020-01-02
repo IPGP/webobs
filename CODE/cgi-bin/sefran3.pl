@@ -632,6 +632,7 @@ if ($date) {
 	my $date_nbm; # number of files
 	my $date_prec = my $dprec = "";
 	my $date_suiv = my $dsuiv = "";
+	my $idarg = "";
 
 	if ($dep) {
 		if ($id) { 	# read event ID from MC + set number of minute-files containing signal + 1
@@ -646,6 +647,7 @@ if ($date) {
 		$dprec = strftime('Jump to %Y-%m-%d <b>%H:%M</b>',gmtime(timegm(0,$Mc,$Hc,$dc,$mc-1,$Yc-1900)-60));
 		$date_suiv = strftime('%Y%m%d%H%M',gmtime(timegm(0,$Mc,$Hc,$dc,$mc-1,$Yc-1900)+60));
 		$dsuiv = strftime('Jump to %Y-%m-%d <b>%H:%M</b>',gmtime(timegm(0,$Mc,$Hc,$dc,$mc-1,$Yc-1900)+60));
+		$idarg = "&id=$id";
 	} else {
 		$date_deb = -1;
 		$date_nbm = 61;
@@ -669,8 +671,8 @@ if ($date) {
 			print "<span class=\"mcbouton\" onClick=\"zoom_1();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Base speed'} (1:1)')\"><SPAN class=\"keycap\">=</SPAN></span>";
 			print "<span class=\"mcbouton\" onClick=\"zoom_out();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Decrease speed'} (&divide;2)')\"><SPAN class=\"keycap\">&minus;</SPAN></span>";
 			print "<span class=\"mcbouton\" onClick=\"shrinkmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide MC events'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/mctag.png\" style=\"vertical-align:middle\"></SPAN></span>";
-			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_prec'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dprec')\"><SPAN class=\"keycap\">&larr;</SPAN></span>";
-			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_suiv'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dsuiv')\"><SPAN class=\"keycap\">&rarr;</SPAN></span>";
+			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_prec$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dprec')\"><SPAN class=\"keycap\">&larr;</SPAN></span>";
+			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_suiv$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dsuiv')\"><SPAN class=\"keycap\">&rarr;</SPAN></span>";
 			print "<span class=\"mcbouton\" onClick=\"quit();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Quit this event without saving changes'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/cancel.png\" style=\"vertical-align:middle\"></SPAN></span>";
 		print "</div>";
 	print "</div>";
