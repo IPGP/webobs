@@ -88,7 +88,7 @@ FILTER_MAX_ERROR_M|0.05
 PICKS_CLEAN_PERCENT|0
 TREND_ERROR_MODE|1
 # minimum time window (in days) needed to compute a trend
-TREND_MIN_DAYS|2
+TREND_MIN_DAYS|5
 
 # ITRF reference (this is a string displayed on graph title, not functional)
 ITRF_REF|ITRF08

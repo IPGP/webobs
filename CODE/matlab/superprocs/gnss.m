@@ -39,7 +39,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2019-12-31
+%   Updated: 2020-01-07
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -470,7 +470,7 @@ for r = 1:length(P.GTABLE)
 			E.t = D(n).t(k);
 			E.d = [D(n).d(k,1:3),D(n).e(k,:),D(n).d(k,4)];
 			E.header = {'Eastern(m)','Northern(m)','Up(m)','dE','dN','dU','Orbit'};
-			E.info = {};
+			E.infos = {};
 			if vrelmode
 				E.d = [E.d, ...
 					D(n).d(k,1) - polyval([voffset(1)/365250,0],E.t - tlim(1)), ...
@@ -599,7 +599,7 @@ for r = 1:length(P.GTABLE)
 			% exports baseline data for reference n
 			if isok(P.GTABLE(r),'EXPORTS')
 				E.title = sprintf('%s: ref. %s',P.GTABLE(r).GTITLE,N(n).ALIAS);
-				E.info = {};
+				E.infos = {};
 				mkexport(WO,sprintf('%s_%s_%s',summary,N(n).FID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 			end
 		end
@@ -772,7 +772,7 @@ for r = 1:length(P.GTABLE)
 
 		% exports data
 		if isok(P.GTABLE(r),'EXPORTS')
-			E.info = { ...
+			E.infos = { ...
 				sprintf('Velocity reference (%s):  E %+g mm/yr, N %+g mm/yr, U %+g mm/yr',datestr(velrefdate),velref), ...
 				};
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
@@ -1051,6 +1051,8 @@ for r = 1:length(P.GTABLE)
 				ux = sum(cat(2,M.ux),2);
 				uy = sum(cat(2,M.uy),2);
 				uz = sum(cat(2,M.uz),2);
+				ex = cat(1,M.ex);
+				ey = cat(1,M.ey);
 				ez = cat(1,M.ez);
 				ws = cat(1,M.ws);
 				ev = cat(1,M.ev)*1e6;
@@ -1901,7 +1903,7 @@ for r = 1:length(P.GTABLE)
 				E.header(k) = strcat({'LAT','LON','Z','dV','dD','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%g',M(m).mtp));
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
-			E.info = {};
+			E.infos = {};
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
 	end
