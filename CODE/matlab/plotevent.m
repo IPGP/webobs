@@ -67,19 +67,19 @@ for n = 1:length(conf)
 					ddy = diff(ylim)*0.005;
 				end
 				for ii = 1:length(k)
-					x1 = dt1(k(ii));
-					x2 = dt2(k(ii));
+					x1 = max(dt1(k(ii)),xlim(1));
+					x2 = min(dt2(k(ii)),xlim(2));
 					y1 = ylim(1) + ddy;
 					y2 = ylim(2) - ddy;
 					cc = htm2rgb(rgb{k(ii)});
 					axes(ha(i));
 					hold on
 					if x1==x2
-						h = plot([x1,x2],[y1,y2],'-','LineWidth',lw(k(ii)),'Color',cc);
+						h = plot([x1,x2],[y1,y2],'-','LineWidth',lw(k(ii)),'Color',cc,'Clipping','on');
 					else
 						%h = fill3([x1,x1,x2,x2],[y1,y2,y2,y1],-ones([1,4]),cc);
 						h = patch([x1,x1,x2,x2],[y1,y2,y2,y1],cc);
-						set(h,'EdgeColor','none');
+						set(h,'EdgeColor','none','Clipping','on');
 					end
 					hold off
 					% puts in the background
