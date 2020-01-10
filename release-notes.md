@@ -8,7 +8,7 @@ The lastest release has many improvements, new features and bug fixes.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
-## v2.1.4b (January 2020)
+## v2.1.4c (January 2020)
 
 ### Sefran
 
@@ -86,6 +86,12 @@ A bug has been fixed in the request results table to show correctly the job stat
 1. User's form now allows edition of associated group(s). Associated users in group edition form is still allowed.
 
 2. New tool to edit domains: creation, edition, and grid association.
+
+### GNSS GipsyX scripts
+
+1. new default option in .rc to force delta antenna to zero (avoid offsets when rinex headers are not consistent)
+
+2. `raw2rinex` now manages any gzipped data files (.gz)
 
 
 ## v2.1.3f (September, 2019)
