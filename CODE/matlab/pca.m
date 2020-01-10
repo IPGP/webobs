@@ -4,12 +4,12 @@ function [y,V,D]=pca(x,varargin)
 %
 %	Author: F. Beauducel / IPGP
 %	Created: 1992 in Paris
-%	Updated: 2019-10-13
+%	Updated: 2020-01-10
 
 % selects only non-NaN values
-k = all(~isnan(x),2);
+k = all(~isnan(x) & isfinite(x),2);
 
-if ~isempty(k)
+if any(k)
 	% removes mean value of each column
 	x0 = bsxfun(@minus, x, mean(x(k,:),1));
 
