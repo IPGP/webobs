@@ -8,7 +8,7 @@
 #
 # Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
 # Created: 2014-01-12
-# Updated: 2019-08-01
+# Updated: 2020-01-10
 
 if [ $# -lt 2 ]; then
 	echo "raw2rinex input output [teqc options]"
@@ -45,6 +45,10 @@ do
 		cp -L $f $tmpdir/
 	fi
 
+	# gunzip (must copy first before unzip)
+	if [[ $f == *".gz" ]]; then
+		gunzip -f $tmpdir/*.gz
+	fi
 done
 
 # --- try rinex files
