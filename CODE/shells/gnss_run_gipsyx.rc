@@ -3,7 +3,7 @@
 # please copy to /etc/webobs.rc/, rename and edit to your needs.
 #
 # Created: 2019-02-25
-# Updated: 2019-08-25
+# Updated: 2020-01-09
 
 # prepares GIPSYX processing
 source /home/wo/GipsyX-1.2/rc_GipsyX.sh
@@ -29,8 +29,8 @@ DEST=/home/wo/GNSS/gipsyx
 # gd2e.py options
 GIPSYOPTIONS="-runType PPP"
 
-# teqc options
-TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -C2 -O.-obs C2 -O.-obs C5 -O.dec 10s -max_rx_SVs 30 -n_GLONASS 27"
+# teqc options: Please take a deep look at www.unavco.org TEQC tutorial!
+TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -0.pe 0 0 0 -C2 -O.-obs C2 -O.-obs C5 -O.dec 30s -max_rx_SVs 30 -n_GLONASS 27"
 
 # download_orbit options
 DOWNLOAD_OPTIONS="-r 30"
