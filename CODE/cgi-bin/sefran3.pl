@@ -79,6 +79,7 @@ my $date   = $cgi->url_param('date');
 my $high   = $cgi->url_param('high');
 my $sx     = $cgi->url_param('sx') // 0;
 my $replay = $cgi->url_param('replay');
+my $limit  = $cgi->url_param('limit');
 
 # ---- analysis (depouillement) mode ?
 my $dep = 0 ;
@@ -113,7 +114,6 @@ $userLevel = 1 if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"MC") ||
 $userLevel = 2 if (WebObs::Users::clientHasEdit(type=>"authprocs",name=>"MC") || WebObs::Users::clientHasEdit(type=>"authprocs",name=>"$mc3"));
 $userLevel = 4 if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"MC") || WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$mc3"));
 
-my $limit  = $cgi->url_param('limit');
 if (!defined($limit)) { $limit = $SEFRAN3{TIME_INTERVALS_DEFAULT_VALUE}; }
 # for "last events" mode ($limit = 0), forces real-time ($ref = 0)
 if ($limit == 0) { $ref = 0; }
@@ -186,6 +186,7 @@ if (!$ref) {
 	# permits 29-31 days for all months...
 	my $day0 = $dref - 1;
 	($yref,$mref,$dref) = split('/',strftime('%Y/%m/%d',gmtime(timegm(0,0,0,1,$mref-1,$yref-1900) + $day0*86400)));
+	# if the reference date is specified (not real-time), forces 24 hours minimum display
 	$limit = 24 if ($limit < 24);
 }
 # builds the list of dates and loads associated MC events over the period (+ 1 day)
@@ -998,30 +999,24 @@ sub mcinfo
 
 	if (length($MC{qml}) > 2) {
 		$MC{info} .= "<HR><I>SC3 ID: $MC{qml}</I>";
-		if ($MC3{SC3_EVENTS_ROOT} ne "" && $MC{qml} =~ /[0-9]{4}\/[0-9]{2}\/[0-9]{2}\/.+/) {
-			my ($qmly,$qmlm,$qmld,$sc3id) = split(/\//,$MC{qml});
-			my %QML = qmlorigin("$MC3{SC3_EVENTS_ROOT}/$MC{qml}/$sc3id.last.xml");
-			$MC{origin} = ($QML{latitude} < 0 ? sprintf("<b>%2.2f°S</b>",-$QML{latitude}):sprintf("<b>%2.2f°N</b>",$QML{latitude}))
-				." / ".($QML{longitude} < 0 ? sprintf("<b>%2.2f°W</b>",-$QML{longitude}):sprintf("<b>%2.2f°E</b>",$QML{longitude}))
-				.($QML{depth} ? " / ".sprintf("<b>%1.1f km</b>",$QML{depth}):"");
-
-			$MC{info} .= "<br><I>Quality:</I> <B><B>$QML{phases}</B> phases / <SPAN style=color:"
-				.($QML{mode} eq 'manual' ? "green>M":"red>A").($QML{status} ne "" ? " ($QML{status})":"")."</B><BR>"
-				."<I>Time:</I> <B>$QML{time}</B><br>"
-				."<I>Origin:</I> $MC{origin}<br>"
-				.($QML{magtype} && $QML{magnitude} ? "<I>$QML{magtype} =</I> <B>$QML{magnitude}</B>":"");
-		}
-		elsif ($MC{qml} =~ /:\/\//) {
-			my ($fdsnws_src,$evt_id) = split(/:\/\//,$MC{qml});
-		        my $fdsnws_url = "";
-			if (defined($MC3{FDSNWS_EVENTS_URL})) {
-			        $fdsnws_url = $MC3{FDSNWS_EVENTS_URL};
+		if ($SEFRAN3{MC3_EVENT_DISPLAY_LOC} =~ m/Y|YES/i) {
+			my %QML;
+			if ($MC3{SC3_EVENTS_ROOT} ne "" && $MC{qml} =~ /[0-9]{4}\/[0-9]{2}\/[0-9]{2}\/.+/) {
+				my ($qmly,$qmlm,$qmld,$sc3id) = split(/\//,$MC{qml});
+				%QML = qmlorigin("$MC3{SC3_EVENTS_ROOT}/$MC{qml}/$sc3id.last.xml");
 			}
-                        if (length($fdsnws_src) > 0) {
-                                my $varname = "FDSNWS_EVENTS_URL_$fdsnws_src";
-                                $fdsnws_url = "$MC3{$varname}";
-                        }
-			my %QML = qmlfdsn("${fdsnws_url}&format=xml&eventid=$evt_id");
+			elsif ($MC{qml} =~ /:\/\//) {
+				my ($fdsnws_src,$evt_id) = split(/:\/\//,$MC{qml});
+				my $fdsnws_url = "";
+				if (defined($MC3{FDSNWS_EVENTS_URL})) {
+					$fdsnws_url = $MC3{FDSNWS_EVENTS_URL};
+				}
+				if (length($fdsnws_src) > 0) {
+					my $varname = "FDSNWS_EVENTS_URL_$fdsnws_src";
+					$fdsnws_url = "$MC3{$varname}";
+				}
+				%QML = qmlfdsn("${fdsnws_url}&format=xml&eventid=$evt_id");
+			}
 			$MC{origin} = ($QML{latitude} < 0 ? sprintf("<b>%2.2f°S</b>",-$QML{latitude}):sprintf("<b>%2.2f°N</b>",$QML{latitude}))
 				." / ".($QML{longitude} < 0 ? sprintf("<b>%2.2f°W</b>",-$QML{longitude}):sprintf("<b>%2.2f°E</b>",$QML{longitude}))
 				.($QML{depth} ? " / ".sprintf("<b>%1.1f km</b>",$QML{depth}):"");
@@ -1043,17 +1038,15 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+Francois Beauducel, Didier Lafon, Jean-Marie Saurel
 
 Acknowledgments:
-
-afficheSEFRAN.pl [2009] by Alexis Bosson and Francois Beauducel
-
-frameMC2.pl and formulaireMC2.pl [2004-2009] by Didier Mallarino, Francois Beauducel and Alexis Bosson
+- afficheSEFRAN.pl [2009] by Alexis Bosson and Francois Beauducel
+- frameMC2.pl and formulaireMC2.pl [2004-2009] by Didier Mallarino, Francois Beauducel and Alexis Bosson
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2020 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
