@@ -142,6 +142,10 @@ end
 
 % --- Seismic rate interpolation
 %[FBwas:] t_rate = floor(min([P.DATELIST{:}])):samp_int:ceil(P.NOW);
+if find(isnan(rt))
+    rt(1) = 0;
+    rt(end) = 0;
+end
 t_rate = floor(P.DATELIM(1)):samp_int:ceil(P.DATELIM(2));
 rate = interp1(t_rt,rt,t_rate);
 k = find(~isnan(rate));
@@ -309,11 +313,15 @@ for r = 1:length(P.GTABLE)
         figure, clf, orient tall
         % Upper plot is seismic rate
         subplot(4,1,1:2); extaxes
-        if ratelogscale
-        	set(gca,'YScale','log');
-            ylim = [10.^floor(log10(min(ratek))) 10.^ceil(log10(max(ratek)))];
+        if find(isnan(ratek))
+            ylim = [0 1];
         else
-            ylim = [floor(min(ratek)) ceil(max(ratek))];
+            if ratelogscale
+                set(gca,'YScale','log');
+                ylim = [10.^floor(log10(min(ratek))) 10.^ceil(log10(max_ratek))];
+            else
+                ylim = [floor(min(ratek)) ceil(max_ratek)];
+            end
         end
         if find(swarms_datelim)
             swarms_y(1:2,:) = ylim(1);
