@@ -471,11 +471,13 @@ if (!$date) {
 								# case B: event has started in a previous hour
 								} else {
 									$deb_evt = 2;
+									my $hdeb = $MC{hour};
+									$hdeb -= 24 if ($hdeb > $hh); # solves event crossover a day
 									# case B1: more than 3 hours overlap = full width
-									if ($h0 + $dh > $hh - $MC{hour} + 1) {
+									if ($h0 + $dh > $hh - $hdeb + 1) {
 										$dur_evt = $SEFRAN3{HOURLY_WIDTH};
 									} else {
-										$dur_evt = $SEFRAN3{HOURLY_WIDTH}*($h0 + $dh - ($hh-$MC{hour}));
+										$dur_evt = $SEFRAN3{HOURLY_WIDTH}*($h0 + $dh - ($hh-$hdeb)) + 1;
 									}
 								}
 								print "<DIV class=\"mctag\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{firstarrival}',BGCOLOR,'$types{$MC{type}}{Color}',FGCOLOR,'#EEEEEE',WIDTH,250)\" onClick=\"window.open('$prog$MC{edit}')\"",
