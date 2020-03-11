@@ -257,6 +257,8 @@ JOB_MCNODISPLAY|cd ${ROOT_CODE}/matlab;env LANG=${LOCALE}.ISO-8859-1 ${PATH_MCC}
 JOB_MCXVFB|cd ${ROOT_CODE}/matlab;env LANG=${LOCALE}.ISO-8859-1 xvfb-run -a --server-args="-screen 0 1024x768x16" ${PATH_MCC}
 
 # Options for the Codemirror javascript editor
+#  To browse available Codemirror themes, see:
+#  https://codemirror.net/demo/theme.html
 CODEMIRROR_EDIT_THEME|default    # codemirror theme when editing
 CODEMIRROR_BROWSING_THEME|neat   # codemirror theme when browsing
 CODEMIRROR_AUTO_VIM_MODE|no      # automatically enter vim mode or not (any other value):
