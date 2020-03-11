@@ -256,10 +256,12 @@ JOB_MLXVFB|env MATLABPATH=${ROOT_CODE}/matlab LANG=${LOCALE}.ISO-8859-1 xvfb-run
 JOB_MCNODISPLAY|cd ${ROOT_CODE}/matlab;env LANG=${LOCALE}.ISO-8859-1 ${PATH_MCC}
 JOB_MCXVFB|cd ${ROOT_CODE}/matlab;env LANG=${LOCALE}.ISO-8859-1 xvfb-run -a --server-args="-screen 0 1024x768x16" ${PATH_MCC}
 
-# xedit.pl options --------------------------------------
-XEDIT_ETHEME|ambiance      # codemirror theme when editing
-XEDIT_BTHEME|neat          # codemirror theme when browsing
-XEDIT_VMODE|vim            # automatically enter vim mode or not (any other value)
+# Options for the Codemirror javascript editor
+CODEMIRROR_EDIT_THEME|default    # codemirror theme when editing
+CODEMIRROR_BROWSING_THEME|neat   # codemirror theme when browsing
+CODEMIRROR_AUTO_VIM_MODE|no      # automatically enter vim mode or not (any other value):
+                                 #  True if value is 'true' or 'yes' (case insensitive),
+                                 #  False for any other value.
 
 # Nagios -------------------------------------
 NAGIOS_SEND_NSCA|send_nsca -H 127.0.0.1 -c /etc/send_nsca.cfg
