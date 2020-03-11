@@ -17,35 +17,45 @@ function positionPopup(){
 		left: (($(window).width() - $('.overlay_form').outerWidth()) / 2)+$(window).scrollLeft() + "px",
 	});
 }
-function openPopupUser(ux) {
-	// ux  ==  users' html-table row id OR -1 for a new user
-	if (arguments.length <= 0 ) { return; } // noop if no ux
+
+function openPopupUser(user_row) {
+	// user_row is the jquery selector for the user row in the table.
+	// If user_row is undefined, edit a new user
 	var form = $('#overlay_form_user')[0];
-	if (ux != -1) { // editing an existing user: populate popup from its table row TDs
-		// ATT:  $("td",user.ux)[n] = n (0-based) must match users <td> order in def-row  
-		form.uid.value = $("td",ux)[2].textContent;
-		form.OLDuid.value = $("td",ux)[2].textContent;
+	var listgids;
+
+	if (user_row !== undefined) {
+		// editing an existing user: populate popup from its table row TDs
+		form.uid.value = $(user_row + ' .user-uid').text()
+		form.OLDuid.value = $(user_row + ' .user-uid').text();
 		form.uid.style.backgroundColor = "#EEEEEE";
-		form.fullname.value = $("td",ux)[3].textContent;
-		form.login.value = $("td",ux)[4].textContent;
-		form.email.value = $("td",ux)[5].textContent;
-		var listgids = $("td",ux)[6].textContent.split(',');
-		$('#overlay_form_user #gid option').each(function() { 
+		form.fullname.value = $(user_row + ' .user-fullname').text();
+		form.login.value = $(user_row + ' .user-login').text();
+		form.email.value = $(user_row + ' .user-email').text();
+		listgids = $(user_row + ' .user-groups').text().split(',');
+		$('#overlay_form_user #gid option').each(function() {
 			$(this).removeProp('selected');
-			if (jQuery.inArray( this.value, listgids ) != -1) { $(this).prop('selected',true) }
+			if (jQuery.inArray( this.value, listgids ) != -1) {
+				$(this).prop('selected',true)
+			}
 		});
 		$('label[for=gid]').css('display','block');
 		$(form.gid).css('display','block');
-		form.OLDgid.value = $("td",ux)[6].textContent;
-		form.valid.value = $("td",ux)[7].textContent;
+		form.OLDgid.value = $(user_row + ' .user-groups').text();
+		form.valid.value = $(user_row + ' .user-validity').text();
 		form.action.value = "update";
-	} else { // inserting a new user
+	} else {
+		// populate a blank form to edit a new user
 		form.uid.value = "";
 		form.uid.readOnly = false;
 		form.uid.style.backgroundColor = "";
 		form.fullname.value = "";
 		form.login.value = "";
 		form.email.value = "";
+		$('#overlay_form_user #gid option').each(function() {
+			// clear any option selected in an earlier edition
+			$(this).removeProp('selected');
+		});
 		form.valid.value = "Y";
 		form.action.value = "insert";
 	}
@@ -55,25 +65,32 @@ function openPopupUser(ux) {
 	positionPopup();
 	form.uid.focus();
 }
-function openPopupGroup(ux) {
+
+function openPopupGroup(group_row) {
+	// group_row is the jquery selector for the group row in the table.
+	// If group_row is undef, edit a new group
 	var form = $('#overlay_form_group')[0];
-	// ux  ==  groups' html-table row id OR -1 for a new group/user
-	if (arguments.length <= 0 ) { return; } // noop if no ux
-	if (ux != -1) { // editing a group/user: populate popup from its table row TDs
-		// ATT:  $("td",user.ux)[n] = n (0-based) must match users <td> order in def-row  
-		form.gid.value = $("td",ux)[2].textContent;
-		var listuids = $("td",ux)[3].textContent.split(',');
-		$('#overlay_form_group #uid option').each(function() { 
+	var listuids;
+
+	if (group_row !== undefined) {
+		// group members edition: populate popup from its table row elements
+		form.gid.value = $(group_row + ' .group-gid').text();
+
+		listuids = $(group_row + ' .group-uids').text().split(',');
+		$('#overlay_form_group #uid option').each(function() {
 			$(this).removeProp('selected');
-			if (jQuery.inArray( this.value, listuids ) != -1) { $(this).prop('selected',true) }
+			if (jQuery.inArray( this.value, listuids ) != -1) {
+				$(this).prop('selected',true);
+			}
 		});
 		$('label[for=uid]').css('display','block');
 		$(form.uid).css('display','block');
-		form.OLDgid.value = $("td",ux)[2].textContent;
-		form.OLDuid.value = $("td",ux)[3].textContent;
+		form.OLDgid.value = $(group_row + ' .group-gid').text();
+		form.OLDuid.value = $(group_row + ' .group-uids').text();
 		form.action.value = "updgrp";
 
-	} else { // inserting a new group
+	} else {
+		// populate a blank form to edit a new group
 		form.uid.value = "!";
 		$('label[for=uid]').css('display','none');
 		$(form.uid).css('display','none');
@@ -87,26 +104,26 @@ function openPopupGroup(ux) {
 	form.gid.focus();
 }
 
-function openPopupNotf(ux) {
+function openPopupNotf(notif_row) {
+	// notif_row is the jquery selector for the notification row in the table.
+	// If notif_row is undef, edit a new notification
 	var form = $('#overlay_form_notf')[0];
-	// ux  ==  notifications' html-table row id OR -1 for a new notif.
-	if (arguments.length <= 0 ) { return; } // noop if no ux
-	if (ux != -1) { 
-		// ATT:  $("td",notf.ux)[n] = n (0-based) must match notifications <td> order in def-row  
-		form.event.value = $("td",ux)[2].textContent;
-		form.OLDevent.value = $("td",ux)[2].textContent;
+	if (notif_row !== undefined) {
+		form.event.value = $(notif_row + " .notif-event").text();
+		form.OLDevent.value = $(notif_row + " .notif-event").text();
 		form.event.style.backgroundColor = "#EEEEEE";
-		form.valid.value = $("td",ux)[3].textContent;
-		form.uid.value = $("td",ux)[4].textContent;
-		form.OLDuid.value = $("td",ux)[4].textContent;
+		form.valid.value = $(notif_row + " .notif-validity").text();
+		form.uid.value = $(notif_row + " .notif-emailuid").text();
+		form.OLDuid.value = $(notif_row + " .notif-emailuid").text();
 		form.uid.style.backgroundColor = "#EEEEEE";
-		form.mailsub.value = $("td",ux)[5].textContent;
-		form.mailatt.value = $("td",ux)[6].textContent;
-		form.act.value = $("td",ux)[7].textContent;
-		form.OLDact.value = $("td",ux)[7].textContent;
+		form.mailsub.value = $(notif_row + " .notif-emailsubj").text();
+		form.mailatt.value = $(notif_row + " .notif-emailattach").text();
+		form.act.value = $(notif_row + " .notif-action").text();
+		form.OLDact.value = $(notif_row + " .notif-action").text();
 		form.act.style.backgroundColor = "#EEEEEE";
 		form.action.value = "update";
-	} else { // inserting a new user
+	} else {
+		// populate a blank form to edit a new notification
 		form.event.value = "";
 		form.event.style.backgroundColor = "";
 		form.valid.value = "Y";
@@ -125,19 +142,21 @@ function openPopupNotf(ux) {
 	form.event.focus();
 }
 
-function openPopupAuth(tb,ux) {
+function openPopupAuth(auth_table, auth_row) {
+	// auth_row is the jquery selector for the authorization row in the table auth_table.
+	// If auth_row is undef, edit a new authorization in the table.
 	form = $('#overlay_form_auth')[0];
-	if (arguments.length <= 0 ) { return; } // noop if no ux
-	if (ux != -1) { 
-		form.uid.value = $("td",ux)[2].textContent;
-		form.OLDuid.value = $("td",ux)[2].textContent;
+	if (auth_row !== undefined) {
+		form.uid.value = $(auth_row + " .auth-uid").text();
+		form.OLDuid.value = $(auth_row + " .auth-uid").text();
 		form.uid.style.backgroundColor = "#EEEEEE";
-		form.res.value = $("td",ux)[3].textContent;
-		form.OLDres.value = $("td",ux)[3].textContent;
+		form.res.value = $(auth_row + " .auth-res").text();
+		form.OLDres.value = $(auth_row + " .auth-res").text();
 		form.res.style.backgroundColor = "#EEEEEE";
-		form.auth.value = $("td",ux)[4].textContent;
+		form.auth.value = $(auth_row + " .auth-auth").text();
 		form.action.value = "update";
-	} else { 
+	} else {
+		// populate a blank form to edit a new authorization
 		form.uid.value = "";
 		form.uid.style.backgroundColor = "";
 		form.res.value = "";
@@ -145,7 +164,7 @@ function openPopupAuth(tb,ux) {
 		form.auth.value = "";
 		form.action.value = "insert";
 	}
-	form.tbl.value = tb;
+	form.tbl.value = auth_table;
 	$('#overlay_form_auth[name=sendbutton]').attr('onclick',"sendPopupAuth(); return false");
 	$("#overlay_form_auth").fadeIn(500);
 	positionPopup();
@@ -182,9 +201,9 @@ function sendPopupGroup() {
 		alert ("gid invalid syntax");
 		return false;
 	}
-	var usels=''; 
-	for (i=0;i<form.uid.length;i++) { 
-		if (form.uid[i].selected) usels += form.uid[i].value+','; 
+	var usels='';
+	for (i=0;i<form.uid.length;i++) {
+		if (form.uid[i].selected) usels += form.uid[i].value+',';
 	}
 	usels=usels.slice(0,-1);
 	if ( usels.length == 0 ) {
@@ -239,7 +258,7 @@ function sendPopupAuth() {
 			alert ("authorization can't be empty");
 			return false;
 		}
-		if ( ['1','2','4'].indexOf(form.auth.value) == -1 ) {  
+		if ( ['1','2','4'].indexOf(form.auth.value) == -1 ) {
 			alert ("authorization must be one of 1,2,4");
 			return false;
 		}
@@ -252,8 +271,8 @@ function sendPopupAuth() {
 	}
 }
 
-function postDeleteUser(ux) {
-	var uid =  $("td",ux)[2].textContent;
+function postDeleteUser(user) {
+	var uid = $(user + ' .user-uid').text();
 	var answer = confirm("do you really want to delete userid " + uid + " ? If so, you might first delete the corresponding line in htpasswd.")
 	if (answer) {
 		uid = uid.replace(/\+/g,'%2B');
@@ -262,20 +281,8 @@ function postDeleteUser(ux) {
 	}
 }
 
-function postDeleteGroup(ux) {
-	var gid =  $("td",ux)[2].textContent;
-	var uid =  $("td",ux)[3].textContent;
-	var answer = confirm("do you really want to delete "+gid+" / "+uid+" ?")
-	if (answer) {
-		gid =  gid.replace(/\+/g,'%2B');
-		uid =  uid.replace(/\+/g,'%2B');
-		if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-		location.href = Gscriptname+"?action=delete&tbl=group&gid="+gid+"&uid="+uid+"\#IDENT"
-	}
-}
-
-function postDeleteUGroup(ux) {
-	var gid =  $("td",ux)[2].textContent;
+function postDeleteUGroup(group) {
+	var gid = $(group + ' .group-gid').text();
 	var answer = confirm("do you really want to delete group "+gid+" ?")
 	if (answer) {
 		gid = gid.replace(/\+/g,'%2B');
@@ -284,10 +291,10 @@ function postDeleteUGroup(ux) {
 	}
 }
 
-function postDeleteNotf(ux) {
-	var evt = $("td",ux)[2].textContent;
-	var uid = $("td",ux)[4].textContent;
-	var act = $("td",ux)[7].textContent;
+function postDeleteNotf(notif) {
+	var evt = $(notif + ' .notif-event').text();
+	var uid = $(notif + ' .notif-emailuid').text();
+	var act = $(notif + ' .notif-action').text();
 	var answer = confirm("do you really want to delete event "+evt+"/"+uid+"/"+act+" ?")
 	if (answer) {
 		uid =  uid.replace(/\+/g,'%2B');
@@ -296,8 +303,8 @@ function postDeleteNotf(ux) {
 	}
 }
 
-function postDeleteUNotf(ux) {
-	var evt  =  $("td",ux)[1].textContent;
+function postDeleteUNotf(unotif) {
+	var evt = $(unotif + ' .unotif-event').text();
 	var answer = confirm("do you really want to delete event "+evt+" ?")
 	if (answer) {
 		if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
@@ -305,14 +312,14 @@ function postDeleteUNotf(ux) {
 	}
 }
 
-function postDeleteAuth(tb,ux) {
-	var uid =  $("td",ux)[2].textContent;
-	var res =  $("td",ux)[3].textContent;
+function postDeleteAuth(auth_table, auth) {
+	var uid =  $(auth + ' .auth-uid').text();
+	var res =  $(auth + ' .auth-res').text();
 	var answer = confirm("do you really want to delete auth "+uid+"/"+res+" ?")
 	if (answer) {
 		uid = uid.replace(/\+/g,'%2B');
 		if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-		location.href = Gscriptname+"?action=delete&tbl="+tb+"&uid="+uid+"&res="+res+"\#AUTH"
+		location.href = Gscriptname+"?action=delete&tbl="+auth_table+"&uid="+uid+"&res="+res+"\#AUTH"
 	}
 }
 
@@ -321,7 +328,7 @@ function closePopup() {
 	$("#ovly").fadeOut(500);
 }
 
-//---   $("form").serialize() 
-//$("td",job.jid).each(function() { 
+//---   $("form").serialize()
+//$("td",job.jid).each(function() {
 //	console.log(this.textContent) ;
 //});
