@@ -637,7 +637,7 @@ my %QML;
 foreach my $line (@lignes) {
 	$l++;
 	my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,
-	    $nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$signature,
+	    $nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$event_img,$signature,
 	    $comment) = split(/\|/,$line);
 	my ($operator,$timestamp) = split("/",$signature);
     	my $origin;
@@ -676,7 +676,7 @@ foreach my $line (@lignes) {
                        } else {
                                $origin = '';
                        }
-			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$signature|$comment|$origin";
+			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$event_img|$signature|$comment|$origin";
 		}
 		# ID FDSNWS case: request QuakeML file by FDSN webservice
 		elsif ($qml =~ /:\/\//) {
@@ -705,7 +705,7 @@ foreach my $line (@lignes) {
 			} else {
 				$origin = '';
 			}
-			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$signature|$comment|$origin";
+			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$event_img|$signature|$comment|$origin";
 		}
 		# Old suds ID case :
 		elsif (length($qml) < 3 && $HYPO_USE_FMT0_PATH) {
@@ -746,7 +746,7 @@ foreach my $line (@lignes) {
 				}
 				$mod = 'manual';
 				$origin = "$id;$dat;$lat;$lon;$dep;$pha;$mod;;$mag;$mty;Hypo71;;$cod";
-				$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$signature|$comment|$origin";
+				$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$event_img|$signature|$comment|$origin";
 			}
 		}
 
@@ -830,7 +830,7 @@ my $stat_max_duration = 0;
 my $stat_max_magnitude = 0;
 foreach (@finalLignes) {
 	if ( $_ ne "" ) {
-		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$signature,$comment,$origin) = split(/\|/,$_);
+		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$event_img,$signature,$comment,$origin) = split(/\|/,$_);
 		if (!$nombre) { $nombre = 1; }
 		my $time =  timegm(substr($heure,6,2),substr($heure,3,2),substr($heure,0,2),substr($date,8,2),substr($date,5,2)-1,substr($date,0,4)-1900);
 		my $duree_s = ($duree ? $duree*$duration_s{$unite}:0);
@@ -1058,7 +1058,7 @@ $html .= "</tr>";
 # 
 for (@finalLignes) {
 	if ( $_ ne "") {
-		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$signature,$comment,$origin) = split(/\|/,$_);
+		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$event_img,$signature,$comment,$origin) = split(/\|/,$_);
 		my ($operator,$timestamp) = split("/",$signature);
 		my ($evt_annee4,$evt_mois,$evt_jour,$suds_jour,$suds_heure,$suds_minute,$suds_seconde,$suds_reseau) = split;
 		my $diriaspei;
@@ -1330,12 +1330,24 @@ for (@finalLignes) {
 
 		# --- link to Sefran screenshot
 		$html .= "<td>";
-		#FB-was: my $sefranPNG = "$evt_annee4/$MC3{PATH_IMAGES}/$evt_annee4$evt_mois/$MC3{FILE_PREFIX}$png";
-		my $sefranPNG = "$evt_annee4/$MC3{PATH_IMAGES}/$evt_annee4$evt_mois/$png";
-		if (-f "$MC3{ROOT}/$sefranPNG") { 
-			#$html .= "<a href=\"$MC3{PATH_WEB}/$sefranPNG\" data-lightbox=\"$sefranPNG\" title=\"$sefranPNG\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$imagePOPUP',CAPTION,'$imageCAPTION')\"><img src=\"$amplitude_img\" border=\"0\"></a>";
-			$html .= "<img border=\"0\" wolbsrc=\"$MC3{PATH_WEB}/$sefranPNG\" src=\"$amplitude_img\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$imagePOPUP',CAPTION,'$imageCAPTION')\">";
+		#FB-was: my $event_img_subdir = "$evt_annee4/$MC3{PATH_IMAGES}/$evt_annee4$evt_mois/$MC3{FILE_PREFIX}$event_img";
+		my $event_img_subdir = "$evt_annee4/$MC3{PATH_IMAGES}/$evt_annee4$evt_mois";
+		my $event_img_path = "$MC3{ROOT}/$event_img_subdir/$event_img";
+
+		# Split the MC3 column value on commas in case multiple images were to be displayed
+		my @img_list = map { $_ =~ s/^\s+|\s+$//g; $_; } split(/,/, "$event_img");
+
+		if (@img_list) {
+			# Define the icon visible in the MC3 'Sefran' column
+			# (wolbtarget designates the gallery of images to display defined below)
+			$html .= "<img wolbtarget=\"event-img-$id_evt\" border=\"0\" src=\"$amplitude_img\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$imagePOPUP',CAPTION,'$imageCAPTION')\">";
+
+			# Add all collected images to a unique common gallery (same wolbset)
+			for my $img (@img_list) {
+				$html .= "<span wolbset=\"event-img-$id_evt\" wolbsrc=\"$MC3{PATH_WEB}/$event_img_subdir/$img\" ></span>";
+			}
 		} else {
+			# No image was designated in the MC3 entry
 			$html .= "&nbsp;";
 		}
 

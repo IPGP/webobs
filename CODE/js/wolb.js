@@ -1,7 +1,12 @@
 
 $(document).ready(function(){
+	// Set a click handler for thumbnail img and image area
 	$('img[wolbsrc],area[wolbsrc]').click( function() {
 		openPopup($(this));
+	});
+	// Set a click handler for icons opening an album designated by wolbtarget
+	$('img[wolbtarget]').click( function() {
+		openPopup($("[wolbset="+$(this).attr('wolbtarget')+"]").first());
 	});
 	wolbHtml="<div id='wolbOvly' class='wolbOvly' onClick='closePopup()'></div>"+
 	  "<div id='wolbBox' class='wolbBox'>"+
