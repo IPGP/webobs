@@ -10,8 +10,8 @@ http://..../mseedreq.pl?... see query string parameters below ...
 
 =head1 DESCRIPTION
 
-Makes a request to SeedLink or ArcLink server to get miniseed data file. 
-mseedreq.pl will decide to address SeedLink or ArcLink server depending on 
+Makes a request to SeedLink or ArcLink server to get miniseed data file.
+mseedreq.pl will decide to address SeedLink or ArcLink server depending on
 current time and $WEBOBS{ARCLINK_DELAY_HOURS} value.
 
 Other server's parameters are taken from WEBOBS and SEFRAN3 configuration files.
@@ -22,7 +22,7 @@ Other server's parameters are taken from WEBOBS and SEFRAN3 configuration files.
   sefran3 configuration file; Defaults to $WEBOBS{ROOT_CONF}/$WEBOBS{SEFRAN3_DEFAULT_NAME}.conf
 
  streams=NET1.STA1.LOC1.CHA1,NET2.STA2.LOC2.CHA2[,...]
-  specifies streams list; any missing information will be replaced by wildcards. 
+  specifies streams list; any missing information will be replaced by wildcards.
   e.g.: streams=PF.RER,PF.BOR..EHZ
         streams=PF
  defaults to using SEFRAN3 defined channels
@@ -36,8 +36,8 @@ Other server's parameters are taken from WEBOBS and SEFRAN3 configuration files.
   start date and time
 
  t2=yyyy,mm,dd,HH,MM,SS
-  end date and time   
-	
+  end date and time
+
  ds=duration
   signal duration in seconds, in place of t2=
 
@@ -68,8 +68,16 @@ use Locale::TextDomain('webobs');
 my $tmpdir = $WEBOBS{MSEEDREQ_TMP_DIR};
 my $template = $WEBOBS{MSEEDREQ_TEMPLATE};
 my $reqtemplate = 'request_XXXXX';
+my $posttemplate = 'postfile_XXXXX';
 my $method;
 my $host;
+my $rtformat;
+my $rtsource;
+my $arcformat;
+my $arcsource;
+my $dataformat;
+my $datasource;
+my $fdsnwsrv;
 
 # ---- get query-string  parameters
 my $s3  = $cgi->url_param('s3');
@@ -92,43 +100,51 @@ my $aluser = $SEFRAN3{ARCLINK_USER};
 my @datasrc = split(/;/,$SEFRAN3{DATASOURCE});
 my $sltos = $SEFRAN3{SEEDLINK_SERVER_TIMEOUT_SECONDS};
 my $slprgm = "$WEBOBS{PRGM_ALARM} ".($sltos > 0 ? $sltos:"5")." $WEBOBS{SLINKTOOL_PRGM}";
+if ($#datasrc eq 1 || $#datasrc eq 2) {
+	($rtformat,$rtsource) = split(/:\/\//,$datasrc[0]);
+	($arcformat,$arcsource) = split(/:\/\//,$datasrc[1]);
+}
+if ($#datasrc eq 0) {
+	($arcformat,$arcsource) = split(/:\/\//,$datasrc[0]);
+}
 
 # ---- calculates time limit to choose which protocol to use
 $delay = $datasrc[2] if ($#datasrc eq 2);
 $delay = 0 if ($delay eq "" || $delay < 0);
 my $limit = qx(date -u -d "$delay hour ago" +"\%Y,\%m,\%d,\%H,\%M,\%S" | xargs echo -n);
 if ($limit lt $t1) {
-	$method = 'SeedLink';
-	if ($#datasrc eq 2) {
-		if ($datasrc[0] =~ /^slink:/) {
-			($slsrv = $datasrc[0]) =~ s/slink:\/\///g;
-		}
-		if ($datasrc[0] =~ /^arclink:/) {
-			my @prot = split(/\?user=/,$datasrc[0]);
-			($alsrv = $prot[0]) =~ s/arclink:\/\///g;
-			if ($#prot > 0) {
-				$aluser = $prot[1];
-			}
-			$method = 'ArcLink';
-		}
-	}
+	$dataformat = $rtformat;
+	$datasource = $rtsource;
 } else {
-	$method = 'ArcLink';
-	if ($#datasrc eq 2) {
-		if ($datasrc[1] =~ /^arclink:/) {
-			my @prot = split(/\?user=/,$datasrc[1]);
-			($alsrv = $prot[0]) =~ s/arclink:\/\///g;
-			if ($#prot > 0) {
-				$aluser = $prot[1];
-			}
-		}
-		if ($datasrc[1] =~ /^slink:/) {
-			($slsrv = $datasrc[1]) =~ s/slink:\/\///g;
-			$method = 'SeedLink';
-		}
-	}
+	$dataformat = $arcformat;
+	$datasource = $arcsource;
 }
 
+# --- parse datasource options
+switch ($dataformat) {
+	case "slink" {
+		$method = 'SeedLink';
+		$slsrv = $datasource;
+	}
+	case "arclink" {
+		$method = 'ArcLink';
+		my @prot = split(/\?user=/,$datasource);
+		$alsrv = $prot[0];
+		if ($#prot > 0) {
+			$aluser = $prot[1];
+		}
+	}
+	case "fdsnws" {
+		$method = 'FDSNWS-dataselect';
+		$fdsnwsrv = $datasource;
+	}
+	case "file" {
+		$method = 'miniSEED';
+	}
+	case "winston" {
+		$method = 'Winston';
+	}
+}
 
 # ---- decodes date and time
 my ($y1,$m1,$d1,$h1,$n1,$s1) = split(/,/,$t1);
@@ -154,74 +170,124 @@ if ($S) {
 	}
 }
 
-# ---- decides which method to use
-if ($method eq "SeedLink") {
-	# SeedLink request
-	$host = $slsrv;
-	my $Q = qx($WEBOBS{SLINKTOOL_PRGM} -Q $host);
-	my @stream_server = split(/\n/,$Q);
-	my @streams;
+# ---- request data according to the method
+switch ($method) {
+	case "SeedLink" {
+		# SeedLink request
+		$host = $slsrv;
+		my $Q = qx($WEBOBS{SLINKTOOL_PRGM} -Q $host);
+		my @stream_server = split(/\n/,$Q);
+		my @streams;
 
-	# all=2 : gets all available channels
-	if ($all == 2) {
-		@stream_list = ();
-		for (@stream_server) {
-			push(@stream_list,trim(substr($_,0,2)).".".trim(substr($_,3,5)).".".trim(substr($_,9,2)).".".substr($_,12,3));
-		}
-	}
-
-	my $date1 = sprintf("%d/%02d/%02d %02d:%02d:%02.0f",$y1,$m1,$d1,$h1,$n1,$s1);
-	my $date2 = sprintf("%d/%02d/%02d %02d:%02d:%02.0f",$y2,$m2,$d2,$h2,$n2,$s2);
-
-	for (@stream_list) {
-		my ($net,$sta,$loc,$cha) = split(/[\.:]/,$_);
-		my @chan = grep(/$net *$sta *$loc *$cha/,@stream_server);
-
-		if (@chan) {
-			my $start = substr($chan[0],18,24);
-			my $end = substr($chan[0],47,24);
-			if ($start le $date1 && $end ge $date2) {
-				if ($all) {
-					$loc = "";
-					$cha = "";
-				}
-				push(@streams,"$net\_$sta".($loc || $cha ? ":":"")."$loc$cha");
+		# all=2 : gets all available channels
+		if ($all == 2) {
+			@stream_list = ();
+			for (@stream_server) {
+				push(@stream_list,trim(substr($_,0,2)).".".trim(substr($_,3,5)).".".trim(substr($_,9,2)).".".substr($_,12,3));
 			}
 		}
-	}
-	my $command = "$slprgm -S \"".join(',',@streams)."\" -tw $t1:$t2 -o $tmpfile $host";
-	if (@streams) {
-		qx($command);
-	}
-	$datafile .= "_$s3";
 
-} else {
-	# ArcLink request
-	$host = $alsrv;
-	$aluser = "wo" if ($aluser eq "");
-	my ($fh, $reqfile) = tempfile($reqtemplate, DIR => $tmpdir);
-	my @streams;
+		my $date1 = sprintf("%d/%02d/%02d %02d:%02d:%02.0f",$y1,$m1,$d1,$h1,$n1,$s1);
+		my $date2 = sprintf("%d/%02d/%02d %02d:%02d:%02.0f",$y2,$m2,$d2,$h2,$n2,$s2);
 
-	# all=2 : gets all available channels
-	if ($all == 2) {
-		@streams = ("$t1 $t2 * * * *\n");
-	} else {
 		for (@stream_list) {
-			my ($net,$sta,$loc,$cha) = split(/\./,$_);
-			push(@streams,"$t1 $t2 ".($net ? $net:"*")." ".($sta ? $sta:"*")." ".($all==1 ? " * *":" $cha $loc")."\n");
+			my ($net,$sta,$loc,$cha) = split(/[\.:]/,$_);
+			my @chan = grep(/$net *$sta *$loc *$cha/,@stream_server);
+
+			if (@chan) {
+				my $start = substr($chan[0],18,24);
+				my $end = substr($chan[0],47,24);
+				if ($start le $date1 && $end ge $date2) {
+					if ($all) {
+						$loc = "";
+						$cha = "";
+					}
+					push(@streams,"$net\_$sta".($loc || $cha ? ":":"")."$loc$cha");
+				}
+			}
 		}
+		my $command = "$slprgm -S \"".join(',',@streams)."\" -tw $t1:$t2 -o $tmpfile $host";
+		if (@streams) {
+			qx($command);
+		}
+		$datafile .= "_$s3";
 	}
 
-	open(FILE, ">$reqfile") || die "$__{'Could not open'} $reqfile \n";
-	print FILE @streams;
-	close(FILE);
+	case "ArcLink" {
+		# ArcLink request
+		$host = $alsrv;
+		$aluser = "wo" if ($aluser eq "");
+		my ($fh, $reqfile) = tempfile($reqtemplate, DIR => $tmpdir);
+		my @streams;
 
-	my $command = "$WEBOBS{ARCLINKFETCH_PRGM} -u $aluser -a $alsrv -o $tmpfile $reqfile";
-	qx($command);
-	qx(rm -f $reqfile);
-	$datafile .= '_arclink';
+		# all=2 : gets all available channels
+		if ($all == 2) {
+			@streams = ("$t1 $t2 * * * *\n");
+		} else {
+			for (@stream_list) {
+				my ($net,$sta,$loc,$cha) = split(/\./,$_);
+				push(@streams,"$t1 $t2 ".($net ? $net:"*")." ".($sta ? $sta:"*")." ".($all==1 ? " * *":" $cha $loc")."\n");
+			}
+		}
 
+		open(FILE, ">$reqfile") || die "$__{'Could not open'} $reqfile \n";
+		print FILE @streams;
+		close(FILE);
+
+		my $command = "$WEBOBS{ARCLINKFETCH_PRGM} -u $aluser -a $alsrv -o $tmpfile $reqfile";
+		qx($command);
+		qx(rm -f $reqfile);
+		$datafile .= '_arclink';
+	}
+
+	case "FDSNWS-dataselect" {
+
+		my $date1 = sprintf("%d-%02d-%02dT%02d:%02d:%02.0f",$y1,$m1,$d1,$h1,$n1,$s1);
+		my $date2 = sprintf("%d-%02d-%02dT%02d:%02d:%02.0f",$y2,$m2,$d2,$h2,$n2,$s2);
+
+		my ($fh, $postfile) = tempfile($posttemplate, DIR => $tmpdir);
+		my @streams;
+
+		# all=2 : gets all available channels
+		if ($all == 2) {
+			@streams = ("$t1 $t2 * * * *\n");
+		} else {
+			for (@stream_list) {
+				my ($net,$sta,$loc,$cha) = split(/\./,$_);
+				if ($loc == '') {$loc = '--'}
+				push(@streams,($net ? $net:"*")." ".($sta ? $sta:"*").($all==1 ? " * *":" $loc $cha")." $date1 $date2\n");
+			}
+		}
+
+		open(FILE, ">$postfile") || die "$__{'Could not open'} $postfile \n";
+		print FILE @streams;
+		close(FILE);
+
+		my $command = "wget -nv -O $tmpfile --post-file $postfile $fdsnwsrv";
+		qx($command);
+		qx(rm -f $postfile);
+		$datafile .= '_fdsnws';
+	}
+
+	case "miniSEED" {
+		print $cgi->header(-charset=>'utf-8'),
+			$cgi->start_html('WEBOBS'),
+			$cgi->h3($__{'mseereq.pl error'}),
+			$cgi->p($__{'Sorry, miniSEED file direct access is not supported yet'}),
+			$cgi->button(-name=>'Back to form',-onClick=>'history.back()'),
+			$cgi->end_html();
+	}
+
+	case "Winston" {
+		print $cgi->header(-charset=>'utf-8'),
+			$cgi->start_html('WEBOBS'),
+			$cgi->h3($__{'miniSEED file error'}),
+			$cgi->p($__{'Sorry, Winston wave server access is not supported yet'}),
+			$cgi->button(-name=>'Back to form',-onClick=>'history.back()'),
+			$cgi->end_html();
+	}
 }
+
 
 # ---- now format/display $tmpfile
 #
@@ -288,4 +354,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
