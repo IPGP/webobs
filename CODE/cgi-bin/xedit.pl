@@ -58,9 +58,15 @@ Uses Vim addon.
 Optional customization variables in B<WEBOBS.rc> are shown below with their default value:
 (themes names are those from CodeMirror distribution, without their css suffix)   
 
-	XEDIT_ETHEME|ambiance      # codemirror theme when editing
-	XEDIT_BTHEME|neat          # codemirror theme when browsing
-	XEDIT_VMODE|vim            # automatically enter vim mode or not (any other value)
+    JS_EDITOR_EDIT_THEME|default    # codemirror theme when editing
+    JS_EDITOR_BROWSING_THEME|neat   # codemirror theme when browsing
+    JS_EDITOR_AUTO_VIM_MODE|no      # automatically enter vim mode or not (any other value)
+                                    #  True if value is 'true' or 'yes' (case insensitive),
+                                    #  False for any other value.
+
+For backwarkd ccompatibility with WebObs 2.1.4c, if the above variables are not
+defined, the following variables are used instead, respectively: XEDIT_ETHEME,
+XEDIT_BTHEME, XEDIT_VMODE (the latter accepts 'vim' as additional true value).
 
 =cut
 
@@ -86,11 +92,15 @@ use Locale::TextDomain('webobs');
 set_message(\&webobs_cgi_msg);
 
 my @lignes;
-my $XEtheme = $WEBOBS{XEDIT_ETHEME} // "ambiance";
-my $XBtheme = $WEBOBS{XEDIT_BTHEME} // "neat";
-my $Vmode   = $WEBOBS{XEDIT_VMODE}  // "vim";
 
-my $mode = "cmwocfg";
+# Code mirror configuration from JS_EDITOR_* variables in WEBOBS.rc.
+# (We also retain backward compatibility with WebObs <= v2.1.4c by reading
+# XEDIT_*)
+my $CM_edit_theme = $WEBOBS{JS_EDITOR_EDIT_THEME} // $WEBOBS{XEDIT_ETHEME} // "default";
+my $CM_browsing_theme = $WEBOBS{JS_EDITOR_BROWSING_THEME} // $WEBOBS{XEDIT_BTHEME} // "neat";
+my $CM_auto_vim_mode = $WEBOBS{JS_EDITOR_AUTO_VIM_MODE} // $WEBOBS{XEDIT_VMODE} // "yes";
+
+my $CM_language_mode = "cmwocfg";
 
 # ---- see what file has to be edited, and corresponding authorization for client
 #
@@ -127,6 +137,7 @@ if ($fs ne "") {
 				$admOK  = clientHasAdm(type=>"authmisc",name=>"$relfile");
 				unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
 				if ( (!-e $absfile) && $admOK ) { qx(/bin/touch $absfile); $fsmsg="New file" }
+                else { $fsmsg="$relfile"; }
 				if ( (!$editOK) && (!-e $absfile) ) { die "$relfile $__{'not found'} or $__{'not authorized'}" }
 			}
 		} else { die "$relfile $__{'not authorized'}" }
@@ -175,27 +186,18 @@ print "Content-type: text/html; charset=utf-8
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
 <HTML>
 <HEAD>
-<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
-<STYLE type=\"text/css\">
-	#ta {
-		border:none;
-	}
-	#statusbar {
-		border: solid 1px grey;
-		background-color: grey;
-		color: white;
-		font-size: 12px;
-	}
-</STYLE>
 <TITLE>WebObs xedit</TITLE>
-<script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
+<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
 ";
 # - page, codemirror defs
 print "<link rel=\"stylesheet\" href=\"/js/codemirror/lib/codemirror.css\">
-<link rel=\"stylesheet\" href=\"/js/codemirror/theme/$XEtheme.css\">
-<link rel=\"stylesheet\" href=\"/js/codemirror/theme/$XBtheme.css\">
+<link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_edit_theme.css\">
+<link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_browsing_theme.css\">
+<link rel=\"stylesheet\" href=\"/css/codemirror-wo.css\">
+
+<script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <script language=\"javascript\" type=\"text/javascript\" src=\"/js/codemirror/lib/codemirror.js\"></script>
-<script language=\"javascript\" type=\"text/javascript\" src=\"/js/$mode.js\"></script>
+<script language=\"javascript\" type=\"text/javascript\" src=\"/js/$CM_language_mode.js\"></script>
 <!-- <script src=\"/js/codemirror/addon/scroll/simplescrollbars.js\"></script> -->
 <script src=\"/js/codemirror/addon/search/searchcursor.js\"></script>
 <!-- <link rel=\"stylesheet\" href=\"/js/codemirror/addon/scroll/simplescrollbars.css\"> -->
@@ -205,18 +207,17 @@ print "<link rel=\"stylesheet\" href=\"/js/codemirror/lib/codemirror.css\">
 ";
 # - page, xedit scripts
 print "<script type=\"text/javascript\">
-var XCB = {
-	ETHEME: '$XEtheme',
-	BTHEME: '$XBtheme',
-	MODE:   '$mode',
-	VMODE:  '$Vmode',
-	READOK: $readOK,
-	ADMOK:  $admOK,
-	EDITOK: $editOK,
-	ME:     '$me' 
+var CODEMIRROR_CONF = {
+	READWRITE_THEME: '$CM_edit_theme',
+	READONLY_THEME: '$CM_browsing_theme',
+	LANGUAGE_MODE: '$CM_language_mode',
+	AUTO_VIM_MODE: '$CM_auto_vim_mode',
+	EDIT_PERM: ".($editOK || $admOK ? 1 : 0).",
+	FORM: '#theform',
+	POST_URL: '$me'
 };
 </script>
-<script src=\"/js/xedit.js\"></script>
+<script src=\"/js/cmtextarea.js\"></script>
 ";
 print "</HEAD>\n";
 # - page, body
@@ -227,24 +228,27 @@ print <<html;
 html
 # - page, edit or browse area
 print "<h3>$relfile</h3>"; 
-print "<form id=\"theform\" name=\"formulaire\" action=\"\" style=\"margin: 0px 0px 0px 10px; width: 600px;\">
+print "<form id=\"theform\" name=\"formulaire\" action=\"\" style=\"margin: 0px 0px 0px 10px; width: 650px;\">
 <input type=\"hidden\" name=\"fs\" value=\"$fs\">
 <input type=\"hidden\" name=\"action\" value=\"save\">
 <input type=\"hidden\" name=\"ts0\" value=\"$TS0\">\n";
 
 # - page, file contents textarea
-print "<TEXTAREA id=\"ta\" name=\"txt\"";
-print " readonly " if ($editOK || $admOK);
+print "<TEXTAREA id=\"textarea-editor\" name=\"txt\"";
+print " readonly " if (not ($editOK || $admOK));
 print ">$txt</TEXTAREA>\n";
 print "<div id=\"statusbar\">$fsmsg</div>";
 # - page, button(s) area
-print "<p align=center>";
-print "<input type=\"button\" id=\"bvim\" title=\"Vim On/Off\" value=\"$__{'Vim'}\" onClick=\"toggleVim();\">";
+print "<p align=center>\n";
+print "<span class=\"js-editor-controls\">\n";
+print "<input type=\"checkbox\" id=\"toggle-vim-mode\" title=\"$__{'Check to enable vim mode in the editor'}\" onClick=\"toggleVim();\"> ";
+print "<label for=\"toggle-vim-mode\" id=\"toggle-vim-mode-label\" title=\"$__{'Check to enable vim mode in the editor'}\">$__{'Use vim mode'}</label>\n";
+print "</span>\n";
 if ($editOK || $admOK) {
-	print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-	print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"postform();\">";
+	print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\">\n";
+	print "<input type=\"button\" class=\"submit-button\" value=\"$__{'Save'}\" onClick=\"postform();\">\n";
 } else {
-	print "<input type=\"button\" name=lien value=\"$__{'Quit'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
+	print "<input type=\"button\" name=lien value=\"$__{'Quit'}\" onClick=\"history.go(-1)\">\n";
 }
 print "</p>";
 print "</form>";

@@ -169,7 +169,7 @@ if ($QryParm->{'action'} eq 'update') {
 # ---- process (execute) sql update table 'groups' after user insert or update
 # ----------------------------------------------------------------------------
 if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $QryParm->{'tbl'} eq "user") {
-	my @gids = $cgi->param('gid');
+	my @gids = $cgi->multi_param('gid');
 	my $q0 = "insert into $WEBOBS{SQL_TABLE_GROUPS} values (\'+++\',\'$QryParm->{'uid'}\')";
 	my $q1 = "delete from $WEBOBS{SQL_TABLE_GROUPS} WHERE UID=\'$QryParm->{'uid'}\' AND GID != \'+++\'";
 	my @values = map { "('$_',\'$QryParm->{'uid'}\')" } @gids ;
@@ -184,7 +184,7 @@ if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $Q
 # ---- process (execute) sql update table 'groups' 
 # ----------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'updgrp') {
-	my @uids = $cgi->param('uid');
+	my @uids = $cgi->multi_param('uid');
 	my $q0 = "insert into $WEBOBS{SQL_TABLE_GROUPS} values (\'$QryParm->{'gid'}\',\'+++\')";
 	my $q1 = "delete from $WEBOBS{SQL_TABLE_GROUPS} WHERE GID=\'$QryParm->{'gid'}\' AND UID != \'+++\'";
 	my @values = map { "(\'$QryParm->{'gid'}\','$_')" } @uids ;
@@ -274,115 +274,188 @@ EOHEADER
 
 # ---- build users and groups 'select dropdowns contents' 
 # -----------------------------------------------------------------------------
-my $quusers  = "select distinct(UID) from $WEBOBS{SQL_TABLE_USERS} order by uid";
-@qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$quusers");
+my $quusers = "select distinct(UID),FULLNAME from $WEBOBS{SQL_TABLE_USERS} order by uid";
+@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$quusers");
 chomp(@qrs);
-my $selusers = ""; map { $selusers .= "<option>$_</option>" } @qrs; 
+my $selusers = "";
+for my $uid_name (@qrs) {
+	my ($uid, $name) = split(/\|/, $uid_name);
+	$selusers .= "<option value=\"$uid\">$uid &ndash; $name</option>";
+}
 
-my $qugrps  = "select distinct(GID) from $WEBOBS{SQL_TABLE_GROUPS} order by gid";
-@qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qugrps");
+my $qugrps = "select distinct(GID) from $WEBOBS{SQL_TABLE_GROUPS} order by gid";
+@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qugrps");
 chomp(@qrs);
 my $selgrps = ""; map { $selgrps .= "<option>$_</option>" } @qrs;  
 
 # ---- build 'users' table result rows 
 # -----------------------------------------------------------------------------
-my $qusers  = "select u.UID,FULLNAME,LOGIN,EMAIL,VALIDITY,group_concat(GID) AS groups";
-$qusers .= " from $WEBOBS{SQL_TABLE_USERS} u left join $WEBOBS{SQL_TABLE_GROUPS} g on (u.uid = g.uid)";
-$qusers .= " group by u.uid order by u.uid";
-@qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qusers");
+my $qusers  = "select u.UID,FULLNAME,LOGIN,EMAIL,VALIDITY,group_concat(GID) AS groups"
+			  ." from $WEBOBS{SQL_TABLE_USERS} u left join $WEBOBS{SQL_TABLE_GROUPS} g on (u.uid = g.uid)"
+			  ." group by u.uid order by u.uid";
+@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qusers");
 chomp(@qrs);
-my $dusers='';
-my $dusersCount=0; my $dusersId='';
+
+my $dusers = '';
+my $dusersCount = 0;
+my $dusersId = '';
+
 for (@qrs) {
-	(my $dusers_uid, my $dusers_fullname, my $dusers_login, my $dusers_email, my $dusers_validity, my $dusers_groups) = split(/\|/,$_);
-	$dusersCount++; $dusersId="udef".$dusersCount;
+	my ($dusers_uid, $dusers_fullname, $dusers_login, $dusers_email,
+		$dusers_validity, $dusers_groups) = split(/\|/,$_);
+	$dusersCount++;
+	$dusersId="udef".$dusersCount;
+
+	# Webobs owner and visitor user row should be grayed and have no edition/deletion link
+	my $tr_classes = '';
+	my $edit_link = '';
+	my $del_link = '';
 	if ($dusers_uid eq "!" || $dusers_uid eq "?" ) {
-		$dusers .= "<tr id=\"$dusersId\"><td class=\"tdlock\">";
-		$dusers .= "<td class=\"tdlock\">";
-		$dusers .= "<td class=\"tdlock\">$dusers_uid</td><td class=\"tdlock\">$dusers_fullname</td><td class=\"tdlock\">$dusers_login</td><td class=\"tdlock\">$dusers_email</td><td class=\"tdlock\">$dusers_groups</td><td class=\"tdlock\">$dusers_validity</td></tr>\n";
+		$tr_classes = "trlock";
 	} else {
-		$dusers .= "<tr id=\"$dusersId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"openPopupUser($dusersId,'$WEBOBS{SQL_TABLE_USERS}');return false\"><img title=\"edit user\" src=\"/icons/modif.png\"></a>";
-		$dusers .= "<td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"postDeleteUser($dusersId);return false\"><img title=\"delete user\" src=\"/icons/no.png\"></a>";
-		$dusers .= "<td>$dusers_uid</td><td nowrap>$dusers_fullname</td><td>$dusers_login</td><td>$dusers_email</td><td>$dusers_groups</td><td>$dusers_validity</td></tr>\n";
+		$edit_link = "<a href=\"#IDENT\" onclick=\"openPopupUser('#$dusersId');return false\">"
+					 ."<img title=\"edit user\" src=\"/icons/modif.png\"></a>";
+		$del_link = "<a href=\"#IDENT\" onclick=\"postDeleteUser('#$dusersId');return false\">"
+					."<img title=\"delete user\" src=\"/icons/no.png\"></a>";
 	}
+
+	# Build user table row (also used as input for the user edition form)
+	$dusers .= <<_EOD_;
+<tr id="$dusersId" class="$tr_classes">
+	<td style="width: 12px" class="tdlock">$edit_link</td>
+	<td style="width: 12px" class="tdlock">$del_link</td>
+	<td class="user-uid">$dusers_uid</td>
+	<td class="user-fullname" nowrap>$dusers_fullname</td>
+	<td class="user-login">$dusers_login</td>
+	<td class="user-email">$dusers_email</td>
+	<td class="user-groups">$dusers_groups</td>
+	<td class="user-validity">$dusers_validity</td>
+</tr>
+_EOD_
 }
 
 # ---- build 'unique groups' table result rows 
 # -----------------------------------------------------------------------------
-my $qugrps  = "select distinct(GID) ";
-$qugrps .= "from $WEBOBS{SQL_TABLE_GROUPS} order by gid";
-@qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qugrps");
+$qugrps = "select distinct(GID) from $WEBOBS{SQL_TABLE_GROUPS} order by gid";
+@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qugrps");
 chomp(@qrs);
-my $dugrps='';
-my $dugrpsCount=0; my $dugrpsId='';
-for (@qrs) {
-	#(my $dgrps_gid, my $dgrps_uid) = split(/\|/,$_);
-	$dugrpsCount++; $dugrpsId="nudef".$dugrpsCount;
-	$dugrps .= "<tr id=\"$dugrpsId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"postDeleteUGroup($dugrpsId);return false\"><img title=\"delete group\" src=\"/icons/no.png\"></a>";
-	$dugrps .= "<td class=\"tdlock\">$_</tr>\n";
-}
 
-# ---- build 'groups' table result rows 
-# -----------------------------------------------------------------------------
-my $qgrps  = "select GID,UID ";
-$qgrps .= "from $WEBOBS{SQL_TABLE_GROUPS} order by gid,uid";
-@qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qgrps");
-chomp(@qrs);
-my $dgrps='';
-my $dgrpsCount=0; my $dgrpsId='';
+my $dugrps = '';
+my $dugrpsCount = 0;
+my $dugrpsId = '';
+
 for (@qrs) {
-	(my $dgrps_gid, my $dgrps_uid) = split(/\|/,$_);
-	$dgrpsCount++; $dgrpsId="gdef".$dgrpsCount;
-	$dgrps .= "<tr id=\"$dgrpsId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"openPopupGroup($dgrpsId);return false\"><img title=\"edit grp\" src=\"/icons/modif.png\"></a>";
-	$dgrps .= "<td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"postDeleteGroup($dgrpsId);return false\"><img title=\"delete group\" src=\"/icons/no.png\"></a>";
-	$dgrps .= "<td>$dgrps_gid<td>$dgrps_uid</tr>\n";
+	$dugrpsCount++;
+	$dugrpsId="nudef".$dugrpsCount;
+	$dugrps .= <<_EOD_
+	<tr id="$dugrpsId">
+	<td style="width:12px" class="tdlock">
+		<a href="#IDENT" onclick="postDeleteUGroup('#$dugrpsId');return false">
+			<img title="delete group" src="/icons/no.png">
+		</a>
+	</td>
+	<td class="tdlock">$_</td>
+	</tr>
+_EOD_
 }
 
 # ---- build S'groups' table result rows 
 # -----------------------------------------------------------------------------
-my $Sqgrps  = "select gid,group_concat(uid) as uids ";
-$Sqgrps .= "from $WEBOBS{SQL_TABLE_GROUPS} group by gid order by gid";
-@qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$Sqgrps");
+my $Sqgrps  = "select gid,group_concat(uid) as uids "
+			  ."from $WEBOBS{SQL_TABLE_GROUPS} group by gid order by gid";
+@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$Sqgrps");
 chomp(@qrs);
-my $Sdgrps='';
-my $SdgrpsCount=0; my $SdgrpsId='';
+
+my $Sdgrps = '';
+my $SdgrpsCount = 0;
+my $SdgrpsId = '';
+
 for (@qrs) {
-	(my $Sdgrps_gid, my $Sdgrps_uids) = split(/\|/,$_);
-	$SdgrpsCount++; $SdgrpsId="gdef".$SdgrpsCount;
-	$Sdgrps .= "<tr id=\"$SdgrpsId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"openPopupGroup($SdgrpsId);return false\"><img title=\"edit grp\" src=\"/icons/modif.png\"></a>";
-	$Sdgrps .= "<td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"postDeleteUGroup($SdgrpsId);return false\"><img title=\"delete group\" src=\"/icons/no.png\"></a>";
-	$Sdgrps .= "<td>$Sdgrps_gid<td>$Sdgrps_uids</tr>\n";
+	my ($Sdgrps_gid, $Sdgrps_uids) = split(/\|/,$_);
+	$SdgrpsCount++;
+	$SdgrpsId="gdef".$SdgrpsCount;
+
+	$Sdgrps .= <<_EOD_;
+<tr id="$SdgrpsId">
+	<td style="width:12px" class="tdlock">
+		<a href="#IDENT" onclick="openPopupGroup('#$SdgrpsId');return false">
+			<img title="edit grp" src="/icons/modif.png">
+		</a>
+	</td>
+	<td style="width:12px" class="tdlock">
+		<a href="#IDENT" onclick="postDeleteUGroup('#$SdgrpsId');return false">
+			<img title="delete group" src="/icons/no.png">
+		</a>
+	</td>
+	<td class="group-gid">$Sdgrps_gid</td>
+	<td class="group-uids">$Sdgrps_uids</td>
+</tr>
+_EOD_
 }
 
 # ---- build 'unique evnt notifications' table result rows 
 # -----------------------------------------------------------------------------
 my $qunotf  = "select distinct(EVENT) ";
 $qunotf .= "from $WEBOBS{SQL_TABLE_NOTIFICATIONS} order by EVENT";
-@qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qunotf");
+@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qunotf");
 chomp(@qrs);
-my $dunotf='';
-my $dunotfCount=0; my $dunotfId='';
+
+my $dunotf = '';
+my $dunotfCount = 0;
+my $dunotfId = '';
+
 for (@qrs) {
-	#(my $dgrps_gid, my $dgrps_uid) = split(/\|/,$_);
-	$dunotfCount++; $dunotfId="nudef".$dunotfCount;
-	$dunotf .= "<tr id=\"$dunotfId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#POSTBOARD\" onclick=\"postDeleteUNotf($dunotfId);return false\"><img title=\"delete group\" src=\"/icons/no.png\"></a>";
-	$dunotf .= "<td class=\"tdlock\">$_</tr>\n";
+	$dunotfCount++;
+	$dunotfId="nudef".$dunotfCount;
+	$dunotf .= <<_EOD_;
+<tr id="$dunotfId">
+	<td style="width:12px" class="tdlock">
+		<a href="#POSTBOARD" onclick="postDeleteUNotf('#$dunotfId');return false">
+			<img title="delete group" src="/icons/no.png">
+		</a>
+	</td>
+<td class="tdlock unotif-event">$_</td>
+</tr>
+_EOD_
 }
 
 # ---- build 'notifications' table result rows 
 # -----------------------------------------------------------------------------
 my $qnotf  = "select EVENT,VALIDITY,UID,MAILSUBJECT,MAILATTACH,ACTION ";
 $qnotf .= "from $WEBOBS{SQL_TABLE_NOTIFICATIONS} order by 1";
-@qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qnotf");
+@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qnotf");
 chomp(@qrs);
-my $dnotf='';
-my $dnotfCount=0; my $dnotfId='';
+
+my $dnotf = '';
+my $dnotfCount = 0;
+my $dnotfId = '';
+
 for (@qrs) {
-	(my $dnotf_event, my $dnotf_valid, my $dnotf_mail, my $dnotf_mailsubj, my $dnotf_mailatt, my $dnotf_act) = split(/\|/,$_);
-	$dnotfCount++; $dnotfId="ndef".$dnotfCount;
-	$dnotf .= "<tr id=\"$dnotfId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#POSTBOARD\" onclick=\"openPopupNotf($dnotfId);return false\"><img title=\"edit grp\" src=\"/icons/modif.png\"></a>";
-	$dnotf .= "<td style=\"width:12px\" class=\"tdlock\"><a href=\"#POSTBOARD\" onclick=\"postDeleteNotf($dnotfId);return false\"><img title=\"delete notification\" src=\"/icons/no.png\"></a>";
-	$dnotf .= "<td>$dnotf_event<td>$dnotf_valid<td>$dnotf_mail<td>$dnotf_mailsubj<td>$dnotf_mailatt<td>$dnotf_act</tr>\n";
+	my ($dnotf_event, $dnotf_valid, $dnotf_mail, $dnotf_mailsubj,
+		$dnotf_mailatt, $dnotf_act) = split(/\|/,$_);
+
+	$dnotfCount++;
+	$dnotfId="ndef".$dnotfCount;
+	$dnotf .= <<_EOD_;
+<tr id="$dnotfId">
+	<td style="width:12px" class="tdlock">
+		<a href="#POSTBOARD" onclick="openPopupNotf('#$dnotfId');return false">
+			<img title="edit grp" src="/icons/modif.png">
+		</a>
+	</td>
+	<td style="width:12px" class="tdlock">
+		<a href="#POSTBOARD" onclick="postDeleteNotf('#$dnotfId');return false">
+			<img title="delete notification" src="/icons/no.png">
+		</a>
+	</td>
+	<td class="notif-event">$dnotf_event</td>
+	<td class="notif-validity">$dnotf_valid</td>
+	<td class="notif-emailuid">$dnotf_mail</td>
+	<td class="notif-emailsubj">$dnotf_mailsubj</td>
+	<td class="notif-emailattach">$dnotf_mailatt</td>
+	<td class="notif-action">$dnotf_act</td>
+</tr>
+_EOD_
 }
 
 # ---- build 'notifications' table result rows 
@@ -407,16 +480,34 @@ for my $an (qw(proc view form wiki misc)) {
 	$TA{$an}{table} = $WEBOBS{SQL_TABLE_AUTHWIKIS} if ($an eq "wiki") ;
 	$TA{$an}{table} = $WEBOBS{SQL_TABLE_AUTHMISC}  if ($an eq "misc") ;
 	$TA{$an}{qauth}  = "select UID,RESOURCE,AUTH from $TA{$an}{table} order by UID,RESOURCE";
-	my @qrs   = qx(sqlite3 $WEBOBS{SQL_DB_USERS} '$TA{$an}{qauth}');
+	my @qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} '$TA{$an}{qauth}');
 	chomp(@qrs);
-	$TA{$an}{dauth}='';
-	$TA{$an}{dauthCount}=0;
+
+	$TA{$an}{dauth} = '';
+	$TA{$an}{dauthCount} = 0;
+
 	for (@qrs) {
-		(my $dauth_uid, my $dauth_res, my $dauth_auth) = split(/\|/,$_);
-		$TA{$an}{dauthCount}++; my $dauthId="adef$an".$TA{$an}{dauthCount};
-		$TA{$an}{dauth} .= "<tr id=\"$dauthId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#AUTH\" onclick=\"openPopupAuth('$an',$dauthId);return false\"><img title=\"edit grp\" src=\"/icons/modif.png\"></a>";
-		$TA{$an}{dauth} .= "<td style=\"width:12px\" class=\"tdlock\"><a href=\"#AUTH\" onclick=\"postDeleteAuth('$an',$dauthId);return false\"><img title=\"delete autorisation\" src=\"/icons/no.png\"></a>";
-		$TA{$an}{dauth} .= "<td>$dauth_uid<td>$dauth_res<td>$dauth_auth</tr>\n";
+		my ($dauth_uid, $dauth_res, $dauth_auth) = split(/\|/,$_);
+
+		$TA{$an}{dauthCount}++;
+		my $dauthId="adef$an".$TA{$an}{dauthCount};
+		$TA{$an}{dauth} .= <<_EOD_;
+<tr id=\"$dauthId\">
+	<td style=\"width:12px\" class=\"tdlock\">
+		<a href=\"#AUTH\" onclick=\"openPopupAuth('$an', '#$dauthId');return false\">
+			<img title=\"edit grp\" src=\"/icons/modif.png\">
+		</a>
+	</td>
+	<td style=\"width:12px\" class=\"tdlock\">
+		<a href=\"#AUTH\" onclick=\"postDeleteAuth('$an', '#$dauthId');return false\">
+			<img title=\"delete autorisation\" src=\"/icons/no.png\">
+		</a>
+	</td>
+	<td class="auth-uid">$dauth_uid</td>
+	<td class="auth-res">$dauth_res</td>
+	<td class="auth-auth">$dauth_auth</td>
+</tr>
+_EOD_
 	}
 }
 
@@ -463,7 +554,8 @@ Identifications&nbsp;$go2top
 	<label>Validity:<span class="small">Y or N</span></label>
 	<input type="text" name="valid" value=""/><br/>
 	<p style="margin: 0px; text-align: center">
-		<input type="button" name="sendbutton" value="send" onclick="sendPopupUser(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
+		<input type="button" name="sendbutton" value="send" onclick="sendPopupUser(); return false;" />
+		<input type="button" value="cancel" onclick="closePopup(); return false" />
 	</p>
 	</form>
 	<form id="overlay_form_group" class="overlay_form" style="display:none">
@@ -478,7 +570,8 @@ Identifications&nbsp;$go2top
 	<!--<input type="text" name="uid" id="uid" value=""/><br/>-->
 	<select name="uid" id="uid" size="5" multiple>$selusers</select><br/> 
 	<p style="margin: 0px; text-align: center">
-		<input type="button" name="sendbutton" value="send" onclick="sendPopupGroup(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
+		<input type="button" name="sendbutton" value="send" onclick="sendPopupGroup(); return false;" />
+		<input type="button" value="cancel" onclick="closePopup(); return false" />
 	</p>
 	</form>
 
@@ -489,9 +582,17 @@ Identifications&nbsp;$go2top
 		<div class="dusers-container">
 			<div class="dusers">
 				<table class="dusers">
-				<thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupUser(-1);return false"><img title="define a new user" src="/icons/modif.png"></a>
-				<th style=\"width:12px\" class="tdlock">&nbsp;
-				<th>Uid</th><th>Name</th><th>Login</th><th>Email</th><th>Groups</th><th>Valid</th>
+				<thead>
+				<tr>
+					<th style=\"width:12px\"><a href="#IDENT" onclick="openPopupUser(); return false">
+						<img title="define a new user" src="/icons/modif.png"></a></th>
+					<th style=\"width:12px\" class="tdlock">&nbsp;</th>
+					<th>Uid</th>
+					<th>Name</th>
+					<th>Login</th>
+					<th>Email</th>
+					<th>Groups</th>
+					<th>Valid</th>
 				</tr></thead>
 				<tbody>
 				$dusers
@@ -508,7 +609,7 @@ Identifications&nbsp;$go2top
 		<div class="dugrps-container">
 			<div class="dugrps">
 				<table class="dugrps">
-				<thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupGroup(-1);return false"><img title="define new group/user" src="/icons/modif.png"></a>
+				<thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupGroup();return false"><img title="define new group/user" src="/icons/modif.png"></a>
 				<th style=\"width:12px\" class="tdlock">&nbsp;
 				<th>Gid<th>Uids
 				</tr></thead>
@@ -586,7 +687,7 @@ PostBoard subscriptions&nbsp;$go2top
 		<div class="dnotf-container">
 			<div class="dnotf">
 				<table class="dnotf">
-				<thead><tr><th style=\"width:12px\"><a href="#POSTBOARD" onclick="openPopupNotf(-1);return false"><img title="define new notification" src="/icons/modif.png"></a>
+				<thead><tr><th style=\"width:12px\"><a href="#POSTBOARD" onclick="openPopupNotf();return false"><img title="define new notification" src="/icons/modif.png"></a>
 				<th style=\"width:12px\" class="tdlock">&nbsp;
 				<th>Event<th>V<th>Uid<th>Mail<br>Subject<th>Mail<br>Attachm.<th>Action
 				</tr></thead>
@@ -637,7 +738,7 @@ EOPART2
 		<div class="dauth-container" style="float: left">
 			<div class="dauth">
 				<table class="dauth">
-				<thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i',-1);return false"><img title="define new authorization" src="/icons/modif.png"></a>
+				<thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/modif.png"></a>
 				<th style=\"width:12px\" class="tdlock">&nbsp;
 				<th>Uid<th>Rname<th>Auth
 				</tr></thead>
@@ -660,7 +761,7 @@ EOAUTH1
 		<div class="dauth-container" style="float: left">
 			<div class="dauth">
 				<table class="dauth">
-				<thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i',-1);return false"><img title="define new authorization" src="/icons/modif.png"></a>
+				<thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/modif.png"></a>
 				<th style=\"width:12px\" class="tdlock">&nbsp;
 				<th>Uid<th>Rname<th>Auth
 				</tr></thead>
@@ -688,7 +789,7 @@ sub dbu {
 	my $dbh = DBI->connect("dbi:SQLite:dbname=$WEBOBS{SQL_DB_USERS}", '', '') or die "$DBI::errstr" ;
 	my $rv = $dbh->do($_[0]);
 	$rv = 0 if ($rv == 0E0); 
-	$lastDBIerrstr = sprintf("(%d row%s) %s",$rv,($rv<=1)?"":"s",$DBI::errstr);
+	$lastDBIerrstr = sprintf("(%d row%s) %s", $rv, ($rv<=1)?"":"s", $DBI::errstr // '');
 	$dbh->disconnect();
 	return $rv;
 }
@@ -705,11 +806,11 @@ sub dbuow {
 		$rv = $dbh->do($_[2]);
 		$dbh->do($_[3]);
 		$rv = 0 if ($rv == 0E0);
-		$lastDBIerrstr = sprintf("(%d row%s) %s",$rv,($rv<=1)?"":"s",$DBI::errstr);
+		$lastDBIerrstr = sprintf("(%d row%s) %s", $rv, ($rv<=1) ? "" : "s", $DBI::errstr // '');
 		$dbh->commit();
 	};
 	if ($@) {
-        $rv = 0; 
+		$rv = 0;
 		$lastDBIerrstr = sprintf("(0 row) %s",$@);
 		$dbh->rollback();
 	}

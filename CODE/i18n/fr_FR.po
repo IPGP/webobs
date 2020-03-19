@@ -1323,6 +1323,14 @@ msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsqu
 msgid "help_node_status"
 msgstr "Status (en %): existence d&rsquo;&eacute;chantillons valides dans le dernier d&eacute;lai d&rsquo;acquisition pour tous les canaux"
 
+# formGRID.pl
+
+msgid "Use vim mode"
+msgstr "Utiliser le mode vim"
+
+msgid "Check to enable vim mode in the editor"
+msgstr "Cocher pour activer le mode vim dans l'éditeur"
+
 # vsearch.pl
 
 msgid "Grid Name"
