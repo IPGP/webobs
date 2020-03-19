@@ -101,11 +101,11 @@ my @datasrc = split(/;/,$SEFRAN3{DATASOURCE});
 my $sltos = $SEFRAN3{SEEDLINK_SERVER_TIMEOUT_SECONDS};
 my $slprgm = "$WEBOBS{PRGM_ALARM} ".($sltos > 0 ? $sltos:"5")." $WEBOBS{SLINKTOOL_PRGM}";
 if ($#datasrc eq 1 || $#datasrc eq 2) {
-	($rtformat,$rtsource) = split(/:\/\//,$datasrc[0]);
-	($arcformat,$arcsource) = split(/:\/\//,$datasrc[1]);
+	($rtformat,$rtsource) = split(/:\/\//,$datasrc[0],2);
+	($arcformat,$arcsource) = split(/:\/\//,$datasrc[1]),2;
 }
 if ($#datasrc eq 0) {
-	($arcformat,$arcsource) = split(/:\/\//,$datasrc[0]);
+	($arcformat,$arcsource) = split(/:\/\//,$datasrc[0],2);
 }
 
 # ---- calculates time limit to choose which protocol to use
@@ -244,13 +244,13 @@ switch ($method) {
 
 		my $date1 = sprintf("%d-%02d-%02dT%02d:%02d:%02.0f",$y1,$m1,$d1,$h1,$n1,$s1);
 		my $date2 = sprintf("%d-%02d-%02dT%02d:%02d:%02.0f",$y2,$m2,$d2,$h2,$n2,$s2);
-
 		my ($fh, $postfile) = tempfile($posttemplate, DIR => $tmpdir);
 		my @streams;
 
+		$host = $fdsnwsrv;
 		# all=2 : gets all available channels
 		if ($all == 2) {
-			@streams = ("$t1 $t2 * * * *\n");
+			@streams = ("* * * * $date1 $date2\n");
 		} else {
 			for (@stream_list) {
 				my ($net,$sta,$loc,$cha) = split(/\./,$_);
@@ -263,7 +263,7 @@ switch ($method) {
 		print FILE @streams;
 		close(FILE);
 
-		my $command = "wget -nv -O $tmpfile --post-file $postfile $fdsnwsrv";
+		my $command = "wget -nv -O $tmpfile --post-file $postfile $host";
 		qx($command);
 		qx(rm -f $postfile);
 		$datafile .= '_fdsnws';
