@@ -8,7 +8,7 @@ function h=target(x,y,s,c,m,w)
 %
 %	Author: F. Beauducel <beauducel@ipgp.fr>
 %	Created: 2003
-%	Updated: 2013-09-24
+%	Updated: 2020-03-21
 
 if nargin < 3
 	s = 8;
@@ -28,20 +28,21 @@ else
 	c = (c - 1)/w + 1;
 end
 
-hold_status = ishold;
+if ~isempty(x) && all(size(x)==size(y))
+	hold_status = ishold;
 
-b = 1 - .8*[1,1,1]/w;
+	b = 1 - .8*[1,1,1]/w;
 
-hh = zeros(2,1);
+	hh = zeros(2,1);
 
-hold on
-hh(1) = plot(x,y,m,'MarkerSize',s,'MarkerFaceColor',c,'MarkerEdgeColor',b,'Linewidth',s/5);
-hh(2) = plot(x,y,m,'MarkerSize',s + 2,'MarkerEdgeColor',.99*[1,1,1],'MarkerFaceColor','none');
+	hold on
+	hh(1) = plot(x,y,m,'MarkerSize',s,'MarkerFaceColor',c,'MarkerEdgeColor',b,'Linewidth',s/5);
+	hh(2) = plot(x,y,m,'MarkerSize',s + 2,'MarkerEdgeColor',.99*[1,1,1],'MarkerFaceColor','none');
 
-if ~hold_status
-	hold off
+	if ~hold_status
+		hold off
+	end
+	if nargout > 0
+		h = hh;
+	end
 end
-if nargout > 0
-	h = hh;
-end
-
