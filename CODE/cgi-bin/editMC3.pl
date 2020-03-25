@@ -236,7 +236,9 @@ if ($id_evt_modif) {
     }
     else {
       # otherwise, add to the list
-      push(@image_list, $imageSEFRAN);
+      my @new_image_list = $imageSEFRAN;
+      push(@new_image_list, @image_list);
+      @image_list = @new_image_list;
     }
 	}
 # case B) new event: reads all and compute next ID
