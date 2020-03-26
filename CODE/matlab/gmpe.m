@@ -56,7 +56,7 @@ switch lower(law)
 	case 'sadigh97'
 		att = exp(-0.624 + magn - 2.1*log(dist_hypo + exp(1.29649 + 0.250*magn)));
 		k = find(magn > 6.5);
-		att(k) = exp(-1.274 + 1.1*magn(k) - 2.1*log(dist_hypo + exp(-0.48451 + 0.524*magn(k))));
+		att(k) = exp(-1.274 + 1.1*magn(k) - 2.1*log(dist_hypo(k) + exp(-0.48451 + 0.524*magn(k))));
 	case 'ambraseys05'
 		att = 10.^(2.522 - 0.142*magn +(-3.184+0.314*magn)*log10(sqrt(dist_hypo.^2+7.6^2))-0.084)/9.81;
 	case 'kanno06'
@@ -66,4 +66,3 @@ switch lower(law)
 	otherwise
 		error('unknown law %s.',law);
 end
-
