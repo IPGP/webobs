@@ -537,10 +537,9 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	push(@logins,@ilogins) if (!($action =~ /new/i)); # adds inactive users
 	for my $ulogin (@logins) {
 		my $sel = "";
-		if ("@oper" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
-			$sel = 'selected';
-		}
-		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME} ($USERS{$ulogin}{UID})</option>\n";
+		my $uid = $USERS{$ulogin}{UID};
+		$sel = 'selected' if (grep(/^$uid$/, @oper) || ($action =~ /new/i && $ulogin eq $CLIENT));
+		print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
 	}
 	print "</SELECT>\n";
 	print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
@@ -548,9 +547,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved remotely (hold CTRL key for multiple selections)'}')\">\n";
 	for my $ulogin (@logins) {
 		my $sel = "";
-		if ("@roper" =~ /\Q$USERS{$ulogin}{UID}\E/ || ($action =~ /new/i && $ulogin eq $CLIENT)) {
-			$sel = 'selected';
-		}
+		$sel = 'selected' if (grep(/^$USERS{$ulogin}{UID}$/, @roper));
 		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME} ($USERS{$ulogin}{UID})</option>\n";
 	}
 	print "</SELECT></TR>\n";
