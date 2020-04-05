@@ -1,0 +1,512 @@
+#!/bin/bash
+#
+# This script builds the tarball archive for official WebObs release
+# along with signature files.
+#
+# Parameter: the version number to use:
+#  Examples: 1.2.3, 1.2.3-beta, etc.
+#  Version format should follow Semantic Versioning
+#  (see https://semver.org/).
+#
+# Note: this script uses as much git plumbing commands as possible.
+#  See git glossary for definition:
+#  https://git.wiki.kernel.org/index.php/GitGlossary#plumbing
+#  https://git.wiki.kernel.org/index.php/GitGlossary#porcelain
+#
+# Original author (for SVN): Didier Lafon and François Beauducel
+#      Rewritten for git by: Xavier Béguin and François Beauducel
+#
+# Creation date (new version): July 2018
+#      Last modification date: December 2018
+#
+
+SCRIPT_NAME=$(basename $0)
+SCRIPT_DIR=$(dirname $0)
+
+# Source some useful functions
+. $SCRIPT_DIR/../SETUP/dutils.sh
+
+# Script argument: version of the release
+# Should be something like X.Y.Z or similar
+RELEASE_VERSION="$1" 
+
+# Prefix to use for the subdirectory and tar archive filename
+RELEASE_PREFIX="WebObs-"
+
+# The full label for the release
+RELEASE_LABEL="${RELEASE_PREFIX}${RELEASE_VERSION}"
+
+# Directory in which to extract archive from repository before creating the tar
+# (could be different that RELEASE_LABEL and this is more explicit)
+RELEASE_DIR="$RELEASE_LABEL"
+
+# Prefix for git tag (e.g. 'v' to use 'vX.Y.Z')
+TAG_PREFIX="v"
+
+# The tag label to use
+RELEASE_TAG="$TAG_PREFIX$RELEASE_VERSION"
+
+# The archive and signature filenames
+ARCHIVE_TAR_FILENAME="$RELEASE_LABEL.tar.gz"
+ARCHIVE_MD5_FILENAME="$ARCHIVE_TAR_FILENAME.md5"
+ARCHIVE_SHA1_FILENAME="$ARCHIVE_TAR_FILENAME.sha1"
+ARCHIVE_SHA512_FILENAME="$ARCHIVE_TAR_FILENAME.sha512"
+
+# File in the repository keeping the list of files ignored by git to 
+# be added to the exported archive (one file or directory per line).
+# Paths should be relative to the git repository top directory.
+#  Note: the relative path is recreated in the target directory:
+#  e.g. "path/to/dir/file" will be copied as path/to/dir/file in the archive.
+ARCHIVE_ADDITIONAL_FILE=".package_add"
+
+# Set to Y to offer commit of generated archive and signature files.
+#  Note: if set to N, tag creation will also not be offered, as the
+#  tag should probably point to the commit providing the archive files
+#  (anyway, the user will decide and proceed manually).
+ALLOW_COMMIT=${ALLOW_COMMIT:-Y}
+
+# Set to Y to push to upstream after archive and tag commit
+# (only if commit and tag are made).
+ALLOW_PUSH=${ALLOW_PUSH:-Y}
+
+# Subdirectory of the git top level directory where to write
+# the generated archive and signatures
+ARCHIVES_SUBDIR="Releases"
+
+# Name of the git remote
+ORIGIN="origin"
+
+# Use vi if the standard $EDITOR environment variable is not set
+EDITOR=${EDITOR:-vi}
+
+
+
+function usage() {
+  cat <<__EOD__
+Usage: $0 <release-version>
+
+Builds WebObs release package.
+
+Example:
+  $0 1.2.3-beta
+
+  Called from a valid WebObs git working directory, this will build
+  $ARCHIVES_SUBDIR/${RELEASE_PREFIX}1.2.3-beta.{tar.gz,md5,sha1} from HEAD.
+
+  Depending on user interactive choices, this script can optionnally:
+    - use an existing tag instead of HEAD for the export
+    - commit files $ARCHIVES_SUBDIR/$RELEASE_PREFIX-1.2.3-beta.{tar.gz,md5,sha1}
+    - create git annotated tag ${TAG_PREFIX}1.2.3-beta to the generated commit
+    - push HEAD to upstream to publish new commit and tag
+
+__EOD__
+}
+
+
+function log() {
+  # Show script progression
+  echo -e "\n-- $@"
+}
+
+
+function log_err() {
+  # Print script error to stderr
+  echo "ERROR: $@" >&2
+}
+ 
+
+function ask() {
+  # Prompt the user with the string "$1 " and read his input.
+  # If no input is provided (user hits 'enter' immediately), 
+  # the default answer of $2 (or 'y' if not provided) is considered.
+  # $3 can be provided to provide a pattern to match answers that return 0.
+  #
+  # Returns 0 if user enters a character matching the regular expression "$3"
+  # ("[yY]" by default) or if user entered nothing and $2 matches $3.
+  # Returns 1 otherwise.
+  local prompt="${1:-Are you sure? [Y/n]}" default="${2:-y}" true_ans="${3:-[yY]}" ans
+  read -r -p "$prompt " ans
+  [[ -z "$ans" ]] && ans="$default"
+  [[ $ans =~ ^$true_ans$ ]]
+  return $?
+}
+
+
+function is_work_tree_clean() {
+  # Returns 0 if the working tree is clean, 1 otherwise.
+  # Inspired by https://gist.github.com/ssbarnea/6089714
+
+  # Refresh to see if merges or updates are needed
+  git update-index -q --ignore-submodules --refresh
+  # Check for unstaged changes in the working tree
+  git diff-files --quiet --ignore-submodules || return 1
+  # Check for uncommitted changes in the index
+  git diff-index --cached --quiet --ignore-submodules HEAD -- || return 1
+  return 0
+}
+
+
+## Start main execution
+
+if [ -z "$RELEASE_VERSION" ]; then
+  # Display usage and exit if no argument was provided
+  usage
+  exit 1
+fi
+
+log "Checking git environment"
+
+# Abort if we're not in a git repository
+GIT_TOP_DIR=$(git rev-parse --show-toplevel 2> /dev/null)
+if [[ $? != 0 ]]; then
+  log_err "working directory doesn't look like a valid git repository. Exiting."
+  exit 1
+fi
+
+# Change directory to top level and check if it looks like a WebObs repository
+cd $GIT_TOP_DIR
+if ! [[ -d CODE/cgi-bin && -d PACK && -d SETUP/CONF ]]; then
+  log_err "working directory doesn't look like a WebObs repository. Exiting."
+  exit 1
+fi
+
+# Abort if the current branch is not master
+if [[ $(git rev-parse --abbrev-ref HEAD) != "master" ]]; then
+  log_err "the current branch is not 'master'. Exiting."
+  exit 1
+fi
+
+# Abort if release-name.tar.gz is already present
+if [[ -d $ARCHIVES_SUBDIR/$ARCHIVE_TAR_FILENAME ]]; then
+  log_err "$ARCHIVE_TAR_FILENAME already exists in $ARCHIVES_SUBDIR. Exiting."
+  exit 1
+fi
+
+# If tag already exists let user choose between HEAD and tag reference
+if git show-ref --quiet --tags $RELEASE_TAG; then
+
+  echo "Tag reference $RELEASE_TAG already exists"
+  if ask "Build package from tag $RELEASE_TAG instead of HEAD [Y/n]?"
+  then
+    # Use the tagged revision as source for the release
+    SRC_REV="TAG"
+  else
+    # Use HEAD as source for the release
+    SRC_REV="HEAD"
+
+    # To avoid problems, abort if the working tree is not clean,
+    # i.e. if there is either:
+    # - uncommited changes in the index (user should do a git commit),
+    # - or existing changes in working directory (user should either add+commit
+    #   or stash the changes).
+    if ! is_work_tree_clean; then
+      log_err "please commit index or stash changes in working directory. Exiting."
+      exit 1
+    fi
+
+    # Check if we are not behind the remote origin (i.e. if $ORIGIN/master have
+    # commits we don't have).  First fetch objects from the remote origin so
+    # we can compare remote commits.
+    log "Checking $ORIGIN for new commits"
+    echo "Fetching objects from $ORIGIN..."
+    git fetch $ORIGIN > /dev/null
+
+    if [[ -n "$(git rev-list $ORIGIN..HEAD)" ]]; then
+      echo "Your local repository branch is behind $ORIGIN"
+      if ! ask "Do you want to continue anyway [y/N]?" "n"; then
+        # Remote as unknown commits: offer to quit here to deal with the
+        # situation.
+        echo "Ok, exiting here. You should run 'git pull'."
+        exit 0
+      fi
+      echo "Ok, continuing anyway."
+    else
+      echo "Ok, looks good."
+    fi
+  fi  # end confirm using tagged ref instead of HEAD as source
+
+else
+  # The tag doesn't exist yet: use HEAD and offer to create the tag
+  SRC_REV="HEAD"
+
+  # Ask if user wants us to create the tag (only if we can also commit)
+  if [[ "$ALLOW_COMMIT" == "Y" ]] \
+    && ask "Will you want to create tag $RELEASE_TAG after archive creation [Y/n]?"
+  then
+    # We'll create the tag after changes confirmation
+    CREATE_GIT_TAG="Y"
+  else
+    CREATE_GIT_TAG="N"
+  fi
+fi
+
+# Display actions and ask for user confirmation
+function display_option() {
+  local value="$1" y_value="${2:-Y}" y_msg="${3:-yes}" n_msg="${4:-no}"
+  [[ $value == "$y_value" ]] && echo "$y_msg (after confirmation)" || echo "$n_msg"
+}
+cat <<__EOD__
+
+-- Preparing to execute the following actions:
+
+ Export from...
+            git ref: $(display_option $SRC_REV "HEAD" \
+                       "HEAD" "tag reference '$RELEASE_TAG'")
+    to subdirectory: $RELEASE_DIR
+ 
+ And copy additional files listed in: $ARCHIVE_ADDITIONAL_FILE
+
+ Using this export, generate...
+        tar archive: $ARCHIVES_SUBDIR/$ARCHIVE_TAR_FILENAME
+      MD5 signature: $ARCHIVES_SUBDIR/$ARCHIVE_MD5_FILENAME
+     SHA1 signature: $ARCHIVES_SUBDIR/$ARCHIVE_SHA1_FILENAME
+   SHA512 signature: $ARCHIVES_SUBDIR/$ARCHIVE_SHA512_FILENAME
+ [paths relative to the top level directory of the repository]
+ 
+ commit these files: $(display_option $ALLOW_COMMIT)
+ create version tag: $(display_option $CREATE_GIT_TAG "Y" "$RELEASE_TAG")
+
+__EOD__
+
+if ! ask "Do you agree to execute the above actions? [y/N]" n; then
+  # User chose not to confirm action
+  echo "Ok, actions cancelled. Exiting."
+  exit 0
+fi
+
+# Remove any left over release files
+rm -rf "$ARCHIVES_SUBDIR/$RELEASE_DIR"
+rm -f "$ARCHIVES_SUBDIR/$ARCHIVE_TAR_FILENAME"  \
+      "$ARCHIVES_SUBDIR/$ARCHIVE_SHA1_FILENAME" \
+      "$ARCHIVES_SUBDIR/$ARCHIVE_MD5_FILENAME"  \
+      "$ARCHIVES_SUBDIR/$ARCHIVE_SHA512_FILENAME"
+
+# Store the target directory in a variable for brievety
+archive_dir="$ARCHIVES_SUBDIR/$RELEASE_DIR"
+# Create the directory
+mkdir -p "$archive_dir" \
+  || { log_err "Unable to create $archive_dir. Exiting."; exit 1; }
+
+# Create the temporary file for manifest
+manifest_filename=$(mktemp -t "${RELEASE_PREFIX}-MANIFEST-XXXXX")
+
+# The -e option ends the script in case of error
+set -e
+# This EXIT trap removes temporary files at script exit (error or not)
+trap "rm -rf '$archive_dir'; rm -f '$manifest_filename'; echo '[Exiting: temporary files removed]' >&2" EXIT
+
+# Determine the exact git revision to export
+if [[ "$SRC_REV" == "HEAD" ]]; then
+  source_rev="HEAD"
+else  # SRC_REV == "TAG"
+  source_rev="$RELEASE_TAG"
+fi
+
+# Export from repository
+log "Exporting archive to $archive_dir"
+# Tip: use the .gitattributes file to exclude files from the archive
+# using the 'export-ignore' attribute. See git-archive(1) and gitattributes(1).
+git archive --format=tar $source_rev | (cd "$archive_dir" && tar xf -)
+
+# Copy additional ignored files
+log "Copying additional files to $archive_dir"
+if [[ -r $ARCHIVE_ADDITIONAL_FILE ]]; then
+  rsync -ar --files-from=$ARCHIVE_ADDITIONAL_FILE ./ $archive_dir
+else
+  echo "Cannot read additional file list from $ARCHIVE_ADDITIONAL_FILE_LIST"
+  if ! ask "Do you want to continue anyway [y/N]?" "n"; then
+    echo "Ok, exiting here."
+    exit 1
+  fi
+fi
+
+log "Editing package contents"
+# Update VERSION variable in exported WEBOBS.rc
+# Note (XB): IMHO it would be preferable to use $RELEASE_VERSION here
+# and let WebObs scripts add 'WebObs-' prefix in relevant places.
+sed -i -e "s/^VERSION.*$/VERSION|$RELEASE_LABEL/" $archive_dir/SETUP/CONF/WEBOBS.rc
+echo "Changed VERSION in $archive_dir/SETUP/CONF/WEBOBS.rc"
+
+# Build list of required perl modules used by scripts in cgi-bin
+log "Scanning perl modules dependency"
+#$archive_dir/PACK/fpm $archive_dir/CODE/cgi-bin
+PACK/fpm $archive_dir/CODE/cgi-bin
+
+# Create + optionally edit the SETUP/README-X.Y.Z file
+#cp $archive_dir/PACK/README $archive_dir/README
+#cp PACK/README $archive_dir/
+cp README release-notes.md $archive_dir/
+
+# Get the latest tag for use as a default starting point for log history in the
+# README. To keep things simple, we simply seek the latest tag that does
+# not correspond to the current release.
+# Note: this is only a hint for user selection: if user have created other tags
+# using the same prefix, our guess might be wrong.
+while read tag; do
+  if [[ $tag != "$RELEASE_TAG" ]]; then
+    previous_tag=$tag
+    break
+  fi
+done <<< $(git for-each-ref refs/tags/${TAG_PREFIX}* \
+            --sort=-creatordate --format="%(refname:strip=2)")
+# If no previous tag was found, use 0 to indicate beginning of log history
+[ -z "$previous_tag" ] && previous_tag=0
+
+# Get the end of the revision range for log history
+if [[ $SRC_REV == "HEAD" ]]; then
+  stop_rev='HEAD'
+else
+  stop_rev="$RELEASE_TAG"
+fi
+
+# Ask the user for the starting reference for log history
+# to write to the release notes (offer the latest tag as default).
+log "Initializing release notes with latest commit messages"
+echo "  Please specify the starting point of the log history to include:"
+echo "  logs will be selected starting at the commit following the provided"
+echo "  commit id or tag and stopping at $stop_rev included."
+echo "  ('..$stop_rev' will be added to form a revision range for 'git log')"
+echo "  Ex: enter 'vX.Y.Z' or '808a984c3' (use '0' to start at beginning of the log history)"
+while [[ "$start_rev" != 0 ]] \
+  && ! git rev-parse --verify --quiet $start_rev > /dev/null
+do
+  [[ -n "$start_rev" ]] \
+    && echo -e "\nCould not find the specified revision. Please specify a valid commit id or a tag."
+  start_rev=$(readkbn "Starting revision for log history (hit enter to use default [$previous_tag]):")
+  [[ -z "$start_rev" ]] && start_rev=$previous_tag
+done
+[[ "$start_rev" == 0 ]] && start_rev=""  # empty value will select all history below
+
+# Print log history to the release notes file
+separation_line=$(printf "%-100s\n" | tr " " "-")
+(
+  echo $separation_line
+  echo -e "Commit logs for WebObs $RELEASE_VERSION:\n"
+  git rev-list --no-merges --format=medium ${start_rev:+$start_rev..}$stop_rev \
+    | sed -r '/^(Author:|Date:)/d'
+  echo $separation_line
+) >> $archive_dir/README
+
+# Propose manual edition of the release notes
+if ask "Edit the release notes file? [Y/n]"; then
+  $EDITOR $archive_dir/README
+  echo "[you've exited $EDITOR; continuing execution of '$SCRIPT_NAME $@']"
+fi
+
+# Build manifest file. User may also remove undesired internals from it ;-)
+# (git archive removed the .git directory and files that have
+#  the 'export-ignore' attribute in .gitattribute)
+log "Creating manifest file"
+( cd $ARCHIVES_SUBDIR && \
+  find "$RELEASE_DIR" -type f -o -type l \
+    | sed "\|^$RELEASE_DIR/PACK|d; \|^$RELEASE_DIR/CODE/cgi-bin/porting|d; \|^$RELEASE_DIR/CODE/shells/porting|d; \|^$RELEASE_DIR/DOC/devtips|d" \
+    | sort \
+) > "$manifest_filename"
+
+if ask "Edit the manifest file to check/add/remove files to be packaged? [Y/n]"
+then
+  $EDITOR "$manifest_filename"
+  echo "[you've exited $EDITOR; continuing execution of '$SCRIPT_NAME $@']"
+fi
+
+# Create tar archive
+log "Building tar archive and checksum files"
+echo -n "Creating $ARCHIVES_SUBDIR/$ARCHIVE_TAR_FILENAME... "
+( cd $ARCHIVES_SUBDIR && \
+  tar czf "./$ARCHIVE_TAR_FILENAME" \
+    --owner=0 --group=0 --numeric-owner --no-recursion \
+    --verbatim-files-from --files-from="$manifest_filename" )
+echo "done."
+
+if [[ ! -f "./$ARCHIVES_SUBDIR/$ARCHIVE_TAR_FILENAME" ]]; then
+  log_err "something went wrong. Archive file could not be created. Exiting."
+fi
+
+# Create checksums files
+for checksum in \
+  "md5sum $ARCHIVE_MD5_FILENAME" \
+  "sha1sum $ARCHIVE_SHA1_FILENAME" \
+  "sha512sum $ARCHIVE_SHA512_FILENAME"
+do
+  read sum output <<< $checksum
+  echo -n "Computing $sum to $output... "
+  eval "$sum -b './$ARCHIVES_SUBDIR/$ARCHIVE_TAR_FILENAME' > './$ARCHIVES_SUBDIR/$output'"
+  echo "done."
+  # Check that the files are really present
+  if [[ ! -f "./$ARCHIVES_SUBDIR/$output" ]]; then
+    log_err "something went wrong. Checksum file $output not found. Exiting."
+    exit 1
+  fi
+done
+
+log "Created files:"
+ls -dlh "$archive_dir"*
+
+# Commit the files if we want it and user confirms
+commit_done=0
+if [[ "$ALLOW_COMMIT" == "Y" ]]; then
+  log "Committing release archive file and checksums"
+  archive_files=""
+  for f in "$ARCHIVE_TAR_FILENAME" "$ARCHIVE_MD5_FILENAME" \
+    "$ARCHIVE_SHA1_FILENAME" "$ARCHIVE_SHA512_FILENAME"
+  do
+    archive_files+="./$ARCHIVES_SUBDIR/$f "
+  done
+  if ask "Commit release archive files now? [y/N]" n; then
+    # We should probably use plumbing commands here instead
+    git add $archive_files
+    git commit -m "Add release package for WebObs $RELEASE_VERSION"
+    commit_done=1
+  else
+    echo "Ok, not committing generated files."
+    echo "You should do it later using a command like this:"
+    echo "  git commit -m 'Add release package for WebObs $RELEASE_VERSION' \\"
+    echo "      $archive_files"
+  fi
+fi
+
+# Create git tag ref after this commit (if we did commit)
+# and before the possible push (so the tag is sent upstream).
+tag_done=0
+if [[ "$CREATE_GIT_TAG" == "Y" && $commit_done == 1 ]]; then
+  log "Creating tag reference $RELEASE_TAG"
+  git tag -a "$RELEASE_TAG" -m "Release $RELEASE_VERSION"
+  echo "Tag $RELEASE_TAG created with message 'Release $RELEASE_VERSION'."
+  tag_done=1
+else
+  log "Tag reference $RELEASE_TAG"
+  echo "Please create tag '$RELEASE_TAG' later using something like:"
+  echo "  git tag -a '$RELEASE_TAG' -m 'Release $RELEASE_VERSION'"
+fi
+
+# Push repository if we want it, if we did commit and tag,
+# and if user confirms.
+log "Pushing HEAD to $ORIGIN"
+push_cmd="git push -u $ORIGIN --follow-tags"
+push_done=0
+if [[ "$ALLOW_PUSH" == "Y" && $commit_done == 1 && $tag_done == 1 ]] \
+    && ask "Push HEAD and tags to $ORIGIN now? [Y/n]"
+then
+  if is_work_tree_clean; then
+    log "Pushing $RELEASE_TAG to $ORIGIN"
+    echo $push_cmd
+    push_done=1
+  else
+    log_err "cannot push: index not empty or working directory not clean."
+    echo "After cleaning, you can push to upstream using something like:"
+    echo "  $push_cmd"
+    exit 1
+  fi
+fi
+
+# If we did not push, display the command to be used
+if [[ $push_done == 0 ]]; then
+  echo "Not ready to push to upstream yet."
+  echo "You can do it using something like:"
+  echo "  $push_cmd"
+fi
+
+
+echo -e "\nExecution of '$SCRIPT_NAME' finished."
+# Note: at this stage, cleaning is done by the EXIT trap
+#       that removes $manifest_filename and $archive_dir.
