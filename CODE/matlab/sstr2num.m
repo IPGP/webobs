@@ -5,9 +5,10 @@ function x=sstr2num(s)
 %
 %	SSTR2NUM('') returns NaN and not empty like STR2NUM.
 %
-%	Note: This is for security purpose: str2num uses eval function which is unsecure.
-%	Letters are still allowed for functions, but since quote and exclamation is
-%	forbidden, it avoids possibility of calling any system command.
+%	Note: This is for security purpose: str2num uses eval function which is 
+%	unsecure. Letters are still allowed for functions, but since quote and 
+%	exclamation point are forbidden, it avoids possibility of calling any system 
+%	command.
 %
 %
 %	Author: F. Beauducel / WEBOBS
