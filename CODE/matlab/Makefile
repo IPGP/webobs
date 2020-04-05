@@ -5,6 +5,7 @@ MCC64 := /usr/local/MATLAB/R2011b/bin/mcc
 MCCmac := /Applications/MATLAB_R2011b.app/bin/mcc
 OPT32 := -glnx86
 SRC := .
+TMP := /tmp/mcc
 
 allprocs: genplot gnss meteo waters afm jerk hypomap tremblemaps extenso naqssohplot music3c tilt volcgas raingauge helicorder rsam sara mc3stats
 allmaps: locastat gridmaps gnss hypomap tremblemaps extenso tilt rsam
@@ -20,5 +21,6 @@ OUT = $(OUT$(arch))
 clean:
 
 %: $(SRC)/superprocs/%.m
-	$(MCC) $(OPT) -m -R -nodisplay -d $(OUT) $<
-	chmod -R a+x $(OUT)/*$@*
+	mkdir -p $(TMP)
+	$(MCC) $(OPT) -m -R -nodisplay -d $(TMP) $<
+	mv -f $(TMP)/$(@F) $(OUT)/
