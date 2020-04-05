@@ -112,9 +112,12 @@ LIST_TITLE2|{\bf(and maximum)}
 LIST_OUTOF|{\bfOut of ${AREA}}
 LIST_UNFELT1|not felt in the cities
 LIST_UNFELT2|of ${AREA}
+
 TABLE_HEADERS|Perceived Shaking,Potential Damage,Acceleration (mg),Intensiy
+TABLE_WHITE_MSK|10:12
 FOOTNOTE1|(*) {\bfmg} = "milli G" is a physical unit for acceleration and equals one thousandth of the earth gravity.
 FOOTNOTE2|Dashed line shows potential limit of the felt event zone.
+
 LESS_1KM_TEXT|less than 1 km
 ADDITIONAL_TEXT|
 GSE_TITLE|${REGION}: $quake_strength $quake_type $epicentral $azimuth of $city ($region)

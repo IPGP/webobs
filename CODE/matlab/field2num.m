@@ -30,7 +30,7 @@ function y = field2num(x,f,y0,varargin)
 %
 %	 Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2015-09-07 at Pos Dukono, Halmahera Utara (Indonesia)
-%	Updated: 2019-03-17
+%	Updated: 2020-04-05
 
 D = struct('s',1/86400,'n',1/1440,'h',1/24,'d',1,'w',7,'m',30,'y',365.25);
 
@@ -60,11 +60,12 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 		% colormap name or .cpt filename
 		elseif ~isempty(regexp(f,'COLORMAP$'))
 			if ~isempty(regexpi(val,'\.cpt$')) && exist(val,'file')
-				y = cptcmap(val);
+				y = cpt2cmap(val);
 			else
 				y = sstr2num(val);
 				if size(y,2) ~= 3
 					y = jet(256);
+					fprintf('WEBOBS{field2num}: ** WARNING ** cannot import %s colormap. Use defaut...\n',f);
 				end
 			end
 
