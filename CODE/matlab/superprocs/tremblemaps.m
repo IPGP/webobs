@@ -120,7 +120,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2019-12-05
+%	Updated: 2020-04-05
 
 
 WO = readcfg;
@@ -155,6 +155,7 @@ end
 % colormap options
 cmap = field2num(P,'COLORMAP',jet(256));
 amap = field2num(P,'COLORMAP_ALPHA',[0,1]);
+twmsk = field2num(P,'TABLE_WHITE_MSK',10:12);
 
 forced = isok(P,'FELT_FORCED',0);
 mskmin = field2num(P,'FELT_MSK_MIN',2);
@@ -620,7 +621,11 @@ for n = 1:length(t)
 			    otherwise
 				ss = msk2str(ii);
 			    end
-			    text(xx,.5/4,ss,'FontWeight','bold','HorizontalAlignment','center','VerticalAlignment','middle','FontSize',9);
+			    sc = zeros(1,3); % normal black color
+			    if any(ii == twmsk)
+				    sc = .99*ones(1,3);
+			    end
+			    text(xx,.5/4,ss,'Color',sc,'FontWeight','bold','HorizontalAlignment','center','VerticalAlignment','middle','FontSize',9);
 			end
 			text(0,0,{P.FOOTNOTE1,P.FOOTNOTE2},'HorizontalAlignment','left','VerticalAlignment','top','FontSize',7);
 			hold off
