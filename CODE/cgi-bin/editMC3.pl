@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl 
 
 =head1 NAME
 
@@ -94,6 +94,7 @@ set_message(\&webobs_cgi_msg);
 $|=1;
 $ENV{LANG} = $WEBOBS{LOCALE};
 my $editOK = 0;
+my @image_list;
 
 # ---- get query-string  parameters
 my $s3       = $cgi->url_param('s3');
@@ -216,6 +217,8 @@ my $id_evt;
 # case A) existing event (modification or delete): reads all but concerned ID
 #
 if ($id_evt_modif) {
+	# Get the event from @lignes
+	my @ligne = grep { /^$id_evt_modif\|/ } @lignes;
 	# Remove the event from @lignes
 	@lignes = grep { $_ !~ /^$id_evt_modif\|/ } @lignes;
 	if ($delete > 0) {
@@ -223,23 +226,23 @@ if ($id_evt_modif) {
 		$id_evt = -($id_evt_modif);
 		print "<P><B>Delete/recover existing event (in/from trash):</B> $id_evt</P>";
 	} else {
-    $id_evt = $id_evt_modif;
+		$id_evt = $id_evt_modif;
 		print "<P><B>Modifying existing event:</B> $id_evt</P>";
-    # read existing line
-  	my @line_values = split(/\|/,$line);
-    @image_list = split(/,/,@line_values[14]);
-    # check if previous image was at the same minute
-    my $idx = first { substr($imageSEFRAN,0,-6) eq substr($image_list[$_],0,-6) } 0..$#image_list;
-    if(defined $idx) {
-      # if found, update image name
-      splice(@image_list,$idx,1,$imageSEFRAN);
-    }
-    else {
-      # otherwise, add to the list
-      my @new_image_list = $imageSEFRAN;
-      push(@new_image_list, @image_list);
-      @image_list = @new_image_list;
-    }
+		# read existing line
+		my @line_values = split(/\|/,@ligne[0]);
+		@image_list = split(/,/,@line_values[14]);
+		# check if previous image was at the same minute
+		my $idx = first { substr($imageSEFRAN,0,-6) eq substr($image_list[$_],0,-6) } 0..$#image_list;
+		if(defined $idx) {
+			# if found, update image name
+			splice(@image_list,$idx,1,$imageSEFRAN);
+		}
+		else {
+			# otherwise, add to the list
+			my @new_image_list = $imageSEFRAN;
+			push(@new_image_list, @image_list);
+			@image_list = @new_image_list;
+		}
 	}
 # case B) new event: reads all and compute next ID
 #
@@ -261,7 +264,7 @@ if ($delete < 2) {
 	my $timestamp = strftime "%Y%m%dT%H%M%S", gmtime;
 	my $chaine = "$id_evt|$anneeEvnt-$moisEvnt-$jourEvnt|$heureEvnt:$minEvnt:$secEvnt"
 		."|$typeEvnt|$amplitudeEvnt|$dureeEvnt|$uniteEvnt|$dureeSatEvnt|$nbrEvnt|$smoinsp|$stationEvnt|$arrivee"
-    ."|$fileNameSUDS|$idSC3|".join(',', @image_list)."|$operator/$timestamp|$comment";
+		."|$fileNameSUDS|$idSC3|".join(',', @image_list)."|$operator/$timestamp|$comment";
 	push(@lignes, u2l($chaine));
 }
 
