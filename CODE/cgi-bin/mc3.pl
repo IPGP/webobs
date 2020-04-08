@@ -1,23 +1,23 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 =head1 NAME
 
-mc3.pl 
+mc3.pl
 
 =head1 SYNOPSIS
 
-http://..../mc3.pl? 
+http://..../mc3.pl?
 
 =head1 DESCRIPTION
 
-Displays 'Main Courante' (MC) seismological database  
+Displays 'Main Courante' (MC) seismological database
 
 =head1 Query string parameters
 
-mc=  
+mc=
  configuration file. Optional, defaults to $WEBOBS{ROOT_CONF}/$WEBOBS{MC3_DEFAULT_NAME}.conf
 
-debug= 
+debug=
  debug level. Optional, defaults to '0' (no debug outputs)
  currently supported level: 1
 
@@ -30,39 +30,39 @@ y2= , m2= , d2= , h2=
 type=
  see valid key values in EVENT_CODES_CONF conf file
 
-duree= 
+duree=
  see valid key values in DURATIONS_CONF conf file
 
-amplitude= 
+amplitude=
  see valid key values in AMPLITUDES_CONF conf file
 
-ampoper= 
+ampoper=
  amplitude operator
  le = less or equal to
  eq = equal (default)
  ge = greater or equal to
 
-located= 
+located=
  selection events to be shown. Optional, default to 0, show all events.
  0 show all events.
  1 show only events which have a location.
  2 show only events which don't have a location.
 
-locstatus= 
+locstatus=
  select location to be shown by status. Optional, defaults to 0, show everything.
  0 show all.
  1 show manual only.
  2 show auto only.
 
-hideloc= 
+hideloc=
  hide locations. Optional, defaults to !DISPLAY_LOCATION_DEFAULT variable from MC3 conf
  0 parse and show, if available, locations.
  1 don't parse (and show, quicker) locations.
 
-obs= 
+obs=
  regular expression for data filtering
 
-graph= 
+graph=
   hbars Hourly Histogram
    bars Daily Histogram
  movsum Daily Moving Histogram
@@ -70,7 +70,7 @@ graph=
    mcum Seismic moment cum.
      gr Gutenberg-Richter (log)
 
-slt= 
+slt=
  use local time zone for date/time selection and statistics (from SELECT_LOCAL_TZ)
 
 newts=
@@ -80,7 +80,7 @@ dump=
  bul event bulletin as .csv file
  cum daily statistics as .csv file
 
-trash=  
+trash=
 
 =head1 MC & MC2 COMPATIBILITY
 
@@ -93,30 +93,30 @@ MC file: MC3{ROOT}/YYYY/MC3{PATH_FILES}/MC3{FILE_PREFIX}YYYYMM.txt
 
  edit url =
                                     !----------$diriaspei----------------!
-   suds = YYYYMMDD?HHMMSSNN.gwa  => WEBOBS{PATH_SOURCE_SISMO_GWA}/YYYYMMDD/YYYYMMDD_HHMMSS.gwa 
-          YYYYMMDD?HHMMSSNN.mq0  => WEBOBS{PATH_SOURCE_SISMO_MQ0}/YYYYMMDD/YYYYMMDD_HHMMSS.mar 
-          DDHHMMSS.GUA           => WEBOBS{PATH_SOURCE_SISMO_GUA}/YYYYMMDD/                    
-          DDHHMMSS.GUX           => WEBOBS{PATH_SOURCE_SISMO_GUX}/YYYYMMDD/                    
-          DDHHMMSS.gl0           => WEBOBS{PATH_SOURCE_SISMO_gl0}/YYYYMMDD/                    
+   suds = YYYYMMDD?HHMMSSNN.gwa  => WEBOBS{PATH_SOURCE_SISMO_GWA}/YYYYMMDD/YYYYMMDD_HHMMSS.gwa
+          YYYYMMDD?HHMMSSNN.mq0  => WEBOBS{PATH_SOURCE_SISMO_MQ0}/YYYYMMDD/YYYYMMDD_HHMMSS.mar
+          DDHHMMSS.GUA           => WEBOBS{PATH_SOURCE_SISMO_GUA}/YYYYMMDD/
+          DDHHMMSS.GUX           => WEBOBS{PATH_SOURCE_SISMO_GUX}/YYYYMMDD/
+          DDHHMMSS.gl0           => WEBOBS{PATH_SOURCE_SISMO_gl0}/YYYYMMDD/
      or = must be sefran3 config =>                                       YYYYYMMDDHHMM        (sefran3, $seedlink = 1)
 
-   if suds == SSSSSSSS.eee         => suds_liste = <WEBOBS{SISMOCP_PATH_FTP}/YYYY/YYMM/SSSSSSSS*> 
+   if suds == SSSSSSSS.eee         => suds_liste = <WEBOBS{SISMOCP_PATH_FTP}/YYYY/YYMM/SSSSSSSS*>
    if suds == RRRRRRRRRRRRRRR.eee  => suds2_pointe = RRRRRRRRRRRRRRR_a.eee
 
  signal =
    if    suds == SSSSSSSS.eee                   => WEBOBS{SISMOCP_PATH_FTP}/YYYY/YYMM/SSSSSSSS*
-   elsif exists WEBOBS{SISMOCP_PATH_FTP}/YYYY/YYMM/RRRRRRRRRRRRRRR_a.eee 
+   elsif exists WEBOBS{SISMOCP_PATH_FTP}/YYYY/YYMM/RRRRRRRRRRRRRRR_a.eee
                                                 => WEBOBS{SISMOCP_PATH_FTP}/YYYY/YYMM/RRRRRRRRRRRRRRR_{a..z}.eee
-   elsif exists                                 => MC3{PATH_DESTINATION_SIGNAUX}/YYYY-MM/suds 
-   elsif exists                                 => MC3{PATH_DESTINATION_SIGNAUX}/YYYY-MM/suds 
-   elsif exists                                 => WEBOBS{RACINE_SIGNAUX_SISMO}/$diriaspei/suds 
+   elsif exists                                 => MC3{PATH_DESTINATION_SIGNAUX}/YYYY-MM/suds
+   elsif exists                                 => MC3{PATH_DESTINATION_SIGNAUX}/YYYY-MM/suds
+   elsif exists                                 => WEBOBS{RACINE_SIGNAUX_SISMO}/$diriaspei/suds
    elsif $suds == "xxxxxxxx.xxx"                => no file
    elsif $seedlink                              => mseedreq&s3=$suds&t1=$begin&ds=$durmseed
 
 
 =head1 HYPOCENTERS FILES
 
-mc3.pl can handle two (2) formats for hypocenters files. Wether they are used or not is determined by the HYPO_USE_FMT0 and HYPO_USE_FMT1 parameters 
+mc3.pl can handle two (2) formats for hypocenters files. Wether they are used or not is determined by the HYPO_USE_FMT0 and HYPO_USE_FMT1 parameters
 in the mc3 configuration file:
 
 HYPO_USE_FMT0|path,file ==> use hypocenters files "path/file" + "path/Auto/file" + "path/Global/yyyy._file"
@@ -159,8 +159,8 @@ set_message(\&webobs_cgi_msg);
 # ---- 1st parse query parameters for configuration file and debug option -----
 #
 my $QryParm  = $cgi->Vars;
-$QryParm->{'debug'}     //= ""; 
-$QryParm->{'mc'}        //= $WEBOBS{MC3_DEFAULT_NAME}; 
+$QryParm->{'debug'}     //= "";
+$QryParm->{'mc'}        //= $WEBOBS{MC3_DEFAULT_NAME};
 
 # ---- read in configuration + info files -------------------------------------
 #
@@ -228,9 +228,9 @@ my $mseedreq = "/cgi-bin/$WEBOBS{MSEEDREQ_CGI}?all=2";
 $|=1;
 
 # ---- check/fix OR default the requested date range --------------------------
-#    - handle 28-31 days/month by re-evaluating  with "YYYY-MM-01 (DD-1) day" 
+#    - handle 28-31 days/month by re-evaluating  with "YYYY-MM-01 (DD-1) day"
 #      (ie. 2012-02-30 ==> 2012-03-02)
-#    - check range-start < range-end , otherwise swap 
+#    - check range-start < range-end , otherwise swap
 if (($QryParm->{'y1'} ne "") && ($QryParm->{'m1'} ne "") && ($QryParm->{'d1'} ne "")
 	&& ($QryParm->{'y2'} ne "") && ($QryParm->{'m2'} ne "") && ($QryParm->{'d2'} ne "")) {
 
@@ -302,7 +302,7 @@ for (@amplitudes) {
 # ---- Load No location SC3 types ----------------------------------------------
 my @nolocation_types = split(/,/,$MC3{SC3_EVENT_TYPES_NOLOCATION});
 
-# ---- Build the DISPLAY-SELECTION form if NOT a 'dump' request ---------------  
+# ---- Build the DISPLAY-SELECTION form if NOT a 'dump' request ---------------
 #
 if ($QryParm->{'dump'} eq "") {
 
@@ -326,8 +326,8 @@ if ($QryParm->{'dump'} eq "") {
 	# ----- selection box TZ (UTC or local)
 	if ($MC3{SELECT_LOCAL_TZ} ne "") {
 		$html .= "<TH rowspan=2>Date TZ: <select name=\"slt\" size=\"1\">";
-		$html .= "<option ".($QryParm->{'slt'} == 0 ? "selected":"")." value=\"0\">UTC</option>\n"; 
-		$html .= "<option ".($QryParm->{'slt'} != 0 ? "selected":"")." value=\"1\">GMT $slt</option>\n"; 
+		$html .= "<option ".($QryParm->{'slt'} == 0 ? "selected":"")." value=\"0\">UTC</option>\n";
+		$html .= "<option ".($QryParm->{'slt'} != 0 ? "selected":"")." value=\"1\">GMT $slt</option>\n";
 		$html .= "</select></TH>\n";
 	}
 
@@ -335,51 +335,51 @@ if ($QryParm->{'dump'} eq "") {
 
 	# ----- selection box YEAR1
 	$html .= "<select name=\"y1\" size=\"1\" onChange=\"resetDate1(0)\">";
-	for ($MC3{BANG}..$currentYear) { 
-		$html .= "<option ".($_ == $QryParm->{'y1'} ? "selected":"")." value=\"$_\">$_</option>\n"; 
+	for ($MC3{BANG}..$currentYear) {
+		$html .= "<option ".($_ == $QryParm->{'y1'} ? "selected":"")." value=\"$_\">$_</option>\n";
 	}
 	$html .= "</select>\n";
 	# ----- selection box MONTH1
 	$html .= "<select name=\"m1\" size=\"1\" onChange=\"resetDate1(1)\">";
-	for (@month_list) { 
-		$html .= "<option ".($_ == $QryParm->{'m1'} ? "selected":"")." value=\"$_\">$_</option>\n"; 
+	for (@month_list) {
+		$html .= "<option ".($_ == $QryParm->{'m1'} ? "selected":"")." value=\"$_\">$_</option>\n";
 	}
 	$html .= "</select>\n";
 	# ----- selection box DAY1
 	$html .= "<select name=\"d1\" size=\"1\" onChange=\"resetDate1(2)\">";
-	for (@day_list) { 
-		$html .= "<option ".($_ == $QryParm->{'d1'} ? "selected":"")." value=\"$_\">$_</option>\n"; 
+	for (@day_list) {
+		$html .= "<option ".($_ == $QryParm->{'d1'} ? "selected":"")." value=\"$_\">$_</option>\n";
 	}
 	$html .= "</select>\n";
 	# ----- selection box HOUR1
 	$html .= "<select name=\"h1\" size=\"1\">";
-	for (@hour_list) { 
-		$html .= "<option ".($_ == $QryParm->{'h1'} ? "selected":"")." value=\"$_\">$_ h</option>\n"; 
+	for (@hour_list) {
+		$html .= "<option ".($_ == $QryParm->{'h1'} ? "selected":"")." value=\"$_\">$_ h</option>\n";
 	}
 	$html .= "</select>\n";
 
 	# ----- selection box YEAR2
 	$html .= " &nbsp;&nbsp; End Date: <select name=\"y2\" size=\"1\" onChange=\"resetDate2(0)\">";
-	for ($MC3{BANG}..$currentYear) { 
-		$html .= "<option ".($_ == $QryParm->{'y2'} ? "selected":"")." value=\"$_\">$_</option>\n"; 
+	for ($MC3{BANG}..$currentYear) {
+		$html .= "<option ".($_ == $QryParm->{'y2'} ? "selected":"")." value=\"$_\">$_</option>\n";
 	}
 	$html .= "</select>\n";
 	# ----- selection Box MONTH2
 	$html .= "<select name=\"m2\" size=\"1\" onChange=\"resetDate2(1)\">";
-	for (@month_list) { 
-		$html .= "<option ".($_ == $QryParm->{'m2'} ? "selected":"")." value=\"$_\">$_</option>\n"; 
+	for (@month_list) {
+		$html .= "<option ".($_ == $QryParm->{'m2'} ? "selected":"")." value=\"$_\">$_</option>\n";
 	}
 	$html .= "</select>\n";
 	# ----- selection box DAY2
 	$html .= "<select name=\"d2\" size=\"1\" onChange=\"resetDate2(2)\">";
-	for (reverse(@day_list)) { 
-		$html .= "<option ".($_ == $QryParm->{'d2'} ? "selected":"")." value=\"$_\">$_</option>\n"; 
+	for (reverse(@day_list)) {
+		$html .= "<option ".($_ == $QryParm->{'d2'} ? "selected":"")." value=\"$_\">$_</option>\n";
 	}
 	$html .= "</select>\n";
 	# ----- selection box HOUR2
 	$html .= "<select name=\"h2\" size=\"1\">";
-	for (@hour_list) { 
-		$html .= "<option ".($_ == $QryParm->{'h2'} ? "selected":"")." value=\"$_\">$_ h</option>\n"; 
+	for (@hour_list) {
+		$html .= "<option ".($_ == $QryParm->{'h2'} ? "selected":"")." value=\"$_\">$_ h</option>\n";
 	}
 	$html .= "</select>\n";
 
@@ -388,7 +388,7 @@ if ($QryParm->{'dump'} eq "") {
 	for (sort(keys(%typesSO))) {
 		my $key = $typesSO{$_};
 		if ($_ ne "") {
-			$html .= "<option ".($key eq $QryParm->{'type'} ? "selected":"")." value=\"$key\">$types{$key}{Name}</option>\n"; 
+			$html .= "<option ".($key eq $QryParm->{'type'} ? "selected":"")." value=\"$key\">$types{$key}{Name}</option>\n";
 		}
 	}
 	$html .= "</select>\n";
@@ -423,7 +423,7 @@ if ($QryParm->{'dump'} eq "") {
 		$msg =~ s/\n//g; # this is needed by overlib()
 		$msg =~ s/'/\\'/g; # this is needed by overlib()
 	}
-				 
+
 	$html .= " Filter&nbsp;(<A href=\"#\" onMouseOut=\"nd()\" onmouseover=\"overlib('$msg',CAPTION, 'INFORMATIONS',STICKY,WIDTH,300,DELAY,250)\">?</A>):"
 		."&nbsp;<INPUT type=\"text\" name=\"obs\" size=30 value=\"$QryParm->{'obs'}\">";
 	if ($QryParm->{'obs'} ne "") {
@@ -434,14 +434,14 @@ if ($QryParm->{'dump'} eq "") {
 	$html .= "&nbsp;&nbsp;Status: <select name=\"locstatus\" size=\"1\">";
 	for ("0|All","1|Manual","2|Auto") {
 		my ($key,$val) = split(/\|/,$_);
-		$html .= "<option".($key eq $QryParm->{'locstatus'} ? " selected":"")." value=\"$key\">$val</option>\n"; 
+		$html .= "<option".($key eq $QryParm->{'locstatus'} ? " selected":"")." value=\"$key\">$val</option>\n";
 	}
 	$html .= "</select>\n";
 
 	$html .= "&nbsp;&nbsp;Locations: <select name=\"located\" size=\"1\">";
 	for ("0|All","1|Located","2|Not located") {
 		my ($key,$val) = split(/\|/,$_);
-		$html .= "<option".($key eq $QryParm->{'located'} ? " selected":"")." value=\"$key\">$val</option>\n"; 
+		$html .= "<option".($key eq $QryParm->{'located'} ? " selected":"")." value=\"$key\">$val</option>\n";
 	}
 	$html .= "</select>\n";
 
@@ -503,7 +503,7 @@ my $nosuds = "xxxxxxxx.xxx";
 my $search = "class=\"searchResult\"";
 
 # ---- Load 'cities' : locations + B3 -----------------------------------------
-# 
+#
 my @listeCommunes = readCfgFile("$MC3{CITIES}");
 my @b3_lon; my @b3_lat; my @b3_nam; my @b3_isl; my @b3_sit; my @b3_dat;
 my $i = 0;
@@ -530,7 +530,7 @@ if (defined $MC3{HYPO_USE_FMT1} and length $MC3{HYPO_USE_FMT1}) {
 }
 
 # ---- Load hypocentres -------------------------------------------------------
-# 
+#
 #DL-was: if ($MC3{SISMOHYP_HYPO_USE}) {
 #DL-was: 	my $fileHypo = "$WEBOBS{RACINE_FTP}/$WEBOBS{SISMOHYP_PATH_FTP}/$WEBOBS{SISMOHYP_HYPO_FILE}";
 if ($HYPO_USE_FMT0_PATH) {
@@ -545,7 +545,7 @@ if ($HYPO_USE_FMT0_PATH) {
 }
 
 # ---- Load data files (MC + HYPO) for [dateStart-dateEnd] --------------------
-# 
+#
 for my $y ($start_datetime->year..$end_datetime->year) {
 	my $y2 = substr($y,2);
 	if ($HYPO_USE_FMT0_PATH) {
@@ -605,22 +605,22 @@ if ($QryParm->{'dump'} eq 'cum') {
 # ---- Filter events based on selection criteria: use of grep on the data line (fast!) ------------------------------
 
 	# Filter out trashed event (except for Administrators)
-	# 
+	#
 	if ( (!clientHasAdm(type=>"authprocs",name=>"MC") && !clientHasAdm(type=>"authprocs",name=>"$mc3"))  || $QryParm->{'trash'} == 0 ) {
 		@lignes = grep(!/^-/, @lignes);
 	}
 	# Filter on type
-	#  
+	#
 	if (($QryParm->{'type'} ne "") && ($QryParm->{'type'} ne "ALL")) {
 		@lignes = grep(/\|$QryParm->{'type'}\|/, @lignes)
 	}
 	# Filter on amplitude
-	# 
+	#
 	if (($QryParm->{'ampoper'} eq "eq") && ($QryParm->{'amplitude'} ne "") && ($QryParm->{'amplitude'} ne "ALL")) {
 		@lignes = grep(/\|$QryParm->{'amplitude'}\|/, @lignes)
 	}
 	# Filter on observations
-	# 
+	#
 	if ($QryParm->{'obs'} ne "") {
 		if (substr($QryParm->{'obs'},0,1) eq "!") {
 			my $regex = substr($QryParm->{'obs'},1);
@@ -631,13 +631,13 @@ if ($QryParm->{'dump'} eq 'cum') {
 	}
 
 # ---- Filters requiring loading of data from $dateStart to $DateEnd), duration, localization, ...
-# 
+#
 my $l = 0;
 my %QML;
 foreach my $line (@lignes) {
 	$l++;
 	my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,
-	    $nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$signature,
+	    $nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$event_img,$signature,
 	    $comment) = split(/\|/,$line);
 	my ($operator,$timestamp) = split("/",$signature);
     	my $origin;
@@ -645,16 +645,16 @@ foreach my $line (@lignes) {
 	my @evt_date_elem = split(/-/,$date);
 	my @evt_hour_elem = split(/:/,$heure);
 	my $evt_date = DateTime->new(year => $evt_date_elem[0],
-				     month => $evt_date_elem[1], 
+				     month => $evt_date_elem[1],
 				     day => $evt_date_elem[2],
 				     hour => $evt_hour_elem[0]);
 	my $evt_amp = $valAmp{$amplitude};
 	# default timestamp for old data is event date
 	$timestamp = join('',@evt_date_elem)."T".join('',@evt_hour_elem) if ($timestamp eq "");
 	my ($lat,$lon,$dep,$mag,$mty,$cod,$dat,$pha,$qua,$mod,$sta,$mth,$mdl,$typ);
-	#XB-was: if (($date le $dateEnd && $date ge $dateStart) 
+	#XB-was: if (($date le $dateEnd && $date ge $dateStart)
 	#XB-was: && ($QryParm->{'duree'} eq "" || $QryParm->{'duree'} eq "NA" || $QryParm->{'duree'} eq "ALL" || $duree_s >= $QryParm->{'duree'})
-	if ($evt_date ge $start_datetime && $evt_date le $end_datetime 
+	if ($evt_date ge $start_datetime && $evt_date le $end_datetime
 		&& ($QryParm->{'duree'} ~~ ["", "NA", "ALL"] || $duree_s >= $QryParm->{'duree'} || length($qml) > 2)
 		&& ($QryParm->{'amplitude'} ~~ ["", "ALL"] || $QryParm->{'ampoper'} eq 'eq'
 			|| ($QryParm->{'ampoper'} eq 'le' && $evt_amp <= $valAmp{$QryParm->{'amplitude'}})
@@ -676,7 +676,7 @@ foreach my $line (@lignes) {
                        } else {
                                $origin = '';
                        }
-			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$signature|$comment|$origin";
+			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$event_img|$signature|$comment|$origin";
 		}
 		# ID FDSNWS case: request QuakeML file by FDSN webservice
 		elsif ($qml =~ /:\/\//) {
@@ -700,12 +700,12 @@ foreach my $line (@lignes) {
 			}
 			%QML = qmlfdsn("${fdsnws_url}&format=xml&eventid=$evt_id");
 			if (%QML) {
-				$QML{type} = "not locatable" if ($QML{type} eq ""); 
+				$QML{type} = "not locatable" if ($QML{type} eq "");
 				$origin = "$evt_id;$QML{time};$QML{latitude};$QML{longitude};$QML{depth};$QML{phases};$QML{mode};$QML{status};$QML{magnitude};$QML{magtype};$QML{method};$QML{model};$QML{type}";
 			} else {
 				$origin = '';
 			}
-			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$signature|$comment|$origin";
+			$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$event_img|$signature|$comment|$origin";
 		}
 		# Old suds ID case :
 		elsif (length($qml) < 3 && $HYPO_USE_FMT0_PATH) {
@@ -719,7 +719,7 @@ foreach my $line (@lignes) {
 			} else {
 				($evt_annee4, $evt_mois) = unpack("a4 x a2",$date);
 			}
-			if (length($suds)==12 && substr($suds,8,1) eq '.') { 
+			if (length($suds)==12 && substr($suds,8,1) eq '.') {
 				# ne prend que les premiers caractères du nom de fichier
 				$suds_sans_seconde = substr($suds,0,7);
 				@loca = grep(/ $suds_sans_seconde/,grep(/^$evt_annee4$evt_mois/,@hypo));
@@ -746,7 +746,7 @@ foreach my $line (@lignes) {
 				}
 				$mod = 'manual';
 				$origin = "$id;$dat;$lat;$lon;$dep;$pha;$mod;;$mag;$mty;Hypo71;;$cod";
-				$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$png|$signature|$comment|$origin";
+				$line = "$id_evt|$date|$heure|$type|$amplitude|$duree|$unite|$duree_sat|$nombre|$s_moins_p|$station|$arrivee|$suds|$qml|$event_img|$signature|$comment|$origin";
 			}
 		}
 
@@ -779,13 +779,13 @@ foreach my $line (@lignes) {
 	}
 }
 
-# ---- finalLignes = data to process, sorted ----------------------------------  
+# ---- finalLignes = data to process, sorted ----------------------------------
 #
 @finalLignes = sort tri_date_avec_id @finalLignes;
 @csv = sort @csv;
 
 # ---- Statistics on number of seisms (for flot-graph and dump CSV) -----------
-# 
+#
 #XB-was: my $timeS = timegm(0,0,0,substr($dateStart,8,2),substr($dateStart,5,2)-1,substr($dateStart,0,4)-1900);
 #XB-was: my $timeE = timegm(0,0,0,substr($dateEnd,8,2),substr($dateEnd,5,2)-1,substr($dateEnd,0,4)-1900);
 #my $timeS = $start_datetime->epoch();
@@ -810,7 +810,7 @@ for my $h (0 .. ($nbDays*24 - 1)) {
 	#push(@stat_jh, ($timeS + $_*3600)*1000);
 	my $d = $start_datetime + DateTime::Duration->new(hours => $h);
 	#my $d1 = $d - DateTime::Duration->new(days => 1);
-	if ($d <= $now) { 
+	if ($d <= $now) {
 		push(@stat_th, $d->strftime('%F %H'));
 		#push(@stat_jh, $d1->epoch*1000);
 		#push(@stat_jh, ($d + DateTime::Duration->new(minutes => 30))->epoch*1000);
@@ -830,7 +830,7 @@ my $stat_max_duration = 0;
 my $stat_max_magnitude = 0;
 foreach (@finalLignes) {
 	if ( $_ ne "" ) {
-		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$signature,$comment,$origin) = split(/\|/,$_);
+		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$event_img,$signature,$comment,$origin) = split(/\|/,$_);
 		if (!$nombre) { $nombre = 1; }
 		my $time =  timegm(substr($heure,6,2),substr($heure,3,2),substr($heure,0,2),substr($date,8,2),substr($date,5,2)-1,substr($date,0,4)-1900);
 		my $duree_s = ($duree ? $duree*$duration_s{$unite}:0);
@@ -893,7 +893,7 @@ foreach (@finalLignes) {
 			$stat_max_magnitude = 2*log($duree_s)/log(10)+0.0035*$dist-0.87;
 		}
 	}
-} 
+}
 my $total = 0;
 my $daily_count;
 my $daily_moment;
@@ -975,7 +975,7 @@ if ($MC3{DISPLAY_INFO_MAIL} && (clientHasAdm(type=>"authprocs",name=>"MC") || cl
 
 #print "<TABLE><tr>";
 #for(sort(keys(%stat))) {
-#	print "<th style=\"font-size:8\"><b>$_</b></th>";  
+#	print "<th style=\"font-size:8\"><b>$_</b></th>";
 #}
 #print "<th><b>Total</b></th></tr><tr>";
 #print "<td style=\"color:red;\"><b>$total</b></td></tr></TABLE>",
@@ -1044,21 +1044,21 @@ if ($QryParm->{'nograph'} == 0) {
 }
 
 # ---- start building main table ----------------------------------------------
-# 
+#
 $html .= "<table class=\"trData\" width=\"100%\"><tr>";
 @titres = split(/\|/,$ligneTitre[0]);
-for (my $i = 0; $i <= $#titres; $i++) { 
+for (my $i = 0; $i <= $#titres; $i++) {
 	if ($QryParm->{'hideloc'} == 0 || $i < 15 ) {
-		$html .= "<th nowrap>$titres[$i]</th>"; 
+		$html .= "<th nowrap>$titres[$i]</th>";
 	}
 }
 $html .= "</tr>";
 
 # ---- build/display main table -----------------------------------------------
-# 
+#
 for (@finalLignes) {
 	if ( $_ ne "") {
-		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$png,$signature,$comment,$origin) = split(/\|/,$_);
+		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$event_img,$signature,$comment,$origin) = split(/\|/,$_);
 		my ($operator,$timestamp) = split("/",$signature);
 		my ($evt_annee4,$evt_mois,$evt_jour,$suds_jour,$suds_heure,$suds_minute,$suds_seconde,$suds_reseau) = split;
 		my $diriaspei;
@@ -1103,7 +1103,7 @@ for (@finalLignes) {
 #		my $suds_ext;
 #		my $suds2_pointe;
 		#djl-was: if (length($suds)==12 && substr($suds,10,1) eq '.') {
-#		if (length($suds)==12 && substr($suds,8,1) eq '.') { 
+#		if (length($suds)==12 && substr($suds,8,1) eq '.') {
 #			# ne prend que les premiers caractères du nom de fichier
 #			$suds_sans_seconde = substr($suds,0,7);
 #			@suds_liste = <$dirTrigger/$suds_sans_seconde*>;
@@ -1299,21 +1299,21 @@ for (@finalLignes) {
 		$html .= "<td>";
 		#djl-was: if (length($suds)==12 && substr($suds,10,1) eq '.') {
 		#if (length($suds)==12 && substr($suds,8,1) eq '.') {
-		#	for(@suds_liste) { 
+		#	for(@suds_liste) {
 		#		$html .= "<a href=\"$dirTriggerUrn/$_\"><img title=\"Pointés $_\" src=\"/icons/signal_pointe.png\" border=\"0\"></a>";
 		#	}
-		#} elsif (-f "$dirTrigger/$suds2_pointe") { 
+		#} elsif (-f "$dirTrigger/$suds2_pointe") {
 		#	for my $lettre ("a".."z") {
 		#		$suds2_pointe = "${suds_racine}_${lettre}.${suds_ext}";
-		#		if (-f "$dirTrigger/$suds2_pointe") { 
+		#		if (-f "$dirTrigger/$suds2_pointe") {
 		#			$html .= "<a href=\"$dirTriggerUrn/$suds2_pointe\"><img title=\"Pointés $suds2_pointe\" src=\"/icons/signal_pointe.png\" border=\"0\"></a>";
 		#		}
 		#	}
-		#} elsif (-f "$MC3{PATH_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds") { 
+		#} elsif (-f "$MC3{PATH_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds") {
 		#	$html .= "<a href=\"$MC3{WEB_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds\" title=\"Signaux $suds\"><img src=\"/icons/signal_non_pointe.png\" border=\"0\"></a>";
-		#} elsif (-f "$MC3{PATH_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds") { 
+		#} elsif (-f "$MC3{PATH_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds") {
 		#	$html .= "<a href=\"$MC3{WEB_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds\" title=\"Signaux $suds\"><img src=\"/icons/signal_non_pointe.png\" border=\"0\"></a>";
-		#} elsif (-f "$WEBOBS{RACINE_SIGNAUX_SISMO}/$diriaspei/$suds") { 
+		#} elsif (-f "$WEBOBS{RACINE_SIGNAUX_SISMO}/$diriaspei/$suds") {
 		#	$html .= "<a href=\"$WEBOBS{WEB_RACINE_SIGNAUX}/$diriaspei/$suds\" title=\"Signaux $suds\"><img src=\"/icons/signal_non_pointe.png\" border=\"0\"></a>";
 		#} elsif ($suds eq $nosuds) {
 		#	$html .= "<img src=\"/icons/nofile.gif\" title=\"Pas de fichier\">";
@@ -1330,12 +1330,24 @@ for (@finalLignes) {
 
 		# --- link to Sefran screenshot
 		$html .= "<td>";
-		#FB-was: my $sefranPNG = "$evt_annee4/$MC3{PATH_IMAGES}/$evt_annee4$evt_mois/$MC3{FILE_PREFIX}$png";
-		my $sefranPNG = "$evt_annee4/$MC3{PATH_IMAGES}/$evt_annee4$evt_mois/$png";
-		if (-f "$MC3{ROOT}/$sefranPNG") { 
-			#$html .= "<a href=\"$MC3{PATH_WEB}/$sefranPNG\" data-lightbox=\"$sefranPNG\" title=\"$sefranPNG\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$imagePOPUP',CAPTION,'$imageCAPTION')\"><img src=\"$amplitude_img\" border=\"0\"></a>";
-			$html .= "<img border=\"0\" wolbsrc=\"$MC3{PATH_WEB}/$sefranPNG\" src=\"$amplitude_img\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$imagePOPUP',CAPTION,'$imageCAPTION')\">";
+		#FB-was: my $event_img_subdir = "$evt_annee4/$MC3{PATH_IMAGES}/$evt_annee4$evt_mois/$MC3{FILE_PREFIX}$event_img";
+		my $event_img_subdir = "$evt_annee4/$MC3{PATH_IMAGES}/$evt_annee4$evt_mois";
+		my $event_img_path = "$MC3{ROOT}/$event_img_subdir/$event_img";
+
+		# Split the MC3 column value on commas in case multiple images were to be displayed
+		my @img_list = map { $_ =~ s/^\s+|\s+$//g; $_; } split(/,/, "$event_img");
+
+		if (@img_list) {
+			# Define the icon visible in the MC3 'Sefran' column
+			# (wolbtarget designates the gallery of images to display defined below)
+			$html .= "<img style=\"cursor:pointer;\" wolbtarget=\"event-img-$id_evt\" border=\"0\" src=\"$amplitude_img\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$imagePOPUP',CAPTION,'$imageCAPTION')\">";
+
+			# Add all collected images to a unique common gallery (same wolbset)
+			for my $img (@img_list) {
+				$html .= "<span wolbset=\"event-img-$id_evt\" wolbsrc=\"$MC3{PATH_WEB}/$event_img_subdir/$img\" ></span>";
+			}
 		} else {
+			# No image was designated in the MC3 entry
 			$html .= "&nbsp;";
 		}
 
@@ -1354,7 +1366,7 @@ for (@finalLignes) {
 			# Si la localisation est automatique, surlignage
 				# S'il y en a plus d'une, elles sont mises sur des lignes en-dessous, qui ne répetent pas les dates/heures
 				if ($ii > 0) {
-					$html .= "</td></tr><tr><td colspan=16>"; 
+					$html .= "</td></tr><tr><td colspan=16>";
 				}
 				# Distance et direction d'après B3
 				my $noloc = 0;
@@ -1412,7 +1424,7 @@ for (@finalLignes) {
 				}
 				$html .= "<td style=\"$sc3AutoStyle\">"
 					.($mty[$ii] && $mag[$ii] ? sprintf("%1.2f&nbsp;&nbsp;%s",$mag[$ii],$mty[$ii]):"")."</td>";
-				
+
 					#if ($MC3{SISMOHYP_HYPO_USE} > 0) {
 					$html .= "<td class=\"msk\" style=\"$sc3AutoStyle\">".($msk[$ii] ? $msk[$ii]:"")."</td>";
 					#}
@@ -1474,7 +1486,7 @@ if ($QryParm->{'debug'}) {
 }
 
 # ---- Notes/legends area -----------------------------------------------------
-# 
+#
 $html .= "<HR><A name=\"Note\"></A>";
 
 	# legend : build types table ----------------------------------------------
@@ -1616,4 +1628,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
