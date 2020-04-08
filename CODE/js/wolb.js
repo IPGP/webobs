@@ -59,7 +59,7 @@ function fitVisible(that) {
 		left: ((winW - box.outerWidth()) / 2) + "px",
 		top:  winY + ((winH - margins - box.outerHeight()) / 2) + "px",
 	});
-	box.fadeIn(400);
+	box.fadeIn(10);
 }
 
 function dokey(event) {
