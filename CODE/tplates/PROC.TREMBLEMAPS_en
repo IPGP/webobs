@@ -57,10 +57,6 @@ SC3_LISTEVT|
 EVENTS_OVERWRITING|
 MAGLIM|2,Inf
 
-# optionaly specify a MC3 bulletin to set the event type ($quake_type)
-MC3_NAME|MC3_OVSG
-# optionaly specify a MC3 bulletin to set the event type ($quake_type)
-MC3_NAME|MC3
 # additional filter applying on event comment which might contains MC3 type (case insensitive regexp)
 EVENTCOMMENT_EXCLUDED_REGEXP|
 

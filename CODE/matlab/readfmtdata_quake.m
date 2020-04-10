@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2019-12-17
+%	Updated: 2020-04-09
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -157,7 +157,7 @@ case 'fdsnws-event'
 
 	setenv('LD_LIBRARY_PATH', '');	% needed to wget system call
 	nbmax = 1000;	% max number of )event for a request (due to possible memory problems in xmlread)
-	wsreq = sprintf('format=xml&orderby=time&limit=%d',nbmax);
+	wsreq = sprintf('format=xml&orderby=time-asc&limit=%d',nbmax);
 	wsreqstime = '';
 	wsreqetime = '';
 	if all(~isnan(P.DATELIM))
@@ -276,9 +276,9 @@ case 'fdsnws-event'
 		k = find(isempty(c(:,2)));
 		c(k,2) = repmat({magtype},length(k),1);
 	end
-	fprintf(' done (%d events).\n',length(t));
-
-	if ~length(t)
+	if ~isempty(t)
+		fprintf(' done (%d events).\n',length(t));
+	else
 		fprintf('** WARNING ** no events found!\n');
 	end
 
@@ -465,6 +465,7 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 		m = mod(ym,12) + 1; % retrieves the month
 		s = wosystem(sprintf('sed ''/^$/d'' %s/%d/files/%s%d%02d.txt >> %s',MC3.ROOT,y,MC3.FILE_PREFIX,y,m,fdat),P);
 	end
+	
 	if exist(fdat,'file') 
 		mc3 = readdatafile(fdat,17,'CommentStyle',''); % reads all events (trash included)
 		fprintf('%s: associating %s event types and images ...',wofun,N.FID_MC3);
