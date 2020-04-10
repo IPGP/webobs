@@ -21,96 +21,36 @@ function DOUT=tremblemaps(varargin)
 %       TREMBLEMAPS will use PROC's parameters from .conf file. RAWFORMAT must be
 %       one of the "quake" formats (see readfmtdata_quake.m for details).
 %
-%       Specific paramaters are:
-%		EVENTTYPE_EXCLUDED_LIST|not existing,not locatable,outside of network interrest,sonic boom,duplicate,other
-%		EVENTSTATUS_EXCLUDED_LIST|auto
-%		PURGE_EXCLUDED_EVENT|
-%		SC3_LISTEVT|
-%		MAGLIM|2,Inf
-%		MC3_NAME|
-%		CITIES|$WEBOBS{ROOT_CONF}/Cities.conf
-%		REGION|Guadeloupe
-%		GMPE|beauducel09
-%		GMICE|gr42
-%		TOPOVS30|Y
-%		TOPOVS30_FILTER|9
-%		FELT_MSK_MIN|1.5
-%		FELT_FORCED|0
-%       	TZ|-4
-%       	LOCALE|fr_FR
-%		AREA|la Guadeloupe et Îles du Nord
-%		MAP_XYLIM|
-%		MAP_LANDONLY|Y
-%		MAP_INSET_EPIMAX|0
-%		MAP_DEM_OPT|'LandColor',.8*ones(2,3),'SeaColor',white,'Contrast',1,'LCut',0.01
-%		EPICENTER_PLOT_OPT|'p','MarkerSize',12,'MarkerEdgeColor','r','MarkerFaceColor','w','LineWidth',1.5
-%		SHAKEMAP_SHAPEFILES_ROOT|
-%		COLORMAP|jet
-%		COLORMAP_ALPHA|0,1
-%		FELTOTHERPLACES_OK|1
-%		EVENT_TITLE1|Magnitude $quake_magnitude, $quake_latitude, $quake_longitude, profondeur $quake_depth
-%		EVENT_TITLE2|$long_date $time
-%		WATERMARK_AUTO|AUTOMATIQUE
-%		WATERMARK|
-%		REPORT_DATE|Paris, $report_date $report_time (local time)
-%		REPORT_TEXT_ROOT|$WEBOBS{ROOT_CONF}/TREMBLEMAPS
-%		REPORT_TEXT_FILE|${REPORT_TEXT_ROOT}_TEXT_en.txt
-%		REPORT_FELT_FILE|${REPORT_TEXT_ROOT}_FELT_en.txt
-%		REPORT_AUTO_FILE|${REPORT_TEXT_ROOT}_AUTO_en.txt
-%		COPYRIGHT|(c) OVSG-IPGP
-%		REFERENCES|Loi d'atténuation B-Cube [Beauducel et al., 2011]
-%		LOGO2|logo_b3r.jpg
-%		LOGO1|logo_ovsgipgp.jpg
-%		TITLE1|Rapport préliminaire de séisme concernant
-%		TITLE2|${AREA}
-%		SUBTITLE1|{\bfObservatoire Volcanologique et Sismologique de Guadeloupe - IPGP}
-%		SUBTITLE2|Le Hou¨lmont - 97113 Gourbeyre - Guadeloupe (FWI)
-%		SUBTITLE3|Tél: +590 (0)590 99 11 33 - Fax: +590 (0)590 99 11 34 - infos@ovsg.univ-ag.fr - www.ipgp.fr
-%		EVENT_TITLE1|Magnitude $magnitude, $latitude, $longitude, profondeur $depth
-%		EVENT_TITLE2|$long_date $long_time
-%		LIST_TITLE1|{\bfIntensités probables moyennes}
-%		LIST_TITLE2|{\bf(et maximales)}
-%		LIST_OUTOF|Hors ${AREA}
-%		TABLE_HEADERS|Perception Humaine,Dégâts Potentiels,Accélérations (mg),Intensités EMS98
-%		FOOTNOTE1|(*) {\bfmg} = "milli gé" est une unité d'accélération correspondant au millième de la pesanteur terrestre
-%		FOOTNOTE2|La ligne pointillée délimite la zone où le séisme a pu être potentiellement ressenti.
-%		LESS_1KM_TEXT|moins de 1 km
-%		ADDITIONAL_TEXT|
-%		GSE_TITLE|${REGION}: $quake_strength $quake_type $epicentral $azimuth of $city ($region)
-%		GSE_AUTO_TITLE|${REGION}: $quake_strength $epicentral $azimuth of $city ($region)
-%		GSE_COMMENT|$azimuth of $city ($region)
-%		NOTIFY_EVENT|feltquake.
-%		PDFOUTPUT|1
-%		AUTOPRINT_OK|1
+%       Specific paramaters are described in the template files CODE/tplates/PROC.TREMBLEMAPS_??.
 %		
-%		List of internal variables that will be substituted in text strings:
-%			$report_date      = long date string of the report (local time)
-%			$report_time      = time string of the report (local time)
-%			$long_date        = earthquake long date string TU (using LOCALE and TZ for system call)
-%			$time             = earthquake time string TU (idem)
-%			$long_date_local  = earthquake long date string local (idem)
-%			$time_local       = earthquake time string local (idem)
-%			$quake_strength   = earthquake magnitude adjective string
-%			$quake_magnitude  = earthquake magnitude value
-%			$quake_latitude   = earthquake origin latitude
-%			$quake_longitude  = earthquake origin longitude
-%			$quake_depth      = earthquake origin depth
-%			$quake_depth_bsl  = earthquake origin depth above/below sea level
-%			$quake_type       = earthquake type
-%			$quake_mag_error  = earthquake magnitude error/uncertainty
-%			$quake_mag_type   = earthquake magnitude type
-%			$city             = city with the maximum predicted intensity
-%			$region           = region of the city
-%			$epicentral       = epicentral distance (km)
-%			$hypocentral      = hypocentral distance (km)
-%			$azimuth          = azimuth of origin (°N)
-%			$pga              = predicted PGA (mg)
-%			$pga_max          = max. predicted PGA (mg)
-%			$msk              = predicted MSK value
-%			$long_msk         = predicted MSK string
-%			$msk_max          = max. predicted MSK value
-%			$long_msk_max     = max. predicted MSK string
-%			$additional_text
+%	List of internal variables that will be substituted in text strings:
+%		$report_date      = long date string of the report (local time)
+%		$report_time      = time string of the report (local time)
+%		$long_date        = earthquake long date string TU (using LOCALE and TZ for system call)
+%		$time             = earthquake time string TU (idem)
+%		$long_date_local  = earthquake long date string local (idem)
+%		$time_local       = earthquake time string local (idem)
+%		$quake_strength   = earthquake magnitude adjective string
+%		$quake_magnitude  = earthquake magnitude value
+%		$quake_latitude   = earthquake origin latitude
+%		$quake_longitude  = earthquake origin longitude
+%		$quake_depth      = earthquake origin depth
+%		$quake_depth_bsl  = earthquake origin depth above/below sea level
+%		$quake_type       = earthquake type
+%		$quake_mag_error  = earthquake magnitude error/uncertainty
+%		$quake_mag_type   = earthquake magnitude type
+%		$city             = city with the maximum predicted intensity
+%		$region           = region of the city
+%		$epicentral       = epicentral distance (km)
+%		$hypocentral      = hypocentral distance (km)
+%		$azimuth          = azimuth of origin (°N)
+%		$pga              = predicted PGA (mg)
+%		$pga_max          = max. predicted PGA (mg)
+%		$msk              = predicted MSK value
+%		$long_msk         = predicted MSK string
+%		$msk_max          = max. predicted MSK value
+%		$long_msk_max     = max. predicted MSK string
+%		$additional_text
 %
 %	Reference paper:
 %	   Beauducel F., S. Bazin, M. Bengoubou-Valérius, M.-P. Bouin, A. Bosson, C. Anténor-Habazac, V. Clouard, J.-B. de Chabalier, 2011.
