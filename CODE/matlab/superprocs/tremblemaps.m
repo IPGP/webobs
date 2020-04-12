@@ -22,7 +22,7 @@ function DOUT=tremblemaps(varargin)
 %       one of the "quake" formats (see readfmtdata_quake.m for details).
 %
 %       Specific paramaters are described in the template files CODE/tplates/PROC.TREMBLEMAPS_??.
-%		
+%
 %	List of internal variables that will be substituted in text strings:
 %		$report_date      = long date string of the report (local time)
 %		$report_time      = time string of the report (local time)
@@ -112,8 +112,8 @@ pgamsk = gmice(1:length(MSK),P.GMICE,'reverse');
 
 region = P.REGION;
 
-% loads cities (with elevations)
-CITIES = readcities(WO,P.CITIES,'elevation');
+% loads cities (with elevations for P.REGION)
+CITIES = readcities(WO,P,'elevation');
 
 if isfield(P,'SHAPE_FILE') && exist(P.SHAPE_FILE,'file')
 	faults = ibln(P.SHAPE_FILE);
@@ -162,7 +162,7 @@ for n = 1:length(t)
 		fprintf(fid,'# %s\n#\n',WO.WEBOBS_TITLE);
 		fprintf(fid,'# PROC: {%s} %s\n',P.SELFREF,P.NAME);
 		fprintf(fid,'# FILENAME: %s\n',fdat);
-		fprintf(fid,'#\n\n'); 
+		fprintf(fid,'#\n\n');
 		if ~suser
 			fprintf(fid,'#\n# CREATED: %s by %s\n',datestr(now),wuser);
 		end
@@ -251,7 +251,7 @@ for n = 1:length(t)
 			DEM.opt = demopt;
 
 			% selects cities from other regions to be displayed
-			kregion = k(msk(k,2) >= mskmin & ~strcmp(CITIES.region(k),region));           
+			kregion = k(msk(k,2) >= mskmin & ~strcmp(CITIES.region(k),region));
 			% unification (1 seule commune par île)
 			[~,k] = unique(CITIES.region(kregion),'first');
 			kregion = kregion(k);
@@ -305,7 +305,7 @@ for n = 1:length(t)
 				E.quake_depth = sprintf('%1.0f km',d(n,3));
 			end
 			if ~isempty(c{n,4})
-				E.quake_type = c{n,4}; % event type from comment 
+				E.quake_type = c{n,4}; % event type from comment
 			else
 				E.quake_type = c{n,3}; % from type
 			end
@@ -330,7 +330,7 @@ for n = 1:length(t)
 			E.msk_max         = msk2str(msk(kepi,2));
 			E.long_msk_max    = MSK(max(round(msk(kepi,2)),1)).name;
 			E.additional_text = P.ADDITIONAL_TEXT;
-			
+
 			% watermak
 			if isfield(P,'WATERMARK')
 				watermark = P.WATERMARK;
@@ -351,14 +351,14 @@ for n = 1:length(t)
 				gse_title = P.GSE_TITLE;
 				gse_evtype = 'ke';
 			end
-				
+
 			% ===========================================================
 			% makes the figure
 
 			figure; orient tall
 			set(gcf,'PaperUnit','inches','PaperType','A4');
 			set(gcf,'PaperPosition',pps);
-		
+
 			% event text
 			axes('Position',[.05,.73,.9,.17]);
 
@@ -366,7 +366,7 @@ for n = 1:length(t)
 			    text(.5,.5,watermark,'FontSize',72,'FontWeight','bold','Color',[1,.8,.8],'Rotation',10, ...
 			    'HorizontalAlignment','center','VerticalAlignment','middle');
 			end
-			
+
 			text(1,1,varsub(P.REPORT_DATE,E),'horizontalAlignment','right','VerticalAlignment','top','FontSize',10);
 			text(.5,.7,{varsub(P.EVENT_TITLE1,E,'tex'),varsub(P.EVENT_TITLE2,E)}, ...
 			     'horizontalAlignment','center','VerticalAlignment','middle','FontSize',14,'FontWeight','bold');
@@ -377,7 +377,7 @@ for n = 1:length(t)
 			isz3 = size(A3);
 
 			pos = [0.03,1-isz1(1)/(P.PPI*pps(4)),isz1(2)/(P.PPI*pps(3)),isz1(1)/(P.PPI*pps(4))];
-			
+
 			% logos and main title
 			axes('Position',pos,'Visible','off');
 			image(A1), axis off
@@ -391,7 +391,7 @@ for n = 1:length(t)
 			pos = [.95 - isz3(2)/(P.PPI*pps(4)),1-isz3(1)/(P.PPI*pps(4)),isz3(2)/(P.PPI*pps(3)),isz3(1)/(P.PPI*pps(4))];
 			axes('Position',pos,'Visible','off');
 			image(A3), axis off
-			
+
 			% ---- map
 			%pos0 = [.092,.08,.836,.646];
 			axes('Position',pos0);
@@ -413,7 +413,7 @@ for n = 1:length(t)
 					'HorizontalAlignment','center','VerticalAlignment','middle','FontSize',P.GTABLE(1).MARKERSIZE,'FontWeight','bold')
 			end
 			hold off
-			
+
 			% ---- inset with epicentral zoom
 			if epi < str2double(P.MAP_INSET_EPIMAX)
 				if epi > 8
@@ -435,7 +435,7 @@ for n = 1:length(t)
 				hold off
 				w1 = .3;    % taille relative de l'encart (par rapport à la page)
 				axes('Position',[pos0(1)+pos0(3)-(w1+.01),pos0(2)+pos0(4)-(w1+.01)*pps(3)/pps(4),w1,w1*pps(3)/pps(4)]);
-				
+
 				basemap(d(n,:),ect,DEM,MSK,P,maxamp,cmap,amap)
 				hold on
 				plot(ect([1,2,2,1,1]),ect([3,3,4,4,3]),'k-','LineWidth',2);
@@ -449,7 +449,7 @@ for n = 1:length(t)
 				hold off
 				axis off
 			end
-			
+
 			axes('Position',pos0);
 			axis([0,1,0,1]), axis off
 
@@ -470,7 +470,7 @@ for n = 1:length(t)
 				set(h,'FaceColor','w')
 				h = rectangle('Position',[.05/4.3,hrect + (.05 - .16)/4.15,lrect,.16/4.15]);
 				set(h,'FaceColor','k')
-				
+
 				text(.05/4.3 + lrect/2,.05/4.15 + hrect,{P.LIST_TITLE1,P.LIST_TITLE2}, ...
 					'HorizontalAlignment','center','VerticalAlignment','top','FontSize',tfont,'Color',.999*[1,1,1]);
 				if isempty(kcom)
@@ -489,7 +489,7 @@ for n = 1:length(t)
 					end
 				     end
 				end
-				
+
 				if ~isempty(kregion) && ncom < maxlines
 				    text(posx,hrect - (ncom + 3.7)*hligne,P.LIST_OUTOF, ...
 					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',tfont);
@@ -509,8 +509,8 @@ for n = 1:length(t)
 
 			% ---- copyright
 			text(1.01,0,txtb3,'Rotation',90,'HorizontalAlignment','left','VerticalAlignment','top','FontSize',7);
-			
-			
+
+
 			% ---- Legend table for intensities and PGA
 			axes('Position',[.03,.022,.95,.068]);
 			sz = length(pgamsk) - 1;
@@ -543,7 +543,7 @@ for n = 1:length(t)
 			for ii = 1:sz
 			    xx = (ii + 1.5)/(sz+2);
 			    switch ii
-			    case 1 
+			    case 1
 				ss = sprintf('< %g',roundsd(pgamsk(ii+1),nbsig));
 			    case sz
 				ss = sprintf('> %g',roundsd(pgamsk(ii),nbsig));
@@ -569,12 +569,12 @@ for n = 1:length(t)
 			end
 			text(0,0,{P.FOOTNOTE1,P.FOOTNOTE2},'HorizontalAlignment','left','VerticalAlignment','top','FontSize',7);
 			hold off
-			set(gca,'XLim',[0,1],'YLim',[0,1]), axis off                    
+			set(gca,'XLim',[0,1],'YLim',[0,1]), axis off
 
 			mkgraph(WO,fnam,P.GTABLE(1))
 			lastb3 = P.GTABLE(1).EVENTS;
 			close
-			
+
 			% ===========================================================
 			% exports GSE file
 			fgse = sprintf('%s/%s.gse',pdat,fnam);
@@ -707,7 +707,7 @@ inorm(inorm>1) = 1;
 I.msk = ind2rgb(round(size(cmap,1)*inorm),cmap); % RGB map of intensities
 
 % transparency follows colormap alpha relation
-A = repmat(interp1(linspace(0,1,length(amap)),amap,inorm),[1,1,3]); 
+A = repmat(interp1(linspace(0,1,length(amap)),amap,inorm),[1,1,3]);
 
 % adds intensity color to shaded relief
 I.tot = I.rgb.*(1 - A) + I.msk.*A;
@@ -761,7 +761,7 @@ if ~isempty(cs)
 	h = pcontour(cs,'k');
 	set(h,'LineStyle',':','LineWidth',.25);
 end
-    
+
 % epicenter marker
 opt = {'p','MarkerSize',10,'MarkerEdgeColor','r','MarkerFaceColor','w','LineWidth',1.5};
 if isfield(P,'EPICENTER_PLOT_OPT')
@@ -772,6 +772,3 @@ if isfield(P,'EPICENTER_PLOT_OPT')
 	end
 end
 plot(eq(2),eq(1),opt{:})
-
-
-
