@@ -1,29 +1,33 @@
 function X=readcities(WO,P,varargin)
 %READCITIES Read cities file
-%	READCITIES(WO,F) reads the cities file F and returns a 1-D structure with fields:
+%	READCITIES(WO,F) reads the cities file F and returns a 1-D structure with
+%	fields:
 %	    lat: city latitude
 %	    lon: city longitude
 %	   name: city name
 %	 region: city region
 %	 factor: site amplification factor
 %
-%	READCITIES(WO,P) uses parameters from PROC's structure P (P.CITIES field must be
-%	set).
+%	READCITIES(WO,P) uses parameters from PROC's structure P (P.CITIES field must
+%	be set).
 %
-%	READCITIES(...,'elevation') will use ETOPO or SRTM topographic data to get the
-%	elevation for each city, and add another field to the output structure:
+%	READCITIES(...,'elevation') will use ETOPO or SRTM topographic data to get
+%	the elevation for each city of P.REGION if defined, and add another field to
+%	the output structure:
 %	    alt: city elevation (in m)
 %
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2016-10-16, in Yogyakarta, Indonesia
-%	Updated: 2017-08-02
+%	Updated: 2020-04-12
 
 
 if isstruct(P)
 	f = field2str(P,'CITIES');
+	region = field2str(P,'REGION');
 else
 	f = P;
+	region = '';
 end
 
 if ~exist(f,'file')
@@ -47,8 +51,10 @@ X.factor = c{5};
 X.factor(isnan(X.factor)) = 1;
 
 if any(strcmpi(varargin,'elevation'))
-	% gets the cities elevations (topography interpolation)
-	DEM = loaddem(WO,[minmax(X.lon),minmax(X.lat)]);
-	X.alt = interp2(DEM.lon,DEM.lat,double(DEM.z),X.lon,X.lat);
+	X.alt = zeros(size(X.lat));
+	% gets the cities elevations for region (topography interpolation)
+	k = strcmpi(X.region,region);
+	DEM = loaddem(WO,[minmax(X.lon(k)),minmax(X.lat(k))]);
+	X.alt(k) = interp2(DEM.lon,DEM.lat,double(DEM.z),X.lon(k),X.lat(k));
 	X.alt(isnan(X.alt)) = 0;
 end
