@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 #
 =head1 NAME
 
-formREQ.pl 
+formREQ.pl
 
 =head1 SYNOPSIS
 
@@ -12,19 +12,19 @@ http://..../formREQ.pl
 
 Builds/Manages the input html-form for 'B<Request for Graphs>' and processes it with postREQ.pl.
 A B<Request for Graphs> is the execution of one or more PROC's routine(s), sharing the same set of
-B<Date-span and Parameters>.  
+B<Date-span and Parameters>.
 
 Available PROCS routines are those defined by a non-blank SUBMIT_COMMAND parameter PROCS' configuration files
-(ie. CONF/PROC/PROCname/PROCName.conf files). 
+(ie. CONF/PROC/PROCname/PROCName.conf files).
 
 Date-span and Parameters (that will eventually be written to a REQUEST.rc file by postREQ.pl)
-are presented to the user with default values taken from a B<template>: $WEBOBS{ROOT_CODE}/tplates/request-template .  
+are presented to the user with default values taken from a B<template>: $WEBOBS{ROOT_CODE}/tplates/request-template .
 
 A submitted B<Request for Graphs> will have all of its results (outputs) files grouped into the
-OUTR directory, under a subdirectory whose name uniquely identifies the Request: 
+OUTR directory, under a subdirectory whose name uniquely identifies the Request:
 
 	OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
-		REQUEST.rc  
+		REQUEST.rc
 		PROC.PROCa/
 			{exports,graphs,maps,logs}/
 		....
@@ -35,7 +35,7 @@ See postREQ.pl documentation for further Request's execution/parameters descript
 
 =head1 RELATED PROC CONFIGURATION PARAMETERS
 
-PROC's configuration parameters related to B<Request for Graphs> are 1) those prefixed with B<SUBMIT_'> and 
+PROC's configuration parameters related to B<Request for Graphs> are 1) those prefixed with B<SUBMIT_'> and
 2) the unique B<REQUEST_KEYLIST>
 
 B<SUBMIT_COMMAND> is the routine execution command line, ie. equivalent to the value of a XEQ1:
@@ -44,7 +44,7 @@ supporting $WEBOBS parametres substitution.
 
 B<SUBMIT_RESOURCE> is the optional routine execution mutex name (process lock).
 
-	Example: 
+	Example:
 	SUBMIT_COMMAND|$WEBOBS{JOB_MCC} superproc $SELFREF -
 	SUBMIT_RESOURCE|proc1
 
@@ -60,11 +60,11 @@ Such parameters will be appended to the REQUEST.rc file as 'PROC.procname.origin
 	PROC.THISPROC.PARAM1|11       (user's input 11)
 	PROC.THISPROC.PARAM2|200      (user's didn't overwrite value)
 
-=head1 DATE SPAN AND PARAMETERS 
+=head1 DATE SPAN AND PARAMETERS
 
 Date span:
 
-	A start date 
+	A start date
 	An end date
 
 Parameters:
@@ -81,6 +81,7 @@ Parameters:
 	POSTSCRIPT
 	EXPORTS
 	ANONYMOUS
+	DEBUG
 
 =cut
 
@@ -94,7 +95,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use Locale::TextDomain('webobs');
 use POSIX qw/strftime/;
 
-# ---- webobs stuff 
+# ---- webobs stuff
 #
 use WebObs::Config;
 use WebObs::Users;
@@ -102,7 +103,7 @@ use WebObs::Grids;
 use WebObs::i18n;
 
 # ---- misc inits
-# 
+#
 set_message(\&webobs_cgi_msg);
 my @tod = localtime();
 my $QryParm   = $cgi->Vars;
@@ -112,7 +113,7 @@ my @procavailable;
 my @proclist;
 my %P;
 
-# ---- Things to populate select dropdown fields 
+# ---- Things to populate select dropdown fields
 my $year = strftime('%Y',@tod);
 my @yearList = reverse($WEBOBS{BIG_BANG}..$year+1);
 my @monthList = ('01'..'12');
@@ -122,7 +123,7 @@ my @minuteList = ('00'..'59');
 
 # ---- dates
 #      default to full previous month
-my @tm = gmtime(time); 
+my @tm = gmtime(time);
 $tm[3] = 1;
 my ($usrYearE,$usrMonthE,$usrDayE) = split(/-/,strftime("%Y-%m-%d",@tm));
 if ($tm[4]==0) { $tm[5]--; $tm[4] = 11;} else { $tm[4]--; }
@@ -257,7 +258,7 @@ print "<form id=\"theform\" name=\"formulaire\" action=\"\">";
 
 print "<TABLE style=\"border:0\" width=\"100%\">";
 print "<TR>";
-	print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column 
+	print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column
 
 	# ---- Display list of PROCS that are eligible for requests
 	print "<fieldset><legend>$__{'Available PROCS'}</legend>";
@@ -271,9 +272,9 @@ print "<TR>";
 	print "</div>";
 	print "</TD>\n";                                             # end left column
 
-	print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # right column 
+	print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # right column
 
-	print "<fieldset><legend>$__{'Date and time span (UT)'}</legend>"; 
+	print "<fieldset><legend>$__{'Date and time span (UT)'}</legend>";
 	#	DATE1|  DATE2|
   	print "<TABLE>";
     	print "<TR>";
@@ -326,7 +327,7 @@ print "<TR>";
 	my @marks = split(',',$WEBOBS{REQ_MARKERSIZE_LIST} //= '1,2,4,6,10,15,20');
 	my @linew = split(',',$WEBOBS{REQ_LINEWIDTH_LIST} //= '0.1,0.25,0.5,1,1.5,2,3');
 
-	print "<fieldset><legend>$__{'Output parameters'}</legend>"; 
+	print "<fieldset><legend>$__{'Output parameters'}</legend>";
   	print "<TABLE>";
     	print "<TR>";
 		print "<TD style=\"border:0\">";
@@ -336,7 +337,7 @@ print "<TR>";
 	#	DATESTR|
 		print "<label style=\"width:80px\" for=\"datestr\">$__{'Date format'}:</label>";
 		print "<select id=\"datestr\" name=\"datestr\" size=\"1\">";
-		for (keys(%datestr)) { print "<OPTION".(($_ eq "-1")?" selected":"")." value=\"$_\">$datestr{$_}</OPTION>" }; 
+		for (keys(%datestr)) { print "<OPTION".(($_ eq "-1")?" selected":"")." value=\"$_\">$datestr{$_}</OPTION>" };
 		print "</select><BR>&nbsp;<BR>";
 	#	CUMULATE|
 		print "<label style=\"width:80px\" for=\"cumulate\">$__{'Cumulate'}:</label>";
@@ -347,18 +348,18 @@ print "<TR>";
 	#	MARKERSIZE|
 		print "<label style=\"width:80px\" for=\"markersize\">$__{'Marker size'}:</label>";
 		print "<select id=\"markersize\" name=\"markersize\" size=\"1\">";
-		for (@marks) { print "<OPTION".(($_ eq $REQDFLT{MARKERSIZE})?" selected":"")." value=\"$_\">$_ pt</OPTION>" }; 
+		for (@marks) { print "<OPTION".(($_ eq $REQDFLT{MARKERSIZE})?" selected":"")." value=\"$_\">$_ pt</OPTION>" };
 		print "</select><BR>&nbsp;<BR>";
 	#	LINEWIDTH|
 		print "<label style=\"width:80px\" for=\"linewidth\">$__{'Line width'}:</label>";
 		print "<select id=\"linewidth\" name=\"linewidth\" size=\"1\">";
-		for (@linew) { print "<OPTION".(($_ eq $REQDFLT{LINEWIDTH})?" selected":"")." value=\"$_\">$_ pt</OPTION>" }; 
+		for (@linew) { print "<OPTION".(($_ eq $REQDFLT{LINEWIDTH})?" selected":"")." value=\"$_\">$_ pt</OPTION>" };
 		print "</select><BR>&nbsp;<BR>";
 		print "</TD><TD style=\"border:0\">";
 	#	PPI|
 		print "<label style=\"width:80px\" for=\"ppi\">$__{'PPI'}:</label>";
 		print "<select id=\"ppi\" name=\"ppi\" size=\"1\">";
-		for (@ppis) { print "<OPTION".(($_ eq $REQDFLT{PPI})?" selected":"")." value=\"$_\">$_</OPTION>" }; 
+		for (@ppis) { print "<OPTION".(($_ eq $REQDFLT{PPI})?" selected":"")." value=\"$_\">$_</OPTION>" };
 		print "</select><BR>&nbsp;<BR>";
 	#	PLOTGRID|
 		print "<label style=\"width:80px\" for=\"gridon\">$__{'Grid'}:</label>";
@@ -372,6 +373,9 @@ print "<TR>";
 	#	ANONYMOUS|
 		print "<label style=\"width:80px\" for=\"anonymous\">$__{'Anonymous'}:</label>";
 		print "<input id=\"anonymous\" name=\"anonymous\" type=\"checkbox\" value=\"1\"".($REQDFLT{ANONYMOUS}==1 ? " checked":"")."><BR>&nbsp;<BR>";
+	#	DEBUG|
+		print "<label style=\"width:80px\" for=\"debug\">$__{'Verbose logs'}:</label>";
+		print "<input id=\"debug\" name=\"debug\" type=\"checkbox\" value=\"1\"".($REQDFLT{DEBUG}==1 ? " checked":"")."><BR>&nbsp;<BR>";
 		print "</TD>";
 
 	print "</TR>";
@@ -380,7 +384,7 @@ print "<TR>";
 	print "</TD>\n";                                             # end right column
 
 print "</TR></TABLE>\n";
-print "<P align=center>"; 
+print "<P align=center>";
 print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 print "<input type=\"button\" value=\"$__{'Submit'}\" onClick=\"checkForm();\" style=\"font-weight:bold\">";
 print "<input type=\"hidden\" id=\"origin\" name=\"origin\" value=\"\">";
@@ -389,7 +393,7 @@ print "</P>";
 print "</form>";
 
 # ---- end HTML
-#  
+#
 print "\n</BODY>\n</HTML>\n";
 
 # ---- build a div for a proc's keylist input fields
@@ -435,4 +439,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
