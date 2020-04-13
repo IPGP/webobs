@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 #
 =head1 NAME
 
-formGRID.pl 
+formGRID.pl
 
 =head1 SYNOPSIS
 
@@ -10,19 +10,19 @@ http://..../formGRID.pl?grid=gridtype.gridname[,type=gridtype.template]
 
 =head1 DESCRIPTION
 
-Edit (create/update) a GRID specified by its fully qualified name, ie. gridtype.gridname. 
+Edit (create/update) a GRID specified by its fully qualified name, ie. gridtype.gridname.
 
 When creating a new GRID (if name does not exist), formGRID starts editing from a predefined template file for the gridtype: filename $WEBOBS{ROOT_CODE}/tplates/<gridtype>_DEFAULT or specific template identified by gridtype.template argument.
 
 To create a new GRID, user must have Admin rights for all VIEWS or PROCS. To update an existing GRID, user must have Edit rights for the concerned GRID.
 
-=head1 QUERY-STRING 
+=head1 QUERY-STRING
 
 grid=gridtype.gridname
- where gridtype either VIEW or PROC.  
+ where gridtype either VIEW or PROC.
 
 type=gridtype.template
- where gridtype either VIEW or PROC.  
+ where gridtype either VIEW or PROC.
 
 =head1 EDITOR
 
@@ -58,7 +58,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use Locale::TextDomain('webobs');
 use POSIX qw/strftime/;
 
-# ---- webobs stuff 
+# ---- webobs stuff
 #
 use WebObs::Config;
 use WebObs::Users;
@@ -79,7 +79,7 @@ my @rawfile;            # raw content of the configuration file
 my $GRIDType = "";      # grid type ("PROC" or "VIEW")
 my $GRIDName = "";      # name of the grid
 my %GRID;               # structure describing the grid
-my $domain;             # the domain of the grid
+my @domain;             # the domain array of the grid
 my $template;           # the template for a new grid
 my %FORMS;              # titles of existing forms
 my $form = "";          # the form ID of the grid (if any)
@@ -167,13 +167,13 @@ if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
 
 if (!$newG) {
 	%GRID = %{$GRID{$GRIDName}};
-	$domain = $GRID{'DOMAIN'};
+	@domain = split(/\|/, $GRID{'DOMAIN'});
 	$form = $GRID{'FORM'} || '' if ($GRIDType eq "PROC");
 	# Build a hash to efficiently test the presence of a node ID later
 	%gridnodeslist = map(($_ => 1), @{$GRID{'NODESLIST'}});
 }
 
-# ---- good, passed all checkings above 
+# ---- good, passed all checkings above
 #
 # ---- start HTML
 #
@@ -246,6 +246,10 @@ function verif_formulaire()
 	for (var i=0; i<document.formulaire.SELs.length; i++) {
 		document.formulaire.SELs[i].selected = true;
 	}
+	if (document.formulaire.domain.value == '') {
+		alert('you must select at least one domain.');
+		return false;
+	}
 	// postform() from cmtextarea.js will submit the form to $post_url
 	postform();
 	//\$.post("/cgi-bin/postGRID.pl", \$("#theform").serialize(), function(data) {
@@ -283,37 +287,42 @@ print "<div id=\"statusbar\">$GRIDType.$GRIDName</div>\n";
 
 print "</TD>\n";
 
+# ---- Domains
 print "<TD style=\"border:0; vertical-align:top\">";
-print "<FIELDSET><LEGEND>Domain</LEGEND><P><select name=\"domain\" size=\"1\">\n";
-for (sort(keys(%DOMAINS))) {
-	print "<option value=\"$_\"".($domain eq $_ ? " selected":"").">{$_}: $DOMAINS{$_}{NAME}</option>\n";
+print "<FIELDSET><LEGEND>Domain</LEGEND><SELECT name=\"domain\" size=\"10\" multiple>\n";
+foreach my $d (sort(keys(%DOMAINS))) {
+	print "<option value=\"$d\"".(grep(/^$d$/, @domain) ? " selected":"").">{$d}: $DOMAINS{$d}{NAME}</option>\n";
 }
-print "</select></P></FIELDSET>\n";
+print "</SELECT></FIELDSET>\n";
+#[DEBUG:] print "<p>domain = +".join('+',@domain)."+</p>";
+
+# ---- Forms
 if ($GRIDType eq "PROC") {
-	print "<FIELDSET><LEGEND>Form</LEGEND><P><select name=\"form\" size=\"1\">\n";
+	print "<FIELDSET><LEGEND>Form</LEGEND><SELECT name=\"form\" size=\"1\">\n";
 	print "<option value=\"\"> --- none --- </option>\n";
 	for (sort(keys(%FORMS))) {
 		print "<option value=\"$_\"".($form eq $_ ? " selected":"").">{$_}: $FORMS{$_}</option>\n";
 	}
-	print "</select></P></FIELDSET>\n";
+	print "</SELECT></FIELDSET>\n";
 }
 
+# ---- Nodes
 print "<FIELDSET><LEGEND>Associated nodes</LEGEND>";
-print "<TABLE border=\"0\" cellpadding=\"3\" cellspacing=\"0\" style=\"\">";
-print "<TR><TD>";
+print "<TABLE cellpadding=\"3\" cellspacing=\"0\" style=\"border:0\">";
+print "<TR><TD style=\"border:0\">";
 print "<SELECT name=\"INs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%\">";
-for my $nodeId (@ALL_NODES) { 
+for my $nodeId (@ALL_NODES) {
 	if (!exists $gridnodeslist{$nodeId}) {
 		print "<option value=\"$nodeId\">$nodeId</option>\n";
 	}
 }
-print "</SELECT></td>";
-print "<TD align=\"center\" valign=\"middle\">";
+print "</SELECT></RD>";
+print "<TD align=\"center\" valign=\"middle\" style=\"border:0\">";
 print "<INPUT type=\"Button\" value=\"Add >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.INs,document.formulaire.SELs)\"><br>";
 print "<br>";
 print "<INPUT type=\"Button\" value=\"<< Remove\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.SELs,document.formulaire.INs)\">";
 print "</TD>";
-print "<TD>";
+print "<TD style=\"border:0\">";
 print "<SELECT name=\"SELs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%;font-weight:bold\">";
 if (!$newG) {
 	for my $nodeId (sort @{$GRID{NODESLIST}}) {
@@ -351,7 +360,7 @@ print <<_EOD_;
 _EOD_
 
 # ---- end HTML
-#  
+#
 print "\n</BODY>\n</HTML>\n";
 
 __END__
@@ -360,11 +369,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+Francois Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2016 - Institut de Physique du Globe Paris
+Webobs - 2012-2020 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -380,4 +389,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

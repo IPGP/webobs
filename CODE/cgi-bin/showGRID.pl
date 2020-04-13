@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 =head1 NAME
 
-showGRID.pl 
+showGRID.pl
 
 =head1 SYNOPSIS
 
@@ -43,7 +43,7 @@ use Locale::TextDomain('webobs');
 my $cgi = new CGI;
 set_message(\&webobs_cgi_msg);
 my $htmlcontents = "";  # HTML page that will be returned to the browser
-my $editOK   = 0;       # 1 if the user is allowed to edit the grid 
+my $editOK   = 0;       # 1 if the user is allowed to edit the grid
 my $admOK    = 0;       # 1 if the user has admin rights in the grid
 my $seeInvOK = 0;       # 1 if the user is allowed to see invalid nodes
 my $GRIDType = "";      # grid type ("PROC" or "VIEW")
@@ -84,13 +84,15 @@ if (scalar(@GID) == 2) {
 			}
 		} else { die "You cannot display $GRIDType.$GRIDName"}
 	} else { die "Couldn't get $GRIDType.$GRIDName configuration." }
-} else { die "No valid GRID requested (NOT gridtype.gridname)." } 
+} else { die "No valid GRID requested (NOT gridtype.gridname)." }
 
-# ---- good, passed all checkings above 
+# ---- good, passed all checkings above
 #
 my $grid = "$GRIDType.$GRIDName";
 my $isProc = ($GRIDType eq "PROC" ? '1':'0');
 $usrProcparam = '' if !$isProc;
+my @domain = split(/\|/,$GRID{DOMAIN});
+
 my $myself = "/cgi-bin/".basename($0)."?grid=$grid";
 my $nbNodes = scalar(@{$GRID{NODESLIST}});
 
@@ -129,12 +131,12 @@ if (-e $statusDB) {
 			undef, "%$grid%");
 	if (@$statusNODES == 0) {
 		$overallStatus = 0;
-	} 
+	}
 } else {
 	$overallStatus = 0;
 }
 
-# ---- Start HTML page 
+# ---- Start HTML page
 #
 print "Content-type: text/html\n\n";
 print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
@@ -154,7 +156,8 @@ print "<script language=\"javascript\" type=\"text/javascript\" src=\"/js/wolb.j
 # ---- header (GRID name) and internal links within page
 #
 print "<A NAME=\"MYTOP\"></A>";
-print "<H1 style=\"margin-bottom:6pt\"> $DOMAINS{$GRID{DOMAIN}}{NAME} / $GRID{NAME}".($admOK ? " <A href=\"/cgi-bin/formGRID.pl?grid=$grid\"><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
+my $domain_title = ($#domain > 0 ? "#":$DOMAINS{$domain[0]}{NAME});
+print "<H1 style=\"margin-bottom:6pt\"> $domain_title / $GRID{NAME}".($admOK ? " <A href=\"/cgi-bin/formGRID.pl?grid=$grid\"><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
 print WebObs::Search::searchpopup();
 #if ($admOK == 1) { print "<A class=\"gridname\" href=\"/cgi-bin/formGRID.pl?grid=$grid\">{$grid}</A>"; }
 
@@ -183,13 +186,13 @@ print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks";
 my @desc;
 my $fileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName"."$GRIDS{DESCRIPTION_SUFFIX}";
 my $legacyfileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDName"."$GRIDS{DESCRIPTION_SUFFIX}";
-if (-e $legacyfileDesc) { 
+if (-e $legacyfileDesc) {
 	copy($legacyfileDesc, $fileDesc);
 }
-if (-e $fileDesc) { 
+if (-e $fileDesc) {
 	@desc = readFile($fileDesc);
 }
-$htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#descID');\">&nbsp;&nbsp;"; 
+$htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#descID');\">&nbsp;&nbsp;";
 	$htmlcontents .= "$__{'Purpose'}";
 	if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{DESCRIPTION_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 	$htmlcontents .= "</div><div id=\"descID\"><BR>";
@@ -198,27 +201,29 @@ $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\
 print $htmlcontents;
 
 
-# ---- GRID's characteristics 
+# ---- GRID's characteristics
 #
 print "<BR>";
 $htmlcontents = "<A NAME=\"SPECS\"></A>";
-$htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#specID');\">&nbsp;&nbsp;"; 
+$htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#specID');\">&nbsp;&nbsp;";
 	$htmlcontents .= "$__{'Specifications'}&nbsp;$go2top";
 	$htmlcontents .= "</div><div id=\"specID\">";
-	# should 'nodes' be called differently (than 'nodes'!) ? 
+	# should 'nodes' be called differently (than 'nodes'!) ?
 	my $snm = defined($GRID{NODE_NAME}) ? $GRID{NODE_NAME} : "$__{'node'}";
 	$htmlcontents .= "<UL>";
 	# -----------
-	$htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$GRID{DOMAIN}\"><B>$DOMAINS{$GRID{DOMAIN}}{NAME}</B></A></LI>\n"; 
+	foreach (@domain) {
+		$htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$_\"><B>$DOMAINS{$_}{NAME}</B></A></LI>\n";
+	}
 	# -----------
 	$htmlcontents .= "<LI>$__{'Grid code'}: <B>$grid</B></LI>\n";
         # -----------
-	if ($showOwnr && defined($GRID{OWNCODE})) { 
-		$htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n" 
-	} 
+	if ($showOwnr && defined($GRID{OWNCODE})) {
+		$htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n"
+	}
 	# -----------
 	$htmlcontents .= "<LI>$__{'Node(s)'}: <B>$nbNodes</B> \"$snm\"";
-	if ($admOK) { 
+	if ($admOK) {
 		$htmlcontents .= " [ "
 			."<A href=\"/cgi-bin/formGRID.pl?grid=$grid\">$__{'Associate existing node(s)'}</A> | "
 			."<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\">$__{'Create a new node'}</A> "
@@ -229,7 +234,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	# -----------
 	# only for PROCs
 	if ($isProc) {
-		# 'old' ddb-key superseeded: use FORM (FORMS) definitions instead!  
+		# 'old' ddb-key superseeded: use FORM (FORMS) definitions instead!
 		if (defined($GRID{'FORM'})) {
 			my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
 			if (%FORM) {
@@ -237,7 +242,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				my $txtData = (defined($FORM{'TITLE'})) ? $FORM{'TITLE'} : "";
 				$htmlcontents .= "<LI>Associated FORM: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
 			}
-		} 
+		}
 		# -----------
 		$htmlcontents .= "<LI>$__{'Default data format'}: <B>"
 							.($GRID{RAWFORMAT} // '')."</B></LI>\n";
@@ -247,17 +252,17 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		if (defined($GRID{URNDATA})) {
 			my $urnData = "$GRID{URNDATA}";
 			$htmlcontents .= "<LI>$__{'Access to rawdata'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
-		} 
+		}
 		# -----------
 		my $urn = '';
-		if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" ) { 
+		if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" ) {
 			$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
 			my $outg = join(', ',map {$_ = "<A href=\"$urn&amp;ts=$_\"><B>$_</B></A>"} split(/,/,$GRID{TIMESCALELIST}));
 			$htmlcontents .= "<LI>$__{'Graphical routine'}: <B>$GRIDName</B> $outg</LI>\n";
-		} elsif ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" ) { 
+		} elsif ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" ) {
 			$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName&ts=events";
 			$htmlcontents .= "<LI>$__{'Graphical routine'}: <B>$GRIDName</B> <A href=\"$urn\">events</A></LI>\n";
-		} 
+		}
 		# -----------
 		if (defined($GRID{EVENTS_FILE})) {
 			$htmlcontents .= "<LI>$__{'Events File(s)'}:";
@@ -275,7 +280,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				}
 			}
 			$htmlcontents .= "</LI>\n";
-		} 
+		}
 	}
 	# -----------
 	if (defined($GRID{URL})) {
@@ -285,18 +290,18 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			push(@txt,$txt[0]) if (index($_, ",") == -1);
 			$htmlcontents .= "<LI>$__{'External link'}: <B><A href=\"$txt[1]\" target=\"_blank\">$txt[0]<\/A></B></LI>\n";
 		}
-	} 
+	}
 	$htmlcontents .= "</UL>\n";
 	$htmlcontents .= "</div></div>";
 print $htmlcontents;
 
 
-# ---- Now the GRID's NODE(s) 
+# ---- Now the GRID's NODE(s)
 # ---- first, submenu line for selections (list Active nodes, All,..., Coordinates type, etc....)
 #
 print "<BR>";
 $htmlcontents = "<A name=\"NODES\"></A>";
-$htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#nodesID');\">&nbsp;&nbsp;"; 
+$htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#nodesID');\">&nbsp;&nbsp;";
 	$htmlcontents .= "$__{'List of'} $snm(s)&nbsp;$go2top";
 	$htmlcontents .= "</div><div id=\"nodesID\">";
 
@@ -476,8 +481,8 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				# Node's type
 				$htmlcontents .= "<TD align=\"center\">".($NODE{TYPE} // "")."</TD>";
 
-				# #Interventions and Project file 
-				if ( $CLIENT ne 'guest' ) { 
+				# #Interventions and Project file
+				if ( $CLIENT ne 'guest' ) {
 					my $textProj = "";
 					my $pathInter="$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";
 					my @interventions  = glob("$pathInter/$NODEName*.txt");
@@ -524,7 +529,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 						."</TD>";
 				}
 
-				# NODE's status 
+				# NODE's status
 				if ($overallStatus) {
 					# Get the latest updated state for the node and print the information
 					my $stState = (grep($_->[0] eq "$grid.$NODEName", @$statusNODES))[-1];
@@ -547,7 +552,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 						else { $bgcolA = "status-warning"; $stState->[2] .= " %"; }
 						if (($stState->[2] eq " %") || ($stState->[2] eq "")) { $bgcolA = ""; $stState->[2] = " " }
 						# $stState->[3..5] (Date, Time and TZ of last measurement)
-						# Display 
+						# Display
 						$htmlcontents .= "<TD align=\"center\" nowrap>$stState->[3]</TD>\n"; # Date de l'analyse de l'etat
 						if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
 							$htmlcontents .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stState->[2]</B></TD>"
@@ -584,7 +589,7 @@ my $mapfile = $grid."_map".$usrMap;
 if  ( -e "$MAPpath/$mapfile.png" ) {
 	print "<BR>";
 	print "<A NAME=\"MAPS\"></A>";
-	print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#mapID');\">&nbsp;&nbsp;"; 
+	print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#mapID');\">&nbsp;&nbsp;";
 	print "$__{'Location'}&nbsp;$go2top";
 	print "</div><div id=\"mapID\">";
 	print "<P class=\"subTitleMenu\" style=\"margin-left: 5px\"> $__{Maps} [ ";
@@ -615,15 +620,15 @@ if  ( -e "$MAPpath/$mapfile.png" ) {
 my $fileProtocole = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName"."$GRIDS{PROTOCOLE_SUFFIX}";
 my $legacyfileProtocole = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDName"."$GRIDS{PROTOCOLE_SUFFIX}";
 my @protocole = ("");
-if (-e $legacyfileProtocole) { 
+if (-e $legacyfileProtocole) {
 	copy($legacyfileProtocole, $fileProtocole);
 }
-if (-e $fileProtocole) { 
+if (-e $fileProtocole) {
 	@protocole = readFile($fileProtocole);
 }
 print "<BR>";
 print "<A name=\"INFO\"></A>\n";
-$htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#infoID');\">&nbsp;&nbsp;"; 
+$htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#infoID');\">&nbsp;&nbsp;";
 	$htmlcontents .= "$__{'Information'}";
 	if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{PROTOCOLE_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 	$htmlcontents .= "&nbsp;$go2top</div><div id=\"infoID\"><BR>";
@@ -632,23 +637,23 @@ $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\
 print $htmlcontents;
 
 # ---- Project ----------------------------------------------------------------
-# 
+#
 print "<BR><A name=\"PROJECT\"></A>\n";
-print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#projID');\">&nbsp;&nbsp;"; 
+print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#projID');\">&nbsp;&nbsp;";
 print "$__{Project}";
 if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&event=$GRIDName\_Projet.txt&object=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 print "&nbsp;$go2top</div><div id=\"projID\"><BR>";
 my $htmlProj = projectShow("$GRIDType.$GRIDName", $editOK);
 print $htmlProj;
 print "</div></div>";
-    
+
 # ---- Events / interventions
-# 
-($myself = $ENV{REQUEST_URI}) =~ s/&_.*$//g ; # how I got called 
+#
+($myself = $ENV{REQUEST_URI}) =~ s/&_.*$//g ; # how I got called
 $myself  =~ s/\bsortby(\=[^&]*)?(&|$)//g ;    # same but sortby= and _= removed
 
 print "<BR><A name=\"EVENTS\"></A>\n";
-print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#eventID');\">&nbsp;&nbsp;"; 
+print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#eventID');\">&nbsp;&nbsp;";
 print "$__{'Events'}";
 if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&object=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 print "&nbsp;$go2top</div><div id=\"eventID\"><BR>";
@@ -663,15 +668,15 @@ print "</div></div>";
 my $fileBib = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName"."$GRIDS{BIBLIO_SUFFIX}";
 my $legacyfileBib = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDName"."$GRIDS{BIBLIO_SUFFIX}";
 my @bib = ("");
-if (-e $legacyfileBib) { 
+if (-e $legacyfileBib) {
 	copy($legacyfileBib, $fileBib);
 }
-if (-e $fileBib) { 
+if (-e $fileBib) {
 	@bib = readFile($fileBib);
 }
 print "<BR>";
 print "<A name=\"REF\"></A>\n";
-$htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#bibID');\">&nbsp;&nbsp;"; 
+$htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#bibID');\">&nbsp;&nbsp;";
 	$htmlcontents .= "$__{'References'}";
 	if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{BIBLIO_SUFFIX}&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 	$htmlcontents .= "&nbsp;$go2top</div><div id=\"bibID\"><BR>";
@@ -708,4 +713,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

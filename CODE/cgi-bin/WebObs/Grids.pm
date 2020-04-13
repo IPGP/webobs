@@ -31,7 +31,7 @@ use WebObs::Utils qw(u2l l2u trim);
 use WebObs::Config qw(%WEBOBS readCfg readFile);
 use WebObs::Users qw(clientHasRead);
 use POSIX qw(strftime);
-   
+
 #our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %DISCP, %GRIDS, %NODES);
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %GRIDS, %NODES);
 require Exporter;
@@ -42,17 +42,17 @@ $VERSION    = "1.00";
 %DOMAINS = readDomain();
 
 if (-e $WEBOBS{FILE_OWNERS}) {
-	%OWNRS = readCfg($WEBOBS{FILE_OWNERS}); 
+	%OWNRS = readCfg($WEBOBS{FILE_OWNERS});
 }
 
 #FB-was: if (-e $WEBOBS{FILE_DISCIPLINES}) { %DISCP = readCfg($WEBOBS{FILE_DISCIPLINES}); }
 
 if (-e $WEBOBS{CONF_NODES}) {
-	%NODES = readCfg($WEBOBS{CONF_NODES}); 
+	%NODES = readCfg($WEBOBS{CONF_NODES});
 }
 
 if (-e $WEBOBS{CONF_GRIDS}) {
-	%GRIDS = readCfg($WEBOBS{CONF_GRIDS}); 
+	%GRIDS = readCfg($WEBOBS{CONF_GRIDS});
 }
 
 
@@ -62,13 +62,13 @@ if (-e $WEBOBS{CONF_GRIDS}) {
 
 =head2 readDomain
 
-Reads all 'domains' configurations into a HoH. 
+Reads all 'domains' configurations into a HoH.
 
     %D = readDomain;     # reads all DOMAINS
     $n = $D{S}{NAME}     # value of 'NAME' field of domain S
     $o = $D{S}{OOA};     # value of 'OOA' (Order of Appearence) field of domain S
 
-=cut 
+=cut
 
 sub readDomain {
 	my %ret;
@@ -86,7 +86,7 @@ sub readDomain {
 
 =head2 readProc
 
-Reads one or more 'procs' configurations into a HoH. 
+Reads one or more 'procs' configurations into a HoH.
 Adds uppercase NODESLIST hash key to point to the list of linked-to NODES for a PROC.
 Adds DOMAIN code from grids2domains db
 
@@ -98,21 +98,21 @@ Adds DOMAIN code from grids2domains db
 
 Internally uses WebObs::listProcNames.
 
-=cut 
+=cut
 
 sub readProc {
 	my %ret;
 	for my $f (listProcNames($_[0])) {
 		my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf");
 		# --- get list of associated NODES
-		opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}"); 
+		opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
 		my @lSn = grep {/^PROC\.($f)\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
 		foreach (@lSn) {s/^PROC\.($f)\.//g};
 		@lSn =  sort {$a cmp $b} @lSn ;
 		$tmp{'NODESLIST'} = \@lSn;
 		closedir(DIR);
 		# --- get list of associated FORMS
-		opendir(DIR, "$WEBOBS{PATH_GRIDS2FORMS}"); 
+		opendir(DIR, "$WEBOBS{PATH_GRIDS2FORMS}");
 		my @lSf = grep {/^PROC\.($f)\./ && -l $WEBOBS{PATH_GRIDS2FORMS}."/".$_} readdir(DIR);
 		foreach (@lSf) {s/^PROC\.($f)\.//g};
 		$tmp{'FORM'} = $lSf[0];	#NOTE: keeps only the first FORM
@@ -120,8 +120,8 @@ sub readProc {
 		# --- get DOMAIN
 		my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'PROC' and NAME = '$f'");
 		chomp(@qx);
-		$tmp{'DOMAIN'} = $qx[0];
-		$ret{$f}=\%tmp; 
+		$tmp{'DOMAIN'} = join('|',@qx);
+		$ret{$f}=\%tmp;
 	}
 	return %ret;
 }
@@ -130,7 +130,7 @@ sub readProc {
 
 =head2 readView
 
-Reads one or more 'views' configurations into a HoH. 
+Reads one or more 'views' configurations into a HoH.
 Adds uppercase NODESLIST hash key to point to the list of linked-to NODES for a VIEW
 Adds DOMAIN code from grids2domains db
 
@@ -138,13 +138,13 @@ See readProc for similar usage examples
 
 Internally uses WebObs::listViewNames.
 
-=cut 
+=cut
 
 sub readView {
 	my %ret;
 	for my $f (listViewNames($_[0])) {
 		my %tmp = readCfg("$WEBOBS{PATH_VIEWS}/$f/$f.conf");
-		opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}"); 
+		opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
 		my @l = grep {/^VIEW\.($f)\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
 		foreach (@l) {s/^VIEW\.($f)\.//g};
 		@l =  sort {$a cmp $b} @l ;
@@ -153,7 +153,7 @@ sub readView {
 		my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'VIEW' and NAME = '$f'");
 		chomp(@qx);
 		$tmp{'DOMAIN'} = $qx[0];
-		$ret{$f}=\%tmp; 
+		$ret{$f}=\%tmp;
 	}
 	return %ret;
 }
@@ -162,11 +162,11 @@ sub readView {
 
 =head2 readGrid
 
-Reads one single 'grid' configuration into a hash. Argument must be GridType.GridName. 
+Reads one single 'grid' configuration into a hash. Argument must be GridType.GridName.
 Adds uppercase NODESLIST hash key to point to the list of linked-to NODES for a GRID
 Adds DOMAIN code from grids2domains db
 
-=cut 
+=cut
 
 sub readGrid {
 	my %ret;
@@ -175,7 +175,7 @@ sub readGrid {
 	my ($gt,$gn) = split(/\./,$f);
 	my $z = "PATH_${gt}S";
 	%tmp = readCfg("$WEBOBS{$z}/$gn/$gn.conf");
-	opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}"); 
+	opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
 	my @l = grep {/^$f\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
 	foreach (@l) {s/^$f\.//g};
 	@l =  sort {$a cmp $b} @l ;
@@ -184,7 +184,7 @@ sub readGrid {
 	my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = '$gt' and NAME = '$gn'");
 	chomp(@qx);
 	$tmp{'DOMAIN'} = $qx[0];
-	$ret{$f}=\%tmp; 
+	$ret{$f}=\%tmp;
 	return %ret;
 
 }
@@ -193,12 +193,12 @@ sub readGrid {
 
 =head2 readNode
 
-Reads one or more 'nodes' configurations into a HoH. Option "nowovsub" will 
+Reads one or more 'nodes' configurations into a HoH. Option "nowovsub" will
 avoid WEBOBS.rc variable substitution.
 
 Internally uses WebObs::listNodeNames.
 
-=cut 
+=cut
 
 sub readNode {
 	my %ret;
@@ -215,28 +215,28 @@ sub readNode {
 		$tmp{LAT_WGS84} =~ s/,/./g;
 		$tmp{LON_WGS84} =~ s/,/./g;
 
-		$ret{$f}=\%tmp; 
+		$ret{$f}=\%tmp;
 	}
 	return %ret;
 }
 
-=pod 
+=pod
 
 =head2 listViewNames
 
-Returns a list of names of 'VIEWS' defined in $WEBOBS{PATH_VIEWS}. 
+Returns a list of names of 'VIEWS' defined in $WEBOBS{PATH_VIEWS}.
 
-Input is optional, as it defaults to 'all views'. If it is specified, 
+Input is optional, as it defaults to 'all views'. If it is specified,
 it will be used as a regexp to select view names.
 
   @L = listViewNames("^GPS");  # all views named GPS*
 
-=cut 
+=cut
 
 sub listViewNames {
 	#$_[0] will be used as a regexp
 	my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
-	opendir(DIR, $WEBOBS{PATH_VIEWS}) or die "can't opendir $WEBOBS{PATH_VIEWS}: $!"; 
+	opendir(DIR, $WEBOBS{PATH_VIEWS}) or die "can't opendir $WEBOBS{PATH_VIEWS}: $!";
 	my @list = grep {/($filter)/ && -d $WEBOBS{PATH_VIEWS}."/".$_} readdir(DIR);
 	closedir(DIR);
 	my @finallist;
@@ -246,23 +246,23 @@ sub listViewNames {
 	return @finallist;
 }
 
-=pod 
+=pod
 
 =head2 listProcNames
 
-Returns a list of names of 'PROCS' defined in $WEBOBS{PATH_PROCS}. 
+Returns a list of names of 'PROCS' defined in $WEBOBS{PATH_PROCS}.
 
-Input is optional, as it defaults to 'all procs'. If it is specified, 
+Input is optional, as it defaults to 'all procs'. If it is specified,
 it will be used as a regexp to select proc names.
 
   @L = listProcNames("^SISMO");  # all procs named SISMO*
 
-=cut 
+=cut
 
 sub listProcNames {
 	#$_[0] will be used as a regexp
 	my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
-	opendir(DIR, $WEBOBS{PATH_PROCS}) or die "can't opendir $WEBOBS{PATH_PROCS}: $!"; 
+	opendir(DIR, $WEBOBS{PATH_PROCS}) or die "can't opendir $WEBOBS{PATH_PROCS}: $!";
 	my @list = grep {/($filter)/ && -d $WEBOBS{PATH_PROCS}."/".$_} readdir(DIR);
 	closedir(DIR);
 	my @finallist;
@@ -272,49 +272,49 @@ sub listProcNames {
 	return @finallist;
 }
 
-=pod 
+=pod
 
 =head2 listNodeNames
 
-Returns a list of names of 'NODES' defined in $NODES{PATH_NODES}. 
+Returns a list of names of 'NODES' defined in $NODES{PATH_NODES}.
 
-Input is optional, as it defaults to 'all nodes'. If it is specified, 
+Input is optional, as it defaults to 'all nodes'. If it is specified,
 it will be used as a regexp to select node names.
 
   @L = listNodeNames("^GSB");  # all nodes like GSB*
 
-=cut 
+=cut
 
 sub listNodeNames {
 	#$_[0] will be used as a regexp
 	my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
-	opendir(DIR, $NODES{PATH_NODES}) or die "can't opendir $NODES{PATH_NODES}: $!"; 
+	opendir(DIR, $NODES{PATH_NODES}) or die "can't opendir $NODES{PATH_NODES}: $!";
 	my @list = grep {/($filter)/ && -d $NODES{PATH_NODES}."/".$_} readdir(DIR);
 	closedir(DIR);
 	return @list;
 }
 
-=pod 
+=pod
 
 =head2 listNodeGrids
 
  %HoA = listNodeGrids(node=>'nodename' [, type=>{'VIEW'|'PROC'}]
 
-Returns a hash of list of grids (of type type) a node belongs to.  
+Returns a hash of list of grids (of type type) a node belongs to.
 
-node will default to all known nodes in $NODES{PATH_NODES}. If 
+node will default to all known nodes in $NODES{PATH_NODES}. If
 specified, will be used as a regexp to select node(s).
 
-type, if not specified, will default to ALL grid types (ie. VIEW and PROC). 
+type, if not specified, will default to ALL grid types (ie. VIEW and PROC).
 
 
  %HoA = listNodeGrids(node=>'GSAT');
  print join('+',keys(%HoA));    # maybe "GSATDB1+GSATHM0+GSATHM1"
  print scalar(@{$HoA{GSATDB1}}) # maybe 2 ie. number of grids for GSATDB1
- print "@{$HoA{GSATDB1}}";      # maybe "PROC.name1 VIEW.name2" 
- 
+ print "@{$HoA{GSATDB1}}";      # maybe "PROC.name1 VIEW.name2"
 
-=cut 
+
+=cut
 
 sub listNodeGrids {
 	my %KWARGS = @_;
@@ -325,9 +325,9 @@ sub listNodeGrids {
 	my @s = listNodeNames($filterS);
 	my $g = "$WEBOBS{PATH_GRIDS2NODES}/";
 	my %rs;
-	foreach (@s) { 
-		my @l = grep(s{$g/}{}g, <$g/$filterT*$_>); 
-		$rs{$_}=[grep(s{\.[^.]*$}{}, @l)]; 
+	foreach (@s) {
+		my @l = grep(s{$g/}{}g, <$g/$filterT*$_>);
+		$rs{$_}=[grep(s{\.[^.]*$}{}, @l)];
 	}
 	return %rs;
 }
@@ -370,14 +370,14 @@ sub listNameGrids {
 
  %H  = listGridNodes( grid=>'[gridtype.]gridname' [,valid=>1] [,active=>{today|isodate|isodateStart:isodateEnd}] )
 
-Returns a hash of hashes of ALIAS, NAME and FID of all or valid-only nodes for a grid. 
-Optionaly limit this list to nodes that are 'active' on a given date. 
-Grid may be specified either as 'gridtype.gridname' or 'gridname'. 
+Returns a hash of hashes of ALIAS, NAME and FID of all or valid-only nodes for a grid.
+Optionaly limit this list to nodes that are 'active' on a given date.
+Grid may be specified either as 'gridtype.gridname' or 'gridname'.
 
-Note1: valid nodes are those with their $node{VALID}=1. 
+Note1: valid nodes are those with their $node{VALID}=1.
 
 Note2: an active node on date D is a node for which D falls between $node{INSTALL_DATE} and $node{END_DATE}.
-'active' date may also be specidfied as a range 'isodateStart:isodateEnd' (: acts as delimiter); the node 
+'active' date may also be specidfied as a range 'isodateStart:isodateEnd' (: acts as delimiter); the node
 is then considered 'active' if one of isodateStart and isodateEnd (or both) fall(s) between $node{INSTALL_DATE} and $node{END_DATE}.
 
  # all nodes ids for PROC.BOJAP grid:
@@ -402,7 +402,7 @@ is then considered 'active' if one of isodateStart and isodateEnd (or both) fall
                         }
          };
 
-=cut 
+=cut
 
 sub listGridNodes {
 	use Time::Piece;
@@ -414,7 +414,7 @@ sub listGridNodes {
 	if (defined($acton))  {
 		$today = strftime( '%Y-%m-%d', localtime );
 		($deb,$fin) = split(/:/,$acton);
-		if (!$fin) {$fin = $deb} 
+		if (!$fin) {$fin = $deb}
 		$deb =~ s/today/$today/;
 		$fin =~ s/today/$today/;
 		eval { $deb = Time::Piece->strptime($deb,"%Y-%m-%d") }; if ($@) { $deb = Time::Piece->strptime("","%Y-%m-%d") }
@@ -423,13 +423,13 @@ sub listGridNodes {
 	}
 	my %vlist;
 	if (defined($grid)) {
-		$grid = ($grid =~ /\./) ? $grid : "*.$grid"; 
+		$grid = ($grid =~ /\./) ? $grid : "*.$grid";
 		my @list = qx (ls -L $WEBOBS{PATH_GRIDS2NODES}/$grid.*/*.cnf 2>/dev/null);
 		chomp(@list);
 		for my $n (@list) {
 			my $tINS = my $tEND = '';
 			my %tmp = readCfg("$n");
-			next if ( defined($valid) && $valid ne $tmp{VALID} ) ; 
+			next if ( defined($valid) && $valid ne $tmp{VALID} ) ;
 			if ( defined($acton) ) {
 				#  Time::Piece->strptime(<date>, "%Y-%m-%d") accepts either %Y, %Y-%m or %Y-%m-%d (fills with '01' as necessary)
 				eval { $tINS = Time::Piece->strptime($tmp{INSTALL_DATE}, "%Y-%m-%d") } ; if ($@) { $tINS = Time::Piece->strptime("","%Y-%m-%d") }
@@ -445,26 +445,26 @@ sub listGridNodes {
 }
 
 
-=pod 
+=pod
 
 =head2 normNode
 
  $normNode = normNode( node=>'[gridtype].[gridname].nodename' );
 
-Returns a 'normalized' NODE name (ie. fully qualified as "gridtype.gridname.nodename") 
-from an 'incomplete' NODE name, with gridtype VIEW preferred. normNode() can also 
+Returns a 'normalized' NODE name (ie. fully qualified as "gridtype.gridname.nodename")
+from an 'incomplete' NODE name, with gridtype VIEW preferred. normNode() can also
 be seen/used as a 'default' grid selector for an unqualified nodename.
 
 Returns null ("") if no normalized node is found.
  !!When more than one normalized node name exist, the first one from their reverse alphabetical
 list is returned, thus making any valid VIEW come first.
 
-Input node is an 'incomplete' node-name (ie. missing a valid grid identifier) where a 
+Input node is an 'incomplete' node-name (ie. missing a valid grid identifier) where a
 dot ('.') is a required placeholder for each missing grid qualifier (either gridtype or gridname).
 
 normNode may be used as a nodename validity (ie. well-formed AND existing) checker.
 
-=cut 
+=cut
 
 sub normNode {
 	my %KWARGS = @_;
@@ -480,25 +480,25 @@ sub normNode {
 	return $ret;
 }
 
-=pod 
+=pod
 
 =head2 getNodeString
 
  $text = getNodeString(node=>'nodename' [,style={'alias'|'short'|'html'] );
 
 Returns a string identifying NODE 'node', formatted in one of the predefined styles
-available: 'alias', 'short' or 'html'.  
+available: 'alias', 'short' or 'html'.
 
-'style' outputs: ('html' is the default style when none is specified) 
+'style' outputs: ('html' is the default style when none is specified)
 
  alias    : ALIAS
  short    : ALIAS: NAME
- html     : <b>ALIAS</b>: NAME <i>TYPE</i>  
+ html     : <b>ALIAS</b>: NAME <i>TYPE</i>
 
-Does NOT use WebObs::Grids::readNode() to save unecessary/expensive directory scans 
+Does NOT use WebObs::Grids::readNode() to save unecessary/expensive directory scans
 and type.txt file-reads ...
 
-=cut 
+=cut
 
 sub getNodeString
 {
@@ -513,7 +513,7 @@ sub getNodeString
 		if ($style eq 'alias')    { $texte = $N{ALIAS} }
 		if ($style eq 'short')    { $texte = sprintf('%s: %s',$N{ALIAS},$N{NAME}) }
 		if ($style eq 'html')     { $texte = sprintf('<b>%s</b>: %s <i>(%s)</i>',$N{ALIAS},$N{NAME},$N{TYPE}) }
-		use warnings; 
+		use warnings;
 		#djl-was: $texte =~ s/ /Â /g;    #djl: re-assess
 	}
 	return $texte;
@@ -525,9 +525,9 @@ sub getNodeString
 
  $pevents = parentEvents($eventFileName);
 
-Knowing that events are represented by their subpath/file names,  
-returns an html-tagged string representing the list of parent events 
-to which $eventFileName belongs. Returns "" if no such list.    
+Knowing that events are represented by their subpath/file names,
+returns an html-tagged string representing the list of parent events
+to which $eventFileName belongs. Returns "" if no such list.
 
 =cut
 
@@ -551,7 +551,7 @@ sub parentEvents ($)
 		$h =~ s/-/:/;
 		my $t = "???";
 		if (-e $f) {
-			my @xx = readFile($f);  
+			my @xx = readFile($f);
 			chomp(@xx);
 			my $o;
 			($o,$t) = split(/\|/,$xx[0]);
@@ -561,7 +561,7 @@ sub parentEvents ($)
 	return $txt;
 }
 
-=pod 
+=pod
 
 =head2 codesFDSN
 
@@ -578,7 +578,7 @@ wget http://www.iris.edu/ds/nodes/dmc/services/network-codes/?type=csv -O CODE/e
 
 It appends and possibly overwrites codes from local configuration file CONF/networkcode.csv
 
-=cut 
+=cut
 
 sub codesFDSN {
 	my %codes;
@@ -640,4 +640,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-				
