@@ -1,6 +1,6 @@
 =key|value
 # template for proc request parameters (default values)
-# updated: 2019-12-12
+# updated: 2020-04-13
 DATE1|
 DATE2|
 TZ|0
@@ -15,5 +15,6 @@ POSTSCRIPT|1
 PDFOUTPUT|0
 EXPORTS|1
 ANONYMOUS|0
+DEBUG|1
 COPYRIGHT|
 LOGO|
