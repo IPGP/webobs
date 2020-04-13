@@ -8,16 +8,17 @@ function DOUT=gnss(varargin)
 %	    TSCALE = '01y' or '30d,10y,'all' : only specified timescales
 %	    (keywords must be in TIMESCALELIST of PROC.conf)
 %
-%	GNSS(PROC,[],REQDIR) makes graphs/exports for specific request directory REQDIR.
-%	REQDIR must contain a REQUEST.rc file with dedicated parameters.
+%	GNSS(PROC,[],REQDIR) makes graphs/exports for specific request directory
+%	REQDIR. REQDIR must contain a REQUEST.rc file with dedicated parameters.
 %
 %       D = GNSS(PROC,...) returns a structure D containing all the PROC data:
 %           D(i).id = node ID
 %           D(i).t = time vector (for node i)
 %           D(i).d = matrix of processed data (NaN = invalid data)
 %
-%       GNSS will use PROC's and NODE's parameters to import data. Particularily, it can
-%       use NODE's calibration file if exists; in that case channels must be as follows:
+%       GNSS will use PROC's and NODE's parameters to import data.
+%	     Particularily, it can use NODE's calibration file if exists; in that
+%	     case channels must be as follows:
 %           Channel 1 = Eastern UTM (m)
 %           Channel 2 = Northern UTM (m)
 %           Channel 3 = Elevation (m)
@@ -39,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2020-01-07
+%   Updated: 2020-04-12
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -78,13 +79,13 @@ if numel(velref)==3 && any(velref~=0)
 end
 cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Northern,Relative Vertical'),',');
 
-% PERNODE graphs parameters 
+% PERNODE graphs parameters
 pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','o');
 pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $node_name - $velref} ($timescale)}');
 pernode_timezoom = field2num(P,'PERNODE_TIMEZOOM',0);
 pernode_cmpoff = field2num(P,'PERNODE_COMPONENT_OFFSET_M',0.01);
 
-% SUMMARY parameters 
+% SUMMARY parameters
 summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','o');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name - $itrf} ($timescale)}');
 summary_timezoom = field2num(P,'SUMMARY_TIMEZOOM',0);
@@ -148,7 +149,14 @@ modelling_title = field2str(P,'MODELLING_TITLE','{\fontsize{14}{\bf$name - Sourc
 plotbest = isok(P,'MODELLING_PLOT_BEST');
 plotbest_col = field2num(P,'MODELLING_PLOT_BEST_COLOR',.5*ones(1,3));
 plotbest_opt = {'p','MarkerSize',15,'LineWidth',1};
+modelling_vmax_mm = field2num(P,'MODELLING_VMAX_MM',0);
+modelling_vmax_ratio = field2num(P,'MODELLING_VMAX_RATIO',.25);
 plotresidual = isok(P,'MODELLING_PLOT_RESIDUAL',1);
+if isok(P,'MODELLING_VECTORS_CLIP',0)
+	vclip = 'on';
+else
+	vclip = 'off';
+end
 modelling_shape = field2shape(P,'MODELLING_SHAPE_FILE');
 
 modelling_source_type = field2str(P,'MODELLING_SOURCE_TYPE','isotropic','notempty');
@@ -225,11 +233,11 @@ V.name = P.NAME;
 V.velref = itrf;
 V.baselines_unit = field2str(P,'BASELINES_UNIT','m');
 
-% ====================================================================================================
+% ==============================================================================
 % Makes the proc's job
 
-% if a local reference is defined (VELOCITY_REF), computes relative positions in D.d
-% from the install date of the station.
+% if a local reference is defined (VELOCITY_REF), computes relative positions in
+% D.d from the install date of the station.
 
 if numel(velref)==3 && ~all(velref==0)
 	for n = 1:length(N)
@@ -394,7 +402,7 @@ for r = 1:length(P.GTABLE)
 		k = D(n).G(r).k;
 		ke = D(n).G(r).ke;
 		%tlim = D(n).G(r).tlim;
-    
+
 		% title and status
 		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
@@ -452,7 +460,7 @@ for r = 1:length(P.GTABLE)
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
-	
+
 		if ~isempty(k)
 			P.GTABLE(r).INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),'(median)',' ',' '};
 			for i = 1:3
@@ -460,7 +468,7 @@ for r = 1:length(P.GTABLE)
 					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},rmedian(D(n).d(k,i)),lre(i,:))}];
 			end
 		end
-		
+
 		% makes graph
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
@@ -483,7 +491,7 @@ for r = 1:length(P.GTABLE)
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
 	end
-	
+
 
 
 
@@ -503,7 +511,7 @@ for r = 1:length(P.GTABLE)
 			ib = 1:3;
 		end
 
-		% builds a structure B containing indexes of each node pairs 
+		% builds a structure B containing indexes of each node pairs
 		if isfield(P,'BASELINES_NODEPAIRS') && ~isempty(P.BASELINES_NODEPAIRS)
 			pairgraphs = split(P.BASELINES_NODEPAIRS,';');
 			np = 0;
@@ -610,7 +618,7 @@ for r = 1:length(P.GTABLE)
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
-	    
+
 		P.GTABLE(r).GSTATUS = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
@@ -621,7 +629,7 @@ for r = 1:length(P.GTABLE)
 	if any(strcmp(P.SUMMARYLIST,summary))
 
 		figure, orient tall
-		
+
 		P.GTABLE(r).GTITLE = varsub(vectors_title,V);
 		P.GTABLE(r).INFOS = {' ',' ', ...
 			sprintf('Referential: {\\bf%s}',itrf),sprintf('   E {\\bf%+g} mm/yr\n   N {\\bf%+g} mm/yr\n   U {\\bf%+g} mm/yr',velref), ...
@@ -665,7 +673,7 @@ for r = 1:length(P.GTABLE)
 		% fixes the axis
 		axis tight
 		axl = axis;
-		
+
 		% determines X-Y limits of the map
 		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),minkm,maxxy,border);
 
@@ -688,7 +696,7 @@ for r = 1:length(P.GTABLE)
 			set(h,'Color',modelling_topo_rgb,'LineWidth',.1);
 			clabel(c,h,'FontSize',8,'Color',modelling_topo_rgb);
 		end
-		
+
 		% plots stations
 		target(geo(knv,2),geo(knv,1),7);
 
@@ -702,7 +710,7 @@ for r = 1:length(P.GTABLE)
 		h = get(gca,'Children');
 		ko = find(ismember(h,ha),1);
 		set(gca,'Children',[ha;h(1:ko-1)])
-		
+
 		% plots error ellipse, vertical component and station name
 		for nn = 1:length(knv)
 			n = knv(nn);
@@ -764,7 +772,7 @@ for r = 1:length(P.GTABLE)
 			xlabel('Distance from target (km)')
 			ylabel('Velocity amplitude (mm/yr)')
 		end
-		
+
 
 		P.GTABLE(r).GSTATUS = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
@@ -864,7 +872,7 @@ for r = 1:length(P.GTABLE)
 		% fixes the axis
 		axis tight
 		axl = axis;
-		
+
 		% determines X-Y limits of the map
 		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),motion_minkm,1,border);
 
@@ -890,7 +898,7 @@ for r = 1:length(P.GTABLE)
 		h = get(gca,'Children');
 		ko = find(ismember(h,ha),1);
 		set(gca,'Children',[ha;h(1:ko-1)])
-		
+
 		% --- Z-Y profile
 		axes('Position',[pos(1)+pos(3)+0.01,pos(2),0.23,pos(4)])
 		plot([0,0],ylim,'-k','LineWidth',.1)
@@ -943,7 +951,7 @@ for r = 1:length(P.GTABLE)
 		axes('position',[.8,0.06,0.17,0.3]);
 		timecolorbar(.1,0,.15,.8,tlim,motion_colormap,8)
 		set(gca,'XLim',[0,1],'YLim',[0,1])
-		axis off		
+		axis off
 
 		P.GTABLE(r).GSTATUS = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
@@ -1011,7 +1019,7 @@ for r = 1:length(P.GTABLE)
 		xs = xsta - (targetll(2) - lon0)*degm*cosd(lat0);
 		ys = ysta - (targetll(1) - lat0)*degm;
 		modelopt.targetxy = (targetll([2,1]) - [lon0,lat0]).*[cosd(lat0),1]*degm;
-		
+
 	end
 
 	% --- Modelling
@@ -1149,7 +1157,10 @@ for r = 1:length(P.GTABLE)
 		%else
 			vmax = rmax(abs(reshape(d(:,1:3),[],1)))/2;
 		%end
-		vsc = .25*min([diff(minmax(xlim)),diff(minmax(ylim)),diff(minmax(zlim))])/vmax;
+		if modelling_vmax_mm > 0
+			vmax = modelling_vmax_mm;
+		end
+		vsc = modelling_vmax_ratio*min([diff(minmax(xlim)),diff(minmax(ylim)),diff(minmax(zlim))])/vmax;
 
 		% --- plots the results
 		figure, orient tall
@@ -1181,13 +1192,13 @@ for r = 1:length(P.GTABLE)
 		end
 		target(xsta,ysta,stasize)
 		if ~isnan(vmax)
-			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
+			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping',vclip)
 			ellipse(xsta + vsc*d(:,1),ysta + vsc*d(:,2),vsc*d(:,4),vsc*d(:,5),'LineWidth',.2,'Clipping','on')
 			arrows(xsta,ysta,vsc*ux,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref, ...
-				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
+				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping',vclip)
 			if plotresidual
 				arrows(xsta,ysta,vsc*(d(:,1)-ux),vsc*(d(:,2)-uy),arrowshapemod,'Cartesian','Ref',arrowref, ...
-					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
+					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping',vclip)
 			end
 		end
 		if numel(targetll)==2
@@ -1228,13 +1239,13 @@ for r = 1:length(P.GTABLE)
 		hold on
 		target(zsta,ysta,stasize)
 		if ~isnan(vmax)
-			arrows(zsta,ysta,vsc*d(:,3),vsc*d(:,2),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
+			arrows(zsta,ysta,vsc*d(:,3),vsc*d(:,2),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping',vclip)
 			ellipse(zsta + vsc*d(:,3),ysta + vsc*d(:,2),vsc*d(:,6),vsc*d(:,5),'LineWidth',.2,'Clipping','on')
 			arrows(zsta,ysta,vsc*uz,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref, ...
-				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
+				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping',vclip)
 			if plotresidual
 				arrows(zsta,ysta,vsc*(d(:,3)-uz),vsc*(d(:,2)-uy),arrowshapemod,'Cartesian','Ref',arrowref, ...
-					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
+					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping',vclip)
 			end
 		end
 		if numel(targetll)==2
@@ -1266,13 +1277,13 @@ for r = 1:length(P.GTABLE)
 		hold on
 		target(xsta,zsta,stasize)
 		if ~isnan(vmax)
-			arrows(xsta,zsta,vsc*d(:,1),vsc*d(:,3),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
+			arrows(xsta,zsta,vsc*d(:,1),vsc*d(:,3),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping',vclip)
 			ellipse(xsta + vsc*d(:,1),zsta + vsc*d(:,3),vsc*d(:,4),vsc*d(:,6),'LineWidth',.2,'Clipping','on')
 			arrows(xsta,zsta,vsc*ux,vsc*uz,arrowshapemod,'Cartesian','Ref',arrowref, ...
-				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
+				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping',vclip)
 			if plotresidual
 				arrows(xsta,zsta,vsc*(d(:,1)-ux),vsc*(d(:,3)-uz),arrowshapemod,'Cartesian','Ref',arrowref, ...
-					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
+					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping',vclip)
 			end
 		end
 		if numel(targetll)==2
@@ -1319,7 +1330,7 @@ for r = 1:length(P.GTABLE)
 			info = cat(2,info,sprintf('a priori horiz. STD = {\\bf%g km}',modelopt.apriori_horizontal));
 		end
 		% displays info for best model(s)
-		if any(~isnan(m0)) 
+		if any(~isnan(m0))
 			%info = cat(2,info,' ',sprintf('   {\\itLeast bad source (%1.1f%%)}:',modelopt.msigp*100));
 			[e0,n0,z0] = ll2utm(lat0,lon0);
 			switch lower(modelling_source_type)
@@ -1510,7 +1521,7 @@ for r = 1:length(P.GTABLE)
 				mtlabel{m} = 't_0 ref.';
 			end
 			M(m).mtp = mtp;
-			
+
 			M(m).t = (fliplr(tlim(2):-dt:tlim(1)))';
 			% last time must contain data
 			tlast = max(max(cat(1,D.tfirstlast)));
@@ -1641,7 +1652,7 @@ for r = 1:length(P.GTABLE)
 
 		% -- volumetric flow rate from volume variation (moving)
 		subplot(10,1,1:3), extaxes(gca,[.08,.04])
-		
+
 		% adjusts unit
 		vmaxs = max(abs(cat(1,M.vmedian)));
 		if isfinite(vmaxs) && vmaxs > 0.5e6
@@ -1812,7 +1823,7 @@ for r = 1:length(P.GTABLE)
 
 		% legend
 		axes('position',[mpos(1)+mpos(3),0.07,pos(3)-mpos(3),0.4]);
-		
+
 		text(.6,1,info,'HorizontalAlignment','left','VerticalAlignment','top','FontSize',8)
 		hold on
 
@@ -1831,7 +1842,7 @@ for r = 1:length(P.GTABLE)
 		axes('position',[.8,0.06,0.17,0.3]);
 		timecolorbar(.1,0,.15,.8,tlim,modeltime_cmap,8)
 		set(gca,'XLim',[0,1],'YLim',[0,1])
-		axis off		
+		axis off
 
 		% -- displacements module
 		%subplot(10,1,6:7), extaxes(gca,[.08,.04])
@@ -1858,7 +1869,7 @@ for r = 1:length(P.GTABLE)
 
 		% -- volume variation (cumulative normalized)
 		%subplot(10,1,8:10), extaxes(gca,[.08,.04])
-		
+
 		%plot(tlim,[0,0],'-k','LineWidth',1)
 		%hold on
 		%for m = 1:length(M)
@@ -1882,7 +1893,7 @@ for r = 1:length(P.GTABLE)
 			'Processing and modelling by Beauducel et al./IPGP',' '};
 		text(.99,.01,twarning,'HorizontalAlignment','right','VerticalAlignment','bottom','FontSize',8)
 
-	    
+
 		P.GTABLE(r).GTITLE = varsub(modeltime_title,V);
 		P.GTABLE(r).GSTATUS = [];
 		P.GTABLE(r).INFOS = {' '};
@@ -1924,8 +1935,8 @@ end
 
 
 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function e = adjerrors(d,opt)
 % avoiding numerical problem with pdf due to low errors
 e = d(:,4:6);
@@ -1947,10 +1958,10 @@ if any(k)
 end
 
 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function y = index3d(x,id3,dim)
-% returns elements of multidimensional matrix x given by index matrix id3 in 
+% returns elements of multidimensional matrix x given by index matrix id3 in
 % the dimension dim. id3 comes from [y,id3] = max(x,[],dim); so y and id3 have
 % one dimension less than x.
 
