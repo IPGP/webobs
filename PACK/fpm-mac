@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Help finding perl's mod dependencies -----------------------------
+# using 'scandeps' [deb: libmodule-scandeps-perl, rpm: ?]
+
+DIR=${1:?please specify the perl directory to be scanned !} # or just use argument
+
+cd ${DIR}
+	echo -n "Scanning ${DIR} ... "
+	rm -f *scandeps*
+	scandeps.pl -V -R * WebObs/* 2>/dev/null | tee /tmp/scandeps | gsed  -e '/^#.*$/d' -e 's/=>.*$//g' -e 's/[ ]//g' -e "s/'//g" | sort > out-scandeps
+	gsed -i -e '/^WebObs::/d' -e '/\[MSG\]/d' out-scandeps
+	##sed -e's/::.*$//g' out-scandeps | uniq > out-scandeps-major
+	gsed  -e '/^[^#]/d' -e's/^#\s*//' -e's/ \[.*$//' /tmp/scandeps > out-scandeps-p
+	echo "done:"
+	echo "$(ls *scandeps*)"
+	echo
+cd -
+
+
+# perlbrew to maintain several perl versions ---------------------
+#
+# ref:  http://perlbrew.pl
+#       http://search.cpan.org/~gugod/App-perlbrew-0.62/lib/App/perlbrew.pm
+#       http://stackoverflow.com/questions/3794922/
+#              how-do-i-use-perlbrew-to-manage-perl-installations-aimed-at-web-applications
+#
+# $ sudo yum install perlbrew
+# $ perlbrew available
+# $ perlbrew init
+# $ perlbrew -v install perl-5.16.3
+#    perl-5.16.3 is successfully installed.
+# $ perlbrew list
+# perl-5.16.3
+#
+# $ perlbrew install-cpanm
+# cpanm is installed to
+#     /..../perl5/perlbrew/bin/cpanm
+#
+# $ perlbrew exec perlbrew list-modules
+
+# Apache's cgis + perlbrew ----------------------------------------
+# redirecting apache perl-cgis to a perlbrew 'maintained' version
+# with set (export) PATH in Apache's 'envvars' (affects all vhosts):
+# /etc/apache2/envvars (Debian) or /etc/sysconfig/httpd (RedHat)
+# + use 'apachectl start' ('service httpd start' doesn't set env vars)

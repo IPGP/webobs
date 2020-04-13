@@ -13,8 +13,8 @@
 #  https://git.wiki.kernel.org/index.php/GitGlossary#plumbing
 #  https://git.wiki.kernel.org/index.php/GitGlossary#porcelain
 #
-# Original author (for SVN): Didier Lafon and François Beauducel
-#      Rewritten for git by: Xavier Béguin and François Beauducel
+# Original author (for SVN): Didier Lafon and Franï¿½ois Beauducel
+#      Rewritten for git by: Xavier Bï¿½guin and Franï¿½ois Beauducel
 #
 # Creation date (new version): July 2018
 #      Last modification date: December 2018
@@ -28,7 +28,7 @@ SCRIPT_DIR=$(dirname $0)
 
 # Script argument: version of the release
 # Should be something like X.Y.Z or similar
-RELEASE_VERSION="$1" 
+RELEASE_VERSION="$1"
 
 # Prefix to use for the subdirectory and tar archive filename
 RELEASE_PREFIX="WebObs-"
@@ -52,7 +52,7 @@ ARCHIVE_MD5_FILENAME="$ARCHIVE_TAR_FILENAME.md5"
 ARCHIVE_SHA1_FILENAME="$ARCHIVE_TAR_FILENAME.sha1"
 ARCHIVE_SHA512_FILENAME="$ARCHIVE_TAR_FILENAME.sha512"
 
-# File in the repository keeping the list of files ignored by git to 
+# File in the repository keeping the list of files ignored by git to
 # be added to the exported archive (one file or directory per line).
 # Paths should be relative to the git repository top directory.
 #  Note: the relative path is recreated in the target directory:
@@ -113,11 +113,11 @@ function log_err() {
   # Print script error to stderr
   echo "ERROR: $@" >&2
 }
- 
+
 
 function ask() {
   # Prompt the user with the string "$1 " and read his input.
-  # If no input is provided (user hits 'enter' immediately), 
+  # If no input is provided (user hits 'enter' immediately),
   # the default answer of $2 (or 'y' if not provided) is considered.
   # $3 can be provided to provide a pattern to match answers that return 0.
   #
@@ -253,7 +253,7 @@ cat <<__EOD__
             git ref: $(display_option $SRC_REV "HEAD" \
                        "HEAD" "tag reference '$RELEASE_TAG'")
     to subdirectory: $RELEASE_DIR
- 
+
  And copy additional files listed in: $ARCHIVE_ADDITIONAL_FILE
 
  Using this export, generate...
@@ -262,7 +262,7 @@ cat <<__EOD__
      SHA1 signature: $ARCHIVES_SUBDIR/$ARCHIVE_SHA1_FILENAME
    SHA512 signature: $ARCHIVES_SUBDIR/$ARCHIVE_SHA512_FILENAME
  [paths relative to the top level directory of the repository]
- 
+
  commit these files: $(display_option $ALLOW_COMMIT)
  create version tag: $(display_option $CREATE_GIT_TAG "Y" "$RELEASE_TAG")
 
@@ -330,7 +330,7 @@ echo "Changed VERSION in $archive_dir/SETUP/CONF/WEBOBS.rc"
 # Build list of required perl modules used by scripts in cgi-bin
 log "Scanning perl modules dependency"
 #$archive_dir/PACK/fpm $archive_dir/CODE/cgi-bin
-PACK/fpm $archive_dir/CODE/cgi-bin
+PACK/fpm-mac $archive_dir/CODE/cgi-bin
 
 # Create + optionally edit the SETUP/README-X.Y.Z file
 #cp $archive_dir/PACK/README $archive_dir/README
@@ -426,7 +426,7 @@ fi
 for checksum in \
   "md5sum $ARCHIVE_MD5_FILENAME" \
   "sha1sum $ARCHIVE_SHA1_FILENAME" \
-  "sha512sum $ARCHIVE_SHA512_FILENAME"
+  "   gsha512sum $ARCHIVE_SHA512_FILENAME"
 do
   read sum output <<< $checksum
   echo -n "Computing $sum to $output... "
