@@ -52,7 +52,7 @@ DEM_SRTM1|N
 # do not show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
-# file for background time referenced events 
+# file for background time referenced events
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 
 PAPER_SIZE|8,11
@@ -92,7 +92,7 @@ TREND_MIN_DAYS|5
 
 # ITRF reference (this is a string displayed on graph title, not functional)
 ITRF_REF|ITRF08
-# Relative velocity reference E,N,U (mm/yr) from ITRF = constant trend 
+# Relative velocity reference E,N,U (mm/yr) from ITRF = constant trend
 # substracted to all data before any other processing
 VELOCITY_REF|0,0,0
 VELOCITY_REF_ORIGIN_DATE|2000-01-01
@@ -187,6 +187,12 @@ MODELLING_APRIORI_HSTD_KM|0
 # set a minimum error on displacements, absolute (mm) and relative (%) to avoid NaN PDF when misfit is too high
 MODELLING_MINERROR_MM|5
 MODELLING_MINERROR_PERCENT|1
+# vector scale (mm), 0 for automatic
+MODELLING_VMAX_MM|0
+# maximum vector length to plot width ratio
+MODELLING_VMAX_RATIO|.25
+# clip vectors outside the plot axis
+MODELLING_VECTORS_CLIP|NO
 # indicates the best source solution on graph
 MODELLING_PLOT_BEST|Y
 # adds residual arrows (data - model)
@@ -223,7 +229,7 @@ MODELLING_PCDM_NEW_LIMIT_EDGE_RATIO|20
 MODELLING_PCDM_NEW_LIMIT_EXTEND|1
 MODELLING_PCDM_SUPPLEMENTARY_GRAPHS|N
 
-# --- MODELTIME: defines the moving periods, minimum sampling, maximum models 
+# --- MODELTIME: defines the moving periods, minimum sampling, maximum models
 # [NOTE] MODELTIME uses all MODELLING parameters but forces an isotropic source
 MODELTIME_PERIOD_DAY|30,15
 MODELTIME_SAMPLING_DAY|2
