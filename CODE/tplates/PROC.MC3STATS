@@ -102,12 +102,12 @@ EVENTTYPE_EXCLUDED_LIST|
 EVENTSTATUS_EXCLUDED_LIST|
 EVENTCOMMENT_EXCLUDED_REGEXP|
 # Located events filtering out (remove all events that doesn't satisfy the filters)
-LATLIM|
-LONLIM|
-DEPLIM|
-MAGLIM|3,10
+LATLIM|-90,90
+LONLIM|-180,360
+DEPLIM|-10,1000
+MAGLIM|-1,10
 # Activate the filtering
-QUALITY_FILTER|N
+QUALITY_FILTER|NO
 
 
 # --- SWARM graph parameters
