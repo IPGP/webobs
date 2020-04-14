@@ -24,3 +24,4 @@ clean:
 	mkdir -p $(TMP)
 	$(MCC) $(OPT) -m -R -nodisplay -d $(TMP) $<
 	mv -f $(TMP)/$(@F) $(OUT)/
+	chmod -R a+x $(OUT)/*$@*
