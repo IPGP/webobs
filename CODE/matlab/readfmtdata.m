@@ -1,7 +1,7 @@
 function [D,P] = readfmtdata(WO,P,N)
 %READFMTDATA Read formatted data file.
 %	D=READFMTDATA(WO,P,N) imports data of proc P (structure from READPROC), in the preset format
-%	defined by P.RAWFORMAT and P.RAWDATA or associated form P.FORM, for proc's nodes N 
+%	defined by P.RAWFORMAT and P.RAWDATA or associated form P.FORM, for proc's nodes N
 %	(structure from READPROC or READNODES) and returns a structure D with:
 %		D.t = time vector in DATENUM format. D.t will be expressed in P.TZ time zone.
 %		D.r = raw data matrix
@@ -12,7 +12,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	[D,P] = READFMTDATA(...) returns an updated structure P (some formats may add or update fields).
 %
-%	PROC's parameters P.RAWFORMAT and P.RAWDATA apply to all associated NODES, excepted if those 
+%	PROC's parameters P.RAWFORMAT and P.RAWDATA apply to all associated NODES, excepted if those
 %	parameters are defined into the NODE itself.
 %
 %	The RAWFORMAT string is case insensitive.
@@ -43,13 +43,14 @@ else
 		F.raw = {fraw};
 		lfid = split(N(n).FID,',');	% possible comma separated list of FID
 		for a = 1:length(lfid)
-			F.raw{a} = regexprep(fraw,'\$FID',lfid{a}); % special variable substitution	
+			F.raw{a} = regexprep(fraw,'\$FID',lfid{a}); % special variable substitution
 		end
-	
+
 		% datelim is finite dates limits of PROC (or NODE) expressed in the NODE's TZ
 		F.datelim = [max([P.DATELIM(1),N(n).INSTALL_DATE,P.BANG]), min([P.DATELIM(2),N(n).END_DATE,P.NOW])] - P.TZ/24 + N(n).UTC_DATA;
 
-		fprintf('%s: loading data [%s] for node "%s" {%s} ...',wofun,F.fmt,N(n).FID,N(n).ID);
+		fprintf('%s: loading data [%s] for node "%s" {%s} from %s to %s ...', ...
+			wofun,F.fmt,N(n).FID,N(n).ID,datestr(F.datelim(1)),datestr(F.datelim(2)));
 
 		% -------------------------------------------------------------
 		switch F.fmt
@@ -98,7 +99,7 @@ else
 
 		otherwise
 			fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);
-	
+
 		end
 	end
 end
@@ -171,4 +172,3 @@ P.tfirstall = rmin(cat(1,D.tfirstlast));
 if ~isok(P.DEBUG)
 	wosystem(sprintf('rm -rf %s',F.ptmp));
 end
-

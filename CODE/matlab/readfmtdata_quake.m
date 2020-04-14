@@ -1,6 +1,6 @@
 function [D,P] = readfmtdata_quake(WO,P,N,F)
 %READFMTDATA_QUAKE subfunction of readfmtdata.m
-%	
+%
 %	From proc P, node N and options F returns data D.
 %	See READFMTDATA function for details.
 %
@@ -14,7 +14,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %	format 'hyp71sum2k'
 %		type: Hypo71, year 2000 compatible, summary lines in a file
 %		filename/path: P.RAWDATA or N.RAWDATA
-%		data format: 
+%		data format:
 %		#   DATE ORIGIN     LAT N     LONG W   DEPTH Mt MAG  NO GAP DMIN RMS  ERH  ERZ  Q SCode File
 %		20141005 1819 07.34 14-48.70  61-10.33  -0.24 D 1.52  8 166  0.3 0.26  0.6  0.8 C  EB1   20141005_181900_a.mq0
 %		node specific variables: FID_MAGTYPE_DEFAULT, FID_MAGERR_DEFAULT
@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2020-04-09
+%	Updated: 2020-04-14
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -162,23 +162,23 @@ case 'fdsnws-event'
 	wsreqetime = '';
 	if all(~isnan(P.DATELIM))
 		tv = datevec(F.datelim);
-		wsreqstime = sprintf('&starttime=%04d-%02d-%02dT%02d:%02d:%02.0f',tv(1,:)); 
-		wsreqetime = sprintf('&endtime=%04d-%02d-%02dT%02d:%02d:%02.0f',tv(2,:)); 
+		wsreqstime = sprintf('&starttime=%04d-%02d-%02dT%02d:%02d:%02.0f',tv(1,:));
+		wsreqetime = sprintf('&endtime=%04d-%02d-%02dT%02d:%02d:%02.0f',tv(2,:));
 	end
 	if all(isfinite(P.LATLIM))
-		wsreq = sprintf('%s&minlatitude=%g&maxlatitude=%g',wsreq,P.LATLIM); 
+		wsreq = sprintf('%s&minlatitude=%g&maxlatitude=%g',wsreq,P.LATLIM);
 	end
 	if all(isfinite(P.LONLIM))
-		wsreq = sprintf('%s&minlongitude=%g&maxlongitude=%g',wsreq,P.LONLIM); 
+		wsreq = sprintf('%s&minlongitude=%g&maxlongitude=%g',wsreq,P.LONLIM);
 	end
 	if all(isfinite(P.DEPLIM))
-		wsreq = sprintf('%s&mindepth=%g&maxdepth=%g',wsreq,P.DEPLIM); 
+		wsreq = sprintf('%s&mindepth=%g&maxdepth=%g',wsreq,P.DEPLIM);
 	end
 	if isfinite(P.MAGLIM(1))
-		wsreq = sprintf('%s&minmagnitude=%g',wsreq,P.MAGLIM(1)); 
+		wsreq = sprintf('%s&minmagnitude=%g',wsreq,P.MAGLIM(1));
 	end
 	if isfinite(P.MAGLIM(2))
-		wsreq = sprintf('%s&maxmagnitude=%g',wsreq,P.MAGLIM(2)); 
+		wsreq = sprintf('%s&maxmagnitude=%g',wsreq,P.MAGLIM(2));
 	end
 
 	% makes a single and homogeneous space-separated numeric file from the raw data
@@ -264,8 +264,8 @@ case 'fdsnws-event'
 			c = [c;cc];
 
 			if evtCount == nbmax
-				% next request will end 1 second before the first existing data
-				wsreqetime = sprintf('&endtime=%04d-%02d-%02dT%02d:%02d:%02.0f',datevec(min(t(:)) - 1/86400));
+				% next request will start 1 second after the last existing data
+				wsreqstime = sprintf('&starttime=%04d-%02d-%02dT%02d:%02d:%02.0f',datevec(t(end) + 1/86400));
 			end
 		end
 	end
@@ -300,7 +300,7 @@ case 'scevtlog-xml'
 	else
 		list{1} = {};
 	end
-	
+
 	% extracts user-defined events from existing files
 	if ~isempty(field2str(P,'SC3_LISTEVT'))
 		evtlist = split(P.SC3_LISTEVT,', ');
@@ -465,8 +465,8 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 		m = mod(ym,12) + 1; % retrieves the month
 		s = wosystem(sprintf('sed ''/^$/d'' %s/%d/files/%s%d%02d.txt >> %s',MC3.ROOT,y,MC3.FILE_PREFIX,y,m,fdat),P);
 	end
-	
-	if exist(fdat,'file') 
+
+	if exist(fdat,'file')
 		mc3 = readdatafile(fdat,17,'CommentStyle',''); % reads all events (trash included)
 		fprintf('%s: associating %s event types and images ...',wofun,N.FID_MC3);
 		nsc3 = 0;
@@ -528,4 +528,3 @@ D.e = e;
 D.CLB.nx = 12;
 D.CLB.nm = {'Latitude','Longitude','Depth','Magnitude','Azimuthal Gap', 'RMS','ErH','ErZ','Phase Count','Quality','EMS98','ErMag'};
 D.CLB.un = {'°','°','km','','°','s','km','km','','','',''};
-
