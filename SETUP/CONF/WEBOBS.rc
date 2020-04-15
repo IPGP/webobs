@@ -6,7 +6,7 @@ BIG_BANG|${InstallYear}
 WEBOBS_TITLE|WEBOBS ${WEBOBS_ID}
 COPYRIGHT|${WEBOBS_TITLE} / IPGP
 
-# ---- site and non-site roots ---------------- 
+# ---- site and non-site roots ----------------
 # ---------------------------------------------
 ROOT_SITE|${InstallDocumentRoot}
 ROOT_VHST|${InstallVirtualHost}
@@ -24,7 +24,7 @@ ROOT_LOGS|${ROOT_SITE}/LOGS
 # might indicate here a path for additional data preprocessor
 ROOT_PREPROCESSOR|
 
-# ---- Grid System paths----------------------- 
+# ---- Grid System paths-----------------------
 # ---------------------------------------------
 PATH_VIEWS|${ROOT_CONF}/VIEWS
 PATH_PROCS|${ROOT_CONF}/PROCS
@@ -108,7 +108,7 @@ OUTG_STALENODES_DISPO|
 
 # ---- Jobs scheduler -------------------------
 # ---------------------------------------------
-CONF_SCHEDULER|${ROOT_CONF}/scheduler.rc 
+CONF_SCHEDULER|${ROOT_CONF}/scheduler.rc
 
 # ---- Apache's aliases -----------------------
 # ---------------------------------------------
@@ -120,6 +120,8 @@ URN_ICONS|/icons
 URN_JS|/js
 URN_SEFRAN|/sefran
 URN_RAWD|/rawdata
+URN_OUTG|/OUTG
+URN_OUTR|/OUTR
 
 # ---- HTML/PAGE ------------------------------
 # ---------------------------------------------
@@ -281,7 +283,7 @@ IMAGE_LOGO_GOOGLE_EARTH|/icons/google/google_earth.gif
 CGI_GOOGLE_MAPS|googleMAPS.pl
 GOOGLE_MAPS_LINK|1
 GOOGLE_MAPS_API|https://maps.google.com/maps?file=api
-# NOTE: API key can be obtained at http://code.google.com/apis/maps/signup.html entering domain address 
+# NOTE: API key can be obtained at http://code.google.com/apis/maps/signup.html entering domain address
 GOOGLE_MAPS_API_KEY|
 GOOGLE_MAPS_LINK_INFO|See with Google Maps (ATTENTION: error ~20 m)
 GOOGLE_MAPS_ICON|/icons/gdot.png
@@ -323,4 +325,3 @@ MKGRAPH_VALUE_PPI|100
 MKGRAPH_THUMBNAIL_HEIGHT|112
 LOGO_DEFAULT|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 LOGO_HEIGHT|0.04
-

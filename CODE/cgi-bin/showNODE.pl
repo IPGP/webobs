@@ -1,8 +1,8 @@
-#!/usr/bin/perl -w 
+#!/usr/bin/perl -w
 
 =head1 NAME
 
-showNODE.pl 
+showNODE.pl
 
 =head1 SYNOPSIS
 
@@ -10,29 +10,29 @@ http://..../showNODE.pl?node=NODEID[,sortBy={event|date}]
 
 =head1 DESCRIPTION
 
-Displays data associated to a NODE identified by its fully qualified name (node=gridtype.gridname.nodename) 
+Displays data associated to a NODE identified by its fully qualified name (node=gridtype.gridname.nodename)
 
-Although a NODE is an independent entity, a GRID-context (the 2 high level qualifiers of the 
+Although a NODE is an independent entity, a GRID-context (the 2 high level qualifiers of the
 fully qualified nodename) is required
-as a validation/authorization/reference information. 
+as a validation/authorization/reference information.
 
 All known data associated to the NODE are shown, along with links for editing these data, according
 to http-client authorizations for the GRID-context requested.
 
 The GRID-context to display other related NODEs in this page are obtained via the WebObs::Grids::normNODE()
-function, that calls to showNode other nodes. 
+function, that calls to showNode other nodes.
 
 =head1 Query string parameters
 
- node=  
+ node=
  the fully qualified NODE name (gridtype.gridname.nodename)
 
  sortby=event
- view the node's events list ordered by date but also showing events/subevents relationships  
+ view the node's events list ordered by date but also showing events/subevents relationships
 
  sortby=date
  view the node's events list ordered by date (subevents viewed as independent events).
- Optional, defaults to 'event'. 
+ Optional, defaults to 'event'.
 
 =cut
 
@@ -81,7 +81,7 @@ my %GRID;
 my %FORM;
 my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my $QryParm   = $cgi->Vars;
-my @NID = split(/[\.\/]/, trim($QryParm->{'node'})); 
+my @NID = split(/[\.\/]/, trim($QryParm->{'node'}));
 if (scalar(@NID) == 3) {
 	($GRIDType, $GRIDName, $NODEName) = @NID;
 	%allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
@@ -105,14 +105,14 @@ if (scalar(@NID) == 3) {
 				} else { die "You cannot view $NODEName in $GRIDType.$GRIDName context"}
 			} else { die "$__{'Could not read'} $GRIDType.$GRIDName configuration" }
 		} else { die "$__{'Could not read'} $__{'Node Configuration'}"}
-	} else { die "$GRIDType.$GRIDName.$NODEName $__{'unknown'}" } 
-} else { die "$__{'Not a fully qualified node name (gridtype.gridname.nodename)'}" } 
+	} else { die "$GRIDType.$GRIDName.$NODEName $__{'unknown'}" }
+} else { die "$__{'Not a fully qualified node name (gridtype.gridname.nodename)'}" }
 
 my $NODENameLower = lc($NODEName);
 
-# ---- went thru all above checks ... init node display 
+# ---- went thru all above checks ... init node display
 #
-(my $myself   = $ENV{REQUEST_URI}) =~ s/&_.*$//g ; # how I got called 
+(my $myself   = $ENV{REQUEST_URI}) =~ s/&_.*$//g ; # how I got called
 $myself       =~ s/\bsortby(\=[^&]*)?(&|$)//g ;    # same but sortby= and _= removed
 
 my $cnfFile   = "$NODES{PATH_NODES}/$NODEName/$NODEName.cnf";  # where's my cnf just in case
@@ -160,7 +160,7 @@ my %UTM =  %WebObs::IGN::UTM;
 
 # ---- sort interventions by date / event stuff  -----------------------------------
 #
-$QryParm->{'sortby'} //= "event";  
+$QryParm->{'sortby'} //= "event";
 my $sortBy = $QryParm->{'sortby'};
 
 #OLD:# NOTE [FB]: comment trier @listeFileInterventions suivant basename(@listeFileInterventions) ??
@@ -196,7 +196,7 @@ function checkRemove(file) {
 		}
 		);
    } else {
-      return false; 
+      return false;
    }
 }
 function askChanNb() {
@@ -227,7 +227,7 @@ print "<H1 style=\"margin-bottom:3pt\">$NODE{ALIAS}: $NODE{NAME}".($editOK ? " <
 #print "<A class=\"gridname\" name='FicheNode' href='$cgiConf'>{$GRIDType.$GRIDName.$NODEName}</A>\n" if ($editOK);
 
 print "<P class=\"subMenu\"> <B>&raquo;&raquo;</B> [";
-if (uc($GRIDType) eq 'VIEW' || uc($GRIDType) eq 'PROC') { 
+if (uc($GRIDType) eq 'VIEW' || uc($GRIDType) eq 'PROC') {
 	print " <A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRIDS}?domain=$GRID{DOMAIN}&type=all\">$DOMAINS{$GRID{DOMAIN}}{NAME}</A> / "
 		."<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName\">$GRID{NAME}</A> |";
 }
@@ -240,10 +240,10 @@ print "<FORM name=form id=\"theform\" action=\"/cgi-bin/$CLBS{CGI_FORM}\">"
 	."<INPUT type=\"hidden\" name=\"node\" value=\"$NODEName\">";
 
 # ---- start of node table ----------------------------------------------------
-# 
+#
 print "<TABLE style=\"background: white;\">";
 
-# ---- Row "Grids" ------------------------------------------------------------  
+# ---- Row "Grids" ------------------------------------------------------------
 #
 print "<TR><TH valign=\"top\" width=\"10%\">Grids</TH>";
 print "<TD colspan=\"2\">";
@@ -251,10 +251,10 @@ for (@{$allNodeGrids{$NODEName}}) {
 	print "<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$_\"><B>$_</B></A><BR>";
 }
 print "</TD></TR>\n";
-	
+
 
 # Row "type" ------------------------------------------------------------------
-# 
+#
 print "<TR><TH valign=\"top\">";
 if ($editOK) {
 	print "<A href=\"$cgiConf\">Type</A>";
@@ -265,7 +265,7 @@ print "</TH><TD colspan=\"2\">$NODE{TYPE}</TD></TR>\n";
 
 
 # Row "Lifetime" ----------------------------------------------------
-# 
+#
 my $installDate = $NODE{INSTALL_DATE};
 my $endDate = $NODE{END_DATE};
 my $txt = "$__{'Lifetime'}";
@@ -276,7 +276,7 @@ print "<TD colspan=\"2\">"
 	."</TD></TR>\n";
 
 # Row "proc": codes, status, data... -----------------
-# 
+#
 if (uc($GRIDType) eq 'PROC') {
 	print "<TR><TH valign=\"top\" rowspan=4>";
 	if ($editOK) { print "<A href=\"$cgiConf\">Proc</A>" }
@@ -295,7 +295,7 @@ if (uc($GRIDType) eq 'PROC') {
 	print "<BR>$fids" if ($fids ne "");
 	print "<BR>Raw Format: $rawFormats{$rawformat}{supfmt} / <B>$rawformat</B> ($rawFormats{$rawformat}{name})" if ($rawformat ne "");
 	print "<BR>Raw Data Source: <B>$rawdata</B>" if ($rawdata ne "");
-	print "</TD></TR>\n"; 
+	print "</TD></TR>\n";
 
 	# --- status
 	print "<TR><TD valign=\"top\" width=\"10%\"><B>$__{'Status'}</B></TD><TD style=\"text-align:left\">"
@@ -336,11 +336,11 @@ if (uc($GRIDType) eq 'PROC') {
 		if ($GRID{'FORM'} ne "") {
 			%FORM = readCfg("$WEBOBS{PATH_FORMS}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
 			my $txt = $FORM{TITLE} // "$__{'Data bank'}";
-			my $url = "/cgi-bin/$FORM{CGI_SHOW}"; 
+			my $url = "/cgi-bin/$FORM{CGI_SHOW}";
 			print "$__{'Form'}: <A href=\"$url?site=$NODEName\"><B>$txt</B></A><BR>";
 		}
 		if ($GRID{'URLDATA'} ne "") {
-			my $rep = "$GRID{'RAWDATA'}";	
+			my $rep = "$GRID{'RAWDATA'}";
 			print "$__{'Raw data'}: <A href=\"$rep\"><B>$rep</B></A><BR>";
 			if ($#dlist >= 0) {
 				print "$__{'ASCII data file(s)'}";
@@ -363,10 +363,10 @@ if (uc($GRIDType) eq 'PROC') {
 			my ($node,$time) = split(/_/,$name);
 			my $vignette = "PROC.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}/$name.jpg";
 			if (-e "$WEBOBS{ROOT_OUTG}/$vignette") {
-				$vignette = "/OUTG/$vignette";
+				$vignette = "$WEBOBS{URN_OUTG}/$vignette";
 			} else {
 				$vignette = "/icons/visu.gif";
-			} 
+			}
 			#my $tmp2 = "/OUTG/PROC.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}/$tmp";
 			my $tmp2 = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName&ts=$time&g=$node";
 			my $message = "<b>$__{'Click to enlarge'}</B><br>";
@@ -425,7 +425,7 @@ if (uc($GRIDType) eq 'PROC') {
 }
 
 # Row "coordinates" and localization map --------------------------------------
-# 
+#
 if (!($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0)) {
 	my $lat = $NODE{LAT_WGS84};
 	my $lon = $NODE{LON_WGS84};
@@ -443,7 +443,7 @@ if (!($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0)) {
 		$utml2 = sprintf("<BR>%6.0f",$n_utml);
 	}
 	my $txt = $__{'Location'};
-	
+
 	# ---- link to Google Maps
 	# ------------------------
 	my $map = "<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_GOOGLE_MAPS}?grid=$GRIDType.$GRIDName.$NODEName','$NODEName','width="
@@ -478,17 +478,17 @@ if (!($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0)) {
 		."<TD align=right><SMALL>UTM$utmzone WGS84:$utml0</TD>"
 		.sprintf("<TD align=center><SMALL><B>%6.0f$utml1</B></TD><TD align=center><SMALL><B>%6.0f$utml2</B></TD>",$e_utm,$n_utm)
 		."<TD>$map</TD></TR></TABLE>\n";
-	
+
 	if (-e $fileMap) {
 		my $tmp=basename $fileMap;
 		print "<BR><img src=\"$WEBOBS{URN_NODES}/$NODEName/$tmp\" alt=\"$__{'Location map'}\">";
 	}
 	print "</TD></TR>\n";
 }
-    
+
 
 # Row "transmission" type and link to relay / data acquisition
-# 
+#
 if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
 	my @trans = split(/ |,|\|/,$NODE{TRANSMISSION});
 	chomp(@trans);
@@ -500,12 +500,12 @@ if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
 		my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
 		print "<BR>&nbsp; &rArr; <A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>";
 	}
-	print "</TD></TR>\n"; 
+	print "</TD></TR>\n";
 }
 
 
 # Row "installation"
-# 
+#
 my $RinfoInstallFile = "installation.txt";
 my $infoInstallFile = "$NODES{PATH_NODES}/$NODEName/$RinfoInstallFile";
 my @infosInstallNode = ("");
@@ -521,7 +521,7 @@ if ($editOK || $#infosInstallNode >=0) {
 
 
 # Row "infos"
-# 
+#
 my $RinfoFile = "info.txt";
 my $infoFile = "$NODES{PATH_NODES}/$NODEName/$RinfoFile";
 my @txt = ("");
@@ -535,7 +535,7 @@ if ($editOK) {
 }
 
 # Row "access"
-# 
+#
 my $RaccessFile="acces.txt";
 my $accessFile="$NODES{PATH_NODES}/$NODEName/$RaccessFile";
 @txt = ("");
@@ -552,7 +552,7 @@ if ($editOK) {
 # ---- mainly used by the < Rows "Features" > functions below
 #
 my @conf_liens_stations = readCfgFile("$NODES{FILE_NODES2NODES}");
-my %liste_liens_fiches;   
+my %liste_liens_fiches;
 my $station_parente_old = "";
 my $caracteristique_old = "";
 my $i = 0;
@@ -568,7 +568,7 @@ for (@conf_liens_stations) {
 }
 
 # Rows "Features"
-# 
+#
 my @listeFinaleCarFiles=("");
 my %lienNode;
 my $lien_car;
@@ -592,7 +592,7 @@ for my $nom_lien (keys %liste_liens_fiches) {
 }
 push(@listeFinaleCarFiles,keys(%lienNode)) ;
 
-# now add features defined in the $NODEName cnf file 
+# now add features defined in the $NODEName cnf file
 my @listeCarFiles=split(/\||,/,$NODE{FILES_FEATURES});
 for (@listeCarFiles) {
 	my $carFileName = $_;
@@ -613,13 +613,13 @@ for (@listeCarFiles) {
 		}
 		$lien_car = 1;
 	}
-	#FB-was: if ((-e $carFile && (-s $carFile || $editOK)) || $lien_car == 1) { 
-	if ((-e $carFile || $editOK) || $lien_car == 1) { 
+	#FB-was: if ((-e $carFile && (-s $carFile || $editOK)) || $lien_car == 1) {
+	if ((-e $carFile || $editOK) || $lien_car == 1) {
 		push(@listeFinaleCarFiles,$carFileName);
 	}
 }
 
-# 2) build output from 'final' list of features 
+# 2) build output from 'final' list of features
 my $lignes=$#listeFinaleCarFiles;
 my @carNode;
 my $carFile;
@@ -666,7 +666,7 @@ my $Fts = my $Fwh = "";
 my $olmsg = "";
 
 # Row "PHOTOS" ----------------------------------------------------------------
-# 
+#
 $Fpath   = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_PHOTOS}";
 #FB-was: ( $Furn  = $Fpath) =~ s/$WEBOBS{ROOT_SITE}/../g;
 ( $Furn  = $Fpath) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
@@ -699,7 +699,7 @@ if ($editOK || $#listePhotos >= 0) {
 }
 
 # Row "SCHEMES" ---------------------------------------------------------------
-# 
+#
 $Fpath  = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_SCHEMES}";
 #FB-was: ($Furn  = $Fpath) =~ s/$WEBOBS{ROOT_SITE}/../g;
 ( $Furn  = $Fpath) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
@@ -737,7 +737,7 @@ if ($editOK || $#listeSchemas >= 0) {
 }
 
 # Row "DOCUMENTS" -------------------------------------------------------------
-# 
+#
 $Fpath  = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_DOCUMENTS}";
 #FB-was: ($Furn  = $Fpath) =~ s/$WEBOBS{ROOT_SITE}/../g;
 ( $Furn  = $Fpath) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
@@ -762,7 +762,7 @@ if ($#listeDocuments >= 0) {
 			if ($TFn ne "") {
 				#FB-was: ($Turn  = $TFn) =~ s/$WEBOBS{ROOT_SITE}/../g;
 				( $Turn  = $TFn) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
-				$olmsg = htmlspecialchars(__x("<b>Click to download</B><br>File={file}",file=>$Fn));	
+				$olmsg = htmlspecialchars(__x("<b>Click to download</B><br>File={file}",file=>$Fn));
 				print "<img src=\"$Turn\" onMouseOut=\"nd()\" onmouseover=\"overlib('$olmsg')\" border=\"0\" alt=\"".__x('Image {file}',file=>$Furn."/".$Fn)."\">";
 			} else { print "$Fn<br>"; }
 		} else { print "$Fn<br>"; }
@@ -772,26 +772,26 @@ if ($#listeDocuments >= 0) {
 if ($editOK || $#listeDocuments >= 0) {
 	print "</TD></TR>\n";
 }
-# 
+#
 # ---- end of node table ------------------------------------------------------
 print "</TABLE>";
 
 
 # ---- Project ----------------------------------------------------------------
-# 
+#
 print "<BR><A name=\"PROJECT\"></A>\n";
-print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#projID');\">&nbsp;&nbsp;"; 
+print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#projID');\">&nbsp;&nbsp;";
 print "$__{Project}";
 if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&event=$NODEName\_Projet.txt&object=$GRIDType.$GRIDName.$NODEName\"><img src=\"/icons/modif.png\"></A>" }
 print "&nbsp;$go2top</div><div id=\"projID\"><BR>";
 my $htmlProj = projectShow("$GRIDType.$GRIDName.$NODEName", $editOK);
 print $htmlProj;
 print "</div></div>";
-    
+
 # ---- Events / interventions
-# 
+#
 print "<BR><A name=\"EVENTS\"></A>\n";
-print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#eventID');\">&nbsp;&nbsp;"; 
+print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#eventID');\">&nbsp;&nbsp;";
 print "$__{'Events'}";
 if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&object=$GRIDType.$GRIDName.$NODEName\"><img src=\"/icons/modif.png\"></A>" }
 print "&nbsp;$go2top</div><div id=\"eventID\"><BR>";
@@ -801,7 +801,7 @@ my $htmlEvents = ($sortBy =~ /event/i) ? eventsShow("events","$GRIDType.$GRIDNam
 print $htmlEvents;
 print "</div></div>";
 
-# --- we're done !!!! 
+# --- we're done !!!!
 print "</FORM><BR>\n</BODY>\n</HTML>\n";
 
 
@@ -831,4 +831,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

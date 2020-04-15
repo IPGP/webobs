@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 =head1 NAME
 
-showOUTR.pl 
+showOUTR.pl
 
 =head1 SYNOPSIS
 
@@ -73,7 +73,7 @@ elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
 my %DefinedNodes = listGridNodes(grid=>"$GRIDType.$GRIDName");
 my @SummaryList  = split(/,/,$GRID{SUMMARYLIST});
 
-# ---- Start HTML page 
+# ---- Start HTML page
 #
 print "Content-type: text/html\n\n";
 print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
@@ -90,13 +90,13 @@ print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME}</H1>\n";
 my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 
 
-# ---- build the top-of-page outputs selection banner: 
+# ---- build the top-of-page outputs selection banner:
 # 1st line for GRID selection
 # 2nd line for output selection
 print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-bottom:10px;'>";
 	print "<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=$GRIDType.$GRIDName\"><B>".ucfirst(lc($GRIDType))."</B></A>";
 	foreach (@GRIDList) {
-		if ($QryParm->{'grid'} eq $_ ) { 
+		if ($QryParm->{'grid'} eq $_ ) {
 			print " | <B>$_</B>";
 		} else {
 			print " | <B><A href=\"/cgi-bin/showOUTR.pl?dir=$QryParm->{'dir'}&grid=$_\">$_</A></B>";
@@ -110,17 +110,17 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 	# build $plist = the list of available .pdf graphs
 	my (@plist) = glob "$OUTR/$WEBOBS{PATH_OUTG_GRAPHS}/*_.pdf";
 
-	# build $dlist = the list of available data/**.* for timescale $tslist[$tsSelected] 
+	# build $dlist = the list of available data/**.* for timescale $tslist[$tsSelected]
 	my (@dlist) = glob "$OUTR/$WEBOBS{PATH_OUTG_EXPORT}/*_.*";
 
-	# build $glist = the list of available .png graphs for timescale $tslist[$tsSelected] 
-	# $glistHtml is the corresponding string of html hrefs to these graphs 
-	# with each nodenames replaced with their alias if it is defined 
+	# build $glist = the list of available .png graphs for timescale $tslist[$tsSelected]
+	# $glistHtml is the corresponding string of html hrefs to these graphs
+	# with each nodenames replaced with their alias if it is defined
 	my (@glist) = glob "$OUTR/$WEBOBS{PATH_OUTG_GRAPHS}/*_.png";
 	my $glistHtml = "";
 	for my $fpath (@glist) {
 		my $short = $fpath;
-		$short =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/; 
+		$short =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 		$short =~ s/^$/$GRIDName/;
 		my $shorter = ($short eq $GRIDName ? "Summary":$short);
 		if ($short ne $GRIDName && !(grep( /^$short$/i, @SummaryList)) ) {
@@ -139,20 +139,20 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 	print "<BR><B>[ ".$glistHtml." ]</B>\n";
 print "</DIV>";
 
-# ---- now show the selected item 
+# ---- now show the selected item
 
 # i.e "only display requested g= in query-string"
-# if none requested in query-string, use the first item of $glist 
+# if none requested in query-string, use the first item of $glist
 if ($QryParm->{'g'} eq "") {
 	$QryParm->{'g'} = $glist[0];
 	$QryParm->{'g'} =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 	$QryParm->{'g'} =~ s/^$/$GRIDName/;
 }
-# prepare additional links to eps, pdf and data 
+# prepare additional links to eps, pdf and data
 my $addlinks = "";
 for my $i (0..$#elist) {
 	if (-f $elist[$i]) {
-		(my $surn = $elist[$i]) =~ s/$WEBOBS{ROOT_SITE}/../g;
+		(my $surn = $elist[$i]) =~ s/$WEBOBS{ROOT_OUTR}/$WEBOBS{URN_OUTR}/g;
 		$elist[$i] =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 		$elist[$i] =~ s/^$/$GRIDName/;
 		if ($elist[$i] eq $QryParm->{'g'}) {
@@ -162,7 +162,7 @@ for my $i (0..$#elist) {
 }
 for my $i (0..$#plist) {
 	if (-f $plist[$i]) {
-		(my $surn = $plist[$i]) =~ s/$WEBOBS{ROOT_SITE}/../g;
+		(my $surn = $plist[$i]) =~ s/$WEBOBS{ROOT_OUTR}/$WEBOBS{URN_OUTR}/g;
 		$plist[$i] =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 		$plist[$i] =~ s/^$/$GRIDName/;
 		if ($plist[$i] eq $QryParm->{'g'}) {
@@ -172,7 +172,7 @@ for my $i (0..$#plist) {
 }
 for my $i (0..$#dlist) {
 	if (-f $dlist[$i]) {
-		(my $surn = $dlist[$i]) =~ s/$WEBOBS{ROOT_SITE}/../g;
+		(my $surn = $dlist[$i]) =~ s/$WEBOBS{ROOT_OUTR}/$WEBOBS{URN_OUTR}/g;
 		$dlist[$i] =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_EXPORT}\/(.*)_.*$/$1/;
 		$dlist[$i] =~ s/^$/$GRIDName/;
 		##if ($dlist[$i] eq $QryParm->{'g'}) {
@@ -187,7 +187,7 @@ if ($QryParm->{'g'} ne $GRIDName && !(grep( /^$QryParm->{'g'}$/i, @SummaryList))
 }
 for my $g (@glist) {
 	(my $map = $g) =~ s/\.png/\.map/;
-	(my $urn  = $g) =~ s/$WEBOBS{ROOT_SITE}/../g;
+	(my $urn  = $g) =~ s/$WEBOBS{ROOT_OUTR}/$WEBOBS{URN_OUTR}/g;
 	$g =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 	$g =~ s/^$/$GRIDName/;
 	if ($g eq $QryParm->{'g'}) {
@@ -232,4 +232,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

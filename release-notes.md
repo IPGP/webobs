@@ -12,7 +12,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ### Enhancements
 
-1. Proc's configuration uses a VIM editor with syntax highlighting. New WEBOBS.rc keys:
+1. Grid's configuration uses a VIM editor with syntax highlighting. New WEBOBS.rc keys:
 
 ```
 CODEMIRROR_EDIT_THEME|default
@@ -21,7 +21,9 @@ CODEMIRROR_AUTO_VIM_MODE|no
 ```
 
 2. Sefran now uses full functionality of `DATASOURCE` variable (Seedlink, Arclink, FDSNWS)
+
 3. MC can handle multiple associated images for each event (still undocumented)
+
 4. GNSS modelling has fixed scale capability for vectors plot, with new keys:
 
 ```
@@ -35,10 +37,29 @@ MODELLING_VECTORS_CLIP|NO
 ### Fixed issues
 
 1. all procs: cannot change default colormap (Matlab and .cpt file) with `*_COLORMAP` keys
+
 2. all procs: fdsnws-event data format failed in associating MC3 event types
+
 3. gridmaps: secondary maps crashed with inactive nodes in grid
+
 4. mc3stats: improper default values
+
 5. some issues with grid associated to more than one domain
+
+6. `!!` scripts showOUTG.pl and showOUTR.pl did not use proper configuration variables. Added in `WEBOBS.rc`:
+
+```
+URN_OUTG|/OUTG
+URN_OUTR|/OUTR
+```
+
+`!!` A new alias `/OUTR` must be added in the Apache configuration:
+
+```
+	Alias /OUTR /opt/webobs/OUTR
+```
+
+or, for non default configurations, `URN_OUTG` pointing to `ROOT_OUTR`.
 
 See github commits for details.
 
