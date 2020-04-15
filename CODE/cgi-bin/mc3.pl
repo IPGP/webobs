@@ -1433,7 +1433,7 @@ for (@finalLignes) {
 				if ($nomB3[$ii]) {
 					$html .= "<td nowrap style=\"color: gray;\" onMouseOut=\"nd()\" onMouseOver=\"overlib('";
 					my $fileB3 = "$WEBOBS{ROOT_OUTG}/PROC.$MC3{TREMBLEMAPS_PROC}/$WEBOBS{PATH_OUTG_EVENTS}/$nomB3[$ii]";
-					(my $urnB3 = $fileB3 ) =~ s/$WEBOBS{ROOT_OUTG}/\/OUTG/g;
+					(my $urnB3 = $fileB3 ) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 					my $ext = "";
 					if (-f "$fileB3/b3.pdf") {
 						$ext = ".pdf";

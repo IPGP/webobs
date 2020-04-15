@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 =head1 NAME
 
-showOUTG.pl 
+showOUTG.pl
 
 =head1 SYNOPSIS
 
@@ -28,6 +28,11 @@ refresh=
 
 header=no
 	hides the title, menu links and icons above the image
+
+Directory paths of OUTG content is defined by the following variables:
+	- ROOT_OUTG (disk root path) in WEBOBS.rc (default is /opt/webobs/OUTG)
+	- URN_OUTG (web root path) in WEBOBS.rc (default is /OUTG)
+	- an alias in Apache configuration (must be URN_OUTG pointing to ROOT_OUTG!)
 =cut
 
 use strict;
@@ -85,8 +90,8 @@ if (scalar(@GID) == 2) {
 	} else { die "$__{'Could not read'} $GRIDType.$GRIDName configuration" }
 } else { die "$__{'Not a valid GRID requested (NOT gridtype.gridname)'}" }
 
-# ---- good, passed all validity/authorization checkings above 
-# ---- grab additional arguments specifying which unique output we have to show 
+# ---- good, passed all validity/authorization checkings above
+# ---- grab additional arguments specifying which unique output we have to show
 $QryParm->{'ts'}       ||= '';
 $QryParm->{'g'}        ||= '';
 $QryParm->{'refresh'}  ||= $GRID{DISPLAY_AUTOREFRESH_SECONDS};
@@ -123,7 +128,7 @@ my %DefinedNodes = listGridNodes(grid=>"$GRIDType.$GRIDName");
 my @SummaryList  = split(/,/,$GRID{SUMMARYLIST});
 outgHouseKeeping();
 
-# ---- Start HTML page 
+# ---- Start HTML page
 #
 print "Content-type: text/html\n\n";
 print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
@@ -144,8 +149,8 @@ print "<A NAME=\"MYTOP\"></A>";
 print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME}</H1>\n" if ($QryParm->{'header'} ne 'no');
 my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 
-	
-# ---- build the top-of-page outputs selection banner: 
+
+# ---- build the top-of-page outputs selection banner:
 # 1st line for timescale selection
 # 2nd line for output selection
 
@@ -174,8 +179,8 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 		} elsif (defined($TIMESCALES{$ts})) {
 			$tsName = $TIMESCALES{$ts};
 		}
-		if ($QryParm->{'ts'} eq $tslist[$i] ) { 
-			$tsSelected = $i; 
+		if ($QryParm->{'ts'} eq $tslist[$i] ) {
+			$tsSelected = $i;
 			$tsHtml .= " <B>$tsName</B> |";
 		} else {
 			$tsHtml .= " <B><A href=\"$baseurl&ts=$tslist[$i]&g=$QryParm->{'g'}\">$tsName</A></B> |";
@@ -183,21 +188,21 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 	}
 	chop($tsHtml);
 	print "<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=$GRIDType.$GRIDName\"><B>".ucfirst(lc($GRIDType))."</B></A> ";
-	if ($QryParm->{'ts'} eq 'map' ) { 
+	if ($QryParm->{'ts'} eq 'map' ) {
 		print "| <B>Map</B> ";
 	} elsif (-d "$OUTG/$WEBOBS{PATH_OUTG_MAPS}") {
 		print "| <B><A href=\"$baseurl&ts=map\">Map</A></B> ";
 	}
-	if ($QryParm->{'ts'} eq 'events' ) { 
+	if ($QryParm->{'ts'} eq 'events' ) {
 		print "| <B>Events</B> ";
 	} elsif (-d "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}") {
 		print "| <B><A href=\"$baseurl&ts=events\">Events</A></B> ";
 	}
 	if (-d "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}") {
-		(my $EVTurn = $OUTG) =~ s/$WEBOBS{ROOT_SITE}//g;
+		(my $EVTurn = $OUTG) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 		print "| <B><A href=\"$EVTurn/$WEBOBS{PATH_OUTG_EVENTS}\">All files</A></B> ";
 
-		# build @nlist = the list of available nodes in events/*/*/*/ subdirectories 
+		# build @nlist = the list of available nodes in events/*/*/*/ subdirectories
 		my (@ilist) = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/????/*/*/*";
 		my @nlist;
 		foreach (sort(keys(%DefinedNodes))) {
@@ -216,32 +221,32 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 	}
 	print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle\" title=\"Refresh\" onclick=\"document.location.reload(false)\"> ]\n";
 
-	# build @elist = the list of available .eps graphs for timescale $tslist[$tsSelected] 
+	# build @elist = the list of available .eps graphs for timescale $tslist[$tsSelected]
 	my (@elist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.eps";
 
-	# build @plist = the list of available .pdf graphs for timescale $tslist[$tsSelected] 
+	# build @plist = the list of available .pdf graphs for timescale $tslist[$tsSelected]
 	my (@plist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.pdf";
 
-	# build @dlist = the list of available data/**.* for timescale $tslist[$tsSelected] 
+	# build @dlist = the list of available data/**.* for timescale $tslist[$tsSelected]
 	my (@dlist) = glob "$OUTG/$WEBOBS{PATH_OUTG_EXPORT}/*_$tslist[$tsSelected]*.*";
 
-	# build @ylist = the list of available events/* years 
+	# build @ylist = the list of available events/* years
 	my (@ylist) = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/????";
 
 
-	# build @glist = the list of available .png graphs for timescale $tslist[$tsSelected] 
-	# $glistHtml is the corresponding string of html hrefs to these graphs 
-	# with each nodenames replaced with their alias if it is defined 
+	# build @glist = the list of available .png graphs for timescale $tslist[$tsSelected]
+	# $glistHtml is the corresponding string of html hrefs to these graphs
+	# with each nodenames replaced with their alias if it is defined
 	my (@glist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.png";
 	my $glistHtml = "";
 	if ($QryParm->{'ts'} eq 'events' ) {
 		if ($QryParm->{'g'} eq "") {
 			$QryParm->{'g'} = $ylist[$#ylist];
-			$QryParm->{'g'} =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_EVENTS}\///; 
+			$QryParm->{'g'} =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_EVENTS}\///;
 		}
 		foreach (@ylist) {
 			my $year = $_;
-			$year =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_EVENTS}\///; 
+			$year =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_EVENTS}\///;
 			if ($QryParm->{'g'} eq $year) {
 				$glistHtml .= " $year |";
 			} else {
@@ -254,7 +259,7 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 		$glistHtml .= ($QryParm->{'g'} ne "col" ? "<A href=\"${lnk}col\">Column</A>":"Column")." |";
 		for my $fpath (@glist) {
 			my $short = $fpath;
-			$short =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/; 
+			$short =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 			$short =~ s/^$/SUMMARY/;
 			my $shorter = $short;
 			if ($short ne 'SUMMARY' && !(grep( /^$short$/i, @SummaryList)) ) {
@@ -281,7 +286,7 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 print "</DIV>";
 
 
-# ---- now show the selected item 
+# ---- now show the selected item
 # -- case 'Map'
 if ($QryParm->{'ts'} eq 'map') {
 
@@ -289,7 +294,7 @@ if ($QryParm->{'ts'} eq 'map') {
 	my $MAPpath = my $MAPurn = "";
 	my @htmlarea;
 	$MAPpath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_MAPS}";
-	( $MAPurn  = $MAPpath ) =~ s/$WEBOBS{ROOT_SITE}/../g;
+	( $MAPurn  = $MAPpath ) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 
 	my $mapname = "$GRIDType.$GRIDName"."_map";
 	if ( -e "$MAPpath/$mapname.eps" ) {
@@ -309,7 +314,7 @@ if ($QryParm->{'ts'} eq 'map') {
 	# this lists files using complementary wildcards from g= YYYY[/MM[/DD[/EVENTID[/EVENTNAME]]]]
 	(my $depth = $QryParm->{'g'}) =~ s/[^\/]//g;
 	$depth = length($depth); # $depth is number of "/" in the g= argument
-	
+
 	# lists all files
 	@plist = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
 
@@ -317,8 +322,8 @@ if ($QryParm->{'ts'} eq 'map') {
 	if ($#plist > 1) {
 		my $month0 = "";
 		for (@plist) {
-			if ( ($depth < 3 && -l $_) || ($depth == 3 && ! -l $_)) { 
-				(my $JPGurn = $_) =~ s/$WEBOBS{ROOT_SITE}/../g;
+			if ( ($depth < 3 && -l $_) || ($depth == 3 && ! -l $_)) {
+				(my $JPGurn = $_) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 				(my $EVENTid = $_) =~ s/$OUTG\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
 				if (-l $_) {
 					my $lnk = basename($_);
@@ -354,7 +359,7 @@ if ($QryParm->{'ts'} eq 'map') {
 	} else {
 		my $addlinks = "";
 		(my $short = $plist[0]) =~ s/\.jpg//g;
-		(my $urn = $short) =~ s/$WEBOBS{ROOT_SITE}/../g;
+		(my $urn = $short) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 		(my $EVENTid = $short) =~ s/$OUTG\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
 		(my @evt) = split(/\//,$EVENTid);
 		my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
@@ -376,34 +381,34 @@ if ($QryParm->{'ts'} eq 'map') {
 } else {
 
 	# i.e "only display requested g= in query-string"
-	# if none requested in query-string, show thumbnails of all available graphs 
+	# if none requested in query-string, show thumbnails of all available graphs
 	if ($QryParm->{'g'} eq "") {
 
 		for my $g (@glist) {
-			(my $urn  = $g) =~ s/$WEBOBS{ROOT_SITE}/../g;
+			(my $urn  = $g) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 			$urn =~ s/\.png$/\.jpg/;
-			(my $short = $g) =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/; 
+			(my $short = $g) =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 			$short =~ s/^$/SUMMARY/;
 			print "<A href=\"$baseurl&ts=$tslist[$tsSelected]&g=$short\"><IMG style=\"margin-bottom: 2px; background-color: beige; padding: 2px\" src=\"$urn\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$short',CAPTION,'$tslist[$tsSelected]')\"></A> ";
 		}
 
-	# if g=col in query-string, show all available graphs in one column 
+	# if g=col in query-string, show all available graphs in one column
 	} elsif ($QryParm->{'g'} eq "col") {
 
 		for my $g (@glist) {
-			(my $urn  = $g) =~ s/$WEBOBS{ROOT_SITE}/../g;
-			(my $short = $g) =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/; 
+			(my $urn  = $g) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
+			(my $short = $g) =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 			$short =~ s/^$/SUMMARY/;
 			print "<A href=\"$baseurl&ts=$tslist[$tsSelected]&g=$short\"><IMG style=\"margin-bottom: 2px; background-color: beige; padding: 2px\" src=\"$urn\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$short',CAPTION,'$tslist[$tsSelected]')\"></A><BR> ";
 		}
 
 
 	} else {
-		# prepare additional links to eps, pdf and data 
+		# prepare additional links to eps, pdf and data
 		my $addlinks = "";
 		for my $i (0..$#elist) {
 			if (-f $elist[$i]) {
-				(my $surn = $elist[$i]) =~ s/$WEBOBS{ROOT_SITE}/../g;
+				(my $surn = $elist[$i]) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 				$elist[$i] =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 				$elist[$i] =~ s/^$/$GRIDName/;
 				if ($elist[$i] eq $QryParm->{'g'}) {
@@ -413,7 +418,7 @@ if ($QryParm->{'ts'} eq 'map') {
 		}
 		for my $i (0..$#plist) {
 			if (-f $plist[$i]) {
-				(my $surn = $plist[$i]) =~ s/$WEBOBS{ROOT_SITE}/../g;
+				(my $surn = $plist[$i]) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 				$plist[$i] =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 				$plist[$i] =~ s/^$/$GRIDName/;
 				if ($plist[$i] eq $QryParm->{'g'}) {
@@ -423,7 +428,7 @@ if ($QryParm->{'ts'} eq 'map') {
 		}
 		for my $i (0..$#dlist) {
 			if (-f $dlist[$i]) {
-				(my $surn = $dlist[$i]) =~ s/$WEBOBS{ROOT_SITE}/../g;
+				(my $surn = $dlist[$i]) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 				$dlist[$i] =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_EXPORT}\/(.*)_.*$/$1/;
 				$dlist[$i] =~ s/^$/$GRIDName/;
 				##if ($dlist[$i] eq $QryParm->{'g'}) {
@@ -436,7 +441,7 @@ if ($QryParm->{'ts'} eq 'map') {
 		if ($GRID{FORM} ne '') {
 			my $FORM = new WebObs::Form($GRID{FORM});
 			my $opt = ($QryParm->{'g'} eq $GRIDName ? "{$GRIDName}":uc($QryParm->{'g'}));
-			$addlinks .= "<A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?node=$opt\"><IMG alt=\"\" src=\"/icons/fdata.png\"></A> "; 
+			$addlinks .= "<A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?node=$opt\"><IMG alt=\"\" src=\"/icons/fdata.png\"></A> ";
 		}
 
 		if ( $QryParm->{'g'} ne $GRIDName && !(grep( /^$QryParm->{'g'}$/i, @SummaryList)) && $QryParm->{'g'} eq lc($QryParm->{'g'}) ) {
@@ -446,7 +451,7 @@ if ($QryParm->{'ts'} eq 'map') {
 		# finally plots the image !
 		for my $g (@glist) {
 			(my $map = $g) =~ s/\.png/\.map/;
-			(my $urn  = $g) =~ s/$WEBOBS{ROOT_SITE}/../g;
+			(my $urn  = $g) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 			$g =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
 			$g =~ s/^$/SUMMARY/;
 			if ($g eq $QryParm->{'g'}) {
@@ -472,7 +477,7 @@ sub outgHouseKeeping {
 		for my $object (@objects) {
 			my $prefix = basename($object); $prefix =~ /(.*)_.*/; $prefix = $1;
 			if ( $WEBOBS{OUTG_STALENODES_DISPO} eq 'DELETE' && ($prefix ne "" || !defined($GRID{SUMMARYLIST})) && $prefix ne $GRIDName ) {
-				if ( !(grep( /^$prefix$/i, keys(%DefinedNodes))) && !(grep( /^$prefix$/i, @SummaryList)) ) { 
+				if ( !(grep( /^$prefix$/i, keys(%DefinedNodes))) && !(grep( /^$prefix$/i, @SummaryList)) ) {
 					qx(rm $object);
 				}
 			}
@@ -490,7 +495,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2019 - Institut de Physique du Globe Paris
+WebObs - 2012-2020 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -506,4 +511,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
