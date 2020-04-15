@@ -24,9 +24,10 @@ CODEMIRROR_AUTO_VIM_MODE|no
 
 3. MC can handle multiple associated images for each event (still undocumented)
 
-4. GNSS modelling has fixed scale capability for vectors plot, with new keys:
+4. GNSS modelling has additional node exclusion filter (distance from target, if defined by `GNSS_TARGET_LATLON`), and fixed scale capability for vectors plot. New keys are:
 
 ```
+MODELLING_EXCLUDED_FROM_TARGET_KM|
 MODELLING_VMAX_MM|0
 MODELLING_VMAX_RATIO|.25
 MODELLING_VECTORS_CLIP|NO

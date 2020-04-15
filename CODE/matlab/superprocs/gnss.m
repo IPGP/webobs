@@ -68,8 +68,8 @@ maxerror = field2num(P,'FILTER_MAX_ERROR_M',NaN);
 terrmod = field2num(P,'TREND_ERROR_MODE',1);
 trendmindays = field2num(P,'TREND_MIN_DAYS',1);
 targetll = field2num(P,'GNSS_TARGET_LATLON');
-if numel(targetll) ~= 2 || any(isnan(targetll))
-	targetll = NaN;
+if numel(targetll)~=2 || any(isnan(targetll))
+	targetll = [];
 end
 velref = field2num(P,'VELOCITY_REF',[0,0,0]);
 velrefdate = field2num(P,'VELOCITY_REF_ORIGIN_DATE',datenum(2000,1,1));
@@ -135,6 +135,7 @@ motion_demopt = field2cell(P,'MOTION_DEM_OPT','colormap',.5*ones(64,3),'watermar
 motion_title = field2str(P,'MOTION_TITLE','{\fontsize{14}{\bf$name - Motion} ($timescale)}');
 
 % MODELLING parameters
+modelling_excluded_from_target = field2num(P,'MODELLING_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 modelling_force_relative = isok(P,'MODELLING_FORCE_RELATIVE');
 modrelauto = strcmpi(field2str(P,'MODELLING_FORCE_RELATIVE'),'auto');
 maxdep = field2num(P,'MODELLING_MAX_DEPTH',8e3);
@@ -344,8 +345,9 @@ for r = 1:length(P.GTABLE)
 	else
 		knv = 1:length(N);
 	end
+	fprintf('---> VECTORS: %d/%d nodes selected\n',length(knv),length(N));
 
-	if isok(P,'VECTORS_TARGET_INCLUDED') && numel(targetll) == 2
+	if isok(P,'VECTORS_TARGET_INCLUDED') && ~isempty(targetll)
 		latlim = minmax([geo(knv,1);targetll(1)]);
 		lonlim = minmax([geo(knv,2);targetll(2)]);
 	else
@@ -658,7 +660,7 @@ for r = 1:length(P.GTABLE)
 		ha = plot(geo(knv,2),geo(knv,1),'k.');  extaxes(gca,[.04,.08])
 		hold on
 
-		if isok(P,'VECTORS_TARGET_INCLUDED',1) && numel(targetll) == 2
+		if isok(P,'VECTORS_TARGET_INCLUDED',1) && ~isempty(targetll)
 			ha = [ha;plot(targetll(2),targetll(1),'k.','MarkerSize',.1)];
 		end
 
@@ -686,7 +688,7 @@ for r = 1:length(P.GTABLE)
 		text(xlim(2),ylim(2)+.01*diff(ylim),DEM.COPYRIGHT,'HorizontalAlignment','right','VerticalAlignment','bottom','Interpreter','none','FontSize',6)
 
 		% adds distance from target
-		if numel(targetll) == 2
+		if ~isempty(targetll)
 			pos = get(gca,'position');
 			set(gca,'position',[pos(1),1-pos(4)-0.02,pos(3:4)]);
 
@@ -752,7 +754,7 @@ for r = 1:length(P.GTABLE)
 		hold off
 
 		% adds subplot amplitude vs distance
-		if numel(targetll) == 2
+		if ~isempty(targetll)
 			pos = get(gca,'position');
 			axes('Position',[.5,.05,.45,pos(2)-0.02])
 			plot(0,0)
@@ -810,8 +812,9 @@ for r = 1:length(P.GTABLE)
 		else
 			knv = 1:length(N);
 		end
+	fprintf('---> MOTION: %d/%d nodes selected\n',length(knv),length(N));
 
-		if numel(targetll) == 2
+		if ~isempty(targetll)
 			latlim = minmax([geo(knv,1);targetll(1)]);
 			lonlim = minmax([geo(knv,2);targetll(2)]);
 		else
@@ -856,7 +859,7 @@ for r = 1:length(P.GTABLE)
 		axes('Position',pos)
 		ha = plot(geo(knv,2),geo(knv,1),'k.');
 		hold on
-		if isok(P,'MOTION_TARGET_INCLUDED',1) && numel(targetll) == 2
+		if isok(P,'MOTION_TARGET_INCLUDED',1) && ~isempty(targetll)
 			ha = [ha;plot(targetll(2),targetll(1),'k.','MarkerSize',.1)];
 		end
 		% plots motion displacements first
@@ -970,12 +973,17 @@ for r = 1:length(P.GTABLE)
 		else
 			kn = 1:length(N);
 		end
+		if ~isempty(targetll) && modelling_excluded_from_target > 0
+			kk = find(greatcircle(targetll(1),targetll(2),geo(kn,1),geo(kn,2)) <= modelling_excluded_from_target);
+			kn = kn(kk);
+		end
+	fprintf('---> MODELLING: %d/%d nodes selected\n',length(kn),length(N));
 
 		degm = 1e3*degkm;
 		modelopt.msigp = erf(modelopt.msig/sqrt(2));
 
 		% center coordinates
-		if numel(targetll) == 2
+		if ~isempty(targetll)
 			latlim = minmax([geo(kn,1);targetll(1)]);
 			lonlim = minmax([geo(kn,2);targetll(2)]);
 			lat0 = targetll(1);
@@ -1201,7 +1209,7 @@ for r = 1:length(P.GTABLE)
 					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping',vclip)
 			end
 		end
-		if numel(targetll)==2
+		if ~isempty(targetll)
 			plot(repmat(modelopt.targetxy(1),1,2),ylim([1,end]),':k')
 			plot(xlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 			if modelopt.apriori_horizontal > 0
@@ -1248,7 +1256,7 @@ for r = 1:length(P.GTABLE)
 					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping',vclip)
 			end
 		end
-		if numel(targetll)==2
+		if ~isempty(targetll)
 			plot(zlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 		end
 		if plotbest && any(~isnan(m0))
@@ -1286,7 +1294,7 @@ for r = 1:length(P.GTABLE)
 					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping',vclip)
 			end
 		end
-		if numel(targetll)==2
+		if ~isempty(targetll)
 			plot(repmat(modelopt.targetxy(1),1,2),zlim([1,end]),':k')
 		end
 		if plotbest && any(~isnan(m0))
@@ -1724,7 +1732,7 @@ for r = 1:length(P.GTABLE)
 		[~,h] = contour(xlim,ylim,zdem,[0:1000:mmz(2),0:-1000:mmz(1)]);
 		set(h,'Color',modelling_topo_rgb,'LineWidth',.75);
 		plot(xsta,ysta,'^k','MarkerSize',4,'MarkerFaceColor','k')
-		if numel(targetll)==2
+		if ~isempty(targetll)
 			plot(repmat(modelopt.targetxy(1),1,2),ylim([1,end]),':k')
 			plot(xlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 			if modelopt.apriori_horizontal > 0
@@ -1767,7 +1775,7 @@ for r = 1:length(P.GTABLE)
 		plot(max(max(zdem,[],3),[],2)',ylim,'-','Color',modelling_topo_rgb)
 		hold on
 		%plot(zsta,ysta,'^k','MarkerSize',stasize,'MarkerFaceColor','k')
-		if numel(targetll)==2
+		if ~isempty(targetll)
 			plot(zlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 		end
 		for m = plist
@@ -1796,7 +1804,7 @@ for r = 1:length(P.GTABLE)
 		plot(xlim,max(max(zdem,[],3),[],1),'-','Color',modelling_topo_rgb)
 		hold on
 		%plot(xsta,zsta,'^k','MarkerSize',stasize,'MarkerFaceColor','k')
-		if numel(targetll)==2
+		if ~isempty(targetll)
 			plot(repmat(modelopt.targetxy(1),1,2),zlim([1,end]),':k')
 		end
 		for m = plist
