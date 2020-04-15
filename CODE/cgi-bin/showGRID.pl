@@ -579,7 +579,7 @@ my @maps;
 my $i = 0;
 my @htmlarea;
 $MAPpath = "$WEBOBS{ROOT_OUTG}/$grid/$WEBOBS{PATH_OUTG_MAPS}";
-( $MAPurn  = $MAPpath ) =~ s/$WEBOBS{ROOT_SITE}/../g;
+( $MAPurn  = $MAPpath ) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
 if (opendir(my $dh, $MAPpath)) {
 	@maps = grep { /.*_map\d*.png/ } readdir($dh);
 	closedir($dh);
