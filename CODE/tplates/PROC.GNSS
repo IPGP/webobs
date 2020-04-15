@@ -172,6 +172,7 @@ MOTION_TARGET_INCLUDED|Y
 # --- MODELLING graph
 # excluding NODES from graphs and calculations
 MODELLING_EXCLUDED_NODELIST|
+MODELLING_EXCLUDED_FROM_TARGET_KM|
 # ignores vertical component
 MODELLING_HORIZONTAL_ONLY|Y
 # recomputes relative velocities before modelling (instead of vectors results)
