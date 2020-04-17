@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2020-04-16
+%	Updated: 2020-04-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -416,12 +416,12 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 		if nimg > 0
 			fprintf('%s: updating %s (hourly thumbnail) ... ',wofun,f);
 			wosystem(sprintf('%s -depth 8 %s/%s/%4d%02d%02d%02d??00.png +append %s', ...
-				convert,pdat,SEFRAN3.PATH_IMAGES_MINUTE,tv(1:4),ftmp),SEFRAN3);
+				convert,pdat,SEFRAN3.PATH_IMAGES_MINUTE,tv(1:4),ftmp),SEFRAN3,'warning');
 			% reduces concatenated minutes image to single hourly thumbnail
 			% (the formula estimates the number of minutes, thus leads to "whour"-width for complete hour,
 			% and relatively smaller for real-time)
 			wosystem(sprintf('%s %s -resize %dx%d\\! -gamma %g %s', ...
-				convert,ftmp,round(whour*nimg/60),hhour,gamma,f),SEFRAN3);
+				convert,ftmp,round(whour*nimg/60),hhour,gamma,f),SEFRAN3,'warning');
 			fprintf('done.\n');
 		end
 	end
