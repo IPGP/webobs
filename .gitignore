@@ -1,1 +1,10 @@
+Releases
 CODE/matlab/bin
+CODE/matlab/*.mex*
+DOC/user-manual/*
+!DOC/user-manual/*.tex
+!DOC/user-manual/WebObs_Manual.pdf
+PACK/*
+!PACK/build
+!PACK/build-mac
+!PACK/fpm*
