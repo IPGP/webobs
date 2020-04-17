@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2019-08-22
+%	Updated: 2020-04-16
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -139,7 +139,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 	if force == 0
 		% list of minutes in the last SEFRAN3.UPDATE_HOURS
 		mlist = (floor(tnow*1440 - 1 - rtdelay/60) - (0:update*60))*daymn;
-		% appends broom-wagon interval(s) if active
+		% appends list of minutes into all broom-wagon interval(s)
 		if broomwagon
 			for bwd = sort(reshape(bwdelay,1,[]))
 				mlist = sort(unique(cat(2,mlist,(floor((tnow - bwd)*1440 - 1) - (0:bwup*60))*daymn)),'descend');
@@ -153,7 +153,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 		disp(datestr(mlist))
 	end
 
-	mdone = zeros(size(mlist));
+	mdone = false(size(mlist));
 	% loop on each minute of the list (last SEFRAN3.UPDATE_HOURS + broom-wagon intervals)
 	for m = 1:length(mlist)
 		t0 = mlist(m);
@@ -164,35 +164,34 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 		fpng = sprintf('%s.png',f);
 		fpng_high = sprintf('%s_high.png',f);
 
-		% checks images to activate the broom-wagon
+		% checks existing image to activate (or not) the BW
 		bw = 0;
-		% first condition: data time (t1) is in the bw time window(s)
-		for bwd = sort(reshape(bwdelay,1,[]),'descend')
-			if bw == 0
-				if broomwagon && t1 <= (tnow - bwd) && t1 >= (tnow - bwd - bwup/24) && (force || length(find(mdone)) < maximages)
-					if exist(fpng,'file')
-						age = datenum(tv) - t1;
-						% second condition: difference between image's timestamp (tpng) and data time (t1) is less than bw delay
-						% -> tpng may be much recent than t1 when the image has been made afterward (bw or gap filling)
-						if (age) <= bwd
-							% retrieves PNG tag "sampling"
-							[~,w] = wosystem(sprintf('%s -format %%[sefran3:sampling] %s;sleep 0.5',WO.PRGM_IDENTIFY,fpng),SEFRAN3);
-							ch = str2vec(w);
-							ch(isnan(ch)) = 0;
-							ch_gaps = 1 - ch;
-							gaps = length(find(ch_gaps > bwmgap));
-							% third condition: channels over max. gap not over max. "dead channels"
-							if gaps > bwmdead 
-								bw = 1;
-								fprintf('%s: Broom wagon will pick up "%s" (%d channels over %g%% gap)...\n',wofun,fpng,gaps,100*bwmgap);
+		if broomwagon
+			for bwd = sort(reshape(bwdelay,1,[]),'descend')
+				% first condition: data time (t1) is in the BW time window
+				if bw == 0 && t1 <= (tnow - bwd) && t1 >= (tnow - bwd - bwup/24) && exist(fpng,'file') && sum(mdone) < maximages
+					D = dir(fpng);
+               tpng = D.datenum - tzserver;    % image timestamp in UT
+					% second condition: difference between image's timestamp (tpng) and data time (t1) is less than BW delay
+					% -> tpng may be more recent than t1 when the image has been made afterward (BW or gap filling)
+					if (tpng - t1) <= bwd
+						% retrieves PNG tag "sampling"
+						[~,w] = wosystem(sprintf('%s -format %%[sefran3:sampling] %s;sleep 0.5',WO.PRGM_IDENTIFY,fpng),SEFRAN3);
+						ch = str2vec(w);
+						ch(isnan(ch)) = 0;
+						ch_gaps = 1 - ch;
+						gaps = sum(ch_gaps > bwmgap); % note: sum(test) is more efficient than length(find(test))
+						% third condition: channels over max. gap not over max. "dead channels"
+						if gaps > bwmdead
+							bw = 1;
+							fprintf('%s: Broom wagon @%gh will pick up "%s" (%d channels over %g%% gap)...\n',wofun,24*bwd,fpng,gaps,100*bwmgap);
 						end
 					end
 				end
 			end
 		end
-	end
 
-		if force || ((~exist(fpng,'file') || bw) && length(find(mdone)) < maximages)
+		if force || ((~exist(fpng,'file') || bw) && sum(mdone) < maximages)
 			wosystem(sprintf('mkdir -p %s/%s %s/%s %s/%s',pdat,SEFRAN3.PATH_IMAGES_MINUTE,pdat,SEFRAN3.PATH_IMAGES_HOUR,pdat,SEFRAN3.PATH_IMAGES_HEADER),SEFRAN3);
 
 			% delete previous temporary file
@@ -353,7 +352,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					fprintf('done.\n');
 				end
 				close
-				mdone(m) = 1;
+				mdone(m) = true;
 			else
 				fprintf('%s: ** WARNING ** no miniSEED file produced at %s. Abort.\n',wofun,datestr(t0));
 			end
@@ -361,7 +360,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 	end
 
 	% makes channel names header image (one per hour, if needed)
-	hdone = unique(floor(mlist(mdone==1)*24)/24); % list of hours containing new or updated images
+	hdone = unique(floor(mlist(mdone)*24)/24); % list of hours containing new or updated images
 	flag = 0;
 	%FB-was: voies = 'voies.png';
 	voies = 'voies';
@@ -529,7 +528,7 @@ case 'seedlink'
 				% has to interpret dates from Seedlink GFZ or IRIS-like formats...
 				%FB-was: ct0 = datenum(A{1}{k(1)}(19+(0:23))); % start time
 				%FB-was: ct1 = datenum(A{1}{k(1)}(48+(0:23))); % end time
-				dte = textscan(stream{1}{k(1)}(19:end),'%n','Delimiter','/-:'); 
+				dte = textscan(stream{1}{k(1)}(19:end),'%n','Delimiter','/-:');
 				%FB-was: if datenum(dte{1}(1:6)') <= t0 && datenum(dte{1}(7:12)') >= (t1 - rtdelay/86400)
 				if datenum(dte{1}(1:6)') <= t0 && datenum(dte{1}(7:12)') >= t1
 					chan(n) = n; % channel n is available at time interval [t0,t1]
