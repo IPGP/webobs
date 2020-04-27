@@ -8,7 +8,7 @@ The latest release has many improvements, new features and bug fixes.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
-## v2.1.5 (April 2020)
+## v2.1.5a (April 2020)
 
 ### Enhancements
 
