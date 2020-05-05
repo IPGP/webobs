@@ -19,14 +19,14 @@ function [D,P] = readfmtdata_mc3(WO,P,N,F)
 %
 %	Authors: Fran?ois Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2019-01-21, in Paris (France)
-%	Updated: 2020-04-14
+%	Updated: 2020-04-27
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % filters
 for fn = {'LAT','LON','DEP','MAG'}
 	fd = [fn{:},'LIM'];
-	if ~isfield(P,fd) || numel(P.(fd)) ~= 2
+	if ~isfield(P,fd) || numel(str2vec(P.(fd))) ~= 2
 		P.(fd) = '-Inf,Inf';
 	end
 	if ischar(P.(fd))
