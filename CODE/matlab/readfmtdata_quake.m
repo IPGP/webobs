@@ -468,6 +468,9 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 
 	if exist(fdat,'file')
 		mc3 = readdatafile(fdat,17,'CommentStyle',''); % reads all events (trash included)
+        k = find(cellfun(@str2num,mc3(:,1))>=0); % remove trash entries
+        fprintf(' found %d valid mc3 entries, removed %d trash events.\n',size(k,1),size(mc3,1)-size(k,1));
+        mc3 = mc3(k,:);
 		fprintf('%s: associating %s event types and images ...',wofun,N.FID_MC3);
 		nsc3 = 0;
 		nh71 = 0;
