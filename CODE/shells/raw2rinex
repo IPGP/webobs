@@ -8,7 +8,7 @@
 #
 # Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
 # Created: 2014-01-12
-# Updated: 2020-01-10
+# Updated: 2020-06-30
 
 if [ $# -lt 2 ]; then
 	echo "raw2rinex input output [teqc options]"
@@ -102,7 +102,7 @@ if [ ! -z "$rf" ]; then
 	wildcard="*.dat"
 	rawfiles=$(find $tmpdir -name "$wildcard" | sort )
 	navfiles="$rawfiles"
-	teqcfmt=""
+	teqcfmt="-tr d"
 fi
 
 if [ -z "$rawfiles" ]; then
@@ -150,4 +150,3 @@ else
 fi
 
 rm -rf $tmpdir
-
