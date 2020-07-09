@@ -33,6 +33,12 @@ types of HTML pages:
 
  header=, status= limit=, ref=, yref=, mref=, dref=, date=, high= 
 
+ hideloc=
+  hide locations of events in hourly sefran view.
+  0: read and display available locations.
+  1: don't read or display locations (quicker).
+  Defaults to the inverted value of MC3_EVENT_DISPLAY_LOC variable from Sefran configuration.
+
 =cut
 
 use strict;
@@ -80,6 +86,7 @@ my $high   = $cgi->url_param('high');
 my $sx     = $cgi->url_param('sx') // 0;
 my $replay = $cgi->url_param('replay');
 my $limit  = $cgi->url_param('limit');
+# $hideloc is read below
 
 # ---- analysis (depouillement) mode ?
 my $dep = 0 ;
@@ -89,6 +96,9 @@ $dep = 1 if ($date && length($date) > 10) ;
 $s3 ||= $WEBOBS{SEFRAN3_DEFAULT_NAME};
 my $s3conf = "$WEBOBS{ROOT_CONF}/$s3.conf";
 my %SEFRAN3 = readCfg("$s3conf") if (-f "$s3conf");
+
+my $hideloc = $cgi->url_param('hideloc')
+	// not $SEFRAN3{MC3_EVENT_DISPLAY_LOC} =~ m/^(Y|YES|1)$/i;
 
 # ---- loads MC3 configuration: requested or Sefran's or default
 $mc3 ||= $SEFRAN3{MC3_NAME} ||= $WEBOBS{MC3_DEFAULT_NAME};
@@ -1001,7 +1011,7 @@ sub mcinfo
 
 	if (length($MC{qml}) > 2) {
 		$MC{info} .= "<HR><I>SC3 ID: $MC{qml}</I>";
-		if ($SEFRAN3{MC3_EVENT_DISPLAY_LOC} =~ m/Y|YES/i) {
+		if (not $hideloc) {
 			my %QML;
 			if ($MC3{SC3_EVENTS_ROOT} ne "" && $MC{qml} =~ /[0-9]{4}\/[0-9]{2}\/[0-9]{2}\/.+/) {
 				my ($qmly,$qmlm,$qmld,$sc3id) = split(/\//,$MC{qml});
