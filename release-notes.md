@@ -15,9 +15,9 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 1. Grid's configuration uses a VIM editor with syntax highlighting. New WEBOBS.rc keys:
 
 ```
-CODEMIRROR_EDIT_THEME|default
-CODEMIRROR_BROWSING_THEME|neat
-CODEMIRROR_AUTO_VIM_MODE|no
+JS_EDITOR_EDIT_THEME|default
+JS_EDITOR_BROWSING_THEME|neat
+JS_EDITOR_AUTO_VIM_MODE|no
 ```
 
 2. Sefran now uses full functionality of `DATASOURCE` variable (Seedlink, Arclink, FDSNWS)
