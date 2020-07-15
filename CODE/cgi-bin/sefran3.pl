@@ -453,7 +453,7 @@ if (!$date) {
 					if (-e "$SEFRAN3{ROOT}/$f") {
 						print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:$align\"><DIV style=\"position:relative\"> ",
 							"<IMG src=\"$SEFRAN3{PATH_WEB}/$f\" border=\"1\" style=\"cursor:pointer\"",
-							" onClick=\"window.open('$prog&date=$ddd$hh')\">";
+							" onClick=\"window.open('$prog&date=$ddd$hh&trash=$trash')\">";
 					} else {
 						print "<TD style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px\" class=\"noImage\"><DIV style=\"position:relative;height:100%\">no image";
 					}
@@ -761,7 +761,7 @@ if ($date) {
 	for (reverse @mc_liste) {
 		my %MC = mcinfo($_);
 		#DL-was: if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1 && $MC{id} != $id && ($MC{minute} - $Mc) <= $date_nbm) {
-		if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1 && ($MC{minute} - $Mc) <= $date_nbm) {
+		if (($MC{id} > 0 || ($userLevel == 4 && $trash == 1)) && $userLevel >= 1 && ($MC{minute} - $Mc) <= $date_nbm) {
 			my $deb_evt;
 			if ($dep) {
 				$deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} - $Mc + $MC{second}/60));
