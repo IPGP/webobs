@@ -34,7 +34,7 @@ function newSdir(dir) {
 		alert ('invalid folder name "'+fn+'"');
 		exit;
 	}
-	location.href = "/cgi-bin/newwdir.pl?dir="+dir+"&sdir="+fn
+	location.href = "/cgi-bin/wdir.pl?dir="+dir+"&sdir="+fn
 }
 
 function selSdir(dir) { // onClick for new sdir
@@ -47,6 +47,6 @@ function selSdir(dir) { // onClick for new sdir
 
 function delFile(dir,file) {
 	if (!confirm("Do you really want to delete "+dir+file+" ?")) return false;
-	location.href = "/cgi-bin/newwdir.pl?dir="+dir+"&del="+file ;
+	location.href = "/cgi-bin/wdir.pl?dir="+dir+"&del="+file ;
 }
 
