@@ -227,6 +227,15 @@ my $mseedreq = "/cgi-bin/$WEBOBS{MSEEDREQ_CGI}?all=2";
 
 $|=1;
 
+
+# ---- a few useful subroutines -----------------------------------------------
+
+sub compute_energy {
+	my $mag = shift;
+	return 10**(1.5 * $mag + 11.8) / 10**7;
+}
+
+
 # ---- check/fix OR default the requested date range --------------------------
 #    - handle 28-31 days/month by re-evaluating  with "YYYY-MM-01 (DD-1) day"
 #      (ie. 2012-02-30 ==> 2012-03-02)
@@ -475,8 +484,16 @@ if ($QryParm->{'dump'} eq "") {
 			."<TD nowrap style=\"text-align:left;vertical-align:top\">";
 		# ----- selection box graph-type
 		$html .= "<P><B>Graph:</B>&nbsp;<SELECT name=\"graph\" size=\"1\" onChange=\"plotFlot(document.formulaire.graph.value)\">";
-		foreach ("hbars|Hourly Histogram","bars|Daily Histogram","movsum|Daily Moving Histogram","ncum|Cumulated","mcum|Seismic moment cum.","gr|Gutenberg-Richter (log)") {
-			my ($key,$val) = split(/\|/,$_);
+		foreach my $menu_opts ("hbars|Hourly Histogram",
+		                       "bars|Daily Histogram",
+		                       "movsum|Daily Moving Histogram",
+		                       "ncum|Cumulated",
+		                       "mcum|Seismic moment cumul.",
+		                       "ecum|Energy cumul. by type",
+		                       "ecum_total|Total energy cumul.",
+		                       "gr|Gutenberg-Richter (log)")
+		{
+			my ($key, $val) = split(/\|/, $menu_opts);
 			if ($QryParm->{'hideloc'} == 0 || ($key ne "mcum" && $key ne "gr")) {
 				$html .= "<OPTION value=\"$key\"".($key eq $QryParm->{'graph'} ? " selected":"").">$val</OPTION>";
 			}
@@ -593,13 +610,13 @@ my @ligneTitre;
 if ($QryParm->{'dump'} eq 'bul') {
 	$dumpFile = "${mc3}_dump_bulletin.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
-	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;Longitude;Latitude;Depth;Type;File;LocMode;LocType;Projection;Operator;Timestamp;ID\n");
+	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;E(J);Longitude;Latitude;Depth;Type;File;LocMode;LocType;Projection;Operator;Timestamp;ID\n");
 }
 if ($QryParm->{'dump'} eq 'cum') {
 	$dumpFile = "${mc3}_dump_daily_total.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
 	push(@csv,"#Daily histogram counted from ".(($start_datetime)->strftime('%F %H:00:00'))."\n");
-	push(@csv,"#YYYY-mm-dd Daily_Total(#);Daily_Moment(N.m)\n");
+	push(@csv,"#YYYY-mm-dd Daily_Total(#);Daily_Count;Daily_Moment(N.m);Daily_Energy(J)\n");
 }
 
 # ---- Filter events based on selection criteria: use of grep on the data line (fast!) ------------------------------
@@ -765,8 +782,12 @@ foreach my $line (@lignes) {
 			|| ($QryParm->{'located'} == 2 && ($noloc == 1 || $pha >= $MC3{LOCATION_MIN_PHASES}) && $QryParm->{'locstatus'} == 2 && $mod eq 'automatic')
 			|| $QryParm->{'hideloc'} == 1 ) {
 			if ($QryParm->{'dump'} eq 'bul') {
+				my $energy = '';
+				if ($mag) {
+					$energy = compute_energy($mag);
+				}
 				push(@csv,join('',split(/-/,$date))." ".join('',split(/:/,$heure)).";"
-					."$nombre;$duree_s;$amplitude;$mag;$lon;$lat;$dep;$type;$qml;"
+					."$nombre;$duree_s;$amplitude;$mag;$energy;$lon;$lat;$dep;$type;$qml;"
 					#.($mod eq 'manual' ? "1":"0").";WGS84;$operator;$timestamp;"
 					."$mod".($sta == "" ? "":" ($sta)").";$typ;WGS84;$operator;$timestamp;"
 					.substr($date,0,7)."#$id_evt\n");
@@ -793,7 +814,7 @@ foreach my $line (@lignes) {
 #my $nbDays = ($timeE - $timeS)/86400;
 my $nbDays = $end_datetime->subtract_datetime_absolute($start_datetime)->seconds/86400 + 1/24;
 
-my @stat_t;
+my @stat_t; # Dates in YYYY-MM-DD format
 my @stat_j; # Javascript dates (in ms since 1970-01-01)
 for my $d (0..($nbDays - 1/24)) {
 	#push(@stat_t, strftime('%F',gmtime($timeS + $_*86400)));
@@ -818,6 +839,7 @@ for my $h (0 .. ($nbDays*24 - 1)) {
 	}
 }
 my %stat_m;      # hash of event types seismic moment per day
+my %stat_energy; # hash of event types seismic energy per day
 my %stat_mh;     # hash of event types seismic moment per hour
 my %stat_d;      # hash of event types per day
 my %stat_dh;     # hash of event types per hour
@@ -848,17 +870,24 @@ foreach (@finalLignes) {
 		if ($origin) {
 			my @orig = split(';',$origin);
 			if ($orig[0]) {
+				# Event has an ID
 				my $M0 = 0;
 				my $km = 0;
-				if ($orig[8]) {
-					$M0 = 10**(1.5*$orig[8] + 9.1); # unit = N.m
+				my $mag = $orig[8];
+				if ($mag) {
+					$M0 = 10**(1.5*$mag + 9.1); # unit = N.m
 					$stat_m{$type}[$kd] += $M0;
 					$stat_mh{$type}[$kh] += $M0;
-					$km = int($orig[8]*10);
+					$km = int($mag*10);
 					# negative magnitudes are counted in the first histogram bin
 					if ($km < 0) { $km = 0; }
 					$stat_grm[$km] = $km/10;
 					$stat_gr{$type}[$km] += 1;
+
+					# Seismic energy calculation
+					my $energy = compute_energy($mag);
+					$stat_energy{$type}[$kd] += $energy;
+					$stat_energy{TOTAL}[$kd] += $energy;
 				}
 			}
 		}
@@ -894,19 +923,28 @@ foreach (@finalLignes) {
 		}
 	}
 }
+
 my $total = 0;
-my $daily_count;
-my $daily_moment;
 $i = 0;
-foreach (@stat_t) {
-	$daily_count = 0;
-	$daily_moment = 0;
-	foreach (keys(%stat_d)) {
-		$daily_count += ($stat_d{$_}[$i] ? $stat_d{$_}[$i]:0);
-		$daily_moment += ($stat_m{$_}[$i] ? $stat_m{$_}[$i]:0);
+foreach my $day (@stat_t) {
+	my $daily_count = 0;
+	my $daily_moment = 0;
+	my $daily_energy = 0;
+	foreach my $evt_type (keys(%stat_d)) {
+		$daily_count += $stat_d{$evt_type}[$i] || 0;
+		$daily_moment += $stat_m{$evt_type}[$i] || 0;
+
+		# Cumulate the total events energy for this day
+		$daily_energy += $stat_energy{$evt_type}[$i] || 0;
+
+		# Also add up daily energy for this type of event
+		$stat_energy{$evt_type}[$i] += ($stat_energy{$evt_type}[$i-1] || 0) unless ($i == 0);
 	}
+	# Store the total daily energy
+	$stat_energy{TOTAL}[$i] = ($i > 0 ? $stat_energy{TOTAL}[$i-1] : 0) + $daily_energy;
+
 	if ($QryParm->{'dump'} eq 'cum') {
-		push(@csv,sprintf("%s;%d;%g\n",$_,$daily_count,$daily_moment));
+		push(@csv, sprintf("%s;%d;%g;%e\n", $day, $daily_count, $daily_moment, $daily_energy));
 	}
 	$total += $daily_count;
 	$i++;
@@ -945,12 +983,13 @@ if ($nbDays - $nbD != 0) {
 if ($nbDays > 365) {
 	my $nbY = int($nbDays/365.25 + 0.5);
 	my $nbM = int(($nbDays%365.25)/30.4 + 0.5);
-	$html .= " ( ~ $nbY year".($nbY>1 ? "s":"")." $nbM month".($nbM>1 ? "s":"");
+	$html .= " ( ~ $nbY year".($nbY>1 ? "s":"")." $nbM month".($nbM>1 ? "s":"")." ) ";;
 } elsif ($nbDays > 30) {
 	my $nbM = int($nbDays/30. + 0.5);
 	$html .= " ( ~ $nbM month".($nbM>1 ? "s":"")." ) ";
 }
 $html .= "</P><P><b>Total number of events</b>: $total</P>";
+$html .= qq(<p><b>Cumulated energy:</b>).sprintf(" %.3e&nbsp;MJ", $stat_energy{TOTAL}[-1] / 10**6).qq(</p>);
 $html .= "<P><B>Daily total</B>: <INPUT type=\"button\" value=\"CSV File\" onClick=\"dumpData('cum');\"></P>";
 $html .= "<P><B>Events bulletin</B>: <INPUT type=\"button\" value=\"CSV File\" onClick=\"dumpData('bul');\"></P>";
 $html .= "</FORM>\n";
@@ -1025,10 +1064,15 @@ if ($QryParm->{'nograph'} == 0) {
 				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
 			}
 			$html .= "]});\n";
+			# Daily cumulated energy, by type
+			$html .= " data_energy.push({ label: \"$types{$key}{Name} = "
+				.sprintf("%.3f", $stat_energy{$key}[-1] / 10**6)
+				." (MJ)\", color: \"$types{$key}{Color}\", data: [";
+			for (my $i = 0; $i <= $#stat_j; $i++) {
+				$html .= sprintf("[%s, %s],", $stat_j[$i], ($stat_energy{$key}[$i] / 10**6 || "0"));
+			}
+			$html .= "]});\n";
 		}
-	}
-	foreach (sort(keys(%typesSO))) {
-		my $key = $typesSO{$_};
 		if ($stat{$key}) {
 			$html .= " datag.push({ label: \"$types{$key}{Name} = <b>$stat{$key}</b>\", color: \"$types{$key}{Color}\","
 				." data: [";
@@ -1039,6 +1083,14 @@ if ($QryParm->{'nograph'} == 0) {
 			$html .= "]});\n";
 		}
 	}
+	# Total daily cumulated energy (all types merged)
+	$html .= " data_energy_total = [{ label: \"Total = "
+		.sprintf("%.3e", $stat_energy{TOTAL}[$#stat_j] / 10**6)
+		." (MJ)\", color: \"".($types{ENERGY}{Color} || "#4A65B8")."\", data: [";
+	for (my $i = 0; $i <= $#stat_j; $i++) {
+		$html .= sprintf("[%s, %f],", $stat_j[$i], ($stat_energy{TOTAL}[$i] / 10**6 || 0));
+	}
+	$html .= "]}];\n";
 
 	$html .= "</script>\n";
 }
@@ -1358,7 +1410,6 @@ for (@finalLignes) {
 		$html .= "<td style=\"text-align:left;\"><i>$comment</i></td>";
 
 		# S'il y a au moins une localisation correspondante à l'événement: extraction des infos et calculs
-
 		$ii = 0;
 		for (@dat) {
 		# S'il y a une localisation validée, on n'affiche pas la localisation automatique
@@ -1422,9 +1473,22 @@ for (@finalLignes) {
 				} else {
 					$html .= "<i>&nbsp;&nbsp;not locatable</i></td><td></td>";
 				}
-				$html .= "<td style=\"$sc3AutoStyle\">"
+
+				# --- Event energy calculation (displayed in the popover for the magnitude column)
+				my $popover_attrs = "";
+				if ($mag[$ii]) {
+					my $mag_disp = sprintf("%.2f %s", $mag[$ii], $mty[$ii]);
+					my $energy_disp = sprintf("%.3e", compute_energy($mag[$ii]));
+					my $popover_text  = qq(<b>Magnitude:</b> $mag_disp<br>);
+					$popover_text .= qq(<b>Energy:</b> $energy_disp J<br>);
+					$popover_attrs = qq(onMouseOut="nd()" onMouseOver="overlib('$popover_text', CAPTION, 'Mag / Energy', WIDTH, 140)");
+				}
+
+				# --- Magnitude
+				$html .= qq(<td style="$sc3AutoStyle" $popover_attrs>)
 					.($mty[$ii] && $mag[$ii] ? sprintf("%1.2f&nbsp;&nbsp;%s",$mag[$ii],$mty[$ii]):"")."</td>";
 
+				# --- EMS
 					#if ($MC3{SISMOHYP_HYPO_USE} > 0) {
 					$html .= "<td class=\"msk\" style=\"$sc3AutoStyle\">".($msk[$ii] ? $msk[$ii]:"")."</td>";
 					#}

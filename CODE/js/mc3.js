@@ -6,6 +6,8 @@ var datav = [];
 var datac = [];
 var datam = [];
 var datag = [];
+var data_energy = [];
+var data_energy_total = [];
 var plot;
 
 function plotFlot(gtype) {
@@ -18,6 +20,8 @@ function plotFlot(gtype) {
 	points = false;
 	ymin = 0;
 	bw = 80000000;
+	timeformat = null;
+	shadowsize = 2;
 	if (gtype == 'bars') {
 		data = datad;
 		lines = false;
@@ -31,6 +35,14 @@ function plotFlot(gtype) {
 		data = datam;
 	} else if (gtype == 'ncum') {
 		data = datac;
+	} else if (gtype == 'ecum') {
+		data = data_energy;
+	} else if (gtype == 'ecum_total') {
+		data = data_energy_total;
+		fill = false;
+		linewidth = 2;
+		timeformat = '%Y-%m-%d';
+		shadowsize = 0;
 	} else if (gtype == 'gr') {
 		data = datag;
 		xmode = null;
@@ -44,7 +56,8 @@ function plotFlot(gtype) {
 	}
 	options = {
 		xaxis: {
-			mode: xmode
+			mode: xmode,
+			timeformat: timeformat
 		},
 		yaxis: {
 			min: ymin,
@@ -53,6 +66,7 @@ function plotFlot(gtype) {
 		},
 		series: {
 			stack: stack,
+			shadowSize: shadowsize,
 			bars: {
 				show: bars,
 				fill: fill,
