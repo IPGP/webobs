@@ -101,11 +101,11 @@ my @datasrc = split(/;/,$SEFRAN3{DATASOURCE});
 my $sltos = $SEFRAN3{SEEDLINK_SERVER_TIMEOUT_SECONDS};
 my $slprgm = "$WEBOBS{PRGM_ALARM} ".($sltos > 0 ? $sltos:"5")." $WEBOBS{SLINKTOOL_PRGM}";
 if ($#datasrc eq 1 || $#datasrc eq 2) {
-	($rtformat,$rtsource) = split(/:\/\//,$datasrc[0],2);
-	($arcformat,$arcsource) = split(/:\/\//,$datasrc[1]),2;
+	($rtformat, $rtsource) = split(m{://}, $datasrc[0], 2);
+	($arcformat, $arcsource) = split(m{://}, $datasrc[1], 2);
 }
 if ($#datasrc eq 0) {
-	($arcformat,$arcsource) = split(/:\/\//,$datasrc[0],2);
+	($arcformat, $arcsource) = split(m{://}, $datasrc[0], 2);
 }
 
 # ---- calculates time limit to choose which protocol to use
