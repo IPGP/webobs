@@ -231,6 +231,9 @@ $|=1;
 # ---- a few useful subroutines -----------------------------------------------
 
 sub compute_energy {
+	# Energy calculation in joules, from:
+	# Hanks, T. C., & Kanamori, H. (1979). A moment magnitude scale.
+	# Journal of Geophysical Research: Solid Earth, 84(B5), 2348-2350
 	my $mag = shift;
 	return 10**(1.5 * $mag + 11.8) / 10**7;
 }
@@ -489,8 +492,8 @@ if ($QryParm->{'dump'} eq "") {
 		                       "movsum|Daily Moving Histogram",
 		                       "ncum|Cumulated",
 		                       "mcum|Seismic moment cumul.",
-		                       "ecum|Energy cumul. by type",
-		                       "ecum_total|Total energy cumul.",
+		                       "ecum|Energy cumul. by type (J)",
+		                       "ecum_total|Total energy cumul. (J)",
 		                       "gr|Gutenberg-Richter (log)")
 		{
 			my ($key, $val) = split(/\|/, $menu_opts);
@@ -784,6 +787,7 @@ foreach my $line (@lignes) {
 			if ($QryParm->{'dump'} eq 'bul') {
 				my $energy = '';
 				if ($mag) {
+					# Include energy in joules into the CSV output
 					$energy = compute_energy($mag);
 				}
 				push(@csv,join('',split(/-/,$date))." ".join('',split(/:/,$heure)).";"
@@ -884,7 +888,7 @@ foreach (@finalLignes) {
 					$stat_grm[$km] = $km/10;
 					$stat_gr{$type}[$km] += 1;
 
-					# Seismic energy calculation
+					# Seismic energy calculation (J)
 					my $energy = compute_energy($mag);
 					$stat_energy{$type}[$kd] += $energy;
 					$stat_energy{TOTAL}[$kd] += $energy;
@@ -1474,7 +1478,7 @@ for (@finalLignes) {
 					$html .= "<i>&nbsp;&nbsp;not locatable</i></td><td></td>";
 				}
 
-				# --- Event energy calculation (displayed in the popover for the magnitude column)
+				# --- Event energy calculation in joules (displayed in the popover for the magnitude column)
 				my $popover_attrs = "";
 				if ($mag[$ii]) {
 					my $mag_disp = sprintf("%.2f %s", $mag[$ii], $mty[$ii]);
