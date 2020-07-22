@@ -80,15 +80,14 @@ my $datasource;
 my $fdsnwsrv;
 
 # ---- get query-string  parameters
-my $s3  = $cgi->url_param('s3');
-my $S   = $cgi->url_param('streams');
-my $t1  = $cgi->url_param('t1');
-my $t2  = $cgi->url_param('t2');
-my $ds  = $cgi->url_param('ds');
-my $all = $cgi->url_param('all');
+my $s3  = $cgi->url_param('s3') // $WEBOBS{SEFRAN3_DEFAULT_NAME};
+my $S   = $cgi->url_param('streams') // '';
+my $t1  = $cgi->url_param('t1') // '';
+my $t2  = $cgi->url_param('t2') // '';
+my $ds  = $cgi->url_param('ds') // 0;
+my $all = $cgi->url_param('all') // 0;
 
 # ---- loads requested Sefran3 configuration or default one
-$s3 ||= $WEBOBS{SEFRAN3_DEFAULT_NAME};
 my $s3conf = "$WEBOBS{ROOT_CONF}/$s3.conf";
 my %SEFRAN3 = readCfg("$s3conf") if (-f "$s3conf");
 
@@ -254,7 +253,7 @@ switch ($method) {
 		} else {
 			for (@stream_list) {
 				my ($net,$sta,$loc,$cha) = split(/\./,$_);
-				if ($loc == '') {$loc = '--'}
+				$loc = '--' if ($loc eq '');
 				push(@streams,($net ? $net:"*")." ".($sta ? $sta:"*").($all==1 ? " * *":" $loc $cha")." $date1 $date2\n");
 			}
 		}
@@ -313,7 +312,7 @@ if (-f "$tmpfile" && $size > 0) {
 			$cgi->li("Server: <b>$host</b>"),
 			$cgi->li("Start time: <b>$t1</b>"),
 			$cgi->li("Duration: <b>$ds s</b>"),
-			$cgi->li("Streams: <b></b>")
+			$cgi->li("Streams: <b><ul>". join('', map($cgi->li($_), @stream_list)) ."</ul></b>")
 		),
 		$cgi->button(-name=>'Back to form',-onClick=>'history.back()'),
 		$cgi->end_html();
