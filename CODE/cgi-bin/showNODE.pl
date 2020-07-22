@@ -649,7 +649,7 @@ if ($lignes > 0) {
 			@carNode = (wiki2html(join("",@carNode)));
 		}
 		print "<TR>" if ($_ ne $listeFinaleCarFiles[0]);
-		if ($editOK) {
+		if ($editOK && !($carFileName =~ / of$/)) {
 			print "<TD valign=\"top\" width=\"10%\"><a href=\"$cgiEtxt?file=$NODES{SPATH_FEATURES}/$carFileName.txt&node=$GRIDType.$GRIDName.$NODEName\"><B>".ucfirst($carFileName)."</B></a></TD>\n";
 		} else {
 			print "<TD valign=\"top\" width=\"10%\"><B>".ucfirst($carFileName)."</B></TD>\n";
