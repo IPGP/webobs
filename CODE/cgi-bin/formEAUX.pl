@@ -190,7 +190,8 @@ function submit()
 	\$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
 			//var contents = \$( data ).find( '#contents' ).text(); 
 			alert(data);
-			document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
+			// Redirect the user to the form display page while keeping the previous filter
+			document.location=\"". $cgi->param('return_url') ."\";
 		}
 	);
 }
@@ -410,7 +411,7 @@ print "<TD style=border:0 colspan=2>";
 print "</TR><TR>";
 print "<TD style=border:0 colspan=2>";
 print "<P style=\"margin-top:20px;text-align:center\">";
-print "<input type=\"button\"  name=lien value=\"Annuler\" onClick=\"document.location='/cgi-bin/".$FORM->conf('CGI_SHOW')."'\" style=\"font-weight:normal\">";
+print "<input type=\"button\"  name=lien value=\"Annuler\" onClick=\"document.location='".$cgi->param('return_url')."'\" style=\"font-weight:normal\">";
 print "<input type=\"button\" value=\"Soumettre\" onClick=\"verif_formulaire();\">";
 print "</P></TABLE>";
 print "</FORM>";
