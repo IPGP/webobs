@@ -121,10 +121,10 @@ my %Ns;
 my @NODESSelList;
 my @NODESValidList;
 my %Ps = $FORM->procs;
-for my $p (keys(%Ps)) {
+for my $p (sort keys(%Ps)) {
 	push(@NODESSelList,"\{$p\}|-- {PROC.$p} $Ps{$p} --");
 	my %N = $FORM->nodes($p);
-	for my $n (keys(%N)) {
+	for my $n (sort keys(%N)) {
 		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
 		push(@NODESValidList,"$n");
 	}
