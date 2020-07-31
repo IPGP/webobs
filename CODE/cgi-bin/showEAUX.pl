@@ -336,10 +336,10 @@ $entete = $entete."<TH rowspan=2>Date</TH>"
 	."<TH rowspan=2>Site<br>(Type)</TH>"
 	."<TH colspan=6>Mesures sur site</TH>"
 	."<TH colspan=5>Cations ($unite)</TH>"
-	."<TH colspan=".(6+$QryParm->{'iode'}).">Anions ($unite)</TH>"
+	."<TH colspan=".(6 + ($QryParm->{'iode'} || 0)).">Anions ($unite)</TH>"
 	.($QryParm->{'sio2'} ne "" ? "<TH>Autres</TH>":"")
 	.($QryParm->{'isotopes'} ne "" ? "<TH colspan=3>Isotopes</TH>":"")
-	."<TH colspan=".(2+$nbRap)."> Calculs</TH>"
+	."<TH colspan=".(2 + ($nbRap || 0))."> Calculs</TH>"
 	."<TH rowspan=2></TH></TR>\n"
 	."<TR><TH>T air<br>(°C)</TH>"
 	."<TH>T eau<br>(°C)</TH>"
@@ -382,7 +382,7 @@ for(@lignes) {
 		push(@csv,l2u("$date;$heure;Code Site;$site;$type;$tAir;$tSource;$pH;$debit;$cond;$niveau;$cLi;$cNa;$cK;$cMg;$cCa;$cF;$cCl;$cBr;$cNO3;$cSO4;$cHCO3;$cI;$cSiO2;$d13C;$d18O;$dD;Cond25;NICB (%);\"$rem\";$val"));
 	}
 	elsif (($_ ne "") 
-		&& ($site =~ $QryParm->{'node'} || $site ~~ @gridsites || ($QryParm->{'node'} eq "All" && $site ~~ @NODESValidList))
+		&& ($site =~ $QryParm->{'node'} || grep(/^$site$/, @gridsites) || ($QryParm->{'node'} eq "All" && grep(/^$site$/, @NODESValidList)))
 		&& ($id > 0 || $clientAuth == 4)
 		&& ($date le $endDate) && ($date ge $startDate)) {
 
@@ -465,9 +465,9 @@ for(@lignes) {
 			$texte .= "<TD align=center>$d13C</TD><TD align=center>$d18O</TD><TD>$dD</TD>";
 		}
 		$texte .= "<TD class=tdResult>$cond25</TD>";
-		if (($nicb < -20) || ($nicb > 20)) {
+		if ($nicb and ($nicb < -20) || ($nicb > 20)) {
 			$texte .= "<TD class=tdResult style=\"background-color:#FFAAAA\">";
-		} elsif (($nicb < -10) || ($nicb > 10)) {
+		} elsif ($nicb and ($nicb < -10) || ($nicb > 10)) {
 			$texte .= "<TD class=tdResult style=\"background-color:#FFEBAA\">";
 		} else {
 			$texte .= "<TD class=tdResult>";
