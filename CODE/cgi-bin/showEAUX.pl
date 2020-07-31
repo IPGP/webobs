@@ -98,6 +98,7 @@ use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 set_message(\&webobs_cgi_msg);
+use URI;
 
 # ---- webobs stuff
 use WebObs::Config;
@@ -107,6 +108,11 @@ use WebObs::Utils;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 use WebObs::Form;
+
+# ---- Return URL --------------------------------------------
+# Keep the URL where the user should be returned after edition
+# (this will keep the filters selected by the user)
+my $return_url = $cgi->url(-query_string => 1);
 
 # ---- standard FORMS inits ----------------------------------
 
@@ -283,7 +289,10 @@ if ($QryParm->{'affiche'} ne "csv") {
 	" <INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"reset()\">",
 	" <INPUT type=\"submit\" value=\"$__{'Display'}\">");
 	if ($clientAuth > 1) {
-		print "<input type=\"button\" style=\"margin-left:15px;color:blue;font-weight:bold\" onClick=\"document.location='/cgi-bin/".$FORM->conf('CGI_FORM')."'\" value=\"$__{'Enter a new record'}\">";
+		my $form_url = URI->new("/cgi-bin/".$FORM->conf('CGI_FORM'));
+		$form_url->query_form('return_url' => $return_url);
+		print qq(<input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
+			qq( onClick="document.location='$form_url'" value="$__{'Enter a new record'}">);
 	}
 	print("<BR>\n");
 	print("<input type=\"checkbox\" name=\"iode\" value=1".($QryParm->{'iode'} ne ""? " checked":"").">Iode&nbsp;&nbsp;");
@@ -421,9 +430,13 @@ for(@lignes) {
 		my $normSite = normNode(node=>"PROC.$site");
 		if ($normSite ne "") {
 			$lien = "<A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normSite\"><B>$aliasSite</B></A>";
-		} else { $lien = "$aliasSite"  }
-		$modif = "<a href=\"/cgi-bin/".$FORM->conf('CGI_FORM')."?id=$id\"><img src=\"/icons/modif.png\" title=\"Editer...\" border=0></a>";
-		$efface = "<img src=\"/icons/no.png\" title=\"Effacer...\" onclick=\"checkRemove($id)\">";
+		} else {
+			$lien = "$aliasSite";
+		}
+		my $form_url = URI->new("/cgi-bin/".$FORM->conf('CGI_FORM'));
+		$form_url->query_form('id' => $id, 'return_url' => $return_url);
+		$modif = qq(<a href="$form_url"><img src="/icons/modif.png" title="Editer..." border=0></a>);
+		$efface = qq(<img src="/icons/no.png" title="Effacer..." onclick="checkRemove($id)">);
 
 		$texte = $texte."<TR ".($id < 1 ? "class=\"node-disabled\"":"").">";
 		if ($clientAuth > 1) {
