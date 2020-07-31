@@ -110,13 +110,15 @@ print "<html><head>
 <script language=\"javascript\" type=\"text/javascript\" src=\"/js/comma2point.js\"></script>
 <script type=\"text/javascript\">
 <!--
-function nicb()
+function update_form()
 {
 	var anions;
 	var cations;
 	var cations_chromato;
 	var hydrogene = 0;
 	var nicb;
+	var formulaire = document.formulaire;
+
 	if (formulaire.pH.value != \"\") {
 		hydrogene = 1000*Math.pow(10,-formulaire.pH.value);
 	}
@@ -195,8 +197,6 @@ function submit()
 		}
 	);
 }
-window.captureEvents(Event.KEYDOWN);
-window.onkeydown = nicb();
 //-->
 </script>
 
@@ -219,8 +219,13 @@ function stopRKey(evt) {
 }
 document.onkeypress = stopRKey;
 \$(document).ready(function(){
-	nicb();
-	\$('input.inputNum').change(nicb).keyup(nicb);
+	// Update the form when the document is loaded
+	update_form();
+	// When any of its element is changed
+	\$('#theform').change(update_form);
+	// And when a key is pressed in the form, but after sleeping 1s
+	// to wait for the previous handler to finish
+	\$('#theform').on("keydown", function() { setTimeout(update_form, 1000); });
 });
 </script>
 FIN
@@ -298,7 +303,7 @@ if ($QryParm->{id} ne "") {
 
 print "</TABLE>";
 
-print "<TABLE style=border:0 onMouseOver=\"nicb()\">";
+print "<TABLE style=\"border: 0\" >";
 print "<TR>";
 print "<TD style=border:0 valign=top>
 	<fieldset><legend>Date et lieu du prélèvement</legend>
@@ -375,7 +380,7 @@ print "<TD style=border:0 valign=top>";
 		print "<B>K<sup>++</sup></B> (en ppm) = <input size=6 class=inputNum name=\"cK\" value=\"$sel_cK\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la concentration en Potassium')\"><BR>\n";
 		print "<B>Mg<sup>++</sup></B> (en ppm) = <input size=6 class=inputNum name=\"cMg\" value=\"$sel_cMg\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la concentration en Magnésium')\"><BR>\n";
 		print "<B>Ca<sup>++</sup></B> (en ppm) = <input size=6 class=inputNum name=\"cCa\" value=\"$sel_cCa\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la concentration en Calcium')\"><BR>\n";
-		print "<B>H<sup>+</sup></B> (en ppm) = <input size=6 readOnly class=inputNumNoEdit name=\"cH\" onFocus=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Concentration en Hydrogène calculé à partir du pH')\"><BR>\n";
+		print "<B>H<sup>+</sup></B> (en ppm) = <input size=6 readOnly class=inputNumNoEdit name=\"cH\" onMouseOut=\"nd()\" onmouseover=\"overlib('Concentration en Hydrogène calculé à partir du pH')\"><BR>\n";
 		print "</TD><TD style=border:0 valign=top>";
 		print "<P class=parform align=right>";
 		print "<B>F<sup>-</sup></B> (en ppm) = <input size=6 class=inputNum name=\"cF\" value=\"$sel_cF\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la concentration en Fluor')\"><BR>\n";
@@ -386,7 +391,7 @@ print "<TD style=border:0 valign=top>";
 		print "<B>HCO<sub>3</sub><sup>-</sup></B> (en ppm) = <input size=6 class=inputNum name=\"cHCO3\" value=\"$sel_cHCO3\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la concentration en Carbonates')\"><BR>\n";
 		print "<B>I<sup>-</sup></B> (en ppb) = <input size=6 class=inputNum name=\"cI\" value=\"$sel_cI\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la concentration en Iode (<b>ATTENTION: valeur en ppb !</b>)')\"><BR>\n";
 		print "</TD></TR>";
-		print "<TR><TD style=border:0 colspan=2 align=center><B>NICB</B> (%) = <input class=inputNum name=\"NICB\" size=5 readOnly onFocus=\"nicb()\" value=\"\"  onMouseOut=\"nd()\" onmouseover=\"overlib('Normalized Inorganic Charge Balance')\"></TD>";
+		print "<TR><TD style=border:0 colspan=2 align=center><B>NICB</B> (%) = <input class=inputNum name=\"NICB\" size=5 readOnly value=\"\"  onMouseOut=\"nd()\" onmouseover=\"overlib('Normalized Inorganic Charge Balance')\"></TD>";
 		print "</TR></table>";
 	print "</fieldset>";
 
