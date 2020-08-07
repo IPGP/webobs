@@ -733,7 +733,7 @@ if ($date) {
 				print " style=\"cursor:crosshair\" class=\"flypointit\"";
 			} elsif ($userLevel >= 2) {
 				print " class=\"flyhour\"  onMouseOver=\"flyhour(this,'$__{'Click to start input Main Courante'}')\"",
-					" href=\"$prog&date=$Y$m$d$H$M&s3=$s3\" target=\"_blank\"";
+					" href=\"$prog&date=$Y$m$d$H$M&s3=$s3\" target=\"_blank\" rel=\"opener\"";
 			}
 			print " shape=rect coords=\"0,".($hauteur_label_haut + 1).",$largeur_image,".($hauteur_image - $hauteur_label_haut)."\"></map>",
 				"<img id=\"png\" class=\"png\" src=\"$png_web\" usemap=\"#$png\">";
