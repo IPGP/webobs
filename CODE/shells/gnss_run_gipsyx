@@ -98,29 +98,29 @@ for (( i=1; i<=$#; i++)); do
 			echo "Will use only final orbit"
 		;;
    	-force)
-      	declare FORCE=1
+      	FORCE=1
       	echo "Force computation despites final orbits already exist"
 		;;
    	-debug)
-      	declare DEBUG=1
+      	DEBUG=1
       	echo "Debug mode: temporary directories will NOT be deleted!"
 		;;
    	-s)
       	j=$((i+1))
       	IFS=' ' read -ra arrayStation <<< "${!j}"
-      	declare NODES=${arrayStation[@]}
+      	NODES=${arrayStation[@]}
 		;;
 		-d)
       	k=$((i+1))
       	IFS=',' read -ra arrayDay <<< "${!k}"
-      	declare STARTDAYS=${arrayDay[@]}
+      	STARTDAYS=${arrayDay[@]}
       	DAYLIST= $()
       	for start in $STARTDAYS;do
-      		declare L=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago $start" +%Y/%m/%d;done)
+      		L=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago $start" +%Y/%m/%d;done)
          	DAYLIST=("${DAYLIST[@]}" "${L[@]}")
       	done
       	DAYLIST=($(printf "%s\n" "${DAYLIST[@]}" | sort -u | tr '\n' ' '))
-      	declare DAYLIST=${DAYLIST[@]} #converting to proper format
+      	DAYLIST=${DAYLIST[@]} #converting to proper format
       ;;
 		-lock)
 			# make sure the lockfile is removed when we exit and then claim it
@@ -184,7 +184,7 @@ for station in $NODES; do
 					rinex2=$tmpdir/rinex2 # yesterday
 					rinex3=$tmpdir/rinex3 # today
 
-					declare ORBITS=( "ultra" ) #reaffect orbit value because only ultra can be used for realtime
+					ORBITS=( "ultra" ) #reaffect orbit value because only ultra can be used for realtime
 
 					yesterday=$(date -u -d "1 day ago" +"%Y/%m/%d")
 					two_days_ago=$(date -u -d "2 day ago" +"%Y/%m/%d")
@@ -242,11 +242,11 @@ for station in $NODES; do
 
 							case $orbit in
 								flinn)
-									declare product="Final";;
+									product="Final";;
 								ql)
-									declare product="Rapid";;
+									product="Rapid";;
 								ultra)
-									declare product="Ultra";;
+									product="Ultra";;
 							esac
 
 							# calling download_orbit
