@@ -1,14 +1,28 @@
 #!/bin/bash
 # Syntax: raw2rinex input output [teqcoptions]
-# Description: GNSS raw data files convertion to daily RINEX
+# Description: GNSS raw data files convertion to daily RINEX 2.11
 # Arguments:
-#	input		Directory or filename of raw data (Leica, Trimble, Rinex) zipped of not
-#	output		Either output directory to write rinex (must exist), or any output rinex filename
-#	teqcoptions	Any options to add (example: -O.dec 30 -O.rt "receiver" -O.at "antenna")
+#	      input	Directory or filename of raw data (Leica, Trimble, Rinex)
+#              compressed of not
+#	     output Either output directory to write rinex (must exist), or any
+#              output rinex filename
+#	teqcoptions	Any options to add to teqc (example: -O.dec 30 -O.rt "receiver"
+#              -O.at "antenna")
+#
+# Dependencies:
+#            teqc for all data preprocessing, binary available at unavco
+#                 https://www.unavco.org/software/data-processing/teqc/teqc.html
+#          gunzip with .gz files
+#           unzip with .zip files
+#         CRX2RNX with Hatanaka files
+#    	   runpkr00 with some Trimble .T02 files
+# cnvrnx3-rnx2-v3 with Rinex v.3 files, source available at
+#                 http://acc.igs.org/misc/cnvrnx3-rnx2-v3.f
+#
 #
 # Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
 # Created: 2014-01-12
-# Updated: 2020-06-30
+# Updated: 2020-08-10
 
 if [ $# -lt 2 ]; then
 	echo "raw2rinex input output [teqc options]"
@@ -16,6 +30,7 @@ if [ $# -lt 2 ]; then
 fi
 
 tmpdir=$(mktemp -d /tmp/raw2rinex.XXXXXXXXXX)
+cd $tmpdir
 
 rawdir=$1
 if [ -d "$rawdir" ]; then
@@ -56,6 +71,16 @@ wc="*.??o"
 rf=$(find $tmpdir -name "$wc" | sort )
 if [ ! -z "$rf" ]; then
 	echo "   Found some Rinex files in $rawdir: proceeding..."
+	# must convert Rinex 3 files
+	for f in $rf; do
+		if [[ $(head -n1 $f | awk '{print $1}') == '3.01' ]]; then
+			cnvrnx3-rnx2-v3 $f +0 g
+			if [ -s $f.gps.rnx2 ]; then
+				# must remove these specific header lines for teqc...
+				grep -v "PHASE SHIFTS" $f.gps.rnx2 > $f
+			fi
+		fi
+	done
 	wildcard=$wc
 	rawfiles=$rf
 	navfiles=$(find $tmpdir -name "*.??n" | sort )
