@@ -8,7 +8,7 @@ The latest release has many improvements, new features and bug fixes.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
-## v2.1.5a (April 2020)
+## v2.1.5b (August 2020)
 
 ### Enhancements
 
@@ -62,8 +62,9 @@ URN_OUTR|/OUTR
 
 or, for non default configurations, `URN_OUTG` pointing to `ROOT_OUTR`.
 
-See github commits for details.
+7. sefran3 new event window did not close after validation with some web browsers (Firefox, Safari).
 
+See github commits for details.
 
 ## v2.1.4c (January 2020)
 
