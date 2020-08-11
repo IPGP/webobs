@@ -35,6 +35,24 @@ MODELLING_VECTORS_CLIP|NO
 
 5. Proc request form now includes a "verbose logs" option (debug mode)
 
+6. sefran3.pl now accepts a 'hideloc' CGI parameter similar to the 'hideloc'
+   parameter of mc3.pl. If its value is 1, event locations will not be shown in
+   the popovers of events in the hourly thumbnail view (which allows the page
+   to load faster, especially when using FDSNWS). If not present, its value
+   defaults to the inverted value of `MC3_EVENT_DISPLAY_LOC` from the Sefran
+   configuration.
+
+7. The MC now includes a calculation of energy in joules, shown for each event
+   in a popover in the 'Magnitude' column. The total energy of selected events
+   is also shown in the top section of the MC, and two new graphs are
+   available: one shows the energy in joules featuring each type of event, the
+   other only plots the total energy of all event types.
+
+8. Several improvements in the form EAUX: the list of nodes now uses a fixed
+   order, and the entry filters are kept after adding/modifying a new entry to
+   ease the entry/modification of new data.
+
+
 ### Fixed issues
 
 1. all procs: cannot change default colormap (Matlab and .cpt file) with `*_COLORMAP` keys
@@ -62,7 +80,13 @@ URN_OUTR|/OUTR
 
 or, for non default configurations, `URN_OUTG` pointing to `ROOT_OUTR`.
 
-7. sefran3 new event window did not close after validation with some web browsers (Firefox, Safari).
+7. sefran3 new event window did not close after validation with the latest version of some web browsers (Firefox, Safari).
+
+8. Properly hide trashed events from the Sefran hour view for admin users when the 'trash' checkbox is unchecked in the Sefran hour thumbnail page.
+
+9. Fix redirection error when creating or deleting a folder in the 'wiki' pages.
+
+10. Fix two bugs in the miniseed output of seismic events (available from the MC or the Sefran pages) when using FDSNWS. Also fix the error page display when the miniseed file could not be fetched.
 
 See github commits for details.
 
