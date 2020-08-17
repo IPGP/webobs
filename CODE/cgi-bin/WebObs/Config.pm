@@ -329,25 +329,42 @@ Return codes from notify:
 =cut
 
 sub notify {
-	my $rc;
+	my $req = shift;
 
-	if (defined($WEBOBS{POSTBOARD_NPIPE})) {
-		if ( defined($_[0]) ) {
-			my $msg = $_[0];
-			my @cmd = (time, split(/\|/, $msg)); 
-			if (scalar(@cmd) == 4) {
-				if ( sysopen(FIFO, "$WEBOBS{POSTBOARD_NPIPE}", O_NONBLOCK|O_WRONLY) ) {
-					$msg = join('|',@cmd);
-					$msg =~ tr/\n/\0/;  # avoid \n over the pipe !!
-					print (FIFO "$msg\n");
-					close(FIFO);
-					$rc = 0;
-				} else { $rc = 96 } # can't open fifo
-			} else { $rc = 99 } # request has invalid format 
-		} else { $rc = 97 } # nothing to send
-	} else { $rc = 98 }	# fifo not defined
+	if (not $WEBOBS{POSTBOARD_NPIPE}) {
+		# Cannot contact postboard: fifo is not defined
+		return 98;
+	}
+	if (not $req) {
+		# No argument: nothing to send
+		return 97;
+	}
 
-	return $rc;
+	my @cmd = (time, split(/\|/, $req));
+	if (@cmd == 3) {
+		# The message argument may be empty (action without argument).
+		push(@cmd, '');
+	}
+
+	if (@cmd != 4) {
+		# There must be 4 fields in the notification message
+		return 99;
+	}
+
+	my $rc = sysopen(my $fifo, "$WEBOBS{POSTBOARD_NPIPE}", O_NONBLOCK|O_WRONLY);
+	if (not $rc) {
+		# Error while opening the fifo
+		return 96;
+	}
+
+	# Rebuild and write the final request to the pipe
+	# avoiding any \n over the pipe.
+	my $postboard_request = join('|', @cmd) =~ s/\n/\0/gr;
+	print($fifo "$postboard_request\n");
+	close($fifo)
+		or warn "An error occurred while closing '$WEBOBS{POSTBOARD_NPIPE}'";
+
+	return 0;
 }
 
 1;
@@ -362,7 +379,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2020 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

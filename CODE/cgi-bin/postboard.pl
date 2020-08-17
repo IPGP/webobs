@@ -227,6 +227,11 @@ while (1) {
 	#?? validate non-interleaved msg from other writing-ends ???
 	my @REQ = split(/\|/, $queued);
 
+	# The message argument may be empty (in case of action without argument).
+	if (@REQ == 3) {
+		push(@REQ, '');
+	}
+
 	if (@REQ != 4) {
 		logit("ignoring invalid request [@REQ]");
 		next;
@@ -343,7 +348,7 @@ while (1) {
 							}
 						}
 						if ($fulln ne '') {
-							$options .= qq( -e 'set from="$oneREQ[2] <$fulln>"');
+							$options .= qq( -e 'set from="$fulln <$oneREQ[2]>"');
 						}
 					}
 					my $tmp_email_body = sprintf ("$WEBOBS{PATH_TMP_APACHE}/WOPB.$$.%16.6f", time);
