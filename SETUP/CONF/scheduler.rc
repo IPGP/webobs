@@ -31,5 +31,12 @@ LOADAVG1_THRESHOLD|0.7
 LOADAVG5_THRESHOLD|0.7
 LOADAVG15_THRESHOLD|0.7
 
+# If MERGE_JOB_LOGS is true (values y, yes, Y, YES, or 1), the job process
+# standard output and error output will be written to a common log file using
+# the `logpath` name from the job definition, suffixed by '.log'.
+# Otherwise (the default if this variable is missing), these outputs will be
+# written to files respectively suffixed by `.stdout` and `.stderr`.
+MERGE_JOB_LOGS|no
+
 PATH_STD|$WEBOBS{ROOT_LOGS}/jobslogs
 PATH_RES|$WEBOBS{ROOT_LOGS}/res

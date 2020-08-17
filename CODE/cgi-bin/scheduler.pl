@@ -645,18 +645,41 @@ while (1) {
 				setpgrp;
 
 				my $log_basename = "$SCHED{PATH_STD}/$logfd/$logfn";
+				my $merge_logs;
+				my $output_name;
+				my $run_path_ext;
+				my $stdout_ext;
 
-				open(STDOUT, $redir, "$log_basename.stdout")
-					or die "Could not redirect STDOUT: $!";
-				printf(STDOUT "\n*** STDOUT WEBOBS JOB *** STARTED  %s [ %s ] ***\n\n",
-					   strftime("%Y-%m-%d %H:%M:%S", localtime($RUNQ{$Qid}{started})), $kidcmd);
-
-				open STDERR, $redir, "$log_basename.stderr"
-					or die "Could not redirect STDERR: $!";;
-				printf(STDERR "\n*** STDERR WEBOBS JOB *** STARTED  %s [ %s ] ***\n\n",
-					   strftime("%Y-%m-%d %H:%M:%S", localtime($RUNQ{$Qid}{started})), $kidcmd);
+				if ($SCHED{'MERGE_JOB_LOGS'}
+						and $SCHED{'MERGE_JOB_LOGS'} =~ /^\s*(?:y(?:es)?|1)\s*$/i) {
+					$merge_logs = 1;
+					$output_name = "STDOUT+STDERR";
+					$run_path_ext = "log";
+					$stdout_ext = "log";
+				} else {
+					$merge_logs = 0;
+					$output_name = "STDOUT";
+					$run_path_ext = "std{out,err}";
+					$stdout_ext = "stdout";
 				}
-				DBUPDATE("UPDATE runs SET kid=$$,stdpath='$redir $logfd/$logfn.std{out,err}'"
+
+				open(STDOUT, $redir, "$log_basename.$stdout_ext")
+					or die "Could not redirect STDOUT: $!";
+				printf(STDOUT "\n*** %s WEBOBS JOB *** STARTED  %s [ %s ] ***\n\n", $output_name,
+					   strftime("%Y-%m-%d %H:%M:%S", localtime($RUNQ{$Qid}{started})), $kidcmd);
+
+				if ($merge_logs) {
+					# stdout and stderr should be redirected to the same file
+					open STDERR, ">&", \*STDOUT
+						or die "Could not redirect STDERR to STDOUT: $!";;
+				} else {
+					# Default behaviour: stderr should be redirected to a different file than stdout
+					open STDERR, $redir, "$log_basename.stderr"
+						or die "Could not redirect STDERR: $!";;
+					printf(STDERR "\n*** STDERR WEBOBS JOB *** STARTED  %s [ %s ] ***\n\n",
+						   strftime("%Y-%m-%d %H:%M:%S", localtime($RUNQ{$Qid}{started})), $kidcmd);
+				}
+				DBUPDATE("UPDATE runs SET kid=$$,stdpath='$redir $logfd/$logfn.$run_path_ext'"
 						 ." WHERE jid='$RUNQ{$Qid}{jid}' AND startts=$RUNQ{$Qid}{started}");
 
 				# alea jacta est ... one way ticket to the job !
