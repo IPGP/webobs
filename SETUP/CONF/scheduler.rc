@@ -5,7 +5,17 @@ ERROR_FILE|$WEBOBS{ROOT_LOGS}/scheduler_error.log
 BEAT|2
 MAX_CHILDREN|10
 
+# Hostname or local IP address where the scheduler should be listening
+# for commands.
+# Warning: access to this UDP port should be limited in some way, as no
+# authentication is performed on command requests. For this reason,
+# it defaults to 'localhost', only accessible from the host.
+LISTEN_ADDR|localhost
+# UDP port where the scheduler should be listening for commands on the
+# LISTEN_ADDR host/address.
 PORT|7761
+# Maximum length in bytes of the request message to the scheduler
+# accepted through its pipe.
 SOCKET_MAXLEN|1500;
 
 SQL_DB_JOBS|$WEBOBS{ROOT_CONF}/WEBOBSJOBS.db

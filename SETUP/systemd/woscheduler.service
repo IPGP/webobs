@@ -1,13 +1,14 @@
 [Unit]
 Description=WebObs Scheduler
 After=local-fs.target remote-fs.target
+After=wopostboard.service
 
 [Service]
 Type=forking
 ExecStart=/opt/webobs/CODE/shells/scheduler start
-ExecStop=/opt/webobs/CODE/shells/scheduler stop
 PIDFile=/opt/webobs/LOGS/scheduler.pid
-User=wo
+User=webobs
+Group=webobs
 UMask=0002
 Restart=on-failure
 

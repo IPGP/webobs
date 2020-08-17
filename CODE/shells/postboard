@@ -1,75 +1,124 @@
 #!/bin/bash
+#
+# Helper script to start, stop, and get the status of the WebObs Postboard.
+#
 
-woconf() {
-	# internal: (re)-loads WEBOBS.rc as the set of bash variables WO__*
-	unset $(/usr/bin/env | egrep '^WO__' | /usr/bin/cut -d= -f1)
-	oIFS=${IFS}; IFS=$'\n'
-	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'WO__'))
-	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
-	IFS=${oIFS}
-}
+# How many time to wait for the process to exit after sending it the TERM
+# signal (see man timeout(1) for details).
+WAIT_TIMEOUT=20s
 
-woconf;
-savedpid=$(cat ${WO__ROOT_LOGS}/postboard.pid 2>/dev/null)
-savedpid=${savedpid:=0}
+# Load configuration from WEBOBS.rc as WO__* environment variables
+. /etc/webobs.d/../CODE/shells/readconf
+
+
+DAEMON_SCRIPT=postboard.pl
+PID_FILE="${WO__ROOT_LOGS}/${DAEMON_SCRIPT%%.*}.pid"
+
+savedpid=$(cat $PID_FILE 2>/dev/null)
+if [[ -n $savedpid ]] && kill -0 $savedpid 2> /dev/null; then
+	# A PID was saved and the corresponding process exists
+	if ps -o cmd --no-headers -p $savedpid | grep -q "\b$DAEMON_SCRIPT\b"; then
+		running=1
+	else
+		rm -f "$PID_FILE"
+		echo "Warning: PID file references PID $savedpid" \
+			"but this process does not seem to be running" \
+			"'$DAEMON_SCRIPT' and was deleted."
+		running=0
+	fi
+else
+	# PID file is missing or the referenced process is not alive (or not ours)
+	# Delete any stale PID file to ensure the daemon can start.
+	rm -f "$PID_FILE"
+	running=0
+fi
 
 case "$1" in
-	start)
-		if [[ $savedpid -ne 0 ]]; then 
-			echo "marked as already started, pid $savedpid"
-		else
-			cd /etc/webobs.d/../CODE/cgi-bin
-			if [ -n "${WO__POSTBOARD_ERROR_FILE}" ]; then
-				# Don't use eval as it would fork a new process not monitored by systemd
-				perl postboard.pl $WO__POSTBOARD_CMD_OPTS 2> $WO__POSTBOARD_ERROR_FILE &
-			else
-				perl postboard.pl $WO__POSTBOARD_CMD_OPTS &
-			fi
-			echo
-		fi
-		;;
-	stop)
-		if [[ $savedpid -ne 0 ]]; then
-			kill -s SIGTERM $savedpid 
-		fi
-		;;
-	status)
-		if [[ $savedpid -ne 0 ]]; then
-			statusts=$(date +'%F %T (%z)')
-			statusps=($(ps -o user,start_time,cmd --no-headers -p $savedpid))
-			if [[ ${#statusps[@]} > 0 ]]; then
-				echo "STATTIME=${statusts}"
-				echo "STARTED=${statusps[1]}"
-				echo "PID=${savedpid}"
-				echo "USER=${statusps[0]}"
-				# ATT: may get Permission denied on /proc/<pid>
-				# so can't really tell wether fifo and log are opened
-				statusfifo=($(lsof -p $savedpid | grep FIFO))
-				if [[ ${#statusfifo[@]} > 0 ]]; then
-					echo "FIFO=${statusfifo[8]}"
-				fi
-				statuslog=($(lsof -p $savedpid | grep "${WO__ROOT_LOGS}/postboard.log"))
-				if [[ ${#statuslog[@]} > 0 ]]; then
-					echo "LOG=${statuslog[8]}" 
-				fi
-			else 
-				echo "POSTBOARD NOT RUNNING but has saved pid=$savedpid"
-			fi
-		fi
-		;;
-	kill)
-		if [[ $savedpid -ne 0 ]]; then
-			kill -9 $savedpid
-			rm -f ${WO__ROOT_LOGS}/postboard.pid >/dev/null 2>&1
-		fi
-		;;
-	notify)
-		echo "msg=" $2
-		;;
-	*)
-		echo "Usage: $0 {start|stop|status|kill}"
-		exit 1
-esac
 
-exit 0
+	start)
+		if [[ $running -eq 1 ]]; then
+			echo "Postboard already started, pid $savedpid"
+			exit 1
+		fi
+		cd /etc/webobs.d/../CODE/cgi-bin
+		if [ -n "${WO__POSTBOARD_ERROR_FILE}" ]; then
+			perl $DAEMON_SCRIPT $WO__POSTBOARD_CMD_OPTS 2> $WO__POSTBOARD_ERROR_FILE &
+			bg_pid=$!
+		else
+			perl $DAEMON_SCRIPT $WO__POSTBOARD_CMD_OPTS &
+			bg_pid=$!
+		fi
+		# Make the pid file available before exiting (required for systemd support)
+		echo $bg_pid > $PID_FILE
+		;;
+
+	stop|terminate|kill)
+		# Exit with 0 if not running
+		# (this allows the command to be used by systemd as 'ExecStop=')
+		if [[ $running -ne 1 ]]; then
+			echo "Scheduler is stopped."
+			exit 0
+		fi
+		;;&  # continue testing other patterns
+
+	stop|terminate)
+		echo "shutdown requested: sending SIGTERM to pid $savedpid."
+		if kill -s SIGTERM $savedpid; then
+			timeout $WAIT_TIMEOUT sh -c "while kill -0 $savedpid 2> /dev/null; do sleep 1; done"
+			rc=$?
+			if [[ $rc -eq 1 ]]; then
+				echo "Postboard has exited."
+			elif [[ $rc -eq 124 ]]; then
+				echo "warning: postboard has not exited after $WAIT_TIMEOUT."
+			else
+				echo "error while waiting for the postboard to exit."
+			fi
+		else
+			echo "error sending signal to $savedpid: unable to stop the postboard."
+		fi
+		;;
+
+	kill)
+		kill -9 $savedpid
+		rm -f $PID_FILE
+		;;
+
+	status)
+		if [[ $running -eq 0 ]]; then
+			echo "Error: could not read the process id. Is the postboard running?"
+			exit 1
+		fi
+		statusts=$(env LANG=C date +'%c (%z)')  # match ps lstart time format for clarity
+		read ps_user ps_starttime <<< $(ps -o user,lstart --no-headers -p $savedpid)
+		if [[ -n $ps_starttime ]]; then
+			echo "STATTIME=$statusts"
+			echo "STARTED=$ps_starttime"
+			echo "PID=$savedpid"
+			echo "USER=$ps_user"
+			# ATT: may get Permission denied on /proc/<pid>
+			# so can't really tell wether fifo and log are opened
+			statusfifo=($(lsof -p $savedpid | grep FIFO))
+			if [[ ${#statusfifo[@]} > 0 ]]; then
+				echo "FIFO=${statusfifo[8]}"
+			fi
+			statuslog=($(lsof -p $savedpid | grep "${WO__ROOT_LOGS}/postboard.log"))
+			if [[ ${#statuslog[@]} > 0 ]]; then
+				echo "LOG=${statuslog[8]}"
+			fi
+		else
+			echo "Error: could not read process information for saved process id $savedpid"
+			exit 1
+		fi
+		;;
+
+	*)
+		echo "Usage: $0 {start|stop|terminate|kill|status}"
+		echo "       start          start, if not already active"
+		echo "       stop           request postboard exit stop"
+		echo "       terminate      same as 'stop'"
+		echo "       kill           force immediate exit, really not recommended"
+		echo "       status         display status/indicators/settings"
+		exit 1
+        ;;
+esac
 

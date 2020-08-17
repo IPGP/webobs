@@ -160,24 +160,20 @@ getopts("vc",\%options);
 my $verbose = defined($options{v}) ? 1 : 0;
 my $clean   = defined($options{c}) ? 1 : 0;
 
-my $ME = basename($0); $ME =~ s/\..*//;
+my $ME = basename($0);
+$ME =~ s/\..*//;
 
 # ---- initialize : pid file and logging 
 # ----------------------------------------------------------------------------
-if (!defined($WEBOBS{ROOT_LOGS})) {
-	printf("Can't start: no ROOT_LOGS in WebObs configuration\n");
+if (!$WEBOBS{ROOT_LOGS}) {
+	printf(STDERR "Cannot start: ROOT_LOGS not found in WebObs configuration\n");
 	exit(98);
 }
-if ( -f "$WEBOBS{ROOT_LOGS}/$ME.pid" ) {
-	printf("Can't start: already running\n");
-	exit(98);
-}
-my @junk = qx(echo $$ >$WEBOBS{ROOT_LOGS}/$ME.pid);
 
+# Open log file
 my $LOGNAME = "$WEBOBS{ROOT_LOGS}/$ME.log" ;
-if (! (open LOG, ">>$LOGNAME") ) { 
-	print "Can't start: couldn't open $LOGNAME: $!\n";
-	unlink("$WEBOBS{ROOT_LOGS}/$ME.pid");
+if (! open(LOG, ">>$LOGNAME")) { 
+	print(STDERR "Cannot start: unable to open $LOGNAME: $!\n");
 	exit(98);
 }
 select((select(LOG), $|=1)[0]);  # turn off buffering
@@ -207,11 +203,8 @@ if ( ! -p $FIFO ) {
 
 # ---- need to tell someone when I'm taken down !
 # ----------------------------------------------------------------------------
-# add: find a mailid to send these scoops  
-$SIG{INT}  = sub { my $msg = "$ME interrupted."; print "$msg\n"; logit($msg); endit(); };
-$SIG{TERM} = sub { my $msg = "$ME terminated.";  print "$msg\n"; logit($msg); endit(); };
-$SIG{KILL} = sub { my $msg = "$ME killed.";      print "$msg\n"; logit($msg); endit(); };
-#
+$SIG{INT} = end_on_sig("$ME interrupted.", 99);
+$SIG{TERM} = end_on_sig("$ME terminated.", 0);
 $SIG{__WARN__} = sub { my $msg = shift; logit("warning: $msg"); };
 
 # ---- open the pipe (fifo input Q) and loop forever 
@@ -402,15 +395,27 @@ sub logit {
 }
 
 # ----------------------------------------------------------
+# return a signal handler that exits the script
+# ----------------------------------------------------------
+sub end_on_sig {
+	my $msg = shift;
+	my $code = shift // 1;
+	return sub {
+		print "$msg\n" if (-t STDOUT);
+		logit($msg);
+		endit($code);
+	}
+}
+
+# ----------------------------------------------------------
 # clean exit 
 # ----------------------------------------------------------
 sub endit {
+	my $exit_code = shift || 99;
 	close(FIFO);
 	close(LOG);
-	unlink "$WEBOBS{ROOT_LOGS}/$ME.pid" ;
-	exit(99);
+	exit($exit_code);
 }
-
 __END__
 
 =pod

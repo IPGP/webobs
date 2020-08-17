@@ -8,6 +8,19 @@ The latest release has many improvements, new features and bug fixes.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
+## Development version (unrelease yet)
+
+### Enhancements
+
+1. The templates files for the optional systemd services `woscheduler.service` and `wopostboard.service` in `SETUP/systemd` have been updated. They should be adapted if necessary to use the correct system user and group and path to the PID file and should be copied to `/etc/systemd/system`. Run the command `sudo systemctl daemon-reload` after updating your service files.
+
+2. The Scheduler now listens for control commands throught UDP on the `127.0.0.1` local address by default. This will restrict control of the Scheduler to local users only. If you really want to allow other users on the network to access this interface, set the `LISTEN_ADDR` configuration variable to a local IP address or hostname in the Scheduler configuration file (by default `scheduler.rc`). In this case, it is advised to limit access to specific hosts using local firewall rules.
+
+### Fixed issues
+
+1. For users using _systemd_, the commands `systemctl stop woscheduler` and `systemctl stop wopostboard` no longer mark the related service as _failed_ as `postboard.pl` and `scheduler.pl` now report a clean exit when stopped through a TERM signal. (Note that the command `sudo systemctl stop woscheduler` will cleanly stop the Scheduler, but running jobs will be killed. If you want to stop the Scheduler after waiting for all the jobs to finish, use the command `/opt/webobs/CODE/shell/scheduler stop`. The systemd service will stop normally when the process exits.)
+
+
 ## v2.1.5b (August 2020)
 
 ### Enhancements

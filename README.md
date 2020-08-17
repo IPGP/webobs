@@ -80,12 +80,20 @@ With root privileges, in your target WebObs directory:
 3. (re)start Apache
 4. launch the scheduler and postboard
 
-For Debian/Ubuntu users, here is a way to install permanently active scheduler and postboard:	
+For users of systemd-base GNU/Linux distributions, template service definitions for the _scheduler_ and the _postboard_ are available in the `/opt/webobs/WebObs-<version>/SETUP/systemd/` directory.
+You can copy these files (as root) to `/etc/systemd/system/` and adapt the user name and group of the Webobs Owner (defaults to `webobs`) to automatically start these services at system boot and restart them if they crash or are killed.
 
+Here are the steps to copy, adapt, and run these systemd services:
 ```sh
+# Copy the files
 sudo cp /opt/webobs/WebObs-<version>/SETUP/systemd/wo* /etc/systemd/system/
+# Adapt the User= and Group= directoves in the files
+sudo nano /etc/systemd/system/woscheduler.service 
+sudo nano /etc/systemd/system/woscheduler.service 
+# Enable the services to have them start at boot
 sudo systemctl enable woscheduler.service
 sudo systemctl enable wopostboard.service
+# Start the services to run them immediately
 sudo systemctl start woscheduler.service
 sudo systemctl start wopostboard.service
 ```
