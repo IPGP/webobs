@@ -277,8 +277,7 @@ messages logged when verbosity level 2 on (-V)
 1) Sending a STOP command to the scheduler is the way to cleanly stop the scheduler, waiting for termination of currently running kids,
 and housekeeping.
 
-2) Sending the scheduler SIGINT, SIGTERM or SIGHUP signals will internally mimic a clean STOP command, but without waiting for currently running kids
-to stop.
+2) Sending the scheduler SIGINT, SIGHUP or SIGTERM signals will internally mimic a clean STOP command, but without waiting for currently running kids to stop. On SIGINT and SIGHUP, the process exits with a code 1, while the code is 0 with SIGTERM.
 
 3) Other signals are not caught by the scheduler. Their default behaviors of your system will get executed. This event will probably
 cause the file LOGS/scheduler.pid to remain present, requiring that you delete it before restarting the scheduler.
@@ -307,6 +306,11 @@ use File::Path qw/make_path/;
 use feature qw(switch);
 
 use WebObs::Config;
+
+BEGIN {
+	# Suppress the default fatalsToBrowser from CGI::Carp
+	$CGI::Carp::TO_BROWSER = 0;
+}
 
 # ---- parse options
 # ---- -v to be verbose, -c to specify configuration file
@@ -474,8 +478,8 @@ $SCHED{BEAT} ||= 2;
 # ---- scheduler's main process, stopped via SIGINT
 # ---- or better still, by an external Q command 'STOP'
 # -----------------------------------------------------------------------------
+printf("scheduler PID=$PID started - logging to $LOGNAME - $PUID\n") if (-t STDOUT);
 logit("scheduler started, listening on $sock_desc - PID=$PID CONFIG=$CFGF USER=$PUID");
-if (-t STDOUT) { printf("scheduler PID=$PID started - logging to $LOGNAME - $PUID\n"); }
 logit(strftime("%Y-%m-%d %H:%M:%S %Z (%z)",localtime($STRT)));
 logit("beat = $SCHED{BEAT} * ".($utick/1000000)." sec.");
 logit("max parallel jobs = $SCHED{MAX_CHILDREN}");
@@ -499,20 +503,21 @@ $SIG{TERM} = sub { exit_on_signal('TERM', 0); };
 # ---- make sure that all past runs are marked as ended for reporting purposes
 # ---- since we have no more knowledge/control over them when (re)starting
 if (defined($SCHED{CLEANUP_RUNS}) && $SCHED{CLEANUP_RUNS} ne '') {
-	my ($zrc,$zmsg) = split(/,/,$SCHED{CLEANUP_RUNS});
-	$zrc ||= 999; $zmsg ||= 'zombie';
-	if (my $dbh = DBI->connect( "dbi:SQLite:".$SCHED{SQL_DB_JOBS},"","")) {
-		$dbh->{PrintError} = 1; $dbh->{RaiseError} = 1;
-		my $ztime = time;
-		my $stmt = "UPDATE runs SET endts=$ztime,rc=$zrc,rcmsg=\"$zmsg\" WHERE endts=0";
-		my $rv  = $dbh->do($stmt);
-		$rv = 0 if ($rv == 0E0);
-		$dbh->disconnect;
-		logit("cleaned up zombie runs: $rv");
-	} else {
-		logit ("DB error connecting to $SCHED{SQL_DB_JOBS}");
+	my ($zrc, $zmsg) = split(/,/, $SCHED{CLEANUP_RUNS});
+	$zrc ||= 999;
+	$zmsg ||= 'zombie';
+	my $ztime = time;
+	my $q = "UPDATE runs SET endts=$ztime,rc=$zrc,rcmsg='$zmsg' WHERE endts=0";
+
+	my $dbh = db_connect($SCHED{SQL_DB_JOBS});
+	if (not $dbh) {
+		logit("Error connecting to $SCHED{SQL_DB_JOBS}: $DBI::errstr");
 		myexit(1);
 	}
+	my $rv = $dbh->do($q);
+
+	$rv = 0 if ($rv == 0E0);
+	logit("cleaned up zombie runs: $rv");
 }
 
 # ---- loop forever handling commands and jobs to be started
@@ -557,7 +562,7 @@ our $BEAT = $SCHED{BEAT};
 while (1) {
 
 	my $psdmsg = sprintf ("%u %s wait %d (d=%f,beat=%d)", $$,$PAUSED?" paused":"",int($adjutick),$adjutick-int($adjutick),$BEAT);
-	if ($verbose2) { logit($psdmsg) }
+	logit($psdmsg) if ($verbose2);
 	usleep(int($adjutick));
 	my $t0 = [gettimeofday];
 	$BEAT-- if (!$PAUSED);
@@ -605,11 +610,14 @@ while (1) {
 			my $redir = '>';
 			(my $RTNE_ = $CANDIDATES{$rid}{XEQ2}) =~ s/\s+/_/g;
 			$CANDIDATES{$rid}{LOGPATH} ||= $RTNE_ ;
-			if ($CANDIDATES{$rid}{LOGPATH} =~ m/(^>{1,2})(.*)$/) { $redir = $1; $CANDIDATES{$rid}{LOGPATH} = $2; }
+			if ($CANDIDATES{$rid}{LOGPATH} =~ m/(^>{1,2})(.*)$/) {
+				$redir = $1;
+				$CANDIDATES{$rid}{LOGPATH} = $2;
+			}
 			$RUNQ{$Qid}{started} = time;
 			$CANDIDATES{$rid}{LOGPATH} =~ s/\{TS\}/$RUNQ{$Qid}{started}/g ;
 			$CANDIDATES{$rid}{LOGPATH} =~ s/\{RTNE\}/$RTNE_/g ;
-			my ($logfn,$logfd) = fileparse($CANDIDATES{$rid}{LOGPATH});
+			my ($logfn, $logfd) = fileparse($CANDIDATES{$rid}{LOGPATH});
 			$RUNQ{$Qid}{logfd} = $logfd;
 			$RUNQ{$Qid}{logfn} = $logfn;
 			# from now on we don't need the $CANDIDATES{$rid} anymore
@@ -617,41 +625,66 @@ while (1) {
 			make_path("$SCHED{PATH_STD}/$logfd");
 			# moved up to have DB and logpath match, but would be better if closer to fork !! : $RUNQ{$Qid}{started} = time;
 			$RUNQ{$Qid}{kidcmd} =~ s/'/''/g;
-			DBUPDATE("UPDATE jobs set laststrts=$RUNQ{$Qid}{started} WHERE jid=\"$RUNQ{$Qid}{jid}\" ");
-			DBUPDATE("INSERT INTO runs (jid,org,startts,cmd,endts) values(\"$RUNQ{$Qid}{jid}\",\"$RUNQ{$Qid}{ORG}\",$RUNQ{$Qid}{started},'$RUNQ{$Qid}{kidcmd}',0) ");
-			DBUPDATE("DELETE FROM runs WHERE startts<=$RUNQ{$Qid}{started}-($SCHED{DAYS_IN_RUN}*86400) and endts <> 0 ");
+			DBUPDATE("UPDATE jobs set laststrts=$RUNQ{$Qid}{started} WHERE jid='$RUNQ{$Qid}{jid}'");
+			DBUPDATE("INSERT INTO runs (jid,org,startts,cmd,endts)"
+				     ." VALUES ('$RUNQ{$Qid}{jid}', '$RUNQ{$Qid}{ORG}', $RUNQ{$Qid}{started}, '$RUNQ{$Qid}{kidcmd}', 0)");
+			DBUPDATE("DELETE FROM runs WHERE startts<=$RUNQ{$Qid}{started}-($SCHED{DAYS_IN_RUN}*86400) AND endts <> 0 ");
 			$JSTARTED++;
+
 			my $kid = fork();
 			if (!defined($kid)) {
 				logit("$$ couldn't fork [ $kidcmd ] !");
 				notifyit("scheduler.critical|$$|couldn't fork [ $kidcmd ]");
 				next;
 			}
-			if ($kid == 0) { # kid's code
+
+			if ($kid == 0) {
+				# Child code
+
+				# Create a new process group for the current process
 				setpgrp;
-				open STDOUT, $redir, "$SCHED{PATH_STD}/$logfd/$logfn.stdout";
-				open STDERR, $redir, "$SCHED{PATH_STD}/$logfd/$logfn.stderr";
-				printf (STDOUT "\n*** %s %s %s ***\n\n","STDOUT WEBOBS JOB *** STARTED ",strftime("%Y-%m-%d  %H:%M:%S",localtime($RUNQ{$Qid}{started}))," [ $kidcmd ]");
-				printf (STDERR "\n*** %s %s %s ***\n\n","STDERR WEBOBS JOB *** STARTED ",strftime("%Y-%m-%d  %H:%M:%S",localtime($RUNQ{$Qid}{started}))," [ $kidcmd ]");
-				DBUPDATE("UPDATE runs set kid=$$,stdpath=\"$redir $logfd/$logfn.std{out,err}\" WHERE jid=\"$RUNQ{$Qid}{jid}\" AND startts=$RUNQ{$Qid}{started} ");
+
+				my $log_basename = "$SCHED{PATH_STD}/$logfd/$logfn";
+
+				open(STDOUT, $redir, "$log_basename.stdout")
+					or die "Could not redirect STDOUT: $!";
+				printf(STDOUT "\n*** STDOUT WEBOBS JOB *** STARTED  %s [ %s ] ***\n\n",
+					   strftime("%Y-%m-%d %H:%M:%S", localtime($RUNQ{$Qid}{started})), $kidcmd);
+
+				open STDERR, $redir, "$log_basename.stderr"
+					or die "Could not redirect STDERR: $!";;
+				printf(STDERR "\n*** STDERR WEBOBS JOB *** STARTED  %s [ %s ] ***\n\n",
+					   strftime("%Y-%m-%d %H:%M:%S", localtime($RUNQ{$Qid}{started})), $kidcmd);
+				}
+				DBUPDATE("UPDATE runs SET kid=$$,stdpath='$redir $logfd/$logfn.std{out,err}'"
+						 ." WHERE jid='$RUNQ{$Qid}{jid}' AND startts=$RUNQ{$Qid}{started}");
+
 				# alea jacta est ... one way ticket to the job !
 				# exec may return on -1 (wrong attrs): force kid exit (so that reaper will see it)
-				exec $kidcmd or logit("$$ couldn't exec [ $kidcmd ]: $? $!"); exit(-1);
-			} else {         # parent's code continued
-				$RUNQ{$Qid}{kid} = $kid;            # link runQ element to kid pid
-				$kids{$kid} = $Qid;                 # link kid pid list to runQ
-				if ($verbose) {
-					logit("forked $kid [ $kidcmd ] Q:$Qid,R(Q):$RUNQ{$Qid}{kid},K:$kids{$kid}");
-					logit("logs $kid: $redir $logfd/$logfn.std{out,err}");
-				}
-				next;
+				exec $kidcmd
+					or logit("$$ couldn't exec [ $kidcmd ]: $? $!");
+
+				# Exit if exec failed
+				exit(-1);
+
+			}  # end of if ($kid == 0)
+
+			# parent's code continued
+			$RUNQ{$Qid}{kid} = $kid;            # link runQ element to kid pid
+			$kids{$kid} = $Qid;                 # link kid pid list to runQ
+			if ($verbose) {
+				logit("forked $kid [ $kidcmd ] Q:$Qid,R(Q):$RUNQ{$Qid}{kid},K:$kids{$kid}");
+				logit("logs $kid: $redir $logfd/$logfn.std{out,err}");
 			}
-		}
+			next;
+		}  # end of for my $rid (keys(%CANDIDATES))
+
 		REAPER();
 		if ($verbose2) {
 			logit("$$ runQ: ");
 			map {logit("  runQ $_ : jid($RUNQ{$_}{jid}) pid=$RUNQ{$_}{kid} started=$RUNQ{$_}{started} cmd=$RUNQ{$_}{kidcmd}")} keys(%RUNQ);
 		}
+
 		my $tvi = tv_interval($t0);
 		if ( ($adjutick = $utick - $tvi) <= 0 ) {
 			logit("$$ drift >= $SCHED{TICK} !!!");
@@ -722,6 +755,7 @@ sub exit_on_signal {
 	notifyit("scheduler.critical|$$|scheduler stopping on signal $signame");
 	my $ets = REAPER();   # any extra-terrestrial survivors ?
 	logit("$ets kid(s) are still alive.") if ($ets>0);
+	print("exiting on signal SIG$signame.") if (-t STDOUT);
 	myexit($exit_code);
 }
 
@@ -752,8 +786,9 @@ sub SYSLOAD {
 sub CANDIDATES {
 	%CANDIDATES = %{DBSELECT()};
 	for my $key (keys %CANDIDATES) {
-		usleep 1; my $art = time;
-    	$CANDIDATES{$art} = delete $CANDIDATES{$key};
+		usleep 1;
+		my $art = time;
+		$CANDIDATES{$art} = delete $CANDIDATES{$key};
 	}
 
 	for my $jtk (keys(%JOBRQ)) {
@@ -832,56 +867,69 @@ sub TTLJOBRQ {
 	}
 	return;
 }
+
+# ----------------------------------------------------------
+# Open and return a connection to a SQLite database
+#
+# Usage example:
+#   my $dbh = db_connect($WEBOBS{SQL_DB_POSTBOARD})
+#     || die "Error connecting to $dbname: $DBI::errstr";
+# ----------------------------------------------------------
+sub db_connect {
+	my $dbname = shift;
+	return DBI->connect("dbi:SQLite:$dbname", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+		})
+}
+
 # ----------------------------------------------------------
 # reads all 'valid & ready' jobs from DataBase table JOBS
 # OR just one JOB definition (wether or not valid and ready)
 # if its job's ID (JID) is passed as argument
 # ----------------------------------------------------------
 sub DBSELECT {
-	my ($rs, $dbh, $sql, $sth);
-	my $origin = my $wclause = '';
-	if ( defined($_[0]) ) {
+	my $job_id = shift;
+	my $origin;
+	my $wclause;
+
+	if ($job_id) {
 		$origin  = "R";
-		$wclause = "JID = \'$_[0]\' ";
+		$wclause = "JID = '$job_id' ";
 	} else {
 		$origin  = 'S';
 		#FWIW: +BEAT prevent accumulating shifts; cast(LASTSTRTS as int) would also act as floor(LASTSTRTS)
-		$wclause = "strftime('%s','now')-LASTSTRTS+".$BEAT." >= RUNINTERVAL AND VALIDITY = 'Y' ";
+		$wclause = "strftime('%s', 'now')-LASTSTRTS+$BEAT >= RUNINTERVAL AND VALIDITY = 'Y' ";
 	}
-	if ($dbh = DBI->connect( "dbi:SQLite:".$SCHED{SQL_DB_JOBS},"","")) {
-		$dbh->{PrintError} = 1;
-		$dbh->{RaiseError} = 1;
-		$sql  = "SELECT JID,\"$origin\" as ORG,'' as RQ, RES, XEQ1,XEQ2,XEQ3,MAXSYSLOAD,LOGPATH";
-		$sql .=	" FROM JOBS WHERE $wclause";
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-		$rs = $sth->fetchall_hashref('JID');
-		$dbh->disconnect;
-		#return ref for future %CANDIDATES = %{$rs};
-		return $rs;
-	} else {
-		logit("DBSELECT error connecting to $SCHED{SQL_DB_JOBS}");
+
+	my $dbh = db_connect($SCHED{SQL_DB_JOBS});
+	if (not $dbh) {
+		logit("Error connecting to $SCHED{SQL_DB_JOBS}: $DBI::errstr");
 		myexit(1);
 	}
+
+	my $q = qq(SELECT JID,"$origin" as ORG,'' as RQ,RES,XEQ1,XEQ2,XEQ3,MAXSYSLOAD,LOGPATH)
+		    .qq( FROM JOBS WHERE $wclause);
+	# Return reference for future %CANDIDATES = %{$rs};
+	return $dbh->selectall_hashref($q, 'JID');
 }
 
 # ----------------------------------------------------------
 # insert or update DB : execute SQL query passed in
 # ----------------------------------------------------------
 sub DBUPDATE {
-	if ($_[0]) {
-			my $stmt = $_[0];
-			logit("$stmt") if ($verbose);
-			if (my $dbh = DBI->connect( "dbi:SQLite:".$SCHED{SQL_DB_JOBS},"","")) {
-				$dbh->{PrintError} = 1; $dbh->{RaiseError} = 1;
-				my $rv  = $dbh->do($stmt);
-				$dbh->disconnect;
-				return $rv;
-			} else {
-				logit("DBUPDATE error connecting to $SCHED{SQL_DB_JOBS}");
-				myexit(1);
-			}
+	my $query = shift;
+	return if not $query;
+
+	my $dbh = db_connect($SCHED{SQL_DB_JOBS});
+	if (not $dbh) {
+		logit("Error connecting to $SCHED{SQL_DB_JOBS} for update: $DBI::errstr");
+		return;
 	}
+
+	logit("Executing query [$query]") if ($verbose);
+	$dbh->do($query);  # This will die on error
 }
 
 # ----------------------------------------------------------
