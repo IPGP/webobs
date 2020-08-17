@@ -2,53 +2,59 @@
 
 =head1 NAME
 
-wsudp.pl 
+wsudp.pl
 
 =head1 SYNOPSIS
 
 perl wsudp.pl 'msg=> [,...see ARGUMENTS below...]'
 
-=head1 DESCRIPTION
+=heAd1 DESCRIPTION
 
-Sends a message to a UDP server, prints corresponding reply from the server to stdout.
-Mainly used as the command line interface to WebObs Scheduler's. Could be used as a generic UDP client 
-since it doesn't rely on WebObs definitions nor libraries, and doesn't parse/interpret strings sent and 
-received to/from the contacted server. 
+This command line script sends a message to a UDP server, prints corresponding
+reply from the server to stdout. Mainly used as the command line interface to
+the WebObs Scheduler.
 
 =head1 ARGUMENTS
 
-Arguments are passed as a unique string made up of comma separated hash 'key=>value'. 
+Arguments are passed as a unique string made up of comma separated hash
+'key=>value'.
 
 Mandatory arguments:
 
 	msg => message to be sent to server
-	eg: msg=>"CMD STAT" 
+	eg: msg=>"CMD STAT"
 
 Mandatory wsudp arguments with defaults:
 
-	host => server addr , used as sockect PeerAddr
+	host => server addr , used as socket PeerAddr
 	default: host=>"localhost"
 
-	port => server port , used as sockect PeerPort
+	port => server port , used as socket PeerPort
 	default: 7761
 
-	ll => maximum reply length , used in socket recv 
-	default: ll=>1500  
+	ll => maximum reply length , used in socket recv
+	default: ll=>1500
 
 	to => timeout , used as socket Timeout (in seconds)
 	default: to=>5
 
 =head1 OUTPUTS
 
-Reply from server and/or error messages are sent to stdout.
+Reply from server are sent to stdout.  In case of error, the error message
+returned by WebObs::Scheduler::scheduler_client is printed to stderr.
 
-Error messages:
+Possible error message are (followed by lower level error message if any):
 
-	wsudp failed nothing to send
-	wsudp failed create:
-	wsudp failed send:
-	wsudp failed received: 
-	wsudp failed timeout:
+	wsudp.pl error: empty command: nothing to send
+	wsudp.pl error: unable to create socket:
+	wsudp.pl error: failed to send request:
+	wsudp.pl error: failed to read answer:
+	wsudp.pl error: connection timeout after Xs:
+
+=head1 EXIT CODES
+
+The script uses an exit code of 1 if the scheduler_client function returned an
+error, 0 otherwise.
 
 =cut
 
@@ -56,29 +62,58 @@ use strict;
 use warnings;
 use IO::Socket::INET;
 
-my $resp = '';
-$|=1;
+use WebObs::Scheduler qw(scheduler_client);
 
-my %dfts = ( host => 'localhost', port => 7761, msg => undef, to => 5, ll => 1500 );
-my $opts = { %dfts, eval($ARGV[0]), }; 
 
-if ($opts->{msg} && $opts->{msg} ne '') {
-	if (my $socket=new IO::Socket::INET->new(PeerAddr => $opts->{host}, PeerPort=>$opts->{port}, Proto=>'udp')) {
-		eval {
-			local $SIG{ALRM} = sub { die 'Timed Out'; };
-			alarm $opts->{to};
-			if ($socket->send($opts->{msg})) {
-				if ($socket->recv($resp, $opts->{ll})) {
-					print "$resp";
-				} else { print("wsudp failed received: $@ $!\n")}
-			} else { print("wsudp failed send: $@ $!\n")}
-			alarm 0;
-		};
-		alarm 0;
-		print "wsudp failed timeout: $opts->{to}s\n" if ( $@ && $@ =~ /Timed Out/ );
-		$socket->close();
-	} else { print("wsudp failed create: $@ $!\n") }
-} else { print("wsudp failed nothing to send\n") }
+# Options allowed on the command line as <opt> => <value>
+# and the regexp the value must match.
+my %opts_regexp = (
+	'msg' => '[\w ]+',
+	'host' => '[\w.-]+',
+	'port' => '\d+',
+	'to' => '\d+',
+	'll' => '\d+',
+);
+
+my %opts = ();
+
+# Read and parse arguments from the command line as options
+foreach my $arg (@ARGV) {
+
+	# Read argument as "key => value"
+	my ($k, $v) = $arg =~ /^\s*([a-z]+)\s*=>\s*(?:'|")?(.+?)(?:'|")?\s*$/;
+
+	# Make sure option exists and its value has a valid format
+	if (not $opts_regexp{$k} or $v !~ /$opts_regexp{$k}/) {
+		print STDERR "Error: invalid argument '$arg'\n";
+		exit(1);
+	}
+
+	# Explicitely reject duplicated options
+	if ($opts{$k}) {
+		print STDERR "Error: option '$k' defined more than once\n";
+		exit(1);
+	}
+	$opts{$k} = $v;
+}
+
+# Submit the command and read the answer
+my ($response, $error) = scheduler_client($opts{'msg'}, \%opts);
+
+# Print the response
+print $response;
+
+# Use exit code of 1 in case of error, 0 otherwise
+my $exit_code;
+if ($error) {
+	(my $script_name = $0) =~ s|^.*/||;
+	print STDERR "$script_name error: $error\n";
+	$exit_code = 1;
+} else {
+	$exit_code = 0;
+}
+
+exit($exit_code);
 
 __END__
 
@@ -86,11 +121,12 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Lafon
+Didier Lafon (original script)
+Xavier Béguin (rewrite, deporting code to WebObs::Scheduler)
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -1,150 +1,194 @@
 #!/bin/bash
+#
+# Helper script to start, stop, and interact with the WebObs Scheduler.
+#
 
-woconf() {
-	# internal: (re)-loads WEBOBS.rc as the set of bash variables WO__*
-	# + (re)-loads WO_CONF_SCHEDULER as bash variabls SC__* 
-	unset $(/usr/bin/env | egrep '^WO__' | /usr/bin/cut -d= -f1)
-	oIFS=${IFS}; IFS=$'\n'
-	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'WO__'))
-	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
-	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'SC__' 'CONF_SCHEDULER'))
-	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
-	IFS=${oIFS}
-}
+# How many time to wait for the process to exit after sending it the TERM
+# signal (see man timeout(1) for details).
+WAIT_TIMEOUT=20s
 
-woconf;
-savedpid=0; running=0; cantalk2=0;
-savedpid=$(cat ${WO__ROOT_LOGS}/scheduler.pid 2>/dev/null)
-if [[ ${savedpid} -ne 0 && $(ps -p${savedpid} -opid --no-headers) -eq ${savedpid} ]]; then running=1; fi
-listening=$(netstat -uln | grep -c "${SC__PORT}" 2>/dev/null)
-if [[ ${running} -eq 1 && ${listening} -eq 1 ]]; then cantalk2=1; fi
 
-#schedudp="/dev/udp/127.0.0.1/${SC__PORT}"
-holdon="Please wait..."
+# Load the 'woconf' function
+. /etc/webobs.d/../CODE/shells/wolib.bash
+# Load configuration from WEBOBS.rc as WO__* environment variables.
+woconf 'WO__'
+# Load configuration from file $WEBOBS{CONF_SCHEDULER} as SC__* environment
+# variables.
+woconf 'SC__' 'CONF_SCHEDULER'
+
+
+DAEMON_SCRIPT=scheduler.pl
+PID_FILE="${WO__ROOT_LOGS}/${DAEMON_SCRIPT%%.*}.pid"
+
+savedpid=$(cat $PID_FILE 2>/dev/null)
+if [[ -n $savedpid ]] && kill -0 $savedpid 2> /dev/null; then
+	# A PID was saved and the corresponding process exists
+	if ps -o cmd --no-headers -p $savedpid | grep -q "\b$DAEMON_SCRIPT\b"; then
+		running=1
+	else
+		rm -f "$PID_FILE"
+		echo "Warning: PID file references PID $savedpid" \
+			"but this process does not seem to be running" \
+			"'$DAEMON_SCRIPT' and was deleted."
+		running=0
+	fi
+else
+	# PID file is missing or the referenced process is not alive (or not ours)
+	# Delete any stale PID file to ensure the daemon can start.
+	rm -f "$PID_FILE"
+	running=0
+fi
+
+holdon="Connecting to scheduler..."
 
 case "$1" in
+
 	start)
-		if [[ ${running} -eq 1 ]]; then echo "scheduler already started, pid $savedpid"; exit 1; fi
-		if [[ ${savedpid} -ne 0 && ${running} -eq 0 ]]; then echo "won't start: scheduler.pid says $savedpid and $savedpid not running"; exit 1; fi
+		if [[ $running -eq 1 ]]; then
+			echo "Scheduler already running with PID $savedpid"
+			exit 1
+		fi
 		cd /etc/webobs.d/../CODE/cgi-bin
 		if [ -n "${SC__ERROR_FILE}" ]; then
-			# Don't use eval as it will fork a new process not monitored by systemd
-			perl scheduler.pl $SC__CMD_OPTS 2> $SC__ERROR_FILE &
+			perl $DAEMON_SCRIPT $SC__CMD_OPTS 2> $SC__ERROR_FILE &
+			bg_pid=$!
 		else
-			perl scheduler.pl $SC__CMD_OPTS &
+			perl $DAEMON_SCRIPT $SC__CMD_OPTS &
+			bg_pid=$!
 		fi
-		echo
+		# Make the pid file available before exiting (required for systemd support)
+		echo $bg_pid > "$PID_FILE"
 		;;
+
+	stop|terminate|kill)
+		# Exit with 0 if not running
+		# (this allows the command to be used by systemd as 'ExecStop=')
+		if [[ $running -ne 1 ]]; then
+			echo "Scheduler is stopped."
+			exit 0
+		fi
+		;;&  # continue testing other patterns
+
+	status|ps|qs|runq|jobq|verbose|quiet|stop|pause|resume|flog|submit|killjob|enq|deq)
+		if [[ $running -ne 1 ]]; then
+			echo "Error: scheduler is not running."
+			exit 1;
+		fi
+		listening=$({ netstat -uln 2> /dev/null || ss -uln; } | grep -c ":${SC__PORT}\b" 2>/dev/null)
+		if [[ ${listening} -ne 1 ]]; then
+			echo "Error: scheduler is not listening on UDP port ${SC__PORT}."
+			exit 1;
+		fi
+		;;&  # Continue testing other patterns
+
 	status)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			#oIFS=${IFS}; IFS=$'\n'; exec 3<>${schedudp}; echo ${holdon}; echo "cmd stat" >&3; rarr=$(timeout 3 cat <&3); echo "${rarr}"; IFS=${oIFS} 
-			#exec 3>&-
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd stat"'
-		#else
-		#	echo "scheduler not running or not listening"
-		fi
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd stat"'
 		;;
+
 	ps)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			ps -p ${savedpid} -osid --no-headers | xargs ps -H -o pid,pgrp,etime,pcpu,pmem,vsize,cmd -s
-		fi
+		ps -p $savedpid -osid --no-headers | xargs ps -H -o pid,pgrp,etime,pcpu,pmem,vsize,cmd -s
 		;;
+
 	qs)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd qs"'
-		fi
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd qs"'
 		;;
+
 	runq)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd runq"'
-		fi
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd runq"'
 		;;
+
 	jobq)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd jobq"'
-		fi
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd jobq"'
 		;;
+
 	verbose)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd verbose"'
-		fi
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd verbose"'
 		;;
+
 	quiet)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd quiet"'
-		fi
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd quiet"'
 		;;
+
 	stop)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd stop"'
-		fi
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd stop"'
 		;;
+
 	pause)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd pause"'
-		fi
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd pause"'
 		;;
+
 	resume)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd resume"'
-		fi
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd resume"'
 		;;
+
 	flog)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd flog"'
-		fi
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd flog"'
 		;;
-	kill)
-		if [[ $savedpid -ne 0 ]]; then
-			kill -9 $savedpid
-			rm -f ${WO__ROOT_LOGS}/scheduler.pid >/dev/null 2>&1
-		fi
-		;;
+
 	submit)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			shift
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"job $@\""
-		fi
+		shift
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"job $@\""
 		;;
+
 	killjob)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			shift
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"killjob $@\""
-		fi
+		shift
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"killjob $@\""
 		;;
+
 	enq)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			shift
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"enq $@\""
-		fi
+		shift
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"enq $@\""
 		;;
+
 	deq)
-		if [[ ${cantalk2} -eq 1 ]]; then
-			shift
-			echo $holdon
-			perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"deq $@\""
+		shift
+		echo $holdon
+		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"deq $@\""
+		;;
+
+	kill)
+		kill -9 $savedpid
+		rm -f "$PID_FILE"
+		;;
+
+	terminate)
+		echo "shutdown requested: sending SIGTERM to pid $savedpid."
+		if kill -TERM $savedpid; then
+			timeout $WAIT_TIMEOUT sh -c "while kill -0 $savedpid 2> /dev/null; do sleep 1; done"
+			rc=$?
+			if [[ $rc -eq 1 ]]; then
+				echo "Scheduler has exited."
+			elif [[ $rc -eq 124 ]]; then
+				echo "warning: scheduler has not exited after $WAIT_TIMEOUT."
+			else
+				echo "error while waiting for the scheduler to exit."
+			fi
+		else
+			echo "error sending signal to $savedpid: unable to stop the scheduler."
 		fi
 		;;
+
 	*)
-		echo "Usage: $0 {enq|deq|flog|jobq|kill|pause|ps|qs|quiet|resume|runq|start|status|stop|submit|killjob|verbose}"
+		echo "Usage: $0 {enq|deq|flog|jobq|terminate|kill|pause|ps|qs|quiet|resume|runq|start|status|stop|submit|killjob|verbose}"
 		echo "       start          start, if not already active"
-		echo "       stop           stop, waiting for active kids to end"
+		echo "       stop           stop, $DAEMON_SCRIPT will wait for active kids to end"
 		echo "       pause          hold execution (suspend jobs processing)"
 		echo "       resume         resume execution"
-		echo "       kill           forced stop, not recommended"
+		echo "       terminate      request immediate exit without stopping kids"
+		echo "       kill           force immediate exit, really not recommended"
 		echo "       verbose        log verbosity"
 		echo "       quiet          log verbosity"
 		echo "       status         display status/indicators/settings"
@@ -163,6 +207,4 @@ case "$1" in
 		echo "                      job outputs and temporary files might remain and must be checked.\n"
 		exit 1
 esac
-
-exit 0
 

@@ -5,12 +5,11 @@ After=local-fs.target remote-fs.target
 [Service]
 Type=forking
 ExecStart=/opt/webobs/CODE/shells/postboard start
-ExecStop=/opt/webobs/CODE/shells/postboard stop
 PIDFile=/opt/webobs/LOGS/postboard.pid
-User=wo
+User=webobs
+Group=webobs
 UMask=0002
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
-
