@@ -22,6 +22,12 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 1. For users using _systemd_, the commands `systemctl stop woscheduler` and `systemctl stop wopostboard` no longer mark the related service as _failed_ as `postboard.pl` and `scheduler.pl` now report a clean exit when stopped through a TERM signal. (Note that the command `sudo systemctl stop woscheduler` will cleanly stop the Scheduler, but running jobs will be killed. If you want to stop the Scheduler after waiting for all the jobs to finish, use the command `/opt/webobs/CODE/shell/scheduler stop`. The systemd service will stop normally when the process exits.)
 
+2. The `scheduler` helper script was not able to start or control the Scheduler on systems where the `netstat` command is missing (on newer systems it is by default replaced by `ss` from the `iproute` toolbox).
+
+3. The postboard and its helper function `WebObs::Config::notify` were rejecting notifications having an empty 4th field (`message` field), although action notifications should rightfully be accepted with no parameters, and therefore with an empty `message` field.
+
+4. When specifying the email address of a webobs user as Envelope From address in a mailing notification submitted to the postboard, the full name of the user and its email address were mistakenly inverted, using something like `john.doe@example.com <John Doe>` instead of `John Doe <john.doe@example.com>` as the `From:` field.
+
 
 ## v2.1.5b (August 2020)
 
