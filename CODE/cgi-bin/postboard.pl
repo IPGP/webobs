@@ -13,15 +13,15 @@ postboard.pl
 
 =head1 OVERVIEW
 
-Receives requests from clients' processes thru the Named Pipe (FIFO) defined 
-with $WEBOBS{POSTBOARD_NPIPE} configuration parameter. 
+Receives requests from clients' processes thru the Named Pipe (FIFO) defined
+with $WEBOBS{POSTBOARD_NPIPE} configuration parameter.
 
 Requests are strings representing the 4-tuple B<"timestamp|event-name|sender-id|message"> where:
 
 1) B<event-name> is the key to the 'notifications' table row(s) that defines what functions (email and/or action) will be triggered by PostBoard for this event;
 its 'validity' column indicates wether a row is actually selectable (ie. valid/active): 'Y' = 'Yes, selectable' or 'N' = 'No, ignore'.
 
-The 'email' function is triggered when column 'Uid' is not '-'; 
+The 'email' function is triggered when column 'Uid' is not '-';
 
 The 'action' function is triggered when column 'Action' is not '-'.
 
@@ -29,7 +29,7 @@ The 'action' function is triggered when column 'Action' is not '-'.
 See below.
 
 3) B<timestamp> is the time when notification was sent to postboard = number of seconds since the Epoch UTC
-(ie. the perl's time function returned value).  
+(ie. the perl's time function returned value).
 
 =head1 SENDING REQUESTS TO POSTBOARD
 
@@ -41,12 +41,12 @@ It automatically prefixes your request with the timestamp (now).
 2) from matlab, B<notify('event-name|sender-id|message')> is available (notify.m) to send a notification to postboard.pl.
 It automatically prefixes your request with the timestamp (now).
 
-The 'notify.pl' perl script may also be used for test purposes from the command line: 
+The 'notify.pl' perl script may also be used for test purposes from the command line:
 B<perl notify.pl "event-name|sender-id|message">
 
 =head1 EMAIL
 
-B<message> will be parsed to send a mail to the WebObs userid or groupid specified in column 'Uid', of the valid/active B<event-name> row(s) 
+B<message> will be parsed to send a mail to the WebObs userid or groupid specified in column 'Uid', of the valid/active B<event-name> row(s)
 of the 'notifications' table, using the $WEBOBS{POSTBOARD_MAILER} agent.
 
 If B<sender-id> looks like an email address, it will be used to override the 'from' header of the email being sent.
@@ -54,7 +54,7 @@ If B<sender-id> looks like an email address, it will be used to override the 'fr
 B<message> syntax is B<[text][keyword=value[keyword=value...]]> where:
 
 	1) text is any string you want to be embedded in the mail contents
-	   blanks are allowed 
+	   blanks are allowed
 	   | (pipes) , \n , are forbidden.
 	   it is optional and stops when a keyword= string is encountered (see below) or end of string
 
@@ -62,13 +62,13 @@ B<message> syntax is B<[text][keyword=value[keyword=value...]]> where:
 	   uid= a_webobs_uid_or_gid     : redefines (ie. overrides), if it is valid, the addressee's uid (or gid)
 	   file= an_absolute_filename>  : includes the contents of filename in the mail
 
-	3) available optional keywords in B<message> for the 'submitrc.jid' event-name (only used by the WebObs scheduler, 
+	3) available optional keywords in B<message> for the 'submitrc.jid' event-name (only used by the WebObs scheduler,
 	   but listed here for reference as you MUST avoid using them in your own text string):
 	   org= , log= , cmd= , rc=
 
-Example: perl script notifying an occurence of 'myevent', defined in 'notification' table as myevent,Y,UID,mysubject,-,- : 
+Example: perl script notifying an occurence of 'myevent', defined in 'notification' table as myevent,Y,UID,mysubject,-,- :
 
-	WebObs::Config::notify("myevent|dummy|my message with a file file=/opt/webobs/OUTR/requestid/mail.msg");	
+	WebObs::Config::notify("myevent|dummy|my message with a file file=/opt/webobs/OUTR/requestid/mail.msg");
     will result in the following email:
 		From: webobs@webobsaddr
 		To: UID-mailaddr
@@ -86,34 +86,34 @@ Column Uid and B<sender-id> are irrelevant for this 'action' processing.
 
 =head1 EVENTS NAMING CONVENTIONS
 
-	event-name    = string[.[string]] 
+	event-name    = string[.[string]]
 	string        = any alphanumeric string with no blank and no .,*?!/\(){};+
 	string.string = aka 'majorname.minorname' form of event-name
 
-'majorname.minorname' is used to define specific actions for each 'majorname.minorname' events AND 
+'majorname.minorname' is used to define specific actions for each 'majorname.minorname' events AND
 also common actions applying to all of them using B<majorname.> event (don't forget the ending dot!).
 
 =head1 SUBMITRC. SPECIAL EVENT
 
-The event B<'submitrc.jid'> is an exception to the standard email message processing by PostBoard used 
-internally by the WebObs scheduler (see scheduler.pl documentation) to notify end-of-job events: 
+The event B<'submitrc.jid'> is an exception to the standard email message processing by PostBoard used
+internally by the WebObs scheduler (see scheduler.pl documentation) to notify end-of-job events:
 
 1) the WebObs Scheduler automatically emits a B<submitrc.jid> when job B<jid> ends:
 
 	notify("submitrc.jid|$$|org={S|R} rc={returncode} log={jid-std-logpath} uid={$CLIENTuid}")
 
-2) you control the B<submitrc.jid> email activation along with its default addressee with  
-specific and/or global definitions of respectively B<submitrc.jid> and/or B<submitrc.> in the 
+2) you control the B<submitrc.jid> email activation along with its default addressee with
+specific and/or global definitions of respectively B<submitrc.jid> and/or B<submitrc.> in the
 'notifications' table. Postboard will merge these definitions with the message keywords value to built the mail
-(addressee,subject,contents) and send it. 
+(addressee,subject,contents) and send it.
 
-3) about the addressee Uid: the uid/gid in the 'notification' table definition acts, in this case, as the 'default' uid/gid 
+3) about the addressee Uid: the uid/gid in the 'notification' table definition acts, in this case, as the 'default' uid/gid
 to which mail is sent when this uid/gid cannot be delivered by the scheduler (no uid= or 'uid=' in the message); eg: this may happen
-for some standalone submit commands issued (anonymously from WebObs point of view) from the linux console. 
+for some standalone submit commands issued (anonymously from WebObs point of view) from the linux console.
 
 4) Example: a submit "job-definition-string" command sent to the scheduler (see scheduler.pl doc) and the corresponding mail sent:
 
-	$ scheduler submit 'XEQ1:perl,XEQ2:/path/to/jobtst.pl,RES:mylock,LOGPATH:/var/log/webobs/jobtst,UID:DL' 
+	$ scheduler submit 'XEQ1:perl,XEQ2:/path/to/jobtst.pl,RES:mylock,LOGPATH:/var/log/webobs/jobtst,UID:DL'
 	will built/sent the following email:
 		From: scheduleruid@webobsaddr
 		To: DL-mailaddr
@@ -125,15 +125,15 @@ for some standalone submit commands issued (anonymously from WebObs point of vie
 
 =head1 NOTES
 
-Note: length of "timestamp|event-name|sender-id|message" should be < system's PIPE_BUF 
+Note: length of "timestamp|event-name|sender-id|message" should be < system's PIPE_BUF
 (guarantees fifo write atomicity with O_NONBLOCK disabled).
 
-Note: Mail subject is automatically prefixed with "[WebObs-$WEBOBS{WEBOBS_ID}]" by postboard. 
+Note: Mail subject is automatically prefixed with "[WebObs-$WEBOBS{WEBOBS_ID}]" by postboard.
 
 Note: POSTBOARD_MAILER, if defined, should be set to B<mutt>, the only supported
 mail user-agent today (March 2013).
 
-Internals Note: WebObs::Config::notify() translates \n character to 0x00 in request when 
+Internals Note: WebObs::Config::notify() translates \n character to 0x00 in request when
 writing to fifo. Postboard translates them back when read.
 
 =cut
@@ -141,7 +141,7 @@ writing to fifo. Postboard translates them back when read.
 use strict;
 use warnings;
 use FindBin;
-use lib $FindBin::Bin; 
+use lib $FindBin::Bin;
 use Time::HiRes qw/time gettimeofday tv_interval usleep/;
 use POSIX qw/strftime :signal_h :errno_h :sys_wait_h mkfifo/;
 use IO::File;
@@ -163,7 +163,7 @@ my $clean   = defined($options{c}) ? 1 : 0;
 my $ME = basename($0);
 $ME =~ s/\..*//;
 
-# ---- initialize : pid file and logging 
+# ---- initialize : pid file and logging
 # ----------------------------------------------------------------------------
 if (!$WEBOBS{ROOT_LOGS}) {
 	printf(STDERR "Cannot start: ROOT_LOGS not found in WebObs configuration\n");
@@ -172,14 +172,14 @@ if (!$WEBOBS{ROOT_LOGS}) {
 
 # Open log file
 my $LOGNAME = "$WEBOBS{ROOT_LOGS}/$ME.log" ;
-if (! open(LOG, ">>$LOGNAME")) { 
+if (! open(LOG, ">>$LOGNAME")) {
 	print(STDERR "Cannot start: unable to open $LOGNAME: $!\n");
 	exit(98);
 }
 select((select(LOG), $|=1)[0]);  # turn off buffering
 logit("------------------------------------------------------------------------");
 
-# ---- is fifo name defined ? 
+# ---- is fifo name defined ?
 # ----------------------------------------------------------------------------
 if (!defined($WEBOBS{POSTBOARD_NPIPE})) {
 	logit("Can't start: no POSTBOARD_NPIPE definition in WebObs configuration");
@@ -187,12 +187,12 @@ if (!defined($WEBOBS{POSTBOARD_NPIPE})) {
 	exit(98);
 }
 
-# ---- should we (re)-create fifo (when missing or -c(lean) requested) ? 
+# ---- should we (re)-create fifo (when missing or -c(lean) requested) ?
 # ----------------------------------------------------------------------------
 my $TS=0;
 my $FIFO = $WEBOBS{POSTBOARD_NPIPE};
 unlink $FIFO if (-p $FIFO && $clean);
-if ( ! -p $FIFO ) { 
+if ( ! -p $FIFO ) {
 	umask 0011;
 	if (! mkfifo($FIFO, 0777)) {
 		logit("Can't start: couldn't mkfifo $FIFO: $!");
@@ -207,7 +207,7 @@ $SIG{INT} = end_on_sig("$ME interrupted.", 99);
 $SIG{TERM} = end_on_sig("$ME terminated.", 0);
 $SIG{__WARN__} = sub { my $msg = shift; logit("warning: $msg"); };
 
-# ---- open the pipe (fifo input Q) and loop forever 
+# ---- open the pipe (fifo input Q) and loop forever
 # ---------------------------------------------------------------------------
 open(FIFO, "+< $FIFO") or die "Couldn't open $FIFO : $!\n";
 logit("WEBOBS PostBoard PID=$$ now listening on opened $FIFO");
@@ -216,9 +216,9 @@ if (-t STDOUT) { printf("PostBoard PID=$$ now listening on $FIFO\n"); }
 while (1) {
 
 	my $queued = <FIFO>;       # input looks like "timestamp | event-name | emitting-pid | message"
-	$queued =~ tr/\0/\n/;      # x00 assumed instead of \n in pipe, translate back 
+	$queued =~ tr/\0/\n/;      # x00 assumed instead of \n in pipe, translate back
 	chomp $queued;
-	#?? todo: check for queued enclosed in my defined-delimiters ==> my implementation of boundaries to 
+	#?? todo: check for queued enclosed in my defined-delimiters ==> my implementation of boundaries to
 	#?? validate non-interleaved msg from other writing-ends ???
 	my @REQ = split(/\|/, $queued);
 	if ( scalar(@REQ) == 4 ) {
@@ -234,7 +234,7 @@ while (1) {
 		# if event is 'majorid' then grab 'majorid' subscriptions
 		if ( $REQ[1] =~ m/^([^\.]*)\.(.*)$/ ) { $eventclause = " (event = \'$REQ[1]\' OR event = \'$1.\') " }
 		else                                  { $eventclause = " event = \'$REQ[1]\' " }
-		# if event is 'submitrc.{something}' then grab 'submitrc.' + 'submitrc.rc*' + 'submitrc.something.rc* subscriptions 
+		# if event is 'submitrc.{something}' then grab 'submitrc.' + 'submitrc.rc*' + 'submitrc.something.rc* subscriptions
 		if ( $REQ[1] =~ m/^submitrc\.(.*)$/ ) { $eventclause = " (event = 'submitrc.' OR event like  \'submitrc.rc%\' OR event like \'submitrc.$1.rc%\') " }
 
 		# ---- process emailing if we know how to do it and have mailid(s) for this event $REQ[1]
@@ -251,10 +251,10 @@ while (1) {
 				for (@allMails) {
 					my @oneMAIL = split(/\|/,$_);
 					my @oneREQ  = @REQ; # save original request (maybe overkill)
-					# parse the incoming request's message ($oneREQ[3]): look for special keywords 
+					# parse the incoming request's message ($oneREQ[3]): look for special keywords
 					# message syntax is: [any text][keyword=[value-allowing-embedded-blanks]...]
 					#                    no | allowed in message; no keyword in 'any text' of course
-					# $px will be set to 'any text' ; %sp will gather parsed keywords as $sp{'keyword='} = 'value' (trimmed) 
+					# $px will be set to 'any text' ; %sp will gather parsed keywords as $sp{'keyword='} = 'value' (trimmed)
 					my %sp; my $px = my $re = '';
 					$re = join '|' => map {quotemeta} ('rc=','cmd=','log=','uid=','org=','file=','subject=','attach=');
 					($px, %sp) = split /($re)\s*/ => $oneREQ[3];
@@ -278,10 +278,10 @@ while (1) {
 						$oneREQ[3] = "";  # create a brand new $oneREQ[3] for normal mail processing below
 						if (defined($sp{'org='}) && $sp{'org='} =~ m/^R/) {
 						# it is an end-of-request (submit) :
-							$oneMAIL[1] = "request $oneREQ[1] has ended"; 
+							$oneMAIL[1] = "request $oneREQ[1] has ended";
 							$oneREQ[3] .= "request submitted by ";
 							$oneREQ[3] .= (defined($sp{'uid='})) ? "$sp{'uid='}\n" : "* unspecified uid *\n" ;
-						} else { 
+						} else {
 						# it is an end-of-scheduled job :
 							$oneMAIL[1] = "scheduled job $oneREQ[1] has ended";
 							# ignore this mail (ie. do NOT send) if an rc-condition is not met
@@ -302,11 +302,11 @@ while (1) {
 					$sql = "SELECT email FROM users WHERE uid = \'$oneMAIL[0]\' OR uid IN (SELECT uid FROM groups WHERE gid=\'$oneMAIL[0]\' )";
 					my @allAddrs = qx(sqlite3 -noheader -separator '|' $WEBOBS{SQL_DB_USERS} \"$sql\");
 					chomp(@allAddrs);
-					if (scalar(@allAddrs) > 0) { 
+					if (scalar(@allAddrs) > 0) {
 						my $addrlist = join(' ',@allAddrs);
 						my $options  = $WEBOBS{POSTBOARD_MAILER_OPTS};
-						   $options .= ($oneMAIL[1] ne '-') ? " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $oneMAIL[1]\'" : " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $WEBOBS{POSTBOARD_MAILER_DEFSUBJECT}\'"; 
-						   $options .= ($oneMAIL[2] ne '-' && -e $oneMAIL[2]) ? " -a \'$oneMAIL[2]\'" : ""; 
+						   $options .= ($oneMAIL[1] ne '-') ? " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $oneMAIL[1]\'" : " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $WEBOBS{POSTBOARD_MAILER_DEFSUBJECT}\'";
+						   $options .= ($oneMAIL[2] ne '-' && -e $oneMAIL[2]) ? " -a \'$oneMAIL[2]\'" : "";
 						if ( $oneREQ[2] =~ m/^([^.@]+)(\.[^.@]+)*@(([^.@]+\.)+([^.@]+))$/ ) {
 							my $domain = $3; my $fulln = '';
 							for (keys(%USERS)) { if ($USERS{$_}{EMAIL} =~ m/^$oneREQ[2]/) {$fulln = $USERS{$_}{FULLNAME}} }
@@ -317,7 +317,7 @@ while (1) {
 							print TWRT "$oneREQ[3]" ;
 							if ( defined($sp{'file='}) && -f "$sp{'file='}" ) {
 								print TWRT "\n";
-								print TWRT gf($sp{'file='}) 
+								print TWRT gf($sp{'file='})
 							}
 							close TWRT;
 							if ($verbose) { logit("$WEBOBS{POSTBOARD_MAILER} $options -- $addrlist < $Tfn"); }
@@ -326,11 +326,11 @@ while (1) {
 							unlink($Tfn);
 						} else { logit("error: couldn't open temporary file for mailing: $?") }
 					} # end we have address(es) for this mail
-				} # end for each mail 
+				} # end for each mail
 			} # we have mailing(s) in table for this event
 		} # end we know how to mail from config setting
 
-		# ---- process action(s) if we have some for this event 
+		# ---- process action(s) if we have some for this event
 		$sql = "SELECT action FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}";
 		#$sql .= " WHERE $eventclause AND validity = 'Y' AND action <> \'-\' ";
 		$sql .= " WHERE $eventclause AND action <> \'-\' AND $validclause";
@@ -359,10 +359,10 @@ endit();
 sub gf {
 	my $ret="";
 	if (defined($_[0])) {
-		if (defined($_[0]) && open(FILE,$_[0])) { 
+		if (defined($_[0]) && open(FILE,$_[0])) {
 			local $/ = undef;
 			$ret = <FILE> ;
-			close (FILE); 
+			close (FILE);
 		} else {
 			logit("warning: couldn't open $_[0] to embed into mail");
 		}
@@ -371,7 +371,7 @@ sub gf {
 }
 
 # ----------------------------------------------------------
-# evaluate an rc-condition of a submitrc subscription 
+# evaluate an rc-condition of a submitrc subscription
 # syntax:  rccond ( subscription-definition, returncode)
 # where: subscription-definition=  submitrc.{.minor}.rcOPvalue
 #        OP= {==, !=, <=, >=}
@@ -385,7 +385,7 @@ sub rccond {
 }
 
 # ----------------------------------------------------------
-# write to log 
+# write to log
 # ----------------------------------------------------------
 sub logit {
 	my ($logText) = @_;
@@ -408,7 +408,7 @@ sub end_on_sig {
 }
 
 # ----------------------------------------------------------
-# clean exit 
+# clean exit
 # ----------------------------------------------------------
 sub endit {
 	my $exit_code = shift || 99;
