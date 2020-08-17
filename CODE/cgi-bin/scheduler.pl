@@ -454,7 +454,7 @@ $SCHED{DAYS_IN_RUN} ||= 30; #days
 # ---- maximum number of seconds that submitted jobs remain in JOBQ
 # -----------------------------------------------------------------------------
 $SCHED{CANCEL_SUBMIT} ||= 600;
-				
+
 # ---- forces output of ditto accumulating msg (log and postboard)
 # -----------------------------------------------------------------------------
 $SCHED{DITTO_LOG_MAX} ||= 500;
@@ -658,7 +658,7 @@ while (1) {
 			$adjutick = 0;
 		}
 		$ELT += $tvi;
-	}	
+	}
 }
 
 # you should never get there !
@@ -1027,7 +1027,7 @@ sub UDPS {
 						$verbose = 1;
 						$ans = "Verbose On\n";
 						next;
-					}	
+					}
 					if (/^QUIET$/i && $PAUSED != 2) {
 						$verbose = 0;
 						$ans = "Verbose Off\n";
@@ -1131,7 +1131,7 @@ sub logit {
 sub notifyit {
 	my ($ntftxt) = @_;
 	my $ntf;
-	
+
 	if ($ntftxt ne $DITTONTF) {
 		if ($DITTONTF ne '' && $DITTONTFCNT != 0){
 			$ntf=sprintf ("%s (x%s)", $DITTONTF,$DITTONTFCNT);
