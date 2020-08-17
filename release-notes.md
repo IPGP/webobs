@@ -16,6 +16,8 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 2. The Scheduler now listens for control commands throught UDP on the `127.0.0.1` local address by default. This will restrict control of the Scheduler to local users only. If you really want to allow other users on the network to access this interface, set the `LISTEN_ADDR` configuration variable to a local IP address or hostname in the Scheduler configuration file (by default `scheduler.rc`). In this case, it is advised to limit access to specific hosts using local firewall rules.
 
+3. A new option `MERGE_JOB_LOGS` in the scheduler configuration file (by default `scheduler.rc`) allows to merge the standard output and standard error outputs of the jobs to a common file using the name set in the `logpath` field of the job definition, suffixed by `.log`. If `MERGE_JOB_LOGS` is `y`, `yes`, (case insensitive) or `1`, the output will be merged, otherwise the scheduler follows the historical behaviour and will write the outputs to files respectively suffixed by `.stdout` and `.stderr`.
+
 ### Fixed issues
 
 1. For users using _systemd_, the commands `systemctl stop woscheduler` and `systemctl stop wopostboard` no longer mark the related service as _failed_ as `postboard.pl` and `scheduler.pl` now report a clean exit when stopped through a TERM signal. (Note that the command `sudo systemctl stop woscheduler` will cleanly stop the Scheduler, but running jobs will be killed. If you want to stop the Scheduler after waiting for all the jobs to finish, use the command `/opt/webobs/CODE/shell/scheduler stop`. The systemd service will stop normally when the process exits.)
