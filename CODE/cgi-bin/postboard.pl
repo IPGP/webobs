@@ -240,14 +240,11 @@ while (1) {
 	WebObs::Users::refreshUsers();
 
 	# shorten the message just for verbose mode display
-	my $shortreq3;
-	if (length($REQ[3]) > 33) {
-		$shortreq3 = substr($REQ[3],0,15)."...".substr($REQ[3],-15);
-	} else {
-		$shortreq3 = $REQ[3];
-	}
+	my $shortreq3 = (length($REQ[3]) > 33) ? substr($REQ[3],0,15)."...".substr($REQ[3],-15) : $REQ[3];
 	$shortreq3 =~ s/\n/<lf>/g;
 	logit("got event [$REQ[1]] from $REQ[2] saying [$REQ[0] - $shortreq3]") if ($verbose);
+	my $sql = my $eventclause = '';
+	my $validclause = " validity = 'Y' ";
 
 	# ---- process emailing if we know how to do it and have mailid(s) for this event $REQ[1]
 	if (defined($WEBOBS{POSTBOARD_MAILER})) {
@@ -449,8 +446,8 @@ sub fetch_emails {
 	my $event_name = shift;
 	my $where_event = get_subscriptions_clause($event_name);
 	my $q = "SELECT uid,mailsubject,mailattach,validity,event"
-			." FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
-			." WHERE uid != '-' AND validity = 'Y' AND $where_event";
+	        ." FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
+	        ." WHERE uid != '-' AND validity = 'Y' AND $where_event";
 
 	return fetch_all($WEBOBS{SQL_DB_POSTBOARD}, $q);
 }
@@ -461,7 +458,7 @@ sub fetch_actions {
 	my $event_name = shift;
 	my $where_event = get_subscriptions_clause($event_name);
 	my $q = "SELECT action FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
-			." WHERE action != '-' AND validity = 'Y' AND $where_event";
+	        ." WHERE action != '-' AND validity = 'Y' AND $where_event";
 
 	logit($q);
 	return fetch_all($WEBOBS{SQL_DB_POSTBOARD}, $q);
@@ -472,8 +469,8 @@ sub fetch_email_addrs {
 	# Return the list of email addresses for a user or a group
 	my $id = shift;  # user or group id
 	my $q = "SELECT email FROM $WEBOBS{SQL_TABLE_USERS}"
-			." WHERE uid = '$id'"
-			." OR uid IN (SELECT uid FROM groups WHERE gid='$id')";
+	        ." WHERE uid = '$id'"
+	        ." OR uid IN (SELECT uid FROM groups WHERE gid='$id')";
 
 	return fetch_all($WEBOBS{SQL_DB_USERS}, $q);
 }

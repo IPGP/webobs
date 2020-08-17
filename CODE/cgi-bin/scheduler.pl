@@ -564,40 +564,63 @@ while (1) {
 	my $psdmsg = sprintf ("%u %s wait %d (d=%f,beat=%d)", $$,$PAUSED?" paused":"",int($adjutick),$adjutick-int($adjutick),$BEAT);
 	logit($psdmsg) if ($verbose2);
 	usleep(int($adjutick));
+
 	my $t0 = [gettimeofday];
 	$BEAT-- if (!$PAUSED);
+
 	UDPS();
 	if (!$PAUSED && !$BEAT) {
 		$BEAT = $SCHED{BEAT};
 		TTLJOBRQ();
-		if (REAPER() == $SCHED{MAX_CHILDREN}) { notifyit("scheduler.critical|$$|Maximum number of started processes reached"); next };
-		if (SYSLOAD()) { notifyit("scheduler.critical|$$|Loadavg thresholds reached"); next }
+		if (REAPER() == $SCHED{MAX_CHILDREN}) {
+			notifyit("scheduler.critical|$$|Maximum number of started processes reached");
+			next;
+		};
+		if (SYSLOAD()) {
+			notifyit("scheduler.critical|$$|Loadavg thresholds reached");
+			next;
+		}
 		CANDIDATES();
 		if ($verbose2) {
 			logit(scalar(keys(%CANDIDATES))." candidate(s): ");
-			map {logit("  $CANDIDATES{$_}{JID}: $CANDIDATES{$_}{XEQ1} $CANDIDATES{$_}{XEQ2} $CANDIDATES{$_}{XEQ3} ")} keys(%CANDIDATES);
+			for my $c (keys(%CANDIDATES)) {
+				logit("  $CANDIDATES{$c}{JID}: $CANDIDATES{$c}{XEQ1} $CANDIDATES{$c}{XEQ2} $CANDIDATES{$c}{XEQ3} ");
+			}
 		}
 		for my $rid (keys(%CANDIDATES)) {
 			# build the actual command to be executed from components XEQx
+
 			# no leading/trailing blanks in EACH components THEN derefrence $WEBOBS{} variables
-			$CANDIDATES{$rid}{XEQ1} =~ s/^\s+|\s+$//g; $CANDIDATES{$rid}{XEQ2} =~ s/^\s+|\s+$//g; $CANDIDATES{$rid}{XEQ3} =~ s/^\s+|\s+$//g;
+			$CANDIDATES{$rid}{XEQ1} =~ s/^\s+|\s+$//g;
+			$CANDIDATES{$rid}{XEQ2} =~ s/^\s+|\s+$//g;
+			$CANDIDATES{$rid}{XEQ3} =~ s/^\s+|\s+$//g;
+
 			my $kidcmd  = "$CANDIDATES{$rid}{XEQ1} $CANDIDATES{$rid}{XEQ2} $CANDIDATES{$rid}{XEQ3}";
 			$kidcmd =~ s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g;
+
 			# check if eligible for RUNQ ?
-			if ( $CANDIDATES{$rid}{MAXSYSLOAD} <= $avg5 ) { logit("jid($CANDIDATES{$rid}{JID}) candidate but CpuLoad too high");
-			                                                notifyit("scheduler.warning|$$|Job [ $CANDIDATES{$rid}{JID} ] candidate but CpuLoad too high");
-															if ($SCHED{LMISS_BIAS}>0) { $LMISS{$CANDIDATES{$rid}{JID}} = time }
-															next;
-														  }
-			if ( ENQ($CANDIDATES{$rid}{RES},$CANDIDATES{$rid}{JID}) == 1 )  { logit("jid($CANDIDATES{$rid}{JID}) candidate but Resource busy");
-															if ($SCHED{EMISS_BIAS}>0) {$EMISS{$CANDIDATES{$rid}{JID}} = time }
-				                                            next;
-                                                          }
+			if ($CANDIDATES{$rid}{MAXSYSLOAD} <= $avg5) {
+				logit("jid($CANDIDATES{$rid}{JID}) candidate but CpuLoad too high");
+				notifyit("scheduler.warning|$$|Job [ $CANDIDATES{$rid}{JID} ] candidate but CpuLoad too high");
+				if ($SCHED{LMISS_BIAS}>0) {
+					$LMISS{$CANDIDATES{$rid}{JID}} = time;
+				}
+				next;
+			}
+			if (ENQ($CANDIDATES{$rid}{RES},$CANDIDATES{$rid}{JID}) == 1) {
+				logit("jid($CANDIDATES{$rid}{JID}) candidate but Resource busy");
+				if ($SCHED{EMISS_BIAS}>0) {
+					$EMISS{$CANDIDATES{$rid}{JID}} = time;
+				}
+				next;
+			}
+
 			# candidate is eligible, remove it from JOBRQ if it came in that way
-            if ( $CANDIDATES{$rid}{ORG} eq "R" ) {
+			if ($CANDIDATES{$rid}{ORG} eq "R") {
 				logit("rid $rid jid($CANDIDATES{$rid}{JID}) candidate, removed from JOBRQ") if ($verbose);
 				delete($JOBRQ{$rid})
 			}
+
 			# create the RUNQ structure for this job
 			my $Qid = $rid;
 			$RUNQ{$Qid}{kidcmd}  = $kidcmd;
@@ -606,6 +629,7 @@ while (1) {
 			$RUNQ{$Qid}{jid}     = $CANDIDATES{$rid}{JID};
 			$RUNQ{$Qid}{uid}     = $CANDIDATES{$rid}{UID};
 			$RUNQ{$Qid}{ORG}     = $CANDIDATES{$rid}{ORG};
+
 			# take care of stdout/err redirections and targets
 			my $redir = '>';
 			(my $RTNE_ = $CANDIDATES{$rid}{XEQ2}) =~ s/\s+/_/g;
@@ -614,16 +638,18 @@ while (1) {
 				$redir = $1;
 				$CANDIDATES{$rid}{LOGPATH} = $2;
 			}
+
 			$RUNQ{$Qid}{started} = time;
 			$CANDIDATES{$rid}{LOGPATH} =~ s/\{TS\}/$RUNQ{$Qid}{started}/g ;
 			$CANDIDATES{$rid}{LOGPATH} =~ s/\{RTNE\}/$RTNE_/g ;
 			my ($logfn, $logfd) = fileparse($CANDIDATES{$rid}{LOGPATH});
 			$RUNQ{$Qid}{logfd} = $logfd;
 			$RUNQ{$Qid}{logfn} = $logfn;
+
 			# from now on we don't need the $CANDIDATES{$rid} anymore
 			delete($CANDIDATES{$rid});
 			make_path("$SCHED{PATH_STD}/$logfd");
-			# moved up to have DB and logpath match, but would be better if closer to fork !! : $RUNQ{$Qid}{started} = time;
+
 			$RUNQ{$Qid}{kidcmd} =~ s/'/''/g;
 			DBUPDATE("UPDATE jobs set laststrts=$RUNQ{$Qid}{started} WHERE jid='$RUNQ{$Qid}{jid}'");
 			DBUPDATE("INSERT INTO runs (jid,org,startts,cmd,endts)"
@@ -673,7 +699,7 @@ while (1) {
 					open STDERR, ">&", \*STDOUT
 						or die "Could not redirect STDERR to STDOUT: $!";;
 				} else {
-					# Default behaviour: stderr should be redirected to a different file than stdout
+					# Default behaviour: stdout and stderr should be redirected to different files
 					open STDERR, $redir, "$log_basename.stderr"
 						or die "Could not redirect STDERR: $!";;
 					printf(STDERR "\n*** STDERR WEBOBS JOB *** STARTED  %s [ %s ] ***\n\n",
@@ -692,7 +718,7 @@ while (1) {
 
 			}  # end of if ($kid == 0)
 
-			# parent's code continued
+			# Continuing with parent's code
 			$RUNQ{$Qid}{kid} = $kid;            # link runQ element to kid pid
 			$kids{$kid} = $Qid;                 # link kid pid list to runQ
 			if ($verbose) {
@@ -705,11 +731,13 @@ while (1) {
 		REAPER();
 		if ($verbose2) {
 			logit("$$ runQ: ");
-			map {logit("  runQ $_ : jid($RUNQ{$_}{jid}) pid=$RUNQ{$_}{kid} started=$RUNQ{$_}{started} cmd=$RUNQ{$_}{kidcmd}")} keys(%RUNQ);
+			for my $j (keys(%RUNQ)) {
+				logit("  runQ $j : jid($RUNQ{$j}{jid}) pid=$RUNQ{$j}{kid} started=$RUNQ{$j}{started} cmd=$RUNQ{$j}{kidcmd}");
+			}
 		}
 
 		my $tvi = tv_interval($t0);
-		if ( ($adjutick = $utick - $tvi) <= 0 ) {
+		if (($adjutick = $utick - $tvi) <= 0) {
 			logit("$$ drift >= $SCHED{TICK} !!!");
 			$adjutick = 0;
 		}
@@ -725,27 +753,34 @@ myexit(99);
 # -----------------------------------
 sub REAPER {
 	my @DBupdates;
+
 	while (($dcd = waitpid(-1, &WNOHANG)) > 0) {
 		my $dcdRC = ${^CHILD_ERROR_NATIVE}; # default, see below each case
 		my $tend = time;
 		my $dcdmsg = '';
-		if ($? == -1) { $dcdmsg = sprintf (" failed to execute: $!"); }
-		elsif ($? & 127) {
+
+		if ($? == -1) {
+			$dcdmsg = sprintf (" failed to execute: $!");
+		} elsif ($? & 127) {
 			$dcdmsg = sprintf (" %s %d %s coredump","$dcd died with signal",($? & 127),($? & 128) ? '' : 'no');
-		}
-		else {
+		} else {
 			$dcdRC = $? >> 8;
 			$dcdmsg = sprintf ("*%d", $dcdRC);
 		}
+
 		my $dcdQid = $kids{$dcd};
 		if ($dcdRC != 0) {
 			notifyit("scheduler.critical|$$|Job $RUNQ{$dcdQid}{jid} started at $RUNQ{$dcdQid}{started} returned non-null code $dcdRC.\nError message was : $dcdmsg");
 		}
 		DBUPDATE("UPDATE runs SET endts=$tend,rc=$dcdRC,rcmsg=\"$dcdmsg\" WHERE jid=\"$RUNQ{$dcdQid}{jid}\" AND startts=$RUNQ{$dcdQid}{started}");
-		my $notifytxt  = "submitrc.$RUNQ{$dcdQid}{jid}|$$|";
-		   $notifytxt .= "org=$RUNQ{$dcdQid}{ORG} rc=$dcdRC cmd=[ $RUNQ{$dcdQid}{kidcmd} ] log=[ $RUNQ{$dcdQid}{logfd}/$RUNQ{$dcdQid}{logfn}.std{out,err} ] ";
-		   $notifytxt .= "uid=$RUNQ{$dcdQid}{uid}" if (defined($RUNQ{$dcdQid}{uid}) && $RUNQ{$dcdQid}{uid} ne '');
+
+		my $notifytxt  = "submitrc.$RUNQ{$dcdQid}{jid}|$$|"
+			."org=$RUNQ{$dcdQid}{ORG} rc=$dcdRC cmd=[ $RUNQ{$dcdQid}{kidcmd} ] log=[ $RUNQ{$dcdQid}{logfd}/$RUNQ{$dcdQid}{logfn}.std{out,err} ] ";
+		if (defined($RUNQ{$dcdQid}{uid}) && $RUNQ{$dcdQid}{uid} ne '') {
+			$notifytxt .= "uid=$RUNQ{$dcdQid}{uid}";
+		}
 		WebObs::Config::notify($notifytxt);
+
 		$JENDED++;
 		logit("reaper: kid($dcd), runQ($dcdQid), jid($RUNQ{$dcdQid}{jid})") if ($verbose);
 		DEQ($RUNQ{$dcdQid}{res},$RUNQ{$dcdQid}{jid});
@@ -787,19 +822,21 @@ sub exit_on_signal {
 # ----------------------------------------------------------
 sub SYSLOAD {
 	# ---- grab fresh system's loadavg figures
-	if ( open FILE, "< /proc/loadavg" ) {
+	if (open FILE, "< /proc/loadavg") {
 		($avg1, $avg5, $avg15, undef, undef) = split / /, <FILE>;
 		close FILE;
 		# load averages in users's definitions are relative to 1 cpu;
 		# fix /proc/loadavg values to match actual number of cpus
 		$avg1 /= $ncpus; $avg5 /= $ncpus; $avg15 /= $ncpus;
 		# ---- system's loadavg vs user thresholds
-		if ( $avg1>$SCHED{LOADAVG1_THRESHOLD} || $avg5>$SCHED{LOADAVG5_THRESHOLD} || $avg15>$SCHED{LOADAVG15_THRESHOLD}) {
+		if ($avg1>$SCHED{LOADAVG1_THRESHOLD} || $avg5>$SCHED{LOADAVG5_THRESHOLD} || $avg15>$SCHED{LOADAVG15_THRESHOLD}) {
 			#logit(" $$ system load > threshold: $avg1/$SCHED{LOADAVG1_THRESHOLD}  $avg5/$SCHED{LOADAVG5_THRESHOLD}  $avg15/$SCHED{LOADAVG15_THRESHOLD}") if ($verbose);
 			logit(" $$ system load > threshold") if ($verbose);
 			return(1);
 		}
-	} else { logit("$$ cpu loadavg not refreshed: $!") }
+	} else {
+		logit("$$ cpu loadavg not refreshed: $!");
+	}
 	return(0);
 }
 
@@ -829,7 +866,7 @@ sub CANDIDATES {
 			}
 		} else {
 			# a %CANDIDATES entry from a submit "XEQ1:gnagna,XEQ2:blabla,..."
-			if ( JDPARSE($jtk) == 0) {
+			if (JDPARSE($jtk) == 0) {
 				logit("$$ deleting submitted job jid($JOBRQ{$jtk}{JID}): parse failed [ $jrq ]");
 				delete($JOBRQ{$jtk});
 			}
@@ -837,13 +874,19 @@ sub CANDIDATES {
 	}
 	# ignore JIDs for which exists a 'pending delay' due to a previous threshold OR enq condition
 	for my $key (keys %CANDIDATES) {
-		if ( defined($LMISS{$CANDIDATES{$key}{JID}}) ) {
-			if ( $LMISS{$CANDIDATES{$key}{JID}}+$SCHED{LMISS_BIAS} >= time ) { delete $CANDIDATES{$key} }
-			else { delete $LMISS{$CANDIDATES{$key}} }
+		if (defined($LMISS{$CANDIDATES{$key}{JID}})) {
+			if ($LMISS{$CANDIDATES{$key}{JID}} + $SCHED{LMISS_BIAS} >= time) {
+				delete $CANDIDATES{$key};
+			} else {
+				delete $LMISS{$CANDIDATES{$key}};
+			}
 		}
-		if ( defined($EMISS{$CANDIDATES{$key}{JID}}) ) {
-			if ( $EMISS{$CANDIDATES{$key}{JID}}+$SCHED{EMISS_BIAS} >= time ) { delete $CANDIDATES{$key} }
-			else { delete $EMISS{$CANDIDATES{$key}} }
+		if (defined($EMISS{$CANDIDATES{$key}{JID}})) {
+			if ($EMISS{$CANDIDATES{$key}{JID}} + $SCHED{EMISS_BIAS} >= time) {
+				delete $CANDIDATES{$key};
+			} else {
+				delete $EMISS{$CANDIDATES{$key}};
+			}
 		}
 	}
 	return scalar(keys(%CANDIDATES));
@@ -866,7 +909,7 @@ sub JDPARSE {
 	$KW{RES} ||= '';
 	$KW{UID} ||= '';
 	$KW{ORG}  = 'R';
-	if ( "$KW{XEQ1}$KW{XEQ2}$KW{XEQ3}" ne "" ) {
+	if ("$KW{XEQ1}$KW{XEQ2}$KW{XEQ3}" ne "") {
 		$CANDIDATES{$_[0]} = \%KW;
 		$CANDIDATES{$_[0]}{JID} = $JOBRQ{$_[0]}{JID};
 		return 1;
@@ -879,13 +922,13 @@ sub JDPARSE {
 # and cancels (removes) those jobs whose ttl drops below 0
 # ----------------------------------------------------------
 sub TTLJOBRQ {
-	for (keys(%JOBRQ)) {
-		$JOBRQ{$_}{TTL} -= $SCHED{BEAT}*($utick/1000000);
-		if ( $JOBRQ{$_}{TTL} <= 0 ) {
-			logit("cancelling TTL-expired waiting job jid($JOBRQ{$_}{JID}) [ $JOBRQ{$_}{REQ} ]");
-			delete($JOBRQ{$_});
-			delete($LMISS{$JOBRQ{$_}{JID}}) if (defined($LMISS{$JOBRQ{$_}{JID}}));
-			delete($EMISS{$JOBRQ{$_}{JID}}) if (defined($EMISS{$JOBRQ{$_}{JID}}));
+	for my $j (keys(%JOBRQ)) {
+		$JOBRQ{$j}{TTL} -= $SCHED{BEAT}*($utick/1000000);
+		if ($JOBRQ{$j}{TTL} <= 0) {
+			logit("cancelling TTL-expired waiting job jid($JOBRQ{$j}{JID}) [ $JOBRQ{$j}{REQ} ]");
+			delete($JOBRQ{$j});
+			delete($LMISS{$JOBRQ{$j}{JID}}) if (defined($LMISS{$JOBRQ{$j}{JID}}));
+			delete($EMISS{$JOBRQ{$j}{JID}}) if (defined($EMISS{$JOBRQ{$j}{JID}}));
 		}
 	}
 	return;
@@ -964,13 +1007,17 @@ sub DBUPDATE {
 # returns 1 if resource busy
 # ----------------------------------------------------------
 sub ENQ {
-	if ( defined($_[0]) && defined($_[1]) && $_[0] ne '' ) {
+	if (defined($_[0]) && defined($_[1]) && $_[0] ne '') {
 		my $ts  = strftime("%Y%m%d-%H%M%S",localtime(time));
 		my @res = split(/\+/,$_[0]);
 		foreach (@res) { s/^\s+|\s+$//g }
+
 		# fails if one of requested resources is not free
-		#foreach (@res) { if (glob("$SCHED{PATH_RES}/$_--*") ) { return 1 } }
-		foreach (@res) { my @u = glob("$SCHED{PATH_RES}/$_--*"); return 1 if scalar(@u) > 0 }
+		foreach (@res) {
+			my @u = glob("$SCHED{PATH_RES}/$_--*");
+			return 1 if scalar(@u) > 0;
+		}
+
 		# then actually enq all requested resources
 		foreach (@res) {
 			my $resource_file = "$SCHED{PATH_RES}/$_--$_[1]-$ts";
@@ -993,11 +1040,11 @@ sub ENQ {
 # ** TBD: could check that only jid that ENQd can DEQ
 # ----------------------------------------------------------
 sub DEQ {
-	if ( defined($_[0]) && defined($_[1]) && $_[0] ne '' ) {
+	if (defined($_[0]) && defined($_[1]) && $_[0] ne '') {
 		foreach my $res (split(/\+/,$_[0])) {
 			$res =~ s/^\s+|\s+$//g;
 			my @g = glob("$SCHED{PATH_RES}/$res--*");
-			if ( @g ) {
+			if (@g) {
 				unlink @g;
 				logit("deq $res, jid($_[1])") if ($verbose);
 			}
@@ -1010,152 +1057,176 @@ sub DEQ {
 # UDPS receives incoming cmds/jobs on non-blocking socket
 # ----------------------------------------------------------
 sub UDPS {
-	my $msg = my $cmd = my $ans = my $junk = '';
-	if ( $SOCK->recv($msg, $SCHED{SOCKET_MAXLEN}) ) {
-		my $sock_client_id = $SOCK->peerhost().":".$SOCK->peerport();
-		$msg =~ s/^\s+|\s+$//g;
-		($cmd,$msg) = split / /, $msg, 2;
-		$cmd ||= 'nil'; $msg ||= 'nil' ;
-		for ($cmd) {
-			if (/^JOB/i && $msg) {
-				my $timekey = time;
-				$JOBRQ{$timekey}{REQ} = $msg;
-				$JOBRQ{$timekey}{TTL} = $SCHED{CANCEL_SUBMIT};
-				# assign a dynamic jid, even if overidden later because it appears to be a jid= command
-				$DynJid = -1 if (--$DynJid < -10E9); # dynamic jid , -10**9 rollover
-				$JOBRQ{$timekey}{JID} = "$DynJid";
-				$ans = "request for job queued\n";
+	my $msg = '';
+	my $cmd = '';
+	my $ans = '';
+	my $junk = '';
+
+	# Read message from the UDFP socket, if any, or return
+	$SOCK->recv($msg, $SCHED{SOCKET_MAXLEN}) or return;
+
+	my $sock_client_id = $SOCK->peerhost().":".$SOCK->peerport();
+	$msg =~ s/^\s+|\s+$//g;
+	($cmd, $msg) = split / /, $msg, 2;
+	$cmd ||= 'nil';
+	$msg ||= 'nil' ;
+	for ($cmd) {
+		if (/^JOB/i && $msg) {
+			my $timekey = time;
+			$JOBRQ{$timekey}{REQ} = $msg;
+			$JOBRQ{$timekey}{TTL} = $SCHED{CANCEL_SUBMIT};
+			# assign a dynamic jid, even if overidden later because it appears to be a jid= command
+			$DynJid = -1 if (--$DynJid < -10E9); # dynamic jid , -10**9 rollover
+			$JOBRQ{$timekey}{JID} = "$DynJid";
+			$ans = "request for job queued\n";
+			next;
+		}
+		if (/^KILLJOB/i && $msg) {
+			if (not $msg =~ /^kid=(\d+)$/) {
+				$ans = "killjob command: invalid argument, should be 'kid=XXX'\n";
 				next;
 			}
-			if (/^KILLJOB/i && $msg) {
-				if (not $msg =~ /^kid=(\d+)$/) {
-					$ans = "killjob command: invalid argument, should be 'kid=XXX'\n";
+			my $pid = $1;
+			logit("killing job $pid") if ($verbose);
+			my $count = kill 'TERM', $pid;
+			if ($count > 0) {
+				$ans = "job with pid = $pid has been killed. Please check!\n";
+			} else {
+				$ans = "ERROR: unable to kill job with pid = $pid. Please check the kid argument.\n";
+			}
+			next;
+		}
+		if (/^ENQ/i && $msg) {
+			if (ENQ($msg,$sock_client_id)) {
+				$ans = "busy $msg";
+			} else {
+				$ans = "ENQ'd $msg\n";
+			}
+			next;
+		}
+		if (/^DEQ/i && $msg) {
+			if (DEQ($msg,$sock_client_id)) {
+				$ans = "failed DEQ $msg";
+			} else {
+				$ans = "DEQ'd $msg\n";
+			}
+			next;
+		}
+		if (/CMD/i) {
+			for ($msg) {
+				if (/^PAUSE$/i && $PAUSED != 2) {
+					$PAUSED = 1 ;
+					$ans = "Paused\n";
 					next;
 				}
-				my $pid = $1;
-				logit("killing job $pid") if ($verbose);
-				my $count = kill 'TERM', $pid;
-				if ($count > 0) {
-					$ans = "job with pid = $pid has been killed. Please check!\n";
-				} else {
-					$ans = "ERROR: unable to kill job with pid = $pid. Please check the kid argument.\n";
+				if (/^RESUME$/i && $PAUSED != 2) {
+					$PAUSED = 0;
+					$ans = "Resumed\n";
+					next;
 				}
-				next;
-			}
-			if (/^ENQ/i && $msg) {
-				if (ENQ($msg,$sock_client_id)) { $ans = "busy $msg" }
-				else { $ans = "ENQ'd $msg\n" }
-				next;
-			}
-			if (/^DEQ/i && $msg) {
-				if (DEQ($msg,$sock_client_id)) { $ans = "failed DEQ $msg" }
-				else { $ans = "DEQ'd $msg\n" }
-				next;
-			}
-			if (/CMD/i) {
-				for ($msg) {
-					if (/^PAUSE$/i && $PAUSED != 2) {
-						$PAUSED = 1 ;
-						$ans = "Paused\n";
-						next;
-					}
-					if (/^RESUME$/i && $PAUSED != 2) {
-						$PAUSED = 0;
-						$ans = "Resumed\n";
-						next;
-					}
-					if (/^RUNQ/i) {
-						$ans = '';
-						for my $id (keys %RUNQ) {
-							$ans .= "RUNQ($id)\n";
-							for (keys %{$RUNQ{$id}}) {
-								$ans .= "   $_=";
-								$ans .= defined($RUNQ{$id}{$_})?"$RUNQ{$id}{$_}\n":"nil\n";
-							}
+				if (/^RUNQ/i) {
+					$ans = '';
+					for my $id (keys %RUNQ) {
+						$ans .= "RUNQ($id)\n";
+						for my $j (keys %{$RUNQ{$id}}) {
+							$ans .= "   $j=";
+							$ans .= defined($RUNQ{$id}{$j}) ? "$RUNQ{$id}{$j}\n" : "nil\n";
 						}
-						next;
 					}
-					if (/^JOBQ/i) {
-						$ans = '';
-						for (keys (%JOBRQ)) { $ans .= "ttl=$JOBRQ{$_}{TTL} ".substr($JOBRQ{$_}{REQ},0,40)."...\n" }
-						next;
-					}
-					if (/^QS/i) {
-						$ans = "JOBQ: ";
-						map { $ans .= "$JOBRQ{$_}{JID}, " } keys (%JOBRQ);
-						$ans .= "\nLMISS: ";
-						map { $ans .= "$_, " } keys (%LMISS);
-						$ans .= "\nEMISS: ";
-						map { $ans .= "$_, " } keys (%EMISS);
-						$ans .= "\nRUNQ: ";
-						map { $ans .= "$RUNQ{$_}{jid} (pid $RUNQ{$_}{kid}), " } keys (%RUNQ);
-						$ans .= "\nENQs: ";
-						map { s/$SCHED{PATH_RES}\///; s/--.*$//; $ans .= "$_, " } glob("$SCHED{PATH_RES}/*");
-						$ans .= "\n";
-						next;
-					}
-					if (/^VERBOSE$/i && $PAUSED != 2) {
-						$verbose = 1;
-						$ans = "Verbose On\n";
-						next;
-					}
-					if (/^QUIET$/i && $PAUSED != 2) {
-						$verbose = 0;
-						$ans = "Verbose Off\n";
-						next;
-					}
-					if (/^FLOG$/i && $PAUSED != 2) {
-						$forcesavelog = 1;
-						$ans = "Log will be backed up on next write\n";
-						next;
-					}
-					if (/^STOP$/i && $PAUSED != 2) {
-						$ans = 'Stopping';
-						my $nb_kids = keys(%kids);
-						if ($nb_kids) {
-							$ans .= " after waiting for $nb_kids job(s)"
-									." to end: ".join(', ', keys(%kids));
-						} else {
-							$ans .= " now.";
-						}
-						$SOCK->send("$ans\n");
-						logit("client ".$sock_client_id." sent [ $msg ]");
-						exit_after_jobs();
-						next;
-					}
-					if (/^STAT$/i) {
-						my $now = time;
-						$ans  = "STATTIME=".strftime("%Y-%m-%d %H:%M:%S",localtime($now))."\n";
-						my @enqs = glob("$SCHED{PATH_RES}/*");
-						my @paused = ('No','Yes','Stopping...');
-						$ans .= "STARTED=$STRTTS\n";
-						$ans .= "PID=$PID\n";
-						$ans .= "USER=$PUID\n";
-						$ans .= "uTICK=$utick\n";
-						$ans .= "BEAT=$SCHED{BEAT}\n";
-						$ans .= sprintf("ELT=%.3f (%.2f%%)\n",$ELT,($ELT*100)/($now-$STRT));
-						$ans .= "LOG=$LOGNAME\n";
-						$ans .= "JOBSDB=$SCHED{SQL_DB_JOBS}\n";
-						$ans .= "JOBS STDio=$SCHED{PATH_STD}\n";
-						$ans .= "JOBS RESource=$SCHED{PATH_RES}\n";
-						$ans .= "PAUSED=$paused[$PAUSED]\n";
-						$ans .= "#JOBSTART=$JSTARTED\n";
-						$ans .= "#JOBSEND=$JENDED\n";
-						$ans .= "KIDS=".scalar(keys(%kids))."\n";
-						$ans .= "ENQs=".scalar(@enqs)."\n";
-						next;
-					}
-					#default { $ans = "unknown cmd"; }
-					$ans = "command unknown or invalid at this time\n";
+					next;
 				}
-				next;
+				if (/^JOBQ/i) {
+					$ans = '';
+					for my $j (keys (%JOBRQ)) {
+						$ans .= "ttl=$JOBRQ{$j}{TTL} ".substr($JOBRQ{$j}{REQ},0,40)."...\n";
+					}
+					next;
+				}
+				if (/^QS/i) {
+					$ans = "JOBQ: ";
+					for my $j (keys (%JOBRQ)) {
+						$ans .= "$JOBRQ{$j}{JID}, ";
+					}
+					$ans .= "\nLMISS: ";
+					for my $j (keys (%LMISS)) {
+						$ans .= "$j, ";
+					}
+					$ans .= "\nEMISS: ";
+					for my $j (keys (%EMISS)) {
+						$ans .= "$j, ";
+					}
+					$ans .= "\nRUNQ: ";
+					for my $j (keys (%RUNQ)) {
+						$ans .= "$RUNQ{$j}{jid} (pid $RUNQ{$j}{kid}), ";
+					}
+					$ans .= "\nENQs: ";
+					for my $j (glob("$SCHED{PATH_RES}/*")) {
+						$j =~ s/$SCHED{PATH_RES}\///;
+						$j =~ s/--.*$//;
+						$ans .= "$j, ";
+					}
+					$ans .= "\n";
+					next;
+				}
+				if (/^VERBOSE$/i && $PAUSED != 2) {
+					$verbose = 1;
+					$ans = "Verbose On\n";
+					next;
+				}
+				if (/^QUIET$/i && $PAUSED != 2) {
+					$verbose = 0;
+					$ans = "Verbose Off\n";
+					next;
+				}
+				if (/^FLOG$/i && $PAUSED != 2) {
+					$forcesavelog = 1;
+					$ans = "Log will be backed up on next write\n";
+					next;
+				}
+				if (/^STOP$/i && $PAUSED != 2) {
+					$ans = 'Stopping';
+					my $nb_kids = keys(%kids);
+					if ($nb_kids) {
+						$ans .= " after waiting for $nb_kids job(s)"
+								." to end: ".join(', ', keys(%kids));
+					} else {
+						$ans .= " now.";
+					}
+					$SOCK->send("$ans\n");
+					logit("client ".$sock_client_id." sent [ $msg ]");
+					exit_after_jobs();
+					next;
+				}
+				if (/^STAT$/i) {
+					my $now = time;
+					$ans  = "STATTIME=".strftime("%Y-%m-%d %H:%M:%S",localtime($now))."\n";
+					my @enqs = glob("$SCHED{PATH_RES}/*");
+					my @paused = ('No','Yes','Stopping...');
+					$ans .= "STARTED=$STRTTS\n";
+					$ans .= "PID=$PID\n";
+					$ans .= "USER=$PUID\n";
+					$ans .= "uTICK=$utick\n";
+					$ans .= "BEAT=$SCHED{BEAT}\n";
+					$ans .= sprintf("ELT=%.3f (%.2f%%)\n", $ELT, ($ELT*100)/($now-$STRT));
+					$ans .= "LOG=$LOGNAME\n";
+					$ans .= "JOBSDB=$SCHED{SQL_DB_JOBS}\n";
+					$ans .= "JOBS STDio=$SCHED{PATH_STD}\n";
+					$ans .= "JOBS RESource=$SCHED{PATH_RES}\n";
+					$ans .= "PAUSED=$paused[$PAUSED]\n";
+					$ans .= "#JOBSTART=$JSTARTED\n";
+					$ans .= "#JOBSEND=$JENDED\n";
+					$ans .= "KIDS=".scalar(keys(%kids))."\n";
+					$ans .= "ENQs=".scalar(@enqs)."\n";
+					next;
+				}
+				$ans = "command unknown or invalid at this time\n";
 			}
-			#default { $ans = "Huh?"; }
-			$ans = "Huh?  ";
+			next;
 		}
-		$SOCK->send($ans);
-		logit("client ".$sock_client_id." sent [ $cmd $msg ]; reply ".length($ans)." bytes") if ($verbose);
+		$ans = "Action unknown.";
 	}
+	$SOCK->send($ans);
+	logit("client ".$sock_client_id." sent [ $cmd $msg ]; reply ".length($ans)." bytes") if ($verbose);
 }
 
 # ----------------------------------------------------------
@@ -1167,7 +1238,8 @@ sub logit {
 	my $ts=sprintf ("%s.%6.6s", strftime("%Y-%m-%d %H:%M:%S",localtime(@$TS[0])),@$TS[1]*100);
 	my $tsdate=substr($ts,0,10);
 
-	if ( ($lldate ne '' && $tsdate ne $lldate) || $forcesavelog == 1 ) { # it's time to save log and start a new one
+	if (($lldate ne '' && $tsdate ne $lldate) || $forcesavelog == 1) {
+		# it is time to save the log file and start a new one
 		$forcesavelog = 0;
 		close(LOG);
 		(my $tsfn = $ts) =~ s| |-|g;
