@@ -66,7 +66,7 @@ case "$1" in
 		if kill -s SIGTERM $savedpid; then
 			timeout $WAIT_TIMEOUT sh -c "while kill -0 $savedpid 2> /dev/null; do sleep 1; done"
 			rc=$?
-			if [[ $rc -eq 1 ]]; then
+			if [[ $rc -eq 0 ]]; then
 				echo "Postboard has exited."
 			elif [[ $rc -eq 124 ]]; then
 				echo "warning: postboard has not exited after $WAIT_TIMEOUT."

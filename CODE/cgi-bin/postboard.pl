@@ -535,7 +535,7 @@ sub end_on_sig {
 # clean exit
 # ----------------------------------------------------------
 sub endit {
-	my $exit_code = shift || 99;
+	my $exit_code = shift // 99;
 	close(FIFO);
 	close(LOG);
 	exit($exit_code);
