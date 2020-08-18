@@ -1,37 +1,68 @@
 .\" Manpage for scheduler.
 .TH man 8 "18 Sep 2013" "1.0" "scheduler shell man page"
 .SH NAME
-scheduler \- command line interface to scheduler.pl process. 
+scheduler \- command line interface to scheduler.pl process.
 .SH SYNOPSIS
-$ shells/scheduler command
+$ .../CODE/shells/scheduler <command>
 .SH COMMANDS
-One of { start | pause | resume | status | runq | jobq | submit | stop | kill } 
+One of { start | pause | resume | status | verbose | quiet |
+         qs | jobq | runq | ps | flog | enq | deq |
+         submit | killjob | stop | terminate | kill }
 
 \fBstart\fP  : starts the scheduler's (scheduler.pl) process in background
-               if not already started.
+         if not already started.
 
-\fBpause\fP  : temporarily prevents scheduler from executing jobs 
+\fBpause\fP  : temporarily prevents scheduler from executing jobs
 
-\fBresume\fP : resumes operations after 'pause' 
+\fBresume\fP : resumes operations after \fIpause\fP
 
-\fBstatus\fP : queries the scheduler's status  
+\fBstatus\fP : queries the scheduler's status
 
-\fBsubmit\fP : submit a job for immediate execution, as specified with an additional argument:  
-               - 'jid=N' to request execution of job's N (as defined in table 'jobs') 
-               - "XEQ1:'launch text',XEQ2:'routine text',XEQ3:'a1 a2',...." as inline job definition
+\fBverbose\fP : turn verbose mode on
 
-\fBstop\fP   : gracefully stops the scheduler's (scheduler.pl) process
+\fBquiet\fP   : turn verbose mode off
 
-\fBkill\fP   : 'stop' didn't do any good ? try brute force 'kill'
+\fBqs\fP      : display summary internal queues
+
+\fBjobq\fP    : list jobs in queue
+
+\fBrunq\fP    : list running jobs
+
+\fBps\fP      : display executing processes (active kids trees)
+
+\fBflog\fP    : backup and cleanup the log file immediately
+
+\fBenq\fP <resource>  : enq (lock) scheduler's resource(s)
+
+\fBdeq\fP <resources> : deq (free) scheduler's resource(s)
+
+\fBsubmit\fP : submit a job for immediate execution, as specified by an
+         additional argument:
+         - \fIjid=<N>\fP to request execution of job's <N>
+           (as defined in 'jobs' table)
+         - an inline job definition of the form:
+           \fIXEQ1:'launch text',XEQ2:'routine text',XEQ3:'a1 a2',....\fP
+
+\fBkilljob\fP kid=<pid> : kill the job process of PID <pid> (see \fIrunq\fP)
+                    Note that job outputs and temporary files might
+                    remain and must be checked
+
+\fBstop\fP : gracefully stops the scheduler's (scheduler.pl) process: it will
+       wait in the background for jobs to finish before exiting
+
+\fBterminate\fP : request immediate exit, killing any running jobs
+
+\fBkill\fP : 'stop' didn't do any good ? try brute force 'kill'
+       (not recommended)
 
 .SH OPTIONS
 n/a
 .SH SEE ALSO
-n/a 
+perldoc <ROOT_SITE>/CODE/cgi-bin/scheduler.pl
 .SH AUTHOR
 Didier Lafon
 .SH COPYRIGHT
-Webobs - 2012 - Institut de Physique du Globe Paris
+Webobs - 2012-2020 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
