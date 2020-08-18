@@ -295,6 +295,7 @@ use strict;
 use warnings;
 use FindBin;
 use lib $FindBin::Bin;
+use DateTime;
 use Time::HiRes qw/time gettimeofday tv_interval usleep/;
 use POSIX qw/strftime :signal_h :errno_h :sys_wait_h/;
 use DBI;
@@ -1126,9 +1127,11 @@ sub UDPS {
 				}
 				if (/^RUNQ/i) {
 					$ans = '';
-					for my $id (keys %RUNQ) {
-						$ans .= "RUNQ($id)\n";
-						for my $j (keys %{$RUNQ{$id}}) {
+					for my $id (sort keys %RUNQ) {
+						my $start_dt = DateTime->from_epoch(epoch => $id);
+						$ans .= sprintf("RUNQ(%s) started on %s\n", $id,
+										$start_dt->strftime('%F %T'));
+						for my $j (sort keys %{$RUNQ{$id}}) {
 							$ans .= "   $j=";
 							$ans .= defined($RUNQ{$id}{$j}) ? "$RUNQ{$id}{$j}\n" : "nil\n";
 						}
@@ -1137,34 +1140,22 @@ sub UDPS {
 				}
 				if (/^JOBQ/i) {
 					$ans = '';
-					for my $j (keys (%JOBRQ)) {
+					for my $j (sort keys (%JOBRQ)) {
 						$ans .= "ttl=$JOBRQ{$j}{TTL} ".substr($JOBRQ{$j}{REQ},0,40)."...\n";
 					}
 					next;
 				}
 				if (/^QS/i) {
-					$ans = "JOBQ: ";
-					for my $j (keys (%JOBRQ)) {
-						$ans .= "$JOBRQ{$j}{JID}, ";
-					}
-					$ans .= "\nLMISS: ";
-					for my $j (keys (%LMISS)) {
-						$ans .= "$j, ";
-					}
-					$ans .= "\nEMISS: ";
-					for my $j (keys (%EMISS)) {
-						$ans .= "$j, ";
-					}
-					$ans .= "\nRUNQ: ";
-					for my $j (keys (%RUNQ)) {
-						$ans .= "$RUNQ{$j}{jid} (pid $RUNQ{$j}{kid}), ";
-					}
-					$ans .= "\nENQs: ";
-					for my $j (glob("$SCHED{PATH_RES}/*")) {
-						$j =~ s/$SCHED{PATH_RES}\///;
-						$j =~ s/--.*$//;
-						$ans .= "$j, ";
-					}
+					$ans = "JOBQ: " . join(', ',
+						map("$JOBRQ{$_}{JID}", sort(keys(%JOBRQ))));
+					$ans .= "\nLMISS: " . join(', ', sort(keys(%LMISS)));
+					$ans .= "\nEMISS: " . join(', ', sort(keys(%EMISS)));
+					$ans .= "\nRUNQ: " . join(', ',
+						map("$RUNQ{$_}{jid} (pid $RUNQ{$_}{kid})",
+							sort(keys(%RUNQ))));
+					$ans .= "\nENQs: " . join(', ',
+						map { s/$SCHED{PATH_RES}\///; s/--.*$//; $_; }
+							(sort glob("$SCHED{PATH_RES}/*")));
 					$ans .= "\n";
 					next;
 				}
