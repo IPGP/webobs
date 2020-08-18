@@ -271,8 +271,9 @@ customize its execution environment. Default configuration file is \textbf{sched
 \begin{lstlisting}[title=\wofile{scheduler.rc}]
 BEAT|2                                        # internal processing loop frequency in seconds
 MAX_CHILDREN|10                               # maximum number of simultaneously started jobs
-PORT|7761                                     # commands' interpreter udp port number
-SOCKET_MAXLEN|1500;                           # commands' interpreter max command size 
+LISTEN_ADDR|localhost                         # hostname or local IP address of the command interperter
+PORT|7761                                     # commands' interpreter UDP port number
+SOCKET_MAXLEN|1500                            # commands' interpreter max command size 
 SQL_DB_JOBS|$WEBOBS{ROOT_CONF}/WEBOBSJOBS.db  # sqlite database for JOBS and RUNS tables
 DAYS_IN_RUN|30                                # number of days JOBS are kept in RUNS table
 DITTO_LOG_MAX|500                             # controls repeating messages in log
@@ -320,25 +321,37 @@ coded as \textbf{\$WEBOBS\{variableName\}}.
 \subsubsection{JOBS LOGS PATHS syntax}
 
 JOBs can redirect/build their own STDOUT and STDERR, however the following rules are implemented as a default behavior in the SCHEDULER:  
-\begin{itemize} 
+\begin{itemize}
 \item   All JOBS outputs as a whole will be placed into the common \textbf{\$SCHED\{PATH\_STD\}} directory,
-\item   JOBs' specific LOGPATH definitions are relative to this common directory  
+\item   JOBs' specific LOGPATH definitions are relative to this common directory.
+\item   By default, the standard output and error output of the job process will be written to diffent files, respectively suffixed \texttt{.stdout} and \texttt{.stderr}.
+\item   If the scheduler configuration variable \textbf{MERGE\_JOB\_LOGS} (that is, \textbf{\$SCHED\{MERGE\_JOB\_LOGS\}})is true (meaning its value is either \texttt{y}, \texttt{yes}, in lower of upper case, or \texttt{1}), the standard error output will be merged in the same file as the standard output, and the ouput file will have the suffix \texttt{.log}.
 \end{itemize}
 
-The following table shows \textbf{LOGPATH} syntax (left) and its full interpretation (right), where 
-any subdirectories will be dynamically created if needed, and \textbf{pid} is the JOB's PID (ie. KID) :
+The following table shows \textbf{LOGPATH} syntax (left) and its full interpretation (right). Any subdirectories will be dynamically created if needed.
 
-\begin{tabular}{ll}
-\wocmd{name}          &	\$SCHED\{PATH\_STD\}/name.std\{out,err\} \\
-\wocmd{name/}         &	\$SCHED\{PATH\_STD\}/name/pid.std\{out,err\} \\
-\wocmd{name/name/out} &	\$SCHED\{PATH\_STD\}/name/name/name/out.std\{out,err\} \\
-(null)                &	\$SCHED\{PATH\_STD\}/pid.std\{out,err\} \\
+\renewcommand{\arraystretch}{1.2}
+
+\begin{tabular}{ l | l }
+	\textbf{\textit{logpath} value} & \textbf{Path to the logfile(s)} \\
+    \hline
+	\wocmd{name}          & \$SCHED\{PATH\_STD\}/name.\textit{ext} 					\\
+    \wocmd{name/}         & \$SCHED\{PATH\_STD\}/name/\textit{pid}.\textit{ext} 	\\
+    \wocmd{name/name/out} & \$SCHED\{PATH\_STD\}/name/name/name/out.\textit{ext} 	\\
+    (null)                & \$SCHED\{PATH\_STD\}/\textit{pid}.\textit{ext}			\\
 \end{tabular}
 
-The following two redirection rules apply to any one of the above syntaxes:
+In the table above, \textit{pid} is the job process PID and the file extension \textit{ext} will be :
+\begin{itemize}
+	\item   \texttt{stdout} for the standard output if \textbf{\$SCHED\{MERGE\_JOB\_LOGS\}} is false or missing;
+	\item   \texttt{stderr} for the standard error output if \textbf{\$SCHED\{MERGE\_JOB\_LOGS\}} is false or missing;
+	\item   \texttt{log} if \textbf{\$SCHED\{MERGE\_JOB\_LOGS\}} is true;
+\end{itemize}
+
+The following two redirection rules apply to any of the above forms of the \textit{logpath} value:
 
 \begin{tabular}{ll}
-\wocmd{\textgreater name}             &  (the default) overwrites previous file with same name \\
+\wocmd{\textgreater name}             &  (the default if '\textgreater' is omitted) overwrites previous file with same name \\
 \wocmd{\textgreater\textgreater name} & appends to previous file with same name \\
 \end{tabular}
 
@@ -348,6 +361,14 @@ The following TAGS are also available in the name(s) you supply for easier speci
 \wocmd{\{TS\}}    & replaced with job's start-timestamp \\
 \wocmd{\{RTNE\}}  &	replaced with job's XEQ2 string, with any blanks (spaces) chars changed to \_ underscores. \\
 \end{tabular}
+
+For example, with the default configuration, a \textit{logpath} value of
+\texttt{sefran3/sefran3\_\{TS\}} will generate log files with names similar to
+\texttt{sefran3\_946699200.54321.stdout} and
+\texttt{sefran3\_946699200.54321.stderr} (or
+\texttt{sefran3\_946699200.54321.log} only, if
+\textbf{\$SCHED\{MERGE\_JOB\_LOGS\}} is true) in the directory
+\texttt{/opt/webobs/LOGS/jobslogs/sefran3/}.
 
 % -----------------------------------------------------------------
 \subsection{Jobs selection and execution}
