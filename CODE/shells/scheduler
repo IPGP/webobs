@@ -169,7 +169,7 @@ case "$1" in
 		if kill -TERM $savedpid; then
 			timeout $WAIT_TIMEOUT sh -c "while kill -0 $savedpid 2> /dev/null; do sleep 1; done"
 			rc=$?
-			if [[ $rc -eq 1 ]]; then
+			if [[ $rc -eq 0 ]]; then
 				echo "Scheduler has exited."
 			elif [[ $rc -eq 124 ]]; then
 				echo "warning: scheduler has not exited after $WAIT_TIMEOUT."
@@ -187,7 +187,7 @@ case "$1" in
 		echo "       stop           stop, $DAEMON_SCRIPT will wait for active kids to end"
 		echo "       pause          hold execution (suspend jobs processing)"
 		echo "       resume         resume execution"
-		echo "       terminate      request immediate exit without stopping kids"
+		echo "       terminate      request immediate exit, killing any running jobs"
 		echo "       kill           force immediate exit, really not recommended"
 		echo "       verbose        log verbosity"
 		echo "       quiet          log verbosity"
