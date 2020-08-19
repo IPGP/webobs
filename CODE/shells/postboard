@@ -42,7 +42,7 @@ case "$1" in
 		fi
 		cd /etc/webobs.d/../CODE/cgi-bin
 		if [ -n "${WO__POSTBOARD_ERROR_FILE}" ]; then
-			echo "--- Starting $(date +'%F %T')" >> $SC__ERROR_FILE
+			echo "--- Postboard started $(date +'%F %T')" >> $WO__POSTBOARD_ERROR_FILE
 			perl $DAEMON_SCRIPT $WO__POSTBOARD_CMD_OPTS 2>> $WO__POSTBOARD_ERROR_FILE &
 			bg_pid=$!
 		else
