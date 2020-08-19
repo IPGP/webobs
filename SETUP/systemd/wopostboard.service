@@ -4,10 +4,10 @@ After=local-fs.target remote-fs.target
 
 [Service]
 Type=forking
-ExecStart=/opt/webobs/CODE/shells/postboard start
-PIDFile=/opt/webobs/LOGS/postboard.pid
-User=webobs
-Group=webobs
+ExecStart=##DOCROOT##/CODE/shells/postboard start
+PIDFile=##DOCROOT##/LOGS/postboard.pid
+User=##USER##
+Group=##GROUP##
 UMask=0002
 Restart=on-failure
 

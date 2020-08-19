@@ -88,6 +88,101 @@ woperlmod_system_install () {
   done
 }
 
+install_systemd_services() {
+	local wouser="$1" wogroup="$2"
+	local need_update=0
+	local postboard_tmpl="${RELBASE}/SETUP/systemd/wopostboard.service"
+	local scheduler_tmpl="${RELBASE}/SETUP/systemd/woscheduler.service"
+	local postboard_service="/etc/systemd/system/wopostboard.service"
+	local scheduler_service="/etc/systemd/system/woscheduler.service"
+
+	if ! ( command -v systemctl > /dev/null && systemctl is-system-running --quiet ); then
+		echo "You system does not seem to be running systemd. Skipping installation of systemd services."
+		return
+	fi
+
+	if ! [[ -r "$postboard_tmpl" && -r "$scheduler_tmpl" ]]; then
+		echo "Error: unable to find systemd templates in ${RELBASE}/SETUP/systemd/ !"
+		echo "Cannot install systemd services. (This is a bug and should be reported.)"
+		read -p "Hit [enter] to continue setup " ans
+		return
+	fi
+
+	echo "Checking systemd services wopostboard and woscheduler:"
+
+	# Adapt the service templates to the system
+	sed -E "s|##DOCROOT##|$DOCROOT|g; s/##USER##/$wouser/g; s/##GROUP##/$wogroup/g" "$postboard_tmpl" > "$postboard_tmpl.tmp"
+	sed -E "s|##DOCROOT##|$DOCROOT|g; s/##USER##/$wouser/g; s/##GROUP##/$wogroup/g" "$scheduler_tmpl" > "$scheduler_tmpl.tmp"
+
+	if ! [[ -r "$postboard_service" && -r "$scheduler_service" ]]; then
+		# Service are not installed yet
+
+		echo "  The systemd services ${postboard_service##*/} and/or ${scheduler_service##*/} are missing."
+		read -p "  Do you want to create and enable these systemd services ? [y/N] " ans
+		[[ $ans =~ (y|Y) ]] || return
+		echo
+		echo "  Copying $postboard_tmpl.tmp to $postboard_service"
+		cp "$postboard_tmpl.tmp" "$postboard_service"
+		echo "  Copying $scheduler_tmpl.tmp to $scheduler_service"
+		cp "$scheduler_tmpl.tmp" "$scheduler_service"
+
+		systemctl daemon-reload
+		echo "  Systemd configuration reloaded."
+		systemctl enable wopostboard
+		systemctl enable woscheduler
+		echo "  Services enabled (will be started at boot)."
+		echo
+		echo "Systemd services installation finished."
+		echo "When ready, please start the services using the following command as root:"
+		echo "  systemctl start wopostboard woscheduler"
+
+	else
+		# Service are already installed: see if they need update
+
+		diff -q "$postboard_service" "$postboard_tmpl.tmp" &> /dev/null || need_update=1
+		diff -q "$scheduler_service" "$scheduler_tmpl.tmp" &> /dev/null || need_update=1
+
+		if [[ $need_update -eq 0 ]]; then
+			echo "Services ${postboard_service##*/} and ${scheduler_service##*/} are up-to-date."
+			echo
+			return
+		fi
+
+		echo "  The ${postboard_service##*/} and/or ${scheduler_service##*/} definition files differ"
+		echo "  from the templates provided by WebObs."
+		while true; do
+			echo
+			echo "  Do you want to update your service files ?"
+			read -p "  Y=[yes, update now] N=[no, do not update] S=[show the differences] " ans
+			if [[ $ans =~ (n|N) ]]; then
+				echo
+				echo "Skipping update of systemd services."
+				echo
+				return
+			fi
+			if [[ $ans =~ (y|Y) ]]; then
+				echo
+				mv -f "$postboard_tmpl.tmp" "$postboard_service"
+				mv -f "$scheduler_tmpl.tmp" "$scheduler_service"
+				echo "  Service files updated."
+				break
+			fi
+			echo
+			echo "Proposed changes in ${postboard_service##*/}:"
+			diff -u "$postboard_service" "$postboard_tmpl.tmp"
+			echo
+			echo "Proposed changes in ${scheduler_service##*/}:"
+			diff -u "$scheduler_service" "$scheduler_tmpl.tmp"
+		done
+
+		systemctl daemon-reload
+		echo "  Systemd configuration reloaded."
+		echo
+		echo "Systemd configuration update finished."
+	fi
+	echo
+}
+
 # here we go --------------------------------------------------------------------
 # -------------------------------------------------------------------------------
 
@@ -831,6 +926,11 @@ if [[ -n ${MCRZIP} ]]; then
 	fi
 	echo
 fi
+
+# Systemd services installation/update ----------------------------------------
+# -----------------------------------------------------------------------------
+install_systemd_services $USERID $USERGID
+
 
 # FINALIZE 
 # -----------------------------------------------------------------------------

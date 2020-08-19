@@ -111,12 +111,13 @@ to create one itself.
 \wocmd{/opt/webobs/WebObs-\release}.
 \item   Run the \wocmd{setup} procedure (again, with \wocmd{root} privileges):
 \begin{itemize}
-\item   must be called as \wocmd{/opt/webobs/WebObs-\release/SETUP/setup}
+\item   must be called as \wocmd{/opt/webobs/WebObs-\release/SETUP/setup} (run \wocmd{setup -h} to see available options)
 \item   \wocmd{setup} will gather information/location from your system/environment,
 check for some dependencies (see Requirements section above), build the \webobs
 structure, optionaly customize Apache's \webobs Virtual Host, set required system's
-ownerships and access-rights, and populate your brand new \webobs with 
-ready to use demonstration data and templates.
+ownerships and access rights, install systemd services to manage the Postboard
+and the Scheduler (on platforms using systemd), and populate your brand new
+\webobs with ready-to-use demonstration data and templates.
 \item   once completed, \wocmd{setup} will display \webobs configuration (see \wocmd{qsys} command below).
 \item   \webobs now ready, you need to activate the \wocmd{scheduler}, \wocmd{postboard} and (re)start Apache http server. 
 \end{itemize}
@@ -141,13 +142,14 @@ It will automatically detect that an upgrade is intended rather than a first tim
 \begin{itemize}
 \item   Download \webobs package corresponding to the version you want to upgrade to.
 \item   Untar \webobs package.
-\item   Run the \wocmd{setup} procedure (\wocmd{/opt/webobs/WebObs-\release/SETUP/setup}).
+\item   Run the \wocmd{setup} procedure by running the script \wocmd{/opt/webobs/WebObs-\release/SETUP/setup} (use the \wocmd{-h} option to see the help screen).
 \item   \wocmd{setup} reports Version changes and important information in the
 \wocmd{SETUP.CONF.README} file. Please read it carefully.
-\item   \wocmd{setup} will also, if you choose to do so, walk through executions of 
-\wocmd{vimdiff}s between your configuration files and corresponding 
-non-customized \webobs version
-configurations that were changed / added. 
+\item   if you choose to do so, \wocmd{setup} will also append to the
+	configuration files of your installation (WebObs, Scheduler, and Grids
+	configuration files, etc.) the configuration variables introduced by the
+	current release and let you edit all the updated files to review or adapt
+	the changes.
 \end{itemize}
 
 % ==================================================================
