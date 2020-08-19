@@ -461,7 +461,8 @@ The SCHEDULER command line interface is \textbf{CODE/shells/scheduler}.
 
 \begin{lstlisting}[style=console,title=shells/scheduler]
 me@here:/opt/webobs/CODE/shells$ ./scheduler
-Usage: ./scheduler {enq|deq|flog|jobq|kill|pause|ps|qs|quiet|resume|runq|start|status|stop|submit|verbose}
+Usage: ./scheduler {enq|deq|flog|jobq|terminate|kill|pause|ps|qs|
+                    quiet|resume|runq|start|status|stop|submit|killjob|verbose}
 \end{lstlisting}
 
 \textbf{CODE/shells/scheduler} sub-commands :
@@ -469,6 +470,7 @@ Usage: ./scheduler {enq|deq|flog|jobq|kill|pause|ps|qs|quiet|resume|runq|start|s
 \begin{tabular}{ll}
 \wocmd{start}    &   start, if not already active                       \\
 \wocmd{stop}     &   stop, waiting for any active kids to end           \\   
+\wocmd{terminate} &  stop, killing any running jobs                     \\
 \wocmd{pause}    &   hold execution (suspend jobs processing)           \\   
 \wocmd{resume}   &   resume execution                                   \\   
 \wocmd{enq}      &   enq a resource                                     \\   
@@ -510,26 +512,26 @@ ENQs=0
 \begin{lstlisting}[style=console,title=example runq and ps]
 me@here:/opt/webobs/CODE/shells$ ./scheduler runq
 Pls wait...
-RUNQ(1407212134.21663)
-   kid=7567
+RUNQ(1407212134.21663) started on 2014-08-05 00:15:34
    ORG=R
-   uid=
-   kidcmd=/opt/webobs/CODE/cgi-bin/jobtester.pl 40 
-   res=
    jid=-2
+   kid=7567
+   kidcmd=/opt/webobs/CODE/cgi-bin/jobtester.pl 40 
    logfd=./
-   started=1407212135.2194
    logfn=undef
-RUNQ(1407211890.24512)
-   kid=7060
+   res=nil
+   started=1407212135.2194
+   uid=nil
+RUNQ(1407211890.24512) started on 2014-08-05 00:11:30
    ORG=S
-   uid=
-   kidcmd=/opt/webobs/CODE/matlab/bin/linux-64/run_mcc sefran3 
-   res=sefran3
    jid=sefran
+   kid=7060
+   kidcmd=/opt/webobs/CODE/matlab/bin/linux-64/run_mcc sefran3 
    logfd=./
-   started=1407211890.46864
    logfn=sefran3
+   res=sefran3
+   started=1407211890.46864
+   uid=nil
 
 me@here:/opt/webobs/CODE/shells$ ./scheduler ps
  PID  PGRP     ELAPSED %CPU %MEM CMD
@@ -539,6 +541,123 @@ me@here:/opt/webobs/CODE/shells$ ./scheduler ps
 7068  7060       04:18  6.7  3.3     /opt/webobs/CODE/matlab/bin/linux-64/sefran3
 7567  7567       00:14  0.0  0.0   /usr/bin/perl /opt/webobs/CODE/cgi-bin/jobtester.pl 40
 \end{lstlisting}
+
+Note that when using \textit{systemd} to manage the \wocmd{scheduler.pl}
+background process, the command \textbf{systemctl stop woscheduler.service}
+(which needs to be run as \textit{root}) will kill any running jobs, as it acts
+just like the \wocmd{scheduler terminate} command.  This will usually not do
+much harm, but using \wocmd{scheduler stop} (as your webobs user) instead is
+recommended if you need to stop the scheduler for administrative purposes
+like on updates (\textit{systemd} will not restart the \textit{woscheduler}
+service in this case, as the main process will exit on a success code).
+
+% ==================================================================
+\section{Postboard and Scheduler system integration}
+
+In order to automatically start and stop the Postboard and the Scheduler when
+the system starts up and shuts down, you need to create some configuration in
+your system. You only need to do this when you first install WebObs.
+
+The configuration to create depends on the system and service manager your
+system uses. Major GNU/Linux distributions nowadays use the \textit{systemd}
+manager, so the rest of this section assumes your system use this manager.
+Should your system use a different one, you will have to refer to its
+documentation, and potentially write an init script that will start and stop
+the postboard and the scheduler based on the \texttt{postboard} and
+\texttt{scheduler} scripts in the \texttt{CODE/shells} directory.
+
+\subsection*{Configuring services in systemd}
+
+To start, stop and manage the Postboard and the Scheduler using systemd, you
+will need to create a \textit{service} for each of these processes.
+
+The WebObs package provides templates for these services in the
+\texttt{SETUP/systemd} directory, named \texttt{wopostboard.service} and
+\texttt{woscheduler.service}. They call the scripts \texttt{postboard} and
+\texttt{scheduler} from the \texttt{CODE/shells} directory with the
+\textit{start} subcommand to start the perl scripts \texttt{postboard.pl} and
+\texttt{scheduler.pl}. When they are stopped, the services send a TERM signal
+to the perl scripts that will then exit cleanly.
+
+To use these services, you will first have to do the following actions as the
+user \textit{root},:
+\begin{itemize}
+	\item copy these files to the directory \texttt{/etc/systemd/system}
+	\begin{lstlisting}[style=console]
+cp SETUP/systemd/wo*.service /etc/systemd/system/
+	\end{lstlisting}
+	\item edit these copied files (for example using the command \texttt{nano
+		/etc/systemd/system/wopostboard.service}) to change the lines
+		\texttt{User=} and \texttt{Group=} to use the name of your WebObs
+		system user and its group (this usually will be something like
+		\texttt{User=webobs} and \texttt{Group=webobs}, although some
+		installation use the \texttt{wo} user and group).
+\end{itemize}
+
+Once these service files are installed and adapted, use these commands as
+\textit{root} to reload the systemd configuration and enable the services:
+\begin{lstlisting}[style=console]
+systemctl daemon-reload
+systemctl enable wopostboard
+systemctl enable woscheduler
+\end{lstlisting}
+
+If you want to immediately start the services, use the following commands:
+\begin{lstlisting}[style=console]
+systemctl start wopostboard
+systemctl start woscheduler
+\end{lstlisting}
+The first command is not mandatory here, as the \textit{woscheduler} service is
+configured to start the \textit{wopostboard} service before, if it is not
+already started.
+
+Once these services are enabled and started, \textit{systemd} will start the
+Postboard and the Scheduler (in this order) when the system starts up, and will
+stop them in reverse order when the system shuts down. \textit{Systemd} will
+also restart them immediately if the corresponding perl scripts were killed or
+happened to crash.
+
+Activities from these scripts and they standard output will
+usually be sent to your \textit{syslog} daemon (this is the case on most
+GNU/Linux distributions), but the scripts mainly log their activies to the
+\texttt{postboard.log} and \texttt{scheduler.log} files in the WebObs log
+directory (by default \texttt{/opt/webobs/LOGS}). Additionally, the error
+output of the scripts will by default be redirected to the respective files
+\texttt{postboard\_error.log} and \texttt{scheduler\_error.log} in this
+directory (unless you changed or disabled the error file names in the
+configuration).
+
+\subsection*{Managing the Postboard and Scheduler processes using systemd}
+
+When using systemd services to start, stop and monitor the Postboard and the
+Scheduler, you can manually stop these services using the following commands:
+\begin{lstlisting}[style=console]
+systemctl stop woscheduler
+systemctl stop wopostboard
+\end{lstlisting}
+However, be aware that stopping the Scheduler this way will immediately kill
+any running job, just like the command \texttt{scheduler terminate} would.
+
+If you need to stop the scheduler for administrative purposes (e.g. before
+upgrading your WebObs installation), it is recommended to run the command
+\texttt{scheduler stop} (as your WebObs user). This will wait for the running
+jobs to stop before the scheduler cleanly exits, which will cause a clean stop
+of the systemd service (it only automatically restart the scheduler in case of
+error).
+
+While waiting for the running jobs to finish (which could be long), remember
+that remaining running jobs can be monitored using the command
+\texttt{scheduler runq}.
+
+Once you are finished with your task (for example once the WebObs installation
+upgrade is finished), you can restart the Postboard and the Scheduler with this
+simple command (as already mentioned, it is not required to start the
+\textit{wopostboard} service, as the \textit{woscheduler} service will take
+care of that before starting the scheduler):
+\begin{lstlisting}[style=console]
+systemctl start woscheduler
+\end{lstlisting}
+
 
 % ==================================================================
 \section{WOC}
@@ -628,7 +747,5 @@ Bye.
 								 
 \end{lstlisting}
 
-% -----------------------------------------------------------------
-\subsection{Overview}
 
 

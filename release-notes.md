@@ -12,7 +12,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ### Enhancements
 
-1. The templates files for the optional systemd services `woscheduler.service` and `wopostboard.service` in `SETUP/systemd` have been updated. They should be adapted if necessary to use the correct system user and group and path to the PID file and should be copied to `/etc/systemd/system`. Run the command `sudo systemctl daemon-reload` after updating your service files.
+1. The templates files for the optional systemd services `woscheduler.service` and `wopostboard.service` in `SETUP/systemd` have been updated. They should be adapted if necessary to use the correct system user and group and path to the PID file and should be copied to `/etc/systemd/system`. Run the command `sudo systemctl daemon-reload` after updating your service files. For further details, please refer to the new section `4.4 Postboard and Scheduler system integration` of the WebObs manual.
 
 2. The Scheduler now listens for control commands throught UDP on the `127.0.0.1` local address by default. This will restrict control of the Scheduler to local users only. If you really want to allow other users on the network to access this interface, set the `LISTEN_ADDR` configuration variable to a local IP address or hostname in the Scheduler configuration file (by default `scheduler.rc`). In this case, it is advised to limit access to specific hosts using local firewall rules.
 
