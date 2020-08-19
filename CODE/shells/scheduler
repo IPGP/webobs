@@ -50,7 +50,7 @@ case "$1" in
 		fi
 		cd /etc/webobs.d/../CODE/cgi-bin
 		if [ -n "${SC__ERROR_FILE}" ]; then
-			echo "--- Starting $(date +'%F %T')" >> $SC__ERROR_FILE
+			echo "--- Scheduler started $(date +'%F %T')" >> $SC__ERROR_FILE
 			perl $DAEMON_SCRIPT $SC__CMD_OPTS 2>> $SC__ERROR_FILE &
 			bg_pid=$!
 		else
