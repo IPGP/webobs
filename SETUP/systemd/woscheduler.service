@@ -6,13 +6,12 @@ Wants=wopostboard.service
 
 [Service]
 Type=forking
-ExecStart=/opt/webobs/CODE/shells/scheduler start
-PIDFile=/opt/webobs/LOGS/scheduler.pid
-User=webobs
-Group=webobs
+ExecStart=##DOCROOT##/CODE/shells/scheduler start
+PIDFile=##DOCROOT##/LOGS/scheduler.pid
+User=##USER##
+Group=##GROUP##
 UMask=0002
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
-

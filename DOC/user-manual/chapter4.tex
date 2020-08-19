@@ -566,6 +566,11 @@ documentation, and potentially write an init script that will start and stop
 the postboard and the scheduler based on the \texttt{postboard} and
 \texttt{scheduler} scripts in the \texttt{CODE/shells} directory.
 
+The \wocmd{setup} script that installs or update your WebObs installation will
+propose you to automatically install or update the systemd configuration files
+as necessary. This section will detail the manual installation and explain how
+to use systemd to start and stop the Postboard and the Scheduler.
+
 \subsection*{Configuring services in systemd}
 
 To start, stop and manage the Postboard and the Scheduler using systemd, you
@@ -587,11 +592,17 @@ user \textit{root},:
 cp SETUP/systemd/wo*.service /etc/systemd/system/
 	\end{lstlisting}
 	\item edit these copied files (for example using the command \texttt{nano
-		/etc/systemd/system/wopostboard.service}) to change the lines
-		\texttt{User=} and \texttt{Group=} to use the name of your WebObs
-		system user and its group (this usually will be something like
-		\texttt{User=webobs} and \texttt{Group=webobs}, although some
-		installation use the \texttt{wo} user and group).
+		/etc/systemd/system/wopostboard.service}) to:
+		\begin{itemize}
+			\item change the lines \texttt{User=} and \texttt{Group=} to use
+				the name of your WebObs system user and its group (this usually
+				will be something like \texttt{User=wo} and \texttt{Group=wo},
+				although some installations use the \texttt{webobs} as user and
+				group).
+			\item change the line \texttt{ExecStart=} to modify the root
+				directory of your webobs installation if you did not use the
+				default value \texttt{/opt/webobs}.
+		\end{itemize}
 \end{itemize}
 
 Once these service files are installed and adapted, use these commands as
@@ -617,7 +628,7 @@ stop them in reverse order when the system shuts down. \textit{Systemd} will
 also restart them immediately if the corresponding perl scripts were killed or
 happened to crash.
 
-Activities from these scripts and they standard output will
+Information about these services, as well as their standard output, will
 usually be sent to your \textit{syslog} daemon (this is the case on most
 GNU/Linux distributions), but the scripts mainly log their activies to the
 \texttt{postboard.log} and \texttt{scheduler.log} files in the WebObs log
