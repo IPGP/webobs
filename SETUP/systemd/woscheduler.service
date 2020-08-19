@@ -2,6 +2,7 @@
 Description=WebObs Scheduler
 After=local-fs.target remote-fs.target
 After=wopostboard.service
+Wants=wopostboard.service
 
 [Service]
 Type=forking
