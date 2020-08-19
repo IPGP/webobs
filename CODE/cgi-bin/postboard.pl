@@ -460,7 +460,6 @@ sub fetch_actions {
 	my $q = "SELECT action FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
 	        ." WHERE action != '-' AND validity = 'Y' AND $where_event";
 
-	logit($q);
 	return fetch_all($WEBOBS{SQL_DB_POSTBOARD}, $q);
 }
 
