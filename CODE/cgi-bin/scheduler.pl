@@ -1127,6 +1127,10 @@ sub UDPS {
 				}
 				if (/^RUNQ/i) {
 					$ans = '';
+					if (not %RUNQ) {
+						$ans .= "No running jobs.\n";
+						next;
+					}
 					for my $id (sort keys %RUNQ) {
 						my $start_dt = DateTime->from_epoch(epoch => $id);
 						$ans .= sprintf("RUNQ(%s) started on %s\n", $id,
@@ -1140,23 +1144,30 @@ sub UDPS {
 				}
 				if (/^JOBQ/i) {
 					$ans = '';
+					if (not %JOBRQ) {
+						$ans .= "No jobs in waiting queue.\n";
+						next;
+					}
 					for my $j (sort keys (%JOBRQ)) {
 						$ans .= "ttl=$JOBRQ{$j}{TTL} ".substr($JOBRQ{$j}{REQ},0,40)."...\n";
 					}
 					next;
 				}
 				if (/^QS/i) {
-					$ans = "JOBQ: " . join(', ',
-						map("$JOBRQ{$_}{JID}", sort(keys(%JOBRQ))));
-					$ans .= "\nLMISS: " . join(', ', sort(keys(%LMISS)));
-					$ans .= "\nEMISS: " . join(', ', sort(keys(%EMISS)));
-					$ans .= "\nRUNQ: " . join(', ',
-						map("$RUNQ{$_}{jid} (pid $RUNQ{$_}{kid})",
-							sort(keys(%RUNQ))));
-					$ans .= "\nENQs: " . join(', ',
-						map { s/$SCHED{PATH_RES}\///; s/--.*$//; $_; }
-							(sort glob("$SCHED{PATH_RES}/*")));
-					$ans .= "\n";
+					my @jobq = map("$JOBRQ{$_}{JID}", sort(keys(%JOBRQ)));
+					my @lmiss = sort(keys(%LMISS));
+					my @emiss = sort(keys(%EMISS));
+					my @runq = map("$RUNQ{$_}{jid} (pid $RUNQ{$_}{kid})",
+					               sort(keys(%RUNQ)));
+					my @enqs = map { s/$SCHED{PATH_RES}\///; s/--.*$//; $_; }
+					               (sort glob("$SCHED{PATH_RES}/*"));
+
+					$ans = "JOBQ: " . (@jobq ? join(', ', @jobq) : "none")
+					       ."\nLMISS: " . (@lmiss ? join(', ', @lmiss) : "none")
+					       ."\nEMISS: " . (@emiss ? join(', ', @emiss) : "none")
+					       ."\nRUNQ: " . (@runq ? join(', ', @runq) : "none")
+					       ."\nENQs: " . (@enqs ? join(', ', @enqs) : "none")
+					       ."\n";
 					next;
 				}
 				if (/^VERBOSE$/i && $PAUSED != 2) {
