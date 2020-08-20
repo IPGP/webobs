@@ -18,6 +18,10 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 3. The `setup` script now checks if your system uses the system and service manager _systemd_, and will propose to install or update the service definition files `woscheduler.service` and `wopostboard.service` if necessary, adapting the provided templates to your environment as needed.  The templates files for these systemd services have also been updated.  For further details about WebOBs _systemd_ integration, please refer to the new section `4.4 Postboard and Scheduler system integration` of the WebObs manual.
 
+4. The HTML interface in the Scheduler Manager now uses a checkbox to activate/desactivate a job in the _validity_ field of the job definition form. If you experience some abnormal behaviour (e.g. if the 'validity' checkbox isn't checked when it should), try clearing your browser cache (the javascript and CSS files might not correctly be refreshed).
+
+5. Some bug and security issues were fixed in the Scheduler Runs and Scheduler Manager CGI scripts. It is advised to update your WebObs installation with this release.
+
 ### Fixed issues
 
 1. For users using _systemd_, the commands `systemctl stop woscheduler` and `systemctl stop wopostboard` no longer mark the related service as _failed_ as `postboard.pl` and `scheduler.pl` now report a clean exit when stopped through a TERM signal. (Note that the command `sudo systemctl stop woscheduler` will cleanly stop the Scheduler, but running jobs will be killed. If you want to stop the Scheduler after waiting for all the jobs to finish, use the command `/opt/webobs/CODE/shell/scheduler stop`. The systemd service will stop normally when the process exits.)
