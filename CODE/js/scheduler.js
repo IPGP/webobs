@@ -5,7 +5,8 @@ var options;
 var yticks;
 var data=new Array();
 var TZoffset = -(new Date()).getTimezoneOffset()*60*1000;
-$(document).ready(function(){
+
+function plotRuns() {
 	var placeholder = $("#placeholder");
 	options = {
 		grid: {
@@ -54,6 +55,14 @@ $(document).ready(function(){
 	setsizes();
 	plot = $.plot(placeholder, data, options);
 	cop();
+};
+
+$(document).ready(function() {
+	// Only run plotRuns() if we are in schedulerRuns.pl, as we are
+	// also called from schedulerMgr.pl where it generates an error.
+	if ($('#placeholder').length == 1) {
+		plotRuns();
+	}
 });
 
 function plotall() {
