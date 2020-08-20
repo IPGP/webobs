@@ -437,7 +437,12 @@ sub fetch_all {
 		return;
 	}
 	# Will raise an error if anything goes wrong
-	return $dbh->selectall_arrayref($query);
+	my $ref = $dbh->selectall_arrayref($query);
+
+	$dbh->disconnect()
+		or warn "Got warning while disconnecting from $dbname: "
+		        . $dbh->errstr;
+	return $ref;
 }
 
 

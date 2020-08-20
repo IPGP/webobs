@@ -516,9 +516,12 @@ if (defined($SCHED{CLEANUP_RUNS}) && $SCHED{CLEANUP_RUNS} ne '') {
 		myexit(1);
 	}
 	my $rv = $dbh->do($q);
-
 	$rv = 0 if ($rv == 0E0);
 	logit("cleaned up zombie runs: $rv");
+
+	$dbh->disconnect()
+		or warn "Got warning while disconnecting from $SCHED{SQL_DB_JOBS}: "
+		        . $dbh->errstr;
 }
 
 # ---- loop forever handling commands and jobs to be started
@@ -979,7 +982,12 @@ sub DBSELECT {
 	my $q = qq(SELECT JID,"$origin" as ORG,'' as RQ,RES,XEQ1,XEQ2,XEQ3,MAXSYSLOAD,LOGPATH)
 		    .qq( FROM JOBS WHERE $wclause);
 	# Return reference for future %CANDIDATES = %{$rs};
-	return $dbh->selectall_hashref($q, 'JID');
+	my $ref = $dbh->selectall_hashref($q, 'JID');
+
+	$dbh->disconnect()
+		or warn "Got warning while disconnecting from $SCHED{SQL_DB_JOBS}: "
+		        . $dbh->errstr;
+	return $ref;
 }
 
 # ----------------------------------------------------------
@@ -996,7 +1004,12 @@ sub DBUPDATE {
 	}
 
 	logit("Executing query [$query]") if ($verbose);
-	$dbh->do($query);  # This will die on error
+	my $rv = $dbh->do($query);  # This will die on error
+
+	$dbh->disconnect()
+		or warn "Got warning while disconnecting from $SCHED{SQL_DB_JOBS}: "
+		        . $dbh->errstr;
+	return $rv == 0E0 ? 0 : $rv;
 }
 
 # ----------------------------------------------------------
