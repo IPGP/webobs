@@ -8,11 +8,14 @@ wsudp.pl
 
 perl wsudp.pl 'msg=> [,...see ARGUMENTS below...]'
 
-=heAd1 DESCRIPTION
+=head1 DESCRIPTION
 
 This command line script sends a message to a UDP server, prints corresponding
-reply from the server to stdout. Mainly used as the command line interface to
-the WebObs Scheduler.
+reply from the server to stdout. It is mainly intended to be used as the
+command line interface to the WebObs Scheduler.
+
+This is merely a command line interface to the module function
+WebObs::Scheduler::scheduler_client().
 
 =head1 ARGUMENTS
 
@@ -24,19 +27,24 @@ Mandatory arguments:
 	msg => message to be sent to server
 	eg: msg=>"CMD STAT"
 
-Mandatory wsudp arguments with defaults:
+Optional arguments:
 
 	host => server addr , used as socket PeerAddr
-	default: host=>"localhost"
+	default value: value of LISTEN_ADDR as set in the scheduler configuration,
+	               or 'localhost' if this configuration is not set.
 
 	port => server port , used as socket PeerPort
-	default: 7761
+	default value: value of PORT as set in the scheduler configuration.
 
-	ll => maximum reply length , used in socket recv
-	default: ll=>1500
+	max_length => maximum reply length , used in socket recv
+	default value: value of SOCKET_MAXLEN as set in the scheduler
+	               configuration.
 
-	to => timeout , used as socket Timeout (in seconds)
-	default: to=>5
+	timeout => timeout , used as socket Timeout (in seconds)
+	default value: 5 seconds
+
+	For backward compatibility with older version, the 'll' option is accepted
+	as an alias for 'max_length', and 'to' as an alias for 'timeout'.
 
 =head1 OUTPUTS
 
@@ -65,14 +73,62 @@ use IO::Socket::INET;
 use WebObs::Scheduler qw(scheduler_client);
 
 
+sub usage {
+	print <<"_EOD_";
+Usage: perl $0 'msg=>"COMMAND"' ['option=>value' ...]
+
+Send a message to a UDP server and print its reply to stdout.
+Mainly used as the command line interface to the WebObs Scheduler.
+
+Mandatory argument:
+
+  msg => message to be sent to server
+
+Options:
+
+  host => <server addr>, used as socket PeerAddr
+  default value: value of LISTEN_ADDR as set in the scheduler configuration,
+                 or 'localhost' if this configuration is not set.
+
+  port => <server port>, used as socket PeerPort
+  default value: value of PORT as set in the scheduler configuration.
+
+  max_length => <maximum reply length>, used in socket recv
+  default value: value of SOCKET_MAXLEN as set in the scheduler configuration.
+
+  timeout => <timeout>, used as socket Timeout (in seconds)
+  default value: 5 seconds
+
+  Reply from server are printed to stdout.  In case of error, the error message
+  returned by WebObs::Scheduler::scheduler_client is printed to stderr.
+
+Examples:
+
+  $0 'msg => CMD QS'
+  $0 'msg => CMD STAT' 'timeout => 2'
+
+_EOD_
+}
+
+if (not @ARGV) {
+	usage();
+	exit(1);
+}
+
 # Options allowed on the command line as <opt> => <value>
 # and the regexp the value must match.
 my %opts_regexp = (
 	'msg' => '[\w ]+',
 	'host' => '[\w.-]+',
 	'port' => '\d+',
-	'to' => '\d+',
-	'll' => '\d+',
+	'timeout' => '\d+',
+	'max_length' => '\d+',
+);
+
+# Backward compatibility aliases for options
+my %compat_aliases = (
+	'to' => 'timeout',
+	'll' => 'max_length',
 );
 
 my %opts = ();
@@ -83,9 +139,20 @@ foreach my $arg (@ARGV) {
 	# Read argument as "key => value"
 	my ($k, $v) = $arg =~ /^\s*([a-z]+)\s*=>\s*(?:'|")?(.+?)(?:'|")?\s*$/;
 
+	if (not $k) {
+		print STDERR "Error: cannot read arguments, please check their format.\n";
+		usage();
+		exit(1);
+	}
+
+	# Apply any option name alias
+	if ($compat_aliases{$k}) {
+		$k = $compat_aliases{$k};
+	}
+
 	# Make sure option exists and its value has a valid format
 	if (not $opts_regexp{$k} or $v !~ /$opts_regexp{$k}/) {
-		print STDERR "Error: invalid argument '$arg'\n";
+		print STDERR "Error: invalid argument or format '$arg'\n";
 		exit(1);
 	}
 
