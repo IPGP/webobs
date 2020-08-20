@@ -49,6 +49,7 @@ use DBI;
 use IO::Socket;
 use WebObs::Config;
 use WebObs::Dates;
+use WebObs::Scheduler qw(scheduler_client);
 $|=1;
 
 set_message(\&webobs_cgi_msg);
@@ -69,8 +70,6 @@ my $schedPidF = $QryParm->{'scheduler'}.".pid";
 
 # ----
 my %SCHED;
-my @qrs;
-my $qjobs; my $qruns;
 my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
 
 # ---- any reasons why we couldn't go on ?
@@ -83,29 +82,88 @@ if (defined($WEBOBS{ROOT_LOGS})) {
 	#} else { die "Couldn't find log $WEBOBS{ROOT_LOGS}/$schedLog" }
 } else { die "No ROOT_LOGS defined" }
 
-# ---- now process special actions (delete all records for given date)
-# ------------------------------------------------------------------------------
-sub dbu {
-	my $dbh = DBI->connect("dbi:SQLite:dbname=$SCHED{SQL_DB_JOBS}", '', '') or die "$DBI::errstr" ;
-	my $rv = $dbh->do($_[0]);
-	if ($rv == 0E0) {$rv = 0} 
-	$dbh->disconnect();
-	return $rv;
+# Function definitions --------------------------------------------------------
+
+sub db_connect {
+	# Open a connection to a SQLite database using RaiseError.
+	#
+	# Usage example:
+	#   my $dbh = db_connect($WEBOBS{SQL_DB_POSTBOARD})
+	#     || die "Error connecting to $dbname: $DBI::errstr";
+	#
+	my $dbname = shift;
+	return DBI->connect("dbi:SQLite:$dbname", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+		})
 }
 
+sub execute_query {
+	# Connect to a database and run the given SQL statement,
+	# raising an error if anything goes wrong.
+	my $dbname = shift;
+	my $query = shift;
+
+	my $dbh = db_connect($dbname);
+	if (not $dbh) {
+		logit("Error connecting to $dbname: $DBI::errstr");
+		return;
+	}
+	my $rv;
+	try {
+		$rv = $dbh->do($query);
+	} catch {
+		# Catch errors in update as they are handled in the script.
+		# Note: $sth->err and $DBI::err are true if error was from DBI.
+		# Try::Tiny puts the error into $_
+		warn "Error while executing query '$query': $_";
+	};
+	$dbh->disconnect()
+		or warn "Got warning while disconnecting from $dbname: "
+		        . $dbh->errstr;
+
+	return $rv == 0E0 ? 0 : $rv;
+}
+
+sub fetch_all {
+	# Connect to a database, run the given SQL statement, and
+	# return a reference to an array of array references.
+	my $dbname = shift;
+	my $query = shift;
+
+	my $dbh = db_connect($dbname);
+	if (not $dbh) {
+		logit("Error connecting to $dbname: $DBI::errstr");
+		return;
+	}
+	# Will raise an error if anything goes wrong
+	my $ref = $dbh->selectall_arrayref($query);
+
+	$dbh->disconnect()
+		or warn "Got warning while disconnecting from $dbname: "
+		        . $dbh->errstr;
+	return $ref;
+}
+
+# ---- now process special actions (delete all records for given date)
+# ------------------------------------------------------------------------------
 my $jobsrunsMsg='';
 
 if ($QryParm->{'action'} eq 'delete') {
-	my $startts = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 00:00:00");  
-	my $rows = dbu("delete from runs where startts >= $startts and startts <= $startts-86399");
-	$jobsrunsMsg  = $rows;
-	$jobsrunsMsg .= ($rows >= 1) ? "  rows deleted " : "  no row deleted ";
-	$jobsrunsMsg .= "for $QryParm->{'runsdate'}";
+	my $startts = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 00:00:00");
+	my $rows = execute_query($SCHED{SQL_DB_JOBS},
+	   "DELETE FROM runs WHERE startts >= $startts AND startts <= $startts-86399");
+	$jobsrunsMsg  = $rows . ($rows >= 1) ? "  rows deleted " : "  no row deleted "
+	                ."for $QryParm->{'runsdate'}";
 }
 if ($QryParm->{'action'} eq 'killjob') {
 	# query-string must contain the PID to be submitted to scheduler
-	my $wsudprc = qx(perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"killjob kid=$QryParm->{'kid'}"');
-	$jobsrunsMsg = "killjob $QryParm->{'kid'} ".strftime("%H:%M:%S %z",localtime(int(time())))." : $wsudprc";
+	my $cmd = "killjob kid=$QryParm->{'kid'}";
+	my ($response, $error) = scheduler_client($cmd);
+	my $timestamp = strftime("%H:%M:%S %z", localtime(int(time())));
+	$jobsrunsMsg = "$cmd run at $timestamp : $response"
+	               .($error ? " got error '$error'" : "");
 }
 
 
@@ -160,101 +218,108 @@ if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
 my $timelineD1 = int(time());
 if ( $QryParm->{'runsdate'} ne $today ) { $timelineD1 = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 23:59:00"); }
 my $timelineD0 = $timelineD1 - 86400;
-$qruns  = "select jid,datetime(cast(startts as integer),'unixepoch','localtime'),";
-$qruns .= "datetime(cast(endts as integer),'unixepoch','localtime'),";
-$qruns .= "cmd, rc ";
-$qruns .= "from runs where startts >= $timelineD0 ";
-if ( $QryParm->{'runsdate'} ne $today ) { $qruns .= "and startts <= $timelineD1 "; }
-$qruns .= "order by jid, startts";
-@qrs   = qx(sqlite3 $SCHED{SQL_DB_JOBS} "$qruns");
-chomp(@qrs);
+my $query_timeline_runs = "SELECT jid, datetime(cast(startts as integer),'unixepoch','localtime'),"
+		. " DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime'), cmd, rc FROM runs"
+		. " WHERE startts >= $timelineD0"
+		. ($QryParm->{'runsdate'} ne $today ? " AND startts <= $timelineD1" : "")
+		. " ORDER BY jid, startts";
+my $timeline_run_list = fetch_all($SCHED{SQL_DB_JOBS}, $query_timeline_runs);
 print "<script language=\"JavaScript\">";
-	print "function setData() {\n";
+print "function setData() {\n";
 
-	my $dataX = my $Ytick = my $jid = 0;
-	for (@qrs) {
-		(my $ajid, my $astart, my $aend, my $acmd, my $arc) = split(/\|/,$_);
-		if ($ajid ne $jid) { # new jid: bump Ytick, otherwise don't bump
-			$Ytick++; 
-			$jid = $ajid;
-			print "options.yaxis.ticks[$Ytick-1] = [$Ytick, '$jid'];\n";
-		}
-		my $acolor="";
-		$astart =~ s/-/\//g;
-		if (substr($aend,0,10) ne "1970-01-01") { 
-			$aend =~ s/-/\//g;
-			$acolor = ($arc == 0) ? "#318308" : "#C8350C";
-		} else {
-			$aend = strftime("%Y/%m/%d %H:%M:%S",localtime($timelineD1));
-			$acolor = "#ED9D13";
-		}
-		#print "data[$dataX] = {color: \"$acolor\", data: [ [(new Date(\"$astart\")).getTime()+TZoffset, $Ytick], [(new Date(\"$aend\")).getTime()+TZoffset, $Ytick] ] };\n";
-		print "data[$dataX] = {color: \"$acolor\", data: [ [(new Date(\"$astart\")), $Ytick], [(new Date(\"$aend\")), $Ytick] ] };\n";
-		$dataX++;
-	}
-	if ( $dataX == 0 ) {
-		# define dummy data, spanning all xaxis, in case we have no data (ie. @qrs was an empty set)
-		#print "data[$dataX] = {color: \"#ffffff\", data: [ [(new Date($timelineD0*1000)).getTime()+TZoffset, $Ytick], [(new Date($timelineD1*1000)).getTime()+TZoffset, $Ytick] ] };\n";
+my $dataX = 0;
+my $Ytick = 0;
+my $jid = 0;
+
+for my $job_run (@$timeline_run_list) {
+	my ($ajid, $astart, $aend, $acmd, $arc) = @$job_run;
+	next if not defined($arc);  # ignore running jobs
+	if ($ajid ne $jid) { # new jid: bump Ytick, otherwise don't bump
 		$Ytick++;
-		print "options.yaxis.ticks[$Ytick-1] = [$Ytick, \"* no start *   \"];\n";
-		#print "data[$dataX] = {color: \"#5555ff\", data: [ [(new Date($timelineD0*1000)).getTime()+TZoffset, $Ytick], [(new Date($timelineD1*1000)).getTime()+TZoffset, $Ytick] ] };\n";
-		print "data[$dataX] = {color: \"#5555ff\", data: [ [(new Date($timelineD0*1000)), $Ytick], [(new Date($timelineD1*1000)), $Ytick] ] };\n";
+		$jid = $ajid;
+		print "options.yaxis.ticks[$Ytick-1] = [$Ytick, '$jid'];\n";
 	}
-	print "yticks=$Ytick;";
-	#print "options.xaxis.min = (new Date($timelineD0*1000)).getTime()+TZoffset;\n";
-	print "options.xaxis.min = (new Date($timelineD0*1000));\n";
-	#print "options.xaxis.max = (new Date($timelineD1*1000)).getTime()+TZoffset;\n";
-	print "options.xaxis.max = (new Date($timelineD1*1000));\n";
-	# print "\$('#jsmsg').text()";
-	# print "\$('#jsmsg').text(\"[ \"+(new Date(options.xaxis.min)).toISOString()+\" - \"+(new Date(options.xaxis.max)).toISOString()+\" ]\")";
-	print "}\n";
+	my $acolor = "";
+	$astart =~ s/-/\//g;
+	if (substr($aend,0,10) ne "1970-01-01") {
+		$aend =~ s/-/\//g;
+		if (defined($arc)) {
+			$acolor = ($arc == 0) ? "#318308" : "#C8350C";
+		}
+	} else {
+		$aend = strftime("%Y/%m/%d %H:%M:%S", localtime($timelineD1));
+		$acolor = "#ED9D13";
+	}
+	print "data[$dataX] = {color: \"$acolor\", data: [ [(new Date(\"$astart\")), $Ytick], [(new Date(\"$aend\")), $Ytick] ] };\n";
+	$dataX++;
+}
+if ($dataX == 0) {
+	# define dummy data, spanning all xaxis, in case we have no data (ie. @$timeline_run_list was an empty set)
+	$Ytick++;
+	print "options.yaxis.ticks[$Ytick-1] = [$Ytick, \"* no start *   \"];\n";
+	print "data[$dataX] = {color: \"#5555ff\", data: [ [(new Date($timelineD0*1000)), $Ytick], [(new Date($timelineD1*1000)), $Ytick] ] };\n";
+}
+print "yticks=$Ytick;";
+print "options.xaxis.min = (new Date($timelineD0*1000));\n";
+print "options.xaxis.max = (new Date($timelineD1*1000));\n";
+print "}\n";
 print "</script>";
 
-my $rdate = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 00:00:00");
 # ---- 'jobsruns' table dates 
 # -------------------------------
-$qruns  = "select distinct(date(cast(startts as integer),'unixepoch','localtime')) ";
-#$qruns .= "from runs where startts>=$rdate-($SCHED{DAYS_IN_RUN}*86400) ";
-$qruns .= "from runs order by 1 desc";
-my @rds= qx(sqlite3 $SCHED{SQL_DB_JOBS} "$qruns");
+my @run_day_list = map { $_->[0] } (@{fetch_all($SCHED{SQL_DB_JOBS},
+	          "SELECT DISTINCT(DATE(CAST(startts AS INTEGER), 'unixepoch', 'localtime'))"
+	          ." FROM runs ORDER BY 1 DESC")});
 
 # ---- 'jobsruns' table 
 # -------------------------------
 my $jobsruns;
 my $maxdcmdl = 70; # max string length for command in table
+my $rdate = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 00:00:00");
 
-$qruns  = "select jid,kid,org,datetime(cast(startts as integer),'unixepoch','localtime'),";
-$qruns .= "datetime(cast(endts as integer),'unixepoch','localtime'),";
-$qruns .= "cmd, stdpath, rc, rcmsg, (endts-startts) as elps ";
-$qruns .= "from runs where startts >= $rdate and startts <= $rdate+86400 ";
-$qruns .= "order by startts, jid";
-@qrs   = qx(sqlite3 $SCHED{SQL_DB_JOBS} "$qruns");
-chomp(@qrs);
+my $query_runs  = "SELECT jid, kid, org, DATETIME(CAST(startts AS INTEGER), 'unixepoch', 'localtime'),"
+		. " DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime'),"
+		. " cmd, stdpath, rc, rcmsg, endts-startts AS elps FROM runs"
+		. " WHERE startts >= $rdate AND startts <= $rdate+86400"
+		. " ORDER BY startts, jid";
+my $run_list = fetch_all($SCHED{SQL_DB_JOBS}, $query_runs);
 
-for (@qrs) {
+for my $run (@$run_list) {
+	my ($djid, $dkid, $org, $dstart, $dend, $dcmd, $dstdpath, $drc, $drcmsg, $elapsed) = @$run;
 	my $elp;
-	(my $djid, my $dkid, my $org, my $dstart, my $dend, my $dcmd, my $dstdpath, my $drc, my $drcmsg, my $elapsed) = split(/\|/,$_);
-	if ( $dend =~ m/^1970.01.01/ ) {
+	# Running jobs have not return code in db yet
+	if (not defined $drc) {
+		$drc = '';
+		$drcmsg = '';
+		$elp = 'still running';
+	}
+
+	if ($dend =~ m/^1970.01.01/) {
 		$dend = "";
 		$elapsed = "";
-	} else {
-		my ($T,$ms)=split(/\./, ($elapsed));
+	} elsif (not defined($elp)) {
+		my ($T, $ms) = split(/\./, ($elapsed));
 		my @out = reverse($T%60, ($T/=60) % 60, ($T/=60) % 24, ($T/=24) );
 		$elp = sprintf "%03d:%02d:%02d:%02d.%3.3s", @out, $ms;
 	}
-	my $bgcolor = "transparent";  
-	if ( $drc ne '' ) {
-		$bgcolor = "green"  if ( !($dend =~ m/^1970.01.01/) && $drc == 0 );
-		$bgcolor = "red"    if ( $drc > 0 );
+	my $bgcolor = "transparent";
+	if ($drc ne '') {
+		$bgcolor = "green" if (!($dend =~ m/^1970.01.01/) && $drc == 0);
+		$bgcolor = "red"   if ($drc > 0);
 	}
-	if (length($dcmd) > $maxdcmdl) { my $s = ($maxdcmdl-5)/2; $dcmd = substr($dcmd,0,$s).'(...)'.substr($dcmd,-$s) }
-	$dstart =~ s/^.* //; $dend =~ s/^.* //;	
+	if (length($dcmd) > $maxdcmdl) {
+		my $s = ($maxdcmdl-5)/2;
+		$dcmd = substr($dcmd,0,$s).'(...)'.substr($dcmd,-$s);
+	}
+	$dstart =~ s/^.* //;
+	$dend =~ s/^.* //;
 	$jobsruns .= "<tr><td class=\"ic tdlock\">";
-	if ($dend == "" && $drc eq "") {
+	if ($drc eq '') {
 		$jobsruns .= "<a href=\"#\" onclick=\"postKill($dkid);return false\"><img title=\"kill job\" src=\"/icons/no.png\"></a>";
 	}
 	$jobsruns .= "</td><td>$djid<td>$dkid<td>$org<td>$dstart<td>$dend<td>$dcmd";
-	(my $zz = $dstdpath) =~ s/[>< ]//g; $jobsruns .= "<td><a href=\"/cgi-bin/schedulerLogs.pl?log=$zz\">$dstdpath</a>";
+	(my $zz = $dstdpath) =~ s/[>< ]//g;
+	$jobsruns .= "<td><a href=\"/cgi-bin/schedulerLogs.pl?log=$zz\">$dstdpath</a>";
 	$jobsruns .= "<td style=\"background-color: $bgcolor\">$drc<td>$drcmsg<td>$elp</tr>\n";
 }
 	
@@ -314,9 +379,12 @@ Runs <small><sub>($buildTS)</sub></small>
 EOP1
 			print "&nbsp;&bull;&nbsp; date: ";
 			print "<select id=\"indate\" name=\"indate\" size=\"1\" maxlength=\"10\" onChange=\"loadADate(); return false\">";
-			print "<option selected value=$QryParm->{'runsdate'}>$QryParm->{'runsdate'}</option>\n";
-			for (@rds) { 
-				if (! m/$QryParm->{'runsdate'}/) { print "<option value=$_>$_</option>\n"}
+			for my $day (@run_day_list) {
+				my $selected = "";
+				if ($day eq $QryParm->{'runsdate'}) {
+					$selected = 'selected="selected"';
+				}
+				print qq{<option value="$day" $selected>$day</option>\n};
 			}
 			print "</select>";
 print <<"EOP2";
