@@ -124,6 +124,9 @@ table.jobsruns tr:hover td {
 	width:300px;
 	margin:2px 0 15px 10px;
 }
+#overlay_form input[type=checkbox]{
+	margin: 2px 0 0 10px;
+}
 #overlay_form p {
 	background: #EAE4CE;
 	width: 100%;
