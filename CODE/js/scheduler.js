@@ -108,7 +108,7 @@ function openPopup(jix) {
 	//if (!$("#overlay_form").is(':visible')) { return; } 
 	if (jix != -1) { // editing an existing job: populate popup from its table row TDs
 		// ATT:  $("td",job.jix)[n] = n (0-based) must match jobsdefs <td> order in def-row  
-		$('[name=validity]').val( $("td",jix)[4].textContent);
+		$('[name=validity]').prop("checked", $("td", jix)[4].textContent.match(/^Y/g) ? "checked" : "");
 		$('[name=res]').val( $("td",jix)[5].textContent);
 		$('[name=xeq1]').val( $("td",jix)[6].textContent);
 		$('[name=xeq2]').val( $("td",jix)[7].textContent);
@@ -123,7 +123,7 @@ function openPopup(jix) {
 
 	} else { // inserting a new job
 		// DON'T rely on default values for popup defined at html-page creation time
-		$('[name=validity]').val("N");
+		$('[name=validity]').prop("checked", "");
 		$('[name=res]').val("");
 		$('[name=xeq1]').val("$WEBOBS{JOB_MCC} genplot");
 		$('[name=xeq2]').val("");
@@ -148,10 +148,6 @@ function sendPopup() {
 		alert ("required jid, [a-zA-Z0-9\-_] only)");
 		return false;
 	}
-	if ( !($('[name=validity]').val()).match(/^Y|N/g) ) {
-		alert ("validity must be Y or N");
-		return false;
-	}	
 	if ( !($('[name=runinterval]').val()).match(/^[0-9]+$/) ) {
 		alert ("runInterval must be numeric");
 		return false;

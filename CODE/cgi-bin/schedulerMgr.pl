@@ -112,7 +112,7 @@ $QryParm->{'xeq3'}        ||= "";
 $QryParm->{'runinterval'} ||= "";   
 $QryParm->{'maxsysload'}  ||= 0.7;  
 $QryParm->{'logpath'}     ||= "";   
-$QryParm->{'validity'}    ||= "Y";    
+$QryParm->{'validity'}    ||= "N";
 $QryParm->{'res'}         ||= "";    
 
 $QryParm->{'xeq1'} =~ s/'/''/g;
@@ -272,8 +272,8 @@ Scheduler status
 	<input type="text" id="maxsysload" name="maxsysload" value="0.8"/><br/>
 	<label for="logpath">logpath:<span class="small">stdout/err subdir</span></label>
 	<input type="text" id="logpath" name="logpath" value=""/><br/>
-	<label for="validity">valid:<span class="small">Y=valid (=active)</span></label>
-	<input type="text" id="validity" name="validity" value="N"/><br/>
+	<label for="validity">valid:<span class="small">check to activate job</span></label>
+	<input type="checkbox" id="validity" name="validity" value="Y"/><br/>
 	<p style="margin: 0px; text-align: center">
 		<input type="button" name="sendbutton" value="send" onclick="sendPopup(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
 	</p>
