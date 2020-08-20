@@ -54,9 +54,11 @@ use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 use DBI;
+use Try::Tiny;
 use IO::Socket;
 use WebObs::Config;
 use WebObs::Users;
+use WebObs::Scheduler qw(scheduler_client);
 $|=1;
 
 set_message(\&webobs_cgi_msg);
@@ -72,8 +74,6 @@ my $schedPidF = $QryParm->{'scheduler'}.".pid";
 
 # ----
 my %SCHED;
-my @qrs;
-my $qjobs; my $qruns;
 my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
 
 # ---- any reasons why we couldn't go on ?
@@ -94,16 +94,75 @@ if (defined($WEBOBS{ROOT_LOGS})) {
 	#} else { die "Couldn't find log $WEBOBS{ROOT_LOGS}/$schedLog" }
 } else { die "No ROOT_LOGS defined" }
 
-# ---- now process special actions (insert, update or delete a job's definition)
-# ------------------------------------------------------------------------------
-sub dbu {
-	my $dbh = DBI->connect("dbi:SQLite:dbname=$SCHED{SQL_DB_JOBS}", '', '') or die "$DBI::errstr" ;
-	my $rv = $dbh->do($_[0]);
-	if ($rv == 0E0) {$rv = 0} 
-	$dbh->disconnect();
-	return $rv;
+
+# Function definitions --------------------------------------------------------
+
+sub db_connect {
+	# Open a connection to a SQLite database using RaiseError.
+	#
+	# Usage example:
+	#   my $dbh = db_connect($WEBOBS{SQL_DB_POSTBOARD})
+	#     || die "Error connecting to $dbname: $DBI::errstr";
+	#
+	my $dbname = shift;
+	return DBI->connect("dbi:SQLite:$dbname", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+		})
 }
 
+sub execute_query {
+	# Connect to a database and run the given SQL statement,
+	# raising an error if anything goes wrong.
+	my $dbname = shift;
+	my $query = shift;
+
+	my $dbh = db_connect($dbname);
+	if (not $dbh) {
+		logit("Error connecting to $dbname: $DBI::errstr");
+		return;
+	}
+	my $rv;
+	try {
+		$rv = $dbh->do($query);
+	} catch {
+		# Catch errors in update as they are handled in the script.
+        # Note: $sth->err and $DBI::err are true if error was from DBI.
+		# Try::Tiny puts the error into $_
+        warn "Error while executing query '$query': $_";
+	};
+	$dbh->disconnect()
+		or warn "Got warning while disconnecting from $dbname: "
+				. $dbh->errstr;
+
+	return $rv == 0E0 ? 0 : $rv;
+}
+
+sub fetch_all {
+	# Connect to a database, run the given SQL statement, and
+	# return a reference to an array of array references.
+	my $dbname = shift;
+	my $query = shift;
+
+	my $dbh = db_connect($dbname);
+	if (not $dbh) {
+		logit("Error connecting to $dbname: $DBI::errstr");
+		return;
+	}
+	# Will raise an error if anything goes wrong
+	my $ref = $dbh->selectall_arrayref($query);
+
+	$dbh->disconnect()
+		or warn "Got warning while disconnecting from $dbname: "
+				. $dbh->errstr;
+	return $ref;
+}
+
+
+
+# ---- Read CGI parameters
+# ------------------------------------------------------------------------------
 $QryParm->{'jid'}         ||= "";
 $QryParm->{'newjid'}      ||= "";
 $QryParm->{'xeq1'}        ||= "";      
@@ -119,37 +178,52 @@ $QryParm->{'xeq1'} =~ s/'/''/g;
 $QryParm->{'xeq2'} =~ s/'/''/g;
 $QryParm->{'xeq3'} =~ s/'/''/g;
 
+
+# ---- now process special actions (insert, update or delete a job's definition)
+# ------------------------------------------------------------------------------
 my $jobsdefsMsg='';
 my $jobsdefsMsgColor='black';
 #DBcols: JID, VALIDITY, RES, XEQ1, XEQ2, XEQ3, RUNINTERVAL, MAXSYSLOAD, LOGPATH, LASTSTRTS
 
 if ($admOK && $QryParm->{'action'} eq 'insert') {
 	# query-string must contain all required DB columns values for an sql insert
-	my $q = "insert into jobs values(\'$QryParm->{'jid'}\',\'$QryParm->{'validity'}\',\'$QryParm->{'res'}\',\'$QryParm->{'xeq1'}\',\'$QryParm->{'xeq2'}\',\'$QryParm->{'xeq3'}\',$QryParm->{'runinterval'},$QryParm->{'maxsysload'},\'$QryParm->{'logpath'}\',0)";
-	my $rows = dbu($q);
-	$jobsdefsMsg  = ($rows == 1) ? "  having inserted new job " : "  failed to insert new job ";  # $jobsdefsMsg .= $q;
+	my $q = "INSERT INTO jobs VALUES('$QryParm->{'jid'}','$QryParm->{'validity'}',"
+	        ."'$QryParm->{'res'}','$QryParm->{'xeq1'}','$QryParm->{'xeq2'}',"
+	        ."'$QryParm->{'xeq3'}',$QryParm->{'runinterval'},"
+	        ."$QryParm->{'maxsysload'},'$QryParm->{'logpath'}',0)";
+	my $rows = execute_query($SCHED{SQL_DB_JOBS}, $q);
+	$jobsdefsMsg  = ($rows == 1)
+		? "  having inserted new job "
+		: "  failed to insert new job ";
 	$jobsdefsMsgColor  = ($rows == 1) ? "green" : "red";
 }
 if ($editOK && $QryParm->{'action'} eq 'update') {
 	# query-string must contain all required DB columns values for an sql update
-	my $q = "update jobs set JID=\'$QryParm->{'newjid'}\', VALIDITY=\'$QryParm->{'validity'}\', RES=\'$QryParm->{'res'}\', XEQ1=\'$QryParm->{'xeq1'}\', XEQ2=\'$QryParm->{'xeq2'}\', XEQ3=\'$QryParm->{'xeq3'}\', RUNINTERVAL=$QryParm->{'runinterval'}, MAXSYSLOAD=$QryParm->{'maxsysload'}, LOGPATH=\'$QryParm->{'logpath'}\' where jid=\"$QryParm->{'jid'}\"";
-	my $rows = dbu($q);
+	my $q = "UPDATE jobs SET JID='$QryParm->{'newjid'}', VALIDITY='$QryParm->{'validity'}',"
+	        ." RES='$QryParm->{'res'}', XEQ1='$QryParm->{'xeq1'}', XEQ2='$QryParm->{'xeq2'}',"
+	        ." XEQ3='$QryParm->{'xeq3'}', RUNINTERVAL=$QryParm->{'runinterval'},"
+	        ." MAXSYSLOAD=$QryParm->{'maxsysload'}, LOGPATH='$QryParm->{'logpath'}'"
+	        ." WHERE jid=\"$QryParm->{'jid'}\"";
+	my $rows = execute_query($SCHED{SQL_DB_JOBS}, $q);
 	$jobsdefsMsg  = ($rows == 1) ? "  having updated " : "  failed to update ";
 	$jobsdefsMsg .= "jid $QryParm->{'jid'} ";   # $jobsdefsMsg .= $q;
 	$jobsdefsMsgColor  = ($rows == 1) ? "green" : "red";
 }
 if ($admOK && $QryParm->{'action'} eq 'delete') {
 	# query-string must contain the JID to be deleted from DB
-	my $rows = dbu("delete from jobs where jid=\"$QryParm->{'jid'}\"");
+	my $rows = execute_query($SCHED{SQL_DB_JOBS},
+	                         "DELETE FROM jobs WHERE jid='$QryParm->{'jid'}'");
 	$jobsdefsMsg  = ($rows == 1) ? "  having deleted " : "  failed to delete ";
 	$jobsdefsMsg .= "jid $QryParm->{'jid'}";
 	$jobsdefsMsgColor  = ($rows == 1) ? "green" : "red";
 }
 if ($QryParm->{'action'} eq 'submit') {
 	# query-string must contain the JID to be submitted to scheduler
-	my $wsudprc = qx(perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"job jid=$QryParm->{'jid'}"');
-	$jobsdefsMsg  = "submit $QryParm->{'jid'} ".strftime("%H:%M:%S %z",localtime(int(time())))." : $wsudprc";
-	$jobsdefsMsgColor  = ($wsudprc =~ /failed/) ? "red" : "green";
+	my ($response, $error) = scheduler_client("job jid=$QryParm->{'jid'}");
+	my $timestamp = strftime("%H:%M:%S %z", localtime(int(time())));
+	$jobsdefsMsg  = "submit $QryParm->{'jid'} run at $timestamp : $response"
+	                .($error ? " got error '$error'" : "");
+	$jobsdefsMsgColor  = $error ? "red" : "green";
 }
 
 
@@ -197,25 +271,52 @@ if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
 
 # ---- 'jobsdefs' table 
 # ---------------------
-$qjobs  = "select JID,VALIDITY,RES,XEQ1,XEQ2,XEQ3,RUNINTERVAL,MAXSYSLOAD,LOGPATH,LASTSTRTS ";
-$qjobs .= "from jobs order by jid";
-@qrs   = qx(sqlite3 $SCHED{SQL_DB_JOBS} "$qjobs");
-chomp(@qrs);
-my $jobsdefs='';
-my $jobsdefsCount=0; my $jobsdefsCountValid=0; my $jobsdefsId='';
-for (@qrs) {
-	(my $djid, my $dvalid, my $dres, my $xeq1, my $xeq2, my $dxeq3, my $dintv, my $dmaxs, my $dlogp, my $dlstrun) = split(/\|/,$_);
+my $job_def_list = fetch_all($SCHED{SQL_DB_JOBS},
+	 "select JID,VALIDITY,RES,XEQ1,XEQ2,XEQ3,RUNINTERVAL,MAXSYSLOAD,LOGPATH,LASTSTRTS "
+     . "from jobs order by jid");
+my $jobsdefs = '';
+my $jobsdefsCount = 0;
+my $jobsdefsCountValid = 0;
+my $jobsdefsId = '';
+
+for my $job (@$job_def_list) {
+	my ($djid, $dvalid, $dres, $xeq1, $xeq2, $dxeq3, $dintv, $dmaxs, $dlogp, $dlstrun) = @$job;
+
 	$dlstrun = strftime("%Y-%m-%d %H:%M:%S", localtime(int($dlstrun)));
-	$jobsdefsCount++; $jobsdefsId="jdef".$jobsdefsCount ;
+	$jobsdefsCount++;
+	$jobsdefsId="jdef".$jobsdefsCount;
 	$jobsdefsCountValid++ if ($dvalid eq 'Y');
-	$jobsdefs .= "<tr id=\"$jobsdefsId\" class=\"".($dvalid eq 'Y' ? "jobsactive":"jobsinactive")."\"><td class=\"ic tdlock\">";
-	# edition
-	$jobsdefs .= "<a href=\"#JOBSDEFS\" onclick=\"openPopup($jobsdefsId);return false\"><img title=\"edit job\" src=\"/icons/modif.png\"></a>" if ($editOK);
-	$jobsdefs .= "</td><td class=\"ic tdlock\">";
-	# delete
-	$jobsdefs .= "<a href=\"#\" onclick=\"postDelete($jobsdefsId);return false\"><img title=\"delete job\" src=\"/icons/no.png\"></a>" if ($admOK);
-	$jobsdefs .= "</td><td class=\"ic tdlock\"><a href=\"#\" onclick=\"postSubmit($jobsdefsId);return false\"><img title=\"submit job\" src=\"/icons/submits.png\"></a></td>";
-	$jobsdefs .= "<td>$djid</td><td>$dvalid</td><td>$dres</td><td>$xeq1</td><td>$xeq2</td><td>$dxeq3</td><td>$dintv</td><td>$dmaxs</td><td>$dlogp</td><td class=\"tdlock\">$dlstrun</td></tr>\n";
+
+	my $tr_class = ($dvalid eq 'Y' ? "jobsactive" : "jobsinactive");
+	my $delete_link = "";
+	if ($admOK) {
+		$delete_link = qq{<a href="#" onclick="postDelete($jobsdefsId);return false">}
+			.qq{<img title="delete job" src="/icons/no.png"></a>};
+	}
+	my $edit_link = "";
+	if ($editOK) {
+		$edit_link = qq{<a href="#JOBSDEFS" onclick="openPopup($jobsdefsId);return false">}
+		             .qq{<img title="edit job" src="/icons/modif.png"></a>};
+	}
+	$jobsdefs .= qq{
+	<tr id="$jobsdefsId" class="$tr_class">
+	  <td class="ic tdlock">$edit_link</td>
+	  <td class="ic tdlock">$delete_link</td>
+	  <td class="ic tdlock"><a href="#" onclick="postSubmit($jobsdefsId);return false">
+	    <img title="submit job" src="/icons/submits.png"></a>
+	  </td>
+	  <td>$djid</td>
+	  <td>$dvalid</td>
+	  <td>$dres</td>
+	  <td>$xeq1</td>
+	  <td>$xeq2</td>
+	  <td>$dxeq3</td>
+	  <td>$dintv</td>
+	  <td>$dmaxs</td>
+	  <td>$dlogp</td>
+	  <td class="tdlock">$dlstrun</td>
+	</tr>
+	};
 }
 
 print "</head>";
