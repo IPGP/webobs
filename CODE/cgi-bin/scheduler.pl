@@ -1238,7 +1238,7 @@ sub UDPS {
 			}
 			next;
 		}
-		$ans = "Action unknown.";
+		$ans = "Unknown action '$_'.\n";
 	}
 	$SOCK->send($ans);
 	logit("client ".$sock_client_id." sent [ $cmd $msg ]; reply ".length($ans)." bytes") if ($verbose);
