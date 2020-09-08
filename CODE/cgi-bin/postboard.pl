@@ -259,7 +259,7 @@ while (1) {
 
 			for my $row (@$allMails) {
 
-				my @oneMAIL = split(/\|/, @$row);
+				my @oneMAIL = @$row;
 				my @oneREQ  = @REQ; # save original request (maybe overkill)
 
 				# Parse the incoming request's message ($oneREQ[3]): look for special keywords
@@ -278,8 +278,6 @@ while (1) {
 					} else {
 						logit("warning: ignoring unknown recipient uid in $oneREQ[3]");
 					}
-				} else {
-					logit("warning: mailing with no recipient uid will be ignored");
 				}
 				#  subject=
 				if (defined($sp{'subject='})) {
@@ -325,45 +323,53 @@ while (1) {
 				# Continue with mail processing
 				my $allAddrs = fetch_email_addrs($oneMAIL[0]);
 
-				if (@$allAddrs) {
+				if (not @$allAddrs) {
+					logit("error: recipient uid/gid '$oneMAIL[0]' "
+					      ."not found in database, aborting mailing.");
+				} else {
 					my $addrlist = join(' ', map { $_->[0] } @$allAddrs);
-					my $options  = $WEBOBS{POSTBOARD_MAILER_OPTS};
-						if ($oneMAIL[1] and $oneMAIL[1] ne '-') {
-							$options .= " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $oneMAIL[1]\'";
-						} else {
-							$options .= " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $WEBOBS{POSTBOARD_MAILER_DEFSUBJECT}\'";
-						}
-						if ($oneMAIL[2] and $oneMAIL[2] ne '-' and -e $oneMAIL[2]) {
-							$options .= " -a \'$oneMAIL[2]\'";
-						}
-					if ($oneREQ[2] =~ m/^([^.@]+)(\.[^.@]+)*@(([^.@]+\.)+([^.@]+))$/) {
-						my $domain = $3;
-						my $fulln = '';
-						for my $login (keys(%USERS)) {
-							if ($USERS{$login}{EMAIL} =~ m/^$oneREQ[2]/) {
-								$fulln = $USERS{$login}{FULLNAME};
+					if (not $addrlist) {
+						logit("warning: no email address defined for recipient"
+						      ." uid/gid '$oneMAIL[0]', aborting mailing.");
+					} else {
+						my $options  = $WEBOBS{POSTBOARD_MAILER_OPTS};
+							if ($oneMAIL[1] and $oneMAIL[1] ne '-') {
+								$options .= " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $oneMAIL[1]\'";
+							} else {
+								$options .= " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $WEBOBS{POSTBOARD_MAILER_DEFSUBJECT}\'";
+							}
+							if ($oneMAIL[2] and $oneMAIL[2] ne '-' and -e $oneMAIL[2]) {
+								$options .= " -a \'$oneMAIL[2]\'";
+							}
+						if ($oneREQ[2] =~ m/^([^.@]+)(\.[^.@]+)*@(([^.@]+\.)+([^.@]+))$/) {
+							my $domain = $3;
+							my $fulln = '';
+							for my $login (keys(%USERS)) {
+								if ($USERS{$login}{EMAIL} =~ m/^$oneREQ[2]/) {
+									$fulln = $USERS{$login}{FULLNAME};
+								}
+							}
+							if ($fulln ne '') {
+								$options .= qq( -e 'set from="$fulln <$oneREQ[2]>"');
 							}
 						}
-						if ($fulln ne '') {
-							$options .= qq( -e 'set from="$fulln <$oneREQ[2]>"');
+						my $tmp_email_body = sprintf ("$WEBOBS{PATH_TMP_APACHE}/WOPB.$$.%16.6f", time);
+						if (open(my $body_file, ">", $tmp_email_body)) {
+							print $body_file "$oneREQ[3]" ;
+							if ($sp{'file='} && -f "$sp{'file='}") {
+								print $body_file "\n", read_file($sp{'file='});
+							}
+							close $body_file
+								or logit("warning: an error occurred while closing $tmp_email_body");
+							logit("executing '$WEBOBS{POSTBOARD_MAILER} $options -- $addrlist < $tmp_email_body'") if ($verbose);
+							system("$WEBOBS{POSTBOARD_MAILER} $options -- $addrlist < $tmp_email_body");
+							if ($?) { logit("error: mailing failed: $?") }
+							unlink($tmp_email_body);
+						} else {
+							logit("error: couldn't open temporary file for mailing: $?");
 						}
-					}
-					my $tmp_email_body = sprintf ("$WEBOBS{PATH_TMP_APACHE}/WOPB.$$.%16.6f", time);
-					if (open(my $body_file, ">", $tmp_email_body)) {
-						print $body_file "$oneREQ[3]" ;
-						if ($sp{'file='} && -f "$sp{'file='}") {
-							print $body_file "\n", read_file($sp{'file='});
-						}
-						close $body_file
-							or logit("warning: an error occurred while closing $tmp_email_body");
-						logit("executing '$WEBOBS{POSTBOARD_MAILER} $options -- $addrlist < $tmp_email_body'") if ($verbose);
-						system("$WEBOBS{POSTBOARD_MAILER} $options -- $addrlist < $tmp_email_body");
-						if ($?) { logit("error: mailing failed: $?") }
-						unlink($tmp_email_body);
-					} else {
-						logit("error: couldn't open temporary file for mailing: $?");
-					}
-				} # end we have address(es) for this mail
+					} # end we have non-empty email address(es) for this mail
+				} # end we have recipient(s) for this mail
 			} # end for each mail
 		} # we have mailing(s) in table for this event
 	} # end we know how to mail from config setting
