@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 =head1 NAME
 
-formNODE.pl 
+formNODE.pl
 
 =head1 SYNOPSIS
 
@@ -10,16 +10,16 @@ http://..../formNODE.pl?[node=NODEID]
 
 =head1 DESCRIPTION
 
-1) Edits an existing NODE when requested node is a fully qualified node name 
+1) Edits an existing NODE when requested node is a fully qualified node name
 (ie. node=gridtype.gridname.nodename).
 
 2) Creates a new NODE when no nodename specified (ie. node=gridtype.gridname).
 
 =head1 Query string parameters
 
- node=  
+ node=
  the fully qualified NODE name gridtype.gridname.nodename to update
- -or- gridtype.gridname to create a new NODE 
+ -or- gridtype.gridname to create a new NODE
 
 =cut
 
@@ -47,7 +47,7 @@ set_message(\&webobs_cgi_msg);
 # ---- init general-use variables on the way and quit if something's wrong
 #
 my %NODE;
-my %GRID; 
+my %GRID;
 my %allNodeGrids;
 my @VIEWS;
 my @PROCS;
@@ -59,7 +59,7 @@ my $QryParm   = $cgi->Vars;
 
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
 if ( $GRIDType ne "" && $GRIDName ne "" ) {
-	if ( clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) { $adminOK = 1 } 
+	if ( clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) { $adminOK = 1 }
 	if ($NODEName ne "") {
 		%allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
 		if ("$GRIDType.$GRIDName" ~~ @{$allNodeGrids{$NODEName}}) {
@@ -77,14 +77,14 @@ if ( $GRIDType ne "" && $GRIDName ne "" ) {
 				} else { die "$__{'Could not read'} $GRIDType.$GRIDName configuration" }
 			} else { die "$__{'Could not read'} $__{'node configuration'} $NODEName" }
 		} else { die "$GRIDType.$GRIDName.$NODEName unknown" }
-	} else { 
+	} else {
 		if ( $adminOK == 1 ) {
 			$newnode = 1;
 		} else { die "$__{'Not authorized'} $__{'to create a node in'} $GRIDType.$GRIDName" }
-	} 
+	}
 } else { die ("$__{'You cannot edit a NODE outside of GRID context'}")  }
 
-# ---- went thru all above checks ... setup edit form 
+# ---- went thru all above checks ... setup edit form
 #
 my $titrePage = "$__{'Node Configuration'}";
 if ($newnode == 0) {
@@ -135,7 +135,7 @@ if ($usrTrans eq "NA") { $usrTrans = "0"; }
 #      dates
 my $usrYearE = my $usrYearC = my $usrYearP = "";
 my $usrMonthE = my $usrMonthC = my $usrMonthP = "";
-my $usrDayE = my $usrDayC = my $usrDayP = my $date = ""; 
+my $usrDayE = my $usrDayC = my $usrDayP = my $date = "";
 #      install date = (the one defined or "" if NA) OR today
 $date            = $NODE{INSTALL_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
@@ -156,7 +156,7 @@ chomp(@allNodes);
 my $infoFile   = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}" // "";
 my $accessFile = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_PHOTOS}" // "";
 
-# ---- Things to populate select dropdown fields 
+# ---- Things to populate select dropdown fields
 my $anneeActuelle = strftime('%Y',@tod);
 my @anneeListeP = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
 my @anneeListeC = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
@@ -164,8 +164,8 @@ my @anneeListeE = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
 my @moisListe = ('','01'..'12');
 my @jourListe = ('','01'..'31');
 
-# ---- ready for HTML output now  
-# 
+# ---- ready for HTML output now
+#
 print $cgi->header(-charset=>"utf-8"),
 $cgi->start_html("$__{'Node configuration form'}");
 
@@ -248,8 +248,8 @@ function postIt()
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
 		     if (data != '') alert(data);
 		     location.href = document.referrer; })
-		  .fail( function() { 
-		     alert( \"postNode couldn't execute\" ); 
+		  .fail( function() {
+		     alert( \"postNode couldn't execute\" );
 		     location.href = document.referrer; });
 	} else {
 		alert(\"No changes, save ignored\");
@@ -287,7 +287,7 @@ function checkNode() {
 	if (nodeSyntax.test(node)) {
 		ok = 0;
 		document.formulaire.message.value = "invalid char. !";
-	} else { 
+	} else {
 		for (var i=0; i<document.formulaire.elements['allNodes'].length; i++) {
 			if (document.formulaire.elements['allNodes'][i].value == node) {
 				ok = 0;
@@ -334,7 +334,7 @@ function delete_node()
 		document.formulaire.delete.value = 1;
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
 			alert(data);
-			location.href = document.referrer;	   
+			location.href = document.referrer;
 		});
 	} else {
 		return false;
@@ -365,9 +365,9 @@ for (@allNodes) {
 }
 print "<TABLE style=\"border:0\" width=\"100%\">";
 print "<TR>";
-	print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # left column 
+	print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # left column
 
-	print "<FIELDSET><LEGEND>$__{'Names and Description'}</LEGEND>"; 
+	print "<FIELDSET><LEGEND>$__{'Names and Description'}</LEGEND>";
 	# --- Codes, Name, Alias, Type
 	if ($newnode == 1) {
 		print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code'}:</label>$GRIDType.$GRIDName.";
@@ -391,9 +391,9 @@ print "<TR>";
 		# --- TYPE
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Type'}:</LABEL>";
 		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
-	print "</FIELDSET>"; 
+	print "</FIELDSET>";
 
-	print "<FIELDSET><LEGEND>$__{'Lifetime and Validity'}</LEGEND>"; 
+	print "<FIELDSET><LEGEND>$__{'Lifetime and Validity'}</LEGEND>";
   	# --- Dates debut et fin
   	print "<TABLE>";
     	print "<TR>";
@@ -434,11 +434,11 @@ print "<TR>";
 	print "</TABLE>\n";
 	print "</FIELDSET>";
 
-	print "<FIELDSET><LEGEND>$__{'Associated Grids'}</LEGEND>\n"; 
+	print "<FIELDSET><LEGEND>$__{'Associated Grids'}</LEGEND>\n";
 	# --- (additional) GRIDS: VIEWs and PROCs
 	# --- list only PROCs and VIEWs that client has AUTHEDIT to ...
-	my @GL; 
-	#     ... all views and procs 
+	my @GL;
+	#     ... all views and procs
 	#FB-was: my @Lprocs = map("PROC.".basename($_), qx(ls -d $WEBOBS{PATH_PROCS}/*)); chomp(@Lprocs);
 	#FB-was: my @Lviews = map("VIEW.".basename($_), qx(ls -d $WEBOBS{PATH_VIEWS}/*)); chomp(@Lviews);
 	my @Lprocs = map("PROC.".basename($_), qx(find $WEBOBS{PATH_PROCS}/* -type d)); chomp(@Lprocs);
@@ -448,8 +448,8 @@ print "<TR>";
 	my $wc = " uid in (SELECT GID from $WEBOBS{SQL_TABLE_GROUPS} WHERE UID=\"$cid\") OR uid = \"$cid\" ";
 	my @Aprocs = qx(sqlite3 -separator '.' $WEBOBS{SQL_DB_USERS} 'select "PROC",resource from $WEBOBS{SQL_TABLE_AUTHPROCS} where auth >= 2 and $wc');
 	my @Aviews = qx(sqlite3 -separator '.' $WEBOBS{SQL_DB_USERS} 'select "VIEW",resource from $WEBOBS{SQL_TABLE_AUTHVIEWS} where auth >= 2 and $wc');
-	chomp(@Aviews); chomp(@Aprocs); 
-	#     ... merge client-allowed-to VIEWS and PROCS into @GL 
+	chomp(@Aviews); chomp(@Aprocs);
+	#     ... merge client-allowed-to VIEWS and PROCS into @GL
 	if   ( ('VIEW.*') ~~ @Aviews ) { @GL = @Lviews }
 	else                           { map { push(@GL,$_) if (($_) ~~ @Aviews) } @Lviews }
 	if   ( ('PROC.*') ~~ @Aprocs ) { @GL = (@GL,@Lprocs) }
@@ -473,8 +473,8 @@ print "<TR>";
 	print "</TABLE>";
 	print "</FIELDSET>";
 
-	# --- Features 
-	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>"; 
+	# --- Features
+	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
 	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',split(/,|\|/,$features))."\"><BR>";
 	print "<br><a href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A>";
 	print "</FIELDSET>";
@@ -483,7 +483,7 @@ print "<TR>";
 	print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
 
 	# --- 'node' position (latitude, longitude & altitude)
-	print "<FIELDSET><LEGEND>$__{'Geographic location'}</LEGEND>"; 
+	print "<FIELDSET><LEGEND>$__{'Geographic location'}</LEGEND>";
 	print "<TABLE><TR>";
 		print "<TD style=\"border:0;text-align:left\">";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
@@ -523,18 +523,18 @@ print "<TR>";
 	print "</FIELDSET>\n";
 
 	# --- Transmission type
-	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>"; 
+	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
 	print "<LABEL for=\"typeTrans\">Type: </LABEL>";
 	print "<SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_type}')\" id=\"typeTrans\" name=\"typeTrans\" size=\"1\" onChange=\"maj_transmission()\">";
 	for (sort(keys(%typeTele))) {
 		my $sel = "";
 		if ( $_ eq "$usrTrans" ) { $sel = "selected" }
-		print "<OPTION $sel value=\"$_\">$typeTele{$_}{name}</OPTION>"; 
+		print "<OPTION $sel value=\"$_\">$typeTele{$_}{name}</OPTION>";
 	}
 	print "</SELECT><BR>";
 
-	# --- Transmission path (acquisition + repeater list) 
-	print "<DIV id=\"pathTrans\" style=\"display:none\"><LABEL for=\"pathTrans\">$__{'Repeaters Path'}: </LABEL>"; 
+	# --- Transmission path (acquisition + repeater list)
+	print "<DIV id=\"pathTrans\" style=\"display:none\"><LABEL for=\"pathTrans\">$__{'Repeaters Path'}: </LABEL>";
 	print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_acq}')\" name=\"pathTrans\" size=\"40\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
 	print "</FIELDSET>";
 
@@ -561,7 +561,7 @@ print "<TR>";
 		print "</SELECT><BR>\n";
 		# --- RAWDATA
 		print "<LABEL for=\"rawdata\">$__{'Raw data source'}: </label> <input size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawdata}')\" type=\"text\" id=\"rawdata\" name=\"rawdata\" value=\"$usrRAWDATA\"/><br/>";
-		# --- Code réseau FDSN
+		# --- Code rï¿½seau FDSN
 		print "<LABEL for=\"fdsn\">Network code: </LABEL>";
 		print "<SELECT name=\"fdsn\" id=\"fdsn\" size=\"1\" onMouseOut=\"nd()\" value=\"$usrFDSN\" onMouseOver=\"overlib('$__{help_creationstation_fdsn}')\">";
 		for ("",sort(keys(%FDSN))) {
@@ -622,16 +622,15 @@ print "<TR>";
 		print "<label for=\"acqr\">$__{'Acq. period (days)'}: </label> <input size=\"9\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_acqrate}')\"type=\"text\" id=\"acqr\" name=\"acqr\" value=\"$usrACQ\"/><br/>";
 		print "<label for=\"ldly\">$__{'Acq. delay (days)'}: </label> <input size=\"9\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_acqdelay}')\"type=\"text\" id=\"ldly\" name=\"ldly\" value=\"$usrDLY\"/><br/>";
 		print "</TD></TR></TABLE></FIELDSET><BR>\n";
-
-		# --- Propagates other Proc's parameters (hidden)
-		#	PROC.*.* = other proc's parameters
-		#	^* = list of selected parameters formerly associated with all proc): they have been used at the begining of this script
-		#	to fill the default values in form, but will be also propagated to all other associated procs (see postNODE.pl)
-		for (keys(%NODE)) {
-			if ( !($_ =~ /^$GRIDType\.$GRIDName\./)
-				&& $_ =~ /^VIEW\.|^PROC\.|^FDSN_NETWORK_CODE$|^UTC_DATA$|^ACQ_RATE$|^RAWFORMAT$|^RAWDATA$|^CHANNEL_LIST$|^FID/ ) {
-				print "<INPUT hidden name=\"$_\" value=\"$NODE{$_}\">";
-			}
+	}
+	# --- Propagates any other Proc's parameters (hidden)
+	#	PROC.*.* = other proc's parameters
+	#	^* = list of selected parameters formerly associated with all proc): they have been used at the begining of this script
+	#	to fill the default values in form, but will be also propagated to all other associated procs (see postNODE.pl)
+	for (keys(%NODE)) {
+		if ( !($_ =~ /^$GRIDType\.$GRIDName\./)
+			&& $_ =~ /^VIEW\.|^PROC\.|^FDSN_NETWORK_CODE$|^UTC_DATA$|^ACQ_RATE$|^RAWFORMAT$|^RAWDATA$|^CHANNEL_LIST$|^FID/ ) {
+			print "<INPUT hidden name=\"$_\" value=\"$NODE{$_}\">";
 		}
 	}
 
@@ -684,4 +683,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
