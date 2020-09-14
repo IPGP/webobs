@@ -49,6 +49,7 @@ use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 use DBI;
+use Try::Tiny;
 use IO::Socket;
 use WebObs::Config;
 use WebObs::Users;
@@ -62,7 +63,7 @@ $QryParm->{'action'}    ||= 'display';
 
 # ---- some globals
 my $go2top = "&nbsp;&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
-my @qrs;
+my $db_rows;
 my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
 my $userMsg="$buildTS ";
 my $userMsgColor='black';
@@ -71,7 +72,6 @@ my $notfMsgColor='black';
 my $authMsg="$buildTS ";
 my $authMsgColor='black';
 my $refMsg = my $refMsgColor = "";
-my $lastDBIerrstr = "";
 
 # ---- any reasons why we couldn't go on ?
 # ----------------------------------------
@@ -129,11 +129,15 @@ if ($QryParm->{'action'} eq 'insert') {
 		$q = "insert into $authtable values(\'$QryParm->{'uid'}\',\'$QryParm->{'res'}\',\'$QryParm->{'auth'}\')";
 		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor; 
 	} else { die "$QryParm->{'action'} for unknown table"; }
-	my $rows = dbu($q);
-	$$refMsg  .= ($rows == 1) ? "  having inserted new $QryParm->{'tbl'} " : "  failed to insert new $QryParm->{'tbl'}"; 
-	$$refMsg  .= " $lastDBIerrstr";
-	$$refMsgColor  = ($rows == 1) ? "green" : "red";
-	#$$refMsg  .= " - <i>$q</i>";
+
+	my $err = execute_queries($WEBOBS{SQL_DB_USERS}, $q);
+	if ($err) {
+		$$refMsg .= " failed to insert new $QryParm->{'tbl'} ($err) ";
+		$$refMsgColor = "red";
+	} else {
+		$$refMsg .= " successfully inserted new $QryParm->{'tbl'} ";
+		$$refMsgColor = "green" if ($$refMsgColor ne "red");
+	}
 }
 # ---- process (execute) sql update a row of table 'tbl' 
 # ----------------------------------------------------------------------------
@@ -160,41 +164,44 @@ if ($QryParm->{'action'} eq 'update') {
 		$q .= " WHERE UID=\'$QryParm->{'OLDuid'}\' AND RESOURCE=\'$QryParm->{'OLDres'}\'";
 		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor; 
 	} else { die "$QryParm->{'action'} for unknown table"; }
-	my $rows = dbu($q);
-	$$refMsg  .= ($rows == 1) ? "  having updated $QryParm->{'tbl'} " : "  failed to update $QryParm->{'tbl'}"; 
-	$$refMsg  .= " $lastDBIerrstr";
-	$$refMsgColor  = ($rows == 1) ? "green" : "red";
-	#$$refMsg  .= " - <i>$q</i>";
+
+	my $err = execute_queries($WEBOBS{SQL_DB_USERS}, $q);
+	if ($err) {
+		$$refMsg .= " failed to update $QryParm->{'tbl'} ($err) ";
+		$$refMsgColor = "red";
+	} else {
+		$$refMsg .= " successfully updated $QryParm->{'tbl'} ";
+		$$refMsgColor = "green" if ($$refMsgColor ne "red" );
+	}
 }
 # ---- process (execute) sql update table 'groups' after user insert or update
 # ----------------------------------------------------------------------------
-if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $QryParm->{'tbl'} eq "user") {
-	my @gids = $cgi->multi_param('gid');
-	my $q0 = "insert into $WEBOBS{SQL_TABLE_GROUPS} values (\'+++\',\'$QryParm->{'uid'}\')";
-	my $q1 = "delete from $WEBOBS{SQL_TABLE_GROUPS} WHERE UID=\'$QryParm->{'uid'}\' AND GID != \'+++\'";
-	my @values = map { "('$_',\'$QryParm->{'uid'}\')" } @gids ;
-	my $q2 = "insert or replace into $WEBOBS{SQL_TABLE_GROUPS} VALUES ".join(',',@values);
-	my $q3 = "delete from $WEBOBS{SQL_TABLE_GROUPS} WHERE UID=\'$QryParm->{'uid'}\' AND GID = \'+++\'";
-	my $rows = dbuow($q0,$q1,$q2,$q3);
-	$userMsg  .= ($rows >= 1) ? "  having updated $WEBOBS{SQL_TABLE_GROUPS} " : "  failed to update $WEBOBS{SQL_TABLE_GROUPS}"; 
-	$userMsg  .= " $lastDBIerrstr";
-	$userMsgColor  = ($rows >= 1) ? "green" : "red";
-	#$userMsg  .= " - <i>$q1 * $q2</i>";
+if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update')
+    && $QryParm->{'tbl'} eq "user")
+{
+	my $err = set_wo_user_groups($QryParm->{'uid'},
+	                             $cgi->multi_param('gid'));
+	if ($err) {
+		$userMsg .= " ‑ failed to update $WEBOBS{SQL_TABLE_GROUPS} ($err) ";
+		$userMsgColor = "red";
+	} else {
+		$userMsg .= " ‑ $WEBOBS{SQL_TABLE_GROUPS} successfully updated ";
+		$userMsgColor = "green" if ($userMsgColor ne "red");
+	}
+
 }
 # ---- process (execute) sql update table 'groups' 
 # ----------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'updgrp') {
-	my @uids = $cgi->multi_param('uid');
-	my $q0 = "insert into $WEBOBS{SQL_TABLE_GROUPS} values (\'$QryParm->{'gid'}\',\'+++\')";
-	my $q1 = "delete from $WEBOBS{SQL_TABLE_GROUPS} WHERE GID=\'$QryParm->{'gid'}\' AND UID != \'+++\'";
-	my @values = map { "(\'$QryParm->{'gid'}\','$_')" } @uids ;
-	my $q2 = "insert or replace into $WEBOBS{SQL_TABLE_GROUPS} VALUES ".join(',',@values);
-	my $q3 = "delete from $WEBOBS{SQL_TABLE_GROUPS} WHERE GID=\'$QryParm->{'gid'}\' AND UID = \'+++\'";
-	my $rows = dbuow($q0,$q1,$q2,$q3);
-	$userMsg  .= ($rows >= 1) ? "  having updated $WEBOBS{SQL_TABLE_GROUPS} " : "  failed to update $WEBOBS{SQL_TABLE_GROUPS}"; 
-	$userMsg  .= " $lastDBIerrstr";
-	$userMsgColor  = ($rows >= 1) ? "green" : "red";
-	#$userMsg  .= " - <i>$q1 * $q2</i>";
+	my $err = set_wo_group_members($QryParm->{'gid'},
+	                               $cgi->multi_param('uid'));
+	if ($err) {
+		$userMsg .= " ‑ failed to update $WEBOBS{SQL_TABLE_GROUPS} ($err) ";
+		$userMsgColor = "red";
+	} else {
+		$userMsg .= " ‑ $WEBOBS{SQL_TABLE_GROUPS} successfully updated ";
+		$userMsgColor = "green" if ($userMsgColor ne "red");
+	}
 }
 # ---- process (execute) sql delete a row of table 'tbl' 
 # ------------------------------------------------------
@@ -221,30 +228,45 @@ if ($QryParm->{'action'} eq 'delete') {
 		$q .= " WHERE UID=\'$QryParm->{'uid'}\' AND RESOURCE=\'$QryParm->{'res'}\'";
 		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor; 
 	} else { die "$QryParm->{'action'} for unknown table"; }
-	my $rows = dbu($q);
-	$$refMsg  .= ($rows >= 1) ? "  having deleted in $QryParm->{'tbl'} " : "  failed to delete in $QryParm->{'tbl'}"; 
-	$$refMsg  .= " $lastDBIerrstr";
-	$$refMsgColor  = ($rows >= 1) ? "green" : "red";
-	#$$refMsg  .= " - <i>$q</i>";
+
+	my $err = execute_queries($WEBOBS{SQL_DB_USERS}, $q);
+	if ($err) {
+		$$refMsg .= " failed to delete in $QryParm->{'tbl'} ($err) ";
+		$$refMsgColor = "red";
+	} else {
+		$$refMsg .= " successfully deleted in $QryParm->{'tbl'} ";
+		$$refMsgColor = "green" if ($$refMsgColor ne "red");
+	}
 }
 # ---- process (execute) sql delete 
 # ---------------------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'deleteU') {
 	if ($QryParm->{'tbl'} eq "group") {
-		my $q = "delete from $WEBOBS{SQL_TABLE_GROUPS} where GID=\'$QryParm->{'gid'}\'";
-		my $rows = dbu($q);
-		$userMsg  .= ($rows >= 1) ? "  having deleted $QryParm->{'tbl'}" : "  failed to delete $QryParm->{'tbl'}"; 
-		$userMsg  .= " $lastDBIerrstr";
-		$userMsgColor  = ($rows >= 1) ? "green" : "red";
-		#$userMsg  .= " - <i>$q</i>";
+		my $q = "DELETE FROM $WEBOBS{SQL_TABLE_GROUPS}"
+		        ." WHERE GID='$QryParm->{'gid'}'";
+
+		my $err = execute_queries($WEBOBS{SQL_DB_USERS}, $q);
+		if ($err) {
+			$userMsg .= " failed to delete $QryParm->{'tbl'} ($err) ";
+			$userMsgColor = "red";
+		} else {
+			$userMsg .= " successfully deleted $QryParm->{'tbl'} ";
+			$userMsgColor = "green" if ($userMsgColor ne "red");
+		}
+
 	}
 	if ($QryParm->{'tbl'} eq "notification") {
-		my $q = "delete from $WEBOBS{SQL_TABLE_NOTIFICATIONS} where EVENT=\'$QryParm->{'event'}\'";
-		my $rows = dbu($q);
-		$notfMsg  .= ($rows >= 1) ? "  having deleted $QryParm->{'tbl'} " : "  failed to delete $QryParm->{'tbl'}"; 
-		$notfMsg  .= " $lastDBIerrstr";
-		$notfMsgColor  = ($rows >= 1) ? "green" : "red";
-		#$notfMsg  .= " - <i>$q</i>";
+		my $q = "DELETE FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
+		        ." WHERE EVENT='$QryParm->{'event'}'";
+
+		my $err = execute_queries($WEBOBS{SQL_DB_USERS}, $q);
+		if ($err) {
+			$notfMsg .= " failed to delete $QryParm->{'tbl'} ($err) ";
+			$notfMsgColor = "red";
+		} else {
+			$notfMsg .= " successfully deleted $QryParm->{'tbl'} ";
+			$notfMsgColor = "green" if ($notfMsgColor ne "red");
+		}
 	}
 }
 
@@ -274,37 +296,43 @@ EOHEADER
 
 # ---- build users and groups 'select dropdowns contents' 
 # -----------------------------------------------------------------------------
-my $quusers = "select distinct(UID),FULLNAME from $WEBOBS{SQL_TABLE_USERS} order by uid";
-@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$quusers");
-chomp(@qrs);
+$db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
+                     "SELECT DISTINCT(UID), FULLNAME"
+                     ." FROM $WEBOBS{SQL_TABLE_USERS} ORDER BY UID");
 my $selusers = "";
-for my $uid_name (@qrs) {
-	my ($uid, $name) = split(/\|/, $uid_name);
-	$selusers .= "<option value=\"$uid\">$uid &ndash; $name</option>";
+for my $uid_name (@$db_rows) {
+	my ($uid, $name) = @$uid_name;
+	$selusers .= qq(<option value="$uid">$uid &ndash; $name</option>);
 }
 
-my $qugrps = "select distinct(GID) from $WEBOBS{SQL_TABLE_GROUPS} order by gid";
-@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qugrps");
-chomp(@qrs);
-my $selgrps = ""; map { $selgrps .= "<option>$_</option>" } @qrs;  
+$db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
+                     "SELECT DISTINCT(GID) FROM $WEBOBS{SQL_TABLE_GROUPS}"
+                     ." ORDER BY GID");
+my $selgrps = "";
+for my $row (@$db_rows) {
+	my ($gid) = @$row;
+	$selgrps .= "<option>$gid</option>";
+}
 
 # ---- build 'users' table result rows 
 # -----------------------------------------------------------------------------
-my $qusers  = "select u.UID,FULLNAME,LOGIN,EMAIL,VALIDITY,group_concat(GID) AS groups"
-			  ." from $WEBOBS{SQL_TABLE_USERS} u left join $WEBOBS{SQL_TABLE_GROUPS} g on (u.uid = g.uid)"
-			  ." group by u.uid order by u.uid";
-@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qusers");
-chomp(@qrs);
-
+$db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
+                     "SELECT u.UID,FULLNAME,LOGIN,EMAIL,VALIDITY,"
+                     ."group_concat(GID) AS groups"
+			         ." FROM $WEBOBS{SQL_TABLE_USERS} u"
+                     ." LEFT JOIN $WEBOBS{SQL_TABLE_GROUPS} g"
+                     ." ON (u.uid = g.uid)"
+			         ." GROUP BY u.UID ORDER BY u.UID");
 my $dusers = '';
 my $dusersCount = 0;
 my $dusersId = '';
 
-for (@qrs) {
+for my $row (@$db_rows) {
 	my ($dusers_uid, $dusers_fullname, $dusers_login, $dusers_email,
-		$dusers_validity, $dusers_groups) = split(/\|/,$_);
+		$dusers_validity, $dusers_groups) = @$row;
+	$dusers_groups //= '';
 	$dusersCount++;
-	$dusersId="udef".$dusersCount;
+	$dusersId = "udef".$dusersCount;
 
 	# Webobs owner and visitor user row should be grayed and have no edition/deletion link
 	my $tr_classes = '';
@@ -336,15 +364,15 @@ _EOD_
 
 # ---- build 'unique groups' table result rows 
 # -----------------------------------------------------------------------------
-$qugrps = "select distinct(GID) from $WEBOBS{SQL_TABLE_GROUPS} order by gid";
-@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qugrps");
-chomp(@qrs);
-
+$db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
+                     "SELECT DISTINCT(GID) FROM $WEBOBS{SQL_TABLE_GROUPS}"
+                     ." ORDER BY GID");
 my $dugrps = '';
 my $dugrpsCount = 0;
 my $dugrpsId = '';
 
-for (@qrs) {
+for my $row (@$db_rows) {
+	my ($gid) = @$row;
 	$dugrpsCount++;
 	$dugrpsId="nudef".$dugrpsCount;
 	$dugrps .= <<_EOD_
@@ -354,24 +382,23 @@ for (@qrs) {
 			<img title="delete group" src="/icons/no.png">
 		</a>
 	</td>
-	<td class="tdlock">$_</td>
+	<td class="tdlock">$gid</td>
 	</tr>
 _EOD_
 }
 
 # ---- build S'groups' table result rows 
 # -----------------------------------------------------------------------------
-my $Sqgrps  = "select gid,group_concat(uid) as uids "
-			  ."from $WEBOBS{SQL_TABLE_GROUPS} group by gid order by gid";
-@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$Sqgrps");
-chomp(@qrs);
-
+$db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
+                     "SELECT GID,GROUP_CONCAT(UID) AS UIDS"
+                     ." FROM $WEBOBS{SQL_TABLE_GROUPS}"
+                     ." GROUP BY GID ORDER BY GID");
 my $Sdgrps = '';
 my $SdgrpsCount = 0;
 my $SdgrpsId = '';
 
-for (@qrs) {
-	my ($Sdgrps_gid, $Sdgrps_uids) = split(/\|/,$_);
+for my $row (@$db_rows) {
+	my ($Sdgrps_gid, $Sdgrps_uids) = @$row;
 	$SdgrpsCount++;
 	$SdgrpsId="gdef".$SdgrpsCount;
 
@@ -395,16 +422,17 @@ _EOD_
 
 # ---- build 'unique evnt notifications' table result rows 
 # -----------------------------------------------------------------------------
-my $qunotf  = "select distinct(EVENT) ";
-$qunotf .= "from $WEBOBS{SQL_TABLE_NOTIFICATIONS} order by EVENT";
-@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qunotf");
-chomp(@qrs);
+$db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
+                     "SELECT DISTINCT(EVENT)"
+                     ." FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
+                     ." ORDER BY EVENT");
 
 my $dunotf = '';
 my $dunotfCount = 0;
 my $dunotfId = '';
 
-for (@qrs) {
+for my $row (@$db_rows) {
+	my ($event) = @$row;
 	$dunotfCount++;
 	$dunotfId="nudef".$dunotfCount;
 	$dunotf .= <<_EOD_;
@@ -414,25 +442,24 @@ for (@qrs) {
 			<img title="delete group" src="/icons/no.png">
 		</a>
 	</td>
-<td class="tdlock unotif-event">$_</td>
+	<td class="tdlock unotif-event">$event</td>
 </tr>
 _EOD_
 }
 
 # ---- build 'notifications' table result rows 
 # -----------------------------------------------------------------------------
-my $qnotf  = "select EVENT,VALIDITY,UID,MAILSUBJECT,MAILATTACH,ACTION ";
-$qnotf .= "from $WEBOBS{SQL_TABLE_NOTIFICATIONS} order by 1";
-@qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "$qnotf");
-chomp(@qrs);
-
+$db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
+                     "SELECT EVENT,VALIDITY,UID,MAILSUBJECT,MAILATTACH,ACTION"
+                     ." FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
+                     ." ORDER BY 1");
 my $dnotf = '';
 my $dnotfCount = 0;
 my $dnotfId = '';
 
-for (@qrs) {
+for my $row (@$db_rows) {
 	my ($dnotf_event, $dnotf_valid, $dnotf_mail, $dnotf_mailsubj,
-		$dnotf_mailatt, $dnotf_act) = split(/\|/,$_);
+		$dnotf_mailatt, $dnotf_act) = @$row;
 
 	$dnotfCount++;
 	$dnotfId="ndef".$dnotfCount;
@@ -474,33 +501,34 @@ if ( scalar(@PBREPLY) > 0 ) {
 # -----------------------------------------------------------------------------
 my %TA;
 for my $an (qw(proc view form wiki misc)) {
-	$TA{$an}{table} = $WEBOBS{SQL_TABLE_AUTHPROCS} if ($an eq "proc") ;
-	$TA{$an}{table} = $WEBOBS{SQL_TABLE_AUTHVIEWS} if ($an eq "view") ;
-	$TA{$an}{table} = $WEBOBS{SQL_TABLE_AUTHFORMS} if ($an eq "form") ;
-	$TA{$an}{table} = $WEBOBS{SQL_TABLE_AUTHWIKIS} if ($an eq "wiki") ;
-	$TA{$an}{table} = $WEBOBS{SQL_TABLE_AUTHMISC}  if ($an eq "misc") ;
-	$TA{$an}{qauth}  = "select UID,RESOURCE,AUTH from $TA{$an}{table} order by UID,RESOURCE";
-	my @qrs = qx(sqlite3 $WEBOBS{SQL_DB_USERS} '$TA{$an}{qauth}');
-	chomp(@qrs);
-
+	my %auth_tablenames = (
+		"proc" => $WEBOBS{SQL_TABLE_AUTHPROCS},
+		"view" => $WEBOBS{SQL_TABLE_AUTHVIEWS},
+		"form" => $WEBOBS{SQL_TABLE_AUTHFORMS},
+		"wiki" => $WEBOBS{SQL_TABLE_AUTHWIKIS},
+		"misc" => $WEBOBS{SQL_TABLE_AUTHMISC},
+	);
+	$db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
+	                     "SELECT UID,RESOURCE,AUTH FROM $auth_tablenames{$an}"
+	                     ." ORDER BY UID,RESOURCE");
 	$TA{$an}{dauth} = '';
 	$TA{$an}{dauthCount} = 0;
 
-	for (@qrs) {
-		my ($dauth_uid, $dauth_res, $dauth_auth) = split(/\|/,$_);
+	for my $row (@$db_rows) {
+		my ($dauth_uid, $dauth_res, $dauth_auth) = @$row;
 
 		$TA{$an}{dauthCount}++;
 		my $dauthId="adef$an".$TA{$an}{dauthCount};
 		$TA{$an}{dauth} .= <<_EOD_;
-<tr id=\"$dauthId\">
-	<td style=\"width:12px\" class=\"tdlock\">
-		<a href=\"#AUTH\" onclick=\"openPopupAuth('$an', '#$dauthId');return false\">
-			<img title=\"edit grp\" src=\"/icons/modif.png\">
+<tr id="$dauthId">
+	<td style="width:12px" class="tdlock">
+		<a href="#AUTH" onclick="openPopupAuth('$an', '#$dauthId');return false">
+			<img title="edit grp" src="/icons/modif.png">
 		</a>
 	</td>
-	<td style=\"width:12px\" class=\"tdlock\">
-		<a href=\"#AUTH\" onclick=\"postDeleteAuth('$an', '#$dauthId');return false\">
-			<img title=\"delete autorisation\" src=\"/icons/no.png\">
+	<td style="width:12px" class="tdlock">
+		<a href="#AUTH" onclick="postDeleteAuth('$an', '#$dauthId');return false">
+			<img title="delete autorisation" src="/icons/no.png">
 		</a>
 	</td>
 	<td class="auth-uid">$dauth_uid</td>
@@ -783,41 +811,142 @@ print "</div>";
 print "<br>\n</body>\n</html>\n";
 exit;
 
-# ---- helper: execute the non-select sql statement in $_[0] 
+# Connect to the database and return the handler
 # ------------------------------------------------------------------------------
-sub dbu {
-	$lastDBIerrstr = "";
-	my $dbh = DBI->connect("dbi:SQLite:dbname=$WEBOBS{SQL_DB_USERS}", '', '') or die "$DBI::errstr" ;
-	my $rv = $dbh->do($_[0]);
-	$rv = 0 if ($rv == 0E0); 
-	$lastDBIerrstr = sprintf("(%d row%s) %s", $rv, ($rv<=1)?"":"s", $DBI::errstr // '');
-	$dbh->disconnect();
-	return $rv;
+sub db_connect {
+	# Open a connection to a SQLite database using RaiseError.
+	#
+	# Usage example:
+	#   my $dbh = db_connect($WEBOBS{SQL_DB_POSTBOARD})
+	#     || die "Error connecting to $dbname: $DBI::errstr";
+	#
+	my $dbname = shift;
+	my $opts = shift || {};
+	my %default_options = (
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+	);
+	my %options = (%default_options, %$opts);
+	return DBI->connect("dbi:SQLite:$dbname", "", "", \%options);
 }
 
-# ---- helper: execute the sql unit of work made up of $_[0]...$_[3] sql statements
-# ------------------------------------------------------------------------------
-sub dbuow {
-	$lastDBIerrstr = "";
-	my $rv = 0;
-	my $dbh = DBI->connect("dbi:SQLite:dbname=$WEBOBS{SQL_DB_USERS}", '', '',{AutoCommit => 0, RaiseError => 1,}) or die "$DBI::errstr" ;
-	eval {
-		$dbh->do($_[0]);
-		$dbh->do($_[1]);
-		$rv = $dbh->do($_[2]);
-		$dbh->do($_[3]);
-		$rv = 0 if ($rv == 0E0);
-		$lastDBIerrstr = sprintf("(%d row%s) %s", $rv, ($rv<=1) ? "" : "s", $DBI::errstr // '');
-		$dbh->commit();
-	};
-	if ($@) {
-		$rv = 0;
-		$lastDBIerrstr = sprintf("(0 row) %s",$@);
-		$dbh->rollback();
+
+# Fetch and return all results of a select statement
+# -----------------------------------------------------------------------------
+sub fetch_all {
+	#
+	# Connect to a database, run the given SQL statement, and
+	# return a reference to an array of array references.
+	#
+	my $dbname = shift;
+	my $query = shift;
+
+	my $dbh = db_connect($dbname);
+	if (not $dbh) {
+		logit("Error connecting to $dbname: $DBI::errstr");
+		return;
 	}
-	$dbh->disconnect();
-	return $rv;
+	# Will raise an error if anything goes wrong
+	my $ref = $dbh->selectall_arrayref($query);
+
+	$dbh->disconnect()
+		or warn "Got warning while disconnecting from $dbname: ".$dbh->errstr;
+	return $ref;
 }
+
+# Atomatically execute a list of queries
+# -----------------------------------------------------------------------------
+sub execute_queries {
+	#
+	# Connect to a database and atomically execute the given SQL
+	# statements, using DBI->do().
+	# Log error or warning to stderr/logs if anything goes wrong.
+	# Return an empty string on success, the error message otherwise.
+	#
+	my $dbname = shift;
+	my @queries = @_;
+	my $err_msg = "";
+
+	my $dbh = db_connect($dbname, {'AutoCommit' => 0});
+	if (not $dbh) {
+		logit("Error connecting to $dbname: $DBI::errstr");
+		return $DBI::errstr;
+	}
+	try {
+		for my $q (@queries) {
+			$dbh->do($q);
+		}
+	} catch {
+		# Catch errors to show them to the user
+		# (Try::Tiny sets $_ to the exception message)
+		$err_msg = $_;
+		# Log the queries for information (the error is already logged by DBI,
+		# as we use the PrintError option).
+		warn "Error while executing queries '".join("; ", @queries)
+		     ." (rolling back)";
+		eval { $dbh->rollback() };  # rollback might fail
+	};
+	if (not $err_msg) {
+		$dbh->commit();
+	}
+	$dbh->disconnect()
+		or CORE::warn "Got warning while disconnecting from $dbname: "
+		              .$dbh->errstr;
+
+	return $err_msg;
+}
+
+# ------------------------------------------------------------------------------
+# Create or update the members of a (potentially new) group
+# Return the empty string on success, or the DBI error message if an error
+# occured and the gropu members could not be updated.
+#
+sub set_wo_group_members {
+	my $gid = shift;  # group GID
+	my @uids = @_;    # UIDs of group members
+
+	# Insert members of the group
+	my @values = map { "('$gid', '$_')" } @uids;
+	my $insert_stm = "INSERT OR REPLACE INTO $WEBOBS{SQL_TABLE_GROUPS} VALUES "
+	                 .join(',', @values);
+
+	# Delete any removed members from the group. This is done _after_ we have
+	# inserted new members to prevent the group from having no member for a
+	# short while, as the SQL trigger on the 'groups' table would remove the
+	# group entries in 'auth*' and 'notifications' tables.
+	my $delete_stm = "DELETE FROM $WEBOBS{SQL_TABLE_GROUPS}"
+	                 ." WHERE GID='$gid' AND UID NOT IN ("
+	                 .join(",", map { "'$_'" } @uids).")";
+
+	return execute_queries($WEBOBS{SQL_DB_USERS}, $insert_stm, $delete_stm);
+}
+
+# ------------------------------------------------------------------------------
+# Update the group memberships for a given user
+# Return the empty string on success, or the DBI error message if an error
+# occured and the memberships could not be updated.
+#
+sub set_wo_user_groups {
+	my $uid = shift;  # user UID
+	my @gids = @_;    # GIDs of groups the user is a member of
+
+	# Insert the user in its groups
+	my @values = map { "('$_', '$uid')" } @gids;
+	my $insert_stm = "INSERT OR REPLACE INTO $WEBOBS{SQL_TABLE_GROUPS} VALUES "
+	                 .join(',', @values);
+
+	# Delete any group membership for the user. This is done _after_ we have
+	# inserted new memberships to prevent any group from having no member for
+	# a short while, as the SQL trigger on the 'groups' table would remove the
+	# group entries in 'auth*' and 'notifications' tables.
+	my $delete_stm = "DELETE FROM $WEBOBS{SQL_TABLE_GROUPS} "
+	                 ."WHERE UID='$uid' AND GID NOT IN ("
+	                 .join(",", map { "'$_'" } @gids).")";
+
+	return execute_queries($WEBOBS{SQL_DB_USERS}, $insert_stm, $delete_stm);
+}
+
 
 __END__
 
