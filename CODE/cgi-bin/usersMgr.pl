@@ -89,7 +89,7 @@ $QryParm->{'email'}     ||= "";
 $QryParm->{'uid'}       ||= "";
 $QryParm->{'gid'}       ||= "";
 $QryParm->{'event'}     ||= "";
-$QryParm->{'valid'}     ||= "";
+$QryParm->{'valid'}     ||= "N";
 $QryParm->{'mailsub'}   ||= "";
 $QryParm->{'mailatt'}   ||= "";
 $QryParm->{'act'}       ||= "";
@@ -257,7 +257,7 @@ print <<"EOHEADER";
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
-<title>Users Manager</title>
+<title>User Manager</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <link rel="stylesheet" type="text/css" href="/css/users.css">
 <link rel="stylesheet" type="text/css" href="/css/scheduler.css">
@@ -520,7 +520,7 @@ print <<"EOPART1";
 <script language="JavaScript" src="/js/overlib/overlib.js" type="text/javascript"></script>
 
 <A NAME="MYTOP"></A>
-<h1>WebObs Users Manager</h1>
+<h1>WebObs User Manager</h1>
 
 <P class="subMenu"> <b>&raquo;&raquo;</b> [ <a href="#IDENT">Identification</a> | <a href="#POSTBOARD">PostBoard Subscriptions</a> | <a href="#AUTH">Authorizations</a>]</P>
 <br>
@@ -549,10 +549,10 @@ Identifications&nbsp;$go2top
 	<label>Email:<span class="small">mail address</span></label>
 	<input type="text" name="email" value=""/><br/>
 	<label for="gid">Gid(s):<span class="small">group id(s)<br>Ctrl for multiple</span></label>
-	<!--<input type="text" name="gid" id="gid" value=""/><br/>-->
 	<select name="gid" id="gid" size="5" multiple>$selgrps</select><br/> 
-	<label>Validity:<span class="small">Y or N</span></label>
-	<input type="text" name="valid" value=""/><br/>
+	<label for="valid-user">Validity:
+		<span class="small">check to activate account</span></label>
+	<input type="checkbox" id="valid-user" name="valid" value="Y"/><br/>
 	<p style="margin: 0px; text-align: center">
 		<input type="button" name="sendbutton" value="send" onclick="sendPopupUser(); return false;" />
 		<input type="button" value="cancel" onclick="closePopup(); return false" />
@@ -641,8 +641,9 @@ PostBoard subscriptions&nbsp;$go2top
 	<p><b><i>Edit notification definition</i></b></p>
 	<label>Event:<span class="small">Event ID (major[.minor])</span></label>
 	<input type="text" name="event" value=""/><br/>
-	<label>Validity:<span class="small">Y or N</span></label>
-	<input type="text" name="valid" value=""/><br/>
+	<label for="valid-notif">Validity:
+		<span class="small">check to activate notification</span></label>
+	<input type="checkbox" id="valid-notif" name="valid" value="Y"/><br/>
 	<label>Uid:<span class="small">userid to send mail to</span></label>
 	<input type="text" name="uid" value=""/><br/>
 	<label>MailSubject:<span class="small">mail subject</span></label>
