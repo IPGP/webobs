@@ -131,7 +131,7 @@ function openPopupNotf(notif_row) {
 		form.uid.style.backgroundColor = "";
 		form.mailsub.value = "";
 		form.mailatt.value = "";
-		form.act.value = "";
+		form.act.value = "-";
 		form.act.style.backgroundColor = "";
 		form.action.value = "insert";
 	}
@@ -198,7 +198,7 @@ function sendPopupGroup() {
 		return false;
 	}
 	if ( !form.gid.value.match(/^\+/) ) {
-		alert ("gid invalid syntax");
+		alert ("gid must start with '+'");
 		return false;
 	}
 	var usels='';
@@ -226,11 +226,11 @@ function sendPopupNotf() {
 		return false;
 	}
 	if ( form.uid.value == "" ) {
-		alert ("uid can't be empty");
+		alert ("uid can't be empty (set to '-' disable email)");
 		return false;
 	}
 	if ( form.act.value == "" ) {
-		alert ("action can't be empty");
+		alert ("action can't be empty (set to '-' to disable)");
 		return false;
 	}
 	if ( UidGidExists(form.uid.value) ) {
