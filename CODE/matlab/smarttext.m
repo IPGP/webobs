@@ -1,9 +1,14 @@
 function varargout=smarttext(x,y,s,varargin)
-%SMARTTEXT Optimized text labelling in lat/lon
-%	SMARTTEXT(LON,LAT,S) adds the text string S to (LON,LAT) location, as 
-%	the function TEXT does in 2-D. If LON and LAT are vectors and S an 
+%SMARTTEXT Optimized text labelling
+%	SMARTTEXT(X,Y,S) adds the text string S to (X,Y) location on the current
+%	axe, as the function TEXT does in 2-D. If X and Y are vectors and S an 
 %	array of strings, SMARTTEXT will optimize the text position and alignment, 
-%	trying to minimize text overlapping. LON and LAT must be in degree.
+%	trying to minimize text overlapping.
+%
+%	If the current axe coordinates are in degrees of latitude and longitude,
+%	use SMARTTEXT(LON,LAT,S,'lonlat') or SMARTTEXT(LAT,LON,S,'latlon') to 
+%	optimize the computation of distances and azimuth. LAT and LON must be
+%	in degree.
 %
 %	SMARTTEXT(...,param1,value1,param2,value2,...) specifies additionnal 
 %	properties of the text using parameter/value pairs. See TEXT 
@@ -13,17 +18,34 @@ function varargout=smarttext(x,y,s,varargin)
 %	   'noframe': allows labels outside the axis limits
 %	   'verbose': displays triples and azimuth values
 %
-%	SMARTTEXT uses function GREATCIRCLE to compute azimuth and distances.
+%	SMARTTEXT uses function GREATCIRCLE to compute azimuth and distances
+%	when using 'latlon' or 'lonlat' option.
 %
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-05-27, in Yogyakarta, Indonesia
-%	Updated: 2020-06-06
+%	Updated: 2020-08-12
 
 hh = [];
 
 if numel(x) ~= numel(y) || (ischar(s) && numel(x) ~= size(s,1)) || (iscell(s) && numel(x) ~= numel(s))
 	error('Number of elements of X, Y and S must be consistent.')
+end
+
+latlon = false;
+k = strcmpi(varargin,'lonlat');
+if any(k)
+	latlon = true;
+	varargin(k) = [];
+end
+
+k = strcmpi(varargin,'latlon');
+if any(k)
+	latlon = true;
+	varargin(k) = [];
+	tmp = x;
+	x = y;
+	y = tmp;
 end
 
 k = strcmpi(varargin,'noframe');
@@ -69,13 +91,25 @@ for n = 1:m
 		az = 180;
 	else
 		% looks for the 2 nearest neighbors
-		[~,k] = sort(greatcircle(y(n),x(n),y,x));
+		if latlon
+			[~,k] = sort(greatcircle(y(n),x(n),y,x));
+		else
+			[~,k] = sort(sqrt((x-x(n)).^2 + (y-y(n)).^2));
+		end
 		if length(k) > 1
 			k2 = k(2:min(3,numel(x)));
 			% computes mean azimuth
-			[~,~,~,bear1] = greatcircle(y(n),x(n),y(k2(1)),x(k2(1)),2);
+			if latlon
+				[~,~,~,bear1] = greatcircle(y(n),x(n),y(k2(1)),x(k2(1)),2);
+			else
+				bear1 = 90 - atan2d(y(k2(1))-y(n),x(k2(1))-x(n));
+			end
 			if length(k2) > 1
-				[~,~,~,bear2] = greatcircle(y(n),x(n),y(k2(2)),x(k2(2)),2);
+				if latlon
+					[~,~,~,bear2] = greatcircle(y(n),x(n),y(k2(2)),x(k2(2)),2);
+				else
+					bear2 = 90 - atan2d(y(k2(2))-y(n),x(k2(2))-x(n));
+				end
 				az = mod((bear1(1) + bear2(1))/2 + 360,360);
 				if abs(bear2(1)-bear1(1))>180
 					az = az + 180;

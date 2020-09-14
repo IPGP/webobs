@@ -1,7 +1,7 @@
 function gridmaps(grids,outd,varargin)
 %GRIDMAPS Grids location maps of nodes
-%   GRIDMAPS creates or updates NODES location maps for each existing GRIDS 
-%   (views or procs). Maps are located in .eps and .png formats. 
+%   GRIDMAPS creates or updates NODES location maps for each existing GRIDS
+%   (views or procs). Maps are located in .eps and .png formats.
 %
 %   GRIDMAPS(GRIDS) updates only grids listed in GRIDS (string or cell) as
 %   	gridtype.gridname
@@ -17,10 +17,10 @@ function gridmaps(grids,outd,varargin)
 %   the REQUEST.rc file located in REQDIR (made by formGRIDMAPS.pl).
 %
 %   GRIDMAPS uses SRTM or ETOPO data for background DEM shading maps. Higher
-%   resolution DEM can be defined into each grid configuration files, in 
+%   resolution DEM can be defined into each grid configuration files, in
 %   ArcInfo format.
-%   
-%   GRIDMAPS uses variables defined in CONF/GRIDMAPS.rc and the following 
+%
+%   GRIDMAPS uses variables defined in CONF/GRIDMAPS.rc and the following
 %   variables from the grid's configuration:
 %   	NODE_NAME|
 %	NODE_MARKER|
@@ -37,7 +37,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2019-12-13
+%   Updated: 2020-09-14
 
 
 WO = readcfg;
@@ -253,7 +253,7 @@ for g = 1:length(grids)
 				dlat = maps{m,2}(3:4);
 			end
 
-			% makes basemap for each individual grids or only first in merge mode 
+			% makes basemap for each individual grids or only first in merge mode
 			if ~merge || g == 1
 				% loads DEM (G may contain user's defined DEM)
 				DEM = loaddem(WO,[dlon,dlat],G);
@@ -293,7 +293,7 @@ for g = 1:length(grids)
 					else
 						clrgb = [0,0,0];
 					end
-					if length(dz1) > 1 
+					if length(dz1) > 1
 						[~,h] = contour(x,y,z,dz1,'-','Color',clrgb);
 						set(h,'LineWidth',lwminor);
 					end
@@ -341,7 +341,7 @@ for g = 1:length(grids)
 						k = k & ~(isinto(geo(kn,2),maps{mm,2}(1:2)) & isinto(geo(kn,1),maps{mm,2}(3:4)));
 					end
 				end
-				smarttext(geo(kn(k),2),geo(kn(k),1),cat(1,{N(kn(k)).ALIAS}),'FontSize',nodefont,'FontWeight','bold')
+				smarttext(geo(kn(k),1),geo(kn(k),2),cat(1,{N(kn(k)).ALIAS}),'latlon','FontSize',nodefont,'FontWeight','bold')
 			end
 
 			% makes figure and basemap
@@ -355,7 +355,7 @@ for g = 1:length(grids)
 					titre = G.NAME;
 				end
 				title(titre,'FontSize',20,'FontWeight','bold')
-				
+
 				pos = get(gca,'Position');
 
 				% gets figure and axes properties
@@ -472,5 +472,3 @@ for g = 1:length(grids)
 end
 
 timelog(procmsg,2)
-
-
