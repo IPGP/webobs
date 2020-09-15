@@ -42,7 +42,8 @@ function openPopupUser(user_row) {
 		$('label[for=gid]').css('display','block');
 		$(form.gid).css('display','block');
 		form.OLDgid.value = $(user_row + ' .user-groups').text();
-		form.valid.value = $(user_row + ' .user-validity').text();
+		$(form.valid).prop("checked",
+		    ($(user_row + ' .user-validity').text() == 'Y' ? "checked" : ""));
 		form.action.value = "update";
 	} else {
 		// populate a blank form to edit a new user
@@ -56,7 +57,7 @@ function openPopupUser(user_row) {
 			// clear any option selected in an earlier edition
 			$(this).removeProp('selected');
 		});
-		form.valid.value = "Y";
+		$(form.valid).prop("checked", "checked");
 		form.action.value = "insert";
 	}
 	form.tbl.value = "user";
@@ -112,7 +113,8 @@ function openPopupNotf(notif_row) {
 		form.event.value = $(notif_row + " .notif-event").text();
 		form.OLDevent.value = $(notif_row + " .notif-event").text();
 		form.event.style.backgroundColor = "#EEEEEE";
-		form.valid.value = $(notif_row + " .notif-validity").text();
+		$(form.valid).prop("checked",
+		  ($(notif_row + " .notif-validity").text() == 'Y' ? "checked" : ""));
 		form.uid.value = $(notif_row + " .notif-emailuid").text();
 		form.OLDuid.value = $(notif_row + " .notif-emailuid").text();
 		form.uid.style.backgroundColor = "#EEEEEE";
@@ -126,12 +128,12 @@ function openPopupNotf(notif_row) {
 		// populate a blank form to edit a new notification
 		form.event.value = "";
 		form.event.style.backgroundColor = "";
-		form.valid.value = "Y";
+		$(form.valid).prop("checked", "checked");
 		form.uid.value = "";
 		form.uid.style.backgroundColor = "";
 		form.mailsub.value = "";
 		form.mailatt.value = "";
-		form.act.value = "";
+		form.act.value = "-";
 		form.act.style.backgroundColor = "";
 		form.action.value = "insert";
 	}
@@ -198,7 +200,7 @@ function sendPopupGroup() {
 		return false;
 	}
 	if ( !form.gid.value.match(/^\+/) ) {
-		alert ("gid invalid syntax");
+		alert ("gid must start with '+'");
 		return false;
 	}
 	var usels='';
@@ -226,11 +228,11 @@ function sendPopupNotf() {
 		return false;
 	}
 	if ( form.uid.value == "" ) {
-		alert ("uid can't be empty");
+		alert ("uid can't be empty (set to '-' disable email)");
 		return false;
 	}
 	if ( form.act.value == "" ) {
-		alert ("action can't be empty");
+		alert ("action can't be empty (set to '-' to disable)");
 		return false;
 	}
 	if ( UidGidExists(form.uid.value) ) {
