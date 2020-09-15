@@ -8,7 +8,7 @@ The latest release has many improvements, new features and bug fixes.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
-## Development version (unrelease yet)
+## v2.1.6 (September 2020)
 
 ### Enhancements
 
@@ -31,6 +31,8 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 3. The postboard and its helper function `WebObs::Config::notify` were rejecting notifications having an empty 4th field (`message` field), although action notifications should rightfully be accepted with no parameters, and therefore with an empty `message` field.
 
 4. When specifying the email address of a webobs user as Envelope From address in a mailing notification submitted to the postboard, the full name of the user and its email address were mistakenly inverted, using something like `john.doe@example.com <John Doe>` instead of `John Doe <john.doe@example.com>` as the `From:` field.
+
+5. When editing a node from an associated view, if this node was also associated with procs, the parameters (FID, FNDS network, etc.) were lost.
 
 
 ## v2.1.5b (August 2020)
@@ -112,6 +114,7 @@ or, for non default configurations, `URN_OUTG` pointing to `ROOT_OUTR`.
 9. Fix redirection error when creating or deleting a folder in the 'wiki' pages.
 
 10. Fix two bugs in the miniseed output of seismic events (available from the MC or the Sefran pages) when using FDSNWS. Also fix the error page display when the miniseed file could not be fetched.
+
 
 See github commits for details.
 
