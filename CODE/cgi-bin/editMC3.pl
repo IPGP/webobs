@@ -410,7 +410,7 @@ if ($err == 0) {
 	print "<script language=\"javascript\">";
 		print "window.opener.location.reload();";
 	if ($replay) {
-		print "window.location='/cgi-bin/$WEBOBS{CGI_SEFRAN3}?date=$date&replay=$id_evt';";
+		print "window.location='/cgi-bin/$WEBOBS{CGI_SEFRAN3}?date=$date&replay=$id_evt&s3=$s3&mc3=$mc3';";
 	} else {
 		# for Firefox: opens a "false" window to be allowed to close it...
 		print "window.open('','_parent','');window.close();";
