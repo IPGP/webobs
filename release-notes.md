@@ -34,6 +34,8 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 5. When editing a node from an associated view, if this node was also associated with procs, the parameters (FID, FNDS network, etc.) were lost.
 
+6. An issue using the 'replay mode' in Sefran/MC when not using the default sefran3.
+
 
 ## v2.1.5b (August 2020)
 
