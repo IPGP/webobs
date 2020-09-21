@@ -226,7 +226,7 @@ if (($ENV{"REDIRECT_QUERY_STRING"} // '') =~ /\blogout\b/
 		<link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 	</head>
 	<body>
-		<img src="$WEBOBS{'LOGO_DEFAULT'}">
+		<img src="$WEBOBS{'URN_LOGO_DEFAULT'}">
 		<h2>You are now logged Out</h2>
 	</body>
 </html>
@@ -324,7 +324,7 @@ print <<__EOD__;
 			<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 			<script language="JavaScript" src="/js/overlib/overlib.js"></script>
 			<!-- overLIB (c) Erik Bosrup -->
-			<img src="$WEBOBS{'LOGO_DEFAULT'}">
+			<img src="$WEBOBS{'URN_LOGO_DEFAULT'}">
 			<h2>Access to $WEBOBS{WEBOBS_TITLE}</h2>
 			<fieldset>
 				<p>
