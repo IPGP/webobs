@@ -301,7 +301,7 @@ use POSIX qw/strftime :signal_h :errno_h :sys_wait_h/;
 use DBI;
 use Getopt::Std;
 use IO::Socket;
-use File::Basename;
+use File::Basename qw(basename fileparse);
 use File::Copy qw/move/;
 use File::Path qw/make_path/;
 use feature qw(switch);
@@ -647,6 +647,7 @@ while (1) {
 			$CANDIDATES{$rid}{LOGPATH} =~ s/\{TS\}/$RUNQ{$Qid}{started}/g ;
 			$CANDIDATES{$rid}{LOGPATH} =~ s/\{RTNE\}/$RTNE_/g ;
 			my ($logfn, $logfd) = fileparse($CANDIDATES{$rid}{LOGPATH});
+			$logfd =~ s|/$||;  # Remove trailing slash from the dir
 			$RUNQ{$Qid}{logfd} = $logfd;
 			$RUNQ{$Qid}{logfn} = $logfn;
 
