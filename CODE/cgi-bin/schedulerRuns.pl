@@ -218,8 +218,9 @@ if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
 my $timelineD1 = int(time());
 if ( $QryParm->{'runsdate'} ne $today ) { $timelineD1 = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 23:59:00"); }
 my $timelineD0 = $timelineD1 - 86400;
-my $query_timeline_runs = "SELECT jid, datetime(cast(startts as integer),'unixepoch','localtime'),"
-		. " DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime'), cmd, rc FROM runs"
+my $query_timeline_runs = "SELECT jid, DATETIME(cast(startts as integer),'unixepoch','localtime'),"
+		. " CASE WHEN endts != 0 THEN DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime') ELSE NULL END,"
+		. " cmd, rc FROM runs"
 		. " WHERE startts >= $timelineD0"
 		. ($QryParm->{'runsdate'} ne $today ? " AND startts <= $timelineD1" : "")
 		. " ORDER BY jid, startts";
@@ -229,28 +230,39 @@ print "function setData() {\n";
 
 my $dataX = 0;
 my $Ytick = 0;
-my $jid = 0;
+my $latest_timeline_jid = 0;
 
+# Print the timeline from the jobs
 for my $job_run (@$timeline_run_list) {
-	my ($ajid, $astart, $aend, $acmd, $arc) = @$job_run;
-	next if not defined($arc);  # ignore running jobs
-	if ($ajid ne $jid) { # new jid: bump Ytick, otherwise don't bump
+	my ($job_jid, $job_start, $job_end, $job_cmd, $job_rc) = @$job_run;
+	my $job_color = "";
+
+	# Running jobs have an undefined end date
+	my $is_running = not defined($job_end);
+
+	if ($job_jid ne $latest_timeline_jid) {
+		# New job to plot: bump Ytick to use a new line
 		$Ytick++;
-		$jid = $ajid;
-		print "options.yaxis.ticks[$Ytick-1] = [$Ytick, '$jid'];\n";
+		$latest_timeline_jid = $job_jid;
+		print "options.yaxis.ticks[$Ytick-1] = [$Ytick, '$latest_timeline_jid'];\n";
 	}
-	my $acolor = "";
-	$astart =~ s/-/\//g;
-	if (substr($aend,0,10) ne "1970-01-01") {
-		$aend =~ s/-/\//g;
-		if (defined($arc)) {
-			$acolor = ($arc == 0) ? "#318308" : "#C8350C";
-		}
+	$job_start =~ s/-/\//g;
+	if ($is_running) {
+		# Running job: use a yellowish activity line
+		$job_end = strftime("%Y/%m/%d %H:%M:%S", localtime($timelineD1));
+		$job_color = "#ED9D13";
 	} else {
-		$aend = strftime("%Y/%m/%d %H:%M:%S", localtime($timelineD1));
-		$acolor = "#ED9D13";
+		$job_end =~ s/-/\//g;
+		if ($job_rc == 0) {
+			# Successful return code: use a green activity line
+			$job_color = "#318308";
+		} else {
+			# Use a red activity line
+			$job_color = "#C8350C";
+		}
 	}
-	print "data[$dataX] = {color: \"$acolor\", data: [ [(new Date(\"$astart\")), $Ytick], [(new Date(\"$aend\")), $Ytick] ] };\n";
+	# Print the javascript line defining a job activity in the timeline
+	print qq(data[$dataX] = {color: "$job_color", data: [ [(new Date("$job_start")), $Ytick], [(new Date("$job_end")), $Ytick] ] };\n);
 	$dataX++;
 }
 if ($dataX == 0) {
@@ -263,70 +275,74 @@ print "yticks=$Ytick;";
 print "options.xaxis.min = (new Date($timelineD0*1000));\n";
 print "options.xaxis.max = (new Date($timelineD1*1000));\n";
 print "}\n";
-print "</script>";
+print "</script>\n";
+print "</head>\n";
 
-# ---- 'jobsruns' table dates 
-# -------------------------------
+
+# ---- List of available days in the 'runs' database table
+# --------------------------------------------------------
 my @run_day_list = map { $_->[0] } (@{fetch_all($SCHED{SQL_DB_JOBS},
-	          "SELECT DISTINCT(DATE(CAST(startts AS INTEGER), 'unixepoch', 'localtime'))"
-	          ." FROM runs ORDER BY 1 DESC")});
+	"SELECT DISTINCT(DATE(CAST(startts AS INTEGER), 'unixepoch', 'localtime'))"
+	." FROM runs ORDER BY 1 DESC")});
 
-# ---- 'jobsruns' table 
-# -------------------------------
+# ---- Prepare the HTML table of job runs
+# ---------------------------------------
 my $jobsruns;
 my $maxdcmdl = 70; # max string length for command in table
 my $rdate = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 00:00:00");
 
 my $query_runs  = "SELECT jid, kid, org, DATETIME(CAST(startts AS INTEGER), 'unixepoch', 'localtime'),"
-		. " DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime'),"
-		. " cmd, stdpath, rc, rcmsg, endts-startts AS elps FROM runs"
+		. " CASE WHEN endts != 0 THEN DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime') ELSE NULL END,"
+		. " cmd, stdpath, rc, rcmsg, endts - startts AS elps FROM runs"
 		. " WHERE startts >= $rdate AND startts <= $rdate+86400"
 		. " ORDER BY startts, jid";
 my $run_list = fetch_all($SCHED{SQL_DB_JOBS}, $query_runs);
 
+# Prepare the rows of the job run table
 for my $run (@$run_list) {
-	my ($djid, $dkid, $org, $dstart, $dend, $dcmd, $dstdpath, $drc, $drcmsg, $elapsed) = @$run;
-	my $elp;
-	# Running jobs have not return code in db yet
-	if (not defined $drc) {
-		$drc = '';
-		$drcmsg = '';
-		$elp = 'still running';
-	}
-
-	if ($dend =~ m/^1970.01.01/) {
-		$dend = "";
-		$elapsed = "";
-	} elsif (not defined($elp)) {
-		my ($T, $ms) = split(/\./, ($elapsed));
-		my @out = reverse($T%60, ($T/=60) % 60, ($T/=60) % 24, ($T/=24) );
-		$elp = sprintf "%03d:%02d:%02d:%02d.%3.3s", @out, $ms;
-	}
+	my ($job_jid, $job_kid, $org, $job_start, $job_end,
+	    $job_cmd, $job_stdpath, $job_rc, $job_rcmsg, $elapsed) = @$run;
+	my $elapsed_column = '';
 	my $bgcolor = "transparent";
-	if ($drc ne '') {
-		$bgcolor = "green" if (!($dend =~ m/^1970.01.01/) && $drc == 0);
-		$bgcolor = "red"   if ($drc > 0);
-	}
-	if (length($dcmd) > $maxdcmdl) {
-		my $s = ($maxdcmdl-5)/2;
-		$dcmd = substr($dcmd,0,$s).'(...)'.substr($dcmd,-$s);
-	}
-	$dstart =~ s/^.* //;
-	$dend =~ s/^.* //;
-	$jobsruns .= "<tr><td class=\"ic tdlock\">";
-	if ($drc eq '') {
-		$jobsruns .= "<a href=\"#\" onclick=\"postKill($dkid);return false\"><img title=\"kill job\" src=\"/icons/no.png\"></a>";
-	}
-	$jobsruns .= "</td><td>$djid<td>$dkid<td>$org<td>$dstart<td>$dend<td>$dcmd";
-	(my $zz = $dstdpath) =~ s/[>< ]//g;
-	$jobsruns .= "<td><a href=\"/cgi-bin/schedulerLogs.pl?log=$zz\">$dstdpath</a>";
-	$jobsruns .= "<td style=\"background-color: $bgcolor\">$drc<td>$drcmsg<td>$elp</tr>\n";
-}
-	
-print "</head>";
+	# Running jobs have an undefined end date
+	my $is_running = not defined($job_end);
 
-# ---- the page 
-# -------------
+	if ($is_running) {
+		$job_rc = '';
+		$job_rcmsg = '';
+		$job_end = 'Running';
+	} else {
+		my ($seconds, $ms) = split(/\./, ($elapsed));
+		my @time = reverse($seconds%60, ($seconds/=60) % 60, ($seconds/=60) % 24, ($seconds/=24) );
+		$elapsed_column = sprintf "%03d:%02d:%02d:%02d.%3.3s", @time, $ms;
+
+		if ($job_rc == 0) {
+			# Return code shows success: use a green background
+			# in the RC column
+			$bgcolor = "green";
+		} else {
+			$bgcolor = "red";
+		}
+	}
+
+	if (length($job_cmd) > $maxdcmdl) {
+		my $s = ($maxdcmdl-5)/2;
+		$job_cmd = substr($job_cmd,0,$s).'(...)'.substr($job_cmd,-$s);
+	}
+	$job_start =~ s/^.* //;
+	$job_end =~ s/^.* //;
+	$jobsruns .= qq(<tr><td class="ic tdlock">);
+	if ($is_running) {
+		$jobsruns .= qq(<a href="#" onclick="postKill($job_kid);return false"><img title="kill job" src="/icons/no.png"></a>);
+	}
+	$jobsruns .= qq(</td><td>$job_jid<td>$job_kid<td>$org<td>$job_start<td>$job_end<td>$job_cmd);
+	my $log_filename = $job_stdpath =~ s/^[><] +//r;
+	$jobsruns .= qq(<td><a href="/cgi-bin/schedulerLogs.pl?log=$log_filename">$log_filename</a>);
+	$jobsruns .= qq(<td style="background-color: $bgcolor">$job_rc<td>$job_rcmsg<td>$elapsed_column</tr>\n);
+}
+
+# ---- Print the rest of the page
+# -------------------------------
 print <<"EOP1";
 <body>
 <!-- overLIB (c) Erik Bosrup 
@@ -395,7 +411,7 @@ print <<"EOP2";
 		<div class="jobsdefs-container" style="height: 300px; display: block;">
 			<div class="jobsruns">
 				<table class="jobsruns">
-				<thead><tr><th></th><th>jid</th><th>kid</th><th>org</th><th>started</th><th>ended</th><th>command</th><th>std path</th><th>RC</th><th>RCmsg</th><th>Elapsed</th></tr></thead>
+				<thead><tr><th></th><th>jid</th><th>kid</th><th>org</th><th>started</th><th>ended</th><th>command</th><th>logs</th><th>RC</th><th>RCmsg</th><th>Elapsed</th></tr></thead>
 				<tbody>
 				$jobsruns
 				</tbody>
