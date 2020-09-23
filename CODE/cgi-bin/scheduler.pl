@@ -313,6 +313,9 @@ BEGIN {
 	$CGI::Carp::TO_BROWSER = 0;
 }
 
+# ---- Read local time zone
+our $local_tz = DateTime::TimeZone->new(name => 'local');
+
 # ---- parse options
 # ---- -v to be verbose, -c to specify configuration file
 # -----------------------------------------------------------------------------
@@ -348,7 +351,7 @@ if (! open(LOG, ">>$LOGNAME")) {
 # ---- initialize: internal structures
 # -----------------------------------------------------------------------------
 our $STRT = time;              # when I was started
-our $STRTTS = strftime("%Y-%m-%d %H:%M:%S",localtime($STRT)); # when I was started
+our $STRTTS = strftime("%Y-%m-%d %H:%M:%S (UTC%z)",localtime($STRT)); # when I was started
 our $PID = $$;				   # my own pid (parent of all running kids)
 our $PUID= (getpwuid($<))[0];  # who am I after all
 our $PAUSED = 0;			   # tick but don't schedule anything if PAUSED
@@ -1146,9 +1149,10 @@ sub UDPS {
 						next;
 					}
 					for my $id (sort keys %RUNQ) {
-						my $start_dt = DateTime->from_epoch(epoch => $id);
-						$ans .= sprintf("RUNQ(%s) started on %s\n", $id,
-										$start_dt->strftime('%F %T'));
+						my $start_dt = DateTime->from_epoch(epoch => $id,
+						                                    time_zone => $local_tz);
+						$ans .= sprintf("RUNQ(%s) started on %s %s\n", $id,
+										$start_dt->strftime('%F %T (UTC%z)'));
 						for my $j (sort keys %{$RUNQ{$id}}) {
 							$ans .= "   $j=";
 							$ans .= defined($RUNQ{$id}{$j}) ? "$RUNQ{$id}{$j}\n" : "nil\n";
@@ -1215,7 +1219,7 @@ sub UDPS {
 				}
 				if (/^STAT$/i) {
 					my $now = time;
-					$ans  = "STATTIME=".strftime("%Y-%m-%d %H:%M:%S",localtime($now))."\n";
+					$ans  = "STATTIME=".strftime("%Y-%m-%d %H:%M:%S (UTC%z)",localtime($now))."\n";
 					my @enqs = glob("$SCHED{PATH_RES}/*");
 					my @paused = ('No','Yes','Stopping...');
 					$ans .= "STARTED=$STRTTS\n";
