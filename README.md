@@ -1,6 +1,6 @@
 ![image alt <](CODE/icons/ipgp/logo_WebObs_C110.png) 
 
-This is the official repository for WebObs project source code development. See the [WebObs page](https://ipgp.github.io/webobs).
+This is the official repository for WebObs project source code development. For install/update packages, see the [WebObs page](https://ipgp.github.io/webobs).
 
 ## Authors	
 
@@ -26,7 +26,7 @@ See also the list of active [contributors](https://github.com/IPGP/webobs/contri
 
 If you use are using WebObs please kindly cite the following paper in your publications:
 
-* Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020), WebObs: The volcano observatories missing link between research and real-time monitoring, *Frontiers in Earth Sciences*, [doi:10.3389/feart.2020.00048](https://doi.org/10.3389/feart.2020.00048).
+> Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020), WebObs: The volcano observatories missing link between research and real-time monitoring, *Frontiers in Earth Sciences*, [doi:10.3389/feart.2020.00048](https://doi.org/10.3389/feart.2020.00048).
 
 ## Copyright	
 
