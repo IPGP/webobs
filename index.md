@@ -16,9 +16,9 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 - [WebObs-2.1.6.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.1.6/WebObs-2.1.6.tar.gz) (58 Mb) updated September 16, 2020
 - [Release notes](https://github.com/IPGP/webobs/blob/v2.1.6/release-notes.md)
 - [User manual](https://github.com/IPGP/webobs/blob/v2.1.6/DOC/user-manual/WebObs_Manual.pdf) (in progress)
-- And, for the first install:
-  - Matlab runtime for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
-  - [ETOPO1](http://www.ipgp.fr/~beaudu/webobs/etopo1.tgz) (308 Mb); untar into WebObs root directory (`tar xf etopo1.tgz`)
+- And, for a first install:
+  - Mandatory: **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
+  - Recommanded: **ETOPO1** (see below for download and install)
 - Previous release packages are available at [here](http://www.ipgp.fr/~beaudu/webobs/).
 
 For install and update, please follow instructions below.
@@ -117,7 +117,12 @@ curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_regist
 unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip
 ```	
 
-and update the ETOPO parameters in the `/etc/webobs.d/WEBOBS.rc` file with the lines:
+If the link is broken you might download a copy [here](http://www.ipgp.fr/~beaudu/webobs/etopo1.tgz) (308 Mb) and untar into the WebObs root directory:
+```sh
+tar xf etopo1.tgz
+```
+
+then update the ETOPO parameters in the `/etc/webobs.d/WEBOBS.rc` file with the lines:
 
 ```	
 ETOPO_NAME|etopo1_bed_g_i2	
