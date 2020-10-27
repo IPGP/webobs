@@ -85,6 +85,9 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 # maximum error on position (in m) before excluding the data from graphs and calculations
 FILTER_MAX_ERROR_M|0.05
 
+# vector of ratios applied to data errors for each orbit (0,1,2 = Final,Rapid,Ultra)
+ORBIT_ERROR_RATIO|1,2
+
 PICKS_CLEAN_PERCENT|0
 TREND_ERROR_MODE|1
 # minimum time window (in days) needed to compute a trend

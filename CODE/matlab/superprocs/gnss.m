@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2020-04-12
+%   Updated: 2020-10-26
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -65,6 +65,7 @@ resarrcol = [0,.8,0]; % color of residual arrows
 % PROC's parameters
 fontsize = field2num(P,'FONTSIZE',7);
 maxerror = field2num(P,'FILTER_MAX_ERROR_M',NaN);
+orbiterr = field2num(P,'ORBIT_ERROR_RATIO',[1,2]);
 terrmod = field2num(P,'TREND_ERROR_MODE',1);
 trendmindays = field2num(P,'TREND_MIN_DAYS',1);
 targetll = field2num(P,'GNSS_TARGET_LATLON');
@@ -241,7 +242,7 @@ V.baselines_unit = field2str(P,'BASELINES_UNIT','m');
 % D.d from the install date of the station.
 
 if numel(velref)==3 && ~all(velref==0)
-	for n = 1:length(N)
+	for n = 1:numel(N)
 		t0 = velrefdate;
 		for c = 1:3
 			if size(D(n).d,2) >= c
@@ -251,18 +252,24 @@ if numel(velref)==3 && ~all(velref==0)
 	end
 end
 
-% filter the data at once
-for n = 1:length(N)
+% filter the data at once and adjust errors
+for n = 1:numel(N)
 	if ~isnan(maxerror)
 		D(n).d(any(D(n).e>maxerror,2),:) = NaN;
 	end
+	for i = 1:numel(orbiterr)
+		k = find(D(n).d(:,4)>=i-1);
+		if ~isempty(k) && orbiterr(i)>0
+			D(n).e(k,:) = D(n).e(k,:)*orbiterr(i);
+		end
+	end
 end
 
-for r = 1:length(P.GTABLE)
+for r = 1:numel(P.GTABLE)
 
 	% initializes trends table
-	tr = nan(length(N),3); % trends per station per component (mm/yr)
-	tre = nan(length(N),3); % trends error (mm/yr)
+	tr = nan(numel(N),3); % trends per station per component (mm/yr)
+	tre = nan(numel(N),3); % trends error (mm/yr)
 
 	V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 	tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
@@ -271,13 +278,13 @@ for r = 1:length(P.GTABLE)
 	end
 
 	% station offset
-	n0 = length(N) - 1;
+	n0 = numel(N) - 1;
 	staoffset = ((0:n0) - n0/2)*summary_staoff;
 
 	% to make a synthetic figure we must build a new matrix of processed data first...
-	X = repmat(struct('t',[],'d',[],'w',[]),length(N),1);
+	X = repmat(struct('t',[],'d',[],'w',[]),numel(N),1);
 	for i = 1:3
-		for n = 1:length(N)
+		for n = 1:numel(N)
 
 			k = D(n).G(r).k;
 			if ~isempty(k)% && ~all(isnan(D(n).d(k,i)))
@@ -286,7 +293,7 @@ for r = 1:length(P.GTABLE)
 
 				% computes yearly trends (in mm/yr)
 				kk = find(~isnan(dk));
-				if length(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays && ~all(isnan(dk(kk)))
+				if numel(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays && ~all(isnan(dk(kk)))
 					[b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./D(n).e(k(kk),i));
 					tr(n,i) = b(1)*365.25*1e3;
 					% different modes for error estimation
@@ -303,7 +310,7 @@ for r = 1:length(P.GTABLE)
 					end
 					% all errors are adjusted with sampling completeness factor
 					if N(n).ACQ_RATE > 0
-						acq = length(kk)*N(n).ACQ_RATE/abs(diff(tlim));
+						acq = numel(kk)*N(n).ACQ_RATE/abs(diff(tlim));
 						tre(n,i) = tre(n,i)/sqrt(acq);
 					end
 				end
@@ -318,7 +325,7 @@ for r = 1:length(P.GTABLE)
 			X(n).trd = 0;
 		end
 	end
-	for n = 1:length(N)
+	for n = 1:numel(N)
 		if isempty(X(n).d)
 			X(n).d = nan(0,3);
 		end
@@ -343,9 +350,9 @@ for r = 1:length(P.GTABLE)
 	if isfield(P,'VECTORS_EXCLUDED_NODELIST')
 		knv = find(~ismemberlist({N.FID},split(P.VECTORS_EXCLUDED_NODELIST,',')));
 	else
-		knv = 1:length(N);
+		knv = 1:numel(N);
 	end
-	fprintf('---> VECTORS: %d/%d nodes selected\n',length(knv),length(N));
+	fprintf('---> VECTORS: %d/%d nodes selected\n',numel(knv),numel(N));
 
 	if isok(P,'VECTORS_TARGET_INCLUDED') && ~isempty(targetll)
 		latlim = minmax([geo(knv,1);targetll(1)]);
@@ -357,7 +364,7 @@ for r = 1:length(P.GTABLE)
 	xyr = cosd(mean(latlim));
 
 	% computes a mean velocity vector (for valid nodes only)
-	if length(knv) > 1
+	if numel(knv) > 1
 		mvv = rsum(tr(knv,:)./tre(knv,:))./rsum(1./tre(knv,:));
 	else
 		mvv = tr;
@@ -370,7 +377,7 @@ for r = 1:length(P.GTABLE)
 			[kvref,knref] = ismember(split(vref,','),{N.FID});
 			if ~isempty(vref) && all(kvref);
 				mode = vref;
-				if length(knref) > 1
+				if numel(knref) > 1
 					voffset = rsum(tr(knref,:)./tre(knref,:))./rsum(1./tre(knref,:));
 				else
 					voffset = tr(knref,:);
@@ -385,17 +392,17 @@ for r = 1:length(P.GTABLE)
 				voffset = [mvv(1:2),(~vrelhorizonly)*mvv(3)];
 			end
 		end
-		tr = tr - repmat(voffset,length(N),1);
+		tr = tr - repmat(voffset,numel(N),1);
 		fprintf('---> Relative mode "%s" - velocity reference = %1.2f, %1.2f, %1.2f mm/yr\n',mode,voffset);
 	end
 
 	% --- per node plots
-	for n = 1:length(N)
+	for n = 1:numel(N)
 
 		V.node_name = N(n).NAME;
 		V.node_alias = N(n).ALIAS;
 		V.last_data = datestr(D(n).tfirstlast(2));
-		nx = length(D(n).CLB.nm);
+		nx = numel(D(n).CLB.nm);
 
 
 		figure, clf, orient tall
@@ -444,7 +451,7 @@ for r = 1:length(P.GTABLE)
 			X(1).rgb = scolor(1);
 			X(1).trd = 1;
 		end
-		for i = 1:length(X)
+		for i = 1:numel(X)
 			if isempty(X(i).d)
 				X(i).d = nan(0,3);
 			end
@@ -517,9 +524,9 @@ for r = 1:length(P.GTABLE)
 		if isfield(P,'BASELINES_NODEPAIRS') && ~isempty(P.BASELINES_NODEPAIRS)
 			pairgraphs = split(P.BASELINES_NODEPAIRS,';');
 			np = 0;
-			for nn = 1:length(pairgraphs)
+			for nn = 1:numel(pairgraphs)
 				pairs = split(pairgraphs{nn},',');
-				if length(pairs)>1
+				if numel(pairs)>1
 					kr = find(ismemberlist({N.FID},pairs(1)));
 					kn = find(ismemberlist({N.FID},pairs(2:end)));
 				end
@@ -538,34 +545,34 @@ for r = 1:length(P.GTABLE)
 			if isfield(P,'BASELINES_EXCLUDED_NODELIST')
 				kn = find(~ismemberlist({N.FID},split(P.BASELINES_EXCLUDED_NODELIST,',')));
 			else
-				kn = 1:length(N);
+				kn = 1:numel(N);
 			end
 			if isfield(P,'BASELINES_REF_NODELIST') && ~isempty(P.BASELINES_REF_NODELIST)
 				kr = kn(ismemberlist({N(kn).FID},split(P.BASELINES_REF_NODELIST,',')));
 			else
-				kr = 1:length(N);
+				kr = 1:numel(N);
 			end
-			for nn = 1:length(kr)
+			for nn = 1:numel(kr)
 				B(nn).kr = kr(nn);
 				B(nn).kn = kn;
 			end
 		end
 
 		figure
-		if length(B) > pagestanum
+		if numel(B) > pagestanum
 			p = get(gcf,'PaperSize');
-			set(gcf,'PaperSize',[p(1),p(2)*length(kr)/pagestanum])
+			set(gcf,'PaperSize',[p(1),p(2)*numel(kr)/pagestanum])
 		end
 		orient tall
 		P.GTABLE(r).GTITLE = varsub(baselines_title,V);
 
 		% builds the structure X for smartplot: X(n).d(:,i) where
 		%   n = destination node and i = reference node
-		X = repmat(struct('t',[],'d',[],'e',[],'w',[],'nam',[]),length(N),1);
-		aliases = cell(1,length(N));
+		X = repmat(struct('t',[],'d',[],'e',[],'w',[],'nam',[]),numel(N),1);
+		aliases = cell(1,numel(N));
 		ncolors = ones(size(aliases));
-		refnames = cell(1,length(B));
-		for nn = 1:length(B)
+		refnames = cell(1,numel(B));
+		for nn = 1:numel(B)
 			n = B(nn).kr;
 			k = D(n).G(r).k;
 			tk = D(n).t(k);
@@ -575,16 +582,16 @@ for r = 1:length(P.GTABLE)
 			E.header = [];
 
 			% station offset
-			n0 = length(B(nn).kn) - 1;
+			n0 = numel(B(nn).kn) - 1;
 			staoffset = ((0:n0) - n0/2)*baselines_staoff;
-			for nn2 = 1:length(B(nn).kn)
+			for nn2 = 1:numel(B(nn).kn)
 				n2 = B(nn).kn(nn2);
 				k2 = D(n2).G(r).k;
 				V.node_name = N(n2).NAME;
 				V.node_alias = N(n2).ALIAS;
 				[~,kk] = unique(D(n2).t(k2));	% mandatory for interp1
 				k2 = k2(kk);
-				if n2 ~= n && length(k)>1 && length(k2)>1
+				if n2 ~= n && numel(k)>1 && numel(k2)>1
 					dk = cleanpicks(sqrt(sum((interp1(D(n2).t(k2),D(n2).d(k2,ib),tk,baselines_interp_method) - D(n).d(k,ib)).^2,2)),P);
 					dk = dk/siprefix(baselines_unit,'m');
 					dk0 = rmean(dk);
@@ -595,7 +602,7 @@ for r = 1:length(P.GTABLE)
 					[tk1,kk] = unique(tk);	% mandatory for interp1
 					dd = sqrt(sum((D(n2).d(k2,ib) - interp1(tk1,D(n).d(k(kk),ib),D(n2).t(k2),baselines_interp_method)).^2,2));
 					if isempty(X(n2).d)
-						X(n2).d = nan(size(X(n2).t,1),length(B));
+						X(n2).d = nan(size(X(n2).t,1),numel(B));
 					end
 					X(n2).d(:,nn) = dd - rmedian(dd) + staoffset(nn2);
 					X(n2).w = D(n2).d(k2,4);
@@ -665,7 +672,7 @@ for r = 1:length(P.GTABLE)
 		end
 
 		% plots velocity vectors first
-		for nn = 1:length(knv)
+		for nn = 1:numel(knv)
 			n = knv(nn);
 			if ~any(isnan([vsc,vmax])) && ~any(isnan(tr(n,1:2)))
 				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1),vsc*tr(n,2),[arrowshape,xyr],'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
@@ -714,7 +721,7 @@ for r = 1:length(P.GTABLE)
 		set(gca,'Children',[ha;h(1:ko-1)])
 
 		% plots error ellipse, vertical component and station name
-		for nn = 1:length(knv)
+		for nn = 1:numel(knv)
 			n = knv(nn);
 			if ~isnan(any(tr(n,1:2)))
 				h = ellipse(geo(n,2) + vsc*tr(n,1)/xyr,geo(n,1) + vsc*tr(n,2),vsc*tre(n,1)/xyr,vsc*tre(n,2), ...
@@ -762,7 +769,7 @@ for r = 1:length(P.GTABLE)
 			sta_dist = greatcircle(targetll(1),targetll(2),geo(knv,1),geo(knv,2));
 			sta_amp = sqrt(rsum(tr(knv,1:3).^2,2));
 			sta_err = sqrt(rsum(tre(knv,1:3).^2,2));
-			for nn = 1:length(knv)
+			for nn = 1:numel(knv)
 				n = knv(nn);
 				errorbar(sta_dist(nn),sta_amp(nn),sta_err(nn),'.','MarkerSize',15,'Color',scolor(n),'LineWidth',0.1)
 			end
@@ -810,9 +817,9 @@ for r = 1:length(P.GTABLE)
 		if isfield(P,'MOTION_EXCLUDED_NODELIST')
 			knv = find(~ismemberlist({N.FID},split(P.MOTION_EXCLUDED_NODELIST,',')));
 		else
-			knv = 1:length(N);
+			knv = 1:numel(N);
 		end
-	fprintf('---> MOTION: %d/%d nodes selected\n',length(knv),length(N));
+	fprintf('---> MOTION: %d/%d nodes selected\n',numel(knv),numel(N));
 
 		if ~isempty(targetll)
 			latlim = minmax([geo(knv,1);targetll(1)]);
@@ -825,7 +832,7 @@ for r = 1:length(P.GTABLE)
 
 		% makes 3-D vectors
 		clear X
-		for nn = 1:length(knv)
+		for nn = 1:numel(knv)
 			n = knv(nn);
 			k = isinto(D(n).t,tlim);
 			if ~isempty(k)
@@ -863,7 +870,7 @@ for r = 1:length(P.GTABLE)
 			ha = [ha;plot(targetll(2),targetll(1),'k.','MarkerSize',.1)];
 		end
 		% plots motion displacements first
-		for nn = 1:length(knv)
+		for nn = 1:numel(knv)
 			n = knv(nn);
 			if ~isempty(X(nn).d)
 				h = scatter(geo(n,2) + X(nn).d(:,1)*vsc/xyr,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
@@ -906,9 +913,9 @@ for r = 1:length(P.GTABLE)
 		axes('Position',[pos(1)+pos(3)+0.01,pos(2),0.23,pos(4)])
 		plot([0,0],ylim,'-k','LineWidth',.1)
 		hold on
-		plot(repmat([dlim3(2),0]*vsc,length(X),1)',repmat(geo(knv,1),1,2)','-k','LineWidth',.1)
+		plot(repmat([dlim3(2),0]*vsc,numel(X),1)',repmat(geo(knv,1),1,2)','-k','LineWidth',.1)
 		% plots motion displacements first
-		for nn = 1:length(knv)
+		for nn = 1:numel(knv)
 			n = knv(nn);
 			if ~isempty(X(nn).d)
 				scatter(X(nn).d(:,3)*vsc,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
@@ -926,9 +933,9 @@ for r = 1:length(P.GTABLE)
 		axes('Position',[pos(1),pos(2)-0.18,pos(3),.17])
 		plot(xlim,[0,0],'-k','LineWidth',.1)
 		hold on
-		plot(repmat(geo(knv,2),1,2)',repmat([dlim3(2),0]*vsc/xyr,length(X),1)','-k','LineWidth',.1)
+		plot(repmat(geo(knv,2),1,2)',repmat([dlim3(2),0]*vsc/xyr,numel(X),1)','-k','LineWidth',.1)
 		% plots motion displacements first
-		for nn = 1:length(knv)
+		for nn = 1:numel(knv)
 			n = knv(nn);
 			if ~isempty(X(nn).d)
 				scatter(geo(n,2) + X(nn).d(:,1)*vsc/xyr,X(nn).d(:,3)*vsc/xyr,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
@@ -971,13 +978,13 @@ for r = 1:length(P.GTABLE)
 		if isfield(P,'MODELLING_EXCLUDED_NODELIST')
 			kn = find(~ismemberlist({N.FID},split(P.MODELLING_EXCLUDED_NODELIST,',')));
 		else
-			kn = 1:length(N);
+			kn = 1:numel(N);
 		end
 		if ~isempty(targetll) && modelling_excluded_from_target > 0
 			kk = find(greatcircle(targetll(1),targetll(2),geo(kn,1),geo(kn,2)) <= modelling_excluded_from_target);
 			kn = kn(kk);
 		end
-	fprintf('---> MODELLING: %d/%d nodes selected\n',length(kn),length(N));
+	fprintf('---> MODELLING: %d/%d nodes selected\n',numel(kn),numel(N));
 
 		degm = 1e3*degkm;
 		modelopt.msigp = erf(modelopt.msig/sqrt(2));
@@ -1037,10 +1044,10 @@ for r = 1:length(P.GTABLE)
 		% makes (or not) the relative data array
 		d = [tr(kn,:),tre(kn,:)];
 		knn = find(~isnan(d(:,1)));
-		if ~isempty(knn) && (modelling_force_relative || (modrelauto && (azgap(xs(knn),ys(knn)) < 150 || length(find(knn)) > 2)))
+		if ~isempty(knn) && (modelling_force_relative || (modrelauto && (azgap(xs(knn),ys(knn)) < 150 || numel(find(knn)) > 2)))
 			% computes a mean velocity vector (horizontal only)
 			mvv = rsum(tr(kn,:)./tre(kn,:))./rsum(1./tre(kn,:));
-			d(:,1:3) = d(:,1:3) - repmat([mvv(1:2),0],length(kn),1);
+			d(:,1:3) = d(:,1:3) - repmat([mvv(1:2),0],numel(kn),1);
 			if isok(P,'DEBUG')
 				fprintf('---> Modelling vector relative forced by (%g,%g).\n',mvv(1:2));
 			end
@@ -1056,11 +1063,11 @@ for r = 1:length(P.GTABLE)
 		switch lower(modelling_source_type)
 		case 'pcdm'
 			M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,PCDM);
-			if length(M) > 1 && M(end).m0 < M(1).m0
+			if numel(M) > 1 && M(end).m0 < M(1).m0
 				[mm,imm] = max(cat(4,M.mm),[],4);
 				% volume for maximum probability
 				vv = M(1).vv;
-				for m = 2:length(M)
+				for m = 2:numel(M)
 					vv(imm==m)=M(m).vv(imm==m);
 				end
 				m0 = cat(1,M.m0);
@@ -1100,11 +1107,11 @@ for r = 1:length(P.GTABLE)
 			end
 		otherwise
 			M = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
-			if length(M) > 1 && M(end).m0 < M(1).m0
+			if numel(M) > 1 && M(end).m0 < M(1).m0
 				[mm,imm] = max(cat(4,M.mm),[],4);
 				% volume for maximum probability
 				vv = M(1).vv;
-				for m = 2:length(M)
+				for m = 2:numel(M)
 					vv(imm==m)=M(m).vv(imm==m);
 				end
 				m0 = cat(1,M.m0);
@@ -1357,7 +1364,7 @@ for r = 1:length(P.GTABLE)
 					'\OmegaZ'; ...
 					'misfit (mm)'};
 				[lats,lons] = utm2ll(e0+pbest(:,1),n0+pbest(:,2),z0);
-				for m = 1:length(M)
+				for m = 1:numel(M)
 					bstab{1,m+1} = sprintf('Source #%d',m);
 					bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
 					bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
@@ -1391,7 +1398,7 @@ for r = 1:length(P.GTABLE)
 					sprintf('{\\itQ} (m^3/s)'); ...
 					'misfit (mm)'};
 				[lats,lons] = utm2ll(e0+pbest(:,1),n0+pbest(:,2),z0);
-				for m = 1:length(M)
+				for m = 1:numel(M)
 					bstab{1,m+1} = sprintf('Source #%d',m);
 					bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
 					bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
@@ -1470,7 +1477,7 @@ for r = 1:length(P.GTABLE)
 				E.infos = {''};
 				switch lower(modelling_source_type)
 				case 'pcdm'
-					for m = 1:length(M)
+					for m = 1:numel(M)
 						E.infos = cat(2,E.infos, ...
 							sprintf('Least bad pCDM model #%d:',m), ...
 							sprintf('latitude = %g N in [%+g , %+g] km',lats(m), roundsd(ey(m,:)/1e3,2)), ...
@@ -1483,7 +1490,7 @@ for r = 1:length(P.GTABLE)
 							' ');
 					end
 				otherwise
-					for m = 1:length(M)
+					for m = 1:numel(M)
 						E.infos = cat(2,E.infos, ...
 							sprintf('Least bad isotropic model #%d:',m), ...
 							sprintf('latitude = %g N in [%+g , %+g] km',lats(m), roundsd(ey(m,:)/1e3,2)), ...
@@ -1503,7 +1510,7 @@ for r = 1:length(P.GTABLE)
 	% --- Modelling in time
 	summary = 'MODELTIME';
 	if any(strcmp(P.SUMMARYLIST,summary))
-		dt = max(modeltime_sampling,ceil(length(modeltime_period)*diff(tlim)/modeltime_max));
+		dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max));
 			%sprintf('model type = {\\bf%s%s}',modelling_source_type,src_multi), ...
 			%sprintf('model space = {\\bf%s}',num2tex(nmodels)), ...
 		info = { ...
@@ -1520,8 +1527,8 @@ for r = 1:length(P.GTABLE)
 			info = cat(2,info,sprintf('a priori horiz. STD = {\\bf%g km}',modelopt.apriori_horizontal));
 		end
 
-		mtlabel = cell(1,length(modeltime_period));
-		for m = 1:length(modeltime_period)
+		mtlabel = cell(1,numel(modeltime_period));
+		for m = 1:numel(modeltime_period)
 			mtp = modeltime_period(m);
 			if mtp > 0
 				mtlabel{m} = sprintf('%g days',mtp);
@@ -1534,14 +1541,14 @@ for r = 1:length(P.GTABLE)
 			% last time must contain data
 			tlast = max(max(cat(1,D.tfirstlast)));
 			M(m).t(M(m).t > tlast) = [];
-			fprintf('%s: computing %d models (%s @ %g day) ',wofun,length(M(m).t),mtlabel{m},dt);
+			fprintf('%s: computing %d models (%s @ %g day) ',wofun,numel(M(m).t),mtlabel{m},dt);
 
 			% initiates the model result matrix
-			M(m).d = nan(length(M(m).t),5);
-			M(m).e = nan(length(M(m).t),5);
-			M(m).o = nan(length(M(m).t),1);
+			M(m).d = nan(numel(M(m).t),5);
+			M(m).e = nan(numel(M(m).t),5);
+			M(m).o = nan(numel(M(m).t),1);
 
-			for w = 1:length(M(m).t)
+			for w = 1:numel(M(m).t)
 				t2 = M(m).t(w);
 				if modeltime_period(m) > 0
 					wlim = t2 - [modeltime_period(m),0];
@@ -1550,10 +1557,10 @@ for r = 1:length(P.GTABLE)
 				end
 
 				% computes trends (mm/yr)
-				tr = nan(length(kn),3); % trends per station per component
-				tre = nan(length(kn),3); % trends error per station per component
-				tro = zeros(length(kn),1); % inits to best orbit per station
-				for j = 1:length(kn)
+				tr = nan(numel(kn),3); % trends per station per component
+				tre = nan(numel(kn),3); % trends error per station per component
+				tro = zeros(numel(kn),1); % inits to best orbit per station
+				for j = 1:numel(kn)
 					n = kn(j);
 					k = find(isinto(D(n).t,wlim));
 					tk = D(n).t(k);
@@ -1563,7 +1570,7 @@ for r = 1:length(P.GTABLE)
 							ke = k(find(~isnan(D(n).d(k,i)),1,'last'));
 							dk = cleanpicks(D(n).d(k,i) - D(n).d(k1,i),P);
 							kk = find(~isnan(dk));
-							if length(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays
+							if numel(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays
 								[b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./D(n).e(k(kk),i));
 								tr(j,i) = b(1)*365.25*1e3;
 								tre(j,i) = stdx(1)*365.25*1e3;
@@ -1578,7 +1585,7 @@ for r = 1:length(P.GTABLE)
 				end
 
 				% computes reference (auto, fixed or station)
-				if length(kn) > 1
+				if numel(kn) > 1
 					mvv = rsum(tr./tre)./rsum(1./tre);
 				else
 					mvv = tr;
@@ -1594,16 +1601,16 @@ for r = 1:length(P.GTABLE)
 					if numel(sstr2num(vref)) == 3
 						voffset = sstr2num(vref);
 					end
-					tr = tr - repmat(voffset,length(kn),1);
+					tr = tr - repmat(voffset,numel(kn),1);
 				end
 
 				% makes (or not) the relative data array
 				d = [tr,tre];
 				knn = find(~isnan(d(:,1)));
 				modrelforced = 0;
-				if ~isempty(knn) && (modelling_force_relative || (modrelauto && (azgap(xs(knn),ys(knn)) < 150 || length(knn) > 2)))
+				if ~isempty(knn) && (modelling_force_relative || (modrelauto && (azgap(xs(knn),ys(knn)) < 150 || numel(knn) > 2)))
 					% computes a mean velocity vector (horizontal only)
-					if length(knn) > 1
+					if numel(knn) > 1
 						mvv = rsum(tr(knn,:)./tre(knn,:))./rsum(1./tre(knn,:));
 					else
 						mvv = tr(knn,:);
@@ -1672,7 +1679,7 @@ for r = 1:length(P.GTABLE)
 
 		plot(tlim,[0,0],'-k','LineWidth',1)
 		hold on
-		for m = 1:length(M)
+		for m = 1:numel(M)
 			col = scolor(m);
 			errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
 			plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
@@ -1692,8 +1699,8 @@ for r = 1:length(P.GTABLE)
 		ylabel(['Source ',vtype,' (',vunit,')'])
 
 		% legend for periods
-		for m = 1:length(M)
-			text(tlim(1)+m*diff(tlim)/(length(M)+1),ylim2(2),mtlabel{m},'Color',scolor(m), ...
+		for m = 1:numel(M)
+			text(tlim(1)+m*diff(tlim)/(numel(M)+1),ylim2(2),mtlabel{m},'Color',scolor(m), ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8,'FontWeight','bold')
 		end
 		set(gca,'YLim',ylim2);
@@ -1702,7 +1709,7 @@ for r = 1:length(P.GTABLE)
 		subplot(10,1,4:5), extaxes(gca,[.08,.04])
 		plot(tlim,[0,0],'-k','LineWidth',1)
 		hold on
-		for m = 1:length(M)
+		for m = 1:numel(M)
 			col = scolor(m);
 			errorbar(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
 			plotorbit(M(m).t,M(m).d(:,3)/1e3,M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
@@ -1761,7 +1768,7 @@ for r = 1:length(P.GTABLE)
 			IMAP(nimap).gca = gca;
 			IMAP(nimap).s = cell(size(M(m).t));
 			IMAP(nimap).l = cell(size(M(m).t));
-			for n = 1:length(IMAP(nimap).s)
+			for n = 1:numel(IMAP(nimap).s)
 				IMAP(nimap).s{n} = sprintf('''%g km<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
 					roundsd(M(m).d(n,3)/1e3,2),vtype,roundsd(M(m).d(n,4)/vfactor,2), ...
 					regexprep(vunit,'\^3','<sup>3</sup>'),roundsd(M(m).e(n,5),2), ...
@@ -1794,7 +1801,7 @@ for r = 1:length(P.GTABLE)
 		for m = plist
 			IMAP(nimap).d = [M(m).d(:,3),M(m).d(:,2),sqrt(mks/pi)+modeltime_marker_linewidth/2];
 			IMAP(nimap).gca = gca;
-			IMAP(nimap).s = IMAP(mod(nimap-1,length(plist))+1).s; % uses the labels for X-Y top view
+			IMAP(nimap).s = IMAP(mod(nimap-1,numel(plist))+1).s; % uses the labels for X-Y top view
 			IMAP(nimap).l = cell(size(M(m).t));
 			nimap = nimap + 1;
 		end
@@ -1823,7 +1830,7 @@ for r = 1:length(P.GTABLE)
 		for m = plist
 			IMAP(nimap).d = [M(m).d(:,1),M(m).d(:,3),sqrt(mks/pi)+modeltime_marker_linewidth/2];
 			IMAP(nimap).gca = gca;
-			IMAP(nimap).s = IMAP(mod(nimap-1,length(plist))+1).s; % uses the labels for X-Y top view
+			IMAP(nimap).s = IMAP(mod(nimap-1,numel(plist))+1).s; % uses the labels for X-Y top view
 			IMAP(nimap).l = cell(size(M(m).t));
 			nimap = nimap + 1;
 		end
@@ -1856,7 +1863,7 @@ for r = 1:length(P.GTABLE)
 		%subplot(10,1,6:7), extaxes(gca,[.08,.04])
 		%plot(tlim,[0,0],'-k','LineWidth',1)
 		%hold on
-		%for m = 1:length(M)
+		%for m = 1:numel(M)
 		%	col = scolor(m);
 		%	errorbar(M(m).t,M(m).d(:,5),M(m).e(:,5),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
 		%	plotorbit(M(m).t,M(m).d(:,5),M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
@@ -1880,7 +1887,7 @@ for r = 1:length(P.GTABLE)
 
 		%plot(tlim,[0,0],'-k','LineWidth',1)
 		%hold on
-		%for m = 1:length(M)
+		%for m = 1:numel(M)
 		%	col = scolor(m);
 		%	errorbar(M(m).t,rcumsum(M(m).d(:,4)),sqrt(rcumsum(M(m).e(:,4).^2)),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
 		%	plot(M(m).t,rcumsum(M(m).d(:,4)),'o-','Color',col,'MarkerFaceColor',col, ...
@@ -1913,9 +1920,9 @@ for r = 1:length(P.GTABLE)
 		if isok(P.GTABLE(r),'EXPORTS')
 			E.t = M(1).t;
 			n = size(M(1).d,2);
-			E.d = nan(size(M(1).d,1),length(M)*size(M(1).d,2)*2);
+			E.d = nan(size(M(1).d,1),numel(M)*size(M(1).d,2)*2);
 			[e0,n0,z0] = ll2utm(lat0,lon0);
-			for m = 1:length(M)
+			for m = 1:numel(M)
 				k = (m-1)*n*2 + (1:2*n);
 				[lats,lons] = utm2ll(e0+M(m).d(:,1),n0+M(m).d(:,2),z0);
 				E.d(:,k) = cat(2,lats,lons,M(m).d(:,3:end),M(m).e);
