@@ -21,13 +21,13 @@ function DEM = loaddem(WO,xylim,OPT)
 %	                  doesn't cover the entire requested area
 %	ETOPO_SRTM_MERGE: Y to force ETOPO+SRTM merge, overwrites WEBOBS.rc
 %
-%	If OPT.DEM_FILE does not exist or user's DEM does not cover the entire 
+%	If OPT.DEM_FILE does not exist or user's DEM does not cover the entire
 %	requested area XYLIM, then SRTM/ETOPO data are returned instead.
 %
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2019-12-25
+%	Updated: 2020-10-26
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -37,6 +37,7 @@ dlat = xylim(3:4);
 
 srtmmax = field2num(WO,'SRTM_MAX_TILES',25);
 psrtm1 = field2str(WO,'PATH_DATA_DEM_SRTM1');
+nasalogin = split(field2str(WO,'EARTHDATA_LOGIN'),',');
 srtm1max = field2num(WO,'SRTM1_MAX_TILES',4);
 oversamp = field2num(WO,'DEM_OVERSAMPLING',500);
 maxwidth = field2num(WO,'DEM_MAX_WIDTH',1201);
@@ -77,9 +78,9 @@ if nargin > 2 && isfield(OPT,'DEM_FILE')
 			fprintf('done.\n');
 		end
 		if forced || (all(isinto(dlon,x)) && all(isinto(dlat,y)))
-			DEM.lon = x(x >= dlon(1) & x <= dlon(2)); 
-			DEM.lat = y(y >= dlat(1) & y <= dlat(2)); 
-			DEM.z = z(y >= dlat(1) & y <= dlat(2),x >= dlon(1) & x <= dlon(2)); 
+			DEM.lon = x(x >= dlon(1) & x <= dlon(2));
+			DEM.lat = y(y >= dlat(1) & y <= dlat(2));
+			DEM.z = z(y >= dlat(1) & y <= dlat(2),x >= dlon(1) & x <= dlon(2));
 			DEM.COPYRIGHT = field2str(OPT,'DEM_COPYRIGHT','User''s defined DEM');
 			if ~isempty(DEM.z)
 				userdem = 1;
@@ -92,7 +93,7 @@ if nargin > 2 && isfield(OPT,'DEM_FILE')
 	end
 end
 
-if ~userdem 
+if ~userdem
 	% if max SRTM tiles exceeded, loads ETOPO
 	n = (abs(diff(floor(dlon))) + 1)*(abs(diff(floor(dlat))) + 1);
 	if n > srtmmax || min(dlat) < -60 || max(dlat) > 59
@@ -103,8 +104,8 @@ if ~userdem
 		etopo = true;
 	else
 		fprintf('%s: loading SRTM data for area lat (%g,%g) lon (%g,%g)...\n',wofun,dlat,dlon);
-		if srtm1 && exist(psrtm1,'dir') && n <= srtm1max
-			DEM = readhgt([dlat,dlon],'outdir',psrtm1,'interp','srtm1','wget');
+		if srtm1 && exist(psrtm1,'dir') && n <= srtm1max && ~isempty(nasalogin)
+			DEM = readhgt([dlat,dlon],'outdir',psrtm1,'interp','srtm1','wget','login',nasalogin{1},nasalogin{2});
 		else
 			DEM = readhgt([dlat,dlon],'outdir',WO.PATH_DATA_DEM_SRTM,'interp','srtm3','wget');
 		end
@@ -180,4 +181,3 @@ yi = linspace(max(lat(1,:)),min(lat(end,1)),nn);
 
 % interpolation on a regular grid
 zi = griddata(lon(:),lat(:),z(:),xx,yy,'linear');
-
