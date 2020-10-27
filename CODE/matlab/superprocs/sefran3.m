@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2020-04-17
+%	Updated: 2020-10-08
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -208,7 +208,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 			F = dir(fmsd);
 			if ~isempty(F) && F.bytes > 0
 				% --- loads the miniseed file
-				[S,I] = rdmseed(fmsd);
+				[S,I] =	 rdmseed(fmsd);
 				channel_list = cellstr(char(I.ChannelFullName));
 
 				% --- makes the 1-minute image
@@ -264,7 +264,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					if ~isempty(k)
 						%chan_drawn = chan_drawn + 1;
 						kk = I(k).XBlockIndex;
-						channel_data = cat(1,S(kk).d);
+						channel_data = double(cat(1,S(kk).d));
 						channel_time = cat(1,S(kk).t);
 						if clean_overlaps
 							[channel_time,un] = unique(channel_time);
