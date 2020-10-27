@@ -302,6 +302,8 @@ PATH_DATA_DEM_SRTM1|${PATH_DATA_DEM}/SRTM1
 SRTM_COPYRIGHT|DEM: SRTM/NASA
 SRTM_MAX_TILES|25
 SRTM1_MAX_TILES|4
+# Login needed to download new SRTM1 tiles (see https://urs.earthdata.nasa.gov)
+EARTHDATA_LOGIN|usr,pwd
 # ETOPO Global Relief Data: can be downloaded at http://www.ngdc.noaa.gov/mgg/global/global.html (.bin and .hdr)
 PATH_DATA_DEM_ETOPO|${PATH_DATA_DEM}/ETOPO
 ETOPO_NAME|etopo5
