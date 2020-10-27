@@ -8,6 +8,33 @@ The latest release has many improvements, new features and bug fixes.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations.
 
+## Version under development
+
+### Enhancements
+
+1. Superproc GNSS has new variable to adjust errors on data for different orbits: `ORBIT_ERROR_RATIO` which contains a vector of ratios associated to orbit values 0 (final), 1 (rapid), and 2 (ultra), respectively. The default setting of the new variable is:
+
+```
+ORBIT_ERROR_RATIO|1,2
+```
+
+   and will multiply by 1 final-orbit errors (orbit = 0), and by 2 any non-final orbits (orbit > 0). Set this variable empty, or 1 to keep previous behavior.
+
+2. Since 2020, there no more free website where SRTM1 tiles can be downloaded without identification. If you have already used SRTM1 data in procs, the tiles have been stored in your `PATH_DATA_DEM_SRTM1` and are still available for mapping on the corresponding areas. But to download new tiles or at first install, you now need a login at https://urs.earthdata.nasa.gov (free registering). User and password must be specified in a new variable `EARTHDATA_LOGIN` in `WEBOBS.rc`:
+
+```
+EARTHDATA_LOGIN|user,password
+```
+
+   If the login is not defined, SRTM3 tiles will be used.
+
+### Fixed issues
+
+1. Due to a bug in rdmseed.m, Sefran3 was not able to use data stream input other than Steim1/2 coding.
+
+2. In GNSS/GispyX data format, station code is now case insensitive. In fact, station code in GipsyX .tdp files is written upper case, so lower case FID were not found.
+
+
 ## v2.1.6 (September 2020)
 
 ### Enhancements
