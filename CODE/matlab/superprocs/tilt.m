@@ -34,9 +34,10 @@ function DOUT=tilt(varargin)
 %       template CODE/tplate/PROC.TILT
 %
 %
-%   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet, V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
+%   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet,
+%            V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
 %   Created: 2015-08-24 in Yogyakarta, Indonesia
-%   Updated: 2019-12-12
+%   Updated: 2020-11-09
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -87,13 +88,15 @@ motion_colormap = field2num(P,'MOTION_COLORMAP',jet(64));
 motion_demopt = field2cell(P,'MOTION_DEM_OPT','colormap',.5*ones(64,3),'watermark',2,'interp');
 motion_title = field2str(P,'MOTION_TITLE','{\fontsize{14}{\bf$name - Motion} ($timescale)}');
 
-maxdep = field2num(P,'MODELLING_MAX_DEPTH',8e3);	% depth limit (m)
-bm = field2num(P,'MODELLING_BORDERS',5000);
+maxdep = field2num(P,'MODELLING_MAX_DEPTH',5000);	% depth limit (m)
+bm = field2num(P,'MODELLING_BORDERS',2500);
 rr = field2num(P,'MODELLING_GRID_SIZE',51);
 msig = field2num(P,'MODELLING_SIGMAS',1);
 plotbest = isok(P,'MODELLING_PLOT_BEST');
 moduleonly = isok(P,'MODELLING_MODULE_ONLY');
 modelling_title = field2str(P,'MODELLING_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
+misfitnorm = field2str(P,'MODELLING_MISFITNORM','L1');
+apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 
 geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
 
@@ -421,7 +424,7 @@ for r = 1:length(P.GTABLE)
 				X(nn).d = mavr(rf(D(n).d(k,4:5)),motion_filter);
 			else
 				X(nn).t = [];
-				X(nn).d = [];
+				X(nn).d = zeros(0,2);
 			end
 		end
 		alldata = cat(1,X.d);
@@ -675,6 +678,7 @@ for r = 1:length(P.GTABLE)
 		ysta = (geo(kn,1) - lat0)*degm;
 		xsta = (geo(kn,2) - lon0)*degm*cosd(lat0);
 		zsta = geo(kn,3);
+		targetxy = (targetll([2,1]) - [lon0,lat0]).*[cosd(lat0),1]*degm;
 
 		wid = max(diff(minmax(xsta)),diff(minmax(ysta))) + bm;
 
@@ -708,6 +712,8 @@ for r = 1:length(P.GTABLE)
 
 		% removes NaN data
 		kk = find(~any(isnan(d(:,1:2)),2));
+		kx = find(~isnan(d(:,1)));
+		ky = find(~isnan(d(:,2)));
 		kr = length(kk);
 
 		% computes optimal volume variation
@@ -716,18 +722,45 @@ for r = 1:length(P.GTABLE)
 		vv = mean(drm(:,:,:,kk),4)./mean(dt(:,:,:,kk),4);
 			
 		% computes probability density
-		vvn = repmat(vv,[1,1,1,kr]);
-		sigx = repmat(reshape(2*d(kk,3),1,1,1,kr),[sz,1]);
-		sigy = repmat(reshape(2*d(kk,4),1,1,1,kr),[sz,1]);
-		if moduleonly
-			% -- misfit from vector module only
-			mm = exp(sum(-(dr(:,:,:,kk) - dt(:,:,:,kk).*vvn).^2./(2*(sigx + sigy).^2),4))./prod((sigx + sigy)*sqrt(2*pi),4);
+		if ~isempty(kx) || ~isempty(ky)
+			vvn = repmat(vv,[1,1,1,kr]);
+			vvx = repmat(vv,[1,1,1,length(kx)]);
+			vvy = repmat(vv,[1,1,1,length(ky)]);
+			sigx = repmat(reshape(d(kx,3),1,1,1,length(kx)),[sz,1]);
+			sigy = repmat(reshape(d(ky,4),1,1,1,length(ky)),[sz,1]);
+
+			if moduleonly
+				% -- misfit from vector module only
+				%mm = exp(sum(-(dr(:,:,:,kk) - dt(:,:,:,kk).*vvn).^2./(2*(sigx + sigy).^2),4))./prod((sigx + sigy)*sqrt(2*pi),4);
+				if strcmpi(misfitnorm,'L2')
+					mm = exp(sum(-(dr(:,:,:,kk) - dt(:,:,:,kk).*vvn).^2./(2*(sigx + sigy).^2),4));
+				else
+					mm = exp(sum(-abs(dr(:,:,:,kk) - dt(:,:,:,kk).*vvn)./(2*(sigx + sigy)),4));
+				end
+			else
+				% -- misfit from vectors difference module (two components)
+				%mm = exp(sum(-(dx(:,:,:,kk) - tx(:,:,:,kk).*vvn).^2./(2*sigx.^2),4))./prod(sigx*sqrt(2*pi),4) ...
+				%	.*exp(sum(-(dy(:,:,:,kk) - ty(:,:,:,kk).*vvn).^2./(2*sigy.^2),4))./prod(sigy*sqrt(2*pi),4);
+				if strcmpi(misfitnorm,'L2')
+					mm = exp(sum(-(dx(:,:,:,kx) - tx(:,:,:,kx).*vvx).^2./(2*sigx.^2),4)) ...
+						.*exp(sum(-(dy(:,:,:,ky) - ty(:,:,:,ky).*vvy).^2./(2*sigy.^2),4));
+				else
+					mm = exp(sum(-abs(dx(:,:,:,kx) - tx(:,:,:,kx).*vvx)./(2*sigx),4)) ...
+						.*exp(sum(-abs(dy(:,:,:,ky) - ty(:,:,:,ky).*vvy)./(2*sigy),4));
+				end
+
+			end
 		else
-			% -- misfit from vectors difference module (two components)
-			mm = exp(sum(-(dx(:,:,:,kk) - tx(:,:,:,kk).*vvn).^2./(2*sigx.^2),4))./prod(sigx*sqrt(2*pi),4) ...
-				.*exp(sum(-(dy(:,:,:,kk) - ty(:,:,:,kk).*vvn).^2./(2*sigy.^2),4))./prod(sigy*sqrt(2*pi),4);
+			mm = nan(sz);
 		end
+		
 		clear tx ty sigx sigy % free some memory
+
+		% applies a priori info
+		if apriori_horizontal > 0
+			mm = mm.*exp(-((xx - targetxy(1)).^2 + (yy - targetxy(2)).^2)/ ...
+			   	 (2*(apriori_horizontal*1e3)^2));
+		end
 
 		% all solutions above the topography are very much unlikely...
 		mm(zz>repmat(zdem,[1,1,sz(3)])) = 0;
@@ -754,9 +787,9 @@ for r = 1:length(P.GTABLE)
 		ws = 2*median(d0(mm >= (1 - msigp)*max(mm(:))));	% distance of the best models (msig)
 		
 		mhor = max(mm,[],3);
-		clim = [min(mhor(:)),max(mhor(:))*(ws/1e6)^.5]
+		%clim = [min(mhor(:)),max(mhor(:))*(ws/1e6)^.5];
 		%clim = [min(mhor(:)),max(mhor(:))];
-		%clim = minmax(mm)
+		clim = minmax(mm);
 		if ~(diff(clim)>0)
 			clim = [0,1];
 		end
@@ -783,6 +816,17 @@ for r = 1:length(P.GTABLE)
 			ellipse(xsta + vsc*d(:,1),ysta + vsc*d(:,2),vsc*d(:,3),vsc*d(:,4),'LineWidth',.2,'Clipping','on')
 			arrows(xsta,ysta,vsc*tx,vsc*ty,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor','r','FaceColor','r','Clipping','off')
 		end
+		if ~isempty(targetll)
+			plot(repmat(targetxy(1),1,2),ylim([1,end]),':k')
+			plot(xlim([1,end]),repmat(targetxy(2),1,2),':k')
+			if apriori_horizontal > 0
+				acircle = linspace(0,2*pi);
+				plot(targetxy(1)+apriori_horizontal*1e3*cos(acircle), ...
+				     targetxy(2)+apriori_horizontal*1e3*sin(acircle), ...
+				     ':k')
+			end
+		end
+
 		%axis equal; axis tight
 		if plotbest
 			plot(xx(k),yy(k),'pk','MarkerSize',10,'LineWidth',2)
