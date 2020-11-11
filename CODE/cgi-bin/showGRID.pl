@@ -210,7 +210,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	$htmlcontents .= "</div><div id=\"specID\">";
 	# should 'nodes' be called differently (than 'nodes'!) ?
 	my $snm = defined($GRID{NODE_NAME}) ? $GRID{NODE_NAME} : "$__{'node'}";
-	$htmlcontents .= "<UL>";
+	$htmlcontents .= "<TABLE width=\"100%\"><TR><TD style=\"border:0\"><UL>";
 	# -----------
 	foreach (@domain) {
 		$htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$_\"><B>$DOMAINS{$_}{NAME}</B></A></LI>\n";
@@ -255,11 +255,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		}
 		# -----------
 		my $urn = '';
-		if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" ) {
-			$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
-			my $outg = join(', ',map {$_ = "<A href=\"$urn&amp;ts=$_\"><B>$_</B></A>"} split(/,/,$GRID{TIMESCALELIST}));
-			$htmlcontents .= "<LI>$__{'Graphical routine'}: <B>$GRIDName</B> $outg</LI>\n";
-		} elsif ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" ) {
+		if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" ) {
 			$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName&ts=events";
 			$htmlcontents .= "<LI>$__{'Graphical routine'}: <B>$GRIDName</B> <A href=\"$urn\">events</A></LI>\n";
 		}
@@ -291,7 +287,33 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			$htmlcontents .= "<LI>$__{'External link'}: <B><A href=\"$txt[1]\" target=\"_blank\">$txt[0]<\/A></B></LI>\n";
 		}
 	}
-	$htmlcontents .= "</UL>\n";
+	$htmlcontents .= "</UL></TD>\n";
+	if ($isProc) {
+		my @ts = split(/,/,$GRID{TIMESCALELIST});
+		if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" ) {
+			my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
+			$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>Proc Graphs</TH><TH>".join("</TH><TH>",@ts)."</TH></TR>\n";
+			foreach my $g ("",split(/,/,$GRID{SUMMARYLIST})) {
+				my $outg = join('',map {$_ = "<TD align=\"center\"><A href=\"$urn&amp;ts=$_&amp;g=$g\"><B>$_</B></A></TD>"} split(/,/,$GRID{TIMESCALELIST}));
+				$htmlcontents .= "<TR><TD align=\"right\">".($g eq ""?"Overview":"$g")."</TD>$outg</TR>\n";
+			}
+			$htmlcontents .= "</TABLE></TD>\n";
+		}
+		$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>Proc Time Scales</TH><TH>".join("</TH><TH>",@ts)."</TH></TR>\n";
+		foreach ("Decimate","Cumulate","DateStr","Marker","LineWidth","Status") {
+			my @tsp = split(/,/,$GRID{uc($_)."LIST"});
+			my $cells;
+			if ($#tsp < 0) {
+				$cells = "<TD align=\"center\" colspan=\"".($#ts+1)."\"><I><SMALL>undefined</SMALL></I>";
+			} else {
+				push(@tsp, '&nbsp;' x ($#ts-$#tsp)) if ($#tsp < $#ts);
+				$cells = "<TD align=\"center\"><B>".join("</B></TD><TD align=\"center\"><B>",@tsp)."</B>";
+			}
+			$htmlcontents .= "<TR><TD align=\"right\">$_</TD>$cells</TD></TR>\n";
+		}
+		$htmlcontents .= "</TABLE></TD>\n";
+	}
+	$htmlcontents .= "</TR></TABLE>\n";
 	$htmlcontents .= "</div></div>";
 print $htmlcontents;
 
