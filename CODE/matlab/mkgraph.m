@@ -1,22 +1,22 @@
 function varargout = mkgraph(WO,f,G,OPT);
 %MKGRAPH Creates graphics file(s) from current figure.
-%	MKGRAPH(WO,F,G) adds header and footer to current figure and makes a file F using 
+%	MKGRAPH(WO,F,G) adds header and footer to current figure and makes a file F using
 %	parameters defined in the graph structure G. Image files are created in:
 %	   G.OUTDIR/[G.SUBDIR/]F.{eps,png,jpg}
 %
 %	MKGRAPH(WO,F,G,OPT) uses structure OPT as optional parameters:
-%		OPT.IMAPS : creates companion html map file for interactive graph
-%		OPT.TYPES : adds a list of symbols on the upper plot
-%		OPT.FIXEDPP : do not change initial paper size
-%		OPT.INFOLINES : specifies the number of lines for INFOS footer (default is 4)
+%		OPT.IMAP: creates companion html map file for interactive graph
+%		OPT.TYPES: adds a list of symbols on the upper plot
+%		OPT.FIXEDPP: do not change initial paper size
+%		OPT.INFOLINES: specifies the number of lines for INFOS footer (default is 4)
 %
-%	Attention: MKGRAPH needs external program "convert" (from ImageMagick package) to produce 
+%	Attention: MKGRAPH needs external program "convert" (from ImageMagick package) to produce
 %	PNG images. Binary location can be defined in PRGM_CONVERT variable in WEBOBS.rc.
 %
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2019-12-12
+%	Updated: 2020-11-12
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -197,45 +197,44 @@ if nargin > 3 && isfield(OPT,'IMAP')
 	I = cat(2,I,OPT.IMAP);
 end
 
-if ~isempty(I)
-	IM = imfinfo(sprintf('%s/%s.png',ptmp,f));
-	ims = [IM.Width IM.Height];
-	fid = fopen(sprintf('%s/%s.map',ptmp,f),'wt');
-	for g = 1:length(I)
-		set(I(g).gca,'Units','normalized');
-		axp = plotboxpos(I(g).gca);
-		xylim = [get(I(g).gca,'XLim'),get(I(g).gca,'YLim')];
-		if strcmp(get(I(g).gca,'XDir'),'reverse')
-			xylim(1:2) = xylim([2,1]);
+IM = imfinfo(sprintf('%s/%s.png',ptmp,f));
+ims = [IM.Width IM.Height];
+fid = fopen(sprintf('%s/%s.map',ptmp,f),'wt');
+% note: empty events will create an empty file
+for g = 1:length(I)
+	set(I(g).gca,'Units','normalized');
+	axp = plotboxpos(I(g).gca);
+	xylim = [get(I(g).gca,'XLim'),get(I(g).gca,'YLim')];
+	if strcmp(get(I(g).gca,'XDir'),'reverse')
+		xylim(1:2) = xylim([2,1]);
+	end
+	if strcmp(get(I(g).gca,'YDir'),'reverse')
+		xylim(3:4) = xylim([4,3]);
+	end
+	% reverse loop to make most recent events on top layer
+	for n = size(I(g).d,1):-1:1
+		if ~isempty(I(g).l{n})
+			lnk = sprintf(' wolbsrc="%s"',I(g).l{n});
+		else
+			lnk = '';
 		end
-		if strcmp(get(I(g).gca,'YDir'),'reverse')
-			xylim(3:4) = xylim([4,3]);
-		end
-		% reverse loop to make most recent events on top layer
-		for n = size(I(g).d,1):-1:1
-			if ~isempty(I(g).l{n})
-				lnk = sprintf(' wolbsrc="%s"',I(g).l{n});
-			else
-				lnk = '';
-			end
-			x = round(ims(1)*((axp(3)*(I(g).d(n,1) - xylim(1))/diff(xylim(1:2)) + axp(1))));
-			y = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,2) - xylim(3))/diff(xylim(3:4)) + axp(2))));
+		x = round(ims(1)*((axp(3)*(I(g).d(n,1) - xylim(1))/diff(xylim(1:2)) + axp(1))));
+		y = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,2) - xylim(3))/diff(xylim(3:4)) + axp(2))));
 
-			if size(I(g).d,2) < 4
-				% r is given in points
-				r = ceil(I(g).d(n,3)*G.PPI/72);
-				fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=circle coords="%d,%d,%d">\n',lnk,I(g).s{n},x,y,r);
-			else
-				x2 = round(ims(1)*((axp(3)*(I(g).d(n,3) - xylim(1))/diff(xylim(1:2)) + axp(1))));
-				y2 = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,4) - xylim(3))/diff(xylim(3:4)) + axp(2))));
-				fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=rect coords="%d,%d,%d,%d">\n',lnk,I(g).s{n},x,y,x2,y2);
-			end
+		if size(I(g).d,2) < 4
+			% r is given in points
+			r = ceil(I(g).d(n,3)*G.PPI/72);
+			fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=circle coords="%d,%d,%d">\n',lnk,I(g).s{n},x,y,r);
+		else
+			x2 = round(ims(1)*((axp(3)*(I(g).d(n,3) - xylim(1))/diff(xylim(1:2)) + axp(1))));
+			y2 = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,4) - xylim(3))/diff(xylim(3:4)) + axp(2))));
+			fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=rect coords="%d,%d,%d,%d">\n',lnk,I(g).s{n},x,y,x2,y2);
 		end
 	end
-	%fprintf(fid,'<AREA nohref shape=default>\n');
-	fclose(fid);
-	fprintf('%s: interactive map %s/%s.map created.\n',wofun,pout,f);
 end
+%fprintf(fid,'<AREA nohref shape=default>\n');
+fclose(fid);
+fprintf('%s: interactive map %s/%s.map created.\n',wofun,pout,f);
 
 wosystem(sprintf('mv -f %s/%s.* %s/',ptmp,f,pout));
 fprintf('%s: %s/%s.* copied.\n',wofun,pout,f);
