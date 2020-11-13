@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2020-10-08
+%	Updated: 2020-11-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -79,6 +79,14 @@ bwdelay = field2num(SEFRAN3,'BROOMWAGON_DELAY_HOURS',6)/24; % Broom-wagon delay 
 bwup = field2num(SEFRAN3,'BROOMWAGON_UPDATE_HOURS',1); % Broom-wagon update window (in hours)
 bwmdead = field2num(SEFRAN3,'BROOMWAGON_MAX_DEAD_CHANNELS',0); % Broom-wagon maximum dead channels tolerance
 bwmgap = field2num(SEFRAN3,'BROOMWAGON_MAX_GAP_FACTOR',0); % Broom-wagon maximum gap tolerance (relative 0-1)
+
+% Spectrogram
+sgram = isok(SEFRAN3,'SGRAM_ACTIVE');
+sgrampath = field2str(SEFRAN3,'PATH_IMAGES_SGRAM','sgram/low');
+sgrampathhigh = field2str(SEFRAN3,'PATH_IMAGES_SGRAM','sgram/high');
+sgramflim = field2num(SEFRAN3,'SGRAM_FREQLIM',[0,50]);
+sgramcmap = field2num(SEFRAN3,'SGRAM_COLORMAP',jet(256));
+sgramclim = field2num(SEFRAN3,'SGRAM_CLIM',[0,1]);
 
 % graphical parameters
 vits = field2num(SEFRAN3,'VALUE_SPEED',1.2); % Sefran paper speed (in inches/minute)
@@ -193,7 +201,10 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 
 		if force || ((~exist(fpng,'file') || bw) && sum(mdone) < maximages)
 			wosystem(sprintf('mkdir -p %s/%s %s/%s %s/%s',pdat,SEFRAN3.PATH_IMAGES_MINUTE,pdat,SEFRAN3.PATH_IMAGES_HOUR,pdat,SEFRAN3.PATH_IMAGES_HEADER),SEFRAN3);
-
+			if sgram
+				wosystem(sprintf('mkdir -p %s/%s %s/%s',pdat,sgrampath,pdat,sgrampathhigh),SEFRAN3);
+			end
+			
 			% delete previous temporary file
 			wosystem(sprintf('rm -f %s',fmsd),SEFRAN3);
 
@@ -207,9 +218,79 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 
 			F = dir(fmsd);
 			if ~isempty(F) && F.bytes > 0
-				% --- loads the miniseed file
+				
+				% --- loads the data
 				[S,I] =	 rdmseed(fmsd);
 				channel_list = cellstr(char(I.ChannelFullName));
+				
+				tag_stat_rate = repmat({''},[1,nchan]);
+				tag_stat_samp = repmat({''},[1,nchan]);
+				tag_stat_medi = repmat({''},[1,nchan]);
+				tag_stat_offs = repmat({''},[1,nchan]);
+				tag_stat_drms = repmat({''},[1,nchan]);
+				tag_stat_asym = repmat({''},[1,nchan]);
+				D = repmat(struct('t',[],'d',[]),nchan,1);
+				
+				% --- loop on channels to prepare the data
+				for n = 1:nchan
+					c = textscan(sfr{n},'%s','Delimiter','.:'); % splits Network, Station, LocId and Channel codes
+					k = find(~cellfun('isempty',regexp(channel_list,sprintf('%s.*%s.*%s.*%s',c{1}{1},c{1}{2},c{1}{3},c{1}{4}))));
+					if ~isempty(k)
+						kk = I(k).XBlockIndex;
+						d = double(cat(1,S(kk).d));
+						t = cat(1,S(kk).t);
+						if clean_overlaps
+							[t,un] = unique(t);
+							d = d(un);
+						end
+						channel_rate = S(kk(1)).SampleRate; % supposes sample rate is constant (looks first block)
+						% statistics
+						ch_median = median(d);
+						ch_minmax = max(d) - min(d);
+						ch_offset = ch_median/ch_minmax;
+						ch_asym = (std(d(d>ch_median)) - std(d(d<ch_median)))/ch_minmax;
+						ch_drms = std(diff(d));
+						ch_samp = length(find(t >= t0 & t < t1))/(60*channel_rate);
+
+						% filtering
+						ds = filtsignal(t,d,channel_rate,C{4}{n});
+						% calibrates and normalizes signal
+						ds = ds/str2double(C{3}{n})/str2double(C{5}{n});
+
+						D(n).t = t;
+						D(n).d = ds;
+					else
+						ch_median = NaN;
+						ch_offset = NaN;
+						ch_drms = NaN;
+						ch_asym = NaN;
+						ch_samp = 0;
+						channel_rate = NaN;
+					end
+					tag_stat_rate{n} = sprintf('%1.5f',channel_rate);
+					tag_stat_samp{n} = sprintf('%1.5f',ch_samp);
+					tag_stat_medi{n} = sprintf('%1.5f',ch_median);
+					tag_stat_offs{n} = sprintf('%1.5f',ch_offset);
+					tag_stat_drms{n} = sprintf('%1.5f',ch_drms);
+					tag_stat_asym{n} = sprintf('%1.5f',ch_asym);
+				end				
+				
+				% --- fill-in PNG tag properties
+				tag = [ ...
+					sprintf('-set sefran3:ppi "%s" ',SEFRAN3.VALUE_PPI), ...
+					sprintf('-set sefran3:intertrace "%s" ',SEFRAN3.INTERTRACE), ...
+					sprintf('-set sefran3:top "%s" ',SEFRAN3.LABEL_TOP_HEIGHT), ...
+					sprintf('-set sefran3:bottom "%s" ',SEFRAN3.LABEL_BOTTOM_HEIGHT), ...
+					sprintf('-set sefran3:streams "%s" ',strjoin(sfr',',')), ...
+					sprintf('-set sefran3:gains "%s" ',strjoin(C{3}',',')), ...
+					sprintf('-set sefran3:amplitudes "%s" ',strjoin(C{5}',',')), ...
+					sprintf('-set sefran3:rate "%s" ',strjoin(tag_stat_rate,',')), ...
+					sprintf('-set sefran3:sampling "%s" ',strjoin(tag_stat_samp,',')), ...
+					sprintf('-set sefran3:median "%s" ',strjoin(tag_stat_medi,',')), ...
+					sprintf('-set sefran3:offset "%s" ',strjoin(tag_stat_offs,',')), ...
+					sprintf('-set sefran3:drms "%s" ',strjoin(tag_stat_drms,',')), ...
+					sprintf('-set sefran3:asymetry "%s" ',strjoin(tag_stat_asym,',')), ...
+				];
 
 				% --- makes the 1-minute image
 				figure, clf
@@ -229,7 +310,11 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					plot(repmat(xlim,[2,1]),ylim,'--','Color',gris1,'LineWidth',1) % minutes vertical limits
 				end
 				if bw || force
-					if bw, s = 'BROOM WAGON'; else s = 'FORCED'; end
+					if bw
+						s = 'BROOM WAGON';
+					else
+						s = 'FORCED';
+					end
 					text(xlim(2)/2,0,{s,''}, ...
 						'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',7,'FontWeight','bold','Color',.8*[1,1,1],'Interpreter','none')
 				end
@@ -250,85 +335,19 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					text(xt,repmat(ylim(1),[1,size(xt,2)]),cellstr(num2str(xticksl')), ...
 						'HorizontalAlignment','center','VerticalAlignment','top','FontSize',7,'Fontweight','Bold','Color','k');
 				end
-				%chan_drawn = 0;
-				tag_stat_rate = repmat({''},[1,nchan]);
-				tag_stat_samp = repmat({''},[1,nchan]);
-				tag_stat_medi = repmat({''},[1,nchan]);
-				tag_stat_offs = repmat({''},[1,nchan]);
-				tag_stat_drms = repmat({''},[1,nchan]);
-				tag_stat_asym = repmat({''},[1,nchan]);
-				for n = 1:nchan
-					c = textscan(sfr{n},'%s','Delimiter','.:'); % splits Network, Station, LocId and Channel codes
-					k = find(~cellfun('isempty',regexp(channel_list,sprintf('%s.*%s.*%s.*%s',c{1}{1},c{1}{2},c{1}{3},c{1}{4}))));
-					%FB-was: k = find(~cellfun('isempty',regexp(channel_list,sprintf('%s:%s.*%s',c{1}{1},c{1}{2},c{1}{4}))));
-					if ~isempty(k)
-						%chan_drawn = chan_drawn + 1;
-						kk = I(k).XBlockIndex;
-						channel_data = double(cat(1,S(kk).d));
-						channel_time = cat(1,S(kk).t);
-						if clean_overlaps
-							[channel_time,un] = unique(channel_time);
-							channel_data = channel_data(un);
-						end
-						channel_rate = S(kk(1)).SampleRate; % supposes sample rate is constant (looks first block)
-						% statistics
-						ch_median = median(channel_data);
-						ch_minmax = max(channel_data) - min(channel_data);
-						ch_offset = ch_median/ch_minmax;
-						ch_asym = (std(channel_data(channel_data>ch_median)) - std(channel_data(channel_data<ch_median)))/ch_minmax;
-						ch_drms = std(diff(channel_data));
-						%FB-was: ch_samp = length(find(channel_time >= t0 & channel_time < (t0 + xlim(2))))/(60*channel_rate);
-						ch_samp = length(find(channel_time >= t0 & channel_time < t1))/(60*channel_rate);
-
-						% filtering
-						ds = filtsignal(channel_time,channel_data,channel_rate,C{4}{n});
-
-						% calibrates and normalizes signal
-						ds = ds/str2double(C{3}{n})/str2double(C{5}{n});
-
-						% clips signal (forces saturation)
-						ds = min(ds,.5);
-						ds = max(ds,-.5);
-
-						% ... finally plots the signal
-						plotregsamp(channel_time - t0,ds - (n - .5)*hsig,'LineWidth',lw,'Color',scol(n,:))
-					else
-						ch_median = NaN;
-						ch_offset = NaN;
-						ch_drms = NaN;
-						ch_asym = NaN;
-						ch_samp = 0;
-						channel_rate = NaN;
-					end
-					tag_stat_rate{n} = sprintf('%1.5f',channel_rate);
-					tag_stat_samp{n} = sprintf('%1.5f',ch_samp);
-					tag_stat_medi{n} = sprintf('%1.5f',ch_median);
-					tag_stat_offs{n} = sprintf('%1.5f',ch_offset);
-					tag_stat_drms{n} = sprintf('%1.5f',ch_drms);
-					tag_stat_asym{n} = sprintf('%1.5f',ch_asym);
-				end
-
-				hold off
 				set(gca,'XLim',xlim,'YLim',ylim,'XTick',[],'YTick',[],'XLimMode','manual','YLimMode','manual');
 
-				% PNG tag properties
-				tag = [ ...
-					sprintf('-set sefran3:ppi "%s" ',SEFRAN3.VALUE_PPI), ...
-					sprintf('-set sefran3:intertrace "%s" ',SEFRAN3.INTERTRACE), ...
-					sprintf('-set sefran3:top "%s" ',SEFRAN3.LABEL_TOP_HEIGHT), ...
-					sprintf('-set sefran3:bottom "%s" ',SEFRAN3.LABEL_BOTTOM_HEIGHT), ...
-					sprintf('-set sefran3:streams "%s" ',strjoin(sfr',',')), ...
-					sprintf('-set sefran3:gains "%s" ',strjoin(C{3}',',')), ...
-					sprintf('-set sefran3:amplitudes "%s" ',strjoin(C{5}',',')), ...
-					sprintf('-set sefran3:rate "%s" ',strjoin(tag_stat_rate,',')), ...
-					sprintf('-set sefran3:sampling "%s" ',strjoin(tag_stat_samp,',')), ...
-					sprintf('-set sefran3:median "%s" ',strjoin(tag_stat_medi,',')), ...
-					sprintf('-set sefran3:offset "%s" ',strjoin(tag_stat_offs,',')), ...
-					sprintf('-set sefran3:drms "%s" ',strjoin(tag_stat_drms,',')), ...
-					sprintf('-set sefran3:asymetry "%s" ',strjoin(tag_stat_asym,',')), ...
-				];
+				% plots the signal
+				hs = zeros(nchan,1);
+				for n = 1:nchan
+						% clips signal (forces saturation)
+						ds = min(D(n).d,.5);
+						ds = max(ds,-.5);
+						hs(n) = plotregsamp(D(n).t - t0,ds - (n - .5)*hsig,'LineWidth',lw,'Color',scol(n,:));
+				end
+				hold off
 
-				% prints image
+				% prints low-speed image
 				fprintf('%s: creating %s ... ',wofun,fpng);
 				ftmp2 = sprintf('%s/sefran.eps',ptmp);
 				print(1,'-depsc','-painters','-loose',ftmp2)
@@ -351,6 +370,49 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s',convert,tag,vitsh,ppi,ftmp2,fpng_high),SEFRAN3);
 					fprintf('done.\n');
 				end
+				
+				% prints spectrogram
+				if sgram
+					hold on
+					delete(hs) % deletes the signals but keeps the remainder!
+					[b,a] = butter(6,.2/50,'high');
+					for n = 1:nchan
+							if numel(D(n).d)>2
+								ti = linspace(0,1/1440,100*60);
+								ds = interp1(D(n).t - t0,D(n).d,ti);
+								ds = filter(b,a,ds);
+								[ss,sf,st] = specgram(ds,128,100,100);
+								p = abs(ss).^.5;
+								pcolor(st/(86400-1),(sf/50 - n)*hsig,p)
+								shading interp
+							end
+					end
+					colormap(sgramcmap)
+					caxis(sgramclim)
+					hold off
+					
+					fpng = sprintf('%s/%s/%4d%02d%02d%02d%02d%02ds.png',pdat,sgrampath,tv);
+					fprintf('%s: creating %s ... ',wofun,fpng);
+					ftmp3 = sprintf('%s/sgram.eps',ptmp);
+					fsxy = [vits,hip]; % image size (in inches)
+					set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
+					print(1,'-depsc','-painters','-loose',ftmp3)
+					wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s',convert,tag,vits,ppi,ftmp3,fpng),SEFRAN3);
+					fprintf('done.\n');
+
+					% prints high-speed image (doesn't replot but modifies the paper size...)
+					if vitsh
+						fpng_high = sprintf('%s/%s/%4d%02d%02d%02d%02d%02ds_high.png',pdat,sgrampathhigh,tv);
+						fprintf('%s: creating %s ... ',wofun,fpng_high);
+						fsxy = [vitsh,hip]; % image size (in inches)
+						set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
+						print(1,'-depsc','-painters','-loose',ftmp3)
+						wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s',convert,tag,vitsh,ppi,ftmp3,fpng_high),SEFRAN3);
+						fprintf('done.\n');
+					end
+					
+				end
+				
 				close
 				mdone(m) = true;
 			else
