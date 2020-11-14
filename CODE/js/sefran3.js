@@ -20,7 +20,7 @@ $(document).ready(function() {
 	}
 	if (typeof MECB  === 'undefined') {
 		// event handlers
-		$(window).load(function() {		
+		$(window).load(function() {
 			init_ref();
 			fsx(SCB.SX);
 			//$('.submenu').innerWidth($('#refrow').width()-3);
@@ -36,13 +36,25 @@ $(document).ready(function() {
 				pos_x = Math.round((sec - 2)*1000*SCB.WIDTH/60000);
 				window.scrollBy(pos_x,0);
 			}
-			shrinkmctags();	
+			shrinkmctags();
 		});
 		$(window).keyup(maj_formulaire);
-	$(window).change(maj_formulaire);
-		// event handlers for crosshair 
+		$(window).change(maj_formulaire);
+		// event handlers for crosshair
 		$('.flypointit').mousemove(function(e) { ptr=flypointit(e,false);overlib(ptr,WIDTH,120,OFFSETX,0,FULLHTML); });
 		$('.flypointit').click(function(e) { flypointit(e,true) });
+	}
+	// spectrogram slider
+	var slider = document.getElementById("sgramslider");
+	slider.oninput = function() {
+  		$('.sgram').css('opacity',this.value/10);
+	}
+});
+
+$(document).keypress(function(event) {
+	var x = event.charCode || event.keyCode;
+	if (x == 102) {
+		showsgram();
 	}
 });
 
@@ -61,7 +73,7 @@ function quit() {
 	window.close();
 }
 
-// ---- toggle height of mctags 
+// ---- toggle height of mctags
 function shrinkmctags() {
 	$('.mctag').each(function () {
 		var h = $(this).height() == SCB.LABELTOP ? SCB.HEIGHTIMG : SCB.LABELTOP ;
@@ -69,18 +81,26 @@ function shrinkmctags() {
 	});
 }
 
-// ---- toggle visibility of mctags 
+// ---- toggle visibility of mctags
 function showmctags() {
 	$('.mctag').toggle();
 	return true;
 }
 
-// ---- restore 1:1 signals 
+// ---- toggle visibility of sgram
+function showsgram() {
+	$('.sgram').css('opacity', function(i, opacity) {
+	    return (opacity > 0) ? 0 : 1;
+	});
+	return true;
+}
+
+// ---- restore 1:1 signals
 function zoom_1() {
 	var ww2 = Math.floor($('body')[0].clientWidth/2);
 	var px = window.pageXOffset;
 	var w=SCB.WIDTH; // current zoom
-	if (w != SCB.WIDTHREF) { 
+	if (w != SCB.WIDTHREF) {
 		var zf = SCB.WIDTHREF/SCB.WIDTH;
 		zoom_tag(zf);
 		SCB.WIDTH = SCB.WIDTHREF;
@@ -115,6 +135,9 @@ function maj_speed() {
 	$('.png').each( function() {
 		$(this).css('width', SCB.WIDTH);
 	});
+	$('.sgram').each( function() {
+		$(this).css('width', SCB.WIDTH);
+	});
 	// ALL maps in page are considered sefran-imgs-maps
 	$('map > area').each( function() {
 		var c = $(this).attr("coords").split(',');
@@ -125,6 +148,10 @@ function maj_speed() {
 
 // ---- apply a zoom factor to mctags and positions of event-start and event-end
 function zoom_tag(zoom) {
+	$('.sgram').each(function() {
+		$(this).css('left', ($(this).position().left - SCB.DX)*zoom + SCB.DX + 'px');
+		$(this).css('width', $(this).width() * zoom + 'px');
+	});
 	$('.mctag').each(function() {
 		$(this).css('left', ($(this).position().left - SCB.DX)*zoom + SCB.DX + 'px');
 		$(this).css('width', $(this).width() * zoom + 'px');
@@ -134,19 +161,19 @@ function zoom_tag(zoom) {
 	});
 }
 
-// ---- load another sefran in its own window for a given hour 
+// ---- load another sefran in its own window for a given hour
 function sefran() {
 	window.open(SCB.PROG+'&date=' + formulaire.ad_date.value + formulaire.ad_heure.value);
 }
 
-// ---- make the formRef visible if needed 
+// ---- make the formRef visible if needed
 function init_ref() {
 	if (document.form) {
 		if (document.form.ref.value == 1) $('#formRef').css('visibility','visible');
 	}
 }
 
-// ---- handle user switching from realtime to date selection 
+// ---- handle user switching from realtime to date selection
 function mod_ref() {
 	if (document.form.ref.value == 0) {
 		$('#formRef').css('visibility','hidden');
@@ -157,8 +184,8 @@ function mod_ref() {
 }
 
 // ---- scroll to right-end of signals (used when page is reloaded with 'previous-date-arrow')
-function fsx(sx) { 
-	if (sx == 1) window.scrollBy(window.scrollMaxX,0); 
+function fsx(sx) {
+	if (sx == 1) window.scrollBy(window.scrollMaxX,0);
 }
 
 // ---- mousemove over hour image(s): build overlib msg, showing position
@@ -201,8 +228,8 @@ function view_mseed() {
 // ---- signals mouseover or click handler; bound via jQuery for cross-browser structures
 function flypointit(event,click) {
 	var dte = new Date(MECB.MINUTE.getTime());      // local dte = date of beginning of window
-	deltaT = 60*(event.pageX - SCB.PPI)/SCB.WIDTH;     // local deltaT = mouse seconds from beginning of window 
-	duration = deltaT - MECB.FORM.sec.value;           // local duration = mouse seconds from eventStart if it already exists 
+	deltaT = 60*(event.pageX - SCB.PPI)/SCB.WIDTH;     // local deltaT = mouse seconds from beginning of window
+	duration = deltaT - MECB.FORM.sec.value;           // local duration = mouse seconds from eventStart if it already exists
 	if (!click) {
 		// -------------------- process a mouseover -------------
 		var ret = '?';
@@ -224,10 +251,10 @@ function flypointit(event,click) {
 		}
 		// adjust crosshair's legend position (set to left or right of crosshair)
 		if (event.clientX >= window.innerWidth - MECB.CHWIDTH) {
-			algn = 'right'; ol_hpos = LEFT; 
+			algn = 'right'; ol_hpos = LEFT;
 			ret=ret+'&nbsp;'+MECB.CROSSHAIR;
-		} else { 
-			algn = 'left'; ol_hpos = RIGHT; 
+		} else {
+			algn = 'left'; ol_hpos = RIGHT;
 			ret=MECB.CROSSHAIR+'&nbsp;'+ret;
 		}
 		return('<div style="width: '+MECB.CHWIDTH+'px;text-align:'+algn+'">'+ret+'</div>');
@@ -270,7 +297,7 @@ function maj_formulaire() {
 	MECB.FORM.dateEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.dateEvenement.value != "")];
 	MECB.FORM.secondeEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.secondeEvenement.value != "" && MECB.FORM.secondeEvenement.value >= 0 && MECB.FORM.secondeEvenement.value < 60)];
 	if (MECB.FORM.secondeEvenement.value!="") {
-		pos_x = Math.round((dte1.getTime() + sec*1000 - dte0.getTime())*SCB.WIDTH/60000 + SCB.PPI);                 	
+		pos_x = Math.round((dte1.getTime() + sec*1000 - dte0.getTime())*SCB.WIDTH/60000 + SCB.PPI);
 		$('#eventStart').css({ 'left': pos_x, 'visibility': 'visible' });
 	} else {
 		$('#eventStart').css({ 'visibility': 'hidden' });
@@ -318,7 +345,7 @@ function maj_formulaire() {
 	}
 	$("#mag").html((mag>0) ? ", Md = <b>" + mag + "</b>": "");
 	MECB.FORM.typeEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.typeEvenement.value != "INCONNU" && MECB.FORM.typeEvenement.value != "UNKNOWN" && MECB.FORM.typeEvenement.value != "AUTO")];
-	
+
 	// EQDISCRIM
 	if (MECB.FORM.secondeEvenement.value!="" && MECB.FORM.dureeEvenement.value!="") {
 		$('#eqdiscrim').show("slow");
@@ -344,9 +371,9 @@ function verif_formulaire() {
         MECB.FORM.stationEvenement.focus();
         return false;
     }
-	if (MECB.FORM.secondeEvenement.value == "" || MECB.FORM.secondeEvenement.value < 0 || MECB.FORM.secondeEvenement.value >= 60) { 
+	if (MECB.FORM.secondeEvenement.value == "" || MECB.FORM.secondeEvenement.value < 0 || MECB.FORM.secondeEvenement.value >= 60) {
         alert(MECB.MSGS['secevt']);
-        MECB.FORM.secondeEvenement.focus(); 
+        MECB.FORM.secondeEvenement.focus();
         return false;
     }
 	if(MECB.FORM.dureeEvenement.value == "" || isNaN(MECB.FORM.dureeEvenement.value)) {
@@ -362,31 +389,31 @@ function verif_formulaire() {
 	if(MECB.FORM.amplitudeEvenement.value == "") {
         alert(MECB.MSGS['ampevt']);
         MECB.FORM.stationEvenement.focus();
-        return false; 
+        return false;
     }
 	if(MECB.FORM.amplitudeEvenement.value == "Sature" || MECB.FORM.amplitudeEvenement.value == "OVERSCALE") {
 		if (MECB.FORM.saturationEvenement.value == "" || MECB.FORM.saturationEvenement.value <= 0) {
         	alert(MECB.MSGS['ovrdur']);
-			MECB.FORM.saturationEvenement.focus(); 
+			MECB.FORM.saturationEvenement.focus();
 			return false;
 		}
     } else {
 		if (MECB.FORM.saturationEvenement.value > 0) {
         	alert(MECB.MSGS['notovr']);
-			MECB.FORM.saturationEvenement.focus(); 
+			MECB.FORM.saturationEvenement.focus();
 			return false;
 		}
 	}
 	if(MECB.FORM.typeEvenement.value == "INCONNU" || MECB.FORM.typeEvenement.value == "UNKNOWN") {
 		if (!confirm(MECB.MSGS['unkevt'])) {
-   			MECB.FORM.typeEvenement.focus(); 
-   			return false; 
+   			MECB.FORM.typeEvenement.focus();
+   			return false;
 		}
 	}
 	if(MECB.FORM.typeEvenement.value == "AUTO") {
 		alert(MECB.MSGS['notval']);
-		MECB.FORM.typeEvenement.focus(); 
-		return false; 
+		MECB.FORM.typeEvenement.focus();
+		return false;
 	}
 }
 
@@ -394,16 +421,16 @@ function verif_formulaire() {
 function supprime(level) {
 	if (level > 1) {
 		if (!confirm(MECB.MSGS['delete'] + MECB.TITLE)) {
-			return false; 
+			return false;
 		}
 	} else {
 		if (MECB.FORM.id_evt.value > 0) {
 			if (!confirm(MECB.MSGS['hidevt'] + MECB.TITLE)) {
-				return false; 
+				return false;
 			}
 		} else {
 			if (!confirm(MECB.MSGS['resevt'] + MECB.TITLE)) {
-				return false; 
+				return false;
 			}
 		}
 	}

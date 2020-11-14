@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-sefran3.pl 
+sefran3.pl
 
 =head1 SYNOPSIS
 
@@ -10,28 +10,28 @@ http://..../sefran3.pl?... see query string parameters below ...
 
 =head1 DESCRIPTION
 
-Display SEFRAN3 data and "Main Courante" form editor. This unique script can generate/manage three 
+Display SEFRAN3 data and "Main Courante" form editor. This unique script can generate/manage three
 types of HTML pages:
-	
-	- Main (default, initial) page, a catalog of available 'hour' images, as thumbnails 
+
+	- Main (default, initial) page, a catalog of available 'hour' images, as thumbnails
 	- 'hour' image page, typically selected from p1
-	- Analysis/Event page (MC event input or update) page, typically selected from p2 or p1   
+	- Analysis/Event page (MC event input or update) page, typically selected from p2 or p1
 
 =head1 Query string parameters
 
  s3=
-  Sefran3 configuration file to be used. Filename only, no path ($WEBOBS{ROOT_CONF} automatically used), 
+  Sefran3 configuration file to be used. Filename only, no path ($WEBOBS{ROOT_CONF} automatically used),
   no extension (.conf automatically used). Defaults to $WEBOBS{SEFRAN3_DEFAULT_NAME}.
 
- mc3= 
+ mc3=
   MC3 configuration file to be used. Filename only, no path ($WEBOBS{ROOT_CONF} automatically used),
   no extension (.conf automatically used).
   Defaults to $SEFRAN3{MC3_NAME} if it exists or $WEBOBS{MC3_DEFAULT_NAME}
 
- id= 
+ id=
   MC event-id, to open an Analysis page for this existing MC event
 
- header=, status= limit=, ref=, yref=, mref=, dref=, date=, high= 
+ header=, status= limit=, ref=, yref=, mref=, dref=, date=, high=
 
  hideloc=
   hide locations of events in hourly sefran view.
@@ -142,7 +142,7 @@ for (@channels) {
 my %types = readCfg("$MC3{EVENT_CODES_CONF}",'sorted');
 my %typesSO;
 my $typesJSARR = "[";
-for (keys(%types)) { 
+for (keys(%types)) {
 	$typesSO{$types{$_}{_SO_}} = $_;
 	$typesJSARR .= "\"$_\"," if ($types{$_}{WO2SC3} == 1);
 }
@@ -154,15 +154,18 @@ for (@durations) {
 	my ($key,$nam,$val) = split(/\|/,$_);
 	$duration_s{$key} = $val;
 }
-# events amplitude texts/thresholds 
+# events amplitude texts/thresholds
 my @amplitudes = readCfgFile("$MC3{AMPLITUDES_CONF}");
 my %nomAmp;
 for (@amplitudes) {
         my ($key,$nam,$val) = split(/\|/,$_);
         $nomAmp{$key} = $nam;
 }
-# time interval texts + value in hours 
+# time interval texts + value in hours
 my %liste_limites = readCfg($SEFRAN3{TIME_INTERVALS_CONF});
+
+# spectrogram
+my $sgram = ($SEFRAN3{SGRAM_ACTIVE} =~ /1|y|yes|on/i ? 1:0);
 
 # ---- misc inits (menu, external pgms and requests, ...)
 #
@@ -252,7 +255,7 @@ print <<html;
 <script type="text/javascript">
 
 // SCB = Sefran Control Block: javascript global variables shared with cgi
-var SCB = {  
+var SCB = {
 	PPI : $SEFRAN3{VALUE_PPI},
 	SPEED : $speed,
 	WIDTHREF : $largeur_image,
@@ -275,7 +278,7 @@ if ($dep) {
 	print <<html
 // MECB = MC3 Event Control Block: javascript global variables for Sefran analysis page
 // gets initialized/updated by cgi and/or javascript
-var MECB = { 
+var MECB = {
 	FORM: null,
 	MFC: null,
 	MINUTE: null,
@@ -283,7 +286,7 @@ var MECB = {
 	CHWIDTH: 120,
 	MSEEDREQ: '$mseedreq',
 	COLORS: { true: '#ccffcc', false: '#ffcccc' },
-	SC3ARR: $typesJSARR, 
+	SC3ARR: $typesJSARR,
 	MSGS: {
 			'staevt': "$__{'Click on first arrival or select station'}",
 			'secevt': "$__{'Click on first arrival or enter seconds'}",
@@ -388,7 +391,7 @@ if (!$date) {
 		"<A href=\"#\" onClick=\"showmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide MC events'}')\">",
 		"<IMG src=\"/icons/mctag.png\" border=1 style=\"vertical-align:middle\"></A> | ",
 		"<A href=\"#infos\">$__{'Information'}</A>",
-		" | <A href=\"/cgi-bin/$WEBOBS{CGI_MC3}?mc=$mc3\">$MC3{TITLE}</A>", 
+		" | <A href=\"/cgi-bin/$WEBOBS{CGI_MC3}?mc=$mc3\">$MC3{TITLE}</A>",
 		" ]</p></TD>";
 		if (!$ref || $SEFRAN3{REF_NORTC} == 0) {
 			print "<TD id=\"rtclock\" style=\"text-align: center; width: 15%\"><h2 style=\"margin-bottom: 8px\">$Ya-$ma-$da<br>$Ha:$Ma UTC</h2>",
@@ -396,7 +399,7 @@ if (!$date) {
 		}
 		print "</TR>";
 	}
-	# form to display/select dates span (interval) and realtime vs start-date (reference) 
+	# form to display/select dates span (interval) and realtime vs start-date (reference)
 	print "<TR id=\"refrow\"><TH colspan=2 align=left>";
 		print "<FORM style=\"margin: 0px;\" name=\"form\" action=\"\" method=\"get\">";
 		# hidden values to pass all parameters in the form
@@ -410,14 +413,14 @@ if (!$date) {
 			"<OPTION value=\"0\"".(!$ref ? " selected":"").">$__{'Real-time refresh every'} $SEFRAN3{DISPLAY_REFRESH_SECONDS}s</OPTION>\n",
 			"<OPTION value=\"1\"".($ref ? " selected":"").">$__{'Date selection'} ---></OPTION>\n",
 			"</SELECT>\n";
-		print "<SPAN id=\"formRef\" style=\"visibility:hidden\">"; 
+		print "<SPAN id=\"formRef\" style=\"visibility:hidden\">";
 			print "<SELECT name=\"yref\" size=\"1\">";
 			for (reverse($SEFRAN3{BANG}..$Ya)) { print "<OPTION value=\"$_\"".($_ eq $yref ? " selected":"").">$_</OPTION>\n"; }
 			print "</SELECT><SELECT name=\"mref\" size=\"1\">";
 			for ("01".."12") { print "<OPTION value=\"$_\"".($_ eq $mref ? " selected":"").">$_</OPTION>\n"; }
 			print "</SELECT><SELECT name=\"dref\" size=\"1\">";
 			for ("01".."31") { print "<OPTION value=\"$_\"".($_ eq $dref ? " selected":"").">$_</OPTION>\n"; }
-			print "</SELECT> <INPUT type=button value=\"Display\" onClick=\"submit()\">"; 
+			print "</SELECT> <INPUT type=button value=\"Display\" onClick=\"submit()\">";
 		print "</SPAN>";
 		print " <INPUT type=checkbox name=\"header\" value=\"1\"".($header ? " checked":"")." onClick=\"submit()\"/>".$__{'Header'};
 		print " <INPUT type=checkbox name=\"status\" value=\"1\"".($status ? " checked":"")." onClick=\"submit()\"/>".$__{'Status'};
@@ -468,10 +471,10 @@ if (!$date) {
 							if ($d0 < $ddd + ($hh+1)/24 && $d1 >= $ddd + $hh/24) {
 								# event start and duration expressed in hour
 								my $h0 = $MC{minute}/60 + $MC{second}/3600;
-								my $dh = $MC{duration}*$duration_s{$MC{unit}}/3600;	
+								my $dh = $MC{duration}*$duration_s{$MC{unit}}/3600;
 								# event start and duration expressed in pixels
 								my $deb_evt = 2 + int($SEFRAN3{HOURLY_WIDTH}*$h0);
-								my $dur_evt = 1 + int(0.5 + $SEFRAN3{HOURLY_WIDTH}*$dh);	
+								my $dur_evt = 1 + int(0.5 + $SEFRAN3{HOURLY_WIDTH}*$dh);
 								# case A: event starts in the current hour
 								if ($MC{hour} eq $hh) {
 									# case A1: event duration exceeds current hour
@@ -608,7 +611,7 @@ if (!$date) {
 		."update window = <B>$SEFRAN3{BROOMWAGON_UPDATE_HOURS} h</B>, "
 		."maximum dead channels = <B>$SEFRAN3{BROOMWAGON_MAX_DEAD_CHANNELS}</B>, "
 		."maximum gap = <B>".sprintf("%g%%",$SEFRAN3{BROOMWAGON_MAX_GAP_FACTOR}*100)."</B>)"):"Not active")."</P>\n";
-	
+
 	print "<TABLE><TR><TH></TH><TH>Virtual speed<br>(inches/minute)</TH><TH>Resolution<br>(pixels/second)</TH>",
 		"<TH>1-minute image width<br>(pixels)</TH><TH>Density \@100Hz<br>(samples/pixel)</TH></TR>\n",
  		"<TR><TH>Normal view</TH><TD><B>$SEFRAN3{VALUE_SPEED}</B></TD><TD><B>".int($SEFRAN3{VALUE_SPEED}*$SEFRAN3{VALUE_PPI}/60)."</B>",
@@ -621,13 +624,13 @@ if (!$date) {
 
 	my @notes = readFile("$SEFRAN3{NOTES}");
 	print WebObs::Wiki::wiki2html(join("",@notes));
-	
+
 	print "</BODY></HTML>";
 }
 
-# ----------------------------------------------------------------------------- 
+# -----------------------------------------------------------------------------
 # ---- Case: hour and analysis (depouillement) form page -------------------
-# ----------------------------------------------------------------------------- 
+# -----------------------------------------------------------------------------
 if ($date) {
 	my ($Yc,$mc,$dc,$Hc,$Mc) = unpack("a4 a2 a2 a2 a2",$date);
 
@@ -639,7 +642,7 @@ if ($date) {
 	}
 
 	print "<DIV id=\"sefran\">";
-	my %MC;  
+	my %MC;
 	my $fileMC = "$MC3{FILE_PREFIX}$Yc$mc.txt";
 	my $date_deb; # starting date (relative)
 	my $date_nbm; # number of files
@@ -679,53 +682,52 @@ if ($date) {
 	# control-panel fixed box (zoom,mctag toggle,next/prev buttons)
 	print "<div class=\"keysbox\"  onMouseOver=\"showkeys();\" onMouseOut=\"hidekeys();\">";
 		print "<span class=\"keytitle\">Controls</span>";
-		print "<div class=\"keys\">"; 
-			print "<span class=\"mcbouton\" onClick=\"zoom_in();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Increase speed'} (&times;2)')\"><SPAN class=\"keycap\">+</SPAN></span>";
-			print "<span class=\"mcbouton\" onClick=\"zoom_1();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Base speed'} (1:1)')\"><SPAN class=\"keycap\">=</SPAN></span>";
-			print "<span class=\"mcbouton\" onClick=\"zoom_out();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Decrease speed'} (&divide;2)')\"><SPAN class=\"keycap\">&minus;</SPAN></span>";
-			print "<span class=\"mcbouton\" onClick=\"shrinkmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide MC events'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/mctag.png\" style=\"vertical-align:middle\"></SPAN></span>";
-			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_prec$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dprec')\"><SPAN class=\"keycap\">&larr;</SPAN></span>";
-			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_suiv$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dsuiv')\"><SPAN class=\"keycap\">&rarr;</SPAN></span>";
-			print "<span class=\"mcbouton\" onClick=\"quit();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Quit this event without saving changes'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/cancel.png\" style=\"vertical-align:middle\"></SPAN></span>";
+		print "<div class=\"keys\">";
+			print "<span class=\"mcbouton\" onClick=\"zoom_in();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Increase speed'} (&times;2)')\"><SPAN class=\"keycap\">+</SPAN></span>\n";
+			print "<span class=\"mcbouton\" onClick=\"zoom_1();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Base speed'} (1:1)')\"><SPAN class=\"keycap\">=</SPAN></span>\n";
+			print "<span class=\"mcbouton\" onClick=\"zoom_out();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Decrease speed'} (&divide;2)')\"><SPAN class=\"keycap\">&minus;</SPAN></span>\n";
+			print "<span class=\"mcbouton\" onClick=\"shrinkmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide MC events'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/mctag.png\" style=\"vertical-align:middle\"></SPAN></span>\n";
+			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_prec$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dprec')\"><SPAN class=\"keycap\">&larr;</SPAN></span>\n";
+			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_suiv$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dsuiv')\"><SPAN class=\"keycap\">&rarr;</SPAN></span>\n";
+			print "<span class=\"mcbouton\" onClick=\"quit();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Quit this event without saving changes'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/cancel.png\" style=\"vertical-align:middle\"></SPAN></span>\n";
+			if ($sgram) {
+				print "<br><div class=\"slidecontainer\"><input type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" id=\"sgramslider\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Adjust Spectrogram opacity'}')\"></div>\n";
+			}
 		print "</div>";
 	print "</div>";
 
-	# image des voies
+	# image of channels
 	my $voies = "$SEFRAN3{PATH_WEB}/$Yc/$Yc$mc$dc/$SEFRAN3{PATH_IMAGES_HEADER}/$Yc$mc$dc$Hc\_voies.png";
 
-	# construit la liste des images
+	# builds the list of minute images
 	my @liste_png;
 	for ($i = $date_deb; $i < $date_nbm; $i++) {
 		my ($Y,$m,$d,$H,$M) = split('/',strftime('%Y/%m/%d/%H/%M',gmtime(timegm(0,($dep ? "$Mc":"0"),$Hc,$dc,$mc-1,$Yc-1900) + $i*60)));
-		my $f = sprintf("%s/%4d/%04d%02d%02d/%s/%04d%02d%02d%02d%02d00",$SEFRAN3{ROOT},$Y,$Y,$m,$d,$SEFRAN3{PATH_IMAGES_MINUTE},$Y,$m,$d,$H,$M);
-		my $fpng = $f.".png";
-		my $fpng_high = $f."_high.png";
-		if ($high && -f $fpng_high) {
-			push(@liste_png,$fpng_high);
-		} else {
-			push(@liste_png,$fpng);
-		}
+		push(@liste_png,sprintf("%s/%4d/%04d%02d%02d/%s/%04d%02d%02d%02d%02d00",
+			$SEFRAN3{ROOT},$Y,$Y,$m,$d,$SEFRAN3{PATH_IMAGES_MINUTE},$Y,$m,$d,$H,$M));
 	}
 	my $fin = 0;
 	my $reload = 0;
-	
+
 	if ($voies_classiques && !$dep) {
 		print "<img class=\"voies-permanentes\" src=\"$voies\">\n";
 	} else {
 		print "<img class=\"voies-dynamiques\" src=\"$voies\">\n";
 	}
 	print "<TABLE class=\"sefran\"><tr>\n";
-	print "<td class=\"signals\">";
+	print "<td class=\"signals\"><div style=\"white-space: nowrap;\">";
 	for (@liste_png) {
 		my $png = qx(basename $_); chomp $png;
 		my ($Y,$m,$d,$H,$M,$S) = unpack("a4 a2 a2 a2 a2 a2",$png);
-		my $file = "$Y-$m-$d $H:$M UT";
-		if ( -f $_ ) {
-			my $png_web = "$SEFRAN3{PATH_WEB}/$Y/$Y$m$d/$SEFRAN3{PATH_IMAGES_MINUTE}/$png";
+		my $timestamp = "$Y-$m-$d $H:$M UT";
+		my $png_file = "$_".($high ? "_high":"").".png";
+		if ( -f $png_file ) {
+			my $png_web = "$SEFRAN3{PATH_WEB}/$Y/$Y$m$d/$SEFRAN3{PATH_IMAGES_MINUTE}/$png".($high ? "_high":"").".png";
+			my $png_sgram = "$SEFRAN3{PATH_WEB}/$Y/$Y$m$d/".($high ? "$SEFRAN3{PATH_IMAGES_SGRAM_HIGH}/${png}s_high":"$SEFRAN3{PATH_IMAGES_SGRAM}/${png}s").".png";
 			my $mseed = "$mseedreq&t1=$Y,$m,$d,$H,$M,0&ds=60";
 
 			print "<map name=\"$png\"><area href=\"$mseed\" onMouseOut=\"nd()\" ",
-				"onMouseOver=\"overlib('$__{'Click to see miniseed file'}<br>$file', WIDTH, 200)\"",
+				"onMouseOver=\"overlib('$__{'Click to see miniseed file'}<br>$timestamp', WIDTH, 200)\"",
 				" shape=rect coords=\"0,0,$largeur_image,$hauteur_label_haut\" alt=\"miniSEED $png\">",
 				"<area onMouseOut=\"nd()\" ";
 			if ($dep) {
@@ -735,11 +737,12 @@ if ($date) {
 				print " class=\"flyhour\"  onMouseOver=\"flyhour(this,'$__{'Click to start input Main Courante'}')\"",
 					" href=\"$prog&date=$Y$m$d$H$M&s3=$s3\" target=\"_blank\" rel=\"opener\"";
 			}
-			print " shape=rect coords=\"0,".($hauteur_label_haut + 1).",$largeur_image,".($hauteur_image - $hauteur_label_haut)."\"></map>",
-				"<img id=\"png\" class=\"png\" src=\"$png_web\" usemap=\"#$png\">";
+			print " shape=rect coords=\"0,".($hauteur_label_haut + 1).",$largeur_image,".($hauteur_image - $hauteur_label_haut)."\"></map>";
+			print	"<img id=\"sgram\" class=\"sgram\" src=\"$png_sgram\" usemap=\"#$png\">" if ($sgram);
+			print	"<img id=\"png\" class=\"png\" src=\"$png_web\" usemap=\"#$png\">";
 		} elsif ( "$Y$m$d$H$M" >= "$Ya$ma$da$Ha$Ma") {
 			if (!$fin) {
-				print "</td><td class=\"fin\"><div>Now<br>$Ya-$ma-$da<br>$Ha:$Ma:$Sa UTC</div></td><td class=\"signals\">";
+				print "</div></td><td class=\"fin\"><div>Now<br>$Ya-$ma-$da<br>$Ha:$Ma:$Sa UTC</div></td><td class=\"signals\">";
 				if (!$reload && !$dep) {
 					print "<script>setTimeout('window.location.reload()',$refreshms)</script>";
 					$reload = 1;
@@ -783,8 +786,8 @@ if ($date) {
 	print "</DIV>";
 
 	if ($dep) {
-		# default values for mcform; 
-		# case : editing an existing id or not 
+		# default values for mcform;
+		# case : editing an existing id or not
 		my $date_evt = ($id ? "$MC{date} $MC{hour}:$MC{minute}" : "$Yc-$mc-$dc $Hc:$Mc");
 		my $seconde_evt = ($id ? $MC{second} : "");
 		my $type_evt = ($id ? $MC{type} : "$MC3{DEFAULT_TYPE}");
@@ -811,7 +814,7 @@ if ($date) {
 		if (($userLevel == 2 && ($operateur eq "" || $operateur eq $USERS{$CLIENT}{UID} || $type_evt eq "AUTO")) || $userLevel == 4 ) {
 			$modif = 1;
 		}
-		# --- mcform: formulaire Main Courante
+		# --- mcform: edit form for Main Courante
 		print "<DIV id=\"mcform\" class=\"mcform\">",
 			"<FORM name=\"formulaire\" action=\"/cgi-bin/editMC3.pl?s3=$s3&mc=$mc3\" method=\"post\" onSubmit=\"return verif_formulaire()\">",
 			"<INPUT type=\"hidden\" name=\"date\" value=\"$date\">",
@@ -820,7 +823,7 @@ if ($date) {
 			"<INPUT type=\"hidden\" name=\"day\" value=\"$dc\">",
 			"<INPUT type=\"hidden\" name=\"hour\" value=\"$Hc\">",
 			"<INPUT type=\"hidden\" name=\"minute\" value=\"$Mc\">",
-			"<INPUT type=\"hidden\" name=\"sec\" value=\"0\">", 
+			"<INPUT type=\"hidden\" name=\"sec\" value=\"0\">",
 			"<INPUT type=\"hidden\" name=\"files\" value=\"$MC{qml}\">", # compatibilite MC2: nombre de fichiers
 			"<INPUT type=\"hidden\" name=\"fileNameSUDS\" value=\"$s3\">", # pour compatibilite MC2: remplace par la version SEFRAN
 			"<INPUT type=\"hidden\" name=\"imageSEFRAN\" value=\"$MC{image}\">",
@@ -850,7 +853,7 @@ if ($date) {
 			print "</TR></TABLE><HR>";
 		}
 
-		# liste des operateurs
+		# list of operators
 		print "<P>$__{'Operator'}: <SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'your name'}')\" name=\"nomOperateur\" size=\"1\">";
 		if ($userLevel < 4) {
 			print "<OPTION value=\"$USERS{$CLIENT}{UID}\" selected>$USERS{$CLIENT}{FULLNAME}</OPTION>\n";
@@ -860,13 +863,13 @@ if ($date) {
 			for (keys(%USERS)) {
 				if ( WebObs::Users::userHasAuth(user=>"$_", type=>'authprocs', name=>'MC',auth=>2 ) || WebObs::Users::userHasAuth(user=>"$_", type=>'authprocs', name=>"$mc3",auth=>2 ) ) { $ku{$USERS{$_}{FULLNAME}} = $_; }
 			}
-			for (sort(keys(%ku))) { 
+			for (sort(keys(%ku))) {
 				print "<option".($USERS{$ku{$_}}{UID} eq $USERS{$CLIENT}{UID} ? " selected":"")." value=$USERS{$ku{$_}}{UID}>$USERS{$ku{$_}}{FULLNAME}</option>";
 			}
 		}
 		print "</SELECT></P>";
 
-		# liste des stations
+		# list of stations
 		print "<P>$__{'Station of first arrival'}: <SELECT name=\"stationEvenement\" size=\"1\"",
 			" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Select station or click on first phase of signal'}')\">",
 			"<OPTION value=\"\">---</OPTION>";
@@ -877,7 +880,7 @@ if ($date) {
 		print "&nbsp;&nbsp;<INPUT type=\"radio\" name=\"arriveeUnique\" value=\"0\"".($unique_evt ? "" : " checked")."> Multiple",
 			"&nbsp;&nbsp;<INPUT type=\"radio\" name=\"arriveeUnique\" value=\"1\"".($unique_evt ? " checked" : "")."> Unique</P>\n";
 
-		# date et heure de premiere arrivee
+		# date and time of first arrival
 		print "<P>Date, HH:MM : <SELECT name=\"dateEvenement\" size=\"1\">";
 		for ($i = -1; $i <= $MC3{WINDOW_LENGTH_MINUTE}; $i++) {
 			my $dd = strftime('%Y-%m-%d %H:%M',gmtime(timegm(0,$Mc,$Hc,$dc,$mc-1,$Yc-1900) + $i*60));
@@ -885,10 +888,10 @@ if ($date) {
 		}
 		print "</SELECT>";
 
-		# secondes de premiere arrivee
+		# seconds of first arrival
 		print " $__{'Seconds'}: <INPUT name=\"secondeEvenement\" size=\"4\" value=\"$seconde_evt\"></P>";
 
-		# duree
+		# duration
 		print "<P>$__{'Duration'}: <INPUT name=\"dureeEvenement\" size=\"4\" value=\"$duree_evt\"> ";
 		print "<SELECT name=\"uniteEvenement\" size=\"1\">";
 		for (@durations) {
@@ -897,7 +900,7 @@ if ($date) {
 		}
 		print "</SELECT>\n";
 
-		# nombre evenements
+		# number of events
 		print "&nbsp;&nbsp;$__{'Number of events'} = <INPUT name=\"nombreEvenement\" size=\"4\" value=\"$nb_evt\"></P>\n";
 
 		# S-P
@@ -906,7 +909,7 @@ if ($date) {
 			"<span id=\"mag\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Magnitude according to indicated duration and distance'}')\"></span>",
 			"<span id=\"tele\"></span></P>";
 
-		# amplitude et saturation
+		# amplitude and saturation
 		print "<P>$__{'Max amplitude'}: <SELECT name=\"amplitudeEvenement\" size=\"1\">";
 		for ("|&nbsp;|-1",@amplitudes) {
 			my ($key,$nam,$val) = split(/\|/,$_);
@@ -916,7 +919,7 @@ if ($date) {
 		print "<P>$__{'Overscale duration'} (<I>$__{'Seconds'}</I>): ",
 			"<INPUT size=\"5\" value=\"$duree_sat_evt\" name=\"saturationEvenement\"> (0 = $__{'not overscale'})</P>\n";
 
-		# type d'evenement
+		# type of event
 		print "<P>$__{'Event type'}: <SELECT name=\"typeEvenement\" size=\"1\" onchange=\"maj_type()\">";
 		for (sort(keys(%typesSO))) {
 			my $key = $typesSO{$_};
@@ -932,15 +935,15 @@ if ($date) {
 			print " <INPUT type=\"button\" id=\"eqdiscrim\" value=\"EQDISCRIM\" onClick=\"run_eqdiscrim()\"><BR>";
 		}
 
-		# lien USGS
+		# link to USGS
 		my $ocl = "<A href=\"$MC3{USGS_URL}\" target=\"_blank\"><B>USGS</B></A>";
 		$ocl = $MC3{VISIT_LINK} if (defined($MC3{VISIT_LINK}));
 		print "&nbsp;<I>&rarr; $__{'Visit'} $ocl</I></P>\n";
 
-		# commentaires
+		# comment
 		print "<P>$__{'Comment'}: <INPUT size=\"52\" name=\"commentEvenement\" value=\"$comment_evt\"></P>\n";
 
-		# options de validation et reset
+		# options for validation and reset
 		if ($modif > 0) {
 			print "<TABLE style=\"border:0\" width=\"100%\"><TR><TD style=\"border:0\">";
 			if (length($MC{qml}) < 3 && $types{$type_evt}{WO2SC3} != -1) {
@@ -948,7 +951,7 @@ if ($date) {
 					." id=\"newSC3event\"".($types{$type_evt}{WO2SC3} && $id ne "" ? " checked":"").">"
 					."<LABEL FOR=\"newSC3event\">$__{'Create a new SeisComp ID'}</LABEL></P>\n";
 			}
-			# impression et replay
+			# print and replay
 			if ($id) {
 				print "<P><INPUT type=\"checkbox\" name=\"impression\" value=\"1\">$__{'Print signal'}</P>\n";
 			} else {
@@ -960,7 +963,7 @@ if ($date) {
 			print "</TD><TD style=\"border:0;text-align:right\"><INPUT type=\"button\" value=\"Reset\" onClick=\"reset();maj_formulaire()\">",
 				"&nbsp;&nbsp;<INPUT type=\"submit\" value=\"".($id ? "$__{'Modify'}":"$__{'Validate'}")."\"></TD></TR></TABLE>\n";
 		}
-		# recuperation du miniseed
+		# downloads miniseed
 		print "<HR><TABLE style=\"border:0\"><TR><TD style=\"border:0\">",
 			"<INPUT type=\"button\" value=\"$__{'miniSEED file'}\" onclick=\"view_mseed()\"></TD>",
 			"<TD style=\"border:0\">",
@@ -970,8 +973,8 @@ if ($date) {
 			"</TD></TR></TABLE>\n";
 
 		print "</FORM></DIV>\n";
-		
-		# vertical tag-lines for event-start, event-end and eventS-P 
+
+		# vertical tag-lines for event-start, event-end and eventS-P
 		print "<DIV id=\"eventStart\"><TABLE><TR><TD class=\"eventStart\">START</TD></TR></TABLE></DIV>\n",
 			"<DIV id=\"eventEnd\"><TABLE><TR><TD class=\"eventEnd\">END</TD></TR></TABLE></DIV>\n";
 		print "<DIV id=\"eventSP\"><TABLE><TR><TD class=\"eventSP\">&nbsp;S&nbsp;</TD></TR></TABLE></DIV>\n";
@@ -1040,7 +1043,7 @@ sub mcinfo
 				.($QML{magtype} && $QML{magnitude} ? "<I>$QML{magtype} =</I> <B>$QML{magnitude}</B>":"");
 		}
 	}
-	
+
 	return (%MC);
 }
 
@@ -1074,4 +1077,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
