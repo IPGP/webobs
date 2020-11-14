@@ -83,10 +83,23 @@ bwmgap = field2num(SEFRAN3,'BROOMWAGON_MAX_GAP_FACTOR',0); % Broom-wagon maximum
 % Spectrogram
 sgram = isok(SEFRAN3,'SGRAM_ACTIVE');
 sgrampath = field2str(SEFRAN3,'PATH_IMAGES_SGRAM','sgram/low');
-sgrampathhigh = field2str(SEFRAN3,'PATH_IMAGES_SGRAM','sgram/high');
-sgramflim = field2num(SEFRAN3,'SGRAM_FREQLIM',[0,50]);
+sgrampathhigh = field2str(SEFRAN3,'PATH_IMAGES_SGRAM_HIGH','sgram/high');
+sgramwindow = field2num(SEFRAN3,'SGRAM_WINDOW_SECOND',1);
+sgramfilt = field2str(SEFRAN3,'SGRAM_FILTER','hpbu6,0.2');
+sgramexp = field2num(SEFRAN3,'SGRAM_EXPONENT',.5);
+sgramfscale = split(field2num(SEFRAN3,'SGRAM_FREQSCALE','0,50,lin'),',');
+sgramfys = 'lin';
+if numel(sgramfscale) < 2
+	sgramflim = [0,50];
+else
+	sgramflim = str2double(sgramfscale(1:2));
+	if numel(sgramfscale) > 2 && strcmpi(sgramfscale{3},'log')
+		sgramfys = 'log';
+	end
+end
+	
 sgramcmap = field2num(SEFRAN3,'SGRAM_COLORMAP',jet(256));
-sgramclim = field2num(SEFRAN3,'SGRAM_CLIM',[0,1]);
+sgramclim = field2num(SEFRAN3,'SGRAM_CLIM',[0,2]);
 
 % graphical parameters
 vits = field2num(SEFRAN3,'VALUE_SPEED',1.2); % Sefran paper speed (in inches/minute)
@@ -259,6 +272,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 
 						D(n).t = t;
 						D(n).d = ds;
+						D(n).samp = channel_rate;
 					else
 						ch_median = NaN;
 						ch_offset = NaN;
@@ -338,12 +352,14 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				set(gca,'XLim',xlim,'YLim',ylim,'XTick',[],'YTick',[],'XLimMode','manual','YLimMode','manual');
 
 				% plots the signal
-				hs = zeros(nchan,1);
+				hs = [];
 				for n = 1:nchan
 						% clips signal (forces saturation)
 						ds = min(D(n).d,.5);
 						ds = max(ds,-.5);
-						hs(n) = plotregsamp(D(n).t - t0,ds - (n - .5)*hsig,'LineWidth',lw,'Color',scol(n,:));
+						if ~isempty(D(n).d)
+							hs = [hs;plotregsamp(D(n).t - t0,ds - (n - .5)*hsig,'LineWidth',lw,'Color',scol(n,:))];
+						end
 				end
 				hold off
 
@@ -375,18 +391,19 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				if sgram
 					hold on
 					delete(hs) % deletes the signals but keeps the remainder!
-					[b,a] = butter(6,.2/50,'high');
 					for n = 1:nchan
 							if numel(D(n).d)>2
-								ti = linspace(0,1/1440,100*60);
+								ti = linspace(0,1/1440,2*sgramflim(2)*60); % interpolates
 								ds = interp1(D(n).t - t0,D(n).d,ti);
-								ds = filter(b,a,ds);
-								[ss,sf,st] = specgram(ds,128,100,100);
-								p = abs(ss).^.5;
-								pcolor(st/(86400-1),(sf/50 - n)*hsig,p)
+								ds = filtsignal(ti,ds,D(n).samp,sgramfilt);
+								[ss,sf,st] = specgram(ds,128,D(n).samp,sgramwindow*D(n).samp);
+								p = abs(ss).^sgramexp;
+								k = isinto(sf,sgramflim);
+								pcolor(st*60/(60-sgramwindow)/86400,((sf(k)-sgramflim(1))/diff(sgramflim) - n)*hsig,p(k,:))
 								shading interp
 							end
 					end
+					set(gca,'YScale',sgramfys)
 					colormap(sgramcmap)
 					caxis(sgramclim)
 					hold off
@@ -620,8 +637,8 @@ case 'seedlink'
 			dt = 0;
 		end
 		% makes SeedLink request and save to temporary miniseed file
-		s = wosystem(sprintf('%s -d -o %s -S "%s" -tw %d,%d,%d,%d,%d,%d:%g,%d,%d,%d,%d,%g %s', ...
-			slinktool,fmsd,streams,datevec(t0-max(dt0)),datevec(t1),datasource),SEFRAN3);
+		wosystem(sprintf('%s -d -o %s -S "%s" -tw %d,%d,%d,%d,%d,%d:%g,%d,%d,%d,%d,%g %s', ...
+			slinktool,fmsd,streams,datevec(t0-max(dt)),datevec(t1),datasource),SEFRAN3,'warning');
 	else
 		fprintf('%s: ** WARNING ** SEEDLINK server %s at %s has no channel available !\n',wofun,datasource,datestr(t1));
 	end
@@ -656,8 +673,8 @@ case 'fdsnws-dataselect'
 	for n = 1:length(sfr)
 		c = textscan(sfr{n},'%s','Delimiter','.:'); % splits NET, STA, LOC, CHA codes
 		if isempty(c{1}{3}) % if empty location code, replace with '--'
-		    c{1}{3} = '--';
-	    end
+			c{1}{3} = '--';
+		end
 		% builds request line for dataselect WebService POST file
 		fprintf(fid,'%s %s %s %s %04d-%02d-%02dT%02d:%02d:%02.0f %04d-%02d-%02dT%02d:%02d:%02.0f\n',c{1}{1},c{1}{2},c{1}{3},c{1}{4},datevec(t0-dt0(n)),datevec(t1));
 	end
