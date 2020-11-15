@@ -87,7 +87,7 @@ sgrampathhigh = field2str(SEFRAN3,'PATH_IMAGES_SGRAM_HIGH','sgram/high');
 sgramwindow = field2num(SEFRAN3,'SGRAM_WINDOW_SECOND',1);
 sgramfilt = field2str(SEFRAN3,'SGRAM_FILTER','hpbu6,0.2');
 sgramexp = field2num(SEFRAN3,'SGRAM_EXPONENT',.5);
-sgramfscale = split(field2num(SEFRAN3,'SGRAM_FREQSCALE','0,50,lin'),',');
+sgramfscale = split(field2str(SEFRAN3,'SGRAM_FREQSCALE','0,50,lin'),',');
 sgramfys = 'lin';
 if numel(sgramfscale) < 2
 	sgramflim = [0,50];
@@ -390,11 +390,14 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				% prints spectrogram
 				if sgram
 					hold on
-					delete(hs) % deletes the signals but keeps the remainder!
+					delete(hs) % deletes the signal plots but keeps all the remainder!
 					for n = 1:nchan
-							if numel(D(n).d)>2
-								ti = linspace(0,1/1440,2*sgramflim(2)*60); % interpolates
-								ds = interp1(D(n).t - t0,D(n).d,ti);
+							k = ~isnan(D(n).d);
+							if numel(D(n).d(k))>=sgramwindow*D(n).samp % needs at least sgramwindow s of valid data
+								% resamples at a minimum of 2*Fmax
+								fmax = max(D(n).samp,2*sgramflim(2));
+								ti = linspace(0,1/1440-1/(86400*fmax),fmax*60);
+								ds = interp1(D(n).t(k) - t0,D(n).d(k),ti);
 								ds = filtsignal(ti,ds,D(n).samp,sgramfilt);
 								[ss,sf,st] = specgram(ds,128,D(n).samp,sgramwindow*D(n).samp);
 								p = abs(ss).^sgramexp;
@@ -486,22 +489,28 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 		% makes hourly images
 		pdat = sprintf('%s/%4d/%4d%02d%02d',SEFRAN3.ROOT,tv(1),tv(1:3));
 		ftmp = sprintf('%s/h.png',ptmp);
-		f = sprintf('%s/%s/%4d%02d%02d%02d.jpg',pdat,SEFRAN3.PATH_IMAGES_HOUR,tv(1:4));
+		f = sprintf('%s/%s/%4d%02d%02d%02d',pdat,SEFRAN3.PATH_IMAGES_HOUR,tv(1:4));
 		wosystem(sprintf('rm -f %s',ftmp),SEFRAN3);
-		%[FB-was:] [s,w] = wosystem(sprintf('ls %s/%s/%4d%02d%02d%02d????.png | wc -l',pdat,SEFRAN3.PATH_IMAGES_MINUTE,tv(1:4)),SEFRAN3);
-		%[FB-was:] if s==0 && ~isempty(w)
 		D = dir(sprintf('%s/%s/%4d%02d%02d%02d*00.png',pdat,SEFRAN3.PATH_IMAGES_MINUTE,tv(1:4)));
 		nimg = length(D);
 		if nimg > 0
-			fprintf('%s: updating %s (hourly thumbnail) ... ',wofun,f);
+			fprintf('%s: updating %s.jpg (hourly thumbnail) ... ',wofun,f);
 			wosystem(sprintf('%s -depth 8 %s/%s/%4d%02d%02d%02d??00.png +append %s', ...
 				convert,pdat,SEFRAN3.PATH_IMAGES_MINUTE,tv(1:4),ftmp),SEFRAN3,'warning');
 			% reduces concatenated minutes image to single hourly thumbnail
 			% (the formula estimates the number of minutes, thus leads to "whour"-width for complete hour,
 			% and relatively smaller for real-time)
-			wosystem(sprintf('%s %s -resize %dx%d\\! -gamma %g %s', ...
+			wosystem(sprintf('%s %s -resize %dx%d\\! -gamma %g %s.jpg', ...
 				convert,ftmp,round(whour*nimg/60),hhour,gamma,f),SEFRAN3,'warning');
 			fprintf('done.\n');
+			if sgram
+				fprintf('%s: updating %ss.jpg (hourly spectrogram thumbnail) ... ',wofun,f);
+				wosystem(sprintf('%s -depth 8 %s/%s/%4d%02d%02d%02d??00s.png +append %s', ...
+					convert,pdat,SEFRAN3.PATH_IMAGES_SGRAM,tv(1:4),ftmp),SEFRAN3,'warning');
+				wosystem(sprintf('%s %s -resize %dx%d\\! %ss.jpg', ...
+					convert,ftmp,round(whour*nimg/60),hhour,f),SEFRAN3,'warning');				
+				fprintf('done.\n');
+			end
 		end
 	end
 
