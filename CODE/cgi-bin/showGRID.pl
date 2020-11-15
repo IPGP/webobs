@@ -300,7 +300,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			$htmlcontents .= "</TABLE></TD>\n";
 		}
 		$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>Proc Time Scales</TH><TH>".join("</TH><TH>",@ts)."</TH></TR>\n";
-		foreach ("Decimate","Cumulate","DateStr","Marker","LineWidth","Status") {
+		foreach ("Decimate","Cumulate","DateStr","MarkerSize","LineWidth","Status") {
 			my @tsp = split(/,/,$GRID{uc($_)."LIST"});
 			my $cells;
 			if ($#tsp < 0) {
