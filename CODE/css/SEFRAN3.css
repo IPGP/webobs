@@ -289,5 +289,6 @@ input[type=submit] {
      z-index: 2;
 }
 .slidecontainer {
-  width: 100%; /* Width of the outside container */
+  	width: 100%; /* Width of the outside container */
+	vertical-align: middle;
 }

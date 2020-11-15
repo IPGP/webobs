@@ -387,12 +387,14 @@ if (!$date) {
 	print "<TABLE style=\"width: 980px; border-collapse: separate\">";
 	if ($header) {
 		print "<TR><TD align=left style=\"border:0\"><H1>$titrePage</H1>",
-		"<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ ",
-		"<A href=\"#\" onClick=\"showmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide MC events'}')\">",
-		"<IMG src=\"/icons/mctag.png\" border=1 style=\"vertical-align:middle\"></A> | ",
-		"<A href=\"#infos\">$__{'Information'}</A>",
-		" | <A href=\"/cgi-bin/$WEBOBS{CGI_MC3}?mc=$mc3\">$MC3{TITLE}</A>",
-		" ]</p></TD>";
+			"<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ ",
+			"<A href=\"#\" onClick=\"showmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide MC events'}')\">",
+			"<IMG src=\"/icons/mctag.png\" border=1 style=\"vertical-align:middle\"></A> | ";
+		print "<A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide Spectrogram (or F-key)'}')\">",
+			"<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> | " if ($sgram);
+		print "<A href=\"#infos\">$__{'Information'}</A>",
+			" | <A href=\"/cgi-bin/$WEBOBS{CGI_MC3}?mc=$mc3\">$MC3{TITLE}</A>",
+			" ]</p></TD>";
 		if (!$ref || $SEFRAN3{REF_NORTC} == 0) {
 			print "<TD id=\"rtclock\" style=\"text-align: center; width: 15%\"><h2 style=\"margin-bottom: 8px\">$Ya-$ma-$da<br>$Ha:$Ma UTC</h2>",
 			"&Delta;T ".($dt < 120 ? "= $dt s" : "&lt; ".($dt < 7200 ? int($dt/60 +1)." mn" : int($dt/3600)." hr"))."</TD>";
@@ -451,12 +453,13 @@ if (!$date) {
 					if ($nb_vign < 3) {
 						$align = "left";
 					}
-					my $f = "$da/$ddd/$SEFRAN3{PATH_IMAGES_HOUR}/$ddd$hh.jpg";
+					my $f = "$da/$ddd/$SEFRAN3{PATH_IMAGES_HOUR}/$ddd$hh";
 					print "<TR><TD class=\"sefran\" align=center>&nbsp;$da-$dm-$dj&nbsp;<br><font size=\"4\">&nbsp;<b>$hh</b></font>h&nbsp;UTC&nbsp;</TD>";
-					if (-e "$SEFRAN3{ROOT}/$f") {
-						print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:$align\"><DIV style=\"position:relative\"> ",
-							"<IMG src=\"$SEFRAN3{PATH_WEB}/$f\" border=\"1\" style=\"cursor:pointer\"",
-							" onClick=\"window.open('$prog&date=$ddd$hh&trash=$trash')\">";
+					if (-e "$SEFRAN3{ROOT}/$f.jpg") {
+						print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:$align\"><DIV style=\"position:relative\">";
+						my $imgopt = "border=\"1\" style=\"cursor:pointer\" onClick=\"window.open('$prog&date=$ddd$hh&trash=$trash')\"";
+						print	"<IMG id=\"sgram\" class=\"sgram\" src=\"$SEFRAN3{PATH_WEB}/${f}s.jpg\" border=\"1\" $imgopt>" if ($sgram);
+						print	"<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" $imgopt";
 					} else {
 						print "<TD style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px\" class=\"noImage\"><DIV style=\"position:relative;height:100%\">no image";
 					}
@@ -691,7 +694,9 @@ if ($date) {
 			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_suiv$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dsuiv')\"><SPAN class=\"keycap\">&rarr;</SPAN></span>\n";
 			print "<span class=\"mcbouton\" onClick=\"quit();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Quit this event without saving changes'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/cancel.png\" style=\"vertical-align:middle\"></SPAN></span>\n";
 			if ($sgram) {
-				print "<br><div class=\"slidecontainer\"><input type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" id=\"sgramslider\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Adjust Spectrogram opacity'}')\"></div>\n";
+				print "<BR><DIV class=\"slidecontainer\"><A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide Spectrogram (or F-key)'}')\">",
+					"<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> ",
+					"<input type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" id=\"sgramslider\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Adjust Spectrogram opacity'}')\"></div>\n";
 			}
 		print "</div>";
 	print "</div>";
