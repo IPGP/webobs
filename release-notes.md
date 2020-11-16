@@ -12,7 +12,37 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ### Enhancements
 
-1. `!!` Superproc GNSS has new variable to adjust errors on data for different orbits: `ORBIT_ERROR_RATIO` which contains a vector of ratios associated to orbit values 0 (final), 1 (rapid), and 2 (ultra), respectively. The default setting of the new variable is:
+1. Sefran3 includes now a continuous spectrogram, which is activated by default. New variables are (will be automatically added during update):
+
+```
+PATH_IMAGES_SGRAM|sgram/low
+PATH_IMAGES_SGRAM_HIGH|sgram/high
+SGRAM_ACTIVE|Y
+SGRAM_FILTER|hpbu6,0.2
+SGRAM_WINDOW_SECOND|1
+SGRAM_EXPONENT|0.5
+SGRAM_FREQSCALE|0,50,lin
+SGRAM_COLORMAP|jet(256)
+SGRAM_CLIM|0,2
+```
+
+Default values are optimized for 100 Hz sampling rate:
+- `SGRAM_FILTER`: signal filtering, same syntax as for `SEFRAN3_CHANNELS` file, i.e., `hpbu6,0.2` is a 6-order Butterworth 0.2 Hz highpass filter;
+- `SGRAM_WINDOW_SECOND`: time window for FFT in seconds;
+- `SGRAM_EXPONENT`: power spectrum amplitude exponent (default is 0.5);
+- `SGRAM_FREQSCALE`: 3-element vector as minimum frequency, maximum frequency, and scale (`lin` or `log`);
+- `SGRAM_COLORMAP`: colormap;
+- `SGRAM_CLIM`: 2-element vector as minimum, maximum values for colormap limits.
+
+When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images. Note that spectrogram images are about 3 times bigger than waveform's. Thus, the total storage volume of Sefran3 will be about 4 times bigger than usual.
+
+For visualization, there is several possibilities:
+- a new icon is available in the main page menu or in the upper-left control panel to toggle waveform/spectrogram view;
+- the control panel includes also a slide range button to control opacity of the spectrogram;
+- a hot key F can be press anytime to toggle waveform/spectrogram view.
+- a hot key E has been added to toggle MC event tags.
+
+2. `!!` Superproc GNSS has new variable to adjust errors on data for different orbits: `ORBIT_ERROR_RATIO` which contains a vector of ratios associated to orbit values 0 (final), 1 (rapid), and 2 (ultra), respectively. The default setting of the new variable is:
 
 ```
 ORBIT_ERROR_RATIO|1,2
@@ -20,7 +50,7 @@ ORBIT_ERROR_RATIO|1,2
 
    and will multiply by 1 final-orbit errors (orbit = 0), and by 2 any non-final orbits (orbit > 0). Set this variable empty, or 1 to keep previous behavior.
 
-2. Since 2020, there no more free website where SRTM1 tiles can be downloaded anonymously. If you have already used SRTM1 data in procs, the tiles have been stored in your `PATH_DATA_DEM_SRTM1` and are still available offline for mapping on the corresponding areas. But to download new tiles or at first install, you now need a login at https://urs.earthdata.nasa.gov (free registering). User and password must be specified in a new variable `EARTHDATA_LOGIN` in `WEBOBS.rc`:
+3. Since 2020, there no more free website where SRTM1 tiles can be downloaded anonymously. If you have already used SRTM1 data in procs, the tiles have been stored in your `PATH_DATA_DEM_SRTM1` and are still available offline for mapping on the corresponding areas. But to download new tiles or at first install, you now need a login at https://urs.earthdata.nasa.gov (free registering). User and password must be specified in a new variable `EARTHDATA_LOGIN` in `WEBOBS.rc`:
 
 ```
 EARTHDATA_LOGIN|user,password
@@ -28,14 +58,14 @@ EARTHDATA_LOGIN|user,password
 
    If the login is not defined, SRTM3 tiles will be used.
 
-3. Superproc TILT has two new parameters for modelling:
+4. Superproc TILT has two new parameters for modelling:
 
 ```
 MODELLING_MISFITNORM|L1
 MODELLING_APRIORI_HSTD_KM|
 ```
 
-as for the GNSS superproc modelling, `MODELLING_MISFITNORM` allows L1 (default) or L2 norm to compute misfit. `MODELLING_APRIORI_HSTD_KM` will apply a gaussian function on the global misfit based on the distance from target defined in `TILT_TARGET_LATLON`. 
+as for the GNSS superproc modelling, `MODELLING_MISFITNORM` allows L1 (default) or L2 norm to compute misfit. `MODELLING_APRIORI_HSTD_KM` will apply a gaussian function on the global misfit based on the distance from target defined in `TILT_TARGET_LATLON`.
 
 ### Fixed issues
 

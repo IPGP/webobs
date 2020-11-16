@@ -51,13 +51,14 @@ $(document).ready(function() {
 	}
 });
 
+// ---- get keypress events but outside any form
 $(document).keypress(function(event) {
-	var x = event.charCode || event.keyCode;
-	if (x == 102) {
-		showsgram();
-	}
-	if (x == 101) {
-		showmctags();
+	event = event || window.event;
+	var target = event.target || event.srcElement;
+	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
+		var x = event.charCode || event.keyCode;
+		if (x == 102 || x == 70) showsgram(); // F key
+		if (x == 101 || x == 69) showmctags(); // E key
 	}
 });
 
@@ -155,7 +156,7 @@ function maj_speed() {
 // ---- apply a zoom factor to mctags and positions of event-start and event-end
 function zoom_tag(zoom) {
 	$('.sgram').each(function() {
-		$(this).css('left', ($(this).position().left - SCB.DX)*zoom + SCB.DX + 'px');
+		$(this).css('left', ($(this).position().left)*zoom + 'px');
 		$(this).css('width', $(this).width() * zoom + 'px');
 	});
 	$('.mctag').each(function() {
