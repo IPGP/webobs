@@ -163,6 +163,11 @@ div.keys {
 	position: absolute;
 	top: 1px;
 	z-index: 3;
+	/*DYNAMIC background-color:$types{$MC{type}}{Color} */
+	/*DYNAMIC width:$dur_evt */
+	/*DYNAMIC height:$SEFRAN3{HOURLY_HEIGHT} */
+	/*DYNAMIC left:$deb_evt */
+	/*DYNAMIC cursor:pointer */
 	/*DYNAMIC opacity: $SEFRAN3{MC3_EVENT_OPACITY}*/
 	/*DYNAMIC filter:alpha(opacity=$opacityIE)*/
 }
@@ -284,9 +289,26 @@ input[type=submit] {
 	/*height and left to be computed at runtime*/
 }
 .sgram {
-     position: absolute;
-	  opacity: 0;
-     z-index: 2;
+   position: absolute;
+	opacity: 0;
+   z-index: 2;
+	/*DYNAMIC opacity: js showsgram()*/
+}
+.signalhour {
+	display: block;
+   position: absolute;
+	left: 0px;
+	top: 0px;
+   z-index: 1;
+}
+.sgramhour {
+	display: block;
+   position: absolute;
+	left: 0px;
+	top: 0px;
+	opacity: 0;
+   z-index: 2;
+	/*DYNAMIC opacity: js showsgram()*/
 }
 .slidecontainer {
   	width: 100%; /* Width of the outside container */
