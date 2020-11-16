@@ -294,13 +294,6 @@ input[type=submit] {
    z-index: 2;
 	/*DYNAMIC opacity: js showsgram()*/
 }
-.signalhour {
-	display: block;
-   position: absolute;
-	left: 0px;
-	top: 0px;
-   z-index: 1;
-}
 .sgramhour {
 	display: block;
    position: absolute;
