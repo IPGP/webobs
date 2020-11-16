@@ -383,12 +383,12 @@ if (!$date) {
 		}
 	}
 
-	# titre et heure courante
+	# title and current data/time
 	print "<TABLE style=\"width: 980px; border-collapse: separate\">";
 	if ($header) {
 		print "<TR><TD align=left style=\"border:0\"><H1>$titrePage</H1>",
 			"<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ ",
-			"<A href=\"#\" onClick=\"showmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide MC events'}')\">",
+			"<A href=\"#\" onClick=\"showmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide MC events (or E-key)'}')\">",
 			"<IMG src=\"/icons/mctag.png\" border=1 style=\"vertical-align:middle\"></A> | ";
 		print "<A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Show/Hide Spectrogram (or F-key)'}')\">",
 			"<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> | " if ($sgram);
@@ -458,8 +458,8 @@ if (!$date) {
 					if (-e "$SEFRAN3{ROOT}/$f.jpg") {
 						print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:$align\"><DIV style=\"position:relative\">";
 						my $imgopt = "border=\"1\" style=\"cursor:pointer\" onClick=\"window.open('$prog&date=$ddd$hh&trash=$trash')\"";
-						print	"<IMG id=\"sgram\" class=\"sgram\" src=\"$SEFRAN3{PATH_WEB}/${f}s.jpg\" border=\"1\" $imgopt>" if ($sgram);
-						print	"<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" $imgopt";
+						print	"<IMG class=\"sgramhour\" src=\"$SEFRAN3{PATH_WEB}/${f}s.jpg\" $imgopt>" if ($sgram);
+						print	"<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" $imgopt>";
 					} else {
 						print "<TD style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px\" class=\"noImage\"><DIV style=\"position:relative;height:100%\">no image";
 					}

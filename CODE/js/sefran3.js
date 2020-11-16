@@ -56,6 +56,9 @@ $(document).keypress(function(event) {
 	if (x == 102) {
 		showsgram();
 	}
+	if (x == 101) {
+		showmctags();
+	}
 });
 
 // ---- show control keys
@@ -90,6 +93,9 @@ function showmctags() {
 // ---- toggle visibility of sgram
 function showsgram() {
 	$('.sgram').css('opacity', function(i, opacity) {
+	    return (opacity > 0) ? 0 : 1;
+	});
+	$('.sgramhour').css('opacity', function(i, opacity) {
 	    return (opacity > 0) ? 0 : 1;
 	});
 	return true;
