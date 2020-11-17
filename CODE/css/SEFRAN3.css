@@ -296,11 +296,8 @@ input[type=submit] {
 }
 .sgramhour {
 	display: block;
-   position: absolute;
 	left: 0px;
 	top: 0px;
-	opacity: 0;
-   z-index: 2;
 	/*DYNAMIC opacity: js showsgram()*/
 }
 .slidecontainer {

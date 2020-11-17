@@ -902,8 +902,14 @@ msgstr "Soumettre"
 msgid "Editor"
 msgstr "Éditeur"
 
-msgid "Show/Hide MC events"
-msgstr "Masquer/afficher les événements MC"
+msgid "showmctags_help"
+msgstr "Masquer/afficher les événements MC (touche E)"
+
+msgid "showsgram_help"
+msgstr "Masquer/afficher le spectrogramme touche F)<br>touches t/T pour réduire/augmenter la transparence"
+
+msgid "Adjust Spectrogram opacity"
+msgstr "Ajuster la transparence du spectrogramme"
 
 msgid "Interval"
 msgstr "Intervalle"
@@ -1046,7 +1052,7 @@ msgstr "Entrez la durée de saturation"
 msgid "Event not flagged OVERSCALE"
 msgstr "L'événement n'est pas indiqué saturé"
 
-msgid "Event type is unknown/undetermined. Validate as is ?" 
+msgid "Event type is unknown/undetermined. Validate as is ?"
 msgstr "Type d'événement inconnu/indéterminé. Valider tel quel ?"
 
 msgid "You cannot validate an event of type AUTO"
