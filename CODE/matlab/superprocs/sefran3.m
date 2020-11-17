@@ -97,7 +97,7 @@ else
 		sgramfys = 'log';
 	end
 end
-	
+
 sgramcmap = field2num(SEFRAN3,'SGRAM_COLORMAP',jet(256));
 sgramclim = field2num(SEFRAN3,'SGRAM_CLIM',[0,2]);
 
@@ -217,7 +217,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 			if sgram
 				wosystem(sprintf('mkdir -p %s/%s %s/%s',pdat,sgrampath,pdat,sgrampathhigh),SEFRAN3);
 			end
-			
+
 			% delete previous temporary file
 			wosystem(sprintf('rm -f %s',fmsd),SEFRAN3);
 
@@ -231,11 +231,11 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 
 			F = dir(fmsd);
 			if ~isempty(F) && F.bytes > 0
-				
+
 				% --- loads the data
 				[S,I] =	 rdmseed(fmsd);
 				channel_list = cellstr(char(I.ChannelFullName));
-				
+
 				tag_stat_rate = repmat({''},[1,nchan]);
 				tag_stat_samp = repmat({''},[1,nchan]);
 				tag_stat_medi = repmat({''},[1,nchan]);
@@ -243,7 +243,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				tag_stat_drms = repmat({''},[1,nchan]);
 				tag_stat_asym = repmat({''},[1,nchan]);
 				D = repmat(struct('t',[],'d',[]),nchan,1);
-				
+
 				% --- loop on channels to prepare the data
 				for n = 1:nchan
 					c = textscan(sfr{n},'%s','Delimiter','.:'); % splits Network, Station, LocId and Channel codes
@@ -287,8 +287,8 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					tag_stat_offs{n} = sprintf('%1.5f',ch_offset);
 					tag_stat_drms{n} = sprintf('%1.5f',ch_drms);
 					tag_stat_asym{n} = sprintf('%1.5f',ch_asym);
-				end				
-				
+				end
+
 				% --- fill-in PNG tag properties
 				tag = [ ...
 					sprintf('-set sefran3:ppi "%s" ',SEFRAN3.VALUE_PPI), ...
@@ -386,7 +386,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s',convert,tag,vitsh,ppi,ftmp2,fpng_high),SEFRAN3);
 					fprintf('done.\n');
 				end
-				
+
 				% prints spectrogram
 				if sgram
 					hold on
@@ -397,20 +397,20 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 								% resamples at a minimum of 2*Fmax
 								fmax = max(D(n).samp,2*sgramflim(2));
 								ti = linspace(0,1/1440-1/(86400*fmax),fmax*60);
-								ds = interp1(D(n).t(k) - t0,D(n).d(k),ti);
-								ds = filtsignal(ti,ds,D(n).samp,sgramfilt);
+								ds = filtsignal(D(n).t(k),D(n).d(k),D(n).samp,sgramfilt);
+								ds = interp1(D(n).t(k) - t0,ds,ti);
 								[ss,sf,st] = specgram(ds,128,D(n).samp,sgramwindow*D(n).samp);
 								p = abs(ss).^sgramexp;
 								k = isinto(sf,sgramflim);
 								pcolor(st*60/(60-sgramwindow)/86400,((sf(k)-sgramflim(1))/diff(sgramflim) - n)*hsig,p(k,:))
-								shading interp
+								shading flat
 							end
 					end
 					set(gca,'YScale',sgramfys)
 					colormap(sgramcmap)
 					caxis(sgramclim)
 					hold off
-					
+
 					fpng = sprintf('%s/%s/%4d%02d%02d%02d%02d%02ds.png',pdat,sgrampath,tv);
 					fprintf('%s: creating %s ... ',wofun,fpng);
 					ftmp3 = sprintf('%s/sgram.eps',ptmp);
@@ -430,9 +430,9 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s',convert,tag,vitsh,ppi,ftmp3,fpng_high),SEFRAN3);
 						fprintf('done.\n');
 					end
-					
+
 				end
-				
+
 				close
 				mdone(m) = true;
 			else
@@ -508,7 +508,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				wosystem(sprintf('%s -depth 8 %s/%s/%4d%02d%02d%02d??00s.png +append %s', ...
 					convert,pdat,SEFRAN3.PATH_IMAGES_SGRAM,tv(1:4),ftmp),SEFRAN3,'warning');
 				wosystem(sprintf('%s %s -resize %dx%d\\! %ss.jpg', ...
-					convert,ftmp,round(whour*nimg/60),hhour,f),SEFRAN3,'warning');				
+					convert,ftmp,round(whour*nimg/60),hhour,f),SEFRAN3,'warning');
 				fprintf('done.\n');
 			end
 		end
