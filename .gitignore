@@ -1,6 +1,7 @@
 Releases
 CODE/matlab/bin
 CODE/matlab/*.mex*
+CODE/i18n/locales
 DOC/user-manual/*
 !DOC/user-manual/*.tex
 !DOC/user-manual/WebObs_Manual.pdf
