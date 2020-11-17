@@ -197,3 +197,11 @@ msgstr "Sampling rate performance (in %):  number of valid samples over the last
 
 msgid "help_node_status"
 msgstr "Status (in %): existence of valid samples in the last time delay for all channels"
+
+# Sefran/MC
+
+msgid "showmctags_help"
+msgstr "Show/Hide MC events (or E-key)"
+
+msgid "showsgram_help"
+msgstr "Show/Hide Spectrogram (or F-key)<br>t/T keys to decrease/increase transparency"

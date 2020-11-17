@@ -10,9 +10,9 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ## Version under development
 
-### Enhancements
+### New features
 
-1. Sefran3 includes now a continuous spectrogram, which is activated by default. New variables are (will be automatically added during update):
+1. `!!` Sefran3 includes a continuous spectrogram, which is activated by default. To disable this feature you must set `SGRAM_ACTIVE` to `NO`. New variables are:
 
 ```
 PATH_IMAGES_SGRAM|sgram/low
@@ -27,20 +27,29 @@ SGRAM_CLIM|0,2
 ```
 
 Default values are optimized for 100 Hz sampling rate:
-- `SGRAM_FILTER`: signal filtering, same syntax as for `SEFRAN3_CHANNELS` file, i.e., `hpbu6,0.2` is a 6-order Butterworth 0.2 Hz highpass filter;
-- `SGRAM_WINDOW_SECOND`: time window for FFT in seconds;
+- `SGRAM_FILTER`: signal filtering, same syntax as for `SEFRAN3_CHANNELS` file (default is `hpbu6,0.2` for a highpass Butterworth 6th-order 0.2 Hz cut-off frequency filter);
+- `SGRAM_WINDOW_SECOND`: time window for FFT in seconds (default is 1 s);
 - `SGRAM_EXPONENT`: power spectrum amplitude exponent (default is 0.5);
-- `SGRAM_FREQSCALE`: 3-element vector as minimum frequency, maximum frequency, and scale (`lin` or `log`);
-- `SGRAM_COLORMAP`: colormap;
-- `SGRAM_CLIM`: 2-element vector as minimum, maximum values for colormap limits.
+- `SGRAM_FREQSCALE`: 3-element vector as minimum frequency, maximum frequency, and scale `lin` or `log` (default is 0-50 Hz linear);
+- `SGRAM_COLORMAP`: colormap (default is jet);
+- `SGRAM_CLIM`: 2-element vector as minimum, maximum values for colormap limits (default is 0-2).
 
-When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images. Note that spectrogram images are about 3 times bigger than waveform's. Thus, the total storage volume of Sefran3 will be about 4 times bigger than usual.
+When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images. It follows also broomwagon rules. Note that spectrogram images are about 3 times bigger than waveform's. Thus, the total storage volume of Sefran3 will be about 4 times bigger than usual.
 
 For visualization, there is several possibilities:
 - a new icon is available in the main page menu or in the upper-left control panel to toggle waveform/spectrogram view;
-- the control panel includes also a slide range button to control opacity of the spectrogram;
-- a hot key F can be press anytime to toggle waveform/spectrogram view.
-- a hot key E has been added to toggle MC event tags.
+- the control panel includes also a manual slide range button to control opacity of the spectrogram;
+- hot key 'F' or 'f' can be press anytime to toggle waveform/spectrogram view;
+- hot keys 't' to lower transparency by 1/10 step (increases opacity), and 'T' to increase by 1/10 (decreases opacity);
+- hot keys 'E' or 'e' have been added to toggle MC event tags display.
+
+   Hot keys are disabled when editing the event form; you must click outside the field inputs to reactivate them.
+
+### Enhancements
+
+1. Proc's main page (cgi-bin/showGRID.pl) displays two additional tables in the *Specification* section:
+- one table of main available proc's output page links sorted by time scales (Overview and Summary plots);
+- one table of time scale parameters as defined in the configuration. This may help to check if some parameters are undefined.
 
 2. `!!` Superproc GNSS has new variable to adjust errors on data for different orbits: `ORBIT_ERROR_RATIO` which contains a vector of ratios associated to orbit values 0 (final), 1 (rapid), and 2 (ultra), respectively. The default setting of the new variable is:
 
@@ -50,13 +59,13 @@ ORBIT_ERROR_RATIO|1,2
 
    and will multiply by 1 final-orbit errors (orbit = 0), and by 2 any non-final orbits (orbit > 0). Set this variable empty, or 1 to keep previous behavior.
 
-3. Since 2020, there no more free website where SRTM1 tiles can be downloaded anonymously. If you have already used SRTM1 data in procs, the tiles have been stored in your `PATH_DATA_DEM_SRTM1` and are still available offline for mapping on the corresponding areas. But to download new tiles or at first install, you now need a login at https://urs.earthdata.nasa.gov (free registering). User and password must be specified in a new variable `EARTHDATA_LOGIN` in `WEBOBS.rc`:
+3. Since 2020, there no more free access website where SRTM1 tiles can be downloaded anonymously. If you have already used SRTM1 data in your procs, the tiles have been stored in your `PATH_DATA_DEM_SRTM1` and are still available offline for mapping on the corresponding areas. But to download new tiles or at first install, you now need to register at https://urs.earthdata.nasa.gov (free). User and password login must be specified in a new variable `EARTHDATA_LOGIN` in `WEBOBS.rc`:
 
 ```
 EARTHDATA_LOGIN|user,password
 ```
 
-   If the login is not defined, SRTM3 tiles will be used.
+   If this login is not defined, SRTM3 tiles will be used whatever `DEM_SRTM1` value is.
 
 4. Superproc TILT has two new parameters for modelling:
 

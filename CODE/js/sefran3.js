@@ -45,10 +45,12 @@ $(document).ready(function() {
 		$('.flypointit').click(function(e) { flypointit(e,true) });
 	}
 	// spectrogram slider
-	var slider = document.getElementById("sgramslider");
+	var slider = document.getElementById('sgramslider');
 	slider.oninput = function() {
   		$('.sgram').css('opacity',this.value/10);
 	}
+	var y = parseInt($('#sgramslider').val());
+  	$('.sgram').css('opacity',y/10); // updates opacity when refreshing page
 });
 
 // ---- get keypress events but outside any form
@@ -57,8 +59,15 @@ $(document).keypress(function(event) {
 	var target = event.target || event.srcElement;
 	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
 		var x = event.charCode || event.keyCode;
-		if (x == 102 || x == 70) showsgram(); // F key
-		if (x == 101 || x == 69) showmctags(); // E key
+		if (x == 102 || x == 70) showsgram(); // f ot F key
+		if (x == 101 || x == 69) showmctags(); // e or E key
+		if (x == 116 || x == 84) {
+			var y = parseInt($('#sgramslider').val());
+			if (x == 116) y = (y + 1) % 11; // t key
+			if (x == 84)  y = (y + 10) % 11; // T key
+			$('#sgramslider').val(y);
+  			$('.sgram').css('opacity',y/10);
+		}
 	}
 });
 
@@ -94,10 +103,7 @@ function showmctags() {
 // ---- toggle visibility of sgram
 function showsgram() {
 	$('.sgram').css('opacity', function(i, opacity) {
-	    return (opacity > 0) ? 0 : 1;
-	});
-	$('.sgramhour').css('opacity', function(i, opacity) {
-	    return (opacity > 0) ? 0 : 1;
+	    return (opacity < 1) ? 1 : 0;
 	});
 	return true;
 }
