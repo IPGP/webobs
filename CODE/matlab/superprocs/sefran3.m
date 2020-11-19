@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2020-11-13
+%	Updated: 2020-11-19
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -120,11 +120,20 @@ gamma = field2num(SEFRAN3,'HOURLY_CONVERT_GAMMA',.4); % gamma factor for hourly 
 apos = [0,labelbottom/hip,1,(hip - labeltop - labelbottom)/hip]; % axe position in figure: uses 100%-width and 90%-height (for labels)
 gris1 = .8*[1,1,1]; % light gray
 %gris2 = .2*[1,1,1]; % dark gray
+
+% external programs
 if isfield(WO,'CONVERT_COLORSPACE')
         convert = sprintf('%s %s',WO.PRGM_CONVERT,WO.CONVERT_COLORSPACE);
 else
         convert = sprintf('%s -colorspace sRGB',WO.PRGM_CONVERT);
 end
+pngquant = field2prog(WO,'PRGM_PNGQUANT');
+if isempty(pngquant)
+	fprintf('%s** WARNING ** you should install pngquant as it will reduce file size by 75%%!\n',wofun);
+end
+pngq_ncol = field2num(SEFRAN3,'PNGQUANT_NCOLORS',16);
+sgram_pngq_ncol = field2num(SEFRAN3,'SGRAM_PNGQUANT_NCOLORS',32);
+
 daymn = 1/1440; % 1 minute (in days)
 
 % imports SEFRAN3 channel parameters
@@ -364,10 +373,15 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				hold off
 
 				% prints low-speed image
+				if ~isempty(pngquant)
+					pngq = sprintf('png:- | %s %d -o',pngquant,pngq_ncol);
+				else
+					pngq = '';
+				end
 				fprintf('%s: creating %s ... ',wofun,fpng);
 				ftmp2 = sprintf('%s/sefran.eps',ptmp);
 				print(1,'-depsc','-painters','-loose',ftmp2)
-				wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s',convert,tag,vits,ppi,ftmp2,fpng),SEFRAN3);
+				wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s %s',convert,tag,vits,ppi,ftmp2,pngq,fpng),SEFRAN3);
 				fprintf('done.\n');
 
 				% test: print svg image
@@ -383,7 +397,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					fsxy = [vitsh,hip]; % image size (in inches)
 					set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
 					print(1,'-depsc','-painters','-loose',ftmp2)
-					wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s',convert,tag,vitsh,ppi,ftmp2,fpng_high),SEFRAN3);
+					wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s %s',convert,tag,vitsh,ppi,ftmp2,pngq,fpng_high),SEFRAN3);
 					fprintf('done.\n');
 				end
 
@@ -411,13 +425,18 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					caxis(sgramclim)
 					hold off
 
+					if ~isempty(pngquant)
+						pngq = sprintf('png:- | %s %d -o',pngquant,sgram_pngq_ncol);
+					else
+						pngq = '';
+					end
 					fpng = sprintf('%s/%s/%4d%02d%02d%02d%02d%02ds.png',pdat,sgrampath,tv);
 					fprintf('%s: creating %s ... ',wofun,fpng);
 					ftmp3 = sprintf('%s/sgram.eps',ptmp);
 					fsxy = [vits,hip]; % image size (in inches)
 					set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
 					print(1,'-depsc','-painters','-loose',ftmp3)
-					wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s',convert,tag,vits,ppi,ftmp3,fpng),SEFRAN3);
+					wosystem(sprintf('%s %s -set sefran3:speed "%g" -depth 8 -density %g %s %s %s',convert,tag,vits,ppi,ftmp3,pngq,fpng),SEFRAN3);
 					fprintf('done.\n');
 
 					% prints high-speed image (doesn't replot but modifies the paper size...)
@@ -427,7 +446,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						fsxy = [vitsh,hip]; % image size (in inches)
 						set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
 						print(1,'-depsc','-painters','-loose',ftmp3)
-						wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s',convert,tag,vitsh,ppi,ftmp3,fpng_high),SEFRAN3);
+						wosystem(sprintf('%s %s -set sefran3:speed "%g" -depth 8 -density %g %s %s %s',convert,tag,vitsh,ppi,ftmp3,pngq,fpng_high),SEFRAN3);
 						fprintf('done.\n');
 					end
 
