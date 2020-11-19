@@ -228,6 +228,7 @@ PRGM_GS|/usr/bin/gs
 PRGM_CONVERT|env LD_LIBRARY_PATH='' /usr/bin/convert
 CONVERT_COLORSPACE|-colorspace sRGB
 PRGM_IDENTIFY|/usr/bin/identify
+PRGM_PNGQUANT|/usr/bin/pngquant
 
 # Earth tide prediction program GOTIC2, downloadable at http://www.miz.nao.ac.jp/staffs/nao99/index_En.html
 PRGM_GOTIC2|/opt/nao99b/gotic2/gotic2

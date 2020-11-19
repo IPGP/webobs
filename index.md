@@ -25,34 +25,34 @@ For install and update, please follow instructions below.
 
 Source code, comments and issues are available at the project repository [github.com/IPGP/webobs](https://github.com/IPGP/webobs).
 
-## Installation / upgrading	
+## Installation / upgrading
 
 To run WebObs you need to install the package which contains a setup script that will set all configuration files. Installing WebObs is not a classical compilation from sources with 'make'. A part of it requires the free Matlab runtime library because package contains some compiled binaries.
 
-### A) Installing WebObs \<version\> from its WebObs-\<version\>.tgz	
+### A) Installing WebObs \<version\> from its WebObs-\<version\>.tgz
 
-You create/choose your WebObs directory within which you will execute the setup process. We suggest `/opt/webobs` (default). This directory will contain both	
-WebObs code and WebObs data, and will be the DocumentRoot of the WebObs Apache's Virtual Host.	
+You create/choose your WebObs directory within which you will execute the setup process. We suggest `/opt/webobs` (default). This directory will contain both
+WebObs code and WebObs data, and will be the DocumentRoot of the WebObs Apache's Virtual Host.
 
 setup will prompt you for a Linux WebObs userid (aka WebObs Owner) that it will create. The WebObs userid's group will also be added to Apache's user. See the WebObs user manual if you need to create your own WebObs owner. 	
 
-The system-wide /etc/webobs.d symbolic link will identify your WebObs 'active' (production) installation.	
+The system-wide /etc/webobs.d symbolic link will identify your WebObs 'active' (production) installation.
 
-WebObs comes with pre-defined configuration files and pre-defined data objects as a starting point and for demonstration purposes.	
+WebObs comes with pre-defined configuration files and pre-defined data objects as a starting point and for demonstration purposes.
 
-#### Prerequisities	
+#### Prerequisities
 
-Graph processes need Matlab compiler runtime 2011b (available above). Download the installer adapted to your architecture in the WebObs directory, the setup will install it during the C) procedure. Or, place it in any local directory then run:	
- 
-```sh
-unzip MCR_<version>_installer.zip	
-sudo ./install -mode silent	
-```	
-
-A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:	
+Graph processes need Matlab compiler runtime 2011b (available above). Download the installer adapted to your architecture in the WebObs directory, the setup will install it during the C) procedure. Or, place it in any local directory then run:
 
 ```sh
-sudo apt-get install apache2 apache2-utils sqlite3 imagemagick mutt xvfb \
+unzip MCR_<version>_installer.zip
+sudo ./install -mode silent
+```
+
+A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:
+
+```sh
+sudo apt-get install apache2 apache2-utils sqlite3 imagemagick pngquant mutt xvfb \
    curl gawk graphviz net-tools libdatetime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
    libtext-multimarkdown-perl libswitch-perl libintl-perl libncurses5
@@ -62,13 +62,13 @@ Compiled binaries are using some ISO-8859-1 encoding characters... to get correc
 
 ```sh
 sudo locale-gen fr_FR en_US
-```	
+```
 
 Also you need to activate CGI module for Apache:
 
 ```sh
 sudo a2enmod cgid
-```	
+```
 
 ### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
 
@@ -98,8 +98,8 @@ Here are the steps to copy, adapt, and run these systemd services:
 # Copy the files
 sudo cp /opt/webobs/WebObs-<version>/SETUP/systemd/wo* /etc/systemd/system/
 # Adapt the User= and Group= directoves in the files
-sudo nano /etc/systemd/system/woscheduler.service 
-sudo nano /etc/systemd/system/woscheduler.service 
+sudo nano /etc/systemd/system/woscheduler.service
+sudo nano /etc/systemd/system/woscheduler.service
 # Enable the services to have them start at boot
 sudo systemctl enable woscheduler.service
 sudo systemctl enable wopostboard.service
@@ -111,11 +111,11 @@ sudo systemctl start wopostboard.service
 ### D) Improving basemap database (optional)
 
 WebObs is distributed with ETOPO5 worldwide topographic data, and will automatically download SRTM data for detailed maps. To improve large scale maps resolution, you can download ETOPO1:
- 
+
 ```sh
 curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip -o /tmp/etopo.zip
 unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip
-```	
+```
 
 If the link is broken you might download a copy [here](http://www.ipgp.fr/~beaudu/webobs/etopo1.tgz) (308 Mb) and untar into the WebObs root directory:
 ```sh
@@ -124,10 +124,10 @@ tar xf etopo1.tgz
 
 then update the ETOPO parameters in the `/etc/webobs.d/WEBOBS.rc` file with the lines:
 
-```	
-ETOPO_NAME|etopo1_bed_g_i2	
+```
+ETOPO_NAME|etopo1_bed_g_i2
 ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
-```	
+```
 
 
 ## What's new?
