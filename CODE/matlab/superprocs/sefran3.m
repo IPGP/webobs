@@ -82,22 +82,10 @@ bwmgap = field2num(SEFRAN3,'BROOMWAGON_MAX_GAP_FACTOR',0); % Broom-wagon maximum
 
 % Spectrogram
 sgram = isok(SEFRAN3,'SGRAM_ACTIVE');
-sgrampath = field2str(SEFRAN3,'PATH_IMAGES_SGRAM','sgram/low');
-sgrampathhigh = field2str(SEFRAN3,'PATH_IMAGES_SGRAM_HIGH','sgram/high');
-sgramwindow = field2num(SEFRAN3,'SGRAM_WINDOW_SECOND',1);
+sgrampath = field2str(SEFRAN3,'PATH_IMAGES_SGRAM','sgram');
 sgramfilt = field2str(SEFRAN3,'SGRAM_FILTER','hpbu6,0.2');
 sgramexp = field2num(SEFRAN3,'SGRAM_EXPONENT',.5);
-sgramfscale = split(field2str(SEFRAN3,'SGRAM_FREQSCALE','0,50,lin'),',');
-sgramfys = 'lin';
-if numel(sgramfscale) < 2
-	sgramflim = [0,50];
-else
-	sgramflim = str2double(sgramfscale(1:2));
-	if numel(sgramfscale) > 2 && strcmpi(sgramfscale{3},'log')
-		sgramfys = 'log';
-	end
-end
-
+sgramparams = field2str(SEFRAN3,'SGRAM_PARAMS','1,0,50,lin','notempty');
 sgramcmap = field2num(SEFRAN3,'SGRAM_COLORMAP',jet(256));
 sgramclim = field2num(SEFRAN3,'SGRAM_CLIM',[0,2]);
 
@@ -138,7 +126,7 @@ daymn = 1/1440; % 1 minute (in days)
 
 % imports SEFRAN3 channel parameters
 fid = fopen(SEFRAN3.CHANNEL_CONF,'rt');
-C = textscan(fid,'%q%q%q%q%q%q%*[^\n]','CommentStyle','#');
+C = textscan(fid,'%q%q%q%q%q%q%q%*[^\n]','CommentStyle','#');
 fclose(fid);
 % C{1} = channel name (alias)
 % C{2} = channel stream
@@ -149,7 +137,9 @@ nchan = length(sfr);
 % C{5} = peak-to-peak amplitude (numeric)
 % C{6} = RGB color string (hexa form #RRGGBB)
 scol = htm2rgb(C{6});
-
+% C{7} = spectrogram parameters (W,Fmin,Fmax,YScale)
+sgp = C{7};
+sgp(cellfun(@isempty,sgp)) = {sgramparams};
 % get time zone of the server
 tzserver = gettz/24;
 
@@ -224,7 +214,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 		if force || ((~exist(fpng,'file') || bw) && sum(mdone) < maximages)
 			wosystem(sprintf('mkdir -p %s/%s %s/%s %s/%s',pdat,SEFRAN3.PATH_IMAGES_MINUTE,pdat,SEFRAN3.PATH_IMAGES_HOUR,pdat,SEFRAN3.PATH_IMAGES_HEADER),SEFRAN3);
 			if sgram
-				wosystem(sprintf('mkdir -p %s/%s %s/%s',pdat,sgrampath,pdat,sgrampathhigh),SEFRAN3);
+				wosystem(sprintf('mkdir -p %s/%s',pdat,sgrampath),SEFRAN3);
 			end
 
 			% delete previous temporary file
@@ -358,16 +348,15 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					text(xt,repmat(ylim(1),[1,size(xt,2)]),cellstr(num2str(xticksl')), ...
 						'HorizontalAlignment','center','VerticalAlignment','top','FontSize',7,'Fontweight','Bold','Color','k');
 				end
-				set(gca,'XLim',xlim,'YLim',ylim,'XTick',[],'YTick',[],'XLimMode','manual','YLimMode','manual');
+				set(gca,'XLim',xlim,'YLim',ylim,'XTick',[],'YTick',[],'XLimMode','manual','YLimMode','manual','Color','none');
 
 				% plots the signal
-				hs = [];
 				for n = 1:nchan
 						% clips signal (forces saturation)
 						ds = min(D(n).d,.5);
 						ds = max(ds,-.5);
 						if ~isempty(D(n).d)
-							hs = [hs;plotregsamp(D(n).t - t0,ds - (n - .5)*hsig,'LineWidth',lw,'Color',scol(n,:))];
+							plotregsamp(D(n).t - t0,ds - (n - .5)*hsig,'LineWidth',lw,'Color',scol(n,:))
 						end
 				end
 				hold off
@@ -404,23 +393,33 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				% prints spectrogram
 				if sgram
 					hold on
-					delete(hs) % deletes the signal plots but keeps all the remainder!
+					cla(gca)
 					for n = 1:nchan
-							k = ~isnan(D(n).d);
-							if numel(D(n).d(k))>=sgramwindow*D(n).samp % needs at least sgramwindow s of valid data
-								% resamples at a minimum of 2*Fmax
-								fmax = max(D(n).samp,2*sgramflim(2));
-								ti = linspace(0,1/1440-1/(86400*fmax),fmax*60);
-								ds = filtsignal(D(n).t(k),D(n).d(k),D(n).samp,sgramfilt);
-								ds = interp1(D(n).t(k) - t0,ds,ti);
-								[ss,sf,st] = specgram(ds,128,D(n).samp,sgramwindow*D(n).samp);
-								p = abs(ss).^sgramexp;
-								k = isinto(sf,sgramflim);
-								pcolor(st*60/(60-sgramwindow)/86400,((sf(k)-sgramflim(1))/diff(sgramflim) - n)*hsig,p(k,:))
-								shading flat
+						SG = split(sgp{n},',');
+						sgramwindow = str2double(SG(1));
+						sgramflim = str2double(SG(2:3));
+						k = ~isnan(D(n).d);
+						if numel(D(n).d(k))>=sgramwindow*D(n).samp % needs at least sgramwindow s of valid data
+							% resamples at a minimum of 2*Fmax
+							fmax = max(D(n).samp,2*sgramflim(2));
+							ti = linspace(0,daymn-1/(86400*fmax),fmax*60);
+							ds = filtsignal(D(n).t(k),D(n).d(k),D(n).samp,sgramfilt);
+							ds = interp1(D(n).t(k) - t0,ds,ti);
+							[ss,sf,st] = specgram(ds,128,D(n).samp,sgramwindow*D(n).samp);
+							p = abs(ss).^sgramexp;
+							k = isinto(sf,sgramflim);
+							if strcmpi(SG{4},'log')
+								k = (k & sf>0);
+								sgramflim(1) = max(sgramflim(1),min(sf(k)));
+								flim = log(sgramflim);
+								sy = (log(sf(k))-flim(1))/diff(flim);
+							else
+								sy = (sf(k)-sgramflim(1))/diff(sgramflim);
 							end
+							pcolor(st*60/(60-sgramwindow)/86400,(sy - n)*hsig,p(k,:))
+							shading flat
+						end
 					end
-					set(gca,'YScale',sgramfys)
 					colormap(sgramcmap)
 					caxis(sgramclim)
 					hold off
@@ -436,19 +435,8 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					fsxy = [vits,hip]; % image size (in inches)
 					set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
 					print(1,'-depsc','-painters','-loose',ftmp3)
-					wosystem(sprintf('%s %s -set sefran3:speed "%g" -depth 8 -density %g %s %s %s',convert,tag,vits,ppi,ftmp3,pngq,fpng),SEFRAN3);
+					wosystem(sprintf('%s %s -set sefran3:speed "%g" -depth 8 -transparent white -density %g %s %s %s',convert,tag,vits,ppi,ftmp3,pngq,fpng),SEFRAN3);
 					fprintf('done.\n');
-
-					% prints high-speed image (doesn't replot but modifies the paper size...)
-					if vitsh
-						fpng_high = sprintf('%s/%s/%4d%02d%02d%02d%02d%02ds_high.png',pdat,sgrampathhigh,tv);
-						fprintf('%s: creating %s ... ',wofun,fpng_high);
-						fsxy = [vitsh,hip]; % image size (in inches)
-						set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
-						print(1,'-depsc','-painters','-loose',ftmp3)
-						wosystem(sprintf('%s %s -set sefran3:speed "%g" -depth 8 -density %g %s %s %s',convert,tag,vitsh,ppi,ftmp3,pngq,fpng_high),SEFRAN3);
-						fprintf('done.\n');
-					end
 
 				end
 
@@ -718,7 +706,6 @@ case 'winston'
 otherwise
 	error('%s: unknown data format "%s".',wofun,dataformat);
 end
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
