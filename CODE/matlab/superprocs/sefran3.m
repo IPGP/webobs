@@ -241,6 +241,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				tag_stat_offs = repmat({''},[1,nchan]);
 				tag_stat_drms = repmat({''},[1,nchan]);
 				tag_stat_asym = repmat({''},[1,nchan]);
+				tag_stat_amax = repmat({''},[1,nchan]);
 				D = repmat(struct('t',[],'d',[]),nchan,1);
 
 				% --- loop on channels to prepare the data
@@ -264,11 +265,13 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						ch_drms = std(diff(d));
 						ch_samp = length(find(t >= t0 & t < t1))/(60*channel_rate);
 
-						% filtering
-						ds = filtsignal(t,d,channel_rate,C{4}{n});
+						% filtering and calibrating
+						ds = filtsignal(t,d,channel_rate,C{4}{n})/str2double(C{3}{n});
+						ch_amax = diff(minmax(ds));
+						
 						% calibrates and normalizes signal
-						ds = ds/str2double(C{3}{n})/str2double(C{5}{n});
-
+						ds = ds/str2double(C{5}{n});
+						% stores signal in structure for spectrogram
 						D(n).t = t;
 						D(n).d = ds;
 						D(n).samp = channel_rate;
@@ -280,16 +283,17 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						ch_samp = 0;
 						channel_rate = NaN;
 					end
-					tag_stat_rate{n} = sprintf('%1.5f',channel_rate);
-					tag_stat_samp{n} = sprintf('%1.5f',ch_samp);
-					tag_stat_medi{n} = sprintf('%1.5f',ch_median);
-					tag_stat_offs{n} = sprintf('%1.5f',ch_offset);
-					tag_stat_drms{n} = sprintf('%1.5f',ch_drms);
-					tag_stat_asym{n} = sprintf('%1.5f',ch_asym);
+					tag_stat_rate{n} = sprintf('%g',channel_rate);
+					tag_stat_samp{n} = sprintf('%g',ch_samp);
+					tag_stat_medi{n} = sprintf('%g',ch_median);
+					tag_stat_offs{n} = sprintf('%g',ch_offset);
+					tag_stat_drms{n} = sprintf('%g',ch_drms);
+					tag_stat_asym{n} = sprintf('%g',ch_asym);
+					tag_stat_amax{n} = sprintf('%g',ch_amax);
 				end
 
 				% --- fill-in PNG tag properties
-				tag = [ ...
+				tag0 = [ ... % common tags for all images
 					sprintf('-set sefran3:ppi "%s" ',SEFRAN3.VALUE_PPI), ...
 					sprintf('-set sefran3:intertrace "%s" ',SEFRAN3.INTERTRACE), ...
 					sprintf('-set sefran3:top "%s" ',SEFRAN3.LABEL_TOP_HEIGHT), ...
@@ -297,12 +301,15 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					sprintf('-set sefran3:streams "%s" ',strjoin(sfr',',')), ...
 					sprintf('-set sefran3:gains "%s" ',strjoin(C{3}',',')), ...
 					sprintf('-set sefran3:amplitudes "%s" ',strjoin(C{5}',',')), ...
+				];
+				tag1 = [ ... % tags for waveforms only
 					sprintf('-set sefran3:rate "%s" ',strjoin(tag_stat_rate,',')), ...
 					sprintf('-set sefran3:sampling "%s" ',strjoin(tag_stat_samp,',')), ...
 					sprintf('-set sefran3:median "%s" ',strjoin(tag_stat_medi,',')), ...
 					sprintf('-set sefran3:offset "%s" ',strjoin(tag_stat_offs,',')), ...
 					sprintf('-set sefran3:drms "%s" ',strjoin(tag_stat_drms,',')), ...
 					sprintf('-set sefran3:asymetry "%s" ',strjoin(tag_stat_asym,',')), ...
+					sprintf('-set sefran3:ampmax "%s" ',strjoin(tag_stat_amax,',')), ...
 				];
 
 				% --- makes the 1-minute image
@@ -363,14 +370,16 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 
 				% prints low-speed image
 				if ~isempty(pngquant)
-					pngq = sprintf('png:- | %s %d -o',pngquant,pngq_ncol);
+					pngq = sprintf('%s %d |',pngquant,pngq_ncol);
 				else
 					pngq = '';
 				end
 				fprintf('%s: creating %s ... ',wofun,fpng);
 				ftmp2 = sprintf('%s/sefran.eps',ptmp);
 				print(1,'-depsc','-painters','-loose',ftmp2)
-				wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s %s',convert,tag,vits,ppi,ftmp2,pngq,fpng),SEFRAN3);
+				%wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s %s',convert,tag,vits,ppi,ftmp2,pngq,fpng),SEFRAN3);
+				wosystem(sprintf('%s -density %g %s png:- | %s convert - %s -set sefran3:speed "%g" %s', ...
+					convert,ppi,ftmp2,pngq,[tag0,tag1],vits,fpng),SEFRAN3);
 				fprintf('done.\n');
 
 				% test: print svg image
@@ -386,46 +395,72 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					fsxy = [vitsh,hip]; % image size (in inches)
 					set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
 					print(1,'-depsc','-painters','-loose',ftmp2)
-					wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s %s',convert,tag,vitsh,ppi,ftmp2,pngq,fpng_high),SEFRAN3);
+					%wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s %s',convert,tag,vitsh,ppi,ftmp2,pngq,fpng_high),SEFRAN3);
+					wosystem(sprintf('%s -density %g %s png:- | %s convert - %s -set sefran3:speed "%g" %s', ...
+						convert,ppi,ftmp2,pngq,[tag0,tag1],vitsh,fpng_high),SEFRAN3);
 					fprintf('done.\n');
 				end
 
 				% prints spectrogram
 				if sgram
+					tag_sgram_wins = repmat({''},[1,nchan]);
+					tag_sgram_fmin = repmat({''},[1,nchan]);
+					tag_sgram_fmax = repmat({''},[1,nchan]);
+					tag_sgram_ylog = repmat({''},[1,nchan]);
+					tag_stat_fdom = repmat({''},[1,nchan]);
+
 					hold on
 					cla(gca)
 					for n = 1:nchan
 						SG = split(sgp{n},',');
-						sgramwindow = str2double(SG(1));
+						sgramwins = str2double(SG(1));
 						sgramflim = str2double(SG(2:3));
+						fdom = NaN;
 						k = ~isnan(D(n).d);
-						if numel(D(n).d(k))>=sgramwindow*D(n).samp % needs at least sgramwindow s of valid data
+						if numel(D(n).d(k))>=sgramwins*D(n).samp % needs at least sgramwindow s of valid data
 							% resamples at a minimum of 2*Fmax
 							fmax = max(D(n).samp,2*sgramflim(2));
 							ti = linspace(0,daymn-1/(86400*fmax),fmax*60);
 							ds = filtsignal(D(n).t(k),D(n).d(k),D(n).samp,sgramfilt);
 							ds = interp1(D(n).t(k) - t0,ds,ti);
-							[ss,sf,st] = specgram(ds,128,D(n).samp,sgramwindow*D(n).samp);
+							[ss,sf,st] = specgram(ds,128,D(n).samp,sgramwins*D(n).samp);
 							p = abs(ss).^sgramexp;
+							[~,i] = max(sum(p,2));
+							fdom = sf(i(1)); % dominant frequency
 							k = isinto(sf,sgramflim);
 							if strcmpi(SG{4},'log')
+								sgramylog = '1';
 								k = (k & sf>0);
 								sgramflim(1) = max(sgramflim(1),min(sf(k)));
 								flim = log(sgramflim);
 								sy = (log(sf(k))-flim(1))/diff(flim);
 							else
+								sgramylog = '0';
 								sy = (sf(k)-sgramflim(1))/diff(sgramflim);
 							end
-							pcolor(st*60/(60-sgramwindow)/86400,(sy - n)*hsig,p(k,:))
+							pcolor(st*60/(60-sgramwins)/86400,(sy - n)*hsig,p(k,:))
 							shading flat
 						end
+						tag_sgram_wins{n} = sprintf('%g',sgramwins);
+						tag_sgram_fmin{n} = sprintf('%g',sgramflim(1));
+						tag_sgram_fmax{n} = sprintf('%g',sgramflim(2));
+						tag_sgram_ylog{n} = sprintf('%s',sgramylog);
+						tag_stat_fdom{n} = sprintf('%g',fdom);
 					end
 					colormap(sgramcmap)
 					caxis(sgramclim)
 					hold off
-
+					
+					% --- fill-in PNG tag properties
+					tag2 = [ ... % tags for spectrogram
+						sprintf('-set sefran3:sgramwin "%s" ',strjoin(tag_sgram_wins,',')), ...
+						sprintf('-set sefran3:sgramfmin "%s" ',strjoin(tag_sgram_fmin,',')), ...
+						sprintf('-set sefran3:sgramfmax "%s" ',strjoin(tag_sgram_fmax,',')), ...
+						sprintf('-set sefran3:sgramylog "%s" ',strjoin(tag_sgram_ylog,',')), ...
+						sprintf('-set sefran3:freqdom "%s" ',strjoin(tag_stat_fdom,',')), ...
+					];
 					if ~isempty(pngquant)
-						pngq = sprintf('png:- | %s %d -o',pngquant,sgram_pngq_ncol);
+						pngq = sprintf('%s %d |',pngquant,sgram_pngq_ncol);
 					else
 						pngq = '';
 					end
@@ -435,7 +470,9 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					fsxy = [vits,hip]; % image size (in inches)
 					set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
 					print(1,'-depsc','-painters','-loose',ftmp3)
-					wosystem(sprintf('%s %s -set sefran3:speed "%g" -depth 8 -transparent white -density %g %s %s %s',convert,tag,vits,ppi,ftmp3,pngq,fpng),SEFRAN3);
+					%wosystem(sprintf('%s %s -set sefran3:speed "%g" -depth 8 -transparent white -density %g %s %s %s',convert,tag,vits,ppi,ftmp3,pngq,fpng),SEFRAN3);
+					wosystem(sprintf('%s -depth 8 -transparent white -density %g %s png:- | %s convert - %s -set sefran3:speed "%g" %s', ...
+						convert,ppi,ftmp3,pngq,[tag0,tag2],vits,fpng),SEFRAN3);
 					fprintf('done.\n');
 
 				end

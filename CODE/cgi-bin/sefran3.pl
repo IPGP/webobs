@@ -460,14 +460,14 @@ if (!$date) {
 						if ($sgram) {
 							my $fs = "$SEFRAN3{ROOT}/${f}s.jpg";
 							if (-e $fs) {
-								if ($nb_vign > 2) {
+								if ($nb_vign > 1) {
 									my ($w, $h) = dim(image_info($fs));
 									$sgramalign = ";left:".($SEFRAN3{HOURLY_WIDTH}-$w)."px !important";
 								}
 								$sgramimg = "<IMG class=\"sgram sgramhour\" src=\"$SEFRAN3{PATH_WEB}/${f}s.jpg\" style=\"cursor:pointer$sgramalign\" $imgopt>";
 							}
 						}
-						print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:".($nb_vign < 3 ? "left":"right")."\"><DIV style=\"position:relative\">";
+						print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:".($nb_vign < 2 ? "left":"right")."\"><DIV style=\"position:relative\">";
 						print	"$sgramimg<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" style=\"cursor:pointer\" $imgopt>";
 					} else {
 						print "<TD style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px\" class=\"noImage\"><DIV style=\"position:relative;height:100%\">no image";
@@ -538,12 +538,20 @@ if (!$date) {
 		my @stat_sampling = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:sampling]" $last_mn/);
 		my @stat_drms = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:drms]" $last_mn/);
 		my @stat_asymetry = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:asymetry]" $last_mn/);
+		my @stat_fdom;
+
+		if ($sgram) {
+			(my $last_sg = $last_mn) =~ s/$SEFRAN3{PATH_IMAGES_MINUTE}/$SEFRAN3{PATH_IMAGES_SGRAM}/;
+			$last_sg =~ s/\.png/s.png/;
+			@stat_fdom = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:freqdom]" $last_sg/);
+		}
 
 		print "<TABLE style=\"padding:2\"><TR><TH rowspan=2>#</TH>",
 			"<TH rowspan=2>Alias</TH><TH rowspan=2>Channel</TH><TH rowspan=2>Calibration<br>(count/(m/s))</TH>",
 			"<TH rowspan=2>Filter</TH><TH rowspan=2>Peak-Peak<br>(m/s)</TH>",
-			"<TH colspan=6>Signal statistics on last image<BR>$lmn</TH><TH colspan=4>SeedLink server $SEFRAN3{SEEDLINK_SERVER}</TH><TH rowspan=2>Status</TH></TR>",
+			"<TH colspan=".($sgram ? "7":"6").">Signal statistics on last image<BR>$lmn</TH><TH colspan=4>SeedLink server $SEFRAN3{SEEDLINK_SERVER}</TH><TH rowspan=2>Status</TH></TR>",
 			"<TR><TH colspan=2>Offset<br>(&mu;m/s)</TH><TH>Asym.</TH><TH>RMS&Delta;<br>(&mu;m/s)</TH><TH>Acq.<br>(%)</TH><TH>Samp.<br>(Hz)</TH>",
+			($sgram ? "<TH>Freq<br>(Hz)</TH>":""),
 			"<TH>Oldest data</TH><TH>Last data</TH><TH>Buffer</TH><TH>&Delta;T</TH></TR>\n";
 		for (@channels) {
 			$i++;
@@ -570,6 +578,7 @@ if (!$date) {
 				printf("<TD style=\"text-align:right\" ".($status_noise == 0 ? "":"class=\"status-".($status_noise == 1 ? "warning":"critical")."\"").">%1.4f</TD>",1e6*$stat_drms[$idx]/$calib);
 				printf("<TD style=\"text-align:right\">%1.0f</TD>",100*$stat_sampling[$idx]);
 				printf("<TD style=\"text-align:center\">%g</TD>",$stat_rate[$idx]);
+				printf("<TD style=\"text-align:center\">%1.2f</TD>",$stat_fdom[$idx]) if ($sgram);
 				if ($status_offset == 0 && $status_noise == 0) {
 					$ch_nagios = 0; # Nagios 'OK' value
 				} elsif ($status_offset == 2 || $status_noise == 2) {
