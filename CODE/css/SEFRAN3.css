@@ -9,7 +9,8 @@
 	color: #CCCCCC;
 	text-align:center;
 	background-color: #F5F5F5;
-	border: solid 1px #AFAFAF;
+	/*border: solid 1px #AFAFAF;*/
+	border: 0;
 }
 
 #attente {

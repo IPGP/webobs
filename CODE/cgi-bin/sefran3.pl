@@ -46,6 +46,7 @@ use warnings;
 use Time::Local;
 use File::Basename;
 use List::Util qw(first);
+use Image::Info qw(image_info dim);
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
@@ -450,17 +451,24 @@ if (!$date) {
 					|| ($limit == 0 && ($dd."|".$hh ge $last_mc || $nb_heures++ < $SEFRAN3{DISPLAY_LAST_MC_HOURS}))) {
 					$nb_heures_jour++;
 					$nb_vign++;
-					my $align = "right";
-					if ($nb_vign < 3) {
-						$align = "left";
-					}
 					my $f = "$da/$ddd/$SEFRAN3{PATH_IMAGES_HOUR}/$ddd$hh";
+					my $imgopt = "border=\"1\" onClick=\"window.open('$prog&date=$ddd$hh&trash=$trash')\"";
 					print "<TR><TD class=\"sefran\" align=center>&nbsp;$da-$dm-$dj&nbsp;<br><font size=\"4\">&nbsp;<b>$hh</b></font>h&nbsp;UTC&nbsp;</TD>";
 					if (-e "$SEFRAN3{ROOT}/$f.jpg") {
-						print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:$align\"><DIV style=\"position:relative\">";
-						my $imgopt = "border=\"1\" style=\"cursor:pointer\" onClick=\"window.open('$prog&date=$ddd$hh&trash=$trash')\"";
-						print	"<IMG class=\"sgram sgramhour\" src=\"$SEFRAN3{PATH_WEB}/${f}s.jpg\" $imgopt>" if ($sgram);
-						print	"<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" $imgopt>";
+						my $sgramimg = "";
+						my $sgramalign = "";
+						if ($sgram) {
+							my $fs = "$SEFRAN3{ROOT}/${f}s.jpg";
+							if (-e $fs) {
+								if ($nb_vign > 2) {
+									my ($w, $h) = dim(image_info($fs));
+									$sgramalign = ";left:".($SEFRAN3{HOURLY_WIDTH}-$w)."px !important";
+								}
+								$sgramimg = "<IMG class=\"sgram sgramhour\" src=\"$SEFRAN3{PATH_WEB}/${f}s.jpg\" style=\"cursor:pointer$sgramalign\" $imgopt>";
+							}
+						}
+						print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:".($nb_vign < 3 ? "left":"right")."\"><DIV style=\"position:relative\">";
+						print	"$sgramimg<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" style=\"cursor:pointer\" $imgopt>";
 					} else {
 						print "<TD style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px\" class=\"noImage\"><DIV style=\"position:relative;height:100%\">no image";
 					}
@@ -729,7 +737,8 @@ if ($date) {
 		my $png_file = "$_".($high ? "_high":"").".png";
 		if ( -f $png_file ) {
 			my $png_web = "$SEFRAN3{PATH_WEB}/$Y/$Y$m$d/$SEFRAN3{PATH_IMAGES_MINUTE}/$png".($high ? "_high":"").".png";
-			my $png_sgram = "$SEFRAN3{PATH_WEB}/$Y/$Y$m$d/".($high ? "$SEFRAN3{PATH_IMAGES_SGRAM_HIGH}/${png}s_high":"$SEFRAN3{PATH_IMAGES_SGRAM}/${png}s").".png";
+			#my $png_sgram = "$SEFRAN3{PATH_WEB}/$Y/$Y$m$d/".($high ? "$SEFRAN3{PATH_IMAGES_SGRAM_HIGH}/${png}s_high":"$SEFRAN3{PATH_IMAGES_SGRAM}/${png}s").".png";
+			my $png_sgram = "$SEFRAN3{PATH_WEB}/$Y/$Y$m$d/$SEFRAN3{PATH_IMAGES_SGRAM}/${png}s.png";
 			my $mseed = "$mseedreq&t1=$Y,$m,$d,$H,$M,0&ds=60";
 
 			print "<map name=\"$png\"><area href=\"$mseed\" onMouseOut=\"nd()\" ",
