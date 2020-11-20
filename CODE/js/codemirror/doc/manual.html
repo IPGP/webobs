@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 
 <title>CodeMirror: User Manual</title>
 <meta charset="utf-8"/>
@@ -24,7 +24,7 @@
 </style>
 
 <div id=nav>
-  <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="logo.png"></a>
+  <a href="https://codemirror.net"><h1>CodeMirror</h1><img id=logo src="logo.png"></a>
   <ul>
     <li><a href="../index.html">Home</a></li>
     <li><a href="#overview" class=active data-default="true">Manual</a></li>
@@ -58,6 +58,7 @@
     <li><a href="#vimapi">Vim Mode API</a>
       <ul>
         <li><a href="#vimapi_configuration">Configuration</a></li>
+        <li><a href="#vimapi_events">Events</a></li>
         <li><a href="#vimapi_extending">Extending VIM</a></li>
       </ul>
     </li>
@@ -69,7 +70,7 @@
 <section class=first id=overview>
     <h2 style="position: relative">
       User manual and reference guide
-      <span style="color: #888; font-size: 1rem; position: absolute; right: 0; bottom: 0">version 5.11.0</span>
+      <span style="color: #888; font-size: 1rem; position: absolute; right: 0; bottom: 0">version 5.58.3</span>
     </h2>
 
     <p>CodeMirror is a code-editor component that can be embedded in
@@ -78,9 +79,9 @@
     functionality. It does provide a rich API on top of which such
     functionality can be straightforwardly implemented. See
     the <a href="#addons">addons</a> included in the distribution,
-    and the <a href="https://github.com/codemirror/CodeMirror/wiki/CodeMirror-addons">list
-    of externally hosted addons</a>, for reusable
-    implementations of extra features.</p>
+    and <a href="https://npms.io/search?q=codemirror">3rd party
+    packages on npm</a>, for reusable implementations of extra
+    features.</p>
 
     <p>CodeMirror works with language-specific modes. Modes are
     JavaScript programs that help color (and optionally indent) text
@@ -96,8 +97,7 @@
     <p>The easiest way to use CodeMirror is to simply load the script
     and style sheet found under <code>lib/</code> in the distribution,
     plus a mode script from one of the <code>mode/</code> directories.
-    (See <a href="compress.html">the compression helper</a> for an
-    easy way to combine scripts.) For example:</p>
+    For example:</p>
 
     <pre data-lang="text/html">&lt;script src="lib/codemirror.js">&lt;/script>
 &lt;link rel="stylesheet" href="lib/codemirror.css">
@@ -224,9 +224,10 @@
       first mode that was loaded. It may be a string, which either
       simply names the mode or is
       a <a href="http://en.wikipedia.org/wiki/MIME">MIME</a> type
-      associated with the mode. Alternatively, it may be an object
-      containing configuration options for the mode, with
-      a <code>name</code> property that names the mode (for
+      associated with the mode. The value <code>"null"</code>
+      indicates no highlighting should be applied. Alternatively, it
+      may be an object containing configuration options for the mode,
+      with a <code>name</code> property that names the mode (for
       example <code>{name: "javascript", json: true}</code>). The demo
       pages for each mode contain information about what configuration
       parameters the mode supports. You can ask CodeMirror which modes
@@ -285,13 +286,24 @@
       should be replaced by a
       special <a href="#option_specialCharPlaceholder">placeholder</a>.
       Mostly useful for non-printing special characters. The default
-      is <code>/[\u0000-\u0019\u00ad\u200b-\u200f\u2028\u2029\ufeff]/</code>.</dd>
+      is <code>/[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028\u2029\ufeff\ufff9-\ufffc]/</code>.</dd>
       <dt id="option_specialCharPlaceholder"><code><strong>specialCharPlaceholder</strong>: function(char) → Element</code></dt>
       <dd>A function that, given a special character identified by
       the <a href="#option_specialChars"><code>specialChars</code></a>
       option, produces a DOM node that is used to represent the
       character. By default, a red dot (<span style="color: red">•</span>)
       is shown, with a title tooltip to indicate the character code.</dd>
+
+      <dt id="option_direction"><code><strong>direction</strong>: "ltr" | "rtl"</code></dt>
+      <dd>Flips overall layout and selects base paragraph direction to
+      be left-to-right or right-to-left.  Default is "ltr".
+      CodeMirror applies the Unicode Bidirectional Algorithm to each
+      line, but does not autodetect base direction — it's set to the
+      editor direction for all lines.  The resulting order is
+      sometimes wrong when base direction doesn't match user intent
+      (for example, leading and trailing punctuation jumps to the
+      wrong side of the line).  Therefore, it's helpful for
+      multilingual input to let users toggle this option.
 
       <dt id="option_rtlMoveVisually"><code><strong>rtlMoveVisually</strong>: boolean</code></dt>
       <dd>Determines whether horizontal cursor movement through
@@ -315,6 +327,37 @@
       by <a href="#option_keyMap"><code>keyMap</code></a>. Should be
       either null, or a valid <a href="#keymaps">key map</a> value.</dd>
 
+      <dt id="option_configureMouse"><code><strong>configureMouse</strong>: fn(cm: CodeMirror, repeat: "single" | "double" | "triple", event: Event) → Object</code></dt>
+      <dd>Allows you to configure the behavior of mouse selection and
+      dragging. The function is called when the left mouse button is
+      pressed. The returned object may have the following properties:
+        <dl>
+          <dt><code><strong>unit</strong>: "char" | "word" | "line" | "rectangle" | fn(CodeMirror, Pos) → {from: Pos, to: Pos}</code></dt>
+          <dd>The unit by which to select. May be one of the built-in
+          units or a function that takes a position and returns a
+          range around that, for a custom unit. The default is to
+          return <code>"word"</code> for double
+          clicks, <code>"line"</code> for triple
+          clicks, <code>"rectangle"</code> for alt-clicks (or, on
+          Chrome OS, meta-shift-clicks), and <code>"single"</code>
+          otherwise.</dd>
+          <dt><code><strong>extend</strong>: bool</code></dt>
+          <dd>Whether to extend the existing selection range or start
+          a new one. By default, this is enabled when shift
+          clicking.</dd>
+          <dt><code><strong>addNew</strong>: bool</code></dt>
+          <dd>When enabled, this adds a new range to the existing
+          selection, rather than replacing it. The default behavior is
+          to enable this for command-click on Mac OS, and
+          control-click on other platforms.</dd>
+          <dt><code><strong>moveOnDrag</strong>: bool</code></dt>
+          <dd>When the mouse even drags content around inside the
+          editor, this controls whether it is copied (false) or moved
+          (true). By default, this is enabled by alt-clicking on Mac
+          OS, and ctrl-clicking elsewhere.</dd>
+        </dl>
+      </dd>
+
       <dt id="option_lineWrapping"><code><strong>lineWrapping</strong>: boolean</code></dt>
       <dd>Whether CodeMirror should scroll or wrap for long lines.
       Defaults to <code>false</code> (scroll).</dd>
@@ -330,16 +373,16 @@
       passed the line number, and should return a string that will be
       shown in the gutter.</dd>
 
-      <dt id="option_gutters"><code><strong>gutters</strong>: array&lt;string&gt;</code></dt>
+      <dt id="option_gutters"><code><strong>gutters</strong>: array&lt;string | {className: string, style: ?string}&gt;</code></dt>
       <dd>Can be used to add extra gutters (beyond or instead of the
-      line number gutter). Should be an array of CSS class names, each
-      of which defines a <code>width</code> (and optionally a
-      background), and which will be used to draw the background of
-      the gutters. <em>May</em> include
-      the <code>CodeMirror-linenumbers</code> class, in order to
-      explicitly set the position of the line number gutter (it will
-      default to be to the right of all other gutters). These class
-      names are the keys passed
+      line number gutter). Should be an array of CSS class names or
+      class name / CSS string pairs, each of which defines
+      a <code>width</code> (and optionally a background), and which
+      will be used to draw the background of the gutters. <em>May</em>
+      include the <code>CodeMirror-linenumbers</code> class, in order
+      to explicitly set the position of the line number gutter (it
+      will default to be to the right of all other gutters). These
+      class names are the keys passed
       to <a href="#setGutterMarker"><code>setGutterMarker</code></a>.</dd>
 
       <dt id="option_fixedGutter"><code><strong>fixedGutter</strong>: boolean</code></dt>
@@ -379,6 +422,10 @@
       simply <code>true</code>), focusing of the editor is also
       disallowed.</dd>
 
+      <dt id="option_screenReaderLabel"><code><strong>screenReaderLabel</strong>: string</code></dt>
+      <dd>This label is read by the screenreaders when CodeMirror text area is focused. This
+      is helpful for accessibility.</dd>
+
       <dt id="option_showCursorWhenSelecting"><code><strong>showCursorWhenSelecting</strong>: boolean</code></dt>
       <dd>Whether the cursor should be drawn when a selection is
       active. Defaults to false.</dd>
@@ -387,6 +434,17 @@
       <dd>When enabled, which is the default, doing copy or cut when
       there is no selection will copy or cut the whole lines that have
       cursors on them.</dd>
+
+      <dt id="option_pasteLinesPerSelection"><code><strong>pasteLinesPerSelection</strong>: boolean</code></dt>
+      <dd>When pasting something from an external source (not from the
+      editor itself), if the number of lines matches the number of
+      selection, CodeMirror will by default insert one line per
+      selection. You can set this to <code>false</code> to disable
+      that behavior.</dd>
+
+      <dt id="option_selectionsMayTouch"><code><strong>selectionsMayTouch</strong>: boolean</code></dt>
+      <dd>Determines whether multiple selections are joined as soon as
+      they touch (the default) or only when they overlap (true).</dd>
 
       <dt id="option_undoDepth"><code><strong>undoDepth</strong>: integer</code></dt>
       <dd>The maximum number of undo levels that the editor stores.
@@ -411,6 +469,15 @@
       set to true when either the source textarea is focused, or it
       has an <code>autofocus</code> attribute and no other element is
       focused.</dd>
+
+      <dt id="option_phrases"><code><strong>phrases</strong>: ?object</code></dt>
+      <dd>Some addons run user-visible strings (such as labels in the
+      interface) through the <a href="#phrase"><code>phrase</code></a>
+      method to allow for translation. This option determines the
+      return value of that method. When it is null or an object that
+      doesn't have a property named by the input string, that string
+      is returned. Otherwise, the value of the property corresponding
+      to that string is returned.</dd>
     </dl>
 
     <p>Below this a few more specialized, low-level options are
@@ -496,6 +563,15 @@
       always rendered, and thus the browser's text search works on it.
       This <em>will</em> have bad effects on performance of big
       documents.</dd>
+
+      <dt id="option_spellcheck"><code><strong>spellcheck</strong>: boolean</code></dt>
+      <dd>Specifies whether or not spellcheck will be enabled on the input.</dd>
+
+      <dt id="option_autocorrect"><code><strong>autocorrect</strong>: boolean</code></dt>
+      <dd>Specifies whether or not autocorrect will be enabled on the input.</dd>
+
+      <dt id="option_autocapitalize"><code><strong>autocapitalize</strong>: boolean</code></dt>
+      <dd>Specifies whether or not autocapitalization will be enabled on the input.</dd>
     </dl>
 </section>
 
@@ -626,14 +702,22 @@
       You can <code>preventDefault</code> the event, to signal that
       CodeMirror should do no further handling.</dd>
 
-      <dt id="event_focus"><code><strong>"focus"</strong> (instance: CodeMirror)</code></dt>
+      <dt id="event_focus"><code><strong>"focus"</strong> (instance: CodeMirror, event: Event)</code></dt>
       <dd>Fires whenever the editor is focused.</dd>
 
-      <dt id="event_blur"><code><strong>"blur"</strong> (instance: CodeMirror)</code></dt>
+      <dt id="event_blur"><code><strong>"blur"</strong> (instance: CodeMirror, event: Event)</code></dt>
       <dd>Fires whenever the editor is unfocused.</dd>
 
       <dt id="event_scroll"><code><strong>"scroll"</strong> (instance: CodeMirror)</code></dt>
       <dd>Fires when the editor is scrolled.</dd>
+
+      <dt id="event_refresh"><code><strong>"refresh"</strong> (instance: CodeMirror)</code></dt>
+      <dd>Fires when the editor is <a href="#refresh">refreshed</a>
+      or <a href="#setSize">resized</a>. Mostly useful to invalidate
+      cached values that depend on the editor or character size.</dd>
+
+      <dt id="event_optionChange"><code><strong>"optionChange"</strong> (instance: CodeMirror, option: string)</code></dt>
+      <dd>Dispatched every time an option is changed with <a href="#setOption"><code>setOption</code></a>.</dd>
 
       <dt id="event_scrollCursorIntoView"><code><strong>"scrollCursorIntoView"</strong> (instance: CodeMirror, event: Event)</code></dt>
       <dd>Fires when the editor tries to scroll its cursor into view.
@@ -657,7 +741,8 @@
       <strong>"keydown"</strong>, <strong>"keypress"</strong>,
       <strong>"keyup"</strong>, <strong>"cut"</strong>, <strong>"copy"</strong>, <strong>"paste"</strong>,
       <strong>"dragstart"</strong>, <strong>"dragenter"</strong>,
-      <strong>"dragover"</strong>, <strong>"drop"</strong>
+      <strong>"dragover"</strong>, <strong>"dragleave"</strong>,
+      <strong>"drop"</strong>
       (instance: CodeMirror, event: Event)</code></dt>
       <dd>Fired when CodeMirror is handling a DOM event of this type.
       You can <code>preventDefault</code> the event, or give it a
@@ -756,9 +841,10 @@
 <section id=keymaps>
     <h2>Key Maps</h2>
 
-    <p>Key maps are ways to associate keys with functionality. A key map
-    is an object mapping strings that identify the keys to functions
-    that implement their functionality.</p>
+    <p>Key maps are ways to associate keys and mouse buttons with
+    functionality. A key map is an object mapping strings that
+    identify the buttons to functions that implement their
+    functionality.</p>
 
     <p>The CodeMirror distributions comes
     with <a href="../demo/emacs.html">Emacs</a>, <a href="../demo/vim.html">Vim</a>,
@@ -789,6 +875,13 @@ editor.setOption("extraKeys", {
     surrounding it in single quotes, for example <code>'$'</code>
     or <code>'q'</code>. Due to limitations in the way browsers fire
     key events, these may not be prefixed with modifiers.</p>
+
+    <p>To bind mouse buttons, use the names `LeftClick`,
+    `MiddleClick`, and `RightClick`. These can also be prefixed with
+    modifiers, and in addition, the word `Double` or `Triple` can be
+    put before `Click` (as in `LeftDoubleClick`) to bind a double- or
+    triple-click. The function for such a binding is passed the
+    position that was clicked as second argument.</p>
 
     <p id="normalizeKeyMap">Multi-stroke key bindings can be specified
     by separating the key names by spaces in the property name, for
@@ -887,7 +980,10 @@ editor.setOption("extraKeys", {
       <dd>Delete the part of the line from the cursor to the right side of the visual line the cursor is on.</dd>
 
       <dt class=command id=command_undo><code><strong>undo</strong></code><span class=keybinding>Ctrl-Z (PC), Cmd-Z (Mac)</span></dt>
-      <dd>Undo the last change.</dd>
+      <dd>Undo the last change. Note that, because browsers still
+      don't make it possible for scripts to react to or customize the
+      context menu, selecting undo (or redo) from the context menu in
+      a CodeMirror instance does not work.</dd>
 
       <dt class=command id=command_redo><code><strong>redo</strong></code><span class=keybinding>Ctrl-Y (PC), Shift-Cmd-Z (Mac), Cmd-Y (Mac)</span></dt>
       <dd>Redo the last undone change.</dd>
@@ -1130,7 +1226,11 @@ editor.setOption("extraKeys", {
     shouldn't worry too much about sanitizing your coordinates. If you
     give <code>ch</code> a value of <code>null</code>, or don't
     specify it, it will be replaced with the length of the specified
-    line.</p>
+    line. Such positions may also have a <code>sticky</code> property
+    holding <code>"before"</code> or <code>"after"</code>, whether the
+    position is associated with the character before or after it. This
+    influences, for example, where the cursor is drawn on a
+    line-break or bidi-direction boundary.</p>
 
     <p>Methods prefixed with <code>doc.</code> can, unless otherwise
     specified, be called both on <code>CodeMirror</code> (editor)
@@ -1192,12 +1292,12 @@ editor.setOption("extraKeys", {
       <dt id="lineCount"><code><strong>doc.lineCount</strong>() → integer</code></dt>
       <dd>Get the number of lines in the editor.</dd>
       <dt id="firstLine"><code><strong>doc.firstLine</strong>() → integer</code></dt>
-      <dd>Get the first line of the editor. This will
+      <dd>Get the number of first line in the editor. This will
       usually be zero but for <a href="#linkedDoc_from">linked sub-views</a>,
       or <a href="#api_doc">documents</a> instantiated with a non-zero
       first line, it might return other values.</dd>
       <dt id="lastLine"><code><strong>doc.lastLine</strong>() → integer</code></dt>
-      <dd>Get the last line of the editor. This will
+      <dd>Get the number of last line in the editor. This will
       usually be <code>doc.lineCount() - 1</code>,
       but for <a href="#linkedDoc_from">linked sub-views</a>,
       it might return other values.</dd>
@@ -1253,7 +1353,7 @@ editor.setOption("extraKeys", {
       separator to put between the lines in the output. When multiple
       selections are present, they are concatenated with instances
       of <code>lineSep</code> in between.</dd>
-      <dt id="getSelections"><code><strong>doc.getSelections</strong>(?lineSep: string) → string</code></dt>
+      <dt id="getSelections"><code><strong>doc.getSelections</strong>(?lineSep: string) → array&lt;string&gt;</code></dt>
       <dd>Returns an array containing a string for each selection,
       representing the content of the selections.</dd>
 
@@ -1434,11 +1534,21 @@ editor.setOption("extraKeys", {
       spec</a> or a mode object (an object with
       a <a href="#token"><code>token</code></a> method).
       The <code>options</code> parameter is optional. If given, it
-      should be an object. Currently, only the <code>opaque</code>
-      option is recognized. This defaults to off, but can be given to
-      allow the overlay styling, when not <code>null</code>, to
-      override the styling of the base mode entirely, instead of the
-      two being applied together.</dd>
+      should be an object, optionally containing the following options:
+        <dl>
+          <dt><code><strong>opaque</strong>: bool</code></dt>
+          <dd>Defaults to off, but can be given to allow the overlay
+          styling, when not <code>null</code>, to override the styling of
+          the base mode entirely, instead of the two being applied
+          together.</dd>
+          <dt><code><strong>priority</strong>: number</code></dt>
+          <dd>Determines the ordering in which the overlays are
+          applied. Those with high priority are applied after those
+          with lower priority, and able to override the opaqueness of
+          the ones that come before. Defaults to 0.</dd>
+        </dl>
+      </dd>
+
       <dt id="removeOverlay"><code><strong>cm.removeOverlay</strong>(mode: string|object)</code></dt>
       <dd>Pass this the exact value passed for the <code>mode</code>
       parameter to <a href="#addOverlay"><code>addOverlay</code></a>,
@@ -1463,10 +1573,11 @@ editor.setOption("extraKeys", {
     represents the editor content, plus a selection, an undo history,
     and a <a href="#option_mode">mode</a>. A document can only be
     associated with a single editor at a time. You can create new
-    documents by calling the <code>CodeMirror.Doc(text, mode,
-    firstLineNumber)</code> constructor. The last two arguments are
-    optional and can be used to set a mode for the document and make
-    it start at a line number other than 0, respectively.</p>
+    documents by calling the <code>CodeMirror.Doc(text: string, mode:
+    Object, firstLineNumber: ?number, lineSeparator: ?string)</code>
+    constructor. The last three arguments are optional and can be used
+    to set a mode for the document, make it start at a line number
+    other than 0, and set a specific line separator respectively.</p>
 
     <dl>
       <dt id="getDoc"><code><strong>cm.getDoc</strong>() → Doc</code></dt>
@@ -1540,7 +1651,7 @@ editor.setOption("extraKeys", {
       <dt id="clearHistory"><code><strong>doc.clearHistory</strong>()</code></dt>
       <dd>Clears the editor's undo history.</dd>
       <dt id="getHistory"><code><strong>doc.getHistory</strong>() → object</code></dt>
-      <dd>Get a (JSON-serializeable) representation of the undo history.</dd>
+      <dd>Get a (JSON-serializable) representation of the undo history.</dd>
       <dt id="setHistory"><code><strong>doc.setHistory</strong>(history: object)</code></dt>
       <dd>Replace the editor's undo history with the one provided,
       which must be a value as returned
@@ -1569,13 +1680,21 @@ editor.setOption("extraKeys", {
         <dt id="mark_inclusiveRight"><code><strong>inclusiveRight</strong>: boolean</code></dt>
         <dd>Like <code>inclusiveLeft</code>,
         but for the right side.</dd>
+        <dt id="mark_selectLeft"><code><strong>selectLeft</strong>: boolean</code></dt>
+        <dd>For atomic ranges, determines whether the cursor is allowed
+        to be placed directly to the left of the range. Has no effect on
+        non-atomic ranges.</dd>
+        <dt id="mark_selectRight"><code><strong>selectRight</strong>: boolean</code></dt>
+        <dd>Like <code>selectLeft</code>,
+        but for the right side.</dd>
         <dt id="mark_atomic"><code><strong>atomic</strong>: boolean</code></dt>
         <dd>Atomic ranges act as a single unit when cursor movement is
         concerned—i.e. it is impossible to place the cursor inside of
-        them. In atomic ranges, <code>inclusiveLeft</code>
-        and <code>inclusiveRight</code> have a different meaning—they
-        will prevent the cursor from being placed respectively
-        directly before and directly after the range.</dd>
+        them. You can control whether the cursor is allowed to be placed
+        directly before or after them using <code>selectLeft</code>
+        or <code>selectRight</code>. If <code>selectLeft</code>
+        (or right) is not provided, then <code>inclusiveLeft</code> (or
+        right) will control this behavior.</dd>
         <dt id="mark_collapsed"><code><strong>collapsed</strong>: boolean</code></dt>
         <dd>Collapsed ranges do not show up in the display. Setting a
         range to be collapsed will automatically make it atomic.</dd>
@@ -1620,10 +1739,10 @@ editor.setOption("extraKeys", {
         to <code>startStyle</code>, but for the rightmost span.</dd>
         <dt id="mark_css"><code><strong>css</strong>: string</code></dt>
         <dd>A string of CSS to be applied to the covered text. For example <code>"color: #fe3"</code>.</dd>
-        <dt id="mark_title"><code><strong>title</strong>:
-        string</code></dt><dd>When given, will give the nodes created
-        for this span a HTML <code>title</code> attribute with the
-        given value.</dd>
+        <dt id="mark_attributes"><code><strong>attributes</strong>: object</code></dt>
+        <dd>When given, add the attributes in the given object to the
+        elements created for the marked text. Adding <code>class</code> or
+        <code>style</code> attributes this way is not supported.</dd>
         <dt id="mark_shared"><code><strong>shared</strong>: boolean</code></dt><dd>When the
         target document is <a href="#linkedDoc">linked</a> to other
         documents, you can set <code>shared</code> to true to make the
@@ -1673,7 +1792,7 @@ editor.setOption("extraKeys", {
 
       <dt id="findMarks"><code><strong>doc.findMarks</strong>(from: {line, ch}, to: {line, ch}) → array&lt;TextMarker&gt;</code></dt>
       <dd>Returns an array of all the bookmarks and marked ranges
-      found between the given positions.</dd>
+      found between the given positions (non-inclusive).</dd>
       <dt id="findMarksAt"><code><strong>doc.findMarksAt</strong>(pos: {line, ch}) → array&lt;TextMarker&gt;</code></dt>
       <dd>Returns an array of all the bookmarks and marked ranges
       present at the given position.</dd>
@@ -1684,7 +1803,7 @@ editor.setOption("extraKeys", {
     <h3 id="api_decoration">Widget, gutter, and decoration methods</h3>
 
     <dl>
-      <dt id="setGutterMarker"><code><strong>cm.setGutterMarker</strong>(line: integer|LineHandle, gutterID: string, value: Element) → LineHandle</code></dt>
+      <dt id="setGutterMarker"><code><strong>doc.setGutterMarker</strong>(line: integer|LineHandle, gutterID: string, value: Element) → LineHandle</code></dt>
       <dd>Sets the gutter marker for the given gutter (identified by
       its CSS class, see
       the <a href="#option_gutters"><code>gutters</code></a> option)
@@ -1693,7 +1812,7 @@ editor.setOption("extraKeys", {
       will be shown in the specified gutter next to the specified
       line.</dd>
 
-      <dt id="clearGutter"><code><strong>cm.clearGutter</strong>(gutterID: string)</code></dt>
+      <dt id="clearGutter"><code><strong>doc.clearGutter</strong>(gutterID: string)</code></dt>
       <dd>Remove all gutter markers in
       the <a href="#option_gutters">gutter</a> with the given ID.</dd>
 
@@ -1718,7 +1837,7 @@ editor.setOption("extraKeys", {
       can be left off to remove all classes for the specified node, or
       be a string to remove only a specific class.</dd>
 
-      <dt id="lineInfo"><code><strong>cm.lineInfo</strong>(line: integer|LineHandle) → object</code></dt>
+      <dt id="lineInfo"><code><strong>doc.lineInfo</strong>(line: integer|LineHandle) → object</code></dt>
       <dd>Returns the line number, text content, and marker status of
       the given line, which can be either a number or a line handle.
       The returned object has the structure <code>{line, handle, text,
@@ -1767,6 +1886,9 @@ editor.setOption("extraKeys", {
           position (zero for the top, N to put it after the Nth other
           widget). Note that this only has effect once, when the
           widget is created.
+          <dt><code><strong>className</strong>: string</code></dt>
+          <dd>Add an extra CSS class name to the wrapper element
+          created for the widget.</dd>
         </dl>
       Note that the widget node will become a descendant of nodes with
       CodeMirror-specific CSS classes, and those classes might in some
@@ -1837,7 +1959,7 @@ editor.setOption("extraKeys", {
       position that the cursor would have when it would sit at that
       position.</dd>
       <dt id="coordsChar"><code><strong>cm.coordsChar</strong>(object: {left, top}, ?mode: string) → {line, ch}</code></dt>
-      <dd>Given an <code>{left, top}</code> object, returns
+      <dd>Given an <code>{left, top}</code> object (e.g. coordinates of a mouse event) returns
       the <code>{line, ch}</code> position that corresponds to it. The
       optional <code>mode</code> parameter determines relative to what
       the coordinates are interpreted. It may
@@ -1848,13 +1970,16 @@ editor.setOption("extraKeys", {
       height. <code>mode</code> can be one of the same strings
       that <a href="#coordsChar"><code>coordsChar</code></a>
       accepts.</dd>
-      <dt id="heightAtLine"><code><strong>cm.heightAtLine</strong>(line: integer|LineHandle, ?mode: string) → number</code></dt>
+      <dt id="heightAtLine"><code><strong>cm.heightAtLine</strong>(line: integer|LineHandle, ?mode: string, ?includeWidgets: bool) → number</code></dt>
       <dd>Computes the height of the top of a line, in the coordinate
       system specified by <code>mode</code>
       (see <a href="#coordsChar"><code>coordsChar</code></a>), which
       defaults to <code>"page"</code>. When a line below the bottom of
       the document is specified, the returned value is the bottom of
-      the last line in the document.</dd>
+      the last line in the document. By default, the position of the
+      actual text is returned. If `includeWidgets` is true and the
+      line has line widgets, the position above the first line widget
+      is returned.</dd>
       <dt id="defaultTextHeight"><code><strong>cm.defaultTextHeight</strong>() → number</code></dt>
       <dd>Returns the line height of the default font for the editor.</dd>
       <dt id="defaultCharWidth"><code><strong>cm.defaultCharWidth</strong>() → number</code></dt>
@@ -1985,6 +2110,17 @@ editor.setOption("extraKeys", {
       lot faster. The return value from this method will be the return
       value of your function.</dd>
 
+      <dt id="startOperation"><code><strong>cm.startOperation</strong>()</code></dt>
+      <dt id="endOperation"><code><strong>cm.endOperation</strong>()</code></dt>
+      <dd>In normal circumstances, use the above <code>operation</code>
+      method. But if you want to buffer operations happening asynchronously,
+      or that can't all be wrapped in a callback function, you can
+      call <code>startOperation</code> to tell CodeMirror to start
+      buffering changes, and <code>endOperation</code> to actually
+      render all the updates. <em>Be careful:</em> if you use this
+      API and forget to call <code>endOperation</code>, the editor will
+      just never update.</dd>
+
       <dt id="indentLine"><code><strong>cm.indentLine</strong>(line: integer, ?dir: string|integer)</code></dt>
       <dd>Adjust the indentation of the given line. The second
       argument (which defaults to <code>"smart"</code>) may be one of:
@@ -2034,6 +2170,11 @@ editor.setOption("extraKeys", {
       <dt id="focus"><code><strong>cm.focus</strong>()</code></dt>
       <dd>Give the editor focus.</dd>
 
+      <dt id="phrase"><code><strong>cm.phrase</strong>(text: string) → string</code></dt>
+      <dd>Allow the given string to be translated with
+      the <a href="#option_phrases"><code>phrases</code>
+      option</a>.</dd>
+
       <dt id="getInputField"><code><strong>cm.getInputField</strong>() → Element</code></dt>
       <dd>Returns the input field for the editor. Will be a textarea
       or an editable div, depending on the value of
@@ -2063,26 +2204,29 @@ editor.setOption("extraKeys", {
       else (usually one) for dev snapshots.</dd>
 
       <dt id="fromTextArea"><code><strong>CodeMirror.fromTextArea</strong>(textArea: TextAreaElement, ?config: object)</code></dt>
-      <dd>
-        The method provides another way to initialize an editor. It
-        takes a textarea DOM node as first argument and an optional
-        configuration object as second. It will replace the textarea
-        with a CodeMirror instance, and wire up the form of that
-        textarea (if any) to make sure the editor contents are put
-        into the textarea when the form is submitted. The text in the
-        textarea will provide the content for the editor. A CodeMirror
-        instance created this way has three additional methods:
-        <dl>
-          <dt id="save"><code><strong>cm.save</strong>()</code></dt>
-          <dd>Copy the content of the editor into the textarea.</dd>
+      <dd>This method provides another way to initialize an editor. It
+      takes a textarea DOM node as first argument and an optional
+      configuration object as second. It will replace the textarea
+      with a CodeMirror instance, and wire up the form of that
+      textarea (if any) to make sure the editor contents are put into
+      the textarea when the form is submitted. The text in the
+      textarea will provide the content for the editor. A CodeMirror
+      instance created this way has three additional methods:
+      <dl>
+        <dt id="save"><code><strong>cm.save</strong>()</code></dt>
+        <dd>Copy the content of the editor into the textarea.</dd>
 
-          <dt id="toTextArea"><code><strong>cm.toTextArea</strong>()</code></dt>
-          <dd>Remove the editor, and restore the original textarea (with
-          the editor's current content).</dd>
+        <dt id="toTextArea"><code><strong>cm.toTextArea</strong>()</code></dt>
+        <dd>Remove the editor, and restore the original textarea (with
+        the editor's current content). If you dynamically create and
+        destroy editors made with `fromTextArea`, without destroying
+        the form they are part of, you should make sure to call
+        `toTextArea` to remove the editor, or its `"submit"` handler
+        on the form will cause a memory leak.</dd>
 
-          <dt id="getTextArea"><code><strong>cm.getTextArea</strong>() → TextAreaElement</code></dt>
-          <dd>Returns the textarea that the instance was based on.</dd>
-        </dl>
+        <dt id="getTextArea"><code><strong>cm.getTextArea</strong>() → TextAreaElement</code></dt>
+        <dd>Returns the textarea that the instance was based on.</dd>
+      </dl>
       </dd>
 
       <dt id="defaults"><code><strong>CodeMirror.defaults</strong>: object</code></dt>
@@ -2099,7 +2243,7 @@ editor.setOption("extraKeys", {
       created from then on.</dd>
 
       <dt id="defineDocExtension"><code><strong>CodeMirror.defineDocExtension</strong>(name: string, value: any)</code></dt>
-      <dd>Like <a href="#defineExtenstion"><code>defineExtension</code></a>,
+      <dd>Like <a href="#defineExtension"><code>defineExtension</code></a>,
       but the method will be added to the interface
       for <a href="#Doc"><code>Doc</code></a> objects instead.</dd>
 
@@ -2138,9 +2282,12 @@ editor.setOption("extraKeys", {
       whenever the given <code>predicate</code> returns true when
       called with the local mode and editor.</dd>
 
-      <dt id="Pos"><code><strong>CodeMirror.Pos</strong>(line: integer, ?ch: integer)</code></dt>
-      <dd>A constructor for the <code>{line, ch}</code> objects that
-      are used to represent positions in editor documents.</dd>
+      <dt id="Pos"><code><strong>CodeMirror.Pos</strong>(line: integer, ?ch: integer, ?sticky: string)</code></dt>
+      <dd>A constructor for the objects that are used to represent
+      positions in editor documents. <code>sticky</code> defaults to
+      null, but can be set to <code>"before"</code>
+      or <code>"after"</code> to make the position explicitly
+      associate with the character before or after it.</dd>
 
       <dt id="changeEnd"><code><strong>CodeMirror.changeEnd</strong>(change: object) → {line, ch}</code></dt>
       <dd>Utility function that computes an end position from a change
@@ -2149,6 +2296,9 @@ editor.setOption("extraKeys", {
       various <a href="#event_change">event handlers</a>). The
       returned position will be the end of the changed
       range, <em>after</em> the change is applied.</dd>
+
+      <dt id="countColumn"><code><strong>CodeMirror.countColumn</strong>(line: string, index: number, tabSize: number) → number</code></dt>
+      <dd>Find the column position at a given string index using a given tabsize.</dd>
     </dl>
 </section>
 
@@ -2174,23 +2324,23 @@ editor.setOption("extraKeys", {
       which, if called, will close the dialog immediately.
       <strong><code>openDialog</code></strong> takes the following options:
         <dl>
-          <dt><code><strong>closeOnEnter</strong></code>:</dt>
+          <dt><code><strong>closeOnEnter</strong>: bool</code></dt>
           <dd>If true, the dialog will be closed when the user presses
           enter in the input. Defaults to <code>true</code>.</dd>
-          <dt><code><strong>onKeyDown</strong></code>:</dt>
-          <dd>An event handler of the signature <code>(event, value, closeFunction)</code>
-          that will be called whenever <code>keydown</code> fires in the
+          <dt><code><strong>closeOnBlur</strong>: bool</code></dt>
+          <dd>Determines whether the dialog is closed when it loses focus. Defaults to <code>true</code>.</dd>
+          <dt><code><strong>onKeyDown</strong>: fn(event: KeyboardEvent, value: string, close: fn()) → bool</code></dt>
+          <dd>An event handler that will be called whenever <code>keydown</code> fires in the
           dialog's input. If your callback returns <code>true</code>,
           the dialog will not do any further processing of the event.</dd>
-          <dt><code><strong>onKeyUp</strong></code>:</dt>
+          <dt><code><strong>onKeyUp</strong>: fn(event: KeyboardEvent, value: string, close: fn()) → bool</code></dt>
           <dd>Same as <code>onKeyDown</code> but for the
           <code>keyup</code> event.</dd>
-          <dt><code><strong>onInput</strong></code>:</dt>
+          <dt><code><strong>onInput</strong>: fn(event: InputEvent, value: string, close: fn()) → bool</code></dt>
           <dd>Same as <code>onKeyDown</code> but for the
           <code>input</code> event.</dd>
-          <dt><code><strong>onClose</strong></code>:</dt>
-          <dd>A callback of the signature <code>(dialogInstance)</code>
-          that will be called after the dialog has been closed and
+          <dt><code><strong>onClose</strong>: fn(instance)</code>:</dt>
+          <dd>A callback that will be called after the dialog has been closed and
           removed from the DOM. No return value.</dd>
         </dl>
 
@@ -2204,16 +2354,18 @@ editor.setOption("extraKeys", {
       <p>Depends on <code>addon/dialog/dialog.css</code>.</p></dd>
 
       <dt id="addon_searchcursor"><a href="../addon/search/searchcursor.js"><code>search/searchcursor.js</code></a></dt>
-      <dd>Adds the <code>getSearchCursor(query, start, caseFold) →
+      <dd>Adds the <code>getSearchCursor(query, start, options) →
       cursor</code> method to CodeMirror instances, which can be used
       to implement search/replace functionality. <code>query</code>
-      can be a regular expression or a string (only strings will match
-      across lines—if they contain newlines). <code>start</code>
+      can be a regular expression or a string. <code>start</code>
       provides the starting position of the search. It can be
       a <code>{line, ch}</code> object, or can be left off to default
-      to the start of the document. <code>caseFold</code> is only
-      relevant when matching a string. It will cause the search to be
-      case-insensitive. A search cursor has the following methods:
+      to the start of the document. <code>options</code> is an
+      optional object, which can contain the property `caseFold:
+      false` to disable case folding when matching a string, or the
+      property `multiline: disable` to disable multi-line matching for
+      regular expressions (which may help performance). A search
+      cursor has the following methods:
         <dl>
           <dt><code><strong>findNext</strong>() → boolean</code></dt>
           <dt><code><strong>findPrevious</strong>() → boolean</code></dt>
@@ -2273,12 +2425,27 @@ editor.setOption("extraKeys", {
 
       <dt id="addon_matchbrackets"><a href="../addon/edit/matchbrackets.js"><code>edit/matchbrackets.js</code></a></dt>
       <dd>Defines an option <code>matchBrackets</code> which, when set
-      to true, causes matching brackets to be highlighted whenever the
-      cursor is next to them. It also adds a
+      to true or an options object, causes matching brackets to be
+      highlighted whenever the cursor is next to them. It also adds a
       method <code>matchBrackets</code> that forces this to happen
       once, and a method <code>findMatchingBracket</code> that can be
       used to run the bracket-finding algorithm that this uses
-      internally.</dd>
+      internally. It takes a start position and an optional config
+      object. By default, it will find the match to a matchable
+      character either before or after the cursor (preferring the one
+      before), but you can control its behavior with these options:
+        <dl>
+          <dt><strong><code>afterCursor</code></strong></dt>
+          <dd>Only use the character after the start position, never the one before it.</dd>
+          <dt><strong><code>strict</code></strong></dt>
+          <dd>Causes only matches where both brackets are at the same side of the start position to be considered.</dd>
+          <dt><strong><code>maxScanLines</code></strong></dt>
+          <dd>Stop after scanning this amount of lines without a successful match. Defaults to 1000.</dd>
+          <dt><strong><code>maxScanLineLength</code></strong></dt>
+          <dd>Ignore lines longer than this. Defaults to 10000.</dd>
+          <dt><strong><code>maxHighlightLineLength</code></strong></dt>
+          <dd>Don't highlight a bracket in a line longer than this. Defaults to 1000.</dd>
+        </dl></dd>
 
       <dt id="addon_closebrackets"><a href="../addon/edit/closebrackets.js"><code>edit/closebrackets.js</code></a></dt>
       <dd>Defines an option <code>autoCloseBrackets</code> that will
@@ -2290,7 +2457,13 @@ editor.setOption("extraKeys", {
       it. <code>explode</code> should be a similar string that gives
       the pairs of characters that, when enter is pressed between
       them, should have the second character also moved to its own
-      line. <a href="../demo/closebrackets.html">Demo here</a>.</dd>
+      line. By default, if the active mode has
+      a <code>closeBrackets</code> property, that overrides the
+      configuration given in the option. But you can add
+      an <code>override</code> property with a truthy value to
+      override mode-specific
+      configuration. <a href="../demo/closebrackets.html">Demo
+      here</a>.</dd>
 
       <dt id="addon_matchtags"><a href="../addon/edit/matchtags.js"><code>edit/matchtags.js</code></a></dt>
       <dd>Defines an option <code>matchTags</code> that, when enabled,
@@ -2322,7 +2495,7 @@ editor.setOption("extraKeys", {
       <dt id="addon_continuelist"><a href="../addon/edit/continuelist.js"><code>edit/continuelist.js</code></a></dt>
       <dd>Markdown specific. Defines
       a <code>"newlineAndIndentContinueMarkdownList"</code> <a href="#commands">command</a>
-      command that can be bound to <code>enter</code> to automatically
+      that can be bound to <code>enter</code> to automatically
       insert the leading characters for continuing a list. See
       the <a href="../mode/markdown/index.html">Markdown mode
       demo</a>.</dd>
@@ -2331,7 +2504,7 @@ editor.setOption("extraKeys", {
       <dd>Addon for commenting and uncommenting code. Adds four
       methods to CodeMirror instances:
       <dl>
-        <dt id="toggleComment"><code><strong>toggleComment</strong>(from: {line, ch}, to: {line, ch}, ?options: object)</code></dt>
+        <dt id="toggleComment"><code><strong>toggleComment</strong>(?options: object)</code></dt>
         <dd>Tries to uncomment the current selection, and if that
         fails, line-comments it.</dd>
         <dt id="lineComment"><code><strong>lineComment</strong>(from: {line, ch}, to: {line, ch}, ?options: object)</code></dt>
@@ -2399,10 +2572,14 @@ editor.setOption("extraKeys", {
         and <code>CodeMirror.fold.xml</code>, for XML-style languages,
         and <code>CodeMirror.fold.comment</code>, for folding comment
         blocks.</dd>
-        <dt><code><strong>widget</strong>: string|Element</code></dt>
+        <dt><code><strong>widget</strong>: string | Element | fn(from: Pos, to: Pos) → string|Element</code></dt>
         <dd>The widget to show for folded ranges. Can be either a
         string, in which case it'll become a span with
-        class <code>CodeMirror-foldmarker</code>, or a DOM node.</dd>
+        class <code>CodeMirror-foldmarker</code>, or a DOM node.
+        To dynamically generate the widget, this can be a function
+        that returns a string or DOM node, which will then render
+        as described. The function will be invoked with parameters
+        identifying the range to be folded.</dd>
         <dt><code><strong>scanUp</strong>: boolean</code></dt>
         <dd>When true (default is false), the addon will try to find
         foldable ranges on the lines above the current one if there
@@ -2523,8 +2700,8 @@ editor.setOption("extraKeys", {
       Defines <code>editor.showHint</code>, which takes an optional
       options object, and pops up a widget that allows the user to
       select a completion. Finding hints is done with a hinting
-      functions (the <code>hint</code> option), which is a function
-      that take an editor instance and options object, and return
+      function (the <code>hint</code> option). This function
+      takes an editor instance and an options object, and returns
       a <code>{list, from, to}</code> object, where <code>list</code>
       is an array of strings or objects (the completions),
       and <code>from</code> and <code>to</code> give the start and end
@@ -2564,10 +2741,14 @@ editor.setOption("extraKeys", {
         <dt><code><strong>to</strong>: {line, ch}</code></dt>
         <dd>Optional <code>to</code> position that will be used by <code>pick()</code> instead
         of the global one passed with the full list of completions.</dd>
-      </dl>
-      The plugin understands the following options (the options object
-      will also be passed along to the hinting function, which may
-      understand additional options):
+      </dl></dd>
+
+      <dd>The plugin understands the following options, which may be
+      either passed directly in the argument to <code>showHint</code>,
+      or provided by setting an <code>hintOptions</code> editor
+      option to an object (the former takes precedence). The options
+      object will also be passed along to the hinting function, which
+      may understand additional options.
       <dl>
         <dt><code><strong>hint</strong>: function</code></dt>
         <dd>A hinting function, as specified above. It is possible to
@@ -2576,7 +2757,10 @@ editor.setOption("extraKeys", {
         arguments <code>(cm, callback, ?options)</code>, and the
         completion interface will only be popped up when the hinting
         function calls the callback, passing it the object holding the
-        completions. By default, hinting only works when there is no
+        completions.
+        The hinting function can also return a promise, and the completion
+        interface will only be popped when the promise resolves.
+        By default, hinting only works when there is no
         selection. You can give a hinting function
         a <code>supportsSelection</code> property with a truthy value
         to indicate that it supports selections.</dd>
@@ -2587,9 +2771,22 @@ editor.setOption("extraKeys", {
         <dt><code><strong>alignWithWord</strong>: boolean</code></dt>
         <dd>Whether the pop-up should be horizontally aligned with the
         start of the word (true, default), or with the cursor (false).</dd>
+        <dt><code><strong>closeCharacters</strong>: RegExp</code></dt>
+        <dd>A regular expression object used to match characters which
+        cause the pop up to be closed (default: <code>/[\s()\[\]{};:>,]/</code>).
+        If the user types one of these characters, the pop up will close, and
+        the <code>endCompletion</code> event is fired on the editor instance.</dd>
         <dt><code><strong>closeOnUnfocus</strong>: boolean</code></dt>
         <dd>When enabled (which is the default), the pop-up will close
         when the editor is unfocused.</dd>
+        <dt><code><strong>completeOnSingleClick</strong>: boolean</code></dt>
+        <dd>Whether a single click on a list item suffices to trigger the
+        completion (which is the default), or if the user has to use a
+        doubleclick.</dd>
+        <dt><code><strong>container</strong>: Element|null</code></dt>
+        <dd>Can be used to define a custom container for the widget. The default
+        is <code>null</code>, in which case the <code>body</code>-element will
+        be used.</dd>
         <dt><code><strong>customKeys</strong>: keymap</code></dt>
         <dd>Allows you to provide a custom key map of keys to be active
         when the pop-up is active. The handlers will be called with an
@@ -2606,6 +2803,9 @@ editor.setOption("extraKeys", {
         <dd>Like <code>customKeys</code> above, but the bindings will
         be added to the set of default bindings, instead of replacing
         them.</dd>
+        <dt><code><strong>scrollMargin</strong>: integer</code></dt>
+        <dd>Show this many lines before and after the selected item.
+        Default is 0.</dd>
       </dl>
       The following events will be fired on the completions object
       during completion:
@@ -2621,6 +2821,14 @@ editor.setOption("extraKeys", {
         (string or object).</dd>
         <dt><code><strong>"close"</strong> ()</code></dt>
         <dd>Fired when the completion is finished.</dd>
+      </dl>
+      The following events will be fired on the editor instance during
+      completion:
+      <dl>
+        <dt><code><strong>"endCompletion"</strong> ()</code></dt>
+        <dd>Fired when the pop-up is being closed programmatically, e.g., when
+        the user types a character which matches the
+        <code>closeCharacters</code> option.</dd>
       </dl>
       This addon depends on styles
       from <code>addon/hint/show-hint.css</code>. Check
@@ -2649,8 +2857,13 @@ editor.setOption("extraKeys", {
       and <code>attrs</code> (an object mapping attribute names
       to <code>null</code> for free-form attributes, and an array of
       valid values for restricted
-      attributes). <a href="../demo/xmlcomplete.html">Demo
-      here.</a></dd>
+      attributes).<br>The hint options accept an additional property:
+      <dl>
+        <dt><code><strong>matchInMiddle</strong>: boolean</code></dt>
+        <dd>Determines whether typed characters are matched anywhere in
+        completions, not just at the beginning. Defaults to false.</dd>
+      </dl>
+      <a href="../demo/xmlcomplete.html">Demo here</a>.</dd>
 
       <dt id="addon_html-hint"><a href="../addon/hint/html-hint.js"><code>hint/html-hint.js</code></a></dt>
       <dd>Provides schema info to
@@ -2692,7 +2905,8 @@ editor.setOption("extraKeys", {
       (default 2), <code>style</code>, for the style to be used to
       highlight the matches (default <code>"matchhighlight"</code>,
       which will correspond to CSS
-      class <code>cm-matchhighlight</code>),
+      class <code>cm-matchhighlight</code>), <code>trim</code>, which
+      controls whether whitespace is trimmed from the selection,
       and <code>showToken</code> which can be set to <code>true</code>
       or to a regexp matching the characters that make up a word. When
       enabled, it causes the current word to be highlighted when
@@ -2721,9 +2935,12 @@ editor.setOption("extraKeys", {
       representing problems. When the function has
       an <code>async</code> property with a truthy value, it will be
       called with an additional second argument, which is a callback
-      to pass the array to. By default, the linter will run
-      (debounced) whenever the document is changed. You can pass
-      a <code>lintOnChange: false</code> option to disable that.
+      to pass the array to.
+      The linting function can also return a promise, in that case the linter
+      will only be executed when the promise resolves.
+      By default, the linter will run (debounced) whenever the document is changed.
+      You can pass a <code>lintOnChange: false</code> option to disable that.
+      You can pass a <code>selfContain: true</code> option to render the tooltip inside the editor instance.
       Depends on <code>addon/lint/lint.css</code>. A demo can be
       found <a href="../demo/lint.html">here</a>.</dd>
 
@@ -2734,10 +2951,20 @@ editor.setOption("extraKeys", {
       like in <a href="../demo/markselection.html">this demo</a>.</dd>
 
       <dt id="addon_active-line"><a href="../addon/selection/active-line.js"><code>selection/active-line.js</code></a></dt>
-      <dd>Defines a <code>styleActiveLine</code> option that, when enabled,
-      gives the wrapper of the active line the class <code>CodeMirror-activeline</code>,
-      and adds a background with the class <code>CodeMirror-activeline-background</code>.
-      is enabled. See the <a href="../demo/activeline.html">demo</a>.</dd>
+      <dd>Defines a <code>styleActiveLine</code> option that, when
+      enabled, gives the wrapper of the line that contains the cursor
+      the class <code>CodeMirror-activeline</code>, adds a background
+      with the class <code>CodeMirror-activeline-background</code>,
+      and adds the class <code>CodeMirror-activeline-gutter</code> to
+      the line's gutter space is enabled. The option's value may be a
+      boolean or an object specifying the following options:
+        <dl>
+          <dt><code><strong>nonEmpty</strong>: bool</code></dt>
+          <dd>Controls whether single-line selections, or just cursor
+          selections, are styled. Defaults to false (only cursor
+          selections).</dd>
+        </dl>
+      See the <a href="../demo/activeline.html">demo</a>.</dd>
 
       <dt id="addon_selection-pointer"><a href="../addon/selection/selection-pointer.js"><code>selection/selection-pointer.js</code></a></dt>
       <dd>Defines a <code>selectionPointer</code> option which you can
@@ -2748,13 +2975,20 @@ editor.setOption("extraKeys", {
       see a demo <a href="../mode/htmlmixed/index.html">here</a>.</dd>
 
       <dt id="addon_loadmode"><a href="../addon/mode/loadmode.js"><code>mode/loadmode.js</code></a></dt>
-      <dd>Defines a <code>CodeMirror.requireMode(modename,
-      callback)</code> function that will try to load a given mode and
-      call the callback when it succeeded. You'll have to
-      set <code>CodeMirror.modeURL</code> to a string that mode paths
-      can be constructed from, for
-      example <code>"mode/%N/%N.js"</code>—the <code>%N</code>'s will
-      be replaced with the mode name. Also
+      <dd>Defines a <code>CodeMirror.requireMode(modename, callback,
+      options)</code> function that will try to load a given mode and
+      call the callback when it succeeded. <code>options</code> is an
+      optional object that may contain:
+        <dl>
+          <dt><code><strong>path</strong>: fn(modeName: string) → string</code></dt>
+          <dd>Defines the way mode names are mapped to paths.</dd>
+          <dt><code><strong>loadMode</strong>: fn(path: string, cont: fn())</code></dt>
+          <dd>Override the way the mode script is loaded. By default,
+          this will use the CommonJS or AMD module loader if one is
+          present, and fall back to creating
+          a <code>&lt;script></code> tag otherwise.</dd>
+        </dl>
+      This addon also
       defines <code>CodeMirror.autoLoadMode(instance, mode)</code>,
       which will ensure the given mode is loaded and cause the given
       editor instance to refresh its mode when the loading
@@ -2837,7 +3071,7 @@ editor.setOption("extraKeys", {
       method <code>annotateScrollbar</code> to editor instances that
       can be called, with a CSS class name as argument, to create a
       set of annotations. The method returns an object
-      whose <code>update</code> method can be called with an array
+      whose <code>update</code> method can be called with a sorted array
       of <code>{from: Pos, to: Pos}</code> objects marking the ranges
       to be highlighted. To detach the annotations, call the
       object's <code>clear</code> method.</dd>
@@ -2865,7 +3099,7 @@ editor.setOption("extraKeys", {
       changed.<br/>
       The method accepts the following options:
       <dl>
-        <dt><code><strong>position</strong> : string</code></dt>
+        <dt><code><strong>position</strong>: string</code></dt>
         <dd>Controls the position of the newly added panel. The
         following values are recognized:
           <dl>
@@ -2879,12 +3113,15 @@ editor.setOption("extraKeys", {
             <dd>Adds the panel at the top of the bottom panels.</dd>
           </dl>
         </dd>
-        <dt><code><strong>before</strong> : Panel</code></dt>
+        <dt><code><strong>before</strong>: Panel</code></dt>
         <dd>The new panel will be added before the given panel.</dd>
-        <dt><code><strong>after</strong> : Panel</code></dt>
+        <dt><code><strong>after</strong>: Panel</code></dt>
         <dd>The new panel will be added after the given panel.</dd>
-        <dt><code><strong>replace</strong> : Panel</code></dt>
+        <dt><code><strong>replace</strong>: Panel</code></dt>
         <dd>The new panel will replace the given panel.</dd>
+        <dt><code><strong>stable</strong>: bool</code></dt>
+        <dd>Whether to scroll the editor to keep the text's vertical
+        position stable, when adding a panel above it. Defaults to false.</dd>
       </dl>
       When using the <code>after</code>, <code>before</code> or <code>replace</code> options,
       if the panel doesn't exists or has been removed,
@@ -2922,9 +3159,19 @@ editor.setOption("extraKeys", {
           <dt><code><strong>killTrailingSpace</strong>: boolean</code></dt>
           <dd>Whether trailing space caused by wrapping should be
           preserved, or deleted. Defaults to true.</dd>
+          <dt><code><strong>forceBreak</strong>: boolean</code></dt>
+          <dd>If set to true forces a break at <code>column</code> in the case
+          when no <code>wrapOn</code> pattern is found in the range. If set to
+          false allows line to overflow the <code>column</code> limit if no
+          <code>wrapOn</code> pattern found. Defaults to true.</dd>
         </dl>
         A demo of the addon is available <a href="../demo/hardwrap.html">here</a>.
       </dd>
+
+      <dt id="addon_scrollpastend"><a href="../addon/scroll/scrollpastend.js"><code>scroll/scrollpastend.js</code></a></dt>
+      <dd>Defines an option `"scrollPastEnd"` that, when set to a
+      truthy value, allows the user to scroll one editor height of
+      empty space into view at the bottom of the editor.</dd>
 
       <dt id="addon_merge"><a href="../addon/merge/merge.js"><code>merge/merge.js</code></a></dt>
       <dd>Implements an interface for merging changes, using either a
@@ -2945,6 +3192,9 @@ editor.setOption("extraKeys", {
           <dt><code><strong>revertButtons</strong>: boolean</code></dt>
           <dd>Determines whether buttons that allow the user to revert
           changes are shown. Defaults to true.</dd>
+          <dt><code><strong>revertChunk</strong>: fn(mv: MergeView, from: CodeMirror, fromStart: Pos, fromEnd: Pos, to: CodeMirror, toStart: Pos, toEnd: Pos)</code></dt>
+          <dd>Can be used to define custom behavior when the user
+          reverts a changed chunk.</dd>
           <dt><code><strong>connect</strong>: string</code></dt>
           <dd>Sets the style used to connect changed chunks of code.
           By default, connectors are drawn. When this is set
@@ -2961,6 +3211,12 @@ editor.setOption("extraKeys", {
           <dt><code><strong>showDifferences</strong>: boolean</code></dt>
           <dd>When true (the default), changed pieces of text are
           highlighted.</dd>
+          <dt><code><strong>chunkClassLocation</strong>: string|Array</code></dt>
+          <dd>By default the chunk highlights are added
+          using <a href="#addLineClass"><code>addLineClass</code></a>
+          with "background". Override this to customize it to be any
+          valid `where` parameter or an Array of valid `where`
+          parameters.</dd>
         </dl>
         The addon also defines commands <code>"goNextDiff"</code>
         and <code>"goPrevDiff"</code> to quickly jump to the next
@@ -2969,14 +3225,14 @@ editor.setOption("extraKeys", {
 
       <dt id="addon_tern"><a href="../addon/tern/tern.js"><code>tern/tern.js</code></a></dt>
       <dd>Provides integration with
-      the <a href="http://ternjs.net">Tern</a> JavaScript analysis
+      the <a href="https://ternjs.net">Tern</a> JavaScript analysis
       engine, for completion, definition finding, and minor
       refactoring help. See the <a href="../demo/tern.html">demo</a>
       for a very simple integration. For more involved scenarios, see
       the comments at the top of
       the <a href="../addon/tern/tern.js">addon</a> and the
       implementation of the
-      (multi-file) <a href="http://ternjs.net/doc/demo.html">demonstration
+      (multi-file) <a href="https://ternjs.net/doc/demo/index.html">demonstration
       on the Tern website</a>.</dd>
     </dl>
 </section>
@@ -3066,7 +3322,7 @@ editor.setOption("extraKeys", {
 
       <dt><code><strong>peek</strong>() → string</code></dt>
       <dd>Returns the next character in the stream without advancing
-      it. Will return an <code>null</code> at the end of the
+      it. Will return a <code>null</code> at the end of the
       line.</dd>
       <dt><code><strong>next</strong>() → string</code></dt>
       <dd>Returns the next character in the stream and advances it.
@@ -3087,11 +3343,11 @@ editor.setOption("extraKeys", {
       white-space.</dd>
       <dt><code><strong>skipToEnd</strong>()</code></dt>
       <dd>Moves the position to the end of the line.</dd>
-      <dt><code><strong>skipTo</strong>(ch: string) → boolean</code></dt>
-      <dd>Skips to the next occurrence of the given character, if
+      <dt><code><strong>skipTo</strong>(str: string) → boolean</code></dt>
+      <dd>Skips to the start of the next occurrence of the given string, if
       found on the current line (doesn't advance the stream if the
-      character does not occur on the line). Returns true if the
-      character was found.</dd>
+      string does not occur on the line). Returns true if the
+      string was found.</dd>
       <dt><code><strong>match</strong>(pattern: string, ?consume: boolean, ?caseFold: boolean) → boolean</code></dt>
       <dt><code><strong>match</strong>(pattern: regexp, ?consume: boolean) → array&lt;string&gt;</code></dt>
       <dd>Act like a
@@ -3119,6 +3375,18 @@ editor.setOption("extraKeys", {
       <dt><code><strong>current</strong>() → string</code></dt>
       <dd>Get the string between the start of the current token and
       the current stream position.</dd>
+
+      <dt><code><strong>lookAhead</strong>(n: number) → ?string</code></dt>
+      <dd>Get the line <code>n</code> (&gt;0) lines after the current
+      one, in order to scan ahead across line boundaries. Note that
+      you want to do this carefully, since looking far ahead will make
+      mode state caching much less effective.</dd>
+
+      <dt id="baseToken"><code><strong>baseToken</strong>() → ?{type: ?string, size: number}</code></dt>
+      <dd>Modes added
+      through <a href="#addOverlay"><code>addOverlay</code></a>
+      (and <em>only</em> such modes) can use this method to inspect
+      the current token produced by the underlying mode.</dd>
     </dl>
 
     <p id="blankLine">By default, blank lines are simply skipped when
@@ -3304,6 +3572,41 @@ editor.setOption("extraKeys", {
       <code>extras.isEdit</code> is applicable only to actions,
       determining whether it is recorded for replay for the
       <code>.</code> single-repeat command.
+
+      <dt id="vimapi_unmap"><strong><code>unmap(lhs: string, ctx: string)</code></strong></dt>
+      <dd>
+      Remove the command <code>lhs</code> if it is a user defined command.
+      If the command is an Ex to Ex or Ex to key mapping then the context
+      must be <code>undefined</code> or <code>false</code>.
+      </dd>
+
+      <dt id="vimapi_mapclear"><strong><code>mapclear(ctx: string)</code></strong></dt>
+      <dd>
+      Remove all user-defined mappings for the provided context.
+      </dd>
+
+      <dt id="vimapi_noremap"><strong><code>noremap(lhs: string, rhs: string, ctx: {string, array&lt;string&gt;})</code></strong></dt>
+      <dd>
+      Non-recursive map function. This will not create mappings to key maps
+      that aren't present in the default key map.
+      If no context is provided then the  mapping will be applied to each of
+      normal, insert, and visual mode.
+      </dd>
+    </dl>
+
+    <h3 id="vimapi_events">Events</h3>
+
+    <p>VIM mode signals a few events on the editor instance. For an example usage, see <a href="https://github.com/codemirror/CodeMirror/blob/5.55.0/demo/vim.html#L101-L110">demo/vim.html#L101</a>.</p>
+
+    <dl>
+      <dt id="vimapi_commanddone"><code><strong>"vim-command-done"</strong> (reason: undefined)</code></dt>
+      <dd>Fired on keypress and mousedown where command has completed or no command found.</dd>
+
+      <dt id="vimapi_keypress"><code><strong>"vim-keypress"</strong> (vimKey: string)</code></dt>
+      <dd>Fired on keypress, <code>vimKey</code> is in Vim's key notation.</dd>
+
+      <dt id="vimapi_modechange"><code><strong>"vim-mode-change"</strong> (modeObj: object)</code></dt>
+      <dd>Fired after mode change, <code>modeObj</code> parameter is a <code>{mode: string, ?subMode: string}</code> object. Modes: <code>"insert", "normal", "replace", "visual"</code>. Visual sub-modes: <code>"linewise", "blockwise"</code>.</dd>
     </dl>
 
     <h3 id="vimapi_extending">Extending VIM</h3>
@@ -3369,7 +3672,74 @@ editor.setOption("extraKeys", {
       command was prefixed with a
       <code><strong><a href="http://vimdoc.sourceforge.net/htmldoc/cmdline.html#cmdline-ranges">line range</a></strong></code>,
       <code>params.line</code> and <code>params.lineEnd</code> will
-      be set.
+      be set.</dd>
+
+      <dt id="vimapi_getRegisterController"><strong><code>getRegisterController()</code></strong></dt>
+      <dd>Returns the RegisterController that manages the state of registers
+      used by vim mode. For the RegisterController api see its
+      defintion <a href="https://github.com/CodeMirror/CodeMirror/blob/b2d26b4ccb1d0994ae84d18ad8b84018de176da9/keymap/vim.js#L1123">here</a>.
+      </dd>
+
+      <dt id='vimapi_buildkeymap'><strong><code>buildKeyMap()</code></strong></dt>
+      <dd>
+      Not currently implemented. If you would like to contribute this please open
+      a pull request on <a href="https://github.com/codemirror/CodeMirror">Github</a>.
+      </dd>
+
+      <dt id="vimapi_defineRegister"><strong><code>defineRegister()</code></strong></dt>
+      <dd> Defines an external register. The name should be a single character
+      that will be used to reference the register. The register should support
+      <code>setText</code>, <code>pushText</code>, <code>clear</code>, and <code>toString</code>.
+      See <a href="https://github.com/CodeMirror/CodeMirror/blob/b2d26b4ccb1d0994ae84d18ad8b84018de176da9/keymap/vim.js#L1055">Register</a> for a reference implementation.
+      </dd>
+
+      <dt id="vimapi_getVimGlobalState_"><strong><code>getVimGlobalState_()</code></strong></dt>
+      <dd>
+      Return a reference to the VimGlobalState.
+      </dd>
+
+      <dt id="vimapi_resetVimGlobalState_"><strong><code>resetVimGlobalState_()</code></strong></dt>
+      <dd>
+      Reset the default values of the VimGlobalState to fresh values. Any options
+      set with <code>setOption</code> will also be applied to the reset global state.
+      </dd>
+
+      <dt id="vimapi_maybeInitVimState_"><strong><code>maybeInitVimState_(cm: CodeMirror)</code></strong></dt>
+      <dd>
+      Initialize <code>cm.state.vim</code> if it does not exist. Returns <code>cm.state.vim</code>.
+      </dd>
+
+      <dt id="vimapi_handleKey"><strong><code>handleKey(cm: CodeMirror, key: string, origin: string)</code></strong></dt>
+      <dd>
+      Convenience function to pass the arguments to <code>findKey</code> and
+      call returned function if it is defined.
+      </dd>
+
+      <dt id="vimapi_findKey"><strong><code>findKey(cm: CodeMirror, key: string, origin: string)</code></strong></dt>
+      <dd>
+      This is the outermost function called by CodeMirror, after keys have
+      been mapped to their Vim equivalents. Finds a command based on the key
+      (and cached keys if there is a multi-key sequence). Returns <code>undefined</code>
+      if no key is matched, a noop function if a partial match is found (multi-key),
+      and a function to execute the bound command if a a key is matched. The
+      function always returns true.
+      </dd>
+
+      <dt id="vimapi_option_suppressErrorLogging"><code><strong>suppressErrorLogging</strong>: boolean</code></dt>
+      <dd>Whether to use suppress the use of <code>console.log</code> when catching an
+      error in the function returned by <code>findKey</code>.
+      Defaults to false.</dd>
+
+      <dt id="vimapi_exitVisualMode"><strong><code>exitVisualMode(cm: CodeMirror, ?moveHead: boolean)</code></strong></dt>
+      <dd> Exit visual mode. If moveHead is set to false, the CodeMirror selection
+      will not be touched. The caller assumes the responsibility of putting
+      the cursor in the right place.
+      </dd>
+
+      <dt id="vimapi_exitInsertMode"><strong><code>exitInsertMode(cm: CodeMirror)</code></strong></dt>
+      <dd>
+      Exit insert mode.
+      </dd>
     </dl>
 
 </section>

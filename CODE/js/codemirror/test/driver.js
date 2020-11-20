@@ -1,4 +1,4 @@
-var tests = [], filters = [], allNames = [];
+var tests = [], filters = [], nameCounts = {};
 
 function Failure(why) {this.message = why;}
 Failure.prototype.toString = function() { return this.message; };
@@ -12,13 +12,12 @@ function indexOf(collection, elt) {
 
 function test(name, run, expectedFail) {
   // Force unique names
-  var originalName = name;
-  var i = 2; // Second function would be NAME_2
-  while (indexOf(allNames, name) !== -1){
-    name = originalName + "_" + i;
-    i++;
+  if (nameCounts[name] == undefined){
+    nameCounts[name] = 2;
+  } else { 
+    // Append number if not first test with this name.
+    name = name + '_' + (nameCounts[name]++);
   }
-  allNames.push(name);
   // Add test
   tests.push({name: name, func: run, expectedFail: expectedFail});
   return name;
@@ -106,12 +105,16 @@ function near(a, b, margin, msg) {
   if (Math.abs(a - b) > margin)
     throw new Failure(label(a + " is not close to " + b + " (" + margin + ")", msg));
 }
-function eqPos(a, b, msg) {
-  function str(p) { return "{line:" + p.line + ",ch:" + p.ch + "}"; }
+function eqCharPos(a, b, msg) {
+  function str(p) { return "{line:" + p.line + ",ch:" + p.ch + ",sticky:" + p.sticky + "}"; }
   if (a == b) return;
   if (a == null) throw new Failure(label("comparing null to " + str(b), msg));
   if (b == null) throw new Failure(label("comparing " + str(a) + " to null", msg));
   if (a.line != b.line || a.ch != b.ch) throw new Failure(label(str(a) + " != " + str(b), msg));
+}
+function eqCursorPos(a, b, msg) {
+  eqCharPos(a, b, msg);
+  if (a) eq(a.sticky, b.sticky, msg ? msg + ' (sticky)' : 'sticky');
 }
 function is(a, msg) {
   if (!a) throw new Failure(label("assertion failed", msg));
