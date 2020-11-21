@@ -22,6 +22,8 @@ SGRAM_PARAMS|1,0,50,lin
 SGRAM_EXPONENT|0.5
 SGRAM_COLORMAP|jet(256)
 SGRAM_CLIM|0,2
+PNGQUANT_NCOLORS|16
+SGRAM_PNGQUANT_NCOLORS|32
 ```
 
 Default values are optimized for 100 Hz sampling rate:
@@ -33,9 +35,9 @@ Default values are optimized for 100 Hz sampling rate:
    - Yscale = `lin` for linear (default) or `log` (logarithmic);
 - `SGRAM_EXPONENT`: power spectrum amplitude exponent (default is 0.5);
 - `SGRAM_COLORMAP`: colormap (default is jet);
-- `SGRAM_CLIM`: 2-element vector as minimum, maximum values for colormap limits (default is 0-2).
+- `SGRAM_CLIM`: 2-element vector as minimum, maximum values for colormap limits (default is 0-2);
 
-When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images. and update follows also broomwagon rules. The additional computing time is not significant. But, spectrogram images are about 3 times bigger than waveform's. Thus, the total storage volume of Sefran3 will be about 4 times bigger than usual.
+When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images, and updated following broomwagon rules. The additional computing time is not significant. But, a spectrogram image are about 1.5 times bigger than waveform's images (low+high speed total). For that reason, we introduced a better compression of all PNG images using open-source program *pngquant*, with a gain of about 70% in size (see next section for details). Final result is a reduction of Sefran3 storage size after activating the spectrogram! ;-)
 
 For visualization, there is several possibilities:
 - a new icon is available in the main page menu or in the upper-left control panel to toggle waveform/spectrogram view;
@@ -46,14 +48,22 @@ For visualization, there is several possibilities:
 
    Hot keys are disabled when editing the event form; you must click outside the field inputs to reactivate them.
 
-2. Another sefran3 improvement: PNG images are now compressed using the external program *pngquant*, which optimizes the colormap. Gain of size is about 70%. It is strongly recommended to install the utility (`apt get pngquant`), which is set in a new WEBOBS.rc variable `PGRM_PNGQUANT`. If the program exists, it will compress the new images, including of course the spectrogram's images.
+2. Another sefran3 improvement: PNG images are now compressed using the external program *pngquant*, which optimizes the colormap. Gain of size on Sefran3 images is about 70%. It is strongly recommended to install the utility (`apt install pngquant`), which is set in a new WEBOBS.rc variable `PRGM_PNGQUANT`. If the program exists, it will automatically compress the new images (waveforms and spectrograms). Two additionnal variables in SEFRAN3.conf are:
+```
+PNGQUANT_NCOLORS|16
+SGRAM_PNGQUANT_NCOLORS|32
+```
 
-We propose a script to compress existing sefran3 archives: `SETUP/compress-SEFRAN`. A basic benchmark shows that a single full year of sefran3 archive may take over a day of processing. Administrators who want to make their own compression must be aware that unfortunately, *pngquant* looses any user's tag header in the original PNG. To rewrite the sefran3 tags in compressed files, you might use the programs `identify` and `convert` as follows:
+where `PNGQUANT_NCOLORS` is the number of colors for waveform compression (default is 16), and `SGRAM_PNGQUANT_NCOLORS` the number of colors for spectrogram compression (default is 32). These values can be reduced to make smaller files, but this might produce unwanted solarization effects, especially visible on the spectrogram.
+
+We also propose a bash script `SETUP/compress-SEFRAN` to compress existing sefran3 archives. A basic benchmark shows that a single full year of sefran3 archive may take over a day of processing on a standard computer, but a reduction of about 70% of the total size of archive. Administrators who want to make their own compression must be aware that unfortunately, *pngquant* ignores user's tag header written in the original PNG file. To rewrite the Sefran3 tags in compressed files (needed by broom wagon and display of data statistics), you might use the program `identify` to export tags from the original file first, then `convert` to rewrite them in the compressed file:
 
 ```
-tag=$(identify -format %[sefran3*] $INPUT|sed -e 's/sefran3/ -set sefran3/g;s/=/ /g'|tr -d '\n')
+tag=$(identify -format %[sefran3*] $INPUT | sed -e 's/sefran3/ -set sefran3/g;s/=/ /g' | tr -d '\n')
 cat $INPUT | pngquant 16 | convert - $tag $OUTPUT
 ```
+
+These two lines make the core of `compress-SEFRAN` script.
 
 ### Enhancements
 
