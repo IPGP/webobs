@@ -59,10 +59,16 @@ $(document).keypress(function(event) {
 	var target = event.target || event.srcElement;
 	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
 		var x = event.charCode || event.keyCode;
-		if (x == 102 || x == 70) showsgram(); // f ot F key
+		var y = parseInt($('#sgramslider').val());
+		if (x == 102 || x == 70) { // f ot F key
+			if (y > 0) showsgram();
+			else {
+				$('#sgramslider').val(SCB.SGRAMOPACITY*10);
+  				$('.sgram').css('opacity',SCB.SGRAMOPACITY);
+			}
+		}
 		if (x == 101 || x == 69) showmctags(); // e or E key
 		if (x == 116 || x == 84) {
-			var y = parseInt($('#sgramslider').val());
 			if (x == 116) y = (y + 1) % 11; // t key
 			if (x == 84)  y = (y + 10) % 11; // T key
 			$('#sgramslider').val(y);
@@ -102,8 +108,10 @@ function showmctags() {
 
 // ---- toggle visibility of sgram
 function showsgram() {
+	/*$('.sgram').toggle();*/
 	$('.sgram').css('opacity', function(i, opacity) {
-	    return (opacity < 1) ? 1 : 0;
+		var y = parseInt($('#sgramslider').val())/10;
+	   return (opacity == 0) ? y : 0;
 	});
 	return true;
 }

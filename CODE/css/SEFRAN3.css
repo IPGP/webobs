@@ -290,16 +290,15 @@ input[type=submit] {
 	/*height and left to be computed at runtime*/
 }
 .sgram {
+	display: inline-block;
    position: absolute;
-	opacity: 0;
    z-index: 2;
-	/*DYNAMIC opacity: js showsgram()*/
+	/*DYNAMIC opacity: $SEFRAN3{SGRAM_OPACITY}*/
 }
 .sgramhour {
-	display: block;
 	left: 0px;
 	top: 0px;
-	/*DYNAMIC opacity: js showsgram()*/
+	/*DYNAMIC opacity: $SEFRAN3{SGRAM_OPACITY}*/
 }
 .slidecontainer {
   	width: 100%; /* Width of the outside container */

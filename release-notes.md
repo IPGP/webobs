@@ -22,6 +22,7 @@ SGRAM_PARAMS|1,0,50,lin
 SGRAM_EXPONENT|0.5
 SGRAM_COLORMAP|jet(256)
 SGRAM_CLIM|0,2
+SGRAM_OPACITY|0.5
 PNGQUANT_NCOLORS|16
 SGRAM_PNGQUANT_NCOLORS|32
 ```
@@ -36,6 +37,7 @@ Default values are optimized for 100 Hz sampling rate:
 - `SGRAM_EXPONENT`: power spectrum amplitude exponent (default is 0.5);
 - `SGRAM_COLORMAP`: colormap (default is jet);
 - `SGRAM_CLIM`: 2-element vector as minimum, maximum values for colormap limits (default is 0-2);
+- `SGRAM_OPACITY`: initial opacity of spectrogram over waveform image (default is 0.5).
 
 When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images, and updated following broomwagon rules. The additional computing time is not significant. But, a spectrogram image are about 1.5 times bigger than waveform's images (low+high speed total). For that reason, we introduced a better compression of all PNG images using open-source program *pngquant*, with a gain of about 70% in size (see next section for details). Final result is a reduction of Sefran3 storage size after activating the spectrogram! ;-)
 
