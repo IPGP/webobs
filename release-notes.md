@@ -15,26 +15,27 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 1. `!!` Sefran3 includes a continuous spectrogram, which is activated by default. To disable this feature you must set `SGRAM_ACTIVE` to `NO`. New variables are:
 
 ```
-PATH_IMAGES_SGRAM|sgram/low
-PATH_IMAGES_SGRAM_HIGH|sgram/high
+PATH_IMAGES_SGRAM|sgram
 SGRAM_ACTIVE|Y
 SGRAM_FILTER|hpbu6,0.2
-SGRAM_WINDOW_SECOND|1
+SGRAM_PARAMS|1,0,50,lin
 SGRAM_EXPONENT|0.5
-SGRAM_FREQSCALE|0,50,lin
 SGRAM_COLORMAP|jet(256)
 SGRAM_CLIM|0,2
 ```
 
 Default values are optimized for 100 Hz sampling rate:
 - `SGRAM_FILTER`: signal filtering, same syntax as for `SEFRAN3_CHANNELS` file (default is `hpbu6,0.2` for a highpass Butterworth 6th-order 0.2 Hz cut-off frequency filter);
-- `SGRAM_WINDOW_SECOND`: time window for FFT in seconds (default is 1 s);
+- `SGRAM_PARAMS`: 4-element vector of coma separated values, as:
+   - W = time step window for FFT (in seconds, default is 1 s),
+   - Fmin = minimum frequency (in Hz, default is 0 Hz),
+   - Fmax = maximum frequency (in Hz, default is 50 Hz),
+   - Yscale = `lin` for linear (default) or `log` (logarithmic);
 - `SGRAM_EXPONENT`: power spectrum amplitude exponent (default is 0.5);
-- `SGRAM_FREQSCALE`: 3-element vector as minimum frequency, maximum frequency, and scale `lin` or `log` (default is 0-50 Hz linear);
 - `SGRAM_COLORMAP`: colormap (default is jet);
 - `SGRAM_CLIM`: 2-element vector as minimum, maximum values for colormap limits (default is 0-2).
 
-When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images. It follows also broomwagon rules. Note that spectrogram images are about 3 times bigger than waveform's. Thus, the total storage volume of Sefran3 will be about 4 times bigger than usual.
+When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images. and update follows also broomwagon rules. The additional computing time is not significant. But, spectrogram images are about 3 times bigger than waveform's. Thus, the total storage volume of Sefran3 will be about 4 times bigger than usual.
 
 For visualization, there is several possibilities:
 - a new icon is available in the main page menu or in the upper-left control panel to toggle waveform/spectrogram view;
@@ -44,6 +45,15 @@ For visualization, there is several possibilities:
 - hot keys 'E' or 'e' have been added to toggle MC event tags display.
 
    Hot keys are disabled when editing the event form; you must click outside the field inputs to reactivate them.
+
+2. Another sefran3 improvement: PNG images are now compressed using the external program *pngquant*, which optimizes the colormap. Gain of size is about 70%. It is strongly recommended to install the utility (`apt get pngquant`), which is set in a new WEBOBS.rc variable `PGRM_PNGQUANT`. If the program exists, it will compress the new images, including of course the spectrogram's images.
+
+We propose a script to compress existing sefran3 archives: `SETUP/compress-SEFRAN`. A basic benchmark shows that a single full year of sefran3 archive may take over a day of processing. Administrators who want to make their own compression must be aware that unfortunately, *pngquant* looses any user's tag header in the original PNG. To rewrite the sefran3 tags in compressed files, you might use the programs `identify` and `convert` as follows:
+
+```
+tag=$(identify -format %[sefran3*] $INPUT|sed -e 's/sefran3/ -set sefran3/g;s/=/ /g'|tr -d '\n')
+cat $INPUT | pngquant 16 | convert - $tag $OUTPUT
+```
 
 ### Enhancements
 
@@ -59,7 +69,7 @@ ORBIT_ERROR_RATIO|1,2
 
    and will multiply by 1 final-orbit errors (orbit = 0), and by 2 any non-final orbits (orbit > 0). Set this variable empty, or 1 to keep previous behavior.
 
-3. Since 2020, there no more free access website where SRTM1 tiles can be downloaded anonymously. If you have already used SRTM1 data in your procs, the tiles have been stored in your `PATH_DATA_DEM_SRTM1` and are still available offline for mapping on the corresponding areas. But to download new tiles or at first install, you now need to register at https://urs.earthdata.nasa.gov (free). User and password login must be specified in a new variable `EARTHDATA_LOGIN` in `WEBOBS.rc`:
+3. Since 2020, there no more free access website where SRTM1 tiles can be downloaded anonymously. If you have already used SRTM1 data in your procs, the tiles have been stored in your `PATH_DATA_DEM_SRTM1` and are still available offline for mapping on the corresponding areas. But to download new tiles or at first install, you now need to register at [earthdata.nasa.gov](https://urs.earthdata.nasa.gov) (free). User and password login must be specified in a new variable `EARTHDATA_LOGIN` in `WEBOBS.rc`:
 
 ```
 EARTHDATA_LOGIN|user,password
