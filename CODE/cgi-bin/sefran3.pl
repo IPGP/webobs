@@ -87,6 +87,7 @@ my $high   = $cgi->url_param('high');
 my $sx     = $cgi->url_param('sx') // 0;
 my $replay = $cgi->url_param('replay');
 my $limit  = $cgi->url_param('limit');
+my $sgramo = $cgi->url_param('sgramslider');
 # $hideloc is read below
 
 # ---- analysis (depouillement) mode ?
@@ -717,7 +718,7 @@ if ($date) {
 			if ($sgram) {
 				print "<BR><DIV class=\"slidecontainer\"><A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showsgram_help'}')\">",
 					"<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> ",
-					"<input type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" id=\"sgramslider\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Adjust Spectrogram opacity'}')\"></div>\n";
+					"<INPUT type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" name=\"sgramslider\" id=\"sgramslider\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Adjust Spectrogram opacity'}')\"></div>\n";
 			}
 		print "</div>";
 	print "</div>";

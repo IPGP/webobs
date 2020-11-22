@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2020-11-19
+%	Updated: 2020-11-22
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -282,6 +282,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						ch_asym = NaN;
 						ch_samp = 0;
 						channel_rate = NaN;
+						ch_amax = NaN;
 					end
 					tag_stat_rate{n} = sprintf('%g',channel_rate);
 					tag_stat_samp{n} = sprintf('%g',ch_samp);
@@ -415,6 +416,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						SG = split(sgp{n},',');
 						sgramwins = str2double(SG(1));
 						sgramflim = str2double(SG(2:3));
+						sgramylog = '0';
 						fdom = NaN;
 						k = ~isnan(D(n).d);
 						if numel(D(n).d(k))>=sgramwins*D(n).samp % needs at least sgramwindow s of valid data
