@@ -60,12 +60,16 @@ $(document).keypress(function(event) {
 	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
 		var x = event.charCode || event.keyCode;
 		var y = parseInt($('#sgramslider').val());
-		if (x == 102 || x == 70) { // f ot F key
+		if (x == 102) { // f key
 			if (y > 0) showsgram();
 			else {
 				$('#sgramslider').val(SCB.SGRAMOPACITY*10);
   				$('.sgram').css('opacity',SCB.SGRAMOPACITY);
 			}
+		}
+		if (x == 70) { // F key
+			$('#sgramslider').val(10);
+  			$('.sgram').css('opacity',1);
 		}
 		if (x == 101 || x == 69) showmctags(); // e or E key
 		if (x == 116 || x == 84) {
