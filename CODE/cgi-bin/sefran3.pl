@@ -177,6 +177,8 @@ my $prog ="/cgi-bin/$WEBOBS{CGI_SEFRAN3}?s3=$s3&mc=$mc3";
 
 $SEFRAN3{REF_NORTC} ||= 0;
 $MC3{NEW_P_CLEAR_S} ||= 0;
+$SEFRAN3{SGRAM_OPACITY} ||= 0.5;
+$SEFRAN3{PATH_IMAGES_SGRAM} ||= "sgram";
 
 # ---- Date and time for now (UTC)...
 my ($Ya,$ma,$da,$Ha,$Ma,$Sa) = split('/',strftime('%Y/%m/%d/%H/%M/%S',gmtime));
@@ -747,7 +749,6 @@ if ($date) {
 		my $png_file = "$_".($high ? "_high":"").".png";
 		if ( -f $png_file ) {
 			my $png_web = "$SEFRAN3{PATH_WEB}/$Y/$Y$m$d/$SEFRAN3{PATH_IMAGES_MINUTE}/$png".($high ? "_high":"").".png";
-			#my $png_sgram = "$SEFRAN3{PATH_WEB}/$Y/$Y$m$d/".($high ? "$SEFRAN3{PATH_IMAGES_SGRAM_HIGH}/${png}s_high":"$SEFRAN3{PATH_IMAGES_SGRAM}/${png}s").".png";
 			my $png_sgram = "$SEFRAN3{PATH_WEB}/$Y/$Y$m$d/$SEFRAN3{PATH_IMAGES_SGRAM}/${png}s.png";
 			my $mseed = "$mseedreq&t1=$Y,$m,$d,$H,$M,0&ds=60";
 
