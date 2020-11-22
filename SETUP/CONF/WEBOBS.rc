@@ -225,7 +225,7 @@ PRGM_MATLAB|/usr/local/bin/matlab -nojvm -display :9
 PRGM_MATLAB_NODISPLAY|/usr/local/bin/matlab -nojvm -nodisplay
 PRGM_GS|/usr/bin/gs
 #PRGM_CONVERT|/usr/bin/convert
-PRGM_CONVERT|env LD_LIBRARY_PATH='' /usr/bin/convert
+PRGM_CONVERT|export LD_LIBRARY_PATH='' && /usr/bin/convert
 CONVERT_COLORSPACE|-colorspace sRGB
 PRGM_IDENTIFY|/usr/bin/identify
 PRGM_PNGQUANT|/usr/bin/pngquant
