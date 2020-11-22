@@ -1,36 +1,63 @@
 #!/bin/bash
 # compress existing SEFRAN3 files
+# Syntax: compress-SEFRAN [-run] [CONF]
+#   - without argument: detects all Sefran3 in the local archives and use interactive mode;
+#   - option '-run': execute the compressing process on archives (batch mode);
+#   - option '-dry': dry run (batch mode);
+#   - option [CONF]: use only Sefran3 configuration file CONF to identify the archive;
 #
 # Author: F. Beauducel
 # Created: 2020-11-20 in Yogyakarta, Indonesia
-# Updated: 2020-11-21
+# Updated: 2020-11-22
 
-CONFDIR=/etc/webobs.d/
-if [ ! -d "$CONFDIR" ]; then
-   echo "no active webobs detected. Aborting."
-   exit 0
-fi
+# checks pngquant
 if [ -z $(which convert) ]; then
    echo "you must install pngquant first. Aborting."
    exit 0
 fi
 
+# -run option: forces execution (batch mode)
+if [[ $1 == '-run' ]]; then
+   dry=false
+   shift
+fi
+
+# -dry option: dry run (batch mode)
+if [[ $1 == '-dry' ]]; then
+   dry=true
+   shift
+fi
+
+# CONF not specified: detects all Sefran3 in the local active webobs
+if [ -z $2 ]; then
+   CONFDIR=/etc/webobs.d/
+   if [ ! -d "$CONFDIR" ]; then
+      echo "no active webobs detected. Aborting."
+      exit 0
+   fi
+   SEFRAN_ROOT=$(grep -E "^SEFRAN_ROOT\|" ${CONFDIR}WEBOBS.rc | sed -e 's/.*|//')
+   C=$(find $CONFDIR -maxdepth 1 -name 'SEFRAN3*.conf' | xargs grep -l -E "^ROOT\|")
+else
+   C=$2
+fi
+
 NCOLORS=16
 PROPELLER=('|' '/' '-' '\')
 TMP=/tmp/sefranpngquant.png
-SEFRAN_ROOT=$(grep -E "^SEFRAN_ROOT\|" ${CONFDIR}WEBOBS.rc | sed -e 's/.*|//')
-C=$(find $CONFDIR -maxdepth 1 -name 'SEFRAN3*.conf')
-echo "Found $(echo $C | wc -l) sefran3 in your archives. The compressing process will modify your orginal files. It is strongly recommended to make a backup first."
-read -r -p "Confirm compressing process (it will take hours) or make a dry run [y/d/N]? " reply
-case $reply in
-	[yY])
-		dry=$false;;
-   [dD])
-      dry=$true;;
-	*)
-		echo "Abort."
-      exit 64;;
-esac
+echo "Found $(echo $C | wc -w) sefran3 in your archives. The compressing process will modify your orginal files. It is strongly recommended to make a backup first."
+
+if [ -z $dry ]; then
+   read -r -p "Confirm compressing process (it will take hours) or make a dry run [y/d/N]? " reply
+   case $reply in
+	   [yY])
+		   dry=false;;
+      [dD])
+         dry=true;;
+	   *)
+		   echo "Abort."
+         exit 64;;
+   esac
+fi
 
 for s in $C; do
 	if [[ ! -z $(grep -E "^ROOT\|" $s) ]]; then
@@ -47,9 +74,9 @@ for s in $C; do
          n=1
          for d in $(ls -d $y/*); do
             for f in $(find $d -name "*.png"); do
-               if [ ! $dry ]; then
+               if [ $dry != true ]; then
                   tag=$(identify -format %[sefran3*] $f|sed -e 's/sefran3/ -set sefran3/g;s/=/ /g'|tr -d '\n')
-                  cat $f | pngquant $NCOLORS | convert - $tag $TMP && mv -f $TMP $f
+                  #cat $f | pngquant $NCOLORS | convert - $tag $TMP && mv -f $TMP $f
                fi
                p=$(printf "%03.0f" $(($n*100/$NFILE)))
                echo -ne "\b\b\b\b\b\b$p% ${PROPELLER[$i]}"
