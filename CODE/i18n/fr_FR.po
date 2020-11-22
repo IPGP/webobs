@@ -906,7 +906,7 @@ msgid "showmctags_help"
 msgstr "Masquer/afficher les événements MC (touche E)"
 
 msgid "showsgram_help"
-msgstr "Masquer/afficher le spectrogramme touche F)<br>touches t/T pour réduire/augmenter la transparence"
+msgstr "Masquer/afficher le spectrogramme touche S)<br>touches t/T pour réduire/augmenter la transparence"
 
 msgid "Adjust Spectrogram opacity"
 msgstr "Ajuster la transparence du spectrogramme"

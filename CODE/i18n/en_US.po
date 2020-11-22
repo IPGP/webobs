@@ -204,4 +204,4 @@ msgid "showmctags_help"
 msgstr "Show/Hide MC events (or E-key)"
 
 msgid "showsgram_help"
-msgstr "Show/Hide Spectrogram (or F-key)<br>t/T keys to decrease/increase transparency"
+msgstr "Show/Hide Spectrogram (or S-key)<br>Use t/T keys to decrease/increase transparency"

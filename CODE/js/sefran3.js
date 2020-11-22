@@ -60,14 +60,14 @@ $(document).keypress(function(event) {
 	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
 		var x = event.charCode || event.keyCode;
 		var y = parseInt($('#sgramslider').val());
-		if (x == 102) { // f key
+		if (x == 115) { // s key
 			if (y > 0) showsgram();
 			else {
 				$('#sgramslider').val(SCB.SGRAMOPACITY*10);
   				$('.sgram').css('opacity',SCB.SGRAMOPACITY);
 			}
 		}
-		if (x == 70) { // F key
+		if (x == 83) { // S key
 			$('#sgramslider').val(10);
   			$('.sgram').css('opacity',1);
 		}
