@@ -16,6 +16,13 @@ if [ -z $(which convert) ]; then
    exit 0
 fi
 
+CONFDIR=$(readlink /etc/webobs.d)
+if [ ! -d "$CONFDIR" ]; then
+   echo "no active webobs detected. Aborting."
+   exit 0
+fi
+SEFRAN_ROOT=$(grep -E "^SEFRAN_ROOT\|" ${CONFDIR}/WEBOBS.rc | sed -e 's/.*|//')
+
 # -run option: forces execution (batch mode)
 if [[ $1 == '-run' ]]; then
    dry=false
@@ -30,12 +37,6 @@ fi
 
 # CONF not specified: detects all Sefran3 in the local active webobs
 if [ -z $2 ]; then
-   CONFDIR=/etc/webobs.d/
-   if [ ! -d "$CONFDIR" ]; then
-      echo "no active webobs detected. Aborting."
-      exit 0
-   fi
-   SEFRAN_ROOT=$(grep -E "^SEFRAN_ROOT\|" ${CONFDIR}WEBOBS.rc | sed -e 's/.*|//')
    C=$(find $CONFDIR -maxdepth 1 -name 'SEFRAN3*.conf' | xargs grep -l -E "^ROOT\|")
 else
    C=$2
@@ -60,12 +61,12 @@ if [ -z $dry ]; then
 fi
 
 for s in $C; do
-	if [[ ! -z $(grep -E "^ROOT\|" $s) ]]; then
-      ROOT=$(grep -E "^ROOT\|" $s | sed -e 's/.*|//' -e "s|\$WEBOBS{SEFRAN_ROOT}|${SEFRAN_ROOT}|")
+   ROOT=$(grep -E "^ROOT\|" $s | sed -e 's/.*|//' -e "s|\$WEBOBS{SEFRAN_ROOT}|${SEFRAN_ROOT}|")
+	if [ -d "$ROOT" ]; then
       NAME=$(grep -E "^TITRE\|" $s | sed -e 's/.*|//')
-      NFILE=$(find $ROOT -type f -name "*.png" | wc -l)
+      echo -n "---> Compressing sefran3 '$NAME': "
       SIZE=$(du -sh $ROOT | sed -E 's/\s+/ /g')
-	   echo "---> Compressing sefran3 '$NAME': $NFILE files, $SIZE."
+      echo "$SIZE."
       cd $ROOT
       for y in $(ls -d ????); do
          echo -n "   Year $y 000%  "
@@ -76,7 +77,7 @@ for s in $C; do
             for f in $(find $d -name "*.png"); do
                if [ $dry != true ]; then
                   tag=$(identify -format %[sefran3*] $f|sed -e 's/sefran3/ -set sefran3/g;s/=/ /g'|tr -d '\n')
-                  #cat $f | pngquant $NCOLORS | convert - $tag $TMP && mv -f $TMP $f
+                  cat $f | pngquant $NCOLORS | convert - $tag $TMP && mv -f $TMP $f
                fi
                p=$(printf "%03.0f" $(($n*100/$NFILE)))
                echo -ne "\b\b\b\b\b\b$p% ${PROPELLER[$i]}"
