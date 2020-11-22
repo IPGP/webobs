@@ -44,7 +44,8 @@ When the spectrogram is activated, minute and hourly images are made at low and 
 For visualization, there is several possibilities:
 - a new icon is available in the main page menu or in the upper-left control panel to toggle waveform/spectrogram view;
 - the control panel includes also a manual slide range button to control opacity of the spectrogram;
-- hot key 'F' or 'f' can be press anytime to toggle waveform/spectrogram view;
+- hot key 'f' can be press anytime to toggle waveform/spectrogram view at default or current opacity value;
+- hot key 'F' forces the spectrogram view at maximum opacity (no transparency);
 - hot keys 't' to lower transparency by 1/10 step (increases opacity), and 'T' to increase by 1/10 (decreases opacity);
 - hot keys 'E' or 'e' have been added to toggle MC event tags display.
 
@@ -57,6 +58,12 @@ SGRAM_PNGQUANT_NCOLORS|32
 ```
 
 where `PNGQUANT_NCOLORS` is the number of colors for waveform compression (default is 16), and `SGRAM_PNGQUANT_NCOLORS` the number of colors for spectrogram compression (default is 32). These values can be reduced to make smaller files, but this might produce unwanted solarization effects, especially visible on the spectrogram.
+
+A known issue is an error in sefran3 using *convert* program, due to missing dynamic library. This might be solved by the following `WEBOBS.rc` variable:
+
+```
+PRGM_CONVERT|export LD_LIBRARY_PATH='' && /usr/bin/convert
+```
 
 We also propose a bash script `SETUP/compress-SEFRAN` to compress existing sefran3 archives. A basic benchmark shows that a single full year of sefran3 archive may take over a day of processing on a standard computer, but a reduction of about 70% of the total size of archive. Administrators who want to make their own compression must be aware that unfortunately, *pngquant* ignores user's tag header written in the original PNG file. To rewrite the Sefran3 tags in compressed files (needed by broom wagon and display of data statistics), you might use the program `identify` to export tags from the original file first, then `convert` to rewrite them in the compressed file:
 
