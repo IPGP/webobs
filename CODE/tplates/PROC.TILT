@@ -10,7 +10,7 @@ OWNCODE|?
 RAWFORMAT|
 # raw data path
 RAWDATA|
-# URN link to data 
+# URN link to data
 #URNDATA|/rawdata/myproc
 # time zone for outputs
 TZ|+0
@@ -64,7 +64,7 @@ DEM_COPYRIGHT|
 # do not show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
-# file for background time referenced events 
+# file for background time referenced events
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
@@ -102,7 +102,7 @@ MOTION_MAFILTER|1
 MOTION_SCALE_RAD|0
 MOTION_MIN_SIZE_KM|10
 MOTION_COLORMAP|jet(64)
-MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'interp'
+MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'saturation',.8,'interp'
 MOTION_TITLE|{\fontsize{14}{\bf$name - Motion} ($timescale)}
 
 VECTORS_TITLE|{\fontsize{14}{\bf$name} ($timescale)}

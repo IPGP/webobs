@@ -97,6 +97,9 @@ function varargout=dem(x,y,z,varargin)
 %		Activates the 'lake' option only above ZMIN elevations. For 
 %		example, use 'lakezmin',0 to limit lake detection on land.
 %
+%	'Saturation',N
+%		Changes the whole image color saturation by a factor of N.
+%
 %	'Watermark',N
 %		Makes the whole image lighter by a factor of N.
 %
@@ -165,7 +168,7 @@ function varargout=dem(x,y,z,varargin)
 %
 %	--- Informations ---
 %
-%	Colormaps are Mx3 RGB matrix so it is easy to modify saturation 
+%	Colormaps are Mx3 RGB matrix so it is easy to modify contrast 
 %	(CMAP.^N), set darker (CMAP/N), lighter (1 - 1/N + CMAP/N), inverse
 %	it (flipud(CMAP)), etc...
 %
@@ -178,9 +181,14 @@ function varargout=dem(x,y,z,varargin)
 %
 %	Author: François Beauducel <beauducel@ipgp.fr>
 %	Created: 2007-05-17 in Guadeloupe, French West Indies
-%	Updated: 2017-03-29
+%	Updated: 2020-06-01
 
 %	History:
+%	[2020-06-01] v2.8
+%	    - new option 'saturation' to change colormaps
+%	    - tick label decimals with smaller font size
+%	[2019-06-17] v2.7
+%		- fix an issue for single RGB color in sea/land color option
 %	[2017-03-29] v2.6
 %		- fix in 'lakezmin' option (thanks to Mustafa Çomo?lu)
 %	[2017-01-09] v2.5
@@ -283,6 +291,12 @@ end
 
 if length(x) ~= size(z,2) || length(y) ~= size(z,1)
 	error('If Z has a size of [M,N], X must have a length of N, and Y a length of M.')
+end
+
+if size(z,3) == 3
+	rgb = true;
+else
+	rgb = false;
 end
 
 % OPTIONS and PARAM/VALUE arguments
@@ -397,6 +411,15 @@ if s==0
 	zratio = 1; % default
 end
 
+% SATURATION param/value
+[s,csat] = checkparam(varargin,'saturation',@isscalar);
+nargs = nargs + 2;
+if s
+	csat = abs(csat);
+else
+	csat = 1; % default
+end
+
 % WATERMARK param/value
 [s,wmark] = checkparam(varargin,'watermark',@isscalar);
 nargs = nargs + 2;
@@ -472,6 +495,20 @@ end
 [s,crop] = checkparam(varargin,'crop',@isvec,4);
 nargs = nargs + 2;
 
+% CLRGB param/value
+[s,clrgb] = checkparam(varargin,'CLRGB',@isrgb);
+nargs = nargs + 2;
+if s==0
+	clrgb = .5*ones(1,3); % default (mid-grey)
+end
+
+% CLLEVEL param/value
+[s,cllevel] = checkparam(varargin,'CLLevel',@isvec,1:2);
+nargs = nargs + 2;
+if s==0
+	cllevel = [0 0]; % default (auto)
+end
+
 % options without argument value
 km = any(strcmpi(varargin,'km'));
 dec = any(strcmpi(varargin,'cartesian') | strcmpi(varargin,'dec'));
@@ -546,7 +583,7 @@ if numel(crop)==4
 	ky = find(y >= crop(3) & y <= crop(4));
 	x = x(kx);
 	y = y(ky);
-	z = z(ky,kx);
+	z = z(ky,kx,:);
 end
 
 % decimates data to avoid disk swap/out of memory...
@@ -559,7 +596,7 @@ end
 if n > 1
 	x = x(1:n:end);
 	y = y(1:n:end);
-	z = z(1:n:end,1:n:end);
+	z = z(1:n:end,1:n:end,:);
 	fprintf('DEM: data has been decimated by a factor of %d...\n',n);
 end
 
@@ -590,14 +627,14 @@ if decim && n < 0
 	fprintf('DEM: data has been oversampled by a factor of %d...\n',-n);
 end
 
-if inter
+if ~rgb && inter
 	z = fillgap(x,y,z);
 end
 
 % -------------------------------------------------------------------------
 % --- Process lighting
 
-if dz > 0
+if ~rgb && dz > 0
 	% first check if colormaps have the minimum required size
 	if size(csea,1) < 2
 		csea = repmat(csea,256,1);
@@ -681,22 +718,36 @@ if dz > 0
 		end
 	end
 
-	if wmark
-		I = watermark(I,wmark);
-	end
 	txt = '';
 	
+elseif rgb
+	I = z;
+	txt = '';
+
 else
-	
 	I = repmat(shiftdim(sea_color,-1),size(z));
 	cmap = repmat(sea_color,[256,1]);
 	txt = 'Mak Byur!';	% Splash !
 end
 
 % -------------------------------------------------------------------------
+% --- applies saturation and watermark to image and cmap (for legend)
+
+if csat~=1
+	I = saturation(I,csat);
+	cmap = saturation(cmap,csat);
+end
+
+if wmark
+	I = watermark(I,wmark);
+	cmap = watermark(cmap,wmark);
+end
+
+
+% -------------------------------------------------------------------------
 % --- ends the function when 'noplot' option is on
 if noplot
-	varargout{1} = struct('x',x,'y',y,'z',z,'rgb',I);
+	varargout{1} = struct('x',x,'y',y,'z',z,'rgb',I,'cmap',cmap);
 	return
 end
 
@@ -770,20 +821,28 @@ if dec || dms
 	
 	if ddx == 0
 		ddx = dtick(diff(xlim),dms);
+		ddxn = 0;
+	else
+		ddxn = double(ddx<0);
+		ddx = abs(ddx);
 	end
 	if ddy == 0
 		ddy = dtick(diff(ylim),dms);
+		ddyn = 0;
+	else
+		ddyn = double(ddy<0);
+		ddy = abs(ddy);
 	end
-	xtick = (ddx*ceil(xlim(1)/ddx)):ddx:xlim(2);
+   	xtick = (ddx*ceil(xlim(1)/ddx)):ddx:xlim(2);
 	for xt = xtick(1:2:end)
 		dt = ddx - max(0,xt + ddx - xlim(2));
 		patch(repmat(xt + dt*[0,1,1,0]',[1,2]),[ylim(1) - bwy*[0,0,1,1];ylim(2) + bwy*[0,0,1,1]]','k','clipping','off')
 		if fs > 0
 			if ~isempty(regexp(tpos,'north','once'))
-				text(xt,ylim(2) + 1.2*bwy,deg2dms(xt,dlon,dec),'FontSize',fs,'FontWeight',fw, ...
+				text(xt + dt*ddxn,ylim(2) + 1.2*bwy,deg2dms(xt + dt*ddxn,dlon,dec,fs),'FontSize',fs,'FontWeight',fw, ...
 					'HorizontalAlignment','center','VerticalAlignment','bottom');
 			else
-				text(xt,ylim(1) - 1.2*bwy,deg2dms(xt,dlon,dec),'FontSize',fs,'FontWeight',fw, ...
+				text(xt + dt*ddxn,ylim(1) - 1.2*bwy,deg2dms(xt + dt*ddxn,dlon,dec,fs),'FontSize',fs,'FontWeight',fw, ...
 					'HorizontalAlignment','center','VerticalAlignment','top');
 			end
 		end
@@ -795,10 +854,10 @@ if dec || dms
 		patch([xlim(1) - bwx*[0,0,1,1];xlim(2) + bwx*[0,0,1,1]]',repmat(yt + dt*[0,1,1,0]',[1,2]),'k','clipping','off')
 		if fs > 0
 			if ~isempty(regexp(tpos,'east','once'))
-				text(xlim(2) + 1.2*bwx,yt,deg2dms(yt,dlat,dec),'FontSize',fs,'FontWeight',fw, ...
+				text(xlim(2) + 1.2*bwx,yt + dt*ddyn,deg2dms(yt + dt*ddyn,dlat,dec,fs),'FontSize',fs,'FontWeight',fw, ...
 					'HorizontalAlignment','center','VerticalAlignment','top','rotation',90);
 			else
-				text(xlim(1) - 1.2*bwx,yt,deg2dms(yt,dlat,dec),'FontSize',fs,'FontWeight',fw, ...
+				text(xlim(1) - 1.2*bwx,yt + dt*ddyn,deg2dms(yt + dt*ddyn,dlat,dec,fs),'FontSize',fs,'FontWeight',fw, ...
 					'HorizontalAlignment','center','VerticalAlignment','bottom','rotation',90);
 			end
 		end
@@ -813,13 +872,22 @@ if clines
 	dz = diff(zlim);
 	% empirical ratio between horizontal extent and elevation interval (dz)
 	%rzh = dz/min(diff(x([1,end]))*cosd(mean(dlat)),diff(y([1,end])))/degkm/4e2;
-	dd = dtick(dz);
+	% major level lines
+	if cllevel(1)==0
+		dd = dtick(dz);
+	else
+		dd = abs(cllevel(1));
+	end
 	dz0 = ceil(zlim(1)/dd)*dd:dd:floor(zlim(2)/dd)*dd;
 	dz0(ismember(0,dz0)) = [];	% eliminates 0 value
-	dd = dtick(dz/5);
+	% minor level lines
+	if numel(cllevel)<2 || cllevel(2)==0
+		dd = dtick(dz/5);
+	else
+		dd = abs(cllevel(2));
+	end
 	dz1 = ceil(zlim(1)/dd)*dd:dd:floor(zlim(2)/dd)*dd;
 	dz1(ismember(dz1,dz0)) = [];	% eliminates minor ticks in major ticks
-	clrgb = .3*ones(1,3);
 	hold on
 	[~,h] = contour(x,y,z,[0,0,dz1],'-','Color',clrgb);
 	set(h,'LineWidth',0.1);
@@ -840,10 +908,6 @@ wsc = bw0;
 xsc = xlim(2) + wsc*2 + bwx;
 
 if scale
-
-	if wmark
-		cmap = watermark(cmap,wmark);
-	end
 
 	% -- elevation scale (colorbar)
 	zscale = linspace(zmin,zmax,length(cmap))';
@@ -959,11 +1023,14 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function s = deg2dms(x,ll,dec)
+function s = deg2dms(x,ll,dec,fs)
 %DEG2DMS Degree/minute/second display
 
+% smaller font for decimals
+fs2 = sprintf('\\fontsize{%d}',round(fs/1.25));
+
 if dec
-	s = sprintf('%7.7g',x);
+	s = regexprep(sprintf('%7.7g',x),'\.(.*)',sprintf('.{%s$1}',fs2));
 else
 	xa = abs(x) + 1/360000;
 	%sd = sprintf('%d%c',floor(xa),176);	% ASCII char 176 is the degree sign
@@ -981,9 +1048,89 @@ else
 			end
 		end
 	end
-	s = [sd,sm,ss,ll{1+int8(x<0)}];
+	s = sd;
+	if ~isempty(sm) || ~isempty(ss)
+		s = [s,'{',fs2,sm,ss,'}'];
+	end
+	s = [s,ll{1+int8(x<0)}];
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function y = watermark(x,n)
+% makes colormap x watermark of ratio n
+if nargin < 2
+	n = 2;
+end
+
+if n == 0
+    y = x;
+else
+    y = (x/n + 1 - 1/n);
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function y=saturation(x,n)
+% changes the color saturation by ratio n
+
+% first needs to convert from RGB to HSV
+if ndims(x) == 3
+	r = x(:,:,1);
+	g = x(:,:,2);
+	b = x(:,:,3);
+	mx = max(x,[],3); % max(r,g,b)
+	mn = min(x,[],3); % min(r,g,b)
+else
+	r = x(:,1);
+	g = x(:,2);
+	b = x(:,3);
+	mx = max(x,[],2); % max(r,g,b)
+	mn = min(x,[],2); % min(r,g,b)
+end
+
+s = zeros(size(r));
+h = zeros(size(r));
+dt = mx - mn;
+v = mx;
+
+k = mx>0 & dt>0;
+if any(k)
+	s(k) = dt(k)./mx(k);
+	kr = (k & mx==r);
+	kg = (k & mx==g);
+	kb = (k & mx==b);
+	h(kr) = mod(60*(g(kr) - b(kr))./dt(kr),360);
+	h(kg) = 60*(b(kg) - r(kg))./dt(kg) + 120;
+	h(kb) = 60*(r(kb) - g(kb))./dt(kb) + 240;
+end
+
+% changes the saturation
+s = s*n;
+s(s>1) = 1;
+
+% converting back from HSV to RGB
+hi = mod(floor(h/60),6);
+f = h/60 - hi;
+l = v.*(1 - s);
+m = v.*(1 - f.*s);
+n = v.*(1 - (1 - f).*s);
+
+% default for hi == 0
+r = v; g = n; b = l;
+
+k = hi==1;
+r(k) = m(k); g(k) = v(k); b(k) = l(k);
+k = hi==2;
+r(k) = l(k); g(k) = v(k); b(k) =n(k);
+k = hi==3;
+r(k) = l(k); g(k) = m(k); b(k) = v(k);
+k = hi==4;
+r(k) = n(k); g(k) = l(k); b(k) = v(k);
+k = hi==5;
+r(k) = v(k); g(k) = l(k); b(k) = m(k);
+
+y = cat(ndims(x),r,g,b);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function z = fillgap(x,y,z)
@@ -1072,7 +1219,7 @@ function s = isvec(x,n)
 if nargin < 2
 	n = 2;
 end
-if isnumeric(x) && numel(x) == n
+if isnumeric(x) && (nargin > 1 && any(numel(x) == n) || numel(x) > 1)
 	s = 1;
 else
 	s = 0;
@@ -1085,20 +1232,6 @@ function y=roundsd(x,n)
 og = 10.^(floor(log10(abs(x)) - n + 1));
 y = round(x./og).*og;
 y(x==0) = 0;
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function y = watermark(x,n)
-
-if nargin < 2
-	n = 2;
-end
-
-if n == 0
-    y = x;
-else
-    y = (x/n + 1 - 1/n);
-end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
