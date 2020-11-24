@@ -87,7 +87,6 @@ my $high   = $cgi->url_param('high');
 my $sx     = $cgi->url_param('sx') // 0;
 my $replay = $cgi->url_param('replay');
 my $limit  = $cgi->url_param('limit');
-my $sgramo = $cgi->url_param('sgramslider');
 # $hideloc is read below
 
 # ---- analysis (depouillement) mode ?
@@ -167,7 +166,7 @@ for (@amplitudes) {
 my %liste_limites = readCfg($SEFRAN3{TIME_INTERVALS_CONF});
 
 # spectrogram
-my $sgram = ($SEFRAN3{SGRAM_ACTIVE} =~ /1|y|yes|on/i ? 1:0);
+my $sgramOK = ($SEFRAN3{SGRAM_ACTIVE} =~ /1|y|yes|on/i ? 1:0);
 
 # ---- misc inits (menu, external pgms and requests, ...)
 #
@@ -396,7 +395,7 @@ if (!$date) {
 			"<A href=\"#\" onClick=\"showmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showmctags_help'}')\">",
 			"<IMG src=\"/icons/mctag.png\" border=1 style=\"vertical-align:middle\"></A> | ";
 		print "<A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showsgram_help'}')\">",
-			"<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> | " if ($sgram);
+			"<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> | " if ($sgramOK);
 		print "<A href=\"#infos\">$__{'Information'}</A>",
 			" | <A href=\"/cgi-bin/$WEBOBS{CGI_MC3}?mc=$mc3\">$MC3{TITLE}</A>",
 			" ]</p></TD>";
@@ -435,7 +434,10 @@ if (!$date) {
 		print "</FORM>";
 	print "</TH></TR>";
 	print "</TABLE>";
-	print	"<INPUT type=hidden name=\"sgramslider\" id=\"sgramslider\" value=\"0\">" if ($sgram);
+	if ($sgramOK) {
+		print	"<INPUT type=hidden name=\"sgramslider\" id=\"sgramslider\" value=\"0\">",
+		      "<INPUT type=hidden name=\"sgram\" id=\"sgramopacity\" value=\"$SEFRAN3{SGRAM_OPACITY}\">";
+	}
 
 	print "<TABLE>";
 	my $nb_heures = 0;
@@ -461,7 +463,7 @@ if (!$date) {
 					if (-e "$SEFRAN3{ROOT}/$f.jpg") {
 						my $sgramimg = "";
 						my $sgramalign = "";
-						if ($sgram) {
+						if ($sgramOK) {
 							my $fs = "$SEFRAN3{ROOT}/${f}s.jpg";
 							if (-e $fs) {
 								if ($nb_vign > 1) {
@@ -544,7 +546,7 @@ if (!$date) {
 		my @stat_asymetry = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:asymetry]" $last_mn/);
 		my @stat_fdom;
 
-		if ($sgram) {
+		if ($sgramOK) {
 			(my $last_sg = $last_mn) =~ s/$SEFRAN3{PATH_IMAGES_MINUTE}/$SEFRAN3{PATH_IMAGES_SGRAM}/;
 			$last_sg =~ s/\.png/s.png/;
 			@stat_fdom = split(/,/,qx/$WEBOBS{PRGM_IDENTIFY} -format "%[sefran3:freqdom]" $last_sg/);
@@ -553,9 +555,9 @@ if (!$date) {
 		print "<TABLE style=\"padding:2\"><TR><TH rowspan=2>#</TH>",
 			"<TH rowspan=2>Alias</TH><TH rowspan=2>Channel</TH><TH rowspan=2>Calibration<br>(count/(m/s))</TH>",
 			"<TH rowspan=2>Filter</TH><TH rowspan=2>Peak-Peak<br>(m/s)</TH>",
-			"<TH colspan=".($sgram ? "7":"6").">Signal statistics on last image<BR>$lmn</TH><TH colspan=4>SeedLink server $SEFRAN3{SEEDLINK_SERVER}</TH><TH rowspan=2>Status</TH></TR>",
+			"<TH colspan=".($sgramOK ? "7":"6").">Signal statistics on last image<BR>$lmn</TH><TH colspan=4>SeedLink server $SEFRAN3{SEEDLINK_SERVER}</TH><TH rowspan=2>Status</TH></TR>",
 			"<TR><TH colspan=2>Offset<br>(&mu;m/s)</TH><TH>Asym.</TH><TH>RMS&Delta;<br>(&mu;m/s)</TH><TH>Acq.<br>(%)</TH><TH>Samp.<br>(Hz)</TH>",
-			($sgram ? "<TH>Freq<br>(Hz)</TH>":""),
+			($sgramOK ? "<TH>Freq<br>(Hz)</TH>":""),
 			"<TH>Oldest data</TH><TH>Last data</TH><TH>Buffer</TH><TH>&Delta;T</TH></TR>\n";
 		for (@channels) {
 			$i++;
@@ -582,7 +584,7 @@ if (!$date) {
 				printf("<TD style=\"text-align:right\" ".($status_noise == 0 ? "":"class=\"status-".($status_noise == 1 ? "warning":"critical")."\"").">%1.4f</TD>",1e6*$stat_drms[$idx]/$calib);
 				printf("<TD style=\"text-align:right\">%1.0f</TD>",100*$stat_sampling[$idx]);
 				printf("<TD style=\"text-align:center\">%g</TD>",$stat_rate[$idx]);
-				printf("<TD style=\"text-align:center\">%1.2f</TD>",$stat_fdom[$idx]) if ($sgram);
+				printf("<TD style=\"text-align:center\">%1.2f</TD>",$stat_fdom[$idx]) if ($sgramOK);
 				if ($status_offset == 0 && $status_noise == 0) {
 					$ch_nagios = 0; # Nagios 'OK' value
 				} elsif ($status_offset == 2 || $status_noise == 2) {
@@ -715,10 +717,11 @@ if ($date) {
 			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_prec$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dprec')\"><SPAN class=\"keycap\">&larr;</SPAN></span>\n";
 			print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_suiv$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dsuiv')\"><SPAN class=\"keycap\">&rarr;</SPAN></span>\n";
 			print "<span class=\"mcbouton\" onClick=\"quit();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Quit this event without saving changes'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/cancel.png\" style=\"vertical-align:middle\"></SPAN></span>\n";
-			if ($sgram) {
+			if ($sgramOK) {
 				print "<BR><DIV class=\"slidecontainer\"><A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showsgram_help'}')\">",
 					"<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> ",
-					"<INPUT type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" name=\"sgramslider\" id=\"sgramslider\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Adjust Spectrogram opacity'}')\"></div>\n";
+					"<INPUT type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" name=\"sgramslider\" id=\"sgramslider\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Adjust Spectrogram opacity'}')\"></div>\n",
+		         "<INPUT type=hidden name=\"sgram\" id=\"sgramopacity\" value=\"$SEFRAN3{SGRAM_OPACITY}\">";
 			}
 		print "</div>";
 	print "</div>";
@@ -765,7 +768,7 @@ if ($date) {
 					" href=\"$prog&date=$Y$m$d$H$M&s3=$s3\" target=\"_blank\" rel=\"opener\"";
 			}
 			print " shape=rect coords=\"0,".($hauteur_label_haut + 1).",$largeur_image,".($hauteur_image - $hauteur_label_haut)."\"></map>";
-			print	"<img id=\"sgram\" class=\"sgram\" src=\"$png_sgram\" usemap=\"#$png\">" if ($sgram);
+			print	"<img id=\"sgram\" class=\"sgram\" src=\"$png_sgram\" usemap=\"#$png\">" if ($sgramOK);
 			print	"<img id=\"png\" class=\"png\" src=\"$png_web\" usemap=\"#$png\">";
 		} elsif ( "$Y$m$d$H$M" >= "$Ya$ma$da$Ha$Ma") {
 			if (!$fin) {
