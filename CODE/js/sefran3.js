@@ -48,6 +48,7 @@ $(document).ready(function() {
 	var slider = document.getElementById('sgramslider');
 	slider.oninput = function() {
   		$('.sgram').css('opacity',this.value/10);
+		$('#sgramopacity').val(this.value/10);
 	}
 	var y = parseInt($('#sgramslider').val());
   	$('.sgram').css('opacity',y/10); // updates opacity when refreshing page
@@ -60,13 +61,7 @@ $(document).keypress(function(event) {
 	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
 		var x = event.charCode || event.keyCode;
 		var y = parseInt($('#sgramslider').val());
-		if (x == 115) { // s key
-			if (y > 0) showsgram();
-			else {
-				$('#sgramslider').val(SCB.SGRAMOPACITY*10);
-  				$('.sgram').css('opacity',SCB.SGRAMOPACITY);
-			}
-		}
+		if (x == 115) showsgram(); // s key
 		if (x == 83) { // S key
 			$('#sgramslider').val(10);
   			$('.sgram').css('opacity',1);
@@ -77,9 +72,25 @@ $(document).keypress(function(event) {
 			if (x == 84)  y = 1 + (y + 8) % 10; // T key
 			$('#sgramslider').val(y);
   			$('.sgram').css('opacity',y/10);
+			$('#sgramopacity').val(y/10);
 		}
 	}
 });
+
+// ---- toggle visibility of sgram
+function showsgram() {
+	// [FB-note] .toggle() is not used here due to paging issues on minute images
+	var y = parseInt($('#sgramslider').val());
+	if (y > 0) {
+		$('#sgramopacity').val(y/10);
+		$('.sgram').css('opacity', 0);
+		$('#sgramslider').val(0);
+	} else {
+		$('#sgramslider').val($('#sgramopacity').val()*10);
+  		$('.sgram').css('opacity', $('#sgramopacity').val());
+	}
+	return true;
+}
 
 // ---- show control keys
 function showkeys() {
@@ -107,16 +118,6 @@ function shrinkmctags() {
 // ---- toggle visibility of mctags
 function showmctags() {
 	$('.mctag').toggle();
-	return true;
-}
-
-// ---- toggle visibility of sgram
-function showsgram() {
-	/*$('.sgram').toggle();*/
-	$('.sgram').css('opacity', function(i, opacity) {
-		var y = parseInt($('#sgramslider').val())/10;
-	   return (opacity == 0) ? y : 0;
-	});
 	return true;
 }
 
