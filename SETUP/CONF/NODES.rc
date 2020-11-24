@@ -13,12 +13,11 @@ PATH_EVENTNODE_TRASH|$WEBOBS{ROOT_DATA}/trash/EVENTNODE
 PATH_NODE_TRASH|$WEBOBS{ROOT_DATA}/trash/NODES
 EVENTNODE_NOTEBOOK|NO
 EVENTNODE_NOTIFY_DEFAULT|NO
-# list of categories (valid keys are: grid,alias,feature,author,remote,startdate,enddate,title,comment,notebook,outcome)
+# list of categories (grid,alias,feature,author,remote,startdate,enddate,title,comment,notebook,outcome)
 EVENT_SEARCH_CATEGORY_LIST|grid,alias,feature,author,remote,startdate,title,comment,notebook,outcome
 EVENT_SEARCH_MAXDISPLAY_LIST|15,50,75,100
 EVENT_SEARCH_DEFAULT|alias
 EVENT_SEARCH_DEFAULT2|comment
-
 
 CGI_SHOW|showNODE.pl
 CGI_SRCH|srchNODES.pl

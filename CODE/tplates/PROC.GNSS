@@ -152,7 +152,7 @@ VECTORS_RELATIVE|N
 VECTORS_VELOCITY_REF|auto
 VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 # background map parameters (see CODE/matlab/dem.m for available options)
-VECTORS_DEM_OPT|'watermark',3,'interp','legend','seacolor',[0.7,0.9,1]
+VECTORS_DEM_OPT|'watermark',2,'saturation',.8,'interp','legend','seacolor',[0.7,0.9,1]
 VECTORS_TITLE|{\fontsize{14}{\bf${NAME} - Velocity vectors} ($timescale)}
 VECTORS_MIN_SIZE_KM|5
 VECTORS_MAX_XYRATIO|1

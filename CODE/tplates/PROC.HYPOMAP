@@ -1,7 +1,7 @@
 =key|value
 # Generic PROC template for superproc hypomap
 # Superformat is 'quakes': see readfmtdata_quakes.m for compatible RAWFORMAT defined
-# in associated NODE's RAWFORMAT field 
+# in associated NODE's RAWFORMAT field
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/hypomap.m for further information.
 
 # long name of the PROC
@@ -12,7 +12,7 @@ TYPE|
 OWNCODE|?
 # raw data path
 RAWDATA|
-# URN link to data 
+# URN link to data
 URNDATA|
 # time zone for outputs
 TZ|0
@@ -98,7 +98,7 @@ QUALITY_FILTER|0.7
 # for graph
 MARKER_LINEWIDTH|1
 PLOT_BG_ALL|.3
-DEM_OPT|'WaterMark',2,'FontSize',7
+DEM_OPT|'WaterMark',2,'Saturation',.8,'FontSize',7
 SHAPE_FILE|$WEBOBS{PATH_DATA_SHAPE}/antilles_faults.bln
 #STATIONS_GRID|VIEW.
 # Hypocenters without individual circle line (1 yes, 0 no)
@@ -122,4 +122,3 @@ MAP_Area1_COLORMAP|jet(256)
 MAP_Area1_COLORREF|time
 # Optional time plot: give a list of parameters (versus time) ==> alpha version not fully functional
 #MAP_Area1_TIMEPLOT|latitude,longitude,depth,magnitude,profile1,profile2
-

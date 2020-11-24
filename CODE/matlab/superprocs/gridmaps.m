@@ -37,7 +37,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2020-09-14
+%   Updated: 2020-11-23
 
 
 WO = readcfg;
@@ -114,7 +114,8 @@ lwminor = field2num(P,'CONTOURLINES_MINOR_LINEWIDTH',.1);
 lwmajor = field2num(P,'CONTOURLINES_MAJOR_LINEWIDTH',1);
 zerolevel = isok(P,'CONTOURLINES_ZERO_LEVEL',0);
 convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
-feclair = field2num(P,'COLOR_LIGHTENING',.5);
+feclair = field2num(P,'COLOR_LIGHTENING',2);
+csat = field2num(P,'COLOR_SATURATION',.8);
 zcut = field2num(P,'ZCUT',0.1);
 laz = field2num(P,'LIGHT_AZIMUTH',45);
 lct = field2num(P,'LIGHT_CONTRAST',1);
@@ -133,7 +134,9 @@ if isfield(P,'SEACOLORMAP')
 else
 	sea = seaflat;
 end
-demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz,'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair,'latlon','legend','axisequal','manual'};
+demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz, ...
+	'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair, ...
+	'Saturation',csat,'latlon','legend','axisequal','manual'};
 
 % loads all needed grid's parameters & associated nodes
 for g = 1:length(grids)
