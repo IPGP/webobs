@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2020-10-26
+%   Updated: 2020-11-25
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -59,8 +59,6 @@ timelog(procmsg,1);
 G = cat(1,D.G);
 
 border = .1;
-modarrcol = [1,0,0]; % color of model arrows
-resarrcol = [0,.8,0]; % color of residual arrows
 
 % PROC's parameters
 fontsize = field2num(P,'FONTSIZE',7);
@@ -111,7 +109,7 @@ minkm = field2num(P,'VECTORS_MIN_SIZE_KM',10);
 maxxy = field2num(P,'VECTORS_MAX_XYRATIO',1);
 arrowshape = field2num(P,'VECTORS_ARROWSHAPE',[.1,.1,.08,.02]);
 vectors_title = field2str(P,'VECTORS_TITLE','{\fontsize{14}{\bf$name - Vectors} ($timescale)}');
-vectors_demopt = field2cell(P,'VECTORS_DEM_OPT','watermark',3,'interp','legend','seacolor',[0.7,0.9,1]);
+vectors_demopt = field2cell(P,'VECTORS_DEM_OPT','watermark',2,'saturation',.8,'interp','legend','seacolor',[0.7,0.9,1]);
 vectors_shape = field2shape(P,'VECTORS_SHAPE_FILE');
 
 % BASELINES parameters
@@ -131,8 +129,8 @@ baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 motion_filter = field2num(P,'MOTION_MAFILTER',10);
 motion_scale = field2num(P,'MOTION_SCALE_MM',0);
 motion_minkm = field2num(P,'MOTION_MIN_SIZE_KM',10);
-motion_colormap = field2num(P,'MOTION_COLORMAP',jet(256));
-motion_demopt = field2cell(P,'MOTION_DEM_OPT','colormap',.5*ones(64,3),'watermark',2,'interp');
+motion_colormap = field2num(P,'MOTION_COLORMAP',spectral(256));
+motion_demopt = field2cell(P,'MOTION_DEM_OPT','watermark',1.5,'saturation',0,'interp');
 motion_title = field2str(P,'MOTION_TITLE','{\fontsize{14}{\bf$name - Motion} ($timescale)}');
 
 % MODELLING parameters
@@ -142,11 +140,15 @@ modrelauto = strcmpi(field2str(P,'MODELLING_FORCE_RELATIVE'),'auto');
 maxdep = field2num(P,'MODELLING_MAX_DEPTH',8e3);
 bm = field2num(P,'MODELLING_BORDERS',5000);
 rr = field2num(P,'MODELLING_GRID_SIZE',51);
-modelling_cmap = field2num(P,'MODELLING_COLORMAP',jet(512));
-modelling_colorshading = field2num(P,'MODELLING_COLOR_SHADING',0.8);
+modelling_cmap = field2num(P,'MODELLING_COLORMAP',ryb(256));
+modelling_colorshading = field2num(P,'MODELLING_COLOR_SHADING',0.3);
 modelling_topo_rgb = field2num(P,'MODELLING_TOPO_RGB',.5*[1,1,1]);
 % color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
 modelling_coloref = lower(field2str(P,'MODELLING_COLORREF','volpdf'));
+% colors for displacement arrows
+datarrcol = field2num(P,'MODELLING_DATA_COLOR',[0,0,0]); % color of model arrows
+modarrcol = field2num(P,'MODELLING_MODEL_COLOR',[.7,0,0]); % color of model arrows
+resarrcol = field2num(P,'MODELLING_RESIDUAL_COLOR',[0,.5,0]); % color of residual arrows
 modelling_title = field2str(P,'MODELLING_TITLE','{\fontsize{14}{\bf$name - Source modelling} ($timescale)}');
 plotbest = isok(P,'MODELLING_PLOT_BEST');
 plotbest_col = field2num(P,'MODELLING_PLOT_BEST_COLOR',.5*ones(1,3));
@@ -225,7 +227,7 @@ modeltime_title = field2str(P,'MODELTIME_TITLE','{\fontsize{14}{\bf$name - Sourc
 modeltime_flowrate = isok(P,'MODELTIME_FLOWRATE',1);
 modeltime_map_period = field2num(P,'MODELTIME_MAP_PERIODLIST',modeltime_period,'notempty');
 modeltime_marker_linewidth = field2num(P,'MODELTIME_MARKER_LINEWIDTH',1);
-modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',jet(256));
+modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',spectral(256));
 modeltime_markersize = pi*(field2num(P,'MODELTIME_MARKERSIZE',10,'notempty')/2)^2; % scatter needs marker size as a surface (πr²)
 
 
@@ -690,7 +692,6 @@ for r = 1:numel(P.GTABLE)
 
 		% loads DEM (P may contain user's defined DEM)
 		DEM = loaddem(WO,[xlim,ylim],P);
-
 		dem(DEM.lon,DEM.lat,DEM.z,'latlon',vectors_demopt{:})
 		text(xlim(2),ylim(2)+.01*diff(ylim),DEM.COPYRIGHT,'HorizontalAlignment','right','VerticalAlignment','bottom','Interpreter','none','FontSize',6)
 

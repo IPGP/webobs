@@ -101,7 +101,7 @@ MOTION_EXCLUDED_NODELIST|
 MOTION_MAFILTER|1
 MOTION_SCALE_RAD|0
 MOTION_MIN_SIZE_KM|10
-MOTION_COLORMAP|jet(64)
+MOTION_COLORMAP|spectral(256)
 MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'saturation',.8,'interp'
 MOTION_TITLE|{\fontsize{14}{\bf$name - Motion} ($timescale)}
 

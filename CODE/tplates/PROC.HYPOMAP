@@ -117,7 +117,7 @@ MAP_Area1_DEPLIM|-2,200
 MAP_Area1_PROFILE1|-61.4651,16.5138,55,100,200
 # Profile 2 (right): same parameters as profile1, but drawn on the right side of the map
 # Colormap used: must specify the number of colors
-MAP_Area1_COLORMAP|jet(256)
+MAP_Area1_COLORMAP|spectral(256)
 # Color reference for markers: 'depth' (default) or 'time'
 MAP_Area1_COLORREF|time
 # Optional time plot: give a list of parameters (versus time) ==> alpha version not fully functional

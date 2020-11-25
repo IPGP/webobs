@@ -11,7 +11,7 @@ OWNCODE|?
 RAWFORMAT|
 # raw data path (might be overwritten in each node)
 RAWDATA|
-# URN link to data 
+# URN link to data
 URNDATA|/rawdata/myproc
 # additionnal URL
 URL|
@@ -62,7 +62,7 @@ DEM_SRTM1|Y
 # do not show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
-# file for background time referenced events 
+# file for background time referenced events
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 
 # --- page format and outputs
@@ -128,7 +128,7 @@ SUMMARY_LINESTYLE|-
 # --- source mapping
 # number of maps will be N*N (allowed values are 1,2,3 or 4)
 SOURCEMAP_N|3
-SOURCEMAP_COLORMAP|jet
+SOURCEMAP_COLORMAP|spectral(256)
 SOURCEMAP_COLORMAP_ALPHA|0,1
 SOURCEMAP_CAXIS|0,2e-5
 SOURCEMAP_PLOT_MAX|Y

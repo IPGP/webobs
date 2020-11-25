@@ -21,39 +21,11 @@ function DOUT=hypomap(varargin)
 %       HYPOMAP will use PROC's parameters from .conf file. RAWFORMAT must be
 %       one of the following: hyp71sum2k, fdsnws-event, scevtlog-xml
 %
-%       Specific paramaters are (some will be used by readfmtdata_quake.m):
-%		EVENTTYPE_EXCLUDED_LIST|not existing,not locatable,outside of network interest,sonic boom,duplicate,other event
-%		EVENTSTATUS_EXCLUDED_LIST|automatic
-%		EVENTCOMMENT_EXCLUDED_REGEXP|AUTO
-%		SC3_LISTEVT|
-%		LATLIM|13,19
-%		LONLIM|-64,-58
-%		MAGLIM|3,10
-%		DEPLIM|-10,200
-%		MSKLIM|1,12
-%		GAPLIM|0,360
-%		RMSLIM|0,1
-%		ERHLIM|0,100
-%		ERZLIM|0,100
-%		NPHLIM|3,Inf
-%		CLALIM|0,4
-%		QUALITY_FILTER|Y
-%		PLOT_BG_ALL|.3
-%		DEM_OPT|'WaterMark',2,'FontSize',7
-%		SHAPE_FILE|$WEBOBS{PATH_DATA_SHAPE}/antilles_faults.bln
-%		MARKER_LINEWIDTH|1
-%		BUBBLE_PLOT|Y
-%		MAP_Areaname_TITLE|Antilles
-%		MAP_Areaname_XYLIM|LON0,LAT0,WIDTH # or LON1,LON2,LAT1,LAT2 (needs to be a square in km)  
-%		MAP_Areaname_MAGLIM|3,7
-%		MAP_Areaname_DEPLIM|-2,200
-%		MAP_Areaname_PROFILE1|-61.4651,16.5138,68,100,200
-%		MAP_Areaname_PROFILE2|-61.4651,16.5138,158,100,200 # optional 2nd profile
-%		MAP_Areaname_COLORMAP|jet(256)
+%	Specific paramaters are described in CODE/tplates/PROC.HYPOMAP (some will be used by readfmtdata_quake.m):
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2018-08-02
+%   Updated: 2020-11-25
 
 
 WO = readcfg;
@@ -108,7 +80,7 @@ else
 end
 
 % default colormap
-cmap = jet(256);
+cmap = spectral(256);
 cmap(237:end,:) = [];
 
 % gets map's parameters in a structure
@@ -366,11 +338,11 @@ for m = 1:length(summarylist)
 			IMAP(nimap).s = IMAP(1).s(k1);
 			IMAP(nimap).l = IMAP(1).l(k1);
 		end
-		
-		
+
+
 		% --- legend
 		axes('position',[0.68,0.105,0.21,0.17]);
-		
+
 		% color scale (depth or time)
 		wsc = 0.1;
 		x = 0.5 - .28*colortime;
@@ -525,7 +497,7 @@ function [xp,yp]=plotcross(prof,xylim,a,b)
 lw = .5;
 
 % if profile azimuth above 45°, plots the cross section lines from X axis limits
-if abs(tand(prof(3))) >= 1 
+if abs(tand(prof(3))) >= 1
 	xp = xylim(1:2);
 	yp = prof(2) + [xylim(1)-prof(1),xylim(2)-prof(1)]*tand(90-prof(3));
 	plot(repmat(xp,2,1)',repmat(yp,2,1)' + [1,-1;1,-1]*prof(4)/degkm(prof(2))/cosd(90-prof(3)),':k','LineWidth',lw)
@@ -535,7 +507,7 @@ else
 	xp = prof(1) + [xylim(3)-prof(2),xylim(4)-prof(2)]*tand(prof(3));
 	plot(repmat(xp,2,1)' + [1,-1;1,-1]*prof(4)/degkm(prof(2))/cosd(prof(3)),repmat(yp,2,1)',':k','LineWidth',lw)
 end
-plot(xp,yp,'-.k','LineWidth',lw)	
+plot(xp,yp,'-.k','LineWidth',lw)
 %text(prof(1),prof(2),'+','HorizontalAlignment','center','rotation',90-prof(3))
 text(xp,yp,{['     ',a],[b,'     ']},'FontSize',12,'FontWeight','bold', ...
 	'VerticalAlignment','middle','HorizontalAlignment','center','rotation',90-prof(3))
@@ -550,4 +522,3 @@ xx = linspace(xp(1),xp(2),500);
 yy = linspace(yp(1),yp(2),500);
 pl = (xx - prof(1))*degkm(prof(2))*cosd(90-prof(3)) + (yy - prof(2))*degkm*sind(90-prof(3));
 pz = interp2(DEM.lon,DEM.lat,-DEM.z/1e3,xx,yy);
-

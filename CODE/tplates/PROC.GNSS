@@ -152,7 +152,7 @@ VECTORS_RELATIVE|N
 VECTORS_VELOCITY_REF|auto
 VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 # background map parameters (see CODE/matlab/dem.m for available options)
-VECTORS_DEM_OPT|'watermark',2,'saturation',.8,'interp','legend','seacolor',[0.7,0.9,1]
+VECTORS_DEM_OPT|'watermark',1.5,'saturation',0.7,'interp','legend','seacolor',[0.7,0.9,1]
 VECTORS_TITLE|{\fontsize{14}{\bf${NAME} - Velocity vectors} ($timescale)}
 VECTORS_MIN_SIZE_KM|5
 VECTORS_MAX_XYRATIO|1
@@ -167,8 +167,8 @@ MOTION_EXCLUDED_NODELIST|
 MOTION_MAFILTER|10
 MOTION_SCALE_MM|0
 MOTION_MIN_SIZE_KM|10
-MOTION_COLORMAP|jet(256)
-MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'interp'
+MOTION_COLORMAP|spectral(256)
+MOTION_DEM_OPT|'saturation',0,'watermark',2,'interp'
 MOTION_TITLE|{\fontsize{14}{\bf${NAME} - Motion} ($timescale)}
 MOTION_TARGET_INCLUDED|Y
 
@@ -207,8 +207,11 @@ MODELLING_SIGMAS|1
 MODELLING_TOPO_RGB|.5,.5,.5
 # color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
 MODELLING_COLORREF|volpdf
-MODELLING_COLORMAP|jet(256)
-MODELLING_COLOR_SHADING|0.8
+MODELLING_COLORMAP|ryb(256)
+MODELLING_COLOR_SHADING|0.3
+MODELLING_DATA_COLOR|0,0,0       # color of model arrows
+MODELLING_MODEL_COLOR|.7,0,0     # color of model arrows
+MODELLING_RESIDUAL_COLOR|0,.5,0  # color of residual arrows
 MODELLING_MAX_DEPTH|8000
 MODELLING_BORDERS|5000
 MODELLING_GRID_SIZE|50
@@ -241,6 +244,6 @@ MODELTIME_MAX_MODELS|50
 MODELTIME_FLOWRATE|Y
 MODELTIME_MAP_PERIODLIST|
 MODELTIME_MARKER_LINEWIDTH|1
-MODELTIME_COLORMAP|jet(256)
+MODELTIME_COLORMAP|spectral(256)
 MODELTIME_MARKERSIZE|10
 MODELTIME_TITLE|{\fontsize{14}{\bf$name - Source best model timeline} ($timescale)}
