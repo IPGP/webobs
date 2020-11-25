@@ -30,7 +30,7 @@ function y = field2num(x,f,y0,varargin)
 %
 %	 Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2015-09-07 at Pos Dukono, Halmahera Utara (Indonesia)
-%	Updated: 2020-04-05
+%	Updated: 2020-11-25
 
 D = struct('s',1/86400,'n',1/1440,'h',1/24,'d',1,'w',7,'m',30,'y',365.25);
 
@@ -64,8 +64,12 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 			else
 				y = sstr2num(val);
 				if size(y,2) ~= 3
-					y = jet(256);
-					fprintf('WEBOBS{field2num}: ** WARNING ** cannot import %s colormap. Use defaut...\n',f);
+					fprintf('WEBOBS{field2num}: ** WARNING ** cannot import %s = "%s" colormap. Use defaut...\n',f,val);
+					if nargin > 2
+						y = y0;
+					else
+						y = spectral(256);
+					end
 				end
 			end
 

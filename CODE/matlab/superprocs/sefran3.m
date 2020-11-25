@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2020-11-22
+%	Updated: 2020-11-25
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -86,7 +86,7 @@ sgrampath = field2str(SEFRAN3,'PATH_IMAGES_SGRAM','sgram');
 sgramfilt = field2str(SEFRAN3,'SGRAM_FILTER','hpbu6,0.2');
 sgramexp = field2num(SEFRAN3,'SGRAM_EXPONENT',.5);
 sgramparams = field2str(SEFRAN3,'SGRAM_PARAMS','1,0,50,lin','notempty');
-sgramcmap = field2num(SEFRAN3,'SGRAM_COLORMAP',jet(256));
+sgramcmap = field2num(SEFRAN3,'SGRAM_COLORMAP',spectral(256));
 sgramclim = field2num(SEFRAN3,'SGRAM_CLIM',[0,2]);
 
 % graphical parameters
@@ -268,7 +268,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						% filtering and calibrating
 						ds = filtsignal(t,d,channel_rate,C{4}{n})/str2double(C{3}{n});
 						ch_amax = diff(minmax(ds));
-						
+
 						% calibrates and normalizes signal
 						ds = ds/str2double(C{5}{n});
 						% stores signal in structure for spectrogram
@@ -452,7 +452,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					colormap(sgramcmap)
 					caxis(sgramclim)
 					hold off
-					
+
 					% --- fill-in PNG tag properties
 					tag2 = [ ... % tags for spectrogram
 						sprintf('-set sefran3:sgramwin "%s" ',strjoin(tag_sgram_wins,',')), ...
