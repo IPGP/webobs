@@ -123,6 +123,7 @@ COLOR_SATURATION|0.7
 
 2. In GNSS/GispyX data format, station code is now case insensitive. In fact, station code in `.tdp` files is written upper case, so lower case FID were not properly found in the GipsyX solutions. This has been fixed.
 
+3. The [Codemirror javascript library](https://codemirror.net/) (used to colorize the textareas used to edit configuration file for procs and nodes) embedded in WebObs has been updated to address the security issue described in [CVE-2020-7760](https://nvd.nist.gov/vuln/detail/CVE-2020-7760).
 
 ## v2.1.6 (September 2020)
 
