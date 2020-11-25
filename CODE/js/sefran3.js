@@ -67,9 +67,9 @@ $(document).keypress(function(event) {
   			$('.sgram').css('opacity',1);
 		}
 		if (x == 101 || x == 69) showmctags(); // e or E key
-		if (x == 116 || x == 84) {
-			if (x == 116) y = 1 + y % 10; // t key
-			if (x == 84)  y = 1 + (y + 8) % 10; // T key
+		if (x == 116 || x == 84 || x == 114 || x == 82) {
+			if (x == 116 || x == 84) y = 1 + y % 10; // t or T key
+			if (x == 114 || x == 82)  y = 1 + (y + 8) % 10; // r or R key
 			$('#sgramslider').val(y);
   			$('.sgram').css('opacity',y/10);
 			$('#sgramopacity').val(y/10);
