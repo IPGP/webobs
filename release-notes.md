@@ -12,15 +12,17 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ### New features
 
-1. `!!` Sefran3 includes a continuous spectrogram, which is activated by default. To disable this feature you must set `SGRAM_ACTIVE` to `NO`. New variables are:
+1. `!!` Sefran3 includes a continuous spectrogram, which is activated by default. To disable this feature you must set `SGRAM_ACTIVE|NO` in all your Sefran3. Since the feature uses new Perl, JavaScript and CSS, if you notice any strange display you must **clear your browser cache**, this will solve the problem definitively.
+
+New variables are:
 
 ```
 PATH_IMAGES_SGRAM|sgram
 SGRAM_ACTIVE|Y
-SGRAM_FILTER|hpbu6,0.2
+SGRAM_FILTER|hpbu6,0.1
 SGRAM_PARAMS|1,0,50,lin
 SGRAM_EXPONENT|0.5
-SGRAM_COLORMAP|jet(256)
+SGRAM_COLORMAP|spectral(256)
 SGRAM_CLIM|0,2
 SGRAM_OPACITY|0.5
 PNGQUANT_NCOLORS|16
@@ -28,7 +30,7 @@ SGRAM_PNGQUANT_NCOLORS|32
 ```
 
 Default values are optimized for 100 Hz sampling rate:
-- `SGRAM_FILTER`: signal filtering, same syntax as for `SEFRAN3_CHANNELS` file (default is `hpbu6,0.2` for a highpass Butterworth 6th-order 0.2 Hz cut-off frequency filter);
+- `SGRAM_FILTER`: signal filtering, same syntax as for `SEFRAN3_CHANNELS` file (default is `hpbu6,0.1` for a highpass Butterworth 6th-order 0.1 Hz cut-off frequency filter);
 - `SGRAM_PARAMS`: 4-element vector of coma separated values, as:
    - W = time step window for FFT (in seconds, default is 1 s),
    - Fmin = minimum frequency (in Hz, default is 0 Hz),
@@ -36,10 +38,10 @@ Default values are optimized for 100 Hz sampling rate:
    - Yscale = `lin` for linear (default) or `log` (logarithmic);
 - `SGRAM_EXPONENT`: power spectrum amplitude exponent (default is 0.5);
 - `SGRAM_COLORMAP`: colormap (default is jet);
-- `SGRAM_CLIM`: 2-element vector as minimum, maximum values for colormap limits (default is 0-2);
+- `SGRAM_CLIM`: 2-element vector as minimum, maximum values for colormap limits (default is 0-2, which corresponds to a saturation of the spectrogram colors when the signal is also saturated on the waveforms);
 - `SGRAM_OPACITY`: initial opacity of spectrogram over waveform image (default is 0.5).
 
-When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images, and updated following broomwagon rules. The additional computing time is not significant. But, a spectrogram image are about 1.5 times bigger than waveform's images (low+high speed total). For that reason, we introduced a better compression of all PNG images using open-source program *pngquant*, with a gain of about 70% in size (see next section for details). Final result is a reduction of Sefran3 storage size after activating the spectrogram! ;-)
+When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images, and updated following broom wagon rules. The additional computing time is not significant. But, a spectrogram image are about 1.5 times bigger than waveform's images (low+high speed total). For that reason, we introduced a better compression of all PNG images using open-source program *pngquant*, with a gain of about 70% in size (see next section for details). Final result is a reduction of Sefran3 storage size after activating the spectrogram! ;-)
 
 For visualization, there is several possibilities:
 - a new icon is available in the main page menu or in the upper-left control panel to toggle waveform/spectrogram view;
@@ -104,6 +106,16 @@ MODELLING_APRIORI_HSTD_KM|
 ```
 
 as for the GNSS superproc modelling, `MODELLING_MISFITNORM` allows L1 (default) or L2 norm to compute misfit. `MODELLING_APRIORI_HSTD_KM` will apply a gaussian function on the global misfit based on the distance from target defined in `TILT_TARGET_LATLON`.
+
+5. Mapping benefits the new feature of dem.m function: the color saturation. Superprocs GNSS, HYPOMAP, TILT and TREMBLEMAPS can include the option in their respective `*DEM_OPT` variables as `'Saturation',0.7` for example, to reduce saturation by 30%. For the superproc GRIDMAPS, a new variable has been added to `GRIDMAPS.rc`:
+
+```
+COLOR_SATURATION|0.7
+```
+
+**Tip:** maps are usually used as a background to highlight other elements (stations, vectors, ...). The mapping concept in WebObs is to keep plain colors for these elements, and attenuate the background colors using two parameters: a watermark effect (set to a factor of 1.5 by default) and now the saturation effect (set to 0.5 by default).
+
+6. Two new colormaps are available: `ryb` and `spectral`. Both are diverging colormaps where luminance is highest at the midpoint, and decreases towards differently-colored endpoints. `ryb` is a Red-Yellow-Blue colormap that is set as default for GNSS modelling probability graphs. `spectral` is a Red-Orange-Yellow-Green-Blue colormap very similar with `jet` but less saturated/agressive; it has been set as default for most of the procs and the Sefran3 spectrogram.
 
 ### Fixed issues
 
