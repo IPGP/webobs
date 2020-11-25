@@ -184,6 +184,8 @@ function varargout=dem(x,y,z,varargin)
 %	Updated: 2020-06-01
 
 %	History:
+%	[2020-11-25] v2.9
+%		- fix a possible issue with saturation under Matlab < 2014
 %	[2020-06-01] v2.8
 %	    - new option 'saturation' to change colormaps
 %	    - tick label decimals with smaller font size
@@ -1095,7 +1097,7 @@ dt = mx - mn;
 v = mx;
 
 k = mx>0 & dt>0;
-if any(k)
+if any(k(:))
 	s(k) = dt(k)./mx(k);
 	kr = (k & mx==r);
 	kg = (k & mx==g);
