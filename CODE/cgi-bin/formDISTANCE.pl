@@ -236,6 +236,7 @@ if (defined($QryParm->{id})) {
 				eval("\$sel_d$_ = \$d$_;");
 			}
 			$sel_rem = $rem;
+			$sel_rem =~ s/"/&quot;/g;
 			$message = "Modification donn&eacute;e n° $QryParm->{id}";
 		} else { $QryParm->{id} = ""; $val = "" ; }
 	 } else { $QryParm->{id} = ""; $val = "" ;}

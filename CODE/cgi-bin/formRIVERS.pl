@@ -265,6 +265,7 @@ if (defined($QryParm->{id})) {
 			$sel_cDOC = $cDOC;
 			$sel_cPOC = $cPOC;
 			$sel_rem = $rem;
+			$sel_rem =~ s/"/&quot;/g;
 			$message = "Modification donn&eacute;e n° $QryParm->{id}";
 		} else { $QryParm->{id} = ""; $val = "" ; }
 	} else { $QryParm->{id} = ""; $val = "" ;}
