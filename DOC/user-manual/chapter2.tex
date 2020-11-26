@@ -419,23 +419,6 @@ All the following parameters are valid for \wo{grids}, that is any \wo{view} or 
 
 \end{itemize}
 
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Digital Elevation Model (DEM)}
-\label{dem}
-
-For any \wo{view} or \wo{proc} that needs topographic data, \webobs will use either SRTM3, SRTM1, ETOPO5, ETOPO1 or user-defined DEM file. SRTM tiles will be downloaded automatically from internet, as needed by the PROC, and stored in the \wokey{PATH\_DATA\_DEM} local directory (see \wofile{WEBOBS.rc}). ETOPO5 is available in the \webobs package offline. ETOPO1 must be downloaded manually from the web. The selection between these different sources respects the following policy:
-\begin{enumerate}
-
-\item SRTM3 is the default, 90m resolution worldwide DEM, available through $1\times1^o$ tiles. It is convenient for any maps from about 20km to 500km width. \wofile{WEBOBS.rc} defines a limit of \wokey{SRTM\_MAX\_TILES} as maximum amount of tiles to avoid memory issues (default is 25). If the covered area needs more than this limit, it will switch automatically to ETOPO with a warning in the logs.
-
-\item SRTM1, a 30m resolution DEM can be activated setting \wokey{DEM\_SRTM1} to \wokey{Y} in the PROC's configuration file. Each tile is $1\times1^o$ and 9 times bigger than SRTM3. This is convenient for smaller areas less than 20km width. \wofile{WEBOBS.rc} defines a limit of \wokey{SRTM1\_MAX\_TILES} maximum amount of tiles to avoid memory issues (default is 4). If the covered area needs more than this limit, it will switch automatically to SRTM3 with a warning in the logs.
-
-\item if SRTM3 or SRTM1 limits are exceeded for any large area, \webobs will use ETOPO worldwide DEM with bathymetry. ETOPO5 is 5 arc-min resolution (about 9km) which is convenient for maps greater than 2,000km width. If ETOPO1 has been installed (which is recommended at installation), it offers 1 arc-min resolution (about 1.8km) which is convenient for maps width greater than 500km. So with SRTM and ETOPO1 installed, most situations will produce nice basemaps.
-
-\item if the area is less than about 5km width, even SRTM1 is not enough to produce decent maps. In that case it is more appropriate to use a local DEM file (in ArcInfo ascii format, elevation values in meters) that can be defined in the PROC's configuration file with \wokey{DEM\_FILE} as full path of the file, and \wokey{DEM\_TYPE} as \wokey{LATLON} (preferred) or \wokey{UTM} (might takes more time). If this DEM does not cover the whole area, the PROC will switch automatically to SRTM/ETOPO data. Nevertheless, it is possible to force the use of your local DEM by setting \wokey{DEM\_FORCED} to \wokey{Y} but when the area exceeds the DEM data, map will be surrounded by gray zones where there is no data available. A last option \wokey{DEM\_COPYRIGHT} allows to specify the DEM copyright.
-
-\end{enumerate}
-
 
 
 % -----------------------------------------------------------------
@@ -453,7 +436,7 @@ A \wo{form} is a web interface for manual data input, edit, display and export. 
 % -----------------------------------------------------------------
 \subsection{Events and Projects}
 
-A \wo{grid} can have events and project like for \wo{nodes}: see sections \ref{nodeevent} and \ref{nodeproject}.
+A \wo{grid} can have events and project like for \wo{nodes}: see section \ref{events:logging}.
 
 % -----------------------------------------------------------------
 \subsection{TMap: GRIDS diagram}
@@ -464,7 +447,7 @@ A \wo{grid} can have events and project like for \wo{nodes}: see sections \ref{n
 
 % ==================================================================
 \section{Events Logging}
-\label{events_logging}
+\label{events:logging}
 
 Nodes and Grids can have \wo{EVENT}. These events are free timestamped text files (Wifi syntax being supported), editable by users having at least Write authorization on the corresponding \wo{Node} or \wo{Grid}. Events live in specific repositories (known as INTERVENTIONS), and are managed through functions of the \wofile{CODE/cgi-bin/WebObs/Events.pm} module and \wofile{CODE/cgi-bin/vedit.pl}. Their filenames reflect both their Node or Grid membership and their timestamp. 
 
@@ -513,6 +496,35 @@ $NODES{PATH_NODES}/NODEA/$NODES{SPATH_INTERVENTIONS}/
 			NODEA_2010-02-02_22-30.txt         Event 2010-02-02_22-30
 \end{lstlisting}
 
+
+% ==================================================================
+\section{Basemaps}
+\label{basemaps}
+
+For any \wo{view} or \wo{proc} that needs topographic data, \webobs will produce automatic background maps. The built-in applications GRIDMAPS and LOCASTAT (see \ref{gridmaps} and \ref{locastat}) will produce maps of associated nodes. Some superprocs will make also dedicated graphs using background maps. All are using the dem.m function for shading relief from topographic data, with a set of options for rendering.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Digital Elevation Model (DEM)}
+\label{dem}
+
+\webobs will use either SRTM3, SRTM1, ETOPO5, ETOPO1 or user-defined DEM file. SRTM tiles will be downloaded automatically from internet, as needed by the PROC, and stored in the \wokey{PATH\_DATA\_DEM} local directory (see \wofile{WEBOBS.rc}). ETOPO5 is available in the \webobs package offline. ETOPO1 must be downloaded manually from the web. The selection between these different sources respects the following policy:
+\begin{enumerate}
+
+\item SRTM3 is the default, 90m resolution worldwide DEM, available through $1\times1$\textsuperscript{o} tiles. It is convenient for any maps from about 20km to 500km width. \wofile{WEBOBS.rc} defines a limit of \wokey{SRTM\_MAX\_TILES} as maximum amount of tiles to avoid memory issues (default is 25). If the covered area needs more than this limit, it will switch automatically to ETOPO with a warning in the logs.
+
+\item SRTM1, a 30m resolution DEM can be activated setting \wokey{DEM\_SRTM1} to \wokey{Y} in the PROC's configuration file. Each tile is $1\times1$\textsuperscript{o} and 9 times bigger than SRTM3. This is convenient for smaller areas less than 20km width, but you need to freely register at \url{https://urs.earthdata.nasa.gov}, and set user and password login as variable \wokey{EARTHDATA\_LOGIN} in \wofile{WEBOBS.rc}. A global variable defines also a limit of \wokey{SRTM1\_MAX\_TILES} maximum amount of tiles to avoid memory issues (default is 4). If the covered area needs more than this limit, or if you did not define a login, it will switch automatically to SRTM3 with a warning in the logs.
+
+\item if SRTM3 or SRTM1 limits are exceeded for any large area, \webobs will use ETOPO worldwide DEM with bathymetry. ETOPO5 is 5 arc-min resolution (about 9km) which is convenient for maps greater than 2,000km width. If ETOPO1 has been installed (which is recommended at installation), it offers 1 arc-min resolution (about 1.8km) which is convenient for maps width greater than 500km. So with SRTM and ETOPO1 installed, most situations will produce nice basemaps.
+
+\item if the area is less than about 5km width, even SRTM1 is not enough to produce decent maps. In that case it is more appropriate to use a local DEM file (in ArcInfo ascii format, elevation values in meters) that can be defined in the PROC's configuration file with \wokey{DEM\_FILE} as full path of the file, and \wokey{DEM\_TYPE} as \wokey{LATLON} (preferred) or \wokey{UTM} (might takes more time). If this DEM does not cover the whole area, the PROC will switch automatically to SRTM/ETOPO data. Nevertheless, it is possible to force the use of your local DEM by setting \wokey{DEM\_FORCED} to \wokey{Y} but when the area exceeds the DEM data, map will be surrounded by gray zones where there is no data available. A last option \wokey{DEM\_COPYRIGHT} allows to specify the DEM copyright.
+
+\end{enumerate}
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Background map rendering}
+
+Maps are usually used as a background to highlight other elements (stations, vectors, ...). The mapping concept in WebObs is to keep plain colors for these elements, and attenuate the background colors using two parameters: a watermark effect (set to a factor of 1.5 by default) and the saturation effect (set to 0.7 by default). These two effects reduce the importance of the background map, while keeping all the detailed information, and give more importance on any foreground elements.
 
 
 % ==================================================================
