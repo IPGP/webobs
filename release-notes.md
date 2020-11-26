@@ -8,7 +8,14 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (not a bug fix). An appropriate configuration to keep former behavior is usually proposed.
 
+<!--
 ## Version under development
+### New features
+### Enhancements
+### Fixed issues
+-->
+
+## v2.2.0 (November 2020)
 
 ### New features
 
@@ -20,7 +27,7 @@ New variables are:
 PATH_IMAGES_SGRAM|sgram
 SGRAM_ACTIVE|Y
 SGRAM_FILTER|hpbu6,0.1
-SGRAM_PARAMS|1,0,50,lin
+SGRAM_PARAMS|0.5,0,50,lin
 SGRAM_EXPONENT|0.5
 SGRAM_COLORMAP|spectral(256)
 SGRAM_CLIM|0,2
@@ -32,12 +39,12 @@ SGRAM_PNGQUANT_NCOLORS|32
 Default values are optimized for 100 Hz sampling rate:
 - `SGRAM_FILTER`: signal filtering, same syntax as for `SEFRAN3_CHANNELS` file (default is `hpbu6,0.1` for a highpass Butterworth 6th-order 0.1 Hz cut-off frequency filter);
 - `SGRAM_PARAMS`: 4-element vector of coma separated values, as:
-   - W = time step window for FFT (in seconds, default is 1 s),
+   - W = time step window for FFT (in seconds, default is 0.5 s),
    - Fmin = minimum frequency (in Hz, default is 0 Hz),
    - Fmax = maximum frequency (in Hz, default is 50 Hz),
    - Yscale = `lin` for linear (default) or `log` (logarithmic);
 - `SGRAM_EXPONENT`: power spectrum amplitude exponent (default is 0.5);
-- `SGRAM_COLORMAP`: colormap (default is jet);
+- `SGRAM_COLORMAP`: colormap (default is spectral);
 - `SGRAM_CLIM`: 2-element vector as minimum, maximum values for colormap limits (default is 0-2, which corresponds to a saturation of the spectrogram colors when the signal is also saturated on the waveforms);
 - `SGRAM_OPACITY`: initial opacity of spectrogram over waveform image (default is 0.5).
 

@@ -182,13 +182,13 @@ GRIDMAPS and LOCASTAT will use automatic mapping with the same standards and opt
 % -----------------------------------------------------------------
 \subsection{Overview}
 
-The SEFRAN3 is a graphical interface to operate seismic data flux, manual and semi-automatic detection of events, and earthquake catalog bulletin management.
+The SEFRAN3 is a graphical interface to operate seismic data flux, multi-channel waveform and spectrogram chart, manual and semi-automatic detection of events, and earthquake catalog bulletin management.
 
 The name ``SefraN'' is a contraction of \textit{Sefram Numérique}; it comes from a 70's paper strip-chart recording instrument from the French factory \textit{SEFRAM\textregistered}, used during decades in French observatories. Starting 2001, the system has been replaced by a numerical simulation using local data files archives in SUDS format. SEFRAN3 is the third version of SefraN which now uses data flow from several data flow protocols (Seedlink, Arclink, FDSNWS, ...).
 
 A second tool called ``Main Courante'' hereafter named MC3, is a database of seismic events that is linked to SEFRAN3 interface and possibly to external earthquake catalogs like a local SeisComP3 or any FDSN-webservice compatible database like EMSC or USGS.
 
-The SEFRAN3 works with a fixed selection of channels (up to 15) coming from a single server source, that will be displayed together as time series using 2 different time scales (normal and high) that simulate the paper speed. SEFRAN3 has 4 different GUI:
+The SEFRAN3 works with a fixed selection of channels (up to 20) coming from a single server source, that will be displayed together as time series using 2 different time scales (normal and high) that simulate the paper speed. A continuous spectrogram is also produced and can be displayed as transparent layer. SEFRAN3 has 4 different GUI:
 \begin{enumerate}
 
 \item Main page showing hourly thumbnail images of seismic signals for a given period of time. Identified events are shown as overlaying colored tags. Bottom part of the page is showing realtime state of each channel with some statistics on the data quality. There is two display modes:
@@ -199,13 +199,63 @@ The SEFRAN3 works with a fixed selection of channels (up to 15) coming from a si
 
 \item One hour display of full-resolution image in a wide window that can be spanned and scrolled through time.
 
-\item A form showing a single event at high-speed time resolution of seismic signals, with possibility of editing data and submitting to the database.
+\item A form showing a single event at high-speed time resolution of seismic signals, with possibility of editing data and submitting to the database MC3.
 
 \item A detailed table of events list with date selection, filters, and dynamic graphs.
 
 \end{enumerate}
 
-\textbf{Notice:} SEFRAN3 is using extensively the network connection (for data flux) and external programs like \wofile{arclink\_fetch} (from \textit{SeisComP3}), \wofile{slinktool} (from \textit{IRIS}) and \wofile{convert} (from \textit{ImageMagick}). If you experience any trouble, check first the network, the data availability on servers, and the third-party programs. You might add the variable \wokey{DEBUG|Y} in the configuration file to make the logs more verbose.
+\subsubsection{General principle of SEFRAN3}
+
+SEFRAN3 is based on 1-minute static images of seismic traces, made independently. It works within a loop that will end after a minimum duration run. Each loop will scan the existing images on disk, and make new images as needed (real-time first, then look at older periods to fill gaps) or update them using broom wagons that check the data completeness after some time delay. There is also a short delay of few seconds to take into account the data flux latency from real-time, and a longer delay to switch from real-time data flux request (e.g., SeedLink protocol) to archive data request (e.g., ArcLink or FDSN web-service). Figure \ref{sefran3_diagram} is a summary of main parameters.
+
+\subsubsection{Waveform signal processing}
+
+To make a single minute image, SEFRAN3 imports the corresponding data as temporary multiplexed miniseed file, result from the data request, that contains all the channels samples in counts. Each channel is processed as follows:
+\begin{enumerate}
+\item filter the signal (default is to remove the median, see \ref{sefran3:channels} for other filtering options);
+\item apply the sensitivity factor to compute velocity in m/s;
+\item apply the peak-to-peak factor to normalize the signal;
+\item force graphical overscale.
+\end{enumerate}
+
+Signals are plotted from top to bottom of the graph in the order of the \wofile{MYSEFRAN\_Channels.conf} configuration file. Then the low-speed (\wokey{VALUE\_SPEED} inches per minute) image is exported as EPS file, converted to PNG using the resolution \wokey{VALUE\_PPI} (default is 100). A second high-speed image, using \wokey{VALUE\_SPEED\_HIGH} in/mn, is also exported as PNG.
+
+\subsubsection{Spectrogram signal processing}
+
+When \wokey{SGRAM\_ACTIVE} is on (default), a spectrogram is computed on each channels after applying an additional filter \wokey{SGRAM\_FILTER}, and normalization at peak-to-peak velocity amplitude. Parameters are (see also configuration file \ref{sefran3:conf}):
+\begin{itemize}
+\item \wokey{SGRAM\_FILTER}: signal filtering applied on all channels, same syntax as for waveform filters (default is \wokey{hpbu6,0.1} for a high-pass Butterworth 6th-order 0.1 Hz cut-off frequency filter);
+\item \wokey{SGRAM\_PARAMS}: default parameters \textit{W, F\textsubscript{min}, F\textsubscript{max}, Y\textsubscript{scale}}, a 4-element vector of coma separated values, as:
+	\begin{itemize}
+		\item \textit{W} = time step window for FFT (in seconds, default is 0.5 s),
+		\item \textit{F\textsubscript{min}} = minimum frequency (in Hz, default is 0 Hz),
+		\item \textit{F\textsubscript{max}} = maximum frequency (in Hz, default is 50 Hz),
+		\item \textit{Y\textsubscript{scale}} = \wokey{lin} for linear (default) or \wokey{log} (logarithmic).
+	\end{itemize}
+\item \wokey{SGRAM\_EXPONENT}: power spectrum amplitude exponent (default is 0.5 to reduce the contrast and visually amplify the low energy signal);
+\item \wokey{SGRAM\_COLORMAP}: colormap (default is spectral);
+\item \wokey{SGRAM\_CLIM}: color scale as 2-element vector as minimum, maximum values for colormap limits (default is 0-2, which corresponds to a saturation of the spectrogram colors when the signal is also saturated on the waveforms);
+\item \wokey{SGRAM\_OPACITY}: initial opacity of spectrogram over waveform image (default is 0.7).
+\end{itemize}
+
+Default parameters \wokey{SGRAM\_PARAMS} values are optimized for 100 Hz sampling rate signals. It can be overwritten for any channel using the last column of \wofile{SEFRAN3\_Channels.conf}.  When the spectrogram is activated, minute and hourly images are made at low and high speed simultaneously with classical waveform images, and updated following broom wagon rules. The additional computing time is not significant. But, a spectrogram image are about 1.5 times bigger than waveform's images (low+high speed total).
+
+For visualization, there is several possibilities:
+\begin{itemize}
+\item a new icon is available in the main page menu or in the upper-left control panel to toggle waveform/spectrogram view;
+\item the control panel includes also a manual slide range button to control opacity of the spectrogram;
+\item hot key 'S' can be press anytime to toggle waveform/spectrogram view at default or current opacity value;
+\item hot key 'shift-S' forces the spectrogram view at maximum opacity (no transparency);
+\item hot keys 'T' to lower transparency by 1/10 step (increases opacity), and 'R' to increase by 1/10 (decreases opacity);
+\item hot key 'E' to toggle MC event tags display.
+\end{itemize}
+Hot keys are disabled when editing the event form; you must click outside the field inputs to reactivate them.
+
+
+\subsubsection{Debugging}
+
+SEFRAN3 is using extensively the network connection (for data flux) and external programs like \wofile{wget} for webservices like FDSN-dataselect, \wofile{arclink\_fetch} (from \textit{SeisComP3}), \wofile{slinktool} (from \textit{IRIS}). SEFRAN3 is also using extensively the programs \wofile{convert} (from \textit{ImageMagick}) and \wofile{pngquant} (from \url{https://pngquant.org}). If you experience any trouble, check first the network connection, the data availability on servers, and the third-party programs. You might add the variable \wokey{DEBUG|Y} in the configuration file to make the logs more verbose.
 
 % -----------------------------------------------------------------
 \subsection{SEFRAN3 installation}
@@ -217,7 +267,6 @@ The SEFRAN3 works with a fixed selection of channels (up to 15) coming from a si
 \label{sefran3_diagram}
 \end{figure}
 
-SEFRAN3 is based on 1-minute images of seismic traces. It works within a loop that will end after a minimum duration run. Each loop will scan the existing images on disk, and make new images (real-time first, then look at older periods for gaps) or update them using broom wagons that check the data completeness after some time delay. There is also a short delay of few seconds to take into account the data flux lateness from real-time, and a longer delay to switch from SeedLink data request (convenient for real-time data flux) to ArcLink data request (convenient for archived data). Figure \ref{sefran3_diagram} is a summary of main parameters.
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -226,14 +275,15 @@ SEFRAN3 is based on 1-minute images of seismic traces. It works within a loop th
 To configure a new SEFRAN3, copy the template files \wofile{SEFRAN3.conf} and \wofile{SEFRAN3\_Channels.conf} to, for example, \wofile{MYSEFRAN.conf} and \wofile{MYSEFRAN\_Channels.conf}.
 
 
-\wofile{MYSEFRAN\_Channels.conf} file sets the channel list. Each channel is defined by its alias (a short code used for display), the stream string (used for the data request), the sensitivity factor (to convert counts to m/s), the filter (median, trend or spline removal), the peak-to-peak signal amplitude, and the color. A good conduct is to order the channels from North to South, and give different colors for specific regions. There is no limit to the number of channels, but a maximum of 15 channels is recommended for a normal screen resolution.
+\wofile{MYSEFRAN\_Channels.conf} file sets the channel list. Each channel is defined by its alias (a short code used for display), the stream string (used for the data request), the sensitivity factor (to convert counts to m/s), the filter (median, trend, spline removal or lp/hp/bp filters), the peak-to-peak signal amplitude, the color, and optionally the spectrogram parameters. A good conduct is to order the channels from North to South, and give different colors for specific regions. There is no limit to the number of channels, but a maximum of 15 channels is recommended for a normal screen resolution.
 
 \wofile{MYSEFRAN.conf} file is the main configuration file. It defines a lot of things like output paths, server address and all parameters of graphical outputs and SEFRAN3 behavior.
 
 \lstinputlisting[title=\wofile{SEFRAN3\_Channels.conf}]{../../SETUP/CONF/SEFRAN3_Channels.conf}
+\label{sefran3:channels}
 
 \lstinputlisting[title=\wofile{SEFRAN3.conf}]{../../SETUP/CONF/SEFRAN3.conf}
-
+\label{sefran3:conf}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Activation}
@@ -250,7 +300,7 @@ To activate the SEFRAN3, add a new job in the scheduler, for example with follow
 \textbf{valid:}    & Y \\
 \end{tabular}
 
-After activation, check that it runs correctly in the Scheduler Runs page (see Section \ref{scheduler}).
+Interval value must be equal to (or lower than) \wokey{MIN\_RUNTIME\_SECONDS} to have continuous, real-time run. After activation, check that it runs correctly in the Scheduler Runs page (see Section \ref{scheduler}).
 
 To access the main SEFRAN3 page, use the following URL (can be set for instance in the menu bar):
 
@@ -460,10 +510,11 @@ Some parameter keys of RSAM are common for all \wo{procs} and \wo{grids} so are 
 GNSS is a superproc dedicated to displacement data from global navigation satellite systems processing for instance solutions from Gispy, Gamit/Globk, ... It handles local velocity referential, some data filtering, and produces following graphs (summary graphs activated by setting \wokey{SUMMARYLIST} to the appropriated keyword list, coma separated), for each timescale:
 \begin{itemize}
 \item default is one graph per \wo{node} showing time series of the 3 component displacements (East, North and Up);
-\item one summary graph \wokey{SUMMARY} as time series combining all \wo{nodes} on the 3 component subplots;
-\item one summary graph \wokey{BASELINES} as time series computing 1-D distance variation between a selection of node pairs;
-\item one summary graph \wokey{VECTORS} as map of velocity vectors and amplitude vs. distance optional graph;
-\item one summary graph \wokey{MODELLING} showing the potential source of deformation, estimating the location, volume variation / flux rate and source shape as result of point-source inversion in elastic medium (source type is isotropic or complex source);
+\item one optional summary graph \wokey{SUMMARY} as time series combining all \wo{nodes} on the 3 component subplots;
+\item one optional summary graph \wokey{BASELINES} as time series computing 1-D distance variation between a selection of node pairs;
+\item one optional summary graph \wokey{VECTORS} as map of velocity vectors and amplitude vs. distance;
+\item one optional summary graph \wokey{MOTION} as map of relative displacements vs. time;
+\item one optional summary graph \wokey{MODELLING} showing the potential source of deformation, estimating the location, volume variation / flux rate and source shape as result of point-source inversion in elastic medium (source type is isotropic or complex source pCDM);
 \item one experimental summary graph \wokey{MODELTIME} showing time series of model sources and time location evolution.
 \end{itemize}
 
