@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2020-11-25
+%	Updated: 2020-11-26
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -265,11 +265,11 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						ch_drms = std(diff(d));
 						ch_samp = length(find(t >= t0 & t < t1))/(60*channel_rate);
 
-						% filtering and calibrating
+						% filtering and calibrating with sensitivity
 						ds = filtsignal(t,d,channel_rate,C{4}{n})/str2double(C{3}{n});
 						ch_amax = diff(minmax(ds));
 
-						% calibrates and normalizes signal
+						% normalizes the signal with PP
 						ds = ds/str2double(C{5}{n});
 						% stores signal in structure for spectrogram
 						D(n).t = t;
