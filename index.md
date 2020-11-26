@@ -13,9 +13,9 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 
 ## Download the latest release
 
-- [WebObs-2.1.6.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.1.6/WebObs-2.1.6.tar.gz) (58 Mb) updated September 16, 2020
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.1.6/release-notes.md)
-- [User manual](https://github.com/IPGP/webobs/blob/v2.1.6/DOC/user-manual/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.2.0.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.2.0/WebObs-2.2.0.tar.gz) (58 Mb) updated November 26, 2020
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.2.0/release-notes.md)
+- [User manual](https://github.com/IPGP/webobs/blob/v2.2.0/DOC/user-manual/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory: **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see below for download and install)
@@ -131,6 +131,12 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 
 
 ## What's new?
+
+### What's new in the 2.2?
+
+- Sefran3 has a continuous multichannel spectrogram, and compressed PNG images (by 70%);
+- new default colormaps (ryb, spectral) for all procs;
+- security update, improvements and fixes in all existing superprocs.
 
 ### What's new in the 2.1?
 
