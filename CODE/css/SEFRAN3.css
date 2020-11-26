@@ -176,7 +176,7 @@ div.keys {
 #eventStart {
 	display: block;
 	position: absolute;
-	z-index: 1;
+	z-index: 4;
 	left: -100;
 	top: 0;
 	padding: 0;
@@ -198,7 +198,7 @@ div.keys {
 #eventEnd {
 	display: block;
 	position: absolute;
-	z-index: 1;
+	z-index: 4;
 	left: -100;
 	top: 0;
 	padding: 0;
@@ -220,7 +220,7 @@ div.keys {
 #eventSP {
 	display: block;
 	position: absolute;
-	z-index: 1;
+	z-index: 4;
 	left: -100;
 	top: 0;
 	padding: 0;
@@ -245,7 +245,7 @@ div.keys {
 	/*left: -10px;*/
 	border: none;
 	border-left: 1px solid black;
-	z-index: 1;
+	z-index: 4;
 	/*DYNAMIC top: ${pointer_dy}*/
 	/*DYNAMIC height: ${hauteur_image}px*/
 }
@@ -256,7 +256,7 @@ div.keys {
 	/*left: -10px;*/
 	border: none;
 	border-left: 1px solid black;
-	z-index: 1;
+	z-index: 4;
 	/*DYNAMIC height: ${hauteur_image}px*/
 }
 input[type=submit] {
@@ -269,7 +269,7 @@ input[type=submit] {
 }
 
 #Larrow {
-	z-index: 3;
+	z-index: 4;
 	position: fixed;
 	top: 0px;
 	opacity: 0;
@@ -280,7 +280,7 @@ input[type=submit] {
 }
 
 #Rarrow {
-	z-index: 3;
+	z-index: 4;
 	position: fixed;
 	top: 0px;
 	opacity: 0;
