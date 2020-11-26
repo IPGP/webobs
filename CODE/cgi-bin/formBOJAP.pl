@@ -230,6 +230,7 @@ if (defined($QryParm->{id})) {
 			$sel_m3 = $m3;
 			$sel_m4 = $m4;
 			$sel_rem = $rem;
+			$sel_rem =~ s/"/&quot;/g;
 			$message = "Modification donnée n° $QryParm->{id}";
 		} else { $QryParm->{id} = ""; $val = ""; }
 	} else { $QryParm->{id} = ""; $val = "" ;}
