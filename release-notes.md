@@ -71,7 +71,7 @@ where `PNGQUANT_NCOLORS` is the number of colors for waveform compression (defau
 A known issue is an error in sefran3 using *convert* program, due to missing dynamic library. This might be solved by the following `WEBOBS.rc` variable:
 
 ```
-PRGM_CONVERT|export LD_LIBRARY_PATH='' && /usr/bin/convert
+PRGM_CONVERT|export LD_LIBRARY_PATH='' /usr/bin/convert
 ```
 
 We also propose a bash script `SETUP/compress-SEFRAN` to compress existing sefran3 archives. A basic benchmark shows that a single full year of sefran3 archive may take over a day of processing on a standard computer, but a reduction of about 70% of the total size of archive. Administrators who want to make their own compression must be aware that unfortunately, *pngquant* ignores user's tag header written in the original PNG file. To rewrite the Sefran3 tags in compressed files (needed by broom wagon and display of data statistics), you might use the program `identify` to export tags from the original file first, then `convert` to rewrite them in the compressed file:
