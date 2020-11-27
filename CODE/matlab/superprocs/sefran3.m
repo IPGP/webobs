@@ -379,8 +379,8 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				ftmp2 = sprintf('%s/sefran.eps',ptmp);
 				print(1,'-depsc','-painters','-loose',ftmp2)
 				%wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s %s',convert,tag,vits,ppi,ftmp2,pngq,fpng),SEFRAN3);
-				wosystem(sprintf('%s -density %g %s png:- | %s convert - %s -set sefran3:speed "%g" %s', ...
-					convert,ppi,ftmp2,pngq,[tag0,tag1],vits,fpng),SEFRAN3);
+				wosystem(sprintf('%s -density %g %s png:- | %s %s - %s -set sefran3:speed "%g" %s', ...
+					convert,ppi,ftmp2,convert,pngq,[tag0,tag1],vits,fpng),SEFRAN3);
 				fprintf('done.\n');
 
 				% test: print svg image
@@ -397,8 +397,8 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
 					print(1,'-depsc','-painters','-loose',ftmp2)
 					%wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s %s',convert,tag,vitsh,ppi,ftmp2,pngq,fpng_high),SEFRAN3);
-					wosystem(sprintf('%s -density %g %s png:- | %s convert - %s -set sefran3:speed "%g" %s', ...
-						convert,ppi,ftmp2,pngq,[tag0,tag1],vitsh,fpng_high),SEFRAN3);
+					wosystem(sprintf('%s -density %g %s png:- | %s %s - %s -set sefran3:speed "%g" %s', ...
+						convert,ppi,ftmp2,convert,pngq,[tag0,tag1],vitsh,fpng_high),SEFRAN3);
 					fprintf('done.\n');
 				end
 
@@ -473,8 +473,8 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
 					print(1,'-depsc','-painters','-loose',ftmp3)
 					%wosystem(sprintf('%s %s -set sefran3:speed "%g" -depth 8 -transparent white -density %g %s %s %s',convert,tag,vits,ppi,ftmp3,pngq,fpng),SEFRAN3);
-					wosystem(sprintf('%s -depth 8 -transparent white -density %g %s png:- | %s convert - %s -set sefran3:speed "%g" %s', ...
-						convert,ppi,ftmp3,pngq,[tag0,tag2],vits,fpng),SEFRAN3);
+					wosystem(sprintf('%s -depth 8 -transparent white -density %g %s png:- | %s %s - %s -set sefran3:speed "%g" %s', ...
+						convert,ppi,ftmp3,convert,pngq,[tag0,tag2],vits,fpng),SEFRAN3);
 					fprintf('done.\n');
 
 				end
