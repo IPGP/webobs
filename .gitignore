@@ -4,8 +4,11 @@ CODE/matlab/*.mex*
 CODE/i18n/locales
 DOC/user-manual/*
 !DOC/user-manual/*.tex
-!DOC/user-manual/WebObs_Manual.pdf
+!DOC/user-manual/*.bib
+!DOC/user-manual/figures
 PACK/*
 !PACK/build
 !PACK/build-mac
 !PACK/fpm*
+.DS_Store
+**/.DS_Store
