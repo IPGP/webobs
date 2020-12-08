@@ -1300,8 +1300,8 @@ for (@finalLignes) {
 				$msg = "Edit...";
 				$ico = "modif.png";
 			}
-			$html .= "<a href=\"$editURL\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$msg',WIDTH,50)\" target=\"_blank\">"
-				."<IMG src=\"/icons/$ico\" style=\"border:0;margin:2\"></a>";
+			$html .= qq(<a href="$editURL" onMouseOut="nd()" onMouseOver="overlib('$msg',WIDTH,50)" target="_blank" rel="opener">)
+			         .qq(<img src="/icons/$ico" style="border:0;margin:2"></a>);
 		} else { $html .= "&nbsp;" }
 		$html .= "</TD>";
 		my $tmp = "$evt_annee4$evt_mois";
