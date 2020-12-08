@@ -19,7 +19,11 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ### New features
 
-1. The `LD_LIBRARY_PATH` environment variable is now automatically reset for commands run from a Matlab process to allow commands to be run in a normal system environment. This means that administrators do not need to prefix command defined in configuration file like `WEBOBS.rc` by `env LD_LIBRARY_PATH=''` any more, as it was previously required on some systems.
+1. The `LD_LIBRARY_PATH` environment variable is now automatically reset for commands run from a Matlab process to allow commands to be run in a normal system environment. This means that administrators do not need to prefix commands defined in configuration file like `WEBOBS.rc` by `env LD_LIBRARY_PATH=''` any more, as it was previously required on some systems. (The continued use of the `env` wrapper is not an issue, but its removal is advised.)
+
+### Fixed issues
+
+1. When using Firefox 79+ (and potentially recent versions of other browsers), the temporary tab was not automatically closed and the event log not refreshed after editing an event in the event log / _main courante_.
 
 
 ## v2.2.0 (November 2020)
