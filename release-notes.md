@@ -21,6 +21,17 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 1. The `LD_LIBRARY_PATH` environment variable is now automatically reset for commands run from a Matlab process to allow commands to be run in a normal system environment. This means that administrators do not need to prefix commands defined in configuration file like `WEBOBS.rc` by `env LD_LIBRARY_PATH=''` any more, as it was previously required on some systems. (The continued use of the `env` wrapper is not an issue, but its removal is advised.)
 
+1. A new script `SETUP/compress-sefran-parallel` is provided as an alternative to the script `SETUP/compress-SEFRAN` described in the release notes for version 2.2.0 below to compress the existing PNG images produced by the Sefran, while retaining the tags in the images.
+    * Run `SETUP/compress-sefran-parallel -h` to learn about available options and to get help on the different ways to use the script.
+    * This script can provide the same functionality as `SETUP/compress-SEFRAN`, but it will not show the percentage of the progression. It will however (by default) show the names of the processed files.
+    * If the `parallel` command is installed on the system, compressions will be executed in parallel (2 by default, but this can be changed using the `-j` option if more than 2 CPU are available and your system is not overloaded);
+    * This script can also be used by advanced users to export the minimalistic bash function `run_pngquant` into the current shell that can then be _manually_ fed with a list of files to compress. This functionality can be useful to compress fewer files at a time to not overload the system for too long (e.g. to process a limited number of sefran images during nighttime). It can also be used to compress images exported on a different system not running WebObs (the system will still need `imagemagick`, `pngquant`, and optionnally `parallel` installed). Run the script with the `-h` option to learn more about this functionality. An example of such advanced use to only process one month of images with 4 concurrent compressions would be (note that the use of `sort` is only useful to visually control the progression of the compressions from the dates in the names of the files being compressed):
+>>```
+>>$ . /opt/webobs/Webobs-2.2.0/SETUP/compress-sefran-parallel load_env
+>>$ find /srv/sefran/201901* -name '*.png' | sort | parallel -j 4 run_pngquant
+>>```
+
+
 ### Fixed issues
 
 1. When using Firefox 79+ (and potentially recent versions of other browsers), the temporary tab was not automatically closed and the event log not refreshed after editing an event in the event log / _main courante_.
