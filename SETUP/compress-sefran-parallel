@@ -1,0 +1,270 @@
+#!/bin/bash
+#
+# Alternative script to compress sefran3 PNG images, using GNU parallel.
+#
+# find 20201127 -name '*.png' | sort | parallel -j 3 -n 1 /opt/webobs/Webobs-2.2.0a/SETUP/compress_sefran_img
+#
+
+
+function usage() {
+    cat <<-_EOD_
+Usage: ${0##*/} [options] [sefran_name] [sefran_name] ...
+
+  This script will compress PNG images from the provided sefrans.
+
+  The provided sefran names should correspond a <sefran_name>.conf file
+  in /etc/webobs.d. If no sefran name is provided, all sefran defined in
+  /etc/webobs.d will be processed.
+
+  Available options:
+   -c <n> : create PNG images with <n> colors
+            (used by pngquant, default is $NCOLORS).
+   -j <n> : run <n> jobs concurrently using parallel (default $RUN_JOBS).
+   -q     : do not print file names when compressing files.
+   -n     : dry run: do not modify files, only show what would be done.
+   -h     : show this help screen.
+
+   ADVANCED USES
+
+   For advanced uses, the script can also be source'd in the current shell
+   using the 'load_env' parameter:
+
+       . ${0##*/} load_env
+
+   Called that way, the script will only export the 'run_pngquant' shell
+   function in the current shell. This function processes the PNG file
+   provided as argument. Advanced users may want to use it to manually feed
+   it with the list of files to process, optionally using parallel manually.
+
+   Examples:
+     $ . ${0##*/} load_env
+     $ find /srv/sefranX/2018/20180101 -name '*.png' | sort | xarg run_pngquant
+     $ find /srv/sefranX/2019 -name '*.png' | sort | parallel -j 4 run_pngquant
+
+   The DRY_RUN and SHOW_FILENAMES may be set to 1 or 0 in the shell to
+   respectively enable or disable the features corresponding to the '-n'
+   options and the reverse of the '-q' option.
+
+   Example:
+     $ . ${0##*/} load_env
+     $ SHOW_FILENAMES=0
+     $ find /srv/sefranX/2018 -name '*.png' | parallel -j 2 run_pngquant
+
+_EOD_
+}
+
+
+function check_env() {
+    #
+    # Check the environment
+    #
+    local -a continue=1
+
+    if [ ! -d "$(readlink /etc/webobs.d)" ]; then
+        echo "No webobs installation found (in /etc/webobs.d). Aborting."
+        exit 1
+    fi
+
+    if ! command -v pngquant > /dev/null; then
+        echo "Cannot find the mandatory 'pngquant' command. Please install the relevant package."
+        continue=0
+    fi
+
+    if ! command -v parallel > /dev/null; then
+        echo "Cannot find GNU parallel. The compression will be much slower. You might want to install it."
+        if [[ $continue == 1 ]]; then
+            read -p "Continue anyway ? [y/N] " ans
+            if ! grep -qsE '(y|Y)' <<< "$ans"; then
+                continue=0
+            fi
+        fi
+    fi
+
+    if [[ $continue == 0 ]]; then
+        echo "Aborting."
+        exit 1
+    fi
+}
+
+function check_opts() {
+    #
+    # Check the validity of options
+    #
+    if [[ ! $NCOLORS =~ [1-9] ]]; then
+        echo "Invalid number of colors for pngquant: $NCOLORS. Aborting."
+        exit 2
+    fi
+    if [[ ! $RUN_JOBS =~ [1-9] ]]; then
+        echo "Invalid number of concurrent jobs: $RUN_JOBS. Aborting."
+        exit 2
+    fi
+}
+
+
+function get_sefran_imgdirs() {
+    #
+    # Seek and print the list of root dir of the provided sefrans
+    #
+    local sefran_list="$@"
+    local name root_dir
+    local -a img_dirs err
+
+    for name in $sefran_list; do
+
+        root_dir=$(awk -F'|' -v sefran_root="$WO__SEFRAN_ROOT" '
+            $1 == "ROOT" { print gensub(/\$WEBOBS{["\047]?SEFRAN_ROOT["\047]?}/, sefran_root, 1, $2) }
+            ' /etc/webobs.d/$name.conf 2>/dev/null)
+
+        if [[ ! -d "$root_dir" ]]; then
+            err+=("$name")
+        else
+            img_dir+=($root_dir)
+        fi
+    done
+
+    if [[ ${#err[*]} != 0 ]]; then
+        echo "Error: sefran dir(s) not found: $(IFS=', ' echo "${err[*]}"). Aborting." >&2
+        return 1
+    fi
+
+    echo "${img_dir[*]}"
+    return 0
+}
+
+
+function run_pngquant {
+    #
+    # Do the real convertion using pngquant, retaining PNG tags
+    #
+    local f="$1" dry_msg
+    local tags=$(identify -format %[sefran3*] $f \
+        | sed -e 's/sefran3/ -set sefran3/g; s/=/ /g' \
+        | tr -d '\n')
+
+    if [[ $DRY_RUN != 1 ]]; then
+        pngquant $NCOLORS < $f | convert - $tags $f.tmp \
+            && mv -f $f.tmp $f
+    else
+        dry_msg=" (DRY RUN)"
+    fi
+
+    if [[ $SHOW_FILENAMES == 1 ]]; then
+        echo "compressing $f$dry_msg"
+    fi
+}
+
+
+function compress_images() {
+    #
+    # Compress the PNG images found in the provided directories
+    #
+    local base_dirs="$@"
+    export -f run_pngquant
+
+    echo "About to compress and override images in the following directories:"
+    echo "(You might want to make backups first.)"
+    echo "  $SEFRAN_DIRS"
+    echo
+
+    if [[ $DRY_RUN != 1 ]]; then
+        echo "Are you sure you want to modify all the images files in these directories now"
+        read -p "(this will probably take a few hours/days)? [y/N] " ans
+        if [[ ! $ans =~ ^[yY]$ ]]; then
+            echo "Ok, aborting as requested."
+            exit 0
+        fi
+        echo
+    else
+        dry_run_msg=" (DRY RUN)"
+    fi
+
+
+    if ! command -v parallel > /dev/null || [[ $RUN_JOBS -eq 1 ]]; then
+        run_cmd="xargs"
+    else
+        run_cmd="parallel -j $RUN_JOBS"
+    fi
+    if [[ $SHOW_FILENAMES == 0 ]]; then
+        # No need to sort files if we don't print names
+        sort_cmd=cat
+    else
+        sort_cmd=sort
+    fi
+
+    for dir in $base_dirs; do
+        while IFS= read -r year_dir; do
+            echo "Processing directory $year_dir$dry_run_msg"
+            [[ $SHOW_FILENAMES == 1 ]] && echo "Sorting files, please wait..."
+
+            find $year_dir -name '*.png' | $sort_cmd | $run_cmd -n 1 run_pngquant
+            #echo "find $year_dir -name '*.png' | $sort_cmd | $run_cmd -n 1 run_pngquant"
+        done < <(find $dir -mindepth 1 -maxdepth 1 -type d -regex '.*/????')
+        exit 1
+    done
+}
+
+
+
+# Initialise variables changed by options
+NCOLORS=16
+RUN_JOBS=3
+DRY_RUN=0
+SHOW_FILENAMES=1
+
+# Export variables used in run_pngquant
+# (it is run by parallel in a subprocess)
+export NCOLORS DRY_RUN SHOW_FILENAMES
+
+
+# Read script option
+while getopts "c:j:qnh" opt; do
+    case $opt in
+        c) NCOLORS=$OPTARG ;;
+        j) RUN_JOBS=$OPTARG ;;
+        q) SHOW_FILENAMES=0 ;;
+        n) DRY_RUN=1 ;;
+        h) usage; exit 0 ;;
+        ?) echo "Invalid option. Aborting."; usage; exit 1 ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+# Verify the validity of some opts
+check_opts
+
+
+if [[ $1 == "load_env" ]]; then
+
+    if (! return >/dev/null 2>&1); then
+        echo "Error: the script must be executed by 'source'"
+        echo "to load the 'run_pngquant' function in the current shell."
+        echo "Please run 'source $0 load_env'"
+        exit 1
+    fi
+    # load_env argument is to be used in the current shell:
+    # simply export run_pngquant for use in the current shell
+    export -f run_pngquant
+    return  # end the 'source'd script, not the shell
+fi
+
+
+# Check WO installation and available commands
+check_env
+
+# Read Webobs configuration to the environment
+WOCONF_DIR=$(readlink /etc/webobs.d)
+.  $WOCONF_DIR/../CODE/shells/readconf
+
+
+# Read list of sefrans to process, or find all defined sefrans
+ALL_SEFRANS=$(find $WOCONF_DIR -maxdepth 1 -name 'SEFRAN3*.conf' \
+              | xargs grep -l -E "^ROOT\|" | sed -E "s|$WOCONF_DIR/(.*).conf|\\1|")
+
+# Use sefran provided as arguments, or the list of available sefran configuration files
+SEFRAN_LIST=(${@:-$ALL_SEFRANS})
+
+# Exit if a sefran configuration file cannot be found
+SEFRAN_DIRS=$(get_sefran_imgdirs "${SEFRAN_LIST[*]}") || exit 1
+
+compress_images $SEFRAN_DIRS
+
