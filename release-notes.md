@@ -19,17 +19,22 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ### New features
 
-1. The `LD_LIBRARY_PATH` environment variable is now automatically reset for commands run from a Matlab process to allow commands to be run in a normal system environment. This means that administrators do not need to prefix commands defined in configuration file like `WEBOBS.rc` by `env LD_LIBRARY_PATH=''` any more, as it was previously required on some systems. (The continued use of the `env` wrapper is not an issue, but its removal is advised.)
+1. The `LD_LIBRARY_PATH` environment variable is now automatically reset for commands run from a Matlab process to allow commands to be run in a normal system environment. This means that administrators do not need to reset this variable in `PRGM_*` variables defined in `WEBOBS.rc` like it was previously required in most environments (these variables should now simply include the command name, using either their short name or an absolute path). In particular, **the value of `PRGM_CONVERT` advised in the release notes for version 2.2.0 will not work with this version**: if you upgrade from 2.2.0, please make sure `PRGM_CONVERT` only points to the convert command like this :
+```
+PRGM_CONVERT|convert
+```
+(using a value of `export LD_LIBRARY_PATH='' && convert` **will NOT work**, but the previous default value of `env LD_LIBRARY_PATH='' /usr/bin/convert` will work, althought redefining `LD_LIBRARY_PATH` is not required any more.)
 
-1. A new script `SETUP/compress-sefran-parallel` is provided as an alternative to the script `SETUP/compress-SEFRAN` described in the release notes for version 2.2.0 below to compress the existing PNG images produced by the Sefran, while retaining the tags in the images.
+2. A new script `SETUP/compress-sefran-parallel` is provided as an alternative to the script `SETUP/compress-SEFRAN` described in the release notes for version 2.2.0 below to compress the existing PNG images produced by the Sefran, while retaining the tags in the images.
     * Run `SETUP/compress-sefran-parallel -h` to learn about available options and to get help on the different ways to use the script.
     * This script can provide the same functionality as `SETUP/compress-SEFRAN`, but it will not show the percentage of the progression. It will however (by default) show the names of the processed files.
     * If the `parallel` command is installed on the system, compressions will be executed in parallel (2 by default, but this can be changed using the `-j` option if more than 2 CPU are available and your system is not overloaded);
     * This script can also be used by advanced users to export the minimalistic bash function `run_pngquant` into the current shell that can then be _manually_ fed with a list of files to compress. This functionality can be useful to compress fewer files at a time to not overload the system for too long (e.g. to process a limited number of sefran images during nighttime). It can also be used to compress images exported on a different system not running WebObs (the system will still need `imagemagick`, `pngquant`, and optionnally `parallel` installed). Run the script with the `-h` option to learn more about this functionality. An example of such advanced use to only process one month of images with 4 concurrent compressions would be (note that the use of `sort` is only useful to visually control the progression of the compressions from the dates in the names of the files being compressed):
->>```
->>$ . /opt/webobs/Webobs-2.2.0/SETUP/compress-sefran-parallel load_env
->>$ find /srv/sefran/201901* -name '*.png' | sort | parallel -j 4 run_pngquant
->>```
+
+```
+$ . /opt/webobs/Webobs-2.2.0/SETUP/compress-sefran-parallel load_env
+$ find /srv/sefran/201901* -name '*.png' | sort | parallel -j 4 run_pngquant
+```
 
 
 ### Fixed issues
@@ -90,11 +95,12 @@ SGRAM_PNGQUANT_NCOLORS|32
 
 where `PNGQUANT_NCOLORS` is the number of colors for waveform compression (default is 16), and `SGRAM_PNGQUANT_NCOLORS` the number of colors for spectrogram compression (default is 32). These values can be reduced to make smaller files, but this might produce unwanted solarization effects, especially visible on the spectrogram.
 
-A known issue is an error in sefran3 using *convert* program, due to missing dynamic library. This might be solved by the following `WEBOBS.rc` variable:
+A known issue is an error in sefran3 using *convert* program, due to missing dynamic library. This might be solved in this version 2.2.0 by the following `WEBOBS.rc` variable:
 
 ```
-PRGM_CONVERT|env LD_LIBRARY_PATH='' /usr/bin/convert
+PRGM_CONVERT|export LD_LIBRARY_PATH=''; /usr/bin/convert
 ```
+> **Attention**: this value of `PRGM_CONVERT` is specific to WebObs version 2.2.0 and **will not work in versions >= 2.2.0a**, where a more general approach was implemented. Please refer to the release notes of 2.2.0a for more details.
 
 We also propose a bash script `SETUP/compress-SEFRAN` to compress existing sefran3 archives. A basic benchmark shows that a single full year of sefran3 archive may take over a day of processing on a standard computer, but a reduction of about 70% of the total size of archive. Administrators who want to make their own compression must be aware that unfortunately, *pngquant* ignores user's tag header written in the original PNG file. To rewrite the Sefran3 tags in compressed files (needed by broom wagon and display of data statistics), you might use the program `identify` to export tags from the original file first, then `convert` to rewrite them in the compressed file:
 
