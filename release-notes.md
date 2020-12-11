@@ -53,7 +53,7 @@ SGRAM_PARAMS|0.5,0,50,lin
 SGRAM_EXPONENT|0.5
 SGRAM_COLORMAP|spectral(256)
 SGRAM_CLIM|0,2
-SGRAM_OPACITY|0.5
+SGRAM_OPACITY|0.7
 PNGQUANT_NCOLORS|16
 SGRAM_PNGQUANT_NCOLORS|32
 ```
@@ -75,9 +75,9 @@ When the spectrogram is activated, minute and hourly images are made at low and 
 For visualization, there is several possibilities:
 - a new icon is available in the main page menu or in the upper-left control panel to toggle waveform/spectrogram view;
 - the control panel includes also a manual slide range button to control opacity of the spectrogram;
-- hot key 's' can be press anytime to toggle waveform/spectrogram view at default or current opacity value;
-- hot key 'S' forces the spectrogram view at maximum opacity (no transparency);
-- hot keys 't' to lower transparency by 1/10 step (increases opacity), and 'T' to increase by 1/10 (decreases opacity);
+- hot key 'S' can be press anytime to toggle waveform/spectrogram view at default or current opacity value;
+- hot key 'Shift-S' forces the spectrogram view at maximum opacity (no transparency);
+- hot keys 'R' to lower transparency by 1/10 step (increases opacity), and 'T' to increase by 1/10 (decreases opacity);
 - hot keys 'E' or 'e' have been added to toggle MC event tags display.
 
    Hot keys are disabled when editing the event form; you must click outside the field inputs to reactivate them.
