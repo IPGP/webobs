@@ -223,12 +223,11 @@ WEB_RACINE_SIGNAUX|
 # ---------------------------------------------
 PRGM_MATLAB|/usr/local/bin/matlab -nojvm -display :9
 PRGM_MATLAB_NODISPLAY|/usr/local/bin/matlab -nojvm -nodisplay
-PRGM_GS|/usr/bin/gs
-#PRGM_CONVERT|/usr/bin/convert
-PRGM_CONVERT|export LD_LIBRARY_PATH='' && /usr/bin/convert
+PRGM_GS|gs
+PRGM_CONVERT|convert
 CONVERT_COLORSPACE|-colorspace sRGB
-PRGM_IDENTIFY|/usr/bin/identify
-PRGM_PNGQUANT|/usr/bin/pngquant
+PRGM_IDENTIFY|identify
+PRGM_PNGQUANT|pngquant
 
 # Earth tide prediction program GOTIC2, downloadable at http://www.miz.nao.ac.jp/staffs/nao99/index_En.html
 PRGM_GOTIC2|/opt/nao99b/gotic2/gotic2
