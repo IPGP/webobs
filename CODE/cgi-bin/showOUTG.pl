@@ -237,7 +237,7 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 	# build @glist = the list of available .png graphs for timescale $tslist[$tsSelected]
 	# $glistHtml is the corresponding string of html hrefs to these graphs
 	# with each nodenames replaced with their alias if it is defined
-	my (@glist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.png";
+	my (@glist) = sort glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.png";
 	my $glistHtml = "";
 	if ($QryParm->{'ts'} eq 'events' ) {
 		if ($QryParm->{'g'} eq "") {
@@ -258,23 +258,25 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 		$glistHtml .= " <A href=\"$lnk\"> Overview</A> | ";
 		$glistHtml .= ($QryParm->{'g'} ne "col" ? "<A href=\"${lnk}col\">Column</A>":"Column")." |";
 		for my $fpath (@glist) {
-			my $short = $fpath;
-			$short =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
-			$short =~ s/^$/SUMMARY/;
-			my $shorter = $short;
-			if ($short ne 'SUMMARY' && !(grep( /^$short$/i, @SummaryList)) ) {
-				if ( grep( /^$short$/i, keys(%DefinedNodes)) ) {  # it's a node file AND node still in proc
-					my $alias = getNodeString(node=>uc($short), style=>'alias');
-					$shorter = $alias if ( $alias ne '' && $alias ne '-' );
+			my $gname = $fpath;
+			$gname =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_$tslist[$tsSelected].*$/$1/;
+			$gname =~ s/^$/SUMMARY/;
+			my $gbase = $gname;
+			$gbase =~ s/(.*)_.*$/$1/;
+			my $gmenu = $gname;
+			if ($gname ne 'SUMMARY' && !(grep( /^$gbase$/i, @SummaryList)) ) {
+				if ( grep( /^$gname$/i, keys(%DefinedNodes)) ) {  # it's a node file AND node still in proc
+					my $alias = getNodeString(node=>uc($gname), style=>'alias');
+					$gmenu = $alias if ( $alias ne '' && $alias ne '-' );
 				} else { # it's a node file, but node NOT currently in proc == stale node that survived the housekeeping above
-					$shorter = 'STALE';
+					$gmenu = 'STALE';
 				}
 			}
-			if ( $shorter ne 'STALE' ) {
-				if ($QryParm->{'g'} eq $short) {
-					$glistHtml .= " $shorter |";
+			if ( $gmenu ne 'STALE' ) {
+				if ($QryParm->{'g'} eq $gname) {
+					$glistHtml .= " $gmenu |";
 				} else {
-					$glistHtml .= " <A href=\"$lnk$short\"> $shorter</A> |";
+					$glistHtml .= " <A href=\"$lnk$gname\"> $gmenu</A> |";
 				}
 			}
 		}

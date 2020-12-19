@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2020-11-25
+%   Updated: 2020-12-18
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -164,12 +164,18 @@ end
 modelling_shape = field2shape(P,'MODELLING_SHAPE_FILE');
 
 modelling_source_type = field2str(P,'MODELLING_SOURCE_TYPE','isotropic','notempty');
+
+% some modelling parameters are structure fields to pass them to other functions
 modelopt.horizonly = isok(P,'MODELLING_HORIZONTAL_ONLY');
+modelopt.minerror = field2num(P,'MODELLING_MINERROR_MM',5); % minimum error on data (in mm)
+modelopt.minerrorrel = field2num(P,'MODELLING_MINERROR_PERCENT',1); % minimum relative error on data (in %)
+modelopt.enuerror = field2num(P,'MODELLING_ENU_ERROR_RATIO'); % factor ratio to adjust each component error
+if numel(modelopt.enuerror) < 3
+	modelopt.enuerror = ones(1,3);
+end
 % a priori horizontal error around the target (in STD, km), 0 or NaN = no a priori
 modelopt.apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 modelopt.msig = field2num(P,'MODELLING_SIGMAS',1);
-modelopt.minerror = field2num(P,'MODELLING_MINERROR_MM',5);
-modelopt.minerrorrel = field2num(P,'MODELLING_MINERROR_PERCENT',1);
 modelopt.misfitnorm = field2str(P,'MODELLING_MISFITNORM','L1');
 modelopt.multi = field2num(P,'MODELLING_MULTIPLE_SOURCES',1,'notempty');
 
@@ -256,13 +262,15 @@ end
 
 % filter the data at once and adjust errors
 for n = 1:numel(N)
-	if ~isnan(maxerror)
-		D(n).d(any(D(n).e>maxerror,2),:) = NaN;
-	end
-	for i = 1:numel(orbiterr)
-		k = find(D(n).d(:,4)>=i-1);
-		if ~isempty(k) && orbiterr(i)>0
-			D(n).e(k,:) = D(n).e(k,:)*orbiterr(i);
+	if ~isempty(D(n).d)
+		if ~isnan(maxerror)
+			D(n).d(any(D(n).e>maxerror,2),:) = NaN;
+		end
+		for i = 1:numel(orbiterr)
+			k = find(D(n).d(:,4)>=i-1);
+			if ~isempty(k) && orbiterr(i)>0
+				D(n).e(k,:) = D(n).e(k,:)*orbiterr(i);
+			end
 		end
 	end
 end
@@ -761,15 +769,15 @@ for r = 1:numel(P.GTABLE)
 
 		hold off
 
-		% adds subplot amplitude vs distance
+		% adds subplot horizontal amplitude vs distance
 		if ~isempty(targetll)
 			pos = get(gca,'position');
 			axes('Position',[.5,.05,.45,pos(2)-0.02])
 			plot(0,0)
 			hold on
 			sta_dist = greatcircle(targetll(1),targetll(2),geo(knv,1),geo(knv,2));
-			sta_amp = sqrt(rsum(tr(knv,1:3).^2,2));
-			sta_err = sqrt(rsum(tre(knv,1:3).^2,2));
+			sta_amp = sqrt(rsum(tr(knv,1:2).^2,2));
+			sta_err = sqrt(rsum(tre(knv,1:2).^2,2));
 			for nn = 1:numel(knv)
 				n = knv(nn);
 				errorbar(sta_dist(nn),sta_amp(nn),sta_err(nn),'.','MarkerSize',15,'Color',scolor(n),'LineWidth',0.1)
@@ -779,8 +787,8 @@ for r = 1:numel(P.GTABLE)
 			if any(~isnan(sta_amp))
 				set(gca,'YLim',[0,max(sta_amp+sta_err)])
 			end
-			xlabel('Distance from target (km)')
-			ylabel('Velocity amplitude (mm/yr)')
+			xlabel('Distance from Target (km)')
+			ylabel({'Horizontal Velocity Amplitude','(mm/yr)'})
 		end
 
 
@@ -958,6 +966,13 @@ for r = 1:numel(P.GTABLE)
 			'HorizontalAlignment','center','VerticalAlignment','top','FontWeight','bold')
 		hold off
 
+		% additionnal legend
+		xsc = xlim(1);
+		ysc = alim(1) - 3*diff(alim)/10;
+		if motion_filter > 1
+			text(xsc,ysc,sprintf('Moving average filter = {\\bf %g}',motion_filter),'FontSize',8)
+		end
+
 		% time legend
 		axes('position',[.8,0.06,0.17,0.3]);
 		timecolorbar(.1,0,.15,.8,tlim,motion_colormap,8)
@@ -981,11 +996,19 @@ for r = 1:numel(P.GTABLE)
 		else
 			kn = 1:numel(N);
 		end
-		if ~isempty(targetll) && modelling_excluded_from_target > 0
-			kk = find(greatcircle(targetll(1),targetll(2),geo(kn,1),geo(kn,2)) <= modelling_excluded_from_target);
+		if ~isempty(targetll) && modelling_excluded_from_target ~= 0
+			if modelling_excluded_from_target > 0
+				kk = find(greatcircle(targetll(1),targetll(2),geo(kn,1),geo(kn,2)) <= modelling_excluded_from_target);
+			else
+				kk = find(greatcircle(targetll(1),targetll(2),geo(kn,1),geo(kn,2)) >= -modelling_excluded_from_target);
+			end
 			kn = kn(kk);
 		end
-	fprintf('---> MODELLING: %d/%d nodes selected\n',numel(kn),numel(N));
+		if isfield(P,'MODELLING_INCLUDED_NODELIST')
+			kni = find(ismemberlist({N.FID},split(P.MODELLING_INCLUDED_NODELIST,',')));
+			kn = unique([kn,kni]);
+		end
+		fprintf('---> MODELLING: %d/%d nodes selected\n',numel(kn),numel(N));
 
 		degm = 1e3*degkm;
 		modelopt.msigp = erf(modelopt.msig/sqrt(2));
@@ -1042,6 +1065,10 @@ for r = 1:numel(P.GTABLE)
 	summary = 'MODELLING';
 	if any(strcmp(P.SUMMARYLIST,summary))
 
+		% loop on the model source type
+		for mst = split(modelling_source_type,',')
+			mt = lower(char(mst));
+
 		% makes (or not) the relative data array
 		d = [tr(kn,:),tre(kn,:)];
 		knn = find(~isnan(d(:,1)));
@@ -1061,8 +1088,9 @@ for r = 1:numel(P.GTABLE)
 		d(:,4:6) = adjerrors(d,modelopt);
 
 		% --- computes the model !
-		switch lower(modelling_source_type)
+		switch lower(mt)
 		case 'pcdm'
+			summary = 'MODELLING_pCDM';
 			M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,PCDM);
 			if numel(M) > 1 && M(end).m0 < M(1).m0
 				[mm,imm] = max(cat(4,M.mm),[],4);
@@ -1107,6 +1135,7 @@ for r = 1:numel(P.GTABLE)
 				nmodels = sum(PCDM.random_sampling);
 			end
 		otherwise
+			summary = 'MODELLING';
 			M = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
 			if numel(M) > 1 && M(end).m0 < M(1).m0
 				[mm,imm] = max(cat(4,M.mm),[],4);
@@ -1229,7 +1258,7 @@ for r = 1:numel(P.GTABLE)
 		end
 		%axis equal; axis tight
 		if plotbest && any(~isnan(m0))
-			switch lower(modelling_source_type)
+			switch lower(mt)
 			case 'pcdm'
 				plotpcdm(pbest(:,[1:6,8,9]),wbest,'xy','EdgeColor',plotbest_col);
 			otherwise
@@ -1268,7 +1297,7 @@ for r = 1:numel(P.GTABLE)
 			plot(zlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 		end
 		if plotbest && any(~isnan(m0))
-			switch lower(modelling_source_type)
+			switch lower(mt)
 			case 'pcdm'
 				plotpcdm(pbest(:,[1:6,8,9]),wbest,'zy','EdgeColor',plotbest_col);
 			otherwise
@@ -1306,7 +1335,7 @@ for r = 1:numel(P.GTABLE)
 			plot(repmat(modelopt.targetxy(1),1,2),zlim([1,end]),':k')
 		end
 		if plotbest && any(~isnan(m0))
-			switch lower(modelling_source_type)
+			switch lower(mt)
 			case 'pcdm'
 				plotpcdm(pbest(:,[1:6,8,9]),wbest,'xz','EdgeColor',plotbest_col);
 			otherwise
@@ -1334,11 +1363,14 @@ for r = 1:numel(P.GTABLE)
 		end
 		info = { ...
 			' ', ...
-			sprintf('model type = {\\bf%s%s}',modelling_source_type,src_multi), ...
+			sprintf('model type = {\\bf%s%s}',mt,src_multi), ...
 			sprintf('model space = {\\bf%s}',num2tex(nmodels)), ...
 			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
 			sprintf('uncertainty = {\\bf%g \\sigma (%1.1f%%)}',modelopt.msig,modelopt.msigp*100), ...
 		};
+		if any(modelopt.enuerror ~= 1)
+			info = cat(2,info,sprintf('error E,N,U ratio = {\\bf%g,%g,%g}',modelopt.enuerror));
+		end
 		if modelopt.horizonly
 			info = cat(2,info,'misfit mode = {\bfhorizontal only}');
 		end
@@ -1349,7 +1381,7 @@ for r = 1:numel(P.GTABLE)
 		if any(~isnan(m0))
 			%info = cat(2,info,' ',sprintf('   {\\itLeast bad source (%1.1f%%)}:',modelopt.msigp*100));
 			[e0,n0,z0] = ll2utm(lat0,lon0);
-			switch lower(modelling_source_type)
+			switch lower(mt)
 			case 'pcdm'
 				bstab = {''; ...
 					'lat N'; ...
@@ -1476,7 +1508,7 @@ for r = 1:numel(P.GTABLE)
 				                                      'E_mod(mm)','N_mod(mm)','Up_mod(mm)'};
 			if any(~isnan(m0))
 				E.infos = {''};
-				switch lower(modelling_source_type)
+				switch lower(mt)
 				case 'pcdm'
 					for m = 1:numel(M)
 						E.infos = cat(2,E.infos, ...
@@ -1484,7 +1516,7 @@ for r = 1:numel(P.GTABLE)
 							sprintf('latitude = %g N in [%+g , %+g] km',lats(m), roundsd(ey(m,:)/1e3,2)), ...
 							sprintf('longitude = %g E in [%+g , %+g]',lons(m), roundsd(ex(m,:)/1e3,2)), ...
 							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',pbest(m,3),-fliplr(ez(m,:))/1e3), ...
-							sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
+							sprintf('DeltaV = %+g m^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
 							sprintf('A = %1.2f / B = %1.2f',pbest(m,8:9)), ...
 							sprintf('shape = %s',pcdmdesc(pbest(m,8),pbest(m,9))), ...
 							sprintf('OmegaX = %+2.0f / OmegaY = %+2.0f / OmegaZ = %+2.0f',pbest(m,4:6)), ...
@@ -1497,7 +1529,7 @@ for r = 1:numel(P.GTABLE)
 							sprintf('latitude = %g N in [%+g , %+g] km',lats(m), roundsd(ey(m,:)/1e3,2)), ...
 							sprintf('longitude = %g E in [%+g , %+g] km',lons(m), roundsd(ex(m,:)/1e3,2)), ...
 							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',-[pbest(m,3),fliplr(ez(m,:))]/1e3), ...
-							sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
+							sprintf('DeltaV = %+g m^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
 							' ');
 					end
 				end
@@ -1505,14 +1537,14 @@ for r = 1:numel(P.GTABLE)
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
-
+		end
 	end
 
 	% --- Modelling in time
 	summary = 'MODELTIME';
 	if any(strcmp(P.SUMMARYLIST,summary))
 		dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max));
-			%sprintf('model type = {\\bf%s%s}',modelling_source_type,src_multi), ...
+			%sprintf('model type = {\\bf%s%s}',mt,src_multi), ...
 			%sprintf('model space = {\\bf%s}',num2tex(nmodels)), ...
 		info = { ...
 			' ', ...
@@ -1954,8 +1986,9 @@ end
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function e = adjerrors(d,opt)
-% avoiding numerical problem with pdf due to low errors
 e = d(:,4:6);
+
+% avoiding numerical problem with pdf due to low errors
 emin = abs(d(:,1:3))*opt.minerrorrel/100;
 k = (e < emin | isnan(d(:,1:3)) | isnan(e));
 if any(k)
@@ -1964,8 +1997,9 @@ if any(k)
 		fprintf('---> %d data errors have been increased to %g%%.\n',sum(k(:)),opt.minerrorrel);
 	end
 end
+
 % forces a minimum relative error
-k = (e<opt.minerror);
+k = (e < opt.minerror);
 if any(k)
 	e(k) = opt.minerror; % forces a minimum absolute error
 	if ~strcmpi(opt.verbose,'quiet')
@@ -1973,6 +2007,13 @@ if any(k)
 	end
 end
 
+% ajusts component errors using a priori factor ratio
+if any(opt.enuerror ~= 1)
+	e = e.*repmat(opt.enuerror(1:3),size(e,1),1);
+	if ~strcmpi(opt.verbose,'quiet')
+		fprintf('---> all data errors dE,dN,dU have been multiplied by %g,%g,%g.\n',opt.enuerror);
+	end
+end
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -149,13 +149,14 @@ VECTORS_RELATIVE|N
 # - 'auto' (default): automatic mean velocity (average vector of all NODES)
 # - NODE's FID name or list of NODES: use the velocity vector (or mean velocity vector)
 # - E,N,U: sets fixed offset values (in mm/yr)
-VECTORS_VELOCITY_REF|auto
 VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 # background map parameters (see CODE/matlab/dem.m for available options)
 VECTORS_DEM_OPT|'watermark',1.5,'saturation',0.7,'interp','legend','seacolor',[0.7,0.9,1]
 VECTORS_TITLE|{\fontsize{14}{\bf${NAME} - Velocity vectors} ($timescale)}
 VECTORS_MIN_SIZE_KM|5
 VECTORS_MAX_XYRATIO|1
+# vectors velocity scale, in mm/yr for 25% of the graph width (default is 0 for automatic)
+VECTORS_VELOCITY_SCALE|0
 VECTORS_ARROWSHAPE|.15,.15,.12,.03
 VECTORS_TARGET_INCLUDED|Y
 
@@ -176,8 +177,12 @@ MOTION_TARGET_INCLUDED|Y
 # excluding NODES from graphs and calculations
 MODELLING_EXCLUDED_NODELIST|
 MODELLING_EXCLUDED_FROM_TARGET_KM|
+# forces including some nodes (after previous exclusion)
+MODELLING_INCLUDED_NODELIST|
 # ignores vertical component
-MODELLING_HORIZONTAL_ONLY|Y
+MODELLING_HORIZONTAL_ONLY|N
+# adjusts a priori errors for each component
+MODELLING_ENU_ERROR_RATIO|1,1,2
 # recomputes relative velocities before modelling (instead of vectors results)
 MODELLING_FORCE_RELATIVE|N
 # modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
