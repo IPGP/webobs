@@ -6,6 +6,11 @@ This document contains install/upgrade summary and specific instructions for use
 The latest release contains improvements, new features, bug fixes, and sometimes security strengthening.
 **Upgrade is recommended for all WebObs administrators**. For known issues, please take a look to [github.com/IPGP/webobs/issues](https://github.com/IPGP/webobs/issues) and do not hesitate to submit any problem with this release.
 
+The release number policy is now **WebObs-X.Y.Z**, where:
+* X = major version number
+* Y = primary version number, will increase for each release that contains new features
+* Z = secondary version number, will increase when release contains only fixes issues
+
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (not a bug fix). An appropriate configuration to keep former behavior is usually proposed.
 
 <!--
@@ -15,7 +20,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.2.0a (Unreleased yet)
+## v2.3.0 (Unreleased yet)
 
 ### New features
 
@@ -25,21 +30,29 @@ PRGM_CONVERT|convert
 ```
 (using a value of `export LD_LIBRARY_PATH='' && convert` **will NOT work**, but the previous default value of `env LD_LIBRARY_PATH='' /usr/bin/convert` will work, althought redefining `LD_LIBRARY_PATH` is not required any more.)
 
-2. A new script `SETUP/compress-sefran-parallel` is provided as an alternative to the script `SETUP/compress-SEFRAN` described in the release notes for version 2.2.0 below to compress the existing PNG images produced by the Sefran, while retaining the tags in the images.
+2. A new script `SETUP/compress-sefran-parallel` is provided to replace the previous script `SETUP/compress-SEFRAN` described in the release notes for version 2.2.0 below to compress the existing PNG images produced by the Sefran, while retaining the tags in the images.
     * Run `SETUP/compress-sefran-parallel -h` to learn about available options and to get help on the different ways to use the script.
     * This script can provide the same functionality as `SETUP/compress-SEFRAN`, but it will not show the percentage of the progression. It will however (by default) show the names of the processed files.
     * If the `parallel` command is installed on the system, compressions will be executed in parallel (2 by default, but this can be changed using the `-j` option if more than 2 CPU are available and your system is not overloaded);
     * This script can also be used by advanced users to export the minimalistic bash function `run_pngquant` into the current shell that can then be _manually_ fed with a list of files to compress. This functionality can be useful to compress fewer files at a time to not overload the system for too long (e.g. to process a limited number of sefran images during nighttime). It can also be used to compress images exported on a different system not running WebObs (the system will still need `imagemagick`, `pngquant`, and optionnally `parallel` installed). Run the script with the `-h` option to learn more about this functionality. An example of such advanced use to only process one month of images with 4 concurrent compressions would be (note that the use of `sort` is only useful to visually control the progression of the compressions from the dates in the names of the files being compressed):
 
 ```
-$ . /opt/webobs/Webobs-2.2.0/SETUP/compress-sefran-parallel load_env
+$ . /opt/webobs/WebObs-2.3.0/SETUP/compress-sefran-parallel load_env
 $ find /srv/sefran/201901* -name '*.png' | sort | parallel -j 4 run_pngquant
 ```
+
+3. The GNSS superproc has new features for the summary graph **MODELLING**:
+   * `MODELLING_SOURCE_TYPE` now accepts a list of coma-separated models, i.e., presently only `isotropic` and `pCDM`. If two models are defined, both will be computed and available through menu links **MODELLING** and **MODELLING_pCDM**, respectively.
+   * `MODELLING_EXCLUDED_FROM_TARGET_KM` now accepts negative value to exclude nodes at distance *lower* than the absolute value, i.e., `-5` will exclude stations up to 5 km from the target. As a reminder, a positive value will exclude nodes at distance *greater* than the value.
+   * `MODELLING_INCLUDED_NODELIST` allows to include node(s) that have been (eventually) excluded by the previous parameter or `MODELLING_EXCLUDED_NODELIST`.
+   * `MODELLING_ENU_ERROR_RATIO` is a list of 3 factors applied to the velocity trend components E, N, and U, respectively, before the modelling process. The default is `1,1,2` to multiply by 2 the vertical component errors, which is more consistent with the usual GNSS data errors. `!!` Set to `1,1,1` to keep the previous behavior and results.
 
 
 ### Fixed issues
 
 1. When using Firefox 79+ (and potentially recent versions of other browsers), the temporary tab was not automatically closed and the event log not refreshed after editing an event in the event log / _main courante_.
+
+2. In the GNSS superproc, there was a mistake in the name of parameter to adjust velocity scale manually in VECTORS graph: the correct name is `VECTORS_VELOCITY_SCALE` and defines the velocity in mm/yr corresponding to 25% of the graph width.
 
 
 ## v2.2.0 (November 2020)
@@ -159,6 +172,7 @@ COLOR_SATURATION|0.7
 2. In GNSS/GispyX data format, station code is now case insensitive. In fact, station code in `.tdp` files is written upper case, so lower case FID were not properly found in the GipsyX solutions. This has been fixed.
 
 3. The [Codemirror javascript library](https://codemirror.net/) (used to colorize the textareas used to edit configuration file for procs and nodes) embedded in WebObs has been updated to address the security issue described in [CVE-2020-7760](https://nvd.nist.gov/vuln/detail/CVE-2020-7760).
+
 
 ## v2.1.6 (September 2020)
 
