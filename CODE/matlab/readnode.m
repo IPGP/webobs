@@ -1,7 +1,7 @@
 function N=readnode(WO,nodefullid,NODES);
 %READNODE Read WEBOBS node configuration
-%	N = READNODE(WO,NODEFULLID) returns a structure variable X containing 
-%	every field key and corresponding value from the node .cnf 
+%	N = READNODE(WO,NODEFULLID) returns a structure variable X containing
+%	every field key and corresponding value from the node .cnf
 %	configuration file. NODEFULLID syntax is 'GRIDtype.GRIDname.ID'.
 %
 %	Specific PROC's parameters (like FIDs, CHANNEL_LIST) will be filtered
@@ -20,12 +20,12 @@ function N=readnode(WO,nodefullid,NODES);
 %	TRANSMISSION: a structure containing following fields (if defined):
 %	               TYPE: index in FILE_TELE (NODES.rc)
 %	              NODES: cell array of NODES ID
-%	          REPEATERi: all base keys of repeater NODE i in a structure 
+%	          REPEATERi: all base keys of repeater NODE i in a structure
 %
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2019-02-14
+%   Updated: 2020-12-19
 
 
 if ~exist('NODES','var')
@@ -87,7 +87,7 @@ for j = 1:length(c2num)
 		N.(c2num{j}) = sstr2num(N.(c2num{j})); %NOTE: str2num() allows some syntax interpretation like '5/1440' (5 mn expressed in days)
 	else
 		N.(c2num{j}) = NaN;
-	end 
+	end
 end
 
 if isnan(N.UTC_DATA)
@@ -101,7 +101,10 @@ if isnan(N.LAST_DELAY)
 end
 
 % --- reads .clb calibration file (if exists)
-clb = sprintf('%s/%s.clb',p,id);
+clb = sprintf('%s/%s.clb',p,nodefullid);
+if ~exist(clb,'file')
+	clb = sprintf('%s/%s.clb',p,id); % for backwards compatibility
+end
 if exist(clb,'file')
 	fid = fopen(clb);
 	C = textscan(fid,'%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%*[^\n]','Delimiter','|','CommentStyle','#');
@@ -171,4 +174,3 @@ if length(tr) > 0 & ~isempty(tr{1})
 		end
 	end
 end
-

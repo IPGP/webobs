@@ -237,7 +237,7 @@ my %CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 
 print "<FORM name=form id=\"theform\" action=\"/cgi-bin/$CLBS{CGI_FORM}\">"
 	."<INPUT type=\"hidden\" name=\"nbc\" value=\"3\">"
-	."<INPUT type=\"hidden\" name=\"node\" value=\"$NODEName\">";
+	."<INPUT type=\"hidden\" name=\"node\" value=\"$GRIDType.$GRIDName.$NODEName\">";
 
 # ---- start of node table ----------------------------------------------------
 #
@@ -378,14 +378,15 @@ if (uc($GRIDType) eq 'PROC') {
 	print "</TD></TR>\n";
 
 	# channels (calibration file)
-	my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
+	my $clbFile = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
+	$clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $clbFile ); # for backwards compatibility
 	my @carCLB;
-	@carCLB = readCfgFile($clbFile) if (-s $clbFile != 0);
+	@carCLB = readCfgFile($clbFile) if ( -s $clbFile );
 	print "<TR><TD valign=\"top\" width=\"10%\"><B>";
 	my $txt = $__{'Channels'};
 	if ($editOK) {
 		if ($#carCLB >= 0) {
-			print "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$NODEName\">$txt</A>";
+			print "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$GRIDType.$GRIDName.$NODEName\">$txt</A>";
 		} else {
 			print "<A href=\"#\" onclick=\"askChanNb();\$(this).closest('form').submit();\"><B>$txt</B></A>";
 		}
