@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-postCLB.pl 
+postCLB.pl
 
 =head1 SYNOPSIS
 
-http://..../postCLB.pl? 
+http://..../postCLB.pl?
 
 =head1 DESCRIPTION
 
@@ -37,6 +37,7 @@ set_message(\&webobs_cgi_msg);
 $ENV{LANG} = $WEBOBS{LOCALE};
 
 # ---- inits
+my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my %NODE;
 my $fileDATA = "";
 my %CLBS;
@@ -49,21 +50,20 @@ my $today = strftime('%F',@tod);
 my $QryParm = $cgi->Vars;
 $QryParm->{'node'}   //= "";
 
-# ---- can we ? should we ? do we have all we need ? 
+# ---- can we ? should we ? do we have all we need ?
 #
-if (clientHasEdit(type=>"authmisc",name=>"CLB")) {
-	if ($QryParm->{'node'} ne "") {
-		my %S = readNode($QryParm->{'node'});
-		%NODE = %{$S{$QryParm->{'node'}}};
+($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
+if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
+	if ( !clientHasEdit(type=>"authprocs",name=>"$GRIDName")) {
+		die "$__{'Not authorized'} (edit) $QryParm->{'node'}";
+	}
+	if ($NODEName ne "") {
+		my %S = readNode($NODEName);
+		%NODE = %{$S{$NODEName}};
 		if (%NODE) {
-			$fileDATA = "$NODES{PATH_NODES}/$QryParm->{'node'}/$QryParm->{'node'}.clb";
+			$fileDATA = "$NODES{PATH_NODES}/$NODEName/$QryParm->{'node'}.clb";
 			%CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
-			if (%CLBS) {
-				@fieldCLB = readCfg($CLBS{FIELDS_FILE});
-				if (@fieldCLB) {
-					$fileDATA = "$NODES{PATH_NODES}/$QryParm->{'node'}/$QryParm->{'node'}.clb";
-				} else { htmlMsgNotOK("Couldn't read the calibration-files data-fields definition."); exit 1; }
-			} else { htmlMsgNotOK("Couldn't read the calibration-files configuration."); exit 1; }
+			@fieldCLB = readCfg($CLBS{FIELDS_FILE});
 		} else { htmlMsgNotOK("Couldn't get $QryParm->{'node'} node configuration."); exit 1; }
 	} else { htmlMsgNotOK("no node specified. "); exit 1; }
 } else { htmlMsgNotOK("You can't edit calibration files !"); exit 1; }
@@ -113,7 +113,7 @@ for ("1"..$nb) {
 		$modify = 1;
 	}
 }
-if ($nbc > $maxc) { 
+if ($nbc > $maxc) {
 	for (($maxc+1)..$nbc) {
 		my $s = $today;
 		$s .= "|$fieldCLB[1][1]|$_";
@@ -133,7 +133,7 @@ if ($nbc > $maxc) {
 }
 
 # stamp (date and staff)
-my $stamp  = "[$today $USERS{$CLIENT}{UID}]";      
+my $stamp  = "[$today $USERS{$CLIENT}{UID}]";
 my $entete = "# WebObs - $WEBOBS{WEBOBS_ID} : calibration file $QryParm->{'node'}\n# $stamp\n";
 
 # ---- lock-exclusive the data file during all update process
@@ -143,10 +143,10 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 		warn "postCLB waiting for lock on $fileDATA...";
 		flock(FILE, LOCK_EX);
 	}
-	# ---- backup file (To Be Removed: lifecycle too short to be used ) 
+	# ---- backup file (To Be Removed: lifecycle too short to be used )
 	if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
 	# ---- rewrite all file from previously built '@donnees'
-	if ( $?  == 0 ) { 
+	if ( $?  == 0 ) {
 		truncate(FILE, 0);
 		seek(FILE, 0, SEEK_SET);
 		print FILE $entete;
@@ -166,10 +166,10 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 	exit 1;
 }
 
-# --- return information when OK 
+# --- return information when OK
 sub htmlMsgOK {
  	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	my $msg = $_[0] || "calibration file successfully updated !" ; 
+	my $msg = $_[0] || "calibration file successfully updated !" ;
 	print "$msg\n";
 }
 
@@ -205,4 +205,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

@@ -6,10 +6,11 @@ This document contains install/upgrade summary and specific instructions for use
 The latest release contains improvements, new features, bug fixes, and sometimes security strengthening.
 **Upgrade is recommended for all WebObs administrators**. For known issues, please take a look to [github.com/IPGP/webobs/issues](https://github.com/IPGP/webobs/issues) and do not hesitate to submit any problem with this release.
 
-The release number policy is now **WebObs-X.Y.Z**, where:
-* X = major version number
-* Y = primary version number, will increase for each release that contains new features
-* Z = secondary version number, will increase when release contains only fixes issues
+The semantic versionning of *WebObs* release is now **X.Y.Z**, where:
+
+1. **X** is the **major** version number, corresponding to structural, deep code changes or new major functionality,
+2. **Y** is the **minor** version number, with additional features in a backwards compatible manner, and
+3. **Z** is the **patch** version number, with backwards compatible bug fixes.
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (not a bug fix). An appropriate configuration to keep former behavior is usually proposed.
 
@@ -47,6 +48,10 @@ $ find /srv/sefran/201901* -name '*.png' | sort | parallel -j 4 run_pngquant
    * `MODELLING_INCLUDED_NODELIST` allows to include node(s) that have been (eventually) excluded by the previous parameter or `MODELLING_EXCLUDED_NODELIST`.
    * `MODELLING_ENU_ERROR_RATIO` is a list of 3 factors applied to the velocity trend components E, N, and U, respectively, before the modelling process. The default is `1,1,2` to multiply by 2 the vertical component errors, which is more consistent with the usual GNSS data errors. `!!` Set to `1,1,1` to keep the previous behavior and results.
 
+4. Node calibration file is now associated to procs, and not unique. Each proc will use its own calibration table for a given node. For backwards compatibility, the following behavior is adopted:
+   * any existing calibration file (created before this release 2.3.0) will continue to apply to any proc associated to the node.
+   * when edited through a particular proc, the former calibration file is duplicated and the edited version will remain specific to the corresponding proc. Other procs will continue to use the former version of the calibration file, until it is edited.
+   * when creating a new calibration file, it will be associated to the proc under which it is created, and only visible and used by this proc.
 
 ### Fixed issues
 

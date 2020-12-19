@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-formCLB.pl 
+formCLB.pl
 
 =head1 SYNOPSIS
 
@@ -10,13 +10,14 @@ formCLB.pl
 
 =head1 DESCRIPTION
 
-Editing the calibration file of a node.
+ Editing or creating the calibration file of a node in association to a proc.
 
 =head1 Query string parameters
 
- node=  
- the NODE name whose CLB file will be edited
- 
+ node=
+ the fully qualified node name whose CLB file will be edited, e.g.,
+ node=PROC.procname.nodename
+
 =cut
 
 use strict;
@@ -50,44 +51,63 @@ sub sort_clb_lines {
 	$a->[0] cmp $b->[0] || $a->[1] cmp $b->[1] || $a->[2] <=> $b->[2];
 }
 
-# ---- inits and checkings   
+# ---- inits and checkings
+my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my %NODE;
 my %CLBS;
 my @clbNote;
 my @fieldCLB;
 my $fileDATA = "";
-my @newChan; 
+my @newChan;
 my @donnees;
 my $nb = 0;
-my $nouveau = 0; 
+my $nouveau = 0;
 my $QryParm = $cgi->Vars;
 
 $QryParm->{'node'}   ||= "";
 
-if (clientHasEdit(type=>"authmisc",name=>"CLB")) {
-	if ($QryParm->{'node'} ne "") {
-		my %S = readNode($QryParm->{'node'});
-		%NODE = %{$S{$QryParm->{'node'}}};
+($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
+if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
+	if ( !clientHasEdit(type=>"authprocs",name=>"$GRIDName")) {
+		die "$__{'Not authorized'} (edit) $GRIDType.$GRIDName.$NODEName";
+	}
+	if ($NODEName ne "") {
+		my %S = readNode($NODEName);
+		%NODE = %{$S{$NODEName}};
 		if (%NODE) {
 			%CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 			if (%CLBS) {
 				@clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
 				@fieldCLB = readCfg($CLBS{FIELDS_FILE});
 				if (@fieldCLB) {
-					$fileDATA = "$NODES{PATH_NODES}/$QryParm->{'node'}/$QryParm->{'node'}.clb";
-					if (-e $fileDATA and -s $fileDATA) {
+					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
+					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $fileDATA ); # for backwards compatibility
+					if ( -s $fileDATA ) {
 						@donnees = map { my @e = split /\|/; \@e; } readCfgFile($fileDATA);
-					} else { $nouveau = 1; @newChan = (1..$QryParm->{'nbc'})}
-				} else { die "$__{'Could not read'} $__{'calibration data-fields definition'}" } 
-			} else { die "$__{'Could not read'} $__{'calibration-files configuration'}" }
-		} else { die "$__{'Could not read'} $QryParm->{'node'} $__{'node configuration'}" }
-	} else { die "$__{'No node requested'}" }
-} else { die "$__{'Not authorized'} (edit)" }
+					} else {
+						$nouveau = 1; @newChan = (1..$QryParm->{'nbc'});
+					}
+				} else {
+					die "$__{'Could not read'} $__{'calibration data-fields definition'}";
+				}
+			} else {
+				die "$__{'Could not read'} $__{'calibration-files configuration'}";
+			}
+		} else {
+			die "$__{'Could not read'} $QryParm->{'node'} $__{'node configuration'}";
+		}
+	} else {
+		die "$__{'No node requested'}";
+	}
+} else {
+	die ("$__{'You cannot edit a NODE calibration file outside of PROC context'}");
+}
+
 
 # ---- OK, passed all above checks
 
 my $titre2 = "$NODE{ALIAS}: $NODE{NAME} [$QryParm->{'node'}]";
-		
+
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
 my $todayyear = strftime('%Y',@tod);
@@ -103,7 +123,7 @@ my @jourListe   = ('01'..'31');
 my @heureListe  = ('00'..'23');
 my @minuteListe = ('00'..'59');
 
-# ---- Start HTML page 
+# ---- Start HTML page
 my $titrePage = "Edit - $CLBS{TITLE}";
 print "Content-type: text/html\n\n
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n
@@ -120,8 +140,8 @@ print "Content-type: text/html\n\n
 my $jvs = ($QryParm->{'submit'}) ? 'onLoad="calc()"' : "";
 print "<BODY style=\"background-color:#E0E0E0\" $jvs>\n";
 print "<H1>$titrePage</H1>\n<H2>$titre2</H2>\n";
-	
-# ---- take care of new "lines" if any 
+
+# ---- take care of new "lines" if any
 #
 for (@newChan) {
 	my $s;
@@ -227,11 +247,11 @@ print "<P>@clbNote</P>\n";
 #djl-was: print "<FORM name=formulaire action=\"/cgi-bin/".basename($0)."?submit=\" method=post onSubmit=\"return verif_formulaire()\">";
 print "<FORM name=formulaire id=\"theform\" action=\"\">";
 print "<input type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">",
-      "<input type=\"hidden\" name=\"nb\" value=\"$nb\">\n\n",	
+      "<input type=\"hidden\" name=\"nb\" value=\"$nb\">\n\n",
 	  "<TABLE class=\"CLBtable\" width=\"100%\" style=\"border:0\" onMouseOver=\"calc()\">",
 	  "<TR>";
 		for (0..($#fieldCLB)) {
-			if ($_ >= 12 && $_ <= 16) { $c = ' class="CLBshowhide"' } else { $c = ''} 
+			if ($_ >= 12 && $_ <= 16) { $c = ' class="CLBshowhide"' } else { $c = ''}
 			print "<TH$c>",$fieldCLB[$_][2]."</TH>";
 		}
 print "</TR>\n";
@@ -283,7 +303,7 @@ for my $line (sort sort_clb_lines @donnees) {
 		$nbc = $line->[2];
 	}
 	for my $j ("2"..($#fieldCLB-1)) {
-		if ($j >= 11 && $j <= 15) { $c = ' class="CLBshowhide"' } else { $c = ''} 
+		if ($j >= 11 && $j <= 15) { $c = ' class="CLBshowhide"' } else { $c = ''}
 		print "<TD$c onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[$j+1][3]}')\"><input name=\"v".$i."_".$j
 				."\" value=\"".($line->[$j+1] // '')."\" size=\"$fieldCLB[$j+1][0]\"></TD>\n";
 	}
@@ -295,7 +315,7 @@ my $txt = "Number of channels for the node:<ul>"
 	."<li>decrease to remove all lines of channels with a greater number."
 	."</ul>";
 print "<TR><TD style=\"border:0\" colspan=2>
-		<P><B>Fix number of channels</B> = 
+		<P><B>Fix number of channels</B> =
 		<input type=\"text\" name=\"nbc\" size=2 value=\"$nbc\" onKeyUp=\"calc()\"
 		onMouseOut=\"nd()\" onMouseOver=\"overlib('$txt',CAPTION,'ATTENTION')\"></P>
 		</TD><TD style=\"border:0\" colspan=5>&nbsp;&uarr; <B>Selected lines :</B><BR>\n
@@ -338,4 +358,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
