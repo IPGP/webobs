@@ -116,6 +116,8 @@ my $today = strftime("%Y-%m-%d", localtime);
 
 my $go2top = "&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 
+my %CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
+
 # ---- Nodes status ---------------------
 my $overallStatus = 1;
 my $statusDB = $NODES{SQL_DB_STATUS} || "$WEBOBS{PATH_DATA_DB}/NODESSTATUS.db";
@@ -395,13 +397,13 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				."<TH colspan=2>$__{'Lifetime and Validity'}"
 				."<TH rowspan=2>$__{'Type'}</TH>";
 			if ($CLIENT ne 'guest') {
-				$htmlcontents .= "<TH rowspan=2>$__{'Nb Evnt'}</TH>";
+				$htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
 				if ($usrProject eq "on") {
 					$htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>";
 				}
 			}
 			if ($usrProcparam eq 'on') {
-				$htmlcontents .= "<TH colspan=2>$__{'Proc Parameters'}</TH>";
+				$htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>";
 			}
 			if ($overallStatus) {
 				$htmlcontents .= "<TH colspan=3>$__{'Proc Status'}</TH>";
@@ -419,7 +421,8 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			$htmlcontents .= "<TH>$__{'Start / Installation'}</TH><TH>$__{'End / Stop'}</TH>";
 			if ($usrProcparam eq 'on') {
 				$htmlcontents .= "<TH>$__{'FID'}</TH>"
-					."<TH>$__{'RAWFORMAT'}</TH>";
+					."<TH>$__{'Raw Format'}</TH>"
+					."<TH>$__{'Chan.'}</TH>";
 			}
 			if ($overallStatus) {
 				$htmlcontents .= "<TH>$__{'Last Data'} (TZ $GRID{TZ})</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
@@ -542,13 +545,12 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 
 				# Node's proc parameters
 				if ($usrProcparam eq 'on') {
-					$htmlcontents .= "<TD align=\"center\">"
-						.($NODE{"$grid.FID"} ? $NODE{"$grid.FID"} : $NODE{FID})."</TD>"
-						."<TD align=\"center\">"
-						.($NODE{"$grid.RAWFORMAT"} ?  $NODE{"$grid.RAWFORMAT"}
-							: ($NODE{RAWFORMAT} ?
-								$NODE{RAWFORMAT} : ($GRID{RAWFORMAT} // '')))
-						."</TD>";
+					my $clbFile = "$NODES{PATH_NODES}/$NODEName/$grid.$NODEName.clb";
+					$clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $clbFile ); # for backwards compatibility
+					$htmlcontents .= "<TD align=\"center\">".($NODE{"$grid.FID"} ? $NODE{"$grid.FID"} : $NODE{FID})."</TD>"
+						."<TD align=\"center\">".($NODE{"$grid.RAWFORMAT"} ? $NODE{"$grid.RAWFORMAT"}
+							: ($NODE{RAWFORMAT} ? $NODE{RAWFORMAT} : ($GRID{RAWFORMAT} // '')))."</TD>"
+						."<TD align=\"center\">".( -s $clbFile ? "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">clb</A>":"")."</TD>";
 				}
 
 				# NODE's status

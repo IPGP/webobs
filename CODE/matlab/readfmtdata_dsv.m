@@ -1,15 +1,15 @@
 function D = readfmtdata_dsv(WO,P,N,F)
 %READFMTDATA_DSV subfunction of readfmtdata.m
-%	
+%
 %	From proc P, node N and options F returns data D.
 %	See READFMTDATA function for details.
 %
-%	         type: delimiter-separated values text file, date & time 
+%	         type: delimiter-separated values text file, date & time
 %	               reference and data columns, all numeric
 %	    P.RAWDATA: full path and filename(s) using bash wildcard facilities
-%	               (may includes $FID, $yyyy, $mm, $dd or $doy variables) 
+%	               (may includes $FID, $yyyy, $mm, $dd or $doy variables)
 %	  data format: date&time;data1;data2; ... ;dataN (semi-colon, coma or space separated values)
-%	node channels: if no calibration file defined, will use the first line 
+%	node channels: if no calibration file defined, will use the first line
 %	               header of data file
 %	Specific node's FID_* key:
 %		FID_PREPROCESSOR: script name of the filter, located at ROOT_PREPROCESSOR directory in WEBOBS.rc
@@ -18,17 +18,21 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %		                  considered as separator; successive blanks count for one.
 %		    FID_TIMECOLS: index vector of columns defining date&time (default is 6 first columns with
 %		                  automatic format detection)
-%		          FID_NF: number of columns/fields of the data files (default is automatic)
+%	           FID_DATACOLS: index vector of columns that contain data (default is automatic).
+%	          FID_ERRORCOLS: index vector of columns defining data errors (default is none), in the same
+%	                         order as data (must have the same length, use 0 to skip a column).
+%		          FID_NF: number of columns/fields of the data files. Lines that don't respect This
+%	                         value will be ignored (default is automatic)
 %		 FID_HEADERLINES: number of uncommented header lines (default is 1)
 %
 %	output fields:
 %		D.t (datenum)
 %		D.d (data1 data2 ...)
-%
+%	       D.e (error1 error2 ...)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2019-12-12
+%	Updated: 2019-12-23
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -44,6 +48,8 @@ else
 	nftest = 0;
 end
 timecols = field2num(N,'FID_TIMECOLS',[],'notempty');
+errorcols = field2num(N,'FID_ERRORCOLS',[]);
+datacols = field2num(N,'FID_DATACOLS',[]);
 % Input field separator
 fs = field2str(N,'FID_FS',';','notempty');
 header = field2num(N,'FID_HEADERLINES',1,'notempty');
@@ -118,11 +124,13 @@ end
 
 t = [];
 d = [];
-if exist(fdat,'file') 
+e = [];
+if exist(fdat,'file')
 	dd = load(fdat);
 	if ~isempty(dd)
 		nx = size(dd,2); % number of data columns
-		if ~isempty(timecols) && nx <= max(timecols) 
+		% extracts the time columns
+		if ~isempty(timecols) && nx <= max(timecols)
 			error('%s: only %d columns found in data while need %d columns for date and time.', ...
 				wofun,nx,length(timecols));
 		end
@@ -133,13 +141,31 @@ if exist(fdat,'file')
 		else
 			t = smartdatenum(dd(:,timecols),1:length(timecols));
 		end
+		% extracts the data columns
+		if any(~isnan(datacols)) && nx <= max(datacols)
+			error('%s: FID_DATACOLS must indicate valid data columns!');
+		end
+		% extracts the error columns
+		if any(~isnan(errorcols)) && nx <= max(errorcols)
+			error('%s: FID_ERRORCOLS must indicate valid data columns!');
+		end
 
 		[t,k] = unique(t);
 		[t,kk] = sort(t);
-		d = dd(k(kk),find(~ismember(1:nx,timecols)));
+		if all(isnan(datacols))
+			d = dd(k(kk),~ismember(1:nx,[timecols,errorcols])); % data is all but timecols and errorcols
+		else
+			d = dd(k(kk),datacols(~isnan(datacols)));
+		end
+		e = nan(size(d));
+		if any(errorcols>0)
+			e(:,find(errorcols(errorcols>0))) = dd(:,errorcols(errorcols>0));
+		end
+
 		% selects only the selected channels
 		if ~isnan(N.CHANNEL_LIST)
 			d = d(:,N.CHANNEL_LIST);
+			e = e(:,N.CHANNEL_LIST);
 		end
 		fprintf('done (%d samples from %s to %s).\n',length(t),datestr(min(t)),datestr(max(t)));
 	end
@@ -150,6 +176,7 @@ end
 
 D.t = t - N.UTC_DATA;
 D.d = d;
+D.e = e;
 if N.CLB.nx == 0
 	D.CLB.nx = size(d,2);
 	D.CLB.un = cell(1,D.CLB.nx);
@@ -169,4 +196,3 @@ else
 	[D.d,D.CLB] = calib(D.t,D.d,N.CLB);
 end
 D.t = D.t + P.TZ/24;
-
