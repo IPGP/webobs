@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2020-12-18
+%   Updated: 2020-12-23
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -260,8 +260,13 @@ if numel(velref)==3 && ~all(velref==0)
 	end
 end
 
-% filter the data at once and adjust errors
+% preprocess the data (orbits and errors)
 for n = 1:numel(N)
+	% add a default orbit column to data if needed
+	if size(D(n).d,2) < 4
+		D(n).d(:,4) = zeros(size(D(n).d(:,1)));
+	end
+	% filter the data at once and adjust errors
 	if ~isempty(D(n).d)
 		if ~isnan(maxerror)
 			D(n).d(any(D(n).e>maxerror,2),:) = NaN;
@@ -1543,9 +1548,7 @@ for r = 1:numel(P.GTABLE)
 	% --- Modelling in time
 	summary = 'MODELTIME';
 	if any(strcmp(P.SUMMARYLIST,summary))
-		dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max));
-			%sprintf('model type = {\\bf%s%s}',mt,src_multi), ...
-			%sprintf('model space = {\\bf%s}',num2tex(nmodels)), ...
+		dt = max(modeltime_sampling,numel(modeltime_period)*diff(tlim)/modeltime_max);
 		info = { ...
 			' ', ...
 			sprintf('model type = {\\bfisotropic}'), ...
@@ -1564,7 +1567,7 @@ for r = 1:numel(P.GTABLE)
 		for m = 1:numel(modeltime_period)
 			mtp = modeltime_period(m);
 			if mtp > 0
-				mtlabel{m} = sprintf('%g days',mtp);
+				mtlabel{m} = days2h(mtp);
 			else
 				mtlabel{m} = 't_0 ref.';
 			end
@@ -1663,7 +1666,7 @@ for r = 1:numel(P.GTABLE)
 				M(m).o(w,1) = max(tro); % model worst orbit
 
 				if isok(P,'DEBUG')
-					fprintf('\n%s,%s: %+g Mm3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM.pbest(4),MM.pbest(3)/1e3],3));
+					fprintf('\n%s,%s: %+g 10e6 m3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM.pbest(4),MM.pbest(3)/1e3],3));
 					if modrelforced
 						fprintf(' / relative mode forced by (%g,%g)',mvv(1:2));
 					end
@@ -1959,10 +1962,13 @@ for r = 1:numel(P.GTABLE)
 				k = (m-1)*n*2 + (1:2*n);
 				[lats,lons] = utm2ll(e0+M(m).d(:,1),n0+M(m).d(:,2),z0);
 				E.d(:,k) = cat(2,lats,lons,M(m).d(:,3:end),M(m).e);
-				E.header(k) = strcat({'LAT','LON','Z','dV','dD','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%g',M(m).mtp));
+				E.header(k) = strcat({'LAT','LON','Z','dV','dD','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
-			E.infos = {};
+			E.infos = {''};
+			for m = 1:numel(modeltime_period)
+				E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'short')));
+			end
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
 	end
