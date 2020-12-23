@@ -572,7 +572,9 @@ print "<TR>";
 		# --- CHANNEL_LIST
 		print "<TD rowspan=2 style=\"border:0;text-valign:top\">";
 		print "<LABEL for=\"chanlist\">$__{'Channel list'}: </LABEL>";
-		my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
+		my $clbFile = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
+		$clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $clbFile ); # for backwards compatibility
+
 		if (-s $clbFile != 0) {
 			my @select = split(/,/,$usrCHAN);
 			my @carCLB   = readCfgFile($clbFile);
