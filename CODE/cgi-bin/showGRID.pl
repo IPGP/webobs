@@ -90,7 +90,14 @@ if (scalar(@GID) == 2) {
 #
 my $grid = "$GRIDType.$GRIDName";
 my $isProc = ($GRIDType eq "PROC" ? '1':'0');
-$usrProcparam = '' if !$isProc;
+my @procTS = ();
+my $procOUTG;
+if ($isProc) {
+	$procOUTG = '1' if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" );
+ 	@procTS = split(/,/,$GRID{TIMESCALELIST});
+} else {
+	$usrProcparam = '';
+}
 my @domain = split(/\|/,$GRID{DOMAIN});
 
 my $myself = "/cgi-bin/".basename($0)."?grid=$grid";
@@ -290,25 +297,26 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		}
 	}
 	$htmlcontents .= "</UL></TD>\n";
+	# -----------
+	# only for PROCs: link to output pages and time scale parameters
 	if ($isProc) {
-		my @ts = split(/,/,$GRID{TIMESCALELIST});
-		if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" ) {
+		if ($procOUTG) {
 			my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
-			$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>Proc Graphs</TH><TH>".join("</TH><TH>",@ts)."</TH></TR>\n";
+			$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE style=\"padding:2px\"><TR><TH>Proc Graphs</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
 			foreach my $g ("",split(/,/,$GRID{SUMMARYLIST})) {
-				my $outg = join('',map {$_ = "<TD align=\"center\"><A href=\"$urn&amp;ts=$_&amp;g=$g\"><B>$_</B></A></TD>"} split(/,/,$GRID{TIMESCALELIST}));
+				my $outg = join('',map {$_ = "<TD align=\"center\"><A href=\"$urn&amp;ts=$_&amp;g=$g\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>"} split(/,/,$GRID{TIMESCALELIST}));
 				$htmlcontents .= "<TR><TD align=\"right\">".($g eq ""?"Overview":"$g")."</TD>$outg</TR>\n";
 			}
 			$htmlcontents .= "</TABLE></TD>\n";
 		}
-		$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>Proc Time Scales</TH><TH>".join("</TH><TH>",@ts)."</TH></TR>\n";
+		$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>Proc Time Scales</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
 		foreach ("Decimate","Cumulate","DateStr","MarkerSize","LineWidth","Status") {
 			my @tsp = split(/,/,$GRID{uc($_)."LIST"});
 			my $cells;
 			if ($#tsp < 0) {
-				$cells = "<TD align=\"center\" colspan=\"".($#ts+1)."\"><I><SMALL>undefined</SMALL></I>";
+				$cells = "<TD align=\"center\" colspan=\"".($#procTS+1)."\"><I><SMALL>undefined</SMALL></I>";
 			} else {
-				push(@tsp, '&nbsp;' x ($#ts-$#tsp)) if ($#tsp < $#ts);
+				push(@tsp, '&nbsp;' x ($#procTS-$#tsp)) if ($#tsp < $#procTS);
 				$cells = "<TD align=\"center\"><B>".join("</B></TD><TD align=\"center\"><B>",@tsp)."</B>";
 			}
 			$htmlcontents .= "<TR><TD align=\"right\">$_</TD>$cells</TD></TR>\n";
@@ -398,16 +406,11 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				."<TH rowspan=2>$__{'Type'}</TH>";
 			if ($CLIENT ne 'guest') {
 				$htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
-				if ($usrProject eq "on") {
-					$htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>";
-				}
+				$htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>" if ($usrProject eq "on");
 			}
-			if ($usrProcparam eq 'on') {
-				$htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>";
-			}
-			if ($overallStatus) {
-				$htmlcontents .= "<TH colspan=3>$__{'Proc Status'}</TH>";
-			}
+			$htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
+			$htmlcontents .= "<TH colspan=".(@procTS).">Proc Graphs</TH>" if (@procTS);
+			$htmlcontents .= "<TH colspan=3>$__{'Proc Status'}</TH>" if ($overallStatus);
 			$htmlcontents .= "</TR>\n<TR>";
 			if ($usrCoord eq "utm") {
 				$htmlcontents .= "<TH>UTM Eastern (m)</TH><TH>UTM Northern (m)</TH><TH>$__{'Elev.'} (m)</TH>";
@@ -419,11 +422,8 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				$htmlcontents .= "<TH>$__{'Lat.'} (WGS84)</TH><TH>$__{'Lon.'} (WGS84)</TH><TH>$__{'Elev.'} (m)</TH>";
 			}
 			$htmlcontents .= "<TH>$__{'Start / Installation'}</TH><TH>$__{'End / Stop'}</TH>";
-			if ($usrProcparam eq 'on') {
-				$htmlcontents .= "<TH>$__{'FID'}</TH>"
-					."<TH>$__{'Raw Format'}</TH>"
-					."<TH>$__{'Chan.'}</TH>";
-			}
+			$htmlcontents .= "<TH>$__{'FID'}</TH><TH>$__{'Raw Format'}</TH><TH>$__{'Chan.'}</TH>" if ($usrProcparam eq 'on');
+			$htmlcontents .= "<TH>".join("</TH><TH>",@procTS)."</TH>" if ($procOUTG);
 			if ($overallStatus) {
 				$htmlcontents .= "<TH>$__{'Last Data'} (TZ $GRID{TZ})</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
 			}
@@ -465,7 +465,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				$htmlcontents .= ($editOK ? "<TH><A href=\"/cgi-bin/formNODE.pl?node=$grid.$NODEName\"><IMG title=\"Edit node\" src=\"/icons/modif.png\"></TH>":"");
 				# Node's code and name
 				my $lienNode="/cgi-bin/$NODES{CGI_SHOW}?node=$grid.$NODEName";
-				$htmlcontents .= "<TD align=center><SPAN class=\"code\">$NODE{ALIAS}</SPAN></TD><TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
+				$htmlcontents .= "<TD align=center><B>$NODE{ALIAS}</B></TD><TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
 
 				# Node's localization
 				if ($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0) {
@@ -511,9 +511,9 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 					my $textProj = "";
 					my $pathInter="$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";
 					my @interventions  = glob("$pathInter/$NODEName*.txt");
-					my $nbInter  = 0;
-					find(sub { $nbInter++ if /^$NODEName.*\.txt$/ }, $pathInter);
-					$htmlcontents .= "<TD align=center>".scalar(@interventions)."</TD>";
+					#my $nbInter  = 0;
+					#find(sub { $nbInter++ if /^$NODEName.*\.txt$/ }, $pathInter);
+					$htmlcontents .= "<TD align=center><A href=\"/cgi-bin/showNODE.pl?node=$grid.$NODEName#EVENTS\">".scalar(@interventions)."</A></TD>";
 					if ($usrProject eq "on") {
 						my $fileProjName = $NODEName."_Projet.txt";
 						my $fileProj = "$pathInter/$fileProjName";
@@ -547,10 +547,25 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				if ($usrProcparam eq 'on') {
 					my $clbFile = "$NODES{PATH_NODES}/$NODEName/$grid.$NODEName.clb";
 					$clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $clbFile ); # for backwards compatibility
-					$htmlcontents .= "<TD align=\"center\">".($NODE{"$grid.FID"} ? $NODE{"$grid.FID"} : $NODE{FID})."</TD>"
+					$htmlcontents .= "<TD align=\"center\"><SPAN class=\"code\">".($NODE{"$grid.FID"} ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>"
 						."<TD align=\"center\">".($NODE{"$grid.RAWFORMAT"} ? $NODE{"$grid.RAWFORMAT"}
 							: ($NODE{RAWFORMAT} ? $NODE{RAWFORMAT} : ($GRID{RAWFORMAT} // '')))."</TD>"
-						."<TD align=\"center\">".( -s $clbFile ? "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">clb</A>":"")."</TD>";
+						."<TD align=\"center\">";
+					if ( -s $clbFile ) {
+						# if a calibration file exists, reads it and count the number of channels
+						my @carCLB = readCfgFile($clbFile);
+						my %chan;
+						for (@carCLB) {
+							my (@chpCLB) = split(/\|/,$_);
+							$chan{$chpCLB[2]} = $chpCLB[3];
+						}
+						$htmlcontents .= "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">".(keys(%chan))."</A>";
+					}
+					$htmlcontents .= "</TD>";
+				}
+				if ($procOUTG) {
+					my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
+					$htmlcontents .= join('',map {$_ = "<TD align=\"center\"><A href=\"$urn&amp;ts=$_&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>"} split(/,/,$GRID{TIMESCALELIST}))."\n";
 				}
 
 				# NODE's status
