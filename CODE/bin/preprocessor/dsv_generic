@@ -70,8 +70,7 @@ FNR <= header_line { next }
 	gsub(/ +/, " ")
 
 	# Remove leading and trailing blanks
-	gsub(/^ /, "")
-	gsub(/ $/, "")
+	gsub(/^ | $/, "")
 
 	# Replace '/', ':', tabs, blanks by FS
 	# (to further split the timestamp into parts)
@@ -89,7 +88,7 @@ FNR <= header_line { next }
 		gsub(/^[\seE.-]*$/, "NaN", $i)
 	}
 
-	# Force substitution of all FS occurences by OFS
+	# Force substitution of all FS occurrences by OFS
 	# (this will update $0 and NF)
 	$1 = $1
 }
