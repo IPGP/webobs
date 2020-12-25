@@ -159,7 +159,7 @@ if exist(fdat,'file')
 		end
 		e = nan(size(d));
 		if any(errorcols>0)
-			e(:,find(errorcols(errorcols>0))) = dd(:,errorcols(errorcols>0));
+			e(:,find(errorcols(errorcols>0))) = dd(k(kk),errorcols(errorcols>0));
 		end
 
 		% selects only the selected channels
