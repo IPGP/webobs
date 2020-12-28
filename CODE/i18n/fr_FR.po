@@ -152,6 +152,9 @@ msgstr "Objectifs"
 msgid "Domain"
 msgstr "Domaines"
 
+msgid "Grid code"
+msgstr "Code Grid"
+
 msgid "Graphs"
 msgstr "Graphes"
 
@@ -230,17 +233,35 @@ msgstr "Actives"
 msgid "Coordinates"
 msgstr "Coordonnées"
 
+msgid "Export"
+msgstr "Exporter"
+
 msgid "Networks Codes"
-msgstr "Codes des Réseaux"
+msgstr "Codes des réseaux"
+
+msgid "Proc Parameters"
+msgstr "Paramètres Proc"
+
+msgid "Proc Graphs"
+msgstr "Graphes Proc"
+
+msgid "Proc Time Scales"
+msgstr "Fenêtres temporelles Proc"
+
+msgid "undefined"
+msgstr "non défini"
+
+msgid "Proc Status"
+msgstr "État Proc"
 
 msgid "Last Measurement"
-msgstr "Dernière Mesure"
+msgstr "Dernière mesure"
 
 msgid "Sampl."
 msgstr "Échant."
 
 msgid "Last Data"
-msgstr "Dernière Donnée"
+msgstr "Dernière donnée"
 
 msgid "Last status check on"
 msgstr "Dernier état effectué le"
@@ -277,6 +298,9 @@ msgstr "Canal"
 
 msgid "See also the following maps"
 msgstr "Voir aussi les cartes suivantes"
+
+msgid "Maps"
+msgstr "Cartes"
 
 msgid "Information"
 msgstr "Informations"
@@ -334,6 +358,15 @@ msgstr "Latitude"
 
 msgid "Elevation"
 msgstr "Altitude"
+
+msgid "Lon."
+msgstr "Lon."
+
+msgid "Lat."
+msgstr "Lat."
+
+msgid "Elev."
+msgstr "Alt."
 
 msgid "Positionning"
 msgstr "Positionnement"
