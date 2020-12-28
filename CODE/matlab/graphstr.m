@@ -9,7 +9,7 @@ function X = graphstr(s)
 %
 %	Examples:
 %	   '1,2,3' means channels 1,2 and 3 on 3 equal size subplots
-%	   '2,,,1,3,10,11,,' means channels 2, 1, 3, 10 and 11 with channel 2 
+%	   '2,,,1,3,10,11,,' means channels 2, 1, 3, 10 and 11 with channel 2
 %	   three times higher and channel 11 two times higher in size than others.
 %
 %	To get the total graph size use sum(cat(1,X.size)).
@@ -17,7 +17,7 @@ function X = graphstr(s)
 %
 %	Authors: F. Beauducel / WEBOBS, IPGP
 %	Created: 2016-08-05, in Paris (France)
-%	Updated: 2019-08-24
+%	Updated: 2020-12-28
 
 
 % splits the graphs (coma separated)
@@ -35,12 +35,12 @@ if ~isempty(x)
 		X(n).type = regexprep(x{k(n)},'[0-9]','');
 	end
 
-	% set the subplot arguments
-	tot = sum(cat(1,X.size));
+	% set the subplot arguments (doubles the height size)
+	tot = 2*sum(cat(1,X.size));
 	sp = 0;
 	for n = 1:ng
-		X(n).subplot = {tot,1,sp + (1:X(n).size)};
-		sp = sum(cat(1,X(1:n).size));
+		X(n).subplot = {tot,1,sp + (1:2*X(n).size)};
+		sp = 2*sum(cat(1,X(1:n).size));
 	end
 else
 	X = [];
