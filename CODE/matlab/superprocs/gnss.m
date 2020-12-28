@@ -76,6 +76,7 @@ itrf = field2str(P,'ITRF_REF','ITRF');
 if numel(velref)==3 && any(velref~=0)
 	itrf = 'local ref.';
 end
+enu = {'E','N','U'};
 cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Northern,Relative Vertical'),',');
 
 % PERNODE graphs parameters
@@ -263,7 +264,7 @@ end
 % preprocess the data (orbits and errors)
 for n = 1:numel(N)
 	% add a default orbit column to data if needed
-	if size(D(n).d,2) < 4
+	if ~isempty(D(n).d) && size(D(n).d,2) < 4
 		D(n).d(:,4) = zeros(size(D(n).d(:,1)));
 	end
 	% filter the data at once and adjust errors
@@ -273,7 +274,7 @@ for n = 1:numel(N)
 		end
 		for i = 1:numel(orbiterr)
 			k = find(D(n).d(:,4)>=i-1);
-			if ~isempty(k) && orbiterr(i)>0
+			if ~isempty(k) && ~isempty(D(n).e) && orbiterr(i)>0
 				D(n).e(k,:) = D(n).e(k,:)*orbiterr(i);
 			end
 		end
@@ -487,7 +488,7 @@ for r = 1:numel(P.GTABLE)
 			P.GTABLE(r).INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),'(median)',' ',' '};
 			for i = 1:3
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%1.3f %s} (%1.3f) - Vel. = {\\bf%+1.1f \\pm %1.1f mm/yr}', ...
-					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},rmedian(D(n).d(k,i)),lre(i,:))}];
+					i, enu{i},D(n).d(ke,i),D(n).CLB.un{i},rmedian(D(n).d(k,i)),lre(i,:))}];
 			end
 		end
 
@@ -659,12 +660,12 @@ for r = 1:numel(P.GTABLE)
 			sprintf('Mean velocity (%s):',itrf) ...
 		};
 		for i = 1:3
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',D(1).CLB.nm{i},mvv(i))}];
+			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',enu{i},mvv(i))}];
 		end
 		if vrelmode
 			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('Velocity ref. vector ({\\bf%s}):',mode)}];
 			for i = 1:3
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',D(1).CLB.nm{i},voffset(i))}];
+				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',enu{i},voffset(i))}];
 			end
 		end
 
