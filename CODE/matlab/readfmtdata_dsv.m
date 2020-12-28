@@ -32,7 +32,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2019-12-23
+%	Updated: 2019-12-27
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -47,9 +47,9 @@ if nf > 0
 else
 	nftest = 0;
 end
-timecols = field2num(N,'FID_TIMECOLS',[],'notempty');
-errorcols = field2num(N,'FID_ERRORCOLS',[]);
-datacols = field2num(N,'FID_DATACOLS',[]);
+timecols = field2num(N,'FID_TIMECOLS',1:6,'notempty');
+errorcols = field2num(N,'FID_ERRORCOLS');
+datacols = field2num(N,'FID_DATACOLS');
 % Input field separator
 fs = field2str(N,'FID_FS',';','notempty');
 header = field2num(N,'FID_HEADERLINES',1,'notempty');
@@ -152,11 +152,10 @@ if exist(fdat,'file')
 
 		[t,k] = unique(t);
 		[t,kk] = sort(t);
-		if all(isnan(datacols))
-			d = dd(k(kk),~ismember(1:nx,[timecols,errorcols])); % data is all but timecols and errorcols
-		else
-			d = dd(k(kk),datacols(~isnan(datacols)));
+		if isempty(datacols) || all(isnan(datacols))
+			datacols = find(~ismember(1:nx,[timecols,errorcols])); % data is all but timecols and errorcols
 		end
+		d = dd(k(kk),datacols(~isnan(datacols)));
 		e = nan(size(d));
 		if any(errorcols>0)
 			e(:,find(errorcols(errorcols>0))) = dd(k(kk),errorcols(errorcols>0));
@@ -179,8 +178,8 @@ D.d = d;
 D.e = e;
 if N.CLB.nx == 0
 	D.CLB.nx = size(d,2);
-	D.CLB.un = cell(1,D.CLB.nx);
-	D.CLB.nm = cell(1,D.CLB.nx);
+	D.CLB.un = repmat({''},1,D.CLB.nx);
+	D.CLB.nm = split(sprintf('data %g\n',1:D.CLB.nx),'\n');
 	if header==1
 		s = wosystem(sprintf('head -q -n 1 %s | uniq > %s',F.raw{1},fdat),P);
 		if ~s
@@ -190,7 +189,7 @@ if N.CLB.nx == 0
 			D.CLB.nm = hdr{1}(2:end)';
 		end
 	else
-		error('%s: no calibration file for node %s. Cannot proceed!',wofun,N.ID);
+		fprintf('%s: ** Warning ** no calibration file for node %s!\n',wofun,N.ID);
 	end
 else
 	[D.d,D.CLB] = calib(D.t,D.d,N.CLB);
