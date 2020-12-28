@@ -302,19 +302,19 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	if ($isProc) {
 		if ($procOUTG) {
 			my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
-			$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE style=\"padding:2px\"><TR><TH>Proc Graphs</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
+			$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Graphs'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
 			foreach my $g ("",split(/,/,$GRID{SUMMARYLIST})) {
 				my $outg = join('',map {$_ = "<TD align=\"center\"><A href=\"$urn&amp;ts=$_&amp;g=$g\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>"} split(/,/,$GRID{TIMESCALELIST}));
 				$htmlcontents .= "<TR><TD align=\"right\">".($g eq ""?"Overview":"$g")."</TD>$outg</TR>\n";
 			}
 			$htmlcontents .= "</TABLE></TD>\n";
 		}
-		$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>Proc Time Scales</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
+		$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Time Scales'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
 		foreach ("Decimate","Cumulate","DateStr","MarkerSize","LineWidth","Status") {
 			my @tsp = split(/,/,$GRID{uc($_)."LIST"});
 			my $cells;
 			if ($#tsp < 0) {
-				$cells = "<TD align=\"center\" colspan=\"".($#procTS+1)."\"><I><SMALL>undefined</SMALL></I>";
+				$cells = "<TD align=\"center\" colspan=\"".($#procTS+1)."\"><I><SMALL>$__{undefined}</SMALL></I>";
 			} else {
 				push(@tsp, '&nbsp;' x ($#procTS-$#tsp)) if ($#tsp < $#procTS);
 				$cells = "<TD align=\"center\"><B>".join("</B></TD><TD align=\"center\"><B>",@tsp)."</B>";
@@ -409,7 +409,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				$htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>" if ($usrProject eq "on");
 			}
 			$htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
-			$htmlcontents .= "<TH colspan=".(@procTS).">Proc Graphs</TH>" if (@procTS);
+			$htmlcontents .= "<TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if (@procTS);
 			$htmlcontents .= "<TH colspan=3>$__{'Proc Status'}</TH>" if ($overallStatus);
 			$htmlcontents .= "</TR>\n<TR>";
 			if ($usrCoord eq "utm") {
