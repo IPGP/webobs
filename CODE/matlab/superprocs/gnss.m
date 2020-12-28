@@ -417,8 +417,6 @@ for r = 1:numel(P.GTABLE)
 		V.node_name = N(n).NAME;
 		V.node_alias = N(n).ALIAS;
 		V.last_data = datestr(D(n).tfirstlast(2));
-		nx = numel(D(n).CLB.nm);
-
 
 		figure, clf, orient tall
 
