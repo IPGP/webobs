@@ -29,28 +29,12 @@ function DOUT=genplot(varargin)
 %       suplot will contain the channel number 1 and will be double-height compared to
 %       the second (channel 4) and third subplot (channel 3).
 %
-%       Other specific paramaters are:
-%           PERNODE_CHANNELS|
-%           PAGE_MAX_SUBPLOT|8
-%           PLOT_GRID|YES
-%           YLOGSCALE|NO
-%           PICKS_CLEAN_PERCENT|0
-%           PICKS_CLEAN_STD|0
-%           FLAT_IS_NAN|NO
-%           MEDIAN_FILTER_SAMPLES|0
-%           MOVING_AVERAGE_SAMPLES|10
-%           CONTINUOUS_PLOT|NO
-%	    PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
-%	    PERNODE_LINESTYLE|-
-%           PERNODE_RELATIVE|NO
-%	    SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
-%	    SUMMARY_LINESTYLE|-
-%           SUMMARY_RELATIVE|NO
+%       See CODE/tplates/PROC.GENPLOT for other specific paramaters.
 %
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2014-07-13
-%	Updated: 2019-05-21
+%	Updated: 2020-12-28
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -76,16 +60,20 @@ pagemaxsubplot = field2num(P,'PAGE_MAX_SUBPLOT',8);
 ylogscale = isok(P,'YLOGSCALE');
 movingaverage = field2num(P,'MOVING_AVERAGE_SAMPLES',1);
 
+exthax = [.08,.02];
+nxm = 0; % max number of channels
+
 for n = 1:length(N)
 
 	C = D(n).CLB;
 	nx = C.nx;
+	nxm = max(nxm,nx);
 	GN = graphstr(field2str(P,'PERNODE_CHANNELS',sprintf('%d,',1:nx),'notempty'));
 	V.node_name = N(n).NAME;
 	V.node_alias = N(n).ALIAS;
 	V.last_data = datestr(D(n).tfirstlast(2));
 
-	
+
 	% ===================== makes the proc's job
 
 	for r = 1:length(P.GTABLE)
@@ -114,10 +102,10 @@ for n = 1:length(N)
 		% loop for each data column
 		for p = 1:length(GN)
 
-			subplot(GN(p).subplot{:}), extaxes(gca,[.07,.01])
+			subplot(GN(p).subplot{:}), extaxes(gca,exthax)
 			i = GN(p).chan;
 			if ~isempty(k) && i <= nx
-				if isok(P,'CONTINUOUS_PLOT')
+				if isok(P,'CONTINUOUS_PLOT') || ~isfield(D(n).CLB,'sf')
 					samp = 0;
 				else
 					samp = D(n).CLB.sf(i);
@@ -185,10 +173,8 @@ end
 
 if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 	G = cat(1,D.G);
-	C = cat(1,D.CLB);
-	nx = max(cat(1,C.nx));
 
-	GS = graphstr(field2str(P,'SUMMARY_CHANNELS',sprintf('%d,',1:nx),'notempty'));
+	GS = graphstr(field2str(P,'SUMMARY_CHANNELS',sprintf('%d,',1:nxm),'notempty'));
 
 	for r = 1:length(P.GTABLE)
 
@@ -210,7 +196,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 		orient tall
 
 		for p = 1:length(GS)
-			subplot(GS(p).subplot{:}), extaxes(gca,[.07,.01])
+			subplot(GS(p).subplot{:}), extaxes(gca,exthax)
 			c = GS(p).chan;
 
 			hold on
@@ -219,7 +205,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 			for n = 1:length(N)
 				k = D(n).G(r).k;
 				if ~isempty(k)
-					if isok(P,'CONTINUOUS_PLOT')
+					if isok(P,'CONTINUOUS_PLOT') || ~isfield(D(n).CLB,'sf')
 						samp = 0;
 					else
 						samp = D(n).CLB.sf(c);
@@ -246,7 +232,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 				set(gca,'XTickLabel',[]);
 			end
 			ylabel(sprintf('%s %s',D(1).CLB.nm{c},regexprep(D(1).CLB.un{c},'(.+)','($1)')))
-			
+
 			% legend: station aliases
 			xlim = get(gca,'XLim');
 			ylim = get(gca,'YLim');
@@ -259,7 +245,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 		end
 
 		tlabel(xlim,P.GTABLE(r).TZ)
-	    
+
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
@@ -279,4 +265,3 @@ timelog(procmsg,2)
 if nargout > 0
 	DOUT = D;
 end
-
