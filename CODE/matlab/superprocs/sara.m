@@ -49,13 +49,13 @@ function DOUT=sara(varargin)
 %	    SARA_CAXIS|0,1
 %
 %	Reference:
-%	   Taisne, B., F. Brenguier, N. M. Shapiro, and V. Ferrazzini (2011), 
-%	   Imaging the dynamics of magma propagation using radiated seismic intensity, 
+%	   Taisne, B., F. Brenguier, N. M. Shapiro, and V. Ferrazzini (2011),
+%	   Imaging the dynamics of magma propagation using radiated seismic intensity,
 %	   Geophys. Res. Lett., 38, L04304, doi:10.1029/2010GL046068.
 %
 %	Authors: Tan Chiou Ting, Benoit Taisne, Francois Beauducel / EOS / IPGP / WEBOBS
 %	Created: 2017-09-14
-%	Updated: 2017-09-14
+%	Updated: 2021-01-01
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -66,7 +66,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = sprintf(' %s',mfilename,varargin{:});
+procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
 
@@ -97,7 +97,7 @@ for n = 1:length(N)
 	V.node_alias = N(n).ALIAS;
 	V.last_data = datestr(D(n).tfirstlast(2));
 
-	
+
 	% ===================== makes the proc's job
 
 	for r = 1:length(P.GTABLE)
@@ -187,7 +187,7 @@ for n = 1:length(N)
 					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},roundsd([rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i))],5))}];
 			end
 		end
-		
+
 		% makes graph
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
@@ -256,7 +256,7 @@ if isfield(P,'SUMMARYLIST')
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
 		ylabel(sprintf('All channels %s',regexprep(D(1).CLB.un{1},'(.+)','($1)')))
-		
+
 		% legend: station aliases
 		xlim = get(gca,'XLim');
 		ylim = get(gca,'YLim');
@@ -271,7 +271,7 @@ if isfield(P,'SUMMARYLIST')
 
 		% 1/x time series (Y-axis linear scale forced)
 		% makes a new data vector with averaged signals
-		
+
 		subplot(4,1,3:4), extaxes(gca,[.07,.01])
 		hold on
 		for n = 1:length(N)
@@ -295,7 +295,7 @@ if isfield(P,'SUMMARYLIST')
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
 		ylabel(sprintf('1/x %s',regexprep(D(1).CLB.un{1},'(.+)','($1)')))
-		
+
 		% legend: station aliases
 		xlim = get(gca,'XLim');
 		ylim = get(gca,'YLim');
@@ -306,7 +306,7 @@ if isfield(P,'SUMMARYLIST')
 
 		tlabel(xlim,P.GTABLE(r).TZ)
 		plotevent(P.EVENTS_FILE)
-	    
+
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
 	end
@@ -318,7 +318,7 @@ if isfield(P,'SUMMARYLIST')
 		kn = find(~ismemberlist({N.FID},split(field2str(P,'SARA_EXCLUDED_NODELIST'),',')));
 		% To have a single vector t with matrix d, must interpolate all channels at the highest frequency sampling rate
 		nsf = nan(length(kn),1);
-		for n = 1:length(kn)	
+		for n = 1:length(kn)
 			nsf(n) = D(kn(n)).CLB.sf;
 		end
 		samp = max(nsf);
@@ -327,7 +327,7 @@ if isfield(P,'SUMMARYLIST')
 		t = (P.DATELIM(1):1/samp/86400:P.DATELIM(2))';
 		d = nan(length(t),length(kn));
 		for n = 1:length(kn)
-			if ~isempty(D(kn(n)).d) 
+			if ~isempty(D(kn(n)).d)
 				d(:,n) = interp1(D(kn(n)).t,rmean(D(kn(n)).d,2),t);
 			end
 		end
@@ -356,7 +356,7 @@ if isfield(P,'SUMMARYLIST')
 			    time_x = 1:size(dr,1);
 
 			    % Extract window-sized block of data and calculate correlation coefficient
-					
+
 			    Coeff = [];
 			    for i = 0:length(time_x)-window
 				tcor = time_x(i*sara_overlap_step + 1:i*sara_overlap_step + window); % index of points in window for time vector
@@ -491,7 +491,7 @@ if isfield(P,'SUMMARYLIST')
 			box on
 			datetick2('x',P.GTABLE(r).DATESTR)
 			ylabel(sprintf('All channels (count)'))
-			
+
 			% legend: station aliases
 			xlim = get(gca,'XLim');
 			ylim = get(gca,'YLim');
@@ -563,4 +563,3 @@ timelog(procmsg,2)
 if nargout > 0
 	DOUT = D;
 end
-

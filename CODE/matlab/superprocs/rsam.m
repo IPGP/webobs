@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2020-11-25
+%	Updated: 2021-01-01
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -41,7 +41,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = sprintf(' %s',mfilename,varargin{:});
+procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
 

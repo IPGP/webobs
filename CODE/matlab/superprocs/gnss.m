@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2020-12-23
+%   Updated: 2021-01-01
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -51,16 +51,15 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = sprintf(' %s',mfilename,varargin{:});
+procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
 % gets PROC's configuration and associated nodes for any TSCALE and/or REQDIR
 [P,N,D] = readproc(WO,varargin{:});
 G = cat(1,D.G);
 
-border = .1;
-
 % PROC's parameters
+border = .1;
 fontsize = field2num(P,'FONTSIZE',7);
 maxerror = field2num(P,'FILTER_MAX_ERROR_M',NaN);
 orbiterr = field2num(P,'ORBIT_ERROR_RATIO',[1,2]);
@@ -227,7 +226,7 @@ tickfactorlim = 5e3; % above 5 km width/depth axis will be in km
 
 % MODELTIME parameters
 modeltime_period = field2num(P,'MODELTIME_PERIOD_DAY');
-modeltime_sampling = field2num(P,'MODELTIME_SAMPLING_DAY');
+modeltime_sampling = field2num(P,'MODELTIME_SAMPLING_DAY',1);
 modeltime_max = field2num(P,'MODELTIME_MAX_MODELS',100);
 modeltime_maxmisfit = field2num(P,'MODELTIME_MAX_MISFIT_M',1);
 modeltime_title = field2str(P,'MODELTIME_TITLE','{\fontsize{14}{\bf$name - Source best model timeline} ($timescale)}');
@@ -1547,7 +1546,7 @@ for r = 1:numel(P.GTABLE)
 	% --- Modelling in time
 	summary = 'MODELTIME';
 	if any(strcmp(P.SUMMARYLIST,summary))
-		dt = max(modeltime_sampling,numel(modeltime_period)*diff(tlim)/modeltime_max);
+		dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max/modeltime_sampling)*modeltime_sampling);
 		info = { ...
 			' ', ...
 			sprintf('model type = {\\bfisotropic}'), ...
@@ -1566,7 +1565,7 @@ for r = 1:numel(P.GTABLE)
 		for m = 1:numel(modeltime_period)
 			mtp = modeltime_period(m);
 			if mtp > 0
-				mtlabel{m} = days2h(mtp);
+				mtlabel{m} = days2h(mtp,'round');
 			else
 				mtlabel{m} = 't_0 ref.';
 			end
@@ -1576,7 +1575,7 @@ for r = 1:numel(P.GTABLE)
 			% last time must contain data
 			tlast = max(max(cat(1,D.tfirstlast)));
 			M(m).t(M(m).t > tlast) = [];
-			fprintf('%s: computing %d models (%s @ %g day) ',wofun,numel(M(m).t),mtlabel{m},dt);
+			fprintf('%s: computing %d models (%s @ %s) ',wofun,numel(M(m).t),mtlabel{m},days2h(dt));
 
 			% initiates the model result matrix
 			M(m).d = nan(numel(M(m).t),5);
@@ -1807,7 +1806,7 @@ for r = 1:numel(P.GTABLE)
 				IMAP(nimap).s{n} = sprintf('''%g km<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
 					roundsd(M(m).d(n,3)/1e3,2),vtype,roundsd(M(m).d(n,4)/vfactor,2), ...
 					regexprep(vunit,'\^3','<sup>3</sup>'),roundsd(M(m).e(n,5),2), ...
-					datestr(M(m).t(n),'dd-mmm-yyyy'),mtlabel{m});
+					datestr(M(m).t(n),'dd-mmm-yyyy HH:MM'),mtlabel{m});
 			end
 			nimap = nimap + 1;
 		end

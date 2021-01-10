@@ -51,7 +51,7 @@ function DOUT=mc3stats(varargin)
 %
 %	Authors: J.-M. Saurel and F. Beauducel / WEBOBS, IPGP
 %	Created: 2019-01-31
-%	Updated: 2019-04-22
+%	Updated: 2021-01-01
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -61,7 +61,7 @@ if nargin < 1
 	error('%s: must define PROC name.',wofun);
 end
 
-procmsg = sprintf(' %s',mfilename,varargin{:});
+procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
 
@@ -280,7 +280,7 @@ for r = 1:length(P.GTABLE)
     if any(strcmp(P.SUMMARYLIST,summary))
         stitre = sprintf('%s - Seismic rate and swarms',P.NAME);
         P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
-        
+
         switch rate_type
             % Calculate classic events/day seismic rate
             case 'classic'

@@ -21,7 +21,7 @@ function DOUT=soh(varargin)
 %	SOH will use PROC's parameters from NODE's .cnf file. Particularily, it
 %       uses RAWFORMAT and and associated NODEs' calibration file channels
 %       definition. Data must contain following channels: voltage, temperature,
-%       current, mass position (1,2,3 or E,N,U) identified by their NODE's 
+%       current, mass position (1,2,3 or E,N,U) identified by their NODE's
 %       calibration file channel numbers.
 %
 %
@@ -49,9 +49,9 @@ function DOUT=soh(varargin)
 %
 
 %
-%   Authors: Jean-Marie Saurel, François Beauducel, IPGP
+%   Authors: Jean-Marie Saurel, Franï¿½ois Beauducel, IPGP
 %   Created: 2017-10-09 in Paris, France
-%   Updated: 2017-10-15
+%   Updated: 2021-01-01
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -62,7 +62,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = sprintf(' %s',mfilename,varargin{:});
+procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
 % gets PROC's configuration and associated nodes for any TSCALE and/or REQDIR
@@ -146,7 +146,7 @@ for n = 1:length(N)
 		ylabel(sprintf('%s (%s)',C.nm{i_xy(2)},C.un{i_xy(2)}))
 
 		nbins = min(300,length(unique(mod(tk(:),1))));
-		
+
 		% PDF1
 		axes('position',[.35,py,0.28,0.18]);
 		kk = find(~isnan(dk(:,i_pdf1)));
@@ -244,7 +244,7 @@ for n = 1:length(N)
 		end
 
 		tlabel(tlim,P.GTABLE(r).TZ)
-    
+
 		% makes graph
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
