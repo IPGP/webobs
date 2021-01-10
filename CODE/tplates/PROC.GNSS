@@ -136,7 +136,7 @@ BASELINES_UNIT|mm
 BASELINES_YLABEL|Ref.\ $ref_node_alias (${BASELINES_UNIT})
 BASELINES_LINESTYLE|-
 # offset between references (in m)
-BASELINES_REF_OFFSET_M|0.001
+BASELINES_REF_OFFSET_M|0.01
 # offset between stations (in m)
 BASELINES_STATION_OFFSET_M|0.01
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
@@ -244,7 +244,7 @@ MODELLING_PCDM_SUPPLEMENTARY_GRAPHS|N
 # --- MODELTIME: defines the moving periods, minimum sampling, maximum models
 # [NOTE] MODELTIME uses all MODELLING parameters but forces an isotropic source
 MODELTIME_PERIOD_DAY|30,15
-MODELTIME_SAMPLING_DAY|2
+MODELTIME_SAMPLING_DAY|1
 MODELTIME_MAX_MODELS|50
 MODELTIME_FLOWRATE|Y
 MODELTIME_MAP_PERIODLIST|
