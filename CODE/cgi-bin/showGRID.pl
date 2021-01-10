@@ -23,6 +23,7 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 use File::Copy qw(copy);
 use File::Find qw(find);
+use List::Util qw(first);
 use Image::Info qw(image_info dim);
 use POSIX qw(strftime);
 
@@ -94,6 +95,7 @@ my @procTS = ();
 my $procOUTG;
 if ($isProc) {
 	$procOUTG = '1' if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" );
+	$procOUTG = 'events' if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" );
  	@procTS = split(/,/,$GRID{TIMESCALELIST});
 } else {
 	$usrProcparam = '';
@@ -239,7 +241,9 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			."]";
 	}
 	$htmlcontents   .= "</LI>";
-	if ($showType) { $htmlcontents .= "<LI>$__{'Type'}: <B>".($GRID{TYPE} // "")."</B></LI>\n" }
+	if ($showType && $GRID{TYPE} ne "") {
+		$htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n";
+	}
 	# -----------
 	# only for PROCs
 	if ($isProc) {
@@ -261,12 +265,6 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		if (defined($GRID{URNDATA})) {
 			my $urnData = "$GRID{URNDATA}";
 			$htmlcontents .= "<LI>$__{'Access to rawdata'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
-		}
-		# -----------
-		my $urn = '';
-		if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" ) {
-			$urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName&ts=events";
-			$htmlcontents .= "<LI>$__{'Graphical routine'}: <B>$GRIDName</B> <A href=\"$urn\">events</A></LI>\n";
 		}
 		# -----------
 		if (defined($GRID{EVENTS_FILE})) {
@@ -303,18 +301,22 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		if ($procOUTG) {
 			my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
 			$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Graphs'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
-			foreach my $g ("",split(/,/,$GRID{SUMMARYLIST})) {
-				my $outg = join('',map {$_ = "<TD align=\"center\"><A href=\"$urn&amp;ts=$_&amp;g=$g\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>"} split(/,/,$GRID{TIMESCALELIST}));
-				$htmlcontents .= "<TR><TD align=\"right\">".($g eq ""?"Overview":"$g")."</TD>$outg</TR>\n";
+			if ($procOUTG eq "events") {
+				$htmlcontents .= "<TR><TD align=\"right\">Events</TD><TD align=\"center\"><A href=\"$urn&amp;ts=events\"><B><IMG src=\"/icons/visu.png\"></B></A></TD></TR>\n";
+			} else {
+				foreach my $g ("",split(/,/,$GRID{SUMMARYLIST})) {
+					my $outg = join('',map {$_ = "<TD align=\"center\"><A href=\"$urn&amp;ts=$_&amp;g=$g\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>"} split(/,/,$GRID{TIMESCALELIST}));
+					$htmlcontents .= "<TR><TD align=\"right\">".($g eq ""?"Overview":"$g")."</TD>$outg</TR>\n";
+				}
 			}
 			$htmlcontents .= "</TABLE></TD>\n";
 		}
-		$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Time Scales'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
+		$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Param.'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
 		foreach ("Decimate","Cumulate","DateStr","MarkerSize","LineWidth","Status") {
 			my @tsp = split(/,/,$GRID{uc($_)."LIST"});
 			my $cells;
 			if ($#tsp < 0) {
-				$cells = "<TD align=\"center\" colspan=\"".($#procTS+1)."\"><I><SMALL>$__{undefined}</SMALL></I>";
+				$cells = "<TD align=\"center\" colspan=\"".($#procTS+1)."\"><I><SMALL>$__{'undefined'}</SMALL></I>";
 			} else {
 				push(@tsp, '&nbsp;' x ($#procTS-$#tsp)) if ($#tsp < $#procTS);
 				$cells = "<TD align=\"center\"><B>".join("</B></TD><TD align=\"center\"><B>",@tsp)."</B>";
@@ -410,7 +412,10 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			}
 			$htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
 			$htmlcontents .= "<TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if (@procTS);
-			$htmlcontents .= "<TH colspan=3>$__{'Proc Status'}</TH>" if ($overallStatus);
+			if ($overallStatus) {
+				my @tsp = split(/,/,$GRID{"STATUSLIST"});
+				$htmlcontents .= "<TH colspan=3>$__{'Proc Status'} (".$procTS[first { $tsp[$_] eq '1' } reverse(0..$#tsp)].")</TH>";
+			}
 			$htmlcontents .= "</TR>\n<TR>";
 			if ($usrCoord eq "utm") {
 				$htmlcontents .= "<TH>UTM Eastern (m)</TH><TH>UTM Northern (m)</TH><TH>$__{'Elev.'} (m)</TH>";
@@ -423,7 +428,11 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			}
 			$htmlcontents .= "<TH>$__{'Start / Installation'}</TH><TH>$__{'End / Stop'}</TH>";
 			$htmlcontents .= "<TH>$__{'FID'}</TH><TH>$__{'Raw Format'}</TH><TH>$__{'Chan.'}</TH>" if ($usrProcparam eq 'on');
-			$htmlcontents .= "<TH>".join("</TH><TH>",@procTS)."</TH>" if ($procOUTG);
+			if ($procOUTG eq "events") {
+				$htmlcontents .= "<TH>Events</TH>";
+			} elsif ($procOUTG) {
+				$htmlcontents .= "<TH>".join("</TH><TH>",@procTS)."</TH>" if ($procOUTG);
+			}
 			if ($overallStatus) {
 				$htmlcontents .= "<TH>$__{'Last Data'} (TZ $GRID{TZ})</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
 			}
@@ -565,7 +574,11 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				}
 				if ($procOUTG) {
 					my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
-					$htmlcontents .= join('',map {$_ = "<TD align=\"center\"><A href=\"$urn&amp;ts=$_&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>"} split(/,/,$GRID{TIMESCALELIST}))."\n";
+					if ($procOUTG eq "events") {
+						$htmlcontents .= "<TD align=\"center\"><A href=\"$urn&amp;ts=events&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>\n";
+					} else {
+						$htmlcontents .= join('',map {$_ = "<TD align=\"center\">".( -e "$WEBOBS{ROOT_OUTG}/$grid/$WEBOBS{PATH_OUTG_GRAPHS}/".lc($NODEName)."_$_.png" ? "<A href=\"$urn&amp;ts=$_&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A>":"" )."</TD>"} split(/,/,$GRID{TIMESCALELIST}))."\n";
+					}
 				}
 
 				# NODE's status

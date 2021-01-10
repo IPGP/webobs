@@ -245,6 +245,9 @@ msgstr "Paramètres Proc"
 msgid "Proc Graphs"
 msgstr "Graphes Proc"
 
+msgid "Proc Param."
+msgstr "Param. Proc"
+
 msgid "Proc Time Scales"
 msgstr "Fenêtres temporelles Proc"
 
