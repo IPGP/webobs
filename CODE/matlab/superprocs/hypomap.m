@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2020-11-25
+%   Updated: 2021-01-01
 
 
 WO = readcfg;
@@ -37,7 +37,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = sprintf(' %s',mfilename,varargin{:});
+procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
 

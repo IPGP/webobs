@@ -30,12 +30,12 @@ function DOUT=meteo(varargin)
 %	    RAIN_CHANNEL|6
 %	If rain data are already cumulated, set this key to Y:
 %	    RAIN_CUMSUM_DATA|N
-%	
+%
 %	Wind speed and azimuth channels numbers are set with (defaults are 5 and 4):
 %	    WIND_SPEED_CHANNEL|5
 %	    WIND_AZIMUTH_CHANNEL|4
 %	    WIND_ROSE_STEP|10
-%	Azimuth data must be in degrees from North (°N), clockwise.
+%	Azimuth data must be in degrees from North (ï¿½N), clockwise.
 %
 %	X-Y graph is set using the x,y channel numbers as (default is 8 vs. 3):
 %	    XY_CHANNELS|3,8
@@ -55,7 +55,7 @@ function DOUT=meteo(varargin)
 %
 %   Authors: F. Beauducel + S. Acounis / WEBOBS, IPGP
 %   Created: 2001-07-04
-%   Updated: 2018-11-09
+%   Updated: 2021-01-01
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -66,7 +66,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = sprintf(' %s',mfilename,varargin{:});
+procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
 % gets PROC's configuration and associated nodes for any TSCALE and/or REQDIR
@@ -187,7 +187,7 @@ for n = 1:length(N)
 				set(ax(2),'XLim',tlim,'FontSize',8,'XTick',[])
 				set(h2,'LineWidth',P.GTABLE(r).MARKERSIZE/3)
 			end
-		
+
 			% rainfall alerts in background
 			vp = [diff(d(:,nx+1)>=s_ap);-1];
 			kp0 = find(vp==1);
@@ -240,7 +240,7 @@ for n = 1:length(N)
 		for ii = 1:length(node_chan)
 			g = node_chan(ii);
 			subplot(length(node_chan) + 4,1,4+ii), extaxes
-			% if plotting wind azimuth, apply modulo +/- 180°
+			% if plotting wind azimuth, apply modulo +/- 180ï¿½
 			if g == i_winda
 				dd = mod(dk(:,g) + 180,360) - 180;
 			else
@@ -261,7 +261,7 @@ for n = 1:length(N)
 			if length(find(~isnan(dk(:,g))))==0, nodata(tlim), end
 		end
 		tlabel(tlim,P.GTABLE(r).TZ)
-    
+
 		% makes graph
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close

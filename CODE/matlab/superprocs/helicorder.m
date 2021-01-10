@@ -45,7 +45,7 @@ function DOUT=helicorder(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2016-12-30 in Yogyakarta, Indonesia
-%	Updated: 2018-05-25
+%	Updated: 2021-01-01
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -56,7 +56,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = sprintf(' %s',mfilename,varargin{:});
+procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
 % gets PROC's configuration, associated nodes for any TSCALE and/or REQDIR and the data
@@ -97,7 +97,7 @@ for n = 1:length(N)
 			scale(c) = 1e10;
 		end
 	end
-	
+
 	% ===================== loops on TSCALE period with DURATION_DAYS steps
 
 	for t0 = floor(P.GTABLE(r).DATE1/hd)*hd:hd:floor(P.GTABLE(r).DATE2/hd)*hd
@@ -117,7 +117,7 @@ for n = 1:length(N)
 
 		% loop for each data channel
 		for c = 1:nx
-			
+
 			fnam = sprintf('%4d%02d%02dT%02d%02d%02.0f_%s_%s_%s_%s',vtps,N(n).FDSN_NETWORK_CODE,N(n).FID,C.cd{c},C.lc{c});
 			fdat = sprintf('%s/%s.png',pdat,fnam);
 			V.stream_name = sprintf('%s:%s:%s:%s',N(n).FDSN_NETWORK_CODE,N(n).FID,C.cd{c},C.lc{c});
@@ -180,7 +180,7 @@ for n = 1:length(N)
 					' ',' ', ...
 					};
 				end
-				
+
 				% makes graph
 				mkgraph(WO,fnam,P.GTABLE(r))
 				close
@@ -215,4 +215,3 @@ timelog(procmsg,2)
 if nargout > 0
 	DOUT = D;
 end
-

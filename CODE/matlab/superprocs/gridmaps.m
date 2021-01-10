@@ -37,13 +37,13 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2020-11-23
+%   Updated: 2021-01-01
 
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
-procmsg = sprintf(' %s',mfilename);
+procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1)
 
 % merges all grids into a single map
@@ -326,14 +326,16 @@ for g = 1:length(grids)
 			end
 
 			% plots active nodes
+			kam = [];
 			if ~isempty(ka)
-				k = find(isinto(geo(ka,2),dlon) & isinto(geo(ka,1),dlat));
-				target(geo(ka(k),2),geo(ka(k),1),nodesize,nodecolor,nodetype)
+				kam = ka(isinto(geo(ka,2),dlon) & isinto(geo(ka,1),dlat));
+				target(geo(kam,2),geo(kam,1),nodesize,nodecolor,nodetype)
 			end
 			% plots inactive nodes
+			k0m = [];
 			if ~isempty(k0)
-				k = find(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
-				target(geo(k0(k),2),geo(k0(k),1),nodesize,nodecolor,nodetype,2)
+				k0m = k0(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
+				target(geo(k0m,2),geo(k0m,1),nodesize,nodecolor,nodetype,2)
 			end
 
 			% writes node names for current map but excluded other maps
@@ -386,8 +388,8 @@ for g = 1:length(grids)
 						target(xl(3),yl,nodesize,nodecolor,nodetype,2);
 					end
 					text(xl,yl*[1,1,1],{sprintf('{\\bf%s}',nodename), ...
-						sprintf('    active ({\\bf%d}/%d)',length(ka),length(kn)), ...
-						repmat(sprintf('    inactive ({\\bf%d}/%d)',length(k0),length(kn)),~isempty(k0))}, ...
+						sprintf('    active ({\\bf%d}/%d)',length(kam),length(kn)), ...
+						repmat(sprintf('    inactive ({\\bf%d}/%d)',length(k0m),length(kn)),~isempty(k0m))}, ...
 						'FontSize',14,'HorizontalAlignment','left')
 				end
 

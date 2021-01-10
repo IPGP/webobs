@@ -8,7 +8,10 @@ function [P,N,D] = readproc(WO,varargin)
 %	in TIMESCALELIST. TSCALE must be in the form of coma-separated string
 %	'ts1,ts2,...,tsn'. Default is '%' to return all the TIMESCALELIST.
 %
-%	P = READPROC(WO,PROC,TSCALE,REQDIR) ignores TSCALE and returns in P.GTABLE the 
+%	P = READPROC(WO,PROC,PARAMS) uses struct PARAMS to replace selected proc's
+%	parameters. PARAMS must be in the form struct('parameter',value).
+%
+%	P = READPROC(WO,PROC,TSCALE,REQDIR) ignores TSCALE and returns in P.GTABLE the
 %	parameters of request in REQDIR/REQUEST.rc.
 %
 %	[P,N] = READPROC(...) returns also a structure N containing all associated nodes
@@ -20,7 +23,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2019-12-11
+%	Updated: 2021-01-01
 
 
 proc = varargin{1};
@@ -41,6 +44,11 @@ end
 
 % reads .conf main conf file
 P = readcfg(WO,f);
+
+% replaces any fields in P by optional argument PARAMS
+if nargin > 2 && isstruct(varargin{2})
+	P = structmerge(P,varargin{2});
+end
 
 % split proc's name
 [~,proc,~] = fileparts(f);
@@ -80,7 +88,7 @@ P.NODESLIST = {};
 for j = 1:length(X)
 	nj = split(X(j).name,'.');
 	P.NODESLIST{end+1} = nj{3};
-end 
+end
 % appends the associated FORM (if exists) by listing directory WO.PATH_GRIDS2FORMS
 X = dir(sprintf('%s/PROC.%s.*',WO.PATH_GRIDS2FORMS,proc));
 if ~isempty(X)
@@ -91,7 +99,7 @@ if ~isempty(X)
 	P.FORM.SELFREF = formname;
 	P.FORM.ROOT = formroot;
 	P.RAWFORMAT = 'woform';
-end 
+end
 
 % TIMESCALELIST : computes the date limits for each timescale and sets P.TIMESCALELIST and P.DATELIST (see timescales.m help)
 P = timescales(P);
@@ -100,7 +108,7 @@ if nargin > 2 && isnumeric(varargin{2}) && numel(varargin{2}) == 2
 	nlist = 1;
 end
 
-% DATESTRLIST 
+% DATESTRLIST
 P = tnorm(P,'DATESTRLIST',nlist,-1);
 
 % MARKERSIZELIST to num vector
@@ -121,9 +129,8 @@ P = tnorm(P,'STATUSLIST',nlist,0);
 % makes the GTABLE
 % case A: TIMESCALELIST all or selection
 if nargin < 4
-	if nargin < 3
-		tscale = {'%'};
-	else
+	tscale = {'%'};
+	if nargin > 2
 		if isstr(varargin{2})
 			% in deployed application, input arguments are only string
 			if isdeployed && numel(str2num(varargin{2}))==2
@@ -131,7 +138,7 @@ if nargin < 4
 			else
 				tscale = split(varargin{2},',');
 			end
-		else
+		elseif isnumeric(varargin{2})
 			tscale = varargin{2};
 		end
 	end
@@ -284,4 +291,3 @@ if lf < nlist
 	P.(fd)(lf+1:nlist) = dv(lf+1:nlist);
 	fprintf('WEBOBS{readproc:tnorm}: ** WARNING ** inconsistent length or inexisting %s in %s timescale table. Fill with default value.\n',fd,P.SELFREF);
 end
-
