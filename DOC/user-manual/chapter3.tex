@@ -801,21 +801,25 @@ EarthWorm Winston wave server (WWS) protocol request from a distant or local ser
 These formats will return time series of data channels, like the waveform formats do but usually the data sampling frequency is lower than for seismic waveforms, so it can be managed using data files stored in local directories. Number of channels depends on the data and can be selected and calibrated using the NODE's calibration file.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{\{ascii\}: Generic ASCII text files}
+\subsubsection{\{dsv\}: Delimiter separated value text files}
 
-Attempt to read generic text files with regular data columns. \wokey{RAWDATA} contains the full path and filename(s) using bash wildcard facilities. The data files must be organized as regular columns of numbers (strings will produce a column of NaN), any separator character, and the date and time must be defined as 3 (year, month, day) or 6 columns (year, month, day, hour, minute, second) at some place (default is the 6 first columns). If there is no calibration file for a NODE, the header line will be used to get the channel names.
+Attempt to read generic text files with regular data columns. \wokey{RAWDATA} contains the full path and filename(s) using bash wildcard facilities. The data files must be organized as regular columns of numbers (strings will produce a column of NaN), any separator character, and the date and time must be defined as 3 (year, month, day) or 6 columns (year, month, day, hour, minute, second) at some place (default is the 6 first columns). The calibration file for a NODE defines names and units for each channel.
+
+This format uses a preprocessor, a script defined in \wofile{WEBOBS.rc} as \wokey{ROOT\_PREPROCESSOR}, as a filter of the rawdata file to output a regular semi-colon separated columns. The default preprocessor is a gawk script named \wofile{CODE/bin/preprocessor/dsv\_generic}.
 
 For this format you may define optional additional \wokey{FID\_*} keys for each NODE to specify the format:
 
-\begin{tabular}{rl}
-\wokey{FID\_FS} & field separator character (default is semicolumn),\\
-\wokey{FID\_TIMECOLS} & index vector of columns defining date\&time in order: year month day hour minute second,\\
-\wokey{FID\_NF} & number of data columns in the file, considering all non-numeric as separator (default is automatic),\\
+\begin{tabular}{rp{13cm}}
+\wokey{FID\_FS} & field separator character (default is semi-colon). Note that blank is always considered as separator; successive blanks count for one\\
+\wokey{FID\_TIMECOLS} & index vector of columns defining date\&time in order: year month day hour minute second (default is 6 first columns with automatic column order detection)\\
+\wokey{FID\_DATACOLS} & index vector of columns that contain data (default is automatic)\\
+\wokey{FID\_ERRORCOLS} & index vector of columns defining data errors (default is none), in the same order as data (must have the same length, use 0 to skip a column)\\
+\wokey{FID\_NF} & number of columns/fields of the data files. Lines that don't respect this value will be ignored (default is automatic),\\
 \wokey{FID\_HEADERLINES} & number of header lines (default is 1).
 \end{tabular}
 
 
-\begin{lstlisting}[language={},title=Generic ASCII format example 1: time + data channels 1 to 3.]
+\begin{lstlisting}[language={},title=DSV format example 1: time + data channels 1 to 3.]
                Date;                   P_0;                 SO2_0;                 H2S_0;
 06/06/2017 18:00:00;            752.579529;             -0.061299;             -0.031172;
 06/06/2017 18:00:09;            724.445852;             -0.071515;             -0.024938;
@@ -829,7 +833,7 @@ FID_HEADERLINES|1
 \end{lstlisting}
 
 
-\begin{lstlisting}[language={},title=Generic ASCII format example 2: data channel 1 (all NaN) + time + data channels 2 to 4.]
+\begin{lstlisting}[language={},title=DSV format example 2: data channel 1 (all NaN) + time + data channels 2 to 4.]
 VMAB    01/01/12        06:20:11        132     338     40.6
 VMAB    01/01/12        06:40:11        135     337     40.7
 VMAB    01/01/12        07:00:11        133     336     40.6
