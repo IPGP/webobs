@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-01-01
+%   Updated: 2021-01-16
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -132,6 +132,18 @@ motion_minkm = field2num(P,'MOTION_MIN_SIZE_KM',10);
 motion_colormap = field2num(P,'MOTION_COLORMAP',spectral(256));
 motion_demopt = field2cell(P,'MOTION_DEM_OPT','watermark',1.5,'saturation',0,'interp');
 motion_title = field2str(P,'MOTION_TITLE','{\fontsize{14}{\bf$name - Motion} ($timescale)}');
+
+% MODELNET parameters
+modelnet_mindisp = field2num(P,'MODELNET_MIN_DISP_M',[0.001,0.001,0.002]);
+modelnet_minsta = field2num(P,'MODELNET_MIN_STATION',3);
+modelnet_dslice = field2num(P,'MODELNET_DEPTH_SLICE',0:2000:8000);
+modelnet_border = field2num(P,'MODELNET_BORDERS',2000);
+modelnet_gridsize = field2num(P,'MODELNET_GRID_SIZE',100);
+modelnet_vazel = field2num(P,'MODELNET_VIEW_AZEL',[40,10]);
+modelnet_dvlim = field2num(P,'MODELNET_DVLIM',[0,1e6]);
+modelnet_cmap = field2num(P,'MODELNET_COLORMAP',roma(256));
+modelnet_mks = field2cell(P,'MODELNET_MARKER','^k','MarkerSize',6,'MarkerFaceColor',.99*ones(1,3));
+modelnet_title = field2str(P,'MODELNET_TITLE','{\fontsize{14}{\bf$name - Network sensitivity} ($timescale)}');
 
 % MODELLING parameters
 modelling_excluded_from_target = field2num(P,'MODELLING_EXCLUDED_FROM_TARGET_KM',0,'notempty');
@@ -831,7 +843,7 @@ for r = 1:numel(P.GTABLE)
 		else
 			knv = 1:numel(N);
 		end
-	fprintf('---> MOTION: %d/%d nodes selected\n',numel(knv),numel(N));
+		fprintf('---> MOTION: %d/%d nodes selected\n',numel(knv),numel(N));
 
 		if ~isempty(targetll)
 			latlim = minmax([geo(knv,1);targetll(1)]);
@@ -987,6 +999,98 @@ for r = 1:numel(P.GTABLE)
 		close
 	end
 
+	% --- Modelnet
+	summary = 'MODELNET';
+	if any(strcmp(P.SUMMARYLIST,summary))
+
+		figure, orient tall
+
+		P.GTABLE(r).GTITLE = varsub(modelnet_title,V);
+		P.GTABLE(r).INFOS = {'{\itTime span}:', ...
+			sprintf('     {\\bf%s}',datestr(tlim(1),'yyyy-mm-dd HH:MM')), ...
+			sprintf('     {\\bf%s}',datestr(tlim(2),'yyyy-mm-dd HH:MM')), ...
+			' ', ...
+	   		sprintf('minimum displacements at {\\bf%d} stations',modelnet_minsta), ...
+	   		sprintf('{\\bf%g mm} E, {\\bf%g mm} N, {\\bf%g mm} U components',modelnet_mindisp*1e3), ...
+			' ', ...
+			};
+
+		% Selects nodes
+		if isfield(P,'MODELNET_EXCLUDED_NODELIST')
+			kn = find(~ismemberlist({N.FID},split(P.MODELNET_EXCLUDED_NODELIST,',')));
+		else
+			kn = 1:numel(N);
+		end
+		fprintf('---> %s: %d/%d nodes selected\n',summary,numel(kn),numel(N));
+
+		% makes the XYZ space
+		latlim = minmax(geo(kn,1));
+		lonlim = minmax(geo(kn,2));
+		lat0 = mean(latlim);
+		lon0 = mean(lonlim);
+		ysta = (geo(kn,1) - lat0)*degkm*1e3;
+		xsta = (geo(kn,2) - lon0)*degkm(lat0)*1e3;
+		zsta = geo(kn,3);
+
+		wid = max(diff(latlim)*degkm*1e3,diff(lonlim)*degkm(lat0)*1e3) + 2*modelnet_border;
+		mlim = linspace(-wid/2,wid/2,modelnet_gridsize);
+
+		% loads SRTM DEM for basemap (with 10% extra borders)
+		DEM = loaddem(WO,[lon0 + wid/(degkm(lat0)*1e3)*[-.6,.6],lat0 + wid/(degkm*1e3)*[-.6,.6]],struct('ETOPO_SRTM_MERGE',0));
+		[xdem,ydem] = meshgrid(mlim);
+		zdem = interp2((DEM.lon-lon0)*degkm(lat0)*1e3,(DEM.lat-lat0)*degkm*1e3,double(DEM.z),xdem,ydem);
+
+		[xx,yy,zz] = meshgrid(mlim,mlim,-modelnet_dslice);
+		sz = size(xx);
+	       nn = length(xsta);
+
+	       % computes Green's functions at stations for a unit volume of 1 m3
+	       [asou,rsou] = cart2pol(repmat(reshape(xsta,1,1,1,nn),[sz,1])-repmat(xx,[1,1,1,nn]), ...
+	           repmat(reshape(ysta,1,1,1,nn),[sz,1])-repmat(yy,[1,1,1,nn]));
+	       [ur,uz] = mogi(rsou,repmat(reshape(zsta,1,1,1,nn),[sz,1]) - repmat(zz,[1,1,1,nn]),1);
+	       [ux,uy] = pol2cart(asou,ur);
+
+	   	% source dVs for minimum displacements on X,Y,Z components, stations
+	   	% sorted in ascending order of dV
+	   	vx = sort(modelnet_mindisp(1)./abs(ux),4);
+	   	vy = sort(modelnet_mindisp(2)./abs(uy),4);
+	   	vz = sort(modelnet_mindisp(3)./abs(uz),4);
+	       vv = min(cat(4,vx(:,:,:,modelnet_minsta),vy(:,:,:,modelnet_minsta),vz(:,:,:,modelnet_minsta)),[],4);
+	       vv(zz>=repmat(zdem,[1,1,sz(3)])) = NaN;
+
+		axes('Position',[0.05,0.1,0.7,0.8])
+	   	slice(xx,yy,zz,vv,[],[],-modelnet_dslice)
+	   	shading flat
+	   	hold on
+	   	plot3(xsta,ysta,-modelnet_dslice(1)*ones(size(xsta))+1,modelnet_mks{:})
+	   	for z = modelnet_dslice
+	   		[~,h] = contour(mlim,mlim,zdem);
+	   		set(h,'LineColor',.99*ones(1,3),'LineWidth',.1);
+	   		[c,h] = contour(mlim,mlim,zdem,[1,1]); % coast line at 1m elevation
+	   		set(h,'LineColor',.99*ones(1,3),'LineWidth',1);
+	   		zi = interp3(xx,yy,zz,vv,xx(:,:,1),yy(:,:,1),-z*ones(rr));
+	   		text(cosd(modelnet_vazel(1))*wid/sqrt(2),sind(modelnet_vazel(1))*wid/sqrt(2),-z, ...
+	   			{sprintf('{\\bfDepth = %g m}',z),sprintf('\\DeltaV = %g to %g m^3',roundsd(minmax(zi),2))}, ...
+	   			'VerticalA','m','FontSize',10)
+	   	end
+	   	hold off
+	   	view(modelnet_vazel)
+		set(gca,'XLim',minmax(mlim),'YLim',minmax(mlim),'ZLim',minmax(-modelnet_dslice))
+	   	axis tight off
+		caxis(modelnet_dvlim)
+
+	   	axes('position',[.55,.07,.4,.02])
+	   	pcolor(linspace(modelnet_dvlim(1),modelnet_dvlim(2)),[0,1],repmat(linspace(modelnet_dvlim(1),modelnet_dvlim(2)),2,1)), shading flat
+	   	set(gca,'YTick',[],'TickDir','out','FontSize',8)
+	   	caxis(modelnet_dvlim)
+	   	xlabel('Detactable \DeltaV (m^3)')
+
+		colormap(modelnet_cmap)
+
+		P.GTABLE(r).GSTATUS = [];
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('INFOLINES',4))
+		close
+	end
 
 	% --- common part for MODELLING and MODELTIME
 	if any(ismember(P.SUMMARYLIST,{'MODELLING','MODELTIME'}))
