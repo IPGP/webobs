@@ -9,7 +9,7 @@ function y = isok(x,f,v)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-08-17
-%	Updated: 2019-02-14
+%	Updated: 2021-01-16
 
 
 okstrings = {'y','yes','ok','on','oui','ya','si'};
@@ -22,7 +22,7 @@ if isstruct(x)
 	if nargin > 1 && isfield(x,f)
 		x = x.(f);
 	else
-		x = 0;
+		x = v;
 	end
 end
 
@@ -34,7 +34,7 @@ end
 
 if (~isempty(xx) && ~isnan(xx) && xx > 0) || (ischar(x) && any(strcmpi(x,okstrings)))
 	y = 1;
-elseif ischar(x) && any(strcmpi(x,notokstrings))
+elseif (~ischar(x) && xx == 0) || (ischar(x) && any(strcmpi(x,notokstrings)))
 	y = 0;
 else
 	y = v;
