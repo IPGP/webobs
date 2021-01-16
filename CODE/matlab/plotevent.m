@@ -1,6 +1,6 @@
 function varargout=plotevent(conf,ax)
 %PLOTEVENT Display time referenced events/phases.
-%	PLOTEVENT(FILE) plots shaded colored areas in the background of all axes in the 
+%	PLOTEVENT(FILE) plots shaded colored areas in the background of all axes in the
 %	current figure, from the configuration FILE in the format:
 %
 %	   Date1|Date2|LineWidth|RGB|Name|Comment
@@ -13,7 +13,7 @@ function varargout=plotevent(conf,ax)
 %
 %   Authors: F. Beauducel + D. Lafon + B. Taisne, WEBOBS/IPGP
 %   Created : 2004-07-21 (from ploterup.m)
-%   Updated : 2018-01-02
+%   Updated : 2021-01-16
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -58,6 +58,7 @@ for n = 1:length(conf)
 		for i = 1:length(ha)
 			xlim = get(ha(i),'XLim');
 			ylim = get(ha(i),'YLim');
+			zlim = get(ha(i),'ZLim');
 			k = find(dt1 <= xlim(2) & dt2 >= xlim(1));
 			if ~isempty(k)
 				tk = [dt1(k),dt2(k)];
@@ -105,8 +106,8 @@ for n = 1:length(conf)
 						datestr(tk(n,1),'dd-mmm-yyyy HH:MM'),datestr(tk(n,2),'dd-mmm-yyyy HH:MM'),sc,nam{k(n)},rgb{k(n)});
 				end
 				imap = imap + 1;
+				set(ha(i),'YLim',ylim,'ZLim',zlim)
 			end
-			set(ha(i),'YLim',ylim,'ZLim',[-1,0])
 		end
 		fprintf(' events added to current axe.\n');
 	end
@@ -119,4 +120,3 @@ if nargout > 0
 		varargout{1} = [];
 	end
 end
-
