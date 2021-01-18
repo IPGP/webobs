@@ -14,13 +14,13 @@
 }
 
 #attente {
-    color: gray;
-    background: white;
-    margin: 0.5em;
-    padding: 0.5em;
-    font-size: 1.5em;
-    border: 1px solid gray;
-    position: float;
+	color: gray;
+	background: white;
+	margin: 0.5em;
+	padding: 0.5em;
+	font-size: 1.5em;
+	border: 1px solid gray;
+	position: float;
 }
 
 html,body {
@@ -150,13 +150,13 @@ div.keys {
 	right: 5;
 	top: 30px;
 	width: 400px;
-   margin: 0;
-   padding: 5;
+	margin: 0;
+	padding: 5;
 	background-color: lightgray;
-   border: solid 2px #AFAFAF;
-   border-radius: 5px;
-   -webkit-border-radius: 5px;
-   -moz-border-radius: 5px;
+	border: solid 2px #AFAFAF;
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
 }
 
 .mctag {
@@ -237,7 +237,7 @@ div.keys {
 	padding: 0;
 	margin: 1;
 	border: 0;
-    font-size: 8px;
+	font-size: 8px;
 }
 #crosshairUp {
 	display: inline-block;
@@ -260,7 +260,7 @@ div.keys {
 	/*DYNAMIC height: ${hauteur_image}px*/
 }
 input[type=submit] {
-    font-weight: bold;
+	font-weight: bold;
 }
 
 #rtclock {
@@ -291,8 +291,8 @@ input[type=submit] {
 }
 .sgram {
 	display: inline-block;
-   position: absolute;
-   z-index: 2;
+	position: absolute;
+	z-index: 2;
 	/*DYNAMIC opacity: $SEFRAN3{SGRAM_OPACITY}*/
 }
 .sgramhour {

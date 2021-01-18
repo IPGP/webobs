@@ -283,7 +283,7 @@ function flypointit(event,click) {
 			algn = 'left'; ol_hpos = RIGHT;
 			ret=MECB.CROSSHAIR+'&nbsp;'+ret;
 		}
-		return('<div style="width: '+MECB.CHWIDTH+'px;text-align:'+algn+'">'+ret+'</div>');
+		return('<div style="width:'+MECB.CHWIDTH+'px;text-align:'+algn+';background-color:white;opacity:0.8">'+ret+'</div>');
 	} else {
 		// ------------------------ process a click -----------------
 		if (event.shiftKey && MECB.FORM.secondeEvenement.value!="" && duration > 0) {
