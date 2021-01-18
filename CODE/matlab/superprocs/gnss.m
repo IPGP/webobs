@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-01-17
+%   Updated: 2021-01-18
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -69,6 +69,7 @@ targetll = field2num(P,'GNSS_TARGET_LATLON');
 if numel(targetll)~=2 || any(isnan(targetll))
 	targetll = [];
 end
+degm = 1e3*degkm;
 velref = field2num(P,'VELOCITY_REF',[0,0,0]);
 velrefdate = field2num(P,'VELOCITY_REF_ORIGIN_DATE',datenum(2000,1,1));
 itrf = field2str(P,'ITRF_REF','ITRF');
@@ -143,6 +144,7 @@ modelnet_mindisp = field2num(P,'MODELNET_MIN_DISP_M',[0.001,0.001,0.002]);
 modelnet_minsta = round(field2num(P,'MODELNET_MIN_STATION',3));
 modelnet_dslice = field2num(P,'MODELNET_DEPTH_SLICE',0:2000:8000);
 modelnet_border = field2num(P,'MODELNET_BORDERS',1000);
+modelnet_target_included = isok(P,'MODELNET_TARGET_INCLUDED',1);
 modelnet_gridsize = field2num(P,'MODELNET_GRID_SIZE',100);
 modelnet_vazel = field2num(P,'MODELNET_VIEW_AZEL',[40,10]);
 modelnet_dvlim = field2num(P,'MODELNET_DVLIM',[0,1e6]);
@@ -1004,8 +1006,13 @@ for r = 1:numel(P.GTABLE)
 		if length(kn) > 0
 
 			% makes the XYZ space
-			latlim = minmax(geo(kn,1));
-			lonlim = minmax(geo(kn,2));
+			if modelnet_target_included && ~isempty(targetll)
+				latlim = minmax([geo(kn,1);targetll(1)]);
+				lonlim = minmax([geo(kn,2);targetll(2)]);
+			else
+				latlim = minmax(geo(kn,1));
+				lonlim = minmax(geo(kn,1));
+			end
 			lat0 = mean(latlim);
 			lon0 = mean(lonlim);
 			ysta = (geo(kn,1) - lat0)*degkm*1e3;
@@ -1043,25 +1050,42 @@ for r = 1:numel(P.GTABLE)
 	   		shading flat
 	   		hold on
 	   		plot3(xsta,ysta,-modelnet_dslice(1)*ones(size(xsta))+1,modelnet_mks{:})
+			if ~isempty(targetll) && modelnet_target_included
+				xt = (targetll(2)-lon0)*degm*cosd(lat0);
+				yt = (targetll(1)-lat0)*degm;
+				plot3([xt,xt],[yt,yt],-modelnet_dslice([1,end]),':k')
+			end
 	   		for z = modelnet_dslice
 	   			c = contourc(mlim,mlim,zdem);
 	   			pcontour3(c,-z+1,'Color',.99*ones(1,3),'LineWidth',.1);
 	   			c = contourc(mlim,mlim,zdem,[1,1]); % coast line at 1m elevation
 	   			pcontour3(c,-z+1,'Color',.99*ones(1,3),'LineWidth',1);
-	   			zi = interp3(xx,yy,zz,vv,xx(:,:,1),yy(:,:,1),-z*ones(rr));
-	   			text(cosd(modelnet_vazel(1))*wid/sqrt(2),sind(modelnet_vazel(1))*wid/sqrt(2),-z, ...
-	   				{sprintf('{\\bfDepth = %g m}',z),sprintf('\\DeltaV = %g to %g m^3',roundsd(minmax(zi),2))}, ...
+	   			vmm = minmax(interp3(xx,yy,zz,vv,xx(:,:,1),yy(:,:,1),-z*ones(modelnet_gridsize)));
+				label = sprintf(' {\\bfDepth = %s m}\n \\DeltaV = %s to %s m^3',num2tex(z), ...
+					num2tex(roundsd(vmm(1),2)),num2tex(roundsd(vmm(2),2)));
+				if ~isempty(targetll) && modelnet_target_included
+	   				vi = interp3(xx,yy,zz,vv,xt,yt,-z);
+					label = [label,sprintf('\n\n \\DeltaV_{target} = {\\bf%s m^3}',num2tex(roundsd(vi,2)))];
+				end
+	   			text(cosd(modelnet_vazel(1))*wid/sqrt(2),sind(modelnet_vazel(1))*wid/sqrt(2),-z,label, ...
 	   				'VerticalA','m','FontSize',10)
 	   		end
 
-			% adds horizontal scale to last slice
+			% adds North compass at first slice
+			wc = wid/5;
+			xc = mlim(1)-wid/10;
+			yc = mlim(end)-wc;
+			h = comprose(xc,yc,1,wc,0,'LineWidth',.1,'FaceColor',zeros(1,3));
+			moveobj(h,[0,0,-modelnet_dslice(1)]);
+
+			% adds horizontal distance scale at last slice
 			ws = dscale(wid/3);
 			xs = mlim(1);
 			ys = mlim(1)-wid/20;
 			zs = -modelnet_dslice(end);
 			pap = get(gcf,'PaperPosition').*get(gca,'Position');
 			as = -modelnet_vazel(1)*sind(modelnet_vazel(2))/(pap(3)/pap(4));
-			plot3(xs+[0,0,ws,ws],ys-wid*[1/40,0,0,1/40],zs*ones(1,4),'k','LineWidth',1.5)
+			plot3(xs+[0,0,ws,ws],ys-wid*[1/40,0,0,1/40],zs*ones(1,4),'k','LineWidth',1)
 			if ws < 1e3
 				ts = sprintf('%g m',ws);
 			else
@@ -1107,7 +1131,6 @@ for r = 1:numel(P.GTABLE)
 		% selects stations
 		kn = selectnode(N,tlim,modelling_excluded,modelling_included,[targetll,modelling_excluded_target]);
 
-		degm = 1e3*degkm;
 		modelopt.msigp = erf(modelopt.msig/sqrt(2));
 
 		% center coordinates
