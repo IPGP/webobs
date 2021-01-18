@@ -1038,7 +1038,7 @@ for r = 1:numel(P.GTABLE)
 			vv = min(cat(4,vx(:,:,:,modelnet_minsta),vy(:,:,:,modelnet_minsta),vz(:,:,:,modelnet_minsta)),[],4);
 	       	vv(zz>=repmat(zdem,[1,1,sz(3)])) = NaN;
 
-			axes('Position',[0.05,0.1,0.7,0.8])
+			axes('Position',[0.03,0.1,0.7,0.8])
 	   		slice(xx,yy,zz,vv,[],[],-modelnet_dslice,'nearest')
 	   		shading flat
 	   		hold on
@@ -1053,6 +1053,23 @@ for r = 1:numel(P.GTABLE)
 	   				{sprintf('{\\bfDepth = %g m}',z),sprintf('\\DeltaV = %g to %g m^3',roundsd(minmax(zi),2))}, ...
 	   				'VerticalA','m','FontSize',10)
 	   		end
+
+			% adds horizontal scale to last slice
+			ws = dscale(wid/3);
+			xs = mlim(1);
+			ys = mlim(1)-wid/20;
+			zs = -modelnet_dslice(end);
+			pap = get(gcf,'PaperPosition').*get(gca,'Position');
+			as = -modelnet_vazel(1)*sind(modelnet_vazel(2))/(pap(3)/pap(4));
+			plot3(xs+[0,0,ws,ws],ys-wid*[1/40,0,0,1/40],zs*ones(1,4),'k','LineWidth',1.5)
+			if ws < 1e3
+				ts = sprintf('%g m',ws);
+			else
+				ts = sprintf('%g km',ws/1e3);
+			end
+			text(xs+ws/2,ys,zs,ts,'FontSize',10,'FontWeight','b', ...
+				'Rotation',as,'Horiz','c','Verti','top')
+
 	   		hold off
 	   		view(modelnet_vazel)
 			set(gca,'XLim',minmax(mlim),'YLim',minmax(mlim),'ZLim',minmax(-modelnet_dslice))
