@@ -147,7 +147,7 @@ modelnet_border = field2num(P,'MODELNET_BORDERS',1000);
 modelnet_target_included = isok(P,'MODELNET_TARGET_INCLUDED',1);
 modelnet_gridsize = field2num(P,'MODELNET_GRID_SIZE',100);
 modelnet_vazel = field2num(P,'MODELNET_VIEW_AZEL',[40,10]);
-modelnet_dvlim = field2num(P,'MODELNET_DVLIM',[0,1e6]);
+modelnet_dvlim = field2num(P,'MODELNET_DVLIM');
 modelnet_cmap = field2num(P,'MODELNET_COLORMAP',roma(256));
 modelnet_mks = field2cell(P,'MODELNET_MARKER','^k','MarkerSize',6,'MarkerFaceColor',.99*ones(1,3));
 modelnet_title = field2str(P,'MODELNET_TITLE','{\fontsize{14}{\bf$name - Network sensitivity}}');
@@ -1011,7 +1011,7 @@ for r = 1:numel(P.GTABLE)
 				lonlim = minmax([geo(kn,2);targetll(2)]);
 			else
 				latlim = minmax(geo(kn,1));
-				lonlim = minmax(geo(kn,1));
+				lonlim = minmax(geo(kn,2));
 			end
 			lat0 = mean(latlim);
 			lon0 = mean(lonlim);
@@ -1023,7 +1023,7 @@ for r = 1:numel(P.GTABLE)
 			mlim = linspace(-wid/2,wid/2,modelnet_gridsize);
 
 			% loads SRTM DEM for basemap (with 10% extra borders)
-			DEM = loaddem(WO,[lon0 + wid/(degkm(lat0)*1e3)*[-.6,.6],lat0 + wid/(degkm*1e3)*[-.6,.6]],struct('ETOPO_SRTM_MERGE',0));
+			DEM = loaddem(WO,[lon0 + wid/(degkm(lat0)*1e3)*[-.6,.6],lat0 + wid/(degkm*1e3)*[-.6,.6]]);
 			[xdem,ydem] = meshgrid(mlim);
 			zdem = interp2((DEM.lon-lon0)*degkm(lat0)*1e3,(DEM.lat-lat0)*degkm*1e3,double(DEM.z),xdem,ydem);
 
@@ -1044,6 +1044,11 @@ for r = 1:numel(P.GTABLE)
 			vz = sort(modelnet_mindisp(3)./abs(uz),4);
 			vv = min(cat(4,vx(:,:,:,modelnet_minsta),vy(:,:,:,modelnet_minsta),vz(:,:,:,modelnet_minsta)),[],4);
 	       	vv(zz>=repmat(zdem,[1,1,sz(3)])) = NaN;
+
+			dvlim = modelnet_dvlim;
+			if any(isnan(dvlim))
+				dvlim = minmax(vv);
+			end
 
 			axes('Position',[0.03,0.1,0.7,0.8])
 	   		slice(xx,yy,zz,vv,[],[],-modelnet_dslice,'nearest')
@@ -1098,12 +1103,12 @@ for r = 1:numel(P.GTABLE)
 	   		view(modelnet_vazel)
 			set(gca,'XLim',minmax(mlim),'YLim',minmax(mlim),'ZLim',minmax(-modelnet_dslice))
 			axis tight off
-			caxis(modelnet_dvlim)
+			caxis(dvlim)
 		end
 	   	axes('position',[.55,.07,.4,.02])
-	   	pcolor(linspace(modelnet_dvlim(1),modelnet_dvlim(2)),[0,1],repmat(linspace(modelnet_dvlim(1),modelnet_dvlim(2)),2,1)), shading flat
+	   	pcolor(linspace(dvlim(1),dvlim(2)),[0,1],repmat(linspace(dvlim(1),dvlim(2)),2,1)), shading flat
 	   	set(gca,'YTick',[],'TickDir','out','FontSize',8)
-	   	caxis(modelnet_dvlim)
+	   	caxis(dvlim)
 	   	xlabel('Detactable \DeltaV (m^3)')
 
 		colormap(modelnet_cmap)
