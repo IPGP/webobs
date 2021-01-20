@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 =head1 NAME
 
-wedit.pl 
+wedit.pl
 
 =head1 SYNOPSIS
 
@@ -18,14 +18,14 @@ WebObs determines wether a file is a MultiMarkdown-coded file when this file sta
 ie. consecutive lines, starting at top of file, ended with a blank line, each line made up of
 key:value pair. See MultiMarkdown Metadata documentation.
 
-MultiMarkdown will now be the default formatting markup. Thus wedit.pl will 
+MultiMarkdown will now be the default formatting markup. Thus wedit.pl will
 add a pseudo Metadata section to each newly created wiki file, consisting of one
-WebObs: MMD metadata.  
+WebObs: MMD metadata.
 
 The authorization resource-name, in authwikis resource-type, that is checked for Edit/Adm access to the file,
 is built from filespec following the 'path-like' resource-names rules as described in WebObs::Users.
 
-	Example: 
+	Example:
 	file = HTML/public/intro.wiki
 	==> actual file = $WEBOBS{PATH_DATA_WEB}/HTML/public/intro.wiki
 	==> resources   = authwikis.HTML/public/intro.wiki  OR
@@ -34,7 +34,7 @@ is built from filespec following the 'path-like' resource-names rules as describ
 
 =head1 Query string parameters
 
-=over 
+=over
 
 =item B<file=filespec>
 
@@ -44,7 +44,7 @@ is built from filespec following the 'path-like' resource-names rules as describ
 =item B<action=>
 
 	{ edit | save }
-	'edit' (default when action is not specified) to enter html-form edit 
+	'edit' (default when action is not specified) to enter html-form edit
 	'save' internaly used to save the file after html-form edition
 	(other parameters are used along with 'save': ts0, txt, titre, html)
 
@@ -52,10 +52,10 @@ is built from filespec following the 'path-like' resource-names rules as describ
 
 =head1 Markitup customization
 
-The JQuery plugin 'markitup' is customized for WebObs: 
+The JQuery plugin 'markitup' is customized for WebObs:
 
-A wiki editor, markitup namespace 'wiki' with 
-CODE/js/markitup/sets/wiki/set.js and CODE/js/markitup/sets/wiki/style.css 
+A wiki editor, markitup namespace 'wiki' with
+CODE/js/markitup/sets/wiki/set.js and CODE/js/markitup/sets/wiki/style.css
 
 A MultMarkdown editor, markiptup namespace 'markdown' with
 CODE/js/markitup/sets/markdown/set.js and CODE/js/markitup/sets/markdown/style.css
@@ -105,7 +105,7 @@ my $mmd = $WEBOBS{WIKI_MMD} // 'YES';
 my $MDMeta = ($mmd ne 'NO') ? "WebObs: created by wedit  " : "";
 
 # ---- see what file has to be edited, and corresponding authorization for client
-# ---- new file (create) initialization 
+# ---- new file (create) initialization
 #
 if ($file ne "") {
 	$absfile = "$WEBOBS{PATH_DATA_WEB}/$file";
@@ -113,24 +113,24 @@ if ($file ne "") {
 	$editOK = clientHasEdit(type=>"authwikis",name=>$file);
 	$admOK  = clientHasAdm(type=>"authwikis",name=>$file);
 	unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
-	if ( (!-e $absfile) && $admOK ) { qx(echo "$MDMeta\n\n" > $absfile) } 
+	if ( (!-e $absfile) && $admOK ) { qx(echo "$MDMeta\n\n" > $absfile) }
 	if ( (!$editOK) && (!-e $absfile) ) { die "$file $__{'not found'} or $__{'not authorized'}" }
 } else { die "$__{'No filename specified'}" }
 
 # ---- action is 'save'
 #
 if ($action eq 'save') {
-	if ($TS0 != (stat("$absfile"))[9]) { 
-		htmlMsgNotOK("$file has been modified while you were editing !"); 
-		exit; 
+	if ($TS0 != (stat("$absfile"))[9]) {
+		htmlMsgNotOK("$file has been modified while you were editing !");
+		exit;
 	}
 	if ( sysopen(FILE, "$absfile", O_RDWR | O_CREAT) ) {
 		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
 			warn "$me waiting for lock on $file...";
 			flock(FILE, LOCK_EX);
 		}
-		qx(cp -a $absfile $absfile~ 2>&1); 
-		if ( $?  == 0 ) { 
+		qx(cp -a $absfile $absfile~ 2>&1);
+		if ( $?  == 0 ) {
 			truncate(FILE, 0);
 			seek(FILE, 0, SEEK_SET);
 			if ($conv eq "1") {
@@ -158,7 +158,7 @@ if ($action eq 'save') {
 
 # ---- action is 'edit' (default)
 #
-# read file (with lock) into @lignes 
+# read file (with lock) into @lignes
 @lignes = readFile($absfile);
 $TS0 = (stat($absfile))[9] ;
 chomp(@lignes);
@@ -178,7 +178,7 @@ $txt = join("\n",@lignes);
 ($txt, my $meta) = WebObs::Wiki::stripMDmetadata($txt);
 
 # start building page
-# 
+#
 print "Content-type: text/html; charset=utf-8
 
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
@@ -192,7 +192,7 @@ function verif_formulaire()
 {
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
 		   if (data != '') alert(data);
-       	   location.href = document.referrer;	   
+       	   location.href = document.referrer;
    	});
 }
 function convert2MMD()
@@ -204,12 +204,12 @@ function convert2MMD()
 }
 </script>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.texte.focus()\">
+<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.txt.focus()\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- markitup -->
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/skins/markitup/style.css\" />
-"; 
+";
 if (length($meta) > 0) {
 	print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
 		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
@@ -236,13 +236,13 @@ print "<form id=\"theform\" name=\"formulaire\" action=\"\">
 
 print "<h2>$__{'Editing file'} \"$file\"</h2>";
 
-# Display file contents into a markitup-textarea 
+# Display file contents into a markitup-textarea
 print "<TABLE><TR><TD style=\"border:0\">";
 print "<P><B>$__{'Page title'}</B><BR><INPUT name=\"titre\" size=80 value=\"$titre\">";
 print "<input onmouseout=\"nd()\" onmouseover=\"overlib('Check for full HTML content (disable the syntax interpreter).')\" name=\"html\" value=\"1\"".($legacyhtml ? " checked":"")." type=\"checkbox\"> 100% HTML</P>";
 print "<P><TEXTAREA id=\"markItUp\" class=\"markItUp\" rows=\"30\" cols=\"110\" name=\"txt\" dataformatas=\"plaintext\">$txt</TEXTAREA></P></TD>\n";
 print "</TR></TABLE>\n";
-print "<p align=center>"; 
+print "<p align=center>";
 if (length($meta) == 0 && $mmd ne 'NO') {
 	print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
 }
