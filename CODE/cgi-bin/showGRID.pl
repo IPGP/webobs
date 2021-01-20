@@ -627,18 +627,18 @@ print $htmlcontents;
 # ---- now the grid's MAPs
 # only 1 map : *.png and its corresponding *.map
 my $MAPpath = my $MAPurn = "";
-my @maps;
-my $i = 0;
-my @htmlarea;
 $MAPpath = "$WEBOBS{ROOT_OUTG}/$grid/$WEBOBS{PATH_OUTG_MAPS}";
-( $MAPurn  = $MAPpath ) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
-if (opendir(my $dh, $MAPpath)) {
-	@maps = grep { /.*_map\d*.png/ } readdir($dh);
-	closedir($dh);
-}
 
 my $mapfile = $grid."_map".$usrMap;
 if  ( -e "$MAPpath/$mapfile.png" ) {
+	my @maps;
+	my $i = 0;
+	my @htmlarea;
+	( $MAPurn  = $MAPpath ) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
+	if (opendir(my $dh, $MAPpath)) {
+		@maps = grep { /.*_map\d*.png/ } readdir($dh);
+		closedir($dh);
+	}
 	print "<BR>";
 	print "<A NAME=\"MAPS\"></A>";
 	print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#mapID');\">&nbsp;&nbsp;";
@@ -646,11 +646,11 @@ if  ( -e "$MAPpath/$mapfile.png" ) {
 	print "</div><div id=\"mapID\">";
 	print "<P class=\"subTitleMenu\" style=\"margin-left: 5px\"> $__{Maps} [ ";
 	foreach (sort @maps) {
-		if ($i++) { print "| "; }
+		print "| " if ($i++);
 		my @v = split(/_map|\./,$_);
 		if ("$mapfile.png" eq $_) {
 			print "<B>MAP$v[2]</B> ";
-		} else {
+		} elsif ( $v[2] eq "" || exists $GRID{"MAP$v[2]_XYLIM"} ) {
 			print "<A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=$usrProject&amp;map=$v[2]$procParm#MAPS\">MAP$v[2]</A> ";
 		}
 	}
@@ -667,7 +667,7 @@ if  ( -e "$MAPpath/$mapfile.png" ) {
 	print "</div></div>\n";
 }
 
-# ----- Fichier Protocole
+# ----- Protocole
 
 my $fileProtocole = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName"."$GRIDS{PROTOCOLE_SUFFIX}";
 my $legacyfileProtocole = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDName"."$GRIDS{PROTOCOLE_SUFFIX}";
@@ -688,7 +688,7 @@ $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\
 	$htmlcontents .= "</div></div>";
 print $htmlcontents;
 
-# ---- Project ----------------------------------------------------------------
+# ---- Project
 #
 print "<BR><A name=\"PROJECT\"></A>\n";
 print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#projID');\">&nbsp;&nbsp;";
@@ -715,7 +715,7 @@ my $htmlEvents = ($usrSortby =~ /event/i) ? eventsShow("events","$GRIDType.$GRID
 print $htmlEvents;
 print "</div></div>";
 
-# ----- Fichier Bibliographie
+# ----- References / bibliographie
 #
 my $fileBib = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName"."$GRIDS{BIBLIO_SUFFIX}";
 my $legacyfileBib = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDName"."$GRIDS{BIBLIO_SUFFIX}";
@@ -749,7 +749,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2021 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
