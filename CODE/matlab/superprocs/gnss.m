@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-01-18
+%   Updated: 2021-01-20
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -140,8 +140,8 @@ motion_title = field2str(P,'MOTION_TITLE','{\fontsize{14}{\bf$name - Motion} ($t
 modelnet_excluded = field2str(P,'MODELNET_EXCLUDED_NODELIST');
 modelnet_included = field2str(P,'MODELNET_INCLUDED_NODELIST');
 modelnet_excluded_target = field2num(P,'MODELNET_EXCLUDED_FROM_TARGET_KM',0,'notempty');
-modelnet_mindisp = field2num(P,'MODELNET_MIN_DISP_M',[0.001,0.001,0.002]);
-modelnet_minsta = round(field2num(P,'MODELNET_MIN_STATION',3));
+modelnet_mindisp = field2num(P,'MODELNET_MIN_DISP_M',[1,1,2]);
+modelnet_minsta = round(field2num(P,'MODELNET_MIN_STATION',2));
 modelnet_dslice = field2num(P,'MODELNET_DEPTH_SLICE',0:2000:8000);
 modelnet_border = field2num(P,'MODELNET_BORDERS',1000);
 modelnet_target_included = isok(P,'MODELNET_TARGET_INCLUDED',1);
@@ -149,7 +149,7 @@ modelnet_gridsize = field2num(P,'MODELNET_GRID_SIZE',100);
 modelnet_vazel = field2num(P,'MODELNET_VIEW_AZEL',[40,10]);
 modelnet_dvlim = field2num(P,'MODELNET_DVLIM');
 modelnet_cmap = field2num(P,'MODELNET_COLORMAP',roma(256));
-modelnet_mks = field2cell(P,'MODELNET_MARKER','^k','MarkerSize',6,'MarkerFaceColor',.99*ones(1,3));
+modelnet_mks = field2cell(P,'MODELNET_MARKER','^k','MarkerSize',8,'MarkerFaceColor',.99*ones(1,3));
 modelnet_title = field2str(P,'MODELNET_TITLE','{\fontsize{14}{\bf$name - Network sensitivity}}');
 
 % MODELLING parameters
@@ -1037,16 +1037,15 @@ for r = 1:numel(P.GTABLE)
 	       	[ur,uz] = mogi(rsou,repmat(reshape(zsta,1,1,1,nn),[sz,1]) - repmat(zz,[1,1,1,nn]),1);
 	       	[ux,uy] = pol2cart(asou,ur);
 
-			% source dVs for minimum displacements on X,Y,Z components, stations
-			% sorted in ascending order of dV
-			vx = sort(modelnet_mindisp(1)./abs(ux),4);
-			vy = sort(modelnet_mindisp(2)./abs(uy),4);
-			vz = sort(modelnet_mindisp(3)./abs(uz),4);
-			vv = min(cat(4,vx(:,:,:,modelnet_minsta),vy(:,:,:,modelnet_minsta),vz(:,:,:,modelnet_minsta)),[],4);
-	       	vv(zz>=repmat(zdem,[1,1,sz(3)])) = NaN;
+			% source dVs for minimum displacements on X,Y,Z radius within an ellipsoid defined by
+			% mindisp semi-axis, stations sorted in ascending order of dV
+			[th,ph,rh] = cart2sph(ux,uy,uz);
+			vv = sort(ellradius(modelnet_mindisp,th,ph)./rh,4);
+			vv = min(vv(:,:,:,modelnet_minsta),[],4);
+	       	vv(zz>=repmat(zdem,[1,1,sz(3)])) = NaN; % removes "air-sources"
 
 			dvlim = modelnet_dvlim;
-			if any(isnan(dvlim))
+			if any(isnan(dvlim)) || numel(dvlim) ~= 2
 				dvlim = minmax(vv);
 			end
 
@@ -1120,7 +1119,7 @@ for r = 1:numel(P.GTABLE)
 			' ', ...
 			sprintf('{\\bf%d}/%d stations',length(kn),numel(N)), ...
 	   		sprintf('minimum displacements at {\\bf%d} stations:',modelnet_minsta), ...
-	   		sprintf('E: {\\bf%g mm}, N: {\\bf%g mm}, U: {\\bf%g mm}',modelnet_mindisp*1e3), ...
+	   		sprintf('E: {\\bf%g mm}, N: {\\bf%g mm}, U: {\\bf%g mm}',modelnet_mindisp), ...
 			' ', ...
 			};
 		P.GTABLE(r).GSTATUS = [];
@@ -2141,6 +2140,7 @@ if any(opt.enuerror ~= 1)
 	end
 end
 
+
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function y = index3d(x,id3,dim)
@@ -2163,3 +2163,14 @@ case 3
 	y = x(sub2ind(sz,i(:),j(:),id3(:)));
 end
 y = reshape(y,size(id3));
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function r = ellradius(abc,lambda,gamma)
+% computes radius of an ellipsoid defined by semi-axis ABC = [A,B,C] at
+% azimuth/longitude LAMBDA and polar/latitude GAMMA angles (in radian)
+
+r = prod(abc)./sqrt(abc(3)^2*(abc(2)^2*cos(lambda).^2 ...
+ 	+ abc(1)^2*sin(lambda).^2).*cos(gamma).^2 ...
+	+ abc(1)^2*abc(2)^2*sin(gamma).^2);
