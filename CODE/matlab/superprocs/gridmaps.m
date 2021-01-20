@@ -1,7 +1,8 @@
 function gridmaps(grids,outd,varargin)
 %GRIDMAPS Grids location maps of nodes
 %   GRIDMAPS creates or updates NODES location maps for each existing GRIDS
-%   (views or procs). Maps are located in .eps and .png formats.
+%   (views or procs). Maps are written in .eps and .png formats, with companion
+%   html file .map for clickable areas, and can be displayed with showGRID.pl.
 %
 %   GRIDMAPS(GRIDS) updates only grids listed in GRIDS (string or cell) as
 %   	gridtype.gridname
@@ -29,6 +30,8 @@ function gridmaps(grids,outd,varargin)
 %	NODE_FONTSIZE|
 %	NODE_SUBMAP_ALIAS|
 %	MAP1_XYLIM|
+%	MAP2_XYLIM|
+%	...
 %	DEM_SRTM1|
 %	DEM_FILE|
 %	DEM_TYPE|
@@ -37,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2021-01-01
+%   Updated: 2021-01-20
 
 
 WO = readcfg;
@@ -251,6 +254,7 @@ for g = 1:length(grids)
 
 			if isempty(maps{m,2})
 				[dlat,dlon] = ll2lim(geo(kn,1),geo(kn,2),minkm,maxxy,border);
+				maps{m,2} = [dlon,dlat];
 			else
 				dlon = maps{m,2}(1:2);
 				dlat = maps{m,2}(3:4);
@@ -437,11 +441,11 @@ for g = 1:length(grids)
 					end
 				end
 				% plots other maps limits
-				for smap = 2:size(maps,1)
+				for smap = size(maps,1):-1:1
 					if smap ~= m
 						x = round(ims(1)*((axp(3)*(maps{smap,2}(1:2) - xylim(1))/diff(xylim(1:2)) + axp(1))));
 						y = round(ims(2) - ims(2)*((axp(4)*(maps{smap,2}(3:4) - xylim(3))/diff(xylim(3:4)) + axp(2))));
-						lnk = sprintf('/cgi-bin/showGRID.pl?grid=%s&map=%d#MAPS',grids{gg},smap-1);
+						lnk = sprintf('/cgi-bin/showGRID.pl?grid=%s&map=%s#MAPS',grids{gg},repmat(num2str(smap-1),1,smap>1));
 						txt = sprintf('click to zoom on %s',maps{smap,1});
 						if html
 							fprintf(fid,'<AREA href="%s" title="%s" shape=rect coords="%d,%d,%d,%d">\n',lnk,txt,x(1),y(1),x(2),y(2));

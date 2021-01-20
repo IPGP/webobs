@@ -645,7 +645,7 @@ if  ( -e "$MAPpath/$mapfile.png" ) {
 	print "$__{'Location'}&nbsp;$go2top";
 	print "</div><div id=\"mapID\">";
 	print "<P class=\"subTitleMenu\" style=\"margin-left: 5px\"> $__{Maps} [ ";
-	foreach (@maps) {
+	foreach (sort @maps) {
 		if ($i++) { print "| "; }
 		my @v = split(/_map|\./,$_);
 		if ("$mapfile.png" eq $_) {
