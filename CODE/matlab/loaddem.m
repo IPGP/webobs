@@ -27,7 +27,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2020-10-26
+%	Updated: 2021-01-20
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -114,7 +114,7 @@ if ~userdem
 		DEM.COPYRIGHT = field2str(WO,'SRTM_COPYRIGHT','DEM: SRTM+ETOPO');
 	end
 
-	% limits the size of DEMs to avoir memory problems
+	% limits the size of DEMs to avoid memory problems
 	n = ceil(sqrt(numel(DEM.z))/maxwidth);
 	if n > 1
 		DEM.lat = DEM.lat(1:n:end);
@@ -124,13 +124,17 @@ if ~userdem
 
 	% adds bathymetry from ETOPO for SRTM offshore areas
 	if mergeetopo && ~userdem && ~etopo
-		k = find(DEM.z==0);
-		if ~isempty(k)
+		k = (DEM.z==0 | isnan(DEM.z));
+		if any(k(:))
 			% loads ETOPO1 with +/- 2 minutes of extra borders
 			E = ibil(sprintf('%s/%s',WO.PATH_DATA_DEM_ETOPO,WO.ETOPO_NAME),xylim + 5/60*[-1,1,-1,1]);
 			E.z(E.z <= 0) = E.z(E.z <= 0) + mergeetopooffset;
 			[xx,yy] = meshgrid(DEM.lon,DEM.lat);
-			DEM.z(k) = min(floor(interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear')),0);
+			if all(k(:))
+				DEM.z(k) = interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear');
+			else
+				DEM.z(k) = min(floor(interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear')),0);
+			end
 			DEM.COPYRIGHT = sprintf('%s + ETOPO/NOOA',DEM.COPYRIGHT);
 		end
 	end
