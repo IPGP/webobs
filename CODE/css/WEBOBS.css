@@ -677,6 +677,68 @@ td.ic, th.ic { width: 1%}
     cursor: pointer;
 }
 
+.emphase-frame-floating,
+.emphase-frame {
+    /*** Grey frames for presentation purposes on the landing page (files Welcome_*.txt) ***/
+    margin: 1em;
+    border: 2px solid #eeeeee;
+    border-radius: 5px;
+}
+
+.emphase-frame-floating {
+    /*** Floating version of the grey frames ***/
+    float: left;
+}
+
+.emphase-frame-floating .emphase-title,
+.emphase-frame .emphase-title {
+    /*** Titles for .emphase-frame ***/
+    margin: 0;
+    background-color: #eeeeee;
+    color: grey;
+    text-align: center;
+}
+
+.emphase-frame ul {
+    text-align: left;
+}
+
+.emphase-frame img,
+.emphase-frame-floating img {
+    margin-bottom: 2px;
+    background-color: beige;
+    padding: 2px;
+}
+
+.emphase-graph-floating {
+    /*** Graph frames, usually within .emphase-frame ***/
+    float: left;
+    width: 85px; /* to be adjust according to the img width below */
+    margin: .6em .8em;
+    text-align: center;
+    color: grey;
+}
+
+.emphase-graph-floating img {
+    /* Force the thumbnail size to make sure the frames are visually aligned */
+    width: 80px;
+    height: 112px;
+}
+
+.emphase-graph-title {
+    /*** Titles for graph frames ***/
+    margin: 0;
+    padding: .5em 0;
+    text-align: center;
+    color: grey;
+}
+
+.float-break {
+    /*** To be placed after floating divs in a container (usually br.float-break) ***/
+    clear: left;
+    margin: 0;
+}
+
 .gmap_popup {
 	height: 100px;
 	width: 200px;
