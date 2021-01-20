@@ -1040,7 +1040,7 @@ for r = 1:numel(P.GTABLE)
 			% source dVs for minimum displacements on X,Y,Z radius within an ellipsoid defined by
 			% mindisp semi-axis, stations sorted in ascending order of dV
 			[th,ph,rh] = cart2sph(ux,uy,uz);
-			vv = sort(ellradius(modelnet_mindisp,th,ph)./rh,4);
+			vv = sort(ellradius(modelnet_mindisp/1e3,th,ph)./rh,4);
 			vv = min(vv(:,:,:,modelnet_minsta),[],4);
 	       	vv(zz>=repmat(zdem,[1,1,sz(3)])) = NaN; % removes "air-sources"
 
