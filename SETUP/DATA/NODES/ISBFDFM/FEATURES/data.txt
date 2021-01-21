@@ -1,0 +1,3 @@
+Data from Geoscope stations are available through the FDSN web services:
+server: ***http://ws.ipgp.fr/fdsnws/dataselect/1/*
+

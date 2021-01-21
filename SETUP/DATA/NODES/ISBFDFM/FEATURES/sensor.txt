@@ -1,0 +1,2 @@
+seismometer STRECKEISEN STS2
+microbaro EFFA
