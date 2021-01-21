@@ -71,7 +71,7 @@ if ($file ne "") {
 			open(RDR, "<$absfile") || die "couldn't open $file";
 			push (@lines,$_) while(<RDR>); 
 			close RDR;
-			my $html  = 0;
+			$html = 0;
 			if ($lines[0] =~ /^TITRE_HTML\|/) {
 				$titre = substr($lines[0],11);
 				shift(@lines);
