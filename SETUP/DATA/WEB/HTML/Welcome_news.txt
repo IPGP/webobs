@@ -8,7 +8,7 @@
      onMouseOver="overlib('La Montagne Pelée en temps-réel',CAPTION,'Depuis 5 minutes')" alt="Mount Pelée">
   </a>
   <br>
-  
+
   <a href="http://volcano.ipgp.fr/reunion/Camera/CameraBory.jpg">
     <img src="http://volcano.ipgp.fr/reunion/Camera/CameraBory.jpg" width="160" height="120" border="1" onMouseOut="nd()"
      onMouseOver="overlib('Le Piton de la Fournaise (Cratère Bory) en temps-réel',CAPTION,'Depuis 5 minutes')"
@@ -34,14 +34,14 @@
   </div>
 
   <div class="emphase-graph-floating">
-    <h4 class="emphase-graph-title"> FDF Seismogram </h4>
-    <a href="/cgi-bin/showOUTG.pl?grid=PROC.GEOSCOPE&ts=06h&g=isbfdf0">
-      <img src="/OUTG/PROC.GEOSCOPE/graphs/isbfdf0_06h.jpg" height="115" border="1"
-      onMouseOut="nd()" onMouseOver="overlib('Geoscope FDF Seismogram',CAPTION,'Last 6 hours')"
+    <h4 class="emphase-graph-title"> FDFM Seismogram </h4>
+    <a href="/cgi-bin/showOUTG.pl?grid=PROC.GEOSCOPE&ts=24h&g=isbfdfm">
+      <img src="/OUTG/PROC.GEOSCOPE/graphs/isbfdfm_24h.jpg" height="115" border="1"
+      onMouseOut="nd()" onMouseOver="overlib('Geoscope FDFM Seismogram',CAPTION,'Last 24 hours')"
       alt="Proc GEOSCOPE">
     </a>
   </div>
-  
+
     <!-- Force the parent container to stretch until after the above frames, or the graphs would appear outside of the Info frame -->
     <br class="float-break">
 </div>
