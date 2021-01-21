@@ -13,9 +13,9 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 
 ## Download the latest release
 
-- [WebObs-2.2.0.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.2.0/WebObs-2.2.0.tar.gz) (58 Mb) updated November 26, 2020
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.2.0/release-notes.md)
-- [User manual](https://github.com/IPGP/webobs/blob/v2.2.0/DOC/user-manual/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.3.0.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.3.0/WebObs-2.3.0.tar.gz) (58 Mb) updated January 21, 2021
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.3.0/release-notes.md)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.3.0/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory: **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see below for download and install)
@@ -24,6 +24,7 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 For install and update, please follow instructions below.
 
 Source code, comments and issues are available at the project repository [github.com/IPGP/webobs](https://github.com/IPGP/webobs).
+
 
 ## Installation / upgrading
 
@@ -132,14 +133,20 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 
 ## What's new?
 
-### What's new in the 2.2?
+### What's new in the 2.3?
+- nodes have one different calibration file per associated proc;
+- new modelling capabilities, and new network sensitivity 3D maps in GNSS superproc;
+- new parameters in DSV data superformat;
+- improved proc access and maps display in showGRID;
+- new CSS classes,
+- some fixes and other minor improvements.
 
+### What's new in the 2.2?
 - Sefran3 has a continuous multichannel spectrogram, and compressed PNG images (by 70%);
 - new default colormaps (ryb, spectral) for all procs;
 - security update, improvements and fixes in all existing superprocs.
 
 ### What's new in the 2.1?
-
 - GNSS superproc has new features (improved graphic and modelling capabilities);
 - Sefran3 has now signal filtering possibility (lowpass, highpass, bandpass);
 - additional parameters for node's events (link to feature or channel, sensor/data outcome, ...);
@@ -150,7 +157,6 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - security update, improvements and fixes in all existing superprocs.
 
 ### What's new in the 2.0?
-
 - source code is now on github!
 - smarter setup to automatically update configuration files;
 - auto-registration for new users;
@@ -158,7 +164,6 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - improvements and fixes in all existing superprocs.
 
 ### What's new in the beta-1.8?
-
 - a security fix in woc;
 - new data format EarthWorm Winston Wave Server;
 - new superproc "RSAM" plotting timeseries and source location maps;
@@ -170,7 +175,6 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - improvements and fixes in all existing superprocs.
 
 ### What's new in the beta-1.7 ?
-
 - a major update of Hebdo: the Gazette!
 - superproc "GENPLOT" improved with a lot of new parameters;
 - new superproc "HYPOMAP" plotting earthquake maps from different data sources (HYPO71 catalog file, FDNS WebService, QuakeML events tree, ...);
@@ -190,7 +194,6 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - improvements and fixes to superprocs SEFRAN3, GENPLOT, GNSS, JERK, METEO.
 
 ## References
-
 - Beauducel, F. and C. Anténor-Habazac (2002), **Quelques éléments d'une surveillance opérationnelle...**, Journées des Observatoires Volcanologiques, Institut de Physique du Globe de Paris, 25 janvier 2002. [Full presentation](http://www.ipgp.fr/~beaudu/2002_Beauducel_Antenor-Habazac.pdf) (in French)
 - Beauducel, F. (2006). **Operational monitoring of French volcanoes: Recent advances in Guadeloupe**, Géosciences, Editions BRGM, n°4, p 64-68, 2006. [Abstract](http://www.ipgp.fr/~beaudu/2006_Beauducel_Geosciences.html).
 - Beauducel, F., A. Bosson, F. Randriamora, C. Anténor-Habazac, A. Lemarchand, J-M Saurel, A. Nercessian, M-P Bouin, J-B de Chabalier, V. Clouard (2010). **Recent advances in the Lesser Antilles observatories - Part 2 - WEBOBS: an integrated web-based system for monitoring and networks management**, Paper presented at European Geosciences Union General Assembly, Vienna, 2-7 May 2010. [Abstract](http://www.ipgp.fr/~beaudu/2010_Beauducel_EGU.html).
