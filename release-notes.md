@@ -6,12 +6,6 @@ This document contains install/upgrade summary and specific instructions for use
 The latest release contains improvements, new features, bug fixes, and sometimes security strengthening.
 **Upgrade is recommended for all WebObs administrators**. For known issues, please take a look to [github.com/IPGP/webobs/issues](https://github.com/IPGP/webobs/issues) and do not hesitate to submit any problem with this release.
 
-The semantic versionning of *WebObs* release is now **X.Y.Z**, where:
-
-1. **X** is the **major** version number, corresponding to structural, deep code changes or new major functionality,
-2. **Y** is the **minor** version number, with additional features in a backwards compatible manner, and
-3. **Z** is the **patch** version number, with backwards compatible bug fixes.
-
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (not a bug fix). An appropriate configuration to keep former behavior is usually proposed.
 
 <!--
@@ -21,15 +15,15 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.3.0 (Unreleased yet)
+## v2.3.0 (January 2021)
 
 ### New features
 
-1. The `LD_LIBRARY_PATH` environment variable is now automatically reset for commands run from a Matlab process to allow commands to be run in a normal system environment. This means that administrators do not need to reset this variable in `PRGM_*` variables defined in `WEBOBS.rc` like it was previously required in most environments (these variables should now simply include the command name, using either their short name or an absolute path). In particular, **the value of `PRGM_CONVERT` advised in the release notes for version 2.2.0 will not work with this version**: if you upgrade from 2.2.0, please make sure `PRGM_CONVERT` only points to the convert command like this :
+1. `!!` The `LD_LIBRARY_PATH` environment variable is now automatically reset for commands run from a Matlab process to allow commands to be run in a normal system environment. This means that administrators do not need to reset this variable in `PRGM_*` variables defined in `WEBOBS.rc` like it was previously required in most environments (these variables should now simply include the command name, using either their short name or an absolute path). In particular, **the value of `PRGM_CONVERT` advised in the release notes for version 2.2.0 will not work with this version**: if you upgrade from 2.2.0, please make sure `PRGM_CONVERT` only points to the convert command like this :
 ```
 PRGM_CONVERT|convert
 ```
-(using a value of `export LD_LIBRARY_PATH='' && convert` **will NOT work**, but the previous default value of `env LD_LIBRARY_PATH='' /usr/bin/convert` will work, althought redefining `LD_LIBRARY_PATH` is not required any more.)
+   (using a value of `export LD_LIBRARY_PATH='' && convert` **will NOT work**, but the previous default value of `env LD_LIBRARY_PATH='' /usr/bin/convert` will work, althought redefining `LD_LIBRARY_PATH` is not required any more.)
 
 2. A new script `SETUP/compress-sefran-parallel` is provided to replace the previous script `SETUP/compress-SEFRAN` described in the release notes for version 2.2.0 below to compress the existing PNG images produced by the Sefran, while retaining the tags in the images.
     * Run `SETUP/compress-sefran-parallel -h` to learn about available options and to get help on the different ways to use the script.
@@ -42,29 +36,68 @@ $ . /opt/webobs/WebObs-2.3.0/SETUP/compress-sefran-parallel load_env
 $ find /srv/sefran/201901* -name '*.png' | sort | parallel -j 4 run_pngquant
 ```
 
-3. The GNSS superproc has new features for the summary graph **MODELLING**:
+3. The **GNSS superproc** has new features for the summary graph **MODELLING**:
    * `MODELLING_SOURCE_TYPE` now accepts a list of coma-separated models, i.e., presently only `isotropic` and `pCDM`. If two models are defined, both will be computed and available through menu links **MODELLING** and **MODELLING_pCDM**, respectively.
    * `MODELLING_EXCLUDED_FROM_TARGET_KM` now accepts negative value to exclude nodes at distance *lower* than the absolute value, i.e., `-5` will exclude stations up to 5 km from the target. As a reminder, a positive value will exclude nodes at distance *greater* than the value.
-   * `MODELLING_INCLUDED_NODELIST` allows to include node(s) that have been (eventually) excluded by the previous parameter or `MODELLING_EXCLUDED_NODELIST`.
-   * `MODELLING_ENU_ERROR_RATIO` is a list of 3 factors applied to the velocity trend components E, N, and U, respectively, before the modelling process. The default is `1,1,2` to multiply by 2 the vertical component errors, which is more consistent with the usual GNSS data errors. `!!` Set to `1,1,1` to keep the previous behavior and results.
+   * `MODELLING_INCLUDED_NODELIST` allows to include node(s) that have been (eventually) excluded by the previous parameter or by `MODELLING_EXCLUDED_NODELIST`.
+   * `!!` `MODELLING_ENU_ERROR_RATIO` is a list of 3 factors applied to the velocity trend components E, N, and U, respectively, before the modelling process. The default is `1,1,2` to multiply by 2 the vertical component errors, which is more consistent with the usual GNSS data errors. Set to `1,1,1` to keep the previous behavior and results.
 
-4. Node calibration file is now associated to procs, and not unique. Each proc will use its own calibration table for a given node. For backwards compatibility, the following behavior is adopted:
-   * any existing calibration file (created before this release 2.3.0) will continue to apply to any proc associated to the node.
-   * when edited through a particular proc, the former calibration file is duplicated and the edited version will remain specific to the corresponding proc. Other procs will continue to use the former version of the calibration file, until it is edited.
-   * when creating a new calibration file, it will be associated to the proc under which it is created, and only visible and used by this proc.
+4. The **GNSS superproc** has new summary graph **MODELNET**, which analyses the network sensitivity as capacity to estimate source volume variation at depth. The graph shows horizontal slices of minimum volume variations detectable by a minimum number of stations simultaneously, giving a minimum displacement for each component E,N,U. The calculation will consider only stations that are active within the graph time scale. New parameters are:
+
+   * `MODELNET_EXCLUDED_NODELIST`, `MODELNET_EXCLUDED_FROM_TARGET_KM`,
+`MODELNET_INCLUDED_NODELIST` to select the stations (same rules as for **MODELLING**).
+   * `MODELNET_MIN_DISP_MM` defines the minimum displacements as an error ellipsoid semi-axis vector of E,N,U components in mm (default is 1 mm for horizontal components, and 2 mm for vertical component).
+   * `MODELNET_MIN_STATION` sets the minimum number of stations (default is 2).
+   * `MODELNET_DEPTH_SLICE` is the vector of depth slices (default is 5 slices from 0 to 8 km depth).
+   * `MODELNET_BORDERS` sets additional border (in m) around the stations to define the grid map (default is 1 km).
+   * `MODELNET_TARGET_INCLUDED` when set to `Y` includes target `GNSS_TARGET_LATLON` in the grid.
+   * `MODELNET_GRID_SIZE` sets the grid size (default is 100 pixels).
+   * `MODELNET_VIEW_AZEL` sets the 3D view parameters as azimuth,elevation in degree (default is 40° azimuth, 10° elevation).
+   * `MODELNET_DVLIM` sets the volume variation colorbar limits as dVmin,dVmax in m<sup>3</sup> (default is automatic).
+   * `MODELNET_COLORMAP` sets the colormap (default is scientific colormap **roma** from F. Crameri).
+   * `MODELNET_MARKER` sets the plot parameters for station markers (default is white triangle).
+   * `MODELNET_TITLE` sets the graph title.
+
+   When upgrading, these lines will be added to any existing gnss procs:
+```
+MODELNET_EXCLUDED_NODELIST|
+MODELNET_EXCLUDED_FROM_TARGET_KM|
+MODELNET_INCLUDED_NODELIST|
+MODELNET_MIN_DISP_MM|1,1,2
+MODELNET_MIN_STATION|2
+MODELNET_DEPTH_SLICE|0:2000:8000
+MODELNET_BORDERS|1000
+MODELNET_TARGET_INCLUDED|Y
+MODELNET_GRID_SIZE|100
+MODELNET_VIEW_AZEL|40,10
+MODELNET_DVLIM|
+MODELNET_COLORMAP|roma(256)
+MODELNET_MARKER|'^k','MarkerSize',6,'MarkerFaceColor',.99*ones(1,3)
+MODELNET_TITLE|{\fontsize{14}{\bf${NAME} - Network sensitivity}}
+```
+5. **Node calibration file** is now associated to procs, and not unique anymore. Each proc will use its own calibration table for a given node. For backwards compatibility, the following behavior is adopted:
+   * any existing calibration file (created before this release 2.3.0) will continue to apply to any proc associated to the node, as a default.
+   * when edited through a particular proc, the former calibration file is duplicated and the edited version will remain specific to the corresponding proc and not affect others that will continue to use the former version of the calibration file, until it is edited.
+   * when creating a new calibration file, it will be uniquely associated to the proc under which it is created, and only visible and used by this proc. Other procs will still consider there is no calibration file for the node, until it is created.
+
+6. The raw data format **dsv** (text delimiter separated values) does not require anymore a calibration file for each node. In case of missing calibration file, a default name will be given to each data channel. Also, it has new possible parameters (editable through node's configuration):
+   * `FID_DATACOLS` is an index vector of the file columns that contain the imported data. The default, and former behavior, is an automatic detection of the data (all but the date and time columns).
+   * `FID_ERRORCOLS` is an index vector of the file columns defining the data errors in the same order as data. It must have the same length as data vector. Use 0 to skip a column if no error is associated to it. Default (empty) won't associate any error with the data. Columns of errors are ignored in the data automatic detection mode.
+
+7. New CSS classes have been created to allow present graphs in nice frames on the welcome page, but it can be used anywhere in WebObs pages. Application to the **Welcome_news.txt** default file to make use of these classes.
 
 ### Fixed issues
 
 1. When using Firefox 79+ (and potentially recent versions of other browsers), the temporary tab was not automatically closed and the event log not refreshed after editing an event in the event log / _main courante_.
 
-2. In the GNSS superproc, there was a mistake in the name of parameter to adjust velocity scale manually in VECTORS graph: the correct name is `VECTORS_VELOCITY_SCALE` and defines the velocity in mm/yr corresponding to 25% of the graph width.
+2. In the **GNSS** superproc, there was a mistake in the name of parameter to adjust velocity scale manually in **VECTORS** graph: the correct name is `VECTORS_VELOCITY_SCALE` and defines the velocity in mm/yr corresponding to 25% of the graph width.
 
 
 ## v2.2.0 (November 2020)
 
 ### New features
 
-1. `!!` Sefran3 includes a continuous spectrogram, which is activated by default. To disable this feature you must set `SGRAM_ACTIVE|NO` in all your Sefran3. Since the feature uses new Perl, JavaScript and CSS, if you notice any strange display you must **clear your browser cache**, this will solve the problem definitively.
+1. `!!` **Sefran3** includes a continuous spectrogram, which is activated by default. To disable this feature you must set `SGRAM_ACTIVE|NO` in all your Sefran3. Since the feature uses new Perl, JavaScript and CSS, if you notice any strange display you must **clear your browser cache**, this will solve the problem definitively.
 
 New variables are:
 
@@ -105,7 +138,7 @@ For visualization, there is several possibilities:
 
    Hot keys are disabled when editing the event form; you must click outside the field inputs to reactivate them.
 
-2. Another sefran3 improvement: PNG images are now compressed using the external program *pngquant*, which optimizes the colormap. Gain of size on Sefran3 images is about 70%. It is strongly recommended to install the utility (`apt install pngquant`), which is set in a new WEBOBS.rc variable `PRGM_PNGQUANT`. If the program exists, it will automatically compress the new images (waveforms and spectrograms). Two additionnal variables in SEFRAN3.conf are:
+2. Another **sefran3** improvement: PNG images are now compressed using the external program *pngquant*, which optimizes the colormap. Gain of size on Sefran3 images is about 70%. It is strongly recommended to install the utility (`apt install pngquant`), which is set in a new WEBOBS.rc variable `PRGM_PNGQUANT`. If the program exists, it will automatically compress the new images (waveforms and spectrograms). Two additionnal variables in SEFRAN3.conf are:
 ```
 PNGQUANT_NCOLORS|16
 SGRAM_PNGQUANT_NCOLORS|32
@@ -118,7 +151,7 @@ A known issue is an error in sefran3 using *convert* program, due to missing dyn
 ```
 PRGM_CONVERT|export LD_LIBRARY_PATH=''; /usr/bin/convert
 ```
-> **Attention**: this value of `PRGM_CONVERT` is specific to WebObs version 2.2.0 and **will not work in versions >= 2.2.0a**, where a more general approach was implemented. Please refer to the release notes of 2.2.0a for more details.
+> **Attention**: this value of `PRGM_CONVERT` is specific to WebObs version 2.2.0 and **will not work in versions >= 2.3.0**, where a more general approach was implemented. Please refer to the release notes of 2.3.0 for more details.
 
 We also propose a bash script `SETUP/compress-SEFRAN` to compress existing sefran3 archives. A basic benchmark shows that a single full year of sefran3 archive may take over a day of processing on a standard computer, but a reduction of about 70% of the total size of archive. Administrators who want to make their own compression must be aware that unfortunately, *pngquant* ignores user's tag header written in the original PNG file. To rewrite the Sefran3 tags in compressed files (needed by broom wagon and display of data statistics), you might use the program `identify` to export tags from the original file first, then `convert` to rewrite them in the compressed file:
 
@@ -168,7 +201,7 @@ COLOR_SATURATION|0.7
 
 **Tip:** maps are usually used as a background to highlight other elements (stations, vectors, ...). The mapping concept in WebObs is to keep plain colors for these elements, and attenuate the background colors using two parameters: a watermark effect (set to a factor of 1.5 by default) and now the saturation effect (set to 0.5 by default).
 
-6. Two new colormaps are available: `ryb` and `spectral`. Both are diverging colormaps where luminance is highest at the midpoint, and decreases towards differently-colored endpoints. `ryb` is a Red-Yellow-Blue colormap that is set as default for GNSS modelling probability graphs. `spectral` is a Red-Orange-Yellow-Green-Blue colormap very similar with `jet` but less saturated/agressive; it has been set as default for most of the procs and the Sefran3 spectrogram.
+6. Two new scientific colormaps are available: `ryb` and `spectral`. `ryb` is a diverging colormap where luminance is highest at the midpoint, and decreases towards differently-colored endpoints (Red-Yellow-Blue). It is set as new default for GNSS modelling probability graphs. `spectral` is a Red-Orange-Yellow-Green-Blue colormap  `jet` but less saturated/agressive and with constant luminance. It has been set as default for most of the procs and the Sefran3 spectrogram.
 
 ### Fixed issues
 
