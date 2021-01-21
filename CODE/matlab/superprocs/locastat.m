@@ -7,18 +7,18 @@ function locastat(sta)
 %   	- node configuration file timestamp newer than map file timestamp,
 %   	- map file timestamp older than LOCASTAT release date.
 %
-%   LOCASTAT(STA) uses string or cell array of string STA as list of 
+%   LOCASTAT(STA) uses string or cell array of string STA as list of
 %	node IDs (or part of ID) to build or re-build. Use STA='*' to force
 %	rebuild of all nodes.
 %
 %   LOCASTAT uses SRTM data for background DEM shading maps. For the right part of the graph,
-%   it uses SRTM by default (but poor resolution), or any higher resolution DEM defined in 
+%   it uses SRTM by default (but poor resolution), or any higher resolution DEM defined in
 %   CONF/LOCASTAT.rc, in ArcInfo format.
-%    
+%
 
 %   Author: F. Beauducel/WEBOBS, IPGP
 %   Created: 2007-05-15
-%   Updated: 2019-07-23
+%   Updated: 2021-01-21
 
 % this will force update of all maps older than this date
 forceupdate = datenum(2019,7,23);
@@ -53,18 +53,19 @@ d2 = field2num(P,'FRAME2_WIDTH_KM',5);
 d3 = field2num(P,'FRAME3_WIDTH_KM',1.5);
 xsc1 = field2num(P,'FRAME1_SCALE_KM',10);
 dxsc1 = d1/30;
-xsc2 = field2num(P,'FRAME2_SCALE_KM',.2);	
+xsc2 = field2num(P,'FRAME2_SCALE_KM',.2);
 dxsc2 = d2/30;
-r2 = field2num(P,'FRAME2_RESAMPLING',200);	
+r2 = field2num(P,'FRAME2_RESAMPLING',200);
 xsc3 = field2num(P,'FRAME3_SCALE_KM',.5);
 dxsc3 = d3*15;
-r3 = field2num(P,'FRAME3_RESAMPLING',400);	
+r3 = field2num(P,'FRAME3_RESAMPLING',400);
 dpi = field2num(P,'DPI',80);
 lw = field2num(P,'LINEWIDTH',1.5);
 bw = 0.7; % border width in % of height for frame 0
 convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
 
 feclair = field2num(P,'COLOR_LIGHTENING',1.2);
+fsat = field2num(P,'COLOR_SATURATION',0.8);
 laz = field2num(P,'LIGHT_AZIMUTH',-45);
 lct = field2num(P,'LIGHT_CONTRAST',1);
 sea = field2num(P,'SEACOLOR','[0.7,0.9,1]','notempty');
@@ -75,7 +76,7 @@ else
 	cmap = landcolor.^1.3;
 end
 demoptions = {'Interp','Azimuth',laz,'Contrast',lct,'ZCut',0, ...
-	'LandColor',cmap,'SeaColor',sea,'Watermark',feclair,'AxisEqual','off'};
+	'LandColor',cmap,'SeaColor',sea,'Watermark',feclair,'Saturation',fsat,'AxisEqual','off'};
 
 pcart = 0.05;		% height of the bottom banner (in fraction of image)
 blanc = .95*[1,1,1];	% near white (to avoid automatic replacement)
@@ -140,19 +141,19 @@ for i = 1:length(k)
 	else
 		timg = 0;
 	end
-	
+
 	% conditions to make (or remake) the map (at least one of the following):
 	%	- map file does not exist
 	%	- NODE is explicitely in the list of argument STA
 	%	- map file timestamp is older than NODE's timestamp
 	%	- map file timestamp is older than forceupdate (release)
 	%	- STA='*' (forced)
-	
+
 	if (nargin < 1 && (~exist(fimg,'file') || timg <= N(ki).TIMESTAMP) || timg < forceupdate) ...
 	   || any(ismember(upper(sta),N(ki).ID)) || any(strcmp(sta,'*'))
 		fprintf('%s: Updating location map for %s: %s [%s] ... ',wofun,N(ki).ALIAS,N(ki).NAME,N(ki).ID)
 
-		lonkm = degkm(geo(ki,1));	% valeur du degré de longitude à cette latitude (en km)
+		lonkm = degkm(geo(ki,1));	% valeur du degrï¿½ de longitude ï¿½ cette latitude (en km)
 
 		% inset frames coordinates
 		xy1 = [geo(ki,2) + d1*.5*[-1,1]/lonkm,geo(ki,1) + d1*.5*[-1,1]/degkm];
@@ -166,26 +167,26 @@ for i = 1:length(k)
 
 		figure, clf
 		set(gcf,'PaperUnits','Inches','PaperSize',[10,5*(1+pcart)],'PaperPosition',[0,0,10,5*(1+pcart)],'Color',[1,1,1])
-		
-		% ----- low-resolution map (frame n°0)
+
+		% ----- low-resolution map (frame nï¿½0)
 		axes('Position',[0.01+bw/100,pcart/(1+pcart)+2*bw/100+0.01,0.25-bw/100-0.01,1-pcart/(1+pcart)-3*bw/100-0.01]);
 		dem(D.lon,D.lat,D.z,'LatLon','FontSize',8,'BorderWidth',bw,demoptions{:})
-		
+
 		hold on
 		if trans, plottrans(WO,N(ki)); end
 		% inset of frame 1
 		plot(xy1([1,2,2,1,1]),xy1([3,3,4,4,3]),'k-','Linewidth',lw)
 		cible(geo(ki,2),geo(ki,1))
 		hold off
-		
-		% ---- mid-resolution map (frame n°1)
+
+		% ---- mid-resolution map (frame nï¿½1)
 		ax1 = axes('Position',[.255,(.5+pcart)/(1+pcart)+.01,.24,.5/(1+pcart)-0.01]);
 		kx = find(D.lon >= xy1(1) & D.lon <= xy1(2));
 		ky = find(D.lat >= xy1(3) & D.lat <= xy1(4));
 		dem(D.lon(kx),D.lat(ky),D.z(ky,kx),'latlon','BorderWidth',0,'FontSize',0,demoptions{:})
 		set(gca,'XTick',[],'YTick',[])
 		hold on
-		
+
 		if trans, plottrans(WO,N(ki)); end
 		% inset of frame 2 (on frame 1)
 		ax = axis;
@@ -198,9 +199,9 @@ for i = 1:length(k)
 				'HorizontalAlignment','center','VerticalAlignment','bottom')
 		hold off
 
-		% ---- tracé de la carte haute-résolution (encart n°2)
+		% ---- tracï¿½ de la carte haute-rï¿½solution (encart nï¿½2)
 		ax2 = axes('Position',[.255,(.1+pcart)/(1+pcart),.2,.4/(1+pcart)]);
-		% sur-échantillonnage de la carte
+		% sur-ï¿½chantillonnage de la carte
 		[xx2,yy2] = meshgrid(xy2(1):(d2/lonkm/r2):xy2(2),xy2(3):(d2/degkm/r2):xy2(4));
 		zz = interp2(D.lon,D.lat,double(D.z),xx2,yy2,'*cubic');
 		[h,I,zz2] = dem(xx2(1,:),yy2(:,1),zz,'latlon','BorderWidth',0,'FontSize',0,demoptions{:});
@@ -210,7 +211,7 @@ for i = 1:length(k)
 		%[c,h] = contour(xx2(1,:),yy2(:,1),zz2,[0,0]);  set(h,'EdgeColor',gris)
 		ax = axis;
 		cible(geo(ki,2),geo(ki,1))
-		% échelle (convertir le km en degré)
+		% ï¿½chelle (convertir le km en degrï¿½)
 		xe = ax(2) - (xsc2/2 + dxsc2)/lonkm;
 		ye = ax(3) + dxsc2/degkm;
 		plot(xe + xsc2*.5*[-1,-1,1,1]/lonkm,ye + [dxsc2,0,0,dxsc2]/degkm,'-','Color',noir,'Linewidth',2)
@@ -220,7 +221,7 @@ for i = 1:length(k)
 		plot(ax([1,2,2,1,1]),ax([3,3,4,4,3]),'k-','Linewidth',.1)
 		hold off
 		mmz = minmax(zz2);
-		
+
 		if ~all(isnan(mmz)) & ~all(mmz==0)
 			% profil EW
 			ax21 = axes('Position',[.255,pcart/(1+pcart),.2,.1/(1+pcart)]);
@@ -230,7 +231,7 @@ for i = 1:length(k)
 			set(gca,'XLim',xy2(1:2),'YLim',mmz), axis off
 			hold on, plot(repmat(geo(ki,2),[1,2]),mmz,'-','Color',noir,'Linewidth',.1), hold off
 			text(xy2(2),mmz(1),sprintf(' %1.0f m',mmz(1)),'FontSize',9,'VerticalAlignment','bottom');
-			% calcul de l'exagération verticale...
+			% calcul de l'exagï¿½ration verticale...
 			dar = daspect(gca);
 			figps = get(gcf,'PaperSize');
 			figpp = get(gcf,'Position');
@@ -239,7 +240,7 @@ for i = 1:length(k)
 			%disp(sprintf('rxy = %g',rxy))
 			text(xy2(2),mean(mmz),sprintf('  x %1.1f',1000*lonkm*dar(1)/dar(2)/rxy),'FontSize',8');
 			text(xy2(2),mmz(2),sprintf(' %1.0f m',mmz(2)),'FontSize',9','VerticalAlignment','top');
-			
+
 			% profil NS
 			ax21 = axes('Position',[.455,(.1+pcart)/(1+pcart),.045,.4/(1+pcart)]);
 			xp = zz2(:,round(size(zz2,2)/2))'; yp = yy2(:,1);
@@ -248,28 +249,28 @@ for i = 1:length(k)
 			set(gca,'XLim',mmz,'YLim',xy2(3:4),'XDir','reverse'), axis off
 			hold on, plot(mmz,repmat(geo(ki,1),[2,1]),'-','Color',noir,'Linewidth',.1), hold off
 		end
-		
+
 		%---- extraction de la photo IGN (BDOrtho 50 cm)
 		% recherche des photo contenant la station et des 8 photos adjacentes
 		%	A31	A32	A33
 		%	A21	A22	A23
 		%	A11	A12	A13
-		% note: la photo finale ne doit pas dépasser la taille d'une dalle unitaire (1 km), sinon l'algorithme ne marche plus...
+		% note: la photo finale ne doit pas dï¿½passer la taille d'une dalle unitaire (1 km), sinon l'algorithme ne marche plus...
 		ignxy = [floor(utm(ki,1)/1000),ceil(utm(ki,2)/1000)];
 		%fign = sprintf('%s-%04d-%04d-u20n.tif',pign,ignxy);
 		fign = sprintf('%s/%04d/971-2004-%04d-%04d-u20n.jpg',pign,ignxy(1),ignxy);
 		if exist(fign,'file')
-			% ----- tracé du cadre sur la carte n°2 (conversion UMT - WGS nécessaire)
+			% ----- tracï¿½ du cadre sur la carte nï¿½2 (conversion UMT - WGS nï¿½cessaire)
 			%xy3geo = utm2geo20([xy3([1,2,2,1,1])',xy3([3,3,4,4,3])']);
 			%axes(ax2), hold on
 			%plot(xy3geo(:,2),xy3geo(:,1),'k-','Linewidth',lw)
 			%hold off
-			
+
 			I = imread(fign);
 			disp(sprintf('Image: %s loaded.',fign));
 			A22 = imresize(I,size(I)/r3);
 			Z = uint8(double(A22)*0+128);	% dalle vide
-			
+
 			% dalle 21
 			A21 = Z;
 			if mod(utm(ki,1),1000) < d3*1e3/2
@@ -279,7 +280,7 @@ for i = 1:length(k)
 					disp(sprintf('Image: %s loaded.',fign));
 				end
 			end
-			
+
 			% dalle 23
 			A23 = Z;
 			if mod(utm(ki,1),1000) > 1000-d3*1e3/2
@@ -289,7 +290,7 @@ for i = 1:length(k)
 					disp(sprintf('Image: %s loaded.',fign));
 				end
 			end
-			
+
 			% dalle 12
 			A12 = Z;
 			if mod(utm(ki,2),1000) < d3*1e3/2
@@ -299,7 +300,7 @@ for i = 1:length(k)
 					disp(sprintf('Image: %s loaded.',fign));
 				end
 			end
-			
+
 			% dalle 32
 			A32 = Z;
 			if mod(utm(ki,2),1000) > 1000-d3*1e3/2
@@ -309,7 +310,7 @@ for i = 1:length(k)
 					disp(sprintf('Image: %s loaded.',fign));
 				end
 			end
-			
+
 			% dalle 11
 			A11 = Z;
 			if mod(utm(ki,1),1000) < d3*1e3/2 & mod(utm(ki,2),1000) < d3*1e3/2
@@ -319,7 +320,7 @@ for i = 1:length(k)
 					disp(sprintf('Image: %s loaded.',fign));
 				end
 			end
-			
+
 			% dalle 13
 			A13 = Z;
 			if mod(utm(ki,1),1000) > 1000-d3*1e3/2 & mod(utm(ki,2),1000) < d3*1e3/2
@@ -329,7 +330,7 @@ for i = 1:length(k)
 					disp(sprintf('Image: %s loaded.',fign));
 				end
 			end
-			
+
 			% dalle 31
 			A31 = Z;
 			if mod(utm(ki,1),1000) < d3*1e3/2 & mod(utm(ki,2),1000) > 1000-d3*1e3/2
@@ -339,7 +340,7 @@ for i = 1:length(k)
 					disp(sprintf('Image: %s loaded.',fign));
 				end
 			end
-			
+
 			% dalle 33
 			A33 = Z;
 			if mod(utm(ki,1),1000) > 1000-d*1e3/2 & mod(utm(ki,2),1000) > 1000-d3*1e3/2
@@ -349,8 +350,8 @@ for i = 1:length(k)
 					disp(sprintf('Image: %s loaded.',fign));
 				end
 			end
-			
-			% concaténation des 9 dalles
+
+			% concatï¿½nation des 9 dalles
 			A = [A31,A32,A33;A21,A22,A23;A11,A12,A13];
 
 			xign = ((ignxy(1)-1)*1000):rign*r3:((ignxy(1)+2)*1000-rign);
@@ -364,7 +365,7 @@ for i = 1:length(k)
 			ax = axis;
 			plot(ax([1,2,2,1,1]),ax([3,3,4,4,3]),'k-','Linewidth',.1)
 			cible(utm(ki,1),utm(ki,2),15)
-			% échelle
+			% ï¿½chelle
 			xe = ax(2) - xsc3*1e3/2 - dxsc3;
 			ye = ax(3) + dxsc3;
 			h = rectangle('Position',[xe - xsc3*1e3/2 - dxsc3,ye - dxsc3,xsc3*1e3 + 2*dxsc3,4*dxsc3]);
@@ -414,7 +415,7 @@ for i = 1:length(k)
 			ax = axis;
 			plot(ax([1,2,2,1,1]),ax([3,3,4,4,3]),'k-','Linewidth',.1)
 			cible(utm(ki,1),utm(ki,2),15)
-			% échelle
+			% ï¿½chelle
 			xe = ax(2) - xsc3*1e3/2 - dxsc3;
 			ye = ax(3) + dxsc3;
 			h = rectangle('Position',[xe - xsc3*1e3/2 - dxsc3,ye - dxsc3,xsc3*1e3 + 2*dxsc3,4*dxsc3]);
@@ -428,17 +429,17 @@ for i = 1:length(k)
 			axis off
 		end
 
-		% plots frame on inset n°2 (approximative)
+		% plots frame on inset nï¿½2 (approximative)
 		axes(ax2); hold on
 		plot(geo(ki,2) + d3/lonkm*.5*[-1,1,1,-1,-1],geo(ki,1) + d3/degkm*.5*[-1,-1,1,1,-1],'k-','Linewidth',lw)
 		hold off
-		
+
 		% ---- copyright (cartouche bas)
 		message = sprintf(' {\\bf%s}  \\copyright %s - %s / %s ',N(ki).ID,WO.COPYRIGHT,demcopyright,datestr(now,0));
 		axes('Position',[0,0,1,pcart/(1+pcart)]); axis([0,1,0,1]); axis off
 		text(0,.5,message,'FontSize',9,'HorizontalAlignment','left')
 		if ign
-			%text(1,.5,{'BD ORTHO \copyright IGN - Paris - 2004';'Reproduction interdite';'Licence n° 06 CUI-dom 0100 '}, ...
+			%text(1,.5,{'BD ORTHO \copyright IGN - Paris - 2004';'Reproduction interdite';'Licence nï¿½ 06 CUI-dom 0100 '}, ...
 			text(1,.5,{'BD ORTHO \copyright IGN - Paris - 2004'}, ...
 				'HorizontalAlignment','right','FontSize',9)
 		end
@@ -450,11 +451,11 @@ for i = 1:length(k)
 		print(gcf,'-depsc2','-loose','-painters',sprintf('%s.ps',ftmp));
 		wosystem(sprintf('%s %s -density %dx%d %s.ps %s.png',WO.PRGM_CONVERT,convertopt,dpi,dpi,ftmp,ftmp));
 		wosystem(sprintf('mv -f %s.png %s',ftmp,fimg));
-		
+
 		fprintf('done.\n');
 
 		close
-		
+
 	else
 		if nargin < 1
 			fprintf('%s: "%s" is up to date.\n',wofun,fimg);
