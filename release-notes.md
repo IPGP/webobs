@@ -15,7 +15,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.3.0 (January 2021)
+## v2.3.1 (unreleased yet)
 
 ### New features
 
@@ -84,7 +84,7 @@ MODELNET_TITLE|{\fontsize{14}{\bf${NAME} - Network sensitivity}}
    * `FID_DATACOLS` is an index vector of the file columns that contain the imported data. The default, and former behavior, is an automatic detection of the data (all but the date and time columns).
    * `FID_ERRORCOLS` is an index vector of the file columns defining the data errors in the same order as data. It must have the same length as data vector. Use 0 to skip a column if no error is associated to it. Default (empty) won't associate any error with the data. Columns of errors are ignored in the data automatic detection mode.
 
-7. New CSS classes have been created to allow present graphs in nice frames on the welcome page, but it can be used anywhere in WebObs pages. Application to the **Welcome_news.txt** default file to make use of these classes.
+7. New CSS classes have been created to allow to present graphs in nice frames on the welcome page, but it can be used anywhere in WebObs pages. Refer to the **Welcome_news.txt** default file for an sample use use of these classes.
 
 ### Fixed issues
 
@@ -92,6 +92,7 @@ MODELNET_TITLE|{\fontsize{14}{\bf${NAME} - Network sensitivity}}
 
 2. In the **GNSS** superproc, there was a mistake in the name of parameter to adjust velocity scale manually in **VECTORS** graph: the correct name is `VECTORS_VELOCITY_SCALE` and defines the velocity in mm/yr corresponding to 25% of the graph width.
 
+3. The wpage.pl script that shows the content of `Wiki` and `HTML` pages now correctly detects and displays HTML-only content (it was previously resulting in an invisible content, which was still editable though).
 
 ## v2.2.0 (November 2020)
 
