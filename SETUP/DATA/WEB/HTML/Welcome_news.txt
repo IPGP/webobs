@@ -21,6 +21,7 @@
   </a>
 </div>
 
+<!-- This is an example of presentation frames -->
 <div class="emphase-frame" style="text-align: center;">
   <h3 class="emphase-title">Featured graphs</h3>
 
@@ -45,3 +46,9 @@
     <!-- Force the parent container to stretch until after the above frames, or the graphs would appear outside of the Info frame -->
     <br class="float-break">
 </div>
+
+<!--
+ Note: a 'emphase-frame-floating' CSS class is also available as an alternative
+ to 'emphase-frame' to have the frame float (as with 'emphase-graph-floating',
+ use a br.float-break to go back to inline content after the floating frames).
+-->
