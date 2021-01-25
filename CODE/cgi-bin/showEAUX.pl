@@ -382,7 +382,7 @@ for(@lignes) {
 		push(@csv,l2u("$date;$heure;Code Site;$site;$type;$tAir;$tSource;$pH;$debit;$cond;$niveau;$cLi;$cNa;$cK;$cMg;$cCa;$cF;$cCl;$cBr;$cNO3;$cSO4;$cHCO3;$cI;$cSiO2;$d13C;$d18O;$dD;Cond25;NICB (%);\"$rem\";$val"));
 	}
 	elsif (($_ ne "") 
-		&& ($site =~ $QryParm->{'node'} || grep(/^$site$/, @gridsites) || ($QryParm->{'node'} eq "All" && grep(/^$site$/, @NODESValidList)))
+		&& ($site eq $QryParm->{'node'} || grep(/^$site$/, @gridsites) || ($QryParm->{'node'} eq "All" && grep(/^$site$/, @NODESValidList)))
 		&& ($id > 0 || $clientAuth == 4)
 		&& ($date le $endDate) && ($date ge $startDate)) {
 
