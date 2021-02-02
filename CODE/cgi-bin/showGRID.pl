@@ -411,7 +411,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				$htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>" if ($usrProject eq "on");
 			}
 			$htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
-			$htmlcontents .= "<TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if (@procTS);
+			$htmlcontents .= "<TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
 			if ($overallStatus) {
 				my @tsp = split(/,/,$GRID{"STATUSLIST"});
 				$htmlcontents .= "<TH colspan=3>$__{'Proc Status'} (".$procTS[first { $tsp[$_] eq '1' } reverse(0..$#tsp)].")</TH>";
@@ -431,7 +431,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			if ($procOUTG eq "events") {
 				$htmlcontents .= "<TH>Events</TH>";
 			} elsif ($procOUTG) {
-				$htmlcontents .= "<TH>".join("</TH><TH>",@procTS)."</TH>" if ($procOUTG);
+				$htmlcontents .= "<TH>".join("</TH><TH>",@procTS)."</TH>";
 			}
 			if ($overallStatus) {
 				$htmlcontents .= "<TH>$__{'Last Data'} (TZ $GRID{TZ})</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
