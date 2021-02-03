@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2021-01-01
+%	Updated: 2021-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -57,7 +57,7 @@ alarm_threshold_level = field2num(P,'ALARM_THRESHOLD_LEVEL',0);
 alarm_color = field2num(P,'ALARM_COLOR',[1,0,0]);
 sourcemap_n = field2num(P,'SOURCEMAP_N',2);
 sourcemap_title = field2str(P,'SOURCEMAP_TITLE','{\fontsize{14}{\bf$name - Source Map} ($timescale)}');
-sourcemap_colormap = field2num(P,'SOURCEMAP_COLORMAP',spectra(256));
+sourcemap_colormap = field2num(P,'SOURCEMAP_COLORMAP',spectral(256));
 sourcemap_alpha = field2num(P,'SOURCEMAP_COLORMAP_ALPHA');
 sourcemap_caxis = field2num(P,'SOURCEMAP_CAXIS',[0,2e-5]);
 ylogscale = isok(P,'YLOGSCALE');
