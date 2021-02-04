@@ -286,10 +286,14 @@ for station in $NODES; do
 							echo "   $cmd"
 							if [ -z $ORBITOK ]; then
 								echo "   ** WARNING: Problem to process gd2e... May be orbit $orbit not yet available?"
-                                                 	grep -E "REC #|ANT #" $rinex
+								if [ ! -z "$ERROR_REGEX_RINEX" ]; then
+                                                 		grep -E "$ERROR_REGEX_RINEX" $rinex
+								fi
 							else
 								echo "   ** ERROR: Problem to process gd2e... Please check logs."
-                                                 	grep -E "REC #|ANT #" $rinex
+								if [ ! -z "$ERROR_REGEX_RINEX" ]; then
+                                                 		grep -E "$ERROR_REGEX_RINEX" $rinex
+								fi
 								ERROR=1
 								break
 							fi

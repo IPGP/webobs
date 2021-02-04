@@ -3,7 +3,7 @@
 # please copy to /etc/webobs.rc/, rename and edit to your needs.
 #
 # Created: 2019-02-25
-# Updated: 2020-01-09
+# Updated: 2021-02-04
 
 # prepares GIPSYX processing
 source /home/wo/GipsyX-1.2/rc_GipsyX.sh
@@ -12,9 +12,6 @@ source /home/wo/GipsyX-1.2/rc_GipsyX.sh
 #GRID=PROC.GIPSYX
 # ... or default list of station codes (space separated)
 NODES=
-
-# base directory to store local orbits (optional)
-ORBITSDIR=/home/wo/GNSS/JPL_Local_Orbits
 
 # base directory that contains the raw data
 FROM=/home/wo/rawdata/GNSS
@@ -26,17 +23,23 @@ FMT='$FROM/$FID/$yyyy/$mm/$dd'
 # base directory for output results
 DEST=/home/wo/GNSS/gipsyx
 
+# base directory to store local orbits (optional)
+ORBITSDIR=/home/wo/GNSS/JPL_Local_Orbits
+
+# download_orbit options (see download_orbit)
+DOWNLOAD_OPTIONS="-r 30"
+
 # gd2e.py options
 GIPSYOPTIONS="-runType PPP"
 
 # teqc options: Please take a deep look at www.unavco.org TEQC tutorial!
 TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -0.pe 0 0 0 -C2 -O.-obs C2 -O.-obs C5 -O.dec 30s -max_rx_SVs 30 -n_GLONASS 27"
 
-# download_orbit options
-DOWNLOAD_OPTIONS="-r 30"
+# display some rinex header in case of error
+ERROR_REGEX_RINEX="REC #|ANT #|# / TYPES OF OBSERV|MARKER NAME"
 
 # realtime processing (put "Y" if wanted)
-REALTIME="" 
+REALTIME=""
+
 # data delay for realtime processing
 DATA_DELAY="5 min"
-
