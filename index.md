@@ -1,4 +1,4 @@
-WebObs is an integrated web-based system for data monitoring and networks management. Seismological and volcanological observatories have common needs and often common practical problems for multi disciplinary data monitoring applications. In fact, access to integrated data in real-time and estimation of uncertainties are keys for an efficient interpretation, but instruments variety, heterogeneity of data sampling and acquisition systems lead to difficulties that may hinder crisis management. In the Guadeloupe observatory, we have developed in the last 15 years an operational system that attempts to answer the questions in the context of a pluri-instrumental observatory. Based on a single computer server, open source scripts (with few binaries) and a Web interface, the system proposes:
+WebObs is an integrated web-based system for data monitoring and networks management. Seismological and volcanological observatories have common needs and often common practical problems for multi disciplinary data monitoring applications. In fact, access to integrated data in real-time and estimation of uncertainties are keys for an efficient interpretation, but instruments variety, heterogeneity of data sampling and acquisition systems lead to difficulties that may hinder crisis management. In the Guadeloupe observatory, we have developed in the last 15 years an operational system that attempts to answer the questions in the context of a pluri-instrumental observatory. Based on a single computer server, open source scripts (with few free binaries) and a Web interface, the system proposes:
 
 - an extended database for networks management, stations and sensors (maps, station file with log history, technical characteristics, meta-data, photos and associated documents);
 - a web-form interfaces for manual data input/editing and export (like geochemical analysis, some of the deformation measurements, ...);
@@ -13,13 +13,13 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 
 ## Download the latest release
 
-- [WebObs-2.3.0.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.3.0/WebObs-2.3.0.tar.gz) (58 Mb) updated January 21, 2021
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.3.0/release-notes.md)
+- [WebObs-2.3.1.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.3.1/WebObs-2.3.1.tar.gz) (58 Mb) updated February 4, 2021
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.3.1/release-notes.md)
 - [User manual](https://github.com/IPGP/webobs/releases/download/v2.3.0/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
-  - Mandatory: **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
+  - Mandatory (free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see below for download and install)
-- Previous release packages are available at [here](http://www.ipgp.fr/~beaudu/webobs/).
+- Previous releases are available [here](https://github.com/IPGP/webobs/releases) and older packages [here](http://www.ipgp.fr/~beaudu/webobs/).
 
 For install and update, please follow instructions below.
 
