@@ -15,7 +15,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.3.1 (unreleased yet)
+## v2.3.1 (February 2021)
 
 ### New features
 
