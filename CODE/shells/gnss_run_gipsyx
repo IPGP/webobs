@@ -17,7 +17,7 @@
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia)
 #          Based on Gipsy-Oasis version by Francois BEAUDUCEL (IPGP) and Ahmad Ali FAHMI (IRD),
 #          Domerapi/WebObs Project, 2014.
-# Updated: 2020-08-10
+# Updated: 2021-02-04
 
 #Check lock file
 LOCKFILE=/tmp/gnss_run_gipsyx.txt
@@ -286,8 +286,10 @@ for station in $NODES; do
 							echo "   $cmd"
 							if [ -z $ORBITOK ]; then
 								echo "   ** WARNING: Problem to process gd2e... May be orbit $orbit not yet available?"
+                                                 	grep -E "REC #|ANT #" $rinex
 							else
 								echo "   ** ERROR: Problem to process gd2e... Please check logs."
+                                                 	grep -E "REC #|ANT #" $rinex
 								ERROR=1
 								break
 							fi
