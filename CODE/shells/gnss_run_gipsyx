@@ -17,7 +17,7 @@
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia)
 #          Based on Gipsy-Oasis version by Francois BEAUDUCEL (IPGP) and Ahmad Ali FAHMI (IRD),
 #          Domerapi/WebObs Project, 2014.
-# Updated: 2021-02-04
+# Updated: 2021-02-09
 
 #Check lock file
 LOCKFILE=/tmp/gnss_run_gipsyx.txt
@@ -36,7 +36,7 @@ if [ $# -lt 2 ]; then
 	echo "     Options:"
 	echo "	    -s \"STA1 STA2...\""
 	echo "            station code or station list with double quotes"
-	echo "	         default is all nodes associated with local WebObs $GRID"
+	echo "	         default is all nodes associated with local WebObs $GRID proc name"
 	echo "            or a list of nodes $NODES defined in .rc"
 	echo "       -d \"yyyy/mm/dd,yyyy/mm/dd\""
 	echo "            choose days to start process; the DAYS argument can still be used to"
@@ -70,11 +70,17 @@ PROGDIR=$( cd "$( dirname "$0" )" && pwd )
 
 ORBITS=( "flinn" "ql" "ultra" )
 
-# gets the nodes parameters from WebObs
+# gets the nodes list from WebObs (will erase $NODES)
 if [ "$GRID" != "" ]; then
-	PROC="/etc/webobs.d/GRIDS2NODES/$GRID"
-	NODES=$(grep -h "^$GRID\.FID|" $PROC.*/*.cnf|sed -E "s/.*FID\|//")
-	NODESTABLE=$(grep -H "^$GRID\.FID|" $PROC.*/*.cnf|sed -E "s/.*\///"|sed -E "s/\.cnf:.*FID\|/\ /")
+	# PROC is local directory containing nodes .cnf
+	if [ -d "$NODEROOT" ]; then
+		 PROC="$NODEROOT/"
+	else
+		 PROC="/etc/webobs.d/GRIDS2NODES/$GRID."
+	fi
+	# node's list defined from the FID parameter in .cnf
+	NODES=$(grep -h "^$GRID\.FID|" $PROC*/*.cnf|sed -E "s/.*FID\|//")
+	NODESTABLE=$(grep -H "^$GRID\.FID|" $PROC*/*.cnf|sed -E "s/.*\///"|sed -E "s/\.cnf:.*FID\|/\ /")
 fi
 
 if [ -z "$FMT" ]; then
@@ -89,6 +95,10 @@ LOG=gd2e.log
 
 # boolean for forcing process (default value doesn't force)
 FORCE=0
+
+if [ -z "$ERROR_REGEX_RINEX" ]; then
+	ERROR_REGEX_RINEX="REC #|ANT #|# / TYPES OF OBSERV|MARKER NAME"
+fi
 
 echo "*** GipsyX / WebObs $GRID GNSS File Processing ***"
 
@@ -141,8 +151,8 @@ for station in $NODES; do
 	# looks in node's parameters for possible antenna and receiver (will overwrite rinex header)
 	if [ "$GRID" != "" ]; then
 		ID=$(echo "$NODESTABLE" | awk "/$FID/ {print \$1}")
-		receiver=$(grep -h "^$GRID\.FID_RECEIVER|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
-		antenna=$(grep -h "^$GRID\.FID_ANTENNA|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
+		receiver=$(grep -h "^$GRID\.FID_RECEIVER|" $PROC$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
+		antenna=$(grep -h "^$GRID\.FID_ANTENNA|" $PROC$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
 		echo "   WO ID = $ID - receiver = '$receiver' - antenna = '$antenna' (will use rinex header if empty)"
 		if [ ! -z "$receiver" ]; then
 			receiver=" -O.rt \"$receiver\""
@@ -284,21 +294,14 @@ for station in $NODES; do
 							break
 						else
 							echo "   $cmd"
-							if [ -z $ORBITOK ]; then
+                                                 if [[ -z $ORBITOK && "$orbit" != "ultra" ]]; then
 								echo "   ** WARNING: Problem to process gd2e... May be orbit $orbit not yet available?"
-								if [ ! -z "$ERROR_REGEX_RINEX" ]; then
-                                                 		grep -E "$ERROR_REGEX_RINEX" $rinex
-								fi
 							else
 								echo "   ** ERROR: Problem to process gd2e... Please check logs."
-								if [ ! -z "$ERROR_REGEX_RINEX" ]; then
-                                                 		grep -E "$ERROR_REGEX_RINEX" $rinex
-								fi
+                                                 	grep -E "$ERROR_REGEX_RINEX" $rinex
 								ERROR=1
 								break
 							fi
-
-
 						fi
 					fi
 				done
