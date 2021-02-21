@@ -296,15 +296,15 @@ GOOGLE_MAPS_ZOOM_VALUE|17
 # ---------------------------------------------
 DEM_OVERSAMPLING|500
 DEM_MAX_WIDTH|1201
-# SRTM data are automatically downloaded
 PATH_DATA_DEM_SRTM|${PATH_DATA_DEM}/SRTM
 PATH_DATA_DEM_SRTM1|${PATH_DATA_DEM}/SRTM1
 SRTM_COPYRIGHT|DEM: SRTM/NASA
 SRTM_MAX_TILES|25
 SRTM1_MAX_TILES|4
-# Login needed to download new SRTM1 tiles (see https://urs.earthdata.nasa.gov)
+# Authentication needed to download new SRTM tiles (see https://urs.earthdata.nasa.gov)
+# alternative is to empty this variable and put login information in .netrc
 EARTHDATA_LOGIN|usr,pwd
-# ETOPO Global Relief Data: can be downloaded at http://www.ngdc.noaa.gov/mgg/global/global.html (.bin and .hdr)
+# ETOPO Global Relief Data: ETOPO1 can be downloaded at http://www.ngdc.noaa.gov/mgg/global/global.html (.bin and .hdr)
 PATH_DATA_DEM_ETOPO|${PATH_DATA_DEM}/ETOPO
 ETOPO_NAME|etopo5
 ETOPO_COPYRIGHT|DEM: ETOPO5 NGDC/NOOA

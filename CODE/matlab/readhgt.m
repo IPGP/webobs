@@ -1,22 +1,23 @@
 function varargout = readhgt(varargin)
-%READHGT Import/download NASA SRTM data files (.HGT).
+%READHGT Import/download NASA SRTM data files (.hgt).
 %	READHGT(AREA) where AREA is a 4-element vector [LAT1,LAT2,LON1,LON2]
-%	downloads the SRTM data and plots a map corresponding to the geographic
-%	area defined by latitude and longitude limits (in decimal degrees). If 
-%	the needed SRTM .hgt files are not found in the current directory (or 
-%	in the path), they are downloaded from the USGS data server (needs an 
-%	Internet connection and a companion file "readhgt_srtm_index.txt"). For
-%	better plot results, it is recommended to install DEM personal function
-%	available at author's Matlab page. 
+%	reads SRTM tiles as .hgt files located in the current directory or in 
+%	the Matlab path and plots a map corresponding to the geographic area 
+%	defined by latitude and longitude limits (in decimal degrees).
 %
-%	READHGT(LAT,LON) reads or downloads the SRTM tiles corresponding to LAT
-%	and LON (in decimal degrees) coordinates (lower-left corner).
+%	If the needed .hgt files are not found, they can be automatically
+%	downloaded from the USGS data server using additional option
+%	READHGT(...,'login',USER,PASSWORD) where USER and PASSWORD are a valid 
+%	login to NASA/EarthDATA center (see LOGIN option below).
+%
+%	READHGT(LAT,LON,...) reads (or downloads) the SRTM tiles corresponding 
+%	to LAT and LON (in decimal degrees) coordinates (lower-left corner).
 %
 %	LAT and/or LON can be vectors: in that case, tiles corresponding to all
 %	possible combinations of LAT and LON values will be downloaded, and
 %	optional output structure X will have as much elements as tiles.
 %
-%	READHGT(FILENAME) reads HGT data file FILENAME, must be in the form
+%	READHGT(FILENAME) reads .hgt data file FILENAME, must be in the form
 %	"[N|S]yy[E|W]xxx.hgt[.zip]", as downloaded from SRTM data servers.
 %
 %	X=READHGT(...) returns a structure X containing: 
@@ -55,50 +56,51 @@ function varargout = readhgt(varargin)
 %	   to search existing files. Former syntax READHGT(LAT,LON,OUTDIR) also
 %	   accepted. Default is the current directory.
 %
-%	'url',URL
-%	   Specifies the URL address to find HGT files (default is USGS). 
-%	   Former syntax READHGT(LAT,LON,OUTDIR,URL) still accepted.
-%
-%	'srtm3'
-%	   Forces SRTM3 download for all areas (by default, SRTM1 tiles are 
-%	   downloaded only for USA territory, if exists).
-%
 %	'srtm1'
-%	   Uses SRTM1 tiles which are 9 times bigger than default SRTM3. The
-%	   tiles must be available in the OUTDIR directory or they will be
-%	   downloaded from NASA/EarthDATA website. This action needs a valid
-%	   user login (see LOGIN option below).
+%	   Uses SRTM1 tiles which are 9 times bigger than default SRTM3.
 %	   ! Beware with large zones may lead to computer memory issues.
 %	   ! SRTM1 and SRTM3 tiles hold the same filename, while they have 
 %	   different size. Do not store them in the same directory to avoid
 %	   errors when merging tiles.
 %
+%	'srtm3'
+%	   Forces SRTM3 resolution (if some SRTM1 tiles are found, it decimates 
+%	   them).
+%
 %	'login',USER,PASSWORD
-%	  Needed user authentification to download SRTM1 tiles from the
-%	  NASA/EarthDATA center. See https://urs.earthdata.nasa.gov to register.
+%	  Needed user authentication to download SRTM tiles from the NASA/
+%	  EarthDATA center. See https://urs.earthdata.nasa.gov to register, and
+%	  'wget' option below for auto-login process using .netrc of the system. 
 %
 %	'wget'
 %	   Will use external command wget to download the files (for Linux and
-%	   MacOSX systems). For MacOSX, wget must be installed using homebrew,
-%	   macports, fink or compiling from sources.
-%	   ! NOTICE ! since 2016, USGS has moved SRTM files to a secured 
-%	   https:// URL. This causes Matlab versions older than 2016a failing
-%	   download the tiles automatically, because of unzip function and 
-%	   certificate problems. This issue can be surrounded using this 'wget'
-%	   option and installing wget command on your system.
+%	   MacOSX systems). Because access to SRTM data uses a secured https://
+%	   URL, Matlab versions older than 2016a will fail to download the 
+%	   tiles automatically due to unzip function and certificate problems. 
+%	   This issue can be surrounded using this 'wget' option and installing
+%	   wget command on your system. For MacOSX, wget must be installed 
+%	   using homebrew, macports, fink or compiling from sources.
+%	   Also with this option, the login USER/PASSWORD can be stored in your
+%	   home .netrc instead of 'login' arguments, by adding these lines:
+%	      machine urs.earthdata.nasa.gov
+%	      user xxxxx
+%	      password xxxxx
 %
 %
 %	--- Examples ---
 %
+%	Note: to download .hgt files from the internet, you need the login
+%	option (replacing 'x' by valid user and password at EarthDATA center).
+%
 %	- to plot a map of the Paris region, France (single tile):
-%		readhgt(48,2)
+%		readhgt([48,49,2,3],'login','x','x')
 %
 %	- to plot a map of Flores volcanic island, Indonesia (5 tiles):
 %		readhgt(-9,119:123)
 %
 %	- to plot a map of the Misti volcano, Peru (SRTM1 cropped tile, needs
 %	   a valid login user and password at NASA/EarthDATA center):
-%	   readhgt([-16.4,-16.2,-71.5,-71.3],'srtm1','login','x','x','interp')
+%	   readhgt([-16.4,-16.2,-71.5,-71.3],'srtm1','login','xx','xx','interp')
 %
 %	- to download SRTM1 data of Cascade Range (27 individual tiles):
 %		X=readhgt(40:48,-123:-121,'tiles');
@@ -139,14 +141,14 @@ function varargout = readhgt(varargin)
 %		Institut de Physique du Globe de Paris
 %
 %	References:
-%		https://dds.cr.usgs.gov/srtm/version2_1
+%		https://urs.earthdata.nasa.gov
 %
 %	Acknowledgments: Yves Gaudemer, Jinkui Zhu, Greg
 %
 %	Created: 2012-04-22 in Paris, France
-%	Updated: 2020-10-26
+%	Updated: 2021-02-21
 
-%	Copyright (c) 2020, François Beauducel, covered by BSD License.
+%	Copyright (c) 2021, François Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without 
@@ -171,10 +173,7 @@ function varargout = readhgt(varargin)
 %	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 %	POSSIBILITY OF SUCH DAMAGE.
 
-fidx = 'readhgt_srtm_index.txt';
-% ATTENTION: this file must exist in the Matlab path to use default SRTM3 tiles
-% since USGS delivers data continent-by-continent with nominative directories,
-% this index file is needed to know the full path name of each tile.
+
 sz1 = [3601,3601]; % SRTM1 tile size
 sz3 = [1201,1201]; % SRTM3 tile size
 novalue = intmin('int16'); % -32768
@@ -182,13 +181,9 @@ n = 1;
 
 srtm1 = any(strcmpi(varargin,'srtm1'));
 if srtm1
-	% SRTM1 full resolution tiles available here with EarthData login (2020):
 	url = 'https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11';
-	%url = 'http://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL1.003/2000.02.11';
-	%url = 'http://rmd.neoknet.com/srtm1'; % unavailable since May 2020...
 else
-	% official USGS SRTM3 tiles (and SRTM1 for USA):
-	url = 'https://dds.cr.usgs.gov/srtm/version2_1';
+	url = 'https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL3.003/2000.02.11';
 end
 
 srtm3 = any(strcmpi(varargin,'srtm3'));
@@ -245,6 +240,8 @@ if ~isempty(koutdir)
 end
 
 % --- option: 'url',URL
+% specifies another URL address to find HGT files (default is USGS)
+% (undocumented)
 urlflag = 0;
 kurl = find(strcmpi(varargin,'url'));
 if ~isempty(kurl)
@@ -366,46 +363,24 @@ else
 			else
 				if srtm1
 					ff = sprintf('/%s%s.SRTMGL1.hgt.zip',slat,slon);
-					%ff = sprintf('/%s%s.hgt.zip',slat,slon);
 				else
-					%fsrtm = sprintf('%s/%s',fileparts(mfilename('fullpath')),fidx);
-					fsrtm = fidx;
-					if exist(fsrtm,'file')
-						fid = fopen(fsrtm,'rt');
-						idx = textscan(fid,'%s');
-						fclose(fid);
-						k = find(~cellfun('isempty',strfind(idx{1},sprintf('%s%s',slat,slon))));
-						if isempty(k)
-							%fprintf('READHGT: Warning! Cannot find %s tile in SRTM database. Consider it offshore...\n',ff);
-						else
-							% forcing SRTM3 option: takes the first match in the list
-							if srtm3
-								ff = idx{1}{k(1)};
-							else
-								ff = idx{1}{k(end)};
-							end
-						end
-					else
-						error('Cannot find "%s" index file to parse SRTM database. Please download HGT file manually.',fsrtm);
-					end
+					ff = sprintf('/%s%s.SRTMGL3.hgt.zip',slat,slon);
 				end
 			end
 			if isempty(ff)
 				f{n} = '';
 			else
 				fprintf('Download %s%s ... ',url,ff);
-				if srtm1 && (~exist('usr','var') || ~exist('pwd','var'))
-					error('SRTM1 new tiles download needs the LOGIN option.')
-				end
 				f{n} = '';
 				try
 					if wget
-						if system('which wget')
+						[s,~] = system('which wget');
+						if s
 							fprintf(' ** wget binary not found. Cannot download tiles.\n');
 						else
 							tmp = tempname;
 							mkdir(tmp)
-							if srtm1 && ~isempty(usr) && ~isempty(pwd)
+							if exist('usr','var') && ~exist('pwd','var') && ~isempty(usr) && ~isempty(pwd)
 								login = sprintf('--user %s --password %s',usr,pwd);
 							else
 								login = '';
@@ -421,11 +396,7 @@ else
 					else
 						if exist('websave','file')
 							ftmp = [tempname(out),'.zip'];
-							if srtm1
-								opt = weboptions('Username',usr,'Password',pwd);
-							else
-								opt = weboptions;
-							end
+							opt = weboptions('Username',usr,'Password',pwd);
 							websave(ftmp,[url,ff],opt);
 							f(n) = unzip(ftmp,out);
 							delete(ftmp)
@@ -435,7 +406,11 @@ else
 					end
 					fprintf('done.\n');
 				catch
-					fprintf(' ** tile not found. Considering offshore.\n');
+					if ~loginflag
+						fprintf('\n** SRTM new tiles download needs EarthDATA authentication (see the LOGIN option).\n')
+					else
+						fprintf(' ** tile not found. Considering offshore.\n');
+					end
 				end
 			end
 		end
