@@ -32,7 +32,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2019-12-27
+%	Updated: 2021-02-16
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -142,11 +142,11 @@ if exist(fdat,'file')
 			t = smartdatenum(dd(:,timecols),1:length(timecols));
 		end
 		% extracts the data columns
-		if any(~isnan(datacols)) && nx <= max(datacols)
+		if any(~isnan(datacols)) && nx < max(datacols)
 			error('%s: FID_DATACOLS must indicate valid data columns!');
 		end
 		% extracts the error columns
-		if any(~isnan(errorcols)) && nx <= max(errorcols)
+		if any(~isnan(errorcols)) && nx < max(errorcols)
 			error('%s: FID_ERRORCOLS must indicate valid data columns!');
 		end
 
