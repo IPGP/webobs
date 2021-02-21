@@ -1,16 +1,17 @@
 ###############################################################################
-# Template configuration file for script gnss_run_gipsyx
-# please copy to /etc/webobs.rc/, rename and edit to your needs.
+# Template configuration file for script gnss_run_gipsyx (must be in the same
+# directory). Please copy, rename and edit it for each "network".
 #
 # Created: 2019-02-25
-# Updated: 2021-02-04
+# Updated: 2021-02-09
 
 # prepares GIPSYX processing
 source /home/wo/GipsyX-1.2/rc_GipsyX.sh
 
 # grid of a local WebObs that contains the station list (nodes)
 #GRID=PROC.GIPSYX
-# ... or default list of station codes (space separated)
+#NODEROOT=/opt/webobs.d/GRID2NODES/$GRID.
+# ... or empty $GRID and default list of station codes (space separated)
 NODES=
 
 # base directory that contains the raw data
