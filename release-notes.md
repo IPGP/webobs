@@ -15,7 +15,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.3.1 (February 2021)
+## v2.3.2 (February 2021)
 
 ### New features
 
@@ -84,15 +84,27 @@ MODELNET_TITLE|{\fontsize{14}{\bf${NAME} - Network sensitivity}}
    * `FID_DATACOLS` is an index vector of the file columns that contain the imported data. The default, and former behavior, is an automatic detection of the data (all but the date and time columns).
    * `FID_ERRORCOLS` is an index vector of the file columns defining the data errors in the same order as data. It must have the same length as data vector. Use 0 to skip a column if no error is associated to it. Default (empty) won't associate any error with the data. Columns of errors are ignored in the data automatic detection mode.
 
-7. New CSS classes have been created to allow to present graphs in nice frames on the welcome page, but it can be used anywhere in WebObs pages. Refer to the **Welcome_news.txt** default file for an sample use use of these classes.
+7. New CSS classes have been created to allow presenting graphs in nice frames on the welcome page, but it can be used anywhere in WebObs pages. Refer to the **Welcome_news.txt** default file for a sample use of these classes.
 
 ### Fixed issues
+1. `!!` To continue the benefits of downloading automatically new SRTM3 global topographic data, WebObs administrator must now register to NASA/EarthDATA center at https://urs.earthdata.nasa.gov (free). A single valid login (user `usr` and password `pwd`) must be obtained then stored in one of the following:
+	* `WEBOBS.rc` configuration file as variable:
+	`EARTHDATA_LOGIN|usr,pwd`
+	* or in the WebObs owner user's home (default is **wo**), adding the 3 lines in `/home/wo/.netrc` (auto-login process):
+```
+machine urs.earthdata.nasa.gov
+user usr
+password pwd
+```
+This authentication will be used for both SRTM3 and SRTM1 1°x1° tiles download. As a reminder, downloaded tiles are stored locally in the `PATH_DATA_DEM_SRTM` directory (default is `/opt/webobs/DATA/DEM/SRTM`), and used to update maps without requiring new download from the internet. Thus, a possible alternative to registering at EarthDATA is to place here all the needed tiles manually (must be in the `.hgt` format).
 
-1. When using Firefox 79+ (and potentially recent versions of other browsers), the temporary tab was not automatically closed and the event log not refreshed after editing an event in the event log / _main courante_.
+2. When using Firefox 79+ (and potentially recent versions of other browsers), the temporary tab was not automatically closed and the event log not refreshed after editing an event in the event log / _main courante_.
 
-2. In the **GNSS** superproc, there was a mistake in the name of parameter to adjust velocity scale manually in **VECTORS** graph: the correct name is `VECTORS_VELOCITY_SCALE` and defines the velocity in mm/yr corresponding to 25% of the graph width.
+3. In the **GNSS** superproc, there was a mistake in the name of parameter to adjust velocity scale manually in **VECTORS** graph: the correct name is `VECTORS_VELOCITY_SCALE` and defines the velocity in mm/yr corresponding to 25% of the graph width.
 
-3. The wpage.pl script that shows the content of `Wiki` and `HTML` pages now correctly detects and displays HTML-only content (it was previously resulting in an invisible content, which was still editable though).
+4. The wpage.pl script that shows the content of `Wiki` and `HTML` pages now correctly detects and displays HTML-only content (it was previously resulting in an invisible content, which was still editable though).
+
+5. Fix in **dsv** rawdata format (was not able to read the last column).
 
 ## v2.2.0 (November 2020)
 
