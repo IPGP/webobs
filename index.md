@@ -13,7 +13,7 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 
 ## Download the latest release
 
-- [WebObs-2.3.2.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.3.2/WebObs-2.3.2.tar.gz) (58 Mb) updated February 23, 2021
+- [WebObs-2.3.3.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.3.2/WebObs-2.3.3.tar.gz) (58 Mb) updated February 24, 2021
 - [Release notes](https://github.com/IPGP/webobs/blob/v2.3.2/release-notes.md)
 - [User manual](https://github.com/IPGP/webobs/releases/download/v2.3.0/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
