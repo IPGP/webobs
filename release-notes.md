@@ -15,7 +15,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.3.2 (February 2021)
+## v2.3.3 (February 2021)
 
 ### New features
 
@@ -93,7 +93,7 @@ MODELNET_TITLE|{\fontsize{14}{\bf${NAME} - Network sensitivity}}
 	* or in the WebObs owner user's home (default is **wo**), adding the 3 lines in `/home/wo/.netrc` (auto-login process):
 ```
 machine urs.earthdata.nasa.gov
-user usr
+login usr
 password pwd
 ```
 This authentication will be used for both SRTM3 and SRTM1 1°x1° tiles download. As a reminder, downloaded tiles are stored locally in the `PATH_DATA_DEM_SRTM` directory (default is `/opt/webobs/DATA/DEM/SRTM`), and used to update maps without requiring new download from the internet. Thus, a possible alternative to registering at EarthDATA is to place here all the needed tiles manually (must be in the `.hgt` format).
@@ -105,6 +105,8 @@ This authentication will be used for both SRTM3 and SRTM1 1°x1° tiles download
 4. The wpage.pl script that shows the content of `Wiki` and `HTML` pages now correctly detects and displays HTML-only content (it was previously resulting in an invisible content, which was still editable though).
 
 5. Fix in **dsv** rawdata format (was not able to read the last column).
+
+6. First try to include Winston format in **Sefran3** data source (was missing)
 
 ## v2.2.0 (November 2020)
 
