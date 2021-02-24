@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2020-11-26
+%	Updated: 2021-02-23
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -48,7 +48,6 @@ minruntime = field2num(SEFRAN3,'MIN_RUNTIME_SECONDS',600)/86400; % minimum runti
 maximages = field2num(SEFRAN3,'MAX_IMAGES_IN_RUN',10);
 
 % SeedLink and ArcLink servers
-fmsd = sprintf('%s/mseed.tmp',ptmp); % temporary miniseed file
 rtdelay = field2num(SEFRAN3,'LATENCY_SECONDS',field2num(SEFRAN3,'SEEDLINK_DELAY_SECONDS',5)); % Real-time latency delay (in seconds)
 rtmax = field2num(SEFRAN3,'ARCLINK_DELAY_HOURS',12); % Delay needed for  request, if possible (in hours)
 rtsource = field2str(SEFRAN3,'SEEDLINK_SERVER');
@@ -68,6 +67,14 @@ if ~isempty(datasource)
 	else
 		[arcformat,arcsource] = readcombined(x);
 		rtmax = 0;
+	end
+end
+if ~isempty(strfind(datasource,'winston'))
+	winstonjar = field2str(WO,'WINSTON_JAVA',sprintf('%s/bin/java/winston-bin.jar',WO.ROOT_CODE));
+	if exist(winstonjar,'file')
+		javaaddpath(winstonjar);
+	else
+		printf('%s: ** WARNING ** cannot find the Java Winston class ("%s"). Please check WINSTON_JAVA parameter in WEBOBS.rc.\n',wofun,winstonjar);
 	end
 end
 
@@ -217,23 +224,15 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				wosystem(sprintf('mkdir -p %s/%s',pdat,sgrampath),SEFRAN3);
 			end
 
-			% delete previous temporary file
-			wosystem(sprintf('rm -f %s',fmsd),SEFRAN3);
-
 			if (tnow - t0)*24 < rtmax
 				% real-time data
-				readdata(WO,SEFRAN3,rtformat,rtsource,t0,C,ptmp,fmsd)
+				X = readdata(WO,SEFRAN3,rtformat,rtsource,t0,C,ptmp);
 			else
 				% archived data
-				readdata(WO,SEFRAN3,arcformat,arcsource,t0,C,ptmp,fmsd)
+				X = readdata(WO,SEFRAN3,arcformat,arcsource,t0,C,ptmp);
 			end
 
-			F = dir(fmsd);
-			if ~isempty(F) && F.bytes > 0
-
-				% --- loads the data
-				[S,I] =	 rdmseed(fmsd);
-				channel_list = cellstr(char(I.ChannelFullName));
+			if ~isempty(X)
 
 				tag_stat_rate = repmat({''},[1,nchan]);
 				tag_stat_samp = repmat({''},[1,nchan]);
@@ -242,21 +241,18 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				tag_stat_drms = repmat({''},[1,nchan]);
 				tag_stat_asym = repmat({''},[1,nchan]);
 				tag_stat_amax = repmat({''},[1,nchan]);
-				D = repmat(struct('t',[],'d',[]),nchan,1);
+				D = repmat(struct('t',[],'d',[],'samp',1),nchan,1);
 
 				% --- loop on channels to prepare the data
 				for n = 1:nchan
-					c = textscan(sfr{n},'%s','Delimiter','.:'); % splits Network, Station, LocId and Channel codes
-					k = find(~cellfun('isempty',regexp(channel_list,sprintf('%s.*%s.*%s.*%s',c{1}{1},c{1}{2},c{1}{3},c{1}{4}))));
-					if ~isempty(k)
-						kk = I(k).XBlockIndex;
-						d = double(cat(1,S(kk).d));
-						t = cat(1,S(kk).t);
+					if ~isempty(X(n).t)
+						d = X(n).d;
+						t = X(n).t;
 						if clean_overlaps
 							[t,un] = unique(t);
 							d = d(un);
 						end
-						channel_rate = S(kk(1)).SampleRate; % supposes sample rate is constant (looks first block)
+						channel_rate = X(n).SampleRate;
 						% statistics
 						ch_median = median(d);
 						ch_minmax = max(d) - min(d);
@@ -630,9 +626,11 @@ fprintf('WEBOBS{sefran3): forces update of all minutes in %s* (from %s to %s)\n'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function readdata(WO,SEFRAN3,dataformat,datasource,t0,C,ptmp,fmsd)
+function D = readdata(WO,SEFRAN3,dataformat,datasource,t0,C,ptmp)
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
+fmsd = sprintf('%s/mseed.tmp',ptmp); % temporary miniseed file
+wosystem(sprintf('rm -f %s',fmsd),SEFRAN3); % delete previous temporary file
 slinktool = sprintf('%s %g %s',WO.PRGM_ALARM,field2num(SEFRAN3,'SEEDLINK_SERVER_TIMEOUT_SECONDS',5),WO.SLINKTOOL_PRGM);
 alfetch = field2str(WO,'ARCLINKFETCH_PRGM','arclink_fetch','notempty');
 aluser = field2str(SEFRAN3,'ARCLINK_USER','sefran3','notempty');
@@ -723,8 +721,8 @@ case 'arclink'
 case 'fdsnws-dataselect'
 	% delete previous temporary file
 	wosystem(sprintf('rm -f %s/postfile.tmp',ptmp),SEFRAN3);
-    fpost = sprintf('%s/postfile.tmp',ptmp); % temporary POST file
-    fid = fopen(fpost,'w');
+	fpost = sprintf('%s/postfile.tmp',ptmp); % temporary POST file
+	fid = fopen(fpost,'w');
 	for n = 1:length(sfr)
 		c = textscan(sfr{n},'%s','Delimiter','.:'); % splits NET, STA, LOC, CHA codes
 		if isempty(c{1}{3}) % if empty location code, replace with '--'
@@ -741,15 +739,67 @@ case 'miniseed'
 
 % =============================================================================
 case 'winston'
+	if ~exist('gov.usgs.winston.server.WWSClient','class')
+		error('%s: cannot find the needed class to read Winston data... Abort.\n',wofun);
+	end
+	ws = split(datasource,':');
+	if length(ws) < 2
+		error('%s: DATASOURCE (%s) must be in the form host:port.\n',wofun,datasource);
+	end
+	fprintf('\n%s: connect to Winston Wave Server %s ...\n',wofun,datasource);
+	WWS = gov.usgs.winston.server.WWSClient(ws{1},str2num(ws{2}));
+	WWS.setTimeout(field2num(SEFRAN3,'DATALINK_TIMEOUT',10000));
 
+	% make a request for all channels and possible multiple calibrations periods
+	for n = 1:length(sfr)
+		c = textscan(sfr{n},'%s','Delimiter','.:'); % splits NET, STA, LOC, CHA codes
+		fprintf('%s: requesting %s.%s.%s.%s from %s to %s ...',wofun,c{1}{2},c{1}{4},c{1}{1},c{1}{3},datestr(t0 - dt0(n)),datestr(t1));
+		dd = WWS.getRawData(c{1}{2},c{1}{4},c{1}{1},c{1}{3}, ...
+			(t0 - dt0(n) - datenum(1970,1,1))*86400, ...
+			(t1 - datenum(1970,1,1))*86400);
+		if ~isempty(dd)
+			tt = linspace(dd.getStartTime,dd.getEndTime,dd.numSamples)'/86400 + datenum(1970,1,1);
+			D(n).t = tt;
+			D(n).d = double(dd.buffer);
+			D(n).SampleRate = dd.getSamplingRate;
+			fprintf(' %d samples imported.\n',length(dd.buffer));
+		else
+			fprintf(' no data found.\n')
+			D(n).t = [];
+			D(n).d = zeros(0,1);
+			D(n).SampleRate = NaN;
+		end
+	end
+	% after this loop structure X(i) contains all timeseries from channel i
+
+	WWS.close;
 otherwise
 	error('%s: unknown data format "%s".',wofun,dataformat);
 end
 
+% loads miniseed file (all formats but winston)
+if ~strcmp(dataformat,'winston')
+	F = dir(fmsd);
+	if ~isempty(F) && F.bytes > 0
+		[S,I] = rdmseed(fmsd);
+		channel_list = cellstr(char(I.ChannelFullName));
+		for n = 1:length(sfr)
+			c = textscan(sfr{n},'%s','Delimiter','.:'); % splits Network, Station, LocId and Channel codes
+			k = find(~cellfun('isempty',regexp(channel_list,sprintf('%s.*%s.*%s.*%s',c{1}{1},c{1}{2},c{1}{3},c{1}{4}))));
+			if ~isempty(k)
+				kk = I(k).XBlockIndex;
+				D(n).d = double(cat(1,S(kk).d));
+				D(n).t = cat(1,S(kk).t);
+				D(n).SampleRate = S(kk(1)).SampleRate; % supposes sample rate is constant (looks first block)
+			end
+		end
+	else
+		D=[];
+	end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 function varargout = readcombined(x)
 
 % default behavior (no prefix)
