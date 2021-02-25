@@ -13,9 +13,9 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 
 ## Download the latest release
 
-- [WebObs-2.3.3.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.3.2/WebObs-2.3.3.tar.gz) (58 Mb) updated February 24, 2021
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.3.2/release-notes.md)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.3.0/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.3.3.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.3.3/WebObs-2.3.3.tar.gz) (58 Mb) updated February 24, 2021
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.3.3/release-notes.md)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.3.3/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see below for download and install)
@@ -85,33 +85,25 @@ Configuration files will be updaded and displayed/editabled at the end of the up
 ### C) Procedure (for both A) and B) above)
 
 With root privileges, in your target WebObs directory:
+1. execute `mkdir -p /opt/webobs && cd /opt/webobs`
+2. execute  `tar xf WebObs-<version>.tar.gz`
+3. execute  `WebObs-<version>/SETUP/setup`
+4. (re)start Apache
+5. launch the scheduler and postboard
 
-1. execute  `tar xf WebObs-<version>.tar.gz`
-2. execute  `WebObs-<version>/SETUP/setup`
-3. (re)start Apache
-4. launch the scheduler and postboard
-
-For users of systemd-base GNU/Linux distributions, template service definitions for the _scheduler_ and the _postboard_ are available in the `/opt/webobs/WebObs-<version>/SETUP/systemd/` directory.
-You can copy these files (as root) to `/etc/systemd/system/` and adapt the user name and group of the Webobs Owner (defaults to `webobs`) to automatically start these services at system boot and restart them if they crash or are killed.
-
-Here are the steps to copy, adapt, and run these systemd services:
+For users of systemd-base GNU/Linux distributions, the `setup` proposes an automatic installation for _scheduler_ and the _postboard_ services. If you accepted it, you can launch both systemd services with the following commands:
 ```sh
-# Copy the files
-sudo cp /opt/webobs/WebObs-<version>/SETUP/systemd/wo* /etc/systemd/system/
-# Adapt the User= and Group= directoves in the files
-sudo nano /etc/systemd/system/woscheduler.service
-sudo nano /etc/systemd/system/woscheduler.service
-# Enable the services to have them start at boot
-sudo systemctl enable woscheduler.service
-sudo systemctl enable wopostboard.service
-# Start the services to run them immediately
-sudo systemctl start woscheduler.service
-sudo systemctl start wopostboard.service
+sudo service woscheduler start
+sudo service wopostboard start
 ```
 
-### D) Improving basemap database (optional)
+### D) Improving basemap database (reommanded)
 
-WebObs is distributed with ETOPO5 worldwide topographic data, and will automatically download SRTM data for detailed maps. To improve large scale maps resolution, you can download ETOPO1:
+WebObs is distributed with ETOPO5 worldwide topographic data, which is very coarse and not sufficient to produce detailed basemaps.
+
+#### 1. SRTM topographic data
+
+and will automatically download SRTM data for detailed maps. To improve large scale maps resolution, you can download ETOPO1:
 
 ```sh
 curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip -o /tmp/etopo.zip
@@ -138,7 +130,8 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - new modelling capabilities, and new network sensitivity 3D maps in GNSS superproc;
 - new parameters in DSV data superformat;
 - improved proc access and maps display in showGRID;
-- new CSS classes,
+- new CSS classes;
+- Sefran3 accepts data flux from Winston server;
 - some fixes and other minor improvements.
 
 ### What's new in the 2.2?
