@@ -129,8 +129,8 @@ BASELINES_EXCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
 # - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
 BASELINES_NODEPAIRS|
-# interpolation method between nodes: linear or nearest
-BASELINES_INTERP_METHOD|linear
+# interpolation method between nodes: none (empty), linear or nearest
+BASELINES_INTERP_METHOD|
 BASELINES_TITLE|{\fontsize{14}{\bf${NAME} - Baselines} ($timescale)}
 BASELINES_UNIT|mm
 BASELINES_YLABEL|Ref.\ $ref_node_alias (${BASELINES_UNIT})
