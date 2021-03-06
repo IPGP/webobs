@@ -53,9 +53,9 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
 %
-%	Authors: Fran�ois Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
+%	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2020-10-05
+%	Updated: 2021-03-06
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -65,15 +65,18 @@ switch F.fmt
 case 'globkval'
 
 	% extracts components from VAL file
-	s = split(F.raw{1},'/');
-	chantier = s{end};
-	fraw = sprintf('%s/VAL.%s',F.raw{1},chantier);
-
+	% if rawdata is a directory, use Gamit/Globk standardfile "project/VAL.project"
+	if isdir(F.raw{1})
+		s = split(F.raw{1},'/');
+		chantier = s{end};
+		fraw = sprintf('%s/VAL.%s',F.raw{1},chantier);
+	else
+		fraw = F.raw{1};
+	end
 	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
 	wosystem(sprintf('rm -f %s',fdat),P);
 	lfid = split(N.FID,',');
 	if exist(fraw,'file')
-
 		% loop on potential list of dataIDs
 		for nn = lfid(:)'
 			nfid = strtrim(nn{:});

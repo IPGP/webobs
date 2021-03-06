@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-01-20
+%   Updated: 2021-03-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -118,7 +118,7 @@ vectors_shape = field2shape(P,'VECTORS_SHAPE_FILE');
 baselines_excluded = field2str(P,'BASELINES_EXCLUDED_NODELIST');
 baselines_horizonly = isok(P,'BASELINES_HORIZONTAL_ONLY');
 pagestanum = field2num(P,'BASELINES_PAGE_STA_NUM',10);
-baselines_interp_method = field2str(P,'BASELINES_INTERP_METHOD',{'linear','nearest'});
+baselines_interp_method = field2str(P,'BASELINES_INTERP_METHOD',{'','linear','nearest'});
 baselines_linestyle = field2str(P,'BASELINES_LINESTYLE','o-');
 baselines_title = field2str(P,'BASELINES_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
 baselines_ylabel = field2str(P,'BASELINES_YLABEL','$ref_node_alias ($baselines_unit)');
@@ -614,15 +614,28 @@ for r = 1:numel(P.GTABLE)
 				[~,kk] = unique(D(n2).t(k2));	% mandatory for interp1
 				k2 = k2(kk);
 				if n2 ~= n && numel(k)>1 && numel(k2)>1
-					dk = cleanpicks(sqrt(sum((interp1(D(n2).t(k2),D(n2).d(k2,ib),tk,baselines_interp_method) - D(n).d(k,ib)).^2,2)),P);
-					dk = dk/siprefix(baselines_unit,'m');
-					dk0 = rmean(dk);
+					% exported baselines (text files) are based on the reference station time
+					if isempty(baselines_interp_method)
+						dk = nan(length(k),1);
+						[tc,ka,kb] = intersect(D(n).t(k),D(n2).t(k2));
+						dk(ka) = sqrt(sum((D(n2).d(k2(kb),ib) - D(n).d(k(ka),ib)).^2,2));
+					else
+						dk = sqrt(sum((interp1(D(n2).t(k2),D(n2).d(k2,ib),tk,baselines_interp_method) - D(n).d(k,ib)).^2,2));
+					end
+					dk = cleanpicks(dk,P)/siprefix(baselines_unit,'m');
 					E.d = cat(2,E.d,dk);
 					E.header = cat(2,E.header,{sprintf('%s-%s_(%s)',N(n).ALIAS,N(n2).ALIAS,baselines_unit)});
 
+					% plotted baselines are based on the destination station time (because of smartplot structure)
+					if isempty(baselines_interp_method)
+						dd = nan(length(k2),1);
+						[tc,ka,kb] = intersect(D(n).t(k),D(n2).t(k2));
+						dd(kb) = sqrt(sum((D(n2).d(k2(kb),ib) - D(n).d(k(ka),ib)).^2,2));
+					else
+						[tk1,kk] = unique(tk);	% mandatory for interp1
+						dd = sqrt(sum((D(n2).d(k2,ib) - interp1(tk1,D(n).d(k(kk),ib),D(n2).t(k2),baselines_interp_method)).^2,2));
+					end
 					X(n2).t = D(n2).t(k2);
-					[tk1,kk] = unique(tk);	% mandatory for interp1
-					dd = sqrt(sum((D(n2).d(k2,ib) - interp1(tk1,D(n).d(k(kk),ib),D(n2).t(k2),baselines_interp_method)).^2,2));
 					if isempty(X(n2).d)
 						X(n2).d = nan(size(X(n2).t,1),numel(B));
 					end
