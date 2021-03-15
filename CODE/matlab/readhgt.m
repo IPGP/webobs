@@ -1,16 +1,16 @@
 function varargout = readhgt(varargin)
 %READHGT Import/download NASA SRTM data files (.hgt).
 %	READHGT(AREA) where AREA is a 4-element vector [LAT1,LAT2,LON1,LON2]
-%	reads SRTM tiles as .hgt files located in the current directory or in 
-%	the Matlab path and plots a map corresponding to the geographic area 
+%	reads SRTM tiles as .hgt files located in the current directory or in
+%	the Matlab path and plots a map corresponding to the geographic area
 %	defined by latitude and longitude limits (in decimal degrees).
 %
 %	If the needed .hgt files are not found, they can be automatically
 %	downloaded from the USGS data server using additional option
-%	READHGT(...,'login',USER,PASSWORD) where USER and PASSWORD are a valid 
+%	READHGT(...,'login',USER,PASSWORD) where USER and PASSWORD are a valid
 %	login to NASA/EarthDATA center (see LOGIN option below).
 %
-%	READHGT(LAT,LON,...) reads (or downloads) the SRTM tiles corresponding 
+%	READHGT(LAT,LON,...) reads (or downloads) the SRTM tiles corresponding
 %	to LAT and LON (in decimal degrees) coordinates (lower-left corner).
 %
 %	LAT and/or LON can be vectors: in that case, tiles corresponding to all
@@ -20,7 +20,7 @@ function varargout = readhgt(varargin)
 %	READHGT(FILENAME) reads .hgt data file FILENAME, must be in the form
 %	"[N|S]yy[E|W]xxx.hgt[.zip]", as downloaded from SRTM data servers.
 %
-%	X=READHGT(...) returns a structure X containing: 
+%	X=READHGT(...) returns a structure X containing:
 %		lat: coordinate vector of latitudes (decimal degree)
 %		lon: coordinate vector of longitudes (decimal degree)
 %		  z: matrix of elevations (meters, INT16 class)
@@ -32,7 +32,7 @@ function varargout = readhgt(varargin)
 %	--- Additionnal options ---
 %
 %	'tiles'
-%	   Imports and plots individual tiles instead of merging them (default 
+%	   Imports and plots individual tiles instead of merging them (default
 %	   behavior if adjoining values of LAT and LON).
 %
 %	'interp'
@@ -44,41 +44,41 @@ function varargout = readhgt(varargin)
 %	   resolution (might induces memory issue for large areas).
 %
 %	'crop'
-%	   crops the resulting map around existing land (reduces any sea or 
+%	   crops the resulting map around existing land (reduces any sea or
 %	   novalue areas at the borders).
 %
 %	'crop',[LAT1,lAT2,LON1,LON2]
-%	   Former syntax that crops the map using latitude/longitude limits. 
+%	   Former syntax that crops the map using latitude/longitude limits.
 %	   Prefer the new syntax READHGT(AREA).
 %
 %	'outdir',OUTDIR
-%	   Specifies output directory OUTDIR to write downloaded files and/or 
+%	   Specifies output directory OUTDIR to write downloaded files and/or
 %	   to search existing files. Former syntax READHGT(LAT,LON,OUTDIR) also
 %	   accepted. Default is the current directory.
 %
 %	'srtm1'
 %	   Uses SRTM1 tiles which are 9 times bigger than default SRTM3.
 %	   ! Beware with large zones may lead to computer memory issues.
-%	   ! SRTM1 and SRTM3 tiles hold the same filename, while they have 
+%	   ! SRTM1 and SRTM3 tiles hold the same filename, while they have
 %	   different size. Do not store them in the same directory to avoid
 %	   errors when merging tiles.
 %
 %	'srtm3'
-%	   Forces SRTM3 resolution (if some SRTM1 tiles are found, it decimates 
+%	   Forces SRTM3 resolution (if some SRTM1 tiles are found, it decimates
 %	   them).
 %
 %	'login',USER,PASSWORD
 %	  Needed user authentication to download SRTM tiles from the NASA/
 %	  EarthDATA center. See https://urs.earthdata.nasa.gov to register, and
-%	  'wget' option below for auto-login process using .netrc of the system. 
+%	  'wget' option below for auto-login process using .netrc of the system.
 %
 %	'wget'
 %	   Will use external command wget to download the files (for Linux and
 %	   MacOSX systems). Because access to SRTM data uses a secured https://
-%	   URL, Matlab versions older than 2016a will fail to download the 
-%	   tiles automatically due to unzip function and certificate problems. 
+%	   URL, Matlab versions older than 2016a will fail to download the
+%	   tiles automatically due to unzip function and certificate problems.
 %	   This issue can be surrounded using this 'wget' option and installing
-%	   wget command on your system. For MacOSX, wget must be installed 
+%	   wget command on your system. For MacOSX, wget must be installed
 %	   using homebrew, macports, fink or compiling from sources.
 %	   Also with this option, the login USER/PASSWORD can be stored in your
 %	   home .netrc instead of 'login' arguments, by adding these lines:
@@ -109,9 +109,9 @@ function varargout = readhgt(varargin)
 %	--- Information ---
 %
 %	- each file corresponds to a tile of 1x1 degree of a square grid
-%	  1201x1201 of elevation values (SRTM3 = 3 arc-seconds), and for USA  
-%	  territory or when using the 'srtm1' option, at higher resolution 
-%	  3601x3601 grid (SRTM1 = 1 arc-second). Note that SRTM1 and SRTM3 
+%	  1201x1201 of elevation values (SRTM3 = 3 arc-seconds), and for USA
+%	  territory or when using the 'srtm1' option, at higher resolution
+%	  3601x3601 grid (SRTM1 = 1 arc-second). Note that SRTM1 and SRTM3
 %	  files have the same syntax names; only the size differs.
 %
 %	- elevations are of class INT16: sea level values are 0, unknown values
@@ -122,22 +122,22 @@ function varargout = readhgt(varargin)
 %	  you must remove one row/column in the corresponding direction (this
 %	  is made automatically by READHGT when merging tiles).
 %
-%	- downloaded file is written in the current directory or optional  
+%	- downloaded file is written in the current directory or optional
 %	  OUTDIR directory, and it remains there. Take care that mixed SRTM1
 %	  and SRTM3 files may lead to fail to merge. It is better to use
 %	  different directories for SRTM1 and SRTM3 (see 'outdir' option).
 %
-%	- NASA Shuttle Radar Topography Mission [February 11 to 22, 2000] 
-%	  produced a near-global covering on Earth land, but still limited to 
+%	- NASA Shuttle Radar Topography Mission [February 11 to 22, 2000]
+%	  produced a near-global covering on Earth land, but still limited to
 %	  latitudes from 60S to 60N. Offshore tiles will be output as flat 0
 %	  value grid.
 %
 %	- if you look for other global topographic data, take a look to ASTER
-%	  GDEM, worldwide 1 arc-second resolution (from 83S to 83N): 
+%	  GDEM, worldwide 1 arc-second resolution (from 83S to 83N):
 %	  http://gdex.cr.usgs.gov/gdex/ (free registration required)
 %
 %
-%	Author: François Beauducel <beauducel@ipgp.fr>
+%	Author: Franï¿½ois Beauducel <beauducel@ipgp.fr>
 %		Institut de Physique du Globe de Paris
 %
 %	References:
@@ -146,31 +146,31 @@ function varargout = readhgt(varargin)
 %	Acknowledgments: Yves Gaudemer, Jinkui Zhu, Greg
 %
 %	Created: 2012-04-22 in Paris, France
-%	Updated: 2021-02-21
+%	Updated: 2021-03-15
 
-%	Copyright (c) 2021, François Beauducel, covered by BSD License.
+%	Copyright (c) 2021, Franï¿½ois Beauducel, covered by BSD License.
 %	All rights reserved.
 %
-%	Redistribution and use in source and binary forms, with or without 
-%	modification, are permitted provided that the following conditions are 
+%	Redistribution and use in source and binary forms, with or without
+%	modification, are permitted provided that the following conditions are
 %	met:
 %
-%	   * Redistributions of source code must retain the above copyright 
+%	   * Redistributions of source code must retain the above copyright
 %	     notice, this list of conditions and the following disclaimer.
-%	   * Redistributions in binary form must reproduce the above copyright 
-%	     notice, this list of conditions and the following disclaimer in 
+%	   * Redistributions in binary form must reproduce the above copyright
+%	     notice, this list of conditions and the following disclaimer in
 %	     the documentation and/or other materials provided with the distribution
-%	                           
-%	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-%	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-%	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-%	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-%	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-%	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-%	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-%	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-%	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-%	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+%
+%	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+%	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+%	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+%	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+%	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+%	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+%	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+%	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+%	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+%	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %	POSSIBILITY OF SUCH DAMAGE.
 
 
@@ -260,7 +260,7 @@ if ~isempty(klogin)
 	if (klogin + 2) <= nargin && ischar(varargin{klogin+1}) && ischar(varargin{klogin+2})
 		loginflag = 3;
 		usr = varargin{klogin+1};
-		pwd = varargin{klogin+2};
+		psw = varargin{klogin+2};
 	else
 		error('''login'' option must be followed by USER and PASSWORD strings.')
 	end
@@ -328,14 +328,14 @@ else
 			end
 		end
 	end
-	
+
 	% wget option: automatic setting
 	mrel = version('-release');
 	if issorted({mrel,'2014b'}) && ~wget
 		wget = 1;
 		fprintf('** Warning ** Matlab release %s: ''wget'' option forced.\n',mrel);
 	end
-	
+
 	% if LAT/LON are vectors, NDGRID makes a grid of corresponding tiles
 	[lat,lon] = ndgrid(lat,lon);
 	f = cell(size(lat));
@@ -351,7 +351,7 @@ else
 			slon = sprintf('E%03d',lon(n));
 		end
 		f{n} = sprintf('%s/%s%s.hgt',out,slat,slon);
-		
+
 		if ~exist(f{n},'file')
 			ff = '';
 			% former syntax: readght(LAT,LON,OUTDIR,URL)
@@ -372,16 +372,16 @@ else
 			else
 				fprintf('Download %s%s ... ',url,ff);
 				f{n} = '';
+				tmp = tempname;
+				mkdir(tmp)
 				try
 					if wget
 						[s,~] = system('which wget');
 						if s
 							fprintf(' ** wget binary not found. Cannot download tiles.\n');
 						else
-							tmp = tempname;
-							mkdir(tmp)
-							if exist('usr','var') && ~exist('pwd','var') && ~isempty(usr) && ~isempty(pwd)
-								login = sprintf('--user %s --password %s',usr,pwd);
+							if exist('usr','var') && ~exist('psw','var') && ~isempty(usr) && ~isempty(psw)
+								login = sprintf('--user %s --password %s',usr,psw);
 							else
 								login = '';
 							end
@@ -391,12 +391,11 @@ else
 								disp(w)
 							end
 							f(n) = unzip(ftmp,out);
-							delete(ftmp)
 						end
 					else
 						if exist('websave','file')
 							ftmp = [tempname(out),'.zip'];
-							opt = weboptions('Username',usr,'Password',pwd);
+							opt = weboptions('Username',usr,'Password',psw);
 							websave(ftmp,[url,ff],opt);
 							f(n) = unzip(ftmp,out);
 							delete(ftmp)
@@ -412,6 +411,7 @@ else
 						fprintf(' ** tile not found. Considering offshore.\n');
 					end
 				end
+				rmdir(tmp,'s')
 			end
 		end
 	end
@@ -473,7 +473,7 @@ for n = 1:numel(f)
 	% builds latitude and longitude coordinates
 	X(n).lon = linspace(lon(n),lon(n)+1,sz(2));
 	X(n).lat = linspace(lat(n),lat(n)+1,sz(1))';
-	
+
 	% interpolates NaN (if not merged)
 	if inter && tiles
 		X(n).z = fillgap(X(n).lon,X(n).lat,X(n).z,novalue);
@@ -499,12 +499,12 @@ if ~tiles
 			crop = [minmax(crop(1:2)),normlon(minmax(crop(3:4)))];
 			klat = find(Y.lat >= crop(1) & Y.lat <= crop(2));
 			klon = find(Y.lon >= crop(3) & Y.lon <= crop(4));
-		end			
+		end
 		Y.lat = Y.lat(klat);
 		Y.lon = Y.lon(klon);
 		Y.z = Y.z(klat,klon);
 	end
-	
+
 	if inter
 		Y.z = fillgap(Y.lon,Y.lat,Y.z,novalue);
 	end
@@ -620,7 +620,7 @@ if ~isempty(k)
 	mask = zeros(sz,'int8');
 	k2 = ind90(sz,k); % k2 is linear index in the row order
 	% sets to 1 every previous and next index, both in column and row order
-	mask([k-1;k+1;ind90(fliplr(sz),[k2-1;k2+1])]) = 1; 
+	mask([k-1;k+1;ind90(fliplr(sz),[k2-1;k2+1])]) = 1;
 	mask(k) = 0; % removes the novalue index
 	kb = find(mask); % keeps only border values
 	z(k) = int16(griddata(xx(kb),yy(kb),double(z(kb)),xx(k),yy(k)));
