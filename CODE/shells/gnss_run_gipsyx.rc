@@ -14,6 +14,12 @@ source /home/wo/GipsyX-1.2/rc_GipsyX.sh
 # ... or empty $GRID and default list of station codes (space separated)
 NODES=
 
+# optional site logs to overwrite rinex headers (antenna and receiver codes)
+# - option 1: station.info file (Gamit)
+STATION_INFO=
+# - option 2: site log directory (recommended)
+SITELOG=
+
 # base directory that contains the raw data
 FROM=/home/wo/rawdata/GNSS
 
@@ -37,7 +43,7 @@ GIPSYOPTIONS="-runType PPP"
 TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -0.pe 0 0 0 -C2 -O.-obs C2 -O.-obs C5 -O.dec 30s -max_rx_SVs 30 -n_GLONASS 27"
 
 # display some rinex header in case of error
-ERROR_REGEX_RINEX="REC #|ANT #|# / TYPES OF OBSERV|MARKER NAME"
+ERROR_REGEX_RINEX="REC #|ANT #|# / TYPES OF OBSERV|MARKER NAME|APPROX POSITION XYZ"
 
 # realtime processing (put "Y" if wanted)
 REALTIME=""
