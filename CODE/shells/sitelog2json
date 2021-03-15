@@ -1,0 +1,59 @@
+#!/bin/bash
+# sitelog2json
+#
+# Author: F. Beauducel <beauducel@ipgp.fr>
+# Created: 2021-03-15 in Yogyakarta
+# Updated: 2021-03-15
+
+# Helper
+if [ $# -lt 2 ]; then
+	echo "      Syntax: sitelog2json FILE SITE [DATE]"
+	echo " Description: reads sitelog file(s) and returns data as JSON"
+	echo "   Arguments: FILE = path or filename(s) of sitelog(s)"
+	echo "              SITE = site code (4 characters)"
+	echo "              DATE = date as YYYY-MM-DD[Thh:mm] (default is current time)"
+	echo ""
+	exit 0;
+fi
+
+if [ -z "$3" ]; then
+	DATE=$(date -u +"%Y-%m-%d %H:%M") # current date and time, UT
+else
+	DATE="$3"
+fi
+
+# upper and lower case site code
+site=$(echo $2 | tr '[:upper:]' '[:lower:]')
+SITE=$(echo $2 | tr '[:lower:]' '[:upper:]')
+
+# selects the last sitelog file
+if [ -d "$1" ]; then
+	FILE=$(ls $1/${site}*_????????.log | sort -t '_' -k 2 | tail -n -1)
+else
+	FILE=$(ls $1 | sort -t '_' -k 2 | tail -n -1)
+fi
+
+# checks if the file contains the site
+if [ -z "$(grep "Four Character ID.*: ${SITE}" ${FILE})" ]; then
+	exit
+fi
+
+if [ ! -z "$FILE" ]; then
+	JSON={\"site\":\"${SITE}\"
+	JSON=$JSON,\"name\":\"$(grep 'Site Name' ${FILE} | sed -e 's/^.*: //g')\"
+	JSON=$JSON,\"px\":\"$(grep 'X coordinate' ${FILE} | sed -e 's/^.*: //g')\"
+	JSON=$JSON,\"py\":\"$(grep 'Y coordinate' ${FILE} | sed -e 's/^.*: //g')\"
+	JSON=$JSON,\"pz\":\"$(grep 'Z coordinate' ${FILE} | sed -e 's/^.*: //g')\"
+
+	JSON=$JSON,$(sed -n "/^3.[1-9]. Receiver Type/,/Date Removed/p;s/$/x/g" ${FILE} | \
+		sed -e 's/^.*: //g' | paste -d '\t' - - - - - - - | \
+		awk -F '\t' -v date="$DATE" '{ if (date >= $6  && date <= $7) print "\"recType\":\"" $1 "\"" }'
+	)
+
+	JSON=$JSON,$(sed -n "/^4.[1-9]. Antenna Type/,/Date Removed/p;s/$/x/g" ${FILE} | \
+		sed -e 's/^.*: //g' | paste -d '\t' - - - - - - - - - - - - - | \
+		awk -F '\t' -v date="${DATE}" '{ if (date >= $12  && date <= $13) print "\"antType\":\"" $1 "\"" }'
+	)
+
+	echo $JSON}
+fi
