@@ -3,7 +3,7 @@
 #
 # Author: F. Beauducel <beauducel@ipgp.fr>
 # Created: 2021-03-15 in Yogyakarta
-# Updated: 2021-03-15
+# Updated: 2021-03-16
 
 # Helper
 if [ $# -lt 2 ]; then
@@ -28,9 +28,9 @@ SITE=$(echo $2 | tr '[:lower:]' '[:upper:]')
 
 # selects the last sitelog file
 if [ -d "$1" ]; then
-	FILE=$(ls $1/${site}*_????????.log | sort -t '_' -k 2 | tail -n -1)
+	FILE=$(ls $1/${site}*_????????.log | sort -t '_' -k 2 | tail -n1)
 else
-	FILE=$(ls $1 | sort -t '_' -k 2 | tail -n -1)
+	FILE=$(ls $1 | sort -t '_' -k 2 | tail -n1)
 fi
 
 # checks if the file contains the site
@@ -39,21 +39,21 @@ if [ -z "$(grep "Four Character ID.*: ${SITE}" ${FILE})" ]; then
 fi
 
 if [ ! -z "$FILE" ]; then
-	JSON={\"site\":\"${SITE}\"
-	JSON=$JSON,\"name\":\"$(grep 'Site Name' ${FILE} | sed -e 's/^.*: //g')\"
-	JSON=$JSON,\"px\":\"$(grep 'X coordinate' ${FILE} | sed -e 's/^.*: //g')\"
-	JSON=$JSON,\"py\":\"$(grep 'Y coordinate' ${FILE} | sed -e 's/^.*: //g')\"
-	JSON=$JSON,\"pz\":\"$(grep 'Z coordinate' ${FILE} | sed -e 's/^.*: //g')\"
-
-	JSON=$JSON,$(sed -n "/^3.[1-9]. Receiver Type/,/Date Removed/p;s/$/x/g" ${FILE} | \
-		sed -e 's/^.*: //g' | paste -d '\t' - - - - - - - | \
-		awk -F '\t' -v date="$DATE" '{ if (date >= $6  && date <= $7) print "\"recType\":\"" $1 "\"" }'
+	JSON={\"mo\":\"${SITE}\"
+	JSON=$JSON,\"sn\":\"$(sed -n "/^1\. /,/Site Name/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"
+	JSON=$JSON,\"px\":\"$(sed -n "/^2\. /,/Z coordinate/p" ${FILE} |\
+	 	tail -n3 | sed -e 's/^.*: //g')\"
+	JSON=$JSON,$(sed -n "/^3\.[1-9]. /,/Date Removed/p" ${FILE} |\
+		sed -e 's/^.*: //g' | paste -d '\t' - - - - - - - |\
+		awk -F '\t' -v date="$DATE" '{ if (date >= $6  && date <= $7) \
+			print "\"rt\":\"" $1 "\",\"rv\":\"" $4 "\",\"rn\":\"" $3 "\"" }'
 	)
-
-	JSON=$JSON,$(sed -n "/^4.[1-9]. Antenna Type/,/Date Removed/p;s/$/x/g" ${FILE} | \
-		sed -e 's/^.*: //g' | paste -d '\t' - - - - - - - - - - - - - | \
-		awk -F '\t' -v date="${DATE}" '{ if (date >= $12  && date <= $13) print "\"antType\":\"" $1 "\"" }'
+	JSON=$JSON,$(sed -n "/^4\.[1-9]. /,/Date Removed/p" ${FILE} |\
+		sed -e 's/^.*: //g' | paste -d '\t' - - - - - - - - - - - - - |\
+		awk -F '\t' -v date="${DATE}" '{ if (date >= $12  && date <= $13) \
+			print "\"at\":\"" $1 "\",\"an\":\"" $2 "\"" }'
 	)
-
-	echo $JSON}
+	JSON=$JSON,\"op\":\"$(sed -n "/^11\. /,/Abbreviation/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"
+	JSON=$JSON,\"ag\":\"$(sed -n "/^12\. /,/Abbreviation/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"}
+	echo $JSON
 fi

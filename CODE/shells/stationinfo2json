@@ -4,7 +4,7 @@
 #
 # Author: F. Beauducel <beauducel@ipgp.fr>
 # Created: 2021-03-08 in Yogyakarta
-# Updated: 2021-03-15
+# Updated: 2021-03-16
 
 # Helper
 if [ $# -lt 2 ]; then
@@ -30,20 +30,17 @@ JSON=$(gawk -v site="$2" -v date="$DATE" '
 		start = sprintf("%4d-%03d %02d:%02d:%02d",$3, $4, $5, $6, $7);
 		stop = sprintf("%4d-%03d %02d:%02d:%02d",$8, $9, $10, $11, $12);
 		if (trim($1) == site && date >= start && date <= stop)
-			print "{\"site\":\"" site \
-				"\",\"name\":\"" trim($2)\
-				"\",\"start\":\"" start\
-				"\",\"stop\":\"" stop\
-				"\",\"antHt\":\"" trim($13)\
-				"\",\"HtCod\":\"" trim($14)\
-				"\",\"antN\":\"" trim($15)\
-				"\",\"antE\":\"" trim($16)\
-				"\",\"recType\":\"" trim($17)\
-				"\",\"recVers\":\"" trim($18)\
-				"\",\"SwVer\":\"" trim($19)\
-				"\",\"recSN\":\"" trim($20)\
-				"\",\"antType\":\"" trim($21)\
-				"\",\"antSN\":\"" trim($22) "\"}"
+			print "{\"mo\":\"" site \
+				"\",\"sn\":\"" trim($2)\
+				"\",\"tw\":\"" start,stop\
+				"\",\"pe\":\"" trim($13),trim($15),trim($16)\
+				"\",\"hc\":\"" trim($14)\
+				"\",\"rt\":\"" trim($17)\
+				"\",\"rs\":\"" trim($18)\
+				"\",\"rv\":\"" trim($19)\
+				"\",\"rn\":\"" trim($20)\
+				"\",\"at\":\"" trim($21)\
+				"\",\"an\":\"" trim($22) "\"}"
 	}' $1)
 
 echo $JSON
