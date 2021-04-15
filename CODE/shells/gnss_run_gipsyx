@@ -207,7 +207,7 @@ for station in $NODES; do
 				antenna=" -O.at \"$antenna\""
 			fi
 			if [ ! -z "$posxyz" ]; then
-				posxyz=" -O.px \"$posxyz\""
+				posxyz=" -O.px $posxyz"
 			fi
 		else
 			alertheader=''
