@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-03-03
+%   Updated: 2021-06-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -329,7 +329,7 @@ for r = 1:numel(P.GTABLE)
 
 				% computes yearly trends (in mm/yr)
 				kk = find(~isnan(dk));
-				if numel(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays && ~all(isnan(dk(kk)))
+				if numel(kk) >= 2 && diff(minmax(tk(kk))) >= trendmindays && ~all(isnan(dk(kk)))
 					[b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./D(n).e(k(kk),i));
 					tr(n,i) = b(1)*365.25*1e3;
 					% different modes for error estimation
@@ -349,6 +349,9 @@ for r = 1:numel(P.GTABLE)
 						acq = numel(kk)*N(n).ACQ_RATE/abs(diff(tlim));
 						tre(n,i) = tre(n,i)/sqrt(acq);
 					end
+				else
+					tr(n,i) = NaN;
+					tre(n,i) = NaN;
 				end
 				X(n).t = tk;
 				X(n).d(:,i) = dk + staoffset(n);
