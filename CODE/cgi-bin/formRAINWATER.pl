@@ -144,7 +144,7 @@ print qq[
 	    form.m1.value = date[1];
 	    form.d1.value = date[2];
 	    form.hr1.value = time[0];
-	    form.mn1.value = time[1];
+	    form.mn1.value = time[	1];
 	    form.diameter.value = array[7];
     }
     update_form();
@@ -281,14 +281,14 @@ my $message = $__{'Enter a new data'};
 my @line;
 my $ptr;
 my $fts = -1;
-my ($id,$date2,$time2,$date1,$time1,$site,$volume,$diameter,$pH,$cond,$cNa,$cK,$cMg,$cCa,$cHCO3,$cCl,$cSO4,$dD,$d18O,$rem,$val);
-$id=$date2=$time2=$date1=$time1=$site=$volume=$diameter=$pH=$cond=$cNa=$cK=$cMg=$cCa=$cHCO3=$cCl=$cSO4=$dD=$d18O=$rem=$val = "";
+my ($id,$date2,$time2,$site,$date1,$time1,$volume,$diameter,$pH,$cond,$cNa,$cK,$cMg,$cCa,$cHCO3,$cCl,$cSO4,$dD,$d18O,$rem,$val);
+$id=$date2=$time2=$site=$date1=$time1=$volume=$diameter=$pH=$cond=$cNa=$cK=$cMg=$cCa=$cHCO3=$cCl=$cSO4=$dD=$d18O=$rem=$val = "";
 if (defined($QryParm->{id})) {
 	($ptr, $fts) = $FORM->data($QryParm->{id});
 	@line = @$ptr;
 	if (scalar(@line) >= 1) {
 		chomp(@line);
-		($id,$date2,$time2,$date1,$time1,$site,$volume,$diameter,$pH,$cond,$cNa,$cK,$cMg,$cCa,$cHCO3,$cCl,$cSO4,$dD,$d18O,$rem,$val) = split (/\|/,l2u($line[0]));
+		($id,$date2,$time2,$site,$date1,$time1,$volume,$diameter,$pH,$cond,$cNa,$cK,$cMg,$cCa,$cHCO3,$cCl,$cSO4,$dD,$d18O,$rem,$val) = split (/\|/,l2u($line[0]));
 		if ($QryParm->{id} eq $id) {
 			($sel_y1,$sel_m1,$sel_d1) = split (/-/,$date1);
 			($sel_hr1,$sel_mn1) = split (/:/,$time1);
@@ -348,11 +348,14 @@ print qq(</table>
       <fieldset>
         <legend>$__{'Sampling Location and Time'}</legend>
        <P class="parform" align="right">
-	<B>$__{'Site'}: </B>
-	  <select name="site" size="1" onChange="update_site()"
+	<B>$__{'Site'}: </B>);
+if ($QryParm->{id} ne "") {
+	print qq(<select name="site" size="1" disable="true");
+} else {
+	print qq(<select name="site" size="1" onChange="update_site()"
 		onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_site}')">
-	  <option value=""></option>);
-
+		<option value=""></option>);
+}
 	for (@NODESSelList) {
 		my @cle = split(/\|/,$_);
 		if ($cle[0] eq $sel_site) {
