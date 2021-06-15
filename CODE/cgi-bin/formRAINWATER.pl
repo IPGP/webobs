@@ -348,19 +348,16 @@ print qq(</table>
       <fieldset>
         <legend>$__{'Sampling Location and Time'}</legend>
        <P class="parform" align="right">
-	<B>$__{'Site'}: </B>);
-if ($QryParm->{id} ne "") {
-	print qq(<select name="site" disabled>);
-} else {
-	print qq(<select name="site" size="1" onChange="update_site()"
-		onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_site}')">
-		<option value=""></option>);
-}
+	<B>$__{'Site'}: </B>
+	<select name="site" size="1" onChange="update_site()"
+		onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_site}')">);
+	print qq(<option value=""></option>) if ($QryParm->{id} eq "");
+
 	for (@NODESSelList) {
 		my @cle = split(/\|/,$_);
 		if ($cle[0] eq $sel_site) {
 			print qq(<option selected value="$cle[0]">$cle[1]</option>);
-		} else {
+		} elsif ($QryParm->{id} eq "") {
 			print qq(<option value="$cle[0]">$cle[1]</option>);
 		}
 	}
