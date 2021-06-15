@@ -173,7 +173,7 @@ $QryParm->{'node'}     //= "All";
 $QryParm->{'isotopes'} //= "1";
 $QryParm->{'dump'}  //= "";
 $QryParm->{'unit'}    //= "ppm";
-$unit = ($QryParm->{'unit'} eq "ppm" ? "ppm = mg/l":"mmol/l");
+$unit = ($QryParm->{'unit'} eq "ppm" ? "ppm":"mmol/l");
 $startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'}";
 $endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'}";
 
@@ -195,24 +195,24 @@ push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type
 
 if ($QryParm->{'dump'} ne "csv") {
 	print $cgi->header(-charset=>'utf-8');
-	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
-	"<html><head><title>".$FORM->conf('TITLE')."</title>\n",
-	"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
-	"<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
+	print qq(<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+	<html><head><title>).$FORM->conf('TITLE').qq(</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">);
 
-	print "</head>\n",
-	"<body style=\"background-attachment: fixed\">\n",
-	"<div id=\"attente\">$__{'Searching for the data... please wait'}.</div>",
-	"<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
-	"<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
-	"<!-- overLIB (c) Erik Bosrup -->\n";
+	print qq(</head>
+	<body style="background-attachment: fixed">
+	<div id="attente">$__{'Searching for the data... please wait'}.</div>
+	<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+	<script language="JavaScript" src="/js/overlib/overlib.js"></script>
+	<!-- overLIB (c) Erik Bosrup -->\n);
 }
 
 # ---- Debut du formulaire pour la selection de l'affichage
 #
 if ($QryParm->{'dump'} ne "csv") {
 	print "<FORM name=\"formulaire\" action=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\" method=\"get\">",
-		"<P class=\"boitegrise\" align=\"center\">",
+		"<TABLE width=\"100%\"><TR><TD class=\"boitegrise\" style=\"border:0\">",
 		"<B>$__{'Start Date'}:</B> ";
 	print "<SELECT name=\"y1\" size=\"1\">\n";
 	for ($FORM->conf('BANG')..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
@@ -242,23 +242,23 @@ if ($QryParm->{'dump'} ne "csv") {
 			print("<option value=$val>$cle</option>\n");
 		}
 	}
-	print("</select>\n",
-	"<select name=\"unit\" size=\"1\">");
+	print qq(</select>
+	<select name="unit" size="1">);
 	for (@cleParamUnite) {
 		my ($val,$cle) = split (/\|/,$_);
 		if ("$val" eq "$QryParm->{'unit'}") { print("<option selected value=$val>$cle</option>\n"); }
 		else { print("<option value=$val>$cle</option>\n"); }
 	}
-	print("</select>",
-	" <INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"reset()\">",
-	" <INPUT type=\"submit\" value=\"$__{'Display'}\">");
+	print qq(</select>&nbsp;&nbsp;&nbsp;
+	<INPUT type="button" value="$__{'Reset'}" onClick="reset()">
+	<INPUT type="submit" value="$__{'Display'}" style="font-weight: bold"></TD>);
 	if ($clientAuth > 1) {
 		my $form_url = URI->new("/cgi-bin/".$FORM->conf('CGI_FORM'));
 		$form_url->query_form('return_url' => $return_url);
-		print qq(<input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
-			qq( onClick="document.location='$form_url'" value="$__{'Enter a new record'}">);
+		print qq(<TD class="boitegrise" style="border:0"><input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
+			qq( onClick="document.location='$form_url'" value="$__{'Enter a new record'}"></TD>);
 	}
-	print "</B></P></FORM>\n",
+	print "</B></TR></TABLE></FORM>\n",
 	"<H2>".$FORM->conf('TITLE')."</H2>\n",
 	"<P>";
 }
@@ -403,7 +403,7 @@ for (@lines) {
 			$txt .= "$cNa;$cK;$cMg;$cCa;$cHCO3;$cCl;$cSO4;";
 		}
 		if ($QryParm->{'isotopes'} ne "") {
-			$texte .= "<TD>$dD</TD><TD align=center>$d18O</TD>";
+			$texte .= "<TD align=center>$dD</TD><TD align=center>$d18O</TD>";
 		}
 		if ($nicb and ($nicb < -20) || ($nicb > 20)) {
 			$texte .= "<TD class=tdResult style=\"background-color:#FFAAAA\">";
