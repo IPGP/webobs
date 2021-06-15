@@ -166,8 +166,8 @@ function update_form()
 	    form.cumrainfall.value = total_rain.toFixed(0);
     }
 
-    var date1 = new Date(form.y1.value,form.m1.value,form.d1.value);
-    var date2 = new Date(form.y2.value,form.m2.value,form.d2.value);
+    var date1 = new Date(form.y1.value,form.m1.value-1,form.d1.value);
+    var date2 = new Date(form.y2.value,form.m2.value-1,form.d2.value);
     duration = (date2.getTime() - date1.getTime())/86400000;
     form.duration.value = duration.toFixed(1);
     if (total_rain > 0 && duration > 0) {
@@ -334,9 +334,9 @@ if ($QryParm->{id} ne "") {
 		print qq(<p><b>$__{'Input Information'}:</b> $val
 		<input type="hidden" name="val" value="$val"></p>);
 	}
-	print qq(<input type="button" value=") . ($id < 0 ? "Reset":"$__{'Remove'}") . qq(" onClick="suppress(1);">);
+	print qq(<input type="button" style="font-weight: bold" value=") . ($id < 0 ? "Reset":"$__{'Remove'}") . qq(" onClick="suppress(1);">);
 	if (clientHasAdm(type=>"authforms",name=>"RAINWATER")) {
-		print qq(<input type="button" value="$__{'Erase'}" onClick="suppress(2);">);
+		print qq(<input type="button" style="font-weight: bold" value="$__{'Erase'}" onClick="suppress(2);">);
 	}
 	print qq(<hr></td></tr>);
 }
@@ -350,7 +350,7 @@ print qq(</table>
        <P class="parform" align="right">
 	<B>$__{'Site'}: </B>);
 if ($QryParm->{id} ne "") {
-	print qq(<select name="site" size="1" disable="true");
+	print qq(<select name="site" disabled>);
 } else {
 	print qq(<select name="site" size="1" onChange="update_site()"
 		onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_site}')">
@@ -554,7 +554,7 @@ print qq(</select>
       <P style="margin-top: 20px; text-align: center">
         <input type="button" name=lien value="$__{'Cancel'}"
          onClick="document.location=') . $cgi->param('return_url') . qq('" style="font-weight: normal">
-        <input type="button" value="$__{'Submit'}" onClick="check_form();">
+        <input type="button" value="$__{'Submit'}" onClick="check_form();" style="font-weight: bold">
       </P>
     </td>
   </tr>
