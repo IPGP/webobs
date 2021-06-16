@@ -150,7 +150,7 @@ my %GMOL = readCfg("$WEBOBS{ROOT_CODE}/etc/gmol.conf");
 
 $ENV{LANG} = $WEBOBS{LOCALE};
 
-my $fileCSV = $FORM->conf('FILE_CSV_PREFIX')."_$endDate.csv";
+my $fileCSV = $WEBOBS{WEBOBS_ID}."_".$FORM->conf('FILE_CSV_PREFIX')."_$endDate.csv";
 
 my $critereDate = "";
 my $unit;
@@ -317,7 +317,7 @@ my $nbLignesRetenues = 0;
 for (@lines) {
 	my ($id,$date2,$time2,$site,$date1,$time1,$volume,$diameter,$pH,$cond,$cNa,$cK,$cMg,$cCa,$cHCO3,$cCl,$cSO4,$dD,$d18O,$rem,$val) = split (/\|/,$_);
 	if ($i eq 0) {
-		push(@csv,l2u("$date1;$time1;$date2;$time2;$site;$volume;$diameter;$pH;$cond;$cNa;$cK;$cMg;$cCa;$cHCO3;$cCl;$cSO4;$dD;$d18O;NICB (%);\"$rem\";$val"));
+		push(@csv,l2u("$date1;$time1;$date2;$time2;Site ID;$site;$volume;$diameter;Total Rain (mm);Daily Rain (mm/day);$pH;$cond;$cNa;$cK;$cMg;$cCa;$cHCO3;$cCl;$cSO4;$dD;$d18O;NICB (%);\"$rem\";$val"));
 	}
 	elsif (($_ ne "")
 		&& ($site eq $QryParm->{'node'} || grep(/^$site$/, @gridsites) || ($QryParm->{'node'} eq "All" && grep(/^$site$/, @NODESValidList)))
@@ -387,7 +387,8 @@ for (@lines) {
 		$texte = $texte."<TD nowrap>$date1 $time1</TD><TD nowrap>$date2 $time2</TD><TD align=center>$dur</TD><TD align=center>$lien</TD>"
 			."<TD align=center>".sprintf("%0.1f",$total_rain)."</TD><TD align=center>".sprintf("%0.1f",$daily_rain)."</TD>"
 			."<TD align=center>$pH</TD><TD align=center>$cond</TD>";
-		$txt = "$date1;$time1;$date2;$time2;$site;$aliasSite;$volume;$diameter;$pH;$cond;";
+		$txt = "$date1;$time1;$date2;$time2;$site;$aliasSite;$volume;$diameter;"
+			.sprintf("%0.1f",$total_rain).";".sprintf("%0.1f",$daily_rain).";$pH;$cond;";
 		if ($QryParm->{'unit'} eq "mmol") {
 			for ("Na","K","Mg","Ca","HCO3","Cl","SO4") {
 				$texte .= "<TD align=center>";
@@ -416,7 +417,7 @@ for (@lines) {
 			$texte .= sprintf("%1.1f",$nicb);
 		}
 		$texte .= "</TD>$rapport<TD>";
-		$txt = $txt."$dD;$d18O;$nicb;\"$rem\"\n";
+		$txt = $txt."$dD;$d18O;".sprintf("%0.1f",$nicb).";\"$rem\"\n";
 		if ($rem ne "") {
 			$rem =~ s/\'/&rsquo;/g;
 			$rem =~ s/\"/&quot;/g;
