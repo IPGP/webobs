@@ -162,7 +162,7 @@ msgstr "Location code (SEED dataless)"
 
 
 
-# formulaireHEBDO.pl
+# ---- formulaireHEBDO.pl
 
 msgid "help_hebdo_select_nodate"
 msgstr "Tick to create entry without date"
@@ -176,7 +176,8 @@ msgstr "Select the names of those involved (Hold CTRL to select multiple names)"
 msgid "help_hebdo_select_external"
 msgstr "Enter names of EXTERNAL people"
 
-# gazette
+
+# ---- Gazette
 
 msgid "gzt_fmt_long_date"
 msgstr "%A, %B %-d %Y <i>(day %j, week %V)</i>"
@@ -190,7 +191,8 @@ msgstr "Week %V, %G"
 msgid "gzt_fmt_long_year"
 msgstr "Year %Y"
 
-# showGRID.pl
+
+# ---- showGRID.pl
 
 msgid "help_node_sampling"
 msgstr "Sampling rate performance (in %):  number of valid samples over the last time period, compared to theoretical acquisition period"
@@ -198,10 +200,59 @@ msgstr "Sampling rate performance (in %):  number of valid samples over the last
 msgid "help_node_status"
 msgstr "Status (in %): existence of valid samples in the last time delay for all channels"
 
-# Sefran/MC
+
+# ---- Sefran/MC
 
 msgid "showmctags_help"
 msgstr "Show/Hide MC events (or E-key)"
 
 msgid "showsgram_help"
 msgstr "Show/Hide Spectrogram (or S key)<br>Use R/T keys to increase/decrease transparency"
+
+
+# ---- formRAINWATER.pl
+
+msgid "help_rainwater_date1"
+msgstr "Enter start date & time of the sampling"
+
+msgid "help_rainwater_date2"
+msgstr "Enter end date & time of the sampling"
+
+msgid "help_rainwater_site"
+msgstr "Select the sampling site"
+
+msgid "help_rainwater_ph"
+msgstr "Enter the pH value"
+
+msgid "help_rainwater_cond"
+msgstr "Enter the resistivity value"
+
+msgid "help_rainwater_na"
+msgstr "Enter the Sodium concentration value"
+
+msgid "help_rainwater_k"
+msgstr "Enter the Potassium concentration value"
+
+msgid "help_rainwater_mg"
+msgstr "Enter the Magnesium concentration value"
+
+msgid "help_rainwater_ca"
+msgstr "Enter the Calcium concentration value"
+
+msgid "help_rainwater_cl"
+msgstr "Enter the Chlorine concentration value"
+
+msgid "help_rainwater_so4"
+msgstr "Enter the Sulfate concentration value"
+
+msgid "help_rainwater_o18"
+msgstr "Enter the Oxygen-18 ratio value"
+
+msgid "help_rainwater_d"
+msgstr "Enter the Deuterium ratio value"
+
+msgid "help_rainwater_h"
+msgstr "Hydrogen concentration computed from the pH"
+
+msgid "help_rainwater_observations"
+msgstr "Note any presence of odor, gas, precipitate, etc..."
