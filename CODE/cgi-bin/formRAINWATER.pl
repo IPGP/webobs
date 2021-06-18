@@ -488,7 +488,7 @@ print qq(</select>
 
     <TD style=border:0 valign=top>
       <fieldset>
-        <legend>$__{'Anions and Cations Concentrations'}</legend>
+        <legend>$__{'Cations and Anions Concentrations'}</legend>
         <table>
           <tr>
             <td style="border: 0" valign="top">
@@ -523,7 +523,7 @@ print qq(</select>
       </fieldset>
 
       <fieldset>
-        <legend>$__{'Isotopic Concentrations'}</legend>
+        <legend>$__{'Isotopic Ratios'}</legend>
         <table>
           <TR>
             <TD style=border:0 valign=top>

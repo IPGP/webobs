@@ -1434,3 +1434,81 @@ msgstr "trié par"
 
 msgid "max diplayed"
 msgstr "max affiché"
+
+
+# ---- formRAINWATER.pl
+
+msgid "Edit existing data"
+msgstr "Modifier une donnée existante"
+
+msgid "Sampling Location and Time"
+msgstr "Lieu et période d'échantillonnage"
+
+msgid "Rain Collector"
+msgstr "Pluviométrie"
+
+msgid "Funnel Diameter"
+msgstr "Diamètre de l'entonnoir"
+
+msgid "Cumulated Rainfall"
+msgstr "Pluviométrie cumulée"
+
+msgid "Average Daily Rainfall"
+msgstr "Pluviométrie moyenne"
+
+msgid "Physical Measurements"
+msgstr "Mesures physiques"
+
+msgid "Conductivity"
+msgstr "Conductivité"
+
+msgid "Cations and Anions Concentrations"
+msgstr "Concentrations ioniques"
+
+msgid "Isotopic Ratios"
+msgstr "Rapports isotopiques"
+
+msgid "help_rainwater_date1"
+msgstr "Entrer la date et l'heure de début de prélèvement"
+
+msgid "help_rainwater_date2"
+msgstr "Entrer la date et l'heure de fin de prélèvement"
+
+msgid "help_rainwater_site"
+msgstr "Sélectionner le site du prélèvement"
+
+msgid "help_rainwater_ph"
+msgstr "Entrer la valeur du pH"
+
+msgid "help_rainwater_cond"
+msgstr "Entrer la valeur de conductivité électrique"
+
+msgid "help_rainwater_na"
+msgstr "Entrer la concentration en sodium"
+
+msgid "help_rainwater_k"
+msgstr "Entrer la concentration en potassium"
+
+msgid "help_rainwater_mg"
+msgstr "Entrer la concentration en magnésium"
+
+msgid "help_rainwater_ca"
+msgstr "Entrer la concentration en calcium"
+
+msgid "help_rainwater_cl"
+msgstr "Entrer la concentration en chlore"
+
+msgid "help_rainwater_so4"
+msgstr "Entrer la concentration en sulfate"
+
+msgid "help_rainwater_o18"
+msgstr "Entrer the rapport en oxygène 18"
+
+msgid "help_rainwater_d"
+msgstr "Entrer le rapport en deuterium"
+
+msgid "help_rainwater_h"
+msgstr "Concentration en Hydrogène calculée à partir du pH"
+
+msgid "help_rainwater_observations"
+msgstr "Noter toute présence d&rsquo;odeur, gaz, précipité, etc..."

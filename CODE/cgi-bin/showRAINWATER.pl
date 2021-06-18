@@ -177,6 +177,16 @@ $unit = ($QryParm->{'unit'} eq "ppm" ? "ppm":"mmol/l");
 $startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'}";
 $endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'}";
 
+$i = 0;
+for (@ratios) {
+	my $rapn = "rap$i";
+	if (defined($QryParm->{$rapn})) {
+		$rap[$i] = 1;
+		$nbRap++;
+	} else { $rap[$i] = 0 }
+	$i++;
+}
+
 # ---- a site requested as {name} means "all nodes for proc 'name'"
 #
 my @gridsites;
@@ -212,7 +222,7 @@ if ($QryParm->{'dump'} ne "csv") {
 #
 if ($QryParm->{'dump'} ne "csv") {
 	print "<FORM name=\"formulaire\" action=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\" method=\"get\">",
-		"<TABLE width=\"100%\"><TR><TD class=\"boitegrise\" style=\"border:0\">",
+		"<TABLE width=\"100%\"><TR><TD class=\"boitegrise\" style=\"border:0;text-align:center\">",
 		"<B>$__{'Start Date'}:</B> ";
 	print "<SELECT name=\"y1\" size=\"1\">\n";
 	for ($FORM->conf('BANG')..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
@@ -246,21 +256,31 @@ if ($QryParm->{'dump'} ne "csv") {
 	<select name="unit" size="1">);
 	for (@cleParamUnite) {
 		my ($val,$cle) = split (/\|/,$_);
-		if ("$val" eq "$QryParm->{'unit'}") { print("<option selected value=$val>$cle</option>\n"); }
-		else { print("<option value=$val>$cle</option>\n"); }
+		if ("$val" eq "$QryParm->{'unit'}") { print qq(<option selected value=$val>$cle</option>\n); }
+		else { print qq(<option value=$val>$cle</option>\n); }
 	}
 	print qq(</select>&nbsp;&nbsp;&nbsp;
 	<INPUT type="button" value="$__{'Reset'}" onClick="reset()">
-	<INPUT type="submit" value="$__{'Display'}" style="font-weight: bold"></TD>);
+	<INPUT type="submit" value="$__{'Display'}" style="font-weight: bold"><BR>
+	&nbsp;&nbsp;\n<B>$__{'Ratios'}:</B>);
+
+	$i = 0;
+	for (@ratios) {
+		my ($num,$den,$nhtm,$dhtm) = split(/\|/,$_);
+		my $sel_rap = "";
+		if ($rap[$i] == 1) { $sel_rap = "checked"; }
+		print qq(<input type="checkbox" name="rap$i" $sel_rap>$nhtm/$dhtm&nbsp;&nbsp;);
+		$i++;
+	}
+	print "</TD>";
 	if ($clientAuth > 1) {
 		my $form_url = URI->new("/cgi-bin/".$FORM->conf('CGI_FORM'));
 		$form_url->query_form('return_url' => $return_url);
 		print qq(<TD class="boitegrise" style="border:0"><input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
 			qq( onClick="document.location='$form_url'" value="$__{'Enter a new record'}"></TD>);
 	}
-	print "</B></TR></TABLE></FORM>\n",
-	"<H2>".$FORM->conf('TITLE')."</H2>\n",
-	"<P>";
+	print qq(</B></TR></TABLE></FORM>
+	<H2>).$FORM->conf('TITLE').qq(</H2>\n);
 }
 
 # ---- Read the data file
@@ -286,11 +306,11 @@ $header = $header."<TH colspan=3>Sampling Time Collection</TH>"
 	."<TH rowspan=2>Site</TH>"
 	."<TH colspan=2>Rainfall</TH>"
 	."<TH colspan=2>Laboratory Meas.</TH>"
-	."<TH colspan=4>Anions ($unit)</TH>"
-	."<TH colspan=3>Cations ($unit)</TH>"
-	."<TH colspan=2>Isotopes</TH>"
+	."<TH colspan=4>Cations ($unit)</TH>"
+	."<TH colspan=3>Anions ($unit)</TH>"
+	."<TH colspan=2>Isotopes (‰)</TH>"
 	."<TH rowspan=2>NICB<br>(%)</TH>"
-	."<TH colspan=".(1 + $#ratios)."> Ratios</TH>"
+	.($nbRap > 0 ? "<TH colspan=".$nbRap."> Ratios</TH>":"")
 	."<TH rowspan=2></TH></TR>\n"
 	."<TR><TH>Start<br>Date &amp; Time</TH><TH>End<br>Date &amp; Time</TH><TH>Days</TH>"
 	."<TH>Cum.<br>(mm)</TH><TH>Avr.<br>(mm/day)</TH>"
@@ -307,7 +327,12 @@ $header = $header."<TH colspan=3>Sampling Time Collection</TH>"
 $i = 0;
 for (@ratios) {
 	my ($num,$den,$nhtm,$dthm) = split(/\|/,$_);
-	$header = $header."<TH><table align=center><tr><th style=\"border:0;border-bottom-style:solid;border-bottom-width:1px;text-align:center\">$nhtm</th><tr><tr><th style=\"border:0;text-align:center\">$dthm</th></tr></table></TH>";
+	if ($rap[$i] == 1) {
+		$header = $header."<TH><table align=center><TR>"
+		."<TH style=\"border:0;border-bottom-style:solid;border-bottom-width:1px;text-align:center\">$nhtm</TH></TR>"
+		."<TR><TH style=\"border:0;text-align:center\">$dthm</TH></TR></TABLE></TH>";
+	}
+	$i++;
 }
 
 $header = $header."</TR>\n";
@@ -340,7 +365,6 @@ for (@lines) {
 		my $tzn = "";
 		my $nicb = "";
 		my @rapv;
-		my $iv = 0;
 		my $rapport = "";
 
 		if ($volume gt 0 && $diameter gt 0) {
@@ -360,11 +384,14 @@ for (@lines) {
 		$tzn = $cCl_mmol + 2*$cSO4_mmol + $cHCO3_mmol;
 		if (($tzp != 0) && ($tzn != 0)) { $nicb = 100*($tzp - $tzn)/($tzp + $tzn); }
 
+		my $iv = 0;
 		for (@ratios) {
-			my ($num,$den,$nrp) = split(/\|/,$_);
+			if ($rap[$iv] == 1) {
+				my ($num,$den,$nrp) = split(/\|/,$_);
+				$rapv[$iv] = eval("sprintf(\"%1.3f\",\$c".$num."_mmol/\$c".$den."_mmol)");
+				$rapport = $rapport."<TD class=tdResult>$rapv[$iv]</TD>";
+			}
 			$iv++;
-			$rapv[$iv] = eval("sprintf(\"%1.3f\",\$c".$num."_mmol/\$c".$den."_mmol)");
-			$rapport = $rapport."<TD class=tdResult>$rapv[$iv]</TD>";
 		}
 
 		$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
