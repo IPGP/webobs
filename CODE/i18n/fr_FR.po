@@ -182,6 +182,9 @@ msgstr "Fréquence d'échantillonnage"
 msgid "Acquisition period"
 msgstr "Période d'acquisition"
 
+msgid "Access to data"
+msgstr "Accès aux données"
+
 msgid "Default data format"
 msgstr "Format de données par défaut"
 
@@ -193,6 +196,9 @@ msgstr "Accès aux données brutes"
 
 msgid "Graphical routine"
 msgstr "Routine graphique"
+
+msgid "Events File(s)"
+msgstr "Fichier(s) d'événements"
 
 msgid "External link(s)"
 msgstr "Lien(s) externe(s)"
@@ -1512,3 +1518,11 @@ msgstr "Concentration en Hydrogène calculée à partir du pH"
 
 msgid "help_rainwater_observations"
 msgstr "Noter toute présence d&rsquo;odeur, gaz, précipité, etc..."
+
+# ---- showRAINWATER.pl
+
+msgid "Number of records"
+msgstr "Nombre d'enregistrements"
+
+msgid "Download a CSV text file of these data"
+msgstr "Télécharger un fichier CSV de ces données"
