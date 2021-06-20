@@ -280,7 +280,7 @@ if ($QryParm->{'dump'} ne "csv") {
 			qq( onClick="document.location='$form_url'" value="$__{'Enter a new record'}"></TD>);
 	}
 	print qq(</B></TR></TABLE></FORM>
-	<H2>).$FORM->conf('TITLE').qq(</H2>\n);
+	<H1>).$FORM->conf('TITLE').qq(</H1>\n);
 }
 
 # ---- Read the data file
@@ -458,8 +458,8 @@ for (@lines) {
 	$i++;
 }
 
-push(@html,"Number of records = <B>$nbLignesRetenues</B> / $nbData.</P>\n",
-	"<P>Download a CSV text file of these data <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?dump=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&unit=$QryParm->{'unit'}\"><B>$fileCSV</B></A></P>\n");
+push(@html,"$__{'Number of records'} = <B>$nbLignesRetenues</B> / $nbData.</P>\n",
+	"<P>$__{'Download a CSV text file of these data'} <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?dump=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&unit=$QryParm->{'unit'}\"><B>$fileCSV</B></A></P>\n");
 
 if ($texte ne "") {
 	push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$texte\n$header\n</TABLE>");
