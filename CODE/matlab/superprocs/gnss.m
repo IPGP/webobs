@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-06-03
+%   Updated: 2021-07-05
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -194,6 +194,8 @@ modelopt.enuerror = field2num(P,'MODELLING_ENU_ERROR_RATIO'); % factor ratio to 
 if numel(modelopt.enuerror) < 3
 	modelopt.enuerror = ones(1,3);
 end
+% a priori source depth (value, gaussian STD in m)
+modelopt.apriori_depth = field2num(P,'MODELLING_APRIORI_DEPTH_M');
 % a priori horizontal error around the target (in STD, km), 0 or NaN = no a priori
 modelopt.apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 modelopt.msig = field2num(P,'MODELLING_SIGMAS',1);
@@ -1436,6 +1438,9 @@ for r = 1:numel(P.GTABLE)
 		if ~isempty(targetll)
 			plot(zlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 		end
+		if numel(modelopt.apriori_depth) == 2
+			plot(repmat(-modelopt.apriori_depth(1),1,2),ylim([1,end]),':k')
+		end
 		if plotbest && any(~isnan(m0))
 			switch lower(mt)
 			case 'pcdm'
@@ -1473,6 +1478,9 @@ for r = 1:numel(P.GTABLE)
 		end
 		if ~isempty(targetll)
 			plot(repmat(modelopt.targetxy(1),1,2),zlim([1,end]),':k')
+		end
+		if numel(modelopt.apriori_depth) == 2
+			plot(xlim([1,end]),repmat(-modelopt.apriori_depth(1),1,2),':k')
 		end
 		if plotbest && any(~isnan(m0))
 			switch lower(mt)
@@ -1513,6 +1521,9 @@ for r = 1:numel(P.GTABLE)
 		end
 		if modelopt.horizonly
 			info = cat(2,info,'misfit mode = {\bfhorizontal only}');
+		end
+		if numel(modelopt.apriori_depth) == 2
+			info = cat(2,info,sprintf('a priori depth = {\\bf%g \\pm %g km}',roundsd(modelopt.apriori_depth/1e3,2)));
 		end
 		if modelopt.apriori_horizontal > 0
 			info = cat(2,info,sprintf('a priori horiz. STD = {\\bf%g km}',modelopt.apriori_horizontal));
@@ -1694,6 +1705,9 @@ for r = 1:numel(P.GTABLE)
 		if modelopt.horizonly
 			info = cat(2,info,'misfit mode = {\bfhorizontal only}');
 		end
+		if numel(modelopt.apriori_depth) == 2
+			info = cat(2,info,sprintf('a priori depth = {\\bf%g \\pm %g km}',roundsd(modelopt.apriori_depth/1e3,2)));
+		end
 		if modelopt.apriori_horizontal > 0
 			info = cat(2,info,sprintf('a priori horiz. STD = {\\bf%g km}',modelopt.apriori_horizontal));
 		end
@@ -1818,7 +1832,7 @@ for r = 1:numel(P.GTABLE)
 					dtf = modeltime_period(m)*86400;
 				end
 				M(m).d(:,4) = M(m).d(:,4)*1e6./dtf;
-				M(m).e(:,4) = M(m).d(:,4)*1e6./dtf;
+				M(m).e(:,4) = M(m).e(:,4)*1e6./dtf;
 				vtype = 'Flow rate';
 				vunit = 'm^3/s';
 			else
@@ -1852,8 +1866,9 @@ for r = 1:numel(P.GTABLE)
 		hold on
 		for m = 1:numel(M)
 			col = scolor(m);
-			errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
-			plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
+			errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).LINEWIDTH/2,'Color',col/3 + 2/3)
+			%errorarea(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,col);
+			plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,'o-',P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
 		end
 		hold off
 		ylim2 = get(gca,'YLim');
@@ -1882,8 +1897,9 @@ for r = 1:numel(P.GTABLE)
 		hold on
 		for m = 1:numel(M)
 			col = scolor(m);
-			errorbar(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
-			plotorbit(M(m).t,M(m).d(:,3)/1e3,M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
+			errorbar(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,'-','LineWidth',P.GTABLE(r).LINEWIDTH/2,'Color',col/3 + 2/3)
+			%errorarea(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,col);
+			plotorbit(M(m).t,M(m).d(:,3)/1e3,M(m).o,'o-',P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
 		end
 		hold off
 		set(gca,'XLim',tlim,'FontSize',fontsize,'YLim',minmax(zz)/1e3)
@@ -1956,6 +1972,9 @@ for r = 1:numel(P.GTABLE)
 		if ~isempty(targetll)
 			plot(zlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 		end
+		if numel(modelopt.apriori_depth) == 2
+			plot(repmat(-modelopt.apriori_depth(1),1,2),ylim([1,end]),':k')
+		end
 		for m = plist
 			col = scolor(m);
 			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
@@ -1984,6 +2003,9 @@ for r = 1:numel(P.GTABLE)
 		%plot(xsta,zsta,'^k','MarkerSize',stasize,'MarkerFaceColor','k')
 		if ~isempty(targetll)
 			plot(repmat(modelopt.targetxy(1),1,2),zlim([1,end]),':k')
+		end
+		if numel(modelopt.apriori_depth) == 2
+			plot(xlim([1,end]),repmat(-modelopt.apriori_depth(1),1,2),':k')
 		end
 		for m = plist
 			col = scolor(m);
@@ -2097,12 +2119,12 @@ for r = 1:numel(P.GTABLE)
 				k = (m-1)*n*2 + (1:2*n);
 				[lats,lons] = utm2ll(e0+M(m).d(:,1),n0+M(m).d(:,2),z0);
 				E.d(:,k) = cat(2,lats,lons,M(m).d(:,3:end),M(m).e);
-				E.header(k) = strcat({'LAT','LON','Z','dV','dD','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
+				E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			E.infos = {''};
 			for m = 1:numel(modeltime_period)
-				E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'short')));
+				E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
 			end
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
@@ -2190,3 +2212,11 @@ function r = ellradius(abc,lambda,gamma)
 r = prod(abc)./sqrt(abc(3)^2*(abc(2)^2*cos(lambda).^2 ...
  	+ abc(1)^2*sin(lambda).^2).*cos(gamma).^2 ...
 	+ abc(1)^2*abc(2)^2*sin(gamma).^2);
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function h = errorarea(x,y,e,c)
+
+h = fill([x(:);flipud(x(:))],[y(:)+e(:);flipud(y(:)-e(:))],'k');
+set(h,'EdgeColor','none','FaceColor',c/3+2/3,'FaceAlpha',.1);
