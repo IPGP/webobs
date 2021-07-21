@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2020-04-14
+%	Updated: 2020-07-21
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -318,7 +318,8 @@ case 'scevtlog-xml'
 	for evt = 1:evtCount
 		sc3ml = xmlread(list{1}{evt});
 		eventNode = sc3ml.getElementsByTagName('EventParameters').item(0);
-		c{evt,1} = char(eventNode.getElementsByTagName('event').item(0).getAttributes().item(0).getTextContent);
+		eventID = char(eventNode.getElementsByTagName('event').item(0).getAttributes().item(0).getTextContent);
+		c{evt,1} = eventID;
 		childList = eventNode.getElementsByTagName('event').item(0).getChildNodes;
 		preferredOriginID = '';
 		preferredMagnitudeID = '';
@@ -334,13 +335,31 @@ case 'scevtlog-xml'
 				c{evt,4} = char(childList.item(child).getElementsByTagName('text').item(0).getTextContent);
 			end
 		end
-		if eventNode.getElementsByTagName('origin').getLength == 1
-			originNode = eventNode.getElementsByTagName('origin').item(0);
-		else
-			for originI = 0:eventNode.getElementsByTagName('origin').getLength - 1
-				originNode = eventNode.getElementsByTagName('origin').item(originI);
-				if strcmp(originNode.getAttributes().item(0).getTextContent,preferredOriginID)
-					break;
+		if eventNode.getElementsByTagName('magnitude').getLength
+			for k = 0:eventNode.getElementsByTagName('magnitude').getLength - 1
+				magnitudeNode = eventNode.getElementsByTagName('magnitude').item(k);
+				if magnitudeNode.hasAttributes() && strcmp(magnitudeNode.getAttributes().item(0).getTextContent,preferredMagnitudeID)
+					d(evt,4) = str2double(magnitudeNode.getElementsByTagName('magnitude').item(0).getElementsByTagName('value').item(0).getTextContent);
+					c{evt,2} = char(magnitudeNode.getElementsByTagName('type').item(0).getTextContent);
+					if magnitudeNode.getElementsByTagName('magnitude').item(0).getElementsByTagName('uncertainty').getLength
+						d(evt,12) = str2double(magnitudeNode.getElementsByTagName('magnitude').item(0).getElementsByTagName('uncertainty').item(0).getTextContent);
+					end
+					break
+				end
+			end
+		end
+		switch eventNode.getElementsByTagName('origin').getLength
+			case 0
+				printf('** WARNING: Event ID %s (%d) has no origin!\n',eventID,evt);
+			 	continue
+			case 1
+				originNode = eventNode.getElementsByTagName('origin').item(0);
+			otherwise
+				for originI = 0:eventNode.getElementsByTagName('origin').getLength - 1
+					originNode = eventNode.getElementsByTagName('origin').item(originI);
+					if strcmp(originNode.getAttributes().item(0).getTextContent,preferredOriginID)
+						break
+					end
 				end
 			end
 		end
@@ -354,19 +373,6 @@ case 'scevtlog-xml'
 			d(evt,3) = str2double(originNode.getElementsByTagName('depth').item(0).getElementsByTagName('value').item(0).getTextContent);
 			if originNode.getElementsByTagName('depth').item(0).getElementsByTagName('uncertainty').getLength
 				d(evt,8) = str2double(originNode.getElementsByTagName('depth').item(0).getElementsByTagName('uncertainty').item(0).getTextContent);
-			end
-		end
-		if eventNode.getElementsByTagName('magnitude').getLength
-			for k = 0:eventNode.getElementsByTagName('magnitude').getLength - 1
-				magnitudeNode = eventNode.getElementsByTagName('magnitude').item(k);
-				if magnitudeNode.hasAttributes() && strcmp(magnitudeNode.getAttributes().item(0).getTextContent,preferredMagnitudeID)
-					d(evt,4) = str2double(magnitudeNode.getElementsByTagName('magnitude').item(0).getElementsByTagName('value').item(0).getTextContent);
-					c{evt,2} = char(magnitudeNode.getElementsByTagName('type').item(0).getTextContent);
-					if magnitudeNode.getElementsByTagName('magnitude').item(0).getElementsByTagName('uncertainty').getLength
-						d(evt,12) = str2double(magnitudeNode.getElementsByTagName('magnitude').item(0).getElementsByTagName('uncertainty').item(0).getTextContent);
-					end
-					break;
-				end
 			end
 		end
 		if originNode.getElementsByTagName('azimuthalGap').getLength
