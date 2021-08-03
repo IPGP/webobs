@@ -1,0 +1,23 @@
+{	
+	"data_to_analyze":{
+                # Useful arguments to go request data. Depends on the application and the reading_function.
+		"reading_arguments":{
+			"network":"VG",
+			"station":"MEPAS",
+			"location":"00",
+			"channel":"HHZ"
+		},
+		"filtering":{
+			"bandwith":{"fmin":0.2,"fmax":25},
+                        "butter_order":5
+		}
+
+	},
+
+	"analysis":"None", 
+	"display":"None"
+
+}
+
+
+

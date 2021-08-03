@@ -1,0 +1,35 @@
+{
+	"general":{
+		"analysis_type":"sparse_realtime",
+		# Name of the configuration file with information related to data request
+		"specific_config_filename":"configuration_filename_specific_3_00.json",
+		"path_to_analyzer":"analyzer/",
+		"path_to_catalogue":"catalogue/"
+	},
+	
+	"preprocessing":{
+		"energy_norm":"True"
+	},
+	
+	"learning":{
+		# Machine learning algorithm available in python libraries:
+                # RandomForestClassifier, AdaBoostClassifier, LogisticRegression, DecisionTreeClassifier, KNeighborsClassifier, LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+                # GaussianNB, SVC , MLPClassifier
+                # with its parameters
+		"algo":"RandomForestClassifier(n_estimators=200,criterion='entropy',bootstrap=True, class_weight='balanced')",
+                # Cross-validator among KFold, RepeatedKFold, RepeatedStratifiedKFold, ShuffleSplit, StratifiedKFold, StratifiedShuffleSplit from sklearn.model_selection python librairy. 
+		"cv":"StratifiedShuffleSplit(n_splits=10, train_size=0.7, test_size=0.3)",
+		# Filename of the catalogue located  in the subfolder 'path_to_catalogue'
+		"catalogue_filename":"MC3_BPPTKG_dump_bulletin_20210101_20210131_filtered.csv",
+		# Filename of the analyzer located  in the subfolder 'path_to_analyzer'
+		"analyzer_filename":"analyzer_07"
+	},
+	
+	"features":{
+		"path_features":"features_01.json",
+		"computation_domains":"time spectral cepstral",
+		# Parameters  provided for the switch from semi-automatic to totally automatic classification
+		"thresholding":"False",
+		"thresholds":"None"
+	}
+}

@@ -1,0 +1,13 @@
+Prerequisites:
+- Install Perl module: sudo apt-get install libjson-perl jq
+- Install Python 3 (a version greater than or equal to 3.5.3)
+- Install pip for Python 3: sudo apt-get install python3-pip 
+
+Installation:
+- Download or clone the source code from the webobs github repository.
+- (Optional: Create and activate a virtual environment python -m venv VenvName , source pathTo/VenvName/bin/activate)
+- Install Python packages as ROOT administrator: move to the Python AAA code (cd ../../ python/AAA) and run pip install -r requirements.txt.
+
+Usage:
+- Read the readme.md if you use this code under an IDE.
+- Read webobsreadme.md if you use this code as a feature of WebObs.

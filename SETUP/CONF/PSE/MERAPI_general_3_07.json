@@ -1,0 +1,26 @@
+{
+	"general":{
+		"analysis_type":"sparse_realtime",
+		"specific_config_filename":"MERAPI_specific_3_07.json",
+		"path_to_analyzer":"analyzer/",
+		"path_to_catalogue":"catalogue/"
+	},
+	
+	"preprocessing":{
+		"energy_norm":"True"
+	},
+	
+	"learning":{
+		"algo":"RandomForestClassifier(n_estimators=200,criterion='entropy',bootstrap=True, class_weight='balanced')",
+		"cv":"StratifiedShuffleSplit(n_splits=10, train_size=0.7, test_size=0.3)",
+		"catalogue_filename":"MC3_BPPTKG_dump_bulletin_20210101_20210131_filtered.csv",
+		"analyzer_filename":"analyzer_07"
+	},
+	
+	"features":{
+		"path_features":"features_01.json",
+		"computation_domains":"time spectral cepstral",
+		"thresholding":"False",
+		"thresholds":"None"
+	}
+}

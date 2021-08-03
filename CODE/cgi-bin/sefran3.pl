@@ -276,6 +276,22 @@ var SCB = {
 	PROG : '$prog',
 	NOREFRESH: 0
 };
+
+// PSE = Predict seismic-events
+var PSE = {
+        PREDICT_EVENT_TYPE: '$MC3{PREDICT_EVENT_TYPE}',
+        PSE_ROOT_CONF: '$MC3{PSE_ROOT_CONF}',
+        PSE_ROOT_DATA: '$MC3{PSE_ROOT_DATA}',
+        PSE_ALGO_FILEPATH: '$MC3{PSE_ALGO_FILEPATH}',
+        PSE_CONF_FILENAME: '$MC3{PSE_CONF_FILENAME}',
+        PSE_TMP_FILEPATH: '$MC3{PSE_TMP_FILEPATH}',
+        DATASOURCE: '$SEFRAN3{DATASOURCE}',
+        SLINKTOOL_PRGM: '$WEBOBS{SLINKTOOL_PRGM}'
+};
+
+
+
+
 html
 
 if ($dep) {
@@ -309,6 +325,8 @@ var MECB = {
 	NEWPCLEARS: $MC3{NEW_P_CLEAR_S},
 	TITLE: '$MC3{TITLE}'
 };
+
+
 html
 } # endif dep
 
@@ -950,20 +968,21 @@ if ($date) {
 			"<INPUT size=\"5\" value=\"$duree_sat_evt\" name=\"saturationEvenement\"> (0 = $__{'not overscale'})</P>\n";
 
 		# type of event
-		print "<P>$__{'Event type'}: <SELECT name=\"typeEvenement\" size=\"1\" onchange=\"maj_type()\">";
+		print "<P>$__{'Event type'}: <SELECT id=\"eventList\" name=\"typeEvenement\" size=\"1\" onchange=\"maj_type()\">";
 		for (sort(keys(%typesSO))) {
 			my $key = $typesSO{$_};
 			if ($key ne "AUTO" || $id) {
-				print "<OPTION value=\"$key\"".($type_evt eq $key ? " selected":"").">$types{$key}{Name}</OPTION>\n";
+				print "<OPTION id=\"$key\" value=\"$key\"".($type_evt eq $key ? " selected":"").">$types{$key}{Name} </OPTION>\n";
 			}
 		}
 		print "</SELECT>\n";
 
-		# eqdiscrim
-		if ($MC3{EQDISCRIM_SERVER} ne "") {
-			print "<INPUT type=\"hidden\" name=\"eqdsrv\" value=\"$MC3{EQDISCRIM_SERVER}\">";
-			print " <INPUT type=\"button\" id=\"eqdiscrim\" value=\"EQDISCRIM\" onClick=\"run_eqdiscrim()\"><BR>";
-		}
+                # Prediction seismic-event
+		if ($MC3{PREDICT_EVENT_TYPE} ne "" && $MC3{PREDICT_EVENT_TYPE} ne "NO") {
+                        print "<INPUT type=\"hidden\" id=\"pseresults\" >\n";
+			print "<INPUT type=\"button\" style=\"display : none \" id=\"pseCompute\" value=\"$__{'COMPUTE'}\" onClick=\"predict_seismic_event_onclick()\"><BR>\n";
+                        print "<P id=\"wait\" style=\"display : none; text-align:center\" > $__{'PLEASE WAIT'}</P>\n";
+                }
 
 		# link to USGS
 		my $ocl = "<A href=\"$MC3{USGS_URL}\" target=\"_blank\"><B>USGS</B></A>";
@@ -971,7 +990,7 @@ if ($date) {
 		print "&nbsp;<I>&rarr; $__{'Visit'} $ocl</I></P>\n";
 
 		# comment
-		print "<P>$__{'Comment'}: <INPUT size=\"52\" name=\"commentEvenement\" value=\"$comment_evt\"></P>\n";
+		print "<P>$__{'Comment'}: <INPUT size=\"52\" id=\"comment\" name=\"commentEvenement\" value=\"$comment_evt\"></P>\n";
 
 		# options for validation and reset
 		if ($modif > 0) {
@@ -1083,7 +1102,7 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon, Jean-Marie Saurel
+Francois Beauducel, Didier Lafon, Jean-Marie Saurel, Lucie Van Nieuwenhuyze
 
 Acknowledgments:
 - afficheSEFRAN.pl [2009] by Alexis Bosson and Francois Beauducel
@@ -1091,7 +1110,7 @@ Acknowledgments:
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2020 - Institut de Physique du Globe Paris
+WebObs - 2012-2021 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

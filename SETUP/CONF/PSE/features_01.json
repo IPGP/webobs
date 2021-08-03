@@ -1,0 +1,193 @@
+{
+	"01":{
+		"ref": "01",
+		"function": "minimum_signal",
+		"function_opt_arg": "{}"
+	},
+	
+	"02":{
+		"ref": "02",
+		"function": "maximum_signal",
+		"function_opt_arg": "{}"
+	},
+
+	"03":{
+		"ref": "03",
+		"function": "mean_signal",
+		"function_opt_arg": "{}"
+	},
+
+	"04":{
+		"ref": "04",
+		"function": "max_sur_mean",
+		"function_opt_arg": "{}"
+	},
+	
+	"05":{
+		"ref": "05",
+		"function": "min_sur_mean",
+		"function_opt_arg": "{}"
+	},
+
+	"06":{
+		"ref": "06",
+		"function": "u_mean",
+		"function_opt_arg": "{}"
+	},
+	
+	"07":{
+		"ref": "07",
+		"function": "RMS_u",
+		"function_opt_arg": "{}"
+	},
+	
+	"08":{
+		"ref": "08",
+		"function": "std_u",
+		"function_opt_arg": "{}"
+	},
+	
+	"09":{
+		"ref": "09",
+		"function": "skewness_",
+		"function_opt_arg": "{}"
+	},
+	
+	"10":{
+		"ref": "10",
+		"function": "kurtosis_",
+		"function_opt_arg": "{}"
+	},
+
+	"11":{
+		"ref": "11",
+		"function": "skewness",
+		"function_opt_arg": "{}"
+	},
+	
+	"12":{
+		"ref": "12",
+		"function": "kurtosis",
+		"function_opt_arg": "{}"
+	},
+	
+	"13":{
+		"ref": "13",
+		"function": "shannon",
+		"function_opt_arg": "{'n_bin': 5}"
+	},
+	
+	"14":{
+		"ref": "14",
+		"function": "shannon",
+		"function_opt_arg": "{'n_bin': 30}"
+	},
+	
+	"15":{
+		"ref": "15",
+		"function": "shannon",
+		"function_opt_arg": "{'n_bin': 500}"
+	},
+	
+	"16":{
+		"ref": "16",
+		"function": "renyi",
+		"function_opt_arg": "{'n_bin': 5, 'alpha': 2}"
+	},
+	
+	"17":{
+		"ref": "17",
+		"function": "renyi",
+		"function_opt_arg": "{'n_bin': 30, 'alpha': 2}"
+	},
+	
+	"18":{
+		"ref": "18",
+		"function": "renyi",
+		"function_opt_arg": "{'n_bin': 500, 'alpha': 2}"
+	},
+	
+	"19":{
+		"ref": "19",
+		"function": "renyi",
+		"function_opt_arg": "{'n_bin': 5, 'alpha': inf}"
+	},
+	
+	"20":{
+		"ref": "20",
+		"function": "renyi",
+		"function_opt_arg": "{'n_bin': 30, 'alpha': inf}"
+	},
+	
+	"21":{
+		"ref": "21",
+		"function": "renyi",
+		"function_opt_arg": "{'n_bin': 500, 'alpha': inf}"
+	},
+	
+	"22":{
+		"ref": "22",
+		"function": "rate_attack",
+		"function_opt_arg": "{}"
+	},
+	
+	"23":{
+		"ref": "23",
+		"function": "rate_decay",
+		"function_opt_arg": "{}"
+	},
+
+	"24":{
+		"ref": "24",
+		"function": "silence_ratio",
+		"function_opt_arg": "{'silenceThreshold':0.25}"
+	},
+
+	"25":{
+		"ref": "25",
+		"function": "silence_ratio",
+		"function_opt_arg": "{'silenceThreshold':0.5}"
+	},
+
+	"26":{
+		"ref": "26",
+		"function": "silence_ratio",
+		"function_opt_arg": "{'silenceThreshold':0.75}"
+	},
+
+	"27":{
+		"ref": "27",
+		"function": "threshold_crossing_rate",
+		"function_opt_arg": "{'threshold':0.25}"
+	},
+
+	"28":{
+		"ref": "28",
+		"function": "threshold_crossing_rate",
+		"function_opt_arg": "{'threshold':0.5}"
+	},
+
+	"29":{
+		"ref": "29",
+		"function": "threshold_crossing_rate",
+		"function_opt_arg": "{'threshold':0.75}"
+	},
+	
+	"30":{
+		"ref": "30",
+		"function": "energy_std",
+		"function_opt_arg": "{}"
+	},
+	
+	"31":{
+		"ref": "31",
+		"function": "energy_skewness",
+		"function_opt_arg": "{}"
+	},
+	
+	"32":{
+		"ref": "32",
+		"function": "energy_kurtosis",
+		"function_opt_arg": "{}"
+	}
+}

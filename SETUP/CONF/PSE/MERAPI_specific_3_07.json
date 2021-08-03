@@ -1,0 +1,27 @@
+{	
+	"data_to_analyze":{
+		"reading_arguments":{
+			"network":"VG",
+			"station":"MEPAS",
+			"location":"00",
+			"channel":"HHZ"
+		},
+		"filtering":{
+			"bandwith":{"fmin":0.2,"fmax":25},
+                        "butter_order":5
+		}
+
+	},
+
+	"analysis":"None", 
+	"display":"None"
+
+}
+
+
+
+
+
+
+
+	

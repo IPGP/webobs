@@ -372,12 +372,17 @@ function maj_formulaire() {
 	$("#mag").html((mag>0) ? ", Md = <b>" + mag + "</b>": "");
 	MECB.FORM.typeEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.typeEvenement.value != "INCONNU" && MECB.FORM.typeEvenement.value != "UNKNOWN" && MECB.FORM.typeEvenement.value != "AUTO")];
 
-	// EQDISCRIM
-	if (MECB.FORM.secondeEvenement.value!="" && MECB.FORM.dureeEvenement.value!="") {
-		$('#eqdiscrim').show("slow");
-	} else {
-		$('#eqdiscrim').hide("fast");
-	}
+	// PSE: predict seismic-events
+        if (PSE.PREDICT_EVENT_TYPE=='ONCLICK'){
+	    if (MECB.FORM.secondeEvenement.value!="" && MECB.FORM.dureeEvenement.value!="") {
+		$('#pseCompute').show("slow");
+	    } else {
+		$('#pseCompute').hide("fast");
+	    }
+        }else if (PSE.PREDICT_EVENT_TYPE=='AUTO' && $('#pseresults').val() == '' &&  MECB.FORM.secondeEvenement.value!="" && MECB.FORM.dureeEvenement.value!="") {
+           //Automatic classification
+            predict_seismic_event_automatic();
+        }
 }
 
 // ---- check box newSC3 if event-type is in SC3ARR
@@ -464,12 +469,121 @@ function supprime(level) {
 	MECB.FORM.submit();
 }
 
-// ---- EQDISCRIM: run request
-function run_eqdiscrim() {
-	var EQD = MECB.FORM.eqdsrv.value;
-//	$.getJSON(EQD,
-//		'run_predict, 20160831T172927.32, 10'
-//	)
-//	.done(function(data) {
-//		,alert('test !'));
+// ---- check for required inputs in mcform to predict
+function verif_to_predict() {
+	if (MECB.FORM.stationEvenement.value == "") {
+        alert(MECB.MSGS['staevt']);
+        MECB.FORM.stationEvenement.focus();
+        return false;
+    }
+	if (MECB.FORM.secondeEvenement.value == "" || MECB.FORM.secondeEvenement.value < 0 || MECB.FORM.secondeEvenement.value >= 60) {
+        alert(MECB.MSGS['secevt']);
+        MECB.FORM.secondeEvenement.focus();
+        return false;
+    }
+	if(MECB.FORM.dureeEvenement.value == "" || isNaN(MECB.FORM.dureeEvenement.value)) {
+        alert(MECB.MSGS['durevt']);
+        MECB.FORM.dureeEvenement.focus();
+        return false;
+    }
+    return true;
+
 }
+
+
+// ---- Compute probabilities of seismic events and update interface
+function predict_seismic_event(pse_root_conf, pse_root_data, pse_algo_filepath, pse_conf_filename, pse_tmp_filepath, datasource, slinktool_prgm){
+	var verbatim = 0;
+        let URL="/cgi-bin/predict.pl";
+        // check the input arguments
+        if(verif_to_predict()){
+            console.log("COMPUTE SEISMIC-EVENTS CLASSIFICATION PROBABILITIES");
+            // Send a request to a server
+            return $.ajax({
+                url:URL,
+                type:'GET',
+                dataType: "json",
+                data:{pse_root_conf:pse_root_conf,
+                    pse_root_data:pse_root_data,
+                    pse_algo_filepath:pse_algo_filepath,
+                    pse_conf_filename:pse_conf_filename,
+                    pse_tmp_filepath:pse_tmp_filepath,
+                    datasource:datasource,
+                    slinktool_prgm:slinktool_prgm,
+                    year:parseInt(MECB.FORM.year.value),
+                    month:parseInt(MECB.FORM.month.value),
+                    day:parseInt(MECB.FORM.day.value),
+                    hour:parseInt(MECB.FORM.hour.value),
+                    minut:parseInt(MECB.FORM.minute.value),
+                    second:parseFloat(MECB.FORM.secondeEvenement.value),
+                    duration:parseFloat(MECB.FORM.dureeEvenement.value),
+                    verbatim:verbatim},
+                error: function(error){console.log("ERROR",error)}
+	    }).done(function(JSONdata){
+                console.log("OUTPUTS: ",JSONdata);
+                (Object.keys(JSONdata).forEach(function(key){
+                    // Display probability on the drop-doxn menu of events type
+                    var event_html = $('#'+key);
+                    var proba = Math.round(parseFloat(JSONdata[key])*100);
+	            if (event_html !== null){
+                        if (! /\d+/.test(event_html.html())){
+                            event_html.append(proba + ' %');
+                        }
+                        // Update probability if already display
+                        else {
+                            event_html.html().replace(/\d+/,proba);
+                    }}
+                    else {console.log("Need to add class:", key)}
+                }));
+               // array of events type from highest to lowest probabily
+               var eventsOrdered = Object.keys(JSONdata).sort((event1,event2)=>JSONdata[event2] -  JSONdata[event1]);
+               // Rearrange the events order
+               // Put to the top the event with the highest probability (if it is not already)
+               if ($('#eventList option:eq(0)').prop('id') != $('#'+eventsOrdered[0]).prop('id')){
+               $('#'+eventsOrdered[0]).insertBefore($('#eventList option:eq(0)'));}
+               // Move the event s type according to the ordered array of events
+               for (let i=0; i<(eventsOrdered.length-1); i++) {
+                   $('#'+eventsOrdered[i+1]).insertAfter($('#'+eventsOrdered[i]));
+               }
+               // Select the event with the highest probability
+               $('#eventList').val(eventsOrdered[0]);
+               // Add all probabilities  in the comment section
+               //if(/\{.*\}/.test($('#comment').val())){
+               //      $('#comment').val($('#comment').val().replace(/\{.*\}/,JSON.stringify(JSONdata)));
+               //}
+               //else{
+               //      $('#comment').val($('#comment').val()+JSON.stringify(JSONdata));
+               //}
+               //Add probabilities to the MC3 form
+               $('#pseresults').val(JSON.stringify(JSONdata));
+
+          maj_formulaire();
+          });
+        }else{alert("MISSING INPUTS TO PREDICT");}
+}
+
+// ---- Compute probabilities of seismic events with on click button
+function predict_seismic_event_onclick(){
+    // Modify the  button design during the computation
+    $('#pseCompute').prop('disabled',true);
+    $('#wait').show();
+    $.when(
+predict_seismic_event(PSE.PSE_ROOT_CONF, PSE.PSE_ROOT_DATA, PSE.PSE_ALGO_FILEPATH, PSE.PSE_CONF_FILENAME, PSE.PSE_TMP_FILEPATH, PSE.DATASOURCE, PSE.SLINKTOOL_PRGM)
+    ).done(()=>{
+    // Modify the  button design
+    $('#pseCompute').prop('disabled',false);
+    $('#wait').hide();
+    });
+}
+
+
+// ---- Compute probabilities of seismic events when the end of the signal is selected 
+function predict_seismic_event_automatic(){
+    $('#wait').show();
+    $.when(
+predict_seismic_event(PSE.PSE_ROOT_CONF, PSE.PSE_ROOT_DATA, PSE.PSE_ALGO_FILEPATH, PSE.PSE_CONF_FILENAME, PSE.PSE_TMP_FILEPATH, PSE.DATASOURCE, PSE.SLINKTOOL_PRGM)
+    ).done(()=>{
+    $('#wait').hide();
+    });
+}
+
