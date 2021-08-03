@@ -81,6 +81,7 @@ COPYRIGHT2|
 # for catalog data request
 EVENTTYPE_EXCLUDED_LIST|not existing,not locatable,outside of network interest,sonic boom,duplicate,other event
 EVENTSTATUS_EXCLUDED_LIST|automatic
+EVENTCOMMENT_INCLUDED_REGEXP|
 EVENTCOMMENT_EXCLUDED_REGEXP|AUTOMATIC
 SC3_LISTEVT|
 LATLIM|13,19
