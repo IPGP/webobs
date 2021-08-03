@@ -1,4 +1,6 @@
 Releases
+CODE/bin
+!CODE/bin/preprocessor
 CODE/matlab/bin
 CODE/matlab/*.mex*
 CODE/i18n/locales
