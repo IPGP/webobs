@@ -1811,7 +1811,8 @@ for r = 1:numel(P.GTABLE)
 				% --- computes the model !
 				MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
 				M(m).d(w,:) = [MM(1).pbest(1:4),sign(MM(1).pbest(4))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
-				M(m).e(w,:) = [MM(1).ws,MM(1).ws,diff(MM(1).ez),diff(MM(1).ev),MM(1).m0];
+				%M(m).e(w,:) = [MM(1).ws,MM(1).ws,diff(MM(1).ez),diff(MM(1).ev),MM(1).m0];
+				M(m).e(w,:) = [diff(MM(1).ex)/2,diff(MM(1).ey)/2,diff(MM(1).ez)/2,diff(MM(1).ev)/2,MM(1).m0];
 				M(m).o(w,1) = max(tro); % model worst orbit
 
 				if isok(P,'DEBUG')
