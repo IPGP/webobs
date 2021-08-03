@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2021-01-01
+%   Updated: 2021-05-19
 
 
 WO = readcfg;
@@ -90,7 +90,7 @@ for m = 1:length(summarylist)
 	% --- gets parameters for the map
 	% title
 	M(m).title = P.(sprintf('MAP_%s_TITLE',map));
-	% map geographical limits: lon1,lon2,lat1,lat2
+	% map geographical limits: lon0,lat0,width (in degree) or lon1,lon2,lat1,lat2 (in degree)
 	M(m).xylim = sstr2num(P.(sprintf('MAP_%s_XYLIM',map)));
 	if numel(M(m).xylim) == 3
 		M(m).xylim = xyw2lim(M(m).xylim,1/cosd(M(m).xylim(2)));

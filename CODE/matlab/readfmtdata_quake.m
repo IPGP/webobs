@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2020-07-21
+%	Updated: 2021-08-02
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -69,6 +69,7 @@ else
 end
 
 excomment = field2str(P,'EVENTCOMMENT_EXCLUDED_REGEXP');
+incomment = field2str(P,'EVENTCOMMENT_INCLUDED_REGEXP');
 
 % default values
 magtype = field2str(N,'FID_MAGTYPE_DEFAULT');
@@ -349,17 +350,16 @@ case 'scevtlog-xml'
 			end
 		end
 		switch eventNode.getElementsByTagName('origin').getLength
-			case 0
-				printf('** WARNING: Event ID %s (%d) has no origin!\n',eventID,evt);
-			 	continue
-			case 1
-				originNode = eventNode.getElementsByTagName('origin').item(0);
-			otherwise
-				for originI = 0:eventNode.getElementsByTagName('origin').getLength - 1
-					originNode = eventNode.getElementsByTagName('origin').item(originI);
-					if strcmp(originNode.getAttributes().item(0).getTextContent,preferredOriginID)
-						break
-					end
+		case 0
+			printf('** WARNING: Event ID %s (%d) has no origin!\n',eventID,evt);
+		 	continue
+		case 1
+			originNode = eventNode.getElementsByTagName('origin').item(0);
+		otherwise
+			for originI = 0:eventNode.getElementsByTagName('origin').getLength - 1
+				originNode = eventNode.getElementsByTagName('origin').item(originI);
+				if strcmp(originNode.getAttributes().item(0).getTextContent,preferredOriginID)
+					break
 				end
 			end
 		end
@@ -411,6 +411,7 @@ case 'scevtlog-xml'
 		fprintf('** WARNING ** no events found!\n');
 	end
 
+% -----------------------------------------------------------------------------
 otherwise
 	fprintf('%s: ** WARNING ** unknown format "%s" for node %s!\n',wofun,F.fmt,N.ID);
 end
@@ -509,8 +510,9 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 			end
 			if isfield(MC3TYPES,c{ii,4})
 				c{ii,4} = MC3TYPES.(c{ii,4}{1}).Name;
-			else
-				c{ii,4} = '';
+			%[FB-note] it seems better to keep the undocumented event type here...
+			%else
+			%	c{ii,4} = '';
 			end
 		end
 		fprintf(' found %d sc3id, %d hypo71id and %d mc3id.\n',nsc3,nh71,nmc3);
@@ -518,11 +520,22 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 	end
 end
 
+% applies a filter on the comment field (regexp)
+if ~isempty(incomment)
+	k = find(~cellfun(@isempty,regexp(c(:,4),incomment)));
+	if ~isempty(k)
+		fprintf('%s: ** WARNING ** only %d events have been selected from comment (%s).\n',wofun,length(k),incomment);
+		t = t(k,1);
+		d = d(k,:);
+		c = c(k,:);
+		e = e(k,1);
+	end
+end
 % applies a last filter on the comment field (case-insensitive regexp)
 if ~isempty(excomment)
 	k = find(cellfun(@isempty,regexpi(c(:,4),excomment)));
 	if ~isempty(k)
-		fprintf('%s: ** WARNING ** %d events have been excluded from comment.\n',wofun,length(t)-length(k));
+		fprintf('%s: ** WARNING ** %d events have been excluded from comment (%s).\n',wofun,length(t)-length(k),excomment);
 		t = t(k,1);
 		d = d(k,:);
 		c = c(k,:);
