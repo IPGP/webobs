@@ -59,6 +59,8 @@ PRGM_HTPASSWD|/usr/bin/htpasswd
 # "md5" for option -m or "bcrypt" for option -B to htpasswd.
 # "md5" is more portable while "bcrypt" is even more secure.
 HTPASSWD_ENCRYPTION|md5
+# set this file for autologin functions
+NETRC_FILE|/home/wo/.netrc
 
 
 # ---- Site DATA paths ------------------------
@@ -184,7 +186,7 @@ PLOTERUP_FILE|${ROOT_CONF}/ERUPTIONS_SHM.conf
 MAP_EXTENSION_ORDER|ANT,GUA,SBT,SOU,DOM
 
 PATH_MCR|/usr/local/MATLAB/MATLAB_Compiler_Runtime/v716
-PATH_MCC|${ROOT_CODE}/matlab/bin/linux-64
+PATH_MCC|${ROOT_CODE}/bin/linux-64
 
 # ---- Graphs requests    ---------------------
 # ---------------------------------------------
@@ -222,9 +224,6 @@ WEB_RACINE_SIGNAUX|
 
 # --- executables ----------------------------
 # ---------------------------------------------
-PRGM_MATLAB|/usr/local/bin/matlab -nojvm -display :9
-PRGM_MATLAB_NODISPLAY|/usr/local/bin/matlab -nojvm -nodisplay
-PRGM_GS|gs
 PRGM_CONVERT|convert
 CONVERT_COLORSPACE|-colorspace sRGB
 PRGM_IDENTIFY|identify
@@ -234,8 +233,6 @@ PRGM_PNGQUANT|pngquant
 PRGM_GOTIC2|/opt/nao99b/gotic2/gotic2
 
 PRGM_PS2PDF|/usr/bin/ps2pdf
-PRGM_SUD2MAT|${ROOT_CODE}/bin/sud2mat0
-PRGM_SUD2MAT2|${ROOT_CODE}/bin/sud2mat
 PRGM_ALARM|perl -e "alarm shift @ARGV; exec @ARGV"
 
 WINSTON_JAVA|${ROOT_CODE}/bin/java/winston-bin.jar
