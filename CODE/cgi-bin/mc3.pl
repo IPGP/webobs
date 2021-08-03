@@ -584,8 +584,10 @@ for my $y ($start_datetime->year..$end_datetime->year) {
 	}
 	for my $m ("01".."12") {
 		my $start_month = DateTime->new(year => $y, month => $m, day => 1);
-		my $end_month = DateTime->last_day_of_month(year => $y, month => $m);
-		if (DateTime->compare($end_month,$start_datetime) ge 0
+		#my $end_month = DateTime->last_day_of_month(year => $y, month => $m);
+		my $end_month = $start_month->clone;
+		$end_month->add( months => 1 ); # first day of the next month
+		if (DateTime->compare($end_month,$start_datetime) gt 0
 		    && DateTime->compare($start_month,$end_datetime) le 0) {
 			$fileMC = "$MC3{ROOT}/$y/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$y$m.txt";
 			if (-e $fileMC) {
