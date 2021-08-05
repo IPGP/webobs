@@ -722,7 +722,8 @@ foreach my $line (@lignes) {
 			}
 			%QML = qmlfdsn("${fdsnws_url}&format=xml&eventid=$evt_id");
 			if (%QML) {
-				$QML{type} = "not locatable" if ($QML{type} eq "");
+				#[FB-note]: should be replaced by empty type in the SC3_EVENT_TYPES_NOLOCATION list
+				#$QML{type} = "not locatable" if ($QML{type} eq "");
 				$origin = "$evt_id;$QML{time};$QML{latitude};$QML{longitude};$QML{depth};$QML{phases};$QML{mode};$QML{status};$QML{magnitude};$QML{magtype};$QML{method};$QML{model};$QML{type}";
 			} else {
 				$origin = '';
