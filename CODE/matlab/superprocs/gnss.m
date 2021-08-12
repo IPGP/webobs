@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-07-05
+%   Updated: 2021-08-09
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -160,7 +160,7 @@ modelling_force_relative = isok(P,'MODELLING_FORCE_RELATIVE');
 modrelauto = strcmpi(field2str(P,'MODELLING_FORCE_RELATIVE'),'auto');
 maxdep = field2num(P,'MODELLING_MAX_DEPTH',8e3);
 bm = field2num(P,'MODELLING_BORDERS',5000);
-rr = field2num(P,'MODELLING_GRID_SIZE',51);
+rr = field2num(P,'MODELLING_GRID_SIZE',50);
 modelling_cmap = field2num(P,'MODELLING_COLORMAP',ryb(256));
 modelling_colorshading = field2num(P,'MODELLING_COLOR_SHADING',0.3);
 modelling_topo_rgb = field2num(P,'MODELLING_TOPO_RGB',.5*[1,1,1]);
@@ -251,10 +251,13 @@ tickfactorlim = 5e3; % above 5 km width/depth axis will be in km
 modeltime_period = field2num(P,'MODELTIME_PERIOD_DAY');
 modeltime_sampling = field2num(P,'MODELTIME_SAMPLING_DAY',1);
 modeltime_max = field2num(P,'MODELTIME_MAX_MODELS',100);
+modeltime_gridsize = field2num(P,'MODELTIME_GRID_SIZE',rr);
 modeltime_maxmisfit = field2num(P,'MODELTIME_MAX_MISFIT_M',1);
 modeltime_title = field2str(P,'MODELTIME_TITLE','{\fontsize{14}{\bf$name - Source best model timeline} ($timescale)}');
 modeltime_flowrate = isok(P,'MODELTIME_FLOWRATE',1);
+modeltime_flim = field2num(P,'MODELTIME_FLIM');
 modeltime_map_period = field2num(P,'MODELTIME_MAP_PERIODLIST',modeltime_period,'notempty');
+modeltime_linestyle = field2str(P,'MODELTIME_LINESTYLE','-');
 modeltime_marker_linewidth = field2num(P,'MODELTIME_MARKER_LINEWIDTH',1);
 modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',spectral(256));
 modeltime_markersize = pi*(field2num(P,'MODELTIME_MARKERSIZE',10,'notempty')/2)^2; % scatter needs marker size as a surface (πr²)
@@ -1193,6 +1196,7 @@ for r = 1:numel(P.GTABLE)
 
 		[xdem,ydem] = meshgrid(xlim,ylim);
 		zdem = interp2((DEM.lon-lon0)*degm*cosd(lat0),(DEM.lat-lat0)*degm,double(DEM.z),xdem,ydem);
+		mmz = minmax(zdem);
 
 		[xx,yy,zz] = meshgrid(xlim,ylim,zlim);
 
@@ -1355,7 +1359,6 @@ for r = 1:numel(P.GTABLE)
 		stasize = 6;
 		arrowshapemod = [.1,.1,.08,.02];
 		arrowref = vsc*vmax/2;
-		mmz = minmax(zdem);
 
 		% X-Y top view
 		subplot(5,3,[1,2,4,5,7,8]);
@@ -1694,11 +1697,21 @@ for r = 1:numel(P.GTABLE)
 	% --- Modelling in time
 	summary = 'MODELTIME';
 	if any(strcmp(P.SUMMARYLIST,summary))
+		% remakes the model space
+		if modeltime_gridsize ~= rr
+			rr = modeltime_gridsize;
+			xlim = linspace(0,wid,rr) - wid/2 - (lon0 - mean(lonlim))*degkm(lat0)*1e3;
+			ylim = linspace(0,wid,rr) - wid/2 - (lat0 - mean(latlim))*degkm*1e3;
+			zlim = linspace(-maxdep,roundsd(double(max(DEM.z(:))),2,'ceil'),rr);
+			[xdem,ydem] = meshgrid(xlim,ylim);
+			zdem = interp2((DEM.lon-lon0)*degm*cosd(lat0),(DEM.lat-lat0)*degm,double(DEM.z),xdem,ydem);
+			[xx,yy,zz] = meshgrid(xlim,ylim,zlim);
+		end
 		dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max/modeltime_sampling)*modeltime_sampling);
 		info = { ...
 			' ', ...
 			sprintf('model type = {\\bfisotropic}'), ...
-			sprintf('model space = {\\bf%s}',num2tex(numel(mm))), ...
+			sprintf('model space = {\\bf%s}',num2tex(rr^3)), ...
 			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
 			sprintf('uncertainty = {\\bf%g \\sigma (%1.1f%%)}',modelopt.msig,modelopt.msigp*100), ...
 		};
@@ -1760,7 +1773,7 @@ for r = 1:numel(P.GTABLE)
 								tr(j,i) = b(1)*365.25*1e3;
 								tre(j,i) = stdx(1)*365.25*1e3;
 							end
-							% sets a lor orbit if there is not enough data
+							% sets a lower orbit if there is not enough data
 							%if D(n).t(D(n).G(r).ke) >= M(m).t(w)
 							if (D(n).t(ke) + 1) < M(m).t(w)
 								tro(j) = 2;
@@ -1813,7 +1826,7 @@ for r = 1:numel(P.GTABLE)
 				M(m).d(w,:) = [MM(1).pbest(1:4),sign(MM(1).pbest(4))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
 				%M(m).e(w,:) = [MM(1).ws,MM(1).ws,diff(MM(1).ez),diff(MM(1).ev),MM(1).m0];
 				M(m).e(w,:) = [diff(MM(1).ex)/2,diff(MM(1).ey)/2,diff(MM(1).ez)/2,diff(MM(1).ev)/2,MM(1).m0];
-				M(m).o(w,1) = max(tro); % model worst orbit
+				M(m).o(w,1) = median(tro); % model worst orbit
 
 				if isok(P,'DEBUG')
 					fprintf('\n%s,%s: %+g 10e6 m3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM.pbest(4),MM.pbest(3)/1e3],3));
@@ -1867,11 +1880,14 @@ for r = 1:numel(P.GTABLE)
 		hold on
 		for m = 1:numel(M)
 			col = scolor(m);
-			errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).LINEWIDTH/2,'Color',col/3 + 2/3)
+			errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).LINEWIDTH/3,'Color',col/3 + 2/3)
 			%errorarea(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,col);
-			plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,'o-',P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
+			plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
 		end
 		hold off
+		if numel(modeltime_flim)==2
+			set(gca,'YLim',modeltime_flim);
+		end
 		ylim2 = get(gca,'YLim');
 		if ylim2(2) > 0
 			text(tlim(2),0,{'',' \rightarrow Inflation'},'rotation',90,'Color','k', ...
@@ -1898,9 +1914,9 @@ for r = 1:numel(P.GTABLE)
 		hold on
 		for m = 1:numel(M)
 			col = scolor(m);
-			errorbar(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,'-','LineWidth',P.GTABLE(r).LINEWIDTH/2,'Color',col/3 + 2/3)
+			errorbar(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,'-','LineWidth',P.GTABLE(r).LINEWIDTH/3,'Color',col/3 + 2/3)
 			%errorarea(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,col);
-			plotorbit(M(m).t,M(m).d(:,3)/1e3,M(m).o,'o-',P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
+			plotorbit(M(m).t,M(m).d(:,3)/1e3,M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
 		end
 		hold off
 		set(gca,'XLim',tlim,'FontSize',fontsize,'YLim',minmax(zz)/1e3)
@@ -2060,7 +2076,7 @@ for r = 1:numel(P.GTABLE)
 		%for m = 1:numel(M)
 		%	col = scolor(m);
 		%	errorbar(M(m).t,M(m).d(:,5),M(m).e(:,5),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
-		%	plotorbit(M(m).t,M(m).d(:,5),M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
+		%	plotorbit(M(m).t,M(m).d(:,5),M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
 		%end
 		%hold off
 		%ylim = get(gca,'YLim');
@@ -2098,10 +2114,11 @@ for r = 1:numel(P.GTABLE)
 
 		axes('Position',[0,0,1,1])
 		axis off
-		twarning = {'{\bfWarning:} This graph is experimental. Use results with caution.', ...
-			'Processing and modelling by Beauducel et al./IPGP',' '};
-		text(.99,.01,twarning,'HorizontalAlignment','right','VerticalAlignment','bottom','FontSize',8)
-
+		if ~isok(P,'MODELTIME_NOWARNING')
+			twarning = {'{\bfWarning:} This graph is experimental. Use results with caution.', ...
+				'Processing and modelling by Beauducel et al./IPGP',' '};
+				text(.99,.01,twarning,'HorizontalAlignment','right','VerticalAlignment','bottom','FontSize',8)
+		end
 
 		P.GTABLE(r).GTITLE = varsub(modeltime_title,V);
 		P.GTABLE(r).GSTATUS = [];
