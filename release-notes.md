@@ -15,6 +15,44 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
+## v2.4 (under development)
+
+### New features
+
+1. An automatic classification of seismic event type in the Sefran/MC has been implemented. It uses the code **Automatic Analysis Architecture** by M. MALFANTE, J. MARS, and M. DALLA MURA [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1216028.svg)](https://doi.org/10.5281/zenodo.1216028). Installation procedure, configuration and usage are described in [pse_configuration.md](https://github.com/IPGP/webobs/blob/master/DOC/pse_configuration.md) readme file.
+
+2. Any **SEFRAN** is now managed as a new type of GRID, beside VIEW and PROC. It can be associated to a DOMAIN and will be displayed in the table of grids, with links to SEFRAN3 main page and associated MC3. A new sefran can be created from templates using the create/edit GRID form. A specific page of configuration allows edition of the main configuration files (`SEFRAN3.conf` and `SEFRAN3_Channels.conf`).
+`!!` Former configuration file `SEFRAN3_TimeIntervals.conf` and corresponding variable `TIME_INTERVALS_CONF` become obsolete and might be deleted; they are replaced by a new variable `TIME_INTERVALS_LIST` in `SEFRAN3.conf` (coma-separated list of time intervals in hours, 0 stands for "Last MC events"):  
+```
+TIME_INTERVALS_LIST|0,6,12,24,48,168
+```
+
+3. Two new forms have been created: **SOILSOLUTION** (soil solution chemical analysis) and **RAINWATER** (rain water chemical analysis). Databanks can be created using specific editor forms, display table and graphs.
+
+
+### Enhancements
+
+1. superproc **hypomap** has a new variable to select events `EVENTCOMMENT_INCLUDED_REGEXP` containing a regular expression applied to each event comment string. It can be used to select type(s) of event from MC3, since the comment field contains the event type full name from associated MC3. Example:
+```
+EVENTCOMMENT_INCLUDED_REGEXP|Volcano-Tectonic\|Long Period
+```
+To select events of types **Volcano-Tectonic** and **Long Period**. Note the pipe `|` must be escaped with a backslash `\|`.
+
+2. superproc **gnss** has two new variables to fix Y-axis of MODELTIME plots: `MODELTIME_FLIM` containing min,max values for source flow rate (in m<sup>3</sup>/s) or volume variation (in m<sup>3</sup>), depending on the `MODELTIME_FLOWRATE` option. Empty value stands for automatic scale which is the default and former behaviour.
+
+3. superproc **gnss** can use different grid sizes for MODELLING and MODELTIME summary graphs: new variable `MODELTIME_GRID_SIZE` which uses `MODELLING_GRID_SIZE` as default value.
+
+4. `!!` Directory of proc's binaries has been moved from `${ROOT_CODE}/matlab/bin` to `${ROOT_CODE}/bin`. This affects only the distributed package since binaries are ignored by git. Symbolic links have been created to preserve existing configuration when upgrading, but administrators are encouraged to edit `WEBOBS.rc` and remove the `matlab/` sub-directory in the MCC path variable, for example in the case of linux-64 architecture:
+```
+PATH_MCC|${ROOT_CODE}/bin/linux-64
+```
+
+### Fixed issues
+1. **sefran3**: There was a problem with the last binary with seedlink and fdsnws-dataselect protocols if one or more data channels are missing (error).
+2. **mc3**: It was impossible to select a time period within the last day of the month. Solved thanks to  Indra Rudianto and Sulistyani.
+3. `!!` **SRTM tiles for mapping**: Following the fix in 2.3.3, an USGS mirror site has been restored to continue the benefits of downloading automatically new SRTM3 global topographic data without the need to register at the NASA/EarthDATA center. Nevertheless, the authentication is still needed for SRTM1 tiles download (option `DEM_SRTM1|Y`). As a reminder, downloaded tiles are stored locally in the `PATH_DATA_DEM_SRTM` directory (in **WEBOBS.rc**, default is `/opt/webobs/DATA/DEM/SRTM`), and used to update maps without requiring new download from the internet. Thus, a possible alternative to registering at EarthDATA is to place here all the needed tiles manually (must be in the `.hgt` format, filename in the form `[N|S]yy[E|W]xxx.hgt[.zip]` for LAT yy and LON xx at lower-left corner of the tile).
+
+
 ## v2.3.3 (February 2021)
 
 ### New features
