@@ -458,7 +458,7 @@ print qq(</table>
       <fieldset>
         <legend>$__{'Lysimeter'}</legend>
         <P class="parform">
-          <B>$__{'Sampling Depth'}</B> (cm) = <select name=volume value="$sel_depth" size="1" onChange="update_site()"
+          <B>$__{'Sampling Depth'}</B> (cm) = <select name=depth value="$sel_depth" size="1" onChange="update_site()"
               onMouseOut="nd()" onmouseover="overlib('$__{help_soilsolution_depth}')">);
 	for (@depth) {
 		if ($_ eq $sel_depth) {
