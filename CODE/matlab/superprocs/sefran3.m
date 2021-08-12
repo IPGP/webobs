@@ -19,7 +19,7 @@ function sefran3(name,fdate)
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2021-02-23
+%	Updated: 2021-07-19
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -658,10 +658,7 @@ case 'seedlink'
 			k = find(~cellfun('isempty',regexp(stream{1},sprintf('%s.*%s.*%s.*%s',c{1}{1},c{1}{2},c{1}{3},c{1}{4}))));
 			if ~isempty(k)
 				% has to interpret dates from Seedlink GFZ or IRIS-like formats...
-				%FB-was: ct0 = datenum(A{1}{k(1)}(19+(0:23))); % start time
-				%FB-was: ct1 = datenum(A{1}{k(1)}(48+(0:23))); % end time
 				dte = textscan(stream{1}{k(1)}(19:end),'%n','Delimiter','/-:');
-				%FB-was: if datenum(dte{1}(1:6)') <= t0 && datenum(dte{1}(7:12)') >= (t1 - rtdelay/86400)
 				if datenum(dte{1}(1:6)') <= t0 && datenum(dte{1}(7:12)') >= t1
 					chan(n) = n; % channel n is available at time interval [t0,t1]
 				else
@@ -671,7 +668,7 @@ case 'seedlink'
 				fprintf('%s: ** WARNING ** SEEDLINK server %s has no channel %s available ! \n',wofun,datasource,sfr{n});
 			end
 		end
-		chan(isnan(chan)) = [];
+		chan(isnan(chan)) = []; % removes non-existant channels
 	end
 	if ~isempty(chan)
 		% build stream list of available channels (slinktool -S option strange format...)
@@ -736,6 +733,7 @@ case 'fdsnws-dataselect'
 
 % =============================================================================
 case 'miniseed'
+	fmsd = datasource;
 
 % =============================================================================
 case 'winston'
@@ -791,6 +789,11 @@ if ~strcmp(dataformat,'winston')
 				D(n).d = double(cat(1,S(kk).d));
 				D(n).t = cat(1,S(kk).t);
 				D(n).SampleRate = S(kk(1)).SampleRate; % supposes sample rate is constant (looks first block)
+			else
+				fprintf(' no data found in miniseed for channel %s.\n',sfr{n});
+				D(n).t = [];
+				D(n).d = zeros(0,1);
+				D(n).SampleRate = NaN;
 			end
 		end
 	else
