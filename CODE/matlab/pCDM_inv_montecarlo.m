@@ -4,9 +4,9 @@ function [best_model,m,param] = pCDM_inv_montecarlo(...
 %
 %	Dependency: pcdmv.mex (compiled from pcdmv.c)
 %
-%	Authors: Antoine Villié (École des Mines de Paris / UGM / IRD), François Beauducel
+%	Authors: Antoine VilliÃ© (Ã‰cole des Mines de Paris / UGM / IRD), FranÃ§ois Beauducel
 %	Created: 2018 in Yogyakarta, Indonesia
-%	Updated: 2021-06-24
+%	Updated: 2021-08-16
 
 
 % Random models creation
@@ -24,7 +24,7 @@ end
 % for source depth (parameter 3), lower values are limited by the topography
 lower_z = max(limite(1,3),-interp2(TOPO.xx,TOPO.yy,TOPO.zz,param(:,1),param(:,2),'nearest'));
 %param(:,3) = rand(nbtest,1).*(limite(2,3) - lower_z) + lower_z;
-k = (param(:,3)<lower_z,3);
+k = (param(:,3)<lower_z);
 param(k,3) = lower_z(k);
 
 % Computing the random models
