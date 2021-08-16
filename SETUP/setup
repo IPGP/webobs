@@ -622,7 +622,11 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	verbosecho "checking for updates to SQL databases"
 	if [[ -z $(sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db 'PRAGMA table_info("users");' | grep VALIDITY) ]]; then
 		verbosecho "adding a VALIDITY field in WEBOBSUSERS.db"
-		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS.sql
+		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS-validity.sql
+	fi
+	if [[ -z $(sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db 'PRAGMA table_info("users");' | grep COMMENT) ]]; then
+		verbosecho "adding a COMMENT field in WEBOBSUSERS.db"
+		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS-comment.sql
 	fi
 
 	db_temp_dir="tmp-$$-$RANDOM"
@@ -673,7 +677,7 @@ else
 	sed -i -e "s=^XML2_PRGM|.*$=XML2_PRGM|\${ROOT_CODE}/bin/${ABIN}/xml2=g" ${DOCROOT}/CONF/WEBOBS.rc
 
 	verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc (PATH_MCC)"
-	sed -i -e "s=^PATH_MCC|.*$=PATH_MCC|\${ROOT_CODE}/matlab/bin/${ABIN}=g" ${DOCROOT}/CONF/WEBOBS.rc
+	sed -i -e "s=^PATH_MCC|.*$=PATH_MCC|\${ROOT_CODE}/bin/${ABIN}=g" ${DOCROOT}/CONF/WEBOBS.rc
 
 	# create SQLite DataBases of CONF/
 	cd ${DOCROOT}/CONF

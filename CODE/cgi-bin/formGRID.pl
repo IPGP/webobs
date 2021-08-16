@@ -19,10 +19,10 @@ To create a new GRID, user must have Admin rights for all VIEWS or PROCS. To upd
 =head1 QUERY-STRING
 
 grid=gridtype.gridname
- where gridtype either VIEW or PROC.
+ where gridtype either VIEW, PROC, or SEFRAN.
 
 type=gridtype.template
- where gridtype either VIEW or PROC.
+ where gridtype either VIEW, PROC, or SEFRAN.
 
 =head1 EDITOR
 
@@ -76,7 +76,7 @@ my $editOK  = 0;        # 1 if the user is allowed to edit the grid
 my $admOK = 0;          # 1 if the user is allowed to administrate the grid
 my $newG    = 0;        # 1 if we are creating a new grid
 my @rawfile;            # raw content of the configuration file
-my $GRIDType = "";      # grid type ("PROC" or "VIEW")
+my $GRIDType = "";      # grid type ("PROC", "VIEW", or "SEFRAN")
 my $GRIDName = "";      # name of the grid
 my %GRID;               # structure describing the grid
 my @domain;             # the domain array of the grid
@@ -94,9 +94,9 @@ my $post_url = "/cgi-bin/postGRID.pl";
 
 # Read and check CGI parameters
 my $type = checkParam($cgi->param('type'),
-			qr{^((VIEW|PROC)(\.|/)[a-zA-Z0-9_]+)?$}, 'type') // "";
+			qr{^((VIEW|PROC|SEFRAN)(\.|/)[a-zA-Z0-9_]+)?$}, 'type') // "";
 my $grid = checkParam($cgi->param('grid'),
-			qr{^(VIEW|PROC)(\.|/)[a-zA-Z0-9_]+$}, 'grid');
+			qr{^(VIEW|PROC|SEFRAN)(\.|/)[a-zA-Z0-9_]+$}, 'grid');
 my @GID = split(/[\.\/]/, $grid);
 
 
@@ -126,29 +126,35 @@ closedir($nodeDH)
 # ---- init general-use variables on the way and quit if something's wrong
 #
 if (scalar(@GID) == 2) {
+	my $auth;
 	@GID = map { uc($_) } @GID;
 	($GRIDType, $GRIDName) = @GID;
+	if ($GRIDType eq 'SEFRAN') {
+		$gridConfFile = "$WEBOBS{PATH_SEFRANS}/$GRIDName/$GRIDName.conf";
+		$auth = 'procs';
+	}
 	if ($GRIDType eq 'VIEW') {
 		$gridConfFile = "$WEBOBS{PATH_VIEWS}/$GRIDName/$GRIDName.conf";
+		$auth = 'views';
 	}
 	if ($GRIDType eq 'PROC') {
 		$gridConfFile = "$WEBOBS{PATH_PROCS}/$GRIDName/$GRIDName.conf";
+		$auth = 'procs';
 	}
 	if ($type ne '') {
 		$template = "$WEBOBS{ROOT_CODE}/tplates/$type";
 	} else {
 		$template = "$WEBOBS{ROOT_CODE}/tplates/$GRIDType.DEFAULT";
 	}
-	$editOK = WebObs::Users::clientHasEdit(type => "auth".lc($GRIDType)."s",
-										   name => "$GRIDName");
-	$admOK = WebObs::Users::clientHasAdm(type => "auth".lc($GRIDType)."s",
-										 name => "*");
+	$editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$GRIDName");
+	$admOK = WebObs::Users::clientHasAdm(type => "auth".$auth, name => "*");
 	if ( -e "$gridConfFile" ) {
 		if ($editOK) {
 			@rawfile = readFile($gridConfFile);
 			$gridConfFileMtime = (stat($gridConfFile))[9] ;
 			$editOK = 1;
 		}
+		if (uc($GRIDType) eq 'SEFRAN') { %GRID = readSefran($GRIDName) };
 		if (uc($GRIDType) eq 'VIEW') { %GRID = readView($GRIDName) };
 		if (uc($GRIDType) eq 'PROC') { %GRID = readProc($GRIDName) };
 	}
@@ -231,11 +237,11 @@ print <<_EOD_;
  <script type="text/javascript">
  function delete_grid()
  {
-	if ( confirm("$__{'The GRID will be deleted (but not associated nodes). Are you sure ?'}") ) {
+	if ( confirm("$__{'The GRID will be deleted (but not associated nodes). Are you sure?'}") ) {
 		document.formulaire.delete.value = 1;
 		\$.post("$post_url", \$("#theform").serialize(), function(data) {
 			if (data != '') alert(data);
-			location.href = document.referrer;
+			location.href = "$GRIDS{CGI_SHOW_GRIDS}";
 		});
 	} else {
 		return false;
@@ -247,8 +253,7 @@ function verif_formulaire()
 		document.formulaire.SELs[i].selected = true;
 	}
 	if (document.formulaire.domain.value == '') {
-		alert('you must select at least one domain.');
-		return false;
+		if ( !confirm("$__{'No associated domain: the grid will be hidden. Are you sure?'}") ) return false;
 	}
 	// postform() from cmtextarea.js will submit the form to $post_url
 	postform();
@@ -307,33 +312,36 @@ if ($GRIDType eq "PROC") {
 }
 
 # ---- Nodes
-print "<FIELDSET><LEGEND>Associated nodes</LEGEND>";
-print "<TABLE cellpadding=\"3\" cellspacing=\"0\" style=\"border:0\">";
-print "<TR><TD style=\"border:0\">";
-print "<SELECT name=\"INs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%\">";
-for my $nodeId (@ALL_NODES) {
-	if (!exists $gridnodeslist{$nodeId}) {
-		print "<option value=\"$nodeId\">$nodeId</option>\n";
+if ($GRIDType eq "PROC" || $GRIDType eq "VIEW") {
+	print "<FIELDSET><LEGEND>Associated nodes</LEGEND>";
+	print "<TABLE cellpadding=\"3\" cellspacing=\"0\" style=\"border:0\">";
+	print "<TR><TD style=\"border:0\">";
+	print "<SELECT name=\"INs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%\">";
+	for my $nodeId (@ALL_NODES) {
+		if (!exists $gridnodeslist{$nodeId}) {
+			print "<option value=\"$nodeId\">$nodeId</option>\n";
+		}
 	}
-}
-print "</SELECT></RD>";
-print "<TD align=\"center\" valign=\"middle\" style=\"border:0\">";
-print "<INPUT type=\"Button\" value=\"Add >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.INs,document.formulaire.SELs)\"><br>";
-print "<br>";
-print "<INPUT type=\"Button\" value=\"<< Remove\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.SELs,document.formulaire.INs)\">";
-print "</TD>";
-print "<TD style=\"border:0\">";
-print "<SELECT name=\"SELs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%;font-weight:bold\">";
-if (!$newG) {
-	for my $nodeId (sort @{$GRID{NODESLIST}}) {
-		print "<option value=\"$nodeId\">$nodeId</option>";
+	print "</SELECT></RD>";
+	print "<TD align=\"center\" valign=\"middle\" style=\"border:0\">";
+	print "<INPUT type=\"Button\" value=\"Add >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.INs,document.formulaire.SELs)\"><br>";
+	print "<br>";
+	print "<INPUT type=\"Button\" value=\"<< Remove\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.SELs,document.formulaire.INs)\">";
+	print "</TD>";
+	print "<TD style=\"border:0\">";
+	print "<SELECT name=\"SELs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%;font-weight:bold\">";
+	if (!$newG) {
+		for my $nodeId (sort @{$GRID{NODESLIST}}) {
+			print "<option value=\"$nodeId\">$nodeId</option>";
+		}
 	}
+	print "</SELECT></td>";
+	print "</TR>";
+	print "</TABLE>";
+	print "</FIELDSET>";
+} else {
+	print "<SELECT name=\"SELs\" type=\"hidden\"></SELECT>";
 }
-print "</SELECT></td>";
-print "</TR>";
-print "</TABLE>";
-print "</FIELDSET>";
-
 print "</TD>\n</TR>\n";
 print "<TR><TD style=\"border:0\">\n";
 

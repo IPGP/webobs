@@ -253,18 +253,18 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			if (%FORM) {
 				my $urnData = (defined($FORM{'CGI_SHOW'})) ? "/cgi-bin/$FORM{'CGI_SHOW'}?node={$GRIDName}" : "";
 				my $txtData = (defined($FORM{'TITLE'})) ? $FORM{'TITLE'} : "";
-				$htmlcontents .= "<LI>Associated FORM: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
+				$htmlcontents .= "<LI>$__{'Access to data'}: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
 			}
-		}
-		# -----------
-		$htmlcontents .= "<LI>$__{'Default data format'}: <B>"
-							.($GRID{RAWFORMAT} // '')."</B></LI>\n";
-		$htmlcontents .= "<LI>$__{'Default data source'}: <B>"
-							.($GRID{RAWDATA} // '')."</B></LI>\n";
-		# -----------
-		if (defined($GRID{URNDATA})) {
-			my $urnData = "$GRID{URNDATA}";
-			$htmlcontents .= "<LI>$__{'Access to rawdata'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
+		} else {
+			# -----------
+			$htmlcontents .= "<LI>$__{'Default data format'}: <B>"
+						.($GRID{RAWFORMAT} // '')."</B></LI>\n";
+			$htmlcontents .= "<LI>$__{'Default data source'}: <B>"
+						.($GRID{RAWDATA} // '')."</B></LI>\n";
+			if (defined($GRID{URNDATA})) {
+				my $urnData = "$GRID{URNDATA}";
+				$htmlcontents .= "<LI>$__{'Access to rawdata'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
+			}
 		}
 		# -----------
 		if (defined($GRID{EVENTS_FILE})) {
