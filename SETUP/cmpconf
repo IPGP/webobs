@@ -1,17 +1,18 @@
 #!/bin/bash
 
+# Syntax: cmpconf [RELEASE] [WRITEFLAG]
 # compares templates conf files with current installed version (in /opt/webobs):
 #
 # author: F. Beauducel, IPGP/IRD
 # created: 2018-10-10
-# updated: 2018-10-30
+# updated: 2021-08-13
 
 mydiff() {
 # Syntax: mydiff TEMPLATEFILE CONFFILE RELEASE [WRITEFLAG]
 #
 #	new keys are always written to standard output
 #	WRITEFLAG not empty makes writing to local CONFFILE also
-#	
+#
 	if [[ -z "$4" ]]; then
 		CONF=/dev/null
 	else
@@ -79,7 +80,15 @@ done
 C=$(find $CONFDIR -maxdepth 1 -name 'SEFRAN3*.conf')
 for s in $C; do
 	if [[ ! -z $(grep -E "^CHANNEL_CONF\|" $s) ]]; then
-		mydiff $TPLATEDIR/CONF/SEFRAN3.conf $s $RELREL $WRITE
+		S=$(basename $s .conf)
+		sd="$CONFDIR/SEFRANS/$S"
+		sn="$sd/$S.conf"
+		if [[ ! -d $sd ]]; then
+			>&2 echo "creating symlink for $sd."
+			mkdir -p $sd
+			ln -s $s $sn
+		fi
+		mydiff $TPLATEDIR/../CODE/tplates/SEFRAN.DEFAULT $sn $RELREL $WRITE
 	fi
 done
 
@@ -91,7 +100,7 @@ for s in $C; do
 	fi
 done
 
-# procs (checks superproc)
+# procs (checks superproc name: only the SUBMIT_COMMAND has it...)
 C=$(find $CONFDIR/PROCS -maxdepth 2 -name '*.conf')
 for s in $C; do
 	P=$(grep -E "^SUBMIT_COMMAND\|" $s | cut -d " " -f 2 | tr '[:lower:]' '[:upper:]')
@@ -105,6 +114,18 @@ C=$(find $CONFDIR/VIEWS -maxdepth 2 -name '*.conf')
 for s in $C; do
 	if [[ ! -z $(grep -E "^NAME\|" $s) ]]; then
 		mydiff $TPLATEDIR/../CODE/tplates/VIEW.DEFAULT $s $RELREL $WRITE
+	fi
+done
+
+# forms (checks template forms in SETUP/CONF)
+C=$(find $TPLATEDIR/CONF/FORMS/* -type d)
+for s in $C; do
+	F=$(basename $s)
+	if [[ ! -d "$CONFDIR/FORMS/$F" ]]; then
+		>&2 echo "creating new form $CONFDIR/FORMS/$F."
+		cp -a $TPLATEDIR/CONF/FORMS/$F $CONFDIR/FORMS/
+	else
+		mydiff $s/$F.conf $CONFDIR/FORMS/$F/$F.conf $RELREL $WRITE
 	fi
 done
 

@@ -18,7 +18,7 @@ It should return a text/plain content shown to the user in a dialog box.
 =head1 Query string parameters
 
 grid=<gridtype.gridname>
- where gridtype either VIEW or PROC.
+ where gridtype either VIEW, PROC, or SEFRAN.
 
 text=
  inline text to be saved under file= filename
@@ -100,10 +100,12 @@ sub update_grid2nodes_links {
 	my $GRIDType = shift;
 	my $GRIDName = shift;
 	my $SELs_ref = shift;
-	unlink(glob("$WEBOBS{PATH_GRIDS2NODES}/$GRIDType.$GRIDName.*"));
-	for my $nodeid (@$SELs_ref) {
-		symlink("$NODES{PATH_NODES}/$nodeid",
+	if ($GRIDType eq "PROC" || $GRIDType eq "VIEW") {
+		unlink(glob("$WEBOBS{PATH_GRIDS2NODES}/$GRIDType.$GRIDName.*"));
+		for my $nodeid (@$SELs_ref) {
+			symlink("$NODES{PATH_NODES}/$nodeid",
 				"$WEBOBS{PATH_GRIDS2NODES}/$GRIDType.$GRIDName.$nodeid")
+		}
 	}
 }
 
@@ -173,6 +175,9 @@ if (uc($GRIDType) eq 'VIEW') {
 }
 if (uc($GRIDType) eq 'PROC') {
 	$gridConfFile = "$WEBOBS{PATH_PROCS}/$GRIDName/$GRIDName.conf";
+}
+if (uc($GRIDType) eq 'SEFRAN') {
+	$gridConfFile = "$WEBOBS{PATH_SEFRANS}/$GRIDName/$GRIDName.conf";
 }
 my $griddir = dirname($gridConfFile);
 
@@ -255,6 +260,7 @@ unless(flock(FILE, LOCK_EX|LOCK_NB)) {
 }
 
 # Backup the configuration file (To Be Removed: lifecycle too short)
+local $File::Copy::Recursive::CopyLink = 0;
 if (copy($gridConfFile, "$gridConfFile~") != 1) {
 	# Unable to backup of the configuration file
 	close(FILE);
@@ -285,7 +291,7 @@ François Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2020 - Institut de Physique du Globe Paris
+Webobs - 2012-2021 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
