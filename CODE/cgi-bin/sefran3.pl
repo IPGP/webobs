@@ -95,7 +95,8 @@ $dep = 1 if ($date && length($date) > 10) ;
 
 # ---- loads requested Sefran3 configuration or default one
 $s3 ||= $WEBOBS{SEFRAN3_DEFAULT_NAME};
-my $s3conf = "$WEBOBS{ROOT_CONF}/$s3.conf";
+my $s3root = "$WEBOBS{PATH_SEFRANS}/$s3";
+my $s3conf = "$s3root/$s3.conf";
 my %SEFRAN3 = readCfg("$s3conf") if (-f "$s3conf");
 
 my $hideloc = $cgi->url_param('hideloc')
@@ -131,7 +132,7 @@ if ($limit == 0) { $ref = 0; }
 
 # ---- loads additional configurations:
 # channels
-my @channels = readCfgFile("$SEFRAN3{CHANNEL_CONF}");
+my @channels = readCfgFile(exists($SEFRAN3{CHANNEL_CONF}) ? $SEFRAN3{CHANNEL_CONF}:"$s3root/channels.conf");
 my @alias;
 my @streams;
 for (@channels) {
