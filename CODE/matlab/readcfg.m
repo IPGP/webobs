@@ -6,7 +6,7 @@ function X=readcfg(varargin);
 %   	${KEY} for internal conf variable KEY
 %   	$WEBOBS{KEY} for WEBOBS.rc variable KEY
 %
-%   X=READCFG(CONFIG) or READCFG(WO,CONFIG) reads the config file CONFIG. It 
+%   X=READCFG(CONFIG) or READCFG(WO,CONFIG) reads the config file CONFIG. It
 %   returns different structure format depending on config file header:
 %
 %   	no header or =key|value
@@ -24,7 +24,7 @@ function X=readcfg(varargin);
 %   	NOTE: because Matlab does not accept field names starting with a number,
 %   	the function adds a prefix 'KEY' to any numerical key.
 %
-%   X=READCFG(...,'keyarray') uses the key as a numerical index in a 
+%   X=READCFG(...,'keyarray') uses the key as a numerical index in a
 %   structure array where each line corresponds to an element of the structure:
 %
 %   	no header or =key|value
@@ -43,7 +43,7 @@ function X=readcfg(varargin);
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2019-02-22
+%   Updated: 2021-08-12
 
 if nargin > 0 && isstruct(varargin{1})
 	WO = varargin{1};
@@ -226,7 +226,8 @@ for i = 1:length(keys)
 				end
 			end
 			if ~isempty(strfind(X.(keys{i}),'${'))
-				fprintf('WEBOBS{readcfg}: ** WARNING ** key %s contains undefined variable "%s"\n',keys{i},X.(keys{i}));
+				fprintf(' ** WARNING ** key %s contains undefined variable "%s", replaces with empty value! ',keys{i},X.(keys{i}));
+				X.(keys{i}) = '';
 			end
 		end
 	end
@@ -256,4 +257,3 @@ for i = 1:length(keys)
 		end
 	end
 end
-
