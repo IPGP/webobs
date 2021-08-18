@@ -4,7 +4,8 @@
 NAME|Seismic multichannel stripchart
 BANG|2020
 ROOT|$WEBOBS{SEFRAN_ROOT}/sefran3
-CHANNEL_CONF|$WEBOBS{ROOT_CONF}/SEFRAN3_Channels.conf
+# starting release v2.4, channel's configuration file is 'channels.conf'
+# (CHANNEL_CONF still functional for backward compatibility)
 CSS|SEFRAN3.css
 
 PATH_WEB|$WEBOBS{SEFRAN_ROOT_ALIAS}/sefran3
@@ -115,7 +116,7 @@ LASTHOUR_WIDTH|320
 # --- Spectrogram parameters
 SGRAM_ACTIVE|Y
 SGRAM_FILTER|hpbu6,0.2
-# Spectrogram default parameters W,Fmin,Fmax,Yscale (overwritten by ${CHANNEL_CONF} columns)
+# Spectrogram default parameters W,Fmin,Fmax,Yscale (overwritten by channels.conf columns)
 SGRAM_PARAMS|0.5,0,50,lin
 SGRAM_COLORMAP|spectral(64)
 SGRAM_EXPONENT|0.5

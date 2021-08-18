@@ -146,7 +146,7 @@ if (scalar(@GID) == 2) {
 	} else {
 		$template = "$WEBOBS{ROOT_CODE}/tplates/$GRIDType.DEFAULT";
 	}
-	$editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$GRIDName");
+	$editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$GRIDName") || WebObs::Users::clientHasEdit(type => "auth".$auth, name => "MC");
 	$admOK = WebObs::Users::clientHasAdm(type => "auth".$auth, name => "*");
 	if ( -e "$gridConfFile" ) {
 		if ($editOK) {
@@ -340,8 +340,18 @@ if ($GRIDType eq "PROC" || $GRIDType eq "VIEW") {
 	print "</TABLE>";
 	print "</FIELDSET>";
 } else {
-	print "<SELECT name=\"SELs\" type=\"hidden\"></SELECT>";
+	print "<INPUT name=\"SELs\" type=\"hidden\" value=\"-\">";
 }
+# ---- Sefrans
+if ($GRIDType eq "SEFRAN") {
+	my $chconf = (exists($GRID{CHANNEL_CONF}) && -e $GRID{CHANNEL_CONF} ? "$GRID{CHANNEL_CONF}":"$WEBOBS{PATH_SEFRANS}/$GRIDName/channels.conf");
+	qx(cp $WEBOBS{ROOT_CODE}/tplates/SEFRAN_channels.conf $chconf) if (! -e "$chconf");
+	$chconf =~ s|^.*/CONF/|CONF/|g;
+	print "<FIELDSET><LEGEND>Sefran Channels</LEGEND>\n";
+	print "<A href=\"/cgi-bin/xedit.pl?fs=$chconf\">$chconf</a>\n";
+	print "</FIELDSET>\n";
+}
+
 print "</TD>\n</TR>\n";
 print "<TR><TD style=\"border:0\">\n";
 

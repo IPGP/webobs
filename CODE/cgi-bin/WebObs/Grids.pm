@@ -147,7 +147,7 @@ sub readSefran {
 		my %tmp = readCfg("$WEBOBS{PATH_SEFRANS}/$f/$f.conf");
 		$tmp{NAME} ||= $tmp{TITRE};
 		# --- get channels list
-		my @ch = readCfgFile("$tmp{CHANNEL_CONF}");
+		my @ch = readCfgFile(exists($tmp{CHANNEL_CONF}) ? "$tmp{CHANNEL_CONF}":"$WEBOBS{PATH_SEFRANS}/$f/channels.conf");
 		my @st;
 		for (@ch) {
 			my ($ali,$cod) = split(/\s+/,$_);

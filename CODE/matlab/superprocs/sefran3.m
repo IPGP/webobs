@@ -18,8 +18,9 @@ function sefran3(name,fdate)
 %
 %
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
-%	Created: 2012-02-09 in Paris, France (based on previous versions leg/sefran.m, 2002 and leg/sefran2.m, 2007)
-%	Updated: 2021-07-19
+%	Created: 2012-02-09 in Paris, France
+%	         (based on legacy sefran.m, 2002 and sefran2.m, 2007)
+%	Updated: 2021-08-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -28,7 +29,10 @@ wofun = sprintf('WEBOBS{%s}',mfilename);
 if nargin < 1
 	name = WO.SEFRAN3_DEFAULT_NAME;
 end
-SEFRAN3 = readcfg(WO,sprintf('/etc/webobs.d/%s.conf',name));
+SEFRAN3 = readcfg(WO,sprintf('/etc/webobs.d/SEFRANS/%s/%s.conf',name,name));
+if ~isfield(SEFRAN3,'CHANNEL_CONF') || ~exist(SEFRAN3.CHANNEL_CONF,'file')
+	SEFRAN3.CHANNEL_CONF = sprintf('/etc/webobs.d/SEFRANS/%s/channels.conf',name);
+end
 
 ptmp = sprintf('%s/sefran3/%s',WO.PATH_TMP_WEBOBS,name); % temporary path
 
