@@ -164,7 +164,20 @@ for (@amplitudes) {
         $nomAmp{$key} = $nam;
 }
 # time interval texts + value in hours
-my %liste_limites = readCfg($SEFRAN3{TIME_INTERVALS_CONF});
+my @time_intervals = split(/,/,$SEFRAN3{TIME_INTERVALS_LIST});
+my %time_limits;
+for (@time_intervals) {
+	if ($_ == 0) {
+		$time_limits{$_} = $__{'Last MC events'};
+	} elsif ($_%168 == 0) {
+		$time_limits{$_} = ($_/168)." week".($_/168>1 ? "s":"");
+	} elsif ($_%24 == 0) {
+		$time_limits{$_} = ($_/24)." day".($_/24>1 ? "s":"");
+	} else {
+		$time_limits{$_} = "$_ hours";
+	}
+}
+
 
 # spectrogram
 my $sgramOK = ($SEFRAN3{SGRAM_ACTIVE} =~ /1|y|yes|on/i ? 1:0);
@@ -430,8 +443,8 @@ if (!$date) {
 		# hidden values to pass all parameters in the form
 		print "<INPUT type=hidden name=\"mc\" value=\"$mc3\"/><INPUT type=hidden name=\"s3\" value=\"$s3\"/>";
 		print "<B>$__{'Interval'}:</B> <SELECT name=\"limit\" size=\"1\" onchange=\"submit();\">\n";
-		for my $id_limite (sort { $a <=> $b } keys %liste_limites) {
-			 print "<option ".($limit eq $id_limite ? "selected ":"")."value=\"".$id_limite."\">".$liste_limites{$id_limite}."</option>\n";
+		for my $id_limit (sort { $a <=> $b } keys %time_limits) {
+			 print "<option ".($limit eq $id_limit ? "selected ":"")."value=\"".$id_limit."\">".$time_limits{$id_limit}."</option>\n";
 		}
 		print "</SELECT>";
 		print "<B>&nbsp;&nbsp;$__{'Reference'}:</B> <select name=\"ref\" size=\"1\" onchange=\"mod_ref()\">",
