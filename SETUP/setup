@@ -625,8 +625,8 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS-validity.sql
 	fi
 	if [[ -z $(sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db 'PRAGMA table_info("users");' | grep COMMENT) ]]; then
-		verbosecho "adding a COMMENT field in WEBOBSUSERS.db"
-		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS-comment.sql
+		verbosecho "adding ENDDATE and COMMENT fields in WEBOBSUSERS.db"
+		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS-enddate+comment.sql
 	fi
 
 	db_temp_dir="tmp-$$-$RANDOM"

@@ -21,7 +21,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 1. An automatic classification of seismic event type in the Sefran/MC has been implemented. It uses the code **Automatic Analysis Architecture** by M. MALFANTE, J. MARS, and M. DALLA MURA [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1216028.svg)](https://doi.org/10.5281/zenodo.1216028). Installation procedure, configuration and usage are described in [pse_configuration.md](https://github.com/IPGP/webobs/blob/master/DOC/pse_configuration.md) readme file.
 
-2. Two new forms have been created: **SOILSOLUTION** (soil solution chemical analysis) and **RAINWATER** (rain water chemical analysis). Databanks can be created using specific editor forms, display table and graphs.
+2. Two new forms have been created: **SOILSOLUTION** (soil solution chemical analysis) and **RAINWATER** (rain water chemical analysis). Databanks can be created using specific editor forms, display table and graphs (presently the genplot). When upgrading, the `setup` will copy the templates in the local CONF directory.
 
 
 ### Enhancements
@@ -34,17 +34,26 @@ To select events of types **Volcano-Tectonic** and **Long Period**. Note the pip
 
 2. superproc **gnss** has two new variables to fix Y-axis of MODELTIME plots: `MODELTIME_FLIM` containing min,max values for source flow rate (in m<sup>3</sup>/s) or volume variation (in m<sup>3</sup>), depending on the `MODELTIME_FLOWRATE` option. Empty value stands for automatic scale which is the default and former behaviour.
 
-3. `!!` Any **SEFRAN** is now managed as a new type of GRID, beside VIEW and PROC. It can be associated to a DOMAIN and will be displayed in the table of grids, with optional type/owner and links to SEFRAN3 main page and associated MC3. A new sefran can be created from templates using the create/edit GRID form. A specific page of configuration allows edition of the main configuration files (`SEFRAN3.conf` and `SEFRAN3_Channels.conf`). When upgrading, existing sefrans must be manually associated to a domain to appear in the grid table (use the Domain manager), and configuration files will not be moved from the CONF directory; only symbolic links will be created in the new `CONF/SEFRANS/*` structure.
-`!!` Former configuration file `SEFRAN3_TimeIntervals.conf` and corresponding variable `TIME_INTERVALS_CONF` become obsolete and might be deleted; they are replaced by a new variable `TIME_INTERVALS_LIST` in `SEFRAN3.conf` (coma-separated list of time intervals in hours, 0 stands for "Last MC events"):  
+3. `!!` Any **SEFRAN** is now managed as a new type of GRID, beside VIEW and PROC.
+    - It can be associated to a DOMAIN and will be displayed in the table of grids, with optional type/owner and links to SEFRAN3 main page and associated MC3.
+    - A new sefran can be created from templates using the create/edit GRID form. A specific page of configuration allows edition of the main configuration files: `SEFRAN3.conf` and `channels.conf` which are stored in a specific directory in the new `$WEBOBS{PATH_SEFRANS}/*` structure.
+    - When upgrading, existing sefrans must be manually associated to a domain to appear in the grid table (use the Domain manager). `setup` will **NOT** move existing configuration files from the original CONF directory; only symbolic links will be created.
+    - The variable `CHANNEL_CONF` remains operational for backward compatibility, pointing to any channels' configuration file, but it is recommended to remove/comment it so sefran will use implicitly the unique `channels.conf` file.
+    - Authorization for a sefran is managed using the **procs** auth table and sefran name as resource. The generic `MC` resource name remains functional for all sefrans.
+
+4. `!!` Still for **SEFRAN**, former configuration file `SEFRAN3_TimeIntervals.conf` and corresponding variable `TIME_INTERVALS_CONF` become obsolete and might be deleted; they are replaced by a new variable `TIME_INTERVALS_LIST` in `SEFRAN3.conf` (coma-separated list of time intervals in hours, 0 stands for "Last MC events"), with default list of values that might be edited if necessary:  
 ```
 TIME_INTERVALS_LIST|0,6,12,24,48,168
 ```
 
-4. `!!` Directory of proc's binaries has been moved from `${ROOT_CODE}/matlab/bin` to `${ROOT_CODE}/bin`. This affects only the distributed package since binaries are ignored by git. Symbolic links have been created to preserve existing configuration when upgrading, but administrators are encouraged to edit `WEBOBS.rc` and remove the `matlab/` sub-directory in the MCC path variable, for example in the case of linux-64 architecture, it should be like:
+5. `!!` Directory of proc's binaries has been moved from `${ROOT_CODE}/matlab/bin` to `${ROOT_CODE}/bin`. This affects only the distributed package since binaries are ignored by git. Symbolic links have been created to preserve existing configuration when upgrading, but administrators are encouraged to edit `WEBOBS.rc` and remove the `matlab/` sub-directory in the MCC path variable, for example in the case of linux-64 architecture, it should be like:
 ```
 PATH_MCC|${ROOT_CODE}/bin/linux-64
 ```
 
+6. **User's** have now two new attributes for administration (editabled through the User Manager GUI):
+    - an ending date of validity in the format `YYYY-MM-DD` as the last effective day of the account (reference is the WebObs server local time). Even with a validity flag `Y`, if the end date is past the user will be considered as invalid. Let this field empty for never-ending accounts.
+    - a comment field (free string) to add any useful information about the account (only seen by admins). When a new user has autoregistered, this field is used to add the date and time of registering.
 
 ### Fixed issues
 1. **sefran3**: There was a problem with the last binary with seedlink and fdsnws-dataselect protocols if one or more data channels are missing (error).
