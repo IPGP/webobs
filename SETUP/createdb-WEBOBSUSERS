@@ -22,7 +22,7 @@ if [[ ! -f $IN ]]
 then
 	echo "File $IN not found: no legacy data will be imported."
 	L=false
-else 
+else
 	L=true
 	if ! $(confirm "confirm using data from $IN [y/n] ? ") ; then
 		echo "OK, no legacy will be imported."
@@ -37,7 +37,7 @@ echo "Creating users,groups,auth*,notifications tables ..."
 sqlite3 WEBOBSUSERS.db <<EOF
 BEGIN TRANSACTION;
 drop table if exists users;
-create table users (UID text NOT NULL UNIQUE, FULLNAME text NOT NULL, LOGIN text NOT NULL UNIQUE, EMAIL text, VALIDITY text NOT NULL default 'Y');
+create table users (UID text NOT NULL UNIQUE, FULLNAME text NOT NULL, LOGIN text NOT NULL UNIQUE, EMAIL text, VALIDITY text NOT NULL default 'Y', ENDDATE text, COMMENT text);
 drop table if exists authprocs;
 create table authprocs (UID text NOT NULL, RESOURCE text NOT NULL, AUTH int NOT NULL DEFAULT 1, unique(UID,RESOURCE,AUTH));
 drop table if exists authviews;
@@ -51,41 +51,41 @@ create table authmisc (UID text NOT NULL, RESOURCE text NOT NULL, AUTH int NOT N
 drop table if exists groups;
 create table groups (GID text NOT NULL, UID text NOT NULL, unique(GID,UID));
 drop table if exists notifications;
-create table notifications (EVENT text NOT NULL, 
-                            VALIDITY NOT NULL default 'Y', 
-							UID text default '-', 
-							MAILSUBJECT text default '-', 
-							MAILATTACH text default '-', 
+create table notifications (EVENT text NOT NULL,
+                            VALIDITY NOT NULL default 'Y',
+							UID text default '-',
+							MAILSUBJECT text default '-',
+							MAILATTACH text default '-',
 							ACTION text default '-' ) ;
 
 COMMIT;
 EOF
 
-# now populate tables with default values 
+# now populate tables with default values
 echo "Populating auth*,groups,notifications tables with defaults ..."
 sqlite3 WEBOBSUSERS.db <<EOF
 BEGIN TRANSACTION;
 
--- default users : guest and webobs owner 
-insert into users values ('?','- Guest -','guest','','Y');
-insert into users values ('!','WebObs Owner','${US}','${US}@localhost','Y');
+-- default users : guest and webobs owner
+insert into users values ('?','- Guest -','guest','','Y','','guest or unauthenticated user');
+insert into users values ('!','WebObs Owner','${US}','${US}@localhost','Y','','super administrator');
 
 -- default groups : make webobs owner belong to all of these groups,
 -- just to make sure groups table gets initialized ;-)
 insert into groups values ('+VISITOR','!')  ;
-insert into groups values ('+VISITOR','?')  ;  
+insert into groups values ('+VISITOR','?')  ;
 insert into groups values ('+OBSERVER','!') ;
 insert into groups values ('+DUTY','!')     ;
 insert into groups values ('+ADMIN','!')    ;
 
 -- default authorizations
-insert into authprocs values ('!','MC',4);
+insert into authprocs values ('!','MC3',4);
+insert into authprocs values ('!','SEFRAN3',4);
 insert into authprocs values ('!','CGPSWI',4);
 insert into authprocs values ('!','SOURCES',4);
 insert into authviews values ('!','CGPSWI',4);
 insert into authviews values ('!','SOURCES',4);
 
-insert into authmisc values ('!','CLB',4);
 insert into authmisc values ('!','NODES',4);
 insert into authmisc values ('!','users',4);
 
@@ -123,25 +123,25 @@ insert into notifications (EVENT,UID,MAILSUBJECT) values('scheduler.warning','!'
 insert into notifications (EVENT,UID,MAILATTACH) values('scheduler.critical','!','pp/ff.txt');
 
 create trigger deluid after delete on users for each row
-begin 
-  delete from groups where uid = OLD.uid; 
-  delete from authviews where uid = OLD.uid; 
-  delete from authprocs where uid = OLD.uid; 
-  delete from authforms where uid = OLD.uid; 
-  delete from authwikis where uid = OLD.uid; 
-  delete from authmisc  where uid = OLD.uid; 
-  delete from notifications where uid = OLD.uid; 
+begin
+  delete from groups where uid = OLD.uid;
+  delete from authviews where uid = OLD.uid;
+  delete from authprocs where uid = OLD.uid;
+  delete from authforms where uid = OLD.uid;
+  delete from authwikis where uid = OLD.uid;
+  delete from authmisc  where uid = OLD.uid;
+  delete from notifications where uid = OLD.uid;
 end;
 
-create trigger delgid after delete on groups for each row 
-when (select count(*) from groups where gid=OLD.gid) == 0 
-begin 
+create trigger delgid after delete on groups for each row
+when (select count(*) from groups where gid=OLD.gid) == 0
+begin
   delete from authviews where uid = OLD.gid;
-  delete from authprocs where uid = OLD.gid; 
-  delete from authforms where uid = OLD.gid; 
-  delete from authwikis where uid = OLD.gid; 
-  delete from authmisc  where uid = OLD.gid; 
-  delete from notifications where uid = OLD.gid; 
+  delete from authprocs where uid = OLD.gid;
+  delete from authforms where uid = OLD.gid;
+  delete from authwikis where uid = OLD.gid;
+  delete from authmisc  where uid = OLD.gid;
+  delete from notifications where uid = OLD.gid;
 end;
 
 COMMIT;
@@ -158,8 +158,8 @@ create table tmpusers (UID text NOT NULL, FULLNAME text NOT NULL, USERLEVEL inte
 .import /tmp/createdb-operators  tmpusers
 delete from tmpusers where UID in ('?','!');
 
--- all users into users table  
-insert into users select UID, FULLNAME, LOGIN, EMAIL, 'Y' FROM tmpusers;
+-- all users into users table
+insert into users select UID, FULLNAME, LOGIN, EMAIL, 'Y', '', 'imported from legacy operators' FROM tmpusers;
 -- all userlevel 1 and 2 users are in +VISITOR group
 insert into groups select '+VISITOR',UID from tmpusers where userlevel = 1 or userlevel = 2;
 -- all userlevel 3 users are in +OBSERVER group

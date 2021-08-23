@@ -25,6 +25,10 @@ table.dusers tr.trlock,
 table.dusers td.tdlock {
 	background: #dddddd;
 }
+table.dusers tr.troff,
+table.dusers td.tdoff {
+	color: #777777;
+}
 
 #groups-field {
 	width: 950px;

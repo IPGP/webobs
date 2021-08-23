@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-register.pl 
+register.pl
 
 =head1 SYNOPSIS
 
@@ -11,8 +11,8 @@ http://..../register.pl?.... see 'Query string parameters'....
 =head1 DESCRIPTION
 
 This script must be reachable/executable from any http client (ie. not subject to Apache's Authentication
-rules). It may also be used as the Apache's target document in case of 401 error. 
- 
+rules). It may also be used as the Apache's target document in case of 401 error.
+
 =head1 Query string parameters
 
 =over
@@ -55,6 +55,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use Encode qw(decode encode);
 use Fcntl ':flock';
 use File::Basename;
+use POSIX qw/strftime/;
 
 # ---- webobs stuff
 # -----------------
@@ -88,6 +89,7 @@ sub uid_exists {
 	return 0;
 }
 
+my $today = strftime("%c",localtime(int(time())));
 
 # List of accepted characters for the password for display to the user
 # (should reflect the regex in javascript and checkParam call below)
@@ -143,7 +145,7 @@ if ($action eq "reg") {
 	close $reg_file or die "Could not write to registration file";
 
 	if ($autoregister) {
-		# Autoregistration is enabled: we insert a disabled user into the
+		# Autoregistration is enabled: we insert an invalid user into the
 		# database (she/he won't be able to see/do anything until an admin
 		# changes the user validity to 'Y')
 
@@ -177,7 +179,7 @@ if ($action eq "reg") {
 		}
 		# Insert the new user in the database (will raise an exception on database error)
 		# Use a bound query to let DBI do the escaping (to avoid security problems)
-		my $q = "insert into $WEBOBS{SQL_TABLE_USERS} values(?, ?, ?, ?, 'N')";
+		my $q = "insert into $WEBOBS{SQL_TABLE_USERS} values(?, ?, ?, ?, 'N', '', 'registered $today')";
 		my $sth = $dbh->prepare($q);
 		# Note: there is a (very) slight chance of race condition if someone
 		# made a registration request for a user with the same UID in the last
@@ -235,7 +237,7 @@ __EOD__
 }  # end of "if logout"
 
 
-# ---- called for 'pseudo-logout' or 'display form'  
+# ---- called for 'pseudo-logout' or 'display form'
 # -------------------------------------------------
 my @charte = readFile("$WEBOBS{TERMSOFUSE}");
 
@@ -398,4 +400,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

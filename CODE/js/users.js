@@ -44,6 +44,8 @@ function openPopupUser(user_row) {
 		form.OLDgid.value = $(user_row + ' .user-groups').text();
 		$(form.valid).prop("checked",
 		    ($(user_row + ' .user-validity').text() == 'Y' ? "checked" : ""));
+		form.enddate.value = $(user_row + ' .user-enddate').text();
+		form.comment.value = $(user_row + ' .user-comment').text();
 		form.action.value = "update";
 	} else {
 		// populate a blank form to edit a new user
@@ -58,6 +60,8 @@ function openPopupUser(user_row) {
 			$(this).removeProp('selected');
 		});
 		$(form.valid).prop("checked", "checked");
+		form.enddate.value = "";
+		form.comment.value = "";
 		form.action.value = "insert";
 	}
 	form.tbl.value = "user";

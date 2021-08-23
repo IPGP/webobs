@@ -17,59 +17,59 @@ use WebObs::Users
 
 Webobs' users management: descriptions (profiles) and resources access rights (authorizations).
 
-WebObs::Users is the interface to the Webobs users profiles defined 
-in the SQL DataBase $WEBOBS{SQL_DB_USERS}, tables $WEBOBS{SQL_TABLE_USERS},  
+WebObs::Users is the interface to the Webobs users profiles defined
+in the SQL DataBase $WEBOBS{SQL_DB_USERS}, tables $WEBOBS{SQL_TABLE_USERS},
 $WEBOBS{SQL_TABLE_AUTHxxxx} and $WEBOBS{SQL_TABLE_GROUPS}
 
-A 'user' is identified by its 'login' string, as defined in the http authentication file. 
-A userID (UID) is associated to this login. It is a short (typically user's name initials) identification string, 
+A 'user' is identified by its 'login' string, as defined in the http authentication file.
+A userID (UID) is associated to this login. It is a short (typically user's name initials) identification string,
 used as the key to access rights tables and groups table.
 
 The 'client' (global $CLIENT provided by WebObs::Users) is defined
-as the currently executing cgi 'user' (as returned by $ENV{REMOTE_USER}): 
-$CLIENT is the corresponding user's login. 
+as the currently executing cgi 'user' (as returned by $ENV{REMOTE_USER}):
+$CLIENT is the corresponding user's login.
 
-'Special' users are pre-defined to Webobs : 
+'Special' users are pre-defined to Webobs :
  login 'guest', uid '?' : forced by system when http's remote user not found, OR when http's remote user is not defined to Webobs
 
-A user may also be a member of one or more B<GROUP(S)>. A group is 
+A user may also be a member of one or more B<GROUP(S)>. A group is
 considered as any other user, except for its userid prefixed with '+',
 (eg. +G1) and its additional definition in the $WEBOBS{SQL_TABLE_GROUPS} table.
-A user inherits access-rights from the group(s) it belongs to.  
+A user inherits access-rights from the group(s) it belongs to.
 
-Individual user's access rights are given to 'resources' defined/checked by WebObs functionnalities. 
-A user may be granted Read, Edit (ie. Read+Update) or Admin (ie. Read+Update+Create/Delete) on a given resource. 
-Resources are represented as 'resourceType.resourceName'. 
+Individual user's access rights are given to 'resources' defined/checked by WebObs functionnalities.
+A user may be granted Read, Edit (ie. Read+Update) or Admin (ie. Read+Update+Create/Delete) on a given resource.
+Resources are represented as 'resourceType.resourceName'.
 
-resourceTypes are pre-defined in WebObs: there are 5 resourceTypes available (at time of writing this document): 
+resourceTypes are pre-defined in WebObs: there are 5 resourceTypes available (at time of writing this document):
 authprocs, authviews, authforms, authwikis, and authmisc.
 
 resourceNames are developer-freely-defined strings, with the exception of '*' that WebObs interprets as all/any resource of the given resourceType.
-Additionaly, WebObs applications may specify path-like parseable resourceNames, eg. subdir/subdir/file, that the system 
-will automatically try to match against individual resourceNames; in the previous example, the system will try to check access rights 
-for resourceNames subdir/ , subdir/subdir/ , and subdir/file. 
+Additionaly, WebObs applications may specify path-like parseable resourceNames, eg. subdir/subdir/file, that the system
+will automatically try to match against individual resourceNames; in the previous example, the system will try to check access rights
+for resourceNames subdir/ , subdir/subdir/ , and subdir/file.
 
-=head1 GLOBALS VARIABLES 
+=head1 GLOBALS VARIABLES
 
 =head2 CONSTANTS
 
  READAUTH : Read access right value
- EDITAUTH : Edit access right value 
+ EDITAUTH : Edit access right value
  ADMAUTH  : Admin access right value
 
-=head2 %WebObs::USERS    
+=head2 %WebObs::USERS
 
 HoH of all users (identified by their 'login' name) and their attributes.
 
-=head2 %webObs::USERIDS    
+=head2 %webObs::USERIDS
 
 Hash mapping each user 'LOGIN' to its corresponding UID.
 
 =head2 %WebObs::CLIENT
 
-Currently executing web client, as reported by $ENV{REMOTE_USER}. 
-If $ENV{REMOTE_USER} undefined|""|unknown in users table,  
-then $CLIENT will default to user 'guest' (UID = '?') 
+Currently executing web client, as reported by $ENV{REMOTE_USER}.
+If $ENV{REMOTE_USER} undefined|""|unknown in users table,
+then $CLIENT will default to user 'guest' (UID = '?')
 
 =cut
 
@@ -77,9 +77,10 @@ use strict;
 use warnings;
 use DBI;
 use File::Basename;
+use POSIX qw/strftime/;
 use WebObs::Utils qw(u2l l2u);
 use WebObs::Config qw( %WEBOBS );
-    
+
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %USERS, %USERIDS, $USERS_LFN, $CLIENT);
 use constant READAUTH => 1;
 use constant EDITAUTH => 2;
@@ -117,10 +118,10 @@ sub refreshUsers {
 	$USERIDS{$USERS{$_}{UID}}=$_  foreach (keys(%USERS)) ;
 }
 
-=head2 allUsers 
+=head2 allUsers
 
-Gets the full profile (all attributes, ie. sql columns) for each user into a HoH. 
-Attributes names dynamically match the corresponding SQL table column names. 
+Gets the full profile (all attributes, ie. sql columns) for each user into a HoH.
+Attributes names dynamically match the corresponding SQL table column names.
 
  'juntel' => {
               'UID' => 'JU',
@@ -129,7 +130,7 @@ Attributes names dynamically match the corresponding SQL table column names.
               'LOGIN' => 'juntel'
             },
 
-=cut 
+=cut
 
 sub allUsers {
 	my ($rs, $dbh, $sql, $sth);
@@ -144,7 +145,7 @@ sub allUsers {
 		'RaiseError' => 1,
 		}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-	$sql = "SELECT * FROM $tablename" ; 
+	$sql = "SELECT * FROM $tablename" ;
 	$sth = $dbh->prepare($sql);
 	$sth->execute();
 	$rs = $sth->fetchall_hashref('LOGIN');
@@ -155,7 +156,7 @@ sub allUsers {
 
 =pod
 
-=head2 listRNames 
+=head2 listRNames
 
 Gets the list of currently defined resources of a given type.
 Returns a reference to the list (or 0).
@@ -163,7 +164,7 @@ Returns a reference to the list (or 0).
 	$pres = WebObs::Users::listRNames(type=>'authprocs');
 	for (@$pres) { print "=>$_\n" };   # ie., all @$pres[]
 
-=cut 
+=cut
 
 sub listRNames {
 	my %KWARGS = @_;
@@ -180,7 +181,7 @@ sub listRNames {
 			'RaiseError' => 1,
 			}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-		$sql = "SELECT distinct(resource) FROM $KWARGS{type}" ; 
+		$sql = "SELECT distinct(resource) FROM $KWARGS{type}" ;
 		$sth = $dbh->prepare($sql);
 		$sth->execute();
 		$tmp = $sth->fetchall_arrayref();
@@ -191,18 +192,18 @@ sub listRNames {
 	} else { return 0 }
 }
 
-=pod 
+=pod
 
 =head2 userName (was 'nomOperateur')
 
-Given user(s) UID(s) (ie. initials) returns user(s) full-name(s) 
+Given user(s) UID(s) (ie. initials) returns user(s) full-name(s)
 
-=cut 
+=cut
 
 sub userName {
 	my @name;
 	for (@_) {
-		if ( defined($USERIDS{$_}) ) { 
+		if ( defined($USERIDS{$_}) ) {
 			push(@name,$USERS{$USERIDS{$_}}{FULLNAME});
 		} else {
 			push(@name,$_);
@@ -212,16 +213,16 @@ sub userName {
 }
 
 
-=pod 
+=pod
 
 =head2 userListGroup
 
-Given a user 'login' (as defined in 'users' table),returns an array of 
-all known user's groups: 
+Given a user 'login' (as defined in 'users' table),returns an array of
+all known user's groups:
 
 	@Group = userListGroup('juntel');
 
-=cut 
+=cut
 
 sub userListGroup {
 	my (@groups, $dbh, $sql, $sth);
@@ -237,9 +238,9 @@ sub userListGroup {
 			}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
 		$sql  = "SELECT GID";
-		$sql .= " FROM $tblgroups"; 
-		$sql .= " WHERE UID = '$USERS{$_[0]}{UID}'" ; 
-		
+		$sql .= " FROM $tblgroups";
+		$sql .= " WHERE UID = '$USERS{$_[0]}{UID}'" ;
+
 		$sth = $dbh->prepare($sql);
 		$sth->execute();
 		my $tmp = $sth->fetchall_arrayref();
@@ -249,17 +250,17 @@ sub userListGroup {
 	return @groups;
 }
 
-=pod 
+=pod
 
-=head2 userListAuth 
+=head2 userListAuth
 
-Given a user 'login' (as defined in 'users' table),returns an Hash of arrays of 
-all known user's authorizations: 
+Given a user 'login' (as defined in 'users' table),returns an Hash of arrays of
+all known user's authorizations:
 
 	%HoA = userListAuth('juntel');
 	$HoA{resource-type} = array of all juntel's authorizations for resource-type
 
-=cut 
+=cut
 
 sub userListAuth {
 	my (%rs, $dbh, $sql, $sth);
@@ -276,10 +277,10 @@ sub userListAuth {
 				}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
 			$sql  = "SELECT $tblauth.RESOURCE, $tblauth.AUTH";
-			$sql .= " FROM $tblusers,$tblauth"; 
-			$sql .= " WHERE $tblusers.UID = '$USERS{$_[0]}{UID}' AND  $tblusers.UID = $tblauth.UID" ; 
+			$sql .= " FROM $tblusers,$tblauth";
+			$sql .= " WHERE $tblusers.UID = '$USERS{$_[0]}{UID}' AND  $tblusers.UID = $tblauth.UID" ;
 			$sql .= " ORDER BY 1,2";
-			
+
 			$sth = $dbh->prepare($sql);
 			$sth->execute();
 			my $tmp = $sth->fetchall_arrayref();
@@ -290,7 +291,7 @@ sub userListAuth {
 	return %rs;
 }
 
-=pod 
+=pod
 
 =head2 userHasAuth
 
@@ -302,9 +303,9 @@ to resource-'type' named 'name'.
 	'user' has 'xAUTH'-access to resource-type/resource-name when :
     	 1) resource-type has: user / resource-name / auth >= xAUTH
 	 OR  2) resource-type has: user / * /auth >= xAUTH
-	 OR  3) 'user' belongs to 'group' that verifies 1) OR 2) as above 
+	 OR  3) 'user' belongs to 'group' that verifies 1) OR 2) as above
 
-=cut 
+=cut
 
 sub userHasAuth {
 	my %KWARGS = @_;
@@ -313,7 +314,7 @@ sub userHasAuth {
 	my ($rs, $dbh, $sql, $sth, $count);
 	my $rc = 0;
 
-	#if ($KWARGS{type} ~~ @validtbls)  { 
+	#if ($KWARGS{type} ~~ @validtbls)  {
 	if (grep /^$KWARGS{type}$/i , @validtbls) {
 		$KWARGS{user} = $USERS{$KWARGS{user}}{UID};
 		my $dbname    = $WEBOBS{SQL_DB_USERS};
@@ -326,11 +327,12 @@ sub userHasAuth {
 			'RaiseError' => 1,
 			}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}'");
+        my $today = strftime("%Y-%m-%d",localtime(int(time())));
+		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND ENDDATE<'$today'");
 		if ($validuser eq 'Y') {
-			my @inl="'*'"; 
+			my @inl="'*'";
 			while ($KWARGS{name} !~ m|^.?/$|) { push(@inl,"\'$KWARGS{name}\'"); $KWARGS{name}=dirname($KWARGS{name})."/"; };
-			my $sql  = "SELECT COUNT(*) FROM $KWARGS{type}"; 
+			my $sql  = "SELECT COUNT(*) FROM $KWARGS{type}";
 			$sql    .= " WHERE ( $KWARGS{type}.UID in (SELECT GID from $tblgroups WHERE UID='$KWARGS{user}') OR $KWARGS{type}.UID = '$KWARGS{user}') ";
 			$sql    .= " AND $KWARGS{type}.RESOURCE in (".join(", ",@inl).") AND $KWARGS{type}.AUTH >= $KWARGS{auth}";
 
@@ -344,7 +346,7 @@ sub userHasAuth {
 	return $rc;
 }
 
-=pod 
+=pod
 
 =head2 userMaxAuth
 
@@ -352,7 +354,7 @@ returns maximum authorization granted to user on resource type / resource name i
 
 	$max = WebObs::Users::userMaxAuth(user=>'juntel', type=>'authprocs', name=>"('res1','res2')";
 
-=cut 
+=cut
 
 sub userMaxAuth {
 	my %KWARGS = @_;
@@ -374,9 +376,10 @@ sub userMaxAuth {
 			'RaiseError' => 1,
 			}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}'");
+        my $today = strftime("%Y-%m-%d",localtime(int(time())));
+		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND ENDDATE<'$today'");
 		if ($validuser eq 'Y') {
-			my $sql  = "SELECT MAX(AUTH) FROM $KWARGS{type}"; 
+			my $sql  = "SELECT MAX(AUTH) FROM $KWARGS{type}";
 			$sql    .= " WHERE ( $KWARGS{type}.UID in (SELECT GID from $tblgroups WHERE UID='$KWARGS{user}') OR $KWARGS{type}.UID = '$KWARGS{user}') ";
 			$sql    .= " AND ($KWARGS{type}.RESOURCE IN $KWARGS{name} OR $KWARGS{type}.RESOURCE ='*')";
 
@@ -389,7 +392,7 @@ sub userMaxAuth {
 	return $rc;
 }
 
-=pod 
+=pod
 
 =head2 userIsValid
 
@@ -397,7 +400,7 @@ sub userMaxAuth {
 
 returns true (1) if given 'user' login has a validity status 'Y'
 
-=cut 
+=cut
 
 sub userIsValid {
 	my %KWARGS = @_;
@@ -416,7 +419,8 @@ sub userIsValid {
 		'RaiseError' => 1,
 		}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-	my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}'");
+    my $today = strftime("%Y-%m-%d",localtime(int(time())));
+	my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND ENDDATE<'$today'");
 	if ($validuser eq 'Y') { $rc = 1 }
 
 	$dbh->disconnect;
@@ -424,13 +428,13 @@ sub userIsValid {
 	return $rc;
 }
 
-=pod 
+=pod
 
 =head2 clientHas{Read | Edit | Adm}
 
-wrappers for userHasAuth with user=$CLIENT. 
+wrappers for userHasAuth with user=$CLIENT.
 
-=cut 
+=cut
 
 sub clientHasRead {
 	my %KWARGS = @_;
