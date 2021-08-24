@@ -52,8 +52,8 @@ PATH_MCC|${ROOT_CODE}/bin/linux-64
 ```
 
 6. **User's** have now two new attributes for administration (editabled through the User Manager GUI):
-    - an ending date of validity in the format `YYYY-MM-DD` as the last effective day of the account (reference is the WebObs server local time). Even with a validity flag `Y`, if the end date is past the user will be considered as invalid. Let this field empty for never-ending accounts.
-    - a comment field (free string) to add any useful information about the account (only seen by admins). When a new user has autoregistered, this field is used to add the date and time of registering.
+    - an **end date of validity** in the format `YYYY-MM-DD` as the last effective day of the account activity (reference is the WebObs server local time). Let this field empty for potentially never-ending accounts. Combined with a validity flag `Y`, if the end date is pasted the user will be still considered as invalid. A validity flag `N` always invalidates the account whatever the end date is.
+    - a **comment** field (free string) to add any useful information about the account (only seen by admins). When a new user has autoregistered, this field is used to add the date and time of registering.
 
 ### Fixed issues
 1. **sefran3**: There was a problem with the last binary with seedlink and fdsnws-dataselect protocols if one or more data channels are missing (error).

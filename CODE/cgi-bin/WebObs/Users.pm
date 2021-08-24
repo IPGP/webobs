@@ -328,7 +328,7 @@ sub userHasAuth {
 			}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
         my $today = strftime("%Y-%m-%d",localtime(int(time())));
-		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND ENDDATE<'$today'");
+		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND ENDDATE<='$today'");
 		if ($validuser eq 'Y') {
 			my @inl="'*'";
 			while ($KWARGS{name} !~ m|^.?/$|) { push(@inl,"\'$KWARGS{name}\'"); $KWARGS{name}=dirname($KWARGS{name})."/"; };
@@ -377,7 +377,7 @@ sub userMaxAuth {
 			}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
         my $today = strftime("%Y-%m-%d",localtime(int(time())));
-		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND ENDDATE<'$today'");
+		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND ENDDATE<='$today'");
 		if ($validuser eq 'Y') {
 			my $sql  = "SELECT MAX(AUTH) FROM $KWARGS{type}";
 			$sql    .= " WHERE ( $KWARGS{type}.UID in (SELECT GID from $tblgroups WHERE UID='$KWARGS{user}') OR $KWARGS{type}.UID = '$KWARGS{user}') ";
@@ -420,7 +420,7 @@ sub userIsValid {
 		}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
     my $today = strftime("%Y-%m-%d",localtime(int(time())));
-	my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND ENDDATE<'$today'");
+	my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND ENDDATE<='$today'");
 	if ($validuser eq 'Y') { $rc = 1 }
 
 	$dbh->disconnect;
