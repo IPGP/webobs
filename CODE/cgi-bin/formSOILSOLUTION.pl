@@ -511,7 +511,7 @@ print qq(</table>
                  onMouseOut="nd()" onmouseover="overlib('$__{help_soilsolution_hco3}')"><BR>
               <B>Cl<sup>-</sup></B> (ppm) = <input size=6 class=inputNum name="cCl" value="$sel_cCl"
                  onMouseOut="nd()" onmouseover="overlib('$__{help_soilsolution_cl}')"><BR>
-              <B>NO<sub>3</sub><sup>-</sup></B> (ppm) = <input size=6 class=inputNum name="cNO3" value="$sel_cCl"
+              <B>NO<sub>3</sub><sup>-</sup></B> (ppm) = <input size=6 class=inputNum name="cNO3" value="$sel_cNO3"
                  onMouseOut="nd()" onmouseover="overlib('$__{help_soilsolution_no3}')"><BR>
               <B>SO<sub>4</sub><sup>--</sup></B> (ppm) = <input size=6 class=inputNum name="cSO4" value="$sel_cSO4"
                  onMouseOut="nd()" onmouseover="overlib('$__{help_soilsolution_so4}')"><BR>
