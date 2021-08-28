@@ -164,7 +164,7 @@ for (@amplitudes) {
         $nomAmp{$key} = $nam;
 }
 # time interval texts + value in hours
-my @time_intervals = split(/,/,$SEFRAN3{TIME_INTERVALS_LIST});
+my @time_intervals = split(/,/,exists($SEFRAN3{TIME_INTERVALS_LIST}) ? $SEFRAN3{TIME_INTERVALS_LIST}:"0,6,12,24,48");
 my %time_limits;
 for (@time_intervals) {
 	if ($_ == 0) {
