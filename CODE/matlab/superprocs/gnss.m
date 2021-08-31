@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-08-09
+%   Updated: 2021-08-31
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -248,6 +248,7 @@ PCDM.supplementary_graphs = isok(P,'MODELLING_PCDM_SUPPLEMENTARY_GRAPHS');
 tickfactorlim = 5e3; % above 5 km width/depth axis will be in km
 
 % MODELTIME parameters
+modeltime_source_type = field2str(P,'MODELTIME_SOURCE_TYPE','isotropic','notempty');
 modeltime_period = field2num(P,'MODELTIME_PERIOD_DAY');
 modeltime_sampling = field2num(P,'MODELTIME_SAMPLING_DAY',1);
 modeltime_max = field2num(P,'MODELTIME_MAX_MODELS',100);
@@ -1708,9 +1709,22 @@ for r = 1:numel(P.GTABLE)
 			[xx,yy,zz] = meshgrid(xlim,ylim,zlim);
 		end
 		dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max/modeltime_sampling)*modeltime_sampling);
+
+		% loop on the model source type
+		for mst = split(modeltime_source_type,',')
+			mt = lower(char(mst));
+
+			switch lower(mt)
+			case 'pcdm'
+				summary = 'MODELTIME_pCDM';
+				PCDM.random_sampling = field2num(P,'MODELTIME_PCDM_RANDOM_SAMPLING',PCDM.random_sampling);
+			otherwise
+				summary = 'MODELTIME';
+			end
+
 		info = { ...
 			' ', ...
-			sprintf('model type = {\\bfisotropic}'), ...
+			sprintf('model type = {\\bf%s}',mst{1}), ...
 			sprintf('model space = {\\bf%s}',num2tex(rr^3)), ...
 			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
 			sprintf('uncertainty = {\\bf%g \\sigma (%1.1f%%)}',modelopt.msig,modelopt.msigp*100), ...
@@ -1739,12 +1753,13 @@ for r = 1:numel(P.GTABLE)
 			% last time must contain data
 			tlast = max(max(cat(1,D.tfirstlast)));
 			M(m).t(M(m).t > tlast) = [];
-			fprintf('%s: computing %d models (%s @ %s) ',wofun,numel(M(m).t),mtlabel{m},days2h(dt));
+			fprintf('%s: computing %d %s models (%s @ %s) ',wofun,numel(M(m).t),mst{1},mtlabel{m},days2h(dt));
 
 			% initiates the model result matrix
 			M(m).d = nan(numel(M(m).t),5);
 			M(m).e = nan(numel(M(m).t),5);
 			M(m).o = nan(numel(M(m).t),1);
+			M(m).type = cell(numel(M(m).t),1);
 
 			for w = 1:numel(M(m).t)
 				t2 = M(m).t(w);
@@ -1821,12 +1836,19 @@ for r = 1:numel(P.GTABLE)
 				modelopt.verbose = 'quiet';
 				d(:,4:6) = adjerrors(d,modelopt);
 
-				% --- computes the model !
-				MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
-				M(m).d(w,:) = [MM(1).pbest(1:4),sign(MM(1).pbest(4))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
+				% --- computes the model (and stores only the source #1) !
+				switch lower(mt)
+				case 'pcdm'
+					MM = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,PCDM);
+					M(m).d(w,:) = [MM(1).pbest(1:3),MM(1).pbest(7)*1e6,sign(MM(1).pbest(7))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
+				otherwise
+					MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
+					M(m).d(w,:) = [MM(1).pbest(1:3),MM(1).pbest(4)*1e6,sign(MM(1).pbest(4))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
+				end
 				%M(m).e(w,:) = [MM(1).ws,MM(1).ws,diff(MM(1).ez),diff(MM(1).ev),MM(1).m0];
 				M(m).e(w,:) = [diff(MM(1).ex)/2,diff(MM(1).ey)/2,diff(MM(1).ez)/2,diff(MM(1).ev)/2,MM(1).m0];
 				M(m).o(w,1) = median(tro); % model worst orbit
+				M(m).type{w} = MM(1).type;
 
 				if isok(P,'DEBUG')
 					fprintf('\n%s,%s: %+g 10e6 m3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM.pbest(4),MM.pbest(3)/1e3],3));
@@ -1862,19 +1884,19 @@ for r = 1:numel(P.GTABLE)
 			fprintf(' done!\n');
 		end
 
-		figure, orient tall
-
-		% -- volumetric flow rate from volume variation (moving)
-		subplot(10,1,1:3), extaxes(gca,[.08,.04])
-
 		% adjusts unit
-		vmaxs = max(abs(cat(1,M.vmedian)));
+		vmaxs = max(abs(cat(1,M.vmax)));
 		if isfinite(vmaxs) && vmaxs > 0.5e6
 			vfactor = 1e6;
 			vunit = ['M',vunit];
 		else
 			vfactor = 1;
 		end
+		
+		figure, orient tall
+
+		% -- volumetric flow rate from volume variation (moving)
+		subplot(10,1,1:3), extaxes(gca,[.08,.04])
 
 		plot(tlim,[0,0],'-k','LineWidth',1)
 		hold on
@@ -1973,8 +1995,9 @@ for r = 1:numel(P.GTABLE)
 			IMAP(nimap).s = cell(size(M(m).t));
 			IMAP(nimap).l = cell(size(M(m).t));
 			for n = 1:numel(IMAP(nimap).s)
-				IMAP(nimap).s{n} = sprintf('''%g km<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
-					roundsd(M(m).d(n,3)/1e3,2),vtype,roundsd(M(m).d(n,4)/vfactor,2), ...
+				IMAP(nimap).s{n} = sprintf('''%g km (%s)<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
+					roundsd(M(m).d(n,3)/1e3,2),	M(m).type{n}, ...
+					vtype,roundsd(M(m).d(n,4)/vfactor,2), ...
 					regexprep(vunit,'\^3','<sup>3</sup>'),roundsd(M(m).e(n,5),2), ...
 					datestr(M(m).t(n),'dd-mmm-yyyy HH:MM'),mtlabel{m});
 			end
@@ -2146,6 +2169,7 @@ for r = 1:numel(P.GTABLE)
 			end
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
+	end
 	end
 end
 
