@@ -10,8 +10,9 @@ function M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt,PCDM)
 %	       opt.msigp: number of sigma for best model uncertainty
 %	            PCDM: structure of additional parameters (see gnss.m)
 %
-%	            
+%
 %	Output paramaters as structure with fields:
+%	      type: source type (description)
 %	        mm: 3-D matrix of misfit (as probabilities)
 %	        vv: 3-D matrix of optimal volume variation
 %	         k: = global index of best model into 3-D matrix MM or VV
@@ -27,7 +28,7 @@ function M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt,PCDM)
 %
 %	Authors: Antoine Villié and François Beauducel
 %	Created: 2018-07-11 in Yogyakarta (Indonesia)
-%	Updated: 2020-04-02
+%	Updated: 2021-08-31
 
 if all(length(PCDM.random_sampling) ~= [1,PCDM.iterations])
 	error('MODELLING_PCDM_RANDOM_SAMPLING must be scalar or vector of MODELLING_PCDM_ITERATIONS length.')
@@ -55,10 +56,12 @@ first_limits(:,7) = PCDM.dvlim'/1e9; % dVtot (km3)
 
 first_limits(:,8) = PCDM.alim';
 first_limits(:,9) = PCDM.blim';
-fprintf('---> pCDM parameter limits:\n');
-pname = {'X','Y','Z','Ox','Oy','Oz','dV','A','B'};
-for p = 1:length(pname)
-	fprintf('    %2s : %10g %10g\n',pname{p},first_limits(:,p));
+if ~strcmpi(opt.verbose,'quiet')
+	fprintf('---> pCDM parameter limits:\n');
+	pname = {'X','Y','Z','Ox','Oy','Oz','dV','A','B'};
+	for p = 1:length(pname)
+		fprintf('    %2s : %10g %10g\n',pname{p},first_limits(:,p));
+	end
 end
 
 PCDM.ptmp = '/tmp/webobs/pcdm';
@@ -120,8 +123,7 @@ for m = 1:opt.multi
 	%ws = median(d0(mm>minmax(mm(:),.99)));	% median distance of the 1% best models
 	ws = 2*median(d0(mm >= (1 - opt.msigp)*max(mm(:))));	% distance of the best models (msig)
 
-	% divides mm by m to reduce importance of secondary source
-	M(m).mm = mm/m;
+	M(m).mm = mm/m; % divides mm by m to reduce importance of secondary source
 	M(m).vv = vv;
 	M(m).m0 = m0;
 	M(m).ux = ux;
@@ -133,6 +135,7 @@ for m = 1:opt.multi
 	M(m).ev = ev;
 	M(m).ws = ws;
 	pbest = param(kmax,:);
+	M(m).type = pcdmdesc(pbest(8),pbest(9));
 	% coordinates in m, depth < 0, dV in Mm3
 	M(m).pbest = [pbest(1:2)*1e3,-pbest(3)*1e3,pbest(4:6),pbest(7)*1e3,pbest(8:9)];
 
@@ -163,7 +166,7 @@ nb_iterations = PCDM.iterations;
 tracepCDM = 0;
 
 trace = 0;                % for pCDM_inv_montecarlo (si trace~=0, alors on trace
-					  % les cartes de proba sur une dernière itération avec un nombre 
+					  % les cartes de proba sur une dernière itération avec un nombre
 					  % de modèles égale à trace)
 if PCDM.supplementary_graphs
 	% PCDM.ptmp is path to write supplementary results
@@ -180,9 +183,11 @@ low_limits(:,:,1) = first_limits(1,:);
 high_limits(:,:,1) = first_limits(2,:);
 Output(1).plim = first_limits;
 
-% Inversion: main loop of iterations 
+% Inversion: main loop of iterations
 for i = 1:nb_iterations
-	fprintf('---> pCDM iteration %d/%d (%d models)...',i,nb_iterations,nb_models(i));
+	if ~strcmpi(opt.verbose,'quiet')
+		fprintf('---> pCDM iteration %d/%d (%d models)...',i,nb_iterations,nb_models(i));
+	end
 	[Output(i).best_model,Output(i).prob,Output(i).param] = pCDM_inv_montecarlo(...
 	TOPO,X,Y,Z,Ue,Un,Uv,Sigmas,Output(i).plim,nb_models(i),trace,opt,PCDM);
 
@@ -190,7 +195,9 @@ for i = 1:nb_iterations
 
 	low_limits(:,:,i+1) = Output(i+1).plim(1,:);
 	high_limits(:,:,i+1) = Output(i+1).plim(2,:);
-	fprintf(' done.\n');
+	if ~strcmpi(opt.verbose,'quiet')
+		fprintf(' done.\n');
+	end
 end
 Output(nb_iterations+1).best_model = nan(1,9);
 Output(nb_iterations+1).prob = NaN;
@@ -207,7 +214,7 @@ if PCDM.supplementary_graphs
 		subplot(3,3,indice(param_number))
 		title(names{param_number})
 		axis('square')
-		hold on 
+		hold on
 		plot(1:nb_iterations+1,reshape(low_limits(1,param_number,1:end),[1,nb_iterations+1]),'r')
 		plot(1:nb_iterations+1,reshape(high_limits(1,param_number,1:end),[1,nb_iterations+1]),'r')
 		plot(1:nb_iterations,best_model(1:end-1,param_number)')
@@ -215,13 +222,13 @@ if PCDM.supplementary_graphs
 	end
 	print(sprintf('%s/Resume_Global',PCDM.ptmp),'-dpng');
 	save(sprintf('%s/environnement',PCDM.ptmp))
-	close 
-	    
+	close
+
 	%-------------------------------------------------------------------------------
 
 
 
-	   
+
 	% Text file with the iterations details
 	%_______________________________________________________________________________
 	% Cette partie sort le fichier texte avec le résumé des limites et best_models pour chaque itération
@@ -284,7 +291,7 @@ for param_number = 1:9
 		shading flat;
 		axis tight;
 		axis('square')
-		caxis([1,max(N(:).^PCDM.heatmap_saturation)]); 
+		caxis([1,max(N(:).^PCDM.heatmap_saturation)]);
 	end
 	% Curve
 	%_________________________________________________________________________
@@ -300,14 +307,14 @@ for param_number = 1:9
 	if max(pp(:))~=0
 		pp = pp./max(pp(:));
 	end
-	pp = smooth(pp,PCDM.heatmap_smooth_span,'sgolay',PCDM.heatmap_smooth_degree); 
-	% Next limits 
+	pp = smooth(pp,PCDM.heatmap_smooth_span,'sgolay',PCDM.heatmap_smooth_degree);
+	% Next limits
 	%_________________________________________________________________________
 	%Test with different convergence speeds (x,y, dvtot)
 
 	xnext = find(pp>=mean(pp));
 
-	if xnext(1)<grid_size/PCDM.newlimit_edge_ratio   
+	if xnext(1)<grid_size/PCDM.newlimit_edge_ratio
 		xnext(1) = 1;
 	end
 	if xnext(end)>(PCDM.newlimit_edge_ratio-1)*grid_size/PCDM.newlimit_edge_ratio
@@ -335,7 +342,7 @@ for param_number = 1:9
 end
 
 if PCDM.supplementary_graphs
-	hold off 
+	hold off
 	print(sprintf('%s/Resume_iteration_number%d',PCDM.ptmp,numeroiter),'-dpng');
 	close all
 end
@@ -349,7 +356,5 @@ for i = 1:9
 	if (next_limits(2,i)==limits(2,i))
 		next_limits(2,i) = min(limits(2,i)+(limits(2,i)-limits(1,i))*PCDM.newlimit_extend,initial_limits(2,i));
 	end
-end  
+end
 new_limits = next_limits(:,:);
-
-
