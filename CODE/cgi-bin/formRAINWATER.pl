@@ -103,8 +103,8 @@ my %GMOL = readCfg("$WEBOBS{ROOT_CODE}/etc/gmol.conf");
 $ENV{LANG} = $WEBOBS{LOCALE};
 
 # ----
-my ($sel_site,$sel_volume,$sel_diameter,$sel_pH,$sel_cond,$sel_cNa,$sel_cK,$sel_cMg,$sel_cCa,$sel_cHCO3,$sel_cCl,$sel_cSO4,$sel_d18O,$sel_dD,$sel_rem);
-$sel_site=$sel_volume=$sel_pH=$sel_cond=$sel_cNa=$sel_cK=$sel_cMg=$sel_cCa=$sel_cHCO3=$sel_cCl=$sel_cSO4=$sel_d18O=$sel_dD=$sel_rem = "";
+my ($sel_site,$sel_volume,$sel_diameter,$sel_pH,$sel_cond,$sel_cNa,$sel_cK,$sel_cMg,$sel_cCa,$sel_cHCO3,$sel_cCl,$sel_cSO4,$sel_dD,$sel_d18O,$sel_rem);
+$sel_site=$sel_volume=$sel_pH=$sel_cond=$sel_cNa=$sel_cK=$sel_cMg=$sel_cCa=$sel_cHCO3=$sel_cCl=$sel_cSO4=$sel_dD=$sel_d18O=$sel_rem = "";
 $sel_diameter = "";
 
 # ---- Variables des menus
@@ -528,10 +528,10 @@ print qq(</select>
           <TR>
             <TD style=border:0 valign=top>
               <P class=parform align=right>
-                <B>&delta;<sup>18</sup>O</B> (‰) = <input size=6 class=inputNum name="d18O" value="$sel_d18O"
-                  onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_o18}')"><BR>
                 <B>&delta;D</B> (‰) = <input size=6 class=inputNum name="dD" value="$sel_dD"
                   onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_d}')"><BR>
+                <B>&delta;<sup>18</sup>O</B> (‰) = <input size=6 class=inputNum name="d18O" value="$sel_d18O"
+                  onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_o18}')"><BR>
               </P>
             </TD>
           </TR>
