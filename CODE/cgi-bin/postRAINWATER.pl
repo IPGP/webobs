@@ -70,9 +70,9 @@ parameters from each field:
 
 =item B<cHCO3=>
 
-=item B<d18O=>
-
 =item B<dD=>
+
+=item B<d18O=>
 
 =item B<val=>
 
@@ -139,8 +139,8 @@ my $cCa    = $cgi->param('cCa');
 my $cHCO3  = $cgi->param('cHCO3');
 my $cCl    = $cgi->param('cCl');
 my $cSO4   = $cgi->param('cSO4');
-my $d18O   = $cgi->param('d18O');
 my $dD     = $cgi->param('dD');
+my $d18O   = $cgi->param('d18O');
 
 my $val    = $cgi->param('val');
 my $oper   = $cgi->param('oper');
@@ -160,7 +160,7 @@ my @lines;
 my $maxId = 0;
 my $msg = "";
 my $newID;
-my $header = u2l("ID|Date2|Time2|Site|Date1|Time1|Volume (ml)|Diameter (cm)|pH|Cond. (°C)|Na (ppm)|K (ppm)|Mg (ppm)|Ca (pmm)|HCO3 (ppm)|Cl (ppm)|SO4 (ppm)|d18O (‰)|dD (‰)|Comments|Valid\n");
+my $header = u2l("ID|Date2|Time2|Site|Date1|Time1|Volume (ml)|Diameter (cm)|pH|Cond. (°C)|Na (ppm)|K (ppm)|Mg (ppm)|Ca (pmm)|HCO3 (ppm)|Cl (ppm)|SO4 (ppm)|dD (‰)|d18O (‰)|Comments|Valid\n");
 
 # ---- lock-exclusive the data file during all update process
 #
@@ -196,7 +196,7 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 			$newID = ++$maxId;
 			$msg = "new record #$newID has been created.";
 		}
-		my $string = u2l("$newID|$date2|$time2|$site|$date1|$time1|$volume|$diameter|$pH|$cond|$cNa|$cK|$cMg|$cCa|$cHCO3|$cCl|$cSO4|$d18O|$dD|$rem|$val\n");
+		my $string = u2l("$newID|$date2|$time2|$site|$date1|$time1|$volume|$diameter|$pH|$cond|$cNa|$cK|$cMg|$cCa|$cHCO3|$cCl|$cSO4|$dD|$d18O|$rem|$val\n");
 		if ($delete < 2) {
 			push(@lines, $string);
 		} else {
