@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-08-31
+%   Updated: 2021-10-14
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -1714,7 +1714,7 @@ for r = 1:numel(P.GTABLE)
 		for mst = split(modeltime_source_type,',')
 			mt = lower(char(mst));
 
-			switch lower(mt)
+			switch mt
 			case 'pcdm'
 				summary = 'MODELTIME_pCDM';
 				PCDM.random_sampling = field2num(P,'MODELTIME_PCDM_RANDOM_SAMPLING',PCDM.random_sampling);
@@ -1756,7 +1756,7 @@ for r = 1:numel(P.GTABLE)
 			fprintf('%s: computing %d %s models (%s @ %s) ',wofun,numel(M(m).t),mst{1},mtlabel{m},days2h(dt));
 
 			% initiates the model result matrix
-			M(m).d = nan(numel(M(m).t),5);
+			M(m).d = nan(numel(M(m).t),5 + 5*strcmp(mt,'pcdm'));
 			M(m).e = nan(numel(M(m).t),5);
 			M(m).o = nan(numel(M(m).t),1);
 			M(m).type = cell(numel(M(m).t),1);
@@ -1837,10 +1837,10 @@ for r = 1:numel(P.GTABLE)
 				d(:,4:6) = adjerrors(d,modelopt);
 
 				% --- computes the model (and stores only the source #1) !
-				switch lower(mt)
+				switch mt
 				case 'pcdm'
 					MM = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,PCDM);
-					M(m).d(w,:) = [MM(1).pbest(1:3),MM(1).pbest(7)*1e6,sign(MM(1).pbest(7))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
+					M(m).d(w,:) = [MM(1).pbest(1:3),MM(1).pbest(7)*1e6,MM(1).pbest([8,9,4:6]),sign(MM(1).pbest(7))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
 				otherwise
 					MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
 					M(m).d(w,:) = [MM(1).pbest(1:3),MM(1).pbest(4)*1e6,sign(MM(1).pbest(4))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
@@ -1892,7 +1892,7 @@ for r = 1:numel(P.GTABLE)
 		else
 			vfactor = 1;
 		end
-		
+
 		figure, orient tall
 
 		% -- volumetric flow rate from volume variation (moving)
@@ -2153,17 +2153,23 @@ for r = 1:numel(P.GTABLE)
 		% exports data
 		if isok(P.GTABLE(r),'EXPORTS')
 			E.t = M(1).t;
-			n = size(M(1).d,2);
-			E.d = nan(size(M(1).d,1),numel(M)*size(M(1).d,2)*2);
+			n = size(M(1).d,2) + size(M(1).e,2);
+			E.d = nan(size(M(1).d,1),numel(M)*n);
+			E.header = cell(size(M(1).d,1),numel(M)*size(M(1).d,2)*2);
 			[e0,n0,z0] = ll2utm(lat0,lon0);
 			for m = 1:numel(M)
-				k = (m-1)*n*2 + (1:2*n);
+				k = (m-1)*n + (1:n);
 				[lats,lons] = utm2ll(e0+M(m).d(:,1),n0+M(m).d(:,2),z0);
 				E.d(:,k) = cat(2,lats,lons,M(m).d(:,3:end),M(m).e);
-				E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
+				switch mt
+				case 'pcdm'
+					E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'A','B','Ox','Oy','Oz','dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
+				otherwise
+					E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
+				end
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
-			E.infos = {''};
+			E.infos = {sprintf('Source type: %s',mt)};
 			for m = 1:numel(modeltime_period)
 				E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
 			end
