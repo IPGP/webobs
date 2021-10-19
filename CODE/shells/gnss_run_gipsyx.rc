@@ -42,6 +42,9 @@ GIPSYOPTIONS="-runType PPP"
 # teqc options: Please take a deep look at www.unavco.org TEQC tutorial!
 TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -0.pe 0 0 0 -C2 -O.-obs C2 -O.-obs C5 -O.dec 30s -max_rx_SVs 30 -n_GLONASS 27"
 
+# not empty value will add troposphere results in .tdp files (.Trop.*)
+TROP_TDP=
+
 # display some rinex header in case of error
 ERROR_REGEX_RINEX="REC #|ANT #|# / TYPES OF OBSERV|MARKER NAME|APPROX POSITION XYZ"
 

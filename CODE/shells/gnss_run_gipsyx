@@ -25,7 +25,7 @@
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia)
 #          Based on Gipsy-Oasis version by Francois BEAUDUCEL (IPGP) and Ahmad Ali FAHMI (IRD),
 #          Domerapi/WebObs Project, 2014.
-# Updated: 2021-03-16
+# Updated: 2021-10-12
 
 #Check lock file
 LOCKFILE=/tmp/gnss_run_gipsyx.txt
@@ -51,8 +51,8 @@ if [ $# -lt 2 ]; then
 	echo "            process previous days from the selected ones, for instance:"
 	echo "            gnss_run_gipsyx CONF 1 -d 2017/03/17,2018/08/05"
 	echo "            will compute  2017/03/17, 2017/03/16, 2018/08/05 and 2018/08/04"
-	echo "       -final"
-	echo "            use only final orbit"
+	echo "       -final, -rapid, -ultra"
+	echo "            use only final, rapid or ultra orbit"
 	echo "       -force"
 	echo "            forces the process despite existence of final results"
 	echo "       -lock"
@@ -116,6 +116,14 @@ for (( i=1; i<=$#; i++)); do
 	-final)
 		ORBITS=( "flinn" )
 		echo "Will use only final orbit"
+		;;
+	-rapid)
+		ORBITS=( "ql" )
+		echo "Will use only rapid orbit"
+		;;
+	-ultra)
+		ORBITS=( "ultra" )
+		echo "Will use only ultra orbit"
 		;;
    	-force)
       		FORCE=1
@@ -326,7 +334,10 @@ for station in $NODES; do
 						if [[ $rc == 0 && -s $tdp ]]; then
 							mkdir -p "$DEST/$FID/$year"
 							rm -f $gipsyres.*
-							grep ".State.Pos.[XYZ]" $tdp | tail -n3 > $gipsyres
+							grep "\.State\.Pos\.[XYZ]" $tdp | tail -n3 > $gipsyres
+							if [ -z $TROP_TDP ]; then
+								grep "\.Trop\." $tdp >> $gipsyres
+							fi
 							echo "==> $gipsyres [$orbit] written."
 							if [[ "$orbit" != "flinn" ]]; then
 								mv $gipsyres $gipsyres.$orbit
