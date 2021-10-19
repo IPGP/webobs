@@ -1,4 +1,4 @@
-# WEBOBS RELEASE NOTES
+    # WEBOBS RELEASE NOTES
 
 ## Important note
 This document contains install/upgrade summary and specific instructions for users and administrators.
@@ -15,11 +15,11 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.4 (under development)
+## v2.4 (October 2021)
 
 ### New features
 
-1. An automatic classification of seismic event type in the Sefran/MC has been implemented. It uses the code **Automatic Analysis Architecture** by M. MALFANTE, J. MARS, and M. DALLA MURA [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1216028.svg)](https://doi.org/10.5281/zenodo.1216028). Installation procedure, configuration and usage are described in [pse_configuration.md](https://github.com/IPGP/webobs/blob/master/DOC/pse_configuration.md) readme file.
+1. An automatic classification of seismic event type in the Sefran/MC has been implemented. It uses the code **Automatic Analysis Architecture** by M. Malfante, J. Mars, and M. Dalla Mura [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1216028.svg)](https://doi.org/10.5281/zenodo.1216028). Installation procedure, configuration and usage are described in [pse_configuration.md](https://github.com/IPGP/webobs/blob/master/DOC/pse_configuration.md) readme file.
 
 2. Two new forms have been created: **SOILSOLUTION** (soil solution chemical analysis) and **RAINWATER** (rain water chemical analysis). Databanks can be created using specific editor forms, display table and graphs (presently the genplot). When upgrading, the `setup` will copy the templates in the local CONF directory.
 
@@ -32,16 +32,18 @@ EVENTCOMMENT_INCLUDED_REGEXP|Volcano-Tectonic\|Long Period
 ```
 To select events of types **Volcano-Tectonic** and **Long Period**. Note the pipe `|` must be escaped with a backslash `\|`.
 
-2. superproc **gnss** has two new variables to fix Y-axis of MODELTIME plots: `MODELTIME_FLIM` containing min,max values for source flow rate (in m<sup>3</sup>/s) or volume variation (in m<sup>3</sup>), depending on the `MODELTIME_FLOWRATE` option. Empty value stands for automatic scale which is the default and former behaviour.
+2. superproc **gnss** has new features for summary graph MODELTIME:
+    - a new variable `MODELTIME_SOURCE_TYPE` now allowing the pCDM source in model time series. An additional graph will be made with name **MODELTIME_pCDM**. Use `isotropic,pcdm` value to compute both types of sources (separated graphs). **Warning:** the computation of pCDM source can be very long: about a minute for a single 2,5 million points model, so detailed model time series on several periods may take hours of computation. Use `MODELTIME_MAX_MODELS` to limit the computation (time step will be adjusted automatically, overwriting the `MODELTIME_SAMPLING_DAY` value).
+    - a new variable to fix Y-axis of plots: `MODELTIME_FLIM` containing min,max values for source flow rate (in m<sup>3</sup>/s) or volume variation (in m<sup>3</sup>), depending on the `MODELTIME_FLOWRATE` option. Empty value stands for automatic scale which is the default and former behaviour.
 
-3. `!!` Any **SEFRAN** is now managed as a new type of GRID, beside VIEW and PROC.
+3. `!!` Any **sefran3** is now managed as a new type of GRID, beside VIEW and PROC.
     - It can be associated to a DOMAIN and will be displayed in the table of grids, with optional type/owner and links to SEFRAN3 main page and associated MC3.
     - A new sefran can be created from templates using the create/edit GRID form. A specific page of configuration allows edition of the main configuration files: `SEFRAN3.conf` and `channels.conf` which are stored in a specific directory in the new `$WEBOBS{PATH_SEFRANS}/*` structure.
     - When upgrading, existing sefrans must be manually associated to a domain to appear in the grid table (use the Domain manager). `setup` will **NOT** move existing configuration files from the original CONF directory; only symbolic links will be created.
     - The variable `CHANNEL_CONF` remains operational for backward compatibility, pointing to any channels' configuration file, but it is recommended to remove/comment it so sefran will use implicitly the unique `channels.conf` file.
     - Authorization for a sefran is managed using the **procs** auth table and sefran name as resource. The generic `MC` resource name remains functional for all sefrans.
 
-4. `!!` Still for **SEFRAN**, former configuration file `SEFRAN3_TimeIntervals.conf` and corresponding variable `TIME_INTERVALS_CONF` become obsolete and might be deleted; they are replaced by a new variable `TIME_INTERVALS_LIST` in `SEFRAN3.conf` (coma-separated list of time intervals in hours, 0 stands for "Last MC events"), with default list of values that might be edited if necessary:  
+4. `!!` Still for **sefran3**, former configuration file `SEFRAN3_TimeIntervals.conf` and corresponding variable `TIME_INTERVALS_CONF` become obsolete and might be deleted; they are replaced by a new variable `TIME_INTERVALS_LIST` in `SEFRAN3.conf` (coma-separated list of time intervals in hours, 0 stands for "Last MC events"), with default list of values that might be edited if necessary:  
 ```
 TIME_INTERVALS_LIST|0,6,12,24,48,168
 ```
@@ -51,9 +53,9 @@ TIME_INTERVALS_LIST|0,6,12,24,48,168
 PATH_MCC|${ROOT_CODE}/bin/linux-64
 ```
 
-6. **User's** have now two new attributes for administration (editabled through the User Manager GUI):
-    - an **end date of validity** in the format `YYYY-MM-DD` as the last effective day of the account activity (reference is the WebObs server local time). Let this field empty for potentially never-ending accounts. Combined with a validity flag `Y`, if the end date is pasted the user will be still considered as invalid. A validity flag `N` always invalidates the account whatever the end date is.
-    - a **comment** field (free string) to add any useful information about the account (only seen by admins). When a new user has autoregistered, this field is used to add the date and time of registering.
+6. **User's** have now two new attributes for account administration (editabled through the User Manager GUI):
+    - an **expiry date** of validity in the format `YYYY-MM-DD` as the last effective day of the account activity (reference is the WebObs server local time). Let this field empty for potentially never-ending accounts. Combined with a validity flag `Y`, if the expiry date is passed the user will be still considered as invalid. A validity flag `N` always invalidates the account whatever the expiry date is.
+    - a **comment** field (free string) to add any useful information about the account (only seen by admins). When a new user has auto-registered, this field is used to add the date and time of registering.
 
 ### Fixed issues
 1. **sefran3**: There was a problem with the last binary with seedlink and fdsnws-dataselect protocols if one or more data channels are missing (error).

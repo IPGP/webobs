@@ -272,17 +272,17 @@ SEFRAN3 is using extensively the network connection (for data flux) and external
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Configuration files}
 
-To configure a new SEFRAN3, copy the template files \wofile{SEFRAN3.conf} and \wofile{SEFRAN3\_Channels.conf} to, for example, \wofile{MYSEFRAN.conf} and \wofile{MYSEFRAN\_Channels.conf}.
+To configure a new SEFRAN3, create a new grid using the create/edit button in any grid table header. Select the Grid type SEFRAN and enter the sefran short name, e.g., MYSEFRAN. This will open the form to edit the main configuration file located in \wofile{CONF/SEFRANS/MYSEFRAN/}, associate a domain, and edit the \wofile{channels.conf} file.
 
 
-\wofile{MYSEFRAN\_Channels.conf} file sets the channel list. Each channel is defined by its alias (a short code used for display), the stream string (used for the data request), the sensitivity factor (to convert counts to m/s), the filter (median, trend, spline removal or lp/hp/bp filters), the peak-to-peak signal amplitude, the color, and optionally the spectrogram parameters. A good conduct is to order the channels from North to South, and give different colors for specific regions. There is no limit to the number of channels, but a maximum of 15 channels is recommended for a normal screen resolution.
+\wofile{channels.conf} file sets the channel list. Each channel is defined by its alias (a short code used for display), the stream string (used for the data request), the sensitivity factor (to convert counts to m/s), the filter (median, trend, spline removal or lp/hp/bp filters), the peak-to-peak signal amplitude, the color, and optionally the spectrogram parameters. A good conduct is to order the channels from North to South, and give different colors for specific regions. There is no limit to the number of channels, but a maximum of 15 channels is recommended for a normal screen resolution.
 
 \wofile{MYSEFRAN.conf} file is the main configuration file. It defines a lot of things like output paths, server address and all parameters of graphical outputs and SEFRAN3 behavior.
 
-\lstinputlisting[title=\wofile{SEFRAN3\_Channels.conf}]{../../SETUP/CONF/SEFRAN3_Channels.conf}
+\lstinputlisting[title=\wofile{channels.conf}]{../../CODE/tplates/SEFRAN_Channels.conf}
 \label{sefran3:channels}
 
-\lstinputlisting[title=\wofile{SEFRAN3.conf}]{../../SETUP/CONF/SEFRAN3.conf}
+\lstinputlisting[title=\wofile{SEFRAN template}]{../../CODE/tplates/SEFRAN.DEFAULT}
 \label{sefran3:conf}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
