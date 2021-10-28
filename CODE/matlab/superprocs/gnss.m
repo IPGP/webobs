@@ -1867,8 +1867,8 @@ for r = 1:numel(P.GTABLE)
 				else
 					dtf = modeltime_period(m)*86400;
 				end
-				M(m).d(:,4) = M(m).d(:,4)*1e6./dtf;
-				M(m).e(:,4) = M(m).e(:,4)*1e6./dtf;
+				M(m).d(:,4) = M(m).d(:,4)./dtf;
+				M(m).e(:,4) = M(m).e(:,4)./dtf;
 				vtype = 'Flow rate';
 				vunit = 'm^3/s';
 			else
