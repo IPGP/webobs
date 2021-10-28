@@ -1,6 +1,6 @@
 function D = readfmtdata_miniseed(WO,P,N,F)
 %READFMTDATA_MINISEED subfunction of readfmtdata.m
-%	
+%
 %	From proc P, node N and options F returns data D.
 %	See READFMTDATA function for details.
 %
@@ -47,11 +47,11 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2019-12-10
+%	Updated: 2021-10-28
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
-mseed2sac = field2str(WO,'MSEED2SAC_PRGM','mseed2sac');
+mseed2sac = field2str(WO,'MSEED2SAC_PRGM','mseed2sac','notempty');
 
 % checks correct definition of codes and calibration for the node N
 if isempty(N.FDSN_NETWORK_CODE)
@@ -159,10 +159,35 @@ case 'miniseed'
 
 % -----------------------------------------------------------------------------
 case 'fdsnws-dataselect'
-
-	% builds request line for dataselect WebService
-	wsreq = sprintf('starttime=%04d-%02d-%02dT%02d:%02d:%02.0f&endtime=%04d-%02d-%02dT%02d:%02d:%02.0f&net=%s&sta=%s&cha=%s',tv,N.FDSN_NETWORK_CODE,N.FID,strjoin(cha_list,','));
-	wosystem(sprintf('wget -nv -O %s "%s%s"',fdat,F.raw{1},wsreq),P);
+	% builds request file for POST method (all channels and possible multiple calibrations periods)
+	freq = sprintf('%s/post.txt',F.ptmp);
+	fid = fopen(freq,'wt');
+	cc = unique(N.CLB.nv);
+	dt = N.CLB.dt;
+	for ic = 1:length(cc)
+		c = cc(ic);
+		kc = find(N.CLB.nv == c);
+		for ii = 1:length(kc)
+			if dt(kc(ii)) < F.datelim(2) && (ii==length(kc) || dt(kc(ii+1)) > F.datelim(1))
+				t1 = max(dt(kc(ii)),F.datelim(1));
+				if ii == length(kc)
+					t2 = F.datelim(2);
+				else
+					t2 = min(dt(kc(ii+1)),F.datelim(2));
+				end
+				fprintf(fid,'%s %s %s %s %04d-%02d-%02dT%02d:%02d:%02.0f %04d-%02d-%02dT%02d:%02d:%02.0f\n', ...
+					N.FDSN_NETWORK_CODE,N.FID,N.CLB.lc{kc(ii)},N.CLB.cd{kc(ii)},datevec(t1),datevec(t2));
+			end
+		end
+	end
+	fclose(fid);
+	if isok(P,'DEBUG')
+		fprintf('\n%s: FDSNWS dataselect POST request:\n',wofun);
+		type(freq)
+	end
+	
+	% makes the request
+	wosystem(sprintf('wget -nv --post-file %s -O %s %s',freq,fdat,F.raw{1}),P);
 
 
 % -----------------------------------------------------------------------------
@@ -175,7 +200,7 @@ end
 % loads the miniseed file
 if exist(fdat,'file')
 	fprintf('%s: data file %s ...',wofun,fdat);
-	[X,I] = rdmseedfast(fdat,field2str(WO,'MSEED2SAC_PRGM','mseed2sac','notempty'));
+	[X,I] = rdmseedfast(fdat,mseed2sac);
 	fprintf(' loaded.\n');
 
 	% copy the original file to export directory (if needed)
