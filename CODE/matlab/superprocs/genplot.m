@@ -34,7 +34,7 @@ function DOUT=genplot(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2014-07-13
-%	Updated: 2021-01-01
+%	Updated: 2021-10-28
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -126,7 +126,7 @@ for n = 1:length(N)
 			end
 			set(gca,'XLim',tlim,'FontSize',8)
 			datetick2('x',P.GTABLE(r).DATESTR)
-			if i < nx
+			if p < length(GN)
 				set(gca,'XTickLabel',[]);
 			end
 			ylabel(sprintf('%s %s',D(n).CLB.nm{i},regexprep(D(n).CLB.un{i},'(.+)','($1)')))
