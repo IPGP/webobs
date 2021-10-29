@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-schedulerRuns.pl 
+schedulerRuns.pl
 
 =head1 SYNOPSIS
 
@@ -11,10 +11,10 @@ schedulerRuns.pl
 =head1 DESCRIPTION
 
 Builds html page to display scheduler's runs log for a (selectable) DAY.
-The page includes the following 3 areas: 
+The page includes the following 3 areas:
 1) the scheduler current status
 2) the runs table tabular view for a given day
-3) a timeline representation of the runs table  
+3) a timeline representation of the runs table
 
 =head1 Query string parameters
 
@@ -54,7 +54,7 @@ $|=1;
 
 set_message(\&webobs_cgi_msg);
 
-# ---- checks/defaults query-string elements 
+# ---- checks/defaults query-string elements
 my $QryParm   = $cgi->Vars;
 $QryParm->{'action'}    ||= 'display';
 $QryParm->{'scheduler'} ||= 'scheduler';
@@ -189,16 +189,16 @@ print <<"EOHEADER";
 <script language="JavaScript" src="/js/htmlFormsUtils.js" type="text/javascript"></script>
 EOHEADER
 
-# ---- scheduler status 
+# ---- scheduler status
 # ---------------------
 my $schedstatus= "";
-my $SCHEDSRV   = "localhost"; 
+my $SCHEDSRV   = "localhost";
 my $SCHEDREPLY = "";
 if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
 	my $SCHEDSOCK  = IO::Socket::INET->new(Proto => 'udp', PeerPort => $SCHED{PORT}, PeerAddr => $SCHEDSRV );
 	if ( $SCHEDSOCK ) {
 		if ( $SCHEDSOCK->send("CMD STAT") ) {
-			if ( $SCHEDSOCK->recv($SCHEDREPLY, $SCHED{SOCKET_MAXLEN}) ) { 
+			if ( $SCHEDSOCK->recv($SCHEDREPLY, $SCHED{SOCKET_MAXLEN}) ) {
 				my @xx = split(/(?<=\n)/,$SCHEDREPLY);
 				my @td1 = map {$_ =~ s/\n/<br>/; $_} (grep { /STARTED=|PID=|USER=|uTICK=|BEAT=|PAUSED=/ } @xx);
 				s/PAUSED=1/<span class=\"statusWNG\">PAUSED=1<\/span>/ for @td1;
@@ -210,14 +210,14 @@ if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
 	} else { $schedstatus = "</div class=\"status statusWNG\">STATUS NOT AVAILABLE (create socket failed)</div>" }
 } else { $schedstatus = "<div class=\"status statusBAD\">JOBS SCHEDULER IS NOT RUNNING !</div>"}
 
-# ---- dynamic 'timeline' scripts 
+# ---- dynamic 'timeline' scripts
 # -------------------------------
 # ---- all jobs of runs table started in range [now-24hours , now] if runsdate = today
 # ---- all jobs of runs table started in range [runsdate23h59-24hours, runsdate23h59] if runsdate not= today
 # ---- order by jid so that unique jid occurences appear on a single graph line
 my $timelineD1 = int(time());
 if ( $QryParm->{'runsdate'} ne $today ) { $timelineD1 = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 23:59:00"); }
-my $timelineD0 = $timelineD1 - 86400;
+my $timelineD0 = 	$timelineD1 - 86400;
 my $query_timeline_runs = "SELECT jid, DATETIME(cast(startts as integer),'unixepoch','localtime'),"
 		. " CASE WHEN endts != 0 THEN DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime') ELSE NULL END,"
 		. " cmd, rc FROM runs"
@@ -345,7 +345,7 @@ for my $run (@$run_list) {
 # -------------------------------
 print <<"EOP1";
 <body>
-<!-- overLIB (c) Erik Bosrup 
+<!-- overLIB (c) Erik Bosrup
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <script language="JavaScript" src="/js/overlib/overlib.js" type="text/javascript"></script>
 -->
@@ -470,5 +470,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
-
