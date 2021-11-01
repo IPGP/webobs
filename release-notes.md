@@ -15,7 +15,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.4 (October 2021)
+## v2.4.1 (October 2021)
 
 ### New features
 
@@ -58,9 +58,10 @@ PATH_MCC|${ROOT_CODE}/bin/linux-64
     - a **comment** field (free string) to add any useful information about the account (only seen by admins). When a new user has auto-registered, this field is used to add the date and time of registering.
 
 ### Fixed issues
-1. **sefran3**: There was a problem with the last binary with seedlink and fdsnws-dataselect protocols if one or more data channels are missing (error).
+1. **sefran3**: There was a problem with the last binary with seedlink and fdsnws-dataselect protocols if one or more data channels are missing (error). Also the variable `NAME` was not used (still former obsolete `TITRE`)
 2. **mc3**: It was impossible to select a time period within the last day of the month.
 3. `!!` **SRTM tiles for mapping**: Following the fix in 2.3.3, an USGS mirror site has been restored to continue the benefits of downloading automatically new SRTM3 global topographic data without the need to register at the NASA/EarthDATA center. Nevertheless, the authentication is still needed for SRTM1 tiles download (option `DEM_SRTM1|Y`). As a reminder, downloaded tiles are stored locally in the `PATH_DATA_DEM_SRTM` directory (in **WEBOBS.rc**, default is `/opt/webobs/DATA/DEM/SRTM`), and used to update maps without requiring new download from the internet. Thus, a possible alternative to registering at EarthDATA is to place here all the needed tiles manually (must be in the `.hgt` format, filename in the form `[N|S]yy[E|W]xxx.hgt[.zip]` for LAT yy and LON xx at lower-left corner of the tile).
+4. all maps: an uggly artifact might appended on coast lines with `ETOPO_SRTM_MERGE|Y`.
 
 
 ## v2.3.3 (February 2021)
