@@ -27,7 +27,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2021-01-20
+%	Updated: 2021-11-01
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -42,7 +42,6 @@ srtm1max = field2num(WO,'SRTM1_MAX_TILES',4);
 oversamp = field2num(WO,'DEM_OVERSAMPLING',500);
 maxwidth = field2num(WO,'DEM_MAX_WIDTH',1201);
 mergeetopo = isok(WO,'ETOPO_SRTM_MERGE',1);
-mergeetopooffset = 0;
 srtm1 = false;
 etopo = false;
 if nargin > 2
@@ -128,12 +127,12 @@ if ~userdem
 		if any(k(:))
 			% loads ETOPO1 with +/- 2 minutes of extra borders
 			E = ibil(sprintf('%s/%s',WO.PATH_DATA_DEM_ETOPO,WO.ETOPO_NAME),xylim + 5/60*[-1,1,-1,1]);
-			E.z(E.z <= 0) = E.z(E.z <= 0) + mergeetopooffset;
 			[xx,yy] = meshgrid(DEM.lon,DEM.lat);
 			if all(k(:))
 				DEM.z(k) = interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear');
 			else
-				DEM.z(k) = min(floor(interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear')),0);
+				% to avoid transit artifacts, limits ETOPO values to -1 m
+				DEM.z(k) = min(floor(interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear')),-1);
 			end
 			DEM.COPYRIGHT = sprintf('%s + ETOPO/NOOA',DEM.COPYRIGHT);
 		end

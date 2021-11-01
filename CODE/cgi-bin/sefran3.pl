@@ -202,7 +202,7 @@ my $today = "$Ya-$ma-$da";
 my $yesterday = "$Yy-$my-$dy";
 
 # ----
-my $titrePage = $SEFRAN3{TITRE};
+my $titrePage = $SEFRAN3{NAME} ||= $SEFRAN3{TITRE};
 my @html;
 
 my $s;
@@ -422,7 +422,7 @@ if (!$date) {
 	# title and current data/time
 	print "<TABLE style=\"width: 980px; border-collapse: separate\">";
 	if ($header) {
-		print "<TR><TD align=left style=\"border:0\"><H1>$titrePage</H1>",
+		print "<TR><TD align=left style=\"border:0\"><H1>$titrePage".($userLevel == 4 ? " <A href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$s3\"><IMG src=\"/icons/modif.png\"></A>":"")."</H1>",
 			"<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ ",
 			"<A href=\"#\" onClick=\"showmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showmctags_help'}')\">",
 			"<IMG src=\"/icons/mctag.png\" border=1 style=\"vertical-align:middle\"></A> | ";
