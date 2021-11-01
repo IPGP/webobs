@@ -321,12 +321,12 @@ if ($QryParm->{'dump'} eq "") {
 	$html .= "<H1>$MC3{TITLE}</H1><P>";
 	$html .= "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ Associated Sefran3: ";
 	# adds links to all associated Sefran
-	my @Sefran = qx(grep -H -E 'MC3_NAME\\|$mc3\$' /etc/webobs.d/SEFRAN3*.conf);
+	my @Sefran = qx(grep -H -E 'MC3_NAME\|$mc3\$' $WEBOBS{PATH_SEFRANS}/*/*.conf);
 	my @SefranLinks;
 	for my $s3 (@Sefran) {
 		chomp $s3;
-		$s3 =~ s/^.*webobs\.d\///g;
-		$s3 =~ s/\.conf.*//g;
+		$s3 =~ s/^$WEBOBS{PATH_SEFRANS}\///g;
+		$s3 =~ s/\/.*//g;
 		push(@SefranLinks, "<A href=\"/cgi-bin/$WEBOBS{CGI_SEFRAN3}?header=1&s3=$s3&mc3=$mc3\"><B>$s3</B></A>");
 	}
 	$html .= join(" | ",@SefranLinks)." - <A href=\"#Note\">Notes</A> ]</P>";
