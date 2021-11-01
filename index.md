@@ -13,9 +13,9 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 
 ## Download the latest release
 
-- [WebObs-2.4.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.4/WebObs-2.4.tar.gz) (66 Mb) updated October 22, 2021
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.4/release-notes.md)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.4/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.4.1.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.4.1/WebObs-2.4.1.tar.gz) (66 Mb) updated October 29, 2021
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.4.1/release-notes.md)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.4.1/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see below for download and install)
@@ -124,6 +124,13 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 
 
 ## What's new?
+
+### What's new in the 2.4?
+- sefran3/mc3 includes a machine learning module for automatic event classification;
+- new forms for soil solution and rain water chemical analysis;
+- new modelling capabilities (pCDM MODELTIME) in GNSS superproc;
+- Sefran3 is now a grid type associated to a domain, with configuration GUI;
+- some fixes and other minor improvements.
 
 ### What's new in the 2.3?
 - nodes have one different calibration file per associated proc;
