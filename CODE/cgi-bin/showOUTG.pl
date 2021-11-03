@@ -103,7 +103,8 @@ if ($QryParm->{'g'} =~ s!^lastevent(\b|$)!!) {
 	# replace it with the directory the 'lastevent' symlink links to.
 	my $lastevent_dir = abs_path("$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/lastevent");
 	# Remove ^$OUTG/events/ from the path to only keep "yyyy/mm/dd/eventid"
-	$lastevent_dir =~ s!^$OUTG/.*?/!!;
+	my $OUTGabs = abs_path("$OUTG/$WEBOBS{PATH_OUTG_EVENTS}");
+	$lastevent_dir =~ s!$OUTGabs/!!;
 	# Replace 'g' with this link and append the remaining of the original 'g', if any
 	# (so that both g=lastevent and g=lastevent/b3 work).
 	$QryParm->{'g'} = $lastevent_dir.$QryParm->{'g'};
