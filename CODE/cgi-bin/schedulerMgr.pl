@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-schedulerMgr.pl 
+schedulerMgr.pl
 
 =head1 SYNOPSIS
 
@@ -11,7 +11,7 @@ schedulerMgr.pl
 =head1 DESCRIPTION
 
 Builds html page for WebObs' scheduler Manager. This page contains
-the following two areas: 
+the following two areas:
 
 the B<jobs scheduler status> , showing the scheduler's status information as dynamically obtained
 from the scheduler's built-in UDP commands handler (CMD STAT)
@@ -30,7 +30,7 @@ internal/debug use only: the name of the WebObs scheduler process from which con
 
 =item B<action=>
 
-{ display | insert | update | delete | submit } . Defaults to 'display' . 'update', 'delete' and 'submit' require a 'jid' 
+{ display | insert | update | delete | submit } . Defaults to 'display' . 'update', 'delete' and 'submit' require a 'jid'
 
 =item B<jid=>
 
@@ -63,7 +63,7 @@ $|=1;
 
 set_message(\&webobs_cgi_msg);
 
-# ---- checks/defaults query-string elements 
+# ---- checks/defaults query-string elements
 my $QryParm   = $cgi->Vars;
 $QryParm->{'action'}    ||= 'display';
 $QryParm->{'scheduler'} ||= 'scheduler';
@@ -165,14 +165,14 @@ sub fetch_all {
 # ------------------------------------------------------------------------------
 $QryParm->{'jid'}         ||= "";
 $QryParm->{'newjid'}      ||= "";
-$QryParm->{'xeq1'}        ||= "";      
-$QryParm->{'xeq2'}        ||= "";       
-$QryParm->{'xeq3'}        ||= "";          
-$QryParm->{'runinterval'} ||= "";   
-$QryParm->{'maxsysload'}  ||= 0.7;  
-$QryParm->{'logpath'}     ||= "";   
+$QryParm->{'xeq1'}        ||= "";
+$QryParm->{'xeq2'}        ||= "";
+$QryParm->{'xeq3'}        ||= "";
+$QryParm->{'runinterval'} ||= "";
+$QryParm->{'maxsysload'}  ||= 0.7;
+$QryParm->{'logpath'}     ||= "";
 $QryParm->{'validity'}    ||= "N";
-$QryParm->{'res'}         ||= "";    
+$QryParm->{'res'}         ||= "";
 
 $QryParm->{'xeq1'} =~ s/'/''/g;
 $QryParm->{'xeq2'} =~ s/'/''/g;
@@ -246,16 +246,16 @@ print <<"EOHEADER";
 <script language="JavaScript" src="/js/htmlFormsUtils.js" type="text/javascript"></script>
 EOHEADER
 
-# ---- scheduler status 
+# ---- scheduler status
 # ---------------------
 my $schedstatus= "";
-my $SCHEDSRV   = "localhost"; 
+my $SCHEDSRV   = "localhost";
 my $SCHEDREPLY = "";
 if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
 	my $SCHEDSOCK  = IO::Socket::INET->new(Proto => 'udp', PeerPort => $SCHED{PORT}, PeerAddr => $SCHEDSRV );
 	if ( $SCHEDSOCK ) {
 		if ( $SCHEDSOCK->send("CMD STAT") ) {
-			if ( $SCHEDSOCK->recv($SCHEDREPLY, $SCHED{SOCKET_MAXLEN}) ) { 
+			if ( $SCHEDSOCK->recv($SCHEDREPLY, $SCHED{SOCKET_MAXLEN}) ) {
 				my @xx = split(/(?<=\n)/,$SCHEDREPLY);
 				my @td1 = map {$_ =~ s/\n/<br>/; $_} (grep { /STARTED=|PID=|USER=|uTICK=|BEAT=|PAUSED=/ } @xx);
 				s/PAUSED=1/<span class=\"statusWNG\">PAUSED=1<\/span>/ for @td1;
@@ -269,7 +269,7 @@ if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
 	} else { $schedstatus = "</div class=\"status statusWNG\">STATUS NOT AVAILABLE (create socket failed)</div>" }
 } else { $schedstatus = "<div class=\"status statusBAD\">JOBS SCHEDULER IS NOT RUNNING !</div>"}
 
-# ---- 'jobsdefs' table 
+# ---- 'jobsdefs' table
 # ---------------------
 my $job_def_list = fetch_all($SCHED{SQL_DB_JOBS},
 	 "select JID,VALIDITY,RES,XEQ1,XEQ2,XEQ3,RUNINTERVAL,MAXSYSLOAD,LOGPATH,LASTSTRTS "
@@ -314,14 +314,14 @@ for my $job (@$job_def_list) {
 	  <td>$dintv</td>
 	  <td>$dmaxs</td>
 	  <td>$dlogp</td>
-	  <td class="tdlock">$dlstrun</td>
+	  <td class="tdlock" nowrap>$dlstrun</td>
 	</tr>
 	};
 }
 
 print "</head>";
 
-# ---- the page 
+# ---- the page
 # -------------
 print "<body style=\"min-height: 600px;\">";
 print "<!-- overLIB (c) Erik Bosrup -->";
@@ -386,7 +386,7 @@ Jobs definitions&nbsp;<A href="#MYTOP"><img src="/icons/go2top.png"></A>
 </div>
 <div id="defsID">
 	<div style="background: #BBB; margin: 4px 2px;">
-		&nbsp;Jobs defined: <b>$jobsdefsCount</b> (currently valid: $jobsdefsCountValid) 
+		&nbsp;Jobs defined: <b>$jobsdefsCount</b> (currently valid: $jobsdefsCountValid)
 		<span id="jobsdefsMsg" style="padding-left: 20px; font-weight: bold; color: $jobsdefsMsgColor">$jobsdefsMsg</span>
 	</div>
 	<div class="jobsdefs-container">
@@ -444,4 +444,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
