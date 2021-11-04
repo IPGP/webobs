@@ -10,14 +10,14 @@ use WebObs::Events
 
 =head1 DESCRIPTION
 
-B<WebObs' events> are timestamped text files associated to Nodes or Grids. They are 
+B<WebObs' events> are timestamped text files associated to Nodes or Grids. They are
 created/updated/deleted by authorized users. They contain a header line and free wiki text lines.
-Their filenames reflect both their Node or Grid membership and their timestamp. 
+Their filenames reflect both their Node or Grid membership and their timestamp.
 
-Each B<event> may also have attached images and/or B<subevents>: both are collectively referred to as B<event extensions>. 
+Each B<event> may also have attached images and/or B<subevents>: both are collectively referred to as B<event extensions>.
 Subevents are themselves events, thus building up a tree structure for each event.
 
-B<WebObs' events> live in B<dedicated directories> of nodes and/or grids:  B<INTERVENTIONS> subdirectories.  
+B<WebObs' events> live in B<dedicated directories> of nodes and/or grids:  B<INTERVENTIONS> subdirectories.
 
 	Events base directories (interventions):
 		$GRIDS{PATH_GRIDS}/gridtype/gridname/$GRIDS{SPATH_INTERVENTIONS}/
@@ -30,7 +30,7 @@ B<WebObs' events> live in B<dedicated directories> of nodes and/or grids:  B<INT
 	Events files and extensions naming conventions:
 		event_file       :=  event.txt
 		event_extensions :=  event/
-		event            :=  name_YYYY-MM-DD_HH-MM{_v}  |  name_YYYY-MM-DD_NA{_v}  
+		event            :=  name_YYYY-MM-DD_HH-MM{_v}  |  name_YYYY-MM-DD_NA{_v}
 		name             :=  { gridname | nodename }
 		v                :=  so-called version number (automatically generated to make event name unique)
 		NA               :=  "NA" for unknown/undefined HH-MM
@@ -43,14 +43,14 @@ B<WebObs' events> live in B<dedicated directories> of nodes and/or grids:  B<INT
 			NODEA_Projet.txt
 			NODEA_2001-01-01_20-00.txt         Event 2001-01-01 20:00 file
 			NODEA_2001-01-01_20-00/            Event 2001-01-01 20:00 extensions
-				PHOTOS/                            Event 2001-01-01 20:00 photos 
-					*.[jpg,pdf]                         
-					THUMBNAILS/                         
+				PHOTOS/                            Event 2001-01-01 20:00 photos
+					*.[jpg,pdf]
+					THUMBNAILS/
 				NODEA_2002-02-02_02-02.txt         subEvent 2002-02-02 02:02
 				NODEA_2002-02-02_02-02/            subEvent 2002-02-02 02:02 extensions
 					PHOTOS/                             subEvent 2002-02-02 02:02 photos
-						*.[jpg,pdf]                         
-						THUMBNAILS                          
+						*.[jpg,pdf]
+						THUMBNAILS
 					NODEA_2003-03-03_03-03.txt          subsubEvent 2003-03-03 03:03
 			NODEA_2010-02-02_22-30.txt         Event 2010-02-02 22:30
 
@@ -67,7 +67,7 @@ use WebObs::Users;
 use WebObs::Grids;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
-    
+
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 
 require Exporter;
@@ -79,16 +79,16 @@ $VERSION    = "1.00";
 
 =head1 FUNCTIONS
 
-=cut				
+=cut
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 struct
 
-struct(objectname) takes objectname as a normalized grid name OR normalized node name and  
-returns an array whose elements are: 
+struct(objectname) takes objectname as a normalized grid name OR normalized node name and
+returns an array whose elements are:
 
 	[0] = gridtype
 	[1] = gridname
@@ -96,12 +96,12 @@ returns an array whose elements are:
 	[3] = path-to-event-directory
 	[4] = path-to-trash-directory
 
-struct returns 'undef' if 1) objectname is not a well-formed normalized object or 2) it is a grid but 
-$GRIDS{PATH_GRIDS} is not defined (ie. events for grids are not enabled). 
+struct returns 'undef' if 1) objectname is not a well-formed normalized object or 2) it is a grid but
+$GRIDS{PATH_GRIDS} is not defined (ie. events for grids are not enabled).
 
-NOTE: nodename will be made equals to gridname for normalized grids. 
+NOTE: nodename will be made equals to gridname for normalized grids.
 
-=cut 
+=cut
 
 sub struct {
 	return undef if (@_ != 1);
@@ -110,12 +110,42 @@ sub struct {
 	if (defined($GRIDS{PATH_GRIDS}) && $#obj == 1) {
 		return ($obj[0],$obj[1],$obj[1],"$GRIDS{PATH_GRIDS}/$obj[0]/$obj[1]/$GRIDS{SPATH_INTERVENTIONS}","$GRIDS{PATH_EVENTGRID_TRASH}","G");
 	}
-	return undef;	
+	return undef;
 }
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
+
+=head2 eventnameSplit
+
+eventnameSplit(eventname) decodes event name string and returns an array of elements:
+
+	[0] = object (node ID or grid name)
+	[1] = date (yyyy-mm-dd)
+	[2] = time (HH:MM or void)
+	[3] = version
+
+=cut
+
+sub eventnameSplit {
+        # grid name might contain '_' so reads date and time by splitting '-' first
+		my @pn = split(/-/,$_[0]); # object_year month day_hour minute_version
+        my @p1 = split(/_/,$pn[0]);
+        my @p2 = split(/_/,$pn[2]);
+        my @p3 = split(/_/,$pn[3]);
+        my $obj = join('_',$p1[0 .. $#p1-1]);
+        my $date = "$p1[$#p1]-$pn[1]-$p2[0]";
+        my $time = "$p2[1]:$p3[0]";
+		$time =~ s/NA//;
+        my $ver = ($#p3 > 0 ? $p3[1]:"");
+
+	return ($obj,$date,$time,$ver);
+}
+
+# -------------------------------------------------------------------------------------------
+
+=pod
 
 =head2 headersplit
 
@@ -131,7 +161,7 @@ headersplit(header) decodes header string and returns an array of elements:
 	[7] = notebook number
 	[8] = notebook forward flag
 
-=cut 
+=cut
 
 sub headersplit {
 	my ($title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = "";
@@ -154,13 +184,13 @@ sub headersplit {
 		$notebookfwd = $header[7] if ($#header > 6);
 	}
 	$title =~ s/\"/\'\'/g;
-	
-	return (\@UIDs,\@RUIDs,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd);	
+
+	return (\@UIDs,\@RUIDs,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd);
 }
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 eventsTree
 
@@ -168,13 +198,13 @@ eventsTree(list, path) appends to list the events filenames tree starting path a
 sorted by descending dates.
 
 	list          is a reference to the array of Events filenames (*.txt)
-	path          the objectname   
+	path          the objectname
 
 	Example:
 		my @treeInterventions;
 		eventsTree(\@listInterventions, "/webobs/path/DATA/NODES/node/INTERVENTIONS");
 
-=cut 
+=cut
 
 sub eventsTree {
 	return if (@_ != 2) ;
@@ -187,26 +217,26 @@ sub eventsTree {
 		#DL-err5.10: push($list, $entry) if -f $entry;
 		push(@$list, $entry) if -f $entry;
 		eventsTree($list, $entry) if -d $entry;
-	} 
+	}
 	return;
 }
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 eventsChrono
 
 eventsChrono(list, path) appends to list the sorted (dates descending) events filenames in path.
 
 	list         is a reference to the target array of events filenames (*.txt)
-	path         path to events directory structure   
+	path         path to events directory structure
 
 	Example:
 		my @listInterventions;
 		eventsChrono(\@listInterventions, "/webobs/path/DATA/NODES/node/INTERVENTIONS");
-	
-=cut 
+
+=cut
 
 sub eventsChrono {
 	return if (@_ != 2) ;
@@ -221,39 +251,39 @@ sub eventsChrono {
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 existProject alias countProject
 
-existProject(objectname) takes objectname as a normalized grid or node name and  
+existProject(objectname) takes objectname as a normalized grid or node name and
 returns 1 if a Project file exists for this object, 0 otherwise
 
 countProject is an alias for existProject.
 
-=cut 
+=cut
 
 sub existProject {
 	return 0 if (@_ != 1);
 	my ($gt,$gn,$n,$p,$t) = struct($_[0]);
 	if (defined($p)) {
-		return 1 if (-e "$p/$n\_Projet.txt"); 
+		return 1 if (-e "$p/$n\_Projet.txt");
 	}
-	return 0;	
+	return 0;
 }
 sub countProject { return existProject(@_) }
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 existEvents alias countEvents
 
-existEvents(objectname) takes objectname as a normalized grid or node name and  
+existEvents(objectname) takes objectname as a normalized grid or node name and
 returns the number of Events for this object [0..n]
 
 countEvents is an alias for existEvents.
 
-=cut 
+=cut
 
 sub existEvents {
 	return 0 if (@_ != 1);
@@ -261,13 +291,13 @@ sub existEvents {
 	if (defined($p)) {
 		return qx(/usr/bin/find $p -name "$n*.txt" 2>/dev/null | wc -l);
 	}
-	return 0;	
+	return 0;
 }
 sub countEvents { return existEvents(@_) }
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 eventsShow
 
@@ -278,7 +308,7 @@ editYN indicates wether current viewing client has authorization to edit events 
 
 	$contents = eventsShow("date", "VIEW.MYVIEW.NODE1", 1);
 
-=cut 
+=cut
 
 sub eventsShow {
 	return undef if (@_ != 3);
@@ -299,9 +329,9 @@ sub eventsShow {
 		(my $relevt = $evt) =~ s/$path\/// ;   # evt = full path to event file; relevt = relative path to event file
 		(my $extevt = $evt) =~ s/\.txt//;      # extevt = full path to event extensions directory
 		(my $relextevt = $extevt) =~ s/$path\/// ;   # relextevt = relative path to event extensions directory
-		my ($obj,$date,$time,$ver) = split(/_/,basename($extevt));
-		$time =~ s/-/:/;
-		$time =~ s/NA//;
+		#my ($obj,$date,$time,$ver) = split(/_/,basename($extevt));
+        # grid name might contain '_' so reads date and time by splitting '-'
+		my ($obj,$date,$time,$ver) = eventnameSplit(basename($extevt));
 
 		my @file = readFile($evt);
 		#DL-beforeMMD # ignore blank lines and LF
@@ -322,7 +352,7 @@ sub eventsShow {
 		}
 		my $EVTtitle = "<B>".ucfirst($title)."</B>";
 		my $EVTdate = "$date $time".($date eq $date2 ? ($time eq $time2 || $time2 eq "" ? "":" &rarr; $time2"):" &rarr; $date2 $time2");
-		my $EVTver = (defined($ver)) ? " v$ver" : "";
+		#my $EVTver = (defined($ver)) ? " v$ver" : "";
 		my $EVToutcome = ($outcome > 0 ? "<IMG src=\"/icons/attention.gif\" border=0 onMouseOut=\"nd()\" onMouseOver=\"overlib('Potential outcome on sensor/data',CAPTION,'Warning')\">":"");
 		my $EVTinfo = ucfirst($feature);
 		$EVTinfo .= ($channel ne "" ? " • $__{Channel} $channel":"");
@@ -348,9 +378,9 @@ sub eventsShow {
 			$EVTedit .= "&nbsp;<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$relextevt&action=new\"><img src=\"/icons/plus.gif\" title=\"$__{'Add a sub event...'}\" border=0 alt=\"$__{'Add a sub event...'}\"></a>";
 		}
 
-		# indent this event in "events" list 
+		# indent this event in "events" list
 		if ($sortedBy =~ /events/i) {
-			my $thisLevel = ($relevt =~ tr/\///);  # count "/"s 
+			my $thisLevel = ($relevt =~ tr/\///);  # count "/"s
 			if ($thisLevel >  $currentIndent) {
 				for (1..($thisLevel-$currentIndent)) { $html .= "<UL style=\"list-style-type:circle\">\n"; $currentIndent++ }
 			} elsif ($thisLevel < $currentIndent) {
@@ -375,7 +405,7 @@ sub eventsShow {
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 projectShow
 
@@ -384,7 +414,7 @@ editYN indicates wether current viewing client has authorization to edit Project
 
 	$contents = projectShow("PROC.PNAME", 0 );
 
-=cut 
+=cut
 
 sub projectShow {
 	return undef if (@_ != 2);
@@ -408,7 +438,7 @@ sub projectShow {
 			unshift(@file,"|untitled\n");  # force our own default (add a line)
 		}
 		my @firstline = split(/\|/,$file[0]);
-		my @users = split(/\+/,$firstline[0]); 
+		my @users = split(/\+/,$firstline[0]);
 		my $Pusers = join(", ",WebObs::Users::userName(@users));
 		my $Ptitle = ($#firstline > 0) ? ucfirst($firstline[1]) : "NA" ;
 
@@ -438,13 +468,13 @@ sub projectShow {
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 photoStrip
 
-photoStrip(photo-files-list) returns the html string displaying thumbnails 
+photoStrip(photo-files-list) returns the html string displaying thumbnails
 
-=cut 
+=cut
 
 sub photoStrip {
 	my $ret = "<DIV style='width: auto; overflow-x: auto; overflow-y: hidden'><TABLE><TR><TD>";
@@ -463,22 +493,22 @@ sub photoStrip {
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 parents
 
-parents(path, event)  
-returns an html-tagged string describing all parent events of an event:  
+parents(path, event)
+returns an html-tagged string describing all parent events of an event:
 path is the events directory 'root' path, as can be obtained via a call to struct routine;
 event is the relative (to path) event path.
 
-	$path = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";  
-	$html = parents($path, "$NODEName_2000-01-01_01-01/$NODEName_2002-12-11_01-01"); 
+	$path = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";
+	$html = parents($path, "$NODEName_2000-01-01_01-01/$NODEName_2002-12-11_01-01");
 
-This routine replaces the WebObs::Grids::parentEvents() method to 
+This routine replaces the WebObs::Grids::parentEvents() method to
 account for grids events as well as nodes events
 
-=cut 
+=cut
 
 sub parents {
 	my $html = "";
@@ -488,10 +518,10 @@ sub parents {
 		for (my $i=$#parents-1; $i>=0; $i--) {
 			my $f = "$path/".join("/",@parents[0..$i]).".txt";
 			my ($s,$d,$h) = split(/_/,$parents[$i]);
-			$h =~ s/-/:/; 
+			$h =~ s/-/:/;
 			my $t = "???";
 			if (-e $f) {
-				my @xx = readFile($f);  
+				my @xx = readFile($f);
 				@xx = grep(!/^$/, @xx);
 				chomp(@xx);
 				my $o;
@@ -505,20 +535,20 @@ sub parents {
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 deleteit
 
-deleteit(eventbase,eventtrash,eventpath)  
+deleteit(eventbase,eventtrash,eventpath)
 
 Deletes an event file and its event extensions dir. Delete actually is a 'move' to the shared
-TRASH directory (eventtrash). 
+TRASH directory (eventtrash).
 
-NOTE: Events in the TRASH directory keep their children (subevents) BUT loose their own parent relationships; 
+NOTE: Events in the TRASH directory keep their children (subevents) BUT loose their own parent relationships;
 they are saved as 'first level' events. Furthermore, 'versionning' is not used, ie.
 a deleted event will overwrite a previously deleted one with the same name.
 
-=cut 
+=cut
 
 sub deleteit {
 	if (@_ == 3 && $_[2] =~ /.*\.txt$/) {
@@ -531,32 +561,32 @@ sub deleteit {
 		if (-e "$evbase/$evpath/") {
 			qx(mkdir -p "$evtrash/$evname/" 2>&1);
 			qx(/bin/mv "$evbase/$evpath/" "$evtrash/$evname/" 2>&1);
-			if ($? != 0) { 
+			if ($? != 0) {
 				# extensions dir move failed, try reverting *txt move
-				# move $evname.txt -> back to $evbase/.../ 
+				# move $evname.txt -> back to $evbase/.../
 				return "$__{'Could not move event extensions to trash'} , $?";
 			}
 		}
 		return "OK";
-	}	
+	}
 	return "deleteit: $__{'invalid argument'}";
 }
 
 # -------------------------------------------------------------------------------------------
 
-=pod 
+=pod
 
 =head2 versionit
 
-versionit(eventfile)  
+versionit(eventfile)
 
-Appends a version tag (_n), if required, to an event file name. 
-To be used when creating an event file from an event form's date/time: 
+Appends a version tag (_n), if required, to an event file name.
+To be used when creating an event file from an event form's date/time:
 if event name already exists, make it unique by appending a 'version' number to its name.
 
 eventfile = reference of the event full path name to be 'versioned' if needed.
 
-=cut 
+=cut
 
 sub versionit {
 	if (@_ == 1 && ref($_[0])eq "SCALAR") {
@@ -573,8 +603,8 @@ sub versionit {
 
 # -------------------------------------------------------------------------------------------
 
-# local helper to reverse elements order of a list 
-# @list = rev( ("a","b","c") ); # @list: ("c","b","a")  
+# local helper to reverse elements order of a list
+# @list = rev( ("a","b","c") ); # @list: ("c","b","a")
 sub rev { my @r; push @r, pop @_ while @_ ; return @r }
 
 
@@ -606,4 +636,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-				
