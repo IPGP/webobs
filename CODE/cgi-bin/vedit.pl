@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 =head1 NAME
 
-vedit.pl 
+vedit.pl
 
 =head1 SYNOPSIS
 
@@ -10,27 +10,27 @@ http://..../vedit.pl?action=action&object={normnode | normgrid}[&event=eventpath
 
 =head1 DESCRIPTION
 
-Create or update or delete an B<event> file or B<Project> file of a grid or node. 
+Create or update or delete an B<event> file or B<Project> file of a grid or node.
 See WebObs/Events.pm for a description of the events-directories structures.
 
 An B<event> reference is also created/updated/deleted into the WebObs Gazette.
 See 'WebObs/Gazette.pm' for a description of the event-category articles.
 
-An B<event> (or subevent) is identified by its B<base-path/event-path>: 
-B<base-path/> is derived from the object (ie. grid or node) the event belongs to, 
+An B<event> (or subevent) is identified by its B<base-path/event-path>:
+B<base-path/> is derived from the object (ie. grid or node) the event belongs to,
 B<event-path/> is the full subevents hierarchy path to the event file OR to its parent extension directory.
 
 There's only one B<Project> associated to a grid or node: B<base-path/projectName.txt> .
 
 =head1 VEDIT-GAZETTE BEHAVIOR
 
-WebObs::Gazette::setArticle is used by vedit 'new' action, based on the $WEBOBS{EVENTS_TO_GAZETTE} settings. 
+WebObs::Gazette::setArticle is used by vedit 'new' action, based on the $WEBOBS{EVENTS_TO_GAZETTE} settings.
 WebObs::Gazette::delEventArticle is used by vedit 'del' action, based on $WEBOBS{EVENTS_GAZETTE_DELETE} settings.
 
 	$WEBOBS{EVENTS_TO_GAZETTE}|ALL       # ALL    = insert all created events into Gazette (= default)
                                          # NONE   = events are not inserted into Gazette
-								   
-	$WEBOBS{EVENTS_GAZETTE_DELETE}|YES   # when deleting Event, try to delete it from Gazette too                              
+
+	$WEBOBS{EVENTS_GAZETTE_DELETE}|YES   # when deleting Event, try to delete it from Gazette too
 
 =head1 Query string parameters
 
@@ -41,7 +41,7 @@ WebObs::Gazette::delEventArticle is used by vedit 'del' action, based on $WEBOBS
 	event="GCSCBM1_2012-01-01_20-10/GCSCBM1_2012-02-01_13-20.txt"
 	is: $WEBOBS{ROOT_PATH}/GCSCBM1/$NODES{SPATH_INTERVENTIONS}/GCSCBM1_2012-01-01_20-10/GCSCBM1_2012-02-01_13-20.txt
 
-=over 
+=over
 
 =item B<object=normnode|normgrid>
 
@@ -58,26 +58,26 @@ For B<upd> or B<del>, event must be the targeted event's file (*.txt). For B<new
 event must be the parent's event (ie. may be "" if event is not a subevent).
 
 
-=item B<event=eventrelpath> 
+=item B<event=eventrelpath>
 
-	eventrelpath := relative path to event file (.txt) if action is 'upd' or 'del' , 
+	eventrelpath := relative path to event file (.txt) if action is 'upd' or 'del' ,
 	                OR relative path to event's parent's extensions dir if action is 'new'
 
-=item B<event=projectName> 
+=item B<event=projectName>
 
-	projectName  := NODEName_Projet.txt  
+	projectName  := NODEName_Projet.txt
 
 =back
 
 =head1 Markitup customization
 
-The JQuery plugin 'markitup' is customized for WebObs: 
+The JQuery plugin 'markitup' is customized for WebObs:
 
 - CODE/js/markitup/sets/wiki/set.js
-contains the markup tags along with their corresponding keys, to be used from the 
-markitup editor textarea. 
+contains the markup tags along with their corresponding keys, to be used from the
+markitup editor textarea.
 
-- CODE/js/markitup/sets/wiki/style.css 
+- CODE/js/markitup/sets/wiki/style.css
 defines the icons used in the markitup editor textarea.
 
 =cut
@@ -111,7 +111,7 @@ set_message(\&webobs_cgi_msg);
 #
 my $me = $ENV{SCRIPT_NAME};
 my $GazetteWhat = (defined($WEBOBS{EVENTS_TO_GAZETTE})) ? $WEBOBS{EVENTS_TO_GAZETTE} : "ALL";
-$GazetteWhat = "NONE" if ($GazetteWhat eq "LEVEL1");  # legacy "LEVEL1" now means "NONE" 
+$GazetteWhat = "NONE" if ($GazetteWhat eq "LEVEL1");  # legacy "LEVEL1" now means "NONE"
 my $GazetteDel  = (defined($WEBOBS{EVENTS_GAZETTE_DELETE})) ? $WEBOBS{EVENTS_GAZETTE_DELETE} : "YES";
 my $isProject = 0;
 my $QryParm   = $cgi->Vars;
@@ -179,7 +179,7 @@ if ($object =~ /^.*\..*\..*$/) {
 # ---------------------------------------------------------------------------------------
 # ---- action 'save' : process submit button of previously displayed event's form
 # write event's form elements to event file (object,event,formelements)
-# 
+#
 if ($action =~ /save/i ) {
 	my $logmsg = "";
 	my @lines;
@@ -214,7 +214,7 @@ if ($action =~ /save/i ) {
 				$logmsg .= "deleting gazette $evpath\n";
 				my $rcd = WebObs::Gazette::delEventArticle($object, "$evbase/$evpath");
 			}
-		} 
+		}
 	}
 	$logmsg .= "saving ".basename($target);
 	if ( sysopen(FILE, "$target", O_RDWR | O_CREAT) ) {
@@ -237,7 +237,7 @@ if ($action =~ /save/i ) {
 	} else { htmlMsgNotOK("$logmsg\nerror $! opening ".basename($target)) }
 
 	exit;
-} 
+}
 
 # ---------------------------------------------------------------------------------------
 # ---- action 'del' : delete an event file AND its extensions dir
@@ -251,7 +251,7 @@ if ($action =~ /del/i ) {
 	WebObs::Events::eventsTree(\@tree,"$evbase/$evp");
 	grep {s/^\Q$evbase\E\///} @tree;
 	#dbg# $msg .= "\ntree=\n"; for (@tree) { $msg .= "* $_\n"};
-	# delete event and all of its children 
+	# delete event and all of its children
 	$msg .= "deleting $evpath and children\n";
 	$rc = WebObs::Events::deleteit($evbase, $evtrash, $evpath);
 	# if events are gone, remove their reference in Gazette (from @tree)
@@ -268,7 +268,7 @@ if ($action =~ /del/i ) {
 }
 
 # ---------------------------------------------------------------------------------------
-# ---- actions below will display an event's form 
+# ---- actions below will display an event's form
 #
 my $pagetitle = "";
 my @lines;
@@ -283,13 +283,13 @@ my $parents = WebObs::Events::parents($evbase, $evpath);
 # (object,event)
 #
 if ($action =~ /new/i ) {
-	if (!$isProject) { 
+	if (!$isProject) {
 		$date = $today->strftime('%Y-%m-%d');
 		$time = $today->strftime('%H:%M');
 		$date2 = $date;
 		$time2 = $time;
 		$pagetitle = "$__{'Create Event'}";
-		# fool parents() with a pseudo (xx) evntname if needed 
+		# fool parents() with a pseudo (xx) evntname if needed
 		$parents = WebObs::Events::parents($evbase, "$evpath/xx") if ($evpath ne "" && $parents eq "");
 		$s2g = ( $GazetteWhat eq "ALL" ) ? 1 : 0;
 	} else {
@@ -305,7 +305,7 @@ if ($action =~ /new/i ) {
 if ($action =~ /upd/i ) {
 	if (!$isProject) {
 		my ($fname,$ft) = split(/\./,basename($evpath));
-		($name,$date,$time,$version) = split(/_/,basename($fname));
+		($name,$date,$time,$version) = WebObs::Events::eventnameSplit(basename($fname));
 		$time =~ s/-/:/;
 		$time =~ s/NA//;
 		$pagetitle = "$__{'Edit Event'} [$date $time $version]";
@@ -333,16 +333,16 @@ my $thismonday    = $today-($today->day_of_week+6)%7*86400;
 my $daynames      = join(',',map { l2u(($thismonday+86400*$_)->strftime('%A'))} (0..6)) ;
 my $monthnames    = join(',',map { l2u((Time::Piece->strptime("$_",'%m'))->strftime('%B')) } (1..12)) ;
 my $wodp_d2 = "[".join(',',map { "'".substr($_,0,2)."'" } split(/,/,$daynames))."]";
-my @months = split(/,/,$monthnames); 
+my @months = split(/,/,$monthnames);
 my $wodp_m  = "[".join(',',map { "'$_'" } @months)."]";
 my @holidaysdef;
-open(FILE, "<$WEBOBS{FILE_DAYSOFF}") || die "$__{'failed opening holidays definitions'}\n"; 
+open(FILE, "<$WEBOBS{FILE_DAYSOFF}") || die "$__{'failed opening holidays definitions'}\n";
 while(<FILE>) { push(@holidaysdef,l2u($_)) if ($_ !~/^(#|$)/); }; close(FILE);
 chomp(@holidaysdef);
 my $wodp_holidays = "[".join(',',map { my ($d,$t)=split(/\|/,$_); "{d: \"$d\", t:\"$t\"}" } @holidaysdef)."]";
 # ---- end wodp stuff
 
-# ---- html page 
+# ---- html page
 print "Content-type: text/html; charset=utf-8
 
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
@@ -416,7 +416,7 @@ function postform() {
 	}
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
 		 if (data != '') alert(\$(\"<div/>\").html(data).text());
-       	 location.href = document.referrer;	   
+       	 location.href = document.referrer;
    	});
 }
 function convert2MMD()
@@ -427,7 +427,7 @@ function convert2MMD()
 	}
 }
 </script>";
-# javascript for Project form 
+# javascript for Project form
 #
 } else {
 	print "<script language=\"javascript\" type=\"text/javascript\">
@@ -449,7 +449,7 @@ function postform() {
 	}
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
 		 alert(\$(\"<div/>\").html(data).text());
-       	 location.href = document.referrer;	   
+       	 location.href = document.referrer;
    	});
 }
 function convert2MMD()
@@ -519,7 +519,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 		}
 	}
 	print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
-	print "<B>$__{'Author(s)'}: </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\" 
+	print "<B>$__{'Author(s)'}: </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\"
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved (hold CTRL key for multiple selections)'}')\">\n";
 	# makes a list of active (and inactive) users
 	my @alogins;
@@ -543,7 +543,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	}
 	print "</SELECT>\n";
 	print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
-	print "<B>$__{'Remote Operator(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\" 
+	print "<B>$__{'Remote Operator(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved remotely (hold CTRL key for multiple selections)'}')\">\n";
 	for my $ulogin (@logins) {
 		my $sel = "";
@@ -570,7 +570,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	print "</P>";
 	print "</TABLE>";
 print "</FORM>\n";
-		
+
 print "\n</BODY>\n</HTML>\n";
 
 
@@ -587,7 +587,7 @@ sub htmlMsgOK {
 		$rcd = WebObs::Gazette::setEventArticle($object,$target,$titre,join('+',@oper),$date2."_".$time2);
 		$msg .= "+ ".basename($target)." $__{'written to Gazette'}\n" if ($rcd =~ /1 row.*/);
 	}
-	if ( $notify eq 'OK' ) { 
+	if ( $notify eq 'OK' ) {
 		my $t = notify();
 		$msg .= "+ Notify ok"  if ( $t == 0 );
 		$msg .= "+ Notify error $t" if ( $t > 0);
@@ -602,7 +602,7 @@ sub htmlMsgNotOK {
 
 # ---- notify
 #
-sub notify { 
+sub notify {
 	my $eventname = "eventnode";
 	my $senderId  = $USERS{$CLIENT}{UID};
 	my $names = join(", ",WebObs::Users::userName(@oper));
