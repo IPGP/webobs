@@ -14,11 +14,11 @@ WebObs is presently fully functional and used in a dozen observatories, but the 
 ## Download the latest release
 
 - [WebObs-2.4.1.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.4.1/WebObs-2.4.1.tar.gz) (66 Mb) updated October 29, 2021
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.4.1/release-notes.md) (see also the *What's new?* section below)
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.4.1/release-notes.md) (see also the [What's new?](#whatsnew) section below)
 - [User manual](https://github.com/IPGP/webobs/releases/download/v2.4.1/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
-  - Recommanded: **ETOPO1** (see below for download and install)
+  - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
 - Previous releases are available [here](https://github.com/IPGP/webobs/releases) and older packages [here](http://www.ipgp.fr/~beaudu/webobs/).
 
 For install and update, please follow instructions below.
@@ -97,13 +97,10 @@ sudo service woscheduler start
 sudo service wopostboard start
 ```
 
+<a name="srtm1"></a>
 ### D) Improving basemap database (reommanded)
 
-WebObs is distributed with ETOPO5 worldwide topographic data, which is very coarse and not sufficient to produce detailed basemaps.
-
-#### 1. SRTM topographic data
-
-and will automatically download SRTM data for detailed maps. To improve large scale maps resolution, you can download ETOPO1:
+WebObs is distributed with ETOPO5 worldwide topographic data, which is very coarse. For details maps on land, WebObs uses SRTM3 topographic data, automatically downloaded from the internet. To improve offshore parts of maps, you can freely download ETOPO1:
 
 ```sh
 curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip -o /tmp/etopo.zip
@@ -123,6 +120,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 ```
 
 
+<a name="whatsnew"></a>
 ## What's new?
 
 ### What's new in the 2.4?
@@ -194,17 +192,18 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - improvements and fixes to superprocs SEFRAN3, GENPLOT, GNSS, JERK, METEO.
 
 ## References
-### Publications on the WebObs system
 <a name="worefs"></a>
-- Beauducel, F. and C. Anténor-Habazac (2002), **Quelques éléments d'une surveillance opérationnelle...**, Journées des Observatoires Volcanologiques, Institut de Physique du Globe de Paris, 25 janvier 2002. [Full presentation](http://www.ipgp.fr/~beaudu/2002_Beauducel_Antenor-Habazac.pdf) (in French)
-- Beauducel, F., Anténor-Habazac, C., & Mallarino, D. (2004). **WEBOBS: Integrated monitoring system interface for volcano observatories**. *IAVCEI General Assembly, Pucon, Chile*, November 2004.
-- Beauducel, F. (2006). **Operational monitoring of French volcanoes: Recent advances in Guadeloupe**, Géosciences, Editions BRGM, n°4, p 64-68, 2006. [Abstract](http://www.ipgp.fr/~beaudu/2006_Beauducel_Geosciences.html).
-- Beauducel, F., A. Bosson, F. Randriamora, C. Anténor-Habazac, A. Lemarchand, J-M Saurel, A. Nercessian, M-P Bouin, J-B de Chabalier, V. Clouard (2010). **Recent advances in the Lesser Antilles observatories - Part 2 - WEBOBS: an integrated web-based system for monitoring and networks management**, Paper presented at European Geosciences Union General Assembly, Vienna, 2-7 May 2010. [Abstract](http://www.ipgp.fr/~beaudu/2010_Beauducel_EGU.html).
-- Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020), **WebObs: The volcano observatories missing link between research and real-time monitoring**, Frontiers in Earth Sciences, [Open Access Full Article](https://doi.org/10.3389/feart.2020.00048).
+### Publications on the WebObs system
+1. Beauducel, F. and C. Anténor-Habazac (2002), **Quelques éléments d'une surveillance opérationnelle...**, *Journées des Observatoires Volcanologiques, Institut de Physique du Globe de Paris, 25 janvier 2002*. [PDF](http://www.ipgp.fr/~beaudu/2002_Beauducel_Antenor-Habazac.pdf) (in French)
+1. Beauducel, F., Anténor-Habazac, C., & Mallarino, D. (2004). **WEBOVS: Integrated monitoring system interface for volcano observatories**. *IAVCEI General Assembly, Pucon, Chile, November 2004*, poster. [PDF](http://web2013prod.ipgp.fr/~beaudu/download/2004_Beauducel_IAVCEI.pdf)
+1. Beauducel, F. (2006). **Operational monitoring of French volcanoes: Recent advances in Guadeloupe**, *Géosciences*, Editions BRGM, n°4, p 64-68, 2006. [Abstract](http://www.ipgp.fr/~beaudu/2006_Beauducel_Geosciences.html)
+1. Beauducel, F., A. Bosson, F. Randriamora, C. Anténor-Habazac, A. Lemarchand, J-M Saurel, A. Nercessian, M-P Bouin, J-B de Chabalier, V. Clouard (2010). **Recent advances in the Lesser Antilles observatories - Part 2 - WEBOBS: an integrated web-based system for monitoring and networks management**, *Paper presented at European Geosciences Union General Assembly, Vienna, 2-7 May 2010*. [Abstract](http://www.ipgp.fr/~beaudu/2010_Beauducel_EGU.html)
+1. Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020), **WebObs: The volcano observatories missing link between research and real-time monitoring**, *Frontiers in Earth Sciences*, [Open Access Full Article](https://doi.org/10.3389/feart.2020.00048)
 
-### Publications using data from the WebObs system
 <a name="wopubs"></a>
+### Publications using data from the WebObs system
 1. Bengoubou-Valérius M. et al. (2008). CDSA: A New Seismological Data Center for the French Lesser Antilles. *Seismol. Res. Lett.*, [doi:10.1785/gssrl.79.1.90](https://doi.org/10.1785/gssrl.79.1.90)
+1. Truong, F. et al. (2009). MAGIS: The information system of IPGP magnetic observatories. *In Proceedings of the XIIIth IAGA Workshop on Geomagnetic Observatory Instruments, Data Acquisition and Processing, June 9-18 2008.* [PDF](http://www.ipgp.jussieu.fr/~chulliat/papers/Truong_etal_2009.pdf)
 1.  Saurel J. M. et al. (2010). Recent advances in the Lesser Antilles observatories Part 1: Seismic Data Acquisition Design based on EarthWorm and SeisComP. *In EGU General Assembly Conference Abstracts*, p. 5023.
 1.  Beauducel F. et al. (2011). Empirical model for rapid macroseismic intensities prediction in Guadeloupe and Martinique. *C.R. Geoscience*, [doi:10.1016/j.crte.2011.09.004](10.1016/j.crte.2011.09.004)
 1.  Cole P. et al. (2011), MVO scientific report for volcanic activity between 1 November 2010 and 30 April 2011, [Open File Report OFR 11-01](http://www.mvo.ms/pub/Open_File_Reports/MVO_OFR_11_02-MVO_Report_to_SAC_16.pdf).
