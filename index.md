@@ -53,8 +53,8 @@ sudo ./install -mode silent
 A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:
 
 ```sh
-sudo apt-get install apache2 apache2-utils sqlite3 imagemagick pngquant mutt xvfb \
-   curl gawk graphviz net-tools libdatetime-perl libdate-calc-perl \
+sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant mutt xvfb \
+   curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
    libtext-multimarkdown-perl libswitch-perl libintl-perl libncurses5
 ```
@@ -198,4 +198,32 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - Beauducel, F. (2006). **Operational monitoring of French volcanoes: Recent advances in Guadeloupe**, Géosciences, Editions BRGM, n°4, p 64-68, 2006. [Abstract](http://www.ipgp.fr/~beaudu/2006_Beauducel_Geosciences.html).
 - Beauducel, F., A. Bosson, F. Randriamora, C. Anténor-Habazac, A. Lemarchand, J-M Saurel, A. Nercessian, M-P Bouin, J-B de Chabalier, V. Clouard (2010). **Recent advances in the Lesser Antilles observatories - Part 2 - WEBOBS: an integrated web-based system for monitoring and networks management**, Paper presented at European Geosciences Union General Assembly, Vienna, 2-7 May 2010. [Abstract](http://www.ipgp.fr/~beaudu/2010_Beauducel_EGU.html).
 - Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020), **WebObs: The volcano observatories missing link between research and real-time monitoring**, Frontiers in Earth Sciences, DOI: 10.3389/feart.2020.00048. [Open Access Full Article](https://doi.org/10.3389/feart.2020.00048).
-- Beauducel F., A. Peltier, A. Villié, W. Suryanto (2020), **Mechanical imaging of a volcano plumbing system from unsupervised GNSS modeling**, Geophysical Research Letters, [Open Access Full Article](https://doi.org/10.1029/2020GL089419).
+
+## Some publications using data from the WebObs system
+1. <font size="2">Bengoubou-Valérius M. et al. (2008). CDSA: A New Seismological Data Center for the French Lesser Antilles. *Seismol. Res. Lett.*, https://doi.org/10.1785/gssrl.79.1.90</font>
+1. Saurel J. M. et al. (2010). Recent advances in the Lesser Antilles observatories Part 1: Seismic Data Acquisition Design based on EarthWorm and SeisComP. *In EGU General Assembly Conference Abstracts*, p. 5023.
+1. Beauducel F. et al. (2011). Empirical model for rapid macroseismic intensities prediction in Guadeloupe and Martinique. *C.R. Geoscience*, https://doi.org/10.1016/j.crte.2011.09.004
+1. Cole P. et al. (2011), MVO scientific report for volcanic activity between 1 November 2010 and 30 April 2011, *Open File Report OFR 11-01*.
+1. Vorobieva I. et al. (2013). Multiscale mapping of completeness magnitude of earthquake catalogs, *Bull. Seismol. Soc. Am.*, https://doi.org/10.1785/0120120132
+1. Beauducel F. et al. (2014). Real-time source deformation modeling through GNSS permanent stations at Merapi volcano (Indonesia). *In AGU Fall Meeting Abstracts* Vol. 2014, pp. V41B-4800.
+1. Boissier P. et al. (2014). Acquisition, capitalization, modeling and sharing of volcanic and seismic monitoring data at La Réunion Island. *In EGU General Assembly Conference Abstracts*, p. 7964.
+1. Lemarchand, A. et al. (2014). Significant breakthroughs in monitoring networks of the volcanological and seismological French observatories. *In EGU General Assembly Conference Abstracts* p. 14987.
+1. Villemant B. et al. (2014). The hydrothermal system of La Soufrière of Guadeloupe (Lesser Antilles): 35 years of geochemical monitoring with particular emphasis on halogens tracers, *J. Volcanol. Geotherm. Res.*, https://doi.org/10.1016/j.jvolgeores.2014.08.002
+1. Lemarchand A. et al. (2015). Validation of seismological data from volcanological and seismological French observatories of the Institut de Physique du Globe de Paris (OVSG, OVSM and OVPF). *In 2nd Scientific and Technical Meetings of Résif*.
+1. Maggi A. et al. (2017). Implementation of a multi-station approach for automated event classification at Piton de la Fournaise volcano, *Seismol. Res. Lett.*, https://doi.org/10.1785/0220160189
+1. Pinel V. et al. (2021). Monitoring of Merapi volcano, Indonesia based on Sentinel-1 data. *In EGU General Assembly Conference Abstracts*, pp. EGU21-10392.
+1. Tamburello G. et al. (2019). Spatio-temporal relationships between fumarolic activity, hydrothermal fluid circulation and geophysical signals at an arc volcano in degassing unrest: La Soufrière of Guadeloupe (French West Indies). *Geosciences*, https://doi.org/10.3390/geosciences9110480
+1. Moretti R. et al. (2020). The 2018 unrest phase at La Soufrière of Guadeloupe (French West Indies) andesitic volcano: scrutiny of a failed but prodromal phreatic eruption, *J. Volcanol. Geotherm. Res.*, https://doi.org/10.1016/j.jvolgeores.2020.106769
+1. Beauducel F. et al. (2020), Mechanical imaging of a volcano plumbing system from unsupervised GNSS modeling, *Geophys. Res. Lett.*, https://doi.org/10.1029/2020GL089419
+1. Feron R. et al. (2020). First optical seismometer at the top of La Soufrière volcano, Guadeloupe. *Seismol. Soc. Am., https://doi.org/10.1785/0220200126
+1. Terray L. (2020). From sensor to cloud: An IoT network of radon outdoor probes to monitor active volcanoes. *Sensors*, https://doi.org/10.3390/s20102755
+1. Stabile T. A. et al. (2020). The INSIEME seismic network: a research infrastructure for studying induced seismicity in the High Agri Valley (southern Italy). *Earth System Science Data*, https://doi.org/10.5194/essd-12-519-2020
+1. Rizal M. H. (2020). Structure of Merapi-Merbabu complex, Central Java, Indonesia, modeled from body wave tomography. *Master Solid Earth Geophysics, Université de Paris*.
+1. Peltier, A. et al. (2021). Volcano crisis management at Piton de la Fournaise (La Réunion) during the COVID-19 lockdown, *Seismol. Res. Lett.*, https://doi.org/10.1785/0220200212
+1. Falcin A. et al. (2021). A machine learning approach for automatic classification of volcanic seismicity at La Soufrière volcano, Guadeloupe, *J. Volcanol. Geotherm. Res.*, https://doi.org/10.1016/j.jvolgeores.2020.107151
+1. Feuillet N. et al. (2021). Birth of a large volcanic edifice through lithosphere-scale dyking offshore Mayotte (Indian Ocean), *Nature Geoscience*, https://doi.org/10.1038/s41561-021-00809-x
+1. Massin F. et al. (2021). Automatic picking and probabilistic location for earthquake assessment in the Lesser Antilles subduction zone, *CR Géoscience*, https://doi.org/10.5802/crgeos.81
+1. Trasatti, E. et al. (2021). The Impact of Open Science for Evaluation of Volcanic Hazards. *Frontiers in Earth Science*, https://doi.org/10.3389/feart.2021.659772.
+1. Saurel J. M. et al. (2021). Mayotte seismic crisis: building knowledge in near real-time by combining land and ocean-bottom seismometers, first results. *Geophys. J. Int.*, https://doi.org/10.1093/gji/ggab392
+1. Duputel Z. et al. (2021). Seismicity of La Réunion island. *Comptes Rendus Géoscience*, https://doi.org/10.5802/crgeos.77
+</span>
