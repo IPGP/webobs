@@ -225,5 +225,5 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 1. <font size="2"> Feuillet N. et al. (2021). Birth of a large volcanic edifice through lithosphere-scale dyking offshore Mayotte (Indian Ocean), *Nature Geoscience*, https://doi.org/10.1038/s41561-021-00809-x</font>
 1. <font size="2"> Massin F. et al. (2021). Automatic picking and probabilistic location for earthquake assessment in the Lesser Antilles subduction zone, *CR Géoscience*, https://doi.org/10.5802/crgeos.81</font>
 1. <font size="2"> Trasatti, E. et al. (2021). The Impact of Open Science for Evaluation of Volcanic Hazards. *Frontiers in Earth Science*, https://doi.org/10.3389/feart.2021.659772.</font>
-1. <font size="2"> Saurel J. M. et al. (2021). Mayotte seismic crisis: building knowledge in near real-time by combining land and ocean-bottom seismometers, first results. *Geophys. J. Int.*, https://doi.org/10.1093/gji/ggab392</font>
-1. <font size="2"> Duputel Z. et al. (2021). Seismicity of La Réunion island. *Comptes Rendus Géoscience*, https://doi.org/10.5802/crgeos.77</font>
+1. <font size="2"> Saurel J. M. et al. (2021). Mayotte seismic crisis: building knowledge in near real-time by combining land and ocean-bottom seismometers, first results. *Geophys. J. Int.*, https://doi.org/10.1093/gji/ggab392
+1. <font size="2"> Duputel Z. et al. (2021). Seismicity of La Réunion island. *Comptes Rendus Géoscience*, https://doi.org/10.5802/crgeos.77
