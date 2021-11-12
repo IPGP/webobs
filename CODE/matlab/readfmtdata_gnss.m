@@ -55,7 +55,7 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2021-03-06
+%	Updated: 2021-11-12
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -203,7 +203,7 @@ case 'usgs-rneu'
 	for a = 1:length(F.raw)
 		fraw = F.raw{a};
 		if strncmpi('http',fraw,4)
-			s = wosystem(sprintf('/usr/bin/curl "%s" | awk ''{print $1,$3,$4,$5,$6,$7,$8,$9}'' | sed -e ''s/rrr/0/g;s/ppp/1/g'' >> %s',fraw,fdat),P);
+			s = wosystem(sprintf('curl -s -S "%s" | awk ''{print $1,$3,$4,$5,$6,$7,$8,$9}'' | sed -e ''s/rrr/0/g;s/ppp/1/g'' >> %s',fraw,fdat),P);
 			if s ~= 0
 				break;
 			end
@@ -250,7 +250,7 @@ case 'ies-neu'
 		fraw = F.raw{a};
 		cmd0 = sprintf('awk ''{ if (NR!=1) {print}}'' >> %s',fdat);
 		if strncmpi('http',fraw,4)
-			s  = wosystem(sprintf('/usr/bin/curl "%s" | %s',fraw,cmd0),P);
+			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
 			if s ~= 0
 				break;
 			end
@@ -294,7 +294,7 @@ case 'ogc-neu'
 		fraw = F.raw{a};
 		cmd0 = sprintf('awk ''/^[^#]/ {print}'' >> %s',fdat);
 		if strncmpi('http',fraw,4)
-			s  = wosystem(sprintf('/usr/bin/curl "%s" | %s',fraw,cmd0),P);
+			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
 			if s ~= 0
 				break;
 			end

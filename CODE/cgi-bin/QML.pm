@@ -4,7 +4,7 @@
 # ------
 # Perl module to import QuakeML files
 #
-# 
+#
 # Authors: François Beauducel <beauducel@ipgp.fr>, Jean-Marie Saurel <saurel@ipgp.fr>
 # Created: 2012-04-30
 # Updated: 2017-07-20
@@ -55,7 +55,7 @@ sub qmlfdsn {
 	my %qml;
 	my @x;
 
-	my @xml2 = qx(curl -s --globoff "$url" | $WEBOBS{XML2_PRGM});
+	my @xml2 = qx(curl -s -S --globoff "$url" | $WEBOBS{XML2_PRGM});
 
 	my $root = '/q:quakeml/eventParameters/event';
 	my $evt_origID = findvalue("$root/preferredOriginID=",\@xml2);
@@ -145,4 +145,3 @@ sub findnode {
 }
 
 1;
-
