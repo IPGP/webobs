@@ -201,7 +201,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 1. Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020), **WebObs: The volcano observatories missing link between research and real-time monitoring**, *Frontiers in Earth Sciences*, [Open Access Full Article](https://doi.org/10.3389/feart.2020.00048)
 
 <a name="wopubs"></a>
-### Publications citing or using data from the WebObs system
+### Publications citing or using data from WebObs
 
 #### Multidisciplinary
 1. Truong, F. et al. (2009). MAGIS: The information system of IPGP magnetic observatories. *In Proceedings of the XIIIth IAGA Workshop on Geomagnetic Observatory Instruments, Data Acquisition and Processing, June 9-18 2008.* [PDF](http://www.ipgp.jussieu.fr/~chulliat/papers/Truong_etal_2009.pdf)
