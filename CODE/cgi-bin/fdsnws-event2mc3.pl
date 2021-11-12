@@ -181,7 +181,7 @@ if (! -d $MC3{SC3_EVENTS_ROOT} ) {
 
 # ---- gets the list of last events
 my $starttime = POSIX::strftime('%Y-%m-%dT%H:%M:%S',gmtime(time-3600*24*$MC3{SC3_UPDATE_DAYS}));
-my @last = sort(qx(curl -s --globoff "${fdsnws_url}${fdsnws_search}&format=text&orderby=time&starttime=$starttime" | egrep '^[^#]' | cut -d '|' -f 1));
+my @last = sort(qx(curl -s -S --globoff "${fdsnws_url}${fdsnws_search}&format=text&orderby=time&starttime=$starttime" | egrep '^[^#]' | cut -d '|' -f 1));
 chomp(@last);
 print "checks $MC3{SC3_UPDATE_DAYS} last days ($#last events)...\n";
 
@@ -205,7 +205,7 @@ for (@last) {
 		my @tab;
 		my $s;
 
-		my @event = qx(curl -s --globoff "${fdsnws_url}${fdsnws_detail}&format=xml&eventid=$evt_id" | $WEBOBS{XML2_PRGM});
+		my @event = qx(curl -s -S --globoff "${fdsnws_url}${fdsnws_detail}&format=xml&eventid=$evt_id" | $WEBOBS{XML2_PRGM});
 
 		$s = '/q:quakeml/eventParameters/event';
 		foreach (@event) { s/^$s//g; }
