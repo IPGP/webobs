@@ -201,7 +201,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 1. Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020), **WebObs: The volcano observatories missing link between research and real-time monitoring**, *Frontiers in Earth Sciences*, [Open Access Full Article](https://doi.org/10.3389/feart.2020.00048)
 
 <a name="wopubs"></a>
-### Publications using data from the WebObs system
+### Publications citing or using data from the WebObs system
 
 #### Multidisciplinary
 1. Truong, F. et al. (2009). MAGIS: The information system of IPGP magnetic observatories. *In Proceedings of the XIIIth IAGA Workshop on Geomagnetic Observatory Instruments, Data Acquisition and Processing, June 9-18 2008.* [PDF](http://www.ipgp.jussieu.fr/~chulliat/papers/Truong_etal_2009.pdf)
@@ -238,6 +238,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 1. Lengliné, O. et al. (2016), Uncovering the hidden signature of a magmatic recharge at Piton de la Fournaise volcano using small earthquakes, *Geophys. Res. Lett.*, [doi:10.1002/2016GL068383](https://doi.org/10.1002/2016GL068383)
 1.  Maggi A. et al. (2017). Implementation of a multi-station approach for automated event classification at Piton de la Fournaise volcano, *Seismol. Res. Lett.*, [doi:10.1785/0220160189](https://doi.org/10.1785/0220160189)
 1. Duputel Z. et al. (2019). Constraining spatiotemporal characteristics of magma migration at piton De La Fournaise volcano from pre‐eruptive seismicity. *Geophys. Res. Lett.*, [doi:10.1029/2018GL080895](https://doi.org/10.1029/2018GL080895)
+1. Tan C.T. et al. (2019), Real-time assessment of potential seismic migration within a monitoring network using Red-flag SARA, *J. Volcanol. Geotherm. Res.*, [doi:10.1016/j.jvolgeores.2019.07.004](https://doi.org/10.1016/j.jvolgeores.2019.07.004)
 1.  Feron R. et al. (2020). First optical seismometer at the top of La Soufrière volcano, Guadeloupe. *Seismol. Soc. Am., [doi:10.1785/0220200126](https://doi.org/10.1785/0220200126)
 1.  Stabile T. A. et al. (2020). The INSIEME seismic network: a research infrastructure for studying induced seismicity in the High Agri Valley (southern Italy). *Earth System Science Data*, [doi:10.5194/essd-12-519-2020](https://doi.org/10.5194/essd-12-519-2020)
 1.  Rizal M. H. (2020). Structure of Merapi-Merbabu complex, Central Java, Indonesia, modeled from body wave tomography. Master report, *Master Solid Earth Geophysics, Université de Paris*.
@@ -250,6 +251,6 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 1.  Beauducel F. et al. (2014). Real-time source deformation modeling through GNSS permanent stations at Merapi volcano (Indonesia). *In AGU Fall Meeting Abstracts* Vol. 2014, pp. V41B-4800.
 1. Beauducel, F., and Carbone, D. (2015). A strategy to explore the topography-driven distortions in the tilt field induced by a spherical pressure source: the case of Mt Etna. *Geophys. J. Int.*, [doi:10.1093/gji/ggv076](https://doi.org/10.1093/gji/ggv076)
 1. Peltier A. et al. (2016), Deep fluid transfer evidenced by surface deformation during the 2014-2015 unrest at Piton de la Fournaise volcano, *J. Volcanol. Geotherm. Res.*, [doi:10.1016/j.jvolgeores.2016.04.031](doi:10.1016/j.jvolgeores.2016.04.031)
-1.  Pinel V. et al. (2021). Monitoring of Merapi volcano, Indonesia based on Sentinel-1 data. *In EGU General Assembly Conference Abstracts*, pp. EGU21-10392.
+1. Pinel V. et al. (2021). Monitoring of Merapi volcano, Indonesia based on Sentinel-1 data. *In EGU General Assembly Conference Abstracts*, pp. EGU21-10392.
 1. Syahbana D. et al. (2019). The 2017–19 activity at Mount Agung in Bali (Indonesia): intense unrest, monitoring, crisis response, evacuation, and eruption. *Sci. Rep.*, [doi:10.1038/s41598-019-45295-9](https://doi.org/10.1038/s41598-019-45295-9)
 1.  Beauducel F. et al. (2020), Mechanical imaging of a volcano plumbing system from unsupervised GNSS modeling, *Geophys. Res. Lett.*, [doi:10.1029/2020GL089419](https://doi.org/10.1029/2020GL089419)
