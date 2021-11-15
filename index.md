@@ -238,6 +238,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 1. Lengliné, O. et al. (2016), Uncovering the hidden signature of a magmatic recharge at Piton de la Fournaise volcano using small earthquakes, *Geophys. Res. Lett.*, [doi:10.1002/2016GL068383](https://doi.org/10.1002/2016GL068383)
 1.  Maggi A. et al. (2017). Implementation of a multi-station approach for automated event classification at Piton de la Fournaise volcano, *Seismol. Res. Lett.*, [doi:10.1785/0220160189](https://doi.org/10.1785/0220160189)
 1. Duputel Z. et al. (2019). Constraining spatiotemporal characteristics of magma migration at piton De La Fournaise volcano from pre‐eruptive seismicity. *Geophys. Res. Lett.*, [doi:10.1029/2018GL080895](https://doi.org/10.1029/2018GL080895)
+1. Saurel J.M. et al. (2019). High-resolution onboard manual locations of Mayotte seismicity since March 2019, using local land and seafloor stations. *In AGU Fall Meeting Abstracts*, Vol. 2019, pp. V43I-0220.
 1. Tan C.T. et al. (2019), Real-time assessment of potential seismic migration within a monitoring network using Red-flag SARA, *J. Volcanol. Geotherm. Res.*, [doi:10.1016/j.jvolgeores.2019.07.004](https://doi.org/10.1016/j.jvolgeores.2019.07.004)
 1.  Feron R. et al. (2020). First optical seismometer at the top of La Soufrière volcano, Guadeloupe. *Seismol. Soc. Am., [doi:10.1785/0220200126](https://doi.org/10.1785/0220200126)
 1.  Stabile T. A. et al. (2020). The INSIEME seismic network: a research infrastructure for studying induced seismicity in the High Agri Valley (southern Italy). *Earth System Science Data*, [doi:10.5194/essd-12-519-2020](https://doi.org/10.5194/essd-12-519-2020)
@@ -251,6 +252,8 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 1.  Beauducel F. et al. (2014). Real-time source deformation modeling through GNSS permanent stations at Merapi volcano (Indonesia). *In AGU Fall Meeting Abstracts* Vol. 2014, pp. V41B-4800.
 1. Beauducel, F., and Carbone, D. (2015). A strategy to explore the topography-driven distortions in the tilt field induced by a spherical pressure source: the case of Mt Etna. *Geophys. J. Int.*, [doi:10.1093/gji/ggv076](https://doi.org/10.1093/gji/ggv076)
 1. Peltier A. et al. (2016), Deep fluid transfer evidenced by surface deformation during the 2014-2015 unrest at Piton de la Fournaise volcano, *J. Volcanol. Geotherm. Res.*, [doi:10.1016/j.jvolgeores.2016.04.031](doi:10.1016/j.jvolgeores.2016.04.031)
+1. Kristianto K. et al. (2020). Deformasi Gunung Anak Krakatau Periode Oktober–Desember 2019. *Bulletin of Volcanology and Geological Hazard*, 14(1), 9-17.
 1. Pinel V. et al. (2021). Monitoring of Merapi volcano, Indonesia based on Sentinel-1 data. *In EGU General Assembly Conference Abstracts*, pp. EGU21-10392.
 1. Syahbana D. et al. (2019). The 2017–19 activity at Mount Agung in Bali (Indonesia): intense unrest, monitoring, crisis response, evacuation, and eruption. *Sci. Rep.*, [doi:10.1038/s41598-019-45295-9](https://doi.org/10.1038/s41598-019-45295-9)
 1.  Beauducel F. et al. (2020), Mechanical imaging of a volcano plumbing system from unsupervised GNSS modeling, *Geophys. Res. Lett.*, [doi:10.1029/2020GL089419](https://doi.org/10.1029/2020GL089419)
+1. Indrastuti N. et al. (2021). Potential Eruption and Current Activity of Anak Krakatau Volcano, Indonesia. *In IOP Conference Series: Earth and Environmental Science*, Vol. 873, No. 1, p. 012021.
