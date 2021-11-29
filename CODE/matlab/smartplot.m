@@ -44,11 +44,11 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 2021-11-09
+%	Updated: 2021-11-29
 
 linestyle = field2str(OPT,'linestyle','-');
 fontsize = field2num(OPT,'fontsize',8);
-chnames = field2cell(OPT,'chnames');
+chnames = OPT.chnames;
 choffset = field2num(OPT,'choffset');
 zoompca = field2num(OPT,'zoompca');
 trendmindays = field2num(OPT,'trendmindays');
@@ -146,8 +146,8 @@ for ii = 0:(tzoom+(zoompca<0))
 			'HorizontalAlignment','center','VerticalAlignment','bottom','Rotation',90);
 	end
 	% y-scale
-	if yscalevalue > 0
-		set(gca,'YTick',(ceil(ylim(1)/yscalevalue):floor(ylim(2)/yscalevalue))/yscalevalue);
+	if yscalevalue > 0 && diff(ylim) > 2*yscalevalue
+		set(gca,'YTick',(ceil(ylim(1)/yscalevalue):floor(ylim(2)/yscalevalue))*yscalevalue);
 	end
 	ytick = get(gca,'YTick');
 	set(gca,'TickLength',[0.005,0.005]) % reduces tick length
