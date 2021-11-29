@@ -102,6 +102,8 @@ VELOCITY_REF_ORIGIN_DATE|2000-01-01
 
 # component names used as Y-label for SUMMARY and PERNODE graphs (use '\ ' to avoid word splitting)
 COMPONENT_NAMELIST|Relative Eastern,Relative Northern,Relative Vertical
+# Y-scale for displacement time series plots (in m, empty is automatic)
+DISP_YSCALE_M|
 
 # --- PERNODE graphs
 PERNODE_LINESTYLE|o
