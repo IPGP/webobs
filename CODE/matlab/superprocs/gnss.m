@@ -27,7 +27,7 @@ function DOUT=gnss(varargin)
 %       GNSS will use PROC's parameters from .conf file. See CODE/tplates/PROC.GNSS
 %       template file for a list of all parameters with comments.
 %
-%	Any of the *_TITLE keys may contain any local key (e.g. ${NAME}) and a list
+%	Any of the *_TITLE keys may contain local keys (e.g. ${NAME}) and a list
 %	of internal variables that will be substituted in the text strings:
 %	    $node_name      = node long name
 %	    $node_alias     = node alias
@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-10-14
+%   Updated: 2021-11-29
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -384,7 +384,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.linestyle = summary_linestyle;
 		OPT.fontsize = fontsize;
 		OPT.chnames = cmpnames;
-		OPT.choff = summary_cmpoff;
+		OPT.choffset = summary_cmpoff;
 		OPT.zoompca = summary_timezoom;
 		OPT.trendmindays = trendmindays;
 		OPT.yscalevalue = disp_yscale;
@@ -508,7 +508,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.linestyle = pernode_linestyle;
 		OPT.fontsize = fontsize;
 		OPT.chnames = cmpnames;
-		OPT.choff = pernode_cmpoff;
+		OPT.choffset = pernode_cmpoff;
 		OPT.zoompca = pernode_timezoom;
 		OPT.trendmindays = trendmindays;
 		OPT.yscalevalue = disp_yscale;
@@ -688,7 +688,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.linestyle = baselines_linestyle;
 		OPT.fontsize = fontsize;
 		OPT.chnames = refnames;
-		OPT.choff = baselines_cmpoff;
+		OPT.choffset = baselines_refoff;
 		OPT.zoompca = baselines_timezoom;
 		OPT.trendmindays = trendmindays;
 		OPT.yscalevalue = disp_yscale;
