@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 #
 =head1 NAME
 
-showREQ.pl 
+showREQ.pl
 
 =head1 SYNOPSIS
 
@@ -13,10 +13,10 @@ http://..../cgi-bin/showREQ.pl
 Shows the list of results from html-form for 'B<Request for Graphs>'.
 
 A submitted B<Request for Graphs> will have all of its results (outputs) files grouped into the
-OUTR directory, under a subdirectory whose name uniquely identifies the Request: 
+OUTR directory, under a subdirectory whose name uniquely identifies the Request:
 
 	OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
-		REQUEST.rc  
+		REQUEST.rc
 		PROC.PROCa/
 			{exports,graphs,maps,logs}/
 		....
@@ -36,7 +36,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use Locale::TextDomain('webobs');
 use POSIX qw/strftime/;
 
-# ---- webobs stuff 
+# ---- webobs stuff
 #
 use WebObs::Config;
 use WebObs::Users;
@@ -44,7 +44,7 @@ use WebObs::Grids;
 use WebObs::i18n;
 
 # ---- misc inits
-# 
+#
 set_message(\&webobs_cgi_msg);
 
 my @reqlist;
@@ -89,7 +89,7 @@ print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ Forms: "
 ."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'>"
 ." ]</P>";
 
-$table = "<TABLE><TR><TH>Date & Time</TH><TH>Host</TH><TH>User</TH><TH>Time Span</TH><TH>Job</TH><TH>Graphs</TH><TH>Status</TH></TR>\n";
+$table = "<TABLE><TR><TH>Date & Time</TH><TH>Host</TH><TH>User</TH><TH>Time Span</TH><TH>Params</TH><TH>Job</TH><TH>Graphs</TH><TH>Status</TH></TR>\n";
 
 for (reverse sort @reqlist) {
 	my $dir = my $reqdir = $_;
@@ -108,7 +108,8 @@ for (reverse sort @reqlist) {
 			."<TD rowspan='$rowspan' align=center>$date $time</TD>"
 			."<TD rowspan='$rowspan' align=center>$host</TD>"
 			."<TD rowspan='$rowspan' align=center>$user</TD>"
-			."<TD rowspan='$rowspan' align=center>$date1 - $date2</TD>";
+			."<TD rowspan='$rowspan' align=center>$date1 - $date2</TD>"
+			."<TD rowspan='$rowspan' align=center><A href='/OUTR/$reqdir/REQUEST.rc'>.rc</A></TD>";
 		for (@procs) {
 			$_ =~ s/$dir\///;
 			(my $proc = $_) =~ s/PROC\.//;
@@ -173,4 +174,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
