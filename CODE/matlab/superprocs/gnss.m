@@ -78,6 +78,7 @@ if numel(velref)==3 && any(velref~=0)
 end
 enu = {'E','N','U'};
 cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Northern,Relative Vertical'),',');
+disp_yscale = field2num(P,'DISP_YSCALE_M');
 
 % PERNODE graphs parameters
 pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','o');
@@ -380,7 +381,16 @@ for r = 1:numel(P.GTABLE)
 	summary = 'SUMMARY';
 	if any(strcmp(P.SUMMARYLIST,summary))
 		figure, clf, orient tall
-		smartplot(X,tlim,P.GTABLE(r),summary_linestyle,fontsize,cmpnames,summary_cmpoff,summary_timezoom,trendmindays);
+		OPT.linestyle = summary_linestyle;
+		OPT.fontsize = fontsize;
+		OPT.chnames = cmpnames;
+		OPT.choff = summary_cmpoff;
+		OPT.zoompca = summary_timezoom;
+		OPT.trendmindays = trendmindays;
+		OPT.yscalevalue = disp_yscale;
+		OPT.yscaleunit = 'cm';
+		OPT.yscalefact = 100;
+		smartplot(X,tlim,P.GTABLE(r),OPT);
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
@@ -495,7 +505,16 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% makes the plot
-		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),pernode_linestyle,fontsize,cmpnames,pernode_cmpoff,pernode_timezoom,trendmindays);
+		OPT.linestyle = pernode_linestyle;
+		OPT.fontsize = fontsize;
+		OPT.chnames = cmpnames;
+		OPT.choff = pernode_cmpoff;
+		OPT.zoompca = pernode_timezoom;
+		OPT.trendmindays = trendmindays;
+		OPT.yscalevalue = disp_yscale;
+		OPT.yscaleunit = 'cm';
+		OPT.yscalefact = 100;
+		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),OPT);
 		if ~isempty(rev)
 			axes('Position',[.8,.02,.18,.07])
 			plotcube([0,0,0],eye(3),[0,0,0],{'E','N','U'}), hold on
@@ -666,7 +685,16 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% makes the plot
-		smartplot(X,tlim,P.GTABLE(r),baselines_linestyle,fontsize,refnames,baselines_refoff,baselines_timezoom,trendmindays);
+		OPT.linestyle = baselines_linestyle;
+		OPT.fontsize = fontsize;
+		OPT.chnames = refnames;
+		OPT.choff = baselines_cmpoff;
+		OPT.zoompca = baselines_timezoom;
+		OPT.trendmindays = trendmindays;
+		OPT.yscalevalue = disp_yscale;
+		OPT.yscaleunit = 'cm';
+		OPT.yscalefact = 1/siprefix(OPT.yscaleunit,'m');
+		smartplot(X,tlim,P.GTABLE(r),OPT);
 
 		if isok(P,'PLOT_GRID')
 			grid on
