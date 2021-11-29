@@ -873,7 +873,7 @@ if ($date) {
 
 		my $modif = 0;
 
-		if (($userLevel == 2 && ($operateur eq "" || $operateur eq $USERS{$CLIENT}{UID} || $type_evt eq "AUTO")) || $userLevel == 4 ) {
+		if (($MC3{LEVEL2_MODIFY_ALL_EVENTS} eq "Y" && $userLevel ==2) || ($userLevel == 2 && ($operateur eq "" || $operateur eq $USERS{$CLIENT}{UID} || $type_evt eq "AUTO")) || $userLevel == 4 ) {
 			$modif = 1;
 		}
 		# --- mcform: edit form for Main Courante
