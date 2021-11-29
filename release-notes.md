@@ -15,7 +15,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.4.1 (October 2021)
+## v2.4.2 (November 2021)
 
 ### New features
 
@@ -35,6 +35,7 @@ To select events of types **Volcano-Tectonic** and **Long Period**. Note the pip
 2. superproc **gnss** has new features for summary graph MODELTIME:
     - a new variable `MODELTIME_SOURCE_TYPE` now allowing the pCDM source in model time series. An additional graph will be made with name **MODELTIME_pCDM**. Use `isotropic,pcdm` value to compute both types of sources (separated graphs). **Warning:** the computation of pCDM source can be very long: about a minute for a single 2,5 million points model, so detailed model time series on several periods may take hours of computation. Use `MODELTIME_MAX_MODELS` to limit the computation (time step will be adjusted automatically, overwriting the `MODELTIME_SAMPLING_DAY` value).
     - a new variable to fix Y-axis of plots: `MODELTIME_FLIM` containing min,max values for source flow rate (in m<sup>3</sup>/s) or volume variation (in m<sup>3</sup>), depending on the `MODELTIME_FLOWRATE` option. Empty value stands for automatic scale which is the default and former behaviour.
+    - a new variable `DISP_YSCALE_M` to fix the displacement Y-scale on some graph (in meter). Default is automatic.
 
 3. `!!` Any **sefran3** is now managed as a new type of GRID, beside VIEW and PROC.
     - It can be associated to a DOMAIN and will be displayed in the table of grids, with optional type/owner and links to SEFRAN3 main page and associated MC3.
@@ -62,6 +63,7 @@ PATH_MCC|${ROOT_CODE}/bin/linux-64
 2. **mc3**: It was impossible to select a time period within the last day of the month.
 3. `!!` **SRTM tiles for mapping**: Following the fix in 2.3.3, an USGS mirror site has been restored to continue the benefits of downloading automatically new SRTM3 global topographic data without the need to register at the NASA/EarthDATA center. Nevertheless, the authentication is still needed for SRTM1 tiles download (option `DEM_SRTM1|Y`). As a reminder, downloaded tiles are stored locally in the `PATH_DATA_DEM_SRTM` directory (in **WEBOBS.rc**, default is `/opt/webobs/DATA/DEM/SRTM`), and used to update maps without requiring new download from the internet. Thus, a possible alternative to registering at EarthDATA is to place here all the needed tiles manually (must be in the `.hgt` format, filename in the form `[N|S]yy[E|W]xxx.hgt[.zip]` for LAT yy and LON xx at lower-left corner of the tile).
 4. all maps: an uggly artifact might appended on coast lines with `ETOPO_SRTM_MERGE|Y`.
+1. fix an issue in events display for grids with an underscore in the name.
 
 
 ## v2.3.3 (February 2021)
