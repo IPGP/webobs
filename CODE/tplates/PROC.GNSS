@@ -210,7 +210,7 @@ MODELLING_SOURCE_TYPE|isotropic
 MODELLING_MULTIPLE_SOURCES|1
 # misfit norm calculation: 'L1' (default) or 'L2'
 MODELLING_MISFITNORM|L1
-% a priori source depth, gaussian STD (both in m), empty = no apriori
+# a priori source depth, gaussian STD (both in m), empty = no apriori
 MODELLING_APRIORI_DEPTH_M|
 # a priori horizontal error around the target or grid center (in STD, km), 0 = no a priori
 MODELLING_APRIORI_HSTD_KM|0
