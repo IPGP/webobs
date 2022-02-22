@@ -8,12 +8,18 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (not a bug fix). An appropriate configuration to keep former behavior is usually proposed.
 
-<!--
 ## Version under development
+
 ### New features
+
+1. In the superproc **gnss**, new functionality available to apply a harmonic sine+cosine correction on the signal for each component (E,N,U). This can be used to remove a priori periodic signal like atmospheric or ocean loading. New parameters are:
+    - `HARMONIC_ORIGIN_DATE` for the date/time of phase origin for all sine and cosine,
+    - `HARMONIC_PERIOD_DAY` list of harmonic periods, coma separated values, in days (example: `365.25,182.625` for 1 year and 6 months),
+    - `HARMONIC_EAST_SINCOS_MM`, `HARMONIC_NORTH_SINCOS_MM`, `HARMONIC_UP_SINCOS_MM` contain pairs of sine,cosine amplitudes for each period, in mm.
+To activate the correction, all parameters must be valid and number of pairs must be consistent with the number of periods for all components.
+
 ### Enhancements
 ### Fixed issues
--->
 
 ## v2.4.2 (November 2021)
 
