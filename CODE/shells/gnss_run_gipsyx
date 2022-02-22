@@ -335,7 +335,7 @@ for station in $NODES; do
 							mkdir -p "$DEST/$FID/$year"
 							rm -f $gipsyres.*
 							grep "\.State\.Pos\.[XYZ]" $tdp | tail -n3 > $gipsyres
-							if [ -z $TROP_TDP ]; then
+							if [ ! -z $TROP_TDP ]; then
 								grep "\.Trop\." $tdp >> $gipsyres
 							fi
 							echo "==> $gipsyres [$orbit] written."
