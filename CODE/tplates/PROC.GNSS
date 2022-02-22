@@ -102,8 +102,17 @@ VELOCITY_REF_ORIGIN_DATE|2000-01-01
 
 # component names used as Y-label for SUMMARY and PERNODE graphs (use '\ ' to avoid word splitting)
 COMPONENT_NAMELIST|Relative Eastern,Relative Northern,Relative Vertical
-# Y-scale for displacement time series plots (in m, empty is automatic)
-DISP_YSCALE_M|
+# Y-scale for displacement time series plots (in m, 0 is automatic)
+DISP_YSCALE_M|0
+
+# --- Harmonic correction
+HARMONIC_ORIGIN_DATE|
+# period list (day)
+HARMONIC_PERIOD_DAY|
+# pairs of sine,cosine (mm) for each period
+HARMONIC_EAST_SINCOS_MM|
+HARMONIC_NORTH_SINCOS_MM|
+HARMONIC_UP_SINCOS_MM|
 
 # --- PERNODE graphs
 PERNODE_LINESTYLE|o

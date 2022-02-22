@@ -5,8 +5,8 @@ function DOUT=gnss(varargin)
 %
 %       GNSS(PROC,TSCALE) updates all or a selection of TIMESCALES graphs:
 %           TSCALE = '%' : all timescales defined by PROC.conf (default)
-%	    TSCALE = '01y' or '30d,10y,'all' : only specified timescales
-%	    (keywords must be in TIMESCALELIST of PROC.conf)
+%	        TSCALE = '01y' or '30d,10y,all': only specified timescales
+%	        (keywords must be in TIMESCALELIST of PROC.conf)
 %
 %	GNSS(PROC,[],REQDIR) makes graphs/exports for specific request directory
 %	REQDIR. REQDIR must contain a REQUEST.rc file with dedicated parameters.
@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2021-11-29
+%   Updated: 2022-02-22
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -78,7 +78,23 @@ if numel(velref)==3 && any(velref~=0)
 end
 enu = {'E','N','U'};
 cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Northern,Relative Vertical'),',');
-disp_yscale = field2num(P,'DISP_YSCALE_M');
+disp_yscale = field2num(P,'DISP_YSCALE_M',0);
+
+% Harmonic correction: period list (day), pairs of sine, cosine (mm) for each component
+harm_refdate = field2num(P,'HARMONIC_ORIGIN_DATE');
+harm_period = field2num(P,'HARMONIC_PERIOD_DAY');
+harm(1).x = field2num(P,'HARMONIC_EAST_SINCOS_MM')/1e3;
+harm(2).x = field2num(P,'HARMONIC_NORTH_SINCOS_MM')/1e3;
+harm(3).x = field2num(P,'HARMONIC_UP_SINCOS_MM')/1e3;
+harmcorr = false;
+if isnumeric(harm_refdate) && all(harm_period > 0)
+	if all([numel(harm(1).x),numel(harm(2).x),numel(harm(3).x)]==2*numel(harm_period))
+		fprintf('---> Harmonic correction: %s days\n',num2str(harm_period));
+		harmcorr = true;
+	else
+		fprintf('*** Warning: inconsistent pairs of sine/cosine for harmonic correction!\n');
+	end
+end
 
 % PERNODE graphs parameters
 pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','o');
@@ -273,12 +289,16 @@ V.baselines_unit = field2str(P,'BASELINES_UNIT','m');
 
 % ==============================================================================
 % Makes the proc's job
+%
+% Note: D(n).d = [E,N,U,Orbit,E_proc,N_proc,U_proc] where columns 1:4 are original
+% data (in the local reference) and columns 5:7 are processed/corrected data
 
-% if a local reference is defined (VELOCITY_REF), computes relative positions in
-% D.d from the install date of the station.
 
-if numel(velref)==3 && ~all(velref==0)
-	for n = 1:numel(N)
+for n = 1:numel(N)
+
+	% --- if a local reference is defined (VELOCITY_REF), computes relative positions in
+	% D.d from the install date of the station.
+	if numel(velref)==3 && ~all(velref==0)
 		t0 = velrefdate;
 		for c = 1:3
 			if size(D(n).d,2) >= c
@@ -286,15 +306,13 @@ if numel(velref)==3 && ~all(velref==0)
 			end
 		end
 	end
-end
 
-% preprocess the data (orbits and errors)
-for n = 1:numel(N)
-	% add a default orbit column to data if needed
+	% --- add a default orbit column to data if needed
 	if ~isempty(D(n).d) && size(D(n).d,2) < 4
 		D(n).d(:,4) = zeros(size(D(n).d(:,1)));
 	end
-	% filter the data at once and adjust errors
+
+	% --- filter the data at once and adjust errors
 	if ~isempty(D(n).d)
 		if ~isnan(maxerror)
 			D(n).d(any(D(n).e>maxerror,2),:) = NaN;
@@ -306,13 +324,29 @@ for n = 1:numel(N)
 			end
 		end
 	end
+
+	% --- duplicate raw data in columns 5:7
+	D(n).d = D(n).d(:,[1:4,1:3]);
+
+	% --- harmonic correction
+	if harmcorr
+		tharm = D(n).t - harm_refdate;
+		for i = 1:3
+			for c = 1:length(harm_period)
+				a = 2*pi*tharm/harm_period(c);
+				D(n).d(:,i+4) = D(n).d(:,i+4) - sin(a)*harm(i).x(1+(c-1)*2) - cos(a)*harm(i).x(2+(c-1)*2);
+			end
+		end
+	end
+
 end
+
 
 for r = 1:numel(P.GTABLE)
 
-	% initializes trends table
-	tr = nan(numel(N),3); % trends per station per component (mm/yr)
-	tre = nan(numel(N),3); % trends error (mm/yr)
+	% initializes linear trends table
+	tr = nan(numel(N),3); % linear trends per station per component (mm/yr)
+	tre = nan(numel(N),3); % linear trends error (mm/yr)
 
 	V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 	tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
@@ -331,7 +365,7 @@ for r = 1:numel(P.GTABLE)
 
 			k = D(n).G(r).k;
 			if ~isempty(k)% && ~all(isnan(D(n).d(k,i)))
-				dk = cleanpicks(D(n).d(k,i) - rmedian(D(n).d(k,i)),P);
+				dk = cleanpicks(D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P);
 				tk = D(n).t(k);
 
 				% computes yearly trends (in mm/yr)
@@ -476,7 +510,8 @@ for r = 1:numel(P.GTABLE)
 				if i == 3
 					X(1).w = D(n).d(k,4);
 				end
-				if vrelmode
+				if harmcorr || vrelmode
+					dk = cleanpicks(D(n).d(k,i+4)-rmedian(D(n).d(k,i+4)),P);
 					X(2).t = tk;
 					X(2).d(:,i) = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
 					X(2).e(:,i) = D(n).e(k,i);
@@ -486,11 +521,12 @@ for r = 1:numel(P.GTABLE)
 				end
 			end
 		end
-		if vrelmode
+		if harmcorr || vrelmode
 			X(1).nam = 'original';
 			X(1).rgb = scolor(1);
 			X(1).trd = 0;
-			X(2).nam = sprintf('relative (%s)',mode);
+			%X(2).nam = sprintf('relative (%s)',mode);
+			X(2).nam = sprintf('corrected (%s%s%s)',repmat('harmonic',harmcorr),repmat('+',harmcorr&&vrelmode),repmat('relative',vrelmode));
 			X(2).rgb = scolor(3);
 			X(2).trd = 1;
 		else
@@ -530,7 +566,7 @@ for r = 1:numel(P.GTABLE)
 			P.GTABLE(r).INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),'(median)',' ',' '};
 			for i = 1:3
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%1.3f %s} (%1.3f) - Vel. = {\\bf%+1.1f \\pm %1.1f mm/yr}', ...
-					i, enu{i},D(n).d(ke,i),D(n).CLB.un{i},rmedian(D(n).d(k,i)),lre(i,:))}];
+					i, enu{i},D(n).d(ke,i+4),D(n).CLB.un{i},rmedian(D(n).d(k,i+4)),lre(i,:))}];
 			end
 		end
 
@@ -569,9 +605,9 @@ for r = 1:numel(P.GTABLE)
 	if any(strcmp(P.SUMMARYLIST,summary))
 
 		if baselines_horizonly
-			ib = 1:2;
+			ib = 5:6;
 		else
-			ib = 1:3;
+			ib = 5:7;
 		end
 
 		% builds a structure B containing indexes of each node pairs
@@ -903,7 +939,7 @@ for r = 1:numel(P.GTABLE)
 			k = isinto(D(n).t,tlim);
 			if ~isempty(k)
 				X(nn).t = D(n).t(k);
-				X(nn).d = mavr(rf(D(n).d(k,1:3)),motion_filter);
+				X(nn).d = mavr(rf(D(n).d(k,5:7)),motion_filter);
 			else
 				X(nn).t = [];
 				X(nn).d = [];
@@ -1797,7 +1833,7 @@ for r = 1:numel(P.GTABLE)
 					wlim = [tlim(1),t2];
 				end
 
-				% computes trends (mm/yr)
+				% computes linear trends (mm/yr)
 				tr = nan(numel(kn),3); % trends per station per component
 				tre = nan(numel(kn),3); % trends error per station per component
 				tro = zeros(numel(kn),1); % inits to best orbit per station
@@ -1806,10 +1842,10 @@ for r = 1:numel(P.GTABLE)
 					k = find(isinto(D(n).t,wlim));
 					tk = D(n).t(k);
 					for i = 1:3
-						if ~isempty(k) && ~all(isnan(D(n).d(k,i)))
-							k1 = k(find(~isnan(D(n).d(k,i)),1,'first'));
-							ke = k(find(~isnan(D(n).d(k,i)),1,'last'));
-							dk = cleanpicks(D(n).d(k,i) - D(n).d(k1,i),P);
+						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
+							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
+							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
+							dk = cleanpicks(D(n).d(k,i+4) - D(n).d(k1,i+4),P);
 							kk = find(~isnan(dk));
 							if numel(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays
 								[b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./D(n).e(k(kk),i));
