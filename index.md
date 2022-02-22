@@ -27,6 +27,7 @@ For install and update, please follow instructions below.
 Source code, comments and issues are available at the project repository [github.com/IPGP/webobs](https://github.com/IPGP/webobs).
 
 
+<a name="install"></a>
 ## Installation / upgrading
 
 To run WebObs you need to install the package which contains a setup script that will set all configuration files. Installing WebObs is not a classical compilation from sources with 'make'. A part of it requires the free Matlab runtime library because package contains some compiled binaries for optimization purpose.
@@ -72,6 +73,12 @@ Also you need to activate CGI module for Apache:
 sudo a2enmod cgid
 ```
 
+Create the target WebObs directory:
+```sh
+sudo mkdir -p /opt/webobs
+```
+
+<a name="update"></a>
 ### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
 
 The setup process is also used for upgrading an already installed WebObs.
@@ -83,12 +90,12 @@ It is recommended to stop any WebObs-related processes before upgrading.
 Configuration files will be updaded and displayed/editabled at the end of the upgrade process to help you apply required changes to configuration/data.
 
 
-### C) Procedure (for both A) and B) above)
+### C) Procedure for both A) and B) above
 
 With root privileges, in your target WebObs directory:
-1. execute `mkdir -p /opt/webobs && cd /opt/webobs`
-2. execute  `tar xf WebObs-<version>.tar.gz`
-3. execute  `WebObs-<version>/SETUP/setup`
+1. execute `cd /opt/webobs`
+2. execute `tar xf WebObs-<version>.tar.gz`
+3. execute `WebObs-<version>/SETUP/setup`
 4. (re)start Apache
 5. launch the scheduler and postboard
 
