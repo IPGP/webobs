@@ -514,15 +514,14 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 	USERID=$(readkbn "Enter WebObs userid (default will be wo): ")
 	if [[ -z ${USERID} ]];then
 		USERID="wo"
+	fi
+	if [[ $(id ${USERID} 2>/dev/null) ]]; then
+		echo "${USERID} already exists"
 	else
-		if [[ $(id ${USERID} 2>/dev/null) ]]; then
-			echo "${USERID} already exists"
-		else
-			rcmd="useradd -r -U ${USERID}"
-			if $(confirmy "Confirm create WebObs user (${rcmd}) [Y/n] ? ") ; then
-				${rcmd}
-				errexit "creating user ${USERID}"
-			fi
+		rcmd="useradd -r -U ${USERID}"
+		if $(confirmy "Confirm create WebObs user (${rcmd}) [Y/n] ? ") ; then
+			${rcmd}
+			errexit "creating user ${USERID}"
 		fi
 	fi
 	USERGID=$(id -n -g ${USERID})
