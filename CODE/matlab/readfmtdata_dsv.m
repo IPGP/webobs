@@ -32,7 +32,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2021-02-16
+%	Updated: 2022-03-07
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -59,7 +59,7 @@ ppscript = field2str(N,'FID_PREPROCESSOR','dsv_generic','notempty');
 % for security reasons : keeps only the basename
 ppscript = regexprep(ppscript,'^.*/','');
 % absolute path
-preprocessor = sprintf('%s/bin/preprocessor/%s',WO.ROOT_CODE,ppscript);
+preprocessor = sprintf('%s/shells/preprocessor/%s',WO.ROOT_CODE,ppscript);
 if ~exist(preprocessor,'file') && ~isempty(field2str(WO,'ROOT_PREPROCESSOR'))
 	preprocessor = sprintf('%s/%s',field2str(WO,'ROOT_PREPROCESSOR'),ppscript);
 end
