@@ -89,7 +89,7 @@ print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ Forms: "
 ."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'>"
 ." ]</P>";
 
-$table = "<TABLE><TR><TH>Date & Time</TH><TH>Host</TH><TH>User</TH><TH>Time Span</TH><TH>Params</TH><TH>Job</TH><TH>Graphs</TH><TH>Status</TH></TR>\n";
+$table = "<TABLE><TR><TH>Date & Time</TH><TH>Host</TH><TH>User</TH><TH>Time Span</TH><TH>Params</TH><TH>Job</TH><TH>Graphs</TH><TH>Archive</TH><TH>Status</TH></TR>\n";
 
 for (reverse sort @reqlist) {
 	my $dir = my $reqdir = $_;
@@ -115,7 +115,8 @@ for (reverse sort @reqlist) {
 			(my $proc = $_) =~ s/PROC\.//;
 			if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"$proc") || $_ eq "GRIDMAPS") {
 				$table .= "<TD align=center>$_</TD>"
-					."<TD align=center><A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A></TD>";
+					."<TD align=center><A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A></TD>"
+					."<TD align=center><a download='$_' href='/OUTR/$reqdir/$_.tgz'><img src='/icons/dwld.png'></a></TD>";
 				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
 				chomp($rreq);
 				if ($rreq eq "") {
