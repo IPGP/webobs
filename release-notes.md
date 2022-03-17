@@ -18,6 +18,9 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
     - `HARMONIC_EAST_SINCOS_MM`, `HARMONIC_NORTH_SINCOS_MM`, `HARMONIC_UP_SINCOS_MM` contain pairs of sine,cosine amplitudes for each period, in mm.
 To activate the correction, all parameters must be valid and number of pairs must be consistent with the number of periods for all components.
 
+2. Still in superproc **gnss**, new option for summary plot VECTORS:
+    - `VECTORS_AMPLITUDE_COMPONENTS` defines the used components to compute velocity amplitudes and plot the amplitude vs distance plot. Default is `1,2` for horizontal components only. Set this option to `3` to use only the vertical component.
+
 ### Enhancements
 ### Fixed issues
 
