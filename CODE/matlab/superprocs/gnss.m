@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2022-02-22
+%   Updated: 2022-03-02
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -130,6 +130,12 @@ arrowshape = field2num(P,'VECTORS_ARROWSHAPE',[.1,.1,.08,.02]);
 vectors_title = field2str(P,'VECTORS_TITLE','{\fontsize{14}{\bf$name - Vectors} ($timescale)}');
 vectors_demopt = field2cell(P,'VECTORS_DEM_OPT','watermark',2,'saturation',.8,'interp','legend','seacolor',[0.7,0.9,1]);
 vectors_shape = field2shape(P,'VECTORS_SHAPE_FILE');
+vectors_ampcmp = field2num(P,'VECTORS_AMPLITUDE_COMPONENTS',1:2);
+if numel(vectors_ampcmp)>3 || ~all(ismember(vectors_ampcmp,1:3))
+	fprintf('*** Warning: VECTORS_AMPLITUDE_COMPONENTS not consistent. Using default (1,2)\n');
+	vectors_ampcmp = 1:2;
+end
+vectors_ampstr = strjoin(enu(vectors_ampcmp),'+');
 
 % BASELINES parameters
 baselines_excluded = field2str(P,'BASELINES_EXCLUDED_NODELIST');
@@ -580,13 +586,13 @@ for r = 1:numel(P.GTABLE)
 			E.d = [D(n).d(k,1:3),D(n).e(k,:),D(n).d(k,4)];
 			E.header = {'Eastern(m)','Northern(m)','Up(m)','dE','dN','dU','Orbit'};
 			E.infos = {};
-			if vrelmode
-				E.d = [E.d, ...
-					D(n).d(k,1) - polyval([voffset(1)/365250,0],E.t - tlim(1)), ...
-					D(n).d(k,2) - polyval([voffset(2)/365250,0],E.t - tlim(1)), ...
-					D(n).d(k,3) - polyval([voffset(3)/365250,0],E.t - tlim(1)), ...
-				];
-				E.header = {E.header{:},'East_rel(m)','North_rel(m)','Up_rel(m)'};
+			if harmcorr || vrelmode
+				E.d = [E.d,	...
+			   		D(n).d(k,5) - polyval([voffset(1)/365250,0],E.t - tlim(1)), ...
+			   		D(n).d(k,6) - polyval([voffset(2)/365250,0],E.t - tlim(1)), ...
+			   		D(n).d(k,7) - polyval([voffset(3)/365250,0],E.t - tlim(1)), ...
+			   	];
+				E.header = {E.header{:},'East_treat(m)','North_treat(m)','Up_treat(m)'};
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
@@ -874,8 +880,8 @@ for r = 1:numel(P.GTABLE)
 			plot(0,0)
 			hold on
 			sta_dist = greatcircle(targetll(1),targetll(2),geo(knv,1),geo(knv,2));
-			sta_amp = sqrt(rsum(tr(knv,1:2).^2,2));
-			sta_err = sqrt(rsum(tre(knv,1:2).^2,2));
+			sta_amp = sqrt(rsum(tr(knv,vectors_ampcmp).^2,2));
+			sta_err = sqrt(rsum(tre(knv,vectors_ampcmp).^2,2));
 			for nn = 1:numel(knv)
 				n = knv(nn);
 				errorbar(sta_dist(nn),sta_amp(nn),sta_err(nn),'.','MarkerSize',15,'Color',scolor(n),'LineWidth',0.1)
@@ -886,7 +892,7 @@ for r = 1:numel(P.GTABLE)
 				set(gca,'YLim',[0,max(sta_amp+sta_err)])
 			end
 			xlabel('Distance from Target (km)')
-			ylabel({'Horizontal Velocity Amplitude','(mm/yr)'})
+			ylabel({sprintf('Velocity Amplitude (%s)',vectors_ampstr),'(mm/yr)'})
 		end
 
 
@@ -898,6 +904,7 @@ for r = 1:numel(P.GTABLE)
 		if isok(P.GTABLE(r),'EXPORTS')
 			E.infos = { ...
 				sprintf('Velocity reference (%s):  E %+g mm/yr, N %+g mm/yr, U %+g mm/yr',datestr(velrefdate),velref), ...
+				sprintf('Stations'' aliases: %s',strjoin(cellstr(cat(1,N(knv).ALIAS)),',')), ...
 				};
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,:)];
@@ -1726,7 +1733,10 @@ for r = 1:numel(P.GTABLE)
 			E.header = {'Latitude','Longitude','Altitude','E_obs(mm)','N_obs(mm)','Up_obs(mm)','dE(mm)','dN(mm)','dU(mm)', ...
 				                                      'E_mod(mm)','N_mod(mm)','Up_mod(mm)'};
 			if any(~isnan(m0))
-				E.infos = {''};
+				E.infos = { ...
+					sprintf('Stations'' aliases: %s',strjoin(cellstr(cat(1,N(kn).ALIAS)),',')), ...
+					'', ...
+				};
 				switch lower(mt)
 				case 'pcdm'
 					for m = 1:numel(M)

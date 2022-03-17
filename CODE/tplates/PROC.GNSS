@@ -171,6 +171,8 @@ VECTORS_MAX_XYRATIO|1
 VECTORS_VELOCITY_SCALE|0
 VECTORS_ARROWSHAPE|.15,.15,.12,.03
 VECTORS_TARGET_INCLUDED|Y
+# amplitude vs distance plot: used components to compute the amplitude (1,2 = horizontal only)
+VECTORS_AMPLITUDE_COMPONENTS|1,2
 
 # defines a main target (latitude,longitude coordinates)
 GNSS_TARGET_LATLON|
