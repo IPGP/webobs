@@ -22,6 +22,9 @@ To activate the correction, all parameters must be valid and number of pairs mus
     - `VECTORS_AMPLITUDE_COMPONENTS` defines the used components to compute velocity amplitudes and plot the amplitude vs distance plot. Default is `1,2` for horizontal components only. Set this option to `3` to use only the vertical component.
 
 ### Enhancements
+
+1. It's now posible to directly dowload proc's requests results in .tgz format at results page.
+
 ### Fixed issues
 
 ## v2.4.2 (November 2021)

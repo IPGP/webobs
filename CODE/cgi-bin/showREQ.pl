@@ -89,7 +89,8 @@ print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ Forms: "
 ."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'>"
 ." ]</P>";
 
-$table = "<TABLE><TR><TH>Date & Time</TH><TH>Host</TH><TH>User</TH><TH>Time Span</TH><TH>Params</TH><TH>Job</TH><TH>Graphs</TH><TH>Archive</TH><TH>Status</TH></TR>\n";
+$table = "<TABLE><TR><TH>$__{'Date & Time'}</TH><TH>$__{'Host'}</TH><TH>$__{'User'}</TH><TH>$__{'Time Span'}</TH><TH>$__{'Params'}</TH>
+	.<TH>$__{'Job'}</TH><TH>$__{'Graphs'}</TH><TH>$__{'Archive'}</TH><TH>$__{'Status'}</TH></TR>\n";
 
 for (reverse sort @reqlist) {
 	my $dir = my $reqdir = $_;
@@ -109,14 +110,19 @@ for (reverse sort @reqlist) {
 			."<TD rowspan='$rowspan' align=center>$host</TD>"
 			."<TD rowspan='$rowspan' align=center>$user</TD>"
 			."<TD rowspan='$rowspan' align=center>$date1 - $date2</TD>"
-			."<TD rowspan='$rowspan' align=center><A href='/OUTR/$reqdir/REQUEST.rc'>.rc</A></TD>";
+			."<TD rowspan='$rowspan' align=center><A href='$WEBOBS{URN_OUTR}/$reqdir/REQUEST.rc'>.rc</A></TD>";
 		for (@procs) {
 			$_ =~ s/$dir\///;
 			(my $proc = $_) =~ s/PROC\.//;
 			if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"$proc") || $_ eq "GRIDMAPS") {
 				$table .= "<TD align=center>$_</TD>"
-					."<TD align=center><A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A></TD>"
-					."<TD align=center><a download='$_' href='/OUTR/$reqdir/$_.tgz'><img src='/icons/dwld.png'></a></TD>";
+					."<TD align=center><A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A></TD>";
+				my $archive = qx(ls $dir/$_.tgz);
+				if ($archive eq ""){
+					$table .= "<TD></TD>";
+				} else {
+					$table .= "<TD align=center><a download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></a></TD>";
+				}
 				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
 				chomp($rreq);
 				if ($rreq eq "") {
