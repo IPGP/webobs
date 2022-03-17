@@ -20,7 +20,7 @@ To activate the correction, all parameters must be valid and number of pairs mus
 
 ### Enhancements
 
-1. It's now posible to directly dowload proc's requests results in .tgz format at results page.
+1. It's now posible to directly download proc requests results in .tgz format at results page.
 
 ### Fixed issues
 
