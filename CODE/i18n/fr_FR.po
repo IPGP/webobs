@@ -1526,3 +1526,6 @@ msgstr "Nombre d'enregistrements"
 
 msgid "Download a CSV text file of these data"
 msgstr "Télécharger un fichier CSV de ces données"
+
+msgid "Request results"
+msgstr "Résultat des requêtes"
