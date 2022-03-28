@@ -1,0 +1,40 @@
+###############################################################################
+# Template configuration file for script gnss_run_gipsyx (must be in the same
+# directory). Please copy, rename and edit it for each "network".
+#
+# Created: 2019-02-25
+# Updated: 2021-02-09
+
+# default list of station codes (space separated)
+NODES="PLAW KNDT"
+# ... or empty $NODES and grid of a local WebObs that contains the station list (nodes).
+GRID=PROC.CGPSWI
+NODEROOT=/opt/webobs.d/GRID2NODES/$GRID.
+
+# site information source used to overwrite rinex headers if empty (antenna type, receiver codes, etc. )
+# it can be a site_log file, a station.info file (Gamit), or the webobs node informations
+# this option can be also pass in parameters with "-i"
+# valid variables are : SITELOG / WEBOBS / STATION_INFO 
+INFOSRC=WEBOBS
+
+# site information source parameters :
+# - sitelog directory, must be filled to use SITELOG as INFOSRC
+SITELOG=/home/camusba/rinex-sitelog/sitelog
+# - station.info file (Gamit), must be filled to use STATION_INFO as INFOSRC
+STATION_INFO=
+# - webobs node informations, GRID and NODEROOT must be filled to use WEBOBS as INFOSRC
+
+
+# base directory that contains the raw data
+FROM=/home/camusba/rinex-sitelog/rinex_gen/rawdata
+
+# directory structure of the raw data (will be evaluated using eval...)
+# valid variables are: $FID, $sta (lowercase FID), $yyyy, $yy, $mm, $dd, $doy
+FMT='$FROM/$FID/$yyyy/$mm/$dd'
+
+# base directory for output results
+DEST=/home/camusba/rinex-sitelog/rinex_gen
+
+# teqc options: Please take a deep look at www.unavco.org TEQC tutorial!
+TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -O.pe 0 0 0 -C2 -O.-obs C2 -O.-obs C5 -O.dec 30s -max_rx_SVs 50 -n_GLONASS 27"
+
