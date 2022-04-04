@@ -9,13 +9,13 @@
 NODES=
 # ... or empty $NODES and grid of a local WebObs that contains the station list (nodes).
 GRID=PROC.GIPSYX
-NODEROOT=/opt/webobs.d/GRID2NODES/$GRID.
+NODEROOT=/etc/webobs.d/GRID2NODES/$GRID.
 
 # site information source used to overwrite rinex headers if empty (antenna type, receiver codes, etc. )
 # it can be a site_log file, a station.info file (Gamit), or the webobs node informations
 # this option can be also pass in parameters with "-i"
 # valid variables are : SITELOG / WEBOBS / STATION_INFO 
-INFOSRC=SITELOG
+INFOSRC=WEBOBS
 
 # site information source parameters :
 # - sitelog directory, must be filled to use SITELOG as INFOSRC
