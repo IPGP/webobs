@@ -20,6 +20,8 @@ To activate the correction, all parameters must be valid and number of pairs mus
 
 2. Still in superproc **gnss**, new option for summary plot VECTORS:
     - `VECTORS_AMPLITUDE_COMPONENTS` defines the used components to compute velocity amplitudes and plot the amplitude vs distance plot. Default is `1,2` for horizontal components only. Set this option to `3` to use only the vertical component.
+   
+3. GNSS thing again, new shell `gnss_make_rinex` and its config file `gnss_make_rinex.rc` make rinex files from different formats of raw datas and some site informations. It based on shell script `raw2rinex`.
 
 ### Enhancements
 ### Fixed issues
