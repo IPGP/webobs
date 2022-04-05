@@ -145,8 +145,8 @@ for station in $NODES; do
         	            # use node's parameters to overwrite rinex header
         	            if [[ "$GRID" != "" && "$NODEROOT" != "" ]]; then
         	     		    ID=$(echo "$NODESTABLE" | awk "/$FID/ {print \$1}")
-        	        		receiver=$(grep -h "^FID_RECEIVER|" $PROC$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
-        	        		anttype=$(grep -h "^FID_ANTENNA|" $PROC$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
+        	        		receiver=$(grep -h "^$GRID\.FID_RECEIVER|" $PROC$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
+        	        		anttype=$(grep -h "^$GRID\.FID_ANTENNA|" $PROC$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
         	        		alertheader="   $DAYLYMSG WO ID = $ID - receiver = '$receiver' - antenna = '$anttype' (will use rinex header if empty)"
         	            else
         	                echo "   $DAYLYMSG   - Warning -   Webobs site information : GRID or NODEROOT is empty in .rc file."
