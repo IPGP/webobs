@@ -1379,6 +1379,29 @@ msgstr "Utiliser le mode vim"
 msgid "Check to enable vim mode in the editor"
 msgstr "Cocher pour activer le mode vim dans l'éditeur"
 
+# showREQ.pl
+
+msgid "Date & Time"
+msgstr "Date & Heure"
+
+msgid "Host"
+msgstr "Serveur"
+
+msgid "User"
+msgstr "Utilisateur"
+
+msgid "Time Span"
+msgstr "Plage temporelle"
+
+msgid "Params"
+msgstr "Params"
+
+msgid "Job"
+msgstr "Job"
+
+msgid "Archive"
+msgstr "Archive"
+
 # vsearch.pl
 
 msgid "Grid Name"
