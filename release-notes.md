@@ -25,6 +25,8 @@ To activate the correction, all parameters must be valid and number of pairs mus
 
 1. In nodes event editing, the date and time formats are now checked
 
+2. It's now posible to directly download proc requests results in .tgz file at results page.
+
 ### Fixed issues
 
 ## v2.4.2 (November 2021)
