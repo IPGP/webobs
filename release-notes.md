@@ -22,6 +22,9 @@ To activate the correction, all parameters must be valid and number of pairs mus
     - `VECTORS_AMPLITUDE_COMPONENTS` defines the used components to compute velocity amplitudes and plot the amplitude vs distance plot. Default is `1,2` for horizontal components only. Set this option to `3` to use only the vertical component.
 
 ### Enhancements
+
+1. In nodes event editing, the date and time formats are now checked
+
 ### Fixed issues
 
 ## v2.4.2 (November 2021)
