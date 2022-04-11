@@ -398,11 +398,17 @@ function postform() {
 	var form = \$(\"#theform\")[0];
 	var bad = false;
 	\$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
-	if (!form.date.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date.style.background='red';};
-	if (form.time.value == '') {form.time.value = 'NA';}
+	if (!form.date.value.match(/^[1-2]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|1\\d|2\\d|3[01])\$/)) {bad=true; form.date.style.background='red';};
+	if (form.time.value == '') {
+		form.time.value = 'NA';
+		} else {
+			if (!form.time.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {bad=true; form.time.style.background='red';};
+		}
+	console.log(\"0 - time=\" + form.time.value);
 	if (form.date2.value != '' && !form.date2.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date2.style.background='red';};
 	if (form.date2.value == '') {form.date2.value = form.date.value;}
 	if (form.time2.value == '') {form.time2.value = form.time.value;}
+	if (!form.time2.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {bad=true; form.time2.style.background='red';};
 	if (form.oper.value == '' && form.roper.value == '') {
 		bad=true;
 		form.oper.style.background='red';
@@ -478,7 +484,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 		print "<LABEL style=\"width:80px\" for=\"date\">$__{'Start date & time'}: </LABEL><INPUT size=\"10\" name=\"date\" id=\"date\" value=\"$date\"> ";
 		print "<INPUT size=\"5\" name=\"time\" id=\"time\" value=\"$time\"><br><br>\n";
 		print "<LABEL style=\"width:80px\" for=\"date2\">$__{'End date & time'}: </LABEL><INPUT size=\"10\" name=\"date2\" id=\"date2\" value=\"$date2\"> ";
-		print "<INPUT size=\"5\" name=\"time2\" id=\"time\" value=\"$time2\"><br><br>\n";
+		print "<INPUT size=\"5\" name=\"time2\" id=\"time2\" value=\"$time2\"><br><br>\n";
 	}
 	print "<LABEL style=\"width:80px\" for=\"titre\">$__{'Title'}:</LABEL><INPUT type=\"text\" name=\"titre\" id=\"titre\" value=\"$titre\" size=\"80\"><br><br>\n";
 	# only for node's event
