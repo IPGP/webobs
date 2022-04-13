@@ -29,6 +29,8 @@ To activate the correction, all parameters must be valid and number of pairs mus
 
 ### Fixed issues
 
+1. The search event fonction is now working with grid's name.
+
 ## v2.4.2 (November 2021)
 
 ### New features
