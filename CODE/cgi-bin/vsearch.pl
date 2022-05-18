@@ -122,7 +122,7 @@ if ($#catlist < 0) {
 }
 my %category = (
 	"grid"      => $__{'Grid Name'},
-	"alias"     => $__{'Node Alias'},
+	"alias"     => $__{'Node Alias/Name'},
 	"feature"   => $__{'Node Feature'},
 	"author"    => $__{'Author'},
 	"remote"    => $__{'Remote Operator'},
@@ -416,7 +416,8 @@ sub searchEvents {
 	# grid will look for $str in the grid's NAME configuration
 	if ($in eq "grid") {
 		# search for grid names
-		my @GRIDlist = qx(find $WEBOBS{ROOT_CONF}/{PROCS,VIEWS}/* -name "*.conf" | xargs awk -F "|" '\$1 == "NAME" && toupper(\$2) ~ /$struc/ { print FILENAME }' | LC_ALL=C sed -e 's|.*CONF/||g;s|PROCS/|PROC.|g;s|VIEWS/|VIEW.|g;s|/.*||g' 2>&1);
+		my @GRIDlist = qx(find $WEBOBS{ROOT_CONF}/PROCS/* -name "*.conf" | xargs awk -F "|" '\$1 == "NAME" && toupper(\$2) ~ /$struc/ { print FILENAME }' | LC_ALL=C sed -e 's|.*CONF/||g;s|PROCS/|PROC.|g;s|VIEWS/|VIEW.|g;s|/.*||g' 2>&1);
+		push(@GRIDlist,qx(find $WEBOBS{ROOT_CONF}/VIEWS/* -name "*.conf" | xargs awk -F "|" '\$1 == "NAME" && toupper(\$2) ~ /$struc/ { print FILENAME }' | LC_ALL=C sed -e 's|.*CONF/||g;s|PROCS/|PROC.|g;s|VIEWS/|VIEW.|g;s|/.*||g' 2>&1));
 		chomp(@GRIDlist);
 		if ($#GRIDlist < 0) {
 			$cmd = "";

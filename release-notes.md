@@ -23,9 +23,13 @@ To activate the correction, all parameters must be valid and number of pairs mus
 
 ### Enhancements
 
-1. It's now posible to directly dowload proc's requests results in .tgz format at results page.
+1. In nodes event editing, the date and time formats are now checked
+
+2. It's now possible to directly download proc requests results in .tgz file at results page.
 
 ### Fixed issues
+
+1. The search event fonction is now working with grid's name.
 
 ## v2.4.2 (November 2021)
 
