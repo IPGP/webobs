@@ -27,9 +27,20 @@ To activate the correction, all parameters must be valid and number of pairs mus
 
 2. It's now possible to directly download proc requests results in .tgz file at results page.
 
+3. New options in the Search node events tool:
+    - grids column is now optional (checkbox) and desactivated by default,
+    - full node name can be displayed (checkbox),
+    - a link allows to download a .csv file of the results,
+    - a wait icon appears during the search.
+
+4. Proc request form proposes the last user's date intervals as preset dates.
+
 ### Fixed issues
 
 1. The search event fonction is now working with grid's name.
+
+2. Some fixes in proc request results display.
+
 
 ## v2.4.2 (November 2021)
 
