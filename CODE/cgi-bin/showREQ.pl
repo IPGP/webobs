@@ -94,11 +94,16 @@ $table = "<TABLE><TR><TH>$__{'Date & Time'}</TH><TH>$__{'Host'}</TH><TH>$__{'Use
 
 for (reverse sort @reqlist) {
 	my $dir = my $reqdir = $_;
-	$reqdir =~ s/$WEBOBS{ROOT_OUTR}\///;
+	$reqdir =~ s|$WEBOBS{ROOT_OUTR}/||;
 	my ($date,$time,$host,$user) = split(/_/,$reqdir);
 	my $date1 = qx(grep "^DATE1|" $dir/REQUEST.rc | sed -e "s/DATE1|//");
 	my $date2 = qx(grep "^DATE2|" $dir/REQUEST.rc | sed -e "s/DATE2|//");
-	my (@procs) = grep {-d} glob("$dir/{PROC.*,GRIDMAPS}");
+	my (@procs) = grep {-d} glob("$dir/{PROC.*,GRIDMAPS}"); # first list of procs from output directories
+	$_ =~ s|$dir/|| for @procs; # keeps only the PROC.NAME part
+	my @procreq = qx(grep "^PROC\." $dir/REQUEST.rc | sed -e "s/\.[^.]*|.*//"); # second list of procs from the request parameters
+	chomp(@procreq);
+	push(@procs,@procreq); # merging output directories and request parameters
+	@procs = do { my %seen; grep { !$seen{$_}++ } @procs }; # uniq
 	my $rowspan = scalar(@procs)+1;
 	if ($user eq $CLIENT || (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$_") && $QryParm->{'usr'} eq "all")) {
 		if (length($date)==8 && length($time)==6) {
@@ -110,18 +115,16 @@ for (reverse sort @reqlist) {
 			."<TD rowspan='$rowspan' align=center>$host</TD>"
 			."<TD rowspan='$rowspan' align=center>$user</TD>"
 			."<TD rowspan='$rowspan' align=center>$date1 - $date2</TD>"
-			."<TD rowspan='$rowspan' align=center><A href='$WEBOBS{URN_OUTR}/$reqdir/REQUEST.rc'>.rc</A></TD>";
+			."<TD rowspan='$rowspan' align=center><A href='$WEBOBS{URN_OUTR}/$reqdir/REQUEST.rc'><IMG src='/icons/params.png'></A></TD>";
 		for (@procs) {
-			$_ =~ s/$dir\///;
 			(my $proc = $_) =~ s/PROC\.//;
 			if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"$proc") || $_ eq "GRIDMAPS") {
 				$table .= "<TD align=center>$_</TD>"
-					."<TD align=center><A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A></TD>";
-				my $archive = qx(ls $dir/$_.tgz);
-				if ($archive eq ""){
-					$table .= "<TD></TD>";
-				} else {
+					."<TD align=center>".(-d "$dir/$_" ? "<A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A>":"")."</TD>";
+				if ( -e "$dir/$_.tgz") {
 					$table .= "<TD align=center><a download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></a></TD>";
+				} else {
+					$table .= "<TD></TD>";
 				}
 				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
 				chomp($rreq);
@@ -161,11 +164,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel
+François Beauducel, Baptiste Camus
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
