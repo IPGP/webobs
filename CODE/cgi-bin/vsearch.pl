@@ -453,6 +453,7 @@ push(@html,"<P><A id=\"download_link\" download=\"my_exported_file.csv\" href=\"
 print(join("\n",@html));
 
 my $csvstring = join('\\n',@csv);
+$csvstring =~ s/'/\\'/g;
 
 print <<"ENDBOTOFPAGE";
 <SCRIPT type="text/javascript">
