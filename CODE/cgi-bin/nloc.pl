@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 =head1 NAME
 
-nloc.pl 
+nloc.pl
 
 =head1 SYNOPSIS
 
@@ -20,15 +20,15 @@ nodes=
   { all | active | valid }
   default is all existing nodes.
 
-today= 
+today=
   forces a reference date for active nodes, format YYYY[-MM[-DD]] (default is today)
   must be used together with nodes=active
 
-format= 
+format=
   { txt | csv | kml }
   txt returns a tab-delimited text file of nodes (default)
   csv returns a semicolon-delimited text file of nodes (Excel compatible)
-  kml returns a KML file of nodes (Google Earth compatible) 
+  kml returns a KML file of nodes (Google Earth compatible)
 
 coord=
   { geo | utm | local | xyz }
@@ -46,7 +46,7 @@ use Switch;
 use WebObs::Config;
 use WebObs::Grids;
 use WebObs::Utils;
-use WebObs::IGN;
+use WebObs::Mapping;
 
 my $cgi = new CGI;
 
@@ -66,7 +66,7 @@ if (scalar(@NID) < 2) {
 }
 ($GRIDType, $GRIDName, $NODEName) = @NID;
 
-# ---- get all nodenames of grid (only VALID) 
+# ---- get all nodenames of grid (only VALID)
 my %N = listGridNodes(grid=>"$GRIDType.$GRIDName");
 my %G;
 my %GRID;
@@ -105,7 +105,7 @@ switch (lc($format)) {
 
 for (keys(%N)) {
 	my $sta = $_;
-	if ( scalar(@NID)==2 || $sta eq $NODEName ) { 
+	if ( scalar(@NID)==2 || $sta eq $NODEName ) {
 		my %NODE = readNode($sta);
 		if (!($NODE{$sta}{LAT_WGS84} eq "" && $NODE{$sta}{LON_WGS84} eq "" && $NODE{$sta}{ALTITUDE} eq "")
 			&& ( ($nodes ne "active" || (($NODE{$sta}{END_DATE} ge $today || $NODE{$sta}{END_DATE} eq "NA")
@@ -132,7 +132,7 @@ for (keys(%N)) {
 				$lon = sprintf("%.0f",$lon);
 				$alt = sprintf("%.0f",$alt);
 			}
-	
+
 			switch (lc($format)) {
 				case 'kml' {
 					print "<Placemark id=\"$sta\">\n<name>$alias : $name</name>\n";
@@ -170,7 +170,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -186,4 +186,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

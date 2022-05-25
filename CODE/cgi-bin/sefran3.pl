@@ -59,7 +59,7 @@ use WebObs::Users;
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
-use WebObs::IGN;
+use WebObs::Mapping;
 use WebObs::Wiki;
 use Locale::TextDomain('webobs');
 use QML;
@@ -1124,7 +1124,7 @@ Acknowledgments:
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2021 - Institut de Physique du Globe Paris
+WebObs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
