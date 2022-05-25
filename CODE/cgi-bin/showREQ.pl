@@ -90,7 +90,7 @@ print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ Forms: "
 ." ]</P>";
 
 $table = "<TABLE><TR><TH>$__{'Date & Time'}</TH><TH>$__{'Host'}</TH><TH>$__{'User'}</TH><TH>$__{'Time Span'}</TH><TH>$__{'Params'}</TH>
-	.<TH>$__{'Job'}</TH><TH>$__{'Graphs'}</TH><TH>$__{'Archive'}</TH><TH>$__{'Status'}</TH></TR>\n";
+	.<TH>$__{'Job logs'}</TH><TH>$__{'Status'}</TH><TH>$__{'Graphs'}</TH><TH>$__{'Archive'}</TH></TR>\n";
 
 for (reverse sort @reqlist) {
 	my $dir = my $reqdir = $_;
@@ -119,19 +119,15 @@ for (reverse sort @reqlist) {
 		for (@procs) {
 			(my $proc = $_) =~ s/PROC\.//;
 			if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"$proc") || $_ eq "GRIDMAPS") {
-				$table .= "<TD align=center>$_</TD>"
-					."<TD align=center>".(-d "$dir/$_" ? "<A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A>":"")."</TD>";
-				if ( -e "$dir/$_.tgz") {
-					$table .= "<TD align=center><a download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></a></TD>";
-				} else {
-					$table .= "<TD></TD>";
-				}
-				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
+				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,stdpath,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
 				chomp($rreq);
 				if ($rreq eq "") {
 					$table .= "<TD></TD>";
 				} else {
-					my ($rcmd,$rc) = split(/\|/,$rreq);
+					my ($rcmd,$rlog,$rc) = split(/\|/,$rreq);
+					my $log_filename = $rlog =~ s/^[><] +//r;
+					my $log_name = $log_filename =~ s|/$reqdir/||r;
+					$table .= "<TD align=center><A href='/cgi-bin/schedulerLogs.pl?log=$log_filename'>$log_name</a>";
 					if ($rc eq "0") {
 						$table .= "<TD align=center bgcolor=green>OK</TD>";
 					} elsif ($rc > 0) {
@@ -139,6 +135,12 @@ for (reverse sort @reqlist) {
 					} else {
 						$table .= "<TD align=center bgcolor=orange>wait...</TD>";
 					}
+				}
+				$table .= "<TD align=center>".(-d "$dir/$_" ? "<A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A>":"")."</TD>";
+				if ( -e "$dir/$_.tgz") {
+					$table .= "<TD align=center><a download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></a></TD>";
+				} else {
+					$table .= "<TD></TD>";
 				}
 			}
 			$table .= "</TR>\n<TR>";
