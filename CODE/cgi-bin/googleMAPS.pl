@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 =head1 NAME
 
-googleMAPS.pl 
+googleMAPS.pl
 
 =head1 SYNOPSIS
 
@@ -21,15 +21,15 @@ node=
 grid=
   gridtype.gridname           : map with all nodes of grid
 
-today= 
+today=
   forces a date (defaults to today)
 
 nodes=
   { active | valid }
 
 width=
-height= 
-  defaulted to corresponding GOOGLE_MAPS_xxxx_VALUE key in WEBOBS.rc 
+height=
+  defaulted to corresponding GOOGLE_MAPS_xxxx_VALUE key in WEBOBS.rc
 
 =cut
 
@@ -49,7 +49,7 @@ use WebObs::Utils;
 use WebObs::Wiki;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
-use WebObs::IGN;
+use WebObs::Mapping;
 
 my $titre="";
 my @nodes;
@@ -70,15 +70,15 @@ if (scalar(@NID) < 2) {
 }
 ($GRIDType, $GRIDName, $NODEName) = @NID;
 
-# ---- get all nodenames of grid (only VALID) 
+# ---- get all nodenames of grid (only VALID)
 my %N = listGridNodes(grid=>"$GRIDType.$GRIDName");
 
-# ---- if requested nodename~ ==> remove all other nodes from grid 
-#if ($NODEName && $NODEName =~ m/~$/) { 
+# ---- if requested nodename~ ==> remove all other nodes from grid
+#if ($NODEName && $NODEName =~ m/~$/) {
 #	$NODEName =~ s/~$// ;
 #	@nodes = $NODEName;
 #}
-# ---- no node requested forces 1st of grid list to comply to processing below 
+# ---- no node requested forces 1st of grid list to comply to processing below
 #$NODEName ||= $nodes[0];
 
 # ---- build the HTML page calling Google Maps once loaded ----
@@ -125,9 +125,9 @@ for (keys(%N)) {
 		bounds.extend(sta[$i]);
 		map.addOverlay(marker[$i]);
 		GEvent.addListener(marker[$i], 'click', function() { marker[$i].openInfoWindowHtml(\"$texte\"); });";
-		if ($sta eq $NODEName) { 
+		if ($sta eq $NODEName) {
 			print "
-			map.setCenter(sta[$i], $WEBOBS{GOOGLE_MAPS_ZOOM_VALUE}); 
+			map.setCenter(sta[$i], $WEBOBS{GOOGLE_MAPS_ZOOM_VALUE});
 			marker[$i].openInfoWindowHtml(\"$texte\", { maxWidth:300 });";
 			$titre = "$NODE{$sta}{ALIAS}: $NODE{$sta}{NAME}";
 		}
@@ -165,7 +165,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -181,4 +181,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

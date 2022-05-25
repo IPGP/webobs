@@ -61,7 +61,7 @@ use WebObs::Config;
 use WebObs::Users;
 use WebObs::Grids;
 use WebObs::i18n;
-use WebObs::IGN;
+use WebObs::Mapping;
 use Locale::TextDomain('webobs');
 
 # ---- inits ----------------------------------
@@ -338,7 +338,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2021 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -19,7 +19,7 @@ as a validation/authorization/reference information.
 All known data associated to the NODE are shown, along with links for editing these data, according
 to http-client authorizations for the GRID-context requested.
 
-The GRID-context to display other related NODEs in this page are obtained via the WebObs::Grids::normNODE()
+The GRID-context to display other related NODEs in this page are obtained via the WebObs::Grids::normNode()
 function, that calls to showNode other nodes.
 
 =head1 Query string parameters
@@ -56,7 +56,7 @@ use WebObs::Grids;
 use WebObs::Events;
 use WebObs::Utils;
 use WebObs::i18n;
-use WebObs::IGN;
+use WebObs::Mapping;
 use WebObs::Wiki;
 use Locale::TextDomain('webobs');
 
@@ -156,26 +156,12 @@ if (-e $statusDB) {
 
 $GRID{UTM_LOCAL} //= '';
 #my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
-my %UTM =  %WebObs::IGN::UTM;
+my %UTM =  %WebObs::Mapping::UTM;
 
 # ---- sort interventions by date / event stuff  -----------------------------------
 #
 $QryParm->{'sortby'} //= "event";
 my $sortBy = $QryParm->{'sortby'};
-
-#OLD:# NOTE [FB]: comment trier @listeFileInterventions suivant basename(@listeFileInterventions) ??
-#OLD:if ($sortBy eq "date") {
-#OLD:	my @x;
-#OLD:	for (@listeFileInterventions) {
-#OLD:		push(@x,basename($_)."|".$_);
-#OLD:	}
-#OLD:	@x = reverse(sort(@x));
-#OLD:	@listeFileInterventions = ();
-#OLD:	for (@x) {
-#OLD:		my @xx = split(/\|/,$_);
-#OLD:		push(@listeFileInterventions,$xx[1]);
-#OLD:	}
-#OLD:}
 
 # ---- start HTML page ouput ------------------------------------------------
 # ---------------------------------------------------------------------------
@@ -816,7 +802,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2018 - Institut de Physique du Globe Paris
+WebObs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -540,8 +540,7 @@ sub normNode {
 		$node =~ s/\./*./g;
 		my @l = qx(ls -dr $WEBOBS{PATH_GRIDS2NODES}/$node 2>/dev/null);
 		chomp(@l);
-		@l = map(basename($_), @l);
-		if (scalar(@l) > 0) {$ret = $l[0]}
+		if (scalar(@l) > 0) {$ret = basemap($l[0])}
 	}
 	return $ret;
 }
@@ -690,7 +689,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
