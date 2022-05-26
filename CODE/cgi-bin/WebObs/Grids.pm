@@ -540,7 +540,7 @@ sub normNode {
 		$node =~ s/\./*./g;
 		my @l = qx(ls -dr $WEBOBS{PATH_GRIDS2NODES}/$node 2>/dev/null);
 		chomp(@l);
-		if (scalar(@l) > 0) {$ret = basemap($l[0])}
+		if (scalar(@l) > 0) {$ret = basename($l[0])}
 	}
 	return $ret;
 }
@@ -576,8 +576,8 @@ sub getNodeString
 		my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
 		no warnings "uninitialized";
 		if ($style eq 'alias')    { $texte = $N{ALIAS} }
-		if ($style eq 'short')    { $texte = sprintf('%s: %s',$N{ALIAS},$N{NAME}) }
-		if ($style eq 'html')     { $texte = sprintf('<b>%s</b>: %s <i>(%s)</i>',$N{ALIAS},$N{NAME},$N{TYPE}) }
+		if ($style eq 'short')    { $texte = "$N{ALIAS}: $N{NAME}" }
+		if ($style eq 'html')     { $texte = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ? " <i>($N{TYPE})</i>":"") }
 		use warnings;
 		#djl-was: $texte =~ s/ /Â /g;    #djl: re-assess
 	}
