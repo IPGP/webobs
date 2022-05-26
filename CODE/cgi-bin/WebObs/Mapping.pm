@@ -1,4 +1,4 @@
-package WebObs::IGN;
+package WebObs::Mapping;
 
 =head1 NAME
 
@@ -6,31 +6,31 @@ Package WebObs : Common perl-cgi variables and functions
 
 =head1 SYNOPSIS
 
- use WebObs::IGN;
- print $WebObs::IGN::UTM{GEODETIC_DATUM_LOCAL_NAME};
+ use WebObs::Mapping;
+ print $WebObs::Mapping::UTM{GEODETIC_DATUM_LOCAL_NAME};
  # or:
  my %U = %{setUTMLOCAL($GRID{UTM_LOCAL})};
- print %U{GEODETIC_DATUM_LOCAL_NAME}; # specific definition for grid $GRID 
+ print %U{GEODETIC_DATUM_LOCAL_NAME}; # specific definition for grid $GRID
 
 =head1 DESCRIPTION
 
-IGN geodetic subroutines to convert geographic coordinates (WGS84 Lat,Lon) to UTM or cartesian geocentric.
+Mapping geodetic subroutines to convert geographic coordinates (WGS84 Lat,Lon) to UTM or cartesian geocentric.
 Main subroutines are B<geo2utm> (WGS84), B<geo2utml> (local datum) and B<geo2cart>.
 
-WebObs::IGN sets up its %UTM hash defining required computation parameters. 
-As a default, at WebObs::IGN load time, %UTM is initialized with the contents of 
-the site's required global definitions found in $WEBOBS{UTM_LOCAL} file. Scripts 
-using WebObs::IGN may provide their own definitions via a call to setUTMLOCAL(name-of-specific-definitions-file).
-In case this file can't be loaded, WebObs::IGN uses the default site's definitions. 
+WebObs::Mapping sets up its %UTM hash defining required computation parameters.
+As a default, at WebObs::Mapping load time, %UTM is initialized with the contents of
+the site's required global definitions found in $WEBOBS{UTM_LOCAL} file. Scripts
+using WebObs::Mapping may provide their own definitions via a call to setUTMLOCAL(name-of-specific-definitions-file).
+In case this file can't be loaded, WebObs::Mapping uses the default site's definitions.
 
-Typically, specific WebObs::IGN definitions are associated to any GRID, via its own 
+Typically, specific WebObs::Mapping definitions are associated to any GRID, via its own
 configuration parameter UTM_LOCAL pointing to its own definitions file.
 
 =head1 REFERENCES
 
  Author: François Beauducel, IPGP
-         Created:  2009-10-21 (translated from Matlab 2003 author's toolbox)
-	 Updated:  2014-05-14
+     Created:  2009-10-21 (translated from Matlab 2003 author's toolbox)
+	 Updated:  2022-05-26
 
  I.G.N., Changement de système géodésique: Algorithmes, Notes Techniques NT/G 80, janvier 1995.
  I.G.N., Projection cartographique Mercator Transverse: Algorithmes, Notes Techniques NT/G 76, janvier 1995.
@@ -64,27 +64,27 @@ setUTMLOCAL();    # load default, not presuming later setUTMLOCAL calls by user
 
 =head2 setUTMLOCAL
 
-Sets the %UTM structure with the contents of $utmfilename (if provided and exists) 
-or with the contents of $WEBOBS{UTM_LOCAL} -the default definitions- (if it exists). 
-Returns %UTM address if loaded successfully, 0 otherwise. 
+Sets the %UTM structure with the contents of $utmfilename (if provided and exists)
+or with the contents of $WEBOBS{UTM_LOCAL} -the default definitions- (if it exists).
+Returns %UTM address if loaded successfully, 0 otherwise.
 
 	print "OK" if ( setUTMLOCAL($utmfilename) ); # try load $utmfilename or default settings
 
-	print Dumper setUTMLOCAL();                  # try load + dump the default UTM settings 
+	print Dumper setUTMLOCAL();                  # try load + dump the default UTM settings
 
-=cut 
+=cut
 
 sub setUTMLOCAL {
-	if ($_[0] && -e "$_[0]") { 
+	if ($_[0] && -e "$_[0]") {
 		%UTM = ();
 		%UTM = readCfg($_[0]);
 	}
 	else {
-		if ((exists $WEBOBS{UTM_LOCAL}) && -e $WEBOBS{UTM_LOCAL}) { 
+		if ((exists $WEBOBS{UTM_LOCAL}) && -e $WEBOBS{UTM_LOCAL}) {
 			%UTM = ();
 			%UTM = readCfg($WEBOBS{UTM_LOCAL}) ;
 		}
-	}	
+	}
 	if (scalar(keys(%UTM))) { return \%UTM }
 	else                    { return 0 }
 }
@@ -100,7 +100,7 @@ Calcul de la latitude isométrique
 	References:
 	I.G.N., Projection cartographique Mercator Transverse: Algorithmes, Notes Techniques NT/G 76, janvier 1995.
 
-=cut 
+=cut
 
 sub ign0001 {
 
@@ -118,7 +118,7 @@ sub ign0001 {
 =head2 ign0009
 
 #IGN0009 Transformation de coordonnées géographiques ellipsoidales en coordonnées cartésiennes.
-#       [X,Y,Z]=IGN0009(LAM,PHI,HE,A,E) renvoie les coordonnées cartésiennes X,Y,Z à 
+#       [X,Y,Z]=IGN0009(LAM,PHI,HE,A,E) renvoie les coordonnées cartésiennes X,Y,Z à
 #       partir des paramètres:
 #           LAM = longitude par rapport au méridien origine
 #           PHI = latitude
@@ -134,7 +134,7 @@ sub ign0001 {
 #   Created : 2003-01-13
 #   Updated : 2003-01-13
 
-=cut 
+=cut
 
 sub ign0009 {
 	my $l = shift;
@@ -171,7 +171,7 @@ sub ign0009 {
 #   Created : 2003-01-13
 #   Updated : 2003-01-14
 
-=cut 
+=cut
 
 sub ign0012 {
 	my $x = shift;
@@ -219,7 +219,7 @@ sub ign0012 {
 =head2 ign0013b
 
 #IGN0013B Transformation de coordonnées à 7 paramètres ntre 2 systèmes - passage "inverse".
-#       V=IGN0013B(TX,TY,TZ,D,RX,RY,RZ,U) renvoie le vecteur de coordonnées cartésiennes 
+#       V=IGN0013B(TX,TY,TZ,D,RX,RY,RZ,U) renvoie le vecteur de coordonnées cartésiennes
 #       dans le système 2 V = [VX,VY,VZ] à partir des paramètres:
 #           TX = translation suivant l'axe des x (de 2 vers 1)
 #           TY = translation suivant l'axe des y (de 2 vers 1)
@@ -236,7 +236,7 @@ sub ign0012 {
 #   Created : 2003-01-13
 #   Updated : 2003-01-13
 
-=cut 
+=cut
 
 sub ign0013b {
 	my $tx = shift;
@@ -280,7 +280,7 @@ sub ign0013b {
 #   Created : 2003-01-13
 #   Updated : 2003-01-13
 
-=cut 
+=cut
 
 sub ign0021 {
 	my $p = shift;
@@ -307,13 +307,13 @@ sub ign0021 {
 #   Created : 2003-01-13
 #   Updated : 2003-01-13
 
-=cut 
+=cut
 
 sub ign0025 {
 	my $e = shift;
 	# Jeux d'essai
 	#$e = 0.08199188998;
-	
+
 	my @c;
 	$c[0] = -175.0/16384*$e**8 - 5.0/256*$e**6 - 3.0/64*$e**4 - 1.0/4*$e**2 + 1;
 	$c[1] = -105.0/4096*$e**8 - 45.0/1024*$e**6 - 3.0/32*$e**4 - 3.0/8*$e**2;
@@ -340,10 +340,10 @@ sub ign0025 {
 #   Created : 2003-01-13
 #   Updated : 2003-01-13
 
-=cut 
+=cut
 
 sub ign0026 {
-	my $p = shift;	
+	my $p = shift;
 	my @c = shift;
 
 	my $b = $c[0]*$p + $c[1]*sin(2*$p) + $c[2]*sin(4*$p) + $c[3]*sin(6*$p) + $c[4]*sin(8*$p);
@@ -366,7 +366,7 @@ sub ign0026 {
 #   Created : 2003-01-13
 #   Updated : 2003-01-13
 
-=cut 
+=cut
 
 sub ign0028 {
 	my $e = shift;
@@ -390,7 +390,7 @@ sub ign0028 {
 =head2 ign0030
 
 #IGN0030 Transformation de coordonnées géographiques en coordonnées projection Mercator Transverse.
-#       [X,Y]=IGN0030(LC,N,XS,YS,E,LAM,PHI) renvoie les coordonnées en projection 
+#       [X,Y]=IGN0030(LC,N,XS,YS,E,LAM,PHI) renvoie les coordonnées en projection
 #       Transverse Mercator X et Y à partir des paramètres:
 #           LC = longitude origine par rapport au méridien origine
 #           N = rayon de la sphère intermédiaire
@@ -407,7 +407,7 @@ sub ign0028 {
 #   Created : 2003-01-13
 #   Updated : 2003-01-13
 
-=cut 
+=cut
 
 sub ign0030 {
 	my $lc = shift;
@@ -449,7 +449,7 @@ sub ign0030 {
 #           E = première excentricité de l'ellipsoide
 #           K0 = facteur d'échelle au point d'origine
 #           L0 = longitude origine par rapport au méridien origine
-#           P0 = latitude du point origine 
+#           P0 = latitude du point origine
 #           X0,Y0 = coordonnées en projection du point origine
 #
 #       Autres algorithmes utilisés: IGN0025, IGN0026
@@ -461,7 +461,7 @@ sub ign0030 {
 #   Updated : 2003-01-13
 
 
-=cut 
+=cut
 
 sub ign0052 {
 	my $a = shift;
@@ -492,8 +492,8 @@ sub ign0052 {
 
 #GEO2UTM Conversion coordonnées WGS84 géographiques à UTM20
 #       ENU=GEO2UTMWGS(LL) retourne une matrice de coordonnées UTM [E N]
-#       avec E = Est (m), N = Nord (m), à partir d'une matrice 
-#       de coordonnées géographiques [LAT LON] avec LAT = latitude (degrés), 
+#       avec E = Est (m), N = Nord (m), à partir d'une matrice
+#       de coordonnées géographiques [LAT LON] avec LAT = latitude (degrés),
 #       LON = longitude (degrés).
 
 #   References:
@@ -504,7 +504,7 @@ sub ign0052 {
 #   Created : 2003-12-02
 #   Updated : 2004-04-27
 
-=cut 
+=cut
 
 sub geo2utm {
 	my $p1 = shift;
@@ -539,8 +539,8 @@ sub geo2utm {
 
 #GEO2UTMSA Conversion coordonnées géographiques WGS84 à UTM local (Ste-Anne pour Guadeloupe)
 #       ENU=GEO2UTMSA(LLH) retourne une matrice de coordonnées UTM [E N U]
-#       avec E = Est (m), N = Nord (m), U = Altitude (m), à partir d'une matrice 
-#       de coordonnées géographiques [LAT LON ELE] avec LAT = latitude (degrés), 
+#       avec E = Est (m), N = Nord (m), U = Altitude (m), à partir d'une matrice
+#       de coordonnées géographiques [LAT LON ELE] avec LAT = latitude (degrés),
 #       LON = longitude (degrés) et ELE = hauteur ellipsoidale (km).
 
 #   Bibliographie:
@@ -551,7 +551,7 @@ sub geo2utm {
 #   Created : 2003-01-10
 #   Updated : 2004-04-27
 
-=cut 
+=cut
 
 sub geo2utml {
 	my $p1 = shift;
@@ -605,7 +605,7 @@ sub geo2utml {
 
 Returns UTM WGS84 parameters (zone, false easting and northing) from latitude and longitude
 
-=cut 
+=cut
 
 sub utmwgs {
 	my $p1 = shift;
@@ -628,14 +628,14 @@ sub utmwgs {
 
 	return ($F0,$K0,$P0,$L0,$X0,$Y0);
 }
- 
+
 =pod
 
 =head2 utm
 
 returns UTM parameters (zone, false easting and northing) from latitude and longitude
 
-=cut 
+=cut
 
 sub utm {
 	my $p1 = shift;
@@ -664,7 +664,7 @@ sub utm {
 #GEO2CART Geodetic WGS84 to cartesian geocentric coordinates
 #   Author: F. Beauducel, IPGP
 
-=cut 
+=cut
 
 sub geo2cart {
 	my $p1 = shift;
@@ -687,6 +687,32 @@ sub geo2cart {
 	return ($x,$y,$z);
 }
 
+
+=pod
+
+=head2 greatcircle
+
+#	greatcircle(lat1,lon1,lat2,lon2) computes the distance (in km) between two
+#	geographic coordinates lat/lon (greatcircle Haversin formula)
+#   Author: F. Beauducel, IPGP
+
+=cut
+
+sub greatcircle {
+	my $k = pi/180;
+
+	my $lat1 = shift;
+	my $lon1 = shift;
+	my $lat2 = shift;
+	my $lon2 = shift;
+
+	my $rearth = 6371;	# volumetric Earth radius (in km)
+
+	my $dist = $rearth*2*asin(sqrt(sin(($lat2 - $lat1)*$k/2)**2 + cos($lat1*$k)*cos($lat2*$k)*sin(($lon2 - $lon1)*$k/2)**2));
+
+	return $dist;
+}
+
 1;
 
 __END__
@@ -699,7 +725,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -715,4 +741,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-				

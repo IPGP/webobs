@@ -455,22 +455,43 @@ if (!($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0)) {
 		."<TH><SMALL>$__{'Date'}</SMALL></TH><TH><SMALL>$__{'Type'}</SMALL></TH>"
 		."<TH><SMALL>$__{'Lat.'} ".($lat >= 0 ? "N":"S")." (WGS84)</SMALL></TH>"
 		."<TH><SMALL>$__{'Lon.'} ".($lon >= 0 ? "E":"W")." (WGS84)</SMALL></TH>";
-	$lat = abs($lat);
-	$lon = abs($lon);
+	my $alat = abs($lat);
+	my $alon = abs($lon);
 	print "<TH><SMALL>$__{'Alt.'} (m)</TH><TH align=right><SMALL>Transverse Mercator</SMALL></TH><TH><SMALL>$__{'East'} (m)</SMALL></TH><TH><SMALL>$__{'North'} (m)</SMALL></TH><TH></TH></TR>\n<TR>"
 		."<TD align=center><SMALL>$NODE{POS_DATE}</SMALL></TD><TD align=center><SMALL>".u2l($typePos{$NODE{POS_TYPE}})."</SMALL></TD>"
-		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$lat,int($lat),($lat-int($lat))*60,$lat,($lat-int($lat))*60,($lat*60-int($lat*60))*60)
-		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$lon,int($lon),($lon-int($lon))*60,$lon,($lon-int($lon))*60,($lon*60-int($lon*60))*60)
+		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$alat,int($alat),($alat-int($alat))*60,$alat,($alat-int($alat))*60,($alat*60-int($alat*60))*60)
+		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$alon,int($alon),($alon-int($alon))*60,$alon,($alon-int($alon))*60,($alon*60-int($alon*60))*60)
 		."<TD align=center><SMALL><B>$NODE{ALTITUDE}</B></TD>"
 		."<TD align=right><SMALL>UTM$utmzone WGS84:$utml0</TD>"
 		.sprintf("<TD align=center><SMALL><B>%6.0f$utml1</B></TD><TD align=center><SMALL><B>%6.0f$utml2</B></TD>",$e_utm,$n_utm)
 		."<TD>$map</TD></TR></TABLE>\n";
-
+	print "<BR><TABLE width='100%'><TR>";
 	if (-e $fileMap) {
-		my $tmp=basename $fileMap;
-		print "<BR><img src=\"$WEBOBS{URN_NODES}/$NODEName/$tmp\" alt=\"$__{'Location map'}\">";
+		my $tmp = basename($fileMap);
+		print "<TD style=\"border:0\"><img src=\"$WEBOBS{URN_NODES}/$NODEName/$tmp\" alt=\"$__{'Location map'}\"></TD>";
 	}
-	print "</TD></TR>\n";
+	if ($NODES{NEIGHBOUR_NODES_MAX} > 0) {
+		# loads all existing nodes
+		my %allNodes = readNode;
+		my %dist;
+		for (keys(%allNodes)) {
+			my %N = %{$allNodes{$_}};
+			$dist{$_} = WebObs::Mapping::greatcircle($lat,$lon,$N{LAT_WGS84},$N{LON_WGS84}) if ($N{VALID});
+		}
+		print "<TD align=left valign=top style='border:0'><P><B>$__{'Neighbour nodes'}:</B></P>";
+		my $n = 1;
+		foreach (sort { $dist{$a} <=> $dist{$b} or $a cmp $b } keys %dist) {
+			if ($_ ne $NODEName) {
+				my $d = sprintf("%7.3f", $dist{$_});
+				my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
+				next if ($nnn eq '');
+				print "$d&nbsp;km: <A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A><BR>";
+				last if ($n++ == $NODES{NEIGHBOUR_NODES_MAX});
+			}
+		}
+		print "</TD>\n";
+	}
+	print "</TR></TABLE>\n</TD></TR>\n";
 }
 
 
