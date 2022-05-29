@@ -277,18 +277,16 @@ GOOGLE_EARTH_LINK|1
 GOOGLE_EARTH_LINK_INFO|KML file for Google Earth (ATTENTION: error ~20 m)
 IMAGE_LOGO_GOOGLE_EARTH|/icons/google/google_earth.gif
 
-# Google Maps ---------------------------------
-CGI_GOOGLE_MAPS|googleMAPS.pl
-GOOGLE_MAPS_LINK|1
-GOOGLE_MAPS_API|https://maps.google.com/maps?file=api
-# NOTE: API key can be obtained at http://code.google.com/apis/maps/signup.html entering domain address
-GOOGLE_MAPS_API_KEY|
-GOOGLE_MAPS_LINK_INFO|See with Google Maps (ATTENTION: error ~20 m)
-GOOGLE_MAPS_ICON|/icons/gdot.png
-GOOGLE_MAPS_TYPE|G_HYBRID_MAP
-GOOGLE_MAPS_WIDTH_VALUE|800
-GOOGLE_MAPS_HEIGHT_VALUE|600
-GOOGLE_MAPS_ZOOM_VALUE|17
+# OpenStreetMap ---------------------------------
+CGI_OSM|OSM.pl
+OSM_LINK|1
+# NOTE: API access token can be obtained at https://www.openstreetmap.org
+OSM_MAPBOX_API|https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoid2Vib2JzIiwiYSI6ImNsM24zejJ4eTBiMjQzamxua2tpbjIyeHYifQ.ILd7gRthHcZvnDVS04wGYQ
+OSM_INFO|See with OpenStreetMap
+OSM_NODE_ICON|/icons/gdot.png
+OSM_WIDTH_VALUE|800
+OSM_HEIGHT_VALUE|600
+OSM_ZOOM_VALUE|17
 
 # Digital Elevation Models --------------------
 # ---------------------------------------------

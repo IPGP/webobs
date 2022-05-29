@@ -108,6 +108,7 @@ if (scalar(@NID) == 3) {
 	} else { die "$GRIDType.$GRIDName.$NODEName $__{'unknown'}" }
 } else { die "$__{'Not a fully qualified node name (gridtype.gridname.nodename)'}" }
 
+my %allNodes = readNode;
 my $NODENameLower = lc($NODEName);
 
 # ---- went thru all above checks ... init node display
@@ -261,6 +262,140 @@ print "<TD colspan=\"2\">"
 	." / ".($endDate ne "NA" ? "$__{'Ended on'}: <B>$endDate</B>":"Active")
 	."</TD></TR>\n";
 
+# Row "coordinates" and localization map --------------------------------------
+#
+if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
+	my $lat = $NODE{LAT_WGS84};
+	my $lon = $NODE{LON_WGS84};
+	my $alt = $NODE{ALTITUDE};
+	my ($e_utm,$n_utm,$utmzone) = geo2utm($lat,$lon);
+	my $e_utml;
+	my $n_utml;
+	my $utml0;
+	my $utml1;
+	my $utml2;
+	if (defined($GRID{UTM_LOCAL}) && -e $GRID{UTM_LOCAL} ) {
+		($e_utml,$n_utml) = geo2utml($lat,$lon,$alt);
+		$utml0 = "<BR>$UTM{GEODETIC_DATUM_LOCAL_NAME}:";
+		$utml1 = sprintf("<BR>%6.0f",$e_utml);
+		$utml2 = sprintf("<BR>%6.0f",$n_utml);
+	}
+	my $txt = $__{'Location'};
+
+	# ---- link to OpenStreetMap
+	# ------------------------
+	my $map = "<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$GRIDType.$GRIDName.$NODEName','$NODEName',"
+		."'width=".($WEBOBS{OSM_WIDTH_VALUE}+15).",height=".($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">"
+		."<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
+
+	# --- link KML Google Earth
+	# -------------------------
+	if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
+		$map .= " <A href=\"#\" onClick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$GRIDType.$GRIDName.$NODEName&format=kml')\" title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
+	}
+
+	# ---- link to interactive map - IGN (A. Bosson)
+	# ----------------------------------------------
+	if ($WEBOBS{IGN_MAPI_LINK} eq 1) {
+		$map .= " <A href=\"$WEBOBS{IGN_MAPI_LINK_URL}form?lon=$e_utm&lat=$n_utm\" title=\"".l2u($WEBOBS{IGN_MAPI_LINK_INFO})."\" target=\"_blank\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_IGN_MAPI}\" alt=\"".l2u($WEBOBS{IGN_MAPI_LINK_INFO})."\"></A>\n";
+	}
+
+	print "<TR><TH valign=\"top\">".($editOK ? "<A href=\"$cgiConf\">$txt</A>":$txt)."</TH>";
+	print "<TD colspan=\"2\">";
+	print "<TABLE width=\"100%\"><TR>"
+		."<TH><SMALL>$__{'Date'}</SMALL></TH><TH><SMALL>$__{'Type'}</SMALL></TH>"
+		."<TH><SMALL>$__{'Lat.'} ".($lat >= 0 ? "N":"S")." (WGS84)</SMALL></TH>"
+		."<TH><SMALL>$__{'Lon.'} ".($lon >= 0 ? "E":"W")." (WGS84)</SMALL></TH>";
+	my $alat = abs($lat);
+	my $alon = abs($lon);
+	print "<TH><SMALL>$__{'Alt.'} (m)</TH><TH align=right><SMALL>Transverse Mercator</SMALL></TH><TH><SMALL>$__{'East'} (m)</SMALL></TH><TH><SMALL>$__{'North'} (m)</SMALL></TH><TH></TH></TR>\n<TR>"
+		."<TD align=center><SMALL>$NODE{POS_DATE}</SMALL></TD><TD align=center><SMALL>".u2l($typePos{$NODE{POS_TYPE}})."</SMALL></TD>"
+		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$alat,int($alat),($alat-int($alat))*60,$alat,($alat-int($alat))*60,($alat*60-int($alat*60))*60)
+		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$alon,int($alon),($alon-int($alon))*60,$alon,($alon-int($alon))*60,($alon*60-int($alon*60))*60)
+		."<TD align=center><SMALL><B>$NODE{ALTITUDE}</B></TD>"
+		."<TD align=right><SMALL>UTM$utmzone WGS84:$utml0</TD>"
+		.sprintf("<TD align=center><SMALL><B>%6.0f$utml1</B></TD><TD align=center><SMALL><B>%6.0f$utml2</B></TD>",$e_utm,$n_utm)
+		."<TD>$map</TD></TR></TABLE>\n";
+	print "<BR><TABLE width='100%'><TR>";
+	if (-e $fileMap) {
+		my $tmp = basename($fileMap);
+		print "<TD style=\"border:0\"><img src=\"$WEBOBS{URN_NODES}/$NODEName/$tmp\" alt=\"$__{'Location map'}\"></TD>";
+	}
+	# ---- Neighbour nodes
+	# ----------------------------------------------
+	if ($NODES{NEIGHBOUR_NODES_MAX} > 0) {
+		# loads all existing nodes
+		my %dist;
+		my %deniv;
+		my %bear;
+		for (keys(%allNodes)) {
+			my %N = %{$allNodes{$_}};
+			if ($N{VALID}) {
+				($dist{$_},$bear{$_}) = greatcircle($lat,$lon,$N{LAT_WGS84},$N{LON_WGS84});
+				if ($alt != 0 && $N{ALTITUDE} != 0) {
+					$deniv{$_} = $N{ALTITUDE} - $alt;
+					$dist{$_} = sqrt($dist{$_}**2 + ($deniv{$_}/1000)**2);
+				}
+			}
+		}
+		print "<TD valign=top style='border:0'><TABLE style='border-collapse:collapse'><TR>"
+			."<TH width=10%><SMALL>$__{'Distance (beeline)'}</SMALL></TH><TH width=10%><SMALL>$__{'Elev. gain'}</SMALL></TH>"
+			."<TH><SMALL>$__{'Neighbour nodes'}</SMALL></TH></TR>\n";
+		my $n = 1;
+		foreach (sort { $dist{$a} <=> $dist{$b} or $a cmp $b } keys %dist) {
+			if ($_ ne $NODEName) {
+				my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
+				next if ($nnn eq '');
+				my $d = ($dist{$_}<1 ? sprintf("%8.0f&nbsp;m",1000*$dist{$_}):sprintf("%7.3f&nbsp;km",$dist{$_}));
+				print "<TR><TD align=right style='border:none'><SMALL>$d<IMG src=\"/icons/boussole/".lc(compass($bear{$_})).".png\" align=\"top\"></SMALL></TD>"
+					."<TD align=right style='border:none'><SMALL>".sprintf("%+1.0f&nbsp;m&nbsp;",$deniv{$_})."</SMALL></TD>"
+					."<TD style='border:none'><SMALL><A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A></SMALL></TD></TR>\n";
+				last if ($n++ == $NODES{NEIGHBOUR_NODES_MAX});
+			}
+		}
+		print "</TABLE></TD>\n";
+	}
+	print "</TR></TABLE>\n</TD></TR>\n";
+}
+
+
+# Row "transmission" type and link to relay / data acquisition
+#
+if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
+	my @trans = split(/ |,|\|/,$NODE{TRANSMISSION});
+	chomp(@trans);
+	my $txt = $__{'Transmission'};
+	print "<TR><TH valign=\"top\">".($editOK ? "<A href=\"$cgiConf\">$txt</A>":$txt)."</TH>";
+	my ($utype,$ujunk) = split(/\|/,$typeTele{$trans[0]}{name});
+	print "<TD colspan=\"2\"><TABLE style='border-spacing:0;border:none'><TR><TD colspan=3 style='border:none'>Type: <B>".u2l($utype)."</B></TD></TR>";
+	for (@trans[1 .. $#trans]) {
+		my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
+		my $distelev = "<TD colspan=2 style='border:none'>&ensp;</TD>";
+		my $nodelink = "";
+		if ($nnn ne "") {
+			my %N = %{$allNodes{$_}};
+			if (!($N{LAT_WGS84}=="" && $N{LON_WGS84}=="")) {
+				my ($dist,$bear) = greatcircle($NODE{LAT_WGS84},$NODE{LON_WGS84},$N{LAT_WGS84},$N{LON_WGS84});
+				my $deniv = "";
+				if ($NODE{ALTITUDE} != 0 && $N{ALTITUDE} != 0) {
+					$deniv = $N{ALTITUDE} - $NODE{ALTITUDE};
+					$dist = sqrt($dist**2 + ($deniv/1000)**2);
+				}
+				my $d = ($dist<1 ? sprintf("%8.0f&nbsp;m",1000*$dist):sprintf("%7.3f&nbsp;km",$dist));
+				$distelev = "<TD align=right style='border:none'><SMALL>&ensp;$d<IMG src=\"/icons/boussole/".lc(compass($bear)).".png\" align=\"top\"></SMALL></TD>"
+					."<TD align=right style='border:none'><SMALL>(<I>&Delta;h</I>&nbsp;".sprintf("%+1.0f&nbsp;m",$deniv).")&nbsp;</SMALL></TD>";
+			}
+			$nodelink = "<A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>";
+		} else {
+			$nodelink = "<B>$_</B> ($__{'unknown'})";
+		}
+		print "<TR>$distelev<TD style='border:none'><SMALL>$nodelink</SMALL></TD></TR>\n";
+	}
+	print "</TABLE></TD>\n";
+	print "</TD></TR>\n";
+}
+
+
 # Row "proc": codes, status, data... -----------------
 #
 if (uc($GRIDType) eq 'PROC') {
@@ -407,120 +542,6 @@ if (uc($GRIDType) eq 'PROC') {
 		print "<BR><SMALL>@clbNote</SMALL>";
 	} else {
 		print "no channel defined";
-	}
-	print "</TD></TR>\n";
-}
-
-# Row "coordinates" and localization map --------------------------------------
-#
-if (!($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0)) {
-	my $lat = $NODE{LAT_WGS84};
-	my $lon = $NODE{LON_WGS84};
-	my $alt = $NODE{ALTITUDE};
-	my ($e_utm,$n_utm,$utmzone) = geo2utm($lat,$lon);
-	my $e_utml;
-	my $n_utml;
-	my $utml0;
-	my $utml1;
-	my $utml2;
-	if (defined($GRID{UTM_LOCAL}) && -e $GRID{UTM_LOCAL} ) {
-		($e_utml,$n_utml) = geo2utml($lat,$lon,$alt);
-		$utml0 = "<BR>$UTM{GEODETIC_DATUM_LOCAL_NAME}:";
-		$utml1 = sprintf("<BR>%6.0f",$e_utml);
-		$utml2 = sprintf("<BR>%6.0f",$n_utml);
-	}
-	my $txt = $__{'Location'};
-
-	# ---- link to Google Maps
-	# ------------------------
-	my $map = "<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_GOOGLE_MAPS}?grid=$GRIDType.$GRIDName.$NODEName','$NODEName','width="
-		.($WEBOBS{OSM_WIDTH_VALUE}+15).",height="
-		.($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\"><IMG src=\"$WEBOBS{GOOGLE_MAPS_ICON}\" title=\"$WEBOBS{GOOGLE_MAPS_LINK_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
-
-	# --- link KML Google Earth
-	# -------------------------
-	if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
-		$map .= " <A href=\"#\" onClick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$GRIDType.$GRIDName.$NODEName&format=kml')\" title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
-	}
-
-	# ---- link to interactive map - IGN (A. Bosson)
-	# ----------------------------------------------
-	if ($WEBOBS{IGN_MAPI_LINK} eq 1) {
-		$map .= " <A href=\"$WEBOBS{IGN_MAPI_LINK_URL}form?lon=$e_utm&lat=$n_utm\" title=\"".l2u($WEBOBS{IGN_MAPI_LINK_INFO})."\" target=\"_blank\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_IGN_MAPI}\" alt=\"".l2u($WEBOBS{IGN_MAPI_LINK_INFO})."\"></A>\n";
-	}
-
-	print "<TR><TH valign=\"top\">".($editOK ? "<A href=\"$cgiConf\">$txt</A>":$txt)."</TH>";
-	print "<TD colspan=\"2\">";
-	print "<TABLE width=\"100%\"><TR>"
-		."<TH><SMALL>$__{'Date'}</SMALL></TH><TH><SMALL>$__{'Type'}</SMALL></TH>"
-		."<TH><SMALL>$__{'Lat.'} ".($lat >= 0 ? "N":"S")." (WGS84)</SMALL></TH>"
-		."<TH><SMALL>$__{'Lon.'} ".($lon >= 0 ? "E":"W")." (WGS84)</SMALL></TH>";
-	my $alat = abs($lat);
-	my $alon = abs($lon);
-	print "<TH><SMALL>$__{'Alt.'} (m)</TH><TH align=right><SMALL>Transverse Mercator</SMALL></TH><TH><SMALL>$__{'East'} (m)</SMALL></TH><TH><SMALL>$__{'North'} (m)</SMALL></TH><TH></TH></TR>\n<TR>"
-		."<TD align=center><SMALL>$NODE{POS_DATE}</SMALL></TD><TD align=center><SMALL>".u2l($typePos{$NODE{POS_TYPE}})."</SMALL></TD>"
-		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$alat,int($alat),($alat-int($alat))*60,$alat,($alat-int($alat))*60,($alat*60-int($alat*60))*60)
-		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$alon,int($alon),($alon-int($alon))*60,$alon,($alon-int($alon))*60,($alon*60-int($alon*60))*60)
-		."<TD align=center><SMALL><B>$NODE{ALTITUDE}</B></TD>"
-		."<TD align=right><SMALL>UTM$utmzone WGS84:$utml0</TD>"
-		.sprintf("<TD align=center><SMALL><B>%6.0f$utml1</B></TD><TD align=center><SMALL><B>%6.0f$utml2</B></TD>",$e_utm,$n_utm)
-		."<TD>$map</TD></TR></TABLE>\n";
-	print "<BR><TABLE width='100%'><TR>";
-	if (-e $fileMap) {
-		my $tmp = basename($fileMap);
-		print "<TD style=\"border:0\"><img src=\"$WEBOBS{URN_NODES}/$NODEName/$tmp\" alt=\"$__{'Location map'}\"></TD>";
-	}
-	# ---- Neighbour nodes
-	# ----------------------------------------------
-	if ($NODES{NEIGHBOUR_NODES_MAX} > 0) {
-		# loads all existing nodes
-		my %allNodes = readNode;
-		my %dist;
-		my %deniv;
-		my %bear;
-		for (keys(%allNodes)) {
-			my %N = %{$allNodes{$_}};
-			if ($N{VALID}) {
-				($dist{$_},$bear{$_}) = greatcircle($lat,$lon,$N{LAT_WGS84},$N{LON_WGS84});
-				if ($alt != 0 && $N{ALTITUDE} != 0) {
-					$deniv{$_} = $N{ALTITUDE} - $alt;
-					$dist{$_} = sqrt($dist{$_}**2 + ($deniv{$_}/1000)**2);
-				}
-			}
-		}
-		print "<TD valign=top style='border:0'><TABLE style='border-collapse:collapse'><TR>"
-			."<TH width=10%><SMALL>$__{'Distance (beeline)'}</SMALL></TH><TH width=10%><SMALL>$__{'Elev. gain'}</SMALL></TH>"
-			."<TH><SMALL>$__{'Neighbour nodes'}</SMALL></TH></TR>\n";
-		my $n = 1;
-		foreach (sort { $dist{$a} <=> $dist{$b} or $a cmp $b } keys %dist) {
-			if ($_ ne $NODEName) {
-				my $d = ($dist{$_}<1 ? sprintf("%8.0f&nbsp;m",1000*$dist{$_}):sprintf("%7.3f&nbsp;km",$dist{$_}));
-				my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
-				next if ($nnn eq '');
-				print "<TR><TD align=right style='border:none'><SMALL>$d<IMG src=\"/icons/boussole/".lc(compass($bear{$_})).".png\" align=\"top\"></SMALL></TD>"
-					."<TD align=right style='border:none'><SMALL>".sprintf("%+1.0f&nbsp;m&nbsp;",$deniv{$_})."</SMALL></TD>"
-					."<TD style='border:none'><SMALL><A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A></SMALL></TD></TR>\n";
-				last if ($n++ == $NODES{NEIGHBOUR_NODES_MAX});
-			}
-		}
-		print "</TABLE></TD>\n";
-	}
-	print "</TR></TABLE>\n</TD></TR>\n";
-}
-
-
-# Row "transmission" type and link to relay / data acquisition
-#
-if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
-	my @trans = split(/ |,|\|/,$NODE{TRANSMISSION});
-	chomp(@trans);
-	my $txt = $__{'Transmission'};
-	print "<TR><TH valign=\"top\">".($editOK ? "<A href=\"$cgiConf\">$txt</A>":$txt)."</TH>";
-	my ($utype,$ujunk) = split(/\|/,$typeTele{$trans[0]}{name});
-	print "<TD colspan=\"2\">Type: <B>".u2l($utype)."</B>";
-	for (@trans[1 .. $#trans]) {
-		my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
-		print "<BR>&nbsp; &rArr; <A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>";
 	}
 	print "</TD></TR>\n";
 }
