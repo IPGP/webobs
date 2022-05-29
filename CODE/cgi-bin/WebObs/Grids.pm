@@ -577,7 +577,7 @@ sub getNodeString
 		no warnings "uninitialized";
 		if ($style eq 'alias')    { $texte = $N{ALIAS} }
 		if ($style eq 'short')    { $texte = "$N{ALIAS}: $N{NAME}" }
-		if ($style eq 'html')     { $texte = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ? " <i>($N{TYPE})</i>":"") }
+		if ($style eq 'html')     { $texte = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ne "" && $N{TYPE} ne "-" ? " <i>($N{TYPE})</i>":"") }
 		use warnings;
 		#djl-was: $texte =~ s/ /Â /g;    #djl: re-assess
 	}
