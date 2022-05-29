@@ -30,7 +30,7 @@ configuration parameter UTM_LOCAL pointing to its own definitions file.
 
  Author: François Beauducel, IPGP
      Created:  2009-10-21 (translated from Matlab 2003 author's toolbox)
-	 Updated:  2022-05-26
+	 Updated:  2022-05-29
 
  I.G.N., Changement de système géodésique: Algorithmes, Notes Techniques NT/G 80, janvier 1995.
  I.G.N., Projection cartographique Mercator Transverse: Algorithmes, Notes Techniques NT/G 76, janvier 1995.
@@ -47,7 +47,7 @@ use WebObs::Config;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %UTM);
 require Exporter;
 @ISA        = qw(Exporter);
-@EXPORT     = qw(setUTMLOCAL geo2utm geo2utml geo2cart);
+@EXPORT     = qw(setUTMLOCAL geo2utm geo2utml geo2cart greatcircle compass);
 $VERSION    = "1.01";
 
 $ENV{"LC_NUMERIC"} = "C";
@@ -693,8 +693,10 @@ sub geo2cart {
 =head2 greatcircle
 
 #	greatcircle(lat1,lon1,lat2,lon2) computes the distance (in km) between two
-#	geographic coordinates lat/lon (greatcircle Haversin formula)
-#   Author: F. Beauducel, IPGP
+#	geographic coordinates lat/lon (greatcircle Haversin formula). It returns
+#	also the bear angle (in °).
+#
+#	Reference: modified from greatcircle.m by F. Beauducel, IPGP
 
 =cut
 
@@ -706,11 +708,31 @@ sub greatcircle {
 	my $lat2 = shift;
 	my $lon2 = shift;
 
+	my $dlat = ($lat2 - $lat1)*$k;
+	my $dlon = ($lon2 - $lon1)*$k;
+
 	my $rearth = 6371;	# volumetric Earth radius (in km)
 
-	my $dist = $rearth*2*asin(sqrt(sin(($lat2 - $lat1)*$k/2)**2 + cos($lat1*$k)*cos($lat2*$k)*sin(($lon2 - $lon1)*$k/2)**2));
+	my $dist = $rearth*2*asin(sqrt(sin($dlat/2)**2 + cos($lat1*$k)*cos($lat2*$k)*sin($dlon/2)**2));
+	my $bear = atan2(sin($dlon)*cos($lat2*$k),cos($lat1*$k)*sin($lat2*$k) - sin($lat1*$k)*cos($lat2*$k)*cos($dlon))/$k;
 
-	return $dist;
+	return $dist, $bear;
+}
+
+=pod
+
+=head2 compass
+
+#	compass(azimuth) returns a short string indicating geographical orientation from azimuth in
+#	degrees from North, clockwise
+
+=cut
+sub compass {
+       my @nesw = ('N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW');
+       my $az = shift;
+       $az = ($az*16/360)%16;
+       return $nesw[$az];
+
 }
 
 1;

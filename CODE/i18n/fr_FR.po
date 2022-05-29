@@ -3,9 +3,9 @@ msgstr ""
 "Project-Id-Version: WebOBS 2.0\n"
 "Report-Msgid-Bugs-To: webobs@ovsg.univ-ag.fr\n"
 "POT-Creation-Date: 2007-05-25 09:10-0400\n"
-"PO-Revision-Date: 2016-04-20 11:21-0400\n"
-"Last-Translator: Francois Beauducel <beauducel@ipgp.fr>\n"
-"Language-Team: WebOBS Traduction fr <webobs-fr@ovsg.univ-ag.fr>\n"
+"PO-Revision-Date: 2022-05-27 18:00+0400\n"
+"Last-Translator: François Beauducel <beauducel@ipgp.fr>\n"
+"Language-Team: WebOBS Traduction fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -282,10 +282,10 @@ msgid "Lifetime"
 msgstr "Durée de vie"
 
 msgid "Started on"
-msgstr "Installé le"
+msgstr "Débute le"
 
 msgid "Ended on"
-msgstr "Desinstallé le "
+msgstr "Termine le "
 
 msgid "Start / Installation"
 msgstr "Début / Installation"
@@ -308,8 +308,23 @@ msgstr "Canal"
 msgid "See also the following maps"
 msgstr "Voir aussi les cartes suivantes"
 
+msgid "Location"
+msgstr "Localisation"
+
 msgid "Maps"
 msgstr "Cartes"
+
+msgid "Distance (beeline)"
+msgstr "Distance (vol d'oiseau)"
+
+msgid "Elev. gain"
+msgstr "Dénivelée"
+
+msgid "Transmission"
+msgstr "Transmission"
+
+msgid "Installation"
+msgstr "Installation"
 
 msgid "Information"
 msgstr "Informations"
@@ -356,9 +371,6 @@ msgstr "Graphes"
 msgid "Click to enlarge"
 msgstr "Cliquer pour agrandir"
 
-msgid "Location"
-msgstr "Localisation"
-
 msgid "Longitude"
 msgstr "Longitude"
 
@@ -391,6 +403,9 @@ msgstr "Nord"
 
 msgid "Location map"
 msgstr "Carte de localisation"
+
+msgid "Neighbour nodes"
+msgstr "Nœuds voisins"
 
 msgid "Access"
 msgstr "Accès"
@@ -1401,29 +1416,6 @@ msgstr "Utiliser le mode vim"
 
 msgid "Check to enable vim mode in the editor"
 msgstr "Cocher pour activer le mode vim dans l'éditeur"
-
-# showREQ.pl
-
-msgid "Date & Time"
-msgstr "Date & Heure"
-
-msgid "Host"
-msgstr "Serveur"
-
-msgid "User"
-msgstr "Utilisateur"
-
-msgid "Time Span"
-msgstr "Plage temporelle"
-
-msgid "Params"
-msgstr "Params"
-
-msgid "Job"
-msgstr "Job"
-
-msgid "Archive"
-msgstr "Archive"
 
 # vsearch.pl
 

@@ -434,8 +434,8 @@ if (!($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0)) {
 	# ---- link to Google Maps
 	# ------------------------
 	my $map = "<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_GOOGLE_MAPS}?grid=$GRIDType.$GRIDName.$NODEName','$NODEName','width="
-		.($WEBOBS{GOOGLE_MAPS_WIDTH_VALUE}+15).",height="
-		.($WEBOBS{GOOGLE_MAPS_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\"><IMG src=\"$WEBOBS{GOOGLE_MAPS_ICON}\" title=\"$WEBOBS{GOOGLE_MAPS_LINK_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
+		.($WEBOBS{OSM_WIDTH_VALUE}+15).",height="
+		.($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\"><IMG src=\"$WEBOBS{GOOGLE_MAPS_ICON}\" title=\"$WEBOBS{GOOGLE_MAPS_LINK_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
 
 	# --- link KML Google Earth
 	# -------------------------
@@ -470,26 +470,40 @@ if (!($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0)) {
 		my $tmp = basename($fileMap);
 		print "<TD style=\"border:0\"><img src=\"$WEBOBS{URN_NODES}/$NODEName/$tmp\" alt=\"$__{'Location map'}\"></TD>";
 	}
+	# ---- Neighbour nodes
+	# ----------------------------------------------
 	if ($NODES{NEIGHBOUR_NODES_MAX} > 0) {
 		# loads all existing nodes
 		my %allNodes = readNode;
 		my %dist;
+		my %deniv;
+		my %bear;
 		for (keys(%allNodes)) {
 			my %N = %{$allNodes{$_}};
-			$dist{$_} = WebObs::Mapping::greatcircle($lat,$lon,$N{LAT_WGS84},$N{LON_WGS84}) if ($N{VALID});
+			if ($N{VALID}) {
+				($dist{$_},$bear{$_}) = greatcircle($lat,$lon,$N{LAT_WGS84},$N{LON_WGS84});
+				if ($alt != 0 && $N{ALTITUDE} != 0) {
+					$deniv{$_} = $N{ALTITUDE} - $alt;
+					$dist{$_} = sqrt($dist{$_}**2 + ($deniv{$_}/1000)**2);
+				}
+			}
 		}
-		print "<TD align=left valign=top style='border:0'><P><B>$__{'Neighbour nodes'}:</B></P>";
+		print "<TD valign=top style='border:0'><TABLE style='border-collapse:collapse'><TR>"
+			."<TH width=10%><SMALL>$__{'Distance (beeline)'}</SMALL></TH><TH width=10%><SMALL>$__{'Elev. gain'}</SMALL></TH>"
+			."<TH><SMALL>$__{'Neighbour nodes'}</SMALL></TH></TR>\n";
 		my $n = 1;
 		foreach (sort { $dist{$a} <=> $dist{$b} or $a cmp $b } keys %dist) {
 			if ($_ ne $NODEName) {
-				my $d = sprintf("%7.3f", $dist{$_});
+				my $d = ($dist{$_}<1 ? sprintf("%8.0f&nbsp;m",1000*$dist{$_}):sprintf("%7.3f&nbsp;km",$dist{$_}));
 				my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
 				next if ($nnn eq '');
-				print "$d&nbsp;km: <A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A><BR>";
+				print "<TR><TD align=right style='border:none'><SMALL>$d<IMG src=\"/icons/boussole/".lc(compass($bear{$_})).".png\" align=\"top\"></SMALL></TD>"
+					."<TD align=right style='border:none'><SMALL>".sprintf("%+1.0f&nbsp;m&nbsp;",$deniv{$_})."</SMALL></TD>"
+					."<TD style='border:none'><SMALL><A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A></SMALL></TD></TR>\n";
 				last if ($n++ == $NODES{NEIGHBOUR_NODES_MAX});
 			}
 		}
-		print "</TD>\n";
+		print "</TABLE></TD>\n";
 	}
 	print "</TR></TABLE>\n</TD></TR>\n";
 }

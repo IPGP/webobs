@@ -1245,9 +1245,11 @@ for (@finalLignes) {
 				for ($ii = 0; $ii <= $#dat; $ii++) {
 					# calcul de la distance epicentrale minimum (et azimut epicentre/villes)
 					for (0..$#b3_lat) {
-						my $dx = ($lon[$ii] - $b3_lon[$_])*111.18*cos($lat[$ii]*0.01745);
-						my $dy = ($lat[$ii] - $b3_lat[$_])*111.18;
-						$b3_dat[$_] = sprintf("%06.1f|%g|%s|%s|%g",sqrt($dx**2 + $dy**2),atan2($dy,$dx),$b3_nam[$_],$b3_isl[$_],$b3_sit[$_]);
+						my ($dist,$bear) = greatcircle($b3_lat[$_],$b3_lon[$_],$lat[$ii],$lon[$ii]);
+						#my $dx = ($lon[$ii] - $b3_lon[$_])*111.18*cos($lat[$ii]*0.01745);
+						#my $dy = ($lat[$ii] - $b3_lat[$_])*111.18;
+						#$b3_dat[$_] = sprintf("%06.1f|%g|%s|%s|%g",sqrt($dx**2 + $dy**2),atan2($dy,$dx),$b3_nam[$_],$b3_isl[$_],$b3_sit[$_]);
+						$b3_dat[$_] = sprintf("%06.1f|%g|%s|%s|%g",$dist,$bear,$b3_nam[$_],$b3_isl[$_],$b3_sit[$_]);
 					}
 					my @xx = sort { $a cmp $b } @b3_dat;
 					$bcube[$ii] = $xx[0];
@@ -1450,7 +1452,7 @@ for (@finalLignes) {
 					#DL-was: my $pgamax = $pga*$WEBOBS{SHAKEMAPS_SITE_EFFECTS};
 					#FB-was: $pgamax = $pga*$MC3{CITIES_SITE_EFFECTS};
 					$pgamax = $pga*($b3[4] > 0 ? $b3[4]:3);
-					$dir = boussole($b3[1]);
+					$dir = compass($b3[1]);
 					$dkm = sprintf("%5.1f",$b3[0]);
 					$dkm =~ s/\s/&nbsp;&nbsp;/g;
 					$ems = pga2msk($pga);
