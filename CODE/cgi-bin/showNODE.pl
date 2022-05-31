@@ -328,6 +328,7 @@ if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
 		my %dist;
 		my %deniv;
 		my %bear;
+		my %proj;
 		for (keys(%allNodes)) {
 			my %N = %{$allNodes{$_}};
 			if ($N{VALID}) {
@@ -336,6 +337,7 @@ if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
 					$deniv{$_} = $N{ALTITUDE} - $alt;
 					$dist{$_} = sqrt($dist{$_}**2 + ($deniv{$_}/1000)**2);
 				}
+				$proj{$_} = $N{PROJECT};
 			}
 		}
 		print "<TD valign=top style='border:0'><TABLE style='border-collapse:collapse'><TR>"
@@ -347,9 +349,10 @@ if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
 				my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
 				next if ($nnn eq '');
 				my $d = ($dist{$_}<1 ? sprintf("%8.0f&nbsp;m",1000*$dist{$_}):sprintf("%7.3f&nbsp;km",$dist{$_}));
+				my $p = ($proj{$_} ? "&nbsp;<IMG src='/icons/attention.gif' border='0'>":"");
 				print "<TR><TD align=right style='border:none'><SMALL>$d<IMG src=\"/icons/boussole/".lc(compass($bear{$_})).".png\" align=\"top\"></SMALL></TD>"
 					."<TD align=right style='border:none'><SMALL>".sprintf("%+1.0f&nbsp;m&nbsp;",$deniv{$_})."</SMALL></TD>"
-					."<TD style='border:none'><SMALL><A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A></SMALL></TD></TR>\n";
+					."<TD style='border:none'><SMALL><A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>$p</SMALL></TD></TR>\n";
 				last if ($n++ == $NODES{NEIGHBOUR_NODES_MAX});
 			}
 		}
@@ -385,7 +388,7 @@ if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
 				$distelev = "<TD align=right style='border:none'><SMALL>&ensp;$d<IMG src=\"/icons/boussole/".lc(compass($bear)).".png\" align=\"top\"></SMALL></TD>"
 					."<TD align=right style='border:none'><SMALL>(<I>&Delta;h</I>&nbsp;".sprintf("%+1.0f&nbsp;m",$deniv).")&nbsp;</SMALL></TD>";
 			}
-			$nodelink = "<A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>";
+			$nodelink = "<A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>".($N{PROJECT} ? "&nbsp;<IMG src='/icons/attention.gif' border='0'>":"");
 		} else {
 			$nodelink = "<B>$_</B> ($__{'unknown'})";
 		}
