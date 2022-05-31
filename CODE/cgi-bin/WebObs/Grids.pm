@@ -244,10 +244,11 @@ sub readNode {
 		#FB-legacy: if TYPE not defined and old type.txt exists, loads it
 		if (!$tmp{TYPE}) {
 			my $typ = "$NODES{PATH_NODES}/$f/type.txt";
-			if ((-e $typ) && (-s $typ !=0)) {
+			if ((-e $typ) && (-s $typ != 0)) {
 				$tmp{TYPE} = trim(join("",readFile($typ)));
 			}
 		}
+		$tmp{PROJECT} = 1 if (-s "$NODES{PATH_NODES}/$f/$NODES{SPATH_INTERVENTIONS}/${f}_Projet.txt");
 		#substitutes possible decimal comma to point for numerics
 		$tmp{LAT_WGS84} =~ s/,/./g;
 		$tmp{LON_WGS84} =~ s/,/./g;
