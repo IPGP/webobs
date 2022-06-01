@@ -107,6 +107,7 @@ print <<'END';
 <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
       integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
       crossorigin=""></script>
+<script type="text/javascript" src="https://stamen-maps.a.ssl.fastly.net/js/tile.stamen.js?v1.3.0"></script>
 END
 
 print <<"END";
@@ -116,37 +117,41 @@ print <<"END";
 <BODY>
 <DIV id="map" style="height: ${height}px"></DIV>
 <script type="text/javascript">
-	var mbUrl = '$WEBOBS{OSM_MAPBOX_API}';
-	var mapboxAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>';
-	var dem = L.tileLayer(mbUrl, {
-		id: 'mapbox/hillshading',
-		tileSize: 512,
-		zoomOffset: -1,
-		attribution: mapboxAttribution});
-	var streets = L.tileLayer(mbUrl, {
-		id: 'mapbox/streets-v11',
-		tileSize: 512,
-		zoomOffset: -1,
-		attribution: mapboxAttribution});
-	var satellite = L.tileLayer(mbUrl, {
-		id: 'mapbox/satellite-v9',
-		tileSize: 512,
-		zoomOffset: -1,
-		attribution: mapboxAttribution});
+	var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+	var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+	var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+	var terrain = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
+		attribution: stamenAttribution,
+		subdomains: 'abcd',
+		minZoom: 0,
+		maxZoom: 18,
+		ext: 'png'
+	});
+	var watercolor = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
+		attribution: stamenAttribution,
+		subdomains: 'abcd',
+		minZoom: 1,
+		maxZoom: 18,
+		ext: 'jpg'
+	});
+	var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+		maxZoom: 17,
+		attribution: osmAttribution});
+	var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+		attribution: esriAttribution});
 	var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    	attribution: mapboxAttribution,
-		maxZoom: 20,
-    	tileSize: 512,
-    	zoomOffset: -1});
+    	attribution: osmAttribution,
+		maxZoom: 19});
 	var map = L.map('map', {
 		center: [$lat, $lon],
 		zoom: $WEBOBS{OSM_ZOOM_VALUE},
-		layers: [osm,dem,streets,satellite]});
+		layers: [terrain,topo,osm,watercolor,satellite]});
 	var baseMaps = {
+    	"Stamen Terrain": terrain,
+    	"OpenTopoMap": topo,
     	"OpenStreetMap": osm,
-    	"Terrain DEM": dem,
-    	"Mapbox Streets": streets,
-		"Satellite": satellite
+    	"Stamen Watercolor": watercolor,
+		"ESRI World Imagery": satellite,
 	};
 	var layerControl = L.control.layers(baseMaps).addTo(map);
 

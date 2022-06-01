@@ -71,6 +71,8 @@ my @listeDocumentsHsV=("");
 my $pathVisu="";
 my $editOK=0;
 my $go2top = "&nbsp;&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
+my $today  = qx(date +\%Y-\%m-\%d);
+chomp($today);
 
 # ---- see what we've been called for and what the client is allowed to do
 # ---- init general-use variables on the way and quit if something's wrong
@@ -164,6 +166,10 @@ my %UTM =  %WebObs::Mapping::UTM;
 $QryParm->{'sortby'} //= "event";
 my $sortBy = $QryParm->{'sortby'};
 
+my $nodeName = "$NODE{ALIAS}: $NODE{NAME}";
+my $title = "$__{'Show node '}$nodeName";
+$nodeName = "<SPAN style='text-decoration: line-through;text-decoration-thickness: 3px'>$nodeName</SPAN>" if (!isok($NODE{VALID}));
+
 # ---- start HTML page ouput ------------------------------------------------
 # ---------------------------------------------------------------------------
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
@@ -171,7 +177,7 @@ print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
 
 print <<"FIN";
 <html><head>
-<title>Affichage de FICHE</title>
+<title>$title</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
 <script language="JavaScript" type="text/javascript">
@@ -210,7 +216,7 @@ FIN
 # ---- Title Node Name and edition links if authorized ------------------------
 #
 print "<A NAME=\"MYTOP\"></A>";
-print "<H1 style=\"margin-bottom:3pt\">$NODE{ALIAS}: $NODE{NAME}".($editOK ? " <A href='$cgiConf'><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
+print "<H1 style=\"margin-bottom:3pt\">$nodeName".($editOK ? " <A href='$cgiConf'><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
 #print "<A class=\"gridname\" name='FicheNode' href='$cgiConf'>{$GRIDType.$GRIDName.$NODEName}</A>\n" if ($editOK);
 
 print "<P class=\"subMenu\"> <B>&raquo;&raquo;</B> [";
@@ -331,7 +337,8 @@ if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
 		my %proj;
 		for (keys(%allNodes)) {
 			my %N = %{$allNodes{$_}};
-			if ($N{VALID}) {
+			if (isok($N{VALID}) && (!isok($NODES{NEIGHBOUR_NODES_ACTIVE_ONLY}) || (($N{END_DATE} ge $today || $N{END_DATE} eq "NA")
+				&& ($N{INSTALL_DATE} le $today || $N{INSTALL_DATE} eq "NA")))) {
 				($dist{$_},$bear{$_}) = greatcircle($lat,$lon,$N{LAT_WGS84},$N{LON_WGS84});
 				if ($alt != 0 && $N{ALTITUDE} != 0) {
 					$deniv{$_} = $N{ALTITUDE} - $alt;
@@ -455,7 +462,7 @@ if (uc($GRIDType) eq 'PROC') {
 	my (@dlist) = glob "$OUTG/$WEBOBS{PATH_OUTG_EXPORT}/$NODENameLower"."_*.txt";
 
 	print "<TR><TD valign=\"top\"><B>$__{'Data'}</B></TH><TD>";
-	if ($OUTG ne "" && $NODE{VALID} && ($GRID{'URLDATA'} ne "" || $GRID{'FORM'} ne "" || $#glist >= 0 || $#dlist >= 0)) {
+	if ($OUTG ne "" && isok($NODE{VALID}) && ($GRID{'URLDATA'} ne "" || $GRID{'FORM'} ne "" || $#glist >= 0 || $#dlist >= 0)) {
 		print "<TABLE><TR><TD style=\"border:0\">";
 		if ($GRID{'FORM'} ne "") {
 			%FORM = readCfg("$WEBOBS{PATH_FORMS}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
