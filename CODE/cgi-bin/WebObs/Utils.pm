@@ -21,7 +21,7 @@ our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
-            rtrim tri_date_avec_id romain pga2msk attenuation txt2htm
+            rtrim tri_date_avec_id isok romain pga2msk attenuation txt2htm
             url2target checkParam);
 $VERSION = "1.00";
 
@@ -181,6 +181,14 @@ sub tri_date_avec_id ($$) {
 	$d =~ s/\|\|/00:00/;
 	return $d cmp $c;
 }
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub isok ($)
+{
+    my $ok = shift;
+    return ($ok =~ /^(Y|YES|OK|ON|1)/i ? 1:0);
+}
+
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 sub romain ($)

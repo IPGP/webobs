@@ -180,7 +180,7 @@ for (@time_intervals) {
 
 
 # spectrogram
-my $sgramOK = ($SEFRAN3{SGRAM_ACTIVE} =~ /1|y|yes|on/i ? 1:0);
+my $sgramOK = isok($SEFRAN3{SGRAM_ACTIVE});
 
 # ---- misc inits (menu, external pgms and requests, ...)
 #
@@ -873,7 +873,7 @@ if ($date) {
 
 		my $modif = 0;
 
-		if (($MC3{LEVEL2_MODIFY_ALL_EVENTS} eq "Y" && $userLevel ==2) || ($userLevel == 2 && ($operateur eq "" || $operateur eq $USERS{$CLIENT}{UID} || $type_evt eq "AUTO")) || $userLevel == 4 ) {
+		if ((isok($MC3{LEVEL2_MODIFY_ALL_EVENTS}) && $userLevel ==2) || ($userLevel == 2 && ($operateur eq "" || $operateur eq $USERS{$CLIENT}{UID} || $type_evt eq "AUTO")) || $userLevel == 4 ) {
 			$modif = 1;
 		}
 		# --- mcform: edit form for Main Courante

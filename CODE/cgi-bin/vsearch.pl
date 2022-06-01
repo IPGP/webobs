@@ -137,7 +137,7 @@ my %category = (
 	"outcome"   => $__{'Sensor Outcome'},
 );
 # removes category notebook if option is not set
-delete $category{"notebook"} if ($NODES{EVENTNODE_NOTEBOOK} ne "YES");
+delete $category{"notebook"} if (!isok($NODES{EVENTNODE_NOTEBOOK}));
 
 my %catdisplay;
 foreach my $n (0..$#catlist) {
@@ -432,7 +432,7 @@ foreach(@finalevents) {
 				push(@csvf,"\"$commentcsv\"");
 			}
 			case "notebook"  {
-				push(@html,"<TD $tds>$notebook</TD>") if ($NODES{EVENTNODE_NOTEBOOK} eq "YES");
+				push(@html,"<TD $tds>$notebook</TD>") if (isok($NODES{EVENTNODE_NOTEBOOK}));
 				push(@csvf,"\"$notebook\"");
 			}
 			case "outcome"   {
