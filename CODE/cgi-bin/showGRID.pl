@@ -449,7 +449,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			if (%NODE) {
 
 				# is VALID ? do we display INVALID ?
-				if ($NODE{VALID} == 0) {
+				if (!isok($NODE{VALID}) {
 					$tcolor="node-disabled";
 					if ($usrNodes eq "valid" || !$seeInvOK) {
 						$nbNonValides++;
@@ -461,7 +461,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				}
 
 				# is NOT active if already 'ended' OR not yet 'installed' ? do we display ?
-				if ($NODE{VALID} && ($NODE{END_DATE} ne "NA" && $NODE{END_DATE} lt $today) || ($NODE{INSTALL_DATE} ne "NA" && $NODE{INSTALL_DATE} gt $today)) {
+				if (isok($NODE{VALID}) && ($NODE{END_DATE} ne "NA" && $NODE{END_DATE} lt $today) || ($NODE{INSTALL_DATE} ne "NA" && $NODE{INSTALL_DATE} gt $today)) {
 					$tcolor="node-inactive";
 					if ($usrNodes eq "active") {
 						$displayNode = 0;

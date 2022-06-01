@@ -256,7 +256,7 @@ if ($action =~ /del/i ) {
 	$rc = WebObs::Events::deleteit($evbase, $evtrash, $evpath);
 	# if events are gone, remove their reference in Gazette (from @tree)
 	if ($rc eq 'OK') {
-		if ($GazetteDel eq "YES") {
+		if (isok($GazetteDel) {
 			for (@tree) { $rcd += WebObs::Gazette::delEventArticle($object,$_); }
 			$msg .= " $rcd $__{'article removed from Gazette'}";
 		}
@@ -516,7 +516,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 			print "<INPUT type=\"hidden\" name=\"channel\" value=\"$channel\">\n";
 		}
 		print "<B>$__{'Sensor/data outcome'}: </B><INPUT type=\"checkbox\" name=\"outcome\" value=\"1\"".($outcome ? "checked":"").">";
-		if ($NODES{EVENTNODE_NOTEBOOK} eq "YES") {
+		if (isok($NODES{EVENTNODE_NOTEBOOK})) {
 			print "<B style=\"margin-left:20px\">$__{'Notebook Nb'}: </B><INPUT type=\"text\" size=\"3\" name=\"notebook\" value=\"$notebook\">";
 			print "<B style=\"margin-left:20px\">$__{'Forward to notebook'}: </B><INPUT type=\"checkbox\" name=\"notebookfwd\" value=\"1\" ".($notebookfwd ? "checked":"").">";
 		} else {
@@ -533,7 +533,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	for my $uid (sort keys(%USERS)) {
 		my @grp = WebObs::Users::userListGroup($uid);
 		my %gid = map { $_ => 1 } split(/,/,$WEBOBS{EVENTS_ACTIVE_GID});
-		if ((%gid && grep { $gid{$_} } @grp) || (!%gid && $USERS{$_}{VALIDITY} eq "Y")) {
+		if ((%gid && grep { $gid{$_} } @grp) || (!%gid && isok($USERS{$_}{VALIDITY}))) {
 			push(@alogins,$uid);
 		} else {
 			push(@ilogins,$uid);
@@ -565,7 +565,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 			print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
 		}
 		print "<input type=\"button\" style=\"font-weight:bold\" value=\"$__{'Submit'}\" onClick=\"postform();\">";
-		print "<B style=\"margin-left:20px\">$__{Notify} (email)</B><input type=\"checkbox\"".($NODES{EVENTNODE_NOTIFY_DEFAULT} eq "YES" ? " checked":"")." name=\"notify\" value=\"OK\""
+		print "<B style=\"margin-left:20px\">$__{Notify} (email)</B><input type=\"checkbox\"".(isok($NODES{EVENTNODE_NOTIFY_DEFAULT}) ? " checked":"")." name=\"notify\" value=\"OK\""
 			." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Send an e-mail to inform Webobs users'}')\">";
 		print "<input type=\"hidden\" name=\"action\" value=\"save\">";
 		print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
@@ -586,7 +586,7 @@ sub htmlMsgOK {
 	my $msg = "$_[0]\n";
 	my $rcd = 0;
 	if ($send2Gazette) {
-		if ($GazetteDel eq "YES" && $target ne "") {
+		if (isok($GazetteDel) && $target ne "") {
 			$rcd = WebObs::Gazette::delEventArticle($object,$target);
 			$msg .= "\n+ ".basename($target)." $__{'removed from Gazette'}" if ($rcd != 0);
 		}
