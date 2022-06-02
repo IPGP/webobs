@@ -47,6 +47,7 @@ my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 use Data::Dumper;
 use POSIX qw(locale_h);
+use MIME::Base64;
 use locale;
 
 # ---- webobs stuff
@@ -170,6 +171,8 @@ my $nodeName = "$NODE{ALIAS}: $NODE{NAME}";
 my $title = "$__{'Show node '}$nodeName";
 $nodeName = "<SPAN style='text-decoration: line-through;text-decoration-thickness: 3px'>$nodeName</SPAN>" if (!isok($NODE{VALID}));
 
+my $qrcode = encode_base64(qx(qrencode -s 2 -o - "$ENV{HTTP_REFERER}"));
+
 # ---- start HTML page ouput ------------------------------------------------
 # ---------------------------------------------------------------------------
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
@@ -216,15 +219,18 @@ FIN
 # ---- Title Node Name and edition links if authorized ------------------------
 #
 print "<A NAME=\"MYTOP\"></A>";
+print "<TABLE width=100%><TR><TD style='border:0'>\n";
 print "<H1 style=\"margin-bottom:3pt\">$nodeName".($editOK ? " <A href='$cgiConf'><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
-#print "<A class=\"gridname\" name='FicheNode' href='$cgiConf'>{$GRIDType.$GRIDName.$NODEName}</A>\n" if ($editOK);
-
+print "</TD><TD rowspan=2 width='82px' style='border:0;text-align:right'><IMG src=\"data:image/png;base64,$qrcode\"></TD></TR>\n";
+print "<TR><TD style='border:0'>\n";
 print "<P class=\"subMenu\"> <B>&raquo;&raquo;</B> [";
 if (uc($GRIDType) eq 'VIEW' || uc($GRIDType) eq 'PROC') {
 	print " <A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRIDS}?domain=$GRID{DOMAIN}&type=all\">$DOMAINS{$GRID{DOMAIN}}{NAME}</A> / "
 		."<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName\">$GRID{NAME}</A> |";
 }
 print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> ]</P>";
+
+print "</TD></TR></TABLE>\n";
 
 my %CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 
