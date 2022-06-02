@@ -25,7 +25,6 @@ use File::Copy qw(copy);
 use File::Find qw(find);
 use List::Util qw(first);
 use Image::Info qw(image_info dim);
-use MIME::Base64;
 use POSIX qw(strftime);
 
 use WebObs::Config;
@@ -148,8 +147,6 @@ if (-e $statusDB) {
 	$overallStatus = 0;
 }
 
-my $qrcode = encode_base64(qx(qrencode -s 2 -o - "$ENV{HTTP_REFERER}"));
-
 # ---- Start HTML page
 #
 print "Content-type: text/html\n\n";
@@ -174,8 +171,6 @@ print "<TABLE width=100%><TR><TD style='border:0'>\n";
 my $domain_title = ($#domain > 0 ? "#":$DOMAINS{$domain[0]}{NAME});
 print "<H1 style=\"margin-bottom:6pt\"> $domain_title / $GRID{NAME}".($admOK ? " <A href=\"/cgi-bin/formGRID.pl?grid=$grid\"><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
 print WebObs::Search::searchpopup();
-print "</TD><TD rowspan=2 width='82px' style='border:0;text-align:right'><IMG src=\"data:image/png;base64,$qrcode\"></TD></TR>\n";
-print "<TR><TD style='border:0'>\n";
 
 my $ilinks = "[ ";
 $ilinks .= "<A href=\"/cgi-bin/listGRIDS.pl?type=$GRIDType\">".ucfirst(lc($GRIDType))."s</A>";
@@ -196,7 +191,7 @@ $ilinks .= " | <A href=\"#EVENTS\">$__{'Events'}</A>";
 $ilinks .= " | <A href=\"#REF\">$__{'References'}</A>";
 $ilinks .= " ]";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks</P>";
-print "</TD></TR></TABLE>\n";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode."</TD></TR></TABLE>\n";
 
 # ---- Objectives
 #

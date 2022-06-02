@@ -22,7 +22,7 @@ require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
             rtrim tri_date_avec_id isok romain pga2msk attenuation txt2htm
-            url2target checkParam);
+            qrcode url2target checkParam);
 $VERSION = "1.00";
 
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -228,6 +228,15 @@ sub attenuation ($$)
 	if ($hyp < 5) { $hyp = 5; }
 	my $pga = 1000*10**(0.620986*$mag - 0.00345256*$hyp - log($hyp)/log(10) - 3.374841);
 	return $pga;
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub qrcode
+{
+    use MIME::Base64;
+	my $qr = encode_base64(qx(qrencode -s 2 -o - "$ENV{HTTP_REFERER}"));
+    my $img = ($qr eq "" ? "":"<IMG src=\"data:image/png;base64,$qr\">");
+    return $img;
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
