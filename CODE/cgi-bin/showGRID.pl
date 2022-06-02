@@ -449,7 +449,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			if (%NODE) {
 
 				# is VALID ? do we display INVALID ?
-				if (!isok($NODE{VALID}) {
+				if (!isok($NODE{VALID})) {
 					$tcolor="node-disabled";
 					if ($usrNodes eq "valid" || !$seeInvOK) {
 						$nbNonValides++;
