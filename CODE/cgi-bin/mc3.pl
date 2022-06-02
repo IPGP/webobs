@@ -27,6 +27,9 @@ y1= , m1= , d1= , h1=
 y2= , m2= , d2= , h2=
  end date (year, month, day) and hour (included)
 
+routine=
+ last full day, month or year (overwrites any other dates arguments)
+
 type=
  see valid key values in EVENT_CODES_CONF conf file
 
@@ -179,35 +182,32 @@ my @infoTexte  = readFile("$MC3{NOTES}");
 $QryParm->{'y1'}        //= "";
 $QryParm->{'m1'}        //= "";
 $QryParm->{'d1'}        //= "";
-$QryParm->{'h1'}        //= "00";
+$QryParm->{'h1'}        //= "";
 $QryParm->{'y2'}        //= "";
 $QryParm->{'m2'}        //= "";
 $QryParm->{'d2'}        //= "";
-$QryParm->{'h2'}        //= "23";
+$QryParm->{'h2'}        //= "";
 $QryParm->{'type'}      //= "";
+$QryParm->{'routine'}   //= "";
 $QryParm->{'duree'}     //= "";
 $QryParm->{'amplitude'} //= "ALL";
 $QryParm->{'ampoper'}   //= "eq";
 $QryParm->{'located'}   //= "";
-$QryParm->{'locstatus'}  //= $MC3{DISPLAY_LOCATION_STATUS_DEFAULT};
+$QryParm->{'locstatus'} //= $MC3{DISPLAY_LOCATION_STATUS_DEFAULT};
 $QryParm->{'hideloc'}   //= !$MC3{DISPLAY_LOCATION_DEFAULT};
 $QryParm->{'obs'}       //= "";
 $QryParm->{'graph'}     //= "movsum";
-$QryParm->{'slt'}       //= "$MC3{DEFAULT_SELECT_LOCAL}";
+$QryParm->{'slt'}       //= $MC3{DEFAULT_SELECT_LOCAL};
 $QryParm->{'newts'}     //= "";
 $QryParm->{'dump'}      //= "";
 $QryParm->{'trash'}     //= "";
 
 # ---- DateTime inits ---------------------------------------------------------
 #
-#my $Ctod  = time();  my @tod  = localtime($Ctod);
-#my $today = strftime('%F',@tod);
-#my $currentYear = strftime('%Y',gmtime);
 my $now = DateTime->now( time_zone => 'UTC' );
 my $currentYear = $now->strftime('%Y');
 my $currentMonth = $now->strftime('%m');
 my $currentDay = $now->strftime('%d');
-my $today = DateTime->today();
 my @month_list = ("01".."12");
 my @day_list = ("01".."31");
 my @hour_list = ("00".."23");
@@ -243,7 +243,18 @@ sub compute_energy {
 #    - handle 28-31 days/month by re-evaluating  with "YYYY-MM-01 (DD-1) day"
 #      (ie. 2012-02-30 ==> 2012-03-02)
 #    - check range-start < range-end , otherwise swap
-if (($QryParm->{'y1'} ne "") && ($QryParm->{'m1'} ne "") && ($QryParm->{'d1'} ne "")
+if ($QryParm->{'routine'} =~ /^(day|month|year)$/) {
+	if ($QryParm->{'routine'} eq "day") {
+		$start_datetime = DateTime->today()->subtract(days => 1);
+		$end_datetime = DateTime->today()->subtract(hours => 1);
+	} elsif ($QryParm->{'routine'} eq "month") {
+		$start_datetime = DateTime->today()->set_day(1)->subtract(months => 1);
+		$end_datetime = DateTime->today()->set_day(1)->subtract(hours => 1);
+	} elsif ($QryParm->{'routine'} eq "year") {
+		$start_datetime = DateTime->today()->subtract(years => 1)->set_month(1)->set_day(1);
+		$end_datetime = DateTime->today()->set_month(1)->set_day(1)->subtract(hours => 1);
+	}
+} elsif (($QryParm->{'y1'} ne "") && ($QryParm->{'m1'} ne "") && ($QryParm->{'d1'} ne "")
 	&& ($QryParm->{'y2'} ne "") && ($QryParm->{'m2'} ne "") && ($QryParm->{'d2'} ne "")) {
 
 	# We chose to handle short months by converting (e.g.) 30 February to 02 March, or 31 June to 01 July.
@@ -259,7 +270,7 @@ if (($QryParm->{'y1'} ne "") && ($QryParm->{'m1'} ne "") && ($QryParm->{'d1'} ne
 			+ DateTime::Duration->new(days => ($QryParm->{d2}-1))
 			+ DateTime::Duration->new(hours => ($QryParm->{h2}));
 } else {
-	$start_datetime = $today - DateTime::Duration->new(days => $MC3{DEFAULT_TABLE_DAYS});
+	$start_datetime = DateTime->now()->subtract(hours => (24*$MC3{DEFAULT_TABLE_DAYS}-1));
 	$end_datetime = $now;
 }
 
