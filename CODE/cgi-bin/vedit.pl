@@ -256,7 +256,7 @@ if ($action =~ /del/i ) {
 	$rc = WebObs::Events::deleteit($evbase, $evtrash, $evpath);
 	# if events are gone, remove their reference in Gazette (from @tree)
 	if ($rc eq 'OK') {
-		if (isok($GazetteDel) {
+		if (isok($GazetteDel)) {
 			for (@tree) { $rcd += WebObs::Gazette::delEventArticle($object,$_); }
 			$msg .= " $rcd $__{'article removed from Gazette'}";
 		}
