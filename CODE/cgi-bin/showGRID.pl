@@ -191,7 +191,7 @@ $ilinks .= " | <A href=\"#EVENTS\">$__{'Events'}</A>";
 $ilinks .= " | <A href=\"#REF\">$__{'References'}</A>";
 $ilinks .= " ]";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks</P>";
-print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode."</TD></TR></TABLE>\n";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode(2)."</TD></TR></TABLE>\n";
 
 # ---- Objectives
 #

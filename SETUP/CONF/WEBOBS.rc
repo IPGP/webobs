@@ -183,7 +183,6 @@ CGI_CONFIRM_SUCCESSFUL|NO
 # ---- External resources ---------------------
 # ---------------------------------------------
 PLOTERUP_FILE|${ROOT_CONF}/ERUPTIONS_SHM.conf
-MAP_EXTENSION_ORDER|ANT,GUA,SBT,SOU,DOM
 
 PATH_MCR|/usr/local/MATLAB/MATLAB_Compiler_Runtime/v716
 PATH_MCC|${ROOT_CODE}/bin/linux-64
@@ -280,13 +279,14 @@ IMAGE_LOGO_GOOGLE_EARTH|/icons/google/google_earth.gif
 # OpenStreetMap ---------------------------------
 CGI_OSM|OSM.pl
 OSM_LINK|1
-# NOTE: API access token can be obtained at https://www.openstreetmap.org
-OSM_MAPBOX_API|https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoid2Vib2JzIiwiYSI6ImNsM24zejJ4eTBiMjQzamxua2tpbjIyeHYifQ.ILd7gRthHcZvnDVS04wGYQ
 OSM_INFO|See with OpenStreetMap
 OSM_NODE_ICON|/icons/gdot.png
 OSM_WIDTH_VALUE|800
 OSM_HEIGHT_VALUE|600
 OSM_ZOOM_VALUE|17
+
+# QR code
+QRCODE_LOGOS|/icons/ipgp/logo_WebObs_C413.png,/icons/ipgp/logo_IPGP_2022.png
 
 # Digital Elevation Models --------------------
 # ---------------------------------------------
@@ -297,7 +297,7 @@ PATH_DATA_DEM_SRTM1|${PATH_DATA_DEM}/SRTM1
 SRTM_COPYRIGHT|DEM: SRTM/NASA
 SRTM_MAX_TILES|25
 SRTM1_MAX_TILES|4
-# Authentication needed to download new SRTM tiles (see https://urs.earthdata.nasa.gov)
+# Authentication needed to download new SRTM1 tiles (see https://urs.earthdata.nasa.gov)
 # alternative is to empty this variable and put login information in .netrc
 EARTHDATA_LOGIN|usr,pwd
 # ETOPO Global Relief Data: ETOPO1 can be downloaded at http://www.ngdc.noaa.gov/mgg/global/global.html (.bin and .hdr)

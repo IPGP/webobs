@@ -231,11 +231,14 @@ sub attenuation ($$)
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
-sub qrcode
+sub qrcode ($)
 {
     use MIME::Base64;
-	my $qr = encode_base64(qx(qrencode -s 2 -o - "$ENV{HTTP_REFERER}"));
-    my $img = ($qr eq "" ? "":"<IMG src=\"data:image/png;base64,$qr\">");
+    my $s = shift;
+    my $url = "http://$ENV{HTTP_HOST}$ENV{REQUEST_URI}";
+	my $qr = encode_base64(qx(qrencode -s $s -o - "$url"));
+    my $img = ($qr eq "" ? "":"<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/showQRcode.pl','$url',"
+		."'width=600,height=420,toolbar=no,menubar=no,status=no,location=no')\"><IMG src=\"data:image/png;base64,$qr\"></A>");
     return $img;
 }
 

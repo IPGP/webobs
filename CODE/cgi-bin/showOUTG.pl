@@ -287,7 +287,7 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 		print "<BR><B>[ ".$glistHtml." ]</B>\n";
 	}
 print "</DIV>";
-print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode."</TD></TR></TABLE>\n";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode(2)."</TD></TR></TABLE>\n";
 
 
 # ---- now show the selected item
