@@ -238,7 +238,7 @@ sub qrcode ($)
     my $url = "http://$ENV{HTTP_HOST}$ENV{REQUEST_URI}";
 	my $qr = encode_base64(qx(qrencode -s $s -o - "$url"));
     my $img = ($qr eq "" ? "":"<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/showQRcode.pl','$url',"
-		."'width=600,height=420,toolbar=no,menubar=no,status=no,location=no')\"><IMG src=\"data:image/png;base64,$qr\"></A>");
+		."'width=600,height=450,toolbar=no,menubar=no,status=no,location=no')\"><IMG src=\"data:image/png;base64,$qr\"></A>");
     return $img;
 }
 
