@@ -44,7 +44,8 @@ my @logos = split(',',$WEBOBS{QRCODE_LOGOS});
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">","\n";
 print "<HTML><HEAD><TITLE>$title</TITLE></HEAD><BODY style=\"background-color: white;\">\n"
-	."<TABLE width=\"100%\"><TR><TD width=\"400px\" style=\"border:0\">$img</TD>"
+	."<TABLE width=\"100%\"><TR><TD width=\"400px\" style=\"border:0\">$img\n"
+	."<P style=\"font-size:6pt;text-align:center\">$title</P></TD>"
 	."<TD style=\"border:0;text-align:center\">";
 for (@logos) {
 	print "<P><IMG width=\"100px\" src=\"$_\"></P>";
