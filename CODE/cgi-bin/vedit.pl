@@ -315,7 +315,7 @@ if ($action =~ /upd/i ) {
 	}
 
 	# event metadata are stored in the header line of file as pipe-separated fields:
-	# 	UID1[+UID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
+	# 	UID1[+UID2+...]/RUID1[+RUID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
 	#	event text content
 	#	...
 	@lines = readFile("$evbase/$evpath");
@@ -528,23 +528,25 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	print "<B>$__{'Author(s)'}: </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\"
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved (hold CTRL key for multiple selections)'}')\">\n";
 	# makes a list of active (and inactive) users
-	my @alogins;
-	my @ilogins;
-	for my $uid (sort keys(%USERS)) {
-		my @grp = WebObs::Users::userListGroup($uid);
+	my %alogins;
+	my %ilogins;
+	for my $ulogin (keys(%USERS)) {
+		my @grp = WebObs::Users::userListGroup($ulogin);
 		my %gid = map { $_ => 1 } split(/,/,$WEBOBS{EVENTS_ACTIVE_GID});
 		if ((%gid && grep { $gid{$_} } @grp) || (!%gid && isok($USERS{$_}{VALIDITY}))) {
-			push(@alogins,$uid);
+			$alogins{$USERS{$ulogin}{UID}} = $ulogin;
 		} else {
-			push(@ilogins,$uid);
+			$ilogins{$USERS{$ulogin}{UID}} = $ulogin;
 		}
 	}
-	my @logins = @alogins;
-	push(@logins,@ilogins) if (!($action =~ /new/i)); # adds inactive users
+	my @logins;
+	for my $uid (sort keys(%alogins)) { push(@logins,$alogins{$uid}); }
+	if (!($action =~ /new/i)) { # adds inactive users
+		for my $uid (sort keys(%ilogins)) { push(@logins,$ilogins{$uid}); }
+	}
 	for my $ulogin (@logins) {
-		my $sel = "";
 		my $uid = $USERS{$ulogin}{UID};
-		$sel = 'selected' if (grep(/^$uid$/, @oper) || ($action =~ /new/i && $ulogin eq $CLIENT));
+		my $sel = ((grep {$_ eq $uid} @oper) || ($action =~ /new/i && $ulogin eq $CLIENT) ? 'selected':'');
 		print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
 	}
 	print "</SELECT>\n";
@@ -552,9 +554,9 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	print "<B>$__{'Remote Operator(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved remotely (hold CTRL key for multiple selections)'}')\">\n";
 	for my $ulogin (@logins) {
-		my $sel = "";
-		$sel = 'selected' if (grep(/^$USERS{$ulogin}{UID}$/, @roper));
-		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME} ($USERS{$ulogin}{UID})</option>\n";
+		my $uid = $USERS{$ulogin}{UID};
+		my $sel = ((grep {$_ eq $uid} @roper) || ($action =~ /new/i && $ulogin eq $CLIENT) ? 'selected':'');
+		print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
 	}
 	print "</SELECT></TR>\n";
 	print "<TR><TD style=\"vertical-align: top; border: none;\" colspan=3>";
@@ -649,7 +651,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2018 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
