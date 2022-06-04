@@ -529,7 +529,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 						my $fileProj = "$pathInter/$fileProjName";
 						if ((-e $fileProj) && (-s $fileProj)) {
 							my @proj = readFile($fileProj);
-							@proj = grep(!/^$/, @proj);
+							@proj = grep(!/^$|^WebObs: created by /, @proj);
 							chomp(@proj);
 							if ($proj[0] =~ "|") {
 								my @pLigne = split(/\|/,$proj[0]);
