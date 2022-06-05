@@ -183,43 +183,53 @@ function postIt()
    alert("NAME: Please enter a full name (non-blank string)");
    document.formulaire.fullName.focus();
    return false;
-  }
+ }
  if(document.formulaire.alias.value == "") {
    alert("ALIAS: Please enter a short name (non-blank string)");
    document.formulaire.alias.focus();
    return false;
-  }
- if(document.formulaire.latwgs84.value != "" && (isNaN(document.formulaire.latwgs84.value) || document.formulaire.latwgs84.value < 0 || document.formulaire.latwgs84.value > 90)) {
-   alert("LATITUDE: Please enter a positive number between 0 and +90, use S for southern latitude, or leave blank");
+ }
+ if(document.formulaire.latwgs84.value != "" && (isNaN(document.formulaire.latwgs84.value) || document.formulaire.latwgs84.value < -90 || document.formulaire.latwgs84.value > 90)) {
+   alert("LATITUDE: Please enter a latitude value between -90 and +90, or leave blank");
    document.formulaire.latwgs84.focus();
    return false;
-  }
+ }
+ if(document.formulaire.latwgs84.value < 0 && document.formulaire.latwgs84.value >= -90) {
+   document.formulaire.latwgs84.value = Math.abs(document.formulaire.latwgs84.value);
+   if (document.formulaire.latwgs84n.value == "N") document.formulaire.latwgs84n.value = "S";
+   else document.formulaire.latwgs84n.value = "N";
+ }
  if(document.formulaire.latwgs84.value == "" && (document.formulaire.latwgs84min.value != "" || document.formulaire.latwgs84sec.value != "")) {
    alert("LATITUDE: Please enter a value for degree or leave all fields blank");
    document.formulaire.latwgs84.focus();
    return false;
-  }
- if(document.formulaire.lonwgs84.value != "" && (isNaN(document.formulaire.lonwgs84.value) || document.formulaire.lonwgs84.value < 0 || document.formulaire.lonwgs84.value > 180)) {
-   alert("LONGITUDE: Please enter a positive number between 0 and +180, use W for western longitude, or leave blank");
+ }
+ if(document.formulaire.lonwgs84.value != "" && (isNaN(document.formulaire.lonwgs84.value) || document.formulaire.lonwgs84.value < -180 || document.formulaire.lonwgs84.value > 180)) {
+   alert("LONGITUDE: Please enter a longiture value between -180 and +180, or leave blank");
    document.formulaire.lonwgs84.focus();
    return false;
-  }
+ }
+ if(document.formulaire.lonwgs84.value < 0 && document.formulaire.lonwgs84.value >= -180) {
+   document.formulaire.lonwgs84.value = Math.abs(document.formulaire.lonwgs84.value);
+   if (document.formulaire.lonwgs84e.value == "E") document.formulaire.lonwgs84e.value = "W";
+   else document.formulaire.lonwgs84e.value = "E";
+ }
  if(document.formulaire.lonwgs84.value == "" && (document.formulaire.lonwgs84min.value != "" || document.formulaire.lonwgs84sec.value != "")) {
    alert("LONGITUDE: Please enter a value for degree or leave all fields blank");
    document.formulaire.lonwgs84.focus();
    return false;
-  }
+ }
  if(document.formulaire.altitude.value != "" && isNaN(document.formulaire.altitude.value)) {
    alert("ELEVATION: Please enter a number or leave blank");
    document.formulaire.altitude.focus();
    return false;
-  }
+ }
 /*FB-was:
  if(document.formulaire.features.value == "") {
    alert("FEATURES: Please enter at least one word");
    document.formulaire.features.focus();
    return false;
-  }
+ }
 */
   if (document.formulaire.SELs.options.length < 1) {
     alert(\"node MUST belong to at least 1 grid\");
@@ -369,13 +379,12 @@ print "<TR>";
 
 	print "<FIELDSET><LEGEND>$__{'Names and Description'}</LEGEND>";
 	# --- Codes, Name, Alias, Type
+	print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code/ID'}:</label>$GRIDType.$GRIDName.";
 	if ($newnode == 1) {
-		print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code'}:</label>$GRIDType.$GRIDName.";
 		print "<INPUT id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\" onKeyUp=\"checkNode()\">";
 	 	print "<INPUT size=\"15\" id=\"message\" name=\"message\" readOnly style=\"background-color:#E0E0E0;border:0\">";
 		print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"1\"\n>";
 	} else {
-		print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code'}:</label>$GRIDType.$GRIDName.";
 		print "<INPUT readonly=\"readonly\" style=\"font-family:monospace;font-weight:bold;font-size:120%;background-color:transparent;border:none\" id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\"><BR>";
 	 	print "<INPUT type=\"hidden\" name=\"message\" value=\"0\">";
 	 	print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"0\">";
@@ -522,20 +531,25 @@ print "<TR>";
 	print "</TR></TABLE>";
 	print "</FIELDSET>\n";
 
-	# --- Transmission type
+	# --- Transmission
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
-	print "<LABEL for=\"typeTrans\">Type: </LABEL>";
-	print "<SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_type}')\" id=\"typeTrans\" name=\"typeTrans\" size=\"1\" onChange=\"maj_transmission()\">";
-	for (sort(keys(%typeTele))) {
-		my $sel = "";
-		if ( $_ eq "$usrTrans" ) { $sel = "selected" }
-		print "<OPTION $sel value=\"$_\">$typeTele{$_}{name}</OPTION>";
-	}
-	print "</SELECT><BR>";
-
-	# --- Transmission path (acquisition + repeater list)
-	print "<DIV id=\"pathTrans\" style=\"display:none\"><LABEL for=\"pathTrans\">$__{'Repeaters Path'}: </LABEL>";
-	print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_acq}')\" name=\"pathTrans\" size=\"40\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
+	print "<TABLE><TR>";
+		print "<TD style=\"border:0;text-align:left\">";
+			print "<LABEL for=\"typeTrans\">Type: </LABEL>";
+			print "<SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_type}')\" id=\"typeTrans\" name=\"typeTrans\" size=\"1\" onChange=\"maj_transmission()\">";
+			for (sort(keys(%typeTele))) {
+				my $sel = "";
+				if ( $_ eq "$usrTrans" ) { $sel = "selected" }
+				print "<OPTION $sel value=\"$_\">$typeTele{$_}{name}</OPTION>";
+			}
+			print "</SELECT>\n";
+		print "</TD>";
+		print "<TD style=\"border:0\">";
+			# Transmission path (acquisition + repeater list)
+			print "<DIV id=\"pathTrans\" style=\"display:none\"><LABEL for=\"pathTrans\">$__{'Repeaters Path'}: </LABEL>";
+			print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_acq}')\" name=\"pathTrans\" size=\"40\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
+		print "</TD>";
+	print "</TR></TABLE>";
 	print "</FIELDSET>";
 
 	# --- Procs parameters
@@ -561,7 +575,7 @@ print "<TR>";
 		print "</SELECT><BR>\n";
 		# --- RAWDATA
 		print "<LABEL for=\"rawdata\">$__{'Raw data source'}: </label> <input size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawdata}')\" type=\"text\" id=\"rawdata\" name=\"rawdata\" value=\"$usrRAWDATA\"/><br/>";
-		# --- Code r�seau FDSN
+		# --- FDSN Network Code
 		print "<LABEL for=\"fdsn\">Network code: </LABEL>";
 		print "<SELECT name=\"fdsn\" id=\"fdsn\" size=\"1\" onMouseOut=\"nd()\" value=\"$usrFDSN\" onMouseOver=\"overlib('$__{help_creationstation_fdsn}')\">";
 		for ("",sort(keys(%FDSN))) {
@@ -647,14 +661,12 @@ print "<TR>";
 	## }
 
 print "</TD></TR>";
-print "<TR><TD style=border:0 colspan=2>";
-
-	print "<HR>";
-	# --- buttons zone
-	print "<P align=center>";
-	print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-	print "<INPUT type=\"button\" value=\"$__{'Save'}\" style=\"font-weight:bold\" onClick=\"postIt();\">";
-print "</TD></TR></TABLE>";
+print "<TR><TD style=border:0 colspan=2><HR>";
+# --- buttons zone
+print "<P align=center>";
+print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
+print "<INPUT type=\"button\" value=\"$__{'Save'}\" style=\"font-weight:bold\" onClick=\"postIt();\">";
+print "</P></TD></TR></TABLE>";
 print "</FORM>";
 
 print "\n</BODY>\n</HTML>\n";
@@ -669,7 +681,7 @@ Francois Beauducel, Didier Mallarino, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2018 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
