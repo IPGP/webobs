@@ -191,7 +191,7 @@ $ilinks .= " | <A href=\"#EVENTS\">$__{'Events'}</A>";
 $ilinks .= " | <A href=\"#REF\">$__{'References'}</A>";
 $ilinks .= " ]";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks</P>";
-print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode(2)."</TD></TR></TABLE>\n";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
 
 # ---- Objectives
 #
@@ -529,7 +529,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 						my $fileProj = "$pathInter/$fileProjName";
 						if ((-e $fileProj) && (-s $fileProj)) {
 							my @proj = readFile($fileProj);
-							@proj = grep(!/^$|^WebObs: created by /, @proj);
+							@proj = grep(!/^$|^WebObs: /, @proj);
 							chomp(@proj);
 							if ($proj[0] =~ "|") {
 								my @pLigne = split(/\|/,$proj[0]);

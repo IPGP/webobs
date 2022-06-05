@@ -235,6 +235,7 @@ sub qrcode ($)
 {
     use MIME::Base64;
     my $s = shift;
+    return "" if ($s eq "");
     my $url = "http://$ENV{HTTP_HOST}$ENV{REQUEST_URI}";
 	my $qr = encode_base64(qx(qrencode -s $s -o - "$url"));
     my $img = ($qr eq "" ? "":"<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/showQRcode.pl','$url',"

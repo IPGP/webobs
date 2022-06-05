@@ -285,7 +285,8 @@ OSM_WIDTH_VALUE|800
 OSM_HEIGHT_VALUE|600
 OSM_ZOOM_VALUE|17
 
-# QR code
+# QR code module size (in pixels) / empty or zero to not display in grid/node pages
+QRCODE_SIZE|2
 QRCODE_LOGOS|/icons/ipgp/logo_WebObs_C413.png,/icons/ipgp/logo_IPGP_2022.png
 
 # Digital Elevation Models --------------------
