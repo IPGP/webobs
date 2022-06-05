@@ -252,6 +252,9 @@ sub readNode {
 		#substitutes possible decimal comma to point for numerics
 		$tmp{LAT_WGS84} =~ s/,/./g;
 		$tmp{LON_WGS84} =~ s/,/./g;
+		#FB-legacy: removes escape characters in feature's list
+		$tmp{FILES_FEATURES} =~ s/\\,/,/g;
+		$tmp{FILES_FEATURES} =~ s/\\\|/,/g;
 
 		$ret{$f}=\%tmp;
 	}
