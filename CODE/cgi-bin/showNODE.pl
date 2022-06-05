@@ -225,7 +225,7 @@ if (uc($GRIDType) eq 'VIEW' || uc($GRIDType) eq 'PROC') {
 }
 print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> ]</P>";
 
-print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode(2)."</TD></TR></TABLE>\n";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
 
 my %CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 

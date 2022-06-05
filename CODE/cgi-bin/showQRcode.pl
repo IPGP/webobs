@@ -16,7 +16,7 @@ HTML page with QR code of the referer URL.
 
 no query string parameters needed, but logos will be displayed on the side of
 QR code, using the WEBOBS.rc variables:
-	QRCODE_LOGOS|logo1,logo2,...
+	QRCODE_LOGOS|URI_logo1,URI_logo2,...
 
 =cut
 
@@ -30,28 +30,40 @@ $CGI::DISABLE_UPLOADS = 1;
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Utils;
-use WebObs::Wiki;
-use WebObs::i18n;
-use Locale::TextDomain('webobs');
 use MIME::Base64;
 
 my $title = "$ENV{HTTP_REFERER}";
 my $qr = encode_base64(qx(qrencode -t SVG -o - "$ENV{HTTP_REFERER}"));
-my $img = ($qr eq "" ? "":"<IMG height=\"400px\" src=\"data:image/svg+xml;base64,$qr\">");
+my $img = ($qr eq "" ? "":"<IMG width=400px src=\"data:image/svg+xml;base64,$qr\">");
 my @logos = split(',',$WEBOBS{QRCODE_LOGOS});
 
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">","\n";
-print "<HTML><HEAD><TITLE>$title</TITLE></HEAD><BODY style=\"background-color: white;\">\n"
-	."<TABLE width=\"100%\"><TR><TD width=\"400px\" style=\"border:0\">$img\n"
-	."<P style=\"font-size:6pt;text-align:center\">$title</P></TD>"
-	."<TD style=\"border:0;text-align:center\">";
+print <<"END";
+<HTML><HEAD><TITLE>$title</TITLE></HEAD>
+<STYLE>
+html, body {
+	background-color: white;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+img {
+    padding: 0;
+    display: block;
+    margin: 0 auto;
+    max-height: 100%;
+    max-width: 100%;
+}
+</STYLE>
+<BODY><TABLE width="100%"><TR><TD width="80%" style="border:0">$img
+<P style="font-size:6pt;text-align:center">$title</P></TD>
+<TD width="20%" style="border:0;text-align:center">
+END
 for (@logos) {
 	print "<P><IMG width=\"100px\" src=\"$_\"></P>";
 }
-print "</TD></TR></TABLE>\n"
-	."</BODY>\n</HTML>\n";
+print "</TD></TR></TABLE>\n</BODY>\n</HTML>\n";
 
 __END__
 
