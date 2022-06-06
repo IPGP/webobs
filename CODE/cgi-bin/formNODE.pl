@@ -109,7 +109,8 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
-my $features     = $NODE{FILES_FEATURES} // "$__{'sensor'}";
+my $usrTZ        = $NODE{TZ} // strftime("%z", localtime());
+my $features     = $NODE{FILES_FEATURES} // "$__{'featureA,featureB,featureC'}";
 #      proc parameters
 my $usrFDSN      = $NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} // $NODE{FDSN_NETWORK_CODE};
 my $usrUTC       = $NODE{"$GRIDType.$GRIDName.UTC_DATA"}          // $NODE{UTC_DATA};
@@ -363,12 +364,21 @@ function delete_node()
 
 FIN
 
+print "<FORM id=\"theform\" name=\"formulaire\" action=\"\">\n";
+# --- "Validity"
+my $nodevalidity;
+if (clientHasAdm(type=>"authmisc",name=>"NODES")) {
+	$nodevalidity = "<P><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
+		." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_valid'}')\">"
+		."<b>$__{'Valid Node'}</b></P>";
+} else {
+	$nodevalidity = "<INPUT type=\"hidden\" name=\"valide\" value=\"NA\">";
+}
 print "<TABLE width=\"100%\">
-	<TR><TD style=\"border:0\"><H1>$titrePage</H1>\n<H2>$titre2</H2></TD>
+	<TR><TD style=\"border:0\"><H1>$titrePage</H1>\n<H2>$titre2</H2>$nodevalidity</TD>
 	<TD style=\"border:0; text-align:right\"></TD></TR>
 	</TABLE>";
 
-print "<FORM id=\"theform\" name=\"formulaire\" action=\"\">\n";
 print "<INPUT type=\"hidden\" name=\"delete\" value=\"0\">\n";
 for (@allNodes) {
 	print "<INPUT type=\"hidden\" name=\"allNodes\" value=\"$_\">\n";
@@ -402,7 +412,7 @@ print "<TR>";
 		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
 	print "</FIELDSET>";
 
-	print "<FIELDSET><LEGEND>$__{'Lifetime and Validity'}</LEGEND>";
+	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
   	# --- Dates debut et fin
   	print "<TABLE>";
     	print "<TR>";
@@ -430,19 +440,21 @@ print "<TR>";
 			print "</DIV></TD>";
 			print "<TD align=center style=\"border:0\"></TD>";
 			print "<TD style=\"border:0\">";
-				# --- "Validity"
-				if ( clientHasAdm(type=>"authmisc",name=>"NODES")) {
-					print "<P class=parform><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
-						." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Check to mark node as valid'}')\">"
-						."<b>$__{'Valid Node'}</b></P>\n";
-				} else {
-					print "<INPUT type=\"hidden\" name=\"valide\" value=\"NA\">";
-				}
+				# --- ALIAS
+				print "<LABEL style=\"width:100px\" for=\"tz\">$__{'Time zone (h)'}:</LABEL>";
+				print "<INPUT size=\"5\" onMouseOut=\"nd()\" value=\"$usrTZ\" onmouseover=\"overlib('$__{help_creationstation_tz}')\" size=\"8\" name=\"tz\" id=\"tz\">";
 			print "</TD>";
 		print "</TR>";
 	print "</TABLE>\n";
 	print "</FIELDSET>";
 
+	# --- Features
+	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
+	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',split(/,|\|/,$features))."\"><BR>";
+	print "<br><a href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A>";
+	print "</FIELDSET>";
+
+	# --- Grids
 	print "<FIELDSET><LEGEND>$__{'Associated Grids'}</LEGEND>\n";
 	# --- (additional) GRIDS: VIEWs and PROCs
 	# --- list only PROCs and VIEWs that client has AUTHEDIT to ...
@@ -482,12 +494,6 @@ print "<TR>";
 	print "</TABLE>";
 	print "</FIELDSET>";
 
-	# --- Features
-	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
-	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',split(/,|\|/,$features))."\"><BR>";
-	print "<br><a href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A>";
-	print "</FIELDSET>";
-
 	print "</TD>\n";                                                                 # end left column
 	print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
 
@@ -496,16 +502,16 @@ print "<TR>";
 	print "<TABLE><TR>";
 		print "<TD style=\"border:0;text-align:left\">";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\">&#176;&nbsp;";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\">'&nbsp;";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\">\"&nbsp;";
+			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"latwgs84n\" size=\"1\">";
 			for ("N","S") { print "<option".($usrLatN eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
 			print "<label for=\"lonwgs84\">$__{'Longitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\">&#176;&nbsp;";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\">'&nbsp;";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\">\"&nbsp;";
+			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\"><B>'&nbsp;</B>";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"lonwgs84e\" size=\"1\">";
 			for ("E","W") { print "<option".($usrLonE eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";

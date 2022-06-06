@@ -142,6 +142,7 @@ $contents = "$metain$contents";            # add MMD
 my $meta;                                  # add MMD
 my $mmd = $WEBOBS{WIKI_MMD} // 'YES';        # add MMD
 my $target = "";
+my $tz = "";
 
 if ($action =~ /upd|new|del|save/i) {
 	if (defined($GRIDType)) {
@@ -169,11 +170,13 @@ if ($object =~ /^.*\..*\..*$/) {
 	my %S = readNode($NODEName);
 	%NODE = %{$S{$NODEName}};
 	$objectfullname = "<B>$NODE{ALIAS}: $NODE{NAME}</B> <I>($NODE{TYPE})</I>";
+	$tz = $NODE{TZ};
 # ... or a grid (gridtype.gridname)
 } else {
 	my %S = readGrid($object);
 	%GRID = %{$S{$object}};
 	$objectfullname = "<B>$GRID{NAME}</B>";
+	$tz = $GRID{TZ};
 }
 
 # ---------------------------------------------------------------------------------------
@@ -308,7 +311,7 @@ if ($action =~ /upd/i ) {
 		($name,$date,$time,$version) = WebObs::Events::eventnameSplit(basename($fname));
 		$time =~ s/-/:/;
 		$time =~ s/NA//;
-		$pagetitle = "$__{'Edit Event'} [$date $time $version]";
+		$pagetitle = "$__{'Edit Event'} [$date $time".($tz ne "" ? " <I>($tz)</I>":"")." $version]";
 		$s2g = ( $GazetteWhat eq "ALL" ) ? 1 : 0;
 	} else {
 		$pagetitle = "$__{'Edit Project'}";
@@ -481,15 +484,15 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	print "<TABLE><TR>";
 	print "<TD style=\"vertical-align: top; border: none;\">";
 	if (!$isProject) {
-		print "<LABEL style=\"width:80px\" for=\"date\">$__{'Start date & time'}: </LABEL><INPUT size=\"10\" name=\"date\" id=\"date\" value=\"$date\"> ";
-		print "<INPUT size=\"5\" name=\"time\" id=\"time\" value=\"$time\"><br><br>\n";
-		print "<LABEL style=\"width:80px\" for=\"date2\">$__{'End date & time'}: </LABEL><INPUT size=\"10\" name=\"date2\" id=\"date2\" value=\"$date2\"> ";
-		print "<INPUT size=\"5\" name=\"time2\" id=\"time2\" value=\"$time2\"><br><br>\n";
+		print "<LABEL style=\"width:100px\" for=\"date\">$__{'Start date & time'}: </LABEL><INPUT size=\"10\" name=\"date\" id=\"date\" value=\"$date\"> ";
+		print "<INPUT size=\"5\" name=\"time\" id=\"time\" value=\"$time\">".($tz ne "" ? " <I>GMT $tz</I>":"")."<br><br>\n";
+		print "<LABEL style=\"width:100px\" for=\"date2\">$__{'End date & time'}: </LABEL><INPUT size=\"10\" name=\"date2\" id=\"date2\" value=\"$date2\"> ";
+		print "<INPUT size=\"5\" name=\"time2\" id=\"time2\" value=\"$time2\">".($tz ne "" ? " <I>GMT $tz</I>":"")."<br><br>\n";
 	}
-	print "<LABEL style=\"width:80px\" for=\"titre\">$__{'Title'}:</LABEL><INPUT type=\"text\" name=\"titre\" id=\"titre\" value=\"$titre\" size=\"80\"><br><br>\n";
+	print "<LABEL style=\"width:100px\" for=\"titre\">$__{'Title'}:</LABEL><INPUT type=\"text\" name=\"titre\" id=\"titre\" value=\"$titre\" size=\"80\"><br><br>\n";
 	# only for node's event
 	if ($object =~ /^.*\..*\..*$/) {
-		print "<LABEL style=\"width:80px\" for=\"feature\">$__{Feature}:</LABEL><SELECT id=\"feature\" name=\"feature\" size=\"0\">";
+		print "<LABEL style=\"width:100px\" for=\"feature\">$__{Feature}:</LABEL><SELECT id=\"feature\" name=\"feature\" size=\"0\">";
 		my @features = ("",split(/[,\|]/,$NODE{FILES_FEATURES}));
 		push(@features,$feature) if !(@features =~ $feature); # adds current feature if not in the list
 		foreach (@features) {

@@ -132,6 +132,7 @@ $fileMap        = "$NODES{PATH_NODES}/$NODEName/$NODEName"."_map.png";
 my $cgiConf = "/cgi-bin/$NODES{CGI_FORM}?node=$GRIDType.$GRIDName.$NODEName";
 my $cgiEtxt = "/cgi-bin/nedit.pl";
 
+my $tz = "<I>(GMT".($NODE{TZ} ne "" ? " $NODE{TZ})":"")."</I>";
 my %typeTele = readCfg("$NODES{FILE_TELE}");
 my %typePos  = readCfg("$NODES{FILE_POS}");
 my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
@@ -846,7 +847,7 @@ print "</div></div>";
 #
 print "<BR><A name=\"EVENTS\"></A>\n";
 print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#eventID');\">&nbsp;&nbsp;";
-print "$__{'Events'}";
+print "$__{'Events'} $tz";
 if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&object=$GRIDType.$GRIDName.$NODEName\"><img src=\"/icons/modif.png\"></A>" }
 print "&nbsp;$go2top</div><div id=\"eventID\"><BR>";
 print "&nbsp;$__{'Sort by'} [ ".($sortBy ne "event" ? "<A href=\"$myself&amp;sortby=event#EVENTS\">$__{'Event'}</A>":"<B>$__{'Event'}</B>")." | "
