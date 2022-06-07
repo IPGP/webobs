@@ -722,6 +722,9 @@ msgstr "actuellement sélectionné(s)"
 msgid "featureA,featureB,featureC"
 msgstr "caract_A,caract_B,caract_C"
 
+msgid "help_creationstation_featrefresh"
+msgstr "Cliquez pour rafraîchir la liste des caractéristiques ci-dessous"
+
 msgid "Edit the node-features-nodes associations list"
 msgstr "Éditer la liste des associations node-feature-nodes"
 
@@ -784,6 +787,9 @@ msgstr "Entrez la liste des codes ID de chaque node utilisé pour la transmissio
 
 msgid "help_creationstation_spec"
 msgstr "Entrez les mots clés sans accent ou caractères spéciaux et séparés par une virgule"
+
+msgid "help_creationstation_n2n"
+msgstr "Entrez le(s) code/ID du(des) node(s) enfant(s) pour cette caractéristique, séparés par une virgule"
 
 msgid "help_creationstation_fid"
 msgstr "Le champ FID correspond à un code/identifiant utilisé dans le traitement des données (fonctionnel)"

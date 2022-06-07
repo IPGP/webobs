@@ -100,6 +100,11 @@ msgstr "Select the channels associated to the proc (hold ctrl/cmd key for multip
 msgid "help_creationstation_spec"
 msgstr "Enter the features keywords list, coma delimited. Spaces are allowed. Please use short names and avoid special characters."
 
+msgid "help_creationstation_featrefresh"
+msgstr "Click to refresh the list of features below"
+
+msgid "help_creationstation_n2n"
+msgstr "Enter the children node ID for this feature, coma delimited"
 
 # formCLB.pl
 
