@@ -199,7 +199,13 @@ my $moisP     = $cgi->param('moisMesure')  // '';
 my $jourP     = $cgi->param('jourMesure')  // '';
 my $typePos   = $cgi->param('typePos')     // '';
 my $features  = $cgi->param('features')    // '';
+$features =~ s/\|/,/g;
+my %nfn;
+for (split(',',lc($features))) {
+	$nfn{$_} = $cgi->param($_) if $cgi->param($_) ne '';
+}
 my $typeTrans = $cgi->param('typeTrans')   // '';
+$typeTrans =~ s/\|/,/g;
 my $typeTele  = $cgi->param('pathTrans')   // '';
 if ($typeTele ne "") { $typeTrans = "$typeTrans,$typeTele"; }
 my @SELs      = $cgi->param('SELs');
@@ -260,10 +266,11 @@ push(@lines,"POS_DATE|$datePos\n");
 push(@lines,"POS_TYPE|".u2l($typePos)."\n");
 push(@lines,"INSTALL_DATE|$dateInstall\n");
 push(@lines,"END_DATE|$dateEnd\n");
-$features =~ s/\|/,/g;
 push(@lines,"FILES_FEATURES|".u2l(lc($features))."\n");
-$typeTrans =~ s/\|/,/g;
 push(@lines,"TRANSMISSION|".u2l($typeTrans)."\n");
+#my @fn;
+#for (keys(%nfn)) { push(@fn,"$_,$nfn{$_}"); }
+#push(@lines,"NFN|".join(';',@fn)."\n");
 
 # ---- procs parameters
 if ($GRIDType eq "PROC") {
