@@ -101,7 +101,10 @@ my %typeTele = readCfg("$NODES{FILE_TELE}");
 my %typePos  = readCfg("$NODES{FILE_POS}");
 my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
 my %FDSN = WebObs::Grids::codesFDSN();
+my $referer = $QryParm->{'referer'} // $ENV{HTTP_REFERER};
 
+# reads node-feature-node file (only lines associated to the current node)
+my @nfn = readFile($NODES{FILE_NODES2NODES},qr/^$NODEName\|/);
 
 # ---- initialize user input variables -----------------------
 #      Name and codes
@@ -111,6 +114,7 @@ my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
 my $usrTZ        = $NODE{TZ} // strftime("%z", localtime());
 my $features     = $NODE{FILES_FEATURES} // "$__{'featureA,featureB,featureC'}";
+my @feat = split(/,|\|/,$features);
 #      proc parameters
 my $usrFDSN      = $NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} // $NODE{FDSN_NETWORK_CODE};
 my $usrUTC       = $NODE{"$GRIDType.$GRIDName.UTC_DATA"}          // $NODE{UTC_DATA};
@@ -258,7 +262,10 @@ function postIt()
 		}
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
 		     if (data != '') alert(data);
-		     location.href = document.referrer; })
+			 if (document.formulaire.refresh.value == 1) {
+				 location.reload();
+		     } else { location.href = document.formulaire.referer.value; }
+		})
 		  .fail( function() {
 		     alert( \"postNode couldn't execute\" );
 		     location.href = document.referrer; });
@@ -338,6 +345,12 @@ function fc() {
 	\$(\"#theform\").formChanges();
 }
 
+function refresh_form()
+{
+	document.formulaire.refresh.value = 1;
+	postIt();
+}
+
 function delete_node()
 {
 	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative. Are you sure you want to move this NODE to trash ?\") ) {
@@ -379,6 +392,8 @@ print "<TABLE width=\"100%\">
 	<TD style=\"border:0; text-align:right\"></TD></TR>
 	</TABLE>";
 
+print "<INPUT type=\"hidden\" name=\"referer\" value=\"$referer\">\n";
+print "<INPUT type=\"hidden\" name=\"refresh\" value=\"0\">\n";
 print "<INPUT type=\"hidden\" name=\"delete\" value=\"0\">\n";
 for (@allNodes) {
 	print "<INPUT type=\"hidden\" name=\"allNodes\" value=\"$_\">\n";
@@ -450,8 +465,17 @@ print "<TR>";
 
 	# --- Features
 	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
-	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',split(/,|\|/,$features))."\"><BR>";
-	print "<br><a href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A>";
+	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',@feat)."\">"
+		."&nbsp;<IMG src=\"/icons/refresh.png\" align=\"top\" onClick=\"refresh_form();\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_featrefresh'}')\"><BR><BR>";
+	for (@feat) {
+		print "<LABEL style=\"width:120px\" for=\"$_\">$_:</LABEL>";
+		my $pat = qr/^$NODEName\|$_\|/;
+		my @fnlist = grep(/$pat/,@nfn);
+		my $fn = join(',',@fnlist);
+		$fn =~ s/$NODEName\|$_\|//g;
+		print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('$__{help_creationstation_nfn}')\"><BR>";
+	}
+	print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
 	print "</FIELDSET>";
 
 	# --- Grids
