@@ -147,6 +147,7 @@ if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
 my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
 my $nodepath = "$NODES{PATH_NODES}/$NODEName";
 my $nodefile = "$nodepath/$NODEName.cnf";
+my $n2nfile = "$NODES{FILE_NODES2NODES}";
 
 # ---- If deleting NODE, do not wait for further information
 #
@@ -200,9 +201,9 @@ my $jourP     = $cgi->param('jourMesure')  // '';
 my $typePos   = $cgi->param('typePos')     // '';
 my $features  = $cgi->param('features')    // '';
 $features =~ s/\|/,/g;
-my %nfn;
+my %n2n;
 for (split(',',lc($features))) {
-	$nfn{$_} = $cgi->param($_) if $cgi->param($_) ne '';
+	$n2n{$_} = $cgi->param($_) if $cgi->param($_) ne '';
 }
 my $typeTrans = $cgi->param('typeTrans')   // '';
 $typeTrans =~ s/\|/,/g;
@@ -268,9 +269,6 @@ push(@lines,"INSTALL_DATE|$dateInstall\n");
 push(@lines,"END_DATE|$dateEnd\n");
 push(@lines,"FILES_FEATURES|".u2l(lc($features))."\n");
 push(@lines,"TRANSMISSION|".u2l($typeTrans)."\n");
-#my @fn;
-#for (keys(%nfn)) { push(@fn,"$_,$nfn{$_}"); }
-#push(@lines,"NFN|".join(';',@fn)."\n");
 
 # ---- procs parameters
 if ($GRIDType eq "PROC") {
@@ -363,11 +361,40 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 
 } else { htmlMsgNotOK("$nodefile $!") }
 
+# ---- node2node update: only if there is something to do!
+#
+if (%n2n) {
+	# reads all but current node
+	@lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
+	for my $key (keys(%n2n)) {
+		for my $n (split(/,/,$n2n{$key})) {
+			push(@lines,"$NODEName|$key|$n\n");
+		}
+	}
+	# ---- node2node edit: lock-exclusive the file during update process
+	#
+	if ( sysopen(FILE, "$n2nfile", O_RDWR | O_CREAT) ) {
+		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+			warn "postNODE waiting for lock on $n2nfile...";
+			flock(FILE, LOCK_EX);
+		}
+		# ---- backup the file (To Be Removed: lifecycle too short)
+		if ( -e $n2nfile ) {
+			qx(cp -a $n2nfile $n2nfile~ 2>&1);
+		}
+		# ---- actually create the NODE's configuration file and release lock!
+		truncate FILE, 0;
+		print FILE @lines;
+		close(FILE);
+
+	} else { htmlMsgNotOK("$n2nfile $!") }
+}
+exit;
+
 # --- return information when OK
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
 	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
-	exit;
 }
 
 # --- return information when not OK

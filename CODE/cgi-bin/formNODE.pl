@@ -103,8 +103,8 @@ my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
 my %FDSN = WebObs::Grids::codesFDSN();
 my $referer = $QryParm->{'referer'} // $ENV{HTTP_REFERER};
 
-# reads node-feature-node file (only lines associated to the current node)
-my @nfn = readFile($NODES{FILE_NODES2NODES},qr/^$NODEName\|/);
+# reads the node2node file (only lines associated to the current node)
+my @n2n = readFile($NODES{FILE_NODES2NODES},qr/^$NODEName\|/);
 
 # ---- initialize user input variables -----------------------
 #      Name and codes
@@ -470,12 +470,15 @@ print "<TR>";
 	for (@feat) {
 		print "<LABEL style=\"width:120px\" for=\"$_\">$_:</LABEL>";
 		my $pat = qr/^$NODEName\|$_\|/;
-		my @fnlist = grep(/$pat/,@nfn);
+		my @fnlist = grep(/$pat/,@n2n);
 		my $fn = join(',',@fnlist);
 		$fn =~ s/$NODEName\|$_\|//g;
-		print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('$__{help_creationstation_nfn}')\"><BR>";
+		print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('$__{help_creationstation_n2n}')\"><BR>";
 	}
-	print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
+	# edition of the node2node file needs an admin level
+	if (WebObs::Users::clientHasAdm(type => "auth".lc($GRIDType)."s", name => "*")) {
+		print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
+	}
 	print "</FIELDSET>";
 
 	# --- Grids
