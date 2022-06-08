@@ -18,21 +18,24 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %		                  considered as separator; successive blanks count for one.
 %		    FID_TIMECOLS: index vector of columns defining date&time (default is 6 first columns with
 %		                  automatic format detection)
-%	           FID_DATACOLS: index vector of columns that contain data (default is automatic).
-%	          FID_ERRORCOLS: index vector of columns defining data errors (default is none), in the same
-%	                         order as data (must have the same length, use 0 to skip a column).
+%	        FID_DATACOLS: index vector of columns that contain data (default is automatic).
+%	       FID_ERRORCOLS: index vector of columns defining data errors (default is none), in the same
+%                         order as data (must have the same length, use 0 to skip a column).
 %		          FID_NF: number of columns/fields of the data files. Lines that don't respect This
 %	                         value will be ignored (default is automatic)
 %		 FID_HEADERLINES: number of uncommented header lines (default is 1)
+%	   FID_DATA_DECIMATE: decimates the data by N using the average value
+%	             FLAGCOL: column index containing a boolean value
+%	          FLAGACTION: action to take when FLAG column value is TRUE (default is keep data)
 %
 %	output fields:
 %		D.t (datenum)
 %		D.d (data1 data2 ...)
-%	       D.e (error1 error2 ...)
+%	    D.e (error1 error2 ...)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2022-03-07
+%	Updated: 2022-06-08
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -53,6 +56,9 @@ datacols = field2num(N,'FID_DATACOLS');
 % Input field separator
 fs = field2str(N,'FID_FS',';','notempty');
 header = field2num(N,'FID_HEADERLINES',1,'notempty');
+datadecim = field2num(N,'FID_DATA_DECIMATE',1,'notempty');
+flagcol = field2num(N,'FID_FLAGCOL');
+flagaction = field2str(N,'FID_FLAGACTION','valid');
 
 % name of the script that must preprocess the data
 ppscript = field2str(N,'FID_PREPROCESSOR','dsv_generic','notempty');
@@ -72,7 +78,7 @@ end
 % if RAWDATA contains '$yyyy' internal variable, makes a loop on years
 if ~isempty(regexpi(F.raw{1},'\$yyyy'))
 	Y = dir(regexprep(F.raw{1},'\$yyyy.*$','*'));
-	years = str2num(cat(1,Y(~ismember({Y.name},{'.','..'})' & cat(1,Y.isdir)).name))';
+	years = str2num(cat(1,Y(cellfun(@length,{Y.name})==4 & cat(1,Y.isdir)').name));
 	for yyyy = years
 		if (isnan(P.DATELIM(1)) || datenum(yyyy,12,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,1) <= P.DATELIM(2))
 			if ~isempty(regexpi(F.raw{1},'\$mm'))
@@ -149,6 +155,10 @@ if exist(fdat,'file')
 		if any(~isnan(errorcols)) && nx < max(errorcols)
 			error('%s: FID_ERRORCOLS must indicate valid data columns!');
 		end
+		% extracts the flag column
+		if any(~isnan(flagcol)) && nx < flagcol
+			error('%s: FID_FLAGCOL must indicate valid data columns!');
+		end
 
 		[t,k] = unique(t);
 		[t,kk] = sort(t);
@@ -159,6 +169,15 @@ if exist(fdat,'file')
 		e = nan(size(d));
 		if any(errorcols>0)
 			e(:,find(errorcols(errorcols>0))) = dd(k(kk),errorcols(errorcols>0));
+		end
+		if flagcol>0
+			flag = dd(k(kk),flagcol);
+			switch flagaction
+			case 'valid'
+				t(~flag) = [];
+				d(~flag,:) = [];
+				e(~flag,:) = [];
+			end
 		end
 
 		% selects only the selected channels
@@ -173,9 +192,9 @@ if isempty(t)
 	fprintf('** WARNING ** no data found!\n');
 end
 
-D.t = t - N.UTC_DATA;
-D.d = d;
-D.e = e;
+D.t = decim(t - N.UTC_DATA,datadecim);
+D.d = decim(d,datadecim);
+D.e = decim(e,datadecim);
 if N.CLB.nx == 0
 	D.CLB.nx = size(d,2);
 	D.CLB.un = repmat({''},1,D.CLB.nx);
