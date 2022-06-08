@@ -309,7 +309,7 @@ var PSE = {
 html
 
 if ($dep) {
-	print <<html
+	print <<html;
 // MECB = MC3 Event Control Block: javascript global variables for Sefran analysis page
 // gets initialized/updated by cgi and/or javascript
 var MECB = {
@@ -337,11 +337,15 @@ var MECB = {
 	      },
 	CROSSHAIR: '<span id=crosshairUp></span><span id=crosshairDown></span>',
 	NEWPCLEARS: $MC3{NEW_P_CLEAR_S},
-	TITLE: '$MC3{TITLE}'
-};
-
-
+	TITLE: '$MC3{TITLE}',
 html
+
+	print "	KB: {\n";
+	for (keys(%types)) {
+		print "		'$_': \"$types{$_}{KBcode}\",\n" if ($types{$_}{KBcode} ne "");
+	}
+	print "		}\n};\n\n";
+
 } # endif dep
 
 print "</script>";
@@ -986,7 +990,8 @@ if ($date) {
 		for (sort(keys(%typesSO))) {
 			my $key = $typesSO{$_};
 			if ($key ne "AUTO" || $id) {
-				print "<OPTION id=\"$key\" value=\"$key\"".($type_evt eq $key ? " selected":"").">$types{$key}{Name} </OPTION>\n";
+				print "<OPTION id=\"$key\" value=\"$key\"".($type_evt eq $key ? " selected":"").">$types{$key}{Name} "
+					.($types{$key}{KBcode} ne "" ? "[$types{$key}{KBcode}]":"")."</OPTION>\n";
 			}
 		}
 		print "</SELECT>\n";
