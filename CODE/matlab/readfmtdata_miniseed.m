@@ -16,7 +16,10 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %
 %	format 'miniseed'
-%		type: miniSEED local file(s) defined by RAWDATA
+%		type: miniSEED local file(s)
+%	    files: P.RAWDATA contains full path and filename(s) using bash wildcard
+%		     facilities. The string may include $FID, $NET, $yyyy, $mm, $dd or
+%		     $doy variables.
 %
 %	format 'seedlink'
 %		type: SEEDLink data stream (using slinktool)
@@ -47,7 +50,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2021-10-28
+%	Updated: 2022-06-09
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -79,6 +82,9 @@ N.CLB = clbselect(N.CLB,cha_list);
 datalinkdelay = field2num(P,'DATALINK_DELAY_SECONDS',0);
 
 fdat = sprintf('%s/%s.msd',F.ptmp,N.ID);
+if exist(fdat,'file')
+	delete(fdat)
+end
 tv = floor(datevec(F.datelim - datalinkdelay/86400)');	% floor() is needed to avoid second 60 due to round
 
 % add an alarm to slinktool to avoid freezing...
@@ -151,9 +157,50 @@ case 'combined'
 % -----------------------------------------------------------------------------
 case 'miniseed'
 
-	wosystem(sprintf('cat %s > %s',F.raw{1},fdat),P);
-	if ~exist(fdat,'file')
-		fprintf('%s: ** WARNING ** cannot find file %s for format "%s"!\n',wofun,F.raw{1},F.fmt);
+	% if RAWDATA contains the '$yyyy' variable, makes a loop on years
+	if ~isempty(regexpi(F.raw{1},'\$yyyy'))
+		Y = dir(regexprep(F.raw{1},'\$yyyy.*$','*'));
+		years = str2num(cat(1,Y(cellfun(@length,{Y.name})==4 & cat(1,Y.isdir)').name))';
+		for yyyy = years
+			if (isnan(P.DATELIM(1)) || datenum(yyyy,12,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,1) <= P.DATELIM(2))
+				if ~isempty(regexpi(F.raw{1},'\$mm'))
+					for mm = 1:12
+						if (isnan(P.DATELIM(1)) || datenum(yyyy,mm,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,1) <= P.DATELIM(2))
+							if ~isempty(regexpi(F.raw{1},'\$dd'))
+								for dd = 1:31
+									if (isnan(P.DATELIM(1)) || datenum(yyyy,mm,dd) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,dd) <= P.DATELIM(2))
+										fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
+										fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
+										fraw = regexprep(fraw,'\$dd',sprintf('%02d',dd),'ignorecase');
+										wosystem(sprintf('cat %s >> %s',fraw,fdat), P);
+									end
+								end
+							else
+								fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
+								fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
+								wosystem(sprintf('cat %s >> %s',fraw,fdat), P);
+							end
+						end
+					end
+				else
+					if ~isempty(regexpi(F.raw{1},'\$doy'))
+						for doy = 1:366
+							if (isnan(P.DATELIM(1)) || datenum(yyyy,1,doy) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,doy) <= P.DATELIM(2))
+								fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
+								fraw = regexprep(fraw,'\$doy',sprintf('%03d',doy),'ignorecase');
+								wosystem(sprintf('cat %s >> %s',fraw,fdat), P);
+							end
+						end
+					else
+						fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
+						wosystem(sprintf('cat %s >> %s',fraw,fdat), P);
+					end
+				end
+				fprintf('.');
+			end
+		end
+	else
+		wosystem(sprintf('cat %s > %s',F.raw{1},fdat),P);
 	end
 
 
@@ -185,7 +232,7 @@ case 'fdsnws-dataselect'
 		fprintf('\n%s: FDSNWS dataselect POST request:\n',wofun);
 		type(freq)
 	end
-	
+
 	% makes the request
 	wosystem(sprintf('wget -nv --post-file %s -O %s %s',freq,fdat,F.raw{1}),P);
 
@@ -253,7 +300,7 @@ if exist(fdat,'file')
 		end
 	end
 else
-	fprintf('no data found!\n')
+	fprintf('%s: ** WARNING ** no data found in file "%s" with format "%s"!\n',wofun,F.raw{1},F.fmt);
 	t = [];
 	d = [];
 end

@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-postNODE.pl 
+postNODE.pl
 
 =head1 SYNOPSIS
 
@@ -10,17 +10,17 @@ http://..../postNODE.pl?....see query string list below ....
 
 =head1 DESCRIPTION
 
-Process NODE Update or Create from formNODE submitted info 
+Process NODE Update or Create from formNODE submitted info
 
 =head1 Query string parameters
 
- node=  
+ node=
  the fully qualified NODE name (ie. gridtype.gridname.nodename) to create or update
 
  delete=
  if present and =1, deletes the NODE.
 
- acqr= 
+ acqr=
  ACQ_RATE|  configuration value
 
  utcd=
@@ -30,13 +30,13 @@ Process NODE Update or Create from formNODE submitted info
  LAST_DELAY|  configuration value
 
  data=
- FID|  configuration value - string 
+ FID|  configuration value - string
 
  rawformat=
- RAWFORMAT|  configuration value - string 
+ RAWFORMAT|  configuration value - string
 
  rawdata=
- RAWDATA|  configuration value - string 
+ RAWDATA|  configuration value - string
 
  chanlist=
  CHANNEL_LIST|  list of selected channels - comma-separated integers
@@ -47,16 +47,16 @@ Process NODE Update or Create from formNODE submitted info
  moisD=
  INSTALL_DATE|  configuration value - month component
 
- jourD= 
+ jourD=
  INSTALL_DATE|  configuration value - day component
 
  anneeE=
  END_DATE|  configuration value - year component
 
- moisE= 
+ moisE=
  END_DATE|  configuration value - month component
 
- jourE= 
+ jourE=
  END_DATE|  configuration value - day component
 
  validite=
@@ -72,7 +72,7 @@ Process NODE Update or Create from formNODE submitted info
  NAME|  configuration value - string
 
  fdsn=
- FDSN_NETWORK_CODE|  configuration value - string 
+ FDSN_NETWORK_CODE|  configuration value - string
 
  lat=
  LAT_WGS84|  configuration value
@@ -84,28 +84,28 @@ Process NODE Update or Create from formNODE submitted info
  ALTITUDE|  configuration value
 
  anneeP=
- POS_DATE|  configuration - year component 
+ POS_DATE|  configuration - year component
 
  moisP=
- POS_DATE|  configuration - month component 
+ POS_DATE|  configuration - month component
 
  jourP=
- POS_DATE|  configuration - day component 
+ POS_DATE|  configuration - day component
 
  typePos=
  POS_TYPE|  configuration value
 
- features= 
+ features=
  FILES_FEATURES|  configuration value - string file1[|file2[....|filen]]
 
  typeTrans=
  TRANSMISSION|  configuration value - string type
 
  pathTrans=
- TRANSMISSION|  configuration value component - string 
+ TRANSMISSION|  configuration value component - string
 
  SELs=
- PROC| and VIEW| configuration lists 
+ PROC| and VIEW| configuration lists
 
 =cut
 
@@ -147,6 +147,7 @@ if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
 my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
 my $nodepath = "$NODES{PATH_NODES}/$NODEName";
 my $nodefile = "$nodepath/$NODEName.cnf";
+my $n2nfile = "$NODES{FILE_NODES2NODES}";
 
 # ---- If deleting NODE, do not wait for further information
 #
@@ -163,12 +164,12 @@ if ($delete) {
 	htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n deleted");
 }
 
-# ---- What are we supposed to do ?: find it out in the query string 
+# ---- What are we supposed to do ?: find it out in the query string
 #
 my $QryParm   = $cgi->Vars;    # used later; todo: replace cgi->param's below
-my $acqr      = $cgi->param('acqr')        // ''; 
-my $utcd      = $cgi->param('utcd')        // ''; 
-my $ldly      = $cgi->param('ldly')        // ''; 
+my $acqr      = $cgi->param('acqr')        // '';
+my $utcd      = $cgi->param('utcd')        // '';
+my $ldly      = $cgi->param('ldly')        // '';
 my $anneeD    = $cgi->param('anneeDepart') // '';
 my $moisD     = $cgi->param('moisDepart')  // '';
 my $jourD     = $cgi->param('jourDepart')  // '';
@@ -178,6 +179,7 @@ my $jourE     = $cgi->param('jourEnd')     // '';
 my $validite  = $cgi->param('valide')      // '';
 my $alias     = $cgi->param('alias')       // '';
 my $type      = $cgi->param('type')        // '';
+my $tz        = $cgi->param('tz')        // '';
 my $data      = $cgi->param('data')        // '';
 my $rawformat = $cgi->param('rawformat')   // '';
 my $rawdata   = $cgi->param('rawdata')     // '';
@@ -197,13 +199,19 @@ my $anneeP    = $cgi->param('anneeMesure') // '';
 my $moisP     = $cgi->param('moisMesure')  // '';
 my $jourP     = $cgi->param('jourMesure')  // '';
 my $typePos   = $cgi->param('typePos')     // '';
-my $features  = $cgi->param('features')    // ''; 
+my $features  = $cgi->param('features')    // '';
+$features =~ s/\|/,/g;
+my %n2n;
+for (split(',',lc($features))) {
+	$n2n{$_} = $cgi->param($_) if $cgi->param($_) ne '';
+}
 my $typeTrans = $cgi->param('typeTrans')   // '';
+$typeTrans =~ s/\|/,/g;
 my $typeTele  = $cgi->param('pathTrans')   // '';
 if ($typeTele ne "") { $typeTrans = "$typeTrans,$typeTele"; }
 my @SELs      = $cgi->param('SELs');
 
-# ---- pre-set actions to be run soon under control of 
+# ---- pre-set actions to be run soon under control of
 # ---- lock-exclusive on the configuration file.
 # ----
 
@@ -236,7 +244,7 @@ if ($lon ne "" && $lat ne "") {
 my $valide = "";
 if ( $validite eq "NA" ) { $valide = 1; } else { $valide = 0; }
 # ---- NODES' Feature Files: "system" always present, and "user" defined
-my @FFsys = ('acces.txt', 'info.txt', 'installation.txt', 'type.txt', "$NODEName.clb"); 
+my @FFsys = ('acces.txt', 'info.txt', 'installation.txt', 'type.txt', "$NODEName.clb");
 my @FFusr = map { "$NODES{SPATH_FEATURES}/".lc($_).'.txt'} split(/\||,/,$features);
 my @FFnew = map { $_ if(! -e "$nodepath/$_") } (@FFsys, @FFusr);
 # ---- NODE's documents subdirectories
@@ -251,6 +259,7 @@ push(@lines,"NAME|\"".u2l($name)."\"\n");
 push(@lines,"ALIAS|".u2l($alias)."\n");
 push(@lines,"TYPE|".u2l($type)."\n");
 push(@lines,"VALID|$valide\n");
+push(@lines,"TZ|$tz\n");
 push(@lines,"LAT_WGS84|$lat\n");
 push(@lines,"LON_WGS84|$lon\n");
 push(@lines,"ALTITUDE|$alt\n");
@@ -258,9 +267,7 @@ push(@lines,"POS_DATE|$datePos\n");
 push(@lines,"POS_TYPE|".u2l($typePos)."\n");
 push(@lines,"INSTALL_DATE|$dateInstall\n");
 push(@lines,"END_DATE|$dateEnd\n");
-$features =~ s/\|/,/g;
 push(@lines,"FILES_FEATURES|".u2l(lc($features))."\n");
-$typeTrans =~ s/\|/,/g;
 push(@lines,"TRANSMISSION|".u2l($typeTrans)."\n");
 
 # ---- procs parameters
@@ -333,7 +340,7 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 	}
 	# ---- delete any existing GRIDS to NODE symbolic links
 	qx(rm -f $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName);
- 
+
 	# ---- create GRIDS to NODE symbolic link(s) if required
 	for (@SELs) {
 		qx(ln -s $nodepath $WEBOBS{PATH_GRIDS2NODES}/$_.$NODEName);
@@ -354,11 +361,40 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 
 } else { htmlMsgNotOK("$nodefile $!") }
 
-# --- return information when OK 
+# ---- node2node update: only if there is something to do!
+#
+if (%n2n) {
+	# reads all but current node
+	@lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
+	for my $key (keys(%n2n)) {
+		for my $n (split(/,/,$n2n{$key})) {
+			push(@lines,"$NODEName|$key|$n\n");
+		}
+	}
+	# ---- node2node edit: lock-exclusive the file during update process
+	#
+	if ( sysopen(FILE, "$n2nfile", O_RDWR | O_CREAT) ) {
+		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+			warn "postNODE waiting for lock on $n2nfile...";
+			flock(FILE, LOCK_EX);
+		}
+		# ---- backup the file (To Be Removed: lifecycle too short)
+		if ( -e $n2nfile ) {
+			qx(cp -a $n2nfile $n2nfile~ 2>&1);
+		}
+		# ---- actually create the NODE's configuration file and release lock!
+		truncate FILE, 0;
+		print FILE @lines;
+		close(FILE);
+
+	} else { htmlMsgNotOK("$n2nfile $!") }
+}
+exit;
+
+# --- return information when OK
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
 	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
-	exit;
 }
 
 # --- return information when not OK
@@ -379,7 +415,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -395,4 +431,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

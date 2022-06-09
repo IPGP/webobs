@@ -55,25 +55,27 @@ $(document).ready(function() {
 });
 
 // ---- get keypress events but outside any form
-$(document).keypress(function(event) {
-	event = event || window.event;
-	var target = event.target || event.srcElement;
+$(document).keydown(function(e) {
+	e = e || window.event;
+	var target = e.target || e.srcElement;
 	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
-		var x = event.charCode || event.keyCode;
-		var y = parseInt($('#sgramslider').val());
-		if (x == 115) showsgram(); // s key
-		if (x == 83) { // S key
+		if (e.key == "e") showmctags();
+		if (e.key == "s") showsgram();
+		if (e.key == "S") {
 			$('#sgramslider').val(10);
   			$('.sgram').css('opacity',1);
 		}
-		if (x == 101 || x == 69) showmctags(); // e or E key
-		if (x == 116 || x == 84 || x == 114 || x == 82) {
-			if (x == 116 || x == 84) y = 1 + y % 10; // t or T key
-			if (x == 114 || x == 82)  y = 1 + (y + 8) % 10; // r or R key
+		if (e.key == "t" || e.key == "r") {
+			var y = parseInt($('#sgramslider').val());
+			if (e.key == "t") y = 1 + y % 10;
+			if (e.key == "r")  y = 1 + (y + 8) % 10;
 			$('#sgramslider').val(y);
   			$('.sgram').css('opacity',y/10);
 			$('#sgramopacity').val(y/10);
 		}
+		Object.keys(MECB.KB).forEach(function (key) {
+			if (e.key === MECB.KB[key]) MECB.FORM.typeEvenement.value = key;
+		});
 	}
 });
 
@@ -577,7 +579,7 @@ predict_seismic_event(PSE.PSE_ROOT_CONF, PSE.PSE_ROOT_DATA, PSE.PSE_ALGO_FILEPAT
 }
 
 
-// ---- Compute probabilities of seismic events when the end of the signal is selected 
+// ---- Compute probabilities of seismic events when the end of the signal is selected
 function predict_seismic_event_automatic(){
     $('#wait').show();
     $.when(
@@ -586,4 +588,3 @@ predict_seismic_event(PSE.PSE_ROOT_CONF, PSE.PSE_ROOT_DATA, PSE.PSE_ALGO_FILEPAT
     $('#wait').hide();
     });
 }
-

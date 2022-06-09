@@ -101,7 +101,10 @@ my %typeTele = readCfg("$NODES{FILE_TELE}");
 my %typePos  = readCfg("$NODES{FILE_POS}");
 my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
 my %FDSN = WebObs::Grids::codesFDSN();
+my $referer = $QryParm->{'referer'} // $ENV{HTTP_REFERER};
 
+# reads the node2node file (only lines associated to the current node)
+my @n2n = readFile($NODES{FILE_NODES2NODES},qr/^$NODEName\|/);
 
 # ---- initialize user input variables -----------------------
 #      Name and codes
@@ -109,7 +112,9 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
-my $features     = $NODE{FILES_FEATURES} // "$__{'sensor'}";
+my $usrTZ        = $NODE{TZ} // strftime("%z", localtime());
+my $features     = $NODE{FILES_FEATURES} // "$__{'featureA,featureB,featureC'}";
+my @feat = split(/,|\|/,$features);
 #      proc parameters
 my $usrFDSN      = $NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} // $NODE{FDSN_NETWORK_CODE};
 my $usrUTC       = $NODE{"$GRIDType.$GRIDName.UTC_DATA"}          // $NODE{UTC_DATA};
@@ -183,43 +188,53 @@ function postIt()
    alert("NAME: Please enter a full name (non-blank string)");
    document.formulaire.fullName.focus();
    return false;
-  }
+ }
  if(document.formulaire.alias.value == "") {
    alert("ALIAS: Please enter a short name (non-blank string)");
    document.formulaire.alias.focus();
    return false;
-  }
- if(document.formulaire.latwgs84.value != "" && (isNaN(document.formulaire.latwgs84.value) || document.formulaire.latwgs84.value < 0 || document.formulaire.latwgs84.value > 90)) {
-   alert("LATITUDE: Please enter a positive number between 0 and +90, use S for southern latitude, or leave blank");
+ }
+ if(document.formulaire.latwgs84.value != "" && (isNaN(document.formulaire.latwgs84.value) || document.formulaire.latwgs84.value < -90 || document.formulaire.latwgs84.value > 90)) {
+   alert("LATITUDE: Please enter a latitude value between -90 and +90, or leave blank");
    document.formulaire.latwgs84.focus();
    return false;
-  }
+ }
+ if(document.formulaire.latwgs84.value < 0 && document.formulaire.latwgs84.value >= -90) {
+   document.formulaire.latwgs84.value = Math.abs(document.formulaire.latwgs84.value);
+   if (document.formulaire.latwgs84n.value == "N") document.formulaire.latwgs84n.value = "S";
+   else document.formulaire.latwgs84n.value = "N";
+ }
  if(document.formulaire.latwgs84.value == "" && (document.formulaire.latwgs84min.value != "" || document.formulaire.latwgs84sec.value != "")) {
    alert("LATITUDE: Please enter a value for degree or leave all fields blank");
    document.formulaire.latwgs84.focus();
    return false;
-  }
- if(document.formulaire.lonwgs84.value != "" && (isNaN(document.formulaire.lonwgs84.value) || document.formulaire.lonwgs84.value < 0 || document.formulaire.lonwgs84.value > 180)) {
-   alert("LONGITUDE: Please enter a positive number between 0 and +180, use W for western longitude, or leave blank");
+ }
+ if(document.formulaire.lonwgs84.value != "" && (isNaN(document.formulaire.lonwgs84.value) || document.formulaire.lonwgs84.value < -180 || document.formulaire.lonwgs84.value > 180)) {
+   alert("LONGITUDE: Please enter a longiture value between -180 and +180, or leave blank");
    document.formulaire.lonwgs84.focus();
    return false;
-  }
+ }
+ if(document.formulaire.lonwgs84.value < 0 && document.formulaire.lonwgs84.value >= -180) {
+   document.formulaire.lonwgs84.value = Math.abs(document.formulaire.lonwgs84.value);
+   if (document.formulaire.lonwgs84e.value == "E") document.formulaire.lonwgs84e.value = "W";
+   else document.formulaire.lonwgs84e.value = "E";
+ }
  if(document.formulaire.lonwgs84.value == "" && (document.formulaire.lonwgs84min.value != "" || document.formulaire.lonwgs84sec.value != "")) {
    alert("LONGITUDE: Please enter a value for degree or leave all fields blank");
    document.formulaire.lonwgs84.focus();
    return false;
-  }
+ }
  if(document.formulaire.altitude.value != "" && isNaN(document.formulaire.altitude.value)) {
    alert("ELEVATION: Please enter a number or leave blank");
    document.formulaire.altitude.focus();
    return false;
-  }
+ }
 /*FB-was:
  if(document.formulaire.features.value == "") {
    alert("FEATURES: Please enter at least one word");
    document.formulaire.features.focus();
    return false;
-  }
+ }
 */
   if (document.formulaire.SELs.options.length < 1) {
     alert(\"node MUST belong to at least 1 grid\");
@@ -247,7 +262,10 @@ function postIt()
 		}
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
 		     if (data != '') alert(data);
-		     location.href = document.referrer; })
+			 if (document.formulaire.refresh.value == 1) {
+				 location.reload();
+		     } else { location.href = document.formulaire.referer.value; }
+		})
 		  .fail( function() {
 		     alert( \"postNode couldn't execute\" );
 		     location.href = document.referrer; });
@@ -327,6 +345,12 @@ function fc() {
 	\$(\"#theform\").formChanges();
 }
 
+function refresh_form()
+{
+	document.formulaire.refresh.value = 1;
+	postIt();
+}
+
 function delete_node()
 {
 	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative. Are you sure you want to move this NODE to trash ?\") ) {
@@ -353,12 +377,23 @@ function delete_node()
 
 FIN
 
+print "<FORM id=\"theform\" name=\"formulaire\" action=\"\">\n";
+# --- "Validity"
+my $nodevalidity;
+if (clientHasAdm(type=>"authmisc",name=>"NODES")) {
+	$nodevalidity = "<P><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
+		." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_valid'}')\">"
+		."<b>$__{'Valid Node'}</b></P>";
+} else {
+	$nodevalidity = "<INPUT type=\"hidden\" name=\"valide\" value=\"NA\">";
+}
 print "<TABLE width=\"100%\">
-	<TR><TD style=\"border:0\"><H1>$titrePage</H1>\n<H2>$titre2</H2></TD>
+	<TR><TD style=\"border:0\"><H1>$titrePage</H1>\n<H2>$titre2</H2>$nodevalidity</TD>
 	<TD style=\"border:0; text-align:right\"></TD></TR>
 	</TABLE>";
 
-print "<FORM id=\"theform\" name=\"formulaire\" action=\"\">\n";
+print "<INPUT type=\"hidden\" name=\"referer\" value=\"$referer\">\n";
+print "<INPUT type=\"hidden\" name=\"refresh\" value=\"0\">\n";
 print "<INPUT type=\"hidden\" name=\"delete\" value=\"0\">\n";
 for (@allNodes) {
 	print "<INPUT type=\"hidden\" name=\"allNodes\" value=\"$_\">\n";
@@ -369,13 +404,12 @@ print "<TR>";
 
 	print "<FIELDSET><LEGEND>$__{'Names and Description'}</LEGEND>";
 	# --- Codes, Name, Alias, Type
+	print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code/ID'}:</label>$GRIDType.$GRIDName.";
 	if ($newnode == 1) {
-		print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code'}:</label>$GRIDType.$GRIDName.";
 		print "<INPUT id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\" onKeyUp=\"checkNode()\">";
 	 	print "<INPUT size=\"15\" id=\"message\" name=\"message\" readOnly style=\"background-color:#E0E0E0;border:0\">";
 		print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"1\"\n>";
 	} else {
-		print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code'}:</label>$GRIDType.$GRIDName.";
 		print "<INPUT readonly=\"readonly\" style=\"font-family:monospace;font-weight:bold;font-size:120%;background-color:transparent;border:none\" id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\"><BR>";
 	 	print "<INPUT type=\"hidden\" name=\"message\" value=\"0\">";
 	 	print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"0\">";
@@ -393,7 +427,7 @@ print "<TR>";
 		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
 	print "</FIELDSET>";
 
-	print "<FIELDSET><LEGEND>$__{'Lifetime and Validity'}</LEGEND>";
+	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
   	# --- Dates debut et fin
   	print "<TABLE>";
     	print "<TR>";
@@ -421,19 +455,33 @@ print "<TR>";
 			print "</DIV></TD>";
 			print "<TD align=center style=\"border:0\"></TD>";
 			print "<TD style=\"border:0\">";
-				# --- "Validity"
-				if ( clientHasAdm(type=>"authmisc",name=>"NODES")) {
-					print "<P class=parform><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
-						." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Check to mark node as valid'}')\">"
-						."<b>$__{'Valid Node'}</b></P>\n";
-				} else {
-					print "<INPUT type=\"hidden\" name=\"valide\" value=\"NA\">";
-				}
+				# --- ALIAS
+				print "<LABEL style=\"width:100px\" for=\"tz\">$__{'Time zone (h)'}:</LABEL>";
+				print "<INPUT size=\"5\" onMouseOut=\"nd()\" value=\"$usrTZ\" onmouseover=\"overlib('$__{help_creationstation_tz}')\" size=\"8\" name=\"tz\" id=\"tz\">";
 			print "</TD>";
 		print "</TR>";
 	print "</TABLE>\n";
 	print "</FIELDSET>";
 
+	# --- Features
+	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
+	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',@feat)."\">"
+		."&nbsp;<IMG src=\"/icons/refresh.png\" align=\"top\" onClick=\"refresh_form();\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_featrefresh'}')\"><BR><BR>";
+	for (@feat) {
+		print "<LABEL style=\"width:120px\" for=\"$_\">$_:</LABEL>";
+		my $pat = qr/^$NODEName\|$_\|/;
+		my @fnlist = grep(/$pat/,@n2n);
+		my $fn = join(',',@fnlist);
+		$fn =~ s/$NODEName\|$_\|//g;
+		print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('$__{help_creationstation_n2n}')\"><BR>";
+	}
+	# edition of the node2node file needs an admin level
+	#if (WebObs::Users::clientHasAdm(type => "auth".lc($GRIDType)."s", name => "*")) {
+	#	print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
+	#}
+	print "</FIELDSET>";
+
+	# --- Grids
 	print "<FIELDSET><LEGEND>$__{'Associated Grids'}</LEGEND>\n";
 	# --- (additional) GRIDS: VIEWs and PROCs
 	# --- list only PROCs and VIEWs that client has AUTHEDIT to ...
@@ -473,12 +521,6 @@ print "<TR>";
 	print "</TABLE>";
 	print "</FIELDSET>";
 
-	# --- Features
-	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
-	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',split(/,|\|/,$features))."\"><BR>";
-	print "<br><a href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A>";
-	print "</FIELDSET>";
-
 	print "</TD>\n";                                                                 # end left column
 	print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
 
@@ -487,16 +529,16 @@ print "<TR>";
 	print "<TABLE><TR>";
 		print "<TD style=\"border:0;text-align:left\">";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\">&#176;&nbsp;";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\">'&nbsp;";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\">\"&nbsp;";
+			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"latwgs84n\" size=\"1\">";
 			for ("N","S") { print "<option".($usrLatN eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
 			print "<label for=\"lonwgs84\">$__{'Longitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\">&#176;&nbsp;";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\">'&nbsp;";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\">\"&nbsp;";
+			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\"><B>'&nbsp;</B>";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"lonwgs84e\" size=\"1\">";
 			for ("E","W") { print "<option".($usrLonE eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
@@ -522,20 +564,25 @@ print "<TR>";
 	print "</TR></TABLE>";
 	print "</FIELDSET>\n";
 
-	# --- Transmission type
+	# --- Transmission
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
-	print "<LABEL for=\"typeTrans\">Type: </LABEL>";
-	print "<SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_type}')\" id=\"typeTrans\" name=\"typeTrans\" size=\"1\" onChange=\"maj_transmission()\">";
-	for (sort(keys(%typeTele))) {
-		my $sel = "";
-		if ( $_ eq "$usrTrans" ) { $sel = "selected" }
-		print "<OPTION $sel value=\"$_\">$typeTele{$_}{name}</OPTION>";
-	}
-	print "</SELECT><BR>";
-
-	# --- Transmission path (acquisition + repeater list)
-	print "<DIV id=\"pathTrans\" style=\"display:none\"><LABEL for=\"pathTrans\">$__{'Repeaters Path'}: </LABEL>";
-	print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_acq}')\" name=\"pathTrans\" size=\"40\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
+	print "<TABLE><TR>";
+		print "<TD style=\"border:0;text-align:left\">";
+			print "<LABEL for=\"typeTrans\">Type: </LABEL>";
+			print "<SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_type}')\" id=\"typeTrans\" name=\"typeTrans\" size=\"1\" onChange=\"maj_transmission()\">";
+			for (sort(keys(%typeTele))) {
+				my $sel = "";
+				if ( $_ eq "$usrTrans" ) { $sel = "selected" }
+				print "<OPTION $sel value=\"$_\">$typeTele{$_}{name}</OPTION>";
+			}
+			print "</SELECT>\n";
+		print "</TD>";
+		print "<TD style=\"border:0\">";
+			# Transmission path (acquisition + repeater list)
+			print "<DIV id=\"pathTrans\" style=\"display:none\"><LABEL for=\"pathTrans\">$__{'Repeaters Path'}: </LABEL>";
+			print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_acq}')\" name=\"pathTrans\" size=\"40\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
+		print "</TD>";
+	print "</TR></TABLE>";
 	print "</FIELDSET>";
 
 	# --- Procs parameters
@@ -561,7 +608,7 @@ print "<TR>";
 		print "</SELECT><BR>\n";
 		# --- RAWDATA
 		print "<LABEL for=\"rawdata\">$__{'Raw data source'}: </label> <input size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawdata}')\" type=\"text\" id=\"rawdata\" name=\"rawdata\" value=\"$usrRAWDATA\"/><br/>";
-		# --- Code r�seau FDSN
+		# --- FDSN Network Code
 		print "<LABEL for=\"fdsn\">Network code: </LABEL>";
 		print "<SELECT name=\"fdsn\" id=\"fdsn\" size=\"1\" onMouseOut=\"nd()\" value=\"$usrFDSN\" onMouseOver=\"overlib('$__{help_creationstation_fdsn}')\">";
 		for ("",sort(keys(%FDSN))) {
@@ -647,14 +694,12 @@ print "<TR>";
 	## }
 
 print "</TD></TR>";
-print "<TR><TD style=border:0 colspan=2>";
-
-	print "<HR>";
-	# --- buttons zone
-	print "<P align=center>";
-	print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-	print "<INPUT type=\"button\" value=\"$__{'Save'}\" style=\"font-weight:bold\" onClick=\"postIt();\">";
-print "</TD></TR></TABLE>";
+print "<TR><TD style=border:0 colspan=2><HR>";
+# --- buttons zone
+print "<P align=center>";
+print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
+print "<INPUT type=\"button\" value=\"$__{'Save'}\" style=\"font-weight:bold\" onClick=\"postIt();\">";
+print "</P></TD></TR></TABLE>";
 print "</FORM>";
 
 print "\n</BODY>\n</HTML>\n";
@@ -669,7 +714,7 @@ Francois Beauducel, Didier Mallarino, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2018 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

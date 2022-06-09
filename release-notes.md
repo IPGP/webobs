@@ -1,4 +1,4 @@
-    # WEBOBS RELEASE NOTES
+# WEBOBS RELEASE NOTES
 
 ## Important note
 This document contains install/upgrade summary and specific instructions for users and administrators.
@@ -8,7 +8,14 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (not a bug fix). An appropriate configuration to keep former behavior is usually proposed.
 
+<!--
 ## Version under development
+### New features
+### Enhancements
+### Fixed issues
+-->
+
+## v2.5 (June 2022)
 
 ### New features
 
@@ -18,13 +25,62 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
     - `HARMONIC_EAST_SINCOS_MM`, `HARMONIC_NORTH_SINCOS_MM`, `HARMONIC_UP_SINCOS_MM` contain pairs of sine,cosine amplitudes for each period, in mm.
 To activate the correction, all parameters must be valid and number of pairs must be consistent with the number of periods for all components.
 
-2. Still in superproc **gnss**, new option for summary plot VECTORS:
-    - `VECTORS_AMPLITUDE_COMPONENTS` defines the used components to compute velocity amplitudes and plot the amplitude vs distance plot. Default is `1,2` for horizontal components only. Set this option to `3` to use only the vertical component.
-   
-3. GNSS thing again, new shell `gnss_make_rinex` and its config file `gnss_make_rinex.rc` make rinex files from different formats of raw datas and some site informations. It based on shell script `raw2rinex`.
+1. Also in superproc **gnss**, new options for velocity trends:
+    - `VECTORS_AMPLITUDE_COMPONENTS` defines the used components to compute velocity amplitudes and plot the amplitude vs distance plot (summary graph VECTORS). Default is `1,2` for horizontal components only. Set this option to `3` to use only the vertical component.
+    - `TREND_MIN_PERCENT` sets a minimum threshold of time period with data to compute a trend. Default is 50%.
+
+1. GNSS thing again, new shell `gnss_make_rinex` and its config file `gnss_make_rinex.rc` make rinex files from different formats of raw datas and some site informations. It based on shell script `raw2rinex`.
+
+1. In the superproc **genplot**, per node graph can plot several moving averages using `MOVING_AVERAGE_SAMPLES` with coma separated values of samples. A shading color scale will be used.
+
+1. In addition to map location node, a list of active neighbour nodes is automatically displayed, sorted by decreasing distances and indicating direction and elevation gain. A link to each neighbour nodes is available, with a warning icon when a project is associated to this node. Two new parameters are added to **NODES.rc** configuration file: `NEIGHBOUR_NODES_ACTIVE_ONLY` (default is `Y`) and `NEIGHBOUR_NODES_MAX` (default is 15) to limit the number of displayed nodes.
+
+1. Former *Google Maps API* for grids and nodes has been replaced by *OpenStreetMap* free mapping (layers taken from https://leaflet-extras.github.io/leaflet-providers/preview/):
+    - **ESRI World Imagery**: mix of satellite images
+    - **OpenTopoMap**: topography with contour lines and roads
+    - **OpenStreetMap**: the collaborative project world map
+    - **Stamen Terrain**: hill shading and natural vegetation colors
+    - **Stamen Watercolor**: just for fun...
+The new GUI uses https://leafletjs.com javascript application.
+
+1. Any grid or node's page shows a QRcode containing URL address of the page. The code can be printed in a new window with associated logos defined in **WEBOBS.rc** `QRCODE_LOGOS` variable. `QRCODE_SIZE` defines the code module size (in pixels, default is 2, empty or zero to disable the display). This function needs the installation of **qrencode** utility on the server (`sudo apt install qrencode`).
+
+1. Node-feature-node association can be edited using the node configuration form: each feature can be associated to another node or list of nodes, creating a parent-children link through this feature. This functionality was already existing but only editable by administrator. If the list of features is modified, a refresh icon allows to update the list of feature/node association text forms. The interface still requires to enter the node ID codes. The former link to edit the **node2node.rc** global file has been removed. It can be added in the +ADMIN menu, as a new entry like `<li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_NODES2NODES)">node2node.rc</a></li>`.
+
+1. In **Sefran/MC**, keyboard shortcuts can be defined by administrator to select the event type during phase picking, as an alternative to menu list mouse selection. The key must be a single character, case sensitive, defined in the **MC3_Codes.conf** file. Note that letters `e`, `r`, `t`, `s` and `S` are already assigned to functions (show/hide MC events and spectrogram control).
 
 ### Enhancements
+
+1. In nodes event editing, the date and time formats are now checked
+
+2. It's now possible to directly download proc requests results in .tgz file at results page, and a link to the scheduler run log is available.
+
+3. New options in the Search node events tool:
+    - grids column is now optional (checkbox) and desactivated by default,
+    - full node name can be displayed (checkbox),
+    - a link allows to download a .csv file of the results,
+    - a wait icon appears during the search.
+
+4. Proc request form proposes the last user's date intervals as preset dates (will fill-up the date/time fields).
+
+5. All nodes have a time zone parameter associated to lifetime dates and events date/time. Default (undefined) time zone will be considered as GMT. Any node configuration edit will propose the time zone of the server.
+
+1. Improves the form behaviour in node configuration edit:
+    - features former delimiters (escaped characters like \, or \|) are replaced by coma,
+    - negative latitude or longitude is allowed in node geographic location. A negative value will automatically switch the N/S or E/W selection.
+
 ### Fixed issues
+
+1. The search event fonction is now working with grid's name.
+
+2. Some fixes in proc request results display.
+
+3. Improves boolean parameters reading in Perl scripts.
+
+4. Users list in grid/node event editor is now sorted in alphabetic order of UID (previously it was based on the login name, case sensitive).
+
+1. Other minor fixes.
+
 
 ## v2.4.2 (November 2021)
 

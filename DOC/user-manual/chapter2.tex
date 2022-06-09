@@ -16,7 +16,8 @@ A \wo{node} is the central \webobs element associated with following attributes:
 \item    a long name (\wo{name}) and short name (\wo{alias});
 \item    an optional short description (\wo{type});
 \item    a lifetime period with start and end dates (both optional);
-\item    an optional location (latitude, longitude, elevation) associated with a location map (graph), Google Maps and Google Earth links;
+\item    a time zone (associated to lifetime dates and events date/time);
+\item    an optional location (latitude, longitude, elevation) associated with a location map (graph), OpenStreetMap GUI and KML link;
 \item    optional text contents for "informations", "installation" and "access";
 \item    an optional sensor description associated with a calibration table of channels parameters;
 \item    a list of user-defined features (also free text contents);
@@ -25,7 +26,7 @@ A \wo{node} is the central \webobs element associated with following attributes:
 \item    events log associated with date and operator list;
 \item    a list of associated grids (\wo{views} and/or \wo{procs}, see \ref{grids});
 \item    a validity flag (for admin users);
-\item	 optional functional parameters when the \wo{node} is associated to a \wo{proc}: data code (\wo{FID}), network code (\wo{FDSN}), data format (\wo{RAWFORMAT}) and source (\wo{RAWDATA}), time zone (\wo{TZ}), acquisition period and delay, and a calibration file that describes each channel characteristics and history:
+\item	 optional functional parameters when the \wo{node} is associated to a \wo{proc}: data code (\wo{FID}), network code (\wo{FDSN}), data format (\wo{RAWFORMAT}) and source (\wo{RAWDATA}), time zone (\wo{TZ}) of data, acquisition period and delay, and a calibration file that describes each channel characteristics and history:
 	\begin{itemize}
 	\item    date and time of validity;
 	\item    channel number, name, unit, code, S/N, offset, factor, gain, min/max values, azimuth, latitude, longitude, elevation, depth, sampling frequency, dynamic, location code.
@@ -49,6 +50,11 @@ Examples of what a \wo{node} can be:
 
 Modifying \wo{node} is possible only through a \wo{grid} (see next section \ref{grids}). Creation of new \wo{node} or edition of an existing \wo{node} deserves to \wo{users} with edit level for the associated \wo{grid}. Deletion of a \wo{node} is reserved to administrator level \wo{users}.
 
+% -----------------------------------------------------------------
+\subsubsection{Node validity}
+
+Once created, a \wo{node} can be valid or invalid. When invalid, a \wo{node} exists but is hidden for standard \wo{users}. It will be ignored by most of the \webobs processes (like \wo{procs}). Nevertheless, if a \wo{user} has an administrator level, he will be able to see an invalid \wo{node} in the lists and tables, and make it valid if necessary.
+
 
 % -----------------------------------------------------------------
 \subsection{Names and codes}
@@ -57,6 +63,7 @@ Modifying \wo{node} is possible only through a \wo{grid} (see next section \ref{
 \subsubsection{Main code (ID)}
 
 Each \wo{node} has a unique ID code in \webobs. The code can be any string of characters, but it is recommended to use a comprehensive and rational code (see appendix \ref{nodeidcodes}) when creating a new \wo{node}. Attribution of this unique code deserves to \wo{users} with administrator level when creating a new \wo{node}. It cannot be modified after.
+
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Name}
@@ -78,7 +85,7 @@ The TYPE of a \wo{node} is an optional free string that will be used for any sho
 
 
 % -----------------------------------------------------------------
-\subsection{Lifetime and validity}
+\subsection{Lifetime and time zone}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Start/end dates}
@@ -89,11 +96,9 @@ The lifetime of a \wo{node} has potential impact on processes that use this \wo{
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Valid \wo{node}}
+\subsubsection{Time zone}
 
-Independently of the lifetime period, a \wo{node} can be valid or invalid. When invalid, a \wo{node} is simply ignored by most of the \webobs processes and invisible for standard \wo{users}. Nevertheless, if a \wo{user} has an administrator level , he will be able to see an invalid \wo{node} in the lists and tables.
-
-
+A time zone (in hours relative to GMT, in the format \wokey{+/-HH[MM]}) is used to define the lifetime and dated events (see below).
 
 % -----------------------------------------------------------------
 \subsection{Grids memberships}
@@ -125,27 +130,24 @@ This optional information provides the timestamp (date) of coordinates, and a ty
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Google Maps API link}
+\subsubsection{OpenStreetMap API link}
 
-Link to Google Maps API is available if the \wo{node} has coordinates. The link will open a pop-up window. This functionality is associated with some variables in the main configuration file \wofile{WEBOBS.rc}:
+Link to OpenStreetMap API is available if the \wo{node} has coordinates. The link will open a pop-up window. This functionality is associated with some variables in the main configuration file \wofile{WEBOBS.rc}:
 
 \begin{lstlisting}[title=\wofile{WEBOBS.rc} (excerpt)]
-CGI_GOOGLE_MAPS|googleMAPS.pl
-GOOGLE_MAPS_LINK|1
-GOOGLE_MAPS_API|http://maps.google.com/maps?file=api
-GOOGLE_MAPS_API_KEY
-GOOGLE_MAPS_LINK_INFO|See with Google Maps (ATTENTION: error ~20 m)
-GOOGLE_MAPS_ICON|/icons/gdot.png
-GOOGLE_MAPS_TYPE|G_HYBRID_MAP
-GOOGLE_MAPS_WIDTH_VALUE|500
-GOOGLE_MAPS_HEIGHT_VALUE|500
-GOOGLE_MAPS_ZOOM_VALUE|17
+CGI_OSM|OSM.pl
+OSM_LINK|1
+OSM_INFO|See with OpenStreetMap
+OSM_NODE_ICON|/icons/gdot.png
+OSM_WIDTH_VALUE|800
+OSM_HEIGHT_VALUE|600
+OSM_ZOOM_VALUE|17
 \end{lstlisting}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Google Earth KML link}
+\subsubsection{KML link}
 
-Link to Google Earth KML file is available if the \wo{node} has coordinates. The link will download a local KML file, which may be open with local application Google Earth (if installed). This functionality is associated with some variables in the main configuration file \wofile{WEBOBS.rc}:
+Link to a KML file is available if the \wo{node} has coordinates. The link will download a local KML file, which may be open with local application associated with KML file type (e.g., Google Earth). This functionality is associated with some variables in the main configuration file \wofile{WEBOBS.rc}:
 
 \begin{lstlisting}[title=\wofile{WEBOBS.rc} (excerpt)]
 GOOGLE_EARTH_LINK|1
@@ -158,6 +160,11 @@ IMAGE_LOGO_GOOGLE_EARTH|/icons/google/google_earth.gif
 
 A location map with 4 different scales is automatically made and updated by LOCASTAT application (see section \ref{locastat} for associated parameters), using the coordinates of the \wo{node}.
 
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Neighbour nodes}
+
+A list of neighbour nodes is automatically displayed, sorted by decreasing distances and indicating direction and elevation gain relative to the displayed node. A link to each neighbour nodes is available, with a warning icon when a project is associated to this node. 
 
 % -----------------------------------------------------------------
 \subsection{Transmission}
@@ -178,6 +185,28 @@ Type of transmission is defined in a list of transmission type associated with p
 \subsubsection{Acquisition and repeaters}
 
 The transmission chain is described by defining a list of \wo{node}'s ID, from station to acquisition.
+
+
+% -----------------------------------------------------------------
+\subsection{Features}
+
+Each \wo{node} can have user-defined features which are free text contents (HTML and Wiki syntax allowed) that appear in the main table as a series of table cells.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{List of user-defined features}
+
+Feature name is limited to short names and must avoid special characters. Edit the list of features to be displayed using the \wo{node} configuration form. Features with void content won't be displayed for \wo{users} without edit or admin rights.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Node-features-nodes association list}
+
+It is possible to associate a \wo{node}'s feature to an other \wo{node} as its feature's children. An automatic link will be displayed in the feature's table cell before the text content of the feature. In the children \wo{node} page, the parent feature will appear with automatic name "feature of" and a link to the parent \wo{node}.
+
+For administrators, the node2node association list is stored in a single configuration file containing a 3-field definition (pipe delimited):
+
+\begin{lstlisting}[title=\wofile{nodes2nodes.rc} (excerpt)]
+PARENT_NODEID|featurename|CHILDREN_NODEID
+\end{lstlisting}
 
 
 % -----------------------------------------------------------------
@@ -261,27 +290,6 @@ For most of \wo{procs}, it is mandatory to define a list of data channels. This 
 The date and time of validity applies until real-time or next line of parameters for this channel number.
 
 Each \wo{proc} might be associated to a selection of channels. Active channels appear in bold font, while inactive appear in gray.
-
-% -----------------------------------------------------------------
-\subsection{Features}
-
-Each \wo{node} can have user-defined features which are free text contents (HTML and Wiki syntax allowed) that appear in the main table as a series of table cells.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{List of user-defined features}
-
-Feature name is limited to short names and must avoid special characters. Edit the list of features to be displayed using the \wo{node} configuration form. Features with void content won't be displayed for \wo{users} without edit or admin rights.
-
-% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\subsubsection{Node-features-nodes association list}
-
-It is possible to associate a \wo{node}'s feature to an other \wo{node} as its feature's children. An automatic link will be displayed in the feature's table cell before the text content of the feature. In the children \wo{node} page, the parent feature will appear with automatic name "feature of" and a link to the parent \wo{node}.
-
-Configuring the node2node association list is made by editing a configuration file containing a 3-field definition (pipe delimited):
-
-\begin{lstlisting}[title=\wofile{nodes2nodes.rc} (excerpt)]
-PARENT_NODEID|featurename|CHILDREN_NODEID
-\end{lstlisting}
 
 
 % -----------------------------------------------------------------

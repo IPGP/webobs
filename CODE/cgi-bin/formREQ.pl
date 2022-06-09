@@ -108,7 +108,7 @@ set_message(\&webobs_cgi_msg);
 my @tod = localtime();
 my $QryParm   = $cgi->Vars;
 
-my %SCHED;
+my %SCHED = readCfg($WEBOBS{CONF_SCHEDULER});
 my @procavailable;
 my @proclist;
 my %P;
@@ -129,6 +129,7 @@ my ($usrYearE,$usrMonthE,$usrDayE) = split(/-/,strftime("%Y-%m-%d",@tm));
 if ($tm[4]==0) { $tm[5]--; $tm[4] = 11;} else { $tm[4]--; }
 my ($usrYearS,$usrMonthS,$usrDayS) = split(/-/,strftime("%Y-%m-%d",@tm));
 
+# ---- makes the proc list
 map (push(@procavailable,basename($_,".conf")), qx(grep -l '^SUBMIT_COMMAND|.*' $WEBOBS{PATH_PROCS}/*/*.conf ));
 chomp(@procavailable);
 if (scalar(@procavailable)>0) {
@@ -146,6 +147,11 @@ my $reqdflt = "$WEBOBS{ROOT_CODE}/tplates/request-template";
 if (-e $reqdflt ) {
 	%REQDFLT = readCfg($reqdflt)
 }
+
+# ---- retrieve the last requests for current user
+my @reqlist;
+map (push(@reqlist,$_), qx(find $WEBOBS{ROOT_OUTR} -type d -mindepth 1 -maxdepth 1 -name "*_$CLIENT"));
+chomp(@reqlist);
 
 # ---- passed all checkings above ...
 # ---- build/process the form HTML page
@@ -172,13 +178,13 @@ function selProc(proc) {
 
 function checkForm()
 {
-	var d1 = document.formulaire.startY.value.concat(document.formulaire.startM.value,document.formulaire.startD.value,document.formulaire.startH.value,document.formulaire.startN.value);
-	var d2 = document.formulaire.endY.value.concat(document.formulaire.endM.value,document.formulaire.endD.value,document.formulaire.endH.value,document.formulaire.endN.value);
+	var d1 = document.form.startY.value.concat(document.form.startM.value,document.form.startD.value,document.form.startH.value,document.form.startN.value);
+	var d2 = document.form.endY.value.concat(document.form.endM.value,document.form.endD.value,document.form.endH.value,document.form.endN.value);
 	if (d1 >= d2) {
 		alert(\"End date must not be before Start date!\");
 		return false;
 	}
-	var checkboxes = document.formulaire.querySelectorAll(\"input[type=checkbox]\");
+	var checkboxes = document.form.querySelectorAll(\"input[type=checkbox]\");
 	var requestprocs = 0;
 	for (index = 0; index < checkboxes.length; ++index) {
 		if (checkboxes[index].name.substring(0, 2) == \"p_\" && checkboxes[index].checked) {
@@ -200,51 +206,64 @@ function postIt()
 function preSet()
 {
 	var now = new Date;
-	if (document.formulaire.preset.value == \"fullmonth\") {
-		document.formulaire.endY.value = now.getUTCFullYear();
-		document.formulaire.endM.value = ('0' + (now.getUTCMonth() + 1)).substr(-2);
-		document.formulaire.endD.value = \"01\";
-		document.formulaire.endH.value = \"00\";
-		document.formulaire.endN.value = \"00\";
-		document.formulaire.startY.value = now.getUTCFullYear();
+	var preset = document.form.preset.value;
+	if (preset == \"fullmonth\") {
+		document.form.endY.value = now.getUTCFullYear();
+		document.form.endM.value = ('0' + (now.getUTCMonth() + 1)).substring(-2);
+		document.form.endD.value = \"01\";
+		document.form.endH.value = \"00\";
+		document.form.endN.value = \"00\";
+		document.form.startY.value = now.getUTCFullYear();
 		if (now.getUTCMonth() > 0) {
-			document.formulaire.startM.value = ('0' + now.getUTCMonth()).substr(-2);
+			document.form.startM.value = ('0' + now.getUTCMonth()).substring(-2);
 		} else {
-			document.formulaire.startY.value -= 1;
-			document.formulaire.startM.value = \"12\";
+			document.form.startY.value -= 1;
+			document.form.startM.value = \"12\";
 		}
-		document.formulaire.startD.value = \"01\";
-		document.formulaire.startH.value = \"00\";
-		document.formulaire.startN.value = \"00\";
+		document.form.startD.value = \"01\";
+		document.form.startH.value = \"00\";
+		document.form.startN.value = \"00\";
 	}
-	if (document.formulaire.preset.value == \"fullyear\") {
-		document.formulaire.startY.value = now.getUTCFullYear() - 1;
-		document.formulaire.startM.value = \"01\";
-		document.formulaire.startD.value = \"01\";
-		document.formulaire.startH.value = \"00\";
-		document.formulaire.startN.value = \"00\";
-		document.formulaire.endY.value = now.getUTCFullYear();
-		document.formulaire.endM.value = \"01\";
-		document.formulaire.endD.value = \"01\";
-		document.formulaire.endH.value = \"00\";
-		document.formulaire.endN.value = \"00\";
+	if (preset == \"fullyear\") {
+		document.form.startY.value = now.getUTCFullYear() - 1;
+		document.form.startM.value = \"01\";
+		document.form.startD.value = \"01\";
+		document.form.startH.value = \"00\";
+		document.form.startN.value = \"00\";
+		document.form.endY.value = now.getUTCFullYear();
+		document.form.endM.value = \"01\";
+		document.form.endD.value = \"01\";
+		document.form.endH.value = \"00\";
+		document.form.endN.value = \"00\";
 	}
-	if (document.formulaire.preset.value == \"currentyear\") {
-		document.formulaire.startY.value = now.getUTCFullYear();
-		document.formulaire.startM.value = \"01\";
-		document.formulaire.startD.value = \"01\";
-		document.formulaire.startH.value = \"00\";
-		document.formulaire.startN.value = \"00\";
-		document.formulaire.endY.value = now.getUTCFullYear() + 1;
-		document.formulaire.endM.value = \"01\";
-		document.formulaire.endD.value = \"01\";
-		document.formulaire.endH.value = \"00\";
-		document.formulaire.endN.value = \"00\";
+	if (preset == \"currentyear\") {
+		document.form.startY.value = now.getUTCFullYear();
+		document.form.startM.value = \"01\";
+		document.form.startD.value = \"01\";
+		document.form.startH.value = \"00\";
+		document.form.startN.value = \"00\";
+		document.form.endY.value = now.getUTCFullYear() + 1;
+		document.form.endM.value = \"01\";
+		document.form.endD.value = \"01\";
+		document.form.endH.value = \"00\";
+		document.form.endN.value = \"00\";
+	}
+	if (preset.includes(\"_\") && preset.length == 25) {
+		document.form.startY.value = preset.substring(0,4);
+		document.form.startM.value = preset.substring(4,6);
+		document.form.startD.value = preset.substring(6,8);
+		document.form.startH.value = preset.substring(8,10);
+		document.form.startN.value = preset.substring(10,12);
+		document.form.endY.value = preset.substring(13,17);
+		document.form.endM.value = preset.substring(17,19);
+		document.form.endD.value = preset.substring(19,21);
+		document.form.endH.value = preset.substring(21,23);
+		document.form.endN.value = preset.substring(23,25);
 	}
 }
 </script>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');preSet();document.formulaire.timezone.focus();\">
+<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.form.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');preSet();document.form.timezone.focus();\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
@@ -254,7 +273,7 @@ function preSet()
 print "<h2>$pagetitle</h2>";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ <a href=\"/cgi-bin/showREQ.pl\">Results</a> ]</P>";
 
-print "<form id=\"theform\" name=\"formulaire\" action=\"\">";
+print "<form id=\"theform\" name=\"form\" action=\"\">";
 
 print "<TABLE style=\"border:0\" width=\"100%\">";
 print "<TR>";
@@ -314,6 +333,15 @@ print "<TR>";
 		print "<TD style=\"border:0\"></TD>";
 		print "<TD align=center style=\"border:0\">$__{'Preset dates'} <select name=\"preset\" size=\"1\" onChange=\"preSet()\">";
 		print "<option value=\"\" selected></option>\n";
+		for (@reqlist) {
+			my $date1 = qx(grep "^DATE1|" $_/REQUEST.rc | sed -e "s/DATE1|//");
+			my $date2 = qx(grep "^DATE2|" $_/REQUEST.rc | sed -e "s/DATE2|//");
+			chomp($date1);
+			chomp($date2);
+			my $date12 = $date1."_".$date2;
+			$date12 =~ s/[-: ]//g;
+			print "<option value=\"$date12\">$date1 to $date2</option>\n";
+		}
 		print "<option value=\"fullmonth\">$__{'Last full month'}</option>\n";
 		print "<option value=\"fullyear\">$__{'Last full year'}</option>\n";
 		print "<option value=\"currentyear\">$__{'Current year'}</option>\n";
@@ -419,11 +447,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

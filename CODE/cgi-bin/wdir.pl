@@ -132,7 +132,7 @@ for $aFile (@files) {
 		if ( WebObs::Users::clientHasRead(type=>'authwikis',name=>$aFile) ) {
 			print "<TD></TD>";
 			print "<TD style='width:20px'><img class=\"link\" title=\"delete\" onClick=\"delFile('$dir','$aFile');return false;\" src=\"/icons/no.png\"></TD>";
-			print "<TD><A href=\"$myname?dir=$dir/$aFile\"><B>$aFile/</B></A></TD>";
+			print "<TD><A href=\"$myname?dir=$dir$aFile\"><B>$aFile/</B></A></TD>";
 		}
 	}
 	print "</TR>";
@@ -148,7 +148,7 @@ for $aFile (@files) {
 			print "<TD style='width:20px'><img class=\"link\" title=\"delete\" onClick=\"delFile('$dir','$aFile');return false;\" src=\"/icons/no.png\"></TD>";
 		}
 		if ( WebObs::Users::clientHasRead(type=>'authwikis',name=>$aFile) ) {
-			print "<TD><A href=\"/cgi-bin/wpage.pl?file=$dir/$aFile&css=wpage.css\"><B>$aFile</B></A>  $title</TD>";
+			print "<TD><A href=\"/cgi-bin/wpage.pl?file=$dir$aFile&css=wpage.css\"><B>$aFile</B></A>  $title</TD>";
 		}
 	}
 	print "</TR>";

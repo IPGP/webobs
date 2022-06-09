@@ -1,9 +1,8 @@
 #!/usr/bin/perl
-##!/usr/bin/perl 
 
 =head1 NAME
 
-index.pl 
+index.pl
 
 =head1 SYNOPSIS
 
@@ -12,58 +11,58 @@ index.pl
 
 WEBOBS site entry point and navigation control.
 
-Initial WebObs page (home page), reading its config/customization 
-parameters in the file pointed to by $WEBOBS{FILE_MENU}, sets up: 
+Initial WebObs page (home page), reading its config/customization
+parameters in the file pointed to by $WEBOBS{FILE_MENU}, sets up:
 
 1) the fixed navigation menu bar as defined/configured in $WEBOBS{FILE_MENU}->{NAVIGATION} file.
 Two formats are supported: the legacy 'rc' format and the 'html' format. Index.pl
-uses the {NAVIGATION} filename extension to determine which format to use ('.rc' and '.html' respectively). 
+uses the {NAVIGATION} filename extension to determine which format to use ('.rc' and '.html' respectively).
 Formats are described below.
 
 2) misc 'decoration' fields in the menu bar: WebObs release number, http-client's login,
 logos and their href.
 
-3) the site's pages iframe div. This iframe is then initially loaded with 
+3) the site's pages iframe div. This iframe is then initially loaded with
 the $WEBOBS{FILE_MENU}->{WELCOME} page.
 
 =head1 Query string parameters
 
- langue=  
+ langue=
  optional, specifies which language to use
 
  page=
- optional, overides the default $WEBOBS{FILE_MENU} welcome page  
+ optional, overides the default $WEBOBS{FILE_MENU} welcome page
 
 =head1 NAVIGATION FILE .rc FORMAT
 
- see the default 'menunav.rc' file; 
+ see the default 'menunav.rc' file;
  each line defines one (1) menu item:  [+|!|*]menu-text|menu-link
-     
- where: + :     top level menu (always shown); also indicates that 
-                following line(s) define(s) the dropdown item(s) 
+
+ where: + :     top level menu (always shown); also indicates that
+                following line(s) define(s) the dropdown item(s)
                 associated to this level, until next '+' line
 
         ! :     same as + but item only made available to administrator(s)
 
-        * :     same as omitting this first character, but item only made available 
-		        to administrator(s) 
+        * :     same as omitting this first character, but item only made available
+		        to administrator(s)
 
         menu-text : item's name as displayed
 
-        menu-link : item's href uri 
+        menu-link : item's href uri
 
  Accepts $WEBOBS{...} variable substitutions
 
- # comment-lines (# in column 1) are allowed; blank lines are ignored  
+ # comment-lines (# in column 1) are allowed; blank lines are ignored
 
 =head1 NAVIGATION FILE .html FORMAT
 
- see the default 'menunav.html' file; 
+ see the default 'menunav.html' file;
  html tags <ul> and <li> describing the dropdown menu tree
 
- an '*' in column 1 indicates that the line is reserved for WebObs administrators  
+ an '*' in column 1 indicates that the line is reserved for WebObs administrators
 
-=cut 
+=cut
 
 use strict;
 use warnings;
@@ -78,14 +77,14 @@ use WebObs::Config;
 use WebObs::Utils;
 use WebObs::Users;
 use WebObs::i18n;
-use Locale::TextDomain('webobs'); 
+use Locale::TextDomain('webobs');
 
 
 # if the client is not a valid user, ends here !!
 if (!WebObs::Users::clientIsValid(user=>$USERS{$CLIENT})) {
  	print $cgi->header(-type=>'text/html', -charset=>'utf-8');
 	print "<H1>$WEBOBS{VERSION}</H1>"
-	."Sorry, user '$USERS{$CLIENT}{LOGIN}' is waiting for validation by an administrator. Please be patient..."; 
+	."Sorry, user '$USERS{$CLIENT}{LOGIN}' is waiting for validation by an administrator. Please be patient...";
 	exit(1);
 }
 
@@ -147,7 +146,7 @@ i	$logos .= "<a href=\"$liste_url[$i]\"><img src=\"$liste_logos[$i]\" alt=\"$lis
 }
 $logos =~ s/'/\\'/g;
 
-# ---- is the http client an admin ? 
+# ---- is the http client an admin ?
 #
 my $admOK = (WebObs::Users::clientHasAdm(name=>'*',type=>'authmisc')) ? 1 : 0;
 
@@ -173,7 +172,7 @@ push(@menu,readCfgFile("$WEBOBS{ROOT_CONF}/MENUS/$USERS{$CLIENT}{UID}","utf8"));
 
 # legacy format .rc
 if ( $menunav =~ m/.rc$/) {
-	my $l1 = my $l2 = 0; 
+	my $l1 = my $l2 = 0;
 	$menuhtml = "<ul class=\"haut inactif\">";
 	for (@menu) {
 		my ($titre,$lien)=split(/\|/,$_);
@@ -185,13 +184,13 @@ if ( $menunav =~ m/.rc$/) {
 			$l1 = 1;
 			$menuhtml .= "<li class=\"haut inactif $xtrn\"><a href=".(defined($lien)?"$lien":"").">".substr($titre,1)."</a>\n";
 			next;
-		} 
+		}
 		if ( substr($titre,0,1) eq "*" ){
 			next if (! $admOK);
 			$titre = substr($titre,1);
 		}
 		if ($l2==0) { $menuhtml .= "<ul class=\"bas inactif\">"; $l2 = 1; }
-		$menuhtml .= "<li class=\"bas inactif $xtrn\"><a href=".(defined($lien)?"$lien":"").">$titre</a></li>\n"; 
+		$menuhtml .= "<li class=\"bas inactif $xtrn\"><a href=".(defined($lien)?"$lien":"").">$titre</a></li>\n";
 	}
 	if ($l2==1) { $menuhtml .= "</ul>"; }
 	if ($l1==1) { $menuhtml .= "</li>"; }
@@ -201,7 +200,7 @@ if ( $menunav =~ m/.rc$/) {
 # new format .html (CSS)
 } else {
 	@menu = grep { $_ !~ /^\*/ } @menu if (! $admOK);
-	for(@menu) { 
+	for(@menu) {
 		s/^\*//;
 		s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g ;
 		my $xtrn = ($_ =~ m/http.?:\/\//) ? " class=\"externe\" ": "";
@@ -239,6 +238,11 @@ print <<"FIN";
 		<script language="javascript" type="text/javascript" src="/js/wm.js"></script>
 	</head>
 	<body>
+    <script type="text/javascript">
+    if ( window.self !== window.top ) {
+        window.top.location.href=window.location.href;
+    }
+    </script>
 FIN
 print <<"FIN";
 		<div id="wm">
@@ -256,8 +260,8 @@ print <<"FIN";
 FIN
 print <<"FIN";
 		<div style="clear: both"></div>
-		<iframe name="wmtarget" id="wmtarget" src="$iframepage" width="100%" height="100%" frameborder=0 scrolling="no">no iframe!!</iframe>
-		<!--<iframe name="wmtarget" id="wmtarget" width="100%" height="100%" frameborder=0 scrolling="no">no iframe!!</iframe>-->
+		<iframe name="wmtarget" id="wmtarget" src="$iframepage" width="100%" height="100%" frameborder=0>no iframe!!</iframe>
+		<!--<iframe name="wmtarget" id="wmtarget" width="100%" height="100%" frameborder=0>no iframe!!</iframe>-->
 		<hr/>
 		<div id="wmsig">$signature</div>
 		<noscript><div id="nojsMsg">$__{'WebObs pages require JavaScript enabled'}</div></noscript>
@@ -291,4 +295,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-
