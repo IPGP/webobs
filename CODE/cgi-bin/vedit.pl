@@ -142,6 +142,7 @@ $contents = "$metain$contents";            # add MMD
 my $meta;                                  # add MMD
 my $mmd = $WEBOBS{WIKI_MMD} // 'YES';        # add MMD
 my $target = "";
+my $tz = "";
 
 if ($action =~ /upd|new|del|save/i) {
 	if (defined($GRIDType)) {
@@ -169,11 +170,13 @@ if ($object =~ /^.*\..*\..*$/) {
 	my %S = readNode($NODEName);
 	%NODE = %{$S{$NODEName}};
 	$objectfullname = "<B>$NODE{ALIAS}: $NODE{NAME}</B> <I>($NODE{TYPE})</I>";
+	$tz = $NODE{TZ};
 # ... or a grid (gridtype.gridname)
 } else {
 	my %S = readGrid($object);
 	%GRID = %{$S{$object}};
 	$objectfullname = "<B>$GRID{NAME}</B>";
+	$tz = $GRID{TZ};
 }
 
 # ---------------------------------------------------------------------------------------
@@ -256,7 +259,7 @@ if ($action =~ /del/i ) {
 	$rc = WebObs::Events::deleteit($evbase, $evtrash, $evpath);
 	# if events are gone, remove their reference in Gazette (from @tree)
 	if ($rc eq 'OK') {
-		if ($GazetteDel eq "YES") {
+		if (isok($GazetteDel)) {
 			for (@tree) { $rcd += WebObs::Gazette::delEventArticle($object,$_); }
 			$msg .= " $rcd $__{'article removed from Gazette'}";
 		}
@@ -308,14 +311,14 @@ if ($action =~ /upd/i ) {
 		($name,$date,$time,$version) = WebObs::Events::eventnameSplit(basename($fname));
 		$time =~ s/-/:/;
 		$time =~ s/NA//;
-		$pagetitle = "$__{'Edit Event'} [$date $time $version]";
+		$pagetitle = "$__{'Edit Event'} [$date $time".($tz ne "" ? " <I>($tz)</I>":"")." $version]";
 		$s2g = ( $GazetteWhat eq "ALL" ) ? 1 : 0;
 	} else {
 		$pagetitle = "$__{'Edit Project'}";
 	}
 
 	# event metadata are stored in the header line of file as pipe-separated fields:
-	# 	UID1[+UID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
+	# 	UID1[+UID2+...]/RUID1[+RUID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
 	#	event text content
 	#	...
 	@lines = readFile("$evbase/$evpath");
@@ -398,11 +401,17 @@ function postform() {
 	var form = \$(\"#theform\")[0];
 	var bad = false;
 	\$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
-	if (!form.date.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date.style.background='red';};
-	if (form.time.value == '') {form.time.value = 'NA';}
+	if (!form.date.value.match(/^[1-2]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|1\\d|2\\d|3[01])\$/)) {bad=true; form.date.style.background='red';};
+	if (form.time.value == '') {
+		form.time.value = 'NA';
+		} else {
+			if (!form.time.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {bad=true; form.time.style.background='red';};
+		}
+	console.log(\"0 - time=\" + form.time.value);
 	if (form.date2.value != '' && !form.date2.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date2.style.background='red';};
 	if (form.date2.value == '') {form.date2.value = form.date.value;}
 	if (form.time2.value == '') {form.time2.value = form.time.value;}
+	if (!form.time2.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {bad=true; form.time2.style.background='red';};
 	if (form.oper.value == '' && form.roper.value == '') {
 		bad=true;
 		form.oper.style.background='red';
@@ -475,15 +484,15 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	print "<TABLE><TR>";
 	print "<TD style=\"vertical-align: top; border: none;\">";
 	if (!$isProject) {
-		print "<LABEL style=\"width:80px\" for=\"date\">$__{'Start date & time'}: </LABEL><INPUT size=\"10\" name=\"date\" id=\"date\" value=\"$date\"> ";
-		print "<INPUT size=\"5\" name=\"time\" id=\"time\" value=\"$time\"><br><br>\n";
-		print "<LABEL style=\"width:80px\" for=\"date2\">$__{'End date & time'}: </LABEL><INPUT size=\"10\" name=\"date2\" id=\"date2\" value=\"$date2\"> ";
-		print "<INPUT size=\"5\" name=\"time2\" id=\"time\" value=\"$time2\"><br><br>\n";
+		print "<LABEL style=\"width:100px\" for=\"date\">$__{'Start date & time'}: </LABEL><INPUT size=\"10\" name=\"date\" id=\"date\" value=\"$date\"> ";
+		print "<INPUT size=\"5\" name=\"time\" id=\"time\" value=\"$time\">".($tz ne "" ? " <I>GMT $tz</I>":"")."<br><br>\n";
+		print "<LABEL style=\"width:100px\" for=\"date2\">$__{'End date & time'}: </LABEL><INPUT size=\"10\" name=\"date2\" id=\"date2\" value=\"$date2\"> ";
+		print "<INPUT size=\"5\" name=\"time2\" id=\"time2\" value=\"$time2\">".($tz ne "" ? " <I>GMT $tz</I>":"")."<br><br>\n";
 	}
-	print "<LABEL style=\"width:80px\" for=\"titre\">$__{'Title'}:</LABEL><INPUT type=\"text\" name=\"titre\" id=\"titre\" value=\"$titre\" size=\"80\"><br><br>\n";
+	print "<LABEL style=\"width:100px\" for=\"titre\">$__{'Title'}:</LABEL><INPUT type=\"text\" name=\"titre\" id=\"titre\" value=\"$titre\" size=\"80\"><br><br>\n";
 	# only for node's event
 	if ($object =~ /^.*\..*\..*$/) {
-		print "<LABEL style=\"width:80px\" for=\"feature\">$__{Feature}:</LABEL><SELECT id=\"feature\" name=\"feature\" size=\"0\">";
+		print "<LABEL style=\"width:100px\" for=\"feature\">$__{Feature}:</LABEL><SELECT id=\"feature\" name=\"feature\" size=\"0\">";
 		my @features = ("",split(/[,\|]/,$NODE{FILES_FEATURES}));
 		push(@features,$feature) if !(@features =~ $feature); # adds current feature if not in the list
 		foreach (@features) {
@@ -510,7 +519,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 			print "<INPUT type=\"hidden\" name=\"channel\" value=\"$channel\">\n";
 		}
 		print "<B>$__{'Sensor/data outcome'}: </B><INPUT type=\"checkbox\" name=\"outcome\" value=\"1\"".($outcome ? "checked":"").">";
-		if ($NODES{EVENTNODE_NOTEBOOK} eq "YES") {
+		if (isok($NODES{EVENTNODE_NOTEBOOK})) {
 			print "<B style=\"margin-left:20px\">$__{'Notebook Nb'}: </B><INPUT type=\"text\" size=\"3\" name=\"notebook\" value=\"$notebook\">";
 			print "<B style=\"margin-left:20px\">$__{'Forward to notebook'}: </B><INPUT type=\"checkbox\" name=\"notebookfwd\" value=\"1\" ".($notebookfwd ? "checked":"").">";
 		} else {
@@ -522,23 +531,25 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	print "<B>$__{'Author(s)'}: </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\"
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved (hold CTRL key for multiple selections)'}')\">\n";
 	# makes a list of active (and inactive) users
-	my @alogins;
-	my @ilogins;
-	for my $uid (sort keys(%USERS)) {
-		my @grp = WebObs::Users::userListGroup($uid);
+	my %alogins;
+	my %ilogins;
+	for my $ulogin (keys(%USERS)) {
+		my @grp = WebObs::Users::userListGroup($ulogin);
 		my %gid = map { $_ => 1 } split(/,/,$WEBOBS{EVENTS_ACTIVE_GID});
-		if ((%gid && grep { $gid{$_} } @grp) || (!%gid && $USERS{$_}{VALIDITY} eq "Y")) {
-			push(@alogins,$uid);
+		if ((%gid && grep { $gid{$_} } @grp) || (!%gid && isok($USERS{$_}{VALIDITY}))) {
+			$alogins{$USERS{$ulogin}{UID}} = $ulogin;
 		} else {
-			push(@ilogins,$uid);
+			$ilogins{$USERS{$ulogin}{UID}} = $ulogin;
 		}
 	}
-	my @logins = @alogins;
-	push(@logins,@ilogins) if (!($action =~ /new/i)); # adds inactive users
+	my @logins;
+	for my $uid (sort keys(%alogins)) { push(@logins,$alogins{$uid}); }
+	if (!($action =~ /new/i)) { # adds inactive users
+		for my $uid (sort keys(%ilogins)) { push(@logins,$ilogins{$uid}); }
+	}
 	for my $ulogin (@logins) {
-		my $sel = "";
 		my $uid = $USERS{$ulogin}{UID};
-		$sel = 'selected' if (grep(/^$uid$/, @oper) || ($action =~ /new/i && $ulogin eq $CLIENT));
+		my $sel = ((grep {$_ eq $uid} @oper) || ($action =~ /new/i && $ulogin eq $CLIENT) ? 'selected':'');
 		print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
 	}
 	print "</SELECT>\n";
@@ -546,9 +557,9 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	print "<B>$__{'Remote Operator(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved remotely (hold CTRL key for multiple selections)'}')\">\n";
 	for my $ulogin (@logins) {
-		my $sel = "";
-		$sel = 'selected' if (grep(/^$USERS{$ulogin}{UID}$/, @roper));
-		print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME} ($USERS{$ulogin}{UID})</option>\n";
+		my $uid = $USERS{$ulogin}{UID};
+		my $sel = ((grep {$_ eq $uid} @roper) || ($action =~ /new/i && $ulogin eq $CLIENT) ? 'selected':'');
+		print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
 	}
 	print "</SELECT></TR>\n";
 	print "<TR><TD style=\"vertical-align: top; border: none;\" colspan=3>";
@@ -559,7 +570,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 			print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
 		}
 		print "<input type=\"button\" style=\"font-weight:bold\" value=\"$__{'Submit'}\" onClick=\"postform();\">";
-		print "<B style=\"margin-left:20px\">$__{Notify} (email)</B><input type=\"checkbox\"".($NODES{EVENTNODE_NOTIFY_DEFAULT} eq "YES" ? " checked":"")." name=\"notify\" value=\"OK\""
+		print "<B style=\"margin-left:20px\">$__{Notify} (email)</B><input type=\"checkbox\"".(isok($NODES{EVENTNODE_NOTIFY_DEFAULT}) ? " checked":"")." name=\"notify\" value=\"OK\""
 			." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Send an e-mail to inform Webobs users'}')\">";
 		print "<input type=\"hidden\" name=\"action\" value=\"save\">";
 		print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
@@ -580,7 +591,7 @@ sub htmlMsgOK {
 	my $msg = "$_[0]\n";
 	my $rcd = 0;
 	if ($send2Gazette) {
-		if ($GazetteDel eq "YES" && $target ne "") {
+		if (isok($GazetteDel) && $target ne "") {
 			$rcd = WebObs::Gazette::delEventArticle($object,$target);
 			$msg .= "\n+ ".basename($target)." $__{'removed from Gazette'}" if ($rcd != 0);
 		}
@@ -643,7 +654,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2018 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -183,7 +183,6 @@ CGI_CONFIRM_SUCCESSFUL|NO
 # ---- External resources ---------------------
 # ---------------------------------------------
 PLOTERUP_FILE|${ROOT_CONF}/ERUPTIONS_SHM.conf
-MAP_EXTENSION_ORDER|ANT,GUA,SBT,SOU,DOM
 
 PATH_MCR|/usr/local/MATLAB/MATLAB_Compiler_Runtime/v716
 PATH_MCC|${ROOT_CODE}/bin/linux-64
@@ -277,18 +276,18 @@ GOOGLE_EARTH_LINK|1
 GOOGLE_EARTH_LINK_INFO|KML file for Google Earth (ATTENTION: error ~20 m)
 IMAGE_LOGO_GOOGLE_EARTH|/icons/google/google_earth.gif
 
-# Google Maps ---------------------------------
-CGI_GOOGLE_MAPS|googleMAPS.pl
-GOOGLE_MAPS_LINK|1
-GOOGLE_MAPS_API|https://maps.google.com/maps?file=api
-# NOTE: API key can be obtained at http://code.google.com/apis/maps/signup.html entering domain address
-GOOGLE_MAPS_API_KEY|
-GOOGLE_MAPS_LINK_INFO|See with Google Maps (ATTENTION: error ~20 m)
-GOOGLE_MAPS_ICON|/icons/gdot.png
-GOOGLE_MAPS_TYPE|G_HYBRID_MAP
-GOOGLE_MAPS_WIDTH_VALUE|800
-GOOGLE_MAPS_HEIGHT_VALUE|600
-GOOGLE_MAPS_ZOOM_VALUE|17
+# OpenStreetMap ---------------------------------
+CGI_OSM|OSM.pl
+OSM_LINK|1
+OSM_INFO|See with OpenStreetMap
+OSM_NODE_ICON|/icons/gdot.png
+OSM_WIDTH_VALUE|800
+OSM_HEIGHT_VALUE|600
+OSM_ZOOM_VALUE|17
+
+# QR code module size (in pixels) / empty or zero to not display in grid/node pages
+QRCODE_SIZE|2
+QRCODE_LOGOS|/icons/ipgp/logo_WebObs_C413.png,/icons/ipgp/logo_IPGP_2022.png
 
 # Digital Elevation Models --------------------
 # ---------------------------------------------
@@ -299,7 +298,7 @@ PATH_DATA_DEM_SRTM1|${PATH_DATA_DEM}/SRTM1
 SRTM_COPYRIGHT|DEM: SRTM/NASA
 SRTM_MAX_TILES|25
 SRTM1_MAX_TILES|4
-# Authentication needed to download new SRTM tiles (see https://urs.earthdata.nasa.gov)
+# Authentication needed to download new SRTM1 tiles (see https://urs.earthdata.nasa.gov)
 # alternative is to empty this variable and put login information in .netrc
 EARTHDATA_LOGIN|usr,pwd
 # ETOPO Global Relief Data: ETOPO1 can be downloaded at http://www.ngdc.noaa.gov/mgg/global/global.html (.bin and .hdr)

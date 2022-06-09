@@ -244,13 +244,17 @@ sub readNode {
 		#FB-legacy: if TYPE not defined and old type.txt exists, loads it
 		if (!$tmp{TYPE}) {
 			my $typ = "$NODES{PATH_NODES}/$f/type.txt";
-			if ((-e $typ) && (-s $typ !=0)) {
+			if ((-e $typ) && (-s $typ != 0)) {
 				$tmp{TYPE} = trim(join("",readFile($typ)));
 			}
 		}
+		$tmp{PROJECT} = 1 if (-s "$NODES{PATH_NODES}/$f/$NODES{SPATH_INTERVENTIONS}/${f}_Projet.txt");
 		#substitutes possible decimal comma to point for numerics
 		$tmp{LAT_WGS84} =~ s/,/./g;
 		$tmp{LON_WGS84} =~ s/,/./g;
+		#FB-legacy: removes escape characters in feature's list
+		$tmp{FILES_FEATURES} =~ s/\\,/,/g;
+		$tmp{FILES_FEATURES} =~ s/\\\|/,/g;
 
 		$ret{$f}=\%tmp;
 	}
@@ -540,8 +544,7 @@ sub normNode {
 		$node =~ s/\./*./g;
 		my @l = qx(ls -dr $WEBOBS{PATH_GRIDS2NODES}/$node 2>/dev/null);
 		chomp(@l);
-		@l = map(basename($_), @l);
-		if (scalar(@l) > 0) {$ret = $l[0]}
+		if (scalar(@l) > 0) {$ret = basename($l[0])}
 	}
 	return $ret;
 }
@@ -577,8 +580,8 @@ sub getNodeString
 		my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
 		no warnings "uninitialized";
 		if ($style eq 'alias')    { $texte = $N{ALIAS} }
-		if ($style eq 'short')    { $texte = sprintf('%s: %s',$N{ALIAS},$N{NAME}) }
-		if ($style eq 'html')     { $texte = sprintf('<b>%s</b>: %s <i>(%s)</i>',$N{ALIAS},$N{NAME},$N{TYPE}) }
+		if ($style eq 'short')    { $texte = "$N{ALIAS}: $N{NAME}" }
+		if ($style eq 'html')     { $texte = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ne "" && $N{TYPE} ne "-" ? " <i>($N{TYPE})</i>":"") }
 		use warnings;
 		#djl-was: $texte =~ s/ /Â /g;    #djl: re-assess
 	}
@@ -690,7 +693,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

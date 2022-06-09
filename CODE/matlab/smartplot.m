@@ -1,5 +1,4 @@
 function [lre,V] = smartplot(X,tlim,G,OPT)
-%function [lre,V] = smartplot(X,tlim,G,linestyle,fontsize,chnames,choffset,zoompca,trendmindays)
 %SMARTPLOT Enhanced multi-component timeseries plot
 %	SMARTPLOT plots a single graph divided into channel subplots, each
 %	subplot grouping all nodes with different colors. This supposes all
@@ -36,7 +35,8 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %	     chnames: cell of strings defining the channel names.
 %	    choffset: scalar defining the space between each channel subplots
 %	     zoompca: scalar defining the ratio of zoom if positive or PCA if negative.
-%	trendmindays: minimum time interval between 2 samples to compute a trend.
+%	trendmindays: minimum time interval (in days) of data limits to compute a trend.
+%	trendminperc: minimum time interval (in percent) of data limits to compute a trend.
 %	 yscalevalue: fixes the Y-scale (value in data unit)
 %	  yscaleunit: name of the scale unit (default is 'cm')
 %	  yscalefact: factor of the scale unit (default is 100)
@@ -44,7 +44,7 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 2021-11-29
+%	Updated: 2022-04-27
 
 linestyle = field2str(OPT,'linestyle','-');
 fontsize = field2num(OPT,'fontsize',8);
@@ -52,6 +52,7 @@ chnames = OPT.chnames;
 choffset = field2num(OPT,'choffset');
 zoompca = field2num(OPT,'zoompca');
 trendmindays = field2num(OPT,'trendmindays');
+trendminperc = field2num(OPT,'trendminperc');
 yscalevalue = field2num(OPT,'yscalevalue');
 yscaleunit = field2str(OPT,'yscaleunit','cm');
 yscalefact = field2num(OPT,'yscalefact',100);
@@ -116,7 +117,7 @@ for ii = 0:(tzoom+(zoompca<0))
 					plotorbit(X(n).t,mavr(d(:,1),10),X(n).w,'-',G.LINEWIDTH,G.MARKERSIZE/2,scolor(2));
 				end
 				kk = find(~isnan(d(:,1)));
-				if ii == 0 && X(n).trd && length(kk) >= 2 && diff(minmax(X(n).t(kk))) >= trendmindays
+				if ii == 0 && X(n).trd && length(kk) >= 2 && diff(minmax(X(n).t(kk))) >= trendmindays && 100*diff(minmax(X(n).t(kk))) >= trendminperc
 					if size(d,2) > 1 && all(d(kk,2)~=0)
 						lr = wls(X(n).t(kk)-tlim(1),d(kk,1),1./d(kk,2).^2);
 					else

@@ -59,7 +59,7 @@ use WebObs::Users;
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
-use WebObs::IGN;
+use WebObs::Mapping;
 use WebObs::Wiki;
 use Locale::TextDomain('webobs');
 use QML;
@@ -180,7 +180,7 @@ for (@time_intervals) {
 
 
 # spectrogram
-my $sgramOK = ($SEFRAN3{SGRAM_ACTIVE} =~ /1|y|yes|on/i ? 1:0);
+my $sgramOK = isok($SEFRAN3{SGRAM_ACTIVE});
 
 # ---- misc inits (menu, external pgms and requests, ...)
 #
@@ -309,7 +309,7 @@ var PSE = {
 html
 
 if ($dep) {
-	print <<html
+	print <<html;
 // MECB = MC3 Event Control Block: javascript global variables for Sefran analysis page
 // gets initialized/updated by cgi and/or javascript
 var MECB = {
@@ -337,11 +337,15 @@ var MECB = {
 	      },
 	CROSSHAIR: '<span id=crosshairUp></span><span id=crosshairDown></span>',
 	NEWPCLEARS: $MC3{NEW_P_CLEAR_S},
-	TITLE: '$MC3{TITLE}'
-};
-
-
+	TITLE: '$MC3{TITLE}',
 html
+
+	print "	KB: {\n";
+	for (keys(%types)) {
+		print "		'$_': \"$types{$_}{KBcode}\",\n" if ($types{$_}{KBcode} ne "");
+	}
+	print "		}\n};\n\n";
+
 } # endif dep
 
 print "</script>";
@@ -873,7 +877,7 @@ if ($date) {
 
 		my $modif = 0;
 
-		if (($MC3{LEVEL2_MODIFY_ALL_EVENTS} eq "Y" && $userLevel ==2) || ($userLevel == 2 && ($operateur eq "" || $operateur eq $USERS{$CLIENT}{UID} || $type_evt eq "AUTO")) || $userLevel == 4 ) {
+		if ((isok($MC3{LEVEL2_MODIFY_ALL_EVENTS}) && $userLevel ==2) || ($userLevel == 2 && ($operateur eq "" || $operateur eq $USERS{$CLIENT}{UID} || $type_evt eq "AUTO")) || $userLevel == 4 ) {
 			$modif = 1;
 		}
 		# --- mcform: edit form for Main Courante
@@ -986,7 +990,8 @@ if ($date) {
 		for (sort(keys(%typesSO))) {
 			my $key = $typesSO{$_};
 			if ($key ne "AUTO" || $id) {
-				print "<OPTION id=\"$key\" value=\"$key\"".($type_evt eq $key ? " selected":"").">$types{$key}{Name} </OPTION>\n";
+				print "<OPTION id=\"$key\" value=\"$key\"".($type_evt eq $key ? " selected":"").">$types{$key}{Name} "
+					.($types{$key}{KBcode} ne "" ? "[$types{$key}{KBcode}]":"")."</OPTION>\n";
 			}
 		}
 		print "</SELECT>\n";
@@ -1124,7 +1129,7 @@ Acknowledgments:
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2021 - Institut de Physique du Globe Paris
+WebObs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

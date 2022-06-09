@@ -35,7 +35,7 @@ use WebObs::Utils;
 use WebObs::Search;
 use WebObs::Wiki;
 use WebObs::i18n;
-use WebObs::IGN;
+use WebObs::Mapping;
 use Locale::TextDomain('webobs');
 
 
@@ -167,19 +167,19 @@ print "<script language=\"javascript\" type=\"text/javascript\" src=\"/js/wolb.j
 # ---- header (GRID name) and internal links within page
 #
 print "<A NAME=\"MYTOP\"></A>";
+print "<TABLE width=100%><TR><TD style='border:0'>\n";
 my $domain_title = ($#domain > 0 ? "#":$DOMAINS{$domain[0]}{NAME});
 print "<H1 style=\"margin-bottom:6pt\"> $domain_title / $GRID{NAME}".($admOK ? " <A href=\"/cgi-bin/formGRID.pl?grid=$grid\"><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
 print WebObs::Search::searchpopup();
-#if ($admOK == 1) { print "<A class=\"gridname\" href=\"/cgi-bin/formGRID.pl?grid=$grid\">{$grid}</A>"; }
 
 my $ilinks = "[ ";
 $ilinks .= "<A href=\"/cgi-bin/listGRIDS.pl?type=$GRIDType\">".ucfirst(lc($GRIDType))."s</A>";
 $ilinks .= " | <A href='#MYTOP' title=\"$__{'Find text in Grid'}\" onclick='srchopenPopup(\"+$GRIDType.$GRIDName\");return false'><img class='ic' src='/icons/search.png'></A>";
 $ilinks .= " | <A href=\"/cgi-bin/gvTransit.pl?grid=$GRIDType.$GRIDName\"><IMG src=\"/icons/tmap.png\" title=\"Tmap\" style=\"vertical-align:middle;border:0\"></A>";
-$ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_GOOGLE_MAPS}?grid=$grid','$GRIDName','width="
-		.($WEBOBS{GOOGLE_MAPS_WIDTH_VALUE}+15).",height="
-		.($WEBOBS{GOOGLE_MAPS_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">
-		<IMG src=\"$WEBOBS{GOOGLE_MAPS_ICON}\" title=\"$WEBOBS{GOOGLE_MAPS_LINK_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
+$ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$grid','$GRIDName','width="
+		.($WEBOBS{OSM_WIDTH_VALUE}+15).",height="
+		.($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">
+		<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
 if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
 	$ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml')\" title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
 }
@@ -190,7 +190,8 @@ $ilinks .= " | <A href=\"#PROJECT\">$__{'Project'}</A>";
 $ilinks .= " | <A href=\"#EVENTS\">$__{'Events'}</A>";
 $ilinks .= " | <A href=\"#REF\">$__{'References'}</A>";
 $ilinks .= " ]";
-print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks";
+print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks</P>";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
 
 # ---- Objectives
 #
@@ -449,7 +450,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			if (%NODE) {
 
 				# is VALID ? do we display INVALID ?
-				if ($NODE{VALID} == 0) {
+				if (!isok($NODE{VALID})) {
 					$tcolor="node-disabled";
 					if ($usrNodes eq "valid" || !$seeInvOK) {
 						$nbNonValides++;
@@ -461,7 +462,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				}
 
 				# is NOT active if already 'ended' OR not yet 'installed' ? do we display ?
-				if ($NODE{VALID} && ($NODE{END_DATE} ne "NA" && $NODE{END_DATE} lt $today) || ($NODE{INSTALL_DATE} ne "NA" && $NODE{INSTALL_DATE} gt $today)) {
+				if (isok($NODE{VALID}) && ($NODE{END_DATE} ne "NA" && $NODE{END_DATE} lt $today) || ($NODE{INSTALL_DATE} ne "NA" && $NODE{INSTALL_DATE} gt $today)) {
 					$tcolor="node-inactive";
 					if ($usrNodes eq "active") {
 						$displayNode = 0;
@@ -528,7 +529,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 						my $fileProj = "$pathInter/$fileProjName";
 						if ((-e $fileProj) && (-s $fileProj)) {
 							my @proj = readFile($fileProj);
-							@proj = grep(!/^$/, @proj);
+							@proj = grep(!/^$|^WebObs: /, @proj);
 							chomp(@proj);
 							if ($proj[0] =~ "|") {
 								my @pLigne = split(/\|/,$proj[0]);
@@ -749,7 +750,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2021 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

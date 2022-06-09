@@ -147,9 +147,9 @@ print "<!-- overLIB (c) Erik Bosrup --><div id=\"overDiv\" style=\"position:abso
 <link href=\"/css/wolb.css\" rel=\"stylesheet\" />";
 
 print "<A NAME=\"MYTOP\"></A>";
+print "<TABLE width=100%><TR><TD style='border:0'>\n";
 print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME}</H1>\n" if ($QryParm->{'header'} ne 'no');
 my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
-
 
 # ---- build the top-of-page outputs selection banner:
 # 1st line for timescale selection
@@ -287,6 +287,7 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 		print "<BR><B>[ ".$glistHtml." ]</B>\n";
 	}
 print "</DIV>";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode(2)."</TD></TR></TABLE>\n";
 
 
 # ---- now show the selected item

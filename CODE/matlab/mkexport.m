@@ -11,7 +11,7 @@ function status = mkexport(WO,f,E,G);
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2019-06-10
+%	Updated: 2022-04-18
 
 
 ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,G.SELFREF,randname(16));
@@ -42,19 +42,19 @@ if fid > 0
 	fprintf(fid,'# TITLE: %s\n',E.title);
 	fprintf(fid,'# FILENAME: %s.txt\n',f);
 	if ~isnan(G.DATE1) && ~isnan(G.DATE2)
-		fprintf(fid,'# TIMESPAN: from %s to %s\n',datestr(G.DATE1),datestr(G.DATE2)); 
+		fprintf(fid,'# TIMESPAN: from "%s" to "%s"\n',datestr(G.DATE1),datestr(G.DATE2));
 	end
-	fprintf(fid,'#\n'); 
+	fprintf(fid,'#\n');
 	if isfield(E,'infos')
 		for i = 1:length(E.infos)
-			fprintf(fid,'#   %s\n',E.infos{i}); 
+			fprintf(fid,'#   %s\n',E.infos{i});
 		end
 	end
 	[s,w] = wosystem('echo "$(whoami)@$(hostname)"','chomp');
 	if ~s
-		fprintf(fid,'#\n# CREATED: %s by %s\n',datestr(now),w); 
+		fprintf(fid,'#\n# CREATED: %s by %s\n',datestr(now),w);
 	end
-	fprintf(fid,'# COPYRIGHT: %s, %s\n',datestr(now,'yyyy'),G.COPYRIGHT);
+	fprintf(fid,'# COPYRIGHT: %s, %s\n',num2roman(str2num(datestr(now,'yyyy'))),G.COPYRIGHT);
 	fprintf(fid,'%s\n',repmat('#',[1,80]));
 	fprintf(fid,'#\n');
 	fprintf(fid,'#yyyy mm dd HH MM SS');
@@ -83,4 +83,3 @@ end
 
 % removes the temporary directory
 wosystem(sprintf('rm -rf %s',ptmp));
-
