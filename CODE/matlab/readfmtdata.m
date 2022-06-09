@@ -15,14 +15,16 @@ function [D,P] = readfmtdata(WO,P,N)
 %	PROC's parameters P.RAWFORMAT and P.RAWDATA apply to all associated NODES, excepted if those
 %	parameters are defined into the NODE itself.
 %
+%	RAWDATA can contain variables $FID and $NET (FDSN network code).
+%
 %	The RAWFORMAT string is case insensitive.
 %
 %	List of formats selectable by users must be set in CODE/etc/rawformats.conf
 %
 %
-%	Authors: Fran?ois Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
+%	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2019-12-24
+%	Updated: 2022-06-09
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -40,6 +42,7 @@ else
 
 		F.fmt = lower(field2str(N(n),'RAWFORMAT',P.RAWFORMAT,'notempty'));
 		fraw = field2str(N(n),'RAWDATA',P.RAWDATA,'notempty');
+		fraw = regexprep(fraw,'\$NET',N(n).FDSN_NETWORK_CODE);
 		F.raw = {fraw};
 		lfid = split(N(n).FID,',');	% possible comma separated list of FID
 		for a = 1:length(lfid)
