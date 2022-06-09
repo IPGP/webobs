@@ -34,7 +34,7 @@ function DOUT=genplot(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2014-07-13
-%	Updated: 2021-10-28
+%	Updated: 2022-06-09
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -58,7 +58,8 @@ summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
 pagemaxsubplot = field2num(P,'PAGE_MAX_SUBPLOT',8);
 ylogscale = isok(P,'YLOGSCALE');
-movingaverage = field2num(P,'MOVING_AVERAGE_SAMPLES',1);
+movingaverage = round(field2num(P,'MOVING_AVERAGE_SAMPLES',1));
+movingaverage(movingaverage<2) = []; % removes any non integer or lower than 2 values
 
 exthax = [.08,.02];
 nxm = 0; % max number of channels
@@ -113,13 +114,13 @@ for n = 1:length(N)
 				col = scolor(p);
 				timeplot(tk,dk(:,i),samp,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
 					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
-				if movingaverage > 1
-					hold on
-					col = .5+scolor(p)/2;
-					timeplot(tk,mavr(dk(:,i),movingaverage),samp,'-', ...
+				hold on
+				for j = 1:length(movingaverage)
+					col = j/(j+1) + scolor(p)/(j+1);
+					timeplot(tk,mavr(dk(:,i),movingaverage(j)),samp,'-', ...
 						'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',col,'MarkerFaceColor',col)
-					hold off
 				end
+				hold off
 			end
 			if ylogscale
 				set(gca,'YScale','log')
@@ -133,6 +134,18 @@ for n = 1:length(N)
 			if isempty(D(n).d) || all(isnan(D(n).d(k,i)))
 				nodata(tlim)
 			end
+
+			% legend: moving average
+			xlim = get(gca,'XLim');
+			ylim = get(gca,'YLim');
+			nn = length(movingaverage);
+			for j = 1:nn
+				col = j/(j+1) + scolor(p)/(j+1);
+				text(xlim(1)+j*diff(xlim)/(nn+1),ylim(2)+diff(ylim)/100,sprintf('mov. avg %g',movingaverage(j)),'Color',col, ...
+					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',max(10-nn,6),'FontWeight','bold')
+			end
+			set(gca,'YLim',ylim);
+
 		end
 
 		tlabel(tlim,P.GTABLE(r).TZ)
@@ -238,8 +251,8 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 			ylim = get(gca,'YLim');
 			nn = length(aliases);
 			for n = 1:nn
-				text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
+				text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2)+diff(ylim)/100,aliases(n),'Color',scolor(ncolors(n)), ...
+					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',max(11-nn,6),'FontWeight','bold')
 			end
 			set(gca,'YLim',ylim);
 		end
