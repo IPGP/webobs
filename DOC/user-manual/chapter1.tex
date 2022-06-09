@@ -31,6 +31,7 @@ It has been successfully installed/tested on:
 \begin{itemize}
 \item   Linux 3.13.0 , x86\_64 , Ubuntu 14.04 LTS
 \item   Linux 4.13.0 , x86\_64 , Ubuntu 16.04 LTS
+\item   Linux 4.15.0 , x86\_64 , Ubuntu 18.04 LTS
 \item   Linux 2.6.32, i386 , Debian 2.6.32-48squeeze4
 \item   Linux version 3.2.0-4-amd64, Debian 3.2.51-1
 \item   Linux version 3.2.0-4-amd64, Debian 4.6.3-14
@@ -40,7 +41,7 @@ It has been successfully installed/tested on:
 
 \webobs (browser) clients have been successfully tested with:
 \begin{itemize}
-\item   FireFox (up to FireFox 49)
+\item   FireFox (up to FireFox 93)
 \item   Safari (up to Safari 14)
 \end{itemize}
 
@@ -232,6 +233,8 @@ with a \textbackslash .
 	    \hspace{0.8cm} \wocmd{formname/}             & definitions for FORM formname    \\
 	    \hspace{0.4cm} \wocmd{PROCS/}                & PROCS definitions \\
 	    \hspace{0.8cm} \wocmd{procname/}             & definitions for PROC procname    \\
+	    \hspace{0.4cm} \wocmd{SEFRANS/}              & SEFRANS definitions \\
+	    \hspace{0.8cm} \wocmd{sefranname/}           & definitions for SEFRAN sefranname    \\
 	    \hspace{0.4cm} \wocmd{VIEWS/}                & VIEWS definitions \\
 	    \hspace{0.8cm} \wocmd{viewname/}             & definitions for VIEW viewname    \\
 	    \hspace{0.4cm} \wocmd{GRIDS2FORMS/}          & links from PROCs to FORMS  \\
@@ -239,6 +242,8 @@ with a \textbackslash .
 	    \hspace{0.4cm} \wocmd{GRIDS2NODES/}          & links from GRIDs to NODES  \\
 	    \hspace{0.8cm} \wocmd{PROC.pname.nodename}   & -\textgreater ../../DATA/NODES/nodename  \\
 	    \hspace{0.8cm} \wocmd{VIEW.vname.nodename}   & -\textgreater ../../DATA/NODES/nodename  \\
+	    \hspace{0.4cm} \wocmd{MENUS/}                & group's menus \\
+	    \hspace{0.8cm} \wocmd{+GID}                  & menu content for group +GID \\
 	    \\
 		\fcolorbox[gray]{0.1}{0.9}{\wocmd{CODE/}} & \webobs code  \\
 	    \hspace{0.4cm} \wocmd{bin/}                  & executables                \\
@@ -247,7 +252,8 @@ with a \textbackslash .
 	    \hspace{0.4cm} \wocmd{html/}                 & static HTML pages          \\
 	    \hspace{0.4cm} \wocmd{icons/}                & HTML icons, static images  \\
 	    \hspace{0.4cm} \wocmd{js/}                   & javascript                 \\
-	    \hspace{0.4cm} \wocmd{matlab/}               & matlab (+ compiled)        \\
+	    \hspace{0.4cm} \wocmd{matlab/}               & Matlab codes and library   \\
+	    \hspace{0.4cm} \wocmd{python/}               & Python codes and library   \\
 	    \hspace{0.4cm} \wocmd{shells/}               & bash commands              \\
 	    \hspace{0.4cm} \wocmd{tplates/}              & configurations templates   \\
 	    \\
@@ -262,7 +268,7 @@ with a \textbackslash .
 		\hspace{1.2cm} \wocmd{*.clb}                & calibration file             \\
 		\hspace{1.2cm} \wocmd{DOCUMENTS/}           & documents                    \\
 		\hspace{1.2cm} \wocmd{FEATURES/}            & features                     \\
-		\hspace{1.2cm} \wocmd{INTERVENTIONS/}       & events log                   \\
+		\hspace{1.2cm} \wocmd{EVENTS/}              & events log                   \\
 		\hspace{1.2cm} \wocmd{PHOTOS/}              & pictures                     \\
 	    \\
 		\fcolorbox[gray]{0.1}{0.9}{\wocmd{DOC/}} & documentations  \\
