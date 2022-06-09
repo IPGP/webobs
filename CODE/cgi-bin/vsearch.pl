@@ -336,7 +336,7 @@ foreach(@finalevents) {
 	my @authors = WebObs::Users::userName(@$aa);
 	my @remotes = WebObs::Users::userName(@$ar);
 	shift(@lines);
-	shift(@lines) if (grep($lines[0],'^WebObs: created by '));
+	shift(@lines) if (grep($lines[0],'^WebObs:'));
 	my $comment = wiki2html(join("",@lines));
 	my $commentcsv = join("",@lines);
 	my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
