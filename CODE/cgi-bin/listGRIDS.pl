@@ -440,12 +440,14 @@ sub geditpopup {
 	my @tplates;
 	my @tmp = glob("$WEBOBS{ROOT_CODE}/tplates/{VIEW,PROC,SEFRAN}.*");
 	foreach my $t (@tmp) {
-		my @conf = readCfg($t);
-		next if (@conf == 1);  # readCfg returns [0] if the file is empty
-		my %G = @conf;
-		$t =~ s/$WEBOBS{ROOT_CODE}\/tplates\///;
-		my ($gt,$gn) = split(/\./,$t);
-		push(@tplates,"$gt|$gn|".u2l($G{NAME}));
+        if (! -l $t) {
+		    my @conf = readCfg($t);
+            next if (@conf == 1);  # readCfg returns [0] if the file is empty
+            my %G = @conf;
+		    $t =~ s/$WEBOBS{ROOT_CODE}\/tplates\///;
+		    my ($gt,$gn) = split(/\./,$t);
+		    push(@tplates,"$gt|$gn|".u2l($G{NAME}));
+        }
 	}
 
 	my $SP = "";
