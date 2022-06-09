@@ -16,7 +16,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2020-11-12
+%	Updated: 2022-04-18
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -37,6 +37,10 @@ if numel(psz) == 2 && all(psz>0)
 	set(gcf,'PaperUnit','inches','PaperSize',psz);
 	if nargin < 4 || ~isok(OPT,'FIXEDPP')
 		set(gcf,'PaperPosition',[0,0,psz]);
+	end
+	if nargin > 3 && isok(OPT,'FIXEDPP')
+		pp = get(gcf,'PaperPosition');
+		set(gcf,'PaperPosition',[0,0,psz(1),psz(1)*pp(4)/pp(3)]);
 	end
 else
 	psz = get(gcf,'PaperSize');
@@ -122,8 +126,8 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 		else
 			w2 = regexprep(w2,'.*Updated: ','');
 		end
-		text(1,0,sprintf('%s / %s - %s - %s %+02d - %s (%s) / WebObs project (Beauducel et al., 2001-%s)  ', ...
-			G.SELFREF,f,w1,datestr(G.NOW),G.TZ,superproc,w2,datestr(now,'yyyy')), ...
+		text(1,0,sprintf('%s / %s - %s - %s %+02d - %s (%s) / WebObs %s  ', ...
+			G.SELFREF,f,w1,datestr(G.NOW),G.TZ,superproc,w2,num2roman(str2num(datestr(now,'yyyy')))), ...
 			'HorizontalAlignment','right','VerticalAlignment','bottom', ...
 			'FontSize',timestamp,'Color',.5*ones(1,3),'FontWeight','bold', ...
 			'Interpreter','none');
