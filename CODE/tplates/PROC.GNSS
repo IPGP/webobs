@@ -90,7 +90,8 @@ ORBIT_ERROR_RATIO|1,2
 
 PICKS_CLEAN_PERCENT|0
 TREND_ERROR_MODE|1
-# minimum time window (in days) needed to compute a trend
+# minimum time window (in percent and/or days) needed to compute a trend
+TREND_MIN_PERCENT|50
 TREND_MIN_DAYS|5
 
 # ITRF reference (this is a string displayed on graph title, not functional)
@@ -240,6 +241,8 @@ MODELLING_PLOT_BEST|Y
 MODELLING_PLOT_RESIDUAL|Y
 # number of sigma (STD) to compute uncertainty intervals for best model
 MODELLING_SIGMAS|1
+# plots the data and model partial vectors (1 or 2 component missing) replacing NaN by 0
+MODELLING_PLOT_NAN_COMPONENT|Y
 # RGB color for topo/bathy basemap
 MODELLING_TOPO_RGB|.5,.5,.5
 # color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
@@ -253,6 +256,7 @@ MODELLING_MAX_DEPTH|8000
 MODELLING_BORDERS|5000
 MODELLING_GRID_SIZE|50
 MODELLING_TITLE|{\fontsize{14}{\bf${NAME} - Source modelling} ($timescale)}
+MODELLING_EXPORT_MAT|
 
 # specific pCDM parameters for MODELLING
 MODELLING_PCDM_ITERATIONS|5
