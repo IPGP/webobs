@@ -50,19 +50,23 @@ fi
 
 # makes the JSON string
 if [ ! -z "$FILE" ]; then
+	#******************* site *******************
 	JSON={\"mo\":\"${SITE}\"
 	JSON=$JSON,\"sn\":\"$(sed -n "/^1\. /,/Site Name/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"
+	#******************* Approximative position *******************
 	JSON=$JSON,\"px\":\"$(sed -n "/^2\. /,/Z coordinate/p" ${FILE} | tail -n3 | sed -e 's/^.*: //g')\"
-	JSON=$JSON,$(sed -n "/^3\.[1-9]. /,/Date Removed/p" ${FILE} |\
+	#******************* receiver *******************
+	JSON=$JSON$(sed -n "/^3\.[1-9]. /,/Date Removed/p" ${FILE} |\
 		sed -e 's/^.*: //g' | paste -d '\t' - - - - - - - |\
 		awk -F '\t' -v date="${DATE}" '{ if (date >= $6  && date <= $7) \
-			printf "\"rt\":\"%s\",\"rv\":\"%s\",\"rn\":\"%s\"", $1, $2, $3 }'
+			printf ",\"rt\":\"%s\",\"rv\":\"%s\",\"rn\":\"%s\"", $1, $2, $3 }'
 	)
-	JSON=$JSON,$(sed -n "/^4\.[1-9]. /,/Date Removed/p" ${FILE} |\
-		sed -e 's/^.*: //g' | paste -d '\t' - - - - - - - - - - - - - |\
+	#******************* Antenna *******************
+	JSON=$JSON$(sed -n "/^4\.[1-9]. /,/Date Removed/p" ${FILE} |\
+		sed -e 's/^.*: //g' | sed -e 's/\s*NONE//g'| paste -d '\t' - - - - - - - - - - - - - |\
 		awk -F '\t' -v date="${DATE}" '{ if (date >= $12  && date <= $13) \
-			printf "\"at\":\"%s\",\"an\":\"%s\",\"pe\":\"%1.4f %1.4f %1.4f\"", $1, $2, $4, $5, $6 }'
-	)
+			printf ",\"at\":\"%s\",\"an\":\"%s\",\"pe\":\"%1.4f %1.4f %1.4f\"", $1, $2, $4, $5, $6 }'
+    )
 	JSON=$JSON,\"op\":\"$(sed -n "/^11\. /,/Abbreviation/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"
 	JSON=$JSON,\"ag\":\"$(sed -n "/^12\. /,/Abbreviation/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"}
 	echo $JSON

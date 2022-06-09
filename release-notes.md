@@ -28,7 +28,8 @@ To activate the correction, all parameters must be valid and number of pairs mus
 1. Also in superproc **gnss**, new options for velocity trends:
     - `VECTORS_AMPLITUDE_COMPONENTS` defines the used components to compute velocity amplitudes and plot the amplitude vs distance plot (summary graph VECTORS). Default is `1,2` for horizontal components only. Set this option to `3` to use only the vertical component.
     - `TREND_MIN_PERCENT` sets a minimum threshold of time period with data to compute a trend. Default is 50%.
-1. Still in superproc **gnss**,
+
+1. GNSS thing again, new shell `gnss_make_rinex` and its config file `gnss_make_rinex.rc` make rinex files from different formats of raw datas and some site informations. It based on shell script `raw2rinex`.
 
 1. In the superproc **genplot**, per node graph can plot several moving averages using `MOVING_AVERAGE_SAMPLES` with coma separated values of samples. A shading color scale will be used.
 
