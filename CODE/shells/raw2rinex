@@ -131,7 +131,7 @@ if [ ! -z "$rf" ]; then
 fi
 
 if [ -z "$rawfiles" ]; then
-	echo "No valid GNSS file found in $1... abort."
+	echo "No valid GNSS file found in $rawdir... abort."
 	exit
 fi
 
