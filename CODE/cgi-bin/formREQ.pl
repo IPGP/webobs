@@ -150,8 +150,18 @@ if (-e $reqdflt ) {
 
 # ---- retrieve the last requests for current user
 my @reqlist;
+my %reqdates;
 map (push(@reqlist,$_), qx(find $WEBOBS{ROOT_OUTR} -type d -mindepth 1 -maxdepth 1 -name "*_$CLIENT"));
 chomp(@reqlist);
+for (@reqlist) {
+	my $date1 = qx(grep "^DATE1|" $_/REQUEST.rc | sed -e "s/DATE1|//");
+	my $date2 = qx(grep "^DATE2|" $_/REQUEST.rc | sed -e "s/DATE2|//");
+	chomp($date1);
+	chomp($date2);
+	my $date12 = $date1."_".$date2;
+	$date12 =~ s/[-: ]//g;
+	$reqdates{$date12} = "$date1 to $date2";
+}
 
 # ---- passed all checkings above ...
 # ---- build/process the form HTML page
@@ -333,14 +343,8 @@ print "<TR>";
 		print "<TD style=\"border:0\"></TD>";
 		print "<TD align=center style=\"border:0\">$__{'Preset dates'} <select name=\"preset\" size=\"1\" onChange=\"preSet()\">";
 		print "<option value=\"\" selected></option>\n";
-		for (@reqlist) {
-			my $date1 = qx(grep "^DATE1|" $_/REQUEST.rc | sed -e "s/DATE1|//");
-			my $date2 = qx(grep "^DATE2|" $_/REQUEST.rc | sed -e "s/DATE2|//");
-			chomp($date1);
-			chomp($date2);
-			my $date12 = $date1."_".$date2;
-			$date12 =~ s/[-: ]//g;
-			print "<option value=\"$date12\">$date1 to $date2</option>\n";
+		for (reverse sort keys %reqdates) {
+			print "<option value=\"$_\">$reqdates{$_}</option>\n";
 		}
 		print "<option value=\"fullmonth\">$__{'Last full month'}</option>\n";
 		print "<option value=\"fullyear\">$__{'Last full year'}</option>\n";
