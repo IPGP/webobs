@@ -255,6 +255,8 @@ sub readNode {
 		#FB-legacy: removes escape characters in feature's list
 		$tmp{FILES_FEATURES} =~ s/\\,/,/g;
 		$tmp{FILES_FEATURES} =~ s/\\\|/,/g;
+		# removes trailing blanks in each features
+		$tmp{FILES_FEATURES} = join(",",map {trim($_)} split(/[,\|]/,$tmp{FILES_FEATURES}));
 
 		$ret{$f}=\%tmp;
 	}

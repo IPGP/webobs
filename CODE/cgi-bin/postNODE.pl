@@ -267,7 +267,7 @@ push(@lines,"POS_DATE|$datePos\n");
 push(@lines,"POS_TYPE|".u2l($typePos)."\n");
 push(@lines,"INSTALL_DATE|$dateInstall\n");
 push(@lines,"END_DATE|$dateEnd\n");
-push(@lines,"FILES_FEATURES|".u2l(lc($features))."\n");
+push(@lines,"FILES_FEATURES|".u2l(lc(join(",",map {trim($_)} split(/[,\|]/,$features))))."\n");
 push(@lines,"TRANSMISSION|".u2l($typeTrans)."\n");
 
 # ---- procs parameters
