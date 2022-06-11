@@ -241,9 +241,10 @@ print "<TABLE style=\"background: white;\">";
 # ---- Row "Grids" ------------------------------------------------------------
 #
 print "<TR><TH valign=\"top\" width=\"10%\">Grids</TH>";
-print "<TD colspan=\"2\">";
+print "<TD colspan=\"2\"><B>$QryParm->{'node'}</B>";
 for (@{$allNodeGrids{$NODEName}}) {
-	print "<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$_\"><B>$_</B></A><BR>";
+	my $fullnode = "$_.$NODEName";
+	print "<BR><A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$fullnode\"><B>$fullnode</B></A><BR>" if ($fullnode ne $QryParm->{'node'});
 }
 print "</TD></TR>\n";
 
@@ -422,9 +423,9 @@ if (uc($GRIDType) eq 'PROC') {
 	elsif ($editOK) { print "<A href=\"$cnfUrn\">$txt</A>" }
 	else { print "$txt" }
 	print "</B></TD><TD>";
-	print "ID: <B>$NODEName</B>";
+	#print "ID: <B>$NODEName</B>";
+	print "FID: ".($fid ne "" ? "<B>$fid</B>":"<I>$__{undefined}</I>")."\n";
 	print "<BR>Network: <B>$fdsn</B> ($FDSN{$fdsn})\n" if ($fdsn ne "");
-	print "<BR>FID: <B>$fid</B>\n" if ($fid ne "");
 	print "<BR>$fids" if ($fids ne "");
 	print "<BR>Raw Format: $rawFormats{$rawformat}{supfmt} / <B>$rawformat</B> ($rawFormats{$rawformat}{name})" if ($rawformat ne "");
 	print "<BR>Raw Data Source: <B>$rawdata</B>" if ($rawdata ne "");

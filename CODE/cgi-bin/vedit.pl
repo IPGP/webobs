@@ -121,6 +121,7 @@ my $notify      = $QryParm->{'notify'} // "";
 my $object      = $QryParm->{'object'} // "";
 my ($GRIDType, $GRIDName, $NODEName, $evbase, $evtrash) = WebObs::Events::struct(trim($object));
 my $evpath      = $QryParm->{'event'}  // "";
+my $mvnode      = $QryParm->{'mvnode'} // "";
 my $s2g         = 0;
 my $send2Gazette = $QryParm->{'s2g'} // 0;
 my $titre       = $QryParm->{'titre'} // "";
@@ -200,16 +201,39 @@ if ($action =~ /save/i ) {
 		# now build an event's file name from form's elements
 		$time =~ s/:/-/;
 		my $formname = "$NODEName\_$date\_$time.txt";
-		if ($evname eq "") { # no *txt specified, use $formname
+		if ($evname eq "") { # no *txt specified, use $formname (new event)
 			$target = "$evbase/$evpath/$formname";
 			WebObs::Events::versionit(\$target);
 			my $fp = dirname($target);	qx(mkdir -p "$fp" 2>/dev/null);
 		} else {
-			if ($evname ne $formname) { # *.txt not == $formname, its a rename
+			# moving an event
+			if ($mvnode ne "" && $mvnode ne $NODEName) {
+				(my $object2 = $object) =~ s/$NODEName/$mvnode/;
+				(my $evpath2 = $evpath) =~ s/$NODEName/$mvnode/;
+				my ($GRIDType2, $GRIDName2, $NODEName2, $evbase2, $evtrash2) = WebObs::Events::struct(trim($object2));
+				my $formname2 = "$mvnode\_$date\_$time.txt";
+				my $evname2 = ($evpath2 =~ /.*\.txt$/) ? basename($evpath2) : "";
+				$target = "$evbase2/$formname2";
+				WebObs::Events::versionit(\$target);
+				my $fp = dirname($target);
+				qx(mkdir -p "$fp" 2>/dev/null);
+				(my $evsrc = $evname2) =~ s/.txt//;
+				(my $evtgt = $formname2) =~ s/.txt//;
+				$logmsg .= "moving event $evpath to $evname2\n";
+				qx(mv "$evbase/$evpath" $target);           # rename event file
+				qx(mv "$evbase/$evsrc/" "$evbase2/$evtgt");  # rename event extensions dir
+				qx(rm "$evbase/$evpath~" 2>/dev/null);      # delete legacy bkup file
+				$logmsg .= "deleting gazette $evpath\n";
+				my $rcd = WebObs::Gazette::delEventArticle($object, "$evbase/$evpath");
+			}
+			# renaming of an event (*.txt != $formname)
+			elsif ($evname ne $formname) {
 				$target = dirname("$evbase/$evpath")."/$formname";
 				WebObs::Events::versionit(\$target);
-				my $fp = dirname($target);	qx(mkdir -p "$fp" 2>/dev/null);
-				(my $evsrc = $evname) =~ s/.txt//; (my $evtgt = $formname) =~ s/.txt//;
+				my $fp = dirname($target);
+				qx(mkdir -p "$fp" 2>/dev/null);
+				(my $evsrc = $evname) =~ s/.txt//;
+				(my $evtgt = $formname) =~ s/.txt//;
 				$logmsg .= "renaming event $evpath\n";
 				qx(mv "$evbase/$evpath" $target);           # rename event file
 				qx(mv "$evbase/$evsrc/" "$evbase/$evtgt");  # rename event extensions dir
@@ -564,14 +588,24 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 	print "</SELECT></TR>\n";
 	print "<TR><TD style=\"vertical-align: top; border: none;\" colspan=3>";
 	print "<P><TEXTAREA id=\"markItUp\" class=\"markItUp\" rows=\"11\" cols=\"80\" name=\"contents\" dataformatas=\"plaintext\">$contents</TEXTAREA></P>";
-	print "<P style=\"background-color: #ffffee\">";
+	print "<P><B>$__{Notify} (email)</B><input type=\"checkbox\"".(isok($NODES{EVENTNODE_NOTIFY_DEFAULT}) ? " checked":"")." name=\"notify\" value=\"OK\""
+			." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Send an e-mail to inform Webobs users'}')\">";
+	# moves event to another node
+	if (!($action =~ /new/i) && $object =~ /^.*\..*\..*$/ && !$isProject) {
+		my @allNodes = qx(/bin/ls $NODES{PATH_NODES});
+		chomp(@allNodes);
+		print "\n<B style=\"margin-left:20px\">$__{'Move this event to another node'}:</B>&nbsp;<SELECT id=\"mvnode\" name=\"mvnode\" size=\"1\">";
+		for ("",@allNodes) {
+			print "<OPTION value=\"$_\">$_</OPTION>\n";
+		}
+		print "</SELECT>\n";
+	}
+	print "</P>\n<P style=\"background-color: #ffffee\">";
 		print "<input type=\"button\" name=\"lien\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 		if (length($meta) == 0 && $mmd ne 'NO') {
 			print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
 		}
 		print "<input type=\"button\" style=\"font-weight:bold\" value=\"$__{'Submit'}\" onClick=\"postform();\">";
-		print "<B style=\"margin-left:20px\">$__{Notify} (email)</B><input type=\"checkbox\"".(isok($NODES{EVENTNODE_NOTIFY_DEFAULT}) ? " checked":"")." name=\"notify\" value=\"OK\""
-			." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Send an e-mail to inform Webobs users'}')\">";
 		print "<input type=\"hidden\" name=\"action\" value=\"save\">";
 		print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
 		print "<input type=\"hidden\" name=\"event\" value=\"$evpath\">";
@@ -618,39 +652,36 @@ sub notify {
 	my $senderId  = $USERS{$CLIENT}{UID};
 	my $names = join(", ",WebObs::Users::userName(@oper));
 	my $msg = '';
+	my $isnode = ($object =~ /^.*\..*\..*$/ ? 1:0);
 
-	if ($object =~ /^.*\..*\..*$/) {
+	$msg .= "$__{'New event'} WebObs-$WEBOBS{WEBOBS_ID}.\n\n";
+	if ($isnode) {
 		my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
-
-		$msg .= "$__{'New event'} WebObs-$WEBOBS{WEBOBS_ID}.\n\n";
 		$msg .= "$__{'Node'}: {$NODEName} $NODE{ALIAS}: $NODE{NAME} ($NODE{TYPE})\n";
 		$msg .= "$__{'Grids'}: @{$allNodeGrids{$NODEName}}\n";
-		$msg .= "$__{'Date'}: $date $time\n";
-		$msg .= "$__{'Author(s)'}: $names\n";
-		$msg .= "$__{'Title'}: $titre\n\n";
-		#$msg .= "$comment\n\n";
-		$msg .= "$__{'WebObs show node'}: $WEBOBS{ROOT_URL}?page=/cgi-bin/$NODES{CGI_SHOW}?node=$GRIDType.$GRIDName.$NODEName";
-		$msg .= "\n";
-	} else {  # act as $etype = "G"
-		$msg .= "$__{'New event'} WebObs-$WEBOBS{WEBOBS_ID}.\n\n";
+	} else {
 		$msg .= "$__{'Grid'}: {$GRIDType.$GRIDName} $GRID{NAME}\n";
-		$msg .= "$__{'Date'}: $date $time\n";
-		$msg .= "$__{'Author(s)'}: $names\n";
-		$msg .= "$__{'Title'}: $titre\n\n";
-		#$msg .= "$comment\n\n";
-		$msg .= "$__{'WebObs show grid'}: $WEBOBS{ROOT_URL}?page=/cgi-bin/$GRIDS{CGI_SHOW_GRID}?node=$GRIDType.$GRIDName";
-		$msg .= "\n";
 	}
+	$msg .= "$__{'Date'}: $date $time\n";
+	$msg .= "$__{'Author(s)'}: $names\n";
+	$msg .= "$__{'Title'}: $titre\n\n";
+	$msg .= "$contents\n\n" if (isok($WEBOBS{EVENTS_NOTIFY_FULL_MESSAGE}));
+	if ($isnode) {
+		$msg .= "$__{'WebObs show node'}: $WEBOBS{ROOT_URL}?page=/cgi-bin/$NODES{CGI_SHOW}?node=$GRIDType.$GRIDName.$NODEName";
+	} else {
+		$msg .= "$__{'WebObs show grid'}: $WEBOBS{ROOT_URL}?page=/cgi-bin/$GRIDS{CGI_SHOW_GRID}?node=$GRIDType.$GRIDName";
+	}
+	$msg .= "\n";
 
 	my $args = substr("$eventname|$senderId|$msg",0,4000); # 4000 fits FIFO atomicity (4096)
-	return ( WebObs::Config::notify($args) );
+	return ( WebObs::Config::notify($args) )
 }
 
 =pod
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
