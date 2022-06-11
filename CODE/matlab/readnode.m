@@ -10,7 +10,7 @@ function N=readnode(WO,nodefullid,NODES);
 %	Some specific treatments are applied:
 %		- numerical parameters are converted to scalar or vectors,
 %		- dates are converted to datenum,
-%		- UTC_DATA is converted from hours to days,
+%		- TZ and UTC_DATA is converted from hours to days,
 %		- ALIAS underscores are escaped (\_) for display purpose.
 %
 %	Some additional keys are also added:
@@ -21,11 +21,16 @@ function N=readnode(WO,nodefullid,NODES);
 %	               TYPE: index in FILE_TELE (NODES.rc)
 %	              NODES: cell array of NODES ID
 %	          REPEATERi: all base keys of repeater NODE i in a structure
+%	      EVENTS: a structure array containing some node's events data:
+%	               TLIM: [start_date end_date] (datenum format, node's TZ)
+%	              TITLE: node alias, name and authors
+%	            COMMENT: event's title
+%	            OUTCOME: sensor outcome flag
 %
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2020-12-19
+%   Updated: 2022-06-11
 
 
 if ~exist('NODES','var')
@@ -81,12 +86,23 @@ N.CHANNEL_LIST = field2str(N,'CHANNEL_LIST');
 N.TYPE = field2str(N,'TYPE');
 
 % --- converts to numeric some fields
-c2num = {'VALID' 'LAT_WGS84' 'LON_WGS84' 'ALTITUDE' 'UTC_DATA' 'POS_TYPE','ACQ_RATE','LAST_DELAY','CHANNEL_LIST'};
+c2num = {'VALID' 'LAT_WGS84' 'LON_WGS84' 'ALTITUDE' 'TZ' 'UTC_DATA' 'POS_TYPE','ACQ_RATE','LAST_DELAY','CHANNEL_LIST'};
 for j = 1:length(c2num)
 	if isfield(N,c2num{j}) && ~isempty(N.(c2num{j}))
 		N.(c2num{j}) = sstr2num(N.(c2num{j})); %NOTE: str2num() allows some syntax interpretation like '5/1440' (5 mn expressed in days)
 	else
 		N.(c2num{j}) = NaN;
+	end
+end
+
+% TZ in days (format +HH or +HHMM)
+if isnan(N.TZ)
+	N.TZ = 0;
+else
+	if abs(N.TZ) > 100
+		N.TZ = N.TZ/2400;
+	else
+		N.TZ = N.TZ/24;
 	end
 end
 
@@ -171,6 +187,24 @@ if length(tr) > 0 & ~isempty(tr{1})
 			N.TRANSMISSION.NODES{nn} = tr{n};
 			N.TRANSMISSION.(sprintf('REPEATER%d',nn)) = readcfg(WO,f);
 			fprintf('WEBOBS{readnode}: %s read (repeater %d).\n',f,nn);
+		end
+	end
+end
+
+% --- node events
+evtpath = sprintf('%s/%s/%s',NODES.PATH_NODES,id,NODES.SPATH_INTERVENTIONS);
+[s,w] = wosystem(sprintf('find %s -name "*.txt"',evtpath));
+if ~s && ~isempty(w)
+	evtlist = split(w,'\n')
+	for e = 1:length(evtlist)
+		E = readnodeevent(evtlist{e});
+		N.EVENTS(e).TLIM = [E.date1,E.date2] - N.TZ; % TLIM in UTC
+		N.EVENTS(e).TITLE = sprintf('%s: %s (%s)',N.ALIAS,N.NAME,E.author);
+		N.EVENTS(e).COMMENT = E.title;
+		if isfield(E,'outcome')
+			N.EVENTS(e).OUTCOME = E.outcome;
+		else
+			N.EVENTS(e).OUTCOME = 0;
 		end
 	end
 end
