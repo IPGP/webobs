@@ -93,6 +93,7 @@ TERMSOFUSE|${ROOT_DATA}/WEB/terms.txt
 EVENTS_TO_GAZETTE|ALL
 EVENTS_GAZETTE_DELETE|YES
 EVENTS_ACTIVE_GID|+ADMIN,+DUTY
+EVENTS_NOTIFY_FULL_MESSAGE|NO
 
 # Uncomment this line to disable MultiMarkDown facilities for all 'wiki' contents
 #WIKI_MMD|NO
