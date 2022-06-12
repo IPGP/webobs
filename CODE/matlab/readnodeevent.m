@@ -30,8 +30,16 @@ if exist(file,'file')
     else
         X.date2 = X.date1;
     end
-    X.author = evthead{1};
-    X.title = evthead{2};
+    if length(evthead) > 0
+        X.author = evthead{1};
+    else
+        X.author = '';
+    end
+    if length(evthead) > 1
+        X.title = evthead{2};
+    else
+        X.title = '';
+    end
     X.comment = ss(2:end);
     if length(evthead) > 3
         X.feature = evthead{4};

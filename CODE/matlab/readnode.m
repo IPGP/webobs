@@ -196,7 +196,11 @@ end
 
 % --- node events
 evtpath = sprintf('%s/%s/%s',NODES.PATH_NODES,id,NODES.SPATH_INTERVENTIONS);
-[s,w] = wosystem(sprintf('find %s -name "*_????-??-??_??-??*.txt"',evtpath));
+if exist(evtpath,'dir')
+	[s,w] = wosystem(sprintf('find %s -name "*_????-??-??_??-??*.txt"',evtpath));
+else
+	s = 1;
+end
 if ~s && ~isempty(w)
 	evtlist = split(w,'\n');
 	for e = 1:length(evtlist);
