@@ -127,6 +127,7 @@ PERNODE_LINESTYLE|-
 PERNODE_RELATIVE|NO
 # superimpose a moving average on N samples
 MOVING_AVERAGE_SAMPLES|0
+PERNODE_PLOT_EVENTS|YES
 
 # --- summary graph (all nodes together)
 # empty or comment this key to not plot the summary graph

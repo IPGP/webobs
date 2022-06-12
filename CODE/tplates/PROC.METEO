@@ -58,7 +58,7 @@ DEM_COPYRIGHT|
 # do not show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
-# file for background time referenced events 
+# file for background time referenced events
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 
 # graphical density for PNG outputs (in pixel per inches)
@@ -89,10 +89,10 @@ WIND_ROSE_STEP|10
 
 XY_CHANNELS|3,8
 NODE_CHANNELS|1,2,7,4,5,3,8
+PERNODE_PLOT_EVENTS|YES
 
 RAIN_ALERT_THRESHOLD|50
 RAIN_ALERT_INTERVAL|1
 RAIN_ALERT_DELAY|3
 RAIN_ALERT_RGB|1,.3,.3
 RAIN_ALERT_DELAY_RGB|1,.6,.6
-

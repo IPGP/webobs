@@ -27,7 +27,7 @@ function DOUT=afm(varargin)
 %
 %	Authors: F. Beauducel + V. Clouard + J.M. Saurel / WEBOBS, IPGP
 %	Created: 2014-01-03
-%	Updated: 2021-01-01
+%	Updated: 2022-06-12
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -217,7 +217,8 @@ for n = 1:length(N)
 		end
 
 		% makes graph
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		OPT.EVENTS = N(n).EVENTS;
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
 		close
 
 		% exports data

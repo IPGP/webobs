@@ -1,4 +1,4 @@
-function [rgb,html]=rgb(x)
+function [rgb,htm]=rgb(x)
 %RGB Color RGB vector.
 %	RGB(X) returns 3-column RGB value(s) from any standard color name or
 %	HTML color string or cell array of strings in #RRGGBB hexadecimal format.
@@ -7,6 +7,8 @@ function [rgb,html]=rgb(x)
 %	   >> rgb orchid
 %	   ans =
 %	     0.8549    0.4392    0.8392
+%
+%	[RGB,HTM]=RGB(X) returns also the HTML string hexadecimal code.
 %
 %	RGB without input argument displays the list of available colors.
 %
@@ -175,6 +177,7 @@ end
 
 x = upper(cellstr(x));
 rgb = zeros(size(x,1),3);
+htm = cell(size(x,1),1);
 for i = 1:numel(x)
 	k = strcmpi(html(:,1),x{i});
 	if any(k)
@@ -182,6 +185,7 @@ for i = 1:numel(x)
 	else
 		s = x{i};
 	end
+	htm{i} = s;
 	if length(s) >= 6
 		s = regexprep(s,'\','');
 		if strcmp(s(1),'#')

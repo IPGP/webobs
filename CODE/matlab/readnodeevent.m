@@ -14,8 +14,8 @@ function X=readnodeevent(file)
 %	  notebook: notebook number
 %	     nbfwd: notebook forward flag
 %
-%    Author: F. Beauducel, in Saint-Pierre, La Réunion
-%   Created: 2022-06-11
+%    Author: F. Beauducel / WebObs
+%   Created: 2022-06-11, in Saint-Pierre, La Réunion
 
 % event name = NODEID_YYYY-MM-DD_HH-MM.txt
 evtname = split(regexprep(regexprep(file,'.txt$',''),'^.*/',''),'_');

@@ -22,15 +22,18 @@ function N=readnode(WO,nodefullid,NODES);
 %	              NODES: cell array of NODES ID
 %	          REPEATERi: all base keys of repeater NODE i in a structure
 %	      EVENTS: a structure array containing some node's events data:
-%	               TLIM: [start_date end_date] (datenum format, node's TZ)
-%	              TITLE: node alias, name and authors
-%	            COMMENT: event's title
-%	            OUTCOME: sensor outcome flag
+%	                 dt1: start_date (datenum format, node's TZ)
+%	                 dt2: end_date (datenum format, node's TZ)
+%	                 nam: node alias, node name and authors
+%	                 com: event's title
+%	                  lw: default linewidth (from NODES.rc)
+%	                 rgb: default color (from NODES.rc)
+%	                 out: data outcome flag
 %
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2022-06-11
+%   Updated: 2022-06-12
 
 
 if ~exist('NODES','var')
@@ -193,18 +196,27 @@ end
 
 % --- node events
 evtpath = sprintf('%s/%s/%s',NODES.PATH_NODES,id,NODES.SPATH_INTERVENTIONS);
-[s,w] = wosystem(sprintf('find %s -name "*.txt"',evtpath));
+[s,w] = wosystem(sprintf('find %s -name "*_????-??-??_??-??*.txt"',evtpath));
 if ~s && ~isempty(w)
-	evtlist = split(w,'\n')
-	for e = 1:length(evtlist)
+	evtlist = split(w,'\n');
+	for e = 1:length(evtlist);
 		E = readnodeevent(evtlist{e});
-		N.EVENTS(e).TLIM = [E.date1,E.date2] - N.TZ; % TLIM in UTC
-		N.EVENTS(e).TITLE = sprintf('%s: %s (%s)',N.ALIAS,N.NAME,E.author);
-		N.EVENTS(e).COMMENT = E.title;
+		N.EVENTS(e).dt1 = E.date1 - N.TZ; % TLIM in UTC
+		N.EVENTS(e).dt2 = E.date2 - N.TZ; % TLIM in UTC
+		N.EVENTS(e).nam = {sprintf('%s: %s (%s)',N.ALIAS,N.NAME,E.author)};
+		N.EVENTS(e).com = {E.title};
+		N.EVENTS(e).lw = field2num(NODES,'EVENTNODE_PLOT_LINEWIDTH',.1);
+		N.EVENTS(e).rgb = field2num(NODES,'EVENTNODE_PLOT_COLOR',rgb('Silver'));
+		N.EVENTS(e).hex = rgb2hex(N.EVENTS(e).rgb);
 		if isfield(E,'outcome')
-			N.EVENTS(e).OUTCOME = E.outcome;
+			N.EVENTS(e).out = E.outcome;
 		else
-			N.EVENTS(e).OUTCOME = 0;
+			N.EVENTS(e).out = false;
 		end
 	end
+	if isok(NODES,'EVENTNODE_PLOT_OUTCOME_ONLY')
+		N.EVENTS(~cat(1,N.EVENTS.out)) = [];
+	end
+else
+	N.EVENTS = [];
 end
