@@ -1,25 +1,32 @@
-function [rgb,html]=htm2rgb(x);
-%HTM2RGB HTML to RGB color converter.
-%	HTM2RGB(X) returns 3-column RGB value(s) from HTML color string
-%	or cell array of strings in #RRGGBB format or standard color name.
+function [rgb,html]=rgb(x)
+%RGB Color RGB vector.
+%	RGB(X) returns 3-column RGB value(s) from any standard color name or
+%	HTML color string or cell array of strings in #RRGGBB hexadecimal format.
 %
-%	HTM2RGB without input argument display the list of available colors.
+%	Examples:
+%	   >> rgb orchid
+%	   ans =
+%	     0.8549    0.4392    0.8392
 %
-%	
+%	RGB without input argument displays the list of available colors.
+%
+%
 %	Author: Francois Beauducel <beauducel@ipgp.fr>
 %	Created: 2008-11-10 in Paris, France
-%	Updated: 2017-01-11
+%	Updated: 2022-06-12
 
 html = [ ...
 {'AliceBlue','#F0F8FF'};
 {'AntiqueWhite','#FAEBD7'};
 {'Aqua','#00FFFF'};
 {'Aquamarine','#7FFFD4'};
+{'Ash','#B2BEB5'};
 {'Azure','#F0FFFF'};
 {'Beige','#F5F5DC'};
 {'Bisque','#FFE4C4'};
 {'Black','#000000'};
 {'BlanchedAlmond','#FFEBCD'};
+{'Blood','#BB0A1E'};
 {'Blue','#0000FF'};
 {'BlueViolet','#8A2BE2'};
 {'Brown','#A52A2A'};
@@ -136,6 +143,7 @@ html = [ ...
 {'SaddleBrown','#8B4513'};
 {'Salmon','#FA8072'};
 {'SandyBrown','#F4A460'};
+{'Sea','B3E6FF'};
 {'SeaGreen','#2E8B57'};
 {'SeaShell','#FFF5EE'};
 {'Sienna','#A0522D'};
@@ -161,15 +169,15 @@ html = [ ...
 ];
 
 if nargin < 1
-	display(html(:,1))
+	disp(html(:,1))
 	return
 end
 
 x = upper(cellstr(x));
 rgb = zeros(size(x,1),3);
 for i = 1:numel(x)
-	k = find(strcmpi(html(:,1),x{i}));
-	if ~isempty(k)
+	k = strcmpi(html(:,1),x{i});
+	if any(k)
 		s = html{k,2};
 	else
 		s = x{i};

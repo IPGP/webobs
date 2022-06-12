@@ -1,5 +1,5 @@
 function sefran3(name,fdate)
-%SEFRAN3 Continuous seismogram using SeedLink/ArcLink data request
+%SEFRAN3 Continuous stripchart seismogram using waveform data request
 %
 %	SEFRAN3 by itself creates/updates seismogram images in real time:
 %		- creates all 1-minute images for selected channels
@@ -20,7 +20,7 @@ function sefran3(name,fdate)
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France
 %	         (based on legacy sefran.m, 2002 and sefran2.m, 2007)
-%	Updated: 2021-08-17
+%	Updated: 2022-06-12
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -147,7 +147,7 @@ nchan = length(sfr);
 % C{4} = filter: offset value (in counts) or 'median','trend','spN','lpbuN,F','hpbuN,F','bpbuN,FL,FH'
 % C{5} = peak-to-peak amplitude (numeric)
 % C{6} = RGB color string (hexa form #RRGGBB)
-scol = htm2rgb(C{6});
+scol = rgb(C{6});
 % C{7} = spectrogram parameters (W,Fmin,Fmax,YScale)
 sgp = C{7};
 sgp(cellfun(@isempty,sgp)) = {sgramparams};
