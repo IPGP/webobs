@@ -29,7 +29,7 @@ To activate the correction, all parameters must be valid and number of pairs mus
     - `VECTORS_AMPLITUDE_COMPONENTS` defines the used components to compute velocity amplitudes and plot the amplitude vs distance plot (summary graph VECTORS). Default is `1,2` for horizontal components only. Set this option to `3` to use only the vertical component.
     - `TREND_MIN_PERCENT` sets a minimum threshold of time period with data to compute a trend. Default is 50%.
 
-1. GNSS thing again, new shell `gnss_make_rinex` and its config file `gnss_make_rinex.rc` make rinex files from different formats of raw datas and some site informations. It based on shell script `raw2rinex`.
+1. GNSS thing again, new shell script `gnss_make_rinex` and its config file `gnss_make_rinex.rc` to build rinex files from different formats of raw data and sitelog files.
 
 1. In the superproc **genplot**, per node graph can plot several moving averages using `MOVING_AVERAGE_SAMPLES` with coma separated values of samples. A shading color scale will be used.
 
@@ -49,9 +49,11 @@ The new GUI uses https://leafletjs.com javascript application.
 
 1. In **Sefran/MC**, keyboard shortcuts can be defined by administrator to select the event type during phase picking, as an alternative to menu list mouse selection. The key must be a single character, case sensitive, defined in the **MC3_Codes.conf** file. Note that letters `e`, `r`, `t`, `s` and `S` are already assigned to functions (show/hide MC events and spectrogram control).
 
+1. Node's events are shown as background areas in graphs (per node only, not in summary graphs). New variables in **NODES.rc**: `EVENTNODE_PLOT_COLOR` to set the color (default is `Silver`), `EVENTNODE_PLOT_LINEWIDTH` to set the line width for "instant" events (default is 1), and `EVENTNODE_PLOT_OUTCOME_ONLY` to select only events having the flag 'sensor/data outcome' ON (default is `YES`). Presently this functionality is available for superprocs **genplot**, **afm**, **gnss**, **tilt**, **jerk**, **rsam**, and **meteo**.
+
 ### Enhancements
 
-1. In nodes event editing, the date and time formats are now checked
+1. In nodes event editing, the date and time formats are now checked. When editing an existing event, it is now possible to move the event to another node (you must know the target's node ID).
 
 2. It's now possible to directly download proc requests results in .tgz file at results page, and a link to the scheduler run log is available.
 
@@ -68,6 +70,8 @@ The new GUI uses https://leafletjs.com javascript application.
 1. Improves the form behaviour in node configuration edit:
     - features former delimiters (escaped characters like \, or \|) are replaced by coma,
     - negative latitude or longitude is allowed in node geographic location. A negative value will automatically switch the N/S or E/W selection.
+
+1. `!!` Event mail notification now contains the full message. It is possible to keep the former behavior (event's title only) by setting the new **WEBOBS.rc** variable `EVENTS_NOTIFY_FULL_MESSAGE` to `NO`.
 
 ### Fixed issues
 
