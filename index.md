@@ -5,24 +5,25 @@ WebObs is an integrated web-based system for data monitoring and networks manage
 routine data processing with dedicated automatic scripts for each technique, production of validated data outputs, static graphs on preset moving time intervals, possible e-mail alarms, sensors and station status based on data validity;
 - in the special case of seismology, a multichannel continuous stripchart associated with EarthWorm/SeisComP acquisition chain, event classification database, automatic shakemap reports, regional catalog with associated hypocenter maps.
 
-WebObs is presently fully functional and used in a dozen observatories (see the related [publications](#wopubs)), but the documentation for end users is still incomplete. We hope to shortly finish the main user's manual. If you are in a hurry, please contact the project coordinator and we will be happy to help you to install it. WebObs is fully described in the following paper (please cite this one if you publish something using WebObs):
+WebObs is presently fully functional and used in a dozen observatories (see the related [publications](#wopubs)) and was [awarded in 2022](#woaward), but the documentation for end users is still incomplete and there is no tutorial. We hope to shortly finish the main user's manual. If you are in a hurry, please contact the project coordinator and we will be happy to help you to install it. WebObs is fully described in the following paper (please cite this one if you publish something using WebObs):
 
 >Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020). <b>WebObs: The volcano observatories missing link between research and real-time monitoring</b>, <i>Frontiers in Earth Sciences</i>, [doi:10.3389/feart.2020.00048](https://doi.org/10.3389/feart.2020.00048).
-
-**IMPORTANT:** when upgrading from a previous version, please read carefully the information at the end of the procedure: some updates may require changes in your configuration files.
 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.4.2.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.4.2/WebObs-2.4.2.tar.gz) (67 Mb) updated November 29, 2021
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.4.2/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.4.2/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.5.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.5/WebObs-2.5.tar.gz) (100 Mb) updated June 12, 2023
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.5/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.5/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
 - Previous releases are available [here](https://github.com/IPGP/webobs/releases) and older packages [here](http://www.ipgp.fr/~beaudu/webobs/).
 
 For install and update, please follow instructions below.
+
+**IMPORTANT:** when upgrading from a previous version, please read carefully the information at the end of the procedure: some updates may require changes in your configuration files.
+
 
 Source code, comments and issues are available at the project repository [github.com/IPGP/webobs](https://github.com/IPGP/webobs).
 
@@ -55,7 +56,7 @@ sudo ./install -mode silent
 A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:
 
 ```sh
-sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant mutt xvfb \
+sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode mutt xvfb \
    curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
    libtext-multimarkdown-perl libswitch-perl libintl-perl libncurses5
@@ -106,7 +107,7 @@ sudo service wopostboard start
 ```
 
 <a name="srtm1"></a>
-### D) Improving basemap database (reommanded)
+### D) Improving basemap database (recommanded)
 
 WebObs is distributed with ETOPO5 worldwide topographic data, which is very coarse. For details maps on land, WebObs uses SRTM3 topographic data, automatically downloaded from the internet. To improve offshore parts of maps, you can freely download ETOPO1:
 
@@ -129,10 +130,20 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 
 
 <a name="whatsnew"></a>
-## What's new?
+## What's new and release history
+
+### What's new in the 2.5?
+- SEFRAN3/MC3 can use key shortcuts to select the event type;
+- new functionalities in superproc GNSS (harmonic correction, velocity scale) and GENPLOT (moving averages), node events are plotted in background for pernode graphs (most superprocs);
+- external node maps now use OpenStreetMaps with various free tile layers (satellite, terrain, topo, ...);
+- neighbour nodes are automatically displayed with dynamic links;
+- QR codes available for all grids, output graphs and nodes pages (link to direct URL);
+- node-feature-node association editable through node configuration GUI;
+- improved node events search tool;
+- some fixes and other minor improvements.
 
 ### What's new in the 2.4?
-- sefran3/mc3 includes a machine learning module for automatic event classification;
+- SEFRAN3/MC3 includes a machine learning module for automatic event classification;
 - new forms for soil solution and rain water chemical analysis;
 - new modelling capabilities (pCDM MODELTIME) in GNSS superproc;
 - Sefran3 is now a grid type associated to a domain, with configuration GUI;
@@ -199,6 +210,14 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - photos associated to a NODE are now sorted in chronological order (timestamp from EXIF data);
 - improvements and fixes to superprocs SEFRAN3, GENPLOT, GNSS, JERK, METEO.
 
+<a name="woaward"></a>
+## Awards
+The WebObs system has been awarded by a **"Community" accessit** during the **First Open Science Award Ceremony**, *Paris Open Science European Conference (OSEC)*, February 4-5, 2022. See related articles (in French):
+- [Ministère de l'Enseignement Supérieur et de la Recherche](https://www.enseignementsup-recherche.gouv.fr/fr/remise-des-prix-science-ouverte-du-logiciel-libre-de-la-recherche-83576)
+- [Institut de Physique du Globe de Paris](https://www.ipgp.fr/fr/logiciel-webobs-recompense-lors-de-premiere-edition-prix-science-ouverte-logiciel-libre-remis-mesri)
+- [Université Paris Cité](https://u-paris.fr/le-logiciel-webobs-laureat-de-la-premiere-edition-du-prix-science-ouverte-du-logiciel-libre-de-la-recherche/)
+- [Resif/EPOS](https://www.resif.fr/blog/2022/02/22/prix-national-de-la-science-ouverte-le-logiciel-webobs-recompense/)
+
 ## References
 <a name="worefs"></a>
 ### Publications on the WebObs system
@@ -231,6 +250,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 1.  Peltier, A. et al. (2021). Volcano crisis management at Piton de la Fournaise (La Réunion) during the COVID-19 lockdown, *Seismol. Res. Lett.*, [doi:10.1785/0220200212](https://doi.org/10.1785/0220200212)
 1.  Feuillet N. et al. (2021). Birth of a large volcanic edifice through lithosphere-scale dyking offshore Mayotte (Indian Ocean), *Nature Geoscience*, [doi:10.1038/s41561-021-00809-x](https://doi.org/10.1038/s41561-021-00809-x)
 1.  Trasatti, E. et al. (2021). The Impact of Open Science for Evaluation of Volcanic Hazards. *Frontiers in Earth Science*, [doi:10.3389/feart.2021.659772](https://doi.org/10.3389/feart.2021.659772).
+1. Lowenstern, J. B., Wallace, K., Barsotti, S., Sandri, L., Stovall, W., Bernard, B., ... & Garaebiti, E. (2022). Guidelines for volcano-observatory operations during crises: recommendations from the 2019 volcano observatory best practices meeting. *Journal of Applied Volcanology*, 11(1), 1-24. [doi:10.1186/s13617-021-00112-9](https://doi.org/10.1186/s13617-021-00112-9)
 
 #### Seismology
 1. Bengoubou-Valérius M. et al. (2008). CDSA: A New Seismological Data Center for the French Lesser Antilles. *Seismol. Res. Lett.*, [doi:10.1785/gssrl.79.1.90](https://doi.org/10.1785/gssrl.79.1.90)
@@ -265,3 +285,5 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 1. Syahbana D. et al. (2019). The 2017–19 activity at Mount Agung in Bali (Indonesia): intense unrest, monitoring, crisis response, evacuation, and eruption. *Sci. Rep.*, [doi:10.1038/s41598-019-45295-9](https://doi.org/10.1038/s41598-019-45295-9)
 1.  Beauducel F. et al. (2020), Mechanical imaging of a volcano plumbing system from unsupervised GNSS modeling, *Geophys. Res. Lett.*, [doi:10.1029/2020GL089419](https://doi.org/10.1029/2020GL089419)
 1. Indrastuti N. et al. (2021). Potential Eruption and Current Activity of Anak Krakatau Volcano, Indonesia. *In IOP Conference Series: Earth and Environmental Science*, Vol. 873, No. 1, p. 012021.
+1. Mittal, T., Jordan, J. S., Retailleau, L., Beauducel, F., & Peltier, A. (2022). Mayotte 2018 eruption likely sourced from a magmatic mush. *Earth and Planetary Science Letters*, 590, 117566. [doi:10.1016/j.epsl.2022.117566](https://doi.org/10.1016/j.epsl.2022.117566)
+1. Dumont, Q., Cayol, V., Froger, J. L., & Peltier, A. (2022). 22 years of satellite imagery reveal a major destabilization structure at Piton de la Fournaise. *Nature Communications*, 13(1), 1-11. [doi:10.1038/s41467-022-30109-w](https://doi.org/10.1038/s41467-022-30109-w)
