@@ -596,7 +596,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 		chomp(@allNodes);
 		print "\n<B style=\"margin-left:20px\">$__{'Move this event to another node'}:</B>&nbsp;<SELECT id=\"mvnode\" name=\"mvnode\" size=\"1\">";
 		for ("",@allNodes) {
-			print "<OPTION value=\"$_\">$_</OPTION>\n";
+			print "<OPTION value=\"$_\">$_</OPTION>\n" if ($_ ne $NODEName);
 		}
 		print "</SELECT>\n";
 	}
