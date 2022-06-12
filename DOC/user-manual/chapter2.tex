@@ -331,7 +331,7 @@ A \wo{node} can be associated to dated events. A \wo{node} event has following c
 	\item notebook forward flag (optional);
 	\item associated photos (image files).
 \end{itemize}
-An event can include one or more sub-events (children). Event files  accept the MultiMarkDown syntax. See \wo{Events logging} section (\ref{events_logging}) for a description of Nodes and Grids events coding.
+An event can include one or more sub-events (children). Event files  accept the MultiMarkDown syntax. See \wo{Events logging} section (\ref{events:logging}) for a description of Nodes and Grids events coding.
 
 
 % ==================================================================
@@ -457,7 +457,7 @@ A \wo{grid} can have events and project like for \wo{nodes}: see section \ref{ev
 \section{Events Logging}
 \label{events:logging}
 
-Nodes and Grids can have \wo{EVENT}. These events are free timestamped text files (Wifi syntax being supported), editable by users having at least Write authorization on the corresponding \wo{Node} or \wo{Grid}. Events live in specific repositories (known as INTERVENTIONS), and are managed through functions of the \wofile{CODE/cgi-bin/WebObs/Events.pm} module and \wofile{CODE/cgi-bin/vedit.pl}. Their filenames reflect both their Node or Grid membership and their timestamp. 
+Nodes and Grids can have \wo{EVENT}. These events are free timestamped text files (Wiki syntax being supported), editable by users having at least Write authorization on the corresponding \wo{Node} or \wo{Grid}. Events live in specific repositories (known as INTERVENTIONS), and are managed through functions of the \wofile{CODE/cgi-bin/WebObs/Events.pm} module and \wofile{CODE/cgi-bin/vedit.pl}. Their filenames reflect both their Node or Grid membership and their timestamp. 
 
 An event may also have attached images (PHOTOS) and/or sub-events: both are collectively referred to as \wo{event extensions}. 
 Subevents are themselves events, thus building up a tree structure for each event.
