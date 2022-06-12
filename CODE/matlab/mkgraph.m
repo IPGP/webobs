@@ -6,6 +6,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	MKGRAPH(WO,F,G,OPT) uses structure OPT as optional parameters:
 %		OPT.IMAP: creates companion html map file for interactive graph
+%	    OPT.EVENTS: addition background events structure
 %		OPT.TYPES: adds a list of symbols on the upper plot
 %		OPT.FIXEDPP: do not change initial paper size
 %		OPT.INFOLINES: specifies the number of lines for INFOS footer (default is 4)
@@ -16,7 +17,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2022-04-18
+%	Updated: 2022-06-12
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -55,7 +56,11 @@ if isok(G,'PLOT_GRID')
 end
 
 % events in background
-I = plotevent(G.EVENTS_FILE);
+if nargin > 3 && isfield(OPT,'EVENTS')
+	I = plotevent(G.EVENTS_FILE,OPT.EVENTS);
+else
+	I = plotevent(G.EVENTS_FILE);
+end
 
 h0 = [];
 h1 = [];
@@ -197,6 +202,7 @@ end
 
 
 % --- Creates optional interactive MAP (html map)
+% appends IMAP from proc to events
 if nargin > 3 && isfield(OPT,'IMAP')
 	I = cat(2,I,OPT.IMAP);
 end

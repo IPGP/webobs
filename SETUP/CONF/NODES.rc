@@ -13,6 +13,10 @@ PATH_EVENTNODE_TRASH|$WEBOBS{ROOT_DATA}/trash/EVENTNODE
 PATH_NODE_TRASH|$WEBOBS{ROOT_DATA}/trash/NODES
 EVENTNODE_NOTEBOOK|NO
 EVENTNODE_NOTIFY_DEFAULT|NO
+EVENTNODE_PLOT_COLOR|Silver
+EVENTNODE_PLOT_LINEWIDTH|1
+EVENTNODE_PLOT_OUTCOME_ONLY|YES
+
 # list of categories (grid,alias,feature,author,remote,startdate,enddate,title,comment,notebook,outcome)
 EVENT_SEARCH_CATEGORY_LIST|grid,alias,feature,author,remote,startdate,title,comment,notebook,outcome
 EVENT_SEARCH_MAXDISPLAY_LIST|15,50,75,100
