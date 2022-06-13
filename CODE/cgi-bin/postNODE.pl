@@ -153,8 +153,8 @@ my $n2nfile = "$NODES{FILE_NODES2NODES}";
 #
 if ($delete) {
 	# NOTE: this removes the node directory and association to grids, but not any reference to it in other nodes...
-	mkdir $NODES{PATH_NODE_TRASH};
-	system("rm -rf $NODES{PATH_NODE_TRASH}/$NODEName");
+	qx(/bin/mkdir -p $NODES{PATH_NODE_TRASH});
+	qx(/bin/rm -rf $NODES{PATH_NODE_TRASH}/$NODEName);
 	if (system("/bin/mv $nodepath $NODES{PATH_NODE_TRASH}/") == 0) {
 		unlink glob "$WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName";
 		#system("/bin/rm -f $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName");
@@ -162,6 +162,7 @@ if ($delete) {
 		htmlMsgNotOK("postNODE couldn't move directory $nodepath to trash... [$!]");
 	}
 	htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n deleted");
+	exit;
 }
 
 # ---- What are we supposed to do ?: find it out in the query string
@@ -357,7 +358,6 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 	if (-e "$nodepath/type.txt") {
 		qx(rm -f $nodepath/type.txt);
 	}
-	htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n created/updated");
 
 } else { htmlMsgNotOK("$nodefile $!") }
 
@@ -389,12 +389,13 @@ if (%n2n) {
 
 	} else { htmlMsgNotOK("$n2nfile $!") }
 }
-exit;
+htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n created/updated");
 
 # --- return information when OK
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
 	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+	exit;
 }
 
 # --- return information when not OK
