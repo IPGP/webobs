@@ -26,10 +26,12 @@ if exist(file,'file')
     ss = split(fileread(file),'\n');
     % event header = authors|title|datetime2|feature|sensor|outcome|notebook|notebookfwd
     evthead = split(ss{1},'|');
+    X.date2 = X.date1;
     if length(evthead) > 2
-        X.date2 = isodatenum(evthead{3});
-    else
-        X.date2 = X.date1;
+        date2 = isodatenum(evthead{3});
+        if ~isnan(date2)
+            X.date2 = date2;
+        end
     end
     if length(evthead) > 0
         X.author = evthead{1};
