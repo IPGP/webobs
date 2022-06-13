@@ -1028,6 +1028,11 @@ if ($MC3{DISPLAY_INFO_MAIL} && (clientHasAdm(type=>"authprocs",name=>"MC") || cl
 	$html .= "<INPUT type=\"hidden\" name=\"RFcount\" value=\"".$stat{RFcount}."\"/>";
 	$html .= "<INPUT type=\"hidden\" name=\"VTcount\" value=\"".$stat{VTcount}."\"/>";
 	$html .= "</FORM>\n";
+	$html .= "<FORM name=\"formulaire_mail_revosime\" action=\"/cgi-bin/$MC3{CGI_REVOSIMA_MAIL_INFO}\" method=\"get\">";
+	$html .= "<P><B>Mail d'information REVOSIMA</B>: <INPUT type=\"submit\" value=\"G&eacute;n&eacute;rer\"/></P>";
+	$html .= "<INPUT type=\"hidden\" name=\"dateStart\" value=\"".$start_datetime->strftime("%F")."\"/>";
+	$html .= "<INPUT type=\"hidden\" name=\"dateEnd\" value=\"".$end_datetime->strftime("%F")."\"/>";
+	$html .= "</FORM>\n";
 }
 # ---- END of HTML-form
 
