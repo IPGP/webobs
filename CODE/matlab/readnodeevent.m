@@ -16,17 +16,18 @@ function X=readnodeevent(file)
 %
 %    Author: F. Beauducel / WebObs
 %   Created: 2022-06-11, in Saint-Pierre, La Réunion
+%   Updated: 2022-06-13
 
 % event name = NODEID_YYYY-MM-DD_HH-MM.txt
 evtname = split(regexprep(regexprep(file,'.txt$',''),'^.*/',''),'_');
 X.id = evtname{1};
-X.date1 = datenum(sprintf('%s %s',evtname{2},regexprep(evtname{3},'-',':')));
+X.date1 = isodatenum(sprintf('%s %s',evtname{2},regexprep(evtname{3},'-',':')));
 if exist(file,'file')
     ss = split(fileread(file),'\n');
     % event header = authors|title|datetime2|feature|sensor|outcome|notebook|notebookfwd
     evthead = split(ss{1},'|');
     if length(evthead) > 2
-        X.date2 = datenum(evthead{3});
+        X.date2 = isodatenum(evthead{3});
     else
         X.date2 = X.date1;
     end
