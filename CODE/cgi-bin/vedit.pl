@@ -582,7 +582,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
       onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved remotely (hold CTRL key for multiple selections)'}')\">\n";
 	for my $ulogin (@logins) {
 		my $uid = $USERS{$ulogin}{UID};
-		my $sel = ((grep {$_ eq $uid} @roper) || ($action =~ /new/i && $ulogin eq $CLIENT) ? 'selected':'');
+		my $sel = (grep {$_ eq $uid} @roper) ? 'selected':'');
 		print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
 	}
 	print "</SELECT></TR>\n";
