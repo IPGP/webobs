@@ -148,6 +148,7 @@ use WebObs::Config;
 use WebObs::Users qw(clientHasRead clientHasEdit clientHasAdm $CLIENT);
 use WebObs::Grids;
 use WebObs::Utils;
+use WebObs::Mapping;
 use WebObs::i18n;
 use WebObs::Wiki;
 use Locale::TextDomain('webobs');
