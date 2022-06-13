@@ -15,7 +15,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.5 (June 2022)
+## v2.5.1 (June 2022)
 
 ### New features
 
@@ -47,7 +47,15 @@ The new GUI uses https://leafletjs.com javascript application.
 
 1. Node-feature-node association can be edited using the node configuration form: each feature can be associated to another node or list of nodes, creating a parent-children link through this feature. This functionality was already existing but only editable by administrator. If the list of features is modified, a refresh icon allows to update the list of feature/node association text forms. The interface still requires to enter the node ID codes. The former link to edit the **node2node.rc** global file has been removed. It can be added in the +ADMIN menu, as a new entry like `<li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_NODES2NODES)">node2node.rc</a></li>`.
 
-1. In **Sefran/MC**, keyboard shortcuts can be defined by administrator to select the event type during phase picking, as an alternative to menu list mouse selection. The key must be a single character, case sensitive, defined in the **MC3_Codes.conf** file. Note that letters `e`, `r`, `t`, `s` and `S` are already assigned to functions (show/hide MC events and spectrogram control).
+1. In **Sefran/MC**, keyboard shortcuts can be defined by administrator to select the event type during phase picking, as an alternative to menu list mouse selection. The key must be a single character, case sensitive, defined in the **MC3_Codes.conf** file as a new column with name `KBcode` in the header line `=key|...`. Example:
+    ```
+    =key|Name|Color|BgColor|Md|asVT|asRF|Location|WO2SC3|KBcode
+    UNKNOWN|Unknown event|\#535353|\#FFFFFF|-1|0|0|1|1|
+    VOLCTECT|Volcano-Tectonic|\#FA8072|\#FFFFFF|0|1|0|1|1|V
+    VOLCLP|Volcanic Long-Periode|\#DC143C|\#FFFFFF|0|0|0|1|1|L
+    ...
+    ```
+    to set key `V` (uppercase) for event type **VOLCTECT** and key `L` for event type **VOLCLP**. Note that letters `e`, `r`, `t`, `s` and `S` are already assigned to functions (show/hide MC events and spectrogram control).
 
 1. Node's events are shown as background areas in graphs (per node only, not in summary graphs). New variables in **NODES.rc**: `EVENTNODE_PLOT_COLOR` to set the color (default is `Silver`), `EVENTNODE_PLOT_LINEWIDTH` to set the line width for "instant" events (default is 1), and `EVENTNODE_PLOT_OUTCOME_ONLY` to select only events having the flag 'sensor/data outcome' ON (default is `YES`). Presently this functionality is available for superprocs **genplot**, **afm**, **gnss**, **tilt**, **jerk**, **rsam**, and **meteo**.
 
