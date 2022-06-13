@@ -133,6 +133,7 @@ use Locale::TextDomain('webobs');
 #
 my $delete = $cgi->param('delete') // 0;
 my $GRIDName  = my $GRIDType  = my $NODEName = "";
+my @lines;
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($cgi->param('node')));
 if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
 	if ( $delete && !clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
@@ -152,12 +153,15 @@ my $n2nfile = "$NODES{FILE_NODES2NODES}";
 # ---- If deleting NODE, do not wait for further information
 #
 if ($delete) {
-	# NOTE: this removes the node directory and association to grids, but not any reference to it in other nodes...
+	# NOTE: this removes only the node directory, association to grids and node feature associations
 	qx(/bin/mkdir -p $NODES{PATH_NODE_TRASH});
 	qx(/bin/rm -rf $NODES{PATH_NODE_TRASH}/$NODEName);
 	if (system("/bin/mv $nodepath $NODES{PATH_NODE_TRASH}/") == 0) {
 		unlink glob "$WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName";
 		#system("/bin/rm -f $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName");
+		# reads all but feature children nodes
+		@lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
+		saveN2N(@lines);
 	} else {
 		htmlMsgNotOK("postNODE couldn't move directory $nodepath to trash... [$!]");
 	}
@@ -253,7 +257,6 @@ my @docs  = ($NODES{SPATH_INTERVENTIONS}, $NODES{SPATH_PHOTOS}, $NODES{SPATH_DOC
 my @Dnew  = map { $_ if(! -e "$nodepath/$_") } (@docs);
 # ---- build the NODE's configuration file. There is no 'true update' of this .cnf,
 # ---- each time it is rebuilt from scratch (hum...from query-string parameters)
-my @lines;
 #my @Ps; my @Vs;
 push(@lines,"=key|value\n");
 push(@lines,"NAME|\"".u2l($name)."\"\n");
@@ -371,8 +374,12 @@ if (%n2n) {
 			push(@lines,"$NODEName|$key|$n\n");
 		}
 	}
-	# ---- node2node edit: lock-exclusive the file during update process
-	#
+	saveN2N(@lines);
+}
+htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n created/updated");
+
+# ---- node2node edit: lock-exclusive the file during update process
+sub saveN2N {
 	if ( sysopen(FILE, "$n2nfile", O_RDWR | O_CREAT) ) {
 		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
 			warn "postNODE waiting for lock on $n2nfile...";
@@ -384,13 +391,12 @@ if (%n2n) {
 		}
 		# ---- actually create the NODE's configuration file and release lock!
 		truncate FILE, 0;
-		print FILE @lines;
+		print FILE @_;
 		close(FILE);
 
 	} else { htmlMsgNotOK("$n2nfile $!") }
-}
-htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n created/updated");
 
+}
 # --- return information when OK
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');

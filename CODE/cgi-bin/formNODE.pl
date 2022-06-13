@@ -184,6 +184,11 @@ print <<"FIN";
 
 function postIt()
 {
+ if(document.formulaire.nouveau.value == 1 && document.formulaire.message.value != "ok") {
+   alert("NODE ID: Please enter a valid and new ID!");
+   document.formulaire.nodename.focus();
+   return false;
+ }
  if((/^[\\s]*\$/).test(document.formulaire.fullName.value)) {
    alert("NAME: Please enter a full name (non-blank string)");
    document.formulaire.fullName.focus();
@@ -250,7 +255,7 @@ function postIt()
   }
 
 	if (\$(\"#theform\").hasChanged()) {
-		document.formulaire.node.value = document.formulaire.node.value + document.formulaire.nodename.value.toUpperCase();
+		document.formulaire.node.value = document.formulaire.grid.value + document.formulaire.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
 			var fidx = document.getElementById("fidx").getElementsByTagName("div");
 			for (var i=0; i<fidx.length; i++) {
@@ -354,7 +359,7 @@ function refresh_form()
 function delete_node()
 {
 	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative. Are you sure you want to move this NODE to trash ?\") ) {
-		document.formulaire.node.value = document.formulaire.node.value + document.formulaire.nodename.value.toUpperCase();
+		document.formulaire.node.value = document.formulaire.grid.value + document.formulaire.nodename.value.toUpperCase();
 		document.formulaire.delete.value = 1;
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
 			alert(data);
@@ -414,7 +419,8 @@ print "<TR>";
 	 	print "<INPUT type=\"hidden\" name=\"message\" value=\"0\">";
 	 	print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"0\">";
 	}
-	print "<INPUT type=\"hidden\" name=\"node\" value=\"$GRIDType.$GRIDName.\">";
+	print "<INPUT type=\"hidden\" name=\"grid\" value=\"$GRIDType.$GRIDName.\">";
+	print "<INPUT type=\"hidden\" name=\"node\" value=\"\">";
 		print "<BR>";
 		# --- Nom complet
 		print "<LABEL style=\"width:80px\" for=\"fullName\">$__{'Name'}:</LABEL>";
