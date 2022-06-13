@@ -132,7 +132,7 @@ $fileMap        = "$NODES{PATH_NODES}/$NODEName/$NODEName"."_map.png";
 my $cgiConf = "/cgi-bin/$NODES{CGI_FORM}?node=$GRIDType.$GRIDName.$NODEName";
 my $cgiEtxt = "/cgi-bin/nedit.pl";
 
-my $tz = "<I>(GMT".($NODE{TZ} ne "" ? " $NODE{TZ})":"")."</I>";
+my $tz = "<I>(GMT".($NODE{TZ} ne "" ? " $NODE{TZ}":"").")</I>";
 my %typeTele = readCfg("$NODES{FILE_TELE}");
 my %typePos  = readCfg("$NODES{FILE_POS}");
 my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
