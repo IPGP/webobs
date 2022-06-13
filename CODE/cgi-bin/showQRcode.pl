@@ -52,8 +52,6 @@ img {
     padding: 0;
     display: block;
     margin: 0 auto;
-    max-height: 100%;
-    max-width: 100%;
 }
 </STYLE>
 <BODY><TABLE width="100%"><TR><TD width="80%" style="border:0">$img
