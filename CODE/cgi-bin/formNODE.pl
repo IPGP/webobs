@@ -180,7 +180,6 @@ print <<"FIN";
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
 <script type="text/javascript">
-<!--
 
 function postIt()
 {
@@ -234,13 +233,6 @@ function postIt()
    document.formulaire.altitude.focus();
    return false;
  }
-/*FB-was:
- if(document.formulaire.features.value == "") {
-   alert("FEATURES: Please enter at least one word");
-   document.formulaire.features.focus();
-   return false;
- }
-*/
   if (document.formulaire.SELs.options.length < 1) {
     alert(\"node MUST belong to at least 1 grid\");
     document.formulaire.SELs.focus();
@@ -254,7 +246,7 @@ function postIt()
   	document.formulaire.SELs[i].selected = true;
   }
 
-	if (\$(\"#theform\").hasChanged()) {
+	if (\$(\"#theform\").hasChanged() || document.formulaire.delete.value == 1) {
 		document.formulaire.node.value = document.formulaire.grid.value + document.formulaire.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
 			var fidx = document.getElementById("fidx").getElementsByTagName("div");
@@ -358,18 +350,13 @@ function refresh_form()
 
 function delete_node()
 {
-	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative. Are you sure you want to move this NODE to trash ?\") ) {
-		document.formulaire.node.value = document.formulaire.grid.value + document.formulaire.nodename.value.toUpperCase();
+	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative.\\n\\n Are you sure you want to move this NODE to trash ?\") ) {
 		document.formulaire.delete.value = 1;
-		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
-			alert(data);
-			location.href = document.referrer;
-		});
+		postIt();
 	} else {
 		return false;
 	}
 }
-//-->
 </script>
 
 </head>
@@ -420,7 +407,7 @@ print "<TR>";
 	 	print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"0\">";
 	}
 	print "<INPUT type=\"hidden\" name=\"grid\" value=\"$GRIDType.$GRIDName.\">";
-	print "<INPUT type=\"hidden\" name=\"node\" value=\"\">";
+	print "<INPUT type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">";
 		print "<BR>";
 		# --- Nom complet
 		print "<LABEL style=\"width:80px\" for=\"fullName\">$__{'Name'}:</LABEL>";

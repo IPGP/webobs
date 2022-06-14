@@ -142,7 +142,7 @@ if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
 	if ( !clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
 		htmlMsgNotOK("You cannot edit $GRIDType.$GRIDName.$NODEName");
 	}
-} else { htmlMsgNotOK ("Invalid NODE posted for create/update/delete")  }
+} else { htmlMsgNotOK ("Invalid NODE (".$cgi->param('node').") posted for create/update/delete")  }
 
 # ---- where are the NODE's directory and NODE's conf file ?
 my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
@@ -307,12 +307,6 @@ foreach my $g (@{$allNodeGrids{$NODEName}}) {
 	}
 }
 
-# ---- [FB-was]: no need to store PROC and VIEW in .cnf
-#for (@SELs) { if (/^PROC\./) { (my $u = $_) =~ s/^PROC\.//g ; push(@Ps,$u) }};
-#for (@SELs) { if (/^VIEW\./) { (my $u = $_) =~ s/^VIEW\.//g ; push(@Vs,$u) }};
-#push(@lines,"PROC|".join(',',@Ps)."\n");
-#push(@lines,"VIEW|".join(',',@Vs)."\n");
-# push(@lines,u2l("CALIB_FILE $stationName.clb\n"));
 
 # ---- create NODE's directory if required
 umask 0002;
@@ -376,7 +370,7 @@ if (%n2n) {
 	}
 	saveN2N(@lines);
 }
-htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n created/updated");
+htmlMsgOK("$GRIDType.$GRIDName.$NODEName created/updated");
 
 # ---- node2node edit: lock-exclusive the file during update process
 sub saveN2N {
@@ -400,7 +394,7 @@ sub saveN2N {
 # --- return information when OK
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
 }
 
