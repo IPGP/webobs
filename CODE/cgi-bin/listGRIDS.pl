@@ -296,7 +296,7 @@ print "<div id=\"noscrolldiv\">";
 							print "<TD style=\"text-align:center\">";
 							if (defined($G{$vs}{MC3_NAME}) && $G{$vs}{MC3_NAME} ne '') {
 								my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$G{$vs}{MC3_NAME}.conf");
-								print "<A HREF=\"/cgi-bin/mc3.pl?mc3=$G{$vs}{MC3_NAME}\" title=\"$MC3{TITLE}\"><IMG border=\"0\" alt=\"$G{$vs}{MC3_NAME}\" SRC=\"/icons/form.png\"></A>";
+								print "<A HREF=\"/cgi-bin/mc3.pl?mc=$G{$vs}{MC3_NAME}\" title=\"$MC3{TITLE}\"><IMG border=\"0\" alt=\"$G{$vs}{MC3_NAME}\" SRC=\"/icons/form.png\"></A>";
 							}
 							print "</TD>";
 						}
