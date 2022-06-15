@@ -157,11 +157,17 @@ for (@durations) {
 	$duration_s{$key} = $val;
 }
 # events amplitude texts/thresholds
-my @amplitudes = readCfgFile("$MC3{AMPLITUDES_CONF}");
-my %nomAmp;
-for (@amplitudes) {
-        my ($key,$nam,$val) = split(/\|/,$_);
-        $nomAmp{$key} = $nam;
+# [TODO]: converts to regular HoH config file...
+my %amplitudes;
+my @ampfile = readCfgFile("$MC3{AMPLITUDES_CONF}");
+my $i = 0;
+for (@ampfile) {
+        my ($key,$nam,$val,$kb) = split(/\|/,$_);
+		my $skey = sprintf("%02d",$i)."_$key"; # adds a prefix "xx_" to the hash key to be sorted
+        $amplitudes{$skey}{Name} = $nam;
+        $amplitudes{$skey}{Value} = $val;
+        $amplitudes{$skey}{KBcode} = $kb;
+		$i++;
 }
 # time interval texts + value in hours
 my @time_intervals = split(/,/,exists($SEFRAN3{TIME_INTERVALS_LIST}) ? $SEFRAN3{TIME_INTERVALS_LIST}:"0,6,12,24,48");
@@ -340,9 +346,15 @@ var MECB = {
 	TITLE: '$MC3{TITLE}',
 html
 
-	print "	KB: {\n";
+	print "	KBtyp: {\n";
 	for (keys(%types)) {
 		print "		'$_': \"$types{$_}{KBcode}\",\n" if ($types{$_}{KBcode} ne "");
+	}
+	print "		},\n";
+	print "	KBamp: {\n";
+	for (sort keys(%amplitudes)) {
+		(my $key = $_) =~ s/^.._//g; # removes the xx_ prefix
+		print "		'$key': \"$amplitudes{$_}{KBcode}\",\n" if ($amplitudes{$_}{KBcode} ne "");
 	}
 	print "		}\n};\n\n";
 
@@ -977,9 +989,10 @@ if ($date) {
 
 		# amplitude and saturation
 		print "<P>$__{'Max amplitude'}: <SELECT name=\"amplitudeEvenement\" size=\"1\">";
-		for ("|&nbsp;|-1",@amplitudes) {
-			my ($key,$nam,$val) = split(/\|/,$_);
-			print "<OPTION value=\"$key\"".($amplitude_evt eq $key ? " selected":"").">$nam</OPTION>";
+		for ("",sort keys(%amplitudes)) {
+			(my $key = $_) =~ s/^.._//g; # removes the xx_prefix
+			print "<OPTION value=\"$key\"".($amplitude_evt eq $key ? " selected":"").">$amplitudes{$_}{Name} "
+				.($amplitudes{$_}{KBcode} ne "" ? "[$amplitudes{$_}{KBcode}]":"")."</OPTION>\n";
 		}
 		print "</SELECT></P>\n";
 		print "<P>$__{'Overscale duration'} (<I>$__{'Seconds'}</I>): ",
@@ -1076,7 +1089,7 @@ sub mcinfo
 		."<I>Duration:</I> <B>$MC{duration} $MC{unit}</B><BR>"
 		."<I>Type:</I> <B>$types{$MC{type}}{Name}</B><BR>"
 		."<I>Station:</I> <B>$MC{station}</B>".($MC{unique} ? " (unique)":"")."<BR>"
-		.($MC{amplitude} ? "<I>Amplitude:</I> <B>$nomAmp{$MC{amplitude}}</B><BR>":"")
+		.($MC{amplitude} ? "<I>Amplitude:</I> <B>$amplitudes{$MC{amplitude}}{Name}</B><BR>":"")
 		."<I>Comment:</I> <B>$comment</B>"
 		."</SPAN>";
 
