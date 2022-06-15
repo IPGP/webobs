@@ -73,8 +73,11 @@ $(document).keydown(function(e) {
   			$('.sgram').css('opacity',y/10);
 			$('#sgramopacity').val(y/10);
 		}
-		Object.keys(MECB.KB).forEach(function (key) {
-			if (e.key === MECB.KB[key]) MECB.FORM.typeEvenement.value = key;
+		Object.keys(MECB.KBtyp).forEach(function (key) {
+			if (e.key === MECB.KBtyp[key]) MECB.FORM.typeEvenement.value = key;
+		});
+		Object.keys(MECB.KBamp).forEach(function (key) {
+			if (e.key === MECB.KBamp[key]) MECB.FORM.amplitudeEvenement.value = key;
 		});
 	}
 });
