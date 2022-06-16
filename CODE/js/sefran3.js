@@ -59,6 +59,10 @@ $(document).keydown(function(e) {
 	e = e || window.event;
 	var target = e.target || e.srcElement;
 	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
+		if (e.key == 'Enter') {
+			verif_formulaire();
+			MECB.FORM.submit();
+		}
 		if (e.key == "e") showmctags();
 		if (e.key == "s") showsgram();
 		if (e.key == "S") {

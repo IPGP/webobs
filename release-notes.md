@@ -65,7 +65,7 @@ The new GUI uses https://leafletjs.com javascript application.
     OVERSCALE|Overscale|2000|4
     ```
     to set numbers 1 to 4 for amplitudes **WEAK** to **OVERSCALE**, respectively.
-    Note that letters `e`, `r`, `t`, `s` and `S` are already assigned to functions (show/hide MC events and spectrogram control).
+    Note that letters `e`, `r`, `t`, `s` and `S` are already assigned to functions (show/hide MC events and spectrogram control). The `Enter` key submit the form.
 
 1. Node's events are shown as background areas in graphs (per node only, not in summary graphs). New variables in **NODES.rc**: `EVENTNODE_PLOT_COLOR` to set the color (default is `Silver`), `EVENTNODE_PLOT_LINEWIDTH` to set the line width for "instant" events (default is 1), and `EVENTNODE_PLOT_OUTCOME_ONLY` to select only events having the flag 'sensor/data outcome' ON (default is `YES`). Presently this functionality is available for superprocs **genplot**, **afm**, **gnss**, **tilt**, **jerk**, **rsam**, and **meteo**.
 
