@@ -352,6 +352,7 @@ function delete_node()
 {
 	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative.\\n\\n Are you sure you want to move this NODE to trash ?\") ) {
 		document.formulaire.delete.value = 1;
+		document.formulaire.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
 		postIt();
 	} else {
 		return false;
