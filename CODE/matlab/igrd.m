@@ -1,21 +1,31 @@
-function [x,y,z] = igrd(fn)
+function varargout = igrd(fn,crop)
 %IGRD	Import DEM in .GRD formats (Surfer, ArcInfo / GMT).
-%	[X,Y,Z] = IGRD(FILENAME) returns the Digital Elevation Model data
+%	[X,Y,Z]=IGRD(FILENAME) returns the Digital Elevation Model data
 %	defined by X and Y (vectors or matrix) and matrix Z of elevations.
-%	FILENAME is in one the data grid .GRD formats: Golden Sofware Surfer (ASCII
-%	or binary), Arc/Info (ASCII), or Generic Mapping Tool (ASCII only).
+%	FILENAME is a file using one the data grid .GRD formats:
+%      - Golden Sofware Surfer (ASCII or binary),
+%      - Arc/Info (ASCII),
+%      - Generic Mapping Tool (ASCII only).
+%
+%   IGRD(FILENAME,[X1 X2 Y1 Y2]) will crop the grid using area limits
+%   [X1,X2] for X, and [Y1,Y2] for Y.
+%
+%   G=IGRD(...) returns a structure G with fields:
+%      x: X vector
+%      y: Y vector
+%      z: Z matrix
 %
 %	NoData values are replaced by NaN.
 %
 %	Author: François Beauducel, IPG Paris.
 %	Created: 1996
-%	Updated: 2020-04-22
+%	Updated: 2022-05-23
 %
 %	References:
 %	   Golden Software Surfer, http://www.goldensoftware.com/
 %	   GMT (Generic Mapping Tools), http://gmt.soest.hawaii.edu
 
-%	Copyright (c) 1996-2020, François Beauducel, covered by BSD License.
+%	Copyright (c) 1996-2022, François Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without
@@ -51,6 +61,8 @@ ndv = -99999;                % default NoValue
 if ~exist(fn,'file')
 	error('File "%s" not found.',fn);
 end
+
+fprintf('IGRD: importing "%s"...\n',fn);
 
 fid = fopen(fn, 'r');
 line = fgets(fid);             % reads 1st line header
@@ -101,10 +113,18 @@ elseif regexpi(line,'^ncols')
 			switch lower(s{x}{:})
 			case 'nrows'
 				sz(2) = s{v};
-			case {'xllcorner','xllcenter','xll'}
+			case {'xllcenter','xll'}
 				xm(1) = s{v};
-			case {'yllcorner','yllcenter','yll'}
+                dx2 = 0;
+			case 'xllcorner'
+				xm(1) = s{v};
+                dx2 = 1;
+			case {'yllcenter','yll'}
 				ym(1) = s{v};
+                dy2 = 0;
+            case 'yllcorner'
+				ym(1) = s{v};
+                dy2 = 1;
 			case 'cellsize'
 				csx = s{v};
 				csy = s{v};
@@ -125,12 +145,15 @@ elseif regexpi(line,'^ncols')
 	end
 	xm(2) = xm(1) + (sz(1)-1)*csx;
 	ym(2) = ym(1) + (sz(2)-1)*csy;	% note the reverse order of Y-axis vector
-    fprintf('--> found ESRI/AcrInfo ascii grid: %dx%d, xlim = [%g %g], ylim = [%g %g] ...',sz,xm,ym);
+    % applies half cell size if corner origin
+    xm = xm + dx2*csx/2;
+    ym = ym - dy2*csy/2;
+    fprintf('--> found ESRI/ArcInfo ascii grid: %dx%d, xlim = [%g %g], ylim = [%g %g] ...',sz,xm,ym);
 	z = flipud(fscanf(fid, '%f', sz)');	% transform needed because Z values are sorted rowwise
     fprintf(' done.\n');
 
 elseif regexpi(line,'^CDF')
-	error('"%s" is a binary netCDF grid file. Cannot be read, yet...\nConvert it first using "grd2xyz -Ef" command.',fn)
+	error('"%s" is a binary netCDF grid file. Cannot be read, yet...\nConvert it first using "gmt grd2xyz -Ef" command.',fn)
 else
 	error('"%s" is not a valid GRD file for this function.',fn)
 end
@@ -140,5 +163,22 @@ fclose(fid);
 x = linspace(xm(1),xm(2),sz(1));
 y = linspace(ym(1),ym(2),sz(2))';
 
+% crop
+if nargin > 1
+	kx = (x >= crop(1) & x <= crop(2));
+	ky = (y >= crop(3) & y <= crop(4));
+	x = x(kx);
+	y = y(ky);
+	z = z(ky,kx);
+end
+
 % replace NoData values by NaN
 z(z == ndv | abs(z) > 1e38) = NaN;
+
+if nargout == 3
+    varargout{1} = x;
+    varargout{2} = y;
+    varargout{3} = z;    
+else
+    varargout{1} = struct('x',x,'y',y,'z',z);
+end
