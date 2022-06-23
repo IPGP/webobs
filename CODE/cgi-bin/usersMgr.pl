@@ -333,13 +333,16 @@ $db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
 			         ." GROUP BY u.UID ORDER BY u.UID");
 my $dusers = '';
 my $dusersCount = 0;
+my $dusersCountValid = 0;
 my $dusersId = '';
 
 for my $row (@$db_rows) {
 	my ($dusers_uid, $dusers_fullname, $dusers_login, $dusers_email,
 		$dusers_validity, $dusers_enddate, $dusers_comment, $dusers_groups) = @$row;
 	$dusers_groups //= '';
+	$dusers_groups =~ s/,/ /g;
 	$dusersCount++;
+	$dusersCountValid++ if ($dusers_validity eq 'Y' && ($dusers_enddate eq '' || $dusers_enddate gt $today));
 	$dusersId = "udef".$dusersCount;
 
 	# Webobs owner and visitor user row should be grayed and have no edition/deletion link
@@ -412,6 +415,7 @@ my $SdgrpsId = '';
 
 for my $row (@$db_rows) {
 	my ($Sdgrps_gid, $Sdgrps_uids) = @$row;
+	$Sdgrps_uids =~ s/,/ /g;
 	$SdgrpsCount++;
 	$SdgrpsId="gdef".$SdgrpsCount;
 
@@ -623,7 +627,7 @@ Identifications&nbsp;$go2top
 
 	<fieldset id="users-field"><legend><b>Users</b></A></legend>
 		<div style="background: #BBB">
-			<b>$dusersCount</b> users defined
+			<b>$dusersCountValid</b>/$dusersCount users valid/defined
 		</div>
 		<div class="dusers-container">
 			<div class="dusers">
