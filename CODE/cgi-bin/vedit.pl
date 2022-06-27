@@ -650,7 +650,7 @@ sub htmlMsgNotOK {
 sub notify {
 	my $eventname = "eventnode";
 	my $senderId  = $USERS{$CLIENT}{UID};
-	my $names = join(", ",WebObs::Users::userName(@oper));
+	my $names = join(", ",WebObs::Users::userName(@oper))."/".join(", ",WebObs::Users::userName(@roper));
 	my $msg = '';
 	my $isnode = ($object =~ /^.*\..*\..*$/ ? 1:0);
 
