@@ -47,6 +47,7 @@ use POSIX;
 
 use WebObs::Config;
 use QML;
+use MC3;
 
 # ---- create files with group permissions from the parent directory
 umask 002;
@@ -350,98 +351,115 @@ for (@last) {
 				print "* Warning: no duration!\n";
 			}
 
+			# --- updates MC3 file
+			my $date = $evt_sdate'T'$evt_stime;
+			my $amp = '';
+			my $duree_sat = '';
+			my $nb_evts = 1;
+			my $img = '';
+			my $org_id = "$fdsnws_server:\/\/$evt_id";
+			my $comment = "$evt_magtyp$evt_mag $evt_txt";
 
-			my $lockFile = "/tmp/.$mc3.lock";
-
-			if ($arg =~ /update/) {
-				# --- checks lock file
-				if (-e $lockFile) {
-					my $lockWho = qx(cat $lockFile | xargs echo -n);
-					die "WEBOBS: MC is presently edited by $lockWho ...";
-				} else {
-					my $retLock = qx(echo "$oper" > $lockFile);
-				}
-			}
-
-			my $mc_id;
-			my $newID = 1;
-			my $maxID = 0;
-
-			# --- reads MC file
-			my ($mcy,$mcm) = split(/-/,$evt_sdate);
-			$mc_file = "$MC3{ROOT}/$mcy/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$mcy$mcm.txt";
-			my @lignes;
-			if (-e $mc_file)  {
-				print "MC file: $mc_file ...";
-				open(FILE, "<$mc_file") || Quit($lockFile," Problem to read $mc_file\n");
-				while(<FILE>) {
-					my $line = $_;
-					($mc_id) = split(/\|/,$line);
-					# --- check if $evt_mcID found
-					if ($evt_mcID ne '' && $mcIDname eq $mc3 && $mcIDym eq "$mcy$mcm" && $mc_id == $mcIDid) {
-						$newID = 0;
-						my @txt = split(/\|/,$line);
-						$txt[13] = "$fdsnws_server:\/\/$evt_id";
-						# @txt last field already contains "\n"
-						$line = join('|',@txt);
-					}
-					$maxID = abs($mc_id) if (abs($mc_id) > $maxID);
-					push(@lignes,$line);
-				}
-				close(FILE);
-				print " imported (max ID = $maxID).\n";
+			if ($evt_mcID == '') {
+				print "No mcID found, add new MC3 line\n"
+				mc3_add($mc3,$sefran3_name,$oper,$date,$evt_type,$amp,$evt_dur,$duree_sat,$nb_evts,$evt_SP,$evt_scode,$evt_unique,$org_id,$img,$comment);
 			} else {
-				# MC file does not exist: need to create directory and empty file.
-				if ($arg =~ /update/) {
-					qx(mkdir -p `dirname $mc_file`);
-					open(FILE, ">$mc_file") || Quit($lockFile,"Problem to create new file $mc_file\n");
-					print FILE ("");
-					close(FILE);
-					$mc_id = 1;
-				}
-			}
-
-			# --- outputs for MC
-			if ($newID > 0) {
-				$mc_id = $maxID + 1;
-				my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1|$evt_SP|$evt_scode|$evt_unique|$sefran3_name|$fdsnws_server:\/\/$evt_id||$oper|$evt_magtyp$evt_mag $evt_txt\n";
-				print "$newline\n";
-				push(@lignes,$newline);
+				print "Existing mcID found, update MC3 line\n"
+				mc3_update($mc3,$sefran3_name,$oper,$date,$evt_type,$amp,$evt_dur,$duree_sat,$nb_evts,$evt_SP,$evt_scode,$evt_unique,$org_id,$img,$comment);
 			}
 
 
-			if ($arg =~ /update/) {
-				@lignes = sort Sort_date_with_id(@lignes);
-
-				# Temporary file for sanity check before replacing
-				my $mc_file_temp="$mc_file.tmp";
-				# Open temporary file for writing
-				open(FILE, ">$mc_file_temp") || Quit($lockFile,"Problem with file $mc_file_temp !\n");
-				# Write the updated lines
-				print FILE @lignes;
-				close(FILE);
-				# Sanity check : the columns number must always be 17
-				if (system("awk -F'|' 'NF!=17{exit 1}' $mc_file") == 0) {
-					# Test passed, the file isn't corrupted
-					# The update should have increased the file size
-					if ( -s $mc_file_temp >= -s $mc_file ) {
-						# The file size is increased
-						# Replace the old file by the new one
-						if ( system("mv $mc_file_temp $mc_file") == 0 ) {
-							print "MC file: $mc_file updated\n";
-						} else {
-							Quit($lockFile,"Problem while replacing file $mc_file by $mc_file_temp!\n");
-						}
-					}
-				} else {
-					print "Problem with updated file : bad columns number ! Not replacing file $mc_file !\n";
-				}
-
-				# --- deletes lock file
-				if (-e $lockFile) {
-					unlink $lockFile;
-				}
-			}
+			# my $lockFile = "/tmp/.$mc3.lock";
+			#
+			# if ($arg =~ /update/) {
+			# 	# --- checks lock file
+			# 	if (-e $lockFile) {
+			# 		my $lockWho = qx(cat $lockFile | xargs echo -n);
+			# 		die "WEBOBS: MC is presently edited by $lockWho ...";
+			# 	} else {
+			# 		my $retLock = qx(echo "$oper" > $lockFile);
+			# 	}
+			# }
+			#
+			# my $mc_id;
+			# my $newID = 1;
+			# my $maxID = 0;
+			#
+			# # --- reads MC file
+			# my ($mcy,$mcm) = split(/-/,$evt_sdate);
+			# $mc_file = "$MC3{ROOT}/$mcy/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$mcy$mcm.txt";
+			# my @lignes;
+			# if (-e $mc_file)  {
+			# 	print "MC file: $mc_file ...";
+			# 	open(FILE, "<$mc_file") || Quit($lockFile," Problem to read $mc_file\n");
+			# 	while(<FILE>) {
+			# 		my $line = $_;
+			# 		($mc_id) = split(/\|/,$line);
+			# 		# --- check if $evt_mcID found
+			# 		if ($evt_mcID ne '' && $mcIDname eq $mc3 && $mcIDym eq "$mcy$mcm" && $mc_id == $mcIDid) {
+			# 			$newID = 0;
+			# 			my @txt = split(/\|/,$line);
+			# 			$txt[13] = "$fdsnws_server:\/\/$evt_id";
+			# 			# @txt last field already contains "\n"
+			# 			$line = join('|',@txt);
+			# 		}
+			# 		$maxID = abs($mc_id) if (abs($mc_id) > $maxID);
+			# 		push(@lignes,$line);
+			# 	}
+			# 	close(FILE);
+			# 	print " imported (max ID = $maxID).\n";
+			# } else {
+			# 	# MC file does not exist: need to create directory and empty file.
+			# 	if ($arg =~ /update/) {
+			# 		qx(mkdir -p `dirname $mc_file`);
+			# 		open(FILE, ">$mc_file") || Quit($lockFile,"Problem to create new file $mc_file\n");
+			# 		print FILE ("");
+			# 		close(FILE);
+			# 		$mc_id = 1;
+			# 	}
+			# }
+			#
+			# # --- outputs for MC
+			# if ($newID > 0) {
+			# 	$mc_id = $maxID + 1;
+			# 	my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1|$evt_SP|$evt_scode|$evt_unique|$sefran3_name|$fdsnws_server:\/\/$evt_id||$oper|$evt_magtyp$evt_mag $evt_txt\n";
+			# 	print "$newline\n";
+			# 	push(@lignes,$newline);
+			# }
+			#
+			#
+			# if ($arg =~ /update/) {
+			# 	@lignes = sort Sort_date_with_id(@lignes);
+			#
+			# 	# Temporary file for sanity check before replacing
+			# 	my $mc_file_temp="$mc_file.tmp";
+			# 	# Open temporary file for writing
+			# 	open(FILE, ">$mc_file_temp") || Quit($lockFile,"Problem with file $mc_file_temp !\n");
+			# 	# Write the updated lines
+			# 	print FILE @lignes;
+			# 	close(FILE);
+			# 	# Sanity check : the columns number must always be 17
+			# 	if (system("awk -F'|' 'NF!=17{exit 1}' $mc_file") == 0) {
+			# 		# Test passed, the file isn't corrupted
+			# 		# The update should have increased the file size
+			# 		if ( -s $mc_file_temp >= -s $mc_file ) {
+			# 			# The file size is increased
+			# 			# Replace the old file by the new one
+			# 			if ( system("mv $mc_file_temp $mc_file") == 0 ) {
+			# 				print "MC file: $mc_file updated\n";
+			# 			} else {
+			# 				Quit($lockFile,"Problem while replacing file $mc_file by $mc_file_temp!\n");
+			# 			}
+			# 		}
+			# 	} else {
+			# 		print "Problem with updated file : bad columns number ! Not replacing file $mc_file !\n";
+			# 	}
+			#
+			# 	# --- deletes lock file
+			# 	if (-e $lockFile) {
+			# 		unlink $lockFile;
+			# 	}
+			# }
 		}
 	}
 
