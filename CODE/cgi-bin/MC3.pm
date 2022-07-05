@@ -14,11 +14,11 @@ use strict;
 #--------------------------------------------------------------------------------------------------------------------------------------
 # mc3_add: add MC3 entry
 sub mc3_add {
-        my ($mc3,$sefran3_name,$oper,$evt_date,$evt_type,$evt_dur,$evt_scode,$evt_SP) = @_;
+        my ($mc3,$s3,$oper,$date,$type,$amp,$dur,$duree_sat,$nb_evts,$evt_SP,$station,$is_unique,$evt_id,$img,$comment) = @_;
 
         # ---- read config
         my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$mc3.conf");
-        my %SEFRAN3 = readCfg("$WEBOBS{ROOT_CONF}/$sefran3_name.conf");
+        my %SEFRAN3 = readCfg("$WEBOBS{ROOT_CONF}/$s3.conf");
 
         # my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1||$evt_scode|1|$sefran3_name|lfdetect:$evt_id|$evt_img|$oper|$comment\n";
         # my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1|$evt_SP|$evt_scode|$evt_unique|$sefran3_name|$fdsnws_server:\/\/$evt_id||$oper|$evt_magtyp$evt_mag $evt_txt\n";
@@ -40,7 +40,7 @@ sub mc3_add {
   			my $maxID = 0;
 
   			# --- reads MC file
-  			my ($mcy,$mcm) = split(/-/,$evt_sdate);
+  			my ($mcy,$mcm) = split(/-/,$date);
   			# The date of the event is mandatory
   			if (defined($mcy)) {
   				$mc_file = "$MC3{ROOT}/$mcy/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$mcy$mcm.txt";
