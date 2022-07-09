@@ -607,20 +607,12 @@ if ($editOK) {
 # ---- Build the hash of nodes' relationships from file $NODES{FILE_NODES2NODES} ---
 # ---- mainly used by the < Rows "Features" > functions below
 #
-my @conf_liens_stations = readCfgFile("$NODES{FILE_NODES2NODES}");
-my %liste_liens_fiches;
-my $station_parente_old = "";
-my $caracteristique_old = "";
-my $i = 0;
-for (@conf_liens_stations) {
- 	my ($station_parente,$caracteristique,$station_fille)=split(/\|/,$_);
- 	if ( $station_parente."|".$caracteristique ne $station_parente_old."|".$caracteristique_old ) {
-		$i = 0;
- 	}
-	my $nom_lien = $station_parente."|".$caracteristique;
- 	$liste_liens_fiches{$nom_lien} .= ($i++==0?"":"|").$station_fille;
- 	$station_parente_old = $station_parente;
- 	$caracteristique_old = $caracteristique;
+my @file_node2node = readCfgFile("$NODES{FILE_NODES2NODES}");
+my %node2node; # hash key = 'parentnode|feature', hash value = 'childnode' or 'childnode1|childnode2|...'
+for (@file_node2node) {
+ 	my ($parent_node,$feature,$children_node)=split(/\|/,$_);
+	my $key_link = $parent_node."|".$feature;
+ 	$node2node{$key_link} .= (exists($node2node{$key_link}) ? "|":"").$children_node;
 }
 
 # Rows "Features"
@@ -631,18 +623,17 @@ my $lien_car;
 
 # 1) create the 'final' list of features to be shown
 # first insert 'parent' features from $NODES{FILE_NODES2NODES} for NODEName
-my $liens_fiches_parentes = "";
 my $pseudoFileName = "";
-for my $nom_lien (keys %liste_liens_fiches) {
- 	my @liste_fiches_filles = split(/\|/,$liste_liens_fiches{$nom_lien});
- 	for (@liste_fiches_filles) {
+for my $key_link (keys %node2node) {
+ 	my @children_node_list = split(/\|/,$node2node{$key_link});
+ 	for (@children_node_list) {
  		if ( $_ eq $NODEName ) {
- 			my @data = split(/\|/,$nom_lien);
- 			my $fiche_parente = $data[0];
- 			my $caracteristique = $data[1];
-			$pseudoFileName = "ISOF:$caracteristique";
-			my $nnn = ($fiche_parente =~ m/^.*[\.\/].*[\.\/].*$/)?$fiche_parente:WebObs::Grids::normNode(node=>"..$fiche_parente");
-			$lienNode{$pseudoFileName} .= ($lienNode{$pseudoFileName} eq "" ? "" : "<br>")."<a href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$fiche_parente)."</a>";
+ 			my @data = split(/\|/,$key_link);
+ 			my $parent_node = $data[0];
+ 			my $feature = $data[1];
+			$pseudoFileName = "ISOF:$feature";
+			my $nnn = ($parent_node =~ m/^.*[\.\/].*[\.\/].*$/)?$parent_node:WebObs::Grids::normNode(node=>"..$parent_node");
+			$lienNode{$pseudoFileName} .= ($lienNode{$pseudoFileName} eq "" ? "" : "<br>")."<a href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$parent_node)."</a>";
  		}
 	}
 }
@@ -653,15 +644,15 @@ my @listeCarFiles=split(/\||,/,$NODE{FILES_FEATURES});
 for (@listeCarFiles) {
 	my $carFileName = $_;
 	my $carFile = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_FEATURES}/$carFileName.txt";
-	my $nom_lien = $NODEName."|".$carFileName;
+	my $key_link = $NODEName."|".$carFileName;
 	$lienNode{$carFileName} = "";
 	$lien_car = 0;
-	if ( exists($liste_liens_fiches{$nom_lien}) ) {
-		my @liste_liens=split(/\|/,$liste_liens_fiches{$nom_lien});
+	if ( exists($node2node{$key_link}) ) {
+		my @liste_liens=split(/\|/,$node2node{$key_link});
 		for (@liste_liens) {
 			if ( length($_) > 0 ) {
 				my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
-				$lienNode{$carFileName} .= ($lienNode{$carFileName} eq "" ? "" : "<br>")."<a href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</a>";
+				$lienNode{$carFileName} .= ($lienNode{$carFileName} eq "" || $nnn eq "" ? "" : "<br>")."<a href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</a>";
 			}
 		}
 		if ( $lienNode{$carFileName} ne "" ) {
