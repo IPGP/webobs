@@ -104,7 +104,7 @@ for (reverse sort @reqlist) {
 	chomp(@procreq);
 	push(@procs,@procreq); # merging output directories and request parameters
 	@procs = do { my %seen; grep { !$seen{$_}++ } @procs }; # uniq
-	my $rowspan = scalar(@procs)+1;
+	my $rowspan = scalar(@procs);
 	if ($user eq $CLIENT || (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$_") && $QryParm->{'usr'} eq "all")) {
 		if (length($date)==8 && length($time)==6) {
 			$date = substr($date,0,4)."-".substr($date,4,2)."-".substr($date,6,2);
@@ -122,12 +122,12 @@ for (reverse sort @reqlist) {
 				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,stdpath,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
 				chomp($rreq);
 				if ($rreq eq "") {
-					$table .= "<TD></TD>";
+					$table .= ("<TD></TD>" x 2);
 				} else {
 					my ($rcmd,$rlog,$rc) = split(/\|/,$rreq);
 					my $log_filename = $rlog =~ s/^[><] +//r;
 					my $log_name = $log_filename =~ s|/$reqdir/||r;
-					$table .= "<TD align=center><A href='/cgi-bin/schedulerLogs.pl?log=$log_filename'>$log_name</a>";
+					$table .= "<TD align=center><A href='/cgi-bin/schedulerLogs.pl?log=$log_filename'>$log_name</a></TD>";
 					if ($rc eq "0") {
 						$table .= "<TD align=center bgcolor=green>OK</TD>";
 					} elsif ($rc > 0) {
@@ -137,17 +137,13 @@ for (reverse sort @reqlist) {
 					}
 				}
 				$table .= "<TD align=center>".(-d "$dir/$_" ? "<A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A>":"")."</TD>";
-				if ( -e "$dir/$_.tgz") {
-					$table .= "<TD align=center><a download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></a></TD>";
-				} else {
-					$table .= "<TD></TD>";
-				}
+				$table .= "<TD align=center>".(-e "$dir/$_.tgz" ? "<A download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></A>":"")."</TD>";
+			} else {
+				$table .= "<TD colspan=4></TD>";
 			}
 			$table .= "</TR>\n<TR>";
 		}
-		if ($rowspan==1) {
-			$table .= ("<TD style='background-color: #EEEEDD'></TD>" x 3)."</TD></TR>\n";
-		}
+		$table .= "<TD colspan=9 style='background-color: #EEEEDD'></TD></TR>\n";
 	}
 }
 
