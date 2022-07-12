@@ -15,7 +15,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Fixed issues
 -->
 
-## v2.5.2 (June 2022)
+## v2.5.2 (July 2022)
 
 ### New features
 
@@ -97,7 +97,7 @@ The new GUI uses https://leafletjs.com javascript application.
 
 2. Some fixes in proc request results display.
 
-3. Improves boolean parameters reading in Perl scripts.
+3. Improves boolean parameters reading in Perl scripts (accepts case insentitive 0/N/NO or 1,Y,YES).
 
 4. Users list in grid/node event editor is now sorted in alphabetic order of UID (previously it was based on the login name, case sensitive).
 
