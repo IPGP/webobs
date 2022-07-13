@@ -12,9 +12,9 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.5.1.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.5.1/WebObs-2.5.1.tar.gz) (100 Mb) updated June 13, 2023
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.5.1/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.5.1/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.5.2.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.5.2/WebObs-2.5.2.tar.gz) (100 Mb) updated July 12, 2022
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.5.2/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.5.2/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
@@ -62,7 +62,7 @@ sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode mut
    libtext-multimarkdown-perl libswitch-perl libintl-perl libncurses5
 ```
 
-Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `FR_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
+Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
 
 ```sh
 sudo locale-gen fr_FR en_US
