@@ -311,7 +311,7 @@ for (@last) {
 				my $phase = findvalue('/phaseHint=',\@pick);
 				$evt_pick_time =~ s/[A-Z]$/0/g; # sometimes time value is "2012-05-07T18:46:53.7Z"
 
-				if ($phase == 'P') {
+				if ($phase eq 'P') {
 					my $evt_pickID = findvalue('/\@publicID=',\@pick);
 					$evt_sdate = substr($evt_pick_time,0,10);
 					$evt_stime = substr($evt_pick_time,11,11);
@@ -342,13 +342,38 @@ for (@last) {
 					} else {
 						print "* Warning: no arrivals (phase, distance, S-P)!\n";
 					}
+					last;
 				}
-				# --- Search matching S phase to compute S-P
-				if ( ($phase == 'S') && (findvalue('/waveformID/@stationCode=',\@pick) == split('.',$evt_scode)[1]) ) {
+			}
+			# --- Search matching S phase to compute S-P
+			foreach my $evt_pick_time (@tab) {
+				my @pick = findnode('/pick',"/time/value=$evt_pick_time",\@event);
+				my $phase = findvalue('/phaseHint=',\@pick);
+				my ($n,$s,$c,$l) = split(/\./,$evt_scode);
+
+				if ( ($phase eq 'S') && (findvalue('/waveformID/@stationCode=',\@pick) eq $s) ) {
+					my $evt_pickID = findvalue('/\@publicID=',\@pick);
+					my $NET = findvalue('/waveformID/@networkCode=',\@pick) // '';
+					my $STA = findvalue('/waveformID/@stationCode=',\@pick) // '';
+					my $LOC = findvalue('/waveformID/@locationCode=',\@pick) // '';
+					my $CHA = findvalue('/waveformID/@channelCode=',\@pick) // '';
+					$evt_scode = "$NET.$STA.$LOC.$CHA";
+					print "station pickID = $evt_pickID\n";
+					print "station time = $evt_pick_time\n";
+					print "station code = $evt_scode\n";
+
+					my @arrival = findnode('/arrival',"/pickID=$evt_pickID",\@origin);
+
+					my $evt_pha = '';
+					if (@arrival) {
+						# --- finds first station phase and distance (using "origin:arrival")
+						$evt_pha = findvalue('/phase=',\@arrival);
+						print "station phase = $evt_pha\n";
+					}
 					# --- convert P and S times as epochs
-					my $ptime = Time::Piece->strptime($evt_sdate .  'T' . substr($evt_stime,0,9), '%Y-%m-%dT%H:%M:%S')
-					my $stime = Time::Piece->strptime(substr($evt_pick_time,0,19), '%Y-%m-%dT%H:%M:%S')
-					$evt_SP = ($stime - $ptime) + (substr($evt_pick_time,19,2) - substr($evt_stime,9,2)) / 100
+					my $ptime = Time::Piece->strptime($evt_sdate .  'T' . substr($evt_stime,0,8), '%Y-%m-%dT%H:%M:%S');
+					my $stime = Time::Piece->strptime(substr($evt_pick_time,0,19), '%Y-%m-%dT%H:%M:%S');
+					$evt_SP = ($stime - $ptime) + (substr($evt_pick_time,20,2) - substr($evt_stime,9,2)) / 100;
 					print "station S-P = $evt_SP\n";
 					last;
 				}

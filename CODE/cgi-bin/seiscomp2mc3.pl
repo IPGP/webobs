@@ -290,7 +290,7 @@ for (@last) {
 					# --- convert P and S times as epochs
 					my $ptime = Time::Piece->strptime($evt_sdate .  'T' . substr($evt_stime,0,9), '%Y-%m-%dT%H:%M:%S')
 					my $stime = Time::Piece->strptime(substr($evt_pick_time,0,19), '%Y-%m-%dT%H:%M:%S')
-					$evt_SP = ($stime - $ptime) + (substr($evt_pick_time,19,2) - substr($evt_stime,9,2)) / 100
+					$evt_SP = ($stime - $ptime) + (substr($evt_pick_time,20,2) - substr($evt_stime,9,2)) / 100
 					print "station S-P = $evt_SP\n";
 					last;
 				}
