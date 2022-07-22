@@ -641,7 +641,7 @@ if (!$date) {
 					$ch_nagios = 1; # Nagios 'WARNING' value
 				}
 			} else {
-				print "<TD colspan=6 class=\"status-standby\" style=\"text-align:center\"><I>not available</I></TD>";
+				print "<TD colspan=7 class=\"status-standby\" style=\"text-align:center\"><I>not available</I></TD>";
 			}
 
 			if (@chan) {
