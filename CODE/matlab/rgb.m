@@ -15,7 +15,7 @@ function [rgb,htm]=rgb(x)
 %
 %	Author: Francois Beauducel <beauducel@ipgp.fr>
 %	Created: 2008-11-10 in Paris, France
-%	Updated: 2022-06-12
+%	Updated: 2022-07-22
 
 html = [ ...
 {'AliceBlue','#F0F8FF'};
@@ -187,7 +187,7 @@ for i = 1:numel(x)
 	end
 	htm{i} = s;
 	if length(s) >= 6
-		s = regexprep(s,'\','');
+		s = regexprep(s,'\\','');
 		if strcmp(s(1),'#')
 			s = s(2:end);
 		else
@@ -204,4 +204,3 @@ for i = 1:numel(x)
 		rgb(i,:) = [hex2dec(rr),hex2dec(gg),hex2dec(bb)]/255;
 	end
 end
-
