@@ -827,7 +827,7 @@ for r = 1:numel(P.GTABLE)
 			[xx,yy] = meshgrid(DEM.lon,DEM.lat);
 			DEM.dist = greatcircle(targetll(1),targetll(2),yy,xx);
 			[c,h] = contour(DEM.lon,DEM.lat,DEM.dist,'k');
-			set(h,'Color',modelling_topo_rgb,'LineWidth',.1);
+			set(h,'LineColor',modelling_topo_rgb,'LineWidth',.1);
 			clabel(c,h,'FontSize',8,'Color',modelling_topo_rgb);
 		end
 
@@ -895,8 +895,8 @@ for r = 1:numel(P.GTABLE)
 			sta_amp = sqrt(rsum(tr(knv,vectors_ampcmp).^2,2));
 			sta_err = sqrt(rsum(tre(knv,vectors_ampcmp).^2,2));
 			for nn = 1:numel(knv)
-				n = knv(nn);
-				errorbar(sta_dist(nn),sta_amp(nn),sta_err(nn),'.','MarkerSize',15,'Color',scolor(n),'LineWidth',0.1)
+				h = errorbar(sta_dist(nn),sta_amp(nn),sta_err(nn),'.');
+				set(h,'MarkerSize',15,'Color',scolor(knv(nn)),'LineWidth',0.1);
 			end
 			hold off
 			set(gca,'FontSize',8)

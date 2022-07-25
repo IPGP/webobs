@@ -170,10 +170,12 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 	end
 
 	% load the file
+	dd = [];
 	if exist(fdat,'file')
-		dd = load(fdat);
-	else
-		dd = [];
+		F = dir(fdat);
+		if F.bytes > 0
+			dd = load(fdat);
+		end
 	end
 	if ~isempty(dd)
 		% converts GPS J2000 time to datenum

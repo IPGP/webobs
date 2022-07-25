@@ -23,7 +23,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2021-01-01
+%	Updated: 2022-07-22
 
 
 proc = varargin{1};
@@ -83,16 +83,18 @@ P.DEBUG = isok(field2str(P,'DEBUG',field2str(WO,'DEBUG')));
 
 % appends the list of nodes (i.e., creates field P.NODESLIST)
 % list directory WO.PATH_GRIDS2NODES for PROC.n, appends to P as NODESLIST
-X = dir(sprintf('%s/PROC.%s.*',WO.PATH_GRIDS2NODES,proc));
+X = dir(WO.PATH_GRIDS2NODES);
+k = find(strncmp(['PROC.' proc],{X.name},length(proc)+5));
 P.NODESLIST = {};
-for j = 1:length(X)
-	nj = split(X(j).name,'.');
+for j = 1:length(X(k))
+	nj = split(X(k(j)).name,'.');
 	P.NODESLIST{end+1} = nj{3};
 end
 % appends the associated FORM (if exists) by listing directory WO.PATH_GRIDS2FORMS
-X = dir(sprintf('%s/PROC.%s.*',WO.PATH_GRIDS2FORMS,proc));
-if ~isempty(X)
-	form = split(X(1).name,'.');
+X = dir(WO.PATH_GRIDS2FORMS);
+k = find(strncmp(['PROC.' proc],{X.name},length(proc)+5));
+if ~isempty(k)
+	form = split(X(k).name,'.');
 	formname = form{3};
 	formroot = sprintf('%s/%s',WO.PATH_FORMS,formname);
 	P.FORM = readcfg(WO,sprintf('%s/%s.conf',formroot,formname));
@@ -131,7 +133,7 @@ P = tnorm(P,'STATUSLIST',nlist,0);
 if nargin < 4
 	tscale = {'%'};
 	if nargin > 2
-		if isstr(varargin{2})
+		if ischar(varargin{2})
 			% in deployed application, input arguments are only string
 			if isdeployed && numel(str2num(varargin{2}))==2
 				tscale = str2num(varargin{2});
