@@ -197,7 +197,7 @@ case 'fdsnws-event'
 		%xml = urlread(sprintf('%s&includeallmagnitudes=false&includeallorigins=false&includearrivals=false&%s%s%s',F.raw{1},wsreq,wsreqstime,wsreqetime),'Charset','UTF-8','Timeout',60);
 		%xml = urlread(sprintf('%s&includeallmagnitudes=false&includeallorigins=false&includearrivals=false&%s%s%s',F.raw{1},wsreq,wsreqstime,wsreqetime));
 		url = sprintf('%s&includeallmagnitudes=false&includeallorigins=false&includearrivals=false&%s%s%s',F.raw{1},wsreq,wsreqstime,wsreqetime);
-		s = wosystem(sprintf('wget "%s" -O %s -t 1 -T 60',url,fdat),P);
+		s = wosystem(sprintf('wget -q "%s" -O %s -t 1 -T 60',url,fdat),P);
 		if s ~= 0
 			break;
 		end

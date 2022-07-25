@@ -17,7 +17,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2022-06-12
+%	Updated: 2022-07-25
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -77,7 +77,7 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 	h1 = plotlogo(G.LOGO2_FILE,G.LOGO2_HEIGHT,'right');
 
 	if isfield(G,'GSTATUS')
-		if G.STATUS & length(G.GSTATUS) > 2 & all(~isnan(G.GSTATUS(2:3)))
+		if G.STATUS && length(G.GSTATUS) > 2 && all(~isnan(G.GSTATUS(2:3)))
 			G.GTITLE = [G.GTITLE, ...
 			   {sprintf('%s %+02d - Status %03d %% - Sampling %03d %% ',datestr(G.GSTATUS(1)),G.TZ,round(G.GSTATUS(2:3)))}];
 		end
@@ -122,7 +122,8 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 	% --- timestamp
 	if timestamp > 0
 		ST = dbstack;
-		superproc = ST(2).file;
+		[spath,sname,sext] = fileparts(ST(2).file);
+		superproc = sprintf('%s%s',sname,sext);
 		w1 = wosystem('echo "$(whoami)@$(hostname)"','chomp','print');
 		% gets the updated date of superproc's code... (note: mkgraph is always called by a superproc)
 		[s,w2] = wosystem(sprintf('grep "Updated:" superprocs/%s',superproc),'chomp');
@@ -204,7 +205,11 @@ end
 % --- Creates optional interactive MAP (html map)
 % appends IMAP from proc to events
 if nargin > 3 && isfield(OPT,'IMAP')
-	I = cat(2,I,OPT.IMAP);
+	if ~isempty(I)
+		I = cat(2,I,OPT.IMAP);
+	else
+		I = OPT.IMAP;
+	end
 end
 
 IM = imfinfo(sprintf('%s/%s.png',ptmp,f));
@@ -273,13 +278,16 @@ if ~isempty(f)
 	for i = 1:length(ff)
 		if exist(ff{i},'file')
 			try
-				A = imread(ff{i});
+				[A,map,alpha] = imread(ff{i});
+				% applies transparency channel manually (for Octave compatibility)
+				M = repmat(double(alpha)/255,[1,1,3]);
+				I = M.*double(A)/255 + (1 - M);
 				isz = size(A);
 				lgh = rh*pp(3)/pp(4);
 				lgw = lgh*isz(2)*pp(4)/isz(1)/pp(3);
 				posx = pos0 + strcmp(pos,'right')*(1-lgw);
 				h = axes('Position',[posx,1-lgh,lgw,lgh],'Visible','off');
-				image(A)
+				imagesc(I)
 				axis off
 				pos0 = pos0 + (lgw + 0.005)*(1 - 2*strcmp(pos,'right'));
 			catch

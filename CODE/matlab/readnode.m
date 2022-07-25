@@ -33,7 +33,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2022-06-12
+%   Updated: 2022-07-25
 
 
 if ~exist('NODES','var')
@@ -126,7 +126,7 @@ if ~exist(clb,'file')
 end
 if exist(clb,'file')
 	fid = fopen(clb);
-	C = textscan(fid,'%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%*[^\n]','Delimiter','|','CommentStyle','#');
+	C = textscan(fid,'%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s','Delimiter','|','CommentStyle','#');
 	fclose(fid);
 	%[y,m,d,h,n,nv,nm,un,ns,cc,of,et,ga,vn,vm,az,la,lo,al] = textread(f,'%d-%d-%d%d:%d%s%s%s%s%s%s%s%s%s%s%s%s%s%s%*[^\n]','delimiter','|','commentstyle','shell');
 	nn = 1;
@@ -172,14 +172,14 @@ if exist(clb,'file')
 	N.CLB = CC;
 end
 
-if ~exist('CC','var') | isempty(CC)
+if ~exist('CC','var') || isempty(CC)
 	N.CLB = struct('nx',0,'dt',0,'nv',0,'nm','','un','','ns','','cd','','of',0,'et',0,'ga',0,'vn',0,'vm',0,'az',0,'la',0,'lo',0,'al',0,'dp',0,'sf',NaN,'db','','lc','');
 end
 
 % --- transmission type and nodes' list
 tr = split(N.TRANSMISSION,'|, ');
 
-if length(tr) > 0 & ~isempty(tr{1})
+if length(tr) > 0 && ~isempty(tr{1})
 	rmfield(N,'TRANSMISSION');	% needed since R2015... (?)
 	N.TRANSMISSION = struct('TYPE',str2num(tr{1}));
 	nn = 0;

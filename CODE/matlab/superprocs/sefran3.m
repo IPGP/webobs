@@ -20,7 +20,7 @@ function sefran3(name,fdate)
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France
 %	         (based on legacy sefran.m, 2002 and sefran2.m, 2007)
-%	Updated: 2022-07-22
+%	Updated: 2022-07-24
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -339,12 +339,11 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					text(xlim(2)/2,0,{s,''}, ...
 						'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',7,'FontWeight','bold','Color',.8*[1,1,1],'Interpreter','none')
 				end
-				text(xlim(2)/2,0,datestr(t0,'yyyy-mm-dd HH:MM'), ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',9,'Color','k','Interpreter','none')
-				text(xlim,[0,0],{'|','|'}, ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',9,'Fontweight','Bold','Color','k')
-				text(xlim,repmat(ylim(1),[1,2]),{datestr(t0,'|\nHH:MM\nyyyy-mm-dd');datestr(t1,'|\nHH:MM\nyyyy-mm-dd')}, ...
-					'HorizontalAlignment','center','VerticalAlignment','top','FontSize',9,'Fontweight','Bold','Color','k')
+				opt = {'HorizontalAlignment','center','FontSize',9,'Color','k','Interpreter','none'};
+				text(xlim(2)/2,0,datestr(t0,'yyyy-mm-dd HH:MM'),'VerticalAlignment','bottom',opt{:})
+				text(xlim,[0,0],{'|','|'},'VerticalAlignment','bottom',opt{:})
+				text(xlim(1),ylim(1),{'|',datestr(t0,'HH:MM'),datestr(t0,'yyyy-mm-dd')},'FontWeight','bold','VerticalAlignment','top',opt{:})
+				text(xlim(2),ylim(1),{'|',datestr(t1,'HH:MM'),datestr(t1,'yyyy-mm-dd')},'FontWeight','bold','VerticalAlignment','top',opt{:})
 				if xtickinterval
 					xt = (0:xtickinterval:60)/86400;
 					plot(repmat(xt,[2,1]),ylim(1)-repmat([0;.01*ylim(1)],[1,size(xt,2)]),'-','Color','k','LineWidth',.2);
