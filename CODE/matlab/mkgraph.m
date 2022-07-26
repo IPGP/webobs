@@ -17,7 +17,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2022-07-25
+%	Updated: 2022-07-26
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -280,14 +280,14 @@ if ~isempty(f)
 			try
 				[A,map,alpha] = imread(ff{i});
 				% applies transparency channel manually (for Octave compatibility)
-				M = repmat(double(alpha)/255,[1,1,3]);
-				I = M.*double(A)/255 + (1 - M);
+				M = repmat(double(alpha)/double(intmax(class(alpha))),[1,1,3]);
+				I = M.*double(A)/double(intmax(class(A))) + (1 - M);
 				isz = size(A);
 				lgh = rh*pp(3)/pp(4);
 				lgw = lgh*isz(2)*pp(4)/isz(1)/pp(3);
 				posx = pos0 + strcmp(pos,'right')*(1-lgw);
 				h = axes('Position',[posx,1-lgh,lgw,lgh],'Visible','off');
-				imagesc(I)
+				image(I)
 				axis off
 				pos0 = pos0 + (lgw + 0.005)*(1 - 2*strcmp(pos,'right'));
 			catch
