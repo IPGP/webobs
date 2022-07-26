@@ -205,9 +205,11 @@ function varargout=dem(x,y,z,varargin)
 %	Acknowledgments: Éric Gayer
 %
 %	Created: 2007-05-17 in Guadeloupe, French West Indies
-%	Updated: 2022-07-21
+%	Updated: 2022-07-26
 
 %	History:
+%	[2022-07-26] v3.1
+%		- minor fix for Octave compatibility
 %	[2022-07-21] v3.0
 %		- new option 'shading' (stack method with opacity factor)
 %		- new option 'elevation' (light elevation for stack shading)
@@ -717,7 +719,7 @@ if ~rgb && dz > 0
 	end
 
 	% normalisation of Z using CMAP and convertion to RGB
-	I = ind2rgb(uint16(round((z - zmin)*(size(cmap,1) - 1)/dz) + 1),cmap);
+	I = ind2rgb(uint16(min(max((z - zmin)/dz,0),1)*(size(cmap,1)-1)),cmap);
 
 	if ct > 0
 		dx = diff(x(1:2));
@@ -990,7 +992,8 @@ if scale
 	yscale = linspace(0,diff(ylim)/2,length(cmap));
 	ddz = dtick(dz*max(0.5*xyr*diff(xlim)/yscale(end),1));
 	ztick = (ddz*ceil(zscale(1)/ddz)):ddz:zscale(end);
- 	rgbscale = ind2rgb(uint16(round((zscale - zmin)*(size(cmap,1) - 1)/dz) + 1),cmap);
+	rgbscale = ind2rgb(uint16(min(max((zscale - zmin)/dz,0),1)*(size(cmap,1)-1)),cmap);
+
 	ysc = ylim(1);
 	hold on
 	imagesc(xsc + wsc*[-1,1]/2,ysc + yscale,repmat(rgbscale,1,2),'clipping','off');
@@ -1146,11 +1149,14 @@ function s = deg2dms(x,ll,dec,fs)
 fs2 = sprintf('\\fontsize{%d}',round(fs/1.25));
 
 if dec
-	s = regexprep(sprintf('%7.7g',x),'\.(.*)',sprintf('.{%s$1}',fs2));
+	ss = split(sprintf('%1.7g',x),'.');
+	s = fliplr(regexprep(fliplr(ss{1}),'(\d{3})','$1 '));
+	if length(ss) > 1
+		s = sprintf('%s.{%s%s}',s,fs2,ss{2});
+	end
 else
 	xa = abs(x) + 1/360000;
 	sd = sprintf('%d%c',floor(xa),176);	% ASCII char 176 is the degree sign
-	%sd = sprintf('%d�',floor(xa));
 	sm = '';
 	ss = '';
 	if mod(x,1)

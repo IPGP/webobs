@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2021-05-19
+%   Updated: 2022-07-21
 
 
 WO = readcfg;
@@ -117,10 +117,11 @@ lwminor = field2num(P,'CONTOURLINES_MINOR_LINEWIDTH',.1);
 lwmajor = field2num(P,'CONTOURLINES_MAJOR_LINEWIDTH',1);
 zerolevel = isok(P,'CONTOURLINES_ZERO_LEVEL',0);
 convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
+shading = field2str(P,'SHADING','light');
 feclair = field2num(P,'COLOR_LIGHTENING',2);
 csat = field2num(P,'COLOR_SATURATION',.8);
 zcut = field2num(P,'ZCUT',0.1);
-laz = field2num(P,'LIGHT_AZIMUTH',45);
+laz = field2num(P,'LIGHT_AZIMUTH',[-45,45]);
 lct = field2num(P,'LIGHT_CONTRAST',1);
 if isfield(P,'LANDCOLORMAP') && exist(P.LANDCOLORMAP,'file')
 	cmap = eval(P.LANDCOLORMAP);
@@ -139,7 +140,7 @@ else
 end
 demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz, ...
 	'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair, ...
-	'Saturation',csat,'latlon','legend','axisequal','manual'};
+	'Saturation',csat,'latlon','shading',shading,'legend','axisequal','manual'};
 
 % loads all needed grid's parameters & associated nodes
 for g = 1:length(grids)
@@ -192,7 +193,7 @@ for g = 1:length(grids)
 	s = split(grids{g},'.');
 	G = GRIDS.(s{1}).(s{2});
 	% GRIDMAPS.rc SRTM1 option applies only if not defined in the PROC's configuration
-	if isok(P,'DEM_SRTM1') & (~isfield(G,'DEM_SRTM1') || merge)
+	if isok(P,'DEM_SRTM1') && (~isfield(G,'DEM_SRTM1') || merge)
 		G.DEM_SRTM1 = 'Y';
 	end
 	if request
@@ -304,12 +305,12 @@ for g = 1:length(grids)
 						clrgb = [0,0,0];
 					end
 					if length(dz1) > 1
-						[~,h] = contour(x,y,z,dz1,'-','Color',clrgb);
-						set(h,'LineWidth',lwminor);
+						[~,h] = contour(x,y,z,dz1,'-');
+						set(h,'LineColor',clrgb,'LineWidth',lwminor);
 					end
 					if length(dz0) > 1
-						[cs,h] = contour(x,y,z,dz0,'-','Color',clrgb);
-						set(h,'LineWidth',lwmajor);
+						[cs,h] = contour(x,y,z,dz0,'-');
+						set(h,'LineColor',clrgb,'LineWidth',lwmajor);
 						if isok(P,'CONTOURLINES_LABEL')
 							clabel(cs,h,dz0,'Color',clrgb,'FontSize',7,'FontWeight','bold','LabelSpacing',288)
 						end
@@ -381,7 +382,8 @@ for g = 1:length(grids)
 				xylim = [get(gca,'XLim'),get(gca,'YLim')];
 
 				% copyright
-				copyright = sprintf('{\\bf\\copyright %s} - {%s} - %s / %s',WO.COPYRIGHT,strrep(grids{g},'_','\_'),demcopyright,datestr(now,0));
+				copyright = sprintf('{\\bf\\copyright %s, %s} - {%s} - %s / %s',num2roman(str2double(datestr(now,'yyyy'))), ...
+					WO.COPYRIGHT,strrep(grids{g},'_','\_'),demcopyright,datestr(now,0));
 				axes('Position',[pos(1),0,pos(3),pos(2)])
 				axis([0,1,0,1]); axis off
 				text(.5,0,copyright,'Color',.4*[1,1,1],'FontSize',9,'HorizontalAlignment','center','VerticalAlignment','bottom')
@@ -437,7 +439,10 @@ for g = 1:length(grids)
 							txt = regexprep(sprintf('%s: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
 							fprintf(fid,'<AREA href="%s" title="%s" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						else
-							txt = unicode2native(regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"',''),'utf-8');
+							txt = regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
+							try
+								txt = unicode2native(txt,'UTF-8');
+							end
 							txt = regexprep(char(txt),'''','\\''');
 							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						end
