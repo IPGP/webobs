@@ -19,7 +19,7 @@ function N=readnodes(WO,grids,tlim,valid);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-23
-%   Updated: 2019-02-07
+%   Updated: 2022-07-26
 
 if nargin < 2
 	error('No few input arguments')
@@ -31,7 +31,7 @@ if ~iscell(grids)
 	grids = cellstr(grids);
 end
 
-if nargin < 3 | isempty(tlim)
+if nargin < 3 || isempty(tlim)
 	tlim = NaN;
 end
 
