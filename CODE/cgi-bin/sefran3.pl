@@ -158,14 +158,20 @@ for (@durations) {
 }
 # events amplitude texts/thresholds
 # [TODO]: converts to regular HoH config file...
+<<<<<<< HEAD
 my %nomAmp;
+=======
+>>>>>>> f4034721901ebe31154354f7c644a5268dca7cdd
 my %amplitudes;
 my @ampfile = readCfgFile("$MC3{AMPLITUDES_CONF}");
 my $i = 0;
 for (@ampfile) {
         my ($key,$nam,$val,$kb) = split(/\|/,$_);
 		my $skey = sprintf("%02d",$i)."_$key"; # adds a prefix "xx_" to the hash key to be sorted
+<<<<<<< HEAD
         $nomAmp{$key} = $nam;
+=======
+>>>>>>> f4034721901ebe31154354f7c644a5268dca7cdd
         $amplitudes{$skey}{Name} = $nam;
         $amplitudes{$skey}{Value} = $val;
         $amplitudes{$skey}{KBcode} = $kb;
@@ -1091,7 +1097,7 @@ sub mcinfo
 		."<I>Duration:</I> <B>$MC{duration} $MC{unit}</B><BR>"
 		."<I>Type:</I> <B>$types{$MC{type}}{Name}</B><BR>"
 		."<I>Station:</I> <B>$MC{station}</B>".($MC{unique} ? " (unique)":"")."<BR>"
-		.($MC{amplitude} ? "<I>Amplitude:</I> <B>$nomAmp{$MC{amplitude}}</B><BR>":"")
+		.($MC{amplitude} ? "<I>Amplitude:</I> <B>$amplitudes{$MC{amplitude}}{Name}</B><BR>":"")
 		."<I>Comment:</I> <B>$comment</B>"
 		."</SPAN>";
 
