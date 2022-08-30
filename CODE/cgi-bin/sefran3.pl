@@ -1091,7 +1091,7 @@ sub mcinfo
 		."<I>Duration:</I> <B>$MC{duration} $MC{unit}</B><BR>"
 		."<I>Type:</I> <B>$types{$MC{type}}{Name}</B><BR>"
 		."<I>Station:</I> <B>$MC{station}</B>".($MC{unique} ? " (unique)":"")."<BR>"
-		.($MC{amplitude} ? "<I>Amplitude:</I> <B>$amplitudes{$MC{amplitude}}{Name}</B><BR>":"")
+		.($MC{amplitude} ? "<I>Amplitude:</I> <B>$nomAmp{$MC{amplitude}}</B><BR>":"")
 		."<I>Comment:</I> <B>$comment</B>"
 		."</SPAN>";
 
