@@ -8,14 +8,13 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (not a bug fix). An appropriate configuration to keep former behavior is usually proposed.
 
-<!--
 ## Version under development
 ### New features
 ### Enhancements
 ### Fixed issues
--->
+1. We started to improve *GNU Octave* compatibility of the *Matlab* code. Since *Octave* has a less permissive grammar, it lead to a better writing and sometimes hidden bug fixes. See the associated [discussion thread](https://github.com/IPGP/webobs/discussions/116).
 
-## v2.5.2 (July 2022)
+## v2.5.3 (September 2022)
 
 ### New features
 
