@@ -169,7 +169,9 @@ for station in $NODES; do
     			        	anttype=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.at' | tr -d '"')
         	    			antnum=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.an' | tr -d '"')
         	    			posxyz=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.px' | tr -d '"')
-        	    			alertheader="   $DAYLYMSG sitelog: receiver = '$receiver' - antenna type = '$anttype' - antenna s/n = '$antnum' (will use rinex header if empty)"
+							observer=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.op' | tr -d '"')
+							agency=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.ag' | tr -d '"')
+        	    			alertheader="   $DAYLYMSG sitelog: receiver='$receiver' - antenna type='$anttype' - antenna s/n='$antnum' - observer='$observer' - agency='$agency' (will use rinex header if empty)"
         	            else
         	                echo "   $DAYLYMSG   - Warning -   sitelog : SITELOG is empty in .rc file !!!"
         	            fi
@@ -178,7 +180,7 @@ for station in $NODES; do
 						echo "   $DAYLYMSG   - Warning -   bad site information source "
         	    esac
 			fi
-    	    if [[ ! -z "$receiver$anttype$antnum$posxyz" ]]; then
+    	    if [[ ! -z "$receiver$anttype$antnum$posxyz$observer$agency" ]]; then
     	        echo "$alertheader"
     	        # transform site imformation in teqc option
     			if [ ! -z "$receiver" ]; then
@@ -193,6 +195,12 @@ for station in $NODES; do
     			if [ ! -z "$posxyz" ]; then
     				posxyz=" -O.px $posxyz"
     			fi
+				if [ ! -z "$observer" ]; then
+    				observer=" -O.op $observer"
+    			fi
+				if [ ! -z "$agency" ]; then
+    				agency=" -O.ag $agency"
+    			fi
     	    else
     	        echo "   $DAYLYMSG   - Warning -   No site information fond in $INFOSRC, Rinex will be generated whithout overwriting headers if empty"
     	    fi
@@ -200,9 +208,9 @@ for station in $NODES; do
 
 			# makes Rinex daily file from raw data (see raw2rinex script)
 			mkdir -p $RINEX
-			$PROGDIR/raw2rinex "$RAW" $RINEX $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $anttype $antnum $posxyz
+			$PROGDIR/raw2rinex "$RAW" $RINEX $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $anttype $antnum $posxyz $observer $agency
 			if [[ ! -z $VERBOSE || $? != 0 ]]; then
-				echo "   $PROGDIR/raw2rinex \"$RAW\" $RINEX $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $anttype $antnum $posxyz"
+				echo "   $PROGDIR/raw2rinex \"$RAW\" $RINEX $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $anttype $antnum $posxyz $observer $agency"
 			fi
 		else
 			echo "   $DAYLYMSG no data to process in $RAW."
