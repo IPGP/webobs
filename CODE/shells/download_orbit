@@ -4,7 +4,7 @@
 #
 # Authors: Edgar Lenhof, François Beauducel
 # Created: 2019-07-31 at OVPF, La Réunion Island
-# Updated: 2020-08-07
+# Updated: 2022-09-22
 
 if [ $# -lt 2 ]; then
 	echo "     Syntax: download_orbit DAYS DEST [options]"
@@ -17,7 +17,7 @@ if [ $# -lt 2 ]; then
 	echo "    Options:"
 	echo "        -o ORBIT = type of orbit (Ultra, Rapid or Final)"
 	echo "        -d STARTDAY = days to start retrieving (YYYY/mm/dd)"
-   echo "        -r DAYS = remove orbit files older than DAYS days"
+   	echo "        -r DAYS = remove orbit files older than DAYS days"
 	echo "        -v = verbose mode"
 	echo ""
 	echo "Needs the companion file download_orbit.rc"
@@ -69,7 +69,7 @@ for (( i=1; i<=$#; i++)); do
 	-r)
 		k=$((i+1))
 		delete="TRUE"
-      nb_delete=( "${!k}" )
+      	nb_delete=( "${!k}" )
 	;;
 
 	-v)
@@ -79,6 +79,17 @@ for (( i=1; i<=$#; i++)); do
 	esac
 done
 
+
+# deleting too ancient orbits
+if [ $delete == "TRUE" ]; then
+	files=$(find $DEST -type f -mtime +$nb_delete)
+	for f in $files; do
+    	rm $f
+   		if [ $verbose == "TRUE" ]; then
+         	echo "removed $f"
+		fi
+   done
+fi
 
 for day in $DAYLIST; do
 
@@ -119,15 +130,3 @@ for day in $DAYLIST; do
 	done
 
 done
-
-
-# deleting too ancient orbits
-if [ $delete == "TRUE" ]; then
-   files=$(find $DEST -type f -mtime +$nb_delete)
-   for f in $files; do
-      rm $f
-   	if [ $verbose == "TRUE" ]; then
-         echo "removed $f"
-      fi
-   done
-fi
