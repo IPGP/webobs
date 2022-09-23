@@ -15,7 +15,7 @@ NODEROOT=/etc/webobs.d/GRID2NODES/$GRID.
 # it can be a site_log file, a station.info file (Gamit), or the webobs node informations
 # this option can be also pass in parameters with "-i"
 # valid variables are : SITELOG (recommended) / WEBOBS / STATION_INFO 
-INFOSRC=WEBOBS
+INFOSRC=SITELOG
 
 # site information source parameters :
 # - sitelog directory, must be filled to use SITELOG as INFOSRC
@@ -37,5 +37,5 @@ FMT='$FROM/$FID/$yyyy/$mm/$dd'
 DEST=/opt/webobs/rawdata
 
 # teqc options: Please take a deep look at www.unavco.org TEQC tutorial!
-TEQCOPTIONS="+quiet -O.ag 'IPGP' -O.op 'WO' -O.pe 0 0 0 -C2 -O.-obs C2 -O.-obs C5 -O.dec 30s -max_rx_SVs 50 -n_GLONASS 27"
+TEQCOPTIONS='+quiet -O.pe 0 0 0 -C2 -O.-obs C2 -O.-obs C5 -O.dec 30s -max_rx_SVs 50 -n_GLONASS 27'
 
