@@ -25,7 +25,7 @@
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia)
 #          Based on Gipsy-Oasis version by Francois BEAUDUCEL (IPGP) and Ahmad Ali FAHMI (IRD),
 #          Domerapi/WebObs Project, 2014.
-# Updated: 2021-10-12
+# Updated: 2022-09-22
 
 #Check lock file
 LOCKFILE=/tmp/gnss_run_gipsyx.txt
@@ -42,7 +42,7 @@ if [ $# -lt 2 ]; then
 	echo "       CONF = configuration filename, e.g., /etc/webobs.d/gnss_run_gipsyx.rc"
 	echo "       DAYS = number of days to process (from today)"
 	echo "     Options:"
-	echo "	      -s \"STA1 STA2...\""
+	echo "       -s \"STA1 STA2...\""
 	echo "            station code or station list with double quotes"
 	echo "	           default is all nodes associated with local WebObs $GRID proc name"
 	echo "            or a list of nodes $NODES defined in .rc"
@@ -131,6 +131,7 @@ for (( i=1; i<=$#; i++)); do
 		;;
    	-debug)
       		DEBUG=1
+		export VERBOSE=Y
       		echo "Debug mode: temporary directories will NOT be deleted!"
 		;;
    	-s)
@@ -184,8 +185,10 @@ for station in $NODES; do
 		sta=$(echo $FID | tr '[:upper:]' '[:lower:]')
 		yyyy=${ymd:0:4}
 		year=$yyyy
+		yy=${ymd:2:2}
 		mm=${ymd:5:2}
 		dd=${ymd:8:2}
+		bb=$(date -d "$ymd" +"%b")
 
 		# uses station.info to overwrite rinex header
 		if [[ "$STATION_INFO" != "" && -s "$STATION_INFO" ]]; then
@@ -207,8 +210,7 @@ for station in $NODES; do
 			receiver=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.rt' | tr -d '"')
 			antenna=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.at' | tr -d '"')
 			posxyz=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.px' | tr -d '"')
-			antennaecc=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.pe' | tr -d '"')
-			alertheader="   sitelog: $FID @ $ymd - receiver = '$receiver' - antenna = '$antenna' - antenna ecc = '$antennaecc' (will use rinex header if empty)"
+			alertheader="   sitelog: $FID @ $ymd - receiver = '$receiver' - antenna = '$antenna' (will use rinex header if empty)"
 			if [ ! -z "$receiver" ]; then
 				receiver=" -O.rt \"$receiver\""
 			fi
@@ -217,9 +219,6 @@ for station in $NODES; do
 			fi
 			if [ ! -z "$posxyz" ]; then
 				posxyz=" -O.px $posxyz"
-			fi
-			if [ ! -z "$antennaecc" ]; then
-				antennaecc=" -O.pe[hEN,m] $antennaecc"
 			fi
 		else
 			alertheader=''
@@ -239,9 +238,9 @@ for station in $NODES; do
 				echo "$alertheader"
 				rm -rf $tmpdir/*
 				# makes Rinex daily file from raw data (see raw2rinex script)
-				$PROGDIR/raw2rinex "$RAW" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz $antennaecc
+				$PROGDIR/raw2rinex "$RAW" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz
 				if [[ ! -z $VERBOSE || $? != 0 ]]; then
-					echo "   $PROGDIR/raw2rinex \"$RAW\" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz $antennaecc"
+					echo "   $PROGDIR/raw2rinex \"$RAW\" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz"
 				fi
 
 				# real-time case: makes a 24h window from yesterday+today data
@@ -264,9 +263,9 @@ for station in $NODES; do
               			dd=${yesterday:8:2}
               			RAW2=$(eval "echo $FMT")
 					echo "$RAW2"
-					$PROGDIR/raw2rinex "$RAW2" $rinex2 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz $antennaecc
+					$PROGDIR/raw2rinex "$RAW2" $rinex2 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz
 					if [[ ! -z $VERBOSE || $? != 0 ]]; then
-						echo "$PROGDIR/raw2rinex \"$RAW2\" $rinex2 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz $antennaecc"
+						echo "$PROGDIR/raw2rinex \"$RAW2\" $rinex2 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz"
 					fi
 
 					#converting 2 days ago rinex
@@ -276,9 +275,9 @@ for station in $NODES; do
               			dd=${two_days_ago:8:2}
               			RAW1=$(eval "echo $FMT")
 					echo "$RAW1"
-              			$PROGDIR/raw2rinex "$RAW1" $rinex1 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz $antennaecc
+              			$PROGDIR/raw2rinex "$RAW1" $rinex1 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz
               			if [[ ! -z $VERBOSE || $? != 0 ]]; then
-       					echo "$PROGDIR/raw2rinex \"$RAW1\" $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz $antennaecc"
+       					echo "$PROGDIR/raw2rinex \"$RAW1\" $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz"
        				fi
 
 					mv $rinex $rinex3 #already converted rinex for today
