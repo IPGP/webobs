@@ -52,6 +52,7 @@ fi
 if [ ! -z "$FILE" ]; then
 	#******************* site *******************
 	JSON={\"mo\":\"${SITE}\"
+	#******************* Serial number *******************
 	JSON=$JSON,\"sn\":\"$(sed -n "/^1\. /,/Site Name/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"
 	#******************* Approximative position *******************
 	JSON=$JSON,\"px\":\"$(sed -n "/^2\. /,/Z coordinate/p" ${FILE} | tail -n3 | sed -e 's/^.*: //g')\"
@@ -67,7 +68,9 @@ if [ ! -z "$FILE" ]; then
 		awk -F '\t' -v date="${DATE}" '{ if (date >= $12  && date <= $13) \
 			printf ",\"at\":\"%s\",\"an\":\"%s\",\"pe\":\"%1.4f %1.4f %1.4f\"", $1, $2, $4, $5, $6 }'
     )
+	#******************* Observer *******************
 	JSON=$JSON,\"op\":\"$(sed -n "/^11\. /,/Abbreviation/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"
+	#******************* Agency ******************
 	JSON=$JSON,\"ag\":\"$(sed -n "/^12\. /,/Abbreviation/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"}
 	echo $JSON
 fi
