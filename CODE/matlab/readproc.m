@@ -23,7 +23,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2022-10-25
+%	Updated: 2022-10-26
 
 
 proc = varargin{1};
@@ -43,7 +43,13 @@ if ~exist(f,'file')
 end
 
 % reads .conf main conf file
-P = readcfg(WO,f);
+if nargin < 4
+	P = readcfg(WO,f);
+	request = false;
+else
+	P = readcfg(WO,f,'novsub');
+	request = true;
+end
 
 % replaces any fields in P by optional argument PARAMS
 if nargin > 2 && isstruct(varargin{2})
@@ -130,7 +136,7 @@ P = tnorm(P,'STATUSLIST',nlist,0);
 
 % makes the GTABLE
 % case A: TIMESCALELIST all or selection
-if nargin < 4
+if ~request
 	tscale = {'%'};
 	if nargin > 2
 		if ischar(varargin{2})
@@ -197,7 +203,7 @@ else
 		error('%s: cannot find request file %s.',wofun,freq);
 	end
 
-	P.GTABLE = readcfg(WO,freq);
+	P.GTABLE = readcfg(WO,freq,'novsub');
 
 	% converts dates in DATENUM format
 	P.GTABLE.DATE1 = isodatenum(P.GTABLE.DATE1);
@@ -231,6 +237,9 @@ else
 	if isfield(P.GTABLE,'PROC') && isfield(P.GTABLE.PROC,proc) && isstruct(P.GTABLE.PROC.(proc))
 		P = structmerge(P,P.GTABLE.PROC.(proc));
 	end
+
+	% makes internal KEY variable substitution
+	P = vsub(P,'[\$][\{](.*?)[\}]');
 
 	P.REQUEST = 1;
 end
@@ -293,4 +302,27 @@ end
 if lf < nlist
 	P.(fd)(lf+1:nlist) = dv(lf+1:nlist);
 	fprintf('WEBOBS{readproc:tnorm}: ** WARNING ** inconsistent length or inexisting %s in %s timescale table. Fill with default value.\n',fd,P.SELFREF);
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function X = vsub(X,pat)
+%VSUB Variable substitution in structure X, pattern PAT
+
+keys = fieldnames(X);
+for i = 1:length(keys)
+	if ~isempty(X.(keys{i})) && ischar(X.(keys{i}))
+		s = regexp(X.(keys{i}),pat,'tokens');
+		if ~isempty(s)
+			for j = 1:length(s)
+				if isfield(X,s{j}{:})
+					X.(keys{i}) = regexprep(X.(keys{i}),['\${' s{j}{:} '}'],regexprep(X.(s{j}{:}),'\${','\\${'));
+				end
+			end
+			if ~isempty(strfind(X.(keys{i}),'${'))
+				fprintf(' ** WARNING ** key %s contains undefined variable "%s", replaces with empty value! ',keys{i},X.(keys{i}));
+				X.(keys{i}) = '';
+			end
+		end
+	end
 end
