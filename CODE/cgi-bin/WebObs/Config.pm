@@ -16,35 +16,35 @@ Package WebObs : Common perl-cgi variables and functions
 
 =head1 DESCRIPTION
 
-Provides the main Webobs configuration hash B<%WEBOBS> 
+Provides the main Webobs configuration hash B<%WEBOBS>
 and subroutine B<readCfg> to read/parse other configuration files.
 
 WebObs::Config also defines the B<"WebObs specific cgi error messages"> that any
 script is free to use or not. Aka B<webobs_cgi_msg> (entry-point) it is also
-customized thru html definitions residing in the file pointed to by the 
+customized thru html definitions residing in the file pointed to by the
 $WEBOBS{CGI_MSG} variable.
 
 B<readCfg> internally uses the base B<readFile> function, also publicly available,
-reading any file into an array, providing access control thru Perl's B<flock> locking 
-interface. 
+reading any file into an array, providing access control thru Perl's B<flock> locking
+interface.
 
-Configuration files (usually *.conf; *.cnf or *.rc) typically define one 
+Configuration files (usually *.conf; *.cnf or *.rc) typically define one
 functionnal parameter (C<key>) per line, made up of one or more associated values
-(C<fields>). When read with B<readCfg>, those lines are subject to the 
+(C<fields>). When read with B<readCfg>, those lines are subject to the
 following rules for parsing/interpretation:
 
-Rule #1 : any text following a # is considered a comment and discarded 
+Rule #1 : any text following a # is considered a comment and discarded
 
 Rule #2 : blank lines are discarded, leading and trailing blanks too
 
 Rule #3 : fields separator character, within interpreted lines, is | (pipe)
 
-Rule #4 : | and # characters that should belong to a field value may be 
-          'escaped' (ie. not interpreted as speparator or comment resp.) 
-          by prefixing them with \ 
+Rule #4 : | and # characters that should belong to a field value may be
+          'escaped' (ie. not interpreted as speparator or comment resp.)
+          by prefixing them with \
 
-Rule #5 : a so-called 'definition line' (= in column 1) may be present as the 
-          first interpreted line, to further define how each line will be 
+Rule #5 : a so-called 'definition line' (= in column 1) may be present as the
+          first interpreted line, to further define how each line will be
           interpreted and fields returned:
 
             V=readCfg("afile.rc");
@@ -52,14 +52,14 @@ Rule #5 : a so-called 'definition line' (= in column 1) may be present as the
             =key|name1|...|nameN : V is a %HoH, $V{key}{nameI} => value
             no definition line   : V is an @AoA
 
-Rule #6 : field value substitution is allowed in =key|value form: 
+Rule #6 : field value substitution is allowed in =key|value form:
           ${key} in a value field will be replaced by the value of the key|value pair of the current file.
 
             REFKEY|/main/path
             ANOTHERKEY|${REFKEY}/down/to/filename
             will create: $hash{ANOTHERKEY} => /main/path/down/to/filename
 
-Rule #7 : line continuation (ie. field value spanning more than one line), if desired, 
+Rule #7 : line continuation (ie. field value spanning more than one line), if desired,
           is specified by a \ (backslash) as the last character of a line.
 		  Note: leading and trailing spaces in each line are preserved.
 		  Example:
@@ -67,7 +67,7 @@ Rule #7 : line continuation (ie. field value spanning more than one line), if de
 		    LONGLIST|Element1,\
 			         Element2,\
 			Element3
-			is equivalent to: LONGLIST|Element1,         Element2,Element3					 
+			is equivalent to: LONGLIST|Element1,         Element2,Element3
 
 
 Rule #8 : configuration files are all considered ISO-8859-15 (latin) encoded
@@ -77,7 +77,7 @@ Rule #8 : configuration files are all considered ISO-8859-15 (latin) encoded
 =head2 %WebObs::WEBOBS
 
 The main Webobs configuration hash, automatically built from B</etc/webobs.d/WEBOBS.rc>
-(/etc/webobs.d is the symbolic link to the actual Webobs-install-time/user-defined directory for configuration files). 
+(/etc/webobs.d is the symbolic link to the actual Webobs-install-time/user-defined directory for configuration files).
 WEBOBS.rc B<must> be of the '=key|value' form (see above).
 
 =head1 FUNCTIONS
@@ -90,13 +90,13 @@ use Fcntl qw(:flock SEEK_SET SEEK_END O_NONBLOCK O_WRONLY O_RDWR);
 use File::Basename;
 use WebObs::Utils qw(u2l l2u);
 use CGI::Carp qw(fatalsToBrowser);
-    
+
 our(@ISA, @EXPORT, $VERSION, %WEBOBS, $WEBOBS_LFN);
 require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(%WEBOBS readFile xreadFile readCfgFile readCfg webobs_cgi_msg);
 $VERSION = "2.00";
- 
+
 my $confF1 = "/etc/webobs.d/WEBOBS.rc";
 if (-e $confF1) {
 	%WEBOBS   = readCfg($confF1) ;
@@ -113,7 +113,7 @@ if ( defined($WEBOBS{CGI_MSG}) && -e $WEBOBS{CGI_MSG} ) {
 	$cgi_msg_html = "<img src='/icons/ipgp/logo_OVS50.png'><b> Webobs error</b>";
 }
 
-sub webobs_cgi_msg {                                                                                                                                                   
+sub webobs_cgi_msg {
 	my $msg = shift;
 	print $cgi_msg_html;
 	$msg =~ s/\n/ /g; # \n once found nullifying the following match
@@ -138,9 +138,9 @@ sub webobs_cgi_msg {
 Reads file contents (optionaly filtered with $filter regex reference) into an array.
 All lines are read unfiltered, uninterpreted, unchanged.
 Does B<NOT> attempt to convert lines to UTF8, B<NOR> does it chomp lines.
-readFile blocks until it acquires a shared lock on the file to be read. 
+readFile blocks until it acquires a shared lock on the file to be read.
 
-=cut 
+=cut
 
 sub readFile
 {
@@ -166,8 +166,8 @@ sub readFile
 
 =head2 xreadFile
 
-eXtended readFile(). Performs same functions as readFile, but returns 
-both 1) a reference to the file contents and 2) the 'last-modified-timestamp' of the file 
+eXtended readFile(). Performs same functions as readFile, but returns
+both 1) a reference to the file contents and 2) the 'last-modified-timestamp' of the file
 
 	# reading all lines from filepath/filename :
 	($ptr, $ts) = readFile("filepath/filename");
@@ -177,9 +177,9 @@ Follows all other rules of readFile().
 
 Why would you choose xreadFile() ? The last-modified-timestamp caught under flock control at read time
 might be used as a check for externally modified data between reading and later updating of the file.
-Reference (pointer) to file contents might help perf/storage on huge files.  
+Reference (pointer) to file contents might help perf/storage on huge files.
 
-=cut 
+=cut
 
 sub xreadFile
 {
@@ -208,10 +208,10 @@ sub xreadFile
 
 	@lines = readCfgFile("[filepath/]filename");
 
-reads file contents into an array, converting lines to UTF8, 
+reads file contents into an array, converting lines to UTF8,
 and removing commented lines (# in col1), blank lines, and all \r (CR).
 
-=cut 
+=cut
 
 sub readCfgFile
 {
@@ -240,7 +240,7 @@ sub readCfgFile
 
 	@lines = readCfg("[filepath]/filename");  # other files
 
-reads in a configuration file (defaults to main webobs WEBOBS.conf 
+reads in a configuration file (defaults to main webobs WEBOBS.conf
 if none is specified). See DESCRIPTION above for a description of readCfg interpretation rules
 
 =cut
@@ -265,7 +265,7 @@ sub readCfg
 			next;					# and forget it
 		}
 		$l = l2u($_);				# force utf8 !
-		@wrk = split(/(?<!\\)\|/,$l);  # parse with unescaped-| as delim 
+		@wrk = split(/(?<!\\)\|/,$l);  # parse with unescaped-| as delim
 		if (!$escape) { s/\\//g for(@wrk) };          # remove escape chars (\)
 		if (@df == 2) {             # key|value ? build Hash
 			$H{$wrk[0]} = $wrk[1];
@@ -281,18 +281,20 @@ sub readCfg
 		push(@A, [@wrk]);           # otherwise build an AoA
 	}
 	if (@A) { return @A; }
-	if (%H) { 
+	if (%H) {
 		no warnings "uninitialized";
-		for my $key (keys %H) { $H{$key} =~ s/[\$][\{](.*?)[\}]/$H{$1}/g; }
-		# need two passes, last one also handling %WEBOBS substitution  
 		if (!$novsub) {
+            for my $key (keys %H) {
+                $H{$key} =~ s/[\$][\{](.*?)[\}]/$H{$1}/g;
+            }
+            # need two passes, last one also handling %WEBOBS substitution
 			for my $key (keys %H) {
-				$H{$key} =~ s/[\$][\{](.*?)[\}]/$H{$1}/g; 
+				$H{$key} =~ s/[\$][\{](.*?)[\}]/$H{$1}/g;
 				$H{$key} =~ s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g;
 			}
-		}	
+		}
 		use warnings;
-		return %H; 
+		return %H;
 	}
 	# Use an explicit return in case $fn is undefined or the file is empty
 	# (otherwise an implicit return would return [0]).
@@ -306,15 +308,15 @@ sub readCfg
 Sends an event notification to the WebObs postboard for dispatching to registered users or processes.
 
 Internally sends B<notifications requests> to the B<postboard> named pipe.
-This named pipe is defined by the $WEBOBS{POSTBOARD_NPIPE} configuration parameter and the 
+This named pipe is defined by the $WEBOBS{POSTBOARD_NPIPE} configuration parameter and the
 postboard.pl process is acting as a daemon waiting for notifications requests to process them asap.
 
 Requests, as sent by processes, are strings representing the 3-tuple 'event-name|sender-id|message' ('|' delimiting
-the elements). notify adds the current timestamp (UTC elapsed seconds since Epoch) to this input, 
+the elements). notify adds the current timestamp (UTC elapsed seconds since Epoch) to this input,
 resulting in the following request
 being sent to postboard pipe: B<'timestamp|event-name|sender-id|message'>
 
-See the postboard.pl perldoc for more information on 'timestamp|event-name|sender-id|message' request interpretation. 
+See the postboard.pl perldoc for more information on 'timestamp|event-name|sender-id|message' request interpretation.
 
 Note: notify translates all '\n' to 0x00 in the request being sent over the pipe; postboard will
 translate them back after request is pulled out of the pipe.
@@ -323,8 +325,8 @@ Return codes from notify:
 
 	96   can't open postboard named pipe (fifo)
 	97   no request specified (nothing to send)
-	98   postboard named pipe is unknown (no definition in config.) 
-	99   notification request has an invalid format 
+	98   postboard named pipe is unknown (no definition in config.)
+	99   notification request has an invalid format
 
 =cut
 
