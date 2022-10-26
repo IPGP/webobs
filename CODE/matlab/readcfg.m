@@ -43,7 +43,7 @@ function X=readcfg(varargin);
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2021-08-12
+%   Updated: 2022-10-26
 
 if nargin > 0 && isstruct(varargin{1})
 	WO = varargin{1};
@@ -86,23 +86,33 @@ else
 		end
 	% --- returns a key|value structure from file f
 	else
-		X = rfile(WO,f,0);
+		if nargin > 1 && any(strcmp(varargin,'novsub'))
+			X = rfile(WO,f,0,'nobsub');
+		else
+			X = rfile(WO,f,0);
+		end
 	end
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function X = rfile(WO,f,mode)
+function X = rfile(WO,f,mode,novsub)
 %RF actually read the configuration file f
 %  mode = 0 : key|value conf file (default)
 %  mode = 1 : key array
+%    novsub : no internal variable substitution
 
 if nargin < 2
 	f = '/etc/webobs.d/WEBOBS.rc';
 end
 if nargin < 3
 	mode = 0;
+end
+if nargin < 4
+	novsub = false;
+else
+	novsub = true;
 end
 
 
@@ -178,8 +188,10 @@ end
 
 if length(df{1}) <= 2 && mode==0
 
-	% makes internal KEY variable substitution
-	X = vsub(X,'[\$][\{](.*?)[\}]');
+	if ~novsub
+		% makes internal KEY variable substitution
+		X = vsub(X,'[\$][\{](.*?)[\}]');
+	end
 
 	% makes WEBOBS variable substitution
 	if exist('WO','var')
@@ -206,7 +218,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function X = vsub(X,pat,W)
-%VARSUB Variable substitution in structure X, pattern PAT
+%VSUB Variable substitution in structure X, pattern PAT
 %	If W provided, uses it to substitute $WEBOBS{} variables
 
 keys = fieldnames(X);

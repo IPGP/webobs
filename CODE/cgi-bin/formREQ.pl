@@ -293,7 +293,7 @@ print "<TR>";
 	print "<fieldset><legend>$__{'Available PROCS'}</legend>";
 	print "<div style=\"overflow-y: scroll;height: 400px\">";
 	for my $p (@proclist) {
-		%P = readProc($p);
+		%P = readProc($p,"novsub");
 		my $nn = scalar(@{$P{$p}{NODESLIST}});
 		print "<INPUT type=\"checkbox\" name=\"p_$p\" title=\"$p\" onclick=\"selProc('$p')\" value=\"0\"> <B>{$p}:</B> $P{$p}{NAME} (<B>$nn</B> node".($nn>1?"s":"").")<BR>\n";
 		print pkeys($p,\%P);
