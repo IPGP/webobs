@@ -24,7 +24,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2022-06-09
+%	Updated: 2022-10-26
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -42,7 +42,7 @@ else
 
 		F.fmt = lower(field2str(N(n),'RAWFORMAT',P.RAWFORMAT,'notempty'));
 		fraw = field2str(N(n),'RAWDATA',P.RAWDATA,'notempty');
-		fraw = regexprep(fraw,'\$NET',N(n).FDSN_NETWORK_CODE);
+		fraw = regexprep(fraw,'\$NET',field2str(N(n),'FDSN_NETWORK_CODE',''));
 		F.raw = {fraw};
 		lfid = split(N(n).FID,',');	% possible comma separated list of FID
 		for a = 1:length(lfid)
