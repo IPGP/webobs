@@ -174,14 +174,18 @@ print WebObs::Search::searchpopup();
 
 my $ilinks = "[ ";
 $ilinks .= "<A href=\"/cgi-bin/listGRIDS.pl?type=$GRIDType\">".ucfirst(lc($GRIDType))."s</A>";
-$ilinks .= " | <A href='#MYTOP' title=\"$__{'Find text in Grid'}\" onclick='srchopenPopup(\"+$GRIDType.$GRIDName\");return false'><img class='ic' src='/icons/search.png'></A>";
-$ilinks .= " | <A href=\"/cgi-bin/gvTransit.pl?grid=$GRIDType.$GRIDName\"><IMG src=\"/icons/tmap.png\" title=\"Tmap\" style=\"vertical-align:middle;border:0\"></A>";
+$ilinks .= " | <A href='#MYTOP' title=\"$__{'Find text in Grid'}\" onclick='srchopenPopup(\"+$GRIDType.$GRIDName\");return false'>\
+               <img class='ic' src='/icons/search.png'></A>";
+$ilinks .= " | <A href=\"/cgi-bin/gvTransit.pl?grid=$GRIDType.$GRIDName\"><IMG src=\"/icons/tmap.png\" \
+               title=\"Tmap\" style=\"vertical-align:middle;border:0\"></A>";
 $ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$grid','$GRIDName','width="
 		.($WEBOBS{OSM_WIDTH_VALUE}+15).",height="
 		.($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">
 		<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
 if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
-	$ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml')\" title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
+	$ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml')\" \
+	               title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" \
+				   src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
 }
 $ilinks .= " | <A href=\"#SPECS\">$__{Specifications}</A>";
 $ilinks .= " | <A href=\"#MAPS\">$__{'Location'}</A>";
@@ -189,6 +193,8 @@ $ilinks .= " | <A href=\"#INFO\">$__{'Information'}</A>";
 $ilinks .= " | <A href=\"#PROJECT\">$__{'Project'}</A>";
 $ilinks .= " | <A href=\"#EVENTS\">$__{'Events'}</A>";
 $ilinks .= " | <A href=\"#REF\">$__{'References'}</A>";
+$ilinks .= " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle\" title=\"Refresh\" \
+               onclick=\"document.location.reload(false)\">";
 $ilinks .= " ]";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks</P>";
 print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
@@ -299,6 +305,13 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	# -----------
 	# only for PROCs: link to output pages and time scale parameters
 	if ($isProc) {
+		if (grep(/^FID_/,keys(%GRID))) {
+			$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH colspan=2>$__{'Nodes Default FIDs'}</TH></TR>\n";
+			foreach (grep(/^FID_/,sort(keys(%GRID)))) {
+				$htmlcontents .= "<TR><TD>$_</TD><TD><B>$GRID{$_}</B></TD></TR>\n";
+			}
+			$htmlcontents .= "</TABLE></TD>\n";
+		}
 		if ($procOUTG) {
 			my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
 			$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Graphs'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";

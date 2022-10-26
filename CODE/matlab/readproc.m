@@ -23,7 +23,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2022-07-22
+%	Updated: 2022-10-25
 
 
 proc = varargin{1};
@@ -263,6 +263,7 @@ if nargout > 1
 	N = readnodes(WO,P.SELFREF,P.DATELIM);
 	% list of complete node's FID (expands multiple FIDs)
 	%[FB-was] P.FID_LIST = split(char(strcat({N.FID},{','}))',',');
+	N = fid_proc2nodes(P,N);
 end
 
 if nargout > 2
