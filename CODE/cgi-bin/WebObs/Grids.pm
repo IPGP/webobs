@@ -104,7 +104,7 @@ Internally uses WebObs::listProcNames.
 sub readProc {
 	my %ret;
 	for my $f (listProcNames($_[0])) {
-		my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf");
+		my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf",@_[1..$#_]);
 		# --- get list of associated NODES
 		opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
 		my @lSn = grep {/^PROC\.($f)\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
