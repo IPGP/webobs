@@ -93,11 +93,14 @@ my $grid = "$GRIDType.$GRIDName";
 my $isProc = ($GRIDType eq "PROC" ? '1':'0');
 my @procTS = ();
 my $procOUTG;
+my %authUsers;
 if ($isProc) {
+	%authUsers = WebObs::Users::resListAuth(type=>'authprocs',name=>$GRIDName);
 	$procOUTG = '1' if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" );
 	$procOUTG = 'events' if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" );
  	@procTS = split(/,/,$GRID{TIMESCALELIST});
 } else {
+	%authUsers = WebObs::Users::resListAuth(type=>'authviews',name=>$GRIDName);
 	$usrProcparam = '';
 }
 my @domain = split(/\|/,$GRID{DOMAIN});
@@ -235,19 +238,10 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	}
 	# -----------
 	$htmlcontents .= "<LI>$__{'Grid code'}: <B>$grid</B></LI>\n";
-        # -----------
+    # -----------
 	if ($showOwnr && defined($GRID{OWNCODE})) {
 		$htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n"
 	}
-	# -----------
-	$htmlcontents .= "<LI>$__{'Node(s)'}: <B>$nbNodes</B> \"$snm\"";
-	if ($admOK) {
-		$htmlcontents .= " [ "
-			."<A href=\"/cgi-bin/formGRID.pl?grid=$grid\">$__{'Associate existing node(s)'}</A> | "
-			."<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\">$__{'Create a new node'}</A> "
-			."]";
-	}
-	$htmlcontents   .= "</LI>";
 	if ($showType && $GRID{TYPE} ne "") {
 		$htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n";
 	}
@@ -350,7 +344,7 @@ print $htmlcontents;
 print "<BR>";
 $htmlcontents = "<A name=\"NODES\"></A>";
 $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#nodesID');\">&nbsp;&nbsp;";
-	$htmlcontents .= "$__{'List of'} $snm(s)&nbsp;$go2top";
+	$htmlcontents .= "$nbNodes $snm(s)&nbsp;$go2top";
 	$htmlcontents .= "</div><div id=\"nodesID\">";
 
 		$htmlcontents .= "<P class=\"subTitleMenu\" style=\"margin-left: 5px\">";
@@ -410,11 +404,12 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		my $nbNonValides=0;
 		my $tcolor;
 		my %NODE;
+		my $newNODE = "<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\"><IMG title=\"$__{'Create a new node'}\" src=\"/icons/modif.png\"></A>";
 
 		#$htmlcontents .= "<TABLE width=\"100%\" style=\"margin-left: 5px\">";
 		$htmlcontents .= "<TABLE width=\"100%\">";
 		$htmlcontents .= "<TR>";
-			$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2></TH>":"")
+			$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
 				."<TH rowspan=2>$__{'Alias'}</TH>"
 				."<TH rowspan=2>$__{'Name'}</TH>"
 				."<TH colspan=3>$__{'Coordinates'}</TH>"
@@ -485,7 +480,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				# trick: execute display logic even if we don't display, but html-comment out first
 				$htmlcontents .= (!$displayNode ? "<!--":"");
 				$htmlcontents .= "<TR class=\"$tcolor\">";
-				$htmlcontents .= ($editOK ? "<TH><A href=\"/cgi-bin/formNODE.pl?node=$grid.$NODEName\"><IMG title=\"Edit node\" src=\"/icons/modif.png\"></TH>":"");
+				$htmlcontents .= ($editOK ? "<TH><A href=\"/cgi-bin/formNODE.pl?node=$grid.$NODEName\"><IMG title=\"Edit node $NODEName\" src=\"/icons/modif.png\"></TH>":"");
 				# Node's code and name
 				my $lienNode="/cgi-bin/$NODES{CGI_SHOW}?node=$grid.$NODEName";
 				$htmlcontents .= "<TD align=center><B>$NODE{ALIAS}</B></TD><TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
@@ -749,6 +744,12 @@ $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\
 	if ($#bib >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@bib))."</P>\n" }
 	$htmlcontents .= "</div></div>";
 print $htmlcontents;
+
+# ----- Authorization access ------
+print "<P class=\"subTitleMenu\" style=\"margin-top:20px\">$__{'Authorization access'} for <B>$GRIDType.$GRIDName</B>:";
+print " Admin = <B>".join(", ", @{$authUsers{4}})."</B>;";
+print " Edit = <B>".join(", ", @{$authUsers{2}})."</B>;";
+print " Read = <B>".join(", ", @{$authUsers{1}})."</B></P>\n";
 
 # ---- We're done !
 print "</BODY>\n</HTML>\n";

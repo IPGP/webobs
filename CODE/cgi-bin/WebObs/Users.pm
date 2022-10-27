@@ -467,6 +467,47 @@ sub clientIsValid {
 
 =pod
 
+=head2 resListAuth
+
+Given a given resource-type and resource-name (as defined in 'users' table),
+returns an Hash of arrays of all UID or GID's for each authorization levels
+(1,2,4):
+
+	%HoA = WebObs::Users::resListAuth(type=>'authprocs',name=>'res1');
+	$HoA{authlevel} = array of all UID/GID for authlevel
+
+=cut
+
+sub resListAuth {
+	my %KWARGS = @_;
+	return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
+
+	my (%rs, $dbh, $sql, $sth);
+
+	my $dbname    = $WEBOBS{SQL_DB_USERS};
+
+	$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+	}) or die "DB error connecting to $dbname: ".DBI->errstr;
+
+	foreach my $authlevel (READAUTH,EDITAUTH,ADMAUTH) {
+		$sql  = "SELECT UID FROM $KWARGS{type} WHERE AUTH = $authlevel AND (RESOURCE = '$KWARGS{name}' OR RESOURCE = '*')";
+		$sth = $dbh->prepare($sql);
+		$sth->execute();
+		my $tmp = $sth->fetchall_arrayref();
+		my @users;
+		foreach (@$tmp) { push(@users, @$_) }
+		$rs{$authlevel} = \@users;
+	}
+	$dbh->disconnect;
+
+	return %rs;
+}
+
+=pod
+
 =head2 htpasswd
 
 Calls the 'htpasswd' command specified by $WEBOBS{PRGM_HTPASSWD} with the
@@ -590,7 +631,7 @@ Francois Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2018 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
