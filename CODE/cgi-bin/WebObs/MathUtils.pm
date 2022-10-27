@@ -2,7 +2,7 @@ package WebObs::MathUtils;
 
 =head1 NAME
 
-WebObs::MathUtils - Common cgi math utility functions  
+WebObs::MathUtils - Common cgi math utility functions
 
 =head1 SYNOPSIS
 
@@ -14,6 +14,7 @@ use WebObs::MathUtils
 
 use strict;
 use warnings;
+use POSIX qw(log10 floor);
 
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 require Exporter;
@@ -46,7 +47,7 @@ sub tri_date_avec_id ($$) {
 
 $romain = romain($decimal);
 
-converts $decimal (range [0-10]) to roman. $decimal 0 yields X (10)   
+converts $decimal (range [0-10]) to roman. $decimal 0 yields X (10)
 
 Matlab equivalent: romanx.m
 
@@ -61,11 +62,40 @@ sub romain ($)
 
 =pod
 
-=head2 romain
+=head2 num2roman
+
+$roman = num2romain($number);
+
+converts integer (range [1-4999]) to roman string.
+
+Algorithm from num2roman.m
+
+=cut
+
+sub num2roman ($)
+{
+	my @r = (["I","X","C","M"],["V","L","D"," "," "]);
+	my $n = shift;
+	my $x;
+
+	for my $i (reverse(0 .. floor(log10($n)))) {
+		my $ii = int($n/10**$i);
+		$x .= $r[0][$i] x $ii if ($ii < 4 || ($ii == 4 && $i == 3));
+		$x .= $r[0][$i] if ($ii == 9 || ($ii == 4 && $i < 3));
+		$x .= $r[1][$i].($r[0][$i] x ($ii - 5)) if ($ii >= 4 && $ii <= 8 && $i != 3);
+		$x .= $r[0][$i+1] if ($ii == 9);
+		$n -= $ii*10**$i;
+	}
+	return $x;
+}
+
+=pod
+
+=head2 boussole
 
 $direction = boussole($azimut);
 
-converts $azimut (in degrees) to geographic direction string (eg. ENE, SW, ...)   
+converts $azimut (in degrees) to geographic direction string (eg. ENE, SW, ...)
 
 Matlab equivalent: boussole.m
 
@@ -106,10 +136,9 @@ sub pga2msk ($)
 =cut
 
 sub attenuation ($$)
-# Input: magnitude et distance hypocentrale (en km)
-# Ouput: acceleration PGA (en g)
-# Equivalent Matlab: attenuation.m
-# Auteur: F. Beauducel, IPGP, 2009-06-24
+# Input: magnitude and hypocentral distance (in km)
+# Ouput: acceleration PGA (in g)
+# Matlab equivalent: attenuation.m
 {
 	my ($mag,$hyp) = @_;
 	if ($hyp < 5) { $hyp = 5; }
@@ -130,7 +159,7 @@ Alexis Bosson, Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+WebObs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

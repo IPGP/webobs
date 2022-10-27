@@ -66,7 +66,7 @@ the $WEBOBS{FILE_MENU}->{WELCOME} page.
 
 use strict;
 use warnings;
-use POSIX qw(getpid);
+use POSIX qw(getpid strftime);
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI::Cookie;
@@ -77,6 +77,7 @@ use WebObs::Config;
 use WebObs::Utils;
 use WebObs::Users;
 use WebObs::i18n;
+use WebObs::MathUtils;
 use Locale::TextDomain('webobs');
 
 
@@ -213,7 +214,9 @@ if ( $menunav =~ m/.rc$/) {
 }
 # ---- 'signature' that will show up at bottom
 #
-my $signature = join(' ',readFile("$MENU{SIGNATURE}"));
+my $year = WebObs::MathUtils::num2roman(strftime("%Y", localtime));
+my $signature = join(' ', readFile("$MENU{SIGNATURE}"));
+$signature =~ s/\(c\)|©/© $year/g;
 
 # ---- the optinal querystring 'page=' parameter may override the default Welcome page
 #
