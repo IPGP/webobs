@@ -212,11 +212,11 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 
 <a name="woaward"></a>
 ## Awards
-The WebObs system has been awarded by a **"Community" accessit** during the **First Open Science Award Ceremony**, *Paris Open Science European Conference (OSEC)*, February 4-5, 2022. See related articles (in French):
+The WebObs system has been awarded by a **"Community" accessit** during the **First Open Science Award Ceremony**, *Paris Open Science European Conference (OSEC)*, February 4-5, 2022. See related articles (mostly in French):
 - [Ministère de l'Enseignement Supérieur et de la Recherche](https://www.enseignementsup-recherche.gouv.fr/fr/remise-des-prix-science-ouverte-du-logiciel-libre-de-la-recherche-83576)
 - [Institut de Physique du Globe de Paris](https://www.ipgp.fr/fr/logiciel-webobs-recompense-lors-de-premiere-edition-prix-science-ouverte-logiciel-libre-remis-mesri)
 - [Université Paris Cité](https://u-paris.fr/le-logiciel-webobs-laureat-de-la-premiere-edition-du-prix-science-ouverte-du-logiciel-libre-de-la-recherche/)
-- [Resif/EPOS](https://www.resif.fr/blog/2022/02/22/prix-national-de-la-science-ouverte-le-logiciel-webobs-recompense/)
+- [Resif/EPOS](https://www.resif.fr/blog/2022/02/22/prix-national-de-la-science-ouverte-le-logiciel-webobs-recompense/) [English version](https://www.resif.fr/en/blog/2022/02/22/national-open-science-award-webobs-software-wins-award/)
 
 ## References
 <a name="worefs"></a>
@@ -251,6 +251,7 @@ The WebObs system has been awarded by a **"Community" accessit** during the **Fi
 1.  Feuillet N. et al. (2021). Birth of a large volcanic edifice through lithosphere-scale dyking offshore Mayotte (Indian Ocean), *Nature Geoscience*, [doi:10.1038/s41561-021-00809-x](https://doi.org/10.1038/s41561-021-00809-x)
 1.  Trasatti, E. et al. (2021). The Impact of Open Science for Evaluation of Volcanic Hazards. *Frontiers in Earth Science*, [doi:10.3389/feart.2021.659772](https://doi.org/10.3389/feart.2021.659772).
 1. Lowenstern, J. B., Wallace, K., Barsotti, S., Sandri, L., Stovall, W., Bernard, B., ... & Garaebiti, E. (2022). Guidelines for volcano-observatory operations during crises: recommendations from the 2019 volcano observatory best practices meeting. *Journal of Applied Volcanology*, 11(1), 1-24. [doi:10.1186/s13617-021-00112-9](https://doi.org/10.1186/s13617-021-00112-9)
+1. Chevrel, M. O., Harris, A., Peltier, A., Villeneuve, N., Coppola, D., Gouhier, M., & Drenne, S. (2022). Volcanic crisis management supported by near real-time lava flow hazard assessment at Piton de la Fournaise, La Réunion. *Volcanica*, 5(2), 313-334. [doi:10.30909/vol.05.02.313334](https://doi.org/10.30909/vol.05.02.313334)
 
 #### Seismology
 1. Bengoubou-Valérius M. et al. (2008). CDSA: A New Seismological Data Center for the French Lesser Antilles. *Seismol. Res. Lett.*, [doi:10.1785/gssrl.79.1.90](https://doi.org/10.1785/gssrl.79.1.90)
@@ -287,3 +288,5 @@ The WebObs system has been awarded by a **"Community" accessit** during the **Fi
 1. Indrastuti N. et al. (2021). Potential Eruption and Current Activity of Anak Krakatau Volcano, Indonesia. *In IOP Conference Series: Earth and Environmental Science*, Vol. 873, No. 1, p. 012021.
 1. Mittal, T., Jordan, J. S., Retailleau, L., Beauducel, F., & Peltier, A. (2022). Mayotte 2018 eruption likely sourced from a magmatic mush. *Earth and Planetary Science Letters*, 590, 117566. [doi:10.1016/j.epsl.2022.117566](https://doi.org/10.1016/j.epsl.2022.117566)
 1. Dumont, Q., Cayol, V., Froger, J. L., & Peltier, A. (2022). 22 years of satellite imagery reveal a major destabilization structure at Piton de la Fournaise. *Nature Communications*, 13(1), 1-11. [doi:10.1038/s41467-022-30109-w](https://doi.org/10.1038/s41467-022-30109-w)
+1. Cayol, V., Peltier, A., Froger, J. L., & Beauducel, F. (2022). Monitoring Volcano Deformation. *Hazards and Monitoring of Volcanic Activity 2: Seismology, Deformation and Remote Sensing*, 95-165. [doi:10.1002/9781394169610.ch2](https://doi.org/10.1002/9781394169610.ch2)
+1. Nikkhoo, M., & Rivalta, E. (2022). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. *Geophys. J. Int., 232(1), 643-655. [doi:10.1093/gji/ggac351](https://doi.org/10.1093/gji/ggac351)
