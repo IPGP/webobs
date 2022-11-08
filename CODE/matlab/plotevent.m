@@ -13,7 +13,7 @@ function varargout=plotevent(evtfile,evt)
 %
 %   Authors: F. Beauducel + D. Lafon + B. Taisne, WEBOBS/IPGP
 %   Created : 2004-07-21 (from ploterup.m)
-%   Updated : 2022-06-12
+%   Updated : 2022-11-08
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -34,15 +34,19 @@ if nargin > 0 & ~isempty(evtfile)
 		else
 			data = textscan(fid,'%s%s%n%s%s%s','Delimiter','|','CommentStyle','#');
 			fclose(fid);
-			E(n).dt1 = isodatenum(data{1});
-			E(n).dt2 = isodatenum(data{2});
-			E(n).lw = data{3};
-			E(n).rgb = rgb(data{4});
-			E(n).hex = rgb2hex(E(n).rgb);
-			E(n).nam = data{5};
-			E(n).com = data{6};
-			E(n).out = false(size(data{1}));
-			fprintf('WEBOBS{%s}: %s imported...',wofun,f);
+			if size(data{1},1) == 0
+				fprintf('%s: ** WARNING ** file %s is empty.\n',wofun,f);
+			else
+				E(n).dt1 = isodatenum(data{1});
+				E(n).dt2 = isodatenum(data{2});
+				E(n).lw = data{3};
+				E(n).rgb = rgb(data{4});
+				E(n).hex = rgb2hex(E(n).rgb);
+				E(n).nam = data{5};
+				E(n).com = data{6};
+				E(n).out = false(size(data{1}));
+				fprintf('WEBOBS{%s}: %s imported...',wofun,f);
+			end
 		end
 	end
 end
