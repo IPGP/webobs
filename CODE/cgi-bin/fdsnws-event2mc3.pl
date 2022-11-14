@@ -46,7 +46,7 @@ use lib $FindBin::Bin;
 use POSIX;
 
 use WebObs::Config;
-use QML;
+use WebObs::QML;
 
 # ---- create files with group permissions from the parent directory
 umask 002;
