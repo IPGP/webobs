@@ -43,7 +43,7 @@ use WebObs::Utils;
 use WebObs::i18n;
 use WebObs::Wiki;
 use Locale::TextDomain('webobs');
-use QML;
+use WebObs::QML;
 use Switch;
 
 set_message(\&webobs_cgi_msg);
