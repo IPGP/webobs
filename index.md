@@ -263,6 +263,8 @@ The WebObs system has been awarded by a **"Community" accessit** during the **Fi
 1. Roult G. et al. (2014). The "Jerk" Method for Predicting Intrusions and Eruptions of Piton De La Fournaise (La Réunion Island) from the Analysis of the Broadband Seismological RER Station. *In AGU Fall Meeting Abstracts, Vol. 2014, pp. V43A-4844*.
 1. Anglade A. et al. (2015). Significant technical advances in broadband seismic stations in the Lesser Antilles, *Adv. Geosci.* [doi:10.5194/adgeo-40-43-2015](https://doi.org/10.5194/adgeo-40-43-2015) 
 1.  Lemarchand A. et al. (2015). Validation of seismological data from volcanological and seismological French observatories of the Institut de Physique du Globe de Paris (OVSG, OVSM and OVPF). *In 2nd Scientific and Technical Meetings of Résif*.
+1. Ucciani G. (2015). Caractérisation spatiale et temporelle de la sismicité volcanique de la Soufrière de Guadeloupe : relations avec
+le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 2015*, pp. 235.
 1. Savage M. et al. (2015), Seismic anisotropy and its precursory change before eruptions at Piton de la Fournaise volcano, La Réunion, *J. Geophys. Res.*, [doi:10.1002/2014JB011665](https://doi.org/10.1002/2014JB011665)
 1. Lengliné, O. et al. (2016), Uncovering the hidden signature of a magmatic recharge at Piton de la Fournaise volcano using small earthquakes, *Geophys. Res. Lett.*, [doi:10.1002/2016GL068383](https://doi.org/10.1002/2016GL068383)
 1.  Maggi A. et al. (2017). Implementation of a multi-station approach for automated event classification at Piton de la Fournaise volcano, *Seismol. Res. Lett.*, [doi:10.1785/0220160189](https://doi.org/10.1785/0220160189)
@@ -276,6 +278,7 @@ The WebObs system has been awarded by a **"Community" accessit** during the **Fi
 1.  Massin F. et al. (2021). Automatic picking and probabilistic location for earthquake assessment in the Lesser Antilles subduction zone, *CR Géoscience*, [doi:10.5802/crgeos.81](https://doi.org/10.5802/crgeos.81)
 1.  Saurel J. M. et al. (2021). Mayotte seismic crisis: building knowledge in near real-time by combining land and ocean-bottom seismometers, first results. *Geophys. J. Int.*, [doi:10.1093/gji/ggab392](https://doi.org/10.1093/gji/ggab392)
 1.  Duputel Z. et al. (2021). Seismicity of La Réunion island. *Comptes Rendus Géoscience*, [doi:10.5802/crgeos.77](https://doi.org/10.5802/crgeos.77)
+1. Falcin, A. (2022). Détection et classification des signaux sismo-volcaniques de la Soufrière de Guadeloupe par apprentissage supervisé, *Doctorate Thesis, Université Paris Cité, 14 April 2022*.
 
 #### Deformation
 1.  Beauducel F. et al. (2014). Real-time source deformation modeling through GNSS permanent stations at Merapi volcano (Indonesia). *In AGU Fall Meeting Abstracts* Vol. 2014, pp. V41B-4800.
@@ -289,4 +292,5 @@ The WebObs system has been awarded by a **"Community" accessit** during the **Fi
 1. Mittal, T., Jordan, J. S., Retailleau, L., Beauducel, F., & Peltier, A. (2022). Mayotte 2018 eruption likely sourced from a magmatic mush. *Earth and Planetary Science Letters*, 590, 117566. [doi:10.1016/j.epsl.2022.117566](https://doi.org/10.1016/j.epsl.2022.117566)
 1. Dumont, Q., Cayol, V., Froger, J. L., & Peltier, A. (2022). 22 years of satellite imagery reveal a major destabilization structure at Piton de la Fournaise. *Nature Communications*, 13(1), 1-11. [doi:10.1038/s41467-022-30109-w](https://doi.org/10.1038/s41467-022-30109-w)
 1. Cayol, V., Peltier, A., Froger, J. L., & Beauducel, F. (2022). Monitoring Volcano Deformation. *Hazards and Monitoring of Volcanic Activity 2: Seismology, Deformation and Remote Sensing*, 95-165. [doi:10.1002/9781394169610.ch2](https://doi.org/10.1002/9781394169610.ch2)
+1. Journeau, C. (2022). Insights into the magma transport beneath active volcanoes from seismic and geodetic networks. *Doctorate thesis, Université Grenoble Alpes, 23 September 2022*, pp. 230.
 1. Nikkhoo, M., & Rivalta, E. (2022). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. *Geophys. J. Int., 232(1), 643-655. [doi:10.1093/gji/ggac351](https://doi.org/10.1093/gji/ggac351)
