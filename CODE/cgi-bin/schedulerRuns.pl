@@ -28,6 +28,10 @@ internal/debug use only: the name of the WebObs scheduler process from which con
 
 YYYY-MM-DD specifying DAY to be displayed. Defaults to today.
 
+=item B<jid=>
+
+job ID to display. Defaults to all jobs.
+
 =item B<hourdepth>
 
 numeric value representing the timeline depth in hours. Defaults to 4.
@@ -60,6 +64,7 @@ $QryParm->{'action'}    ||= 'display';
 $QryParm->{'scheduler'} ||= 'scheduler';
 $QryParm->{'hourdepth'} ||= 4;
 $QryParm->{'runsdate'}  ||= strftime("%Y-%m-%d", localtime(time));
+$QryParm->{'jid'}       ||= '';
 my $hdepthdown = $QryParm->{'hourdepth'}/2;
 my $hdepthup   = $QryParm->{'hourdepth'}*2;
 my $today = strftime("%Y-%m-%d", localtime(time));
@@ -235,35 +240,38 @@ my $latest_timeline_jid = 0;
 # Print the timeline from the jobs
 for my $job_run (@$timeline_run_list) {
 	my ($job_jid, $job_start, $job_end, $job_cmd, $job_rc) = @$job_run;
-	my $job_color = "";
 
-	# Running jobs have an undefined end date
-	my $is_running = not defined($job_end);
+	if ($QryParm->{'jid'} eq "" || $QryParm->{'jid'} eq $job_jid) {
+		my $job_color = "";
 
-	if ($job_jid ne $latest_timeline_jid) {
-		# New job to plot: bump Ytick to use a new line
-		$Ytick++;
-		$latest_timeline_jid = $job_jid;
-		print "options.yaxis.ticks[$Ytick-1] = [$Ytick, '$latest_timeline_jid'];\n";
-	}
-	$job_start =~ s/-/\//g;
-	if ($is_running) {
-		# Running job: use a yellowish activity line
-		$job_end = strftime("%Y/%m/%d %H:%M:%S", localtime($timelineD1));
-		$job_color = "#ED9D13";
-	} else {
-		$job_end =~ s/-/\//g;
-		if ($job_rc == 0) {
-			# Successful return code: use a green activity line
-			$job_color = "#318308";
-		} else {
-			# Use a red activity line
-			$job_color = "#C8350C";
+		# Running jobs have an undefined end date
+		my $is_running = not defined($job_end);
+
+		if ($job_jid ne $latest_timeline_jid) {
+			# New job to plot: bump Ytick to use a new line
+			$Ytick++;
+			$latest_timeline_jid = $job_jid;
+			print "options.yaxis.ticks[$Ytick-1] = [$Ytick, '$job_jid'];\n";
 		}
+		$job_start =~ s/-/\//g;
+		if ($is_running) {
+			# Running job: use a yellowish activity line
+			$job_end = strftime("%Y/%m/%d %H:%M:%S", localtime($timelineD1));
+			$job_color = "#ED9D13";
+		} else {
+			$job_end =~ s/-/\//g;
+			if ($job_rc == 0) {
+				# Successful return code: use a green activity line
+				$job_color = "#318308";
+			} else {
+				# Use a red activity line
+				$job_color = "#C8350C";
+			}
+		}
+		# Print the javascript line defining a job activity in the timeline
+		print qq(data[$dataX] = {color: "$job_color", data: [ [(new Date("$job_start")), $Ytick], [(new Date("$job_end")), $Ytick] ] };\n);
+		$dataX++;
 	}
-	# Print the javascript line defining a job activity in the timeline
-	print qq(data[$dataX] = {color: "$job_color", data: [ [(new Date("$job_start")), $Ytick], [(new Date("$job_end")), $Ytick] ] };\n);
-	$dataX++;
 }
 if ($dataX == 0) {
 	# define dummy data, spanning all xaxis, in case we have no data (ie. @$timeline_run_list was an empty set)
@@ -271,7 +279,7 @@ if ($dataX == 0) {
 	print "options.yaxis.ticks[$Ytick-1] = [$Ytick, \"* no start *   \"];\n";
 	print "data[$dataX] = {color: \"#5555ff\", data: [ [(new Date($timelineD0*1000)), $Ytick], [(new Date($timelineD1*1000)), $Ytick] ] };\n";
 }
-print "yticks=$Ytick;";
+print "yticks=$Ytick".($Ytick == 1 ? "+1":"").";"; # needs to add an Ytick in case of single job
 print "options.xaxis.min = (new Date($timelineD0*1000));\n";
 print "options.xaxis.max = (new Date($timelineD1*1000));\n";
 print "}\n";
@@ -285,11 +293,13 @@ my @run_day_list = map { $_->[0] } (@{fetch_all($SCHED{SQL_DB_JOBS},
 	"SELECT DISTINCT(DATE(CAST(startts AS INTEGER), 'unixepoch', 'localtime'))"
 	." FROM runs ORDER BY 1 DESC")});
 
-# ---- Prepare the HTML table of job runs
-# ---------------------------------------
+
+# ---- Prepare the HTML table of job runs for selected day
+# --------------------------------------------------------
 my $jobsruns;
 my $maxdcmdl = 70; # max string length for command in table
 my $rdate = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 00:00:00");
+my @jid_list;
 
 my $query_runs  = "SELECT jid, kid, org, DATETIME(CAST(startts AS INTEGER), 'unixepoch', 'localtime'),"
 		. " CASE WHEN endts != 0 THEN DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime') ELSE NULL END,"
@@ -302,44 +312,45 @@ my $run_list = fetch_all($SCHED{SQL_DB_JOBS}, $query_runs);
 for my $run (@$run_list) {
 	my ($job_jid, $job_kid, $org, $job_start, $job_end,
 	    $job_cmd, $job_stdpath, $job_rc, $job_rcmsg, $elapsed) = @$run;
-	my $elapsed_column = '';
-	my $bgcolor = "transparent";
-	# Running jobs have an undefined end date
-	my $is_running = not defined($job_end);
 
-	if ($is_running) {
-		$job_rc = '';
-		$job_rcmsg = '';
-		$job_end = 'Running';
-	} else {
-		my ($seconds, $ms) = split(/\./, ($elapsed));
-		my @time = reverse($seconds%60, ($seconds/=60) % 60, ($seconds/=60) % 24, ($seconds/=24) );
-		$elapsed_column = sprintf "%03d:%02d:%02d:%02d.%3.3s", @time, $ms;
+	push(@jid_list, $job_jid) unless grep{$_ eq $job_jid} @jid_list;
 
-		if ($job_rc == 0) {
-			# Return code shows success: use a green background
-			# in the RC column
-			$bgcolor = "green";
+	if ($QryParm->{'jid'} eq "" || $QryParm->{'jid'} eq $job_jid) {
+
+		my $elapsed_column = '';
+		my $bgcolor = "transparent";
+		# Running jobs have an undefined end date
+		my $is_running = not defined($job_end);
+
+		if ($is_running) {
+			$job_rc = '';
+			$job_rcmsg = '';
+			$job_end = 'Running';
 		} else {
-			$bgcolor = "red";
+			my ($seconds, $ms) = split(/\./, ($elapsed));
+			my @time = reverse($seconds%60, ($seconds/=60) % 60, ($seconds/=60) % 24, ($seconds/=24) );
+			$elapsed_column = sprintf "%03d:%02d:%02d:%02d.%3.3s", @time, $ms;
+			# Return code shows success: use a green background in the RC column
+			$bgcolor = ($job_rc == 0 ? "green":"red");
 		}
-	}
 
-	if (length($job_cmd) > $maxdcmdl) {
-		my $s = ($maxdcmdl-5)/2;
-		$job_cmd = substr($job_cmd,0,$s).'(...)'.substr($job_cmd,-$s);
+		if (length($job_cmd) > $maxdcmdl) {
+			my $s = ($maxdcmdl-5)/2;
+			$job_cmd = substr($job_cmd,0,$s).'(...)'.substr($job_cmd,-$s);
+		}
+		$job_start =~ s/^.* //;
+		$job_end =~ s/^.* //;
+		$jobsruns .= qq(<tr><td class="ic tdlock">);
+		if ($is_running) {
+			$jobsruns .= qq(<a href="#" onclick="postKill($job_kid);return false"><img title="kill job" src="/icons/no.png"></a>);
+		}
+		$jobsruns .= qq(</td><td>$job_jid<td>$job_kid<td>$org<td>$job_start<td>$job_end<td>$job_cmd);
+		my $log_filename = $job_stdpath =~ s/^[><] +//r;
+		$jobsruns .= qq(<td><a href="/cgi-bin/schedulerLogs.pl?log=$log_filename">$log_filename</a>);
+		$jobsruns .= qq(<td style="background-color: $bgcolor">$job_rc<td>$job_rcmsg<td>$elapsed_column</tr>\n);
 	}
-	$job_start =~ s/^.* //;
-	$job_end =~ s/^.* //;
-	$jobsruns .= qq(<tr><td class="ic tdlock">);
-	if ($is_running) {
-		$jobsruns .= qq(<a href="#" onclick="postKill($job_kid);return false"><img title="kill job" src="/icons/no.png"></a>);
-	}
-	$jobsruns .= qq(</td><td>$job_jid<td>$job_kid<td>$org<td>$job_start<td>$job_end<td>$job_cmd);
-	my $log_filename = $job_stdpath =~ s/^[><] +//r;
-	$jobsruns .= qq(<td><a href="/cgi-bin/schedulerLogs.pl?log=$log_filename">$log_filename</a>);
-	$jobsruns .= qq(<td style="background-color: $bgcolor">$job_rc<td>$job_rcmsg<td>$elapsed_column</tr>\n);
 }
+
 
 # ---- Print the rest of the page
 # -------------------------------
@@ -353,9 +364,10 @@ print <<"EOP1";
 	\$(document).ready(function() {
 		\$('div.jobsdefs-container').scrollTop(\$('div.jobsdefs-container')[0].scrollHeight);
 	});
-	function loadADate() {
+	function reload() {
 		var dl = \$('#indate').val();
-		location.href=\"/cgi-bin/schedulerRuns.pl?runsdate=\"+dl ;
+		var j = \$('#injid').val();
+		location.href=\"/cgi-bin/schedulerRuns.pl?runsdate=\"+dl+"&jid="+j ;
 	}
 	function delADate() {
 		var d1 = \$('#indate').val();
@@ -393,8 +405,18 @@ Runs <small><sub>($buildTS)</sub></small>
 	<div id="runsID">
 		<div style="padding: 5px; background: #DDDDDD">
 EOP1
-			print "&nbsp;&bull;&nbsp; date: ";
-			print "<select id=\"indate\" name=\"indate\" size=\"1\" maxlength=\"10\" onChange=\"loadADate(); return false\">";
+			print "&nbsp;&bull;&nbsp; Job: ";
+			print "<select id=\"injid\" name=\"injid\" size=\"1\" maxlength=\"10\" onChange=\"reload(); return false\">";
+			for my $jid ("", @jid_list) {
+				my $selected = "";
+				if ($jid eq $QryParm->{'jid'}) {
+					$selected = 'selected="selected"';
+				}
+				print "<option value=\"$jid\" $selected>".($jid ne "" ? $jid:"--- all ---")."</option>\n";
+			}
+			print "</select> ";
+			print "&nbsp;&bull;&nbsp; Date: ";
+			print "<select id=\"indate\" name=\"indate\" size=\"1\" maxlength=\"10\" onChange=\"reload(); return false\">";
 			for my $day (@run_day_list) {
 				my $selected = "";
 				if ($day eq $QryParm->{'runsdate'}) {
@@ -450,11 +472,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Lafon
+Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
