@@ -546,7 +546,7 @@ sub searchEvents {
 	}
 	# comment will look for $str in event's full text (except header line)
 	if ($in eq "comment") {
-		$cmd = $base."| xargs awk 'toupper(\$0) ~ /".uc($str)."/ NR>1 { print FILENAME ; nextfile }'";
+		$cmd = $base."| xargs awk 'FNR>1 && toupper(\$0) ~ /".uc($str)."/ { print FILENAME ; nextfile }'";
 	}
 
 	@evt = qx($cmd);
