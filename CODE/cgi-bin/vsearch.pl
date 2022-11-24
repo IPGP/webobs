@@ -331,14 +331,13 @@ foreach(@finalevents) {
 	}
 
 	@lines = readFile("$evfname");
-	chomp(@lines);
 	my ($aa,$ar,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
 	my @authors = WebObs::Users::userName(@$aa);
 	my @remotes = WebObs::Users::userName(@$ar);
-	shift(@lines);
-	shift(@lines) if (grep($lines[0],'^WebObs:'));
+	shift(@lines); # shift header line
 	my $comment = wiki2html(join("",@lines));
-	my $commentcsv = join("",@lines);
+	shift(@lines) if (grep($lines[0],'^WebObs:')); # shift Wiki/MMD metadata
+	my $commentcsv = join(" • ",@lines);
 	my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
 	my @nodes;
 	foreach(@{$NG{$node}}) {

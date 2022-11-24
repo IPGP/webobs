@@ -18,12 +18,12 @@ $newtxt  = WebObs::Wiki::wiki2MMD($wikitxt);
 =head1 DESCRIPTION
 
 WebObs::Wiki::wiki2html() converts either a WebObs's legacy wiki string OR
-a MultiMarkdown string to an html string.   
+a MultiMarkdown string to an html string.
 
-The input string is considered as the concatenation of lines of a markup file with '\n' 
+The input string is considered as the concatenation of lines of a markup file with '\n'
 preserved as line delimiter.
 
-WebObs::Wiki::wiki2html() automatically determines wether 
+WebObs::Wiki::wiki2html() automatically determines wether
 input string has to be processed as MultiMarkDown or WebObs legacy markup.
 Input string is MMD when it starts with any MultiMarkdown MetaData block of lines:
 consecutive lines of 'key:value' pair, ending with a blank line.
@@ -31,45 +31,45 @@ See MultiMarkdown MetaData documentation for additional information.
 
 WebObs::Wiki::wiki2MMD() is used to convert legacy WebObs' Wiki to MultiMarkdown syntax.
 
-WebObs::Wiki::stripMDmetadata() extracts mdedata section from text string (the wiki file contents); 
-returns ($MDtext-without-metadata, $MDmetadata). It is used to tell wether a file may contain MMD markup 
-( length($MDmetadata) > 0 ) or legacy webobs markup ( length($MDmetadata) = 0 ). 
+WebObs::Wiki::stripMDmetadata() extracts mdedata section from text string (the wiki file contents);
+returns ($MDtext-without-metadata, $MDmetadata). It is used to tell wether a file may contain MMD markup
+( length($MDmetadata) > 0 ) or legacy webobs markup ( length($MDmetadata) = 0 ).
 
 =head1 MMD and WO
 
-- A file will be considered "MMD" (to be parsed for MMD markup) when it contains a MMD-Metadata section ie.: 
+- A file will be considered "MMD" (to be parsed for MMD markup) when it contains a MMD-Metadata section ie.:
 at top of file, consecutive lines with metadata as key:value pairs, up to and including a blank line.
-Note that WebObs::Wiki uses the special 'WebObs:' metadata (whose value has currently no special meaning); 
+Note that WebObs::Wiki uses the special 'WebObs:' metadata (whose value has currently no special meaning);
 
 - metadata section follow the syntax as described in http://fletcher.github.io/MultiMarkdown-4/metadata.html ,
 with these special considerations:
 
-	- keys are case sensitive 
+	- keys are case sensitive
 	- keys are NOT 'compressed', ie. embedded blanks are preserved in keys
 	- must contain one 'WebObs:' key , otherwise input will be considered has NOT having metadata
-	- WO's specific 'TITRE.*|xxx' optional as very first line of $txt is stripped off (ie. 
+	- WO's specific 'TITRE.*|xxx' optional as very first line of $txt is stripped off (ie.
 	  ignored, so that MMD parsing/markup is allowed after a TITRE*| )
-	- non 'key:value' lines preceeding a valid metadata section will be discarded 
+	- non 'key:value' lines preceeding a valid metadata section will be discarded
 
-- WebObs extra line containing the special tags TITRE and TITRE_HTML (always 1st line) are still recognized, 
+- WebObs extra line containing the special tags TITRE and TITRE_HTML (always 1st line) are still recognized,
 even for MMD files: WebObs::Wiki ignores it; any associated processing must be handled outside of Wiki processing.
 
 =head1 Converting WO legacy wiki language to MMD
 
-The conversion routine wiki2MMD() (thus the wiki2mmd.pl tool that uses it) may 
+The conversion routine wiki2MMD() (thus the wiki2mmd.pl tool that uses it) may
 slightly modify the author original formatting intentions:
 
 - WebObs drawer is not supported, converted as header level 2 + paragraph.
 
-- Underscoring not supported, converted to strong 
+- Underscoring not supported, converted to strong
 
 - First row of table will automatically be considered as the header of table.
 
-- Paragraphs and line breaks differs in MMD. Extracted from Markdown documentation: A paragraph is simply one or more consecutive lines of text, 
-separated by one or more blank lines [...] The implication of the “one or more consecutive lines of text” rule 
-is that Markdown supports “hard-wrapped” text paragraphs [...]. 
+- Paragraphs and line breaks differs in MMD. Extracted from Markdown documentation: A paragraph is simply one or more consecutive lines of text,
+separated by one or more blank lines [...] The implication of the “one or more consecutive lines of text” rule
+is that Markdown supports “hard-wrapped” text paragraphs [...].
 
-Line breaks will not be translated as <br> tag. Inserting a <br>, requires that you 
+Line breaks will not be translated as <br> tag. Inserting a <br>, requires that you
 end the line with two or more spaces, then line break.
 
 =cut
@@ -83,7 +83,7 @@ use WebObs::Users;
 if ($WEBOBS{WIKI_MMD} ne 'NO') {
 	require Text::MultiMarkdown;
 }
-   
+
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 require Exporter;
 @ISA        = qw(Exporter);
@@ -99,12 +99,12 @@ sub wiki2html {
 #dl-was:isub stripMDmetadata {
 #dl-was:	if (defined($_[0]) && $_[0] ne "") {
 #dl-was:		my @tt = split /(?<=\n)/, $_[0];
-#dl-was:		$tt[0] =~ /^TITRE(_HTML)*\|.*\n/ and shift(@tt);	
-#dl-was:		my @meta = (); 
+#dl-was:		$tt[0] =~ /^TITRE(_HTML)*\|.*\n/ and shift(@tt);
+#dl-was:		my @meta = ();
 #dl-was:		if ($WEBOBS{WIKI_MMD} eq 'NO') { return (join("",@tt),@meta) };
 #dl-was:		foreach my $line (@tt) {
 #dl-was:			$line =~ /^\s*$/ and (scalar @meta > 0) and push(@meta, $line) and last;
-#dl-was:			$line =~ /^([a-zA-Z0-9][0-9a-zA-Z _-]+?):.*$/ and push(@meta, $line) and next; 
+#dl-was:			$line =~ /^([a-zA-Z0-9][0-9a-zA-Z _-]+?):.*$/ and push(@meta, $line) and next;
 #dl-was:			if (scalar @meta > 0) { push(@meta, $line) } else { last }
 #dl-was:		}
 #dl-was:		for (1..scalar(@meta)) { shift(@tt) }
@@ -114,7 +114,7 @@ sub wiki2html {
 
 sub stripMDmetadata {
 	if (defined($_[0]) && $_[0] ne "") {
-		(my $txt = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;	
+		(my $txt = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;
 		return ($txt,"") if (defined($WEBOBS{WIKI_MMD}) && $WEBOBS{WIKI_MMD} eq 'NO');
 		return ($txt, "") if ($txt !~ /\n\s*\n/);           # no blank line means no chance for metadata
 		(my $head, my $tail) = split /\n\s*\n/ , $txt, 2;   # head up to 1st blank line
@@ -158,45 +158,45 @@ sub stripMDmetadata {
 
 =item  ----            horizontal line
 
-=item  ====text====    text as a small heading (h4)            
+=item  ====text====    text as a small heading (h4)
 
-=item  ===text===      text as a medium heading (h3)           
+=item  ===text===      text as a medium heading (h3)
 
 =item  ==text==        text as a large heading (h2)
 
-=item +text            text is continuation of previous wiki line text    
+=item +text            text is continuation of previous wiki line text
 
-=item text\            continuation + HTML line break (<BR>)    
+=item text\            continuation + HTML line break (<BR>)
 
-=item $WEBOBS{var}     replaced with WEBOBS.rc configuration variable 'var' 
+=item $WEBOBS{var}     replaced with WEBOBS.rc configuration variable 'var'
 
 =back
 
 =cut
 
 sub wiki {
- 
+
  	my $txt = $_[0];
-	$txt.="\n"; 
+	$txt.="\n";
 
 	# --- include wiki files
 	$txt =~ s[\%\%(.*?)\%\%] { wfcheck($1); }egis;
 
 	# --- remove ending ^M's
-	$txt =~ s/\cM\n/\n/g; 
+	$txt =~ s/\cM\n/\n/g;
 
-	# --- \ ==> <br> 
+	# --- \ ==> <br>
 	$txt =~ s/\\\n/<br>/g;
 
 	# --- ----  ==> horizontal line <hr>
 	$txt =~ s/----/<HR>/g;
 
-	# --- || ==> <table> 
-	$txt =~ s/\|\|(.*)\|\|\n/<__row__><TD>$1\n/g;            # all lines ||...||\n are temporary rows 
+	# --- || ==> <table>
+	$txt =~ s/\|\|(.*)\|\|\n/<__row__><TD>$1\n/g;            # all lines ||...||\n are temporary rows
 	$txt =~ s/\|\|/<TD>/g;                                   # then all || are <td>
 	$txt =~ s/<__row__>(.*?)\n(?!<__row__>)/<TABLE><TR>$1<\/TABLE>\n/sg; # now enclose successive rows in table tags
 	$txt =~ s/<__row__>/<TR>/g;                              # take care of leftover temporary rows
-	
+
 	# --- - ==>  <ul></ul>
 	$txt =~ s/^-/\n-/;	        # to find start of list
 	$txt =~ s/([^\n]$)/$1\n/;	# to find end of list
@@ -270,7 +270,7 @@ sub wiki {
 
 	return $txt;
 
-	# --- variables expansion : $WEBOBS{xx}  
+	# --- variables expansion : $WEBOBS{xx}
 	#$txt =~ s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g;
 }
 
@@ -282,7 +282,7 @@ sub wfcheck{
 		if ( -f $absbfn ) {
 			if ( WebObs::Users::clientHasRead(type=>'authwikis',name=>$bfn) ) {
 				if (open(RDR, "<$absbfn")) {
-					$ret .= $_ while(<RDR>); 
+					$ret .= $_ while(<RDR>);
 					close RDR;
 					return qq[$ret];
 				} else { return qq[ couldn't open $bfn ] }
@@ -310,8 +310,8 @@ sub markdown {
 	my $m = Text::MultiMarkdown->new(strip_metadata => 1,);
 	my $html = $m->markdown($_[0]);
 
-	# WebObs MMD post-processing: 
-	# simple replacement of pre-defined WebObs tags with 'operational' strings, 
+	# WebObs MMD post-processing:
+	# simple replacement of pre-defined WebObs tags with 'operational' strings,
 	# NOT modifying the html structure.
 
 	$html =~ s/\$WebObsNode/\/cgi-bin\/showNODE.pl?node/g;
@@ -330,9 +330,9 @@ See "https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide" 
 sub wiki2MMD {
 
 	my $txt = $_[0];
-	if ($WEBOBS{WIKI_MMD} ne 'NO') { 
+	if ($WEBOBS{WIKI_MMD} ne 'NO') {
 
-		# --- \ ==> forces <br /> 
+		# --- \ ==> forces <br />
 		$txt =~ s/\\\n/  \n/g;
 
 		# --- || ==> table, first row will be header row (didn't exist in webobs)
@@ -369,18 +369,18 @@ sub wiki2MMD {
 		# --- + ==> not useful anymore
 		$txt =~ s/\n\+/\n/g;
 
-		# --- headings 2-4 anywhere on line ==> Atx-style alone on line 
+		# --- headings 2-4 anywhere on line ==> Atx-style alone on line
 		$txt =~ s/\=\=\=\=(.*?)\=\=\=\=/\n#### $1\n/g;
 		$txt =~ s/\=\=\=(.*?)\=\=\=/\n### $1\n/g;
 		$txt =~ s/\=\=(.*?)\=\=/\n## $1\n/g;
-		
-		# --- \n ==> NOT <br> anymore (MMD has “hard-wrapped” text paragraphs) 
+
+		# --- \n ==> NOT <br> anymore (MMD has “hard-wrapped” text paragraphs)
 
 		# --- MMD supports emphasis+strong with * or _ (and double *, double _)
 		# --- **bold text** ==> compatible, leave as is
 		# --- __underscore__ ==> leave as is, but will now be <strong> (no more underscore)
 		# --- //italic// ==> em (single _)
-		# BUT for all above, remove space(s) right after and before markup (eg. ** x ** becomes **x**) 
+		# BUT for all above, remove space(s) right after and before markup (eg. ** x ** becomes **x**)
 		$txt =~ s/\*\*\s*(.*?)\s*\*\*/**$1**/g;
 		$txt =~ s/__\s*(.*?)\s*__/__$1__/g;
 		$txt =~ s/\/\/\s*(.*?)\s*\/\//_$1_/g;
@@ -433,4 +433,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-				
