@@ -150,7 +150,7 @@ msgid "Purpose"
 msgstr "Objectifs"
 
 msgid "Domain"
-msgstr "Domaines"
+msgstr "Domaine"
 
 msgid "Grid code"
 msgstr "Code Grid"
@@ -1427,6 +1427,12 @@ msgid "Archive"
 msgstr "Archive"
 
 # formGRID.pl
+
+msgid "Form"
+msgstr "Form"
+
+msgid "Available/Associated nodes"
+msgstr "Nodes disponibles/associés"
 
 msgid "Use vim mode"
 msgstr "Utiliser le mode vim"
