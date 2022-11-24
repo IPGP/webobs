@@ -347,7 +347,7 @@ for my $run (@$run_list) {
 		$jobsruns .= qq(</td><td>$job_jid<td>$job_kid<td>$org<td>$job_start<td>$job_end<td>$job_cmd);
 		my $log_filename = $job_stdpath =~ s/^[><] +//r;
 		$jobsruns .= qq(<td><a href="/cgi-bin/schedulerLogs.pl?log=$log_filename">$log_filename</a>);
-		$jobsruns .= qq(<td style="background-color: $bgcolor">$job_rc<td>$job_rcmsg<td>$elapsed_column</tr>\n);
+		$jobsruns .= qq(<td style="background-color: $bgcolor;text-align:center">$job_rc<td>$job_rcmsg<td>$elapsed_column</tr>\n);
 	}
 }
 
@@ -433,7 +433,7 @@ print <<"EOP2";
 		<div class="jobsdefs-container" style="height: 300px; display: block;">
 			<div class="jobsruns">
 				<table class="jobsruns">
-				<thead><tr><th></th><th>jid</th><th>kid</th><th>org</th><th>started</th><th>ended</th><th>command</th><th>logs</th><th>RC</th><th>RCmsg</th><th>Elapsed</th></tr></thead>
+				<thead><tr><th></th><th>JID</th><th>Kid</th><th>Org</th><th>Started</th><th>Ended</th><th>Command</th><th>Logs</th><th align=center>RC</th><th>RCmsg</th><th>Elapsed</th></tr></thead>
 				<tbody>
 				$jobsruns
 				</tbody>
