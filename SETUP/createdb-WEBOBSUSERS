@@ -88,6 +88,7 @@ insert into authviews values ('!','SOURCES',4);
 
 insert into authmisc values ('!','NODES',4);
 insert into authmisc values ('!','users',4);
+insert into authmisc values ('!','scheduler',4);
 
 insert into authprocs values ('+VISITOR','*',1);
 insert into authviews values ('+VISITOR','*',1);
