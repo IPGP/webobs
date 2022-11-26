@@ -79,7 +79,7 @@ my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
 # ---- any reasons why we couldn't go on ?
 # ----------------------------------------
 if ( ! WebObs::Users::clientHasRead(type=>"authmisc",name=>"scheduler")) {
-	die "You are not authorized" ;
+	die "You are not authorized to access the Scheduler" ;
 }
 my $editOK = my $admOK = 0;
 $admOK  = 1 if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"scheduler"));

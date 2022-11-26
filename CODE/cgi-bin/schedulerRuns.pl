@@ -52,6 +52,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use DBI;
 use IO::Socket;
 use WebObs::Config;
+use WebObs::Users;
 use WebObs::Dates;
 use WebObs::Scheduler qw(scheduler_client);
 $|=1;
@@ -78,6 +79,11 @@ my %SCHED;
 my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
 
 # ---- any reasons why we couldn't go on ?
+if ( ! WebObs::Users::clientHasRead(type=>"authmisc",name=>"scheduler")) {
+	die "You are not authorized to access the Scheduler" ;
+}
+my $admOK = 0;
+$admOK  = 1 if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"scheduler"));
 if (defined($WEBOBS{ROOT_LOGS})) {
 	#if ( -f "$WEBOBS{ROOT_LOGS}/$schedLog" ) {
 		if (defined($WEBOBS{CONF_SCHEDULER}) && -e $WEBOBS{CONF_SCHEDULER} ) {
@@ -192,6 +198,7 @@ print <<"EOHEADER";
 <script language="JavaScript" src="/js/flot/jquery.flot.selection.js"></script>
 <script language="JavaScript" src="/js/scheduler.js" type="text/javascript"></script>
 <script language="JavaScript" src="/js/htmlFormsUtils.js" type="text/javascript"></script>
+<script language="JavaScript" src="/js/tables.js" type="text/javascript"></script>
 EOHEADER
 
 # ---- scheduler status
@@ -341,7 +348,7 @@ for my $run (@$run_list) {
 		$job_start =~ s/^.* //;
 		$job_end =~ s/^.* //;
 		$jobsruns .= qq(<tr><td class="ic tdlock">);
-		if ($is_running) {
+		if ($is_running && $admOK) {
 			$jobsruns .= qq(<a href="#" onclick="postKill($job_kid);return false"><img title="kill job" src="/icons/no.png"></a>);
 		}
 		$jobsruns .= qq(</td><td>$job_jid<td>$job_kid<td>$org<td>$job_start<td>$job_end<td>$job_cmd);
@@ -369,6 +376,9 @@ print <<"EOP1";
 		var j = \$('#injid').val();
 		location.href=\"/cgi-bin/schedulerRuns.pl?runsdate=\"+dl+"&jid="+j ;
 	}
+EOP1
+if ($admOK) {
+	print <<"EOP2";
 	function delADate() {
 		var d1 = \$('#indate').val();
 		var answer = confirm("do you really want to delete all records for "+d1+" ?");
@@ -376,6 +386,9 @@ print <<"EOP1";
 			location.href=\"/cgi-bin/schedulerRuns.pl?action=delete&runsdate=\"+d1 ;
 		}
 	}
+EOP2
+}
+print <<"EOP3";
 </script>
 
 <A NAME="MYTOP"></A>
@@ -404,10 +417,10 @@ Runs <small><sub>($buildTS)</sub></small>
 </div>
 	<div id="runsID">
 		<div style="padding: 5px; background: #DDDDDD">
-EOP1
+EOP3
 			print "&nbsp;&bull;&nbsp; Job: ";
 			print "<select id=\"injid\" name=\"injid\" size=\"1\" maxlength=\"10\" onChange=\"reload(); return false\">";
-			for my $jid ("", @jid_list) {
+			for my $jid ("", sort @jid_list) {
 				my $selected = "";
 				if ($jid eq $QryParm->{'jid'}) {
 					$selected = 'selected="selected"';
@@ -425,15 +438,27 @@ EOP1
 				print qq{<option value="$day" $selected>$day</option>\n};
 			}
 			print "</select>";
-print <<"EOP2";
-			<!--<input type="button" onclick="loadADate(); return false" value="show date" />-->
-			<input type="button" onclick="delADate(); return false" value="delete date" />
+			if ($admOK) {
+				print "<input type='button' onclick='delADate(); return false' value='delete date' />";
+			}
+print <<"EOP4";
 			<span style="padding-left: 20px; color: red;font-weight:bold">$jobsrunsMsg</span>
 		</div>
 		<div class="jobsdefs-container" style="height: 300px; display: block;">
 			<div class="jobsruns">
-				<table class="jobsruns">
-				<thead><tr><th></th><th>JID</th><th>Kid</th><th>Org</th><th>Started</th><th>Ended</th><th>Command</th><th>Logs</th><th align=center>RC</th><th>RCmsg</th><th>Elapsed</th></tr></thead>
+				<table class="jobsruns" id="t1">
+				<thead><tr><th></th>
+				<th onclick="sortTable('t1',1)"><img src="/icons/sort_both.svg"> JID</th>
+				<th onclick="sortTable('t1',2)"><img src="/icons/sort_both.svg"> Kid</th>
+				<th onclick="sortTable('t1',3)"><img src="/icons/sort_both.svg"> Org</th>
+				<th onclick="sortTable('t1',4)"><img src="/icons/sort_both.svg"> Started</th>
+				<th onclick="sortTable('t1',5)"><img src="/icons/sort_both.svg"> Ended</th>
+				<th onclick="sortTable('t1',6)"><img src="/icons/sort_both.svg"> Command</th>
+				<th onclick="sortTable('t1',7)"><img src="/icons/sort_both.svg"> Logs</th>
+				<th onclick="sortTable('t1',8)" align=center><img src="/icons/sort_both.svg"> RC</th>
+				<th onclick="sortTable('t1',9)"><img src="/icons/sort_both.svg"> RCmsg</th>
+				<th onclick="sortTable('t1',10)"><img src="/icons/sort_both.svg"> Elapsed</th>
+				</tr></thead>
 				<tbody>
 				$jobsruns
 				</tbody>
@@ -462,7 +487,7 @@ Timeline <small><sub>($buildTS)</sub></small>
 			<span id="jsmsg"></span>
 		</div>
 </div>
-EOP2
+EOP4
 
 print "<br>\n</body>\n</html>\n";
 
