@@ -201,6 +201,7 @@ for g = 1:length(grids)
 			G.(key{:}) = field2str(P.(s{1}).(s{2}),key{:},field2str(G,key{:}),'notempty');
 		end
 	end
+	griddemopt = field2cell(G,'GRIDMAPS_DEM_OPT');
 	nodename = field2str(G,'NODE_NAME','node','notempty');
 	nodetype = field2str(G,'NODE_MARKER','o','notempty');
 	nodesize = field2num(G,'NODE_SIZE',15,'notempty');
@@ -282,7 +283,11 @@ for g = 1:length(grids)
 				subplot(1,1,1); extaxes(gca,[.04,.08]);
 
 				% plots DEM basemap
-				dem(x,y,z,demoptions{:});
+				if merge
+					dem(x,y,z,demoptions{:});
+				else
+					dem(x,y,z,demoptions{:},griddemopt{:});
+				end
 
 				hold on
 

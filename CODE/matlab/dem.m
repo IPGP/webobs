@@ -205,9 +205,12 @@ function varargout=dem(x,y,z,varargin)
 %	Acknowledgments: Éric Gayer
 %
 %	Created: 2007-05-17 in Guadeloupe, French West Indies
-%	Updated: 2022-07-26
+%	Updated: 2022-11-26
 
 %	History:
+%	[2022-11-26] v3.2
+%		- fix an issue with 'grayscale' option
+%		- allows duplicate arguments (takes the last one)
 %	[2022-07-26] v3.1
 %		- minor fix for Octave compatibility
 %	[2022-07-21] v3.0
@@ -1072,8 +1075,8 @@ end
 % azimuth angle
 azimuth = (360 - az + 90)*pi/180;
 
-fx = conv2(z,[-1,0,1;-2,0,2;-1,0,1]/8/dx);
-fy = conv2(z,[-1,-2,-1;0,0,0;1,2,1]/8/dy);
+fx = conv2(z,[-1,0,1;-2,0,2;-1,0,1]/8/dx,'same');
+fy = conv2(z,[-1,-2,-1;0,0,0;1,2,1]/8/dy,'same');
 slope = atan(sqrt(fx.^2 + fy.^2));
 aspect = atan2(fy,fx);
 %k0 = (aspect < 0);
@@ -1088,10 +1091,6 @@ end
 if numel(azimuth) > 1
 	shadow = max(shadow,[],3);
 end
-
-% crops the final matrix (due to convolution)
-shadow(:,[1,end]) = [];
-shadow([1,end],:) = [];
 
 shadow(isnan(shadow)) = 0;
 
@@ -1156,7 +1155,7 @@ if dec
 	end
 else
 	xa = abs(x) + 1/360000;
-	sd = sprintf('%d%c',floor(xa),176);	% ASCII char 176 is the degree sign
+ 	sd = sprintf('%d%c',floor(xa),176);	% ASCII char 176 is the degree sign
 	sm = '';
 	ss = '';
 	if mod(x,1)
@@ -1260,9 +1259,9 @@ function y=rgb2gray(x)
 % removes color information
 
 if ndims(x) == 3
-	y = repmat(0.2989*x(:,:,1) + 0.5870*x(:,:,2) + 0.1140*x(:,:,3),1,1,3);
+	y = repmat(0.2989*x(:,:,1) + 0.5870*x(:,:,2) + 0.1140*x(:,:,3),[1,1,3]);
 else
-	y = repmat(0.2989*x(:,1) + 0.5870*x(:,2) + 0.1140*x(:,3),1,3);
+	y = repmat(0.2989*x(:,1) + 0.5870*x(:,2) + 0.1140*x(:,3),[1,3]);
 end
 
 
@@ -1396,7 +1395,7 @@ end
 
 s = 0;
 v = [];
-k = find(strcmpi(arg,nam));
+k = find(strcmpi(arg,nam),1,'last');
 if ~isempty(k)
 	if (k + 1) <= length(arg) ...
 			&& (~num || isnumeric(arg{k+1})) ...
