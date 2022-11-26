@@ -61,7 +61,9 @@ DEM_COPYRIGHT|
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
-# do not show node alias in zoom map(s)
+# additional options for gridmaps background map
+GRIDMAPS_DEM_OPT|
+# show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
 # file for background time referenced events
