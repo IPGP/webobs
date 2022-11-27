@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2022-06-12
+%   Updated: 2022-10-19
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -113,6 +113,8 @@ summary_cmpoff = field2num(P,'SUMMARY_COMPONENT_OFFSET_M',0.01);
 
 % VECTORS parameters
 vectors_excluded = field2str(P,'VECTORS_EXCLUDED_NODELIST');
+vectors_included = field2str(P,'VECTORS_INCLUDED_NODELIST');
+vectors_excluded_target = field2num(P,'VECTORS_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 vrelmode = isok(P,'VECTORS_RELATIVE');
 if vrelmode
 	vref = '';
@@ -141,6 +143,8 @@ vectors_ampstr = strjoin(enu(vectors_ampcmp),'+');
 
 % BASELINES parameters
 baselines_excluded = field2str(P,'BASELINES_EXCLUDED_NODELIST');
+baselines_included = field2str(P,'BASELINES_INCLUDED_NODELIST');
+baselines_excluded_target = field2num(P,'BASELINES_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 baselines_horizonly = isok(P,'BASELINES_HORIZONTAL_ONLY');
 pagestanum = field2num(P,'BASELINES_PAGE_STA_NUM',10);
 baselines_interp_method = field2str(P,'BASELINES_INTERP_METHOD',{'','linear','nearest'});
@@ -154,6 +158,8 @@ baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 
 % MOTION parameters
 motion_excluded = field2str(P,'MOTION_EXCLUDED_NODELIST');
+motion_included = field2str(P,'MOTION_INCLUDED_NODELIST');
+motion_excluded_target = field2num(P,'MOTION_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 motion_filter = field2num(P,'MOTION_MAFILTER',10);
 motion_scale = field2num(P,'MOTION_SCALE_MM',0);
 motion_minkm = field2num(P,'MOTION_MIN_SIZE_KM',10);
@@ -451,7 +457,7 @@ for r = 1:numel(P.GTABLE)
 
 
 	% --- computes vector reference (relative mode) + common part for relative mode
-	knv = selectnode(N,tlim,vectors_excluded);
+	knv = selectnode(N,tlim,vectors_excluded,vectors_included,[targetll,vectors_excluded_target]);
 
 	if isok(P,'VECTORS_TARGET_INCLUDED') && ~isempty(targetll)
 		latlim = minmax([geo(knv,1);targetll(1)]);
@@ -649,7 +655,7 @@ for r = 1:numel(P.GTABLE)
 		% former behavior: will plot all possible pairs combinations,
 		% eventually using only specific reference stations
 		if ~exist('B','var')
-			kn = selectnode(N,tlim,baselines_excluded);
+			kn = selectnode(N,tlim,baselines_excluded,baselines_included,[targetll,baselines_excluded_target]);
 			if isfield(P,'BASELINES_REF_NODELIST') && ~isempty(P.BASELINES_REF_NODELIST)
 				kr = kn(ismemberlist({N(kn).FID},split(P.BASELINES_REF_NODELIST,',')));
 			else
@@ -940,7 +946,7 @@ for r = 1:numel(P.GTABLE)
 			' '};
 
 		% Selects nodes
-		knv = selectnode(N,tlim,motion_excluded);
+		knv = selectnode(N,tlim,motion_excluded,motion_included,[targetll,motion_excluded_target]);
 
 		if ~isempty(targetll)
 			latlim = minmax([geo(knv,1);targetll(1)]);
@@ -1773,7 +1779,7 @@ for r = 1:numel(P.GTABLE)
 		title('Model Probability','FontSize',10)
 
 		% - data/model arrows scale
-		axes('position',[0.67,0.05,0.3,0.03])
+		axes('position',[0.55,0.05,0.3,0.03])
 		dxl = diff(xlim([1,end]))*0.3/0.6142;
 		dyl = diff(ylim([1,end]))*0.03/0.3;
 		hold on
