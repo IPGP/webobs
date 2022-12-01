@@ -85,7 +85,7 @@ use Locale::TextDomain('webobs');
 if (!WebObs::Users::clientIsValid(user=>$USERS{$CLIENT})) {
  	print $cgi->header(-type=>'text/html', -charset=>'utf-8');
 	print "<H1>$WEBOBS{VERSION}</H1>"
-	."Sorry, user '$USERS{$CLIENT}{LOGIN}' is waiting for validation by an administrator. Please be patient...";
+	."Sorry, user '$USERS{$CLIENT}{LOGIN}' is not valid or is waiting for validation by an administrator...";
 	exit(1);
 }
 
@@ -216,7 +216,7 @@ if ( $menunav =~ m/.rc$/) {
 #
 my $year = WebObs::MathUtils::num2roman(strftime("%Y", localtime));
 my $signature = join(' ', readFile("$MENU{SIGNATURE}"));
-$signature =~ s/\(c\)|©/© $year/g;
+$signature =~ s/\(c\)|©/© $year,/g;
 
 # ---- the optinal querystring 'page=' parameter may override the default Welcome page
 #
