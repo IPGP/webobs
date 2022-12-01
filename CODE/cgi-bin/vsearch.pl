@@ -337,6 +337,7 @@ foreach(@finalevents) {
 	shift(@lines); # shift header line
 	my $comment = wiki2html(join("",@lines));
 	shift(@lines) if (grep($lines[0],'^WebObs:')); # shift Wiki/MMD metadata
+	chomp(@lines);
 	my $commentcsv = join(" • ",@lines);
 	my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
 	my @nodes;
@@ -458,7 +459,7 @@ print <<"ENDBOTOFPAGE";
 <SCRIPT type="text/javascript">
 	document.getElementById("attente").style.display = "none";
 	var text = '$csvstring';
-	var data = new Blob([text], {type: 'text/csv'});
+	var data = new Blob([text], { type: 'text/csv;charset=utf-8;' });
 	var url = window.URL.createObjectURL(data);
 	document.getElementById('download_link').href = url;
 </SCRIPT>
