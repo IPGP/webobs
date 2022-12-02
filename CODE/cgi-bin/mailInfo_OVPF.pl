@@ -49,8 +49,8 @@ use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
 use WebObs::Wiki;
+use WebObs::QML;
 use Locale::TextDomain('webobs');
-use QML;
 
 set_message(\&webobs_cgi_msg);
 #my $old_locale = setlocale(LC_NUMERIC);

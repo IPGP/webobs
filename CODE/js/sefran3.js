@@ -54,15 +54,17 @@ $(document).ready(function() {
   	$('.sgram').css('opacity',y/10); // updates opacity when refreshing page
 });
 
-// ---- get keypress events but outside any form
+// ---- get keypress events
 $(document).keydown(function(e) {
 	e = e || window.event;
 	var target = e.target || e.srcElement;
+	// Enter key works everywhere
+	if (e.key == 'Enter') {
+		verif_formulaire();
+		MECB.FORM.submit();
+	}
+	// other keys only outside any form
 	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
-		if (e.key == 'Enter') {
-			verif_formulaire();
-			MECB.FORM.submit();
-		}
 		if (e.key == "e") showmctags();
 		if (e.key == "s") showsgram();
 		if (e.key == "S") {

@@ -79,7 +79,7 @@ my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
 # ---- any reasons why we couldn't go on ?
 # ----------------------------------------
 if ( ! WebObs::Users::clientHasRead(type=>"authmisc",name=>"scheduler")) {
-	die "You are not authorized" ;
+	die "You are not authorized to access the Scheduler" ;
 }
 my $editOK = my $admOK = 0;
 $admOK  = 1 if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"scheduler"));
@@ -306,13 +306,13 @@ for my $job (@$job_def_list) {
 	    <img title="submit job" src="/icons/submits.png"></a>
 	  </td>
 	  <td>$djid</td>
-	  <td>$dvalid</td>
+	  <td align=center>$dvalid</td>
 	  <td>$dres</td>
 	  <td>$xeq1</td>
 	  <td>$xeq2</td>
 	  <td>$dxeq3</td>
-	  <td>$dintv</td>
-	  <td>$dmaxs</td>
+	  <td align=right>$dintv</td>
+	  <td align=center>$dmaxs</td>
 	  <td>$dlogp</td>
 	  <td class="tdlock" nowrap>$dlstrun</td>
 	</tr>
@@ -373,7 +373,7 @@ Scheduler status
 	<input type="text" id="maxsysload" name="maxsysload" value="0.8"/><br/>
 	<label for="logpath">logpath:<span class="small">stdout/err subdir</span></label>
 	<input type="text" id="logpath" name="logpath" value=""/><br/>
-	<label for="validity">valid:<span class="small">check to activate job</span></label>
+	<label for="validity">active:<span class="small">check to activate job</span></label>
 	<input type="checkbox" id="validity" name="validity" value="Y"/><br/>
 	<p style="margin: 0px; text-align: center">
 		<input type="button" name="sendbutton" value="send" onclick="sendPopup(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
@@ -386,13 +386,13 @@ Jobs definitions&nbsp;<A href="#MYTOP"><img src="/icons/go2top.png"></A>
 </div>
 <div id="defsID">
 	<div style="background: #BBB; margin: 4px 2px;">
-		&nbsp;Jobs defined: <b>$jobsdefsCount</b> (currently valid: $jobsdefsCountValid)
+		&nbsp;Jobs defined: <b>$jobsdefsCount</b> (currently activated: <b>$jobsdefsCountValid</b>)
 		<span id="jobsdefsMsg" style="padding-left: 20px; font-weight: bold; color: $jobsdefsMsgColor">$jobsdefsMsg</span>
 	</div>
 	<div class="jobsdefs-container">
 		<div class="jobsdefs">
 			<table class="jobsdefs">
-			<thead><tr><th class="ic tdlock">
+			<thead><tr><th class="ic tdlock" rowspan=2>
 EOPAGE
 
 if ($admOK) {
@@ -400,11 +400,13 @@ if ($admOK) {
 } else {
 	print "&nbsp;";
 }
-print "</th><th class=\"ic tdlock\">&nbsp;</th>";
-print "</th><th class=\"ic tdlock\">&nbsp;</th>";
+print "</th><th class=\"ic tdlock\" rowspan=2>&nbsp;</th>";
+print "</th><th class=\"ic tdlock\" rowspan=2>&nbsp;</th>";
 
 print <<"EOPAGE";
-			<th>jid</th><th>V</th><th>res</th><th>xeq1</th><th>xeq2</th><th>xeq3</th><th>interval</th><th>load&le;</th><th>logpath</th><th class="tdlock">laststart</th>
+			<th rowspan=2>JID</th><th rowspan=2 align=center>A</th><th rowspan=2>Resource</th><th colspan=3 align=center>Job command</th>
+			<th rowspan=2 align=right>Interval<br>(s)</th><th rowspan=2 align=center>Max.<br>load</th><th rowspan=2>Log Path</th>
+			<th class="tdlock" rowspan=2>Last Start</th></tr><tr><th>xeq1</th><th>xeq2</th><th>xeq3</th>
 			</tr></thead>
 			<tbody>
 			$jobsdefs
@@ -428,7 +430,7 @@ Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -49,7 +49,9 @@ DEM_SRTM1|N
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
-# do not show node alias in zoom map(s)
+# additional options for gridmaps background map
+GRIDMAPS_DEM_OPT|
+# show node alias in insert sub-map(s)
 NODE_SUBMAP_ALIAS|N
 
 # file for background time referenced events
@@ -101,6 +103,9 @@ ITRF_REF|ITRF08
 VELOCITY_REF|0,0,0
 VELOCITY_REF_ORIGIN_DATE|2000-01-01
 
+# defines a main target (latitude,longitude coordinates)
+GNSS_TARGET_LATLON|
+
 # component names used as Y-label for SUMMARY and PERNODE graphs (use '\ ' to avoid word splitting)
 COMPONENT_NAMELIST|Relative Eastern,Relative Northern,Relative Vertical
 # Y-scale for displacement time series plots (in m, 0 is automatic)
@@ -138,6 +143,8 @@ SUMMARY_STATION_OFFSET_M|0.01
 BASELINES_HORIZONTAL_ONLY|Y
 # - default behavior: all pairs of nodes, with possible node exclusion and/or node reference list
 BASELINES_EXCLUDED_NODELIST|
+BASELINES_EXCLUDED_FROM_TARGET_KM|
+BASELINES_INCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
 # - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
 BASELINES_NODEPAIRS|
@@ -156,6 +163,8 @@ BASELINES_TIMEZOOM|
 
 # --- VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|
+VECTORS_EXCLUDED_FROM_TARGET_KM|
+VECTORS_INCLUDED_NODELIST|
 VECTORS_RELATIVE|N
 # VECTORS: if VECTORS_RELATIVE is Y, substracts a reference vector in VECTORS_VELOCITY_REF:
 # - 'auto' (default): automatic mean velocity (average vector of all NODES)
@@ -175,11 +184,10 @@ VECTORS_TARGET_INCLUDED|Y
 # amplitude vs distance plot: used components to compute the amplitude (1,2 = horizontal only)
 VECTORS_AMPLITUDE_COMPONENTS|1,2
 
-# defines a main target (latitude,longitude coordinates)
-GNSS_TARGET_LATLON|
-
 # --- MOTION summary graph
 MOTION_EXCLUDED_NODELIST|
+MOTION_EXCLUDED_FROM_TARGET_KM|
+MOTION_INCLUDED_NODELIST|
 MOTION_MAFILTER|10
 MOTION_SCALE_MM|0
 MOTION_MIN_SIZE_KM|10

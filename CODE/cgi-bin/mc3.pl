@@ -151,8 +151,8 @@ use WebObs::Utils;
 use WebObs::Mapping;
 use WebObs::i18n;
 use WebObs::Wiki;
+use WebObs::QML;
 use Locale::TextDomain('webobs');
-use QML;
 
 set_message(\&webobs_cgi_msg);
 #DL-TBD: no strict "subs";

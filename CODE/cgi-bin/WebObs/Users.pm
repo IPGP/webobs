@@ -420,7 +420,7 @@ sub userIsValid {
 		}) or die "DB error connecting to $dbname: ".DBI->errstr;
 
     my $today = strftime("%Y-%m-%d",localtime(int(time())));
-	my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND ENDDATE<='$today'");
+	my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND (ENDDATE='' OR ENDDATE>='$today')");
 	if ($validuser eq 'Y') { $rc = 1 }
 
 	$dbh->disconnect;

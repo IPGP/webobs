@@ -10,7 +10,16 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ## Version under development
 ### New features
+
+1. Node's automatic geographical positioning using automatic KML feed is possible by selecting **auto KML feed** in positioning type. It uses a new node's variable `POS_RAWKML` containing a URL that returns a KML content. Latitude, longitude, altitude and positioning date will be filled and updated from *Placemark/TimeStamp/when* and *Placemark/Point/coordinates* tags.
+`!!` The local data configuration **CONF/POSITIONtypes.conf** pointed by `FILE_POS` variable in **NODE.rc** is now obsolete and unused. It is replaced by the read-only file **CODE/etc/postypes.conf**. If some administrators have modified the original template by adding new positioning types, please open an issue or contact the dev team.
+
+
 ### Enhancements
+1. In the **Scheduler Runs**:
+    -  possibility to select a job ID and to sort any column in the job runs table.
+    - ``!!`` access is now submitted to authorization rights. Resource is *scheduler* in the *misc* table. Admin (4) is needed to delete a log date or kill a running job.
+
 ### Fixed issues
 1. We started to improve *GNU Octave* compatibility of the *Matlab* code. Since *Octave* has a less permissive grammar, it lead to a better writing and sometimes hidden bug fixes. See the associated [discussion thread](https://github.com/IPGP/webobs/discussions/116).
 

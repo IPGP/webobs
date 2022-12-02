@@ -43,6 +43,7 @@ use warnings;
 use Math::Trig;
 use Math::Complex;
 use WebObs::Config;
+use WebObs::XML2;
 
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %UTM);
 require Exporter;
@@ -733,6 +734,32 @@ sub compass {
        $az = ($az*16/360)%16;
        return $nesw[$az];
 
+}
+
+
+=pod
+
+=head2 KMLfeed
+
+#	KMLfeed(URL) dowloads a KML string from URL and returns latitude, longitude,
+#	altitude, and timestamp.
+
+=cut
+
+sub KMLfeed {
+
+	my $url = shift;
+	my ($lat, $lon, $alt, $date);
+
+	if ($url =~ /^http/) {
+		my @kml = qx(curl -s "$url" | $WEBOBS{XML2_PRGM});
+		my $root = '/q:quakeml/eventParameters/event';
+		my $pos = findvalue("$root/Point/coordinates=",\@kml);
+		($lon,$lat,$alt) = split(/,/,$pos);
+		$date = findvalue("$root/TimeStamp/when=",\@kml);
+	}
+
+	return $lat, $lon, $alt, $date;
 }
 
 1;

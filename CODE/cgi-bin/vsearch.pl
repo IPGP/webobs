@@ -331,14 +331,14 @@ foreach(@finalevents) {
 	}
 
 	@lines = readFile("$evfname");
-	chomp(@lines);
 	my ($aa,$ar,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
 	my @authors = WebObs::Users::userName(@$aa);
 	my @remotes = WebObs::Users::userName(@$ar);
-	shift(@lines);
-	shift(@lines) if (grep($lines[0],'^WebObs:'));
+	shift(@lines); # shift header line
 	my $comment = wiki2html(join("",@lines));
-	my $commentcsv = join("",@lines);
+	shift(@lines) if (grep($lines[0],'^WebObs:')); # shift Wiki/MMD metadata
+	chomp(@lines);
+	my $commentcsv = join(" • ",@lines);
 	my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
 	my @nodes;
 	foreach(@{$NG{$node}}) {
@@ -459,7 +459,7 @@ print <<"ENDBOTOFPAGE";
 <SCRIPT type="text/javascript">
 	document.getElementById("attente").style.display = "none";
 	var text = '$csvstring';
-	var data = new Blob([text], {type: 'text/csv'});
+	var data = new Blob([text], { type: 'text/csv;charset=utf-8;' });
 	var url = window.URL.createObjectURL(data);
 	document.getElementById('download_link').href = url;
 </SCRIPT>
@@ -546,7 +546,7 @@ sub searchEvents {
 	}
 	# comment will look for $str in event's full text (except header line)
 	if ($in eq "comment") {
-		$cmd = $base."| xargs awk 'toupper(\$0) ~ /".uc($str)."/ NR>1 { print FILENAME ; nextfile }'";
+		$cmd = $base."| xargs awk 'FNR>1 && toupper(\$0) ~ /".uc($str)."/ { print FILENAME ; nextfile }'";
 	}
 
 	@evt = qx($cmd);
