@@ -260,6 +260,23 @@ if ($editOK) {
 print "</TH><TD colspan=\"2\">$NODE{TYPE}</TD></TR>\n";
 
 
+
+# Row "GNSS 9-code" ----------------------------------------------------
+#
+if ($NODE{GNSS_9CHAR}) {
+	print "<TR><TH valign=\"top\">";
+	if ($editOK) {
+		print "<A href=\"$cgiConf\">GNSS 9-code</A>";
+	} else {
+		print "GNSS 9-code";
+	}
+	print "</TH><TD colspan=\"2\">$NODE{GNSS_9CHAR}</TD></TR>\n";
+}
+
+
+
+
+
 # Row "Lifetime" ----------------------------------------------------
 #
 my $installDate = $NODE{INSTALL_DATE};

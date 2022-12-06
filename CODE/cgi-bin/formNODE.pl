@@ -541,7 +541,7 @@ print "<TR>";
 			print "<input size=\"10\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_alt}')\" id=\"altitude\" name=\"altitude\">";
 			print "</select><BR>\n";
 			print "<label for=\"gnss_9char\">$__{'GNSS 9 char. code'} :</label>";
-			print "<input size=\"10\" value=\"$usrGnss9char\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_gnss_9char}')\" id=\"gnss_9char\" name=\"gnssGNSS_9char\">";
+			print "<input size=\"10\" value=\"$usrGnss9char\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_gnss_9char}')\" id=\"gnss_9char\" name=\"gnss_9char\">";
 			print "</select><BR>\n";
 		print "</TD>";
 		print "<TD style=\"border:0\">";
