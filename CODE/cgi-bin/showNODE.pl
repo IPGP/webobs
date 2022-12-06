@@ -589,6 +589,27 @@ if ($editOK || $#infosInstallNode >=0) {
 }
 
 
+# Row "M3G"
+#
+if ( $NODE{GNSS_9CHAR} ) {
+	print "<TR><TH valign=\"top\">";
+	my $txt = $__{'M3G GNSS Metadata'};
+	my $m3g_url_edit = "https://gnss-metadata.eu/sitelog/modify?station=".$NODE{GNSS_9CHAR};
+	my $m3g_url_sitelog = "https://gnss-metadata.eu/sitelog/exportlog?station=".$NODE{GNSS_9CHAR};
+	my $m3g_url_gml = "https://gnss-metadata.eu/sitelog/exportxml?station=".$NODE{GNSS_9CHAR};
+	
+	my $m3g_link_edit = "<a href=".$m3g_url_edit.">Edit the sitelog on M3G (requires prior M3G login)</a>";
+	my $m3g_link_sitelog = "<a href=".$m3g_url_sitelog.">Download the sitelog</a>";
+	my $m3g_link_gml = "<a href=".$m3g_url_gml.">Download the GeodesyML</a>";
+	
+	if ($editOK) {
+		print "<A href=\"$cgiConf\">GNSS 9-code</A>";
+	} else {
+		print "M3G GNSS Metadata";
+	}	print "</TH><TD colspan=\"2\">".join("<br>",$NODE{GNSS_9CHAR},$m3g_link_edit,$m3g_link_sitelog,$m3g_link_gml)."</TD></TR>\n";
+}
+
+
 # Row "infos"
 #
 my $RinfoFile = "info.txt";
