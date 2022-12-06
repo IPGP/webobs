@@ -327,3 +327,9 @@ LOGO_DEFAULT|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 LOGO_HEIGHT|0.04
 # URN to LOGO_DEFAULT
 URN_LOGO_DEFAULT|/icons/ipgp/logo_WOVS.png
+
+# M3G (European GNSS metadata database)
+# --------------------------------------------
+M3G_URL|https://gnss-metadata.eu
+M3G_EXPORTXML|${M3G_URL}/sitelog/exportxml?station=
+M3G_EXPORTLOG|${M3G_URL}/sitelog/exportlog?station=

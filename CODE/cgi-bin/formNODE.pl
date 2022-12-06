@@ -132,6 +132,7 @@ $usrLat =~ s/^-//g; # computes the absolute value but avoiding the use of locale
 my $usrLon       = $NODE{LON_WGS84};
 my $usrLonE = ($usrLon >= 0 ? "E":"W");
 $usrLon =~ s/^-//g;
+my $usrGnss9char = $NODE{GNSS_9CHAR};
 my $usrAlt       = $NODE{ALTITUDE};
 my $usrTypePos   = $NODE{POS_TYPE};
 #      Transmission
@@ -538,6 +539,10 @@ print "<TR>";
 			print "</select><BR>\n";
 			print "<label for=\"altitude\">$__{'Elevation'}  (m):</label>";
 			print "<input size=\"10\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_alt}')\" id=\"altitude\" name=\"altitude\">";
+			print "</select><BR>\n";
+			print "<label for=\"gnss_9char\">$__{'GNSS 9 char. code'} :</label>";
+			print "<input size=\"10\" value=\"$usrGnss9char\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_gnss_9char}')\" id=\"gnss_9char\" name=\"gnssGNSS_9char\">";
+			print "</select><BR>\n";
 		print "</TD>";
 		print "<TD style=\"border:0\">";
 			# --- positioning date
