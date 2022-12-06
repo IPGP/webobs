@@ -273,10 +273,6 @@ if ($NODE{GNSS_9CHAR}) {
 	print "</TH><TD colspan=\"2\">$NODE{GNSS_9CHAR}</TD></TR>\n";
 }
 
-
-
-
-
 # Row "Lifetime" ----------------------------------------------------
 #
 my $installDate = $NODE{INSTALL_DATE};
