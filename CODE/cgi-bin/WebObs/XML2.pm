@@ -59,10 +59,10 @@ sub findnode {
         my @tab = grep(/^$root/,@$xml2);
         if (@tab) {
                 foreach (@tab) {
-			s/^$root//g;
-			s/\n//g;
-		}
-                @tab = grep(/$s/,split(/\|\|/,join('|',@tab)));
+					s/^$root//g;
+					s/\n//g;
+				}
+				@tab = grep(/$s/,split(/\|\|/,join('|',@tab)));
                 return split(/\|/,$tab[0]);
         } else {
                 return;
