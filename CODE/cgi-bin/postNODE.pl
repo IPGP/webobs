@@ -171,41 +171,42 @@ if ($delete) {
 
 # ---- What are we supposed to do ?: find it out in the query string
 #
-my $QryParm   = $cgi->Vars;    # used later; todo: replace cgi->param's below
-my $acqr      = $cgi->param('acqr')        // '';
-my $utcd      = $cgi->param('utcd')        // '';
-my $ldly      = $cgi->param('ldly')        // '';
-my $anneeD    = $cgi->param('anneeDepart') // '';
-my $moisD     = $cgi->param('moisDepart')  // '';
-my $jourD     = $cgi->param('jourDepart')  // '';
-my $anneeE    = $cgi->param('anneeEnd')    // '';
-my $moisE     = $cgi->param('moisEnd')     // '';
-my $jourE     = $cgi->param('jourEnd')     // '';
-my $validite  = $cgi->param('valide')      // '';
-my $alias     = $cgi->param('alias')       // '';
-my $type      = $cgi->param('type')        // '';
-my $tz        = $cgi->param('tz')        // '';
-my $data      = $cgi->param('data')        // '';
-my $rawformat = $cgi->param('rawformat')   // '';
-my $rawdata   = $cgi->param('rawdata')     // '';
-my @chanlist  = $cgi->param('chanlist');
-my $name      = $cgi->param('fullName')    // '';
-my $fdsn      = $cgi->param('fdsn')        // '';
-my $latN      = $cgi->param('latwgs84n')   // '';
-my $lat       = $cgi->param('latwgs84')    // '';
-my $latmin    = $cgi->param('latwgs84min') // '';
-my $latsec    = $cgi->param('latwgs84sec') // '';
-my $lonE      = $cgi->param('lonwgs84e')   // '';
-my $lon       = $cgi->param('lonwgs84')    // '';
-my $lonmin    = $cgi->param('lonwgs84min') // '';
-my $lonsec    = $cgi->param('lonwgs84sec') // '';
-my $gnss_9char = $cgi->param('gnss_9char')   // '';
-my $alt       = $cgi->param('altitude')    // '';
-my $anneeP    = $cgi->param('anneeMesure') // '';
-my $moisP     = $cgi->param('moisMesure')  // '';
-my $jourP     = $cgi->param('jourMesure')  // '';
-my $typePos   = $cgi->param('typePos')     // '';
-my $features  = $cgi->param('features')    // '';
+my $QryParm    = $cgi->Vars;    # used later; todo: replace cgi->param's below
+my $acqr       = $cgi->param('acqr')        // '';
+my $utcd       = $cgi->param('utcd')        // '';
+my $ldly       = $cgi->param('ldly')        // '';
+my $anneeD     = $cgi->param('anneeDepart') // '';
+my $moisD      = $cgi->param('moisDepart')  // '';
+my $jourD      = $cgi->param('jourDepart')  // '';
+my $anneeE     = $cgi->param('anneeEnd')    // '';
+my $moisE      = $cgi->param('moisEnd')     // '';
+my $jourE      = $cgi->param('jourEnd')     // '';
+my $validite   = $cgi->param('valide')      // '';
+my $alias      = $cgi->param('alias')       // '';
+my $type       = $cgi->param('type')        // '';
+my $tz         = $cgi->param('tz')          // '';
+my $data       = $cgi->param('data')        // '';
+my $rawformat  = $cgi->param('rawformat')   // '';
+my $rawdata    = $cgi->param('rawdata')     // '';
+my @chanlist   = $cgi->param('chanlist');
+my $name       = $cgi->param('fullName')    // '';
+my $fdsn       = $cgi->param('fdsn')        // '';
+my $latN       = $cgi->param('latwgs84n')   // '';
+my $lat        = $cgi->param('latwgs84')    // '';
+my $latmin     = $cgi->param('latwgs84min') // '';
+my $latsec     = $cgi->param('latwgs84sec') // '';
+my $lonE       = $cgi->param('lonwgs84e')   // '';
+my $lon        = $cgi->param('lonwgs84')    // '';
+my $lonmin     = $cgi->param('lonwgs84min') // '';
+my $lonsec     = $cgi->param('lonwgs84sec') // '';
+my $gnss_9char = $cgi->param('gnss_9char')  // '';
+my $m3g_check  = $cgi->param('m3g_check')   // '';
+my $alt        = $cgi->param('altitude')    // '';
+my $anneeP     = $cgi->param('anneeMesure') // '';
+my $moisP      = $cgi->param('moisMesure')  // '';
+my $jourP      = $cgi->param('jourMesure')  // '';
+my $typePos    = $cgi->param('typePos')     // '';
+my $features   = $cgi->param('features')    // '';
 $features =~ s/\|/,/g;
 my %n2n;
 for (split(',',lc($features))) {
@@ -249,6 +250,10 @@ if ($lon ne "" && $lat ne "") {
 # ---- NODE's validity flag
 my $valide = "";
 if ( $validite eq "NA" ) { $valide = 1; } else { $valide = 0; }
+# ---- 2nd checkbox: M3G avaiability flag
+my $m3g_avaiable = "";
+if ( $m3g_check eq "NA" ) { $m3g_avaiable = 1; } else { $m3g_avaiable = 0; }
+
 # ---- NODES' Feature Files: "system" always present, and "user" defined
 my @FFsys = ('acces.txt', 'info.txt', 'installation.txt', 'type.txt', "$NODEName.clb");
 my @FFusr = map { "$NODES{SPATH_FEATURES}/".lc($_).'.txt'} split(/\||,/,$features);
@@ -269,6 +274,7 @@ push(@lines,"LAT_WGS84|$lat\n");
 push(@lines,"LON_WGS84|$lon\n");
 push(@lines,"ALTITUDE|$alt\n");
 push(@lines,"GNSS_9CHAR|$gnss_9char\n");
+push(@lines,"M3G_AVAIABLE|$m3g_avaiable\n");
 push(@lines,"POS_DATE|$datePos\n");
 push(@lines,"POS_TYPE|".u2l($typePos)."\n");
 push(@lines,"INSTALL_DATE|$dateInstall\n");

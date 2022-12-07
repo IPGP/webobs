@@ -591,7 +591,7 @@ if ($editOK || $#infosInstallNode >=0) {
 
 # Row "M3G"
 #
-if ( $NODE{GNSS_9CHAR} ) {
+if ( $NODE{GNSS_9CHAR} && $NODE{M3G_AVAIABLE} ) {
 	print "<TR><TH valign=\"top\">";
 	my $txt = $__{'M3G GNSS Metadata'};
 	my $m3g_url_edit = "https://gnss-metadata.eu/sitelog/modify?station=".$NODE{GNSS_9CHAR};
@@ -603,7 +603,7 @@ if ( $NODE{GNSS_9CHAR} ) {
 	my $m3g_link_gml = "<a href=".$m3g_url_gml.">Download the GeodesyML</a>";
 	
 	if ($editOK) {
-		print "<A href=\"$cgiConf\">GNSS 9-code</A>";
+		print "<A href=\"$cgiConf\">$txt</A>";
 	} else {
 		print "M3G GNSS Metadata";
 	}	print "</TH><TD colspan=\"2\">".join("<br>",$NODE{GNSS_9CHAR},$m3g_link_edit,$m3g_link_sitelog,$m3g_link_gml)."</TD></TR>\n";
