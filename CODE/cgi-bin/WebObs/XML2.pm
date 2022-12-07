@@ -69,4 +69,53 @@ sub findnode {
         }
 }
 
+#--------------------------------------------------------------------------------------------------------------------------------------
+# findnodes: search for a particular array of tags and returns the wished one
+# Slightly different from findnode designed for QML
+# This one is designed for GML
+# P Sakic - 2022-12-07
+# Usage:
+# my @Rec = findnodes($root_rec,"/\@gml:id=","gnss-receiver-6011908e8ef7b",\@xml2);
+
+
+sub findnodes {
+    my ($root,$att_name,$att_val,$xml2) = @_;
+
+	# substitute the question marks/doit with escaped equivalent signs (?)
+	$att_name =~ s/\?/\\\?/g;
+	$att_name =~ s/\./\\\./g;
+	$att_val  =~ s/\?/\\\?/g;
+	$att_val  =~ s/\./\\\./g;
+	
+		# we grep everything starting with the root
+        my @tab = grep(/^$root/,@$xml2);
+        if (@tab) {
+				#for each line of the table of in the grepped elements:
+				# clean the root prefix 
+				# clean the \n 
+				# add a double bar || before each attritute name
+				# this is the trick to separate each block
+                foreach (@tab) {
+					s/^$root//g;
+					s/\n//g;
+					s/$att_name/\|\|$att_name/g;					
+				}
+				
+				# create big strings: each field is separated with |, 
+				# and each block separated with ||
+				# we split wrt ||, and grep the right block ID (att_val)
+				@tab = grep(/$att_val/,split(/\|\|/,join('|',@tab)));
+				#print @tab; 
+				# debug print above, make sure we have the correct block
+				
+				# we recreate a correct array, one field per element
+                return split(/\|/,$tab[0]); #NB after the previous grep, @tab is a singleton (normally...) 
+        } else {
+                return;
+        }
+}
+
+
+
+
 1;
