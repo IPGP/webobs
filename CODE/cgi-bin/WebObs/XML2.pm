@@ -72,9 +72,9 @@ sub findnode {
 #--------------------------------------------------------------------------------------------------------------------------------------
 # findnodes: search for a particular array of tags and returns the wished one
 # Slightly different from findnode designed for QML
-# This one is designed for GML
+# This one is designed for GML, but might be more polyvalent
 # P Sakic - 2022-12-07
-# Usage:
+# Usage exemple:
 # my @Rec = findnodes($root_rec,"/\@gml:id=","gnss-receiver-6011908e8ef7b",\@xml2);
 
 
@@ -93,7 +93,7 @@ sub findnodes {
 				#for each line of the table of in the grepped elements:
 				# clean the root prefix 
 				# clean the \n 
-				# add a double bar || before each attritute name
+				# add a double bar || before each block ID (att_name)
 				# this is the trick to separate each block
                 foreach (@tab) {
 					s/^$root//g;
