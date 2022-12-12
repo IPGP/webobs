@@ -567,14 +567,32 @@ print "<TR>";
 		print "<TD style=\"border:0;text-align:left\">";
 			print "<label for=\"gnss_9char\">$__{'GNSS 9 char. code'} :</label>";
 			print "<input size=\"10\" value=\"$usrGnss9char\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_gnss_9char}')\" id=\"gnss_9char\" name=\"gnss_9char\">";
-			print "</select><BR>\n";
+			print "<BR>\n";
 			print "<label for=\"m3g_check\">$__{'M3G availability'} :</label>";
 			if ( $m3g_check ) {
 				print "<input type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\" checked>";
 			} else {
 				print "<input type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\">";
 			}
-			print "</select><BR>\n";
+			print "<BR>\n";
+			#### get M3G geodesyML
+			my $GetGml = "/cgi-bin/get_gml_m3g.pl";
+			print "<a href=\"$GetGml?node=$GRIDType.$GRIDName.$NODEName\">Get geodesyML from M3G</a>";
+			print "<BR>\n";
+			my $cgiEtxt = "/cgi-bin/nedit.pl";
+			my $newfile = "/home/sakic/Downloads/query_qml_croatiaa.xml";
+			#my $cgiEtxt = "/cgi-bin/nedit.pl";
+			#print "<INPUT type=\"Button\" value=\"$__{'Features Update from M3G'}\" style=\"width:200px\" onClick=\"$cgiEtxt?file=$NODEName.cnf&node=$GRIDType.$GRIDName.$NODEName&encode=iso\"><br>";
+			my $FEATURENODE = "FEATURES/featurea.txt";
+			print "<a href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&txt=$newfile\">Features Update from M3G</a>";
+			print "<BR>\n";
+			my $cgiEtxt = "/cgi-bin/nedit_mod.pl";
+			my $newfile = "/home/sakic/Downloads/query_qml_croatiaa.xml";
+			#my $cgiEtxt = "/cgi-bin/nedit.pl";
+			#print "<INPUT type=\"Button\" value=\"$__{'Features Update from M3G'}\" style=\"width:200px\" onClick=\"$cgiEtxt?file=$NODEName.cnf&node=$GRIDType.$GRIDName.$NODEName&encode=iso\"><br>";
+			my $FEATURENODE = "FEATURES/receiver.txt";
+			print "<a href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&gmlfeat=rec\">update feature receiver from M3G</a>";
+			print "<BR>\n";
 		print "</TD>";
 	print "</TR></TABLE>";
 	print "</FIELDSET>";
