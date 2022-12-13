@@ -594,19 +594,20 @@ if ($editOK || $#infosInstallNode >=0) {
 if ( $NODE{GNSS_9CHAR} && $NODE{M3G_AVAIABLE} ) {
 	print "<TR><TH valign=\"top\">";
 	my $txt = $__{'M3G GNSS Metadata'};
-	my $m3g_url_edit = "https://gnss-metadata.eu/sitelog/modify?station=".$NODE{GNSS_9CHAR};
-	my $m3g_url_sitelog = "https://gnss-metadata.eu/sitelog/exportlog?station=".$NODE{GNSS_9CHAR};
-	my $m3g_url_gml = "https://gnss-metadata.eu/sitelog/exportxml?station=".$NODE{GNSS_9CHAR};
+	my $gnss9char = $NODE{GNSS_9CHAR};
+	my $m3g_url_edit = "https://gnss-metadata.eu/sitelog/modify?station=".$gnss9char;
+	my $m3g_url_sitelog = "https://gnss-metadata.eu/sitelog/exportlog?station=".$gnss9char;
+	my $m3g_url_gml = "https://gnss-metadata.eu/sitelog/exportxml?station=".$gnss9char;
 	
-	my $m3g_link_edit = "<a href=".$m3g_url_edit.">Edit the sitelog on M3G (requires prior M3G login)</a>";
-	my $m3g_link_sitelog = "<a href=".$m3g_url_sitelog.">Download the sitelog</a>";
-	my $m3g_link_gml = "<a href=".$m3g_url_gml.">Download the GeodesyML</a>";
+	my $m3g_link_edit = "<a href=".$m3g_url_edit.">Edit $gnss9char sitelog on M3G (requires prior M3G login)</a>";
+	my $m3g_link_sitelog = "<a href=".$m3g_url_sitelog.">Download $gnss9char sitelog on your local disk</a>";
+	my $m3g_link_gml = "<a href=".$m3g_url_gml.">Download $gnss9char GeodesyML on your local disk</a>";
 	
 	if ($editOK) {
 		print "<A href=\"$cgiConf\">$txt</A>";
 	} else {
 		print "M3G GNSS Metadata";
-	}	print "</TH><TD colspan=\"2\">".join("<br>",$NODE{GNSS_9CHAR},$m3g_link_edit,$m3g_link_sitelog,$m3g_link_gml)."</TD></TR>\n";
+	}	print "</TH><TD colspan=\"2\">".join("<br>",$m3g_link_edit,$m3g_link_sitelog,$m3g_link_gml)."</TD></TR>\n";
 }
 
 

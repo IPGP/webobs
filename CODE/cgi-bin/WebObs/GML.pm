@@ -50,9 +50,9 @@ sub gmlread {
 	$gmlrec{satsys} = findvalue('/geo:satelliteSystem=',\@Rec);
 	$gmlrec{sn}     = findvalue('/geo:manufacturerSerialNumber=',\@Rec);
 	$gmlrec{vfirm}  = findvalue('/geo:firmwareVersion=',\@Rec);
-	$gmlrec{cutoff} = findvalue('/geo:firmwareVersion=',\@Rec);
-	$gmlrec{dinsta} = findvalue('/geo:firmwareVersion=',\@Rec);
-	$gmlrec{dremov} = findvalue('/geo:firmwareVersion=',\@Rec);
+	$gmlrec{cutoff} = findvalue('/geo:elevationCutoffSetting=',\@Rec);
+	$gmlrec{dinsta} = findvalue('/geo:dateInstalled=',\@Rec);
+	$gmlrec{dremov} = findvalue('/geo:dateRemoved=',\@Rec);
 
 	###### Antenna
 	## root path for the Antenna
@@ -83,11 +83,11 @@ sub gmlread {
 
 	$gmlant{model}  = findvalue('/geo:igsModelCode=',\@Ant);
 	$gmlant{sn}     = findvalue('/geo:manufacturerSerialNumber=',\@Ant);
-	$gmlant{radome} = findvalue('/geo:igsModelCode=',\@Ant);
-	$gmlant{alignN} = findvalue('/geo:igsModelCode=',\@Ant);
-	$gmlant{lcable} = findvalue('/geo:igsModelCode=',\@Ant);
-	$gmlrec{dinsta} = findvalue('/geo:firmwareVersion=',\@Rec);
-	$gmlrec{dremov} = findvalue('/geo:firmwareVersion=',\@Rec);
+	$gmlant{radome} = findvalue('/geo:antennaRadomeType=',\@Ant);
+	$gmlant{alignN} = findvalue('/geo:alignmentFromTrueNorth=',\@Ant);
+	$gmlant{lcable} = findvalue('/geo:antennaCableLength=',\@Ant);
+	$gmlrec{dinsta} = findvalue('/geo:dateInstalled=',\@Ant);
+	$gmlrec{dremov} = findvalue('/geo:dateRemoved=',\@Ant);
 			
 	####### Misc Info
 	my $domes = findvalue("$root/geo:siteIdentification/geo:iersDOMESNumber",\@xml2);
@@ -107,16 +107,26 @@ sub gml2txt {
 
 	my @outlines ;
 
-	if ( $featsection == "rec" ) {
-		push(@outlines,$gmlfile);
-		my $recmodel = $gmlrec->{'model'};
-		push(@outlines,"model: $recmodel \n");
+	if ( $featsection eq "gnssrec" ) {
+		push(@outlines,"Model: $gmlrec->{'model'} \n");
+		push(@outlines,"Satellite system: $gmlrec->{'satsys'}\n");
 		push(@outlines,"Serial number: $gmlrec->{'sn'}\n");
+		push(@outlines,"Firmware version: $gmlrec->{'vfirm'} \n");
+		push(@outlines,"Date installed: $gmlrec->{'dinsta'}\n");
+		push(@outlines,"Date removed: $gmlrec->{'dremov'}\n");
+	} elsif ( $featsection eq "gnssant" ) {
+		push(@outlines,"Model: $gmlant->{'model'} \n");
+		push(@outlines,"Radome: $gmlant->{'radome'} \n");
+		push(@outlines,"Serial number: $gmlant->{'sn'}\n");
+		push(@outlines,"Alignment from North: $gmlant->{'alignN'} \n");
+		push(@outlines,"Cable length (m): $gmlant->{'lcable'} \n");
+		push(@outlines,"Date installed: $gmlant->{'dinsta'}\n");
+		push(@outlines,"Date removed: $gmlant->{'dremov'}\n");		
 	}
+
 	return @outlines;
 	#### !!!! EXCEPTION HERE IF FILE NOT FOUND GMLFILE!!!!
 	#### !!!! EXCEPTION HERE IF $featsection NOT FOUND !!!!
-
 
 }
 

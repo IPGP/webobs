@@ -180,7 +180,6 @@ if ( $feat eq "" ){ # regular case
 	#### !!!! EXCEPTION HERE IF FILE NOT FOUND GMLFILE!!!!
 }
 
-#@lignes = readFile($absfile);
 $TS0 = (stat($absfile))[9] ;
 chomp(@lignes);
 # file contents as a string and determine markup type (WO or MMD)
