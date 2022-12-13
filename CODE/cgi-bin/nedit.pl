@@ -34,6 +34,15 @@ The file is created if it does not exist AND client has Adm access.
 	'save' internaly used to save the file after html-form edition
 	(other parameters are used along with 'save': ts0, txt)
 
+=item B<feat=string>
+	string := { 'gnssrec' | 'gnssant' }
+    automatic edition of a node's feature
+	'edit' (default when action is not specified) to display edit html-form edit 
+	'save' internaly used to save the file after html-form edition
+	(other parameters are used along with 'save': ts0, txt)
+
+
+
 =back
 
 =head1 Markitup customization
@@ -65,6 +74,7 @@ use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::Wiki;
 use WebObs::i18n;
+use WebObs::GML;
 use Locale::TextDomain('webobs');
 
 set_message(\&webobs_cgi_msg);
@@ -81,6 +91,7 @@ my $action = $QryParm->{'action'}     // "edit";
 my $txt    = $QryParm->{'txt'}        // "";
 my $TS0    = $QryParm->{'ts0'}        // "";
 my $metain = $QryParm->{'meta'}       // "";
+my $gmlfeat = $QryParm->{'feat'}  // "";
 my $conv   = $cgi->param('conv')      // "0";
 my $encode   = $cgi->param('encode')  // "utf8";
 $txt = "$metain$txt";
@@ -91,12 +102,25 @@ my $absfile ="";
 my $editOK = my $admOK = 0;
 my $mmd = $WEBOBS{WIKI_MMD} // 'YES';
 my $MDMeta = ($mmd ne 'NO') ? "WebObs: created by nedit  " : "";
+###########
+
+### define these variables for the auto edition of the GNSS features
+my %allNodeGrids;
+my %S;
+my %NODE;	
+my $gnss9char;
 
 # ---- see what file has to be edited, and corresponding authorization for client
 #
 if (scalar(@NID) == 3) { 
 	if ($file ne "") {
 		($GRIDType, $GRIDName, $NODEName) = @NID;
+		if ($gmlfeat ne "") {
+			%allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
+			%S = readNode($NODEName);
+			%NODE = %{$S{$NODEName}};	
+			$gnss9char = %NODE{GNSS_9CHAR};
+		}
 		$absfile = "$NODES{PATH_NODES}/$NODEName/$file";
 		$editOK = clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
 		$admOK  = clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
@@ -145,7 +169,15 @@ if ($action eq 'save') {
 # ---- action is 'edit' (default)
 #
 # read file (with lock) into @lignes 
-@lignes = readFile($absfile);
+if ( $gmlfeat eq "" ){ # regular case 
+	@lignes = readFile($absfile);
+} else { # case when we import a GML file (update GNSS features)
+	my $gmlfile = "$NODES{PATH_NODES}/$NODEName/$gnss9char.xml";
+	@lignes = gml2txt($gmlfile,$gmlfeat);
+	#### !!!! EXCEPTION HERE !!!!
+}
+
+#@lignes = readFile($absfile);
 $TS0 = (stat($absfile))[9] ;
 chomp(@lignes);
 # file contents as a string and determine markup type (WO or MMD)

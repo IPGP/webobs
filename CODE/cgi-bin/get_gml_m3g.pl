@@ -78,7 +78,7 @@ if (scalar(@NID) == 3) {
 	
 	rename($outfile , $outdir . $NODE{GNSS_9CHAR} . '.xml') or die ( "Error in renaming" );
 	
-	#### !!!!! Implement here the error handeling and a backup copy !!!!!!
+	#### !!!!! Implement here the EXCEPTION handeling and a backup copy !!!!!!
 #	} else { die "$__{'No filename specified'}" }
 } else { die "$__{'Not a fully qualified node name (gridtype.gridname.nodename)'}" }
 
