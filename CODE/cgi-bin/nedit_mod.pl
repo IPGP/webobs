@@ -82,7 +82,6 @@ my $action = $QryParm->{'action'}     // "edit";
 my $txt    = $QryParm->{'txt'}        // "";
 my $TS0    = $QryParm->{'ts0'}        // "";
 my $metain = $QryParm->{'meta'}       // "";
-#my $gmlfile = $QryParm->{'gmlfile'}  // "";
 my $gmlfeat = $QryParm->{'gmlfeat'}  // "";
 my $conv   = $cgi->param('conv')      // "0";
 my $encode   = $cgi->param('encode')  // "utf8";
@@ -95,17 +94,24 @@ my $editOK = my $admOK = 0;
 my $mmd = $WEBOBS{WIKI_MMD} // 'YES';
 my $MDMeta = ($mmd ne 'NO') ? "WebObs: created by nedit  " : "";
 ###########
-($GRIDType, $GRIDName, $NODEName) = @NID;
-my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
-my %S = readNode($NODEName);
-my %NODE = %{$S{$NODEName}};	
-my $gnss9char = %NODE{GNSS_9CHAR};
+
+### define these variables for the auto edition of the GNSS features
+my %allNodeGrids;
+my %S;
+my %NODE;	
+my $gnss9char;
 
 # ---- see what file has to be edited, and corresponding authorization for client
 #
 if (scalar(@NID) == 3) { 
 	if ($file ne "") {
 		($GRIDType, $GRIDName, $NODEName) = @NID;
+		if ($gmlfeat ne "") {
+			%allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
+			%S = readNode($NODEName);
+			%NODE = %{$S{$NODEName}};	
+			$gnss9char = %NODE{GNSS_9CHAR};
+		}
 		$absfile = "$NODES{PATH_NODES}/$NODEName/$file";
 		$editOK = clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
 		$admOK  = clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
@@ -156,9 +162,10 @@ if ($action eq 'save') {
 # read file (with lock) into @lignes 
 if ( $gmlfeat eq "" ){ # regular case 
 	@lignes = readFile($absfile);
-} else {                 # case when we import a GML file
+} else { # case when we import a GML file (update GNSS features)
 	my $gmlfile = "$NODES{PATH_NODES}/$NODEName/$gnss9char.xml";
 	@lignes = gml2txt($gmlfile,$gmlfeat);
+	#### !!!! EXCEPTION HERE !!!!
 }
 
 #@lignes = readFile($absfile);
