@@ -35,12 +35,15 @@ The file is created if it does not exist AND client has Adm access.
 	(other parameters are used along with 'save': ts0, txt)
 
 =item B<feat=string>
-	string := { 'gnssrec' | 'gnssant' }
-    automatic edition of a node's feature
-	'edit' (default when action is not specified) to display edit html-form edit 
-	'save' internaly used to save the file after html-form edition
-	(other parameters are used along with 'save': ts0, txt)
 
+    automatic edition of a node's feature
+	string := { 'gnssrec' | 'gnssant' }
+	'' (default when action is not specified) standard edit mode (uses 
+	pre-existing feature file)
+	'gnssrec' automatic update of the node's "receiver" feature based on
+	the node's GeodesyML (assuming the node is a GNSS station
+	'gnssant' automatic update of the node's "antenna" feature based on
+	the node's GeodesyML (assuming the node is a GNSS station
 
 
 =back
@@ -91,7 +94,7 @@ my $action = $QryParm->{'action'}     // "edit";
 my $txt    = $QryParm->{'txt'}        // "";
 my $TS0    = $QryParm->{'ts0'}        // "";
 my $metain = $QryParm->{'meta'}       // "";
-my $gmlfeat = $QryParm->{'feat'}  // "";
+my $feat = $QryParm->{'feat'}  // "";
 my $conv   = $cgi->param('conv')      // "0";
 my $encode   = $cgi->param('encode')  // "utf8";
 $txt = "$metain$txt";
@@ -115,7 +118,7 @@ my $gnss9char;
 if (scalar(@NID) == 3) { 
 	if ($file ne "") {
 		($GRIDType, $GRIDName, $NODEName) = @NID;
-		if ($gmlfeat ne "") {
+		if ($feat ne "") {
 			%allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
 			%S = readNode($NODEName);
 			%NODE = %{$S{$NODEName}};	
@@ -169,12 +172,12 @@ if ($action eq 'save') {
 # ---- action is 'edit' (default)
 #
 # read file (with lock) into @lignes 
-if ( $gmlfeat eq "" ){ # regular case 
+if ( $feat eq "" ){ # regular case 
 	@lignes = readFile($absfile);
 } else { # case when we import a GML file (update GNSS features)
 	my $gmlfile = "$NODES{PATH_NODES}/$NODEName/$gnss9char.xml";
-	@lignes = gml2txt($gmlfile,$gmlfeat);
-	#### !!!! EXCEPTION HERE !!!!
+	@lignes = gml2txt($gmlfile,$feat);
+	#### !!!! EXCEPTION HERE IF FILE NOT FOUND GMLFILE!!!!
 }
 
 #@lignes = readFile($absfile);

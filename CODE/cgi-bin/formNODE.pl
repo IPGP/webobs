@@ -575,14 +575,19 @@ print "<TR>";
 				print "<input type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\">";
 			}
 			print "<BR>\n";
-			#### get M3G geodesyML
+			###### get and edit features 
+			#### get geodesyML from M3G
 			my $GetGml = "/cgi-bin/get_gml_m3g.pl";
 			print "<a href=\"$GetGml?node=$GRIDType.$GRIDName.$NODEName\">Get geodesyML from M3G</a>";
 			print "<BR>\n";
+			#### Auto-update receiver feature
 			my $cgiEtxt = "/cgi-bin/nedit.pl";
-			#print "<INPUT type=\"Button\" value=\"$__{'Features Update from M3G'}\" style=\"width:200px\" onClick=\"$cgiEtxt?file=$NODEName.cnf&node=$GRIDType.$GRIDName.$NODEName&encode=iso\"><br>";
 			my $FEATURENODE = "FEATURES/receiver.txt";
-			print "<a href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&feat=gnssrec\">update feature receiver from M3G</a>";
+			print "<a href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&feat=gnssrec\">Auto-update receiver feature</a>";
+			print "<BR>\n";
+			#### Auto-update antenna feature
+			my $FEATURENODE = "FEATURES/antenna.txt";
+			print "<a href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&feat=gnssant\">Auto-update antenna feature</a>";
 			print "<BR>\n";
 		print "</TD>";
 	print "</TR></TABLE>";

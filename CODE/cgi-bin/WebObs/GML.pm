@@ -114,6 +114,10 @@ sub gml2txt {
 		push(@outlines,"Serial number: $gmlrec->{'sn'}\n");
 	}
 	return @outlines;
+	#### !!!! EXCEPTION HERE IF FILE NOT FOUND GMLFILE!!!!
+	#### !!!! EXCEPTION HERE IF $featsection NOT FOUND !!!!
+
+
 }
 
 #my $p="/home/sakic/Downloads/ILAM00MTQ.xml";
