@@ -25,36 +25,22 @@ use Locale::TextDomain('webobs');
 
 set_message(\&webobs_cgi_msg);
 
-print CGI::header();
-print "Hello World";
+print CGI::header(); ## for the print in HTML
 
 # ---- init
 #
-my @lignes;
-
 my $me = $ENV{SCRIPT_NAME}; 
 my $QryParm   = $cgi->Vars;
 my $node   = $QryParm->{'node'}       // "";
-my $file   = $QryParm->{'file'}       // "";
-my $action = $QryParm->{'action'}     // "edit";
-my $txt    = $QryParm->{'txt'}        // "";
-my $TS0    = $QryParm->{'ts0'}        // "";
-my $metain = $QryParm->{'meta'}       // "";
-my $conv   = $cgi->param('conv')      // "0";
-my $encode = $cgi->param('encode')  // "utf8";
-my $gmlfile = $cgi->param('gmlfile')  // "utf8";
-my $gmlfeat = $cgi->param('gmlfeat')  // "utf8";
 
-$txt = "$metain$txt";
 my @NID = split(/[\.\/]/, trim($QryParm->{'node'}));
 
 my $GRIDName = my $GRIDType = my $NODEName = "";
+my %S;
+my %NODE;
+
 my $outfile ="";
 my $outdir ="";
-my $editOK = my $admOK = 0;
-my $mmd = $WEBOBS{WIKI_MMD} // 'YES';
-my $MDMeta = ($mmd ne 'NO') ? "WebObs: created by nedit  " : "";
-my %NODE;
 
 
 # ---- see what file has to be edited, and corresponding authorization for client
@@ -76,7 +62,11 @@ if (scalar(@NID) == 3) {
 	$outdir = "$NODES{PATH_NODES}/$NODEName/";
 	my $outfile = $ff->fetch( to => $outdir ) or die $ff->error;
 	
-	rename($outfile , $outdir . $NODE{GNSS_9CHAR} . '.xml') or die ( "Error in renaming" );
+	my $outfileok = $outdir . $NODE{GNSS_9CHAR} . '.xml';
+	rename($outfile , $outfileok) or die ( "Error in renaming" );
+	
+	print "Metadata have been correctly downloaded in $outfileok";
+	print "<form> <input type='button' value='Go back' onclick='history.back()'> </form>";
 	
 	#### !!!!! Implement here the EXCEPTION handeling and a backup copy !!!!!!
 #	} else { die "$__{'No filename specified'}" }

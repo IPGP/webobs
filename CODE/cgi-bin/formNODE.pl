@@ -568,17 +568,17 @@ print "<TR>";
 			print "<label for=\"gnss_9char\">$__{'GNSS 9 char. code'} :</label>";
 			print "<input size=\"10\" value=\"$usrGnss9char\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_gnss_9char}')\" id=\"gnss_9char\" name=\"gnss_9char\">";
 			print "<BR>\n";
-			print "<label for=\"m3g_check\">$__{'M3G availability'} :</label>";
+			print "<label for=\"m3g_check\">$__{'Show links to M3G'} :</label>";
 			if ( $m3g_check ) {
-				print "<input type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\" checked>";
+				print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\" checked>";
 			} else {
-				print "<input type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\">";
+				print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\">";
 			}
 			print "<BR>\n";
 			###### get and edit features 
 			#### get geodesyML from M3G
 			my $GetGml = "/cgi-bin/get_gml_m3g.pl";
-			print "<a href=\"$GetGml?node=$GRIDType.$GRIDName.$NODEName\">Get geodesyML from M3G</a>";
+			print "<a href=\"$GetGml?node=$GRIDType.$GRIDName.$NODEName\">Import GNSS metadata from M3G</a>";
 			print "<BR>\n";
 			#### Auto-update receiver feature
 			my $cgiEtxt = "/cgi-bin/nedit.pl";

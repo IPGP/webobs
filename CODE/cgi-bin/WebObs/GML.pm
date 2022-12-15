@@ -86,8 +86,8 @@ sub gmlread {
 	$gmlant{radome} = findvalue('/geo:antennaRadomeType=',\@Ant);
 	$gmlant{alignN} = findvalue('/geo:alignmentFromTrueNorth=',\@Ant);
 	$gmlant{lcable} = findvalue('/geo:antennaCableLength=',\@Ant);
-	$gmlrec{dinsta} = findvalue('/geo:dateInstalled=',\@Ant);
-	$gmlrec{dremov} = findvalue('/geo:dateRemoved=',\@Ant);
+	$gmlant{dinsta} = findvalue('/geo:dateInstalled=',\@Ant);
+	$gmlant{dremov} = findvalue('/geo:dateRemoved=',\@Ant);
 			
 	####### Misc Info
 	my $domes = findvalue("$root/geo:siteIdentification/geo:iersDOMESNumber",\@xml2);
@@ -108,7 +108,7 @@ sub gml2txt {
 	my @outlines ;
 
 	if ( $featsection eq "gnssrec" ) {
-		push(@outlines,"Model: $gmlrec->{'model'} \n");
+		push(@outlines,"//Model//: $gmlrec->{'model'} \n");
 		push(@outlines,"Satellite system: $gmlrec->{'satsys'}\n");
 		push(@outlines,"Serial number: $gmlrec->{'sn'}\n");
 		push(@outlines,"Firmware version: $gmlrec->{'vfirm'} \n");
