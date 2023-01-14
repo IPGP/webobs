@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2022-07-21
+%   Updated: 2023-01-13
 
 
 WO = readcfg;
@@ -401,9 +401,10 @@ for g = 1:length(grids)
 					if ~isempty(k0)
 						target(xl(3),yl,nodesize,nodecolor,nodetype,2);
 					end
+					nm = length(kam) + length(k0m);
 					text(xl,yl*[1,1,1],{sprintf('{\\bf%s}',nodename), ...
-						sprintf('    active ({\\bf%d}/%d)',length(kam),length(kn)), ...
-						repmat(sprintf('    inactive ({\\bf%d}/%d)',length(k0m),length(kn)),~isempty(k0m))}, ...
+						sprintf('    active ({\\bf%d}/%d)',length(kam),nm), ...
+						repmat(sprintf('    inactive ({\\bf%d}/%d)',length(k0m),nm),~isempty(k0m))}, ...
 						'FontSize',14,'HorizontalAlignment','left')
 				end
 
