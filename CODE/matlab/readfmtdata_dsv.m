@@ -90,15 +90,15 @@ if ~isempty(regexpi(F.raw{1},'\$yyyy'))
 									fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
 									fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
 									fraw = regexprep(fraw,'\$dd',sprintf('%02d',dd),'ignorecase');
-									wosystem(sprintf('cat %s | %s %s \\%s %d %d >> %s', ...
-										fraw, preprocessor, N.ID, fs, header, nftest, fdat), P);
+									wosystem(sprintf('cat %s | %s %s.%s \\%s %d %d >> %s', ...
+										fraw, preprocessor, P.SELFREF, N.ID, fs, header, nftest, fdat), P);
 								end
 							end
 						else
 							fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
 							fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
-							wosystem(sprintf('cat %s | %s %s \\%s %d %d >> %s', ...
-								fraw, preprocessor, N.ID, fs, header, nftest, fdat), P);
+							wosystem(sprintf('cat %s | %s %s.%s \\%s %d %d >> %s', ...
+								fraw, preprocessor, P.SELFREF, N.ID, fs, header, nftest, fdat), P);
 						end
 					end
 				end
@@ -108,22 +108,22 @@ if ~isempty(regexpi(F.raw{1},'\$yyyy'))
 						if (isnan(P.DATELIM(1)) || datenum(yyyy,1,doy) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,doy) <= P.DATELIM(2))
 							fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
 							fraw = regexprep(fraw,'\$doy',sprintf('%03d',doy),'ignorecase');
-							wosystem(sprintf('cat %s | %s %s \\%s %d %d >> %s', ...
-								fraw, preprocessor, N.ID, fs, header, nftest, fdat), P);
+							wosystem(sprintf('cat %s | %s %s.%s \\%s %d %d >> %s', ...
+								fraw, preprocessor, P.SELFREF, N.ID, fs, header, nftest, fdat), P);
 						end
 					end
 				else
 					fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
-					wosystem(sprintf('cat %s | %s %s \\%s %d %d >> %s', ...
-						fraw, preprocessor, N.ID, fs, header, nftest, fdat), P);
+					wosystem(sprintf('cat %s | %s %s.%s \\%s %d %d >> %s', ...
+						fraw, preprocessor, P.SELFREF, N.ID, fs, header, nftest, fdat), P);
 				end
 			end
 			fprintf('.');
 		end
 	end
 else
-	wosystem(sprintf('for f in $(ls %s);do cat $f | %s %s \\%s %d %d >> %s; done', ...
-		F.raw{1}, preprocessor, N.ID, fs, header, nftest, fdat), P);
+	wosystem(sprintf('for f in $(ls %s);do cat $f | %s %s.%s \\%s %d %d >> %s; done', ...
+		F.raw{1}, preprocessor, P.SLEFREF, N.ID, fs, header, nftest, fdat), P);
 end
 
 %wosystem(sprintf('for f in $(ls %s);do awk -F''%s'' ''NR>%d {print $0}'' $f | sed -e ''s/  */ /g;s/ *%s */%s/g;s/[%s\\/: ]/;/g;s/[^0-9.+\\-eE;]//g;s/^;/NaN;/g;s/;\\s*;/;NaN;/g;s/;;/;NaN;/g;s/;\\s*$/;NaN/g'' | awk -F'';'' ''%s {print $0}'' >> %s;done',F.raw{1},fs,header,fs,fs,fs,nftest,fdat),P);
