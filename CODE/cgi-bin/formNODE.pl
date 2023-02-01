@@ -1,26 +1,17 @@
 #!/usr/bin/perl
 
 =head1 NAME
-
 formNODE.pl
-
 =head1 SYNOPSIS
-
-http://..../formNODE.pl?[node=NODEID]O
-
+http://..../formNODE.pl?[node=NODEID]
 =head1 DESCRIPTION
-
 1) Edits an existing NODE when requested node is a fully qualified node name
 (ie. node=gridtype.gridname.nodename).
-
 2) Creates a new NODE when no nodename specified (ie. node=gridtype.gridname).
-
 =head1 Query string parameters
-
  node=
  the fully qualified NODE name gridtype.gridname.nodename to update
  -or- gridtype.gridname to create a new NODE
-
 =cut
 
 use strict;
@@ -176,17 +167,17 @@ $cgi->start_html("$__{'Node configuration form'}");
 
 print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js'></script>
-
 <script src='https://openlayers.org/api/OpenLayers.js'></script>
+
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
 <script type="text/javascript">
-
 function postIt()
 {
  if(document.formulaire.nouveau.value == 1 && document.formulaire.message.value != "ok") {
@@ -244,19 +235,17 @@ function postIt()
     document.formulaire.SELs.focus();
     return false;
   }
-
   for (var i=0; i<document.formulaire.elements['allNodes'].length; i++) {
   	document.formulaire.elements['allNodes'][i].disabled = true;
   }
   for (var i=0; i<document.formulaire.SELs.length; i++) {
   	document.formulaire.SELs[i].selected = true;
   }
-	\#if (\$(\"#theform\").hasChanged() || document.formulaire.delete.value == 1) {
+  	console.log(\$(\"#theform\").hasChanged());
 	if (\$(\"#theform\").hasChanged() || document.formulaire.delete.value == 1) {
 		document.formulaire.node.value = document.formulaire.grid.value + document.formulaire.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
 			var fidx = document.getElementById("fidx").getElementsByTagName("div");
-			console.log(fidx);
 			for (var i=0; i<fidx.length; i++) {
 				if (document.formulaire.rawformat.value == "" || fidx[i].id.indexOf(document.formulaire.rawformat.value + "-") == -1) {
 					var nested = document.getElementById("input-" + fidx[i].id);
@@ -278,7 +267,6 @@ function postIt()
 		return false;
 	}
 }
-
 function maj_rawformat() {
 	var fidx = document.getElementById("fidx").getElementsByTagName("div"), fid;
 	for (var i=0; i<fidx.length; i++) {
@@ -289,7 +277,6 @@ function maj_rawformat() {
 		}
 	}
 }
-
 function maj_transmission() {
 	if (document.formulaire.typeTrans.value==0) {
 		document.getElementById("pathTrans").style.display="none";
@@ -297,14 +284,12 @@ function maj_transmission() {
 		document.getElementById("pathTrans").style.display="block";
 	}
 }
-
 function checkNode() {
 	document.formulaire.nodename.value = document.formulaire.nodename.value.toUpperCase();
 	var nodeSyntax=/[^A-Za-z0-9\.@]+/;
 	var ok = 1;
 	var rouge = '#EE0000';
 	var vert = '#66DD66';
-
 	var node = document.formulaire.nodename.value;
 	if (nodeSyntax.test(node)) {
 		ok = 0;
@@ -334,7 +319,6 @@ function checkNode() {
 		document.formulaire.message.value = "";
 	}
 }
-
 function latlonChange() {
 	var today = new Date();
 	var d  = today.getDate();
@@ -344,17 +328,14 @@ function latlonChange() {
 	var yy = today.getYear();
 	document.formulaire.anneeMesure.value = (yy < 1000) ? yy + 1900 : yy;
 }
-
 function fc() {
 	\$(\"#theform\").formChanges();
 }
-
 function refresh_form()
 {
 	document.formulaire.refresh.value = 1;
 	postIt();
 }
-
 function delete_node()
 {
 	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative.\\n\\n Are you sure you want to move this NODE to trash ?\") ) {
@@ -365,6 +346,7 @@ function delete_node()
 		return false;
 	}
 }
+
 function nsew() {
 	var ns = 1;
 	var ew = 1;
@@ -380,6 +362,7 @@ function nsew() {
 	}
 	return [ns,ew];
 }
+
 function getCurrent (pos) {
 	var lat = pos.coords.latitude*nsew[0];
 	var lon = pos.coords.longitude*nsew[1];
@@ -391,6 +374,7 @@ function getCurrent (pos) {
 	}
 	map.flyTo([lat, lon], 13);
 }
+
 function error (err) {
 	switch (err.code) {
 		case err.TIMEOUT:
@@ -403,6 +387,7 @@ function error (err) {
 		break;
 	}
 }
+
 function onMapClick(e) {
 	var lat = e.latlng['lat'].toFixed(6);
 	var lon = e.latlng['lng'].toFixed(6);
@@ -414,6 +399,7 @@ function onMapClick(e) {
 	document.formulaire.latwgs84.value = lat*nsew[0];
 	document.formulaire.lonwgs84.value = lon*nsew[1];
 }
+
 function onInputWrite(e) {
 	var lat = document.formulaire.latwgs84.value*nsew[0];
 	var latZoom = lat.toString().split(".")[1].length;
@@ -437,15 +423,12 @@ function onInputWrite(e) {
 	}
 }
 </script>
-
 </head>
-
 <body style="background-color:#E0E0E0" onLoad="maj_transmission();fc();checkNode();" id="formNode">
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <script language="javascript" src="/js/overlib/overlib.js"></script>
 <!-- overLIB (c) Erik Bosrup -->
 <DIV ID="helpBox"></DIV>
-
 FIN
 
 print "<FORM id=\"theform\" name=\"formulaire\" action=\"\">\n";
@@ -597,21 +580,21 @@ print "<TR>";
 	print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
 
 	# --- 'node' position (latitude, longitude & altitude)
-	print "<FIELDSET'><LEGEND>$__{'Geographic location'}</LEGEND>";
+	print "<FIELDSET><LEGEND>$__{'Geographic location'}</LEGEND>";
 	print "<TABLE><TR>";
-		print "<TD style=\"border:1;text-align:center\">";
+		print "<TD style=\"border:0;text-align:left\">";
 			print "<DIV id='map' style=\"position: relative ;width: 900px; height: 360px\"></DIV>";
 		print "</TD>";
 		print "<TD style=\"border:1;text-align:left;rows:5\">";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" oninput=\"onInputWrite()\" id=\"latwgs84\" name=\"latwgs84\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"latwgs84n\" size=\"1\">";
 			for ("N","S") { print "<option".($usrLatN eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
 			print "<label for=\"lonwgs84\">$__{'Longitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" oninput=\"onInputWrite()\" id=\"lonwgs84\" name=\"lonwgs84\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\"><B>'&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"lonwgs84e\" size=\"1\">";
@@ -638,7 +621,7 @@ print "<TR>";
 		#print "</TD>";
 		#print "<TD style=\"border:0;text-align:center\">";
 			# --- theia categories
-			print "<label>Copy-paste an <a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\">URI</a> related to observed properties</label><BR>\n";
+			print "<label>Copy-paste an <a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\">URI</a> related to observed properties:</label><BR>\n";
 			print "<textarea rows=\"2\" name=\"TheiaCategories\"></textarea>";
 		print "</TD>";
 		
@@ -647,55 +630,84 @@ print "<TR>";
 		print <<"FIN";
 		<script>
 		var nsew = nsew();
+		let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
+		var latwgs84 = document.formulaire.latwgs84.value*nsew[0];
+		var lonwgs84 = document.formulaire.lonwgs84.value*nsew[1];
+		
 		var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
 		var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 		var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-		var terrain = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
-			attribution: stamenAttribution,
-			subdomains: 'abcd',
-			minZoom: 0,
-			maxZoom: 18,
-			ext: 'png'
-		});
-		var watercolor = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
-			attribution: stamenAttribution,
-			subdomains: 'abcd',
-			minZoom: 1,
-			maxZoom: 18,
-			ext: 'jpg'
-		});
-		var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-			maxZoom: 17,
-			attribution: osmAttribution});
-		var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-			attribution: esriAttribution});
-		var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			attribution: osmAttribution,
-			maxZoom: 19});
-		var latwgs84 = document.formulaire.latwgs84.value*nsew[0];
-		var lonwgs84 = document.formulaire.lonwgs84.value*nsew[1];
-		var map = L.map('map', {
-			center: [latwgs84, lonwgs84],
-			zoom: 0,
-			layers: [terrain,topo,osm,watercolor,satellite]});
-		if (document.formulaire.latwgs84.value=="" && document.formulaire.lonwgs84.value==""){
-			map.setZoom(0)
-		} else {
-			map.setZoom(10);
-		}
-		console.log(map.getCenter());
-		var baseMaps = {
-			"Stamen Terrain": terrain,
-			"OpenTopoMap": topo,
-			"OpenStreetMap": osm,
-			"Stamen Watercolor": watercolor,
-			"ESRI World Imagery": satellite,
+		
+		\/\/Init Overlays
+		var overlays = {};
+		
+		\/\/Init BaseMaps
+		var basemaps = {
+			'OpenStreetMaps': L.tileLayer(
+				"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+				{
+					attribution: osmAttribution,
+					minZoom: 2,
+					maxZoom: 19,
+					id: "osm"
+				}
+			),
+			'Stamen-Terrain': L.tileLayer(
+				'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}',
+				{
+					attribution: stamenAttribution,
+					minZoom: 2,
+					maxZoom: 19,
+					id: "stamen.terrain"
+				}
+			),
+			'Stamen-Watercolor': L.tileLayer(
+				'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}',
+				{
+					attribution: stamenAttribution,
+					minZoom: 2,
+					maxZoom: 19,
+					id: "stamen.watercolor"
+				}
+			),
+			'OpenTopoMap': L.tileLayer(
+				'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+				{
+					attribution: osmAttribution,
+					minZoom: 2,
+					maxZoom: 19,
+					id: "otm"
+				}
+			),
+			'ESRIWorldImagery': L.tileLayer(
+				'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+				{
+					attribution: osmAttribution,
+					minZoom: 2,
+					maxZoom: 19,
+					id: "esri.world"
+				}
+			)
 		};
-		var layerControl = L.control.layers(baseMaps).addTo(map);
-
-		var markers = [];
+		
+		\/\/Map Options
+		var mapOptions = {
+			zoomControl: false,
+			attributionControl: false,
+			center: [latwgs84, lonwgs84],
+			zoom: 10,
+			layers: [basemaps.ESRIWorldImagery]
+		};
+		
+		var map = L.map('map', mapOptions);
+		
+		var layerControl = L.control.layers(basemaps, overlays).addTo(map);
+		
+		var marker = [];
 		
 		var popup = L.popup();
+		
+		map.on('click', onMapClick);
 		
 		var editableLayers = new L.FeatureGroup();
 		map.addLayer(editableLayers);
@@ -733,6 +745,7 @@ print "<TR>";
 
 		  editableLayers.addLayer(layer);
 		  layerGeoJSON = editableLayers.toGeoJSON();
+		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
 
 		  var wkt_options = {};
 		  var geojson_format = new OpenLayers.Format.GeoJSON();
@@ -748,6 +761,7 @@ print "<TR>";
 			layer = e.layer;
 
 		  layerGeoJSON = editableLayers.toGeoJSON();
+		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
 
 		  var wkt_options = {};
 		  var geojson_format = new OpenLayers.Format.GeoJSON();
@@ -763,6 +777,7 @@ print "<TR>";
 			layer = e.layer;
 
 		  layerGeoJSON = editableLayers.toGeoJSON();
+		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
 
 		  var wkt_options = {};
 		  var geojson_format = new OpenLayers.Format.GeoJSON();
@@ -772,15 +787,12 @@ print "<TR>";
 
 		  alert(\"WKT FORMAT\" + out);
 		});
-
 		
-		let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
-		map.on('click', onMapClick);
 		</script>
 FIN
 
-		print "</TR></TABLE>";
-		print "</FIELDSET>\n";
+	print "</TR></TABLE>";
+	print "</FIELDSET>\n";
 
 	# --- Transmission
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
@@ -923,28 +935,37 @@ print "</FORM>";
 print "\n</BODY>\n</HTML>\n";
 
 __END__
-
 =pod
-
 =head1 AUTHOR(S)
-
 Francois Beauducel, Didier Mallarino, Alexis Bosson, Didier Lafon
-
 =head1 COPYRIGHT
-
 Webobs - 2012-2022 - Institut de Physique du Globe Paris
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
-
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 =cut
+Footer
+© 2023 GitHub, Inc.
+Footer navigation
+
+    Terms
+    Privacy
+    Security
+    Status
+    Docs
+    Contact GitHub
+    Pricing
+    API
+    Training
+    Blog
+    About
+
+webobs/formNODE.pl at master · IPGP/webobs · GitHub
+
