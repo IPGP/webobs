@@ -1235,6 +1235,9 @@ msgstr "Dynamique du numériseur (en bits)"
 msgid "help_clb_lc"
 msgstr "Location code (SEED dataless)"
 
+msgid "help_clb_cat"
+msgstr "Catégorie du thésaurus THEIA correspondant à la variable du channel (chaine de caractère)"
+
 # formulaireHEBDO.pl
 
 msgid "help_hebdo_select_nodate"
