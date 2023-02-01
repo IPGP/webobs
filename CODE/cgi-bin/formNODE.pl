@@ -6,7 +6,7 @@ formNODE.pl
 
 =head1 SYNOPSIS
 
-http://..../formNODE.pl?[node=NODEID]
+http://..../formNODE.pl?[node=NODEID]O
 
 =head1 DESCRIPTION
 
@@ -181,6 +181,12 @@ $cgi->start_html("$__{'Node configuration form'}");
 
 print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js'></script>
+
+<script src='https://openlayers.org/api/OpenLayers.js'></script>
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
@@ -255,6 +261,7 @@ function postIt()
 		document.form.node.value = document.form.grid.value + document.form.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
 			var fidx = document.getElementById("fidx").getElementsByTagName("div");
+			console.log(fidx);
 			for (var i=0; i<fidx.length; i++) {
 				if (document.form.rawformat.value == "" || fidx[i].id.indexOf(document.form.rawformat.value + "-") == -1) {
 					var nested = document.getElementById("input-" + fidx[i].id);
@@ -391,6 +398,77 @@ function delete_node()
 		postIt();
 	} else {
 		return false;
+	}
+}
+function nsew() {
+	var ns = 1;
+	var ew = 1;
+	if (document.formulaire.latwgs84n.value == 'S') {
+		ns = -1;
+	} else {
+		ns = 1;
+	}
+	if (document.formulaire.lonwgs84e.value == 'W') {
+		ew = -1;
+	} else {
+		ew = 1;
+	}
+	return [ns,ew];
+}
+function getCurrent (pos) {
+	var lat = pos.coords.latitude*nsew[0];
+	var lon = pos.coords.longitude*nsew[1];
+	if (document.formulaire.latwgs84.value == "") {
+		document.formulaire.latwgs84.value = lat.toFixed(6);
+	}
+	if (document.formulaire.lonwgs84.value == "") {
+		document.formulaire.lonwgs84.value = lon.toFixed(6);
+	}
+	map.flyTo([lat, lon], 13);
+}
+function error (err) {
+	switch (err.code) {
+		case err.TIMEOUT:
+		break;
+		case err.PERMISSION_DENIED:
+		break;
+		case err.POSITION_UNAVAILABLE:
+		break;
+		case err.UNKNOWN_ERROR:
+		break;
+	}
+}
+function onMapClick(e) {
+	var lat = e.latlng['lat'].toFixed(6);
+	var lon = e.latlng['lng'].toFixed(6);
+
+	popup
+		.setLatLng(e.latlng)
+		.setContent("You clicked the map at " + e.latlng)
+		.openOn(map)
+	document.formulaire.latwgs84.value = lat*nsew[0];
+	document.formulaire.lonwgs84.value = lon*nsew[1];
+}
+function onInputWrite(e) {
+	var lat = document.formulaire.latwgs84.value*nsew[0];
+	var latZoom = lat.toString().split(".")[1].length;
+	var lon = document.formulaire.lonwgs84.value*nsew[1];
+	var lonZoom = lon.toString().split(".")[1].length;
+	
+	console.log(map.getZoom());
+	console.log(latZoom);
+	console.log(Math.min(latZoom, lonZoom));
+	if (Math.min(latZoom, lonZoom) == 0) {
+		map.flyTo([lat, lon], 4);
+	} 
+	if (Math.min(latZoom, lonZoom) == 1) {
+		map.flyTo([lat, lon], 12);
+	}
+	if (Math.min(latZoom, lonZoom) == 2) {
+		map.flyTo([lat, lon], 18);
+	} 
+	if (Math.min(latZoom, lonZoom) > 2) {
+		map.flyTo([lat, lon], 19);
 	}
 }
 </script>
@@ -554,27 +632,30 @@ print "<TR>";
 	print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
 
 	# --- 'node' position (latitude, longitude & altitude)
-	print "<FIELDSET><LEGEND>$__{'Geographic location'}</LEGEND>";
+	print "<FIELDSET'><LEGEND>$__{'Geographic location'}</LEGEND>";
 	print "<TABLE><TR>";
-		print "<TD style=\"border:0;text-align:left\">";
+		print "<TD style=\"border:1;text-align:center\">";
+			print "<DIV id='map' style=\"position: relative ;width: 900px; height: 360px\"></DIV>";
+		print "</TD>";
+		print "<TD style=\"border:1;text-align:left;rows:5\">";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" oninput=\"onInputWrite()\" id=\"latwgs84\" name=\"latwgs84\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"latwgs84n\" size=\"1\">";
 			for ("N","S") { print "<option".($usrLatN eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
 			print "<label for=\"lonwgs84\">$__{'Longitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" oninput=\"onInputWrite()\" id=\"lonwgs84\" name=\"lonwgs84\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\"><B>'&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"lonwgs84e\" size=\"1\">";
 			for ("E","W") { print "<option".($usrLonE eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
 			print "<label for=\"altitude\">$__{'Elevation'}  (m):</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_alt}')\" id=\"altitude\" name=\"altitude\">";
-		print "</TD>";
-		print "<TD style=\"border:0\">";
+			print "<input size=\"10\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_alt}')\" id=\"altitude\" name=\"altitude\"><BR>\n";
+		#print "</TD>";
+		#print "<TD style=\"border:0\">";
 			# --- positioning date
 			print "<label for=\"datePos\">Date:</label> <select name=\"anneeMesure\" size=\"1\">";
 			for ($usrYearP,@yearListP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";	}
@@ -594,8 +675,146 @@ print "<TR>";
 				." <INPUT name=\"rawKML\" size=\"40\" value=\"$usrRAWKML\">"
 				."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Fetch KML' onClick='fetchKML()'></DIV>";
 		print "</TD>";
-	print "</TR></TABLE>";
-	print "</FIELDSET>\n";
+		
+		# ---- link to OpenStreetMap
+		# ------------------------
+		print <<"FIN";
+		<script>
+		var nsew = nsew();
+		var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+		var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+		var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+		var terrain = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
+			attribution: stamenAttribution,
+			subdomains: 'abcd',
+			minZoom: 0,
+			maxZoom: 18,
+			ext: 'png'
+		});
+		var watercolor = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
+			attribution: stamenAttribution,
+			subdomains: 'abcd',
+			minZoom: 1,
+			maxZoom: 18,
+			ext: 'jpg'
+		});
+		var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+			maxZoom: 17,
+			attribution: osmAttribution});
+		var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+			attribution: esriAttribution});
+		var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: osmAttribution,
+			maxZoom: 19});
+		var latwgs84 = document.formulaire.latwgs84.value*nsew[0];
+		var lonwgs84 = document.formulaire.lonwgs84.value*nsew[1];
+		var map = L.map('map', {
+			center: [latwgs84, lonwgs84],
+			zoom: 0,
+			layers: [terrain,topo,osm,watercolor,satellite]});
+		if (document.formulaire.latwgs84.value=="" && document.formulaire.lonwgs84.value==""){
+			map.setZoom(0)
+		} else {
+			map.setZoom(10);
+		}
+		console.log(map.getCenter());
+		var baseMaps = {
+			"Stamen Terrain": terrain,
+			"OpenTopoMap": topo,
+			"OpenStreetMap": osm,
+			"Stamen Watercolor": watercolor,
+			"ESRI World Imagery": satellite,
+		};
+		var layerControl = L.control.layers(baseMaps).addTo(map);
+
+		var markers = [];
+		
+		var popup = L.popup();
+		
+		var editableLayers = new L.FeatureGroup();
+		map.addLayer(editableLayers);
+		
+		var drawControl = new L.Control.Draw({
+		  position: 'topright',
+		  draw: {
+			polyline: true,
+			polygon: {
+			  allowIntersection: false, 
+			  drawError: {
+				color: '#e1e100', 
+				message: \"<strong>Oh snap!<strong> you can\'t draw that!\" 
+			  }
+			},
+			circle: true, 
+			rectangle: true,
+			marker: true
+		  },
+		  edit: {
+			featureGroup: editableLayers, 
+			remove: true
+		  }
+		});
+
+		map.addControl(drawControl);
+
+		map.on(L.Draw.Event.CREATED, function(e) {
+		  var type = e.layerType,
+			layer = e.layer;
+
+		  if (type === 'marker') {
+			layer.bindPopup('LatLng: ' + layer.getLatLng().lat + ',' + layer.getLatLng().lng).openPopup();
+		  }
+
+		  editableLayers.addLayer(layer);
+		  layerGeoJSON = editableLayers.toGeoJSON();
+
+		  var wkt_options = {};
+		  var geojson_format = new OpenLayers.Format.GeoJSON();
+		  var testFeature = geojson_format.read(layerGeoJSON);
+		  var wkt = new OpenLayers.Format.WKT(wkt_options);
+		  var out = wkt.write(testFeature);
+
+		  alert(\"WKT FORMAT \" + out);
+		});
+
+		map.on(L.Draw.Event.EDITED, function(e) {
+		  var type = e.layerType,
+			layer = e.layer;
+
+		  layerGeoJSON = editableLayers.toGeoJSON();
+
+		  var wkt_options = {};
+		  var geojson_format = new OpenLayers.Format.GeoJSON();
+		  var testFeature = geojson_format.read(layerGeoJSON);
+		  var wkt = new OpenLayers.Format.WKT(wkt_options);
+		  var out = wkt.write(testFeature);
+
+		  alert(\"WKT FORMAT\" + out);
+		});
+
+		map.on(L.Draw.Event.DELETED, function(e) {
+		  var type = e.layerType,
+			layer = e.layer;
+
+		  layerGeoJSON = editableLayers.toGeoJSON();
+
+		  var wkt_options = {};
+		  var geojson_format = new OpenLayers.Format.GeoJSON();
+		  var testFeature = geojson_format.read(layerGeoJSON);
+		  var wkt = new OpenLayers.Format.WKT(wkt_options);
+		  var out = wkt.write(testFeature);
+
+		  alert(\"WKT FORMAT\" + out);
+		});
+
+		
+		let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
+		map.on('click', onMapClick);
+		</script>
+FIN
+
+		print "</TR></TABLE>";
+		print "</FIELDSET>\n";
 
 	# --- Transmission
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
