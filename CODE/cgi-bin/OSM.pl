@@ -104,9 +104,12 @@ print <<'END';
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
    crossorigin=""/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
 <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
       integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
       crossorigin=""></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js'></script>
+<script src='https://openlayers.org/api/OpenLayers.js'></script>
 <script type="text/javascript" src="https://stamen-maps.a.ssl.fastly.net/js/tile.stamen.js?v1.3.0"></script>
 END
 
@@ -156,6 +159,85 @@ print <<"END";
 	var layerControl = L.control.layers(baseMaps).addTo(map);
 
 	var markers = [];
+	
+	var editableLayers = new L.FeatureGroup();
+		map.addLayer(editableLayers);
+		
+		var drawControl = new L.Control.Draw({
+		  position: 'topright',
+		  draw: {
+			polyline: true,
+			polygon: {
+			  allowIntersection: false, 
+			  drawError: {
+				color: '#e1e100', 
+				message: \"<strong>Oh snap!<strong> you can\'t draw that!\" 
+			  }
+			},
+			circle: true, 
+			rectangle: true,
+			marker: true
+		  },
+		  edit: {
+			featureGroup: editableLayers, 
+			remove: true
+		  }
+		});
+
+		map.addControl(drawControl);
+
+		map.on(L.Draw.Event.CREATED, function(e) {
+		  var type = e.layerType,
+			layer = e.layer;
+
+		  if (type === 'marker') {
+			layer.bindPopup('LatLng: ' + layer.getLatLng().lat + ',' + layer.getLatLng().lng).openPopup();
+		  }
+
+		  editableLayers.addLayer(layer);
+		  layerGeoJSON = editableLayers.toGeoJSON();
+		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
+
+		  var wkt_options = {};
+		  var geojson_format = new OpenLayers.Format.GeoJSON();
+		  var testFeature = geojson_format.read(layerGeoJSON);
+		  var wkt = new OpenLayers.Format.WKT(wkt_options);
+		  var out = wkt.write(testFeature);
+
+		  alert(\"WKT FORMAT \" + out);
+		});
+
+		map.on(L.Draw.Event.EDITED, function(e) {
+		  var type = e.layerType,
+			layer = e.layer;
+
+		  layerGeoJSON = editableLayers.toGeoJSON();
+		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
+
+		  var wkt_options = {};
+		  var geojson_format = new OpenLayers.Format.GeoJSON();
+		  var testFeature = geojson_format.read(layerGeoJSON);
+		  var wkt = new OpenLayers.Format.WKT(wkt_options);
+		  var out = wkt.write(testFeature);
+
+		  alert(\"WKT FORMAT\" + out);
+		});
+
+		map.on(L.Draw.Event.DELETED, function(e) {
+		  var type = e.layerType,
+			layer = e.layer;
+
+		  layerGeoJSON = editableLayers.toGeoJSON();
+		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
+
+		  var wkt_options = {};
+		  var geojson_format = new OpenLayers.Format.GeoJSON();
+		  var testFeature = geojson_format.read(layerGeoJSON);
+		  var wkt = new OpenLayers.Format.WKT(wkt_options);
+		  var out = wkt.write(testFeature);
+
+		  alert(\"WKT FORMAT\" + out);
+		});
 END
 
 for (keys(%N)) {
