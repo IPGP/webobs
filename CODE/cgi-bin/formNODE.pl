@@ -173,6 +173,7 @@ print <<"FIN";
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js'></script>
 <script src='https://openlayers.org/api/OpenLayers.js'></script>
+<script type="text/javascript" src="https://stamen-maps.a.ssl.fastly.net/js/tile.stamen.js?v1.3.0"></script>
 
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
@@ -413,13 +414,22 @@ function onInputWrite(e) {
 		map.flyTo([lat, lon], 4);
 	} 
 	if (Math.min(latZoom, lonZoom) == 1) {
-		map.flyTo([lat, lon], 12);
+		map.flyTo([lat, lon], 6);
 	}
 	if (Math.min(latZoom, lonZoom) == 2) {
-		map.flyTo([lat, lon], 18);
+		map.flyTo([lat, lon], 8);
 	} 
-	if (Math.min(latZoom, lonZoom) > 2) {
-		map.flyTo([lat, lon], 19);
+	if (Math.min(latZoom, lonZoom) == 3) {
+		map.flyTo([lat, lon], 12);
+	}
+	if (Math.min(latZoom, lonZoom) == 4) {
+		map.flyTo([lat, lon], 14);
+	}
+	if (Math.min(latZoom, lonZoom) == 5) {
+		map.flyTo([lat, lon], 16);
+	}
+	if (Math.min(latZoom, lonZoom) == 6) {
+		map.flyTo([lat, lon], 18);
 	}
 }
 </script>
@@ -620,9 +630,6 @@ print "<TR>";
 			print "</select><BR>\n";
 		#print "</TD>";
 		#print "<TD style=\"border:0;text-align:center\">";
-			# --- theia categories
-			print "<label>Copy-paste an <a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\">URI</a> related to observed properties:</label><BR>\n";
-			print "<textarea rows=\"2\" name=\"TheiaCategories\"></textarea>";
 		print "</TD>";
 		
 		# ---- link to OpenStreetMap
@@ -696,7 +703,7 @@ print "<TR>";
 			attributionControl: false,
 			center: [latwgs84, lonwgs84],
 			zoom: 10,
-			layers: [basemaps.ESRIWorldImagery]
+			layers: [basemaps.OpenStreetMaps]
 		};
 		
 		var map = L.map('map', mapOptions);
