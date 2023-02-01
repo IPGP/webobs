@@ -61,9 +61,9 @@ def extract_vars(proc_name):
     data = pd.read_csv(proc_name,sep='|',header=None,skiprows=2, encoding=encoding)
     #print(data)
     #print(data[3])
-    n = data[3].size
+    n = data[6].size
     #print(n)
-    var_names = [data[3][i]  for i in range(n)]
+    var_names = [data[6][i]  for i in range(n)]
     #var_names = sorted(set(var_names), key=var_names.index) # checking if one variable appears twice in the calibration file
     
     n = data[0].size
