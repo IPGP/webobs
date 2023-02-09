@@ -1,33 +1,22 @@
 #!/usr/bin/perl
 
 =head1 NAME
-
 OSM.pl
-
 =head1 SYNOPSIS
-
 http://..../OSM.pl?...(see Query String parameters)....
-
 =head1 DESCRIPTION
-
 HTML page with OpenStreetMap for a GRID.
-
 =head1 Query string parameters
-
 grid=
   gridtype.gridname           : map with all nodes of grid
   gridtype.gridname.nodename  : map centered on nodename + all nodes of grid
-
 today=
   forces a date (defaults to today)
-
 nodes=
   { active | valid }
-
 width=
 height=
   defaulted to corresponding OSM_xxxx_VALUE key in WEBOBS.rc
-
 =cut
 
 use strict;
@@ -111,6 +100,7 @@ print <<'END';
 <script src='https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js'></script>
 <script src='https://openlayers.org/api/OpenLayers.js'></script>
 <script type="text/javascript" src="https://stamen-maps.a.ssl.fastly.net/js/tile.stamen.js?v1.3.0"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 END
 
 print <<"END";
@@ -157,87 +147,92 @@ print <<"END";
 		"ESRI World Imagery": satellite,
 	};
 	var layerControl = L.control.layers(baseMaps).addTo(map);
-
 	var markers = [];
 	
 	var editableLayers = new L.FeatureGroup();
-		map.addLayer(editableLayers);
-		
-		var drawControl = new L.Control.Draw({
-		  position: 'topright',
-		  draw: {
-			polyline: true,
-			polygon: {
-			  allowIntersection: false, 
-			  drawError: {
-				color: '#e1e100', 
-				message: \"<strong>Oh snap!<strong> you can\'t draw that!\" 
-			  }
-			},
-			circle: true, 
-			rectangle: true,
-			marker: true
-		  },
-		  edit: {
-			featureGroup: editableLayers, 
-			remove: true
+	map.addLayer(editableLayers);
+	
+	var drawControl = new L.Control.Draw({
+	  position: 'topright',
+	  draw: {
+		polyline: true,
+		polygon: {
+		  allowIntersection: false, \/\/ Restricts shapes to simple polygons 
+		  drawError: {
+		    color: '#e1e100', \/\/ Color the shape will turn when intersects 
+		    message: \"<strong>Oh snap!<strong> you can\'t draw that!\" \/\/ Message that will show when intersect 
 		  }
-		});
+		},
+		circle: true, \/\/ Turns off this drawing tool 
+		rectangle: true,
+		marker: true
+	  },
+	  edit: {
+		featureGroup: editableLayers, \/\/REQUIRED!! 
+		remove: true
+	  }
+	});
 
-		map.addControl(drawControl);
+	map.addControl(drawControl);
+	
+	var outGeoJSON = '';
+	var outWKT = '';
+	
+	\/\/On Draw Create Event
+	map.on(L.Draw.Event.CREATED, function(e) {
+	  var type = e.layerType,
+		layer = e.layer;
 
-		map.on(L.Draw.Event.CREATED, function(e) {
-		  var type = e.layerType,
-			layer = e.layer;
+	  if (type === 'marker') {
+		layer.bindPopup('LatLng: ' + layer.getLatLng().lat + ',' + layer.getLatLng().lng).openPopup();
+	  }
 
-		  if (type === 'marker') {
-			layer.bindPopup('LatLng: ' + layer.getLatLng().lat + ',' + layer.getLatLng().lng).openPopup();
-		  }
+	  editableLayers.addLayer(layer);
+	  layerGeoJSON = editableLayers.toGeoJSON();
+	  outGeoJSON = JSON.stringify(layerGeoJSON);
 
-		  editableLayers.addLayer(layer);
-		  layerGeoJSON = editableLayers.toGeoJSON();
-		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
+	  var wkt_options = {};
+	  var geojson_format = new OpenLayers.Format.GeoJSON();
+	  var testFeature = geojson_format.read(layerGeoJSON);
+	  var wkt = new OpenLayers.Format.WKT(wkt_options);
+	  var out = wkt.write(testFeature);
+	  
+      outWKT = out;
+	});
 
-		  var wkt_options = {};
-		  var geojson_format = new OpenLayers.Format.GeoJSON();
-		  var testFeature = geojson_format.read(layerGeoJSON);
-		  var wkt = new OpenLayers.Format.WKT(wkt_options);
-		  var out = wkt.write(testFeature);
+	//On Draw Edit Event
+	map.on(L.Draw.Event.EDITED, function(e) {
+	  var type = e.layerType,
+		layer = e.layer;
 
-		  alert(\"WKT FORMAT \" + out);
-		});
+	  layerGeoJSON = editableLayers.toGeoJSON();
+	  outGeoJSON = JSON.stringify(layerGeoJSON);
 
-		map.on(L.Draw.Event.EDITED, function(e) {
-		  var type = e.layerType,
-			layer = e.layer;
+	  var wkt_options = {};
+	  var geojson_format = new OpenLayers.Format.GeoJSON();
+	  var testFeature = geojson_format.read(layerGeoJSON);
+	  var wkt = new OpenLayers.Format.WKT(wkt_options);
+	  var out = wkt.write(testFeature);
 
-		  layerGeoJSON = editableLayers.toGeoJSON();
-		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
+      outWKT = out;
+	});
 
-		  var wkt_options = {};
-		  var geojson_format = new OpenLayers.Format.GeoJSON();
-		  var testFeature = geojson_format.read(layerGeoJSON);
-		  var wkt = new OpenLayers.Format.WKT(wkt_options);
-		  var out = wkt.write(testFeature);
+	\/\/On Draw Delete Event
+	map.on(L.Draw.Event.DELETED, function(e) {
+	  var type = e.layerType,
+		layer = e.layer;
 
-		  alert(\"WKT FORMAT\" + out);
-		});
+	  layerGeoJSON = editableLayers.toGeoJSON();
+	  outGeoJSON = JSON.stringify(layerGeoJSON);
 
-		map.on(L.Draw.Event.DELETED, function(e) {
-		  var type = e.layerType,
-			layer = e.layer;
+	  var wkt_options = {};
+	  var geojson_format = new OpenLayers.Format.GeoJSON();
+	  var testFeature = geojson_format.read(layerGeoJSON);
+	  var wkt = new OpenLayers.Format.WKT(wkt_options);
+	  var out = wkt.write(testFeature);
 
-		  layerGeoJSON = editableLayers.toGeoJSON();
-		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
-
-		  var wkt_options = {};
-		  var geojson_format = new OpenLayers.Format.GeoJSON();
-		  var testFeature = geojson_format.read(layerGeoJSON);
-		  var wkt = new OpenLayers.Format.WKT(wkt_options);
-		  var out = wkt.write(testFeature);
-
-		  alert(\"WKT FORMAT\" + out);
-		});
+      outWKT = out;
+	});
 END
 
 for (keys(%N)) {
@@ -264,32 +259,27 @@ if (scalar(@NID) == 2) {
 }
 print "</script>\n";
 
+print "<form action='geomNODE.pl' method='get' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON+';$NODEName';window.close()\">";
+print "<input id='geom' type='submit' name='geom' value='Sauvegarder'>";
+print "</form>";
+
 # ---- we're done ------------------------------------
 print "\n</BODY>\n</HTML>\n";
 
 __END__
-
 =pod
-
 =head1 AUTHOR(S)
-
 François Beauducel
-
 =head1 COPYRIGHT
-
 Webobs - 2012-2022 - Institut de Physique du Globe Paris
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
-
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 =cut
