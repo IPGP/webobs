@@ -159,7 +159,6 @@ if (-e $statusDB) {
 }
 
 $GRID{UTM_LOCAL} //= '';
-#my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
 my %UTM =  %WebObs::Mapping::UTM;
 
 # ---- sort interventions by date / event stuff  -----------------------------------
@@ -224,7 +223,8 @@ if (uc($GRIDType) eq 'VIEW' || uc($GRIDType) eq 'PROC') {
 	print " <A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRIDS}?domain=$GRID{DOMAIN}&type=all\">$DOMAINS{$GRID{DOMAIN}}{NAME}</A> / "
 		."<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName\">$GRID{NAME}</A> |";
 }
-print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> ]</P>";
+print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> "
+	."| <IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'> ]</P>";
 
 print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
 
