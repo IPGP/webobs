@@ -35,7 +35,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2022-06-09
+%	Updated: 2022-11-24
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -182,8 +182,12 @@ if exist(fdat,'file')
 
 		% selects only the selected channels
 		if ~isnan(N.CHANNEL_LIST)
-			d = d(:,N.CHANNEL_LIST);
-			e = e(:,N.CHANNEL_LIST);
+			if all(N.CHANNEL_LIST <= size(d,2))
+				d = d(:,N.CHANNEL_LIST);
+				e = e(:,N.CHANNEL_LIST);
+			else
+				fprintf('** WARNING ** channel list selection mismatch.\n');
+			end
 		end
 		fprintf('done (%d samples from %s to %s).\n',length(t),datestr(min(t)),datestr(max(t)));
 	end
