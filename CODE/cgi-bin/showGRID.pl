@@ -747,9 +747,9 @@ print $htmlcontents;
 
 # ----- Authorization access ------
 print "<P class=\"subTitleMenu\" style=\"margin-top:20px\">$__{'Authorization access'} for <B>$GRIDType.$GRIDName</B>:";
-print " Admin = <B>".join(", ", @{$authUsers{4}})."</B>;";
-print " Edit = <B>".join(", ", @{$authUsers{2}})."</B>;";
-print " Read = <B>".join(", ", @{$authUsers{1}})."</B></P>\n";
+print " administrators = <B>".join(", ", @{$authUsers{4}})."</B>;";
+print " editors = <B>".join(", ", @{$authUsers{2}})."</B>;";
+print " readers = <B>".join(", ", @{$authUsers{1}})."</B></P>\n";
 
 # ---- We're done !
 print "</BODY>\n</HTML>\n";
