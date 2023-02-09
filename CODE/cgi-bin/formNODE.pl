@@ -162,6 +162,12 @@ my @yearListE = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
 my @monthList = ('','01'..'12');
 my @dayList = ('','01'..'31');
 
+my $text = "<B>$NODE{ALIAS}: $NODE{NAME}</B><BR>"
+	.($NODE{TYPE} ne "" ? "<I>($NODE{TYPE})</I><br>":"")
+	."&nbspfrom <B>$NODE{INSTALL_DATE}</B>".($NODE{END_DATE} ne "NA" ? " to <B>$NODE{END_DATE}</B>":"")."<br>"
+	."&nbsp;<B>$NODE{LAT_WGS84}&deg;</B>, <B>$NODE{LON_WGS84}&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
+$text =~ s/\"//g;  # fix ticket #166
+
 # ---- ready for HTML output now
 #
 print $cgi->header(
@@ -388,12 +394,12 @@ function delete_node()
 function nsew() {
 	var ns = 1;
 	var ew = 1;
-	if (document.formulaire.latwgs84n.value == 'S') {
+	if (document.formulaire.latwgs84n.value == 'S' && document.formulaire.latwgs84.value > 0) {
 		ns = -1;
 	} else {
 		ns = 1;
 	}
-	if (document.formulaire.lonwgs84e.value == 'W') {
+	if (document.formulaire.lonwgs84e.value == 'W' && document.formulaire.lonwgs84.value > 0) {
 		ew = -1;
 	} else {
 		ew = 1;
@@ -411,6 +417,17 @@ function getCurrent (pos) {
 		document.formulaire.lonwgs84.value = lon.toFixed(6);
 	}
 	map.flyTo([lat, lon], 13);
+	
+	if (document.formulaire.latwgs84.value < 0) {
+		document.formulaire.latwgs84n.value = 'S';
+	} else {
+		document.formulaire.latwgs84n.value = 'N';
+	}
+	if (document.formulaire.lonwgs84.value < 0) {
+		document.formulaire.lonwgs84e.value = 'W';
+	} else {
+		document.formulaire.lonwgs84e.value = 'E';
+	}
 }
 
 function error (err) {
@@ -440,13 +457,16 @@ function onMapClick(e) {
 
 function onInputWrite(e) {
 	var lat = document.formulaire.latwgs84.value*nsew[0];
-	var latZoom = lat.toString().split(".")[1].length;
 	var lon = document.formulaire.lonwgs84.value*nsew[1];
-	var lonZoom = lon.toString().split(".")[1].length;
+	console.log(lat);
+	console.log(lon);
+	if (lat.toString().includes('.')){
+			var latZoom = lat.toString().split(".")[1].length;
+	}
+	if (lon.toString().includes('.')){
+			var lonZoom = lon.toString().split(".")[1].length;
+	}
 	
-	console.log(map.getZoom());
-	console.log(latZoom);
-	console.log(Math.min(latZoom, lonZoom));
 	if (Math.min(latZoom, lonZoom) == 0) {
 		map.flyTo([lat, lon], 4);
 	} 
@@ -631,7 +651,7 @@ print "<TR>";
 	print "<FIELDSET><LEGEND>$__{'Geographic location'}</LEGEND>";
 	print "<TABLE><TR>";
 		print "<TD style=\"border:0;text-align:left\">";
-			print "<DIV id='map' style=\"position: relative ;width: 900px; height: 360px\"></DIV>";
+			print "<DIV id='map' style=\"position: relative ;width: 900px; height: 347px\"></DIV>";
 		print "</TD>";
 		print "<TD style=\"border:1;text-align:left;rows:5\">";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
@@ -676,11 +696,6 @@ print "<TR>";
 		# ------------------------
 		print <<"FIN";
 		<script>
-		var nsew = nsew();
-		let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
-		var latwgs84 = document.formulaire.latwgs84.value*nsew[0];
-		var lonwgs84 = document.formulaire.lonwgs84.value*nsew[1];
-		
 		var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
 		var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 		var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -741,102 +756,27 @@ print "<TR>";
 		var mapOptions = {
 			zoomControl: false,
 			attributionControl: false,
-			center: [latwgs84, lonwgs84],
-			zoom: 10,
+			center: [0, 0],
+			zoom: 2,
 			layers: [basemaps.OpenStreetMaps]
 		};
 		
 		var map = L.map('map', mapOptions);
+		var popup = L.popup();
+		map.on('click', onMapClick);
+		var nsew = nsew();
+		
+		let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
+		
+		if (document.formulaire.latwgs84.value != '' || document.formulaire.lonwgs84.value != '') {
+			map.flyTo([document.formulaire.latwgs84.value*nsew[0], document.formulaire.lonwgs84.value*nsew[1]], 18);
+		}
 		
 		var layerControl = L.control.layers(basemaps, overlays).addTo(map);
-		
-		var marker = [];
-		
-		var popup = L.popup();
-		
-		map.on('click', onMapClick);
-		
-		var editableLayers = new L.FeatureGroup();
-		map.addLayer(editableLayers);
-		
-		var drawControl = new L.Control.Draw({
-		  position: 'topright',
-		  draw: {
-			polyline: true,
-			polygon: {
-			  allowIntersection: false, 
-			  drawError: {
-				color: '#e1e100', 
-				message: \"<strong>Oh snap!<strong> you can\'t draw that!\" 
-			  }
-			},
-			circle: true, 
-			rectangle: true,
-			marker: true
-		  },
-		  edit: {
-			featureGroup: editableLayers, 
-			remove: true
-		  }
-		});
-
-		map.addControl(drawControl);
-
-		map.on(L.Draw.Event.CREATED, function(e) {
-		  var type = e.layerType,
-			layer = e.layer;
-
-		  if (type === 'marker') {
-			layer.bindPopup('LatLng: ' + layer.getLatLng().lat + ',' + layer.getLatLng().lng).openPopup();
-		  }
-
-		  editableLayers.addLayer(layer);
-		  layerGeoJSON = editableLayers.toGeoJSON();
-		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
-
-		  var wkt_options = {};
-		  var geojson_format = new OpenLayers.Format.GeoJSON();
-		  var testFeature = geojson_format.read(layerGeoJSON);
-		  var wkt = new OpenLayers.Format.WKT(wkt_options);
-		  var out = wkt.write(testFeature);
-
-		  alert(\"WKT FORMAT \" + out);
-		});
-
-		map.on(L.Draw.Event.EDITED, function(e) {
-		  var type = e.layerType,
-			layer = e.layer;
-
-		  layerGeoJSON = editableLayers.toGeoJSON();
-		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
-
-		  var wkt_options = {};
-		  var geojson_format = new OpenLayers.Format.GeoJSON();
-		  var testFeature = geojson_format.read(layerGeoJSON);
-		  var wkt = new OpenLayers.Format.WKT(wkt_options);
-		  var out = wkt.write(testFeature);
-
-		  alert(\"WKT FORMAT\" + out);
-		});
-
-		map.on(L.Draw.Event.DELETED, function(e) {
-		  var type = e.layerType,
-			layer = e.layer;
-
-		  layerGeoJSON = editableLayers.toGeoJSON();
-		  alert(\"GEOJSON FORMAT\" + JSON.stringify(layerGeoJSON));
-
-		  var wkt_options = {};
-		  var geojson_format = new OpenLayers.Format.GeoJSON();
-		  var testFeature = geojson_format.read(layerGeoJSON);
-		  var wkt = new OpenLayers.Format.WKT(wkt_options);
-		  var out = wkt.write(testFeature);
-
-		  alert(\"WKT FORMAT\" + out);
-		});
-		
-		</script>
 FIN
+	print "var marker = L.marker([$NODE{LAT_WGS84}, $NODE{LON_WGS84}]).addTo(map);\n";
+	print "marker.bindPopup(\"$text\").openPopup();\n";
+	print "</script>";
 
 	print "</TR></TABLE>";
 	print "</FIELDSET>\n";
