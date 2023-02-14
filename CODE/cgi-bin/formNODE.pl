@@ -261,7 +261,7 @@ function postIt()
 		     if (data != '') alert(data);
 			 if (document.formulaire.refresh.value == 1) {
 				 location.reload();
-		     } else { location.href = document.formulaire.referer.value; }
+		     } else { location.href = go_back_node(); } 
 		})
 		  .fail( function() {
 		     alert( \"postNode couldn't execute\" );
@@ -270,6 +270,10 @@ function postIt()
 		alert(\"No changes, save ignored\");
 		return false;
 	}
+}
+
+function go_back_node() {
+	location.href  = '/cgi-bin/showNODE.pl?node=$GRIDType.$GRIDName.$NODEName';
 }
 
 function maj_rawformat() {
@@ -691,7 +695,7 @@ print "</TD></TR>";
 print "<TR><TD style=border:0 colspan=2><HR>";
 # --- buttons zone
 print "<P align=center>";
-print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
+print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"go_back_node()\" style=\"font-weight:normal\">";
 print "<INPUT type=\"button\" value=\"$__{'Save'}\" style=\"font-weight:bold\" onClick=\"postIt();\">";
 print "</P></TD></TR></TABLE>";
 print "</FORM>";
