@@ -17,7 +17,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2022-07-26
+%	Updated: 2023-02-14
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -277,11 +277,15 @@ if ~isempty(f)
 	pos0 = 0;
 	for i = 1:length(ff)
 		if exist(ff{i},'file')
-			try
+			%try
 				[A,map,alpha] = imread(ff{i});
 				% applies transparency channel manually (for Octave compatibility)
-				M = repmat(double(alpha)/double(intmax(class(alpha))),[1,1,3]);
-				I = M.*double(A)/double(intmax(class(A))) + (1 - M);
+				if ~isempty(alpha)
+					M = repmat(double(alpha)/double(intmax(class(alpha))),[1,1,3]);
+					I = M.*double(A)/double(intmax(class(A))) + (1 - M);
+				else
+					I = A;
+				end
 				isz = size(A);
 				lgh = rh*pp(3)/pp(4);
 				lgw = lgh*isz(2)*pp(4)/isz(1)/pp(3);
@@ -290,9 +294,9 @@ if ~isempty(f)
 				image(I)
 				axis off
 				pos0 = pos0 + (lgw + 0.005)*(1 - 2*strcmp(pos,'right'));
-			catch
-				fprintf('WEBOBS{mkgraph:plotlogo}: ** WARNING ** Cannot read image file "%s".\n',ff{i});
-			end
+			%catch
+			%	fprintf('WEBOBS{mkgraph:plotlogo}: ** WARNING ** Cannot read image file "%s".\n',ff{i});
+			%end
 		end
 	end
 end
