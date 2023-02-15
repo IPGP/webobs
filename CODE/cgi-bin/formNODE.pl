@@ -98,7 +98,7 @@ if ($newnode == 0) {
 
 my $Ctod = time(); my @tod  = localtime($Ctod);
 my %typeTele = readCfg("$NODES{FILE_TELE}");
-my %typePos  = readCfg("$NODES{FILE_POS}");
+my %typePos  = readCfg("$WEBOBS{ROOT_CODE}/etc/postypes.conf");
 my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
 my %FDSN = WebObs::Grids::codesFDSN();
 my $referer = $QryParm->{'referer'} // $ENV{HTTP_REFERER};
@@ -134,13 +134,15 @@ my $usrLonE = ($usrLon >= 0 ? "E":"W");
 $usrLon =~ s/^-//g;
 my $usrAlt       = $NODE{ALTITUDE};
 my $usrTypePos   = $NODE{POS_TYPE};
+my $usrRAWKML    = $NODE{POS_RAWKML};
 #      Transmission
 my ($usrTrans,@usrTele) = split(/,| |\|/,$NODE{TRANSMISSION});
 if ($usrTrans eq "NA") { $usrTrans = "0"; }
 #      dates
 my $usrYearE = my $usrYearC = my $usrYearP = "";
 my $usrMonthE = my $usrMonthC = my $usrMonthP = "";
-my $usrDayE = my $usrDayC = my $usrDayP = my $date = "";
+my $usrDayE = my $usrDayC = my $usrDayP = "";
+my $usrTimeP = my $date = "";
 #      install date = (the one defined or "" if NA) OR today
 $date            = $NODE{INSTALL_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
@@ -152,7 +154,7 @@ if ($date eq "NA") { $date = "" }
 #      positionning date = (the one defined or "" if NA) OR today
 $date            = $NODE{POS_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
-($usrYearP,$usrMonthP,$usrDayP) = split(/-/,$date);
+($usrYearP,$usrMonthP,$usrDayP,$usrTimeP) = split(/-|T/,$date);
 
 # ---- Load the list of existing nodes
 my @allNodes = qx(/bin/ls $NODES{PATH_NODES});
@@ -162,16 +164,19 @@ my $infoFile   = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}" // "
 my $accessFile = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_PHOTOS}" // "";
 
 # ---- Things to populate select dropdown fields
-my $anneeActuelle = strftime('%Y',@tod);
-my @anneeListeP = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
-my @anneeListeC = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
-my @anneeListeE = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
-my @moisListe = ('','01'..'12');
-my @jourListe = ('','01'..'31');
+my $currentYear = strftime('%Y',@tod);
+my @yearListP = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
+my @yearListC = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
+my @yearListE = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
+my @monthList = ('','01'..'12');
+my @dayList = ('','01'..'31');
 
 # ---- ready for HTML output now
 #
-print $cgi->header(-charset=>"utf-8"),
+print $cgi->header(
+	-charset                     => 'utf-8',
+	-access_control_allow_origin => 'http://localhost',
+	),
 $cgi->start_html("$__{'Node configuration form'}");
 
 print <<"FIN";
@@ -183,75 +188,75 @@ print <<"FIN";
 
 function postIt()
 {
- if(document.formulaire.nouveau.value == 1 && document.formulaire.message.value != "ok") {
+ if(document.form.nouveau.value == 1 && document.form.message.value != "ok") {
    alert("NODE ID: Please enter a valid and new ID!");
-   document.formulaire.nodename.focus();
+   document.form.nodename.focus();
    return false;
  }
- if((/^[\\s]*\$/).test(document.formulaire.fullName.value)) {
+ if((/^[\\s]*\$/).test(document.form.fullName.value)) {
    alert("NAME: Please enter a full name (non-blank string)");
-   document.formulaire.fullName.focus();
+   document.form.fullName.focus();
    return false;
  }
- if(document.formulaire.alias.value == "") {
+ if(document.form.alias.value == "") {
    alert("ALIAS: Please enter a short name (non-blank string)");
-   document.formulaire.alias.focus();
+   document.form.alias.focus();
    return false;
  }
- if(document.formulaire.latwgs84.value != "" && (isNaN(document.formulaire.latwgs84.value) || document.formulaire.latwgs84.value < -90 || document.formulaire.latwgs84.value > 90)) {
+ if(document.form.latwgs84.value != "" && (isNaN(document.form.latwgs84.value) || document.form.latwgs84.value < -90 || document.form.latwgs84.value > 90)) {
    alert("LATITUDE: Please enter a latitude value between -90 and +90, or leave blank");
-   document.formulaire.latwgs84.focus();
+   document.form.latwgs84.focus();
    return false;
  }
- if(document.formulaire.latwgs84.value < 0 && document.formulaire.latwgs84.value >= -90) {
-   document.formulaire.latwgs84.value = Math.abs(document.formulaire.latwgs84.value);
-   if (document.formulaire.latwgs84n.value == "N") document.formulaire.latwgs84n.value = "S";
-   else document.formulaire.latwgs84n.value = "N";
+ if(document.form.latwgs84.value < 0 && document.form.latwgs84.value >= -90) {
+   document.form.latwgs84.value = Math.abs(document.form.latwgs84.value);
+   if (document.form.latwgs84n.value == "N") document.form.latwgs84n.value = "S";
+   else document.form.latwgs84n.value = "N";
  }
- if(document.formulaire.latwgs84.value == "" && (document.formulaire.latwgs84min.value != "" || document.formulaire.latwgs84sec.value != "")) {
+ if(document.form.latwgs84.value == "" && (document.form.latwgs84min.value != "" || document.form.latwgs84sec.value != "")) {
    alert("LATITUDE: Please enter a value for degree or leave all fields blank");
-   document.formulaire.latwgs84.focus();
+   document.form.latwgs84.focus();
    return false;
  }
- if(document.formulaire.lonwgs84.value != "" && (isNaN(document.formulaire.lonwgs84.value) || document.formulaire.lonwgs84.value < -180 || document.formulaire.lonwgs84.value > 180)) {
+ if(document.form.lonwgs84.value != "" && (isNaN(document.form.lonwgs84.value) || document.form.lonwgs84.value < -180 || document.form.lonwgs84.value > 180)) {
    alert("LONGITUDE: Please enter a longiture value between -180 and +180, or leave blank");
-   document.formulaire.lonwgs84.focus();
+   document.form.lonwgs84.focus();
    return false;
  }
- if(document.formulaire.lonwgs84.value < 0 && document.formulaire.lonwgs84.value >= -180) {
-   document.formulaire.lonwgs84.value = Math.abs(document.formulaire.lonwgs84.value);
-   if (document.formulaire.lonwgs84e.value == "E") document.formulaire.lonwgs84e.value = "W";
-   else document.formulaire.lonwgs84e.value = "E";
+ if(document.form.lonwgs84.value < 0 && document.form.lonwgs84.value >= -180) {
+   document.form.lonwgs84.value = Math.abs(document.form.lonwgs84.value);
+   if (document.form.lonwgs84e.value == "E") document.form.lonwgs84e.value = "W";
+   else document.form.lonwgs84e.value = "E";
  }
- if(document.formulaire.lonwgs84.value == "" && (document.formulaire.lonwgs84min.value != "" || document.formulaire.lonwgs84sec.value != "")) {
+ if(document.form.lonwgs84.value == "" && (document.form.lonwgs84min.value != "" || document.form.lonwgs84sec.value != "")) {
    alert("LONGITUDE: Please enter a value for degree or leave all fields blank");
-   document.formulaire.lonwgs84.focus();
+   document.form.lonwgs84.focus();
    return false;
  }
- if(document.formulaire.altitude.value != "" && isNaN(document.formulaire.altitude.value)) {
+ if(document.form.altitude.value != "" && isNaN(document.form.altitude.value)) {
    alert("ELEVATION: Please enter a number or leave blank");
-   document.formulaire.altitude.focus();
+   document.form.altitude.focus();
    return false;
  }
-  if (document.formulaire.SELs.options.length < 1) {
+  if (document.form.SELs.options.length < 1) {
     alert(\"node MUST belong to at least 1 grid\");
-    document.formulaire.SELs.focus();
+    document.form.SELs.focus();
     return false;
   }
 
-  for (var i=0; i<document.formulaire.elements['allNodes'].length; i++) {
-  	document.formulaire.elements['allNodes'][i].disabled = true;
+  for (var i=0; i<document.form.elements['allNodes'].length; i++) {
+  	document.form.elements['allNodes'][i].disabled = true;
   }
-  for (var i=0; i<document.formulaire.SELs.length; i++) {
-  	document.formulaire.SELs[i].selected = true;
+  for (var i=0; i<document.form.SELs.length; i++) {
+  	document.form.SELs[i].selected = true;
   }
 
-	if (\$(\"#theform\").hasChanged() || document.formulaire.delete.value == 1) {
-		document.formulaire.node.value = document.formulaire.grid.value + document.formulaire.nodename.value.toUpperCase();
+	if (\$(\"#theform\").hasChanged() || document.form.delete.value == 1) {
+		document.form.node.value = document.form.grid.value + document.form.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
 			var fidx = document.getElementById("fidx").getElementsByTagName("div");
 			for (var i=0; i<fidx.length; i++) {
-				if (document.formulaire.rawformat.value == "" || fidx[i].id.indexOf(document.formulaire.rawformat.value + "-") == -1) {
+				if (document.form.rawformat.value == "" || fidx[i].id.indexOf(document.form.rawformat.value + "-") == -1) {
 					var nested = document.getElementById("input-" + fidx[i].id);
 					nested.parentNode.removeChild(nested);
 				}
@@ -259,9 +264,9 @@ function postIt()
 		}
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
 		     if (data != '') alert(data);
-			 if (document.formulaire.refresh.value == 1) {
+			 if (document.form.refresh.value == 1) {
 				 location.reload();
-		     } else { location.href = document.formulaire.referer.value; }
+		     } else { location.href = document.form.referer.value; }
 		})
 		  .fail( function() {
 		     alert( \"postNode couldn't execute\" );
@@ -275,7 +280,7 @@ function postIt()
 function maj_rawformat() {
 	var fidx = document.getElementById("fidx").getElementsByTagName("div"), fid;
 	for (var i=0; i<fidx.length; i++) {
-		if (document.formulaire.rawformat.value != "" && fidx[i].id.indexOf(document.formulaire.rawformat.value + "-") != -1) {
+		if (document.form.rawformat.value != "" && fidx[i].id.indexOf(document.form.rawformat.value + "-") != -1) {
 			fidx[i].style.display = "block";
 		} else {
 			fidx[i].style.display = "none";
@@ -284,7 +289,7 @@ function maj_rawformat() {
 }
 
 function maj_transmission() {
-	if (document.formulaire.typeTrans.value==0) {
+	if (document.form.typeTrans.value==0) {
 		document.getElementById("pathTrans").style.display="none";
 	} else {
 		document.getElementById("pathTrans").style.display="block";
@@ -292,50 +297,80 @@ function maj_transmission() {
 }
 
 function checkNode() {
-	document.formulaire.nodename.value = document.formulaire.nodename.value.toUpperCase();
+	document.form.nodename.value = document.form.nodename.value.toUpperCase();
 	var nodeSyntax=/[^A-Za-z0-9\.@]+/;
 	var ok = 1;
 	var rouge = '#EE0000';
 	var vert = '#66DD66';
 
-	var node = document.formulaire.nodename.value;
+	var node = document.form.nodename.value;
 	if (nodeSyntax.test(node)) {
 		ok = 0;
-		document.formulaire.message.value = "invalid char. !";
+		document.form.message.value = "invalid char. !";
 	} else {
-		for (var i=0; i<document.formulaire.elements['allNodes'].length; i++) {
-			if (document.formulaire.elements['allNodes'][i].value == node) {
+		for (var i=0; i<document.form.elements['allNodes'].length; i++) {
+			if (document.form.elements['allNodes'][i].value == node) {
 				ok = 0;
-				document.formulaire.message.value = "already exists !";
+				document.form.message.value = "already exists !";
 			}
 		}
 	}
 	if (ok==1) {
-		document.formulaire.nodename.style.background = vert;
-		document.formulaire.message.value = "ok";
-		document.formulaire.message.style.color = vert;
+		document.form.nodename.style.background = vert;
+		document.form.message.value = "ok";
+		document.form.message.style.color = vert;
 	} else {
-		document.formulaire.nodename.style.background = rouge;
-		document.formulaire.message.style.color = rouge;
+		document.form.nodename.style.background = rouge;
+		document.form.message.style.color = rouge;
 	}
-	if (document.formulaire.nodename.value == "") {
-		document.formulaire.nodename.style.background = 'cornsilk';
-		document.formulaire.message.value = "";
+	if (document.form.nodename.value == "") {
+		document.form.nodename.style.background = 'cornsilk';
+		document.form.message.value = "";
 	}
-	if (document.formulaire.nouveau.value == 0) {
-		document.formulaire.nodename.style.background = 'none';
-		document.formulaire.message.value = "";
+	if (document.form.nouveau.value == 0) {
+		document.form.nodename.style.background = 'none';
+		document.form.message.value = "";
 	}
 }
 
 function latlonChange() {
-	var today = new Date();
-	var d  = today.getDate();
-	document.formulaire.jourMesure.value = (d < 10) ? '0' + d : d;
-	var m = today.getMonth() + 1;
-	document.formulaire.moisMesure.value = (m < 10) ? '0' + m : m;
-	var yy = today.getYear();
-	document.formulaire.anneeMesure.value = (yy < 1000) ? yy + 1900 : yy;
+	if (document.form.typePos.value == 3) {
+		document.getElementById("rawKML").style.display = "block";
+		document.form.anneeMesure.disabled = true;
+		document.form.moisMesure.disabled = true;
+		document.form.jourMesure.disabled = true;
+	} else {
+		document.getElementById("rawKML").style.display = "none";
+		var today = new Date();
+		var d  = today.getDate();
+		document.form.jourMesure.disabled = false;
+		document.form.jourMesure.value = (d < 10) ? '0' + d : d;
+		var m = today.getMonth() + 1;
+		document.form.moisMesure.disabled = false;
+		document.form.moisMesure.value = (m < 10) ? '0' + m : m;
+		var yy = today.getYear();
+		document.form.anneeMesure.disabled = false;
+		document.form.anneeMesure.value = (yy < 1000) ? yy + 1900 : yy;
+	}
+}
+
+function fetchKML() {
+	var credentials = btoa("webobs:0vpf1pgp");
+	var auth = {
+		'Origin': 'http://localhost',
+		'Access-Control-Request-Method': 'GET',
+		'Access-Control-Allow-Origin': 'http://localhost',
+		'Authorization': `Basic \${credentials}`,
+	};
+	var url = "https://share.garmin.com/Feed/Share/6DOQM";
+    return fetch(url, {
+		credentials: 'include',
+		mode: 'cors',
+		headers: auth,
+	})
+        .then(response => response.text())
+        .then(xmlString => \$.parseXML(xmlString))
+        .then(data => console.log(data))
 }
 
 function fc() {
@@ -344,15 +379,15 @@ function fc() {
 
 function refresh_form()
 {
-	document.formulaire.refresh.value = 1;
+	document.form.refresh.value = 1;
 	postIt();
 }
 
 function delete_node()
 {
 	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative.\\n\\n Are you sure you want to move this NODE to trash ?\") ) {
-		document.formulaire.delete.value = 1;
-		document.formulaire.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
+		document.form.delete.value = 1;
+		document.form.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
 		postIt();
 	} else {
 		return false;
@@ -362,7 +397,7 @@ function delete_node()
 
 </head>
 
-<body style="background-color:#E0E0E0" onLoad="maj_transmission();fc();checkNode();" id="formNode">
+<body style="background-color:#E0E0E0" onLoad="maj_transmission();latlonChange();fc();checkNode();" id="formNode">
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <script language="javascript" src="/js/overlib/overlib.js"></script>
 <!-- overLIB (c) Erik Bosrup -->
@@ -370,7 +405,7 @@ function delete_node()
 
 FIN
 
-print "<FORM id=\"theform\" name=\"formulaire\" action=\"\">\n";
+print "<FORM id=\"theform\" name=\"form\" action=\"\">\n";
 # --- "Validity"
 my $nodevalidity;
 if (clientHasAdm(type=>"authmisc",name=>"NODES")) {
@@ -428,23 +463,23 @@ print "<TR>";
 			print "<TD style=\"border:0;text-align:right\">";
     		print "<DIV class=parform>";
 				print "<B>$__{'Start date'}:</b> <SELECT name=\"anneeDepart\" size=\"1\">";
-				for ($usrYearC,@anneeListeC) { print "<OPTION".(($_ eq $usrYearC)?" selected":"")." value=$_>$_</option>\n"; }
+				for ($usrYearC,@yearListC) { print "<OPTION".(($_ eq $usrYearC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 				print " <SELECT name=\"moisDepart\" size=\"1\">";
-				for (@moisListe) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@monthList) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 				print " <SELECT name=\"jourDepart\" size=\"1\">";
-				for (@jourListe) { 	print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@dayList) { 	print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT><BR>";
 				print "<b>$__{'End date'}:</b> <SELECT name=\"anneeEnd\" size=\"1\">";
-				for ($usrYearE,@anneeListeE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
+				for ($usrYearE,@yearListE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "<OPTION value=NA>NA</option>\n";
 				print "</SELECT>";
 				print " <SELECT name=\"moisEnd\" size=\"1\">";
-				for (@moisListe) { print "<option".(($_ eq $usrMonthE)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@monthList) { print "<option".(($_ eq $usrMonthE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 				print " <SELECT name=\"jourEnd\" size=\"1\">";
-				for (@jourListe) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@dayList) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 			print "</DIV></TD>";
 			print "<TD align=center style=\"border:0\"></TD>";
@@ -502,9 +537,9 @@ print "<TR>";
 	for (@GL) { if (! (($_) ~~ @{$allNodeGrids{$NODEName}}) ) { print "<option value=\"$_\">$_</option>\n" } }
 	print "</SELECT></td>";
 	print "<TD style=\"border:0;text-align:center;vertical-align:middle\">";
-	print "<INPUT type=\"Button\" value=\"$__{Add} >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.INs,document.formulaire.SELs)\"><br>";
+	print "<INPUT type=\"Button\" value=\"$__{Add} >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.form.INs,document.form.SELs)\"><br>";
 	print "<BR>";
-	print "<INPUT type=\"Button\" value=\"<< $__{Remove}\" style=\"width:100px\" onClick=\"javascript: if (document.formulaire.SELs.options.length == 1) {alert('invalid remove: node MUST belong to at least 1 grid !');} else { SelectMoveRows(document.formulaire.SELs,document.formulaire.INs);}\">";
+	print "<INPUT type=\"Button\" value=\"<< $__{Remove}\" style=\"width:100px\" onClick=\"javascript: if (document.form.SELs.options.length == 1) {alert('invalid remove: node MUST belong to at least 1 grid !');} else { SelectMoveRows(document.form.SELs,document.form.INs);}\">";
 	print "</TD>";
 	print "<TD style=\"border:0\">";
 	print "<SELECT name=\"SELs\" size=\"5\" multiple style=\"font-weight:bold\">";
@@ -542,18 +577,22 @@ print "<TR>";
 		print "<TD style=\"border:0\">";
 			# --- positioning date
 			print "<label for=\"datePos\">Date:</label> <select name=\"anneeMesure\" size=\"1\">";
-			for ($usrYearP,@anneeListeP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";	}
+			for ($usrYearP,@yearListP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";	}
 			print "</select>";
 			print " <select name=\"moisMesure\" size=\"1\">";
-			for (@moisListe) { print "<option".(($_ eq $usrMonthP)?" selected":"")." value=$_>$_</option>\n"; }
+			for (@monthList) { print "<option".(($_ eq $usrMonthP)?" selected":"")." value=$_>$_</option>\n"; }
 			print "</select>";
 			print " <select name=\"jourMesure\" size=\"1\">";
-			for (@jourListe) { print "<option".(($_ eq $usrDayP)?" selected":"")." value=$_>$_</option>\n"; }
+			for (@dayList) { print "<option".(($_ eq $usrDayP)?" selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>";
-			# --- Positioning type (GPS, Map (Carte) ou Inconnu)
-			print "<label for=\"typePos\">Type: </label> <select onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_pos_type}')\" name=\"typePos\" size=\"1\">";
+			# --- Positioning type (unknown, map, GPS or auto)
+			print "<label for=\"typePos\">Type: </label> "
+				."<select name=\"typePos\" size=\"1\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_pos_type}')\">";
 			for (sort(keys(%typePos))) { print  "<option".(($_ eq $usrTypePos) ? " selected ":"")." value=$_>$typePos{$_}</option>\n"; }
-			print "</select>";
+			print "</select><BR>";
+			print "<DIV id=\"rawKML\" style=\"display:none\"><LABEL for=\"rawKML\">Raw KML: </LABEL>"
+				." <INPUT name=\"rawKML\" size=\"40\" value=\"$usrRAWKML\">"
+				."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Fetch KML' onClick='fetchKML()'></DIV>";
 		print "</TD>";
 	print "</TR></TABLE>";
 	print "</FIELDSET>\n";
