@@ -33,7 +33,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2022-07-26
+%   Updated: 2023-02-15
 
 
 if ~exist('NODES','var')
@@ -126,6 +126,10 @@ if ~exist(clb,'file')
 end
 if exist(clb,'file')
 	C = readdatafile(clb,'CommentStyle','#')';
+	nf = size(C,1);
+	if nf < 20
+		C = cat(1,C,repmat({''},20-nf,size(C,2)));
+	end
 	nn = 1;
 	for j = 1:size(C,2)
 		k = strfind(C{3,j},'-');
