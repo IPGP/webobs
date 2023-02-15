@@ -95,6 +95,9 @@ Process NODE Update or Create from formNODE submitted info
  typePos=
  POS_TYPE|  configuration value
 
+ rawKML=
+ POS_RAWKML|  configuration value (URL)
+
  features=
  FILES_FEATURES|  configuration value - string file1[|file2[....|filen]]
 
@@ -184,7 +187,7 @@ my $jourE     = $cgi->param('jourEnd')     // '';
 my $validite  = $cgi->param('valide')      // '';
 my $alias     = $cgi->param('alias')       // '';
 my $type      = $cgi->param('type')        // '';
-my $tz        = $cgi->param('tz')        // '';
+my $tz        = $cgi->param('tz')          // '';
 my $data      = $cgi->param('data')        // '';
 my $rawformat = $cgi->param('rawformat')   // '';
 my $rawdata   = $cgi->param('rawdata')     // '';
@@ -204,6 +207,7 @@ my $anneeP    = $cgi->param('anneeMesure') // '';
 my $moisP     = $cgi->param('moisMesure')  // '';
 my $jourP     = $cgi->param('jourMesure')  // '';
 my $typePos   = $cgi->param('typePos')     // '';
+my $rawKML    = $cgi->param('rawKML')      // '';
 my $features  = $cgi->param('features')    // '';
 $features =~ s/\|/,/g;
 my %n2n;
@@ -268,7 +272,8 @@ push(@lines,"LAT_WGS84|$lat\n");
 push(@lines,"LON_WGS84|$lon\n");
 push(@lines,"ALTITUDE|$alt\n");
 push(@lines,"POS_DATE|$datePos\n");
-push(@lines,"POS_TYPE|".u2l($typePos)."\n");
+push(@lines,"POS_TYPE|$typePos\n");
+push(@lines,"POS_RAWKML|$rawKML\n");
 push(@lines,"INSTALL_DATE|$dateInstall\n");
 push(@lines,"END_DATE|$dateEnd\n");
 push(@lines,"FILES_FEATURES|".u2l(lc(join(",",map {trim($_)} split(/[,\|]/,$features))))."\n");
