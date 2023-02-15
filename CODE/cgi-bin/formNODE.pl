@@ -267,8 +267,12 @@ function postIt()
 		     alert( \"postNode couldn't execute\" );
 		     location.href = document.referrer; });
 	} else {
-		alert(\"No changes, save ignored\");
-		return false;
+		const quit_ans = confirm(\"No changes, save ignored \\nOK = back to Node's description \\nCancel = continue edition\");
+		if (quit_ans){
+			go_back_node();
+		} else {
+			return false;
+		}
 	}
 }
 
