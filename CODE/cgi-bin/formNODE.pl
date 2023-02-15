@@ -261,7 +261,7 @@ function postIt()
 		     if (data != '') alert(data);
 			 if (document.formulaire.refresh.value == 1) {
 				 location.reload();
-		     } else { location.href = go_back_node(); } 
+		     } else { go_back_node(); } 
 		})
 		  .fail( function() {
 		     alert( \"postNode couldn't execute\" );
