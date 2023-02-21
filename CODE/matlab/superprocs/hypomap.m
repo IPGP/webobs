@@ -4,9 +4,9 @@ function DOUT=hypomap(varargin)
 %       HYPOMAP(PROC) makes default outputs of PROC.
 %
 %       HYPOMAP(PROC,TSCALE) updates all or a selection of TIMESCALES graphs:
-%           TSCALE = '%' : all timescales defined by PROC.conf (default)
-%	    TSCALE = '01y' or '30d,10y,'all' : only specified timescales
-%	    (keywords must be in TIMESCALELIST of PROC.conf)
+%           TSCALE = '%': all timescales defined by PROC.conf (default)
+%	        TSCALE = '01y' or '30d,10y,all': only specified timescales
+%	        (keywords must be in TIMESCALELIST of PROC.conf)
 %
 %	HYPOMAP(PROC,[],REQDIR) makes graphs/exports for specific request directory REQDIR.
 %	REQDIR must contain a REQUEST.rc file with dedicated parameters.
@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2021-05-19
+%   Updated: 2023-02-14
 
 
 WO = readcfg;
@@ -165,15 +165,20 @@ for m = 1:length(summarylist)
 		figure, clf
 		psz = [8,12];
 		set(gcf,'PaperUnits','inches','PaperSize',psz,'PaperPosition',[0,0,psz])
+		x0 = 0.07; dx0 = 0.92; dx01 = 0.6;
+		x1 = 0.70; dx1 = 0.23;
+		y0 = 0.36; dy0 = 0.56;
+		y1 = 0.15; dy1 = 0.18; y01 = y1;
 
 		% --- main map
 		%[FB-was] if ~isempty(M(m).prof1) & ~isempty(M(m).prof2)
 		if numel(M(m).prof2)==5
-			set(gcf,'PaperSize',[psz(1)+4,psz(2)])
-			axes('position',[0.07,0.33,0.6,0.6]);
-		else
-			axes('position',[0.07,0.33,0.9,0.6]);
+			set(gcf,'PaperSize',[psz(1)+2,psz(2)])
+			dx0 = 0.6; dx01 = dx0;
+			y0 = 0.405; dy0 = 0.5;
+			y1 = 0.205; dy1 = 0.18; y01 = y1-0.03;
 		end
+		axes('position',[x0,y0,dx0,dy0]);
 		orient tall
 
 		% basemap
@@ -245,7 +250,7 @@ for m = 1:length(summarylist)
 		% --- profile 1
 		prof = M(m).prof1;
 		if numel(prof)==5
-			axes('position',[0.07,0.13,0.6,0.18])
+			axes('position',[x0,y1,dx01,dy1])
 
 			% in local referential (x0,y0) and km, cross-section line has equation a.x + b.y + c = 0, where c=0
 			% and distance of any point (x,y) from line is abs(a.x + b.y + c)/sqrt(a^2 + b^2)
@@ -279,7 +284,8 @@ for m = 1:length(summarylist)
 			end
 			caxis(clim)
 			hold off
-			text(pl([1,end]),pz([1,end]),{'   A','B   '},'FontSize',14,'FontWeight','bold','VerticalAlignment','top','HorizontalAlignment','center')
+			text(pl(1),pz(1),' A','FontSize',14,'FontWeight','bold','VerticalAlignment','top','HorizontalAlignment','left')
+			text(pl(end),pz(end),'B ','FontSize',14,'FontWeight','bold','VerticalAlignment','top','HorizontalAlignment','right')
 			ylabel('Depth (km)')
 			xlabel('Projected distance on cross-section A-B (km)')
 
@@ -293,7 +299,7 @@ for m = 1:length(summarylist)
 		% --- profile 2
 		prof = M(m).prof2;
 		if numel(prof)==5
-			axes('position',[0.70,0.33,0.23,0.6])
+			axes('position',[x1,y0,dx1,dy0])
 
 			% in local referential (x0,y0) and km, cross-section line has equation a.x + b.y + c = 0, where c=0
 			% and distance of any point (x,y) from line is abs(a.x + b.y + c)/sqrt(a^2 + b^2)
@@ -327,8 +333,8 @@ for m = 1:length(summarylist)
 			end
 			caxis(clim)
 			hold off
-			text(pz([1,end]),pl([1,end]),{'    A''','B''    '},'FontSize',14,'FontWeight','bold', ...
-				'VerticalAlignment','top','HorizontalAlignment','center','rotation',90)
+			text(pz(1),pl(1),'  A''','FontSize',14,'FontWeight','bold','VerticalAlignment','top','HorizontalAlignment','left','rotation',90)
+			text(pz(end),pl(end),'B''  ','FontSize',14,'FontWeight','bold','VerticalAlignment','top','HorizontalAlignment','right','rotation',90)
 			xlabel('Depth (km)')
 			ylabel('Projected distance on cross-section A''-B'' (km)')
 
@@ -341,7 +347,7 @@ for m = 1:length(summarylist)
 
 
 		% --- legend
-		axes('position',[0.68,0.105,0.21,0.17]);
+		axes('position',[x1-0.02,y01,dx1-0.02,dy1-0.01]);
 
 		% color scale (depth or time)
 		wsc = 0.1;
@@ -522,3 +528,8 @@ xx = linspace(xp(1),xp(2),500);
 yy = linspace(yp(1),yp(2),500);
 pl = (xx - prof(1))*degkm(prof(2))*cosd(90-prof(3)) + (yy - prof(2))*degkm*sind(90-prof(3));
 pz = interp2(DEM.lon,DEM.lat,-DEM.z/1e3,xx,yy);
+k = isnan(pz);
+if ~all(k)
+	pz(k) = [];
+	pl(k) = [];
+end
