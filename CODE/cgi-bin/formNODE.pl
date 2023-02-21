@@ -279,10 +279,11 @@ function postIt()
 function go_back_node() {
 // the node aready exists, go back to its page
 	if ($newnode == 0) { 
-		location.href  = '/cgi-bin/showNODE.pl?node=$GRIDType.$GRIDName.$NODEName';
-// the node is new, use history
+//		location.href  = '/cgi-bin/showNODE.pl?node=$GRIDType.$GRIDName.$NODEName';
+		location.href  = document.formulaire.referer.value;
+// the node is new
 	} else { 
-		history.go(-1);
+		location.href  = document.formulaire.referer.value;
 	}
 }
 
