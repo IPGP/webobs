@@ -277,7 +277,13 @@ function postIt()
 }
 
 function go_back_node() {
-	location.href  = '/cgi-bin/showNODE.pl?node=$GRIDType.$GRIDName.$NODEName';
+// the node aready exists, go back to its page
+	if ($newnode == 0) { 
+		location.href  = '/cgi-bin/showNODE.pl?node=$GRIDType.$GRIDName.$NODEName';
+// the node is new, use history
+	} else { 
+		history.go(-1);
+	}
 }
 
 function maj_rawformat() {
