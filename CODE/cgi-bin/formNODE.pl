@@ -266,14 +266,29 @@ function postIt()
 		     if (data != '') alert(data);
 			 if (document.form.refresh.value == 1) {
 				 location.reload();
-		     } else { location.href = document.form.referer.value; }
+		     } else { go_back_node(); } 
 		})
 		  .fail( function() {
 		     alert( \"postNode couldn't execute\" );
 		     location.href = document.referrer; });
 	} else {
-		alert(\"No changes, save ignored\");
-		return false;
+		const quit_ans = confirm(\"No changes, save ignored \\nOK = back to Node's description \\nCancel = continue edition\");
+		if (quit_ans){
+			go_back_node();
+		} else {
+			return false;
+		}
+	}
+}
+
+function go_back_node() {
+// the node aready exists, go back to its page
+	if ($newnode == 0) { 
+//		location.href  = '/cgi-bin/showNODE.pl?node=$GRIDType.$GRIDName.$NODEName';
+		location.href  = document.formulaire.referer.value;
+// the node is new
+	} else { 
+		location.href  = document.formulaire.referer.value;
 	}
 }
 
@@ -730,7 +745,7 @@ print "</TD></TR>";
 print "<TR><TD style=border:0 colspan=2><HR>";
 # --- buttons zone
 print "<P align=center>";
-print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
+print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"go_back_node()\" style=\"font-weight:normal\">";
 print "<INPUT type=\"button\" value=\"$__{'Save'}\" style=\"font-weight:bold\" onClick=\"postIt();\">";
 print "</P></TD></TR></TABLE>";
 print "</FORM>";
