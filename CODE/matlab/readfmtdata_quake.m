@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2023-02-14
+%	Updated: 2023-02-16
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -68,6 +68,7 @@ else
 	exstatus = '';
 end
 
+felteventcode = isok(P,'FELT_EVENTCODE_OK');
 feltcomment = field2str(P,'EVENTCOMMENT_FELT_REGEXP');
 excomment = field2str(P,'EVENTCOMMENT_EXCLUDED_REGEXP');
 incomment = field2str(P,'EVENTCOMMENT_INCLUDED_REGEXP');
@@ -486,14 +487,15 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 		nflt = 0;
 		% now must process all events in a loop...
 		for ii = 1:length(t)
-			% comment field (c(:,4)) will be replaced by MC3 event type
-			k = ~cellfun(@isempty,regexp(mc3(:,13),c(ii,1))) | ~cellfun(@isempty,regexp(mc3(:,14),c(ii,1)));
-			if any(k)
-				c{ii,4} = mc3(k,4);
-				c{ii,6} = sprintf('%s/%d/images/%d%02d/%s',MC3.PATH_WEB,tv(ii,[1,1:2]),mc3{k,15});
-				nbid = nbid + 1;
-				% set as felt event if the comment contains the right regexp
-				if ~isempty(feltcomment)
+			k = find(~cellfun(@isempty,regexp(mc3(:,13),c(ii,1))) | ~cellfun(@isempty,regexp(mc3(:,14),c(ii,1))),1);
+			if ~isempty(k)
+				% set as felt event if the event comment contains the code |xxN|
+				if felteventcode && regexp(c{ii,4},'\|[A-Z]{2}[1-9].*\|')
+					ems = str2double(regexprep(c{ii,4},'.*\|[A-Z]{2}([1-9]).*','$1'));
+					d(ii,11) = max(2,ems);
+					nflt = nflt + 1;
+				% or the MC3 comment contains the right regexp...
+				elseif ~isempty(feltcomment) && ~isempty(mc3{k,17})
 					if ~isempty(regexpi(mc3{k,17},feltcomment))
 						% get the maximum intensity N from a code xxN (if specified)
 						ems = str2double(regexprep(mc3(k,17),'.*[A-Z]{2}([2-9]).*','$1'));
@@ -501,6 +503,10 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 						nflt = nflt + 1;
 					end
 				end
+				% comment field (c(:,4)) is replaced by MC3 event type
+				c{ii,4} = mc3(k,4);
+				c{ii,6} = sprintf('%s/%d/images/%d%02d/%s',MC3.PATH_WEB,tv(ii,[1,1:2]),mc3{k,15});
+				nbid = nbid + 1;
 			else
 				X = dir(sprintf('%s/%d/images/%d%02d/%d%02d%02d%02d%02d*.png',MC3.ROOT,tv(ii,[1,1:2,1:5])));
 				X1 = dir(sprintf('%s/%d/images/%d%02d/%d%02d%02d%02d%02d*.png',MC3.ROOT,tv1(ii,[1,1:2,1:5])));
