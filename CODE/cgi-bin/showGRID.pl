@@ -6,11 +6,49 @@ showGRID.pl
 
 =head1 SYNOPSIS
 
-http://..../showGRID.pl?grid=gridtype.gridname[,nodes=][,coord=][,project=][,procparam=]
+http://..../showGRID.pl?grid=gridtype.gridname[,nodes=][,coord=][,project=][,procparam=][,sortby=][,map=][,invalid=]
 
 =head1 DESCRIPTION
 
 Display a GRID
+
+=head1 Query string parameters
+
+grid=
+ grid full name to display as gridtype.gridname
+
+nodes=
+ filter on the node activity status. Default value is DEFAULT_NODES_FILTER variable in GRIDS.rc. Options are:
+   active  only active nodes (current time is between the start and end dates)
+ inactive  only inactive nodes (end date in the past or start date in the future)
+      all  all nodes
+
+coord=
+ specify the coordonates. Default value is DEFAULT_COORDINATES variable in GRIDS.rc. Options are:
+  latlon  latitude and longitude
+     utm  Universal Transverse Mercator projection (WGS84)
+	 xyz  geocentric X, Y and Z
+
+project=
+ show/hide the project column. Default value is DEFAULT_PROJECT_FILTER variable in GRIDS.rc. Options are:
+   on
+   off
+
+procparam=
+ show/hide the proc parameters columns. Default value is DEFAULT_PROCPARAM_FILTER variable in GRIDS.rc. Options are:
+   on
+   off
+
+sortby=
+ how to sort the grid events. Options are:
+   event  sub-events are displayed below the parent event (default)
+    date  all events in reversed chronological order
+
+map=
+ map number in case of submaps. Default is the main grid map.
+
+invalid=
+ show/hide invalid nodes. This option is for administrator level only.
 
 =cut
 
@@ -46,7 +84,6 @@ set_message(\&webobs_cgi_msg);
 my $htmlcontents = "";  # HTML page that will be returned to the browser
 my $editOK   = 0;       # 1 if the user is allowed to edit the grid
 my $admOK    = 0;       # 1 if the user has admin rights in the grid
-my $seeInvOK = 0;       # 1 if the user is allowed to see invalid nodes
 my $GRIDType = "";      # grid type ("PROC" or "VIEW")
 my $GRIDName = "";      # name of the grid
 my %GRID;               # structure describing the grid
@@ -65,6 +102,7 @@ my $usrProcparam = checkParam($cgi->param('procparam'),
 my $usrSortby = checkParam($cgi->param('sortby'), qr/^[a-z]*$/, 'sortby')
 			// "event";
 my $usrMap = checkParam($cgi->param('map'), qr/^[0-9]*$/, 'map') // '';
+my $usrInvalid = checkParam($cgi->param('invalid'), qr/^(on|off)?$/, 'invalid') // "off";
 
 if (scalar(@GID) == 2) {
 	($GRIDType, $GRIDName) = @GID;
@@ -79,9 +117,6 @@ if (scalar(@GID) == 2) {
 			}
 			if ( WebObs::Users::clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
 				$admOK = 1;
-			}
-			if ( WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"SEEINVALIDNODES") ) {
-				$seeInvOK = 1;
 			}
 		} else { die "You cannot display $GRIDType.$GRIDName"}
 	} else { die "Couldn't get $GRIDType.$GRIDName configuration." }
@@ -356,15 +391,16 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 
 		# -- Nodes list submenu Nodes
 		$htmlcontents .= "$__{'Nodes'} [ ";
-		if ($usrNodes eq "active") {
-			$htmlcontents .= "<B>$__{'Active'}</B>" ;
-		} else {
-			$htmlcontents .= "<A href=\"$myself&amp;nodes=active&amp;coord=$usrCoord&amp;project=$usrProject&amp;$procParm#NODES\">$__{'Active'}</A>";
+		$htmlcontents .= ($usrNodes eq "active" ? "<B>$__{'Active'}</B>":"<A href=\"$myself&amp;nodes=active&amp;coord=$usrCoord&amp;project=$usrProject&amp;$procParm#NODES\">$__{'Active'}</A>");
+		$htmlcontents .= " | ";
+		$htmlcontents .= ($usrNodes eq "inactive" ? "<B>$__{'Inactive'}</B>":"<A href=\"$myself&amp;nodes=inactive&amp;coord=$usrCoord&amp;project=$usrProject&amp;$procParm#NODES\">$__{'Inactive'}</A>");
+		$htmlcontents .= " | ";
+		$htmlcontents .= ($usrNodes eq "all" ? "<B>$__{'All'}</B>":"<A href=\"$myself&amp;nodes=all&amp;coord=$usrCoord&amp;project=$usrProject$procParm#NODES\">$__{'All'}</A>");
+		if ( $admOK ) {
+			$htmlcontents .= " | ".($usrInvalid eq "on" ? "<A href=\"$myself&amp;invalid=off&amp;coord=$usrCoord&amp;project=$usrProject&amp;nodes=$usrNodes$procParm#NODES\">$__{'Hide invalid'}</A>"
+			                                             :"<A href=\"$myself&amp;invalid=on&amp;coord=$usrCoord&amp;project=$usrProject&amp;nodes=$usrNodes$procParm#NODES\">$__{'Show invalid'}</A>");
 		}
-		if ( $seeInvOK ) {
-			$htmlcontents .= " | ".($usrNodes eq "valid" ? "<B>$__{'Valid'}</B>":"<A href=\"$myself&amp;?coord=$usrCoord&amp;project=$usrProject&amp;nodes=valid$procParm#NODES\">$__{'Valid'}</A>");
-		}
-		$htmlcontents .= " | ".($usrNodes eq "all" ? "<B>$__{'All'}</B>":"<A href=\"$myself&amp;coord=$usrCoord&amp;project=$usrProject&amp;nodes=all$procParm#NODES\">$__{'All'}</A>")." ] ";
+		$htmlcontents .= " ] ";
 
 		# -- Nodes list submenu Coordinates
 		$htmlcontents .= "- $__{Coordinates} [ "
@@ -400,8 +436,8 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 
 		# ---- then, the Nodes' table
 		#
-		my $nbValides=0;
-		my $nbNonValides=0;
+		my $nbValides = 0;
+		my $nbNonValides = 0;
 		my $tcolor;
 		my %NODE;
 		my $newNODE = "<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\"><IMG title=\"$__{'Create a new node'}\" src=\"/icons/modif.png\"></A>";
@@ -460,7 +496,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				# is VALID ? do we display INVALID ?
 				if (!isok($NODE{VALID})) {
 					$tcolor="node-disabled";
-					if ($usrNodes eq "valid" || !$seeInvOK) {
+					if ($usrInvalid ne "on") {
 						$nbNonValides++;
 						$displayNode = 0;
 					}
@@ -473,6 +509,10 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				if (isok($NODE{VALID}) && ($NODE{END_DATE} ne "NA" && $NODE{END_DATE} lt $today) || ($NODE{INSTALL_DATE} ne "NA" && $NODE{INSTALL_DATE} gt $today)) {
 					$tcolor="node-inactive";
 					if ($usrNodes eq "active") {
+						$displayNode = 0;
+					}
+				} else {
+					if ($usrNodes eq "inactive") {
 						$displayNode = 0;
 					}
 				}
