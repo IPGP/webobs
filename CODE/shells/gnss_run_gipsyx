@@ -189,6 +189,7 @@ for station in $NODES; do
 		mm=${ymd:5:2}
 		dd=${ymd:8:2}
 		bb=$(date -d "$ymd" +"%b")
+		rinex="$tmpdir/${sta}${doy}0.${yy}o"
 
 		# uses station.info to overwrite rinex header
 		if [[ "$STATION_INFO" != "" && -s "$STATION_INFO" ]]; then
