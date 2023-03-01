@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2023-02-16
+%	Updated: 2023-02-28
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -545,7 +545,7 @@ if ~isempty(incomment)
 		e = e(k,1);
 	end
 end
-% applies a last filter on the comment field (case-insensitive regexp)
+% applies a filter on the comment field (case-insensitive regexp)
 if ~isempty(excomment)
 	k = cellfun(@isempty,regexpi(c(:,4),excomment));
 	if any(k)
@@ -556,6 +556,12 @@ if ~isempty(excomment)
 		e = e(k,1);
 	end
 end
+% applies a last selection filter on MSK (may come from MC3)
+k = isinto(d(:,11),P.MSKLIM);
+t = t(k,1);
+d = d(k,:);
+c = c(k,:);
+e = e(k,1);
 
 D.t = t + P.TZ/24;
 D.d = d;
