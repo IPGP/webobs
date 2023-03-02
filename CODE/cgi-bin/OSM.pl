@@ -94,6 +94,7 @@ print <<'END';
    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
    crossorigin=""/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+<script src="https://unpkg.com/shpjs@latest/dist/shp.js" crossorigin=""></script>
 <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
       integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
       crossorigin=""></script>
@@ -232,6 +233,7 @@ print <<"END";
 	  var out = wkt.write(testFeature);
 
       outWKT = out;
+      
 	});
 END
 
@@ -260,7 +262,7 @@ if (scalar(@NID) == 2) {
 print "</script>\n";
 
 print "<form action='geomNODE.pl' method='get' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON+';$NODEName';window.close()\">";
-print "<input id='geom' type='submit' name='geom' value='Sauvegarder'>";
+print "<strong>Pour enregistrer la couverture spatiale du NODE aux formats WKT et GeoJSON, cliquez ici: </strong><input id='geom' type='submit' name='geom' value='Sauvegarder'>";
 print "</form>";
 
 # ---- we're done ------------------------------------

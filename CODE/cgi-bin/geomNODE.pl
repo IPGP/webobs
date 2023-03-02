@@ -23,7 +23,7 @@ print $cgi->header( -type => 'text/plain', -status => '200' );
 
 # ---- managing the database
 my $driver   = "SQLite";
-my $database = "/home/lucas/webobs/SETUP/WEBOBSGEOMETRY.db";
+my $database = "/home/lucas/webobs/SETUP/WEBOBSMETA.db";
 my $dsn = "DBI:$driver:dbname=$database";
 my $userid = "";
 my $password = "";
