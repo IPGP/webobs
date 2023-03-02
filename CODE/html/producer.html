@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <title>Titre de la page</title>
+    <script src="/js/jquery.js"></script>
+  </head>
+  <body>
+    <p>Formulaire de renseignement du producteur de données</p>
+    
+    <form action="../cgi-bin/producer.pl" method="get" id="producer">
+        <fieldset>
+            <fieldset id='mandatory'>
+                <legend>Champs obligatoires</legend>
+                    <p><label>Identifiant: <input type="text" name="Identifier" value="OBSE"></label></p>
+                    <p><label>Nom: <input type="text" name="Name" value="OBSERA"></p>
+                    <p><label>Titre: <input type="text" name="Title" value="Observatoire de l'Eau et de l'Erosion aux Antilles"></p>
+                    <p><label>Description: <textarea name="Description" rows="2" cols="35"></textarea></p>
+                    <p><label>Courriel: <input type="text" name="Email"></p>
+                    <p><label>Contacts: </label>&nbsp<button id="mgr" class="add">Ajouter un responsable des données</button>&nbsp<button id="mgr" class="remove">Enlever un responsable des données</button></p>
+                    <p>&nbspChef de projet: <input type="text" name="projectLeader"><p>
+                    <div id="div_mgr"></div>
+                    <input type="hidden" id="count_mgr" value=0>
+                    <p><label>Financeurs: </label>&nbsp<button id="fund" class="add">Ajouter un financeur</button>&nbsp<button id="fund" class="remove">Enlever un financeur</button></p>
+                    <p id="p_fund">&nbspType:
+                        <select name="type" id="type">
+                            <option value="FrenchResearchInstitutes">Institut de recherche français</option>
+                            <option value="FederativeStructure">Structure fédérative</option>
+                            <option value="ResearchUnit">Unité de recherche</option>
+                            <option value="Other">Autre</option>
+                            <option value="OtherUniversitiesAndSchools">Autres universités et écoles</option>
+                            <option value="ResearchProgram">Programme de recherche</option>
+                            <option value="FrenchUniversitiesAndSchools">Universités et écoles françaises</option>
+                            <option value="OtherResearchInstitutes">Autres instituts de recherche</option>
+                        </select>&nbspIdentifiant de l'organisation:
+                        <input type="text" name="organisationsId">
+                    </p>
+                    <div id="div_fund"></div>
+                    <input type="hidden" id="count_fund" value=0>
+            </fieldset>
+            <fieldset>
+                <legend>Champs recommandés</legend>
+                    <p><label>Objectif: <textarea name="Objective" rows="2" cols="50"></textarea></p>
+                    <p><label>Variables mesurées: <textarea name="MeasuredVariable" rows="2" cols="50"></textarea></p>
+            </fieldset>
+            <fieldset>
+                <legend>Champs optionnels</legend>
+                    <p><label>Ressources en ligne: </label>&nbsp<button id="res" class="add">Ajouter une ressource</button>&nbsp<button id="res" class="remove">Enlever une ressource</button></p>
+                        <p id="p_res">&nbspType:
+                            <select name="element" id ="element" onchange="addDesc()">
+                                <option value="info">Info</option>
+                                <option value="download">Téléchargement</option>
+                                <option value="doi">DOI</option>
+                                <option value="webservice">Service web</option>
+                            </select>&nbspURL:
+                            <input type="text" name="url"><br>
+                            &nbspDescription du service web (à remplir si le type de ressource est un service web):&nbsp
+                            <textarea rows="3" cols="50" name="webServiceDesc"></textarea>
+                        </p>
+                    <div id="div_res"></div>
+                    <input type="hidden" id="count_res" value=0>
+            <input type="hidden" name="dat">
+            <input type="hidden" name="fnd">
+            <input type="hidden" name="inf">
+            </fieldset>
+            <p><input type="submit" value="Sauvegarder"></p>
+        </fieldset>
+    </form>
+    
+    <script>
+        $('.add').on('click', add);
+        $('.remove').on('click', remove);
+        
+        let form_producer = document.getElementById("producer");
+    
+    /*function addDesc() {
+        var n_value = document.getElementsByName('element').length;
+        for (let i =0; i < n_value; i++) {
+            var value = document.getElementsByName("element")[i].value;
+            if (value === "webservice") {
+                var url = document.getElementsByName("desc")[i];
+                var textarea = document.createElement("textarea");
+                textarea.rows = "3";
+                textarea.cols = "50";
+                textarea.name = "webServiceDesc";
+                url.innerHTML = "&nbspDescription du service web (à remplir si le type de ressource est un service web):&nbsp";
+                url.appendChild(textarea);
+            }
+        }
+        return false;
+    }*/
+
+    function add() {
+      var new_input = document.createElement('p');
+      var count = parseInt($('#count_'+this.id).val())+1;
+      $('#count_'+this.id).val(count);
+
+      switch (this.id ){
+        case "mgr":
+          new_input.innerHTML = "&nbspResponsable des données:&nbsp<input type='text' name='dataManager'>";
+          new_input.id = this.id + "_" + count;
+          break;
+        case "fund":
+            /*var type = document.getElementById("type");
+            var select = document.createElement('select');
+            select.innerHTML = type.innerHTML;
+            select.name = 'type';
+            new_input.innerHTML = '&nbspType:&nbsp';
+            new_input.appendChild(select);
+            new_input.innerHTML = new_input.innerHTML +"&nbspIdentifiant de l'organisation:&nbsp<input type='text' name='organisationsId'>";*/
+            var p_fund = document.getElementById('p_fund');
+            new_input.innerHTML = p_fund.innerHTML;
+            new_input.id = this.id + "_" + count;
+            break;
+        case "res":
+            /*var element = document.getElementById("element");
+            var select = document.createElement('select');
+            select.innerHTML = element.innerHTML;
+            select.name = 'element';
+            select.id = "element";
+            new_input.innerHTML = "&nbspType:&nbsp";
+            new_input.appendChild(select);
+            new_input.innerHTML = new_input.innerHTML +"&nbspURL:&nbsp<input type='text' name='url'>&nbspDescription du service web (à remplir si le type de ressource est un service web):&nbsp";
+            new_input.addEventListener('change', addDesc);
+            var textarea = document.createElement("textarea");
+            textarea.rows = "3";
+            textarea.cols = "50";
+            textarea.name = "webServiceDesc";
+            new_input.append(textarea)*/
+            var p_res = document.getElementById('p_res');
+            new_input.innerHTML = p_res.innerHTML;
+            new_input.id = this.id + "_" + count;
+            break;
+        default:
+            alert('Il ya un problème...');
+        }
+        
+      $('#div_'+this.id).append(new_input);
+      
+      return false;
+    }
+    
+    /*var elements = document.getElementsByName('element');
+    var n_value = document.getElementsByName('element').length;
+        
+    for (let i =0; i < n_value; i++) {
+        elements[i].addEventListener('change', addDesc);
+    }*/
+
+    function remove() {
+        var count = parseInt($('#count_'+this.id).val());
+        if (count > 0) {
+            $('#' + this.id + "_" + count).remove();
+            $('#count_'+this.id).val(count - 1);
+        }
+      return false;
+    }
+    
+    function valider (event) {
+        var dataMgr = document.getElementsByName('dataManager');
+        var type = document.getElementsByName('type');
+        var org = document.getElementsByName('organisationsId');
+        var elem = document.getElementsByName('element');
+        var url = document.getElementsByName('url');
+        
+        let champ_mgr = form_producer.elements["dat"];
+        let champ_fnd = form_producer.elements["fnd"];
+        let champ_url = form_producer.elements["inf"];
+
+        if (dataMgr.length > 0) {
+            for (let i = 0; i < dataMgr.length-1; i++) {
+                champ_mgr.value = champ_mgr.value.concat("dataManager" + ":" + dataMgr[i].value + "_,");
+            } 
+            champ_mgr.value = champ_mgr.value.concat("dataManager" + ":" + dataMgr[dataMgr.length-1].value);
+        }
+        
+        for (let i = 0; i < type.length-1; i++) {
+            champ_fnd.value = champ_fnd.value.concat(type[i].value + ":" + org[i].value + "_,");
+        } 
+        champ_fnd.value = champ_fnd.value.concat(type[type.length-1].value + ":" + org[org.length-1].value);
+
+        for (let i = 0; i < elem.length-1; i++) {
+            if (elem[i].value === "webservice") {
+                var desc = document.getElementsByName('webServiceDesc')[i];
+                champ_url.value = champ_url.value.concat("http:" + elem[i].value + "[" + desc.value + "]@" + url[i].value + "_,");
+            } else {
+                champ_url.value = champ_url.value.concat("http:" + elem[i].value + "@" + url[i].value + "_,");
+            }
+        } if (elem[elem.length-1].value === "webservice") {
+            var desc = document.getElementsByName('webServiceDesc')[elem.length-1];
+            champ_url.value = champ_url.value.concat("http:" + elem[elem.length-1].value + "[" + desc.value + "]@"+ url[url.length-1].value);
+        } else {
+            champ_url.value = champ_url.value.concat("http:" + elem[elem.length-1].value + "@" + url[url.length-1].value);
+        }
+        
+        let champ_proj = form_producer.elements["projectLeader"];
+        champ_proj.value = "projectLeader:" + champ_proj.value;
+    }
+    
+    form_producer.addEventListener('submit', valider);
+
+    $('#producer').on('submit', function(){
+        var arr = $(this).serializeArray();
+        console.log(arr);
+        if (arr[3].value === "" || arr[4].value === "" || arr[5].value === "" || arr[7].value === "") {
+            console.log('ça ne va pas !');
+        };
+        // return false; //      /<-- Only, if you don't want the form to be submitted after above commands
+    });
+    </script>
+  </body>
+</html>
