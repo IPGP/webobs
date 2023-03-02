@@ -8,12 +8,12 @@ import csv
 try:
 
     # Connect to DB and create a cursor
-    sqliteConnection = sqlite3.connect('/home/lucas/webobs/SETUP/WEBOBSOWNERS.db')
+    sqliteConnection = sqlite3.connect('/home/lucas/webobs/SETUP/WEBOBSOWNER.db')
     cursor = sqliteConnection.cursor()
     print('DB Init')
     
     # Write a query and execute it with cursor
-    query = 'pragma table_info("owners");'
+    query = 'pragma table_info("producer");'
     cursor.execute(query)
     
     # Fetch and output result
@@ -26,7 +26,7 @@ try:
         fields.append(result[i][1])
     #print(fields)
     
-    query = 'select * from owners'
+    query = 'select * from producer'
     cursor.execute(query)
     result = cursor.fetchall()
     #print(result)
