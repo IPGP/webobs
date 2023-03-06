@@ -177,7 +177,9 @@ print <<"END";
 	map.addControl(drawControl);
 	
 	var outGeoJSON = '';
-	var outWKT = '';
+	var outWKT = "POINT("+$lat+" "+$lon+")";
+	
+	console.log(outGeoJSON);
 	
 	\/\/On Draw Create Event
 	map.on(L.Draw.Event.CREATED, function(e) {
@@ -261,7 +263,7 @@ if (scalar(@NID) == 2) {
 }
 print "</script>\n";
 
-print "<form action='geomNODE.pl' method='get' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON+';$NODEName';window.close()\">";
+print "<form action='geomNODE.pl' method='get' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON+';$NODEName';window.close()\">"; #;window.close()
 print "<strong>Pour enregistrer la couverture spatiale du NODE aux formats WKT et GeoJSON, cliquez ici: </strong><input id='geom' type='submit' name='geom' value='Sauvegarder'>";
 print "</form>";
 

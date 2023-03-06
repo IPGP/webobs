@@ -168,6 +168,40 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 
 # --- return information when OK
 sub htmlMsgOK {
+
+	foreach (@donnees) {
+        my @obs   = split(/[\|]/, $_);
+        my $id    = $obs[6];
+        my $name  = $id;
+        my $unit  = $obs[4];
+        my $theia = $obs[$#obs];
+
+		# --- connecting to the database
+		my $driver   = "SQLite";
+		my $database = "/home/lucas/webobs/SETUP/WEBOBSMETA.db";
+		my $dsn = "DBI:$driver:dbname=$database";
+		my $userid = "";
+		my $password = "";
+		my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+		   or die $DBI::errstr;
+
+		# --- creating observed_properties table
+		my $stmt = qq(CREATE TABLE IF NOT EXISTS observed_properties
+		   (  Identifier 		TEXT NOT NULL,
+		      Unit				TEXT NOT NULL,
+		      Description		TEXT,
+		      TheiaCategories	TEXT,
+		      Keywords			TEXT)
+			;);
+
+		# --- complteing the observed_properties table
+		my $sth = $dbh->prepare( $stmt );
+		my $rv = $sth->execute() or die $DBI::errstr;
+
+		my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (Identifier, Unit) VALUES (?,?);');
+		$sth->execute($id, $unit);
+	}
+	
  	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
 	my $msg = $_[0] || "calibration file successfully updated !" ;
 	print "$msg\n";
