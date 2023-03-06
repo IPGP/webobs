@@ -27,7 +27,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2021-11-01
+%	Updated: 2022-02-03
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -71,15 +71,17 @@ if nargin > 2 && isfield(OPT,'DEM_FILE')
 			fprintf('%s: converting user''s DEM from UTM to lat/lon... ',wofun);
 			[dx,dy,zone] = ll2utm(repmat(dlat,2,1),repmat(dlon,2,1));
 			epsxy = 2*max(abs(diff(x(1:2))),abs(diff(y(1:2))));
-			kx = find(x >= min(dx(:,1) - epsxy) & x <= max(dx(:,2) + epsxy));
-			ky = find(y >= min(dy(:,1) - epsxy) & y <= max(dy(:,2) + epsxy));
+			kx = (x >= min(dx(:,1) - epsxy) & x <= max(dx(:,2) + epsxy));
+			ky = (y >= min(dy(:,1) - epsxy) & y <= max(dy(:,2) + epsxy));
 			[x,y,z] = gridutm2ll(x(kx),y(ky),z(ky,kx),zone);
 			fprintf('done.\n');
 		end
 		if forced || (all(isinto(dlon,x)) && all(isinto(dlat,y)))
-			DEM.lon = x(x >= dlon(1) & x <= dlon(2));
-			DEM.lat = y(y >= dlat(1) & y <= dlat(2));
-			DEM.z = z(y >= dlat(1) & y <= dlat(2),x >= dlon(1) & x <= dlon(2));
+			kx = (x >= min(dlon) & x <= max(dlon));
+			ky = (y >= min(dlat) & y <= max(dlat));
+			DEM.lon = x(kx);
+			DEM.lat = y(ky);
+			DEM.z = z(ky,kx);
 			DEM.COPYRIGHT = field2str(OPT,'DEM_COPYRIGHT','User''s defined DEM');
 			if ~isempty(DEM.z)
 				userdem = 1;
