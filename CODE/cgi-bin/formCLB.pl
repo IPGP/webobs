@@ -30,6 +30,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 $CGI::POST_MAX = 1024;
 $CGI::DISABLE_UPLOADS = 1;
 my $cgi = new CGI;
+use DBI;
 
 # ---- webobs stuff
 use WebObs::Config;
