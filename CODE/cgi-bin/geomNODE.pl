@@ -17,7 +17,7 @@ print $cgi->header( -type => 'text/plain', -status => '200' );
 
 # ---- extracting some data from the table producer
 my $driver   = "SQLite";
-my $database = "/home/lucas/webobs/SETUP/WEBOBSMETA.db";
+my $database = "/opt/CONF/WEBOBSMETA.db";
 my $dsn = "DBI:$driver:dbname=$database";
 my $userid = "";
 my $password = "";
