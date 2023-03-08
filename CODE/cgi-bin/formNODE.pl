@@ -190,8 +190,7 @@ print <<"FIN";
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
 <script type="text/javascript">
-function postIt()
-{
+function postIt() {
  if(document.form.nouveau.value == 1 && document.form.message.value != "ok") {
    alert("NODE ID: Please enter a valid and new ID!");
    document.form.nodename.focus();
@@ -278,6 +277,7 @@ function postIt()
 	} else {
 		alert(\"No changes, save ignored\");
 		return false;
+		}
 	}
 }
 function maj_rawformat() {
@@ -394,12 +394,12 @@ function delete_node()
 function nsew() {
 	var ns = 1;
 	var ew = 1;
-	if (document.formulaire.latwgs84n.value == 'S' && document.formulaire.latwgs84.value > 0) {
+	if (document.form.latwgs84n.value == 'S' && document.form.latwgs84.value > 0) {
 		ns = -1;
 	} else {
 		ns = 1;
 	}
-	if (document.formulaire.lonwgs84e.value == 'W' && document.formulaire.lonwgs84.value > 0) {
+	if (document.form.lonwgs84e.value == 'W' && document.form.lonwgs84.value > 0) {
 		ew = -1;
 	} else {
 		ew = 1;
@@ -410,23 +410,23 @@ function nsew() {
 function getCurrent (pos) {
 	var lat = pos.coords.latitude*nsew[0];
 	var lon = pos.coords.longitude*nsew[1];
-	if (document.formulaire.latwgs84.value == "") {
-		document.formulaire.latwgs84.value = lat.toFixed(6);
+	if (document.form.latwgs84.value == "") {
+		document.form.latwgs84.value = lat.toFixed(6);
 	}
-	if (document.formulaire.lonwgs84.value == "") {
-		document.formulaire.lonwgs84.value = lon.toFixed(6);
+	if (document.form.lonwgs84.value == "") {
+		document.form.lonwgs84.value = lon.toFixed(6);
 	}
 	map.flyTo([lat, lon], 13);
 	
-	if (document.formulaire.latwgs84.value < 0) {
-		document.formulaire.latwgs84n.value = 'S';
+	if (document.form.latwgs84.value < 0) {
+		document.form.latwgs84n.value = 'S';
 	} else {
-		document.formulaire.latwgs84n.value = 'N';
+		document.form.latwgs84n.value = 'N';
 	}
-	if (document.formulaire.lonwgs84.value < 0) {
-		document.formulaire.lonwgs84e.value = 'W';
+	if (document.form.lonwgs84.value < 0) {
+		document.form.lonwgs84e.value = 'W';
 	} else {
-		document.formulaire.lonwgs84e.value = 'E';
+		document.form.lonwgs84e.value = 'E';
 	}
 }
 
@@ -451,13 +451,13 @@ function onMapClick(e) {
 		.setLatLng(e.latlng)
 		.setContent("You clicked the map at " + e.latlng)
 		.openOn(map)
-	document.formulaire.latwgs84.value = lat*nsew[0];
-	document.formulaire.lonwgs84.value = lon*nsew[1];
+	document.form.latwgs84.value = lat*nsew[0];
+	document.form.lonwgs84.value = lon*nsew[1];
 }
 
 function onInputWrite(e) {
-	var lat = document.formulaire.latwgs84.value*nsew[0];
-	var lon = document.formulaire.lonwgs84.value*nsew[1];
+	var lat = document.form.latwgs84.value*nsew[0];
+	var lon = document.form.lonwgs84.value*nsew[1];
 	console.log(lat);
 	console.log(lon);
 	if (lat.toString().includes('.')){
@@ -768,8 +768,8 @@ print "<TR>";
 		
 		let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
 		
-		if (document.formulaire.latwgs84.value != '' || document.formulaire.lonwgs84.value != '') {
-			map.flyTo([document.formulaire.latwgs84.value*nsew[0], document.formulaire.lonwgs84.value*nsew[1]], 18);
+		if (document.form.latwgs84.value != '' || document.form.lonwgs84.value != '') {
+			map.flyTo([document.form.latwgs84.value*nsew[0], document.form.lonwgs84.value*nsew[1]], 18);
 		}
 		
 		var layerControl = L.control.layers(basemaps, overlays).addTo(map);
