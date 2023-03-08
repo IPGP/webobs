@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2023-02-28
+%	Updated: 2023-03-01
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -557,7 +557,7 @@ if ~isempty(excomment)
 	end
 end
 % applies a last selection filter on MSK (may come from MC3)
-k = isinto(d(:,11),P.MSKLIM);
+k = isnan(d(:,11)) | isinto(d(:,11),P.MSKLIM);
 t = t(k,1);
 d = d(k,:);
 c = c(k,:);
