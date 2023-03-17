@@ -12,9 +12,9 @@ function X = readtob1(filename)
 %	and any ascii as NaN.
 %
 %
-%	Author: François Beauducel, IPGP / WEBOBS
+%	Author: Franï¿½ois Beauducel, IPGP / WEBOBS
 %	Created: 2018-06-13 in Jakarta, Indonesia
-%	Updated: 2018-07-31
+%	Updated: 2023-03-17
 
 if ~exist(filename,'file')
 	error('file %s not exists.',filename)
@@ -96,7 +96,7 @@ X.HEADER.data_mclass = mclass;
 X.HEADER.data_bytes = rbytes;
 
 record_bytes = sum(rbytes); % record length (in byte)
-nr = (F.bytes - header_bytes)/record_bytes; % number of records in the file
+nr = floor((F.bytes - header_bytes)/record_bytes); % number of records in the file
 
 % --- reads the entire file (after header) into memory - VERY fast! -
 bb = fread(fid,[record_bytes,nr],'*uint8');
