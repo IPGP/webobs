@@ -53,6 +53,38 @@ function openPopupDomain(ux) {
 	positionPopup();
 	form.code.focus();
 }
+function openPopupProducer(ux) {
+	// ux  ==  producer' html-table row id OR -1 for a new domain
+	if (arguments.length <= 0 ) { return; } // noop if no ux
+	var form = $('#overlay_form_producer')[0];
+	if (ux != -1) { // editing an existing producer: populate popup from its table row TDs
+		// ATT:  $("td",domain.ux)[n] = n (0-based) must match domains <td> order in def-row  
+		form.id.value = $("td",ux)[2].textContent;
+		form.OLDcode.value = $("td",ux)[2].textContent;
+		form.id.style.backgroundColor = "#EEEEEE";
+		form.name.value = $("td",ux)[4].textContent;
+		var listgrids = $("td",ux)[6].textContent.split(', ');
+		$('#overlay_form_producer #grid option').each(function() { 
+			$(this).removeProp('selected');
+			if (jQuery.inArray( this.value, listgrids ) != -1) { $(this).prop('selected',true) }
+		});
+		$('label[for=gid]').css('display','block');
+		$(form.gid).css('display','block');
+		form.OLDgrid.value = $("td",ux)[6].textContent;
+		form.action.value = "update";
+	} else { // inserting a new domain
+		form.id.value = "";
+		form.id.readOnly = false;
+		form.id.style.backgroundColor = "";
+		form.name.value = "";
+		form.action.value = "insert";
+	}
+	form.tbl.value = "producer";
+	$('#overlay_form_producer[name=sendbutton]').attr('onclick',"sendPopupUser(); return false");
+	$("#overlay_form_producer").fadeIn(500);
+	positionPopup();
+	form.id.focus();
+}
 
 function sendPopupDomain() {
 	var form = $('#overlay_form_domain')[0];
@@ -74,6 +106,16 @@ function sendPopupDomain() {
 	location.href = Gscriptname+"?"+$("#overlay_form_domain").serialize()+"\#IDENT";
 }
 
+function sendPopupProducer() {
+    var arr = $('#overlay_form_producer').serializeArray();
+    console.log(arr);
+    //return false; //      /<-- Only, if you don't want the form to be submitted after above commands
+	$("#overlay_form_producer").fadeOut(500);
+	$("#ovly").fadeOut(500);
+	if (Gscriptname == "") { Gscriptname = "/cgi-bin/gridsMgr.pl"; }
+	location.href = Gscriptname+"?"+$("#overlay_form_producer").serialize()+"\#IDENT";
+}
+
 
 function postDeleteDomain(ux) {
 	var did =  $("td",ux)[2].textContent;
@@ -83,6 +125,17 @@ function postDeleteDomain(ux) {
 		did = did.replace(/\+/g,'%2B');
 		if (Gscriptname == "") { Gscriptname = "/cgi-bin/gridsMgr.pl"; }
 		location.href = Gscriptname+"?action=delete&tbl=domain&code="+did+"\#IDENT"
+	}
+}
+
+function postDeleteProducer(ux) {
+	var did =  $("td",ux)[2].textContent;
+	var name =  $("td",ux)[3].textContent;
+	var answer = confirm("do you really want to delete producer " + did + " (" + name + ") ? All associated grids will remain but hidden from grid tables.")
+	if (answer) {
+		did = did.replace(/\+/g,'%2B');
+		if (Gscriptname == "") { Gscriptname = "/cgi-bin/gridsMgr.pl"; }
+		location.href = Gscriptname+"?action=delete&tbl=producer&id="+did+"\#IDENT"
 	}
 }
 

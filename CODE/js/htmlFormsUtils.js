@@ -169,3 +169,70 @@ function delEvent(vedit,obj,evt) {
 		});
 	}
 }
+
+// Data producer form
+
+function addMgr () {
+	let form_producer = document.getElementById("overlay_form_producer");
+	var new_div = document.createElement('div');
+    form_producer.elements['mgr'].value = parseInt(form_producer.elements['mgr'].value)+1;
+    var div_mgr = document.getElementById('div_mgr');
+    new_div.innerHTML = "<label>Contact:<span class='small'>Data manager</span></label><input type='text' name='dataManager' value=''/><br/><br/>";
+    new_div.id = 'dataMgr';
+    div_mgr.append(new_div);
+}
+
+function removeMgr() {
+	let form_producer = document.getElementById("overlay_form_producer");
+	if (document.getElementById('dataMgr') === null) {
+		return false;
+	}
+	if (form_producer.elements['mgr'].value > 0) {
+		document.getElementById('dataMgr').remove();
+		form_producer.elements['mgr'].value -= 1;
+	}
+}
+
+function addFnd () {
+	let form_producer = document.getElementById("overlay_form_producer");
+    form_producer.elements['fnd'].value = parseInt(form_producer.elements['fnd'].value)+1;
+    var div_fnd = document.getElementById('div_fnd');
+    var div_fnd_2 = document.getElementById('div_fnd_2');
+    var new_div = document.createElement('div');
+    new_div.id = 'new_fnd';
+    new_div.innerHTML = div_fnd.innerHTML;
+    div_fnd_2.append(new_div);
+}
+
+function removeFnd() {
+	let form_producer = document.getElementById("overlay_form_producer");
+	if (document.getElementById('new_fnd') === null) {
+		return false;
+	}
+	if (form_producer.elements['fnd'].value > 1) {
+		document.getElementById('new_fnd').remove();
+		form_producer.elements['fnd'].value -= 1;
+	}
+}
+
+function addRes () {
+	let form_producer = document.getElementById("overlay_form_producer");
+    form_producer.elements['res'].value = parseInt(form_producer.elements['res'].value)+1;
+    var div_res = document.getElementById('div_res');
+    var div_res_2 = document.getElementById('div_res_2');
+    var new_div = document.createElement('div');
+    new_div.id = 'new_res';
+    new_div.innerHTML = div_res.innerHTML;
+    div_res_2.append(new_div);
+}
+
+function removeRes() {
+	let form_producer = document.getElementById("overlay_form_producer");
+	if (document.getElementById('new_res') === null) {
+		return false;
+	}
+	if (form_producer.elements['res'].value > 1) {
+		document.getElementById('new_res').remove();
+		form_producer.elements['res'].value -= 1;
+	}
+}

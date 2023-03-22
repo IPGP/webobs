@@ -63,5 +63,5 @@ def find_path(parser,var_name,path_to_var=''):
 if __name__ == "__main__":
     wo = '/opt/webobs/CONF/WEBOBS.rc'
     parser = read_file(wo)
-    path = find_path(parser,'path_nodes')
+    path = find_path(parser,'sql_table_producer')
     print(path)
