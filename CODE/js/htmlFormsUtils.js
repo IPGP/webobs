@@ -195,7 +195,7 @@ function removeMgr() {
 
 function addFnd () {
 	let form_producer = document.getElementById("overlay_form_producer");
-    form_producer.elements['fnd'].value = parseInt(form_producer.elements['fnd'].value)+1;
+    form_producer.elements['count_fnd'].value = parseInt(form_producer.elements['count_fnd'].value)+1;
     var div_fnd = document.getElementById('div_fnd');
     var div_fnd_2 = document.getElementById('div_fnd_2');
     var new_div = document.createElement('div');
@@ -209,9 +209,9 @@ function removeFnd() {
 	if (document.getElementById('new_fnd') === null) {
 		return false;
 	}
-	if (form_producer.elements['fnd'].value > 1) {
+	if (form_producer.elements['count_fnd'].value > 1) {
 		document.getElementById('new_fnd').remove();
-		form_producer.elements['fnd'].value -= 1;
+		form_producer.elements['count_fnd'].value -= 1;
 	}
 }
 

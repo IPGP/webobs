@@ -92,13 +92,25 @@ $QryParm->{'desc'}      ||= "";
 $QryParm->{'objective'} ||= "";
 $QryParm->{'meas_var'}  ||= "";
 $QryParm->{'email'}     ||= "";
-$QryParm->{'contacts'}  ||= "";
+$QryParm->{'projectLeader'}  ||= "";
 $QryParm->{'funders'}   ||= "";
 $QryParm->{'resources'} ||= "";
 my $authtable = "";
 $authtable = $WEBOBS{SQL_TABLE_DOMAINS} if ($QryParm->{'tbl'} eq "domain") ;
 $authtable = $WEBOBS{SQL_TABLE_PRODUCER} if ($QryParm->{'tbl'} eq "producer") ;
 $authtable = $WEBOBS{SQL_TABLE_PGRIDS} if ($QryParm->{'tbl'} eq "grids2producers") ;
+
+
+# ---- managing the single quote in SQLite3 query
+# -----------------------------------------------------------------------------
+my $title     = $QryParm->{'title'};
+$title =~ s/'/''/g;
+my $desc      = $QryParm->{'desc'};
+$desc =~ s/'/''/g;
+my $objective = $QryParm->{'objective'};
+$objective =~ s/'/''/g;
+my $meas_var  = $QryParm->{'meas_var'};
+$meas_var =~ s/'/''/g;
 
 # ---- process (execute) sql insert new row into table 'tbl'
 # -----------------------------------------------------------------------------
@@ -111,11 +123,11 @@ if ($QryParm->{'action'} eq 'insert') {
 		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 		my $rows = dbu($WEBOBS{SQL_DOMAINS},$q);
 	} elsif ($QryParm->{'tbl'} eq "producer") {
-		$q = "insert into $WEBOBS{SQL_TABLE_PRODUCER} values(\'$QryParm->{'id'}\',\'$QryParm->{'pname'}\',\'$QryParm->{'title'}\',\'$QryParm->{'desc'}\',\'$QryParm->{'objective'}\',\'$QryParm->{'meas_var'}\',\'$QryParm->{'email'}\',\'$QryParm->{'contacts'}\',\'$QryParm->{'funders'}\',\'$QryParm->{'resources'}\')";
+		$q = "insert into $WEBOBS{SQL_TABLE_PRODUCER} values(\'$QryParm->{'id'}\',\'$QryParm->{'pname'}\',\'$title\',\'$QryParm->{'desc'}\',\'$QryParm->{'objective'}\',\'$QryParm->{'meas_var'}\',\'$QryParm->{'email'}\',\'$QryParm->{'projectLeader'}\',\'$QryParm->{'funders'}\',\'$QryParm->{'resources'}\')";
 		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 		my $rows = dbu($WEBOBS{SQL_METADATA},$q);
 	} else { die "$QryParm->{'action'} for unknown table"; }
-	$$refMsg  .= ($rows == 1) ? "  having inserted new $QryParm->{'tbl'} " : "  failed to insert new $QryParm->{'tbl'}";
+	$$refMsg  .= ($rows == 1) ? "  having inserted new $QryParm->{'tbl'} " : $QryParm->{'title'}."  failed to insert new $QryParm->{'tbl'}";
 	$$refMsg  .= " $lastDBIerrstr";
 	$$refMsgColor  = ($rows == 1) ? "green" : "red";
 	#$$refMsg  .= " - <i>$q</i>";
@@ -132,8 +144,7 @@ if ($QryParm->{'action'} eq 'update') {
 		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 		my $rows = dbu($WEBOBS{SQL_DOMAINS},$q);
 	} elsif ($QryParm->{'tbl'} eq "producer"){
-		$q = "update $WEBOBS{SQL_TABLE_PRODUCER} set IDENTIFIER=\'$QryParm->{'id'}\', NAME=\'$QryParm->{'pname'}\', TITLE=\'$QryParm->{'title'}\', DESCRIPTION=\'$QryParm->{'desc'}\', OBJECTIVE=\'$QryParm->{'objective'}\', MEASUREDVARIABLES=\'$QryParm->{'meas_var'}\', EMAIL=\'$QryParm->{'email'}\', CONTACTS=\'$QryParm->{'contacts'}\', FUNDERS=\'$QryParm->{'funders'}\'";
-		$q .= " WHERE CODE=\'$QryParm->{'OLDcode'}\'";
+		$q = "update $WEBOBS{SQL_TABLE_PRODUCER} set IDENTIFIER=\'$QryParm->{'id'}\', NAME=\'$QryParm->{'pname'}\', TITLE=\'$QryParm->{'title'}\', DESCRIPTION=\'$QryParm->{'desc'}\', OBJECTIVE=\'$QryParm->{'objective'}\', MEASUREDVARIABLES=\'$QryParm->{'meas_var'}\', EMAIL=\'$QryParm->{'email'}\', CONTACTS=\'$QryParm->{'projectLeader'}\', FUNDERS=\'$QryParm->{'funders'}\', RESOURCES=\'$QryParm->{'resources'}\'";
 		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 		my $rows = dbu($WEBOBS{SQL_METADATA},$q);
 	} else { die "$QryParm->{'action'} for unknown table"; }
@@ -172,10 +183,46 @@ if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $Q
 	} 
 	my $q3 = "delete from $WEBOBS{SQL_TABLE_PGRIDS} WHERE PID=\'$QryParm->{'id'}\' AND TYPE = \'+++\'";
 	my $rows = dbuow($WEBOBS{SQL_METADATA},$q0,$q1,$q2,$q3);
-	$domainMsg  .= ($rows >= 1 || $q2 eq "") ? "salut  having updated $WEBOBS{SQL_TABLE_PGRIDS} " : "  failed to update $WEBOBS{SQL_TABLE_PGRIDS}";
+	$domainMsg  .= ($rows >= 1 || $q2 eq "") ? "  having updated $WEBOBS{SQL_TABLE_PGRIDS} " : "  failed to update $WEBOBS{SQL_TABLE_PGRIDS}";
 	$domainMsg  .= " $lastDBIerrstr";
 	$domainMsgColor  = ($rows >= 1 || $q2 eq "") ? "green" : "red";
 }
+=pod
+# ---- process (execute) sql update table 'contacts' after user insert or update
+# ----------------------------------------------------------------------------
+if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $QryParm->{'tbl'} eq "producer") {
+	my @grids = $cgi->param('grid');
+	my $q0 = "insert into $WEBOBS{SQL_TABLE_CONTACTS} values (\'+++\',\'\',\'$QryParm->{'id'}\')";
+	my $q1 = "delete from $WEBOBS{SQL_TABLE_CONTACTS} WHERE PID=\'$QryParm->{'id'}\' AND TYPE != \'+++\'";
+	my $q2 = "";
+	if (@grids > 0 && $grids[0] ne "") {
+		my @values = map { "(\'".join("\',\'",split(/\./,$_))."\',\'$QryParm->{'id'}\')" } @grids ;
+		$q2 = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@values);
+	} 
+	my $q3 = "delete from $WEBOBS{SQL_TABLE_CONTACTS} WHERE PID=\'$QryParm->{'id'}\' AND TYPE = \'+++\'";
+	my $rows = dbuow($WEBOBS{SQL_METADATA},$q0,$q1,$q2,$q3);
+	$domainMsg  .= ($rows >= 1 || $q2 eq "") ? "  having updated $WEBOBS{SQL_TABLE_CONTACTS} " : "  failed to update $WEBOBS{SQL_TABLE_CONTACTS}";
+	$domainMsg  .= " $lastDBIerrstr";
+	$domainMsgColor  = ($rows >= 1 || $q2 eq "") ? "green" : "red";
+}
+# ---- process (execute) sql update table 'organisations' after user insert or update
+# ----------------------------------------------------------------------------
+if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $QryParm->{'tbl'} eq "producer") {
+	my @grids = $cgi->param('grid');
+	my $q0 = "insert into $WEBOBS{SQL_TABLE_ORGANISATIONS} values (\'+++\',\'\',\'$QryParm->{'id'}\')";
+	my $q1 = "delete from $WEBOBS{SQL_TABLE_ORGANISATIONS} WHERE PID=\'$QryParm->{'id'}\' AND TYPE != \'+++\'";
+	my $q2 = "";
+	if (@grids > 0 && $grids[0] ne "") {
+		my @values = map { "(\'".join("\',\'",split(/\./,$_))."\',\'$QryParm->{'id'}\')" } @grids ;
+		$q2 = "insert or replace into $WEBOBS{SQL_TABLE_ORGANISATIONS} VALUES ".join(',',@values);
+	} 
+	my $q3 = "delete from $WEBOBS{SQL_TABLE_ORGANISATIONS} WHERE PID=\'$QryParm->{'id'}\' AND TYPE = \'+++\'";
+	my $rows = dbuow($WEBOBS{SQL_METADATA},$q0,$q1,$q2,$q3);
+	$domainMsg  .= ($rows >= 1 || $q2 eq "") ? "  having updated $WEBOBS{SQL_TABLE_ORGANISATIONS} " : "  failed to update $WEBOBS{SQL_TABLE_ORGANISATIONS}";
+	$domainMsg  .= " $lastDBIerrstr";
+	$domainMsgColor  = ($rows >= 1 || $q2 eq "") ? "green" : "red";
+} 
+=cut
 # ---- process (execute) sql delete a row of table 'tbl'
 # ------------------------------------------------------
 if ($QryParm->{'action'} eq 'delete') {
@@ -282,7 +329,7 @@ for (@qrs) {
 	$pproducersCount++; $pproducersId="p_udef".$pproducersCount;
 	$pproducers .= "<tr id=\"$pproducersId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"openPopupProducer($pproducersId,'$WEBOBS{SQL_TABLE_PRODUCER}');return false\"><img title=\"edit producer\" src=\"/icons/modif.png\"></a>";
 	$pproducers .= "<td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"postDeleteProducer($pproducersId);return false\"><img title=\"delete producer\" src=\"/icons/no.png\"></a>";
-	$pproducers .= "<td>$pproducers_did</td><td nowrap>$pproducers_name</td><td>$pproducers_title</td><td>$pproducers_desc</td><td>$pproducers_objective</td><td>$pproducers_meas</td><td>$pproducers_email</td><td>$pproducers_contacts</td><td>$pproducers_funders</td><td>$pproducers_res</td><td>".join(", ",split(/,/,$pproducers_grids))."</td></tr>\n";
+	$pproducers .= "<td>$pproducers_did</td><td nowrap>$pproducers_name</td><td>$pproducers_title</td><td>$pproducers_desc</td><td>$pproducers_objective</td><td>$pproducers_meas</td><td>$pproducers_email</td><td>$pproducers_contacts</td><td>$pproducers_funders</td><td>$pproducers_res</td><td>".join(", ",$pproducers_grids)."</td></tr>\n";
 }
 
 # ---- read 'typeOrganisation' table in WEBOBSMETA.db
@@ -430,10 +477,11 @@ Producers&nbsp;$go2top
 	<label>Funders:</label>
 	<button onclick="addFnd();return false;">Add a funder</button>
 	<button onclick="removeFnd();return false;">Remove a funder</button></br></br>
-	<input type='hidden' name="fnd" value='1'></input>
+	<input type='hidden' name="count_fnd" value='1'></input>
+	<input type='hidden' name='funders' value=''></input>
 	<div id='div_fnd'>
 		<label>Funder:<span class="small">Type</span></label>
-		<select>
+		<select name="typeFunders">
 			<option value=$types[0]>$names[0]</option>
             <option value=$types[1]>$names[1]</option>
             <option value=$types[2]>$names[2]</option>
@@ -443,9 +491,12 @@ Producers&nbsp;$go2top
             <option value=$types[6]>$names[6]</option>
             <option value=$types[7]>$names[7]</option>
 		</select>
-		<label>Funder:<span class="small">Organisation identifier</span></label>
-		<input type='text'></input>
+		<label>Funder:<span class="small">Organisation name</span></label>
+		<input type='text' name="nameFunders"></input>
+		<label>Funder:<span class="small">Organisation ScanR ID</span></label>
+		<input type='text' name="scanRFunders"></input>
 	</div>
+	<div id='div_fnd_2'></div>
 	
 	<label for="gid">Grid(s):<span class="small">associated grid(s)<br>Ctrl for multiple</span></label>
 	<select name="grid" id="grid" size="5" multiple>$selgrids</select><br/>
@@ -464,21 +515,22 @@ Producers&nbsp;$go2top
 	<button onclick="addRes();return false;">Add a resource</button>
 	<button onclick="removeRes();return false;">Remove a resource</button></br></br>
 	<input type='hidden' name="res" value='1'></input>
+	<input type='hidden' name='resources' value=''></input>
 	<div id='div_res'>
 		<label>Online resource:<span class="small">Type</span></label>
-		<select>
+		<select name='typeRes'>
 			<option value=$resources[0]>$resNames[0]</option>
             <option value=$resources[1]>$resNames[1]</option>
             <option value=$resources[2]>$resNames[2]</option>
             <option value=$resources[3]>$resNames[3]</option>
 		</select>
 		<label>Online resource:<span class="small">URL</span></label>
-		<input type='text'></input>
+		<input type='text' name='nameRes'></input>
 	</div>
 	<div id='div_res_2'></div>
 	
 	<p style="margin: 0px; text-align: center">
-		<input type="button" name="sendbutton" value="send" onclick="sendPopupProducer(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
+		<input type="button" name="sendbutton" value="send" onclick="sendPopupProducer(); return false; " /> <input type="button" value="cancel" onclick="closePopup(); return false" />
 	</p>
 	
 	</form>
