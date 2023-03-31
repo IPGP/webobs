@@ -21,13 +21,13 @@ create table producer (
     CONTACTS text NOT NULL, 
     FUNDERS text NOT NULL, 
     ONLINERESOURCE text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER), 
+    PRIMARY KEY (IDENTIFIER), 
     FOREIGN KEY (CONTACTS) REFERENCES contact(IDENTIFIER), 
     FOREIGN KEY (FUNDERS) REFERENCES organisations(IDENTIFIER)
     );
     
 drop table if exists contacts;
-create table contacts (
+create table contacts ( 
     IDENTIFIER text NOT NULL, 
     EMAIL text NOT NULL, 
     PRIMARY KEY(IDENTIFIER)
@@ -98,21 +98,21 @@ create table grids2producers (
     
 drop table if exists typeOrganisation;
 create table typeOrganisation (TYPE text NOT NULL, NAME text NOT NULL);
-INSERT INTO "typeOrganisation" VALUES('FrenchResearchInstitutes', 'French research institutes');
-INSERT INTO "typeOrganisation" VALUES('FederativeStructure','Federative structure');
-INSERT INTO "typeOrganisation" VALUES('ResearchUnit','Research unit');
-INSERT INTO "typeOrganisation" VALUES('Other','Other');
-INSERT INTO "typeOrganisation" VALUES('OtherUniversitiesAndSchools','Other universities and schools');
-INSERT INTO "typeOrganisation" VALUES('ResearchProgram','Research program');
-INSERT INTO "typeOrganisation" VALUES('FrenchUniversitiesAndSchools','French universities and schools');
-INSERT INTO "typeOrganisation" VALUES('OtherResearchInstitutes','Other research institutes');
+INSERT INTO "typeOrganisation" VALUES('FrenchResearchInstitutes:', 'French research institutes');
+INSERT INTO "typeOrganisation" VALUES('FederativeStructure:','Federative structure');
+INSERT INTO "typeOrganisation" VALUES('ResearchUnit:','Research unit');
+INSERT INTO "typeOrganisation" VALUES('Other:','Other');
+INSERT INTO "typeOrganisation" VALUES('OtherUniversitiesAndSchools:','Other universities and schools');
+INSERT INTO "typeOrganisation" VALUES('ResearchProgram:','Research program');
+INSERT INTO "typeOrganisation" VALUES('FrenchUniversitiesAndSchools:','French universities and schools');
+INSERT INTO "typeOrganisation" VALUES('OtherResearchInstitutes:','Other research institutes');
 
 drop table if exists typeResource;
 create table typeResource (TYPE text NOT NULL, NAME text NOT NULL);
-INSERT INTO "typeResource" VALUES('info', 'Info');
-INSERT INTO "typeResource" VALUES('download', 'Download');
-INSERT INTO "typeResource" VALUES('doi', 'DOI');
-INSERT INTO "typeResource" VALUES('webservice', 'Webservice');
+INSERT INTO "typeResource" VALUES('http:info@', 'Info');
+INSERT INTO "typeResource" VALUES('http:download@', 'Download');
+INSERT INTO "typeResource" VALUES('http:doi@', 'DOI');
+INSERT INTO "typeResource" VALUES('http:webservice@', 'Webservice');
 
 COMMIT;
 EOF
