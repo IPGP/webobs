@@ -107,15 +107,63 @@ function sendPopupDomain() {
 }
 
 function sendPopupProducer() {
+	var form = $('#overlay_form_producer')[0];
+	if ( form.id.value == "" ) {
+		alert ("id can't be empty");
+		return false;
+	}
+	if ( form.pname.value == "" ) {
+		alert ("name can't be empty");
+		return false;
+	}
+	if ( form.title.value == "" ) {
+		alert ("title can't be empty");
+		return false;
+	}
+	if ( form.desc.value == "" ) {
+		alert ("description can't be empty");
+		return false;
+	}
+	if ( form.email.value == "" ) {
+		alert ("email can't be empty");
+		return false;
+	}
+	if ( form.projectLeader.value == "" ) {
+		alert ("contacts can't be empty");
+		return false;
+	}
+	
     var arr = $('#overlay_form_producer').serializeArray();
-    console.log(arr);
-    //return false; //      /<-- Only, if you don't want the form to be submitted after above commands
+    var typeFnd = arr.filter(element => element.name === 'typeFunders');
+    var scanRFnd = arr.filter(element => element.name === 'scanRFunders');
+    var fnd = [];
+    
+    var typeRes = arr.filter(element => element.name === 'typeRes');
+    var nameRes = arr.filter(element => element.name === 'nameRes');
+    var res = [];
+    
+    for (let i = 0; i <= typeFnd.length-1; i++) {
+    	fnd.push(typeFnd[i].value+scanRFnd[i].value);
+    } form.funders.value = fnd.join('_,');
+    
+    if ( form.funders.value == "" ) {
+		alert ("funders can't be empty");
+		return false;
+	}
+
+    if (nameRes[0].value !== "") {
+		for (let i = 0; i <= typeRes.length-1; i++) {
+			res.push(typeRes[i].value+nameRes[i].value);
+		} form.resources.value = res.join('_,');
+    }
+    
+    console.log(form.scanRFunders.value);
+    return false; //      /<-- Only, if you don't want the form to be submitted after above commands
 	$("#overlay_form_producer").fadeOut(500);
 	$("#ovly").fadeOut(500);
 	if (Gscriptname == "") { Gscriptname = "/cgi-bin/gridsMgr.pl"; }
 	location.href = Gscriptname+"?"+$("#overlay_form_producer").serialize()+"\#IDENT";
 }
-
 
 function postDeleteDomain(ux) {
 	var did =  $("td",ux)[2].textContent;
