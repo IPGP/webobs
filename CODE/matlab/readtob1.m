@@ -12,7 +12,7 @@ function X = readtob1(filename)
 %	and any ascii as NaN.
 %
 %
-%	Author: Fran�ois Beauducel, IPGP / WEBOBS
+%	Author: François Beauducel, IPGP / WEBOBS
 %	Created: 2018-06-13 in Jakarta, Indonesia
 %	Updated: 2023-03-17
 
