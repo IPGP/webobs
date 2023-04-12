@@ -97,13 +97,13 @@ function geditsendPopup() {
 	}
 	var gtype = $('#geditoverlay_form')[0].geditT.value;
 	var gname = $('#geditoverlay_form')[0].geditN.value;
-	if ( !gname.match(/[^A-Z_]/g) ) {
+	if ( gname.match(/^[A-Za-z]/) && !gname.match(/[^A-Za-z_0-9]/g) ) {
 		var tt = gtype.split(".");
 		$("#geditoverlay_form").fadeOut(500);
 		$("#geditovly").fadeOut(500);
 		location.href = "/cgi-bin/formGRID.pl?grid=" + tt[0] + "." + gname.toUpperCase() + "&type=" + gtype;
 	} else {
-		alert('Grid name have to be uppercase letters only, no other character except underscore allowed');
+		alert('Grid name is alphanumerical and underscore characters only, case insensitive, and the first character must be a letter.');
 		return false;
 	}
 	//FBwas: if ( gname.match(/PROC\./i) || gname.match(/VIEW\./i) ) {
