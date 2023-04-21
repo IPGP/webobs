@@ -113,7 +113,7 @@ sub Show {
 		$dtto = eval { Time::Piece->strptime($KWARGS{to},'%Y-%m-%d');} or return undef;
 		if ($KWARGS{view} =~ /calendar/i && $dtfrom == $dtto ) { $KWARGS{view} = "day" } 
 	}
-	my $filter = (exists($KWARGS{textfilter})) ? quotemeta $KWARGS{textfilter} : "";
+	my $filter = (exists($KWARGS{textfilter})) ? $KWARGS{textfilter} : "";
 	my $jsedit = (exists($KWARGS{jseditor})) ? $KWARGS{jseditor} : "";
 	my $jsevent = (exists($KWARGS{jsevent})) ? $KWARGS{jsevent} : "";
 	my @html = ();
