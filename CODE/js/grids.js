@@ -53,38 +53,6 @@ function openPopupDomain(ux) {
 	positionPopup();
 	form.code.focus();
 }
-function openPopupProducer(ux) {
-	// ux  ==  producer' html-table row id OR -1 for a new domain
-	if (arguments.length <= 0 ) { return; } // noop if no ux
-	var form = $('#overlay_form_producer')[0];
-	if (ux != -1) { // editing an existing producer: populate popup from its table row TDs
-		// ATT:  $("td",domain.ux)[n] = n (0-based) must match domains <td> order in def-row  
-		form.id.value = $("td",ux)[2].textContent;
-		form.OLDcode.value = $("td",ux)[2].textContent;
-		form.id.style.backgroundColor = "#EEEEEE";
-		form.name.value = $("td",ux)[4].textContent;
-		var listgrids = $("td",ux)[6].textContent.split(', ');
-		$('#overlay_form_producer #grid option').each(function() { 
-			$(this).removeProp('selected');
-			if (jQuery.inArray( this.value, listgrids ) != -1) { $(this).prop('selected',true) }
-		});
-		$('label[for=gid]').css('display','block');
-		$(form.gid).css('display','block');
-		form.OLDgrid.value = $("td",ux)[6].textContent;
-		form.action.value = "update";
-	} else { // inserting a new domain
-		form.id.value = "";
-		form.id.readOnly = false;
-		form.id.style.backgroundColor = "";
-		form.name.value = "";
-		form.action.value = "insert";
-	}
-	form.tbl.value = "producer";
-	$('#overlay_form_producer[name=sendbutton]').attr('onclick',"sendPopupUser(); return false");
-	$("#overlay_form_producer").fadeIn(500);
-	positionPopup();
-	form.id.focus();
-}
 
 function sendPopupDomain() {
 	var form = $('#overlay_form_domain')[0];
@@ -106,64 +74,6 @@ function sendPopupDomain() {
 	location.href = Gscriptname+"?"+$("#overlay_form_domain").serialize()+"\#IDENT";
 }
 
-function sendPopupProducer() {
-	var form = $('#overlay_form_producer')[0];
-	if ( form.id.value == "" ) {
-		alert ("id can't be empty");
-		return false;
-	}
-	if ( form.pname.value == "" ) {
-		alert ("name can't be empty");
-		return false;
-	}
-	if ( form.title.value == "" ) {
-		alert ("title can't be empty");
-		return false;
-	}
-	if ( form.desc.value == "" ) {
-		alert ("description can't be empty");
-		return false;
-	}
-	if ( form.email.value == "" ) {
-		alert ("email can't be empty");
-		return false;
-	}
-	if ( form.projectLeader.value == "" ) {
-		alert ("contacts can't be empty");
-		return false;
-	}
-	
-    var arr = $('#overlay_form_producer').serializeArray();
-    var typeFnd = arr.filter(element => element.name === 'typeFunders');
-    var scanRFnd = arr.filter(element => element.name === 'scanRFunders');
-    var fnd = [];
-    
-    var typeRes = arr.filter(element => element.name === 'typeRes');
-    var nameRes = arr.filter(element => element.name === 'nameRes');
-    var res = [];
-    
-    for (let i = 0; i <= typeFnd.length-1; i++) {
-    	fnd.push(typeFnd[i].value+scanRFnd[i].value);
-    } form.funders.value = fnd.join('_,');
-    
-    if ( form.funders.value == "" ) {
-		alert ("funders can't be empty");
-		return false;
-	}
-
-    if (nameRes[0].value !== "") {
-		for (let i = 0; i <= typeRes.length-1; i++) {
-			res.push(typeRes[i].value+nameRes[i].value);
-		} form.resources.value = res.join('_,');
-    }
-    
-    console.log(form.scanRFunders.value);
-    return false; //      /<-- Only, if you don't want the form to be submitted after above commands
-	$("#overlay_form_producer").fadeOut(500);
-	$("#ovly").fadeOut(500);
-	if (Gscriptname == "") { Gscriptname = "/cgi-bin/gridsMgr.pl"; }
-	location.href = Gscriptname+"?"+$("#overlay_form_producer").serialize()+"\#IDENT";
-}
 
 function postDeleteDomain(ux) {
 	var did =  $("td",ux)[2].textContent;
@@ -176,9 +86,129 @@ function postDeleteDomain(ux) {
 	}
 }
 
+function openPopupProducer(ux) {
+	// ux  ==  domain' html-table row id OR -1 for a new domain
+	if (arguments.length <= 0 ) { return; } // noop if no ux
+	var form = $('#overlay_form_producer')[0];
+	if (ux != -1) { // editing an existing domain: populate popup from its table row TDs
+		// ATT:  $("td",domain.ux)[n] = n (0-based) must match domains <td> order in def-row  
+		console.log($("td",ux));
+		form.id.value = $("td",ux)[2].textContent;
+		form.OLDcode.value = $("td",ux)[2].textContent;
+		form.id.style.backgroundColor = "#EEEEEE";
+		form.title.value = $("td",ux)[3].textContent;
+		form.prodName.value = $("td",ux)[4].textContent;
+		form.desc.value = $("td",ux)[5].textContent;
+		form.objective.value = $("td",ux)[6].textContent;
+		form.measVar.value = $("td",ux)[7].textContent;
+		form.email.value = $("td",ux)[8].textContent;
+		form.contacts.value = $("td",ux)[9].textContent;
+		form.funders.value = $("td",ux)[10].textContent;
+		form.onlineRes.value = $("td",ux)[11].textContent;
+		var listgrids = $("td",ux)[12].textContent.split(', ');
+		$('#overlay_form_producer #grid option').each(function() { 
+			$(this).removeProp('selected');
+			if (jQuery.inArray( this.value, listgrids ) != -1) { $(this).prop('selected',true) }
+		});
+		$('label[for=gid]').css('display','block');
+		$(form.gid).css('display','block');
+		form.OLDgrid.value = $("td",ux)[6].textContent;
+		form.action.value = "update";
+	} else { // inserting a new domain
+		form.id.value = "";
+		form.id.readOnly = false;
+		form.id.style.backgroundColor = "";
+		form.prodName.value = "";
+		form.title.value = "";
+		form.desc.value = "";
+		form.objective.value = "";
+		form.measVar.value = "";
+		form.email.value = "";
+		form.contacts.value = "";
+		form.funders.value = "";
+		form.onlineRes.value = "";
+		form.action.value = "insert";
+	}
+	form.tbl.value = "producer";
+	$('#overlay_form_producer[name=sendbutton]').attr('onclick',"sendPopupUser(); return false");
+	$("#overlay_form_producer").fadeIn(500);
+	positionPopup();
+	form.id.focus();
+}
+
+function sendPopupProducer() {
+	var form = $('#overlay_form_producer')[0];
+	
+	// checking if mandatory fields are not empty
+	if ( form.id.value == "" ) {
+		alert ("id can't be empty");
+		return false;
+	}
+	if ( form.prodName.value == "" ) {
+		alert ("name can't be empty");
+		return false;
+	}
+	if ( form.title.value == "" ) {
+		alert ("title can't be empty");
+		return false;
+	}
+	if ( form.desc.value == "" ) {
+		alert ("desc can't be empty");
+		return false;
+	}
+	if ( form.email.value == "" ) {
+		alert ("email can't be empty");
+		return false;
+	}
+	
+	// preparing data for the integration in the database
+	if (form.count_mgr.value == 0) {
+		form.contacts.value = 'projectLeader:'+form.contacts.value+'|'+form.contacts.value;
+	} else if (form.count_mgr.value > 0) {
+		var contacts = ['projectLeader:'+form.contacts.value];
+		var emails = [form.contacts.value];
+		for (let i = 1; i <= form.count_mgr.value; i++) {
+			var id = 'dataMgr'+i;
+			contacts.push('dataManager:'+form.elements[id].value)
+			emails.push(form.elements[id].value);
+		} form.contacts.value = contacts.join('_,'); form.contacts.value = form.contacts.value + '|' + emails.join(','); 
+	} 
+	
+	// preparing data for the integration in the database
+	if (form.count_fnd.value == 1) {
+		form.funders.value = form.typeFunders.value+form.scanR.value+'|'+form.nameFunders.value+'|'+form.scanR.value;
+	} else if (form.count_fnd.value > 1) {
+		var funders = [];
+		var names = [];
+		var scanR = [];
+		for (let i = 0; i <= form.count_fnd.value-1; i++) {
+			funders.push(form.typeFunders[i].value+form.scanR[i].value);
+			names.push(form.nameFunders[i].value);
+			scanR.push(form.scanR[i].value);
+		} form.funders.value = funders.join('_,'); form.funders.value = form.funders.value +'|'+names.join(',')+'|'+scanR.join(',');
+	} 
+	
+	if ( form.contacts.value == "" ) {
+		alert ("contacts can't be empty");
+		return false;
+	} 
+	if ( form.funders.value == "" ) {
+		alert ("funders can't be empty");
+		return false;
+	}
+	
+	console.log(form.grid);
+	//return false;
+	$("#overlay_form_producer").fadeOut(500);
+	$("#ovly").fadeOut(500);
+	if (Gscriptname == "") { Gscriptname = "/cgi-bin/gridsMgr.pl"; }
+	location.href = Gscriptname+"?"+$("#overlay_form_producer").serialize()+"\#IDENT";
+}
+
+
 function postDeleteProducer(ux) {
 	var did =  $("td",ux)[2].textContent;
-	var name =  $("td",ux)[3].textContent;
+	var name =  $("td",ux)[4].textContent;
 	var answer = confirm("do you really want to delete producer " + did + " (" + name + ") ? All associated grids will remain but hidden from grid tables.")
 	if (answer) {
 		did = did.replace(/\+/g,'%2B');
@@ -197,3 +227,4 @@ function closePopup() {
 //$("td",job.jid).each(function() { 
 //	console.log(this.textContent) ;
 //});
+

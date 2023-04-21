@@ -170,69 +170,64 @@ function delEvent(vedit,obj,evt) {
 	}
 }
 
-// Data producer form
+// data producer form
 
-function addMgr () {
-	let form_producer = document.getElementById("overlay_form_producer");
+function addMgr() {
+	var form = $('#overlay_form_producer')[0];
+	form.count_mgr.value = parseInt(form.count_mgr.value)+1;
 	var new_div = document.createElement('div');
-    form_producer.elements['mgr'].value = parseInt(form_producer.elements['mgr'].value)+1;
-    var div_mgr = document.getElementById('div_mgr');
-    new_div.innerHTML = "<label>Contact:<span class='small'>Data manager</span></label><input type='text' name='dataManager' value=''/><br/><br/>";
-    new_div.id = 'dataMgr';
-    div_mgr.append(new_div);
+    new_div.innerHTML = "<label>Contact:<span class='small'>Data manager</span></label><input type='text' name='dataMgr"+form.count_mgr.value+"'value=''/><br/><br/>";
+    new_div.id = 'dataMgr'+form.count_mgr.value;
+    $('#div_mgr')[0].append(new_div);
 }
 
 function removeMgr() {
-	let form_producer = document.getElementById("overlay_form_producer");
-	if (document.getElementById('dataMgr') === null) {
+	var form = $('#overlay_form_producer')[0];
+	var id = '#dataMgr'+form.count_mgr.value;
+	if ($(id)[0] === null) {
 		return false;
-	}
-	if (form_producer.elements['mgr'].value > 0) {
-		document.getElementById('dataMgr').remove();
-		form_producer.elements['mgr'].value -= 1;
+	} else if (form.count_mgr.value > 0) {
+		$(id)[0].remove();
+		form.count_mgr.value -= 1;
 	}
 }
 
-function addFnd () {
-	let form_producer = document.getElementById("overlay_form_producer");
-    form_producer.elements['count_fnd'].value = parseInt(form_producer.elements['count_fnd'].value)+1;
-    var div_fnd = document.getElementById('div_fnd');
-    var div_fnd_2 = document.getElementById('div_fnd_2');
-    var new_div = document.createElement('div');
-    new_div.id = 'new_fnd';
-    new_div.innerHTML = div_fnd.innerHTML;
-    div_fnd_2.append(new_div);
+function addFnd() {
+	var form = $('#overlay_form_producer')[0];
+	form.count_fnd.value = parseInt(form.count_fnd.value)+1;
+	var new_div = document.createElement('div');
+	new_div.id = 'new_fnd'+form.count_fnd.value;
+    new_div.innerHTML = $('#div_fnd')[0].innerHTML;
+    $('#div_fnd_add')[0].append(new_div);
 }
 
 function removeFnd() {
-	let form_producer = document.getElementById("overlay_form_producer");
-	if (document.getElementById('new_fnd') === null) {
+	var form = $('#overlay_form_producer')[0];
+	var id = '#new_fnd'+form.count_fnd.value;
+	if ($(id)[0] === null) {
 		return false;
-	}
-	if (form_producer.elements['count_fnd'].value > 1) {
-		document.getElementById('new_fnd').remove();
-		form_producer.elements['count_fnd'].value -= 1;
+	} else if (form.count_fnd.value > 1) {
+		$(id)[0].remove();
+		form.count_fnd.value -= 1;
 	}
 }
 
-function addRes () {
-	let form_producer = document.getElementById("overlay_form_producer");
-    form_producer.elements['res'].value = parseInt(form_producer.elements['res'].value)+1;
-    var div_res = document.getElementById('div_res');
-    var div_res_2 = document.getElementById('div_res_2');
+function addRes() {
+	var form = $('#overlay_form_producer')[0];
+    form.count_res.value = parseInt(form.count_res.value)+1;
     var new_div = document.createElement('div');
-    new_div.id = 'new_res';
-    new_div.innerHTML = div_res.innerHTML;
-    div_res_2.append(new_div);
+    new_div.id = 'new_res'+form.count_res.value;
+    new_div.innerHTML = $('#div_res')[0].innerHTML;
+    $('#div_res_add')[0].append(new_div);
 }
 
 function removeRes() {
-	let form_producer = document.getElementById("overlay_form_producer");
-	if (document.getElementById('new_res') === null) {
+	var form = $('#overlay_form_producer')[0];
+	var id = '#new_res'+form.count_res.value;
+	if ($(id)[0] === null) {
 		return false;
-	}
-	if (form_producer.elements['res'].value > 1) {
-		document.getElementById('new_res').remove();
-		form_producer.elements['res'].value -= 1;
+	} else if (form.count_res.value > 1) {
+		$(id)[0].remove();
+		form.count_res.value -= 1;
 	}
 }

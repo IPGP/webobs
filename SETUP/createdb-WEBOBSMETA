@@ -21,16 +21,16 @@ create table producer (
     CONTACTS text NOT NULL, 
     FUNDERS text NOT NULL, 
     ONLINERESOURCE text NOT NULL, 
-    PRIMARY KEY (IDENTIFIER), 
-    FOREIGN KEY (CONTACTS) REFERENCES contact(IDENTIFIER), 
-    FOREIGN KEY (FUNDERS) REFERENCES organisations(IDENTIFIER)
+    PRIMARY KEY (IDENTIFIER)
     );
     
 drop table if exists contacts;
 create table contacts ( 
     IDENTIFIER text NOT NULL, 
     EMAIL text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER)
+    PID text NOT NULL, 
+    PRIMARY KEY(EMAIL), 
+    FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     
 drop table if exists organisations;
@@ -38,7 +38,9 @@ create table organisations (
     IDENTIFIER text NOT NULL, 
     NAME text NOT NULL, 
     ISO3166 text DEFAULT 'fr', 
-    PRIMARY KEY(IDENTIFIER)
+    PID text NOT NULL, 
+    PRIMARY KEY(NAME), 
+    FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     
 drop table if exists datasets;
@@ -51,7 +53,7 @@ create table datasets (
     SPATIALCOVERAGE text NOT NULL, 
     PROVENANCE text NOT NULL, 
     PRIMARY KEY(IDENTIFIER), 
-    FOREIGN KEY (CREATOR) REFERENCES contacts(IDENTIFIER)
+    FOREIGN KEY (CREATOR) REFERENCES contacts(IDENTIFIER) ON DELETE CASCADE
     );
     
 drop table if exists observations;
@@ -66,9 +68,9 @@ create table observations (
     DATASET text NOT NULL, 
     DATAFILENAME text NOT NULL, 
     PRIMARY KEY(IDENTIFIER), 
-    FOREIGN KEY (OBSERVEDPROPERTY) REFERENCES observed_properties(IDENTIFIER), 
-    FOREIGN KEY (STATIONNAME) REFERENCES sampling_features(IDENTIFIER), 
-    FOREIGN KEY (DATASET) REFERENCES datasets(IDENTIFIER)
+    FOREIGN KEY (OBSERVEDPROPERTY) REFERENCES observed_properties(IDENTIFIER) ON DELETE CASCADE, 
+    FOREIGN KEY (STATIONNAME) REFERENCES sampling_features(IDENTIFIER) ON DELETE CASCADE, 
+    FOREIGN KEY (DATASET) REFERENCES datasets(IDENTIFIER) ON DELETE CASCADE
     );
     
 drop table if exists observed_properties;
@@ -78,7 +80,7 @@ create table observed_properties (
     UNIT text NOT NULL, 
     THEIACATEGORIES text NOT NULL, 
     PRIMARY KEY(IDENTIFIER)
- );
+    );
     
 drop table if exists sampling_features;
 create table sampling_features (
@@ -93,7 +95,7 @@ create table grids2producers (
     TYPE text NOT NULL, 
     NAME text NOT NULL, 
     PID text NOT NULL, 
-    FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER)
+    FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     
 drop table if exists typeOrganisation;
