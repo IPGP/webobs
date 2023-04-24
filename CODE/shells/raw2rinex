@@ -22,7 +22,7 @@
 #
 # Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
 # Created: 2014-01-12
-# Updated: 2022-09-22
+# Updated: 2023-04-24
 
 if [ $# -lt 2 ]; then
 	echo "raw2rinex input output [teqc options]"
@@ -99,7 +99,7 @@ if [ ! -z "$rf" ]; then
 		CRX2RNX $f -f
 	done
 	rawfiles=$(find $tmpdir -iname "*.??o" | sort )
-	obsfile=$rawfiles
+	obsfiles=$rawfiles
 	navfiles=""
 	teqcfmt=""
 fi
