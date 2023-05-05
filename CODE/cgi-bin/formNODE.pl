@@ -1,17 +1,26 @@
 #!/usr/bin/perl
 
 =head1 NAME
+
 formNODE.pl
+
 =head1 SYNOPSIS
+
 http://..../formNODE.pl?[node=NODEID]
+
 =head1 DESCRIPTION
+
 1) Edits an existing NODE when requested node is a fully qualified node name
 (ie. node=gridtype.gridname.nodename).
+
 2) Creates a new NODE when no nodename specified (ie. node=gridtype.gridname).
+
 =head1 Query string parameters
+
  node=
  the fully qualified NODE name gridtype.gridname.nodename to update
  -or- gridtype.gridname to create a new NODE
+
 =cut
 
 use strict;
@@ -178,19 +187,15 @@ $cgi->start_html("$__{'Node configuration form'}");
 
 print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"></script>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js'></script>
-<script src='https://openlayers.org/api/OpenLayers.js'></script>
-<script type="text/javascript" src="https://stamen-maps.a.ssl.fastly.net/js/tile.stamen.js?v1.3.0"></script>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css" crossorigin=""/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js" crossorigin=""></script>
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
 <script type="text/javascript">
-function postIt() {
+
+function postIt()
+{
  if(document.form.nouveau.value == 1 && document.form.message.value != "ok") {
    alert("NODE ID: Please enter a valid and new ID!");
    document.form.nodename.focus();
@@ -254,7 +259,7 @@ function postIt() {
   	document.form.SELs[i].selected = true;
   }
 
-	if (\$(\"#theform\").hasChanged() || document.form.delete.value == 1) {
+	if (\$(\"#theform\").hasChanged() || document.form.delete.value == 1 || document.form.locMap.value == 1) {
 		document.form.node.value = document.form.grid.value + document.form.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
 			var fidx = document.getElementById("fidx").getElementsByTagName("div");
@@ -277,9 +282,9 @@ function postIt() {
 	} else {
 		alert(\"No changes, save ignored\");
 		return false;
-		}
 	}
 }
+
 function maj_rawformat() {
 	var fidx = document.getElementById("fidx").getElementsByTagName("div"), fid;
 	for (var i=0; i<fidx.length; i++) {
@@ -290,6 +295,7 @@ function maj_rawformat() {
 		}
 	}
 }
+
 function maj_transmission() {
 	if (document.form.typeTrans.value==0) {
 		document.getElementById("pathTrans").style.display="none";
@@ -297,6 +303,7 @@ function maj_transmission() {
 		document.getElementById("pathTrans").style.display="block";
 	}
 }
+
 function checkNode() {
 	document.form.nodename.value = document.form.nodename.value.toUpperCase();
 	var nodeSyntax=/[^A-Za-z0-9\.@]+/;
@@ -333,6 +340,7 @@ function checkNode() {
 		document.form.message.value = "";
 	}
 }
+
 function latlonChange() {
 	if (document.form.typePos.value == 3) {
 		document.getElementById("rawKML").style.display = "block";
@@ -372,14 +380,17 @@ function fetchKML() {
         .then(xmlString => \$.parseXML(xmlString))
         .then(data => console.log(data))
 }
+
 function fc() {
 	\$(\"#theform\").formChanges();
 }
+
 function refresh_form()
 {
 	document.form.refresh.value = 1;
 	postIt();
 }
+
 function delete_node()
 {
 	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative.\\n\\n Are you sure you want to move this NODE to trash ?\") ) {
@@ -391,45 +402,42 @@ function delete_node()
 	}
 }
 
-function nsew() {
-	var ns = 1;
-	var ew = 1;
-	if (document.form.latwgs84n.value == 'S' && document.form.latwgs84.value > 0) {
-		ns = -1;
-	} else {
-		ns = 1;
-	}
-	if (document.form.lonwgs84e.value == 'W' && document.form.lonwgs84.value > 0) {
-		ew = -1;
-	} else {
-		ew = 1;
-	}
-	return [ns,ew];
-}
+// functions to make the map works
 
-function getCurrent (pos) {
-	var lat = pos.coords.latitude*nsew[0];
-	var lon = pos.coords.longitude*nsew[1];
-	if (document.form.latwgs84.value == "") {
-		document.form.latwgs84.value = lat.toFixed(6);
-	}
-	if (document.form.lonwgs84.value == "") {
-		document.form.lonwgs84.value = lon.toFixed(6);
-	}
-	map.flyTo([lat, lon], 13);
+function onMapClick(e) {
+	var lat = e.latlng['lat'].toFixed(6);
+	var lon = e.latlng['lng'].toFixed(6);
+	lat, lon = nsew(lat, lon);
 	
-	if (document.form.latwgs84.value < 0) {
-		document.form.latwgs84n.value = 'S';
-	} else {
-		document.form.latwgs84n.value = 'N';
+	var p = document.createElement('p');
+	p.innerHTML = "<B>$NODE{ALIAS}: "+$NODE{NAME}+"</B><BR><I>($NODE{TYPE})</I><BR>&nbspfrom <B>$NODE{INSTALL_DATE}</B> to <B>$NODE{END_DATE}</B><BR>&nbsp;<B>"+lat+"&deg;</B>, <B>"+lon+"&deg;</B>, <B>$NODE{ALTITUDE} m</B>"
+	var txt = p.innerHTML;
+	if (typeof(marker) != "undefined") {
+		map.removeLayer(marker);
 	}
-	if (document.form.lonwgs84.value < 0) {
-		document.form.lonwgs84e.value = 'W';
-	} else {
-		document.form.lonwgs84e.value = 'E';
-	}
-}
+	
+	marker = L.marker([lat, lon]).addTo(map);
+	marker.bindPopup(txt).openPopup();
 
+	document.form.latwgs84.value = lat;
+	document.form.lonwgs84.value = lon;
+	document.form.locMap.value = 1;
+
+	document.form.typePos.value="1";
+	return false;
+}
+function getCurrent (pos) {
+	var lat = pos.coords.latitude;
+	var lon = pos.coords.longitude;
+	lat, lon = nsew(lat, lon)
+	
+	document.form.latwgs84.value = lat;
+	document.form.lonwgs84.value = lon;
+	document.form.locMap.value = 1;
+
+	map.flyTo([lat, lon], 18);
+	document.form.typePos.value="2";
+}
 function error (err) {
 	switch (err.code) {
 		case err.TIMEOUT:
@@ -442,24 +450,29 @@ function error (err) {
 		break;
 	}
 }
-
-function onMapClick(e) {
-	var lat = e.latlng['lat'].toFixed(6);
-	var lon = e.latlng['lng'].toFixed(6);
-
-	popup
-		.setLatLng(e.latlng)
-		.setContent("You clicked the map at " + e.latlng)
-		.openOn(map)
-	document.form.latwgs84.value = lat*nsew[0];
-	document.form.lonwgs84.value = lon*nsew[1];
+function nsew(lat, lon) {
+	// synchronizing leaflet location and WebObs geographic location form
+	var ns = document.form.latwgs84n.value;
+	var ew = document.form.lonwgs84e.value;
+	
+	if (lat < 0 && lon > 0 && ns == 'N') {
+		document.form.latwgs84n.value = 'S';
+		return -lat, lon;
+	} else if (lat > 0 && lon < 0 && ew == 'E') {
+		document.form.lonwgs84e.value = 'W';
+		return lat, -lon;
+	} else if (lat < 0 && lon < 0 && ns == 'N' && ew == 'E') {
+		document.form.latwgs84n.value = 'S';
+		document.form.lonwgs84e.value = 'W';
+		return -lat, -lon;
+	} else {
+		return lat, lon;
+	}
 }
-
 function onInputWrite(e) {
-	var lat = document.form.latwgs84.value*nsew[0];
-	var lon = document.form.lonwgs84.value*nsew[1];
-	console.log(lat);
-	console.log(lon);
+	var lat = document.form.latwgs84.value;
+	var lon = document.form.lonwgs84.value;
+
 	if (lat.toString().includes('.')){
 			var latZoom = lat.toString().split(".")[1].length;
 	}
@@ -489,7 +502,74 @@ function onInputWrite(e) {
 		map.flyTo([lat, lon], 18);
 	}
 }
+// creating and parametring the map for the geographic location choice
+
+var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>contributors';
+var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+		
+//Init Overlays
+var overlays = {};
+		
+//Init BaseMaps
+var basemaps = {
+	'OpenStreetMaps': L.tileLayer(
+		"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+		{
+			attribution: osmAttribution,
+			minZoom: 2,
+			maxZoom: 19,
+			id: "osm"
+		}
+	),
+	'Stamen-Terrain': L.tileLayer(
+		'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}',
+		{
+			attribution: stamenAttribution,
+			minZoom: 2,
+			maxZoom: 19,
+			id: "stamen.terrain"
+		}
+	),
+	'Stamen-Watercolor': L.tileLayer(
+		'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}',
+		{
+			attribution: stamenAttribution,
+			minZoom: 2,
+			maxZoom: 19,
+			id: "stamen.watercolor"
+		}
+	),
+	'OpenTopoMap': L.tileLayer(
+		'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+		{
+			attribution: osmAttribution,
+			minZoom: 2,
+			maxZoom: 19,
+			id: "otm"
+		}
+	),
+	'ESRIWorldImagery': L.tileLayer(
+		'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+		{
+			attribution: osmAttribution,
+			minZoom: 2,
+			maxZoom: 19,
+			id: "esri.world"
+		}
+	)
+};
+		
+//Map Options
+var mapOptions = {
+	zoomControl: false,
+	attributionControl: false,
+	center: [0, 0],
+	zoom: 2,
+	layers: [basemaps.OpenStreetMaps]
+};
 </script>
+
 </head>
 
 <body style="background-color:#E0E0E0" onLoad="maj_transmission();latlonChange();fc();checkNode();" id="formNode">
@@ -497,6 +577,7 @@ function onInputWrite(e) {
 <script language="javascript" src="/js/overlib/overlib.js"></script>
 <!-- overLIB (c) Erik Bosrup -->
 <DIV ID="helpBox"></DIV>
+
 FIN
 
 print "<FORM id=\"theform\" name=\"form\" action=\"\">\n";
@@ -517,6 +598,7 @@ print "<TABLE width=\"100%\">
 print "<INPUT type=\"hidden\" name=\"referer\" value=\"$referer\">\n";
 print "<INPUT type=\"hidden\" name=\"refresh\" value=\"0\">\n";
 print "<INPUT type=\"hidden\" name=\"delete\" value=\"0\">\n";
+print "<INPUT type=\"hidden\" name=\"locMap\" value=\"0\">\n";
 for (@allNodes) {
 	print "<INPUT type=\"hidden\" name=\"allNodes\" value=\"$_\">\n";
 }
@@ -650,28 +732,26 @@ print "<TR>";
 	# --- 'node' position (latitude, longitude & altitude)
 	print "<FIELDSET><LEGEND>$__{'Geographic location'}</LEGEND>";
 	print "<TABLE><TR>";
-		print "<TD style=\"border:0;text-align:left\">";
-			print "<DIV id='map' style=\"position: relative ;width: 900px; height: 347px\"></DIV>";
+		print "<TD style=\"border:1;text-align:left\">";
+			print "<DIV id='map' style=\"position: relative ;width: 750px; height: 347px\"></DIV>";
 		print "</TD>";
-		print "<TD style=\"border:1;text-align:left;rows:5\">";
+		print "<TD style=\"border:1;text-align:left;rows:5;width: 500px\">";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"8\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"latwgs84n\" size=\"1\">";
 			for ("N","S") { print "<option".($usrLatN eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
 			print "<label for=\"lonwgs84\">$__{'Longitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"8\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\"><B>'&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"lonwgs84e\" size=\"1\">";
 			for ("E","W") { print "<option".($usrLonE eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
 			print "<label for=\"altitude\">$__{'Elevation'}  (m):</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_alt}')\" id=\"altitude\" name=\"altitude\"><BR>\n";
-		#print "</TD>";
-		#print "<TD style=\"border:0\">";
+			print "<input size=\"8\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_alt}')\" id=\"altitude\" name=\"altitude\"><BR>\n";
 			# --- positioning date
 			print "<label for=\"datePos\">Date:</label> <select name=\"anneeMesure\" size=\"1\">";
 			for ($usrYearP,@yearListP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";	}
@@ -691,93 +771,25 @@ print "<TR>";
 				." <INPUT name=\"rawKML\" size=\"40\" value=\"$usrRAWKML\">"
 				."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Fetch KML' onClick='fetchKML()'></DIV>";
 		print "</TD>";
-		
-		# ---- link to OpenStreetMap
-		# ------------------------
-		print <<"FIN";
+		print <<FIN;
 		<script>
-		var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
-		var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-		var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-		
-		\/\/Init Overlays
-		var overlays = {};
-		
-		\/\/Init BaseMaps
-		var basemaps = {
-			'OpenStreetMaps': L.tileLayer(
-				"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-				{
-					attribution: osmAttribution,
-					minZoom: 2,
-					maxZoom: 19,
-					id: "osm"
-				}
-			),
-			'Stamen-Terrain': L.tileLayer(
-				'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}',
-				{
-					attribution: stamenAttribution,
-					minZoom: 2,
-					maxZoom: 19,
-					id: "stamen.terrain"
-				}
-			),
-			'Stamen-Watercolor': L.tileLayer(
-				'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}',
-				{
-					attribution: stamenAttribution,
-					minZoom: 2,
-					maxZoom: 19,
-					id: "stamen.watercolor"
-				}
-			),
-			'OpenTopoMap': L.tileLayer(
-				'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-				{
-					attribution: osmAttribution,
-					minZoom: 2,
-					maxZoom: 19,
-					id: "otm"
-				}
-			),
-			'ESRIWorldImagery': L.tileLayer(
-				'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-				{
-					attribution: osmAttribution,
-					minZoom: 2,
-					maxZoom: 19,
-					id: "esri.world"
-				}
-			)
-		};
-		
-		\/\/Map Options
-		var mapOptions = {
-			zoomControl: false,
-			attributionControl: false,
-			center: [0, 0],
-			zoom: 2,
-			layers: [basemaps.OpenStreetMaps]
-		};
-		
-		var map = L.map('map', mapOptions);
-		var popup = L.popup();
-		map.on('click', onMapClick);
-		var nsew = nsew();
-		
-		let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
-		
-		if (document.form.latwgs84.value != '' || document.form.lonwgs84.value != '') {
-			map.flyTo([document.form.latwgs84.value*nsew[0], document.form.lonwgs84.value*nsew[1]], 18);
-		}
-		
-		var layerControl = L.control.layers(basemaps, overlays).addTo(map);
-FIN
-	print "var marker = L.marker([$NODE{LAT_WGS84}, $NODE{LON_WGS84}]).addTo(map);\n";
-	print "marker.bindPopup(\"$text\").openPopup();\n";
-	print "</script>";
+			var map = L.map('map', mapOptions);
+			var popup = L.popup();
+			map.on('click', onMapClick);
 
+			let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
+
+			if (document.form.latwgs84.value != '' || document.form.lonwgs84.value != '') {
+				var lat = $NODE{LAT_WGS84};
+				var lon = $NODE{LON_WGS84};
+				map.flyTo([lat, lon], 18);
+				var marker = L.marker([lat, lon]).addTo(map);
+				marker.bindPopup(\"$text\").openPopup();
+			}
+
+			var layerControl = L.control.layers(basemaps, overlays).addTo(map);
+		</script>
+FIN
 	print "</TR></TABLE>";
 	print "</FIELDSET>\n";
 
@@ -922,37 +934,29 @@ print "</FORM>";
 print "\n</BODY>\n</HTML>\n";
 
 __END__
+
 =pod
+
 =head1 AUTHOR(S)
+
 Francois Beauducel, Didier Mallarino, Alexis Bosson, Didier Lafon
+
 =head1 COPYRIGHT
+
 Webobs - 2012-2022 - Institut de Physique du Globe Paris
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
+
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
+
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 =cut
-Footer
-© 2023 GitHub, Inc.
-Footer navigation
-
-    Terms
-    Privacy
-    Security
-    Status
-    Docs
-    Contact GitHub
-    Pricing
-    API
-    Training
-    Blog
-    About
-
-webobs/formNODE.pl at master · IPGP/webobs · GitHub
 

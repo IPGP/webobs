@@ -94,11 +94,12 @@ print <<'END';
    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
    crossorigin=""/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
-<script src="https://unpkg.com/shpjs@latest/dist/shp.js" crossorigin=""></script>
 <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
       integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
       crossorigin=""></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js'></script>
+<script src="https://unpkg.com/shpjs@latest/dist/shp.js" type="text/javascript"></script>
+<script src="https://cdn.rawgit.com/calvinmetcalf/leaflet.shapefile/gh-pages/leaflet.shpfile.js" type="text/javascript"></script>
 <script src='https://openlayers.org/api/OpenLayers.js'></script>
 <script type="text/javascript" src="https://stamen-maps.a.ssl.fastly.net/js/tile.stamen.js?v1.3.0"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
@@ -237,6 +238,30 @@ print <<"END";
       outWKT = out;
       
 	});
+	
+	function handleFiles() {
+		var fichierSelectionne = document.getElementById('input').files[0];
+
+		var fr = new FileReader();
+		fr.onload = function () {
+			shp(this.result).then(function(geojson) {
+		  		console.log('loaded geojson:', geojson);
+				var shpfile = new L.Shapefile(geojson,{
+					onEachFeature: function(feature, layer) {
+						if (feature.properties) {
+							layer.bindPopup(Object.keys(feature.properties).map(function(k) {
+								return k + ": " + feature.properties[k];
+							}).join("<br />"), {
+								maxHeight: 200
+							});
+						}
+					}
+				});
+				shpfile.addTo(map);
+		  })
+		};
+		fr.readAsArrayBuffer(fichierSelectionne);
+	};
 END
 
 for (keys(%N)) {
@@ -264,6 +289,7 @@ if (scalar(@NID) == 2) {
 print "</script>\n";
 
 print "<form action='geomNODE.pl' method='get' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON+';$NODEName';window.close()\">"; #;window.close()
+print "<strong>To add a shapefile layer, click here: </strong><input type='file' id='input' onchange='handleFiles()'><br>";
 print "<strong>Pour enregistrer la couverture spatiale du NODE aux formats WKT et GeoJSON, cliquez ici: </strong><input id='geom' type='submit' name='geom' value='Sauvegarder'>";
 print "</form>";
 
