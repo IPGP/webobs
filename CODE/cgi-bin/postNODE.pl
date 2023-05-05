@@ -377,6 +377,9 @@ if (%n2n) {
 }
 htmlMsgOK("$GRIDType.$GRIDName.$NODEName created/updated");
 
+# ---- saving NODE informations in sampling_features tables
+
+
 # ---- node2node edit: lock-exclusive the file during update process
 sub saveN2N {
 	if ( sysopen(FILE, "$n2nfile", O_RDWR | O_CREAT) ) {
@@ -399,6 +402,38 @@ sub saveN2N {
 # --- return information when OK
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    my $point = "wkt:POINT(".$lat.",".$lon.")";
+
+	# --- connecting to the database
+	my $driver   = "SQLite";
+	my $database = $WEBOBS{SQL_METADATA};
+	my $dsn = "DBI:$driver:dbname=$database";
+	my $userid = "";
+	my $password = "";
+	my $obsid = 'OBSE_OBS_'.$NODEName,$GRIDName;
+	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+	   or die $DBI::errstr;
+=pod
+	# --- completing observed_properties table
+	my $rv = $dbh->do("INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES ('$GRIDName','$NODEName','$point')");
+=cut
+	my $stmt = qq(SELECT Identifier FROM observed_properties;);
+	my $sth = $dbh->prepare( $stmt );
+	my $rv = $sth->execute() or die $DBI::errstr;
+
+	my @rows = $sth->fetchrow_array();
+	print @rows;
+	for (my $i = 0; $i <= @rows; i++) {
+		print $row[$i];
+	}
+	
+	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
+	$sth->execute($GRIDName.'.'.$NODEName,$alias,$point);
+	
+	my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, STATIONNAME, DATASET, DATAFILENAME) VALUES (?,?,?,?);');
+	$sth->execute($obsid,GRIDName.'.''.'.$NODEName,'OBSE_DAT_'.$GRIDName.'.'.$NODEName,$NODEName.'_all.txt');
+
+	
 	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
 }
