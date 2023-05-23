@@ -127,7 +127,7 @@ if ($QryParm->{'action'} eq 'insert') {
 		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 		$rows = dbu($WEBOBS{SQL_METADATA},$q);
 	} else { die "$QryParm->{'action'} for unknown table"; }
-	$$refMsg  .= ($rows == 1) ? "  having inserted new $QryParm->{'tbl'} " : "  failed to insert new $QryParm->{'tbl'}";
+	$$refMsg  .= ($rows == 1) ? $QryParm->{'onlineRes'}."  having inserted new $QryParm->{'tbl'} " : "  failed to insert new $QryParm->{'tbl'}";
 	$$refMsg  .= " $lastDBIerrstr";
 	$$refMsgColor  = ($rows == 1) ? "green" : "red";
 	#$$refMsg  .= " - <i>$q</i>";
@@ -331,7 +331,7 @@ for (@qrs) {
 # ---- read 'typeOrganisation' and 'typeResource' tables in WEBOBSMETA.db
 # -----------------------------------------------------------------------------
 my $driver   = "SQLite";
-my $database = "/opt/webobs/CONF/WEBOBSMETA.db";
+my $database = $WEBOBS{SQL_METADATA};
 my $dsn = "DBI:$driver:dbname=$database";
 my $userid = "";
 my $password = "";
@@ -514,8 +514,8 @@ Producers&nbsp;$go2top
 	<button onclick="addRes();return false;">Add a resource</button>
 	<button onclick="removeRes();return false;">Remove a resource</button></br></br>
 	<input type='hidden' name="count_res" value='1'></input>
+	<input type='hidden' name='onlineRes' value=''></input>
 	<div id='div_res'>
-		<input type='hidden' name='onlineRes' value=''></input>
 		<label>Online resource:<span class="small">Type</span></label>
 		<select name='typeRes'>
 			<option value=$resources[0]>$resNames[0]</option>

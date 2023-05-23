@@ -15,6 +15,14 @@ RAWDATA|$WEBOBS{ROOT_RAWD}/mydatasource
 # URN link to data
 URNDATA|$WEBOBS{URN_RAWD}/mydatasource
 
+# proc TITLE and DESCRIPTION
+TITLE|
+DESCRIPTION|
+
+# proc THEME and TOPICS
+THEME|
+TOPICS|
+
 DEM_SRTM1|N
 # optional user-defined DEM (Arcinfo format, lat/lon, overwrites SRTM/ETOPO default)
 #DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc

@@ -36,12 +36,12 @@ my $id = $sth->fetchrow_array();
 my $wkt = 'wkt:'.$geom[0];
 my $geo = $geom[1];
 my $nod = $id.'_DAT_'.$geom[2];
-
+=pod
 # ---- managing the database
 my $stmt = qq(CREATE TABLE IF NOT EXISTS datasets
    (  Identifier TEXT NOT NULL,
       wktgeom    TEXT NOT NULL,
-      geojson    TEXT NOT NULL,
+      geojson    TEXT,
       FOREIGN KEY(Identifier) REFERENCES producer(Identifier))
       ;);
 
@@ -51,9 +51,9 @@ if($rv < 0) {
 } else {
    print "Table created successfully\n";
 }
-
-my $sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (Identifier, wktgeom, geojson) VALUES (?,?,?);');
-$sth->execute($nod, $wkt, $geo);
+=cut
+my $sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, SPATIALCOVERAGE) VALUES (?,?);');
+$sth->execute($nod, $wkt);
 
 print "Records created successfully\n";
 #=pod

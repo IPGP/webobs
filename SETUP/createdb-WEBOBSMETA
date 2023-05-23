@@ -5,6 +5,8 @@ P=`dirname $0`
 # can be run for fresh installation or within a legacy Webobs migration
 # current directory (pwd) MUST be the target webob's CONF/ directory
 
+# loading INSPIRE themes and topic categories into two variables
+
 echo "Creating/populating metadata tables ..."
 sqlite3 WEBOBSMETA.db <<EOF
 BEGIN TRANSACTION;
@@ -29,7 +31,7 @@ create table contacts (
     IDENTIFIER text NOT NULL, 
     EMAIL text NOT NULL, 
     PID text NOT NULL, 
-    PRIMARY KEY(EMAIL), 
+    PRIMARY KEY(IDENTIFIER), 
     FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     
@@ -39,7 +41,7 @@ create table organisations (
     NAME text NOT NULL, 
     ISO3166 text DEFAULT 'fr', 
     PID text NOT NULL, 
-    PRIMARY KEY(NAME), 
+    PRIMARY KEY(IDENTIFIER), 
     FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     
@@ -52,18 +54,17 @@ create table datasets (
     CREATOR text NOT NULL, 
     SPATIALCOVERAGE text NOT NULL, 
     PROVENANCE text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER), 
-    FOREIGN KEY (CREATOR) REFERENCES contacts(IDENTIFIER) ON DELETE CASCADE
+    PRIMARY KEY(IDENTIFIER)
     );
     
 drop table if exists observations;
 create table observations (
     IDENTIFIER text NOT NULL, 
-    PROCESSINGLEVEL text NOT NULL,
+    PROCESSINGLEVEL text DEFAULT 'Raw data',
     DATATYPE text DEFAULT 'Numeric',
-    TEMPORALEXTENT text NOT NULL,
+    TEMPORALEXTENT text,
     TIMESERIES text DEFAULT 'TRUE',
-    OBSERVEDPROPERTY text NOT NULL, 
+    OBSERVEDPROPERTY text, 
     STATIONNAME text NOT NULL, 
     DATASET text NOT NULL, 
     DATAFILENAME text NOT NULL, 
@@ -116,8 +117,27 @@ INSERT INTO "typeResource" VALUES('http:download@', 'Download');
 INSERT INTO "typeResource" VALUES('http:doi@', 'DOI');
 INSERT INTO "typeResource" VALUES('http:webservice@', 'Webservice');
 
+drop table if exists inspireTheme;
+create table inspireTheme (THEME text NOT NULL);
+
+drop table if exists topicCategories;
+create table topicCategories (TOPIC text NOT NULL);
+
 COMMIT;
 EOF
 
+# creating INSPIRE themes and topic categories tables 
+cat /opt/webobs/CONF/inspireTheme.conf | while read line
+do
+    sqlite3 WEBOBSMETA.db "INSERT INTO inspireTheme (THEME) VALUES ('$line');"
+done
+
+cat /opt/webobs/CONF/topicCategories.conf | while read line
+do
+    sqlite3 WEBOBSMETA.db "INSERT INTO topicCategories (TOPIC) VALUES ('$line');"
+done
+
 echo "Done."
 exit 0
+
+# sql commands to add : FOREIGN KEY (CREATOR) REFERENCES contacts(IDENTIFIER) ON DELETE CASCADE
