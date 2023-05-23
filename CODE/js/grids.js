@@ -196,8 +196,28 @@ function sendPopupProducer() {
 		alert ("funders can't be empty");
 		return false;
 	}
+	if ( form.grid.value == "" ) {
+		alert ("grid can't be empty");
+		return false;
+	}
 	
-	console.log(form.grid);
+	// preparing data for the integration in the database
+	if (form.nameRes.value !== '') {
+		console.log(typeof(form.nameRes.value));
+		if (form.count_res.value == 1) {
+		    form.onlineRes.value = form.typeRes.value+form.nameRes.value;
+	    } else if (form.count_res.value > 1) {
+		    var onlineRes = [];
+		    var names = [];
+		    var types = [];
+		    for (let i = 0; i <= form.count_res.value-1; i++) {
+			    onlineRes.push(form.typeRes[i].value+form.nameRes[i].value);
+			    names.push(form.nameRes[i].value);
+			    types.push(form.typeRes[i].value);
+		    } form.onlineRes.value = onlineRes.join('_,');
+	    } 
+	}
+	
 	//return false;
 	$("#overlay_form_producer").fadeOut(500);
 	$("#ovly").fadeOut(500);
@@ -207,8 +227,10 @@ function sendPopupProducer() {
 
 
 function postDeleteProducer(ux) {
+	//console.log($("td", ux));
+	//return false;
 	var did =  $("td",ux)[2].textContent;
-	var name =  $("td",ux)[4].textContent;
+	var name =  $("td",ux)[3].textContent;
 	var answer = confirm("do you really want to delete producer " + did + " (" + name + ") ? All associated grids will remain but hidden from grid tables.")
 	if (answer) {
 		did = did.replace(/\+/g,'%2B');
