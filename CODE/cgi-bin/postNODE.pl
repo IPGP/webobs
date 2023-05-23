@@ -174,41 +174,46 @@ if ($delete) {
 
 # ---- What are we supposed to do ?: find it out in the query string
 #
-my $QryParm   = $cgi->Vars;    # used later; todo: replace cgi->param's below
-my $acqr      = $cgi->param('acqr')        // '';
-my $utcd      = $cgi->param('utcd')        // '';
-my $ldly      = $cgi->param('ldly')        // '';
-my $anneeD    = $cgi->param('anneeDepart') // '';
-my $moisD     = $cgi->param('moisDepart')  // '';
-my $jourD     = $cgi->param('jourDepart')  // '';
-my $anneeE    = $cgi->param('anneeEnd')    // '';
-my $moisE     = $cgi->param('moisEnd')     // '';
-my $jourE     = $cgi->param('jourEnd')     // '';
-my $validite  = $cgi->param('valide')      // '';
-my $alias     = $cgi->param('alias')       // '';
-my $type      = $cgi->param('type')        // '';
-my $tz        = $cgi->param('tz')          // '';
-my $data      = $cgi->param('data')        // '';
-my $rawformat = $cgi->param('rawformat')   // '';
-my $rawdata   = $cgi->param('rawdata')     // '';
-my @chanlist  = $cgi->param('chanlist');
-my $name      = $cgi->param('fullName')    // '';
-my $fdsn      = $cgi->param('fdsn')        // '';
-my $latN      = $cgi->param('latwgs84n')   // '';
-my $lat       = $cgi->param('latwgs84')    // '';
-my $latmin    = $cgi->param('latwgs84min') // '';
-my $latsec    = $cgi->param('latwgs84sec') // '';
-my $lonE      = $cgi->param('lonwgs84e')   // '';
-my $lon       = $cgi->param('lonwgs84')    // '';
-my $lonmin    = $cgi->param('lonwgs84min') // '';
-my $lonsec    = $cgi->param('lonwgs84sec') // '';
-my $alt       = $cgi->param('altitude')    // '';
-my $anneeP    = $cgi->param('anneeMesure') // '';
-my $moisP     = $cgi->param('moisMesure')  // '';
-my $jourP     = $cgi->param('jourMesure')  // '';
-my $typePos   = $cgi->param('typePos')     // '';
-my $rawKML    = $cgi->param('rawKML')      // '';
-my $features  = $cgi->param('features')    // '';
+my $QryParm    = $cgi->Vars;    # used later; todo: replace cgi->param's below
+my $acqr       = $cgi->param('acqr')        // '';
+my $utcd       = $cgi->param('utcd')        // '';
+my $ldly       = $cgi->param('ldly')        // '';
+my $anneeD     = $cgi->param('anneeDepart') // '';
+my $moisD      = $cgi->param('moisDepart')  // '';
+my $jourD      = $cgi->param('jourDepart')  // '';
+my $anneeE     = $cgi->param('anneeEnd')    // '';
+my $moisE      = $cgi->param('moisEnd')     // '';
+my $jourE      = $cgi->param('jourEnd')     // '';
+my $validite   = $cgi->param('valide')      // '';
+my $alias      = $cgi->param('alias')       // '';
+my $type       = $cgi->param('type')        // '';
+my $title      = $cgi->param('title')       // '';
+my $desc       = $cgi->param('description') // '';
+my $theme      = $cgi->param('theme')       // '';
+my $topics     = $cgi->param('topics') // '';
+my $tz         = $cgi->param('tz')          // '';
+my $data       = $cgi->param('data')        // '';
+my $rawformat  = $cgi->param('rawformat')   // '';
+my $rawdata    = $cgi->param('rawdata')     // '';
+my @chanlist   = $cgi->param('chanlist');
+my $name       = $cgi->param('fullName')    // '';
+my $fdsn       = $cgi->param('fdsn')        // '';
+my $latN       = $cgi->param('latwgs84n')   // '';
+my $lat        = $cgi->param('latwgs84')    // '';
+my $latmin     = $cgi->param('latwgs84min') // '';
+my $latsec     = $cgi->param('latwgs84sec') // '';
+my $lonE       = $cgi->param('lonwgs84e')   // '';
+my $lon        = $cgi->param('lonwgs84')    // '';
+my $lonmin     = $cgi->param('lonwgs84min') // '';
+my $lonsec     = $cgi->param('lonwgs84sec') // '';
+my $spatialcov = $cgi->param('outWKT')      // '';
+my $alt        = $cgi->param('altitude')    // '';
+my $anneeP     = $cgi->param('anneeMesure') // '';
+my $moisP      = $cgi->param('moisMesure')  // '';
+my $jourP      = $cgi->param('jourMesure')  // '';
+my $typePos    = $cgi->param('typePos')     // '';
+my $rawKML     = $cgi->param('rawKML')      // '';
+my $features   = $cgi->param('features')    // '';
 $features =~ s/\|/,/g;
 my %n2n;
 for (split(',',lc($features))) {
@@ -402,7 +407,6 @@ sub saveN2N {
 # --- return information when OK
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-    my $point = "wkt:POINT(".$lat.",".$lon.")";
 
 	# --- connecting to the database
 	my $driver   = "SQLite";
@@ -410,13 +414,22 @@ sub htmlMsgOK {
 	my $dsn = "DBI:$driver:dbname=$database";
 	my $userid = "";
 	my $password = "";
-	my $obsid = 'OBSE_OBS_'.$NODEName,$GRIDName;
+	
+	# --- station informations
+	my $point = "wkt:POINT(".$lat.",".$lon.")";
+	
+	# --- dataset informations
+	my $id  = 'OBSE_DAT_'.$GRIDName.'.'.$NODEName;
+	my $subject = $topics.'inspireTheme:'.$theme;
+	my $creator = 'principalInvestigator:lajeuness@ipgp.fr';
+	my $provenance = 'statement:';
+	
 	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
 	   or die $DBI::errstr;
 =pod
 	# --- completing observed_properties table
 	my $rv = $dbh->do("INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES ('$GRIDName','$NODEName','$point')");
-=cut
+
 	my $stmt = qq(SELECT Identifier FROM observed_properties;);
 	my $sth = $dbh->prepare( $stmt );
 	my $rv = $sth->execute() or die $DBI::errstr;
@@ -426,14 +439,13 @@ sub htmlMsgOK {
 	for (my $i = 0; $i <= @rows; i++) {
 		print $row[$i];
 	}
-	
+=cut
 	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
-	$sth->execute($GRIDName.'.'.$NODEName,$alias,$point);
-	
-	my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, STATIONNAME, DATASET, DATAFILENAME) VALUES (?,?,?,?);');
-	$sth->execute($obsid,GRIDName.'.''.'.$NODEName,'OBSE_DAT_'.$GRIDName.'.'.$NODEName,$NODEName.'_all.txt');
+	$sth->execute($alias,$alias,$point);
 
-	
+	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, CREATOR, SPATIALCOVERAGE, PROVENANCE) VALUES (?,?,?,?,?,?,?);');
+	$sth->execute($id,$title,'abstract:'.$desc,$subject,$creator,$spatialcov,$provenance);
+
 	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
 }

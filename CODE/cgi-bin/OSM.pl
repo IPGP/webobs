@@ -100,6 +100,7 @@ print <<'END';
 <script src='https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js'></script>
 <script src="https://unpkg.com/shpjs@latest/dist/shp.js" type="text/javascript"></script>
 <script src="https://cdn.rawgit.com/calvinmetcalf/leaflet.shapefile/gh-pages/leaflet.shpfile.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/gh/seabre/simplify-geometry@master/simplifygeometry-0.0.2.js" type="text/javascript"></script>
 <script src='https://openlayers.org/api/OpenLayers.js'></script>
 <script type="text/javascript" src="https://stamen-maps.a.ssl.fastly.net/js/tile.stamen.js?v1.3.0"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
@@ -238,14 +239,22 @@ print <<"END";
       outWKT = out;
       
 	});
-	
-	function handleFiles() {
+
+	function handleFiles() {	// read .zip shpfiles 
 		var fichierSelectionne = document.getElementById('input').files[0];
 
 		var fr = new FileReader();
 		fr.onload = function () {
 			shp(this.result).then(function(geojson) {
 		  		console.log('loaded geojson:', geojson);
+		  		outWKT = [];
+		  		for (var i = 0; i <= geojson.features.length-1; i++) {
+		  			var coordinates = simplifyGeometry(geojson.features[i].geometry.coordinates[0], 0.0005);
+		  			var lonLat = [];
+		  			for (var j = 0; j <= coordinates.length-1; j++) {
+		  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]);
+		  			} outWKT.push('((' + lonLat + '))');
+		  		} outWKT = 'wkt:MULTIPOLYGON('+outWKT+')';
 				var shpfile = new L.Shapefile(geojson,{
 					onEachFeature: function(feature, layer) {
 						if (feature.properties) {
@@ -288,7 +297,7 @@ if (scalar(@NID) == 2) {
 }
 print "</script>\n";
 
-print "<form action='geomNODE.pl' method='get' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON+';$NODEName';window.close()\">"; #;window.close()
+print "<form action='geomNODE.pl' method='post' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON+';$NODEName';\">"; #;window.close()
 print "<strong>To add a shapefile layer, click here: </strong><input type='file' id='input' onchange='handleFiles()'><br>";
 print "<strong>Pour enregistrer la couverture spatiale du NODE aux formats WKT et GeoJSON, cliquez ici: </strong><input id='geom' type='submit' name='geom' value='Sauvegarder'>";
 print "</form>";

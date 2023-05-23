@@ -112,6 +112,10 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
+my $usrTitle     = $NODE{TITLE};
+my $usrDesc      = $NODE{DESCRIPTION};
+my $usrTheme     = $NODE{THEME};
+my $usrTopic     = $NODE{TOPICS};
 my $usrTZ        = $NODE{TZ} // strftime("%z", localtime());
 my $features     = $NODE{FILES_FEATURES} // "$__{'featureA,featureB,featureC'}";
 my @feat = split(/,|\|/,$features);
@@ -156,6 +160,25 @@ $date            = $NODE{POS_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
 ($usrYearP,$usrMonthP,$usrDayP,$usrTimeP) = split(/-|T/,$date);
 
+# ---- INSPIRE themes and topic categories
+my $inspireTheme = "/$WEBOBS{THEME}";
+my @themes;
+open(FH, '<', $inspireTheme) or die $!;
+
+while(<FH>){
+	push(@themes, $_);
+}
+
+close(FH);
+
+my $topicCategories = "/$WEBOBS{TOPIC}";
+my @topics;
+open(FH, '<', $topicCategories) or die $!;
+
+while(<FH>){
+	push(@topics, $_);
+}
+
 # ---- Load the list of existing nodes
 my @allNodes = qx(/bin/ls $NODES{PATH_NODES});
 chomp(@allNodes);
@@ -192,6 +215,9 @@ print <<"FIN";
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
+<script src="https://unpkg.com/shpjs\@latest/dist/shp.js" type="text/javascript"></script>
+<script src="https://cdn.rawgit.com/calvinmetcalf/leaflet.shapefile/gh-pages/leaflet.shpfile.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/gh/seabre/simplify-geometry\@master/simplifygeometry-0.0.2.js" type="text/javascript"></script>
 <script type="text/javascript">
 
 function postIt()
@@ -258,7 +284,12 @@ function postIt()
   for (var i=0; i<document.form.SELs.length; i++) {
   	document.form.SELs[i].selected = true;
   }
-
+  var selected = \$('#topicCats')[0].selectedOptions;
+  var topics = [];
+  for (var i=0; i<selected.length; i++) {
+  	topics.push(selected[i].value);
+  } document.form.topics.value = 'topicCategories:'+topics.join(',')+'_';
+	console.log(\$(\"#theform\"));
 	if (\$(\"#theform\").hasChanged() || document.form.delete.value == 1 || document.form.locMap.value == 1) {
 		document.form.node.value = document.form.grid.value + document.form.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
@@ -366,7 +397,7 @@ function fetchKML() {
 	var credentials = btoa("webobs:0vpf1pgp");
 	var auth = {
 		'Origin': 'http://localhost',
-		'Access-Control-Request-Method': 'GET',
+		'Access-Control-Request-Method': 'POST',
 		'Access-Control-Allow-Origin': 'http://localhost',
 		'Authorization': `Basic \${credentials}`,
 	};
@@ -502,6 +533,37 @@ function onInputWrite(e) {
 		map.flyTo([lat, lon], 18);
 	}
 }
+function handleFiles() {	// read .zip shpfiles 
+	var fichierSelectionne = document.getElementById('input').files[0];
+
+	var fr = new FileReader();
+	fr.onload = function () {
+		shp(this.result).then(function(geojson) {
+	  		console.log('loaded geojson:', geojson);
+	  		outWKT = [];
+	  		for (var i = 0; i <= geojson.features.length-1; i++) {
+	  			var coordinates = simplifyGeometry(geojson.features[i].geometry.coordinates[0], 0.001);
+	  			var lonLat = [];
+	  			for (var j = 0; j <= coordinates.length-1; j++) {
+	  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]);
+	  			} outWKT.push('((' + lonLat + '))');
+	  		} document.form.outWKT.value = 'wkt:MULTIPOLYGON('+outWKT+')'; console.log(outWKT[0]);
+			var shpfile = new L.Shapefile(geojson,{
+				onEachFeature: function(feature, layer) {
+					if (feature.properties) {
+						layer.bindPopup(Object.keys(feature.properties).map(function(k) {
+							return k + ": " + feature.properties[k];
+						}).join("<br />"), {
+							maxHeight: 200
+						});
+					}
+				}
+			});
+			shpfile.addTo(map);
+	  })
+	};
+	fr.readAsArrayBuffer(fichierSelectionne);
+};
 // creating and parametring the map for the geographic location choice
 
 var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
@@ -580,7 +642,7 @@ var mapOptions = {
 
 FIN
 
-print "<FORM id=\"theform\" name=\"form\" action=\"\">\n";
+print "<FORM id=\"theform\" name=\"form\" method=\"post\" action=\"\">\n";
 # --- "Validity"
 my $nodevalidity;
 if (clientHasAdm(type=>"authmisc",name=>"NODES")) {
@@ -630,6 +692,23 @@ print "<TR>";
 		# --- TYPE
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Type'}:</LABEL>";
 		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
+		# --- TITLE
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Title'}:</LABEL>";
+		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrTitle\" onmouseover=\"overlib('$__{help_creationstation_title}')\" size=\"8\" name=\"title\" id=\"title\">&nbsp;&nbsp;<BR>";
+		# --- DESCRIPTION
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Description'}:</LABEL>";
+		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrDesc\" onmouseover=\"overlib('$__{help_creationstation_description}')\" size=\"8\" name=\"description\" id=\"description\">&nbsp;&nbsp;<BR>";
+		# --- INSPIRE THEME
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
+		print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
+		for (@themes) { print "<OPTION value=$_>$_</option>\n"; }
+		print "</SELECT><BR>";
+		# --- TOPIC CATEGORIES
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Topic categories'}:</LABEL>";
+		print "<INPUT type=\"hidden\" name=\"topics\">";
+		print "<SELECT multiple onMouseOut=\"nd()\" value=\"$usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" id=\"topicCats\">";
+		for (@topics) { print "<OPTION value=$_>$_</option>\n"; }
+		print "</SELECT><BR>";
 	print "</FIELDSET>";
 
 	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
@@ -770,6 +849,11 @@ print "<TR>";
 			print "<DIV id=\"rawKML\" style=\"display:none\"><LABEL for=\"rawKML\">Raw KML: </LABEL>"
 				." <INPUT name=\"rawKML\" size=\"40\" value=\"$usrRAWKML\">"
 				."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Fetch KML' onClick='fetchKML()'></DIV>";
+				
+			# --- Importation of shpfile
+			print "<strong>To add a shapefile layer, click here: </strong><input type='file' id='input' onchange='handleFiles()'><br>";
+			print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
+				
 		print "</TD>";
 		print <<FIN;
 		<script>

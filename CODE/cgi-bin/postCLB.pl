@@ -169,30 +169,35 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 # --- return information when OK
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	my $obsid    = 'OBSE_OBS_'.$NODEName,$GRIDName;
+	my $station  = $GRIDName.'.'.$NODEName;
+	my $dataset  = 'OBSE_DAT_'.$GRIDName.'.'.$NODEName;
+	my $dataname = $NODEName.'_all.txt';
+	my @obsProp;
+	
+	# --- connecting to the database
+	my $driver   = "SQLite";
+	my $database = $WEBOBS{SQL_METADATA};
+	my $dsn = "DBI:$driver:dbname=$database";
+	my $userid = "";
+	my $password = "";
+	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+	   or die $DBI::errstr;
+	
 	foreach (@donnees) {
         my @obs   = split(/[\|]/, $_);
-        my $time  = $obs[0].'T'.$obs[1].'Z';
         my $id    = $obs[6];
         my $name  = $obs[6];
         my $unit  = $obs[4];
         my $theia = $obs[$#obs];
-
-		# --- connecting to the database
-		my $driver   = "SQLite";
-		my $database = $WEBOBS{SQL_METADATA};
-		my $dsn = "DBI:$driver:dbname=$database";
-		my $userid = "";
-		my $password = "";
-		my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-		   or die $DBI::errstr;
+        push(@obsProp,$id);
 
 		# --- completing observed_properties table
 		my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES) VALUES (?,?,?,?);');
 		$sth->execute($id, $name, $unit, $theia);
-		
-		my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (TEMPORALEXTENT, OBSERVEDPROPERTY) VALUES (?,?);');
-		$sth->execute($time,$id);
 	}
+	my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?);');
+	$sth->execute($obsid,$station,join(',',@obsProp),$dataset,$dataname);
 	
  	
 	my $msg = $_[0] || "calibration file successfully updated !" ;
