@@ -116,6 +116,7 @@ my $usrTitle     = $NODE{TITLE};
 my $usrDesc      = $NODE{DESCRIPTION};
 my $usrTheme     = $NODE{THEME};
 my $usrTopic     = $NODE{TOPICS};
+my $usrOrigin    = $NODE{ORIGIN};
 my $usrTZ        = $NODE{TZ} // strftime("%z", localtime());
 my $features     = $NODE{FILES_FEATURES} // "$__{'featureA,featureB,featureC'}";
 my @feat = split(/,|\|/,$features);
@@ -709,6 +710,9 @@ print "<TR>";
 		print "<SELECT multiple onMouseOut=\"nd()\" value=\"$usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" id=\"topicCats\">";
 		for (@topics) { print "<OPTION value=$_>$_</option>\n"; }
 		print "</SELECT><BR>";
+		# --- Provenance
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Provenance'}:</LABEL>";
+		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrOrigin\" onmouseover=\"overlib('$__{help_creationstation_provenance}')\" size=\"8\" name=\"provenance\" id=\"provenance\">&nbsp;&nbsp;<BR>";
 	print "</FIELDSET>";
 
 	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
@@ -851,7 +855,7 @@ print "<TR>";
 				."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Fetch KML' onClick='fetchKML()'></DIV>";
 				
 			# --- Importation of shpfile
-			print "<strong>To add a shapefile layer, click here: </strong><input type='file' id='input' onchange='handleFiles()'><br>";
+			print "<strong>To add a shapefile (.zip only) layer, click here: </strong><input type='file' id='input' onchange='handleFiles()'><br>";
 			print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
 				
 		print "</TD>";

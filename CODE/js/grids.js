@@ -202,23 +202,21 @@ function sendPopupProducer() {
 	}
 	
 	// preparing data for the integration in the database
-	if (form.nameRes.value !== '') {
-		console.log(typeof(form.nameRes.value));
-		if (form.count_res.value == 1) {
-		    form.onlineRes.value = form.typeRes.value+form.nameRes.value;
-	    } else if (form.count_res.value > 1) {
-		    var onlineRes = [];
-		    var names = [];
-		    var types = [];
-		    for (let i = 0; i <= form.count_res.value-1; i++) {
-			    onlineRes.push(form.typeRes[i].value+form.nameRes[i].value);
-			    names.push(form.nameRes[i].value);
-			    types.push(form.typeRes[i].value);
-		    } form.onlineRes.value = onlineRes.join('_,');
-	    } 
-	}
+	if (form.count_res.value == 1) {
+		if (form.nameRes.value == '') {form.onlineRes.value = ''}
+		else {form.onlineRes.value = form.typeRes.value+form.nameRes.value}
+	} else if (form.count_res.value > 1) {
+	    var onlineRes = [];
+	    var names = [];
+	    var types = [];
+	    for (let i = 0; i <= form.count_res.value-1; i++) {
+		    onlineRes.push(form.typeRes[i].value+form.nameRes[i].value);
+		    names.push(form.nameRes[i].value);
+		    types.push(form.typeRes[i].value);
+	    } form.onlineRes.value = onlineRes.join('_,');
+	} 
 	
-	//return false;
+	// return false;
 	$("#overlay_form_producer").fadeOut(500);
 	$("#ovly").fadeOut(500);
 	if (Gscriptname == "") { Gscriptname = "/cgi-bin/gridsMgr.pl"; }

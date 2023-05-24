@@ -235,6 +235,14 @@ if ($QryParm->{'action'} eq 'delete') {
 		$q .= " WHERE IDENTIFIER=\'$QryParm->{'id'}\'";
 		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 		$rows = dbu($WEBOBS{SQL_METADATA},$q);
+		$q = " delete from $WEBOBS{SQL_TABLE_DATASETS}";
+		$q .= " WHERE IDENTIFIER LIKE \'$QryParm->{'id'}%\'";
+		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
+		$rows = dbu($WEBOBS{SQL_METADATA},$q);
+		$q = " delete from $WEBOBS{SQL_TABLE_OBSERVATIONS}";
+		$q .= " WHERE IDENTIFIER LIKE \'$QryParm->{'id'}%\'";
+		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
+		$rows = dbu($WEBOBS{SQL_METADATA},$q);
 	} else { die "$QryParm->{'action'} for unknown table"; }
 	$$refMsg  .= ($rows >= 1) ? "  having deleted in $QryParm->{'tbl'} " : "  failed to delete in $QryParm->{'tbl'}";
 	$$refMsg  .= " $lastDBIerrstr";

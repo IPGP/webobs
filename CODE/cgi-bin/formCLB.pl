@@ -300,6 +300,10 @@ for my $line (sort sort_clb_lines @donnees) {
 	print "</select></TD>\n";
 	print "<TD nowrap><input type=checkbox name=\"s$i\" onChange=\"calc()\">
 		<input name=\"v".$i."_1\" readonly value=\"$line->[2]\" size=\"$fieldCLB[2][0]\" style=\"font-weight:bold;background-color:#E0E0E0;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[2][3]}')\">";
+	if ($line->[2] =~ /Theia/) {
+		print "<TD nowrap><input type=checkbox name=\"s$i\" onChange=\"calc()\">
+			<input name=\"v".$i."_1\" readonly value=\"salut\" size=\"$fieldCLB[2][0]\" style=\"font-weight:bold;background-color:#E0E0E0;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('salut')\">";
+	}
 	if ($line->[2] > $nbc) {
 		$nbc = $line->[2];
 	}
