@@ -190,7 +190,8 @@ my $type       = $cgi->param('type')        // '';
 my $title      = $cgi->param('title')       // '';
 my $desc       = $cgi->param('description') // '';
 my $theme      = $cgi->param('theme')       // '';
-my $topics     = $cgi->param('topics') // '';
+my $topics     = $cgi->param('topics')      // '';
+my $provenane  = $cgi->param('provenance')  // '';
 my $tz         = $cgi->param('tz')          // '';
 my $data       = $cgi->param('data')        // '';
 my $rawformat  = $cgi->param('rawformat')   // '';
@@ -422,7 +423,7 @@ sub htmlMsgOK {
 	my $id  = 'OBSE_DAT_'.$GRIDName.'.'.$NODEName;
 	my $subject = $topics.'inspireTheme:'.$theme;
 	my $creator = 'principalInvestigator:lajeuness@ipgp.fr';
-	my $provenance = 'statement:';
+	my $origin  = 'statement:'.$provenance;
 	
 	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
 	   or die $DBI::errstr;
@@ -444,7 +445,7 @@ sub htmlMsgOK {
 	$sth->execute($alias,$alias,$point);
 
 	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, CREATOR, SPATIALCOVERAGE, PROVENANCE) VALUES (?,?,?,?,?,?,?);');
-	$sth->execute($id,$title,'abstract:'.$desc,$subject,$creator,$spatialcov,$provenance);
+	$sth->execute($id,$title,'abstract:'.$desc,$subject,$creator,$spatialcov,$origin);
 
 	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;

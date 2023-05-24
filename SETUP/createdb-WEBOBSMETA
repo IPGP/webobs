@@ -47,7 +47,7 @@ create table organisations (
     
 drop table if exists datasets;
 create table datasets (
-    IDENTIFIER text NOT NULL, 
+    IDENTIFIER text NOT NULL,
     TITLE text NOT NULL, 
     DESCRIPTION text NOT NULL, 
     SUBJECT text NOT NULL, 
@@ -59,7 +59,7 @@ create table datasets (
     
 drop table if exists observations;
 create table observations (
-    IDENTIFIER text NOT NULL, 
+    IDENTIFIER text NOT NULL,
     PROCESSINGLEVEL text DEFAULT 'Raw data',
     DATATYPE text DEFAULT 'Numeric',
     TEMPORALEXTENT text,
@@ -69,7 +69,7 @@ create table observations (
     DATASET text NOT NULL, 
     DATAFILENAME text NOT NULL, 
     PRIMARY KEY(IDENTIFIER), 
-    FOREIGN KEY (OBSERVEDPROPERTY) REFERENCES observed_properties(IDENTIFIER) ON DELETE CASCADE, 
+    FOREIGN KEY (OBSERVEDPROPERTY) REFERENCES observed_properties(IDENTIFIER) ON DELETE CASCADE,
     FOREIGN KEY (STATIONNAME) REFERENCES sampling_features(IDENTIFIER) ON DELETE CASCADE, 
     FOREIGN KEY (DATASET) REFERENCES datasets(IDENTIFIER) ON DELETE CASCADE
     );
@@ -141,3 +141,5 @@ echo "Done."
 exit 0
 
 # sql commands to add : FOREIGN KEY (CREATOR) REFERENCES contacts(IDENTIFIER) ON DELETE CASCADE
+# 
+# FOREIGN KEY (NAME) REFERENCES observations(OBSERVEDPROPERTY) ON DELETE CASCADE
