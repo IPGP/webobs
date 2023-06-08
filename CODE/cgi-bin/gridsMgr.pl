@@ -333,7 +333,7 @@ for (@qrs) {
 	$pproducersCount++; $pproducersId="p_udef".$pproducersCount;
 	$pproducers .= "<tr id=\"$pproducersId\"><td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"openPopupProducer($pproducersId,'$WEBOBS{SQL_TABLE_PRODUCER}');return false\"><img title=\"edit producer\" src=\"/icons/modif.png\"></a>";
 	$pproducers .= "<td style=\"width:12px\" class=\"tdlock\"><a href=\"#IDENT\" onclick=\"postDeleteProducer($pproducersId);return false\"><img title=\"delete producer\" src=\"/icons/no.png\"></a>";
-	$pproducers .= "<td>$pproducers_did</td><td nowrap>$pproducers_name</td><td>$pproducers_title</td><td>$pproducers_desc</td><td>$pproducers_objective</td><td>$pproducers_meas</td><td>$pproducers_email</td><td>$pproducers_contacts</td><td>$pproducers_funders</td><td>$pproducers_res</td><td>".join(", ",$pproducers_grids)."</td></tr>\n";
+	$pproducers .= "<td >$pproducers_did</td><td nowrap>$pproducers_name</td><td>$pproducers_title</td><td>$pproducers_desc</td><td>$pproducers_objective</td><td>$pproducers_meas</td><td>$pproducers_email</td><td>$pproducers_contacts</td><td>$pproducers_funders</td><td>$pproducers_res</td><td>".join(", ",$pproducers_grids)."</td></tr>\n";
 }
 
 # ---- read 'typeOrganisation' and 'typeResource' tables in WEBOBSMETA.db
@@ -540,7 +540,7 @@ Producers&nbsp;$go2top
 		<input type="button" name="sendbutton" value="send" onclick="sendPopupProducer(); return false; " /> <input type="button" value="cancel" onclick="closePopup(); return false" />
 	</p>
 	</form>
-	<fieldset id="domains-field"><legend><b>Producers</b></legend>
+	<fieldset id="producerss-field"><legend><b>Producers</b></legend>
 		<div style="background: #BBB">
 			<b>$pproducersCount</b> producers defined
 		</div>
