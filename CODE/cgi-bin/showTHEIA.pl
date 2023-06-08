@@ -96,18 +96,14 @@ print "<TABLE width=\"100%\"><TR>"
 		."<TH><SMALL>Funders</SMALL></TH>"
 		."<TH><SMALL>Online resource</SMALL></TH></TR>";
 		
-while(my @row = $sth->fetchrow_array()) {
-	my @contacts  = ();
-	for (split(/_,/,$row[7])) {
-		my @contact = split(/:/,$_);
-		my %hash = { email => $contact[1], role => $contact[0]};
-		push(@contacts, encode_json \%hash);
+my $contacts;
+my $funders;
+my $onlineRes;
 		
-	}
-	my $contacts = encode_json \@contacts;
-	print $contacts;
-	my $funders   = join(',',split(/_,/,$row[8]));
-	my $onlineRes = join(',',split(/_,/,$row[9]));
+while(my @row = $sth->fetchrow_array()) {
+	$contacts  = join(',',split(/_,/,$row[7]));
+	$funders   = join(',',split(/_,/,$row[8]));
+	$onlineRes = join(',',split(/_,/,$row[9]));
 	print "<TR><TD width=3% align=center><SMALL><A href=\"/cgi-bin/gridsMgr.pl\">$row[0]</A>"
 			."<p><input type=\"hidden\" name=\"producerId\" value=\"$row[0]\"></input></p></SMALL></TD>"
 			."<TD width=4% align=center><SMALL>$row[1]"
@@ -122,12 +118,12 @@ while(my @row = $sth->fetchrow_array()) {
 			."<p><input type=\"hidden\" name=\"measuredVariables\" value=\"$row[5]\"></input></p></SMALL></TD>"
 			."<TD width=5% align=center><SMALL>$row[6]"
 			."<p><input type=\"hidden\" name=\"email\" value=\"$row[6]\"></input></p></SMALL></TD>"
-			."<TD width=8% align=center><SMALL>@contacts"
-			."<p><input type=\"hidden\" name=\"contacts\" value=\"@contacts\"></input></p></SMALL></TD>"
+			."<TD width=8% align=center><SMALL>$contacts"
+			."<p><input type=\"hidden\" name=\"contacts\"></input></p></SMALL></TD>"
 			."<TD width=8% align=center><SMALL>$funders"
-			."<p><input type=\"hidden\" name=\"funders\" value=\"$funders\"></input></p></SMALL></TD>"
-			."<TD width=10% align=center><SMALL>$onlineRes"
-			."<p><input type=\"hidden\" name=\"onlineRes\" value=\"$onlineRes\"></input></p></SMALL></TD></TR>";
+			."<p><input type=\"hidden\" name=\"fundings\"></input></p></SMALL></TD>"
+			."<TD width=10% align=center><SMALL>$onlineRes";
+			#."<p><input type=\"hidden\" name=\"onlineRes\"></input></p></SMALL></TD></TR>";
 };
 
 print "</TABLE></TD>\n";
@@ -214,6 +210,77 @@ while(my @row = $sth->fetchrow_array()){
 			."<TD width=8% align=center><SMALL>$row[8]</SMALL></TD></TR>";
 };
 
+# ---- start the creation of the JSON object ----------------------------------------------------
+#
+# ---- extracting observed_properties data
+
+$stmt = qq(SELECT * FROM observations, observed_properties, sampling_features GROUP BY observations.identifier;);
+$sth = $dbh->prepare( $stmt );
+$rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+my @observations;
+
+while( my @row = $sth->fetchrow_array() ) {
+	# ---- data from observed_properties table
+	my %observedProperty = (
+		name => $row[10],
+		unit => $row[11],
+	);
+	my @theiaCategories;
+	foreach (split(',',$row[12])) {
+		push(@theiaCategories, $_);
+	}
+	$observedProperty{"theiaCategories"} = \@theiaCategories;
+
+	#print $observation{'observedProperty'}{'theiaCategories'}->[0];
+	# ---- data from sampling_features table
+	my %samplingFeature = (
+		name => $row[6],
+		type => "Feature",
+		properties => "{}",
+	);
+	my $geometry = (split ':', $row[$#row])[1];
+	my %geometry = (
+		type => (split '\(|\)', $geometry)[0],
+		coordinates => (split '\(|\)', $geometry)[1],
+	);
+	my %samplingFeature = (
+		geometry => \%geometry,
+	);
+	my %featureOfInterest = (
+		samplingFeature => \%samplingFeature,
+	);
+	
+	my %datafile = (
+		name => $row[8],
+	);
+	my %result = (
+		datatype => \%datafile,
+	);
+	
+	my %temporalExtent = (
+		dateBeg => (split '/', $row[3])[0],
+		dateEnd => (split '/', $row[3])[1],
+	);
+	
+	my %observation = (
+		observedProperty => \%observedProperty,
+		featureOfInterest => \%featureOfInterest,
+		result => \%result,
+		datatype => $row[2],
+		timeSerie => $row[4],
+		temporalExtent => \%temporalExtent,
+		processingLevel => $row[1],
+	);
+	push(@observations, \%observation);
+}
+
+print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
+
 print "</TABLE></TD>\n";
 print "</TR></TABLE>\n";
 print "<BR><BR>\n";
@@ -223,7 +290,7 @@ print <<"FIN";
 	let text = \'{\"versions\" : \"1.0\", \"producer\" : {}, \"datasets\" : []}\';
 	
 	const obj = JSON.parse(text);
-	console.log(obj);
+	//console.log(obj);
 
 	function getFormData(\$form){
 		var unindexed_array = \$form.serializeArray();
@@ -235,15 +302,43 @@ print <<"FIN";
 
 		return indexed_array;
 	}
+	
+	function contactJSON(lists){
+		var new_lists = [];
+		lists.split(",").forEach(function(item){
+			var sep_list = item.split(":");
+			var obj = {email: sep_list[1], role: sep_list[0]}
+			new_lists.push(obj)
+		});
+		return new_lists;
+	}
+
+	function funderJSON(lists){
+		var new_lists = [];
+		lists.split(",").forEach(function(item){
+			var sep_list = item.split(":");
+			var obj = {type: sep_list[0], idScanR: sep_list[1]}
+			new_lists.push(obj)
+		});
+		return new_lists;
+	}
+	
+	function createOBS(\$form) {
+		console.log(\$form)
+	}
 
 	var \$form = \$("#formTHEIA");
 	var data = getFormData(\$form);
 	
 	obj.producer = data
-	console.log(typeof(obj.producer.contacts));
+	obj.producer.contacts = contactJSON(\"$contacts\");
+	obj.producer.fundings = funderJSON(\"$funders\");
+	//console.log(obj.producer.contacts);
 
 	// var formData = \$(\"#formTHEIA\").serialize();
 	// console.log(formData);
+	
+	createOBS(\$form);
 </script>
 FIN
 
