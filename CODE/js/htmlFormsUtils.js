@@ -176,7 +176,10 @@ function addMgr() {
 	var form = $('#overlay_form_producer')[0];
 	form.count_mgr.value = parseInt(form.count_mgr.value)+1;
 	var new_div = document.createElement('div');
-    new_div.innerHTML = "<label>Contact:<span class='small'>Data manager</span></label><input type='text' name='dataMgr"+form.count_mgr.value+"'value=''/><br/><br/>";
+    new_div.innerHTML = "<label>Contact:<span class='small'>Data manager</span></label><input type='text' name='dataMgr"+form.count_mgr.value+"'value=''/><br/><br/><label>Contacts:<span class='small'>Data Manager</span></label><input type='text' name='firstName' style='width:33%;' value=''/><input type='text' name='lastName' style='width:33%;' value=''/><br/><br/>";
+    //new_div.innerHTML = $('#div_prj')[0].innerHTML;
+    //var prj_email = document.getElementById("prj_email");
+    //prj_email.name = 'dataMgr'+form.count_mgr.value;
     new_div.id = 'dataMgr'+form.count_mgr.value;
     $('#div_mgr')[0].append(new_div);
 }

@@ -191,7 +191,7 @@ my $title      = $cgi->param('title')       // '';
 my $desc       = $cgi->param('description') // '';
 my $theme      = $cgi->param('theme')       // '';
 my $topics     = $cgi->param('topics')      // '';
-my $provenance = $cgi->param('provenance')  // '';
+my $lineage    = $cgi->param('lineage')     // '';
 my $tz         = $cgi->param('tz')          // '';
 my $data       = $cgi->param('data')        // '';
 my $rawformat  = $cgi->param('rawformat')   // '';
@@ -417,13 +417,17 @@ sub htmlMsgOK {
 	my $password = "";
 	
 	# --- station informations
-	my $point = "wkt:POINT(".$lat.",".$lon.")";
+	my $point;
+	if ($alt ne "") {
+		$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
+	} else {
+		$point = "wkt:Point(".$lat.",".$lon.")";
+	}
 	
 	# --- dataset informations
 	my $id  = 'OBSE_DAT_'.$GRIDName.'.'.$NODEName;
 	my $subject = $topics.'inspireTheme:'.$theme;
-	my $creator = 'principalInvestigator:lajeuness@ipgp.fr';
-	my $origin  = 'statement:'.$provenance;
+	my $creator = 'Principal investigator:lajeuness@ipgp.fr';
 	
 	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
 	   or die $DBI::errstr;
@@ -444,8 +448,8 @@ sub htmlMsgOK {
 	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
 	$sth->execute($alias,$alias,$point);
 
-	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, CREATOR, SPATIALCOVERAGE, PROVENANCE) VALUES (?,?,?,?,?,?,?);');
-	$sth->execute($id,$title,'abstract:'.$desc,$subject,$creator,$spatialcov,$origin);
+	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, CREATOR, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?,?);');
+	$sth->execute($id,$title,'abstract:'.$desc,$subject,$creator,$spatialcov,$lineage);
 
 	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
