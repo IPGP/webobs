@@ -541,14 +541,16 @@ function handleFiles() {	// read .zip shpfiles
 	fr.onload = function () {
 		shp(this.result).then(function(geojson) {
 	  		console.log('loaded geojson:', geojson);
-	  		outWKT = [];
-	  		for (var i = 0; i <= geojson.features.length-1; i++) {
-	  			var coordinates = simplifyGeometry(geojson.features[i].geometry.coordinates[0], 0.001);
+	  		
+	  		/*for (var i = 0; i <= geojson.features.length-1; i++) {
+	  			// applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
+	  			var coordinates = simplifyGeometry(geojson.features[i].geometry.coordinates[0], 0.01);
 	  			var lonLat = [];
 	  			for (var j = 0; j <= coordinates.length-1; j++) {
 	  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]);
 	  			} outWKT.push('((' + lonLat + '))');
-	  		} document.form.outWKT.value = 'wkt:MULTIPOLYGON('+outWKT+')'; console.log(outWKT[0]);
+	  		} document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]);*/
+	  		
 			var shpfile = new L.Shapefile(geojson,{
 				onEachFeature: function(feature, layer) {
 					if (feature.properties) {
@@ -561,10 +563,46 @@ function handleFiles() {	// read .zip shpfiles
 				}
 			});
 			shpfile.addTo(map);
+			// geojson.features = geojson.features[0];	// test with a Polygon;
+			var geometry = JSON.stringify(getGeometry(geojson));
+			console.log(geometry);
+			document.form.outWKT.value = geometry;
 	  })
 	};
 	fr.readAsArrayBuffer(fichierSelectionne);
 };
+function getGeometry(geojson) {
+	var geometry = {"type":"", "coordinates":""};
+
+	if (geojson.features.length > 1) {
+		geometry.type = "MultiPolygon";
+		var coordinates = [];
+		
+		for (var i = 0; i < geojson.features.length; i++) {
+			coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
+		} geometry.coordinates = coordinates; return geometry;
+	} else {
+		geometry.type = "Polygon";
+		geometry.coordinates = [getBoundingBox(geojson.features.geometry.coordinates)];
+		return geometry;
+	}
+}
+function getBoundingBox(coordinates) {
+	var bounds = {}, coords, point, latitude, longitude;
+
+    coords = coordinates;
+
+	for (var j = 0; j < coords.length; j++) {
+		longitude = coords[j][0];
+    	latitude = coords[j][1];
+    	bounds.xMin = bounds.xMin < longitude ? bounds.xMin : longitude;
+    	bounds.xMax = bounds.xMax > longitude ? bounds.xMax : longitude;
+		bounds.yMin = bounds.yMin < latitude ? bounds.yMin : latitude;
+    	bounds.yMax = bounds.yMax > latitude ? bounds.yMax : latitude;
+    }
+    var coordinates = [bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.xMin];
+    return coordinates;
+}
 // creating and parametring the map for the geographic location choice
 
 var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
@@ -702,13 +740,13 @@ print "<TR>";
 		# --- INSPIRE THEME
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
 		print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
-		for (@themes) { print "<OPTION value=$_>$_</option>\n"; }
+		for (@themes) { print "<OPTION value=\"$_\">$_</option>\n"; }
 		print "</SELECT><BR>";
 		# --- TOPIC CATEGORIES
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Topic categories'}:</LABEL>";
 		print "<INPUT type=\"hidden\" name=\"topics\">";
 		print "<SELECT multiple onMouseOut=\"nd()\" value=\"$usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" id=\"topicCats\">";
-		for (@topics) { print "<OPTION value=$_>$_</option>\n"; }
+		for (@topics) { print "<OPTION value=\"$_\">$_</option>\n"; }
 		print "</SELECT><BR>";
 		# --- Provenance
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Provenance'}:</LABEL>";
