@@ -163,29 +163,36 @@ function sendPopupProducer() {
 	
 	// preparing data for the integration in the database
 	if (form.count_mgr.value == 0) {
-		form.contacts.value = 'projectLeader:'+form.contacts.value+'|'+form.contacts.value;
+		form.contacts.value = 'Project leader:'+form.contacts.value;
+		form.contactNames.value = form.firstName.value + '|' + form.lastName.value;
 	} else if (form.count_mgr.value > 0) {
-		var contacts = ['projectLeader:'+form.contacts.value];
-		var emails = [form.contacts.value];
+		var contacts = ['Project leader:'+form.contacts.value];
+		var firstNames = [];
+		var lastNames = [];
 		for (let i = 1; i <= form.count_mgr.value; i++) {
 			var id = 'dataMgr'+i;
-			contacts.push('dataManager:'+form.elements[id].value)
-			emails.push(form.elements[id].value);
-		} form.contacts.value = contacts.join('_,'); form.contacts.value = form.contacts.value + '|' + emails.join(','); 
+			contacts.push('Data manager:'+form.elements[id].value)
+		} 
+		for (let i = 0; i <= form.count_mgr.value; i++){
+			firstNames.push(form.firstName[i].value);
+			lastNames.push(form.lastName[i].value);
+		} form.contacts.value = contacts.join('_,'); form.contactNames.value = firstNames.join('_,') + '|' + lastNames.join('_,'); 
 	} 
-	
+
 	// preparing data for the integration in the database
 	if (form.count_fnd.value == 1) {
-		form.funders.value = form.typeFunders.value+form.scanR.value+'|'+form.nameFunders.value+'|'+form.scanR.value;
+		console.log(form.typeFunders);
+		form.funders.value = form.typeFunders.value+":"+form.scanR.value+'|'+form.nameFunders.value;
 	} else if (form.count_fnd.value > 1) {
+		console.log(form.typeFunders);
 		var funders = [];
 		var names = [];
 		var scanR = [];
 		for (let i = 0; i <= form.count_fnd.value-1; i++) {
-			funders.push(form.typeFunders[i].value+form.scanR[i].value);
+			funders.push(form.typeFunders[i].value+":"+form.scanR[i].value);
 			names.push(form.nameFunders[i].value);
 			scanR.push(form.scanR[i].value);
-		} form.funders.value = funders.join('_,'); form.funders.value = form.funders.value +'|'+names.join(',')+'|'+scanR.join(',');
+		} form.funders.value = funders.join('_,'); form.funders.value = form.funders.value +'|'+names.join(',');
 	} 
 	
 	if ( form.contacts.value == "" ) {
@@ -200,7 +207,7 @@ function sendPopupProducer() {
 		alert ("grid can't be empty");
 		return false;
 	}
-	
+	console.log(form.contactNames);
 	// preparing data for the integration in the database
 	if (form.count_res.value == 1) {
 		if (form.nameRes.value == '') {form.onlineRes.value = ''}
