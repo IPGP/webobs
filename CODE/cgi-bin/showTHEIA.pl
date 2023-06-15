@@ -130,6 +130,75 @@ print "</TABLE></TD>\n";
 print "</TH></TABLE>\n";
 print "<BR><BR>\n";
 
+# ---- start the creation of the JSON object ----------------------------------------------------
+#
+# ---- extracting producer data
+
+$stmt = qq(SELECT * FROM producer, contacts, organisations;);
+$sth = $dbh->prepare( $stmt );
+$rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+my %producer;
+
+while( my @row = $sth->fetchrow_array() ) {
+	# ---- parsing contacts
+	my @contacts;
+	foreach(split(/_,/, $row[7])) {
+		my %contact = (
+			firstName => $row[11],
+			lastName => $row[12],
+			email => (split ':',$_)[1],
+			role => (split ':',$_)[0],
+		);
+		push(@contacts, \%contact)
+	}
+	# ---- parsing fundings
+	my @fundings;
+	foreach(split(/_,/, $row[8])) {
+		my %funding = (
+			type => (split ':',$_)[0],
+			iso3166 => "fr",
+			idScanR => (split ':',$_)[1],
+		);
+		push(@fundings, \%funding)
+	}
+=pod
+	# ---- parsing online resources
+	my @resources;
+	foreach(split(/_,/, $row[9])) {
+		my %resource = (
+			email => (split ':',$_)[1],
+			role => (split ':',$_)[0],
+		);
+		push(@resources, \%resource)
+	}
+=cut
+	%producer = (
+		producerId => $row[0],
+		name => $row[1],
+		title => $row[2],
+		description => $row[3],
+		#objectives => $row[4],
+		#measuredVariables => $row[5],
+		email => $row[6],
+		contacts => \@contacts,
+		fundings => \@fundings,
+		#onlineResource => \@resources
+	);
+	if ($row[4] ne "") {
+		$producer{'objectives'} = $row[4];
+	}
+	if ($row[5] ne "") {
+		$producer{'measuredVariables'} = $row[5];
+	}
+}
+
+#print to_json $producer{'fundings'};
+
 # ---- start of datasets table ----------------------------------------------------
 #
 # ---- extracting datasets data
@@ -169,6 +238,8 @@ while(my @row = $sth->fetchrow_array()){
 print "</TABLE></TD>\n";
 print "</TR></TABLE>\n";
 print "<BR><BR>\n";
+
+#print encode_json \@datasets;
 
 # ---- start of datasets table ----------------------------------------------------
 #
@@ -232,24 +303,27 @@ while( my @row = $sth->fetchrow_array() ) {
 	);
 	my @theiaCategories;
 	foreach (split(',',$row[12])) {
+		$_ =~ s/(\n)//g;
 		push(@theiaCategories, $_);
 	}
 	$observedProperty{"theiaCategories"} = \@theiaCategories;
 
 	#print $observation{'observedProperty'}{'theiaCategories'}->[0];
 	# ---- data from sampling_features table
-	my %samplingFeature = (
-		name => $row[6],
-		type => "Feature",
-		properties => "{}",
-	);
 	my $geometry = (split ':', $row[$#row])[1];
+	my $position = (split '\(|\)', $geometry)[1];
+	my @coordinates = split(',', $position);
+	$coordinates[0] = $coordinates[0] + 0;
+	$coordinates[1] = $coordinates[1] + 0;
 	my %geometry = (
 		type => (split '\(|\)', $geometry)[0],
-		coordinates => (split '\(|\)', $geometry)[1],
+		coordinates => \@coordinates,
 	);
 	my %samplingFeature = (
+		name => $row[6],
 		geometry => \%geometry,
+		type => "Feature",
+		properties => {}
 	);
 	my %featureOfInterest = (
 		samplingFeature => \%samplingFeature,
@@ -259,7 +333,7 @@ while( my @row = $sth->fetchrow_array() ) {
 		name => $row[8],
 	);
 	my %result = (
-		datatype => \%datafile,
+		dataFile => \%datafile,
 	);
 	
 	my %temporalExtent = (
@@ -268,18 +342,106 @@ while( my @row = $sth->fetchrow_array() ) {
 	);
 	
 	my %observation = (
+		observationId => $row[0],
 		observedProperty => \%observedProperty,
 		featureOfInterest => \%featureOfInterest,
 		result => \%result,
-		datatype => $row[2],
-		timeSerie => $row[4],
+		dataType => $row[2],
+		timeSerie => \1,
 		temporalExtent => \%temporalExtent,
 		processingLevel => $row[1],
 	);
 	push(@observations, \%observation);
 }
 
-print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
+# ---- extracting datasets data
+
+$stmt = qq(SELECT * FROM datasets;);
+$sth = $dbh->prepare( $stmt );
+$rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+my @datasets;
+
+while( my @row = $sth->fetchrow_array() ) {
+	my @contacts;
+	foreach(split('_,',$row[4])) {
+		my %contact = (
+			firstName => "first",
+			lastName  => "last",
+			email => (split ':',$_)[1],
+			role => (split ':',$_)[0],
+		);
+		push(@contacts, \%contact);
+	}
+	my $topicCategories = (split '_',$row[3])[0];
+	my @topicCategories;
+	foreach(split('_,',$topicCategories)){
+		my $category = (split(':',$_))[1];
+		$category =~ s/(\r\n)//g;
+		push(@topicCategories,$category);
+	}
+	my %geometry = (
+		type => JSON->new->utf8->decode($row[$#row-1])->{'type'},
+		coordinates => JSON->new->utf8->decode($row[$#row-1])->{'coordinates'}
+	);
+	my %spatialExtent = (
+		type => "Feature",
+		properties => {},
+		geometry => \%geometry,
+	);
+	# print JSON->new->utf8->decode($row[$#row-1])->{'type'};
+	my %dataConstraint = (
+		accessUseConstraint => "No conditions to access and use",
+	);
+	my %metadata = (
+		title => $row[1],
+		description => (split ':', $row[2])[1],
+		datasetLineage => "datasetLineage",
+		contacts => \@contacts,
+		dataConstraint => \%dataConstraint,
+		topicCategories => \@topicCategories,
+		inspireTheme => (split '_inspireTheme:', $row[3])[1],
+		spatialExtent => \%spatialExtent,
+	);
+	$metadata{'inspireTheme'} =~ s/(\r\n)//g;
+	my %dataset = (
+		datasetId => $row[0],
+		metadata => \%metadata,
+	);
+	
+	my @ds_obs;
+	foreach(@observations) {
+		if ($_>{'observationId'} =~ /$row[0]/){
+			#print encode_json $_;
+			push(@ds_obs, $_);
+		}
+	}
+	#print encode_json $ds_obs[0];
+	$dataset{'observations'} = \@ds_obs;
+	push(@datasets, \%dataset);
+}
+
+#print encode_json \@datasets;
+
+my %json = (
+	producer => \%producer,
+	datasets => \@datasets,
+	version => "1.0",
+);
+
+my $filename = '/opt/webobs/CONF/file.json';
+chmod 0755, $filename;
+open(FH, '>', $filename) or die $!;
+
+print FH encode_json \%json;
+
+close(FH);
+
+#print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
 
 print "</TABLE></TD>\n";
 print "</TR></TABLE>\n";

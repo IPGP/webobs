@@ -93,6 +93,7 @@ $QryParm->{'objective'} ||= "";
 $QryParm->{'measVar'}   ||= "";
 $QryParm->{'email'}     ||= "";
 $QryParm->{'contacts'}  ||= "";
+$QryParm->{'contactNames'} ||= "";
 $QryParm->{'funders'}   ||= "";
 $QryParm->{'onlineRes'} ||= "";
 my $authtable = "";
@@ -109,6 +110,11 @@ my $objective = $QryParm->{'objective'};
 $objective =~ s/'/''/g;
 my $meas_var  = $QryParm->{'measVar'};
 $meas_var  =~ s/'/''/g;
+my @firstNames = split('_,', (split '\|', $QryParm->{'contactNames'})[0]);
+my @lastNames  = split('_,', (split '\|', $QryParm->{'contactNames'})[1]);
+my @contacts   = split(/_,/,$QryParm->{'contacts'});
+my @funders    = (split(/\|/,$QryParm->{'funders'}))[0];
+my @names      = (split(/\|/,$QryParm->{'funders'}))[1];
 
 # ---- process (execute) sql insert new row into table 'tbl'
 # -----------------------------------------------------------------------------
@@ -185,16 +191,15 @@ if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $Q
 # ---- process (execute) sql update table 'contacts' after user insert or update
 # ----------------------------------------------------------------------------
 if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $QryParm->{'tbl'} eq "producer") {
-	my @contacts = split(/\|/,$QryParm->{'contacts'});
-	@contacts = split(",",$contacts[1]);
-	my $q0 = "insert into $WEBOBS{SQL_TABLE_CONTACTS} values (\'+++\',\'\',\'$QryParm->{'id'}\')";
-	my $q1 = "delete from $WEBOBS{SQL_TABLE_CONTACTS} WHERE PID=\'$QryParm->{'id'}\' AND IDENTIFIER != \'+++\'";
+	my $q0 = "insert into $WEBOBS{SQL_TABLE_CONTACTS} values (\'+++\',\'\',\'\',\'\',\'$QryParm->{'id'}\')";
+	my $q1 = "delete from $WEBOBS{SQL_TABLE_CONTACTS} WHERE PID=\'$QryParm->{'id'}\' AND EMAIL != \'+++\'";
 	my $q2 = "";
 	if (@contacts > 0 && $contacts[0] ne "") {
-		my @values = map { "(\'id:$_\',\'$_\',\'$QryParm->{'id'}\')" } @contacts ;
+		my @values = map { "(\'".(split(':', $contacts[$_]))[1]."\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'".(split(':', $contacts[$_]))[0]."\',\'$QryParm->{'id'}\')" } 0..$#contacts ;
+		
 		$q2 = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@values);
 	} 
-	my $q3 = "delete from $WEBOBS{SQL_TABLE_CONTACTS} WHERE PID=\'$QryParm->{'id'}\' AND IDENTIFIER = \'+++\'";
+	my $q3 = "delete from $WEBOBS{SQL_TABLE_CONTACTS} WHERE PID=\'$QryParm->{'id'}\' AND EMAIL = \'+++\'";
 	my $rows = dbuow($WEBOBS{SQL_METADATA},$q0,$q1,$q2,$q3);
 	$domainMsg  .= ($rows >= 1 || $q2 eq "") ? "  having updated $WEBOBS{SQL_TABLE_CONTACTS} " : "  failed to update $WEBOBS{SQL_TABLE_CONTACTS}";
 	$domainMsg  .= " $lastDBIerrstr";
@@ -203,14 +208,11 @@ if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $Q
 # ---- process (execute) sql update table 'organisations' after user insert or update
 # ----------------------------------------------------------------------------
 if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $QryParm->{'tbl'} eq "producer") {
-	my @contacts = split(/\|/,$QryParm->{'funders'});
-	my @funders = split(",",$contacts[1]);
-	my @scanR = split(",",$contacts[2]);
-	my $q0 = "insert into $WEBOBS{SQL_TABLE_ORGANISATIONS} values (\'+++\',\'\',\'\',\'$QryParm->{'id'}\')";
+	my $q0 = "insert into $WEBOBS{SQL_TABLE_ORGANISATIONS} values (\'+++\',\'\',\'\',\'\',\'$QryParm->{'id'}\')";
 	my $q1 = "delete from $WEBOBS{SQL_TABLE_ORGANISATIONS} WHERE PID=\'$QryParm->{'id'}\' AND IDENTIFIER != \'+++\'";
 	my $q2 = "";
-	if (@contacts > 0 && $contacts[0] ne "") {
-		my @values = map { "(\'$scanR[$_]\',\'$funders[$_]\',\'fr\',\'$QryParm->{'id'}\')" } 0..$#funders ;
+	if (@funders > 0 && $funders[0] ne "") {
+		my @values = map { "(\'".(split(':', $funders[$_]))[1]."\',\'$names[$_]\',\'fr\',\'".(split(':',$funders[$_]))[0]."\',\'$QryParm->{'id'}\')" } 0..$#funders ;
 		$q2 = "insert or replace into $WEBOBS{SQL_TABLE_ORGANISATIONS} VALUES ".join(',',@values);
 	} 
 	my $q3 = "delete from $WEBOBS{SQL_TABLE_ORGANISATIONS} WHERE PID=\'$QryParm->{'id'}\' AND IDENTIFIER = \'+++\'";
@@ -347,7 +349,7 @@ my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
    or die $DBI::errstr;
 #print "Opened database successfully\n";
 
-my $stmt = qq(SELECT type, name FROM typeOrganisation;);
+my $stmt = qq(SELECT type FROM typeOrganisation;);
 my $sth = $dbh->prepare( $stmt );
 my $rv = $sth->execute() or die $DBI::errstr;
 
@@ -356,13 +358,10 @@ if($rv < 0) {
 }
 
 my @types;
-my @names;
 
 while(my @row = $sth->fetchrow_array()) {
 	my $type = $row[0];
-	my $name = $row[1];
     push(@types, $type);
-    push(@names, $name);
 }
 
 my $stmt = qq(SELECT type, name FROM typeResource;);
@@ -474,8 +473,14 @@ Producers&nbsp;$go2top
 	<input type="text" name="desc" value=""/><br/><br/>
 	<label>Email:<span class="small"></span></label>
 	<input type="text" name="email" value=""/><br/><br/>
-	<label>Contacts:<span class="small">Project leader</span></label>
-	<input type="text" name="contacts" value=""/><br/><br/>
+	<div id='div_prj'>
+		<label>Contacts:<span class="small">Project leader</span></label>
+		<input id="prj_email" type="text" name="contacts" placeholder="email" value=""/><br/><br/>
+		<label>Contacts:<span class="small">Project Leader</span></label>
+		<input type="text" name="firstName" style="width:33%;" placeholder="first name" value=""/>
+		<input type="text" name="lastName" style="width:33%;" placeholder="last name" value=""/><br/><br/>
+		<input type="hidden" name="contactNames"/><br/><br/>
+	</div>
 	<label>Contacts:</label>
 	<button onclick="addMgr();return false;">Add a data manager</button>
 	<button onclick="removeMgr();return false;">Remove a data manager</button></br></br>
@@ -484,19 +489,19 @@ Producers&nbsp;$go2top
 	<label>Funders:</label>
 	<button onclick="addFnd();return false;">Add a funder</button>
 	<button onclick="removeFnd();return false;">Remove a funder</button></br></br>
-	<input type='hidden' name="count_fnd" value='1'></input>
+	<input type='hidden' name='count_fnd' value='1'></input>
 	<input type='hidden' name='funders' value=''></input>
 	<div id='div_fnd'>
 		<label>Funder:<span class="small">Type</span></label>
 		<select name="typeFunders">
-			<option value=$types[0]>$names[0]</option>
-            <option value=$types[1]>$names[1]</option>
-            <option value=$types[2]>$names[2]</option>
-            <option value=$types[3]>$names[3]</option>
-            <option value=$types[4]>$names[4]</option>
-            <option value=$types[5]>$names[5]</option>
-            <option value=$types[6]>$names[6]</option>
-            <option value=$types[7]>$names[7]</option>
+			<option value=\"$types[0]\">$types[0]</option>
+            <option value=\"$types[1]\">$types[1]</option>
+            <option value=\"$types[2]\">$types[2]</option>
+            <option value=\"$types[3]\">$types[3]</option>
+            <option value=\"$types[4]\">$types[4]</option>
+            <option value=\"$types[5]\">$types[5]</option>
+            <option value=\"$types[6]\">$types[6]</option>
+            <option value=\"$types[7]\">$types[7]</option>
 		</select>
 		<label>Funder:<span class="small">Organisation name</span></label>
 		<input type='text' name="nameFunders"></input>

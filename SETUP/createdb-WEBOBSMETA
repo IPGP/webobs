@@ -28,10 +28,12 @@ create table producer (
     
 drop table if exists contacts;
 create table contacts ( 
-    IDENTIFIER text NOT NULL, 
     EMAIL text NOT NULL, 
+    FIRSTNAME text NOT NULL,
+    LASTNAME text NOT NULL,
+    ROLE text NOT NULL,
     PID text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER), 
+    PRIMARY KEY(EMAIL), 
     FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     
@@ -40,6 +42,7 @@ create table organisations (
     IDENTIFIER text NOT NULL, 
     NAME text NOT NULL, 
     ISO3166 text DEFAULT 'fr', 
+    TYPE text NOT NULL, 
     PID text NOT NULL, 
     PRIMARY KEY(IDENTIFIER), 
     FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
@@ -53,7 +56,7 @@ create table datasets (
     SUBJECT text NOT NULL, 
     CREATOR text NOT NULL, 
     SPATIALCOVERAGE text NOT NULL, 
-    PROVENANCE text NOT NULL, 
+    LINEAGE text NOT NULL, 
     PRIMARY KEY(IDENTIFIER)
     );
     
@@ -99,16 +102,9 @@ create table grids2producers (
     FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     
+
 drop table if exists typeOrganisation;
-create table typeOrganisation (TYPE text NOT NULL, NAME text NOT NULL);
-INSERT INTO "typeOrganisation" VALUES('FrenchResearchInstitutes:', 'French research institutes');
-INSERT INTO "typeOrganisation" VALUES('FederativeStructure:','Federative structure');
-INSERT INTO "typeOrganisation" VALUES('ResearchUnit:','Research unit');
-INSERT INTO "typeOrganisation" VALUES('Other:','Other');
-INSERT INTO "typeOrganisation" VALUES('OtherUniversitiesAndSchools:','Other universities and schools');
-INSERT INTO "typeOrganisation" VALUES('ResearchProgram:','Research program');
-INSERT INTO "typeOrganisation" VALUES('FrenchUniversitiesAndSchools:','French universities and schools');
-INSERT INTO "typeOrganisation" VALUES('OtherResearchInstitutes:','Other research institutes');
+create table typeOrganisation (TYPE text NOT NULL);
 
 drop table if exists typeResource;
 create table typeResource (TYPE text NOT NULL, NAME text NOT NULL);
@@ -125,6 +121,12 @@ create table topicCategories (TOPIC text NOT NULL);
 
 COMMIT;
 EOF
+
+# creating organisation types table 
+cat /opt/webobs/CONF/typeOrganisation.conf | while read line
+do
+    sqlite3 WEBOBSMETA.db "INSERT INTO typeOrganisation (TYPE) VALUES ('$line');"
+done
 
 # creating INSPIRE themes and topic categories tables 
 cat /opt/webobs/CONF/inspireTheme.conf | while read line

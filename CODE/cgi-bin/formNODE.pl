@@ -748,9 +748,9 @@ print "<TR>";
 		print "<SELECT multiple onMouseOut=\"nd()\" value=\"$usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" id=\"topicCats\">";
 		for (@topics) { print "<OPTION value=\"$_\">$_</option>\n"; }
 		print "</SELECT><BR>";
-		# --- Provenance
-		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Provenance'}:</LABEL>";
-		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrOrigin\" onmouseover=\"overlib('$__{help_creationstation_provenance}')\" size=\"8\" name=\"provenance\" id=\"provenance\">&nbsp;&nbsp;<BR>";
+		# --- Lineage
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
+		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrOrigin\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
 	print "</FIELDSET>";
 
 	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
