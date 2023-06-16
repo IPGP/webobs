@@ -64,12 +64,15 @@ if numel(E) == 0
 	return;
 end
 
-% Detects all axes in the current figure
+% Detects all axes in the current figure with empty UserData
 ha = findobj(gcf,'Type','axes');
 
 imap = 1;
 for n = 1:numel(E)
 	for i = 1:length(ha)
+		if ~isempty(get(ha(i),'UserData'))
+			break
+		end
 		xlim = get(ha(i),'XLim');
 		ylim = get(ha(i),'YLim');
 		zlim = get(ha(i),'ZLim');
@@ -125,7 +128,7 @@ for n = 1:numel(E)
 			set(ha(i),'YLim',ylim,'ZLim',zlim)
 		end
 	end
-	fprintf(' events added to current axe.\n');
+	fprintf(' events added to all time series axes in current figure.\n');
 end
 
 if nargout > 0

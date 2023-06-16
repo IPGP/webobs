@@ -3,7 +3,10 @@ function y=roundsd(x,n,method)
 %	ROUNDSD(X,N) rounds the elements of X towards the nearest number with
 %	N significant digits.
 %
-%	ROUNDSD(X,N,METHOD) uses following methods for rounding:
+%	ROUNDSD(X,PIVOTS) rounds the elements of X towards the nearest number
+%	based on digits in the PIVOTS vector.
+%
+%	ROUNDSD(...,METHOD) uses following methods for rounding:
 %		'round' - nearest (default)
 %		'floor' - towards minus infinity
 %		'ceil'  - towards infinity
@@ -12,7 +15,7 @@ function y=roundsd(x,n,method)
 %	Examples:
 %		roundsd(0.012345,3) returns 0.0123
 %		roundsd(12345,2) returns 12000
-%		roundsd(12.345,4,'ceil') returns 12.35
+%		roundsd(12.345,3,'ceil') returns 12.4000
 %
 %	See also Matlab's functions ROUND, ROUND10, FLOOR, CEIL, FIX, and 
 %	ROUNDN (Mapping Toolbox).
@@ -23,9 +26,9 @@ function y=roundsd(x,n,method)
 %	Acknowledgments: Edward Zechmann, Daniel Armyr, Yuri Kotliarov
 %
 %	Created: 2009-01-16
-%	Updated: 2015-04-03
+%	Updated: 2023-04-19
 
-%	Copyright (c) 2015, François Beauducel, covered by BSD License.
+%	Copyright (c) 2023, François Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without 
@@ -62,8 +65,8 @@ if ~isnumeric(x)
 		error('X argument must be numeric.')
 end
 
-if ~isnumeric(n) | ~isscalar(n) | n < 0 | mod(n,1) ~= 0
-	error('N argument must be a scalar positive integer.')
+if ~isnumeric(n) || any(n < 1) || any(mod(n,1))
+	error('N or PIVOTS argument must be positive integers.')
 end
 
 opt = {'round','floor','ceil','fix'};
@@ -71,25 +74,40 @@ opt = {'round','floor','ceil','fix'};
 if nargin < 3
 	method = opt{1};
 else
-	if ~ischar(method) | ~ismember(opt,method)
+	if ~ischar(method) || ~any(ismember(opt,method))
 		error('METHOD argument is invalid.')
 	end
 end
 
-% --- the generic formula was:
-%og = 10.^(floor(log10(abs(x)) - n + 1));
-%y = feval(method,x./og).*og;
+% The generic formula was simple:
+%    og = 10.^(floor(log10(abs(x)) - n + 1));
+%    y = feval(method,x./og).*og;
+% BUT we must treat separately positive and negative exponents, 
+% because of numerical noise, i.e.:
+%    3.55/0.1 - 35.5 is -7.105427357601e-15
+%    3.55*10 - 35.5 is 0
 
-% --- but to avoid numerical noise, we must treat separately positive and 
-% negative exponents, because:
-% 3.55/0.1 - 35.5 is -7.105427357601e-15
-% 	3.55*10 - 35.5 is 0
+if length(n) > 1
+	pivots = n;
+	n = floor(log10(max(n))) + 1;
+else
+	pivots = [];
+end
 e = floor(log10(abs(x)) - n + 1);
 og = 10.^abs(e);
-y = feval(method,x./og).*og;
-k = find(e<0);
-if ~isempty(k)
-	y(k) = feval(method,x(k).*og(k))./og(k);
+y = roundg(x./og,method,pivots).*og;
+k = (e<0);
+if any(k)
+	y(k) = roundg(x(k).*og(k),method,pivots)./og(k);
 end	
 y(x==0) = 0;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function y=roundg(x,method,pivots)
+if isempty(pivots)
+	y = feval(method,x);
+else
+	xp = [pivots(end)/10,pivots,pivots(1)*10];
+	yp = 0:length(xp)-1;
+	y = interp1(yp,xp,feval(method,interp1(xp,yp,x)));
+end
