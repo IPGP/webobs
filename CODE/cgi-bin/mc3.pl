@@ -69,6 +69,7 @@ graph=
   hbars Hourly Histogram
    bars Daily Histogram
  movsum Daily Moving Histogram
+   wsum Weekly Moving Histogram
    ncum Cumulated
    mcum Seismic moment cum.
      gr Gutenberg-Richter (log)
@@ -502,6 +503,7 @@ if ($QryParm->{'dump'} eq "") {
 		foreach my $menu_opts ("hbars|Hourly Histogram",
 		                       "bars|Daily Histogram",
 		                       "movsum|Daily Moving Histogram",
+		                       "wsum|Weekly Moving Histogram",
 		                       "ncum|Cumulated",
 		                       "mcum|Seismic moment cumul.",
 		                       "ecum|Energy cumul. by type (J)",
@@ -826,34 +828,20 @@ foreach my $line (@lignes) {
 
 # ---- Statistics on number of seisms (for flot-graph and dump CSV) -----------
 #
-#XB-was: my $timeS = timegm(0,0,0,substr($dateStart,8,2),substr($dateStart,5,2)-1,substr($dateStart,0,4)-1900);
-#XB-was: my $timeE = timegm(0,0,0,substr($dateEnd,8,2),substr($dateEnd,5,2)-1,substr($dateEnd,0,4)-1900);
-#my $timeS = $start_datetime->epoch();
-#my $timeE = $end_datetime->epoch();
-#my $nbDays = ($timeE - $timeS)/86400;
 my $nbDays = $end_datetime->subtract_datetime_absolute($start_datetime)->seconds/86400 + 1/24;
 
 my @stat_t; # Dates in YYYY-MM-DD format
 my @stat_j; # Javascript dates (in ms since 1970-01-01)
 for my $d (0..($nbDays - 1/24)) {
-	#push(@stat_t, strftime('%F',gmtime($timeS + $_*86400)));
-	#push(@stat_j, ($timeS + ($_ + 0.5)*86400)*1000);
 	push(@stat_t, ($start_datetime + DateTime::Duration->new(days => $d))->strftime('%F'));
-	#FB-was: push(@stat_j, ($start_datetime + DateTime::Duration->new(days => ($d+0.5)))->epoch * 1000);
 	push(@stat_j, ($start_datetime + DateTime::Duration->new(days => $d) + DateTime::Duration->new(hours => 12))->epoch * 1000);
 }
 my @stat_th;
 my @stat_jh;     # Javascript dates hourly (in ms since 1970-01-01)
 for my $h (0 .. ($nbDays*24 - 1)) {
-	#push(@stat_th, strftime('%F %H',gmtime($timeS + $_*3600)));
-	#push(@stat_th1, strftime('%F %H',gmtime($timeS + $_*3600 - 86400)));
-	#push(@stat_jh, ($timeS + $_*3600)*1000);
 	my $d = $start_datetime + DateTime::Duration->new(hours => $h);
-	#my $d1 = $d - DateTime::Duration->new(days => 1);
 	if ($d <= $now) {
 		push(@stat_th, $d->strftime('%F %H'));
-		#push(@stat_jh, $d1->epoch*1000);
-		#push(@stat_jh, ($d + DateTime::Duration->new(minutes => 30))->epoch*1000);
 		push(@stat_jh, $d->epoch*1000);
 	}
 }
@@ -863,6 +851,7 @@ my %stat_mh;     # hash of event types seismic moment per hour
 my %stat_d;      # hash of event types per day
 my %stat_dh;     # hash of event types per hour
 my %stat_vh;     # hash of daily moving histogram event types (per hour)
+my %stat_wh;     # hash of weekly moving histogram event types (per hour)
 my %stat_ch;     # hash of cumulated event types (per hour)
 my %stat;        # hash of event types total number
 my %stat_gr;     # hash of event types Gutenberg-Richter number
@@ -882,8 +871,6 @@ foreach (@finalLignes) {
 					    hour => substr($heure,0,2),
 					    minute => substr($heure,3,2),
 					    second => substr($heure,6,2));
-		#my $kd = int(($time - $timeS)/86400);
-		#my $kh = int(($time - $timeS)/3600);
 		my $kd = int($time_dt->subtract_datetime_absolute($start_datetime)->seconds/86400);
 		my $kh = int($time_dt->subtract_datetime_absolute($start_datetime)->seconds/3600);
 		if ($origin) {
@@ -920,9 +907,10 @@ foreach (@finalLignes) {
 			$stat_ch{$type}[$kh] += $nombre;
 			$stat_dh{$type}[$kh] += $nombre;
 			for ($kh .. ($kh+23)) {
-				if ($_ <= $#stat_th) {
-					$stat_vh{$type}[$_] += $nombre;
-				}
+				$stat_vh{$type}[$_] += $nombre if ($_ <= $#stat_th);
+			}
+			for ($kh .. ($kh+(7*24-1))) {
+				$stat_wh{$type}[$_] += $nombre if ($_ <= $#stat_th);
 			}
 		}
 		if ($types{$type}{asVT} && $duree_s > $stat_max_duration) {
@@ -1071,6 +1059,13 @@ if ($QryParm->{'nograph'} == 0) {
 				." data: [";
 			for (my $i=0; $i<=$#stat_th; $i++) {
 				my $d = $stat_vh{$key}[$i];
+				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
+			}
+			$html .= "]});\n";
+			$html .= " dataw.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
+				." data: [";
+			for (my $i=0; $i<=$#stat_th; $i++) {
+				my $d = $stat_wh{$key}[$i];
 				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
 			}
 			$html .= "]});\n";
