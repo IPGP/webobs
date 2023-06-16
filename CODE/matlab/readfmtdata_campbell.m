@@ -30,7 +30,7 @@ function D = readfmtdata_campbell(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2023-03-17
+%	Updated: 2023-04-17
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -68,7 +68,7 @@ case {'toa5','t0a5'}
 
 	% needs to fix the number of column (including the 6 first for yyyy-mm-dd HH:MM:SS)
 	ncol = 6 + max(str2double(N.CLB.cd));
-	wosystem(sprintf('for y in %s; do for f in $(ls %s/$y/%s*.dat);do sed ''s/-/,/;s/-/,/'' $f | awk -F "[:, ]" ''NF>=%d {gsub(/"/,"");print $1%s}'';done;done > %s',ylist,pdat,N.FID,ncol,sprintf(',$%d',2:ncol),fdat),P);
+	wosystem(sprintf('for y in %s; do for f in $(ls %s/$y/%s*.dat);do cat $f | grep "^\\"[0-9]" | sed ''s/-/,/;s/-/,/'' | awk -F "[:, ]" ''NF>=%d {gsub(/"/,"");print $1%s}'';done;done > %s',ylist,pdat,N.FID,ncol,sprintf(',$%d',2:ncol),fdat),P);
 
 % -----------------------------------------------------------------------------
 case {'tob1'}
@@ -102,10 +102,11 @@ end
 if isempty(t)
 	fprintf('** WARNING ** no data found!\n');
 else
+	l0 = length(t);
 	[t,k] = unique(t);
 	[t,kk] = sort(t);
 	d = d(k(kk),:);
-	fprintf('done (%d samples).\n',length(t));
+	fprintf('done (removed %d duplicates, %d final samples).\n',l0-length(t),length(t));
 end
 
 D.t = t - N.UTC_DATA;
