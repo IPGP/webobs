@@ -1,0 +1,14 @@
+#!/bin/bash
+
+host=dozer2
+home=/data/Medium/cgps
+dest=/home/www/webobs-datatest/acqui/cgps
+
+for chantier in anti ovpf ovsg ovsm; do
+	itrf=$home/exp/$chantier/gsoln/{SUM,VAL}.$chantier
+	baseline=$home/gpsresults/$chantier/RES_GAMIT_$chantier/base-GAMIT-*.dat
+
+	rsync -av $host:$itrf $dest
+	rsync -av $host:$baseline $dest
+done
+

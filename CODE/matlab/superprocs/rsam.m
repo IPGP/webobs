@@ -24,13 +24,34 @@ function DOUT=rsam(varargin)
 %       be set with 'SUMMARYLIST|' parameter. RSAM will compute the mean of all channels
 %       for each node.
 %
-%       Other specific paramaters are described in CODE/tplates/PROC.RSAM.
+%       In addition to each single node graph, a summary graph with all nodes can
+%       be set with 'SUMMARYLIST|' parameter.
+%
+%       Other specific paramaters are:
+%           YLOGSCALE|NO
+%           PICKS_CLEAN_PERCENT|0
+%           FLAT_IS_NAN|NO
+%           MOVING_AVERAGE_SAMPLES|10
+%           CONTINUOUS_PLOT|NO
+%	    PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
+%	    PERNODE_LINESTYLE|-
+%           PERNODE_RELATIVE|NO
+%	    SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
+%	    SUMMARY_LINESTYLE|-
+%           ALARM_THRESHOLD_LEVEL|1e-5
+%           ALARM_COLOR|IndianRed
+%	    NOTIFY_EVENT|rsamalert.
+%           SOURCEMAP_N|2
+%	    SOURCEMAP_COLORMAP|jet
+%	    SOURCEMAP_COLORMAP_ALPHA|0,1
+%	    SOURCEMAP_CAXIS|0,1.5e-6
+%	    SOURCEMAP_PLOT_MAX|Y
 %
 %	Reference: based on the tremor maps made by V. Ferrazzini / OVPF-IPGP
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2022-06-12
+%	Updated: 2017-09-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -41,7 +62,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename,varargin{:});
 timelog(procmsg,1);
 
 
@@ -57,7 +78,7 @@ alarm_threshold_level = field2num(P,'ALARM_THRESHOLD_LEVEL',0);
 alarm_color = field2num(P,'ALARM_COLOR',[1,0,0]);
 sourcemap_n = field2num(P,'SOURCEMAP_N',2);
 sourcemap_title = field2str(P,'SOURCEMAP_TITLE','{\fontsize{14}{\bf$name - Source Map} ($timescale)}');
-sourcemap_colormap = field2num(P,'SOURCEMAP_COLORMAP',spectral(256));
+sourcemap_colormap = field2num(P,'SOURCEMAP_COLORMAP');
 sourcemap_alpha = field2num(P,'SOURCEMAP_COLORMAP_ALPHA');
 sourcemap_caxis = field2num(P,'SOURCEMAP_CAXIS',[0,2e-5]);
 ylogscale = isok(P,'YLOGSCALE');
@@ -72,7 +93,7 @@ for n = 1:length(N)
 	V.node_alias = N(n).ALIAS;
 	V.last_data = datestr(D(n).tfirstlast(2));
 
-
+	
 	% ===================== makes the proc's job
 
 	for r = 1:length(P.GTABLE)
@@ -179,10 +200,9 @@ for n = 1:length(N)
 					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},roundsd([rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i))],5))}];
 			end
 		end
-
+		
 		% makes graph
-		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
 
 		% exports data
@@ -255,7 +275,7 @@ if isfield(P,'SUMMARYLIST')
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
 		ylabel(sprintf('All channels %s',regexprep(D(1).CLB.un{1},'(.+)','($1)')))
-
+		
 		% legend: station aliases
 		xlim = get(gca,'XLim');
 		ylim = get(gca,'YLim');
@@ -269,7 +289,7 @@ if isfield(P,'SUMMARYLIST')
 
 		% 1/x time series (Y-axis linear scale forced)
 		% makes a new data vector with averaged signals
-
+		
 		subplot(4,1,3:4), extaxes(gca,[.07,.01])
 		if alarm_threshold_level > 0
 			plot(tlim,1./repmat(alarm_threshold_level,1,2),'--','Color',alarm_color,'LineWidth',1)
@@ -296,7 +316,7 @@ if isfield(P,'SUMMARYLIST')
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
 		ylabel(sprintf('1/x %s',regexprep(D(1).CLB.un{1},'(.+)','($1)')))
-
+		
 		% legend: station aliases
 		xlim = get(gca,'XLim');
 		ylim = get(gca,'YLim');
@@ -306,7 +326,7 @@ if isfield(P,'SUMMARYLIST')
 		end
 
 		tlabel(xlim,P.GTABLE(r).TZ)
-
+	    
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
 	end
@@ -365,7 +385,7 @@ if isfield(P,'SUMMARYLIST')
 			box on
 			datetick2('x',P.GTABLE(r).DATESTR)
 			ylabel(sprintf('All channels (m/s)'))
-
+			
 			% legend: station aliases
 			xlim = get(gca,'XLim');
 			ylim = get(gca,'YLim');
@@ -424,7 +444,7 @@ if isfield(P,'SUMMARYLIST')
 				inorm(inorm<0) = 0;
 				inorm(inorm>1) = 1;
 				I.msk = ind2rgb(round(size(sourcemap_colormap,1)*inorm),sourcemap_colormap); % RGB map
-				A = repmat(interp1(linspace(0,1,length(sourcemap_alpha)),sourcemap_alpha,inorm),[1,1,3]);
+				A = repmat(interp1(linspace(0,1,length(sourcemap_alpha)),sourcemap_alpha,inorm),[1,1,3]); 
 				I.tot = I.rgb.*(1 - A) + I.msk.*A;
 				imagesc(xx(1,:),yy(:,1),I.tot);
 				axis xy
@@ -487,3 +507,4 @@ timelog(procmsg,2)
 if nargout > 0
 	DOUT = D;
 end
+

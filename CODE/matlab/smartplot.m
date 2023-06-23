@@ -1,4 +1,4 @@
-function [lre,V] = smartplot(X,tlim,G,OPT)
+function [lre,V] = smartplot(X,tlim,G,linestyle,fontsize,chnames,choffset,timezoom,trendmindays)
 %SMARTPLOT Enhanced multi-component timeseries plot
 %	SMARTPLOT plots a single graph divided into channel subplots, each
 %	subplot grouping all nodes with different colors. This supposes all
@@ -29,38 +29,28 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %	G: A structure containing fields from proc's GTABLE to set G.LINEWIDTH,
 %	G.MARKERSIZE, G.DATESTR and G.TZ (timezone).
 %
-%	OPT: A structure containing fields of options:
-%	   linestyle: String compatible with plot function (line/marker type).
-%	    fontsize: Scalar that applies for all axes text.
-%	     chnames: cell of strings defining the channel names.
-%	    choffset: scalar defining the space between each channel subplots
-%	     zoompca: scalar defining the ratio of zoom if positive or PCA if negative.
-%	trendmindays: minimum time interval (in days) of data limits to compute a trend.
-%	trendminperc: minimum time interval (in percent) of data limits to compute a trend.
-%	 yscalevalue: fixes the Y-scale (value in data unit)
-%	  yscaleunit: name of the scale unit (default is 'cm')
-%	  yscalefact: factor of the scale unit (default is 100)
+%	linestyle: String compatible with plot function (line/marker type).
+%
+%	fontsize: Scalar that applies for all axes text.
+%
+%	chnames: cell of strings defining the channel names.
+%
+%	choffset: scalar defining the space between each channel subplots
+%
+%	zoompca: scalar defining the ratio of zoom if positive or PCA if negative.
+%
+%	trendmindays: minimum time interval between 2 samples to compute a trend.
 %
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 2022-04-27
+%	Updated: 2019-10-29
 
-linestyle = field2str(OPT,'linestyle','-');
-fontsize = field2num(OPT,'fontsize',8);
-chnames = OPT.chnames;
-choffset = field2num(OPT,'choffset');
-zoompca = field2num(OPT,'zoompca');
-trendmindays = field2num(OPT,'trendmindays');
-trendminperc = field2num(OPT,'trendminperc');
-yscalevalue = field2num(OPT,'yscalevalue');
-yscaleunit = field2str(OPT,'yscaleunit','cm');
-yscalefact = field2num(OPT,'yscalefact',100);
 
-tzoom = double(isinto(zoompca,[0,1],'exclude'));
-npca = (zoompca<0)*ceil(abs(zoompca));
+zoom = double(isinto(timezoom,[0,1],'exclude'));
+npca = (timezoom<0)*ceil(abs(timezoom));
 V = [];
-for ii = 0:(tzoom+(zoompca<0))
+for ii = 0:(zoom+(timezoom<0))
 	% computes PCA
 	if npca > 0 && ii > 0
 		[y,V,D] = pca(X(npca).d);
@@ -76,8 +66,8 @@ for ii = 0:(tzoom+(zoompca<0))
 	alld = cat(1,X.d);
 	% number of channels
 	nx = size(alld,2);
-	if tzoom && ii > 0
-		tlim = [-zoompca*diff(tlim),0] + tlim(2);
+	if zoom && ii > 0
+		tlim = [-timezoom*diff(tlim),0] + tlim(2);
 		alld = alld(isinto(cat(1,X.t),tlim),:);
 	end
 	if ~isempty(alld)
@@ -97,10 +87,10 @@ for ii = 0:(tzoom+(zoompca<0))
 	end
 
 	% plots the data
-	subplot(4,1,ii*2 + (1:(4/(1+tzoom+(zoompca<0))))), extaxes(gca,[.08,.04])
+	subplot(4,1,ii*2 + (1:(4/(1+zoom+(timezoom<0))))), extaxes(gca,[.08,.04])
 	hold on
 	if ii == 0
-		lre = nan(nx,2);
+		lre = nan(nx,2);	
 	end
 	for i = 1:nx
 		if i < nx
@@ -115,9 +105,9 @@ for ii = 0:(tzoom+(zoompca<0))
 				plotorbit(X(n).t,d,X(n).w,linestyle,G.LINEWIDTH,G.MARKERSIZE,X(n).rgb);
 				if npca > 0 && ii > 0
 					plotorbit(X(n).t,mavr(d(:,1),10),X(n).w,'-',G.LINEWIDTH,G.MARKERSIZE/2,scolor(2));
-				end
+				end 
 				kk = find(~isnan(d(:,1)));
-				if ii == 0 && X(n).trd && length(kk) >= 2 && diff(minmax(X(n).t(kk))) >= trendmindays && 100*diff(minmax(X(n).t(kk))) >= trendminperc
+				if ii == 0 && X(n).trd && length(kk) >= 2 && diff(minmax(X(n).t(kk))) >= trendmindays
 					if size(d,2) > 1 && all(d(kk,2)~=0)
 						lr = wls(X(n).t(kk)-tlim(1),d(kk,1),1./d(kk,2).^2);
 					else
@@ -138,7 +128,6 @@ for ii = 0:(tzoom+(zoompca<0))
 	set(gca,'XLim',tlim,'FontSize',fontsize,'YTickLabel',[]);
 	box on
 
-	ylim = get(gca,'YLim');
 	% --- legends
 	datetick2('x',G.DATESTR)
 	% y-labels
@@ -147,21 +136,19 @@ for ii = 0:(tzoom+(zoompca<0))
 			'HorizontalAlignment','center','VerticalAlignment','bottom','Rotation',90);
 	end
 	% y-scale
-	if yscalevalue > 0 && diff(ylim) > 2*yscalevalue
-		set(gca,'YTick',(ceil(ylim(1)/yscalevalue):floor(ylim(2)/yscalevalue))*yscalevalue);
-	end
 	ytick = get(gca,'YTick');
 	set(gca,'TickLength',[0.005,0.005]) % reduces tick length
 	hold on
 	xt = tlim(2) + .015*diff(tlim)*[1,2,2,1];
 	yt = ytick(end-[1,1,0,0]);
 	plot(xt,yt,'k','LineWidth',1.5,'Clipping','off')
-	text(xt(2),mean(yt(2:3)),sprintf('{\\bf%g %s}',yscalefact*diff(ytick(1:2)),yscaleunit),'FontSize',fontsize*1.25, ...
+	text(xt(2),mean(yt(2:3)),sprintf('{\\bf%g cm}',100*diff(ytick(1:2))),'FontSize',fontsize*1.25, ...
 		'HorizontalAlignment','center','VerticalAlignment','bottom','Rotation',90)
 
 	% indicates zoom
-	if tzoom && ii==0
-		xt = [-zoompca*diff(tlim),0] + tlim(2);
+	ylim = get(gca,'YLim');
+	if zoom && ii==0
+		xt = [-timezoom*diff(tlim),0] + tlim(2);
 		yt = ylim(1) - 0.04*diff(ylim) + [0,0];
 		ct = .3*[1,1,1];
 		plot(xt,yt,'-','LineWidth',1.5,'Color',ct,'Clipping','off')
@@ -188,3 +175,4 @@ for ii = 0:(tzoom+(zoompca<0))
 
 	tlabel(tlim,G.TZ,'FontSize',fontsize)
 end
+

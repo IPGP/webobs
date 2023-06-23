@@ -20,7 +20,7 @@ $(document).ready(function() {
 	}
 	if (typeof MECB  === 'undefined') {
 		// event handlers
-		$(window).load(function() {
+		$(window).load(function() {		
 			init_ref();
 			fsx(SCB.SX);
 			//$('.submenu').innerWidth($('#refrow').width()-3);
@@ -36,72 +36,15 @@ $(document).ready(function() {
 				pos_x = Math.round((sec - 2)*1000*SCB.WIDTH/60000);
 				window.scrollBy(pos_x,0);
 			}
-			shrinkmctags();
+			shrinkmctags();	
 		});
 		$(window).keyup(maj_formulaire);
-		$(window).change(maj_formulaire);
-		// event handlers for crosshair
+	$(window).change(maj_formulaire);
+		// event handlers for crosshair 
 		$('.flypointit').mousemove(function(e) { ptr=flypointit(e,false);overlib(ptr,WIDTH,120,OFFSETX,0,FULLHTML); });
 		$('.flypointit').click(function(e) { flypointit(e,true) });
 	}
-	// spectrogram slider
-	var slider = document.getElementById('sgramslider');
-	slider.oninput = function() {
-  		$('.sgram').css('opacity',this.value/10);
-		$('#sgramopacity').val(this.value/10);
-	}
-	var y = parseInt($('#sgramslider').val());
-  	$('.sgram').css('opacity',y/10); // updates opacity when refreshing page
 });
-
-// ---- get keypress events
-$(document).keydown(function(e) {
-	e = e || window.event;
-	var target = e.target || e.srcElement;
-	// Enter key works everywhere
-	if (e.key == 'Enter') {
-		verif_formulaire();
-		MECB.FORM.submit();
-	}
-	// other keys only outside any form
-	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
-		if (e.key == "e") showmctags();
-		if (e.key == "s") showsgram();
-		if (e.key == "S") {
-			$('#sgramslider').val(10);
-  			$('.sgram').css('opacity',1);
-		}
-		if (e.key == "t" || e.key == "r") {
-			var y = parseInt($('#sgramslider').val());
-			if (e.key == "t") y = 1 + y % 10;
-			if (e.key == "r")  y = 1 + (y + 8) % 10;
-			$('#sgramslider').val(y);
-  			$('.sgram').css('opacity',y/10);
-			$('#sgramopacity').val(y/10);
-		}
-		Object.keys(MECB.KBtyp).forEach(function (key) {
-			if (e.key === MECB.KBtyp[key]) MECB.FORM.typeEvenement.value = key;
-		});
-		Object.keys(MECB.KBamp).forEach(function (key) {
-			if (e.key === MECB.KBamp[key]) MECB.FORM.amplitudeEvenement.value = key;
-		});
-	}
-});
-
-// ---- toggle visibility of sgram
-function showsgram() {
-	// [FB-note] .toggle() is not used here due to paging issues on minute images
-	var y = parseInt($('#sgramslider').val());
-	if (y > 0) {
-		$('#sgramopacity').val(y/10);
-		$('.sgram').css('opacity', 0);
-		$('#sgramslider').val(0);
-	} else {
-		$('#sgramslider').val($('#sgramopacity').val()*10);
-  		$('.sgram').css('opacity', $('#sgramopacity').val());
-	}
-	return true;
-}
 
 // ---- show control keys
 function showkeys() {
@@ -118,7 +61,7 @@ function quit() {
 	window.close();
 }
 
-// ---- toggle height of mctags
+// ---- toggle height of mctags 
 function shrinkmctags() {
 	$('.mctag').each(function () {
 		var h = $(this).height() == SCB.LABELTOP ? SCB.HEIGHTIMG : SCB.LABELTOP ;
@@ -126,18 +69,18 @@ function shrinkmctags() {
 	});
 }
 
-// ---- toggle visibility of mctags
+// ---- toggle visibility of mctags 
 function showmctags() {
 	$('.mctag').toggle();
 	return true;
 }
 
-// ---- restore 1:1 signals
+// ---- restore 1:1 signals 
 function zoom_1() {
 	var ww2 = Math.floor($('body')[0].clientWidth/2);
 	var px = window.pageXOffset;
 	var w=SCB.WIDTH; // current zoom
-	if (w != SCB.WIDTHREF) {
+	if (w != SCB.WIDTHREF) { 
 		var zf = SCB.WIDTHREF/SCB.WIDTH;
 		zoom_tag(zf);
 		SCB.WIDTH = SCB.WIDTHREF;
@@ -172,9 +115,6 @@ function maj_speed() {
 	$('.png').each( function() {
 		$(this).css('width', SCB.WIDTH);
 	});
-	$('.sgram').each( function() {
-		$(this).css('width', SCB.WIDTH);
-	});
 	// ALL maps in page are considered sefran-imgs-maps
 	$('map > area').each( function() {
 		var c = $(this).attr("coords").split(',');
@@ -185,10 +125,6 @@ function maj_speed() {
 
 // ---- apply a zoom factor to mctags and positions of event-start and event-end
 function zoom_tag(zoom) {
-	$('.sgram').each(function() {
-		$(this).css('left', ($(this).position().left)*zoom + 'px');
-		$(this).css('width', $(this).width() * zoom + 'px');
-	});
 	$('.mctag').each(function() {
 		$(this).css('left', ($(this).position().left - SCB.DX)*zoom + SCB.DX + 'px');
 		$(this).css('width', $(this).width() * zoom + 'px');
@@ -198,19 +134,19 @@ function zoom_tag(zoom) {
 	});
 }
 
-// ---- load another sefran in its own window for a given hour
+// ---- load another sefran in its own window for a given hour 
 function sefran() {
 	window.open(SCB.PROG+'&date=' + formulaire.ad_date.value + formulaire.ad_heure.value);
 }
 
-// ---- make the formRef visible if needed
+// ---- make the formRef visible if needed 
 function init_ref() {
 	if (document.form) {
 		if (document.form.ref.value == 1) $('#formRef').css('visibility','visible');
 	}
 }
 
-// ---- handle user switching from realtime to date selection
+// ---- handle user switching from realtime to date selection 
 function mod_ref() {
 	if (document.form.ref.value == 0) {
 		$('#formRef').css('visibility','hidden');
@@ -221,8 +157,8 @@ function mod_ref() {
 }
 
 // ---- scroll to right-end of signals (used when page is reloaded with 'previous-date-arrow')
-function fsx(sx) {
-	if (sx == 1) window.scrollBy(window.scrollMaxX,0);
+function fsx(sx) { 
+	if (sx == 1) window.scrollBy(window.scrollMaxX,0); 
 }
 
 // ---- mousemove over hour image(s): build overlib msg, showing position
@@ -265,8 +201,8 @@ function view_mseed() {
 // ---- signals mouseover or click handler; bound via jQuery for cross-browser structures
 function flypointit(event,click) {
 	var dte = new Date(MECB.MINUTE.getTime());      // local dte = date of beginning of window
-	deltaT = 60*(event.pageX - SCB.PPI)/SCB.WIDTH;     // local deltaT = mouse seconds from beginning of window
-	duration = deltaT - MECB.FORM.sec.value;           // local duration = mouse seconds from eventStart if it already exists
+	deltaT = 60*(event.pageX - SCB.PPI)/SCB.WIDTH;     // local deltaT = mouse seconds from beginning of window 
+	duration = deltaT - MECB.FORM.sec.value;           // local duration = mouse seconds from eventStart if it already exists 
 	if (!click) {
 		// -------------------- process a mouseover -------------
 		var ret = '?';
@@ -288,13 +224,13 @@ function flypointit(event,click) {
 		}
 		// adjust crosshair's legend position (set to left or right of crosshair)
 		if (event.clientX >= window.innerWidth - MECB.CHWIDTH) {
-			algn = 'right'; ol_hpos = LEFT;
+			algn = 'right'; ol_hpos = LEFT; 
 			ret=ret+'&nbsp;'+MECB.CROSSHAIR;
-		} else {
-			algn = 'left'; ol_hpos = RIGHT;
+		} else { 
+			algn = 'left'; ol_hpos = RIGHT; 
 			ret=MECB.CROSSHAIR+'&nbsp;'+ret;
 		}
-		return('<div style="width:'+MECB.CHWIDTH+'px;text-align:'+algn+';background-color:white;opacity:0.8">'+ret+'</div>');
+		return('<div style="width: '+MECB.CHWIDTH+'px;text-align:'+algn+'">'+ret+'</div>');
 	} else {
 		// ------------------------ process a click -----------------
 		if (event.shiftKey && MECB.FORM.secondeEvenement.value!="" && duration > 0) {
@@ -334,7 +270,7 @@ function maj_formulaire() {
 	MECB.FORM.dateEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.dateEvenement.value != "")];
 	MECB.FORM.secondeEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.secondeEvenement.value != "" && MECB.FORM.secondeEvenement.value >= 0 && MECB.FORM.secondeEvenement.value < 60)];
 	if (MECB.FORM.secondeEvenement.value!="") {
-		pos_x = Math.round((dte1.getTime() + sec*1000 - dte0.getTime())*SCB.WIDTH/60000 + SCB.PPI);
+		pos_x = Math.round((dte1.getTime() + sec*1000 - dte0.getTime())*SCB.WIDTH/60000 + SCB.PPI);                 	
 		$('#eventStart').css({ 'left': pos_x, 'visibility': 'visible' });
 	} else {
 		$('#eventStart').css({ 'visibility': 'hidden' });
@@ -382,18 +318,13 @@ function maj_formulaire() {
 	}
 	$("#mag").html((mag>0) ? ", Md = <b>" + mag + "</b>": "");
 	MECB.FORM.typeEvenement.style.backgroundColor = MECB.COLORS[(MECB.FORM.typeEvenement.value != "INCONNU" && MECB.FORM.typeEvenement.value != "UNKNOWN" && MECB.FORM.typeEvenement.value != "AUTO")];
-
-	// PSE: predict seismic-events
-        if (PSE.PREDICT_EVENT_TYPE=='ONCLICK'){
-	    if (MECB.FORM.secondeEvenement.value!="" && MECB.FORM.dureeEvenement.value!="") {
-		$('#pseCompute').show("slow");
-	    } else {
-		$('#pseCompute').hide("fast");
-	    }
-        }else if (PSE.PREDICT_EVENT_TYPE=='AUTO' && $('#pseresults').val() == '' &&  MECB.FORM.secondeEvenement.value!="" && MECB.FORM.dureeEvenement.value!="") {
-           //Automatic classification
-            predict_seismic_event_automatic();
-        }
+	
+	// EQDISCRIM
+	if (MECB.FORM.secondeEvenement.value!="" && MECB.FORM.dureeEvenement.value!="") {
+		$('#eqdiscrim').show("slow");
+	} else {
+		$('#eqdiscrim').hide("fast");
+	}
 }
 
 // ---- check box newSC3 if event-type is in SC3ARR
@@ -413,9 +344,9 @@ function verif_formulaire() {
         MECB.FORM.stationEvenement.focus();
         return false;
     }
-	if (MECB.FORM.secondeEvenement.value == "" || MECB.FORM.secondeEvenement.value < 0 || MECB.FORM.secondeEvenement.value >= 60) {
+	if (MECB.FORM.secondeEvenement.value == "" || MECB.FORM.secondeEvenement.value < 0 || MECB.FORM.secondeEvenement.value >= 60) { 
         alert(MECB.MSGS['secevt']);
-        MECB.FORM.secondeEvenement.focus();
+        MECB.FORM.secondeEvenement.focus(); 
         return false;
     }
 	if(MECB.FORM.dureeEvenement.value == "" || isNaN(MECB.FORM.dureeEvenement.value)) {
@@ -431,31 +362,31 @@ function verif_formulaire() {
 	if(MECB.FORM.amplitudeEvenement.value == "") {
         alert(MECB.MSGS['ampevt']);
         MECB.FORM.stationEvenement.focus();
-        return false;
+        return false; 
     }
 	if(MECB.FORM.amplitudeEvenement.value == "Sature" || MECB.FORM.amplitudeEvenement.value == "OVERSCALE") {
 		if (MECB.FORM.saturationEvenement.value == "" || MECB.FORM.saturationEvenement.value <= 0) {
         	alert(MECB.MSGS['ovrdur']);
-			MECB.FORM.saturationEvenement.focus();
+			MECB.FORM.saturationEvenement.focus(); 
 			return false;
 		}
     } else {
 		if (MECB.FORM.saturationEvenement.value > 0) {
         	alert(MECB.MSGS['notovr']);
-			MECB.FORM.saturationEvenement.focus();
+			MECB.FORM.saturationEvenement.focus(); 
 			return false;
 		}
 	}
 	if(MECB.FORM.typeEvenement.value == "INCONNU" || MECB.FORM.typeEvenement.value == "UNKNOWN") {
 		if (!confirm(MECB.MSGS['unkevt'])) {
-   			MECB.FORM.typeEvenement.focus();
-   			return false;
+   			MECB.FORM.typeEvenement.focus(); 
+   			return false; 
 		}
 	}
 	if(MECB.FORM.typeEvenement.value == "AUTO") {
 		alert(MECB.MSGS['notval']);
-		MECB.FORM.typeEvenement.focus();
-		return false;
+		MECB.FORM.typeEvenement.focus(); 
+		return false; 
 	}
 }
 
@@ -463,16 +394,16 @@ function verif_formulaire() {
 function supprime(level) {
 	if (level > 1) {
 		if (!confirm(MECB.MSGS['delete'] + MECB.TITLE)) {
-			return false;
+			return false; 
 		}
 	} else {
 		if (MECB.FORM.id_evt.value > 0) {
 			if (!confirm(MECB.MSGS['hidevt'] + MECB.TITLE)) {
-				return false;
+				return false; 
 			}
 		} else {
 			if (!confirm(MECB.MSGS['resevt'] + MECB.TITLE)) {
-				return false;
+				return false; 
 			}
 		}
 	}
@@ -480,120 +411,12 @@ function supprime(level) {
 	MECB.FORM.submit();
 }
 
-// ---- check for required inputs in mcform to predict
-function verif_to_predict() {
-	if (MECB.FORM.stationEvenement.value == "") {
-        alert(MECB.MSGS['staevt']);
-        MECB.FORM.stationEvenement.focus();
-        return false;
-    }
-	if (MECB.FORM.secondeEvenement.value == "" || MECB.FORM.secondeEvenement.value < 0 || MECB.FORM.secondeEvenement.value >= 60) {
-        alert(MECB.MSGS['secevt']);
-        MECB.FORM.secondeEvenement.focus();
-        return false;
-    }
-	if(MECB.FORM.dureeEvenement.value == "" || isNaN(MECB.FORM.dureeEvenement.value)) {
-        alert(MECB.MSGS['durevt']);
-        MECB.FORM.dureeEvenement.focus();
-        return false;
-    }
-    return true;
-
-}
-
-
-// ---- Compute probabilities of seismic events and update interface
-function predict_seismic_event(pse_root_conf, pse_root_data, pse_algo_filepath, pse_conf_filename, pse_tmp_filepath, datasource, slinktool_prgm){
-	var verbatim = 0;
-        let URL="/cgi-bin/predict.pl";
-        // check the input arguments
-        if(verif_to_predict()){
-            console.log("COMPUTE SEISMIC-EVENTS CLASSIFICATION PROBABILITIES");
-            // Send a request to a server
-            return $.ajax({
-                url:URL,
-                type:'GET',
-                dataType: "json",
-                data:{pse_root_conf:pse_root_conf,
-                    pse_root_data:pse_root_data,
-                    pse_algo_filepath:pse_algo_filepath,
-                    pse_conf_filename:pse_conf_filename,
-                    pse_tmp_filepath:pse_tmp_filepath,
-                    datasource:datasource,
-                    slinktool_prgm:slinktool_prgm,
-                    year:parseInt(MECB.FORM.year.value),
-                    month:parseInt(MECB.FORM.month.value),
-                    day:parseInt(MECB.FORM.day.value),
-                    hour:parseInt(MECB.FORM.hour.value),
-                    minut:parseInt(MECB.FORM.minute.value),
-                    second:parseFloat(MECB.FORM.secondeEvenement.value),
-                    duration:parseFloat(MECB.FORM.dureeEvenement.value),
-                    verbatim:verbatim},
-                error: function(error){console.log("ERROR",error)}
-	    }).done(function(JSONdata){
-                console.log("OUTPUTS: ",JSONdata);
-                (Object.keys(JSONdata).forEach(function(key){
-                    // Display probability on the drop-doxn menu of events type
-                    var event_html = $('#'+key);
-                    var proba = Math.round(parseFloat(JSONdata[key])*100);
-	            if (event_html !== null){
-                        if (! /\d+/.test(event_html.html())){
-                            event_html.append(proba + ' %');
-                        }
-                        // Update probability if already display
-                        else {
-                            event_html.html().replace(/\d+/,proba);
-                    }}
-                    else {console.log("Need to add class:", key)}
-                }));
-               // array of events type from highest to lowest probabily
-               var eventsOrdered = Object.keys(JSONdata).sort((event1,event2)=>JSONdata[event2] -  JSONdata[event1]);
-               // Rearrange the events order
-               // Put to the top the event with the highest probability (if it is not already)
-               if ($('#eventList option:eq(0)').prop('id') != $('#'+eventsOrdered[0]).prop('id')){
-               $('#'+eventsOrdered[0]).insertBefore($('#eventList option:eq(0)'));}
-               // Move the event s type according to the ordered array of events
-               for (let i=0; i<(eventsOrdered.length-1); i++) {
-                   $('#'+eventsOrdered[i+1]).insertAfter($('#'+eventsOrdered[i]));
-               }
-               // Select the event with the highest probability
-               $('#eventList').val(eventsOrdered[0]);
-               // Add all probabilities  in the comment section
-               //if(/\{.*\}/.test($('#comment').val())){
-               //      $('#comment').val($('#comment').val().replace(/\{.*\}/,JSON.stringify(JSONdata)));
-               //}
-               //else{
-               //      $('#comment').val($('#comment').val()+JSON.stringify(JSONdata));
-               //}
-               //Add probabilities to the MC3 form
-               $('#pseresults').val(JSON.stringify(JSONdata));
-
-          maj_formulaire();
-          });
-        }else{alert("MISSING INPUTS TO PREDICT");}
-}
-
-// ---- Compute probabilities of seismic events with on click button
-function predict_seismic_event_onclick(){
-    // Modify the  button design during the computation
-    $('#pseCompute').prop('disabled',true);
-    $('#wait').show();
-    $.when(
-predict_seismic_event(PSE.PSE_ROOT_CONF, PSE.PSE_ROOT_DATA, PSE.PSE_ALGO_FILEPATH, PSE.PSE_CONF_FILENAME, PSE.PSE_TMP_FILEPATH, PSE.DATASOURCE, PSE.SLINKTOOL_PRGM)
-    ).done(()=>{
-    // Modify the  button design
-    $('#pseCompute').prop('disabled',false);
-    $('#wait').hide();
-    });
-}
-
-
-// ---- Compute probabilities of seismic events when the end of the signal is selected
-function predict_seismic_event_automatic(){
-    $('#wait').show();
-    $.when(
-predict_seismic_event(PSE.PSE_ROOT_CONF, PSE.PSE_ROOT_DATA, PSE.PSE_ALGO_FILEPATH, PSE.PSE_CONF_FILENAME, PSE.PSE_TMP_FILEPATH, PSE.DATASOURCE, PSE.SLINKTOOL_PRGM)
-    ).done(()=>{
-    $('#wait').hide();
-    });
+// ---- EQDISCRIM: run request
+function run_eqdiscrim() {
+	var EQD = MECB.FORM.eqdsrv.value;
+//	$.getJSON(EQD,
+//		'run_predict, 20160831T172927.32, 10'
+//	)
+//	.done(function(data) {
+//		,alert('test !'));
 }

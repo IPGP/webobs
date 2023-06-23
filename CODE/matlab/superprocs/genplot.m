@@ -29,12 +29,28 @@ function DOUT=genplot(varargin)
 %       suplot will contain the channel number 1 and will be double-height compared to
 %       the second (channel 4) and third subplot (channel 3).
 %
-%       See CODE/tplates/PROC.GENPLOT for other specific paramaters.
+%       Other specific paramaters are:
+%           PERNODE_CHANNELS|
+%           PAGE_MAX_SUBPLOT|8
+%           PLOT_GRID|YES
+%           YLOGSCALE|NO
+%           PICKS_CLEAN_PERCENT|0
+%           PICKS_CLEAN_STD|0
+%           FLAT_IS_NAN|NO
+%           MEDIAN_FILTER_SAMPLES|0
+%           MOVING_AVERAGE_SAMPLES|10
+%           CONTINUOUS_PLOT|NO
+%	    PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
+%	    PERNODE_LINESTYLE|-
+%           PERNODE_RELATIVE|NO
+%	    SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
+%	    SUMMARY_LINESTYLE|-
+%           SUMMARY_RELATIVE|NO
 %
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2014-07-13
-%	Updated: 2022-11-24
+%	Updated: 2019-05-21
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -44,7 +60,7 @@ if nargin < 1
 	error('%s: must define PROC name.',wofun);
 end
 
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename,varargin{:});
 timelog(procmsg,1);
 
 
@@ -58,29 +74,21 @@ summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
 pagemaxsubplot = field2num(P,'PAGE_MAX_SUBPLOT',8);
 ylogscale = isok(P,'YLOGSCALE');
-movingaverage = round(field2num(P,'MOVING_AVERAGE_SAMPLES',1));
-
-exthax = [.08,.02];
-nxm = 0; % max number of channels
+movingaverage = field2num(P,'MOVING_AVERAGE_SAMPLES',1);
 
 for n = 1:length(N)
 
 	C = D(n).CLB;
 	nx = C.nx;
-	nxm = max(nxm,nx);
 	GN = graphstr(field2str(P,'PERNODE_CHANNELS',sprintf('%d,',1:nx),'notempty'));
 	V.node_name = N(n).NAME;
 	V.node_alias = N(n).ALIAS;
 	V.last_data = datestr(D(n).tfirstlast(2));
 
-
+	
 	% ===================== makes the proc's job
 
 	for r = 1:length(P.GTABLE)
-
-		% adjusts moving average filter to decimated data (keeps the cut-off frequency)
-		movingaverage_dec = round(movingaverage/P.GTABLE(r).DECIMATE);
-		movingaverage_dec(movingaverage_dec<2) = []; % removes any non integer or lower than 2 values
 
 		figure
 		if length(N) > pagemaxsubplot
@@ -106,10 +114,10 @@ for n = 1:length(N)
 		% loop for each data column
 		for p = 1:length(GN)
 
-			subplot(GN(p).subplot{:}), extaxes(gca,exthax)
+			subplot(GN(p).subplot{:}), extaxes(gca,[.07,.01])
 			i = GN(p).chan;
 			if ~isempty(k) && i <= nx
-				if isok(P,'CONTINUOUS_PLOT') || ~isfield(D(n).CLB,'sf')
+				if isok(P,'CONTINUOUS_PLOT')
 					samp = 0;
 				else
 					samp = D(n).CLB.sf(i);
@@ -117,42 +125,26 @@ for n = 1:length(N)
 				col = scolor(p);
 				timeplot(tk,dk(:,i),samp,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
 					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
-				hold on
-				for j = 1:length(movingaverage_dec)
-					if movingaverage_dec(j) > 1
-						col = j/(j+1) + scolor(p)/(j+1);
-						timeplot(tk,mavr(dk(:,i),movingaverage_dec(j)),samp,'-', ...
-							'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',col,'MarkerFaceColor',col)
-					end
+				if movingaverage > 1
+					hold on
+					col = .5+scolor(p)/2;
+					timeplot(tk,mavr(dk(:,i),movingaverage),samp,'-', ...
+						'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',col,'MarkerFaceColor',col)
+					hold off
 				end
-				hold off
 			end
 			if ylogscale
 				set(gca,'YScale','log')
 			end
 			set(gca,'XLim',tlim,'FontSize',8)
 			datetick2('x',P.GTABLE(r).DATESTR)
-			if p < length(GN)
+			if i < nx
 				set(gca,'XTickLabel',[]);
 			end
 			ylabel(sprintf('%s %s',D(n).CLB.nm{i},regexprep(D(n).CLB.un{i},'(.+)','($1)')))
 			if isempty(D(n).d) || all(isnan(D(n).d(k,i)))
 				nodata(tlim)
 			end
-
-			% legend: moving average
-			xlim = get(gca,'XLim');
-			ylim = get(gca,'YLim');
-			nn = length(movingaverage_dec);
-			for j = 1:nn
-				if movingaverage_dec(j) > 1
-					col = j/(j+1) + scolor(p)/(j+1);
-					text(xlim(1)+j*diff(xlim)/(nn+1),ylim(2)+diff(ylim)/100,sprintf('mov. avg %g',movingaverage_dec(j)),'Color',col, ...
-						'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',max(10-nn,6),'FontWeight','bold')
-				end
-			end
-			set(gca,'YLim',ylim);
-
 		end
 
 		tlabel(tlim,P.GTABLE(r).TZ)
@@ -173,8 +165,7 @@ for n = 1:length(N)
 		end
 
 		% makes graph
-		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
 
 		% exports data
@@ -194,8 +185,10 @@ end
 
 if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 	G = cat(1,D.G);
+	C = cat(1,D.CLB);
+	nx = max(cat(1,C.nx));
 
-	GS = graphstr(field2str(P,'SUMMARY_CHANNELS',sprintf('%d,',1:nxm),'notempty'));
+	GS = graphstr(field2str(P,'SUMMARY_CHANNELS',sprintf('%d,',1:nx),'notempty'));
 
 	for r = 1:length(P.GTABLE)
 
@@ -217,7 +210,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 		orient tall
 
 		for p = 1:length(GS)
-			subplot(GS(p).subplot{:}), extaxes(gca,exthax)
+			subplot(GS(p).subplot{:}), extaxes(gca,[.07,.01])
 			c = GS(p).chan;
 
 			hold on
@@ -226,14 +219,14 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 			for n = 1:length(N)
 				k = D(n).G(r).k;
 				if ~isempty(k)
+					if isok(P,'CONTINUOUS_PLOT')
+						samp = 0;
+					else
+						samp = D(n).CLB.sf(c);
+					end
 					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,c),P.GTABLE(r).DECIMATE,P);
 					if isok(P,'SUMMARY_RELATIVE')
 						dk = rf(dk);
-					end
-					if isok(P,'CONTINUOUS_PLOT') || ~isfield(D(n).CLB,'sf')
-						samp = 0;
-					else
-						samp = D(n).CLB.sf(c)/P.GTABLE(r).DECIMATE;
 					end
 					col = scolor(n);
 					timeplot(tk,dk,samp,summary_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
@@ -253,20 +246,20 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 				set(gca,'XTickLabel',[]);
 			end
 			ylabel(sprintf('%s %s',D(1).CLB.nm{c},regexprep(D(1).CLB.un{c},'(.+)','($1)')))
-
+			
 			% legend: station aliases
 			xlim = get(gca,'XLim');
 			ylim = get(gca,'YLim');
 			nn = length(aliases);
 			for n = 1:nn
-				text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2)+diff(ylim)/100,aliases(n),'Color',scolor(ncolors(n)), ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',max(11-nn,6),'FontWeight','bold')
+				text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
+					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 			end
 			set(gca,'YLim',ylim);
 		end
 
 		tlabel(xlim,P.GTABLE(r).TZ)
-
+	    
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
@@ -286,3 +279,4 @@ timelog(procmsg,2)
 if nargout > 0
 	DOUT = D;
 end
+

@@ -21,8 +21,8 @@ our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
-            rtrim tri_date_avec_id isok romain pga2msk attenuation txt2htm
-            qrcode url2target checkParam);
+            rtrim tri_date_avec_id romain boussole pga2msk attenuation txt2htm
+            url2target checkParam);
 $VERSION = "1.00";
 
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ $VERSION = "1.00";
 
  uses legacy routines from i18n.pl for compatible behavior
 
-=cut
+=cut 
 
 use Locale::Recode;
 my $u2l = Locale::Recode->new (from => 'UTF-8', to => 'ISO-8859-15');
@@ -63,7 +63,7 @@ binmode STDOUT, ':raw'; # Needed to make it work in UTF-8 locales in Perl-5.8.
 
 =head2 htmlspecialchars
 
-converts $textin B<" \< \>> to resp. html entities B<&quot; &lt; &gt;> :
+converts $textin B<" \< \>> to resp. html entities B<&quot; &lt; &gt;> : 
 
   $textout = htmlspecialchars($textin);
 
@@ -90,14 +90,14 @@ sub htmlspecialchars
   $thumbnail = makeThumbnail($srcFullName, $geometry, $thumbPath, $thumbExt);
 
 If a thumbnail for $srcFullName doesn't already exists within directory $thumbPath,
-tries to build and save one.
-$geometry is the ImageMagick's convert geometry parameter for -thumbnail option.
+tries to build and save one. 
+$geometry is the ImageMagick's convert geometry parameter for -thumbnail option. 
 $thumbExt is the thumbnail's filename extension.
 Returns the full path to thumbnail if it has been created, or one was already present.
-Returns "" otherwise (ie. thumbnail couldn't be created typically because
+Returns "" otherwise (ie. thumbnail couldn't be created typically because 
 ImageMagick couldn't do it, but also because of missing arguments !).
 
-Example:
+Example: 
 
  # tries to create /mypath/tothumbnails/image.jpg.png if not already exists
  #
@@ -114,8 +114,8 @@ sub makeThumbnail
 		my ($img, $path) = fileparse($_[0]);
 		my ($ext) = $img =~ /(\.[^.]+)$/;
 		my $thumb = $_[2]."/".$img.".".$_[3];
-		#DL-was:if ($ext ~~ @needsel) { $img .= '[0]' }
-		if (grep /\Q$ext/i , @needsel) { $img .= '[0]' }
+		#DL-was:if ($ext ~~ @needsel) { $img .= '[0]' }  
+		if (grep /\Q$ext/i , @needsel) { $img .= '[0]' }  
 		if ( !-e $thumb ) {
 			qx(/usr/bin/convert "$path$img" -thumbnail $_[1] "$thumb"  2>/dev/null);
 			if ( $? == 0 ) {
@@ -183,14 +183,6 @@ sub tri_date_avec_id ($$) {
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
-sub isok ($)
-{
-    my $ok = shift;
-    return ($ok =~ /^(Y|YES|OK|ON|1)/i ? 1:0);
-}
-
-
-#--------------------------------------------------------------------------------------------------------------------------------------
 sub romain ($)
 # Input: intensite MSK (en numerique de 1 a 0 ou 10)
 # Output: intensite MSK (en chiffres romains)
@@ -199,6 +191,20 @@ sub romain ($)
 	my @msk = ("X","I","II","III","IV","V","VI","VII","VIII","IX");
 	my $string = shift;
 	return $msk[$string%10];
+}
+
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub boussole ($)
+# Input: azimut (en degres)
+# Output: indication de direction geographique (chaine)
+# Equivalent Matlab: boussole.m
+{
+       my @nsew = ('E','ENE','NE','NNE','N','NNW','NW','WNW','W','WSW','SW','SSW','S','SSE','SE','ESE');
+       my $az = shift;
+       $az = ($az*16/6.283)%16;
+       return $nsew[$az];
+
 }
 
 
@@ -228,19 +234,6 @@ sub attenuation ($$)
 	if ($hyp < 5) { $hyp = 5; }
 	my $pga = 1000*10**(0.620986*$mag - 0.00345256*$hyp - log($hyp)/log(10) - 3.374841);
 	return $pga;
-}
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-sub qrcode ($)
-{
-    use MIME::Base64;
-    my $s = shift;
-    return "" if ($s eq "");
-    my $url = "http://$ENV{HTTP_HOST}$ENV{REQUEST_URI}";
-	my $qr = encode_base64(qx(qrencode -s $s -o - "$url"));
-    my $img = ($qr eq "" ? "":"<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/showQRcode.pl','$url',"
-		."'width=600,height=450,toolbar=no,menubar=no,status=no,location=no')\"><IMG src=\"data:image/png;base64,$qr\"></A>");
-    return $img;
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -349,7 +342,7 @@ Alexis Bosson, Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2014 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

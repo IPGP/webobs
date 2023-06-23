@@ -1,6 +1,6 @@
 function D = readfmtdata_miniseed(WO,P,N,F)
 %READFMTDATA_MINISEED subfunction of readfmtdata.m
-%
+%	
 %	From proc P, node N and options F returns data D.
 %	See READFMTDATA function for details.
 %
@@ -16,10 +16,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %
 %	format 'miniseed'
-%		type: miniSEED local file(s)
-%	    files: P.RAWDATA contains full path and filename(s) using bash wildcard
-%		     facilities. The string may include $FID, $NET, $yyyy, $mm, $dd or
-%		     $doy variables.
+%		type: miniSEED local file(s) defined by RAWDATA
 %
 %	format 'seedlink'
 %		type: SEEDLink data stream (using slinktool)
@@ -50,11 +47,11 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2022-06-09
+%	Updated: 2019-12-10
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
-mseed2sac = field2str(WO,'MSEED2SAC_PRGM','mseed2sac','notempty');
+mseed2sac = field2str(WO,'MSEED2SAC_PRGM','mseed2sac');
 
 % checks correct definition of codes and calibration for the node N
 if isempty(N.FDSN_NETWORK_CODE)
@@ -82,9 +79,6 @@ N.CLB = clbselect(N.CLB,cha_list);
 datalinkdelay = field2num(P,'DATALINK_DELAY_SECONDS',0);
 
 fdat = sprintf('%s/%s.msd',F.ptmp,N.ID);
-if exist(fdat,'file')
-	delete(fdat)
-end
 tv = floor(datevec(F.datelim - datalinkdelay/86400)');	% floor() is needed to avoid second 60 due to round
 
 % add an alarm to slinktool to avoid freezing...
@@ -157,84 +151,18 @@ case 'combined'
 % -----------------------------------------------------------------------------
 case 'miniseed'
 
-	% if RAWDATA contains the '$yyyy' variable, makes a loop on years
-	if ~isempty(regexpi(F.raw{1},'\$yyyy'))
-		Y = dir(regexprep(F.raw{1},'\$yyyy.*$','*'));
-		years = str2num(cat(1,Y(cellfun(@length,{Y.name})==4 & cat(1,Y.isdir)').name))';
-		for yyyy = years
-			if (isnan(P.DATELIM(1)) || datenum(yyyy,12,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,1) <= P.DATELIM(2))
-				if ~isempty(regexpi(F.raw{1},'\$mm'))
-					for mm = 1:12
-						if (isnan(P.DATELIM(1)) || datenum(yyyy,mm,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,1) <= P.DATELIM(2))
-							if ~isempty(regexpi(F.raw{1},'\$dd'))
-								for dd = 1:31
-									if (isnan(P.DATELIM(1)) || datenum(yyyy,mm,dd) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,dd) <= P.DATELIM(2))
-										fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
-										fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
-										fraw = regexprep(fraw,'\$dd',sprintf('%02d',dd),'ignorecase');
-										wosystem(sprintf('cat %s >> %s',fraw,fdat), P);
-									end
-								end
-							else
-								fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
-								fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
-								wosystem(sprintf('cat %s >> %s',fraw,fdat), P);
-							end
-						end
-					end
-				else
-					if ~isempty(regexpi(F.raw{1},'\$doy'))
-						for doy = 1:366
-							if (isnan(P.DATELIM(1)) || datenum(yyyy,1,doy) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,doy) <= P.DATELIM(2))
-								fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
-								fraw = regexprep(fraw,'\$doy',sprintf('%03d',doy),'ignorecase');
-								wosystem(sprintf('cat %s >> %s',fraw,fdat), P);
-							end
-						end
-					else
-						fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
-						wosystem(sprintf('cat %s >> %s',fraw,fdat), P);
-					end
-				end
-				fprintf('.');
-			end
-		end
-	else
-		wosystem(sprintf('cat %s > %s',F.raw{1},fdat),P);
+	wosystem(sprintf('cat %s > %s',F.raw{1},fdat),P);
+	if ~exist(fdat,'file')
+		fprintf('%s: ** WARNING ** cannot find file %s for format "%s"!\n',wofun,F.raw{1},F.fmt);
 	end
 
 
 % -----------------------------------------------------------------------------
 case 'fdsnws-dataselect'
-	% builds request file for POST method (all channels and possible multiple calibrations periods)
-	freq = sprintf('%s/post.txt',F.ptmp);
-	fid = fopen(freq,'wt');
-	cc = unique(N.CLB.nv);
-	dt = N.CLB.dt;
-	for ic = 1:length(cc)
-		c = cc(ic);
-		kc = find(N.CLB.nv == c);
-		for ii = 1:length(kc)
-			if dt(kc(ii)) < F.datelim(2) && (ii==length(kc) || dt(kc(ii+1)) > F.datelim(1))
-				t1 = max(dt(kc(ii)),F.datelim(1));
-				if ii == length(kc)
-					t2 = F.datelim(2);
-				else
-					t2 = min(dt(kc(ii+1)),F.datelim(2));
-				end
-				fprintf(fid,'%s %s %s %s %04d-%02d-%02dT%02d:%02d:%02.0f %04d-%02d-%02dT%02d:%02d:%02.0f\n', ...
-					N.FDSN_NETWORK_CODE,N.FID,N.CLB.lc{kc(ii)},N.CLB.cd{kc(ii)},datevec(t1),datevec(t2));
-			end
-		end
-	end
-	fclose(fid);
-	if isok(P,'DEBUG')
-		fprintf('\n%s: FDSNWS dataselect POST request:\n',wofun);
-		type(freq)
-	end
 
-	% makes the request
-	wosystem(sprintf('wget -nv --post-file %s -O %s %s',freq,fdat,F.raw{1}),P);
+	% builds request line for dataselect WebService
+	wsreq = sprintf('starttime=%04d-%02d-%02dT%02d:%02d:%02.0f&endtime=%04d-%02d-%02dT%02d:%02d:%02.0f&net=%s&sta=%s&cha=%s',tv,N.FDSN_NETWORK_CODE,N.FID,strjoin(cha_list,','));
+	wosystem(sprintf('wget -nv -O %s "%s%s"',fdat,F.raw{1},wsreq),P);
 
 
 % -----------------------------------------------------------------------------
@@ -247,7 +175,7 @@ end
 % loads the miniseed file
 if exist(fdat,'file')
 	fprintf('%s: data file %s ...',wofun,fdat);
-	[X,I] = rdmseedfast(fdat,mseed2sac);
+	[X,I] = rdmseedfast(fdat,field2str(WO,'MSEED2SAC_PRGM','mseed2sac','notempty'));
 	fprintf(' loaded.\n');
 
 	% copy the original file to export directory (if needed)
@@ -300,7 +228,7 @@ if exist(fdat,'file')
 		end
 	end
 else
-	fprintf('%s: ** WARNING ** no data found in file "%s" with format "%s"!\n',wofun,F.raw{1},F.fmt);
+	fprintf('no data found!\n')
 	t = [];
 	d = [];
 end

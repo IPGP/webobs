@@ -18,9 +18,9 @@ function DOUT=tilt(varargin)
 %
 %       TILT will use PROC's and NODE's parameters to import data. Particularily, it uses
 %       NODE's calibration file channels definition, that must contain these 3 channels:
-%           Tilt X (ï¿½rad)
-%           Tilt Y (ï¿½rad)
-%           Temperature (ï¿½C)
+%           Tilt X (µrad)
+%           Tilt Y (µrad)
+%           Temperature (°C)
 %       defined by these 3 PROC's parameters (values are selected Ch. Nb. in calibration
 %       file order, starting from 1):
 %           TILTX_CHANNEL|1
@@ -28,16 +28,15 @@ function DOUT=tilt(varargin)
 %           TEMPERATURE_CHANNEL|3
 %	Note that channels X and Y azimuth values are mandatory to convert to NS and EW
 %	components.
-%
+%	
 %
 %       TILT will use PROC's parameters from .conf file. Specific paramaters are described in the
 %       template CODE/tplate/PROC.TILT
 %
 %
-%   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet,
-%            V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
+%   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet, V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
 %   Created: 2015-08-24 in Yogyakarta, Indonesia
-%   Updated: 2022-06-12
+%   Updated: 2019-12-12
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -48,7 +47,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename,varargin{:});
 timelog(procmsg,1);
 
 % gets PROC's configuration and associated nodes for any TSCALE and/or REQDIR
@@ -84,20 +83,17 @@ vectors_shape = field2shape(P,'VECTORS_SHAPE_FILE');
 motion_filter = field2num(P,'MOTION_MAFILTER',10);
 motion_scale = field2num(P,'MOTION_SCALE_RAD',0);
 motion_minkm = field2num(P,'MOTION_MIN_SIZE_KM',10);
-motion_colormap = field2num(P,'MOTION_COLORMAP',spectral(256));
+motion_colormap = field2num(P,'MOTION_COLORMAP',jet(64));
 motion_demopt = field2cell(P,'MOTION_DEM_OPT','colormap',.5*ones(64,3),'watermark',2,'interp');
 motion_title = field2str(P,'MOTION_TITLE','{\fontsize{14}{\bf$name - Motion} ($timescale)}');
 
-maxdep = field2num(P,'MODELLING_MAX_DEPTH',5000);	% depth limit (m)
-bm = field2num(P,'MODELLING_BORDERS',2500);
+maxdep = field2num(P,'MODELLING_MAX_DEPTH',8e3);	% depth limit (m)
+bm = field2num(P,'MODELLING_BORDERS',5000);
 rr = field2num(P,'MODELLING_GRID_SIZE',51);
 msig = field2num(P,'MODELLING_SIGMAS',1);
 plotbest = isok(P,'MODELLING_PLOT_BEST');
 moduleonly = isok(P,'MODELLING_MODULE_ONLY');
-modelling_cmap = field2num(P,'MODELLING_COLORMAP',spectral(256));
 modelling_title = field2str(P,'MODELLING_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
-misfitnorm = field2str(P,'MODELLING_MISFITNORM','L1');
-apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 
 geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
 
@@ -111,13 +107,13 @@ for n = 1:length(N)
 	      cosd(azt) sind(azt)];
 	xy = inv(RT) * D(n).d(:,ixyt(1:2))';
 	D(n).d = [D(n).d,xy'];
-
-	% in "target mode", adds 2 more columns to data matrix: radial and tangential
+	
+	% in "target mode", adds 2 more columns to data matrix: radial and tangential 
 	if length(targetll) > 1
 		%[lat,lon,dist,bear] = greatcircle(geo(n,1),geo(n,2),targetll(1),targetll(2),2);
 		%D(n).d = [D(n).d,];
 	end
-
+	
 	t = D(n).t;
 	d = D(n).d;
 	C = D(n).CLB;
@@ -146,7 +142,7 @@ for n = 1:length(N)
 		k = D(n).G(r).k;
 		ke = D(n).G(r).ke;
 		tlim = D(n).G(r).tlim;
-
+    
 		% title and status
 		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 		stitre = varsub(pernode_title,V);
@@ -209,7 +205,7 @@ for n = 1:length(N)
 				if isempty(d) || all(isnan(d(k,i)))
 					nodata(tlim)
 				end
-
+				
 			end
 			OPT.FIXEDPP = true;
 		else
@@ -262,9 +258,8 @@ for n = 1:length(N)
 					ii, C.nm{i},d(ke,i)-drel,C.un{i},rmin(d(k,i)-drel),rmean(d(k,i)-drel),rmax(d(k,i)-drel),lre(i,:),C.un{i})}];
 			end
 		end
-
+		
 		% makes graph
-		OPT.EVENTS = N(n).EVENTS;
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
 		close
 
@@ -272,12 +267,12 @@ for n = 1:length(N)
 		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
 			E.t = t(k);
 			E.d = d(k,ixyt);
-			E.header = {'TiltX(ï¿½rad)','TiltY(ï¿½rad)','Temperature(ï¿½C)'};
+			E.header = {'TiltX(µrad)','TiltY(µrad)','Temperature(°C)'};
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
 	end
-
+	
 	% Stores in main structure D to prepare the summary graph
 	D(n).t = t;
 	D(n).d = d;
@@ -293,7 +288,7 @@ for r = 1:length(P.GTABLE)
 	if any(isnan(tlim))
 		tlim = minmax(cat(1,D.tfirstlast));
 	end
-
+	
 	V.name = P.NAME;
 	V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 	P.GTABLE(r).GTITLE = varsub(summary_title,V);
@@ -301,8 +296,8 @@ for r = 1:length(P.GTABLE)
 		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 	end
 	P.GTABLE(r).INFOS = {''};
-	tr = nan(length(N),2); % trends per station per component (ï¿½rad/day)
-	tre = nan(length(N),2); % trends error (ï¿½rad/day)
+	tr = nan(length(N),2); % trends per station per component (µrad/day)
+	tre = nan(length(N),2); % trends error (µrad/day)
 
 
 	% --- Time series graph converted to orthogonal NS-EW components
@@ -311,7 +306,7 @@ for r = 1:length(P.GTABLE)
 	for ii = 1:3
 		if ii < 3
 			i = ii + 3;
-		else
+		else	
 			i = ixyt(ii);
 		end
 		subplot(6,1,(ii-1)*2+(1:2)), extaxes(gca,[.07,0])
@@ -320,7 +315,7 @@ for r = 1:length(P.GTABLE)
 		ncolors = [];
 		rel = '';
 		for n = 1:length(N)
-
+			
 			k = D(n).G(r).k;
 			if ~isempty(k)
 				k1 = k(find(~isnan(D(n).d(k,i)),1));
@@ -337,7 +332,7 @@ for r = 1:length(P.GTABLE)
 					samp = N(n).ACQ_RATE;
 				end
 				timeplot(tk,dk,samp,summary_linestyle,'Color',scolor(n),'MarkerSize',P.GTABLE(r).MARKERSIZE/10)
-				% computes daily trends (in ï¿½rad/day)
+				% computes daily trends (in µrad/day)
 				kk = find(~isnan(dk));
 				if ii < 3 && length(kk) > 2
 					b = polyfit(tk(kk)-tk(1),dk(kk),1);
@@ -366,13 +361,13 @@ for r = 1:length(P.GTABLE)
 		datetick2('x',P.GTABLE(r).DATESTR)
 		switch ii
 			case 1
-				ylabel(sprintf('%sTilt X (ï¿½rad)',rel))
+				ylabel(sprintf('%sTilt X (µrad)',rel))
 			case 2
-				ylabel(sprintf('%sTilt Y (ï¿½rad)',rel))
+				ylabel(sprintf('%sTilt Y (µrad)',rel))
 			case 3
 				ylabel(sprintf('%s%s (%s)',rel,D(n).CLB.nm{i},D(n).CLB.un{i}))
 		end
-
+		
 		% legend: station aliases
 		ylim = get(gca,'YLim');
 		nl = length(aliases);
@@ -384,7 +379,7 @@ for r = 1:length(P.GTABLE)
 	end
 
 	tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
-
+    
 	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 	close
 
@@ -426,12 +421,12 @@ for r = 1:length(P.GTABLE)
 				X(nn).d = mavr(rf(D(n).d(k,4:5)),motion_filter);
 			else
 				X(nn).t = [];
-				X(nn).d = zeros(0,2);
+				X(nn).d = [];
 			end
 		end
 		alldata = cat(1,X.d);
 
-		% scale is adjusted to maximum relative tilt (in ï¿½rad)
+		% scale is adjusted to maximum relative tilt (in µrad)
 		if isempty(motion_scale) || ~(motion_scale > 0)
 			mscale = max([diff(minmax(alldata(:,1))),diff(minmax(alldata(:,2)))]);
 		end
@@ -456,7 +451,7 @@ for r = 1:length(P.GTABLE)
 		% fixes the axis
 		axis tight
 		axl = axis;
-
+		
 		% determines X-Y limits of the map
 		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),motion_minkm,1,border);
 
@@ -480,13 +475,13 @@ for r = 1:length(P.GTABLE)
 		h = get(gca,'Children');
 		ko = find(ismember(h,ha),1);
 		set(gca,'Children',[ha;h(1:ko-1)])
-
+		
 		% displacement legend
 		alim = get(gca,'YLim');
 		xsc = xlim(1) + [0,vscale*vsc*xyr];
 		ysc = repmat(alim(1)-diff(alim)/20,1,2);
 		plot(xsc,ysc,'-k','Linewidth',2,'Clipping','off')
-		text(mean(xsc),ysc(1),sprintf('%g ï¿½rad',vscale),'Clipping','off', ...
+		text(mean(xsc),ysc(1),sprintf('%g µrad',vscale),'Clipping','off', ...
 			'HorizontalAlignment','center','VerticalAlignment','top','FontWeight','bold')
 		hold off
 
@@ -494,7 +489,7 @@ for r = 1:length(P.GTABLE)
 		axes('position',[.4,0.1,0.5,0.15]);
 		timecolorbar(0,0,.8,.15,tlim,motion_colormap,10,45)
 		set(gca,'XLim',[0,1],'YLim',[0,1])
-		axis off
+		axis off		
 
 		P.GTABLE(r).GSTATUS = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
@@ -520,7 +515,7 @@ for r = 1:length(P.GTABLE)
 		xyr = cosd(mean(latlim));
 
 		figure, orient tall
-
+		
 		P.GTABLE(r).GTITLE = varsub(vectors_title,V);
 
 		% scale is adjusted to maximum horizontal vector or error amplitude (in mm/yr)
@@ -550,7 +545,7 @@ for r = 1:length(P.GTABLE)
 		% fixes the axis
 		axis tight
 		axl = axis;
-
+		
 		% determines X-Y limits of the map
 		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),minkm,maxxy,border);
 
@@ -573,7 +568,7 @@ for r = 1:length(P.GTABLE)
 			set(h,'Color',vectors_topo_rgb,'LineWidth',.1);
 			clabel(c,h,'FontSize',8,'Color',vectors_topo_rgb);
 		end
-
+		
 		% plots stations
 		target(geo(knv,2),geo(knv,1),7);
 
@@ -587,7 +582,7 @@ for r = 1:length(P.GTABLE)
 		h = get(gca,'Children');
 		ko = find(ismember(h,ha),1);
 		set(gca,'Children',[ha;h(1:ko-1)])
-
+		
 		% plots error ellipse and station name
 		for nn = 1:length(knv)
 			n = knv(nn);
@@ -612,7 +607,7 @@ for r = 1:length(P.GTABLE)
 		ysc = ylim(2) + .04*diff(ylim);
 		lsc = vscale*vsc;
 		arrows(xsc,ysc,lsc,90,arrowshape*vmax/vscale,'FaceColor','none','LineWidth',1,'Clipping','off');
-		text(xsc+1.1*lsc,ysc,sprintf('%g ï¿½rad/day',vscale),'FontWeight','bold')
+		text(xsc+1.1*lsc,ysc,sprintf('%g µrad/day',vscale),'FontWeight','bold')
 
 
 		hold off
@@ -636,9 +631,9 @@ for r = 1:length(P.GTABLE)
 				set(gca,'YLim',[0,max(sta_amp+sta_err)])
 			end
 			xlabel('Distance from target (km)')
-			ylabel('Tilt amplitude (ï¿½rad/day)')
+			ylabel('Tilt amplitude (µrad/day)')
 		end
-
+		
 
 		P.GTABLE(r).GSTATUS = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
@@ -648,7 +643,7 @@ for r = 1:length(P.GTABLE)
 		if isok(P.GTABLE(r),'EXPORTS')
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,1:2)];
-			E.header = {'Latitude','Longitude','Altitude','E_tilt(ï¿½rad/day)','N_Tilt(ï¿½rad/day)','dEt(ï¿½rad/day)','dNt(ï¿½rad/day)'};
+			E.header = {'Latitude','Longitude','Altitude','E_tilt(µrad/day)','N_Tilt(µrad/day)','dEt(µrad/day)','dNt(µrad/day)'};
 			E.title = sprintf('%s {%s}',stitre,upper(sprintf('%s_%s',proc,summary)));
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
@@ -669,7 +664,7 @@ for r = 1:length(P.GTABLE)
 
 		nn = length(kn);
 
-		% makes the data array in ï¿½rad (from ï¿½rad/day)
+		% makes the data array in µrad (from µrad/day)
 		d = [tr(kn,:),tre(kn,:)]*diff(tlim);
 
 		degm = 1e3*degkm;
@@ -680,7 +675,6 @@ for r = 1:length(P.GTABLE)
 		ysta = (geo(kn,1) - lat0)*degm;
 		xsta = (geo(kn,2) - lon0)*degm*cosd(lat0);
 		zsta = geo(kn,3);
-		targetxy = (targetll([2,1]) - [lon0,lat0]).*[cosd(lat0),1]*degm;
 
 		wid = max(diff(minmax(xsta)),diff(minmax(ysta))) + bm;
 
@@ -714,55 +708,26 @@ for r = 1:length(P.GTABLE)
 
 		% removes NaN data
 		kk = find(~any(isnan(d(:,1:2)),2));
-		kx = find(~isnan(d(:,1)));
-		ky = find(~isnan(d(:,2)));
 		kr = length(kk);
 
 		% computes optimal volume variation
 		[da,dr] = cart2pol(dx,dy);
 		drm = dr.*cos(da - asou);	% data vector radial component
 		vv = mean(drm(:,:,:,kk),4)./mean(dt(:,:,:,kk),4);
-
+			
 		% computes probability density
-		if ~isempty(kx) || ~isempty(ky)
-			vvn = repmat(vv,[1,1,1,kr]);
-			vvx = repmat(vv,[1,1,1,length(kx)]);
-			vvy = repmat(vv,[1,1,1,length(ky)]);
-			sigx = repmat(reshape(d(kx,3),1,1,1,length(kx)),[sz,1]);
-			sigy = repmat(reshape(d(ky,4),1,1,1,length(ky)),[sz,1]);
-
-			if moduleonly
-				% -- misfit from vector module only
-				%mm = exp(sum(-(dr(:,:,:,kk) - dt(:,:,:,kk).*vvn).^2./(2*(sigx + sigy).^2),4))./prod((sigx + sigy)*sqrt(2*pi),4);
-				if strcmpi(misfitnorm,'L2')
-					mm = exp(sum(-(dr(:,:,:,kk) - dt(:,:,:,kk).*vvn).^2./(2*(sigx + sigy).^2),4));
-				else
-					mm = exp(sum(-abs(dr(:,:,:,kk) - dt(:,:,:,kk).*vvn)./(2*(sigx + sigy)),4));
-				end
-			else
-				% -- misfit from vectors difference module (two components)
-				%mm = exp(sum(-(dx(:,:,:,kk) - tx(:,:,:,kk).*vvn).^2./(2*sigx.^2),4))./prod(sigx*sqrt(2*pi),4) ...
-				%	.*exp(sum(-(dy(:,:,:,kk) - ty(:,:,:,kk).*vvn).^2./(2*sigy.^2),4))./prod(sigy*sqrt(2*pi),4);
-				if strcmpi(misfitnorm,'L2')
-					mm = exp(sum(-(dx(:,:,:,kx) - tx(:,:,:,kx).*vvx).^2./(2*sigx.^2),4)) ...
-						.*exp(sum(-(dy(:,:,:,ky) - ty(:,:,:,ky).*vvy).^2./(2*sigy.^2),4));
-				else
-					mm = exp(sum(-abs(dx(:,:,:,kx) - tx(:,:,:,kx).*vvx)./(2*sigx),4)) ...
-						.*exp(sum(-abs(dy(:,:,:,ky) - ty(:,:,:,ky).*vvy)./(2*sigy),4));
-				end
-
-			end
+		vvn = repmat(vv,[1,1,1,kr]);
+		sigx = repmat(reshape(2*d(kk,3),1,1,1,kr),[sz,1]);
+		sigy = repmat(reshape(2*d(kk,4),1,1,1,kr),[sz,1]);
+		if moduleonly
+			% -- misfit from vector module only
+			mm = exp(sum(-(dr(:,:,:,kk) - dt(:,:,:,kk).*vvn).^2./(2*(sigx + sigy).^2),4))./prod((sigx + sigy)*sqrt(2*pi),4);
 		else
-			mm = nan(sz);
+			% -- misfit from vectors difference module (two components)
+			mm = exp(sum(-(dx(:,:,:,kk) - tx(:,:,:,kk).*vvn).^2./(2*sigx.^2),4))./prod(sigx*sqrt(2*pi),4) ...
+				.*exp(sum(-(dy(:,:,:,kk) - ty(:,:,:,kk).*vvn).^2./(2*sigy.^2),4))./prod(sigy*sqrt(2*pi),4);
 		end
-
 		clear tx ty sigx sigy % free some memory
-
-		% applies a priori info
-		if apriori_horizontal > 0
-			mm = mm.*exp(-((xx - targetxy(1)).^2 + (yy - targetxy(2)).^2)/ ...
-			   	 (2*(apriori_horizontal*1e3)^2));
-		end
 
 		% all solutions above the topography are very much unlikely...
 		mm(zz>repmat(zdem,[1,1,sz(3)])) = 0;
@@ -787,11 +752,11 @@ for r = 1:length(P.GTABLE)
 		d0 = sqrt((xx-xx(k)).^2 + (yy-yy(k)).^2 + (zz-zz(k)).^2);	% distance from source
 		%ws = median(d0(mm>minmax(mm(:),.99)));	% median distance of the 1% best models
 		ws = 2*median(d0(mm >= (1 - msigp)*max(mm(:))));	% distance of the best models (msig)
-
+		
 		mhor = max(mm,[],3);
-		%clim = [min(mhor(:)),max(mhor(:))*(ws/1e6)^.5];
+		clim = [min(mhor(:)),max(mhor(:))*(ws/1e6)^.5]
 		%clim = [min(mhor(:)),max(mhor(:))];
-		clim = minmax(mm);
+		%clim = minmax(mm)
 		if ~(diff(clim)>0)
 			clim = [0,1];
 		end
@@ -818,17 +783,6 @@ for r = 1:length(P.GTABLE)
 			ellipse(xsta + vsc*d(:,1),ysta + vsc*d(:,2),vsc*d(:,3),vsc*d(:,4),'LineWidth',.2,'Clipping','on')
 			arrows(xsta,ysta,vsc*tx,vsc*ty,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor','r','FaceColor','r','Clipping','off')
 		end
-		if ~isempty(targetll)
-			plot(repmat(targetxy(1),1,2),ylim([1,end]),':k')
-			plot(xlim([1,end]),repmat(targetxy(2),1,2),':k')
-			if apriori_horizontal > 0
-				acircle = linspace(0,2*pi);
-				plot(targetxy(1)+apriori_horizontal*1e3*cos(acircle), ...
-				     targetxy(2)+apriori_horizontal*1e3*sin(acircle), ...
-				     ':k')
-			end
-		end
-
 		%axis equal; axis tight
 		if plotbest
 			plot(xx(k),yy(k),'pk','MarkerSize',10,'LineWidth',2)
@@ -862,7 +816,7 @@ for r = 1:length(P.GTABLE)
 		plot(xlim,max(max(zdem,[],3),[],1),'-k')
 		hold off
 		set(gca,'XLim',minmax(xlim),'YLim',minmax(zlim),'YAxisLocation','right','XTick',[],'FontSize',6)
-		shademap(modelling_cmap,0.8)
+		shademap(jet(512),0.8)
 
 		% legend
 		subplot(5,3,[12,15])
@@ -873,7 +827,7 @@ for r = 1:length(P.GTABLE)
 			sprintf('   {\\itBest sources (%1.1f%%)}:',msigp*100), ...
 			sprintf('depth = {\\bf%1.1f km} \\in [%1.1f , %1.1f]',-[zz(k),fliplr(ez)]/1e3), ...
 			sprintf('\\DeltaV = {\\bf%+g Mm^3} \\in [%+g , %+g]',roundsd([vv(k),ev],2)), ...
-			sprintf('lowest misfit = {\\bf%g ï¿½rad}',roundsd(mm0,2)), ...
+			sprintf('lowest misfit = {\\bf%g µrad}',roundsd(mm0,2)), ...
 			'', ... %sprintf('width = {\\bf%g m}',roundsd(2*ws,1)), ...
 			sprintf('grid size = {\\bf%g^3 nodes}',rr), ...
 			sprintf('trend error mode = {\\bf%d}',terrmod), ...
@@ -896,7 +850,7 @@ for r = 1:length(P.GTABLE)
 		if ~isnan(arrowref)
 			vlegend = roundsd(vmax/2,1);
 			arrows(dxl/2,dyl,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
-			text(dxl/2 + vsc*vlegend/2,dyl,sprintf('{\\bf%g ï¿½rad}',vlegend),'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8)
+			text(dxl/2 + vsc*vlegend/2,dyl,sprintf('{\\bf%g µrad}',vlegend),'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8)
 			%ellipse(xsta + vsc*d(:,1),zsta + vsc*d(:,3),vsc*d(:,4),vsc*d(:,6),'LineWidth',.2,'Clipping','on')
 			arrows(dxl/2,dyl/2,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor','r','FaceColor','r','Clipping','off')
 			text([dxl/2,dxl/2],[dyl,dyl/2],{'data   ','model   '},'HorizontalAlignment','right')

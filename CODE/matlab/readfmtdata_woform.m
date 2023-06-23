@@ -1,6 +1,6 @@
 function D = readfmtdata_woform(WO,P,N)
 %READFMTDATA_WOFORM subfunction of readfmtdata.m
-%
+%	
 %	From proc P and nodes N, returns data D.
 %	See READFMTDATA function for details.
 %
@@ -25,22 +25,13 @@ function D = readfmtdata_woform(WO,P,N)
 %		D.d (Distance Temp Wind)
 %		D.e (Distance Temp Wind)
 %
-%	form 'RAINWATER'
-%		D.t (datenum)
-%		D.d (18 columns)
 %
-%	form 'SOILSOLUTION'
-%		D.t (datenum)
-%		D.d (18 columns)
-%
-%
-%	Author: FranÃ§ois Beauducel, WEBOBS/IPGP
+%	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2021-08-12
+%	Updated: 2017-08-02
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
-GMOL = readcfg(WO,sprintf('%s/etc/gmol.conf',WO.ROOT_CODE));
 
 f = sprintf('%s/%s',WO.PATH_DATA_DB,P.FORM.FILE_NAME);
 if ~exist(f,'file')
@@ -51,14 +42,14 @@ fprintf('%s: importing FORM data [%s] ...\n',wofun,P.FORM.SELFREF);
 
 data = readdatafile(f,[],'HeaderLines',1);
 
-% replaces missing hours by default time, converts to datenum
-deftime = field2str(P.FORM,'DEFAULT_SAMPLING_TIME','00:00','notempty');
-data(strcmp(data(:,3),''),3) = {deftime};
+% replaces missing hours by '00:00', converts to datenum
+data(strcmp(data(:,3),''),3) = {'00:00'};
 t = datenum(strcat(data(:,2),{' '},data(:,3),{':00'}));
 
 switch P.FORM.SELFREF
 
 case 'EAUX'
+
 	FT = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_TYPE));
 	tcod = fieldnames(FT);
 	% replaces site type of sampling by a number
@@ -68,6 +59,7 @@ case 'EAUX'
 	% converts all fields to number (after replacing french decimal points)
 	d = str2double(regexprep(data(:,5:26),',','.'));
 	% converts concentrations to mmol/l
+	GMOL = readcfg(WO,sprintf('%s/etc/gmol.conf',WO.ROOT_CODE));
 	elm = {'Li','Na','K','Mg','Ca','F','Cl','Br','NO3','SO4','HCO3','I'};
 	for i = 1:length(elm)
 		d(:,i+7) = d(:,i+7)/str2double(GMOL.(elm{i}));
@@ -85,12 +77,13 @@ case 'EAUX'
 	e = zeros(size(d));
 	nm = {'type','TA','TS','pH','Flux','Cond','Level','Li+','Na+','K+','Mg++','Ca++','F-','Cl-','Br-','NO3-','SO4--','HCO3-','I-', ...
 		'\delta^{13}C','\delta^{18}O','{\delta}D','Cl-/SO4-- ','HCO3-/SO4--','Mg++/Cl-','Cond_{25}','NICB'};
-	un = {    '','ï¿½C','ï¿½C',  '','l/mn',  'ï¿½S',    'm','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l', ...
-		    '',    '',  '',          '',           '',        '',    'ï¿½S',   '%'};
+	un = {    '','°C','°C',  '','l/mn',  'µS',    'm','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l', ...
+		    '',    '',  '',          '',           '',        '',    'µS',   '%'};
 
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
 
 case 'GAZ'
+
 	FT = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_TYPE));
 	tcod = fieldnames(FT);
 	% replaces site type of sampling by a number
@@ -106,12 +99,13 @@ case 'GAZ'
 
 	e = zeros(size(d));
 	nm = {'Temperature','pH','Flux',  'Rn','type','H_2','He','CO','CH_4','N_2','H_2S','Ar','CO_2','SO_2','O_2','\delta^{13}C','\delta^{18}O','S/C'};
-	un = {  'ï¿½C',  '',   '-','#/mn',    '', '%', '%', '%',  '%', '%',  '%', '%',  '%',  '%', '%',    '',    '',   ''};
+	un = {  '°C',  '',   '-','#/mn',    '', '%', '%', '%',  '%', '%',  '%', '%',  '%',  '%', '%',    '',    '',   ''};
 
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
 
 case 'EXTENSO'
-	d1 = str2double(data(:,10:3:34)); % windows (fenï¿½tre)
+
+	d1 = str2double(data(:,10:3:34)); % windows (fenêtre)
 	d2 = str2double(data(:,11:3:35)); % faces (cadran)
 	d2(isnan(d2)) = 0;	% forces void faces to 0
 	d3 = str2double(data(:,12:3:36)); % wind speed
@@ -124,11 +118,12 @@ case 'EXTENSO'
 	e(e==0) = 1;	% forces error = 1
 
 	nm = {'Distance','TempAir','Wind'};
-	un = {      'mm',     'ï¿½C',   '-'};
+	un = {      'mm',     '°C',   '-'};
 
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
 
 case 'FISSURO'
+
 	d1 = str2double(data(:,10:3:34)); % perpendicular (opening)
 	d2 = str2double(data(:,11:3:35)); % parallel (senestral)
 	d3 = str2double(data(:,12:3:36)); % vertical
@@ -140,68 +135,9 @@ case 'FISSURO'
 	e(e==0) = 1;	% forces error = 1
 
 	nm = {'Perp.','Para.','Vert.','TempAir'};
-	un = {   'mm',   'mm',   'mm',  'ï¿½C'};
+	un = {   'mm',   'mm',   'mm',  '°C'};
 
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
-
-case 'RAINWATER'
-	data(strcmp(data(:,6),''),3) = {deftime};
-	t2 = datenum(strcat(data(:,5),{' '},data(:,6),{':00'}));
-	% converts all fields to number (after replacing french decimal points)
-	dd = str2double(regexprep(data(:,7:19),',','.'));
-	dr = 10*dd(:,1)./(pi*(dd(:,2)/2).^2)./(t-t2); % daily rain (mm/day)
-	d = [dr,dd(:,3:end)];
-	% converts concentrations to mmol/l
-	elm = {'Na','K','Mg','Ca','HCO3','Cl','SO4'};
-	for i = 1:length(elm)
-		d(:,i+3) = d(:,i+3)/str2double(GMOL.(elm{i}));
-	end
-	% adds 4 new columns with chemical ratios an NICB
-	% [FB:Todo] use ratios.conf file to build selected ratios only
-	d(:,13) = d(:,9)./d(:,4); % Cl/Na
-	d(:,14) = d(:,10)./d(:,4); % SO4/Na
-	d(:,15) = d(:,6)./d(:,4); % Mg/Na
-	% computes NICB (Mg++, Ca++ and SO4-- are double counted)
-	cations = rsum(d(:,[4,5,6,6,7,7])');
-	anions = rsum(d(:,[8,9,10,10])');
-	d(:,16) = 100*((cations - anions)./(cations + anions))';
-
-	e = zeros(size(d));
-	nm = {'Rainmeter','pH','Cond','Na+','K+','Mg++','Ca++','HCO3-','Cl-','SO4--', ...
-		'{\delta}D','\delta^{18}O','Cl-/Na+ ','SO4--/Na+','Mg++/Na+','NICB'};
-	un = {    'mm/day',  '',  'ï¿½S', 'mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l', ...
-		    '%{\fontsize{5}o}',    '%{\fontsize{5}o}',    '',      '',      '',  '%'};
-
-	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
-
-case 'SOILSOLUTION'
-	data(strcmp(data(:,6),''),3) = {deftime};
-	duration = t - datenum(strcat(data(:,5),{' '},data(:,6),{':00'}));
-	% adds duration from t2 and onverts all fields to number (after replacing french decimal points)
-	d = [duration,str2double(regexprep(data(:,7:20),',','.'))];
-	% converts concentrations to mmol/l
-	elm = {'Na','K','Mg','Ca','HCO3','Cl','NO3','SO4'};
-	for i = 1:length(elm)
-		d(:,i+5) = d(:,i+5)/str2double(GMOL.(elm{i}));
-	end
-	% adds 4 new columns with chemical ratios an NICB
-	% [FB:Todo] use ratios.conf file to build selected ratios only
-	d(:,16) = d(:,11)./d(:,6); % Cl/Na
-	d(:,17) = d(:,13)./d(:,6); % SO4/Na
-	d(:,18) = d(:,8)./d(:,6); % Mg/Na
-	% computes NICB (Mg++, Ca++ and SO4-- are double counted)
-	cations = rsum(d(:,[6,7,8,8,9,9])');
-	anions = rsum(d(:,[10,11,12,13,13])');
-	d(:,19) = 100*((cations - anions)./(cations + anions))';
-
-	e = zeros(size(d));
-	nm = {'Duration','Depth','Level','pH','Cond','Na+',  'K+',    'Mg++',  'Ca++',  'HCO3-', 'Cl-',   'NO3-',  'SO4--', ...
-		'SiO2','DOC','Cl-/Na+ ','SO4--/Na+','Mg++/Na+','NICB'};
-	un = {    'day', 'cm'   , ''    ,'',  'ï¿½S', 'mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l', ...
-		'ppm', 'ppm','',        '',         '',        '%'};
-
-	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
-
 end
 
 
@@ -233,3 +169,4 @@ for n = 1:length(N)
 	end
 	D(n).t = D(n).t + P.TZ/24;
 end
+

@@ -4,18 +4,18 @@ function h=plottrans(WO,N,s,varargin)
 %   relative to the node N (structure from readnode) on current figure, using optional
 %   marker size MARKERSIZE (in points).
 %
-%   PLOTTRANS(WO,N,SIZE,'utm')
+%   PLOTTRANS(WO,N,SIZE,'utm') 
 %
 %
 %   Author: F. Beauducel, WEBOBS/IPGP
 %   Created: 2014-08-17, in Yogyakarta, Indonesia
-%   Updated: 2022-07-26
+%   Updated: 2017-08-02
 
 
 NODES = readcfg(WO,WO.CONF_NODES); % loads nodes config.
 T = readcfg(WO,NODES.FILE_TELE);
 
-if ~isfield(N,'TRANSMISSION') || ~isstruct(N.TRANSMISSION) || ~isfield(N.TRANSMISSION,'NODES') || N.TRANSMISSION.TYPE < 1
+if ~isfield(N,'TRANSMISSION') | ~isstruct(N.TRANSMISSION) | ~isfield(N.TRANSMISSION,'NODES') | N.TRANSMISSION.TYPE < 1
 	h = [];
 	return
 end

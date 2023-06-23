@@ -6,7 +6,7 @@ function X=readcfg(varargin);
 %   	${KEY} for internal conf variable KEY
 %   	$WEBOBS{KEY} for WEBOBS.rc variable KEY
 %
-%   X=READCFG(CONFIG) or READCFG(WO,CONFIG) reads the config file CONFIG. It
+%   X=READCFG(CONFIG) or READCFG(WO,CONFIG) reads the config file CONFIG. It 
 %   returns different structure format depending on config file header:
 %
 %   	no header or =key|value
@@ -24,7 +24,7 @@ function X=readcfg(varargin);
 %   	NOTE: because Matlab does not accept field names starting with a number,
 %   	the function adds a prefix 'KEY' to any numerical key.
 %
-%   X=READCFG(...,'keyarray') uses the key as a numerical index in a
+%   X=READCFG(...,'keyarray') uses the key as a numerical index in a 
 %   structure array where each line corresponds to an element of the structure:
 %
 %   	no header or =key|value
@@ -43,7 +43,7 @@ function X=readcfg(varargin);
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2022-11-26
+%   Updated: 2019-02-22
 
 if nargin > 0 && isstruct(varargin{1})
 	WO = varargin{1};
@@ -86,22 +86,17 @@ else
 		end
 	% --- returns a key|value structure from file f
 	else
-		if nargin > 1 && any(strcmp(varargin,'novsub'))
-			X = rfile(WO,f,0,'nobsub');
-		else
-			X = rfile(WO,f,0);
-		end
+		X = rfile(WO,f,0);
 	end
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function X = rfile(WO,f,mode,novsub)
+function X = rfile(WO,f,mode)
 %RF actually read the configuration file f
 %  mode = 0 : key|value conf file (default)
 %  mode = 1 : key array
-%    novsub : no internal variable substitution
 
 if nargin < 2
 	f = '/etc/webobs.d/WEBOBS.rc';
@@ -109,21 +104,13 @@ end
 if nargin < 3
 	mode = 0;
 end
-if nargin < 4
-	novsub = false;
-else
-	novsub = true;
-end
 
 
 fprintf('%s ... ',f);
 
 % reads all the file content in a single string
-sraw = fileread(f);
-if ~isoctave
-	% clears escaped new lines
-	sraw = regexprep(sraw,'\\(\r\n|\n)\s*','');
-end
+% and clears escaped new lines
+sraw = regexprep(fileread(f),'\\(\r\n|\n)\s*','');
 
 s = textscan(sraw,'%s','CommentStyle','#','Delimiter','\n');
 
@@ -158,10 +145,8 @@ for i = 1:size(s{:},1)
 			val = '';
 			if length(wrk{1}) > 1
 				val = strtrim(stresc(wrk{1}{2}));
-				if ~isoctave
-					% deletes end-line comment (if # not escaped as \#)
-					val = regexprep(val,'[^\\]#.*$','');
-				end
+				% deletes end-line comment (if # not escaped as \#)
+				val = regexprep(val,'[^\\]#.*$','');
 			end
 			% if key contains dots, produces sub-structures
 			skey = split(key,'.');
@@ -193,10 +178,8 @@ end
 
 if length(df{1}) <= 2 && mode==0
 
-	if ~novsub
-		% makes internal KEY variable substitution
-		X = vsub(X,'[\$][\{](.*?)[\}]');
-	end
+	% makes internal KEY variable substitution
+	X = vsub(X,'[\$][\{](.*?)[\}]');
 
 	% makes WEBOBS variable substitution
 	if exist('WO','var')
@@ -212,7 +195,8 @@ function s = stresc(x)
 %STRESC Replaces escape characters in string X.
 
 if ~isempty(x)
-	s = strrep(x,'\#','#');
+	s = strrep(x,'''','''''');
+	s = strrep(s,'\#','#');
 	s = strrep(s,'\|','|');
 else
 	s = '';
@@ -222,7 +206,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function X = vsub(X,pat,W)
-%VSUB Variable substitution in structure X, pattern PAT
+%VARSUB Variable substitution in structure X, pattern PAT
 %	If W provided, uses it to substitute $WEBOBS{} variables
 
 keys = fieldnames(X);
@@ -242,8 +226,7 @@ for i = 1:length(keys)
 				end
 			end
 			if ~isempty(strfind(X.(keys{i}),'${'))
-				fprintf(' ** WARNING ** key %s contains undefined variable "%s", replaces with empty value! ',keys{i},X.(keys{i}));
-				X.(keys{i}) = '';
+				fprintf('WEBOBS{readcfg}: ** WARNING ** key %s contains undefined variable "%s"\n',keys{i},X.(keys{i}));
 			end
 		end
 	end
@@ -273,3 +256,4 @@ for i = 1:length(keys)
 		end
 	end
 end
+

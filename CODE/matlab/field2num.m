@@ -11,7 +11,7 @@ function y = field2num(x,f,y0,varargin)
 %	There is some specific FIELD names:
 %
 %	        *_RGB : a vector of 3 values R,G,B between 0 and 1 to set a color,
-%	   or *_COLOR : allows HTML color name (see rgb.m for available colors)
+%	   or *_COLOR : allows HTML color name (see htm2rgb.m for available colors)
 %	       *_DATE : converts the value to datenum
 %	   *_COLORMAP : colormap name or .cpt filename
 %	      *_ALPHA : scalar or 2-element vector between 0 and 1
@@ -30,7 +30,7 @@ function y = field2num(x,f,y0,varargin)
 %
 %	 Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2015-09-07 at Pos Dukono, Halmahera Utara (Indonesia)
-%	Updated: 2022-06-12
+%	Updated: 2020-04-05
 
 D = struct('s',1/86400,'n',1/1440,'h',1/24,'d',1,'w',7,'m',30,'y',365.25);
 
@@ -42,10 +42,10 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 	if ischar(val)
 		% RGB or color name
 		if ~isempty(regexp(f,'_(RGB|COLOR)$')) && numel(str2num(val)) ~= 3
-			y = rgb(val);
+			y = htm2rgb(val);
 
 		% any datenum compatible date
-		elseif ~isempty(regexp(f,'_DATE$')) && ~isempty(val)
+		elseif ~isempty(regexp(f,'_DATE$'))
 			try
 				y = isodatenum(val);
 			catch
@@ -64,12 +64,8 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 			else
 				y = sstr2num(val);
 				if size(y,2) ~= 3
-					fprintf('WEBOBS{field2num}: ** WARNING ** cannot import %s = "%s" colormap. Use defaut...\n',f,val);
-					if nargin > 2
-						y = y0;
-					else
-						y = spectral(256);
-					end
+					y = jet(256);
+					fprintf('WEBOBS{field2num}: ** WARNING ** cannot import %s colormap. Use defaut...\n',f);
 				end
 			end
 

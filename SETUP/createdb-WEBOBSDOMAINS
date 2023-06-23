@@ -3,7 +3,7 @@ P=`dirname $0`
 . $P/dutils.sh
 
 # can be run for fresh installation or within a legacy Webobs migration
-# current directory (pwd) MUST be the target webob's CONF/ directory
+# current directory (pwd) MUST be the target webob's CONF/ directory 
 
 echo "Creating/populating domains tables ..."
 sqlite3 WEBOBSDOMAINS.db <<EOF
@@ -27,7 +27,6 @@ INSERT INTO "grids2domains" VALUES('PROC','SOURCES','C');
 INSERT INTO "grids2domains" VALUES('VIEW','CGPSWI','D');
 INSERT INTO "grids2domains" VALUES('PROC','CGPSWI','D');
 INSERT INTO "grids2domains" VALUES('PROC','GEOSCOPE','S');
-INSERT INTO "grids2domains" VALUES('SEFRAN','SEFRAN3','S');
 INSERT INTO "grids2domains" VALUES('PROC','HYPOINDO','S');
 INSERT INTO "grids2domains" VALUES('PROC','HYPOWI','S');
 
@@ -36,3 +35,4 @@ EOF
 
 echo "Done."
 exit 0
+

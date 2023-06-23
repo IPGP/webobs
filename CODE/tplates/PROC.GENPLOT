@@ -12,7 +12,7 @@ OWNCODE|?
 RAWFORMAT|
 # raw data path (might be overwritten in each node configuration)
 RAWDATA|$WEBOBS{ROOT_RAWD}/mydatasource
-# URN link to data
+# URN link to data 
 URNDATA|$WEBOBS{URN_RAWD}/mydatasource
 
 DEM_SRTM1|N
@@ -70,12 +70,10 @@ DEM_SRTM1|NO
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
-# additional options for gridmaps background map
-GRIDMAPS_DEM_OPT|
-# show node alias in zoom map(s)
+# do not show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
-# file for background time referenced events
+# file for background time referenced events 
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 
 # --- page format and outputs
@@ -113,6 +111,8 @@ PICKS_CLEAN_PERCENT|0
 FLAT_IS_NAN|NO
 # applies a median filter to the data
 MEDIAN_FILTER_SAMPLES|0
+# superimpose a moving average on N samples
+MOVING_AVERAGE_SAMPLES|0
 # set to YES to plot continuous line ignoring gaps
 CONTINUOUS_PLOT|NO
 # set Y-axis with a log scale
@@ -127,9 +127,6 @@ PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
 PERNODE_LINESTYLE|-
 # set to YES to substract the median value in all plots
 PERNODE_RELATIVE|NO
-# superimpose a moving average on N samples
-MOVING_AVERAGE_SAMPLES|0
-PERNODE_PLOT_EVENTS|YES
 
 # --- summary graph (all nodes together)
 # empty or comment this key to not plot the summary graph
@@ -142,3 +139,4 @@ SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
 SUMMARY_LINESTYLE|-
 # set to YES to substract the median data value in all plots
 SUMMARY_RELATIVE|NO
+

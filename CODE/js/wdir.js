@@ -15,7 +15,7 @@ function newFile(dir) {
 	var fn = $('#newfile').val();
 	if (fn.match(/^--|^\s*$|\//)) {
 		alert ('invalid filename "'+fn+'"');
-		return;
+		exit;
 	}
 	location.href = "/cgi-bin/wedit.pl?file="+dir+fn
 }
@@ -32,7 +32,7 @@ function newSdir(dir) {
 	var fn = $('#newsdir').val();
 	if (fn.match(/^--|^\s*$|\//)) {
 		alert ('invalid folder name "'+fn+'"');
-		return;
+		exit;
 	}
 	location.href = "/cgi-bin/wdir.pl?dir="+dir+"&sdir="+fn
 }

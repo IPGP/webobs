@@ -41,12 +41,24 @@ xml2
 use strict;
 use strict;
 use warnings;
+use DateTime;
+use Data::Dumper;
+use File::Path qw(make_path);
+use File::Basename qw(dirname);
 use FindBin;
-use lib $FindBin::Bin;
 use POSIX;
-
+use HTTP::Tiny;
+use XML::LibXML;
+use XML::LibXML::XPathContext;
 use WebObs::Config;
-use WebObs::QML;
+use QML;
+use lib $FindBin::Bin;
+
+# WebObs::Config forces errors in HTML, but this is not what we want here
+# (use a BEGIN block to also intercept compile-time errors)
+BEGIN {
+	CGI::Carp::set_die_handler(\&CGI::Carp::realdie);
+}
 
 # ---- create files with group permissions from the parent directory
 umask 002;
@@ -106,7 +118,7 @@ if (@ARGV > 0) {
 			print "invalid -f option\n";
 			exit(1);
 		}
-	}
+	}	
 	if ( $opt =~ /-s/ ) {
 		$opt = shift;
 		if ( $opt ) {
@@ -117,7 +129,7 @@ if (@ARGV > 0) {
 			print "invalid -s option\n";
 			exit(1);
 		}
-	}
+	}	
 	if ( $opt =~ /-n/ ) {
 		$opt = shift;
 		if ( $opt ) {
@@ -128,14 +140,128 @@ if (@ARGV > 0) {
 			print "invalid -n option\n";
 			exit(1);
 		}
-	}
+	}	
 }
 
-# ---- read config
+# Version lisant les fichiers
+#sub is_event_in_mc {
+#	# Tests if an event $event is present in a MC file matching $mc_glob.
+#	#
+#	# Returns 1 if a line is found with event colum matching $event.
+#	# Returns 0 otherwise
+#	#
+#	my $event = shift;
+#	my $mc_glob = shift;
+#	my @mc_files = glob($mc_glob);
+#	return 0 unless @mc_files;
+#
+#	for my $mc_path (@mc_files) {
+#		open(my $mc, '<:encoding(ISO-8859-1)', $mc_path)
+#			or die "Could not open file '$mc_path' $!";
+#		
+#		while (my $line = <$mc>) {
+#			#return 1 if $events =~ $line;
+#			my @row = split(/\|/, $line);
+#			print "FOUND $event in $mc_path\n" if ($row[13] and $row[13] eq $event);
+#			return 1 if ($row[13] and $row[13] eq $event);
+#		}
+#	}
+#	return 0;
+#}
+
+
+sub get_mc_filename {
+	# Return the name of the MC file for an event happening on $year-$month.
+	my $mc3conf = shift;
+	my $year = shift;
+	my $month = shift;
+	return sprintf("%s/%.4d/%s/%s%.4d%.2d.txt",
+					$mc3conf->{ROOT}, $year, $mc3conf->{PATH_FILES},
+					$mc3conf->{FILE_PREFIX}, $year, $month);
+}
+
+
+sub get_mc_file_list {
+	# Returns the list of MC filenames (as absolute paths) where the relevant
+	# events are to be read. Note: non existing MC files are silently skipped.
+	# $mc3conf is the global %MC3 and $update_days should be $MC3{SC3_UPDATE_DAYS}
+	my $mc3conf = shift;
+	my $update_days = shift;
+	my $now = DateTime->now('time_zone' => 'local');
+	my $date = $now->clone()->subtract('days' => $update_days)->set('day' => 1);
+	my @mc_files = ();
+
+	while (DateTime->compare($date, $now) < 1) {
+		# Add the filename to the list if it exists
+		my $mc_filename = get_mc_filename($mc3conf, $date->year, $date->month);
+		push(@mc_files, $mc_filename) if (-e $mc_filename);
+		# Process next month
+		$date = $date->add('months' => 1);
+	}
+	return \@mc_files;
+}
+
+
+sub load_mc_events {
+	# Retourne la liste des événements (sous forme de hash
+	# pour permettre une recherche de présence plus rapide).
+	my $mc_file_list = shift;
+	my %events = ();
+	return {} unless @$mc_file_list;
+
+	for my $mc_path (@$mc_file_list) {
+		open(my $mc, '<:encoding(ISO-8859-1)', $mc_path)
+			or die "Could not open file '$mc_path' $!";
+		
+		while (my $line = <$mc>) {
+			# Skip empty line
+			next unless $line;
+			my @row = split(/\|/, $line);
+			# Skip malformed line or older format
+			next if (@row < 17);
+			# Keep event ID in colum 13, if defined
+			$events{$row[13]} = 1 if ($row[13]);
+		}
+	}
+	return \%events;
+}
+
+
+sub check_fields_count {
+	# Returns 1 if all lines in $mc_filename have $nb_col fields
+	# using the '|' separator.
+	# Returns 0 otherwise.
+	my $mc_filename = shift;
+	my $nb_col = shift;
+	open(my $mc, '<:encoding(ISO-8859-1)', $mc_filename)
+		or die "Could not open file '$mc_filename' $!";
+	
+	while (my $line = <$mc>) {
+		return 0 if (scalar(split(/\|/, $line)) != $nb_col);
+	}
+	return 1;
+}
+
+
+sub fetch_or_die {
+	# Fetches an URL and returns the content, or die with an error message.
+	my $url = shift;
+    my $response = HTTP::Tiny->new->get($url);
+    if (!$response->{success}) {
+        die "Could not fetch URL $url\n"
+			."Got status $response->{status}: $response->{reasons}";
+	}
+	return $response->{content};
+}
+
+
+# ---- Read MC3 config
 my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$mc3.conf");
 my $oper = $MC3{SC3_USER};
-my @blacklist_types = split(/,/,$MC3{SC3_EVENT_TYPES_BLACKLIST});
-# ---- FDSN WebService server
+# list of blacklisted events (use an hash to quickly test the inclusion)
+my %blacklist_types = map(($_ => 1), split(/,/, $MC3{SC3_EVENT_TYPES_BLACKLIST}));
+
+# ---- Read FDSN WebService config
 my $fdsnws_url = "";
 my $fdsnws_search = "";
 my $fdsnws_detail = "";
@@ -176,50 +302,57 @@ if (length($fdsnws_server) > 0) {
 
 if (! -d $MC3{SC3_EVENTS_ROOT} ) {
 	print "creating $MC3{SC3_EVENTS_ROOT}\n";
-	my @rcme = qx(mkdir -p $MC3{SC3_EVENTS_ROOT} );
+	make_path($MC3{SC3_EVENTS_ROOT})
+		|| die "Could not create directory '$MC3{SC3_EVENTS_ROOT}' $!";
 }
 
-# ---- gets the list of last events
-my $starttime = POSIX::strftime('%Y-%m-%dT%H:%M:%S',gmtime(time-3600*24*$MC3{SC3_UPDATE_DAYS}));
-my @last = sort(qx(curl -s -S --globoff "${fdsnws_url}${fdsnws_search}&format=text&orderby=time&starttime=$starttime" | egrep '^[^#]' | cut -d '|' -f 1));
-chomp(@last);
-print "checks $MC3{SC3_UPDATE_DAYS} last days ($#last events)...\n";
 
-# checks if events exist in MC database
-for (@last) {
-	my $evt_id = $_;
+# ---- Get the list of last events
+#my $starttime = POSIX::strftime('%Y-%m-%dT%H:%M:%S',gmtime(time-3600*24*$MC3{SC3_UPDATE_DAYS}));
+my $starttime = DateTime->now('time_zone' => 'local')
+					->subtract('days' => $MC3{SC3_UPDATE_DAYS})
+					->strftime("%Y-%m-%dT%H:%M:%S");
+print "Fetching events since $starttime from ${fdsnws_url}...\n";
+my $lastEventsText = fetch_or_die("${fdsnws_url}${fdsnws_search}&format=text&orderby=time&starttime=$starttime");
+
+# Split lines to an array, removing the header line
+my @lastEvents = grep(!/^#/, split(/\n/, $lastEventsText));
+# Only keep the ID of each event
+my @lastEventsID = map((split(/\|/, $_))[0], @lastEvents);
+
+print "Loading events from the MC for the last $MC3{SC3_UPDATE_DAYS} days...\n";
+my $mc_events = load_mc_events(get_mc_file_list(\%MC3, $MC3{SC3_UPDATE_DAYS}));
+
+print "Checking events for the last $MC3{SC3_UPDATE_DAYS} days (".scalar(@lastEventsID)." events)...\n";
+
+
+# Check if each event exists in MC database, and add it if needed
+for my $evt_id (@lastEventsID) {
 	print "--- $evt_id ---\n";
 
-	my $mc_path = "$MC3{ROOT}/*/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}*.txt";
-	my @lines = qx(grep "${fdsnws_server}:\/\/${evt_id}" $mc_path|xargs echo -n);
-	my $mc_file;
+	if (!$mc_events->{"$fdsnws_server://$evt_id"}) {
+		# Event ID does not exists in MC: update the MC file
 
-	if (@lines) {
-		# event's ID already exists in MC: do nothing (for the moment...)
-		$mc_file = "";
-	} else {
+		# Fetch event info from the web service
+		#my $event_url = "${fdsnws_url}${fdsnws_detail}&format=xml&eventid=$evt_id";
+		#my $dom = XML::LibXML->load_xml(location => $event_url);
+		#my $xpc = XML::LibXML::XPathContext->new($dom);
+		#$xpc->registerNs('q', 'http://quakeml.org/xmlns/bed/1.2');
 
-		# -------------------------------------------------------------------------
-		# event seems new: updates MC file
-
-		my @tab;
-		my $s;
-
-		my @event = qx(curl -s -S --globoff "${fdsnws_url}${fdsnws_detail}&format=xml&eventid=$evt_id" | $WEBOBS{XML2_PRGM});
-
-		$s = '/q:quakeml/eventParameters/event';
-		foreach (@event) { s/^$s//g; }
+		my @event = qx(curl -s --globoff "${fdsnws_url}${fdsnws_detail}&format=xml&eventid=$evt_id" | $WEBOBS{XML2_PRGM});
+		for (@event) { s{^/q:quakeml/eventParameters/event}{}g; };  # Remove prefix in xml2 output
 
 		if ($arg =~ /dumper/) {
 			print join('',@event);
 		}
 		chomp(@event);
 
-		# --- gets event type
+		# --- Get event type
+		#print "Found type = ".$xpc->findvalue("//q:event/q:type")."\n";
 		my $evt_type = findvalue('/type=',\@event) // '';
 		print "event type = $evt_type\n";
-		if (grep(/^$evt_type$/,@blacklist_types)) {
-			print "Warning: Event type '$evt_type' is blacklisted!\n";
+		if ($blacklist_types{$evt_type}) {
+			print "Event type '$evt_type' is blacklisted. Skipping.\n";
 		} else {
 
 			# --- gets preferred origin ID
@@ -296,8 +429,13 @@ for (@last) {
 
 			# --- selects first pick
 			# sorting pick:time:value = chronological order
-			@tab = sort(findvalues('/pick/time/value=',\@event));
-			my $evt_pick = $tab[0];
+			my @tab = sort(findvalues('/pick/time/value=',\@event));
+			my $evt_pick = $tab[0] || '';
+			if (!$evt_pick) {
+				print "* Warning: no pick in event, ignoring event.\n";
+				next;
+			}
+
 			my @pick = findnode('/pick',"/time/value=$evt_pick",\@event);
 			my $evt_pickID = findvalue('/\@publicID=',\@pick);
 			my $evt_sdate = substr($evt_pick,0,10) // '';
@@ -311,7 +449,6 @@ for (@last) {
 			print "station pickID = $evt_pickID\n";
 			print "station time = $evt_pick\n";
 			print "station code = $evt_scode\n";
-
 
 			my @arrival = findnode('/arrival',"/pickID=$evt_pickID",\@origin);
 
@@ -354,12 +491,19 @@ for (@last) {
 			my $lockFile = "/tmp/.$mc3.lock";
 
 			if ($arg =~ /update/) {
-				# --- checks lock file
+				# --- create lock file or die
 				if (-e $lockFile) {
-					my $lockWho = qx(cat $lockFile | xargs echo -n);
-					die "WEBOBS: MC is presently edited by $lockWho ...";
+					#my $lockWho = qx(cat $lockFile | xargs echo -n);
+					open(my $lock, "<$lockFile") || Quit($lockFile, "Could not read file $lockFile\n");
+					my $lockOwner = <$lock>;
+					close($lock);
+					chomp $lockOwner;
+					die "WEBOBS: MC is presently edited by $lockOwner ...";
 				} else {
-					my $retLock = qx(echo "$oper" > $lockFile);
+					#my $retLock = qx(echo "$oper" > $lockFile);
+					open(my $lock, ">$lockFile") || Quit($lockFile, "Could not open file $lockFile for writing\n");
+					print $lock "$oper\n";
+					close($lock);
 				}
 			}
 
@@ -369,7 +513,8 @@ for (@last) {
 
 			# --- reads MC file
 			my ($mcy,$mcm) = split(/-/,$evt_sdate);
-			$mc_file = "$MC3{ROOT}/$mcy/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$mcy$mcm.txt";
+			#my $mc_file = "$MC3{ROOT}/$mcy/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$mcy$mcm.txt";
+			my $mc_file = get_mc_filename(\%MC3, $mcy, $mcm);
 			my @lignes;
 			if (-e $mc_file)  {
 				print "MC file: $mc_file ...";
@@ -393,10 +538,14 @@ for (@last) {
 			} else {
 				# MC file does not exist: need to create directory and empty file.
 				if ($arg =~ /update/) {
-					qx(mkdir -p `dirname $mc_file`);
-					open(FILE, ">$mc_file") || Quit($lockFile,"Problem to create new file $mc_file\n");
-					print FILE ("");
-					close(FILE);
+					#qx(mkdir -p `dirname $mc_file`);
+					my $mc_dir = dirname($mc_file);
+					# Note: make_path calls carp() or croak() in case of error
+					eval { make_path($mc_dir); };
+					if ($@) { Quit($lockFile, "Could not create directory '$mc_dir': $@"); }
+					open(my $mc, ">$mc_file") || Quit($lockFile, "Could not create file '$mc_file'\n");
+					print $mc ("");
+					close($mc);
 					$mc_id = 1;
 				}
 			}
@@ -404,6 +553,7 @@ for (@last) {
 			# --- outputs for MC
 			if ($newID > 0) {
 				$mc_id = $maxID + 1;
+				#my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1||$evt_scode|$evt_unique|$sefran3_name|$fdsnws_server:\/\/$evt_id||$oper|$evt_magtyp$evt_mag $evt_txt\n";
 				my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1|$evt_SP|$evt_scode|$evt_unique|$sefran3_name|$fdsnws_server:\/\/$evt_id||$oper|$evt_magtyp$evt_mag $evt_txt\n";
 				print "$newline\n";
 				push(@lignes,$newline);
@@ -416,25 +566,25 @@ for (@last) {
 				# Temporary file for sanity check before replacing
 				my $mc_file_temp="$mc_file.tmp";
 				# Open temporary file for writing
-				open(FILE, ">$mc_file_temp") || Quit($lockFile,"Problem with file $mc_file_temp !\n");
+				open(my $temp_mc_file, ">$mc_file_temp") || Quit($lockFile, "Could not write to file $mc_file_temp !\n");
 				# Write the updated lines
-				print FILE @lignes;
-				close(FILE);
+				print $temp_mc_file @lignes;
+				close($temp_mc_file);
 				# Sanity check : the columns number must always be 17
-				if (system("awk -F'|' 'NF!=17{exit 1}' $mc_file") == 0) {
+				if (check_fields_count($mc_file, 17)) {
 					# Test passed, the file isn't corrupted
 					# The update should have increased the file size
 					if ( -s $mc_file_temp >= -s $mc_file ) {
 						# The file size is increased
 						# Replace the old file by the new one
-						if ( system("mv $mc_file_temp $mc_file") == 0 ) {
+						if (rename($mc_file_temp, $mc_file)) {
 							print "MC file: $mc_file updated\n";
 						} else {
 							Quit($lockFile,"Problem while replacing file $mc_file by $mc_file_temp!\n");
 						}
 					}
 				} else {
-					print "Problem with updated file : bad columns number ! Not replacing file $mc_file !\n";
+					print "Problem with updated file : bad columns count ! Not replacing file $mc_file !\n";
 				}
 
 				# --- deletes lock file
@@ -442,11 +592,11 @@ for (@last) {
 					unlink $lockFile;
 				}
 			}
-		}
-	}
+		}  # end of else (event is not backlisted)
+	}  # end of if event is not in MC
+}  # end of for each FDSNWS event in the last month
 
-	setlocale(LC_NUMERIC,$old_locale);
-}
+setlocale(LC_NUMERIC,$old_locale);
 
 
 #--------------------------------------------------------------------------------------------------------------------------------------

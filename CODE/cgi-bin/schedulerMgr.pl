@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-schedulerMgr.pl
+schedulerMgr.pl 
 
 =head1 SYNOPSIS
 
@@ -11,7 +11,7 @@ schedulerMgr.pl
 =head1 DESCRIPTION
 
 Builds html page for WebObs' scheduler Manager. This page contains
-the following two areas:
+the following two areas: 
 
 the B<jobs scheduler status> , showing the scheduler's status information as dynamically obtained
 from the scheduler's built-in UDP commands handler (CMD STAT)
@@ -30,7 +30,7 @@ internal/debug use only: the name of the WebObs scheduler process from which con
 
 =item B<action=>
 
-{ display | insert | update | delete | submit } . Defaults to 'display' . 'update', 'delete' and 'submit' require a 'jid'
+{ display | insert | update | delete | submit } . Defaults to 'display' . 'update', 'delete' and 'submit' require a 'jid' 
 
 =item B<jid=>
 
@@ -63,7 +63,7 @@ $|=1;
 
 set_message(\&webobs_cgi_msg);
 
-# ---- checks/defaults query-string elements
+# ---- checks/defaults query-string elements 
 my $QryParm   = $cgi->Vars;
 $QryParm->{'action'}    ||= 'display';
 $QryParm->{'scheduler'} ||= 'scheduler';
@@ -79,7 +79,7 @@ my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
 # ---- any reasons why we couldn't go on ?
 # ----------------------------------------
 if ( ! WebObs::Users::clientHasRead(type=>"authmisc",name=>"scheduler")) {
-	die "You are not authorized to access the Scheduler" ;
+	die "You are not authorized" ;
 }
 my $editOK = my $admOK = 0;
 $admOK  = 1 if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"scheduler"));
@@ -165,14 +165,14 @@ sub fetch_all {
 # ------------------------------------------------------------------------------
 $QryParm->{'jid'}         ||= "";
 $QryParm->{'newjid'}      ||= "";
-$QryParm->{'xeq1'}        ||= "";
-$QryParm->{'xeq2'}        ||= "";
-$QryParm->{'xeq3'}        ||= "";
-$QryParm->{'runinterval'} ||= "";
-$QryParm->{'maxsysload'}  ||= 0.7;
-$QryParm->{'logpath'}     ||= "";
+$QryParm->{'xeq1'}        ||= "";      
+$QryParm->{'xeq2'}        ||= "";       
+$QryParm->{'xeq3'}        ||= "";          
+$QryParm->{'runinterval'} ||= "";   
+$QryParm->{'maxsysload'}  ||= 0.7;  
+$QryParm->{'logpath'}     ||= "";   
 $QryParm->{'validity'}    ||= "N";
-$QryParm->{'res'}         ||= "";
+$QryParm->{'res'}         ||= "";    
 
 $QryParm->{'xeq1'} =~ s/'/''/g;
 $QryParm->{'xeq2'} =~ s/'/''/g;
@@ -246,16 +246,16 @@ print <<"EOHEADER";
 <script language="JavaScript" src="/js/htmlFormsUtils.js" type="text/javascript"></script>
 EOHEADER
 
-# ---- scheduler status
+# ---- scheduler status 
 # ---------------------
 my $schedstatus= "";
-my $SCHEDSRV   = "localhost";
+my $SCHEDSRV   = "localhost"; 
 my $SCHEDREPLY = "";
 if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
 	my $SCHEDSOCK  = IO::Socket::INET->new(Proto => 'udp', PeerPort => $SCHED{PORT}, PeerAddr => $SCHEDSRV );
 	if ( $SCHEDSOCK ) {
 		if ( $SCHEDSOCK->send("CMD STAT") ) {
-			if ( $SCHEDSOCK->recv($SCHEDREPLY, $SCHED{SOCKET_MAXLEN}) ) {
+			if ( $SCHEDSOCK->recv($SCHEDREPLY, $SCHED{SOCKET_MAXLEN}) ) { 
 				my @xx = split(/(?<=\n)/,$SCHEDREPLY);
 				my @td1 = map {$_ =~ s/\n/<br>/; $_} (grep { /STARTED=|PID=|USER=|uTICK=|BEAT=|PAUSED=/ } @xx);
 				s/PAUSED=1/<span class=\"statusWNG\">PAUSED=1<\/span>/ for @td1;
@@ -269,7 +269,7 @@ if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
 	} else { $schedstatus = "</div class=\"status statusWNG\">STATUS NOT AVAILABLE (create socket failed)</div>" }
 } else { $schedstatus = "<div class=\"status statusBAD\">JOBS SCHEDULER IS NOT RUNNING !</div>"}
 
-# ---- 'jobsdefs' table
+# ---- 'jobsdefs' table 
 # ---------------------
 my $job_def_list = fetch_all($SCHED{SQL_DB_JOBS},
 	 "select JID,VALIDITY,RES,XEQ1,XEQ2,XEQ3,RUNINTERVAL,MAXSYSLOAD,LOGPATH,LASTSTRTS "
@@ -306,22 +306,22 @@ for my $job (@$job_def_list) {
 	    <img title="submit job" src="/icons/submits.png"></a>
 	  </td>
 	  <td>$djid</td>
-	  <td align=center>$dvalid</td>
+	  <td>$dvalid</td>
 	  <td>$dres</td>
 	  <td>$xeq1</td>
 	  <td>$xeq2</td>
 	  <td>$dxeq3</td>
-	  <td align=right>$dintv</td>
-	  <td align=center>$dmaxs</td>
+	  <td>$dintv</td>
+	  <td>$dmaxs</td>
 	  <td>$dlogp</td>
-	  <td class="tdlock" nowrap>$dlstrun</td>
+	  <td class="tdlock">$dlstrun</td>
 	</tr>
 	};
 }
 
 print "</head>";
 
-# ---- the page
+# ---- the page 
 # -------------
 print "<body style=\"min-height: 600px;\">";
 print "<!-- overLIB (c) Erik Bosrup -->";
@@ -373,7 +373,7 @@ Scheduler status
 	<input type="text" id="maxsysload" name="maxsysload" value="0.8"/><br/>
 	<label for="logpath">logpath:<span class="small">stdout/err subdir</span></label>
 	<input type="text" id="logpath" name="logpath" value=""/><br/>
-	<label for="validity">active:<span class="small">check to activate job</span></label>
+	<label for="validity">valid:<span class="small">check to activate job</span></label>
 	<input type="checkbox" id="validity" name="validity" value="Y"/><br/>
 	<p style="margin: 0px; text-align: center">
 		<input type="button" name="sendbutton" value="send" onclick="sendPopup(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
@@ -386,13 +386,13 @@ Jobs definitions&nbsp;<A href="#MYTOP"><img src="/icons/go2top.png"></A>
 </div>
 <div id="defsID">
 	<div style="background: #BBB; margin: 4px 2px;">
-		&nbsp;Jobs defined: <b>$jobsdefsCount</b> (currently activated: <b>$jobsdefsCountValid</b>)
+		&nbsp;Jobs defined: <b>$jobsdefsCount</b> (currently valid: $jobsdefsCountValid) 
 		<span id="jobsdefsMsg" style="padding-left: 20px; font-weight: bold; color: $jobsdefsMsgColor">$jobsdefsMsg</span>
 	</div>
 	<div class="jobsdefs-container">
 		<div class="jobsdefs">
 			<table class="jobsdefs">
-			<thead><tr><th class="ic tdlock" rowspan=2>
+			<thead><tr><th class="ic tdlock">
 EOPAGE
 
 if ($admOK) {
@@ -400,13 +400,11 @@ if ($admOK) {
 } else {
 	print "&nbsp;";
 }
-print "</th><th class=\"ic tdlock\" rowspan=2>&nbsp;</th>";
-print "</th><th class=\"ic tdlock\" rowspan=2>&nbsp;</th>";
+print "</th><th class=\"ic tdlock\">&nbsp;</th>";
+print "</th><th class=\"ic tdlock\">&nbsp;</th>";
 
 print <<"EOPAGE";
-			<th rowspan=2>JID</th><th rowspan=2 align=center>A</th><th rowspan=2>Resource</th><th colspan=3 align=center>Job command</th>
-			<th rowspan=2 align=right>Interval<br>(s)</th><th rowspan=2 align=center>Max.<br>load</th><th rowspan=2>Log Path</th>
-			<th class="tdlock" rowspan=2>Last Start</th></tr><tr><th>xeq1</th><th>xeq2</th><th>xeq3</th>
+			<th>jid</th><th>V</th><th>res</th><th>xeq1</th><th>xeq2</th><th>xeq3</th><th>interval</th><th>load&le;</th><th>logpath</th><th class="tdlock">laststart</th>
 			</tr></thead>
 			<tbody>
 			$jobsdefs
@@ -430,7 +428,7 @@ Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -446,3 +444,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
+

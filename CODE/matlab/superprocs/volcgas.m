@@ -23,7 +23,7 @@ function DOUT = volcgas(varargin)
 %
 %	Authors: F. Beauducel + G. Hammouya + C. Dessert + A. Bosson, OVSG-IPGP
 %	Created: 2003-04-14, in Guadeloupe (French West Indies)
-%	Updated: 2021-01-01
+%	Updated: 2017-09-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -34,7 +34,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename,varargin{:});
 timelog(procmsg,1);
 
 % gets PROC's configuration and associated nodes
@@ -67,7 +67,7 @@ FF = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_DEBITS));
 
 
 % --- index of columns in matrix d
-i_tf = 1;	% fumarole temperature (ï¿½C)
+i_tf = 1;	% fumarole temperature (°C)
 i_ph = 2;	% pH
 i_fx = 3;	% flux (0 = none to 4 = very high)
 i_rn = 4;	% Rn (count/min)
@@ -115,7 +115,7 @@ for n = 1:length(N)
 		end
 
 		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),'','','', ...
-			sprintf('Tfum = {\\bf%1.1f ï¿½C}',d(ke,i_tf)), ...
+			sprintf('Tfum = {\\bf%1.1f °C}',d(ke,i_tf)), ...
 			sprintf('pH = {\\bf%1.2f}',d(ke,i_ph)), ...
 			sprintf('Flux = {\\bf%d} (%s)',d(ke,i_fx),s_flux), ...
 			sprintf('S/C = {\\bf%+1.2f %%}',d(ke,i_rsc)), ...
@@ -217,7 +217,7 @@ if isfield(P,'SUMMARYLIST')
 				end
 				set(gca,'YLim',ylim);
 			end
-
+		
 		end
 
 		tlabel(tlim,P.TZ)
@@ -258,3 +258,4 @@ mm = minmax(d);
 if diff(mm) > 0 && ~any(isnan(mm))
 	set(gca,'YLim',mm)
 end
+

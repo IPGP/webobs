@@ -12,9 +12,9 @@ allmaps: locastat gridmaps gnss hypomap tremblemaps extenso tilt rsam
 all: locastat gridmaps sefran3 allprocs clean
 
 MCC = $(MCC$(arch))
-OUT32 = ../bin/linux-32
-OUT64 = ../bin/linux-64
-OUTmac = ../bin/maci-64
+OUT32 = bin/linux-32
+OUT64 = bin/linux-64
+OUTmac = bin/maci-64
 OPT = $(OPT$(arch))
 OUT = $(OUT$(arch))
 

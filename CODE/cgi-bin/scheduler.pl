@@ -84,7 +84,7 @@ scheduler.pl MUST be stopped/started to load new configuration values.
 	PATH_RES|$WEBOBS{ROOT_CONF}/res               # root directory for jobs resources (==ENQ ==LOCKS)
 	DITTO_LOG_MAX|500                             # how many occurences of a msg to log before forcing a write
 	DITTO_NTF_MAX|1000                            # how many occurences of a msg to notify before forcing a notify
-	CANCEL_SUBMIT|3600                            # how long (seconds) a submited job can be waiting in JOBQ
+	CANCEL_SUBMIT|600                             # how long (seconds) a submited job can be waiting in JOBQ
 	DAYS_IN_RUN|30                                # number of days that jobs stay in runs table
 	LMISS_BIAS|10                                 # number of seconds to delay candidates not run because of load-threshold
 	EMISS_BIAS|4                                  # number of seconds to delay candidates not run because of enq busy
@@ -461,7 +461,7 @@ $SCHED{DAYS_IN_RUN} ||= 30; #days
 
 # ---- maximum number of seconds that submitted jobs remain in JOBQ
 # -----------------------------------------------------------------------------
-$SCHED{CANCEL_SUBMIT} ||= 3600;
+$SCHED{CANCEL_SUBMIT} ||= 600;
 
 # ---- forces output of ditto accumulating msg (log and postboard)
 # -----------------------------------------------------------------------------
@@ -1152,7 +1152,7 @@ sub UDPS {
 						my $start_dt = DateTime->from_epoch(epoch => $id,
 						                                    time_zone => $local_tz);
 						$ans .= sprintf("RUNQ(%s) started on %s %s\n", $id,
-										$start_dt->strftime('%F %T (UTC%z)'));
+						                $start_dt->strftime('%F %T (UTC%z)'));
 						for my $j (sort keys %{$RUNQ{$id}}) {
 							$ans .= "   $j=";
 							$ans .= defined($RUNQ{$id}{$j}) ? "$RUNQ{$id}{$j}\n" : "nil\n";
@@ -1333,7 +1333,7 @@ Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2014 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -1349,3 +1349,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
+

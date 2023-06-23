@@ -32,7 +32,7 @@ function openPopupUser(user_row) {
 		form.fullname.value = $(user_row + ' .user-fullname').text();
 		form.login.value = $(user_row + ' .user-login').text();
 		form.email.value = $(user_row + ' .user-email').text();
-		listgids = $(user_row + ' .user-groups').text().split(' ');
+		listgids = $(user_row + ' .user-groups').text().split(',');
 		$('#overlay_form_user #gid option').each(function() {
 			$(this).removeProp('selected');
 			if (jQuery.inArray( this.value, listgids ) != -1) {
@@ -44,8 +44,6 @@ function openPopupUser(user_row) {
 		form.OLDgid.value = $(user_row + ' .user-groups').text();
 		$(form.valid).prop("checked",
 		    ($(user_row + ' .user-validity').text() == 'Y' ? "checked" : ""));
-		form.enddate.value = $(user_row + ' .user-enddate').text();
-		form.comment.value = $(user_row + ' .user-comment').text();
 		form.action.value = "update";
 	} else {
 		// populate a blank form to edit a new user
@@ -60,8 +58,6 @@ function openPopupUser(user_row) {
 			$(this).removeProp('selected');
 		});
 		$(form.valid).prop("checked", "checked");
-		form.enddate.value = "";
-		form.comment.value = "";
 		form.action.value = "insert";
 	}
 	form.tbl.value = "user";
@@ -81,7 +77,7 @@ function openPopupGroup(group_row) {
 		// group members edition: populate popup from its table row elements
 		form.gid.value = $(group_row + ' .group-gid').text();
 
-		listuids = $(group_row + ' .group-uids').text().split(' ');
+		listuids = $(group_row + ' .group-uids').text().split(',');
 		$('#overlay_form_group #uid option').each(function() {
 			$(this).removeProp('selected');
 			if (jQuery.inArray( this.value, listuids ) != -1) {

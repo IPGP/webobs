@@ -1,17 +1,17 @@
 =key|value
 # TREMBLEMAPS PROC template (French version)
 # Superformat is 'quakes': see readfmtdata_quakes.m for compatible RAWFORMAT defined
-# in associated NODE's RAWFORMAT field
+# in associated NODE's RAWFORMAT field 
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/tremblemaps.m for further information.
 
 # long name of the PROC
-NAME|Rapports sÃ©isme ressenti B3 (FR)
+NAME|Rapports sÃ©isme ressenti B3 (FranÃais)
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 RAWFORMAT|quakes
 TYPE|
 # raw data path
 RAWDATA|
-# URN link to data
+# URN link to data 
 URNDATA|
 # time zone for outputs
 TZ|-4
@@ -63,15 +63,15 @@ CITIES|$WEBOBS{ROOT_CONF}/Cities.conf
 # see ${CITIES} file for valid regions
 REGION|Guadeloupe
 #REGION|Martinique
-#REGION|Rï¿½union
-AREA|la Guadeloupe et ï¿½les du Nord
+#REGION|Réunion
+AREA|la Guadeloupe et Îles du Nord
 #AREA|la Martinique
-#AREA|la Rï¿½union
+#AREA|la Réunion
 
 # see CODE/matlab/gmpe.m and gmice.m for valid laws
 GMPE|beauducel09
 GMICE|gr42
-REFERENCES|Loi d'attï¿½nuation B-Cube [Beauducel et al., 2011]
+REFERENCES|Loi d'atténuation B-Cube [Beauducel et al., 2011]
 # colormap for intensities
 COLORMAP|jet
 COLORMAP_ALPHA|0,1
@@ -95,7 +95,7 @@ AUTOPRINT|1
 
 # event must be defined in the postboard
 NOTIFY_EVENT|feltquake.
-NOTIFY_EMAIL_SUBJECT|$quake_strength M=$quake_magnitude - B3=$msk ($msk_max max) ï¿½ $city
+NOTIFY_EMAIL_SUBJECT|$quake_strength M=$quake_magnitude - B3=$msk ($msk_max max) à $city
 REPORT_TEXT_ROOT|$WEBOBS{ROOT_CONF}/TREMBLEMAPS
 REPORT_TEXT_FILE|${REPORT_TEXT_ROOT}_TEXT_fr.txt
 REPORT_FELT_FILE|${REPORT_TEXT_ROOT}_FELT_fr.txt
@@ -103,27 +103,28 @@ REPORT_AUTO_FILE|${REPORT_TEXT_ROOT}_AUTO_fr.txt
 
 WATERMARK_AUTO|AUTOMATIQUE
 WATERMARK|
-TITLE1|Rapport prï¿½liminaire de sï¿½isme concernant
+TITLE1|Rapport préliminaire de séisme concernant
 TITLE2|${AREA}
 SUBTITLE1|{\bfObservatoire Volcanologique et Sismologique de Guadeloupe - IPGP}
-SUBTITLE2|Le Houï¿½lmont - 97113 Gourbeyre - Guadeloupe (FWI)
-SUBTITLE3|Tï¿½l: +590 (0)590 99 11 33 - Fax: +590 (0)590 99 11 34 - infos@ovsg.univ-ag.fr - www.ipgp.fr
-REPORT_DATE|Paris, $report_date ï¿½ $report_time (locale)
+SUBTITLE2|Le Houëlmont - 97113 Gourbeyre - Guadeloupe (FWI)
+SUBTITLE3|Tél: +590 (0)590 99 11 33 - Fax: +590 (0)590 99 11 34 - infos@ovsg.univ-ag.fr - www.ipgp.fr
+REPORT_DATE|Paris, $report_date à $report_time (locale)
 EVENT_TITLE1|Magnitude $quake_magnitude, $quake_latitude, $quake_longitude, profondeur $quake_depth
 EVENT_TITLE2|$long_date $time
-LIST_TITLE1|{\bfIntensitï¿½s probables moyennes}
+LIST_TITLE1|{\bfIntensités probables moyennes}
 LIST_TITLE2|{\bf(et maximales)}
 LIST_OUTOF|{\bfHors ${AREA}}
 LIST_UNFELT1|non ressenti dans les communes
 LIST_UNFELT2|de ${AREA}
 
-TABLE_HEADERS|Perception Humaine,Dï¿½gï¿½ts Potentiels,Accï¿½lï¿½rations (mg),Intensitï¿½s EMS98
+TABLE_HEADERS|Perception Humaine,Dégâts Potentiels,Accélérations (mg),Intensités EMS98
 TABLE_WHITE_MSK|10:12
-FOOTNOTE1|(*) {\bfmg} = "milli gï¿½" est une unitï¿½ d'accï¿½lï¿½ration correspondant au milliï¿½me de la pesanteur terrestre
-FOOTNOTE2|La ligne pointillï¿½e dï¿½limite la zone oï¿½ le sï¿½isme a pu ï¿½tre potentiellement ressenti.
+FOOTNOTE1|(*) {\bfmg} = "milli gé" est une unité d'accélération correspondant au millième de la pesanteur terrestre
+FOOTNOTE2|La ligne pointillée délimite la zone où le séisme a pu être potentiellement ressenti.
 
 LESS_1KM_TEXT|moins de 1 km
 ADDITIONAL_TEXT|
 GSE_TITLE|${REGION}: $quake_strength $quake_type $epicentral $azimuth de $city ($region)
 GSE_AUTO_TITLE|${REGION}: $quake_strength $epicentral $azimuth de $city ($region)
 GSE_COMMENT|$azimuth de $city ($region)
+

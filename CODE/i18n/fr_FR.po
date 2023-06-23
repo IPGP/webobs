@@ -1,21 +1,21 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: WebObs 2.5\n"
-"Report-Msgid-Bugs-To: webobs-dev@ipgp.fr\n"
-"POT-Creation-Date: 2007-05-25 09:10-0400\n"
-"PO-Revision-Date: 2022-06-11 15:00+0400\n"
-"Last-Translator: François Beauducel <beauducel@ipgp.fr>\n"
-"Language-Team: WebOBS Traduction fr\n"
+"Project-Id-Version: WebOBS 2.0\n"
+"Report-Msgid-Bugs-To: webobs@ovsg.univ-ag.fr\n"
+"PO-Revision-Date: 2021-09-14 11:21-0400\n"
+"Last-Translator: Alexis Bosson\n"
+"Language-Team: WebOBS Traduction fr <webobs-fr@ovsg.univ-ag.fr>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 msgid "Node"
 msgstr "Node"
 
 msgid "WebObs pages require JavaScript enabled"
-msgstr "Les pages WebObs n&eacute;cessitent l\\'activation de JavaScript"
+msgstr "Les pages WebObs n&eacute;cessitent l'activation de JavaScript"
 
 msgid "Node Configuration"
 msgstr "Configuration de Node"
@@ -24,13 +24,13 @@ msgid "No grid context specified"
 msgstr "Contexte grid non spécifié"
 
 msgid "Could not open"
-msgstr "Impossible d\\'ouvrir"
+msgstr "Impossible d'ouvrir"
 
 msgid "Could not read"
 msgstr "Impossible de lire"
 
 msgid "Could not access"
-msgstr "Impossible d\\'accéder à"
+msgstr "Impossible d'accéder à"
 
 msgid "Could not create"
 msgstr "Impossible de créer"
@@ -48,7 +48,7 @@ msgid "new filename"
 msgstr "nouveau fichier"
 
 msgid "File is currently being edited"
-msgstr "Fichier en cours d\\'édition"
+msgstr "Fichier en cours d'édition"
 
 msgid "by"
 msgstr "par"
@@ -135,7 +135,7 @@ msgid "to create a node in"
 msgstr "de créer un node dans"
 
 msgid "Cannot edit a NODE outside of GRID context"
-msgstr "Impossible d\\'éditer un node hors d\\'un contexte grid"
+msgstr "Impossible d'éditer un node hors d'un contexte grid"
 
 msgid "select"
 msgstr "choisir"
@@ -150,10 +150,7 @@ msgid "Purpose"
 msgstr "Objectifs"
 
 msgid "Domain"
-msgstr "Domaine"
-
-msgid "Grid code"
-msgstr "Code Grid"
+msgstr "Domaines"
 
 msgid "Graphs"
 msgstr "Graphes"
@@ -177,13 +174,10 @@ msgid "Time reference"
 msgstr "Fuseau de référence"
 
 msgid "Sampling Frequency"
-msgstr "Fréquence d\\'échantillonnage"
+msgstr "Fréquence d'échantillonnage"
 
 msgid "Acquisition period"
-msgstr "Période d\\'acquisition"
-
-msgid "Access to data"
-msgstr "Accès aux données"
+msgstr "Période d'acquisition"
 
 msgid "Default data format"
 msgstr "Format de données par défaut"
@@ -196,9 +190,6 @@ msgstr "Accès aux données brutes"
 
 msgid "Graphical routine"
 msgstr "Routine graphique"
-
-msgid "Events File(s)"
-msgstr "Fichier(s) d\\'événements"
 
 msgid "External link(s)"
 msgstr "Lien(s) externe(s)"
@@ -239,44 +230,20 @@ msgstr "Actives"
 msgid "Coordinates"
 msgstr "Coordonnées"
 
-msgid "Export"
-msgstr "Exporter"
-
 msgid "Networks Codes"
-msgstr "Codes des réseaux"
-
-msgid "Proc Parameters"
-msgstr "Paramètres Proc"
-
-msgid "Proc Graphs"
-msgstr "Graphes Proc"
-
-msgid "Proc Param."
-msgstr "Param. Proc"
-
-msgid "Proc Time Scales"
-msgstr "Fenêtres temporelles Proc"
-
-msgid "undefined"
-msgstr "non défini"
-
-msgid "Proc Status"
-msgstr "État Proc"
+msgstr "Codes des Réseaux"
 
 msgid "Last Measurement"
-msgstr "Dernière mesure"
+msgstr "Dernière Mesure"
 
 msgid "Sampl."
 msgstr "Échant."
 
 msgid "Last Data"
-msgstr "Dernière donnée"
+msgstr "Dernière Donnée"
 
 msgid "Last status check on"
 msgstr "Dernier état effectué le"
-
-msgid "Code/ID"
-msgstr "Code/ID"
 
 msgid "Name"
 msgstr "Nom"
@@ -285,10 +252,10 @@ msgid "Lifetime"
 msgstr "Durée de vie"
 
 msgid "Started on"
-msgstr "Débute le"
+msgstr "Installé le"
 
 msgid "Ended on"
-msgstr "Termine le "
+msgstr "Desinstallé le "
 
 msgid "Start / Installation"
 msgstr "Début / Installation"
@@ -310,24 +277,6 @@ msgstr "Canal"
 
 msgid "See also the following maps"
 msgstr "Voir aussi les cartes suivantes"
-
-msgid "Location"
-msgstr "Localisation"
-
-msgid "Maps"
-msgstr "Cartes"
-
-msgid "Distance (beeline)"
-msgstr "Distance (vol d'oiseau)"
-
-msgid "Elev. gain"
-msgstr "Dénivelée"
-
-msgid "Transmission"
-msgstr "Transmission"
-
-msgid "Installation"
-msgstr "Installation"
 
 msgid "Information"
 msgstr "Informations"
@@ -374,6 +323,9 @@ msgstr "Graphes"
 msgid "Click to enlarge"
 msgstr "Cliquer pour agrandir"
 
+msgid "Location"
+msgstr "Localisation"
+
 msgid "Longitude"
 msgstr "Longitude"
 
@@ -382,15 +334,6 @@ msgstr "Latitude"
 
 msgid "Elevation"
 msgstr "Altitude"
-
-msgid "Lon."
-msgstr "Lon."
-
-msgid "Lat."
-msgstr "Lat."
-
-msgid "Elev."
-msgstr "Alt."
 
 msgid "Positionning"
 msgstr "Positionnement"
@@ -406,12 +349,6 @@ msgstr "Nord"
 
 msgid "Location map"
 msgstr "Carte de localisation"
-
-msgid "Neighbour nodes"
-msgstr "Nœuds voisins"
-
-msgid "This node has a project"
-msgstr "Ce node a un projet actif"
 
 msgid "Access"
 msgstr "Accès"
@@ -675,7 +612,7 @@ msgid "End date & time"
 msgstr "Date & heure fin"
 
 msgid "Full name"
-msgstr "Nom & prénom"
+msgstr "Prénom & nom"
 
 msgid "Birthday"
 msgstr "Date de naissance"
@@ -684,7 +621,7 @@ msgid "E-mail address"
 msgstr "Adresse électronique"
 
 msgid "Login user name"
-msgstr "Nom d\\'utilisateur"
+msgstr "Nom d'utilisateur"
 
 msgid "Password"
 msgstr "Mot de passe"
@@ -696,13 +633,13 @@ msgid "Create a new individual account"
 msgstr "Demande de compte personnel"
 
 msgid "I do accept the terms of use"
-msgstr "J\\'accepte les conditions d\\'utilisation"
+msgstr "J'accepte les conditions d'utilisation"
 
 msgid "Names and Description"
 msgstr "Noms et description"
 
-msgid "Lifetime and Time Zone"
-msgstr "Durée de vie et fuseau horaire"
+msgid "Lifetime and Validity"
+msgstr "Durée de vie et validité"
 
 msgid "Acquisition and Repeater"
 msgstr "Acquisition et relais"
@@ -722,14 +659,8 @@ msgstr "Déplacer cet événement vers un autre node"
 msgid "currently selected people"
 msgstr "actuellement sélectionné(s)"
 
-msgid "featureA,featureB,featureC"
-msgstr "caract_A,caract_B,caract_C"
-
-msgid "help_creationstation_featrefresh"
-msgstr "Cliquez pour rafraîchir la liste des caractéristiques ci-dessous"
-
 msgid "Edit the node-features-nodes associations list"
-msgstr "Éditer la liste des associations node-feature-nodes"
+msgstr "Éditer la liste des associatiions node-feature-nodes"
 
 msgid "Send an e-mail to inform Webobs users"
 msgstr "Informer par e-mail les utilisateurs WebObs"
@@ -740,17 +671,17 @@ msgstr "Dupliquer cet événement dans un autre node"
 msgid "Select the target node"
 msgstr "Choisir le node cible"
 
-msgid "help_creationstation_valid"
-msgstr "Cocher pour marquer le node comme valide. Un node invalide ne sera pas utilisé par les procs et sera masqué aux utilisateurs non admin."
+msgid "Check to mark node as valid"
+msgstr "Cocher pour marquer le node comme valide"
 
 msgid "Time zone (h)"
 msgstr "Fuseau horaire"
 
 msgid "Acquisition period (days)"
-msgstr "Période d\\'acquisition (jours)"
+msgstr "Période d'acquisition (jours)"
 
 msgid "Acquisition delay (days)"
-msgstr "Délai d\\'acquisition (jours)"
+msgstr "Délai d'acquisition (jours)"
 
 msgid "help_creationstation_network"
 msgstr "Sélectioner le réseau concerné"
@@ -762,13 +693,13 @@ msgid "help_creationstation_name"
 msgstr "Entrez le nom long de la fiche (champ libre pour affichage)"
 
 msgid "help_creationstation_alias"
-msgstr "Le champ ALIAS est le code/nom court donné à la fiche (préférablement unique au sein du réseau) mais n\\'est pas fonctionnel"
+msgstr "Le champ ALIAS est le code/nom court donné à la fiche (préférablement unique au sein du réseau) mais n'est pas fonctionnel"
 
-msgid "help_creationstation_type"
-msgstr "La champ TYPE est une description courte du node qui complète le nom long (par ex., le modèle d\\'un équipement)"
+msgid "help_creationstation_fid"
+msgstr "Le champ FID correspond à un code/identifiant utilisé dans le traitement des données (fonctionnel)"
 
-msgid "help_creationstation_tz"
-msgstr "Entrez le fuseau horaire (utilisé pour les dates d\\'activité et les événements du node), en heures par rapport à GMT (ex: +0)"
+msgid "help_creationstation_fdsn"
+msgstr "Code officiel de l'International Federation of Digital Seismograph Network (FDSN/IRIS)"
 
 msgid "help_creationstation_lat"
 msgstr "Latitude de la station (WGS84, degrés décimaux OU deg/minOU deg/min/sec- les 3 champs seront pris en compte)"
@@ -786,28 +717,10 @@ msgid "help_creationstation_tele_type"
 msgstr "Type de transmission pour la station"
 
 msgid "help_creationstation_tele_acq"
-msgstr "Entrez la liste des codes ID de chaque node utilisé pour la transmission, séparés par une virgule, dans l\\'ordre de la station vers l\\'acquisition finale"
+msgstr "Entrez le code ID (7 caract.) des Éventuels relais et de la station d'acquisition, séparés par une virgule, dans l'ordre de la station vers l'acquisition"
 
 msgid "help_creationstation_spec"
 msgstr "Entrez les mots clés sans accent ou caractères spéciaux et séparés par une virgule"
-
-msgid "help_creationstation_n2n"
-msgstr "Entrez le(s) code/ID du(des) node(s) enfant(s) pour cette caractéristique, séparés par une virgule"
-
-msgid "help_creationstation_fid"
-msgstr "Le champ FID correspond à un code/identifiant utilisé dans le traitement des données (fonctionnel)"
-
-msgid "help_creationstation_fdsn"
-msgstr "Code officiel de l\\'International Federation of Digital Seismograph Network (FDSN/IRIS)"
-
-msgid "help_creationstation_proc_tz"
-msgstr "Entrez le fuseau horaire des données, en heures par rapport à GMT (ex: +0)"
-
-msgid "help_creationstation_proc_acqrate"
-msgstr "Entrez la période d\\'acquisition en jours, les formules arithmétiques simples sont autorisées (ex: 1/86400 pour 1 seconde)"
-
-msgid "help_creationstation_proc_acqdelay"
-msgstr "Entrez le délai d\\'acquisition en jours, les formules arithmétiques simples sont autorisées (ex: 1/86400 pour 1 seconde)"
 
 msgid "Language selection"
 msgstr "Choix de la langue"
@@ -828,7 +741,7 @@ msgid "to"
 msgstr "au"
 
 msgid "Today"
-msgstr "Aujourd\\'hui"
+msgstr "Aujourd'hui"
 
 msgid "Tomorrow"
 msgstr "Demain"
@@ -852,7 +765,7 @@ msgid "all events since"
 msgstr "tous les événements depuis le"
 
 msgid "all year"
-msgstr "toute l\\'année"
+msgstr "toute l'année"
 
 msgid "by type"
 msgstr "par type"
@@ -876,7 +789,7 @@ msgid "hebdo_help_time_interval"
 msgstr "Sélectionner l\\'intervalle"
 
 msgid "Type of event"
-msgstr "Type d\\'événement"
+msgstr "Type d'événement"
 
 msgid "hebdo_help_type_event"
 msgstr "Sélectionner le type d\\'événement"
@@ -989,14 +902,8 @@ msgstr "Soumettre"
 msgid "Editor"
 msgstr "Éditeur"
 
-msgid "showmctags_help"
-msgstr "Masquer/afficher les événements MC (touche E)"
-
-msgid "showsgram_help"
-msgstr "Masquer/afficher le spectrogramme touche S)<br>Touches R/T pour augmenter/réduire la transparence"
-
-msgid "Adjust Spectrogram opacity"
-msgstr "Ajuster la transparence du spectrogramme"
+msgid "Show/Hide MC events"
+msgstr "Masquer/afficher les événements MC"
 
 msgid "Interval"
 msgstr "Intervalle"
@@ -1068,7 +975,7 @@ msgid "Duration"
 msgstr "Durée"
 
 msgid "Number of events"
-msgstr "Nombre d\\'événements"
+msgstr "Nombre d'événements"
 
 msgid "Distance according to indicated S-P"
 msgstr "Distance selon le S-P indiqué"
@@ -1128,7 +1035,7 @@ msgid "Click on End of signal or enter duration"
 msgstr "Cliquez sur la fin du signal ou entrez la durée"
 
 msgid "Enter number of events"
-msgstr "Entrez le nombre d\\'évènements"
+msgstr "Entrez le nombre d'évènements"
 
 msgid "Select amplitude"
 msgstr "Choisissez une amplitude"
@@ -1137,10 +1044,10 @@ msgid "Enter overscale duration"
 msgstr "Entrez la durée de saturation"
 
 msgid "Event not flagged OVERSCALE"
-msgstr "L\\'événement n\\'est pas indiqué saturé"
+msgstr "L'événement n'est pas indiqué saturé"
 
-msgid "Event type is unknown/undetermined. Validate as is ?"
-msgstr "Type d\\'événement inconnu/indéterminé. Valider tel quel ?"
+msgid "Event type is unknown/undetermined. Validate as is ?" 
+msgstr "Type d'événement inconnu/indéterminé. Valider tel quel ?"
 
 msgid "You cannot validate an event of type AUTO"
 msgstr "Vous ne pouvez pas valider un évènement de type AUTO"
@@ -1171,6 +1078,19 @@ msgstr "fin du signal"
 
 
 # formulaireCREATION_STATION.pl
+
+msgid "help_creationstation_valid_check"
+msgstr "Select to indicate a valid data sheet"
+
+msgid "help_creationstation_proc_tz"
+msgstr "Enter the time zone of data, in hours from UT (ex: +0)"
+
+msgid "help_creationstation_proc_acqrate"
+msgstr "Enter the acquisition period in days, simple arithmetics allowed (ex: 1/86400 for 1 second)"
+
+msgid "help_creationstation_proc_acqdelay"
+msgstr "Enter the acquisition delay in days, simple arithmetics allowed (ex: 1/24 for 1 hour)"
+
 
 
 # formCLB.pl
@@ -1264,7 +1184,7 @@ msgid "gzt_fmt_long_year"
 msgstr "Ann&eacute;e %Y"
 
 msgid "until"
-msgstr "jusqu\\'&agrave;"
+msgstr "jusqu'&agrave;"
 
 msgid "since"
 msgstr "depuis"
@@ -1285,7 +1205,7 @@ msgid "No match found"
 msgstr "Aucun article trouv&eacute;"
 
 msgid "from now on"
-msgstr "&#192; partir d\\'aujourd\\'hui"
+msgstr "&#192; partir d'aujourd'hui"
 
 msgid "saved as"
 msgstr "sauvegard&eacute; sous"
@@ -1309,13 +1229,13 @@ msgid "List by categories"
 msgstr "Liste par Cat&eacute;gories"
 
 msgid "All year"
-msgstr "Toute l\\'ann&eacute;e"
+msgstr "Toute l' ann&eacute;e"
 
 msgid "From today"
-msgstr "&#192; partir d\\'aujourd\\'hui"
+msgstr "&#192; partir d'aujourd'hui"
 
 msgid "Until today"
-msgstr "Jusqu\\'&agrave; aujourd\\'hui"
+msgstr "Jusqu'&agrave; aujourd'hui"
 
 msgid "Shortcuts"
 msgstr "Raccourcis"
@@ -1403,42 +1323,13 @@ msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsqu
 msgid "help_node_status"
 msgstr "Status (en %): existence d&rsquo;&eacute;chantillons valides dans le dernier d&eacute;lai d&rsquo;acquisition pour tous les canaux"
 
-# showREQ.pl
-
-msgid "Date & Time"
-msgstr "Date & Heure"
-
-msgid "Host"
-msgstr "Serveur"
-
-msgid "User"
-msgstr "Utilisateur"
-
-msgid "Time Span"
-msgstr "Plage temporelle"
-
-msgid "Params"
-msgstr "Params"
-
-msgid "Job"
-msgstr "Job"
-
-msgid "Archive"
-msgstr "Archive"
-
 # formGRID.pl
-
-msgid "Form"
-msgstr "Form"
-
-msgid "Available/Associated nodes"
-msgstr "Nodes disponibles/associés"
 
 msgid "Use vim mode"
 msgstr "Utiliser le mode vim"
 
 msgid "Check to enable vim mode in the editor"
-msgstr "Cocher pour activer le mode vim dans l\\'éditeur"
+msgstr "Cocher pour activer le mode vim dans l'éditeur"
 
 # vsearch.pl
 
@@ -1464,7 +1355,7 @@ msgid "End Date"
 msgstr "Date de fin"
 
 msgid "Event Title"
-msgstr "Titre d\\'événement"
+msgstr "Titre d'événement"
 
 msgid "Comment/Observation"
 msgstr "Observations"
@@ -1482,7 +1373,7 @@ msgid "Start Date - decreasing"
 msgstr "Dates croissantes"
 
 msgid "Search Node Events"
-msgstr "Recherche d\\'événements"
+msgstr "Recherche d'événements"
 
 msgid "Search for"
 msgstr "Chercher"
@@ -1501,92 +1392,3 @@ msgstr "trié par"
 
 msgid "max diplayed"
 msgstr "max affiché"
-
-
-# ---- formRAINWATER.pl
-
-msgid "Edit existing data"
-msgstr "Modifier une donnée existante"
-
-msgid "Sampling Location and Time"
-msgstr "Lieu et période d\\'échantillonnage"
-
-msgid "Rain Collector"
-msgstr "Pluviométrie"
-
-msgid "Funnel Diameter"
-msgstr "Diamètre de l\\'entonnoir"
-
-msgid "Cumulated Rainfall"
-msgstr "Pluviométrie cumulée"
-
-msgid "Average Daily Rainfall"
-msgstr "Pluviométrie moyenne"
-
-msgid "Physical Measurements"
-msgstr "Mesures physiques"
-
-msgid "Conductivity"
-msgstr "Conductivité"
-
-msgid "Cations and Anions Concentrations"
-msgstr "Concentrations ioniques"
-
-msgid "Isotopic Ratios"
-msgstr "Rapports isotopiques"
-
-msgid "help_rainwater_date1"
-msgstr "Entrer la date et l\\'heure de début de prélèvement"
-
-msgid "help_rainwater_date2"
-msgstr "Entrer la date et l\\'heure de fin de prélèvement"
-
-msgid "help_rainwater_site"
-msgstr "Sélectionner le site du prélèvement"
-
-msgid "help_rainwater_ph"
-msgstr "Entrer la valeur du pH"
-
-msgid "help_rainwater_cond"
-msgstr "Entrer la valeur de conductivité électrique"
-
-msgid "help_rainwater_na"
-msgstr "Entrer la concentration en sodium"
-
-msgid "help_rainwater_k"
-msgstr "Entrer la concentration en potassium"
-
-msgid "help_rainwater_mg"
-msgstr "Entrer la concentration en magnésium"
-
-msgid "help_rainwater_ca"
-msgstr "Entrer la concentration en calcium"
-
-msgid "help_rainwater_cl"
-msgstr "Entrer la concentration en chlore"
-
-msgid "help_rainwater_so4"
-msgstr "Entrer la concentration en sulfate"
-
-msgid "help_rainwater_o18"
-msgstr "Entrer the rapport en oxygène 18"
-
-msgid "help_rainwater_d"
-msgstr "Entrer le rapport en deuterium"
-
-msgid "help_rainwater_h"
-msgstr "Concentration en Hydrogène calculée à partir du pH"
-
-msgid "help_rainwater_observations"
-msgstr "Noter toute présence d&rsquo;odeur, gaz, précipité, etc..."
-
-# ---- showRAINWATER.pl
-
-msgid "Number of records"
-msgstr "Nombre d\\'enregistrements"
-
-msgid "Download a CSV text file of these data"
-msgstr "Télécharger un fichier CSV de ces données"
-
-msgid "Request results"
-msgstr "Résultat des requêtes"

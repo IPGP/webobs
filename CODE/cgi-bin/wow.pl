@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-wow.pl
+wow.pl 
 
 =head1 SYNOPSIS
 
@@ -16,7 +16,7 @@ http to remotely query WebObs objects and definitions, reserved for WebObs admin
 
 =head1 FUNCTIONS
 
-=head2 SYNTAX
+=head2 SYNTAX 
 
 	curl -u userid:password  'siteUrl/wow.pl?F=functionCall{&F=functionCall}'
 
@@ -44,7 +44,7 @@ use WebObs::Config;
 use WebObs::Users;
 use WebObs::Grids;
 use WebObs::Utils;
-use WebObs::Mapping;
+use WebObs::IGN;
 
 my $cgi = new CGI;
 my @out = '';
@@ -53,7 +53,7 @@ my $attachFn = "WEBOBS-$WEBOBS{WEBOBS_ID}-wow";
 # ---- vectors functionNames to their subroutine
 #
 my %vectors =
-	(
+	( 
 		'webobs'    => \&do_webobs ,
 		'grids'     => \&do_grids ,
 		'proc'      => \&do_dumpproc ,
@@ -70,7 +70,7 @@ if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"users")) {
 	my @funs = $cgi->param('F');
 	my @funout;
 	for my $fun (@funs) {
-		$fun =~ /(.*)\((.*)\)/ ;
+		$fun =~ /(.*)\((.*)\)/ ; 
 		my $f = $1; my @fargl = split(/,/,$2);
 		if (exists($vectors{$f})) {
 			eval { @funout = &{$vectors{$f}} (@fargl) }
@@ -142,9 +142,9 @@ Optional filter to select the dumped name(s).
 sub do_dumpproc {
 	my @out;
 	push(@out, $cgi->header(-type=>'text/html', -attachment=>"$attachFn.txt", -charset=>'utf-8') );
-	if (exists($_[0])) {
+	if (exists($_[0])) { 
 		my %proc = WebObs::Grids::readProc($_[0]);
-		for my $l (keys(%proc)) {
+		for my $l (keys(%proc)) { 
 			for ( sort(keys(%{$proc{$l}})) ) {
 				next if (exists($_[1]) && !/$_[1]/);
 				my $var = $proc{$l}{$_};
@@ -154,7 +154,7 @@ sub do_dumpproc {
 					push(@out, "PROC.$l\{$_\}=$var\n");
 				}
 			}
-		}
+		}	
 	}
 	return @out;
 }
@@ -176,9 +176,9 @@ Optional filter to select the dumped name(s).
 sub do_dumpview {
 	my @out;
 	push(@out, $cgi->header(-type=>'text/html', -attachment=>"$attachFn.txt", -charset=>'utf-8') );
-	if (exists($_[0])) {
+	if (exists($_[0])) { 
 		my %view = WebObs::Grids::readView($_[0]);
-		for my $l (keys(%view)) {
+		for my $l (keys(%view)) { 
 			for ( sort(keys(%{$view{$l}})) ) {
 				next if (exists($_[1]) && !/$_[1]/);
 				my $var = $view{$l}{$_};
@@ -188,7 +188,7 @@ sub do_dumpview {
 					push(@out, "VIEW.$l\{$_\}=$var\n");
 				}
 			}
-		}
+		}	
 	}
 	return @out;
 }
@@ -220,7 +220,7 @@ sub do_dumpnode {
 			my %node = WebObs::Grids::readNode($n);
 			for my $l (keys(%node)) {
 				grep { /$re/ && push(@out, "$l\{$_\}=$node{$l}{$_}\n") } sort(keys(%{$node{$l}}));
-			}
+			}	
 		}
 	}
 	return @out;
@@ -257,17 +257,17 @@ dump locations of nodes of a grid in different formats.
 
 	nodeSpecs must be of the form grid{|validonly|active} (ie. nodes list not allowed).
 
-	coord :=   geo | utm | local | xyz
+	coord :=   geo | utm | local | xyz 
 		for txt and csv formats, specifies the type of coordinates:
 		geo is latitude,longitude,altitude WGS84 (default)
 		utm is eastern,northern,altitude UTM WGS84 (Universal Transverse Mercator)
 		local is UTM in a local geodetic system (see UTM.rc)
 		xyz is geocentric X,Y,Z coordinates (in m)
 
-	format :=   txt | csv | kml
+	format :=   txt | csv | kml 
 		txt returns a tab-delimited text file of nodes (default)
 		csv returns a semicolon-delimited text file of nodes (Excel compatible)
-		kml returns a KML file of nodes (Google Earth compatible)
+		kml returns a KML file of nodes (Google Earth compatible) 
 
 =cut
 
@@ -296,7 +296,7 @@ sub do_nloc {
 					<scale>1</scale>
 				</LabelStyle>
 				</Style>\n");
-				push(@out, "<Folder>\n<name>$grid[0].$grid[1]</name>\n");
+				push(@out, "<Folder>\n<name>$grid[0].$grid[1]</name>\n"); 
 			}
 			if ( $fmt =~ /csv/i ) {
 				push(@out, $cgi->header(-type=>'text/csv', -attachment=>"$attachFn.csv",-charset=>'utf-8'));
@@ -329,7 +329,7 @@ sub do_nloc {
 						$lon = sprintf("%.0f",$lon);
 						$alt = sprintf("%.0f",$alt);
 					}
-
+		
 					if ( $fmt =~ /kml/i ) {
 						push(@out, "<Placemark id=\"$sta\">\n<name>$alias : $name</name>\n");
 						push(@out, "<description><![CDATA[<i>$type</i><br>$DOMAINS{$GRID{DOMAIN}}{NAME} / $GRID{NAME}<br><small>($grid[0].$grid[1].$sta)</small>]]></description>\n");
@@ -344,7 +344,7 @@ sub do_nloc {
 					}
 				}
 			}
-			if ( $fmt =~ /kml/i) {
+			if ( $fmt =~ /kml/i) { 
 				push(@out, "</Folder>\n");
 				push(@out, "</Document>\n</kml>\n");
 			}
@@ -358,7 +358,7 @@ sub do_nloc {
 
 sub h_listnodes {
 	# argument is a [nodeSpecs], ie:
-	#   := nodeName{|nodeName{|nodeName}...}
+	#   := nodeName{|nodeName{|nodeName}...} 
 	#   := grid{|validonly|active}
 	# returns an array of nodeNames matching argument
 	if (exists($_[0])) {
@@ -367,7 +367,7 @@ sub h_listnodes {
 		my @firstel = split(/\./,$nodeSpecs[0]);
 		if (scalar(@firstel) == 2) { # if 1st element looks like a normalized grid (gridtype.gridname)
 			$nodeSpecs[1] = 0 if !exists($nodeSpecs[1]); # not validonly (ie. all)
-			$nodeSpecs[2] = '' if !exists($nodeSpecs[2]); # no (act as not defined) active date
+			$nodeSpecs[2] = '' if !exists($nodeSpecs[2]); # no (act as not defined) active date 
 			my %N = listGridNodes(grid=>$nodeSpecs[0],valid=>$nodeSpecs[1],active=>$nodeSpecs[2]);
 			#return map { "$nodeSpecs[0].$_"} sort keys(%N); # use for normalized nodenames
 			return sort keys(%N);
@@ -399,7 +399,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2015 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -415,3 +415,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
+

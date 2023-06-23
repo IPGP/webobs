@@ -1,6 +1,6 @@
 function D = readfmtdata_gnss(WO,P,N,F)
 %READFMTDATA_GNSS subfunction of readfmtdata.m
-%
+%	
 %	From proc P, node N and options F returns data D.
 %	See READFMTDATA function for details.
 %
@@ -53,9 +53,9 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
 %
-%	Authors: FranÃ§ois Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
+%	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2021-11-12
+%	Updated: 2019-12-24
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -65,18 +65,15 @@ switch F.fmt
 case 'globkval'
 
 	% extracts components from VAL file
-	% if rawdata is a directory, use Gamit/Globk standardfile "project/VAL.project"
-	if isdir(F.raw{1})
-		s = split(F.raw{1},'/');
-		chantier = s{end};
-		fraw = sprintf('%s/VAL.%s',F.raw{1},chantier);
-	else
-		fraw = F.raw{1};
-	end
+	s = split(F.raw{1},'/');
+	chantier = s{end};
+	fraw = sprintf('%s/VAL.%s',F.raw{1},chantier);
+
 	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
 	wosystem(sprintf('rm -f %s',fdat),P);
 	lfid = split(N.FID,',');
 	if exist(fraw,'file')
+
 		% loop on potential list of dataIDs
 		for nn = lfid(:)'
 			nfid = strtrim(nn{:});
@@ -130,7 +127,7 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 	ylim = tv(1:2);
 
 	% loop on potential list of dataIDs
-	for nn = 1:length(lfid)
+	for nn = 1:length(lfid)	
 		nfid = strtrim(lfid{nn});
 
 		switch F.fmt
@@ -143,7 +140,7 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 			awkstr = '$1,$3,$4';
 			kmfact = 1000;
 		end
-
+	
 		if any(isnan(ylim))
 			% gets the list of existing year directories
 			Z = dir(sprintf('%s/%s/',F.raw{nn},nfid));
@@ -157,7 +154,7 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 			fprintf('.');
 			for o = 1:length(orbits)	% loop on orbits
 				for c = {'X','Y','Z'}	% loop on components
-					wosystem(sprintf('grep -ish "%s%s" %s/%s/%4d/*.%s | awk ''{print %s,%d}'' >> %s/%s.%s', ...
+					wosystem(sprintf('grep -sh "%s%s" %s/%s/%4d/*.%s | awk ''{print %s,%d}'' >> %s/%s.%s', ...
 						grepstr,c{1},F.raw{nn},nfid,y,orbits{o},awkstr,o-1,F.ptmp,nfid,c{1}),P);
 				end
 			end
@@ -170,12 +167,10 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 	end
 
 	% load the file
-	dd = [];
 	if exist(fdat,'file')
-		F = dir(fdat);
-		if F.bytes > 0
-			dd = load(fdat);
-		end
+		dd = load(fdat);
+	else
+		dd = [];
 	end
 	if ~isempty(dd)
 		% converts GPS J2000 time to datenum
@@ -205,7 +200,7 @@ case 'usgs-rneu'
 	for a = 1:length(F.raw)
 		fraw = F.raw{a};
 		if strncmpi('http',fraw,4)
-			s = wosystem(sprintf('curl -s -S "%s" | awk ''{print $1,$3,$4,$5,$6,$7,$8,$9}'' | sed -e ''s/rrr/0/g;s/ppp/1/g'' >> %s',fraw,fdat),P);
+			s = wosystem(sprintf('/usr/bin/curl "%s" | awk ''{print $1,$3,$4,$5,$6,$7,$8,$9}'' | sed -e ''s/rrr/0/g;s/ppp/1/g'' >> %s',fraw,fdat),P);
 			if s ~= 0
 				break;
 			end
@@ -252,7 +247,7 @@ case 'ies-neu'
 		fraw = F.raw{a};
 		cmd0 = sprintf('awk ''{ if (NR!=1) {print}}'' >> %s',fdat);
 		if strncmpi('http',fraw,4)
-			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			s  = wosystem(sprintf('/usr/bin/curl "%s" | %s',fraw,cmd0),P);
 			if s ~= 0
 				break;
 			end
@@ -296,7 +291,7 @@ case 'ogc-neu'
 		fraw = F.raw{a};
 		cmd0 = sprintf('awk ''/^[^#]/ {print}'' >> %s',fdat);
 		if strncmpi('http',fraw,4)
-			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			s  = wosystem(sprintf('/usr/bin/curl "%s" | %s',fraw,cmd0),P);
 			if s ~= 0
 				break;
 			end
@@ -332,7 +327,7 @@ case 'ogc-neu'
 case 'ingv-gps'
 	% format example
 	% Point Name,Easting,E error,Northing,N error,Latitude,E error,Longitude,N error,Height,h error
-	% CAP,494784.181,0.001,4177299.935,0.001,"37ï¿½44'34.71321""N",0.001,"14ï¿½56'26.87473""E",0.001,1922.295,0.001
+	% CAP,494784.181,0.001,4177299.935,0.001,"37°44'34.71321""N",0.001,"14°56'26.87473""E",0.001,1922.295,0.001
 
 	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
 	wosystem(sprintf('rm -f %s',fdat),P);
@@ -439,3 +434,4 @@ else
 	[D.d,D.CLB] = calib(D.t,D.d,N.CLB);
 end
 D.t = D.t + P.TZ/24;
+

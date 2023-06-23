@@ -11,9 +11,9 @@ function [dc,C]=calib(t,d,CLB,cco);
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2004-09-01
-%	Updated: 2022-07-24
+%	Updated: 2017-02-01
 
-if isempty(t) || (isscalar(t) && isnan(t))
+if isempty(t) | (isscalar(t) & isnan(t))
 	t = now;
 end
 
@@ -21,7 +21,7 @@ if isempty(d)
 	d = nan(1,CLB.nx);
 end
 
-if nargin > 3 && strcmp(lower(cco),'channelcodeorder')
+if nargin > 3 & strcmp(lower(cco),'channelcodeorder')
 	cco = 1;
 else
 	cco = 0;
@@ -59,7 +59,7 @@ for j = 1:length(CLB)
 						col = i;
 					end
 					fprintf('WEBOBS{calib}: channel %d ("%s") calibrated from %s column %d (%d data).\n',i,CLB(j).nm{ki(ii)},datestr(tt(ii)),col,length(k))
-					if CLB(j).vn(ki(ii)) ~= 0 || CLB(j).vm(ki(ii)) ~= 0
+					if CLB(j).vn(ki(ii)) ~= 0 | CLB(j).vm(ki(ii)) ~= 0
 						kk = find(d(k,col) < CLB(j).vn(ki(ii)) | d(k,col) > CLB(j).vm(ki(ii)));
 						if ~isempty(kk)
 							d(k(kk),col) = NaN;

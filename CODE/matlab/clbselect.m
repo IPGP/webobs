@@ -1,6 +1,6 @@
 function X=clbselect(X,s)
 %CLBSELECT Calibration channel selection
-%	Y=CLBSELECT(X,CHAN) selects channels CHAN in calibration structure X and
+%	Y=CLBSELECT(X,CHAN) selects channels CHAN in calibration structure X and 
 %	returns new calibration structure Y. CHAN can be either a cell array of
 %	strings with channel names, or a vector of channel numbers, as given in
 %	the node's calibration file.
@@ -8,9 +8,9 @@ function X=clbselect(X,s)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2017-01-13 in Yogyakarta, Indonesia
-%	Updated: 2022-07-25
+%	Updated: 2017-07-27
 
-if ischar(s)
+if isstr(s)
 	s = cellstr(s);
 end
 

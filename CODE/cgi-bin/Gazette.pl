@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-Gazette.pl
+Gazette.pl 
 
 =head1 SYNOPSIS
 
@@ -20,7 +20,7 @@ Also used to update the Gazette DB.
 Query String's select/display arguments (match the Display Options Form's fields)
 
  gview=       [ calendar | datelist | categorylist | iCalendar ]
-			  calendar: display week(s) calendar
+			  calendar: display week(s) calendar 
 			  dateList: display as a list of dates
 			  categoryList: display as a list of categories
 			  iCalendar: display as iCal
@@ -45,12 +45,12 @@ Query String's management arguments (optional)
              posted json object (all row's columns) before processing select/display.
 			 See Gazette.js
 
- delid=      specifies an article's id whose DB row will be deleted
+ delid=      specifies an article's id whose DB row will be deleted 
              before processing select/display.
 			 See Gazette.js
 
  getical=    specifies an ical file name (as previously built/saved with a gview=ical)
-             to be downloaded
+             to be downloaded 
 
  create=yes  automatically enters the article creation process, displaying the "create new article" form popup;
              can be used with other view-related arguments. Primarily used in 'menunav' direct links to creation.
@@ -59,7 +59,7 @@ Query String's management arguments (optional)
 
 =head1 LOCALIZATION
 
-Date formats and date texts use Locale::TextDomain('webobs') specifications/translations.
+Date formats and date texts use Locale::TextDomain('webobs') specifications/translations. 
 
 Holidays are defined in $WEBOBS{FILE_DAYSOFF} file, as a collection of <date-expression|name>
 
@@ -81,7 +81,7 @@ use CGI::Carp qw(fatalsToBrowser  set_message);
 my $cgi = new CGI;
 set_message(\&webobs_cgi_msg);
 
-# ---- webobs stuff
+# ---- webobs stuff 
 use WebObs::Config;
 use WebObs::Gazette;
 use WebObs::Users;
@@ -103,16 +103,16 @@ $QryParm->{'delid'}     //= "";
 # ---- special requests before querying/displaying gazette rows
 # ------------------------------------------------------------------
 my $setmsg = "";
-# ---- download an iCal file; will not return here
-getical($QryParm->{'getical'}) if defined($QryParm->{'getical'});
+# ---- download an iCal file; will not return here 
+getical($QryParm->{'getical'}) if defined($QryParm->{'getical'}); 
 # ---- getId() doesn't format results; will not return here
 getId($QryParm->{'getid'}) if ($QryParm->{'getid'}  ne "") ;
-# ---- DB update 'setid' (article row
+# ---- DB update 'setid' (article row 
 $setmsg = setId($QryParm->{'setid'}) if ($QryParm->{'setid'}  ne "");
-# ---- DB delete 'delid' (article) row
+# ---- DB delete 'delid' (article) row 
 $setmsg = delId($QryParm->{'delid'}) if ($QryParm->{'delid'}  ne "");
 ### ---- if no select/display parms, special requests return DB update message only
-##if (!defined($QryParm->{'gview'})) {
+##if (!defined($QryParm->{'gview'})) { 
 ##	if ($setmsg ne "") {
 ## 		print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
 ## 		print "Gazette update returned: $setmsg \n";
@@ -120,7 +120,7 @@ $setmsg = delId($QryParm->{'delid'}) if ($QryParm->{'delid'}  ne "");
 ##	}
 ##}
 $setmsg = "<span>".$today->strftime('%Y-%m-%d %H:%M:%S')." $__{'last DB update'}: $setmsg</span>" if ($setmsg ne "");
-# ---- end of special requests
+# ---- end of special requests 
 # ------------------------------------------------------------------
 
 # ---- query select/display parms with defaults
@@ -133,14 +133,14 @@ $QryParm->{'create'}    //= "";
 
 # ---- convert gdate keywords to their wodp-compatible date/range expression
 # ---- keywords are a subset of those handled by Gazette.js function shortcuts()
-# ---- (only for coherence/documentation ... ie. could differ)
+# ---- (only for coherence/documentation ... ie. could differ) 
 if ($QryParm->{'gdate'} =~ /today/i) {
 	$QryParm->{'gdate'} = $today->strftime('%Y-%m-%d');
 }
-elsif ($QryParm->{'gdate'} =~ /tomorrow/i) {
+elsif ($QryParm->{'gdate'} =~ /tomorrow/i) { 
 	$QryParm->{'gdate'} = ($today+86400)->strftime('%Y-%m-%d');
 }
-elsif ($QryParm->{'gdate'} =~ /yesterday/i) {
+elsif ($QryParm->{'gdate'} =~ /yesterday/i) { 
 	$QryParm->{'gdate'} = ($today-86400)->strftime('%Y-%m-%d');
 }
 elsif ($QryParm->{'gdate'} =~ /allyear/i) {
@@ -160,15 +160,15 @@ my $maxdate = ($GAZETTE{FUTURE_YEARS} + $today->year);
 
 # ---- resolve i18n
 my $fmt_long_date = $__{'gzt_fmt_long_date'} ;
-my $fmt_date      = $__{'gzt_fmt_date'};
+my $fmt_date      = $__{'gzt_fmt_date'}; 
 my $fmt_long_week = $__{'gzt_fmt_long_week'};
 my $fmt_long_year = $__{'gzt_fmt_long_year'};
 my $thismonday    = $today-($today->day_of_week+6)%7*86400;
 my $daynames      = join(',',map { l2u(($thismonday+86400*$_)->strftime('%A'))} (0..6)) ;
 my $monthnames    = join(',',map { l2u((Time::Piece->strptime("$_",'%m'))->strftime('%B')) } (1..12)) ;
 
-my %prez = ('calendar' => $__{'Calendar'},
-			'dateList' => $__{'List by dates'},
+my %prez = ('calendar' => $__{'Calendar'}, 
+			'dateList' => $__{'List by dates'}, 
 			'categoryList' => $__{'List by categories'},
 			'dump' => 'dump',
 			'stats' => 'stats',
@@ -177,25 +177,25 @@ my %prez = ('calendar' => $__{'Calendar'},
 
 # ---- ... for wodp javascript
 my $wodp_d2 = "[".join(',',map { "'".substr($_,0,2)."'" } split(/,/,$daynames))."]";
-my @months = split(/,/,$monthnames);
+my @months = split(/,/,$monthnames); 
 my $wodp_m  = "[".join(',',map { "'$_'" } @months)."]";
 my @holidaysdef;
-open(FILE, "<$WEBOBS{FILE_DAYSOFF}") || die "$__{'failed opening holidays definitions'}\n";
+open(FILE, "<$WEBOBS{FILE_DAYSOFF}") || die "$__{'failed opening holidays definitions'}\n"; 
 while(<FILE>) { push(@holidaysdef,l2u($_)) if ($_ !~/^(#|$)/); }; close(FILE);
 chomp(@holidaysdef);
 # check/translate holidaysdef quote and accents ?
 my $wodp_holidays = "[".join(',',map { my ($d,$t)=split(/\|/,$_); "{d: \"$d\", t:\"$t\"}" } @holidaysdef)."]";
 
-# ---- build the requested display page
-#
+# ---- build the requested display page  
+# 
 my $reqdate = "";
 my @gazette=();
 
-# ---- get date(-range) to display and format its default "verbose" date expression
-# (  [from] format($d1) [to] format($d2)  OR  format($d1)  )
+# ---- get date(-range) to display and format its default "verbose" date expression 
+# (  [from] format($d1) [to] format($d2)  OR  format($d1)  )  
 my ($d1, $d2) = split(/,/,$QryParm->{'gdate'});
 my ($d1dt, $d2dt) = '';
-if (!$d1) {
+if (!$d1) {  
 	$d1 = $today->strftime('%Y-%m-%d');
 	$d1dt = Time::Piece->strptime($d1,'%Y-%m-%d');
 	$d2 = $d1;
@@ -227,7 +227,7 @@ if (grep /\Q$QryParm->{'gview'}/i , keys(%prez)) {
 									 jseditor=>'openPopup',jsevent=>'showobject');
 	@gazette = ("<h3>$empty</h3>") if (!@gazette);
 }
-
+  
 # ---- Start HTML page output
 #
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
@@ -240,7 +240,7 @@ print "<html><head><title>$GAZETTE{TITLE}</title>\n",
 	  "<script language=\"JavaScript\" src=\"/js/jquery.js\"></script>",
 	  "<script language=\"JavaScript\" src=\"/js/wodp.js\"></script>",
 	  "<script language=\"JavaScript\" src=\"/js/Gazette.js\"></script>\n",
-	  "</head>" ;
+	  "</head>" ;  
 print "<body>\n";
 
 # ---- articles management form
@@ -253,7 +253,7 @@ my %IUSERNAMES;
 foreach (keys(%USERS)) {
 	my @grp = WebObs::Users::userListGroup($_);
 	my %gid = map { $_ => 1 } split(/,/,$GAZETTE{ACTIVE_GID});
-	if ((%gid && grep { $gid{$_} } @grp) || (!%gid && isok($USERS{$_}{VALIDITY}))) {
+	if ((%gid && grep { $gid{$_} } @grp) || (!%gid && $USERS{$_}{VALIDITY} eq "Y")) {
 		$VUSERNAMES{$USERS{$_}{UID}} = $USERS{$_}{FULLNAME}
 	} else {
 		$IUSERNAMES{$USERS{$_}{UID}} = $USERS{$_}{FULLNAME}
@@ -284,8 +284,8 @@ print <<"FIN";
 	<label for="UID">$__{'Name(s)'}:<span class="small">$__{'Ctrl for multiple'}</span></label><select style="width:auto;" name="UID" id="UID" size="5" multiple>$selusers</select>
 	<label for="OTHERS">$__{'Other(s)'}:<span class="small">$__{'names list'}</span></label><input style="width:200px;" type="text" name="OTHERS" id="OTHERS" value=""><br/>
 
-	<label for="PLACE">$__{'Place'}:<span class="small">$__{'string'}</span></label><input type="text" name="PLACE" id="PLACE" value=""><br/>
-	<label for="SUBJECT">$__{'Subject'}:<span class="small">$__{'string'}</span></label><input type="text" name="SUBJECT" id="SUBJECT" value=""><br/>
+	<label for="PLACE">$__{'Place'}:<span class="small">$__{'string'}</span></label><input type="text" name="PLACE" id="PLACE" value=""><br/> 
+	<label for="SUBJECT">$__{'Subject'}:<span class="small">$__{'string'}</span></label><input type="text" name="SUBJECT" id="SUBJECT" value=""><br/> 
 
 	<p style="margin: 0px; text-align: center">
 		<input type="button" id="sendbutton" name="sendbutton" value="$__{'Save'}" onclick="sendPopup(); return false;" />&nbsp;
@@ -294,7 +294,7 @@ print <<"FIN";
 	</form>
 FIN
 
-# ---- JavaScript inits
+# ---- JavaScript inits 
 my $jscat   = "{".join(',',map { " \"$_\": \"$QCAT{$_}\"" } keys(%QCAT))."}";
 #DL-was:my $jsnames = "{".join(',',map { " \"$_\": \"$USERNAMES{$_}\"" } keys(%USERNAMES))."}";
 my $jsnames  = "{".join(',',map { " \"$_\": \"$VUSERNAMES{$_} ($_)\"" } sort keys(%VUSERNAMES))."}";
@@ -307,7 +307,7 @@ var gazette_cat  = $jscat;
 var gazette_usrV = $jsnames;
 var gazette_usrI = $jsnamesI;
 var gazette_remove_text = '$__{"Remove"}';
-var gazette_create_text = '$__{"Create Article"}';
+var gazette_create_text = '$__{"Create Article"}'; 
 \$(document).ready(function() {
 	\$('div.thepage').css('margin-bottom', '400px'); // room for form-popup near end of page
 	set_wodp($wodp_d2, $wodp_m, $wodp_holidays, $mindate, $maxdate);
@@ -316,7 +316,7 @@ var gazette_create_text = '$__{"Create Article"}';
 </script>
 FIN
 
-# ---- Display selection-form as banner
+# ---- Display selection-form as banner 
 #
 my $reslist = join (',', map { "'GAZETTE$_'" } keys(%GAZETTECAT));
 my $createOK = (WebObs::Users::clientMaxAuth(type=>'authmisc',name=>"($reslist)") >= EDITAUTH );
@@ -343,13 +343,13 @@ print "<div id=\"banner\" class=\"banner\">\n";
 		print "<td style=\"border: none; text-align: center; vertical-align: middle\">";
 		print "<label style=\"width:80px;font-weight:bold\" for=\"gview\">$__{'Presentation'}:</label> <select id=\"gview\" name=\"gview\" size=\"1\" >";
 		for my $i ('calendar','dateList','categoryList','ical') { # only these and ordered my way, not keys(%prez) perl's way
-    		if ("$i" eq "$QryParm->{'gview'}") { print "<option selected value=$i>$prez{$i}</option>"; }
+    		if ("$i" eq "$QryParm->{'gview'}") { print "<option selected value=$i>$prez{$i}</option>"; } 
     		else                              { print "<option value=$i>$prez{$i}</option>"; }
 		}
 		if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"GAZETTE_")) {
-			if ("dump" eq "$QryParm->{'gview'}") { print "<option selected value=dump>$prez{dump}</option>"; }
+			if ("dump" eq "$QryParm->{'gview'}") { print "<option selected value=dump>$prez{dump}</option>"; } 
 			else                                { print "<option value='dump'>$prez{dump}</option>"; }
-			if ("stats" eq "$QryParm->{'gview'}") { print "<option selected value=stats>$prez{stats}</option>"; }
+			if ("stats" eq "$QryParm->{'gview'}") { print "<option selected value=stats>$prez{stats}</option>"; } 
 			else                                { print "<option value='stats'>$prez{stats}</option>"; }
 		}
 		print "</select></td>\n";
@@ -357,7 +357,7 @@ print "<div id=\"banner\" class=\"banner\">\n";
 		print "<label style=\"width:80px;font-weight:bold\" for=\"gcategory\">$__{'Category'}:</label> <select id=\"gcategory\" name=\"gcategory\" size=\"1\">";
 		my $selected='';
 		for (sort keys %GAZETTECAT) {
-			$selected = ("$_" eq "$QryParm->{'gcategory'}" ? "selected" : "");
+			$selected = ("$_" eq "$QryParm->{'gcategory'}" ? "selected" : ""); 
 			print "<option $selected value=$_>$GAZETTECAT{$_}{Name}</option>";
 		}
 		print "</select></td>\n";
@@ -388,16 +388,16 @@ exit;
 
 # ---- process a 'getical' query: download an iCal file  previously saved by
 # ---- a 'gview ical'. Assumes that such files are in a tmp directory that gets
-# ---- cleaned up some other housekeeping process
+# ---- cleaned up some other housekeeping process 
 #
 sub getical {
 	if (@_ == 1 && -f $_[0]) {
-		if (open(IN, "<$_[0]")) {
+		if (open(IN, "<$_[0]")) { 
 			my @in = <IN>;
 			close(IN);
 			print $cgi->header(-type=>'text/calendar', -attachment=>"$_[0]",-charset=>'utf-8');
 			print @in;
-		} else { die "$__{'Could not open'} $_[0]" }
+		} else { die "$__{'Could not open'} $_[0]" } 
 	} else { die "$__{'invalid'} $_[0]" }
 	exit;
 }
@@ -410,13 +410,13 @@ sub getId {
 	exit;
 }
 
-# ---- process a 'setid' query: do the DB update, then back to normal page build processing
+# ---- process a 'setid' query: do the DB update, then back to normal page build processing  
 #
 sub setId {
 	my $id = ($_[0] eq "-1") ? "null" : "$_[0]";
-	(my $others  = $QryParm->{'OTHERS'}) =~ s/\Q'\E/''/g;
-	(my $place   = $QryParm->{'PLACE'}) =~ s/\Q'\E/''/g;
-	(my $subject = $QryParm->{'SUBJECT'}) =~ s/\Q'\E/''/g;
+	(my $others  = $QryParm->{'OTHERS'}) =~ s/\Q'\E/''/g; 	
+	(my $place   = $QryParm->{'PLACE'}) =~ s/\Q'\E/''/g; 	
+	(my $subject = $QryParm->{'SUBJECT'}) =~ s/\Q'\E/''/g; 	
 	my $values = sprintf("%s,'%s','%s','%s','%s','%s','%s','%s','%s','%s'",
 				 $id,
 				 $QryParm->{'STARTDATE'},
@@ -432,10 +432,10 @@ sub setId {
 	return $row;
 }
 
-# ---- process a 'delid' query: delete in DB , then back to normal page build processing
+# ---- process a 'delid' query: delete in DB , then back to normal page build processing  
 #
 sub delId {
-	my $id = ($_[0] eq "-1") ? "null" : "$_[0]";
+	my $id = ($_[0] eq "-1") ? "null" : "$_[0]"; 
 	my $row = delArticle($id);
 	return $row;
 }
@@ -444,7 +444,7 @@ sub delId {
 
 =head1 AUTHOR(S)
 
-Didier Lafon from HEBDO by Didier Mallarino, Francois Beauducel, Alexis Bosson
+Didier Lafon from HEBDO by Didier Mallarino, Francois Beauducel, Alexis Bosson 
 
 =head1 COPYRIGHT
 
@@ -464,3 +464,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
+

@@ -98,13 +98,10 @@ if ($newnode == 0) {
 
 my $Ctod = time(); my @tod  = localtime($Ctod);
 my %typeTele = readCfg("$NODES{FILE_TELE}");
-my %typePos  = readCfg("$WEBOBS{ROOT_CODE}/etc/postypes.conf");
+my %typePos  = readCfg("$NODES{FILE_POS}");
 my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
 my %FDSN = WebObs::Grids::codesFDSN();
-my $referer = $QryParm->{'referer'} // $ENV{HTTP_REFERER};
 
-# reads the node2node file (only lines associated to the current node)
-my @n2n = readFile($NODES{FILE_NODES2NODES},qr/^$NODEName\|/);
 
 # ---- initialize user input variables -----------------------
 #      Name and codes
@@ -112,9 +109,7 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
-my $usrTZ        = $NODE{TZ} // strftime("%z", localtime());
-my $features     = $NODE{FILES_FEATURES} // "$__{'featureA,featureB,featureC'}";
-my @feat = split(/,|\|/,$features);
+my $features     = $NODE{FILES_FEATURES} // "$__{'sensor'}";
 #      proc parameters
 my $usrFDSN      = $NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} // $NODE{FDSN_NETWORK_CODE};
 my $usrUTC       = $NODE{"$GRIDType.$GRIDName.UTC_DATA"}          // $NODE{UTC_DATA};
@@ -134,15 +129,13 @@ my $usrLonE = ($usrLon >= 0 ? "E":"W");
 $usrLon =~ s/^-//g;
 my $usrAlt       = $NODE{ALTITUDE};
 my $usrTypePos   = $NODE{POS_TYPE};
-my $usrRAWKML    = $NODE{POS_RAWKML};
 #      Transmission
 my ($usrTrans,@usrTele) = split(/,| |\|/,$NODE{TRANSMISSION});
 if ($usrTrans eq "NA") { $usrTrans = "0"; }
 #      dates
 my $usrYearE = my $usrYearC = my $usrYearP = "";
 my $usrMonthE = my $usrMonthC = my $usrMonthP = "";
-my $usrDayE = my $usrDayC = my $usrDayP = "";
-my $usrTimeP = my $date = "";
+my $usrDayE = my $usrDayC = my $usrDayP = my $date = "";
 #      install date = (the one defined or "" if NA) OR today
 $date            = $NODE{INSTALL_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
@@ -154,7 +147,7 @@ if ($date eq "NA") { $date = "" }
 #      positionning date = (the one defined or "" if NA) OR today
 $date            = $NODE{POS_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
-($usrYearP,$usrMonthP,$usrDayP,$usrTimeP) = split(/-|T/,$date);
+($usrYearP,$usrMonthP,$usrDayP) = split(/-/,$date);
 
 # ---- Load the list of existing nodes
 my @allNodes = qx(/bin/ls $NODES{PATH_NODES});
@@ -164,19 +157,16 @@ my $infoFile   = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}" // "
 my $accessFile = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_PHOTOS}" // "";
 
 # ---- Things to populate select dropdown fields
-my $currentYear = strftime('%Y',@tod);
-my @yearListP = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
-my @yearListC = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
-my @yearListE = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
-my @monthList = ('','01'..'12');
-my @dayList = ('','01'..'31');
+my $anneeActuelle = strftime('%Y',@tod);
+my @anneeListeP = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
+my @anneeListeC = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
+my @anneeListeE = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
+my @moisListe = ('','01'..'12');
+my @jourListe = ('','01'..'31');
 
 # ---- ready for HTML output now
 #
-print $cgi->header(
-	-charset                     => 'utf-8',
-	-access_control_allow_origin => 'http://localhost',
-	),
+print $cgi->header(-charset=>"utf-8"),
 $cgi->start_html("$__{'Node configuration form'}");
 
 print <<"FIN";
@@ -185,78 +175,71 @@ print <<"FIN";
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
 <script type="text/javascript">
+<!--
 
 function postIt()
 {
- if(document.form.nouveau.value == 1 && document.form.message.value != "ok") {
-   alert("NODE ID: Please enter a valid and new ID!");
-   document.form.nodename.focus();
-   return false;
- }
- if((/^[\\s]*\$/).test(document.form.fullName.value)) {
+ if((/^[\\s]*\$/).test(document.formulaire.fullName.value)) {
    alert("NAME: Please enter a full name (non-blank string)");
-   document.form.fullName.focus();
+   document.formulaire.fullName.focus();
    return false;
- }
- if(document.form.alias.value == "") {
+  }
+ if(document.formulaire.alias.value == "") {
    alert("ALIAS: Please enter a short name (non-blank string)");
-   document.form.alias.focus();
+   document.formulaire.alias.focus();
    return false;
- }
- if(document.form.latwgs84.value != "" && (isNaN(document.form.latwgs84.value) || document.form.latwgs84.value < -90 || document.form.latwgs84.value > 90)) {
-   alert("LATITUDE: Please enter a latitude value between -90 and +90, or leave blank");
-   document.form.latwgs84.focus();
+  }
+ if(document.formulaire.latwgs84.value != "" && (isNaN(document.formulaire.latwgs84.value) || document.formulaire.latwgs84.value < 0 || document.formulaire.latwgs84.value > 90)) {
+   alert("LATITUDE: Please enter a positive number between 0 and +90, use S for southern latitude, or leave blank");
+   document.formulaire.latwgs84.focus();
    return false;
- }
- if(document.form.latwgs84.value < 0 && document.form.latwgs84.value >= -90) {
-   document.form.latwgs84.value = Math.abs(document.form.latwgs84.value);
-   if (document.form.latwgs84n.value == "N") document.form.latwgs84n.value = "S";
-   else document.form.latwgs84n.value = "N";
- }
- if(document.form.latwgs84.value == "" && (document.form.latwgs84min.value != "" || document.form.latwgs84sec.value != "")) {
+  }
+ if(document.formulaire.latwgs84.value == "" && (document.formulaire.latwgs84min.value != "" || document.formulaire.latwgs84sec.value != "")) {
    alert("LATITUDE: Please enter a value for degree or leave all fields blank");
-   document.form.latwgs84.focus();
+   document.formulaire.latwgs84.focus();
    return false;
- }
- if(document.form.lonwgs84.value != "" && (isNaN(document.form.lonwgs84.value) || document.form.lonwgs84.value < -180 || document.form.lonwgs84.value > 180)) {
-   alert("LONGITUDE: Please enter a longiture value between -180 and +180, or leave blank");
-   document.form.lonwgs84.focus();
+  }
+ if(document.formulaire.lonwgs84.value != "" && (isNaN(document.formulaire.lonwgs84.value) || document.formulaire.lonwgs84.value < 0 || document.formulaire.lonwgs84.value > 180)) {
+   alert("LONGITUDE: Please enter a positive number between 0 and +180, use W for western longitude, or leave blank");
+   document.formulaire.lonwgs84.focus();
    return false;
- }
- if(document.form.lonwgs84.value < 0 && document.form.lonwgs84.value >= -180) {
-   document.form.lonwgs84.value = Math.abs(document.form.lonwgs84.value);
-   if (document.form.lonwgs84e.value == "E") document.form.lonwgs84e.value = "W";
-   else document.form.lonwgs84e.value = "E";
- }
- if(document.form.lonwgs84.value == "" && (document.form.lonwgs84min.value != "" || document.form.lonwgs84sec.value != "")) {
+  }
+ if(document.formulaire.lonwgs84.value == "" && (document.formulaire.lonwgs84min.value != "" || document.formulaire.lonwgs84sec.value != "")) {
    alert("LONGITUDE: Please enter a value for degree or leave all fields blank");
-   document.form.lonwgs84.focus();
+   document.formulaire.lonwgs84.focus();
    return false;
- }
- if(document.form.altitude.value != "" && isNaN(document.form.altitude.value)) {
+  }
+ if(document.formulaire.altitude.value != "" && isNaN(document.formulaire.altitude.value)) {
    alert("ELEVATION: Please enter a number or leave blank");
-   document.form.altitude.focus();
+   document.formulaire.altitude.focus();
    return false;
- }
-  if (document.form.SELs.options.length < 1) {
+  }
+/*FB-was:
+ if(document.formulaire.features.value == "") {
+   alert("FEATURES: Please enter at least one word");
+   document.formulaire.features.focus();
+   return false;
+  }
+*/
+  if (document.formulaire.SELs.options.length < 1) {
     alert(\"node MUST belong to at least 1 grid\");
-    document.form.SELs.focus();
+    document.formulaire.SELs.focus();
     return false;
   }
 
-  for (var i=0; i<document.form.elements['allNodes'].length; i++) {
-  	document.form.elements['allNodes'][i].disabled = true;
+  for (var i=0; i<document.formulaire.elements['allNodes'].length; i++) {
+  	document.formulaire.elements['allNodes'][i].disabled = true;
   }
-  for (var i=0; i<document.form.SELs.length; i++) {
-  	document.form.SELs[i].selected = true;
+  for (var i=0; i<document.formulaire.SELs.length; i++) {
+  	document.formulaire.SELs[i].selected = true;
   }
 
-	if (\$(\"#theform\").hasChanged() || document.form.delete.value == 1) {
-		document.form.node.value = document.form.grid.value + document.form.nodename.value.toUpperCase();
+	if (\$(\"#theform\").hasChanged()) {
+		document.formulaire.node.value = document.formulaire.node.value + document.formulaire.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
 			var fidx = document.getElementById("fidx").getElementsByTagName("div");
 			for (var i=0; i<fidx.length; i++) {
-				if (document.form.rawformat.value == "" || fidx[i].id.indexOf(document.form.rawformat.value + "-") == -1) {
+				if (document.formulaire.rawformat.value == "" || fidx[i].id.indexOf(document.formulaire.rawformat.value + "-") == -1) {
 					var nested = document.getElementById("input-" + fidx[i].id);
 					nested.parentNode.removeChild(nested);
 				}
@@ -264,10 +247,7 @@ function postIt()
 		}
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
 		     if (data != '') alert(data);
-			 if (document.form.refresh.value == 1) {
-				 location.reload();
-		     } else { location.href = document.form.referer.value; }
-		})
+		     location.href = document.referrer; })
 		  .fail( function() {
 		     alert( \"postNode couldn't execute\" );
 		     location.href = document.referrer; });
@@ -280,7 +260,7 @@ function postIt()
 function maj_rawformat() {
 	var fidx = document.getElementById("fidx").getElementsByTagName("div"), fid;
 	for (var i=0; i<fidx.length; i++) {
-		if (document.form.rawformat.value != "" && fidx[i].id.indexOf(document.form.rawformat.value + "-") != -1) {
+		if (document.formulaire.rawformat.value != "" && fidx[i].id.indexOf(document.formulaire.rawformat.value + "-") != -1) {
 			fidx[i].style.display = "block";
 		} else {
 			fidx[i].style.display = "none";
@@ -289,7 +269,7 @@ function maj_rawformat() {
 }
 
 function maj_transmission() {
-	if (document.form.typeTrans.value==0) {
+	if (document.formulaire.typeTrans.value==0) {
 		document.getElementById("pathTrans").style.display="none";
 	} else {
 		document.getElementById("pathTrans").style.display="block";
@@ -297,107 +277,75 @@ function maj_transmission() {
 }
 
 function checkNode() {
-	document.form.nodename.value = document.form.nodename.value.toUpperCase();
+	document.formulaire.nodename.value = document.formulaire.nodename.value.toUpperCase();
 	var nodeSyntax=/[^A-Za-z0-9\.@]+/;
 	var ok = 1;
 	var rouge = '#EE0000';
 	var vert = '#66DD66';
 
-	var node = document.form.nodename.value;
+	var node = document.formulaire.nodename.value;
 	if (nodeSyntax.test(node)) {
 		ok = 0;
-		document.form.message.value = "invalid char. !";
+		document.formulaire.message.value = "invalid char. !";
 	} else {
-		for (var i=0; i<document.form.elements['allNodes'].length; i++) {
-			if (document.form.elements['allNodes'][i].value == node) {
+		for (var i=0; i<document.formulaire.elements['allNodes'].length; i++) {
+			if (document.formulaire.elements['allNodes'][i].value == node) {
 				ok = 0;
-				document.form.message.value = "already exists !";
+				document.formulaire.message.value = "already exists !";
 			}
 		}
 	}
 	if (ok==1) {
-		document.form.nodename.style.background = vert;
-		document.form.message.value = "ok";
-		document.form.message.style.color = vert;
+		document.formulaire.nodename.style.background = vert;
+		document.formulaire.message.value = "ok";
+		document.formulaire.message.style.color = vert;
 	} else {
-		document.form.nodename.style.background = rouge;
-		document.form.message.style.color = rouge;
+		document.formulaire.nodename.style.background = rouge;
+		document.formulaire.message.style.color = rouge;
 	}
-	if (document.form.nodename.value == "") {
-		document.form.nodename.style.background = 'cornsilk';
-		document.form.message.value = "";
+	if (document.formulaire.nodename.value == "") {
+		document.formulaire.nodename.style.background = 'cornsilk';
+		document.formulaire.message.value = "";
 	}
-	if (document.form.nouveau.value == 0) {
-		document.form.nodename.style.background = 'none';
-		document.form.message.value = "";
+	if (document.formulaire.nouveau.value == 0) {
+		document.formulaire.nodename.style.background = 'none';
+		document.formulaire.message.value = "";
 	}
 }
 
 function latlonChange() {
-	if (document.form.typePos.value == 3) {
-		document.getElementById("rawKML").style.display = "block";
-		document.form.anneeMesure.disabled = true;
-		document.form.moisMesure.disabled = true;
-		document.form.jourMesure.disabled = true;
-	} else {
-		document.getElementById("rawKML").style.display = "none";
-		var today = new Date();
-		var d  = today.getDate();
-		document.form.jourMesure.disabled = false;
-		document.form.jourMesure.value = (d < 10) ? '0' + d : d;
-		var m = today.getMonth() + 1;
-		document.form.moisMesure.disabled = false;
-		document.form.moisMesure.value = (m < 10) ? '0' + m : m;
-		var yy = today.getYear();
-		document.form.anneeMesure.disabled = false;
-		document.form.anneeMesure.value = (yy < 1000) ? yy + 1900 : yy;
-	}
-}
-
-function fetchKML() {
-	var credentials = btoa("webobs:0vpf1pgp");
-	var auth = {
-		'Origin': 'http://localhost',
-		'Access-Control-Request-Method': 'GET',
-		'Access-Control-Allow-Origin': 'http://localhost',
-		'Authorization': `Basic \${credentials}`,
-	};
-	var url = "https://share.garmin.com/Feed/Share/6DOQM";
-    return fetch(url, {
-		credentials: 'include',
-		mode: 'cors',
-		headers: auth,
-	})
-        .then(response => response.text())
-        .then(xmlString => \$.parseXML(xmlString))
-        .then(data => console.log(data))
+	var today = new Date();
+	var d  = today.getDate();
+	document.formulaire.jourMesure.value = (d < 10) ? '0' + d : d;
+	var m = today.getMonth() + 1;
+	document.formulaire.moisMesure.value = (m < 10) ? '0' + m : m;
+	var yy = today.getYear();
+	document.formulaire.anneeMesure.value = (yy < 1000) ? yy + 1900 : yy;
 }
 
 function fc() {
 	\$(\"#theform\").formChanges();
 }
 
-function refresh_form()
-{
-	document.form.refresh.value = 1;
-	postIt();
-}
-
 function delete_node()
 {
-	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative.\\n\\n Are you sure you want to move this NODE to trash ?\") ) {
-		document.form.delete.value = 1;
-		document.form.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
-		postIt();
+	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative. Are you sure you want to move this NODE to trash ?\") ) {
+		document.formulaire.node.value = document.formulaire.node.value + document.formulaire.nodename.value.toUpperCase();
+		document.formulaire.delete.value = 1;
+		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
+			alert(data);
+			location.href = document.referrer;
+		});
 	} else {
 		return false;
 	}
 }
+//-->
 </script>
 
 </head>
 
-<body style="background-color:#E0E0E0" onLoad="maj_transmission();latlonChange();fc();checkNode();" id="formNode">
+<body style="background-color:#E0E0E0" onLoad="maj_transmission();fc();checkNode();" id="formNode">
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <script language="javascript" src="/js/overlib/overlib.js"></script>
 <!-- overLIB (c) Erik Bosrup -->
@@ -405,23 +353,12 @@ function delete_node()
 
 FIN
 
-print "<FORM id=\"theform\" name=\"form\" action=\"\">\n";
-# --- "Validity"
-my $nodevalidity;
-if (clientHasAdm(type=>"authmisc",name=>"NODES")) {
-	$nodevalidity = "<P><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
-		." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_valid'}')\">"
-		."<b>$__{'Valid Node'}</b></P>";
-} else {
-	$nodevalidity = "<INPUT type=\"hidden\" name=\"valide\" value=\"NA\">";
-}
 print "<TABLE width=\"100%\">
-	<TR><TD style=\"border:0\"><H1>$titrePage</H1>\n<H2>$titre2</H2>$nodevalidity</TD>
+	<TR><TD style=\"border:0\"><H1>$titrePage</H1>\n<H2>$titre2</H2></TD>
 	<TD style=\"border:0; text-align:right\"></TD></TR>
 	</TABLE>";
 
-print "<INPUT type=\"hidden\" name=\"referer\" value=\"$referer\">\n";
-print "<INPUT type=\"hidden\" name=\"refresh\" value=\"0\">\n";
+print "<FORM id=\"theform\" name=\"formulaire\" action=\"\">\n";
 print "<INPUT type=\"hidden\" name=\"delete\" value=\"0\">\n";
 for (@allNodes) {
 	print "<INPUT type=\"hidden\" name=\"allNodes\" value=\"$_\">\n";
@@ -432,18 +369,18 @@ print "<TR>";
 
 	print "<FIELDSET><LEGEND>$__{'Names and Description'}</LEGEND>";
 	# --- Codes, Name, Alias, Type
-	print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code/ID'}:</label>$GRIDType.$GRIDName.";
 	if ($newnode == 1) {
+		print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code'}:</label>$GRIDType.$GRIDName.";
 		print "<INPUT id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\" onKeyUp=\"checkNode()\">";
 	 	print "<INPUT size=\"15\" id=\"message\" name=\"message\" readOnly style=\"background-color:#E0E0E0;border:0\">";
 		print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"1\"\n>";
 	} else {
+		print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code'}:</label>$GRIDType.$GRIDName.";
 		print "<INPUT readonly=\"readonly\" style=\"font-family:monospace;font-weight:bold;font-size:120%;background-color:transparent;border:none\" id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\"><BR>";
 	 	print "<INPUT type=\"hidden\" name=\"message\" value=\"0\">";
 	 	print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"0\">";
 	}
-	print "<INPUT type=\"hidden\" name=\"grid\" value=\"$GRIDType.$GRIDName.\">";
-	print "<INPUT type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">";
+	print "<INPUT type=\"hidden\" name=\"node\" value=\"$GRIDType.$GRIDName.\">";
 		print "<BR>";
 		# --- Nom complet
 		print "<LABEL style=\"width:80px\" for=\"fullName\">$__{'Name'}:</LABEL>";
@@ -456,61 +393,47 @@ print "<TR>";
 		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
 	print "</FIELDSET>";
 
-	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
+	print "<FIELDSET><LEGEND>$__{'Lifetime and Validity'}</LEGEND>";
   	# --- Dates debut et fin
   	print "<TABLE>";
     	print "<TR>";
 			print "<TD style=\"border:0;text-align:right\">";
     		print "<DIV class=parform>";
 				print "<B>$__{'Start date'}:</b> <SELECT name=\"anneeDepart\" size=\"1\">";
-				for ($usrYearC,@yearListC) { print "<OPTION".(($_ eq $usrYearC)?" selected":"")." value=$_>$_</option>\n"; }
+				for ($usrYearC,@anneeListeC) { print "<OPTION".(($_ eq $usrYearC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 				print " <SELECT name=\"moisDepart\" size=\"1\">";
-				for (@monthList) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@moisListe) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 				print " <SELECT name=\"jourDepart\" size=\"1\">";
-				for (@dayList) { 	print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@jourListe) { 	print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT><BR>";
 				print "<b>$__{'End date'}:</b> <SELECT name=\"anneeEnd\" size=\"1\">";
-				for ($usrYearE,@yearListE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
+				for ($usrYearE,@anneeListeE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "<OPTION value=NA>NA</option>\n";
 				print "</SELECT>";
 				print " <SELECT name=\"moisEnd\" size=\"1\">";
-				for (@monthList) { print "<option".(($_ eq $usrMonthE)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@moisListe) { print "<option".(($_ eq $usrMonthE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 				print " <SELECT name=\"jourEnd\" size=\"1\">";
-				for (@dayList) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@jourListe) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 			print "</DIV></TD>";
 			print "<TD align=center style=\"border:0\"></TD>";
 			print "<TD style=\"border:0\">";
-				# --- ALIAS
-				print "<LABEL style=\"width:100px\" for=\"tz\">$__{'Time zone (h)'}:</LABEL>";
-				print "<INPUT size=\"5\" onMouseOut=\"nd()\" value=\"$usrTZ\" onmouseover=\"overlib('$__{help_creationstation_tz}')\" size=\"8\" name=\"tz\" id=\"tz\">";
+				# --- "Validity"
+				if ( clientHasAdm(type=>"authmisc",name=>"NODES")) {
+					print "<P class=parform><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
+						." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Check to mark node as valid'}')\">"
+						."<b>$__{'Valid Node'}</b></P>\n";
+				} else {
+					print "<INPUT type=\"hidden\" name=\"valide\" value=\"NA\">";
+				}
 			print "</TD>";
 		print "</TR>";
 	print "</TABLE>\n";
 	print "</FIELDSET>";
 
-	# --- Features
-	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
-	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',@feat)."\">"
-		."&nbsp;<IMG src=\"/icons/refresh.png\" align=\"top\" onClick=\"refresh_form();\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_featrefresh'}')\"><BR><BR>";
-	for (@feat) {
-		print "<LABEL style=\"width:120px\" for=\"$_\">$_:</LABEL>";
-		my $pat = qr/^$NODEName\|$_\|/;
-		my @fnlist = grep(/$pat/,@n2n);
-		my $fn = join(',',@fnlist);
-		$fn =~ s/$NODEName\|$_\|//g;
-		print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('$__{help_creationstation_n2n}')\"><BR>";
-	}
-	# edition of the node2node file needs an admin level
-	#if (WebObs::Users::clientHasAdm(type => "auth".lc($GRIDType)."s", name => "*")) {
-	#	print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
-	#}
-	print "</FIELDSET>";
-
-	# --- Grids
 	print "<FIELDSET><LEGEND>$__{'Associated Grids'}</LEGEND>\n";
 	# --- (additional) GRIDS: VIEWs and PROCs
 	# --- list only PROCs and VIEWs that client has AUTHEDIT to ...
@@ -537,9 +460,9 @@ print "<TR>";
 	for (@GL) { if (! (($_) ~~ @{$allNodeGrids{$NODEName}}) ) { print "<option value=\"$_\">$_</option>\n" } }
 	print "</SELECT></td>";
 	print "<TD style=\"border:0;text-align:center;vertical-align:middle\">";
-	print "<INPUT type=\"Button\" value=\"$__{Add} >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.form.INs,document.form.SELs)\"><br>";
+	print "<INPUT type=\"Button\" value=\"$__{Add} >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.INs,document.formulaire.SELs)\"><br>";
 	print "<BR>";
-	print "<INPUT type=\"Button\" value=\"<< $__{Remove}\" style=\"width:100px\" onClick=\"javascript: if (document.form.SELs.options.length == 1) {alert('invalid remove: node MUST belong to at least 1 grid !');} else { SelectMoveRows(document.form.SELs,document.form.INs);}\">";
+	print "<INPUT type=\"Button\" value=\"<< $__{Remove}\" style=\"width:100px\" onClick=\"javascript: if (document.formulaire.SELs.options.length == 1) {alert('invalid remove: node MUST belong to at least 1 grid !');} else { SelectMoveRows(document.formulaire.SELs,document.formulaire.INs);}\">";
 	print "</TD>";
 	print "<TD style=\"border:0\">";
 	print "<SELECT name=\"SELs\" size=\"5\" multiple style=\"font-weight:bold\">";
@@ -550,6 +473,12 @@ print "<TR>";
 	print "</TABLE>";
 	print "</FIELDSET>";
 
+	# --- Features
+	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
+	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',split(/,|\|/,$features))."\"><BR>";
+	print "<br><a href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A>";
+	print "</FIELDSET>";
+
 	print "</TD>\n";                                                                 # end left column
 	print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
 
@@ -558,16 +487,16 @@ print "<TR>";
 	print "<TABLE><TR>";
 		print "<TD style=\"border:0;text-align:left\">";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\"><B>&#176;&nbsp;</B>";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\"><B>\"&nbsp;</B>";
+			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\">&#176;&nbsp;";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\">'&nbsp;";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\">\"&nbsp;";
 			print "<select name=\"latwgs84n\" size=\"1\">";
 			for ("N","S") { print "<option".($usrLatN eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
 			print "<label for=\"lonwgs84\">$__{'Longitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\"><B>&#176;&nbsp;</B>";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\"><B>'&nbsp;</B>";
-			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\"><B>\"&nbsp;</B>";
+			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\">&#176;&nbsp;";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\">'&nbsp;";
+			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\">\"&nbsp;";
 			print "<select name=\"lonwgs84e\" size=\"1\">";
 			for ("E","W") { print "<option".($usrLonE eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
@@ -577,45 +506,36 @@ print "<TR>";
 		print "<TD style=\"border:0\">";
 			# --- positioning date
 			print "<label for=\"datePos\">Date:</label> <select name=\"anneeMesure\" size=\"1\">";
-			for ($usrYearP,@yearListP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";	}
+			for ($usrYearP,@anneeListeP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";	}
 			print "</select>";
 			print " <select name=\"moisMesure\" size=\"1\">";
-			for (@monthList) { print "<option".(($_ eq $usrMonthP)?" selected":"")." value=$_>$_</option>\n"; }
+			for (@moisListe) { print "<option".(($_ eq $usrMonthP)?" selected":"")." value=$_>$_</option>\n"; }
 			print "</select>";
 			print " <select name=\"jourMesure\" size=\"1\">";
-			for (@dayList) { print "<option".(($_ eq $usrDayP)?" selected":"")." value=$_>$_</option>\n"; }
+			for (@jourListe) { print "<option".(($_ eq $usrDayP)?" selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>";
-			# --- Positioning type (unknown, map, GPS or auto)
-			print "<label for=\"typePos\">Type: </label> "
-				."<select name=\"typePos\" size=\"1\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_pos_type}')\">";
+			# --- Positioning type (GPS, Map (Carte) ou Inconnu)
+			print "<label for=\"typePos\">Type: </label> <select onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_pos_type}')\" name=\"typePos\" size=\"1\">";
 			for (sort(keys(%typePos))) { print  "<option".(($_ eq $usrTypePos) ? " selected ":"")." value=$_>$typePos{$_}</option>\n"; }
-			print "</select><BR>";
-			print "<DIV id=\"rawKML\" style=\"display:none\"><LABEL for=\"rawKML\">Raw KML: </LABEL>"
-				." <INPUT name=\"rawKML\" size=\"40\" value=\"$usrRAWKML\">"
-				."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Fetch KML' onClick='fetchKML()'></DIV>";
+			print "</select>";
 		print "</TD>";
 	print "</TR></TABLE>";
 	print "</FIELDSET>\n";
 
-	# --- Transmission
+	# --- Transmission type
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
-	print "<TABLE><TR>";
-		print "<TD style=\"border:0;text-align:left\">";
-			print "<LABEL for=\"typeTrans\">Type: </LABEL>";
-			print "<SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_type}')\" id=\"typeTrans\" name=\"typeTrans\" size=\"1\" onChange=\"maj_transmission()\">";
-			for (sort(keys(%typeTele))) {
-				my $sel = "";
-				if ( $_ eq "$usrTrans" ) { $sel = "selected" }
-				print "<OPTION $sel value=\"$_\">$typeTele{$_}{name}</OPTION>";
-			}
-			print "</SELECT>\n";
-		print "</TD>";
-		print "<TD style=\"border:0\">";
-			# Transmission path (acquisition + repeater list)
-			print "<DIV id=\"pathTrans\" style=\"display:none\"><LABEL for=\"pathTrans\">$__{'Repeaters Path'}: </LABEL>";
-			print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_acq}')\" name=\"pathTrans\" size=\"40\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
-		print "</TD>";
-	print "</TR></TABLE>";
+	print "<LABEL for=\"typeTrans\">Type: </LABEL>";
+	print "<SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_type}')\" id=\"typeTrans\" name=\"typeTrans\" size=\"1\" onChange=\"maj_transmission()\">";
+	for (sort(keys(%typeTele))) {
+		my $sel = "";
+		if ( $_ eq "$usrTrans" ) { $sel = "selected" }
+		print "<OPTION $sel value=\"$_\">$typeTele{$_}{name}</OPTION>";
+	}
+	print "</SELECT><BR>";
+
+	# --- Transmission path (acquisition + repeater list)
+	print "<DIV id=\"pathTrans\" style=\"display:none\"><LABEL for=\"pathTrans\">$__{'Repeaters Path'}: </LABEL>";
+	print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_acq}')\" name=\"pathTrans\" size=\"40\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
 	print "</FIELDSET>";
 
 	# --- Procs parameters
@@ -641,7 +561,7 @@ print "<TR>";
 		print "</SELECT><BR>\n";
 		# --- RAWDATA
 		print "<LABEL for=\"rawdata\">$__{'Raw data source'}: </label> <input size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawdata}')\" type=\"text\" id=\"rawdata\" name=\"rawdata\" value=\"$usrRAWDATA\"/><br/>";
-		# --- FDSN Network Code
+		# --- Code r�seau FDSN
 		print "<LABEL for=\"fdsn\">Network code: </LABEL>";
 		print "<SELECT name=\"fdsn\" id=\"fdsn\" size=\"1\" onMouseOut=\"nd()\" value=\"$usrFDSN\" onMouseOver=\"overlib('$__{help_creationstation_fdsn}')\">";
 		for ("",sort(keys(%FDSN))) {
@@ -652,9 +572,7 @@ print "<TR>";
 		# --- CHANNEL_LIST
 		print "<TD rowspan=2 style=\"border:0;text-valign:top\">";
 		print "<LABEL for=\"chanlist\">$__{'Channel list'}: </LABEL>";
-		my $clbFile = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
-		$clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $clbFile ); # for backwards compatibility
-
+		my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
 		if (-s $clbFile != 0) {
 			my @select = split(/,/,$usrCHAN);
 			my @carCLB   = readCfgFile($clbFile);
@@ -727,12 +645,14 @@ print "<TR>";
 	## }
 
 print "</TD></TR>";
-print "<TR><TD style=border:0 colspan=2><HR>";
-# --- buttons zone
-print "<P align=center>";
-print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-print "<INPUT type=\"button\" value=\"$__{'Save'}\" style=\"font-weight:bold\" onClick=\"postIt();\">";
-print "</P></TD></TR></TABLE>";
+print "<TR><TD style=border:0 colspan=2>";
+
+	print "<HR>";
+	# --- buttons zone
+	print "<P align=center>";
+	print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
+	print "<INPUT type=\"button\" value=\"$__{'Save'}\" style=\"font-weight:bold\" onClick=\"postIt();\">";
+print "</TD></TR></TABLE>";
 print "</FORM>";
 
 print "\n</BODY>\n</HTML>\n";
@@ -747,7 +667,7 @@ Francois Beauducel, Didier Mallarino, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2018 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

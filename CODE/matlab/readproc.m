@@ -8,10 +8,7 @@ function [P,N,D] = readproc(WO,varargin)
 %	in TIMESCALELIST. TSCALE must be in the form of coma-separated string
 %	'ts1,ts2,...,tsn'. Default is '%' to return all the TIMESCALELIST.
 %
-%	P = READPROC(WO,PROC,PARAMS) uses struct PARAMS to replace selected proc's
-%	parameters. PARAMS must be in the form struct('parameter',value).
-%
-%	P = READPROC(WO,PROC,TSCALE,REQDIR) ignores TSCALE and returns in P.GTABLE the
+%	P = READPROC(WO,PROC,TSCALE,REQDIR) ignores TSCALE and returns in P.GTABLE the 
 %	parameters of request in REQDIR/REQUEST.rc.
 %
 %	[P,N] = READPROC(...) returns also a structure N containing all associated nodes
@@ -23,7 +20,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2022-10-26
+%	Updated: 2019-12-11
 
 
 proc = varargin{1};
@@ -43,18 +40,7 @@ if ~exist(f,'file')
 end
 
 % reads .conf main conf file
-if nargin < 4
-	P = readcfg(WO,f);
-	request = false;
-else
-	P = readcfg(WO,f,'novsub');
-	request = true;
-end
-
-% replaces any fields in P by optional argument PARAMS
-if nargin > 2 && isstruct(varargin{2})
-	P = structmerge(P,varargin{2});
-end
+P = readcfg(WO,f);
 
 % split proc's name
 [~,proc,~] = fileparts(f);
@@ -89,25 +75,23 @@ P.DEBUG = isok(field2str(P,'DEBUG',field2str(WO,'DEBUG')));
 
 % appends the list of nodes (i.e., creates field P.NODESLIST)
 % list directory WO.PATH_GRIDS2NODES for PROC.n, appends to P as NODESLIST
-X = dir(WO.PATH_GRIDS2NODES);
-k = find(strncmp(['PROC.' proc],{X.name},length(proc)+5));
+X = dir(sprintf('%s/PROC.%s.*',WO.PATH_GRIDS2NODES,proc));
 P.NODESLIST = {};
-for j = 1:length(X(k))
-	nj = split(X(k(j)).name,'.');
+for j = 1:length(X)
+	nj = split(X(j).name,'.');
 	P.NODESLIST{end+1} = nj{3};
-end
+end 
 % appends the associated FORM (if exists) by listing directory WO.PATH_GRIDS2FORMS
-X = dir(WO.PATH_GRIDS2FORMS);
-k = find(strncmp(['PROC.' proc],{X.name},length(proc)+5));
-if ~isempty(k)
-	form = split(X(k).name,'.');
+X = dir(sprintf('%s/PROC.%s.*',WO.PATH_GRIDS2FORMS,proc));
+if ~isempty(X)
+	form = split(X(1).name,'.');
 	formname = form{3};
 	formroot = sprintf('%s/%s',WO.PATH_FORMS,formname);
 	P.FORM = readcfg(WO,sprintf('%s/%s.conf',formroot,formname));
 	P.FORM.SELFREF = formname;
 	P.FORM.ROOT = formroot;
 	P.RAWFORMAT = 'woform';
-end
+end 
 
 % TIMESCALELIST : computes the date limits for each timescale and sets P.TIMESCALELIST and P.DATELIST (see timescales.m help)
 P = timescales(P);
@@ -116,7 +100,7 @@ if nargin > 2 && isnumeric(varargin{2}) && numel(varargin{2}) == 2
 	nlist = 1;
 end
 
-% DATESTRLIST
+% DATESTRLIST 
 P = tnorm(P,'DATESTRLIST',nlist,-1);
 
 % MARKERSIZELIST to num vector
@@ -136,17 +120,18 @@ P = tnorm(P,'STATUSLIST',nlist,0);
 
 % makes the GTABLE
 % case A: TIMESCALELIST all or selection
-if ~request
-	tscale = {'%'};
-	if nargin > 2
-		if ischar(varargin{2})
+if nargin < 4
+	if nargin < 3
+		tscale = {'%'};
+	else
+		if isstr(varargin{2})
 			% in deployed application, input arguments are only string
 			if isdeployed && numel(str2num(varargin{2}))==2
 				tscale = str2num(varargin{2});
 			else
 				tscale = split(varargin{2},',');
 			end
-		elseif isnumeric(varargin{2})
+		else
 			tscale = varargin{2};
 		end
 	end
@@ -203,7 +188,7 @@ else
 		error('%s: cannot find request file %s.',wofun,freq);
 	end
 
-	P.GTABLE = readcfg(WO,freq,'novsub');
+	P.GTABLE = readcfg(WO,freq);
 
 	% converts dates in DATENUM format
 	P.GTABLE.DATE1 = isodatenum(P.GTABLE.DATE1);
@@ -238,9 +223,6 @@ else
 		P = structmerge(P,P.GTABLE.PROC.(proc));
 	end
 
-	% makes internal KEY variable substitution
-	P = vsub(P,'[\$][\{](.*?)[\}]');
-
 	P.REQUEST = 1;
 end
 
@@ -272,7 +254,6 @@ if nargout > 1
 	N = readnodes(WO,P.SELFREF,P.DATELIM);
 	% list of complete node's FID (expands multiple FIDs)
 	%[FB-was] P.FID_LIST = split(char(strcat({N.FID},{','}))',',');
-	N = fid_proc2nodes(P,N);
 end
 
 if nargout > 2
@@ -304,25 +285,3 @@ if lf < nlist
 	fprintf('WEBOBS{readproc:tnorm}: ** WARNING ** inconsistent length or inexisting %s in %s timescale table. Fill with default value.\n',fd,P.SELFREF);
 end
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function X = vsub(X,pat)
-%VSUB Variable substitution in structure X, pattern PAT
-
-keys = fieldnames(X);
-for i = 1:length(keys)
-	if ~isempty(X.(keys{i})) && ischar(X.(keys{i}))
-		s = regexp(X.(keys{i}),pat,'tokens');
-		if ~isempty(s)
-			for j = 1:length(s)
-				if isfield(X,s{j}{:})
-					X.(keys{i}) = regexprep(X.(keys{i}),['\${' s{j}{:} '}'],regexprep(X.(s{j}{:}),'\${','\\${'));
-				end
-			end
-			if ~isempty(strfind(X.(keys{i}),'${'))
-				fprintf(' ** WARNING ** key %s contains undefined variable "%s", replaces with empty value! ',keys{i},X.(keys{i}));
-				X.(keys{i}) = '';
-			end
-		end
-	end
-end

@@ -12,5 +12,4 @@ n = numel(c);
 ss = cell(2,n);
 ss(1,:) = reshape(c,1,n);
 ss(2,1:n-1) = {d};
-ss{end} = '';
 s = [ss{:}];

@@ -9,18 +9,17 @@
 	color: #CCCCCC;
 	text-align:center;
 	background-color: #F5F5F5;
-	/*border: solid 1px #AFAFAF;*/
-	border: 0;
+	border: solid 1px #AFAFAF;
 }
 
 #attente {
-	color: gray;
-	background: white;
-	margin: 0.5em;
-	padding: 0.5em;
-	font-size: 1.5em;
-	border: 1px solid gray;
-	position: float;
+    color: gray;
+    background: white;
+    margin: 0.5em;
+    padding: 0.5em;
+    font-size: 1.5em;
+    border: 1px solid gray;
+    position: float;
 }
 
 html,body {
@@ -36,7 +35,7 @@ img.voies-permanentes {
 img.voies-dynamiques {
 	display: block;
 	position: absolute;
-	z-index: 3;
+	z-index: 2;
 	left: 0;
 	top: 3;
 }
@@ -129,7 +128,7 @@ div.keys {
 	background-color: #BBBBBB;
 	cursor: default;
 }
-.mcbouton span.keycap.greyed {
+.mcbouton span.keycap.greyed { 
 	background-color: #BBBBBB;
 	color: #999999
 }
@@ -146,29 +145,24 @@ div.keys {
 .mcform {
 	display: block;
 	position: fixed;
-	z-index: 3;
+	z-index: 1;
 	right: 5;
 	top: 30px;
 	width: 400px;
-	margin: 0;
-	padding: 5;
+    margin: 0;
+    padding: 5;
 	background-color: lightgray;
-	border: solid 2px #AFAFAF;
-	border-radius: 5px;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
+    border: solid 2px #AFAFAF;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
 }
 
 .mctag {
 	display: block;
 	position: absolute;
 	top: 1px;
-	z-index: 3;
-	/*DYNAMIC background-color:$types{$MC{type}}{Color} */
-	/*DYNAMIC width:$dur_evt */
-	/*DYNAMIC height:$SEFRAN3{HOURLY_HEIGHT} */
-	/*DYNAMIC left:$deb_evt */
-	/*DYNAMIC cursor:pointer */
+	z-index: 1;
 	/*DYNAMIC opacity: $SEFRAN3{MC3_EVENT_OPACITY}*/
 	/*DYNAMIC filter:alpha(opacity=$opacityIE)*/
 }
@@ -176,7 +170,7 @@ div.keys {
 #eventStart {
 	display: block;
 	position: absolute;
-	z-index: 4;
+	z-index: 1;
 	left: -100;
 	top: 0;
 	padding: 0;
@@ -198,7 +192,7 @@ div.keys {
 #eventEnd {
 	display: block;
 	position: absolute;
-	z-index: 4;
+	z-index: 1;
 	left: -100;
 	top: 0;
 	padding: 0;
@@ -220,7 +214,7 @@ div.keys {
 #eventSP {
 	display: block;
 	position: absolute;
-	z-index: 4;
+	z-index: 1;
 	left: -100;
 	top: 0;
 	padding: 0;
@@ -237,30 +231,30 @@ div.keys {
 	padding: 0;
 	margin: 1;
 	border: 0;
-	font-size: 8px;
+    font-size: 8px;
 }
 #crosshairUp {
-	display: inline-block;
+	display: inline-block; 
 	position: absolute;
 	/*left: -10px;*/
-	border: none;
+	border: none; 
 	border-left: 1px solid black;
-	z-index: 4;
+	z-index: 1;
 	/*DYNAMIC top: ${pointer_dy}*/
 	/*DYNAMIC height: ${hauteur_image}px*/
 }
 #crosshairDown {
-	display: inline-block;
+	display: inline-block; 
 	position: absolute;
 	top: 0;
 	/*left: -10px;*/
-	border: none;
+	border: none; 
 	border-left: 1px solid black;
-	z-index: 4;
+	z-index: 1;
 	/*DYNAMIC height: ${hauteur_image}px*/
 }
 input[type=submit] {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 #rtclock {
@@ -269,9 +263,9 @@ input[type=submit] {
 }
 
 #Larrow {
-	z-index: 4;
+	z-index: 3;
 	position: fixed;
-	top: 0px;
+	top: 0px; 
 	opacity: 0;
 	background: #EAE4CE url("/icons/arrow_left.png") no-repeat center center;
 	width: 50px;
@@ -280,7 +274,7 @@ input[type=submit] {
 }
 
 #Rarrow {
-	z-index: 4;
+	z-index: 3;
 	position: fixed;
 	top: 0px;
 	opacity: 0;
@@ -288,19 +282,4 @@ input[type=submit] {
 	width: 50px;
 	height: 0px; left: 0px;
 	/*height and left to be computed at runtime*/
-}
-.sgram {
-	display: inline-block;
-	position: absolute;
-	z-index: 2;
-	/*DYNAMIC opacity: $SEFRAN3{SGRAM_OPACITY}*/
-}
-.sgramhour {
-	left: 0px;
-	top: 0px;
-	/*DYNAMIC opacity: $SEFRAN3{SGRAM_OPACITY}*/
-}
-.slidecontainer {
-  	width: 100%; /* Width of the outside container */
-	vertical-align: middle;
 }

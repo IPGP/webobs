@@ -2,30 +2,22 @@
 #	Script: gnss_run_gipsyx
 #
 #	Dependencies:
-#	   - teqc (3rd party binary www.unavco.org, must be in $PATH)
-#	   - raw2rinex (WebObs script located in the same directory)
-#	   - download_orbit (WebObs script located in the same directory)
-#	   - the list of stations to process can be set in the .rc using NODES
-#	     variable, or, using a local WebObs proc for node's list with FID
-#	     parameter as station/marker code name for each node. Optionally,
-#	     each node might contain the parameters (will overwrite Rinex header):
-#		      FID_RECEIVER: receiver code name
-#		       FID_ANTENNA: antenna code name
-#	   - a station.info Gamit file can be added to overwrite Rinex headers
-#	     with receiver/antenna codes (set STATION_INFO variable in .rc);
-#	     needs stationinfo2json (WebObs script) and jq (JSON processor).
-#	   - a directory of sitelogs can be added to overwrite Rinex headers with
-#	     receiver/antenna/approx. position metadata (set SITELOG variable in
-#	     .rc); needs sitelog2json (WebObs script) and jq (JSON processor).
+#		- teqc (3rd party binary www.unavco.org, must be in $PATH)
+#		- raw2rinex (WebObs script located in the same directory)
+#		- download_orbit (WebObs script located in the same directory)
+#		- a WebObs grid for node's list and parameters (defined in
+#		  the configuration file) that must be defined for each node:
+#		               FID: station/marker code name
+#		      FID_RECEIVER: receiver code name (overwrites Rinex header)
+#		       FID_ANTENNA: antenna code name (overwrites Rinex header)
 #
-#	For all other parameters see the gnss_run_gipsyx.rc template.
 #
 # Authors: François BEAUDUCEL, Edgar LENHOF, Patrice BOISSIER
 #
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia)
 #          Based on Gipsy-Oasis version by Francois BEAUDUCEL (IPGP) and Ahmad Ali FAHMI (IRD),
 #          Domerapi/WebObs Project, 2014.
-# Updated: 2022-09-22
+# Updated: 2020-08-10
 
 #Check lock file
 LOCKFILE=/tmp/gnss_run_gipsyx.txt
@@ -42,17 +34,17 @@ if [ $# -lt 2 ]; then
 	echo "       CONF = configuration filename, e.g., /etc/webobs.d/gnss_run_gipsyx.rc"
 	echo "       DAYS = number of days to process (from today)"
 	echo "     Options:"
-	echo "       -s \"STA1 STA2...\""
+	echo "	    -s \"STA1 STA2...\""
 	echo "            station code or station list with double quotes"
-	echo "	           default is all nodes associated with local WebObs $GRID proc name"
+	echo "	         default is all nodes associated with local WebObs $GRID"
 	echo "            or a list of nodes $NODES defined in .rc"
 	echo "       -d \"yyyy/mm/dd,yyyy/mm/dd\""
 	echo "            choose days to start process; the DAYS argument can still be used to"
 	echo "            process previous days from the selected ones, for instance:"
 	echo "            gnss_run_gipsyx CONF 1 -d 2017/03/17,2018/08/05"
 	echo "            will compute  2017/03/17, 2017/03/16, 2018/08/05 and 2018/08/04"
-	echo "       -final, -rapid, -ultra"
-	echo "            use only final, rapid or ultra orbit"
+	echo "       -final"
+	echo "            use only final orbit"
 	echo "       -force"
 	echo "            forces the process despite existence of final results"
 	echo "       -lock"
@@ -78,17 +70,11 @@ PROGDIR=$( cd "$( dirname "$0" )" && pwd )
 
 ORBITS=( "flinn" "ql" "ultra" )
 
-# gets the nodes list from WebObs (will erase $NODES)
+# gets the nodes parameters from WebObs
 if [ "$GRID" != "" ]; then
-	# PROC is local directory containing nodes .cnf
-	if [ -d "$NODEROOT" ]; then
-		PROC="$NODEROOT/"
-	else
-		PROC="/etc/webobs.d/GRIDS2NODES/$GRID."
-	fi
-	# node's list defined from the FID parameter in .cnf
-	NODES=$(grep -h "^$GRID\.FID|" $PROC*/*.cnf|sed -E "s/.*FID\|//")
-	NODESTABLE=$(grep -H "^$GRID\.FID|" $PROC*/*.cnf|sed -E "s/.*\///"|sed -E "s/\.cnf:.*FID\|/\ /")
+	PROC="/etc/webobs.d/GRIDS2NODES/$GRID"
+	NODES=$(grep -h "^$GRID\.FID|" $PROC.*/*.cnf|sed -E "s/.*FID\|//")
+	NODESTABLE=$(grep -H "^$GRID\.FID|" $PROC.*/*.cnf|sed -E "s/.*\///"|sed -E "s/\.cnf:.*FID\|/\ /")
 fi
 
 if [ -z "$FMT" ]; then
@@ -104,58 +90,45 @@ LOG=gd2e.log
 # boolean for forcing process (default value doesn't force)
 FORCE=0
 
-if [ -z "$ERROR_REGEX_RINEX" ]; then
-	ERROR_REGEX_RINEX="REC #|ANT #|# / TYPES OF OBSERV|MARKER NAME"
-fi
-
 echo "*** GipsyX / WebObs $GRID GNSS File Processing ***"
 
 # Optional parameters
 for (( i=1; i<=$#; i++)); do
-	case ${!i} in
-	-final)
-		ORBITS=( "flinn" )
-		echo "Will use only final orbit"
-		;;
-	-rapid)
-		ORBITS=( "ql" )
-		echo "Will use only rapid orbit"
-		;;
-	-ultra)
-		ORBITS=( "ultra" )
-		echo "Will use only ultra orbit"
+   case ${!i} in
+		-final)
+			ORBITS=( "flinn" )
+			echo "Will use only final orbit"
 		;;
    	-force)
-      		FORCE=1
-      		echo "Force computation despites final orbits already exist"
+      	FORCE=1
+      	echo "Force computation despites final orbits already exist"
 		;;
    	-debug)
-      		DEBUG=1
-		export VERBOSE=Y
-      		echo "Debug mode: temporary directories will NOT be deleted!"
+      	DEBUG=1
+      	echo "Debug mode: temporary directories will NOT be deleted!"
 		;;
    	-s)
-      		j=$((i+1))
-      		IFS=' ' read -ra arrayStation <<< "${!j}"
-      		NODES=${arrayStation[@]}
+      	j=$((i+1))
+      	IFS=' ' read -ra arrayStation <<< "${!j}"
+      	NODES=${arrayStation[@]}
 		;;
-	-d)
-      		k=$((i+1))
-      		IFS=',' read -ra arrayDay <<< "${!k}"
-      		STARTDAYS=${arrayDay[@]}
-      		DAYLIST= $()
-      		for start in $STARTDAYS;do
-      			L=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago $start" +%Y/%m/%d;done)
-         		DAYLIST=("${DAYLIST[@]}" "${L[@]}")
-      		done
-      		DAYLIST=($(printf "%s\n" "${DAYLIST[@]}" | sort -u | tr '\n' ' '))
-      		DAYLIST=${DAYLIST[@]} #converting to proper format
-		;;
-	-lock)
-		# make sure the lockfile is removed when we exit and then claim it
-		trap "rm -f ${LOCKFILE}; exit" INT TERM EXIT
-		echo $$ > ${LOCKFILE}
-	esac
+		-d)
+      	k=$((i+1))
+      	IFS=',' read -ra arrayDay <<< "${!k}"
+      	STARTDAYS=${arrayDay[@]}
+      	DAYLIST= $()
+      	for start in $STARTDAYS;do
+      		L=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago $start" +%Y/%m/%d;done)
+         	DAYLIST=("${DAYLIST[@]}" "${L[@]}")
+      	done
+      	DAYLIST=($(printf "%s\n" "${DAYLIST[@]}" | sort -u | tr '\n' ' '))
+      	DAYLIST=${DAYLIST[@]} #converting to proper format
+      ;;
+		-lock)
+			# make sure the lockfile is removed when we exit and then claim it
+			trap "rm -f ${LOCKFILE}; exit" INT TERM EXIT
+			echo $$ > ${LOCKFILE}
+   esac
 done
 
 
@@ -168,8 +141,8 @@ for station in $NODES; do
 	# looks in node's parameters for possible antenna and receiver (will overwrite rinex header)
 	if [ "$GRID" != "" ]; then
 		ID=$(echo "$NODESTABLE" | awk "/$FID/ {print \$1}")
-		receiver=$(grep -h "^$GRID\.FID_RECEIVER|" $PROC$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
-		antenna=$(grep -h "^$GRID\.FID_ANTENNA|" $PROC$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
+		receiver=$(grep -h "^$GRID\.FID_RECEIVER|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_RECEIVER\|//"|tr -d '\r')
+		antenna=$(grep -h "^$GRID\.FID_ANTENNA|" $PROC.$ID/$ID.cnf|sed -E "s/.*FID_ANTENNA\|//"|tr -d '\r')
 		echo "   WO ID = $ID - receiver = '$receiver' - antenna = '$antenna' (will use rinex header if empty)"
 		if [ ! -z "$receiver" ]; then
 			receiver=" -O.rt \"$receiver\""
@@ -185,45 +158,8 @@ for station in $NODES; do
 		sta=$(echo $FID | tr '[:upper:]' '[:lower:]')
 		yyyy=${ymd:0:4}
 		year=$yyyy
-		yy=${ymd:2:2}
 		mm=${ymd:5:2}
 		dd=${ymd:8:2}
-		bb=$(date -d "$ymd" +"%b")
-		rinex="$tmpdir/${sta}${doy}0.${yy}o"
-
-		# uses station.info to overwrite rinex header
-		if [[ "$STATION_INFO" != "" && -s "$STATION_INFO" ]]; then
-			receiver=$($PROGDIR/stationinfo2json "$STATION_INFO" $FID $yyyy-$doy|jq '.rt' | tr -d '"')
-			antenna=$($PROGDIR/stationinfo2json "$STATION_INFO" $FID $yyyy-$doy|jq '.at' | tr -d '"')
-			alertheader="   station.info: $FID @ $yyyy-$doy - receiver = '$receiver' - antenna = '$antenna' (will use rinex header if empty)"
-			if [ ! -z "$receiver" ]; then
-				receiver=" -O.rt \"$receiver\""
-			fi
-			if [ ! -z "$antenna" ]; then
-				antenna=" -O.at \"$antenna\""
-			fi
-		else
-			alertheader=''
-		fi
-
-		# uses sitelogs to overwrite rinex header
-		if [[ "$SITELOG" != "" ]]; then
-			receiver=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.rt' | tr -d '"')
-			antenna=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.at' | tr -d '"')
-			posxyz=$($PROGDIR/sitelog2json "$SITELOG" $FID $ymd|jq '.px' | tr -d '"')
-			alertheader="   sitelog: $FID @ $ymd - receiver = '$receiver' - antenna = '$antenna' (will use rinex header if empty)"
-			if [ ! -z "$receiver" ]; then
-				receiver=" -O.rt \"$receiver\""
-			fi
-			if [ ! -z "$antenna" ]; then
-				antenna=" -O.at \"$antenna\""
-			fi
-			if [ ! -z "$posxyz" ]; then
-				posxyz=" -O.px $posxyz"
-			fi
-		else
-			alertheader=''
-		fi
 
 		# setting paths
 		res="$DEST/$FID/$yyyy/$yyyy-$mm-$dd.$FID"
@@ -236,12 +172,11 @@ for station in $NODES; do
 			# path of raw data: eval() will replace any variables in $FMT (from .rc)
 			RAW=$(eval "echo $FMT")
 			if [ ! -z "$(ls -Ad $RAW 2>/dev/null)" ]; then
-				echo "$alertheader"
 				rm -rf $tmpdir/*
 				# makes Rinex daily file from raw data (see raw2rinex script)
-				$PROGDIR/raw2rinex "$RAW" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz
+				$PROGDIR/raw2rinex "$RAW" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna
 				if [[ ! -z $VERBOSE || $? != 0 ]]; then
-					echo "   $PROGDIR/raw2rinex \"$RAW\" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz"
+					echo "$PROGDIR/raw2rinex \"$RAW\" $rinex $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
 				fi
 
 				# real-time case: makes a 24h window from yesterday+today data
@@ -258,28 +193,29 @@ for station in $NODES; do
 					echo "   Real-time case: Appending $two_days_ago, $yesterday and $TODAY to process 30h of data."
 
 					# converting yesterday rinex
-              			doy=$(date -d "$yesterday" +"%j")
-              			yyyy=${yesterday:0:4}
-              			mm=${yesterday:5:2}
-              			dd=${yesterday:8:2}
-              			RAW2=$(eval "echo $FMT")
+               doy=$(date -d "$yesterday" +"%j")
+               yyyy=${yesterday:0:4}
+               mm=${yesterday:5:2}
+               dd=${yesterday:8:2}
+               RAW2=$(eval "echo $FMT")
 					echo "$RAW2"
-					$PROGDIR/raw2rinex "$RAW2" $rinex2 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz
+					$PROGDIR/raw2rinex "$RAW2" $rinex2 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna
 					if [[ ! -z $VERBOSE || $? != 0 ]]; then
-						echo "$PROGDIR/raw2rinex \"$RAW2\" $rinex2 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz"
+						echo "$PROGDIR/raw2rinex \"$RAW2\" $rinex2 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
 					fi
 
+
 					#converting 2 days ago rinex
-		         		doy=$(date -d "$two_days_ago" +"%j")
-              			yyyy=${two_days_ago:0:4}
-              			mm=${two_days_ago:5:2}
-              			dd=${two_days_ago:8:2}
-              			RAW1=$(eval "echo $FMT")
+		         doy=$(date -d "$two_days_ago" +"%j")
+               yyyy=${two_days_ago:0:4}
+               mm=${two_days_ago:5:2}
+               dd=${two_days_ago:8:2}
+               RAW1=$(eval "echo $FMT")
 					echo "$RAW1"
-              			$PROGDIR/raw2rinex "$RAW1" $rinex1 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz
-              			if [[ ! -z $VERBOSE || $? != 0 ]]; then
-       					echo "$PROGDIR/raw2rinex \"$RAW1\" $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna $posxyz"
-       				fi
+               $PROGDIR/raw2rinex "$RAW1" $rinex1 $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna
+               if [[ ! -z $VERBOSE || $? != 0 ]]; then
+               	echo "$PROGDIR/raw2rinex \"$RAW1\" $TEQCOPTIONS -O.mn \"$FID\" -O.mo \"$FID\" $receiver $antenna"
+               fi
 
 					mv $rinex $rinex3 #already converted rinex for today
 					if [[ ! -z $VERBOSE || $? != 0 ]]; then
@@ -303,14 +239,16 @@ for station in $NODES; do
 						echo "   file $gipsyres [$orbit] already exists..."
 						break
 					else
+
 						if [ "$ORBITSDIR" != "" ]; then #running Gipsy from local orbit
+
 							case $orbit in
-							flinn)
-								product="Final";;
-							ql)
-								product="Rapid";;
-							ultra)
-							product="Ultra";;
+								flinn)
+									product="Final";;
+								ql)
+									product="Rapid";;
+								ultra)
+									product="Ultra";;
 							esac
 
 							# calling download_orbit
@@ -328,7 +266,7 @@ for station in $NODES; do
 							ORBITOPT=$orbit
 						fi
 						cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITOPT $GIPSYOPTIONS"
-						echo "   $cmd"
+						echo "$cmd"
 						if [ -z $DEBUG ]; then
 							eval "$cmd > $LOG 2>&1"
 						else
@@ -338,10 +276,7 @@ for station in $NODES; do
 						if [[ $rc == 0 && -s $tdp ]]; then
 							mkdir -p "$DEST/$FID/$year"
 							rm -f $gipsyres.*
-							grep "\.State\.Pos\.[XYZ]" $tdp | tail -n3 > $gipsyres
-							if [ ! -z $TROP_TDP ]; then
-								grep "\.Trop\." $tdp >> $gipsyres
-							fi
+							grep ".State.Pos.[XYZ]" $tdp | tail -n3 > $gipsyres
 							echo "==> $gipsyres [$orbit] written."
 							if [[ "$orbit" != "flinn" ]]; then
 								mv $gipsyres $gipsyres.$orbit
@@ -349,14 +284,15 @@ for station in $NODES; do
 							break
 						else
 							echo "   $cmd"
-                                                	if [[ -z $ORBITOK && "$orbit" != "ultra" ]]; then
+							if [ -z $ORBITOK ]; then
 								echo "   ** WARNING: Problem to process gd2e... May be orbit $orbit not yet available?"
 							else
 								echo "   ** ERROR: Problem to process gd2e... Please check logs."
-                                                		grep -E "$ERROR_REGEX_RINEX" $rinex
 								ERROR=1
 								break
 							fi
+
+
 						fi
 					fi
 				done

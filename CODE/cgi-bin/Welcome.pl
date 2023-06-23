@@ -2,20 +2,20 @@
 
 =head1 NAME
 
-Welcome.pl
+Welcome.pl 
 
 =head1 SYNOPSIS
 
-1) defined in menu.rc as being the WebObs initial page: WELCOME|/cgi-bin/Welcome.pl
+1) defined in menu.rc as being the WebObs initial page: WELCOME|/cgi-bin/Welcome.pl   
 
-2) uses its own configuration file, pointed to by $WEBOBS{WELCOME_CONF}
+2) uses its own configuration file, pointed to by $WEBOBS{WELCOME_CONF} 
 
 =head1 DESCRIPTION
 
-Builds a WEBOBS welcome page as the name suggests. Page will be loaded by 'index.pl' script
-if referenced by $WEBOBS{WELCOME_PAGE}.
+Builds a WEBOBS welcome page as the name suggests. Page will be loaded by 'index.pl' script 
+if referenced by $WEBOBS{WELCOME_PAGE}. 
 
-Has its own configuration file defined by $WEBOBS{WELCOME_CONF}: it further defines
+Has its own configuration file defined by $WEBOBS{WELCOME_CONF}: it further defines  
 the contents of predefined areas on the page: see PAGE LAYOUT below.
 
 =head1 PAGE LAYOUT
@@ -33,15 +33,15 @@ the contents of predefined areas on the page: see PAGE LAYOUT below.
 	|               |Calendar |                  |
 	|               |  wodp   |      timezone(s) |
 	|               |         |                  |
-	----------------------------------------------
+	----------------------------------------------       
 
-=head1 {WELCOME_CONF} format
+=head1 {WELCOME_CONF} format 
 
-	TITLE|        html page title
-	HEAD|         the file containing html for Header
+	TITLE|        html page title   
+	HEAD|         the file containing html for Header 
 	ACTU|         the file containing html for Actu
-	INFO|         the file containing html (wiki) for Info
-	TIMEZONES|    the configuration file for timezone(s)
+	INFO|         the file containing html (wiki) for Info 
+	TIMEZONES|    the configuration file for timezone(s)  
 	DAYLIGHT|     option to display a world map
 
 =cut
@@ -79,7 +79,7 @@ if (defined($WEBOBS{WELCOME_CONF})) {
 my $DN = $APARMS{DAYNIGHT} // "NO";
 my $HW = $APARMS{HELLOWORLD} // $__{'Hello World'};
 
-# ---- prepare timezones area, a view of other interesting places datetime
+# ---- prepare timezones area, a view of other interesting places datetime 
 my $tz_old = $ENV{TZ};
 my %fuseaux_horaires = readCfg("$APARMS{TIMEZONES}");
 my @liste_heures; my @liste_coords; my $DNcoords;
@@ -88,7 +88,7 @@ my $DNc = 0;
 for (sort keys(%fuseaux_horaires)) {
 	$ENV{TZ} = $_;
 	my $bullet = "<span style=\"font-weight: bolder; color: $DNcolors[$DNc]\">&#8226;&nbsp;</span>";
-	if (isok($DN)) {
+	if ($DN eq "YES") {
 		push(@liste_heures,sprintf("<div style=\"padding-bottom: 4px;background-color:%s\">%s<b>%s</b>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<i>%s</i></div>",
 									($DNc%2)?"#EAE4CE":"transparent",
 									$bullet,
@@ -116,7 +116,7 @@ for (sort keys(%fuseaux_horaires)) {
 }
 my $displayListeHeures = "<TABLE align=center>";
 $displayListeHeures .= "<tr>";
-$displayListeHeures .= "<td style=\"border: none\"><canvas height=\"180\" id=\"DNmap\" width=\"360\"></canvas></td>" if (isok($DN));
+$displayListeHeures .= "<td style=\"border: none\"><canvas height=\"180\" id=\"DNmap\" width=\"360\"></canvas></td>" if ($DN eq "YES");
 $displayListeHeures .= "<td style=\"border: none; text-align: right; vertical-align: top\">".join("\n",@liste_heures)."</td>";
 $displayListeHeures .= "</tr>";
 $displayListeHeures .= "</TABLE>";
@@ -126,24 +126,24 @@ my $thismonday = $today-($today->day_of_week+6)%7*86400;
 my $daynames   = join(',',map { l2u(($thismonday+86400*$_)->strftime('%A'))} (0..6)) ;
 my $monthnames = join(',',map { l2u((Time::Piece->strptime("$_",'%m'))->strftime('%B')) } (1..12)) ;
 my $wodp_d2    = "[".join(',',map { "'".substr($_,0,2)."'" } split(/,/,$daynames))."]";
-my @months = split(/,/,$monthnames);
+my @months = split(/,/,$monthnames); 
 my $wodp_m     = "[".join(',',map { "'$_'" } @months)."]";
 my @holidaysdef;
 my $wodp_holidays = "[]";
-if (open(FILE, "<$WEBOBS{FILE_DAYSOFF}")) {
+if (open(FILE, "<$WEBOBS{FILE_DAYSOFF}")) {  
 	while(<FILE>) { push(@holidaysdef,l2u($_)) if ($_ !~/^(#|$)/); }; close(FILE);
 	chomp(@holidaysdef);
 	$wodp_holidays = "[".join(',',map { my ($d,$t)=split(/\|/,$_); "{d: \"$d\", t:\"$t\"}" } @holidaysdef)."]";
 }
 my $calendar = "<input id=\"d0\" class=\"wodp\" type=\"text\"/>";
 
-# ---- prepare an inline view of today's Gazette articles
+# ---- prepare an inline view of today's Gazette articles 
 my $gview = $APARMS{GAZETTE_VIEW} // 'categorylist';
 my $empty = $__{$GAZETTE{EMPTY_SELECTION_MSG}} // $__{"Empty"};
 my @gazette = WebObs::Gazette::Show(view=>$gview,from=>$today->strftime('%Y-%m-%d'));
 @gazette = ("<h3>$empty</h3>") if (!@gazette);
 
-# ---- prepare (read in) all possible user-defined contents
+# ---- prepare (read in) all possible user-defined contents 
 my @Head  = readFile("$APARMS{HEAD}");
 my @Actu  = readFile("$APARMS{ACTU}");
 my @Info  = readFile("$APARMS{INFO}");
@@ -167,7 +167,7 @@ print "\n</HEAD>\n<BODY>\n",
       "<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\"></script>",
       "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>",
       "<!-- overLIB (c) Erik Bosrup -->";
-if (isok($DN)) { print "<script language=\"JavaScript\" src=\"/js/daynight.js\"></script>"; }
+if ($DN eq "YES") { print "<script language=\"JavaScript\" src=\"/js/daynight.js\"></script>"; }
 print <<"FIN";
 <script language="JavaScript">
 \$(document).ready(function() {
@@ -179,7 +179,7 @@ print <<"FIN";
 		onpicked: function() { if (! \$('input#d0').data('wodpdesc').match(/init|ranging/)) location.href='/cgi-bin/Gazette.pl?gview=calendar&gdate='+\$('input#d0').val(); },
 	});
 	if(\$('#DNmap').length != 0) {
-		initDN($jstoday, \"/icons/DN2.png\", $DNcoords);
+		initDN($jstoday, \"/icons/DN2.png\", $DNcoords); 
 	}
 });
 </script>
@@ -187,8 +187,8 @@ FIN
 
 print "@Head\n";
 
-print "<TABLE class=\"welcome\" width=\"100%\">";
-	print "<TR class=\"welcome\">";
+print "<TABLE class=\"welcome\" width=\"100%\">"; 
+	print "<TR class=\"welcome\">"; 
 	print "<TD width=\"340\" class=\"welcome\" rowspan=\"2\" valign=\"top\" align=\"center\">\n";
 		print "<div class=\"drawer\"><div class=\"welcomedrawer\">&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#ActuID');\">";
 		print "$__{'News'}</div><div id=\"ActuID\">";
@@ -203,12 +203,12 @@ print "<TABLE class=\"welcome\" width=\"100%\">";
 	print "</TD>";
 
 	print "</TR>";
-	print "<TR class=\"welcome\" >";
-	print "<TD valign=\"top\" class=\"welcome\">";
+	print "<TR class=\"welcome\" >"; 
+	print "<TD valign=\"top\" class=\"welcome\">"; 
 	print "<div class=\"drawer\"><div class=\"welcomedrawer\">&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#GazetteID');\">";
 	print "$__{'Gazette Today'}</div><div id=\"GazetteID\" style=\"padding-left: 3px;\">";
 	my $fmt_long_date = $__{'gzt_fmt_long_date'} ;
-	if ( isok($APARMS{WETON}) ) {
+	if ( uc($APARMS{WETON}) =~ /^(Y|YES|OK|ON|1)$/ ) {
 		my $weton = "<H2><small><i>~ ".WebObs::Dates::weton($today->strftime('%Y-%m-%d'))." ~</i></small></H2>";
 		print $weton;
 	}
@@ -259,3 +259,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
+

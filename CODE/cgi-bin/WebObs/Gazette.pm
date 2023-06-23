@@ -113,7 +113,7 @@ sub Show {
 		$dtto = eval { Time::Piece->strptime($KWARGS{to},'%Y-%m-%d');} or return undef;
 		if ($KWARGS{view} =~ /calendar/i && $dtfrom == $dtto ) { $KWARGS{view} = "day" } 
 	}
-	my $filter = (exists($KWARGS{textfilter})) ? $KWARGS{textfilter} : "";
+	my $filter = (exists($KWARGS{textfilter})) ? quotemeta $KWARGS{textfilter} : "";
 	my $jsedit = (exists($KWARGS{jseditor})) ? $KWARGS{jseditor} : "";
 	my $jsevent = (exists($KWARGS{jsevent})) ? $KWARGS{jsevent} : "";
 	my @html = ();
@@ -135,7 +135,7 @@ sub Show {
  	  	$dtfrom = $dtfrom - (($dtfrom->day_of_week+6)%7)*86400;
 	  	$dtto   = $dtto + ((0-$dtto->day_of_week)%7)*86400;
 		my $articles = getRaw(from=>$dtfrom->strftime('%Y-%m-%d'), to=>$dtto->strftime('%Y-%m-%d'), categories=>$incat, order=> 'startdate,starttime,category');
-		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/i) } @$articles }
+		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/) } @$articles }
 
 		# from 'number of weeks displayed' in requested date frame, derive the preceeding and next date frames
 			my $wn = ($dtto->epoch - $dtfrom->epoch)/(60*60*24*7); # nb of weeks in requested date frame
@@ -265,7 +265,7 @@ sub Show {
 
 	if ($KWARGS{view} =~ /day/i) {
 		my $articles = getRaw(from=>$dtfrom->strftime('%Y-%m-%d'), to=>$dtfrom->strftime('%Y-%m-%d'), categories=>$incat, order=> 'startdate,starttime,category');
-		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/i) } @$articles }
+		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/) } @$articles }
 
 		my $prevday=($dtfrom-86400)->strftime('%Y-%m-%d');
 		my $nextday=($dtfrom+86400)->strftime('%Y-%m-%d');
@@ -307,7 +307,7 @@ sub Show {
 
 	if ($KWARGS{view} =~ /datelist/i) { 
 		my $articles = getRaw(from=>$dtfrom->strftime('%Y-%m-%d'), to=>$dtto->strftime('%Y-%m-%d'), categories=>$incat, order=> 'startdate,starttime,category');
-		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/i) } @$articles }
+		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/) } @$articles }
 	
 		for ( my $d=$dtfrom, my $cnt=0; $d<=$dtto; $d+=86400, $cnt++) {  # for each day starting on $d 
 			my $ymd = $d->strftime('%Y-%m-%d');
@@ -358,7 +358,7 @@ sub Show {
 
 	if ($KWARGS{view} =~ /categorylist/i) { 
 		my $articles = getRaw(from=>$dtfrom->strftime('%Y-%m-%d'), to=>$dtto->strftime('%Y-%m-%d'), categories=>$incat, order=> 'category,startdate,starttime');
-		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/i) } @$articles }
+		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/) } @$articles }
 
 		my $currentCat = ""; 
 		for my $art (@{$articles}) {  # for each article (ordered by category)
@@ -424,7 +424,7 @@ sub Show {
 		} else {
 			$articles = getRaw(from=>$dtfrom->strftime('%Y-%m-%d'), to=>$dtto->strftime('%Y-%m-%d'), categories=>$incat, order=> 'startdate,starttime,category');
 		}
-		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/i) } @$articles }
+		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/) } @$articles }
 		push(@html,"<TABLE class=\"gzt-dump\"><tr><th>ID<th>STARTDATE<th>STARTTIME<th>ENDDATE<th>ENDTIME<th>CATEGORY<th>UID<th>OTHERS<th>PLACE<th>SUBJECT<th>Updated<th>UpdID</tr>");
 		for my $art (@{$articles}) {  # each article
 			push(@html, "<tr><td>".join('<td>', map { "$art->[$_]" } (0..11))."</tr>\n");
@@ -475,7 +475,7 @@ sub Show {
 	
 	if ($KWARGS{view} =~ /ical/i) {
 		my $articles = getRaw(from=>$dtfrom->strftime('%Y-%m-%d'), to=>$dtto->strftime('%Y-%m-%d'), categories=>$incat, order=> 'startdate,starttime,category');
-		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/i) } @$articles }
+		if ($filter ne "") { @$articles = grep { (@$_[7..9] =~ /$filter/) } @$articles }
 
 		push(@html,"BEGIN:VCALENDAR\n");
 		push(@html,"PRODID:-//webobs.ipgp.fr/gazette//EN\n");

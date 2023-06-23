@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-formCLB.pl
+formCLB.pl 
 
 =head1 SYNOPSIS
 
@@ -10,14 +10,13 @@ formCLB.pl
 
 =head1 DESCRIPTION
 
- Editing or creating the calibration file of a node in association to a proc.
+Editing the calibration file of a node.
 
 =head1 Query string parameters
 
- node=
- the fully qualified node name whose CLB file will be edited, e.g.,
- node=PROC.procname.nodename
-
+ node=  
+ the NODE name whose CLB file will be edited
+ 
 =cut
 
 use strict;
@@ -51,69 +50,50 @@ sub sort_clb_lines {
 	$a->[0] cmp $b->[0] || $a->[1] cmp $b->[1] || $a->[2] <=> $b->[2];
 }
 
-# ---- inits and checkings
-my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
+# ---- inits and checkings   
 my %NODE;
 my %CLBS;
 my @clbNote;
 my @fieldCLB;
 my $fileDATA = "";
-my @newChan;
+my @newChan; 
 my @donnees;
 my $nb = 0;
-my $nouveau = 0;
+my $nouveau = 0; 
 my $QryParm = $cgi->Vars;
 
 $QryParm->{'node'}   ||= "";
 
-($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
-if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
-	if ( !clientHasEdit(type=>"authprocs",name=>"$GRIDName")) {
-		die "$__{'Not authorized'} (edit) $GRIDType.$GRIDName.$NODEName";
-	}
-	if ($NODEName ne "") {
-		my %S = readNode($NODEName);
-		%NODE = %{$S{$NODEName}};
+if (clientHasEdit(type=>"authmisc",name=>"CLB")) {
+	if ($QryParm->{'node'} ne "") {
+		my %S = readNode($QryParm->{'node'});
+		%NODE = %{$S{$QryParm->{'node'}}};
 		if (%NODE) {
 			%CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 			if (%CLBS) {
 				@clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
 				@fieldCLB = readCfg($CLBS{FIELDS_FILE});
 				if (@fieldCLB) {
-					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
-					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $fileDATA ); # for backwards compatibility
-					if ( -s $fileDATA ) {
+					$fileDATA = "$NODES{PATH_NODES}/$QryParm->{'node'}/$QryParm->{'node'}.clb";
+					if ((-s $fileDATA) != 0) {
 						@donnees = map { my @e = split /\|/; \@e; } readCfgFile($fileDATA);
-					} else {
-						$nouveau = 1; @newChan = (1..$QryParm->{'nbc'});
-					}
-				} else {
-					die "$__{'Could not read'} $__{'calibration data-fields definition'}";
-				}
-			} else {
-				die "$__{'Could not read'} $__{'calibration-files configuration'}";
-			}
-		} else {
-			die "$__{'Could not read'} $QryParm->{'node'} $__{'node configuration'}";
-		}
-	} else {
-		die "$__{'No node requested'}";
-	}
-} else {
-	die ("$__{'You cannot edit a NODE calibration file outside of PROC context'}");
-}
-
+					} else { $nouveau = 1; @newChan = (1..$QryParm->{'nbc'})}
+				} else { die "$__{'Could not read'} $__{'calibration data-fields definition'}" } 
+			} else { die "$__{'Could not read'} $__{'calibration-files configuration'}" }
+		} else { die "$__{'Could not read'} $QryParm->{'node'} $__{'node configuration'}" }
+	} else { die "$__{'No node requested'}" }
+} else { die "$__{'Not authorized'} (edit)" }
 
 # ---- OK, passed all above checks
 
 my $titre2 = "$NODE{ALIAS}: $NODE{NAME} [$QryParm->{'node'}]";
-
+		
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
 my $todayyear = strftime('%Y',@tod);
 my $today = strftime('%F',@tod);
 my $firstyear = $WEBOBS{BIG_BANG};
-if ($NODE{INSTALL_DATE} and $NODE{INSTALL_DATE} =~ /\d{4}-\d{2}-\d{2}/) {
+if ($NODE{INSTALL_DATE} ne "") {
 	$firstyear = substr($NODE{INSTALL_DATE},0,4);
 }
 
@@ -123,7 +103,7 @@ my @jourListe   = ('01'..'31');
 my @heureListe  = ('00'..'23');
 my @minuteListe = ('00'..'59');
 
-# ---- Start HTML page
+# ---- Start HTML page 
 my $titrePage = "Edit - $CLBS{TITLE}";
 print "Content-type: text/html\n\n
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n
@@ -136,20 +116,25 @@ print "Content-type: text/html\n\n
 <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
 <!-- overLIB (c) Erik Bosrup -->
+<DIV ID=\"helpBox\"></DIV>
+<!-- to avoid validating form when pressing ENTER -->
+<script type=\"text/javascript\">
+function stopRKey(evt) {
+	var evt = (evt) ? evt : ((event) ? event : null);
+	var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+	if ((evt.keyCode == 13) && (node.type==\"text\"))  {return false;}
+}
+document.onkeypress = stopRKey;
+</script>
 </HEAD>";
 my $jvs = ($QryParm->{'submit'}) ? 'onLoad="calc()"' : "";
 print "<BODY style=\"background-color:#E0E0E0\" $jvs>\n";
 print "<H1>$titrePage</H1>\n<H2>$titre2</H2>\n";
-
-# ---- take care of new "lines" if any
+	
+# ---- take care of new "lines" if any 
 #
 for (@newChan) {
-	my $s;
-	if ($NODE{INSTALL_DATE} and $NODE{INSTALL_DATE} =~ /\d{4}-\d{2}-\d{2}/) {
-		$s = $NODE{INSTALL_DATE}
-	} else {
-		$s = $today;
-	}
+	my $s = ($nouveau && $NODE{INSTALL_DATE} ne "" ? "$NODE{INSTALL_DATE}":$today) ;
 	$s .= "|$fieldCLB[1][1]|$_";
 	for (3..($#fieldCLB)) {
 		if    ($_ == 13) { $s .= "|".$NODE{LAT_WGS84}; }
@@ -164,10 +149,7 @@ $nb = @donnees;  # number of elements in @donnees
 
 # ---- now inject some js code
 #
-print "
-<div id=\"helpBox\"></div>
-<script type=\"text/javascript\">
-
+print "<script type=\"text/javascript\">
 function verif_formulaire()
 {
 	var i;
@@ -196,50 +178,21 @@ function verif_formulaire()
 
 function calc()
 {
-	// This function should be changed to be run as a change callback
-	// First, one should make sure this all make any sense...
 	var i;
-	// I guess 'ok' should be 1 if changes are to be submitted/recorded
-	// and 0 if the form is to be updated.
 	var ok = 1;
 
-	if (document.formulaire.nbc.value != document.formulaire.nbc.defaultValue) {
-		ok = 0;
-	}
+	if (document.formulaire.nbc.value != document.formulaire.nbc.defaultValue) ok = 0;
 
 	for (i=1;i<=".scalar(@donnees).";i++) {
-		// Note: not really sure if the fix of this nonsense is ok, but it
-		// was useless anyway, as sX.value is always 'on' as the 'value' HTML
-		// attribute of the checkbox is not defined.
-		//if (eval('document.formulaire.s' + i + '.value') != '') ok = 0;
-		if (eval('document.formulaire.s' + i + '.checked')) { ok = 0; }
+		if (eval('document.formulaire.s' + i + '.value') != '') ok = 0;
 	}
+	if (ok) document.formulaire.submit.value = 'Valider';
+	else document.formulaire.submit.value = 'Soumettre';
 
-	// Update the label of the submit button : I guess 'Submit' is supposed to
-	// be used when the form needs to be updated, and 'Validate' when
-	// calibration file is ready to be written (and, of course, the user is
-	// supposed to understand the difference. Poor, poor user.)
-	var sb = document.getElementById('submit_button')
-	if (ok) {
-		sb.value = '$__{'Validate'}';
-	} else {
-		sb.value = '$__{'Submit'}';
-	}
 }
 
-\$(function() { // Executed after page is loaded
-
-	// Not sure this is still useful
-	window.onkeydown = calc();
-
-	// Prevent implicit submission of the form on pressing the Enter key
-	document.addEventListener('keypress', function(event) {
-		if (event.keyCode == 13) {
-			event.preventDefault();
-		}
-	});
-});
-
+window.captureEvents(Event.KEYDOWN);
+window.onkeydown = calc();
 </script>\n\n";
 
 my $c = "";
@@ -247,11 +200,11 @@ print "<P>@clbNote</P>\n";
 #djl-was: print "<FORM name=formulaire action=\"/cgi-bin/".basename($0)."?submit=\" method=post onSubmit=\"return verif_formulaire()\">";
 print "<FORM name=formulaire id=\"theform\" action=\"\">";
 print "<input type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">",
-      "<input type=\"hidden\" name=\"nb\" value=\"$nb\">\n\n",
+      "<input type=\"hidden\" name=\"nb\" value=\"$nb\">\n\n",	
 	  "<TABLE class=\"CLBtable\" width=\"100%\" style=\"border:0\" onMouseOver=\"calc()\">",
 	  "<TR>";
 		for (0..($#fieldCLB)) {
-			if ($_ >= 12 && $_ <= 16) { $c = ' class="CLBshowhide"' } else { $c = ''}
+			if ($_ >= 12 && $_ <= 16) { $c = ' class="CLBshowhide"' } else { $c = ''} 
 			print "<TH$c>",$fieldCLB[$_][2]."</TH>";
 		}
 print "</TR>\n";
@@ -262,9 +215,9 @@ my $nbc  = 0;
 for my $line (sort sort_clb_lines @donnees) {
 	$i++;
 	print "<TR>";
-
-	my @date = split(/-/, $line->[0]);
-	my @heure = split(/:/, $line->[1]);
+	
+	my (@date) = split(/-/, $line->[0]);
+	my (@heure) = split(/:/, $line->[1]);
 	print "<TD nowrap onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[0][3]}')\"><select name=\"y$i\" size=\"$fieldCLB[0][0]\">";
 	for (@anneeListe) {
 		my $sel = "";
@@ -303,7 +256,7 @@ for my $line (sort sort_clb_lines @donnees) {
 		$nbc = $line->[2];
 	}
 	for my $j ("2"..($#fieldCLB-1)) {
-		if ($j >= 11 && $j <= 15) { $c = ' class="CLBshowhide"' } else { $c = ''}
+		if ($j >= 11 && $j <= 15) { $c = ' class="CLBshowhide"' } else { $c = ''} 
 		print "<TD$c onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[$j+1][3]}')\"><input name=\"v".$i."_".$j
 				."\" value=\"".($line->[$j+1] // '')."\" size=\"$fieldCLB[$j+1][0]\"></TD>\n";
 	}
@@ -315,7 +268,7 @@ my $txt = "Number of channels for the node:<ul>"
 	."<li>decrease to remove all lines of channels with a greater number."
 	."</ul>";
 print "<TR><TD style=\"border:0\" colspan=2>
-		<P><B>Fix number of channels</B> =
+		<P><B>Fix number of channels</B> = 
 		<input type=\"text\" name=\"nbc\" size=2 value=\"$nbc\" onKeyUp=\"calc()\"
 		onMouseOut=\"nd()\" onMouseOver=\"overlib('$txt',CAPTION,'ATTENTION')\"></P>
 		</TD><TD style=\"border:0\" colspan=5>&nbsp;&uarr; <B>Selected lines :</B><BR>\n
@@ -325,7 +278,7 @@ print "<TR><TD style=\"border:0\" colspan=2>
 print "<TD style=\"border:0\" colspan=".(@fieldCLB-7)."><P style=\"text-align:right\">";
 print "<input type=\"button\" onClick=\"CLBshowhide();\" value=\"$__{'show/hide Loc'}\">";
 print "<input type=\"button\" name=lien onClick=\"history.go(-1);\" value=\"$__{'Cancel'}\">";
-print "<input type=\"button\" id=\"submit_button\" value=\"$__{'Submit'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\"> ";
+print "<input type=\"button\" value=\"$__{'Submit'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\"> ";
 
 print "</P></TD></TR></TABLE></FORM>";
 
@@ -358,3 +311,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
+

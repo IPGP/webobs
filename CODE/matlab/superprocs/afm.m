@@ -27,7 +27,7 @@ function DOUT=afm(varargin)
 %
 %	Authors: F. Beauducel + V. Clouard + J.M. Saurel / WEBOBS, IPGP
 %	Created: 2014-01-03
-%	Updated: 2022-06-12
+%	Updated: 2017-09-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -38,7 +38,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename,varargin{:});
 timelog(procmsg,1);
 
 
@@ -115,7 +115,7 @@ for n = 1:length(N)
 	end
 
 
-
+	
 	% ===================== makes the proc's job
 
 	for r = 1:length(P.GTABLE)
@@ -152,7 +152,7 @@ for n = 1:length(N)
 				if ~isnan(d(ke,i))
 					etat = etat + 1;
 				end
-				% specific PLUVIO: d>90% of full scale => status =
+				% specific PLUVIO: d>90% of full scale => status = 
 				if i == 5 && d(ke,i) > pluvio
 					etat = etat - 1;
 				end
@@ -162,7 +162,7 @@ for n = 1:length(N)
 		else
 			etat = 0;
 		end
-
+    
 
 		% title and status
 		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
@@ -215,10 +215,9 @@ for n = 1:length(N)
 					i, C.nm{i},d(ke,i),C.un{i},rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i)))}];
 			end
 		end
-
+		
 		% makes graph
-		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
 
 		% exports data
@@ -284,7 +283,7 @@ if isfield(P,'SUMMARYLIST')
 			box on
 			datetick2('x',P.GTABLE(r).DATESTR)
 			ylabel(sprintf('%s (%s)',C.nm{so(i)},C.un{so(i)}))
-
+			
 			% legend: station aliases
 			xlim = get(gca,'XLim');
 			ylim = get(gca,'YLim');
@@ -297,7 +296,7 @@ if isfield(P,'SUMMARYLIST')
 		end
 
 		tlabel(xlim,P.GTABLE(r).TZ)
-
+	    
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
 	end
@@ -314,3 +313,4 @@ timelog(procmsg,2)
 if nargout > 0
 	DOUT = D;
 end
+

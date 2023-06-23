@@ -61,7 +61,7 @@ use WebObs::Config;
 use WebObs::Users;
 use WebObs::Grids;
 use WebObs::i18n;
-use WebObs::Mapping;
+use WebObs::IGN;
 use Locale::TextDomain('webobs');
 
 # ---- inits ----------------------------------
@@ -88,8 +88,7 @@ my $ds  = $cgi->url_param('ds') // 0;
 my $all = $cgi->url_param('all') // 0;
 
 # ---- loads requested Sefran3 configuration or default one
-my $s3root = "$WEBOBS{PATH_SEFRANS}/$s3";
-my $s3conf = "$s3root/$s3.conf";
+my $s3conf = "$WEBOBS{ROOT_CONF}/$s3.conf";
 my %SEFRAN3 = readCfg("$s3conf") if (-f "$s3conf");
 
 # ---- data source parameters (or former variables by default)
@@ -163,7 +162,7 @@ my @stream_list;
 if ($S) {
 	@stream_list = split(/,/,$S);
 } else {
-	my @channels = readCfgFile(exists($SEFRAN3{CHANNEL_CONF}) ? $SEFRAN3{CHANNEL_CONF}:"$s3root/channels.conf");
+	my @channels = readCfgFile("$SEFRAN3{CHANNEL_CONF}");
 	for (@channels) {
 		my ($ali,$cod) = split(/\s+/,$_);
 		push(@stream_list,$cod);
@@ -338,7 +337,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -2,22 +2,22 @@ function varargout = readhgt(varargin)
 %READHGT Import/download NASA SRTM data files (.HGT).
 %	READHGT(AREA) where AREA is a 4-element vector [LAT1,LAT2,LON1,LON2]
 %	downloads the SRTM data and plots a map corresponding to the geographic
-%	area defined by latitude and longitude limits (in decimal degrees).
-%	Upper-right coordinates limits (LAT2,LON2) are excluded.
-%	If the needed SRTM .hgt files are not found in the current directory (or 
+%	area defined by latitude and longitude limits (in decimal degrees). If 
+%	the needed SRTM .hgt files are not found in the current directory (or 
 %	in the path), they are downloaded from the USGS data server (needs an 
 %	Internet connection and a companion file "readhgt_srtm_index.txt"). For
 %	better plot results, it is recommended to install DEM personal function
 %	available at author's Matlab page. 
 %
 %	READHGT(LAT,LON) reads or downloads the SRTM tiles corresponding to LAT
-%	and LON (in decimal degrees) coordinates (lower-left corner). LAT and/or
-%	LON can be vectors: in that case, tiles corresponding to all possible 
-%	combinations of LAT and LON values will be downloaded, and optional 
-%	output structure X will have as much elements as tiles.
+%	and LON (in decimal degrees) coordinates (lower-left corner).
 %
-%	READHGT(FILENAME) reads single .hgt data file FILENAME, must be in the
-%	form "[N|S]yy[E|W]xxx.hgt[.zip]", as downloaded from SRTM data servers.
+%	LAT and/or LON can be vectors: in that case, tiles corresponding to all
+%	possible combinations of LAT and LON values will be downloaded, and
+%	optional output structure X will have as much elements as tiles.
+%
+%	READHGT(FILENAME) reads HGT data file FILENAME, must be in the form
+%	"[N|S]yy[E|W]xxx.hgt[.zip]", as downloaded from SRTM data servers.
 %
 %	X=READHGT(...) returns a structure X containing: 
 %		lat: coordinate vector of latitudes (decimal degree)
@@ -50,59 +50,48 @@ function varargout = readhgt(varargin)
 %	   Former syntax that crops the map using latitude/longitude limits. 
 %	   Prefer the new syntax READHGT(AREA).
 %
-%	'outdir',OUTDIR
-%	   Specifies output directory OUTDIR to write downloaded files and/or 
-%	   to search existing files. Former syntax READHGT(LAT,LON,OUTDIR) also
-%	   accepted. Default is the current directory.
-%
-%	'url',URL
-%	   Specifies the URL address to find HGT files (default is USGS). 
-%	   Former syntax READHGT(LAT,LON,OUTDIR,URL) still accepted.
-%
-%	'srtm3'
-%	   Forces SRTM3 download for all areas (by default, SRTM1 tiles are 
-%	   downloaded only for USA territory, if exists).
-%
 %	'srtm1'
-%	   Uses SRTM1 tiles which are 9 times bigger than default SRTM3. The
-%	   tiles must be available in the OUTDIR directory or they will be
-%	   downloaded from NASA/EarthDATA website. This action needs a valid
-%	   user login (see LOGIN option below).
+%	   Downloads SRTM1 tiles which are 9 times bigger than default SRTM3 
+%	   ! EXPERIMENTAL ! since the used URL seems unofficial.
 %	   ! Beware with large zones may lead to computer memory issues.
 %	   ! SRTM1 and SRTM3 tiles hold the same filename, while they have 
 %	   different size. Do not store them in the same directory to avoid
 %	   errors when merging tiles.
 %
-%	'login',USER,PASSWORD
-%	  Needed user authentification to download SRTM1 tiles from the
-%	  NASA/EarthDATA center. See https://urs.earthdata.nasa.gov to register.
+%	'srtm3'
+%	   Forces SRTM3 download for all areas (by default, SRTM1 tiles are 
+%	   downloaded only for USA territory, if exists).
+%
+%	'outdir',OUTDIR
+%	   Specifies output directory OUTDIR to write downloaded files and/or 
+%	   to search existing files. Former syntax READHGT(LAT,LON,OUTDIR) also
+%	   accepted.
+%
+%	'url',URL
+%	   Specifies the URL address to find HGT files (default is USGS). 
+%	   Former syntax READHGT(LAT,LON,OUTDIR,URL) still accepted.
 %
 %	'wget'
 %	   Will use external command wget to download the files (for Linux and
-%	   MacOSX systems). Because access to SRTM data uses a secured https://
-%	   URL, Matlab versions older than 2016a will fail to download the 
-%	   tiles automatically due to unzip function and certificate problems. 
-%	   This issue can be surrounded using this 'wget' option and installing
-%	   wget command on your system. For MacOSX, wget must be installed 
-%	   using homebrew, macports, fink or compiling from sources.
-%	   Also with this option, the login USER/PASSWORD can be stored in your
-%	   home .netrc instead of 'login' arguments, by adding these lines:
-%	      machine urs.earthdata.nasa.gov
-%	      user xxxxx
-%	      password xxxxx
+%	   MacOSX systems). For MacOSX, wget must be installed using homebrew,
+%	   macports, fink or compiling from sources.
+%	   ! NOTICE ! since 2016, USGS has moved SRTM files to a secured 
+%	   https:// URL. This causes Matlab versions older than 2014b failing
+%	   dowload the tiles automatically, because of unzip function and 
+%	   certificate problems. This issue can be surrounded using this 'wget'
+%	   option.
 %
 %
 %	--- Examples ---
 %
 %	- to plot a map of the Paris region, France (single tile):
-%		readhgt([48,49,2,3])
+%		readhgt(48,2)
 %
 %	- to plot a map of Flores volcanic island, Indonesia (5 tiles):
-%		readhgt([-9,-8,119,124])
+%		readhgt(-9,119:123)
 %
-%	- to plot a map of the Misti volcano, Peru (SRTM1 cropped tile, needs
-%	   a valid login user and password at NASA/EarthDATA center):
-%	   readhgt([-16.4,-16.2,-71.5,-71.3],'srtm1','login','xx','xx','interp')
+%	- to plot a map of the Misti volcano, Peru (SRTM1 cropped tile):
+%	   readhgt([-16.4,-16.2,-71.5,-71.3],'srtm1','interp')
 %
 %	- to download SRTM1 data of Cascade Range (27 individual tiles):
 %		X=readhgt(40:48,-123:-121,'tiles');
@@ -143,14 +132,14 @@ function varargout = readhgt(varargin)
 %		Institut de Physique du Globe de Paris
 %
 %	References:
-%		https://srtm.kurviger.de
+%		https://dds.cr.usgs.gov/srtm/version2_1
 %
 %	Acknowledgments: Yves Gaudemer, Jinkui Zhu, Greg
 %
 %	Created: 2012-04-22 in Paris, France
-%	Updated: 2021-08-11
+%	Updated: 2019-12-25
 
-%	Copyright (c) 2021, François Beauducel, covered by BSD License.
+%	Copyright (c) 2019, François Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without 
@@ -182,19 +171,17 @@ fidx = 'readhgt_srtm_index.txt';
 sz1 = [3601,3601]; % SRTM1 tile size
 sz3 = [1201,1201]; % SRTM3 tile size
 novalue = intmin('int16'); % -32768
-pixel = 1/sz1(1); % minimum pixel size
 n = 1;
 
 srtm1 = any(strcmpi(varargin,'srtm1'));
 if srtm1
-	% SRTM1 full resolution tiles available here with EarthData login (2020):
-	url = 'https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/2000.02.11';
+	% EXPERIMENTAL: SRTM1 full resolution tiles available here (2016):
+	%url = 'http://e4ftl01.cr.usgs.gov/SRTM/SRTMGL1.003/2000.02.11';
 	%url = 'http://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL1.003/2000.02.11';
-	%url = 'http://rmd.neoknet.com/srtm1'; % unavailable since May 2020...
+	url = 'http://rmd.neoknet.com/srtm1';
 else
-	% SRTM3 tiles (and SRTM1 for USA):
-	%url = 'https://dds.cr.usgs.gov/srtm/version2_1'; % unavailable since 2021...
-	url = 'https://srtm.kurviger.de'; % USGS mirror site
+	% official USGS SRTM3 tiles (and SRTM1 for USA):
+	url = 'https://dds.cr.usgs.gov/srtm/version2_1';
 end
 
 srtm3 = any(strcmpi(varargin,'srtm3'));
@@ -262,22 +249,9 @@ if ~isempty(kurl)
 	end
 end
 
-% --- option: 'login',USER,PASSWORD
-loginflag = 0;
-klogin = find(strcmpi(varargin,'login'));
-if ~isempty(klogin)
-	if (klogin + 2) <= nargin && ischar(varargin{klogin+1}) && ischar(varargin{klogin+2})
-		loginflag = 3;
-		usr = varargin{klogin+1};
-		pwd = varargin{klogin+2};
-	else
-		error('''login'' option must be followed by USER and PASSWORD strings.')
-	end
-end
-
 % needs to count the arguments to allow former syntaxes...
 nargs = makeplot + merge + tiles + cropflag + srtm1 + srtm3 + inter ...
-	+ decimflag + outflag + urlflag + loginflag + wget;
+	+ decimflag + outflag + urlflag + wget;
 
 % syntax READHGT without argument: opens the GUI to select a file
 if nargin == nargs
@@ -313,8 +287,8 @@ else
 		if ~isnumeric(crop) || any(size(crop) ~= [1,4])
 			error('Area must be a 4-element vector [LAT1,LAT2,LON1,LON2].')
 		end
-		lat = floor(min(crop(1:2))):floor(max(crop(1:2))-pixel);
-		lon = floor(min(normlon(crop(3:4)))):floor(max(normlon(crop(3:4)))-pixel);
+		lat = floor(min(crop(1:2))):floor(max(crop(1:2)));
+		lon = floor(min(normlon(crop(3:4)))):floor(max(normlon(crop(3:4))));
 		cropflag = 2;
 	else
 		lat = floor(varargin{1}(:));
@@ -371,8 +345,8 @@ else
 				end
 			else
 				if srtm1
-					ff = sprintf('/%s%s.SRTMGL1.hgt.zip',slat,slon);
-					%ff = sprintf('/%s%s.hgt.zip',slat,slon);
+					%ff = sprintf('/%s%s.SRTMGL1.hgt.zip',slat,slon);
+					ff = sprintf('/%s%s.hgt.zip',slat,slon);
 				else
 					%fsrtm = sprintf('%s/%s',fileparts(mfilename('fullpath')),fidx);
 					fsrtm = fidx;
@@ -400,9 +374,6 @@ else
 				f{n} = '';
 			else
 				fprintf('Download %s%s ... ',url,ff);
-				if srtm1 && (~exist('usr','var') || ~exist('pwd','var'))
-					error('SRTM1 new tiles download needs the LOGIN option.')
-				end
 				f{n} = '';
 				try
 					if wget
@@ -411,13 +382,8 @@ else
 						else
 							tmp = tempname;
 							mkdir(tmp)
-							if srtm1
-								login = sprintf('--user %s --password %s',usr,pwd);
-							else
-								login = '';
-							end
 							ftmp = sprintf('%s/%s%s.hgt.zip',tmp,slat,slon);
-							[s,w] = system(sprintf('wget %s -O %s %s%s',login,ftmp,url,ff));
+							[s,w] = system(sprintf('wget --no-check-certificate -O %s %s%s',ftmp,url,ff));
 							if s
 								disp(w)
 							end
@@ -425,19 +391,7 @@ else
 							delete(ftmp)
 						end
 					else
-						if exist('websave','file')
-							ftmp = [tempname(out),'.zip'];
-							if srtm1
-								opt = weboptions('Username',usr,'Password',pwd);
-							else
-								opt = weboptions;
-							end
-							websave(ftmp,[url,ff],opt);
-							f(n) = unzip(ftmp,out);
-							delete(ftmp)
-						else
-							f(n) = unzip([url,ff],out);
-						end
+						f(n) = unzip([url,ff],out);
 					end
 					fprintf('done.\n');
 				catch

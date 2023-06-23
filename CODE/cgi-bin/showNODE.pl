@@ -19,7 +19,7 @@ as a validation/authorization/reference information.
 All known data associated to the NODE are shown, along with links for editing these data, according
 to http-client authorizations for the GRID-context requested.
 
-The GRID-context to display other related NODEs in this page are obtained via the WebObs::Grids::normNode()
+The GRID-context to display other related NODEs in this page are obtained via the WebObs::Grids::normNODE()
 function, that calls to showNode other nodes.
 
 =head1 Query string parameters
@@ -56,7 +56,7 @@ use WebObs::Grids;
 use WebObs::Events;
 use WebObs::Utils;
 use WebObs::i18n;
-use WebObs::Mapping;
+use WebObs::IGN;
 use WebObs::Wiki;
 use Locale::TextDomain('webobs');
 
@@ -71,8 +71,6 @@ my @listeDocumentsHsV=("");
 my $pathVisu="";
 my $editOK=0;
 my $go2top = "&nbsp;&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
-my $today  = qx(date +\%Y-\%m-\%d);
-chomp($today);
 
 # ---- see what we've been called for and what the client is allowed to do
 # ---- init general-use variables on the way and quit if something's wrong
@@ -110,7 +108,6 @@ if (scalar(@NID) == 3) {
 	} else { die "$GRIDType.$GRIDName.$NODEName $__{'unknown'}" }
 } else { die "$__{'Not a fully qualified node name (gridtype.gridname.nodename)'}" }
 
-my %allNodes = readNode;
 my $NODENameLower = lc($NODEName);
 
 # ---- went thru all above checks ... init node display
@@ -132,7 +129,6 @@ $fileMap        = "$NODES{PATH_NODES}/$NODEName/$NODEName"."_map.png";
 my $cgiConf = "/cgi-bin/$NODES{CGI_FORM}?node=$GRIDType.$GRIDName.$NODEName";
 my $cgiEtxt = "/cgi-bin/nedit.pl";
 
-my $tz = "<I>(GMT".($NODE{TZ} ne "" ? " $NODE{TZ}":"").")</I>";
 my %typeTele = readCfg("$NODES{FILE_TELE}");
 my %typePos  = readCfg("$NODES{FILE_POS}");
 my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
@@ -159,16 +155,27 @@ if (-e $statusDB) {
 }
 
 $GRID{UTM_LOCAL} //= '';
-my %UTM =  %WebObs::Mapping::UTM;
+#my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
+my %UTM =  %WebObs::IGN::UTM;
 
 # ---- sort interventions by date / event stuff  -----------------------------------
 #
 $QryParm->{'sortby'} //= "event";
 my $sortBy = $QryParm->{'sortby'};
 
-my $nodeName = "$NODE{ALIAS}: $NODE{NAME}";
-my $title = "$__{'Show node '}$nodeName";
-$nodeName = "<SPAN style='text-decoration: line-through;text-decoration-thickness: 3px'>$nodeName</SPAN>" if (!isok($NODE{VALID}));
+#OLD:# NOTE [FB]: comment trier @listeFileInterventions suivant basename(@listeFileInterventions) ??
+#OLD:if ($sortBy eq "date") {
+#OLD:	my @x;
+#OLD:	for (@listeFileInterventions) {
+#OLD:		push(@x,basename($_)."|".$_);
+#OLD:	}
+#OLD:	@x = reverse(sort(@x));
+#OLD:	@listeFileInterventions = ();
+#OLD:	for (@x) {
+#OLD:		my @xx = split(/\|/,$_);
+#OLD:		push(@listeFileInterventions,$xx[1]);
+#OLD:	}
+#OLD:}
 
 # ---- start HTML page ouput ------------------------------------------------
 # ---------------------------------------------------------------------------
@@ -177,7 +184,7 @@ print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
 
 print <<"FIN";
 <html><head>
-<title>$title</title>
+<title>Affichage de FICHE</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
 <script language="JavaScript" type="text/javascript">
@@ -216,23 +223,21 @@ FIN
 # ---- Title Node Name and edition links if authorized ------------------------
 #
 print "<A NAME=\"MYTOP\"></A>";
-print "<TABLE width=100%><TR><TD style='border:0'>\n";
-print "<H1 style=\"margin-bottom:3pt\">$nodeName".($editOK ? " <A href='$cgiConf'><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
+print "<H1 style=\"margin-bottom:3pt\">$NODE{ALIAS}: $NODE{NAME}".($editOK ? " <A href='$cgiConf'><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
+#print "<A class=\"gridname\" name='FicheNode' href='$cgiConf'>{$GRIDType.$GRIDName.$NODEName}</A>\n" if ($editOK);
+
 print "<P class=\"subMenu\"> <B>&raquo;&raquo;</B> [";
 if (uc($GRIDType) eq 'VIEW' || uc($GRIDType) eq 'PROC') {
 	print " <A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRIDS}?domain=$GRID{DOMAIN}&type=all\">$DOMAINS{$GRID{DOMAIN}}{NAME}</A> / "
 		."<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName\">$GRID{NAME}</A> |";
 }
-print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> "
-	."| <IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'> ]</P>";
-
-print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
+print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> ]</P>";
 
 my %CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 
 print "<FORM name=form id=\"theform\" action=\"/cgi-bin/$CLBS{CGI_FORM}\">"
 	."<INPUT type=\"hidden\" name=\"nbc\" value=\"3\">"
-	."<INPUT type=\"hidden\" name=\"node\" value=\"$GRIDType.$GRIDName.$NODEName\">";
+	."<INPUT type=\"hidden\" name=\"node\" value=\"$NODEName\">";
 
 # ---- start of node table ----------------------------------------------------
 #
@@ -241,10 +246,9 @@ print "<TABLE style=\"background: white;\">";
 # ---- Row "Grids" ------------------------------------------------------------
 #
 print "<TR><TH valign=\"top\" width=\"10%\">Grids</TH>";
-print "<TD colspan=\"2\"><B>$QryParm->{'node'}</B>";
+print "<TD colspan=\"2\">";
 for (@{$allNodeGrids{$NODEName}}) {
-	my $fullnode = "$_.$NODEName";
-	print "<BR><A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$fullnode\"><B>$fullnode</B></A>" if ($fullnode ne $QryParm->{'node'});
+	print "<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$_\"><B>$_</B></A><BR>";
 }
 print "</TD></TR>\n";
 
@@ -271,144 +275,6 @@ print "<TD colspan=\"2\">"
 	." / ".($endDate ne "NA" ? "$__{'Ended on'}: <B>$endDate</B>":"Active")
 	."</TD></TR>\n";
 
-# Row "coordinates" and localization map --------------------------------------
-#
-if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
-	my $lat = $NODE{LAT_WGS84};
-	my $lon = $NODE{LON_WGS84};
-	my $alt = $NODE{ALTITUDE};
-	my ($e_utm,$n_utm,$utmzone) = geo2utm($lat,$lon);
-	my $e_utml;
-	my $n_utml;
-	my $utml0;
-	my $utml1;
-	my $utml2;
-	if (defined($GRID{UTM_LOCAL}) && -e $GRID{UTM_LOCAL} ) {
-		($e_utml,$n_utml) = geo2utml($lat,$lon,$alt);
-		$utml0 = "<BR>$UTM{GEODETIC_DATUM_LOCAL_NAME}:";
-		$utml1 = sprintf("<BR>%6.0f",$e_utml);
-		$utml2 = sprintf("<BR>%6.0f",$n_utml);
-	}
-	my $txt = $__{'Location'};
-
-	# ---- link to OpenStreetMap
-	# ------------------------
-	my $map = "<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$GRIDType.$GRIDName.$NODEName','$NODEName',"
-		."'width=".($WEBOBS{OSM_WIDTH_VALUE}+15).",height=".($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">"
-		."<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
-
-	# --- link KML Google Earth
-	# -------------------------
-	if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
-		$map .= " <A href=\"#\" onClick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$GRIDType.$GRIDName.$NODEName&format=kml')\" title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
-	}
-
-	# ---- link to interactive map - IGN (A. Bosson)
-	# ----------------------------------------------
-	if ($WEBOBS{IGN_MAPI_LINK} eq 1) {
-		$map .= " <A href=\"$WEBOBS{IGN_MAPI_LINK_URL}form?lon=$e_utm&lat=$n_utm\" title=\"".l2u($WEBOBS{IGN_MAPI_LINK_INFO})."\" target=\"_blank\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_IGN_MAPI}\" alt=\"".l2u($WEBOBS{IGN_MAPI_LINK_INFO})."\"></A>\n";
-	}
-
-	print "<TR><TH valign=\"top\">".($editOK ? "<A href=\"$cgiConf\">$txt</A>":$txt)."</TH>";
-	print "<TD colspan=\"2\">";
-	print "<TABLE width=\"100%\"><TR>"
-		."<TH><SMALL>$__{'Date'}</SMALL></TH><TH><SMALL>$__{'Type'}</SMALL></TH>"
-		."<TH><SMALL>$__{'Lat.'} ".($lat >= 0 ? "N":"S")." (WGS84)</SMALL></TH>"
-		."<TH><SMALL>$__{'Lon.'} ".($lon >= 0 ? "E":"W")." (WGS84)</SMALL></TH>";
-	my $alat = abs($lat);
-	my $alon = abs($lon);
-	print "<TH><SMALL>$__{'Alt.'} (m)</TH><TH align=right><SMALL>Transverse Mercator</SMALL></TH><TH><SMALL>$__{'East'} (m)</SMALL></TH><TH><SMALL>$__{'North'} (m)</SMALL></TH><TH></TH></TR>\n<TR>"
-		."<TD align=center><SMALL>$NODE{POS_DATE}</SMALL></TD><TD align=center><SMALL>".u2l($typePos{$NODE{POS_TYPE}})."</SMALL></TD>"
-		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$alat,int($alat),($alat-int($alat))*60,$alat,($alat-int($alat))*60,($alat*60-int($alat*60))*60)
-		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$alon,int($alon),($alon-int($alon))*60,$alon,($alon-int($alon))*60,($alon*60-int($alon*60))*60)
-		."<TD align=center><SMALL><B>$NODE{ALTITUDE}</B></TD>"
-		."<TD align=right><SMALL>UTM$utmzone WGS84:$utml0</TD>"
-		.sprintf("<TD align=center><SMALL><B>%6.0f$utml1</B></TD><TD align=center><SMALL><B>%6.0f$utml2</B></TD>",$e_utm,$n_utm)
-		."<TD>$map</TD></TR></TABLE>\n";
-	print "<BR><TABLE width='100%'><TR>";
-	if (-e $fileMap) {
-		my $tmp = basename($fileMap);
-		print "<TD style=\"border:0\"><img src=\"$WEBOBS{URN_NODES}/$NODEName/$tmp\" alt=\"$__{'Location map'}\"></TD>";
-	}
-	# ---- Neighbour nodes
-	# ----------------------------------------------
-	if ($NODES{NEIGHBOUR_NODES_MAX} > 0) {
-		# loads all existing nodes
-		my %dist;
-		my %deniv;
-		my %bear;
-		my %proj;
-		for (keys(%allNodes)) {
-			my %N = %{$allNodes{$_}};
-			if (isok($N{VALID}) && (!isok($NODES{NEIGHBOUR_NODES_ACTIVE_ONLY}) || (($N{END_DATE} ge $today || $N{END_DATE} eq "NA")
-				&& ($N{INSTALL_DATE} le $today || $N{INSTALL_DATE} eq "NA")))) {
-				($dist{$_},$bear{$_}) = greatcircle($lat,$lon,$N{LAT_WGS84},$N{LON_WGS84});
-				if ($alt != 0 && $N{ALTITUDE} != 0) {
-					$deniv{$_} = $N{ALTITUDE} - $alt;
-					$dist{$_} = sqrt($dist{$_}**2 + ($deniv{$_}/1000)**2);
-				}
-				$proj{$_} = $N{PROJECT};
-			}
-		}
-		print "<TD valign=top style='border:0'><TABLE style='border-collapse:collapse'><TR>"
-			."<TH width=10%><SMALL>$__{'Distance (beeline)'}</SMALL></TH><TH width=10%><SMALL>$__{'Elev. gain'}</SMALL></TH>"
-			."<TH><SMALL>$__{'Neighbour nodes'}</SMALL></TH></TR>\n";
-		my $n = 1;
-		foreach (sort { $dist{$a} <=> $dist{$b} or $a cmp $b } keys %dist) {
-			if ($_ ne $NODEName) {
-				my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
-				next if ($nnn eq '');
-				my $d = ($dist{$_}<1 ? sprintf("%8.0f&nbsp;m",1000*$dist{$_}):sprintf("%7.3f&nbsp;km",$dist{$_}));
-				my $p = ($proj{$_} ? "&nbsp;<IMG src='/icons/attention.gif' border='0' title=\"$__{'This node has a project'}\">":"");
-				print "<TR><TD align=right style='border:none'><SMALL>$d<IMG src=\"/icons/boussole/".lc(compass($bear{$_})).".png\" align=\"top\"></SMALL></TD>"
-					."<TD align=right style='border:none'><SMALL>".sprintf("%+1.0f&nbsp;m&nbsp;",$deniv{$_})."</SMALL></TD>"
-					."<TD style='border:none'><SMALL><A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>$p</SMALL></TD></TR>\n";
-				last if ($n++ == $NODES{NEIGHBOUR_NODES_MAX});
-			}
-		}
-		print "</TABLE></TD>\n";
-	}
-	print "</TR></TABLE>\n</TD></TR>\n";
-}
-
-
-# Row "transmission" type and link to relay / data acquisition
-#
-if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
-	my @trans = split(/ |,|\|/,$NODE{TRANSMISSION});
-	chomp(@trans);
-	my $txt = $__{'Transmission'};
-	print "<TR><TH valign=\"top\">".($editOK ? "<A href=\"$cgiConf\">$txt</A>":$txt)."</TH>";
-	my ($utype,$ujunk) = split(/\|/,$typeTele{$trans[0]}{name});
-	print "<TD colspan=\"2\"><TABLE style='border-spacing:0;border:none'><TR><TD colspan=3 style='border:none'>Type: <B>".u2l($utype)."</B></TD></TR>";
-	for (@trans[1 .. $#trans]) {
-		my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
-		my $distelev = "<TD colspan=2 style='border:none'>&ensp;</TD>";
-		my $nodelink = "";
-		if ($nnn ne "") {
-			my %N = %{$allNodes{$_}};
-			if (!($N{LAT_WGS84}=="" && $N{LON_WGS84}=="")) {
-				my ($dist,$bear) = greatcircle($NODE{LAT_WGS84},$NODE{LON_WGS84},$N{LAT_WGS84},$N{LON_WGS84});
-				my $deniv = "";
-				if ($NODE{ALTITUDE} != 0 && $N{ALTITUDE} != 0) {
-					$deniv = $N{ALTITUDE} - $NODE{ALTITUDE};
-					$dist = sqrt($dist**2 + ($deniv/1000)**2);
-				}
-				my $d = ($dist<1 ? sprintf("%8.0f&nbsp;m",1000*$dist):sprintf("%7.3f&nbsp;km",$dist));
-				$distelev = "<TD align=right style='border:none'><SMALL>&ensp;$d<IMG src=\"/icons/boussole/".lc(compass($bear)).".png\" align=\"top\"></SMALL></TD>"
-					."<TD align=right style='border:none'><SMALL>(<I>&Delta;h</I>&nbsp;".sprintf("%+1.0f&nbsp;m",$deniv).")&nbsp;</SMALL></TD>";
-			}
-			$nodelink = "<A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>".($N{PROJECT} ? "&nbsp;<IMG src='/icons/attention.gif' border='0'>":"");
-		} else {
-			$nodelink = "<B>$_</B> ($__{'unknown'})";
-		}
-		print "<TR>$distelev<TD style='border:none'><SMALL>$nodelink</SMALL></TD></TR>\n";
-	}
-	print "</TABLE></TD>\n";
-	print "</TD></TR>\n";
-}
-
-
 # Row "proc": codes, status, data... -----------------
 #
 if (uc($GRIDType) eq 'PROC') {
@@ -423,9 +289,9 @@ if (uc($GRIDType) eq 'PROC') {
 	elsif ($editOK) { print "<A href=\"$cnfUrn\">$txt</A>" }
 	else { print "$txt" }
 	print "</B></TD><TD>";
-	#print "ID: <B>$NODEName</B>";
-	print "FID: ".($fid ne "" ? "<B>$fid</B>":"<I>$__{undefined}</I>")."\n";
+	print "ID: <B>$NODEName</B>";
 	print "<BR>Network: <B>$fdsn</B> ($FDSN{$fdsn})\n" if ($fdsn ne "");
+	print "<BR>FID: <B>$fid</B>\n" if ($fid ne "");
 	print "<BR>$fids" if ($fids ne "");
 	print "<BR>Raw Format: $rawFormats{$rawformat}{supfmt} / <B>$rawformat</B> ($rawFormats{$rawformat}{name})" if ($rawformat ne "");
 	print "<BR>Raw Data Source: <B>$rawdata</B>" if ($rawdata ne "");
@@ -465,7 +331,7 @@ if (uc($GRIDType) eq 'PROC') {
 	my (@dlist) = glob "$OUTG/$WEBOBS{PATH_OUTG_EXPORT}/$NODENameLower"."_*.txt";
 
 	print "<TR><TD valign=\"top\"><B>$__{'Data'}</B></TH><TD>";
-	if ($OUTG ne "" && isok($NODE{VALID}) && ($GRID{'URLDATA'} ne "" || $GRID{'FORM'} ne "" || $#glist >= 0 || $#dlist >= 0)) {
+	if ($OUTG ne "" && $NODE{VALID} && ($GRID{'URLDATA'} ne "" || $GRID{'FORM'} ne "" || $#glist >= 0 || $#dlist >= 0)) {
 		print "<TABLE><TR><TD style=\"border:0\">";
 		if ($GRID{'FORM'} ne "") {
 			%FORM = readCfg("$WEBOBS{PATH_FORMS}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
@@ -512,15 +378,14 @@ if (uc($GRIDType) eq 'PROC') {
 	print "</TD></TR>\n";
 
 	# channels (calibration file)
-	my $clbFile = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
-	$clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $clbFile ); # for backwards compatibility
+	my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
 	my @carCLB;
-	@carCLB = readCfgFile($clbFile) if ( -s $clbFile );
+	@carCLB = readCfgFile($clbFile) if (-s $clbFile != 0);
 	print "<TR><TD valign=\"top\" width=\"10%\"><B>";
 	my $txt = $__{'Channels'};
 	if ($editOK) {
 		if ($#carCLB >= 0) {
-			print "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$GRIDType.$GRIDName.$NODEName\">$txt</A>";
+			print "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$NODEName\">$txt</A>";
 		} else {
 			print "<A href=\"#\" onclick=\"askChanNb();\$(this).closest('form').submit();\"><B>$txt</B></A>";
 		}
@@ -555,6 +420,85 @@ if (uc($GRIDType) eq 'PROC') {
 		print "<BR><SMALL>@clbNote</SMALL>";
 	} else {
 		print "no channel defined";
+	}
+	print "</TD></TR>\n";
+}
+
+# Row "coordinates" and localization map --------------------------------------
+#
+if (!($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0)) {
+	my $lat = $NODE{LAT_WGS84};
+	my $lon = $NODE{LON_WGS84};
+	my $alt = $NODE{ALTITUDE};
+	my ($e_utm,$n_utm,$utmzone) = geo2utm($lat,$lon);
+	my $e_utml;
+	my $n_utml;
+	my $utml0;
+	my $utml1;
+	my $utml2;
+	if (defined($GRID{UTM_LOCAL}) && -e $GRID{UTM_LOCAL} ) {
+		($e_utml,$n_utml) = geo2utml($lat,$lon,$alt);
+		$utml0 = "<BR>$UTM{GEODETIC_DATUM_LOCAL_NAME}:";
+		$utml1 = sprintf("<BR>%6.0f",$e_utml);
+		$utml2 = sprintf("<BR>%6.0f",$n_utml);
+	}
+	my $txt = $__{'Location'};
+
+	# ---- link to Google Maps
+	# ------------------------
+	my $map = "<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_GOOGLE_MAPS}?grid=$GRIDType.$GRIDName.$NODEName','$NODEName','width="
+		.($WEBOBS{GOOGLE_MAPS_WIDTH_VALUE}+15).",height="
+		.($WEBOBS{GOOGLE_MAPS_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\"><IMG src=\"$WEBOBS{GOOGLE_MAPS_ICON}\" title=\"$WEBOBS{GOOGLE_MAPS_LINK_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
+
+	# --- link KML Google Earth
+	# -------------------------
+	if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
+		$map .= " <A href=\"#\" onClick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$GRIDType.$GRIDName.$NODEName&format=kml')\" title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
+	}
+
+	# ---- link to interactive map - IGN (A. Bosson)
+	# ----------------------------------------------
+	if ($WEBOBS{IGN_MAPI_LINK} eq 1) {
+		$map .= " <A href=\"$WEBOBS{IGN_MAPI_LINK_URL}form?lon=$e_utm&lat=$n_utm\" title=\"".l2u($WEBOBS{IGN_MAPI_LINK_INFO})."\" target=\"_blank\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_IGN_MAPI}\" alt=\"".l2u($WEBOBS{IGN_MAPI_LINK_INFO})."\"></A>\n";
+	}
+
+	print "<TR><TH valign=\"top\">".($editOK ? "<A href=\"$cgiConf\">$txt</A>":$txt)."</TH>";
+	print "<TD colspan=\"2\">";
+	print "<TABLE width=\"100%\"><TR>"
+		."<TH><SMALL>$__{'Date'}</SMALL></TH><TH><SMALL>$__{'Type'}</SMALL></TH>"
+		."<TH><SMALL>$__{'Lat.'} ".($lat >= 0 ? "N":"S")." (WGS84)</SMALL></TH>"
+		."<TH><SMALL>$__{'Lon.'} ".($lon >= 0 ? "E":"W")." (WGS84)</SMALL></TH>";
+	$lat = abs($lat);
+	$lon = abs($lon);
+	print "<TH><SMALL>$__{'Alt.'} (m)</TH><TH align=right><SMALL>Transverse Mercator</SMALL></TH><TH><SMALL>$__{'East'} (m)</SMALL></TH><TH><SMALL>$__{'North'} (m)</SMALL></TH><TH></TH></TR>\n<TR>"
+		."<TD align=center><SMALL>$NODE{POS_DATE}</SMALL></TD><TD align=center><SMALL>".u2l($typePos{$NODE{POS_TYPE}})."</SMALL></TD>"
+		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$lat,int($lat),($lat-int($lat))*60,$lat,($lat-int($lat))*60,($lat*60-int($lat*60))*60)
+		.sprintf("<TD><SMALL> <B>%9.6f &deg;<BR> %02d &deg; %07.4f '<BR> %02d &deg; %02d ' %05.2f \"</B></TD>",$lon,int($lon),($lon-int($lon))*60,$lon,($lon-int($lon))*60,($lon*60-int($lon*60))*60)
+		."<TD align=center><SMALL><B>$NODE{ALTITUDE}</B></TD>"
+		."<TD align=right><SMALL>UTM$utmzone WGS84:$utml0</TD>"
+		.sprintf("<TD align=center><SMALL><B>%6.0f$utml1</B></TD><TD align=center><SMALL><B>%6.0f$utml2</B></TD>",$e_utm,$n_utm)
+		."<TD>$map</TD></TR></TABLE>\n";
+
+	if (-e $fileMap) {
+		my $tmp=basename $fileMap;
+		print "<BR><img src=\"$WEBOBS{URN_NODES}/$NODEName/$tmp\" alt=\"$__{'Location map'}\">";
+	}
+	print "</TD></TR>\n";
+}
+
+
+# Row "transmission" type and link to relay / data acquisition
+#
+if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
+	my @trans = split(/ |,|\|/,$NODE{TRANSMISSION});
+	chomp(@trans);
+	my $txt = $__{'Transmission'};
+	print "<TR><TH valign=\"top\">".($editOK ? "<A href=\"$cgiConf\">$txt</A>":$txt)."</TH>";
+	my ($utype,$ujunk) = split(/\|/,$typeTele{$trans[0]}{name});
+	print "<TD colspan=\"2\">Type: <B>".u2l($utype)."</B>";
+	for (@trans[1 .. $#trans]) {
+		my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
+		print "<BR>&nbsp; &rArr; <A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>";
 	}
 	print "</TD></TR>\n";
 }
@@ -607,12 +551,20 @@ if ($editOK) {
 # ---- Build the hash of nodes' relationships from file $NODES{FILE_NODES2NODES} ---
 # ---- mainly used by the < Rows "Features" > functions below
 #
-my @file_node2node = readCfgFile("$NODES{FILE_NODES2NODES}");
-my %node2node; # hash key = 'parentnode|feature', hash value = 'childnode' or 'childnode1|childnode2|...'
-for (@file_node2node) {
- 	my ($parent_node,$feature,$children_node)=split(/\|/,$_);
-	my $key_link = $parent_node."|".$feature;
- 	$node2node{$key_link} .= (exists($node2node{$key_link}) ? "|":"").$children_node;
+my @conf_liens_stations = readCfgFile("$NODES{FILE_NODES2NODES}");
+my %liste_liens_fiches;
+my $station_parente_old = "";
+my $caracteristique_old = "";
+my $i = 0;
+for (@conf_liens_stations) {
+ 	my ($station_parente,$caracteristique,$station_fille)=split(/\|/,$_);
+ 	if ( $station_parente."|".$caracteristique ne $station_parente_old."|".$caracteristique_old ) {
+		$i = 0;
+ 	}
+	my $nom_lien = $station_parente."|".$caracteristique;
+ 	$liste_liens_fiches{$nom_lien} .= ($i++==0?"":"|").$station_fille;
+ 	$station_parente_old = $station_parente;
+ 	$caracteristique_old = $caracteristique;
 }
 
 # Rows "Features"
@@ -623,17 +575,18 @@ my $lien_car;
 
 # 1) create the 'final' list of features to be shown
 # first insert 'parent' features from $NODES{FILE_NODES2NODES} for NODEName
+my $liens_fiches_parentes = "";
 my $pseudoFileName = "";
-for my $key_link (keys %node2node) {
- 	my @children_node_list = split(/\|/,$node2node{$key_link});
- 	for (@children_node_list) {
+for my $nom_lien (keys %liste_liens_fiches) {
+ 	my @liste_fiches_filles = split(/\|/,$liste_liens_fiches{$nom_lien});
+ 	for (@liste_fiches_filles) {
  		if ( $_ eq $NODEName ) {
- 			my @data = split(/\|/,$key_link);
- 			my $parent_node = $data[0];
- 			my $feature = $data[1];
-			$pseudoFileName = "ISOF:$feature";
-			my $nnn = ($parent_node =~ m/^.*[\.\/].*[\.\/].*$/)?$parent_node:WebObs::Grids::normNode(node=>"..$parent_node");
-			$lienNode{$pseudoFileName} .= ($lienNode{$pseudoFileName} eq "" ? "" : "<br>")."<a href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$parent_node)."</a>";
+ 			my @data = split(/\|/,$nom_lien);
+ 			my $fiche_parente = $data[0];
+ 			my $caracteristique = $data[1];
+			$pseudoFileName = "ISOF:$caracteristique";
+			my $nnn = ($fiche_parente =~ m/^.*[\.\/].*[\.\/].*$/)?$fiche_parente:WebObs::Grids::normNode(node=>"..$fiche_parente");
+			$lienNode{$pseudoFileName} .= ($lienNode{$pseudoFileName} eq "" ? "" : "<br>")."<a href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$fiche_parente)."</a>";
  		}
 	}
 }
@@ -644,15 +597,15 @@ my @listeCarFiles=split(/\||,/,$NODE{FILES_FEATURES});
 for (@listeCarFiles) {
 	my $carFileName = $_;
 	my $carFile = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_FEATURES}/$carFileName.txt";
-	my $key_link = $NODEName."|".$carFileName;
+	my $nom_lien = $NODEName."|".$carFileName;
 	$lienNode{$carFileName} = "";
 	$lien_car = 0;
-	if ( exists($node2node{$key_link}) ) {
-		my @liste_liens=split(/\|/,$node2node{$key_link});
+	if ( exists($liste_liens_fiches{$nom_lien}) ) {
+		my @liste_liens=split(/\|/,$liste_liens_fiches{$nom_lien});
 		for (@liste_liens) {
 			if ( length($_) > 0 ) {
 				my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
-				$lienNode{$carFileName} .= ($lienNode{$carFileName} eq "" || $nnn eq "" ? "" : "<br>")."<a href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</a>";
+				$lienNode{$carFileName} .= ($lienNode{$carFileName} eq "" ? "" : "<br>")."<a href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</a>";
 			}
 		}
 		if ( $lienNode{$carFileName} ne "" ) {
@@ -720,7 +673,7 @@ $Fpath   = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_PHOTOS}";
 $Tpath   = "$Fpath/$NODES{SPATH_THUMBNAILS}";
 qx(mkdir -p $Tpath) if (!-d $Tpath);
 
-my @listePhotos   = <$Fpath/*.{jpg,jpeg,JPG,JPEG,HEIC}*> ;
+my @listePhotos   = <$Fpath/*.{jpg,jpeg,JPG,JPEG}*> ;
 #DL-was:my $uploadPHOTOS  = "$WEBOBS{CGI_UPLOAD}?node=$GRIDType.$GRIDName.$NODEName&doc=$NODES{SPATH_PHOTOS}";
 my $uploadPHOTOS  = "$WEBOBS{CGI_UPLOAD}?object=$GRIDType.$GRIDName.$NODEName&doc=SPATH_PHOTOS";
 if ($editOK) {
@@ -839,7 +792,7 @@ print "</div></div>";
 #
 print "<BR><A name=\"EVENTS\"></A>\n";
 print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#eventID');\">&nbsp;&nbsp;";
-print "$__{'Events'} $tz";
+print "$__{'Events'}";
 if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&object=$GRIDType.$GRIDName.$NODEName\"><img src=\"/icons/modif.png\"></A>" }
 print "&nbsp;$go2top</div><div id=\"eventID\"><BR>";
 print "&nbsp;$__{'Sort by'} [ ".($sortBy ne "event" ? "<A href=\"$myself&amp;sortby=event#EVENTS\">$__{'Event'}</A>":"<B>$__{'Event'}</B>")." | "
@@ -862,7 +815,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2018 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

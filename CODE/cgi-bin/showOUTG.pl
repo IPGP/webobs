@@ -103,8 +103,7 @@ if ($QryParm->{'g'} =~ s!^lastevent(\b|$)!!) {
 	# replace it with the directory the 'lastevent' symlink links to.
 	my $lastevent_dir = abs_path("$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/lastevent");
 	# Remove ^$OUTG/events/ from the path to only keep "yyyy/mm/dd/eventid"
-	my $OUTGabs = abs_path("$OUTG/$WEBOBS{PATH_OUTG_EVENTS}");
-	$lastevent_dir =~ s!$OUTGabs/!!;
+	$lastevent_dir =~ s!^$OUTG/.*?/!!;
 	# Replace 'g' with this link and append the remaining of the original 'g', if any
 	# (so that both g=lastevent and g=lastevent/b3 work).
 	$QryParm->{'g'} = $lastevent_dir.$QryParm->{'g'};
@@ -147,9 +146,9 @@ print "<!-- overLIB (c) Erik Bosrup --><div id=\"overDiv\" style=\"position:abso
 <link href=\"/css/wolb.css\" rel=\"stylesheet\" />";
 
 print "<A NAME=\"MYTOP\"></A>";
-print "<TABLE width=100%><TR><TD style='border:0'>\n";
 print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME}</H1>\n" if ($QryParm->{'header'} ne 'no');
 my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
+
 
 # ---- build the top-of-page outputs selection banner:
 # 1st line for timescale selection
@@ -238,7 +237,7 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 	# build @glist = the list of available .png graphs for timescale $tslist[$tsSelected]
 	# $glistHtml is the corresponding string of html hrefs to these graphs
 	# with each nodenames replaced with their alias if it is defined
-	my (@glist) = sort glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.png";
+	my (@glist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.png";
 	my $glistHtml = "";
 	if ($QryParm->{'ts'} eq 'events' ) {
 		if ($QryParm->{'g'} eq "") {
@@ -259,25 +258,23 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 		$glistHtml .= " <A href=\"$lnk\"> Overview</A> | ";
 		$glistHtml .= ($QryParm->{'g'} ne "col" ? "<A href=\"${lnk}col\">Column</A>":"Column")." |";
 		for my $fpath (@glist) {
-			my $gname = $fpath;
-			$gname =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_$tslist[$tsSelected].*$/$1/;
-			$gname =~ s/^$/SUMMARY/;
-			my $gbase = $gname;
-			$gbase =~ s/(.*)_.*$/$1/;
-			my $gmenu = $gname;
-			if ($gname ne 'SUMMARY' && !(grep( /^$gbase$/i, @SummaryList)) ) {
-				if ( grep( /^$gname$/i, keys(%DefinedNodes)) ) {  # it's a node file AND node still in proc
-					my $alias = getNodeString(node=>uc($gname), style=>'alias');
-					$gmenu = $alias if ( $alias ne '' && $alias ne '-' );
+			my $short = $fpath;
+			$short =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+			$short =~ s/^$/SUMMARY/;
+			my $shorter = $short;
+			if ($short ne 'SUMMARY' && !(grep( /^$short$/i, @SummaryList)) ) {
+				if ( grep( /^$short$/i, keys(%DefinedNodes)) ) {  # it's a node file AND node still in proc
+					my $alias = getNodeString(node=>uc($short), style=>'alias');
+					$shorter = $alias if ( $alias ne '' && $alias ne '-' );
 				} else { # it's a node file, but node NOT currently in proc == stale node that survived the housekeeping above
-					$gmenu = 'STALE';
+					$shorter = 'STALE';
 				}
 			}
-			if ( $gmenu ne 'STALE' ) {
-				if ($QryParm->{'g'} eq $gname) {
-					$glistHtml .= " $gmenu |";
+			if ( $shorter ne 'STALE' ) {
+				if ($QryParm->{'g'} eq $short) {
+					$glistHtml .= " $shorter |";
 				} else {
-					$glistHtml .= " <A href=\"$lnk$gname\"> $gmenu</A> |";
+					$glistHtml .= " <A href=\"$lnk$short\"> $shorter</A> |";
 				}
 			}
 		}
@@ -287,7 +284,6 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 		print "<BR><B>[ ".$glistHtml." ]</B>\n";
 	}
 print "</DIV>";
-print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode(2)."</TD></TR></TABLE>\n";
 
 
 # ---- now show the selected item
@@ -308,7 +304,7 @@ if ($QryParm->{'ts'} eq 'map') {
 		print "<IMG style=\"margin-bottom: 15px; background-color: beige;\" src=\"$MAPurn/$mapname.png\" usemap=\"#map\"><BR>\n";
 		if (-e "$MAPpath/$mapname.map") {
 			@htmlarea = readFile("$MAPpath/$mapname.map");
-			print "<map name=\"map\">\n@htmlarea</map>\n";
+			print "<map name=\"map\">@htmlarea</map>\n";
 		}
 	}
 
@@ -463,7 +459,7 @@ if ($QryParm->{'ts'} eq 'map') {
 				print "<IMG style=\"margin-bottom: 15px; margin-top: 5 px; background-color: beige;\" src=\"$urn\" usemap=\"#map\"><BR>";
 				if (-e "$map") {
 					my @htmlarea = readFile("$map");
-					print "<map name=\"map\">\n@htmlarea</map>\n";
+					print "<map name=\"map\">@htmlarea</map>\n";
 				}
 			}
 		}

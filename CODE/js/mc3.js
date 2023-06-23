@@ -3,7 +3,6 @@ var bars = true;
 var datad = [];
 var datah = [];
 var datav = [];
-var dataw = [];
 var datac = [];
 var datam = [];
 var datag = [];
@@ -52,8 +51,6 @@ function plotFlot(gtype) {
 		linewidth = 2;
 		points = true;
 		ymin = -0.2;
-	} else if (gtype == 'wsum') {
-		data = dataw;
 	} else {
 		data = datav;
 	}

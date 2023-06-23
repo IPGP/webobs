@@ -20,7 +20,7 @@ function DOUT=naqssohplot(varargin)
 %       uses RAWFORMAT and and nodes' calibration file channels definition.
 %       In addition to each single node graph, a summary graph with all nodes can
 %       be set with 'SUMMARYLIST|' parameter. Default is all channels, but selection
-%       can be made with 'SUMMARY_CHANNELS|' followed by a coma-separated channel
+%       can be made with 'SUMMARY_CHANNELS|' followed by a coma-separated channel 
 %       number list (example: 1,4,2,3,6). Other specific paramaters are:
 %           PAGE_MAX_NODE|8
 %
@@ -29,7 +29,7 @@ function DOUT=naqssohplot(varargin)
 %
 %   Authors: J.M. Saurel / WEBOBS, IPGP
 %   Created: 2014-07-13
-%   Updated: 2021-01-01
+%   Updated: 2017-09-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -40,7 +40,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename,varargin{:});
 timelog(procmsg,1);
 
 % gets PROC's configuration, associated nodes for any TSCALE and/or REQDIR and the data
@@ -83,7 +83,7 @@ for n = 1:length(N)
 	end
 
 
-
+	
 	% ===================== makes the proc's job
 
 	for r = 1:length(P.GTABLE)
@@ -177,7 +177,7 @@ for n = 1:length(N)
 		else
 			etat = 0;
 		end
-
+    
 
 		% title and status
 		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
@@ -228,7 +228,7 @@ for n = 1:length(N)
 					i, C.nm{i},d(ke,i),C.un{i},roundsd([rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i))],5))}];
 			end
 		end
-
+		
 		% makes graph
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
@@ -307,7 +307,7 @@ if isfield(P,'SUMMARYLIST')
 				set(gca,'XTickLabel',[]);
 			end
 			ylabel(sprintf('%s (%s)',C.nm{so(i)},C.un{so(i)}))
-
+			
 			% legend: station aliases
 			xlim = get(gca,'XLim');
 			ylim = get(gca,'YLim');
@@ -320,7 +320,7 @@ if isfield(P,'SUMMARYLIST')
 		end
 
 		tlabel(xlim,P.GTABLE(r).TZ)
-
+	    
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
 	end
@@ -337,3 +337,4 @@ timelog(procmsg,2)
 if nargout > 0
 	DOUT = D;
 end
+

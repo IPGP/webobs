@@ -5,8 +5,8 @@ function DOUT=gnss(varargin)
 %
 %       GNSS(PROC,TSCALE) updates all or a selection of TIMESCALES graphs:
 %           TSCALE = '%' : all timescales defined by PROC.conf (default)
-%	        TSCALE = '01y' or '30d,10y,all': only specified timescales
-%	        (keywords must be in TIMESCALELIST of PROC.conf)
+%	    TSCALE = '01y' or '30d,10y,'all' : only specified timescales
+%	    (keywords must be in TIMESCALELIST of PROC.conf)
 %
 %	GNSS(PROC,[],REQDIR) makes graphs/exports for specific request directory
 %	REQDIR. REQDIR must contain a REQUEST.rc file with dedicated parameters.
@@ -27,7 +27,7 @@ function DOUT=gnss(varargin)
 %       GNSS will use PROC's parameters from .conf file. See CODE/tplates/PROC.GNSS
 %       template file for a list of all parameters with comments.
 %
-%	Any of the *_TITLE keys may contain local keys (e.g. ${NAME}) and a list
+%	Any of the *_TITLE keys may contain any local key (e.g. ${NAME}) and a list
 %	of internal variables that will be substituted in the text strings:
 %	    $node_name      = node long name
 %	    $node_alias     = node alias
@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2022-10-19
+%   Updated: 2020-04-12
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -51,52 +51,33 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename,varargin{:});
 timelog(procmsg,1);
 
 % gets PROC's configuration and associated nodes for any TSCALE and/or REQDIR
 [P,N,D] = readproc(WO,varargin{:});
 G = cat(1,D.G);
 
-% PROC's parameters
 border = .1;
+modarrcol = [1,0,0]; % color of model arrows
+resarrcol = [0,.8,0]; % color of residual arrows
+
+% PROC's parameters
 fontsize = field2num(P,'FONTSIZE',7);
 maxerror = field2num(P,'FILTER_MAX_ERROR_M',NaN);
-minerror = field2num(P,'ENU_MIN_ERROR_M',[0.01,0.01,0.01]);
-orbiterr = field2num(P,'ORBIT_ERROR_RATIO',[1,2]);
 terrmod = field2num(P,'TREND_ERROR_MODE',1);
 trendmindays = field2num(P,'TREND_MIN_DAYS',1);
-trendminperc = field2num(P,'TREND_MIN_PERCENT',50);
 targetll = field2num(P,'GNSS_TARGET_LATLON');
 if numel(targetll)~=2 || any(isnan(targetll))
 	targetll = [];
 end
-degm = 1e3*degkm;
 velref = field2num(P,'VELOCITY_REF',[0,0,0]);
 velrefdate = field2num(P,'VELOCITY_REF_ORIGIN_DATE',datenum(2000,1,1));
 itrf = field2str(P,'ITRF_REF','ITRF');
 if numel(velref)==3 && any(velref~=0)
 	itrf = 'local ref.';
 end
-enu = {'E','N','U'};
 cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Northern,Relative Vertical'),',');
-disp_yscale = field2num(P,'DISP_YSCALE_M',0);
-
-% Harmonic correction: period list (day), pairs of sine, cosine (mm) for each component
-harm_refdate = field2num(P,'HARMONIC_ORIGIN_DATE');
-harm_period = field2num(P,'HARMONIC_PERIOD_DAY',0);
-harm(1).x = field2num(P,'HARMONIC_EAST_SINCOS_MM')/1e3;
-harm(2).x = field2num(P,'HARMONIC_NORTH_SINCOS_MM')/1e3;
-harm(3).x = field2num(P,'HARMONIC_UP_SINCOS_MM')/1e3;
-harmcorr = false;
-if isnumeric(harm_refdate) && all(harm_period > 0)
-	if all([numel(harm(1).x),numel(harm(2).x),numel(harm(3).x)]==2*numel(harm_period))
-		fprintf('---> Harmonic correction: %s days\n',num2str(harm_period));
-		harmcorr = true;
-	else
-		fprintf('*** Warning: inconsistent pairs of sine/cosine for harmonic correction!\n');
-	end
-end
 
 % PERNODE graphs parameters
 pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','o');
@@ -112,9 +93,6 @@ summary_staoff = field2num(P,'SUMMARY_STATION_OFFSET_M',0.01);
 summary_cmpoff = field2num(P,'SUMMARY_COMPONENT_OFFSET_M',0.01);
 
 % VECTORS parameters
-vectors_excluded = field2str(P,'VECTORS_EXCLUDED_NODELIST');
-vectors_included = field2str(P,'VECTORS_INCLUDED_NODELIST');
-vectors_excluded_target = field2num(P,'VECTORS_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 vrelmode = isok(P,'VECTORS_RELATIVE');
 if vrelmode
 	vref = '';
@@ -132,22 +110,13 @@ minkm = field2num(P,'VECTORS_MIN_SIZE_KM',10);
 maxxy = field2num(P,'VECTORS_MAX_XYRATIO',1);
 arrowshape = field2num(P,'VECTORS_ARROWSHAPE',[.1,.1,.08,.02]);
 vectors_title = field2str(P,'VECTORS_TITLE','{\fontsize{14}{\bf$name - Vectors} ($timescale)}');
-vectors_demopt = field2cell(P,'VECTORS_DEM_OPT','watermark',2,'saturation',.8,'interp','legend','seacolor',[0.7,0.9,1]);
+vectors_demopt = field2cell(P,'VECTORS_DEM_OPT','watermark',3,'interp','legend','seacolor',[0.7,0.9,1]);
 vectors_shape = field2shape(P,'VECTORS_SHAPE_FILE');
-vectors_ampcmp = field2num(P,'VECTORS_AMPLITUDE_COMPONENTS',1:2);
-if numel(vectors_ampcmp)>3 || ~all(ismember(vectors_ampcmp,1:3))
-	fprintf('*** Warning: VECTORS_AMPLITUDE_COMPONENTS not consistent. Using default (1,2)\n');
-	vectors_ampcmp = 1:2;
-end
-vectors_ampstr = strjoin(enu(vectors_ampcmp),'+');
 
 % BASELINES parameters
-baselines_excluded = field2str(P,'BASELINES_EXCLUDED_NODELIST');
-baselines_included = field2str(P,'BASELINES_INCLUDED_NODELIST');
-baselines_excluded_target = field2num(P,'BASELINES_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 baselines_horizonly = isok(P,'BASELINES_HORIZONTAL_ONLY');
 pagestanum = field2num(P,'BASELINES_PAGE_STA_NUM',10);
-baselines_interp_method = field2str(P,'BASELINES_INTERP_METHOD',{'','linear','nearest'});
+baselines_interp_method = field2str(P,'BASELINES_INTERP_METHOD',{'linear','nearest'});
 baselines_linestyle = field2str(P,'BASELINES_LINESTYLE','o-');
 baselines_title = field2str(P,'BASELINES_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
 baselines_ylabel = field2str(P,'BASELINES_YLABEL','$ref_node_alias ($baselines_unit)');
@@ -157,51 +126,26 @@ baselines_staoff = field2num(P,'BASELINES_STATION_OFFSET_M',0.01);
 baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 
 % MOTION parameters
-motion_excluded = field2str(P,'MOTION_EXCLUDED_NODELIST');
-motion_included = field2str(P,'MOTION_INCLUDED_NODELIST');
-motion_excluded_target = field2num(P,'MOTION_EXCLUDED_FROM_TARGET_KM',0,'notempty');
+%MOTION_EXCLUDED_NODELIST|
 motion_filter = field2num(P,'MOTION_MAFILTER',10);
 motion_scale = field2num(P,'MOTION_SCALE_MM',0);
 motion_minkm = field2num(P,'MOTION_MIN_SIZE_KM',10);
-motion_colormap = field2num(P,'MOTION_COLORMAP',spectral(256));
-motion_demopt = field2cell(P,'MOTION_DEM_OPT','watermark',1.5,'saturation',0,'interp');
+motion_colormap = field2num(P,'MOTION_COLORMAP',jet(256));
+motion_demopt = field2cell(P,'MOTION_DEM_OPT','colormap',.5*ones(64,3),'watermark',2,'interp');
 motion_title = field2str(P,'MOTION_TITLE','{\fontsize{14}{\bf$name - Motion} ($timescale)}');
 
-% MODELNET parameters
-modelnet_excluded = field2str(P,'MODELNET_EXCLUDED_NODELIST');
-modelnet_included = field2str(P,'MODELNET_INCLUDED_NODELIST');
-modelnet_excluded_target = field2num(P,'MODELNET_EXCLUDED_FROM_TARGET_KM',0,'notempty');
-modelnet_mindisp = field2num(P,'MODELNET_MIN_DISP_M',[1,1,2]);
-modelnet_minsta = round(field2num(P,'MODELNET_MIN_STATION',2));
-modelnet_dslice = field2num(P,'MODELNET_DEPTH_SLICE',0:2000:8000);
-modelnet_border = field2num(P,'MODELNET_BORDERS',1000);
-modelnet_target_included = isok(P,'MODELNET_TARGET_INCLUDED',1);
-modelnet_gridsize = field2num(P,'MODELNET_GRID_SIZE',100);
-modelnet_vazel = field2num(P,'MODELNET_VIEW_AZEL',[40,10]);
-modelnet_dvlim = field2num(P,'MODELNET_DVLIM');
-modelnet_cmap = field2num(P,'MODELNET_COLORMAP',roma(256));
-modelnet_mks = field2cell(P,'MODELNET_MARKER','^k','MarkerSize',8,'MarkerFaceColor',.99*ones(1,3));
-modelnet_title = field2str(P,'MODELNET_TITLE','{\fontsize{14}{\bf$name - Network sensitivity}}');
-
 % MODELLING parameters
-modelling_excluded = field2str(P,'MODELLING_EXCLUDED_NODELIST');
-modelling_included = field2str(P,'MODELLING_INCLUDED_NODELIST');
-modelling_excluded_target = field2num(P,'MODELLING_EXCLUDED_FROM_TARGET_KM',0,'notempty');
+modelling_excluded_from_target = field2num(P,'MODELLING_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 modelling_force_relative = isok(P,'MODELLING_FORCE_RELATIVE');
 modrelauto = strcmpi(field2str(P,'MODELLING_FORCE_RELATIVE'),'auto');
 maxdep = field2num(P,'MODELLING_MAX_DEPTH',8e3);
 bm = field2num(P,'MODELLING_BORDERS',5000);
-rr = field2num(P,'MODELLING_GRID_SIZE',50);
-modelling_cmap = field2num(P,'MODELLING_COLORMAP',ryb(256));
-modelling_colorshading = field2num(P,'MODELLING_COLOR_SHADING',0.3);
+rr = field2num(P,'MODELLING_GRID_SIZE',51);
+modelling_cmap = field2num(P,'MODELLING_COLORMAP',jet(512));
+modelling_colorshading = field2num(P,'MODELLING_COLOR_SHADING',0.8);
 modelling_topo_rgb = field2num(P,'MODELLING_TOPO_RGB',.5*[1,1,1]);
 % color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
 modelling_coloref = lower(field2str(P,'MODELLING_COLORREF','volpdf'));
-% colors for displacement arrows
-datarrcol = field2num(P,'MODELLING_DATA_COLOR',[0,0,0]); % color of model arrows
-modarrcol = field2num(P,'MODELLING_MODEL_COLOR',[.7,0,0]); % color of model arrows
-resarrcol = field2num(P,'MODELLING_RESIDUAL_COLOR',[0,.5,0]); % color of residual arrows
-plotnancomp = isok(P,'MODELLING_PLOT_NAN_COMPONENT',1);
 modelling_title = field2str(P,'MODELLING_TITLE','{\fontsize{14}{\bf$name - Source modelling} ($timescale)}');
 plotbest = isok(P,'MODELLING_PLOT_BEST');
 plotbest_col = field2num(P,'MODELLING_PLOT_BEST_COLOR',.5*ones(1,3));
@@ -217,20 +161,12 @@ end
 modelling_shape = field2shape(P,'MODELLING_SHAPE_FILE');
 
 modelling_source_type = field2str(P,'MODELLING_SOURCE_TYPE','isotropic','notempty');
-
-% some modelling parameters are structure fields to pass them to other functions
 modelopt.horizonly = isok(P,'MODELLING_HORIZONTAL_ONLY');
-modelopt.minerror = field2num(P,'MODELLING_MINERROR_MM',5); % minimum error on data (in mm)
-modelopt.minerrorrel = field2num(P,'MODELLING_MINERROR_PERCENT',1); % minimum relative error on data (in %)
-modelopt.enuerror = field2num(P,'MODELLING_ENU_ERROR_RATIO'); % factor ratio to adjust each component error
-if numel(modelopt.enuerror) < 3
-	modelopt.enuerror = ones(1,3);
-end
-% a priori source depth (value, gaussian STD in m)
-modelopt.apriori_depth = field2num(P,'MODELLING_APRIORI_DEPTH_M');
 % a priori horizontal error around the target (in STD, km), 0 or NaN = no a priori
 modelopt.apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 modelopt.msig = field2num(P,'MODELLING_SIGMAS',1);
+modelopt.minerror = field2num(P,'MODELLING_MINERROR_MM',5);
+modelopt.minerrorrel = field2num(P,'MODELLING_MINERROR_PERCENT',1);
 modelopt.misfitnorm = field2str(P,'MODELLING_MISFITNORM','L1');
 modelopt.multi = field2num(P,'MODELLING_MULTIPLE_SOURCES',1,'notempty');
 
@@ -280,19 +216,15 @@ PCDM.supplementary_graphs = isok(P,'MODELLING_PCDM_SUPPLEMENTARY_GRAPHS');
 tickfactorlim = 5e3; % above 5 km width/depth axis will be in km
 
 % MODELTIME parameters
-modeltime_source_type = field2str(P,'MODELTIME_SOURCE_TYPE','isotropic','notempty');
 modeltime_period = field2num(P,'MODELTIME_PERIOD_DAY');
-modeltime_sampling = field2num(P,'MODELTIME_SAMPLING_DAY',1);
+modeltime_sampling = field2num(P,'MODELTIME_SAMPLING_DAY');
 modeltime_max = field2num(P,'MODELTIME_MAX_MODELS',100);
-modeltime_gridsize = field2num(P,'MODELTIME_GRID_SIZE',rr);
 modeltime_maxmisfit = field2num(P,'MODELTIME_MAX_MISFIT_M',1);
 modeltime_title = field2str(P,'MODELTIME_TITLE','{\fontsize{14}{\bf$name - Source best model timeline} ($timescale)}');
 modeltime_flowrate = isok(P,'MODELTIME_FLOWRATE',1);
-modeltime_flim = field2num(P,'MODELTIME_FLIM');
 modeltime_map_period = field2num(P,'MODELTIME_MAP_PERIODLIST',modeltime_period,'notempty');
-modeltime_linestyle = field2str(P,'MODELTIME_LINESTYLE','-');
 modeltime_marker_linewidth = field2num(P,'MODELTIME_MARKER_LINEWIDTH',1);
-modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',spectral(256));
+modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',jet(256));
 modeltime_markersize = pi*(field2num(P,'MODELTIME_MARKERSIZE',10,'notempty')/2)^2; % scatter needs marker size as a surface (πr²)
 
 
@@ -304,16 +236,12 @@ V.baselines_unit = field2str(P,'BASELINES_UNIT','m');
 
 % ==============================================================================
 % Makes the proc's job
-%
-% Note: D(n).d = [E,N,U,Orbit,E_proc,N_proc,U_proc] where columns 1:4 are original
-% data (in the local reference) and columns 5:7 are processed/corrected data
 
+% if a local reference is defined (VELOCITY_REF), computes relative positions in
+% D.d from the install date of the station.
 
-for n = 1:numel(N)
-
-	% --- if a local reference is defined (VELOCITY_REF), computes relative positions in
-	% D.d from the install date of the station.
-	if numel(velref)==3 && ~all(velref==0)
+if numel(velref)==3 && ~all(velref==0)
+	for n = 1:length(N)
 		t0 = velrefdate;
 		for c = 1:3
 			if size(D(n).d,2) >= c
@@ -321,52 +249,20 @@ for n = 1:numel(N)
 			end
 		end
 	end
-
-	% --- add a default orbit column to data if needed
-	if ~isempty(D(n).d) && size(D(n).d,2) < 4
-		D(n).d(:,4) = zeros(size(D(n).d(:,1)));
-	end
-
-	% --- filter the data at once and adjust errors
-	if ~isempty(D(n).d)
-		if ~isnan(maxerror)
-			D(n).d(any(D(n).e>maxerror,2),:) = NaN;
-		end
-		for c = 1:3
-			D(n).e(isnan(D(n).e(:,c)) | D(n).e(:,c)<minerror(c),c) = minerror(c);
-		end
-		for i = 1:numel(orbiterr)
-			k = find(D(n).d(:,4)>=i-1);
-			if ~isempty(k) && ~isempty(D(n).e) && orbiterr(i)>0
-				D(n).e(k,:) = D(n).e(k,:)*orbiterr(i);
-			end
-		end
-	end
-
-	% --- duplicate raw data in columns 5:7
-	if ~isempty(D(n).d)
-		D(n).d = D(n).d(:,[1:4,1:3]);
-	end
-
-	% --- harmonic correction
-	if harmcorr && ~isempty(D(n).d)
-		tharm = D(n).t - harm_refdate;
-		for i = 1:3
-			for c = 1:length(harm_period)
-				a = 2*pi*tharm/harm_period(c);
-				D(n).d(:,i+4) = D(n).d(:,i+4) - sin(a)*harm(i).x(1+(c-1)*2) - cos(a)*harm(i).x(2+(c-1)*2);
-			end
-		end
-	end
-
 end
 
+% filter the data at once
+for n = 1:length(N)
+	if ~isnan(maxerror)
+		D(n).d(any(D(n).e>maxerror,2),:) = NaN;
+	end
+end
 
-for r = 1:numel(P.GTABLE)
+for r = 1:length(P.GTABLE)
 
-	% initializes linear trends table
-	tr = nan(numel(N),3); % linear trends per station per component (mm/yr)
-	tre = nan(numel(N),3); % linear trends error (mm/yr)
+	% initializes trends table
+	tr = nan(length(N),3); % trends per station per component (mm/yr)
+	tre = nan(length(N),3); % trends error (mm/yr)
 
 	V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 	tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
@@ -375,22 +271,22 @@ for r = 1:numel(P.GTABLE)
 	end
 
 	% station offset
-	n0 = numel(N) - 1;
+	n0 = length(N) - 1;
 	staoffset = ((0:n0) - n0/2)*summary_staoff;
 
 	% to make a synthetic figure we must build a new matrix of processed data first...
-	X = repmat(struct('t',[],'d',[],'w',[]),numel(N),1);
+	X = repmat(struct('t',[],'d',[],'w',[]),length(N),1);
 	for i = 1:3
-		for n = 1:numel(N)
+		for n = 1:length(N)
 
 			k = D(n).G(r).k;
 			if ~isempty(k)% && ~all(isnan(D(n).d(k,i)))
-				dk = cleanpicks(D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P);
+				dk = cleanpicks(D(n).d(k,i) - rmedian(D(n).d(k,i)),P);
 				tk = D(n).t(k);
 
 				% computes yearly trends (in mm/yr)
 				kk = find(~isnan(dk));
-				if numel(kk) >= 2 && diff(minmax(tk(kk))) >= trendmindays && 100*diff(minmax(tk(kk)))/diff(tlim) >= trendminperc && ~all(isnan(dk(kk)))
+				if length(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays && ~all(isnan(dk(kk)))
 					[b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./D(n).e(k(kk),i));
 					tr(n,i) = b(1)*365.25*1e3;
 					% different modes for error estimation
@@ -407,12 +303,9 @@ for r = 1:numel(P.GTABLE)
 					end
 					% all errors are adjusted with sampling completeness factor
 					if N(n).ACQ_RATE > 0
-						acq = numel(kk)*N(n).ACQ_RATE/abs(diff(tlim));
+						acq = length(kk)*N(n).ACQ_RATE/abs(diff(tlim));
 						tre(n,i) = tre(n,i)/sqrt(acq);
 					end
-				else
-					tr(n,i) = NaN;
-					tre(n,i) = NaN;
 				end
 				X(n).t = tk;
 				X(n).d(:,i) = dk + staoffset(n);
@@ -425,7 +318,7 @@ for r = 1:numel(P.GTABLE)
 			X(n).trd = 0;
 		end
 	end
-	for n = 1:numel(N)
+	for n = 1:length(N)
 		if isempty(X(n).d)
 			X(n).d = nan(0,3);
 		end
@@ -435,17 +328,7 @@ for r = 1:numel(P.GTABLE)
 	summary = 'SUMMARY';
 	if any(strcmp(P.SUMMARYLIST,summary))
 		figure, clf, orient tall
-		OPT.linestyle = summary_linestyle;
-		OPT.fontsize = fontsize;
-		OPT.chnames = cmpnames;
-		OPT.choffset = summary_cmpoff;
-		OPT.zoompca = summary_timezoom;
-		OPT.trendmindays = trendmindays;
-		OPT.trendminperc = trendminperc;
-		OPT.yscalevalue = disp_yscale;
-		OPT.yscaleunit = 'cm';
-		OPT.yscalefact = 100;
-		smartplot(X,tlim,P.GTABLE(r),OPT);
+		smartplot(X,tlim,P.GTABLE(r),summary_linestyle,fontsize,cmpnames,summary_cmpoff,summary_timezoom,trendmindays);
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
@@ -457,7 +340,12 @@ for r = 1:numel(P.GTABLE)
 
 
 	% --- computes vector reference (relative mode) + common part for relative mode
-	knv = selectnode(N,tlim,vectors_excluded,vectors_included,[targetll,vectors_excluded_target]);
+	if isfield(P,'VECTORS_EXCLUDED_NODELIST')
+		knv = find(~ismemberlist({N.FID},split(P.VECTORS_EXCLUDED_NODELIST,',')));
+	else
+		knv = 1:length(N);
+	end
+	fprintf('---> VECTORS: %d/%d nodes selected\n',length(knv),length(N));
 
 	if isok(P,'VECTORS_TARGET_INCLUDED') && ~isempty(targetll)
 		latlim = minmax([geo(knv,1);targetll(1)]);
@@ -469,7 +357,7 @@ for r = 1:numel(P.GTABLE)
 	xyr = cosd(mean(latlim));
 
 	% computes a mean velocity vector (for valid nodes only)
-	if numel(knv) > 1
+	if length(knv) > 1
 		mvv = rsum(tr(knv,:)./tre(knv,:))./rsum(1./tre(knv,:));
 	else
 		mvv = tr;
@@ -482,7 +370,7 @@ for r = 1:numel(P.GTABLE)
 			[kvref,knref] = ismember(split(vref,','),{N.FID});
 			if ~isempty(vref) && all(kvref);
 				mode = vref;
-				if numel(knref) > 1
+				if length(knref) > 1
 					voffset = rsum(tr(knref,:)./tre(knref,:))./rsum(1./tre(knref,:));
 				else
 					voffset = tr(knref,:);
@@ -497,22 +385,25 @@ for r = 1:numel(P.GTABLE)
 				voffset = [mvv(1:2),(~vrelhorizonly)*mvv(3)];
 			end
 		end
-		tr = tr - repmat(voffset,numel(N),1);
+		tr = tr - repmat(voffset,length(N),1);
 		fprintf('---> Relative mode "%s" - velocity reference = %1.2f, %1.2f, %1.2f mm/yr\n',mode,voffset);
 	end
 
 	% --- per node plots
-	for n = 1:numel(N)
+	for n = 1:length(N)
 
 		V.node_name = N(n).NAME;
 		V.node_alias = N(n).ALIAS;
 		V.last_data = datestr(D(n).tfirstlast(2));
+		nx = length(D(n).CLB.nm);
+
 
 		figure, clf, orient tall
 
 		% renames main variables for better lisibility...
 		k = D(n).G(r).k;
 		ke = D(n).G(r).ke;
+		%tlim = D(n).G(r).tlim;
 
 		% title and status
 		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
@@ -531,8 +422,7 @@ for r = 1:numel(P.GTABLE)
 				if i == 3
 					X(1).w = D(n).d(k,4);
 				end
-				if harmcorr || vrelmode
-					dk = cleanpicks(D(n).d(k,i+4)-rmedian(D(n).d(k,i+4)),P);
+				if vrelmode
 					X(2).t = tk;
 					X(2).d(:,i) = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
 					X(2).e(:,i) = D(n).e(k,i);
@@ -542,12 +432,11 @@ for r = 1:numel(P.GTABLE)
 				end
 			end
 		end
-		if harmcorr || vrelmode
+		if vrelmode
 			X(1).nam = 'original';
 			X(1).rgb = scolor(1);
 			X(1).trd = 0;
-			%X(2).nam = sprintf('relative (%s)',mode);
-			X(2).nam = sprintf('corrected (%s%s%s)',repmat('harmonic',harmcorr),repmat('+',harmcorr&&vrelmode),repmat('relative',vrelmode));
+			X(2).nam = sprintf('relative (%s)',mode);
 			X(2).rgb = scolor(3);
 			X(2).trd = 1;
 		else
@@ -555,24 +444,14 @@ for r = 1:numel(P.GTABLE)
 			X(1).rgb = scolor(1);
 			X(1).trd = 1;
 		end
-		for i = 1:numel(X)
+		for i = 1:length(X)
 			if isempty(X(i).d)
 				X(i).d = nan(0,3);
 			end
 		end
 
 		% makes the plot
-		OPT.linestyle = pernode_linestyle;
-		OPT.fontsize = fontsize;
-		OPT.chnames = cmpnames;
-		OPT.choffset = pernode_cmpoff;
-		OPT.zoompca = pernode_timezoom;
-		OPT.trendmindays = trendmindays;
-		OPT.trendminperc = trendminperc;
-		OPT.yscalevalue = disp_yscale;
-		OPT.yscaleunit = 'cm';
-		OPT.yscalefact = 100;
-		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),OPT);
+		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),pernode_linestyle,fontsize,cmpnames,pernode_cmpoff,pernode_timezoom,trendmindays);
 		if ~isempty(rev)
 			axes('Position',[.8,.02,.18,.07])
 			plotcube([0,0,0],eye(3),[0,0,0],{'E','N','U'}), hold on
@@ -588,13 +467,12 @@ for r = 1:numel(P.GTABLE)
 			P.GTABLE(r).INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),'(median)',' ',' '};
 			for i = 1:3
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%1.3f %s} (%1.3f) - Vel. = {\\bf%+1.1f \\pm %1.1f mm/yr}', ...
-					i, enu{i},D(n).d(ke,i+4),D(n).CLB.un{i},rmedian(D(n).d(k,i+4)),lre(i,:))}];
+					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},rmedian(D(n).d(k,i)),lre(i,:))}];
 			end
 		end
 
 		% makes graph
-		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
 
 		% exports data
@@ -603,18 +481,20 @@ for r = 1:numel(P.GTABLE)
 			E.d = [D(n).d(k,1:3),D(n).e(k,:),D(n).d(k,4)];
 			E.header = {'Eastern(m)','Northern(m)','Up(m)','dE','dN','dU','Orbit'};
 			E.infos = {};
-			if harmcorr || vrelmode
-				E.d = [E.d,	...
-			   		D(n).d(k,5) - polyval([voffset(1)/365250,0],E.t - tlim(1)), ...
-			   		D(n).d(k,6) - polyval([voffset(2)/365250,0],E.t - tlim(1)), ...
-			   		D(n).d(k,7) - polyval([voffset(3)/365250,0],E.t - tlim(1)), ...
-			   	];
-				E.header = {E.header{:},'East_treat(m)','North_treat(m)','Up_treat(m)'};
+			if vrelmode
+				E.d = [E.d, ...
+					D(n).d(k,1) - polyval([voffset(1)/365250,0],E.t - tlim(1)), ...
+					D(n).d(k,2) - polyval([voffset(2)/365250,0],E.t - tlim(1)), ...
+					D(n).d(k,3) - polyval([voffset(3)/365250,0],E.t - tlim(1)), ...
+				];
+				E.header = {E.header{:},'East_rel(m)','North_rel(m)','Up_rel(m)'};
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
 	end
+
+
 
 
 	if P.GTABLE(r).STATUS
@@ -628,18 +508,18 @@ for r = 1:numel(P.GTABLE)
 	if any(strcmp(P.SUMMARYLIST,summary))
 
 		if baselines_horizonly
-			ib = 5:6;
+			ib = 1:2;
 		else
-			ib = 5:7;
+			ib = 1:3;
 		end
 
 		% builds a structure B containing indexes of each node pairs
 		if isfield(P,'BASELINES_NODEPAIRS') && ~isempty(P.BASELINES_NODEPAIRS)
 			pairgraphs = split(P.BASELINES_NODEPAIRS,';');
 			np = 0;
-			for nn = 1:numel(pairgraphs)
+			for nn = 1:length(pairgraphs)
 				pairs = split(pairgraphs{nn},',');
-				if numel(pairs)>1
+				if length(pairs)>1
 					kr = find(ismemberlist({N.FID},pairs(1)));
 					kn = find(ismemberlist({N.FID},pairs(2:end)));
 				end
@@ -655,33 +535,37 @@ for r = 1:numel(P.GTABLE)
 		% former behavior: will plot all possible pairs combinations,
 		% eventually using only specific reference stations
 		if ~exist('B','var')
-			kn = selectnode(N,tlim,baselines_excluded,baselines_included,[targetll,baselines_excluded_target]);
+			if isfield(P,'BASELINES_EXCLUDED_NODELIST')
+				kn = find(~ismemberlist({N.FID},split(P.BASELINES_EXCLUDED_NODELIST,',')));
+			else
+				kn = 1:length(N);
+			end
 			if isfield(P,'BASELINES_REF_NODELIST') && ~isempty(P.BASELINES_REF_NODELIST)
 				kr = kn(ismemberlist({N(kn).FID},split(P.BASELINES_REF_NODELIST,',')));
 			else
-				kr = 1:numel(N);
+				kr = 1:length(N);
 			end
-			for nn = 1:numel(kr)
+			for nn = 1:length(kr)
 				B(nn).kr = kr(nn);
 				B(nn).kn = kn;
 			end
 		end
 
 		figure
-		if numel(B) > pagestanum
+		if length(B) > pagestanum
 			p = get(gcf,'PaperSize');
-			set(gcf,'PaperSize',[p(1),p(2)*numel(kr)/pagestanum])
+			set(gcf,'PaperSize',[p(1),p(2)*length(kr)/pagestanum])
 		end
 		orient tall
 		P.GTABLE(r).GTITLE = varsub(baselines_title,V);
 
 		% builds the structure X for smartplot: X(n).d(:,i) where
 		%   n = destination node and i = reference node
-		X = repmat(struct('t',[],'d',[],'e',[],'w',[],'nam',[]),numel(N),1);
-		aliases = cell(1,numel(N));
+		X = repmat(struct('t',[],'d',[],'e',[],'w',[],'nam',[]),length(N),1);
+		aliases = cell(1,length(N));
 		ncolors = ones(size(aliases));
-		refnames = cell(1,numel(B));
-		for nn = 1:numel(B)
+		refnames = cell(1,length(B));
+		for nn = 1:length(B)
 			n = B(nn).kr;
 			k = D(n).G(r).k;
 			tk = D(n).t(k);
@@ -691,40 +575,27 @@ for r = 1:numel(P.GTABLE)
 			E.header = [];
 
 			% station offset
-			n0 = numel(B(nn).kn) - 1;
+			n0 = length(B(nn).kn) - 1;
 			staoffset = ((0:n0) - n0/2)*baselines_staoff;
-			for nn2 = 1:numel(B(nn).kn)
+			for nn2 = 1:length(B(nn).kn)
 				n2 = B(nn).kn(nn2);
 				k2 = D(n2).G(r).k;
 				V.node_name = N(n2).NAME;
 				V.node_alias = N(n2).ALIAS;
 				[~,kk] = unique(D(n2).t(k2));	% mandatory for interp1
 				k2 = k2(kk);
-				if n2 ~= n && numel(k)>1 && numel(k2)>1
-					% exported baselines (text files) are based on the reference station time
-					if isempty(baselines_interp_method)
-						dk = nan(length(k),1);
-						[tc,ka,kb] = intersect(D(n).t(k),D(n2).t(k2));
-						dk(ka) = sqrt(sum((D(n2).d(k2(kb),ib) - D(n).d(k(ka),ib)).^2,2));
-					else
-						dk = sqrt(sum((interp1(D(n2).t(k2),D(n2).d(k2,ib),tk,baselines_interp_method) - D(n).d(k,ib)).^2,2));
-					end
-					dk = cleanpicks(dk,P)/siprefix(baselines_unit,'m');
+				if n2 ~= n && length(k)>1 && length(k2)>1
+					dk = cleanpicks(sqrt(sum((interp1(D(n2).t(k2),D(n2).d(k2,ib),tk,baselines_interp_method) - D(n).d(k,ib)).^2,2)),P);
+					dk = dk/siprefix(baselines_unit,'m');
+					dk0 = rmean(dk);
 					E.d = cat(2,E.d,dk);
 					E.header = cat(2,E.header,{sprintf('%s-%s_(%s)',N(n).ALIAS,N(n2).ALIAS,baselines_unit)});
 
-					% plotted baselines are based on the destination station time (because of smartplot structure)
-					if isempty(baselines_interp_method)
-						dd = nan(length(k2),1);
-						[tc,ka,kb] = intersect(D(n).t(k),D(n2).t(k2));
-						dd(kb) = sqrt(sum((D(n2).d(k2(kb),ib) - D(n).d(k(ka),ib)).^2,2));
-					else
-						[tk1,kk] = unique(tk);	% mandatory for interp1
-						dd = sqrt(sum((D(n2).d(k2,ib) - interp1(tk1,D(n).d(k(kk),ib),D(n2).t(k2),baselines_interp_method)).^2,2));
-					end
 					X(n2).t = D(n2).t(k2);
+					[tk1,kk] = unique(tk);	% mandatory for interp1
+					dd = sqrt(sum((D(n2).d(k2,ib) - interp1(tk1,D(n).d(k(kk),ib),D(n2).t(k2),baselines_interp_method)).^2,2));
 					if isempty(X(n2).d)
-						X(n2).d = nan(size(X(n2).t,1),numel(B));
+						X(n2).d = nan(size(X(n2).t,1),length(B));
 					end
 					X(n2).d(:,nn) = dd - rmedian(dd) + staoffset(nn2);
 					X(n2).w = D(n2).d(k2,4);
@@ -744,17 +615,7 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% makes the plot
-		OPT.linestyle = baselines_linestyle;
-		OPT.fontsize = fontsize;
-		OPT.chnames = refnames;
-		OPT.choffset = baselines_refoff;
-		OPT.zoompca = baselines_timezoom;
-		OPT.trendmindays = trendmindays;
-		OPT.trendminperc = trendminperc;
-		OPT.yscalevalue = disp_yscale;
-		OPT.yscaleunit = 'cm';
-		OPT.yscalefact = 1/siprefix(OPT.yscaleunit,'m');
-		smartplot(X,tlim,P.GTABLE(r),OPT);
+		smartplot(X,tlim,P.GTABLE(r),baselines_linestyle,fontsize,refnames,baselines_refoff,baselines_timezoom,trendmindays);
 
 		if isok(P,'PLOT_GRID')
 			grid on
@@ -778,12 +639,12 @@ for r = 1:numel(P.GTABLE)
 			sprintf('Mean velocity (%s):',itrf) ...
 		};
 		for i = 1:3
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',enu{i},mvv(i))}];
+			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',D(1).CLB.nm{i},mvv(i))}];
 		end
 		if vrelmode
 			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('Velocity ref. vector ({\\bf%s}):',mode)}];
 			for i = 1:3
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',enu{i},voffset(i))}];
+				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',D(1).CLB.nm{i},voffset(i))}];
 			end
 		end
 
@@ -804,7 +665,7 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% plots velocity vectors first
-		for nn = 1:numel(knv)
+		for nn = 1:length(knv)
 			n = knv(nn);
 			if ~any(isnan([vsc,vmax])) && ~any(isnan(tr(n,1:2)))
 				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1),vsc*tr(n,2),[arrowshape,xyr],'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
@@ -822,6 +683,7 @@ for r = 1:numel(P.GTABLE)
 
 		% loads DEM (P may contain user's defined DEM)
 		DEM = loaddem(WO,[xlim,ylim],P);
+
 		dem(DEM.lon,DEM.lat,DEM.z,'latlon',vectors_demopt{:})
 		text(xlim(2),ylim(2)+.01*diff(ylim),DEM.COPYRIGHT,'HorizontalAlignment','right','VerticalAlignment','bottom','Interpreter','none','FontSize',6)
 
@@ -833,7 +695,7 @@ for r = 1:numel(P.GTABLE)
 			[xx,yy] = meshgrid(DEM.lon,DEM.lat);
 			DEM.dist = greatcircle(targetll(1),targetll(2),yy,xx);
 			[c,h] = contour(DEM.lon,DEM.lat,DEM.dist,'k');
-			set(h,'LineColor',modelling_topo_rgb,'LineWidth',.1);
+			set(h,'Color',modelling_topo_rgb,'LineWidth',.1);
 			clabel(c,h,'FontSize',8,'Color',modelling_topo_rgb);
 		end
 
@@ -852,7 +714,7 @@ for r = 1:numel(P.GTABLE)
 		set(gca,'Children',[ha;h(1:ko-1)])
 
 		% plots error ellipse, vertical component and station name
-		for nn = 1:numel(knv)
+		for nn = 1:length(knv)
 			n = knv(nn);
 			if ~isnan(any(tr(n,1:2)))
 				h = ellipse(geo(n,2) + vsc*tr(n,1)/xyr,geo(n,1) + vsc*tr(n,2),vsc*tre(n,1)/xyr,vsc*tre(n,2), ...
@@ -891,26 +753,26 @@ for r = 1:numel(P.GTABLE)
 
 		hold off
 
-		% adds subplot horizontal amplitude vs distance
+		% adds subplot amplitude vs distance
 		if ~isempty(targetll)
 			pos = get(gca,'position');
 			axes('Position',[.5,.05,.45,pos(2)-0.02])
 			plot(0,0)
 			hold on
 			sta_dist = greatcircle(targetll(1),targetll(2),geo(knv,1),geo(knv,2));
-			sta_amp = sqrt(rsum(tr(knv,vectors_ampcmp).^2,2));
-			sta_err = sqrt(rsum(tre(knv,vectors_ampcmp).^2,2));
-			for nn = 1:numel(knv)
-				h = errorbar(sta_dist(nn),sta_amp(nn),sta_err(nn),'.');
-				set(h,'MarkerSize',15,'Color',scolor(knv(nn)),'LineWidth',0.1);
+			sta_amp = sqrt(rsum(tr(knv,1:3).^2,2));
+			sta_err = sqrt(rsum(tre(knv,1:3).^2,2));
+			for nn = 1:length(knv)
+				n = knv(nn);
+				errorbar(sta_dist(nn),sta_amp(nn),sta_err(nn),'.','MarkerSize',15,'Color',scolor(n),'LineWidth',0.1)
 			end
 			hold off
 			set(gca,'FontSize',8)
 			if any(~isnan(sta_amp))
 				set(gca,'YLim',[0,max(sta_amp+sta_err)])
 			end
-			xlabel('Distance from Target (km)')
-			ylabel({sprintf('Velocity Amplitude (%s)',vectors_ampstr),'(mm/yr)'})
+			xlabel('Distance from target (km)')
+			ylabel('Velocity amplitude (mm/yr)')
 		end
 
 
@@ -922,7 +784,6 @@ for r = 1:numel(P.GTABLE)
 		if isok(P.GTABLE(r),'EXPORTS')
 			E.infos = { ...
 				sprintf('Velocity reference (%s):  E %+g mm/yr, N %+g mm/yr, U %+g mm/yr',datestr(velrefdate),velref), ...
-				sprintf('Stations'' aliases: %s',strjoin(cellstr(cat(1,N(knv).ALIAS)),',')), ...
 				};
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,:)];
@@ -946,7 +807,12 @@ for r = 1:numel(P.GTABLE)
 			' '};
 
 		% Selects nodes
-		knv = selectnode(N,tlim,motion_excluded,motion_included,[targetll,motion_excluded_target]);
+		if isfield(P,'MOTION_EXCLUDED_NODELIST')
+			knv = find(~ismemberlist({N.FID},split(P.MOTION_EXCLUDED_NODELIST,',')));
+		else
+			knv = 1:length(N);
+		end
+	fprintf('---> MOTION: %d/%d nodes selected\n',length(knv),length(N));
 
 		if ~isempty(targetll)
 			latlim = minmax([geo(knv,1);targetll(1)]);
@@ -959,12 +825,12 @@ for r = 1:numel(P.GTABLE)
 
 		% makes 3-D vectors
 		clear X
-		for nn = 1:numel(knv)
+		for nn = 1:length(knv)
 			n = knv(nn);
 			k = isinto(D(n).t,tlim);
 			if ~isempty(k)
 				X(nn).t = D(n).t(k);
-				X(nn).d = mavr(rf(D(n).d(k,5:7)),motion_filter);
+				X(nn).d = mavr(rf(D(n).d(k,1:3)),motion_filter);
 			else
 				X(nn).t = [];
 				X(nn).d = [];
@@ -997,7 +863,7 @@ for r = 1:numel(P.GTABLE)
 			ha = [ha;plot(targetll(2),targetll(1),'k.','MarkerSize',.1)];
 		end
 		% plots motion displacements first
-		for nn = 1:numel(knv)
+		for nn = 1:length(knv)
 			n = knv(nn);
 			if ~isempty(X(nn).d)
 				h = scatter(geo(n,2) + X(nn).d(:,1)*vsc/xyr,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
@@ -1040,9 +906,9 @@ for r = 1:numel(P.GTABLE)
 		axes('Position',[pos(1)+pos(3)+0.01,pos(2),0.23,pos(4)])
 		plot([0,0],ylim,'-k','LineWidth',.1)
 		hold on
-		plot(repmat([dlim3(2),0]*vsc,numel(X),1)',repmat(geo(knv,1),1,2)','-k','LineWidth',.1)
+		plot(repmat([dlim3(2),0]*vsc,length(X),1)',repmat(geo(knv,1),1,2)','-k','LineWidth',.1)
 		% plots motion displacements first
-		for nn = 1:numel(knv)
+		for nn = 1:length(knv)
 			n = knv(nn);
 			if ~isempty(X(nn).d)
 				scatter(X(nn).d(:,3)*vsc,geo(n,1) + X(nn).d(:,2)*vsc,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
@@ -1060,9 +926,9 @@ for r = 1:numel(P.GTABLE)
 		axes('Position',[pos(1),pos(2)-0.18,pos(3),.17])
 		plot(xlim,[0,0],'-k','LineWidth',.1)
 		hold on
-		plot(repmat(geo(knv,2),1,2)',repmat([dlim3(2),0]*vsc/xyr,numel(X),1)','-k','LineWidth',.1)
+		plot(repmat(geo(knv,2),1,2)',repmat([dlim3(2),0]*vsc/xyr,length(X),1)','-k','LineWidth',.1)
 		% plots motion displacements first
-		for nn = 1:numel(knv)
+		for nn = 1:length(knv)
 			n = knv(nn);
 			if ~isempty(X(nn).d)
 				scatter(geo(n,2) + X(nn).d(:,1)*vsc/xyr,X(nn).d(:,3)*vsc/xyr,P.GTABLE(r).MARKERSIZE^2*pi,X(nn).t,'filled');
@@ -1084,13 +950,6 @@ for r = 1:numel(P.GTABLE)
 			'HorizontalAlignment','center','VerticalAlignment','top','FontWeight','bold')
 		hold off
 
-		% additionnal legend
-		xsc = xlim(1);
-		ysc = alim(1) - 3*diff(alim)/10;
-		if motion_filter > 1
-			text(xsc,ysc,sprintf('Moving average filter = {\\bf %g}',motion_filter),'FontSize',8)
-		end
-
 		% time legend
 		axes('position',[.8,0.06,0.17,0.3]);
 		timecolorbar(.1,0,.15,.8,tlim,motion_colormap,8)
@@ -1102,141 +961,6 @@ for r = 1:numel(P.GTABLE)
 		close
 	end
 
-	% --- Modelnet
-	summary = 'MODELNET';
-	if any(strcmp(P.SUMMARYLIST,summary))
-
-		figure, orient tall
-
-		% Selects nodes
-		kn = selectnode(N,tlim,modelnet_excluded,modelnet_included,[targetll,modelnet_excluded_target]);
-
-		% minimum number of stations must be a valid number
-		modelnet_minsta = max(min(modelnet_minsta,length(kn)),1);
-
-		if length(kn) > 0
-
-			% makes the XYZ space
-			if modelnet_target_included && ~isempty(targetll)
-				latlim = minmax([geo(kn,1);targetll(1)]);
-				lonlim = minmax([geo(kn,2);targetll(2)]);
-			else
-				latlim = minmax(geo(kn,1));
-				lonlim = minmax(geo(kn,2));
-			end
-			lat0 = mean(latlim);
-			lon0 = mean(lonlim);
-			ysta = (geo(kn,1) - lat0)*degkm*1e3;
-			xsta = (geo(kn,2) - lon0)*degkm(lat0)*1e3;
-			zsta = geo(kn,3);
-
-			wid = max(diff(latlim)*degkm*1e3,diff(lonlim)*degkm(lat0)*1e3) + 2*modelnet_border;
-			mlim = linspace(-wid/2,wid/2,modelnet_gridsize);
-
-			% loads SRTM DEM for basemap (with 10% extra borders)
-			DEM = loaddem(WO,[lon0 + wid/(degkm(lat0)*1e3)*[-.6,.6],lat0 + wid/(degkm*1e3)*[-.6,.6]]);
-			[xdem,ydem] = meshgrid(mlim);
-			zdem = interp2((DEM.lon-lon0)*degkm(lat0)*1e3,(DEM.lat-lat0)*degkm*1e3,double(DEM.z),xdem,ydem);
-
-			[xx,yy,zz] = meshgrid(mlim,mlim,-modelnet_dslice);
-			sz = size(xx);
-	       	nn = length(xsta);
-
-	       	% computes Green's functions at stations for a unit volume of 1 m3
-	       	[asou,rsou] = cart2pol(repmat(reshape(xsta,1,1,1,nn),[sz,1])-repmat(xx,[1,1,1,nn]), ...
-	           	repmat(reshape(ysta,1,1,1,nn),[sz,1])-repmat(yy,[1,1,1,nn]));
-	       	[ur,uz] = mogi(rsou,repmat(reshape(zsta,1,1,1,nn),[sz,1]) - repmat(zz,[1,1,1,nn]),1);
-	       	[ux,uy] = pol2cart(asou,ur);
-
-			% source dVs for minimum displacements on X,Y,Z radius within an ellipsoid defined by
-			% mindisp semi-axis, stations sorted in ascending order of dV
-			[th,ph,rh] = cart2sph(ux,uy,uz);
-			vv = sort(ellradius(modelnet_mindisp/1e3,th,ph)./rh,4);
-			vv = min(vv(:,:,:,modelnet_minsta),[],4);
-	       	vv(zz>=repmat(zdem,[1,1,sz(3)])) = NaN; % removes "air-sources"
-
-			dvlim = modelnet_dvlim;
-			if any(isnan(dvlim)) || numel(dvlim) ~= 2
-				dvlim = minmax(vv);
-			end
-
-			axes('Position',[0.03,0.1,0.7,0.8])
-	   		slice(xx,yy,zz,vv,[],[],-modelnet_dslice,'nearest')
-	   		shading flat
-	   		hold on
-	   		plot3(xsta,ysta,-modelnet_dslice(1)*ones(size(xsta))+1,modelnet_mks{:})
-			if ~isempty(targetll) && modelnet_target_included
-				xt = (targetll(2)-lon0)*degm*cosd(lat0);
-				yt = (targetll(1)-lat0)*degm;
-				plot3([xt,xt],[yt,yt],-modelnet_dslice([1,end]),':k')
-			end
-	   		for z = modelnet_dslice
-	   			c = contourc(mlim,mlim,zdem);
-	   			pcontour3(c,-z+1,'Color',.99*ones(1,3),'LineWidth',.1);
-	   			c = contourc(mlim,mlim,zdem,[1,1]); % coast line at 1m elevation
-	   			pcontour3(c,-z+1,'Color',.99*ones(1,3),'LineWidth',1);
-	   			vmm = minmax(interp3(xx,yy,zz,vv,xx(:,:,1),yy(:,:,1),-z*ones(modelnet_gridsize)));
-				label = sprintf(' {\\bfDepth = %s m}\n \\DeltaV = %s to %s m^3',num2tex(z), ...
-					num2tex(roundsd(vmm(1),2)),num2tex(roundsd(vmm(2),2)));
-				if ~isempty(targetll) && modelnet_target_included
-	   				vi = interp3(xx,yy,zz,vv,xt,yt,-z);
-					label = [label,sprintf('\n\n \\DeltaV_{target} = {\\bf%s m^3}',num2tex(roundsd(vi,2)))];
-				end
-	   			text(cosd(modelnet_vazel(1))*wid/sqrt(2),sind(modelnet_vazel(1))*wid/sqrt(2),-z,label, ...
-	   				'VerticalA','m','FontSize',10)
-	   		end
-
-			% adds North compass at first slice
-			wc = wid/5;
-			xc = mlim(1)-wid/10;
-			yc = mlim(end)-wc;
-			h = comprose(xc,yc,1,wc,0,'LineWidth',.1,'FaceColor',zeros(1,3));
-			moveobj(h,[0,0,-modelnet_dslice(1)]);
-
-			% adds horizontal distance scale at last slice
-			ws = dscale(wid/3);
-			xs = mlim(1);
-			ys = mlim(1)-wid/20;
-			zs = -modelnet_dslice(end);
-			pap = get(gcf,'PaperPosition').*get(gca,'Position');
-			as = -modelnet_vazel(1)*sind(modelnet_vazel(2))/(pap(3)/pap(4));
-			plot3(xs+[0,0,ws,ws],ys-wid*[1/40,0,0,1/40],zs*ones(1,4),'k','LineWidth',1)
-			if ws < 1e3
-				ts = sprintf('%g m',ws);
-			else
-				ts = sprintf('%g km',ws/1e3);
-			end
-			text(xs+ws/2,ys,zs,ts,'FontSize',10,'FontWeight','b', ...
-				'Rotation',as,'Horiz','c','Verti','top')
-
-	   		hold off
-	   		view(modelnet_vazel)
-			set(gca,'XLim',minmax(mlim),'YLim',minmax(mlim),'ZLim',minmax(-modelnet_dslice))
-			axis tight off
-			caxis(dvlim)
-		end
-	   	axes('position',[.55,.07,.4,.02])
-	   	pcolor(linspace(dvlim(1),dvlim(2)),[0,1],repmat(linspace(dvlim(1),dvlim(2)),2,1)), shading flat
-	   	set(gca,'YTick',[],'TickDir','out','FontSize',8)
-	   	caxis(dvlim)
-	   	xlabel('Detactable \DeltaV (m^3)')
-
-		colormap(modelnet_cmap)
-
-		P.GTABLE(r).GTITLE = varsub(modelnet_title,V);
-		P.GTABLE(r).INFOS = {'{\itTime span}:', ...
-			sprintf('     {\\bf%s}',datestr(tlim(1),'yyyy-mm-dd HH:MM')), ...
-			sprintf('     {\\bf%s}',datestr(tlim(2),'yyyy-mm-dd HH:MM')), ...
-			' ', ...
-			sprintf('{\\bf%d}/%d stations',length(kn),numel(N)), ...
-	   		sprintf('minimum displacements at {\\bf%d} stations:',modelnet_minsta), ...
-	   		sprintf('E: {\\bf%g mm}, N: {\\bf%g mm}, U: {\\bf%g mm}',modelnet_mindisp), ...
-			' ', ...
-			};
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('INFOLINES',4))
-		close
-	end
 
 	% --- common part for MODELLING and MODELTIME
 	if any(ismember(P.SUMMARYLIST,{'MODELLING','MODELTIME'}))
@@ -1244,8 +968,18 @@ for r = 1:numel(P.GTABLE)
 		refstring = 'Modelling by Beauducel et al./IPGP';
 
 		% selects stations
-		kn = selectnode(N,tlim,modelling_excluded,modelling_included,[targetll,modelling_excluded_target]);
+		if isfield(P,'MODELLING_EXCLUDED_NODELIST')
+			kn = find(~ismemberlist({N.FID},split(P.MODELLING_EXCLUDED_NODELIST,',')));
+		else
+			kn = 1:length(N);
+		end
+		if ~isempty(targetll) && modelling_excluded_from_target > 0
+			kk = find(greatcircle(targetll(1),targetll(2),geo(kn,1),geo(kn,2)) <= modelling_excluded_from_target);
+			kn = kn(kk);
+		end
+	fprintf('---> MODELLING: %d/%d nodes selected\n',length(kn),length(N));
 
+		degm = 1e3*degkm;
 		modelopt.msigp = erf(modelopt.msig/sqrt(2));
 
 		% center coordinates
@@ -1286,7 +1020,6 @@ for r = 1:numel(P.GTABLE)
 
 		[xdem,ydem] = meshgrid(xlim,ylim);
 		zdem = interp2((DEM.lon-lon0)*degm*cosd(lat0),(DEM.lat-lat0)*degm,double(DEM.z),xdem,ydem);
-		mmz = minmax(zdem);
 
 		[xx,yy,zz] = meshgrid(xlim,ylim,zlim);
 
@@ -1301,17 +1034,13 @@ for r = 1:numel(P.GTABLE)
 	summary = 'MODELLING';
 	if any(strcmp(P.SUMMARYLIST,summary))
 
-		% loop on the model source type
-		for mst = split(modelling_source_type,',')
-			mt = lower(char(mst));
-
 		% makes (or not) the relative data array
 		d = [tr(kn,:),tre(kn,:)];
 		knn = find(~isnan(d(:,1)));
-		if ~isempty(knn) && (modelling_force_relative || (modrelauto && (azgap(xs(knn),ys(knn)) < 150 || numel(find(knn)) > 2)))
+		if ~isempty(knn) && (modelling_force_relative || (modrelauto && (azgap(xs(knn),ys(knn)) < 150 || length(find(knn)) > 2)))
 			% computes a mean velocity vector (horizontal only)
 			mvv = rsum(tr(kn,:)./tre(kn,:))./rsum(1./tre(kn,:));
-			d(:,1:3) = d(:,1:3) - repmat([mvv(1:2),0],numel(kn),1);
+			d(:,1:3) = d(:,1:3) - repmat([mvv(1:2),0],length(kn),1);
 			if isok(P,'DEBUG')
 				fprintf('---> Modelling vector relative forced by (%g,%g).\n',mvv(1:2));
 			end
@@ -1323,18 +1052,15 @@ for r = 1:numel(P.GTABLE)
 		modelopt.verbose = '';
 		d(:,4:6) = adjerrors(d,modelopt);
 
-		[e0,n0,z0] = ll2utm(lat0,lon0);
-
 		% --- computes the model !
-		switch lower(mt)
+		switch lower(modelling_source_type)
 		case 'pcdm'
-			summary = 'MODELLING_pCDM';
 			M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,PCDM);
-			if numel(M) > 1 && M(end).m0 < M(1).m0
+			if length(M) > 1 && M(end).m0 < M(1).m0
 				[mm,imm] = max(cat(4,M.mm),[],4);
 				% volume for maximum probability
 				vv = M(1).vv;
-				for m = 2:numel(M)
+				for m = 2:length(M)
 					vv(imm==m)=M(m).vv(imm==m);
 				end
 				m0 = cat(1,M.m0);
@@ -1372,15 +1098,13 @@ for r = 1:numel(P.GTABLE)
 			else
 				nmodels = sum(PCDM.random_sampling);
 			end
-			[lats,lons] = utm2ll(e0+pbest(:,1),n0+pbest(:,2),z0);
 		otherwise
-			summary = 'MODELLING';
 			M = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
-			if numel(M) > 1 && M(end).m0 < M(1).m0
+			if length(M) > 1 && M(end).m0 < M(1).m0
 				[mm,imm] = max(cat(4,M.mm),[],4);
 				% volume for maximum probability
 				vv = M(1).vv;
-				for m = 2:numel(M)
+				for m = 2:length(M)
 					vv(imm==m)=M(m).vv(imm==m);
 				end
 				m0 = cat(1,M.m0);
@@ -1410,58 +1134,8 @@ for r = 1:numel(P.GTABLE)
 				pbest = M.pbest;
 				vv0 = pbest(4)*1e6; % best dV in m3
 			end
-			[lats,lons] = utm2ll(e0+pbest(:,1),n0+pbest(:,2),z0);
 			nmodels = numel(mm);
 		end
-
-		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
-			E.t = max(cat(1,D(kn).tfirstlast),[],2);
-			E.d = [geo(kn,:),d,ux,uy,uz];
-			E.header = {'Latitude','Longitude','Altitude','E_obs(mm)','N_obs(mm)','Up_obs(mm)','dE(mm)','dN(mm)','dU(mm)', ...
-				                                      'E_mod(mm)','N_mod(mm)','Up_mod(mm)'};
-			if any(~isnan(m0))
-				E.infos = { ...
-					sprintf('Stations'' aliases: %s',strjoin(cellstr(cat(1,N(kn).ALIAS)),',')), ...
-					'', ...
-				};
-				switch lower(mt)
-				case 'pcdm'
-					for m = 1:numel(M)
-						E.infos = cat(2,E.infos, ...
-							sprintf('Least bad pCDM model #%d:',m), ...
-							sprintf('latitude = %g N in [%+g , %+g] km',lats(m), roundsd(ey(m,:)/1e3,2)), ...
-							sprintf('longitude = %g E in [%+g , %+g]',lons(m), roundsd(ex(m,:)/1e3,2)), ...
-							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',pbest(m,3),-fliplr(ez(m,:))/1e3), ...
-							sprintf('DeltaV = %+g m^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
-							sprintf('A = %1.2f / B = %1.2f',pbest(m,8:9)), ...
-							sprintf('shape = %s',pcdmdesc(pbest(m,8),pbest(m,9))), ...
-							sprintf('OmegaX = %+2.0f / OmegaY = %+2.0f / OmegaZ = %+2.0f',pbest(m,4:6)), ...
-							' ');
-					end
-				otherwise
-					for m = 1:numel(M)
-						E.infos = cat(2,E.infos, ...
-							sprintf('Least bad isotropic model #%d:',m), ...
-							sprintf('latitude = %g N in [%+g , %+g] km',lats(m), roundsd(ey(m,:)/1e3,2)), ...
-							sprintf('longitude = %g E in [%+g , %+g] km',lons(m), roundsd(ex(m,:)/1e3,2)), ...
-							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',-[pbest(m,3),fliplr(ez(m,:))]/1e3), ...
-							sprintf('DeltaV = %+g m^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
-							' ');
-					end
-				end
-			end
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
-		end
-
-		if isok(P,'MODELLING_EXPORT_MAT')
-			f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
-			fprintf('%s: saving workspace in %s...',wofun,f);
-			save(sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
-			fprintf(' done.\n');
-		end
-
 		% adjusts unit for volume variation
 		vunit = 'm^3';
 		if all(isfinite(vv0)) && any(abs(vv0) > 0.5e6)
@@ -1496,27 +1170,13 @@ for r = 1:numel(P.GTABLE)
 		end
 		vsc = modelling_vmax_ratio*min([diff(minmax(xlim)),diff(minmax(ylim)),diff(minmax(zlim))])/vmax;
 
-		% for graphical purpose only: set NaN components in data and model to 0
-		if plotnancomp
-			k = find(any(~isnan(d(:,1:3)),2));
-			if ~isempty(k)
-				tmp = d(k,1:3);
-				knan = isnan(tmp);
-				tmp(knan) = 0;
-				d(k,1:3) = tmp;
-				ux(k(knan(:,1))) = 0;
-				uy(k(knan(:,2))) = 0;
-				uz(k(knan(:,3))) = 0;
-			end
-		end
-
 		% --- plots the results
 		figure, orient tall
 
 		stasize = 6;
 		arrowshapemod = [.1,.1,.08,.02];
-		arrowshapedat = [.1,.1,.08,.04];
-		arrowref = vsc*vmax;
+		arrowref = vsc*vmax/2;
+		mmz = minmax(zdem);
 
 		% X-Y top view
 		subplot(5,3,[1,2,4,5,7,8]);
@@ -1540,7 +1200,7 @@ for r = 1:numel(P.GTABLE)
 		end
 		target(xsta,ysta,stasize)
 		if ~isnan(vmax)
-			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),arrowshapedat,'Cartesian','Ref',arrowref,'Clipping',vclip)
+			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping',vclip)
 			ellipse(xsta + vsc*d(:,1),ysta + vsc*d(:,2),vsc*d(:,4),vsc*d(:,5),'LineWidth',.2,'Clipping','on')
 			arrows(xsta,ysta,vsc*ux,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref, ...
 				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping',vclip)
@@ -1561,7 +1221,7 @@ for r = 1:numel(P.GTABLE)
 		end
 		%axis equal; axis tight
 		if plotbest && any(~isnan(m0))
-			switch lower(mt)
+			switch lower(modelling_source_type)
 			case 'pcdm'
 				plotpcdm(pbest(:,[1:6,8,9]),wbest,'xy','EdgeColor',plotbest_col);
 			otherwise
@@ -1587,7 +1247,7 @@ for r = 1:numel(P.GTABLE)
 		hold on
 		target(zsta,ysta,stasize)
 		if ~isnan(vmax)
-			arrows(zsta,ysta,vsc*d(:,3),vsc*d(:,2),arrowshapedat,'Cartesian','Ref',arrowref,'Clipping',vclip)
+			arrows(zsta,ysta,vsc*d(:,3),vsc*d(:,2),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping',vclip)
 			ellipse(zsta + vsc*d(:,3),ysta + vsc*d(:,2),vsc*d(:,6),vsc*d(:,5),'LineWidth',.2,'Clipping','on')
 			arrows(zsta,ysta,vsc*uz,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref, ...
 				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping',vclip)
@@ -1599,11 +1259,8 @@ for r = 1:numel(P.GTABLE)
 		if ~isempty(targetll)
 			plot(zlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 		end
-		if numel(modelopt.apriori_depth) == 2
-			plot(repmat(-modelopt.apriori_depth(1),1,2),ylim([1,end]),':k')
-		end
 		if plotbest && any(~isnan(m0))
-			switch lower(mt)
+			switch lower(modelling_source_type)
 			case 'pcdm'
 				plotpcdm(pbest(:,[1:6,8,9]),wbest,'zy','EdgeColor',plotbest_col);
 			otherwise
@@ -1628,7 +1285,7 @@ for r = 1:numel(P.GTABLE)
 		hold on
 		target(xsta,zsta,stasize)
 		if ~isnan(vmax)
-			arrows(xsta,zsta,vsc*d(:,1),vsc*d(:,3),arrowshapedat,'Cartesian','Ref',arrowref,'Clipping',vclip)
+			arrows(xsta,zsta,vsc*d(:,1),vsc*d(:,3),1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping',vclip)
 			ellipse(xsta + vsc*d(:,1),zsta + vsc*d(:,3),vsc*d(:,4),vsc*d(:,6),'LineWidth',.2,'Clipping','on')
 			arrows(xsta,zsta,vsc*ux,vsc*uz,arrowshapemod,'Cartesian','Ref',arrowref, ...
 				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping',vclip)
@@ -1640,11 +1297,8 @@ for r = 1:numel(P.GTABLE)
 		if ~isempty(targetll)
 			plot(repmat(modelopt.targetxy(1),1,2),zlim([1,end]),':k')
 		end
-		if numel(modelopt.apriori_depth) == 2
-			plot(xlim([1,end]),repmat(-modelopt.apriori_depth(1),1,2),':k')
-		end
 		if plotbest && any(~isnan(m0))
-			switch lower(mt)
+			switch lower(modelling_source_type)
 			case 'pcdm'
 				plotpcdm(pbest(:,[1:6,8,9]),wbest,'xz','EdgeColor',plotbest_col);
 			otherwise
@@ -1672,19 +1326,13 @@ for r = 1:numel(P.GTABLE)
 		end
 		info = { ...
 			' ', ...
-			sprintf('model type = {\\bf%s%s}',mt,src_multi), ...
+			sprintf('model type = {\\bf%s%s}',modelling_source_type,src_multi), ...
 			sprintf('model space = {\\bf%s}',num2tex(nmodels)), ...
 			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
 			sprintf('uncertainty = {\\bf%g \\sigma (%1.1f%%)}',modelopt.msig,modelopt.msigp*100), ...
 		};
-		if any(modelopt.enuerror ~= 1)
-			info = cat(2,info,sprintf('error E,N,U ratio = {\\bf%g,%g,%g}',modelopt.enuerror));
-		end
 		if modelopt.horizonly
 			info = cat(2,info,'misfit mode = {\bfhorizontal only}');
-		end
-		if numel(modelopt.apriori_depth) == 2
-			info = cat(2,info,sprintf('a priori depth = {\\bf%g \\pm %g km}',roundsd(modelopt.apriori_depth/1e3,2)));
 		end
 		if modelopt.apriori_horizontal > 0
 			info = cat(2,info,sprintf('a priori horiz. STD = {\\bf%g km}',modelopt.apriori_horizontal));
@@ -1692,7 +1340,8 @@ for r = 1:numel(P.GTABLE)
 		% displays info for best model(s)
 		if any(~isnan(m0))
 			%info = cat(2,info,' ',sprintf('   {\\itLeast bad source (%1.1f%%)}:',modelopt.msigp*100));
-			switch lower(mt)
+			[e0,n0,z0] = ll2utm(lat0,lon0);
+			switch lower(modelling_source_type)
 			case 'pcdm'
 				bstab = {''; ...
 					'lat N'; ...
@@ -1707,7 +1356,8 @@ for r = 1:numel(P.GTABLE)
 					'\OmegaY'; ...
 					'\OmegaZ'; ...
 					'misfit (mm)'};
-				for m = 1:numel(M)
+				[lats,lons] = utm2ll(e0+pbest(:,1),n0+pbest(:,2),z0);
+				for m = 1:length(M)
 					bstab{1,m+1} = sprintf('Source #%d',m);
 					bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
 					bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
@@ -1719,7 +1369,7 @@ for r = 1:numel(P.GTABLE)
 						bstab{6,m+1} = sprintf('%+g \\pm %g',roundsd(vv0(m)/diff(tlim)/86400,2), ...
 							roundsd(abs(diff(ev(m,:)))/2/diff(tlim)/86400,1));
 					else
-						bstab{4,m+1} = sprintf('{\\bf%g} to {\\bf%g}',roundsd(minmax(-(pbest(m,3)+ez(m,:))/1e3),2));
+						bstab{4,m+1} = sprintf('{\\bf%g} to {\\bf%g}',roundsd(minmax(-ez(m,:)/1e3),2));
 						bstab{5,m+1} = sprintf('{\\bf%+g} to {\\bf%+g}',roundsd(minmax(ev(m,:)/vfactor),2));
 						bstab{6,m+1} = sprintf('%+g to %+g',roundsd(minmax(ev(m,:)/diff(tlim)/86400),2));
 					end
@@ -1740,7 +1390,8 @@ for r = 1:numel(P.GTABLE)
 					sprintf('\\DeltaV (%s)',vunit); ...
 					sprintf('{\\itQ} (m^3/s)'); ...
 					'misfit (mm)'};
-				for m = 1:numel(M)
+				[lats,lons] = utm2ll(e0+pbest(:,1),n0+pbest(:,2),z0);
+				for m = 1:length(M)
 					bstab{1,m+1} = sprintf('Source #%d',m);
 					bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
 					bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
@@ -1751,7 +1402,7 @@ for r = 1:numel(P.GTABLE)
 							roundsd(vv0(m)/vfactor,2),roundsd(abs(diff(ev(m,:)))/2/vfactor,1));
 						bstab{6,m+1} = sprintf('%+g',roundsd(vv0(m)/diff(tlim)/86400,2));
 					else
-						bstab{4,m+1} = sprintf('{\\bf%g} to {\\bf%g}',roundsd(minmax(-(pbest(m,3)+ez(m,:))/1e3),2));
+						bstab{4,m+1} = sprintf('{\\bf%g} to {\\bf%g}',roundsd(minmax(-ez(m,:)/1e3),2));
 						bstab{5,m+1} = sprintf('{\\bf%+g} to {\\bf%+g}', ...
 							roundsd(minmax(ev(m,:)/vfactor),2));
 						bstab{6,m+1} = sprintf('%+g to %+g',roundsd(minmax(ev(m,:)/diff(tlim)/86400),2));
@@ -1779,13 +1430,13 @@ for r = 1:numel(P.GTABLE)
 		title('Model Probability','FontSize',10)
 
 		% - data/model arrows scale
-		axes('position',[0.55,0.05,0.3,0.03])
+		axes('position',[0.67,0.05,0.3,0.03])
 		dxl = diff(xlim([1,end]))*0.3/0.6142;
 		dyl = diff(ylim([1,end]))*0.03/0.3;
 		hold on
 		if ~isnan(arrowref)
-			vlegend = roundsd(2*vmax,1);
-			arrows(dxl/2,dyl,vsc*vlegend,0,arrowshapedat,'Cartesian','Ref',arrowref,'Clipping','off')
+			vlegend = roundsd(vmax/2,1);
+			arrows(dxl/2,dyl,vsc*vlegend,0,1.5*arrowshapemod,'Cartesian','Ref',arrowref,'Clipping','off')
 			text(dxl/2 + vsc*vlegend/2,dyl,sprintf('{\\bf%g mm}',vlegend),'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8)
 			%ellipse(xsta + vsc*d(:,1),zsta + vsc*d(:,3),vsc*d(:,4),vsc*d(:,6),'LineWidth',.2,'Clipping','on')
 			arrows(dxl/2,dyl/2,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
@@ -1808,58 +1459,72 @@ for r = 1:numel(P.GTABLE)
 		P.GTABLE(r).GSTATUS = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true))
 		close
+
+		% exports data
+		if isok(P.GTABLE(r),'EXPORTS')
+			E.t = max(cat(1,D(kn).tfirstlast),[],2);
+			E.d = [geo(kn,:),d,ux,uy,uz];
+			E.header = {'Latitude','Longitude','Altitude','E_obs(mm)','N_obs(mm)','Up_obs(mm)','dE(mm)','dN(mm)','dU(mm)', ...
+				                                      'E_mod(mm)','N_mod(mm)','Up_mod(mm)'};
+			if any(~isnan(m0))
+				E.infos = {''};
+				switch lower(modelling_source_type)
+				case 'pcdm'
+					for m = 1:length(M)
+						E.infos = cat(2,E.infos, ...
+							sprintf('Least bad pCDM model #%d:',m), ...
+							sprintf('latitude = %g N in [%+g , %+g] km',lats(m), roundsd(ey(m,:)/1e3,2)), ...
+							sprintf('longitude = %g E in [%+g , %+g]',lons(m), roundsd(ex(m,:)/1e3,2)), ...
+							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',pbest(m,3),-fliplr(ez(m,:))/1e3), ...
+							sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
+							sprintf('A = %1.2f / B = %1.2f',pbest(m,8:9)), ...
+							sprintf('shape = %s',pcdmdesc(pbest(m,8),pbest(m,9))), ...
+							sprintf('OmegaX = %+2.0f / OmegaY = %+2.0f / OmegaZ = %+2.0f',pbest(m,4:6)), ...
+							' ');
+					end
+				otherwise
+					for m = 1:length(M)
+						E.infos = cat(2,E.infos, ...
+							sprintf('Least bad isotropic model #%d:',m), ...
+							sprintf('latitude = %g N in [%+g , %+g] km',lats(m), roundsd(ey(m,:)/1e3,2)), ...
+							sprintf('longitude = %g E in [%+g , %+g] km',lons(m), roundsd(ex(m,:)/1e3,2)), ...
+							sprintf('depth = %1.1f km in [%1.1f , %1.1f]',-[pbest(m,3),fliplr(ez(m,:))]/1e3), ...
+							sprintf('DeltaV = %+g Mm^3 in [%+g , %+g]',roundsd([vv0(m,:),ev(m,:)],2)), ...
+							' ');
+					end
+				end
+			end
+			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
+			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
+
 	end
 
 	% --- Modelling in time
 	summary = 'MODELTIME';
 	if any(strcmp(P.SUMMARYLIST,summary))
-		% remakes the model space
-		if modeltime_gridsize ~= rr
-			rr = modeltime_gridsize;
-			xlim = linspace(0,wid,rr) - wid/2 - (lon0 - mean(lonlim))*degkm(lat0)*1e3;
-			ylim = linspace(0,wid,rr) - wid/2 - (lat0 - mean(latlim))*degkm*1e3;
-			zlim = linspace(-maxdep,roundsd(double(max(DEM.z(:))),2,'ceil'),rr);
-			[xdem,ydem] = meshgrid(xlim,ylim);
-			zdem = interp2((DEM.lon-lon0)*degm*cosd(lat0),(DEM.lat-lat0)*degm,double(DEM.z),xdem,ydem);
-			[xx,yy,zz] = meshgrid(xlim,ylim,zlim);
-		end
-		dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max/modeltime_sampling)*modeltime_sampling);
-
-		% loop on the model source type
-		for mst = split(modeltime_source_type,',')
-			mt = lower(char(mst));
-
-			switch mt
-			case 'pcdm'
-				summary = 'MODELTIME_pCDM';
-				PCDM.random_sampling = field2num(P,'MODELTIME_PCDM_RANDOM_SAMPLING',PCDM.random_sampling);
-			otherwise
-				summary = 'MODELTIME';
-			end
-
+		dt = max(modeltime_sampling,ceil(length(modeltime_period)*diff(tlim)/modeltime_max));
+			%sprintf('model type = {\\bf%s%s}',modelling_source_type,src_multi), ...
+			%sprintf('model space = {\\bf%s}',num2tex(nmodels)), ...
 		info = { ...
 			' ', ...
-			sprintf('model type = {\\bf%s}',mst{1}), ...
-			sprintf('model space = {\\bf%s}',num2tex(rr^3)), ...
+			sprintf('model type = {\\bfisotropic}'), ...
+			sprintf('model space = {\\bf%s}',num2tex(numel(mm))), ...
 			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
 			sprintf('uncertainty = {\\bf%g \\sigma (%1.1f%%)}',modelopt.msig,modelopt.msigp*100), ...
 		};
 		if modelopt.horizonly
 			info = cat(2,info,'misfit mode = {\bfhorizontal only}');
 		end
-		if numel(modelopt.apriori_depth) == 2
-			info = cat(2,info,sprintf('a priori depth = {\\bf%g \\pm %g km}',roundsd(modelopt.apriori_depth/1e3,2)));
-		end
 		if modelopt.apriori_horizontal > 0
 			info = cat(2,info,sprintf('a priori horiz. STD = {\\bf%g km}',modelopt.apriori_horizontal));
 		end
 
-		mtlabel = cell(1,numel(modeltime_period));
-		for m = 1:numel(modeltime_period)
+		mtlabel = cell(1,length(modeltime_period));
+		for m = 1:length(modeltime_period)
 			mtp = modeltime_period(m);
 			if mtp > 0
-				mtlabel{m} = days2h(mtp,'round');
+				mtlabel{m} = sprintf('%g days',mtp);
 			else
 				mtlabel{m} = 't_0 ref.';
 			end
@@ -1869,15 +1534,14 @@ for r = 1:numel(P.GTABLE)
 			% last time must contain data
 			tlast = max(max(cat(1,D.tfirstlast)));
 			M(m).t(M(m).t > tlast) = [];
-			fprintf('%s: computing %d %s models (%s @ %s) ',wofun,numel(M(m).t),mst{1},mtlabel{m},days2h(dt));
+			fprintf('%s: computing %d models (%s @ %g day) ',wofun,length(M(m).t),mtlabel{m},dt);
 
 			% initiates the model result matrix
-			M(m).d = nan(numel(M(m).t),5 + 5*strcmp(mt,'pcdm'));
-			M(m).e = nan(numel(M(m).t),5);
-			M(m).o = nan(numel(M(m).t),1);
-			M(m).type = cell(numel(M(m).t),1);
+			M(m).d = nan(length(M(m).t),5);
+			M(m).e = nan(length(M(m).t),5);
+			M(m).o = nan(length(M(m).t),1);
 
-			for w = 1:numel(M(m).t)
+			for w = 1:length(M(m).t)
 				t2 = M(m).t(w);
 				if modeltime_period(m) > 0
 					wlim = t2 - [modeltime_period(m),0];
@@ -1885,26 +1549,26 @@ for r = 1:numel(P.GTABLE)
 					wlim = [tlim(1),t2];
 				end
 
-				% computes linear trends (mm/yr)
-				tr = nan(numel(kn),3); % trends per station per component
-				tre = nan(numel(kn),3); % trends error per station per component
-				tro = zeros(numel(kn),1); % inits to best orbit per station
-				for j = 1:numel(kn)
+				% computes trends (mm/yr)
+				tr = nan(length(kn),3); % trends per station per component
+				tre = nan(length(kn),3); % trends error per station per component
+				tro = zeros(length(kn),1); % inits to best orbit per station
+				for j = 1:length(kn)
 					n = kn(j);
 					k = find(isinto(D(n).t,wlim));
 					tk = D(n).t(k);
 					for i = 1:3
-						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
-							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
-							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
-							dk = cleanpicks(D(n).d(k,i+4) - D(n).d(k1,i+4),P);
+						if ~isempty(k) && ~all(isnan(D(n).d(k,i)))
+							k1 = k(find(~isnan(D(n).d(k,i)),1,'first'));
+							ke = k(find(~isnan(D(n).d(k,i)),1,'last'));
+							dk = cleanpicks(D(n).d(k,i) - D(n).d(k1,i),P);
 							kk = find(~isnan(dk));
-							if numel(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays && 100*diff(minmax(D(n).t(kk)))/diff(wlim) >= trendminperc
+							if length(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays
 								[b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./D(n).e(k(kk),i));
 								tr(j,i) = b(1)*365.25*1e3;
 								tre(j,i) = stdx(1)*365.25*1e3;
 							end
-							% sets a lower orbit if there is not enough data
+							% sets a lor orbit if there is not enough data
 							%if D(n).t(D(n).G(r).ke) >= M(m).t(w)
 							if (D(n).t(ke) + 1) < M(m).t(w)
 								tro(j) = 2;
@@ -1914,7 +1578,7 @@ for r = 1:numel(P.GTABLE)
 				end
 
 				% computes reference (auto, fixed or station)
-				if numel(kn) > 1
+				if length(kn) > 1
 					mvv = rsum(tr./tre)./rsum(1./tre);
 				else
 					mvv = tr;
@@ -1930,16 +1594,16 @@ for r = 1:numel(P.GTABLE)
 					if numel(sstr2num(vref)) == 3
 						voffset = sstr2num(vref);
 					end
-					tr = tr - repmat(voffset,numel(kn),1);
+					tr = tr - repmat(voffset,length(kn),1);
 				end
 
 				% makes (or not) the relative data array
 				d = [tr,tre];
 				knn = find(~isnan(d(:,1)));
 				modrelforced = 0;
-				if ~isempty(knn) && (modelling_force_relative || (modrelauto && (azgap(xs(knn),ys(knn)) < 150 || numel(knn) > 2)))
+				if ~isempty(knn) && (modelling_force_relative || (modrelauto && (azgap(xs(knn),ys(knn)) < 150 || length(knn) > 2)))
 					% computes a mean velocity vector (horizontal only)
-					if numel(knn) > 1
+					if length(knn) > 1
 						mvv = rsum(tr(knn,:)./tre(knn,:))./rsum(1./tre(knn,:));
 					else
 						mvv = tr(knn,:);
@@ -1952,22 +1616,14 @@ for r = 1:numel(P.GTABLE)
 				modelopt.verbose = 'quiet';
 				d(:,4:6) = adjerrors(d,modelopt);
 
-				% --- computes the model (and stores only the source #1) !
-				switch mt
-				case 'pcdm'
-					MM = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,PCDM);
-					M(m).d(w,:) = [MM(1).pbest(1:3),MM(1).pbest(7)*1e6,MM(1).pbest([8,9,4:6]),sign(MM(1).pbest(7))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
-				otherwise
-					MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
-					M(m).d(w,:) = [MM(1).pbest(1:3),MM(1).pbest(4)*1e6,sign(MM(1).pbest(4))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
-				end
-				%M(m).e(w,:) = [MM(1).ws,MM(1).ws,diff(MM(1).ez),diff(MM(1).ev),MM(1).m0];
-				M(m).e(w,:) = [diff(MM(1).ex)/2,diff(MM(1).ey)/2,diff(MM(1).ez)/2,diff(MM(1).ev)*1e6/2,MM(1).m0];
-				M(m).o(w,1) = median(tro); % model worst orbit
-				M(m).type{w} = MM(1).type;
+				% --- computes the model !
+				MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
+				M(m).d(w,:) = [MM(1).pbest(1:4),sign(MM(1).pbest(4))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
+				M(m).e(w,:) = [MM(1).ws,MM(1).ws,diff(MM(1).ez),diff(MM(1).ev),MM(1).m0];
+				M(m).o(w,1) = max(tro); % model worst orbit
 
 				if isok(P,'DEBUG')
-					fprintf('\n%s,%s: %+g 10e6 m3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM.pbest(4),MM.pbest(3)/1e3],3));
+					fprintf('\n%s,%s: %+g Mm3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM.pbest(4),MM.pbest(3)/1e3],3));
 					if modrelforced
 						fprintf(' / relative mode forced by (%g,%g)',mvv(1:2));
 					end
@@ -1983,8 +1639,8 @@ for r = 1:numel(P.GTABLE)
 				else
 					dtf = modeltime_period(m)*86400;
 				end
-				M(m).d(:,4) = M(m).d(:,4)./dtf;
-				M(m).e(:,4) = M(m).e(:,4)./dtf;
+				M(m).d(:,4) = M(m).d(:,4)*1e6./dtf;
+				M(m).e(:,4) = M(m).d(:,4)*1e6./dtf;
 				vtype = 'Flow rate';
 				vunit = 'm^3/s';
 			else
@@ -2000,8 +1656,13 @@ for r = 1:numel(P.GTABLE)
 			fprintf(' done!\n');
 		end
 
+		figure, orient tall
+
+		% -- volumetric flow rate from volume variation (moving)
+		subplot(10,1,1:3), extaxes(gca,[.08,.04])
+
 		% adjusts unit
-		vmaxs = max(abs(cat(1,M.vmax)));
+		vmaxs = max(abs(cat(1,M.vmedian)));
 		if isfinite(vmaxs) && vmaxs > 0.5e6
 			vfactor = 1e6;
 			vunit = ['M',vunit];
@@ -2009,23 +1670,14 @@ for r = 1:numel(P.GTABLE)
 			vfactor = 1;
 		end
 
-		figure, orient tall
-
-		% -- volumetric flow rate from volume variation (moving)
-		subplot(10,1,1:3), extaxes(gca,[.08,.04])
-
 		plot(tlim,[0,0],'-k','LineWidth',1)
 		hold on
-		for m = 1:numel(M)
+		for m = 1:length(M)
 			col = scolor(m);
-			errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).LINEWIDTH/3,'Color',col/3 + 2/3)
-			%errorarea(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,col);
-			plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
+			errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
+			plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
 		end
 		hold off
-		if numel(modeltime_flim)==2
-			set(gca,'YLim',modeltime_flim);
-		end
 		ylim2 = get(gca,'YLim');
 		if ylim2(2) > 0
 			text(tlim(2),0,{'',' \rightarrow Inflation'},'rotation',90,'Color','k', ...
@@ -2040,8 +1692,8 @@ for r = 1:numel(P.GTABLE)
 		ylabel(['Source ',vtype,' (',vunit,')'])
 
 		% legend for periods
-		for m = 1:numel(M)
-			text(tlim(1)+m*diff(tlim)/(numel(M)+1),ylim2(2),mtlabel{m},'Color',scolor(m), ...
+		for m = 1:length(M)
+			text(tlim(1)+m*diff(tlim)/(length(M)+1),ylim2(2),mtlabel{m},'Color',scolor(m), ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8,'FontWeight','bold')
 		end
 		set(gca,'YLim',ylim2);
@@ -2050,11 +1702,10 @@ for r = 1:numel(P.GTABLE)
 		subplot(10,1,4:5), extaxes(gca,[.08,.04])
 		plot(tlim,[0,0],'-k','LineWidth',1)
 		hold on
-		for m = 1:numel(M)
+		for m = 1:length(M)
 			col = scolor(m);
-			errorbar(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,'-','LineWidth',P.GTABLE(r).LINEWIDTH/3,'Color',col/3 + 2/3)
-			%errorarea(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,col);
-			plotorbit(M(m).t,M(m).d(:,3)/1e3,M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
+			errorbar(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
+			plotorbit(M(m).t,M(m).d(:,3)/1e3,M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
 		end
 		hold off
 		set(gca,'XLim',tlim,'FontSize',fontsize,'YLim',minmax(zz)/1e3)
@@ -2100,7 +1751,7 @@ for r = 1:numel(P.GTABLE)
 		hold off
 		set(gca,'XLim',minmax(xlim),'YLim',minmax(ylim),'XTickLabel',[],'FontSize',6);
 		tickfactor(distfactor)
-		ylabel(sprintf('Distances in %s',distunit),'FontSize',8)
+		ylabel(sprintf('Distances in %s',distunit))
 		box on
 		colormap(modeltime_cmap)
 		caxis(tlim)
@@ -2110,12 +1761,11 @@ for r = 1:numel(P.GTABLE)
 			IMAP(nimap).gca = gca;
 			IMAP(nimap).s = cell(size(M(m).t));
 			IMAP(nimap).l = cell(size(M(m).t));
-			for n = 1:numel(IMAP(nimap).s)
-				IMAP(nimap).s{n} = sprintf('''%g km (%s)<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
-					roundsd(M(m).d(n,3)/1e3,2),	M(m).type{n}, ...
-					vtype,roundsd(M(m).d(n,4)/vfactor,2), ...
+			for n = 1:length(IMAP(nimap).s)
+				IMAP(nimap).s{n} = sprintf('''%g km<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
+					roundsd(M(m).d(n,3)/1e3,2),vtype,roundsd(M(m).d(n,4)/vfactor,2), ...
 					regexprep(vunit,'\^3','<sup>3</sup>'),roundsd(M(m).e(n,5),2), ...
-					datestr(M(m).t(n),'dd-mmm-yyyy HH:MM'),mtlabel{m});
+					datestr(M(m).t(n),'dd-mmm-yyyy'),mtlabel{m});
 			end
 			nimap = nimap + 1;
 		end
@@ -2128,9 +1778,6 @@ for r = 1:numel(P.GTABLE)
 		if ~isempty(targetll)
 			plot(zlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
 		end
-		if numel(modelopt.apriori_depth) == 2
-			plot(repmat(-modelopt.apriori_depth(1),1,2),ylim([1,end]),':k')
-		end
 		for m = plist
 			col = scolor(m);
 			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
@@ -2140,14 +1787,14 @@ for r = 1:numel(P.GTABLE)
 		hold off
 		set(gca,'XLim',minmax(zlim),'YLim',minmax(ylim),'XDir','reverse','YTickLabel',[],'YAxisLocation','right','FontSize',6);
 		tickfactor(distfactor)
-		xlabel(sprintf('Depth (%s)',distunit),'FontSize',8)
+		xlabel(sprintf('Depth (%s)',distunit))
 		box on
 		colormap(modeltime_cmap)
 		caxis(tlim)
 		for m = plist
 			IMAP(nimap).d = [M(m).d(:,3),M(m).d(:,2),sqrt(mks/pi)+modeltime_marker_linewidth/2];
 			IMAP(nimap).gca = gca;
-			IMAP(nimap).s = IMAP(mod(nimap-1,numel(plist))+1).s; % uses the labels for X-Y top view
+			IMAP(nimap).s = IMAP(mod(nimap-1,length(plist))+1).s; % uses the labels for X-Y top view
 			IMAP(nimap).l = cell(size(M(m).t));
 			nimap = nimap + 1;
 		end
@@ -2160,9 +1807,6 @@ for r = 1:numel(P.GTABLE)
 		if ~isempty(targetll)
 			plot(repmat(modelopt.targetxy(1),1,2),zlim([1,end]),':k')
 		end
-		if numel(modelopt.apriori_depth) == 2
-			plot(xlim([1,end]),repmat(-modelopt.apriori_depth(1),1,2),':k')
-		end
 		for m = plist
 			col = scolor(m);
 			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
@@ -2172,14 +1816,14 @@ for r = 1:numel(P.GTABLE)
 		hold off
 		set(gca,'XLim',minmax(xlim),'YLim',minmax(zlim),'FontSize',6);
 		tickfactor(distfactor)
-		ylabel(sprintf('Depth (%s)',distunit),'FontSize',8)
+		ylabel(sprintf('Depth (%s)',distunit))
 		box on
 		colormap(modeltime_cmap)
 		caxis(tlim)
 		for m = plist
 			IMAP(nimap).d = [M(m).d(:,1),M(m).d(:,3),sqrt(mks/pi)+modeltime_marker_linewidth/2];
 			IMAP(nimap).gca = gca;
-			IMAP(nimap).s = IMAP(mod(nimap-1,numel(plist))+1).s; % uses the labels for X-Y top view
+			IMAP(nimap).s = IMAP(mod(nimap-1,length(plist))+1).s; % uses the labels for X-Y top view
 			IMAP(nimap).l = cell(size(M(m).t));
 			nimap = nimap + 1;
 		end
@@ -2212,10 +1856,10 @@ for r = 1:numel(P.GTABLE)
 		%subplot(10,1,6:7), extaxes(gca,[.08,.04])
 		%plot(tlim,[0,0],'-k','LineWidth',1)
 		%hold on
-		%for m = 1:numel(M)
+		%for m = 1:length(M)
 		%	col = scolor(m);
 		%	errorbar(M(m).t,M(m).d(:,5),M(m).e(:,5),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
-		%	plotorbit(M(m).t,M(m).d(:,5),M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
+		%	plotorbit(M(m).t,M(m).d(:,5),M(m).o,'o-',P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
 		%end
 		%hold off
 		%ylim = get(gca,'YLim');
@@ -2236,7 +1880,7 @@ for r = 1:numel(P.GTABLE)
 
 		%plot(tlim,[0,0],'-k','LineWidth',1)
 		%hold on
-		%for m = 1:numel(M)
+		%for m = 1:length(M)
 		%	col = scolor(m);
 		%	errorbar(M(m).t,rcumsum(M(m).d(:,4)),sqrt(rcumsum(M(m).e(:,4).^2)),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
 		%	plot(M(m).t,rcumsum(M(m).d(:,4)),'o-','Color',col,'MarkerFaceColor',col, ...
@@ -2253,11 +1897,10 @@ for r = 1:numel(P.GTABLE)
 
 		axes('Position',[0,0,1,1])
 		axis off
-		if ~isok(P,'MODELTIME_NOWARNING')
-			twarning = {'{\bfWarning:} This graph is experimental. Use results with caution.', ...
-				'Processing and modelling by Beauducel et al./IPGP',' '};
-				text(.99,.01,twarning,'HorizontalAlignment','right','VerticalAlignment','bottom','FontSize',8)
-		end
+		twarning = {'{\bfWarning:} This graph is experimental. Use results with caution.', ...
+			'Processing and modelling by Beauducel et al./IPGP',' '};
+		text(.99,.01,twarning,'HorizontalAlignment','right','VerticalAlignment','bottom','FontSize',8)
+
 
 		P.GTABLE(r).GTITLE = varsub(modeltime_title,V);
 		P.GTABLE(r).GSTATUS = [];
@@ -2269,36 +1912,19 @@ for r = 1:numel(P.GTABLE)
 		% exports data
 		if isok(P.GTABLE(r),'EXPORTS')
 			E.t = M(1).t;
-			n = size(M(1).d,2) + size(M(1).e,2);
-			E.d = nan(size(M(1).d,1),numel(M)*n);
-			E.header = cell(size(M(1).d,1),numel(M)*size(M(1).d,2)*2);
+			n = size(M(1).d,2);
+			E.d = nan(size(M(1).d,1),length(M)*size(M(1).d,2)*2);
 			[e0,n0,z0] = ll2utm(lat0,lon0);
-			for m = 1:numel(M)
-				k = (m-1)*n + (1:n);
+			for m = 1:length(M)
+				k = (m-1)*n*2 + (1:2*n);
 				[lats,lons] = utm2ll(e0+M(m).d(:,1),n0+M(m).d(:,2),z0);
 				E.d(:,k) = cat(2,lats,lons,M(m).d(:,3:end),M(m).e);
-				switch mt
-				case 'pcdm'
-					E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'A','B','Ox','Oy','Oz','dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
-				otherwise
-					E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
-				end
+				E.header(k) = strcat({'LAT','LON','Z','dV','dD','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%g',M(m).mtp));
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
-			E.infos = {sprintf('Source type: %s',mt)};
-			for m = 1:numel(modeltime_period)
-				E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
-			end
+			E.infos = {};
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
-
-		if isok(P,'MODELTIME_EXPORT_MAT')
-			f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
-			fprintf('%s: saving workspace in %s...',wofun,f);
-			save(sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
-			fprintf(' done.\n');
-		end
-	end
 	end
 end
 
@@ -2320,9 +1946,8 @@ end
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function e = adjerrors(d,opt)
-e = d(:,4:6);
-
 % avoiding numerical problem with pdf due to low errors
+e = d(:,4:6);
 emin = abs(d(:,1:3))*opt.minerrorrel/100;
 k = (e < emin | isnan(d(:,1:3)) | isnan(e));
 if any(k)
@@ -2331,21 +1956,12 @@ if any(k)
 		fprintf('---> %d data errors have been increased to %g%%.\n',sum(k(:)),opt.minerrorrel);
 	end
 end
-
 % forces a minimum relative error
-k = (e < opt.minerror);
+k = (e<opt.minerror);
 if any(k)
 	e(k) = opt.minerror; % forces a minimum absolute error
 	if ~strcmpi(opt.verbose,'quiet')
 		fprintf('---> %d data errors have been set to %g mm.\n',sum(k(:)),opt.minerror);
-	end
-end
-
-% ajusts component errors using a priori factor ratio
-if any(opt.enuerror ~= 1)
-	e = e.*repmat(opt.enuerror(1:3),size(e,1),1);
-	if ~strcmpi(opt.verbose,'quiet')
-		fprintf('---> all data errors dE,dN,dU have been multiplied by %g,%g,%g.\n',opt.enuerror);
 	end
 end
 
@@ -2372,22 +1988,3 @@ case 3
 	y = x(sub2ind(sz,i(:),j(:),id3(:)));
 end
 y = reshape(y,size(id3));
-
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function r = ellradius(abc,lambda,gamma)
-% computes radius of an ellipsoid defined by semi-axis ABC = [A,B,C] at
-% azimuth/longitude LAMBDA and polar/latitude GAMMA angles (in radian)
-
-r = prod(abc)./sqrt(abc(3)^2*(abc(2)^2*cos(lambda).^2 ...
- 	+ abc(1)^2*sin(lambda).^2).*cos(gamma).^2 ...
-	+ abc(1)^2*abc(2)^2*sin(gamma).^2);
-
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function h = errorarea(x,y,e,c)
-
-h = fill([x(:);flipud(x(:))],[y(:)+e(:);flipud(y(:)-e(:))],'k');
-set(h,'EdgeColor','none','FaceColor',c/3+2/3,'FaceAlpha',.1);

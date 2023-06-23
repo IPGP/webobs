@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-usersMgr.pl
+usersMgr.pl 
 
 =head1 SYNOPSIS
 
@@ -10,13 +10,13 @@ usersMgr.pl
 
 =head1 DESCRIPTION
 
-Builds html page for WebObs' users Manager. Displays all 'USERS' DataBase tables and
+Builds html page for WebObs' users Manager. Displays all 'USERS' DataBase tables and 
 provides maintenance functions on these tables: insert new rows, delete rows, updates rows.
 
 First apply the maintenance function (action+tbl) if requested, then build page to display all tables.
 
 usersMgr.pl assumes that the DataBase 'USERS' have sql-triggers defined ('deluid' and 'delgid' triggers)
-to handle clean deletion of userid (uid) and groupid (gid) references across all tables.
+to handle clean deletion of userid (uid) and groupid (gid) references across all tables. 
 
 =head1 QUERY-STRING PARAMETERS
 
@@ -25,15 +25,15 @@ to handle clean deletion of userid (uid) and groupid (gid) references across all
 =item B<action=>
 
 One of { display | insert | update | updgrp | delete } . Defaults to 'display' .
-'insert', 'update' and 'delete' require a 'tbl' (table to act upon).
+'insert', 'update' and 'delete' require a 'tbl' (table to act upon).  
 
 =item B<tbl=>
 
-{ user | group | notification | proc | view | form | wiki | misc } .
+{ user | group | notification | proc | view | form | wiki | misc } .  
 
-=item B<uid=>, B<gid=>, B<fullname=>, B<login=>, B<email=>, B<event=>, B<valid=>, B<enddate>, B<comment=>, B<mailsub=>, B<mailatt=>, B<act=>, B<res=>, B<auth=>
+=item B<uid=>, B<gid=>, B<fullname=>, B<login=>, B<email=>, B<event=>, B<valid=>, B<mailsub=>, B<mailatt=>, B<act=>, B<res=>, B<auth=>
 
-Any, depending on requested maintenance function (action+tbl)
+Any, depending on requested maintenance function (action+tbl) 
 
 =back
 
@@ -57,7 +57,7 @@ $|=1;
 
 set_message(\&webobs_cgi_msg);
 
-# ---- checks/defaults query-string elements
+# ---- checks/defaults query-string elements 
 my $QryParm   = $cgi->Vars;
 $QryParm->{'action'}    ||= 'display';
 
@@ -65,7 +65,6 @@ $QryParm->{'action'}    ||= 'display';
 my $go2top = "&nbsp;&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 my $db_rows;
 my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
-my $today = strftime("%Y-%m-%d",localtime(int(time())));
 my $userMsg="$buildTS ";
 my $userMsgColor='black';
 my $notfMsg="$buildTS ";
@@ -91,8 +90,6 @@ $QryParm->{'uid'}       ||= "";
 $QryParm->{'gid'}       ||= "";
 $QryParm->{'event'}     ||= "";
 $QryParm->{'valid'}     ||= "N";
-$QryParm->{'enddate'}   ||= "";
-$QryParm->{'comment'}   ||= "";
 $QryParm->{'mailsub'}   ||= "";
 $QryParm->{'mailatt'}   ||= "";
 $QryParm->{'act'}       ||= "";
@@ -111,28 +108,26 @@ $authtable = $WEBOBS{SQL_TABLE_AUTHFORMS} if ($QryParm->{'tbl'} eq "form") ;
 $authtable = $WEBOBS{SQL_TABLE_AUTHWIKIS} if ($QryParm->{'tbl'} eq "wiki") ;
 $authtable = $WEBOBS{SQL_TABLE_AUTHMISC}  if ($QryParm->{'tbl'} eq "misc") ;
 
-# ---- process (execute) sql insert new row into table 'tbl'
+# ---- process (execute) sql insert new row into table 'tbl' 
 # -----------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'insert') {
 	# query-string must contain all required DB columns values for an sql insert
 	my $q='';
 	if ($QryParm->{'tbl'} eq "user") {
-		$q = "insert into $WEBOBS{SQL_TABLE_USERS} values(\'$QryParm->{'uid'}\',\'$QryParm->{'fullname'}\',";
-		$q .= "\'$QryParm->{'login'}\',\'$QryParm->{'email'}\',\'$QryParm->{'valid'}\',\'$QryParm->{'enddate'}\',\'$QryParm->{'comment'}\')";
-		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor;
+		$q = "insert into $WEBOBS{SQL_TABLE_USERS} values(\'$QryParm->{'uid'}\',\'$QryParm->{'fullname'}\',\'$QryParm->{'login'}\',\'$QryParm->{'email'}\',\'$QryParm->{'valid'}\')";
+		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor; 
 	}
 	elsif ($QryParm->{'tbl'} eq "group") {
 		$q = "insert into $WEBOBS{SQL_TABLE_GROUPS} values(\'$QryParm->{'gid'}\',\'$QryParm->{'uid'}\')";
-		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor;
+		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor; 
 	}
 	elsif ($QryParm->{'tbl'} eq "notification") {
-		$q = "insert into $WEBOBS{SQL_TABLE_NOTIFICATIONS} values(\'$QryParm->{'event'}\',\'$QryParm->{'valid'}\',";
-		$q .= "\'$QryParm->{'uid'}\',\'$QryParm->{'mailsub'}\',\'$QryParm->{'mailatt'}\',\'$QryParm->{'act'}\')";
-		$refMsg = \$notfMsg; $refMsgColor = \$notfMsgColor;
+		$q = "insert into $WEBOBS{SQL_TABLE_NOTIFICATIONS} values(\'$QryParm->{'event'}\',\'$QryParm->{'valid'}\',\'$QryParm->{'uid'}\',\'$QryParm->{'mailsub'}\',\'$QryParm->{'mailatt'}\',\'$QryParm->{'act'}\')";
+		$refMsg = \$notfMsg; $refMsgColor = \$notfMsgColor; 
 	}
 	elsif ($authtable ne "") {
 		$q = "insert into $authtable values(\'$QryParm->{'uid'}\',\'$QryParm->{'res'}\',\'$QryParm->{'auth'}\')";
-		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor;
+		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor; 
 	} else { die "$QryParm->{'action'} for unknown table"; }
 
 	my $err = execute_queries($WEBOBS{SQL_DB_USERS}, $q);
@@ -144,33 +139,30 @@ if ($QryParm->{'action'} eq 'insert') {
 		$$refMsgColor = "green" if ($$refMsgColor ne "red");
 	}
 }
-# ---- process (execute) sql update a row of table 'tbl'
+# ---- process (execute) sql update a row of table 'tbl' 
 # ----------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'update') {
 	# query-string must contain all required DB columns values for an sql insert
 	my $q='';
 	if ($QryParm->{'tbl'} eq "user") {
-		$q = "update $WEBOBS{SQL_TABLE_USERS} set UID=\'$QryParm->{'uid'}\',";
-		$q .= " FULLNAME=\'$QryParm->{'fullname'}\', LOGIN=\'$QryParm->{'login'}\',";
-		$q .= " EMAIL=\'$QryParm->{'email'}\', VALIDITY=\'$QryParm->{'valid'}\',";
-		$q .= " ENDDATE=\'$QryParm->{'enddate'}\', COMMENT=\'$QryParm->{'comment'}\'";
+		$q = "update $WEBOBS{SQL_TABLE_USERS} set UID=\'$QryParm->{'uid'}\', FULLNAME=\'$QryParm->{'fullname'}\', LOGIN=\'$QryParm->{'login'}\', EMAIL=\'$QryParm->{'email'}\', VALIDITY=\'$QryParm->{'valid'}\'";
 		$q .= " WHERE UID=\'$QryParm->{'OLDuid'}\'";
-		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor;
+		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor; 
 	}
 	elsif ($QryParm->{'tbl'} eq "group") {
 		$q = "update $WEBOBS{SQL_TABLE_GROUPS} set GID=\'$QryParm->{'gid'}\', UID=\'$QryParm->{'uid'}\'";
 		$q .= " WHERE GID=\'$QryParm->{'OLDgid'}\' AND UID=\'$QryParm->{'OLDuid'}\'";
-		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor;
+		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor; 
 	}
 	elsif ($QryParm->{'tbl'} eq "notification") {
 		$q = "update $WEBOBS{SQL_TABLE_NOTIFICATIONS} set EVENT=\'$QryParm->{'event'}\', VALIDITY=\'$QryParm->{'valid'}\', UID=\'$QryParm->{'uid'}\', MAILSUBJECT=\'$QryParm->{'mailsub'}\', MAILATTACH=\'$QryParm->{'mailatt'}\',ACTION=\'$QryParm->{'act'}\'";
 		$q .= " WHERE EVENT=\'$QryParm->{'OLDevent'}\' AND UID=\'$QryParm->{'OLDuid'}\' AND ACTION=\'$QryParm->{'OLDact'}\'";
-		$refMsg = \$notfMsg; $refMsgColor = \$notfMsgColor;
-	}
+		$refMsg = \$notfMsg; $refMsgColor = \$notfMsgColor; 
+	} 
 	elsif ($authtable ne "") {
 		$q = "update $authtable set UID=\'$QryParm->{'uid'}\', RESOURCE=\'$QryParm->{'res'}\', AUTH=\'$QryParm->{'auth'}\'";
 		$q .= " WHERE UID=\'$QryParm->{'OLDuid'}\' AND RESOURCE=\'$QryParm->{'OLDres'}\'";
-		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor;
+		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor; 
 	} else { die "$QryParm->{'action'} for unknown table"; }
 
 	my $err = execute_queries($WEBOBS{SQL_DB_USERS}, $q);
@@ -198,7 +190,7 @@ if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update')
 	}
 
 }
-# ---- process (execute) sql update table 'groups'
+# ---- process (execute) sql update table 'groups' 
 # ----------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'updgrp') {
 	my $err = set_wo_group_members($QryParm->{'gid'},
@@ -211,7 +203,7 @@ if ($QryParm->{'action'} eq 'updgrp') {
 		$userMsgColor = "green" if ($userMsgColor ne "red");
 	}
 }
-# ---- process (execute) sql delete a row of table 'tbl'
+# ---- process (execute) sql delete a row of table 'tbl' 
 # ------------------------------------------------------
 if ($QryParm->{'action'} eq 'delete') {
 	my $q='';
@@ -219,22 +211,22 @@ if ($QryParm->{'action'} eq 'delete') {
 	if ($QryParm->{'tbl'} eq "user") {
 		$q = "delete from $WEBOBS{SQL_TABLE_USERS}";
 		$q .= " WHERE UID=\'$QryParm->{'uid'}\'";
-		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor;
+		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor; 
 	}
 	elsif ($QryParm->{'tbl'} eq "group") {
 		$q = "delete from $WEBOBS{SQL_TABLE_GROUPS}";
 		$q .= " WHERE GID=\'$QryParm->{'gid'}\' AND UID=\'$QryParm->{'uid'}\'";
-		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor;
+		$refMsg = \$userMsg; $refMsgColor = \$userMsgColor; 
 	}
 	elsif ($QryParm->{'tbl'} eq "notification") {
 		$q = "delete from $WEBOBS{SQL_TABLE_NOTIFICATIONS}";
 		$q .= " WHERE EVENT=\'$QryParm->{'event'}\' AND UID=\'$QryParm->{'uid'}\' AND ACTION=\'$QryParm->{'act'}\'";
-		$refMsg = \$notfMsg; $refMsgColor = \$notfMsgColor;
+		$refMsg = \$notfMsg; $refMsgColor = \$notfMsgColor; 
 	}
 	elsif ($authtable ne "") {
 		$q = "delete from $authtable";
 		$q .= " WHERE UID=\'$QryParm->{'uid'}\' AND RESOURCE=\'$QryParm->{'res'}\'";
-		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor;
+		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor; 
 	} else { die "$QryParm->{'action'} for unknown table"; }
 
 	my $err = execute_queries($WEBOBS{SQL_DB_USERS}, $q);
@@ -246,7 +238,7 @@ if ($QryParm->{'action'} eq 'delete') {
 		$$refMsgColor = "green" if ($$refMsgColor ne "red");
 	}
 }
-# ---- process (execute) sql delete
+# ---- process (execute) sql delete 
 # ---------------------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'deleteU') {
 	if ($QryParm->{'tbl'} eq "group") {
@@ -302,7 +294,7 @@ Gscriptname = \"$ENV{SCRIPT_NAME}\"; // required by users.js
 </head>
 EOHEADER
 
-# ---- build users and groups 'select dropdowns contents'
+# ---- build users and groups 'select dropdowns contents' 
 # -----------------------------------------------------------------------------
 $db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
                      "SELECT DISTINCT(UID), FULLNAME"
@@ -322,10 +314,10 @@ for my $row (@$db_rows) {
 	$selgrps .= "<option>$gid</option>";
 }
 
-# ---- build 'users' table result rows
+# ---- build 'users' table result rows 
 # -----------------------------------------------------------------------------
 $db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
-                     "SELECT u.UID,FULLNAME,LOGIN,EMAIL,VALIDITY,ENDDATE,COMMENT,"
+                     "SELECT u.UID,FULLNAME,LOGIN,EMAIL,VALIDITY,"
                      ."group_concat(GID) AS groups"
 			         ." FROM $WEBOBS{SQL_TABLE_USERS} u"
                      ." LEFT JOIN $WEBOBS{SQL_TABLE_GROUPS} g"
@@ -333,16 +325,13 @@ $db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
 			         ." GROUP BY u.UID ORDER BY u.UID");
 my $dusers = '';
 my $dusersCount = 0;
-my $dusersCountValid = 0;
 my $dusersId = '';
 
 for my $row (@$db_rows) {
 	my ($dusers_uid, $dusers_fullname, $dusers_login, $dusers_email,
-		$dusers_validity, $dusers_enddate, $dusers_comment, $dusers_groups) = @$row;
+		$dusers_validity, $dusers_groups) = @$row;
 	$dusers_groups //= '';
-	$dusers_groups =~ s/,/ /g;
 	$dusersCount++;
-	$dusersCountValid++ if ($dusers_validity eq 'Y' && ($dusers_enddate eq '' || $dusers_enddate gt $today));
 	$dusersId = "udef".$dusersCount;
 
 	# Webobs owner and visitor user row should be grayed and have no edition/deletion link
@@ -352,9 +341,6 @@ for my $row (@$db_rows) {
 	if ($dusers_uid eq "!" || $dusers_uid eq "?" ) {
 		$tr_classes = "trlock";
 	} else {
-		if ($dusers_validity ne "Y" || ($dusers_enddate ne "" && $dusers_enddate lt $today)) {
-			$tr_classes = "troff";
-		}
 		$edit_link = "<a href=\"#IDENT\" onclick=\"openPopupUser('#$dusersId');return false\">"
 					 ."<img title=\"edit user\" src=\"/icons/modif.png\"></a>";
 		$del_link = "<a href=\"#IDENT\" onclick=\"postDeleteUser('#$dusersId');return false\">"
@@ -372,13 +358,11 @@ for my $row (@$db_rows) {
 	<td class="user-email">$dusers_email</td>
 	<td class="user-groups">$dusers_groups</td>
 	<td class="user-validity">$dusers_validity</td>
-	<td class="user-enddate">$dusers_enddate</td>
-	<td class="user-comment">$dusers_comment</td>
 </tr>
 _EOD_
 }
 
-# ---- build 'unique groups' table result rows
+# ---- build 'unique groups' table result rows 
 # -----------------------------------------------------------------------------
 $db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
                      "SELECT DISTINCT(GID) FROM $WEBOBS{SQL_TABLE_GROUPS}"
@@ -403,7 +387,7 @@ for my $row (@$db_rows) {
 _EOD_
 }
 
-# ---- build S'groups' table result rows
+# ---- build S'groups' table result rows 
 # -----------------------------------------------------------------------------
 $db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
                      "SELECT GID,GROUP_CONCAT(UID) AS UIDS"
@@ -415,7 +399,6 @@ my $SdgrpsId = '';
 
 for my $row (@$db_rows) {
 	my ($Sdgrps_gid, $Sdgrps_uids) = @$row;
-	$Sdgrps_uids =~ s/,/ /g;
 	$SdgrpsCount++;
 	$SdgrpsId="gdef".$SdgrpsCount;
 
@@ -437,7 +420,7 @@ for my $row (@$db_rows) {
 _EOD_
 }
 
-# ---- build 'unique evnt notifications' table result rows
+# ---- build 'unique evnt notifications' table result rows 
 # -----------------------------------------------------------------------------
 $db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
                      "SELECT DISTINCT(EVENT)"
@@ -464,7 +447,7 @@ for my $row (@$db_rows) {
 _EOD_
 }
 
-# ---- build 'notifications' table result rows
+# ---- build 'notifications' table result rows 
 # -----------------------------------------------------------------------------
 $db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
                      "SELECT EVENT,VALIDITY,UID,MAILSUBJECT,MAILATTACH,ACTION"
@@ -502,7 +485,7 @@ for my $row (@$db_rows) {
 _EOD_
 }
 
-# ---- build 'notifications' table result rows
+# ---- build 'notifications' table result rows 
 # -----------------------------------------------------------------------------
 my $postboardstatus="";
 my @PBREPLY = qx($WEBOBS{ROOT_CODE}/shells/postboard status);
@@ -514,7 +497,7 @@ if ( scalar(@PBREPLY) > 0 ) {
 } else { $postboardstatus = "<span class=\"statusBAD\">POSTBOARD IS NOT RUNNING !</span>"}
 
 
-# ---- build 'auth' table result rows
+# ---- build 'auth' table result rows 
 # -----------------------------------------------------------------------------
 my %TA;
 for my $an (qw(proc view form wiki misc)) {
@@ -556,7 +539,7 @@ _EOD_
 	}
 }
 
-# ---- assemble the page
+# ---- assemble the page 
 # -----------------------------------------------------------------------------
 print <<"EOPART1";
 <body style="min-height: 600px;">
@@ -594,15 +577,10 @@ Identifications&nbsp;$go2top
 	<label>Email:<span class="small">mail address</span></label>
 	<input type="text" name="email" value=""/><br/>
 	<label for="gid">Gid(s):<span class="small">group id(s)<br>Ctrl for multiple</span></label>
-	<select name="gid" id="gid" size="5" multiple>$selgrps</select><br/>
+	<select name="gid" id="gid" size="5" multiple>$selgrps</select><br/> 
 	<label for="valid-user">Validity:
 		<span class="small">check to activate account</span></label>
-	<input type="checkbox" id="valid-user" name="valid" value="Y"/>
-	<label for="end-date">End Date:
-		<span class="small">YYYY-MM-DD</span></label>
-	<input type="text" name="enddate" maxlength="10" value="" style="width: 100px"/><br/>
-	<label for="comment">Comment:<span class="small">free string</span></label>
-	<input type="text" name="comment" value=""/><br/>
+	<input type="checkbox" id="valid-user" name="valid" value="Y"/><br/>
 	<p style="margin: 0px; text-align: center">
 		<input type="button" name="sendbutton" value="send" onclick="sendPopupUser(); return false;" />
 		<input type="button" value="cancel" onclick="closePopup(); return false" />
@@ -618,7 +596,7 @@ Identifications&nbsp;$go2top
 	<input type="text" name="gid" id="gid"value=""/><br/>
 	<label for="uid">Uid(s):<span class="small">WebObs userid(s)<br>Ctrl for multiple</span></label>
 	<!--<input type="text" name="uid" id="uid" value=""/><br/>-->
-	<select name="uid" id="uid" size="5" multiple>$selusers</select><br/>
+	<select name="uid" id="uid" size="5" multiple>$selusers</select><br/> 
 	<p style="margin: 0px; text-align: center">
 		<input type="button" name="sendbutton" value="send" onclick="sendPopupGroup(); return false;" />
 		<input type="button" value="cancel" onclick="closePopup(); return false" />
@@ -627,7 +605,7 @@ Identifications&nbsp;$go2top
 
 	<fieldset id="users-field"><legend><b>Users</b></A></legend>
 		<div style="background: #BBB">
-			<b>$dusersCountValid</b>/$dusersCount users valid/defined
+			<b>$dusersCount</b> users defined
 		</div>
 		<div class="dusers-container">
 			<div class="dusers">
@@ -643,8 +621,6 @@ Identifications&nbsp;$go2top
 					<th>Email</th>
 					<th>Groups</th>
 					<th>Valid</th>
-					<th>Until</th>
-					<th>Comment</th>
 				</tr></thead>
 				<tbody>
 				$dusers
@@ -831,7 +807,7 @@ print "</TR></TABLE>";
 print "</div>";
 print "</div>";
 
-# ---- That's all folks: end html
+# ---- That's all folks: end html 
 print "<br>\n</body>\n</html>\n";
 exit;
 
@@ -998,3 +974,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
+

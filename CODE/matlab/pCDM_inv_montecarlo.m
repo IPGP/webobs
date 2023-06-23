@@ -4,29 +4,24 @@ function [best_model,m,param] = pCDM_inv_montecarlo(...
 %
 %	Dependency: pcdmv.mex (compiled from pcdmv.c)
 %
-%	Authors: Antoine VilliÃ© (Ã‰cole des Mines de Paris / UGM / IRD), FranÃ§ois Beauducel
+%	Authors: Antoine Villié (École des Mines de Paris / UGM / IRD), François Beauducel
 %	Created: 2018 in Yogyakarta, Indonesia
-%	Updated: 2021-08-16
+%	Updated: 2019-08-14
 
 
 % Random models creation
 param = rand(nbtest,9).*repmat(limite(2,:)-limite(1,:),nbtest,1)+repmat(limite(1,:),nbtest,1);
 
-% for source location, use normal distribution if necessary
+% for source x and y, use normal distribution if necessary
 if opt.apriori_horizontal > 0
 	param(:,1) = randnb([nbtest,1],opt.targetxy(1)/1e3,opt.apriori_horizontal,limite(1,1),limite(2,1));
 	param(:,2) = randnb([nbtest,1],opt.targetxy(2)/1e3,opt.apriori_horizontal,limite(1,2),limite(2,2));
 end
-if numel(opt.apriori_depth) == 2 && opt.apriori_depth(2) > 0
-	param(:,3) = randnb([nbtest,1],opt.apriori_depth(1)/1e3,opt.apriori_depth(2),limite(1,3),limite(2,3));
-end
 
 % for source depth (parameter 3), lower values are limited by the topography
 lower_z = max(limite(1,3),-interp2(TOPO.xx,TOPO.yy,TOPO.zz,param(:,1),param(:,2),'nearest'));
-%param(:,3) = rand(nbtest,1).*(limite(2,3) - lower_z) + lower_z;
-k = (param(:,3)<lower_z);
-param(k,3) = lower_z(k);
-
+param(:,3) = rand(nbtest,1).*(limite(2,3) - lower_z) + lower_z;
+ 
 % Computing the random models
 %_______________________________________________________________________________
 % outputs are NxM matrix where N is number of stations and M is number of models
@@ -38,8 +33,8 @@ n = size(X,1);
 		   repmat(param(:,6)',n,1),repmat(param(:,7)',n,1), ...
 		   repmat(param(:,8)',n,1),repmat(param(:,9)',n,1),PCDM.nu);
 %ue = nan(n,nbtest);
-%un = nan(n,nbtest);
-%uv = nan(n,nbtest);
+%un = nan(n,nbtest); 
+%uv = nan(n,nbtest);  
 %for i = 1:nbtest
 	%[ue(:,i),un(:,i),uv(:,i)] = pcdm(X-param(i,1),Y-param(i,2),...
 	%	Z+param(i,3),param(i,4),param(i,5),param(i,6),param(i,7),param(i,8),...
@@ -80,9 +75,6 @@ end
 m = exp(-m(:));
 
 % applies a priori info
-if numel(opt.apriori_depth) == 2 && opt.apriori_depth(2) > 0
-	m = m.*exp(-((param(:,3) + opt.apriori_depth(1)).^2)/(2*(opt.apriori_depth(2))^2));
-end
 if opt.apriori_horizontal > 0
 	m = m.*exp(-((param(:,1) - opt.targetxy(1)/1e3).^2 + (param(:,2) - opt.targetxy(2)/1e3).^2)/ ...
 	    (2*opt.apriori_horizontal^2));
@@ -92,7 +84,7 @@ best_model = param(m==max(m),:);
 
 
 
-% Results display
+% Results display  
 %_______________________________________________________________________________
 
 
@@ -113,7 +105,7 @@ if PCDM.supplementary_graphs && trace
 	for h = 1:size(limite,2)
 		coord(:,h) = linspace(limite(1,h),limite(2,h),gridsize)';
 	end
-
+	
 	%coord=linspace(limite(1,:),limite(2,:),gridsize)';
 	coordt = coord(1:end-1,:)+repmat((coord(2,:)-coord(1,:))./2,gridsize-1,1);
 	names = {'X0','Y0','Z0','OmegaX','OmegaY','OmegaZ','Dvtot','A','B'};
@@ -131,7 +123,7 @@ if PCDM.supplementary_graphs && trace
 						if (maxi~=0)
 							matri(j,i)=maxi;
 						 end
-					end
+					end 
 				end
 				[grid2,grid1] = ndgrid(coordt(:,a),coordt(:,b));
 				subplot(3,3,b)
@@ -153,10 +145,11 @@ if PCDM.supplementary_graphs && trace
 	end
 	print(sprintf('%s/pCDM/pCDMMC%s',PCDM.ptmp,names{a}),'-dpng');
 	close
-end
+end 
 
 if PCDM.supplementary_graphs
 	save(sprintf('%s/pCDM/environnement',PCDM.ptmp))
 end
 
 end
+

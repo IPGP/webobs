@@ -1,7 +1,7 @@
 =key|value
 # Generic PROC template for superproc hypomap
 # Superformat is 'quakes': see readfmtdata_quakes.m for compatible RAWFORMAT defined
-# in associated NODE's RAWFORMAT field
+# in associated NODE's RAWFORMAT field 
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/hypomap.m for further information.
 
 # long name of the PROC
@@ -12,7 +12,7 @@ TYPE|
 OWNCODE|?
 # raw data path
 RAWDATA|
-# URN link to data
+# URN link to data 
 URNDATA|
 # time zone for outputs
 TZ|0
@@ -59,9 +59,7 @@ DEM_COPYRIGHT|
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
-# additional options for gridmaps background map
-GRIDMAPS_DEM_OPT|
-# show node alias in zoom map(s)
+# do not show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
 # graphical density for PNG outputs (in pixel per inches)
@@ -83,12 +81,7 @@ COPYRIGHT2|
 # for catalog data request
 EVENTTYPE_EXCLUDED_LIST|not existing,not locatable,outside of network interest,sonic boom,duplicate,other event
 EVENTSTATUS_EXCLUDED_LIST|automatic
-EVENTCOMMENT_INCLUDED_REGEXP|
 EVENTCOMMENT_EXCLUDED_REGEXP|AUTOMATIC
-# search for string in the event comment to tag it as felt EQ
-EVENTCOMMENT_FELT_REGEXP|
-# search for event code (xxNrr) in the catalog comment
-FELT_EVENTCODE_OK|NO
 SC3_LISTEVT|
 LATLIM|13,19
 LONLIM|-64,-58
@@ -105,7 +98,7 @@ QUALITY_FILTER|0.7
 # for graph
 MARKER_LINEWIDTH|1
 PLOT_BG_ALL|.3
-DEM_OPT|'WaterMark',2,'Saturation',.8,'FontSize',7
+DEM_OPT|'WaterMark',2,'FontSize',7
 SHAPE_FILE|$WEBOBS{PATH_DATA_SHAPE}/antilles_faults.bln
 #STATIONS_GRID|VIEW.
 # Hypocenters without individual circle line (1 yes, 0 no)
@@ -124,8 +117,9 @@ MAP_Area1_DEPLIM|-2,200
 MAP_Area1_PROFILE1|-61.4651,16.5138,55,100,200
 # Profile 2 (right): same parameters as profile1, but drawn on the right side of the map
 # Colormap used: must specify the number of colors
-MAP_Area1_COLORMAP|spectral(256)
+MAP_Area1_COLORMAP|jet(256)
 # Color reference for markers: 'depth' (default) or 'time'
 MAP_Area1_COLORREF|time
 # Optional time plot: give a list of parameters (versus time) ==> alpha version not fully functional
 #MAP_Area1_TIMEPLOT|latitude,longitude,depth,magnitude,profile1,profile2
+

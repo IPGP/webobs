@@ -36,7 +36,7 @@ function DOUT=extenso(varargin)
 %
 %   Authors: F. Beauducel + J.C. Komorowski / WEBOBS, IPGP
 %   Created: 2001-10-23
-%   Updated: 2021-01-01
+%   Updated: 2017-09-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -47,7 +47,7 @@ if nargin < 1
 end
 
 proc = varargin{1};
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename,varargin{:});
 timelog(procmsg,1);
 
 
@@ -91,7 +91,7 @@ for n = 1:length(N)
 	e = D(n).e;
 	C = D(n).CLB;
 	nx = length(C.nm);
-
+	
 	if ~isempty(t)
 		tlast(n) = rmax(t);
 		tfirst(n) = rmin(t);
@@ -107,7 +107,7 @@ for n = 1:length(N)
 	end
 
 
-
+	
 	% ===================== makes the proc's job
 
 	for r = 1:length(P.GTABLE)
@@ -144,7 +144,7 @@ for n = 1:length(N)
 		else
 			etat = 0;
 		end
-
+    
 		% title and status
 		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
 		P.GTABLE(r).GSTATUS = [P.NOW,etat,acqui];
@@ -220,7 +220,7 @@ for n = 1:length(N)
 					i, C.nm{i},d(ke,i),C.un{i},rmin(d(k,i)),rmean(d(k,i)),rmax(d(k,i)))}];
 			end
 		end
-
+		
 		% makes graph
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
@@ -234,7 +234,7 @@ for n = 1:length(N)
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
 	end
-
+	
 	% Stores in main structure D to prepare the summary graph
 	D(n).t = t;
 	D(n).d = d;
@@ -300,7 +300,7 @@ for r = 1:length(P.GTABLE)
 			end
 		end
 	end
-
+	
 
 	% --- Time series graph
 	figure, clf, orient tall
@@ -311,7 +311,7 @@ for r = 1:length(P.GTABLE)
 		aliases = [];
 		ncolors = [];
 		for n = 1:length(N)
-
+			
 			t = D(n).t;
 			d = D(n).d;
 			%e = D(n).e;
@@ -333,7 +333,7 @@ for r = 1:length(P.GTABLE)
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
 		ylabel(sprintf('%s: %s (%s)',P.(sprintf('ZONE%d_NAME',i)),C.nm{1},C.un{1}))
-
+		
 		% legend: station aliases
 		ylim = get(gca,'YLim');
 		nl = length(aliases);
@@ -345,7 +345,7 @@ for r = 1:length(P.GTABLE)
 	end
 
 	tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
-
+    
 	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 	close
 
@@ -394,7 +394,7 @@ for r = 1:length(P.GTABLE)
 		% fixes the axis
 		axis tight
 		axl = axis;
-
+		
 		% determines X-Y limits of the map
 		dlat = axl(3:4);
 		lat0 = mean(axl(3:4));
@@ -433,7 +433,7 @@ for r = 1:length(P.GTABLE)
 		h = get(gca,'Children');
 		ko = find(h == ha(1));
 		set(gca,'Children',[ha;h(1:ko)])
-
+		
 		% plots error ellipse and station name
 		for nn = 1:length(kn)
 			n = kn(nn);
@@ -554,7 +554,7 @@ for r = 1:length(P.GTABLE)
 		[da,dr] = cart2pol(dx,dy);
 		drm = dr.*cos(da - asou);	% data vector radial component
 		vv = mean(drm(:,:,:,kk),4)./mean(sqrt(ux(:,:,:,kk).^2 + uy(:,:,:,kk).^2),4);
-
+			
 		% computes probability density
 		vvn = repmat(vv,[1,1,1,kr]);
 		sigx = repmat(reshape(d(kk,4),1,1,1,kr),[sz,1]);
@@ -596,7 +596,7 @@ for r = 1:length(P.GTABLE)
 		d0 = sqrt((xx-xx(k)).^2 + (yy-yy(k)).^2 + (zz-zz(k)).^2);	% distance from source
 		%ws = median(d0(mm>minmax(mm(:),.99)));	% median distance of the 1% best models
 		ws = 2*median(d0(mm >= (1 - msigp)*max(mm(:))));	% distance of the best models (msig)
-
+		
 		mhor = max(mm,[],3);
 		clim = [min(mhor(:)),max(mhor(:))*(ws/500)^.5];
 		%clim = [min(mhor(:)),max(mhor(:))];

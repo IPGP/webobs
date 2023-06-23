@@ -10,7 +10,7 @@ OWNCODE|?
 RAWFORMAT|
 # raw data path
 RAWDATA|
-# URN link to data
+# URN link to data 
 #URNDATA|/rawdata/myproc
 # time zone for outputs
 TZ|+0
@@ -61,12 +61,10 @@ DEM_COPYRIGHT|
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
-# additional options for gridmaps background map
-GRIDMAPS_DEM_OPT|
-# show node alias in zoom map(s)
+# do not show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
-# file for background time referenced events
+# file for background time referenced events 
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
@@ -87,13 +85,11 @@ FLAT_IS_NAN|NO
 # applies a median filter to the data
 MEDIAN_FILTER_SAMPLES|0
 TREND_ERROR_MODE|1
-CONTINUOUS_PLOT|N
 
 # defines the channels
 TILTX_CHANNEL|1
 TILTY_CHANNEL|2
 TEMPERATURE_CHANNEL|3
-
 TILT_TARGET_LATLON|
 
 PERNODE_TEMPERATURE_BACKGROUND|N
@@ -103,8 +99,8 @@ MOTION_EXCLUDED_NODELIST|
 MOTION_MAFILTER|1
 MOTION_SCALE_RAD|0
 MOTION_MIN_SIZE_KM|10
-MOTION_COLORMAP|spectral(256)
-MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'saturation',.8,'interp'
+MOTION_COLORMAP|jet(64)
+MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'interp'
 MOTION_TITLE|{\fontsize{14}{\bf$name - Motion} ($timescale)}
 
 VECTORS_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
@@ -122,9 +118,5 @@ MODELLING_TITLE|{\fontsize{14}{\bf$name} ($timescale)}
 MODELLING_EXCLUDED_NODELIST|
 MODELLING_MAX_DEPTH|5000
 MODELLING_BORDERS|2500
-MODELLING_GRID_SIZE|51
+MODELLING_GRID_SIZE|100
 MODELLING_SIGMAS|1
-MODELLING_MODULE_ONLY|N
-MODELLING_MISFITNORM|L1
-MODELLING_APRIORI_HSTD_KM|
-MODELLING_PLOT_BEST|N

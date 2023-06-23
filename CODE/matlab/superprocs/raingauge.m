@@ -23,7 +23,7 @@ function DOUT=raingauge(varargin)
 %
 %	Authors: Alexis Bosson, WEBOBS/IPGP
 %	Created: 2016-08-05, in Guadeloupe
-%	Updated: 2021-01-01
+%	Updated: 2018-10-10
 
 WO = readcfg;
 % Log prefix : function name
@@ -37,7 +37,7 @@ end
 % Proc name
 proc = varargin{1};
 % Start log
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename,varargin{:});
 timelog(procmsg,1);
 
 
@@ -304,3 +304,4 @@ timelog(procmsg,2)
 if nargout > 0
 	DOUT = D;
 end
+

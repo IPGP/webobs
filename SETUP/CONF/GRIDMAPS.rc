@@ -9,11 +9,10 @@ DPI|100
 # basemap DEM rendering options (see CODE/matlab/dem.m documentation)
 LINEWIDTH|1.5
 LANDCOLORMAP|landcolor
+#SEACOLORMAP|seacolor
 SEACOLORMAP|[0.7,0.9,1]
-SHADING|light
-COLOR_LIGHTENING|1.5
-COLOR_SATURATION|0.7
-LIGHT_AZIMUTH|-45,45
+COLOR_LIGHTENING|2
+LIGHT_AZIMUTH|-45
 LIGHT_CONTRAST|1
 ZCUT|0.1
 
@@ -21,11 +20,11 @@ ZCUT|0.1
 OVERSAMPLING|500
 
 # minimum size of map around NODES
-MIN_SIZE_KM|2
+MIN_SIZE_KM|5
 
 # maximum X/Y ratio in case of automatic sizing around NODES
-MAX_XYRATIO|2
-BORDER_ADD|.1
+MAX_XYRATIO|1.5
+BORDER_ADD|0.1
 DEM_SRTM1|N
 
 # --- contour lines

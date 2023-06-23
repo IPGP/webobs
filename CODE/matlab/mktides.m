@@ -19,7 +19,7 @@ function T = mktides(prgm,opt,t,lat,lon,alt,ptmp)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2015
-%	Updated: 2022-07-26
+%	Updated: 2017-02-03
 
 
 g = 9.81;
@@ -79,5 +79,6 @@ else
 end
 
 if delflag
-	wosystem(sprintf('rm -rf %s',ptmp));
+	rmdir(ptmp,'s');
 end
+

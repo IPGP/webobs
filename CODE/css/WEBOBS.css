@@ -88,7 +88,7 @@ ul
 }
 li
 {
-	margin-bottom:1pt;
+	margin-bottom:1pt; 
 	margin-top:1pt;
 }
 
@@ -99,7 +99,7 @@ table.trData tr:hover td {
 .subMenu {
     background-color: #fAf4dE ;
     border-radius: 3px 3px 3px 3px;
-	border: thin solid #eAe4cE;
+	border: thin solid #eAe4cE; 
     padding-top: 2px;
     padding-bottom: 2px;
     padding-left: 5px;
@@ -131,9 +131,7 @@ input[type="submit"]:hover {
 {
 	text-align: right;
 	color: #555555;
-	font-weight: bold;
-	background: transparent;
-	border: none;
+	background-color: #CCCCCC;
 }
 .tdResult
 {
@@ -156,8 +154,8 @@ input[type="submit"]:hover {
 }
 .Event
 {
-	margin-bottom:0.5ex;
-	margin-top:1ex;
+	margin-bottom:0.5ex; 
+	margin-top:1ex; 
 }
 .titleEvent
 {
@@ -194,7 +192,7 @@ input[type="submit"]:hover {
 	border-width:1px;
 	border-style:dotted;
 	border-color:#DDDDDD;
-	margin:0.5ex;
+	margin:0.5ex; 
 	padding:0.5ex;
 }
 .contentPartialEvent
@@ -202,7 +200,7 @@ input[type="submit"]:hover {
 	border-width:2px;
 	border-style:dashed;
 	border-color:#DDDDDD;
-	margin:0.5ex;
+	margin:0.5ex; 
 	padding:0.5ex;
 }
 .typeHebdo
@@ -291,12 +289,12 @@ input[type="submit"]:hover {
 table.Dcalnd { border-collapse:collapse; border-spacing:0; table-layout: fixed; border: 1px solid gray; font-size: 9px; vertical-align: top; }
 table.Dcalnd tr.t1 { border: none; background-color: #bbbbbb; text-align: center; font-weight: bold}
 table.Dcalnd tr.t2 { border: none; background-color: #dddddd; text-align: right; font-weight: bold}
-table.Dcalnd th { border: none; background-color: #dddddd; text-align: right;}
-table.Dcalnd td.week { border: none; background-color: #dddddd; text-align: right;}
-table.Dcalnd td { border: none; text-align: right}
-table.Dcalnd td.off { border: none; text-align: right; background-color: #BBCCBB; color: #CC0000}
-table.Dcalnd td.SD  { border: none; text-align: right; background-color: #BBCCBB;}
-table.Dcalnd td.today  { border: none; text-align: right; background-color: #FF6666;}
+table.Dcalnd th { border: none; background-color: #dddddd; text-align: right;}                                                                                        
+table.Dcalnd td.week { border: none; background-color: #dddddd; text-align: right;}                                                                                        
+table.Dcalnd td { border: none; text-align: right} 
+table.Dcalnd td.off { border: none; text-align: right; background-color: #BBCCBB; color: #CC0000} 
+table.Dcalnd td.SD  { border: none; text-align: right; background-color: #BBCCBB;} 
+table.Dcalnd td.today  { border: none; text-align: right; background-color: #FF6666;} 
 table.Dcalnd a:link
 {
 	text-decoration: none;
@@ -403,19 +401,19 @@ table.Dcalnd a:hover
 	font-family:monospace;
 	font-weight:bold;
 	font-size: 8pt;
-	color: #000000;
+	color: #000000; 
 	border-style: solid;
 	border-width: 1px;
 	padding-left: 3px;
 	padding-right: 2px;
 	border-color: #AAAAAA;
 	background-color: #FFFAF0;
-}
+} 
 .code {
 	font-family: monospace;
 	font-weight: bold;
 	font-size: 110%;
-}
+} 
 
 /* Style pour le menu (menu.pl) */
 #bandeau-menu {
@@ -542,10 +540,10 @@ table.Dcalnd a:hover
 	color: inherit;
 }
 #theform label {
-	display: block; width: 150px; float: left;
-	font-weight: bold;
+	display: block; width: 150px; float: left; 
+	font-weight: bold; 
 	margin-right: 1em; text-align: right; padding-top: 3px;
-}
+} 
 #theform legend {
 	color: #8DB8E6;
 	font-size: 10pt;
@@ -653,24 +651,24 @@ td.welcome {
 td.ic, th.ic { width: 1%}
 .ic:hover { cursor: pointer }
 
-.drawer {
-	border: solid 1px #EAE4CE;
+.drawer { 
+	border: solid 1px #EAE4CE; 
 	border-radius: 4px;
 	background: white;
-}
+} 
 
 .drawerh2 {
 	border-bottom: 1px solid #EAE4CE;
-	font-size: 14pt; font-weight: bold;
+	font-size: 14pt; font-weight: bold; 
 	background: #FAF4DE;
-	color: #FF6666
+	color: #FF6666 
 }
 .drawerh2 > img {
     cursor: pointer;
 }
 .welcomedrawer {
 	border-bottom: 1px solid #EAE4CE;
-	font-size: 12pt; font-weight: bold;
+	font-size: 12pt; font-weight: bold; 
 	background: #EAE4CE;
 	color: #FF666D;
 	text-align: left;
@@ -722,7 +720,7 @@ td.ic, th.ic { width: 1%}
 }
 
 .emphase-graph-floating img {
-    /* Force the thumbnail size to make sure the frames are visually aligned */
+    /* Force the thumbnail size to make sure the frames are properly visually aligned */
     width: 80px;
     height: 112px;
 }
@@ -745,3 +743,4 @@ td.ic, th.ic { width: 1%}
 	height: 100px;
 	width: 200px;
 }
+

@@ -21,13 +21,13 @@ function DEM = loaddem(WO,xylim,OPT)
 %	                  doesn't cover the entire requested area
 %	ETOPO_SRTM_MERGE: Y to force ETOPO+SRTM merge, overwrites WEBOBS.rc
 %
-%	If OPT.DEM_FILE does not exist or user's DEM does not cover the entire
+%	If OPT.DEM_FILE does not exist or user's DEM does not cover the entire 
 %	requested area XYLIM, then SRTM/ETOPO data are returned instead.
 %
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2022-02-03
+%	Updated: 2019-12-25
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -37,11 +37,11 @@ dlat = xylim(3:4);
 
 srtmmax = field2num(WO,'SRTM_MAX_TILES',25);
 psrtm1 = field2str(WO,'PATH_DATA_DEM_SRTM1');
-nasalogin = split(field2str(WO,'EARTHDATA_LOGIN'),',');
 srtm1max = field2num(WO,'SRTM1_MAX_TILES',4);
 oversamp = field2num(WO,'DEM_OVERSAMPLING',500);
 maxwidth = field2num(WO,'DEM_MAX_WIDTH',1201);
 mergeetopo = isok(WO,'ETOPO_SRTM_MERGE',1);
+mergeetopooffset = 0;
 srtm1 = false;
 etopo = false;
 if nargin > 2
@@ -71,17 +71,15 @@ if nargin > 2 && isfield(OPT,'DEM_FILE')
 			fprintf('%s: converting user''s DEM from UTM to lat/lon... ',wofun);
 			[dx,dy,zone] = ll2utm(repmat(dlat,2,1),repmat(dlon,2,1));
 			epsxy = 2*max(abs(diff(x(1:2))),abs(diff(y(1:2))));
-			kx = (x >= min(dx(:,1) - epsxy) & x <= max(dx(:,2) + epsxy));
-			ky = (y >= min(dy(:,1) - epsxy) & y <= max(dy(:,2) + epsxy));
+			kx = find(x >= min(dx(:,1) - epsxy) & x <= max(dx(:,2) + epsxy));
+			ky = find(y >= min(dy(:,1) - epsxy) & y <= max(dy(:,2) + epsxy));
 			[x,y,z] = gridutm2ll(x(kx),y(ky),z(ky,kx),zone);
 			fprintf('done.\n');
 		end
 		if forced || (all(isinto(dlon,x)) && all(isinto(dlat,y)))
-			kx = (x >= min(dlon) & x <= max(dlon));
-			ky = (y >= min(dlat) & y <= max(dlat));
-			DEM.lon = x(kx);
-			DEM.lat = y(ky);
-			DEM.z = z(ky,kx);
+			DEM.lon = x(x >= dlon(1) & x <= dlon(2)); 
+			DEM.lat = y(y >= dlat(1) & y <= dlat(2)); 
+			DEM.z = z(y >= dlat(1) & y <= dlat(2),x >= dlon(1) & x <= dlon(2)); 
 			DEM.COPYRIGHT = field2str(OPT,'DEM_COPYRIGHT','User''s defined DEM');
 			if ~isempty(DEM.z)
 				userdem = 1;
@@ -94,7 +92,7 @@ if nargin > 2 && isfield(OPT,'DEM_FILE')
 	end
 end
 
-if ~userdem
+if ~userdem 
 	% if max SRTM tiles exceeded, loads ETOPO
 	n = (abs(diff(floor(dlon))) + 1)*(abs(diff(floor(dlat))) + 1);
 	if n > srtmmax || min(dlat) < -60 || max(dlat) > 59
@@ -105,8 +103,8 @@ if ~userdem
 		etopo = true;
 	else
 		fprintf('%s: loading SRTM data for area lat (%g,%g) lon (%g,%g)...\n',wofun,dlat,dlon);
-		if srtm1 && exist(psrtm1,'dir') && n <= srtm1max && ~isempty(nasalogin)
-			DEM = readhgt([dlat,dlon],'outdir',psrtm1,'interp','srtm1','wget','login',nasalogin{1},nasalogin{2});
+		if srtm1 && exist(psrtm1,'dir') && n <= srtm1max
+			DEM = readhgt([dlat,dlon],'outdir',psrtm1,'interp','srtm1','wget');
 		else
 			DEM = readhgt([dlat,dlon],'outdir',WO.PATH_DATA_DEM_SRTM,'interp','srtm3','wget');
 		end
@@ -115,7 +113,7 @@ if ~userdem
 		DEM.COPYRIGHT = field2str(WO,'SRTM_COPYRIGHT','DEM: SRTM+ETOPO');
 	end
 
-	% limits the size of DEMs to avoid memory problems
+	% limits the size of DEMs to avoir memory problems
 	n = ceil(sqrt(numel(DEM.z))/maxwidth);
 	if n > 1
 		DEM.lat = DEM.lat(1:n:end);
@@ -125,17 +123,13 @@ if ~userdem
 
 	% adds bathymetry from ETOPO for SRTM offshore areas
 	if mergeetopo && ~userdem && ~etopo
-		k = (DEM.z==0 | isnan(DEM.z));
-		if any(k(:))
+		k = find(DEM.z==0);
+		if ~isempty(k)
 			% loads ETOPO1 with +/- 2 minutes of extra borders
 			E = ibil(sprintf('%s/%s',WO.PATH_DATA_DEM_ETOPO,WO.ETOPO_NAME),xylim + 5/60*[-1,1,-1,1]);
+			E.z(E.z <= 0) = E.z(E.z <= 0) + mergeetopooffset;
 			[xx,yy] = meshgrid(DEM.lon,DEM.lat);
-			if all(k(:))
-				DEM.z(k) = interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear');
-			else
-				% to avoid transit artifacts, limits ETOPO values to -1 m
-				DEM.z(k) = min(floor(interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear')),-1);
-			end
+			DEM.z(k) = min(floor(interp2(E.lon,E.lat,E.z,xx(k),yy(k),'*linear')),0);
 			DEM.COPYRIGHT = sprintf('%s + ETOPO/NOOA',DEM.COPYRIGHT);
 		end
 	end
@@ -186,3 +180,4 @@ yi = linspace(max(lat(1,:)),min(lat(end,1)),nn);
 
 % interpolation on a regular grid
 zi = griddata(lon(:),lat(:),z(:),xx,yy,'linear');
+

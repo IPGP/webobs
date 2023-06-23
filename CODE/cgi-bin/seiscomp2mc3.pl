@@ -43,7 +43,7 @@ use lib $FindBin::Bin;
 use POSIX;
 
 use WebObs::Config;
-use WebObs::QML;
+use QML;
 # Date parsing library
 use DateTime::Format::Strptime;
 

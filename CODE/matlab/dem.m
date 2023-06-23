@@ -1,17 +1,17 @@
 function varargout=dem(x,y,z,varargin)
 %DEM Shaded relief image plot
 %
-%	DEM(X,Y,Z) plots the Digital Elevation Model defined by X and Y
+%	DEM(X,Y,Z) plots the Digital Elevation Model defined by X and Y 
 %	coordinate vectors and elevation matrix Z, as a lighted image using
-%	specific "landcolor" and "seacolor" colormaps. DEM uses IMAGESC
-%	function which is much faster than SURFL when dealing with large
-%	high-resolution DEM. It produces also high-quality and moderate-size
+%	specific "landcolor" and "seacolor" colormaps. DEM uses IMAGESC 
+%	function which is much faster than SURFL when dealing with large 
+%	high-resolution DEM. It produces also high-quality and moderate-size 
 %	Postscript image adapted for publication.
 %
 %	DEM(X,Y,Z,'Param1',Value1,'Param2',Value2,...) specifies options or
 %	parameter/value couple (case insensitive):
 %
-%	[H,I] = DEM(...); returns graphic handle H and optional illuminated
+%	[H,I] = DEM(...); returns graphic handle H and optional illuminated 
 %	image as I, a MxNx3 matrix (if Z is MxN and DECIM is 1).
 %
 %	I = DEM(...,'noplot') returns a structure I containing fields x, y, z,
@@ -20,37 +20,22 @@ function varargout=dem(x,y,z,varargin)
 %
 %	--- Lighting options ---
 %
-%	'Shading', 'light' (default) | 'stack'
-%	    Shading method to combine the relief image and shadow mask:
-%	       'light' is the default and initial method of dem.m (changing the
-%	               lightness intensity),
-%	       'stack' is the common transparency method (stacking using an
-%	               opacity value).
-%
 %	'Azimuth',A
-%		Light azimuth in degrees clockwise relative to North. Accepts
-%	    a vector for multiple lights. Default is A = [-45,45] for a
-%	    combined north-west and north-east illumination.
-%
-%	'Elevation',E
-%		Light elevation (or altitude) (in degrees from the horizon level).
-%		Default value is E = 45.
-%
-%	'Opacity',O
-%		Opacity value (between 0 and 1) of the relief image when using the
-%		'stack' shading method. Default value is O = 0.5.
+%		Light azimuth in degrees clockwise relative to North. Default is
+%		A = -45 for	a natural northwestern illumination.
 %
 %	'Contrast',C
 %		Light contrast, as the exponent of the gradient value:
 %			C = 1 for linear contrast (default),
 %			C = 0 to remove lighting,
 %			C = 0.5 for moderate lighting,
-%			C = 2 or more for stronger contrast.
+%			C = 2 or more for strong contrast.
 %
 %	'LCut',LC
-%		Lighting scale saturation cut with a median-style filter in % of
-%	    elements, such as LC% of maximum gradient values are ignored (0 is
-%	    default for full scale gradient).
+%		Lighting scale saturation cut with a median-style filter in % of 
+%	    elements, such as LC% of maximum gradient values are ignored:
+%			LC = 0.2 is default, 
+%			LC = 0 for full scale gradient.
 %
 %	'km'
 %		Stands that X and Y coordinates are in km instead of m (default).
@@ -60,22 +45,22 @@ function varargout=dem(x,y,z,varargin)
 %	--- Elevation colorscale options ---
 %
 %	'ZLim',[ZMIN,ZMAX]
-%		Fixes min and max elevation values for colormap. Use NaN to keep
+%		Fixes min and max elevation values for colormap. Use NaN to keep 
 %		real min and/or max data values.
 %
 %	'ZCut',ZC
 %		Median-style filter to cut extremes values of Z (in % of elements),
 %		such that ZC% of most min/max elevation values are ignored in the
 %		colormap application:
-%			ZC = 0.5 is default,
+%			ZC = 0.5 is default, 
 %			ZC = 0 for full scale.
 %
 %
 %	--- "No Value" elevation options ---
 %
 %	'NoValue',NOVALUE
-%		Defines the values that will be replaced by NaN. Note that values
-%		equal to minimum of Z class are automatically detected as NaN
+%		Defines the values that will be replaced by NaN. Note that values 
+%		equal to minimum of Z class are automatically detected as NaN 
 %		(e.g., -32768 for int16 class).
 %
 %	'NaNColor',[R,G,B]
@@ -85,38 +70,32 @@ function varargout=dem(x,y,z,varargin)
 %		or [0,0,0] instead.
 %
 %	'Interp'
-%		Interpolates linearly all NaN values (fills the gaps using linear
+%		Interpolates linearly all NaN values (fills the gaps using linear 
 %		triangulation), using an optimized algorithm.
 %
 %
 %	--- Colormap options ---
 %
 %	'LandColor',LMAP
-%		Uses LMAP colormap instead of default (landcolor, if exists or
+%		Uses LMAP colormap instead of default (landcolor, if exists or 
 %		jet) for Z > 0 elevations.
 %
 %	'SeaColor',SMAP
-%		Sets the colormap used for Z <= 0 elevations. Default is seacolor
+%		Sets the colormap used for Z <= 0 elevations. Default is seacolor 
 %		(if exists) or single color [0.7,0.9,1] (a light cyan) to simulate
 %		sea color.
 %
 %	'ColorMap',CMAP
-%		Uses CMAP colormap for full range of elevations, instead of default
+%		Uses CMAP colormap for full range of elevations, instead of default 
 %		land/sea. This option overwrites LANDCOLOR/SEACOLOR options.
 %
 %	'Lake'
-%		Detects automatically flat areas different from sea level (non-zero
+%		Detects automatically flat areas different from sea level (non-zero 
 %		elevations) and colors them as lake surfaces.
 %
 %	'LakeZmin',ZMIN
-%		Activates the 'lake' option only above ZMIN elevations. For
+%		Activates the 'lake' option only above ZMIN elevations. For 
 %		example, use 'lakezmin',0 to limit lake detection on land.
-%
-%	'Saturation',N
-%		Changes the whole image color saturation by a factor of N.
-%
-%	'GrayScale'
-%		Converts the used colormap(s) to grayscale (colour-blind).
 %
 %	'Watermark',N
 %		Makes the whole image lighter by a factor of N.
@@ -129,13 +108,13 @@ function varargout=dem(x,y,z,varargin)
 %		and a distance scale (in km).
 %
 %	'Cartesian'
-%		Plots classic basemap-style axis, considering coordinates X and Y
+%		Plots classic basemap-style axis, considering coordinates X and Y 
 %		as cartesian in meters. Use parameter "km' for X/Y in km.
 %
 %	'LatLon'
-%		Plots geographic basemap-style axis in deg/min/sec, considering
-%		coordinates X as longitude and Y as latitude. Axis aspect ratio
-%		will be adjusted to approximatively preserve distances (this is
+%		Plots geographic basemap-style axis in deg/min/sec, considering 
+%		coordinates X as longitude and Y as latitude. Axis aspect ratio 
+%		will be adjusted to approximatively preserve distances (this is  
 %		not a real projection!). This overwrites ZRatio option.
 %
 %	'AxisEqual', 'auto' (default) | 'manual' | 'off'
@@ -143,10 +122,10 @@ function varargout=dem(x,y,z,varargin)
 %		is applied to respect data aspect ratio. Default mode is 'auto' and
 %		uses AXIS EQUAL and DASPECT functions. The 'manual' mode modifies
 %		axes width or height with respect to the paper size in order to
-%		produce correct data scaling at print (but not necessarily at
+%		produce correct data scaling at print (but not necessarily at 
 %		screen). The 'off' mode disables any scaling.
 %
-%	Additionnal options for basemap CARTESIAN, LATLON, and LEGEND:
+%	Additionnal options for basemap CARTESIAN or LATLON:
 %
 %	'BorderWidth',BW
 %		Border width of the basemap axis, in % of axis height. Default is
@@ -167,15 +146,12 @@ function varargout=dem(x,y,z,varargin)
 %		Position of the tick labels: 'southwest' (default), 'southeast',
 %		'northwest','northeast'
 %
-%	'ZUnit',ZU
-%		Sets the elevation unit as string ZU, used when min/max values are
-%		indicated on colorbar legend (default is 'm').
 %
 %	--- Decimation options ---
 %
 %	For optimization purpose, DEM will automatically decimate data to limit
 %	to a total of 1500x1500 pixels images. To avoid this, use following
-%	options, but be aware that large grids may require huge computer
+%	options, but be aware that large grids may require huge computer 
 %	ressources or induce disk swap or memory errors.
 %
 %	'Decim',N
@@ -189,7 +165,7 @@ function varargout=dem(x,y,z,varargin)
 %
 %	--- Informations ---
 %
-%	Colormaps are Mx3 RGB matrix so it is easy to modify contrast
+%	Colormaps are Mx3 RGB matrix so it is easy to modify saturation 
 %	(CMAP.^N), set darker (CMAP/N), lighter (1 - 1/N + CMAP/N), inverse
 %	it (flipud(CMAP)), etc...
 %
@@ -197,44 +173,20 @@ function varargout=dem(x,y,z,varargin)
 %
 %	For backward compatibility, the former syntax is still accepted:
 %	DEM(X,Y,Z,OPT,CMAP,NOVALUE,SEACOLOR) where OPT = [A,C,LC,ZMIN,ZMAX,ZC],
-%	also option aliases DEC, DMS and SCALE, but there is no argument
+%	also option aliases DEC, DMS and SCALE, but there is no argument 
 %	checking. Please prefer the param/value syntax.
 %
-%	Author: FranÃ§ois Beauducel <beauducel@ipgp.fr>
-%
-%	Acknowledgments: Ã‰ric Gayer
-%
+%	Author: François Beauducel <beauducel@ipgp.fr>
 %	Created: 2007-05-17 in Guadeloupe, French West Indies
-%	Updated: 2022-11-26
+%	Updated: 2017-03-29
 
 %	History:
-%	[2022-11-26] v3.2
-%		- fix an issue with 'grayscale' option
-%		- allows duplicate arguments (takes the last one)
-%	[2022-07-26] v3.1
-%		- minor fix for Octave compatibility
-%	[2022-07-21] v3.0
-%		- new option 'shading' (stack method with opacity factor)
-%		- new option 'elevation' (light elevation for stack shading)
-%		- lighting with multiple source azimuth
-%		- graphic improvement of basemap axes corners
-%	[2021-01-08] v2.11
-%		- minor optimization for 'interp' option
-%	[2020-11-29] v2.10
-%		- new option 'grayscale'
-%	[2020-11-25] v2.9
-%		- fix a possible issue with saturation under Matlab < 2014
-%	[2020-06-01] v2.8
-%	    - new option 'saturation' to change colormaps
-%	    - tick label decimals with smaller font size
-%	[2019-06-17] v2.7
-%		- fix an issue for single RGB color in sea/land color option
 %	[2017-03-29] v2.6
-%		- fix in 'lakezmin' option (thanks to Mustafa ï¿½omo?lu)
+%		- fix in 'lakezmin' option (thanks to Mustafa Çomo?lu)
 %	[2017-01-09] v2.5
-%		- new option 'lakezmin' to limit lake detection
+%		- new option 'lakezmin' to limit lake detection 
 %	[2016-12-21] v2.4
-%		- improves the colormap splitting between land and sea
+%		- improves the colormap splitting between land and sea 
 %	[2016-04-19] v2.3
 %		- major update (thanks to mas Wiwit)
 %	[2016-01-31] v2.2
@@ -242,7 +194,7 @@ function varargout=dem(x,y,z,varargin)
 %	[2015-08-22] v2.1
 %		- minor fix (former versions of Matlab compatibility)
 %	[2015-08-19] v2.0
-%		- image is now 100% true color (including the legend colorbar),
+%		- image is now 100% true color (including the legend colorbar), 
 %	      thus completely independent from the figure colormap
 %	[2014-10-14]
 %		- 'decim' option allows oversampling (negative value)
@@ -279,29 +231,29 @@ function varargout=dem(x,y,z,varargin)
 %		- Optimizations: adds a decimation for large DEM grids.
 
 %
-%	Copyright (c) 2007-2022, Franï¿½ois Beauducel, covered by BSD License.
+%	Copyright (c) 2016, François Beauducel, covered by BSD License.
 %	All rights reserved.
 %
-%	Redistribution and use in source and binary forms, with or without
-%	modification, are permitted provided that the following conditions are
+%	Redistribution and use in source and binary forms, with or without 
+%	modification, are permitted provided that the following conditions are 
 %	met:
 %
-%	   * Redistributions of source code must retain the above copyright
+%	   * Redistributions of source code must retain the above copyright 
 %	     notice, this list of conditions and the following disclaimer.
-%	   * Redistributions in binary form must reproduce the above copyright
-%	     notice, this list of conditions and the following disclaimer in
+%	   * Redistributions in binary form must reproduce the above copyright 
+%	     notice, this list of conditions and the following disclaimer in 
 %	     the documentation and/or other materials provided with the distribution
-%
-%	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-%	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-%	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-%	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-%	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-%	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-%	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-%	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-%	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-%	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+%	                           
+%	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+%	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+%	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+%	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+%	LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+%	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+%	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+%	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+%	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+%	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 %	POSSIBILITY OF SUCH DAMAGE.
 
 if nargin < 3
@@ -333,40 +285,20 @@ if length(x) ~= size(z,2) || length(y) ~= size(z,1)
 	error('If Z has a size of [M,N], X must have a length of N, and Y a length of M.')
 end
 
-if size(z,3) == 3
-	rgb = true;
-else
-	rgb = false;
-end
-
 % OPTIONS and PARAM/VALUE arguments
-
-% SHADING param/value
-[s,shading] = checkparam(varargin,'shading',@ischar,{'light','stack'});
-nargs = nargs + 2;
-if s==0
-	shading = 'light'; % default
-end
-
-% OPACITY param/value
-[s,opacity] = checkparam(varargin,'opacity',@isscalar);
-nargs = nargs + 2;
-if s==0
-	opacity = .5; % default
-end
-
+			
 % AZIMUTH param/value
-[s,az] = checkparam(varargin,'azimuth',@isvec);
+[s,az] = checkparam(varargin,'azimuth',@isscalar);
 nargs = nargs + 2;
 if s==0
-	az = [-45,45]; % default
+	az = -45; % default
 end
 
-% ZENITH param/value
+% ELEVATION param/value
 [s,el] = checkparam(varargin,'elevation',@isscalar);
 nargs = nargs + 2;
 if s==0
-	el = 45; % default
+	el = 0; % default
 end
 
 % CONTRAST param/value
@@ -382,7 +314,7 @@ end
 [s,lcut] = checkparam(varargin,'lcut',@isperc);
 nargs = nargs + 2;
 if s==0
-	lcut = 0; % default
+	lcut = .2; % default
 end
 
 % NOVALUE param/value
@@ -465,15 +397,6 @@ if s==0
 	zratio = 1; % default
 end
 
-% SATURATION param/value
-[s,csat] = checkparam(varargin,'saturation',@isscalar);
-nargs = nargs + 2;
-if s
-	csat = abs(csat);
-else
-	csat = 1; % default
-end
-
 % WATERMARK param/value
 [s,wmark] = checkparam(varargin,'watermark',@isscalar);
 nargs = nargs + 2;
@@ -538,13 +461,6 @@ if s==0
 	tpos = 'southwest'; % default
 end
 
-% ZUNIT param/value
-[s,zunit] = checkparam(varargin,'zunit',@ischar);
-nargs = nargs + 2;
-if s==0
-	zunit = 'm'; % default
-end
-
 % AXISEQUAL param/value
 [s,axeq] = checkparam(varargin,'axisequal',@ischar,{'auto','manual','off'});
 nargs = nargs + 2;
@@ -555,20 +471,6 @@ end
 % CROP param/value
 [s,crop] = checkparam(varargin,'crop',@isvec,4);
 nargs = nargs + 2;
-
-% CLRGB param/value
-[s,clrgb] = checkparam(varargin,'CLRGB',@isrgb);
-nargs = nargs + 2;
-if s==0
-	clrgb = .5*ones(1,3); % default (mid-grey)
-end
-
-% CLLEVEL param/value
-[s,cllevel] = checkparam(varargin,'CLLevel',@isvec,1:2);
-nargs = nargs + 2;
-if s==0
-	cllevel = [0 0]; % default (auto)
-end
 
 % options without argument value
 km = any(strcmpi(varargin,'km'));
@@ -581,11 +483,10 @@ lake = any(strcmpi(varargin,'lake')) || lake;
 fbold = any(strcmpi(varargin,'fontbold'));
 noplot = any(strcmpi(varargin,'noplot'));
 clines = any(strcmpi(varargin,'contourlines'));
-gscale = any(strcmpi(varargin,'grayscale'));
 
 
 % for backward compatibility (former syntax)...
-nargs = nargs + dec + dms + scale + kmscale + inter + lake + km + fbold + noplot + clines + gscale;
+nargs = nargs + dec + dms + scale + kmscale + inter + lake + km + fbold + noplot + clines;
 
 if (nargin - nargs) > 3 && ~isempty(varargin{1})
 	opt = varargin{1};
@@ -645,7 +546,7 @@ if numel(crop)==4
 	ky = find(y >= crop(3) & y <= crop(4));
 	x = x(kx);
 	y = y(ky);
-	z = z(ky,kx,:);
+	z = z(ky,kx);
 end
 
 % decimates data to avoid disk swap/out of memory...
@@ -658,7 +559,7 @@ end
 if n > 1
 	x = x(1:n:end);
 	y = y(1:n:end);
-	z = z(1:n:end,1:n:end,:);
+	z = z(1:n:end,1:n:end);
 	fprintf('DEM: data has been decimated by a factor of %d...\n',n);
 end
 
@@ -689,14 +590,14 @@ if decim && n < 0
 	fprintf('DEM: data has been oversampled by a factor of %d...\n',-n);
 end
 
-if ~rgb && inter
+if inter
 	z = fillgap(x,y,z);
 end
 
 % -------------------------------------------------------------------------
 % --- Process lighting
 
-if ~rgb && dz > 0
+if dz > 0
 	% first check if colormaps have the minimum required size
 	if size(csea,1) < 2
 		csea = repmat(csea,256,1);
@@ -720,46 +621,40 @@ if ~rgb && dz > 0
 			cmap = csea;
 		end
 	end
-
+	
 	% normalisation of Z using CMAP and convertion to RGB
-	I = ind2rgb(uint16(min(max((z - zmin)/dz,0),1)*(size(cmap,1)-1)),cmap);
-
+	I = ind2rgb(uint16(round((z - zmin)*(size(cmap,1) - 1)/dz) + 1),cmap);
+	
 	if ct > 0
-		dx = diff(x(1:2));
-		dy = diff(y(1:2));
+		% computes lighting from elevation gradient
+		%[fx,fy] = gradient(z,x,y);
 		if dms
-			dx = dx*degkm*1000;
-			dy = dy*degkm*1000*cosd(mean(y));
+			ryz = degkm*1000;
+			rxz = degkm*1000*cosd(mean(y));
 		else
-			dx = zratio*dx;
-			dy = zratio*dy;
+			rxz = zratio;
+			ryz = zratio;
 		end
-		% computes lighting from hillshade ArcGIS algotithm
-		shadow = hillshade(z,az,el,dx,dy,shading);
+		[xx,yy] = meshgrid(x*rxz,y*ryz);
+		[fx,fy,fz] = surfnorm(xx,yy,z);
+		[ux,uy,uz] = sph2cart((90-az)*pi/180,el*pi/180,1);
+		fxy = fx*ux + fy*uy + fz*uz;
+		clear xx yy fx fy fz	% free some memory...
+		
+		fxy(isnan(fxy)) = 0;
 
 		% computes maximum absolute gradient (median-style), normalizes,
 		% saturates and duplicates in 3-D matrix
-		r = repmat(max(min(shadow/nmedian(abs(shadow),1 - lcut/100),1),-1),[1,1,3]);
-		%r = repmat(max(min(fxy/diff(nmedian(fxy,[lcut/100,1 - lcut/100])),1),-1),[1,1,3]);
-		%r = repmat(fxy,[1,1,3]);
-
-		switch shading
-			case 'light'
-				% applies contrast using exponent
-				rp = (1 - abs(r)).^ct;
-
-				% darker for negative hillshade
-				%I(r<0) = I(r<0).*(1 - abs(r(r<0)));
-				I = I.*rp;
-
-				% lighter for positive gradient
-				I(r>0) = I(r>0) + (1 - rp(r>0));
-			otherwise
-				% applies contrast using exponent
-				rp = ((r - min(r(:)))/diff(minmax(r))).^(ct*2);
-				% applies transparency
-				I = opacity*I + (1-opacity)*rp;
-		end
+		li = 1 - abs(sind(el)); % light amplitude (experimental)
+		r = repmat(max(min(li*fxy/nmedian(abs(fxy),1 - lcut/100),1),-1),[1,1,3]);
+		rp = (1 - abs(r)).^ct;
+	
+		% applies contrast using exponent
+		I = I.*rp;
+	
+		% lighter for positive gradient
+		I(r>0) = I(r>0) + (1 - rp(r>0));
+				
 	end
 
 	% set novalues / NaN to nancolor
@@ -767,7 +662,7 @@ if ~rgb && dz > 0
 	if ~isempty(i)
 		I(sub2ind(size(I),repmat(i,1,3),repmat(j,1,3),repmat(1:3,size(i,1),1))) = repmat(novalue_color,size(i,1),1);
 	end
-
+	
 	% lake option
 	if lake
         klake = islake(z);
@@ -777,7 +672,7 @@ if ~rgb && dz > 0
 	else
 		klake = 0;
 	end
-
+	
 	% set the seacolor (upper color) for 0 values
 	if ~isempty(csea)
 		[i,j] = find(z==0 | klake);
@@ -786,45 +681,22 @@ if ~rgb && dz > 0
 		end
 	end
 
+	if wmark
+		I = watermark(I,wmark);
+	end
 	txt = '';
-
-elseif rgb
-	I = z;
-	txt = '';
-
+	
 else
+	
 	I = repmat(shiftdim(sea_color,-1),size(z));
 	cmap = repmat(sea_color,[256,1]);
 	txt = 'Mak Byur!';	% Splash !
 end
 
 % -------------------------------------------------------------------------
-% --- applies saturation, grayscale and watermark to image and cmap (for legend)
-
-if gscale
-	I = rgb2gray(I);
-	cmap = rgb2gray(cmap);
-end
-
-if csat~=1
-	I = saturation(I,csat);
-	cmap = saturation(cmap,csat);
-end
-
-if wmark
-	I = watermark(I,wmark);
-	cmap = watermark(cmap,wmark);
-end
-
-if strcmpi(shading,'stack')
-	cmap = cmap*opacity + sind(el)*(1 - opacity);
-end
-
-
-% -------------------------------------------------------------------------
 % --- ends the function when 'noplot' option is on
 if noplot
-	varargout{1} = struct('x',x,'y',y,'z',z,'rgb',I,'cmap',cmap);
+	varargout{1} = struct('x',x,'y',y,'z',z,'rgb',I);
 	return
 end
 
@@ -847,7 +719,7 @@ ylim = [min(y),max(y)];
 zlim = [min([z(z(:) ~= novalue);zmin]),max([z(z(:) ~= novalue);zmax])];
 
 if dms
-	% approximates X-Y aspect ratio for this latitude (< 20-m precision for 1x1ï¿½ grid)
+	% approximates X-Y aspect ratio for this latitude (< 20-m precision for 1x1° grid)
 	xyr = cos(mean(y)*pi/180);
 else
 	xyr = 1;
@@ -882,13 +754,11 @@ if dec || dms
 	end
 
 	if bw > 0
-		% transparent borders with diagonal lines
-		hold on
-		patch(xlim([1,1,2,2]),ylim([1,2,2,1]),'k','FaceColor','none','clipping','off')
-		patch(xlim([1,1,2,2]) + bwx*[-1,-1,1,1],ylim([1,2,2,1]) + bwy*[-1,1,1,-1],'k','FaceColor','none','clipping','off')
-		plot(repmat(xlim(1) + bwx*[-1;0],1,2),repmat(ylim,2,1) + bwy*[-1,1;0,0],'k-','clipping','off')
-		plot(repmat(xlim(2) + bwx*[1;0],1,2),repmat(ylim,2,1) + bwy*[-1,1;0,0],'k-','clipping','off')
-		hold off
+		% transparent borders
+		patch([xlim(1)-bwx,xlim(2)+bwx,xlim(2)+bwx,xlim(1)-bwx],ylim(1) - bwy*[0,0,1,1],'k','FaceColor','none','clipping','off')
+		patch([xlim(1)-bwx,xlim(2)+bwx,xlim(2)+bwx,xlim(1)-bwx],ylim(2) + bwy*[0,0,1,1],'k','FaceColor','none','clipping','off')
+		patch(xlim(1) - bwx*[0,0,1,1],[ylim(1)-bwy,ylim(2)+bwy,ylim(2)+bwy,ylim(1)-bwy],'k','FaceColor','none','clipping','off')
+		patch(xlim(2) + bwx*[0,0,1,1],[ylim(1)-bwy,ylim(2)+bwy,ylim(2)+bwy,ylim(1)-bwy],'k','FaceColor','none','clipping','off')
 	end
 	dlon = {'E','W'};
 	dlat = {'N','S'};
@@ -897,32 +767,23 @@ if dec || dms
 	else
 		fw = 'normal';
 	end
-
+	
 	if ddx == 0
 		ddx = dtick(diff(xlim),dms);
-		ddxn = 0;
-	else
-		ddxn = double(ddx<0);
-		ddx = abs(ddx);
 	end
 	if ddy == 0
 		ddy = dtick(diff(ylim),dms);
-		ddyn = 0;
-	else
-		ddyn = double(ddy<0);
-		ddy = abs(ddy);
 	end
-   	xtick = (ddx*ceil(xlim(1)/ddx)):ddx:xlim(2);
+	xtick = (ddx*ceil(xlim(1)/ddx)):ddx:xlim(2);
 	for xt = xtick(1:2:end)
 		dt = ddx - max(0,xt + ddx - xlim(2));
-		dt2 = ddx - max(0,xt + ddx - bwx - xlim(2));
-		patch(repmat(xt + [0,dt,dt2,0]',[1,2]),[ylim(1) - bwy*[0,0,1,1];ylim(2) + bwy*[0,0,1,1]]','k','clipping','off')
+		patch(repmat(xt + dt*[0,1,1,0]',[1,2]),[ylim(1) - bwy*[0,0,1,1];ylim(2) + bwy*[0,0,1,1]]','k','clipping','off')
 		if fs > 0
 			if ~isempty(regexp(tpos,'north','once'))
-				text(xt + dt*ddxn,ylim(2) + 1.2*bwy,deg2dms(xt + dt*ddxn,dlon,dec,fs),'FontSize',fs,'FontWeight',fw, ...
+				text(xt,ylim(2) + 1.2*bwy,deg2dms(xt,dlon,dec),'FontSize',fs,'FontWeight',fw, ...
 					'HorizontalAlignment','center','VerticalAlignment','bottom');
 			else
-				text(xt + dt*ddxn,ylim(1) - 1.2*bwy,deg2dms(xt + dt*ddxn,dlon,dec,fs),'FontSize',fs,'FontWeight',fw, ...
+				text(xt,ylim(1) - 1.2*bwy,deg2dms(xt,dlon,dec),'FontSize',fs,'FontWeight',fw, ...
 					'HorizontalAlignment','center','VerticalAlignment','top');
 			end
 		end
@@ -931,14 +792,13 @@ if dec || dms
 	ytick = (ddy*ceil(ylim(1)/ddy)):ddy:ylim(2);
 	for yt = ytick(1:2:end)
 		dt = ddy - max(0,yt + ddy - ylim(2));
-		dt2 = ddy - max(0,yt + ddy - bwy - ylim(2));
-		patch([xlim(1) - bwx*[0,0,1,1];xlim(2) + bwx*[0,0,1,1]]',repmat(yt + [0,dt,dt2,0]',[1,2]),'k','clipping','off')
+		patch([xlim(1) - bwx*[0,0,1,1];xlim(2) + bwx*[0,0,1,1]]',repmat(yt + dt*[0,1,1,0]',[1,2]),'k','clipping','off')
 		if fs > 0
 			if ~isempty(regexp(tpos,'east','once'))
-				text(xlim(2) + 1.2*bwx,yt + dt*ddyn,deg2dms(yt + dt*ddyn,dlat,dec,fs),'FontSize',fs,'FontWeight',fw, ...
+				text(xlim(2) + 1.2*bwx,yt,deg2dms(yt,dlat,dec),'FontSize',fs,'FontWeight',fw, ...
 					'HorizontalAlignment','center','VerticalAlignment','top','rotation',90);
 			else
-				text(xlim(1) - 1.2*bwx,yt + dt*ddyn,deg2dms(yt + dt*ddyn,dlat,dec,fs),'FontSize',fs,'FontWeight',fw, ...
+				text(xlim(1) - 1.2*bwx,yt,deg2dms(yt,dlat,dec),'FontSize',fs,'FontWeight',fw, ...
 					'HorizontalAlignment','center','VerticalAlignment','bottom','rotation',90);
 			end
 		end
@@ -953,22 +813,13 @@ if clines
 	dz = diff(zlim);
 	% empirical ratio between horizontal extent and elevation interval (dz)
 	%rzh = dz/min(diff(x([1,end]))*cosd(mean(dlat)),diff(y([1,end])))/degkm/4e2;
-	% major level lines
-	if cllevel(1)==0
-		dd = dtick(dz);
-	else
-		dd = abs(cllevel(1));
-	end
+	dd = dtick(dz);
 	dz0 = ceil(zlim(1)/dd)*dd:dd:floor(zlim(2)/dd)*dd;
 	dz0(ismember(0,dz0)) = [];	% eliminates 0 value
-	% minor level lines
-	if numel(cllevel)<2 || cllevel(2)==0
-		dd = dtick(dz/5);
-	else
-		dd = abs(cllevel(2));
-	end
+	dd = dtick(dz/5);
 	dz1 = ceil(zlim(1)/dd)*dd:dd:floor(zlim(2)/dd)*dd;
 	dz1(ismember(dz1,dz0)) = [];	% eliminates minor ticks in major ticks
+	clrgb = .3*ones(1,3);
 	hold on
 	[~,h] = contour(x,y,z,[0,0,dz1],'-','Color',clrgb);
 	set(h,'LineWidth',0.1);
@@ -990,13 +841,16 @@ xsc = xlim(2) + wsc*2 + bwx;
 
 if scale
 
+	if wmark
+		cmap = watermark(cmap,wmark);
+	end
+
 	% -- elevation scale (colorbar)
 	zscale = linspace(zmin,zmax,length(cmap))';
 	yscale = linspace(0,diff(ylim)/2,length(cmap));
 	ddz = dtick(dz*max(0.5*xyr*diff(xlim)/yscale(end),1));
 	ztick = (ddz*ceil(zscale(1)/ddz)):ddz:zscale(end);
-	rgbscale = ind2rgb(uint16(min(max((zscale - zmin)/dz,0),1)*(size(cmap,1)-1)),cmap);
-
+ 	rgbscale = ind2rgb(uint16(round((zscale - zmin)*(size(cmap,1) - 1)/dz) + 1),cmap);
 	ysc = ylim(1);
 	hold on
 	imagesc(xsc + wsc*[-1,1]/2,ysc + yscale,repmat(rgbscale,1,2),'clipping','off');
@@ -1004,16 +858,16 @@ if scale
 	text(xsc + 2*wsc + zeros(size(ztick)),ysc + (ztick - zscale(1))*0.5*diff(ylim)/diff(zscale([1,end])),num2str(ztick'), ...
 		'HorizontalAlignment','left','VerticalAlignment','middle','FontSize',fs*.75)
 	% indicates min and max Z values
-	text(xsc,ysc - bwy/2,sprintf('%g %s',roundsd(zlim(1),3),zunit),'FontWeight','bold', ...
+	text(xsc,ysc - bwy/2,sprintf('%g m',roundsd(zlim(1),3)),'FontWeight','bold', ...
 		'HorizontalAlignment','left','VerticalAlignment','top','FontSize',fs*.75)
-	text(xsc,ysc + .5*diff(ylim) + bwy/2,sprintf('%g %s',roundsd(zlim(2),3),zunit),'FontWeight','bold', ...
+	text(xsc,ysc + .5*diff(ylim) + bwy/2,sprintf('%g m',roundsd(zlim(2),3)),'FontWeight','bold', ...
 		'HorizontalAlignment','left','VerticalAlignment','bottom','FontSize',fs*.75)
-
+	
 	% frees axes only if not hold on
 	if ~holdon
 		hold off
 	end
-
+	
 end
 
 if scale || kmscale
@@ -1059,43 +913,6 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function shadow=hillshade(z,az,el,dx,dy,method)
-%HILLSHADE Illumination of a surface
-%	SHADOW=HILLSHADE(Z,AZ,EL) computes the hypothetical illumination of a
-%	surface given by a grid Z, using light azimuth AZ (in degree from North) and
-%	light elevation (altitude) EL (in degree from horizon).
-
-% zenith angle
-if strcmpi(method,'light')
-	zenith = pi/2;
-else
-	zenith = (90 - el)*pi/180;
-end
-
-% azimuth angle
-azimuth = (360 - az + 90)*pi/180;
-
-fx = conv2(z,[-1,0,1;-2,0,2;-1,0,1]/8/dx,'same');
-fy = conv2(z,[-1,-2,-1;0,0,0;1,2,1]/8/dy,'same');
-slope = atan(sqrt(fx.^2 + fy.^2));
-aspect = atan2(fy,fx);
-%k0 = (aspect < 0);
-%aspect(k0) = aspect(k0) + 2*pi;
-%aspect(fx == 0 & fy > 0) = pi/2;
-%aspect(fx == 0 & fy < 0) = 2*pi - pi/2;
-
-shadow = zeros([size(fx),numel(azimuth)]);
-for n = 1:numel(azimuth)
-	shadow(:,:,n) = (cos(zenith).*cos(slope) + sin(zenith).*sin(slope).*cos(azimuth(n) - aspect));
-end
-if numel(azimuth) > 1
-	shadow = max(shadow,[],3);
-end
-
-shadow(isnan(shadow)) = 0;
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function y = nmedian(x,n)
 %NMEDIAN Generalized median filter
 %	NMEDIAN(X,N) sorts elemets of X and returns N-th value (N normalized).
@@ -1107,7 +924,8 @@ function y = nmedian(x,n)
 if nargin < 2
 	n = 0.5;
 end
-y = interp1(sort(x(:)),n*(numel(x)-1) + 1);
+y = sort(x(:));
+y = interp1(sort(y),n*(length(y)-1) + 1);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1141,21 +959,15 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function s = deg2dms(x,ll,dec,fs)
+function s = deg2dms(x,ll,dec)
 %DEG2DMS Degree/minute/second display
 
-% smaller font for decimals
-fs2 = sprintf('\\fontsize{%d}',round(fs/1.25));
-
 if dec
-	ss = split(sprintf('%1.7g',x),'.');
-	s = fliplr(regexprep(fliplr(ss{1}),'(\d{3})','$1 '));
-	if length(ss) > 1
-		s = sprintf('%s.{%s%s}',s,fs2,ss{2});
-	end
+	s = sprintf('%7.7g',x);
 else
 	xa = abs(x) + 1/360000;
- 	sd = sprintf('%d%c',floor(xa),176);	% ASCII char 176 is the degree sign
+	%sd = sprintf('%d%c',floor(xa),176);	% ASCII char 176 is the degree sign
+	sd = sprintf('%d°',floor(xa));
 	sm = '';
 	ss = '';
 	if mod(x,1)
@@ -1169,117 +981,29 @@ else
 			end
 		end
 	end
-	s = sd;
-	if ~isempty(sm) || ~isempty(ss)
-		s = [s,'{',fs2,sm,ss,'}'];
-	end
-	s = [s,ll{1+int8(x<0)}];
-end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function y = watermark(x,n)
-% makes colormap x watermark of ratio n
-if nargin < 2
-	n = 2;
-end
-
-if n == 0
-    y = x;
-else
-    y = (x/n + 1 - 1/n);
-end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function y=saturation(x,n)
-% changes the color saturation by ratio n
-
-% first needs to convert from RGB to HSV
-if ndims(x) == 3
-	r = x(:,:,1);
-	g = x(:,:,2);
-	b = x(:,:,3);
-	mx = max(x,[],3); % max(r,g,b)
-	mn = min(x,[],3); % min(r,g,b)
-else
-	r = x(:,1);
-	g = x(:,2);
-	b = x(:,3);
-	mx = max(x,[],2); % max(r,g,b)
-	mn = min(x,[],2); % min(r,g,b)
-end
-
-s = zeros(size(r));
-h = zeros(size(r));
-dt = mx - mn;
-v = mx;
-
-k = mx>0 & dt>0;
-if any(k(:))
-	s(k) = dt(k)./mx(k);
-	kr = (k & mx==r);
-	kg = (k & mx==g);
-	kb = (k & mx==b);
-	h(kr) = mod(60*(g(kr) - b(kr))./dt(kr),360);
-	h(kg) = 60*(b(kg) - r(kg))./dt(kg) + 120;
-	h(kb) = 60*(r(kb) - g(kb))./dt(kb) + 240;
-end
-
-% changes the saturation channel
-s = s*n;
-s(s>1) = 1;
-
-% converting back from HSV to RGB
-hi = mod(floor(h/60),6);
-f = h/60 - hi;
-l = v.*(1 - s);
-m = v.*(1 - f.*s);
-n = v.*(1 - (1 - f).*s);
-
-% default for hi == 0
-r = v; g = n; b = l;
-
-k = hi==1;
-r(k) = m(k); g(k) = v(k); b(k) = l(k);
-k = hi==2;
-r(k) = l(k); g(k) = v(k); b(k) =n(k);
-k = hi==3;
-r(k) = l(k); g(k) = m(k); b(k) = v(k);
-k = hi==4;
-r(k) = n(k); g(k) = l(k); b(k) = v(k);
-k = hi==5;
-r(k) = v(k); g(k) = l(k); b(k) = m(k);
-
-y = cat(ndims(x),r,g,b);
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function y=rgb2gray(x)
-% removes color information
-
-if ndims(x) == 3
-	y = repmat(0.2989*x(:,:,1) + 0.5870*x(:,:,2) + 0.1140*x(:,:,3),[1,1,3]);
-else
-	y = repmat(0.2989*x(:,1) + 0.5870*x(:,2) + 0.1140*x(:,3),[1,3]);
+	s = [sd,sm,ss,ll{1+int8(x<0)}];
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function z = fillgap(x,y,z)
-% This function reproduces the core of NANINTERP2
+% GRIDDATA is not efficient for large arrays, but has great advantage to be
+% included in Matlab's core functions! To optimize interpolation, we
+% reduce the amount of relevant data by building a mask of all surrounding
+% pixels of novalue areas... playing with linear index!
 
 sz = size(z);
 k = find(isnan(z));
 k(k == 1 | k == numel(z)) = []; % removes first and last index (if exist)
 if ~isempty(k)
 	[xx,yy] = meshgrid(x,y);
-	mask = false(sz);
+	mask = zeros(sz,'int8');
 	k2 = ind90(sz,k); % k2 is linear index in the row order
 	% sets to 1 every previous and next index, both in column and row order
-	mask([k-1;k+1;ind90(fliplr(sz),[k2-1;k2+1])]) = true;
-	mask(k) = false; % removes the novalue index
-	z(k) = griddata(xx(mask),yy(mask),z(mask),xx(k),yy(k));
+	mask([k-1;k+1;ind90(fliplr(sz),[k2-1;k2+1])]) = 1; 
+	mask(k) = 0; % removes the novalue index
+	kb = find(mask); % keeps only border values
+	z(k) = griddata(xx(kb),yy(kb),z(kb),xx(k),yy(k));
 end
 
 
@@ -1299,7 +1023,7 @@ function k = islake(z)
 
 dx = diff(z,1,2);	% differences in X direction
 dy = diff(z,1,1);	% differences in Y direction
-u1 = ones(size(z,1),1);	% row unit vector
+u1 = ones(size(z,1),1);	% row unit vector 
 u2 = ones(1,size(z,2));	% column unit vector
 u2r = u2(2:end);
 
@@ -1348,7 +1072,7 @@ function s = isvec(x,n)
 if nargin < 2
 	n = 2;
 end
-if isnumeric(x) && (nargin > 1 && any(numel(x) == n) || numel(x) > 0)
+if isnumeric(x) && numel(x) == n
 	s = 1;
 else
 	s = 0;
@@ -1361,6 +1085,20 @@ function y=roundsd(x,n)
 og = 10.^(floor(log10(abs(x)) - n + 1));
 y = round(x./og).*og;
 y(x==0) = 0;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function y = watermark(x,n)
+
+if nargin < 2
+	n = 2;
+end
+
+if n == 0
+    y = x;
+else
+    y = (x/n + 1 - 1/n);
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1395,7 +1133,7 @@ end
 
 s = 0;
 v = [];
-k = find(strcmpi(arg,nam),1,'last');
+k = find(strcmpi(arg,nam));
 if ~isempty(k)
 	if (k + 1) <= length(arg) ...
 			&& (~num || isnumeric(arg{k+1})) ...
@@ -1422,5 +1160,4 @@ n = numel(c);
 ss = cell(2,n);
 ss(1,:) = reshape(c,1,n);
 ss(2,1:n-1) = {d};
-ss{end} = '';
 s = [ss{:}];

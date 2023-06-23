@@ -1,6 +1,6 @@
 function s = field2str(x,f,s0,varargin)
 %FIELD2STR Convert structure field to string
-%	FIELD2STR(X,FIELD) checks existence of structure field X.(FIELD) and
+%	FIELD2STR(X,FIELD) checks existance of structure field X.(FIELD) and
 %	return the string content.
 %
 %	FIELD2STR(X,FIELD,S0) returns S0 string if the convertion fails (default
@@ -14,9 +14,9 @@ function s = field2str(x,f,s0,varargin)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2016-01-29 at BPPTKG, Yogyakarta Indonesia
-%	Updated: 2020-11-19
+%	Updated: 2019-05-22
 
-if nargin < 2 && ~isstruct(x) && ~ischar(f)
+if nargin < 2 && ~isstruct(x) & ~ischar(f)
 	error('Arguments X must be a structure and FIELD a string.')
 end
 

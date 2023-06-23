@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2021-01-01
+%	Updated: 2020-04-05
 
 
 WO = readcfg;
@@ -71,7 +71,7 @@ if nargin < 1
 	error('%s: must define PROC name.',wofun);
 end
 
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename,varargin{:});
 timelog(procmsg,1);
 
 

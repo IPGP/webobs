@@ -1,0 +1,5 @@
+#!/bin/bash
+
+eval $(./WebObsConfig.pl);
+printenv | grep 'WEBOBS_';
+

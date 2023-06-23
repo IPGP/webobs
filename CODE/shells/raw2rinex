@@ -15,14 +15,14 @@
 #          gunzip with .gz files
 #           unzip with .zip files
 #         CRX2RNX with Hatanaka files
-#    	 runpkr00 with some Trimble .T02 files
+#    	   runpkr00 with some Trimble .T02 files
 # cnvrnx3-rnx2-v3 with Rinex v.3 files, source available at
 #                 http://acc.igs.org/misc/cnvrnx3-rnx2-v3.f
 #
 #
 # Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
 # Created: 2014-01-12
-# Updated: 2023-04-24
+# Updated: 2020-08-10
 
 if [ $# -lt 2 ]; then
 	echo "raw2rinex input output [teqc options]"
@@ -67,7 +67,8 @@ do
 done
 
 # --- try rinex files
-rf=$(find $tmpdir -iname "*.??o" | sort )
+wc="*.??o"
+rf=$(find $tmpdir -name "$wc" | sort )
 if [ ! -z "$rf" ]; then
 	echo "   Found some Rinex files in $rawdir: proceeding..."
 	# must convert Rinex 3 files
@@ -80,9 +81,9 @@ if [ ! -z "$rf" ]; then
 			fi
 		fi
 	done
+	wildcard=$wc
 	rawfiles=$rf
-	obsfiles=$(find $tmpdir -iname "*.??o" | sort )
-	navfiles=$(find $tmpdir -iname "*.??n" | sort )
+	navfiles=$(find $tmpdir -name "*.??n" | sort )
 	teqcfmt=""
 fi
 
@@ -98,37 +99,39 @@ if [ ! -z "$rf" ]; then
 		fi
 		CRX2RNX $f -f
 	done
-	rawfiles=$(find $tmpdir -iname "*.??o" | sort )
-	obsfiles=$rawfiles
+	wildcard="*.??o"
+	rawfiles=$(find $tmpdir -name "$wildcard" | sort )
 	navfiles=""
 	teqcfmt=""
 fi
 # try Leica mdb...
-rf=$(find $tmpdir -name "*.m??" | sort )
+wc="*.m??"
+rf=$(find $tmpdir -name "$wc" | sort )
 if [ ! -z "$rf" ]; then
 	echo "   Found some Leica files in $rawdir: proceeding..."
+	wildcard=$wc
 	rawfiles=$rf
-	obsfiles=$(find $tmpdir -iname "*.m??" | sort )
-	navfiles=$rawfiles
+	navfiles="$rawfiles"
 	teqcfmt="-lei mdb"
 fi
 
 # try Trimble T02...
-rf=$(find $tmpdir -name "*.T02" | sort )
+wc="*.T02"
+rf=$(find $tmpdir -name "$wc" | sort )
 if [ ! -z "$rf" ]; then
 	echo "   Found some Trimble files in $rawdir: proceeding..."
 	# must convert T02 to dat
 	for f in $rf; do
 		runpkr00 -d $f
 	done
-	rawfiles=$(find $tmpdir -iname "*.dat" | sort )
-	obsfiles=$rawfiles
-	navfiles=$rawfiles
+	wildcard="*.dat"
+	rawfiles=$(find $tmpdir -name "$wildcard" | sort )
+	navfiles="$rawfiles"
 	teqcfmt="-tr d"
 fi
 
 if [ -z "$rawfiles" ]; then
-	echo "No valid GNSS file found in $rawdir... abort."
+	echo "No valid GNSS file found in $1... abort."
 	exit
 fi
 
@@ -138,9 +141,9 @@ tmpnav=$tmpdir/nav
 
 # --- converts rawfiles to single daily Rinex
 if [ ! -z $VERBOSE ]; then
-	echo "teqc $teqcfmt $teqcopt $obsfiles > $tmprnx"
+	echo "teqc $teqcfmt $teqcopt $tmpdir/$wildcard > $tmprnx"
 fi
-teqc $teqcfmt $teqcopt $obsfiles > $tmprnx
+teqc $teqcfmt $teqcopt $tmpdir/$wildcard > $tmprnx
 
 # case A: output directory specified => archiving rinex with proper names (obs and nav)
 if [ -d $outdir ]; then
@@ -171,6 +174,4 @@ else
 	cp -f $tmprnx $outdir
 fi
 
-if [ -z $VERBOSE ]; then
-	rm -rf $tmpdir
-fi
+rm -rf $tmpdir

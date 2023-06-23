@@ -1,8 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/perl 
 
 =head1 NAME
 
-vsearch.pl
+vsearch.pl 
 
 =head1 SYNOPSIS
 
@@ -13,7 +13,7 @@ http://..../vsearch.pl?target=type.grid[.node]&str=text&in=category&lop=[AND|OR]
 Search for a B<text string> into node events, selecting one B<category> and sorting results Create or update or delete an B<event> file or B<Project> file of a grid or node. Possibility to add a second B<text string> and B<category> using logical operator B<AND> or B<OR>.
 See WebObs/Events.pm for a description of the events-directories structures.
 
-=over
+=over 
 
 =item B<target=type.grid[.node]>
 
@@ -60,13 +60,13 @@ Text string to be searched as second criteria (regex for any category but author
 =item B<sort=category>
 
 
-=item B<max=maxres>
+=item B<max=maxres> 
 
 maxres is maximum number of event to be displayed in the results page.
 The list of available numbers is defined by EVENT_SEARCH_MAXDISPLAY_LIST in CONF/NODES.rc
+	
 
-
-=item B<from=firstresnb>
+=item B<from=firstresnb> 
 
 firstresnb is the index of first result to be displayed.
 
@@ -114,9 +114,6 @@ my $in2    = $QryParm->{'in2'}    // $NODES{EVENT_SEARCH_DEFAULT2};
 my $sort   = $QryParm->{'sort'}   // "startdatedec";
 my $max    = $QryParm->{'max'}    // "15";
 my $from   = $QryParm->{'from'}   // "1";
-my $showg  = $QryParm->{'showg'}  // "";
-my $shown  = $QryParm->{'shown'}  // "";
-my $dump   = $QryParm->{'dump'}   // "";
 
 # predefined lists
 my @catlist = split(/,/,$NODES{EVENT_SEARCH_CATEGORY_LIST});
@@ -125,7 +122,7 @@ if ($#catlist < 0) {
 }
 my %category = (
 	"grid"      => $__{'Grid Name'},
-	"alias"     => $__{'Node Alias/Name'},
+	"alias"     => $__{'Node Alias'},
 	"feature"   => $__{'Node Feature'},
 	"author"    => $__{'Author'},
 	"remote"    => $__{'Remote Operator'},
@@ -137,7 +134,7 @@ my %category = (
 	"outcome"   => $__{'Sensor Outcome'},
 );
 # removes category notebook if option is not set
-delete $category{"notebook"} if (!isok($NODES{EVENTNODE_NOTEBOOK}));
+delete $category{"notebook"} if ($NODES{EVENTNODE_NOTEBOOK} ne "YES");
 
 my %catdisplay;
 foreach my $n (0..$#catlist) {
@@ -158,10 +155,9 @@ my $mmd = $WEBOBS{WIKI_MMD} // 'YES';        # add MMD
 
 my $pagetitle = $__{'Search Node Events'};
 
-my @html;
-my @csv;
 
 # ---- read and search for matching events then store list of event filenames sorted as requested
+
 my @events1;
 my @events2;
 my @events;
@@ -191,7 +187,7 @@ foreach(@events1) {
 		$ok = 1 if (clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
 	}
 	# avoid duplicates and keeps only vents common to the 2 requests in case of AND logical operator
-	if (! grep(/$fname/,@events) && ($lop ne "AND" || $str2 eq "" || grep(/$fname/,@events2))) {
+	if (! grep(/$fname/,@events) && ($lop ne "AND" || $str2 eq "" || grep(/$fname/,@events2))) { 
 		push(@events,$evfname);
 	}
 }
@@ -200,11 +196,11 @@ foreach(@events1) {
 @events = sort sort_by_date @events;
 @events = reverse(@events) if ($sort eq "startdateinc");
 
-$from = ($#events+1) if (($from - 1) > $#events);
+$from = ($#events+1) if (($from - 1) > $#events); 
 my $maxdisp = $max;
-$maxdisp = ($#events + 2 - $from) if (($from + $max - 1) > $#events);
+$maxdisp = ($#events + 2 - $from) if (($from + $max - 1) > $#events); 
 
-# ---- html page
+# ---- html page 
 print "Content-type: text/html; charset=utf-8
 
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
@@ -228,7 +224,6 @@ print "<!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
 <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
 <DIV ID=\"helpBox\"></DIV>";
-
 print "<A NAME=\"MYTOP\"></A>";
 print "\n<H1>$pagetitle</H1>\n";
 
@@ -260,10 +255,7 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"$me\" method=\"get\">";
 	foreach (keys(%sortlist)) {
 		print "<OPTION value=\"$_\"".($_ eq $sort ? " selected":"").">$sortlist{$_}</OPTION>";
 	}
-	print "</SELECT><BR>\n";
-	print "Show: <INPUT type=\"checkbox\" name=\"showg\"".($showg ? " checked":"")."> grids";
-	print "&nbsp;&nbsp;<INPUT type=\"checkbox\" name=\"shown\"".($shown ? " checked":"")."> node's name";
-	print "</TH>\n";
+	print "</SELECT></TH>\n";
 	print "<TH style=\"border: none;\">";
 	print "<B>$__{'max diplayed'}: </B><SELECT size=\"1\" name=\"max\" id=\"max\"> ";
 	foreach (@maxlist) {
@@ -289,23 +281,21 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"$me\" method=\"get\">";
 	print "<INPUT type=\"hidden\" name=\"from\" value=\"$from\">\n";
 print "</FORM>\n";
 
-print "<DIV id=\"attente\">$__{'Searching for the data... please wait'}.</DIV>";
-
-# builds the html string
-push(@html,"<TABLE width=\"100%\"><TR><TH></TH>");
-foreach (sort(keys(%catdisplay))) {
-	my ($n,$k) = split(/\|/,$_);
-	push(@html,"<TH>$catdisplay{$_}</TH>") if ($_ != 0 || $showg);
-}
-push(@html,"<TH></TH></TR>\n");
 
 # result part : will read and display only the needed events
 my @finalevents = @events[$from-1 .. ($from + $maxdisp)-2];
 #print "<H3>".join("<br>",@finalevents)."</H3>";
 
+print "<TABLE width=\"100%\"><TR><TH></TH>";
+foreach (sort(keys(%catdisplay))) {
+	my ($n,$k) = split(/\|/,$_);
+	print "<TH>$catdisplay{$_}</TH>";
+}
+print "<TH></TH></TR>\n";
+
 if ($#finalevents < 0 || $finalevents[0] eq "") {
 	@finalevents = ();
-	push(@html,"<TR><TD colspan=\"".(keys(%catdisplay) + 2)."\"><H3>No match.</H3></TD></TR>\n");
+	print "<TR><TD colspan=\"".(keys(%catdisplay) + 2)."\"><H3>No match.</H3></TD></TR>\n";
 }
 
 my %G = WebObs::Grids::listNameGrids;
@@ -331,146 +321,77 @@ foreach(@finalevents) {
 	}
 
 	@lines = readFile("$evfname");
-	my ($aa,$ar,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
-	my @authors = WebObs::Users::userName(@$aa);
-	my @remotes = WebObs::Users::userName(@$ar);
-	shift(@lines); # shift header line
-	my $comment = wiki2html(join("",@lines));
-	shift(@lines) if (grep($lines[0],'^WebObs:')); # shift Wiki/MMD metadata
 	chomp(@lines);
-	my $commentcsv = join(" • ",@lines);
+	my ($aa,$ar,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
+	my $authors = join("<BR>",WebObs::Users::userName(@$aa));
+	my $remotes = join("<BR>",WebObs::Users::userName(@$ar));
+	shift(@lines);
+	my $comment = wiki2html(join("",@lines));
 	my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
+	my @alias;
+	foreach (@{$NG{$node}}) {
+		push(@alias,"<A href=\"/cgi-bin/showNODE.pl?node=$_.$node#$evrel\" title=\"$_.$node\">$N{ALIAS}</A>");
+	}
+	my @grids;
+	foreach (@{$NG{$node}}) {
+		push(@grids,"<A href=\"/cgi-bin/showGRID.pl?grid=$_\" title=\"$_\"><small>{$_}</small> $G{$_}</A>");
+	}
 	my @nodes;
 	foreach(@{$NG{$node}}) {
 		push(@nodes,"<A href=\"/cgi-bin/vedit.pl?object=$_.$node&event=$evrel&action=upd\"><IMG src=\"/icons/modif.png\" title=\"$__{'Edit...'}\" border=0 alt=\"$__{'Edit...'}\"></A>");
 	}
 
 	my $tds = " class=\"td$n\"";
-
+	
 	# highlights results
-	my $hauthors = join("<BR>",@authors);
-	my $hremotes = join("<BR>",@remotes);
-	my $hfeature = $feature;
-	my $hdate1 = $date1;
-	my $hdate2 = $date2;
-	my $htitle = $title;
 	if ($str ne "") {
-		$hauthors =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "author");
-		$hremotes =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "remote");
-		$hfeature =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "feature");
-		$hdate1 =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "startdate");
-		$hdate2 =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "enddate");
-		$htitle =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "title");
+		$authors =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "author");
+		$remotes =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "remote");
+		$feature =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "feature");
+		$date1 =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "startdate");
+		$date2 =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "enddate");
+		$title =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "title");
 		$comment =~ s/($str)/<SPAN class="sr1">\1<\/SPAN>/ig if ($in eq "comment");
 	}
 	if ($str2 ne "") {
-		$hauthors =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "author");
-		$hremotes =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "remote");
-		$hfeature =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "feature");
-		$hdate1 =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "startdate");
-		$hdate2 =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "enddate");
-		$htitle =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "title");
+		$authors =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "author");
+		$remotes =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "remote");
+		$feature =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "feature");
+		$date1 =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "startdate");
+		$date2 =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "enddate");
+		$title =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "title");
 		$comment =~ s/($str2)/<SPAN class="sr2">\1<\/SPAN>/ig if ($in2 eq "comment");
 	}
 
-	push(@html,"<TR>");
+	print "<TR>";
 	#[FB]: possibility to display all edit links (procs and views)
 	#print "<TD $tds>".join("<BR>",@nodes)."</TD>";
-	push(@html,"<TD $tds>".join("<BR>",$nodes[0])."</TD>");
+	print "<TD $tds>".join("<BR>",$nodes[0])."</TD>";
 
-	my @csvf;
 	foreach (sort(keys(%catdisplay))) {
 		my ($n,$k) = split(/\|/,$_);
 		switch ($k) {
-			case "grid"      {
-				my @grids;
-				my @gridscsv;
-				foreach (@{$NG{$node}}) {
-					push(@grids,"<A href=\"/cgi-bin/showGRID.pl?grid=$_\" title=\"$_\">$G{$_}</A>");
-					push(@gridscsv,$G{$_});
-				}
-				push(@html,"<TD $tds nowrap>".join("<BR>",@grids)."</TD>") if ($showg);
-				push(@csvf,"\"".join(",",@gridscsv)."\"");
-			}
-			case "alias"     {
-				my @alias;
-				my @aliascsv;
-				foreach (@{$NG{$node}}) {
-					push(@alias,"<A href=\"/cgi-bin/showNODE.pl?node=$_.$node#$evrel\" title=\"$_.$node\">$N{ALIAS}</A>".($shown ? " $N{NAME}":"")."");
-					push(@aliascsv,$N{ALIAS});
-				}
-				@alias = ($alias[0]) if (!$showg);
-				push(@html,"<TD $tds title=\"$N{NAME}\">".join("<BR>",@alias)."</TD>");
-				push(@csvf,"\"".join(",",@aliascsv)."\"");
-			}
-			case "feature"   {
-				push(@html,"<TD $tds nowrap>$hfeature</TD>");
-				push(@csvf,"\"$feature\"");
-			}
-			case "author"    {
-				push(@html,"<TD $tds nowrap>$hauthors</TD>");
-				push(@csvf,"\"".join(",",@authors)."\"");
-			}
-			case "remote"    {
-				push(@html,"<TD $tds nowrap>$hremotes</TD>");
-				push(@csvf,"\"".join(",",@remotes)."\"");
-			}
-			case "startdate" {
-				push(@html,"<TD $tds nowrap>$hdate1 $time1</TD>");
-				push(@csvf,"\"$date1 $time1\"");
-			}
-			case "enddate"   {
-				push(@html,"<TD $tds nowrap>$hdate2 $time2</TD>");
-				push(@csvf,"\"$date2 $time2\"");
-			}
-			case "title"     {
-				push(@html,"<TD $tds>$htitle</TD>");
-				push(@csvf,"\"$title\"");
-			}
-			case "comment"   {
-				push(@html,"<TD $tds style=\"text-align:left\">$comment</TD>");
-				push(@csvf,"\"$commentcsv\"");
-			}
-			case "notebook"  {
-				push(@html,"<TD $tds>$notebook</TD>") if (isok($NODES{EVENTNODE_NOTEBOOK}));
-				push(@csvf,"\"$notebook\"");
-			}
-			case "outcome"   {
-				push(@html,"<TD $tds>".($outcome > 0 ? "<IMG src=\"/icons/attention.gif\" border=0 title=\"Potential outcome on sensor/data\">":"")."</TD>");
-				push(@csvf,"\"$outcome\"");
-			}
+			case "grid"      { print "<TD $tds nowrap>".join("<BR>",@grids)."</TD>" }
+			case "alias"     { print "<TD $tds title=\"$N{NAME}\">".join("<BR>",@alias)."</TD>" }
+			case "feature"   { print "<TD $tds nowrap>$feature</TD>" }
+			case "author"    { print "<TD $tds nowrap>$authors</TD>" }
+			case "remote"    { print "<TD $tds nowrap>$remotes</TD>" }
+			case "startdate" { print "<TD $tds nowrap>$date1 $time1</TD>" }
+			case "enddate"   { print "<TD $tds nowrap>$date2 $time2</TD>" }
+			case "title"     { print "<TD $tds>$title</TD>" }
+			case "comment"   { print "<TD $tds style=\"text-align:left\">$comment</TD>" }
+			case "notebook"  { print "<TD $tds>$notebook</TD>" if ($NODES{EVENTNODE_NOTEBOOK} eq "YES") }
+			case "outcome"   { print "<TD $tds>".($outcome > 0 ? "<IMG src=\"/icons/attention.gif\" border=0 title=\"Potential outcome on sensor/data\">":"")."</TD>" }
 		}
 	}
-	push(@csv,join(";",@csvf));
-	push(@html,"<TD $tds>".($#attach > 0 ? "<IMG src=\"/icons/attach.png\" border=0 title=\"$#attach attached document(s)\">":"")."</TD>");
-	push(@html,"</TR>\n");
+	print "<TD $tds>".($#attach > 0 ? "<IMG src=\"/icons/attach.png\" border=0 title=\"$#attach attached document(s)\">":"")."</TD>";
+	print "</TR>\n";
 	$n = ($n + 1) % 2;
 }
 
-push(@html,"</TABLE>\n");
-push(@html,"<P><A id=\"download_link\" download=\"my_exported_file.csv\" href=\"\">$__{'Download as CSV File'}</A></P>\n");
+print "</TABLE>\n";
 
-print(join("\n",@html));
-
-my $csvstring = join('\\n',@csv);
-$csvstring =~ s/'/\\'/g;
-
-print <<"ENDBOTOFPAGE";
-<SCRIPT type="text/javascript">
-	document.getElementById("attente").style.display = "none";
-	var text = '$csvstring';
-	var data = new Blob([text], { type: 'text/csv;charset=utf-8;' });
-	var url = window.URL.createObjectURL(data);
-	document.getElementById('download_link').href = url;
-</SCRIPT>
-<STYLE type="text/css">
-	#attente
-	{ display: none;}
-</STYLE>
-<BR>
-</BODY>
-</HTML>
-ENDBOTOFPAGE
+print "\n</BODY>\n</HTML>\n";
 
 
 ###############################################################################
@@ -495,8 +416,7 @@ sub searchEvents {
 	# grid will look for $str in the grid's NAME configuration
 	if ($in eq "grid") {
 		# search for grid names
-		my @GRIDlist = qx(find $WEBOBS{ROOT_CONF}/PROCS/* -name "*.conf" | xargs awk -F "|" '\$1 == "NAME" && toupper(\$2) ~ /$struc/ { print FILENAME }' | LC_ALL=C sed -e 's|.*CONF/||g;s|PROCS/|PROC.|g;s|VIEWS/|VIEW.|g;s|/.*||g' 2>&1);
-		push(@GRIDlist,qx(find $WEBOBS{ROOT_CONF}/VIEWS/* -name "*.conf" | xargs awk -F "|" '\$1 == "NAME" && toupper(\$2) ~ /$struc/ { print FILENAME }' | LC_ALL=C sed -e 's|.*CONF/||g;s|PROCS/|PROC.|g;s|VIEWS/|VIEW.|g;s|/.*||g' 2>&1));
+		my @GRIDlist = qx(find $WEBOBS{ROOT_CONF}/{PROCS,VIEWS}/* -name "*.conf" | xargs awk -F "|" '\$1 == "NAME" && toupper(\$2) ~ /$struc/ { print FILENAME }' | LC_ALL=C sed -e 's|.*CONF/||g;s|PROCS/|PROC.|g;s|VIEWS/|VIEW.|g;s|/.*||g' 2>&1);
 		chomp(@GRIDlist);
 		if ($#GRIDlist < 0) {
 			$cmd = "";
@@ -546,7 +466,7 @@ sub searchEvents {
 	}
 	# comment will look for $str in event's full text (except header line)
 	if ($in eq "comment") {
-		$cmd = $base."| xargs awk 'FNR>1 && toupper(\$0) ~ /".uc($str)."/ { print FILENAME ; nextfile }'";
+		$cmd = $base."| xargs awk 'toupper(\$0) ~ /".uc($str)."/ NR>1 { print FILENAME ; nextfile }'";
 	}
 
 	@evt = qx($cmd);
@@ -577,7 +497,7 @@ Francois Beauducel, Christophe Brunet
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2019 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

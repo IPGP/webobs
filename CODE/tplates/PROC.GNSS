@@ -49,9 +49,7 @@ DEM_SRTM1|N
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
-# additional options for gridmaps background map
-GRIDMAPS_DEM_OPT|
-# show node alias in insert sub-map(s)
+# do not show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
 # file for background time referenced events
@@ -87,13 +85,9 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 # maximum error on position (in m) before excluding the data from graphs and calculations
 FILTER_MAX_ERROR_M|0.05
 
-# vector of ratios applied to data errors for each orbit (0,1,2 = Final,Rapid,Ultra)
-ORBIT_ERROR_RATIO|1,2
-
 PICKS_CLEAN_PERCENT|0
 TREND_ERROR_MODE|1
-# minimum time window (in percent and/or days) needed to compute a trend
-TREND_MIN_PERCENT|50
+# minimum time window (in days) needed to compute a trend
 TREND_MIN_DAYS|5
 
 # ITRF reference (this is a string displayed on graph title, not functional)
@@ -103,22 +97,8 @@ ITRF_REF|ITRF08
 VELOCITY_REF|0,0,0
 VELOCITY_REF_ORIGIN_DATE|2000-01-01
 
-# defines a main target (latitude,longitude coordinates)
-GNSS_TARGET_LATLON|
-
 # component names used as Y-label for SUMMARY and PERNODE graphs (use '\ ' to avoid word splitting)
 COMPONENT_NAMELIST|Relative Eastern,Relative Northern,Relative Vertical
-# Y-scale for displacement time series plots (in m, 0 is automatic)
-DISP_YSCALE_M|0
-
-# --- Harmonic correction
-HARMONIC_ORIGIN_DATE|
-# period list (day)
-HARMONIC_PERIOD_DAY|
-# pairs of sine,cosine (mm) for each period
-HARMONIC_EAST_SINCOS_MM|
-HARMONIC_NORTH_SINCOS_MM|
-HARMONIC_UP_SINCOS_MM|
 
 # --- PERNODE graphs
 PERNODE_LINESTYLE|o
@@ -143,19 +123,17 @@ SUMMARY_STATION_OFFSET_M|0.01
 BASELINES_HORIZONTAL_ONLY|Y
 # - default behavior: all pairs of nodes, with possible node exclusion and/or node reference list
 BASELINES_EXCLUDED_NODELIST|
-BASELINES_EXCLUDED_FROM_TARGET_KM|
-BASELINES_INCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
 # - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
 BASELINES_NODEPAIRS|
-# interpolation method between nodes: none (empty), linear or nearest
-BASELINES_INTERP_METHOD|
+# interpolation method between nodes: linear or nearest
+BASELINES_INTERP_METHOD|linear
 BASELINES_TITLE|{\fontsize{14}{\bf${NAME} - Baselines} ($timescale)}
 BASELINES_UNIT|mm
 BASELINES_YLABEL|Ref.\ $ref_node_alias (${BASELINES_UNIT})
 BASELINES_LINESTYLE|-
 # offset between references (in m)
-BASELINES_REF_OFFSET_M|0.01
+BASELINES_REF_OFFSET_M|0.001
 # offset between stations (in m)
 BASELINES_STATION_OFFSET_M|0.01
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
@@ -163,75 +141,48 @@ BASELINES_TIMEZOOM|
 
 # --- VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|
-VECTORS_EXCLUDED_FROM_TARGET_KM|
-VECTORS_INCLUDED_NODELIST|
 VECTORS_RELATIVE|N
 # VECTORS: if VECTORS_RELATIVE is Y, substracts a reference vector in VECTORS_VELOCITY_REF:
 # - 'auto' (default): automatic mean velocity (average vector of all NODES)
 # - NODE's FID name or list of NODES: use the velocity vector (or mean velocity vector)
 # - E,N,U: sets fixed offset values (in mm/yr)
-VECTORS_VELOCITY_REF|
+VECTORS_VELOCITY_REF|auto
 VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 # background map parameters (see CODE/matlab/dem.m for available options)
-VECTORS_DEM_OPT|'watermark',1.5,'saturation',0.7,'interp','legend','seacolor',[0.7,0.9,1]
+VECTORS_DEM_OPT|'watermark',3,'interp','legend','seacolor',[0.7,0.9,1]
 VECTORS_TITLE|{\fontsize{14}{\bf${NAME} - Velocity vectors} ($timescale)}
 VECTORS_MIN_SIZE_KM|5
 VECTORS_MAX_XYRATIO|1
-# vectors velocity scale, in mm/yr for 25% of the graph width (default is 0 for automatic)
-VECTORS_VELOCITY_SCALE|0
 VECTORS_ARROWSHAPE|.15,.15,.12,.03
 VECTORS_TARGET_INCLUDED|Y
-# amplitude vs distance plot: used components to compute the amplitude (1,2 = horizontal only)
-VECTORS_AMPLITUDE_COMPONENTS|1,2
+
+# defines a main target (latitude,longitude coordinates)
+GNSS_TARGET_LATLON|
 
 # --- MOTION summary graph
 MOTION_EXCLUDED_NODELIST|
-MOTION_EXCLUDED_FROM_TARGET_KM|
-MOTION_INCLUDED_NODELIST|
 MOTION_MAFILTER|10
 MOTION_SCALE_MM|0
 MOTION_MIN_SIZE_KM|10
-MOTION_COLORMAP|spectral(256)
-MOTION_DEM_OPT|'saturation',0,'watermark',2,'interp'
+MOTION_COLORMAP|jet(256)
+MOTION_DEM_OPT|'colormap',.5*ones(64,3),'watermark',2,'interp'
 MOTION_TITLE|{\fontsize{14}{\bf${NAME} - Motion} ($timescale)}
 MOTION_TARGET_INCLUDED|Y
 
-# --- MODELNET summary graph
-MODELNET_EXCLUDED_NODELIST|
-MODELNET_EXCLUDED_FROM_TARGET_KM|
-MODELNET_INCLUDED_NODELIST|
-MODELNET_MIN_DISP_MM|1,1,2
-MODELNET_MIN_STATION|2
-MODELNET_DEPTH_SLICE|0:2000:8000
-MODELNET_TARGET_INCLUDED|Y
-MODELNET_BORDERS|1000
-MODELNET_GRID_SIZE|100
-MODELNET_VIEW_AZEL|40,10
-MODELNET_DVLIM|
-MODELNET_COLORMAP|roma(256)
-MODELNET_MARKER|'^k','MarkerSize',6,'MarkerFaceColor',.99*ones(1,3)
-MODELNET_TITLE|{\fontsize{14}{\bf${NAME} - Network sensitivity}}
-
-# --- MODELLING summary graph
+# --- MODELLING graph
 # excluding NODES from graphs and calculations
 MODELLING_EXCLUDED_NODELIST|
 MODELLING_EXCLUDED_FROM_TARGET_KM|
-# forces including some nodes (after previous exclusion)
-MODELLING_INCLUDED_NODELIST|
 # ignores vertical component
-MODELLING_HORIZONTAL_ONLY|N
-# adjusts a priori errors for each component
-MODELLING_ENU_ERROR_RATIO|1,1,2
+MODELLING_HORIZONTAL_ONLY|Y
 # recomputes relative velocities before modelling (instead of vectors results)
 MODELLING_FORCE_RELATIVE|N
 # modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
 MODELLING_SOURCE_TYPE|isotropic
-# sets 2 to model the residuals with a secondary source (EXPERIMENTAL)
+# models the residuals with a secondary source (EXPERIMENTAL)
 MODELLING_MULTIPLE_SOURCES|1
 # misfit norm calculation: 'L1' (default) or 'L2'
 MODELLING_MISFITNORM|L1
-# a priori source depth, gaussian STD (both in m), empty = no apriori
-MODELLING_APRIORI_DEPTH_M|
 # a priori horizontal error around the target or grid center (in STD, km), 0 = no a priori
 MODELLING_APRIORI_HSTD_KM|0
 # set a minimum error on displacements, absolute (mm) and relative (%) to avoid NaN PDF when misfit is too high
@@ -249,22 +200,16 @@ MODELLING_PLOT_BEST|Y
 MODELLING_PLOT_RESIDUAL|Y
 # number of sigma (STD) to compute uncertainty intervals for best model
 MODELLING_SIGMAS|1
-# plots the data and model partial vectors (1 or 2 component missing) replacing NaN by 0
-MODELLING_PLOT_NAN_COMPONENT|Y
 # RGB color for topo/bathy basemap
 MODELLING_TOPO_RGB|.5,.5,.5
 # color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
 MODELLING_COLORREF|volpdf
-MODELLING_COLORMAP|ryb(256)
-MODELLING_COLOR_SHADING|0.3
-MODELLING_DATA_COLOR|0,0,0       # color of model arrows
-MODELLING_MODEL_COLOR|.7,0,0     # color of model arrows
-MODELLING_RESIDUAL_COLOR|0,.5,0  # color of residual arrows
+MODELLING_COLORMAP|jet(256)
+MODELLING_COLOR_SHADING|0.8
 MODELLING_MAX_DEPTH|8000
 MODELLING_BORDERS|5000
 MODELLING_GRID_SIZE|50
 MODELLING_TITLE|{\fontsize{14}{\bf${NAME} - Source modelling} ($timescale)}
-MODELLING_EXPORT_MAT|
 
 # specific pCDM parameters for MODELLING
 MODELLING_PCDM_ITERATIONS|5
@@ -288,14 +233,11 @@ MODELLING_PCDM_SUPPLEMENTARY_GRAPHS|N
 # --- MODELTIME: defines the moving periods, minimum sampling, maximum models
 # [NOTE] MODELTIME uses all MODELLING parameters but forces an isotropic source
 MODELTIME_PERIOD_DAY|30,15
-MODELTIME_SAMPLING_DAY|1
+MODELTIME_SAMPLING_DAY|2
 MODELTIME_MAX_MODELS|50
-MODELTIME_GRID_SIZE|${MODELLING_GRID_SIZE}
 MODELTIME_FLOWRATE|Y
-MODELTIME_FLIM|
-MODELTIME_LINESTYLE|-
 MODELTIME_MAP_PERIODLIST|
 MODELTIME_MARKER_LINEWIDTH|1
-MODELTIME_COLORMAP|spectral(256)
+MODELTIME_COLORMAP|jet(256)
 MODELTIME_MARKERSIZE|10
 MODELTIME_TITLE|{\fontsize{14}{\bf$name - Source best model timeline} ($timescale)}

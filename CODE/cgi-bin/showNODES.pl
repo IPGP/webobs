@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-showNODES.pl
+showNODES.pl 
 
 =head1 SYNOPSIS
 
@@ -10,12 +10,12 @@ http://..../showNODES.pl
 
 =head1 DESCRIPTION
 
-Displays all known NODES as a matrix: row=node, column=GRID node belongs to
+Displays all known NODES as a matrix: row=node, column=GRID node belongs to 
 
 =cut
 
 use strict;
-use warnings;
+use warnings; 
 
 use CGI;
 my $cgi = new CGI;
@@ -29,11 +29,11 @@ my @T;
 push(@T, map({"VIEW.$_"} sort(WebObs::Grids::listViewNames())));
 push(@T, map({"PROC.$_"} sort(WebObs::Grids::listProcNames())));
 
-# get all NODEs configurations !!
+# get all NODEs configurations !! 
 my %N = WebObs::Grids::listNodeGrids();
 my $row = "";
 
-# ---- start HTML page output
+# ---- start HTML page output 
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
 print <<"FIN";
@@ -60,34 +60,34 @@ print <<"FIN";
 <body>
 FIN
 
-# ---- build matrix as a <TABLE>
+# ---- build matrix as a <TABLE> 
 print "<DIV class=\"nodetbl\">";
 print "<TABLE cellspacing=0>\n";
 	print "<THEAD>";
 	my $oddeven = "even"; my $what = 'view';
-	$row = "<TR><TH></TH>";
-	for (@T) {
+	$row = "<TR><TH></TH>"; 
+	for (@T) { 
 		$what = ($_ =~ m/^VIEW./) ? 'view' : 'proc';
 		$row .= "<TH class=\"skew $what $oddeven\"><div><span>$_</span></div></TH>";
-		$oddeven = $oddeven eq "even" ? "odd" : "even";
+		$oddeven = $oddeven eq "even" ? "odd" : "even"; 
 	}
 	print "$row\n";
 	print "</THEAD>";
 
 	print "<TBODY>";
-	for my $node (sort keys(%N)) {
+	for my $node (sort keys(%N)) { 
 		my $oddeven = "even";
 		$row = "<TR><TD class=\"nodeid\">$node</TD>";
-		for (@T) {
+		for (@T) { 
 			$what = ($_ =~ m/^VIEW./) ? 'view' : 'proc';
-			if ($_ ~~ @{$N{$node}}) {
+			if ($_ ~~ @{$N{$node}}) { 
 				my $link = "\"$NODES{CGI_SHOW}?node=$_.$node\"";
-				$row .= "<TD class=\"otimes $what $oddeven\"><a href=$link>&cir;</a></TD>" 
-			}
-			else {
-				$row .= "<TD class=\"oempty $what $oddeven\">&empty;</TD>"
-			}
-			$oddeven = $oddeven eq "even" ? "odd" : "even";
+				$row .= "<TD class=\"otimes $what $oddeven\"><a href=$link>&otimes;</a></TD>" 
+			} 
+			else { 
+				$row .= "<TD class=\"oempty $what $oddeven\">&empty;</TD>" 
+			} 
+			$oddeven = $oddeven eq "even" ? "odd" : "even"; 
 		}
 		print $row;
 	}
@@ -124,3 +124,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
+

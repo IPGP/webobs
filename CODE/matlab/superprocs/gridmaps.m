@@ -1,8 +1,7 @@
 function gridmaps(grids,outd,varargin)
 %GRIDMAPS Grids location maps of nodes
 %   GRIDMAPS creates or updates NODES location maps for each existing GRIDS
-%   (views or procs). Maps are written in .eps and .png formats, with companion
-%   html file .map for clickable areas, and can be displayed with showGRID.pl.
+%   (views or procs). Maps are located in .eps and .png formats.
 %
 %   GRIDMAPS(GRIDS) updates only grids listed in GRIDS (string or cell) as
 %   	gridtype.gridname
@@ -30,8 +29,6 @@ function gridmaps(grids,outd,varargin)
 %	NODE_FONTSIZE|
 %	NODE_SUBMAP_ALIAS|
 %	MAP1_XYLIM|
-%	MAP2_XYLIM|
-%	...
 %	DEM_SRTM1|
 %	DEM_FILE|
 %	DEM_TYPE|
@@ -40,13 +37,13 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2023-01-13
+%   Updated: 2020-09-14
 
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
-procmsg = any2str(mfilename,varargin{:});
+procmsg = sprintf(' %s',mfilename);
 timelog(procmsg,1)
 
 % merges all grids into a single map
@@ -117,11 +114,9 @@ lwminor = field2num(P,'CONTOURLINES_MINOR_LINEWIDTH',.1);
 lwmajor = field2num(P,'CONTOURLINES_MAJOR_LINEWIDTH',1);
 zerolevel = isok(P,'CONTOURLINES_ZERO_LEVEL',0);
 convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
-shading = field2str(P,'SHADING','light');
-feclair = field2num(P,'COLOR_LIGHTENING',2);
-csat = field2num(P,'COLOR_SATURATION',.8);
+feclair = field2num(P,'COLOR_LIGHTENING',.5);
 zcut = field2num(P,'ZCUT',0.1);
-laz = field2num(P,'LIGHT_AZIMUTH',[-45,45]);
+laz = field2num(P,'LIGHT_AZIMUTH',45);
 lct = field2num(P,'LIGHT_CONTRAST',1);
 if isfield(P,'LANDCOLORMAP') && exist(P.LANDCOLORMAP,'file')
 	cmap = eval(P.LANDCOLORMAP);
@@ -138,9 +133,7 @@ if isfield(P,'SEACOLORMAP')
 else
 	sea = seaflat;
 end
-demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz, ...
-	'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair, ...
-	'Saturation',csat,'latlon','shading',shading,'legend','axisequal','manual'};
+demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz,'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair,'latlon','legend','axisequal','manual'};
 
 % loads all needed grid's parameters & associated nodes
 for g = 1:length(grids)
@@ -193,7 +186,7 @@ for g = 1:length(grids)
 	s = split(grids{g},'.');
 	G = GRIDS.(s{1}).(s{2});
 	% GRIDMAPS.rc SRTM1 option applies only if not defined in the PROC's configuration
-	if isok(P,'DEM_SRTM1') && (~isfield(G,'DEM_SRTM1') || merge)
+	if isok(P,'DEM_SRTM1') & (~isfield(G,'DEM_SRTM1') || merge)
 		G.DEM_SRTM1 = 'Y';
 	end
 	if request
@@ -201,7 +194,6 @@ for g = 1:length(grids)
 			G.(key{:}) = field2str(P.(s{1}).(s{2}),key{:},field2str(G,key{:}),'notempty');
 		end
 	end
-	griddemopt = field2cell(G,'GRIDMAPS_DEM_OPT');
 	nodename = field2str(G,'NODE_NAME','node','notempty');
 	nodetype = field2str(G,'NODE_MARKER','o','notempty');
 	nodesize = field2num(G,'NODE_SIZE',15,'notempty');
@@ -221,11 +213,8 @@ for g = 1:length(grids)
 			x = split(fd{k(ii)},'_');
 			maps{ii+1,1} = x{1};
 			maps{ii+1,2} = sstr2num(G.(fd{k(ii)}));
-			if numel(maps{ii+1,2}) == 3
-				maps{ii+1,2} = xyw2lim(maps{ii+1,2},1/cosd(maps{ii+1,2}(2)));
-			end
-			if numel(maps{ii+1,2}) ~= 4
-				error('%s: %s key must contain 3 or 4 elements: (LON,LAT,WIDTH) or (LON1,LON2,LAT1,LAT2). Abort.',wofun,fd{k});
+			if length(maps{ii+1,2}) < 4
+				error('%s: %s key must contains 4 elements (LON1,LON2,LAT1,LAT2). Abort.',wofun,fd{k});
 			end
 		end
 	end
@@ -259,7 +248,6 @@ for g = 1:length(grids)
 
 			if isempty(maps{m,2})
 				[dlat,dlon] = ll2lim(geo(kn,1),geo(kn,2),minkm,maxxy,border);
-				maps{m,2} = [dlon,dlat];
 			else
 				dlon = maps{m,2}(1:2);
 				dlat = maps{m,2}(3:4);
@@ -283,11 +271,7 @@ for g = 1:length(grids)
 				subplot(1,1,1); extaxes(gca,[.04,.08]);
 
 				% plots DEM basemap
-				if merge
-					dem(x,y,z,demoptions{:});
-				else
-					dem(x,y,z,demoptions{:},griddemopt{:});
-				end
+				dem(x,y,z,demoptions{:});
 
 				hold on
 
@@ -310,12 +294,12 @@ for g = 1:length(grids)
 						clrgb = [0,0,0];
 					end
 					if length(dz1) > 1
-						[~,h] = contour(x,y,z,dz1,'-');
-						set(h,'LineColor',clrgb,'LineWidth',lwminor);
+						[~,h] = contour(x,y,z,dz1,'-','Color',clrgb);
+						set(h,'LineWidth',lwminor);
 					end
 					if length(dz0) > 1
-						[cs,h] = contour(x,y,z,dz0,'-');
-						set(h,'LineColor',clrgb,'LineWidth',lwmajor);
+						[cs,h] = contour(x,y,z,dz0,'-','Color',clrgb);
+						set(h,'LineWidth',lwmajor);
 						if isok(P,'CONTOURLINES_LABEL')
 							clabel(cs,h,dz0,'Color',clrgb,'FontSize',7,'FontWeight','bold','LabelSpacing',288)
 						end
@@ -339,16 +323,14 @@ for g = 1:length(grids)
 			end
 
 			% plots active nodes
-			kam = [];
 			if ~isempty(ka)
-				kam = ka(isinto(geo(ka,2),dlon) & isinto(geo(ka,1),dlat));
-				target(geo(kam,2),geo(kam,1),nodesize,nodecolor,nodetype)
+				k = find(isinto(geo(ka,2),dlon) & isinto(geo(ka,1),dlat));
+				target(geo(ka(k),2),geo(ka(k),1),nodesize,nodecolor,nodetype)
 			end
 			% plots inactive nodes
-			k0m = [];
 			if ~isempty(k0)
-				k0m = k0(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
-				target(geo(k0m,2),geo(k0m,1),nodesize,nodecolor,nodetype,2)
+				k = find(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
+				target(geo(k0(k),2),geo(k0(k),1),nodesize,nodecolor,nodetype,2)
 			end
 
 			% writes node names for current map but excluded other maps
@@ -387,8 +369,7 @@ for g = 1:length(grids)
 				xylim = [get(gca,'XLim'),get(gca,'YLim')];
 
 				% copyright
-				copyright = sprintf('{\\bf\\copyright %s, %s} - {%s} - %s / %s',num2roman(str2double(datestr(now,'yyyy'))), ...
-					WO.COPYRIGHT,strrep(grids{g},'_','\_'),demcopyright,datestr(now,0));
+				copyright = sprintf('{\\bf\\copyright %s} - {%s} - %s / %s',WO.COPYRIGHT,strrep(grids{g},'_','\_'),demcopyright,datestr(now,0));
 				axes('Position',[pos(1),0,pos(3),pos(2)])
 				axis([0,1,0,1]); axis off
 				text(.5,0,copyright,'Color',.4*[1,1,1],'FontSize',9,'HorizontalAlignment','center','VerticalAlignment','bottom')
@@ -401,10 +382,9 @@ for g = 1:length(grids)
 					if ~isempty(k0)
 						target(xl(3),yl,nodesize,nodecolor,nodetype,2);
 					end
-					nm = length(kam) + length(k0m);
 					text(xl,yl*[1,1,1],{sprintf('{\\bf%s}',nodename), ...
-						sprintf('    active ({\\bf%d}/%d)',length(kam),nm), ...
-						repmat(sprintf('    inactive ({\\bf%d}/%d)',length(k0m),nm),~isempty(k0m))}, ...
+						sprintf('    active ({\\bf%d}/%d)',length(ka),length(kn)), ...
+						repmat(sprintf('    inactive ({\\bf%d}/%d)',length(k0),length(kn)),~isempty(k0))}, ...
 						'FontSize',14,'HorizontalAlignment','left')
 				end
 
@@ -445,21 +425,18 @@ for g = 1:length(grids)
 							txt = regexprep(sprintf('%s: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
 							fprintf(fid,'<AREA href="%s" title="%s" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						else
-							txt = regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
-							try
-								txt = unicode2native(txt,'UTF-8');
-							end
+							txt = unicode2native(regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"',''),'utf-8');
 							txt = regexprep(char(txt),'''','\\''');
 							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						end
 					end
 				end
 				% plots other maps limits
-				for smap = size(maps,1):-1:1
+				for smap = 2:size(maps,1)
 					if smap ~= m
 						x = round(ims(1)*((axp(3)*(maps{smap,2}(1:2) - xylim(1))/diff(xylim(1:2)) + axp(1))));
 						y = round(ims(2) - ims(2)*((axp(4)*(maps{smap,2}(3:4) - xylim(3))/diff(xylim(3:4)) + axp(2))));
-						lnk = sprintf('/cgi-bin/showGRID.pl?grid=%s&map=%s#MAPS',grids{gg},repmat(num2str(smap-1),1,smap>1));
+						lnk = sprintf('/cgi-bin/showGRID.pl?grid=%s&map=%d#MAPS',grids{gg},smap-1);
 						txt = sprintf('click to zoom on %s',maps{smap,1});
 						if html
 							fprintf(fid,'<AREA href="%s" title="%s" shape=rect coords="%d,%d,%d,%d">\n',lnk,txt,x(1),y(1),x(2),y(2));
