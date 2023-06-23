@@ -31,7 +31,9 @@ DEM_SRTM1|NO
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
-# do not show node alias in zoom map(s)
+# additional options for gridmaps background map
+NODE_SUBMAP_ALIAS|
+# show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
 # time zone for outputs

@@ -1,17 +1,17 @@
 =key|value
 # TREMBLEMAPS PROC template (English version)
 # Superformat is 'quakes': see readfmtdata_quakes.m for compatible RAWFORMAT defined
-# in associated NODE's RAWFORMAT field 
+# in associated NODE's RAWFORMAT field
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/tremblemaps.m for further information.
 
 # long name of the PROC
-NAME|Earthquake Felt Report (English)
+NAME|Earthquake Felt Report (EN)
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 RAWFORMAT|quakes
 TYPE|
 # raw data path
 RAWDATA|
-# URN link to data 
+# URN link to data
 URNDATA|
 # time zone for outputs
 TZ|-4
@@ -119,4 +119,3 @@ ADDITIONAL_TEXT|
 GSE_TITLE|${REGION}: $quake_strength $quake_type $epicentral $azimuth of $city ($region)
 GSE_TITLE|${REGION}: $quake_strength $epicentral $azimuth of $city ($region)
 GSE_COMMENT|$azimuth of $city ($region)
-
