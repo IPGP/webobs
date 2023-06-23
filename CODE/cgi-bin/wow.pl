@@ -44,7 +44,7 @@ use WebObs::Config;
 use WebObs::Users;
 use WebObs::Grids;
 use WebObs::Utils;
-use WebObs::IGN;
+use WebObs::Mapping;
 
 my $cgi = new CGI;
 my @out = '';

@@ -56,7 +56,7 @@ use WebObs::Grids;
 use WebObs::Events;
 use WebObs::Utils;
 use WebObs::i18n;
-use WebObs::IGN;
+use WebObs::Mapping;
 use WebObs::Wiki;
 use Locale::TextDomain('webobs');
 
@@ -156,7 +156,7 @@ if (-e $statusDB) {
 
 $GRID{UTM_LOCAL} //= '';
 #my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
-my %UTM =  %WebObs::IGN::UTM;
+my %UTM =  %WebObs::Mapping::UTM;
 
 # ---- sort interventions by date / event stuff  -----------------------------------
 #

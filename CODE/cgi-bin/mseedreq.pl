@@ -61,7 +61,7 @@ use WebObs::Config;
 use WebObs::Users;
 use WebObs::Grids;
 use WebObs::i18n;
-use WebObs::IGN;
+use WebObs::Mapping;
 use Locale::TextDomain('webobs');
 
 # ---- inits ----------------------------------

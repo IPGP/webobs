@@ -84,7 +84,7 @@ use WebObs::Users;
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
-use WebObs::IGN;
+use WebObs::Mapping;
 use WebObs::Wiki;
 use Locale::TextDomain('webobs');
 use IO::Socket;

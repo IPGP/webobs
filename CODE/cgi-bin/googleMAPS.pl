@@ -49,7 +49,7 @@ use WebObs::Utils;
 use WebObs::Wiki;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
-use WebObs::IGN;
+use WebObs::Mapping;
 
 my $titre="";
 my @nodes;
