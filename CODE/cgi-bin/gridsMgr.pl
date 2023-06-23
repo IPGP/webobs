@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-gridsMgr.pl 
+gridsMgr.pl
 
 =head1 SYNOPSIS
 
@@ -10,7 +10,7 @@ gridsMgr.pl
 
 =head1 DESCRIPTION
 
-Builds html page for WebObs' grids Manager. Displays all 'DOMAINS' DataBase tables and 
+Builds html page for WebObs' grids Manager. Displays all 'DOMAINS' DataBase tables and
 provides maintenance functions on these tables: insert new rows, delete rows, updates rows.
 
 First apply the maintenance function (action+tbl) if requested, then build page to display all tables.
@@ -22,15 +22,15 @@ First apply the maintenance function (action+tbl) if requested, then build page 
 =item B<action=>
 
 One of { display | insert | update | delete } . Defaults to 'display' .
-'insert', 'update' and 'delete' require a 'tbl' (table to act upon).  
+'insert', 'update' and 'delete' require a 'tbl' (table to act upon).
 
 =item B<tbl=>
 
-{ domain | notification | proc | view | form | wiki | misc } .  
+{ domain | notification | proc | view | form | wiki | misc } .
 
 =item B<code=>, B<name=>, B<ooa=>, B<marker=>
 
-Any, depending on requested maintenance function (action+tbl) 
+Any, depending on requested maintenance function (action+tbl)
 
 =back
 
@@ -53,7 +53,7 @@ $|=1;
 
 set_message(\&webobs_cgi_msg);
 
-# ---- checks/defaults query-string elements 
+# ---- checks/defaults query-string elements
 my $QryParm   = $cgi->Vars;
 $QryParm->{'action'}    ||= 'display';
 
@@ -86,22 +86,22 @@ $QryParm->{'OLDgrid'}   ||= "";
 my $authtable = "";
 $authtable = $WEBOBS{SQL_TABLE_DOMAINS} if ($QryParm->{'tbl'} eq "domain") ;
 
-# ---- process (execute) sql insert new row into table 'tbl' 
+# ---- process (execute) sql insert new row into table 'tbl'
 # -----------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'insert') {
 	# query-string must contain all required DB columns values for an sql insert
 	my $q='';
 	if ($QryParm->{'tbl'} eq "domain") {
 		$q = "insert into $WEBOBS{SQL_TABLE_DOMAINS} values(\'$QryParm->{'code'}\',\'$QryParm->{'ooa'}\',\'$QryParm->{'name'}\',\'$QryParm->{'marker'}\')";
-		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor; 
+		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 	} else { die "$QryParm->{'action'} for unknown table"; }
 	my $rows = dbu($q);
-	$$refMsg  .= ($rows == 1) ? "  having inserted new $QryParm->{'tbl'} " : "  failed to insert new $QryParm->{'tbl'}"; 
+	$$refMsg  .= ($rows == 1) ? "  having inserted new $QryParm->{'tbl'} " : "  failed to insert new $QryParm->{'tbl'}";
 	$$refMsg  .= " $lastDBIerrstr";
 	$$refMsgColor  = ($rows == 1) ? "green" : "red";
 	#$$refMsg  .= " - <i>$q</i>";
 }
-# ---- process (execute) sql update a row of table 'tbl' 
+# ---- process (execute) sql update a row of table 'tbl'
 # ----------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'update') {
 	# query-string must contain all required DB columns values for an sql insert
@@ -109,10 +109,10 @@ if ($QryParm->{'action'} eq 'update') {
 	if ($QryParm->{'tbl'} eq "domain") {
 		$q = "update $WEBOBS{SQL_TABLE_DOMAINS} set CODE=\'$QryParm->{'code'}\', OOA=\'$QryParm->{'ooa'}\', NAME=\'$QryParm->{'name'}\', MARKER=\'$QryParm->{'marker'}\'";
 		$q .= " WHERE CODE=\'$QryParm->{'OLDcode'}\'";
-		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor; 
+		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 	} else { die "$QryParm->{'action'} for unknown table"; }
 	my $rows = dbu($q);
-	$$refMsg  .= ($rows == 1) ? "  having updated $QryParm->{'tbl'} " : "  failed to update $QryParm->{'tbl'}"; 
+	$$refMsg  .= ($rows == 1) ? "  having updated $QryParm->{'tbl'} " : "  failed to update $QryParm->{'tbl'}";
 	$$refMsg  .= " $lastDBIerrstr";
 	$$refMsgColor  = ($rows == 1) ? "green" : "red";
 	#$$refMsg  .= " - <i>$q</i>";
@@ -130,11 +130,11 @@ if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $Q
 	}
 	my $q3 = "delete from $WEBOBS{SQL_TABLE_GRIDS} WHERE DCODE=\'$QryParm->{'code'}\' AND TYPE = \'+++\'";
 	my $rows = dbuow($q0,$q1,$q2,$q3);
-	$domainMsg  .= ($rows >= 1 || $q2 eq "") ? "  having updated $WEBOBS{SQL_TABLE_GRIDS} " : "  failed to update $WEBOBS{SQL_TABLE_GRIDS}"; 
+	$domainMsg  .= ($rows >= 1 || $q2 eq "") ? "  having updated $WEBOBS{SQL_TABLE_GRIDS} " : "  failed to update $WEBOBS{SQL_TABLE_GRIDS}";
 	$domainMsg  .= " $lastDBIerrstr";
 	$domainMsgColor  = ($rows >= 1 || $q2 eq "") ? "green" : "red";
 }
-# ---- process (execute) sql delete a row of table 'tbl' 
+# ---- process (execute) sql delete a row of table 'tbl'
 # ------------------------------------------------------
 if ($QryParm->{'action'} eq 'delete') {
 	my $q='';
@@ -142,21 +142,21 @@ if ($QryParm->{'action'} eq 'delete') {
 	if ($QryParm->{'tbl'} eq "domain") {
 		$q = "delete from $WEBOBS{SQL_TABLE_DOMAINS}";
 		$q .= " WHERE CODE=\'$QryParm->{'code'}\'";
-		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor; 
+		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 	} else { die "$QryParm->{'action'} for unknown table"; }
 	my $rows = dbu($q);
-	$$refMsg  .= ($rows >= 1) ? "  having deleted in $QryParm->{'tbl'} " : "  failed to delete in $QryParm->{'tbl'}"; 
+	$$refMsg  .= ($rows >= 1) ? "  having deleted in $QryParm->{'tbl'} " : "  failed to delete in $QryParm->{'tbl'}";
 	$$refMsg  .= " $lastDBIerrstr";
 	$$refMsgColor  = ($rows >= 1) ? "green" : "red";
 	#$$refMsg  .= " - <i>$q</i>";
 }
-# ---- process (execute) sql delete 
+# ---- process (execute) sql delete
 # ---------------------------------------------------------------------------------------
 if ($QryParm->{'action'} eq 'deleteU') {
 	if ($QryParm->{'tbl'} eq "group") {
 		my $q = "delete from $WEBOBS{SQL_TABLE_GROUPS} where GID=\'$QryParm->{'gid'}\'";
 		my $rows = dbu($q);
-		$domainMsg  .= ($rows >= 1) ? "  having deleted $QryParm->{'tbl'}" : "  failed to delete $QryParm->{'tbl'}"; 
+		$domainMsg  .= ($rows >= 1) ? "  having deleted $QryParm->{'tbl'}" : "  failed to delete $QryParm->{'tbl'}";
 		$domainMsg  .= " $lastDBIerrstr";
 		$domainMsgColor  = ($rows >= 1) ? "green" : "red";
 	}
@@ -185,22 +185,23 @@ Gscriptname = \"$ENV{SCRIPT_NAME}\"; // required by grids.js
 </head>
 EOHEADER
 
-# ---- build grids 'select dropdowns contents' 
+# ---- build grids 'select dropdowns contents'
 # -----------------------------------------------------------------------------
 #[FBnote:] listing grids from grids2domains table does not see orphan grids
 #my $qugrids  = "select distinct(TYPE || '.' || NAME) from $WEBOBS{SQL_TABLE_GRIDS} order by NAME";
 #@qrs   = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "$qugrids");
 #chomp(@qrs);
-#my $selgrids = ""; map { $selgrids .= "<option>$_</option>" } @qrs; 
+#my $selgrids = ""; map { $selgrids .= "<option>$_</option>" } @qrs;
 
 # get all existing GRIDs
 my @T;
 push(@T, map({"VIEW.$_"} sort(WebObs::Grids::listViewNames())));
 push(@T, map({"PROC.$_"} sort(WebObs::Grids::listProcNames())));
-my $selgrids = ""; map { $selgrids .= "<option>$_</option>" } @T; 
+push(@T, map({"SEFRAN.$_"} sort(WebObs::Grids::listSefranNames())));
+my $selgrids = ""; map { $selgrids .= "<option>$_</option>" } @T;
 
 
-# ---- build 'domains' table result rows 
+# ---- build 'domains' table result rows
 # -----------------------------------------------------------------------------
 my $qdomains  = "select CODE,OOA,d.NAME,MARKER,group_concat(TYPE || '.' || g.NAME) AS $WEBOBS{SQL_TABLE_GRIDS}";
 $qdomains .= " from $WEBOBS{SQL_TABLE_DOMAINS} d left join $WEBOBS{SQL_TABLE_GRIDS} g on (d.CODE = g.DCODE)";
@@ -220,7 +221,7 @@ for (@qrs) {
 
 
 
-# ---- assemble the page 
+# ---- assemble the page
 # -----------------------------------------------------------------------------
 print <<"EOPART1";
 <body style="min-height: 600px;">
@@ -259,7 +260,7 @@ Domains&nbsp;$go2top
 	<input type="text" name="marker" value=""/><br/>
 	<label for="gid">Grid(s):<span class="small">associated grid(s)<br>Ctrl for multiple</span></label>
 	<!--<input type="text" name="grid" id="grid" value=""/><br/>-->
-	<select name="grid" id="grid" size="5" multiple>$selgrids</select><br/> 
+	<select name="grid" id="grid" size="5" multiple>$selgrids</select><br/>
 	<p style="margin: 0px; text-align: center">
 		<input type="button" name="sendbutton" value="send" onclick="sendPopupDomain(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
 	</p>
@@ -291,17 +292,17 @@ print "</TR></TABLE>";
 print "</div>";
 print "</div>";
 
-# ---- That's all folks: end html 
+# ---- That's all folks: end html
 print "<br>\n</body>\n</html>\n";
 exit;
 
-# ---- helper: execute the non-select sql statement in $_[0] 
+# ---- helper: execute the non-select sql statement in $_[0]
 # ------------------------------------------------------------------------------
 sub dbu {
 	$lastDBIerrstr = "";
 	my $dbh = DBI->connect("dbi:SQLite:dbname=$WEBOBS{SQL_DOMAINS}", '', '') or die "$DBI::errstr" ;
 	my $rv = $dbh->do($_[0]);
-	$rv = 0 if ($rv == 0E0); 
+	$rv = 0 if ($rv == 0E0);
 	$lastDBIerrstr = sprintf("(%d row%s) %s",$rv,($rv<=1)?"":"s",$DBI::errstr);
 	$dbh->disconnect();
 	return $rv;
@@ -323,7 +324,7 @@ sub dbuow {
 		$dbh->commit();
 	};
 	if ($@) {
-        $rv = 0; 
+        $rv = 0;
 		$lastDBIerrstr = sprintf("(0 row) %s",$@);
 		$dbh->rollback();
 	}
@@ -337,7 +338,7 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Lafon, François Beauducel 
+Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
@@ -357,4 +358,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

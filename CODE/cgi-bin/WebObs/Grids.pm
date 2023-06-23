@@ -28,7 +28,7 @@ use strict;
 use warnings;
 use File::Basename;
 use WebObs::Utils qw(u2l l2u trim);
-use WebObs::Config qw(%WEBOBS readCfg readFile);
+use WebObs::Config qw(%WEBOBS readCfg readCfgFile readFile);
 use WebObs::Users qw(clientHasRead);
 use POSIX qw(strftime);
 
@@ -36,7 +36,7 @@ use POSIX qw(strftime);
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %GRIDS, %NODES);
 require Exporter;
 @ISA        = qw(Exporter);
-@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS readDomain readGrid readProc readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode);
+@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS readDomain readGrid readSefran readProc readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode);
 $VERSION    = "1.00";
 
 %DOMAINS = readDomain();
@@ -89,6 +89,7 @@ sub readDomain {
 Reads one or more 'procs' configurations into a HoH.
 Adds uppercase NODESLIST hash key to point to the list of linked-to NODES for a PROC.
 Adds DOMAIN code from grids2domains db
+Adds FORM code if proc is linked to any form
 
     %N = readProc("^S");           # all PROCS whose names start in S
     $x = $N{SISMOHYP}{NAME}        # value of 'NAME' field of SISMOHYP proc
@@ -103,7 +104,7 @@ Internally uses WebObs::listProcNames.
 sub readProc {
 	my %ret;
 	for my $f (listProcNames($_[0])) {
-		my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf");
+		my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf",@_[1..$#_]);
 		# --- get list of associated NODES
 		opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
 		my @lSn = grep {/^PROC\.($f)\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
@@ -119,6 +120,42 @@ sub readProc {
 		closedir(DIR);
 		# --- get DOMAIN
 		my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'PROC' and NAME = '$f'");
+		chomp(@qx);
+		$tmp{'DOMAIN'} = join('|',@qx);
+		$ret{$f}=\%tmp;
+	}
+	return %ret;
+}
+
+=head2 readSefran
+
+Reads one or more 'sefrans' configurations into a HoH.
+Adds DOMAIN code from grids2domains db
+Adds CHANNELLIST from CHANNEL_CONF file
+
+    %N = readSefran("^S");         # all Sefrans whose names start with a S
+    $x = $N{SEFRAN3}{NAME}         # value of 'NAME' field of SEFRAN3 sefran
+    $d = $N{GEOSCOPE}{DOMAIN}      # value of 'DOMAIN' field of GEOSCOPE sefran
+
+Internally uses WebObs::listSefranNames.
+
+=cut
+
+sub readSefran {
+	my %ret;
+	for my $f (listSefranNames($_[0])) {
+		my %tmp = readCfg("$WEBOBS{PATH_SEFRANS}/$f/$f.conf");
+		$tmp{NAME} ||= $tmp{TITRE};
+		# --- get channels list
+		my @ch = readCfgFile(exists($tmp{CHANNEL_CONF}) ? "$tmp{CHANNEL_CONF}":"$WEBOBS{PATH_SEFRANS}/$f/channels.conf");
+		my @st;
+		for (@ch) {
+			my ($ali,$cod) = split(/\s+/,$_);
+			push(@st,$ali);
+		}
+		$tmp{'CHANNELLIST'} = join('|',@st);
+		# --- get DOMAIN
+		my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'SEFRAN' and NAME = '$f'");
 		chomp(@qx);
 		$tmp{'DOMAIN'} = join('|',@qx);
 		$ret{$f}=\%tmp;
@@ -207,13 +244,19 @@ sub readNode {
 		#FB-legacy: if TYPE not defined and old type.txt exists, loads it
 		if (!$tmp{TYPE}) {
 			my $typ = "$NODES{PATH_NODES}/$f/type.txt";
-			if ((-e $typ) && (-s $typ !=0)) {
+			if ((-e $typ) && (-s $typ != 0)) {
 				$tmp{TYPE} = trim(join("",readFile($typ)));
 			}
 		}
+		$tmp{PROJECT} = 1 if (-s "$NODES{PATH_NODES}/$f/$NODES{SPATH_INTERVENTIONS}/${f}_Projet.txt");
 		#substitutes possible decimal comma to point for numerics
 		$tmp{LAT_WGS84} =~ s/,/./g;
 		$tmp{LON_WGS84} =~ s/,/./g;
+		#FB-legacy: removes escape characters in feature's list
+		$tmp{FILES_FEATURES} =~ s/\\,/,/g;
+		$tmp{FILES_FEATURES} =~ s/\\\|/,/g;
+		# removes trailing blanks in each features
+		$tmp{FILES_FEATURES} = join(",",map {trim($_)} split(/[,\|]/,$tmp{FILES_FEATURES}));
 
 		$ret{$f}=\%tmp;
 	}
@@ -268,6 +311,35 @@ sub listProcNames {
 	my @finallist;
 	for (@list) {
 		push(@finallist, $_) if (WebObs::Users::clientHasRead(name=>$_,type=>'authprocs'));
+	}
+	return @finallist;
+}
+
+=pod
+
+=head2 listSefranNames
+
+Returns a list of names of 'SEFRAN3' found in $WEBOBS{ROOT_CONF}.
+
+Input is optional, as it defaults to 'all sefrans'. If it is specified,
+it will be used as a regexp to select proc names.
+
+  @L = listSefranNames("^SEFRAN3_");  # all sefrans named SEFRAN3_*
+
+=cut
+
+sub listSefranNames {
+	#$_[0] will be used as a regexp
+	my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
+	opendir(DIR, $WEBOBS{PATH_SEFRANS}) or die "can't opendir $WEBOBS{PATH_SEFRANS}: $!";
+	my @list = grep {/($filter)/ && -d $WEBOBS{PATH_SEFRANS}."/".$_} readdir(DIR);
+	closedir(DIR);
+	my @finallist;
+	for (@list) {
+		my $mc = qx(grep -E "^MC3_NAME\\|" $WEBOBS{PATH_SEFRANS}/$_/$_.conf);
+		chomp($mc);
+		$mc =~ s/^MC3_NAME\|//g;
+		push(@finallist, $_) if (WebObs::Users::clientHasRead(name=>$mc,type=>'authprocs'));
 	}
 	return @finallist;
 }
@@ -474,8 +546,7 @@ sub normNode {
 		$node =~ s/\./*./g;
 		my @l = qx(ls -dr $WEBOBS{PATH_GRIDS2NODES}/$node 2>/dev/null);
 		chomp(@l);
-		@l = map(basename($_), @l);
-		if (scalar(@l) > 0) {$ret = $l[0]}
+		if (scalar(@l) > 0) {$ret = basename($l[0])}
 	}
 	return $ret;
 }
@@ -511,8 +582,8 @@ sub getNodeString
 		my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
 		no warnings "uninitialized";
 		if ($style eq 'alias')    { $texte = $N{ALIAS} }
-		if ($style eq 'short')    { $texte = sprintf('%s: %s',$N{ALIAS},$N{NAME}) }
-		if ($style eq 'html')     { $texte = sprintf('<b>%s</b>: %s <i>(%s)</i>',$N{ALIAS},$N{NAME},$N{TYPE}) }
+		if ($style eq 'short')    { $texte = "$N{ALIAS}: $N{NAME}" }
+		if ($style eq 'html')     { $texte = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ne "" && $N{TYPE} ne "-" ? " <i>($N{TYPE})</i>":"") }
 		use warnings;
 		#djl-was: $texte =~ s/ /Â /g;    #djl: re-assess
 	}
@@ -624,7 +695,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

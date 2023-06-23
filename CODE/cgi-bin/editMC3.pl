@@ -487,7 +487,7 @@ frameMC2.pl and formulaireMC2.pl [2004-2009] by Didier Mallarino, Francois Beaud
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
