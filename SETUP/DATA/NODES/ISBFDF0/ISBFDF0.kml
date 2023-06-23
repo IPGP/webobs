@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://earth.google.com/kml/2.0">
+<Placemark>
+<name>FDF : "Fond-St-Denis (Martinique)"</name>
+<description>Geoscope time series (ID DEV: ISBFDF0)</description>
+<open>1</open>
+<styleUrl>root://styleMaps#default+nicon=0x304+hicon=0x314</styleUrl>
+<Point><coordinates>-61.146311,14.734971,467</coordinates></Point>
+</Placemark>
+</kml>
