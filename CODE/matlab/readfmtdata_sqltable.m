@@ -13,7 +13,7 @@ function D = readfmtdata_sqltable(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2018-08-28
+%	Updated: 2023-06-23
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -56,6 +56,7 @@ end
 
 D.t = t - N.UTC_DATA;
 D.d = d;
+D.e = [];
 
 if N.CLB.nx == 0
 	D.CLB = clbdefault(size(d,2));

@@ -8,6 +8,7 @@ function D = readfmtdata_campbell(WO,P,N,F)
 %	output fields:
 %		D.t (datenum)
 %		D.d (data1 data2 ...)
+%		D.e empty
 %
 %	format 'cr10xasc'
 %		type: Campbell Scientific CR10X ascii data acquisition files
@@ -30,7 +31,7 @@ function D = readfmtdata_campbell(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2023-04-17
+%	Updated: 2023-06-23
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -111,5 +112,6 @@ end
 
 D.t = t - N.UTC_DATA;
 D.d = d;
+D.e = [];
 [D.d,D.CLB] = calib(D.t,D.d,N.CLB,'channelcodeorder');
 D.t = D.t + P.TZ/24;

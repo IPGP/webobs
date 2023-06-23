@@ -8,6 +8,7 @@ function D = readfmtdata_naqs(WO,P,N,F)
 %	output fields:
 %		D.t (datenum)
 %		D.d (data1 data2 ...)
+%		D.e empty
 %
 %	format 'naqs-soh'
 %		type: SOH csv files from Nanometrics Naqs server,
@@ -23,7 +24,7 @@ function D = readfmtdata_naqs(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2017-09-07
+%	Updated: 2023-06-23
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -146,5 +147,6 @@ if isempty(t)
 end
 D.t = t - N.UTC_DATA;
 D.d = d;
+D.e = [];
 D.t = D.t + P.TZ/24;
 

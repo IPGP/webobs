@@ -12,7 +12,7 @@ function D = readfmtdata_porkyasc(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2017-02-04
+%	Updated: 2023-06-23
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
