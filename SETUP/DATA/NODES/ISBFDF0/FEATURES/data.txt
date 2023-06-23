@@ -1,3 +1,0 @@
-Data from Geoscope stations are available in real-time (for the last ~8 days) using the seedlink protocol:
-server: **rtserver.ipgp.fr**
-port: **18000**

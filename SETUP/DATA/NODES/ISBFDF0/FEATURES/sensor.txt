@@ -1,3 +1,0 @@
-seismometer STRECKEISEN STS2
-thermometer PT1000
-microbaro EFFA
