@@ -51,7 +51,7 @@ use HTTP::Tiny;
 use XML::LibXML;
 use XML::LibXML::XPathContext;
 use WebObs::Config;
-use QML;
+use WebObs::QML;
 use lib $FindBin::Bin;
 
 # WebObs::Config forces errors in HTML, but this is not what we want here

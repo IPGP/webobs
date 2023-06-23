@@ -61,7 +61,7 @@ use WebObs::i18n;
 use WebObs::Mapping;
 use WebObs::Wiki;
 use Locale::TextDomain('webobs');
-use QML;
+use WebObs::QML;
 
 # ---- inits ----------------------------------
 set_message(\&webobs_cgi_msg);
