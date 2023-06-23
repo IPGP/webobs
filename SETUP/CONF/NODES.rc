@@ -12,13 +12,17 @@ SPATH_THUMBNAILS|THUMBNAILS
 PATH_EVENTNODE_TRASH|$WEBOBS{ROOT_DATA}/trash/EVENTNODE
 PATH_NODE_TRASH|$WEBOBS{ROOT_DATA}/trash/NODES
 EVENTNODE_NOTEBOOK|NO
+EVENTNODE_NOFEATURE_CONFIRM|NO
 EVENTNODE_NOTIFY_DEFAULT|NO
-# list of categories (valid keys are: grid,alias,feature,author,remote,startdate,enddate,title,comment,notebook,outcome)
+EVENTNODE_PLOT_COLOR|Silver
+EVENTNODE_PLOT_LINEWIDTH|YES
+EVENTNODE_PLOT_OUTCOME_ONLY|YES
+
+# list of categories (grid,alias,feature,author,remote,startdate,enddate,title,comment,notebook,outcome)
 EVENT_SEARCH_CATEGORY_LIST|grid,alias,feature,author,remote,startdate,title,comment,notebook,outcome
 EVENT_SEARCH_MAXDISPLAY_LIST|15,50,75,100
 EVENT_SEARCH_DEFAULT|alias
 EVENT_SEARCH_DEFAULT2|comment
-
 
 CGI_SHOW|showNODE.pl
 CGI_SRCH|srchNODES.pl
@@ -28,6 +32,10 @@ THUMBNAILS_ON|ALL
 THUMBNAILS_PIXH|100
 THUMBNAILS_PIXV|100
 THUMBNAILS_EXT|jpg
+
+# display neighbour nodes (maximum number)
+NEIGHBOUR_NODES_MAX|15
+NEIGHBOUR_NODES_ACTIVE_ONLY|Y
 
 FILE_NETWORKS|$WEBOBS{ROOT_CONF}/networkcodes.csv
 FILE_NODES2NODES|$WEBOBS{ROOT_CONF}/nodes2nodes.rc

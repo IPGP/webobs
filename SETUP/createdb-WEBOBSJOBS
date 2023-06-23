@@ -34,8 +34,8 @@ create table runs (
 	RCMSG          text
 	);
 COMMIT;
-INSERT INTO JOBS VALUES('cleanreq','Y','cleanreq','find \$WEBOBS{ROOT_OUTR} -mtime +30 -exec rm -rf {} \;','','',86400,1,'cleanreq',0);
-INSERT INTO JOBS VALUES('cleantmp','Y','cleantmp','find \$WEBOBS{PATH_TMP_WEBOBS} -mtime +2 -exec rm -rf {} \;','','',86400,1,'cleantmp',0);
+INSERT INTO JOBS VALUES('cleanreq','Y','cleanreq','find \$WEBOBS{ROOT_OUTR} -mtime +30 -exec rm -rf {} \; || true','','',86400,1,'cleanreq',0);
+INSERT INTO JOBS VALUES('cleantmp','Y','cleantmp','find \$WEBOBS{PATH_TMP_WEBOBS} -mtime +2 -exec rm -rf {} \; || true','','',86400,1,'cleantmp',0);
 INSERT INTO JOBS VALUES('locastat','Y','locastat','\$WEBOBS{JOB_MCC} locastat','','',3600,0.8,'locastat',0);
 INSERT INTO JOBS VALUES('gridmaps','Y','gridmaps','\$WEBOBS{JOB_MCC} gridmaps','','',3600,0.8,'gridmaps',0);
 INSERT INTO JOBS VALUES('sefran','N','sefran3','\$WEBOBS{JOB_MCC} sefran3','','',600,0.8,'sefran3',0);
@@ -50,4 +50,3 @@ EOF
 
 echo "Done."
 exit 0
-

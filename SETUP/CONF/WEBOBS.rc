@@ -1,6 +1,6 @@
 =key|value
 
-VERSION|WebObs-2.1.6
+VERSION|nd
 WEBOBS_ID|${WebObsIdentification}
 BIG_BANG|${InstallYear}
 WEBOBS_TITLE|WEBOBS ${WEBOBS_ID}
@@ -29,6 +29,7 @@ ROOT_PREPROCESSOR|
 PATH_VIEWS|${ROOT_CONF}/VIEWS
 PATH_PROCS|${ROOT_CONF}/PROCS
 PATH_FORMS|${ROOT_CONF}/FORMS
+PATH_SEFRANS|${ROOT_CONF}/SEFRANS
 CONF_NODES|${ROOT_CONF}/NODES.rc
 CONF_GRIDS|${ROOT_CONF}/GRIDS.rc
 # also found in NODES.rc !
@@ -58,6 +59,8 @@ PRGM_HTPASSWD|/usr/bin/htpasswd
 # "md5" for option -m or "bcrypt" for option -B to htpasswd.
 # "md5" is more portable while "bcrypt" is even more secure.
 HTPASSWD_ENCRYPTION|md5
+# set this file for autologin functions
+NETRC_FILE|/home/wo/.netrc
 
 
 # ---- Site DATA paths ------------------------
@@ -90,6 +93,7 @@ TERMSOFUSE|${ROOT_DATA}/WEB/terms.txt
 EVENTS_TO_GAZETTE|ALL
 EVENTS_GAZETTE_DELETE|YES
 EVENTS_ACTIVE_GID|+ADMIN,+DUTY
+EVENTS_NOTIFY_FULL_MESSAGE|YES
 
 # Uncomment this line to disable MultiMarkDown facilities for all 'wiki' contents
 #WIKI_MMD|NO
@@ -180,10 +184,9 @@ CGI_CONFIRM_SUCCESSFUL|NO
 # ---- External resources ---------------------
 # ---------------------------------------------
 PLOTERUP_FILE|${ROOT_CONF}/ERUPTIONS_SHM.conf
-MAP_EXTENSION_ORDER|ANT,GUA,SBT,SOU,DOM
 
 PATH_MCR|/usr/local/MATLAB/MATLAB_Compiler_Runtime/v716
-PATH_MCC|${ROOT_CODE}/matlab/bin/linux-64
+PATH_MCC|${ROOT_CODE}/bin/linux-64
 
 # ---- Graphs requests    ---------------------
 # ---------------------------------------------
@@ -221,20 +224,15 @@ WEB_RACINE_SIGNAUX|
 
 # --- executables ----------------------------
 # ---------------------------------------------
-PRGM_MATLAB|/usr/local/bin/matlab -nojvm -display :9
-PRGM_MATLAB_NODISPLAY|/usr/local/bin/matlab -nojvm -nodisplay
-PRGM_GS|/usr/bin/gs
-#PRGM_CONVERT|/usr/bin/convert
-PRGM_CONVERT|env LD_LIBRARY_PATH='' /usr/bin/convert
+PRGM_CONVERT|convert
 CONVERT_COLORSPACE|-colorspace sRGB
-PRGM_IDENTIFY|/usr/bin/identify
+PRGM_IDENTIFY|identify
+PRGM_PNGQUANT|pngquant
 
 # Earth tide prediction program GOTIC2, downloadable at http://www.miz.nao.ac.jp/staffs/nao99/index_En.html
 PRGM_GOTIC2|/opt/nao99b/gotic2/gotic2
 
 PRGM_PS2PDF|/usr/bin/ps2pdf
-PRGM_SUD2MAT|${ROOT_CODE}/bin/sud2mat0
-PRGM_SUD2MAT2|${ROOT_CODE}/bin/sud2mat
 PRGM_ALARM|perl -e "alarm shift @ARGV; exec @ARGV"
 
 WINSTON_JAVA|${ROOT_CODE}/bin/java/winston-bin.jar
@@ -279,30 +277,32 @@ GOOGLE_EARTH_LINK|1
 GOOGLE_EARTH_LINK_INFO|KML file for Google Earth (ATTENTION: error ~20 m)
 IMAGE_LOGO_GOOGLE_EARTH|/icons/google/google_earth.gif
 
-# Google Maps ---------------------------------
-CGI_GOOGLE_MAPS|googleMAPS.pl
-GOOGLE_MAPS_LINK|1
-GOOGLE_MAPS_API|https://maps.google.com/maps?file=api
-# NOTE: API key can be obtained at http://code.google.com/apis/maps/signup.html entering domain address
-GOOGLE_MAPS_API_KEY|
-GOOGLE_MAPS_LINK_INFO|See with Google Maps (ATTENTION: error ~20 m)
-GOOGLE_MAPS_ICON|/icons/gdot.png
-GOOGLE_MAPS_TYPE|G_HYBRID_MAP
-GOOGLE_MAPS_WIDTH_VALUE|800
-GOOGLE_MAPS_HEIGHT_VALUE|600
-GOOGLE_MAPS_ZOOM_VALUE|17
+# OpenStreetMap ---------------------------------
+CGI_OSM|OSM.pl
+OSM_LINK|1
+OSM_INFO|See with OpenStreetMap
+OSM_NODE_ICON|/icons/gdot.png
+OSM_WIDTH_VALUE|800
+OSM_HEIGHT_VALUE|600
+OSM_ZOOM_VALUE|17
+
+# QR code module size (in pixels) / empty or zero to not display in grid/node pages
+QRCODE_SIZE|2
+QRCODE_LOGOS|/icons/ipgp/logo_WebObs_C413.png,/icons/ipgp/logo_IPGP_2022.png
 
 # Digital Elevation Models --------------------
 # ---------------------------------------------
 DEM_OVERSAMPLING|500
 DEM_MAX_WIDTH|1201
-# SRTM data are automatically downloaded
 PATH_DATA_DEM_SRTM|${PATH_DATA_DEM}/SRTM
 PATH_DATA_DEM_SRTM1|${PATH_DATA_DEM}/SRTM1
 SRTM_COPYRIGHT|DEM: SRTM/NASA
 SRTM_MAX_TILES|25
 SRTM1_MAX_TILES|4
-# ETOPO Global Relief Data: can be downloaded at http://www.ngdc.noaa.gov/mgg/global/global.html (.bin and .hdr)
+# Authentication needed to download new SRTM1 tiles (see https://urs.earthdata.nasa.gov)
+# alternative is to empty this variable and put login information in .netrc
+EARTHDATA_LOGIN|usr,pwd
+# ETOPO Global Relief Data: ETOPO1 can be downloaded at http://www.ngdc.noaa.gov/mgg/global/global.html (.bin and .hdr)
 PATH_DATA_DEM_ETOPO|${PATH_DATA_DEM}/ETOPO
 ETOPO_NAME|etopo5
 ETOPO_COPYRIGHT|DEM: ETOPO5 NGDC/NOOA
@@ -325,3 +325,5 @@ MKGRAPH_VALUE_PPI|100
 MKGRAPH_THUMBNAIL_HEIGHT|112
 LOGO_DEFAULT|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 LOGO_HEIGHT|0.04
+# URN to LOGO_DEFAULT
+URN_LOGO_DEFAULT|/icons/ipgp/logo_WOVS.png

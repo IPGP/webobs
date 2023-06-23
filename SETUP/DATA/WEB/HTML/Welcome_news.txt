@@ -1,10 +1,54 @@
-<A href="http://volcano.ipgp.fr/guadeloupe/images/soufriere.jpg"><IMG src="http://volcano.ipgp.fr/guadeloupe/images/soufriere.jpg"  width="160" height="120" border="1" onMouseOut="nd()" onMouseOver="overlib('La Soufrière volcano in real-time',CAPTION,'Every 5 minutes')"></A>
-<A href="http://volcano.ipgp.jussieu.fr/martinique/images/latest.jpg"><IMG src="http://volcano.ipgp.jussieu.fr/martinique/images/latest.jpg" width="160" height="120" border="1" onMouseOut="nd()" onMouseOver="overlib('La Montagne Pelée en temps-réel',CAPTION,'Depuis 5 minutes')"></A>
-<br>
-<A href="http://fournaise.ipgp.fr/cameras/CameraBory/cameraBory.jpg"><IMG src="http://fournaise.ipgp.fr/cameras/CameraBory/cameraBory.jpg" width="160" height="120" border="1" onMouseOut="nd()" onMouseOver="overlib('Le Piton de la Fournaise (Cratère Bory) en temps-réel',CAPTION,'Depuis 5 minutes')"></A>
-<A href="http://fournaise.ipgp.fr/cameras/CameraBert/cameraBert.jpg"><IMG src="http://fournaise.ipgp.fr/cameras/CameraBert/cameraBert.jpg" width="160" height="120" border="1" onMouseOut="nd()" onMouseOver="overlib('Le Piton de la Fournaise (depuis Piton de Bert) en temps-réel',CAPTION,'Depuis 5 minutes')"></A>
-<br>
+<div style="margin-top: 5px; margin-bottom: 3px">
+  <a href="http://volcano.ipgp.fr/guadeloupe/Cameras/soufriere.jpg">
+    <img src="http://volcano.ipgp.fr/guadeloupe/Cameras/soufriere.jpg" width="160" height="120" border="1" onMouseOut="nd()"
+     onMouseOver="overlib('La Soufrière volcano in real-time',CAPTION,'Every 5 minutes')" alt="Soufrière of Guadeloupe">
+  </a>
+  <a href="http://volcano.ipgp.fr/martinique/Cameras/pelee.jpg">
+    <img src="http://volcano.ipgp.fr/martinique/Cameras/pelee.jpg" width="160" height="120" border="1" onMouseOut="nd()"
+     onMouseOver="overlib('La Montagne Pelée en temps-réel',CAPTION,'Depuis 5 minutes')" alt="Mount Pelée">
+  </a>
+  <br>
 
-<A href="/cgi-bin/showOUTG.pl?grid=PROC.HYPOINDO&ts=01y&g=Java"><IMG src="/OUTG/PROC.HYPOINDO/graphs/Java_01y.jpg" height="115" border="1" onMouseOut="nd()" onMouseOver="overlib('USGS Java Seismicity',CAPTION,'Last year')"></A>
+  <a href="http://volcano.ipgp.fr/reunion/Camera/CameraBory.jpg">
+    <img src="http://volcano.ipgp.fr/reunion/Camera/CameraBory.jpg" width="160" height="120" border="1" onMouseOut="nd()"
+     onMouseOver="overlib('Le Piton de la Fournaise (Cratère Bory) en temps-réel',CAPTION,'Depuis 5 minutes')"
+     alt="Piton de la Fournaise (Bory Crater)">
+  </a>
+  <a href="http://volcano.ipgp.fr/reunion/Camera/CameraBert.jpg">
+    <img src="http://volcano.ipgp.fr/reunion/Camera/CameraBert.jpg" width="160" height="120" border="1" onMouseOut="nd()"
+     onMouseOver="overlib('Le Piton de la Fournaise (depuis Piton de Bert) en temps-réel',CAPTION,'Depuis 5 minutes')"
+     alt="Piton de la Fournaise (Bert Crater)">
+  </a>
+</div>
 
-<A href="/cgi-bin/showOUTG.pl?grid=PROC.GEOSCOPE&ts=06h&g=isbfdf0"><IMG src="/OUTG/PROC.GEOSCOPE/graphs/isbfdf0_06h.jpg" height="115" border="1" onMouseOut="nd()" onMouseOver="overlib('Geoscope FDF Seismogram',CAPTION,'Last 6 hours')"></A>
+<!-- This is an example of presentation frames -->
+<div class="emphase-frame" style="text-align: center;">
+  <h3 class="emphase-title">Featured graphs</h3>
+
+  <div class="emphase-graph-floating" style="margin-left: 20%">
+    <h4 class="emphase-graph-title"> Java Seismicity </h4>
+    <a href="/cgi-bin/showOUTG.pl?grid=PROC.HYPOINDO&ts=01y&g=Java">
+      <img src="/OUTG/PROC.HYPOINDO/graphs/Java_01y.jpg" height="115" border="1"
+      onMouseOut="nd()" onMouseOver="overlib('USGS Java Seismicity',CAPTION,'Last year')"
+      alt="Proc HYPOINDO">
+    </a>
+  </div>
+
+  <div class="emphase-graph-floating">
+    <h4 class="emphase-graph-title"> FDFM Seismogram </h4>
+    <a href="/cgi-bin/showOUTG.pl?grid=PROC.GEOSCOPE&ts=24h&g=isbfdfm">
+      <img src="/OUTG/PROC.GEOSCOPE/graphs/isbfdfm_24h.jpg" height="115" border="1"
+      onMouseOut="nd()" onMouseOver="overlib('Geoscope FDFM Seismogram',CAPTION,'Last 24 hours')"
+      alt="Proc GEOSCOPE">
+    </a>
+  </div>
+
+    <!-- Force the parent container to stretch until after the above frames, or the graphs would appear outside of the Info frame -->
+    <br class="float-break">
+</div>
+
+<!--
+ Note: a 'emphase-frame-floating' CSS class is also available as an alternative
+ to 'emphase-frame' to have the frame float (as with 'emphase-graph-floating',
+ use a br.float-break to go back to inline content after the floating frames).
+-->
