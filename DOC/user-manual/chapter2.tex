@@ -16,6 +16,11 @@ A \wo{node} is the central \webobs element associated with following attributes:
 \item    a long name (\wo{name}) and short name (\wo{alias});
 \item    an optional short description (\wo{type});
 \item    a lifetime period with start and end dates (both optional);
+\item	 a dataset title for all the data related to the NODE;
+\item 	 a description of the data gathered in the \wo{node}, which can include definitions, geographical indication or information on the method to obtain the data;
+\item 	 INSPIRE theme related to the data gathered in the \wo{node};
+\item 	 keywords related to the topic categories covered by the data gathered in the \wo{node};
+\item 	 a description of the lineage of the data, from the acquisition to the method use to treat and/or analyse the data;
 \item    a time zone (associated to lifetime dates and events date/time);
 \item    an optional location (latitude, longitude, elevation) associated with a location map (graph), OpenStreetMap GUI and KML link;
 \item    optional text contents for "informations", "installation" and "access";
@@ -26,6 +31,7 @@ A \wo{node} is the central \webobs element associated with following attributes:
 \item    events log associated with date and operator list;
 \item    a list of associated grids (\wo{views} and/or \wo{procs}, see \ref{grids});
 \item    a validity flag (for admin users);
+\item 	 a map to locate the NODE without typing manually the position. The map includes the possibility of adding a shapefile related to the spatial coverage of NODE (for example a watershed or lava flows); 
 \item	 optional functional parameters when the \wo{node} is associated to a \wo{proc}: data code (\wo{FID}), network code (\wo{FDSN}), data format (\wo{RAWFORMAT}) and source (\wo{RAWDATA}), time zone (\wo{TZ}) of data, acquisition period and delay, and a calibration file that describes each channel characteristics and history:
 	\begin{itemize}
 	\item    date and time of validity;
@@ -48,7 +54,7 @@ Examples of what a \wo{node} can be:
 % -----------------------------------------------------------------
 \subsection{Create, edit or delete a NODE}
 
-Modifying \wo{node} is possible only through a \wo{grid} (see next section \ref{grids}). Creation of new \wo{node} or edition of an existing \wo{node} deserves to \wo{users} with edit level for the associated \wo{grid}. Deletion of a \wo{node} is reserved to administrator level \wo{users}.
+Modifying \wo{node} is possible only through a \wo{grid} (see next section \ref{grids}). Creation of new \wo{node} or edition of an existing \wo{node} deserves to \wo{users} with edit level for the associated \wo{grid}. Deletion of a \wo{node} is reserved to administrator level \wo{users}. A few parameters are needed only for the THEIA$\vert$OZCAR pivot model (see \ref{theia}).
 
 % -----------------------------------------------------------------
 \subsubsection{Node validity}
@@ -83,6 +89,20 @@ The ALIAS is the short name of a \wo{node}, used for display purposes in table a
 
 The TYPE of a \wo{node} is an optional free string that will be used for any short description of the \wo{node}. The TYPE is displayed in the main GRID's table in front of the corresponding \wo{node}.
 
+% -----------------------------------------------------------------
+\subsection{Node dataset description}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{INSPIRE Theme}
+See \ref{theia}. INSPIRE dataset theme. Refer to the data model description for the various INSPIRE themes available.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Topic categories}
+See \ref{theia}. List of keywords representing the thematic categories of the dataset. The various elements of the list are separated by commas. Please refer to the data model description for the different thematic categories available.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Lineage}
+See \ref{tehia}. Describes the genealogy of a dataset, i.e. the history of the dataset and, if known, its life cycle, from the acquisition and capture of information to its compilation with other datasets and variants of its current form. The aim is to provide a literal and concise description of either the history of the dataset, or the means, procedures or computer processing implemented at the time the dataset was acquired. The genealogy describes the processing history and/or the general quality of the geographic data set. Where applicable, it may include information on whether the dataset has been validated or subjected to quality control, whether it is the official version (if several versions exist) and whether it has legal value.
 
 % -----------------------------------------------------------------
 \subsection{Lifetime and time zone}
@@ -154,6 +174,13 @@ GOOGLE_EARTH_LINK|1
 GOOGLE_EARTH_LINK_INFO|KML file for Google Earth (ATTENTION: error ~20 m)
 IMAGE_LOGO_GOOGLE_EARTH|/icons/google/google_earth.gif
 \end{lstlisting}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsubsection{Interactive map}
+
+A \wo{node} can also be located using an interactive map. It is possible to open shapefile into the interactive map in order to display the spatial coverage of a \wo{node}. See also \ref{theia}.
+
+\includegraphics[width=\textwidth]{figures/interactive_map.png}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Location map}
