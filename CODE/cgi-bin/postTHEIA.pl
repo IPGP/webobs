@@ -22,6 +22,7 @@ use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 use JSON;
+use feature 'say';
 
 # ---- webobs stuff
 use WebObs::Config;
@@ -41,7 +42,7 @@ my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
 #
 # ---- extracting producer data
 
-my $stmt = qq(SELECT * FROM producer, contacts, organisations;);
+my $stmt = qq(SELECT * FROM producer, contacts, organisations GROUP BY contacts.email;);
 my $sth = $dbh->prepare( $stmt );
 my $rv = $sth->execute() or die $DBI::errstr;
 
@@ -54,25 +55,23 @@ my %producer;
 while( my @row = $sth->fetchrow_array() ) {
 	# ---- parsing contacts
 	my @contacts;
-	foreach(split(/_,/, $row[7])) {
-		my %contact = (
-			firstName => $row[11],
-			lastName => $row[12],
-			email => (split ':',$_)[1],
-			role => (split ':',$_)[0],
-		);
-		push(@contacts, \%contact)
-	}
+	my %contact = (
+		firstName => $row[11],
+		lastName => $row[12],
+		email => $row[10],
+		role => $row[13],
+	);
+	push(@contacts, \%contact);
 	# ---- parsing fundings
 	my @fundings;
-	foreach(split(/_,/, $row[8])) {
-		my %funding = (
-			type => (split ':',$_)[0],
-			iso3166 => "fr",
-			idScanR => (split ':',$_)[1],
-		);
-		push(@fundings, \%funding)
-	}
+	my %funding = (
+		type => $row[15],
+		iso3166 => "fr",
+		idScanR => $row[19],
+		name => $row[18],
+		acronym => $row[17],
+	);
+	push(@fundings, \%funding);
 =pod
 	# ---- parsing online resources
 	my @resources;
@@ -224,8 +223,8 @@ while( my @row = $sth->fetchrow_array() ) {
 	);
 	my %metadata = (
 		title => $row[1],
-		description => (split ':', $row[2])[1],
-		datasetLineage => "datasetLineage",
+		description => $row[2],
+		datasetLineage => $row[6],
 		contacts => \@contacts,
 		dataConstraint => \%dataConstraint,
 		topicCategories => \@topicCategories,
@@ -260,13 +259,15 @@ my %json = (
 
 my $filename = "$WEBOBS{ROOT_CONF}/$json{'producer'}{'producerId'}_en.json";
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
-print "The JSON metadata file has been successfully created at ".$filename." !";
 chmod 0755, $filename;
 open(FH, '>', $filename) or die $!;
 
 print FH encode_json \%json;
 
 close(FH);
+
+my $output = "java -jar /home/lucas/Documents/donnees_webobs_obsera/JSON-schema-validation-0-jar-with-dependencies.jar ".$filename;
+if (qx($output) =~ /success/) {print "The JSON metadata file has been successfully created at ".$filename." !"} else {"The JSON metadata file is not valid"};
 
 #print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
    

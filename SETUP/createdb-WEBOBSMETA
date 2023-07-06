@@ -5,8 +5,6 @@ P=`dirname $0`
 # can be run for fresh installation or within a legacy Webobs migration
 # current directory (pwd) MUST be the target webob's CONF/ directory
 
-# loading INSPIRE themes and topic categories into two variables
-
 echo "Creating/populating metadata tables ..."
 sqlite3 WEBOBSMETA.db <<EOF
 BEGIN TRANSACTION;
@@ -39,10 +37,11 @@ create table contacts (
     
 drop table if exists organisations;
 create table organisations (
-    IDENTIFIER text NOT NULL, 
-    NAME text NOT NULL, 
-    ISO3166 text DEFAULT 'fr', 
     TYPE text NOT NULL, 
+    ISO3166 text DEFAULT 'fr', 
+    ACRONYM text NOT NULL, 
+    NAME text NOT NULL, 
+    IDENTIFIER text NOT NULL, 
     PID text NOT NULL, 
     PRIMARY KEY(IDENTIFIER), 
     FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
@@ -102,9 +101,11 @@ create table grids2producers (
     FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     
+drop table if exists EnumContactPersonRoles;
+create table EnumContactPersonRoles (ROLE text NOT NULL);
 
-drop table if exists typeOrganisation;
-create table typeOrganisation (TYPE text NOT NULL);
+drop table if exists EnumFundingTypes;
+create table EnumFundingTypes (TYPE text NOT NULL);
 
 drop table if exists typeResource;
 create table typeResource (TYPE text NOT NULL, NAME text NOT NULL);
@@ -123,18 +124,24 @@ COMMIT;
 EOF
 
 # creating organisation types table 
-cat /opt/webobs/CONF/typeOrganisation.conf | while read line
+cat /opt/webobs/CONF/EnumContactPersonRoles.conf | while read line
 do
-    sqlite3 WEBOBSMETA.db "INSERT INTO typeOrganisation (TYPE) VALUES ('$line');"
+    sqlite3 WEBOBSMETA.db "INSERT INTO EnumContactPersonRoles (ROLE) VALUES ('$line');"
+done
+
+# creating organisation types table 
+cat /opt/webobs/CONF/EnumFundingTypes.conf | while read line
+do
+    sqlite3 WEBOBSMETA.db "INSERT INTO EnumFundingTypes (TYPE) VALUES ('$line');"
 done
 
 # creating INSPIRE themes and topic categories tables 
-cat /opt/webobs/CONF/inspireTheme.conf | while read line
+cat /opt/webobs/CONF/EnumInspireTheme.conf | while read line
 do
     sqlite3 WEBOBSMETA.db "INSERT INTO inspireTheme (THEME) VALUES ('$line');"
 done
 
-cat /opt/webobs/CONF/topicCategories.conf | while read line
+cat /opt/webobs/CONF/EnumTopicCategories.conf | while read line
 do
     sqlite3 WEBOBSMETA.db "INSERT INTO topicCategories (TOPIC) VALUES ('$line');"
 done

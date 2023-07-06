@@ -90,9 +90,8 @@ function openPopupProducer(ux) {
 	// ux  ==  domain' html-table row id OR -1 for a new domain
 	if (arguments.length <= 0 ) { return; } // noop if no ux
 	var form = $('#overlay_form_producer')[0];
-	if (ux != -1) { // editing an existing domain: populate popup from its table row TDs
-		// ATT:  $("td",domain.ux)[n] = n (0-based) must match domains <td> order in def-row  
-		console.log($("td",ux));
+	if (ux != -1) { // editing an existing producer: populate popup from its table row TDs
+		// ATT:  $("td",producer.ux)[n] = n (0-based) must match producers <td> order in def-row  
 		form.id.value = $("td",ux)[2].textContent;
 		form.OLDcode.value = $("td",ux)[2].textContent;
 		form.id.style.backgroundColor = "#EEEEEE";
@@ -102,10 +101,10 @@ function openPopupProducer(ux) {
 		form.objective.value = $("td",ux)[6].textContent;
 		form.measVar.value = $("td",ux)[7].textContent;
 		form.email.value = $("td",ux)[8].textContent;
-		form.contacts.value = $("td",ux)[9].textContent;
-		form.funders.value = $("td",ux)[10].textContent;
+		form.emails.value = $("td",ux)[9].textContent.split(',')[0];
+		form.nameFunders.value = $("td",ux)[10].textContent;
 		form.onlineRes.value = $("td",ux)[11].textContent;
-		var listgrids = $("td",ux)[12].textContent.split(', ');
+		var listgrids = $("td",ux)[12].textContent.split(',');
 		$('#overlay_form_producer #grid option').each(function() { 
 			$(this).removeProp('selected');
 			if (jQuery.inArray( this.value, listgrids ) != -1) { $(this).prop('selected',true) }
@@ -161,39 +160,32 @@ function sendPopupProducer() {
 		return false;
 	}
 	
-	// preparing data for the integration in the database
-	if (form.count_mgr.value == 0) {
-		form.contacts.value = 'Project leader:'+form.contacts.value;
-		form.contactNames.value = form.firstName.value + '|' + form.lastName.value;
-	} else if (form.count_mgr.value > 0) {
-		var contacts = ['Project leader:'+form.contacts.value];
+	// concatening the contacts and funders data into one variable
+	if (form.count_mgr.value > 1) {
 		var firstNames = [];
 		var lastNames = [];
-		for (let i = 1; i <= form.count_mgr.value; i++) {
-			var id = 'dataMgr'+i;
-			contacts.push('Data manager:'+form.elements[id].value)
-		} 
-		for (let i = 0; i <= form.count_mgr.value; i++){
+		var roles = [];
+		var emails = [];
+		for (let i = 0; i <= form.count_mgr.value-1; i++){
 			firstNames.push(form.firstName[i].value);
 			lastNames.push(form.lastName[i].value);
-		} form.contacts.value = contacts.join('_,'); form.contactNames.value = firstNames.join('_,') + '|' + lastNames.join('_,'); 
-	} 
-
-	// preparing data for the integration in the database
-	if (form.count_fnd.value == 1) {
-		console.log(form.typeFunders);
-		form.funders.value = form.typeFunders.value+":"+form.scanR.value+'|'+form.nameFunders.value;
-	} else if (form.count_fnd.value > 1) {
-		console.log(form.typeFunders);
-		var funders = [];
-		var names = [];
+			roles.push(form.roles[i].value);
+			emails.push(form.emails[i].value);
+		} form.contacts.value = firstNames.join('_,') + '|' + lastNames.join('_,') + '|' + roles.join('_,') + '|' + emails.join('_,'); 
+	} else { form.contacts.value = form.firstName.value + '|' + form.lastName.value + '|' + form.roles.value + '|' + form.emails.value; }
+	
+	if (form.count_fnd.value > 1) {
+		var types = [];
 		var scanR = [];
-		for (let i = 0; i <= form.count_fnd.value-1; i++) {
-			funders.push(form.typeFunders[i].value+":"+form.scanR[i].value);
-			names.push(form.nameFunders[i].value);
+		var names = [];
+		var acronyms = [];
+		for (let i = 0; i <= form.count_fnd.value-1; i++){
+			types.push(form.typeFunders[i].value);
 			scanR.push(form.scanR[i].value);
-		} form.funders.value = funders.join('_,'); form.funders.value = form.funders.value +'|'+names.join(',');
-	} 
+			names.push(form.nameFunders[i].value);
+			acronyms.push(form.acronyms[i].value);
+		} form.funders.value = types.join('_,') + '|' + scanR.join('_,') + '|' + names.join('_,') + '|' + acronyms.join('_,'); 
+	} else { form.funders.value = form.typeFunders.value + '|' + form.scanR.value + '|' + form.nameFunders.value + '|' + form.acronyms.value; }
 	
 	if ( form.contacts.value == "" ) {
 		alert ("contacts can't be empty");
@@ -207,7 +199,7 @@ function sendPopupProducer() {
 		alert ("grid can't be empty");
 		return false;
 	}
-	console.log(form.contactNames);
+
 	// preparing data for the integration in the database
 	if (form.count_res.value == 1) {
 		if (form.nameRes.value == '') {form.onlineRes.value = ''}
