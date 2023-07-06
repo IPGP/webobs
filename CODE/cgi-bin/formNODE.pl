@@ -112,8 +112,6 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
-my $usrTitle     = $NODE{TITLE};
-my $usrDesc      = $NODE{DESCRIPTION};
 my $usrTheme     = $NODE{THEME};
 my $usrTopic     = $NODE{TOPICS};
 my $usrOrigin    = $NODE{ORIGIN};
@@ -254,7 +252,7 @@ function postIt()
    return false;
  }
  if(document.form.lonwgs84.value != "" && (isNaN(document.form.lonwgs84.value) || document.form.lonwgs84.value < -180 || document.form.lonwgs84.value > 180)) {
-   alert("LONGITUDE: Please enter a longiture value between -180 and +180, or leave blank");
+   alert("LONGITUDE: Please enter a longitude value between -180 and +180, or leave blank");
    document.form.lonwgs84.focus();
    return false;
  }
@@ -440,17 +438,23 @@ function onMapClick(e) {
 	var lat = e.latlng['lat'].toFixed(6);
 	var lon = e.latlng['lng'].toFixed(6);
 	lat, lon = nsew(lat, lon);
-	
+
+	/*
 	var p = document.createElement('p');
-	p.innerHTML = "<B>$NODE{ALIAS}: "+$NODE{NAME}+"</B><BR><I>($NODE{TYPE})</I><BR>&nbspfrom <B>$NODE{INSTALL_DATE}</B> to <B>$NODE{END_DATE}</B><BR>&nbsp;<B>"+lat+"&deg;</B>, <B>"+lon+"&deg;</B>, <B>$NODE{ALTITUDE} m</B>"
+	
+	p.innerHTML = "<B>$NODE{ALIAS}: "+$NODE{NAME}+"</B><BR><I>($NODE{TYPE})</I><BR>&nbspfrom <B>$NODE{INSTALL_DATE}</B> to <B>$NODE{END_DATE}</B><BR>&nbsp;<B>"+lat+"&deg;</B>, <B>"+lon+"&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
 	var txt = p.innerHTML;
 	if (typeof(marker) != "undefined") {
 		map.removeLayer(marker);
 	}
 	
-	marker = L.marker([lat, lon]).addTo(map);
 	marker.bindPopup(txt).openPopup();
-
+	*/
+	
+	if (typeof(marker) != "undefined") {
+		map.removeLayer(marker);
+	}
+	marker = L.marker([lat, lon]).addTo(map);
 	document.form.latwgs84.value = lat;
 	document.form.lonwgs84.value = lon;
 	document.form.locMap.value = 1;
@@ -497,6 +501,8 @@ function nsew(lat, lon) {
 		document.form.latwgs84n.value = 'S';
 		document.form.lonwgs84e.value = 'W';
 		return -lat, -lon;
+	} else if (lat > 0 && lon > 0 && ns == 'N' && ew == 'W') {
+		return lat, -lon;
 	} else {
 		return lat, lon;
 	}
@@ -570,7 +576,7 @@ function handleFiles() {	// read .zip shpfiles
 	  })
 	};
 	fr.readAsArrayBuffer(fichierSelectionne);
-};
+}
 function getGeometry(geojson) {
 	var geometry = {"type":"", "coordinates":""};
 
@@ -722,21 +728,15 @@ print "<TR>";
 	print "<INPUT type=\"hidden\" name=\"grid\" value=\"$GRIDType.$GRIDName.\">";
 	print "<INPUT type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">";
 		print "<BR>";
-		# --- Nom complet
+		# --- Nom complet/TITLE
 		print "<LABEL style=\"width:80px\" for=\"fullName\">$__{'Name'}:</LABEL>";
 		print "<INPUT size=\"40\" value=\"$usrName\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_name}')\" name=\"fullName\" id=\"fullName\"><BR>";
 		# --- ALIAS
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Alias'}:</LABEL>";
 		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrAlias\" onmouseover=\"overlib('$__{help_creationstation_alias}')\" size=\"8\" name=\"alias\" id=\"alias\">&nbsp;&nbsp;<BR>";
-		# --- TYPE
+		# --- TYPE/DESCRIPTION
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Type'}:</LABEL>";
-		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
-		# --- TITLE
-		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Title'}:</LABEL>";
-		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrTitle\" onmouseover=\"overlib('$__{help_creationstation_title}')\" size=\"8\" name=\"title\" id=\"title\">&nbsp;&nbsp;<BR>";
-		# --- DESCRIPTION
-		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Description'}:</LABEL>";
-		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrDesc\" onmouseover=\"overlib('$__{help_creationstation_description}')\" size=\"8\" name=\"description\" id=\"description\">&nbsp;&nbsp;<BR>";
+		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" cols=\"40\" name=\"type\" id=\"type\"><\/TEXTAREA>&nbsp;&nbsp;<BR>";
 		# --- INSPIRE THEME
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
 		print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
@@ -902,17 +902,18 @@ print "<TR>";
 			var map = L.map('map', mapOptions);
 			var popup = L.popup();
 			map.on('click', onMapClick);
-
+			
 			let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
-
-			if (document.form.latwgs84.value != '' || document.form.lonwgs84.value != '') {
-				var lat = $NODE{LAT_WGS84};
-				var lon = $NODE{LON_WGS84};
+			
+			if ( document.form.latwgs84.value !== "" || document.form.lonwgs84.value !== "" ) {
+				var lat = document.form.latwgs84.value;
+				var lon = document.form.lonwgs84.value;
+				lat, lon = nsew(lat, lon);
 				map.flyTo([lat, lon], 18);
 				var marker = L.marker([lat, lon]).addTo(map);
 				marker.bindPopup(\"$text\").openPopup();
-			}
-
+			} 
+			
 			var layerControl = L.control.layers(basemaps, overlays).addTo(map);
 		</script>
 FIN
@@ -1065,11 +1066,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Mallarino, Alexis Bosson, Didier Lafon
+Francois Beauducel, Didier Mallarino, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

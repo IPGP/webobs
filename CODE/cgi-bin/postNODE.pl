@@ -187,8 +187,6 @@ my $jourE      = $cgi->param('jourEnd')     // '';
 my $validite   = $cgi->param('valide')      // '';
 my $alias      = $cgi->param('alias')       // '';
 my $type       = $cgi->param('type')        // '';
-my $title      = $cgi->param('title')       // '';
-my $desc       = $cgi->param('description') // '';
 my $theme      = $cgi->param('theme')       // '';
 my $topics     = $cgi->param('topics')      // '';
 my $lineage    = $cgi->param('lineage')     // '';
@@ -449,7 +447,7 @@ sub htmlMsgOK {
 	$sth->execute($alias,$alias,$point);
 
 	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, CREATOR, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?,?);');
-	$sth->execute($id,$title,'abstract:'.$desc,$subject,$creator,$spatialcov,$lineage);
+	$sth->execute($id,$name,$type,$subject,$creator,$spatialcov,$lineage);
 
 	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
@@ -469,11 +467,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
+Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
