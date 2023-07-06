@@ -1,0 +1,159 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{WebObs metadata database interface}
+
+
+
+% ==================================================================
+\section{Theia$\vert$OZCAR Information System}
+
+Theia$\vert$OZCAR is an Information System which aims to collect the data from different observatories that have different data management methods. Some observatories working with WebObs needed functionalities to do so. Thus, an interface has been made between WebObs and the Theia$\vert$OZCAR IS. This data flux is based on the \textit{FAIR} data principles which stands for:
+
+\begin{itemize}
+\item 	 F : easy (\textit{facile} in french) to find;
+\item 	 A : accessible;
+\item 	 I : interoperable;
+\item 	 R : reusable.
+\end{itemize}
+
+It is expected in the future that this bridge created between WebObs and the Theia$\vert$OZCAR IS can be reused between WebObs and others data portal. That is why the principle of the Theia$\vert$OZCAR pivot model is presented here but it will be a more general pivot model in the future.
+
+% ==================================================================
+\section{Theia$\vert$OZCAR pivot model}
+
+In order to exchange information between WebObs and the Theia$\vert$OZCAR IS, some functionalities have been created to transfer necessary metadata for the Theia$\vert$OZCAR gateway. Those functionalities have been inspired by the Theia$\vert$OZCAR pivot model, based on the ISO19115$/$INSPIRE, O$\&$M and DataCite standards. This model contains the metadata which describes the \textbf{data producer}, the \textbf{datasets} that the \textbf{producer} provides and the \textbf{observations} contained in each of the \textbf{dataset}. An \textbf{observation} describes an \textbf{observed property} (a row in the calibration file) at a given {station} (a \wo{node}) following a \textbf{procedure} and its \textbf{results} (the raw data). 
+
+% ==================================================================
+\subsection{Metadata structure}
+
+Those informations are gathered by WebObs in a JSON file which respects the structure above (or see the figure below). 3 levels of importance exist for filling informations : mandatory (M), recommended (R) and optionnal (O).
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{figures/theia_pivot_model.png}
+	\caption{Figure from \url{https://github.com/theia-ozcar-is/csv-to-theia-ozcar-pivot-model}.}
+\end{figure}
+
+
+At the highest in the hierarchy are 3 JSON objects : 
+
+\begin{itemize}
+\item 	 producer;
+\item 	 datasets;
+\item 	 version.
+\end{itemize}
+
+datasets is a collection of dataset JSON object. Each dataset contains 3 informations : 
+
+\begin{itemize}
+\item 	 identifier;
+\item 	 metadata;
+\item 	 observations
+\end{itemize}
+
+observations is a collection of observation JSON object. producer, dataset and observation parameters are detailed in the sections below. 
+
+% ==================================================================
+\subsubsection{Producer metadata}
+
+The producer metadata are : 
+
+\begin{itemize}
+\item 	 Identifier (M) : identifier for the observtories concerned by the Theia$\vert$OZCAR IS have already been provided to the concerned laboratories;
+\item 	 Name (M) : name of the observatory;
+\item 	 Title (M) : title of the data producer;
+\item 	 Description (M) : a description of the data producer;
+\item 	 Objective (R) : a summary of the scientific objectives of the data producer;
+\item 	 Measured variables (R) : a summary of the variables observed by the data producer;
+\item 	 Email (M) : generic email to contact the data producer;
+\item 	 Contacts (M) : first names, last names, emails and roles of the data producer. 2 roles exist: Project leader and Data manager;
+\item 	 Funders (M) : type of organisation, scanR identifiers and names of the organisations that fund the data producer;
+\item 	 Online resource (O) : link toward the website of the data producer, link to download data, doi and webservice.
+\end{itemize}
+
+% ==================================================================
+\subsubsection{Dataset metadata}
+
+The dataset metadata are : 
+
+\begin{itemize}
+\item 	 Identifier (M) : each dataset identifier is based on the data producer identifier as following : $PRODUCERID\_DAT\_DATASETID$;
+\item 	 Title (M) : title of the dataset;
+\item 	 Description (M) : summary of the dataset, such as definition of the measured variables, the purpose of the study or the geographic location;
+\item 	 Subject (M) : lists of keywords and INSPIRE theme;
+\item 	 Creator (M) : lists of contacts for the dataset (people in charge of the dataset). Same informations registered as in producer.contacts. 2 roles exist : Publisher and Principal investigator;
+\item 	 Spatial coverage (M) : wkt object referencing the spatial extent of the dataset in latitude$\/$longitude;
+\item 	 Lineage (M) : describes the life cycle of the dataset, from the acquisition to the data entry via the data treatment.
+\end{itemize}
+
+% ==================================================================
+\subsubsection{Observation metadata}
+
+The observation metadata are : 
+
+\begin{itemize}
+\item 	 Identifier (M) : each dataset identifier is based on the data producer identifier as following : $PRODUCERID\_OBS\_DATASETID$;
+\item 	 Processing level (O) : Raw data, Quality-controlled data, Derived products;
+\item 	 Data type (M) : Numeric, Text, Vector, Raster, Photo, Video, Audio, Other;
+\item 	 Temporal extent (M) : startDate/endDate, format ISO 8601 "YYYY-MM-DDThh:mm:ssZ";
+\item 	 Observed property (M) : name of the variable of the observed phenomenon;
+\item 	 Station name (M) : name of the acquisition station;
+\item 	 Dataset (M) : identifier of the dataset whom the observation belongs to;
+\item 	 Data file name (M) : name of the file containing the observations (.csv, .txt, .dat, etc.).
+\end{itemize}
+
+% ==================================================================
+\subsection{Filling the metadata file}
+
+Each of these 3 objects (producer, datasets, observations) can be filled through WebObs, and some are even done automatically, for example when creating a \wo{node}, or when filling a line of a calibration file. A table to display the producer, datasets and observations metadata is available by clicking on a tab in the menu bar in WebObs.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{figures/theia_tab.png}
+	\caption{Click on the tab to open the metadata summary table.}
+\end{figure}
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{figures/theia_recap_table.png}
+	\caption{The table sums up the mandatory metadata that have been filled to create the JSON file that will be send to the Theia$\vert$OZCAR IS.}
+\end{figure}
+
+By clicking on each highlighted \textbf{Identifier}, you can get back to the edition menu of the clicked object. Then, to create the JSON file, you have to validate the form. A message will appear if the creation of the file succeed and will tell the path to the JSON file.
+
+\begin{figure}[!hb]
+	\centering
+	\includegraphics[scale=0.4]{figures/creation_json_msg.png}
+	\caption{}
+\end{figure}
+
+% ==================================================================
+\subsubsection{Producer metadata}
+
+The producer metadata can be filled throughout the \wo{domain} edition menu. 
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{figures/gridsMgr.png}
+	\caption{The table sums up the information about the data producer.}
+\end{figure}
+
+Each data producer can be edited or deleted. When creating, deleting or editing a producer, a local SQLite database is filled,  called WEBOBSMETA.db, which is only available for the admin. Only the mandatory metadata are necessary, in addition to the grids related to the producer (as several producer can co-exist on the same WebObs).Other metadata are optional even if some are more or less recommended.
+
+% ==================================================================
+\subsubsection{Dataset metadata}
+
+Dataset metadata is entered when creating or editing an existing \wo{node}. The \textbf{Name} and \textbf{Type} WebObs \wo{node} fields correspond respectively to the \textbf{dataset.Title} and \textbf{dataset.Description} Theia$\vert$OZCAR IS fields.
+
+% ==================================================================
+\subsubsection{Observation metadata}
+
+Observation metadata is entered when creating or editing an existing calibration file. Concerning the Theia topic categories, an hyperlink is provided towards the Theia$\vert$OZCAR Skosmos thesaurus.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{figures/calib_file_form.png}
+	\caption{You can click on the highlighted Theia word (on the right) to get drive to the Theia thesaurus.}
+\end{figure}
+
