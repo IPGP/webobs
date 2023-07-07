@@ -133,7 +133,7 @@ while(my @row = $sth->fetchrow_array()) {
 	$funders   = join(',',split(/_,/,$row[8]));
 	$onlineRes = join(',',split(/_,/,$row[9]));
 	print "<TR><TD width=3% align=center><SMALL><A href=\"/cgi-bin/gridsMgr.pl\">$row[0]</A>&nbsp&nbsp"
-			."<A href=\"/cgi-bin/showTHEIA.pl?object=producer&id=$row[0]&action=delete\"><IMG style=\"width:10px;height:10px;\"title=\"delete producer\" src=\"/icons/no.png\"></A>"
+			."<A id=$row[0] class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"width:10px;height:10px;\"title=\"delete producer\" src=\"/icons/no.png\"></A></SMALL></TD>"
 			."<p><input type=\"hidden\" name=\"producerId\" value=\"$row[0]\"></input></p></SMALL></TD>"
 			."<TD width=4% align=center><SMALL>$row[1]"
 			."<p><input type=\"hidden\" name=\"name\" value=\"$row[1]\"></input></p></SMALL></TD>"
@@ -187,7 +187,7 @@ while(my @row = $sth->fetchrow_array()){
 	my $proc    = (split '_', (split '\.', $row[0]) [0]) [2];
 	my $subject = join(',', split(/_/,$row[3]));
 	print "<TR><TD width=15% align=center><SMALL><A href=\"/cgi-bin/formNODE.pl?node=PROC.$proc.$nodeId\">$row[0]</A>&nbsp&nbsp"
-			."<A href=\"/cgi-bin/showTHEIA.pl?object=datasets&id=$row[0]&action=delete\"><IMG style=\"width:10px;height:10px;\"title=\"delete producer\" src=\"/icons/no.png\"></A></SMALL></TD>"
+			."<A id=$row[0] class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"width:10px;height:10px;\"title=\"delete producer\" src=\"/icons/no.png\"></A></SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$row[2]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
