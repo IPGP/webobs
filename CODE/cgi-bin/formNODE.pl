@@ -437,7 +437,7 @@ function delete_node()
 function onMapClick(e) {
 	var lat = e.latlng['lat'].toFixed(6);
 	var lon = e.latlng['lng'].toFixed(6);
-	lat, lon = nsew(lat, lon);
+	// lat, lon = nsew(lat, lon);
 
 	/*
 	var p = document.createElement('p');
@@ -455,8 +455,8 @@ function onMapClick(e) {
 		map.removeLayer(marker);
 	}
 	marker = L.marker([lat, lon]).addTo(map);
-	document.form.latwgs84.value = lat;
-	document.form.lonwgs84.value = lon;
+	document.form.latwgs84.value = ns(lat);
+	document.form.lonwgs84.value = ew(lon);
 	document.form.locMap.value = 1;
 
 	document.form.typePos.value="1";
@@ -505,6 +505,34 @@ function nsew(lat, lon) {
 		return lat, -lon;
 	} else {
 		return lat, lon;
+	}
+}
+// Better use these 2 functions when modifying lat/lon form values by clicking on the map
+function ns(lat) {
+	var ns = document.form.latwgs84n.value;
+	if (lat < 0 && ns == 'N') {
+		document.form.latwgs84n.value = 'S';
+		return -lat;
+	} else if (lat < 0 && ns == 'S') {
+		return -lat;
+	} else if (lat > 0 && ns == 'S') {
+		document.form.latwgs84n.value = 'N';
+	} else {
+		return lat;
+	} 
+}
+function ew(lon) {
+	var ew = document.form.lonwgs84e.value;
+	if (lon < 0 && ew == 'E') {
+		document.form.lonwgs84e.value = 'W';
+		return -lon;
+	} else if (lon < 0 && ew == 'W') {
+		return -lon;
+	} else if (lon > 0 && ew == 'W') {
+		document.form.lonwgs84e.value = 'E';
+		return lon;
+	} else {
+		return lon;
 	}
 }
 function onInputWrite(e) {
