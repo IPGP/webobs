@@ -112,6 +112,10 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
+my $usrCreator   = $NODE{CREATOR};
+my $usrFirstName = $NODE{FIRSTNAME};
+my $usrLastName  = $NODE{LASTNAME};
+my $usrEmail     = $NODE{EMAIL};
 my $usrTheme     = $NODE{THEME};
 my $usrTopic     = $NODE{TOPICS};
 my $usrOrigin    = $NODE{ORIGIN};
@@ -178,6 +182,18 @@ while(<FH>){
 	push(@topics, $_);
 }
 
+close(FH);
+
+my $creatorRoles = "/$WEBOBS{CREATOR}";
+my @creators;
+open(FH, '<', $creatorRoles) or die $!;
+
+while(<FH>){
+	if ($_ ne "Project leader") {push(@creators, $_);}
+}
+
+close(FH);
+
 # ---- Load the list of existing nodes
 my @allNodes = qx(/bin/ls $NODES{PATH_NODES});
 chomp(@allNodes);
@@ -221,80 +237,93 @@ print <<"FIN";
 
 function postIt()
 {
- if(document.form.nouveau.value == 1 && document.form.message.value != "ok") {
+ var form = \$('#theform')[0];
+ if(form.nouveau.value == 1 && form.message.value != "ok") {
    alert("NODE ID: Please enter a valid and new ID!");
-   document.form.nodename.focus();
+   form.nodename.focus();
    return false;
  }
- if((/^[\\s]*\$/).test(document.form.fullName.value)) {
+ if((/^[\\s]*\$/).test(form.fullName.value)) {
    alert("NAME: Please enter a full name (non-blank string)");
-   document.form.fullName.focus();
+   form.fullName.focus();
    return false;
  }
- if(document.form.alias.value == "") {
+ if(form.alias.value == "") {
    alert("ALIAS: Please enter a short name (non-blank string)");
-   document.form.alias.focus();
+   form.alias.focus();
    return false;
  }
- if(document.form.latwgs84.value != "" && (isNaN(document.form.latwgs84.value) || document.form.latwgs84.value < -90 || document.form.latwgs84.value > 90)) {
+ if(form.latwgs84.value != "" && (isNaN(form.latwgs84.value) || form.latwgs84.value < -90 || form.latwgs84.value > 90)) {
    alert("LATITUDE: Please enter a latitude value between -90 and +90, or leave blank");
-   document.form.latwgs84.focus();
+   form.latwgs84.focus();
    return false;
  }
- if(document.form.latwgs84.value < 0 && document.form.latwgs84.value >= -90) {
-   document.form.latwgs84.value = Math.abs(document.form.latwgs84.value);
-   if (document.form.latwgs84n.value == "N") document.form.latwgs84n.value = "S";
-   else document.form.latwgs84n.value = "N";
+ if(form.latwgs84.value < 0 && form.latwgs84.value >= -90) {
+   form.latwgs84.value = Math.abs(form.latwgs84.value);
+   if (form.latwgs84n.value == "N") form.latwgs84n.value = "S";
+   else form.latwgs84n.value = "N";
  }
- if(document.form.latwgs84.value == "" && (document.form.latwgs84min.value != "" || document.form.latwgs84sec.value != "")) {
+ if(form.latwgs84.value == "" && (form.latwgs84min.value != "" || form.latwgs84sec.value != "")) {
    alert("LATITUDE: Please enter a value for degree or leave all fields blank");
-   document.form.latwgs84.focus();
+   form.latwgs84.focus();
    return false;
  }
- if(document.form.lonwgs84.value != "" && (isNaN(document.form.lonwgs84.value) || document.form.lonwgs84.value < -180 || document.form.lonwgs84.value > 180)) {
+ if(form.lonwgs84.value != "" && (isNaN(form.lonwgs84.value) || form.lonwgs84.value < -180 || form.lonwgs84.value > 180)) {
    alert("LONGITUDE: Please enter a longitude value between -180 and +180, or leave blank");
-   document.form.lonwgs84.focus();
+   form.lonwgs84.focus();
    return false;
  }
- if(document.form.lonwgs84.value < 0 && document.form.lonwgs84.value >= -180) {
-   document.form.lonwgs84.value = Math.abs(document.form.lonwgs84.value);
-   if (document.form.lonwgs84e.value == "E") document.form.lonwgs84e.value = "W";
-   else document.form.lonwgs84e.value = "E";
+ if(form.lonwgs84.value < 0 && form.lonwgs84.value >= -180) {
+   form.lonwgs84.value = Math.abs(form.lonwgs84.value);
+   if (form.lonwgs84e.value == "E") form.lonwgs84e.value = "W";
+   else form.lonwgs84e.value = "E";
  }
- if(document.form.lonwgs84.value == "" && (document.form.lonwgs84min.value != "" || document.form.lonwgs84sec.value != "")) {
+ if(form.lonwgs84.value == "" && (form.lonwgs84min.value != "" || form.lonwgs84sec.value != "")) {
    alert("LONGITUDE: Please enter a value for degree or leave all fields blank");
-   document.form.lonwgs84.focus();
+   form.lonwgs84.focus();
    return false;
  }
- if(document.form.altitude.value != "" && isNaN(document.form.altitude.value)) {
+ if(form.altitude.value != "" && isNaN(form.altitude.value)) {
    alert("ELEVATION: Please enter a number or leave blank");
-   document.form.altitude.focus();
+   form.altitude.focus();
    return false;
  }
-  if (document.form.SELs.options.length < 1) {
+  if (form.SELs.options.length < 1) {
     alert(\"node MUST belong to at least 1 grid\");
-    document.form.SELs.focus();
+    form.SELs.focus();
     return false;
   }
 
-  for (var i=0; i<document.form.elements['allNodes'].length; i++) {
-  	document.form.elements['allNodes'][i].disabled = true;
+  for (var i=0; i<form.elements['allNodes'].length; i++) {
+  	form.elements['allNodes'][i].disabled = true;
   }
-  for (var i=0; i<document.form.SELs.length; i++) {
-  	document.form.SELs[i].selected = true;
+  for (var i=0; i<form.SELs.length; i++) {
+  	form.SELs[i].selected = true;
   }
   var selected = \$('#topicCats')[0].selectedOptions;
   var topics = [];
   for (var i=0; i<selected.length; i++) {
   	topics.push(selected[i].value);
-  } document.form.topics.value = 'topicCategories:'+topics.join(',')+'_';
+  } form.topics.value = 'topicCategories:'+topics.join(',')+'_';
+  	// form.creators.value = 
+  var roles = [];
+  var firstNames = [];
+  var lastNames = [];
+  var emails = [];
+  for (var i=0; i<form.role.length; i++) {
+  	roles.push(form.role[i].value);
+  	firstNames.push(form.firstName[i].value);
+  	lastNames.push(form.lastName[i].value);
+  	emails.push(form.email[i].value);
+  } 
+  	form.creators.value = roles.join(',') + '|' + firstNames.join(',') + '|' + lastNames.join(',') + '|' + emails.join(',');
 	console.log(\$(\"#theform\"));
-	if (\$(\"#theform\").hasChanged() || document.form.delete.value == 1 || document.form.locMap.value == 1) {
-		document.form.node.value = document.form.grid.value + document.form.nodename.value.toUpperCase();
+	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
+		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
 			var fidx = document.getElementById("fidx").getElementsByTagName("div");
 			for (var i=0; i<fidx.length; i++) {
-				if (document.form.rawformat.value == "" || fidx[i].id.indexOf(document.form.rawformat.value + "-") == -1) {
+				if (form.rawformat.value == "" || fidx[i].id.indexOf(form.rawformat.value + "-") == -1) {
 					var nested = document.getElementById("input-" + fidx[i].id);
 					nested.parentNode.removeChild(nested);
 				}
@@ -302,9 +331,9 @@ function postIt()
 		}
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
 		     if (data != '') alert(data);
-			 if (document.form.refresh.value == 1) {
+			 if (form.refresh.value == 1) {
 				 location.reload();
-		     } else { location.href = document.form.referer.value; }
+		     } else { location.href = form.referer.value; }
 		})
 		  .fail( function() {
 		     alert( \"postNode couldn't execute\" );
@@ -637,6 +666,26 @@ function getBoundingBox(coordinates) {
     var coordinates = [bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.xMin];
     return coordinates;
 }
+
+function addCreator() {
+    var form = \$('#theform')[0];
+	form.count_creator.value = parseInt(form.count_creator.value)+1;
+	var new_div = document.createElement('div');
+	new_div.id = 'new_creator'+form.count_creator.value;
+    new_div.innerHTML = \$('#creator')[0].innerHTML;
+    \$('#creator_add')[0].append(new_div);
+}
+function removeCreator() {
+	var form = \$('#theform')[0];
+	var id = '#new_creator'+form.count_creator.value;
+	if (\$(id)[0] === null) {
+		return false;
+	} else if (form.count_creator.value > 1) {
+		\$(id)[0].remove();
+		form.count_creator.value -= 1;
+	}
+}
+
 // creating and parametring the map for the geographic location choice
 
 var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
@@ -741,7 +790,7 @@ print "<TABLE style=\"border:0\" width=\"100%\">";
 print "<TR>";
 	print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # left column
 
-	print "<FIELDSET><LEGEND>$__{'Names and Description'}</LEGEND>";
+	print "<FIELDSET><LEGEND>$__{'Name and Description'}</LEGEND>";
 	# --- Codes, Name, Alias, Type
 	print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code/ID'}:</label>$GRIDType.$GRIDName.";
 	if ($newnode == 1) {
@@ -765,6 +814,20 @@ print "<TR>";
 		# --- TYPE/DESCRIPTION
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Type'}:</LABEL>";
 		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" cols=\"40\" name=\"type\" id=\"type\"><\/TEXTAREA>&nbsp;&nbsp;<BR>";
+		# --- CREATOR
+		print "<BUTTON style=\"text-align:center\" onclick=\"addCreator(); return false;\">Add a creator </BUTTON>";
+		print "<BUTTON onclick=\"removeCreator(); return false;\">Remove a creator </BUTTON>";
+		print "<INPUT type='hidden' name=\"count_creator\" value='1'></INPUT>";
+		print "<INPUT type='hidden' name=\"creators\" value=''></INPUT>";
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Creator'}:</LABEL><BR><BR>";
+		print "<DIV id=\"creator\">";
+		print "<SELECT onMouseOut=\"nd()\" value=\"$usrCreator\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
+		for (@creators) { print "<OPTION value=\"$_\">$_</option>\n"; }
+		print "</SELECT>&nbsp;&nbsp";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR></DIV>";
+		print "<DIV id='creator_add'></DIV><BR>";
 		# --- INSPIRE THEME
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
 		print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
