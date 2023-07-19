@@ -89,7 +89,8 @@ LANDSCAPE|NO
 PAGE_MAX_SUBPLOT|8
 # plot grid for all axes
 PLOT_GRID|YES
-# makes a PDF file for each graph (in addition to PNG, EPS and JPG thumbnail)
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
 PDFOUTPUT|NO
 # main logo file
 LOGO_FILE|$WEBOBS{LOGO_DEFAULT}

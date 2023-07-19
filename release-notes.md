@@ -11,16 +11,38 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ## Version under development
 ### New features
 
-1. Node's automatic geographical positioning using automatic KML feed is possible by selecting **auto KML feed** in positioning type. It uses a new node's variable `POS_RAWKML` containing a URL that returns a KML content. Latitude, longitude, altitude and positioning date will be filled and updated from *Placemark/TimeStamp/when* and *Placemark/Point/coordinates* tags.
+1. **EXPERIMENTAL:** Node's automatic geographical positioning using automatic KML feed is possible by selecting **auto KML feed** in positioning type. It uses a new node's variable `POS_RAWKML` containing a URL that returns a KML content. Latitude, longitude, altitude and positioning date will be filled and updated from *Placemark/TimeStamp/when* and *Placemark/Point/coordinates* tags.
 `!!` The local data configuration **CONF/POSITIONtypes.conf** pointed by `FILE_POS` variable in **NODE.rc** is now obsolete and unused. It is replaced by the read-only file **CODE/etc/postypes.conf**. If some administrators have modified the original template by adding new positioning types, please open an issue or contact the dev team.
 
 
 ### Enhancements
+1. **All procs**: new experimental flag option `SVGOUTPUT` to produce a vector file in SVG format for all graphs, allowing rescaling of the plot, using brower facilities. This option is also available in the proc request form.
+1. **Gridmaps**: new variable `GRIDMAPS_DEM_OPT` that can be set in any grid (view and proc) to overwrite the default background map options (defined in **GRIDMAPS.rc** configuration file). The variable must contain option list compatible with the **dem.m** function. Example:
+    ```
+    GRIDMAPS_DEM_OPT|'grayscale','watermark',2
+    ```
+1. In superproc **gnss**, new options to select/exclude nodes in summary graphs BASELINES, MOTION, and VECTORS:
+    ```
+    BASELINES_EXCLUDED_FROM_TARGET_KM|
+    BASELINES_INCLUDED_NODELIST|
+    MOTION_EXCLUDED_FROM_TARGET_KM|
+    MOTION_INCLUDED_NODELIST|
+    VECTORS_EXCLUDED_FROM_TARGET_KM|
+    VECTORS_INCLUDED_NODELIST|
+    ```
+    These variables come in addition to basic `_EXCLUDED_NODELIST` options. The filter works like for `MODELLING`:
+    - `*_EXCLUDED_FROM_TARGET_KM`: exclude nodes at greater distance from target (defined by `GNSS_TARGET_LATLON`), or at lower distance if the value is negative;
+    - `*_EXCLUDED_NODELIST`: exclude some nodes;
+    - `*_INCLUDED_NODELIST`: force to include some nodes (overwriting possible excluded nodes by other filter).
 1. In the **Scheduler Runs**:
     -  possibility to select a job ID and to sort any column in the job runs table.
     - ``!!`` access is now submitted to authorization rights. Resource is *scheduler* in the *misc* table. Admin (4) is needed to delete a log date or kill a running job.
 
 ### Fixed issues
+1. Fix an issue with user account end date of validity
+
+1. Fix some issues (search in comments) in the *Node Search Events* tool.
+
 1. We started to improve *GNU Octave* compatibility of the *Matlab* code. Since *Octave* has a less permissive grammar, it lead to a better writing and sometimes hidden bug fixes. See the associated [discussion thread](https://github.com/IPGP/webobs/discussions/116).
 
 ## v2.5.3 (September 2022)

@@ -37,9 +37,11 @@ SUBMIT_RESOURCE|tremblemaps
 REQUEST_KEYLIST|SC3_LISTEVT,EVENTS_OVERWRITING,WATERMARK,FELT_FORCED,REGION
 
 PPI|150
-POSTSCRIPT|1
-PDFOUTPUT|1
-EXPORTS|1
+# exports text data files
+EXPORTS|NO
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
+PDFOUTPUT|YES
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_ovsgipgp.jpg
 LOGO2_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_b3r.jpg
 COPYRIGHT|(c) OVSG-IPGP
