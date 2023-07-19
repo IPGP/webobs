@@ -387,18 +387,21 @@ print "<TR>";
 		print "<select id=\"linewidth\" name=\"linewidth\" size=\"1\">";
 		for (@linew) { print "<OPTION".(($_ eq $REQDFLT{LINEWIDTH})?" selected":"")." value=\"$_\">$_ pt</OPTION>" };
 		print "</select><BR>&nbsp;<BR>";
+	#	PLOTGRID|
+		print "<label style=\"width:80px\" for=\"gridon\">$__{'Grid'}:</label>";
+		print "<input id=\"gridon\" name=\"gridon\" type=\"checkbox\" value=\"1\"".($REQDFLT{PLOTGRID}==1 ? " checked":"")."><BR>&nbsp;<BR>";
 		print "</TD><TD style=\"border:0\">";
 	#	PPI|
 		print "<label style=\"width:80px\" for=\"ppi\">$__{'PPI'}:</label>";
 		print "<select id=\"ppi\" name=\"ppi\" size=\"1\">";
 		for (@ppis) { print "<OPTION".(($_ eq $REQDFLT{PPI})?" selected":"")." value=\"$_\">$_</OPTION>" };
 		print "</select><BR>&nbsp;<BR>";
-	#	PLOTGRID|
-		print "<label style=\"width:80px\" for=\"gridon\">$__{'Grid'}:</label>";
-		print "<input id=\"gridon\" name=\"gridon\" type=\"checkbox\" value=\"1\"".($REQDFLT{PLOTGRID}==1 ? " checked":"")."><BR>&nbsp;<BR>";
 	#	PDFOUTPUT|
 		print "<label style=\"width:80px\" for=\"pdfoutput\">$__{'PDF'}:</label>";
 		print "<input id=\"pdfoutput\" name=\"pdfoutput\" type=\"checkbox\" value=\"1\"".($REQDFLT{PDFOUTPUT}==1 ? " checked":"")."><BR>&nbsp;<BR>";
+	#	SVGOUTPUT|
+		print "<label style=\"width:80px\" for=\"svgoutput\">$__{'SVG'}:</label>";
+		print "<input id=\"svgoutput\" name=\"svgoutput\" type=\"checkbox\" value=\"1\"".($REQDFLT{SVGOUTPUT}==1 ? " checked":"")."><BR>&nbsp;<BR>";
 	#	EXPORTS|
 		print "<label style=\"width:80px\" for=\"exports\">$__{'Exports'}:</label>";
 		print "<input id=\"exports\" name=\"exports\" type=\"checkbox\" value=\"1\"".($REQDFLT{EXPORTS}==1 ? " checked":"")."><BR>&nbsp;<BR>";

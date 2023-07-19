@@ -72,25 +72,19 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 
 # graphical density for PNG outputs (in pixel per inches)
 PPI|100
-
 # landscape format for all outputs
 LANDSCAPE|N
-
-# value = 1 to produce EPS graphs
-POSTSCRIPT|1
-
-# value = 1 to export text data files
-EXPORTS|1
-
+# exports text data files
+EXPORTS|YES
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
+PDFOUTPUT|NO
 # main logo file
 LOGO_FILE|
-
 # secondary logo file
 LOGO2_FILE|
-
 # main copyright
 COPYRIGHT|
-
 # secondary copyright
 COPYRIGHT2|
 

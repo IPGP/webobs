@@ -63,8 +63,10 @@ LANDSCAPE|N
 PLOT_GRID|N
 
 FONTSIZE|8
-POSTSCRIPT|1
-EXPORTS|1
+EXPORTS|YES
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
+PDFOUTPUT|NO
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 LOGO2_FILE|
 COPYRIGHT|
@@ -139,8 +141,14 @@ SUMMARY_COMPONENT_OFFSET_M|0.01
 SUMMARY_STATION_OFFSET_M|0.01
 
 # --- BASELINES graphs
-# ignores vertical component
+BASELINES_TITLE|{\fontsize{14}{\bf${NAME} - Baselines} ($timescale)}
+BASELINES_UNIT|mm
+BASELINES_YLABEL|Ref.\ $ref_node_alias (${BASELINES_UNIT})
+BASELINES_LINESTYLE|.
+# ignores vertical component in computation
 BASELINES_HORIZONTAL_ONLY|Y
+# interpolation method between nodes: none (empty), linear or nearest
+BASELINES_INTERP_METHOD|
 # - default behavior: all pairs of nodes, with possible node exclusion and/or node reference list
 BASELINES_EXCLUDED_NODELIST|
 BASELINES_EXCLUDED_FROM_TARGET_KM|
@@ -148,12 +156,8 @@ BASELINES_INCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
 # - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
 BASELINES_NODEPAIRS|
-# interpolation method between nodes: none (empty), linear or nearest
-BASELINES_INTERP_METHOD|
-BASELINES_TITLE|{\fontsize{14}{\bf${NAME} - Baselines} ($timescale)}
-BASELINES_UNIT|mm
-BASELINES_YLABEL|Ref.\ $ref_node_alias (${BASELINES_UNIT})
-BASELINES_LINESTYLE|-
+# graph type: 'ref' (group pairs with same reference) or 'all' (pairs in order, default)
+BASELINES_GRAPH_TYPE|ref
 # offset between references (in m)
 BASELINES_REF_OFFSET_M|0.01
 # offset between stations (in m)
