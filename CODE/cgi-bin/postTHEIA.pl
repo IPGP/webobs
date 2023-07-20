@@ -37,12 +37,25 @@ my $userid = "";
 my $password = "";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
    or die $DBI::errstr;
-   
+
+=pod
+# ---- if action=delete, the field with the id=Identifier will be erased from the database ----------------------------------------------------
+
+if ($action eq "delete") {
+	my $stmt = qq(DELETE FROM $object WHERE identifier = \"$identifier\");
+	my $sth = $dbh->prepare( $stmt );
+	my $rv = $sth->execute() or die $DBI::errstr;
+
+	if($rv < 0) {
+	   print $DBI::errstr;
+	}
+}
+=cut
 # ---- start the creation of the JSON object ----------------------------------------------------
 #
 # ---- extracting producer data
 
-my $stmt = qq(SELECT * FROM producer, contacts, organisations GROUP BY contacts.email;);
+my $stmt = qq(SELECT * FROM producer);
 my $sth = $dbh->prepare( $stmt );
 my $rv = $sth->execute() or die $DBI::errstr;
 
@@ -53,25 +66,6 @@ if($rv < 0) {
 my %producer;
 
 while( my @row = $sth->fetchrow_array() ) {
-	# ---- parsing contacts
-	my @contacts;
-	my %contact = (
-		firstName => $row[11],
-		lastName => $row[12],
-		email => $row[10],
-		role => $row[13],
-	);
-	push(@contacts, \%contact);
-	# ---- parsing fundings
-	my @fundings;
-	my %funding = (
-		type => $row[15],
-		iso3166 => "fr",
-		idScanR => $row[19],
-		name => $row[18],
-		acronym => $row[17],
-	);
-	push(@fundings, \%funding);
 =pod
 	# ---- parsing online resources
 	my @resources;
@@ -91,8 +85,8 @@ while( my @row = $sth->fetchrow_array() ) {
 		#objectives => $row[4],
 		#measuredVariables => $row[5],
 		email => $row[6],
-		contacts => \@contacts,
-		fundings => \@fundings,
+		#contacts => \@contacts,
+		#fundings => \@fundings,
 		#onlineResource => \@resources
 	);
 	if ($row[4] ne "") {
@@ -101,7 +95,57 @@ while( my @row = $sth->fetchrow_array() ) {
 	if ($row[5] ne "") {
 		$producer{'measuredVariables'} = $row[5];
 	}
+	
+	# ---- extracting contacts data
+
+	my $stmt2 = qq(SELECT * FROM contacts;);
+	my $sth2 = $dbh->prepare( $stmt2 );
+	my $rv2 = $sth2->execute() or die $DBI::errstr;
+
+	if($rv2 < 0) {
+	   print $DBI::errstr;
+	}
+	
+	my @contacts;
+	
+	while( my @row2 = $sth2->fetchrow_array() ) {
+		if ($row2[4] eq $producer{'producerId'}) {
+			# ---- parsing contacts
+			my %contact = (
+				firstName => $row2[1],
+				lastName => $row2[2],
+				email => $row2[0],
+				role => $row2[3],
+			);
+			push(@contacts, \%contact);
+		}
+	}
+	
+	$producer{'contacts'} = \@contacts;
 }
+
+my $stmt = qq(SELECT * FROM organisations;);
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+my @fundings;
+
+while( my @row = $sth->fetchrow_array() ) {
+	# ---- parsing fundings
+	my %funding = (
+		type => $row[0],
+		iso3166 => $row[1],
+		idScanR => $row[4],
+		name => $row[3],
+		acronym => $row[2],
+	);
+	push(@fundings, \%funding);
+}
+$producer{'fundings'} = \@fundings;
 
 #print to_json $producer{'fundings'};
 
@@ -191,16 +235,7 @@ if($rv < 0) {
 my @datasets;
 
 while( my @row = $sth->fetchrow_array() ) {
-	my @contacts;
-	foreach(split('_,',$row[4])) {
-		my %contact = (
-			firstName => "first",
-			lastName  => "last",
-			email => (split ':',$_)[1],
-			role => (split ':',$_)[0],
-		);
-		push(@contacts, \%contact);
-	}
+
 	my $topicCategories = (split '_',$row[3])[0];
 	my @topicCategories;
 	foreach(split('_,',$topicCategories)){
@@ -209,8 +244,8 @@ while( my @row = $sth->fetchrow_array() ) {
 		push(@topicCategories,$category);
 	}
 	my %geometry = (
-		type => JSON->new->utf8->decode($row[$#row-1])->{'type'},
-		coordinates => JSON->new->utf8->decode($row[$#row-1])->{'coordinates'}
+		type => JSON->new->utf8->decode($row[4])->{'type'},
+		coordinates => JSON->new->utf8->decode($row[4])->{'coordinates'}
 	);
 	my %spatialExtent = (
 		type => "Feature",
@@ -221,11 +256,12 @@ while( my @row = $sth->fetchrow_array() ) {
 	my %dataConstraint = (
 		accessUseConstraint => "No conditions to access and use",
 	);
+	
 	my %metadata = (
 		title => $row[1],
 		description => $row[2],
-		datasetLineage => $row[6],
-		contacts => \@contacts,
+		datasetLineage => $row[5],
+		#contacts => \@contacts,
 		dataConstraint => \%dataConstraint,
 		topicCategories => \@topicCategories,
 		inspireTheme => (split '_inspireTheme:', $row[3])[1],
@@ -234,8 +270,36 @@ while( my @row = $sth->fetchrow_array() ) {
 	$metadata{'inspireTheme'} =~ s/(\r\n)//g;
 	my %dataset = (
 		datasetId => $row[0],
-		metadata => \%metadata,
+		#metadata => \%metadata,
 	);
+	
+	# ---- extracting contacts data
+
+	my $stmt2 = qq(SELECT * FROM contacts;);
+	my $sth2 = $dbh->prepare( $stmt2 );
+	my $rv2 = $sth2->execute() or die $DBI::errstr;
+
+	if($rv2 < 0) {
+	   print $DBI::errstr;
+	}
+	
+	my @contacts;
+	
+	while( my @row2 = $sth2->fetchrow_array() ) {
+		if ($row2[4] eq $dataset{'datasetId'}) {
+			# ---- parsing contacts
+			my %contact = (
+				firstName => $row2[1],
+				lastName => $row2[2],
+				email => $row2[0],
+				role => $row2[3],
+			);
+			push(@contacts, \%contact);
+		}
+	}
+	
+	$metadata{'contacts'} = \@contacts;
+	$dataset{'metadata'} = \%metadata;
 	
 	my @ds_obs;
 	foreach(@observations) {
@@ -251,6 +315,8 @@ while( my @row = $sth->fetchrow_array() ) {
 
 #print encode_json \@datasets;
 
+# ---- creating the final json object
+
 my %json = (
 	producer => \%producer,
 	datasets => \@datasets,
@@ -259,6 +325,10 @@ my %json = (
 
 my $filename = "$WEBOBS{ROOT_CONF}/$json{'producer'}{'producerId'}_en.json";
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
+
+#print encode_json $json{'datasets'}->[0]{'metadata'}{'contacts'}; 
+print "\n";
+
 chmod 0755, $filename;
 open(FH, '>', $filename) or die $!;
 
@@ -266,9 +336,39 @@ print FH encode_json \%json;
 
 close(FH);
 
+# ---- checking is the final json file is conform
+
 my $output = "java -jar /home/lucas/Documents/donnees_webobs_obsera/JSON-schema-validation-0-jar-with-dependencies.jar ".$filename;
-if (qx($output) =~ /success/) {print "The JSON metadata file has been successfully created at ".$filename." !"} else {"The JSON metadata file is not valid"};
+#print qx($output);
+if (qx($output) =~ /success/) {print "The JSON metadata file has been successfully created at ".$filename." !"} elsif (qx($output) =~ /not found/) {"The JSON metadata file is not valid \n"};
 
 #print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
    
 $dbh->disconnect();
+
+__END__
+
+=pod
+
+=head1 AUTHOR(S)
+
+Lucas Dassin
+
+=head1 COPYRIGHT
+
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=cut
