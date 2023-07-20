@@ -22,6 +22,7 @@ use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 use JSON;
+use Encode qw(decode encode);
 use feature 'say';
 
 # ---- webobs stuff
@@ -112,8 +113,8 @@ while( my @row = $sth->fetchrow_array() ) {
 		if ($row2[4] eq $producer{'producerId'}) {
 			# ---- parsing contacts
 			my %contact = (
-				firstName => $row2[1],
-				lastName => $row2[2],
+				firstName => decode("utf8",$row2[1]),
+				lastName => decode("utf8",$row2[2]),
 				email => $row2[0],
 				role => $row2[3],
 			);
@@ -289,8 +290,8 @@ while( my @row = $sth->fetchrow_array() ) {
 		if ($row2[4] eq $dataset{'datasetId'}) {
 			# ---- parsing contacts
 			my %contact = (
-				firstName => $row2[1],
-				lastName => $row2[2],
+				firstName => decode("utf8",$row2[1]),
+				lastName => decode("utf8",$row2[2]),
 				email => $row2[0],
 				role => $row2[3],
 			);
@@ -340,7 +341,7 @@ close(FH);
 
 my $output = "java -jar /home/lucas/Documents/donnees_webobs_obsera/JSON-schema-validation-0-jar-with-dependencies.jar ".$filename;
 #print qx($output);
-if (qx($output) =~ /success/) {print "The JSON metadata file has been successfully created at ".$filename." !"} elsif (qx($output) =~ /not found/) {"The JSON metadata file is not valid \n"};
+if (qx($output) =~ /success/) {print "The JSON metadata file has been successfully created at ".$filename." !"} elsif (qx($output) =~ /not found/) {print "The JSON metadata file is not valid :\n".qx($output)};
 
 #print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
    
