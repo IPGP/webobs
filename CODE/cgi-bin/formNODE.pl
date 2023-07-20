@@ -112,6 +112,7 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
+my $usrProducer  = $NODE{PRODUCER};
 my $usrCreator   = $NODE{CREATOR};
 my $usrFirstName = $NODE{FIRSTNAME};
 my $usrLastName  = $NODE{LASTNAME};
@@ -189,7 +190,8 @@ my @creators;
 open(FH, '<', $creatorRoles) or die $!;
 
 while(<FH>){
-	if ($_ ne "Project leader") {push(@creators, $_);}
+	chomp($_);
+	push(@creators, $_);
 }
 
 close(FH);
@@ -812,8 +814,11 @@ print "<TR>";
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Alias'}:</LABEL>";
 		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrAlias\" onmouseover=\"overlib('$__{help_creationstation_alias}')\" size=\"8\" name=\"alias\" id=\"alias\">&nbsp;&nbsp;<BR>";
 		# --- TYPE/DESCRIPTION
-		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Type'}:</LABEL>";
+		print "<LABEL style=\"width:80px\" for=\"type\">$__{'Type'}:</LABEL>";
 		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" cols=\"40\" name=\"type\" id=\"type\"><\/TEXTAREA>&nbsp;&nbsp;<BR>";
+		# --- PRODUCER
+		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
+		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
 		# --- CREATOR
 		print "<BUTTON style=\"text-align:center\" onclick=\"addCreator(); return false;\">Add a creator </BUTTON>";
 		print "<BUTTON onclick=\"removeCreator(); return false;\">Remove a creator </BUTTON>";

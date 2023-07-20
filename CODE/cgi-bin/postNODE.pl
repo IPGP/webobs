@@ -187,6 +187,8 @@ my $jourE      = $cgi->param('jourEnd')     // '';
 my $validite   = $cgi->param('valide')      // '';
 my $alias      = $cgi->param('alias')       // '';
 my $type       = $cgi->param('type')        // '';
+my $producer   = $cgi->param('producer')    // '';
+my $creators   = $cgi->param('creators')    // '';
 my $theme      = $cgi->param('theme')       // '';
 my $topics     = $cgi->param('topics')      // '';
 my $lineage    = $cgi->param('lineage')     // '';
@@ -423,12 +425,23 @@ sub htmlMsgOK {
 	}
 	
 	# --- dataset informations
-	my $id  = 'OBSE_DAT_'.$GRIDName.'.'.$NODEName;
+	my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
 	my $subject = $topics.'inspireTheme:'.$theme;
 	my $creator = 'Principal investigator:lajeuness@ipgp.fr';
 	
+	# --- creator information
+	my @roles      = split(',',(split '\|', $creators)[0]);
+	my @firstNames = split(',',(split '\|', $creators)[1]);
+	my @lastNames  = split(',',(split '\|', $creators)[2]);
+	my @emails     = split(',',(split '\|', $creators)[3]);
+	
 	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
 	   or die $DBI::errstr;
+	   
+	# inserting creator into contacts table
+	my @values = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
+	my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@values);
+	$dbh->do($q);
 =pod
 	# --- completing observed_properties table
 	my $rv = $dbh->do("INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES ('$GRIDName','$NODEName','$point')");
@@ -446,8 +459,8 @@ sub htmlMsgOK {
 	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
 	$sth->execute($alias,$alias,$point);
 
-	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, CREATOR, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?,?);');
-	$sth->execute($id,$name,$type,$subject,$creator,$spatialcov,$lineage);
+	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
+	$sth->execute($id,$name,$type,$subject,$spatialcov,$lineage);
 
 	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
