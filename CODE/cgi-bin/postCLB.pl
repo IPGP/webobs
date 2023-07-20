@@ -240,11 +240,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+Francois Beauducel, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -75,6 +75,17 @@ if ($action eq "delete") {
 	if($rv < 0) {
 	   print $DBI::errstr;
 	}
+	
+	if ($object = "datasets") {
+	    $stmt = qq(DELETE FROM datasets WHERE identifier LIKE \"$identifier%\");
+	    $rv = $dbh->do("PRAGMA foreign_keys = ON;");
+	    $sth = $dbh->prepare( $stmt );
+	    $rv = $sth->execute() or die $DBI::errstr;
+
+	    if($rv < 0) {
+	       print $DBI::errstr;
+	    }
+	}
 }
 
 #$dbh->disconnect();

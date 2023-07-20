@@ -112,6 +112,7 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
+my $usrDesc      = $NODE{DESCRIPTION};
 my $usrProducer  = $NODE{PRODUCER};
 my $usrCreator   = $NODE{CREATOR};
 my $usrFirstName = $NODE{FIRSTNAME};
@@ -119,7 +120,8 @@ my $usrLastName  = $NODE{LASTNAME};
 my $usrEmail     = $NODE{EMAIL};
 my $usrTheme     = $NODE{THEME};
 my $usrTopic     = $NODE{TOPICS};
-my $usrOrigin    = $NODE{ORIGIN};
+my $usrLineage   = $NODE{LINEAGE};
+#my $usrOrigin    = $NODE{ORIGIN};
 my $usrTZ        = $NODE{TZ} // strftime("%z", localtime());
 my $features     = $NODE{FILES_FEATURES} // "$__{'featureA,featureB,featureC'}";
 my @feat = split(/,|\|/,$features);
@@ -141,6 +143,7 @@ my $usrLon       = $NODE{LON_WGS84};
 my $usrLonE = ($usrLon >= 0 ? "E":"W");
 $usrLon =~ s/^-//g;
 my $usrAlt       = $NODE{ALTITUDE};
+my $usrShpFile   = $NODE{SPATIAL_COVERAGE};
 my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
 #      Transmission
@@ -312,13 +315,15 @@ function postIt()
   var firstNames = [];
   var lastNames = [];
   var emails = [];
-  for (var i=0; i<form.role.length; i++) {
-  	roles.push(form.role[i].value);
-  	firstNames.push(form.firstName[i].value);
-  	lastNames.push(form.lastName[i].value);
-  	emails.push(form.email[i].value);
-  } 
+  if (form.count_creator.value > 1) {
+  	  for (var i=0; i<form.role.length; i++) {
+	  	roles.push(form.role[i].value);
+	  	firstNames.push(form.firstName[i].value);
+	  	lastNames.push(form.lastName[i].value);
+	  	emails.push(form.email[i].value);
+	  } 
   	form.creators.value = roles.join(',') + '|' + firstNames.join(',') + '|' + lastNames.join(',') + '|' + emails.join(',');
+  } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
 	console.log(\$(\"#theform\"));
 	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
 		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
@@ -601,6 +606,7 @@ function onInputWrite(e) {
 }
 function handleFiles() {	// read .zip shpfiles 
 	var fichierSelectionne = document.getElementById('input').files[0];
+	form.filename.value = fichierSelectionne.name;
 
 	var fr = new FileReader();
 	fr.onload = function () {
@@ -813,9 +819,12 @@ print "<TR>";
 		# --- ALIAS
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Alias'}:</LABEL>";
 		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrAlias\" onmouseover=\"overlib('$__{help_creationstation_alias}')\" size=\"8\" name=\"alias\" id=\"alias\">&nbsp;&nbsp;<BR>";
-		# --- TYPE/DESCRIPTION
+		# --- TYPE
 		print "<LABEL style=\"width:80px\" for=\"type\">$__{'Type'}:</LABEL>";
-		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" cols=\"40\" name=\"type\" id=\"type\"><\/TEXTAREA>&nbsp;&nbsp;<BR>";
+		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
+		# --- DESCRIPTION
+		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
+		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc<\/TEXTAREA>&nbsp;&nbsp;<BR>";
 		# --- PRODUCER
 		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
 		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
@@ -846,7 +855,7 @@ print "<TR>";
 		print "</SELECT><BR>";
 		# --- Lineage
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
-		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrOrigin\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
+		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
 	print "</FIELDSET>";
 
 	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
@@ -989,7 +998,8 @@ print "<TR>";
 				."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Fetch KML' onClick='fetchKML()'></DIV>";
 				
 			# --- Importation of shpfile
-			print "<strong>To add a shapefile (.zip only) layer, click here: </strong><input type='file' id='input' onchange='handleFiles()'><br>";
+			print "<INPUT type=\"hidden\" name=\"filename\"";
+			print "<strong>To add a shapefile (.zip only) layer, click here: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
 			print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
 				
 		print "</TD>";
