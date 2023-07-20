@@ -5,6 +5,8 @@ P=`dirname $0`
 # can be run for fresh installation or within a legacy Webobs migration
 # current directory (pwd) MUST be the target webob's CONF/ directory
 
+# RELATED_ID refers to the identifier of a producer or a dataset in order to bound producer/dataset with a member of the contact table
+
 echo "Creating/populating metadata tables ..."
 sqlite3 WEBOBSMETA.db <<EOF
 BEGIN TRANSACTION;
@@ -30,9 +32,8 @@ create table contacts (
     FIRSTNAME text NOT NULL,
     LASTNAME text NOT NULL,
     ROLE text NOT NULL,
-    PID text NOT NULL, 
-    PRIMARY KEY(EMAIL), 
-    FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
+    RELATED_ID text NOT NULL, 
+    PRIMARY KEY(RELATED_ID, EMAIL)
     );
     
 drop table if exists organisations;
@@ -42,9 +43,9 @@ create table organisations (
     ACRONYM text NOT NULL, 
     NAME text NOT NULL, 
     IDENTIFIER text NOT NULL, 
-    PID text NOT NULL, 
+    RELATED_ID text NOT NULL, 
     PRIMARY KEY(IDENTIFIER), 
-    FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
+    FOREIGN KEY (RELATED_ID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     
 drop table if exists datasets;
@@ -53,7 +54,6 @@ create table datasets (
     TITLE text NOT NULL, 
     DESCRIPTION text NOT NULL, 
     SUBJECT text NOT NULL, 
-    CREATOR text NOT NULL, 
     SPATIALCOVERAGE text NOT NULL, 
     LINEAGE text NOT NULL, 
     PRIMARY KEY(IDENTIFIER)
@@ -72,7 +72,6 @@ create table observations (
     DATAFILENAME text NOT NULL, 
     PRIMARY KEY(IDENTIFIER), 
     FOREIGN KEY (OBSERVEDPROPERTY) REFERENCES observed_properties(IDENTIFIER) ON DELETE CASCADE,
-    FOREIGN KEY (STATIONNAME) REFERENCES sampling_features(IDENTIFIER) ON DELETE CASCADE, 
     FOREIGN KEY (DATASET) REFERENCES datasets(IDENTIFIER) ON DELETE CASCADE
     );
     
@@ -90,7 +89,7 @@ create table sampling_features (
     IDENTIFIER text NOT NULL, 
     NAME text NOT NULL, 
     GEOMETRY text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER)
+    PRIMARY KEY(IDENTIFIER) 
     );
     
 drop table if exists grids2producers;
