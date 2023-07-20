@@ -68,6 +68,7 @@ my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
 
 if ($action eq "delete") {
 	my $stmt = qq(DELETE FROM $object WHERE identifier = \"$identifier\");
+	my $rv = $dbh->do("PRAGMA foreign_keys = ON;");
 	my $sth = $dbh->prepare( $stmt );
 	my $rv = $sth->execute() or die $DBI::errstr;
 
@@ -113,6 +114,8 @@ print "<TABLE style=\"background: white;\" width=\"100%\">";
 print "<TR><TH valign=\"middle\" width=\"5%\">Producer</TH>";
 print "<TD colspan=\"2\">";
 print "<TABLE width=\"100%\"><TR>"
+		."<TH><IMG \"title=\"edition\" src=\"/icons/modif.png\"></TH>"
+		."<TH></TH>"
 		."<TH><SMALL>Identifier</SMALL></TH>"
 		."<TH><SMALL>Name</SMALL></TH>"
 		."<TH><SMALL>Title</SMALL></TH>"
@@ -132,8 +135,9 @@ while(my @row = $sth->fetchrow_array()) {
 	$contacts  = join(',',split(/_,/,$row[7]));
 	$funders   = join(',',split(/_,/,$row[8]));
 	$onlineRes = join(',',split(/_,/,$row[9]));
-	print "<TR><TD width=3% align=center><SMALL><A href=\"/cgi-bin/gridsMgr.pl\">$row[0]</A>&nbsp&nbsp"
-			."<A id=$row[0] class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"width:10px;height:10px;\"title=\"delete producer\" src=\"/icons/no.png\"></A></SMALL></TD>"
+	print "<TR><TD width=1%><A href=\"/cgi-bin/gridsMgr.pl\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit producer\" src=\"/icons/modif.png\"></A></TD>"
+			."<TD width=1%><A id=$row[0] class=\"producer\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete producer\" src=\"/icons/no.png\"></A></TD>"
+			."<TD width=3% align=center><SMALL>$row[0]&nbsp&nbsp</SMALL></TD>"
 			."<p><input type=\"hidden\" name=\"producerId\" value=\"$row[0]\"></input></p></SMALL></TD>"
 			."<TD width=4% align=center><SMALL>$row[1]"
 			."<p><input type=\"hidden\" name=\"name\" value=\"$row[1]\"></input></p></SMALL></TD>"
@@ -174,11 +178,12 @@ print "<TABLE style=\"background: white;\" width=\"100%\">";
 print "<TR><TH valign=\"middle\" width=\"5%\">Datasets</A></TH>";
 print "<TD colspan=\"2\" style=\"display:block\">";
 print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
+		."<TH><IMG \"title=\"edition\" src=\"/icons/modif.png\"></TH>"
+		."<TH></TH>"
 		."<TH><SMALL>Identifier</SMALL></TH>"
 		."<TH valign=\"top\"><SMALL>Title</SMALL></TH>"
 		."<TH><SMALL>Description</SMALL></TH>"
 		."<TH><SMALL>Subject</SMALL></TH>"
-		."<TH><SMALL>Creator</SMALL></TH>"
 		."<TH><SMALL>Spatial coverage</SMALL></TH>"
 		."<TH><SMALL>Provenance</SMALL></TH></TR>";
 
@@ -186,13 +191,13 @@ while(my @row = $sth->fetchrow_array()){
 	my $nodeId  = (split '\.', $row[0]) [1];
 	my $proc    = (split '_', (split '\.', $row[0]) [0]) [2];
 	my $subject = join(',', split(/_/,$row[3]));
-	print "<TR><TD width=15% align=center><SMALL><A href=\"/cgi-bin/formNODE.pl?node=PROC.$proc.$nodeId\">$row[0]</A>&nbsp&nbsp"
-			."<A id=$row[0] class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"width:10px;height:10px;\"title=\"delete producer\" src=\"/icons/no.png\"></A></SMALL></TD>"
+	print "<TR><TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$proc.$nodeId\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
+			."<TD width=1%><A id=$row[0] class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
+			."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$row[2]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
-			."<TD width=10% align=center><SMALL>$row[4]</SMALL></TD>"
-			."<TD width=12% align=center><SMALL>".substr($row[5], 0, 100)."</SMALL></TD>"
+			."<TD width=12% align=center><SMALL>".substr($row[4], 0, 100)."</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$row[6]</SMALL></TD></TR>";
 };
 
@@ -215,6 +220,8 @@ print "<TABLE style=\"background: white;\" width=\"100%\">";
 print "<TR><TH valign=\"middle\" width=\"5%\">Observations</TH>";
 print "<TD colspan=\"2\" style=\"display:block\">";
 print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
+		."<TH><IMG \"title=\"edition\" src=\"/icons/modif.png\"></TH>"
+		."<TH></TH>"
 		."<TH><SMALL>Identifier</SMALL></TH>"
 		."<TH><SMALL>Processing level</SMALL></TH>"
 		."<TH><SMALL>Data type</SMALL></TH>"
@@ -229,8 +236,9 @@ while(my @row = $sth->fetchrow_array()){
 	my $nodeId  = (split '_', (split '\.', $row[0]) [1]) [0];
 	my $proc    = (split '_', (split '\.', $row[0]) [0]) [2];
 	my $subject = join(',', split(/_/,$row[3]));
-	print "<TR><TD width=12% align=center><SMALL><A href=\"/cgi-bin/formCLB.pl?node=PROC.$proc.$nodeId\">$row[0]</A>&nbsp&nbsp"
-			."<A id=$row[0] class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"width:10px;height:10px;\"title=\"delete producer\" src=\"/icons/no.png\"></A></SMALL></TD>"
+	print "<TR><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$proc.$nodeId\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
+			."<TD width=1%><A id=$row[0] class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete observation\" src=\"/icons/no.png\"></A></TD>"
+			."<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
 			."<TD width=6% align=center><SMALL>$row[1]</SMALL></TD>"
 			."<TD width=6% align=center><SMALL>$row[2]</SMALL></TD>"
 			."<TD width=12% align=center><SMALL>$row[3]</SMALL></TD>"
@@ -291,7 +299,8 @@ print <<"FIN";
 		if (confirm(\"Do you really want to delete \"+element.id+\" ?\")) {
 			element.href=\"/cgi-bin/showTHEIA.pl?object=\"+element.className+\"&id=\"+element.id+\"&action=delete\";
 		} else {
-			console.log(element.className);
+			console.log(element);
+			console.log(\"/cgi-bin/showTHEIA.pl?object=\"+element.className+\"&id=\"+element.id+\"&action=delete\");
 		}
 	}
 
