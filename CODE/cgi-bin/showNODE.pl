@@ -259,6 +259,15 @@ if ($editOK) {
 }
 print "</TH><TD colspan=\"2\">$NODE{TYPE}</TD></TR>\n";
 
+# Row "description" ------------------------------------------------------------------
+#
+print "<TR><TH valign=\"top\">";
+if ($editOK) {
+	print "<A href=\"$cgiConf\">Description</A>";
+} else {
+	print "Description";
+}
+print "</TH><TD colspan=\"2\">$NODE{DESCRIPTION}</TD></TR>\n";
 
 # Row "Lifetime" ----------------------------------------------------
 #
