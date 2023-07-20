@@ -187,8 +187,9 @@ my $jourE      = $cgi->param('jourEnd')     // '';
 my $validite   = $cgi->param('valide')      // '';
 my $alias      = $cgi->param('alias')       // '';
 my $type       = $cgi->param('type')        // '';
+my $desc       = $cgi->param('description') // '';
 my $producer   = $cgi->param('producer')    // '';
-my $creators   = $cgi->param('creators')    // '';
+my $creator    = $cgi->param('creators')    // '';
 my $theme      = $cgi->param('theme')       // '';
 my $topics     = $cgi->param('topics')      // '';
 my $lineage    = $cgi->param('lineage')     // '';
@@ -208,6 +209,7 @@ my $lon        = $cgi->param('lonwgs84')    // '';
 my $lonmin     = $cgi->param('lonwgs84min') // '';
 my $lonsec     = $cgi->param('lonwgs84sec') // '';
 my $spatialcov = $cgi->param('outWKT')      // '';
+my $filename   = $cgi->param('filename')    // '';
 my $alt        = $cgi->param('altitude')    // '';
 my $anneeP     = $cgi->param('anneeMesure') // '';
 my $moisP      = $cgi->param('moisMesure')  // '';
@@ -255,6 +257,9 @@ if ($lon ne "" && $lat ne "") {
 	$lon =~ s/,/./g;
 }
 
+# ---- parsing dataset contacts
+my @creators = split('\|', $creator);
+
 # ---- NODE's validity flag
 my $valide = "";
 if ( $validite eq "NA" ) { $valide = 1; } else { $valide = 0; }
@@ -284,6 +289,16 @@ push(@lines,"INSTALL_DATE|$dateInstall\n");
 push(@lines,"END_DATE|$dateEnd\n");
 push(@lines,"FILES_FEATURES|".u2l(lc(join(",",map {trim($_)} split(/[,\|]/,$features))))."\n");
 push(@lines,"TRANSMISSION|".u2l($typeTrans)."\n");
+push(@lines,"DESCRIPTION|".u2l($desc)."\n");
+push(@lines,"PRODUCER|".u2l($producer)."\n");
+push(@lines,"ROLE|".u2l($creators[0])."\n");
+push(@lines,"FIRSTNAME|".u2l($creators[1])."\n");
+push(@lines,"LASTNAME|".u2l($creators[2])."\n");
+push(@lines,"EMAIL|".u2l($creators[3])."\n");
+push(@lines,"THEME|".u2l($theme)."\n");
+push(@lines,"TOPICS|".u2l($topics)."\n");
+push(@lines,"LINEAGE|".u2l($lineage)."\n");
+push(@lines,"SPATIAL_COVERAGE|".u2l($filename)."\n");
 
 # ---- procs parameters
 if ($GRIDType eq "PROC") {
@@ -430,10 +445,10 @@ sub htmlMsgOK {
 	my $creator = 'Principal investigator:lajeuness@ipgp.fr';
 	
 	# --- creator information
-	my @roles      = split(',',(split '\|', $creators)[0]);
-	my @firstNames = split(',',(split '\|', $creators)[1]);
-	my @lastNames  = split(',',(split '\|', $creators)[2]);
-	my @emails     = split(',',(split '\|', $creators)[3]);
+	my @roles      = split(',',$creators[0]);
+	my @firstNames = split(',',$creators[1]);
+	my @lastNames  = split(',',$creators[2]);
+	my @emails     = split(',',$creators[3]);
 	
 	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
 	   or die $DBI::errstr;
@@ -460,7 +475,7 @@ sub htmlMsgOK {
 	$sth->execute($alias,$alias,$point);
 
 	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
-	$sth->execute($id,$name,$type,$subject,$spatialcov,$lineage);
+	$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
 
 	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
