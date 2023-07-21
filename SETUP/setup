@@ -639,6 +639,8 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSUSERS.db WEBOBSUSERS.db >>$REPORT
 	$RELBASE/SETUP/createdb-WEBOBSDOMAINS >/dev/null
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSDOMAINS.db WEBOBSDOMAINS.db >>$REPORT
+	$RELBASE/SETUP/createdb-WEBOBSMETA >/dev/null
+	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSMETA.db WEBOBSDOMETA.db >>$REPORT
 	cd ..
 	rm -rf $db_temp_dir
 
@@ -695,6 +697,9 @@ else
 
 		verbosecho "creating WEBOBSDOMAINS.db"
 		${RELBASE}/SETUP/createdb-WEBOBSDOMAINS
+		
+		verbosecho "creating WEBOBSMETA.db"
+		${RELBASE}/SETUP/createdb-WEBOBSMETA
 	cd -
 
 fi
