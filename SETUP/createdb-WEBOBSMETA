@@ -123,24 +123,24 @@ COMMIT;
 EOF
 
 # creating organisation types table 
-cat /opt/webobs/CONF/EnumContactPersonRoles.conf | while read line
+cat $P/CONF/THEIA/EnumContactPersonRoles.conf | while read line
 do
     sqlite3 WEBOBSMETA.db "INSERT INTO EnumContactPersonRoles (ROLE) VALUES ('$line');"
 done
 
 # creating organisation types table 
-cat /opt/webobs/CONF/EnumFundingTypes.conf | while read line
+cat $P/CONF/THEIA/EnumFundingTypes.conf | while read line
 do
     sqlite3 WEBOBSMETA.db "INSERT INTO EnumFundingTypes (TYPE) VALUES ('$line');"
 done
 
 # creating INSPIRE themes and topic categories tables 
-cat /opt/webobs/CONF/EnumInspireTheme.conf | while read line
+cat $P/CONF/THEIA/EnumInspireTheme.conf | while read line
 do
     sqlite3 WEBOBSMETA.db "INSERT INTO inspireTheme (THEME) VALUES ('$line');"
 done
 
-cat /opt/webobs/CONF/EnumTopicCategories.conf | while read line
+cat $P/CONF/THEIA/EnumTopicCategories.conf | while read line
 do
     sqlite3 WEBOBSMETA.db "INSERT INTO topicCategories (TOPIC) VALUES ('$line');"
 done
