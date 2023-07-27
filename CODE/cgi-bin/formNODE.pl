@@ -533,6 +533,7 @@ function getLocation() {
 	event.preventDefault();
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(getCurrent, error);
+		document.form.typePos.value="4";
 	} else {
 		alert('Geolocation is not supported by this browser');
 	}
@@ -550,7 +551,7 @@ function getCurrent (pos) {
 	document.form.locMap.value = 1;
 
 	map.flyTo([lat, lon], 18);
-	document.form.typePos.value="2";
+	document.form.typePos.value="4";
 }
 function error (err) {
 	switch (err.code) {
@@ -1044,7 +1045,7 @@ print "<TR>";
 			print "<DIV id='map' style=\"position: relative ;width: 347px; height: 347px\"></DIV>";
 		print "</TD>";
 		print "<TD style=\"border:1;text-align:left;rows:6;\">";
-			print "<label>Auto-location :</label><button id=\"auto-loc\" style=\"position:relative;\">Locate me !</button>&nbsp;<BR>";
+			print "<label>Auto-location :</label><button id=\"auto-loc\" style=\"position:relative;\" onmouseover=\"overlib('$__{beware_approximate_position}')\">Locate me !</button>&nbsp;<BR>";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
 			print "<input size=\"8\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
