@@ -508,16 +508,26 @@ function onMapClick(e) {
 	document.form.typePos.value="1";
 	return false;
 }
+function getLocation() {
+	event.preventDefault();
+	console.log('ça marche ?');
+	if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(getCurrent, error);
+		console.log('ça marche !')
+	} else {
+		alert('Geolocation is not supported by this browser');
+	}
+}
 function getCurrent (pos) {
 	/**
-	 * Get the position of the current user when loading the page and focus the map on it
+	 * Get the position of the current user and focus the map on it
 	 */
 	var lat = pos.coords.latitude;
 	var lon = pos.coords.longitude;
-	lat, lon = nsew(lat, lon)
+	// lat, lon = nsew(lat, lon)
 	
-	document.form.latwgs84.value = lat;
-	document.form.lonwgs84.value = lon;
+	document.form.latwgs84.value = ns(lat);
+	document.form.lonwgs84.value = ew(lon);
 	document.form.locMap.value = 1;
 
 	map.flyTo([lat, lon], 18);
@@ -733,6 +743,15 @@ function removeCreator() {
 		form.count_creator.value -= 1;
 	}
 }
+function showHideTheia(checkbox){
+	const theia = document.getElementById("showHide");
+
+	if (checkbox.checked == true) {
+		theia.style.display = "none";
+	} else {
+		theia.style.display = "block";
+	}
+}
 
 // creating and parametring the map for the geographic location choice
 
@@ -865,6 +884,9 @@ print "<TR>";
 		# --- DESCRIPTION
 		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
 		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc<\/TEXTAREA>&nbsp;&nbsp;<BR>";
+		# --- show THEIA fields ?
+		print "<LABEL>show/hide THEIA metadata fields ?<INPUT type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
+		print "<DIV id=\"showHide\">";
 		# --- PRODUCER
 		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
 		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
@@ -896,6 +918,7 @@ print "<TR>";
 		# --- Lineage
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
 		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
+		print "</DIV>";
 	print "</FIELDSET>";
 
 	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
@@ -1002,6 +1025,7 @@ print "<TR>";
 			print "<DIV id='map' style=\"position: relative ;width: 750px; height: 347px\"></DIV>";
 		print "</TD>";
 		print "<TD style=\"border:1;text-align:left;rows:5;width: 500px\">";
+			print "<button id=\"auto-loc\">Auto-location</button><BR>";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
 			print "<input size=\"8\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
@@ -1049,7 +1073,8 @@ print "<TR>";
 			var popup = L.popup();
 			map.on('click', onMapClick);
 			
-			let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
+			document.getElementById("auto-loc").addEventListener('click', getLocation);
+			// let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
 			
 			if ( document.form.latwgs84.value !== "" || document.form.lonwgs84.value !== "" ) {
 				var lat = document.form.latwgs84.value;
@@ -1058,7 +1083,7 @@ print "<TR>";
 				map.flyTo([lat, lon], 18);
 				var marker = L.marker([lat, lon]).addTo(map);
 				marker.bindPopup(\"$text\").openPopup();
-			} 
+			}
 			
 			var layerControl = L.control.layers(basemaps, overlays).addTo(map);
 		</script>
