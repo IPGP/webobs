@@ -16,7 +16,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 
 ### Enhancements
-1. **All procs**: new experimental flag option `SVGOUTPUT` to produce a vector file in SVG format for all graphs, allowing rescaling of the plot, using brower facilities. This option is also available in the proc request form.
+1. **All procs**: new experimental flag option `SVGOUTPUT` to produce a vector file in SVG format for all graphs, allowing rescaling of the plot using browser facilities. This option is also available in the proc request form.
 1. **Gridmaps**: new variable `GRIDMAPS_DEM_OPT` that can be set in any grid (view and proc) to overwrite the default background map options (defined in **GRIDMAPS.rc** configuration file). The variable must contain option list compatible with the **dem.m** function. Example:
     ```
     GRIDMAPS_DEM_OPT|'grayscale','watermark',2

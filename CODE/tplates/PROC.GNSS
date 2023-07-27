@@ -156,6 +156,8 @@ BASELINES_INCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
 # - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
 BASELINES_NODEPAIRS|
+# plots a moving average filter (raw data in background with lighter color)
+BASELINES_MOVING_AVERAGE|1
 # graph type: 'ref' (group pairs with same reference) or 'all' (pairs in order, default)
 BASELINES_GRAPH_TYPE|ref
 # offset between references (in m)
