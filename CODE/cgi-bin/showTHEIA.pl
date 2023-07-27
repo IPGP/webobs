@@ -21,9 +21,11 @@ http://..../showTHEIA.pl?object=object[,id=Identifier,action=delete]
 
 Displays data associated to a producer.
 
-A producer is associated to datasets which are associated to observations.
+A producer is associated to datasets. A dataset is associated to observations. An observation is an observed property sampled at a given location and associated to a datafile.
 
-All known data associated to the producer are shown and can be edited to be send towards the Theia|OZCAR pivot model.
+A dataset corresponds to a NODE in WebObs. An observation corresponds to a row in the calibration file of a given NODE in WebObs
+
+All known data associated to the producer are shown and can be edited to be send towards the Theia|OZCAR pivot model which convert into a JSON file the metadata, ready to get send to the Theia data portal.
 
 =cut
 
@@ -42,13 +44,16 @@ use JSON;
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users qw(clientHasRead clientHasEdit clientHasAdm);
+use WebObs::Users;
 use WebObs::i18n;
 
-# ---- display database-related text content
-#print $cgi->header( -type => 'text/plain', -status => '200' );
+# ---- checking if user has authorisation to create a JSON metadata file.
+# ----------------------------------------
+if ( ! WebObs::Users::clientHasAdm(type=>"authmisc",name=>"grids")) {
+	die "You are not authorized" ;
+}
 
-# ---- What are we supposed to do ?: find it out in the query string
+# ---- Gathering query informations
 #
 my $QryParm    = $cgi->Vars;    # used later; todo: replace cgi->param's below
 my $object	   = $cgi->param('object')    // '';
@@ -64,7 +69,8 @@ my $password = "";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
    or die $DBI::errstr;
    
-# ---- if action=delete, the field with the id=Identifier will be erased from the database ----------------------------------------------------
+# ---- if action=delete, the field with the id=Identifier will be erased from the metadata panel 
+# ---- note that the deletion of a dataset means the deletion of ALL the observations related to that dataset in the panel
 
 if ($action eq "delete") {
 	my $stmt = qq(DELETE FROM $object WHERE identifier = \"$identifier\");
@@ -88,8 +94,6 @@ if ($action eq "delete") {
 	}
 }
 
-#$dbh->disconnect();
-
 # ---- display HTML content
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
@@ -108,9 +112,6 @@ print <<"FIN";
 <form action="/cgi-bin/postTHEIA.pl" id="formTHEIA" method="post">
 FIN
 
-# ---- start of producer table ----------------------------------------------------
-#
-
 # ---- extracting producer data
 my $stmt = qq(SELECT * FROM producer;);
 my $sth = $dbh->prepare( $stmt );
@@ -120,7 +121,7 @@ if($rv < 0) {
    print $DBI::errstr;
 }
 
-
+# ---- creating the panel
 print "<TABLE style=\"background: white;\" width=\"100%\">";
 print "<TR><TH valign=\"middle\" width=\"5%\">Producer</TH>";
 print "<TD colspan=\"2\">";
@@ -140,12 +141,16 @@ print "<TABLE width=\"100%\"><TR>"
 		
 my $contacts;
 my $funders;
-my $onlineRes;
+my @onlineRes;
 		
 while(my @row = $sth->fetchrow_array()) {
-	$contacts  = join(',',split(/_,/,$row[7]));
-	$funders   = join(',',split(/_,/,$row[8]));
-	$onlineRes = join(',',split(/_,/,$row[9]));
+	$contacts  = join(', ',split(/_,/,$row[7]));
+	$funders   = join(', ',split(/_,/,$row[8]));
+	@onlineRes = split(/_,/,$row[9]);
+	foreach (@onlineRes) {
+		$_ = (split '@', $_)[1];
+	}
+	my $onlineRes = join(', ', @onlineRes);
 	print "<TR><TD width=1%><A href=\"/cgi-bin/gridsMgr.pl\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit producer\" src=\"/icons/modif.png\"></A></TD>"
 			."<TD width=1%><A id=$row[0] class=\"producer\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete producer\" src=\"/icons/no.png\"></A></TD>"
 			."<TD width=3% align=center><SMALL>$row[0]&nbsp&nbsp</SMALL></TD>"
@@ -166,16 +171,14 @@ while(my @row = $sth->fetchrow_array()) {
 			."<p><input type=\"hidden\" name=\"contacts\"></input></p></SMALL></TD>"
 			."<TD width=8% align=center><SMALL>$funders"
 			."<p><input type=\"hidden\" name=\"fundings\"></input></p></SMALL></TD>"
-			."<TD width=10% align=center><SMALL>$onlineRes";
-			#."<p><input type=\"hidden\" name=\"onlineRes\"></input></p></SMALL></TD></TR>";
+			."<TD width=10% align=center><SMALL>$onlineRes"
+			."<p><input type=\"hidden\" name=\"onlineRes\"></input></p></SMALL></TD></TR>";
 };
 
 print "</TABLE></TD>\n";
 print "</TH></TABLE>\n";
 print "<BR><BR>\n";
 
-# ---- start of datasets table ----------------------------------------------------
-#
 # ---- extracting datasets data
 $stmt = qq(SELECT * FROM datasets;);
 $sth = $dbh->prepare( $stmt );
@@ -184,7 +187,7 @@ $rv = $sth->execute() or die $DBI::errstr;
 if($rv < 0) {
    print $DBI::errstr;
 }
-
+# ---- creating the panel
 print "<TABLE style=\"background: white;\" width=\"100%\">";
 print "<TR><TH valign=\"middle\" width=\"5%\">Datasets</A></TH>";
 print "<TD colspan=\"2\" style=\"display:block\">";
@@ -209,15 +212,13 @@ while(my @row = $sth->fetchrow_array()){
 			."<TD width=14% align=center><SMALL>$row[2]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
 			."<TD width=12% align=center><SMALL>".substr($row[4], 0, 100)."</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[6]</SMALL></TD></TR>";
+			."<TD width=14% align=center><SMALL>$row[5]</SMALL></TD></TR>";
 };
 
 print "</TABLE></TD>\n";
 print "</TR></TABLE>\n";
 print "<BR><BR>\n";
 
-# ---- start of datasets table ----------------------------------------------------
-#
 # ---- extracting observations data
 $stmt = qq(SELECT * FROM observations;);
 $sth = $dbh->prepare( $stmt );
@@ -226,7 +227,7 @@ $rv = $sth->execute() or die $DBI::errstr;
 if($rv < 0) {
    print $DBI::errstr;
 }
-
+# ---- creating the panel
 print "<TABLE style=\"background: white;\" width=\"100%\">";
 print "<TR><TH valign=\"middle\" width=\"5%\">Observations</TH>";
 print "<TD colspan=\"2\" style=\"display:block\">";
@@ -266,46 +267,6 @@ print "<BR><BR>\n";
 
 print <<"FIN";
 <script>
-	let text = \'{\"versions\" : \"1.0\", \"producer\" : {}, \"datasets\" : []}\';
-	
-	const obj = JSON.parse(text);
-	//console.log(obj);
-
-	function getFormData(\$form){
-		var unindexed_array = \$form.serializeArray();
-		var indexed_array = {};
-
-		\$.map(unindexed_array, function(n, i){
-		    indexed_array[n['name']] = n['value'];
-		});
-
-		return indexed_array;
-	}
-	
-	function contactJSON(lists){
-		var new_lists = [];
-		lists.split(",").forEach(function(item){
-			var sep_list = item.split(":");
-			var obj = {email: sep_list[1], role: sep_list[0]}
-			new_lists.push(obj)
-		});
-		return new_lists;
-	}
-
-	function funderJSON(lists){
-		var new_lists = [];
-		lists.split(",").forEach(function(item){
-			var sep_list = item.split(":");
-			var obj = {type: sep_list[0], idScanR: sep_list[1]}
-			new_lists.push(obj)
-		});
-		return new_lists;
-	}
-	
-	function createOBS(\$form) {
-		console.log(\$form)
-	}
-	
 	function deleteRow(element) {
 		if (confirm(\"Do you really want to delete \"+element.id+\" ?\")) {
 			element.href=\"/cgi-bin/showTHEIA.pl?object=\"+element.className+\"&id=\"+element.id+\"&action=delete\";
@@ -314,19 +275,6 @@ print <<"FIN";
 			console.log(\"/cgi-bin/showTHEIA.pl?object=\"+element.className+\"&id=\"+element.id+\"&action=delete\");
 		}
 	}
-
-	var \$form = \$("#formTHEIA");
-	var data = getFormData(\$form);
-	
-	obj.producer = data
-	obj.producer.contacts = contactJSON(\"$contacts\");
-	obj.producer.fundings = funderJSON(\"$funders\");
-	//console.log(obj.producer.contacts);
-
-	// var formData = \$(\"#formTHEIA\").serialize();
-	// console.log(formData);
-	
-	createOBS(\$form);
 </script>
 FIN
 

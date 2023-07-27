@@ -10,9 +10,7 @@ http://..../postTHEIA.pl
 
 =head1 DESCRIPTION
 
-Process Theia|OCZAR Update from showTHEIA submitted info
-
-=head1 Query string parameters
+Create a JSON metadata file from the showTHEIA submitted informations.
 
 =cut
 
@@ -39,19 +37,6 @@ my $password = "";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
    or die $DBI::errstr;
 
-=pod
-# ---- if action=delete, the field with the id=Identifier will be erased from the database ----------------------------------------------------
-
-if ($action eq "delete") {
-	my $stmt = qq(DELETE FROM $object WHERE identifier = \"$identifier\");
-	my $sth = $dbh->prepare( $stmt );
-	my $rv = $sth->execute() or die $DBI::errstr;
-
-	if($rv < 0) {
-	   print $DBI::errstr;
-	}
-}
-=cut
 # ---- start the creation of the JSON object ----------------------------------------------------
 #
 # ---- extracting producer data
@@ -67,28 +52,28 @@ if($rv < 0) {
 my %producer;
 
 while( my @row = $sth->fetchrow_array() ) {
-=pod
+
 	# ---- parsing online resources
-	my @resources;
+	my %resource;
 	foreach(split(/_,/, $row[9])) {
-		my %resource = (
-			email => (split ':',$_)[1],
-			role => (split ':',$_)[0],
-		);
-		push(@resources, \%resource)
+		my $typeUrl =(split '@',$_)[0];
+		my $url = (split '@',$_)[1];
+		if ($typeUrl =~ /download/) {
+			$resource{'urlDownload'} = $url;
+		} elsif ($typeUrl =~ /info/) {
+			$resource{'urlInfo'} = $url;
+		} elsif ($typeUrl =~ /doi/) {
+			$resource{'doi'} = $url;
+		}
 	}
-=cut
+
 	%producer = (
 		producerId => $row[0],
 		name => $row[1],
 		title => $row[2],
 		description => $row[3],
-		#objectives => $row[4],
-		#measuredVariables => $row[5],
 		email => $row[6],
-		#contacts => \@contacts,
-		#fundings => \@fundings,
-		#onlineResource => \@resources
+		onlineResource => \%resource
 	);
 	if ($row[4] ne "") {
 		$producer{'objectives'} = $row[4];
@@ -150,8 +135,6 @@ $producer{'fundings'} = \@fundings;
 
 #print to_json $producer{'fundings'};
 
-# ---- start the creation of the JSON object ----------------------------------------------------
-#
 # ---- extracting observed_properties data
 
 $stmt = qq(SELECT * FROM observations, observed_properties, sampling_features GROUP BY observations.identifier;);
@@ -179,11 +162,13 @@ while( my @row = $sth->fetchrow_array() ) {
 
 	#print $observation{'observedProperty'}{'theiaCategories'}->[0];
 	# ---- data from sampling_features table
+	# ---- parsing coordinates
 	my $geometry = (split ':', $row[$#row])[1];
 	my $position = (split '\(|\)', $geometry)[1];
 	my @coordinates = split(',', $position);
 	$coordinates[0] = $coordinates[0] + 0;
 	$coordinates[1] = $coordinates[1] + 0;
+	$coordinates[2] = $coordinates[2] + 0;
 	my %geometry = (
 		type => (split '\(|\)', $geometry)[0],
 		coordinates => \@coordinates,
@@ -241,7 +226,7 @@ while( my @row = $sth->fetchrow_array() ) {
 	my @topicCategories;
 	foreach(split('_,',$topicCategories)){
 		my $category = (split(':',$_))[1];
-		$category =~ s/(\r\n)//g;
+		#$category =~ s/(\r\n)//g;
 		push(@topicCategories,$category);
 	}
 	my %geometry = (
@@ -262,7 +247,6 @@ while( my @row = $sth->fetchrow_array() ) {
 		title => $row[1],
 		description => $row[2],
 		datasetLineage => $row[5],
-		#contacts => \@contacts,
 		dataConstraint => \%dataConstraint,
 		topicCategories => \@topicCategories,
 		inspireTheme => (split '_inspireTheme:', $row[3])[1],
@@ -271,7 +255,6 @@ while( my @row = $sth->fetchrow_array() ) {
 	$metadata{'inspireTheme'} =~ s/(\r\n)//g;
 	my %dataset = (
 		datasetId => $row[0],
-		#metadata => \%metadata,
 	);
 	
 	# ---- extracting contacts data
@@ -337,11 +320,11 @@ print FH encode_json \%json;
 
 close(FH);
 
-# ---- checking is the final json file is conform
+# ---- checking if the final json file is conform to the recommandations
 
 my $output = "java -jar /home/lucas/Documents/donnees_webobs_obsera/JSON-schema-validation-0-jar-with-dependencies.jar ".$filename;
 #print qx($output);
-if (qx($output) =~ /success/) {print "The JSON metadata file has been successfully created at ".$filename." !"} elsif (qx($output) =~ /not found/) {print "The JSON metadata file is not valid :\n".qx($output)};
+if (qx($output) =~ /success/) {print "The JSON metadata file has been successfully created at ".$filename." !"} elsif (qx($output) =~ /(not found|schema violations found|subschema)/) {print "The JSON metadata file is not valid :\n".qx($output)};
 
 #print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
    

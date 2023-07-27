@@ -31,6 +31,10 @@
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_TELE)">TRANStypes.conf</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_NODES2NODES)">node2node.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF/events_World.conf">events_World.conf</a></li>
+			  <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumContactPersonRoles.conf">EnumContactPersonRoles.conf</a></li>
+			  <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumFundingTypes.conf">EnumFundingTypes.conf</a></li>
+              <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumInspireTheme.conf">EnumInspireTheme.conf</a></li>
+              <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumTopicCategories.conf">EnumTopicCategories.conf</a></li>
 *         </ul>
 *       </li>
         <li><a href="#">Gazette Editors</a>
@@ -54,5 +58,7 @@
 *      <li><a href="../DOC/mods.html">Doc Modules</a></li>
 *      <li><hr></li>
        <li><a href="/cgi-bin/changepassword.pl">Change your password</a></li>
+       <li><hr></li>
+       <li><a href="/cgi-bin/showTHEIA.pl">Theia|OZCAR pivot model></li>
    </ul>
 </li>

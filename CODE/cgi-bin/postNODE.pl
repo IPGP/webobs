@@ -420,7 +420,7 @@ sub saveN2N {
 	} else { htmlMsgNotOK("$n2nfile $!") }
 
 }
-# --- return information when OK
+# --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
 
@@ -431,7 +431,7 @@ sub htmlMsgOK {
 	my $userid = "";
 	my $password = "";
 	
-	# --- station informations
+	# --- station informations, coordinates are saved in WKT format
 	my $point;
 	if ($alt ne "") {
 		$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
@@ -442,18 +442,17 @@ sub htmlMsgOK {
 	# --- dataset informations
 	my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
 	my $subject = $topics.'inspireTheme:'.$theme;
-	my $creator = 'Principal investigator:lajeuness@ipgp.fr';
 	
-	# --- creator information
+	# --- creators informations
 	my @roles      = split(',',$creators[0]);
 	my @firstNames = split(',',$creators[1]);
 	my @lastNames  = split(',',$creators[2]);
 	my @emails     = split(',',$creators[3]);
-	
+
 	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
 	   or die $DBI::errstr;
 	   
-	# inserting creator into contacts table
+	# inserting creators into contacts table
 	my @values = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
 	my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@values);
 	$dbh->do($q);

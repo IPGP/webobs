@@ -167,12 +167,13 @@ $date            = $NODE{POS_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
 ($usrYearP,$usrMonthP,$usrDayP,$usrTimeP) = split(/-|T/,$date);
 
-# ---- INSPIRE themes and topic categories
+# ---- parsing INSPIRE themes and topic categories for the select menu in the description part
 my $inspireTheme = "/$WEBOBS{THEME}";
 my @themes;
 open(FH, '<', $inspireTheme) or die $!;
 
 while(<FH>){
+	chomp($_);
 	push(@themes, $_);
 }
 
@@ -183,6 +184,7 @@ my @topics;
 open(FH, '<', $topicCategories) or die $!;
 
 while(<FH>){
+	chomp($_);
 	push(@topics, $_);
 }
 
@@ -305,12 +307,15 @@ function postIt()
   for (var i=0; i<form.SELs.length; i++) {
   	form.SELs[i].selected = true;
   }
+  
+  // Theia metadata part
   var selected = \$('#topicCats')[0].selectedOptions;
   var topics = [];
   for (var i=0; i<selected.length; i++) {
   	topics.push(selected[i].value);
   } form.topics.value = 'topicCategories:'+topics.join(',')+'_';
-  	// form.creators.value = 
+  
+  // registering the NODE contacts metadata
   var roles = [];
   var firstNames = [];
   var lastNames = [];
@@ -324,6 +329,7 @@ function postIt()
 	  } 
   	form.creators.value = roles.join(',') + '|' + firstNames.join(',') + '|' + lastNames.join(',') + '|' + emails.join(',');
   } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
+
 	console.log(\$(\"#theform\"));
 	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
 		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
@@ -468,14 +474,18 @@ function delete_node()
 	}
 }
 
-// functions to make the map works
+// functions to make the interactive map works
 
 function onMapClick(e) {
+	/**
+	 * Places a marker on the interactive map and fills the coordinates fields in the NODE form
+	 * \@param {Event} e Click event
+	 */
 	var lat = e.latlng['lat'].toFixed(6);
 	var lon = e.latlng['lng'].toFixed(6);
 	// lat, lon = nsew(lat, lon);
 
-	/*
+	/* need to rework this function !
 	var p = document.createElement('p');
 	
 	p.innerHTML = "<B>$NODE{ALIAS}: "+$NODE{NAME}+"</B><BR><I>($NODE{TYPE})</I><BR>&nbspfrom <B>$NODE{INSTALL_DATE}</B> to <B>$NODE{END_DATE}</B><BR>&nbsp;<B>"+lat+"&deg;</B>, <B>"+lon+"&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
@@ -493,12 +503,15 @@ function onMapClick(e) {
 	marker = L.marker([lat, lon]).addTo(map);
 	document.form.latwgs84.value = ns(lat);
 	document.form.lonwgs84.value = ew(lon);
-	document.form.locMap.value = 1;
+	document.form.locMap.value = 1;	// added a third variable to make the DOM perceived the changes in the webpage when clicking on the interactive map
 
 	document.form.typePos.value="1";
 	return false;
 }
 function getCurrent (pos) {
+	/**
+	 * Get the position of the current user when loading the page and focus the map on it
+	 */
 	var lat = pos.coords.latitude;
 	var lon = pos.coords.longitude;
 	lat, lon = nsew(lat, lon)
@@ -523,7 +536,11 @@ function error (err) {
 	}
 }
 function nsew(lat, lon) {
-	// synchronizing leaflet location and WebObs geographic location form
+	/**
+	 * Synchronize leaflet location and WebObs geographic location form
+	 * \@param {Number} lat Latitude
+	 * \@param {Number} lon Longitude
+	 */
 	var ns = document.form.latwgs84n.value;
 	var ew = document.form.lonwgs84e.value;
 	
@@ -572,6 +589,10 @@ function ew(lon) {
 	}
 }
 function onInputWrite(e) {
+	/**
+	 * Zoom/dezoom the map following the number of decimals in the latitude and longitude fields
+	 * \@param {Event} e Input event
+	 */
 	var lat = document.form.latwgs84.value;
 	var lon = document.form.lonwgs84.value;
 
@@ -604,7 +625,10 @@ function onInputWrite(e) {
 		map.flyTo([lat, lon], 18);
 	}
 }
-function handleFiles() {	// read .zip shpfiles 
+function handleFiles() {	
+	/**
+	 * Read .zip shpfiles and calculate the bounding box coordinates of the spatial coverage of the shapefile
+	 */
 	var fichierSelectionne = document.getElementById('input').files[0];
 	form.filename.value = fichierSelectionne.name;
 
@@ -643,6 +667,11 @@ function handleFiles() {	// read .zip shpfiles
 	fr.readAsArrayBuffer(fichierSelectionne);
 }
 function getGeometry(geojson) {
+	/**
+	 * Create a geoJSON object
+	 * \@param  {GeoJSON} geojson  GeoJSON object with a given number of points
+	 * \@return {GeoJSON} geometry GeoJSON object which has its coordinates corresponding to the bounding box of the geometry of the input
+	 */
 	var geometry = {"type":"", "coordinates":""};
 
 	if (geojson.features.length > 1) {
@@ -659,6 +688,11 @@ function getGeometry(geojson) {
 	}
 }
 function getBoundingBox(coordinates) {
+	/**
+	 * Calculate the bounding box of given coordinates
+	 * \@param  {Array} coordinates Array of coordinates
+	 * \@return {Array} The calculated bounding box as an array of coordinates
+	 */
 	var bounds = {}, coords, point, latitude, longitude;
 
     coords = coordinates;
@@ -676,6 +710,9 @@ function getBoundingBox(coordinates) {
 }
 
 function addCreator() {
+	/**
+	 * Add a creator row to fill in the form
+	 */
     var form = \$('#theform')[0];
 	form.count_creator.value = parseInt(form.count_creator.value)+1;
 	var new_div = document.createElement('div');
@@ -684,6 +721,9 @@ function addCreator() {
     \$('#creator_add')[0].append(new_div);
 }
 function removeCreator() {
+	/**
+	 * Remove a creator row (if there are more than one row) to fill in the form
+	 */
 	var form = \$('#theform')[0];
 	var id = '#new_creator'+form.count_creator.value;
 	if (\$(id)[0] === null) {

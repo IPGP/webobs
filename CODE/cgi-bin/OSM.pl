@@ -267,10 +267,45 @@ print <<"END";
 					}
 				});
 				shpfile.addTo(map);
+				var geometry = JSON.stringify(getGeometry(geojson));
+				document.form.outWKT.value = geometry;
 		  })
 		};
 		fr.readAsArrayBuffer(fichierSelectionne);
 	};
+	
+	function getGeometry(geojson) {
+		var geometry = {"type":"", "coordinates":""};
+
+		if (geojson.features.length > 1) {
+			geometry.type = "MultiPolygon";
+			var coordinates = [];
+			
+			for (var i = 0; i < geojson.features.length; i++) {
+				coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
+			} geometry.coordinates = coordinates; return geometry;
+		} else {
+			geometry.type = "Polygon";
+			geometry.coordinates = [getBoundingBox(geojson.features.geometry.coordinates)];
+			return geometry;
+		}
+	}
+	function getBoundingBox(coordinates) {
+		var bounds = {}, coords, point, latitude, longitude;
+
+		coords = coordinates;
+
+		for (var j = 0; j < coords.length; j++) {
+			longitude = coords[j][0];
+			latitude = coords[j][1];
+			bounds.xMin = bounds.xMin < longitude ? bounds.xMin : longitude;
+			bounds.xMax = bounds.xMax > longitude ? bounds.xMax : longitude;
+			bounds.yMin = bounds.yMin < latitude ? bounds.yMin : latitude;
+			bounds.yMax = bounds.yMax > latitude ? bounds.yMax : latitude;
+		}
+		var coordinates = [bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.xMin];
+		return coordinates;
+	}
 END
 
 for (keys(%N)) {
@@ -299,7 +334,7 @@ print "</script>\n";
 
 print "<form action='geomNODE.pl' method='post' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON+';$NODEName';\">"; #;window.close()
 print "<strong>To add a shapefile layer, click here: </strong><input type='file' id='input' onchange='handleFiles()'><br>";
-print "<strong>Pour enregistrer la couverture spatiale du NODE aux formats WKT et GeoJSON, cliquez ici: </strong><input id='geom' type='submit' name='geom' value='Sauvegarder'>";
+print "<strong>Pour enregistrer la couverture spatiale du NODE au format GeoJSON, cliquez ici: </strong><input id='geom' type='submit' name='geom' value='Sauvegarder'>";
 print "</form>";
 
 # ---- we're done ------------------------------------
@@ -308,9 +343,9 @@ print "\n</BODY>\n</HTML>\n";
 __END__
 =pod
 =head1 AUTHOR(S)
-François Beauducel
+François Beauducel, Lucas Dassin
 =head1 COPYRIGHT
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
