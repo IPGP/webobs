@@ -167,39 +167,60 @@ $date            = $NODE{POS_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
 ($usrYearP,$usrMonthP,$usrDayP,$usrTimeP) = split(/-|T/,$date);
 
+# --- connecting to the database
+my $driver   = "SQLite";
+my $database = $WEBOBS{SQL_METADATA};
+my $dsn = "DBI:$driver:dbname=$database";
+my $userid = "";
+my $password = "";
+my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+	or die $DBI::errstr;
+
 # ---- parsing INSPIRE themes and topic categories for the select menu in the description part
-my $inspireTheme = "/$WEBOBS{THEME}";
 my @themes;
-open(FH, '<', $inspireTheme) or die $!;
 
-while(<FH>){
-	chomp($_);
-	push(@themes, $_);
+# ---- extracting INSPIRE themes data
+my $stmt = qq(SELECT * FROM inspireTheme;);
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
 }
 
-close(FH);
+while(my @row = $sth->fetchrow_array()) {
+	push(@themes, $row[0]);
+}
 
-my $topicCategories = "/$WEBOBS{TOPIC}";
 my @topics;
-open(FH, '<', $topicCategories) or die $!;
 
-while(<FH>){
-	chomp($_);
-	push(@topics, $_);
+# ---- extracting topic categories data
+my $stmt = qq(SELECT * FROM topicCategories;);
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
 }
 
-close(FH);
+while(my @row = $sth->fetchrow_array()) {
+	push(@topics, $row[0]);
+}
 
-my $creatorRoles = "/$WEBOBS{CREATOR}";
 my @creators;
-open(FH, '<', $creatorRoles) or die $!;
 
-while(<FH>){
-	chomp($_);
-	push(@creators, $_);
+# ---- extracting contacts roles data
+my $stmt = qq(SELECT * FROM EnumContactPersonRoles;);
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
 }
 
-close(FH);
+while(my @row = $sth->fetchrow_array()) {
+	push(@creators, $row[0]);
+}
 
 # ---- Load the list of existing nodes
 my @allNodes = qx(/bin/ls $NODES{PATH_NODES});
