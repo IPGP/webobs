@@ -867,7 +867,7 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
+Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 

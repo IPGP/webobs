@@ -87,13 +87,14 @@ function postDeleteDomain(ux) {
 }
 
 function openPopupProducer(ux) {
-	// ux  ==  domain' html-table row id OR -1 for a new domain
+	// ux  ==  producer' html-table row id OR -1 for a new producer
 	if (arguments.length <= 0 ) { return; } // noop if no ux
 	var form = $('#overlay_form_producer')[0];
+	console.log(form);
 	if (ux != -1) { // editing an existing producer: populate popup from its table row TDs
 		// ATT:  $("td",producer.ux)[n] = n (0-based) must match producers <td> order in def-row  
 		form.id.value = $("td",ux)[2].textContent;
-		form.OLDcode.value = $("td",ux)[2].textContent;
+		form.OLDid.value = $("td",ux)[2].textContent;
 		form.id.style.backgroundColor = "#EEEEEE";
 		form.title.value = $("td",ux)[3].textContent;
 		form.prodName.value = $("td",ux)[4].textContent;
@@ -161,6 +162,7 @@ function sendPopupProducer() {
 	}
 	
 	// concatening the contacts and funders data into one variable
+	console.log(form);
 	if (form.count_mgr.value > 1) {
 		var firstNames = [];
 		var lastNames = [];

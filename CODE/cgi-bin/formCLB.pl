@@ -255,7 +255,7 @@ print "<input type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">",
 			if ($_ >= 12) { $c = ' class="CLBshowhide"' } else { $c = ''}
 			if ($fieldCLB[$_][2] !~ /Theia/) { 
 				print "<TH$c>",$fieldCLB[$_][2]."</TH>";
-			} else { print "<TH$c><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">",$fieldCLB[$_][2]."</TH>" }
+			} else { print "<TH$c><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">",$fieldCLB[$_][2]."</TH>" }	# making the title of the Theia field an URL to open the Theia thesaurus
 		}
 print "</TR>\n";
 
