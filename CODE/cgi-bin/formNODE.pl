@@ -744,7 +744,7 @@ function removeCreator() {
 function showHideTheia(checkbox){
 	const theia = document.getElementById("showHide");
 
-	if (checkbox.checked == true) {
+	if (checkbox.checked == false) {
 		theia.style.display = "none";
 	} else {
 		theia.style.display = "block";
@@ -884,7 +884,7 @@ print "<TR>";
 		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc<\/TEXTAREA>&nbsp;&nbsp;<BR>";
 		# --- show THEIA fields ?
 		print "<LABEL>show/hide THEIA metadata fields ?<INPUT type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
-		print "<DIV id=\"showHide\">";
+		print "<DIV id=\"showHide\" style=\"display:none;\">";
 		# --- PRODUCER
 		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
 		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";

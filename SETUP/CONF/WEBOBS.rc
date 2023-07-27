@@ -175,6 +175,18 @@ SQL_TABLE_OBSERVED_PROPERTIES|observed_properties
 SQL_TABLE_SAMPLING_FEATURES|sampling_features
 SQL_TABLE_PGRIDS|grids2producers
 
+# ---- Creator roles -------------------------
+# ---------------------------------------------
+CREATOR|${ROOT_CONF}/EnumContactPersonRoles.conf
+
+# ---- INSPIRE themes -------------------------
+# ---------------------------------------------
+THEME|${ROOT_CONF}/EnumInspireTheme.conf
+
+# ---- Topic categories -------------------------
+# ---------------------------------------------
+TOPIC|${ROOT_CONF}/EnumTopicCategories.conf
+
 # ---- Internalization ------------------------
 # ---------------------------------------------
 ROOT_I18N|${ROOT_SITE}/CODE/i18n
