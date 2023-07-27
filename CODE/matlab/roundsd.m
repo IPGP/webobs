@@ -1,10 +1,10 @@
 function y=roundsd(x,n,method)
-%ROUNDSD Round with fixed significant digits
+%ROUNDSD Round with fixed significant digits or pivots
 %	ROUNDSD(X,N) rounds the elements of X towards the nearest number with
 %	N significant digits.
 %
 %	ROUNDSD(X,PIVOTS) rounds the elements of X towards the nearest number
-%	based on digits in the PIVOTS vector.
+%	with 1 significant digit selected in the PIVOTS vector.
 %
 %	ROUNDSD(...,METHOD) uses following methods for rounding:
 %		'round' - nearest (default)
@@ -16,11 +16,12 @@ function y=roundsd(x,n,method)
 %		roundsd(0.012345,3) returns 0.0123
 %		roundsd(12345,2) returns 12000
 %		roundsd(12.345,3,'ceil') returns 12.4000
+%		roundsd(1:10,[1 2 5]) returnrs [1  2  2  5  5  5  5 10 10 10]
 %
 %	See also Matlab's functions ROUND, ROUND10, FLOOR, CEIL, FIX, and 
 %	ROUNDN (Mapping Toolbox).
 %
-%	Author: François Beauducel <beauducel@ipgp.fr>
+%	Author: Franï¿½ois Beauducel <beauducel@ipgp.fr>
 %	  Institut de Physique du Globe de Paris
 %
 %	Acknowledgments: Edward Zechmann, Daniel Armyr, Yuri Kotliarov
@@ -28,7 +29,7 @@ function y=roundsd(x,n,method)
 %	Created: 2009-01-16
 %	Updated: 2023-04-19
 
-%	Copyright (c) 2023, François Beauducel, covered by BSD License.
+%	Copyright (c) 2023, Franï¿½ois Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without 
