@@ -166,7 +166,7 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 	exit 1;
 }
 
-# --- return information when OK
+# --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
 	
@@ -184,7 +184,7 @@ sub htmlMsgOK {
 	my $dataname = $NODEName.'_all.txt';
 	
 	foreach (@donnees) {
-	    # observed properties table
+	    # observed_properties table
         my @obs   = split(/[\|]/, $_);
         my $id    = $obs[6];
         my $name  = $obs[6];
