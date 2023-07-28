@@ -504,7 +504,6 @@ function onMapClick(e) {
 	 */
 	var lat = e.latlng['lat'].toFixed(6);
 	var lon = e.latlng['lng'].toFixed(6);
-	// lat, lon = nsew(lat, lon);
 
 	/* need to rework this function !
 	var p = document.createElement('p');
@@ -522,8 +521,7 @@ function onMapClick(e) {
 		map.removeLayer(marker);
 	}
 	marker = L.marker([lat, lon]).addTo(map);
-	// document.form.latwgs84.value = ns(lat);
-	// document.form.lonwgs84.value = ew(lon);
+
 	document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
 	document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
 	document.form.locMap.value = 1;	// added a third variable to make the DOM perceived the changes in the webpage when clicking on the interactive map
@@ -546,10 +544,7 @@ function getCurrent (pos) {
 	 */
 	var lat = pos.coords.latitude;
 	var lon = pos.coords.longitude;
-	// lat, lon = nsew(lat, lon)
-	
-	// document.form.latwgs84.value = ns(lat);
-	// document.form.lonwgs84.value = ew(lon);
+
 	document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
 	document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
 	document.form.altitude.value = "";
@@ -568,59 +563,6 @@ function error (err) {
 		break;
 		case err.UNKNOWN_ERROR:
 		break;
-	}
-}
-function nsew(lat, lon) {
-	/**
-	 * Synchronize leaflet location and WebObs geographic location form
-	 * \@param {Number} lat Latitude
-	 * \@param {Number} lon Longitude
-	 */
-	var ns = document.form.latwgs84n.value;
-	var ew = document.form.lonwgs84e.value;
-	
-	if (lat < 0 && lon > 0 && ns == 'N') {
-		document.form.latwgs84n.value = 'S';
-		return -lat, lon;
-	} else if (lat > 0 && lon < 0 && ew == 'E') {
-		document.form.lonwgs84e.value = 'W';
-		return lat, -lon;
-	} else if (lat < 0 && lon < 0 && ns == 'N' && ew == 'E') {
-		document.form.latwgs84n.value = 'S';
-		document.form.lonwgs84e.value = 'W';
-		return -lat, -lon;
-	} else if (lat > 0 && lon > 0 && ns == 'N' && ew == 'W') {
-		return lat, -lon;
-	} else {
-		return lat, lon;
-	}
-}
-// Better use these 2 functions when modifying lat/lon form values by clicking on the map
-function ns(lat) {
-	var ns = document.form.latwgs84n.value;
-	if (lat < 0 && ns == 'N') {
-		document.form.latwgs84n.value = 'S';
-		return -lat;
-	} else if (lat < 0 && ns == 'S') {
-		return -lat;
-	} else if (lat > 0 && ns == 'S') {
-		document.form.latwgs84n.value = 'N';
-	} else {
-		return lat;
-	} 
-}
-function ew(lon) {
-	var ew = document.form.lonwgs84e.value;
-	if (lon < 0 && ew == 'E') {
-		document.form.lonwgs84e.value = 'W';
-		return -lon;
-	} else if (lon < 0 && ew == 'W') {
-		return -lon;
-	} else if (lon > 0 && ew == 'W') {
-		document.form.lonwgs84e.value = 'E';
-		return lon;
-	} else {
-		return lon;
 	}
 }
 function onInputWrite(e) {
@@ -1104,9 +1046,9 @@ print "<TR>";
 			// let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
 			
 			if ( document.form.latwgs84.value !== "" || document.form.lonwgs84.value !== "" ) {
-				var lat = document.form.latwgs84.value;
-				var lon = document.form.lonwgs84.value;
-				lat, lon = nsew(lat, lon);
+				var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
+				var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
+
 				map.flyTo([lat, lon], 18);
 				var marker = L.marker([lat, lon]).addTo(map);
 				marker.bindPopup(\"$text\").openPopup();
