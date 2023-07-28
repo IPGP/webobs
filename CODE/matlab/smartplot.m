@@ -30,11 +30,12 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %	G.MARKERSIZE, G.DATESTR and G.TZ (timezone).
 %
 %	OPT: A structure containing fields of options:
-%	   linestyle: String compatible with plot function (line/marker type).
-%	    fontsize: Scalar that applies for all axes text.
+%	   linestyle: string compatible with plot function (line/marker type).
+%	    fontsize: scalar that applies for all axes text.
 %	     chnames: cell of strings defining the channel names.
 %	    choffset: scalar defining the space between each channel subplots
 %	     zoompca: scalar defining the ratio of zoom if positive or PCA if negative.
+%	      movavr: number of samples to compute and plot a moving average
 %	trendmindays: minimum time interval (in days) of data limits to compute a trend.
 %	trendminperc: minimum time interval (in percent) of data limits to compute a trend.
 %	 yscalevalue: fixes the Y-scale (value in data unit)
@@ -44,13 +45,14 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 2022-04-27
+%	Updated: 203-07-21
 
 linestyle = field2str(OPT,'linestyle','-');
 fontsize = field2num(OPT,'fontsize',8);
 chnames = OPT.chnames;
 choffset = field2num(OPT,'choffset');
 zoompca = field2num(OPT,'zoompca');
+movavr = field2num(OPT,'movavr',1);
 trendmindays = field2num(OPT,'trendmindays');
 trendminperc = field2num(OPT,'trendminperc');
 yscalevalue = field2num(OPT,'yscalevalue');
@@ -112,7 +114,7 @@ for ii = 0:(tzoom+(zoompca<0))
 				if isfield(X(n),'e') && ~isempty(X(n).e)
 					d = [d,X(n).e(:,i)];
 				end
-				plotorbit(X(n).t,d,X(n).w,linestyle,G.LINEWIDTH,G.MARKERSIZE,X(n).rgb);
+				plotorbit(X(n).t,d,X(n).w,linestyle,G.LINEWIDTH,G.MARKERSIZE,X(n).rgb,movavr);
 				if npca > 0 && ii > 0
 					plotorbit(X(n).t,mavr(d(:,1),10),X(n).w,'-',G.LINEWIDTH,G.MARKERSIZE/2,scolor(2));
 				end
