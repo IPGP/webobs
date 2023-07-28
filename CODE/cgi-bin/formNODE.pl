@@ -522,8 +522,10 @@ function onMapClick(e) {
 		map.removeLayer(marker);
 	}
 	marker = L.marker([lat, lon]).addTo(map);
-	document.form.latwgs84.value = ns(lat);
-	document.form.lonwgs84.value = ew(lon);
+	// document.form.latwgs84.value = ns(lat);
+	// document.form.lonwgs84.value = ew(lon);
+	document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
+	document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
 	document.form.locMap.value = 1;	// added a third variable to make the DOM perceived the changes in the webpage when clicking on the interactive map
 
 	document.form.typePos.value="1";
@@ -546,8 +548,11 @@ function getCurrent (pos) {
 	var lon = pos.coords.longitude;
 	// lat, lon = nsew(lat, lon)
 	
-	document.form.latwgs84.value = ns(lat);
-	document.form.lonwgs84.value = ew(lon);
+	// document.form.latwgs84.value = ns(lat);
+	// document.form.lonwgs84.value = ew(lon);
+	document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
+	document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
+	document.form.altitude.value = "";
 	document.form.locMap.value = 1;
 
 	map.flyTo([lat, lon], 18);
@@ -768,8 +773,10 @@ function showHideTheia(checkbox){
 
 	if (checkbox.checked == false) {
 		theia.style.display = "none";
+		document.form.showHide.value = 0;
 	} else {
 		theia.style.display = "block";
+		document.form.showHide.value = 1;
 	}
 }
 
@@ -905,7 +912,7 @@ print "<TR>";
 		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
 		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc<\/TEXTAREA>&nbsp;&nbsp;<BR>";
 		# --- show THEIA fields ?
-		print "<LABEL>show/hide THEIA metadata fields ?<INPUT type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
+		print "<LABEL>show/hide THEIA metadata fields ?<INPUT name=\"showHide\" type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
 		print "<DIV id=\"showHide\" style=\"display:none;\">";
 		# --- PRODUCER
 		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";

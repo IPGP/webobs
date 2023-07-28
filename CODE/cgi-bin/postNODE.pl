@@ -217,6 +217,7 @@ my $jourP      = $cgi->param('jourMesure')  // '';
 my $typePos    = $cgi->param('typePos')     // '';
 my $rawKML     = $cgi->param('rawKML')      // '';
 my $features   = $cgi->param('features')    // '';
+my $showHide   = $cgi->param('showHide')	// '';
 $features =~ s/\|/,/g;
 my %n2n;
 for (split(',',lc($features))) {
@@ -299,6 +300,7 @@ push(@lines,"THEME|".u2l($theme)."\n");
 push(@lines,"TOPICS|".u2l($topics)."\n");
 push(@lines,"LINEAGE|".u2l($lineage)."\n");
 push(@lines,"SPATIAL_COVERAGE|".u2l($filename)."\n");
+push(@lines,"SHOWHIDE|".u2l($showHide)."\n");
 
 # ---- procs parameters
 if ($GRIDType eq "PROC") {
@@ -423,58 +425,46 @@ sub saveN2N {
 # --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	if ($showHide == 1) {
+		# --- connecting to the database
+		my $driver   = "SQLite";
+		my $database = $WEBOBS{SQL_METADATA};
+		my $dsn = "DBI:$driver:dbname=$database";
+		my $userid = "";
+		my $password = "";
+		
+		# --- station informations, coordinates are saved in WKT format
+		my $point;
+		if ($alt ne "") {
+			$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
+		} else {
+			$point = "wkt:Point(".$lat.",".$lon.")";
+		}
+		
+		# --- dataset informations
+		my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
+		my $subject = $topics.'inspireTheme:'.$theme;
+		
+		# --- creators informations
+		my @roles      = split(',',$creators[0]);
+		my @firstNames = split(',',$creators[1]);
+		my @lastNames  = split(',',$creators[2]);
+		my @emails     = split(',',$creators[3]);
 
-	# --- connecting to the database
-	my $driver   = "SQLite";
-	my $database = $WEBOBS{SQL_METADATA};
-	my $dsn = "DBI:$driver:dbname=$database";
-	my $userid = "";
-	my $password = "";
-	
-	# --- station informations, coordinates are saved in WKT format
-	my $point;
-	if ($alt ne "") {
-		$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
-	} else {
-		$point = "wkt:Point(".$lat.",".$lon.")";
+		my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+		   or die $DBI::errstr;
+		   
+		# inserting creators into contacts table
+		my @values = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
+		my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@values);
+		$dbh->do($q);
+
+		my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
+		$sth->execute($alias,$alias,$point);
+
+		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
+		$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
 	}
-	
-	# --- dataset informations
-	my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
-	my $subject = $topics.'inspireTheme:'.$theme;
-	
-	# --- creators informations
-	my @roles      = split(',',$creators[0]);
-	my @firstNames = split(',',$creators[1]);
-	my @lastNames  = split(',',$creators[2]);
-	my @emails     = split(',',$creators[3]);
-
-	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-	   or die $DBI::errstr;
-	   
-	# inserting creators into contacts table
-	my @values = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
-	my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@values);
-	$dbh->do($q);
-=pod
-	# --- completing observed_properties table
-	my $rv = $dbh->do("INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES ('$GRIDName','$NODEName','$point')");
-
-	my $stmt = qq(SELECT Identifier FROM observed_properties;);
-	my $sth = $dbh->prepare( $stmt );
-	my $rv = $sth->execute() or die $DBI::errstr;
-
-	my @rows = $sth->fetchrow_array();
-	print @rows;
-	for (my $i = 0; $i <= @rows; i++) {
-		print $row[$i];
-	}
-=cut
-	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
-	$sth->execute($alias,$alias,$point);
-
-	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
-	$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
 
 	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
