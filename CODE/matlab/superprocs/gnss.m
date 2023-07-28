@@ -149,12 +149,14 @@ baselines_horizonly = isok(P,'BASELINES_HORIZONTAL_ONLY');
 pagestanum = field2num(P,'BASELINES_PAGE_STA_NUM',10);
 baselines_interp_method = field2str(P,'BASELINES_INTERP_METHOD',{'','linear','nearest'});
 baselines_linestyle = field2str(P,'BASELINES_LINESTYLE','o-');
+baselines_mavr = field2num(P,'BASELINES_MOVING_AVERAGE',1);
 baselines_title = field2str(P,'BASELINES_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
-baselines_ylabel = field2str(P,'BASELINES_YLABEL','$ref_node_alias ($baselines_unit)');
+baselines_ylabel = field2str(P,'BASELINES_YLABEL','$ref_node_alias');
 baselines_unit = field2str(P,'BASELINES_UNIT','m');
 baselines_refoff = field2num(P,'BASELINES_REF_OFFSET_M',0.01);
 baselines_staoff = field2num(P,'BASELINES_STATION_OFFSET_M',0.01);
 baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
+baselines_trend = isok(P,'BASELINES_PLOT_TREND');
 
 % MOTION parameters
 motion_excluded = field2str(P,'MOTION_EXCLUDED_NODELIST');
@@ -730,7 +732,7 @@ for r = 1:numel(P.GTABLE)
 					X(n2).w = D(n2).d(k2,4);
 					X(n2).nam = sprintf('%s',N(n2).ALIAS);
 					X(n2).rgb = scolor(n2);
-					X(n2).trd = 1;
+					X(n2).trd = baselines_trend;
 				end
 			end
 			refnames{nn} = varsub(baselines_ylabel,V);
@@ -745,6 +747,7 @@ for r = 1:numel(P.GTABLE)
 
 		% makes the plot
 		OPT.linestyle = baselines_linestyle;
+		OPT.movavr = baselines_mavr;
 		OPT.fontsize = fontsize;
 		OPT.chnames = refnames;
 		OPT.choffset = baselines_refoff;
