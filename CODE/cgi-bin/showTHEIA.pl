@@ -144,13 +144,26 @@ my $funders;
 my @onlineRes;
 		
 while(my @row = $sth->fetchrow_array()) {
-	$contacts  = join(', ',split(/_,/,$row[7]));
 	$funders   = join(', ',split(/_,/,$row[8]));
 	@onlineRes = split(/_,/,$row[9]);
 	foreach (@onlineRes) {
 		$_ = (split '@', $_)[1];
 	}
 	my $onlineRes = join(', ', @onlineRes);
+	
+	# ---- extracting datasets contacts data
+	my $stmt2 = qq(SELECT * FROM contacts WHERE related_id = '$row[0]';);
+	my $sth2 = $dbh->prepare( $stmt2 );
+	my $rv2 = $sth2->execute() or die $DBI::errstr;
+
+	if($rv2 < 0) {
+	   print $DBI::errstr;
+	}
+
+	my @contacts;
+	while(my @row2 = $sth2->fetchrow_array()){
+		push(@contacts, $row2[1]." ".$row2[2].": ".$row2[0]);
+	}
 	print "<TR><TD width=1%><A href=\"/cgi-bin/gridsMgr.pl\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit producer\" src=\"/icons/modif.png\"></A></TD>"
 			."<TD width=1%><A id=$row[0] class=\"producer\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete producer\" src=\"/icons/no.png\"></A></TD>"
 			."<TD width=3% align=center><SMALL>$row[0]&nbsp&nbsp</SMALL></TD>"
@@ -167,7 +180,7 @@ while(my @row = $sth->fetchrow_array()) {
 			."<p><input type=\"hidden\" name=\"measuredVariables\" value=\"$row[5]\"></input></p></SMALL></TD>"
 			."<TD width=5% align=center><SMALL>$row[6]"
 			."<p><input type=\"hidden\" name=\"email\" value=\"$row[6]\"></input></p></SMALL></TD>"
-			."<TD width=8% align=center><SMALL>$contacts"
+			."<TD width=8% align=center><SMALL>".join(",", @contacts)
 			."<p><input type=\"hidden\" name=\"contacts\"></input></p></SMALL></TD>"
 			."<TD width=8% align=center><SMALL>$funders"
 			."<p><input type=\"hidden\" name=\"fundings\"></input></p></SMALL></TD>"
@@ -198,20 +211,35 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
 		."<TH valign=\"top\"><SMALL>Title</SMALL></TH>"
 		."<TH><SMALL>Description</SMALL></TH>"
 		."<TH><SMALL>Subject</SMALL></TH>"
-		."<TH><SMALL>Spatial coverage</SMALL></TH>"
+		."<TH><SMALL>Creator(s)</SMALL></TH>"
 		."<TH><SMALL>Provenance</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
 	my $nodeId  = (split '\.', $row[0]) [1];
 	my $proc    = (split '_', (split '\.', $row[0]) [0]) [2];
 	my $subject = join(',', split(/_/,$row[3]));
+	
+	# ---- extracting datasets contacts data
+	my $stmt2 = qq(SELECT * FROM contacts WHERE related_id LIKE '$row[0]%';);
+	my $sth2 = $dbh->prepare( $stmt2 );
+	my $rv2 = $sth2->execute() or die $DBI::errstr;
+
+	if($rv2 < 0) {
+	   print $DBI::errstr;
+	}
+
+	my @contacts;
+	while(my @row2 = $sth2->fetchrow_array()){
+		push(@contacts, $row2[1]." ".$row2[2].": ".$row2[0]);
+	}
+	
 	print "<TR><TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$proc.$nodeId\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
 			."<TD width=1%><A id=$row[0] class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
 			."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$row[2]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
-			."<TD width=12% align=center><SMALL>".substr($row[4], 0, 100)."</SMALL></TD>"
+			."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$row[5]</SMALL></TD></TR>";
 };
 
