@@ -196,6 +196,7 @@ fprintf('ok.\n');
 
 if isok(G,'SVGOUTPUT')
 	fprintf('%s: exporting %s/%s.svg ...',wofun,ptmp,f);
+	%fig2svg(sprintf('%s/%s.svg',ptmp,f))
 	plot2svg(sprintf('%s/%s.svg',ptmp,f))
 	%print(gcf,'-dsvg',sprintf('%s/%s.svg',ptmp,f))
 	fprintf('ok.\n');
