@@ -162,7 +162,7 @@ while(my @row = $sth->fetchrow_array()) {
 
 	my @contacts;
 	while(my @row2 = $sth2->fetchrow_array()){
-		push(@contacts, $row2[1]." ".$row2[2].": ".$row2[0]);
+		push(@contacts, "($row2[3]) ".$row2[1]." ".$row2[2].": ".$row2[0]);
 	}
 	print "<TR><TD width=1%><A href=\"/cgi-bin/gridsMgr.pl\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit producer\" src=\"/icons/modif.png\"></A></TD>"
 			."<TD width=1%><A id=$row[0] class=\"producer\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete producer\" src=\"/icons/no.png\"></A></TD>"
@@ -180,7 +180,7 @@ while(my @row = $sth->fetchrow_array()) {
 			."<p><input type=\"hidden\" name=\"measuredVariables\" value=\"$row[5]\"></input></p></SMALL></TD>"
 			."<TD width=5% align=center><SMALL>$row[6]"
 			."<p><input type=\"hidden\" name=\"email\" value=\"$row[6]\"></input></p></SMALL></TD>"
-			."<TD width=8% align=center><SMALL>".join(",", @contacts)
+			."<TD width=8% align=center><SMALL>".(join "\n", @contacts)
 			."<p><input type=\"hidden\" name=\"contacts\"></input></p></SMALL></TD>"
 			."<TD width=8% align=center><SMALL>$funders"
 			."<p><input type=\"hidden\" name=\"fundings\"></input></p></SMALL></TD>"
