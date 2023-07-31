@@ -14,6 +14,8 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 1. **EXPERIMENTAL:** Node's automatic geographical positioning using automatic KML feed is possible by selecting **auto KML feed** in positioning type. It uses a new node's variable `POS_RAWKML` containing a URL that returns a KML content. Latitude, longitude, altitude and positioning date will be filled and updated from *Placemark/TimeStamp/when* and *Placemark/Point/coordinates* tags.
 `!!` The local data configuration **CONF/POSITIONtypes.conf** pointed by `FILE_POS` variable in **NODE.rc** is now obsolete and unused. It is replaced by the read-only file **CODE/etc/postypes.conf**. If some administrators have modified the original template by adding new positioning types, please open an issue or contact the dev team.
 
+2. An interface has been created between WebObs and the Theia|OZCAR data portal. An Admin who needs to transfer metadata towards Theia can now produce a JSON file with WebObs metadata by filling some forms. The first form is located in the WebObs Grids Manager. The others are respectively the NODE forms and CLB forms. When a producer/NODE/new row in a CLB file is created, WebObs fills a metadata database which stores the metadata in order to write them in a JSON file, ready-to-send to the Theia data portal.
+
 
 ### Enhancements
 1. **All procs**: new experimental flag option `SVGOUTPUT` to produce a vector file in SVG format for all graphs, allowing rescaling of the plot using browser facilities. This option is also available in the proc request form.
@@ -37,6 +39,10 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 1. In the **Scheduler Runs**:
     -  possibility to select a job ID and to sort any column in the job runs table.
     - ``!!`` access is now submitted to authorization rights. Resource is *scheduler* in the *misc* table. Admin (4) is needed to delete a log date or kill a running job.
+
+2. In the **NODE form**:
+    - possibility to locate yourself through different possibility on an interactive map : by clicking on the map, or by using the HTML geolocation (beware: approximate position).
+    - possibility to integrate a shapefile in the interactive map
 
 ### Fixed issues
 1. Fix an issue with user account end date of validity
