@@ -112,14 +112,38 @@ my $objective = $QryParm->{'objective'};
 $objective =~ s/'/''/g;
 my $meas_var  = $QryParm->{'measVar'};
 $meas_var  =~ s/'/''/g;
-my @firstNames = split('_,', (split '\|', $QryParm->{'contacts'})[0]);
-my @lastNames  = split('_,', (split '\|', $QryParm->{'contacts'})[1]);
-my @roles      = split('_,', (split '\|', $QryParm->{'contacts'})[2]);;
-my @contacts   = split('_,', (split '\|', $QryParm->{'contacts'})[3]);;
+
+my @contacts   = split(',', $QryParm->{'contacts'});
+my @roles;
+my @firstNames;
+my @lastNames;
+my @emails;
+foreach (@contacts) {
+	my @elements = split(/ /, $_);
+	push(@roles, (split '\(|\)', $_)[1]);
+	push(@firstNames, $elements[2]);
+	push(@lastNames, $elements[3]);
+	push(@emails, $elements[4]);
+}
+
+my @funders     = split(',', $QryParm->{'funders'});
+my @typeFunders;
+my @idScanR;
+my @nameFunders;
+my @acronyms;
+foreach (@funders) {
+	push(@typeFunders, (split ':', $_)[0]);
+	push(@idScanR, (split '/', $_)[1]);
+	push(@nameFunders, (split ':|\(', $_)[1]);
+	push(@acronyms, (split '\(|\)', $_)[1]);
+}
+=pod
 my @typeFunders= split('_,', (split '\|', $QryParm->{'funders'})[0]);
 my @idScanR    = split('_,', (split '\|', $QryParm->{'funders'})[1]);
-my @funders    = split('_,', (split '\|', $QryParm->{'funders'})[2]);;
-my @acronyms   = split('_,', (split '\|', $QryParm->{'funders'})[3]);;
+my @funders    = split('_,', (split '\|', $QryParm->{'funders'})[2]);
+my @acronyms   = split('_,', (split '\|', $QryParm->{'funders'})[3]);
+=cut
+
 my @onlineRes  = split('_,', $QryParm->{'onlineRes'});
 foreach (@onlineRes) {
 	$_ = (split '@', $_)[1];
@@ -208,13 +232,13 @@ if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $Q
 	my $q1 = "delete from $WEBOBS{SQL_TABLE_CONTACTS} WHERE RELATED_ID=\'$QryParm->{'id'}\' AND EMAIL != \'+++\'";
 	my $q2 = "";
 	if (@contacts > 0 && $contacts[0] ne "") {
-		my @values = map { "(\'$contacts[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$QryParm->{'id'}\')" } 0..$#contacts ;
+		my @values = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$QryParm->{'id'}\')" } 0..$#contacts ;
 		
 		$q2 = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@values);
 	} 
 	my $q3 = "delete from $WEBOBS{SQL_TABLE_CONTACTS} WHERE RELATED_ID=\'$QryParm->{'id'}\' AND EMAIL = \'+++\'";
 	my $rows = dbuow($WEBOBS{SQL_METADATA},$q0,$q1,$q2,$q3);
-	$producerMsg  .= ($rows >= 1 || $q2 eq "") ? "  having updated $WEBOBS{SQL_TABLE_CONTACTS} " : $q2."  failed to update $WEBOBS{SQL_TABLE_CONTACTS}";
+	$producerMsg  .= ($rows >= 1 || $q2 eq "") ? "  having updated $WEBOBS{SQL_TABLE_CONTACTS} " : "  failed to update $WEBOBS{SQL_TABLE_CONTACTS}";
 	$producerMsg  .= " $lastDBIerrstr";
 	$producerMsgColor  = ($rows >= 1 || $q2 eq "") ? "green" : "red";
 }
@@ -225,7 +249,7 @@ if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $Q
 	my $q1 = "delete from $WEBOBS{SQL_TABLE_ORGANISATIONS} WHERE RELATED_ID=\'$QryParm->{'id'}\' AND IDENTIFIER != \'+++\'";
 	my $q2 = "";
 	if (@funders > 0 && $funders[0] ne "") {
-		my @values = map { "(\'$typeFunders[$_]\',\'fr\',\'$acronyms[$_]\',\'$funders[$_]\',\'$idScanR[$_]\',\'$QryParm->{'id'}\')" } 0..$#funders ;
+		my @values = map { "(\'$typeFunders[$_]\',\'fr\',\'$acronyms[$_]\',\'$nameFunders[$_]\',\'$idScanR[$_]\',\'$QryParm->{'id'}\')" } 0..$#funders ;
 		$q2 = "insert or replace into $WEBOBS{SQL_TABLE_ORGANISATIONS} VALUES ".join(',',@values);
 	} 
 	my $q3 = "delete from $WEBOBS{SQL_TABLE_ORGANISATIONS} WHERE RELATED_ID=\'$QryParm->{'id'}\' AND IDENTIFIER = \'+++\'";
