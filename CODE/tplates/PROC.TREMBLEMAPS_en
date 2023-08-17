@@ -41,7 +41,7 @@ SVGOUTPUT|NO
 PDFOUTPUT|YES
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_OVS160_noalpha.png
 LOGO2_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_b3r.jpg
-COPYRIGHT|(c) IPGP
+COPYRIGHT|IPGP
 COPYRIGHT2|
 
 # auto refresh of graphic display
@@ -66,6 +66,9 @@ AREA|Guadeloupe and Northern Islands
 CITIES|$WEBOBS{ROOT_CONF}/Cities.conf
 # see ${CITIES} file for valid regions
 REGION|Guadeloupe
+# each city is considered as a circle around its lat/lon center
+CITIES_RADIUS_KM|1
+
 # see CODE/matlab/gmpe.m and gmice.m for valid laws
 GMPE|beauducel09
 GMICE|gr42

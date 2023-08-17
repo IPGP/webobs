@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2021-01-01
+%	Updated: 2023-08-17
 
 
 WO = readcfg;
@@ -114,6 +114,7 @@ region = P.REGION;
 
 % loads cities (with elevations for P.REGION)
 CITIES = readcities(WO,P,'elevation');
+cradius = field2num(P,'CITIES_RADIUS_KM',0);
 
 if isfield(P,'SHAPE_FILE') && exist(P.SHAPE_FILE,'file')
 	faults = ibln(P.SHAPE_FILE);
@@ -146,9 +147,9 @@ for n = 1:length(t)
 
 	if all(~isnan(d(n,1:4))) && ~exist(fdat,'file') && e(n) >= 0
 
-		depi = greatcircle(CITIES.lat,CITIES.lon,d(n,1),d(n,2));	% epicentral distance to all cities
-		dhyp = sqrt(depi.^2 + (CITIES.alt/1e3 + d(n,3)).^2);	% hypocentral distance to all cities
-		pga = 1e3*repmat(gmpe(P.GMPE,d(n,4),dhyp,d(n,3)),1,2).*[ones(size(depi)),CITIES.factor];	% predicted PGA (in mg) and PGAmax (with amplification factor)
+		depi = max(greatcircle(CITIES.lat,CITIES.lon,d(n,1),d(n,2)) - cradius,0);	% epicentral distance to all cities
+		dhyp = sqrt(depi.^2 + (CITIES.alt/1e3 + d(n,3) - znan(d(n,8))).^2);	% hypocentral distance to all cities
+		pga = 1e3*repmat(gmpe(P.GMPE,d(n,4) + znan(d(n,12)),dhyp,d(n,3)),1,2).*[ones(size(depi)),CITIES.factor];	% predicted PGA (in mg) and PGAmax (with amplification factor)
 		msk = gmice(pga,P.GMICE);	% predicted intensity (MSK scale)
 		% sort all pga values in decreasing order
 		[~,k] = sort(pga(:,2),1,'descend');
