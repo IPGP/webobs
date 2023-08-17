@@ -1,7 +1,7 @@
 Releases
 CODE/bin
 CODE/matlab/*.mex*
-CODE/i18n/locales
+CODE/i18n/locales/*/LC_MESSAGES/*.mo
 DOC/user-manual/*
 !DOC/user-manual/*.tex
 !DOC/user-manual/*.bib
