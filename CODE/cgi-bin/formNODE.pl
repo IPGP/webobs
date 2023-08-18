@@ -854,14 +854,14 @@ print "<TR>";
 		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
 		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc<\/TEXTAREA>&nbsp;&nbsp;<BR>";
 		# --- show THEIA fields ?
-		print "<LABEL>show/hide THEIA metadata fields ?<INPUT name=\"showHide\" type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
+		print "<LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT name=\"showHide\" type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
 		print "<DIV id=\"showHide\" style=\"display:none;\">";
 		# --- PRODUCER
 		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
 		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
 		# --- CREATOR
-		print "<BUTTON style=\"text-align:center\" onclick=\"addCreator(); return false;\">Add a creator </BUTTON>";
-		print "<BUTTON onclick=\"removeCreator(); return false;\">Remove a creator </BUTTON>";
+		print "<BUTTON style=\"text-align:center\" onclick=\"addCreator(); return false;\">$__{'Add a creator'} </BUTTON>";
+		print "<BUTTON onclick=\"removeCreator(); return false;\">$__{'Remove a creator'} </BUTTON>";
 		print "<INPUT type='hidden' name=\"count_creator\" value='1'></INPUT>";
 		print "<INPUT type='hidden' name=\"creators\" value=''></INPUT>";
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Creator'}:</LABEL><BR><BR>";
@@ -994,7 +994,7 @@ print "<TR>";
 			print "<DIV id='map' style=\"position: relative ;width: 347px; height: 347px\"></DIV>";
 		print "</TD>";
 		print "<TD style=\"border:1;text-align:left;rows:6;\">";
-			print "<label>Auto-location :</label><button id=\"auto-loc\" style=\"position:relative;\" onmouseover=\"overlib('$__{beware_approximate_position}')\">Locate me !</button>&nbsp;<BR>";
+			print "<label>$__{'Auto-location'} :</label><button id=\"auto-loc\" style=\"position:relative;\" onmouseover=\"overlib('$__{beware_approximate_position}')\">$__{'Locate me'} !</button>&nbsp;<BR>";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
 			print "<input size=\"8\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
@@ -1032,7 +1032,7 @@ print "<TR>";
 				
 			# --- Importation of shpfile
 			print "<INPUT type=\"hidden\" name=\"filename\"";
-			print "<strong>To add a shapefile (.zip only) layer, click here: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
+			print "<strong>$__{'To add a shapefile (.zip only) layer, click here'}: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
 			print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
 				
 		print "</TD>";

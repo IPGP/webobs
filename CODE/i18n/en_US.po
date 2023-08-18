@@ -264,3 +264,25 @@ msgstr "Hydrogen concentration computed from the pH"
 
 msgid "help_rainwater_observations"
 msgstr "Note any presence of odor, gas, precipitate, etc..."
+
+# ---- formNODE.pl
+
+msgid "help_creationstation_description"
+msgstr "Describes the observed properties of the dataset, such as definition, spatial coverage or methodology to acquire the measures. Summary of the scientific purposes."
+
+msgid "help_creationstation_producer"
+msgstr "Name of the data producer."
+
+msgid "help_creationstation_creator"
+msgstr "People in charge of the dataset. 2 roles exist : Publisher and Principal investigator. A Publisher is the person in charge of the data management, the Principal investigator is the scientific referent of the dataset. At least one Principal investigator is required"
+
+msgid "help_creationstation_subject"
+msgstr "The INSPIRE theme refers to the data model description for the various INSPIRE themes available; The topic categories refer to the keywords representing the thematic categories of the dataset."
+
+msgid "help_creationstation_lineage"
+msgstr "Describes the genealogy of the dataset, e.g., the history of the dataset and, if known, its life cycle, from the acquisition and capture of information to its compilation with other datasets and variants of its current form."
+
+msgid "beware_approximate_position"
+msgstr "Use the HTML geolocation API to locate the user. Beware : the location could be approximated from several meters to several thousand meters, depending on your location."
+
+
