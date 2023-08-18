@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2021-01-01
+%	Updated: 2023-08-17
 
 
 WO = readcfg;
@@ -97,9 +97,10 @@ cmap = field2num(P,'COLORMAP',jet(256));
 amap = field2num(P,'COLORMAP_ALPHA',[0,1]);
 twmsk = field2num(P,'TABLE_WHITE_MSK',10:12);
 
-forced = isok(P,'FELT_FORCED',0);
+forced = isok(P,'FELT_FORCED');
 mskmin = field2num(P,'FELT_MSK_MIN',2);
-citiesdisplaylist = field2num(P,'CITIES_DISPLAY_LIST',0);
+magerrmin = field2num(P,'MAG_ERROR_MIN',2);
+citiesdisplaylist = isok(P,'CITIES_DISPLAY_LIST',true);
 
 % loads description and parameters for MSK and MAG tables
 mskscale = sprintf('%s/etc/mskscale.%s',WO.ROOT_CODE,P.LOCALE);
@@ -114,6 +115,7 @@ region = P.REGION;
 
 % loads cities (with elevations for P.REGION)
 CITIES = readcities(WO,P,'elevation');
+cradius = field2num(P,'CITIES_RADIUS_KM',0);
 
 if isfield(P,'SHAPE_FILE') && exist(P.SHAPE_FILE,'file')
 	faults = ibln(P.SHAPE_FILE);
@@ -128,6 +130,9 @@ A3 = imread(P.LOGO2_FILE);
 [suser,wuser] = wosystem('echo "$(whoami)@$(hostname)"','chomp');
 nbsig = 2;                                       % nombre de chiffres significatifs pour PGA affichés
 lastb3 = '';
+
+% fixes the minimum magnitude error
+d(:,12) = max(d(:,12),magerrmin);
 
 % main loop on each data event
 for n = 1:length(t)
@@ -146,9 +151,9 @@ for n = 1:length(t)
 
 	if all(~isnan(d(n,1:4))) && ~exist(fdat,'file') && e(n) >= 0
 
-		depi = greatcircle(CITIES.lat,CITIES.lon,d(n,1),d(n,2));	% epicentral distance to all cities
-		dhyp = sqrt(depi.^2 + (CITIES.alt/1e3 + d(n,3)).^2);	% hypocentral distance to all cities
-		pga = 1e3*repmat(gmpe(P.GMPE,d(n,4),dhyp,d(n,3)),1,2).*[ones(size(depi)),CITIES.factor];	% predicted PGA (in mg) and PGAmax (with amplification factor)
+		depi = max(greatcircle(CITIES.lat,CITIES.lon,d(n,1),d(n,2)) - cradius,0);	% epicentral distance to all cities
+		dhyp = sqrt(depi.^2 + (CITIES.alt/1e3 + d(n,3) - znan(d(n,8))).^2);	% hypocentral distance to all cities
+		pga = 1e3*repmat(gmpe(P.GMPE,d(n,4) + znan(d(n,12)),dhyp,d(n,3)),1,2).*[ones(size(depi)),CITIES.factor];	% predicted PGA (in mg) and PGAmax (with amplification factor)
 		msk = gmice(pga,P.GMICE);	% predicted intensity (MSK scale)
 		% sort all pga values in decreasing order
 		[~,k] = sort(pga(:,2),1,'descend');
