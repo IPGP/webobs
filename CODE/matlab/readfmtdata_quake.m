@@ -477,6 +477,8 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 
 	if exist(fdat,'file')
 		mc3 = readdatafile(fdat,17,'CommentStyle',''); % reads all events (trash included)
+	end
+	if exist('mc3','var') && ~isempty(mc3)
 		%ID|yyyy-mm-dd|HH:MM:SS.ss|type|amplitude|duration|s|0|1||STA|0|SEFRAN3|SC3ID|image.png|op/timestamp|comment
         k = (cellfun(@str2num,mc3(:,1))>=0); % remove trash entries
         fprintf(' found %d valid mc3 entries, removed %d trash events.\n',sum(k),size(mc3,1)-sum(k));

@@ -42,22 +42,30 @@ EXPORTS|NO
 # outputs further vector files (in addition to EPS) for each graph. SVG is experimental
 SVGOUTPUT|NO
 PDFOUTPUT|YES
-LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_ovsgipgp.jpg
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_OVS160_noalpha.png
 LOGO2_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_b3r.jpg
-COPYRIGHT|(c) OVSG-IPGP
+COPYRIGHT|MyCopyright
 COPYRIGHT2|
+
+DEM_SRTM1|N
+# optional user-defined DEM (Arcinfo format, lat/lon, overwrites SRTM/ETOPO default)
+#DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
+#DEM_TYPE|LATLON
+#DEM_COPYRIGHT|DEM: myDEM
 
 # --- proc specific parameters
 # this locale defines the language for system/earthquake origin date/time, magnitude and intensity terms
 LOCALE|fr_FR
+
+MAGLIM|2,Inf
+# minimum magnitude error
+MAG_ERROR_MIN|0.1
+SC3_LISTEVT|
 EVENTTYPE_EXCLUDED_LIST|not existing,not locatable,outside of network interest,sonic boom,duplicate,other event
 EVENTSTATUS_EXCLUDED_LIST|auto
 # allow to purge tremblemap that are associated with an excluded event (set to 1 to enable)
 PURGE_EXCLUDED_EVENT|0
-
-SC3_LISTEVT|
 EVENTS_OVERWRITING|
-MAGLIM|2,Inf
 # additional filter applying on MC3 type (case insensitive regexp)
 EVENTCOMMENT_EXCLUDED_REGEXP|
 
@@ -69,6 +77,8 @@ REGION|Guadeloupe
 AREA|la Guadeloupe et �les du Nord
 #AREA|la Martinique
 #AREA|la R�union
+# each city is considered as a circle around its lat/lon center
+CITIES_RADIUS_KM|1
 
 # see CODE/matlab/gmpe.m and gmice.m for valid laws
 GMPE|beauducel09
@@ -89,11 +99,12 @@ MAP_INSET_EPIMAX|0
 MAP_DEM_OPT|'LandColor',.8*ones(256,3),'SeaColor',white(256),'Contrast',1,'LCut',0.01
 EPICENTER_PLOT_OPT|'p','MarkerSize',12,'MarkerEdgeColor','r','MarkerFaceColor','w','LineWidth',1.5
 FELT_MSK_MIN|1.5
-FELT_FORCED|0
-FELTOTHERPLACES_OK|1
-CITIES_DISPLAY_LIST|1
-PDFOUTPUT|1
-AUTOPRINT|1
+# set to YES will force report output using TREMBLEMAPS_FELT text template
+FELT_FORCED|NO
+FELTOTHERPLACES_OK|YES
+CITIES_DISPLAY_LIST|YES
+PDFOUTPUT|YES
+AUTOPRINT|NO
 
 # event must be defined in the postboard
 NOTIFY_EVENT|feltquake.

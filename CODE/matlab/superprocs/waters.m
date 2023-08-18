@@ -20,10 +20,11 @@ function DOUT = waters(varargin)
 %	by the FORM "EAUX" and associated configuration files. See readfmtdata_wodbform.m for
 %	further information.
 %
+%	**WARNING** this file must be iso-8859 (unicode) encoded and NOT utf-8
 %
 %	Authors: F. Beauducel + G. Hammouya + J.C. Komorowski + C. Dessert + O. Crispi, OVSG-IPGP
 %	Created: 2001-12-21, in Guadeloupe (French West Indies)
-%	Updated: 2021-01-01
+%	Updated: 2023-08-14
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -82,9 +83,9 @@ i_so4 = 17;
 i_hco3 = 18;
 i_i = 19;
 %   20-22 = isotopes d13C, d18O,dD
-%   23 = ratio Cl-/SO4-- (calcul�)
-%   24 = ratio HCO3-/SO4-- (calcul�)
-%   25 = ratio Mg++/Cl- (calcul�)
+%   23 = ratio Cl-/SO4-- (computed)
+%   24 = ratio HCO3-/SO4-- (computed)
+%   25 = ratio Mg++/Cl- (computed)
 %   26 = conductivity at 25�C
 %   27 = ion budget (NICB)
 i_bi = 27;
@@ -211,7 +212,7 @@ for n = 1:length(N)
 		set(gca,'XLim',tlim,'FontSize',8)
 		extylim(dd);
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('D�bit (l/mn)')
+		ylabel('Flux (l/mn)')
 
 		% Conductivity
 		subplot(12,1,11:12), extaxes
@@ -340,7 +341,7 @@ if isfield(P,'SUMMARYLIST')
 		datetick2('x',P.GTABLE(r).DATESTR)
 		ylabel(sprintf('pH'))
 
-		% Conductivity at 25�C
+		% Conductivity at 25C
 		subplot(13,1,8:9), extaxes
 		ddmm = nan(2,1);
 		hold on
