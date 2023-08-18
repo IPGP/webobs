@@ -133,6 +133,14 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 <a name="whatsnew"></a>
 ## What's new and release history
 
+### What's new in the 2.6?
+- first effort for an interface between WebObs and the Theia|OZCAR data portal;
+- node form has interactive map for manual/automatic location and import of a shapefile;
+- new functionalities in superproc GNSS (baselines outputs, node selection from target for all summary graphs);
+- job selection in scheduler runs (display);
+- improved Campbell data format (non-standard directory);
+- some fixes and other minor improvements.
+
 ### What's new in the 2.5?
 - SEFRAN3/MC3 can use key shortcuts to select the event type and amplitude;
 - new functionalities in superproc GNSS (harmonic correction, velocity scale) and GENPLOT (moving averages), node events are plotted in background for pernode graphs (most superprocs);
