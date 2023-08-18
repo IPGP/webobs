@@ -97,9 +97,10 @@ cmap = field2num(P,'COLORMAP',jet(256));
 amap = field2num(P,'COLORMAP_ALPHA',[0,1]);
 twmsk = field2num(P,'TABLE_WHITE_MSK',10:12);
 
-forced = isok(P,'FELT_FORCED',0);
+forced = isok(P,'FELT_FORCED');
 mskmin = field2num(P,'FELT_MSK_MIN',2);
-citiesdisplaylist = field2num(P,'CITIES_DISPLAY_LIST',0);
+magerrmin = field2num(P,'MAG_ERROR_MIN',2);
+citiesdisplaylist = isok(P,'CITIES_DISPLAY_LIST',true);
 
 % loads description and parameters for MSK and MAG tables
 mskscale = sprintf('%s/etc/mskscale.%s',WO.ROOT_CODE,P.LOCALE);
@@ -129,6 +130,9 @@ A3 = imread(P.LOGO2_FILE);
 [suser,wuser] = wosystem('echo "$(whoami)@$(hostname)"','chomp');
 nbsig = 2;                                       % nombre de chiffres significatifs pour PGA affichés
 lastb3 = '';
+
+% fixes the minimum magnitude error
+d(:,12) = max(d(:,12),magerrmin);
 
 % main loop on each data event
 for n = 1:length(t)

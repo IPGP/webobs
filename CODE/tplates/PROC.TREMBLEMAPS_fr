@@ -47,11 +47,19 @@ LOGO2_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_b3r.jpg
 COPYRIGHT|MyCopyright
 COPYRIGHT2|
 
+DEM_SRTM1|N
+# optional user-defined DEM (Arcinfo format, lat/lon, overwrites SRTM/ETOPO default)
+#DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
+#DEM_TYPE|LATLON
+#DEM_COPYRIGHT|DEM: myDEM
+
 # --- proc specific parameters
 # this locale defines the language for system/earthquake origin date/time, magnitude and intensity terms
 LOCALE|fr_FR
 
 MAGLIM|2,Inf
+# minimum magnitude error
+MAG_ERROR_MIN|0.1
 SC3_LISTEVT|
 EVENTTYPE_EXCLUDED_LIST|not existing,not locatable,outside of network interest,sonic boom,duplicate,other event
 EVENTSTATUS_EXCLUDED_LIST|auto
@@ -96,7 +104,7 @@ FELT_FORCED|NO
 FELTOTHERPLACES_OK|YES
 CITIES_DISPLAY_LIST|YES
 PDFOUTPUT|YES
-AUTOPRINT|YES
+AUTOPRINT|NO
 
 # event must be defined in the postboard
 NOTIFY_EVENT|feltquake.
