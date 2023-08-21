@@ -15,14 +15,14 @@
 #          gunzip with .gz files
 #           unzip with .zip files
 #         CRX2RNX with Hatanaka files
-#    	 runpkr00 with some Trimble .T02 files
+#    	 runpkr00 with some Trimble .T02 files (MUST be version ≥ 6.03)
 # cnvrnx3-rnx2-v3 with Rinex v.3 files, source available at
 #                 http://acc.igs.org/misc/cnvrnx3-rnx2-v3.f
 #
 #
 # Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
 # Created: 2014-01-12
-# Updated: 2023-04-24
+# Updated: 2023-08-21
 
 if [ $# -lt 2 ]; then
 	echo "raw2rinex input output [teqc options]"
@@ -119,7 +119,7 @@ if [ ! -z "$rf" ]; then
 	echo "   Found some Trimble files in $rawdir: proceeding..."
 	# must convert T02 to dat
 	for f in $rf; do
-		runpkr00 -d $f
+		runpkr00 -g -d $f
 	done
 	rawfiles=$(find $tmpdir -iname "*.dat" | sort )
 	obsfiles=$rawfiles
