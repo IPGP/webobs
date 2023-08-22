@@ -117,11 +117,11 @@ fi
 rf=$(find $tmpdir -name "*.T02" | sort )
 if [ ! -z "$rf" ]; then
 	echo "   Found some Trimble files in $rawdir: proceeding..."
-	# must convert T02 to dat
+	# must convert T02 to tgd (dat without -g option)
 	for f in $rf; do
 		runpkr00 -g -d $f
 	done
-	rawfiles=$(find $tmpdir -iname "*.dat" | sort )
+	rawfiles=$(find $tmpdir -iname "*.tgd" | sort )
 	obsfiles=$rawfiles
 	navfiles=$rawfiles
 	teqcfmt="-tr d"
