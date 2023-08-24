@@ -55,7 +55,7 @@ function DOUT=meteo(varargin)
 %
 %   Authors: F. Beauducel + S. Acounis / WEBOBS, IPGP
 %   Created: 2001-07-04
-%   Updated: 2023-04-18
+%   Updated: 2023-08-24
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -211,7 +211,7 @@ for n = 1:length(N)
 				end
 				% plots rain cumsum
 				dcum = rcumsum(dk(:,i_rain));
-				ryy = roundsd(max(dcum)/ylim(2),[1 2 5],'ceil'); % upper ratio (pivots 1 2 5) between max rain and max cumulate rain
+				ryy = max(1,roundsd(max(dcum)/ylim(2),[1 2 5],'ceil')); % upper ratio (pivots 1 2 5) between max rain and max cumulate rain
 				plot(tk,dcum/ryy,'Color',rcumcolor,'LineWidth',P.GTABLE(r).LINEWIDTH)
 				hold off
 				axes('Position',pa)
@@ -287,7 +287,8 @@ for n = 1:length(N)
 		% exports data
 		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
 			E.t = tk;
-			E.d = dk(:,1:nx);
+			%E.d = dk(:,1:nx);
+			E.d = dk;
 			E.header = strcat(C.nm,{'('},C.un,{')'});
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
