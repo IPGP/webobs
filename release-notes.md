@@ -6,23 +6,22 @@ This document contains install/upgrade summary and specific instructions for use
 The latest release contains improvements, new features, bug fixes, and sometimes security strengthening.
 **Upgrade is recommended for all WebObs administrators**. For known issues, please take a look to [github.com/IPGP/webobs/issues](https://github.com/IPGP/webobs/issues) and do not hesitate to submit any problem with this release.
 
-Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (not a bug fix). An appropriate configuration to keep former behavior is usually proposed.
+Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## Version under development
+## v2.6.0 (August 2023)
 ### New features
 
-1. **EXPERIMENTAL:** Node's automatic geographical positioning using automatic KML feed is possible by selecting **auto KML feed** in positioning type. It uses a new node's variable `POS_RAWKML` containing a URL that returns a KML content. Latitude, longitude, altitude and positioning date will be filled and updated from *Placemark/TimeStamp/when* and *Placemark/Point/coordinates* tags.
-`!!` The local data configuration **CONF/POSITIONtypes.conf** pointed by `FILE_POS` variable in **NODE.rc** is now obsolete and unused. It is replaced by the read-only file **CODE/etc/postypes.conf**. If some administrators have modified the original template by adding new positioning types, please open an issue or contact the dev team.
-
-2. An interface has been created between WebObs and the Theia|OZCAR data portal. An Admin who needs to transfer metadata towards Theia can now produce a JSON file with WebObs metadata by filling some forms. The first form is located in the WebObs Grids Manager. The others are respectively the NODE forms and CLB forms. When a producer/NODE/new row in a CLB file is created, WebObs fills a metadata database which stores the metadata in order to write them in a JSON file, ready-to-send to the Theia data portal.
+1. An interface has been created between WebObs and the Theia|OZCAR data portal. An Admin who needs to transfer metadata towards Theia can now produce a JSON file with WebObs metadata by filling some forms. The first form is located in the WebObs Grids Manager. The others are respectively the NODE forms and CLB forms. When a producer/NODE/new row in a CLB file is created, WebObs fills a metadata database which stores the metadata in order to write them in a JSON file, ready-to-send to the Theia data portal.
 
 
 ### Enhancements
 1. **All procs**: new experimental flag option `SVGOUTPUT` to produce a vector file in SVG format for all graphs, allowing rescaling of the plot using browser facilities. This option is also available in the proc request form.
+
 1. **Gridmaps**: new variable `GRIDMAPS_DEM_OPT` that can be set in any grid (view and proc) to overwrite the default background map options (defined in **GRIDMAPS.rc** configuration file). The variable must contain option list compatible with the **dem.m** function. Example:
     ```
     GRIDMAPS_DEM_OPT|'grayscale','watermark',2
     ```
+
 1. In superproc **gnss**, new options to select/exclude nodes in summary graphs BASELINES, MOTION, and VECTORS:
     ```
     BASELINES_EXCLUDED_FROM_TARGET_KM|
@@ -36,13 +35,23 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
     - `*_EXCLUDED_FROM_TARGET_KM`: exclude nodes at greater distance from target (defined by `GNSS_TARGET_LATLON`), or at lower distance if the value is negative;
     - `*_EXCLUDED_NODELIST`: exclude some nodes;
     - `*_INCLUDED_NODELIST`: force to include some nodes (overwriting possible excluded nodes by other filter).
+
+1. In superproc **tremblemaps**, new option `CITIES_RADIUS_KM` to define a radius around cities (default is 1 km, the minimum recommanded value). Also, the uncertainties on earthquake magnitude and location depth are now taken into account to compute the maximum acceleration.
+
 1. In the **Scheduler Runs**:
     -  possibility to select a job ID and to sort any column in the job runs table.
-    - ``!!`` access is now submitted to authorization rights. Resource is *scheduler* in the *misc* table. Admin (4) is needed to delete a log date or kill a running job.
+    - `!!` access is now submitted to authorization rights. Resource is *scheduler* in the *misc* table. Admin level (4) is needed to delete a log date or kill a running job.
 
-2. In the **NODE form**:
-    - possibility to locate yourself through different possibility on an interactive map : by clicking on the map, or by using the HTML geolocation (beware: approximate position).
-    - possibility to integrate a shapefile in the interactive map
+1. In the **NODE form**:
+    - possibility to locate yourself through different possibility on an interactive map : by clicking on the map, or by using the HTML geolocation (beware: approximate position based on your computer IP address).
+    - possibility to import a shapefile in the interactive map
+    - **EXPERIMENTAL:** automatic geographical positioning using a KML feed is possible by selecting **auto KML feed** in positioning type. It uses a new node's variable `POS_RAWKML` containing a URL that returns a KML content. Latitude, longitude, altitude and positioning date will be filled and updated from *Placemark/TimeStamp/when* and *Placemark/Point/coordinates* tags.
+    `!!` The local data configuration **CONF/POSITIONtypes.conf** pointed by `FILE_POS` variable in **NODE.rc** is now obsolete and unused. It is replaced by the read-only file **CODE/etc/postypes.conf**. If some administrators have modified the original template by adding new positioning types, please open an issue or contact the dev team.
+
+
+1. `!!` **Campbell data formats** (`cr10xasc`, `toa5` and `tob1`) now use proc/node `RAWDATA` string as full path/filename using bash wildcard facilities and explicit subvariables `$FID` and `$yyyy`. This allows import of data stored in non-standard architectures and file naming. Configuration of existing procs or nodes using these formats **must be updated** by modifying the `RAWDATA` content values as follows:
+    - `cr10xasc`: *former_rawdata_path*/$FID/$yyyy/*.DAT
+    - `toa5` and `tob1`: *former_rawdata_path*/$FID/$yyyy/$FID*.dat
 
 ### Fixed issues
 1. Fix an issue with user account end date of validity
