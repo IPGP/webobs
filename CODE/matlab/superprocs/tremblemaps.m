@@ -99,7 +99,7 @@ twmsk = field2num(P,'TABLE_WHITE_MSK',10:12);
 
 forced = isok(P,'FELT_FORCED');
 mskmin = field2num(P,'FELT_MSK_MIN',2);
-magerrmin = field2num(P,'MAG_ERROR_MIN',2);
+magerrmin = field2num(P,'MAG_ERROR_MIN',0.1);
 citiesdisplaylist = isok(P,'CITIES_DISPLAY_LIST',true);
 
 % loads description and parameters for MSK and MAG tables
