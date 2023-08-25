@@ -3,7 +3,7 @@
 # ------------------- WEBOBS / IPGP ----------------------------
 # mail_info.pl
 # ------
-# Usage: Prepare an information mail based on the Main Courante 
+# Usage: Prepare an information mail based on the Main Courante
 #	(MC) seismological database
 #
 # Arguments
@@ -14,10 +14,15 @@
 #		selected time interval (mandatory)
 #	stat_max_magnitude= Magnitude of the biggest VT for the
 #		selected time interval (mandatory)
+#	stat_max_duration_loc= Duration of the biggest local
+#	        for the selected time interval (mandatory)
+#	stat_max_magnitude_loc= Magnitude of the biggest local
+#	        for the selected time interval (mandatory)
 #	RFcount = Number of rockfalls (mandatory)
 #	VTcount = number of VT (mandatory)
+#	LOCcount = number of VT (mandatory)
 #
-# 
+#
 # Author: Patrice Boissier <boissier@ipgp.fr>
 # Acknowledgments:
 #       mc3.pl [2004-2011] by Didier Mallarino, Francois
@@ -112,6 +117,11 @@ $stat_max_magnitude =~ s/,/\./;
 $stat_max_magnitude = sprintf '%.2f', $stat_max_magnitude;
 my $comptabilisesRockfall = $cgi->url_param('RFcount');
 my $comptabilisesVT = $cgi->url_param('VTcount');
+my $stat_max_duration_loc = $cgi->url_param('stat_max_duration_loc');
+my $stat_max_magnitude_loc = $cgi->url_param('stat_max_magnitude_loc');
+$stat_max_magnitude_loc =~ s/,/\./;
+$stat_max_magnitude_loc = sprintf '%.2f', $stat_max_magnitude_loc;
+my $comptabilisesLOC = $cgi->url_param('LOCcount');
 my $alert = $cgi->url_param('alert');
 my $comment = $cgi->url_param('comment');
 my $send = $cgi->url_param('send');
@@ -131,13 +141,13 @@ my @typeAlerts = readCfgFile("$WEBOBS{ROOT_CONF}/$MC3{ALERTS_CODES_CONF}");
 my @typeZones = readCfgFile("$WEBOBS{ROOT_CONF}/$MC3{ZONES_CODES_CONF}");
 my @commentsGeodesy = readCfgFile("$WEBOBS{ROOT_CONF}/$MC3{COMMENTS_GEODESY_CONF}");
 
-my $dateEndFrench = substr($dateEnd,8,2)."-".substr($dateEnd,5,2)."-".substr($dateEnd,0,4); 
-my $dateStartFrench = substr($dateStart,8,2)."-".substr($dateStart,5,2)."-".substr($dateStart,0,4); 
+my $dateEndFrench = substr($dateEnd,8,2)."-".substr($dateEnd,5,2)."-".substr($dateEnd,0,4);
+my $dateStartFrench = substr($dateStart,8,2)."-".substr($dateStart,5,2)."-".substr($dateStart,0,4);
 my $timePeriod = "Bilan du $dateEnd";
 my $timePeriodHTML = "Bulletin pr&eacute;liminaire d'activit&eacute; du $dateEndFrench";
 my $yesterday = DateTime->now()->subtract( days => 1 )->strftime('%Y-%m-%d');
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if (($dateStart ne $dateEnd || $yesterday ne $dateEnd)  && !defined($send)) {
 	print $cgi->header(-charset=>'utf-8');
 	print <<"PART1";
@@ -183,8 +193,8 @@ PART1
 	$htmlOutput .= $html;
 	$htmlBrowser .= $html;
 	$htmlMail .= $html;
-	$htmlOutput .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/VOLCANO.css\">";
-	$htmlBrowser .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/css/VOLCANO.css\">";
+	$htmlOutput .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">";
+	$htmlBrowser .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/css/style.css\">";
 	$html = '  </head>';
 	$html .= '  <body>';
 	$html .= '  <div id="container">';
@@ -197,11 +207,12 @@ PART1
 	$htmlOutput .= '      <img src=./images/logo-ovpf.png>';
 	$htmlBrowser .= '      <img src=http://195.83.188.56/icons/logo-ovpf.png>';
 	$html = '    </div>';
+	$html .= '    <hr>';
 	$html .= '    <div id="content">';
 	$html .= "    <h2>$timePeriodHTML</h2>";
 	my $dateBulletin = localtime->strftime('%d-%m-%Y %H:%M:%S');
 	$html .= "    <p>Bulletin cr&eacute;&eacute; le $dateBulletin TU.</p>";
-	$html .= "    <p id=\"warning\">Ce bulletin est issu de l'examen pr&eacute;liminaire quotidien des derni&egrave;res donn&eacute;es. Ces informations n'ont pas toutes &eacute;t&eacute; valid&eacute;es et sont susceptibles d'&eacute;voluer.<br/>Pour une information compl&egrave;te, veuillez vous reporter aux <a href=\"http://www.ipgp.fr/fr/dernieres-actualites/344\">Bulletins d'Activit&eacute; valid&eacute;s de l'observatoire.</a></p>";
+	$html .= "    <p id=\"warning\">Ce bulletin est issu de l'examen pr&eacute;liminaire quotidien des derni&egrave;res donn&eacute;es. Ces informations n'ont pas toutes &eacute;t&eacute; valid&eacute;es et sont susceptibles d'&eacute;voluer.<br/>Pour une information compl&egrave;te, veuillez vous reporter aux <a href=\"https://www.ipgp.fr/communiques-et-bulletins-de-lobservatoire/?categorie=72&domaine=&date=&observatoire-associe=391&motcle=\">derniers bulletins mensuels valid&eacute;s</a> de l'observatoire.</p>";
 	$html .= '    <hr>';
 	$html .= '    <p>';
 	$html .= '      <b>Piton de la Fournaise</b><br/>';
@@ -220,8 +231,8 @@ PART1
 		$zones{$liste[0]} = $liste[1];
         }
 	$html .= '    <h3>Sismologie</h3>';
-	
-	my $subject = "[ovpf_bulletin] $timePeriod"; 
+
+	my $subject = "[ovpf_bulletin] $timePeriod";
 	$html .= "<p>- Nombre d'&eacute;boulements du $dateEndFrench : <b>$comptabilisesRockfall</b><br/>";
 	if($#zones_rockfall >= 0) {
 		if($#zones_rockfall == 0) {
@@ -255,6 +266,12 @@ PART1
 	$html .= "<li>Dur&eacute;e : $stat_max_duration s</li>";
 	$html .= "<li>Magnitude de dur&eacute;e : $stat_max_magnitude</li>";
 	$html .= "</ul>";
+	$html .= "<p>- Nombre de s&eacute;ismes locaux (en dehors du massif du Piton de la Fournaise) du $dateEndFrench : <b>$comptabilisesLOC</b><br/></p>";
+	$html .= "<p>- S&eacute;isme local de plus grande magnitude du $dateEndFrench :<br/>";
+	$html .= "<ul>";
+	$html .= "<li>Dur&eacute;e : $stat_max_duration_loc s</li>";
+	$html .= "<li>Magnitude de dur&eacute;e : $stat_max_magnitude_loc</li>";
+	$html .= "</ul>";
 	$htmlOutput .= $html;
 	$htmlBrowser .= $html;
 	$htmlMail .= $html;
@@ -264,9 +281,10 @@ PART1
 	$htmlMail .= $html;
         $html .= "<p id=legend>";
 	$html .= "Carte de localisation (&eacute;picentres) et coupes nord-ouest - sud-est et sud-ouest - nord-est (montrant la localisation en profondeur, hypocentres) des s&eacute;ismes enregistr&eacute;s et localis&eacute;s par l'OVPF-IPGP sur 2 mois sous La R&eacute;union. Seuls les s&eacute;ismes localisables ont &eacute;t&eacute; repr&eacute;sent&eacute;s sur la carte.<br/>";
-	$html .= "L'observatoire enregistre des &eacute;v&egrave;nements sismiques non repr&eacute;sent&eacute;s sur cette carte car non localisables, en raison de leur trop faible magnitude.<br/>Pour prendre connaissance du nombre de s&eacute;ismes d&eacute;tect&eacute;s par les r&eacute;seaux de l'observatoire, vous pouvez vous reporter à son dernier <a href=\"http://www.ipgp.fr/fr/dernieres-actualites/344\">Bulletin d'Activit&eacute;.</a><br/>";
+	$html .= "L'observatoire enregistre des &eacute;v&egrave;nements sismiques non repr&eacute;sent&eacute;s sur cette carte car non localisables, en raison de leur trop faible magnitude.<br/>Pour prendre connaissance du nombre de s&eacute;ismes d&eacute;tect&eacute;s par les r&eacute;seaux de l'observatoire, vous pouvez vous reporter à son dernier <a href=\"https://www.ipgp.fr/communiques-et-bulletins-de-lobservatoire/?categorie=72&domaine=&date=1+months&observatoire-associe=391&motcle=\">bulletin mensuel</a>.<br/>";
 	$html .= "La sismicit&eacute; d&eacute;termin&eacute;e et valid&eacute;e en continu par l'OVPF-IPGP peut &ecirc;tre &eacute;galement suivie sur le <a href=\"https://renass.unistra.fr/fr/zones/la-reunion/\">portail RENASS.</a>";
 	$html .= "</p>";
+	$html .= '    <hr>';
 	$htmlOutput .= $html;
 	$htmlBrowser .= $html;
 
@@ -283,8 +301,9 @@ PART1
         $html = "</p>";
 	$htmlMail .= $html;
         $html .= "<p id=legend>";
-        $html .= "Illustration de la d&eacute;formation sur 1 an. Sont ici repr&eacute;sent&eacute;es des lignes de base (variation de distance entre deux r&eacute;cepteurs GPS) traversant l'&eacute;difice du Piton de la Fournaise, au sommet (en haut), &agrave; la base du c&ocirc;ne terminal (au milieu) et en champ lointain (en bas) (cf. localisation sur les cartes associ&eacute;es). Une hausse est synonyme d'élongation et donc de gonflement du volcan;inversement une diminution est synonyme de contraction et donc de d&eacute;gonflement du volcan. Les &eacute;ventuelles p&eacute;riodes colori&eacute;es en rose clair correspondent aux &eacute;ruptions.";
+        $html .= "Illustration de la d&eacute;formation sur 1 an. Sont ici repr&eacute;sent&eacute;es des lignes de base (variation de distance entre deux r&eacute;cepteurs GPS) traversant l'&eacute;difice du Piton de la Fournaise, au sommet (en haut), &agrave; la base du c&ocirc;ne terminal (au milieu) et en champ lointain (en bas) (cf. localisation sur les cartes associ&eacute;es). Une hausse est synonyme d'élongation et donc de gonflement du volcan ; inversement une diminution est synonyme de contraction et donc de d&eacute;gonflement du volcan. Les &eacute;ventuelles p&eacute;riodes colori&eacute;es en rose clair correspondent aux &eacute;ruptions.";
         $html .= "</p>";
+	$html .= '    <hr>';
 	$htmlOutput .= $html;
 	$htmlBrowser .= $html;
 
@@ -346,7 +365,7 @@ PART1
 			}
 		}
 	}
-	
+
 	my $message = Email::MIME->create_html(
 		header => [
 			From => $from,
@@ -356,7 +375,7 @@ PART1
 		],
 		body => $htmlMail,
 	);
-	
+
 	my @mailingList = split(/,/,$mailList);
 	for(@mailingList) {
 		if($MC3{MAIL_USE_SMTP}) {
@@ -401,7 +420,7 @@ PART1
     <form action="mailInfo_OVPF.pl" onsubmit="return validateAlert()" method="GET">
       <h1>$WEBOBS{WEBOBS_TITLE}</h1>
       <h2>$timePeriodHTML</h2>
-      <h3>Niveau d'alerte en cours : 
+      <h3>Niveau d'alerte en cours :
         <select name="alert" onChange="javascript:alertMessage();">
 PART1
 
@@ -442,6 +461,16 @@ PART3
         <ul>
           <li>Dur&eacute;e : $stat_max_duration s</li>
           <li>Magnitude de dur&eacute;e : $stat_max_magnitude</li>
+        </ul>
+      </p>
+      </p>
+      <h3>Nombre de s&eacute;ismes locaux : $comptabilisesLOC</h3>
+      </p>
+      <h3>Local principal:</h3>
+      <p>
+        <ul>
+          <li>Dur&eacute;e : $stat_max_duration_loc s</li>
+          <li>Magnitude de dur&eacute;e : $stat_max_magnitude_loc</li>
         </ul>
       </p>
 PART4
@@ -497,6 +526,9 @@ PART7
       <input type="hidden" name="stat_max_magnitude" value="$stat_max_magnitude"/>
       <input type="hidden" name="RFcount" value="$comptabilisesRockfall"/>
       <input type="hidden" name="VTcount" value="$comptabilisesVT"/>
+      <input type="hidden" name="stat_max_duration_loc" value="$stat_max_duration_loc"/>
+      <input type="hidden" name="stat_max_magnitude_loc" value="$stat_max_magnitude_loc"/>
+      <input type="hidden" name="LOCcount" value="$comptabilisesLOC"/>
       <br/><input type="submit" name="send" value="Envoyer"/></p>
     </form>
 <br>

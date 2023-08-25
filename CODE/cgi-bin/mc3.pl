@@ -858,6 +858,8 @@ my %stat_gr;     # hash of event types Gutenberg-Richter number
 my @stat_grm;    # array of magnitudes bin
 my $stat_max_duration = 0;
 my $stat_max_magnitude = 0;
+my $stat_max_duration_loc = 0;
+my $stat_max_magnitude_loc = 0;
 foreach (@finalLignes) {
 	if ( $_ ne "" ) {
 		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$event_img,$signature,$comment,$origin) = split(/\|/,$_);
@@ -901,6 +903,9 @@ foreach (@finalLignes) {
 		$stat{TOTAL} += $nombre;
 		$stat{VTcount} += ($types{$type}{asVT} ? $nombre * $types{$type}{asVT}:0);
 		$stat{RFcount} += ($types{$type}{asRF} ? $nombre * $types{$type}{asRF}:0);
+		if ($type eq "LOCAL") { 
+			$stat{LOCcount} += $nombre;
+		}
 
 		$stat_d{$type}[$kd] += $nombre;
 		if ($QryParm->{'nograph'} == 0) {
@@ -913,20 +918,23 @@ foreach (@finalLignes) {
 				$stat_wh{$type}[$_] += $nombre if ($_ <= $#stat_th);
 			}
 		}
-		if ($types{$type}{asVT} && $duree_s > $stat_max_duration) {
-			my $dist;
-			my $Pvel = 6;
-			$Pvel = $MC3{P_WAVE_VELOCITY} if (defined $MC3{P_WAVE_VELOCITY});
-			my $VpVs = 1.75;
-			$VpVs = $MC3{VP_VS_RATIO} if (defined $MC3{VP_VS_RATIO});
-			if ($s_moins_p ne "NA" && $s_moins_p ne "") {
-				# $dist = 8*$s_moins_p;
+		my $dist;
+		my $Pvel = 6;
+		$Pvel = $MC3{P_WAVE_VELOCITY} if (defined $MC3{P_WAVE_VELOCITY});
+		my $VpVs = 1.75;
+		$VpVs = $MC3{VP_VS_RATIO} if (defined $MC3{VP_VS_RATIO});
+		if ($s_moins_p ne "NA" && $s_moins_p ne "") {
     			$dist = $Pvel*$s_moins_p/($VpVs-1);
-			} else {
-				$dist = 0;
-			}
+		} else {
+			$dist = 0;
+		}
+		if ($types{$type}{asVT} && $duree_s > $stat_max_duration) {
 			$stat_max_duration = $duree_s;
 			$stat_max_magnitude = 2*log($duree_s)/log(10)+0.0035*$dist-0.87;
+		}
+		if ($type eq "LOCAL" && $duree_s > $stat_max_duration_loc) {
+			$stat_max_duration_loc = $duree_s;
+			$stat_max_magnitude_loc = 2*log($duree_s)/log(10)+0.0035*$dist-0.87;
 		}
 	}
 }
@@ -1015,6 +1023,9 @@ if ($MC3{DISPLAY_INFO_MAIL} && (clientHasAdm(type=>"authprocs",name=>"MC") || cl
 	$html .= "<INPUT type=\"hidden\" name=\"stat_max_magnitude\" value=\"".$stat_max_magnitude."\"/>";
 	$html .= "<INPUT type=\"hidden\" name=\"RFcount\" value=\"".$stat{RFcount}."\"/>";
 	$html .= "<INPUT type=\"hidden\" name=\"VTcount\" value=\"".$stat{VTcount}."\"/>";
+	$html .= "<INPUT type=\"hidden\" name=\"stat_max_duration_loc\" value=\"".$stat_max_duration_loc."\"/>";
+	$html .= "<INPUT type=\"hidden\" name=\"stat_max_magnitude_loc\" value=\"".$stat_max_magnitude_loc."\"/>";
+	$html .= "<INPUT type=\"hidden\" name=\"LOCcount\" value=\"".$stat{LOCcount}."\"/>";
 	$html .= "</FORM>\n";
 	$html .= "<FORM name=\"formulaire_mail_revosime\" action=\"/cgi-bin/$MC3{CGI_REVOSIMA_MAIL_INFO}\" method=\"get\">";
 	$html .= "<P><B>Mail d'information REVOSIMA</B>: <INPUT type=\"submit\" value=\"G&eacute;n&eacute;rer\"/></P>";
