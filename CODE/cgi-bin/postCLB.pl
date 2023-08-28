@@ -52,7 +52,8 @@ $QryParm->{'node'}   //= "";
 
 # ---- can we ? should we ? do we have all we need ?
 #
-($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
+($GRIDType, $GRIDName, $NODEName) = split(/[
+.\/]/, trim($QryParm->{'node'}));
 if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
 	if ( !clientHasEdit(type=>"authprocs",name=>"$GRIDName")) {
 		die "$__{'Not authorized'} (edit) $QryParm->{'node'}";
@@ -201,27 +202,29 @@ sub htmlMsgOK {
 	   
 	    # read data file to know end date of observations
 	    my $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$dataname";
-	    open(FH, '<', $filepath) or die $!;
-		my @last_date;
-	    while (<FH>) { if ($_ !~ /NaN/) {@last_date = split(/ /,$_)} };
-	    my $last_year   = $last_date[0];
-	    my $last_month  = $last_date[1];
-	    my $last_day    = $last_date[2];
-	    my $last_hour   = $last_date[3] || "00";
-	    my $last_minute = $last_date[4] || "00";
-	    my $last_second = $last_date[5];
-	    if ($last_second =~ /./) { $last_second = "00" };
-	    
-	    my $first_obs_date = "$first_year\T$first_hour:$first_minute:$first_second\Z";
-	    my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
-	    my $obs_date = "$first_obs_date/$last_obs_date";
-	    
-		# --- completing observed_properties table
-		my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES) VALUES (?,?,?,?);');
-		$sth->execute($id, $name, $unit, $theia);
-		
-		my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
-	    $sth->execute($obsid,$obs_date,$station,$id,$dataset,$dataname);
+	    if ( -e $filepath) {
+	    	open(FH, '<', $filepath) or die $!;
+			my @last_date;
+			while (<FH>) { if ($_ !~ /NaN/) {@last_date = split(/ /,$_)} };
+			my $last_year   = $last_date[0];
+			my $last_month  = $last_date[1];
+			my $last_day    = $last_date[2];
+			my $last_hour   = $last_date[3] || "00";
+			my $last_minute = $last_date[4] || "00";
+			my $last_second = $last_date[5];
+			if ($last_second =~ /./) { $last_second = "00" };
+			
+			my $first_obs_date = "$first_year\T$first_hour:$first_minute:$first_second\Z";
+			my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
+			my $obs_date = "$first_obs_date/$last_obs_date";
+			
+			# --- completing observed_properties table
+			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES) VALUES (?,?,?,?);');
+			$sth->execute($id, $name, $unit, $theia);
+			
+			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
+			$sth->execute($obsid,$obs_date,$station,$id,$dataset,$dataname);
+	    }
 	}
 	
 	my $msg = $_[0] || "calibration file successfully updated !" ;
