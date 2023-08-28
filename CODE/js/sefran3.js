@@ -20,24 +20,19 @@ $(document).ready(function() {
 	}
 	if (typeof MECB  === 'undefined') {
 		// event handlers
-		$(window).on("load", function() {
-			init_ref();
-			fsx(SCB.SX);
-			//$('.submenu').innerWidth($('#refrow').width()-3);
-			$('#rtclock').css('background','white');
-		});
+		init_ref();
+		fsx(SCB.SX);
+		//$('.submenu').innerWidth($('#refrow').width()-3);
 	} else {
 		// event handlers
-		$(window).on("load", function() {
-			init_MECB();
-			maj_formulaire();
-			if (MECB.FORM.secondeEvenement.value!="") {
-				sec = MECB.FORM.secondeEvenement.value;
-				pos_x = Math.round((sec - 2)*1000*SCB.WIDTH/60000);
-				window.scrollBy(pos_x,0);
-			}
-			shrinkmctags();
-		});
+		init_MECB();
+		maj_formulaire();
+		if (MECB.FORM.secondeEvenement.value!="") {
+			sec = MECB.FORM.secondeEvenement.value;
+			pos_x = Math.round((sec - 2)*1000*SCB.WIDTH/60000);
+			window.scrollBy(pos_x,0);
+		}
+		shrinkmctags();
 		$(window).keyup(maj_formulaire);
 		$(window).change(maj_formulaire);
 		// event handlers for crosshair
@@ -205,16 +200,16 @@ function sefran() {
 
 // ---- make the formRef visible if needed
 function init_ref() {
-	if (document.form) {
-		if (document.form.ref.value == 1) $('#formRef').css('visibility','visible');
+	if (document.formulaire) {
+		if (document.formulaire.ref.value == 1) $('#formRef').css('visibility','visible');
 	}
 }
 
 // ---- handle user switching from realtime to date selection
 function mod_ref() {
-	if (document.form.ref.value == 0) {
+	if (document.formulaire.ref.value == 0) {
 		$('#formRef').css('visibility','hidden');
-		document.form.submit();
+		document.formulaire.submit();
 	} else {
 		$('#formRef').css('visibility','visible');
 	}
