@@ -3,14 +3,14 @@
 # ------------------- WEBOBS / IPGP ----------------------------
 # mail_info.pl
 # ------
-# Usage: Prepare an information mail based on the Main Courante 
+# Usage: Prepare an information mail based on the Main Courante
 #	(MC) seismological database
 #
 # Arguments
 #	mc= MC conf name (optional)
 #	dateStart= Start date (mandatory)
 #	dateEnd= End date (mandatory)
-# 
+#
 # Author: Patrice Boissier <boissier@ipgp.fr>
 # Acknowledgments:
 #       mc3.pl [2004-2011] by Didier Mallarino, Francois
@@ -105,8 +105,8 @@ my $dateEnd = $cgi->url_param('dateEnd');
 my @dateEndElements = split(/-/,$dateEnd);
 
 my $mc3URL = "http://195.83.188.56/cgi-bin/mc3.pl";
-my $user = 'boissier';
-my $pass = 'or4OU8di';
+my $user = 'user';
+my $pass = 'password';
 my $ua = new LWP::UserAgent;
 
 # DERNIER SEISME RESSENTI
@@ -181,13 +181,13 @@ my @typeAlerts = readCfgFile("$WEBOBS{ROOT_CONF}/$MC3{ALERTS_CODES_REVOSIMA_CONF
 my @typeZones = readCfgFile("$WEBOBS{ROOT_CONF}/$MC3{ZONES_CODES_REVOSIMA_CONF}");
 my @commentsGeodesy = readCfgFile("$WEBOBS{ROOT_CONF}/$MC3{COMMENTS_GEODESY_REVOSIMA_CONF}");
 
-my $dateEndFrench = substr($dateEnd,8,2)."-".substr($dateEnd,5,2)."-".substr($dateEnd,0,4); 
-my $dateStartFrench = substr($dateStart,8,2)."-".substr($dateStart,5,2)."-".substr($dateStart,0,4); 
+my $dateEndFrench = substr($dateEnd,8,2)."-".substr($dateEnd,5,2)."-".substr($dateEnd,0,4);
+my $dateStartFrench = substr($dateStart,8,2)."-".substr($dateStart,5,2)."-".substr($dateStart,0,4);
 my $timePeriod = "Bilan du $dateEnd";
 my $timePeriodHTML = "Bulletin pr&eacute;liminaire d'activit&eacute; du $dateEndFrench";
 my $yesterday = DateTime->now()->subtract( days => 1 )->strftime('%Y-%m-%d');
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if (($dateStart ne $dateEnd || $yesterday ne $dateEnd)  && !defined($send)) {
 	print $cgi->header(-charset=>'utf-8');
 	print <<"PART1";
@@ -204,7 +204,7 @@ if (($dateStart ne $dateEnd || $yesterday ne $dateEnd)  && !defined($send)) {
   </body>
 </html>
 PART1
-	
+
 } elsif (defined($send)) {
 	my $html;
 	my $outputFilename = '/opt/php/bulletin/bulletin.html';
@@ -232,8 +232,8 @@ PART1
 	$htmlOutput .= $html;
 	$htmlBrowser .= $html;
 	$htmlMail .= $html;
-	$htmlOutput .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/VOLCANO.css\">";
-	$htmlBrowser .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/php/bulletin/css/VOLCANO.css\">";
+	$htmlOutput .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">";
+	$htmlBrowser .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/php/bulletin/css/style.css\">";
         $html = '    <script>
 function showCredits() {
   var x = document.getElementById("revocredits");
@@ -243,8 +243,8 @@ function showCredits() {
   } else {
     x.style.display = "none";
   }
-} 
-                      </script>'; 
+}
+                      </script>';
 	$html .= '  </head>';
 	$html .= '  <body>';
 	$html .= '  <div id="container">';
@@ -257,30 +257,28 @@ function showCredits() {
 	$htmlOutput .= $html;
 	$htmlBrowser .= $html;
 	$htmlMail .= $html;
-	$htmlOutput .= '      <img src=./images/revosima.png>';
-	$htmlBrowser .= '      <img src=/php/bulletin/images/revosima.png>';
+	$htmlOutput .= '      <img src=./images/partenaires.png>';
+	$htmlBrowser .= '      <img src=/php/bulletin/images/partenaires.png>';
 	$html = '    </div>';
 	$html .= '    <div id="content">';
 	$html .= "    <h2>$timePeriodHTML</h2>";
 	$htmlOutput .= $html;
 	$htmlBrowser .= $html;
 	$htmlMail .= $html;
-	$htmlOutput .= '      <img src=./images/partenaires.png align="right" width=700>';
-	$htmlBrowser .= '      <img src=/php/bulletin/images/partenaires.png align="right" width=700>';
 	my $dateBulletin = localtime->strftime('%d-%m-%Y %H:%M:%S');
 	$html = "    <p>Bulletin cr&eacute;&eacute; le $dateBulletin TU.</p>";
-	$html .= "    <p id=\"warning\">Ce bulletin est issu de l'examen pr&eacute;liminaire quotidien des derni&egrave;res donn&eacute;es par un.e analyste du REVOSIMA. Ces informations n'ont pas toutes &eacute;t&eacute; valid&eacute;es et sont susceptibles d'&eacute;voluer.<br/>Pour une information compl&egrave;te, veuillez vous reporter aux <a href=\"https://www.ipgp.fr/fr/revosima/actualites-reseau\">Actualit&eacute;s du r&eacute;seau valid&eacute;es.</a></p>";
+	$html .= "    <p id=\"warning\">Ce bulletin est issu de l'examen pr&eacute;liminaire quotidien des derni&egrave;res donn&eacute;es par un.e analyste du REVOSIMA. Ces informations n'ont pas toutes &eacute;t&eacute; valid&eacute;es et sont susceptibles d'&eacute;voluer.<br/>Pour une information compl&egrave;te, veuillez vous reporter aux <a href=\"https://www.ipgp.fr/actualites-du-revosima/\">actualit&eacute;s du r&eacute;seau valid&eacute;es</a>.</p>";
 	$html .= '    <hr>';
 	$html .= '    <h3>Activit&eacute;</h3>';
 	$html .= '    <p>';
-        $html .= '      <b>Ev&egrave;nement en cours :</b> &eacute;ruption sous-marine tr&egrave;s probablement toujours en cours &agrave; 50-60 km &agrave; l\'Est de Mayotte avec sismicit&eacute; et d&eacute;formations associ&eacute;es. ';
+ 	$html .= '      <b>Ev&egrave;nement en cours :</b> activit&eacute; sismique en cours entre 5 et 50 km l\'Est de Mayotte et &eacute;missions de fluides sur la zone du Fer à Cheval. Derni&egrave;re activit&eacute; sous-marine obsers&eacute;e au niveau du volcan Fani Maor&eacute; le 18/01/2021 lors de la campagne MAYOBS17.';
 	$html .= '    </p>';
 	$html .= '    <p>';
-        $html .= "      Derni&egrave;re preuve sans &eacute;quivoque d'activit&eacute; &eacute;ruptive : 18/01/2021 lors de la campagne MAYOBS17.";
+        $html .= "      Arr&ecirc;t probable de l\'&eacute;ruption. Aucune hypoth&egrave;se n\'est pour l\'instant &eacute;cart&eacute;e quant &agrave; l\'&eacute;volution de la situation &agrave; venir (arr&ecirc;t d&eacute;finitif, reprise de l'activit&eacute; &eacute;ruptive sur le m&ecirc;me site, reprise de l'activit&eacute; &eacute;ruptive sur un autre site), compte tenu de l\'activit&eacute; sismique persistante et d\'&eacute;missions de fluides localis&eacute;es dans la zone du Fer &agrave; Cheval.";
 	$html .= '    </p>';
 	$html .= '    <p>';
-	$html .= "      <b>Site &eacute;ruptif actuel</b><br/>";
-	$html .= '      Edifice principal : latitude : -12&deg;54\' ; longitude : 45&deg;43\'<br/>';
+	$html .= "      <b>Edifice principal</b><br/>";
+	$html .= '      Latitude : -12&deg;54\' ; longitude : 45&deg;43\'<br/>';
 	$html .= '      Hauteur : au moins 800 m<br/>';
 	$html .= '      Profondeur &agrave; la base du site &eacute;ruptif : -3500 m<br/>';
 	$html .= '    </p>';
@@ -295,7 +293,7 @@ function showCredits() {
 	#$htmlOutput .= '      <img src=./images/frise.jpg width="700"/>';
 	#$htmlBrowser .= '      <img src=/php/bulletin/images/frise.jpg width="700"/>';
 	$html = '    <h3>Sismologie</h3>';
-	
+
 	my $subject = "[revosima_bulletin] $timePeriod";
 	$html .= "<p>- Nombre de signaux sismiques de type tr&egrave;s longue p&eacute;riode VLP (tr&egrave;s basse fr&eacute;quence, entre 0,01Hz et 0,2Hz) du $dateEndFrench : <b>$comptabilisesVLP</b></p>";
 	$html .= "<p>- Nombre de signaux sismiques de type longue p&eacute;riode LP (basse fr&eacute;quence, entre 0,5Hz et 5Hz) du $dateEndFrench : <b>$comptabilisesLP</b></p>";
@@ -324,6 +322,7 @@ function showCredits() {
 	$html .= "Carte de localisation des &eacute;picentres (± 5 km) des s&eacute;ismes volcano-tectoniques avec les r&eacute;seaux sismiques &agrave; terre (IPGP-IFREMER-CNRS-BRGM-BCSF-R&eacute;NaSS, ITES) au cours du dernier mois (&eacute;chelle temporelle de couleur). Sont aussi repr&eacute;sent&eacute;es une projection des hypocentres des s&eacute;ismes le long de coupes transverses et axiales le long de la ride montrant la localisation estim&eacute;e en profondeur (pr&eacute;cision variant entre +-5km et +-15km) des s&eacute;ismes en fonction de la magnitude (taille des symboles) et de la date (&eacute;chelle temporelle de couleur). &copy;OVPF-IPGP / REVOSIMA<br/>";
 	$html .= "La sismicit&eacute; d&eacute;termin&eacute;e et valid&eacute;e en continu par le REVOSIMA peut &ecirc;tre &eacute;galement suivie sur le <a href=\"https://renass.unistra.fr/fr/zones/mayotte/\">portail RENASS.</a>";
 	$html .= "</p>";
+  	$html .= '	<hr>';
 	$htmlOutput .= $html;
 	$htmlBrowser .= $html;
 
@@ -341,17 +340,18 @@ function showCredits() {
         $html .= "<p id=legend>";
         $html .= "D&eacute;placements (en cm) enregistr&eacute;s sur 9 stations GPS localis&eacute;s &agrave; Mayotte (BDRL, GAMO, KAWE, KNKL, MAYG, MTSA, MTSB, PMZI, PORO), 1 station &agrave; Grande Glorieuse (GLOR) et 1 station au nord de Madagascar &agrave; Diego Suarez (DSUA) sur les composantes est (en haut), nord (au milieu) et vertical (en bas) depuis le 22 d&eacute;cembre 2013 pour visualiser une longue s&eacute;rie temporelle ant&eacute;-crise. Post-traitement de ces donn&eacute;es r&eacute;alis&eacute; par l'IPGP. &copy;OVPF-IPGP / REVOSIMA.";
         $html .= "</p>";
+        $html .= '    <hr>';
 	$htmlOutput .= $html;
 	$htmlBrowser .= $html;
 
         $html = "";
         $html .= "<h3>G&eacute;ochimie</h3>";
-        $comments_geochemistry = encode_entities(decode('utf8', $comments_geochemistry));
+        $comments_geochemistry = encode_entities(decode('utf-8', $comments_geochemistry));
 	$comments_geochemistry =~ s;\n;<br/>;g;
         $html .= "<p>$comments_geochemistry</p>";
 	if ($comment ne "") {
 		$html .= "<h3>Informations compl&eacute;mentaires</h3>";
-		$comment = encode_entities(decode('utf8', $comment));
+		$comment = encode_entities(decode('utf-8', $comment));
 		$comment =~ s;\n;<br/>;g;
 		$html .= "<p>$comment</p>";
 	}
@@ -378,7 +378,7 @@ Ce r&eacute;seau est op&eacute;r&eacute; par l'IPGP avec l'appui du BRGM Mayotte
 Le consortium du REVOSIMA : IPGP et Universit&eacute; Paris Cit&eacute;, BRGM, IFREMER, CNRS, BCSF-R&eacute;NaSS, ITES et Universit&eacute; de Strasbourg, IGN, ENS, SHOM, TAAF, M&eacute;t&eacute;o France, CNES, Universit&eacute; Grenoble Alpes et ISTerre, Universit&eacute; Clermont Auvergne, LMV et OPGC, Universit&eacute; de La R&eacute;union, Universit&eacute; Paul Sabatier, Toulouse et GET-OMP, Universit&eacute; de la Rochelle, Universit&eacute; de Bretagne Occidentale, IRD et collaborateurs. Les astreintes de surveillance renforc&eacute;e du processus sismo-volcanique par le REVOSIMA ont &eacute;t&eacute; assur&eacute;es pendant une phase provisoire depuis le 25 juillet sur la base de la mobilisation exceptionnelle de personnels scientifiques permanents disponibles, qui proviennent de laboratoires de l'INSU-CNRS et de leurs universit&eacute;s associ&eacute;es (BCSF-RENASS, CNRS, ITES et Universit&eacute; de Strasbourg, Universit&eacute; Grenoble Alpes et ISTerre, Universit&eacute; Paul Sabatier, Toulouse et GET-OMP, Universit&eacute; Clermont Auvergne, LMV et OPGC, BRGM, IPGP et Universit&eacute; Paris Cit&eacute;, Universit&eacute; de la R&eacute;union), sous le pilotage de l'IPGP, de l'OVPF-IPGP, et du BRGM Mayotte, et sur la base d'un protocole et d'outils mis en place par l'IPGP, le BCSF-RENASS, l'OVPF-IPGP, et l'IFREMER.<br/><br/>
 Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans ce bulletin sont &agrave; usage d'information, de p&eacute;dagogie et de surveillance. Elles ne peuvent pas &ecirc;tre utilis&eacute;es &agrave; des fins de publications de recherche sans y faire r&eacute;f&eacute;rence explicitement et sans autorisation du comit&eacute; du REVOSIMA. Les donn&eacute;es sismiques sont distribu&eacute;es par l'IPGP (Centre de donn&eacute;es : <a href=http://datacenter.ipgp.fr/>http://datacenter.ipgp.fr</a> et <a href=http://volobsis.ipgp.fr/data.php>http://volobsis.ipgp.fr/data.php</a>) et par les Services Nationaux d'Observations du CNRS-INSU (<a href=http://seismology.resif.fr/>http://seismology.resif.fr/</a>). Les donn&eacute;es GPS sont distribu&eacute;es par l'Institut National de l'Information G&eacute;ographique et Foresti&egrave;re (IGN : <a href=http://mayotte.gnss.fr/donnees>http://mayotte.gnss.fr/donnees</a>). Les donn&eacute;es acquises lors des campagnes oc&eacute;anographiques seront distribu&eacute;es par l'IFREMER, les autres donn&eacute;es g&eacute;ologiques et g&eacute;ochimiques seront diffus&eacute;es par le REVOSIMA et ses partenaires.
                     </p>
-                  </div> 
+                  </div>
                   ";
         $html .= "    </div>";
         $html .= "  </div>";
@@ -417,7 +417,7 @@ Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans c
 			}
 		}
 	}
-	
+
 	my $message = Email::MIME->create_html(
 		header => [
 			From => $from,
@@ -427,7 +427,7 @@ Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans c
 		],
 		body => $htmlMail,
 	);
-	
+
 	my @mailingList = split(/,/,$mailList);
 	for(@mailingList) {
 		if($MC3{MAIL_USE_SMTP_REVOSIMA}) {

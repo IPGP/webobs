@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2023-03-01
+%	Updated: 2023-08-25
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -60,12 +60,12 @@ end
 if isfield(P,'EVENTTYPE_EXCLUDED_LIST')
 	extypes = split(P.EVENTTYPE_EXCLUDED_LIST,',');
 else
-	extypes = '';
+	extypes = {''};
 end
 if isfield(P,'EVENTSTATUS_EXCLUDED_LIST')
 	exstatus = split(P.EVENTSTATUS_EXCLUDED_LIST,',');
 else
-	exstatus = '';
+	exstatus = {''};
 end
 
 felteventcode = isok(P,'FELT_EVENTCODE_OK');
