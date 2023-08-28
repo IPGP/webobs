@@ -326,7 +326,7 @@ print "<TR><TD style=\"border:0\" colspan=2>
 		<input type=radio name=action value=delete>            <B>Delete</B> (remove a line)<BR>";
 
 print "<TD style=\"border:0\" colspan=".(@fieldCLB-7)."><P style=\"text-align:right\">";
-print "<input type=\"button\" onClick=\"CLBshowhide();\" value=\"$__{'show/hide Loc'}\">";
+print "<input type=\"button\" onClick=\"CLBshowhide();\" value=\"$__{'show/hide extra columns'}\">";
 print "<input type=\"button\" name=lien onClick=\"history.go(-1);\" value=\"$__{'Cancel'}\">";
 print "<input type=\"button\" id=\"submit_button\" value=\"$__{'Submit'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\"> ";
 
