@@ -119,8 +119,8 @@ msgstr "définitions des champs de fichier calibration"
 msgid "calibration-files configuration"
 msgstr "configuration calibration"
 
-msgid "show/hide Loc"
-msgstr "(de)masque Loc"
+msgid "show/hide extra columns"
+msgstr "(de)masque colonnes supplémentaires"
 
 msgid "node configuration"
 msgstr "configuration de node"
