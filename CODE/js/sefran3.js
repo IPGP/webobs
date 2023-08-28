@@ -1,7 +1,7 @@
 
 $(document).ready(function() {
 	// common event handlers
-	$(window).unload(function() {
+	$(window).on("unload", function() {
 		if (window.opener && SCB.NOREFRESH == 0) {
 			if (window.opener.parent.document.getElementById("wmtarget")) {
 				window.opener.parent.document.getElementById("wmtarget").contentWindow.location.reload();
@@ -20,7 +20,7 @@ $(document).ready(function() {
 	}
 	if (typeof MECB  === 'undefined') {
 		// event handlers
-		$(window).load(function() {
+		$(window).on("load", function() {
 			init_ref();
 			fsx(SCB.SX);
 			//$('.submenu').innerWidth($('#refrow').width()-3);
@@ -28,7 +28,7 @@ $(document).ready(function() {
 		});
 	} else {
 		// event handlers
-		$(window).load(function() {
+		$(window).on("load", function() {
 			init_MECB();
 			maj_formulaire();
 			if (MECB.FORM.secondeEvenement.value!="") {
