@@ -22,6 +22,8 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use JSON;
 use Encode qw(decode encode);
 use feature 'say';
+use File::Temp qw/ tempfile tempdir /;
+use File::Path qw(mkpath);
 
 # ---- webobs stuff
 use WebObs::Config;
@@ -52,34 +54,34 @@ if($rv < 0) {
 my %producer;
 
 while( my @row = $sth->fetchrow_array() ) {
-
-	# ---- parsing online resources
-	my %resource;
-	foreach(split(/_,/, $row[9])) {
-		my $typeUrl =(split '@',$_)[0];
-		my $url = (split '@',$_)[1];
-		if ($typeUrl =~ /download/) {
-			$resource{'urlDownload'} = $url;
-		} elsif ($typeUrl =~ /info/) {
-			$resource{'urlInfo'} = $url;
-		} elsif ($typeUrl =~ /doi/) {
-			$resource{'doi'} = $url;
-		}
-	}
-
 	%producer = (
 		producerId => $row[0],
 		name => $row[1],
 		title => $row[2],
 		description => $row[3],
-		email => $row[6],
-		onlineResource => \%resource
+		email => $row[6]
 	);
 	if ($row[4] ne "") {
 		$producer{'objectives'} = $row[4];
 	}
 	if ($row[5] ne "") {
 		$producer{'measuredVariables'} = $row[5];
+	}
+	if ($row[9] ne "") {
+    	# ---- parsing online resources
+	    my %resource;
+	    foreach(split(/_,/, $row[9])) {
+		    my $typeUrl =(split '@',$_)[0];
+		    my $url = (split '@',$_)[1];
+		    if ($typeUrl =~ /download/) {
+			    $resource{'urlDownload'} = $url;
+		    } elsif ($typeUrl =~ /info/) {
+			    $resource{'urlInfo'} = $url;
+		    } elsif ($typeUrl =~ /doi/) {
+			    $resource{'doi'} = $url;
+		    }
+	    }
+	    $producer{'onlineResource'} = \%resource;
 	}
 	
 	# ---- extracting contacts data
@@ -307,28 +309,41 @@ my %json = (
 	version => "1.0",
 );
 
-my $filename = "$WEBOBS{ROOT_CONF}/$json{'producer'}{'producerId'}_en.json";
-print $cgi->header(-type=>'text/html',-charset=>'utf-8');
+$dbh->disconnect();
 
+my $dir = "$WEBOBS{PATH_TMP_WEBOBS}";
+my $tempdir = tempdir();
+mkpath("$dir$tempdir");
+my $filename = "$json{'producer'}{'producerId'}_en.json";
+my $filepath = "$dir$tempdir/$filename";
+#print $cgi->header(-type=>'text/html',-charset=>'utf-8');
+#print $filepath;
 #print encode_json $json{'datasets'}->[0]{'metadata'}{'contacts'}; 
-print "\n";
+#print "\n";
+print "Content-Disposition: attachment; filename=\"$filename\";\nContent-type: text/json\n\n";
 
-chmod 0755, $filename;
-open(FH, '>', $filename) or die $!;
+chmod 0755, $filepath;
+open(FH, '>', $filepath) or die $!;
 
 print FH encode_json \%json;
 
 close(FH);
 
+#print encode_json \%json;
 # ---- checking if the final json file is conform to the recommandations
-
-my $output = "java -jar /home/lucas/Documents/donnees_webobs_obsera/JSON-schema-validation-0-jar-with-dependencies.jar ".$filename;
+my $output = "java -jar /home/lucas/Documents/donnees_webobs_obsera/JSON-schema-validation-0-jar-with-dependencies.jar ".$filepath;
 #print qx($output);
-if (qx($output) =~ /success/) {print "The JSON metadata file has been successfully created at ".$filename." !"} elsif (qx($output) =~ /(not found|schema violations found|subschema)/) {print "The JSON metadata file is not valid :\n".qx($output)};
+
+if (qx($output) !~ /success/) {
+	#print "The JSON file has been created successfully";
+	print encode_json \%json;
+} elsif (qx($output) =~ /(not found|schema violations found|subschema)/) {
+	print $cgi->header(-type=>'text/html',-charset=>'utf-8');
+	print "The JSON metadata file is not valid :\n".qx($output)
+};
 
 #print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
    
-$dbh->disconnect();
 
 __END__
 
