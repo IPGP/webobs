@@ -1,1 +1,2 @@
-**Calibration formula:** D = d × (Calib. Fact.) × (Gain) + (Offset)
+**Calibration formula:** d = Calib(x) * Gain + Offset
+where x is raw data, Calib(x) is scalar factor of x, or any arithmetic formula using x (allowed operators are +, -, /, *, ^ and parenthesis)
