@@ -200,16 +200,16 @@ function sefran() {
 
 // ---- make the formRef visible if needed
 function init_ref() {
-	if (document.formulaire) {
-		if (document.formulaire.ref.value == 1) $('#formRef').css('visibility','visible');
+	if (document.form) {
+		if (document.form.ref.value == 1) $('#formRef').css('visibility','visible');
 	}
 }
 
 // ---- handle user switching from realtime to date selection
 function mod_ref() {
-	if (document.formulaire.ref.value == 0) {
+	if (document.form.ref.value == 0) {
 		$('#formRef').css('visibility','hidden');
-		document.formulaire.submit();
+		document.form.submit();
 	} else {
 		$('#formRef').css('visibility','visible');
 	}
