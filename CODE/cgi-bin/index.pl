@@ -234,7 +234,7 @@ print <<"FIN";
 		<meta name="keywords" content="">
 		<meta name="revisit-after" content="1days">
 		<meta name="robot" content="NoIndex,NoFollow">
-		<link href="icons/ipgp/logo_WebObs_C16.ico" rel="shortcut icon">
+		<link href="../icons/ipgp/logo_WebObs_C16.ico" rel="shortcut icon">
 		<link rel="stylesheet" type=text/css href="/$WEBOBS{FILE_HTML_CSS}">
 		<link rel="stylesheet" type=text/css href="/css/$wmcss">
 		<script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
