@@ -1197,13 +1197,13 @@ msgid "help_clb_chcode"
 msgstr "Identifiant du canal pour traitement (champ libre)"
 
 msgid "help_clb_offset"
-msgstr "Offset à appliquer aux données calibrées (valeur numérique)"
+msgstr "Offset à appliquer aux données calibrées après calibration et gain (valeur numérique)"
 
 msgid "help_clb_factor"
-msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique)"
+msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique), ou expression arithmétique utilisant la variable x comme donnée brute (opérateurs autorisés +, -, /, *, ^ et parenthèses)"
 
 msgid "help_clb_gain"
-msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique)"
+msgstr "Facteur multiplicatif à appliquer au résultat de la calibration avant offset (valeur numérique)"
 
 msgid "help_clb_minvalue"
 msgstr "Valeur numérique minimale des données brutes (filtre)"
