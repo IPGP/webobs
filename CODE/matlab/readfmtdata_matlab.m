@@ -18,7 +18,7 @@ function D = readfmtdata_matlab(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2017-10-14 in Bali, Indonesia
-%	Updated: 2017-10-14
+%	Updated: 2023-08-30
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -47,5 +47,10 @@ end
 
 D.t = t - N.UTC_DATA;
 D.d = d;
+if exist('e','var')
+	D.e = e;
+else
+	D.e = [];
+end
 [D.d,D.CLB] = calib(D.t,D.d,N.CLB,'channelcodeorder');
 D.t = D.t + P.TZ/24;

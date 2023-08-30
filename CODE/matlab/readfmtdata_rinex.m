@@ -18,7 +18,7 @@ function D = readfmtdata_rinex(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2017-08-02
+%	Updated: 2023*08-30
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -56,6 +56,7 @@ end
 
 D.t = t - N.UTC_DATA;
 D.d = d;
+D.e = [];
 D.CLB.nx = 5;
 D.CLB.nm = {'Duration','Obs','Mp1','Mp2','O/slps'};
 D.CLB.un = {'% 24h','% Total','m','m','% Obs'};

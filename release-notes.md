@@ -8,7 +8,7 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## v2.6.0 (August 2023)
+## v2.6.2 (August 2023)
 ### New features
 
 1. An interface has been created between WebObs and the Theia|OZCAR data portal. An Admin who needs to transfer metadata towards Theia can now produce a JSON file with WebObs metadata by filling some forms. The first form is located in the WebObs Grids Manager. The others are respectively the NODE forms and CLB forms. When a producer/NODE/new row in a CLB file is created, WebObs fills a metadata database which stores the metadata in order to write them in a JSON file, ready-to-send to the Theia data portal.
@@ -53,12 +53,16 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
     - `cr10xasc`: *former_rawdata_path*/$FID/$yyyy/*.DAT
     - `toa5` and `tob1`: *former_rawdata_path*/$FID/$yyyy/$FID*.dat
 
+1. **All procs node calibration file**: undocumented but functional possibility to compute any arithmetic function in the *calib. factor* field in calibration file, using `x` as raw data.
+
 ### Fixed issues
 1. Fix an issue with user account end date of validity
 
 1. Fix some issues (search in comments) in the *Node Search Events* tool.
 
 1. We started to improve *GNU Octave* compatibility of the *Matlab* code. Since *Octave* has a less permissive grammar, it lead to a better writing and sometimes hidden bug fixes. See the associated [discussion thread](https://github.com/IPGP/webobs/discussions/116).
+
+1. Fix potential security problems with jquery (version 1.8 updated to 3.7)
 
 ## v2.5.3 (September 2022)
 

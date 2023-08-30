@@ -50,7 +50,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2022-06-09
+%	Updated: 2023-08-30
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -306,11 +306,11 @@ else
 end
 D.t = t - N.UTC_DATA;
 D.d = d;
-
+D.e = [];
 [D.d,D.CLB] = calib(D.t,D.d,N.CLB);
 D.t = D.t + P.TZ/24;
 
 if isok(P,'DEBUG')
-	D
-	D.CLB
+	disp(D)
+	disp(D.CLB)
 end
