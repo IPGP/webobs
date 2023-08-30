@@ -96,7 +96,7 @@ for n = 1:length(N)
 	t = D(n).t;
 	d = D(n).d;
 	C = D(n).CLB;
-	nx = length(C.nm);
+	nx = size(d,2);
 
 	% fixes colors for each channel
 	col = [1,1,3,2,2,3,1,4];

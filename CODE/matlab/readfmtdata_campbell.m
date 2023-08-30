@@ -30,7 +30,7 @@ function D = readfmtdata_campbell(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2023-08-10
+%	Updated: 2023-08-30
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -106,5 +106,6 @@ end
 
 D.t = t - N.UTC_DATA;
 D.d = d;
+D.e = [];
 [D.d,D.CLB] = calib(D.t,D.d,N.CLB,'channelcodeorder');
 D.t = D.t + P.TZ/24;

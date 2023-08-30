@@ -22,7 +22,7 @@ function D = readfmtdata_earthworm(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2017-06-10, in Yogyakarta (Indonesia)
-%	Updated: 2018-05-25
+%	Updated: 2023-08-30
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -125,6 +125,6 @@ case 'winston'
 end
 D.t = t - N.UTC_DATA;
 D.d = d;
-
+D.e = [];
 [D.d,D.CLB] = calib(D.t,D.d,N.CLB);
 D.t = D.t + P.TZ/24;

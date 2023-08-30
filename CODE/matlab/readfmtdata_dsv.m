@@ -123,7 +123,7 @@ if ~isempty(regexpi(F.raw{1},'\$yyyy'))
 	end
 else
 	wosystem(sprintf('for f in $(ls %s);do cat $f | %s %s.%s \\%s %d %d >> %s; done', ...
-		F.raw{1}, preprocessor, P.SLEFREF, N.ID, fs, header, nftest, fdat), P);
+		F.raw{1}, preprocessor, P.SELFREF, N.ID, fs, header, nftest, fdat), P);
 end
 
 %wosystem(sprintf('for f in $(ls %s);do awk -F''%s'' ''NR>%d {print $0}'' $f | sed -e ''s/  */ /g;s/ *%s */%s/g;s/[%s\\/: ]/;/g;s/[^0-9.+\\-eE;]//g;s/^;/NaN;/g;s/;\\s*;/;NaN;/g;s/;;/;NaN;/g;s/;\\s*$/;NaN/g'' | awk -F'';'' ''%s {print $0}'' >> %s;done',F.raw{1},fs,header,fs,fs,fs,nftest,fdat),P);

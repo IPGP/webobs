@@ -412,6 +412,7 @@ PART1
           alert("Le niveau d'alerte doit etre defini");
           return false;
         }
+	alert("!!! Attention !!! Merci de bien fermer l'onglet apres envoi du bulletin");
       }
     </script>
   </head>

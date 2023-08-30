@@ -130,13 +130,13 @@ msgid "help_clb_chcode"
 msgstr "Channel code used by PROC (free string but functional)"
 
 msgid "help_clb_offset"
-msgstr "Offset to apply after calibration (numerical value)"
+msgstr "Offset to apply after calibration and gain (numerical value)"
 
 msgid "help_clb_factor"
 msgstr "Multiplying factor to apply on raw data (numerical value)"
 
 msgid "help_clb_gain"
-msgstr "Gain multiplying factor to apply on raw data (numerical value)"
+msgstr "Gain multiplying factor to apply on raw data (numerical value), or arithmetic formula using x as raw data variable (allowed operators are +, -, /, *, ^ and parenthesis)"
 
 msgid "help_clb_minvalue"
 msgstr "Minimum value of raw data (filtering)"
