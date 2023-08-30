@@ -105,8 +105,8 @@ my $dateEnd = $cgi->url_param('dateEnd');
 my @dateEndElements = split(/-/,$dateEnd);
 
 my $mc3URL = "http://195.83.188.56/cgi-bin/mc3.pl";
-my $user = 'user';
-my $pass = 'password';
+my $user = 'mc3';
+my $pass = 'MC3-0vpf';
 my $ua = new LWP::UserAgent;
 
 # DERNIER SEISME RESSENTI
@@ -452,6 +452,11 @@ Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans c
     <title>Bulletin d'information ReVoSiMa</title>
     <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
     <link rel="stylesheet" type="text/css" href="/css/$MC3{CSS}">
+    <script>
+      function validateAlert(){
+        alert("!!! Attention !!! Merci de bien fermer l'onglet apres envoi du bulletin");
+      }
+    </script>
   </head>
   <body>
     <form action="mailInfo_REVOSIMA.pl" onsubmit="return validateAlert()" method="GET">
