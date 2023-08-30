@@ -37,7 +37,7 @@ function D = readfmtdata_woform(WO,P,N)
 %
 %	Author: Fran�ois Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2023-08-14
+%	Updated: 2023-08-30
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -219,9 +219,9 @@ si = si(k);
 
 for n = 1:length(N)
 	k = find(strcmp(si,N(n).ID));	% selects data from site (node's ID)
+	D(n).t = t(k) - N(n).UTC_DATA;
 	D(n).d = d(k,:);
 	D(n).e = e(k,:);
-	D(n).t = t(k) - N(n).UTC_DATA;
 	% set default names and units to inexistant/unappropriate calibration files of node
 	if N(n).CLB.nx ~= length(nm)
 		D(n).CLB.nx = length(nm);
