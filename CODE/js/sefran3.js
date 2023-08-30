@@ -23,6 +23,7 @@ $(document).ready(function() {
 		init_ref();
 		fsx(SCB.SX);
 		//$('.submenu').innerWidth($('#refrow').width()-3);
+		$('#rtclock').css('background','white');
 	} else {
 		// event handlers
 		init_MECB();
