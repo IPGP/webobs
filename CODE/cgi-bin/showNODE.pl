@@ -146,9 +146,11 @@ my $fids = join(" - ", map { my $v; ($v = $_) =~ s/$GRIDType\.$GRIDName\.//;
                             sort grep(/$GRIDType\.$GRIDName\.FID_|^FID_/, keys(%NODE)));
 my $rawformat = $NODE{"$GRIDType.$GRIDName.RAWFORMAT"} // $NODE{RAWFORMAT};
 my $rawdata = $NODE{"$GRIDType.$GRIDName.RAWDATA"} // $NODE{RAWDATA};
+$rawdata =~ s/\$FID/$fid/g;
 my $acqrate = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"} // $NODE{ACQ_RATE};
 my $acqdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"} // $NODE{LAST_DELAY};
 my $chanlist = $NODE{"$GRIDType.$GRIDName.CHANNEL_LIST"} // $NODE{CHANNEL_LIST};
+my @procTS = split(/,/,$GRID{TIMESCALELIST});
 
 my $statusDB = $NODES{SQL_DB_STATUS};
 if ($statusDB eq "") { $statusDB = "$WEBOBS{PATH_DATA_DB}/NODESSTATUS.db" };
@@ -470,8 +472,8 @@ if (uc($GRIDType) eq 'PROC') {
 	if (-d "$WEBOBS{ROOT_OUTG}/PROC.$GRIDName" ) {
 		$OUTG = "$WEBOBS{ROOT_OUTG}/PROC.$GRIDName";
 	}
-	my (@glist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/$NODENameLower"."_*.png";
-	my (@dlist) = glob "$OUTG/$WEBOBS{PATH_OUTG_EXPORT}/$NODENameLower"."_*.txt";
+	my (@glist) = map { "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/$NODENameLower\_$_.png" } @procTS;
+	my (@dlist) = map { "$OUTG/$WEBOBS{PATH_OUTG_EXPORT}/$NODENameLower\_$_.txt" } @procTS;
 
 	print "<TR><TD valign=\"top\"><B>$__{'Data'}</B></TH><TD>";
 	if ($OUTG ne "" && isok($NODE{VALID}) && ($GRID{'URLDATA'} ne "" || $GRID{'FORM'} ne "" || $#glist >= 0 || $#dlist >= 0)) {
