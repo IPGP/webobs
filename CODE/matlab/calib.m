@@ -11,7 +11,7 @@ function [dc,C]=calib(t,d,CLB,cco)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2004-09-01
-%	Updated: 2023-08-25
+%	Updated: 2023-09-05
 
 if isempty(t) || (isscalar(t) && isnan(t))
 	t = now;
@@ -22,9 +22,9 @@ if isempty(d)
 end
 
 if nargin > 3 && strcmpi(cco,'channelcodeorder')
-	cco = 1;
+	cco = true;
 else
-	cco = 0;
+	cco = false;
 end
 
 if CLB.nx > 0
@@ -55,15 +55,17 @@ for j = 1:length(CLB)
 				if ~isempty(k)
 					% selects the right column of raw data
 					col = str2double(CLB(j).cd{ki(ii)});
-					if cco == 0 || col <= 0 || col > size(d,2) || isnan(col)
+					if ~cco || col <= 0 || col > size(d,2) || isnan(col)
 						col = i;
 					end
 					x = d(k,col); % the raw data 
-					fprintf('WEBOBS{calib}: channel %d ("%s") calibrated from %s column %d (%d data).\n',i,CLB(j).nm{ki(ii)},datestr(tt(ii)),col,length(k))
+					fprintf('WEBOBS{calib}: channel %d ("%s") calibrated from %s column %d (%d data - min/max = %g/%g).\n', ...
+						i,CLB(j).nm{ki(ii)},datestr(tt(ii)),col,length(k),minmax(x));
+					% filtering of min/max values is computed on the raw data (before calibration)
 					if ~isnan(CLB(j).vn(ki(ii))) || ~isnan(CLB(j).vm(ki(ii)))
 						kk = (x < CLB(j).vn(ki(ii)) | x > CLB(j).vm(ki(ii)));
 						if any(kk)
-							d(k(kk),col) = NaN;
+							x(kk) = NaN;
 						end
 					end
 					% data calibration is here
