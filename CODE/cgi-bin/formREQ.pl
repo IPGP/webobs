@@ -99,6 +99,7 @@ use POSIX qw/strftime/;
 #
 use WebObs::Config;
 use WebObs::Users;
+use WebObs::Utils;
 use WebObs::Grids;
 use WebObs::i18n;
 
@@ -389,7 +390,7 @@ print "<TR>";
 		print "</select><BR>&nbsp;<BR>";
 	#	PLOTGRID|
 		print "<label style=\"width:80px\" for=\"gridon\">$__{'Grid'}:</label>";
-		print "<input id=\"gridon\" name=\"gridon\" type=\"checkbox\" value=\"1\"".($REQDFLT{PLOTGRID}==1 ? " checked":"")."><BR>&nbsp;<BR>";
+		print "<input id=\"gridon\" name=\"gridon\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{PLOTGRID}) ? " checked":"")."><BR>&nbsp;<BR>";
 		print "</TD><TD style=\"border:0\">";
 	#	PPI|
 		print "<label style=\"width:80px\" for=\"ppi\">$__{'PPI'}:</label>";
@@ -398,19 +399,19 @@ print "<TR>";
 		print "</select><BR>&nbsp;<BR>";
 	#	PDFOUTPUT|
 		print "<label style=\"width:80px\" for=\"pdfoutput\">$__{'PDF'}:</label>";
-		print "<input id=\"pdfoutput\" name=\"pdfoutput\" type=\"checkbox\" value=\"1\"".($REQDFLT{PDFOUTPUT}==1 ? " checked":"")."><BR>&nbsp;<BR>";
+		print "<input id=\"pdfoutput\" name=\"pdfoutput\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{PDFOUTPUT}) ? " checked":"")."><BR>&nbsp;<BR>";
 	#	SVGOUTPUT|
 		print "<label style=\"width:80px\" for=\"svgoutput\">$__{'SVG'}:</label>";
-		print "<input id=\"svgoutput\" name=\"svgoutput\" type=\"checkbox\" value=\"1\"".($REQDFLT{SVGOUTPUT}==1 ? " checked":"")."><BR>&nbsp;<BR>";
+		print "<input id=\"svgoutput\" name=\"svgoutput\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{SVGOUTPUT}) ? " checked":"")."><BR>&nbsp;<BR>";
 	#	EXPORTS|
 		print "<label style=\"width:80px\" for=\"exports\">$__{'Exports'}:</label>";
-		print "<input id=\"exports\" name=\"exports\" type=\"checkbox\" value=\"1\"".($REQDFLT{EXPORTS}==1 ? " checked":"")."><BR>&nbsp;<BR>";
+		print "<input id=\"exports\" name=\"exports\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{EXPORTS}) ? " checked":"")."><BR>&nbsp;<BR>";
 	#	ANONYMOUS|
 		print "<label style=\"width:80px\" for=\"anonymous\">$__{'Anonymous'}:</label>";
-		print "<input id=\"anonymous\" name=\"anonymous\" type=\"checkbox\" value=\"1\"".($REQDFLT{ANONYMOUS}==1 ? " checked":"")."><BR>&nbsp;<BR>";
+		print "<input id=\"anonymous\" name=\"anonymous\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{ANONYMOUS}) ? " checked":"")."><BR>&nbsp;<BR>";
 	#	DEBUG|
 		print "<label style=\"width:80px\" for=\"debug\">$__{'Verbose logs'}:</label>";
-		print "<input id=\"debug\" name=\"debug\" type=\"checkbox\" value=\"1\"".($REQDFLT{DEBUG}==1 ? " checked":"")."><BR>&nbsp;<BR>";
+		print "<input id=\"debug\" name=\"debug\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{DEBUG}) ? " checked":"")."><BR>&nbsp;<BR>";
 		print "</TD>";
 
 	print "</TR>";
