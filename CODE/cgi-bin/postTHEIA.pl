@@ -309,7 +309,7 @@ my %json = (
 	version => "1.0",
 );
 
-$dbh->disconnect();
+#$dbh->disconnect();
 
 my $dir = "$WEBOBS{PATH_TMP_WEBOBS}";
 my $tempdir = tempdir();
@@ -320,7 +320,6 @@ my $filepath = "$dir$tempdir/$filename";
 #print $filepath;
 #print encode_json $json{'datasets'}->[0]{'metadata'}{'contacts'}; 
 #print "\n";
-print "Content-Disposition: attachment; filename=\"$filename\";\nContent-type: text/json\n\n";
 
 chmod 0755, $filepath;
 open(FH, '>', $filepath) or die $!;
@@ -334,12 +333,13 @@ close(FH);
 my $output = "java -jar /home/lucas/Documents/donnees_webobs_obsera/JSON-schema-validation-0-jar-with-dependencies.jar ".$filepath;
 #print qx($output);
 
-if (qx($output) !~ /success/) {
-	#print "The JSON file has been created successfully";
+if (qx($output) =~ /success/) {
+	print "Content-Disposition: attachment; filename=\"$filename\";\nContent-type: text/json\n\n";
 	print encode_json \%json;
-} elsif (qx($output) =~ /(not found|schema violations found|subschema)/) {
+} #elsif (qx($output) =~ /(not found|schema violations found|subschema)/) 
+else {
 	print $cgi->header(-type=>'text/html',-charset=>'utf-8');
-	print "The JSON metadata file is not valid :\n".qx($output)
+	print "The JSON metadata file is not valid :\n".qx($output);
 };
 
 #print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
