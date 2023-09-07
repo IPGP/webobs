@@ -570,8 +570,8 @@ function onInputWrite(e) {
 	 * Zoom/dezoom the map following the number of decimals in the latitude and longitude fields
 	 * \@param {Event} e Input event
 	 */
-	var lat = document.form.latwgs84.value;
-	var lon = document.form.lonwgs84.value;
+	var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
+	var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
 
 	if (lat.toString().includes('.')){
 			var latZoom = lat.toString().split(".")[1].length;
@@ -782,7 +782,7 @@ var basemaps = {
 		
 //Map Options
 var mapOptions = {
-	zoomControl: false,
+	zoomControl: true,
 	attributionControl: false,
 	center: [0, 0],
 	zoom: 2,
