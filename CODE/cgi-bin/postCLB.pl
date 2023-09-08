@@ -203,6 +203,7 @@ sub htmlMsgOK {
 	    # read data file to know end date of observations
 	    my $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$dataname";
 	    if ( -e $filepath) {
+=pod
 	    	open(FH, '<', $filepath) or die $!;
 			my @last_date;
 			while (<FH>) { if ($_ !~ /NaN/) {@last_date = split(/ /,$_)} };
@@ -213,7 +214,28 @@ sub htmlMsgOK {
 			my $last_minute = $last_date[4] || "00";
 			my $last_second = $last_date[5];
 			if ($last_second =~ /./) { $last_second = "00" };
+=cut
+			my $first_date = "grep -v '^#' $filepath | head -n1";
+			my @first_date = split(/ /, qx($first_date));
+			my $last_date  = "grep -v '^#' $filepath | tail -n1";
+			my @last_date  = split(/ /, qx($last_date));
+
+			my $first_year   = $first_date[0];
+			my $first_month  = $first_date[1];
+			my $first_day    = $first_date[2];
+			my $first_hour   = $first_date[3] || "00";
+			my $first_minute = $first_date[4] || "00";
+			my $first_second = $first_date[5];
+			if ($first_second =~ /./) { $first_second = "00" };
 			
+			my $last_year   = $last_date[0];
+			my $last_month  = $last_date[1];
+			my $last_day    = $last_date[2];
+			my $last_hour   = $last_date[3] || "00";
+			my $last_minute = $last_date[4] || "00";
+			my $last_second = $last_date[5];
+			if ($last_second =~ /./) { $last_second = "00" };
+
 			my $first_obs_date = "$first_year\T$first_hour:$first_minute:$first_second\Z";
 			my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
 			my $obs_date = "$first_obs_date/$last_obs_date";
@@ -226,7 +248,7 @@ sub htmlMsgOK {
 			$sth->execute($obsid,$obs_date,$station,$id,$dataset,$dataname);
 	    }
 	}
-	
+
 	my $msg = $_[0] || "calibration file successfully updated !" ;
 	print "$msg\n";
 }
