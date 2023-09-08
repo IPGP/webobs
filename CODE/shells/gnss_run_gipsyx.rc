@@ -5,6 +5,9 @@
 # Created: 2019-02-25
 # Updated: 2021-02-09
 
+# main temporary directory (/tmp per default, change is recommended)
+TMPDIRMAIN=/tmp
+
 # prepares GIPSYX processing
 source /home/wo/GipsyX-1.2/rc_GipsyX.sh
 
@@ -62,3 +65,19 @@ REALTIME=""
 
 # data delay for realtime processing
 DATA_DELAY="5 min"
+
+### use fiducial (regular) or non-fiducial (NF) orbits. 
+# NFORB option will add '-prodTypeGNSS nf -gdCov' in the GIPSYOPTIONS
+# and will perform the post-processing re-alignement 
+# leave NFORB=0 if you are not sure of what you are doing
+# *** Detailed Note:
+# JPL's Fiducial orbits are directly aligned to ITRF.
+# But the usage of Non-fiducial orbits are recommended by
+# the JPL and the geodetic community
+# Coordinates computed with non Fiducial orbits requiries
+# a re-alignement to the ITRF with external Helmert parameters 
+NFORB=0
+
+
+
+
