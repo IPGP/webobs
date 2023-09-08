@@ -43,7 +43,7 @@ function X=readcfg(varargin);
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2022-10-26
+%   Updated: 2022-11-26
 
 if nargin > 0 && isstruct(varargin{1})
 	WO = varargin{1};
@@ -119,8 +119,11 @@ end
 fprintf('%s ... ',f);
 
 % reads all the file content in a single string
-% and clears escaped new lines
-sraw = regexprep(fileread(f),'\\(\r\n|\n)\s*','');
+sraw = fileread(f);
+if ~isoctave
+	% clears escaped new lines
+	sraw = regexprep(sraw,'\\(\r\n|\n)\s*','');
+end
 
 s = textscan(sraw,'%s','CommentStyle','#','Delimiter','\n');
 
@@ -155,8 +158,10 @@ for i = 1:size(s{:},1)
 			val = '';
 			if length(wrk{1}) > 1
 				val = strtrim(stresc(wrk{1}{2}));
-				% deletes end-line comment (if # not escaped as \#)
-				val = regexprep(val,'[^\\]#.*$','');
+				if ~isoctave
+					% deletes end-line comment (if # not escaped as \#)
+					val = regexprep(val,'[^\\]#.*$','');
+				end
 			end
 			% if key contains dots, produces sub-structures
 			skey = split(key,'.');
@@ -207,8 +212,7 @@ function s = stresc(x)
 %STRESC Replaces escape characters in string X.
 
 if ~isempty(x)
-	s = strrep(x,'''','''''');
-	s = strrep(s,'\#','#');
+	s = strrep(x,'\#','#');
 	s = strrep(s,'\|','|');
 else
 	s = '';

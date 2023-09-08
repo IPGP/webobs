@@ -1,0 +1,153 @@
+#!/bin/bash
+P=`dirname $0`
+. $P/dutils.sh
+
+# can be run for fresh installation or within a legacy Webobs migration
+# current directory (pwd) MUST be the target webob's CONF/ directory
+
+# RELATED_ID refers to the identifier of a producer or a dataset in order to bound producer/dataset with a member of the contact table
+
+echo "Creating/populating metadata tables ..."
+sqlite3 WEBOBSMETA.db <<EOF
+BEGIN TRANSACTION;
+
+drop table if exists producer;
+create table producer (
+    IDENTIFIER text NOT NULL, 
+    NAME text NOT NULL, 
+    TITLE text NOT NULL, 
+    DESCRIPTION text NOT NULL, 
+    OBJECTIVE text NOT NULL, 
+    MEASUREDVARIABLES text NOT NULL, 
+    EMAIL text NOT NULL, 
+    CONTACTS text NOT NULL, 
+    FUNDERS text NOT NULL, 
+    ONLINERESOURCE text NOT NULL, 
+    PRIMARY KEY (IDENTIFIER)
+    );
+    
+drop table if exists contacts;
+create table contacts ( 
+    EMAIL text NOT NULL, 
+    FIRSTNAME text NOT NULL,
+    LASTNAME text NOT NULL,
+    ROLE text NOT NULL,
+    RELATED_ID text NOT NULL, 
+    PRIMARY KEY(RELATED_ID, EMAIL)
+    );
+    
+drop table if exists organisations;
+create table organisations (
+    TYPE text NOT NULL, 
+    ISO3166 text DEFAULT 'fr', 
+    ACRONYM text NOT NULL, 
+    NAME text NOT NULL, 
+    IDENTIFIER text NOT NULL, 
+    RELATED_ID text NOT NULL, 
+    PRIMARY KEY(IDENTIFIER), 
+    FOREIGN KEY (RELATED_ID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
+    );
+    
+drop table if exists datasets;
+create table datasets (
+    IDENTIFIER text NOT NULL,
+    TITLE text NOT NULL, 
+    DESCRIPTION text NOT NULL, 
+    SUBJECT text NOT NULL, 
+    SPATIALCOVERAGE text NOT NULL, 
+    LINEAGE text NOT NULL, 
+    PRIMARY KEY(IDENTIFIER)
+    );
+    
+drop table if exists observations;
+create table observations (
+    IDENTIFIER text NOT NULL,
+    PROCESSINGLEVEL text DEFAULT 'Raw data',
+    DATATYPE text DEFAULT 'Numeric',
+    TEMPORALEXTENT text,
+    TIMESERIES text DEFAULT 'TRUE',
+    OBSERVEDPROPERTY text, 
+    STATIONNAME text NOT NULL, 
+    DATASET text NOT NULL, 
+    DATAFILENAME text NOT NULL, 
+    PRIMARY KEY(IDENTIFIER), 
+    FOREIGN KEY (OBSERVEDPROPERTY) REFERENCES observed_properties(IDENTIFIER) ON DELETE CASCADE,
+    FOREIGN KEY (DATASET) REFERENCES datasets(IDENTIFIER) ON DELETE CASCADE
+    );
+    
+drop table if exists observed_properties;
+create table observed_properties (
+    IDENTIFIER text NOT NULL, 
+    NAME text NOT NULL, 
+    UNIT text NOT NULL, 
+    THEIACATEGORIES text NOT NULL, 
+    PRIMARY KEY(IDENTIFIER)
+    );
+    
+drop table if exists sampling_features;
+create table sampling_features (
+    IDENTIFIER text NOT NULL, 
+    NAME text NOT NULL, 
+    GEOMETRY text NOT NULL, 
+    PRIMARY KEY(IDENTIFIER) 
+    );
+    
+drop table if exists grids2producers;
+create table grids2producers (
+    TYPE text NOT NULL, 
+    NAME text NOT NULL, 
+    PID text NOT NULL, 
+    FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
+    );
+    
+drop table if exists EnumContactPersonRoles;
+create table EnumContactPersonRoles (ROLE text NOT NULL);
+
+drop table if exists EnumFundingTypes;
+create table EnumFundingTypes (TYPE text NOT NULL);
+
+drop table if exists typeResource;
+create table typeResource (TYPE text NOT NULL, NAME text NOT NULL);
+INSERT INTO "typeResource" VALUES('http:info@', 'Info');
+INSERT INTO "typeResource" VALUES('http:download@', 'Download');
+INSERT INTO "typeResource" VALUES('http:doi@', 'DOI');
+INSERT INTO "typeResource" VALUES('http:webservice@', 'Webservice');
+
+drop table if exists inspireTheme;
+create table inspireTheme (THEME text NOT NULL);
+
+drop table if exists topicCategories;
+create table topicCategories (TOPIC text NOT NULL);
+
+COMMIT;
+EOF
+
+# creating organisation types table 
+cat $P/CONF/THEIA/EnumContactPersonRoles.conf | while read line
+do
+    sqlite3 WEBOBSMETA.db "INSERT INTO EnumContactPersonRoles (ROLE) VALUES ('$line');"
+done
+
+# creating organisation types table 
+cat $P/CONF/THEIA/EnumFundingTypes.conf | while read line
+do
+    sqlite3 WEBOBSMETA.db "INSERT INTO EnumFundingTypes (TYPE) VALUES ('$line');"
+done
+
+# creating INSPIRE themes and topic categories tables 
+cat $P/CONF/THEIA/EnumInspireTheme.conf | while read line
+do
+    sqlite3 WEBOBSMETA.db "INSERT INTO inspireTheme (THEME) VALUES ('$line');"
+done
+
+cat $P/CONF/THEIA/EnumTopicCategories.conf | while read line
+do
+    sqlite3 WEBOBSMETA.db "INSERT INTO topicCategories (TOPIC) VALUES ('$line');"
+done
+
+echo "Done."
+exit 0
+
+# sql commands to add : FOREIGN KEY (CREATOR) REFERENCES contacts(IDENTIFIER) ON DELETE CASCADE
+# 
+# FOREIGN KEY (NAME) REFERENCES observations(OBSERVEDPROPERTY) ON DELETE CASCADE

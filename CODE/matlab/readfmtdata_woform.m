@@ -33,10 +33,11 @@ function D = readfmtdata_woform(WO,P,N)
 %		D.t (datenum)
 %		D.d (18 columns)
 %
+%	**WARNING** this file must be iso-8859 (unicode) encoded and NOT utf-8
 %
-%	Author: François Beauducel, WEBOBS/IPGP
+%	Author: Fran�ois Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2021-08-12
+%	Updated: 2023-08-30
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -111,7 +112,7 @@ case 'GAZ'
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
 
 case 'EXTENSO'
-	d1 = str2double(data(:,10:3:34)); % windows (fen�tre)
+	d1 = str2double(data(:,10:3:34)); % windows (fentre)
 	d2 = str2double(data(:,11:3:35)); % faces (cadran)
 	d2(isnan(d2)) = 0;	% forces void faces to 0
 	d3 = str2double(data(:,12:3:36)); % wind speed
@@ -218,9 +219,9 @@ si = si(k);
 
 for n = 1:length(N)
 	k = find(strcmp(si,N(n).ID));	% selects data from site (node's ID)
+	D(n).t = t(k) - N(n).UTC_DATA;
 	D(n).d = d(k,:);
 	D(n).e = e(k,:);
-	D(n).t = t(k) - N(n).UTC_DATA;
 	% set default names and units to inexistant/unappropriate calibration files of node
 	if N(n).CLB.nx ~= length(nm)
 		D(n).CLB.nx = length(nm);

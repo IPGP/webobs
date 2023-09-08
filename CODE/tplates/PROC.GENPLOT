@@ -15,6 +15,14 @@ RAWDATA|$WEBOBS{ROOT_RAWD}/mydatasource
 # URN link to data
 URNDATA|$WEBOBS{URN_RAWD}/mydatasource
 
+# proc TITLE and DESCRIPTION
+TITLE|
+DESCRIPTION|
+
+# proc THEME and TOPICS
+THEME|
+TOPICS|
+
 DEM_SRTM1|N
 # optional user-defined DEM (Arcinfo format, lat/lon, overwrites SRTM/ETOPO default)
 #DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
@@ -89,7 +97,8 @@ LANDSCAPE|NO
 PAGE_MAX_SUBPLOT|8
 # plot grid for all axes
 PLOT_GRID|YES
-# makes a PDF file for each graph (in addition to PNG, EPS and JPG thumbnail)
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
 PDFOUTPUT|NO
 # main logo file
 LOGO_FILE|$WEBOBS{LOGO_DEFAULT}

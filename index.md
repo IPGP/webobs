@@ -12,9 +12,9 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.5.3.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.5.3/WebObs-2.5.3.tar.gz) (100 Mb) updated September 23, 2022
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.5.3/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.5.3/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.6.2.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.6.2/WebObs-2.6.2.tar.gz) (104 Mb) updated September 5, 2023
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.6.2/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.6.2/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
@@ -59,7 +59,8 @@ A number of programs and Perl modules are needed to run webobs. During the C) in
 sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode mutt xvfb \
    curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
-   libtext-multimarkdown-perl libswitch-perl libintl-perl libncurses5
+   libtext-multimarkdown-perl libswitch-perl libintl-perl libncurses5 \
+   wkhtmltopdf poppler-utils
 ```
 
 Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
@@ -131,6 +132,15 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 
 <a name="whatsnew"></a>
 ## What's new and release history
+
+### What's new in the 2.6?
+- first effort for an interface between WebObs and the Theia|OZCAR data portal;
+- node form has interactive map for manual/automatic location and import of a shapefile;
+- node calibration file accepts many arithmetic formula (not only linear);
+- new functionalities in superproc GNSS (baselines outputs, node selection from target for all summary graphs);
+- job selection in scheduler runs (display);
+- improved Campbell data format (non-standard directory);
+- some fixes and other minor improvements.
 
 ### What's new in the 2.5?
 - SEFRAN3/MC3 can use key shortcuts to select the event type and amplitude;
@@ -261,7 +271,7 @@ The WebObs system has been awarded by a **"Community" accessit** during the **Fi
 1. Roult G. et al. (2012). A new comprehensive classification of the Piton de la Fournaise activity spanning the 1985-2010 period. Search and analysis of short-term precursors from a broad-band seismological station. *J. Volcanol. Geotherm. Res.*, [doi:10.1016/j.jvolgeores.2012.06.012](https://doi.org/10.1016/j.jvolgeores.2012.06.012)
 1.  Vorobieva I. et al. (2013). Multiscale mapping of completeness magnitude of earthquake catalogs, *Bull. Seismol. Soc. Am.*, [doi:10.1785/0120120132](https://doi.org/10.1785/0120120132)
 1. Roult G. et al. (2014). The "Jerk" Method for Predicting Intrusions and Eruptions of Piton De La Fournaise (La Réunion Island) from the Analysis of the Broadband Seismological RER Station. *In AGU Fall Meeting Abstracts, Vol. 2014, pp. V43A-4844*.
-1. Anglade A. et al. (2015). Significant technical advances in broadband seismic stations in the Lesser Antilles, *Adv. Geosci.* [doi:10.5194/adgeo-40-43-2015](https://doi.org/10.5194/adgeo-40-43-2015) 
+1. Anglade A. et al. (2015). Significant technical advances in broadband seismic stations in the Lesser Antilles, *Adv. Geosci.* [doi:10.5194/adgeo-40-43-2015](https://doi.org/10.5194/adgeo-40-43-2015)
 1.  Lemarchand A. et al. (2015). Validation of seismological data from volcanological and seismological French observatories of the Institut de Physique du Globe de Paris (OVSG, OVSM and OVPF). *In 2nd Scientific and Technical Meetings of Résif*.
 1. Ucciani G. (2015). Caractérisation spatiale et temporelle de la sismicité volcanique de la Soufrière de Guadeloupe : relations avec
 le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 2015*, pp. 235.
@@ -277,8 +287,9 @@ le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 
 1.  Falcin A. et al. (2021). A machine learning approach for automatic classification of volcanic seismicity at La Soufrière volcano, Guadeloupe, *J. Volcanol. Geotherm. Res.*, [doi;10.1016/j.jvolgeores.2020.107151](https://doi.org/10.1016/j.jvolgeores.2020.107151)
 1.  Massin F. et al. (2021). Automatic picking and probabilistic location for earthquake assessment in the Lesser Antilles subduction zone, *CR Géoscience*, [doi:10.5802/crgeos.81](https://doi.org/10.5802/crgeos.81)
 1.  Saurel J. M. et al. (2021). Mayotte seismic crisis: building knowledge in near real-time by combining land and ocean-bottom seismometers, first results. *Geophys. J. Int.*, [doi:10.1093/gji/ggab392](https://doi.org/10.1093/gji/ggab392)
-1.  Duputel Z. et al. (2021). Seismicity of La Réunion island. *Comptes Rendus Géoscience*, [doi:10.5802/crgeos.77](https://doi.org/10.5802/crgeos.77)
+1. Duputel Z. et al. (2021). Seismicity of La Réunion island. *Comptes Rendus Géoscience*, [doi:10.5802/crgeos.77](https://doi.org/10.5802/crgeos.77)
 1. Falcin, A. (2022). Détection et classification des signaux sismo-volcaniques de la Soufrière de Guadeloupe par apprentissage supervisé, *Doctorate Thesis, Université Paris Cité, 14 April 2022*.
+1. Retailleau, L. et al. (2022). Automatic detection for a comprehensive view of Mayotte seismicity, *Comptes Rendus Géoscience*, [doi:10.5802/crgeos.133](https://doi.org/10.5802/crgeos.133)
 
 #### Deformation
 1.  Beauducel F. et al. (2014). Real-time source deformation modeling through GNSS permanent stations at Merapi volcano (Indonesia). *In AGU Fall Meeting Abstracts* Vol. 2014, pp. V41B-4800.

@@ -52,7 +52,8 @@ $QryParm->{'node'}   //= "";
 
 # ---- can we ? should we ? do we have all we need ?
 #
-($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
+($GRIDType, $GRIDName, $NODEName) = split(/[
+.\/]/, trim($QryParm->{'node'}));
 if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
 	if ( !clientHasEdit(type=>"authprocs",name=>"$GRIDName")) {
 		die "$__{'Not authorized'} (edit) $QryParm->{'node'}";
@@ -166,9 +167,88 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 	exit 1;
 }
 
-# --- return information when OK
+# --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	
+	# --- connecting to the database
+	my $driver   = "SQLite";
+	my $database = $WEBOBS{SQL_METADATA};
+	my $dsn = "DBI:$driver:dbname=$database";
+	my $userid = "";
+	my $password = "";
+	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+	   or die $DBI::errstr;
+	
+	my $station  = $GRIDName.'.'.$NODEName;
+	my $dataset  = 'OBSE_DAT_'.$GRIDName.'.'.$NODEName;
+	my $dataname = $NODEName.'_all.txt';
+	
+	foreach (@donnees) {
+	    # observed_properties table
+        my @obs   = split(/[\|]/, $_);
+        my $id    = $obs[6];
+        my $name  = $obs[6];
+        my $unit  = $obs[4];
+        my $theia = $obs[$#obs];
+        
+        # observations table
+        my $obsid    = 'OBSE_OBS_'.$GRIDName.'.'.$NODEName.'_'.$id;
+        my @first_date = split(/ /,$obs[0]);
+        my $first_year   = $first_date[0];
+	    my $first_hour   = $first_date[3] || "00";
+	    my $first_minute = $first_date[4] || "00";
+	    my $first_second = $first_date[5] || "00";
+	   
+	    # read data file to know end date of observations
+	    my $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$dataname";
+	    if ( -e $filepath) {
+=pod
+	    	open(FH, '<', $filepath) or die $!;
+			my @last_date;
+			while (<FH>) { if ($_ !~ /NaN/) {@last_date = split(/ /,$_)} };
+			my $last_year   = $last_date[0];
+			my $last_month  = $last_date[1];
+			my $last_day    = $last_date[2];
+			my $last_hour   = $last_date[3] || "00";
+			my $last_minute = $last_date[4] || "00";
+			my $last_second = $last_date[5];
+			if ($last_second =~ /./) { $last_second = "00" };
+=cut
+			my $first_date = "grep -v '^#' $filepath | head -n1";
+			my @first_date = split(/ /, qx($first_date));
+			my $last_date  = "grep -v '^#' $filepath | tail -n1";
+			my @last_date  = split(/ /, qx($last_date));
+
+			my $first_year   = $first_date[0];
+			my $first_month  = $first_date[1];
+			my $first_day    = $first_date[2];
+			my $first_hour   = $first_date[3] || "00";
+			my $first_minute = $first_date[4] || "00";
+			my $first_second = $first_date[5];
+			if ($first_second =~ /./) { $first_second = "00" };
+			
+			my $last_year   = $last_date[0];
+			my $last_month  = $last_date[1];
+			my $last_day    = $last_date[2];
+			my $last_hour   = $last_date[3] || "00";
+			my $last_minute = $last_date[4] || "00";
+			my $last_second = $last_date[5];
+			if ($last_second =~ /./) { $last_second = "00" };
+
+			my $first_obs_date = "$first_year\T$first_hour:$first_minute:$first_second\Z";
+			my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
+			my $obs_date = "$first_obs_date/$last_obs_date";
+			
+			# --- completing observed_properties table
+			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES) VALUES (?,?,?,?);');
+			$sth->execute($id, $name, $unit, $theia);
+			
+			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
+			$sth->execute($obsid,$obs_date,$station,$id,$dataset,$dataname);
+	    }
+	}
+
 	my $msg = $_[0] || "calibration file successfully updated !" ;
 	print "$msg\n";
 }
@@ -185,11 +265,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+Francois Beauducel, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

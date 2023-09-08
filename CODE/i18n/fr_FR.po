@@ -119,8 +119,8 @@ msgstr "définitions des champs de fichier calibration"
 msgid "calibration-files configuration"
 msgstr "configuration calibration"
 
-msgid "show/hide Loc"
-msgstr "(de)masque Loc"
+msgid "show/hide extra columns"
+msgstr "(de)masque colonnes supplémentaires"
 
 msgid "node configuration"
 msgstr "configuration de node"
@@ -1197,13 +1197,13 @@ msgid "help_clb_chcode"
 msgstr "Identifiant du canal pour traitement (champ libre)"
 
 msgid "help_clb_offset"
-msgstr "Offset à appliquer aux données calibrées (valeur numérique)"
+msgstr "Offset à appliquer aux données calibrées après calibration et gain (valeur numérique)"
 
 msgid "help_clb_factor"
-msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique)"
+msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique), ou expression arithmétique utilisant la variable x comme donnée brute (opérateurs autorisés +, -, /, *, ^ et parenthèses)"
 
 msgid "help_clb_gain"
-msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique)"
+msgstr "Facteur multiplicatif à appliquer au résultat de la calibration avant offset (valeur numérique)"
 
 msgid "help_clb_minvalue"
 msgstr "Valeur numérique minimale des données brutes (filtre)"
@@ -1234,6 +1234,9 @@ msgstr "Dynamique du numériseur (en bits)"
 
 msgid "help_clb_lc"
 msgstr "Location code (SEED dataless)"
+
+msgid "help_clb_cat"
+msgstr "Catégorie du thésaurus THEIA correspondant à la variable du channel (chaine de caractère)"
 
 # formulaireHEBDO.pl
 
@@ -1590,3 +1593,44 @@ msgstr "Télécharger un fichier CSV de ces données"
 
 msgid "Request results"
 msgstr "Résultat des requêtes"
+
+# ---- formNODE.pl
+
+msgid "help_creationstation_description"
+msgstr "Décrit les propriétés observées du jeu de données, telles que la définition, la couverture spatiale ou la méthodologie d'acquisition des mesures. Résumé des objectifs scientifiques."
+
+msgid "show/hide THEIA metadata fields"
+msgstr "montrer/cacher les champs de métadonnées THEIA"
+
+msgid "Producer"
+msgstr "Producteur"
+
+msgid "help_creationstation_producer"
+msgstr "Nom du producteur de données."
+
+msgid "Creator"
+msgstr "Créateur"
+
+msgid "Add a cretor"
+msgstr "Ajouter un créateur"
+
+msgid "Remove a creator"
+msgstr "Supprimer un créateur"
+
+msgid "help_creationstation_creator"
+msgstr "Personnes en charge du jeu de données. 2 rôles existent : L'éditeur et le chercheur principal. L'éditeur est la personne en charge de la gestion des données, le chercheur principal est le référent scientifique du jeu de données. Au moins un chercheur principal est requis"
+
+msgid "help_creationstation_subject"
+msgstr "Le thème INSPIRE fait référence à la description du modèle de données pour les différents thèmes INSPIRE disponibles; Les catégories thématiques font référence aux mots-clés représentant les catégories thématiques du jeu de données."
+
+msgid "help_creationstation_lineage"
+msgstr "Décrit la généalogie du jeu de données, c'est-à-dire l'histoire du jeu de données et, s'il est connu, son cycle de vie, depuis l'acquisition et la capture d'informations jusqu'à sa compilation avec d'autres jeux de données et les variantes de sa forme actuelle."
+
+msgid "Auto-locatation"
+msgstr "Géolocalisation"
+
+msgid "beware_approximate_position"
+msgstr "Utilise l'API de géolocalisation HTML pour localiser l'utilisateur. Attention : la position peut être approximée de quelques mètres à plusieurs milliers de mètres, en fonction de votre localisation."
+
+msgid "To add a shapefile (.zip only) layer, click here"
+msgstr "Pour ajouter une couche de fichier de forme (.zip uniquement), cliquez ici"

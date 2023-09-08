@@ -13,11 +13,11 @@ function x=sstr2num(s)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2015-01-01
-%	Updated: 2020-04-04
+%	Updated: 2023-08-25
 
 if strcmpi(s,'NaN') || isempty(s)
 	x = NaN;
 else
-	% replaces any non-numeric characters before evaluating string
-	x = str2num(regexprep(s,'[^\d\.+-\/\*a-zE,;:\ \(\)\[\]]',''));
+	% replaces any non-alphanumeric characters before evaluating string
+	x = str2num(regexprep(s,'[^\d\.+-\/\*^a-zE,;:\ \(\)\[\]]',''));
 end

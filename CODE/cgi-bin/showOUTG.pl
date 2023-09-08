@@ -225,6 +225,9 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 	# build @elist = the list of available .eps graphs for timescale $tslist[$tsSelected]
 	my (@elist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.eps";
 
+	# build @slist = the list of available .svg graphs for timescale $tslist[$tsSelected]
+	my (@slist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.svg";
+
 	# build @plist = the list of available .pdf graphs for timescale $tslist[$tsSelected]
 	my (@plist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.pdf";
 
@@ -367,7 +370,7 @@ if ($QryParm->{'ts'} eq 'map') {
 		(my $EVENTid = $short) =~ s/$OUTG\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
 		(my @evt) = split(/\//,$EVENTid);
 		my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
-		foreach ("eps","pdf","gse","txt","kml") {
+		foreach ("eps","svg","pdf","gse","txt","kml") {
 			if ( -e "$short.$_" ) {
 				$addlinks .= " <A href=\"$urn.$_\"><IMG alt=\"$urn.$_\" src=\"/icons/f$_.png\"></A> ";
 			}
@@ -408,7 +411,7 @@ if ($QryParm->{'ts'} eq 'map') {
 
 
 	} else {
-		# prepare additional links to eps, pdf and data
+		# prepare additional links to eps, svg, pdf and data
 		my $addlinks = "";
 		for my $i (0..$#elist) {
 			if (-f $elist[$i]) {
@@ -417,6 +420,16 @@ if ($QryParm->{'ts'} eq 'map') {
 				$elist[$i] =~ s/^$/$GRIDName/;
 				if ($elist[$i] eq $QryParm->{'g'}) {
 					$addlinks .= " <A href=\"$surn\"><IMG alt=\"$QryParm->{'g'}.eps\" src=\"/icons/feps.png\"></A> ";
+				}
+			}
+		}
+		for my $i (0..$#slist) {
+			if (-f $slist[$i]) {
+				(my $surn = $slist[$i]) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
+				$slist[$i] =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+				$slist[$i] =~ s/^$/$GRIDName/;
+				if ($slist[$i] eq $QryParm->{'g'}) {
+					$addlinks .= " <A href=\"$surn\"><IMG alt=\"$QryParm->{'g'}.svg\" src=\"/icons/fsvg.png\"></A> ";
 				}
 			}
 		}

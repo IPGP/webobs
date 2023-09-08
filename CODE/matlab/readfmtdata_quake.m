@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2021-08-02
+%	Updated: 2023-08-25
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -60,14 +60,16 @@ end
 if isfield(P,'EVENTTYPE_EXCLUDED_LIST')
 	extypes = split(P.EVENTTYPE_EXCLUDED_LIST,',');
 else
-	extypes = '';
+	extypes = {''};
 end
 if isfield(P,'EVENTSTATUS_EXCLUDED_LIST')
 	exstatus = split(P.EVENTSTATUS_EXCLUDED_LIST,',');
 else
-	exstatus = '';
+	exstatus = {''};
 end
 
+felteventcode = isok(P,'FELT_EVENTCODE_OK');
+feltcomment = field2str(P,'EVENTCOMMENT_FELT_REGEXP');
 excomment = field2str(P,'EVENTCOMMENT_EXCLUDED_REGEXP');
 incomment = field2str(P,'EVENTCOMMENT_INCLUDED_REGEXP');
 
@@ -475,32 +477,45 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 
 	if exist(fdat,'file')
 		mc3 = readdatafile(fdat,17,'CommentStyle',''); % reads all events (trash included)
-        k = find(cellfun(@str2num,mc3(:,1))>=0); % remove trash entries
-        fprintf(' found %d valid mc3 entries, removed %d trash events.\n',size(k,1),size(mc3,1)-size(k,1));
+	end
+	if exist('mc3','var') && ~isempty(mc3)
+		%ID|yyyy-mm-dd|HH:MM:SS.ss|type|amplitude|duration|s|0|1||STA|0|SEFRAN3|SC3ID|image.png|op/timestamp|comment
+        k = (cellfun(@str2num,mc3(:,1))>=0); % remove trash entries
+        fprintf(' found %d valid mc3 entries, removed %d trash events.\n',sum(k),size(mc3,1)-sum(k));
         mc3 = mc3(k,:);
 		fprintf('%s: associating %s event types and images ...',wofun,N.FID_MC3);
-		nsc3 = 0;
-		nh71 = 0;
+		nbid = 0;
 		nmc3 = 0;
-		% comment field (c(:,4)) will be replaced by MC3 event type
+		nflt = 0;
+		% now must process all events in a loop...
 		for ii = 1:length(t)
-			k1 = find(~cellfun(@isempty,regexp(mc3(:,13),c(ii,1))));
-			k2 = find(~cellfun(@isempty,regexp(mc3(:,14),c(ii,1))));
-			if ~isempty(k1)
-				c{ii,4} = mc3(k1,4);
-				c{ii,6} = sprintf('%s/%d/images/%d%02d/%s',MC3.PATH_WEB,tv(ii,[1,1:2]),mc3{k1,15});
-				nh71 = nh71 + 1;
-			elseif ~isempty(k2)
-				c{ii,4} = mc3(k2,4);
-				c{ii,6} = sprintf('%s/%d/images/%d%02d/%s',MC3.PATH_WEB,tv(ii,[1,1:2]),mc3{k2,15});
-				nsc3 = nsc3 + 1;
+			k = find(~cellfun(@isempty,regexp(mc3(:,13),c(ii,1))) | ~cellfun(@isempty,regexp(mc3(:,14),c(ii,1))),1);
+			if ~isempty(k)
+				% set as felt event if the event comment contains the code |xxN|
+				if felteventcode && regexp(c{ii,4},'\|[A-Z]{2}[1-9].*\|')
+					ems = str2double(regexprep(c{ii,4},'.*\|[A-Z]{2}([1-9]).*','$1'));
+					d(ii,11) = max(2,ems);
+					nflt = nflt + 1;
+				% or the MC3 comment contains the right regexp...
+				elseif ~isempty(feltcomment) && ~isempty(mc3{k,17})
+					if ~isempty(regexpi(mc3{k,17},feltcomment))
+						% get the maximum intensity N from a code xxN (if specified)
+						ems = str2double(regexprep(mc3(k,17),'.*[A-Z]{2}([2-9]).*','$1'));
+						d(ii,11) = max(2,ems);
+						nflt = nflt + 1;
+					end
+				end
+				% comment field (c(:,4)) is replaced by MC3 event type
+				c{ii,4} = mc3(k,4);
+				c{ii,6} = sprintf('%s/%d/images/%d%02d/%s',MC3.PATH_WEB,tv(ii,[1,1:2]),mc3{k,15});
+				nbid = nbid + 1;
 			else
 				X = dir(sprintf('%s/%d/images/%d%02d/%d%02d%02d%02d%02d*.png',MC3.ROOT,tv(ii,[1,1:2,1:5])));
 				X1 = dir(sprintf('%s/%d/images/%d%02d/%d%02d%02d%02d%02d*.png',MC3.ROOT,tv1(ii,[1,1:2,1:5])));
 				X = cat(1,X,X1);
 				for iii = 1:numel(X)
-					k = find(~cellfun(@isempty,regexp(mc3(:,15),X(iii).name)));
-					if ~isempty(k)
+					k = ~cellfun(@isempty,regexp(mc3(:,15),X(iii).name));
+					if any(k)
 						c{ii,4} = mc3(k,4);
 						c{ii,6} = sprintf('%s/%d/images/%d%02d/%s',MC3.PATH_WEB,tv(ii,[1,1:2]),X(iii).name);
 						nmc3 = nmc3 + 1;
@@ -515,33 +530,40 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 			%	c{ii,4} = '';
 			end
 		end
-		fprintf(' found %d sc3id, %d hypo71id and %d mc3id.\n',nsc3,nh71,nmc3);
+		fprintf(' found %d sc3/hypo71id, %d mc3id, %d felt.\n',nbid,nmc3,nflt);
 
 	end
 end
 
 % applies a filter on the comment field (regexp)
+%[Note] if the event has been found in MC3, comment contains the MC3 event type name
 if ~isempty(incomment)
-	k = find(~cellfun(@isempty,regexp(c(:,4),incomment)));
-	if ~isempty(k)
-		fprintf('%s: ** WARNING ** only %d events have been selected from comment (%s).\n',wofun,length(k),incomment);
+	k = ~cellfun(@isempty,regexp(c(:,4),incomment));
+	if any(k)
+		fprintf('%s: ** WARNING ** only %d events have been selected from comment (%s).\n',wofun,sum(k),incomment);
 		t = t(k,1);
 		d = d(k,:);
 		c = c(k,:);
 		e = e(k,1);
 	end
 end
-% applies a last filter on the comment field (case-insensitive regexp)
+% applies a filter on the comment field (case-insensitive regexp)
 if ~isempty(excomment)
-	k = find(cellfun(@isempty,regexpi(c(:,4),excomment)));
-	if ~isempty(k)
-		fprintf('%s: ** WARNING ** %d events have been excluded from comment (%s).\n',wofun,length(t)-length(k),excomment);
+	k = cellfun(@isempty,regexpi(c(:,4),excomment));
+	if any(k)
+		fprintf('%s: ** WARNING ** %d events have been excluded from comment (%s).\n',wofun,length(t)-sum(k),excomment);
 		t = t(k,1);
 		d = d(k,:);
 		c = c(k,:);
 		e = e(k,1);
 	end
 end
+% applies a last selection filter on MSK (may come from MC3)
+k = isnan(d(:,11)) | isinto(d(:,11),P.MSKLIM);
+t = t(k,1);
+d = d(k,:);
+c = c(k,:);
+e = e(k,1);
 
 D.t = t + P.TZ/24;
 D.d = d;

@@ -7,7 +7,7 @@ $(document).ready(function() {
     	cache: false        
 	});                     
     
-	$('#wmtarget')[0].style.marginTop = $('#wm')[0].offsetHeight+'px';
+	$('#wmtarget').first().css('margin-top',$('#wm').first().offsetHeight+'px');
 	splash();
 
 	//all links will load to wmtarget iframe (except for index.pl AND http[s]:)
@@ -26,7 +26,7 @@ $(document).ready(function() {
 		location.reload(true);  //reload page from server (refresh)
 	});
 
-	$('#wmtarget').load(function () { // when iframe wmtarget is loaded:
+	$('#wmtarget').on('load', function () { // when iframe wmtarget is loaded:
 		var cw = this.contentWindow;
 
 		// 1) adapt wmtarget height to loaded page

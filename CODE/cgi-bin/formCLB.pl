@@ -30,6 +30,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 $CGI::POST_MAX = 1024;
 $CGI::DISABLE_UPLOADS = 1;
 my $cgi = new CGI;
+use DBI;
 
 # ---- webobs stuff
 use WebObs::Config;
@@ -251,8 +252,10 @@ print "<input type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">",
 	  "<TABLE class=\"CLBtable\" width=\"100%\" style=\"border:0\" onMouseOver=\"calc()\">",
 	  "<TR>";
 		for (0..($#fieldCLB)) {
-			if ($_ >= 12 && $_ <= 16) { $c = ' class="CLBshowhide"' } else { $c = ''}
-			print "<TH$c>",$fieldCLB[$_][2]."</TH>";
+			if ($_ >= 12) { $c = ' class="CLBshowhide"' } else { $c = ''}
+			if ($fieldCLB[$_][2] !~ /Theia/) { 
+				print "<TH$c>",$fieldCLB[$_][2]."</TH>";
+			} else { print "<TH$c><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">",$fieldCLB[$_][2]."</TH>" }	# making the title of the Theia field an URL to open the Theia thesaurus
 		}
 print "</TR>\n";
 
@@ -303,7 +306,7 @@ for my $line (sort sort_clb_lines @donnees) {
 		$nbc = $line->[2];
 	}
 	for my $j ("2"..($#fieldCLB-1)) {
-		if ($j >= 11 && $j <= 15) { $c = ' class="CLBshowhide"' } else { $c = ''}
+		if ($j >= 11 && $j) { $c = ' class="CLBshowhide"' } else { $c = ''}
 		print "<TD$c onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[$j+1][3]}')\"><input name=\"v".$i."_".$j
 				."\" value=\"".($line->[$j+1] // '')."\" size=\"$fieldCLB[$j+1][0]\"></TD>\n";
 	}
@@ -323,7 +326,7 @@ print "<TR><TD style=\"border:0\" colspan=2>
 		<input type=radio name=action value=delete>            <B>Delete</B> (remove a line)<BR>";
 
 print "<TD style=\"border:0\" colspan=".(@fieldCLB-7)."><P style=\"text-align:right\">";
-print "<input type=\"button\" onClick=\"CLBshowhide();\" value=\"$__{'show/hide Loc'}\">";
+print "<input type=\"button\" onClick=\"CLBshowhide();\" value=\"$__{'show/hide extra columns'}\">";
 print "<input type=\"button\" name=lien onClick=\"history.go(-1);\" value=\"$__{'Cancel'}\">";
 print "<input type=\"button\" id=\"submit_button\" value=\"$__{'Submit'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\"> ";
 
@@ -338,11 +341,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Mallarino, François Beauducel, Alexis Bosson, Didier Lafon
+Didier Mallarino, François Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

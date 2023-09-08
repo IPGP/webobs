@@ -1,7 +1,7 @@
 
 $(document).ready(function() {
 	// common event handlers
-	$(window).unload(function() {
+	$(window).on("unload", function() {
 		if (window.opener && SCB.NOREFRESH == 0) {
 			if (window.opener.parent.document.getElementById("wmtarget")) {
 				window.opener.parent.document.getElementById("wmtarget").contentWindow.location.reload();
@@ -20,24 +20,20 @@ $(document).ready(function() {
 	}
 	if (typeof MECB  === 'undefined') {
 		// event handlers
-		$(window).load(function() {
-			init_ref();
-			fsx(SCB.SX);
-			//$('.submenu').innerWidth($('#refrow').width()-3);
-			$('#rtclock').css('background','white');
-		});
+		init_ref();
+		fsx(SCB.SX);
+		//$('.submenu').innerWidth($('#refrow').width()-3);
+		$('#rtclock').css('background','white');
 	} else {
 		// event handlers
-		$(window).load(function() {
-			init_MECB();
-			maj_formulaire();
-			if (MECB.FORM.secondeEvenement.value!="") {
-				sec = MECB.FORM.secondeEvenement.value;
-				pos_x = Math.round((sec - 2)*1000*SCB.WIDTH/60000);
-				window.scrollBy(pos_x,0);
-			}
-			shrinkmctags();
-		});
+		init_MECB();
+		maj_formulaire();
+		if (MECB.FORM.secondeEvenement.value!="") {
+			sec = MECB.FORM.secondeEvenement.value;
+			pos_x = Math.round((sec - 2)*1000*SCB.WIDTH/60000);
+			window.scrollBy(pos_x,0);
+		}
+		shrinkmctags();
 		$(window).keyup(maj_formulaire);
 		$(window).change(maj_formulaire);
 		// event handlers for crosshair

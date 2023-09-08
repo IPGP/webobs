@@ -1,4 +1,4 @@
-numpy==1.18.5
+numpy==1.22
 obspy==1.2.2
 pandas==0.25.3
 pathlib2==2.3.5

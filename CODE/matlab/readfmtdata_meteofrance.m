@@ -14,7 +14,7 @@ function D = readfmtdata_meteofrance(WO,P,N,F)
 %
 %	Authors: Alexis Bosson, François Beauducel, WEBOBS/IPGP
 %	Created: 2016-08-05, in Guadeloupe
-%	Updated: 2017-08-02
+%	Updated: 2023-08-30
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -63,6 +63,7 @@ end
 D.t = t - N.UTC_DATA;
 % Copy data for resulting matrix
 D.d = d;
+D.e = [];
 % Calibrate the data if calibration files are present
 [D.d,D.CLB] = calib(D.t,D.d,N.CLB,'channelcodeorder');
 % Set time zone of data again ?

@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2022-10-19
+%   Updated: 2023-09-05
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -149,12 +149,14 @@ baselines_horizonly = isok(P,'BASELINES_HORIZONTAL_ONLY');
 pagestanum = field2num(P,'BASELINES_PAGE_STA_NUM',10);
 baselines_interp_method = field2str(P,'BASELINES_INTERP_METHOD',{'','linear','nearest'});
 baselines_linestyle = field2str(P,'BASELINES_LINESTYLE','o-');
+baselines_mavr = field2num(P,'BASELINES_MOVING_AVERAGE',1);
 baselines_title = field2str(P,'BASELINES_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
-baselines_ylabel = field2str(P,'BASELINES_YLABEL','$ref_node_alias ($baselines_unit)');
+baselines_ylabel = field2str(P,'BASELINES_YLABEL','$ref_node_alias');
 baselines_unit = field2str(P,'BASELINES_UNIT','m');
 baselines_refoff = field2num(P,'BASELINES_REF_OFFSET_M',0.01);
 baselines_staoff = field2num(P,'BASELINES_STATION_OFFSET_M',0.01);
 baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
+baselines_trend = isok(P,'BASELINES_PLOT_TREND');
 
 % MOTION parameters
 motion_excluded = field2str(P,'MOTION_EXCLUDED_NODELIST');
@@ -730,7 +732,7 @@ for r = 1:numel(P.GTABLE)
 					X(n2).w = D(n2).d(k2,4);
 					X(n2).nam = sprintf('%s',N(n2).ALIAS);
 					X(n2).rgb = scolor(n2);
-					X(n2).trd = 1;
+					X(n2).trd = baselines_trend;
 				end
 			end
 			refnames{nn} = varsub(baselines_ylabel,V);
@@ -745,6 +747,7 @@ for r = 1:numel(P.GTABLE)
 
 		% makes the plot
 		OPT.linestyle = baselines_linestyle;
+		OPT.movavr = baselines_mavr;
 		OPT.fontsize = fontsize;
 		OPT.chnames = refnames;
 		OPT.choffset = baselines_refoff;
@@ -922,7 +925,7 @@ for r = 1:numel(P.GTABLE)
 		if isok(P.GTABLE(r),'EXPORTS')
 			E.infos = { ...
 				sprintf('Velocity reference (%s):  E %+g mm/yr, N %+g mm/yr, U %+g mm/yr',datestr(velrefdate),velref), ...
-				sprintf('Stations'' aliases: %s',strjoin(cellstr(cat(1,N(knv).ALIAS)),',')), ...
+				sprintf('Stations'' aliases: %s',strjoin(cat(1,{N(knv).ALIAS}),',')), ...
 				};
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,:)];
@@ -1422,7 +1425,7 @@ for r = 1:numel(P.GTABLE)
 				                                      'E_mod(mm)','N_mod(mm)','Up_mod(mm)'};
 			if any(~isnan(m0))
 				E.infos = { ...
-					sprintf('Stations'' aliases: %s',strjoin(cellstr(cat(1,N(kn).ALIAS)),',')), ...
+					sprintf('Stations'' aliases: %s',strjoin(cat(1,{N(kn).ALIAS}),',')), ...
 					'', ...
 				};
 				switch lower(mt)
@@ -2287,23 +2290,23 @@ for r = 1:numel(P.GTABLE)
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			E.infos = {sprintf('Source type: %s',mt)};
 			for m = 1:numel(modeltime_period)
-				E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
-			end
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
 		end
+		mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+	end
 
-		if isok(P,'MODELTIME_EXPORT_MAT')
-			f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
-			fprintf('%s: saving workspace in %s...',wofun,f);
-			save(sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
-			fprintf(' done.\n');
-		end
+	if isok(P,'MODELTIME_EXPORT_MAT')
+		f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
+		fprintf('%s: saving workspace in %s...',wofun,f);
+		save(sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
+		fprintf(' done.\n');
 	end
-	end
+end
+end
 end
 
 if P.REQUEST
-	mkendreq(WO,P);
+mkendreq(WO,P);
 end
 
 timelog(procmsg,2)
@@ -2311,7 +2314,7 @@ timelog(procmsg,2)
 
 % Returns data in DOUT
 if nargout > 0
-	DOUT = D;
+DOUT = D;
 end
 
 
@@ -2326,27 +2329,27 @@ e = d(:,4:6);
 emin = abs(d(:,1:3))*opt.minerrorrel/100;
 k = (e < emin | isnan(d(:,1:3)) | isnan(e));
 if any(k)
-	e(k) = emin(k);
-	if ~strcmpi(opt.verbose,'quiet')
-		fprintf('---> %d data errors have been increased to %g%%.\n',sum(k(:)),opt.minerrorrel);
-	end
+e(k) = emin(k);
+if ~strcmpi(opt.verbose,'quiet')
+	fprintf('---> %d data errors have been increased to %g%%.\n',sum(k(:)),opt.minerrorrel);
+end
 end
 
 % forces a minimum relative error
 k = (e < opt.minerror);
 if any(k)
-	e(k) = opt.minerror; % forces a minimum absolute error
-	if ~strcmpi(opt.verbose,'quiet')
-		fprintf('---> %d data errors have been set to %g mm.\n',sum(k(:)),opt.minerror);
-	end
+e(k) = opt.minerror; % forces a minimum absolute error
+if ~strcmpi(opt.verbose,'quiet')
+	fprintf('---> %d data errors have been set to %g mm.\n',sum(k(:)),opt.minerror);
+end
 end
 
 % ajusts component errors using a priori factor ratio
 if any(opt.enuerror ~= 1)
-	e = e.*repmat(opt.enuerror(1:3),size(e,1),1);
-	if ~strcmpi(opt.verbose,'quiet')
-		fprintf('---> all data errors dE,dN,dU have been multiplied by %g,%g,%g.\n',opt.enuerror);
-	end
+e = e.*repmat(opt.enuerror(1:3),size(e,1),1);
+if ~strcmpi(opt.verbose,'quiet')
+	fprintf('---> all data errors dE,dN,dU have been multiplied by %g,%g,%g.\n',opt.enuerror);
+end
 end
 
 
@@ -2362,14 +2365,14 @@ idx = 1:numel(id3);
 
 switch dim
 case 1
-	[j,k] = ind2sub(sz([2,3]),idx);
-	y = x(sub2ind(sz,id3(:),j(:),k(:)));
+[j,k] = ind2sub(sz([2,3]),idx);
+y = x(sub2ind(sz,id3(:),j(:),k(:)));
 case 2
-	[i,k] = ind2sub(sz([1,3]),idx);
-	y = x(sub2ind(sz,i(:),id3(:),k(:)));
+[i,k] = ind2sub(sz([1,3]),idx);
+y = x(sub2ind(sz,i(:),id3(:),k(:)));
 case 3
-	[i,j] = ind2sub(sz([1,2]),idx);
-	y = x(sub2ind(sz,i(:),j(:),id3(:)));
+[i,j] = ind2sub(sz([1,2]),idx);
+y = x(sub2ind(sz,i(:),j(:),id3(:)));
 end
 y = reshape(y,size(id3));
 
@@ -2381,8 +2384,8 @@ function r = ellradius(abc,lambda,gamma)
 % azimuth/longitude LAMBDA and polar/latitude GAMMA angles (in radian)
 
 r = prod(abc)./sqrt(abc(3)^2*(abc(2)^2*cos(lambda).^2 ...
- 	+ abc(1)^2*sin(lambda).^2).*cos(gamma).^2 ...
-	+ abc(1)^2*abc(2)^2*sin(gamma).^2);
++ abc(1)^2*sin(lambda).^2).*cos(gamma).^2 ...
++ abc(1)^2*abc(2)^2*sin(gamma).^2);
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

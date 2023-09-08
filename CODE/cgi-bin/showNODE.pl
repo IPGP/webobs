@@ -146,9 +146,11 @@ my $fids = join(" - ", map { my $v; ($v = $_) =~ s/$GRIDType\.$GRIDName\.//;
                             sort grep(/$GRIDType\.$GRIDName\.FID_|^FID_/, keys(%NODE)));
 my $rawformat = $NODE{"$GRIDType.$GRIDName.RAWFORMAT"} // $NODE{RAWFORMAT};
 my $rawdata = $NODE{"$GRIDType.$GRIDName.RAWDATA"} // $NODE{RAWDATA};
+$rawdata =~ s/\$FID/$fid/g;
 my $acqrate = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"} // $NODE{ACQ_RATE};
 my $acqdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"} // $NODE{LAST_DELAY};
 my $chanlist = $NODE{"$GRIDType.$GRIDName.CHANNEL_LIST"} // $NODE{CHANNEL_LIST};
+my @procTS = split(/,/,$GRID{TIMESCALELIST});
 
 my $statusDB = $NODES{SQL_DB_STATUS};
 if ($statusDB eq "") { $statusDB = "$WEBOBS{PATH_DATA_DB}/NODESSTATUS.db" };
@@ -159,7 +161,6 @@ if (-e $statusDB) {
 }
 
 $GRID{UTM_LOCAL} //= '';
-#my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
 my %UTM =  %WebObs::Mapping::UTM;
 
 # ---- sort interventions by date / event stuff  -----------------------------------
@@ -224,7 +225,8 @@ if (uc($GRIDType) eq 'VIEW' || uc($GRIDType) eq 'PROC') {
 	print " <A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRIDS}?domain=$GRID{DOMAIN}&type=all\">$DOMAINS{$GRID{DOMAIN}}{NAME}</A> / "
 		."<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName\">$GRID{NAME}</A> |";
 }
-print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> ]</P>";
+print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> "
+	."| <IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'> ]</P>";
 
 print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
 
@@ -259,6 +261,15 @@ if ($editOK) {
 }
 print "</TH><TD colspan=\"2\">$NODE{TYPE}</TD></TR>\n";
 
+# Row "description" ------------------------------------------------------------------
+#
+print "<TR><TH valign=\"top\">";
+if ($editOK) {
+	print "<A href=\"$cgiConf\">Description</A>";
+} else {
+	print "Description";
+}
+print "</TH><TD colspan=\"2\">$NODE{DESCRIPTION}</TD></TR>\n";
 
 # Row "Lifetime" ----------------------------------------------------
 #
@@ -294,7 +305,7 @@ if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
 	# ---- link to OpenStreetMap
 	# ------------------------
 	my $map = "<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$GRIDType.$GRIDName.$NODEName','$NODEName',"
-		."'width=".($WEBOBS{OSM_WIDTH_VALUE}+15).",height=".($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">"
+		."'width=".($WEBOBS{OSM_WIDTH_VALUE}+15).",height=".($WEBOBS{OSM_HEIGHT_VALUE}+50).",toolbar=no,menubar=no,location=no')\">"
 		."<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
 
 	# --- link KML Google Earth
@@ -461,8 +472,8 @@ if (uc($GRIDType) eq 'PROC') {
 	if (-d "$WEBOBS{ROOT_OUTG}/PROC.$GRIDName" ) {
 		$OUTG = "$WEBOBS{ROOT_OUTG}/PROC.$GRIDName";
 	}
-	my (@glist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/$NODENameLower"."_*.png";
-	my (@dlist) = glob "$OUTG/$WEBOBS{PATH_OUTG_EXPORT}/$NODENameLower"."_*.txt";
+	my (@glist) = map { "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/$NODENameLower\_$_.png" } @procTS;
+	my (@dlist) = map { "$OUTG/$WEBOBS{PATH_OUTG_EXPORT}/$NODENameLower\_$_.txt" } @procTS;
 
 	print "<TR><TD valign=\"top\"><B>$__{'Data'}</B></TH><TD>";
 	if ($OUTG ne "" && isok($NODE{VALID}) && ($GRID{'URLDATA'} ne "" || $GRID{'FORM'} ne "" || $#glist >= 0 || $#dlist >= 0)) {
@@ -858,7 +869,7 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
+Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 

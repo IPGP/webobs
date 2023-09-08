@@ -65,11 +65,11 @@ NODE_SUBMAP_ALIAS|N
 PPI|100
 # landscape format for all outputs
 LANDSCAPE|N
-# set outputs
-POSTSCRIPT|Y
-PDFOUTPUT|N
-SVGOUTPUT|N
-EXPORTS|Y
+# exports text data files
+EXPORTS|YES
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
+PDFOUTPUT|NO
 # main logo file
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 # secondary logo file

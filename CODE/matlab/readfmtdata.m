@@ -101,6 +101,8 @@ else
 			D(n) = readfmtdata_mc3(WO,P,N(n),F);
 
 		otherwise
+			D(n).t = [];
+			[D(n).d,D(n).CLB] = calib([],[],N(n).CLB);
 			fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);
 
 		end
