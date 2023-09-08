@@ -95,6 +95,9 @@ Process NODE Update or Create from formNODE submitted info
  typePos=
  POS_TYPE|  configuration value
 
+ rawKML=
+ POS_RAWKML|  configuration value (URL)
+
  features=
  FILES_FEATURES|  configuration value - string file1[|file2[....|filen]]
 
@@ -171,40 +174,50 @@ if ($delete) {
 
 # ---- What are we supposed to do ?: find it out in the query string
 #
-my $QryParm   = $cgi->Vars;    # used later; todo: replace cgi->param's below
-my $acqr      = $cgi->param('acqr')        // '';
-my $utcd      = $cgi->param('utcd')        // '';
-my $ldly      = $cgi->param('ldly')        // '';
-my $anneeD    = $cgi->param('anneeDepart') // '';
-my $moisD     = $cgi->param('moisDepart')  // '';
-my $jourD     = $cgi->param('jourDepart')  // '';
-my $anneeE    = $cgi->param('anneeEnd')    // '';
-my $moisE     = $cgi->param('moisEnd')     // '';
-my $jourE     = $cgi->param('jourEnd')     // '';
-my $validite  = $cgi->param('valide')      // '';
-my $alias     = $cgi->param('alias')       // '';
-my $type      = $cgi->param('type')        // '';
-my $tz        = $cgi->param('tz')        // '';
-my $data      = $cgi->param('data')        // '';
-my $rawformat = $cgi->param('rawformat')   // '';
-my $rawdata   = $cgi->param('rawdata')     // '';
-my @chanlist  = $cgi->param('chanlist');
-my $name      = $cgi->param('fullName')    // '';
-my $fdsn      = $cgi->param('fdsn')        // '';
-my $latN      = $cgi->param('latwgs84n')   // '';
-my $lat       = $cgi->param('latwgs84')    // '';
-my $latmin    = $cgi->param('latwgs84min') // '';
-my $latsec    = $cgi->param('latwgs84sec') // '';
-my $lonE      = $cgi->param('lonwgs84e')   // '';
-my $lon       = $cgi->param('lonwgs84')    // '';
-my $lonmin    = $cgi->param('lonwgs84min') // '';
-my $lonsec    = $cgi->param('lonwgs84sec') // '';
-my $alt       = $cgi->param('altitude')    // '';
-my $anneeP    = $cgi->param('anneeMesure') // '';
-my $moisP     = $cgi->param('moisMesure')  // '';
-my $jourP     = $cgi->param('jourMesure')  // '';
-my $typePos   = $cgi->param('typePos')     // '';
-my $features  = $cgi->param('features')    // '';
+my $QryParm    = $cgi->Vars;    # used later; todo: replace cgi->param's below
+my $acqr       = $cgi->param('acqr')        // '';
+my $utcd       = $cgi->param('utcd')        // '';
+my $ldly       = $cgi->param('ldly')        // '';
+my $anneeD     = $cgi->param('anneeDepart') // '';
+my $moisD      = $cgi->param('moisDepart')  // '';
+my $jourD      = $cgi->param('jourDepart')  // '';
+my $anneeE     = $cgi->param('anneeEnd')    // '';
+my $moisE      = $cgi->param('moisEnd')     // '';
+my $jourE      = $cgi->param('jourEnd')     // '';
+my $validite   = $cgi->param('valide')      // '';
+my $alias      = $cgi->param('alias')       // '';
+my $type       = $cgi->param('type')        // '';
+my $desc       = $cgi->param('description') // '';
+my $producer   = $cgi->param('producer')    // '';
+my $creator    = $cgi->param('creators')    // '';
+my $theme      = $cgi->param('theme')       // '';
+my $topics     = $cgi->param('topics')      // '';
+my $lineage    = $cgi->param('lineage')     // '';
+my $tz         = $cgi->param('tz')          // '';
+my $data       = $cgi->param('data')        // '';
+my $rawformat  = $cgi->param('rawformat')   // '';
+my $rawdata    = $cgi->param('rawdata')     // '';
+my @chanlist   = $cgi->param('chanlist');
+my $name       = $cgi->param('fullName')    // '';
+my $fdsn       = $cgi->param('fdsn')        // '';
+my $latN       = $cgi->param('latwgs84n')   // '';
+my $lat        = $cgi->param('latwgs84')    // '';
+my $latmin     = $cgi->param('latwgs84min') // '';
+my $latsec     = $cgi->param('latwgs84sec') // '';
+my $lonE       = $cgi->param('lonwgs84e')   // '';
+my $lon        = $cgi->param('lonwgs84')    // '';
+my $lonmin     = $cgi->param('lonwgs84min') // '';
+my $lonsec     = $cgi->param('lonwgs84sec') // '';
+my $spatialcov = $cgi->param('outWKT')      // '';
+my $filename   = $cgi->param('filename')    // '';
+my $alt        = $cgi->param('altitude')    // '';
+my $anneeP     = $cgi->param('anneeMesure') // '';
+my $moisP      = $cgi->param('moisMesure')  // '';
+my $jourP      = $cgi->param('jourMesure')  // '';
+my $typePos    = $cgi->param('typePos')     // '';
+my $rawKML     = $cgi->param('rawKML')      // '';
+my $features   = $cgi->param('features')    // '';
+my $showHide   = $cgi->param('showHide')	// '';
 $features =~ s/\|/,/g;
 my %n2n;
 for (split(',',lc($features))) {
@@ -245,6 +258,9 @@ if ($lon ne "" && $lat ne "") {
 	$lon =~ s/,/./g;
 }
 
+# ---- parsing dataset contacts
+my @creators = split('\|', $creator);
+
 # ---- NODE's validity flag
 my $valide = "";
 if ( $validite eq "NA" ) { $valide = 1; } else { $valide = 0; }
@@ -268,11 +284,23 @@ push(@lines,"LAT_WGS84|$lat\n");
 push(@lines,"LON_WGS84|$lon\n");
 push(@lines,"ALTITUDE|$alt\n");
 push(@lines,"POS_DATE|$datePos\n");
-push(@lines,"POS_TYPE|".u2l($typePos)."\n");
+push(@lines,"POS_TYPE|$typePos\n");
+push(@lines,"POS_RAWKML|$rawKML\n");
 push(@lines,"INSTALL_DATE|$dateInstall\n");
 push(@lines,"END_DATE|$dateEnd\n");
 push(@lines,"FILES_FEATURES|".u2l(lc(join(",",map {trim($_)} split(/[,\|]/,$features))))."\n");
 push(@lines,"TRANSMISSION|".u2l($typeTrans)."\n");
+push(@lines,"DESCRIPTION|".u2l($desc)."\n");
+push(@lines,"PRODUCER|".u2l($producer)."\n");
+push(@lines,"ROLE|".u2l($creators[0])."\n");
+push(@lines,"FIRSTNAME|".u2l($creators[1])."\n");
+push(@lines,"LASTNAME|".u2l($creators[2])."\n");
+push(@lines,"EMAIL|".u2l($creators[3])."\n");
+push(@lines,"THEME|".u2l($theme)."\n");
+push(@lines,"TOPICS|".u2l($topics)."\n");
+push(@lines,"LINEAGE|".u2l($lineage)."\n");
+push(@lines,"SPATIAL_COVERAGE|".u2l($filename)."\n");
+push(@lines,"SHOWHIDE|".u2l($showHide)."\n");
 
 # ---- procs parameters
 if ($GRIDType eq "PROC") {
@@ -372,6 +400,9 @@ if (%n2n) {
 }
 htmlMsgOK("$GRIDType.$GRIDName.$NODEName created/updated");
 
+# ---- saving NODE informations in sampling_features tables
+
+
 # ---- node2node edit: lock-exclusive the file during update process
 sub saveN2N {
 	if ( sysopen(FILE, "$n2nfile", O_RDWR | O_CREAT) ) {
@@ -391,9 +422,50 @@ sub saveN2N {
 	} else { htmlMsgNotOK("$n2nfile $!") }
 
 }
-# --- return information when OK
+# --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	if ($showHide == 1) {
+		# --- connecting to the database
+		my $driver   = "SQLite";
+		my $database = $WEBOBS{SQL_METADATA};
+		my $dsn = "DBI:$driver:dbname=$database";
+		my $userid = "";
+		my $password = "";
+		
+		# --- station informations, coordinates are saved in WKT format
+		my $point;
+		if ($alt ne "") {
+			$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
+		} else {
+			$point = "wkt:Point(".$lat.",".$lon.")";
+		}
+		
+		# --- dataset informations
+		my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
+		my $subject = $topics.'inspireTheme:'.$theme;
+		
+		# --- creators informations
+		my @roles      = split(',',$creators[0]);
+		my @firstNames = split(',',$creators[1]);
+		my @lastNames  = split(',',$creators[2]);
+		my @emails     = split(',',$creators[3]);
+
+		my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+		   or die $DBI::errstr;
+		   
+		# inserting creators into contacts table
+		my @values = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
+		my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@values);
+		$dbh->do($q);
+
+		my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
+		$sth->execute($alias,$alias,$point);
+
+		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
+		$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
+	}
+
 	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
 }
@@ -412,11 +484,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
+Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

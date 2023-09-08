@@ -627,6 +627,13 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 		verbosecho "adding ENDDATE and COMMENT fields in WEBOBSUSERS.db"
 		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS-enddate+comment.sql
 	fi
+	if [ ! -s ${DOCROOT}/CONF/WEBOBSMETA.db ]; then
+	 	verbosecho "creating WEBOBSMETA.db"
+		cd ${DOCROOT}/CONF
+		$RELBASE/SETUP/createdb-WEBOBSMETA >/dev/null
+		chown ${USER_APACHE[0]}:${USER_APACHE[1]} WEBOBSMETA.db
+		cd -
+	fi
 
 	db_temp_dir="tmp-$$-$RANDOM"
 	mkdir $db_temp_dir || exit 1
@@ -639,6 +646,8 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSUSERS.db WEBOBSUSERS.db >>$REPORT
 	$RELBASE/SETUP/createdb-WEBOBSDOMAINS >/dev/null
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSDOMAINS.db WEBOBSDOMAINS.db >>$REPORT
+	$RELBASE/SETUP/createdb-WEBOBSMETA >/dev/null
+	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSMETA.db WEBOBSMETA.db >>$REPORT
 	cd ..
 	rm -rf $db_temp_dir
 
@@ -695,6 +704,9 @@ else
 
 		verbosecho "creating WEBOBSDOMAINS.db"
 		${RELBASE}/SETUP/createdb-WEBOBSDOMAINS
+		
+		verbosecho "creating WEBOBSMETA.db"
+		${RELBASE}/SETUP/createdb-WEBOBSMETA
 	cd -
 
 fi

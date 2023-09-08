@@ -76,8 +76,8 @@ progress, end, and/or results:
 	CUMULATE|
 	DECIMATE|
 	PLOTGRID|
-	POSTSCRIPT|
 	PDFOUTPUT|
+	SVGOUTPUT|
 	EXPORTS|
 	ANONYMOUS|
 	DEBUG|
@@ -168,8 +168,8 @@ if ( (open REQ, ">$reqfn") ) {
 	print REQ "CUMULATE|".$QryParm->{'cumulate'}."\n";
 	print REQ "DECIMATE|".$QryParm->{'decimate'}."\n";
 	print REQ "PLOTGRID|".$QryParm->{'gridon'}."\n";
-	print REQ "POSTSCRIPT|".$QryParm->{'postscript'}."\n";
 	print REQ "PDFOUTPUT|".$QryParm->{'pdfoutput'}."\n";
+	print REQ "SVGOUTPUT|".$QryParm->{'svgoutput'}."\n";
 	print REQ "EXPORTS|".$QryParm->{'exports'}."\n";
 	print REQ "ANONYMOUS|".$QryParm->{'anonymous'}."\n";
 	print REQ "DEBUG|".$QryParm->{'debug'}."\n";
@@ -262,7 +262,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2020 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

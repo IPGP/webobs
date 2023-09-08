@@ -98,7 +98,7 @@ if ($newnode == 0) {
 
 my $Ctod = time(); my @tod  = localtime($Ctod);
 my %typeTele = readCfg("$NODES{FILE_TELE}");
-my %typePos  = readCfg("$NODES{FILE_POS}");
+my %typePos  = readCfg("$WEBOBS{ROOT_CODE}/etc/postypes.conf");
 my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
 my %FDSN = WebObs::Grids::codesFDSN();
 my $referer = $QryParm->{'referer'} // $ENV{HTTP_REFERER};
@@ -112,6 +112,16 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
+my $usrDesc      = $NODE{DESCRIPTION};
+my $usrProducer  = $NODE{PRODUCER};
+my $usrCreator   = $NODE{CREATOR};
+my $usrFirstName = $NODE{FIRSTNAME};
+my $usrLastName  = $NODE{LASTNAME};
+my $usrEmail     = $NODE{EMAIL};
+my $usrTheme     = $NODE{THEME};
+my $usrTopic     = $NODE{TOPICS};
+my $usrLineage   = $NODE{LINEAGE};
+#my $usrOrigin    = $NODE{ORIGIN};
 my $usrTZ        = $NODE{TZ} // strftime("%z", localtime());
 my $features     = $NODE{FILES_FEATURES} // "$__{'featureA,featureB,featureC'}";
 my @feat = split(/,|\|/,$features);
@@ -133,14 +143,17 @@ my $usrLon       = $NODE{LON_WGS84};
 my $usrLonE = ($usrLon >= 0 ? "E":"W");
 $usrLon =~ s/^-//g;
 my $usrAlt       = $NODE{ALTITUDE};
+my $usrShpFile   = $NODE{SPATIAL_COVERAGE};
 my $usrTypePos   = $NODE{POS_TYPE};
+my $usrRAWKML    = $NODE{POS_RAWKML};
 #      Transmission
 my ($usrTrans,@usrTele) = split(/,| |\|/,$NODE{TRANSMISSION});
 if ($usrTrans eq "NA") { $usrTrans = "0"; }
 #      dates
 my $usrYearE = my $usrYearC = my $usrYearP = "";
 my $usrMonthE = my $usrMonthC = my $usrMonthP = "";
-my $usrDayE = my $usrDayC = my $usrDayP = my $date = "";
+my $usrDayE = my $usrDayC = my $usrDayP = "";
+my $usrTimeP = my $date = "";
 #      install date = (the one defined or "" if NA) OR today
 $date            = $NODE{INSTALL_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
@@ -152,7 +165,62 @@ if ($date eq "NA") { $date = "" }
 #      positionning date = (the one defined or "" if NA) OR today
 $date            = $NODE{POS_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
-($usrYearP,$usrMonthP,$usrDayP) = split(/-/,$date);
+($usrYearP,$usrMonthP,$usrDayP,$usrTimeP) = split(/-|T/,$date);
+
+# --- connecting to the database
+my $driver   = "SQLite";
+my $database = $WEBOBS{SQL_METADATA};
+my $dsn = "DBI:$driver:dbname=$database";
+my $userid = "";
+my $password = "";
+my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+	or die $DBI::errstr;
+
+# ---- parsing INSPIRE themes and topic categories for the select menu in the description part
+my @themes;
+
+# ---- extracting INSPIRE themes data
+my $stmt = qq(SELECT * FROM inspireTheme;);
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+while(my @row = $sth->fetchrow_array()) {
+	push(@themes, $row[0]);
+}
+
+my @topics;
+
+# ---- extracting topic categories data
+my $stmt = qq(SELECT * FROM topicCategories;);
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+while(my @row = $sth->fetchrow_array()) {
+	push(@topics, $row[0]);
+}
+
+my @creators;
+
+# ---- extracting contacts roles data
+my $stmt = qq(SELECT * FROM EnumContactPersonRoles;);
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+while(my @row = $sth->fetchrow_array()) {
+	push(@creators, $row[0]);
+}
 
 # ---- Load the list of existing nodes
 my @allNodes = qx(/bin/ls $NODES{PATH_NODES});
@@ -162,96 +230,134 @@ my $infoFile   = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}" // "
 my $accessFile = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_PHOTOS}" // "";
 
 # ---- Things to populate select dropdown fields
-my $anneeActuelle = strftime('%Y',@tod);
-my @anneeListeP = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
-my @anneeListeC = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
-my @anneeListeE = reverse($WEBOBS{BIG_BANG}..$anneeActuelle+1,'');
-my @moisListe = ('','01'..'12');
-my @jourListe = ('','01'..'31');
+my $currentYear = strftime('%Y',@tod);
+my @yearListP = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
+my @yearListC = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
+my @yearListE = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
+my @monthList = ('','01'..'12');
+my @dayList = ('','01'..'31');
+
+my $text = "<B>$NODE{ALIAS}: $NODE{NAME}</B><BR>"
+	.($NODE{TYPE} ne "" ? "<I>($NODE{TYPE})</I><br>":"")
+	."&nbspfrom <B>$NODE{INSTALL_DATE}</B>".($NODE{END_DATE} ne "NA" ? " to <B>$NODE{END_DATE}</B>":"")."<br>"
+	."&nbsp;<B>$NODE{LAT_WGS84}&deg;</B>, <B>$NODE{LON_WGS84}&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
+$text =~ s/\"//g;  # fix ticket #166
 
 # ---- ready for HTML output now
 #
-print $cgi->header(-charset=>"utf-8"),
+print $cgi->header(
+	-charset                     => 'utf-8',
+	-access_control_allow_origin => 'http://localhost',
+	),
 $cgi->start_html("$__{'Node configuration form'}");
 
 print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css" crossorigin=""/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js" crossorigin=""></script>
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
+<script src="https://unpkg.com/shpjs\@latest/dist/shp.js" type="text/javascript"></script>
+<script src="https://cdn.rawgit.com/calvinmetcalf/leaflet.shapefile/gh-pages/leaflet.shpfile.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/gh/seabre/simplify-geometry\@master/simplifygeometry-0.0.2.js" type="text/javascript"></script>
 <script type="text/javascript">
 
 function postIt()
 {
- if(document.formulaire.nouveau.value == 1 && document.formulaire.message.value != "ok") {
+ var form = \$('#theform')[0];
+ if(form.nouveau.value == 1 && form.message.value != "ok") {
    alert("NODE ID: Please enter a valid and new ID!");
-   document.formulaire.nodename.focus();
+   form.nodename.focus();
    return false;
  }
- if((/^[\\s]*\$/).test(document.formulaire.fullName.value)) {
+ if((/^[\\s]*\$/).test(form.fullName.value)) {
    alert("NAME: Please enter a full name (non-blank string)");
-   document.formulaire.fullName.focus();
+   form.fullName.focus();
    return false;
  }
- if(document.formulaire.alias.value == "") {
+ if(form.alias.value == "") {
    alert("ALIAS: Please enter a short name (non-blank string)");
-   document.formulaire.alias.focus();
+   form.alias.focus();
    return false;
  }
- if(document.formulaire.latwgs84.value != "" && (isNaN(document.formulaire.latwgs84.value) || document.formulaire.latwgs84.value < -90 || document.formulaire.latwgs84.value > 90)) {
+ if(form.latwgs84.value != "" && (isNaN(form.latwgs84.value) || form.latwgs84.value < -90 || form.latwgs84.value > 90)) {
    alert("LATITUDE: Please enter a latitude value between -90 and +90, or leave blank");
-   document.formulaire.latwgs84.focus();
+   form.latwgs84.focus();
    return false;
  }
- if(document.formulaire.latwgs84.value < 0 && document.formulaire.latwgs84.value >= -90) {
-   document.formulaire.latwgs84.value = Math.abs(document.formulaire.latwgs84.value);
-   if (document.formulaire.latwgs84n.value == "N") document.formulaire.latwgs84n.value = "S";
-   else document.formulaire.latwgs84n.value = "N";
+ if(form.latwgs84.value < 0 && form.latwgs84.value >= -90) {
+   form.latwgs84.value = Math.abs(form.latwgs84.value);
+   if (form.latwgs84n.value == "N") form.latwgs84n.value = "S";
+   else form.latwgs84n.value = "N";
  }
- if(document.formulaire.latwgs84.value == "" && (document.formulaire.latwgs84min.value != "" || document.formulaire.latwgs84sec.value != "")) {
+ if(form.latwgs84.value == "" && (form.latwgs84min.value != "" || form.latwgs84sec.value != "")) {
    alert("LATITUDE: Please enter a value for degree or leave all fields blank");
-   document.formulaire.latwgs84.focus();
+   form.latwgs84.focus();
    return false;
  }
- if(document.formulaire.lonwgs84.value != "" && (isNaN(document.formulaire.lonwgs84.value) || document.formulaire.lonwgs84.value < -180 || document.formulaire.lonwgs84.value > 180)) {
-   alert("LONGITUDE: Please enter a longiture value between -180 and +180, or leave blank");
-   document.formulaire.lonwgs84.focus();
+ if(form.lonwgs84.value != "" && (isNaN(form.lonwgs84.value) || form.lonwgs84.value < -180 || form.lonwgs84.value > 180)) {
+   alert("LONGITUDE: Please enter a longitude value between -180 and +180, or leave blank");
+   form.lonwgs84.focus();
    return false;
  }
- if(document.formulaire.lonwgs84.value < 0 && document.formulaire.lonwgs84.value >= -180) {
-   document.formulaire.lonwgs84.value = Math.abs(document.formulaire.lonwgs84.value);
-   if (document.formulaire.lonwgs84e.value == "E") document.formulaire.lonwgs84e.value = "W";
-   else document.formulaire.lonwgs84e.value = "E";
+ if(form.lonwgs84.value < 0 && form.lonwgs84.value >= -180) {
+   form.lonwgs84.value = Math.abs(form.lonwgs84.value);
+   if (form.lonwgs84e.value == "E") form.lonwgs84e.value = "W";
+   else form.lonwgs84e.value = "E";
  }
- if(document.formulaire.lonwgs84.value == "" && (document.formulaire.lonwgs84min.value != "" || document.formulaire.lonwgs84sec.value != "")) {
+ if(form.lonwgs84.value == "" && (form.lonwgs84min.value != "" || form.lonwgs84sec.value != "")) {
    alert("LONGITUDE: Please enter a value for degree or leave all fields blank");
-   document.formulaire.lonwgs84.focus();
+   form.lonwgs84.focus();
    return false;
  }
- if(document.formulaire.altitude.value != "" && isNaN(document.formulaire.altitude.value)) {
+ if(form.altitude.value != "" && isNaN(form.altitude.value)) {
    alert("ELEVATION: Please enter a number or leave blank");
-   document.formulaire.altitude.focus();
+   form.altitude.focus();
    return false;
  }
-  if (document.formulaire.SELs.options.length < 1) {
+  if (form.SELs.options.length < 1) {
     alert(\"node MUST belong to at least 1 grid\");
-    document.formulaire.SELs.focus();
+    form.SELs.focus();
     return false;
   }
 
-  for (var i=0; i<document.formulaire.elements['allNodes'].length; i++) {
-  	document.formulaire.elements['allNodes'][i].disabled = true;
+  for (var i=0; i<form.elements['allNodes'].length; i++) {
+  	form.elements['allNodes'][i].disabled = true;
   }
-  for (var i=0; i<document.formulaire.SELs.length; i++) {
-  	document.formulaire.SELs[i].selected = true;
+  for (var i=0; i<form.SELs.length; i++) {
+  	form.SELs[i].selected = true;
   }
+  
+  // Theia metadata part
+  var selected = \$('#topicCats')[0].selectedOptions;
+  var topics = [];
+  for (var i=0; i<selected.length; i++) {
+  	topics.push(selected[i].value);
+  } form.topics.value = 'topicCategories:'+topics.join(',')+'_';
+  
+  // registering the NODE contacts metadata
+  var roles = [];
+  var firstNames = [];
+  var lastNames = [];
+  var emails = [];
+  if (form.count_creator.value > 1) {
+  	  for (var i=0; i<form.role.length; i++) {
+	  	roles.push(form.role[i].value);
+	  	firstNames.push(form.firstName[i].value);
+	  	lastNames.push(form.lastName[i].value);
+	  	emails.push(form.email[i].value);
+	  } 
+  	form.creators.value = roles.join(',') + '|' + firstNames.join(',') + '|' + lastNames.join(',') + '|' + emails.join(',');
+  } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
 
-	if (\$(\"#theform\").hasChanged() || document.formulaire.delete.value == 1) {
-		document.formulaire.node.value = document.formulaire.grid.value + document.formulaire.nodename.value.toUpperCase();
+	console.log(\$(\"#theform\"));
+	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
+		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
 			var fidx = document.getElementById("fidx").getElementsByTagName("div");
 			for (var i=0; i<fidx.length; i++) {
-				if (document.formulaire.rawformat.value == "" || fidx[i].id.indexOf(document.formulaire.rawformat.value + "-") == -1) {
+				if (form.rawformat.value == "" || fidx[i].id.indexOf(form.rawformat.value + "-") == -1) {
 					var nested = document.getElementById("input-" + fidx[i].id);
 					nested.parentNode.removeChild(nested);
 				}
@@ -259,9 +365,9 @@ function postIt()
 		}
 		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
 		     if (data != '') alert(data);
-			 if (document.formulaire.refresh.value == 1) {
+			 if (form.refresh.value == 1) {
 				 location.reload();
-		     } else { location.href = document.formulaire.referer.value; }
+		     } else { location.href = form.referer.value; }
 		})
 		  .fail( function() {
 		     alert( \"postNode couldn't execute\" );
@@ -275,7 +381,7 @@ function postIt()
 function maj_rawformat() {
 	var fidx = document.getElementById("fidx").getElementsByTagName("div"), fid;
 	for (var i=0; i<fidx.length; i++) {
-		if (document.formulaire.rawformat.value != "" && fidx[i].id.indexOf(document.formulaire.rawformat.value + "-") != -1) {
+		if (document.form.rawformat.value != "" && fidx[i].id.indexOf(document.form.rawformat.value + "-") != -1) {
 			fidx[i].style.display = "block";
 		} else {
 			fidx[i].style.display = "none";
@@ -284,7 +390,7 @@ function maj_rawformat() {
 }
 
 function maj_transmission() {
-	if (document.formulaire.typeTrans.value==0) {
+	if (document.form.typeTrans.value==0) {
 		document.getElementById("pathTrans").style.display="none";
 	} else {
 		document.getElementById("pathTrans").style.display="block";
@@ -292,50 +398,80 @@ function maj_transmission() {
 }
 
 function checkNode() {
-	document.formulaire.nodename.value = document.formulaire.nodename.value.toUpperCase();
+	document.form.nodename.value = document.form.nodename.value.toUpperCase();
 	var nodeSyntax=/[^A-Za-z0-9\.@]+/;
 	var ok = 1;
 	var rouge = '#EE0000';
 	var vert = '#66DD66';
 
-	var node = document.formulaire.nodename.value;
+	var node = document.form.nodename.value;
 	if (nodeSyntax.test(node)) {
 		ok = 0;
-		document.formulaire.message.value = "invalid char. !";
+		document.form.message.value = "invalid char. !";
 	} else {
-		for (var i=0; i<document.formulaire.elements['allNodes'].length; i++) {
-			if (document.formulaire.elements['allNodes'][i].value == node) {
+		for (var i=0; i<document.form.elements['allNodes'].length; i++) {
+			if (document.form.elements['allNodes'][i].value == node) {
 				ok = 0;
-				document.formulaire.message.value = "already exists !";
+				document.form.message.value = "already exists !";
 			}
 		}
 	}
 	if (ok==1) {
-		document.formulaire.nodename.style.background = vert;
-		document.formulaire.message.value = "ok";
-		document.formulaire.message.style.color = vert;
+		document.form.nodename.style.background = vert;
+		document.form.message.value = "ok";
+		document.form.message.style.color = vert;
 	} else {
-		document.formulaire.nodename.style.background = rouge;
-		document.formulaire.message.style.color = rouge;
+		document.form.nodename.style.background = rouge;
+		document.form.message.style.color = rouge;
 	}
-	if (document.formulaire.nodename.value == "") {
-		document.formulaire.nodename.style.background = 'cornsilk';
-		document.formulaire.message.value = "";
+	if (document.form.nodename.value == "") {
+		document.form.nodename.style.background = 'cornsilk';
+		document.form.message.value = "";
 	}
-	if (document.formulaire.nouveau.value == 0) {
-		document.formulaire.nodename.style.background = 'none';
-		document.formulaire.message.value = "";
+	if (document.form.nouveau.value == 0) {
+		document.form.nodename.style.background = 'none';
+		document.form.message.value = "";
 	}
 }
 
 function latlonChange() {
-	var today = new Date();
-	var d  = today.getDate();
-	document.formulaire.jourMesure.value = (d < 10) ? '0' + d : d;
-	var m = today.getMonth() + 1;
-	document.formulaire.moisMesure.value = (m < 10) ? '0' + m : m;
-	var yy = today.getYear();
-	document.formulaire.anneeMesure.value = (yy < 1000) ? yy + 1900 : yy;
+	if (document.form.typePos.value == 3) {
+		document.getElementById("rawKML").style.display = "block";
+		document.form.anneeMesure.disabled = true;
+		document.form.moisMesure.disabled = true;
+		document.form.jourMesure.disabled = true;
+	} else {
+		document.getElementById("rawKML").style.display = "none";
+		var today = new Date();
+		var d  = today.getDate();
+		document.form.jourMesure.disabled = false;
+		document.form.jourMesure.value = (d < 10) ? '0' + d : d;
+		var m = today.getMonth() + 1;
+		document.form.moisMesure.disabled = false;
+		document.form.moisMesure.value = (m < 10) ? '0' + m : m;
+		var yy = today.getYear();
+		document.form.anneeMesure.disabled = false;
+		document.form.anneeMesure.value = (yy < 1000) ? yy + 1900 : yy;
+	}
+}
+
+function fetchKML() {
+	var credentials = btoa("webobs:0vpf1pgp");
+	var auth = {
+		'Origin': 'http://localhost',
+		'Access-Control-Request-Method': 'POST',
+		'Access-Control-Allow-Origin': 'http://localhost',
+		'Authorization': `Basic \${credentials}`,
+	};
+	var url = "https://share.garmin.com/Feed/Share/6DOQM";
+    return fetch(url, {
+		credentials: 'include',
+		mode: 'cors',
+		headers: auth,
+	})
+        .then(response => response.text())
+        .then(xmlString => \$.parseXML(xmlString))
+        .then(data => console.log(data))
 }
 
 function fc() {
@@ -344,25 +480,319 @@ function fc() {
 
 function refresh_form()
 {
-	document.formulaire.refresh.value = 1;
+	document.form.refresh.value = 1;
 	postIt();
 }
 
 function delete_node()
 {
 	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative.\\n\\n Are you sure you want to move this NODE to trash ?\") ) {
-		document.formulaire.delete.value = 1;
-		document.formulaire.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
+		document.form.delete.value = 1;
+		document.form.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
 		postIt();
 	} else {
 		return false;
 	}
 }
+
+// functions to make the interactive map works
+
+function onMapClick(e) {
+	/**
+	 * Places a marker on the interactive map and fills the coordinates fields in the NODE form
+	 * \@param {Event} e Click event
+	 */
+	var lat = e.latlng['lat'].toFixed(6);
+	var lon = e.latlng['lng'].toFixed(6);
+
+	/* need to rework this function !
+	var p = document.createElement('p');
+	
+	p.innerHTML = "<B>$NODE{ALIAS}: "+$NODE{NAME}+"</B><BR><I>($NODE{TYPE})</I><BR>&nbspfrom <B>$NODE{INSTALL_DATE}</B> to <B>$NODE{END_DATE}</B><BR>&nbsp;<B>"+lat+"&deg;</B>, <B>"+lon+"&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
+	var txt = p.innerHTML;
+	if (typeof(marker) != "undefined") {
+		map.removeLayer(marker);
+	}
+	
+	marker.bindPopup(txt).openPopup();
+	*/
+	
+	if (typeof(marker) != "undefined") {
+		map.removeLayer(marker);
+	}
+	marker = L.marker([lat, lon]).addTo(map);
+
+	document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
+	document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
+	document.form.locMap.value = 1;	// added a third variable to make the DOM perceived the changes in the webpage when clicking on the interactive map
+
+	document.form.typePos.value="1";
+	return false;
+}
+function getLocation() {
+	event.preventDefault();
+	if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(getCurrent, error);
+		document.form.typePos.value="4";
+	} else {
+		alert('Geolocation is not supported by this browser');
+	}
+}
+function getCurrent (pos) {
+	/**
+	 * Get the position of the current user and focus the map on it
+	 */
+	var lat = pos.coords.latitude;
+	var lon = pos.coords.longitude;
+
+	document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
+	document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
+	document.form.altitude.value = "";
+	document.form.locMap.value = 1;
+
+	map.flyTo([lat, lon], 18);
+	document.form.typePos.value="4";
+}
+function error (err) {
+	switch (err.code) {
+		case err.TIMEOUT:
+		break;
+		case err.PERMISSION_DENIED:
+		break;
+		case err.POSITION_UNAVAILABLE:
+		break;
+		case err.UNKNOWN_ERROR:
+		break;
+	}
+}
+function onInputWrite(e) {
+	/**
+	 * Zoom/dezoom the map following the number of decimals in the latitude and longitude fields
+	 * \@param {Event} e Input event
+	 */
+	var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
+	var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
+
+	if (lat.toString().includes('.')){
+			var latZoom = lat.toString().split(".")[1].length;
+	}
+	if (lon.toString().includes('.')){
+			var lonZoom = lon.toString().split(".")[1].length;
+	}
+	
+	if (Math.min(latZoom, lonZoom) == 0) {
+		map.flyTo([lat, lon], 4);
+	} 
+	if (Math.min(latZoom, lonZoom) == 1) {
+		map.flyTo([lat, lon], 6);
+	}
+	if (Math.min(latZoom, lonZoom) == 2) {
+		map.flyTo([lat, lon], 8);
+	} 
+	if (Math.min(latZoom, lonZoom) == 3) {
+		map.flyTo([lat, lon], 12);
+	}
+	if (Math.min(latZoom, lonZoom) == 4) {
+		map.flyTo([lat, lon], 14);
+	}
+	if (Math.min(latZoom, lonZoom) == 5) {
+		map.flyTo([lat, lon], 16);
+	}
+	if (Math.min(latZoom, lonZoom) == 6) {
+		map.flyTo([lat, lon], 18);
+	}
+}
+function handleFiles() {	
+	/**
+	 * Read .zip shpfiles and calculate the bounding box coordinates of the spatial coverage of the shapefile
+	 */
+	var fichierSelectionne = document.getElementById('input').files[0];
+	form.filename.value = fichierSelectionne.name;
+
+	var fr = new FileReader();
+	fr.onload = function () {
+		shp(this.result).then(function(geojson) {
+	  		console.log('loaded geojson:', geojson);
+	  		
+	  		/*for (var i = 0; i <= geojson.features.length-1; i++) {
+	  			// applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
+	  			var coordinates = simplifyGeometry(geojson.features[i].geometry.coordinates[0], 0.01);
+	  			var lonLat = [];
+	  			for (var j = 0; j <= coordinates.length-1; j++) {
+	  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]);
+	  			} outWKT.push('((' + lonLat + '))');
+	  		} document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]);*/
+	  		
+			var shpfile = new L.Shapefile(geojson,{
+				onEachFeature: function(feature, layer) {
+					if (feature.properties) {
+						layer.bindPopup(Object.keys(feature.properties).map(function(k) {
+							return k + ": " + feature.properties[k];
+						}).join("<br />"), {
+							maxHeight: 200
+						});
+					}
+				}
+			});
+			shpfile.addTo(map);
+			// geojson.features = geojson.features[0];	// test with a Polygon;
+			var geometry = JSON.stringify(getGeometry(geojson));
+			console.log(geometry);
+			document.form.outWKT.value = geometry;
+	  })
+	};
+	fr.readAsArrayBuffer(fichierSelectionne);
+}
+function getGeometry(geojson) {
+	/**
+	 * Create a geoJSON object
+	 * \@param  {GeoJSON} geojson  GeoJSON object with a given number of points
+	 * \@return {GeoJSON} geometry GeoJSON object which has its coordinates corresponding to the bounding box of the geometry of the input
+	 */
+	var geometry = {"type":"", "coordinates":""};
+
+	if (geojson.features.length > 1) {
+		geometry.type = "MultiPolygon";
+		var coordinates = [];
+		
+		for (var i = 0; i < geojson.features.length; i++) {
+			coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
+		} geometry.coordinates = coordinates; return geometry;
+	} else {
+		geometry.type = "Polygon";
+		geometry.coordinates = [getBoundingBox(geojson.features.geometry.coordinates)];
+		return geometry;
+	}
+}
+function getBoundingBox(coordinates) {
+	/**
+	 * Calculate the bounding box of given coordinates
+	 * \@param  {Array} coordinates Array of coordinates
+	 * \@return {Array} The calculated bounding box as an array of coordinates
+	 */
+	var bounds = {}, coords, point, latitude, longitude;
+
+    coords = coordinates;
+
+	for (var j = 0; j < coords.length; j++) {
+		longitude = coords[j][0];
+    	latitude = coords[j][1];
+    	bounds.xMin = bounds.xMin < longitude ? bounds.xMin : longitude;
+    	bounds.xMax = bounds.xMax > longitude ? bounds.xMax : longitude;
+		bounds.yMin = bounds.yMin < latitude ? bounds.yMin : latitude;
+    	bounds.yMax = bounds.yMax > latitude ? bounds.yMax : latitude;
+    }
+    var coordinates = [bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.xMin];
+    return coordinates;
+}
+
+function addCreator() {
+	/**
+	 * Add a creator row to fill in the form
+	 */
+    var form = \$('#theform')[0];
+	form.count_creator.value = parseInt(form.count_creator.value)+1;
+	var new_div = document.createElement('div');
+	new_div.id = 'new_creator'+form.count_creator.value;
+    new_div.innerHTML = \$('#creator')[0].innerHTML;
+    \$('#creator_add')[0].append(new_div);
+}
+function removeCreator() {
+	/**
+	 * Remove a creator row (if there are more than one row) to fill in the form
+	 */
+	var form = \$('#theform')[0];
+	var id = '#new_creator'+form.count_creator.value;
+	if (\$(id)[0] === null) {
+		return false;
+	} else if (form.count_creator.value > 1) {
+		\$(id)[0].remove();
+		form.count_creator.value -= 1;
+	}
+}
+function showHideTheia(checkbox){
+	const theia = document.getElementById("showHide");
+
+	if (checkbox.checked == false) {
+		theia.style.display = "none";
+		document.form.showHide.value = 0;
+	} else {
+		theia.style.display = "block";
+		document.form.showHide.value = 1;
+	}
+}
+
+// creating and parametring the map for the geographic location choice
+
+var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>contributors';
+var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+		
+//Init Overlays
+var overlays = {};
+		
+//Init BaseMaps
+var basemaps = {
+	'OpenStreetMaps': L.tileLayer(
+		"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+		{
+			attribution: osmAttribution,
+			minZoom: 2,
+			maxZoom: 19,
+			id: "osm"
+		}
+	),
+	'Stamen-Terrain': L.tileLayer(
+		'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}',
+		{
+			attribution: stamenAttribution,
+			minZoom: 2,
+			maxZoom: 19,
+			id: "stamen.terrain"
+		}
+	),
+	'Stamen-Watercolor': L.tileLayer(
+		'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}',
+		{
+			attribution: stamenAttribution,
+			minZoom: 2,
+			maxZoom: 19,
+			id: "stamen.watercolor"
+		}
+	),
+	'OpenTopoMap': L.tileLayer(
+		'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+		{
+			attribution: osmAttribution,
+			minZoom: 2,
+			maxZoom: 19,
+			id: "otm"
+		}
+	),
+	'ESRIWorldImagery': L.tileLayer(
+		'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+		{
+			attribution: osmAttribution,
+			minZoom: 2,
+			maxZoom: 19,
+			id: "esri.world"
+		}
+	)
+};
+		
+//Map Options
+var mapOptions = {
+	zoomControl: true,
+	attributionControl: false,
+	center: [0, 0],
+	zoom: 2,
+	layers: [basemaps.OpenStreetMaps]
+};
 </script>
 
 </head>
 
-<body style="background-color:#E0E0E0" onLoad="maj_transmission();fc();checkNode();" id="formNode">
+<body style="background-color:#E0E0E0" onLoad="maj_transmission();latlonChange();fc();checkNode();" id="formNode">
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <script language="javascript" src="/js/overlib/overlib.js"></script>
 <!-- overLIB (c) Erik Bosrup -->
@@ -370,7 +800,7 @@ function delete_node()
 
 FIN
 
-print "<FORM id=\"theform\" name=\"formulaire\" action=\"\">\n";
+print "<FORM id=\"theform\" name=\"form\" method=\"post\" action=\"\">\n";
 # --- "Validity"
 my $nodevalidity;
 if (clientHasAdm(type=>"authmisc",name=>"NODES")) {
@@ -388,6 +818,7 @@ print "<TABLE width=\"100%\">
 print "<INPUT type=\"hidden\" name=\"referer\" value=\"$referer\">\n";
 print "<INPUT type=\"hidden\" name=\"refresh\" value=\"0\">\n";
 print "<INPUT type=\"hidden\" name=\"delete\" value=\"0\">\n";
+print "<INPUT type=\"hidden\" name=\"locMap\" value=\"0\">\n";
 for (@allNodes) {
 	print "<INPUT type=\"hidden\" name=\"allNodes\" value=\"$_\">\n";
 }
@@ -395,7 +826,7 @@ print "<TABLE style=\"border:0\" width=\"100%\">";
 print "<TR>";
 	print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # left column
 
-	print "<FIELDSET><LEGEND>$__{'Names and Description'}</LEGEND>";
+	print "<FIELDSET><LEGEND>$__{'Name and Description'}</LEGEND>";
 	# --- Codes, Name, Alias, Type
 	print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code/ID'}:</label>$GRIDType.$GRIDName.";
 	if ($newnode == 1) {
@@ -410,15 +841,53 @@ print "<TR>";
 	print "<INPUT type=\"hidden\" name=\"grid\" value=\"$GRIDType.$GRIDName.\">";
 	print "<INPUT type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">";
 		print "<BR>";
-		# --- Nom complet
+		# --- Nom complet/TITLE
 		print "<LABEL style=\"width:80px\" for=\"fullName\">$__{'Name'}:</LABEL>";
 		print "<INPUT size=\"40\" value=\"$usrName\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_name}')\" name=\"fullName\" id=\"fullName\"><BR>";
 		# --- ALIAS
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Alias'}:</LABEL>";
 		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrAlias\" onmouseover=\"overlib('$__{help_creationstation_alias}')\" size=\"8\" name=\"alias\" id=\"alias\">&nbsp;&nbsp;<BR>";
 		# --- TYPE
-		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Type'}:</LABEL>";
-		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
+		print "<LABEL style=\"width:80px\" for=\"type\">$__{'Type'}:</LABEL>";
+		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
+		# --- DESCRIPTION
+		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
+		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc<\/TEXTAREA>&nbsp;&nbsp;<BR>";
+		# --- show THEIA fields ?
+		print "<LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT name=\"showHide\" type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
+		print "<DIV id=\"showHide\" style=\"display:none;\">";
+		# --- PRODUCER
+		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
+		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
+		# --- CREATOR
+		print "<BUTTON style=\"text-align:center\" onclick=\"addCreator(); return false;\">$__{'Add a creator'} </BUTTON>";
+		print "<BUTTON onclick=\"removeCreator(); return false;\">$__{'Remove a creator'} </BUTTON>";
+		print "<INPUT type='hidden' name=\"count_creator\" value='1'></INPUT>";
+		print "<INPUT type='hidden' name=\"creators\" value=''></INPUT>";
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Creator'}:</LABEL><BR><BR>";
+		print "<DIV id=\"creator\">";
+		print "<SELECT onMouseOut=\"nd()\" value=\"$usrCreator\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
+		for (@creators) { print "<OPTION value=\"$_\">$_</option>\n"; }
+		print "</SELECT>&nbsp;&nbsp";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR></DIV>";
+		print "<DIV id='creator_add'></DIV><BR>";
+		# --- INSPIRE THEME
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
+		print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
+		for (@themes) { print "<OPTION value=\"$_\">$_</option>\n"; }
+		print "</SELECT><BR>";
+		# --- TOPIC CATEGORIES
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Topic categories'}:</LABEL>";
+		print "<INPUT type=\"hidden\" name=\"topics\">";
+		print "<SELECT multiple onMouseOut=\"nd()\" value=\"$usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" id=\"topicCats\">";
+		for (@topics) { print "<OPTION value=\"$_\">$_</option>\n"; }
+		print "</SELECT><BR>";
+		# --- Lineage
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
+		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
+		print "</DIV>";
 	print "</FIELDSET>";
 
 	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
@@ -428,23 +897,23 @@ print "<TR>";
 			print "<TD style=\"border:0;text-align:right\">";
     		print "<DIV class=parform>";
 				print "<B>$__{'Start date'}:</b> <SELECT name=\"anneeDepart\" size=\"1\">";
-				for ($usrYearC,@anneeListeC) { print "<OPTION".(($_ eq $usrYearC)?" selected":"")." value=$_>$_</option>\n"; }
+				for ($usrYearC,@yearListC) { print "<OPTION".(($_ eq $usrYearC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 				print " <SELECT name=\"moisDepart\" size=\"1\">";
-				for (@moisListe) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@monthList) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 				print " <SELECT name=\"jourDepart\" size=\"1\">";
-				for (@jourListe) { 	print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@dayList) { 	print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT><BR>";
 				print "<b>$__{'End date'}:</b> <SELECT name=\"anneeEnd\" size=\"1\">";
-				for ($usrYearE,@anneeListeE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
+				for ($usrYearE,@yearListE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "<OPTION value=NA>NA</option>\n";
 				print "</SELECT>";
 				print " <SELECT name=\"moisEnd\" size=\"1\">";
-				for (@moisListe) { print "<option".(($_ eq $usrMonthE)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@monthList) { print "<option".(($_ eq $usrMonthE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 				print " <SELECT name=\"jourEnd\" size=\"1\">";
-				for (@jourListe) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
+				for (@dayList) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 			print "</DIV></TD>";
 			print "<TD align=center style=\"border:0\"></TD>";
@@ -502,9 +971,9 @@ print "<TR>";
 	for (@GL) { if (! (($_) ~~ @{$allNodeGrids{$NODEName}}) ) { print "<option value=\"$_\">$_</option>\n" } }
 	print "</SELECT></td>";
 	print "<TD style=\"border:0;text-align:center;vertical-align:middle\">";
-	print "<INPUT type=\"Button\" value=\"$__{Add} >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.INs,document.formulaire.SELs)\"><br>";
+	print "<INPUT type=\"Button\" value=\"$__{Add} >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.form.INs,document.form.SELs)\"><br>";
 	print "<BR>";
-	print "<INPUT type=\"Button\" value=\"<< $__{Remove}\" style=\"width:100px\" onClick=\"javascript: if (document.formulaire.SELs.options.length == 1) {alert('invalid remove: node MUST belong to at least 1 grid !');} else { SelectMoveRows(document.formulaire.SELs,document.formulaire.INs);}\">";
+	print "<INPUT type=\"Button\" value=\"<< $__{Remove}\" style=\"width:100px\" onClick=\"javascript: if (document.form.SELs.options.length == 1) {alert('invalid remove: node MUST belong to at least 1 grid !');} else { SelectMoveRows(document.form.SELs,document.form.INs);}\">";
 	print "</TD>";
 	print "<TD style=\"border:0\">";
 	print "<SELECT name=\"SELs\" size=\"5\" multiple style=\"font-weight:bold\">";
@@ -521,40 +990,73 @@ print "<TR>";
 	# --- 'node' position (latitude, longitude & altitude)
 	print "<FIELDSET><LEGEND>$__{'Geographic location'}</LEGEND>";
 	print "<TABLE><TR>";
-		print "<TD style=\"border:0;text-align:left\">";
+		print "<TD style=\"border:1;text-align:left\">";
+			print "<DIV id='map' style=\"position: relative ;width: 347px; height: 347px\"></DIV>";
+		print "</TD>";
+		print "<TD style=\"border:1;text-align:left;rows:6;\">";
+			print "<label>$__{'Auto-location'} :</label><button id=\"auto-loc\" style=\"position:relative;\" onmouseover=\"overlib('$__{beware_approximate_position}')\">$__{'Locate me'} !</button>&nbsp;<BR>";
 			print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"8\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"latwgs84n\" size=\"1\">";
 			for ("N","S") { print "<option".($usrLatN eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
 			print "<label for=\"lonwgs84\">$__{'Longitude'}  WGS84:</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\"><B>&#176;&nbsp;</B>";
+			print "<input size=\"8\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\"><B>'&nbsp;</B>";
 			print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\"><B>\"&nbsp;</B>";
 			print "<select name=\"lonwgs84e\" size=\"1\">";
 			for ("E","W") { print "<option".($usrLonE eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>\n";
 			print "<label for=\"altitude\">$__{'Elevation'}  (m):</label>";
-			print "<input size=\"10\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_alt}')\" id=\"altitude\" name=\"altitude\">";
-		print "</TD>";
-		print "<TD style=\"border:0\">";
+			print "<input size=\"8\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_alt}')\" id=\"altitude\" name=\"altitude\"><BR>\n";
 			# --- positioning date
 			print "<label for=\"datePos\">Date:</label> <select name=\"anneeMesure\" size=\"1\">";
-			for ($usrYearP,@anneeListeP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";	}
+			for ($usrYearP,@yearListP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";	}
 			print "</select>";
 			print " <select name=\"moisMesure\" size=\"1\">";
-			for (@moisListe) { print "<option".(($_ eq $usrMonthP)?" selected":"")." value=$_>$_</option>\n"; }
+			for (@monthList) { print "<option".(($_ eq $usrMonthP)?" selected":"")." value=$_>$_</option>\n"; }
 			print "</select>";
 			print " <select name=\"jourMesure\" size=\"1\">";
-			for (@jourListe) { print "<option".(($_ eq $usrDayP)?" selected":"")." value=$_>$_</option>\n"; }
+			for (@dayList) { print "<option".(($_ eq $usrDayP)?" selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>";
-			# --- Positioning type (GPS, Map (Carte) ou Inconnu)
-			print "<label for=\"typePos\">Type: </label> <select onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_pos_type}')\" name=\"typePos\" size=\"1\">";
+			# --- Positioning type (unknown, map, GPS or auto)
+			print "<label for=\"typePos\">Type: </label> "
+				."<select name=\"typePos\" size=\"1\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_pos_type}')\">";
 			for (sort(keys(%typePos))) { print  "<option".(($_ eq $usrTypePos) ? " selected ":"")." value=$_>$typePos{$_}</option>\n"; }
-			print "</select>";
+			print "</select><BR>";
+			print "<DIV id=\"rawKML\" style=\"display:none\"><LABEL for=\"rawKML\">Raw KML: </LABEL>"
+				." <INPUT name=\"rawKML\" size=\"40\" value=\"$usrRAWKML\">"
+				."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Fetch KML' onClick='fetchKML()'></DIV>";
+				
+			# --- Importation of shpfile
+			print "<INPUT type=\"hidden\" name=\"filename\"";
+			print "<strong>$__{'To add a shapefile (.zip only) layer, click here'}: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
+			print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
+				
 		print "</TD>";
+		print <<FIN;
+		<script>
+			var map = L.map('map', mapOptions);
+			var popup = L.popup();
+			map.on('click', onMapClick);
+			
+			document.getElementById("auto-loc").addEventListener('click', getLocation);
+			// let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
+			
+			if ( document.form.latwgs84.value !== "" || document.form.lonwgs84.value !== "" ) {
+				var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
+				var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
+
+				map.flyTo([lat, lon], 18);
+				var marker = L.marker([lat, lon]).addTo(map);
+				marker.bindPopup(\"$text\").openPopup();
+			}
+			
+			var layerControl = L.control.layers(basemaps, overlays).addTo(map);
+		</script>
+FIN
 	print "</TR></TABLE>";
 	print "</FIELDSET>\n";
 
@@ -704,11 +1206,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Mallarino, Alexis Bosson, Didier Lafon
+Francois Beauducel, Didier Mallarino, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -724,3 +1226,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
+

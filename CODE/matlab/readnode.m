@@ -33,7 +33,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2022-07-26
+%   Updated: 2023-08-28
 
 
 if ~exist('NODES','var')
@@ -126,6 +126,10 @@ if ~exist(clb,'file')
 end
 if exist(clb,'file')
 	C = readdatafile(clb,'CommentStyle','#')';
+	nf = size(C,1);
+	if nf < 20
+		C = cat(1,C,repmat({''},20-nf,size(C,2)));
+	end
 	nn = 1;
 	for j = 1:size(C,2)
 		k = strfind(C{3,j},'-');
@@ -145,7 +149,7 @@ if exist(clb,'file')
 				CC.ns{nn} = C{6,j};
 				CC.cd{nn} = C{7,j};
 				CC.of(nn) = sstr2num(C{8,j});
-				CC.et(nn) = sstr2num(C{9,j});
+				CC.et{nn} = C{9,j};
 				CC.ga(nn) = sstr2num(C{10,j});
 				CC.vn(nn) = sstr2num(C{11,j});
 				CC.vm(nn) = sstr2num(C{12,j});
@@ -170,15 +174,15 @@ if exist(clb,'file')
 end
 
 if ~exist('CC','var') || isempty(CC)
-	N.CLB = struct('nx',0,'dt',0,'nv',0,'nm','','un','','ns','','cd','','of',0,'et',0,'ga',0,'vn',0,'vm',0,'az',0,'la',0,'lo',0,'al',0,'dp',0,'sf',NaN,'db','','lc','');
+	N.CLB = struct('nx',0,'dt',0,'nv',0,'nm','','un','','ns','','cd','','of',0,'et','','ga',0,'vn',0,'vm',0,'az',0,'la',0,'lo',0,'al',0,'dp',0,'sf',NaN,'db','','lc','');
 end
 
 % --- transmission type and nodes' list
 tr = split(N.TRANSMISSION,'|, ');
 
-if length(tr) > 0 && ~isempty(tr{1})
+if ~isempty(tr) && ~isempty(tr{1})
 	rmfield(N,'TRANSMISSION');	% needed since R2015... (?)
-	N.TRANSMISSION = struct('TYPE',str2num(tr{1}));
+	N.TRANSMISSION = struct('TYPE',str2double(tr{1}));
 	nn = 0;
 	for n = 2:length(tr)
 		f = sprintf('%s/%s/%s.cnf',NODES.PATH_NODES,tr{n},tr{n});

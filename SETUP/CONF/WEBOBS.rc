@@ -163,6 +163,30 @@ SQL_DOMAINS|${ROOT_CONF}/WEBOBSDOMAINS.db
 SQL_TABLE_DOMAINS|domains
 SQL_TABLE_GRIDS|grids2domains
 
+# ---- METADATA DataBase -----------------------
+# ---------------------------------------------
+SQL_METADATA|${ROOT_CONF}/WEBOBSMETA.db
+SQL_TABLE_PRODUCER|producer
+SQL_TABLE_CONTACTS|contacts
+SQL_TABLE_ORGANISATIONS|organisations
+SQL_TABLE_DATASETS|datasets
+SQL_TABLE_OBSERVATIONS|observations
+SQL_TABLE_OBSERVED_PROPERTIES|observed_properties
+SQL_TABLE_SAMPLING_FEATURES|sampling_features
+SQL_TABLE_PGRIDS|grids2producers
+
+# ---- Creator roles -------------------------
+# ---------------------------------------------
+CREATOR|${ROOT_CONF}/EnumContactPersonRoles.conf
+
+# ---- INSPIRE themes -------------------------
+# ---------------------------------------------
+THEME|${ROOT_CONF}/EnumInspireTheme.conf
+
+# ---- Topic categories -------------------------
+# ---------------------------------------------
+TOPIC|${ROOT_CONF}/EnumTopicCategories.conf
+
 # ---- Internalization ------------------------
 # ---------------------------------------------
 ROOT_I18N|${ROOT_SITE}/CODE/i18n
