@@ -330,7 +330,7 @@ close(FH);
 
 #print encode_json \%json;
 # ---- checking if the final json file is conform to the recommandations
-my $output = "java -jar /home/lucas/Documents/donnees_webobs_obsera/JSON-schema-validation-0-jar-with-dependencies.jar ".$filepath;
+my $output = "java -jar $WEBOBS{ROOT_CODE}/bin/java/JSON-schema-validation-0-jar-with-dependencies.jar ".$filepath;
 #print qx($output);
 
 if (qx($output) =~ /success/) {
