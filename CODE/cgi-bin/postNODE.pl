@@ -290,17 +290,6 @@ push(@lines,"INSTALL_DATE|$dateInstall\n");
 push(@lines,"END_DATE|$dateEnd\n");
 push(@lines,"FILES_FEATURES|".u2l(lc(join(",",map {trim($_)} split(/[,\|]/,$features))))."\n");
 push(@lines,"TRANSMISSION|".u2l($typeTrans)."\n");
-push(@lines,"DESCRIPTION|".u2l($desc)."\n");
-push(@lines,"PRODUCER|".u2l($producer)."\n");
-push(@lines,"ROLE|".u2l($creators[0])."\n");
-push(@lines,"FIRSTNAME|".u2l($creators[1])."\n");
-push(@lines,"LASTNAME|".u2l($creators[2])."\n");
-push(@lines,"EMAIL|".u2l($creators[3])."\n");
-push(@lines,"THEME|".u2l($theme)."\n");
-push(@lines,"TOPICS|".u2l($topics)."\n");
-push(@lines,"LINEAGE|".u2l($lineage)."\n");
-push(@lines,"SPATIAL_COVERAGE|".u2l($filename)."\n");
-push(@lines,"SHOWHIDE|".u2l($showHide)."\n");
 
 # ---- procs parameters
 if ($GRIDType eq "PROC") {
@@ -429,8 +418,8 @@ sub htmlMsgOK {
 		# --- connecting to the database
 		my $driver   = "SQLite";
 		my $database = $WEBOBS{SQL_METADATA};
-		my $dsn = "DBI:$driver:dbname=$database";
-		my $userid = "";
+		my $dsn 	 = "DBI:$driver:dbname=$database";
+		my $userid 	 = "";
 		my $password = "";
 		
 		# --- station informations, coordinates are saved in WKT format
