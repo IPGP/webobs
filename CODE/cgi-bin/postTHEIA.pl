@@ -56,16 +56,16 @@ my %producer;
 while( my @row = $sth->fetchrow_array() ) {
 	%producer = (
 		producerId => $row[0],
-		name => $row[1],
-		title => $row[2],
-		description => $row[3],
+		name => decode("utf8",$row[1]),
+		title => decode("utf8",$row[2]),
+		description => decode("utf8",$row[3]),
 		email => $row[6]
 	);
 	if ($row[4] ne "") {
-		$producer{'objectives'} = $row[4];
+		$producer{'objectives'} = decode("utf8",$row[4]);
 	}
 	if ($row[5] ne "") {
-		$producer{'measuredVariables'} = $row[5];
+		$producer{'measuredVariables'} = decode("utf8",$row[5]);
 	}
 	if ($row[9] ne "") {
     	# ---- parsing online resources
@@ -128,7 +128,7 @@ while( my @row = $sth->fetchrow_array() ) {
 		type => $row[0],
 		iso3166 => $row[1],
 		idScanR => $row[4],
-		name => $row[3],
+		name => decode("utf8",$row[3]),
 		acronym => $row[2],
 	);
 	push(@fundings, \%funding);
@@ -152,8 +152,8 @@ my @observations;
 while( my @row = $sth->fetchrow_array() ) {
 	# ---- data from observed_properties table
 	my %observedProperty = (
-		name => $row[10],
-		unit => $row[11],
+		name => decode("utf8",$row[10]),
+		unit => decode("utf8",$row[11]),
 	);
 	my @theiaCategories;
 	foreach (split(',',$row[12])) {
@@ -246,7 +246,7 @@ while( my @row = $sth->fetchrow_array() ) {
 	);
 	
 	my %metadata = (
-		title => $row[1],
+		title => decode("utf8",$row[1]),
 		description => $row[2],
 		datasetLineage => $row[5],
 		dataConstraint => \%dataConstraint,
