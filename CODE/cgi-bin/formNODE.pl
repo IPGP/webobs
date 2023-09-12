@@ -378,10 +378,15 @@ function postIt()
   var emails = [];
   if (form.email.length > 1) {
   	  for (var i=0; i<form.role.length; i++) {
-	  	roles.push(form.role[i].value);
-	  	firstNames.push(form.firstName[i].value);
-	  	lastNames.push(form.lastName[i].value);
-	  	emails.push(form.email[i].value);
+  	  	if (form.firstName[i].value == "" || form.lastName[i].value == "" || form.email[i].value == "") {
+  	  		alert("A creator must have a first name, a last name and an email adress !");
+  	  		return false;
+  	  	} else {
+  	  		roles.push(form.role[i].value);
+	  		firstNames.push(form.firstName[i].value);
+	  		lastNames.push(form.lastName[i].value);
+	  		emails.push(form.email[i].value);
+  	  	}
 	  } 
   	form.creators.value = roles.join(',') + '|' + firstNames.join(',') + '|' + lastNames.join(',') + '|' + emails.join(',');
   } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
@@ -916,7 +921,11 @@ print "<TR>";
 		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
 		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
 		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR></DIV>";
+		print "<DIV id='creator_add'>";
 		for (my $i = 1; $i <= $#usrRole; $i++) {
+			my $cnt = $i+1;
+			print "<DIV id=new_creator$cnt>";
+			print "<SCRIPT>var form = \$('#theform')[0];form.count_creator.value = parseInt(form.count_creator.value)+1;</SCRIPT>";
 			print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[$i]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
 			for (@creators) { 
 				if ($_ eq $usrRole[$i]){
@@ -929,8 +938,9 @@ print "<TR>";
 			print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
 			print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
 			print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR>";
+			print "</DIV>";
 		}
-		print "<DIV id='creator_add'></DIV><BR>";
+		print "</DIV><BR>";
 		# --- INSPIRE THEME
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
 		print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
