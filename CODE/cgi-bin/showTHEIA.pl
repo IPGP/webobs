@@ -212,6 +212,7 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
 		."<TH><SMALL>Description</SMALL></TH>"
 		."<TH><SMALL>Subject</SMALL></TH>"
 		."<TH><SMALL>Creator(s)</SMALL></TH>"
+		."<TH><SMALL>Spatial coverage</SMALL></TH>"
 		."<TH><SMALL>Provenance</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
@@ -240,6 +241,7 @@ while(my @row = $sth->fetchrow_array()){
 			."<TD width=14% align=center><SMALL>$row[2]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
 			."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
+			."<TD width=14% align=center><SMALL>$row[4]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$row[5]</SMALL></TD></TR>";
 };
 
