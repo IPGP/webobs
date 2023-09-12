@@ -112,15 +112,6 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
-my $usrDesc      = $NODE{DESCRIPTION};
-my $usrProducer  = $NODE{PRODUCER};
-my $usrCreator   = $NODE{CREATOR};
-my $usrFirstName = $NODE{FIRSTNAME};
-my $usrLastName  = $NODE{LASTNAME};
-my $usrEmail     = $NODE{EMAIL};
-my $usrTheme     = $NODE{THEME};
-my $usrTopic     = $NODE{TOPICS};
-my $usrLineage   = $NODE{LINEAGE};
 #my $usrOrigin    = $NODE{ORIGIN};
 my $usrTZ        = $NODE{TZ} // strftime("%z", localtime());
 my $features     = $NODE{FILES_FEATURES} // "$__{'featureA,featureB,featureC'}";
@@ -143,9 +134,19 @@ my $usrLon       = $NODE{LON_WGS84};
 my $usrLonE = ($usrLon >= 0 ? "E":"W");
 $usrLon =~ s/^-//g;
 my $usrAlt       = $NODE{ALTITUDE};
-my $usrShpFile   = $NODE{SPATIAL_COVERAGE};
 my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
+# THEIA metadata
+my $usrDesc;
+my $usrProducer;
+my @usrRole;
+my @usrFirstName;
+my @usrLastName;
+my @usrEmail;
+my $usrTheme;
+my @usrTopic;
+my $usrLineage;
+my $usrShpFile;
 #      Transmission
 my ($usrTrans,@usrTele) = split(/,| |\|/,$NODE{TRANSMISSION});
 if ($usrTrans eq "NA") { $usrTrans = "0"; }
@@ -221,6 +222,40 @@ if($rv < 0) {
 while(my @row = $sth->fetchrow_array()) {
 	push(@creators, $row[0]);
 }
+
+# ---- load the database information if NODE is already filled out in the datasets table
+my $stmt = qq(SELECT * FROM datasets WHERE EXISTS ( SELECT identifier from datasets ) AND identifier LIKE "\%$GRIDName.$NODEName");
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+while(my @row = $sth->fetchrow_array()) {
+	$usrProducer = (split /_/, $row[0])[0];
+	$usrDesc     = $row[2];
+	$usrTheme    = (split /:|_/, $row[3])[3];
+	push(@usrTopic, split(/,/, (split /:|_/, $row[3])[1]));
+	$usrLineage  = $row[5];
+}
+
+# ---- load the database information if NODE is already filled out in the contacts table
+my $stmt = qq(SELECT * FROM contacts WHERE EXISTS ( SELECT related_id from contacts ) AND related_id LIKE "\%$GRIDName.$NODEName");
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+while(my @row = $sth->fetchrow_array()) {
+	push(@usrRole, $row[3]);
+	push(@usrFirstName, $row[1]);
+	push(@usrLastName, $row[2]);
+	push(@usrEmail, $row[0]);
+}
+
 
 # ---- Load the list of existing nodes
 my @allNodes = qx(/bin/ls $NODES{PATH_NODES});
@@ -341,7 +376,7 @@ function postIt()
   var firstNames = [];
   var lastNames = [];
   var emails = [];
-  if (form.count_creator.value > 1) {
+  if (form.email.length > 1) {
   	  for (var i=0; i<form.role.length; i++) {
 	  	roles.push(form.role[i].value);
 	  	firstNames.push(form.firstName[i].value);
@@ -350,7 +385,7 @@ function postIt()
 	  } 
   	form.creators.value = roles.join(',') + '|' + firstNames.join(',') + '|' + lastNames.join(',') + '|' + emails.join(',');
   } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
-
+	
 	console.log(\$(\"#theform\"));
 	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
 		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
@@ -584,10 +619,10 @@ function onInputWrite(e) {
 		map.flyTo([lat, lon], 4);
 	} 
 	if (Math.min(latZoom, lonZoom) == 1) {
-		map.flyTo([lat, lon], 6);
+		map.flyTo([lat, lon], 9);
 	}
 	if (Math.min(latZoom, lonZoom) == 2) {
-		map.flyTo([lat, lon], 8);
+		map.flyTo([lat, lon], 10);
 	} 
 	if (Math.min(latZoom, lonZoom) == 3) {
 		map.flyTo([lat, lon], 12);
@@ -637,7 +672,7 @@ function handleFiles() {
 			shpfile.addTo(map);
 			// geojson.features = geojson.features[0];	// test with a Polygon;
 			var geometry = JSON.stringify(getGeometry(geojson));
-			console.log(geometry);
+			// console.log(geometry);
 			document.form.outWKT.value = geometry;
 	  })
 	};
@@ -695,6 +730,9 @@ function addCreator() {
 	var new_div = document.createElement('div');
 	new_div.id = 'new_creator'+form.count_creator.value;
     new_div.innerHTML = \$('#creator')[0].innerHTML;
+    for (let i = 1; i <= new_div.childElementCount-1; i++) {
+    	new_div.children[i].value = "";
+    }
     \$('#creator_add')[0].append(new_div);
 }
 function removeCreator() {
@@ -866,23 +904,55 @@ print "<TR>";
 		print "<INPUT type='hidden' name=\"creators\" value=''></INPUT>";
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Creator'}:</LABEL><BR><BR>";
 		print "<DIV id=\"creator\">";
-		print "<SELECT onMouseOut=\"nd()\" value=\"$usrCreator\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
-		for (@creators) { print "<OPTION value=\"$_\">$_</option>\n"; }
+		print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[0]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
+		for (@creators) { 
+			if ($_ eq $usrRole[0]){
+				print "<OPTION value=\"$_\" selected>$_</option>\n";
+			} else {
+				print "<OPTION value=\"$_\">$_</option>\n";
+			}
+		}
 		print "</SELECT>&nbsp;&nbsp";
-		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
-		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
-		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR></DIV>";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR></DIV>";
+		for (my $i = 1; $i <= $#usrRole; $i++) {
+			print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[$i]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
+			for (@creators) { 
+				if ($_ eq $usrRole[$i]){
+					print "<OPTION value=\"$_\" selected>$_</option>\n";
+				} else {
+					print "<OPTION value=\"$_\">$_</option>\n";
+				}
+			}
+			print "</SELECT>&nbsp;&nbsp";
+			print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
+			print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
+			print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR>";
+		}
 		print "<DIV id='creator_add'></DIV><BR>";
 		# --- INSPIRE THEME
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
 		print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
-		for (@themes) { print "<OPTION value=\"$_\">$_</option>\n"; }
+		for (@themes) {
+			if ($_ eq $usrTheme) {
+				print "<OPTION value=\"$_\" selected>$_</option>\n"; 
+			} else {
+				print "<OPTION value=\"$_\">$_</option>\n"; 
+			}
+		}
 		print "</SELECT><BR>";
 		# --- TOPIC CATEGORIES
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Topic categories'}:</LABEL>";
 		print "<INPUT type=\"hidden\" name=\"topics\">";
-		print "<SELECT multiple onMouseOut=\"nd()\" value=\"$usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" id=\"topicCats\">";
-		for (@topics) { print "<OPTION value=\"$_\">$_</option>\n"; }
+		print "<SELECT multiple onMouseOut=\"nd()\" value=\"@usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" id=\"topicCats\">";
+		for (@topics) {
+			if ($_ ~~ @usrTopic) {
+				print "<OPTION value=\"$_\" selected>$_</option>\n"; 
+			} else {
+				print "<OPTION value=\"$_\">$_</option>\n"; 
+			}
+		}
 		print "</SELECT><BR>";
 		# --- Lineage
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
