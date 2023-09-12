@@ -444,8 +444,23 @@ sub htmlMsgOK {
 		   or die $DBI::errstr;
 		   
 		# inserting creators into contacts table
-		my @values = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
-		my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@values);
+		my @contacts = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
+		my $stmt = qq(select * from contacts where related_id=\"$id\");
+		my $sth = $dbh->prepare( $stmt );
+		my $rv = $sth->execute() or die $DBI::errstr;
+
+		if($rv < 0) {
+		   print $DBI::errstr;
+		}
+		while(my @row = $sth->fetchrow_array()) {
+			my $email = $row[0];
+			if ($email !~ @emails) {
+				my $stmt2 = "delete from contacts where email=\"$email\" AND related_id=\"$id\"";
+				$dbh->do($stmt2);
+			}
+		}
+		
+		my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
 		$dbh->do($q);
 
 		my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
