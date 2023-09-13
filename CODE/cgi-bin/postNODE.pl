@@ -209,6 +209,7 @@ my $lon        = $cgi->param('lonwgs84')    // '';
 my $lonmin     = $cgi->param('lonwgs84min') // '';
 my $lonsec     = $cgi->param('lonwgs84sec') // '';
 my $spatialcov = $cgi->param('outWKT')      // '';
+my $geojson    = $cgi->param('geojson')     // '';
 my $filename   = $cgi->param('filename')    // '';
 my $alt        = $cgi->param('altitude')    // '';
 my $anneeP     = $cgi->param('anneeMesure') // '';
@@ -374,6 +375,23 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 	}
 
 } else { htmlMsgNotOK("$nodefile $!") }
+
+# ---- saving geojson from the .shp file
+#
+
+my $geojsonfile = "$nodepath/$NODEName.geojson";
+
+if ( sysopen(FILE, "$geojsonfile", O_RDWR | O_CREAT) ) {
+	unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+		warn "postNODE waiting for lock on $geojsonfile...";
+		flock(FILE, LOCK_EX);
+	}
+	
+	truncate FILE, 0;
+	print FILE $geojson;
+	close(FILE);
+	
+} else { htmlMsgNotOK("$geojsonfile $!") }
 
 # ---- node2node update: only if there is something to do!
 #

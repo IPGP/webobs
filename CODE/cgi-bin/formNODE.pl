@@ -653,15 +653,23 @@ function handleFiles() {
 	fr.onload = function () {
 		shp(this.result).then(function(geojson) {
 	  		console.log('loaded geojson:', geojson);
-	  		
-	  		/*for (var i = 0; i <= geojson.features.length-1; i++) {
+			
+	  		for (var i = 0; i <= geojson.features.length-1; i++) {
 	  			// applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
-	  			var coordinates = simplifyGeometry(geojson.features[i].geometry.coordinates[0], 0.01);
-	  			var lonLat = [];
+	  			var geometry = geojson.features[i].geometry;
+	  			var coordinates = simplifyGeometry(geometry.coordinates[0], 0.003, highQuality=true);
+	  			if (coordinates.length < 4) {
+	  				geometry.coordinates[0] = [[geometry.bbox[0],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[1]]];
+	  			}
+	  			else { geometry.coordinates[0] = coordinates; }
+	  			
+	  			/* var lonLat = [];
 	  			for (var j = 0; j <= coordinates.length-1; j++) {
-	  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]);
-	  			} outWKT.push('((' + lonLat + '))');
-	  		} document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]);*/
+	  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]); 
+	  			} outWKT.push('((' + lonLat + '))'); */
+	  			
+	  		} document.form.geojson.value = JSON.stringify(geojson.features); 
+	  		/* document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]); */
 	  		
 			var shpfile = new L.Shapefile(geojson,{
 				onEachFeature: function(feature, layer) {
@@ -673,12 +681,13 @@ function handleFiles() {
 						});
 					}
 				}
-			});
+			}); 
 			shpfile.addTo(map);
 			// geojson.features = geojson.features[0];	// test with a Polygon;
 			var geometry = JSON.stringify(getGeometry(geojson));
 			// console.log(geometry);
 			document.form.outWKT.value = geometry;
+			return geojson;
 	  })
 	};
 	fr.readAsArrayBuffer(fichierSelectionne);
@@ -695,7 +704,7 @@ function getGeometry(geojson) {
 		geometry.type = "MultiPolygon";
 		var coordinates = [];
 		
-		for (var i = 0; i < geojson.features.length; i++) {
+		for (var i = 0; i < geojson.features.length-1; i++) {
 			coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
 		} geometry.coordinates = coordinates; return geometry;
 	} else {
@@ -893,7 +902,105 @@ print "<TR>";
 		# --- TYPE
 		print "<LABEL style=\"width:80px\" for=\"type\">$__{'Type'}:</LABEL>";
 		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
-		# --- DESCRIPTION
+	print "</FIELDSET>";
+
+	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
+  	# --- Dates debut et fin
+  	print "<TABLE>";
+    	print "<TR>";
+			print "<TD style=\"border:0;text-align:right\">";
+    		print "<DIV class=parform>";
+				print "<B>$__{'Start date'}:</b> <SELECT name=\"anneeDepart\" size=\"1\">";
+				for ($usrYearC,@yearListC) { print "<OPTION".(($_ eq $usrYearC)?" selected":"")." value=$_>$_</option>\n"; }
+				print "</SELECT>";
+				print " <SELECT name=\"moisDepart\" size=\"1\">";
+				for (@monthList) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
+				print "</SELECT>";
+				print " <SELECT name=\"jourDepart\" size=\"1\">";
+				for (@dayList) { 	print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
+				print "</SELECT><BR>";
+				print "<b>$__{'End date'}:</b> <SELECT name=\"anneeEnd\" size=\"1\">";
+				for ($usrYearE,@yearListE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
+				print "<OPTION value=NA>NA</option>\n";
+				print "</SELECT>";
+				print " <SELECT name=\"moisEnd\" size=\"1\">";
+				for (@monthList) { print "<option".(($_ eq $usrMonthE)?" selected":"")." value=$_>$_</option>\n"; }
+				print "</SELECT>";
+				print " <SELECT name=\"jourEnd\" size=\"1\">";
+				for (@dayList) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
+				print "</SELECT>";
+			print "</DIV></TD>";
+			print "<TD align=center style=\"border:0\"></TD>";
+			print "<TD style=\"border:0\">";
+				# --- ALIAS
+				print "<LABEL style=\"width:100px\" for=\"tz\">$__{'Time zone (h)'}:</LABEL>";
+				print "<INPUT size=\"5\" onMouseOut=\"nd()\" value=\"$usrTZ\" onmouseover=\"overlib('$__{help_creationstation_tz}')\" size=\"8\" name=\"tz\" id=\"tz\">";
+			print "</TD>";
+		print "</TR>";
+	print "</TABLE>\n";
+	print "</FIELDSET>";
+
+	# --- Features
+	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
+	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',@feat)."\">"
+		."&nbsp;<IMG src=\"/icons/refresh.png\" align=\"top\" onClick=\"refresh_form();\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_featrefresh'}')\"><BR><BR>";
+	for (@feat) {
+		print "<LABEL style=\"width:120px\" for=\"feature_$_\">$_:</LABEL>";
+		my $pat = qr/^$NODEName\|$_\|/;
+		my @fnlist = grep(/$pat/,@n2n);
+		my $fn = join(',',@fnlist);
+		$fn =~ s/$NODEName\|$_\|//g;
+		print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('$__{help_creationstation_n2n}')\"><BR>";
+	}
+	# edition of the node2node file needs an admin level
+	#if (WebObs::Users::clientHasAdm(type => "auth".lc($GRIDType)."s", name => "*")) {
+	#	print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
+	#}
+	print "</FIELDSET>";
+
+	# --- Grids
+	print "<FIELDSET><LEGEND>$__{'Associated Grids'}</LEGEND>\n";
+	# --- (additional) GRIDS: VIEWs and PROCs
+	# --- list only PROCs and VIEWs that client has AUTHEDIT to ...
+	my @GL;
+	#     ... all views and procs
+	#FB-was: my @Lprocs = map("PROC.".basename($_), qx(ls -d $WEBOBS{PATH_PROCS}/*)); chomp(@Lprocs);
+	#FB-was: my @Lviews = map("VIEW.".basename($_), qx(ls -d $WEBOBS{PATH_VIEWS}/*)); chomp(@Lviews);
+	my @Lprocs = map("PROC.".basename($_), qx(find $WEBOBS{PATH_PROCS}/* -type d)); chomp(@Lprocs);
+	my @Lviews = map("VIEW.".basename($_), qx(find $WEBOBS{PATH_VIEWS}/* -type d)); chomp(@Lviews);
+	#     ... set client-and-its-groups where clause element, then query DB
+	my $cid    = "$USERS{$CLIENT}{UID}";
+	my $wc = " uid in (SELECT GID from $WEBOBS{SQL_TABLE_GROUPS} WHERE UID=\"$cid\") OR uid = \"$cid\" ";
+	my @Aprocs = qx(sqlite3 -separator '.' $WEBOBS{SQL_DB_USERS} 'select "PROC",resource from $WEBOBS{SQL_TABLE_AUTHPROCS} where auth >= 2 and $wc');
+	my @Aviews = qx(sqlite3 -separator '.' $WEBOBS{SQL_DB_USERS} 'select "VIEW",resource from $WEBOBS{SQL_TABLE_AUTHVIEWS} where auth >= 2 and $wc');
+	chomp(@Aviews); chomp(@Aprocs);
+	#     ... merge client-allowed-to VIEWS and PROCS into @GL
+	if   ( ('VIEW.*') ~~ @Aviews ) { @GL = @Lviews }
+	else                           { map { push(@GL,$_) if (($_) ~~ @Aviews) } @Lviews }
+	if   ( ('PROC.*') ~~ @Aprocs ) { @GL = (@GL,@Lprocs) }
+	else                           { map { push(@GL,$_) if (($_) ~~ @Aprocs) } @Lprocs }
+	print "<TABLE border=\"0\" cellpadding=\"3\" cellspacing=\"0\" width=\"100%\">";
+	print "<TR><TD style=\"border:0\">";
+	print "<SELECT name=\"INs\" size=\"5\" MULTIPLE>";
+	for (@GL) { if (! (($_) ~~ @{$allNodeGrids{$NODEName}}) ) { print "<option value=\"$_\">$_</option>\n" } }
+	print "</SELECT></td>";
+	print "<TD style=\"border:0;text-align:center;vertical-align:middle\">";
+	print "<INPUT type=\"Button\" value=\"$__{Add} >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.form.INs,document.form.SELs)\"><br>";
+	print "<BR>";
+	print "<INPUT type=\"Button\" value=\"<< $__{Remove}\" style=\"width:100px\" onClick=\"javascript: if (document.form.SELs.options.length == 1) {alert('invalid remove: node MUST belong to at least 1 grid !');} else { SelectMoveRows(document.form.SELs,document.form.INs);}\">";
+	print "</TD>";
+	print "<TD style=\"border:0\">";
+	print "<SELECT name=\"SELs\" size=\"5\" multiple style=\"font-weight:bold\">";
+	if  ($newnode == 1) { print "<option selected value=\"$GRIDType.$GRIDName\">$GRIDType.$GRIDName</option>"; }
+	for (@{$allNodeGrids{$NODEName}}) { print "<option selected value=\"$_\">$_</option>"; }
+	print "</SELECT></td>";
+	print "</TR>";
+	print "</TABLE>";
+	print "</FIELDSET>";
+	
+		# --- Procs metadata
+	print "<FIELDSET><LEGEND>$__{'Procs Metadata'}</LEGEND>";
+	# --- DESCRIPTION
 		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
 		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc<\/TEXTAREA>&nbsp;&nbsp;<BR>";
 		# --- show THEIA fields ?
@@ -970,100 +1077,6 @@ print "<TR>";
 		print "</DIV>";
 	print "</FIELDSET>";
 
-	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
-  	# --- Dates debut et fin
-  	print "<TABLE>";
-    	print "<TR>";
-			print "<TD style=\"border:0;text-align:right\">";
-    		print "<DIV class=parform>";
-				print "<B>$__{'Start date'}:</b> <SELECT name=\"anneeDepart\" size=\"1\">";
-				for ($usrYearC,@yearListC) { print "<OPTION".(($_ eq $usrYearC)?" selected":"")." value=$_>$_</option>\n"; }
-				print "</SELECT>";
-				print " <SELECT name=\"moisDepart\" size=\"1\">";
-				for (@monthList) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
-				print "</SELECT>";
-				print " <SELECT name=\"jourDepart\" size=\"1\">";
-				for (@dayList) { 	print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
-				print "</SELECT><BR>";
-				print "<b>$__{'End date'}:</b> <SELECT name=\"anneeEnd\" size=\"1\">";
-				for ($usrYearE,@yearListE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
-				print "<OPTION value=NA>NA</option>\n";
-				print "</SELECT>";
-				print " <SELECT name=\"moisEnd\" size=\"1\">";
-				for (@monthList) { print "<option".(($_ eq $usrMonthE)?" selected":"")." value=$_>$_</option>\n"; }
-				print "</SELECT>";
-				print " <SELECT name=\"jourEnd\" size=\"1\">";
-				for (@dayList) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
-				print "</SELECT>";
-			print "</DIV></TD>";
-			print "<TD align=center style=\"border:0\"></TD>";
-			print "<TD style=\"border:0\">";
-				# --- ALIAS
-				print "<LABEL style=\"width:100px\" for=\"tz\">$__{'Time zone (h)'}:</LABEL>";
-				print "<INPUT size=\"5\" onMouseOut=\"nd()\" value=\"$usrTZ\" onmouseover=\"overlib('$__{help_creationstation_tz}')\" size=\"8\" name=\"tz\" id=\"tz\">";
-			print "</TD>";
-		print "</TR>";
-	print "</TABLE>\n";
-	print "</FIELDSET>";
-
-	# --- Features
-	print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
-	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',@feat)."\">"
-		."&nbsp;<IMG src=\"/icons/refresh.png\" align=\"top\" onClick=\"refresh_form();\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_featrefresh'}')\"><BR><BR>";
-	for (@feat) {
-		print "<LABEL style=\"width:120px\" for=\"$_\">$_:</LABEL>";
-		my $pat = qr/^$NODEName\|$_\|/;
-		my @fnlist = grep(/$pat/,@n2n);
-		my $fn = join(',',@fnlist);
-		$fn =~ s/$NODEName\|$_\|//g;
-		print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('$__{help_creationstation_n2n}')\"><BR>";
-	}
-	# edition of the node2node file needs an admin level
-	#if (WebObs::Users::clientHasAdm(type => "auth".lc($GRIDType)."s", name => "*")) {
-	#	print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
-	#}
-	print "</FIELDSET>";
-
-	# --- Grids
-	print "<FIELDSET><LEGEND>$__{'Associated Grids'}</LEGEND>\n";
-	# --- (additional) GRIDS: VIEWs and PROCs
-	# --- list only PROCs and VIEWs that client has AUTHEDIT to ...
-	my @GL;
-	#     ... all views and procs
-	#FB-was: my @Lprocs = map("PROC.".basename($_), qx(ls -d $WEBOBS{PATH_PROCS}/*)); chomp(@Lprocs);
-	#FB-was: my @Lviews = map("VIEW.".basename($_), qx(ls -d $WEBOBS{PATH_VIEWS}/*)); chomp(@Lviews);
-	my @Lprocs = map("PROC.".basename($_), qx(find $WEBOBS{PATH_PROCS}/* -type d)); chomp(@Lprocs);
-	my @Lviews = map("VIEW.".basename($_), qx(find $WEBOBS{PATH_VIEWS}/* -type d)); chomp(@Lviews);
-	#     ... set client-and-its-groups where clause element, then query DB
-	my $cid    = "$USERS{$CLIENT}{UID}";
-	my $wc = " uid in (SELECT GID from $WEBOBS{SQL_TABLE_GROUPS} WHERE UID=\"$cid\") OR uid = \"$cid\" ";
-	my @Aprocs = qx(sqlite3 -separator '.' $WEBOBS{SQL_DB_USERS} 'select "PROC",resource from $WEBOBS{SQL_TABLE_AUTHPROCS} where auth >= 2 and $wc');
-	my @Aviews = qx(sqlite3 -separator '.' $WEBOBS{SQL_DB_USERS} 'select "VIEW",resource from $WEBOBS{SQL_TABLE_AUTHVIEWS} where auth >= 2 and $wc');
-	chomp(@Aviews); chomp(@Aprocs);
-	#     ... merge client-allowed-to VIEWS and PROCS into @GL
-	if   ( ('VIEW.*') ~~ @Aviews ) { @GL = @Lviews }
-	else                           { map { push(@GL,$_) if (($_) ~~ @Aviews) } @Lviews }
-	if   ( ('PROC.*') ~~ @Aprocs ) { @GL = (@GL,@Lprocs) }
-	else                           { map { push(@GL,$_) if (($_) ~~ @Aprocs) } @Lprocs }
-	print "<TABLE border=\"0\" cellpadding=\"3\" cellspacing=\"0\" width=\"100%\">";
-	print "<TR><TD style=\"border:0\">";
-	print "<SELECT name=\"INs\" size=\"5\" MULTIPLE>";
-	for (@GL) { if (! (($_) ~~ @{$allNodeGrids{$NODEName}}) ) { print "<option value=\"$_\">$_</option>\n" } }
-	print "</SELECT></td>";
-	print "<TD style=\"border:0;text-align:center;vertical-align:middle\">";
-	print "<INPUT type=\"Button\" value=\"$__{Add} >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.form.INs,document.form.SELs)\"><br>";
-	print "<BR>";
-	print "<INPUT type=\"Button\" value=\"<< $__{Remove}\" style=\"width:100px\" onClick=\"javascript: if (document.form.SELs.options.length == 1) {alert('invalid remove: node MUST belong to at least 1 grid !');} else { SelectMoveRows(document.form.SELs,document.form.INs);}\">";
-	print "</TD>";
-	print "<TD style=\"border:0\">";
-	print "<SELECT name=\"SELs\" size=\"5\" multiple style=\"font-weight:bold\">";
-	if  ($newnode == 1) { print "<option selected value=\"$GRIDType.$GRIDName\">$GRIDType.$GRIDName</option>"; }
-	for (@{$allNodeGrids{$NODEName}}) { print "<option selected value=\"$_\">$_</option>"; }
-	print "</SELECT></td>";
-	print "</TR>";
-	print "</TABLE>";
-	print "</FIELDSET>";
-
 	print "</TD>\n";                                                                 # end left column
 	print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
 
@@ -1114,6 +1127,7 @@ print "<TR>";
 			print "<INPUT type=\"hidden\" name=\"filename\"";
 			print "<strong>$__{'To add a shapefile (.zip only) layer, click here'}: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
 			print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
+			print "<INPUT type=\"hidden\" name=\"geojson\" value=\"\"\n>";
 				
 		print "</TD>";
 		print <<FIN;
@@ -1258,7 +1272,6 @@ FIN
 			print "<INPUT hidden name=\"$_\" value=\"$NODE{$_}\">";
 		}
 	}
-
 
 	## # --- "Validity"
 	## if ( clientHasAdm(type=>"authmisc",name=>"NODES")) {
