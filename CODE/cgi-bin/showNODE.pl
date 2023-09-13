@@ -509,14 +509,11 @@ if (uc($GRIDType) eq 'PROC') {
 			my $vignette = "PROC.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}/$name.jpg";
 			if (-e "$WEBOBS{ROOT_OUTG}/$vignette") {
 				$vignette = "$WEBOBS{URN_OUTG}/$vignette";
-			} else {
-				$vignette = "/icons/visu.gif";
+				my $tmp2 = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName&ts=$time&g=$node";
+				my $message = "<b>$__{'Click to enlarge'}</B><br>";
+				$message = $message."Image=$tmp<br>";
+				print "<a href=\"$tmp2\"><img src=\"$vignette\" onMouseOut=\"nd()\" onmouseover=\"overlib('$message')\" alt=\"$vignette\"></a>";
 			}
-			#my $tmp2 = "/OUTG/PROC.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}/$tmp";
-			my $tmp2 = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName&ts=$time&g=$node";
-			my $message = "<b>$__{'Click to enlarge'}</B><br>";
-			$message = $message."Image=$tmp<br>";
-			print "<a href=\"$tmp2\"><img src=\"$vignette\" onMouseOut=\"nd()\" onmouseover=\"overlib('$message')\" alt=\"$vignette\"></a>";
 		}
 	 	print "</TD></TR></TABLE>\n";
 	}
