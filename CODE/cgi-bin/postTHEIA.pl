@@ -19,11 +19,13 @@ use warnings;
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
+use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
 use JSON;
 use Encode qw(decode encode);
 use feature 'say';
-use File::Temp qw/ tempfile tempdir /;
+#use File::Temp qw/ tempfile tempdir /;
 use File::Path qw(mkpath);
+use IO::Compress::Zip qw(zip $ZipError) ;
 
 # ---- webobs stuff
 use WebObs::Config;
@@ -39,11 +41,42 @@ my $password = "";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
    or die $DBI::errstr;
 
+# ---- local functions
+#
+
+# Return information when OK
+# (Reminder: we use text/plain as this is an ajax action)
+sub htmlMsgOK {
+ 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+}
+
+# Return information when not OK
+# (Reminder: we use text/plain as this is an ajax action)
+sub htmlMsgNotOK {
+ 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+ 	print "Update FAILED !\n $_[0] \n";
+}
+
+# Compress $dir's files into $zipfile without the whole path in the compress archive
+sub compressTxtFiles {
+    my $dataset = shift ;
+    my $NODEName = (split /\./, $dataset)[1];
+    my $dir     = shift ;
+    zip [ <$dir/*$NODEName*.txt> ] => "$dir/$dataset.zip",
+        FilterName => sub { s[^$dir/][] } ;
+}
+
+# ---- creating tmp directory to stock files
+my $dir = "$WEBOBS{PATH_TMP_WEBOBS}/theia";
+mkpath($dir);
+my @zip_files;
+
 # ---- start the creation of the JSON object ----------------------------------------------------
 #
 # ---- extracting producer data
 
-my $stmt = qq(SELECT * FROM producer);
+my $stmt = qq(SELECT * FROM producer INNER JOIN contacts ON producer.identifier = contacts.related_id);
 my $sth = $dbh->prepare( $stmt );
 my $rv = $sth->execute() or die $DBI::errstr;
 
@@ -137,9 +170,9 @@ $producer{'fundings'} = \@fundings;
 
 #print to_json $producer{'fundings'};
 
-# ---- extracting observed_properties data
+# ---- extracting observations data
 
-$stmt = qq(SELECT * FROM observations, observed_properties, sampling_features GROUP BY observations.identifier;);
+$stmt = qq(SELECT * FROM observations, sampling_features INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier GROUP BY observations.identifier);
 $sth = $dbh->prepare( $stmt );
 $rv = $sth->execute() or die $DBI::errstr;
 
@@ -152,11 +185,12 @@ my @observations;
 while( my @row = $sth->fetchrow_array() ) {
 	# ---- data from observed_properties table
 	my %observedProperty = (
-		name => decode("utf8",$row[10]),
-		unit => decode("utf8",$row[11]),
+		name => decode("utf8",$row[13]),
+		unit => decode("utf8", $row[14])
 	);
+
 	my @theiaCategories;
-	foreach (split(',',$row[12])) {
+	foreach (split(',',$row[15])) {
 		$_ =~ s/(\n)//g;
 		push(@theiaCategories, $_);
 	}
@@ -165,7 +199,7 @@ while( my @row = $sth->fetchrow_array() ) {
 	#print $observation{'observedProperty'}{'theiaCategories'}->[0];
 	# ---- data from sampling_features table
 	# ---- parsing coordinates
-	my $geometry = (split ':', $row[$#row])[1];
+	my $geometry = (split ':', $row[11])[1];
 	my $position = (split '\(|\)', $geometry)[1];
 	my @coordinates = split(',', $position);
 	$coordinates[0] = $coordinates[0] + 0;
@@ -185,13 +219,29 @@ while( my @row = $sth->fetchrow_array() ) {
 		samplingFeature => \%samplingFeature,
 	);
 	
+	my $GRIDType = 'PROC';
+	my $GRIDName = (split /\./,$row[6])[0];
+	my $NODEName = (split /\./,$row[6])[1];
 	my %datafile = (
-		name => $row[8],
+		name => $producer{'producerId'}."_OBS_$GRIDName.$NODEName\_$observedProperty{'name'}.txt",
 	);
 	my %result = (
 		dataFile => \%datafile,
 	);
 	
+	# ---- now generating the .txt file
+	my $dataname = $NODEName."_all.txt";
+	my $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/";
+	my $chan_nb = 5 + $row[16];
+	my $content = "grep -v '^#' $filepath$dataname | awk 'FS=\" \" {print \$1,\$2,\$3,\$4,\$5, \$$chan_nb}'";
+	my $content = qx($content);
+	my $obsfile = "$dir/$datafile{'name'}";
+	# ---- lock-exclusive the data file during all update process
+	#
+	open(FILE, '>', $obsfile);
+	print FILE $content;
+	close(FILE);
+
 	my %temporalExtent = (
 		dateBeg => (split '/', $row[3])[0],
 		dateEnd => (split '/', $row[3])[1],
@@ -223,7 +273,6 @@ if($rv < 0) {
 my @datasets;
 
 while( my @row = $sth->fetchrow_array() ) {
-
 	my $topicCategories = (split '_',$row[3])[0];
 	my @topicCategories;
 	foreach(split('_,',$topicCategories)){
@@ -283,20 +332,27 @@ while( my @row = $sth->fetchrow_array() ) {
 			push(@contacts, \%contact);
 		}
 	}
-	
+
 	$metadata{'contacts'} = \@contacts;
 	$dataset{'metadata'} = \%metadata;
-	
+
 	my @ds_obs;
 	foreach(@observations) {
-		if ($_>{'observationId'} =~ /$row[0]/){
-			#print encode_json $_;
+		my $obsId = (split /\./,$_->{'observationId'})[1];
+		my $datId = (split /\./,$row[0])[1];
+		if ($obsId =~ /$datId/) {
+			my $filename = decode_json encode_json $_->{'result'}->{'dataFile'}->{'name'};
+			#print $filename."\n";
 			push(@ds_obs, $_);
 		}
 	}
+
 	#print encode_json $ds_obs[0];
 	$dataset{'observations'} = \@ds_obs;
 	push(@datasets, \%dataset);
+	# ---- compressing observations files into OBSE_DAT_PROC.NODE.zip
+	compressTxtFiles("$dataset{'datasetId'}",$dir)
+		or die "zip failed: $ZipError\n";
 }
 
 #print encode_json \@datasets;
@@ -311,11 +367,8 @@ my %json = (
 
 #$dbh->disconnect();
 
-my $dir = "$WEBOBS{PATH_TMP_WEBOBS}";
-my $tempdir = tempdir();
-mkpath("$dir$tempdir");
 my $filename = "$json{'producer'}{'producerId'}_en.json";
-my $filepath = "$dir$tempdir/$filename";
+my $filepath = "$dir/$filename";
 #print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 #print $filepath;
 #print encode_json $json{'datasets'}->[0]{'metadata'}{'contacts'}; 
@@ -334,8 +387,19 @@ my $output = "java -jar $WEBOBS{ROOT_CODE}/bin/java/JSON-schema-validation-0-jar
 #print qx($output);
 
 if (qx($output) =~ /success/) {
-	print "Content-Disposition: attachment; filename=\"$filename\";\nContent-type: text/json\n\n";
-	print encode_json \%json;
+	push(@zip_files, $filepath);
+	my $zip_files = \@zip_files;
+	my $zipfile   = "$producer{'producerId'}_THEIA.zip";
+	zip [ <$dir/*DAT*.zip>, $filepath ] => "$dir/$zipfile",
+        FilterName => sub { s[^$dir/][] }
+        or die "zip failed: $ZipError\n" ;
+	print "Content-Disposition: attachment; filename=\"$zipfile\";\nContent-type: application/zip\n\n";
+	open(FH, '<',"$dir/$zipfile") or die $!;
+	while(<FH>){
+		print $_;
+	}
+	close(FH);
+	#print "Content-Disposition: attachment; filename=\"$filename\";\nContent-type: text/json\n\n";
 } #elsif (qx($output) =~ /(not found|schema violations found|subschema)/) 
 else {
 	print $cgi->header(-type=>'text/html',-charset=>'utf-8');
