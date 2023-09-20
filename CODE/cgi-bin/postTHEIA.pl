@@ -16,21 +16,23 @@ Create a JSON metadata file from the showTHEIA submitted informations.
 
 use strict;
 use warnings;
+use POSIX qw/strftime/;
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
-use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
 use JSON;
 use Encode qw(decode encode);
 use feature 'say';
-#use File::Temp qw/ tempfile tempdir /;
 use File::Path qw(mkpath);
 use IO::Compress::Zip qw(zip $ZipError) ;
+use File::Glob ':glob';
 
 # ---- webobs stuff
 use WebObs::Config;
 use WebObs::Users qw(clientHasRead clientHasEdit clientHasAdm);
 use WebObs::i18n;
+
+my $today = strftime("%Y-%m-%d\T%H:%M:%S\Z", localtime);
 
 # ---- connecting to the database
 my $driver   = "SQLite";
@@ -233,13 +235,21 @@ while( my @row = $sth->fetchrow_array() ) {
 	my $dataname = $NODEName."_all.txt";
 	my $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/";
 	my $chan_nb = 5 + $row[16];
-	my $content = "grep -v '^#' $filepath$dataname | awk 'FS=\" \" {print \$1,\$2,\$3,\$4,\$5, \$$chan_nb}'";
-	my $content = qx($content);
 	my $obsfile = "$dir/$datafile{'name'}";
-	# ---- lock-exclusive the data file during all update process
-	#
+
+	# ---- generating .txt files for the observed properties
+	# ---- header
+	my $header = "#Date_of_extraction;$today;\n";
+	$header .= "#Observation_ID;$row[0];\n";
+	$header .= "#Dataset_title;;\n";
+	$header .= "#Variable_name;".$row[5].";\n";
+	$header .= "dateBeg;dateEnd;latitude;longitude;altitude;value;qualityFlags;\n";
+	# ---- content
+	my $content = "grep -v '^#' $filepath$dataname | awk 'FS=\" \" {print \";\"\$1\"-\"\$2\"-\"\$3\"T\"\$4\":\"\$5\"Z\",\$$chan_nb\";\"}' OFS=\";\"";
+	$content = qx($content);
+	$header .= $content;
 	open(FILE, '>', $obsfile);
-	print FILE $content;
+	print FILE $header;
 	close(FILE);
 
 	my %temporalExtent = (
@@ -341,9 +351,22 @@ while( my @row = $sth->fetchrow_array() ) {
 		my $obsId = (split /\./,$_->{'observationId'})[1];
 		my $datId = (split /\./,$row[0])[1];
 		if ($obsId =~ /$datId/) {
-			my $filename = decode_json encode_json $_->{'result'}->{'dataFile'}->{'name'};
-			#print $filename."\n";
 			push(@ds_obs, $_);
+			my $filename = decode_json encode_json $_->{'result'}->{'dataFile'}->{'name'};
+			# ---- adding the title dataset into $filename
+			# ---- first we open $filename while creating a new $filename where we will write the line we want to insert
+			open my $in,  '<',  "$dir/$filename"      or die "Can't read old file: $!";
+			open my $out, '>', "$dir/$filename.new" or die "Can't write new file: $!";
+			my $title = decode("utf8",$row[1]);
+			while( <$in> ){
+				s/Dataset_title;/Dataset_title;$title/;	# ---- changing Dataset_title instances with Dataset_title;dataset title;
+				print $out $_;
+			}
+			
+			close $in;
+			close $out;
+			
+			rename "$dir/$filename.new", "$dir/$filename";
 		}
 	}
 
