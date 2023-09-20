@@ -81,6 +81,7 @@ create table observed_properties (
     NAME text NOT NULL, 
     UNIT text NOT NULL, 
     THEIACATEGORIES text NOT NULL, 
+    CHANNEL_NB text NOT NULL,
     PRIMARY KEY(IDENTIFIER)
     );
     
