@@ -29,13 +29,11 @@
 %
 %   MOVSUM(...) without output arguments produces a plot of the results.
 %
-%	Author: François Beauducel <beauducel@ipgp.fr>
+%	Author: Franï¿½ois Beauducel <beauducel@ipgp.fr>
 %		Institut de Physique du Globe de Paris / WEBOBS
 %	Created: 2005
-%	Updated: 2019-02-16
+%	Updated: 2023-09-14
 %
-
-error(nargchk(2,4,nargin));
 
 switch nargin
 
@@ -46,7 +44,7 @@ switch nargin
 		if ~isnumeric(x)
 			error('X argument must be numeric.')
 		end
-		if ~isnumeric(n) | numel(n) ~= 1 | n < 0 | mod(n,1) ~= 0
+		if ~isnumeric(n) || numel(n) ~= 1 || n < 0 || mod(n,1)
 			error('N argument must be a scalar positive integer.')
 		end
 		t = (1:size(x,1))';
@@ -57,10 +55,10 @@ switch nargin
 		t = varargin{1};
 		x = varargin{2};
 		n = varargin{3};
-		if ~isnumeric(t) | ~isnumeric(x) | size(t,1) ~= size(x,1)
+		if ~isnumeric(t) || ~isnumeric(x) || size(t,1) ~= size(x,1)
 			error('T and X must be numeric with same number of rows.')
 		end
-		if ~isnumeric(n) | numel(n) ~= 1 | n < 0 | mod(n,1) ~= 0
+		if ~isnumeric(n) || numel(n) ~= 1 || n < 0 || mod(n,1)
 			error('N argument must be a scalar positive integer.')
 		end
 		
@@ -70,7 +68,7 @@ switch nargin
 		if dtx <= 0
 			error('T must be monotonic non decreasing vector.');
 		end
-		if any(rem(dt,dtx)) ~= 0
+		if any(rem(dt,dtx))
 			error('Cannot find a constant sampling interval for T.');
 		end
 		
@@ -80,28 +78,29 @@ switch nargin
 		x = varargin{2};
 		dtx = varargin{3};
 		dty = varargin{4};
-		if ~isnumeric(t) | ~isnumeric(x) | size(t,1) ~= size(x,1)
+		if ~isnumeric(t) || ~isnumeric(x) || size(t,1) ~= size(x,1)
 			error('T and X must be numeric with same number of rows.')
 		end
-		if ~isnumeric(dtx) | numel(dtx) ~= 1 | dtx < 0
+		if ~isnumeric(dtx) || numel(dtx) ~= 1 || dtx < 0
 			error('DTX argument must be a positive scalar.')
 		end
-		if ~isnumeric(dty) | numel(dty) ~= 1 | dty < 0 | rem(dty,dtx) ~= 0
+		if ~isnumeric(dty) || numel(dty) ~= 1 || dty < 0 || rem(dty,dtx)
 			error('DTY argument must be a positive scalar multiple of DTX.')
 		end
 		n = dty/dtx;
 			
+		otherwise
+			error('Wrong number of input arguments.')
 end
 
 if nargin > 2
 	% makes a continuous monotonic time vector
 	tc = (t(1):dtx:t(end))';
 	r = dtx/2;
-	%resamples vector x into xc
+	%resamples vector x into xc (using sum)
 	xc = zeros(size(tc));
 	for i = 1:numel(tc)
-		k = find(t >= (tc(i) - r) & t < (tc(i) + r));
-		xc(i) = sum(x(k));
+		xc(i) = sum(x(t >= (tc(i) - r) & t < (tc(i) + r)));
 	end
 end
 
