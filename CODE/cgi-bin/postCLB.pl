@@ -191,6 +191,7 @@ sub htmlMsgOK {
         my $name  = $obs[6];
         my $unit  = $obs[4];
         my $theia = $obs[$#obs];
+        my $chan  = $obs[2];
         
         # observations table
         my $obsid    = 'OBSE_OBS_'.$GRIDName.'.'.$NODEName.'_'.$id;
@@ -229,8 +230,8 @@ sub htmlMsgOK {
 			my $obs_date = "$first_obs_date/$last_obs_date";
 			
 			# --- completing observed_properties table
-			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES) VALUES (?,?,?,?);');
-			$sth->execute($id, $name, $unit, $theia);
+			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES,CHANNEL_NB) VALUES (?,?,?,?,?);');
+			$sth->execute($id, $name, $unit, $theia, $chan);
 			
 			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
 			$sth->execute($obsid,$obs_date,$station,$id,$dataset,$dataname);
