@@ -205,8 +205,11 @@ while( my @row = $sth->fetchrow_array() ) {
 	my $position = (split '\(|\)', $geometry)[1];
 	my @coordinates = split(',', $position);
 	$coordinates[0] = $coordinates[0] + 0;
+	my $lat = $coordinates[0];
 	$coordinates[1] = $coordinates[1] + 0;
+	my $lon = $coordinates[1];
 	$coordinates[2] = $coordinates[2] + 0;
+	my $alt = $coordinates[2];
 	my %geometry = (
 		type => (split '\(|\)', $geometry)[0],
 		coordinates => \@coordinates,
@@ -245,7 +248,7 @@ while( my @row = $sth->fetchrow_array() ) {
 	$header .= "#Variable_name;".$row[5].";\n";
 	$header .= "dateBeg;dateEnd;latitude;longitude;altitude;value;qualityFlags;\n";
 	# ---- content
-	my $content = "grep -v '^#' $filepath$dataname | awk 'FS=\" \" {print \";\"\$1\"-\"\$2\"-\"\$3\"T\"\$4\":\"\$5\"Z\",\$$chan_nb\";\"}' OFS=\";\"";
+	my $content = "grep -v '^#' $filepath$dataname | awk 'FS=\" \" {print \";\"\$1\"-\"\$2\"-\"\$3\"T\"\$4\":\"\$5\"Z\",\"$lat\",\"$lon\",\"$alt\",\$$chan_nb\";\"}' OFS=\";\"";
 	$content = qx($content);
 	$header .= $content;
 	open(FILE, '>', $obsfile);
