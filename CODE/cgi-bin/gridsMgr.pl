@@ -609,7 +609,7 @@ Producers&nbsp;$go2top
 		<div class="pproducers-container">
 			<div class="pproducers">
 				<table class="pproducers">
-				<thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupProducer(-1);return false"><img title="define a new domain" src="/icons/modif.png"></a>
+				<thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupProducer(-1);return false"><img title="define a new grid" src="/icons/modif.png"></a>
 				<th style=\"width:12px\" class="tdlock">&nbsp;
 				<th>Id</th><th>Name</th><th>Title</th><th>Description</th><th>Objective</th><th>MeasuredVariables</th><th>Email</th><th>Contacts</th><th>Funders</th><th>Resources</th><th>Grids</th>
 				</tr></thead>
