@@ -17,17 +17,20 @@
  *
  * Author: François Beauducel, IPGP/WebObs
  * Created: 2023-09-15
- * Updated: 2023-09-15
+ * Updated: 2023-09-20
  */
 
 
 void msum(double* t, double* x, double tw, double* y, size_t numel) {
-	mwSize i, j;
+	mwSize i, j, k = 0;
 
-	for (i = 0; i < numel; i++) {
-		for (j = i; j >= 0; j--) {
-			if (*(t + i) - tw < *(t + j)) {
-				*(y + i) += *(x + j);
+	*(y) = *(x);
+	for (i = 1; i < numel; i++) {
+		*(y+i) = *(y+i-1) + *(x+i);
+		for (j = k; j < i; j++) {
+			if ((*(t+i) - tw) > *(t+j)) {
+				*(y+i) -= *(x+j);
+				k++;
 			} else {
 				break;
 			}

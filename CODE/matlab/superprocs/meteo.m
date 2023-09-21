@@ -55,7 +55,7 @@ function DOUT=meteo(varargin)
 %
 %   Authors: F. Beauducel + S. Acounis / WEBOBS, IPGP
 %   Created: 2001-07-04
-%   Updated: 2023-09-14
+%   Updated: 2023-09-20
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -93,8 +93,8 @@ gwind = (~isnan(i_winds) && ~isnan(i_winda)); % suplots wind flag
 for n = 1:length(N)
 	stitre = sprintf('%s : %s',N(n).ALIAS,N(n).NAME);
 
-	t = D(n).t;
-	d = D(n).d;
+	[t,i] = sort(D(n).t); % for rain calculation, data must be sorted
+	d = D(n).d(i,:);
 	C = D(n).CLB;
 	nx = size(d,2);
 
@@ -107,11 +107,14 @@ for n = 1:length(N)
 	end
 	if ~isempty(t)
 
-		fprintf('%s: computing rain moving sum...',wofun);
+		fprintf('%s: [%s] computing rain moving sum...',wofun,N(n).ID);
 		% adds extra columns with continuous rain (i_ap days for alert and CUMULATE)
 		rdec = unique([i_ap,cat(2,P.GTABLE.CUMULATE)]);
+		d = cat(2,d,nan([size(d,1),length(rdec)]));
+		kr = ~isnan(d(:,i_rain)); % process only real samples
 		for r = 1:length(rdec)
-			d(:,nx+r) = msum(t,d(:,i_rain),rdec(r),'verbose');
+			fprintf(' @%s ',days2h(rdec(r)));
+			d(kr,nx+r) = msum(t(kr),d(kr,i_rain),rdec(r));
 			fprintf('.');
 		end
 		fprintf(' done.\n');
@@ -183,7 +186,7 @@ for n = 1:length(N)
 
 				hold on
 				% rainfall alerts in background
-				vp = [diff(d(:,nx+1)>=s_ap);-1];
+				vp = [diff(d(:,nx+find(rdec==i_ap))>=s_ap);-1];
 				kp0 = find(vp==1);
 				kp1 = find(vp==-1);
 				if ~isempty(kp0)
