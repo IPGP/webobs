@@ -17,7 +17,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03
-%	Updated: 2023-02-14
+%	Updated: 2023-09-20
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -126,7 +126,7 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 		superproc = sprintf('%s%s',sname,sext);
 		w1 = wosystem('echo "$(whoami)@$(hostname)"','chomp','print');
 		% gets the updated date of superproc's code... (note: mkgraph is always called by a superproc)
-		[s,w2] = wosystem(sprintf('grep "Updated:" superprocs/%s',superproc),'chomp');
+		[s,w2] = wosystem(sprintf('grep "Updated:" %s/matlab/superprocs/%s',WO.ROOT_CODE,superproc),'chomp');
 		if s
 			w2 = 'no source';
 		else
