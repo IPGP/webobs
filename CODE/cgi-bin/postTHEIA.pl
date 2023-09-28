@@ -38,8 +38,9 @@ use WebObs::i18n;
 
 my $today = strftime("%Y-%m-%d\T%H:%M:%S\Z", localtime);
 
-my $QryParm = $cgi->Vars;
-my @nodes   = split(/,/, $QryParm->{'nodes'});
+my $QryParm  = $cgi->Vars;
+my @nodes    = split(/,/, $QryParm->{'nodes'});
+my @channels = split(/,/, $QryParm->{'channels'});
 
 # ---- connecting to the database
 my $driver   = "SQLite";
@@ -184,9 +185,9 @@ $producer{'fundings'} = \@fundings;
 
 my @observations;
 
-foreach (@nodes) {
+foreach (@channels) {
 	$stmt  = "SELECT * FROM observations, sampling_features INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
-	$stmt .= " WHERE observations.identifier LIKE '\%$_\%'";
+	$stmt .= " WHERE observations.identifier = '$_'";
 	$stmt .= " GROUP BY observations.identifier";
 	$stmt  = qq($stmt);
 	$sth   = $dbh->prepare( $stmt );
@@ -292,7 +293,7 @@ foreach (@nodes) {
 my @datasets;
 
 foreach (@nodes) {
-	$stmt = qq(SELECT * FROM datasets WHERE datasets.identifier LIKE '\%$_\%';);
+	$stmt = qq(SELECT * FROM datasets WHERE datasets.identifier = '$_';);
 	$sth = $dbh->prepare( $stmt );
 	$rv = $sth->execute() or die $DBI::errstr;
 
