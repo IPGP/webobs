@@ -1,7 +1,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{WebObs metadata database interface} \label{metadata}
+a\chapter{WebObs metadata database interface} \label{metadata}
 
 
 
@@ -122,13 +122,17 @@ Each of these 3 objects (producer, datasets, observations) can be filled through
 	\caption{The table sums up the mandatory metadata that have been filled to create the JSON file that will be send to the Theia$\vert$OZCAR IS.}
 \end{figure}
 
-By clicking on each row on the pencil, you can get back to the edition menu of the clicked object. If you click on the delete symbol, the row wil be deleted. Then, to create the JSON file, you have to validate the form. A message will appear if the creation of the file succeed and will tell the path to the JSON file. If not working, the error message will tell you which information is lacking or not filled correctly.
+By clicking on each row on the pencil, you can get back to the edition menu of the clicked object. If you click on the delete symbol, the row wil be deleted. Then, to create the JSON file, you have to validate the form. If all the required metadata are  and valid, a .zip file is created for each dataset, containing the observations in a .txt file. Finally, a .zip file is made with the JSON and the datasets .zip files.
+
+\newpage
 
 \begin{figure}[!h]
 	\centering
-	\includegraphics[scale=0.4]{figures/creation_json_msg.png}
-	\caption{}
+	\includegraphics[scale=0.25]{figures/zipfile.png}
+	\caption{If it succeed, a .zip file will be downloaded, containing all the metadata and data ready to send to THEIA pivot model.}
 \end{figure}
+
+\newpage
 
 % ==================================================================
 \subsubsection{Producer metadata}
@@ -143,10 +147,19 @@ The producer metadata can be filled throughout the \wo{domain} edition menu.
 
 Each data producer can be edited or deleted. When creating, deleting or editing a producer, a local SQLite database is filled,  called WEBOBSMETA.db, which is only available for the admin. Only the mandatory metadata are necessary, in addition to the grids related to the producer (as several producer can co-exist on the same WebObs).Other metadata are optional even if some are more or less recommended.
 
+\newpage
+
 % ==================================================================
 \subsubsection{Dataset metadata}
 
 Dataset metadata is entered when creating or editing an existing \wo{node}. The \textbf{Name} WebObs \wo{node} fields correspond to the \textbf{dataset.Title} Theia$\vert$OZCAR IS field.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth, scale=0.4]{figures/formNODE.png}
+	\caption{When creating or editing a NODE, fields appear in the left lower panel to fill required metadata in.}
+\end{figure}
+
 
 % ==================================================================
 \subsubsection{Observation metadata}
