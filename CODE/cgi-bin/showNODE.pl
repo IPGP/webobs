@@ -110,6 +110,9 @@ if (scalar(@NID) == 3) {
 	} else { die "$GRIDType.$GRIDName.$NODEName $__{'unknown'}" }
 } else { die "$__{'Not a fully qualified node name (gridtype.gridname.nodename)'}" }
 
+# ---- Looking for THEIA user flag
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
+
 my %allNodes = readNode;
 my $NODENameLower = lc($NODEName);
 
@@ -260,16 +263,6 @@ if ($editOK) {
 	print "Type";
 }
 print "</TH><TD colspan=\"2\">$NODE{TYPE}</TD></TR>\n";
-
-# Row "description" ------------------------------------------------------------------
-#
-print "<TR><TH valign=\"top\">";
-if ($editOK) {
-	print "<A href=\"$cgiConf\">Description</A>";
-} else {
-	print "Description";
-}
-print "</TH><TD colspan=\"2\">$NODE{DESCRIPTION}</TD></TR>\n";
 
 # Row "Lifetime" ----------------------------------------------------
 #
@@ -423,7 +416,7 @@ if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
 # Row "proc": codes, status, data... -----------------
 #
 if (uc($GRIDType) eq 'PROC') {
-	print "<TR><TH valign=\"top\" rowspan=4>";
+	print "<TR><TH valign=\"top\" rowspan=5>";
 	if ($editOK) { print "<A href=\"$cgiConf\">Proc</A>" }
 	else { print "Proc" }
 	printf "</TH><TD valign=\"top\" width=\"10%\"><B>";
@@ -441,6 +434,12 @@ if (uc($GRIDType) eq 'PROC') {
 	print "<BR>Raw Format: $rawFormats{$rawformat}{supfmt} / <B>$rawformat</B> ($rawFormats{$rawformat}{name})" if ($rawformat ne "");
 	print "<BR>Raw Data Source: <B>$rawdata</B>" if ($rawdata ne "");
 	print "</TD></TR>\n";
+	
+	# --- description
+	print "<TR><TD valign=\"top\" width=\"10%\"><B>$__{'Description'}</B></TD><TD style=\"text-align:left\">"
+		."<TABLE><TR><TD style=\"border:0;text-align:left\">";
+	print $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
+	print "</TD></TR></TABLE></TD></TR>\n";
 
 	# --- status
 	print "<TR><TD valign=\"top\" width=\"10%\"><B>$__{'Status'}</B></TD><TD style=\"text-align:left\">"
@@ -539,6 +538,7 @@ if (uc($GRIDType) eq 'PROC') {
 	if ($#carCLB >= 0) {
 		my @clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
 		my @fieldCLB = readCfg($CLBS{FIELDS_FILE});
+		if ( $theiaAuth != 1 ) {pop(@fieldCLB); }
 		print "<TABLE><TR>";
 		for (0..($#fieldCLB)) {
 			print "<TH><SMALL>",$fieldCLB[$_][2]."</SMALL></TH>";
@@ -548,6 +548,11 @@ if (uc($GRIDType) eq 'PROC') {
 		my $dateCLB = "";
 		my $sepCLB;
 		for (@carCLB) {
+			if ( $theiaAuth != 1 ) {
+				@_ = split(/\|/, $_);
+				pop(@_);
+				$_ = join('|', @_);
+			}
 			my (@chpCLB) = split(/\|/,$_);
 			if ($dateCLB ne "" && $dateCLB ne $chpCLB[0]) {
 				$sepCLB = "<TR><TH colspan=\"".(@fieldCLB)."\"></TH></TR>\n";
