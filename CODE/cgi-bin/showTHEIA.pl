@@ -6,16 +6,7 @@ showTHEIA.pl
 
 =head1 SYNOPSIS
 
-http://..../showTHEIA.pl?object=object[,id=Identifier,action=delete]
-
- object=
- producer, dataset or observation.
- 
- id=
- Identifier of the above object.
-
- delete=
- if present delete the row.
+http://..../showTHEIA.pl
 
 =head1 DESCRIPTION
 
@@ -44,7 +35,9 @@ use JSON;
 
 # ---- webobs stuff
 use WebObs::Config;
+use WebObs::Grids;
 use WebObs::Users;
+use WebObs::Search;
 use WebObs::i18n;
 
 # ---- checking if user has authorisation to create a JSON metadata file.
@@ -52,6 +45,15 @@ use WebObs::i18n;
 if ( ! WebObs::Users::clientHasAdm(type=>"authmisc",name=>"grids")) {
 	die "You are not authorized" ;
 }
+
+# ---- init general-use variables on the way and quit if something's wrong
+#
+my $GRIDType = "";      # grid type ("PROC" or "VIEW")
+my $GRIDName = "";      # name of the grid
+my %GRID;               # structure describing the grid
+my %NODE;
+my @NODELIST;
+my @CHANLIST;
 
 # ---- Gathering query informations
 #
@@ -68,31 +70,6 @@ my $userid = "";
 my $password = "";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
    or die $DBI::errstr;
-   
-# ---- if action=delete, the field with the id=Identifier will be erased from the metadata panel 
-# ---- note that the deletion of a dataset means the deletion of ALL the observations related to that dataset in the panel
-
-if ($action eq "delete") {
-	my $stmt = qq(DELETE FROM $object WHERE identifier = \"$identifier\");
-	my $rv = $dbh->do("PRAGMA foreign_keys = ON;");
-	my $sth = $dbh->prepare( $stmt );
-	my $rv = $sth->execute() or die $DBI::errstr;
-
-	if($rv < 0) {
-	   print $DBI::errstr;
-	}
-	
-	if ($object = "datasets") {
-	    $stmt = qq(DELETE FROM datasets WHERE identifier LIKE \"$identifier%\");
-	    $rv = $dbh->do("PRAGMA foreign_keys = ON;");
-	    $sth = $dbh->prepare( $stmt );
-	    $rv = $sth->execute() or die $DBI::errstr;
-
-	    if($rv < 0) {
-	       print $DBI::errstr;
-	    }
-	}
-}
 
 # ---- display HTML content
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
@@ -216,33 +193,40 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
 		."<TH><SMALL>Provenance</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
-	my $nodeId  = (split '\.', $row[0]) [1];
-	my $proc    = (split '_', (split '\.', $row[0]) [0]) [2];
-	my $subject = join(',', split(/_/,$row[3]));
-	
-	# ---- extracting datasets contacts data
-	my $stmt2 = qq(SELECT * FROM contacts WHERE related_id LIKE '$row[0]%';);
-	my $sth2 = $dbh->prepare( $stmt2 );
-	my $rv2 = $sth2->execute() or die $DBI::errstr;
+	my $datasetId = (split /_DAT_/, $row[0]) [1];
+	#print $datasetId."||";
+	($GRIDName, my $nodeId) = (split /\./, $datasetId);
+	my %G = readProc($GRIDName);
+	%GRID = %{$G{$GRIDName}};
+	my @NODELIST = 	split / /,$GRID{THEIA_SELECTED_NODELIST};
+	if ( grep(/^$nodeId$/,@NODELIST) || substr($nodeId, 1) ~~ $GRID{THEIA_SELECTED_NODELIST}) {
+		my $subject = join(',', split(/_/,$row[3]));
+		push(@NODELIST, $nodeId);
+		
+		# ---- extracting datasets contacts data
+		my $stmt2 = qq(SELECT * FROM contacts WHERE related_id LIKE '$row[0]%';);
+		my $sth2 = $dbh->prepare( $stmt2 );
+		my $rv2 = $sth2->execute() or die $DBI::errstr;
 
-	if($rv2 < 0) {
-	   print $DBI::errstr;
-	}
+		if($rv2 < 0) {
+		   print $DBI::errstr;
+		}
 
-	my @contacts;
-	while(my @row2 = $sth2->fetchrow_array()){
-		push(@contacts, $row2[1]." ".$row2[2].": ".$row2[0]);
-	}
-	
-	print "<TR><TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$proc.$nodeId\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
-			."<TD width=1%><A id=$row[0] class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
-			."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[2]</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
-			."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[4]</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[5]</SMALL></TD></TR>";
+		my @contacts;
+		while(my @row2 = $sth2->fetchrow_array()){
+			push(@contacts, $row2[1]." ".$row2[2].": ".$row2[0]);
+		}
+		
+		print "<TR class=\"node\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$nodeId\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
+				."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
+				."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
+				."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
+				."<TD width=14% align=center><SMALL>$row[2]</SMALL></TD>"
+				."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
+				."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
+				."<TD width=14% align=center><SMALL>$row[4]</SMALL></TD>"
+				."<TD width=14% align=center><SMALL>$row[5]</SMALL></TD></TR>";
+		}
 };
 
 print "</TABLE></TD>\n";
@@ -275,40 +259,85 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
 		."<TH><SMALL>Data file name</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
-	my $nodeId  = (split '_', (split '\.', $row[0]) [1]) [0];
-	my $proc    = (split '_', (split '\.', $row[0]) [0]) [2];
-	my $subject = join(',', split(/_/,$row[3]));
-	print "<TR><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$proc.$nodeId\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
-			."<TD width=1%><A id=$row[0] class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete observation\" src=\"/icons/no.png\"></A></TD>"
-			."<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
-			."<TD width=6% align=center><SMALL>$row[1]</SMALL></TD>"
-			."<TD width=6% align=center><SMALL>$row[2]</SMALL></TD>"
-			."<TD width=12% align=center><SMALL>$row[3]</SMALL></TD>"
-			."<TD width=4% align=center><SMALL>$row[4]</SMALL></TD>"
-			."<TD width=8% align=center><SMALL>$row[5]</SMALL></TD>"
-			."<TD width=10% align=center><SMALL>$row[6]</SMALL></TD>"
-			."<TD width=12% align=center><SMALL>$row[7]</SMALL></TD>"
-			."<TD width=8% align=center><SMALL>$row[8]</SMALL></TD></TR>";
+	my $datasetId = (split /_/, $row[0]) [2];
+	my $channelId = (split /$datasetId\_/, $row[0]) [1];
+	($GRIDName, my $nodeId) = (split /\./, $datasetId);
+	my %G = readProc($GRIDName);
+	my %S = readNode($nodeId);
+	%GRID = %{$G{$GRIDName}};
+	%NODE = %{$S{$nodeId}};
+	@NODELIST = split /,/,$GRID{THEIA_SELECTED_NODELIST};
+	@CHANLIST = split /,/,$NODE{"PROC.$GRIDName.CHANNEL_LIST"};
+	my $fileDATA = "$NODES{PATH_NODES}/$nodeId/PROC.$GRIDName.$nodeId.clb";
+	my @donnees = map { my @e = split /\|/; \@e; } readCfgFile($fileDATA);
+	my @vars = map {$donnees[$_-1][6]} @CHANLIST;
+	if ( (grep(/^$nodeId$/,@NODELIST) || substr($nodeId, 1) ~~ $GRID{THEIA_SELECTED_NODELIST}) and $channelId ~~ @vars) {
+		my $subject = join(',', split(/_/,$row[3]));
+		print "<TR class=\"channel\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$GRIDName.$nodeId\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
+				."<TD width=1%><A class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete observation\" src=\"/icons/no.png\"></A></TD>"
+				."<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
+				."<TD width=6% align=center><SMALL>$row[1]</SMALL></TD>"
+				."<TD width=6% align=center><SMALL>$row[2]</SMALL></TD>"
+				."<TD width=12% align=center><SMALL>$row[3]</SMALL></TD>"
+				."<TD width=4% align=center><SMALL>$row[4]</SMALL></TD>"
+				."<TD width=8% align=center><SMALL>$row[5]</SMALL></TD>"
+				."<TD width=10% align=center><SMALL>$row[6]</SMALL></TD>"
+				."<TD width=12% align=center><SMALL>$row[7]</SMALL></TD>"
+				."<TD width=8% align=center><SMALL>$row[8]</SMALL></TD></TR>";
+	}
 };
 
 print "</TABLE></TD>\n";
 print "</TR></TABLE>\n";
 print "<BR><BR>\n";
 
+print "<input type=\"hidden\" name=\"nodes\">";
+print "<input type=\"hidden\" name=\"channels\">";
+
 print <<"FIN";
 <script>
 	function deleteRow(element) {
-		if (confirm(\"Do you really want to delete \"+element.id+\" ?\")) {
-			element.href=\"/cgi-bin/showTHEIA.pl?object=\"+element.className+\"&id=\"+element.id+\"&action=delete\";
-		} else {
-			console.log(element);
-			console.log(\"/cgi-bin/showTHEIA.pl?object=\"+element.className+\"&id=\"+element.id+\"&action=delete\");
+		/**
+		 * Delete a row from the THEIA metadata resume board (but the metadata are still saved in the database !).
+		 * \@param {element} element DOM element (e.g. the "delete" sign)
+		 */
+		const form = document.forms[0];
+		var row = element.parentNode.parentNode;
+		const nodes = document.getElementsByClassName('node');
+		const channels = document.getElementsByClassName('channel');
+		if (confirm(\"Do you really want to delete \"+row.id+\" ?\")) {
+			const newNodes = [];
+			row.remove();
+			Array.from(nodes).forEach((node) => newNodes.push(node.id.split('.')[1]));
+			newNodes.join(',');
+			Array.from(channels).forEach( (chan) => { if (chan.id.split(/[\.|\_]/)[3] == row.id.split('.')[1]) {chan.remove();} } );
+			form.nodes.value = newNodes;
+			console.log(form.nodes.value);
 		}
+	}
+	
+	function gather() {
+		/**
+		 * Gather the rows ids to send the list of datasets and observations to postTHEIA.pl.
+		 */
+		const form = document.forms[0];
+		
+		const nodes = document.getElementsByClassName('node');
+		const nodeList = [];
+		Array.from(nodes).forEach((node) => nodeList.push(node.id.split('.')[1]));
+		nodeList.join(',');
+		form.nodes.value = nodeList;
+		
+		const channels = document.getElementsByClassName('channel');
+		const channelList = [];
+		Array.from(channels).forEach((channel) => nodeList.push(channel.id));
+		channelList.join(',');
+		form.channels.value = channelList;
 	}
 </script>
 FIN
 
-print "<p><input type=\"submit\" onclick=\"\" name=\"valider\" value=\"Valider\"></p>";
+print "<p><input type=\"submit\" onclick=\"gather(); console.log(form.nodes.value)\" name=\"valider\" value=\"Valider\"></p>";
 print "</form>";
 
 __END__
