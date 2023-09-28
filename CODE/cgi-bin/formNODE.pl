@@ -56,6 +56,7 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my $newnode   = 0;
 my $titre2 = "";
 my $QryParm   = $cgi->Vars;
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
 
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
 if ( $GRIDType ne "" && $GRIDName ne "" ) {
@@ -137,7 +138,7 @@ my $usrAlt       = $NODE{ALTITUDE};
 my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
 # THEIA metadata
-my $usrDesc;
+my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
 my $usrProducer;
 my @usrRole;
 my @usrFirstName;
@@ -392,6 +393,7 @@ function postIt()
   } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
 	
 	console.log(\$(\"#theform\"));
+	console.log(form.description.value);
 	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
 		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
@@ -762,17 +764,6 @@ function removeCreator() {
 		form.count_creator.value -= 1;
 	}
 }
-function showHideTheia(checkbox){
-	const theia = document.getElementById("showHide");
-
-	if (checkbox.checked == false) {
-		theia.style.display = "none";
-		document.form.showHide.value = 0;
-	} else {
-		theia.style.display = "block";
-		document.form.showHide.value = 1;
-	}
-}
 
 // creating and parametring the map for the geographic location choice
 
@@ -998,13 +989,13 @@ print "<TR>";
 	print "</TABLE>";
 	print "</FIELDSET>";
 	
-		# --- Procs metadata
+	# --- Procs metadata
 	print "<FIELDSET><LEGEND>$__{'Procs Metadata'}</LEGEND>";
 	# --- DESCRIPTION
 		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
-		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc<\/TEXTAREA>&nbsp;&nbsp;<BR>";
+		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\" form=\"theform\">$usrDesc</TEXTAREA>&nbsp;&nbsp;<BR>";
 		# --- show THEIA fields ?
-		print "<LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT name=\"showHide\" type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
+		#print "<LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT name=\"showHide\" type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
 		print "<DIV id=\"showHide\" style=\"display:none;\">";
 		# --- PRODUCER
 		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
@@ -1132,6 +1123,16 @@ print "<TR>";
 		print "</TD>";
 		print <<FIN;
 		<script>
+			const theia = document.getElementById("showHide");
+			const auth = $theiaAuth;
+				
+			if (auth == 1) {
+				console.log(theia);
+				theia.style.display = "block";
+			} else {
+				theia.style.display = "none";
+			}
+		
 			var map = L.map('map', mapOptions);
 			var popup = L.popup();
 			map.on('click', onMapClick);
