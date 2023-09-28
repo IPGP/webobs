@@ -312,7 +312,6 @@ print <<"FIN";
 			newNodes.join(',');
 			Array.from(channels).forEach( (chan) => { if (chan.id.split(/[\.|\_]/)[3] == row.id.split('.')[1]) {chan.remove();} } );
 			form.nodes.value = newNodes;
-			console.log(form.nodes.value);
 		}
 	}
 	
@@ -324,20 +323,20 @@ print <<"FIN";
 		
 		const nodes = document.getElementsByClassName('node');
 		const nodeList = [];
-		Array.from(nodes).forEach((node) => nodeList.push(node.id.split('.')[1]));
+		Array.from(nodes).forEach((node) => nodeList.push(node.id));
 		nodeList.join(',');
 		form.nodes.value = nodeList;
 		
 		const channels = document.getElementsByClassName('channel');
 		const channelList = [];
-		Array.from(channels).forEach((channel) => nodeList.push(channel.id));
+		Array.from(channels).forEach((channel) => channelList.push(channel.id));
 		channelList.join(',');
 		form.channels.value = channelList;
 	}
 </script>
 FIN
 
-print "<p><input type=\"submit\" onclick=\"gather(); console.log(form.nodes.value)\" name=\"valider\" value=\"Valider\"></p>";
+print "<p><input type=\"submit\" onclick=\"gather(); console.log(form.nodes.value); console.log(form.channels.value);\" name=\"valider\" value=\"Valider\"></p>";
 print "</form>";
 
 __END__
