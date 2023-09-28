@@ -6,7 +6,7 @@ postNODE.pl
 
 =head1 SYNOPSIS
 
-http://..../postTHEIA.pl?nodes=NODESLIST
+http://..../postTHEIA.pl?nodes=nodes,channels=channels
 
 =head1 DESCRIPTION
 
@@ -16,6 +16,9 @@ Create a JSON metadata file from the showTHEIA submitted informations.
 
  nodes=
  the NODEs names that we want to send the metadata to THEIA.
+ 
+ channels=
+ the CHANNELs names that we want to send the metadata to THEIA.
 
 =cut
 
