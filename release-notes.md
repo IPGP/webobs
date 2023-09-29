@@ -11,7 +11,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ## Under development
 
 ### New features
-1. When editing or creating a NODE, if a shapefile is associated to the NODE, a GEOJSON file is now created in **/opt/webobs/DATA/NODES/NODEName/**, and will contain all the metadata of the GEOJSON, so it could be re-used elsewhere.
+1. When editing or creating a NODE, if a shapefile is associated to the NODE, a GEOJSON file is now created in `/opt/webobs/DATA/NODES/NODEName/`, and will contain all the metadata of the GEOJSON, so it could be re-used elsewhere.
 2. Currently working on a way to create FORM, so it will be possible for users to generate their own FORM, like they do for generating GRID.
    
 ### Enhancements
