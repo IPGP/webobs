@@ -8,7 +8,16 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## v2.6.2 (September 2023)
+## Under development
+
+### New features
+1. When editing or creating a NODE, if a shapefile is associated to the NODE, a GEOJSON file is now created in `/opt/webobs/DATA/NODES/NODEName/`, and will contain all the metadata of the GEOJSON, so it could be re-used elsewhere.
+2. Currently working on a way to create FORM, so it will be possible for users to generate their own FORM, like they do for generating GRID.
+   
+### Enhancements
+1. The metadatabase has been separated from the THEIA|Ozcar pivot model summary table. From now on, when a NODE is created or edited, the datasets table is filled with the metadata concerning the NODE. Moreover, for each PROC, It is necessary to fill the `THEIA_SELECTED_NODESID` and `THEIA_SELECTED_TS` fields which respectively correspond to the NODEs associated to the given PROC and the timescale on which the given PROC produces the data, in order to send the data and metadata associated with the PROC.NODES and the selected timescale. Thus, the THEIA|Ozcar pivot model summary table only show the selected data producer, **PROC.NODEs** and **PROC.NODE_CHANNELs** that will be send to the pivot model. Finally, a JSON file is produced and a text file is created for each **PROC.NODE_CHANNELs** containing the data, included in the associated timescale, which will be send to the pivot model with the metadata. The JSON file contains only the metadata, and the text files the data. For each **PROC.NODE**, all the **PROC.NODE_CHANNEL** text files are compressed in a zip file named *producerId_DAT_PROC.NODE.zip*, and the the text files contained are named after *producerId_PROC.NODE_CHANNEL.txt*. At the end, a zip file containing the datasets zip files and the JSON metadata file is made and uploaded on the user computer.
+
+## v2.6.3 (September 2023)
 ### New features
 
 1. An interface has been created between WebObs and the Theia|OZCAR data portal. An Admin who needs to transfer metadata towards Theia can now produce a JSON file with WebObs metadata by filling some forms. The first form is located in the WebObs Grids Manager. The others are respectively the NODE forms and CLB forms. When a producer/NODE/new row in a CLB file is created, WebObs fills a metadata database which stores the metadata in order to write them in a JSON file, ready-to-send to the Theia data portal.
@@ -63,6 +72,8 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 1. We started to improve *GNU Octave* compatibility of the *Matlab* code. Since *Octave* has a less permissive grammar, it lead to a better writing and sometimes hidden bug fixes. See the associated [discussion thread](https://github.com/IPGP/webobs/discussions/116).
 
 1. Fix potential security problems with jquery (version 1.8 updated to 3.7)
+
+1. Fix a potential issue with Sefran3 display front page when there is too much MC events in the last days.
 
 ## v2.5.3 (September 2022)
 
