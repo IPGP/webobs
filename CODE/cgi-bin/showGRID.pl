@@ -87,6 +87,7 @@ my $admOK    = 0;       # 1 if the user has admin rights in the grid
 my $GRIDType = "";      # grid type ("PROC" or "VIEW")
 my $GRIDName = "";      # name of the grid
 my %GRID;               # structure describing the grid
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
 
 my @GID = split(/[\.\/]/, trim(checkParam($cgi->param('grid'),
 			qr{^(VIEW|PROC)(\.|/)|[a-zA-Z0-9]+$}, "grid") // ''));
@@ -353,9 +354,11 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 					$htmlcontents .= "<TR><TD align=\"right\">".($g eq ""?"Overview":"$g")."</TD>$outg</TR>\n";
 				}
 			}
-			$htmlcontents .= "<TR><TD>$__{'Send to Theia'}";
-			$htmlcontents .= join('', map { checkingTS($_,$GRID{THEIA_SELECTED_TS}) } @procTS);
-			$htmlcontents .= "</TD></TR>";
+			if (isok($theiaAuth)) {
+				$htmlcontents .= "<TR><TD>$__{'Send to Theia'}\nsalut".isok($theiaAuth);
+				$htmlcontents .= join('', map { checkingTS($_,$GRID{THEIA_SELECTED_TS}) } @procTS);
+				$htmlcontents .= "</TD></TR>";
+			}
 			$htmlcontents .= "</TABLE></TD>\n";
 		}
 		$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Param.'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
@@ -449,13 +452,23 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		#$htmlcontents .= "<TABLE width=\"100%\" style=\"margin-left: 5px\">";
 		$htmlcontents .= "<TABLE width=\"100%\">";
 		$htmlcontents .= "<TR>";
-			$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
-				."<TH rowspan=2>$__{'Alias'}</TH>"
-				."<TH rowspan=2>$__{'Send to Theia'}</TH>"
-				."<TH rowspan=2>$__{'Name'}</TH>"
-				."<TH colspan=3>$__{'Coordinates'}</TH>"
-				."<TH colspan=2>$__{'Lifetime and Validity'}"
-				."<TH rowspan=2>$__{'Type'}</TH>";
+			if (isok($theiaAuth)) {
+				$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
+					."<TH rowspan=2>$__{'Alias'}</TH>"
+					."<TH rowspan=2>$__{'Send to Theia'}</TH>"
+					."<TH rowspan=2>$__{'Name'}</TH>"
+					."<TH colspan=3>$__{'Coordinates'}</TH>"
+					."<TH colspan=2>$__{'Lifetime and Validity'}"
+					."<TH rowspan=2>$__{'Type'}</TH>";
+			}
+			else {
+				$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
+					."<TH rowspan=2>$__{'Alias'}</TH>"
+					."<TH rowspan=2>$__{'Name'}</TH>"
+					."<TH colspan=3>$__{'Coordinates'}</TH>"
+					."<TH colspan=2>$__{'Lifetime and Validity'}"
+					."<TH rowspan=2>$__{'Type'}</TH>";
+			}
 			if ($CLIENT ne 'guest') {
 				$htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
 				$htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>" if ($usrProject eq "on");
@@ -529,7 +542,9 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				# Node's code and name
 				my $lienNode="/cgi-bin/$NODES{CGI_SHOW}?node=$grid.$NODEName";
 				$htmlcontents .= "<TD align=center><B>$NODE{ALIAS}</B></TD>";
-				$htmlcontents .= checkingNODELIST($NODE{ALIAS},$GRID{THEIA_SELECTED_NODELIST});	# Node's checkbox to know if we want to send the NODE metadata to Theia
+				if (isok($theiaAuth)) {
+					$htmlcontents .= checkingNODELIST($NODE{ALIAS},$GRID{THEIA_SELECTED_NODELIST});	# Node's checkbox to know if we want to send the NODE metadata to Theia
+				}
 				$htmlcontents .= "<TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
 				
 				# Node's localization
