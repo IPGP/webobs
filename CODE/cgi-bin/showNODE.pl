@@ -166,6 +166,9 @@ if (-e $statusDB) {
 $GRID{UTM_LOCAL} //= '';
 my %UTM =  %WebObs::Mapping::UTM;
 
+# GNSS M3G metadata
+my $m3g_check    = $NODE{M3G_AVAIABLE};
+
 # ---- sort interventions by date / event stuff  -----------------------------------
 #
 $QryParm->{'sortby'} //= "event";
@@ -263,6 +266,18 @@ if ($editOK) {
 	print "Type";
 }
 print "</TH><TD colspan=\"2\">$NODE{TYPE}</TD></TR>\n";
+
+# Row "GNSS 9-code" ----------------------------------------------------
+#
+if ($NODE{GNSS_9CHAR}) {
+	print "<TR><TH valign=\"top\">";
+	if ($editOK) {
+		print "<A href=\"$cgiConf\">GNSS 9-code</A>";
+	} else {
+		print "GNSS 9-code";
+	}
+	print "</TH><TD colspan=\"2\">$NODE{GNSS_9CHAR}</TD></TR>\n";
+}
 
 # Row "Lifetime" ----------------------------------------------------
 #
@@ -587,6 +602,39 @@ if ($editOK || $#infosInstallNode >=0) {
 	print ($editOK ? "<a href=\"$cgiEtxt?file=$RinfoInstallFile&node=$GRIDType.$GRIDName.$NODEName\">$txt</a>":$txt);
 	print "</TH><TD colspan=\"2\">".wiki2html(join("",@infosInstallNode))."</TD></TR>\n";
 }
+
+# Row "M3G"
+#
+if ( $NODE{GNSS_9CHAR} && $NODE{M3G_AVAIABLE} ) {
+	print "<TR><TH valign=\"top\">";
+	my $txt = $__{'M3G GNSS Metadata'};
+	my $gnss9char = $NODE{GNSS_9CHAR};
+	my $m3g_url_sitelog = $WEBOBS{'M3G_EXPORTLOG'}.$gnss9char;
+	my $m3g_url_gml = $WEBOBS{'M3G_EXPORTXML'}.$gnss9char;
+	
+	my $m3g_link_sitelog = "<a href=".$m3g_url_sitelog.">Download $gnss9char sitelog on your local disk</a>";
+	my $m3g_link_gml = "<a href=".$m3g_url_gml.">Download $gnss9char GeodesyML on your local disk</a>";
+	
+	#### get geodesyML from M3G
+	my $GetGml = "/cgi-bin/get_gml_m3g.pl";
+	my $m3g_xml = "<a href=\"$GetGml?node=$GRIDType.$GRIDName.$NODEName\">Import GNSS metadata from M3G</a>";
+	#print "<BR>\n";
+	#### Auto-update receiver_history feature
+	my $cgiEtxt = "/cgi-bin/nedit.pl";
+	my $FEATURENODE = "FEATURES/receiver_history.txt";
+	my $receiver_history = "<a id=\"update_gnssrec\" href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&feat=gnssrec\">Auto-update receiver history feature</a>";
+	print "<BR>\n";
+	#### Auto-update antenna_history feature
+	my $FEATURENODE = "FEATURES/antenna_history.txt";
+	my $antenna_history = "<a id=\"update_gnssant\" href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&feat=gnssant\">Auto-update antenna history feature</a>";
+	
+	if ($editOK) {
+		print "<A href=\"$cgiConf\">$txt</A>";
+	} else {
+		print "M3G GNSS Metadata";
+	}	print "</TH><TD colspan=\"2\">".join("<br>",$m3g_link_sitelog,$m3g_link_gml,$m3g_xml,$receiver_history,$antenna_history)."</TD></TR>\n";
+}
+
 
 
 # Row "infos"
