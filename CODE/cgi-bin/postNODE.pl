@@ -238,6 +238,8 @@ my $spatialcov = $cgi->param('outWKT')      // '';
 my $geojson    = $cgi->param('geojson')     // '';
 my $filename   = $cgi->param('filename')    // '';
 my $alt        = $cgi->param('altitude')    // '';
+my $gnss_9char = $cgi->param('gnss_9char')  // '';
+my $m3g_check  = $cgi->param('m3g_check')   // '';
 my $anneeP     = $cgi->param('anneeMesure') // '';
 my $moisP      = $cgi->param('moisMesure')  // '';
 my $jourP      = $cgi->param('jourMesure')  // '';
@@ -348,6 +350,9 @@ if ( isok($theiaAuth) ) {
 # ---- NODE's validity flag
 my $valide = "";
 if ( $validite eq "NA" ) { $valide = 1; } else { $valide = 0; }
+# ---- 2nd checkbox: M3G avaiability flag
+my $m3g_avaiable = "";
+if ( $m3g_check eq "NA" ) { $m3g_avaiable = 1; } else { $m3g_avaiable = 0; }
 # ---- NODES' Feature Files: "system" always present, and "user" defined
 my @FFsys = ('acces.txt', 'info.txt', 'installation.txt', 'type.txt', "$NODEName.clb");
 my @FFusr = map { "$NODES{SPATH_FEATURES}/".lc($_).'.txt'} split(/\||,/,$features);
@@ -367,6 +372,8 @@ push(@lines,"TZ|$tz\n");
 push(@lines,"LAT_WGS84|$lat\n");
 push(@lines,"LON_WGS84|$lon\n");
 push(@lines,"ALTITUDE|$alt\n");
+push(@lines,"GNSS_9CHAR|$gnss_9char\n");
+push(@lines,"M3G_AVAIABLE|$m3g_avaiable\n");
 push(@lines,"POS_DATE|$datePos\n");
 push(@lines,"POS_TYPE|$typePos\n");
 push(@lines,"POS_RAWKML|$rawKML\n");
