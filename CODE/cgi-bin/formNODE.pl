@@ -135,6 +135,8 @@ my $usrLon       = $NODE{LON_WGS84};
 my $usrLonE = ($usrLon >= 0 ? "E":"W");
 $usrLon =~ s/^-//g;
 my $usrAlt       = $NODE{ALTITUDE};
+my $usrGnss9char = $NODE{GNSS_9CHAR};
+my $m3g_check    = $NODE{M3G_AVAIABLE};
 my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
 # THEIA metadata
@@ -294,9 +296,10 @@ print <<"FIN";
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
-<script src="https://unpkg.com/shpjs\@latest/dist/shp.js" type="text/javascript"></script>
-<script src="https://cdn.rawgit.com/calvinmetcalf/leaflet.shapefile/gh-pages/leaflet.shpfile.js" type="text/javascript"></script>
+<script src="/js/shp.min.js" type="text/javascript"></script>
+<script src="/js/leaflet.shpfile.js" type="text/javascript"></script>
 <script src="https://cdn.jsdelivr.net/gh/seabre/simplify-geometry\@master/simplifygeometry-0.0.2.js" type="text/javascript"></script>
+<script src="/js/simplifygeometry-0.0.2.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 
 function postIt()
@@ -393,7 +396,6 @@ function postIt()
   } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
 	
 	console.log(\$(\"#theform\"));
-	console.log(form.description.value);
 	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
 		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
@@ -659,18 +661,19 @@ function handleFiles() {
 	  		for (var i = 0; i <= geojson.features.length-1; i++) {
 	  			// applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
 	  			var geometry = geojson.features[i].geometry;
-	  			var coordinates = simplifyGeometry(geometry.coordinates[0], 0.003, highQuality=true);
+	  			var coordinates = simplifyGeometry(geometry.coordinates[0], 0.0001);
 	  			if (coordinates.length < 4) {
 	  				geometry.coordinates[0] = [[geometry.bbox[0],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[1]]];
 	  			}
 	  			else { geometry.coordinates[0] = coordinates; }
-	  			
-	  			/* var lonLat = [];
+				
+	  			/*var lonLat = [];
 	  			for (var j = 0; j <= coordinates.length-1; j++) {
 	  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]); 
-	  			} outWKT.push('((' + lonLat + '))'); */
-	  			
-	  		} document.form.geojson.value = JSON.stringify(geojson.features); 
+	  			} outWKT.push('((' + lonLat + '))');*/
+				
+	  		}
+			
 	  		/* document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]); */
 	  		
 			var shpfile = new L.Shapefile(geojson,{
@@ -689,6 +692,7 @@ function handleFiles() {
 			var geometry = JSON.stringify(getGeometry(geojson));
 			// console.log(geometry);
 			document.form.outWKT.value = geometry;
+			document.form.geojson.value = JSON.stringify(geojson.features);
 			return geojson;
 	  })
 	};
@@ -762,6 +766,22 @@ function removeCreator() {
 	} else if (form.count_creator.value > 1) {
 		\$(id)[0].remove();
 		form.count_creator.value -= 1;
+	}
+}
+
+function go_back_node() {
+	location.href  = document.form.referer.value;
+}
+
+function check_9char_code() {
+	const regex_9char = new RegExp('^[A-Z0-9]{4}[0-9]{2}[A-Z]{3}\$') ;
+	const gnss9char_for_test = document.form.gnss_9char.value;
+	const m3g_link = document.getElementById("m3g_link");
+	m3g_link.href += gnss9char_for_test;
+	if(gnss9char_for_test == "" || ! gnss9char_for_test.match(regex_9char)) {
+		alert("The GNSS 9 character code is not defined or does not fit \\n\<4 letters/numbers\>\<2 numbers\>\<3 letters ISO country code\>");
+		document.form.gnss_9char.focus();
+		return false;
 	}
 }
 
@@ -1127,7 +1147,7 @@ print "<TR>";
 			const auth = $theiaAuth;
 				
 			if (auth == 1) {
-				console.log(theia);
+				// console.log(theia);
 				theia.style.display = "block";
 			} else {
 				theia.style.display = "none";
@@ -1154,6 +1174,50 @@ print "<TR>";
 FIN
 	print "</TR></TABLE>";
 	print "</FIELDSET>\n";
+	
+	# --- GNSS-specific information
+	my $m3g_url_edit = $WEBOBS{'M3G_URL'}."/".$usrGnss9char;
+	print $usrGnss9char."\n";
+	print $m3g_url_edit;
+	print "<FIELDSET><legend>$__{'GNSS-specific information'}</LEGEND>";
+	print "<TABLE><TR>";
+		print "<TD style=\"border:0;text-align:left\">";
+			print "<label for=\"gnss_9char\">$__{'GNSS 9 char. code'} :</label>";
+			print "<input size=\"10\" value=\"$usrGnss9char\" onChange=\"console.log($m3g_url_edit)\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_gnss_9char}')\" id=\"gnss_9char\" name=\"gnss_9char\">";
+			print "<i for=\"gnss_9char_nb\">  NB: use save button to store this code the first time, before updating metadata </i>";
+			print "<BR>\n";
+			print "<BR>\n";
+			###### get and edit features 
+			#### Edit GeodesyML on M3G
+			print "<a href=$m3g_url_edit target=\"_blank\" id=\"m3g_link\" onClick=\"return check_9char_code()\">Edit sitelog on M3G (requires prior M3G login)</a>";
+			print "<BR>\n";
+			#### get geodesyML from M3G
+=pod
+			my $GetGml = "/cgi-bin/get_gml_m3g.pl";
+			print "<a href=\"$GetGml?node=$GRIDType.$GRIDName.$NODEName\" onClick=\"return check_9char_code()\">Import GNSS metadata from M3G</a>";
+			print "<BR>\n";
+			#### Auto-update receiver_history feature
+			my $cgiEtxt = "/cgi-bin/nedit.pl";
+			my $FEATURENODE = "FEATURES/receiver_history.txt";
+			print "<a id=\"update_gnssrec\" href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&feat=gnssrec\" onClick=\"return check_9char_code()\" >Auto-update receiver history feature</a>";
+			print "<BR>\n";
+			#### Auto-update antenna_history feature
+			my $FEATURENODE = "FEATURES/antenna_history.txt";
+			print "<a id=\"update_gnssant\" href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&feat=gnssant\" onClick=\"return check_9char_code()\" >Auto-update antenna history feature</a>";
+=cut
+			print "<BR>\n";
+			print "<BR>\n";
+			print "<label for=\"m3g_check\">$__{'Show links to M3G'} :</label>";
+			if ( $m3g_check ) {
+				print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\" checked>";
+			} else {
+				print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\">";
+			}
+			print "<BR>\n";
+
+		print "</TD>";
+	print "</TR></TABLE>";
+	print "</FIELDSET>";
 
 	# --- Transmission
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";

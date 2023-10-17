@@ -118,7 +118,7 @@ use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
 use POSIX qw/strftime/;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
-$CGI::POST_MAX = 1024 * 10;
+$CGI::POST_MAX = 1024 * 100;
 $CGI::DISABLE_UPLOADS = 1;
 my $cgi = new CGI;
 
@@ -172,7 +172,7 @@ if ($delete) {
 		@lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
 		saveN2N(@lines);
 		
-		if ($theiaAuth == 1) {
+		if ( isok($theiaAuth) ) {
 			# --- connecting to the database
 			my $driver   = "SQLite";
 			my $database = $WEBOBS{SQL_METADATA};
@@ -223,7 +223,7 @@ my $tz         = $cgi->param('tz')          // '';
 my $data       = $cgi->param('data')        // '';
 my $rawformat  = $cgi->param('rawformat')   // '';
 my $rawdata    = $cgi->param('rawdata')     // '';
-my @chanlist   = $cgi->param('chanlist');
+my @chanlist   = $cgi->param('chanlist')    // '';
 my $name       = $cgi->param('fullName')    // '';
 my $fdsn       = $cgi->param('fdsn')        // '';
 my $latN       = $cgi->param('latwgs84n')   // '';
@@ -287,7 +287,7 @@ if ($lon ne "" && $lat ne "") {
 # ---- parsing dataset contacts
 my @creators = split('\|', $creator);
 
-if ($theiaAuth == 1) {
+if ( isok($theiaAuth) ) {
 		# --- connecting to the database
 		my $driver   = "SQLite";
 		my $database = $WEBOBS{SQL_METADATA};
