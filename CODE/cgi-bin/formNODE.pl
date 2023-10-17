@@ -1177,8 +1177,6 @@ FIN
 	
 	# --- GNSS-specific information
 	my $m3g_url_edit = $WEBOBS{'M3G_URL'}."/".$usrGnss9char;
-	print $usrGnss9char."\n";
-	print $m3g_url_edit;
 	print "<FIELDSET><legend>$__{'GNSS-specific information'}</LEGEND>";
 	print "<TABLE><TR>";
 		print "<TD style=\"border:0;text-align:left\">";
