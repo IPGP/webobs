@@ -118,7 +118,7 @@ use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
 use POSIX qw/strftime/;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
-$CGI::POST_MAX = 1024 * 100;
+$CGI::POST_MAX = 1024 * 1000;
 $CGI::DISABLE_UPLOADS = 1;
 my $cgi = new CGI;
 
@@ -290,62 +290,62 @@ if ($lon ne "" && $lat ne "") {
 my @creators = split('\|', $creator);
 
 if ( isok($theiaAuth) ) {
-		# --- connecting to the database
-		my $driver   = "SQLite";
-		my $database = $WEBOBS{SQL_METADATA};
-		my $dsn 	 = "DBI:$driver:dbname=$database";
-		my $userid 	 = "";
-		my $password = "";
+	# --- connecting to the database
+	my $driver   = "SQLite";
+	my $database = $WEBOBS{SQL_METADATA};
+	my $dsn 	 = "DBI:$driver:dbname=$database";
+	my $userid 	 = "";
+	my $password = "";
 		
-		# --- station informations, coordinates are saved in WKT format
-		my $point;
-		if ($alt ne "") {
-			$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
-		} else {
-			$point = "wkt:Point(".$lat.",".$lon.")";
-		}
-		
-		# --- dataset informations
-		my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
-		my $subject = $topics.'inspireTheme:'.$theme;
-		
-		# --- creators informations
-		my @roles      = split(',',$creators[0]);
-		my @firstNames = split(',',$creators[1]);
-		my @lastNames  = split(',',$creators[2]);
-		my @emails     = split(',',$creators[3]);
-
-		my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-		   or die $DBI::errstr;
-		   
-		# inserting creators into contacts table
-		my @contacts = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
-		my $stmt = qq(select * from contacts where related_id=\"$id\");
-		my $sth = $dbh->prepare( $stmt );
-		my $rv = $sth->execute() or die $DBI::errstr;
-
-		if($rv < 0) {
-		   print $DBI::errstr;
-		}
-		while(my @row = $sth->fetchrow_array()) {
-			my $email = $row[0];
-			if ($email !~ @emails) {
-				my $stmt2 = "delete from contacts where email=\"$email\" AND related_id=\"$id\"";
-				$dbh->do($stmt2);
-			}
-		}
-		
-		my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
-		$dbh->do($q);
-
-		my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
-		$sth->execute($alias,$alias,$point);
-
-		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
-		$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
-		
-		$dbh->disconnect();
+	# --- station informations, coordinates are saved in WKT format
+	my $point;
+	if ($alt ne "") {
+		$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
+	} else {
+		$point = "wkt:Point(".$lat.",".$lon.")";
 	}
+		
+	# --- dataset informations
+	my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
+	my $subject = $topics.'inspireTheme:'.$theme;
+		
+	# --- creators informations
+	my @roles      = split(',',$creators[0]);
+	my @firstNames = split(',',$creators[1]);
+	my @lastNames  = split(',',$creators[2]);
+	my @emails     = split(',',$creators[3]);
+
+	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+	   or die $DBI::errstr;
+		   
+	# inserting creators into contacts table
+	my @contacts = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
+	my $stmt = qq(select * from contacts where related_id=\"$id\");
+	my $sth = $dbh->prepare( $stmt );
+	my $rv = $sth->execute() or die $DBI::errstr;
+
+	if($rv < 0) {
+	   print $DBI::errstr;
+	}
+	while(my @row = $sth->fetchrow_array()) {
+		my $email = $row[0];
+		if ($email !~ @emails) {
+			my $stmt2 = "delete from contacts where email=\"$email\" AND related_id=\"$id\"";
+			$dbh->do($stmt2);
+		}
+	}
+		
+	my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
+	$dbh->do($q);
+
+	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
+	$sth->execute($alias,$alias,$point);
+
+	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
+	$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
+		
+	$dbh->disconnect();
+}
 
 # ---- NODE's validity flag
 my $valide = "";
@@ -472,17 +472,19 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 
 my $geojsonfile = "$nodepath/$NODEName.geojson";
 
-if ( sysopen(FILE, "$geojsonfile", O_RDWR | O_CREAT) ) {
-	unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-		warn "postNODE waiting for lock on $geojsonfile...";
-		flock(FILE, LOCK_EX);
-	}
-	
-	truncate FILE, 0;
-	print FILE $geojson;
-	close(FILE);
-	
-} else { htmlMsgNotOK("$geojsonfile $!") }
+if ($geojson ne "") {
+	if ( sysopen(FILE, "$geojsonfile", O_RDWR | O_CREAT) ) {
+		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+			warn "postNODE waiting for lock on $geojsonfile...";
+			flock(FILE, LOCK_EX);
+		}
+		
+		truncate FILE, 0;
+		print FILE $geojson;
+		close(FILE);
+		
+	} else { htmlMsgNotOK("$geojsonfile $!") }
+}
 
 # ---- node2node update: only if there is something to do!
 #
