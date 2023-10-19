@@ -281,6 +281,10 @@ my $text = "<B>$NODE{ALIAS}: $NODE{NAME}</B><BR>"
 	."&nbsp;<B>$NODE{LAT_WGS84}&deg;</B>, <B>$NODE{LON_WGS84}&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
 $text =~ s/\"//g;  # fix ticket #166
 
+# ---- Preparing geojson related variables
+my $geojsonFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.geojson";
+my $json;
+
 # ---- ready for HTML output now
 #
 print $cgi->header(
@@ -646,6 +650,21 @@ function onInputWrite(e) {
 		map.flyTo([lat, lon], 18);
 	}
 }
+function createShp(geojson) {
+	var shpfile = new L.Shapefile(geojson,{
+		onEachFeature: function(feature, layer) {
+			if (feature.properties) {
+				layer.bindPopup(Object.keys(feature.properties).map(function(k) {
+					return k + ": " + feature.properties[k];
+				}).join("<br />"), {
+						maxHeight: 200
+					});
+			}
+		}
+	}); 
+	
+	return shpfile;
+}
 function handleFiles() {	
 	/**
 	 * Read .zip shpfiles and calculate the bounding box coordinates of the spatial coverage of the shapefile
@@ -658,41 +677,31 @@ function handleFiles() {
 		shp(this.result).then(function(geojson) {
 	  		console.log('loaded geojson:', geojson);
 			
-	  		for (var i = 0; i <= geojson.features.length-1; i++) {
+	  		/*for (var i = 0; i <= geojson.features.length-1; i++) {
 	  			// applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
 	  			var geometry = geojson.features[i].geometry;
-	  			var coordinates = simplifyGeometry(geometry.coordinates[0], 0.0001);
+	  			var coordinates = simplifyGeometry(geometry.coordinates[0], 0.000001);
 	  			if (coordinates.length < 4) {
 	  				geometry.coordinates[0] = [[geometry.bbox[0],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[1]]];
 	  			}
 	  			else { geometry.coordinates[0] = coordinates; }
 				
-	  			/*var lonLat = [];
+	  			var lonLat = [];
 	  			for (var j = 0; j <= coordinates.length-1; j++) {
 	  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]); 
-	  			} outWKT.push('((' + lonLat + '))');*/
+	  			} outWKT.push('((' + lonLat + '))');
 				
-	  		}
+	  		}*/
 			
 	  		/* document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]); */
 	  		
-			var shpfile = new L.Shapefile(geojson,{
-				onEachFeature: function(feature, layer) {
-					if (feature.properties) {
-						layer.bindPopup(Object.keys(feature.properties).map(function(k) {
-							return k + ": " + feature.properties[k];
-						}).join("<br />"), {
-							maxHeight: 200
-						});
-					}
-				}
-			}); 
+			var shpfile = createShp(geojson);
 			shpfile.addTo(map);
 			// geojson.features = geojson.features[0];	// test with a Polygon;
 			var geometry = JSON.stringify(getGeometry(geojson));
 			// console.log(geometry);
 			document.form.outWKT.value = geometry;
-			document.form.geojson.value = JSON.stringify(geojson.features);
+			document.form.geojson.value = JSON.stringify(geojson);
 			return geojson;
 	  })
 	};
@@ -746,6 +755,7 @@ function addCreator() {
 	 * Add a creator row to fill in the form
 	 */
     var form = \$('#theform')[0];
+    form.locMap.value = 1;
 	form.count_creator.value = parseInt(form.count_creator.value)+1;
 	var new_div = document.createElement('div');
 	new_div.id = 'new_creator'+form.count_creator.value;
@@ -760,6 +770,7 @@ function removeCreator() {
 	 * Remove a creator row (if there are more than one row) to fill in the form
 	 */
 	var form = \$('#theform')[0];
+	form.locMap.value = 1;
 	var id = '#new_creator'+form.count_creator.value;
 	if (\$(id)[0] === null) {
 		return false;
@@ -1135,11 +1146,20 @@ print "<TR>";
 				."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Fetch KML' onClick='fetchKML()'></DIV>";
 				
 			# --- Importation of shpfile
-			print "<INPUT type=\"hidden\" name=\"filename\"";
-			print "<strong>$__{'To add a shapefile (.zip only) layer, click here'}: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
+			# --- First we check if a geojson already exists in the NODE dir
+			if (-e $geojsonFile) {
+				open(FH, '<', $geojsonFile);
+				while(<FH>){
+					$json = "$_";
+				}
+				close(FH);
+			}
+
+			print "<INPUT type=\"hidden\" name=\"filename\" value=\"\"\n>";
 			print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
 			print "<INPUT type=\"hidden\" name=\"geojson\" value=\"\"\n>";
-				
+			print "<strong>$__{'To add a shapefile (.zip only) layer, click here'}: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
+			
 		print "</TD>";
 		print <<FIN;
 		<script>
@@ -1170,6 +1190,14 @@ print "<TR>";
 			}
 			
 			var layerControl = L.control.layers(basemaps, overlays).addTo(map);
+			
+			if (typeof(\"$geojsonFile\") !== 'undefined') {
+				var shpfile = createShp($json); 
+				shpfile.addTo(map);
+				
+				var geometry = JSON.stringify(getGeometry($json));
+				document.form.outWKT.value = geometry;
+			}
 		</script>
 FIN
 	print "</TR></TABLE>";
