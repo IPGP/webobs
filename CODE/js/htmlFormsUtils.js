@@ -121,6 +121,40 @@ function geditclosePopup() {
 	$("#geditovly").fadeOut(500);
 }
 
+function feditopenPopup() {
+	$("#feditoverlay_form").fadeIn(500);
+	feditpositionPopup();
+}
+
+function feditpositionPopup(){
+	$("#feditovly").css('display','block');
+	$("#feditoverlay_form").css({
+		left: (($(window).width() - $('#feditoverlay_form').outerWidth()) / 2)+$(window).scrollLeft() + "px",
+		position:'fixed'
+	});
+}
+
+function feditsendPopup() {
+	if ( $('#feditoverlay_form')[0].feditN.value == "" ) {
+		alert('Please specify a form name') ;
+		return false;
+	}
+	var fname = $('#feditoverlay_form')[0].feditN.value;
+	if ( fname.match(/^[A-Za-z]/) && !fname.match(/[^A-Za-z_0-9]/g) ) {
+		$("#feditoverlay_form").fadeOut(500);
+		$("#feditovly").fadeOut(500);
+		location.href = "/cgi-bin/fedit.pl?fname=" + fname.toUpperCase() + "&action=edit";
+	} else {
+		alert('Form name is alphanumerical and underscore characters only, case insensitive, and the first character must be a letter.');
+		return false;
+	}
+}
+
+function feditclosePopup() {
+	$("#feditoverlay_form").fadeOut(500);
+	$("#feditovly").fadeOut(500);
+}
+
 function srchopenPopup(g) {
 	if (arguments.length <= 0 ) { return; } // noop if no argument
 	$('#srchoverlay_form')[0].grid.value = g;
