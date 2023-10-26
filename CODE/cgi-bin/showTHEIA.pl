@@ -135,7 +135,7 @@ while(my @row = $sth->fetchrow_array()) {
 		push(@contacts, "($row2[3]) ".$row2[1]." ".$row2[2].": ".$row2[0]);
 	}
 	print "<TR><TD width=1%><A href=\"/cgi-bin/gridsMgr.pl\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit producer\" src=\"/icons/modif.png\"></A></TD>"
-			."<TD width=1%><A id=$row[0] class=\"producer\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete producer\" src=\"/icons/no.png\"></A></TD>"
+			."<TD width=1%><A id=$row[0] class=\"producer\" onclick=\"alert(\"deprecated feature\");\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete producer\" src=\"/icons/no.png\"></A></TD>"
 			."<TD width=3% align=center><SMALL>$row[0]&nbsp&nbsp</SMALL></TD>"
 			."<p><input type=\"hidden\" name=\"producerId\" value=\"$row[0]\"></input></p></SMALL></TD>"
 			."<TD width=4% align=center><SMALL>$row[1]"
@@ -190,6 +190,7 @@ while(my @row = $sth->fetchrow_array()){
 	#print $datasetId."||";
 	($GRIDName, $NODEName) = (split /\./, $datasetId);
 	my %G = readProc($GRIDName);
+	#print $G{$GRIDName}."\n";
 	%GRID = %{$G{$GRIDName}};
 	my @NODELIST = 	split / /,$GRID{THEIA_SELECTED_NODELIST};
 	if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ){
@@ -266,46 +267,50 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
 		."<TH><SMALL>Data file name</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
-	my $datasetId = (split /_/, $row[0]) [2];
-	my $channelId = (split /$datasetId\_/, $row[0]) [1];
+	my $datasetId = $row[7];
+	my $channelId = $row[5];
 	($GRIDName, $NODEName) = (split /\./, $datasetId);
+	$GRIDName = (split /_DAT_/, $GRIDName)[1];
 	my %G = readProc($GRIDName);
 	my %S = readNode($NODEName);
+	#print $NODEName."\n";
 	%GRID = %{$G{$GRIDName}};
 	%NODE = %{$S{$NODEName}};
+	#print $GRID{THEIA_SELECTED_NODELIST}."\n";
 	@NODELIST = split /,/,$GRID{THEIA_SELECTED_NODELIST};
 	@CHANLIST = split /,/,$NODE{"PROC.$GRIDName.CHANNEL_LIST"};
 	my $fileDATA = "$NODES{PATH_NODES}/$NODEName/PROC.$GRIDName.$NODEName.clb";
 	my @donnees = map { my @e = split /\|/; \@e; } readCfgFile($fileDATA);
-	my @vars = map {$donnees[$_-1][6]} @CHANLIST;
+	my @vars = map {$donnees[$_-1]} @CHANLIST;
+	#print $donnees[0];
 	if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
 		if ( (grep(/^$NODEName$/,@NODELIST) || substr($NODEName, 1) ~~ $GRID{THEIA_SELECTED_NODELIST}) and $channelId ~~ @vars) {
 			my $subject = join(',', split(/_/,$row[3]));
 			print "<TR class=\"channel\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
 					."<TD width=1%><A class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete observation\" src=\"/icons/no.png\"></A></TD>"
 					."<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
-					."<TD width=6% align=center><SMALL>$row[1]</SMALL></TD>"
-					."<TD width=6% align=center><SMALL>$row[2]</SMALL></TD>"
+					."<TD width=6%  align=center><SMALL>$row[1]</SMALL></TD>"
+					."<TD width=6%  align=center><SMALL>$row[2]</SMALL></TD>"
 					."<TD width=12% align=center><SMALL>$row[3]</SMALL></TD>"
-					."<TD width=4% align=center><SMALL>$row[4]</SMALL></TD>"
-					."<TD width=8% align=center><SMALL>$row[5]</SMALL></TD>"
+					."<TD width=4%  align=center><SMALL>$row[4]</SMALL></TD>"
+					."<TD width=8%  align=center><SMALL>$row[5]</SMALL></TD>"
 					."<TD width=10% align=center><SMALL>$row[6]</SMALL></TD>"
 					."<TD width=12% align=center><SMALL>$row[7]</SMALL></TD>"
-					."<TD width=8% align=center><SMALL>$row[8]</SMALL></TD></TR>";
+					."<TD width=8%  align=center><SMALL>$row[8]</SMALL></TD></TR>";
 		}
 	} else {
 		print "<TR class=\"node\" id=$row[0]>"
 				."<TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
 				."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
+				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
+				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
+				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
+				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
+				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
+				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
+				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
+				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
+				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
 				."</TR>";
 	}
 };

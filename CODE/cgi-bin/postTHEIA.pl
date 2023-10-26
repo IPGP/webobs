@@ -36,6 +36,7 @@ use IO::Compress::Zip qw(zip $ZipError) ;
 
 # ---- webobs stuff
 use WebObs::Config;
+use WebObs::Grids;
 use WebObs::Users qw(clientHasRead clientHasEdit clientHasAdm);
 use WebObs::i18n;
 
@@ -251,7 +252,10 @@ foreach (@channels) {
 		);
 		
 		# ---- now generating the .txt file
-		my $dataname = $NODEName."_all.txt";
+		my %G = readProc($GRIDName);
+		my %GRID = %{%G{$GRIDName}};
+		#my $dataname = $NODEName."_all.txt";
+		my $dataname = "$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
 		my $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/";
 		my $chan_nb = 5 + $row[16];
 		my $obsfile = "$dir/$datafile{'name'}";

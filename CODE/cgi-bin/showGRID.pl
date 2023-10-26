@@ -355,7 +355,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				}
 			}
 			if (isok($theiaAuth)) {
-				$htmlcontents .= "<TR><TD>$__{'Send to Theia'}\nsalut".isok($theiaAuth);
+				$htmlcontents .= "<TR><TD>$__{'Send to Theia'}\n";
 				$htmlcontents .= join('', map { checkingTS($_,$GRID{THEIA_SELECTED_TS}) } @procTS);
 				$htmlcontents .= "</TD></TR>";
 			}
