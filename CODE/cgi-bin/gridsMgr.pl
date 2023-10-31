@@ -181,12 +181,12 @@ if ($QryParm->{'action'} eq 'update') {
 		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 		$rows = dbu($WEBOBS{SQL_DOMAINS},$q);
 	} elsif ($QryParm->{'tbl'} eq "producer") {
-		$q = "update $WEBOBS{SQL_TABLE_PRODUCER} set (\'$QryParm->{'id'}\',\'$QryParm->{'prodName'}\',\'$title\',\'$QryParm->{'desc'}\',\'$QryParm->{'objective'}\',\'$QryParm->{'measVar'}\',\'$QryParm->{'email'}\',\'".join(', ',@contacts)."\',\'".join(', ',@funders)."\',\'$QryParm->{'onlineRes'}\')";
+		$q = "update $WEBOBS{SQL_TABLE_PRODUCER} set IDENTIFIER=\'$QryParm->{'id'}\', NAME=\"$QryParm->{'prodName'}\", TITLE=\"$title\", DESCRIPTION=\"$QryParm->{'desc'}\", OBJECTIVE=\"$QryParm->{'objective'}\", MEASUREDVARIABLES=\"$QryParm->{'measVar'}\",EMAIL=\"$QryParm->{'email'}\", CONTACTS=\'".join(', ',@contacts)."\', FUNDERS=\'".join(', ',@funders)."\', ONLINERESOURCE=\"$QryParm->{'onlineRes'}\"";
 		$q .= " WHERE IDENTIFIER=\'$QryParm->{'OLDid'}\'";
 		$refMsg = \$producerMsg; $refMsgColor = \$producerMsgColor;
 		$rows = dbu($WEBOBS{SQL_METADATA},$q);
 	} else { die "$QryParm->{'action'} for unknown table"; }
-	$$refMsg  .= ($rows == 1) ? "  having updated $QryParm->{'tbl'} " : "  failed to update $QryParm->{'tbl'}";
+	$$refMsg  .= ($rows == 1) ? "  having updated $QryParm->{'tbl'} " : $q."  failed to update $QryParm->{'tbl'}";
 	$$refMsg  .= " $lastDBIerrstr";
 	$$refMsgColor  = ($rows == 1) ? "green" : "red";
 	#$$refMsg  .= " - <i>$q</i>";
@@ -586,17 +586,16 @@ Producers&nbsp;$go2top
 	<input type='hidden' name="count_res" value='1'></input>
 	<input type='hidden' name='onlineRes' value=''></input>
 	<div id='div_res'>
-		<label>Online resource:<span class="small">Type</span></label>
-		<select name='typeRes'>
+		<label>Online resource:<span class="small">type</span></label>
+		<select name='typeRes' id='typeRes'>
 			<option value=$resources[0]>$resNames[0]</option>
             <option value=$resources[1]>$resNames[1]</option>
             <option value=$resources[2]>$resNames[2]</option>
             <option value=$resources[3]>$resNames[3]</option>
 		</select>
 		<label>Online resource:<span class="small">URL</span></label>
-		<input type='text' name='nameRes'></input>
-	</div>
-	<div id='div_res_add'></div>
+		<input type='text' name='nameRes' id='nameRes'></input>
+	</div><div id='div_res_add'></div>
 	
 	<p style="margin: 0px; text-align: center">
 		<input type="button" name="sendbutton" value="send" onclick="sendPopupProducer(); return false; " /> <input type="button" value="cancel" onclick="closePopup(); return false" />

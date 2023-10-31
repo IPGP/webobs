@@ -124,12 +124,10 @@ function openPopupProducer(ux) {
 		var count_funders = $("td",ux)[10].textContent.split(',').length;
 		if (count_funders>1) {
 			var funders = $("td",ux)[10].textContent.split(', ');
-			console.log(funders);
 			form.typeFunders.value = funders[0].split(':')[0];
 			form.nameFunders.value = funders[0].split(': ')[1].split('(')[0];
 			form.acronyms.value    = funders[0].split('(')[1].split(')')[0];
 			form.scanR.value       = funders[0].split('/ ')[1];
-			console.log(form);
 			for (var i = 0; i<count_funders-1; i++) {
 				addFnd();
 				form.typeFunders[i+1].value = funders[i+1].split(':')[0];
@@ -143,7 +141,21 @@ function openPopupProducer(ux) {
 			form.acronyms.value    = $("td",ux)[10].textContent.split(': ')[1];
 			form.scanR.value       = $("td",ux)[10].textContent.split(' ').slice(0, 2).join(' ').slice(1, -1);
 		}
-		form.onlineRes.value = $("td",ux)[11].textContent;
+		var count_res = $("td",ux)[11].textContent.split('_,').length;
+		if (count_res>1) {
+			var res = $("td",ux)[11].textContent.split('_,');
+			form.typeRes.value = res[0].split('@')[0]+'@';
+			form.nameRes.value = res[0].split('@')[1];
+			for (var i = 0; i<count_res-1; i++) {
+				addRes();
+				form.typeRes[i+1].value = res[i+1].split('@')[0]+'@';
+				form.nameRes[i+1].value = res[i+1].split('@')[1];
+
+			}
+		} else {
+			form.typeRes.value = $("td",ux)[11].textContent.split('@')[0]+'@';
+			form.nameRes.value = $("td",ux)[11].textContent.split('@')[1];
+		}
 		var listgrids = $("td",ux)[12].textContent.split(',');
 		$('#overlay_form_producer #grid option').each(function() { 
 			$(this).removeProp('selected');
@@ -209,7 +221,7 @@ function sendPopupProducer() {
 	} else { form.contacts.value = '('+form.roles.value+') '+form.firstName.value+' '+form.lastName.value+': '+form.emails.value }
 	
 	var funders = [];
-	/*if (form.count_fnd.value > 1) {
+	if (form.count_fnd.value > 1) {
 		var types = [];
 		var scanR = [];
 		var names = [];
@@ -220,7 +232,7 @@ function sendPopupProducer() {
 			names.push(form.nameFunders[i].value);
 			acronyms.push(form.acronyms[i].value);
 		} form.funders.value = types.join('_,') + '|' + scanR.join('_,') + '|' + names.join('_,') + '|' + acronyms.join('_,'); 
-	} else { form.funders.value = form.typeFunders.value + '|' + form.scanR.value + '|' + form.nameFunders.value + '|' + form.acronyms.value; }*/
+	} else { form.funders.value = form.typeFunders.value + '|' + form.scanR.value + '|' + form.nameFunders.value + '|' + form.acronyms.value; }
 	if (form.count_fnd.value > 1) {
 		for (let i = 0; i <= form.count_fnd.value-1; i++){
 			funders.push(form.typeFunders[i].value+': '+form.nameFunders[i].value+' ('+form.acronyms[i].value+') / '+form.scanR[i].value);
@@ -286,4 +298,5 @@ function closePopup() {
 //$("td",job.jid).each(function() { 
 //	console.log(this.textContent) ;
 //});
+
 

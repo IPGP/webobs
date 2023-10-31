@@ -143,7 +143,7 @@ my $entete = "# WebObs - $WEBOBS{WEBOBS_ID} : calibration file $QryParm->{'node'
 # ---- looking after THEIA user flag
 my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
 
-if ($theiaAuth == 1) {
+if ( isok($theiaAuth)) {
 	# --- connecting to the database
 	my $driver   = "SQLite";
 	my $database = $WEBOBS{SQL_METADATA};
@@ -162,8 +162,8 @@ if ($theiaAuth == 1) {
 	foreach (@donnees) {
 		# observed_properties table
 		my @obs   = split(/[\|]/, $_);
-		my $id    = $obs[6];
-		my $name  = $obs[6];
+		my $id    = $obs[3];
+		my $name  = $obs[3];
 		my $unit  = $obs[4];
 		my $theia = $obs[$#obs];
 		my $chan  = $obs[2];
