@@ -372,13 +372,6 @@ function postIt()
   	form.SELs[i].selected = true;
   }
   
-  /* Theia metadata part
-  var selected = \$('#topicCats')[0].selectedOptions;
-  var topics = [];
-  for (var i=0; i<selected.length; i++) {
-  	topics.push(selected[i].value);
-  } form.topics.value = 'topicCategories:'+topics.join(',')+'_';*/
-  
   // registering the NODE contacts metadata
   var roles = [];
   var firstNames = [];
