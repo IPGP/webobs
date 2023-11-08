@@ -55,15 +55,15 @@ end
 % --- index of columns in matrix d
 %   1 = type of site
 i_ty = 1;
-%   2 = temperature of air (ï¿½C)
+%   2 = temperature of air (°C)
 i_ta = 2;
-%   3 = temperature of water (ï¿½C)
+%   3 = temperature of water (°C)
 i_ts = 3;
 %   4 = pH
 i_ph = 4;
 %   5 = flux (l/mn)
 i_db = 5;
-%   6 = conductivity (ï¿½S)
+%   6 = conductivity (µS)
 i_cd = 6;
 %   7 = level (m)
 i_nv = 7;
@@ -86,7 +86,7 @@ i_i = 19;
 %   23 = ratio Cl-/SO4-- (computed)
 %   24 = ratio HCO3-/SO4-- (computed)
 %   25 = ratio Mg++/Cl- (computed)
-%   26 = conductivity at 25ï¿½C
+%   26 = conductivity at 25°C
 %   27 = ion budget (NICB)
 i_bi = 27;
 
@@ -115,11 +115,11 @@ for n = 1:length(N)
 
 		if d(ke,i_db) == 0, sdb = 'TARIE'; else sdb = sprintf('%1.1f l/mn',d(ke,i_db)); end
 		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ), ...
-			sprintf('Twater = {\\bf%1.1f ï¿½C}',d(ke,i_ts)), ...
-			sprintf('Tair = {\\bf%1.1f ï¿½C}',d(ke,i_ta)), ...
+			sprintf('Twater = {\\bf%1.1f °C}',d(ke,i_ts)), ...
+			sprintf('Tair = {\\bf%1.1f °C}',d(ke,i_ta)), ...
 			sprintf('pH = {\\bf%1.2f}',d(ke,i_ph)), ...
-			sprintf('Cond. = {\\bf%1.1f ï¿½S}',d(ke,i_cd)), ...
-			sprintf('Cond_{25} = {\\bf%1.1f ï¿½S}',d(ke,25)), ...
+			sprintf('Cond. = {\\bf%1.1f µS}',d(ke,i_cd)), ...
+			sprintf('Cond_{25} = {\\bf%1.1f µS}',d(ke,25)), ...
 			sprintf('Flux = {\\bf%s}',sdb), ...
 			sprintf('Ion analysis ({\\bfmmol/l}) :'), ...
 			sprintf('Na^+ = {\\bf%1.1f}',d(ke,i_na)), ...
@@ -145,7 +145,7 @@ for n = 1:length(N)
 		set(gca,'XLim',tlim,'FontSize',8)
 		legend('Air','Location','SouthWest')
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Temperatures (ï¿½C)')
+		ylabel('Temperatures (°C)')
 
 		% Legend for site types
 		pos = get(gca,'position');
@@ -227,7 +227,7 @@ for n = 1:length(N)
 			legend([h1(1),h2(1)],'Cond.','Cond_{25}','Location','SouthWest')
 		end
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cond. & Cond_{25} (ï¿½S)')
+		ylabel('Cond. & Cond_{25} (µS)')
 
 		tlabel(tlim,P.TZ)
 
@@ -312,7 +312,7 @@ if isfield(P,'SUMMARYLIST')
 		hold off, box on
 		set(gca,'XLim',tlim,'FontSize',8)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Temperatures (ï¿½C)'))
+		ylabel(sprintf('Temperatures (°C)'))
 
 		% Legend for site types
 		pos = get(gca,'position');
@@ -356,7 +356,7 @@ if isfield(P,'SUMMARYLIST')
 		hold off, box on, extylim(ddmm)
 		set(gca,'YScale','linear','XLim',tlim,'FontSize',8)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cond. 25ï¿½C (ï¿½S)')
+		ylabel('Cond. 25°C (µS)')
 
 		% Ratio Cl-/SO4-
 		subplot(13,1,10:11), extaxes
