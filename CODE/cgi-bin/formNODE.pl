@@ -28,7 +28,7 @@ use File::Basename;
 use POSIX qw/strftime/;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
-$CGI::POST_MAX = 1024 * 10;
+$CGI::POST_MAX = 1024 * 1000;
 $CGI::DISABLE_UPLOADS = 1;
 my $cgi = new CGI;
 
@@ -140,7 +140,7 @@ my $m3g_check    = $NODE{M3G_AVAIABLE};
 my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
 # THEIA metadata
-my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
+my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}		  // $NODE{DESCRIPTION}; $usrDesc =~ s/\"//g;
 my $usrProducer;
 my @usrRole;
 my @usrFirstName;
@@ -372,12 +372,12 @@ function postIt()
   	form.SELs[i].selected = true;
   }
   
-  // Theia metadata part
+  /* Theia metadata part
   var selected = \$('#topicCats')[0].selectedOptions;
   var topics = [];
   for (var i=0; i<selected.length; i++) {
   	topics.push(selected[i].value);
-  } form.topics.value = 'topicCategories:'+topics.join(',')+'_';
+  } form.topics.value = 'topicCategories:'+topics.join(',')+'_';*/
   
   // registering the NODE contacts metadata
   var roles = [];
@@ -399,7 +399,8 @@ function postIt()
   	form.creators.value = roles.join(',') + '|' + firstNames.join(',') + '|' + lastNames.join(',') + '|' + emails.join(',');
   } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
 	
-	console.log(\$(\"#theform\"));
+	console.log(\$(\"#theform\").serialize());
+	
 	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
 		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
@@ -1024,7 +1025,7 @@ print "<TR>";
 	print "<FIELDSET><LEGEND>$__{'Procs Metadata'}</LEGEND>";
 	# --- DESCRIPTION
 		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
-		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\" form=\"theform\">$usrDesc</TEXTAREA>&nbsp;&nbsp;<BR>";
+		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc</TEXTAREA>&nbsp;&nbsp;<BR>";
 		# --- show THEIA fields ?
 		#print "<LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT name=\"showHide\" type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
 		print "<DIV id=\"showHide\" style=\"display:none;\">";
@@ -1083,8 +1084,8 @@ print "<TR>";
 		print "</SELECT><BR>";
 		# --- TOPIC CATEGORIES
 		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Topic categories'}:</LABEL>";
-		print "<INPUT type=\"hidden\" name=\"topics\">";
-		print "<SELECT multiple onMouseOut=\"nd()\" value=\"@usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" id=\"topicCats\">";
+		#print "<INPUT type=\"hidden\" name=\"topics\">";
+		print "<SELECT multiple onMouseOut=\"nd()\" value=\"@usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"topics\">";
 		for (@topics) {
 			if ($_ ~~ @usrTopic) {
 				print "<OPTION value=\"$_\" selected>$_</option>\n"; 
@@ -1147,6 +1148,7 @@ print "<TR>";
 				
 			# --- Importation of shpfile
 			# --- First we check if a geojson already exists in the NODE dir
+
 			if (-e $geojsonFile) {
 				open(FH, '<', $geojsonFile);
 				while(<FH>){
@@ -1159,7 +1161,7 @@ print "<TR>";
 			print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
 			print "<INPUT type=\"hidden\" name=\"geojson\" value=\"\"\n>";
 			print "<strong>$__{'To add a shapefile (.zip only) layer, click here'}: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
-			
+
 		print "</TD>";
 		print <<FIN;
 		<script>
@@ -1202,8 +1204,9 @@ print "<TR>";
 FIN
 	print "</TR></TABLE>";
 	print "</FIELDSET>\n";
-	
+
 	# --- GNSS-specific information
+=pod
 	my $m3g_url_edit = $WEBOBS{'M3G_URL'}."/".$usrGnss9char;
 	print "<FIELDSET><legend>$__{'GNSS-specific information'}</LEGEND>";
 	print "<TABLE><TR>";
@@ -1218,19 +1221,6 @@ FIN
 			print "<a href=$m3g_url_edit target=\"_blank\" id=\"m3g_link\" onClick=\"return check_9char_code()\">Edit sitelog on M3G (requires prior M3G login)</a>";
 			print "<BR>\n";
 			#### get geodesyML from M3G
-=pod
-			my $GetGml = "/cgi-bin/get_gml_m3g.pl";
-			print "<a href=\"$GetGml?node=$GRIDType.$GRIDName.$NODEName\" onClick=\"return check_9char_code()\">Import GNSS metadata from M3G</a>";
-			print "<BR>\n";
-			#### Auto-update receiver_history feature
-			my $cgiEtxt = "/cgi-bin/nedit.pl";
-			my $FEATURENODE = "FEATURES/receiver_history.txt";
-			print "<a id=\"update_gnssrec\" href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&feat=gnssrec\" onClick=\"return check_9char_code()\" >Auto-update receiver history feature</a>";
-			print "<BR>\n";
-			#### Auto-update antenna_history feature
-			my $FEATURENODE = "FEATURES/antenna_history.txt";
-			print "<a id=\"update_gnssant\" href=\"$cgiEtxt?file=$FEATURENODE&node=$GRIDType.$GRIDName.$NODEName&encode=iso&action=edit&feat=gnssant\" onClick=\"return check_9char_code()\" >Auto-update antenna history feature</a>";
-=cut
 			print "<BR>\n";
 			print "<BR>\n";
 			print "<label for=\"m3g_check\">$__{'Show links to M3G'} :</label>";
@@ -1244,7 +1234,7 @@ FIN
 		print "</TD>";
 	print "</TR></TABLE>";
 	print "</FIELDSET>";
-
+=cut
 	# --- Transmission
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
 	print "<TABLE><TR>";
@@ -1305,7 +1295,7 @@ FIN
 
 		if (-s $clbFile != 0) {
 			my @select = split(/,/,$usrCHAN);
-			my @carCLB   = readCfgFile($clbFile);
+			my @carCLB = readCfgFile($clbFile);
 			# make a list of available channels and label them with last Chan. + Loc. codes
 			my %chan;
 			for (@carCLB) {
