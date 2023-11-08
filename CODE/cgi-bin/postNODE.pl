@@ -214,16 +214,16 @@ my $jourE      = $cgi->param('jourEnd')     // '';
 my $validite   = $cgi->param('valide')      // '';
 my $alias      = $cgi->param('alias')       // '';
 my $type       = $cgi->param('type')        // '';
-my $desc       = $cgi->param('description') // '';
+my $desc       = $cgi->param('description') // ''; $desc =~ s/\<\<//g;
 my $creator    = $cgi->param('creators')    // '';
 my $theme      = $cgi->param('theme')       // '';
-my $topics     = $cgi->param('topics')      // '';
+my @topics     = $cgi->param('topics');
 my $lineage    = $cgi->param('lineage')     // '';
 my $tz         = $cgi->param('tz')          // '';
 my $data       = $cgi->param('data')        // '';
 my $rawformat  = $cgi->param('rawformat')   // '';
 my $rawdata    = $cgi->param('rawdata')     // '';
-my @chanlist   = $cgi->param('chanlist')    // '';
+my @chanlist   = $cgi->param('chanlist');
 my $name       = $cgi->param('fullName')    // '';
 my $fdsn       = $cgi->param('fdsn')        // '';
 my $latN       = $cgi->param('latwgs84n')   // '';
@@ -289,64 +289,6 @@ if ($lon ne "" && $lat ne "") {
 # ---- parsing dataset contacts
 my @creators = split('\|', $creator);
 
-if ( isok($theiaAuth) ) {
-	# --- connecting to the database
-	my $driver   = "SQLite";
-	my $database = $WEBOBS{SQL_METADATA};
-	my $dsn 	 = "DBI:$driver:dbname=$database";
-	my $userid 	 = "";
-	my $password = "";
-		
-	# --- station informations, coordinates are saved in WKT format
-	my $point;
-	if ($alt ne "") {
-		$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
-	} else {
-		$point = "wkt:Point(".$lat.",".$lon.")";
-	}
-		
-	# --- dataset informations
-	my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
-	my $subject = $topics.'inspireTheme:'.$theme;
-		
-	# --- creators informations
-	my @roles      = split(',',$creators[0]);
-	my @firstNames = split(',',$creators[1]);
-	my @lastNames  = split(',',$creators[2]);
-	my @emails     = split(',',$creators[3]);
-
-	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-	   or die $DBI::errstr;
-		   
-	# inserting creators into contacts table
-	my @contacts = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
-	my $stmt = qq(select * from contacts where related_id=\"$id\");
-	my $sth = $dbh->prepare( $stmt );
-	my $rv = $sth->execute() or die $DBI::errstr;
-
-	if($rv < 0) {
-	   print $DBI::errstr;
-	}
-	while(my @row = $sth->fetchrow_array()) {
-		my $email = $row[0];
-		if ($email !~ @emails) {
-			my $stmt2 = "delete from contacts where email=\"$email\" AND related_id=\"$id\"";
-			$dbh->do($stmt2);
-		}
-	}
-		
-	my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
-	$dbh->do($q);
-
-	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
-	$sth->execute($alias,$alias,$point);
-
-	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
-	$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
-		
-	$dbh->disconnect();
-}
-
 # ---- NODE's validity flag
 my $valide = "";
 if ( $validite eq "NA" ) { $valide = 1; } else { $valide = 0; }
@@ -392,8 +334,8 @@ if ($GRIDType eq "PROC") {
 	push(@lines,"$GRIDType.$GRIDName.UTC_DATA|$utcd\n");
 	push(@lines,"$GRIDType.$GRIDName.ACQ_RATE|$acqr\n");
 	push(@lines,"$GRIDType.$GRIDName.LAST_DELAY|$ldly\n");
-	push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|$desc\n");
 	push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
+	push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|$desc\n");
 }
 
 # ---- other grid's parameters (not linked to the active grid) are transfered "as is"
@@ -411,6 +353,7 @@ foreach my $g (@{$allNodeGrids{$NODEName}}) {
 		push(@lines,"$g.ACQ_RATE|$QryParm->{ACQ_RATE}\n") if !(defined $QryParm->{"$g.ACQ_RATE"});
 		push(@lines,"$g.LAST_DELAY|$QryParm->{LAST_DELAY}\n") if !(defined $QryParm->{"$g.LAST_DELAY"});
 		push(@lines,"$g.CHANNEL_LIST|$QryParm->{CHANNEL_LIST}\n") if !(defined $QryParm->{"$g.CHANNEL_LIST"});
+		push(@lines,"$g.DESCRIPTION|$QryParm->{DESCRIPTION}\n") if !(defined $QryParm->{"$g.DESCRIPTION"});
 		push(@lines,"$g.FID|$QryParm->{FID}\n") if !(defined $QryParm->{"$g.FID"});
 		grep { $_ =~ /^FID_/ && !(defined $QryParm->{"$g.$_"}) && (push(@lines,"$g.$_|$QryParm->{$_}\n")) } (keys(%$QryParm));
 	}
@@ -484,6 +427,65 @@ if ($geojson ne "") {
 		close(FILE);
 		
 	} else { htmlMsgNotOK("$geojsonfile $!") }
+}
+
+if ( isok($theiaAuth) ) {
+	# --- connecting to the database
+	my $driver   = "SQLite";
+	my $database = $WEBOBS{SQL_METADATA};
+	my $dsn 	 = "DBI:$driver:dbname=$database";
+	my $userid 	 = "";
+	my $password = "";
+		
+	# --- station informations, coordinates are saved in WKT format
+	my $point;
+	if ($alt ne "") {
+		$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
+	} else {
+		$point = "wkt:Point(".$lat.",".$lon.")";
+	}
+		
+	# --- dataset informations
+	my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
+	my $topics = 'topicCategories:'.join(',',@topics);
+	my $subject = $topics.'_inspireTheme:'.$theme;
+		
+	# --- creators informations
+	my @roles      = split(',',$creators[0]);
+	my @firstNames = split(',',$creators[1]);
+	my @lastNames  = split(',',$creators[2]);
+	my @emails     = split(',',$creators[3]);
+
+	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+	   or die $DBI::errstr;
+		   
+	# inserting creators into contacts table
+	my @contacts = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
+	my $stmt = qq(select * from contacts where related_id=\"$id\");
+	my $sth = $dbh->prepare( $stmt );
+	my $rv = $sth->execute() or die $DBI::errstr;
+
+	if($rv < 0) {
+	   print $DBI::errstr;
+	}
+	while(my @row = $sth->fetchrow_array()) {
+		my $email = $row[0];
+		if ($email !~ @emails) {
+			my $stmt2 = "delete from contacts where email=\"$email\" AND related_id=\"$id\"";
+			$dbh->do($stmt2);
+		}
+	}
+		
+	my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
+	$dbh->do($q);
+
+	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
+	$sth->execute($alias,$alias,$point);
+
+	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
+	$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
+		
+	$dbh->disconnect();
 }
 
 # ---- node2node update: only if there is something to do!
