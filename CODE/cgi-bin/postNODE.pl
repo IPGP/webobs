@@ -147,9 +147,10 @@ if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
 	}
 } else { htmlMsgNotOK ("Invalid NODE (".$cgi->param('node').") posted for create/update/delete")  }
 
-# ---- checking if user is a THEIA user
+# ---- checking if user is a THEIA user and if he wants to save data in metadatabase
 #
 my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
+my $saveAuth   = $cgi->param('saveAuth')	// '';
 
 # ---- where are the NODE's directory and NODE's conf file ?
 my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
@@ -172,7 +173,7 @@ if ($delete) {
 		@lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
 		saveN2N(@lines);
 		
-		if ( isok($theiaAuth) ) {
+		if ( isok($theiaAuth) and isok($saveAuth) ) {
 			# --- connecting to the database
 			my $driver   = "SQLite";
 			my $database = $WEBOBS{SQL_METADATA};
@@ -433,7 +434,7 @@ if ($geojson ne "") {
 	} else { htmlMsgNotOK("$geojsonfile $!") }
 }
 
-if ( isok($theiaAuth) ) {
+if ( isok($theiaAuth) and $saveAuth == 1 ) {
 	# --- connecting to the database
 	my $driver   = "SQLite";
 	my $database = $WEBOBS{SQL_METADATA};

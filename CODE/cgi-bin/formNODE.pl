@@ -790,6 +790,18 @@ function check_9char_code() {
 	}
 }
 
+function showHideTheia(checkbox){
+	const theia = document.getElementById("showHide");
+
+	if (checkbox.checked == false) {
+		theia.style.display = "none";
+		document.form.saveAuth.value = 0;
+	} else {
+		theia.style.display = "block";
+		document.form.saveAuth.value = 1;
+	}
+}
+
 // creating and parametring the map for the geographic location choice
 
 var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
@@ -1020,7 +1032,7 @@ print "<TR>";
 		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
 		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc</TEXTAREA>&nbsp;&nbsp;<BR>";
 		# --- show THEIA fields ?
-		#print "<LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT name=\"showHide\" type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
+		print "<DIV id=\"theiaChecked\" style=\"display:none;\"><LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT type=\"checkbox\" name=\"saveAuth\" onchange=\"showHideTheia(this)\" value=0></LABEL>&nbsp;<BR><BR></DIV>";
 		print "<DIV id=\"showHide\" style=\"display:none;\">";
 		# --- PRODUCER
 		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
@@ -1158,14 +1170,14 @@ print "<TR>";
 		print "</TD>";
 		print <<FIN;
 		<script>
-			const theia = document.getElementById("showHide");
+			const checked = document.getElementById("theiaChecked");
 			const auth = $theiaAuth;
-				
+			
 			if (auth == 1) {
 				// console.log(theia);
-				theia.style.display = "block";
+				checked.style.display = "block";
 			} else {
-				theia.style.display = "none";
+				checked.style.display = "none";
 			}
 		
 			var map = L.map('map', mapOptions);
