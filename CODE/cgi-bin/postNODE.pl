@@ -217,6 +217,10 @@ my $type       = $cgi->param('type')        // '';
 my $desc       = $cgi->param('description') // ''; $desc =~ s/\<\<//g;
 my $creator    = $cgi->param('creators')    // '';
 my $theme      = $cgi->param('theme')       // '';
+my @roles	   = $cgi->param('role');
+my @firstNames = $cgi->param('firstName');
+my @lastNames  = $cgi->param('lastName');
+my @emails	   = $cgi->param('email');
 my @topics     = $cgi->param('topics');
 my $lineage    = $cgi->param('lineage')     // '';
 my $tz         = $cgi->param('tz')          // '';
@@ -450,12 +454,6 @@ if ( isok($theiaAuth) ) {
 	my $topics = 'topicCategories:'.join(',',@topics);
 	my $subject = $topics.'_inspireTheme:'.$theme;
 		
-	# --- creators informations
-	my @roles      = split(',',$creators[0]);
-	my @firstNames = split(',',$creators[1]);
-	my @lastNames  = split(',',$creators[2]);
-	my @emails     = split(',',$creators[3]);
-
 	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
 	   or die $DBI::errstr;
 		   
