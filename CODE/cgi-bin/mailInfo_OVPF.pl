@@ -195,6 +195,7 @@ PART1
 	$htmlMail .= $html;
 	$htmlOutput .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">";
 	$htmlBrowser .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/css/style.css\">";
+	$htmlBrowser .= "    <meta http-equiv=\"Refresh\" content=\"5; url=mc3.pl\">";
 	$html = '  </head>';
 	$html .= '  <body>';
 	$html .= '  <div id="container">';
@@ -412,12 +413,10 @@ PART1
           alert("Le niveau d'alerte doit etre defini");
           return false;
         }
-	alert("!!! Attention !!! Merci de bien fermer l'onglet apres envoi du bulletin");
       }
     </script>
   </head>
   <body>
-<!--    <form action="$MC3{CGI_MAIL_INFO}" onsubmit="return validateAlert()" method="GET"> -->
     <form action="mailInfo_OVPF.pl" onsubmit="return validateAlert()" method="GET">
       <h1>$WEBOBS{WEBOBS_TITLE}</h1>
       <h2>$timePeriodHTML</h2>
