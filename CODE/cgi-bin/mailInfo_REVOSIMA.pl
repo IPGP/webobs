@@ -234,6 +234,7 @@ PART1
 	$htmlMail .= $html;
 	$htmlOutput .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">";
 	$htmlBrowser .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/php/bulletin/css/style.css\">";
+	$htmlBrowser .= "    <meta http-equiv=\"Refresh\" content=\"5; url=mc3.pl\">";
         $html = '    <script>
 function showCredits() {
   var x = document.getElementById("revocredits");
@@ -452,14 +453,9 @@ Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans c
     <title>Bulletin d'information ReVoSiMa</title>
     <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
     <link rel="stylesheet" type="text/css" href="/css/$MC3{CSS}">
-    <script>
-      function validateAlert(){
-        alert("!!! Attention !!! Merci de bien fermer l'onglet apres envoi du bulletin");
-      }
-    </script>
   </head>
   <body>
-    <form action="mailInfo_REVOSIMA.pl" onsubmit="return validateAlert()" method="GET">
+    <form action="mailInfo_REVOSIMA.pl" method="GET">
       <h1>REVOSIMA</h1>
       <h2>$timePeriodHTML</h2>
       <h3>Niveau d'alerte en cours :
