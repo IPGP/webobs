@@ -314,6 +314,7 @@ push(@lines,"=key|value\n");
 push(@lines,"NAME|\"".u2l($name)."\"\n");
 push(@lines,"ALIAS|".u2l($alias)."\n");
 push(@lines,"TYPE|".u2l($type)."\n");
+push(@lines,"DESCRIPTION|".u2l($desc)."\n");
 push(@lines,"VALID|$valide\n");
 push(@lines,"TZ|$tz\n");
 push(@lines,"LAT_WGS84|$lat\n");
@@ -340,7 +341,7 @@ if ($GRIDType eq "PROC") {
 	push(@lines,"$GRIDType.$GRIDName.ACQ_RATE|$acqr\n");
 	push(@lines,"$GRIDType.$GRIDName.LAST_DELAY|$ldly\n");
 	push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
-	push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|$desc\n");
+	push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|".u2l($desc)."\n");
 }
 
 # ---- other grid's parameters (not linked to the active grid) are transfered "as is"
@@ -480,9 +481,14 @@ if ( isok($theiaAuth) and $saveAuth == 1 ) {
 
 	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
 	$sth->execute($alias,$alias,$point);
-
-	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
-	$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
+	
+	if ($spatialcov eq "") {
+		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, LINEAGE) VALUES (?,?,?,?,?);');
+		$sth->execute($id,$name,$desc,$subject,$lineage);
+	} else {
+		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
+		$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
+	}
 		
 	$dbh->disconnect();
 }
