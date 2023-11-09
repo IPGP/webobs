@@ -244,7 +244,7 @@ while(my @row = $sth->fetchrow_array()) {
 }
 
 # ---- load the database information if NODE is already filled out in the contacts table
-my $stmt = qq(SELECT * FROM contacts WHERE EXISTS ( SELECT related_id from contacts ) AND related_id LIKE "\%$GRIDName.$NODEName");
+my $stmt = qq(SELECT * FROM contacts WHERE EXISTS ( SELECT related_id from contacts ) AND related_id LIKE "$usrProducer\%$GRIDName.$NODEName");
 my $sth = $dbh->prepare( $stmt );
 my $rv = $sth->execute() or die $DBI::errstr;
 
@@ -371,28 +371,42 @@ function postIt()
   for (var i=0; i<form.SELs.length; i++) {
   	form.SELs[i].selected = true;
   }
-  
-  // registering the NODE contacts metadata
-  var roles = [];
-  var firstNames = [];
-  var lastNames = [];
-  var emails = [];
-  if (form.email.length > 1) {
-  	  for (var i=0; i<form.role.length; i++) {
-  	  	if (form.firstName[i].value == "" || form.lastName[i].value == "" || form.email[i].value == "") {
-  	  		alert("A creator must have a first name, a last name and an email adress !");
-  	  		return false;
-  	  	} else {
-  	  		roles.push(form.role[i].value);
-	  		firstNames.push(form.firstName[i].value);
-	  		lastNames.push(form.lastName[i].value);
-	  		emails.push(form.email[i].value);
-  	  	}
-	  } 
-  	form.creators.value = roles.join(',') + '|' + firstNames.join(',') + '|' + lastNames.join(',') + '|' + emails.join(',');
-  } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
 	
 	console.log(\$(\"#theform\").serialize());
+	console.log(form.outWKT.value)
+	
+	if (form.saveAuth.value == 1) {
+		console.log(form.count_creator);
+		if ( form.producer.value == "" ) {
+			alert("Producer can't be empty !");
+			return false;
+		}
+		var nb_creators = form.count_creator.value;
+		if (nb_creators>1) {
+			for (var i=0; i<nb_creators; i++) {
+				if ( form.firstName[i].value == "" ) {
+					alert("First name can't be empty (make sure the right role is selected too) !");
+					return false;
+				}
+				if ( form.lastName[i].value == "" ) {
+					alert("Last name can't be empty (make sure the right role is selected too) !");
+					return false;
+				}
+				if ( form.email[i].value == "" ) {
+					alert("Email can't be empty (make sure the right role is selected too) !");
+					return false;
+				}
+			}
+		}
+		if ( form.topics.value == "" ) {
+			alert("You have to chose at least one topic category (check that you selected the right INSPIRE theme too) !");
+			return false;
+		}
+		if ( form.lineage.value == "" ) {
+			alert("Lineage can't be empty !");
+			return false;
+		}
+	}
 	
 	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
 		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
@@ -718,7 +732,7 @@ function getGeometry(geojson) {
 		} geometry.coordinates = coordinates; return geometry;
 	} else {
 		geometry.type = "Polygon";
-		geometry.coordinates = [getBoundingBox(geojson.features.geometry.coordinates)];
+		geometry.coordinates = [getBoundingBox(geojson.features[0].geometry.coordinates)];
 		return geometry;
 	}
 }
