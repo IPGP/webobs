@@ -14,7 +14,7 @@ function X = readtob1(filename)
 %
 %	Author: François Beauducel, IPGP / WEBOBS
 %	Created: 2018-06-13 in Jakarta, Indonesia
-%	Updated: 2023-03-17
+%	Updated: 2023-11-07
 
 if ~exist(filename,'file')
 	error('file %s not exists.',filename)
@@ -26,9 +26,17 @@ fid = fopen(filename,'rb');
 
 % --- reads header
 % must check first the file type
+nok = false;
 line = fgets(fid);
-hd = strrep(split(line,','),'"','');
-if ~strcmpi(hd{1},'tob1')
+if ~ischar(line)
+	nok = true;
+else
+	hd = strrep(split(line,','),'"','');
+	if ~strcmpi(hd{1},'tob1')
+		nok = true;
+	end
+end
+if nok
 	fclose(fid);
 	error('File %s is not a valid TOB1 format.\n',filename);
 end
@@ -48,7 +56,7 @@ header_bytes = length(line);
 field_headers = {'field_names','field_units','field_processing','data_types'};
 
 for fd = 1:length(field_headers)
-	line = fgets(fid);
+	line = fgetl(fid);
 	X.HEADER.(field_headers{fd}) = strrep(split(line,','),'"','');
 	header_bytes = header_bytes + length(line);
 end

@@ -8,7 +8,7 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## Under development
+## v2.6.4 (November 2023)
 
 ### New features
 1. When editing or creating a NODE, if a shapefile is associated to the NODE, a GEOJSON file is now created in `/opt/webobs/DATA/NODES/NODEName/`, and will contain all the metadata of the GEOJSON, so it could be re-used elsewhere.
