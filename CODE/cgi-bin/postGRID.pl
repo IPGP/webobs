@@ -181,27 +181,27 @@ if (uc($GRIDType) eq 'SEFRAN') {
 }
 my $griddir = dirname($gridConfFile);
 
-if (! -e $gridConfFile) {
-	# --- Grid creation (config file does not exist)
+	if (! -e $gridConfFile) {
+		# --- Grid creation (config file does not exist)
 
-	if (!-d $griddir and !mkdir($griddir)) {
-		htmlMsgNotOK("postGRID: error while creating directory $griddir: $!");
+		if (!-d $griddir and !mkdir($griddir)) {
+			htmlMsgNotOK("postGRID: error while creating directory $griddir: $!");
+			exit;
+		}
+		if ( open(FILE,">$gridConfFile") ) {
+			print FILE u2l($text);
+			close(FILE);
+		} else {
+			htmlMsgNotOK("postGRID: error creating $gridConfFile: $!");
+			exit;
+		}
+		update_grid2domains($GRIDType, $GRIDName, \@domain);
+		update_grid2nodes_links($GRIDType, $GRIDName, \@SELs);
+		update_grid2forms_links($GRIDType, $GRIDName, $form);
+
+		htmlMsgOK("postGRID: $GRIDFullName created.");
 		exit;
 	}
-	if ( open(FILE,">$gridConfFile") ) {
-		print FILE u2l($text);
-		close(FILE);
-	} else {
-		htmlMsgNotOK("postGRID: error creating $gridConfFile: $!");
-		exit;
-	}
-	update_grid2domains($GRIDType, $GRIDName, \@domain);
-	update_grid2nodes_links($GRIDType, $GRIDName, \@SELs);
-	update_grid2forms_links($GRIDType, $GRIDName, $form);
-
-	htmlMsgOK("postGRID: $GRIDFullName created.");
-	exit;
-}
 
 
 # --- Grid delete or update (config file already exists)

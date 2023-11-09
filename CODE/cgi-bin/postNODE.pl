@@ -118,7 +118,7 @@ use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
 use POSIX qw/strftime/;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
-$CGI::POST_MAX = 1024 * 10;
+$CGI::POST_MAX = 1024 * 1000;
 $CGI::DISABLE_UPLOADS = 1;
 my $cgi = new CGI;
 
@@ -147,6 +147,10 @@ if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
 	}
 } else { htmlMsgNotOK ("Invalid NODE (".$cgi->param('node').") posted for create/update/delete")  }
 
+# ---- checking if user is a THEIA user
+#
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
+
 # ---- where are the NODE's directory and NODE's conf file ?
 my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
 my $nodepath = "$NODES{PATH_NODES}/$NODEName";
@@ -155,6 +159,8 @@ my $n2nfile = "$NODES{FILE_NODES2NODES}";
 
 # ---- If deleting NODE, do not wait for further information
 #
+my $producer   = $cgi->param('producer')    // '';	# information needed to delete the NODE's related row in the metadata DB
+
 if ($delete) {
 	# NOTE: this removes only the node directory, association to grids and node feature associations
 	qx(/bin/mkdir -p $NODES{PATH_NODE_TRASH});
@@ -165,6 +171,27 @@ if ($delete) {
 		# reads all but feature children nodes
 		@lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
 		saveN2N(@lines);
+		
+		if ( isok($theiaAuth) ) {
+			# --- connecting to the database
+			my $driver   = "SQLite";
+			my $database = $WEBOBS{SQL_METADATA};
+			my $dsn 	 = "DBI:$driver:dbname=$database";
+			my $userid 	 = "";
+			my $password = "";
+			my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+		    	or die $DBI::errstr;
+			
+			my $stmt = qq(delete from datasets WHERE datasets.identifier = "$producer\_DAT_$GRIDName.$NODEName");
+			my $sth = $dbh->prepare( $stmt );
+			my $rv = $sth->execute() or die $DBI::errstr;
+
+			if($rv < 0) {
+			   print $DBI::errstr;
+			}
+			
+			$dbh->disconnect();
+		}
 	} else {
 		htmlMsgNotOK("postNODE couldn't move directory $nodepath to trash... [$!]");
 	}
@@ -187,11 +214,14 @@ my $jourE      = $cgi->param('jourEnd')     // '';
 my $validite   = $cgi->param('valide')      // '';
 my $alias      = $cgi->param('alias')       // '';
 my $type       = $cgi->param('type')        // '';
-my $desc       = $cgi->param('description') // '';
-my $producer   = $cgi->param('producer')    // '';
+my $desc       = $cgi->param('description') // ''; $desc =~ s/\<\<//g;
 my $creator    = $cgi->param('creators')    // '';
 my $theme      = $cgi->param('theme')       // '';
-my $topics     = $cgi->param('topics')      // '';
+my @roles	   = $cgi->param('role');
+my @firstNames = $cgi->param('firstName');
+my @lastNames  = $cgi->param('lastName');
+my @emails	   = $cgi->param('email');
+my @topics     = $cgi->param('topics');
 my $lineage    = $cgi->param('lineage')     // '';
 my $tz         = $cgi->param('tz')          // '';
 my $data       = $cgi->param('data')        // '';
@@ -212,13 +242,14 @@ my $spatialcov = $cgi->param('outWKT')      // '';
 my $geojson    = $cgi->param('geojson')     // '';
 my $filename   = $cgi->param('filename')    // '';
 my $alt        = $cgi->param('altitude')    // '';
+my $gnss_9char = $cgi->param('gnss_9char')  // '';
+my $m3g_check  = $cgi->param('m3g_check')   // '';
 my $anneeP     = $cgi->param('anneeMesure') // '';
 my $moisP      = $cgi->param('moisMesure')  // '';
 my $jourP      = $cgi->param('jourMesure')  // '';
 my $typePos    = $cgi->param('typePos')     // '';
 my $rawKML     = $cgi->param('rawKML')      // '';
 my $features   = $cgi->param('features')    // '';
-my $showHide   = $cgi->param('showHide')	// '';
 $features =~ s/\|/,/g;
 my %n2n;
 for (split(',',lc($features))) {
@@ -265,6 +296,9 @@ my @creators = split('\|', $creator);
 # ---- NODE's validity flag
 my $valide = "";
 if ( $validite eq "NA" ) { $valide = 1; } else { $valide = 0; }
+# ---- 2nd checkbox: M3G avaiability flag
+my $m3g_avaiable = "";
+if ( $m3g_check eq "NA" ) { $m3g_avaiable = 1; } else { $m3g_avaiable = 0; }
 # ---- NODES' Feature Files: "system" always present, and "user" defined
 my @FFsys = ('acces.txt', 'info.txt', 'installation.txt', 'type.txt', "$NODEName.clb");
 my @FFusr = map { "$NODES{SPATH_FEATURES}/".lc($_).'.txt'} split(/\||,/,$features);
@@ -284,6 +318,8 @@ push(@lines,"TZ|$tz\n");
 push(@lines,"LAT_WGS84|$lat\n");
 push(@lines,"LON_WGS84|$lon\n");
 push(@lines,"ALTITUDE|$alt\n");
+push(@lines,"GNSS_9CHAR|$gnss_9char\n");
+push(@lines,"M3G_AVAIABLE|$m3g_avaiable\n");
 push(@lines,"POS_DATE|$datePos\n");
 push(@lines,"POS_TYPE|$typePos\n");
 push(@lines,"POS_RAWKML|$rawKML\n");
@@ -303,6 +339,7 @@ if ($GRIDType eq "PROC") {
 	push(@lines,"$GRIDType.$GRIDName.ACQ_RATE|$acqr\n");
 	push(@lines,"$GRIDType.$GRIDName.LAST_DELAY|$ldly\n");
 	push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
+	push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|$desc\n");
 }
 
 # ---- other grid's parameters (not linked to the active grid) are transfered "as is"
@@ -320,6 +357,7 @@ foreach my $g (@{$allNodeGrids{$NODEName}}) {
 		push(@lines,"$g.ACQ_RATE|$QryParm->{ACQ_RATE}\n") if !(defined $QryParm->{"$g.ACQ_RATE"});
 		push(@lines,"$g.LAST_DELAY|$QryParm->{LAST_DELAY}\n") if !(defined $QryParm->{"$g.LAST_DELAY"});
 		push(@lines,"$g.CHANNEL_LIST|$QryParm->{CHANNEL_LIST}\n") if !(defined $QryParm->{"$g.CHANNEL_LIST"});
+		push(@lines,"$g.DESCRIPTION|$QryParm->{DESCRIPTION}\n") if !(defined $QryParm->{"$g.DESCRIPTION"});
 		push(@lines,"$g.FID|$QryParm->{FID}\n") if !(defined $QryParm->{"$g.FID"});
 		grep { $_ =~ /^FID_/ && !(defined $QryParm->{"$g.$_"}) && (push(@lines,"$g.$_|$QryParm->{$_}\n")) } (keys(%$QryParm));
 	}
@@ -381,17 +419,72 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 
 my $geojsonfile = "$nodepath/$NODEName.geojson";
 
-if ( sysopen(FILE, "$geojsonfile", O_RDWR | O_CREAT) ) {
-	unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-		warn "postNODE waiting for lock on $geojsonfile...";
-		flock(FILE, LOCK_EX);
+if ($geojson ne "") {
+	if ( sysopen(FILE, "$geojsonfile", O_RDWR | O_CREAT) ) {
+		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+			warn "postNODE waiting for lock on $geojsonfile...";
+			flock(FILE, LOCK_EX);
+		}
+		
+		truncate FILE, 0;
+		print FILE $geojson;
+		close(FILE);
+		
+	} else { htmlMsgNotOK("$geojsonfile $!") }
+}
+
+if ( isok($theiaAuth) ) {
+	# --- connecting to the database
+	my $driver   = "SQLite";
+	my $database = $WEBOBS{SQL_METADATA};
+	my $dsn 	 = "DBI:$driver:dbname=$database";
+	my $userid 	 = "";
+	my $password = "";
+		
+	# --- station informations, coordinates are saved in WKT format
+	my $point;
+	if ($alt ne "") {
+		$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
+	} else {
+		$point = "wkt:Point(".$lat.",".$lon.")";
 	}
-	
-	truncate FILE, 0;
-	print FILE $geojson;
-	close(FILE);
-	
-} else { htmlMsgNotOK("$geojsonfile $!") }
+		
+	# --- dataset informations
+	my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
+	my $topics = 'topicCategories:'.join(',',@topics);
+	my $subject = $topics.'_inspireTheme:'.$theme;
+		
+	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+	   or die $DBI::errstr;
+		   
+	# inserting creators into contacts table
+	my @contacts = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
+	my $stmt = qq(select * from contacts where related_id=\"$id\");
+	my $sth = $dbh->prepare( $stmt );
+	my $rv = $sth->execute() or die $DBI::errstr;
+
+	if($rv < 0) {
+	   print $DBI::errstr;
+	}
+	while(my @row = $sth->fetchrow_array()) {
+		my $email = $row[0];
+		if ($email !~ @emails) {
+			my $stmt2 = "delete from contacts where email=\"$email\" AND related_id=\"$id\"";
+			$dbh->do($stmt2);
+		}
+	}
+		
+	my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
+	$dbh->do($q);
+
+	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
+	$sth->execute($alias,$alias,$point);
+
+	$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
+	$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
+		
+	$dbh->disconnect();
+}
 
 # ---- node2node update: only if there is something to do!
 #
@@ -432,62 +525,6 @@ sub saveN2N {
 # --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	if ($showHide == 1) {
-		# --- connecting to the database
-		my $driver   = "SQLite";
-		my $database = $WEBOBS{SQL_METADATA};
-		my $dsn 	 = "DBI:$driver:dbname=$database";
-		my $userid 	 = "";
-		my $password = "";
-		
-		# --- station informations, coordinates are saved in WKT format
-		my $point;
-		if ($alt ne "") {
-			$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
-		} else {
-			$point = "wkt:Point(".$lat.",".$lon.")";
-		}
-		
-		# --- dataset informations
-		my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
-		my $subject = $topics.'inspireTheme:'.$theme;
-		
-		# --- creators informations
-		my @roles      = split(',',$creators[0]);
-		my @firstNames = split(',',$creators[1]);
-		my @lastNames  = split(',',$creators[2]);
-		my @emails     = split(',',$creators[3]);
-
-		my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-		   or die $DBI::errstr;
-		   
-		# inserting creators into contacts table
-		my @contacts = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
-		my $stmt = qq(select * from contacts where related_id=\"$id\");
-		my $sth = $dbh->prepare( $stmt );
-		my $rv = $sth->execute() or die $DBI::errstr;
-
-		if($rv < 0) {
-		   print $DBI::errstr;
-		}
-		while(my @row = $sth->fetchrow_array()) {
-			my $email = $row[0];
-			if ($email !~ @emails) {
-				my $stmt2 = "delete from contacts where email=\"$email\" AND related_id=\"$id\"";
-				$dbh->do($stmt2);
-			}
-		}
-		
-		my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
-		$dbh->do($q);
-
-		my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
-		$sth->execute($alias,$alias,$point);
-
-		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
-		$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
-	}
-
 	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
 }
