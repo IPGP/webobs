@@ -152,11 +152,26 @@ if ( isok($theiaAuth)) {
 	my $password = "";
 	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
 	   or die $DBI::errstr;
+	
+	# reading the NODEName dataset row to get the producer id
+	my $stmt = qq(SELECT identifier FROM datasets WHERE identifier LIKE "\%$GRIDName.$NODEName");
+	my $sth = $dbh->prepare( $stmt );
+	my $rv = $sth->execute() or die $DBI::errstr;
+
+	if($rv < 0) {
+	   print $DBI::errstr;
+	}
+
+	my $producerId;
+
+	while( my @row = $sth->fetchrow_array() ) {
+		$producerId = (split /_/, $row[0])[0];
+	}
 		
-	my $station  = $GRIDName.'.'.$NODEName;
-	my $dataset  = 'OBSE_DAT_'.$GRIDName.'.'.$NODEName;
-	my $dataname = 'OBSE_OBS_'.$GRIDName.'.'.$NODEName.'_'.$GRID{THEIA_SELECTED_TS}.'.txt';
-	my $extension= $NODEName.'_'.$GRID{THEIA_SELECTED_TS}.'.txt';
+	my $station   = $GRIDName.'.'.$NODEName;
+	my $dataset   = "$producerId\_DAT_$GRIDName.$NODEName";
+	my $dataname  = "$producerId\_OBS_$GRIDName.$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
+	my $extension = "$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
 	my $filepath;
 
 	foreach (@donnees) {
@@ -169,8 +184,8 @@ if ( isok($theiaAuth)) {
 		my $chan  = $obs[2];
 		    
 		# observations table
-		my $obsid    = 'OBSE_OBS_'.$GRIDName.'.'.$NODEName.'_'.$id;
-		my @first_date = split(/ /,$obs[0]);
+		my $obsid        = "$producerId\_OBS_$GRIDName.$NODEName\_$id";
+		my @first_date   = split(/ /,$obs[0]);
 		my $first_year   = $first_date[0];
 		my $first_hour   = $first_date[3] || "00";
 		my $first_minute = $first_date[4] || "00";
