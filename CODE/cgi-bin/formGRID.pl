@@ -66,7 +66,7 @@ use WebObs::Grids;
 use WebObs::Form;
 use WebObs::Utils;
 use WebObs::i18n;
-my $me = $ENV{SCRIPT_NAME}; 
+
 # ---- misc inits
 #
 set_message(\&webobs_cgi_msg);

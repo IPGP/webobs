@@ -13,6 +13,7 @@ http://..../showNODE.pl?node=NODEID[,sortBy={event|date}]
 Displays data associated to a NODE identified by its fully qualified name (node=gridtype.gridname.nodename)
 
 Although a NODE is an independent entity, a GRID-context (the 2 high level qualifiers of the
+Although a NODE is an independent entity, a GRID-context (the 2 high level qualifiers of the
 fully qualified nodename) is required
 as a validation/authorization/reference information.
 
@@ -640,7 +641,7 @@ if ( $NODE{GNSS_9CHAR} && $NODE{M3G_AVAIABLE} ) {
 		print "M3G GNSS Metadata</TH>";
 	}	#print "</TH><TD colspan=\"2\">".join("<br>",$m3g_link_sitelog,$m3g_link_gml,$m3g_xml,$txt_rec,$txt_ant)."</TD></TR>\n";
 	print "</TH><TD>".join("<br>",$m3g_link_sitelog,$m3g_link_gml,$m3g_xml)."<BR>\n";
-	print "<TABLE><TR><TH>Receiver history feature</TH><TH>Antenna history feature></TH></TR><TR><TD>".wiki2html($txt_rec)."</TD><TD>".wiki2html($txt_ant)."</TD></TR></TABLE></TD>";
+	print "<TABLE><TR><TH>Receiver history feature</TH><TH>Antenna history feature</TH></TR><TR><TD>".wiki2html($txt_rec)."</TD><TD>".wiki2html($txt_ant)."</TD></TR></TABLE></TD>";
 }
 
 
