@@ -227,9 +227,10 @@ foreach (@channels) {
 		my $lon = $coordinates[1];
 		$coordinates[2] = $coordinates[2] + 0;
 		my $alt = $coordinates[2];
+		my @new_crds = ($coordinates[1],$coordinates[0]);
 		my %geometry = (
 			type => (split '\(|\)', $geometry)[0],
-			coordinates => \@coordinates,
+			coordinates => \@new_crds,
 		);
 		my %samplingFeature = (
 			name => $row[6],
