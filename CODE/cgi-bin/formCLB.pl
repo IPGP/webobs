@@ -83,7 +83,7 @@ if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
 			if (%CLBS) {
 				@clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
 				@fieldCLB = readCfg($CLBS{FIELDS_FILE});
-				if ( $theiaAuth != 1 ) { pop(@fieldCLB); }
+				unless ( isok($theiaAuth) ) { pop(@fieldCLB); }
 				if (@fieldCLB) {
 					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
 					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $fileDATA ); # for backwards compatibility

@@ -253,4 +253,8 @@ sub gml2mmdtable {
 	return @outlines;
 }
 
+sub gml2date {
+	
+}
+
 1;

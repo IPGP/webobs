@@ -137,12 +137,6 @@ foreach (@funders) {
 	push(@nameFunders, (split ':|\(', $_)[1]);
 	push(@acronyms, (split '\(|\)', $_)[1]);
 }
-=pod
-my @typeFunders= split('_,', (split '\|', $QryParm->{'funders'})[0]);
-my @idScanR    = split('_,', (split '\|', $QryParm->{'funders'})[1]);
-my @funders    = split('_,', (split '\|', $QryParm->{'funders'})[2]);
-my @acronyms   = split('_,', (split '\|', $QryParm->{'funders'})[3]);
-=cut
 
 my @onlineRes  = split('_,', $QryParm->{'onlineRes'});
 foreach (@onlineRes) {
