@@ -244,7 +244,7 @@ while(my @row = $sth->fetchrow_array()) {
 }
 
 # ---- load the database information if NODE is already filled out in the contacts table
-my $stmt = qq(SELECT * FROM contacts WHERE EXISTS ( SELECT related_id from contacts ) AND related_id LIKE "\%$GRIDName.$NODEName");
+my $stmt = qq(SELECT * FROM contacts WHERE EXISTS ( SELECT related_id from contacts ) AND related_id LIKE "$usrProducer\%$GRIDName.$NODEName");
 my $sth = $dbh->prepare( $stmt );
 my $rv = $sth->execute() or die $DBI::errstr;
 
@@ -371,28 +371,42 @@ function postIt()
   for (var i=0; i<form.SELs.length; i++) {
   	form.SELs[i].selected = true;
   }
-  
-  // registering the NODE contacts metadata
-  var roles = [];
-  var firstNames = [];
-  var lastNames = [];
-  var emails = [];
-  if (form.email.length > 1) {
-  	  for (var i=0; i<form.role.length; i++) {
-  	  	if (form.firstName[i].value == "" || form.lastName[i].value == "" || form.email[i].value == "") {
-  	  		alert("A creator must have a first name, a last name and an email adress !");
-  	  		return false;
-  	  	} else {
-  	  		roles.push(form.role[i].value);
-	  		firstNames.push(form.firstName[i].value);
-	  		lastNames.push(form.lastName[i].value);
-	  		emails.push(form.email[i].value);
-  	  	}
-	  } 
-  	form.creators.value = roles.join(',') + '|' + firstNames.join(',') + '|' + lastNames.join(',') + '|' + emails.join(',');
-  } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
 	
 	console.log(\$(\"#theform\").serialize());
+	console.log(form.outWKT.value)
+	
+	if (form.saveAuth.value == 1) {
+		console.log(form.count_creator);
+		if ( form.producer.value == "" ) {
+			alert("Producer can't be empty !");
+			return false;
+		}
+		var nb_creators = form.count_creator.value;
+		if (nb_creators>1) {
+			for (var i=0; i<nb_creators; i++) {
+				if ( form.firstName[i].value == "" ) {
+					alert("First name can't be empty (make sure the right role is selected too) !");
+					return false;
+				}
+				if ( form.lastName[i].value == "" ) {
+					alert("Last name can't be empty (make sure the right role is selected too) !");
+					return false;
+				}
+				if ( form.email[i].value == "" ) {
+					alert("Email can't be empty (make sure the right role is selected too) !");
+					return false;
+				}
+			}
+		}
+		if ( form.topics.value == "" ) {
+			alert("You have to chose at least one topic category (check that you selected the right INSPIRE theme too) !");
+			return false;
+		}
+		if ( form.lineage.value == "" ) {
+			alert("Lineage can't be empty !");
+			return false;
+		}
+	}
 	
 	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
 		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
@@ -718,7 +732,7 @@ function getGeometry(geojson) {
 		} geometry.coordinates = coordinates; return geometry;
 	} else {
 		geometry.type = "Polygon";
-		geometry.coordinates = [getBoundingBox(geojson.features.geometry.coordinates)];
+		geometry.coordinates = [getBoundingBox(geojson.features[0].geometry.coordinates)];
 		return geometry;
 	}
 }
@@ -787,6 +801,18 @@ function check_9char_code() {
 		alert("The GNSS 9 character code is not defined or does not fit \\n\<4 letters/numbers\>\<2 numbers\>\<3 letters ISO country code\>");
 		document.form.gnss_9char.focus();
 		return false;
+	}
+}
+
+function showHideTheia(checkbox){
+	const theia = document.getElementById("showHide");
+
+	if (checkbox.checked == false) {
+		theia.style.display = "none";
+		document.form.saveAuth.value = 0;
+	} else {
+		theia.style.display = "block";
+		document.form.saveAuth.value = 1;
 	}
 }
 
@@ -1020,7 +1046,7 @@ print "<TR>";
 		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
 		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc</TEXTAREA>&nbsp;&nbsp;<BR>";
 		# --- show THEIA fields ?
-		#print "<LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT name=\"showHide\" type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
+		print "<DIV id=\"theiaChecked\" style=\"display:none;\"><LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT type=\"checkbox\" name=\"saveAuth\" onchange=\"showHideTheia(this)\" value=0></LABEL>&nbsp;<BR><BR></DIV>";
 		print "<DIV id=\"showHide\" style=\"display:none;\">";
 		# --- PRODUCER
 		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
@@ -1158,14 +1184,14 @@ print "<TR>";
 		print "</TD>";
 		print <<FIN;
 		<script>
-			const theia = document.getElementById("showHide");
+			const checked = document.getElementById("theiaChecked");
 			const auth = $theiaAuth;
-				
+			
 			if (auth == 1) {
 				// console.log(theia);
-				theia.style.display = "block";
+				checked.style.display = "block";
 			} else {
-				theia.style.display = "none";
+				checked.style.display = "none";
 			}
 		
 			var map = L.map('map', mapOptions);
