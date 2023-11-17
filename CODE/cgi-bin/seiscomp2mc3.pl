@@ -41,6 +41,7 @@ use warnings;
 use FindBin;
 use lib $FindBin::Bin;
 use POSIX;
+use Time::Piece;
 
 use WebObs::Config;
 use WebObs::QML;
@@ -238,46 +239,61 @@ for (@last) {
 
 			# --- selects first pick
 			# sorting pick:time:value = chronological order
-			@tab = sort(findvalues('/pick/time/value=',\@event));
-			my $evt_pick = $tab[0];
-			my @pick = findnode('/pick',"/time/value=$evt_pick",\@event);
-			my $evt_pickID = findvalue('/\@publicID=',\@pick);
-			my $evt_sdate = substr($evt_pick,0,10) // '';
-			my $evt_stime = substr($evt_pick,11,11) // '';
-			$evt_stime =~ s/[A-Z]/0/g; # sometimes time value is "2012-05-07T18:46:53.7Z"
-			my $NET = findvalue('/waveformID/@networkCode=',\@pick) // '';
-			my $STA = findvalue('/waveformID/@stationCode=',\@pick) // '';
-			my $LOC = findvalue('/waveformID/@locationCode=',\@pick) // '';
-			my $CHA = findvalue('/waveformID/@channelCode=',\@pick) // '';
-			my $evt_scode = "$NET.$STA.$LOC.$CHA";
-			print "station pickID = $evt_pickID\n";
-			print "station time = $evt_pick\n";
-			print "station code = $evt_scode\n";
-
-
-			my @arrival = findnode('/arrival',"/pickID=$evt_pickID",\@origin);
-
-			my $evt_pha = '';
+			my $evt_sdate = '';
+			my $evt_stime = '';
+			my $evt_SP = '';
+			my $evt_scode = '';
 			my $evt_dist = '';
 			my $evt_unique = 0;
-			my $evt_SP = '';
-			if (@arrival) {
-				# --- unique arrival or not
-				if (scalar(@arrival) == 1) {
-					$evt_unique = 1;
-				}
 
-				# --- finds first station phase and distance (using "origin:arrival")
-				$evt_pha = findvalue('/phase=',\@arrival);
-				$evt_dist = findvalue('/distance=',\@arrival);
-				$evt_dist *= 111 if ($evt_dist);
-				print "station phase = $evt_pha\n";
-				print "station distance = ".($evt_dist ? "$evt_dist":"")."\n";
-				# --- computes S-P and duration from distance and magnitude
-				$evt_SP = ($evt_dist ? sprintf("%1.2f",$evt_dist/8):"");
-				print "station S-P = $evt_SP\n";
-			} else {
-				print "* Warning: no arrivals (phase, distance, S-P)!\n";
+			@tab = sort(findvalues('/pick/time/value=',\@event));
+			# --- Iterate to find first P phase
+			foreach my $evt_pick_time (@tab) {
+				my @pick = findnode('/pick',"/time/value=$evt_pick_time",\@event);
+				my $phase = findvalue('/phaseHint=',\@pick);
+				$evt_pick_time =~ s/[A-Z]$/0/g; # sometimes time value is "2012-05-07T18:46:53.7Z"
+
+				if ($phase == 'P') {
+					my $evt_pickID = findvalue('/\@publicID=',\@pick);
+					$evt_sdate = substr($evt_pick_time,0,10);
+					$evt_stime = substr($evt_pick_time,11,11);
+					my $NET = findvalue('/waveformID/@networkCode=',\@pick) // '';
+					my $STA = findvalue('/waveformID/@stationCode=',\@pick) // '';
+					my $LOC = findvalue('/waveformID/@locationCode=',\@pick) // '';
+					my $CHA = findvalue('/waveformID/@channelCode=',\@pick) // '';
+					$evt_scode = "$NET.$STA.$LOC.$CHA";
+					print "station pickID = $evt_pickID\n";
+					print "station time = $evt_pick_time\n";
+					print "station code = $evt_scode\n";
+
+					my @arrival = findnode('/arrival',"/pickID=$evt_pickID",\@origin);
+
+					my $evt_pha = '';
+					if (@arrival) {
+						# --- unique arrival or not
+						if (scalar(@arrival) == 1) {
+							$evt_unique = 1;
+						}
+
+						# --- finds first station phase and distance (using "origin:arrival")
+						$evt_pha = findvalue('/phase=',\@arrival);
+						$evt_dist = findvalue('/distance=',\@arrival);
+						$evt_dist *= 111 if ($evt_dist);
+						print "station phase = $evt_pha\n";
+						print "station distance = ".($evt_dist ? "$evt_dist":"")."\n";
+					} else {
+						print "* Warning: no arrivals (phase, distance, S-P)!\n";
+					}
+				}
+				# --- Search matching S phase to compute S-P
+				if ( ($phase == 'S') && (findvalue('/waveformID/@stationCode=',\@pick) == split('.',$evt_scode)[1]) ) {
+					# --- convert P and S times as epochs
+					my $ptime = Time::Piece->strptime($evt_sdate .  'T' . substr($evt_stime,0,9), '%Y-%m-%dT%H:%M:%S')
+					my $stime = Time::Piece->strptime(substr($evt_pick_time,0,19), '%Y-%m-%dT%H:%M:%S')
+					$evt_SP = ($stime - $ptime) + (substr($evt_pick_time,20,2) - substr($evt_stime,9,2)) / 100
+					print "station S-P = $evt_SP\n";
+					last;
+				}
 			}
 
 			# --- computes duration from distance and magnitude
