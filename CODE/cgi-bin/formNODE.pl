@@ -140,7 +140,7 @@ my $m3g_check    = $NODE{M3G_AVAIABLE};
 my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
 # THEIA metadata
-my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}		  // $NODE{DESCRIPTION}; $usrDesc =~ s/\"//g;
+my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}; $usrDesc =~ s/\"//g; $usrDesc =~ s/\<br\>/\n/g;
 my $usrProducer;
 my @usrRole;
 my @usrFirstName;
