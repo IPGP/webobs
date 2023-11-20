@@ -56,7 +56,7 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my $newnode   = 0;
 my $titre2 = "";
 my $QryParm   = $cgi->Vars;
-my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG}	// 0;
 
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
 if ( $GRIDType ne "" && $GRIDName ne "" ) {
@@ -295,14 +295,13 @@ $cgi->start_html("$__{'Node configuration form'}");
 
 print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css" crossorigin=""/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js" crossorigin=""></script>
+<link rel="stylesheet" href="/css/leaflet.css" crossorigin=""/>
+<script src="/js/leaflet.js" crossorigin=""></script>
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
 <script src="/js/shp.min.js" type="text/javascript"></script>
 <script src="/js/leaflet.shpfile.js" type="text/javascript"></script>
-<script src="https://cdn.jsdelivr.net/gh/seabre/simplify-geometry\@master/simplifygeometry-0.0.2.js" type="text/javascript"></script>
 <script src="/js/simplifygeometry-0.0.2.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 
