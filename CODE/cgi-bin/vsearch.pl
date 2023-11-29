@@ -513,6 +513,7 @@ sub searchEvents {
 	}
 	# author and remote will look for $str in author's full names
 	if ($in eq "author" || $in eq "remote") {
+		my $s = u2l($str);
 		# must replaces author names by their UID
 		my @UIDlist = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "select UID from users where FULLNAME like '%$str%'");
 		chomp(@UIDlist);
@@ -521,7 +522,7 @@ sub searchEvents {
 		} else {
 			my $f = "1";
 			$f = "2" if ($in eq "remote");
-			$cmd = $base."|xargs awk -F '[|/]' 'FNR>1 {nextfile} \$$f ~ /".join(/\|/,@UIDlist)."/ { print FILENAME ; nextfile }'";
+			$cmd = $base."|xargs awk -F '[|/]' 'FNR>1 {nextfile} \$$f ~ /".join('|',@UIDlist)."/ { print FILENAME ; nextfile }'";
 		}
 	}
 	# title will look for $str in event's title (2nd field in header line)
