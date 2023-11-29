@@ -513,7 +513,6 @@ sub searchEvents {
 	}
 	# author and remote will look for $str in author's full names
 	if ($in eq "author" || $in eq "remote") {
-		my $s = u2l($str);
 		# must replaces author names by their UID
 		my @UIDlist = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "select UID from users where FULLNAME like '%$str%'");
 		chomp(@UIDlist);
