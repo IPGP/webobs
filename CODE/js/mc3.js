@@ -10,6 +10,7 @@ var datag = [];
 var data_energy = [];
 var data_energy_total = [];
 var plot;
+var ylabel;
 
 function plotFlot(gtype) {
 	xmode = 'time';
@@ -25,27 +26,34 @@ function plotFlot(gtype) {
 	shadowsize = 2;
 	if (gtype == 'bars') {
 		data = datad;
+		ylabel = '# events per day';
 		lines = false;
 		bars = true;
 	} else if (gtype == 'hbars') {
 		data = datah;
+		ylabel = '# events per hour';
 		lines = false;
 		bars = true;
 		bw = 3300000;
 	} else if (gtype == 'mcum') {
 		data = datam;
+		ylabel = 'cum. seismic moment (Edyn.cm)';
 	} else if (gtype == 'ncum') {
 		data = datac;
+		ylabel = 'cum. # events';
 	} else if (gtype == 'ecum') {
 		data = data_energy;
+		ylabel = 'cum. energy (MJ)';
 	} else if (gtype == 'ecum_total') {
 		data = data_energy_total;
+		ylabel = 'cum. energy (MJ)';
 		fill = false;
 		linewidth = 2;
 		timeformat = '%Y-%m-%d';
 		shadowsize = 0;
 	} else if (gtype == 'gr') {
 		data = datag;
+		ylabel = '# events';
 		xmode = null;
 		stack = null;
 		fill = null;
@@ -54,8 +62,10 @@ function plotFlot(gtype) {
 		ymin = -0.2;
 	} else if (gtype == 'wsum') {
 		data = dataw;
+		ylabel = '# events per week';
 	} else {
 		data = datav;
+		ylabel = '# events per day';
 	}
 	options = {
 		xaxis: {
@@ -65,8 +75,14 @@ function plotFlot(gtype) {
 		yaxis: {
 			min: ymin,
 			minTickSize: 1,
-			tickDecimals: 0
+			tickDecimals: 0,
 		},
+		axisLabels: {
+            show: true
+        },
+		yaxes: [{
+			position: 'left', axisLabel: ylabel
+		}],
 		series: {
 			stack: stack,
 			shadowSize: shadowsize,

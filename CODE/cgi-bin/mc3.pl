@@ -493,10 +493,10 @@ if ($QryParm->{'dump'} eq "") {
 
 	$html .= "<TABLE width=\"100%\"><TR><TD width=700>";
 	if ($QryParm->{'nograph'} == 0) {
-		$html .= "<DIV id=\"mcgraph\" style=\"width:700px;height:200px;float:left;\"></DIV>\n"
+		$html .= "<DIV id=\"mcgraph\" style=\"width:900px;height:250px;float:left;\"></DIV>\n"
 			."<DIV id=\"showall\" style=\"width:50px;height:15px;position:relative;float:left;font-size:smaller;\"><A href=\"#\" onClick=\"plotAll()\">plot all</A></DIV>\n"
-			."<DIV id=\"graphinfo\" style=\"width:600px;height:15px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
-			."<TD nowrap style=\"text-align:left\"><DIV id=\"graphlegend\" style=\"width:200px;height:200px;position:static;\"></DIV></TD>\n"
+			."<DIV id=\"graphinfo\" style=\"width:850px;height:15px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
+			."<TD nowrap style=\"text-align:left\"><DIV id=\"graphlegend\" style=\"width:200px;height:250px;position:static;\"></DIV></TD>\n"
 			."<TD nowrap style=\"text-align:left;vertical-align:top\">";
 		# ----- selection box graph-type
 		$html .= "<P><B>Graph:</B>&nbsp;<SELECT name=\"graph\" size=\"1\" onChange=\"plotFlot(document.formulaire.graph.value)\">";
@@ -1087,7 +1087,7 @@ if ($QryParm->{'nograph'} == 0) {
 				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
 			}
 			$html .= "]});\n";
-			$html .= " datam.push({ label: \"$types{$key}{Name} = ".sprintf("%1.1f",($stat_mh{$key}[$#stat_th] ? $stat_mh{$key}[$#stat_th]:0))." (10^18 dyn.cm)\", color: \"$types{$key}{Color}\","
+			$html .= " datam.push({ label: \"$types{$key}{Name} = ".sprintf("%1.1f",($stat_mh{$key}[$#stat_th] ? $stat_mh{$key}[$#stat_th]:0))."\", color: \"$types{$key}{Color}\","
 				." data: [";
 			for (my $i=0; $i<=$#stat_th; $i++) {
 				my $d = $stat_mh{$key}[$i];
@@ -1626,6 +1626,7 @@ if ($QryParm->{'dump'} eq "") {
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.stack.js"></script>
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.crosshair.js"></script>
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.selection.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.axislabels.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/mc3.js"></script>
 
 <script language="javascript" type="text/javascript" src="/js/wolb.js"></script>
