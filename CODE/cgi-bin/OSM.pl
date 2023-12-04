@@ -114,22 +114,7 @@ print <<"END";
 <DIV id="map" style="height: ${height}px"></DIV>
 <script type="text/javascript">
 	var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
-	var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 	var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-	var terrain = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
-		attribution: stamenAttribution,
-		subdomains: 'abcd',
-		minZoom: 0,
-		maxZoom: 18,
-		ext: 'png'
-	});
-	var watercolor = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
-		attribution: stamenAttribution,
-		subdomains: 'abcd',
-		minZoom: 1,
-		maxZoom: 18,
-		ext: 'jpg'
-	});
 	var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
 		maxZoom: 17,
 		attribution: osmAttribution});
@@ -141,12 +126,10 @@ print <<"END";
 	var map = L.map('map', {
 		center: [$lat, $lon],
 		zoom: $WEBOBS{OSM_ZOOM_VALUE},
-		layers: [terrain,topo,osm,watercolor,satellite]});
+		layers: [topo,osm,satellite]});
 	var baseMaps = {
-    	"Stamen Terrain": terrain,
     	"OpenTopoMap": topo,
     	"OpenStreetMap": osm,
-    	"Stamen Watercolor": watercolor,
 		"ESRI World Imagery": satellite,
 	};
 	var layerControl = L.control.layers(baseMaps).addTo(map);

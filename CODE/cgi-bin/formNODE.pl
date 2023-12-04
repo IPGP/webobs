@@ -818,7 +818,6 @@ function showHideTheia(checkbox){
 // creating and parametring the map for the geographic location choice
 
 var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
-var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>contributors';
 var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 		
 //Init Overlays
@@ -833,24 +832,6 @@ var basemaps = {
 			minZoom: 2,
 			maxZoom: 19,
 			id: "osm"
-		}
-	),
-	'Stamen-Terrain': L.tileLayer(
-		'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}',
-		{
-			attribution: stamenAttribution,
-			minZoom: 2,
-			maxZoom: 19,
-			id: "stamen.terrain"
-		}
-	),
-	'Stamen-Watercolor': L.tileLayer(
-		'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}',
-		{
-			attribution: stamenAttribution,
-			minZoom: 2,
-			maxZoom: 19,
-			id: "stamen.watercolor"
 		}
 	),
 	'OpenTopoMap': L.tileLayer(
