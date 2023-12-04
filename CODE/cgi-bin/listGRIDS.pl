@@ -517,7 +517,11 @@ sub feditpopup {
 	$SP .= "<label for=\"feditN\">$__{'Form Name'}: <span class=\"small\">short name (uppercase)</span></label>";
 	$SP .= "  <input size=\"40\" id=\"feditN\" name=\"feditN\" value=\"\">\n";
 	$SP .= "<br style=\"clear: left\"><br>";
-
+=pod
+	$SP .= "<label for=\"nbIn\">$__{'Number of inputs'}: <span class=\"small\">number of inputs to inform</span></label>";
+	$SP .= "  <input size=\"40\" id=\"nbIn\" name=\"nbIn\" value=\"\">\n";
+	$SP .= "<br style=\"clear: left\"><br>";
+=cut
 	$SP .= "<p style=\"margin: 0px; text-align: center\">";
 	$SP .= "<input type=\"button\" name=\"sendbutton\" value=\"$__{'Create'}\" onclick=\"feditsendPopup(); return false;\" style=\"font-weight:bold\" />";
 	$SP .= "<input type=\"button\" value=\"cancel\" onclick=\"feditclosePopup(); return false;\" />";

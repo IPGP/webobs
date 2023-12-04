@@ -1,0 +1,420 @@
+#!/usr/bin/perl
+#
+#!/usr/bin/perl
+#
+=head1 NAME
+
+fedit.pl
+
+=head1 SYNOPSIS
+
+http://..../formGRID.pl?fname=fname[,nbIn=nbIn]
+
+=head1 DESCRIPTION
+
+Edit (create/update) a FORM specified by its fully qualified name, ie. fname.
+
+When creating a new FORM (if name does not exist), fedit starts editing from a predefined template file: filename $WEBOBS{ROOT_CODE}/tplates/FORM.GENFORM or specific template identified by form.template argument.
+
+To create a new FORM, user must have Admin rights for all VIEWS or PROCS. To update an existing FORM, user must have Edit rights for the concerned FORM.
+
+=head1 QUERY-STRING
+
+fname=fname
+ where fname should be unique.
+ 
+nbIn=nbIn
+ where nbIn is the number of inputs we want to enquire in the form.
+
+=head1 EDITOR
+
+Editor area (textarea) is managed by CodeMirror, copyright (c) by Marijn
+Haverbeke and others, Distributed under an MIT license:
+http://codemirror.net/LICENSE .
+
+Uses WebObs B<cmwocfg.js> for configuration files syntax highlighting. Better used
+with a theme having distinct colors for comment,keyword,operator,qualifier
+such as ambiance.css. See Configuration Variables below.
+
+Uses Vim addon.
+
+=head1 CONFIGURATION VARIABLES
+
+Optional customization variables in B<WEBOBS.rc> are shown below with their default value:
+(themes names are those from CodeMirror distribution, without their css suffix)
+
+    JS_EDITOR_EDIT_THEME|default    # codemirror theme when editing
+    JS_EDITOR_BROWSING_THEME|neat   # codemirror theme when browsing
+    JS_EDITOR_AUTO_VIM_MODE|no      # automatically enter vim mode or not (any other value)
+                                    #  True if value is 'true' or 'yes' (case insensitive),
+                                    #  False for any other value.
+=cut
+
+use strict;
+use warnings;
+use File::Basename;
+use File::Path qw(rmtree);
+use File::Copy qw(copy);
+use CGI;
+my $cgi = new CGI;
+$CGI::POST_MAX = 1024;
+use CGI::Carp qw(fatalsToBrowser set_message);
+use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
+use Locale::TextDomain('webobs');
+use POSIX qw/strftime/;
+
+# ---- webobs stuff
+#
+use WebObs::Config;
+use WebObs::Users;
+use WebObs::Grids;
+use WebObs::Form;
+use WebObs::Utils;
+use WebObs::i18n;
+
+# ---- local functions
+#
+
+# Return information when OK
+# (Reminder: we use text/plain as this is an ajax action)
+sub htmlMsgOK {
+ 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+}
+
+# Return information when not OK
+# (Reminder: we use text/plain as this is an ajax action)
+sub htmlMsgNotOK {
+ 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+ 	print "Update FAILED !\n $_[0] \n";
+}
+
+# ---- misc inits
+#
+set_message(\&webobs_cgi_msg);
+my $me = $ENV{SCRIPT_NAME};
+my $formConfFile;       # file name of the form's configuration file
+my $TS0;                # last modification time of the config file
+#my $editOK = 0;         # 1 if the user is allowed to edit the form
+#my $admOK = 0;          # 1 if the user is allowed to administrate the form
+my @rawfile;            # raw content of the configuration file
+#my %FORM;               # structure describing the form
+my $FORMName;			# name of the form
+my $text;
+my $action;				# new|edit|save
+my $newG;        		# 1 if we are creating a new form
+my $delete;				# 1 to delete form
+my $inputs;				# number which indicates how many inputs we are storing in this form
+
+# Read and check CGI parameters
+$FORMName = $cgi->param('fname');
+$inputs   = $cgi->param('nbIn') // 1;
+$action   = checkParam($cgi->param('action'), qr/(new|edit|save)/, 'action')  // "edit";
+$text	  = scalar($cgi->param('text')) // '';  # used only in print FILE $text;
+$TS0      = checkParam($cgi->param('ts0'), qr/^[0-9]*$/, "TS0")    // 0;
+$delete   = checkParam($cgi->param('delete'), qr/^\d?$/, "delete") // 0;
+
+
+# Read the list of all nodes
+opendir my $nodeDH, $NODES{PATH_NODES}
+	or die "Problem opening node list from '$NODES{PATH_NODES}': $!\n";
+my @ALL_NODES = sort grep(!/^\./ && -d "$NODES{PATH_NODES}/$_",
+						  readdir($nodeDH));
+closedir($nodeDH)
+	or die "Problem closing node list from '$NODES{PATH_NODES}': $!\n";
+
+# codemirror configuration
+my $CM_edit_theme = $WEBOBS{JS_EDITOR_EDIT_THEME} // "default";
+my $CM_browsing_theme = $WEBOBS{JS_EDITOR_BROWSING_THEME} // "neat";
+my $CM_language_mode = "cmwocfg";
+my $CM_auto_vim_mode = $WEBOBS{JS_EDITOR_AUTO_VIM_MODE} // "yes";
+my $post_url = "/cgi-bin/fedit.pl";
+
+# ---- see what we've been called for and what the client is allowed to do
+# ---- init general-use variables on the way and quit if something's wrong
+#
+#if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
+
+#my $auth = 'forms';
+my $template = "$WEBOBS{ROOT_CODE}/tplates/FORM.GENFORM";	# the template for a new form
+my $formdir   = "$WEBOBS{PATH_FORMS}/$FORMName/";			# path to the form configuration file we are creating, editing or deleting
+$formConfFile = "$formdir$FORMName.conf";
+
+# ---- action is 'save'
+#
+if ($action eq 'save') {
+	if (! -e $formConfFile) {
+		# --- Form creation (config file does not exist)
+
+		if (!-d $formdir and !mkdir($formdir)) {
+			htmlMsgNotOK("fedit: error while creating directory $formdir: $!");
+			exit;
+		}
+		if (open(FILE,">", $formConfFile) ) {
+			print FILE u2l($text);
+			close(FILE);
+		} else {
+			htmlMsgNotOK("fedit: error creating $formConfFile: $!");
+			exit;
+		}
+
+		htmlMsgOK("fedit: $FORMName created.");
+		exit;
+	} else {
+		if ($TS0 != (stat("$formConfFile"))[9]) { 
+		htmlMsgNotOK("$FORMName $__{'has been modified while you were editing'}"); 
+		exit; 
+		}
+		if ( sysopen(FILE, "$formConfFile", O_RDWR | O_CREAT) ) {
+			unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+				warn "$me waiting for lock on $FORMName...";
+				flock(FILE, LOCK_EX);
+			}
+			qx(cp -a $formConfFile $formConfFile~ 2>&1); 
+			if ( $?  == 0 ) { 
+				truncate(FILE, 0);
+				seek(FILE, 0, SEEK_SET);
+				$text =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
+				push(@rawfile,u2l($text));
+				print FILE @rawfile ;
+				close(FILE);
+				htmlMsgOK($FORMName);
+			} else {
+				close(FILE);
+				htmlMsgNotOK("$me couldn't backup $FORMName");
+			}
+		} else { htmlMsgNotOK("$me opening $FORMName - $!") }
+		exit;
+	}
+=podelse {
+		# --- Update the form
+
+		# Use an exclusive lock on the config file during the process
+		if (!sysopen(FILE, "$formConfFile", O_RDWR | O_CREAT)) {
+			# Unable to open the configuration file
+			htmlMsgNotOK("fedit: error opening $formConfFile: $!");
+			exit;
+		}
+		unless(flock(FILE, LOCK_EX|LOCK_NB)) {
+			warn "fedit: waiting for lock on $formConfFile...";
+			flock(FILE, LOCK_EX);
+		}
+
+		# Backup the configuration file (To Be Removed: lifecycle too short)
+		local $File::Copy::Recursive::CopyLink = 0;
+		if (copy($formConfFile, "$formConfFile~") != 1) {
+			# Unable to backup of the configuration file
+			close(FILE);
+			htmlMsgNotOK("fedit: couldn't backup $formConfFile");
+			exit;
+		}
+
+		# Write the updated configuration to the configuration file
+		truncate(FILE, 0);
+		seek(FILE, 0, SEEK_SET);
+		print FILE u2l($text);
+		close(FILE);
+	}
+=cut
+}
+
+# --- Form delete or update (config file already exists)
+
+if ($delete == 1) {
+	# --- Delete the grid !
+
+	# delete the dir/file first
+	my $rmtree_errors;
+	rmtree($formdir, {'safe' => 1, 'error' => \$rmtree_errors});
+	if ($rmtree_errors  && @$rmtree_errors) {
+		htmlMsgNotOK("fedit couldn't delete directory $formdir");
+		print STDERR "fedit.pl: unable to delete directory $formdir: "
+			.join(", ", @$rmtree_errors)."\n";
+		exit;
+	}
+	htmlMsgOK("$FORMName deleted");
+	exit;
+}
+
+# ---- action is 'edit' (default)
+#
+#$editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$FORMName") || WebObs::Users::clientHasEdit(type => "auth".$auth, name => "MC");
+#$admOK = WebObs::Users::clientHasAdm(type => "auth".$auth, name => "*");
+if ( -e "$formConfFile" ) {
+	#if ($editOK) {
+		@rawfile = readFile($formConfFile);
+		$TS0 = (stat($formConfFile))[9] ;
+		#$editOK = 1;
+	#}
+}
+else {
+	#if ($admOK) {
+		$formConfFile = $template;
+		@rawfile = readFile($formConfFile);
+		$TS0 = (stat($formConfFile))[9] ;
+	#	$editOK = 1;
+		$newG = 1;
+	#}
+}
+
+# start building page
+#
+my $txt = l2u(join("",@rawfile));
+my $titrePage = "$__{'Editing'} form";
+if ( $newG == 1 ) { $titrePage = "$__{'Creating'} new form" }
+
+#my $cm_edit = ($editOK || $admOK) ? 1 : 0;
+my $cm_edit = 1;
+print <<_EOD_;
+Content-type: text/html; charset=utf-8
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+ <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+ <TITLE>Text edit form</TITLE>
+
+ <link rel="stylesheet" href="/js/codemirror/lib/codemirror.css">
+ <!-- <link rel=\"stylesheet\" href=\"/js/codemirror/addon/scroll/simplescrollbars.css\"> -->
+_EOD_
+
+if ($CM_edit_theme != "default") {
+	print " <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_edit_theme.css\">\n";
+}
+if ($CM_browsing_theme != "default" && $CM_edit_theme != $CM_browsing_theme) {
+	print " <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_browsing_theme.css\">\n";
+}
+
+print <<_EOD_;
+ <link rel="stylesheet" href="/css/codemirror-wo.css">
+
+ <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
+ <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
+ <script language="javascript" type="text/javascript" src="/js/codemirror/lib/codemirror.js"></script>
+ <script language="javascript" type="text/javascript" src="/js/$CM_language_mode.js"></script>
+ <!-- <script src=\"/js/codemirror/addon/scroll/simplescrollbars.js\"></script> -->
+ <script src="/js/codemirror/addon/search/searchcursor.js"></script>
+ <script src="/js/codemirror/addon/dialog/dialog.js"></script>
+ <link rel="stylesheet" href="/js/codemirror/addon/dialog/dialog.css">
+ <script src="/js/codemirror/keymap/vim.js"></script>
+ <script type=\"text/javascript\">
+  // Configuration used in cmtextarea.js
+  var CODEMIRROR_CONF = {
+	READWRITE_THEME: '$CM_edit_theme',
+	READONLY_THEME: '$CM_browsing_theme',
+	LANGUAGE_MODE: '$CM_language_mode',
+	AUTO_VIM_MODE: '$CM_auto_vim_mode',
+	EDIT_PERM: $cm_edit,
+	FORM: '#theform',
+	POST_URL: '$post_url',
+  };
+ </script>
+ <script src="/js/cmtextarea.js"></script>
+
+ <script type="text/javascript">
+ function delete_form()
+ {
+	if ( confirm("$__{'The FORM will be deleted. Are you sure?'}") ) {
+		document.formulaire.delete.value = 1;
+		\$.post("$post_url", \$("#theform").serialize(), function(data) {
+			if (data != '') alert(data);
+			location.href = "$GRIDS{CGI_SHOW_GRIDS}";
+		});
+	} else {
+		return false;
+	}
+}
+function verif_formulaire()
+{
+	// postform() from cmtextarea.js will submit the form to $post_url
+	postform();
+	//\$.post("/cgi-bin/fedit.pl", \$("#theform").serialize(), function(data) {
+	//	if (data != '') alert(data);
+	//	location.href = document.referrer;
+	//});
+}
+ </script>
+</HEAD>
+<BODY style="background-color:#E0E0E0" onLoad="document.formulaire.text.focus()">
+<!-- <script type="text/javascript" src="/js/jquery.js"></script> -->
+<!-- overLIB (c) Erik Bosrup -->
+<script language="JavaScript" src="/js/overlib/overlib.js"></script>
+<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+<div id="helpbox"></div>
+
+<FORM id="theform" name="formulaire" action="">
+<input type="hidden" name="ts0" value="$TS0">
+<input type="hidden" name="fname" value="$FORMName">
+<input type=\"hidden\" name=\"action\" value=\"save\">
+<input type="hidden" name="delete" value="0">
+_EOD_
+
+print "<H2>$titrePage $FORMName";
+if ($newG == 0) {
+	print " <A href=\"#\"><IMG src=\"/icons/no.png\" onClick=\"delete_form();\" title=\"$__{'Delete this form'}\"></A>";
+}
+print "</H2>\n";
+
+# ---- Display file contents into a "textarea" so that it can be edited
+print "<TABLE style=\"\">\n";
+print "<TR><TD style=\"border:0;\">\n";
+#print "<TEXTAREA class=\"editfmono\" id=\"tarea\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$text</TEXTAREA><br>\n";
+print "<TEXTAREA class=\"editfmono\" id=\"textarea-editor\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$txt</TEXTAREA>\n";
+print "<div id=\"statusbar\">$FORMName</div>\n";
+
+print "</TD>\n";
+print "<TR><TD style=\"border:0\">\n";
+
+# Vim mode checkbox
+print <<_EOD_;
+	<div class="js-editor-controls">
+		<input type="checkbox" id="toggle-vim-mode" title="$__{'Check to enable vim mode in the editor'}" onClick="toggleVim()">
+		<label for="toggle-vim-mode" id="toggle-vim-mode-label" title="$__{'Check to enable vim mode in the editor'}">$__{'Use vim mode'}</label>
+	</div>
+	</TD>
+_EOD_
+
+# Form buttons
+print <<_EOD_;
+ <TD style="border: 0">
+  <p align=center>
+   <input type="button" name="lien" value="$__{'Cancel'}" onClick="history.go(-1)">
+   <input type="button" class=\"submit-button\" value="$__{'Save'}" onClick="verif_formulaire();">
+  </p>
+ </TD>
+</TR>
+</TABLE>
+</FORM>
+_EOD_
+
+# ---- end HTML
+#
+print "\n</BODY>\n</HTML>\n";
+
+__END__
+
+=pod
+
+=head1 AUTHOR(S)
+
+Lucas Dassin
+
+=head1 COPYRIGHT
+
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=cut
+
