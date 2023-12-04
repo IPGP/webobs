@@ -8,14 +8,15 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## v2.6.4 (November 2023)
+## v2.6.4 (December 2023)
 
 ### New features
 1. When editing or creating a NODE, if a shapefile is associated to the NODE, a GEOJSON file is now created in `/opt/webobs/DATA/NODES/NODEName/`, and will contain all the metadata of the GEOJSON, so it could be re-used elsewhere.
-2. Currently working on a way to create FORM, so it will be possible for users to generate their own FORM, like they do for generating GRID.
    
 ### Enhancements
 1. The metadatabase has been separated from the THEIA|Ozcar pivot model summary table. From now on, when a NODE is created or edited, the datasets table is filled with the metadata concerning the NODE. Moreover, for each PROC, It is necessary to fill the `THEIA_SELECTED_NODESID` and `THEIA_SELECTED_TS` fields which respectively correspond to the NODEs associated to the given PROC and the timescale on which the given PROC produces the data, in order to send the data and metadata associated with the PROC.NODES and the selected timescale. Thus, the THEIA|Ozcar pivot model summary table only show the selected data producer, **PROC.NODEs** and **PROC.NODE_CHANNELs** that will be send to the pivot model. Finally, a JSON file is produced and a text file is created for each **PROC.NODE_CHANNELs** containing the data, included in the associated timescale, which will be send to the pivot model with the metadata. The JSON file contains only the metadata, and the text files the data. For each **PROC.NODE**, all the **PROC.NODE_CHANNEL** text files are compressed in a zip file named *producerId_DAT_PROC.NODE.zip*, and the the text files contained are named after *producerId_PROC.NODE_CHANNEL.txt*. At the end, a zip file containing the datasets zip files and the JSON metadata file is made and uploaded on the user computer.
+
+1. In the seismic bulletin Main Courante, graph has now an Y-axis label and the plot size has been extended.
 
 ### Fixed issues
 1. Fix an issue with similar author names in search node events (no result were found when search was made on a common part of multiple names).
