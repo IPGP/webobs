@@ -1,0 +1,28 @@
+=key|value
+# Generic FORM template for use with cgi-bin/fedit.pl
+
+NAME|Generic Form
+TITLE|Title of the form
+FIELDSETS_NUMBER|2
+
+# inputs names and units
+# for the type, chose between : text (size), list (link to a file containing the list) or formula (algebric formula)
+INPUT01_NAME|Name1
+INPUT01_UNIT|Unit1
+INPUT01_TYPE|text (10)
+INPUT02_NAME|Name2
+INPUT02_UNIT|Unit2
+INPUT02_TYPE|list (list.txt)
+INPUT03_NAME|Name3
+INPUT03_UNIT|Unit3
+INPUT03_TYPE|formula (INPUT01_NAME+2)
+
+# which inputs are contained in the first fieldset of the first column ?
+FIELDSET01_LIST|INPUT01
+FIELDSET01_NAME|Name1
+# which inputs are contained in the first fieldset of the second column ?
+FIELDSET02_LIST|INPUT02,INPUT03
+FIELDSET02_NAME|Name2
+
+# configuration file path
+CONF_FILE|$WEBOBS{PATH_FORMS}/${NAME}/${NAME}.conf
