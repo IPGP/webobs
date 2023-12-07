@@ -55,7 +55,7 @@ function DOUT=meteo(varargin)
 %
 %   Authors: F. Beauducel + S. Acounis / WEBOBS, IPGP
 %   Created: 2001-07-04
-%   Updated: 2023-09-20
+%   Updated: 2023-12-07
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -170,9 +170,9 @@ for n = 1:length(N)
 		% Rainfall (daily / hourly)
 		subplot(length(node_chan)+2*(1+(gxy|gwind)),1,(1:2)+2*(gxy|gwind)), extaxes
 		ga = gca;
-		gp = find(P.GTABLE(r).CUMULATE==rdec) + nx; % locates the right rain cum column
 		hcum = sprintf('per %s',days2h(P.GTABLE(r).CUMULATE,'round'));
 		if ~isempty(tk)
+			gp = find(P.GTABLE(r).CUMULATE==rdec) + nx; % locates the right rain cum column
 			% area plot does not support NaN...
 			kr = find(~isnan(dk(:,gp)));
 			if ~isempty(kr)

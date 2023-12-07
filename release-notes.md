@@ -16,11 +16,12 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ### Enhancements
 1. The metadatabase has been separated from the THEIA|Ozcar pivot model summary table. From now on, when a NODE is created or edited, the datasets table is filled with the metadata concerning the NODE. Moreover, for each PROC, It is necessary to fill the `THEIA_SELECTED_NODESID` and `THEIA_SELECTED_TS` fields which respectively correspond to the NODEs associated to the given PROC and the timescale on which the given PROC produces the data, in order to send the data and metadata associated with the PROC.NODES and the selected timescale. Thus, the THEIA|Ozcar pivot model summary table only show the selected data producer, **PROC.NODEs** and **PROC.NODE_CHANNELs** that will be send to the pivot model. Finally, a JSON file is produced and a text file is created for each **PROC.NODE_CHANNELs** containing the data, included in the associated timescale, which will be send to the pivot model with the metadata. The JSON file contains only the metadata, and the text files the data. For each **PROC.NODE**, all the **PROC.NODE_CHANNEL** text files are compressed in a zip file named *producerId_DAT_PROC.NODE.zip*, and the the text files contained are named after *producerId_PROC.NODE_CHANNEL.txt*. At the end, a zip file containing the datasets zip files and the JSON metadata file is made and uploaded on the user computer.
 
-1. In the seismic bulletin Main Courante, graph has now an Y-axis label and the plot size has been extended.
+1. In the seismic bulletin Main Courante, graph has now a 28-day moving sum, an Y-axis label, and the plot size has been extended.
 
 ### Fixed issues
 1. Fix an issue with similar author names in search node events (no result were found when search was made on a common part of multiple names).
 
+1. Fix an issue with meteo superproc (error when no data are available)
 
 ## v2.6.3 (September 2023)
 ### New features
