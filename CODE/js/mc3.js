@@ -4,8 +4,9 @@ var datad = [];
 var datah = [];
 var datav = [];
 var dataw = [];
-var datac = [];
 var datam = [];
+var datac = [];
+var datasm = [];
 var datag = [];
 var data_energy = [];
 var data_energy_total = [];
@@ -36,7 +37,7 @@ function plotFlot(gtype) {
 		bars = true;
 		bw = 3300000;
 	} else if (gtype == 'mcum') {
-		data = datam;
+		data = datasm;
 		ylabel = 'cum. seismic moment (Edyn.cm)';
 	} else if (gtype == 'ncum') {
 		data = datac;
@@ -63,6 +64,9 @@ function plotFlot(gtype) {
 	} else if (gtype == 'wsum') {
 		data = dataw;
 		ylabel = '# events per week';
+	} else if (gtype == 'msum') {
+		data = datam;
+		ylabel = '# events per 28 days';
 	} else {
 		data = datav;
 		ylabel = '# events per day';

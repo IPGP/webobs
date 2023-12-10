@@ -19,9 +19,9 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 1. In the seismic bulletin Main Courante, graph has now a 28-day moving sum, an Y-axis label, and the plot size has been extended.
 
 ### Fixed issues
-1. Fix an issue with similar author names in search node events (no result were found when search was made on a common part of multiple names).
+1. Fix an issue with author names in search node events (no result were found when search was made on a common part of multiple names).
 
-1. Fix an issue with meteo superproc (error when no data are available)
+1. Fix an issue with meteo superproc (error when no data are available) 
 
 ## v2.6.3 (September 2023)
 ### New features
