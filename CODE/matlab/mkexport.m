@@ -11,7 +11,7 @@ function status = mkexport(WO,f,E,G);
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2022-04-18
+%	Updated: 2023-12-04
 
 
 ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,G.SELFREF,randname(16));
@@ -43,6 +43,8 @@ if fid > 0
 	fprintf(fid,'# FILENAME: %s.txt\n',f);
 	if ~isnan(G.DATE1) && ~isnan(G.DATE2)
 		fprintf(fid,'# TIMESPAN: from "%s" to "%s"\n',datestr(G.DATE1),datestr(G.DATE2));
+	else
+		fprintf(fid,'# TIMESPAN: all data\n');
 	end
 	fprintf(fid,'#\n');
 	if isfield(E,'infos')
