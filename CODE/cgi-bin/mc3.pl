@@ -68,8 +68,9 @@ obs=
 graph=
   hbars Hourly Histogram
    bars Daily Histogram
- movsum Daily Moving Histogram
-   wsum Weekly Moving Histogram
+ movsum Daily Moving Histogram (24 hours)
+   wsum Weekly Moving Histogram (7 days)
+   msum Monthy Moving Histogram (28 days)
    ncum Cumulated
    mcum Seismic moment cum.
      gr Gutenberg-Richter (log)
@@ -504,6 +505,7 @@ if ($QryParm->{'dump'} eq "") {
 		                       "bars|Daily Histogram",
 		                       "movsum|Daily Moving Histogram",
 		                       "wsum|Weekly Moving Histogram",
+		                       "msum|Monthly Moving Histogram",
 		                       "ncum|Cumulated",
 		                       "mcum|Seismic moment cumul.",
 		                       "ecum|Energy cumul. by type (J)",
@@ -627,12 +629,12 @@ my @ligneTitre;
 # ---- Process request to dump a bulletin -------------------------------------
 #
 if ($QryParm->{'dump'} eq 'bul') {
-	$dumpFile = "${mc3}_dump_bulletin.csv";
+	$dumpFile = "WO_$WEBOBS{WEBOBS_ID}_${mc3}_dump_bulletin.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
 	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;E(J);Longitude;Latitude;Depth;Type;File;LocMode;LocType;Projection;Operator;Timestamp;ID\n");
 }
 if ($QryParm->{'dump'} eq 'cum') {
-	$dumpFile = "${mc3}_dump_daily_total.csv";
+	$dumpFile = "WO_$WEBOBS{WEBOBS_ID}_${mc3}_dump_daily_total.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
 	push(@csv,"#Daily histogram counted from ".(($start_datetime)->strftime('%F %H:00:00'))."\n");
 	push(@csv,"#YYYY-mm-dd Daily_Total(#);Daily_Count;Daily_Moment(N.m);Daily_Energy(J)\n");
@@ -847,11 +849,12 @@ for my $h (0 .. ($nbDays*24 - 1)) {
 }
 my %stat_m;      # hash of event types seismic moment per day
 my %stat_energy; # hash of event types seismic energy per day
-my %stat_mh;     # hash of event types seismic moment per hour
+my %stat_smh;     # hash of event types seismic moment per hour
 my %stat_d;      # hash of event types per day
 my %stat_dh;     # hash of event types per hour
 my %stat_vh;     # hash of daily moving histogram event types (per hour)
 my %stat_wh;     # hash of weekly moving histogram event types (per hour)
+my %stat_mh;     # hash of monthly moving histogram event types (per hour)
 my %stat_ch;     # hash of cumulated event types (per hour)
 my %stat;        # hash of event types total number
 my %stat_gr;     # hash of event types Gutenberg-Richter number
@@ -885,7 +888,7 @@ foreach (@finalLignes) {
 				if ($mag) {
 					$M0 = 10**(1.5*$mag + 9.1); # unit = N.m
 					$stat_m{$type}[$kd] += $M0;
-					$stat_mh{$type}[$kh] += $M0;
+					$stat_smh{$type}[$kh] += $M0;
 					$km = int($mag*10);
 					# negative magnitudes are counted in the first histogram bin
 					if ($km < 0) { $km = 0; }
@@ -916,6 +919,9 @@ foreach (@finalLignes) {
 			}
 			for ($kh .. ($kh+(7*24-1))) {
 				$stat_wh{$type}[$_] += $nombre if ($_ <= $#stat_th);
+			}
+			for ($kh .. ($kh+(28*24-1))) {
+				$stat_mh{$type}[$_] += $nombre if ($_ <= $#stat_th);
 			}
 		}
 		my $dist;
@@ -966,8 +972,8 @@ foreach my $day (@stat_t) {
 }
 if ($QryParm->{'nograph'} == 0) {
 	for ($i = 1; $i <= $#stat_th; $i++) {
-		foreach (keys(%stat_mh)) {
-			$stat_mh{$_}[$i] += ($stat_mh{$_}[$i-1] ? $stat_mh{$_}[$i-1]:0);
+		foreach (keys(%stat_smh)) {
+			$stat_smh{$_}[$i] += ($stat_smh{$_}[$i-1] ? $stat_smh{$_}[$i-1]:0);
 		}
 		foreach (keys(%stat_ch)) {
 			$stat_ch{$_}[$i] += ($stat_ch{$_}[$i-1] ? $stat_ch{$_}[$i-1]:0);
@@ -1080,6 +1086,13 @@ if ($QryParm->{'nograph'} == 0) {
 				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
 			}
 			$html .= "]});\n";
+			$html .= " datam.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
+				." data: [";
+			for (my $i=0; $i<=$#stat_th; $i++) {
+				my $d = $stat_mh{$key}[$i];
+				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
+			}
+			$html .= "]});\n";
 			$html .= " datac.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
 				." data: [";
 			for (my $i=0; $i<=$#stat_th; $i++) {
@@ -1087,10 +1100,10 @@ if ($QryParm->{'nograph'} == 0) {
 				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
 			}
 			$html .= "]});\n";
-			$html .= " datam.push({ label: \"$types{$key}{Name} = ".sprintf("%1.1f",($stat_mh{$key}[$#stat_th] ? $stat_mh{$key}[$#stat_th]:0))."\", color: \"$types{$key}{Color}\","
+			$html .= " datasm.push({ label: \"$types{$key}{Name} = ".sprintf("%1.1f",($stat_smh{$key}[$#stat_th] ? $stat_smh{$key}[$#stat_th]:0))."\", color: \"$types{$key}{Color}\","
 				." data: [";
 			for (my $i=0; $i<=$#stat_th; $i++) {
-				my $d = $stat_mh{$key}[$i];
+				my $d = $stat_smh{$key}[$i];
 				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
 			}
 			$html .= "]});\n";
@@ -1709,7 +1722,7 @@ Francois Beauducel, Didier Mallarino, Alexis Bosson, Jean-Marie Saurel, Patrice 
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+WebObs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
