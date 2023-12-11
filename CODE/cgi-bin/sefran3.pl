@@ -93,6 +93,7 @@ my $date   = $cgi->url_param('date');
 my $high   = $cgi->url_param('high');
 my $sx     = $cgi->url_param('sx') // 0;
 my $replay = $cgi->url_param('replay');
+my $hpx    = $cgi->url_param('hpx');
 my $limit  = $cgi->url_param('limit');
 # $hideloc is read below
 
@@ -247,7 +248,7 @@ if (($high || $dep) && $SEFRAN3{VALUE_SPEED_HIGH} > 0) {
 	$speed = $SEFRAN3{VALUE_SPEED_HIGH};
 }
 my $largeur_image = $speed*$SEFRAN3{VALUE_PPI};
-my $hauteur_image = $SEFRAN3{HEIGHT_INCH}*$SEFRAN3{VALUE_PPI}+1;
+my $hauteur_image = ($hpx ne "" ? $hpx:$SEFRAN3{HEIGHT_INCH}*$SEFRAN3{VALUE_PPI}) + 1;
 my $hauteur_label_haut = $SEFRAN3{LABEL_TOP_HEIGHT};
 my $hauteur_label_bas = $SEFRAN3{LABEL_BOTTOM_HEIGHT};
 my $largeur_fleche = 50;
@@ -810,9 +811,9 @@ if ($date) {
 	my $reload = 0;
 
 	if ($voies_classiques && !$dep) {
-		print "<img class=\"voies-permanentes\" src=\"$voies\">\n";
+		print "<img class=\"voies-permanentes\" src=\"$voies\" height=\"$hauteur_image\">\n";
 	} else {
-		print "<img class=\"voies-dynamiques\" src=\"$voies\">\n";
+		print "<img class=\"voies-dynamiques\" src=\"$voies\" height=\"$hauteur_image\">\n";
 	}
 	print "<TABLE class=\"sefran\"><tr>\n";
 	print "<td class=\"signals\"><div style=\"white-space: nowrap;\">";
