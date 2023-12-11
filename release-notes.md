@@ -23,6 +23,8 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 1. Fix an issue with meteo superproc (error when no data are available) 
 
+1. Fix a possible issue with proc requests when default cleanreq job is activated
+
 ## v2.6.3 (September 2023)
 ### New features
 
