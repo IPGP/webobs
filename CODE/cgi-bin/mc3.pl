@@ -495,8 +495,10 @@ if ($QryParm->{'dump'} eq "") {
 	$html .= "<TABLE width=\"100%\"><TR><TD width=700>";
 	if ($QryParm->{'nograph'} == 0) {
 		$html .= "<DIV id=\"mcgraph\" style=\"width:900px;height:250px;float:left;\"></DIV>\n"
-			."<DIV id=\"showall\" style=\"width:50px;height:15px;position:relative;float:left;font-size:smaller;\"><A href=\"#\" onClick=\"plotAll()\">plot all</A></DIV>\n"
-			."<DIV id=\"graphinfo\" style=\"width:850px;height:15px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
+			."<DIV id=\"showall\" style=\"width:150px;height:15px;position:relative;float:left;font-size:smaller;\">"
+			."<A href=\"#\" onClick=\"plotAll()\">plot all</A>"
+			#."<BR><A href=\"#\" id=\"tlsavelink\">download image</A></DIV>\n"
+			."<DIV id=\"graphinfo\" style=\"width:750px;height:15px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
 			."<TD nowrap style=\"text-align:left\"><DIV id=\"graphlegend\" style=\"width:200px;height:250px;position:static;\"></DIV></TD>\n"
 			."<TD nowrap style=\"text-align:left;vertical-align:top\">";
 		# ----- selection box graph-type
@@ -1632,14 +1634,15 @@ if ($QryParm->{'dump'} eq "") {
 <script language="JavaScript" src="/js/overlib/overlib.js"></script>
 
 <!-- jQuery & FLOT http://code.google.com/p/flot -->
-<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/js/flot/excanvas.min.js"></script><![endif]-->
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.js"></script>
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.js"></script>
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.time.js"></script>
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.stack.js"></script>
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.crosshair.js"></script>
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.selection.js"></script>
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/js/flot/excanvas.min.jsn"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.time.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.stack.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.crosshair.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.selection.min.js"></script>
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.axislabels.js"></script>
+<script language="javascript" type="text/javascript" src="/js/html2canvas.min.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/mc3.js"></script>
 
 <script language="javascript" type="text/javascript" src="/js/wolb.js"></script>
