@@ -72,6 +72,7 @@ function plotFlot(gtype) {
 		ylabel = '# events per day';
 	}
 	options = {
+		canvas: true,
 		xaxis: {
 			mode: xmode,
 			timeformat: timeformat
@@ -85,7 +86,9 @@ function plotFlot(gtype) {
             show: true
         },
 		yaxes: [{
-			position: 'left', axisLabel: ylabel
+			axisLabelUseCanvas: true,
+			position: 'left',
+			axisLabel: ylabel
 		}],
 		series: {
 			stack: stack,
@@ -189,9 +192,29 @@ function plotFlot(gtype) {
 			legends.eq(i).text(series.label.replace(/=.*\//, '= ' + y + '/'));
 		}
 	}
+	cop();
 }
 
 function plotAll() {
 	plot.setSelection({ xaxis: { from: options.xaxis.min, to: options.xaxis.max } },true);
 	plot = $.plot($('#mcgraph'), data, options);
+}
+
+function cop(color) {
+	var bgcolor = (typeof color == "undefined") ? "#fff" : color ;
+	var link = $("#tlsavelink");
+	link.hidden;
+	try {
+		var canvas = plot.getCanvas();
+		var context = canvas.getContext("2d");
+		context.globalCompositeOperation = "destination-over";
+		//context.fillStyle = "#fff";
+		//context.fillRect(0,0,canvas.width,canvas.height);
+		var canvasimg = canvas.toDataURL();
+		link.attr('href',canvasimg);
+		link.attr('download','WebObsMCgraph.png');
+		link.show;
+	} catch(e) {
+		console.log("canvas op failed: "+e);
+	}
 }
