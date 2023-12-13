@@ -25,6 +25,8 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 1. Fix a possible issue with proc requests when default cleanreq job is activated
 
+1. Fix a possible issue with events node plot in procs (when sensor outcome is checked)
+
 ## v2.6.3 (September 2023)
 ### New features
 
