@@ -75,6 +75,7 @@ if (scalar(@NID) == 3) {
 	
 		print "Metadata have been correctly downloaded in $outfileok";
 		print($ENV{M3G_EXPORTXML});
+		print " Tip: you must refresh node's page after the very first import";
 		print "<form> <input type='button' value='Go back' onclick='history.back()'> </form>";
 	}
 	
