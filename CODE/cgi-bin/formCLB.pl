@@ -65,6 +65,9 @@ my $nb = 0;
 my $nouveau = 0;
 my $QryParm = $cgi->Vars;
 
+# ---- looking for THEIA user flag
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
+
 $QryParm->{'node'}   ||= "";
 
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
@@ -80,6 +83,7 @@ if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
 			if (%CLBS) {
 				@clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
 				@fieldCLB = readCfg($CLBS{FIELDS_FILE});
+				unless ( isok($theiaAuth) ) { pop(@fieldCLB); }
 				if (@fieldCLB) {
 					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
 					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $fileDATA ); # for backwards compatibility
@@ -174,6 +178,7 @@ function verif_formulaire()
 	var i;
 	var j;
 	var v;
+	
 	for (i=1;i<=".scalar(@donnees).";i++) {
 		for (j=1;j<=".($#fieldCLB-1).";j++) {
 			eval('v = document.formulaire.v' + i + '_' + j + '.value');
@@ -255,7 +260,10 @@ print "<input type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">",
 			if ($_ >= 12) { $c = ' class="CLBshowhide"' } else { $c = ''}
 			if ($fieldCLB[$_][2] !~ /Theia/) { 
 				print "<TH$c>",$fieldCLB[$_][2]."</TH>";
-			} else { print "<TH$c><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">",$fieldCLB[$_][2]."</TH>" }	# making the title of the Theia field an URL to open the Theia thesaurus
+			} else { 
+				# making the title of the Theia field an URL to open the Theia thesaurus
+				print "<TH$c><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">",$fieldCLB[$_][2]."</TH>" 
+			}
 		}
 print "</TR>\n";
 

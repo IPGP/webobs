@@ -19,6 +19,7 @@ This is the official repository for WebObs project source code development. For 
 * **Xavier Béguin** - [XavierBeguin](https://github.com/XavierBeguin)
 * **Patrice Boissier** - [PBoissier](https://github.com/PBoissier)
 * **Jean-Marie Saurel** - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel)
+* **Lucas Dassin** - [ldassin](https://github.com/ldassin)
 * **Lucie Van Nieuwenhuyze** - [lucievnhyz](https://github.com/lucievnhyz)
 * **Baptiste Camus** - [cmbapt](https://github.com/cmbapt)
 * **Ali Ahmad Fahmi** - [alifahmi89](https://github.com/alifahmi89)
@@ -33,13 +34,13 @@ See also the list of active [contributors](https://github.com/IPGP/webobs/contri
 
 ## Citation
 
-If you use are using WebObs please kindly cite the following paper in your publications:
+If you use are using WebObs or any outputs from WebObs, please kindly cite the following paper in your publications:
 
 > Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020), WebObs: The volcano observatories missing link between research and real-time monitoring, *Frontiers in Earth Sciences*, [doi:10.3389/feart.2020.00048](https://doi.org/10.3389/feart.2020.00048).
 
 ## Copyright
 
-WebObs - 2000-2022 - Institut de Physique du Globe Paris / Université Paris Cité
+WebObs - 2000-2023 - Institut de Physique du Globe Paris / Université Paris Cité
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

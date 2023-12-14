@@ -39,6 +39,7 @@ $ENV{LANG} = $WEBOBS{LOCALE};
 # ---- inits
 my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my %NODE;
+my %GRID;
 my $fileDATA = "";
 my %CLBS;
 my @fieldCLB;
@@ -60,7 +61,9 @@ if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
 	}
 	if ($NODEName ne "") {
 		my %S = readNode($NODEName);
+		my %G = readProc($GRIDName);
 		%NODE = %{$S{$NODEName}};
+		%GRID = %{%G{$GRIDName}};
 		if (%NODE) {
 			$fileDATA = "$NODES{PATH_NODES}/$NODEName/$QryParm->{'node'}.clb";
 			%CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
@@ -137,6 +140,99 @@ if ($nbc > $maxc) {
 my $stamp  = "[$today $USERS{$CLIENT}{UID}]";
 my $entete = "# WebObs - $WEBOBS{WEBOBS_ID} : calibration file $QryParm->{'node'}\n# $stamp\n";
 
+# ---- looking after THEIA user flag
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
+
+if ( isok($theiaAuth)) {
+	# --- connecting to the database
+	my $driver   = "SQLite";
+	my $database = $WEBOBS{SQL_METADATA};
+	my $dsn = "DBI:$driver:dbname=$database";
+	my $userid = "";
+	my $password = "";
+	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+	   or die $DBI::errstr;
+	
+	# reading the NODEName dataset row to get the producer id
+	my $stmt = qq(SELECT identifier FROM datasets WHERE identifier LIKE "\%$GRIDName.$NODEName");
+	my $sth = $dbh->prepare( $stmt );
+	my $rv = $sth->execute() or die $DBI::errstr;
+
+	if($rv < 0) {
+	   print $DBI::errstr;
+	}
+
+	my $producerId;
+
+	while( my @row = $sth->fetchrow_array() ) {
+		$producerId = (split /_/, $row[0])[0];
+	}
+		
+	my $station   = $GRIDName.'.'.$NODEName;
+	my $dataset   = "$producerId\_DAT_$GRIDName.$NODEName";
+	my $dataname  = "$producerId\_OBS_$GRIDName.$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
+	my $extension = "$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
+	my $filepath;
+
+	foreach (@donnees) {
+		# observed_properties table
+		my @obs   = split(/[\|]/, $_);
+		my $id    = $obs[3];
+		my $name  = $obs[3];
+		my $unit  = $obs[4];
+		my $theia = $obs[$#obs];
+		my $chan  = $obs[2];
+		    
+		# observations table
+		my $obsid        = "$producerId\_OBS_$GRIDName.$NODEName\_$id";
+		my @first_date   = split(/ /,$obs[0]);
+		my $first_year   = $first_date[0];
+		my $first_hour   = $first_date[3] || "00";
+		my $first_minute = $first_date[4] || "00";
+		my $first_second = $first_date[5] || "00";
+		   
+		# read data file to know end date of observations
+		$filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$extension";
+		if ( -e $filepath) {
+			my $first_date = "grep -v '^#' $filepath | head -n1";
+			my @first_date = split(/ /, qx($first_date));
+			my $last_date  = "grep -v '^#' $filepath | tail -n1";
+			my @last_date  = split(/ /, qx($last_date));
+
+			my $first_year   = $first_date[0];
+			my $first_month  = $first_date[1];
+			my $first_day    = $first_date[2];
+			my $first_hour   = $first_date[3] || "00";
+			my $first_minute = $first_date[4] || "00";
+			my $first_second = $first_date[5];
+			if ($first_second =~ /./) { $first_second = "00" };
+				
+			my $last_year   = $last_date[0];
+			my $last_month  = $last_date[1];
+			my $last_day    = $last_date[2];
+			my $last_hour   = $last_date[3] || "00";
+			my $last_minute = $last_date[4] || "00";
+			my $last_second = $last_date[5];
+			if ($last_second =~ /./) { $last_second = "00" };
+
+			my $first_obs_date = "$first_year-$first_month-$first_day\T$first_hour:$first_minute:$first_second\Z";
+			my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
+			my $obs_date = "$first_obs_date/$last_obs_date";
+				
+			# --- completing observed_properties table
+			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES,CHANNEL_NB) VALUES (?,?,?,?,?);');
+			$sth->execute($id, $name, $unit, $theia, $chan);
+				
+			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
+			$sth->execute($obsid,$obs_date,$station,$id,$dataset,$dataname);
+		} else {
+			htmlMsgNotOK("$filepath does not exists !");
+			exit 1;
+		}
+	}
+	$dbh->disconnect();
+}
+
 # ---- lock-exclusive the data file during all update process
 #
 if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
@@ -170,74 +266,6 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 # --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	
-	# --- connecting to the database
-	my $driver   = "SQLite";
-	my $database = $WEBOBS{SQL_METADATA};
-	my $dsn = "DBI:$driver:dbname=$database";
-	my $userid = "";
-	my $password = "";
-	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-	   or die $DBI::errstr;
-	
-	my $station  = $GRIDName.'.'.$NODEName;
-	my $dataset  = 'OBSE_DAT_'.$GRIDName.'.'.$NODEName;
-	my $dataname = $NODEName.'_all.txt';
-	
-	foreach (@donnees) {
-	    # observed_properties table
-        my @obs   = split(/[\|]/, $_);
-        my $id    = $obs[6];
-        my $name  = $obs[6];
-        my $unit  = $obs[4];
-        my $theia = $obs[$#obs];
-        my $chan  = $obs[2];
-        
-        # observations table
-        my $obsid    = 'OBSE_OBS_'.$GRIDName.'.'.$NODEName.'_'.$id;
-        my @first_date = split(/ /,$obs[0]);
-        my $first_year   = $first_date[0];
-	    my $first_hour   = $first_date[3] || "00";
-	    my $first_minute = $first_date[4] || "00";
-	    my $first_second = $first_date[5] || "00";
-	   
-	    # read data file to know end date of observations
-	    my $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$dataname";
-	    if ( -e $filepath) {
-			my $first_date = "grep -v '^#' $filepath | head -n1";
-			my @first_date = split(/ /, qx($first_date));
-			my $last_date  = "grep -v '^#' $filepath | tail -n1";
-			my @last_date  = split(/ /, qx($last_date));
-
-			my $first_year   = $first_date[0];
-			my $first_month  = $first_date[1];
-			my $first_day    = $first_date[2];
-			my $first_hour   = $first_date[3] || "00";
-			my $first_minute = $first_date[4] || "00";
-			my $first_second = $first_date[5];
-			if ($first_second =~ /./) { $first_second = "00" };
-			
-			my $last_year   = $last_date[0];
-			my $last_month  = $last_date[1];
-			my $last_day    = $last_date[2];
-			my $last_hour   = $last_date[3] || "00";
-			my $last_minute = $last_date[4] || "00";
-			my $last_second = $last_date[5];
-			if ($last_second =~ /./) { $last_second = "00" };
-
-			my $first_obs_date = "$first_year-$first_month-$first_day\T$first_hour:$first_minute:$first_second\Z";
-			my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
-			my $obs_date = "$first_obs_date/$last_obs_date";
-			
-			# --- completing observed_properties table
-			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES,CHANNEL_NB) VALUES (?,?,?,?,?);');
-			$sth->execute($id, $name, $unit, $theia, $chan);
-			
-			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
-			$sth->execute($obsid,$obs_date,$station,$id,$dataset,$dataname);
-	    }
-	}
-
 	my $msg = $_[0] || "calibration file successfully updated !" ;
 	print "$msg\n";
 }
