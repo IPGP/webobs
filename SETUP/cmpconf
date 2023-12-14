@@ -5,7 +5,7 @@
 #
 # author: F. Beauducel, IPGP/IRD
 # created: 2018-10-10
-# updated: 2021-08-13
+# updated: 2023-12-12
 
 mydiff() {
 # Syntax: mydiff TEMPLATEFILE CONFFILE RELEASE [WRITEFLAG]
@@ -22,10 +22,10 @@ mydiff() {
 	BANNER=""
 	>&2 echo -n "checking $2..."
 	# takes all keys from the template file
-	TPLATE=$(grep -v -E "^#" "$1" | grep -E "\w\|" | sed -E 's/\|.*$//g')
+	TPLATE=$(grep -avE "^#" "$1" | grep -E "\w\|" | sed -E 's/\|.*$//g')
 	for k in $TPLATE; do
 		# if key does not exist (commented or not) in the user file
-		k2=$(grep -E "^[# ]*$k\|" $2)
+		k2=$(grep -aE "^[# ]*$k\|" $2)
 		if [[ -z $k2 ]]; then
 			if [[ -z $BANNER ]]; then
 				BANNER=1
@@ -36,14 +36,14 @@ mydiff() {
 				echo "" | tee -a $CONF
 			fi
 			# takes template line with previous line which can be a comment
-			k1=$(grep -E "^$k\|" -B 1 $1)
+			k1=$(grep -aE "^$k\|" -B 1 $1)
 			if [[ ${k1:0:1} == '#' ]]; then
 				# outputs default key value and its previous comment line
 				COM=1
 			else
 				COM=0
 			fi
-			grep -E "^$k\|" -B $COM -m 1 $1 | tee -a $CONF
+			grep -aE "^$k\|" -B $COM -m 1 $1 | tee -a $CONF
 			echo ""  | tee -a $CONF
 			NEW=1
 			>&2 echo -n " $k"
@@ -79,7 +79,7 @@ done
 # sefran3 (needs to check for main conf file)
 C=$(find $CONFDIR -maxdepth 1 -name 'SEFRAN3*.conf')
 for s in $C; do
-	if [[ ! -z $(grep -E "^CHANNEL_CONF\|" $s) ]]; then
+	if [[ ! -z $(grep -aE "^CHANNEL_CONF\|" $s) ]]; then
 		S=$(basename $s .conf)
 		sd="$CONFDIR/SEFRANS/$S"
 		sn="$sd/$S.conf"
@@ -95,7 +95,7 @@ done
 # mc3 (needs to check for main conf file)
 C=$(find $CONFDIR -maxdepth 1 -name 'MC3*.conf')
 for s in $C; do
-	if [[ ! -z $(grep -E "^EVENT_CODES_CONF\|" $s) ]]; then
+	if [[ ! -z $(grep -aE "^EVENT_CODES_CONF\|" $s) ]]; then
 		mydiff $TPLATEDIR/CONF/MC3.conf $s $RELREL $WRITE
 	fi
 done
@@ -103,7 +103,7 @@ done
 # procs (checks superproc name: only the SUBMIT_COMMAND has it...)
 C=$(find $CONFDIR/PROCS -maxdepth 2 -name '*.conf')
 for s in $C; do
-	P=$(grep -E "^SUBMIT_COMMAND\|" $s | cut -d " " -f 2 | tr '[:lower:]' '[:upper:]')
+	P=$(grep -aE "^SUBMIT_COMMAND\|" $s | cut -d " " -f 2 | tr '[:lower:]' '[:upper:]')
 	if [[ ! -z $P && -e "$TPLATEDIR/../CODE/tplates/PROC.$P" ]]; then
 		mydiff $TPLATEDIR/../CODE/tplates/PROC.$P $s $RELREL $WRITE
 	fi
@@ -112,7 +112,7 @@ done
 # views
 C=$(find $CONFDIR/VIEWS -maxdepth 2 -name '*.conf')
 for s in $C; do
-	if [[ ! -z $(grep -E "^NAME\|" $s) ]]; then
+	if [[ ! -z $(grep -aE "^NAME\|" $s) ]]; then
 		mydiff $TPLATEDIR/../CODE/tplates/VIEW.DEFAULT $s $RELREL $WRITE
 	fi
 done

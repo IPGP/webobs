@@ -55,7 +55,7 @@ function DOUT=meteo(varargin)
 %
 %   Authors: F. Beauducel + S. Acounis / WEBOBS, IPGP
 %   Created: 2001-07-04
-%   Updated: 2023-08-24
+%   Updated: 2023-12-07
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -87,14 +87,14 @@ alertcolor1 = field2num(P,'RAIN_ALERT_RGB',[1,.3,.3]);
 alertcolor2 = field2num(P,'RAIN_ALERT_DELAY_RGB',[1,.6,.6]);
 node_chan = field2num(P,'NODE_CHANNELS',[1,2,7,4,5,3,8]);
 i_xy = field2num(P,'XY_CHANNELS',[3,8]);
-gxy = (length(i_xy) == 2); % subplot XY
-gwind = (~isnan(i_winds) && ~isnan(i_winda)); % suplots wind
+gxy = (length(i_xy) == 2); % subplot XY flag
+gwind = (~isnan(i_winds) && ~isnan(i_winda)); % suplots wind flag
 
 for n = 1:length(N)
 	stitre = sprintf('%s : %s',N(n).ALIAS,N(n).NAME);
 
-	t = D(n).t;
-	d = D(n).d;
+	[t,i] = sort(D(n).t); % for rain calculation, data must be sorted
+	d = D(n).d(i,:);
 	C = D(n).CLB;
 	nx = size(d,2);
 
@@ -107,16 +107,17 @@ for n = 1:length(N)
 	end
 	if ~isempty(t)
 
-		% Irradiation: replaces negative values by 0
-		%d((d(:,3)<0),3) = 0;
-
-		% adds extra column with continuous rain on i_ap days (in mm/j)
-		d(:,nx+1) = movsum(d(:,i_rain),round(i_ap/N(n).ACQ_RATE));
-
-		% adds 3 other columns with continuous rain at different time scales
-		d(:,nx+2) = movsum(d(:,i_rain),round(1/24/N(n).ACQ_RATE));	% hourly
-		d(:,nx+3) = movsum(d(:,i_rain),round(1/N(n).ACQ_RATE));	% daily
-		d(:,nx+4) = movsum(d(:,i_rain),round(30/N(n).ACQ_RATE));	% monthly
+		fprintf('%s: [%s] computing rain moving sum...',wofun,N(n).ID);
+		% adds extra columns with continuous rain (i_ap days for alert and CUMULATE)
+		rdec = unique([i_ap,cat(2,P.GTABLE.CUMULATE)]);
+		d = cat(2,d,nan([size(d,1),length(rdec)]));
+		kr = ~isnan(d(:,i_rain)); % process only real samples
+		for r = 1:length(rdec)
+			fprintf(' @%s ',days2h(rdec(r)));
+			d(kr,nx+r) = msum(t(kr),d(kr,i_rain),rdec(r));
+			fprintf('.');
+		end
+		fprintf(' done.\n');
 	end
 
 	% ===================== makes the proc's job
@@ -169,18 +170,9 @@ for n = 1:length(N)
 		% Rainfall (daily / hourly)
 		subplot(length(node_chan)+2*(1+(gxy|gwind)),1,(1:2)+2*(gxy|gwind)), extaxes
 		ga = gca;
-		switch P.GTABLE(r).CUMULATE
-		case 1
-			hcum = 'daily';
-			gp = nx + 3;
-		case 30
-			hcum = 'monthly';
-			gp = nx + 4;
-		otherwise
-			hcum = 'hourly';
-			gp = nx + 2;
-		end
+		hcum = sprintf('per %s',days2h(P.GTABLE(r).CUMULATE,'round'));
 		if ~isempty(tk)
+			gp = find(P.GTABLE(r).CUMULATE==rdec) + nx; % locates the right rain cum column
 			% area plot does not support NaN...
 			kr = find(~isnan(dk(:,gp)));
 			if ~isempty(kr)
@@ -194,7 +186,7 @@ for n = 1:length(N)
 
 				hold on
 				% rainfall alerts in background
-				vp = [diff(d(:,nx+1)>=s_ap);-1];
+				vp = [diff(d(:,nx+find(rdec==i_ap))>=s_ap);-1];
 				kp0 = find(vp==1);
 				kp1 = find(vp==-1);
 				if ~isempty(kp0)

@@ -28,7 +28,7 @@ use File::Basename;
 use POSIX qw/strftime/;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
-$CGI::POST_MAX = 1024 * 10;
+$CGI::POST_MAX = 1024 * 1000;
 $CGI::DISABLE_UPLOADS = 1;
 my $cgi = new CGI;
 
@@ -56,6 +56,7 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my $newnode   = 0;
 my $titre2 = "";
 my $QryParm   = $cgi->Vars;
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG}	// 0;
 
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
 if ( $GRIDType ne "" && $GRIDName ne "" ) {
@@ -112,15 +113,6 @@ my $usrValid     = $NODE{VALID} // 0;
 my $usrName      = $NODE{NAME}; $usrName =~ s/\"//g;
 my $usrAlias     = $NODE{ALIAS};
 my $usrType      = $NODE{TYPE};
-my $usrDesc      = $NODE{DESCRIPTION};
-my $usrProducer  = $NODE{PRODUCER};
-my $usrCreator   = $NODE{CREATOR};
-my $usrFirstName = $NODE{FIRSTNAME};
-my $usrLastName  = $NODE{LASTNAME};
-my $usrEmail     = $NODE{EMAIL};
-my $usrTheme     = $NODE{THEME};
-my $usrTopic     = $NODE{TOPICS};
-my $usrLineage   = $NODE{LINEAGE};
 #my $usrOrigin    = $NODE{ORIGIN};
 my $usrTZ        = $NODE{TZ} // strftime("%z", localtime());
 my $features     = $NODE{FILES_FEATURES} // "$__{'featureA,featureB,featureC'}";
@@ -143,9 +135,21 @@ my $usrLon       = $NODE{LON_WGS84};
 my $usrLonE = ($usrLon >= 0 ? "E":"W");
 $usrLon =~ s/^-//g;
 my $usrAlt       = $NODE{ALTITUDE};
-my $usrShpFile   = $NODE{SPATIAL_COVERAGE};
+my $usrGnss9char = $NODE{GNSS_9CHAR};
+my $m3g_check    = $NODE{M3G_AVAIABLE};
 my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
+# THEIA metadata
+my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}; $usrDesc =~ s/\"//g; $usrDesc =~ s/\<br\>/\n/g;
+my $usrProducer;
+my @usrRole;
+my @usrFirstName;
+my @usrLastName;
+my @usrEmail;
+my $usrTheme;
+my @usrTopic;
+my $usrLineage;
+my $usrShpFile;
 #      Transmission
 my ($usrTrans,@usrTele) = split(/,| |\|/,$NODE{TRANSMISSION});
 if ($usrTrans eq "NA") { $usrTrans = "0"; }
@@ -222,6 +226,40 @@ while(my @row = $sth->fetchrow_array()) {
 	push(@creators, $row[0]);
 }
 
+# ---- load the database information if NODE is already filled out in the datasets table
+my $stmt = qq(SELECT * FROM datasets WHERE EXISTS ( SELECT identifier from datasets ) AND identifier LIKE "\%$GRIDName.$NODEName");
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+while(my @row = $sth->fetchrow_array()) {
+	$usrProducer = (split /_/, $row[0])[0];
+	$usrDesc     = $row[2];
+	$usrTheme    = (split /:|_/, $row[3])[3];
+	push(@usrTopic, split(/,/, (split /:|_/, $row[3])[1]));
+	$usrLineage  = $row[5];
+}
+
+# ---- load the database information if NODE is already filled out in the contacts table
+my $stmt = qq(SELECT * FROM contacts WHERE EXISTS ( SELECT related_id from contacts ) AND related_id LIKE "$usrProducer\%$GRIDName.$NODEName");
+my $sth = $dbh->prepare( $stmt );
+my $rv = $sth->execute() or die $DBI::errstr;
+
+if($rv < 0) {
+   print $DBI::errstr;
+}
+
+while(my @row = $sth->fetchrow_array()) {
+	push(@usrRole, $row[3]);
+	push(@usrFirstName, $row[1]);
+	push(@usrLastName, $row[2]);
+	push(@usrEmail, $row[0]);
+}
+
+
 # ---- Load the list of existing nodes
 my @allNodes = qx(/bin/ls $NODES{PATH_NODES});
 chomp(@allNodes);
@@ -243,6 +281,10 @@ my $text = "<B>$NODE{ALIAS}: $NODE{NAME}</B><BR>"
 	."&nbsp;<B>$NODE{LAT_WGS84}&deg;</B>, <B>$NODE{LON_WGS84}&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
 $text =~ s/\"//g;  # fix ticket #166
 
+# ---- Preparing geojson related variables
+my $geojsonFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.geojson";
+my $json;
+
 # ---- ready for HTML output now
 #
 print $cgi->header(
@@ -253,14 +295,14 @@ $cgi->start_html("$__{'Node configuration form'}");
 
 print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css" crossorigin=""/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js" crossorigin=""></script>
+<link rel="stylesheet" href="/css/leaflet.css" crossorigin=""/>
+<script src="/js/leaflet.js" crossorigin=""></script>
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
-<script src="https://unpkg.com/shpjs\@latest/dist/shp.js" type="text/javascript"></script>
-<script src="https://cdn.rawgit.com/calvinmetcalf/leaflet.shapefile/gh-pages/leaflet.shpfile.js" type="text/javascript"></script>
-<script src="https://cdn.jsdelivr.net/gh/seabre/simplify-geometry\@master/simplifygeometry-0.0.2.js" type="text/javascript"></script>
+<script src="/js/shp.min.js" type="text/javascript"></script>
+<script src="/js/leaflet.shpfile.js" type="text/javascript"></script>
+<script src="/js/simplifygeometry-0.0.2.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 
 function postIt()
@@ -328,30 +370,43 @@ function postIt()
   for (var i=0; i<form.SELs.length; i++) {
   	form.SELs[i].selected = true;
   }
-  
-  // Theia metadata part
-  var selected = \$('#topicCats')[0].selectedOptions;
-  var topics = [];
-  for (var i=0; i<selected.length; i++) {
-  	topics.push(selected[i].value);
-  } form.topics.value = 'topicCategories:'+topics.join(',')+'_';
-  
-  // registering the NODE contacts metadata
-  var roles = [];
-  var firstNames = [];
-  var lastNames = [];
-  var emails = [];
-  if (form.count_creator.value > 1) {
-  	  for (var i=0; i<form.role.length; i++) {
-	  	roles.push(form.role[i].value);
-	  	firstNames.push(form.firstName[i].value);
-	  	lastNames.push(form.lastName[i].value);
-	  	emails.push(form.email[i].value);
-	  } 
-  	form.creators.value = roles.join(',') + '|' + firstNames.join(',') + '|' + lastNames.join(',') + '|' + emails.join(',');
-  } else {form.creators.value = form.role.value + '|' + form.firstName.value + '|' + form.lastName.value + '|' + form.email.value}
-
-	console.log(\$(\"#theform\"));
+	
+	console.log(\$(\"#theform\").serialize());
+	console.log(form.outWKT.value)
+	
+	if (form.saveAuth.value == 1) {
+		console.log(form.count_creator);
+		if ( form.producer.value == "" ) {
+			alert("Producer can't be empty !");
+			return false;
+		}
+		var nb_creators = form.count_creator.value;
+		if (nb_creators>1) {
+			for (var i=0; i<nb_creators; i++) {
+				if ( form.firstName[i].value == "" ) {
+					alert("First name can't be empty (make sure the right role is selected too) !");
+					return false;
+				}
+				if ( form.lastName[i].value == "" ) {
+					alert("Last name can't be empty (make sure the right role is selected too) !");
+					return false;
+				}
+				if ( form.email[i].value == "" ) {
+					alert("Email can't be empty (make sure the right role is selected too) !");
+					return false;
+				}
+			}
+		}
+		if ( form.topics.value == "" ) {
+			alert("You have to chose at least one topic category (check that you selected the right INSPIRE theme too) !");
+			return false;
+		}
+		if ( form.lineage.value == "" ) {
+			alert("Lineage can't be empty !");
+			return false;
+		}
+	}
+	
 	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
 		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
 		if (document.getElementById("fidx")) {
@@ -584,10 +639,10 @@ function onInputWrite(e) {
 		map.flyTo([lat, lon], 4);
 	} 
 	if (Math.min(latZoom, lonZoom) == 1) {
-		map.flyTo([lat, lon], 6);
+		map.flyTo([lat, lon], 9);
 	}
 	if (Math.min(latZoom, lonZoom) == 2) {
-		map.flyTo([lat, lon], 8);
+		map.flyTo([lat, lon], 10);
 	} 
 	if (Math.min(latZoom, lonZoom) == 3) {
 		map.flyTo([lat, lon], 12);
@@ -602,6 +657,21 @@ function onInputWrite(e) {
 		map.flyTo([lat, lon], 18);
 	}
 }
+function createShp(geojson) {
+	var shpfile = new L.Shapefile(geojson,{
+		onEachFeature: function(feature, layer) {
+			if (feature.properties) {
+				layer.bindPopup(Object.keys(feature.properties).map(function(k) {
+					return k + ": " + feature.properties[k];
+				}).join("<br />"), {
+						maxHeight: 200
+					});
+			}
+		}
+	}); 
+	
+	return shpfile;
+}
 function handleFiles() {	
 	/**
 	 * Read .zip shpfiles and calculate the bounding box coordinates of the spatial coverage of the shapefile
@@ -613,32 +683,33 @@ function handleFiles() {
 	fr.onload = function () {
 		shp(this.result).then(function(geojson) {
 	  		console.log('loaded geojson:', geojson);
-	  		
+			
 	  		/*for (var i = 0; i <= geojson.features.length-1; i++) {
 	  			// applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
-	  			var coordinates = simplifyGeometry(geojson.features[i].geometry.coordinates[0], 0.01);
+	  			var geometry = geojson.features[i].geometry;
+	  			var coordinates = simplifyGeometry(geometry.coordinates[0], 0.000001);
+	  			if (coordinates.length < 4) {
+	  				geometry.coordinates[0] = [[geometry.bbox[0],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[1]]];
+	  			}
+	  			else { geometry.coordinates[0] = coordinates; }
+				
 	  			var lonLat = [];
 	  			for (var j = 0; j <= coordinates.length-1; j++) {
-	  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]);
+	  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]); 
 	  			} outWKT.push('((' + lonLat + '))');
-	  		} document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]);*/
+				
+	  		}*/
+			
+	  		/* document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]); */
 	  		
-			var shpfile = new L.Shapefile(geojson,{
-				onEachFeature: function(feature, layer) {
-					if (feature.properties) {
-						layer.bindPopup(Object.keys(feature.properties).map(function(k) {
-							return k + ": " + feature.properties[k];
-						}).join("<br />"), {
-							maxHeight: 200
-						});
-					}
-				}
-			});
+			var shpfile = createShp(geojson);
 			shpfile.addTo(map);
 			// geojson.features = geojson.features[0];	// test with a Polygon;
 			var geometry = JSON.stringify(getGeometry(geojson));
-			console.log(geometry);
+			// console.log(geometry);
 			document.form.outWKT.value = geometry;
+			document.form.geojson.value = JSON.stringify(geojson);
+			return geojson;
 	  })
 	};
 	fr.readAsArrayBuffer(fichierSelectionne);
@@ -655,12 +726,12 @@ function getGeometry(geojson) {
 		geometry.type = "MultiPolygon";
 		var coordinates = [];
 		
-		for (var i = 0; i < geojson.features.length; i++) {
+		for (var i = 0; i < geojson.features.length-1; i++) {
 			coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
 		} geometry.coordinates = coordinates; return geometry;
 	} else {
 		geometry.type = "Polygon";
-		geometry.coordinates = [getBoundingBox(geojson.features.geometry.coordinates)];
+		geometry.coordinates = [getBoundingBox(geojson.features[0].geometry.coordinates)];
 		return geometry;
 	}
 }
@@ -691,10 +762,14 @@ function addCreator() {
 	 * Add a creator row to fill in the form
 	 */
     var form = \$('#theform')[0];
+    form.locMap.value = 1;
 	form.count_creator.value = parseInt(form.count_creator.value)+1;
 	var new_div = document.createElement('div');
 	new_div.id = 'new_creator'+form.count_creator.value;
     new_div.innerHTML = \$('#creator')[0].innerHTML;
+    for (let i = 1; i <= new_div.childElementCount-1; i++) {
+    	new_div.children[i].value = "";
+    }
     \$('#creator_add')[0].append(new_div);
 }
 function removeCreator() {
@@ -702,6 +777,7 @@ function removeCreator() {
 	 * Remove a creator row (if there are more than one row) to fill in the form
 	 */
 	var form = \$('#theform')[0];
+	form.locMap.value = 1;
 	var id = '#new_creator'+form.count_creator.value;
 	if (\$(id)[0] === null) {
 		return false;
@@ -710,22 +786,38 @@ function removeCreator() {
 		form.count_creator.value -= 1;
 	}
 }
+
+function go_back_node() {
+	location.href  = document.form.referer.value;
+}
+
+function check_9char_code() {
+	const regex_9char = new RegExp('^[A-Z0-9]{4}[0-9]{2}[A-Z]{3}\$') ;
+	const gnss9char_for_test = document.form.gnss_9char.value;
+	const m3g_link = document.getElementById("m3g_link");
+	m3g_link.href += gnss9char_for_test;
+	if(gnss9char_for_test == "" || ! gnss9char_for_test.match(regex_9char)) {
+		alert("The GNSS 9 character code is not defined or does not fit \\n\<4 letters/numbers\>\<2 numbers\>\<3 letters ISO country code\>");
+		document.form.gnss_9char.focus();
+		return false;
+	}
+}
+
 function showHideTheia(checkbox){
 	const theia = document.getElementById("showHide");
 
 	if (checkbox.checked == false) {
 		theia.style.display = "none";
-		document.form.showHide.value = 0;
+		document.form.saveAuth.value = 0;
 	} else {
 		theia.style.display = "block";
-		document.form.showHide.value = 1;
+		document.form.saveAuth.value = 1;
 	}
 }
 
 // creating and parametring the map for the geographic location choice
 
 var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
-var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>contributors';
 var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 		
 //Init Overlays
@@ -740,24 +832,6 @@ var basemaps = {
 			minZoom: 2,
 			maxZoom: 19,
 			id: "osm"
-		}
-	),
-	'Stamen-Terrain': L.tileLayer(
-		'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}',
-		{
-			attribution: stamenAttribution,
-			minZoom: 2,
-			maxZoom: 19,
-			id: "stamen.terrain"
-		}
-	),
-	'Stamen-Watercolor': L.tileLayer(
-		'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}',
-		{
-			attribution: stamenAttribution,
-			minZoom: 2,
-			maxZoom: 19,
-			id: "stamen.watercolor"
 		}
 	),
 	'OpenTopoMap': L.tileLayer(
@@ -850,44 +924,6 @@ print "<TR>";
 		# --- TYPE
 		print "<LABEL style=\"width:80px\" for=\"type\">$__{'Type'}:</LABEL>";
 		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
-		# --- DESCRIPTION
-		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
-		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc<\/TEXTAREA>&nbsp;&nbsp;<BR>";
-		# --- show THEIA fields ?
-		print "<LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT name=\"showHide\" type=\"checkbox\" name=\"show/hide\" onchange=\"showHideTheia(this)\"></LABEL>&nbsp;<BR><BR>";
-		print "<DIV id=\"showHide\" style=\"display:none;\">";
-		# --- PRODUCER
-		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
-		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
-		# --- CREATOR
-		print "<BUTTON style=\"text-align:center\" onclick=\"addCreator(); return false;\">$__{'Add a creator'} </BUTTON>";
-		print "<BUTTON onclick=\"removeCreator(); return false;\">$__{'Remove a creator'} </BUTTON>";
-		print "<INPUT type='hidden' name=\"count_creator\" value='1'></INPUT>";
-		print "<INPUT type='hidden' name=\"creators\" value=''></INPUT>";
-		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Creator'}:</LABEL><BR><BR>";
-		print "<DIV id=\"creator\">";
-		print "<SELECT onMouseOut=\"nd()\" value=\"$usrCreator\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
-		for (@creators) { print "<OPTION value=\"$_\">$_</option>\n"; }
-		print "</SELECT>&nbsp;&nbsp";
-		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
-		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
-		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR></DIV>";
-		print "<DIV id='creator_add'></DIV><BR>";
-		# --- INSPIRE THEME
-		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
-		print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
-		for (@themes) { print "<OPTION value=\"$_\">$_</option>\n"; }
-		print "</SELECT><BR>";
-		# --- TOPIC CATEGORIES
-		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Topic categories'}:</LABEL>";
-		print "<INPUT type=\"hidden\" name=\"topics\">";
-		print "<SELECT multiple onMouseOut=\"nd()\" value=\"$usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" id=\"topicCats\">";
-		for (@topics) { print "<OPTION value=\"$_\">$_</option>\n"; }
-		print "</SELECT><BR>";
-		# --- Lineage
-		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
-		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
-		print "</DIV>";
 	print "</FIELDSET>";
 
 	print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
@@ -931,7 +967,7 @@ print "<TR>";
 	print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',@feat)."\">"
 		."&nbsp;<IMG src=\"/icons/refresh.png\" align=\"top\" onClick=\"refresh_form();\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_featrefresh'}')\"><BR><BR>";
 	for (@feat) {
-		print "<LABEL style=\"width:120px\" for=\"$_\">$_:</LABEL>";
+		print "<LABEL style=\"width:120px\" for=\"feature_$_\">$_:</LABEL>";
 		my $pat = qr/^$NODEName\|$_\|/;
 		my @fnlist = grep(/$pat/,@n2n);
 		my $fn = join(',',@fnlist);
@@ -983,6 +1019,85 @@ print "<TR>";
 	print "</TR>";
 	print "</TABLE>";
 	print "</FIELDSET>";
+	
+	# --- Procs metadata
+	print "<FIELDSET><LEGEND>$__{'Procs Metadata'}</LEGEND>";
+	# --- DESCRIPTION
+		print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
+		print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc</TEXTAREA>&nbsp;&nbsp;<BR>";
+		# --- show THEIA fields ?
+		print "<DIV id=\"theiaChecked\" style=\"display:none;\"><LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT type=\"checkbox\" name=\"saveAuth\" onchange=\"showHideTheia(this)\" value=0></LABEL>&nbsp;<BR><BR></DIV>";
+		print "<DIV id=\"showHide\" style=\"display:none;\">";
+		# --- PRODUCER
+		print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
+		print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
+		# --- CREATOR
+		print "<BUTTON style=\"text-align:center\" onclick=\"addCreator(); return false;\">$__{'Add a creator'} </BUTTON>";
+		print "<BUTTON onclick=\"removeCreator(); return false;\">$__{'Remove a creator'} </BUTTON>";
+		print "<INPUT type='hidden' name=\"count_creator\" value='1'></INPUT>";
+		print "<INPUT type='hidden' name=\"creators\" value=''></INPUT>";
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Creator'}:</LABEL><BR><BR>";
+		print "<DIV id=\"creator\">";
+		print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[0]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
+		for (@creators) { 
+			if ($_ eq $usrRole[0]){
+				print "<OPTION value=\"$_\" selected>$_</option>\n";
+			} else {
+				print "<OPTION value=\"$_\">$_</option>\n";
+			}
+		}
+		print "</SELECT>&nbsp;&nbsp";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
+		print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR></DIV>";
+		print "<DIV id='creator_add'>";
+		for (my $i = 1; $i <= $#usrRole; $i++) {
+			my $cnt = $i+1;
+			print "<DIV id=new_creator$cnt>";
+			print "<SCRIPT>var form = \$('#theform')[0];form.count_creator.value = parseInt(form.count_creator.value)+1;</SCRIPT>";
+			print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[$i]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
+			for (@creators) { 
+				if ($_ eq $usrRole[$i]){
+					print "<OPTION value=\"$_\" selected>$_</option>\n";
+				} else {
+					print "<OPTION value=\"$_\">$_</option>\n";
+				}
+			}
+			print "</SELECT>&nbsp;&nbsp";
+			print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
+			print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
+			print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR>";
+			print "</DIV>";
+		}
+		print "</DIV><BR>";
+		# --- INSPIRE THEME
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
+		print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
+		for (@themes) {
+			if ($_ eq $usrTheme) {
+				print "<OPTION value=\"$_\" selected>$_</option>\n"; 
+			} else {
+				print "<OPTION value=\"$_\">$_</option>\n"; 
+			}
+		}
+		print "</SELECT><BR>";
+		# --- TOPIC CATEGORIES
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Topic categories'}:</LABEL>";
+		#print "<INPUT type=\"hidden\" name=\"topics\">";
+		print "<SELECT multiple onMouseOut=\"nd()\" value=\"@usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"topics\">";
+		for (@topics) {
+			if ($_ ~~ @usrTopic) {
+				print "<OPTION value=\"$_\" selected>$_</option>\n"; 
+			} else {
+				print "<OPTION value=\"$_\">$_</option>\n"; 
+			}
+		}
+		print "</SELECT><BR>";
+		# --- Lineage
+		print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
+		print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
+		print "</DIV>";
+	print "</FIELDSET>";
 
 	print "</TD>\n";                                                                 # end left column
 	print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
@@ -1031,13 +1146,34 @@ print "<TR>";
 				."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Fetch KML' onClick='fetchKML()'></DIV>";
 				
 			# --- Importation of shpfile
-			print "<INPUT type=\"hidden\" name=\"filename\"";
-			print "<strong>$__{'To add a shapefile (.zip only) layer, click here'}: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
+			# --- First we check if a geojson already exists in the NODE dir
+
+			if (-e $geojsonFile) {
+				open(FH, '<', $geojsonFile);
+				while(<FH>){
+					$json = "$_";
+				}
+				close(FH);
+			}
+
+			print "<INPUT type=\"hidden\" name=\"filename\" value=\"\"\n>";
 			print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
-				
+			print "<INPUT type=\"hidden\" name=\"geojson\" value=\"\"\n>";
+			print "<strong>$__{'To add a shapefile (.zip only) layer, click here'}: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
+
 		print "</TD>";
 		print <<FIN;
 		<script>
+			const checked = document.getElementById("theiaChecked");
+			const auth = $theiaAuth;
+			
+			if (auth == 1) {
+				// console.log(theia);
+				checked.style.display = "block";
+			} else {
+				checked.style.display = "none";
+			}
+		
 			var map = L.map('map', mapOptions);
 			var popup = L.popup();
 			map.on('click', onMapClick);
@@ -1055,11 +1191,49 @@ print "<TR>";
 			}
 			
 			var layerControl = L.control.layers(basemaps, overlays).addTo(map);
+			
+			if (typeof(\"$geojsonFile\") !== 'undefined') {
+				var shpfile = createShp($json); 
+				shpfile.addTo(map);
+				
+				var geometry = JSON.stringify(getGeometry($json));
+				document.form.outWKT.value = geometry;
+			}
 		</script>
 FIN
 	print "</TR></TABLE>";
 	print "</FIELDSET>\n";
 
+	# --- GNSS-specific information
+=pod
+	my $m3g_url_edit = $WEBOBS{'M3G_URL'}."/".$usrGnss9char;
+	print "<FIELDSET><legend>$__{'GNSS-specific information'}</LEGEND>";
+	print "<TABLE><TR>";
+		print "<TD style=\"border:0;text-align:left\">";
+			print "<label for=\"gnss_9char\">$__{'GNSS 9 char. code'} :</label>";
+			print "<input size=\"10\" value=\"$usrGnss9char\" onChange=\"console.log($m3g_url_edit)\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_gnss_9char}')\" id=\"gnss_9char\" name=\"gnss_9char\">";
+			print "<i for=\"gnss_9char_nb\">  NB: use save button to store this code the first time, before updating metadata </i>";
+			print "<BR>\n";
+			print "<BR>\n";
+			###### get and edit features 
+			#### Edit GeodesyML on M3G
+			print "<a href=$m3g_url_edit target=\"_blank\" id=\"m3g_link\" onClick=\"return check_9char_code()\">Edit sitelog on M3G (requires prior M3G login)</a>";
+			print "<BR>\n";
+			#### get geodesyML from M3G
+			print "<BR>\n";
+			print "<BR>\n";
+			print "<label for=\"m3g_check\">$__{'Show links to M3G'} :</label>";
+			if ( $m3g_check ) {
+				print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\" checked>";
+			} else {
+				print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\">";
+			}
+			print "<BR>\n";
+
+		print "</TD>";
+	print "</TR></TABLE>";
+	print "</FIELDSET>";
+=cut
 	# --- Transmission
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
 	print "<TABLE><TR>";
@@ -1120,7 +1294,7 @@ FIN
 
 		if (-s $clbFile != 0) {
 			my @select = split(/,/,$usrCHAN);
-			my @carCLB   = readCfgFile($clbFile);
+			my @carCLB = readCfgFile($clbFile);
 			# make a list of available channels and label them with last Chan. + Loc. codes
 			my %chan;
 			for (@carCLB) {
@@ -1178,7 +1352,6 @@ FIN
 			print "<INPUT hidden name=\"$_\" value=\"$NODE{$_}\">";
 		}
 	}
-
 
 	## # --- "Validity"
 	## if ( clientHasAdm(type=>"authmisc",name=>"NODES")) {
