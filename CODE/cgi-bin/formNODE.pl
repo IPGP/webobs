@@ -1205,7 +1205,7 @@ FIN
 	print "</FIELDSET>\n";
 
 	# --- GNSS-specific information
-=pod
+#=pod
 	my $m3g_url_edit = $WEBOBS{'M3G_URL'}."/".$usrGnss9char;
 	print "<FIELDSET><legend>$__{'GNSS-specific information'}</LEGEND>";
 	print "<TABLE><TR>";
@@ -1233,7 +1233,7 @@ FIN
 		print "</TD>";
 	print "</TR></TABLE>";
 	print "</FIELDSET>";
-=cut
+#=cut
 	# --- Transmission
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
 	print "<TABLE><TR>";
