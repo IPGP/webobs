@@ -1220,7 +1220,7 @@ FIN
 			print "<a href=$m3g_url_edit target=\"_blank\" id=\"m3g_link\" onClick=\"return check_9char_code()\">Edit sitelog on M3G (requires prior M3G login)</a>";
 			print "<BR>\n";
 			#### get geodesyML from M3G
-			print "<BR>\n";
+			#print "<BR>\n";
 			print "<BR>\n";
 			print "<label for=\"m3g_check\">$__{'Show links to M3G'} :</label>";
 			if ( $m3g_check ) {
