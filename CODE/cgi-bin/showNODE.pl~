@@ -13,7 +13,6 @@ http://..../showNODE.pl?node=NODEID[,sortBy={event|date}]
 Displays data associated to a NODE identified by its fully qualified name (node=gridtype.gridname.nodename)
 
 Although a NODE is an independent entity, a GRID-context (the 2 high level qualifiers of the
-Although a NODE is an independent entity, a GRID-context (the 2 high level qualifiers of the
 fully qualified nodename) is required
 as a validation/authorization/reference information.
 
@@ -59,7 +58,6 @@ use WebObs::Utils;
 use WebObs::i18n;
 use WebObs::Mapping;
 use WebObs::Wiki;
-use WebObs::GML;
 use Locale::TextDomain('webobs');
 
 # ---- inits ----------------------------------
@@ -144,7 +142,6 @@ my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
 my %FDSN     = WebObs::Grids::codesFDSN();
 
 # parameters linked to a proc
-my $desc = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"} // $NODE{DESCRIPTION};
 my $fdsn = trim($NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} // $NODE{FDSN_NETWORK_CODE});
 my $fid = $NODE{"$GRIDType.$GRIDName.FID"} // $NODE{FID};
 my $fids = join(" - ", map { my $v; ($v = $_) =~ s/$GRIDType\.$GRIDName\.//;
@@ -266,18 +263,6 @@ if ($editOK) {
 	print "Type";
 }
 print "</TH><TD colspan=\"2\">$NODE{TYPE}</TD></TR>\n";
-
-# Row "GNSS 9-code" ----------------------------------------------------
-#
-if ($NODE{GNSS_9CHAR}) {
-	print "<TR><TH valign=\"top\">";
-	if ($editOK) {
-		print "<A href=\"$cgiConf\">GNSS 9-code</A>";
-	} else {
-		print "GNSS 9-code";
-	}
-	print "</TH><TD colspan=\"2\">$NODE{GNSS_9CHAR}</TD></TR>\n";
-}
 
 # Row "Lifetime" ----------------------------------------------------
 #
@@ -451,7 +436,10 @@ if (uc($GRIDType) eq 'PROC') {
 	print "</TD></TR>\n";
 	
 	# --- description
-	print "<TD valign=\"top\" width=\"10%\"><B>$__{'Description'}</B></TD><TD>$desc</TD></TR>\n";
+	print "<TR><TD valign=\"top\" width=\"10%\"><B>$__{'Description'}</B></TD><TD style=\"text-align:left\">"
+		."<TABLE><TR><TD style=\"border:0;text-align:left\">";
+	print $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
+	print "</TD></TR></TABLE></TD></TR>\n";
 
 	# --- status
 	print "<TR><TD valign=\"top\" width=\"10%\"><B>$__{'Status'}</B></TD><TD style=\"text-align:left\">"
@@ -599,46 +587,6 @@ if ($editOK || $#infosInstallNode >=0) {
 	print ($editOK ? "<a href=\"$cgiEtxt?file=$RinfoInstallFile&node=$GRIDType.$GRIDName.$NODEName\">$txt</a>":$txt);
 	print "</TH><TD colspan=\"2\">".wiki2html(join("",@infosInstallNode))."</TD></TR>\n";
 }
-
-# Row "M3G"
-#
-if ( $NODE{GNSS_9CHAR} && $NODE{M3G_AVAIABLE} ) {
-	print "<TR><TH valign=\"top\">";
-	my $txt = $__{'M3G GNSS Metadata'};
-	my $gnss9char = $NODE{GNSS_9CHAR};
-	my $gmlfile = "$NODES{PATH_NODES}/$NODEName/$gnss9char.xml";
-	my $m3g_url_sitelog = $WEBOBS{'M3G_EXPORTLOG'}.$gnss9char;
-	my $m3g_url_gml = $WEBOBS{'M3G_EXPORTXML'}.$gnss9char;
-	my @rec;
-	my $txt_rec = "<TR><TH>Receiver history feature</TH></TR><TR><TD>";
-	my @ant;
-	my $txt_ant = "<TR><TH>Antenna history feature</TH></TR><TR><TD>";
-	
-	my $m3g_link_sitelog = "<a href=".$m3g_url_sitelog.">Download $gnss9char sitelog on your local disk</a>";
-	my $m3g_link_gml = "<a href=".$m3g_url_gml.">Download $gnss9char GeodesyML on your local disk</a>";
-
-	if (-e $gmlfile) {
-		@rec = gml2mmdtable($gmlfile,"gnssrec");
-		chomp(@rec);
-		$txt_rec = join("\n",@rec);
-		@ant  = gml2mmdtable($gmlfile,"gnssant");
-		chomp(@ant);
-		$txt_ant = join("\n",@ant);
-	}
-	
-	#### get geodesyML from M3G
-	my $GetGml = "/cgi-bin/get_gml_m3g.pl";
-	my $m3g_xml = "<a href=\"$GetGml?node=$GRIDType.$GRIDName.$NODEName\">Import GNSS metadata from M3G</a>";
-
-	if ($editOK) {
-		print "<A href=\"$cgiConf\">$txt</A>";
-	} else {
-		print "M3G GNSS Metadata</TH>";
-	}	#print "</TH><TD colspan=\"2\">".join("<br>",$m3g_link_sitelog,$m3g_link_gml,$m3g_xml,$txt_rec,$txt_ant)."</TD></TR>\n";
-	print "</TH><TD>".join("<br>",$m3g_link_sitelog,$m3g_link_gml,$m3g_xml)."<BR>\n";
-	print "<TABLE><TR><TH>Receiver history feature</TH><TH>Antenna history feature</TH></TR><TR><TD>".wiki2html($txt_rec)."</TD><TD>".wiki2html($txt_ant)."</TD></TR></TABLE></TD>";
-}
-
 
 
 # Row "infos"

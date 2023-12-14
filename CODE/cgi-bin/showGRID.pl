@@ -87,6 +87,7 @@ my $admOK    = 0;       # 1 if the user has admin rights in the grid
 my $GRIDType = "";      # grid type ("PROC" or "VIEW")
 my $GRIDName = "";      # name of the grid
 my %GRID;               # structure describing the grid
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
 
 my @GID = split(/[\.\/]/, trim(checkParam($cgi->param('grid'),
 			qr{^(VIEW|PROC)(\.|/)|[a-zA-Z0-9]+$}, "grid") // ''));
@@ -233,6 +234,7 @@ $ilinks .= " | <A href=\"#EVENTS\">$__{'Events'}</A>";
 $ilinks .= " | <A href=\"#REF\">$__{'References'}</A>";
 $ilinks .= " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle\" title=\"Refresh\" \
                onclick=\"document.location.reload(false)\">";
+$ilinks .= " | <A href=\"/cgi-bin/showTHEIA.pl\">$__{'Theia board'}</A>";
 $ilinks .= " ]";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks</P>";
 print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
@@ -352,6 +354,11 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 					$htmlcontents .= "<TR><TD align=\"right\">".($g eq ""?"Overview":"$g")."</TD>$outg</TR>\n";
 				}
 			}
+			if (isok($theiaAuth)) {
+				$htmlcontents .= "<TR><TD>$__{'Send to Theia'}\n";
+				$htmlcontents .= join('', map { checkingTS($_,$GRID{THEIA_SELECTED_TS}) } @procTS);
+				$htmlcontents .= "</TD></TR>";
+			}
 			$htmlcontents .= "</TABLE></TD>\n";
 		}
 		$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Param.'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
@@ -445,12 +452,23 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		#$htmlcontents .= "<TABLE width=\"100%\" style=\"margin-left: 5px\">";
 		$htmlcontents .= "<TABLE width=\"100%\">";
 		$htmlcontents .= "<TR>";
-			$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
-				."<TH rowspan=2>$__{'Alias'}</TH>"
-				."<TH rowspan=2>$__{'Name'}</TH>"
-				."<TH colspan=3>$__{'Coordinates'}</TH>"
-				."<TH colspan=2>$__{'Lifetime and Validity'}"
-				."<TH rowspan=2>$__{'Type'}</TH>";
+			if (isok($theiaAuth)) {
+				$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
+					."<TH rowspan=2>$__{'Alias'}</TH>"
+					."<TH rowspan=2>$__{'Send to Theia'}</TH>"
+					."<TH rowspan=2>$__{'Name'}</TH>"
+					."<TH colspan=3>$__{'Coordinates'}</TH>"
+					."<TH colspan=2>$__{'Lifetime and Validity'}"
+					."<TH rowspan=2>$__{'Type'}</TH>";
+			}
+			else {
+				$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
+					."<TH rowspan=2>$__{'Alias'}</TH>"
+					."<TH rowspan=2>$__{'Name'}</TH>"
+					."<TH colspan=3>$__{'Coordinates'}</TH>"
+					."<TH colspan=2>$__{'Lifetime and Validity'}"
+					."<TH rowspan=2>$__{'Type'}</TH>";
+			}
 			if ($CLIENT ne 'guest') {
 				$htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
 				$htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>" if ($usrProject eq "on");
@@ -523,8 +541,12 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				$htmlcontents .= ($editOK ? "<TH><A href=\"/cgi-bin/formNODE.pl?node=$grid.$NODEName\"><IMG title=\"Edit node $NODEName\" src=\"/icons/modif.png\"></TH>":"");
 				# Node's code and name
 				my $lienNode="/cgi-bin/$NODES{CGI_SHOW}?node=$grid.$NODEName";
-				$htmlcontents .= "<TD align=center><B>$NODE{ALIAS}</B></TD><TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
-
+				$htmlcontents .= "<TD align=center><B>$NODE{ALIAS}</B></TD>";
+				if (isok($theiaAuth)) {
+					$htmlcontents .= checkingNODELIST($NODE{ALIAS},$GRID{THEIA_SELECTED_NODELIST});	# Node's checkbox to know if we want to send the NODE metadata to Theia
+				}
+				$htmlcontents .= "<TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
+				
 				# Node's localization
 				if ($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0) {
 					$htmlcontents .= "<TD colspan=3> </TD>";
@@ -794,17 +816,33 @@ print " readers = <B>".join(", ", @{$authUsers{1}})."</B></P>\n";
 # ---- We're done !
 print "</BODY>\n</HTML>\n";
 
+sub checkingTS {
+	if ( $_[0] eq $_[1] ) {
+		return "<TD><input type=\"checkbox\" checked=true disabled=\"disabled\" id=\"check_$_[0]\[\]\"/></TD>";
+	} else {
+		return "<TD><input type=\"checkbox\" disabled=\"disabled\" id=\"check_$_[0]\[\]\"/></TD>";
+	}
+}
+
+sub checkingNODELIST {
+	if ( $_[1] =~ /$_[0]/ ) {
+		return "<TD align=center><input type=\"checkbox\" checked=true disabled=\"disabled\" id=\"check_$NODE{ALIAS}\[\]\"/></TD>";
+	} else {
+		return "<TD align=center><input type=\"checkbox\" disabled=\"disabled\" id=\"check_$NODE{ALIAS}\[\]\"/></TD>";
+	}
+}
+
 __END__
 
 =pod
 
 =head1 AUTHOR(S)
 
-Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
+Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

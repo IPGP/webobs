@@ -12,10 +12,10 @@ http://..../sefran3.pl?... see query string parameters below ...
 
 Display SEFRAN3 data and "Main Courante" form editor. This unique script can generate/manage three
 types of HTML pages:
-
-	- Main (default, initial) page, a catalog of available 'hour' images, as thumbnails
-	- 'hour' image page, typically selected from p1
-	- Analysis/Event page (MC event input or update) page, typically selected from p2 or p1
+	- p0: low resolution front page (default), a catalog of available hourly images as thumbnails
+	- p1: normal resolution hour image page, typically selected from p0
+	- p2: high resolution analysis/Event form page (MC event input or update), typically
+	      selected from p1
 
 =head1 Query string parameters
 
@@ -28,10 +28,15 @@ types of HTML pages:
   no extension (.conf automatically used).
   Defaults to $SEFRAN3{MC3_NAME} if it exists or $WEBOBS{MC3_DEFAULT_NAME}
 
- id=
-  MC event-id, to open an Analysis page for this existing MC event
+ date=
+  empty: display front page p0 with hourly thumbnails
+  yyyymmddHH: open hour image page p1 (normal speed)
+  yyyymmddHHMM: MC form (high speed) p2
 
- header=, status= limit=, ref=, yref=, mref=, dref=, date=, high=
+ id=
+  MC event-id, to open the form page p2 for this existing MC event
+
+ header=, status= limit=, ref=, yref=, mref=, dref=, high=
 
  hideloc=
   hide locations of events in hourly sefran view.
@@ -44,6 +49,7 @@ types of HTML pages:
 use strict;
 use warnings;
 use Time::Local;
+use DateTime;
 use File::Basename;
 use List::Util qw(first);
 use Image::Info qw(image_info dim);
@@ -75,6 +81,7 @@ my $mc3    = $cgi->url_param('mc');
 my $id     = $cgi->url_param('id');
 my $header = $cgi->url_param('header');
 my $status = $cgi->url_param('status');
+my $evtloc = $cgi->url_param('evtloc');
 my $trash  = $cgi->url_param('trash');
 my $ref    = $cgi->url_param('ref');
 my $yref   = $cgi->url_param('yref');
@@ -86,6 +93,7 @@ my $date   = $cgi->url_param('date');
 my $high   = $cgi->url_param('high');
 my $sx     = $cgi->url_param('sx') // 0;
 my $replay = $cgi->url_param('replay');
+my $hpx    = $cgi->url_param('hpx');
 my $limit  = $cgi->url_param('limit');
 # $hideloc is read below
 
@@ -208,6 +216,7 @@ my ($Yr,$mr,$dr,$Hr,$Mr,$Sr) = split('/',strftime('%Y/%m/%d/%H/%M/%S',gmtime(tim
 my ($Yy,$my,$dy,$Hy,$My,$Sy) = split('/',strftime('%Y/%m/%d/%H/%M/%S',gmtime(time - 86400)));
 my $today = "$Ya-$ma-$da";
 my $yesterday = "$Yy-$my-$dy";
+my $href = 23;
 
 # ----
 my $titrePage = $SEFRAN3{NAME} ||= $SEFRAN3{TITRE};
@@ -220,6 +229,7 @@ if (!$ref) {
 	$yref = $Ya;
 	$mref = $ma;
 	$dref = $da;
+	$href = $Ha;
 } else {
 	# permits 29-31 days for all months...
 	my $day0 = $dref - 1;
@@ -227,20 +237,6 @@ if (!$ref) {
 	# if the reference date is specified (not real-time), forces 24 hours minimum display
 	$limit = 24 if ($limit < 24);
 }
-# builds the list of dates and loads associated MC events over the period (+ 1 day)
-my @dates;
-my @mclist;
-for (0 .. $SEFRAN3{DISPLAY_DAYS}) {
-	my $ymd = strftime('%Y-%m-%d',gmtime(timegm(0,0,0,$dref,$mref-1,$yref-1900) - $_*86400));
-	push(@dates,$ymd) if ($_ < $SEFRAN3{DISPLAY_DAYS});
-	my $f = "$MC3{ROOT}/".substr($ymd,0,4)."/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}".substr($ymd,0,4).substr($ymd,5,2).".txt";
-	if (-f $f) {
-		my @mcday = split(/\n/,qx(awk -F'|' '\$2=="$ymd" {printf "\%s\\n",\$0}' $f));
-		push(@mclist,@mcday);
-	}
-}
-my @listeHeures = reverse('00'..'23');
-
 
 # ---- some display setups
 #
@@ -252,7 +248,7 @@ if (($high || $dep) && $SEFRAN3{VALUE_SPEED_HIGH} > 0) {
 	$speed = $SEFRAN3{VALUE_SPEED_HIGH};
 }
 my $largeur_image = $speed*$SEFRAN3{VALUE_PPI};
-my $hauteur_image = $SEFRAN3{HEIGHT_INCH}*$SEFRAN3{VALUE_PPI}+1;
+my $hauteur_image = ($hpx ne "" ? $hpx:$SEFRAN3{HEIGHT_INCH}*$SEFRAN3{VALUE_PPI}) + 1;
 my $hauteur_label_haut = $SEFRAN3{LABEL_TOP_HEIGHT};
 my $hauteur_label_bas = $SEFRAN3{LABEL_BOTTOM_HEIGHT};
 my $largeur_fleche = 50;
@@ -419,9 +415,32 @@ html
 # -----------------------------------------------------------------------------
 if (!$date) {
 
-	# gets the $SEFRAN3{DISPLAY_LAST_MC} last MC events: from the 2 last monthly files, extracts the Nth last event non 'AUTO' and returns 'yyyy-mm-dd|HH'
-	#my $last_mc = qx(y=\$(find $MC3{ROOT} -maxdepth 1 -name "????" | sort | tail -n1);find \$y/$MC3{PATH_FILES} -maxdepth 1 -name '*.txt' |sort -r|head -n 2|xargs grep -vhE '(^-|\\|AUTO\\|)'|sed -nr "$SEFRAN3{DISPLAY_LAST_MC}s/^[0-9]+\\|([0-9]{4}-[0-9]{2}-[0-9]{2}\\|[0-9]{2}):.*/\\1/p" | xargs echo -n);
-	my $last_mc = qx(y=\$(find $MC3{ROOT} -maxdepth 1 -name "????" | sort | tail -n1);find \$y/$MC3{PATH_FILES} -maxdepth 1 -name '*.txt' |sort -r|head -n 2|xargs grep -vhE '(^-|\\|AUTO\\|)'|sed -nE "$SEFRAN3{DISPLAY_LAST_MC}s/^[0-9]+\\|([0-9]{4}-[0-9]{2}-[0-9]{2}\\|[0-9]{2}):.*/\\1/p" | xargs echo -n);
+	my $last_mc;
+	my $dt_lastmc;
+	my $limit_lastmc = $SEFRAN3{TIME_INTERVALS_DEFAULT_VALUE};
+	if ($limit == 0) {
+		# gets the N=$SEFRAN3{DISPLAY_LAST_MC} last MC event: from the 2 last monthly files, extracts the Nth last event non 'AUTO' and returns 'yyyy-mm-dd|HH'
+		$last_mc = qx(find $MC3{ROOT} -name "$MC3{FILE_PREFIX}*.txt" | sort | tail -n2 | xargs sort -t '|' -k2,3 | tail -n$SEFRAN3{DISPLAY_LAST_MC} | head -n1 |sed -nE "s/^[0-9]+\\|([0-9]{4}-[0-9]{2}-[0-9]{2}\\|[0-9]{2}):.*/\\1/p" | xargs echo -n);
+		my $dtn = timegm(gmtime);
+		$dt_lastmc = timegm(0,0,substr($last_mc,11,2),substr($last_mc,8,2),substr($last_mc,5,2)-1,substr($last_mc,0,4));
+		$limit_lastmc = int(($dtn - $dt_lastmc)/3600);
+		$limit_lastmc = $SEFRAN3{DISPLAY_DAYS}*24 if ($limit_lastmc/24 > $SEFRAN3{DISPLAY_DAYS});
+	}
+	# builds the list of dates and loads associated MC events over the period (+ 1 day)
+	my @dates;
+	my @mclist;
+	for (0 .. ($limit>0?$limit:$limit_lastmc)) {
+		my $ymdh = strftime('%Y-%m-%d|%H',gmtime(timegm(0,0,$href,$dref,$mref-1,$yref-1900) - $_*3600));
+		my $ymd = substr($ymdh,0,10);
+		push(@dates,$ymd) if (!grep(/^$ymd$/,@dates) && $_ < 24*$SEFRAN3{DISPLAY_DAYS});
+		my $f = "$MC3{ROOT}/".substr($ymd,0,4)."/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}".substr($ymd,0,4).substr($ymd,5,2).".txt";
+		if (-f $f) {
+			my @mchour = split(/\n/,qx(grep "|$ymdh:" $f));
+			push(@mclist,@mchour);
+		}
+	}
+	my @listeHeures = reverse('00'..'23');
+
 	my $dt = 0;
 	my $last_mn;
 	my $lmn;
@@ -480,6 +499,7 @@ if (!$date) {
 		print "</SPAN>";
 		print " <INPUT type=checkbox name=\"header\" value=\"1\"".($header ? " checked":"")." onClick=\"submit()\"/>".$__{'Header'};
 		print " <INPUT type=checkbox name=\"status\" value=\"1\"".($status ? " checked":"")." onClick=\"submit()\"/>".$__{'Status'};
+		print " <INPUT type=checkbox name=\"evtloc\" value=\"1\"".($evtloc ? " checked":"")." onClick=\"submit()\"/>".$__{'Event Loc'};
 		print " <INPUT type=checkbox name=\"trash\" value=\"1\"".($trash ? " checked":"")." onClick=\"submit()\"/>".$__{'Trash'};
 		print "</FORM>";
 	print "</TH></TR>";
@@ -503,8 +523,7 @@ if (!$date) {
 		for (@listeHeures) {
 			my $hh = $_;
 			if (($today ne $dd)||($Ha ge $hh)) {
-				if (($limit != 0 && ++$nb_heures <= $limit)
-					|| ($limit == 0 && ($dd."|".$hh ge $last_mc || $nb_heures++ < $SEFRAN3{DISPLAY_LAST_MC_HOURS}))) {
+				if (($limit != 0 && ++$nb_heures <= $limit)	|| ($limit == 0 && ($nb_heures++ <= $limit_lastmc))) {
 					$nb_heures_jour++;
 					$nb_vign++;
 					my $f = "$da/$ddd/$SEFRAN3{PATH_IMAGES_HOUR}/$ddd$hh";
@@ -531,7 +550,7 @@ if (!$date) {
 
 					# plots MC events over sefran
 					for (reverse @mclist) {
-						my %MC = mcinfo($_);
+						my %MC = mcinfo($_,$evtloc);
 						if (($MC{id} > 0 || ($userLevel >= 2 && $trash == 1)) && $userLevel >= 1) {
 							# event start and end expressed in days
 							my $d0 = $MC{year}*10000 + $MC{month}*100 + $MC{day} + $MC{hour}/24 + $MC{minute}/1440 + $MC{second}/86400;
@@ -698,6 +717,8 @@ if (!$date) {
 		"<TD><B>".int($SEFRAN3{VALUE_SPEED_HIGH}*$SEFRAN3{VALUE_PPI})."</B></TD>",
 		"<TD><B>".int(100*60/($SEFRAN3{VALUE_SPEED_HIGH}*$SEFRAN3{VALUE_PPI}))."</B></TD></TR>\n",
 		"</TABLE>\n";
+	print "<P>MC events: <B>".@mclist."</B></P>\n";
+	print "<P>Last MC: <B>$last_mc ($limit_lastmc h)</B></P>\n" if ($limit==0);
 
 	my @notes = readFile("$SEFRAN3{NOTES}");
 	print WebObs::Wiki::wiki2html(join("",@notes));
@@ -711,11 +732,11 @@ if (!$date) {
 if ($date) {
 	my ($Yc,$mc,$dc,$Hc,$Mc) = unpack("a4 a2 a2 a2 a2",$date);
 
-	# read in existing events from MC
-	my @mc_liste;
+	# read existing events from MC for current hour
+	my @mc_hlist;
 	my $f = "$MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$Yc$mc.txt";
 	if (-e $f) {
-		@mc_liste = split(/\n/,qx(awk -F'|' '\$2 == "$Yc-$mc-$dc" && substr(\$3,1,2) == "$Hc" {printf "\%s\\n",\$0}' $f));
+		@mc_hlist = split(/\n/,qx(grep "|$Yc-$mc-$dc|$Hc:" $f));
 	}
 
 	print "<DIV id=\"sefran\">";
@@ -729,8 +750,8 @@ if ($date) {
 
 	if ($dep) {
 		if ($id) { 	# read event ID from MC + set number of minute-files containing signal + 1
-			my @mc_evt = qx(awk -F'|' '\$1 == $id {printf "\%s",\$0}' $MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$fileMC);
-			%MC = mcinfo($mc_evt[0]);
+			my @mc_evt = qx(grep "^$id|" $MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$fileMC);
+			%MC = mcinfo($mc_evt[0],1);
 			$date_nbm = 1 + int(1 + ($MC{duration}*$duration_s{$MC{unit}} + $MC{second})/60);
 		} else {
 			$date_nbm = $MC3{WINDOW_LENGTH_MINUTE};
@@ -790,9 +811,9 @@ if ($date) {
 	my $reload = 0;
 
 	if ($voies_classiques && !$dep) {
-		print "<img class=\"voies-permanentes\" src=\"$voies\">\n";
+		print "<img class=\"voies-permanentes\" src=\"$voies\" height=\"$hauteur_image\">\n";
 	} else {
-		print "<img class=\"voies-dynamiques\" src=\"$voies\">\n";
+		print "<img class=\"voies-dynamiques\" src=\"$voies\" height=\"$hauteur_image\">\n";
 	}
 	print "<TABLE class=\"sefran\"><tr>\n";
 	print "<td class=\"signals\"><div style=\"white-space: nowrap;\">";
@@ -841,8 +862,8 @@ if ($date) {
 	}
 	print "</td>";
 
-	for (reverse @mc_liste) {
-		my %MC = mcinfo($_);
+	for (reverse @mc_hlist) {
+		my %MC = mcinfo($_,1);
 		#DL-was: if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1 && $MC{id} != $id && ($MC{minute} - $Mc) <= $date_nbm) {
 		if (($MC{id} > 0 || ($userLevel == 4 && $trash == 1)) && $userLevel >= 1 && ($MC{minute} - $Mc) <= $date_nbm) {
 			my $deb_evt;
@@ -1095,7 +1116,7 @@ sub mcinfo
 		."<I>Comment:</I> <B>$comment</B>"
 		."</SPAN>";
 
-	if (length($MC{qml}) > 2) {
+	if ($_[1] ne "" && length($MC{qml}) > 2) {
 		$MC{info} .= "<HR><I>SC3 ID: $MC{qml}</I>";
 		if (not $hideloc) {
 			my %QML;

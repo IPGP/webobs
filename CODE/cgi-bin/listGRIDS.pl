@@ -223,6 +223,7 @@ print "<div id=\"noscrolldiv\">";
 		print "<a name=\"popupY\"></a>";
 		print WebObs::Search::searchpopup();
 		print geditpopup();
+		print feditpopup();
 
 		# ---- The GRIDS table
 		#
@@ -232,7 +233,7 @@ print "<div id=\"noscrolldiv\">";
 		if ($subsetDomain eq "") {
 			print "<TH>";
 			if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"*")) {
-				print "&nbsp;<a href='/cgi-bin/gridsMgr.pl' title=\"$__{'Edit/Create a Domain'}\"><img class='ic' src='/icons/modif.png'></a>&nbsp;&nbsp;&nbsp;";
+				print "&nbsp;<a href='/cgi-bin/gridsMgr.pl' title=\"$__{'Edit/Create a Domain/Producer'}\"><img class='ic' src='/icons/modif.png'></a>&nbsp;&nbsp;&nbsp;";
 			}
 			print "Domain</TH>";
 		}
@@ -246,7 +247,10 @@ print "<div id=\"noscrolldiv\">";
 		print "<TH>Type</TH>"  if ($showType);
 		print "<TH>Owner</TH>" if ($showOwnr);
 		print "<TH>Graphs</TH>";
-		print "<TH>Raw Data</TH>" if ($wantProcs || $wantSefrans);
+		if (WebObs::Users::clientHasAdm(type=>"authviews",name=>"*") && WebObs::Users::clientHasAdm(type=>"authprocs",name=>"*") ) {
+			print "<TH>&nbsp;<a href='#popupY' title=\"$__{'Edit/Create a Form'}\" onclick='feditopenPopup(); return false;'><img class='ic' src='/icons/modif.png'></a>" if ($wantProcs || $wantSefrans);
+		}
+		print "&nbsp;&nbsp;&nbsp;Raw Data</TH>" if ($wantProcs || $wantSefrans);
 		print "</TR>\n";
 		for my $d (@$domains) {
 			my ($dc, $dn) = @$d;
@@ -472,6 +476,51 @@ sub geditpopup {
 	$SP .= "<p style=\"margin: 0px; text-align: center\">";
 	$SP .= "<input type=\"button\" name=\"sendbutton\" value=\"$__{'Edit'}\" onclick=\"geditsendPopup(); return false;\" style=\"font-weight:bold\" />";
 	$SP .= "<input type=\"button\" value=\"cancel\" onclick=\"geditclosePopup(); return false\" />";
+	$SP .= "</p>";
+	$SP .= "</form>";
+	return $SP;
+}
+
+# ---- helper edit form popup
+sub feditpopup {
+	# prepares a list of form's templates
+=pod
+	my @tplates;
+	my @tmp = glob("$WEBOBS{ROOT_CODE}/tplates/{VIEW,PROC,SEFRAN}.*");
+	foreach my $t (@tmp) {
+        if (! -l $t) {
+		    my @conf = readCfg($t);
+            next if (@conf == 1);  # readCfg returns [0] if the file is empty
+            my %G = @conf;
+		    $t =~ s/$WEBOBS{ROOT_CODE}\/tplates\///;
+		    my ($gt,$gn) = split(/\./,$t);
+		    push(@tplates,"$gt|$gn|".u2l($G{NAME}));
+        }
+	}
+=cut
+	my $SP = "";
+	$SP .= "<div id=\"feditovly\" style=\"display:none\"></div>";
+	$SP .= "<form id=\"feditoverlay_form\" style=\"display:none\">";
+	$SP .= "<p><b><i>Create/edit a FORM</i></b></p>";
+=pod
+	$SP .= "<label for=\"geditN\">$__{'Grid Type'}: <span class=\"small\">select a template</span></label>";
+	$SP .= "  <select size=\"1\" id=\"geditT\" name=\"geditT\">\n";
+	foreach (@tplates) {
+		my ($gt,$gn,$gl) = split(/\|/,$_);
+		my $sel = "";
+		$sel = "selected" if (($subsetType eq 'all' && $gt eq 'VIEW') || ($gt eq uc($subsetType) && $gn eq 'DEFAULT'));
+		$SP .= "  <option value=\"$gt.$gn\" $sel>$gt: $gl</option>\n";
+	}
+	$SP .= "  </select>\n";
+	$SP .= "<br style=\"clear: left\"><br>";
+=cut
+	$SP .= "<label for=\"feditN\">$__{'Form Name'}: <span class=\"small\">short name (uppercase)</span></label>";
+	$SP .= "  <input size=\"40\" id=\"feditN\" name=\"feditN\" value=\"\">\n";
+	$SP .= "<br style=\"clear: left\"><br>";
+
+	$SP .= "<p style=\"margin: 0px; text-align: center\">";
+	$SP .= "<input type=\"button\" name=\"sendbutton\" value=\"$__{'Create'}\" onclick=\"feditsendPopup(); return false;\" style=\"font-weight:bold\" />";
+	$SP .= "<input type=\"button\" value=\"cancel\" onclick=\"feditclosePopup(); return false;\" />";
 	$SP .= "</p>";
 	$SP .= "</form>";
 	return $SP;

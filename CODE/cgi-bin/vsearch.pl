@@ -521,7 +521,7 @@ sub searchEvents {
 		} else {
 			my $f = "1";
 			$f = "2" if ($in eq "remote");
-			$cmd = $base."|xargs awk -F '[|/]' 'FNR>1 {nextfile} \$$f ~ /".join(/\|/,@UIDlist)."/ { print FILENAME ; nextfile }'";
+			$cmd = $base."|xargs awk -F '[|/]' 'FNR>1 {nextfile} \$$f ~ /".join('|',@UIDlist)."/ { print FILENAME ; nextfile }'";
 		}
 	}
 	# title will look for $str in event's title (2nd field in header line)
