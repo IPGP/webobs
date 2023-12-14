@@ -1632,5 +1632,5 @@ msgstr "Géolocalisation"
 msgid "beware_approximate_position"
 msgstr "Utilise l'API de géolocalisation HTML pour localiser l'utilisateur. Attention : la position peut être approximée de quelques mètres à plusieurs milliers de mètres, en fonction de votre localisation."
 
-msgid "To add a shapefile (.zip only) layer, click here"
+msgid "help_creationstation_shapefile"
 msgstr "Pour ajouter une couche de fichier de forme (.zip uniquement), cliquez ici"
