@@ -192,10 +192,10 @@ print <<"EOHEADER";
 <link rel="stylesheet" type="text/css" href="/css/transit.css">
 <link rel="stylesheet" type="text/css" href="/css/scheduler.css">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
-<script language="JavaScript" src="/js/flot/jquery.flot.js" type="text/javascript"></script>
+<script language="JavaScript" src="/js/flot/jquery.flot.min.js" type="text/javascript"></script>
 <script language="JavaScript" src="/js/flot/jquery.flot.canvas.min.js" type="text/javascript"></script>
 <script language="JavaScript" src="/js/flot/jquery.flot.time.min.js" type="text/javascript"></script>
-<script language="JavaScript" src="/js/flot/jquery.flot.selection.js"></script>
+<script language="JavaScript" src="/js/flot/jquery.flot.selection.min.js"></script>
 <script language="JavaScript" src="/js/scheduler.js" type="text/javascript"></script>
 <script language="JavaScript" src="/js/htmlFormsUtils.js" type="text/javascript"></script>
 <script language="JavaScript" src="/js/tables.js" type="text/javascript"></script>

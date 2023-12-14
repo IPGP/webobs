@@ -187,6 +187,10 @@ THEME|${ROOT_CONF}/EnumInspireTheme.conf
 # ---------------------------------------------
 TOPIC|${ROOT_CONF}/EnumTopicCategories.conf
 
+# ---- THEIA user flag ------------------------
+# ---------------------------------------------
+THEIA_USER_FLAG|0
+
 # ---- Internalization ------------------------
 # ---------------------------------------------
 ROOT_I18N|${ROOT_SITE}/CODE/i18n
