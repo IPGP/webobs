@@ -24,6 +24,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 1. Fix a possible issue with proc requests when default cleanreq job is activated
 1. Fix a possible issue with events node plot in procs (when sensor outcome is checked)
 1. Fix an issue with events plot in proc graphs (time zone is now correctly taken into account)
+1. Fix an issue with markitup shortcuts in file edition (nedit.pl, gedit.pl, vedit.pl)
 
 ## v2.6.3 (September 2023)
 ### New features
