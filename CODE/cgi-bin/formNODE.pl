@@ -676,7 +676,7 @@ function handleFiles() {
 	/**
 	 * Read .zip shpfiles and calculate the bounding box coordinates of the spatial coverage of the shapefile
 	 */
-	var fichierSelectionne = document.getElementById('input').files[0];
+	var fichierSelectionne = document.getElementById('shpfile').files[0];
 	form.filename.value = fichierSelectionne.name;
 
 	var fr = new FileReader();
@@ -1159,7 +1159,8 @@ print "<TR>";
 			print "<INPUT type=\"hidden\" name=\"filename\" value=\"\"\n>";
 			print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
 			print "<INPUT type=\"hidden\" name=\"geojson\" value=\"\"\n>";
-			print "<strong>$__{'To add a shapefile (.zip only) layer, click here'}: </strong><input type='file' id='input' onchange='handleFiles()' value=\"\"><br>";
+			print "<label for=\"shpfile\">$__{'Shapefile'} (.zip): </label> "
+				."<INPUT type='file' id='shpfile' onchange='handleFiles()' value=\"\"  onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_shapefile}')\"><BR>";
 
 		print "</TD>";
 		print <<FIN;
@@ -1205,7 +1206,7 @@ FIN
 	print "</FIELDSET>\n";
 
 	# --- GNSS-specific information
-#=pod
+=pod
 	my $m3g_url_edit = $WEBOBS{'M3G_URL'}."/".$usrGnss9char;
 	print "<FIELDSET><legend>$__{'GNSS-specific information'}</LEGEND>";
 	print "<TABLE><TR>";
@@ -1233,7 +1234,7 @@ FIN
 		print "</TD>";
 	print "</TR></TABLE>";
 	print "</FIELDSET>";
-#=cut
+=cut
 	# --- Transmission
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
 	print "<TABLE><TR>";

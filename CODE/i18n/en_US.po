@@ -285,4 +285,6 @@ msgstr "Describes the genealogy of the dataset, e.g., the history of the dataset
 msgid "beware_approximate_position"
 msgstr "Use the HTML geolocation API to locate the user. Beware : the location could be approximated from several meters to several thousand meters, depending on your location."
 
+msgid "help_creationstation_shapefile"
+msgstr "To add a shapefile (.zip only) layer, click here"
 
