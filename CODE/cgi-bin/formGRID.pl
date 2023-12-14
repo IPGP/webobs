@@ -248,7 +248,7 @@ print <<_EOD_;
 	}
 }
 function verif_formulaire()
-{
+{	
 	for (var i=0; i<document.formulaire.SELs.length; i++) {
 		document.formulaire.SELs[i].selected = true;
 	}

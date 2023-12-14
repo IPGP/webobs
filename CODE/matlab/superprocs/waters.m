@@ -24,7 +24,7 @@ function DOUT = waters(varargin)
 %
 %	Authors: F. Beauducel + G. Hammouya + J.C. Komorowski + C. Dessert + O. Crispi, OVSG-IPGP
 %	Created: 2001-12-21, in Guadeloupe (French West Indies)
-%	Updated: 2023-08-14
+%	Updated: 2023-12-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -231,7 +231,8 @@ for n = 1:length(N)
 
 		tlabel(tlim,P.TZ)
 
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		OPT.EVENTS = N(n).EVENTS;
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
 	end
 
 end

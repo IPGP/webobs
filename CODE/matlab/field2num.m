@@ -30,7 +30,7 @@ function y = field2num(x,f,y0,varargin)
 %
 %	 Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2015-09-07 at Pos Dukono, Halmahera Utara (Indonesia)
-%	Updated: 2022-06-12
+%	Updated: 2023-12-13
 
 D = struct('s',1/86400,'n',1/1440,'h',1/24,'d',1,'w',7,'m',30,'y',365.25);
 
@@ -104,4 +104,8 @@ else
 	else
 		y = [];
 	end
+end
+
+if isempty(y) && nargin > 2
+	y = y0;
 end

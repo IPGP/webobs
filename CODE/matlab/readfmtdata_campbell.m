@@ -30,7 +30,7 @@ function D = readfmtdata_campbell(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2023-09-14
+%	Updated: 2023-11-07
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -74,9 +74,11 @@ case {'toa5','t0a5'}
 % -----------------------------------------------------------------------------
 case {'tob1'}
 	for y = str2double(years(1)):str2double(years(end))
-		G = dir(sprintf('%s',pdat,y,N.FID));
+		fy = regexprep(pdat,'\$y',sprintf('%d',y));
+		G = dir(fy);
+		G(cat(1,G.bytes)==0) = []; % removes empty files
 		for i = 1:length(G)
-			f = sprintf('%s/%d/%s',pdat,y,G(i).name);
+			f = sprintf('%s/%s',regexprep(fy,'[^/]*$',''),G(i).name);
 			if debug
 				fprintf('\n ---> reading file "%s"...',f);
 			end
