@@ -16,8 +16,8 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
-%	Created: 2002-12-03
-%	Updated: 2023-09-20
+%	Created: 2002-12-03 in Gourbeyre, Guadeloupe
+%	Updated: 2023-12-13
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -57,9 +57,9 @@ end
 
 % events in background
 if nargin > 3 && isfield(OPT,'EVENTS')
-	I = plotevent(G.EVENTS_FILE,OPT.EVENTS);
+	I = plotevent(G.TZ,G.EVENTS_FILE,OPT.EVENTS);
 else
-	I = plotevent(G.EVENTS_FILE);
+	I = plotevent(G.TZ,G.EVENTS_FILE);
 end
 
 h0 = [];

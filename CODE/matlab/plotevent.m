@@ -1,11 +1,15 @@
-function varargout=plotevent(evtfile,evt)
+function varargout=plotevent(tz,evtfile,evt)
 %PLOTEVENT Display time referenced events/phases.
-%	PLOTEVENT(FILE) plots shaded colored areas in the background of all axes in the
-%	current figure, from the configuration FILE in the format:
+%	PLOTEVENT(TZ,FILE) plots shaded colored areas in the background of all axes in the
+%	current figure, considering X-axis as UT date/time datenum format, from the
+%	configuration FILE in the format:
 %
 %	   Date1|Date2|LineWidth|RGB|Name|Comment
 %
-%	PLOTEVENT(FILE,EVENTS) plots additionnal events from structure EVENTS.
+%	where Date1 and Date2 are UT date & time strings in ISO format (yyyy-mm-dd HH:MM:SS)
+%	and TZ is time zone in hours from GMT. 
+%	
+%	PLOTEVENT(TZ,FILE,EVENTS) plots additionnal events from structure EVENTS.
 %
 %	FILE can be a list of coma separated files, e.g. 'events1.conf,events2.conf', in
 %	that case all files are loaded and plotted together.
@@ -13,13 +17,17 @@ function varargout=plotevent(evtfile,evt)
 %
 %   Authors: F. Beauducel + D. Lafon + B. Taisne, WEBOBS/IPGP
 %   Created : 2004-07-21 (from ploterup.m)
-%   Updated : 2022-11-08
+%   Updated : 2023-12-13
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
+if isnan(tz) || ~isnumeric(tz)
+	tz = 0;
+end
+
 E = [];
-if nargin > 0 & ~isempty(evtfile)
+if nargin > 1 & ~isempty(evtfile)
 	conf = split(evtfile,',');
 	for n = 1:length(conf)
 		% if filename is local (no directory), considers it in ROOT_CONF for backward compatibility
@@ -51,7 +59,7 @@ if nargin > 0 & ~isempty(evtfile)
 	end
 end
 
-if nargin > 1 && isstruct(evt)
+if nargin > 2 && isstruct(evt)
 	if numel(E) > 0
 		E = cat(2,evt,E);
 	else
@@ -69,6 +77,10 @@ ha = findobj(gcf,'Type','axes');
 
 imap = 1;
 for n = 1:numel(E)
+	% converts event time in the graph time zone
+	E(n).dt1 = E(n).dt1 + tz/24;
+	E(n).dt2 = E(n).dt2 + tz/24;
+
 	for i = 1:length(ha)
 		if ~isempty(get(ha(i),'UserData'))
 			break

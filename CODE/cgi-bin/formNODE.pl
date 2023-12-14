@@ -56,7 +56,7 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my $newnode   = 0;
 my $titre2 = "";
 my $QryParm   = $cgi->Vars;
-my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG}	// 0;
 
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
 if ( $GRIDType ne "" && $GRIDName ne "" ) {
@@ -140,7 +140,7 @@ my $m3g_check    = $NODE{M3G_AVAIABLE};
 my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
 # THEIA metadata
-my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}		  // $NODE{DESCRIPTION}; $usrDesc =~ s/\"//g;
+my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}; $usrDesc =~ s/\"//g; $usrDesc =~ s/\<br\>/\n/g;
 my $usrProducer;
 my @usrRole;
 my @usrFirstName;
@@ -295,14 +295,13 @@ $cgi->start_html("$__{'Node configuration form'}");
 
 print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css" crossorigin=""/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js" crossorigin=""></script>
+<link rel="stylesheet" href="/css/leaflet.css" crossorigin=""/>
+<script src="/js/leaflet.js" crossorigin=""></script>
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
 <script src="/js/shp.min.js" type="text/javascript"></script>
 <script src="/js/leaflet.shpfile.js" type="text/javascript"></script>
-<script src="https://cdn.jsdelivr.net/gh/seabre/simplify-geometry\@master/simplifygeometry-0.0.2.js" type="text/javascript"></script>
 <script src="/js/simplifygeometry-0.0.2.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 
@@ -819,7 +818,6 @@ function showHideTheia(checkbox){
 // creating and parametring the map for the geographic location choice
 
 var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
-var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>contributors';
 var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 		
 //Init Overlays
@@ -834,24 +832,6 @@ var basemaps = {
 			minZoom: 2,
 			maxZoom: 19,
 			id: "osm"
-		}
-	),
-	'Stamen-Terrain': L.tileLayer(
-		'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}',
-		{
-			attribution: stamenAttribution,
-			minZoom: 2,
-			maxZoom: 19,
-			id: "stamen.terrain"
-		}
-	),
-	'Stamen-Watercolor': L.tileLayer(
-		'https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}',
-		{
-			attribution: stamenAttribution,
-			minZoom: 2,
-			maxZoom: 19,
-			id: "stamen.watercolor"
 		}
 	),
 	'OpenTopoMap': L.tileLayer(
