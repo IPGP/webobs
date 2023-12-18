@@ -49,6 +49,7 @@ use DBI;
 use IO::Socket;
 use WebObs::Config;
 use WebObs::Grids;
+use WebObs::Utils;
 $|=1;
 
 set_message(\&webobs_cgi_msg);
@@ -105,13 +106,13 @@ $authtable = $WEBOBS{SQL_TABLE_PRODUCER} if ($QryParm->{'tbl'} eq "producer") ;
 # ---- managing the single quote in SQLite3 query
 # -----------------------------------------------------------------------------
 my $title     = $QryParm->{'title'};
-$title     =~ s/'/''/g;
+#$title     =~ s/'/''/g;
 my $desc      = $QryParm->{'desc'};
-$desc      =~ s/'/''/g;
+#$desc      =~ s/'/''/g;
 my $objective = $QryParm->{'objective'};
-$objective =~ s/'/''/g;
+#$objective =~ s/'/''/g;
 my $meas_var  = $QryParm->{'measVar'};
-$meas_var  =~ s/'/''/g;
+#$meas_var  =~ s/'/''/g;
 
 my @contacts   = split(',', $QryParm->{'contacts'});
 my @roles;
