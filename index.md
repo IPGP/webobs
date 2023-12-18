@@ -12,9 +12,9 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.6.3.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.6.3/WebObs-2.6.3.tar.gz) (107 Mb) updated September 28, 2023
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.6.3/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.6.3/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.6.4.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.6.4/WebObs-2.6.4.tar.gz) (109 Mb) updated December 18, 2023
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.6.4/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.6.4/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
@@ -56,7 +56,7 @@ sudo ./install -mode silent
 A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:
 
 ```sh
-sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode mutt xvfb \
+sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq mutt xvfb \
    curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
    libtext-multimarkdown-perl libswitch-perl libintl-perl libncurses5 \
@@ -141,6 +141,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - job selection in scheduler runs (display);
 - improved Campbell data format (non-standard directory);
 - improved performance of Sefran3 with large amount of events;
+- new moving average graphs in seismc MC;
 - some fixes and other minor improvements.
 
 ### What's new in the 2.5?
