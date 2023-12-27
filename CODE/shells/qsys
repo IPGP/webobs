@@ -22,7 +22,7 @@ echo "Please wait...gathering information..."
 # ---- export WEBOBS.rc variables
 unset $(/usr/bin/env | egrep '^WO__' | /usr/bin/cut -d= -f1)
 oIFS=${IFS}; IFS=$'\n'
-LEXP=($(perl ${WODIR}/CODE/cgi-bin/exposerc.pl '=' 'WO__'))
+LEXP=($(perl ${WODIR}/CODE/perl/exposerc.pl '=' 'WO__'))
 for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
 IFS=${oIFS}
 
