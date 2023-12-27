@@ -120,6 +120,7 @@ URN_CGI|/cgi-bin
 URN_CSS|/css
 URN_HTML|/html
 URN_NODES|/nodes
+URN_DATA|/data
 URN_ICONS|/icons
 URN_JS|/js
 URN_SEFRAN|/sefran
