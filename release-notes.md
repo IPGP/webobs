@@ -8,6 +8,14 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
+## v2.7 (under development)
+
+### Fixed issues
+1. ``!!`` WebObs Perl modules have been moved from CODE/cgi-bin/WebObs to CODE/perl/lib. The system-wide installation **MUST** be executed when upgrading (answer Y to the appropriate question during setup) in order to make all CGI working.
+1. ``!!`` non-CGI Perl scripts have been moved from CODE/cgi-bin/ to new directory CODE/perl/. The scheduler and postboard **MUST** be restarted when upgrading. Deployments that use `fdsnws-event2mc3.pl` or `seiscomp2mc3.pl` through external script or crontab must update the path.
+1. fix an issue to display photos in grid events.
+
+
 ## v2.6.4 (December 2023)
 
 ### New features
