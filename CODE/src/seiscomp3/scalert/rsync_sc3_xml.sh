@@ -28,4 +28,4 @@ DESTINATION_LOCATION="/home/wo/sefran/sc3_events/"
 rsync -av  $EVENTS_QML_DIR/ $DESTINATION_HOST:$DESTINATION_LOCATION
 
 # Launch the MC3 update
-ssh $DESTINATION_HOST "/opt/webobs/CODE/cgi-bin/seiscomp2mc3.pl update"
+ssh $DESTINATION_HOST "/opt/webobs/CODE/perl/seiscomp2mc3.pl update"

@@ -40,7 +40,7 @@ case "$1" in
 			echo "Postboard already started, pid $savedpid"
 			exit 1
 		fi
-		cd /etc/webobs.d/../CODE/cgi-bin
+		cd /etc/webobs.d/../CODE/perl
 		if [ -n "${WO__POSTBOARD_ERROR_FILE}" ]; then
 			echo "--- Postboard started $(date +'%F %T')" >> $WO__POSTBOARD_ERROR_FILE
 			perl $DAEMON_SCRIPT $WO__POSTBOARD_CMD_OPTS 2>> $WO__POSTBOARD_ERROR_FILE &
