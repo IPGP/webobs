@@ -83,9 +83,7 @@ woperlmod_system_install () {
   # install webobs modules in the system
   local installsitelib="$1"
   mkdir -p $installsitelib
-  for m in "WebObs" $(cd $RELBASE/CODE/cgi-bin; echo *.pm); do
-    ln -vsf $DOCROOT/CODE/cgi-bin/$m $installsitelib/
-  done
+  ln -vsf $DOCROOT/CODE/perl/lib $installsitelib/WebObs
 }
 
 install_systemd_services() {
