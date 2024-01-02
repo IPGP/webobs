@@ -117,7 +117,7 @@ sub makeThumbnail
 		#DL-was:if ($ext ~~ @needsel) { $img .= '[0]' }
 		if (grep /\Q$ext/i , @needsel) { $img .= '[0]' }
 		if ( !-e $thumb ) {
-			qx(/usr/bin/convert "$path$img" -thumbnail $_[1] "$thumb"  2>/dev/null);
+			qx(/usr/bin/convert "$path$img" -thumbnail $_[1] -background white -alpha remove "$thumb" 2>/dev/null);
 			if ( $? == 0 ) {
 				$ret = $thumb;
 			}
