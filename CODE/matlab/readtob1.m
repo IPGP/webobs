@@ -14,7 +14,7 @@ function X = readtob1(filename)
 %
 %	Author: François Beauducel, IPGP / WEBOBS
 %	Created: 2018-06-13 in Jakarta, Indonesia
-%	Updated: 2023-11-07
+%	Updated: 2023-12-31
 
 if ~exist(filename,'file')
 	error('file %s not exists.',filename)
@@ -38,7 +38,9 @@ else
 end
 if nok
 	fclose(fid);
-	error('File %s is not a valid TOB1 format.\n',filename);
+	warning('File %s is not a valid TOB1 format.\n',filename);
+	X = struct('HEADER',[],'t',[],'d',[]);
+	return
 end
 
 X.HEADER.file_type     = hd{1}; % file type
