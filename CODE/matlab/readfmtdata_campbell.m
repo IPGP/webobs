@@ -30,7 +30,7 @@ function D = readfmtdata_campbell(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2023-11-07
+%	Updated: 2023-12-31
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -82,10 +82,10 @@ case {'tob1'}
 			if debug
 				fprintf('\n ---> reading file "%s"...',f);
 			end
-			X(i) = readtob1(f);
-			if exist('X','var')
-				t = cat(1,t,X(i).t);
-				d = cat(1,d,X(i).d(:,3:end));	% excludes 2 columns of time from the data matrix
+			X = readtob1(f);
+			if ~isempty(X.t)
+				t = cat(1,t,X.t);
+				d = cat(1,d,X.d(:,3:end));	% excludes 2 columns of time from the data matrix
 				fprintf('.');
 			end
 		end
