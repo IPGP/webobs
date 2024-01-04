@@ -60,7 +60,7 @@ sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq 
    curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
    libtext-multimarkdown-perl libswitch-perl libintl-perl libncurses5 \
-   wkhtmltopdf poppler-utils
+   wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl
 ```
 
 Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
