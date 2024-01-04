@@ -1061,7 +1061,7 @@ fi
 # Insert this 'installation' event in Gazette
 GAZETTENOW=$(date -u "+%F %T")
 GAZETTED=${GAZETTENOW:0:10}; GAZETTET=${GAZETTENOW:11:5}
-sqlite3 ${DOCROOT}/DATA/DB/Gazette.db "insert into Gazette values(null,'${GAZETTED}','${GAZETTET}','${GAZETTED}','${GAZETTET}','Misc','!','','','Setup ${NEWVERSION}','${GAZETTENOW}','!');"
+sqlite3 ${DOCROOT}/DATA/DB/Gazette.db "insert into Gazette values(null,'${GAZETTED}','${GAZETTET}','${GAZETTED}','${GAZETTET}','Misc','!','','','${SETUPTYPE} from ${PREVREL} to ${RELREL}','${GAZETTENOW}','!');"
 
 echo
 echo "---- calling webobs system status (qsys)"
