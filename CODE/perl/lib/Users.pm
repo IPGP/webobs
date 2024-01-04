@@ -89,7 +89,7 @@ use constant ADMAUTH  => 4;
 require Exporter;
 @ISA        = qw(Exporter);
 @EXPORT     = qw(%USERS %USERIDS $CLIENT READAUTH EDITAUTH ADMAUTH);
-@EXPORT_OK  = qw(refreshUsers allUsers clientHasRead clientHasEdit clientHasAdm clientIsValid listRNames userListGroup htpasswd_update htpasswd_verify htpasswd_display);
+@EXPORT_OK  = qw(userIsValid refreshUsers allUsers clientHasRead clientHasEdit clientHasAdm clientIsValid listRNames userListGroup htpasswd_update htpasswd_verify htpasswd_display);
 $VERSION    = "1.00";
 
 refreshUsers();

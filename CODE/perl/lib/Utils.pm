@@ -186,7 +186,7 @@ sub tri_date_avec_id ($$) {
 sub isok ($)
 {
     my $ok = shift;
-    return ($ok =~ /^(Y|YES|OK|ON|1)/i ? 1:0);
+    return ($ok =~ /^(Y|YES|OK|ON|1|TRUE)/i ? 1:0);
 }
 
 
