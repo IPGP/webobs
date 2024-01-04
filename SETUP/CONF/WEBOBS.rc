@@ -52,7 +52,7 @@ HTTP_PASSWORD_FILE|${ROOT_CONF}/htpasswd
 # Minium length for user password
 HTPASSWORD_MIN_LENGTH|8
 # Whether to allow users to change their own password
-ALLOW_HTPASSWORD_CHANGE|1
+ALLOW_HTPASSWORD_CHANGE|Y
 # Path to the htpasswd command
 PRGM_HTPASSWD|/usr/bin/htpasswd
 # Encryption format to use when creating/updating passwords:

@@ -698,6 +698,76 @@ msgstr "Demande de compte personnel"
 msgid "I do accept the terms of use"
 msgstr "J\\'accepte les conditions d\\'utilisation"
 
+# --- changepassword.pl
+msgid "Please fill in the form below to update your WebObs password."
+msgstr "Veuillez remplir le formulaire ci-dessous pour mettre à jour votre mot de passe WebObs."
+
+msgid "Note: your password must be at least %s characters long."
+msgstr "Note: votre mot de passe doit comporter au moins %s caractères."
+
+msgid "Change your WebObs password"
+msgstr "Modifier votre mot de passe WebObs"
+
+msgid "Update your password"
+msgstr "Mise à jour de votre mot de passe"
+
+msgid "Your login name"
+msgstr "Votre identifiant"
+
+msgid "Your current password"
+msgstr "Mot de passe actuel"
+
+msgid "Your new password"
+msgstr "Nouveau mot de passe"
+
+msgid "Your new password for verification"
+msgstr "Nouveau mot de passe (vérification)"
+
+msgid "Password change disabled"
+msgstr "Modification de mot de passe désactivée"
+
+msgid "Sorry, password change is disabled on this platform. Please contact your administrator."
+msgstr "Désolé, la modification de mot de passe a été désactivée sur cette plateforme. Veuillez contacter votre adminstrateur."
+
+msgid "Password change forbidden"
+msgstr "Modification de mot de passe non autorisée"
+
+msgid "Sorry, the special user 'guest' cannot change his password."
+msgstr "Désolé, l'utilisateur spécial 'invité' ne peut modifier son mot de passe."
+
+msgid "Sorry, your new password does not match the second entry."
+msgstr "Désolé, les deux nouveaux mots de passe sont différents."
+
+msgid "Please try again below."
+msgstr "Veuillez réessayer."
+
+msgid "Sorry"
+msgstr "Désolé"
+
+msgid "your password must be at least %s characters long"
+msgstr "votre mot de passe doit comporter au moins %s caractères"
+
+msgid "Sorry, your current password is incorrect."
+msgstr "Désolé, votre mot de passe actuel est incorrect."
+
+msgid "Sorry, an error occured. Your password could not be updated."
+msgstr "Désolé, une erreur s'est produite. Votre mot de passe n'a pas pu être mis à jour."
+
+msgid "Password updated"
+msgstr "Mot de passe mis à jour"
+
+msgid "Your password has been successfully updated!"
+msgstr "Votre mot de passe a été mis à jour !"
+
+msgid "You will be asked for your new password on"
+msgstr "Votre nouveau mot de passe vous sera demandé"
+
+msgid "the next requested page"
+msgstr "sur la page suivante"
+
+# ---
+
+
 msgid "Names and Description"
 msgstr "Noms et description"
 
@@ -1128,7 +1198,7 @@ msgid "Click on End of signal or enter duration"
 msgstr "Cliquez sur la fin du signal ou entrez la durée"
 
 msgid "Enter number of events"
-msgstr "Entrez le nombre d\\'évènements"
+msgstr "Entrez le nombre d'événements"
 
 msgid "Select amplitude"
 msgstr "Choisissez une amplitude"
@@ -1137,13 +1207,13 @@ msgid "Enter overscale duration"
 msgstr "Entrez la durée de saturation"
 
 msgid "Event not flagged OVERSCALE"
-msgstr "L\\'événement n\\'est pas indiqué saturé"
+msgstr "L'événement n'est pas indiqué saturé"
 
 msgid "Event type is unknown/undetermined. Validate as is ?"
-msgstr "Type d\\'événement inconnu/indéterminé. Valider tel quel ?"
+msgstr "Type d'événement inconnu/indéterminé. Valider tel quel ?"
 
 msgid "You cannot validate an event of type AUTO"
-msgstr "Vous ne pouvez pas valider un évènement de type AUTO"
+msgstr "Vous ne pouvez pas valider un événement de type AUTO"
 
 msgid "ATT: Do you want PERMANENTLY erase this event from"
 msgstr "ATT: Voulez-vous supprimer DÉFINITIVEMENT cet événement de"
@@ -1173,7 +1243,7 @@ msgstr "fin du signal"
 # formulaireCREATION_STATION.pl
 
 
-# formCLB.pl
+# --- formCLB.pl
 
 msgid "help_clb_date"
 msgstr "Date d&rsquo;installation/modification (début de validité des paramètres)"
@@ -1238,7 +1308,7 @@ msgstr "Location code (SEED dataless)"
 msgid "help_clb_cat"
 msgstr "Catégorie du thésaurus THEIA correspondant à la variable du channel (chaine de caractère)"
 
-# formulaireHEBDO.pl
+# --- formulaireHEBDO.pl
 
 msgid "help_hebdo_select_nodate"
 msgstr "Tick to create entry without date"
@@ -1252,7 +1322,7 @@ msgstr "Select the names of those involved (Hold CTRL to select multiple names)"
 msgid "help_hebdo_select_external"
 msgstr "Enter names of EXTERNAL people"
 
-# gazette
+# --- gazette
 
 msgid "gzt_fmt_long_date"
 msgstr "%A %-d %B %Y <i>(jour %j, sem %V)</i>"
