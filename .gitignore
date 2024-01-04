@@ -10,5 +10,7 @@ PACK/*
 !PACK/build
 !PACK/build-mac
 !PACK/fpm*
+!PACK/showi18id
+!PACK/CHECKLIST.txt
 .DS_Store
 **/.DS_Store
