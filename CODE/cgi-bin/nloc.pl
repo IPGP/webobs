@@ -47,6 +47,7 @@ use WebObs::Config;
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::Mapping;
+use WebObs::Users qw(clientHasRead);
 
 my $cgi = new CGI;
 
@@ -61,10 +62,15 @@ my $file = "WEBOBS-$WEBOBS{WEBOBS_ID}.$grid";
 
 my $GRIDName  = my $GRIDType  = my $NODEName = my $msk = "";
 my @NID = split(/[\.\/]/, trim($grid));
-if (scalar(@NID) < 2) {
+($GRIDType, $GRIDName, $NODEName) = @NID;
+if ( scalar(@NID) < 2 || !($GRIDType =~ /^PROC|VIEW/i) ) {
 	die "No valid grid requested (NOT= gridtype.gridname[.node])." ;
 }
-($GRIDType, $GRIDName, $NODEName) = @NID;
+
+# user must have read authorization to use this function
+if ( ! clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
+	die "Sorry, you cannot display this page.";
+}
 
 # ---- get all nodenames of grid (only VALID)
 my %N = listGridNodes(grid=>"$GRIDType.$GRIDName");
@@ -74,6 +80,8 @@ if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
 elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
 if (%G) {
 	%GRID = %{$G{$GRIDName}} ;
+} else {
+	die "$grid does not exist."
 }
 
 switch (lc($format)) {
