@@ -59,6 +59,6 @@
 *      <li><hr></li>
        <li><a href="/cgi-bin/changepassword.pl">Change your password</a></li>
        <li><hr></li>
-       <li><a href="/cgi-bin/showTHEIA.pl">Theia|OZCAR pivot model></li>
+       <li><a href="/cgi-bin/showTHEIA.pl">Theia|OZCAR pivot model</a></li>
    </ul>
 </li>
