@@ -17,9 +17,9 @@ function [D,P] = readfmtdata_mc3(WO,P,N,F)
 %		node calibration: none
 %
 %
-%	Authors: Fran?ois Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
+%	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2019-01-21, in Paris (France)
-%	Updated: 2022-10-26
+%	Updated: 2024-01-06
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -81,7 +81,7 @@ if s==0
     k = find(cellfun(@str2num,mc3(:,1))>=0); % remove trash entries
     fprintf(' found %d valid mc3 entries, removed %d trash events.\n',size(k,1),size(mc3,1)-size(k,1));
     mc3 = mc3(k,:);
-    fprintf(' found %d mc3 events (including multiple).\n',sum(cellfun(@str2num,mc3(:,9))));
+    fprintf(' found %d mc3 events.\n',size(mc3,1));
     Nmc3 = size(mc3,1);
     k=cellfun(@isempty,mc3); % search empty strings and replace by NaN
     k(:,1:5)=false; % only work on columns 6 to 10
