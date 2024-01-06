@@ -51,7 +51,7 @@ function DOUT=meteo(varargin)
 %	    RAIN_ALERT_DELAY|3
 %	    RAIN_ALERT_RGB|1,.3,.3
 %	    RAIN_ALERT_DELAY_RGB|1,.6,.6
-
+%
 %
 %   Authors: F. Beauducel + S. Acounis / WEBOBS, IPGP
 %   Created: 2001-07-04
