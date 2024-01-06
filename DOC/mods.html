@@ -6,7 +6,7 @@
 <style>.withMAN {color: green; cursor: pointer} caption {padding-bottom: 5px}</style>
 <style>.withMAT {color: green; cursor: pointer} caption {padding-bottom: 5px}</style>
 <script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/jquery.tablesorter.js"></script>
+<script type="text/javascript" src="/js/jquery.tablesorter.min.js"></script>
 <script type="text/javascript">
 	$(document).ready(function() {
 		$("td.withPOD").click(function(index) {
@@ -157,18 +157,18 @@
 <tr><td>                
 <tr>                
 <tr><td>WebObs/<td> 
-<tr><td class="withPOD">WebObs/Config.pm
-<tr><td>WebObs/Dates.pm
-<tr><td class="withPOD">WebObs/Form.pm
-<tr><td class="withPOD">WebObs/Grids.pm
-<tr><td class="withPOD">WebObs/IGN.pm
-<tr><td>WebObs/i18n.pm
-<tr><td class="withPOD">WebObs/MathUtils.pm
-<tr><td class="withPOD">WebObs/Search.pm
-<tr><td class="withPOD">WebObs/Suds.pm
-<tr><td class="withPOD">WebObs/Users.pm
-<tr><td class="withPOD">WebObs/Utils.pm
-<tr><td>WebObs/Wiki.pm                         
+<tr><td class="withPOD">../perl/lib/Config.pm
+<tr><td class="withPOD">../perl/lib/Dates.pm
+<tr><td class="withPOD">../perl/lib/Form.pm
+<tr><td class="withPOD">../perl/lib/Grids.pm
+<tr><td class="withPOD">../perl/lib/IGN.pm
+<tr><td class="withPOD">../perl/lib/i18n.pm
+<tr><td class="withPOD">../perl/lib/MathUtils.pm
+<tr><td class="withPOD">../perl/lib/Search.pm
+<tr><td class="withPOD">../perl/lib/Suds.pm
+<tr><td class="withPOD">../perl/lib/Users.pm
+<tr><td class="withPOD">../perl/lib/Utils.pm
+<tr><td class="withPOD">../perl/lib/Wiki.pm                         
 <tr><td>
 <tr><td class="withPOD">../../DOC/FORMmodel.pod <td>
 </table>
@@ -284,18 +284,18 @@
 <h2>Perl<A href="#TOP"><img src="/icons/go2top.png"></a> </h2>
 <table>
 <tr><th>Mod<th>Comments</tr>
-<tr><td class="withPOD">woc.pl                  <td>Console Admin+Debugger tool
-<tr><td class="withPOD">scheduler.pl            <td>Jobs scheduler 
-<tr><td class="withPOD">jobq.pl                 <td>Submit a command to a running scheduler.pl
-<tr><td class="withPOD">postboard.pl            <td>dispatcher for the 'notification' system
-<tr><td class="withPOD">notify.pl               <td>perl send to postboard (using WebObs::Config::notify)
-<tr><td class="withPOD">exposerc.pl             <td>perl return %WEBOBS variables for bash usage 
+<tr><td class="withPOD">../perl/woc.pl                  <td>Console Admin+Debugger tool
+<tr><td class="withPOD">../perl/scheduler.pl            <td>Jobs scheduler 
+<tr><td class="withPOD">../perl/jobq.pl                 <td>Submit a command to a running scheduler.pl
+<tr><td class="withPOD">../perl/postboard.pl            <td>dispatcher for the 'notification' system
+<tr><td class="withPOD">../perl/notify.pl               <td>perl send to postboard (using WebObs::Config::notify)
+<tr><td class="withPOD">../perl/exposerc.pl             <td>perl return %WEBOBS variables for bash usage 
 <tr><td class="withPOD">../../SETUP/M2G.pm      <td>Legacy WebObs migration tool for 'reseaux/stations'
 <tr><td>jobtester.pl                            <td>for sched. test (perl jobtester.pl {seconds to sleep})
 <tr><td>
-<tr><td>woc.py                                  <td>draft python's woc 
-<tr><td>pyWebObs/Config.py                      <td>
-<tr><td>pyWebObs/Grids.py                       <td>
+<tr><td>../python/woc.py                                  <td>draft python's woc 
+<tr><td>../python/Config.py                      <td>
+<tr><td>../python/Grids.py                       <td>
 <tr>
 </table>
 
@@ -357,12 +357,23 @@
 <tr><td class="withMAT">dem.m</td><td></td></tr>
 <tr><td class="withMAT">rdmseed.m</td><td></td></tr>
 <tr><th>Procs</th><th>Comments</th></tr>
-<tr><td class="withMAT">locastat.m  </td><td>Detailed location maps for WebObs nodes.</td></tr>
-<tr><td class="withMAT">gridmaps.m  </td><td>Grids location maps of nodes.</td></tr>
-<tr><td class="withMAT">sefran3.m   </td><td>WebObs SuperPROC: Continuous seismogram using SeedLink/Arclink data request.</td></tr>
-<tr><td class="withMAT">gamit.m     </td><td>WebObs SuperPROC: Updates graphs/exports of GAMIT/GLOBK results.</td></tr>
-<tr><td class="withMAT">meteo.m     </td><td>WebObs SuperPROC: Updates graphs/exports of meteorological station.</td></tr>
-<tr><td class="withMAT">waters.m    </td><td>WebObs SuperPROC: Updates graphs/exports of waters chemical analysis.</td></tr>
+<tr><td class="withMAT">superprocs/locastat.m  </td><td>Detailed location maps for nodes.</td></tr>
+<tr><td class="withMAT">superprocs/gridmaps.m  </td><td>Grids location maps of nodes.</td></tr>
+<tr><td class="withMAT">superprocs/sefran3.m   </td><td>WebObs Sefran: Seismic multichannel strichart.</td></tr>
+<tr><td class="withMAT">superprocs/afm.m       </td><td>WebObs SuperPROC: AFM time series.</td></tr>
+<tr><td class="withMAT">superprocs/extenso.m   </td><td>WebObs SuperPROC: Extensometry time series and vectors.</td></tr>
+<tr><td class="withMAT">superprocs/genplot.m   </td><td>WebObs SuperPROC: Generic time series.</td></tr>
+<tr><td class="withMAT">superprocs/helicorder.m</td><td>WebObs SuperPROC: Helicorder.</td></tr>
+<tr><td class="withMAT">superprocs/hypomap.m   </td><td>WebObs SuperPROC: Earthquake hypocenter maps from seismic catalog.</td></tr>
+<tr><td class="withMAT">superprocs/mc3stats.m  </td><td>WebObs SuperPROC: Main Courante statistics.</td></tr>
+<tr><td class="withMAT">superprocs/gnss.m      </td><td>WebObs SuperPROC: GNSS time series, vectors and modelling.</td></tr>
+<tr><td class="withMAT">superprocs/meteo.m     </td><td>WebObs SuperPROC: Meteorological time series.</td></tr>
+<tr><td class="withMAT">superprocs/naqssoh.m   </td><td>WebObs SuperPROC: Naqs SOH time series.</td></tr>
+<tr><td class="withMAT">superprocs/rsam.m      </td><td>WebObs SuperPROC: Realtime Seismic Amplitude Measurement.</td></tr>
+<tr><td class="withMAT">superprocs/tilt.m      </td><td>WebObs SuperPROC: Tiltmetry time series, vectors and modelling.</td></tr>
+<tr><td class="withMAT">superprocs/tremblemaps.m</td><td>WebObs SuperPROC: Earthquake Felt Report.</td></tr>
+<tr><td class="withMAT">superprocs/volcgas.m   </td><td>WebObs SuperPROC: Volcanic chemical analysis.</td></tr>
+<tr><td class="withMAT">superprocs/waters.m    </td><td>WebObs SuperPROC: Waters chemical analysis.</td></tr>
 </table>
 
 <!-- ========================================================================================== -->

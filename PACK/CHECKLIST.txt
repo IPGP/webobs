@@ -2,6 +2,7 @@ CHECKLIST for new release x.y.z
 
 
 - git pull (master branch)
+- update mods.html (if new scripts)
 - update .tex user manual (version + date)
 - update release-notes.md (under development section ==> x.y.z)
 - commit all modified files + git push (!)
