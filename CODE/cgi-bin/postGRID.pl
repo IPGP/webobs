@@ -58,6 +58,7 @@ $CGI::DISABLE_UPLOADS = 1;
 use WebObs::Config;
 use WebObs::Grids;
 use WebObs::Utils;
+use WebObs::Users qw(clientHasEdit clientHasAdm);
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 
@@ -151,6 +152,8 @@ sub update_grid2domains {
    $dbh->disconnect();
 }
 
+my $editOK  = 0;        # 1 if the user is allowed to edit the grid
+my $admOK = 0;          # 1 if the user is allowed to administrate the grid
 
 # ---- what are we here for ?
 #
@@ -171,14 +174,23 @@ my @SELs = checkParam([$cgi->multi_param('SELs')],
 
 my $gridConfFile;
 if (uc($GRIDType) eq 'VIEW') {
+	$editOK = clientHasEdit(type => "authviews", name => "$GRIDName");
+	$admOK = clientHasAdm(type => "authviews", name => "*");
 	$gridConfFile = "$WEBOBS{PATH_VIEWS}/$GRIDName/$GRIDName.conf";
 }
 if (uc($GRIDType) eq 'PROC') {
+	$editOK = clientHasEdit(type => "authprocs", name => "$GRIDName");
+	$admOK = clientHasAdm(type => "authprocs", name => "*");
 	$gridConfFile = "$WEBOBS{PATH_PROCS}/$GRIDName/$GRIDName.conf";
 }
 if (uc($GRIDType) eq 'SEFRAN') {
+	$editOK = clientHasEdit(type => "authprocs", name => "MC");
+	$admOK = clientHasAdm(type => "authprocs", name => "*");
 	$gridConfFile = "$WEBOBS{PATH_SEFRANS}/$GRIDName/$GRIDName.conf";
 }
+# ---- ends here if client is not authorized
+if (!$editOK) { die "Sorry, you must have an edit level to modify ".$cgi->param('grid')."." };
+
 my $griddir = dirname($gridConfFile);
 
 	if (! -e $gridConfFile) {
@@ -218,6 +230,8 @@ if ($TS0 != (stat("$gridConfFile"))[9]) {
 if ($delete == 1) {
 	# --- Delete the grid !
 
+	if (!$admOK) { die "Sorry, you must have an admin level to delete ".$cgi->param('grid')."." };
+
 	# delete the dir/file first
 	my $dir = dirname($gridConfFile);
 	my $rmtree_errors;
@@ -247,6 +261,7 @@ if ($delete == 1) {
 
 
 # --- Update the grid
+
 
 # Use an exclusive lock on the config file during the process
 if (!sysopen(FILE, "$gridConfFile", O_RDWR | O_CREAT)) {
@@ -291,7 +306,7 @@ François Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2021 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

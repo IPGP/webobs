@@ -82,9 +82,9 @@ use Locale::TextDomain('webobs');
 
 
 # if the client is not a valid user, ends here !!
-if (!WebObs::Users::clientIsValid(user=>$USERS{$CLIENT})) {
+if (!WebObs::Users::clientIsValid) {
  	print $cgi->header(-type=>'text/html', -charset=>'utf-8');
-	print "<H1>$WEBOBS{VERSION}</H1>"
+	print "<H1>$WEBOBS{WEBOBS_ID}: $WEBOBS{VERSION}</H1>"
 	."Sorry, user '$USERS{$CLIENT}{LOGIN}' is not valid or is waiting for validation by an administrator...";
 	exit(1);
 }

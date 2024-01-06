@@ -30,7 +30,15 @@ $CGI::DISABLE_UPLOADS = 1;
 
 # ---- webobs stuff
 use WebObs::Config;
+use WebObs::i18n;
+use Locale::TextDomain('webobs');
+use WebObs::Users qw(clientIsValid);
 use MIME::Base64;
+
+# --- ends here if the client is not valid
+if ( !clientIsValid ) {
+  die "$__{'die_client_not_valid'}";
+}
 
 my $title = "$ENV{HTTP_REFERER}";
 my $qr = encode_base64(qx(qrencode -t SVG -o - "$ENV{HTTP_REFERER}"));

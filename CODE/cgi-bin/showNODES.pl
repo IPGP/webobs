@@ -22,12 +22,24 @@ my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 set_message(\&webobs_cgi_msg);
 use WebObs::Config;
+use WebObs::i18n;
+use Locale::TextDomain('webobs');
 use WebObs::Grids;
+use WebObs::Users qw($CLIENT clientIsValid clientHasRead);
 
-# get all GRIDs
+# --- ends here if the client is not valid
+if ( !clientIsValid ) {
+  die "$__{'die_client_not_valid'}";
+}
+
+# get all GRIDs with a minimum read auth
 my @T;
-push(@T, map({"VIEW.$_"} sort(WebObs::Grids::listViewNames())));
-push(@T, map({"PROC.$_"} sort(WebObs::Grids::listProcNames())));
+for (sort(WebObs::Grids::listViewNames())) {
+	push(@T, "VIEW.$_") if (clientHasRead(type=>"authviews",name=>"$_"));
+}
+for (sort(WebObs::Grids::listProcNames())) {
+	push(@T, "PROC.$_") if (clientHasRead(type=>"authprocs",name=>"$_"));
+};
 
 # get all NODEs configurations !!
 my %N = WebObs::Grids::listNodeGrids();
@@ -104,11 +116,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Lafon
+Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
