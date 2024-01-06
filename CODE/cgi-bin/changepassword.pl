@@ -36,7 +36,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users qw(%USERS $CLIENT userIsValid htpasswd_verify htpasswd_update);
+use WebObs::Users qw(%USERS $CLIENT clientIsValid htpasswd_verify htpasswd_update);
 use WebObs::Utils qw(isok);
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
@@ -195,8 +195,9 @@ sub print_secondary {
 
 
 ##---- Main script
-if ( ! userIsValid(user=>$CLIENT) ) {
-  die "You cannot display this page.";
+# ends here if the client is not valid
+if ( !clientIsValid ) {
+  die "$__{'die_client_not_valid'}";
 }
  
 my $current_password = $cgi->param('current_password') // "";

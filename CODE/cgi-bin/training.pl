@@ -30,6 +30,7 @@ use strict;
 use warnings;
 
 use WebObs::Config;
+use WebObs::Users qw(clientHasAdm);
 
 my $cgi = CGI->new;
 $cgi->charset('UTF-8');
@@ -45,6 +46,11 @@ my $debug = $SEFRAN3{DEBUG};
 # ---- loads MC3 configuration: requested or Sefran's or default
 my $mc3 = $SEFRAN3{MC3_NAME};
 my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$mc3.conf");
+
+# ---- must have admin auth to run
+if (clientHasAdm(type=>"authprocs",name=>"MC") || clientHasAdm(type=>"authprocs",name=>"$mc3")) {
+  die "Sorry, you must have administrator right on $mc3 to run this script.";
+}
 
 # ---- Download csv database from the WebObs main-courante
 # manage auto-login to webobs
@@ -93,11 +99,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Lucie Van Nieuwenhuyze
+Lucie Van Nieuwenhuyze, François Beauducel
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2021 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

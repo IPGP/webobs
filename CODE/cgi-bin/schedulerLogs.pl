@@ -20,12 +20,21 @@ use warnings;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use POSIX qw/strftime/;
+use Locale::TextDomain('webobs');
+use WebObs::i18n;
 use WebObs::Config;
+use WebObs::Users qw(clientIsValid);
+
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 
 set_message(\&webobs_cgi_msg);
 my $QryParm = $cgi->Vars;
+
+# --- ends here if the client is not valid
+if ( !clientIsValid ) {
+  die "$__{'die_client_not_valid'}";
+}
 
 my %SCHED;
 my $logname;

@@ -56,7 +56,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 
 use WebObs::Gazette;
 use WebObs::Config;
-use WebObs::Users;
+use WebObs::Users qw(clientIsValid);
 use WebObs::Dates;
 use WebObs::Utils;
 use WebObs::i18n;
@@ -65,6 +65,11 @@ use WebObs::Wiki;
 use Time::Piece;
 
 set_message(\&webobs_cgi_msg);
+
+# --- ends here if the client is not valid
+if ( !clientIsValid ) {
+  die "$__{'die_client_not_valid'}";
+}
 
 my $today = new Time::Piece;
 my $jstoday = '"'.$today->gmtime.'"';

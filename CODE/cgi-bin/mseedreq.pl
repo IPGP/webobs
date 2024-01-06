@@ -58,11 +58,16 @@ use Switch;
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users;
+use WebObs::Users qw(clientIsValid);
 use WebObs::Grids;
 use WebObs::i18n;
 use WebObs::Mapping;
 use Locale::TextDomain('webobs');
+
+# --- ends here if the client is not valid
+if ( !clientIsValid ) {
+  die "$__{'die_client_not_valid'}";
+}
 
 # ---- inits ----------------------------------
 my $tmpdir = $WEBOBS{MSEEDREQ_TMP_DIR};
@@ -338,7 +343,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

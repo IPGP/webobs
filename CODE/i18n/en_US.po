@@ -11,6 +11,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+msgid "die_client_not_valid"
+msgstr "Sorry, your login is not active/valid on this instance of WebObs."
+
 msgid "Hello world"
 msgstr "Hello, all the big world !"
 
