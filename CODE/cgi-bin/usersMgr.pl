@@ -589,6 +589,7 @@ Identifications&nbsp;$go2top
 	<input type="hidden" name="tbl" value="">
 	<input type="hidden" name="OLDuid" value="">
 	<input type="hidden" name="OLDgid" value="">
+	<input type="hidden" name="isWO" value="$isWO">
 	<p><b><i>Edit user definition</i></b></p>
 	<label>Uid:<span class="small">WebObs userid</span></label>
 	<input type="text" name="uid" value=""/><br/>
