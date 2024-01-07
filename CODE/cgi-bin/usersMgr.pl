@@ -74,10 +74,14 @@ my $authMsg="$buildTS ";
 my $authMsgColor='black';
 my $refMsg = my $refMsgColor = "";
 
+# ---- special functions only for the WebObs Owner
+my $isWO = WebObs::Users::clientIsWO;
+
+
 # ---- any reasons why we couldn't go on ?
 # ----------------------------------------
 if ( ! WebObs::Users::clientHasAdm(type=>"authmisc",name=>"users")) {
-	die "You are not authorized" ;
+	die "You are not authorized." ;
 }
 
 # ---- parse/defaults query string
@@ -132,6 +136,7 @@ if ($QryParm->{'action'} eq 'insert') {
 	}
 	elsif ($authtable ne "") {
 		$q = "insert into $authtable values(\'$QryParm->{'uid'}\',\'$QryParm->{'res'}\',\'$QryParm->{'auth'}\')";
+		$q = "" if ( $QryParm->{'uid'} eq '!' && !$isWO );
 		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor;
 	} else { die "$QryParm->{'action'} for unknown table"; }
 
@@ -358,7 +363,7 @@ for my $row (@$db_rows) {
 		$edit_link = "<a href=\"#IDENT\" onclick=\"openPopupUser('#$dusersId');return false\">"
 					 ."<img title=\"edit user\" src=\"/icons/modif.png\"></a>";
 		$del_link = "<a href=\"#IDENT\" onclick=\"postDeleteUser('#$dusersId');return false\">"
-					."<img title=\"delete user\" src=\"/icons/no.png\"></a>";
+					."<img title=\"delete user\" src=\"/icons/no.png\"></a>" if ($isWO);
 	}
 
 	# Build user table row (also used as input for the user edition form)
@@ -534,20 +539,20 @@ for my $an (qw(proc view form wiki misc)) {
 	for my $row (@$db_rows) {
 		my ($dauth_uid, $dauth_res, $dauth_auth) = @$row;
 
+		my $td_modif_auth = '';
+		my $td_delete_auth = '';
 		$TA{$an}{dauthCount}++;
 		my $dauthId="adef$an".$TA{$an}{dauthCount};
+		if ($dauth_uid ne '!' || $isWO) {
+			$td_modif_auth = "<a href=\"#AUTH\" onclick=\"openPopupAuth('$an', '#$dauthId');return false\">"
+				."<img title=\"edit grp\" src=\"/icons/modif.png\"></a>";
+			$td_delete_auth = "<a href=\"#AUTH\" onclick=\"postDeleteAuth('$an', '#$dauthId');return false\">"
+				."<img title=\"delete autorisation\" src=\"/icons/no.png\"></a>";
+		}
 		$TA{$an}{dauth} .= <<_EOD_;
 <tr id="$dauthId">
-	<td style="width:12px" class="tdlock">
-		<a href="#AUTH" onclick="openPopupAuth('$an', '#$dauthId');return false">
-			<img title="edit grp" src="/icons/modif.png">
-		</a>
-	</td>
-	<td style="width:12px" class="tdlock">
-		<a href="#AUTH" onclick="postDeleteAuth('$an', '#$dauthId');return false">
-			<img title="delete autorisation" src="/icons/no.png">
-		</a>
-	</td>
+	<td style="width:12px" class="tdlock">$td_modif_auth</td>
+	<td style="width:12px" class="tdlock">$td_delete_auth</td>
 	<td class="auth-uid">$dauth_uid</td>
 	<td class="auth-res">$dauth_res</td>
 	<td class="auth-auth">$dauth_auth</td>
@@ -982,7 +987,7 @@ Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

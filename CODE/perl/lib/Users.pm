@@ -430,7 +430,7 @@ sub userIsValid {
 
 =pod
 
-=head2 clientHas{Read | Edit | Adm}
+=head2 clientHas{Read | Edit | Adm} clientIsValid clientIsWO
 
 wrappers for userHasAuth with user=$CLIENT.
 
@@ -464,6 +464,10 @@ sub clientIsValid {
 	return userIsValid(user=>$CLIENT);
 }
 
+sub clientIsWO {
+	return 0 if ($USERS{$CLIENT}{UID} ne '!');
+	return 1;
+}
 
 =pod
 
