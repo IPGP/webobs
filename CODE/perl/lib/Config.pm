@@ -110,7 +110,7 @@ if ( defined($WEBOBS{CGI_MSG}) && -e $WEBOBS{CGI_MSG} ) {
 		close(FILE);
 	}
 } else {
-	$cgi_msg_html = "<img src='/icons/ipgp/logo_OVS50.png'><b> Webobs error</b>";
+	$cgi_msg_html = "<h1><img src='/icons/ipgp/logo_WebObs_50.png'> WebObs Error</h1>";
 }
 
 sub webobs_cgi_msg {
