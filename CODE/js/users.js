@@ -26,7 +26,8 @@ function openPopupUser(user_row) {
 
 	if (user_row !== undefined) {
 		// editing an existing user: populate popup from its table row TDs
-		form.uid.value = $(user_row + ' .user-uid').text()
+		form.uid.value = $(user_row + ' .user-uid').text();
+		if (form.isWO.value == 0) form.uid.readOnly = true;
 		form.OLDuid.value = $(user_row + ' .user-uid').text();
 		form.uid.style.backgroundColor = "#EEEEEE";
 		form.fullname.value = $(user_row + ' .user-fullname').text();
