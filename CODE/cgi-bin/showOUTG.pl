@@ -375,6 +375,11 @@ if ($QryParm->{'ts'} eq 'map') {
 				$addlinks .= " <A href=\"$urn.$_\"><IMG alt=\"$urn.$_\" src=\"/icons/f$_.png\"></A> ";
 			}
 		}
+		# special case of .msg file (tremblemaps)
+		if ( -e "$short.msg" ) {
+				$addlinks .= " <A href=\"/cgi-bin/mailB3.pl?grid=$QryParm->{'grid'}&ts=events&g=$EVENTid\">"
+					."<IMG alt=\"$urn.msg\" src=\"/icons/fmail.png\"></A> ";
+		}
 		print "<H2>$dte: <I>$evt[3]&nbsp;/&nbsp;$evt[4]</I></H2>\n";
 		print "$addlinks<BR>" if ($QryParm->{'header'} ne 'no');
 		my $img = "$urn.png";
