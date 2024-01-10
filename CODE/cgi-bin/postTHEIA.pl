@@ -28,6 +28,7 @@ use POSIX qw/strftime/;
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
+$CGI::POST_MAX = 1024 * 1000;
 use JSON;
 use Encode qw(decode encode);
 use feature 'say';
@@ -190,9 +191,9 @@ $producer{'fundings'} = \@fundings;
 my @observations;
 
 foreach (@channels) {
-	$stmt  = "SELECT * FROM observations, sampling_features INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
-	$stmt .= " WHERE observations.identifier = '$_'";
-	$stmt .= " GROUP BY observations.identifier";
+	$stmt  = "SELECT * FROM observations ";
+	$stmt .= "INNER JOIN sampling_features ON observations.stationname = sampling_features.identifier ";
+	$stmt .= "INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
 	$stmt  = qq($stmt);
 	$sth   = $dbh->prepare( $stmt );
 	$rv    = $sth->execute() or die $DBI::errstr;
