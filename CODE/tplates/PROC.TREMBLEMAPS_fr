@@ -137,10 +137,14 @@ FOOTNOTE2|La ligne pointillée délimite la zone où le séisme a pu être potentiell
 
 LESS_1KM_TEXT|moins de 1 km
 ADDITIONAL_TEXT|
+GSE_EXPORT|N
 GSE_TITLE|${REGION}: $quake_strength $quake_type $epicentral $azimuth de $city ($region)
 GSE_AUTO_TITLE|${REGION}: $quake_strength $epicentral $azimuth de $city ($region)
 GSE_COMMENT|$azimuth de $city ($region)
 
+JSON_EXPORT|Y
+
+MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
 TRIGGER_EMAIL|
 TRIGGER_SUBJECT|SEISME RESSENTI
 REPORT_EMAIL|
