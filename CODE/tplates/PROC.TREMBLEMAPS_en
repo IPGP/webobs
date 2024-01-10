@@ -129,6 +129,16 @@ FOOTNOTE2|Dashed line shows potential limit of the felt event zone.
 
 LESS_1KM_TEXT|less than 1 km
 ADDITIONAL_TEXT|
+GSE_EXPORT|N
 GSE_TITLE|${REGION}: $quake_strength $quake_type $epicentral $azimuth of $city ($region)
 GSE_TITLE|${REGION}: $quake_strength $epicentral $azimuth of $city ($region)
 GSE_COMMENT|$azimuth of $city ($region)
+
+JSON_EXPORT|Y
+
+MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
+TRIGGER_EMAIL|
+TRIGGER_SUBJECT|FELT EARTHQUAKE
+REPORT_EMAIL|
+REPORT_SUBJECT|[OVS-IPGP] Felt earquake report
+REPORT_FOOTNOTE|If you felt this earthquake, please fill the form at: www.emsc-csem.org

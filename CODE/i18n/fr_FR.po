@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: WebObs 2.5\n"
+"Project-Id-Version: WebObs 2.6.4\n"
 "Report-Msgid-Bugs-To: webobs-dev@ipgp.fr\n"
 "POT-Creation-Date: 2007-05-25 09:10-0400\n"
-"PO-Revision-Date: 2022-06-11 15:00+0400\n"
+"PO-Revision-Date: 2024-01-06 15:00+0400\n"
 "Last-Translator: François Beauducel <beauducel@ipgp.fr>\n"
 "Language-Team: WebOBS Traduction fr\n"
 "MIME-Version: 1.0\n"
@@ -1707,3 +1707,68 @@ msgstr "Utilise l'API de géolocalisation HTML pour localiser l'utilisateur. Att
 
 msgid "help_creationstation_shapefile"
 msgstr "Pour ajouter une couche de fichier de forme (.zip uniquement), cliquez ici"
+
+# ---- mailB3.pl
+
+msgid "Event origin"
+msgstr "Date de l'événement"
+
+msgid "Event ID/name"
+msgstr "ID/nom de l'événement"
+
+msgid "Unauthorized action"
+msgstr "Action non autorisée"
+
+msgid "Send felt earthquake report information"
+msgstr "Envoyer des informations sur un séisme ressenti"
+
+msgid "Send trigger email"
+msgstr "Envoyer l'email de déclenchement"
+
+msgid "Destination email"
+msgstr "Email du destinataire"
+
+msgid "Trigger email subject"
+msgstr "Sujet de l'email"
+
+msgid "Origin time (UT)"
+msgstr "Temps origine (TU)"
+
+msgid "Depth (km)"
+msgstr "Profondeur (km)"
+
+msgid "Magnitude"
+msgstr "Magnitude"
+
+msgid "Department"
+msgstr "Département"
+
+msgid "Region"
+msgstr "Région (zone)"
+
+msgid "Send the B3 report"
+msgstr "Envoyer le rapport B3"
+
+msgid "Attached file name"
+msgstr "Fichier attaché"
+
+msgid "Report subject"
+msgstr "Sujet de l'email"
+
+msgid "Report message"
+msgstr "Message"
+
+msgid "Send emails"
+msgstr "Envoyer les emails"
+
+msgid "Sending emails"
+msgstr "Envoi des emails"
+
+msgid "Trigger email has been successfully sent!"
+msgstr "L'email de déclenchement a été envoyé avec succès !"
+
+msgid "Sorry, an error occured during report email sending. Please contact an administator."
+msgstr "Désolé, une erreur est survenue lors de l'envoi de l'email. Veuillez contactez un administrateur."
+
+msgid "Report email has been successfully sent!"
+msgstr "L'email du rapport a été envoyé avec succès !"

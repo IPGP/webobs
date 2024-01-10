@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2023-08-17
+%	Updated: 2024-01-10
 
 
 WO = readcfg;
@@ -582,25 +582,48 @@ for n = 1:length(t)
 
 			% ===========================================================
 			% exports GSE file
-			fgse = sprintf('%s/%s.gse',pdat,fnam);
-			fprintf('%s: exporting GSE file %s ...',wofun,fgse);
-			fid = fopen(fgse,'wt');
-			fprintf(fid,'BEGIN GSE2.0\n');
-			fprintf(fid,'MSG_TYPE DATA\n');
-			fprintf(fid,'MSG_ID %s %s\n',fnam,WO.WEBOBS_ID);
-			fprintf(fid,'DATA_TYPE EVENT GSE2.0\n');
-			fprintf(fid,'%s\n',varsub(gse_title,E));
-			fprintf(fid,'EVENT %s\n',id);
-			fprintf(fid,'   Date       Time       Latitude Longitude    Depth    Ndef Nsta Gap    Mag1  N    Mag2  N    Mag3  N  Author          ID \n');
-			fprintf(fid,'     rms   OT_Error      Smajor Sminor Az        Err   mdist  Mdist     Err        Err        Err     Quality\n\n');
-			fprintf(fid,'%4d/%02d/%02d %02d:%02d:%04.1f    %8.4f %9.4f    %5.1f              %03d  %2s%4.1f                           %-8.8s  %02.0f%03.0f%03.0f\n', ...
-				datevec(t(n)),d(n,[1,2,3,5]),c{n,2},d(n,4),WO.WEBOBS_ID,d(n,[1,2,3]));
-			fprintf(fid,'     %5.2f   +-          %6.1f %6.1f         +-%5.1f                                                  %-1.1s i %s\n', ...
-				d(n,[6,7,7,8]),c{n,5},gse_evtype);
-			fprintf(fid,'\n%s\n',upper(varsub(P.GSE_COMMENT,E)));
-			fprintf(fid,'\n\nSTOP\n');
-			fclose(fid);
-			fprintf(' done.\n');
+			if isok(P,'GSE_EXPORT')
+				fgse = sprintf('%s/%s.gse',pdat,fnam);
+				fprintf('%s: exporting GSE file %s ...',wofun,fgse);
+				fid = fopen(fgse,'wt');
+				fprintf(fid,'BEGIN GSE2.0\n');
+				fprintf(fid,'MSG_TYPE DATA\n');
+				fprintf(fid,'MSG_ID %s %s\n',fnam,WO.WEBOBS_ID);
+				fprintf(fid,'DATA_TYPE EVENT GSE2.0\n');
+				fprintf(fid,'%s\n',varsub(gse_title,E));
+				fprintf(fid,'EVENT %s\n',id);
+				fprintf(fid,'   Date       Time       Latitude Longitude    Depth    Ndef Nsta Gap    Mag1  N    Mag2  N    Mag3  N  Author          ID \n');
+				fprintf(fid,'     rms   OT_Error      Smajor Sminor Az        Err   mdist  Mdist     Err        Err        Err     Quality\n\n');
+				fprintf(fid,'%4d/%02d/%02d %02d:%02d:%04.1f    %8.4f %9.4f    %5.1f              %03.0f  %2s%4.1f                           %-8.8s  %02.0f%03.0f%03.0f\n', ...
+					datevec(t(n)),d(n,[1,2,3,5]),c{n,2},d(n,4),WO.WEBOBS_ID,d(n,[1,2,3]));
+				fprintf(fid,'     %5.2f   +-          %6.1f %6.1f         +-%5.1f                                                  %-1.1s i %s\n', ...
+					d(n,[6,7,7,8]),c{n,5},gse_evtype);
+				fprintf(fid,'\n%s\n',upper(varsub(P.GSE_COMMENT,E)));
+				fprintf(fid,'\n\nSTOP\n');
+				fclose(fid);
+				fprintf(' done.\n');
+			end
+
+			% ===========================================================
+			% exports JSON file (for BCSF trigger protocol)
+			% [FB-NOTE]: strings should be encoded UTF-8 in the JSON format... 
+			if isok(P,'JSON_EXPORT')
+				fjson = sprintf('%s/%s.json',pdat,fnam);
+				fprintf('%s: exporting JSON file %s ...',wofun,fjson);
+				fid = fopen(fjson,'wt');
+				fprintf(fid,'{\n');
+				fprintf(fid,'  "id": "%s",\n',id);
+				fprintf(fid,'  "time": "%4d/%02d/%02d %02d:%02d:%04.1f",\n',datevec(t(n)));
+				fprintf(fid,'  "latitude": "%1.4f",\n',d(n,1));
+				fprintf(fid,'  "longitude": "%1.4f",\n',d(n,2));
+				fprintf(fid,'  "depth": "%1.1f",\n',d(n,3));
+				fprintf(fid,'  "magnitude": "%1.1f",\n',d(n,4));
+				fprintf(fid,'  "department": "%s",\n',upper(E.region));
+				fprintf(fid,'  "region": "%s"\n',upper(varsub('$azimuth de $city',E)));
+				fprintf(fid,'}\n');
+				fclose(fid);
+				fprintf(' done.\n');
+			end
 
 			% ===========================================================
 			% exports a comprehensive text message (for notification)

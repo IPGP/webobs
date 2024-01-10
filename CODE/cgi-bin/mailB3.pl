@@ -31,6 +31,7 @@ use warnings;
 use CGI;
 use CGI::Carp;
 use CGI::Carp qw(fatalsToBrowser set_message);
+use JSON;
 
 # ---- webobs stuff
 use WebObs::Config;
@@ -57,8 +58,12 @@ if (not (clientHasEdit(type=>"authprocs",name=>"$GRIDName"))) {
   exit(0);
 }
 
+my $submit_url = $q->url();
 my $operator_name = "$USERS{$CLIENT}{FULLNAME}";
 my $operator_email = "$USERS{$CLIENT}{EMAIL}";
+
+my %P = readCfg("$WEBOBS{ROOT_CONF}/PROCS/$GRIDName/$GRIDName.conf");
+my $mutt_options = "$P{MUTT_OPTIONS}";
 
 ##---- Script functions
 
@@ -109,6 +114,7 @@ Content-type: text/html
       border-color: #d6d8db;
   }
   </style>
+  </script>
 </head>
 <body>
 __EOD__
@@ -124,9 +130,7 @@ __EOD__
 
 
 sub print_form {
-  my $submit_url = $q->url();
 
-  my %P = readCfg("$WEBOBS{ROOT_CONF}/PROCS/$GRIDName/$GRIDName.conf");
   my ($y,$m,$d,$id,$evt) = split(/\//,$g);
   my ($evt_y,$evt_m,$evt_d,$evt_H,$evt_M,$evt_S,$evt_loc) = unpack("a4a2a2xa2a2a2xa*",$evt);
   my $b3 = "$WEBOBS{'ROOT_OUTG'}/$grid/$ts/$g";
@@ -134,7 +138,7 @@ sub print_form {
   my $evt_email = $P{TRIGGER_EMAIL};
   my $evt_subject = $P{TRIGGER_SUBJECT};
   my $report_email = $P{REPORT_EMAIL};
-  my ($evt_latitude,$evt_longitude,$evt_magnitude,$evt_department,$evt_region);
+  my ($evt_latitude,$evt_longitude,$evt_magnitude,$evt_depth,$evt_department,$evt_region);
   my $report_file = "$evt.pdf";
   my $report_subject = "$P{REPORT_SUBJECT}";
   my $report_message;
@@ -144,11 +148,19 @@ sub print_form {
   my $trigger_check = 'checked';
   my $evt_origin = "$evt_y/$evt_m/$evt_d $evt_H:$evt_M:$evt_S";
   if (-e "$b3.json") {
+    my %json = %{decode_json(l2u(join("",readFile("$b3.json"))))};
+    $evt_latitude = $json{'latitude'};
+    $evt_longitude = $json{'longitude'};
+    $evt_depth = $json{'depth'};
+    $evt_magnitude = $json{'magnitude'};
+    $evt_department = l2u($json{'department'});
+    $evt_region = l2u($json{'region'});
 
   } elsif (-e "$b3.gse") {
     my @gse = readFile("$b3.gse");
     $evt_latitude = trim(substr($gse[9],25,9));
     $evt_longitude = trim(substr($gse[9],34,9));
+    $evt_depth = trim(substr($gse[9],47,7));
     $evt_magnitude = trim(substr($gse[9],74,4));
     ($evt_region,$evt_department) = split(/ \(|\)/,l2u(trim($gse[12])));
     $evt_department = $P{REGION} if ($evt_department eq "");
@@ -166,13 +178,14 @@ sub print_form {
   print <<__EOD__;
   <table><tr><td stype="border:2"><img src="$b3_urn.jpg"></td>
   <td style="border:0;padding-left:10px"><h2>$__{'Send felt earthquake report information'}</h2>
-  <p>Event origin: <b>$evt_y-$evt_m-$evt_d $evt_H:$evt_M:$evt_S UT</b></p>
-  <p>Event ID/name: <b>$id/$evt_loc</b></p>
-  <p>Operator: <b>"$operator_name" &lt;$operator_email&gt;</b></p>
+  <p>$__{'Event origin'}: <b>$evt_y-$evt_m-$evt_d $evt_H:$evt_M:$evt_S UT</b></p>
+  <p>$__{'Event ID/name'}: <b>$id/$evt_loc</b></p>
+  <p>$__{'Operator'}: <b>"$operator_name" &lt;$operator_email&gt;</b></p>
   </td></tr></table>
   
   <form class="chpass_form" name="changePass" id="changePass"
     method="POST" action="$submit_url">
+  <input type="hidden" name="grid" value="$grid"/>
   
   <table><tr><td style="border:0; vertical-align:top">
   <fieldset>
@@ -195,7 +208,7 @@ sub print_form {
   <br>
 
   <div class="form_elem form_label">
-      <label for="event_time">$__{'Event time (UT)'}:</label>
+      <label for="event_time">$__{'Origin time (UT)'}:</label>
   </div>
   <div class="form_elem form_input">
       <input name="event_time" value="$evt_origin"/><br/>\n
@@ -203,7 +216,7 @@ sub print_form {
   <br>
 
   <div class="form_elem form_label">
-      <label for="event_latitude">$__{'Event latitude'}:</label>
+      <label for="event_latitude">$__{'Latitude'}:</label>
   </div>
   <div class="form_elem form_input">
     <input name="event_latitude" value="$evt_latitude"/><br>
@@ -211,7 +224,7 @@ sub print_form {
   <br>
 
   <div class="form_elem form_label">
-      <label for="event_longitude">$__{'Event longitude'}:</label>
+      <label for="event_longitude">$__{'Longitude'}:</label>
   </div>
   <div class="form_elem form_input">
     <input name="event_longitude" value="$evt_longitude"/><br>
@@ -219,7 +232,15 @@ sub print_form {
   <br>
 
   <div class="form_elem form_label">
-      <label for="event_magnitude">$__{'Event magnitude'}:</label>
+      <label for="event_depth">$__{'Depth (km)'}:</label>
+  </div>
+  <div class="form_elem form_input">
+    <input name="event_depth" value="$evt_depth"/><br>
+  </div>
+  <br>
+
+  <div class="form_elem form_label">
+      <label for="event_magnitude">$__{'Magnitude'}:</label>
   </div>
   <div class="form_elem form_input">
       <input name="event_magnitude" value="$evt_magnitude"/><br>
@@ -227,7 +248,7 @@ sub print_form {
   <br>
 
   <div class="form_elem form_label">
-      <label for="event_department">$__{'Event department'}:</label>
+      <label for="event_department">$__{'Department'}:</label>
   </div>
   <div class="form_elem form_input">
       <input name="event_department" value="$evt_department"/><br>
@@ -235,7 +256,7 @@ sub print_form {
   <br>
 
   <div class="form_elem form_label">
-      <label for="event_region">$__{'Event region'}:</label>
+      <label for="event_region">$__{'Region'}:</label>
   </div>
   <div class="form_elem form_input">
       <input size=40 name="event_region" value="$evt_region"/><br>
@@ -245,7 +266,7 @@ sub print_form {
   </td><td style="border:0; vertical-align:top">
   
   <fieldset>
-  <legend><h3><input type="checkbox" name="send_report" value="Y" checked>$__{'Send full report'}</h3></legend>
+  <legend><h3><input type="checkbox" name="send_report" value="Y" checked>$__{'Send the B3 report'}</h3></legend>
 
   <div class="form_elem form_label">
       <label for="report_email">$__{'Destination email'}:</label>
@@ -276,7 +297,7 @@ sub print_form {
       <label for="report_message">$__{'Report message'}:</label>
   </div>
   <div class="form_elem form_input">
-    <textarea name="report_message" type="text" cols=80 rows="10"/>$report_message</textarea><br>
+    <textarea name="report_message" type="text" cols=80 rows="12"/>$report_message</textarea><br>
   </div>
   <br>
   </fieldset>
@@ -327,22 +348,42 @@ if ($q->param('send_trigger') eq '' and $q->param('send_report') eq '') {
   print_form();
 
 } else {
+  print "<h2>$__{'Sending emails'}</h2>\n";
+  my $replyto = "export REPLYTO=$operator_email";
+
   # send trigger email
   if ($q->param('send_trigger')) {
     my $mail_address = $q->param('trigger_email');
     my $mail_subject = $q->param('trigger_subject');
-    my $mail_content = "Time: ".$q->param('event_time')."\n\n"
-                       ."Latitude: ".$q->param('event_latitude')."\n\n"
-                       ."Longitude: ".$q->param('event_longitude')."\n\n"
-                       ."Magnitude: ".$q->param('event_magnitude')."\n\n"
-                       ."Departement: ".u2l($q->param('event_department'))."\n\n"
-                       ."Region: ".u2l($q->param('event_region'))."\n\n";
-    my $cmd = "export REPLYTO=$operator_email;echo \"$mail_content\" | mutt -s \"$mail_subject\" $mail_address";
-   system($cmd);
+    my $mail_content = "Time: ".$q->param('event_time')."\n"
+                       ."Latitude: ".$q->param('event_latitude')."\n"
+                       ."Longitude: ".$q->param('event_longitude')."\n"
+                       ."Depth: ".$q->param('event_depth')."\n"
+                       ."Magnitude: ".$q->param('event_magnitude')."\n"
+                       ."Department: ".u2l($q->param('event_department'))."\n"
+                       ."Region: ".u2l($q->param('event_region'))."\n";
+    my $cmd = "$replyto;echo \"$mail_content\" | mutt -s \"$mail_subject\" $mutt_options $mail_address $operator_email";
+    if ( ! system($cmd) ) {
+      print_success($__{'Trigger email has been successfully sent!'});
+    } else {
+      print_error($__{'Sorry, an error occured during report email sending. Please contact an administator.'});
+    }
   }
 
-  print "<h2>$__{'Emails sent'}</h2>\n";
-  print_success($__{'Emails have been successfully sent!'});
+  # send report email
+  if ($q->param('send_report')) {
+    my $mail_address = $q->param('report_email');
+    my $mail_subject = u2l($q->param('report_subject'));
+    my $mail_content = u2l($q->param('report_message'));
+    my $mail_attach = $q->param('report_file');
+    my $cmd = "$replyto;echo \"$mail_content\" | mutt -s \"$mail_subject\" -a \"$mail_attach\" -b \"$mail_address\" $mutt_options -- $operator_email";
+    if ( ! system($cmd) ) {
+      print_success($__{'Report email has been successfully sent!'});
+    } else {
+      print_error($__{'Sorry, an error occured during report email sending. Please contact an administator.'});
+    }
+  }
+
 }
 
 # Print last part of the page
