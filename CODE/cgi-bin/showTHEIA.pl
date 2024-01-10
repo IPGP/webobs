@@ -28,6 +28,7 @@ use Image::Info qw(image_info dim);
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
+$CGI::POST_MAX = 1024 * 1000;
 use Data::Dumper;
 use POSIX qw(locale_h);
 use locale;
