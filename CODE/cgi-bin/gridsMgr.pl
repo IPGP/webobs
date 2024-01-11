@@ -45,6 +45,7 @@ use File::Path qw/make_path/;
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
+$CGI::POST_MAX = 1024 * 1000;
 use DBI;
 use IO::Socket;
 use WebObs::Config;
@@ -106,19 +107,20 @@ $authtable = $WEBOBS{SQL_TABLE_PRODUCER} if ($QryParm->{'tbl'} eq "producer") ;
 # ---- managing the single quote in SQLite3 query
 # -----------------------------------------------------------------------------
 my $title     = $QryParm->{'title'};
-#$title     =~ s/'/''/g;
+$title     =~ s/'/\'/g;
 my $desc      = $QryParm->{'desc'};
-#$desc      =~ s/'/''/g;
+$desc      =~ s/'/\'/g;
 my $objective = $QryParm->{'objective'};
-#$objective =~ s/'/''/g;
+$objective =~ s/'/\'/g;
 my $meas_var  = $QryParm->{'measVar'};
-#$meas_var  =~ s/'/''/g;
+$meas_var  =~ s/'/\'/g;
 
-my @contacts   = split(',', $QryParm->{'contacts'});
-my @roles;
-my @firstNames;
-my @lastNames;
-my @emails;
+my @contacts    = $cgi->param('contacts');
+my @roles		= $cgi->param('roles');
+my @firstNames  = $cgi->param('firstName');
+my @lastNames   = $cgi->param('lastName');
+my @emails      = $cgi->param('emails');
+=pod
 foreach (@contacts) {
 	my @elements = split(/ /, $_);
 	push(@roles, (split '\(|\)', $_)[1]);
@@ -126,19 +128,20 @@ foreach (@contacts) {
 	push(@lastNames, $elements[3]);
 	push(@emails, $elements[4]);
 }
-
-my @funders     = split(',', $QryParm->{'funders'});
-my @typeFunders;
-my @idScanR;
-my @nameFunders;
-my @acronyms;
+=cut
+my @funders     = $cgi->param('funders');
+my @typeFunders = $cgi->param('typeFunders');
+my @idScanR		= $cgi->param('scanR');
+my @nameFunders	= $cgi->param('nameFunders');
+my @acronyms	= $cgi->param('acronyms');
+=pod
 foreach (@funders) {
 	push(@typeFunders, (split ':', $_)[0]);
 	push(@idScanR, (split '/', $_)[1]);
 	push(@nameFunders, (split ':|\(', $_)[1]);
 	push(@acronyms, (split '\(|\)', $_)[1]);
 }
-
+=cut
 my @onlineRes  = split('_,', $QryParm->{'onlineRes'});
 foreach (@onlineRes) {
 	$_ = (split '@', $_)[1];
@@ -155,7 +158,7 @@ if ($QryParm->{'action'} eq 'insert') {
 		$refMsg = \$domainMsg; $refMsgColor = \$domainMsgColor;
 		$rows = dbu($WEBOBS{SQL_DOMAINS},$q);
 	} elsif ($QryParm->{'tbl'} eq "producer") {
-		$q = "insert into $WEBOBS{SQL_TABLE_PRODUCER} values (\'$QryParm->{'id'}\',\'$QryParm->{'prodName'}\',\'$title\',\'$QryParm->{'desc'}\',\'$QryParm->{'objective'}\',\'$QryParm->{'measVar'}\',\'$QryParm->{'email'}\',\'".join(', ',@contacts)."\',\'".join(', ',@funders)."\',\'$QryParm->{'onlineRes'}\')";
+		$q = "insert into $WEBOBS{SQL_TABLE_PRODUCER} values (\'$QryParm->{'id'}\',\'$QryParm->{'prodName'}\',\'$title\',\'$QryParm->{'desc'}\',\'$QryParm->{'objective'}\',\'$QryParm->{'measVar'}\',\'$QryParm->{'email'}\',\'".join(', ',@emails)."\',\'".join(', ',@nameFunders)."\',\'$QryParm->{'onlineRes'}\')";
 		$refMsg = \$producerMsg; $refMsgColor = \$producerMsgColor;
 		$rows = dbu($WEBOBS{SQL_METADATA},$q);
 	} else { die "$QryParm->{'action'} for unknown table"; }
@@ -226,9 +229,8 @@ if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $Q
 	my $q0 = "insert into $WEBOBS{SQL_TABLE_CONTACTS} values (\'+++\',\'\',\'\',\'\',\'$QryParm->{'id'}\')";
 	my $q1 = "delete from $WEBOBS{SQL_TABLE_CONTACTS} WHERE RELATED_ID=\'$QryParm->{'id'}\' AND EMAIL != \'+++\'";
 	my $q2 = "";
-	if (@contacts > 0 && $contacts[0] ne "") {
-		my @values = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$QryParm->{'id'}\')" } 0..$#contacts ;
-		
+	if (@emails > 0 && $emails[0] ne "") {
+		my @values = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$QryParm->{'id'}\')" } 0..$#emails ;
 		$q2 = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@values);
 	} 
 	my $q3 = "delete from $WEBOBS{SQL_TABLE_CONTACTS} WHERE RELATED_ID=\'$QryParm->{'id'}\' AND EMAIL = \'+++\'";
@@ -243,8 +245,8 @@ if (($QryParm->{'action'} eq 'insert' || $QryParm->{'action'} eq 'update') && $Q
 	my $q0 = "insert into $WEBOBS{SQL_TABLE_ORGANISATIONS} values (\'+++\',\'\',\'\',\'\',\'\',\'$QryParm->{'id'}\')";
 	my $q1 = "delete from $WEBOBS{SQL_TABLE_ORGANISATIONS} WHERE RELATED_ID=\'$QryParm->{'id'}\' AND IDENTIFIER != \'+++\'";
 	my $q2 = "";
-	if (@funders > 0 && $funders[0] ne "") {
-		my @values = map { "(\'$typeFunders[$_]\',\'fr\',\'$acronyms[$_]\',\'$nameFunders[$_]\',\'$idScanR[$_]\',\'$QryParm->{'id'}\')" } 0..$#funders ;
+	if (@nameFunders > 0 && $nameFunders[0] ne "") {
+		my @values = map { "(\'$typeFunders[$_]\',\'fr\',\'$acronyms[$_]\',\'$nameFunders[$_]\',\'$idScanR[$_]\',\'$QryParm->{'id'}\')" } 0..$#nameFunders ;
 		$q2 = "insert or replace into $WEBOBS{SQL_TABLE_ORGANISATIONS} VALUES ".join(',',@values);
 	} 
 	my $q3 = "delete from $WEBOBS{SQL_TABLE_ORGANISATIONS} WHERE RELATED_ID=\'$QryParm->{'id'}\' AND IDENTIFIER = \'+++\'";
@@ -690,4 +692,4 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-=cut
+=cut-
