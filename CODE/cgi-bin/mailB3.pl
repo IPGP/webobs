@@ -36,7 +36,7 @@ use JSON;
 # ---- webobs stuff
 use WebObs::Config;
 use WebObs::Users qw(%USERS $CLIENT clientIsValid clientHasEdit);
-use WebObs::Utils qw(isok trim l2u u2l);
+use WebObs::Utils qw(isok trim l2u u2l tex2utf);
 use WebObs::Grids;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
@@ -171,7 +171,8 @@ sub print_form {
 
   if (-e "$b3.msg") {
     my @msg = readFile("$b3.msg");
-    $report_message = l2u(join("",@msg))."\n\n$P{REPORT_FOOTNOTE}\n";
+    $report_message = tex2utf(l2u(join("",@msg))."\n\n$P{REPORT_FOOTNOTE}\n");
+    $report_message =~ s/[ ]+/ /g;
   }
   print_secondary("Sorry, event $evt does not have json or gse file info. Will not be able to send the trigger email.") if (!$triggerOK);
 
@@ -195,7 +196,7 @@ sub print_form {
       <label for="trigger_email">$__{'Destination email'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input name="trigger_email" value="$evt_email"/><br/>\n
+      <input size=50 name="trigger_email" value="$evt_email"/><br/>\n
   </div>
   <br>
 
@@ -203,7 +204,7 @@ sub print_form {
       <label for="trigger_subject">$__{'Trigger email subject'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input name="trigger_subject" value="$evt_subject"/><br/>\n
+      <input size=50 name="trigger_subject" value="$evt_subject"/><br/>\n
   </div>
   <br>
 
@@ -211,7 +212,7 @@ sub print_form {
       <label for="event_time">$__{'Origin time (UT)'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input name="event_time" value="$evt_origin"/><br/>\n
+      <input size=50 name="event_time" value="$evt_origin"/><br/>\n
   </div>
   <br>
 
@@ -219,7 +220,7 @@ sub print_form {
       <label for="event_latitude">$__{'Latitude'}:</label>
   </div>
   <div class="form_elem form_input">
-    <input name="event_latitude" value="$evt_latitude"/><br>
+    <input size=50 name="event_latitude" value="$evt_latitude"/><br>
   </div>
   <br>
 
@@ -227,7 +228,7 @@ sub print_form {
       <label for="event_longitude">$__{'Longitude'}:</label>
   </div>
   <div class="form_elem form_input">
-    <input name="event_longitude" value="$evt_longitude"/><br>
+    <input size=50 name="event_longitude" value="$evt_longitude"/><br>
   </div>
   <br>
 
@@ -235,7 +236,7 @@ sub print_form {
       <label for="event_depth">$__{'Depth (km)'}:</label>
   </div>
   <div class="form_elem form_input">
-    <input name="event_depth" value="$evt_depth"/><br>
+    <input size=50 name="event_depth" value="$evt_depth"/><br>
   </div>
   <br>
 
@@ -243,7 +244,7 @@ sub print_form {
       <label for="event_magnitude">$__{'Magnitude'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input name="event_magnitude" value="$evt_magnitude"/><br>
+      <input size=50 name="event_magnitude" value="$evt_magnitude"/><br>
   </div>
   <br>
 
@@ -251,7 +252,7 @@ sub print_form {
       <label for="event_department">$__{'Department'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input name="event_department" value="$evt_department"/><br>
+      <input size=50 name="event_department" value="$evt_department"/><br>
   </div>
   <br>
 
@@ -259,7 +260,7 @@ sub print_form {
       <label for="event_region">$__{'Region'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input size=40 name="event_region" value="$evt_region"/><br>
+      <input size=50 name="event_region" value="$evt_region"/><br>
   </div>
   </fieldset>
 
@@ -272,7 +273,7 @@ sub print_form {
       <label for="report_email">$__{'Destination email'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input name="report_email" value="$report_email"/><br/>\n
+      <input size=80 name="report_email" value="$report_email"/><br/>\n
   </div>
   <br>
 

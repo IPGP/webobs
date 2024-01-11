@@ -21,7 +21,7 @@ our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
-            rtrim tri_date_avec_id isok romain pga2msk attenuation txt2htm
+            rtrim tri_date_avec_id isok romain pga2msk attenuation txt2htm tex2utf
             qrcode url2target checkParam);
 $VERSION = "1.00";
 
@@ -78,6 +78,36 @@ sub htmlspecialchars
 	$texte =~ s/>/&gt;/g;
 #  	print "<div style=\"border: 1px dotted gray;\">".$texte."</div>";
 	return $texte;
+}
+
+
+# -------------------------------------------------------------------------------------------------
+
+=pod
+
+=head2 tex2utf
+
+converts any TeX characters in $textin into UTF-8 character:
+
+  $textout = tex2utf($textin);
+
+=cut
+
+sub tex2utf
+{
+	my $text = $_[0];
+
+	$text =~ s/\\pm/±/g;
+	$text =~ s/\\approx/≈/g;
+	$text =~ s/\\pi/π/g;
+	$text =~ s/\\mu/µ/g;
+	$text =~ s/\\Omega/Ω/g;
+	$text =~ s/\\Sigma/∑/g;
+	$text =~ s/\\copyright/©/g;
+	$text =~ s/\\partial/∂/g;
+	$text =~ s/\\lt/</g;
+	$text =~ s/\\gt/>/g;
+	return $text;
 }
 
 

@@ -10,9 +10,30 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ## v2.7 (under development)
 
+### New features
+1. In the **tremblemaps** procs (felt earthquakes), GSE message can be replaced by a JSON file with basic information about the event, with two new variables:
+```
+GSE_EXPORT|N
+JSON_EXPORT|Y
+```
+   Each B3 report (felt earthquake) can be sent by email through a new form with all fields automatically filled and still editable by the operator before sending. Access to this form needs an Edit level authorization on the proc. The form is associated with new variables:
+```   
+MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
+TRIGGER_EMAIL|
+TRIGGER_SUBJECT|SÉISME RESSENTI
+REPORT_EMAIL|
+REPORT_SUBJECT|[OVS-IPGP] Séisme ressenti
+REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le site du BCSF à l'adresse suivante : www.franceseisme.fr
+```
+   The `MUTT_OPTIONS` is used to set the "From:" address (instead of Apache user), but other options can be added if needed (see **mutt** manual). `TRIGGER_EMAIL` and `TRIGGER_SUBJECT` is used to send the data to BCSF. It will use JSON file (if exists), or GSE file otherwise. The `REPORT_EMAIL`, `REPORT_SUBJECT`, and `REPORT_FOOTNOTE` are used to send the B3 report with a detailed text message on the event and potential macroseismic intensities. The PDF file of full report will be attached to the mail. Note that email will be sent to the operator and destination address will be in "Bcc:".
+
+### Enhancements
+
 ### Fixed issues
 1. ``!!`` WebObs Perl modules have been moved from CODE/cgi-bin/WebObs to CODE/perl/lib. The system-wide installation **MUST** be executed when upgrading (answer Y to the appropriate question during setup) in order to make all CGI working.
 1. ``!!`` non-CGI Perl scripts have been moved from CODE/cgi-bin/ to new directory CODE/perl/. The scheduler and postboard **MUST** be restarted when upgrading. Deployments that use `fdsnws-event2mc3.pl` or `seiscomp2mc3.pl` through external script or crontab must update the path.
+1. ``!`` CGI-Perl authentication has been improved against potential nasty use from invalid or unauthorized users.
+1. ``!`` User manager form: now only the WebObs Owner is allowed to delete a user, edit any user UID, or modify authorizations for the WebObs Owner himself. Admin level on the resource **user** allows everything else except these. As a reminder, modification/deletion of any user UID is not recommended since it might result in WebObs data corruption (grid or node events, manual data banks, Gazette, ...).
 1. Fix an issue to display attached photos in grid events.
 1. Fix the issue producing a black background for PDF image thumbnails.
 
