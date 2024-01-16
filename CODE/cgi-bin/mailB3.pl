@@ -35,7 +35,7 @@ use JSON;
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users qw(%USERS $CLIENT clientIsValid clientHasEdit);
+use WebObs::Users qw(%USERS $CLIENT clientIsValid clientHasAdm);
 use WebObs::Utils qw(isok trim l2u u2l tex2utf);
 use WebObs::Grids;
 use WebObs::i18n;
@@ -46,11 +46,18 @@ my $q = new CGI;
 my $grid = $q->param('grid');
 my $ts = $q->param('ts');
 my $g = $q->param('g');
+my $b3 = "$WEBOBS{'ROOT_OUTG'}/$grid/$ts/$g";
+if ( -l "$b3.png") {
+  my $b3png = readlink("$b3.png");
+  $b3png =~ s/\.png$//g;
+  $b3 =~ s/b3/$b3png/g;
+  $g =~ s/b3/$b3png/g;
+}
 
 my ($GRIDType, $GRIDName) = split(/\./,$grid);
 
 # before continuing, verify consistancy and authorization
-if (not (clientHasEdit(type=>"authprocs",name=>"$GRIDName"))) {
+if (not (clientHasAdm(type=>"authprocs",name=>"$GRIDName"))) {
   print_head();
   print("<h2>$__{'Unauthorized action'}</h2>\n");
   print_secondary("Sorry, you cannot use this script on $grid. Please contact your administrator.");
@@ -88,6 +95,9 @@ Content-type: text/html
   .form_label {
     width: 15em;
     text-align: right;
+  }
+  .auto {
+    background-color: #eeeeee;
   }
   .alert-success, .alert-error, .alert-info, .alert-secondary {
     border-radius: .25rem;
@@ -133,7 +143,6 @@ sub print_form {
 
   my ($y,$m,$d,$id,$evt) = split(/\//,$g);
   my ($evt_y,$evt_m,$evt_d,$evt_H,$evt_M,$evt_S,$evt_loc) = unpack("a4a2a2xa2a2a2xa*",$evt);
-  my $b3 = "$WEBOBS{'ROOT_OUTG'}/$grid/$ts/$g";
   my $b3_urn = "$WEBOBS{'URN_OUTG'}/$grid/$ts/$g"; 
   my $evt_email = $P{TRIGGER_EMAIL};
   my $evt_subject = $P{TRIGGER_SUBJECT};
@@ -212,7 +221,7 @@ sub print_form {
       <label for="event_time">$__{'Origin time (UT)'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input size=50 name="event_time" value="$evt_origin"/><br/>\n
+      <input size=50 name="event_time" value="$evt_origin" class="auto"/><br/>\n
   </div>
   <br>
 
@@ -220,7 +229,7 @@ sub print_form {
       <label for="event_latitude">$__{'Latitude'}:</label>
   </div>
   <div class="form_elem form_input">
-    <input size=50 name="event_latitude" value="$evt_latitude"/><br>
+    <input size=50 name="event_latitude" value="$evt_latitude" class="auto"/><br>
   </div>
   <br>
 
@@ -228,7 +237,7 @@ sub print_form {
       <label for="event_longitude">$__{'Longitude'}:</label>
   </div>
   <div class="form_elem form_input">
-    <input size=50 name="event_longitude" value="$evt_longitude"/><br>
+    <input size=50 name="event_longitude" value="$evt_longitude" class="auto"/><br>
   </div>
   <br>
 
@@ -236,7 +245,7 @@ sub print_form {
       <label for="event_depth">$__{'Depth (km)'}:</label>
   </div>
   <div class="form_elem form_input">
-    <input size=50 name="event_depth" value="$evt_depth"/><br>
+    <input size=50 name="event_depth" value="$evt_depth" class="auto"/><br>
   </div>
   <br>
 
@@ -244,7 +253,7 @@ sub print_form {
       <label for="event_magnitude">$__{'Magnitude'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input size=50 name="event_magnitude" value="$evt_magnitude"/><br>
+      <input size=50 name="event_magnitude" value="$evt_magnitude" class="auto"/><br>
   </div>
   <br>
 
@@ -252,7 +261,7 @@ sub print_form {
       <label for="event_department">$__{'Department'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input size=50 name="event_department" value="$evt_department"/><br>
+      <input size=50 name="event_department" value="$evt_department" class="auto"/><br>
   </div>
   <br>
 
@@ -260,7 +269,7 @@ sub print_form {
       <label for="event_region">$__{'Region'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input size=50 name="event_region" value="$evt_region"/><br>
+      <input size=50 name="event_region" value="$evt_region" class="auto"/><br>
   </div>
   </fieldset>
 

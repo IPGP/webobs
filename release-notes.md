@@ -16,7 +16,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 GSE_EXPORT|N
 JSON_EXPORT|Y
 ```
-   Each B3 report (felt earthquake) can be sent by email through a new form with all fields automatically filled and still editable by the operator before sending. Access to this form needs an Edit level authorization on the proc. The form is associated with new variables:
+   Each B3 report (felt earthquake) can be sent by email through a new form with all fields automatically filled and still editable by the operator before sending. Access to this form needs an Admin level authorization on the proc. The form is associated with new variables:
 ```   
 MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
 TRIGGER_EMAIL|
@@ -25,7 +25,7 @@ REPORT_EMAIL|
 REPORT_SUBJECT|[OVS-IPGP] Séisme ressenti
 REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le site du BCSF à l'adresse suivante : www.franceseisme.fr
 ```
-   The `MUTT_OPTIONS` is used to set the "From:" address (instead of Apache user), but other options can be added if needed (see **mutt** manual). `TRIGGER_EMAIL` and `TRIGGER_SUBJECT` is used to send the data to BCSF. It will use JSON file (if exists), or GSE file otherwise. The `REPORT_EMAIL`, `REPORT_SUBJECT`, and `REPORT_FOOTNOTE` are used to send the B3 report with a detailed text message on the event and potential macroseismic intensities. The PDF file of full report will be attached to the mail. Note that email will be sent to the operator and destination address will be in "Bcc:".
+   The `MUTT_OPTIONS` is used to set the "From:" address (instead of Apache user who is the real sender), but other options can be added if needed (see **mutt** manual). `TRIGGER_EMAIL` and `TRIGGER_SUBJECT` is used to send the data to BCSF. It will use JSON file (if exists), or GSE file otherwise. The `REPORT_EMAIL`, `REPORT_SUBJECT`, and `REPORT_FOOTNOTE` are used to send the B3 report with a detailed text message on the event and potential macroseismic intensities. The PDF file of full report will be attached to the mail. Note that email will be sent to the operator and destination address will be in "Bcc:".
 
 ### Enhancements
 
