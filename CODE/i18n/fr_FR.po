@@ -1761,6 +1761,9 @@ msgstr "Message"
 msgid "Send emails"
 msgstr "Envoyer les emails"
 
+msgid "Are you sure?"
+msgstr "Êtes-vous sûr ?"
+
 msgid "Sending emails"
 msgstr "Envoi des emails"
 
