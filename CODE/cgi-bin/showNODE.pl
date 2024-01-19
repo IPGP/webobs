@@ -375,13 +375,11 @@ if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
 		my $n = 1;
 		foreach (sort { $dist{$a} <=> $dist{$b} or $a cmp $b } keys %dist) {
 			if ($_ ne $NODEName) {
-				my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
-				next if ($nnn eq '');
 				my $d = ($dist{$_}<1 ? sprintf("%8.0f&nbsp;m",1000*$dist{$_}):sprintf("%7.3f&nbsp;km",$dist{$_}));
 				my $p = ($proj{$_} ? "&nbsp;<IMG src='/icons/attention.gif' border='0' title=\"$__{'This node has a project'}\">":"");
 				print "<TR><TD align=right style='border:none'><SMALL>$d<IMG src=\"/icons/boussole/".lc(compass($bear{$_})).".png\" align=\"top\"></SMALL></TD>"
 					."<TD align=right style='border:none'><SMALL>".sprintf("%+1.0f&nbsp;m&nbsp;",$deniv{$_})."</SMALL></TD>"
-					."<TD style='border:none'><SMALL><A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>$p</SMALL></TD></TR>\n";
+					."<TD style='border:none'><SMALL>".getNodeString(node=>$_, link=>'node')."$p</SMALL></TD></TR>\n";
 				last if ($n++ == $NODES{NEIGHBOUR_NODES_MAX});
 			}
 		}
@@ -401,26 +399,21 @@ if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
 	my ($utype,$ujunk) = split(/\|/,$typeTele{$trans[0]}{name});
 	print "<TD colspan=\"2\"><TABLE style='border-spacing:0;border:none'><TR><TD colspan=3 style='border:none'>Type: <B>".u2l($utype)."</B></TD></TR>";
 	for (@trans[1 .. $#trans]) {
-		my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
 		my $distelev = "<TD colspan=2 style='border:none'>&ensp;</TD>";
-		my $nodelink = "";
-		if ($nnn ne "") {
-			my %N = %{$allNodes{$_}};
-			if (!($N{LAT_WGS84}=="" && $N{LON_WGS84}=="")) {
-				my ($dist,$bear) = greatcircle($NODE{LAT_WGS84},$NODE{LON_WGS84},$N{LAT_WGS84},$N{LON_WGS84});
-				my $deniv = "";
-				if ($NODE{ALTITUDE} != 0 && $N{ALTITUDE} != 0) {
-					$deniv = $N{ALTITUDE} - $NODE{ALTITUDE};
-					$dist = sqrt($dist**2 + ($deniv/1000)**2);
-				}
-				my $d = ($dist<1 ? sprintf("%8.0f&nbsp;m",1000*$dist):sprintf("%7.3f&nbsp;km",$dist));
-				$distelev = "<TD align=right style='border:none'><SMALL>&ensp;$d<IMG src=\"/icons/boussole/".lc(compass($bear)).".png\" align=\"top\"></SMALL></TD>"
-					."<TD align=right style='border:none'><SMALL>(<I>&Delta;h</I>&nbsp;".sprintf("%+1.0f&nbsp;m",$deniv).")&nbsp;</SMALL></TD>";
+		my $nodelink = "<B>$_</B> ($__{'unknown'})";
+		my %N = %{$allNodes{$_}};
+		if (!($N{LAT_WGS84}=="" && $N{LON_WGS84}=="")) {
+			my ($dist,$bear) = greatcircle($NODE{LAT_WGS84},$NODE{LON_WGS84},$N{LAT_WGS84},$N{LON_WGS84});
+			my $deniv = "";
+			if ($NODE{ALTITUDE} != 0 && $N{ALTITUDE} != 0) {
+				$deniv = $N{ALTITUDE} - $NODE{ALTITUDE};
+				$dist = sqrt($dist**2 + ($deniv/1000)**2);
 			}
-			$nodelink = "<A href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</A>".($N{PROJECT} ? "&nbsp;<IMG src='/icons/attention.gif' border='0'>":"");
-		} else {
-			$nodelink = "<B>$_</B> ($__{'unknown'})";
+			my $d = ($dist<1 ? sprintf("%8.0f&nbsp;m",1000*$dist):sprintf("%7.3f&nbsp;km",$dist));
+			$distelev = "<TD align=right style='border:none'><SMALL>&ensp;$d<IMG src=\"/icons/boussole/".lc(compass($bear)).".png\" align=\"top\"></SMALL></TD>"
+				."<TD align=right style='border:none'><SMALL>(<I>&Delta;h</I>&nbsp;".sprintf("%+1.0f&nbsp;m",$deniv).")&nbsp;</SMALL></TD>";
 		}
+		$nodelink = getNodeString(node=>$_,link=>'node').($N{PROJECT} ? "&nbsp;<IMG src='/icons/attention.gif' border='0'>":"");
 		print "<TR>$distelev<TD style='border:none'><SMALL>$nodelink</SMALL></TD></TR>\n";
 	}
 	print "</TABLE></TD>\n";
@@ -697,8 +690,7 @@ for my $key_link (keys %node2node) {
  			my $parent_node = $data[0];
  			my $feature = $data[1];
 			$pseudoFileName = "ISOF:$feature";
-			my $nnn = ($parent_node =~ m/^.*[\.\/].*[\.\/].*$/)?$parent_node:WebObs::Grids::normNode(node=>"..$parent_node");
-			$lienNode{$pseudoFileName} .= ($lienNode{$pseudoFileName} eq "" ? "" : "<br>")."<a href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$parent_node)."</a>";
+			$lienNode{$pseudoFileName} .= ($lienNode{$pseudoFileName} eq "" ? "" : "<br>").getNodeString(node=>$parent_node, link=>'node');
  		}
 	}
 }
@@ -716,8 +708,7 @@ for (@listeCarFiles) {
 		my @liste_liens=split(/\|/,$node2node{$key_link});
 		for (@liste_liens) {
 			if ( length($_) > 0 ) {
-				my $nnn = (m/^.*[\.\/].*[\.\/].*$/)?$_:WebObs::Grids::normNode(node=>"..$_");
-				$lienNode{$carFileName} .= ($lienNode{$carFileName} eq "" || $nnn eq "" ? "" : "<br>")."<a href=\"$NODES{CGI_SHOW}?node=$nnn\">".getNodeString(node=>$_)."</a>";
+				$lienNode{$carFileName} .= ($lienNode{$carFileName} eq "" ? "" : "<br>").getNodeString(node=>$_, style=>'html', link=>'features')."</a>";
 			}
 		}
 		if ( $lienNode{$carFileName} ne "" ) {

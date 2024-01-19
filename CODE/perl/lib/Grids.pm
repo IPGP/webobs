@@ -27,7 +27,7 @@ Package WebObs : Common perl-cgi variables and functions
 use strict;
 use warnings;
 use File::Basename;
-use WebObs::Utils qw(u2l l2u trim);
+use WebObs::Utils qw(u2l l2u trim isok);
 use WebObs::Config qw(%WEBOBS readCfg readCfgFile readFile);
 use WebObs::Users qw(clientHasRead);
 use POSIX qw(strftime);
@@ -555,16 +555,21 @@ sub normNode {
 
 =head2 getNodeString
 
- $text = getNodeString(node=>'nodename' [,style={'alias'|'short'|'html'] );
+ $text = getNodeString(node=>'nodename' [,style={'alias'|'short'|'html'}] [,link={'node'|'features'}] );
 
 Returns a string identifying NODE 'node', formatted in one of the predefined styles
-available: 'alias', 'short' or 'html'.
+available: 'alias', 'short' or 'html', with link to: 'node' or 'features'.
 
 'style' outputs: ('html' is the default style when none is specified)
 
  alias    : ALIAS
  short    : ALIAS: NAME
  html     : <b>ALIAS</b>: NAME <i>TYPE</i>
+
+'link' outputs:
+
+ node     : <a href="...">NODE</a>
+ features : <a href="...">NODE</a> +featureA +featureB +featureC
 
 Does NOT use WebObs::Grids::readNode() to save unecessary/expensive directory scans
 and type.txt file-reads ...
@@ -574,20 +579,28 @@ and type.txt file-reads ...
 sub getNodeString
 {
 	my %KWARGS = @_;
-	my $style = $KWARGS{style} && $KWARGS{style} =~ /^alias|^short|^html/ ? $KWARGS{style} : 'html';
 	my $node  = $KWARGS{node} ? $KWARGS{node} : '';
+	my $style = $KWARGS{style} && $KWARGS{style} =~ /^alias|^short|^html/ ? $KWARGS{style} : 'html';
+	my $link =  $KWARGS{link} && $KWARGS{link} =~ /^node|^features/ ? $KWARGS{link} : '';
 
-	my $texte = "";
+	my $text = "";
 	if ($node ne "" && -f "$NODES{PATH_NODES}/$node/$node.cnf") {
 		my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
-		no warnings "uninitialized";
-		if ($style eq 'alias')    { $texte = $N{ALIAS} }
-		if ($style eq 'short')    { $texte = "$N{ALIAS}: $N{NAME}" }
-		if ($style eq 'html')     { $texte = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ne "" && $N{TYPE} ne "-" ? " <i>($N{TYPE})</i>":"") }
-		use warnings;
-		#djl-was: $texte =~ s/ /Â /g;    #djl: re-assess
+		if (isok($N{VALID})) {
+			my $nnode = normNode(node=>"..$node");
+			no warnings "uninitialized";
+			if ($style eq 'alias')    { $text = $N{ALIAS} }
+			if ($style eq 'short')    { $text = "$N{ALIAS}: $N{NAME}" }
+			if ($style eq 'html')     { $text = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ne "" && $N{TYPE} ne "-" ? " <i>($N{TYPE})</i>":"") }
+			if ($link eq 'node')      { $text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A>"; }
+			if ($link eq 'features') {
+				$text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A> "
+					.($N{FILES_FEATURES} ne "" ? join("",map { "&ensp;<a href=\"\"><img src=\"/icons/drawersmall.png\"></a>&nbsp;$_" } split(/,/,$N{FILES_FEATURES})):"")
+			}
+			use warnings;
+		}
 	}
-	return $texte;
+	return $text;
 }
 
 =pod
