@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2024-01-10
+%	Updated: 2024-01-11
 
 
 WO = readcfg;
@@ -612,7 +612,7 @@ for n = 1:length(t)
 				fprintf('%s: exporting JSON file %s ...',wofun,fjson);
 				fid = fopen(fjson,'wt');
 				fprintf(fid,'{\n');
-				fprintf(fid,'  "id": "%s",\n',id);
+				fprintf(fid,'  "eventid": "%s",\n',id);
 				fprintf(fid,'  "time": "%4d/%02d/%02d %02d:%02d:%04.1f",\n',datevec(t(n)));
 				fprintf(fid,'  "latitude": "%1.4f",\n',d(n,1));
 				fprintf(fid,'  "longitude": "%1.4f",\n',d(n,2));
