@@ -315,7 +315,7 @@ sub print_form {
   <tr><td style="border:0;text-align:center" colspan=2>
 
   <div class="form_elem form_input">
-    <p><input type="submit" name="submit" style="font-weight: bold" value="$__{'Send emails'}"></p>
+    <p><input type="submit" name="submit" style="font-weight: bold" value="$__{'Send emails'}" onclick="return confirm('$__{'Are you sure?'}')"></p>
   </div>
   </td></tr></table>
   
