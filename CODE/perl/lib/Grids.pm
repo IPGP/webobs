@@ -584,6 +584,7 @@ sub getNodeString
 	my $link =  $KWARGS{link} && $KWARGS{link} =~ /^node|^features/ ? $KWARGS{link} : '';
 
 	my $text = "";
+	my $sub = "";
 	if ($node ne "" && -f "$NODES{PATH_NODES}/$node/$node.cnf") {
 		my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
 		if (isok($N{VALID})) {
@@ -594,8 +595,21 @@ sub getNodeString
 			if ($style eq 'html')     { $text = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ne "" && $N{TYPE} ne "-" ? " <i>($N{TYPE})</i>":"") }
 			if ($link eq 'node')      { $text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A>"; }
 			if ($link eq 'features') {
-				$text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A> "
-					.($N{FILES_FEATURES} ne "" ? join("",map { "&ensp;<a href=\"\"><img src=\"/icons/drawersmall.png\"></a>&nbsp;$_" } split(/,/,$N{FILES_FEATURES})):"")
+				$text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A> ";
+				if ($N{FILES_FEATURES} ne "") {
+					$text = "<img src=\"/icons/drawersmall.png\" onClick=\"toggledrawer('\#ID_$node')\">&nbsp;".$text."\n"
+							."<div id=\"ID_$node\"><table class=\"fof\">";
+					for my $feature (split(/,/,$N{FILES_FEATURES})) {
+						my $f = "$NODES{PATH_NODES}/$node/$NODES{SPATH_FEATURES}/$feature.txt";
+						if (-f $f) {
+							my @feat = readFile($f);
+							my $htm = WebObs::Wiki::wiki2html(join("",@feat));
+							$htm =~ s/<br><br>/<br>/ig;
+							$sub .= "<tr><th class=\"fof\"><b>$feature</b></td><td class=\"fof\">".$htm."</td></tr>";
+						}
+					}
+					$text .= $sub."</table></div>";
+				}
 			}
 			use warnings;
 		}
