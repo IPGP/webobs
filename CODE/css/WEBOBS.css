@@ -746,3 +746,24 @@ td.ic, th.ic { width: 1%}
 	height: 100px;
 	width: 200px;
 }
+
+table.fof {
+	border-spacing: 0;
+	border-collapse: separate;
+	border:1px;
+	border-style: solid;
+	border-color: #DDDDDD;
+	border-radius: 5px;
+}
+th.fof {
+	vertical-align: top;
+	border:none;
+	text-align: right;
+	background: #DDDDDD;
+	padding: 5px;
+}
+td.fof {
+	border:none;
+	background: #F9F9F9;
+	padding: 5px;
+}
