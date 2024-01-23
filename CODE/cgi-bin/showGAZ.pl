@@ -336,13 +336,14 @@ for(@lignes) {
 			.($QryParm->{'isotopes'} ne "" ? "<TD align=center>$d13C</TD><TD align=center>$d18O</TD>":"")
 			."<TD class=tdResult>$S_C</TD><TD>";
 		$txt = "$date;$heure;$site;$aliasSite;$tFum;$pH;$debit;$H2;$He;$CO;$CH4;$N2;$H2S;$Ar;$CO2;$SO2;$O2;$Rn;$d13C;$d18O;$S_C";
+		$txt = $txt."\"$rem\"\n";
 		if ($rem ne "") {
 			$rem =~ s/\'/&rsquo;/g;
 			$rem =~ s/\"/&quot;/g;
+			$rem = l2u($rem);
 			$texte = $texte."<IMG src=\"/icons/attention.gif\" border=0 onMouseOut=\"nd()\" onMouseOver=\"overlib('$rem',CAPTION,'Observations $aliasSite')\">";
 		}
 		$texte = $texte."</TD></TR>\n";
-		$txt = $txt."\"$rem\"\n";
 		push(@csv,u2l($txt));
 		
 		$nbLignesRetenues++;
