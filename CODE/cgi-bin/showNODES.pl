@@ -72,6 +72,16 @@ print <<"FIN";
 <body>
 FIN
 
+print "<TABLE width=\"100%\"><TR><TD style=\"border:0;vert-align:top\"><H1>$WEBOBS{WEBOBS_ID}: $__{'All nodes'}</H1></TD>\n";
+my $nv = scalar(grep { $_ =~ /^VIEW/ } @T);
+my $np = scalar(grep { $_ =~ /^PROC/ }@T);
+my $tot = keys %N;
+print "<TD style=\"border:0;text-align:right\"><TABLE>";
+print "<TR><TD style=\"border:0;text-align:right\"><B>$nv</B></TD><TD style=\"border:0\">views</TD></TR>";
+print "<TR><TD style=\"border:0;text-align:right\"><B>$np</B></TD><TD style=\"border:0\">procs</TD></TR>";
+print "<TR><TD style=\"border:0;text-align:right\"><B>$tot</B></TD><TD style=\"border:0\">$__{'nodes'}</TD></TR></TABLE>\n";
+print "</TD></TR></TABLE><P></P>\n";
+
 # ---- build matrix as a <TABLE>
 print "<DIV class=\"nodetbl\">";
 print "<TABLE cellspacing=0>\n";
