@@ -96,22 +96,6 @@ sub wiki2html {
 	if (length($meta) == 0) { wiki($clean) } else { markdown($string) };
 }
 
-#dl-was:isub stripMDmetadata {
-#dl-was:	if (defined($_[0]) && $_[0] ne "") {
-#dl-was:		my @tt = split /(?<=\n)/, $_[0];
-#dl-was:		$tt[0] =~ /^TITRE(_HTML)*\|.*\n/ and shift(@tt);
-#dl-was:		my @meta = ();
-#dl-was:		if ($WEBOBS{WIKI_MMD} eq 'NO') { return (join("",@tt),@meta) };
-#dl-was:		foreach my $line (@tt) {
-#dl-was:			$line =~ /^\s*$/ and (scalar @meta > 0) and push(@meta, $line) and last;
-#dl-was:			$line =~ /^([a-zA-Z0-9][0-9a-zA-Z _-]+?):.*$/ and push(@meta, $line) and next;
-#dl-was:			if (scalar @meta > 0) { push(@meta, $line) } else { last }
-#dl-was:		}
-#dl-was:		for (1..scalar(@meta)) { shift(@tt) }
-#dl-was:		return (join("",@tt),@meta);
-#dl-was:	}
-#dl-was:}
-
 sub stripMDmetadata {
 	if (defined($_[0]) && $_[0] ne "") {
 		(my $txt = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;
