@@ -73,6 +73,8 @@ my $today = strftime("%Y-%m-%d", localtime);
 
 my $htmlcontents = "";
 my $editOK   = 0;
+my $admVIEWS = 0;
+my $admPROCS = 0;
 my $descGridType = my $descGridName = my $descLegacy = "";
 
 
@@ -147,10 +149,12 @@ if ($subsetDomain ne '') {
 	}
 }
 
-# edition is allowed only if the user has edit authorization for ALL grids (views and procs)
-if ( WebObs::Users::clientHasEdit(type=>"authviews",name=>"*") && WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*")) {
-	$editOK = 1
-};
+# creation of new view or proc is allowed only if the user has admin authorization for ALL grids (views and/or procs)
+$admVIEWS = 1 if ( WebObs::Users::clientHasAdm(type=>"authviews",name=>"*") );
+$admPROCS = 1 if ( WebObs::Users::clientHasAdm(type=>"authprocs",name=>"*") );
+
+# content edition is allowed only if the user has edit authorization for ALL grids (views and procs)
+$editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"authviews",name=>"*") && WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*") );
 
 # Regroup all database queries here for optimisation
 my $dbh = connectDbDomains();
@@ -187,6 +191,7 @@ print "<H1 style=\"margin-bottom:6px\">";
 	print "$GRIDS{SHOW_GRIDS_TITLE}\n" if ($subsetType eq 'all');
 	print "Views" if ($subsetType eq 'view');
 	print "Procs" if ($subsetType eq 'proc');
+	print "Sefrans" if ($subsetType eq 'sefran');
 print "</H1>\n";
 
 # ---- Subtitle menu to other domains/grids displays
@@ -239,7 +244,7 @@ print "<div id=\"noscrolldiv\">";
 		}
 		print "<TH>Grid</TH>" if ($subsetType ne "");
 		print "<TH><a href='#popupY' title=\"$__{'Find text in Grids'}\" onclick='srchopenPopup(\"*ALL\");return false'><img class='ic' src='/icons/search.png'></a>";
-		if (WebObs::Users::clientHasAdm(type=>"authviews",name=>"*") && WebObs::Users::clientHasAdm(type=>"authprocs",name=>"*") ) {
+		if ($admVIEWS || $admPROCS) {
 			print "&nbsp;<a href='#popupY' title=\"$__{'Edit/Create a Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/modif.png'></a>"
 		}
 		print     "&nbsp;&nbsp;&nbsp;Name</TH>";
@@ -247,10 +252,13 @@ print "<div id=\"noscrolldiv\">";
 		print "<TH>Type</TH>"  if ($showType);
 		print "<TH>Owner</TH>" if ($showOwnr);
 		print "<TH>Graphs</TH>";
-		if (WebObs::Users::clientHasAdm(type=>"authviews",name=>"*") && WebObs::Users::clientHasAdm(type=>"authprocs",name=>"*") ) {
-			print "<TH>&nbsp;<a href='#popupY' title=\"$__{'Edit/Create a Form'}\" onclick='feditopenPopup(); return false;'><img class='ic' src='/icons/modif.png'></a>" if ($wantProcs || $wantSefrans);
+		if ($wantProcs || $wantSefrans) {
+			print "<TH>";
+			if ( $admPROCS ) {
+				print "<a href='#popupY' title=\"$__{'Edit/Create a Form'}\" onclick='feditopenPopup(); return false;'><img class='ic' src='/icons/modif.png'></a>";
+			}
+			print "&nbsp;&nbsp;&nbsp;Raw Data</TH>";
 		}
-		print "&nbsp;&nbsp;&nbsp;Raw Data</TH>" if ($wantProcs || $wantSefrans);
 		print "</TR>\n";
 		for my $d (@$domains) {
 			my ($dc, $dn) = @$d;
@@ -442,7 +450,10 @@ sub printdesc {
 sub geditpopup {
 	# prepares a list of grid's templates
 	my @tplates;
-	my @tmp = glob("$WEBOBS{ROOT_CODE}/tplates/{VIEW,PROC,SEFRAN}.*");
+	my @gt;
+	push(@gt,"VIEW") if ($admVIEWS);
+	push(@gt,"PROC,SEFRAN") if ($admPROCS);
+	my @tmp = glob("$WEBOBS{ROOT_CODE}/tplates/{".join(',',@gt)."}.*");
 	foreach my $t (@tmp) {
         if (! -l $t) {
 		    my @conf = readCfg($t);
