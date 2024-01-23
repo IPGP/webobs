@@ -41,7 +41,7 @@ for (sort(WebObs::Grids::listProcNames())) {
 	push(@T, "PROC.$_") if (clientHasRead(type=>"authprocs",name=>"$_"));
 };
 
-# get all NODEs configurations !!
+# get all NODE IDs with grid association
 my %N = WebObs::Grids::listNodeGrids();
 my $row = "";
 
@@ -73,14 +73,12 @@ print <<"FIN";
 FIN
 
 print "<TABLE width=\"100%\"><TR><TD style=\"border:0;vert-align:top\"><H1>$WEBOBS{WEBOBS_ID}: $__{'All nodes'}</H1></TD>\n";
-my $nv = scalar(grep { $_ =~ /^VIEW/ } @T);
-my $np = scalar(grep { $_ =~ /^PROC/ }@T);
-my $tot = keys %N;
 print "<TD style=\"border:0;text-align:right\"><TABLE>";
-print "<TR><TD style=\"border:0;text-align:right\"><B>$nv</B></TD><TD style=\"border:0\">views</TD></TR>";
-print "<TR><TD style=\"border:0;text-align:right\"><B>$np</B></TD><TD style=\"border:0\">procs</TD></TR>";
-print "<TR><TD style=\"border:0;text-align:right\"><B>$tot</B></TD><TD style=\"border:0\">$__{'nodes'}</TD></TR></TABLE>\n";
-print "</TD></TR></TABLE><P></P>\n";
+print "<TR><TD style=\"border:0;text-align:right\"><B>".(grep { $_ =~ /^VIEW/ } @T)."</B></TD><TD style=\"border:0\">views</TD></TR>\n";
+print "<TR><TD style=\"border:0;text-align:right\"><B>".(grep { $_ =~ /^PROC/ } @T)."</B></TD><TD style=\"border:0\">procs</TD></TR>\n";
+print "<TR><TD style=\"border:0;text-align:right\"><B>".(keys %N)."</B></TD><TD style=\"border:0\">$__{'nodes'}</TD></TR>\n";
+print "<TR><TD style=\"border:0;text-align:right\"><B>".(grep(/^1$/,map { @{$_} == 0 } values %N))."</B></TD><TD style=\"border:0\">$__{'orphan nodes'}</TD></TR>\n";
+print "</TABLE></TD></TR></TABLE>\n";
 
 # ---- build matrix as a <TABLE>
 print "<DIV class=\"nodetbl\">";
@@ -94,22 +92,26 @@ print "<TABLE cellspacing=0>\n";
 		$oddeven = $oddeven eq "even" ? "odd" : "even";
 	}
 	print "$row\n";
-	print "</THEAD>";
+	print "</THEAD>\n";
 
 	print "<TBODY>";
 	for my $node (sort keys(%N)) {
 		my $oddeven = "even";
 		$row = "<TR><TD class=\"nodeid\">$node</TD>";
-		for (@T) {
-			$what = ($_ =~ m/^VIEW./) ? 'view' : 'proc';
-			if ($_ ~~ @{$N{$node}}) {
-				my $link = "\"$NODES{CGI_SHOW}?node=$_.$node\"";
-				$row .= "<TD class=\"otimes $what $oddeven\"><a href=$link>&cir;</a></TD>" 
+		if (@{$N{$node}}) {
+			for (@T) {
+				$what = ($_ =~ m/^VIEW./) ? 'view' : 'proc';
+				if ($_ ~~ @{$N{$node}}) {
+					my $link = "\"$NODES{CGI_SHOW}?node=$_.$node\"";
+					$row .= "<TD class=\"otimes $what $oddeven\"><a href=$link>&cir;</a></TD>" 
+				}
+				else {
+					$row .= "<TD class=\"oempty $what $oddeven\">&empty;</TD>"
+				}
+				$oddeven = $oddeven eq "even" ? "odd" : "even";
 			}
-			else {
-				$row .= "<TD class=\"oempty $what $oddeven\">&empty;</TD>"
-			}
-			$oddeven = $oddeven eq "even" ? "odd" : "even";
+		} else {
+			$row .= "<TD class=\"oorphan\" colspan=\"".(@T)."\"></TD></TR>\n";
 		}
 		print $row;
 	}

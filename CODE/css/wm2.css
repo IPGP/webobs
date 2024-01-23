@@ -355,6 +355,10 @@
 	background-color:  #EAECD8;
 	color: transparent;
 }
+.nodetbl table td.oorphan {
+	background-color: transparent;
+	color: transparent;
+}
 
 .hover {
 	background-color: #E0E0E0;
