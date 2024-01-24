@@ -201,7 +201,7 @@ msgid "Graphical routine"
 msgstr "Routine graphique"
 
 msgid "Events File(s)"
-msgstr "Fichier(s) d\\'événements"
+msgstr "Fichier(s) d'événements"
 
 msgid "External link(s)"
 msgstr "Lien(s) externe(s)"
@@ -949,10 +949,10 @@ msgid "hebdo_help_time_interval"
 msgstr "Sélectionner l\\'intervalle"
 
 msgid "Type of event"
-msgstr "Type d\\'événement"
+msgstr "Type d'événement"
 
 msgid "hebdo_help_type_event"
-msgstr "Sélectionner le type d\\'événement"
+msgstr "Sélectionner le type d'événement"
 
 msgid "Delete this event"
 msgstr "Supprimer cet événement"
@@ -1141,7 +1141,7 @@ msgid "Duration"
 msgstr "Durée"
 
 msgid "Number of events"
-msgstr "Nombre d\\'événements"
+msgstr "Nombre d'événements"
 
 msgid "Distance according to indicated S-P"
 msgstr "Distance selon le S-P indiqué"
@@ -1540,7 +1540,7 @@ msgid "End Date"
 msgstr "Date de fin"
 
 msgid "Event Title"
-msgstr "Titre d\\'événement"
+msgstr "Titre d'événement"
 
 msgid "Comment/Observation"
 msgstr "Observations"
@@ -1558,13 +1558,13 @@ msgid "Start Date - decreasing"
 msgstr "Dates croissantes"
 
 msgid "Search Node Events"
-msgstr "Recherche d\\'événements"
+msgstr "Recherche d'événements"
 
-msgid "Search for"
-msgstr "Chercher"
+msgid "Search for:"
+msgstr "Chercher :"
 
-msgid "in"
-msgstr "dans"
+msgid "in:"
+msgstr "dans :"
 
 msgid "OR"
 msgstr "OU"
@@ -1572,11 +1572,29 @@ msgstr "OU"
 msgid "AND"
 msgstr "ET"
 
-msgid "sorted by"
-msgstr "trié par"
+msgid "sorted by:"
+msgstr "trié par :"
 
-msgid "max diplayed"
-msgstr "max affiché"
+msgid "max diplayed:"
+msgstr "max affiché :"
+
+msgid "Show:"
+msgstr "Afficher :"
+
+msgid "node's name"
+msgstr "nom du node"
+
+msgid "help_vsearch_str"
+msgstr "Mot ou chaîne de caractères à rechercher. Pour la négation, ajouter un ! en début de chaîne. La plupart des catégories utilisent une expression rationnelle, hormis les auteurs/opérateurs pour lesquels il s\\'agit d\\'une commande \\'LIKE\\' SQLite."
+
+msgid "help_vsearch_in"
+msgstr "Sélectionner la catégorie dans laquelle la recherche s\\'effectue."
+
+msgid "help_vsearch_showg"
+msgstr "Afficher le nom de la grid."
+
+msgid "help_vsearch_shown"
+msgstr "Afficher le nom complet du node."
 
 
 # ---- formRAINWATER.pl
@@ -1775,3 +1793,11 @@ msgstr "Désolé, une erreur est survenue lors de l'envoi de l'email. Veuillez c
 
 msgid "Report email has been successfully sent!"
 msgstr "L'email du rapport a été envoyé avec succès !"
+
+# ---- showNODES.pl
+
+msgid "All nodes"
+msgstr "Tous les nodes"
+
+msgid "orphan node"
+msgstr "node(s) orphelin(s)"

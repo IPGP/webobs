@@ -268,6 +268,7 @@ msgstr "Hydrogen concentration computed from the pH"
 msgid "help_rainwater_observations"
 msgstr "Note any presence of odor, gas, precipitate, etc..."
 
+
 # ---- formNODE.pl
 
 msgid "help_creationstation_description"
@@ -291,3 +292,17 @@ msgstr "Use the HTML geolocation API to locate the user. Beware : the location c
 msgid "help_creationstation_shapefile"
 msgstr "To add a shapefile (.zip only) layer, click here"
 
+
+# ---- vsearch.pl
+
+msgid "help_vsearch_str"
+msgstr "Word or string to search for. For negation, add a ! at the beginning of the string. Most categories use a regular expression, except for authors/operators, for which it\\'s a SQLite \\'LIKE\\' command."
+
+msgid "help_vsearch_in"
+msgstr "Select the category in which to search."
+
+msgid "help_vsearch_showg"
+msgstr "Display the grid name."
+
+msgid "help_vsearch_shown"
+msgstr "Display the node full name."

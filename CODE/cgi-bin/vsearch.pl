@@ -236,8 +236,8 @@ print "\n<H1>$pagetitle</H1>\n";
 print "<FORM name=\"theform\" id=\"theform\" action=\"$me\" method=\"get\">";
 	print "<TABLE width=\"100%\" style=\"border:1 solid darkgray\"><TR>";
 	print "<TH style=\"text-align:right; border: none;\">";
-	print "<B>$__{'Search for'}:</B> <INPUT  size=\"20\" name=\"str\" id=\"str\" value=\"$str\">&nbsp;&nbsp;";
-	print "<B>$__{'in'}: </B><SELECT size=\"1\" name=\"in\" id=\"in\"> ";
+	print "<B>$__{'Search for:'} </B><INPUT  size=\"20\" name=\"str\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_str}')\" id=\"str\" value=\"$str\">&nbsp;&nbsp;";
+	print "<B>$__{'in:'} </B><SELECT size=\"1\" name=\"in\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_in}')\" id=\"in\"> ";
 	foreach (sort(keys(%catdisplay))) {
 		my ($n,$k) = split(/\|/,$_);
 		print "<OPTION value=\"$k\"".($k eq $in ? " selected":"").">$catdisplay{$_}</OPTION>";
@@ -248,24 +248,24 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"$me\" method=\"get\">";
 		print "<OPTION value=\"$_\"".($_ eq $lop ? " selected":"").">$__{$_}</OPTION>";
 	}
 	print "</SELECT>&nbsp;&nbsp;\n";
-	print "<INPUT  size=\"20\" name=\"str2\" id=\"str2\" value=\"$str2\">&nbsp;&nbsp;";
-	print "<B>$__{'in'}: </B><SELECT size=\"1\" name=\"in2\" id=\"in2\"> ";
+	print "<INPUT  size=\"20\" name=\"str2\" id=\"str2\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_str}')\" value=\"$str2\">&nbsp;&nbsp;";
+	print "<B>$__{'in:'} </B><SELECT size=\"1\" name=\"in2\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_in}')\" id=\"in2\"> ";
 	foreach (sort(keys(%catdisplay))) {
 		my ($n,$k) = split(/\|/,$_);
 		print "<OPTION value=\"$k\"".($k eq $in2 ? " selected":"").">$catdisplay{$_}</OPTION>";
 	}
 	print "</SELECT></TH>\n";
 	print "<TH style=\"border: none;\">";
-	print "<B>$__{'sorted by'}: </B><SELECT size=\"1\" name=\"sort\" id=\"sort\"> ";
+	print "<B>$__{'sorted by:'} </B><SELECT size=\"1\" name=\"sort\" id=\"sort\"> ";
 	foreach (keys(%sortlist)) {
 		print "<OPTION value=\"$_\"".($_ eq $sort ? " selected":"").">$sortlist{$_}</OPTION>";
 	}
 	print "</SELECT><BR>\n";
-	print "Show: <INPUT type=\"checkbox\" name=\"showg\"".($showg ? " checked":"")."> grids";
-	print "&nbsp;&nbsp;<INPUT type=\"checkbox\" name=\"shown\"".($shown ? " checked":"")."> node's name";
+	print "$__{'Show:'} <INPUT type=\"checkbox\" name=\"showg\"".($showg ? " checked":"")." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_showg}')\"> $__{'grids'}";
+	print "&nbsp;&nbsp;<INPUT type=\"checkbox\" name=\"shown\"".($shown ? " checked":"")." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_shown}')\"> $__{'node\'s name'}";
 	print "</TH>\n";
 	print "<TH style=\"border: none;\">";
-	print "<B>$__{'max diplayed'}: </B><SELECT size=\"1\" name=\"max\" id=\"max\"> ";
+	print "<B>$__{'max diplayed:'} </B><SELECT size=\"1\" name=\"max\" id=\"max\"> ";
 	foreach (@maxlist) {
 		print "<OPTION value=\"$_\"".($_ eq $max ? " selected":"").">$_</OPTION>";
 	}
@@ -475,10 +475,16 @@ ENDBOTOFPAGE
 
 ###############################################################################
 # this function uses external commands (find, grep, awk ...) to get the list of
-# requested events following the search criteria
+# requested events following the different search criteria
 sub searchEvents {
 	my ($target,$str,$in) = @_;
 	my $struc = uc($str);
+	my $not = my $notlike = '';
+	if ($struc =~ /^!/) {
+		$not = '!';
+		$notlike = 'not';
+		$struc = substr($struc,1); # removes the first character
+	}
 	my ($GRIDType,$GRIDName,$NodeID) = split(/\./,$target);
 
 	my @evt;
@@ -490,13 +496,13 @@ sub searchEvents {
 
 	# alias will look for $str in the node's ALIAS and NAME configuration
 	if ($in eq "alias") {
-		$cmd = "find $WEBOBS{PATH_NODES}/$node -name \"*.cnf\" | xargs awk -F'|' '\$1 ~ /^ALIAS|NAME\$/ && toupper(\$2) ~ /$struc/ { print FILENAME }' | awk -F'/[^/]*\$' '{ print \$1 \"/$NODES{SPATH_INTERVENTIONS}\" }' | xargs find | grep \".txt\$\" | grep -v \"_Projet.txt\"";
+		$cmd = "find $WEBOBS{PATH_NODES}/$node -name \"*.cnf\" | xargs awk -F'|' '\$1 ~ /^ALIAS|NAME\$/ && toupper(\$2) $not~ /$struc/ { print FILENAME }' | awk -F'/[^/]*\$' '{ print \$1 \"/$NODES{SPATH_INTERVENTIONS}\" }' | xargs find | grep \".txt\$\" | grep -v \"_Projet.txt\"";
 	}
 	# grid will look for $str in the grid's NAME configuration
 	if ($in eq "grid") {
 		# search for grid names
-		my @GRIDlist = qx(find $WEBOBS{ROOT_CONF}/PROCS/* -name "*.conf" | xargs awk -F "|" '\$1 == "NAME" && toupper(\$2) ~ /$struc/ { print FILENAME }' | LC_ALL=C sed -e 's|.*CONF/||g;s|PROCS/|PROC.|g;s|VIEWS/|VIEW.|g;s|/.*||g' 2>&1);
-		push(@GRIDlist,qx(find $WEBOBS{ROOT_CONF}/VIEWS/* -name "*.conf" | xargs awk -F "|" '\$1 == "NAME" && toupper(\$2) ~ /$struc/ { print FILENAME }' | LC_ALL=C sed -e 's|.*CONF/||g;s|PROCS/|PROC.|g;s|VIEWS/|VIEW.|g;s|/.*||g' 2>&1));
+		my @GRIDlist = qx(find $WEBOBS{ROOT_CONF}/PROCS/* -name "*.conf" | xargs awk -F "|" '\$1 == "NAME" && toupper(\$2) $not~ /$struc/ { print FILENAME }' | LC_ALL=C sed -e 's|.*CONF/||g;s|PROCS/|PROC.|g;s|VIEWS/|VIEW.|g;s|/.*||g' 2>&1);
+		push(@GRIDlist,qx(find $WEBOBS{ROOT_CONF}/VIEWS/* -name "*.conf" | xargs awk -F "|" '\$1 == "NAME" && toupper(\$2) $not~ /$struc/ { print FILENAME }' | LC_ALL=C sed -e 's|.*CONF/||g;s|PROCS/|PROC.|g;s|VIEWS/|VIEW.|g;s|/.*||g' 2>&1));
 		chomp(@GRIDlist);
 		if ($#GRIDlist < 0) {
 			$cmd = "";
@@ -506,15 +512,15 @@ sub searchEvents {
 	}
 	# startdate will look for $str in event's start date
 	if ($in eq "startdate") {
-		my $s = $str;
+		my $s = $struc;
 		$s =~ s/:/-/;
 		$s =~ s/ /_/;
-		$cmd = "find $WEBOBS{PATH_NODES}/$node/$NODES{SPATH_INTERVENTIONS} \\( -name \"*.txt\" -a -name \"*$s*\" -a ! -name \"*_Projet.txt\" \\)";
+		$cmd = "find $WEBOBS{PATH_NODES}/$node/$NODES{SPATH_INTERVENTIONS} \\( -name \"*.txt\" -a $not -name \"*$s*\" -a ! -name \"*_Projet.txt\" \\)";
 	}
 	# author and remote will look for $str in author's full names
 	if ($in eq "author" || $in eq "remote") {
 		# must replaces author names by their UID
-		my @UIDlist = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "select UID from users where FULLNAME like '%$str%'");
+		my @UIDlist = qx(sqlite3 $WEBOBS{SQL_DB_USERS} "select UID from users where FULLNAME $notlike like '%$str%'");
 		chomp(@UIDlist);
 		if ($#UIDlist < 0) {
 			$cmd = "";
@@ -526,27 +532,27 @@ sub searchEvents {
 	}
 	# title will look for $str in event's title (2nd field in header line)
 	if ($in eq "title") {
-		$cmd = $base."| xargs awk -F \"|\" 'FNR>1 {nextfile} toupper(\$2) ~ /".uc($str)."/ { print FILENAME ; nextfile }'";
+		$cmd = $base."| xargs awk -F \"|\" 'FNR>1 {nextfile} toupper(\$2) $not~ /$struc/ { print FILENAME ; nextfile }'";
 	}
 	# enddate will look for $str in event's end date (3rd field in header line)
 	if ($in eq "enddate") {
-		$cmd = $base."| xargs awk -F \"|\" 'FNR>1 {nextfile} toupper(\$3) ~ /".uc($str)."/ { print FILENAME ; nextfile }'";
+		$cmd = $base."| xargs awk -F \"|\" 'FNR>1 {nextfile} toupper(\$3) $not~ /$struc/ { print FILENAME ; nextfile }'";
 	}
 	# feature will look for $str in event's feature (4th field in header line)
 	if ($in eq "feature") {
-		$cmd = $base."| xargs awk -F \"|\" 'FNR>1 {nextfile} toupper(\$4) ~ /".uc($str)."/ { print FILENAME ; nextfile }'";
+		$cmd = $base."| xargs awk -F \"|\" 'FNR>1 {nextfile} toupper(\$4) $not~ /$struc/ { print FILENAME ; nextfile }'";
 	}
 	# outcome will look for $str in event's outcome (5th field in header line)
 	if ($in eq "outcome") {
-		$cmd = $base."| xargs awk -F \"|\" 'FNR>1 {nextfile} toupper(\$6) ~ /".uc($str)."/ { print FILENAME ; nextfile }'";
+		$cmd = $base."| xargs awk -F \"|\" 'FNR>1 {nextfile} toupper(\$6) $not~ /$struc/ { print FILENAME ; nextfile }'";
 	}
 	# notebook will look for $str in event's outcome (6th field in header line)
 	if ($in eq "notebook") {
-		$cmd = $base."| xargs awk -F \"|\" 'FNR>1 {nextfile} toupper(\$7) ~ /".uc($str)."/ { print FILENAME ; nextfile }'";
+		$cmd = $base."| xargs awk -F \"|\" 'FNR>1 {nextfile} toupper(\$7) $not~ /$struc/ { print FILENAME ; nextfile }'";
 	}
 	# comment will look for $str in event's full text (except header line)
 	if ($in eq "comment") {
-		$cmd = $base."| xargs awk 'FNR>1 && toupper(\$0) ~ /".uc($str)."/ { print FILENAME ; nextfile }'";
+		$cmd = $base."| xargs awk 'BEGIN{ RS = \"\" ; FS = \"\\n\" } FNR>1 && toupper(\$0) $not~ /$struc/ { print FILENAME ; nextfile }'";
 	}
 
 	@evt = qx($cmd);
@@ -577,7 +583,7 @@ Francois Beauducel, Christophe Brunet
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
