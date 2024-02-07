@@ -567,7 +567,8 @@ foreach (@columns) {
                             formulaire.$_.value = parseFloat($formula).toFixed(2);
                         </script>);
                 } elsif ($type =~ "list:") {
-                    my @list = extract_list($type);
+                    my $list = $FORM{$type};
+                    my @list = extract_list($list);
                     print qq($txt<select name="$inputs[$i]" size=1
                         onMouseOut="nd()" onmouseover="overlib('Select one value')"><option value=""></option>);
                     for (my $j = 1; $j <= $#list+1; $j++) {
