@@ -144,6 +144,7 @@ my %rawFormats  = readCfg("$WEBOBS{ROOT_CODE}/etc/rawformats.conf");
 my %FDSN     = WebObs::Grids::codesFDSN();
 
 # parameters linked to a proc
+my $desc = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"} // $NODE{DESCRIPTION};
 my $fdsn = trim($NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} // $NODE{FDSN_NETWORK_CODE});
 my $fid = $NODE{"$GRIDType.$GRIDName.FID"} // $NODE{FID};
 my $fids = join(" - ", map { my $v; ($v = $_) =~ s/$GRIDType\.$GRIDName\.//;
@@ -450,13 +451,7 @@ if (uc($GRIDType) eq 'PROC') {
 	print "</TD></TR>\n";
 	
 	# --- description
-	print "<TD valign=\"top\" width=\"10%\"><B>";
-	$txt = "$__{'Description'}";
-	if ($editOK > 1)    { print "<A href=\"$cgiEtxt?file=$NODEName.cnf&node=$GRIDType.$GRIDName.$NODEName&encode=iso\">$txt</A>" }
-	elsif ($editOK) { print "<A href=\"$cnfUrn\">$txt</A>" }
-	else { print "$txt" };
-	print "</B></TD><TD>";
-	print $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
+	print "<TD valign=\"top\" width=\"10%\"><B>$__{'Description'}</B></TD><TD>$desc</TD></TR>\n";
 
 	# --- status
 	print "<TR><TD valign=\"top\" width=\"10%\"><B>$__{'Status'}</B></TD><TD style=\"text-align:left\">"
