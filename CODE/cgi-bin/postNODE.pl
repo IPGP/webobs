@@ -216,6 +216,7 @@ my $validite   = $cgi->param('valide')      // '';
 my $alias      = $cgi->param('alias')       // '';
 my $type       = $cgi->param('type')        // '';
 my $desc       = $cgi->param('description') // ''; $desc =~ s/\<\<//g;
+my $desc1 = $desc; $desc1 =~ s/\r\n/<br>/g;
 my $creator    = $cgi->param('creators')    // '';
 my $theme      = $cgi->param('theme')       // '';
 my @roles	   = $cgi->param('role');
@@ -314,7 +315,6 @@ push(@lines,"=key|value\n");
 push(@lines,"NAME|\"".u2l($name)."\"\n");
 push(@lines,"ALIAS|".u2l($alias)."\n");
 push(@lines,"TYPE|".u2l($type)."\n");
-push(@lines,"DESCRIPTION|".u2l($desc)."\n");
 push(@lines,"VALID|$valide\n");
 push(@lines,"TZ|$tz\n");
 push(@lines,"LAT_WGS84|$lat\n");
@@ -341,7 +341,7 @@ if ($GRIDType eq "PROC") {
 	push(@lines,"$GRIDType.$GRIDName.ACQ_RATE|$acqr\n");
 	push(@lines,"$GRIDType.$GRIDName.LAST_DELAY|$ldly\n");
 	push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
-	push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|".u2l($desc)."\n");
+	push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|".u2l($desc1)."\n");
 }
 
 # ---- other grid's parameters (not linked to the active grid) are transfered "as is"
@@ -359,7 +359,6 @@ foreach my $g (@{$allNodeGrids{$NODEName}}) {
 		push(@lines,"$g.ACQ_RATE|$QryParm->{ACQ_RATE}\n") if !(defined $QryParm->{"$g.ACQ_RATE"});
 		push(@lines,"$g.LAST_DELAY|$QryParm->{LAST_DELAY}\n") if !(defined $QryParm->{"$g.LAST_DELAY"});
 		push(@lines,"$g.CHANNEL_LIST|$QryParm->{CHANNEL_LIST}\n") if !(defined $QryParm->{"$g.CHANNEL_LIST"});
-		push(@lines,"$g.DESCRIPTION|$QryParm->{DESCRIPTION}\n") if !(defined $QryParm->{"$g.DESCRIPTION"});
 		push(@lines,"$g.FID|$QryParm->{FID}\n") if !(defined $QryParm->{"$g.FID"});
 		grep { $_ =~ /^FID_/ && !(defined $QryParm->{"$g.$_"}) && (push(@lines,"$g.$_|$QryParm->{$_}\n")) } (keys(%$QryParm));
 	}

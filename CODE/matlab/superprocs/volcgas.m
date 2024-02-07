@@ -23,7 +23,7 @@ function DOUT = volcgas(varargin)
 %
 %	Authors: F. Beauducel + G. Hammouya + C. Dessert + A. Bosson, OVSG-IPGP
 %	Created: 2003-04-14, in Guadeloupe (French West Indies)
-%	Updated: 2021-01-01
+%	Updated: 2023-12-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -149,7 +149,8 @@ for n = 1:length(N)
 
 		tlabel(tlim,P.TZ)
 
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		OPT.EVENTS = N(n).EVENTS;
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
 	end
 
 end

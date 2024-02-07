@@ -26,6 +26,21 @@
 #          Based on Gipsy-Oasis version by Francois BEAUDUCEL (IPGP) and Ahmad Ali FAHMI (IRD),
 #          Domerapi/WebObs Project, 2014.
 # Updated: 2022-09-22
+#
+# **** Updates
+# ** 2023-06-xx Pierre Sakic 
+# - Handles Non Fiducial Orbits + associated Helmert transfo. with NFORB=1
+#
+# ** 2023-08-07 Pierre Sakic 
+# - Handles RINEX3
+# - custom temp. directory possible with $TMPDIRMAIN 
+# - Trivia note: flinn stands for
+#   Fiducial Laboratories for an International Natural sciences Network (FLINN)
+#   JPL's GPS analysis was initially its contribution to the FLINN
+#   (Zumberge et al. 1994, https://hdl.handle.net/hdl:2014/32449)
+#
+
+
 
 #Check lock file
 LOCKFILE=/tmp/gnss_run_gipsyx.txt
@@ -70,7 +85,20 @@ source "$1" || {
   exit 1
 }
 
-tmpdir=$(mktemp -d /tmp/gipsyx.XXXXXXXXXX)
+### ------- temporary directory 
+# the main tmp dir can be customized,
+# working in the default /tmp can be tricky especially for big repro
+if [ -z $TMPDIRMAIN ] || [ ! -d  $TMPDIRMAIN ]; then
+        if [ ! -d  $TMPDIRMAIN ]; then
+		echo "WARN: given main temp dir $TMPDIRMAIN does not exists, defaut /tmp will be used"
+	fi
+        TMPDIRMAIN="/tmp/"
+fi
+
+# TMPDIRMAIN must be an environnement var because raw2rinex needs it too
+export TMPDIRMAIN=$TMPDIRMAIN 
+
+tmpdir=$(mktemp -d $TMPDIRMAIN/gipsyx.XXXXXXXXXX)
 rinex="$tmpdir/rinex"
 
 PWD=$(pwd)
@@ -107,6 +135,17 @@ FORCE=0
 if [ -z "$ERROR_REGEX_RINEX" ]; then
 	ERROR_REGEX_RINEX="REC #|ANT #|# / TYPES OF OBSERV|MARKER NAME"
 fi
+
+
+# do not use non fiducial (NF) orbits per default
+#
+# NFORB is the "frontend" boolean set by the user
+# NFORBLOOP is modified for each day/site loop step
+# because non fiducial is only possible for Final
+if [ -z "$NFORB" ]; then
+	NFORB=0 
+fi
+
 
 echo "*** GipsyX / WebObs $GRID GNSS File Processing ***"
 
@@ -228,6 +267,7 @@ for station in $NODES; do
 		# setting paths
 		res="$DEST/$FID/$yyyy/$yyyy-$mm-$dd.$FID"
 		gipsyres="$res.tdp"
+		gipsycov="$res.gdcov"
 		gipsylog="$res.log"
 
 		if [[ $FORCE == 0 && -s "$gipsyres" ]]; then
@@ -306,9 +346,12 @@ for station in $NODES; do
 						if [ "$ORBITSDIR" != "" ]; then #running Gipsy from local orbit
 							case $orbit in
 							flinn)
-								product="Final";;
+								product="Final"
+								NFORBLOOP=$NFORB
+								;;
 							ql)
 								product="Rapid";;
+								#product="Rapid_GE";;
 							ultra)
 							product="Ultra";;
 							esac
@@ -326,8 +369,17 @@ for station in $NODES; do
 
 						else #running Gipsy from direct download
 							ORBITOPT=$orbit
+							NFORBLOOP=0 ### we force the standard case here (fiducial orbits)
 						fi
-						cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITOPT $GIPSYOPTIONS"
+						
+						# if we use NF orbits, add the necessary options -prodTypeGNSS nf -gdCov
+						if [ $NFORBLOOP -eq 1 ]; then
+							NFORBOPTIONS="-prodTypeGNSS nf -gdCov" 
+						else
+							NFORBOPTIONS="" 
+						fi
+
+						cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITOPT $GIPSYOPTIONS $NFORBOPTIONS"
 						echo "   $cmd"
 						if [ -z $DEBUG ]; then
 							eval "$cmd > $LOG 2>&1"
@@ -338,7 +390,32 @@ for station in $NODES; do
 						if [[ $rc == 0 && -s $tdp ]]; then
 							mkdir -p "$DEST/$FID/$year"
 							rm -f $gipsyres.*
-							grep "\.State\.Pos\.[XYZ]" $tdp | tail -n3 > $gipsyres
+							### handle non-fiducial orbits: a further transformation has to be applied
+							if [ $NFORBLOOP -eq 1 ]; then
+								#cp -v $cov $gipsycov #### copy the gdcov from temp > final dir, for debug only 
+							       	trsprm="$ORBITSDIR/$product/$yyyy/$yyyy-$mm-$dd.x.gz"
+							        cmdtrans="netApply.py -t -r -s -i $cov -o ${cov}_trs -x $trsprm"
+								echo "   $cmdtrans"
+								if [ -z $DEBUG ]; then
+									eval "$cmdtrans > $LOG 2>&1"
+								else
+									eval $cmdtrans
+								fi
+							fi
+
+							if [ $NFORBLOOP -eq 0 ]; then
+								### Fiducial orbit (standard case)
+								grep "\.State\.Pos\.[XYZ]" $tdp | tail -n3 > $gipsyres
+							else
+								### Non Fiducial orbit, a conversion gdcov > tdp must be done 
+								# this one-liner 
+								# 1) get the coordinates
+								# 2) 1st awk to reorder the fields
+								# 3) 2nd awk to format the fields (issue when trying to  merge both awk)
+								# 4) Substitute the label field and customize it. NFtrs => Non Fiducial transformed, WebObs internal custom code
+								grep ".STA.[XYZ]" ${cov}_trs | awk '{print $3,0,$4,$5,".Station."$2}' | awk '{printf "%9d %+22.15e %+22.15e %+22.15e %s\n",$1,$2,$3,$4,$5}' | sed 's/.STA./.State.Pos.NFtrs./g' > $gipsyres
+							fi
+
 							if [ ! -z $TROP_TDP ]; then
 								grep "\.Trop\." $tdp >> $gipsyres
 							fi
