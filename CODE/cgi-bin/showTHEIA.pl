@@ -53,8 +53,6 @@ my $GRIDType = "PROC";  # grid type ("PROC" in the THEIA case use)
 my $GRIDName = my $NODEName = "";      # name of the grid
 my %GRID;               # structure describing the grid
 my %NODE;
-my @NODELIST;
-my @CHANLIST;
 
 # ---- connecting to the database
 my $driver   = "SQLite";
@@ -196,37 +194,32 @@ while(my @row = $sth->fetchrow_array()){
 	}
 	#print $G{$GRIDName}."\n";
 	#print $GRIDName."\n";
-	my @NODELIST = 	split /,/,$GRID{THEIA_SELECTED_NODELIST};
 	if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ){
-		#if ( grep(/^$NODEName/,@NODELIST) || substr($NODEName, 1) ~~ @NODELIST) {
-		if ( $GRID{THEIA_SELECTED_NODELIST} =~ substr($NODEName,1) ) {
-			my $subject = join(',', split(/_/,$row[3]));
-			#push(@NODELIST, $NODEName);
+		my $subject = join(',', split(/_/,$row[3]));
 			
-			# ---- extracting datasets contacts data
-			my $stmt2 = qq(SELECT * FROM contacts WHERE related_id LIKE '$row[0]%';);
-			my $sth2 = $dbh->prepare( $stmt2 );
-			my $rv2 = $sth2->execute() or die $DBI::errstr;
+		# ---- extracting datasets contacts data
+		my $stmt2 = qq(SELECT * FROM contacts WHERE related_id LIKE '$row[0]%';);
+		my $sth2 = $dbh->prepare( $stmt2 );
+		my $rv2 = $sth2->execute() or die $DBI::errstr;
 
-			if($rv2 < 0) {
-			   print $DBI::errstr;
-			}
-
-			my @contacts;
-			while(my @row2 = $sth2->fetchrow_array()){
-				push(@contacts, $row2[1]." ".$row2[2].": ".$row2[0]);
-			}
-			
-			print "<TR class=\"node\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
-					."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
-					."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
-					."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
-					."<TD width=14% align=center><SMALL>$row[2]</SMALL></TD>"
-					."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
-					."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
-					."<TD width=14% align=center><SMALL>$row[4]</SMALL></TD>"
-					."<TD width=14% align=center><SMALL>$row[5]</SMALL></TD></TR>";
+		if($rv2 < 0) {
+			print $DBI::errstr;
 		}
+
+		my @contacts;
+		while(my @row2 = $sth2->fetchrow_array()){
+			push(@contacts, $row2[1]." ".$row2[2].": ".$row2[0]);
+		}
+			
+		print "<TR class=\"node\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
+			."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
+			."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
+			."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
+			."<TD width=14% align=center><SMALL>$row[2]</SMALL></TD>"
+			."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
+			."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
+			."<TD width=14% align=center><SMALL>$row[4]</SMALL></TD>"
+			."<TD width=14% align=center><SMALL>$row[5]</SMALL></TD></TR>";
 	} else {
 		print "<TR class=\"node\" id=$row[0]>"
 				."<TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
@@ -281,28 +274,21 @@ while(my @row = $sth->fetchrow_array()){
 	#print $NODEName."\n";
 	%GRID = %{$G{$GRIDName}};
 	%NODE = %{$S{$NODEName}};
-	#print $GRID{THEIA_SELECTED_NODELIST}."\n";
-	@NODELIST = split /,/,$GRID{THEIA_SELECTED_NODELIST};
-	@CHANLIST = split /,/,$NODE{"PROC.$GRIDName.CHANNEL_LIST"};
 	my $fileDATA = "$NODES{PATH_NODES}/$NODEName/PROC.$GRIDName.$NODEName.clb";
 	my @donnees = map { my @e = split /\|/; \@e; } readCfgFile($fileDATA);
-	my @vars = map {$donnees[$_-1][3]} @CHANLIST;
 	if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
-		#if ( grep(/^$NODEName/,@NODELIST) || substr($NODEName, 1) ~~ @NODELIST and $channelId ~~ @vars) {
-		if ( $GRID{THEIA_SELECTED_NODELIST} =~ substr($NODEName,1) and $channelId ~~ @vars ) {
-			my $subject = join(',', split(/_/,$row[3]));
-			print "<TR class=\"channel\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
-					."<TD width=1%><A class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete observation\" src=\"/icons/no.png\"></A></TD>"
-					."<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
-					."<TD width=6%  align=center><SMALL>$row[1]</SMALL></TD>"
-					."<TD width=6%  align=center><SMALL>$row[2]</SMALL></TD>"
-					."<TD width=12% align=center><SMALL>$row[3]</SMALL></TD>"
-					."<TD width=4%  align=center><SMALL>$row[4]</SMALL></TD>"
-					."<TD width=8%  align=center><SMALL>$row[5]</SMALL></TD>"
-					."<TD width=10% align=center><SMALL>$row[6]</SMALL></TD>"
-					."<TD width=12% align=center><SMALL>$row[7]</SMALL></TD>"
-					."<TD width=8%  align=center><SMALL>$row[8]</SMALL></TD></TR>";
-		}
+		my $subject = join(',', split(/_/,$row[3]));
+		print "<TR class=\"channel\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
+			."<TD width=1%><A class=\"observations\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete observation\" src=\"/icons/no.png\"></A></TD>"
+			."<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
+			."<TD width=6%  align=center><SMALL>$row[1]</SMALL></TD>"
+			."<TD width=6%  align=center><SMALL>$row[2]</SMALL></TD>"
+			."<TD width=12% align=center><SMALL>$row[3]</SMALL></TD>"
+			."<TD width=4%  align=center><SMALL>$row[4]</SMALL></TD>"
+			."<TD width=8%  align=center><SMALL>$row[5]</SMALL></TD>"
+			."<TD width=10% align=center><SMALL>$row[6]</SMALL></TD>"
+			."<TD width=12% align=center><SMALL>$row[7]</SMALL></TD>"
+			."<TD width=8%  align=center><SMALL>$row[8]</SMALL></TD></TR>";
 	} else {
 		print "<TR class=\"node\" id=$row[0]>"
 				."<TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
