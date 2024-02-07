@@ -23,13 +23,32 @@
 # Author: F. Beauducel / DOMERAPI <beauducel@ipgp.fr>
 # Created: 2014-01-12
 # Updated: 2023-08-21
+#
+# **** Updates
+# ** 2023-08-07 Pierre Sakic 
+# - Handle the RINEX3 at it is
+#   (no downgrade to RNX2, but no modification of the header either)
+#
+
+### comment the variable to disable the verbose mode
+#VERBOSE=1
 
 if [ $# -lt 2 ]; then
 	echo "raw2rinex input output [teqc options]"
 	exit 0;
 fi
 
-tmpdir=$(mktemp -d /tmp/raw2rinex.XXXXXXXXXX)
+### ------- temporary directory 
+# the main tmp dir can be customized,
+# working in the default /tmp can be tricky especially for big repro
+if [ -z $TMPDIRMAIN ] || [ ! -d  $TMPDIRMAIN ]; then
+        if [ ! -d  $TMPDIRMAIN ]; then
+		echo "WARN: given main temp dir $TMPDIRMAIN does not exists, defaut /tmp will be used"
+	fi
+        TMPDIRMAIN="/tmp/"
+fi
+
+tmpdir=$(mktemp -d $TMPDIRMAIN/raw2rinex.XXXXXXXXXX)
 cd $tmpdir
 
 rawdir=$1
@@ -66,10 +85,11 @@ do
 	fi
 done
 
-# --- try rinex files
+# ------ RINEX2 --------------------------------------------------------
+# --- try RINEX2 uncompressed files
 rf=$(find $tmpdir -iname "*.??o" | sort )
 if [ ! -z "$rf" ]; then
-	echo "   Found some Rinex files in $rawdir: proceeding..."
+	echo "   Found some RINEX2 files in $rawdir: proceeding..."
 	# must convert Rinex 3 files
 	for f in $rf; do
 		if [[ $(head -n1 $f | awk '{print $1}') == '3.01' ]]; then
@@ -84,12 +104,13 @@ if [ ! -z "$rf" ]; then
 	obsfiles=$(find $tmpdir -iname "*.??o" | sort )
 	navfiles=$(find $tmpdir -iname "*.??n" | sort )
 	teqcfmt=""
+        skipteqc=0
 fi
 
-# --- try Hatanaka files
+# --- try RINEX2 Hatanaka files
 rf=$(find $tmpdir -name "*.??d.Z" -o -name "*.??d" | sort )
 if [ ! -z "$rf" ]; then
-	echo "   Found some Hatanaka files in $rawdir: proceeding..."
+	echo "   Found some RINEX2 Hatanaka files in $rawdir: proceeding..."
 	# must convert ??d to ??o
 	for f in $rf; do
 		if [[ $f == *".Z" ]]; then
@@ -102,7 +123,41 @@ if [ ! -z "$rf" ]; then
 	obsfiles=$rawfiles
 	navfiles=""
 	teqcfmt=""
+        skipteqc=0
 fi
+
+# ------ RINEX3 --------------------------------------------------------
+# --- try RINEX3 uncompressed files
+rf=$(find $tmpdir -iname "*.rnx" | sort )
+if [ ! -z "$rf" ]; then
+	echo "   Found some RINEX3 files in $rawdir: proceeding..."
+	rawfiles=$rf
+	obsfiles=$rf
+	#navfiles=$(find $tmpdir -iname "*.??n" | sort )
+	teqcfmt=""
+        skipteqc=1
+fi
+
+# --- try RINEX3 Hatanaka files
+rf=$(find $tmpdir -name "*.crx.gz" -o -name "*.crx" | sort )
+if [ ! -z "$rf" ]; then
+	echo "   Found some RINEX3 Hatanaka files in $rawdir: proceeding..."
+	# must convert ??d to ??o
+	for f in $rf; do
+		if [[ $f == *".gz" ]]; then
+			gunzip -f $f
+			f=${f%.*}
+		fi
+                f2=${f%.*}'.rnx'
+                cat $f | CRX2RNX > $f2
+	done
+	rawfiles=$(find $tmpdir -iname "*.crx" | sort )
+	obsfiles=$(find $tmpdir -iname "*.rnx" | sort )
+	navfiles=""
+	teqcfmt=""
+        skipteqc=1
+fi
+
 # try Leica mdb...
 rf=$(find $tmpdir -name "*.m??" | sort )
 if [ ! -z "$rf" ]; then
@@ -111,6 +166,7 @@ if [ ! -z "$rf" ]; then
 	obsfiles=$(find $tmpdir -iname "*.m??" | sort )
 	navfiles=$rawfiles
 	teqcfmt="-lei mdb"
+        skipteqc=0
 fi
 
 # try Trimble T02...
@@ -125,6 +181,7 @@ if [ ! -z "$rf" ]; then
 	obsfiles=$rawfiles
 	navfiles=$rawfiles
 	teqcfmt="-tr d"
+        skipteqc=0
 fi
 
 if [ -z "$rawfiles" ]; then
@@ -132,17 +189,24 @@ if [ -z "$rawfiles" ]; then
 	exit
 fi
 
-
 tmprnx=$tmpdir/rinex
 tmpnav=$tmpdir/nav
 
 # --- converts rawfiles to single daily Rinex
-if [ ! -z $VERBOSE ]; then
-	echo "teqc $teqcfmt $teqcopt $obsfiles > $tmprnx"
+if [ $skipteqc -eq 0 ]; then
+        if [ ! -z $VERBOSE ]; then
+                echo "teqc $teqcfmt $teqcopt $obsfiles > $tmprnx"
+        fi
+        teqc $teqcfmt $teqcopt $obsfiles > $tmprnx
+else    
+        if [ ! -z $VERBOSE ]; then
+                echo "   teqc concatenation/modding skipped (RNX3). Header's ant/rec assumed correct!"
+        fi
+        obsfiles_1st=`echo $obsfiles | head -1`
+        cp $obsfiles_1st $tmprnx #### XXXXX Unicity problem
 fi
-teqc $teqcfmt $teqcopt $obsfiles > $tmprnx
 
-# case A: output directory specified => archiving rinex with proper names (obs and nav)
+# case A: output **directory** specified => archiving rinex with proper names (obs and nav)
 if [ -d $outdir ]; then
 	# gets the station code from the filename
 	for f in $rawfiles; do
@@ -163,7 +227,7 @@ if [ -d $outdir ]; then
 		fi
 		cp -f $tmpnav ${rinex}.${yy}n
 	fi
-# case B: output file specified => write the rinex using given filename
+# case B: output **file** specified => write the rinex using given filename
 else
 	if [ ! -z $VERBOSE ]; then
 		echo "   cp -f $tmprnx $outdir"

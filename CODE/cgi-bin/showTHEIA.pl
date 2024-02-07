@@ -28,6 +28,7 @@ use Image::Info qw(image_info dim);
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
+$CGI::POST_MAX = 1024 * 1000;
 use Data::Dumper;
 use POSIX qw(locale_h);
 use locale;
@@ -187,11 +188,14 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
 
 while(my @row = $sth->fetchrow_array()){
 	my $datasetId = (split /_DAT_/, $row[0]) [1];
-	#print $datasetId."||";
+	#print $datasetId." || ";
 	($GRIDName, $NODEName) = (split /\./, $datasetId);
 	my %G = readProc($GRIDName);
+	if ($G{$GRIDName}) {
+		%GRID = %{$G{$GRIDName}};
+	}
 	#print $G{$GRIDName}."\n";
-	%GRID = %{$G{$GRIDName}};
+	#print $GRIDName."\n";
 	my @NODELIST = 	split /,/,$GRID{THEIA_SELECTED_NODELIST};
 	if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ){
 		#if ( grep(/^$NODEName/,@NODELIST) || substr($NODEName, 1) ~~ @NODELIST) {
@@ -391,6 +395,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this progra  m.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
