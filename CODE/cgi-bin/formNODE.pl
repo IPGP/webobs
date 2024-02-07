@@ -140,7 +140,7 @@ my $m3g_check    = $NODE{M3G_AVAIABLE};
 my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
 # THEIA metadata
-my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}; $usrDesc =~ s/\"//g; $usrDesc =~ s/\<br\>/\n/g;
+my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}		  // $NODE{DESCRIPTION}; $usrDesc =~ s/\"//g; $usrDesc =~ s/\<\<//g; $usrDesc =~ s/\>\>//g; $usrDesc =~ s/\<br\>/\n/g;
 my $usrProducer;
 my @usrRole;
 my @usrFirstName;
@@ -1206,14 +1206,14 @@ FIN
 	print "</FIELDSET>\n";
 
 	# --- GNSS-specific information
-=pod
+
 	my $m3g_url_edit = $WEBOBS{'M3G_URL'}."/".$usrGnss9char;
 	print "<FIELDSET><legend>$__{'GNSS-specific information'}</LEGEND>";
 	print "<TABLE><TR>";
 		print "<TD style=\"border:0;text-align:left\">";
 			print "<label for=\"gnss_9char\">$__{'GNSS 9 char. code'} :</label>";
 			print "<input size=\"10\" value=\"$usrGnss9char\" onChange=\"console.log($m3g_url_edit)\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_gnss_9char}')\" id=\"gnss_9char\" name=\"gnss_9char\">";
-			print "<i for=\"gnss_9char_nb\">  NB: use save button to store this code the first time, before updating metadata </i>";
+			print "<i for=\"gnss_9char_nb\">";#  NB: use save button to store this code the first time, before updating metadata </i>";
 			print "<BR>\n";
 			print "<BR>\n";
 			###### get and edit features 
@@ -1223,6 +1223,7 @@ FIN
 			#### get geodesyML from M3G
 			#print "<BR>\n";
 			print "<BR>\n";
+
 			print "<label for=\"m3g_check\">$__{'Show links to M3G'} :</label>";
 			if ( $m3g_check ) {
 				print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\" checked>";
@@ -1234,7 +1235,7 @@ FIN
 		print "</TD>";
 	print "</TR></TABLE>";
 	print "</FIELDSET>";
-=cut
+
 	# --- Transmission
 	print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
 	print "<TABLE><TR>";

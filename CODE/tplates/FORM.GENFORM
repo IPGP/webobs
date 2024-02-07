@@ -1,0 +1,36 @@
+=key|value
+# Generic FORM template for use with cgi-bin/fedit.pl
+CGI_SHOW|showGENFORM.pl
+CGI_FORM|formGENFORM.pl
+
+BANG|1789
+NAME|GENFORM
+FILE_NAME|${NAME}.DAT
+TITLE|Generic form
+COLUMNS_NUMBER|1
+FIELDSETS_NUMBER|2
+STARTING_DATE|YES
+
+# inputs names and units
+# for the type, chose between : text (size), list (link to a file containing the list) or formula (algebric formula)
+INPUT01_NAME|Name1
+INPUT01_UNIT|Unit1
+INPUT01_TYPE|text (10)
+INPUT02_NAME|Name2
+INPUT02_UNIT|Unit2
+INPUT02_TYPE|list (list.txt)
+INPUT03_NAME|Name3
+INPUT03_UNIT|Unit3
+INPUT03_TYPE|formula (INPUT01_NAME+2)
+
+FIELDSET01_NAME|Name1
+FIELDSET01_COLUMNS|2
+
+# which inputs are contained in the first fieldset of the first column ?
+FIELDSET01_C01|INPUT01
+# which inputs are contained in the first fieldset of the second column ?
+FIELDSET02_NAME|Name2
+FIELDSET02_C02|INPUT02,INPUT03
+
+# configuration file path
+CONF_FILE|$WEBOBS{PATH_FORMS}/${NAME}/${NAME}.conf
