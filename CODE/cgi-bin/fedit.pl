@@ -1,14 +1,12 @@
 #!/usr/bin/perl
 #
-#!/usr/bin/perl
-#
 =head1 NAME
 
 fedit.pl
 
 =head1 SYNOPSIS
 
-http://..../formGRID.pl?fname=fname[,nbIn=nbIn]
+http://..../fedit.pl?fname=fname[,nbIn=nbIn]
 
 =head1 DESCRIPTION
 
@@ -25,6 +23,9 @@ fname=fname
  
 nbIn=nbIn
  where nbIn is the number of inputs we want to enquire in the form.
+ 
+tpl=tpl
+ where tpl is the template selected to create the new form
 
 =head1 EDITOR
 
@@ -105,6 +106,7 @@ my $action;				# new|edit|save
 my $newG;        		# 1 if we are creating a new form
 my $delete;				# 1 to delete form
 my $inputs;				# number which indicates how many inputs we are storing in this form
+my $template;			# type of template wanted by user
 
 # Read and check CGI parameters
 $FORMName = $cgi->param('fname');
@@ -113,6 +115,7 @@ $action   = checkParam($cgi->param('action'), qr/(new|edit|save)/, 'action')  //
 $text	  = scalar($cgi->param('text')) // '';  # used only in print FILE $text;
 $TS0      = checkParam($cgi->param('ts0'), qr/^[0-9]*$/, "TS0")    // 0;
 $delete   = checkParam($cgi->param('delete'), qr/^\d?$/, "delete") // 0;
+$template = $cgi->param('tpl') // "";
 
 
 # Read the list of all nodes
@@ -136,7 +139,7 @@ my $post_url = "/cgi-bin/fedit.pl";
 #if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
 
 #my $auth = 'forms';
-my $template = "$WEBOBS{ROOT_CODE}/tplates/FORM.GENFORM";	# the template for a new form
+$template 	  = "$WEBOBS{ROOT_CODE}/tplates/$template";
 my $formdir   = "$WEBOBS{PATH_FORMS}/$FORMName/";			# path to the form configuration file we are creating, editing or deleting
 $formConfFile = "$formdir$FORMName.conf";
 
