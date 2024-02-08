@@ -1,12 +1,12 @@
 #!/usr/bin/perl
-#
+
 =head1 NAME
 
 fedit.pl
 
 =head1 SYNOPSIS
 
-http://..../fedit.pl?fname=fname[,nbIn=nbIn]
+http://..../fedit.pl?fname=fname[&action={edit|save}&tpl=tpl]
 
 =head1 DESCRIPTION
 
@@ -16,16 +16,20 @@ When creating a new FORM (if name does not exist), fedit starts editing from a p
 
 To create a new FORM, user must have Admin rights for all VIEWS or PROCS. To update an existing FORM, user must have Edit rights for the concerned FORM.
 
-=head1 QUERY-STRING
+=head1 Query string parameters
 
-fname=fname
- where fname should be unique.
- 
-nbIn=nbIn
- where nbIn is the number of inputs we want to enquire in the form.
- 
-tpl=tpl
- where tpl is the template selected to create the new form
+=item fname=fname
+
+	where fname should be unique.
+
+=item action={save|edit}
+
+	'edit' (default when action is not specified) to display edit html-form edit
+	'save' internaly used to save the file after html-form edition
+
+=item tpl=tpl
+
+	where tpl is the template selected to create the new form
 
 =head1 EDITOR
 
@@ -90,6 +94,25 @@ sub htmlMsgNotOK {
  	print "Update FAILED !\n $_[0] \n";
 }
 
+# Open an SQLite connection to the forms database
+sub connectDbForms {
+	return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+		}) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
+}
+
+sub count_inputs {
+    my $count = 0;
+    foreach(@_) {
+        if ($_ =~ /(INPUT[0-9]{2}_NAME)/) {
+            $count += 1;
+        }
+    }
+    return $count;
+}
+
 # ---- misc inits
 #
 set_message(\&webobs_cgi_msg);
@@ -99,24 +122,21 @@ my $TS0;                # last modification time of the config file
 #my $editOK = 0;         # 1 if the user is allowed to edit the form
 #my $admOK = 0;          # 1 if the user is allowed to administrate the form
 my @rawfile;            # raw content of the configuration file
-#my %FORM;               # structure describing the form
 my $FORMName;			# name of the form
 my $text;
 my $action;				# new|edit|save
-my $newG;        		# 1 if we are creating a new form
+my $newF;        		# 1 if we are creating a new form
 my $delete;				# 1 to delete form
 my $inputs;				# number which indicates how many inputs we are storing in this form
 my $template;			# type of template wanted by user
 
 # Read and check CGI parameters
 $FORMName = $cgi->param('fname');
-$inputs   = $cgi->param('nbIn') // 1;
-$action   = checkParam($cgi->param('action'), qr/(new|edit|save)/, 'action')  // "edit";
+$action   = checkParam($cgi->param('action'), qr/(edit|save)/, 'action')  // "edit";
 $text	  = scalar($cgi->param('text')) // '';  # used only in print FILE $text;
 $TS0      = checkParam($cgi->param('ts0'), qr/^[0-9]*$/, "TS0")    // 0;
 $delete   = checkParam($cgi->param('delete'), qr/^\d?$/, "delete") // 0;
 $template = $cgi->param('tpl') // "";
-
 
 # Read the list of all nodes
 opendir my $nodeDH, $NODES{PATH_NODES}
@@ -160,6 +180,37 @@ if ($action eq 'save') {
 			htmlMsgNotOK("fedit: error creating $formConfFile: $!");
 			exit;
 		}
+		
+		# --- connecting to the database in order to create a table with the name of the FORM
+		my %FORM = readCfg("$WEBOBS{PATH_FORMS}/$FORMName/$FORMName.conf");
+		my $dbh = connectDbForms();
+
+		# --- creation of the DB table
+		my @keys = sort keys %FORM;
+		my $count_inputs = count_inputs(@keys)-1;
+		my @inputs;
+		for (my $i = 1; $i <= $count_inputs+1; $i++) {
+			my $input;
+			if ($i < 10) {
+				$input = "input0".$i;
+			} else {
+				$input = 'input'.$i;
+			}
+			push(@inputs, $input);
+		}
+
+		my $tbl = lc($FORMName);
+		my @db_columns = map {"$_ "} ("BEG_DATE text NOT NULL","BEG_HR","END_DATE","END_HR","SITE text NOT NULL");
+		my $db_columns = "";
+		$db_columns .= join(', ', @db_columns);
+		$db_columns .= " ,";
+		$db_columns .= join(',', map { " $_ text" } @inputs);
+
+		my $stmt = qq(create table if not exists $tbl ($db_columns););
+		#htmlMsgOK($db_columns);
+		my $sth = $dbh->prepare( $stmt );
+		#htmlMsgOK($stmt);
+		my $rv = $sth->execute() or die $DBI::errstr;
 
 		htmlMsgOK("fedit: $FORMName created.");
 		exit;
@@ -189,36 +240,6 @@ if ($action eq 'save') {
 		} else { htmlMsgNotOK("$me opening $FORMName - $!") }
 		exit;
 	}
-=podelse {
-		# --- Update the form
-
-		# Use an exclusive lock on the config file during the process
-		if (!sysopen(FILE, "$formConfFile", O_RDWR | O_CREAT)) {
-			# Unable to open the configuration file
-			htmlMsgNotOK("fedit: error opening $formConfFile: $!");
-			exit;
-		}
-		unless(flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "fedit: waiting for lock on $formConfFile...";
-			flock(FILE, LOCK_EX);
-		}
-
-		# Backup the configuration file (To Be Removed: lifecycle too short)
-		local $File::Copy::Recursive::CopyLink = 0;
-		if (copy($formConfFile, "$formConfFile~") != 1) {
-			# Unable to backup of the configuration file
-			close(FILE);
-			htmlMsgNotOK("fedit: couldn't backup $formConfFile");
-			exit;
-		}
-
-		# Write the updated configuration to the configuration file
-		truncate(FILE, 0);
-		seek(FILE, 0, SEEK_SET);
-		print FILE u2l($text);
-		close(FILE);
-	}
-=cut
 }
 
 # --- Form delete or update (config file already exists)
@@ -243,20 +264,20 @@ if ($delete == 1) {
 #
 #$editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$FORMName") || WebObs::Users::clientHasEdit(type => "auth".$auth, name => "MC");
 #$admOK = WebObs::Users::clientHasAdm(type => "auth".$auth, name => "*");
-if ( -e "$formConfFile" ) {
+if ( -e "$formConfFile" ) {	# looking if the FORM already exists
 	#if ($editOK) {
 		@rawfile = readFile($formConfFile);
 		$TS0 = (stat($formConfFile))[9] ;
 		#$editOK = 1;
 	#}
 }
-else {
+else {	# we are creating a new FORM
 	#if ($admOK) {
 		$formConfFile = $template;
 		@rawfile = readFile($formConfFile);
 		$TS0 = (stat($formConfFile))[9] ;
 	#	$editOK = 1;
-		$newG = 1;
+		$newF = 1;
 	#}
 }
 
@@ -264,7 +285,7 @@ else {
 #
 my $txt = l2u(join("",@rawfile));
 my $titrePage = "$__{'Editing'} form";
-if ( $newG == 1 ) { $titrePage = "$__{'Creating'} new form" }
+if ( $newF == 1 ) { $titrePage = "$__{'Creating'} new form" }
 
 #my $cm_edit = ($editOK || $admOK) ? 1 : 0;
 my $cm_edit = 1;
@@ -353,7 +374,7 @@ function verif_formulaire()
 _EOD_
 
 print "<H2>$titrePage $FORMName";
-if ($newG == 0) {
+if ($newF == 0) {
 	print " <A href=\"#\"><IMG src=\"/icons/no.png\" onClick=\"delete_form();\" title=\"$__{'Delete this form'}\"></A>";
 }
 print "</H2>\n";
@@ -420,4 +441,5 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
+
 

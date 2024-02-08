@@ -6,7 +6,7 @@ formGENFORM.pl
 
 =head1 SYNOPSIS
 
-http://..../formGENFORM.pl?form=FORMName[,id=,return_url=url,action=string]
+http://..../formGENFORM.pl?form=FORMName[&id=id&return_url=url&action={edit|save}]
 
 =head1 DESCRIPTION
 
@@ -176,7 +176,11 @@ if (isok($ask_start)) {
 
 # ---- action is 'save'
 #
-if ($action eq 'save') {
+# ---- registering data in WEBOBSFORMS.db
+# --- connecting to the database
+my $dbh = connectDbForms();
+
+if ($action eq 'save' && $delete < 1) {
     my @lignes;
     my $maxId = 0;
     my $msg = "";
@@ -192,24 +196,6 @@ if ($action eq 'save') {
         }
         push(@inputs, $input);
     }
-
-    # ---- registering data in WEBOBSFORMS.db
-    #
-    # --- connecting to the database
-	my $dbh = connectDbForms();
-	
-	# ---- creating the table forms if not exists
-	my @db_columns = map {"$_ "} ("BEG_DATE text NOT NULL","BEG_HR","END_DATE","END_HR","SITE text NOT NULL");
-    my $db_columns = "";
-    $db_columns .= join(', ', @db_columns);
-    $db_columns .= " ,";
-    $db_columns .= join(',', map { " $_ text" } @inputs);
-	
-	my $stmt = qq(create table if not exists forms ($db_columns););
-	#htmlMsgOK($db_columns);
-	my $sth = $dbh->prepare( $stmt );
-	#htmlMsgOK($stmt);
-	my $rv = $sth->execute() or die $DBI::errstr;
 	
 	# ---- filling the database with the data from the form
 	my @row;
@@ -229,7 +215,7 @@ if ($action eq 'save') {
 	}
     #htmlMsgOK($stmt);
     my $row  = join(', ',@row);
-    $stmt = qq(replace into forms($db_columns) values($row));
+    $stmt = qq(replace into $tbl($db_columns) values($row));
     $sth  = $dbh->prepare( $stmt );
 	$rv   = $sth->execute() or die $DBI::errstr;
     
@@ -240,7 +226,17 @@ if ($action eq 'save') {
     }
     htmlMsgOK($msg);
 	
+	$dbh->disconnect();
 	exit;
+} elsif ($action eq "save" && $delete > 0) {
+    my $tbl = lc($FORMName);
+    my $stmt = qq(delete from $tbl where rowid=$idTraite);
+    my $sth  = $dbh->prepare( $stmt );
+	my $rv   = $sth->execute() or die $DBI::errstr;
+    htmlMsgOK("Delete/recover existing record #$idTraite (in/from trash).");
+    
+    $dbh->disconnect();
+    exit;
 }
 
 # ---- action is 'edit' (default) or new
@@ -358,7 +354,8 @@ if (defined($QryParm->{id})) {
     # --- connecting to the database
 	my $dbh = connectDbForms();
 	
-	my $stmt = qq(SELECT * FROM forms WHERE rowid = $id;); # selecting the row corresponding to the id of the record we want to modify
+	my $tbl = lc($FORMName);
+	my $stmt = qq(SELECT * FROM $tbl WHERE rowid = $id;); # selecting the row corresponding to the id of the record we want to modify
 	my $sth = $dbh->prepare( $stmt );
 	my @colnam = @{ $sth->{NAME_lc} };
 	#htmlMsgOK($stmt);

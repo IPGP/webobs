@@ -537,11 +537,11 @@ sub feditpopup {
 	$SP .= "  <input size=\"40\" id=\"nbIn\" name=\"nbIn\" value=\"\">\n";
 	$SP .= "<br style=\"clear: left\"><br>";
 =cut
-	$SP .= "<label for=\"feditN\">$__{'Form template'}: <span class=\"small\">short name (uppercase)</span></label>";
+	$SP .= "<label for=\"feditT\">$__{'Form template'}: <span class=\"small\">short name (uppercase)</span></label>";
 	opendir my $dir, ("$WEBOBS{ROOT_CODE}/tplates/") or die "Cannot open directory: $!";
 	my @templates = grep (/FORM/, readdir($dir));
 	closedir $dir;
-	$SP .= "  <select id=\"feditTpl\" name=\"feditTpl\" value=\"\">\n";	# select input, look into CODE/tplates to find the differents templates
+	$SP .= "  <select id=\"feditTpl\" name=\"feditT\" value=\"\">\n";	# select input, look into CODE/tplates to find the differents templates
 	for (my $i = 0; $i <= $#templates; $i++) {
 		if ($templates[$i] =~ /FORM./) {
 			$SP .= "<option value=\"$templates[$i]\">$templates[$i]</option>";
