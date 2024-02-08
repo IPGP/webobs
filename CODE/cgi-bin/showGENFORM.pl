@@ -131,7 +131,8 @@ if ($QryParm->{'affiche'} ne "csv") {
 # --- connecting to the database
 my $dbh = connectDbForms();
 
-my $stmt = qq(select * from forms;);
+my $tbl = lc($form);
+my $stmt = qq(select rowid,* from $tbl;);
 my $sth = $dbh->prepare( $stmt );
 my $rv = $sth->execute() or die $DBI::errstr;
 
@@ -141,6 +142,8 @@ while(my @row = $sth->fetchrow_array()) {
 	$nbData++;
 	push(@lignes, \@row);
 }
+
+$dbh->disconnect();
 
 # ---- Debut du formulaire pour la selection de l'affichage
 #  
@@ -259,8 +262,7 @@ $entete .= "</TR>";
 
 my $nbLignesRetenues = 0;
 for (my $j = 0; $j <= $#lignes; $j++) {
-	my $id = $j+1;
-	my ($date_beg, $heure_beg, $date_end, $heure_end, $site) = ($lignes[$j][0],$lignes[$j][1],$lignes[$j][2],$lignes[$j][3],$lignes[$j][4]);
+	my ($id, $date_beg, $heure_beg, $date_end, $heure_end, $site) = ($lignes[$j][0],$lignes[$j][1],$lignes[$j][2],$lignes[$j][3],$lignes[$j][4],$lignes[$j][5]);
 	my $date;
 	my $heure;
 	if (isok($ask_start)) {
@@ -289,7 +291,7 @@ for (my $j = 0; $j <= $#lignes; $j++) {
 	#}
 	$texte = $texte."<TD nowrap>$date</TD><TD align=center>$lien&nbsp;</TD>";
 	my $nb_inputs = $#{ $lignes[$j] };
-	for (my $i = 5; $i <= $nb_inputs; $i++) {
+	for (my $i = 6; $i <= $nb_inputs; $i++) {
 		$texte = $texte."<TD align=center>$lignes[$j][$i]</TD>";
 	}
 	$texte = $texte."</TD><TD></TD></TR>";
