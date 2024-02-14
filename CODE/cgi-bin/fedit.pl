@@ -133,7 +133,7 @@ my $template;			# type of template wanted by user
 # Read and check CGI parameters
 $FORMName = $cgi->param('fname');
 $action   = checkParam($cgi->param('action'), qr/(edit|save)/, 'action')  // "edit";
-$text	  = scalar($cgi->param('text')) // '';  # used only in print FILE $text;
+$text	  = scalar($cgi->param('text')) // '';	# used only in print FILE $text;
 $TS0      = checkParam($cgi->param('ts0'), qr/^[0-9]*$/, "TS0")    // 0;
 $delete   = checkParam($cgi->param('delete'), qr/^\d?$/, "delete") // 0;
 $template = $cgi->param('tpl') // "";
@@ -385,6 +385,41 @@ print "<TR><TD style=\"border:0;\">\n";
 #print "<TEXTAREA class=\"editfmono\" id=\"tarea\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$text</TEXTAREA><br>\n";
 print "<TEXTAREA class=\"editfmono\" id=\"textarea-editor\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$txt</TEXTAREA>\n";
 print "<div id=\"statusbar\">$FORMName</div>\n";
+
+print "</TD>\n<TD style=\"border:0; vertical-align:top\">\n";
+
+# ---- Lists
+my %FORM = readCfg($formConfFile);
+my @keys = sort keys %FORM;
+my $count_inputs = count_inputs(@keys)-1;
+my @inputs;
+for (my $i = 1; $i <= $count_inputs+1; $i++) {
+	my $input;
+	if ($i < 10) {
+		$input = "input0".$i;
+	} else {
+		$input = 'input'.$i;
+	}
+	push(@inputs, $input);
+}
+
+my @lists;
+foreach(@inputs) {
+	my $list = uc($_)."_LIST";
+	if (exists($FORM{$list})) {
+		if (-e $FORM{$list}) {
+			push(@lists, "$WEBOBS{PATH_FORMS}/$FORMName/$FORM{$list}");
+		} else {
+			push(@lists, "$WEBOBS{ROOT_CODE}/tplates/FORM_list.txt");
+		}
+	}
+}
+
+print "<FIELDSET><LEGEND>Lists</LEGEND>\n";
+foreach(@lists) {
+	print "<A href=\"/cgi-bin/xedit.pl?fs=$_\">$_</a>\n";
+}
+print "</FIELDSET>\n";
 
 print "</TD>\n";
 print "<TR><TD style=\"border:0\">\n";

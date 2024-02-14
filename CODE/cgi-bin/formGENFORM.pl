@@ -179,6 +179,7 @@ if (isok($ask_start)) {
 # ---- registering data in WEBOBSFORMS.db
 # --- connecting to the database
 my $dbh = connectDbForms();
+my $tbl = lc($FORMName);
 
 if ($action eq 'save' && $delete < 1) {
     my @lignes;
@@ -199,6 +200,7 @@ if ($action eq 'save' && $delete < 1) {
 	
 	# ---- filling the database with the data from the form
 	my @row;
+	my $db_columns;
 	if (isok($ask_start)) {
 	    $db_columns = "BEG_DATE, END_DATE, BEG_HR, END_HR, SITE";
 	    push(@row, "\"$date\", \"$date2\", \"$heure\", \"$heure2\", \"$site\"");
@@ -215,9 +217,10 @@ if ($action eq 'save' && $delete < 1) {
 	}
     #htmlMsgOK($stmt);
     my $row  = join(', ',@row);
-    $stmt = qq(replace into $tbl($db_columns) values($row));
-    $sth  = $dbh->prepare( $stmt );
-	$rv   = $sth->execute() or die $DBI::errstr;
+    my $stmt = qq(replace into $tbl($db_columns) values($row));
+    my $sth  = $dbh->prepare( $stmt );
+	my $rv   = $sth->execute() or die $DBI::errstr;
+	my $msg;
     
     if ($rv >= 1){
         $msg = "new record #$newID has been created.";
@@ -541,6 +544,8 @@ foreach (@columns) {
                     $name =~ s/(<sup>|<\/sup>|<sub>|<\/sub>|\+|\-|\&|;)//;
                 }
                 $inputs[$i] = lc($inputs[$i]);
+                print $FORM{"$inputs[$i]_LIST"};
+                print exists($FORM{"$inputs[$i]_LIST"});
                 if ($type =~ "formula:") {
                     (my $formula, my @x) = extract_formula($type);
                     foreach (@x) {
@@ -563,9 +568,8 @@ foreach (@columns) {
                         <script>
                             formulaire.$_.value = parseFloat($formula).toFixed(2);
                         </script>);
-                } elsif ($type =~ "list:") {
-                    my $list = $FORM{$type};
-                    my @list = extract_list($list);
+                } elsif ($type =~ "list") {
+                    my @list = extract_list($type);
                     print qq($txt<select name="$inputs[$i]" size=1
                         onMouseOut="nd()" onmouseover="overlib('Select one value')"><option value=""></option>);
                     for (my $j = 1; $j <= $#list+1; $j++) {
@@ -656,7 +660,20 @@ sub extract_formula {
 
 sub extract_list {
     my $list = shift;
-    my @list = split(/,/, (split /\:/, $list)[1]);
+    my $filename = (split /\:/, $list)[1];
+    if (-e "$WEBOBS{PATH_FORMS}/$FORMName/$filename") {
+        $filename = "$WEBOBS{PATH_FORMS}/$FORMName/$filename";
+    } else {
+        $filename = "$WEBOBS{ROOT_CODE}/tplates/FORM_list.txt";
+    }
+
+    open(FH, '<', $filename) or die $!;
+
+    while(<FH>) {
+        $list = $_
+    }
+
+    my @list = split(/,/, $list);
     return @list;
 }
 
