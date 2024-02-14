@@ -80,7 +80,7 @@ for ('01'..'12') {
 	$s = l2u(qx(date -d "$year-$_-01" +"%B")); chomp($s);
 	push(@cleParamMois,"$_|$s");
 }
-my @cleParamUnite = ("ppm|en ppm","mmol|en mmol/l");
+my @cleParamUnite = ("ppm|en ppm","mmol|en mmol/l"); 
 my @cleParamSite;
 
 $QryParm->{'y1'}       //= $y1; 
@@ -206,6 +206,7 @@ if ($QryParm->{'affiche'} ne "csv") {
 my $entete;
 my $pied;
 my $texte = "";
+my $csvTxt = "id;";
 my $modif;
 my $efface;
 my $lien;
@@ -228,6 +229,8 @@ foreach(@fieldsets) {
 }
 
 my @colnam = ("Date","Site");
+$csvTxt .= join(';', @colnam);
+
 my @colnam2;
 for (my $i = 0; $i <= $#fs_names; $i++) {
 	push(@colnam, $fs_names[$i]);
@@ -242,9 +245,11 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
 		} else {
 			push(@colnam2, $name_input);
 		}
+		$csvTxt .= ";$name_input";
 	}
 }
 #print @colnam2;
+$csvTxt .= "\n";
 
 $entete = "<TR>";
 #if ($clientAuth > 1) {
@@ -290,17 +295,22 @@ for (my $j = 0; $j <= $#lignes; $j++) {
 		$texte = $texte."<TD nowrap>$modif</TH>";
 	#}
 	$texte = $texte."<TD nowrap>$date</TD><TD align=center>$lien&nbsp;</TD>";
+	$csvTxt .= join(';', ($id,$date,$aliasSite));
+	$csvTxt .= ";";
 	my $nb_inputs = $#{ $lignes[$j] };
 	for (my $i = 6; $i <= $nb_inputs; $i++) {
 		$texte = $texte."<TD align=center>$lignes[$j][$i]</TD>";
+		$csvTxt .= "$lignes[$j][$i];";
 	}
+	$csvTxt .= "\n";
 	$texte = $texte."</TD><TD></TD></TR>";
 
 	$nbLignesRetenues++;
 }
 
+push(@csv,l2u($csvTxt));
 push(@html,"Number of records = <B>$nbLignesRetenues</B> / $nbData.</P>\n",
-	"<P>Download a CSV text file of these data <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?affiche=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&unite=$QryParm->{'unite'}\"><B>$fileCSV</B></A></P>\n");
+	"<P>Download a CSV text file of these data <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?affiche=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&unite=$QryParm->{'unite'}&form=".$FORM->conf('NAME')."\"><B>$fileCSV</B></A></P>\n");
 
 if ($texte ne "") {
 	push(@html,"<TABLE class=\"trData\" width=\"100%\"><TR>$entete\n</TR>$texte\n<TR>$entete\n</TR></TABLE>");
