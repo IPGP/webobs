@@ -477,9 +477,11 @@ if ( isok($theiaAuth) and $saveAuth == 1 ) {
 		
 	my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
 	$dbh->do($q);
+	
+	my $station_name = $GRIDName.'.'.$NODEName;
 
 	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
-	$sth->execute($alias,$alias,$point);
+	$sth->execute($station_name,$alias,$point);
 	
 	if ($spatialcov eq "") {
 		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, LINEAGE) VALUES (?,?,?,?,?);');

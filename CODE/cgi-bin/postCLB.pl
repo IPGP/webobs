@@ -226,8 +226,8 @@ if ( isok($theiaAuth)) {
 			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
 			$sth->execute($obsid,$obs_date,$station,$id,$dataset,$dataname);
 		} else {
-			htmlMsgNotOK("$filepath does not exists !");
-			exit 1;
+			#htmlMsgFileNotOK("$filepath does not exists (yet) !");
+			#exit 1;
 		}
 	}
 	$dbh->disconnect();
@@ -274,6 +274,12 @@ sub htmlMsgOK {
 sub htmlMsgNotOK {
  	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
  	print "Update FAILED !\n $_[0] \n";
+}
+
+# --- return information when not OK
+sub htmlMsgFileNotOK {
+ 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+ 	print "$_[0] \n";
 }
 
 __END__

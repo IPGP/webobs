@@ -452,23 +452,12 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		#$htmlcontents .= "<TABLE width=\"100%\" style=\"margin-left: 5px\">";
 		$htmlcontents .= "<TABLE width=\"100%\">";
 		$htmlcontents .= "<TR>";
-			if ($theiaAuth) {
-				$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
-					."<TH rowspan=2>$__{'Alias'}</TH>"
-					."<TH rowspan=2>$__{'Send to Theia'}</TH>"
-					."<TH rowspan=2>$__{'Name'}</TH>"
-					."<TH colspan=3>$__{'Coordinates'}</TH>"
-					."<TH colspan=2>$__{'Lifetime and Validity'}"
-					."<TH rowspan=2>$__{'Type'}</TH>";
-			}
-			else {
-				$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
-					."<TH rowspan=2>$__{'Alias'}</TH>"
-					."<TH rowspan=2>$__{'Name'}</TH>"
-					."<TH colspan=3>$__{'Coordinates'}</TH>"
-					."<TH colspan=2>$__{'Lifetime and Validity'}"
-					."<TH rowspan=2>$__{'Type'}</TH>";
-			}
+			$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
+				."<TH rowspan=2>$__{'Alias'}</TH>"
+				."<TH rowspan=2>$__{'Name'}</TH>"
+				."<TH colspan=3>$__{'Coordinates'}</TH>"
+				."<TH colspan=2>$__{'Lifetime and Validity'}"
+				."<TH rowspan=2>$__{'Type'}</TH>";
 			if ($CLIENT ne 'guest') {
 				$htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
 				$htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>" if ($usrProject eq "on");
@@ -542,9 +531,6 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				# Node's code and name
 				my $lienNode="/cgi-bin/$NODES{CGI_SHOW}?node=$grid.$NODEName";
 				$htmlcontents .= "<TD align=center><B>$NODE{ALIAS}</B></TD>";
-				if ($theiaAuth) {
-					$htmlcontents .= checkingNODELIST($NODE{ALIAS},$GRID{THEIA_SELECTED_NODELIST});	# Node's checkbox to know if we want to send the NODE metadata to Theia
-				}
 				$htmlcontents .= "<TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
 				
 				# Node's localization

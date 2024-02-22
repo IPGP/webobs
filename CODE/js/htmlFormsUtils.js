@@ -140,10 +140,11 @@ function feditsendPopup() {
 		return false;
 	}
 	var fname = $('#feditoverlay_form')[0].feditN.value;
+	var tplte = $('#feditoverlay_form')[0].feditT.value;
 	if ( fname.match(/^[A-Za-z]/) && !fname.match(/[^A-Za-z_0-9]/g) ) {
 		$("#feditoverlay_form").fadeOut(500);
 		$("#feditovly").fadeOut(500);
-		location.href = "/cgi-bin/fedit.pl?fname=" + fname.toUpperCase() + "&action=edit";
+		location.href = "/cgi-bin/fedit.pl?fname=" + fname.toUpperCase() + "&action=edit&tpl=" + tplte;
 	} else {
 		alert('Form name is alphanumerical and underscore characters only, case insensitive, and the first character must be a letter.');
 		return false;
