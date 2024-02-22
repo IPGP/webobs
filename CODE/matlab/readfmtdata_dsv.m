@@ -35,7 +35,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2022-11-24
+%	Updated: 2024-02-20
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -207,7 +207,7 @@ if N.CLB.nx == 0
 		s = wosystem(sprintf('head -q -n 1 %s | uniq > %s',F.raw{1},fdat),P);
 		if ~s
 			fid = fopen(fdat);
-			hdr = textscan(fid,'%s','delimiter',fs);
+			hdr = textscan(fid,'%s','delimiter',[' ',fs]);
 			fclose(fid);
 			D.CLB.nm = hdr{1}(2:end)';
 		end
