@@ -346,7 +346,11 @@ print "<div id=\"noscrolldiv\">";
 							print "<TD style=\"text-align:center\">";
 							if (defined($G{$vp}{FORM}) && $G{$vp}{FORM} ne '') {
 								my %F = readCfg("$WEBOBS{PATH_FORMS}/$G{$vp}{FORM}/$G{$vp}{FORM}.conf");
-								print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?node={$vp}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
+								if ($F{CGI_SHOW} eq "showGENFORM.pl") {
+									print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?form=$G{$vp}{FORM}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
+								} else {
+									print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?node={$vp}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
+								}
 							} else {
 								if (defined($G{$vp}{URNDATA}) && $G{$vp}{URNDATA} ne '') {
 									print "<A HREF=\"$G{$vp}{URNDATA}\"><IMG border=\"0\" alt=\""
@@ -527,6 +531,23 @@ sub feditpopup {
 =cut
 	$SP .= "<label for=\"feditN\">$__{'Form Name'}: <span class=\"small\">short name (uppercase)</span></label>";
 	$SP .= "  <input size=\"40\" id=\"feditN\" name=\"feditN\" value=\"\">\n";
+	$SP .= "<br style=\"clear: left\"><br>";
+=pod
+	$SP .= "<label for=\"nbIn\">$__{'Number of inputs'}: <span class=\"small\">number of inputs to inform</span></label>";
+	$SP .= "  <input size=\"40\" id=\"nbIn\" name=\"nbIn\" value=\"\">\n";
+	$SP .= "<br style=\"clear: left\"><br>";
+=cut
+	$SP .= "<label for=\"feditT\">$__{'Form template'}: <span class=\"small\">short name (uppercase)</span></label>";
+	opendir my $dir, ("$WEBOBS{ROOT_CODE}/tplates/") or die "Cannot open directory: $!";
+	my @templates = grep (/FORM/, readdir($dir));
+	closedir $dir;
+	$SP .= "  <select id=\"feditTpl\" name=\"feditT\" value=\"\">\n";	# select input, look into CODE/tplates to find the differents templates
+	for (my $i = 0; $i <= $#templates; $i++) {
+		if ($templates[$i] =~ /FORM./) {
+			$SP .= "<option value=\"$templates[$i]\">$templates[$i]</option>";
+		}
+	}
+	$SP .= "</select>";
 	$SP .= "<br style=\"clear: left\"><br>";
 
 	$SP .= "<p style=\"margin: 0px; text-align: center\">";

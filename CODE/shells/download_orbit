@@ -4,8 +4,12 @@
 #
 # Authors: Edgar Lenhof, François Beauducel
 # Created: 2019-07-31 at OVPF, La Réunion Island
-# Updated: 2022-09-22
-
+# Updated: 2023-08-24
+# 
+# **** Updates
+# ** 2023-08-24 Pierre Sakic 
+# - Download Rapid_GE orbits
+#
 if [ $# -lt 2 ]; then
 	echo "     Syntax: download_orbit DAYS DEST [options]"
 	echo "Description: downloads best avalaible orbit for chosen dates from the"
@@ -29,7 +33,7 @@ PROGDIR=$( cd "$( dirname "$0" )" && pwd )
 DAYS=$1
 DEST=$2
 DAYLIST=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago" +%Y/%m/%d;done)
-ORBIT=("Final" "Rapid" "Ultra")
+ORBIT=("Final" "Rapid" "Ultra" "Rapid_GE")
 delete="FALSE"
 verbose="FALSE"
 quiet="-q"
@@ -59,8 +63,10 @@ for (( i=1; i<=$#; i++)); do
 		if [ "$ORBIT" != "Ultra" ]; then
 			if [ "$ORBIT" != "Rapid" ]; then
 				if [ "$ORBIT" != "Final" ]; then
-					echo "Error : Please enter orbit as Ultra, Rapid or Final"
-					exit 0
+					if [ "$ORBIT" != "Rapid_GE" ]; then
+						echo "Error : Please enter orbit as Ultra, Rapid or Final"
+						exit 0
+					fi
 				fi
 			fi
 		fi
