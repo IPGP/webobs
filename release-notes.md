@@ -28,6 +28,8 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
    The `MUTT_OPTIONS` is used to set the "From:" address (instead of Apache user who is the real sender), but other options can be added if needed (see **mutt** manual). `TRIGGER_EMAIL` and `TRIGGER_SUBJECT` is used to send the data to BCSF. It will use JSON file (if exists), or GSE file otherwise. The `REPORT_EMAIL`, `REPORT_SUBJECT`, and `REPORT_FOOTNOTE` are used to send the B3 report with a detailed text message on the event and potential macroseismic intensities. The PDF file of full report will be attached to the mail. Note that email will be sent to the operator and destination address will be in "Bcc:".
 
 ### Enhancements
+1. In showNODE.pl the links between node's feature displays a table of full feature content in the parent node.
+1. Search node events form accepts negative pattern (beginning with a `!`).
 
 ### Fixed issues
 1. ``!!`` WebObs Perl modules have been moved from CODE/cgi-bin/WebObs to CODE/perl/lib. The system-wide installation **MUST** be executed when upgrading (answer Y to the appropriate question during setup) in order to make all CGI working.
@@ -36,6 +38,7 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
 1. ``!`` User manager form: now only the WebObs Owner is allowed to delete a user, edit any user UID, or modify authorizations for the WebObs Owner himself. Admin level on the resource **user** allows everything else except these. As a reminder, modification/deletion of any user UID is not recommended since it might result in WebObs data corruption (grid or node events, manual data banks, Gazette, ...).
 1. Fix an issue to display attached photos in grid events.
 1. Fix the issue producing a black background for PDF image thumbnails.
+1. Fix an issue with the DECIMATE parameter in superproc **gnss**.
 
 ## v2.6.4 (December 2023)
 
