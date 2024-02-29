@@ -342,6 +342,7 @@ if ($GRIDType eq "PROC" || $GRIDType eq "VIEW") {
 } else {
 	print "<INPUT name=\"SELs\" type=\"hidden\" value=\"-\">";
 }
+
 # ---- Sefrans
 if ($GRIDType eq "SEFRAN") {
 	my $chconf = (exists($GRID{CHANNEL_CONF}) && -e $GRID{CHANNEL_CONF} ? "$GRID{CHANNEL_CONF}":"$WEBOBS{PATH_SEFRANS}/$GRIDName/channels.conf");
