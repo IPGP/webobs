@@ -179,6 +179,7 @@ if ($QryParm->{'affiche'} ne "csv") {
 			print("<option value=$val>$cle</option>\n");
 		}
 	}
+=pod
 	print("</select>\n",
 	"<select name=\"unite\" size=\"1\">");
 	for (@cleParamUnite) { 
@@ -186,8 +187,9 @@ if ($QryParm->{'affiche'} ne "csv") {
 		if ("$val" eq "$QryParm->{'unite'}") { print("<option selected value=$val>$cle</option>\n"); } 
 		else { print("<option value=$val>$cle</option>\n"); }
 	}
-	print("</select>",
-	" <INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"reset()\">");
+=cut
+	print("</select>");
+	print(" <INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"reset()\">");
 	#" <INPUT type=\"submit\" value=\"$__{'Display'}\">");	need to think about how to implement it. Idea : INPUT_TOGGLE key in the FORMs like INPUT_TOGGLE|INPUTX1,INPUTX2,etc.
 	#if ($clientAuth > 1) {
 		my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
