@@ -1799,5 +1799,5 @@ msgstr "L'email du rapport a été envoyé avec succès !"
 msgid "All nodes"
 msgstr "Tous les nodes"
 
-msgid "orphan node"
+msgid "orphan nodes"
 msgstr "node(s) orphelin(s)"

@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2023-09-05
+%   Updated: 2024-02-21
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -375,6 +375,12 @@ for r = 1:numel(P.GTABLE)
 	if any(isnan(tlim))
 		tlim = minmax(cat(1,D.tfirstlast));
 	end
+	
+	tsinfo = {'{\itTime span}:', ...
+		sprintf('     {\\bf%s} {\\it%+g}',datestr(tlim(1),'yyyy-mm-dd HH:MM'),P.TZ), ...
+		sprintf('     {\\bf%s} {\\it%+g}',datestr(tlim(2),'yyyy-mm-dd HH:MM'),P.TZ), ...
+		' ', ...
+	};
 
 	% station offset
 	n0 = numel(N) - 1;
@@ -387,8 +393,7 @@ for r = 1:numel(P.GTABLE)
 
 			k = D(n).G(r).k;
 			if ~isempty(k)% && ~all(isnan(D(n).d(k,i)))
-				dk = cleanpicks(D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P);
-				tk = D(n).t(k);
+				[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
 
 				% computes yearly trends (in mm/yr)
 				kk = find(~isnan(dk));
@@ -525,19 +530,18 @@ for r = 1:numel(P.GTABLE)
 		X = repmat(struct('t',[],'d',[],'e',[],'w',[]),1+vrelmode,1);
 		for i = 1:3
 			if ~isempty(k)
-				tk = D(n).t(k);
-				dk = cleanpicks(D(n).d(k,i)-rmedian(D(n).d(k,i)),P);
+				[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i) - rmedian(D(n).d(k,i)),P.GTABLE(r).DECIMATE,P);
 				X(1).t = tk;
 				X(1).d(:,i) = dk;
-				X(1).e(:,i) = D(n).e(k,i);
+				X(1).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
 				if i == 3
 					X(1).w = D(n).d(k,4);
 				end
 				if harmcorr || vrelmode
-					dk = cleanpicks(D(n).d(k,i+4)-rmedian(D(n).d(k,i+4)),P);
+					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
 					X(2).t = tk;
 					X(2).d(:,i) = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
-					X(2).e(:,i) = D(n).e(k,i);
+					X(2).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
 					if i == 3
 						X(2).w = D(n).d(k,4);
 					end
@@ -775,11 +779,11 @@ for r = 1:numel(P.GTABLE)
 		figure, orient tall
 
 		P.GTABLE(r).GTITLE = varsub(vectors_title,V);
-		P.GTABLE(r).INFOS = {' ',' ', ...
+		P.GTABLE(r).INFOS = [ ' ', ' ', tsinfo, ...
 			sprintf('Referential: {\\bf%s}',itrf),sprintf('   E {\\bf%+g} mm/yr\n   N {\\bf%+g} mm/yr\n   U {\\bf%+g} mm/yr',velref), ...
 			' ', ...
 			sprintf('Mean velocity (%s):',itrf) ...
-		};
+		];
 		for i = 1:3
 			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',enu{i},mvv(i))}];
 		end
@@ -943,10 +947,7 @@ for r = 1:numel(P.GTABLE)
 		ppos = get(gcf,'PaperPosition');
 
 		P.GTABLE(r).GTITLE = varsub(motion_title,V);
-		P.GTABLE(r).INFOS = {'{\itTime span}:', ...
-			sprintf('     {\\bf%s}',datestr(tlim(1),'yyyy-mm-dd HH:MM')), ...
-			sprintf('     {\\bf%s}',datestr(tlim(2),'yyyy-mm-dd HH:MM')), ...
-			' '};
+		P.GTABLE(r).INFOS = tsinfo;
 
 		% Selects nodes
 		knv = selectnode(N,tlim,motion_excluded,motion_included,[targetll,motion_excluded_target]);
@@ -1227,15 +1228,12 @@ for r = 1:numel(P.GTABLE)
 		colormap(modelnet_cmap)
 
 		P.GTABLE(r).GTITLE = varsub(modelnet_title,V);
-		P.GTABLE(r).INFOS = {'{\itTime span}:', ...
-			sprintf('     {\\bf%s}',datestr(tlim(1),'yyyy-mm-dd HH:MM')), ...
-			sprintf('     {\\bf%s}',datestr(tlim(2),'yyyy-mm-dd HH:MM')), ...
-			' ', ...
+		P.GTABLE(r).INFOS = [ tsinfo, ...
 			sprintf('{\\bf%d}/%d stations',length(kn),numel(N)), ...
 	   		sprintf('minimum displacements at {\\bf%d} stations:',modelnet_minsta), ...
 	   		sprintf('E: {\\bf%g mm}, N: {\\bf%g mm}, U: {\\bf%g mm}',modelnet_mindisp), ...
 			' ', ...
-			};
+			];
 		P.GTABLE(r).GSTATUS = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('INFOLINES',4))
 		close
@@ -1895,12 +1893,11 @@ for r = 1:numel(P.GTABLE)
 				for j = 1:numel(kn)
 					n = kn(j);
 					k = find(isinto(D(n).t,wlim));
-					tk = D(n).t(k);
 					for i = 1:3
 						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
 							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
 							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
-							dk = cleanpicks(D(n).d(k,i+4) - D(n).d(k1,i+4),P);
+							[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
 							kk = find(~isnan(dk));
 							if numel(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays && 100*diff(minmax(D(n).t(kk)))/diff(wlim) >= trendminperc
 								[b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./D(n).e(k(kk),i));

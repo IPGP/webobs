@@ -195,7 +195,8 @@ PART1
 	$htmlMail .= $html;
 	$htmlOutput .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">";
 	$htmlBrowser .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/css/style.css\">";
-	$htmlBrowser .= "    <meta http-equiv=\"Refresh\" content=\"5; url=mc3.pl\">";
+	#$htmlBrowser .= "    <meta http-equiv=\"Refresh\" content=\"5; url=mc3.pl\">";
+	$htmlBrowser .= "    <meta http-equiv=\"Refresh\" content=\"5; url=mc3.pl?mc=MC3&routine=day&graph=hday\">";
 	$html = '  </head>';
 	$html .= '  <body>';
 	$html .= '  <div id="container">';
