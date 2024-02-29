@@ -187,7 +187,8 @@ if ($action eq 'save') {
 		my $dbh = connectDbForms();
 
 		# --- checking if the table we want to edit exists
-		my $tbl = lc($FORMName);
+		my $tbl 	  = lc($FORMName);
+
 		my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
 		my $sth = $dbh->prepare( $stmt );
 		my $rv = $sth->execute() or die $DBI::errstr;
@@ -207,11 +208,46 @@ if ($action eq 'save') {
 			#htmlMsgOK($stmt);
 			my $sth = $dbh->prepare( $stmt );
 			my $rv = $sth->execute() or die $DBI::errstr;
+		} else {
+			htmlMsgNotOK("Can't create the table !");
+			exit;
 		}
 
 		htmlMsgOK("fedit: $FORMName created.");
 		exit;
 	} else {
+		# --- connecting to the database in order to create a table with the name of the FORM
+		my $dbh = connectDbForms();
+
+		# --- checking if the table we want to edit exists
+		my $tbl 	  = lc($FORMName);
+
+		my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
+		my $sth = $dbh->prepare( $stmt );
+		my $rv = $sth->execute() or die $DBI::errstr;
+
+		if ($sth->fetchrow_array() == 0) {	# if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
+			# --- creation of the DB table
+			my @inputs = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
+
+			my @db_columns = map {"$_ "} ("trash boolean DEFAULT FALSE", "node text NOT NULL", "edate datetime","edate_min datetime","sdate1 datetime NOT NULL","sdate1_min datetime","users text NOT NULL");
+			my $db_columns = "";
+			$db_columns .= join(', ', @db_columns);
+			$db_columns .= " ,";
+			$db_columns .= join(',', map { " ".lc((split '_', $_)[0])." text" } @inputs);
+			$db_columns .= join(',', (", comment text, tsupd text NOT NULL, userupd text NOT NULL"));
+
+			my $stmt = qq(create table if not exists $tbl ($db_columns););
+			#htmlMsgOK($stmt);
+			my $sth = $dbh->prepare( $stmt );
+			my $rv = $sth->execute() or die $DBI::errstr;
+		} else {
+			htmlMsgNotOK("Can't create the table !");
+			exit;
+		}
+		
+		# now we know if the table exists
+		# we want to look at the modification of $text
 		my @inputs  = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
 		my $newKeys = $#inputs;
 		my $oldKeys = count_inputs(readCfg($formConfFile));
@@ -221,9 +257,6 @@ if ($action eq 'save') {
 			$msg = "A new INPUT has been added to the FORM !";
 
 			# --- connecting to the database in order to add the new INPUT to the DB 
-			my $dbh = connectDbForms();
-			my $tbl = lc($FORMName);
-
 			my @db_columns = map {"$_ "} ("trash boolean DEFAULT FALSE", "node text NOT NULL", "edate datetime","edate_min datetime","sdate1 datetime NOT NULL","sdate1_min datetime","users text NOT NULL");
 			my $db_columns = "";
 			$db_columns .= join(', ', @db_columns);
@@ -376,6 +409,7 @@ print <<_EOD_;
 function verif_formulaire()
 {
 	// postform() from cmtextarea.js will submit the form to $post_url
+	console.log(document.formulaire);
 	postform();
 	//\$.post("/cgi-bin/fedit.pl", \$("#theform").serialize(), function(data) {
 	//	if (data != '') alert(data);
