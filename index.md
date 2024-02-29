@@ -134,7 +134,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 ## What's new and release history
 
 ### What's new in the 2.6?
-- first effort for an interface between WebObs and the Theia|OZCAR data portal;
+- first effort for an interface between WebObs and the Theia\|OZCAR data portal;
 - node form has interactive map for manual/automatic location and import of a shapefile;
 - node calibration file accepts many arithmetic formula (not only linear);
 - new functionalities in superproc GNSS (baselines outputs, node selection from target for all summary graphs);
