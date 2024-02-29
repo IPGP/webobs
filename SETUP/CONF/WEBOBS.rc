@@ -167,7 +167,6 @@ SQL_TABLE_GRIDS|grids2domains
 # ---- FORMS DataBase -----------------------
 # ---------------------------------------------
 SQL_FORMS|${PATH_DATA_DB}/WEBOBSFORMS.db
-SQL_TABLE_FORMS|forms
 SQL_TABLE_FGRIDS|grids2forms    # not used yet (working in progress !)
 
 # ---- METADATA DataBase -----------------------
