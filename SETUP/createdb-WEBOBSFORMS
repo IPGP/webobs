@@ -9,17 +9,11 @@ echo "Creating/populating forms tables ..."
 sqlite3 WEBOBSFORMS.db <<EOF
 BEGIN TRANSACTION;
 
-drop table if exists forms;
-create table forms (NAME text NOT NULL, PRIMARY KEY(NAME));
-
-drop table if exists grids2forms;
-create table grids2forms (TYPE text NOT NULL, GRID text NOT NULL, NAME integer NOT NULL, FOREIGN KEY(NAME) REFERENCES forms(NAME));
-
 COMMIT;
 EOF
 
 echo "Done."
 exit 0
 
-#INSERT INTO "forms" VALUES(1,'TESTFORM');
-#INSERT INTO "grids2forms" VALUES('VIEW','TEST','TESTFORM');
+#drop table if exists grids2forms;
+#create table grids2forms (TYPE text NOT NULL, GRID text NOT NULL, NAME integer NOT NULL, FOREIGN KEY(NAME) REFERENCES forms(NAME));
