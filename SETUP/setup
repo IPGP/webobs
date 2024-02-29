@@ -632,7 +632,7 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 		chown ${USER_APACHE[0]}:${USER_APACHE[1]} WEBOBSMETA.db
 		cd -
 	fi
-	if [ ! -s ${DOCROOT}/CONF/WEBOBSFORMS.db ]; then
+	if [ ! -s ${DOCROOT}/DATA/DB/WEBOBSFORMS.db ]; then
 	 	verbosecho "creating WEBOBSFORMS.db"
 		cd ${DOCROOT}/CONF
 		$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
@@ -654,7 +654,7 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	$RELBASE/SETUP/createdb-WEBOBSMETA >/dev/null
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSMETA.db WEBOBSMETA.db >>$REPORT
 		$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
-	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSFORMS.db WEBOBSFORMS.db >>$REPORT
+	$RELBASE/SETUP/cmpsql $DOCROOT/DATA/DB/WEBOBSFORMS.db WEBOBSFORMS.db >>$REPORT
 	cd ..
 	rm -rf $db_temp_dir
 
