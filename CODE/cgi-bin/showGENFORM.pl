@@ -148,7 +148,7 @@ $dbh->disconnect();
 # ---- Debut du formulaire pour la selection de l'affichage
 #  
 if ($QryParm->{'affiche'} ne "csv") {
-	print "<FORM name=\"formulaire\" action=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\" method=\"get\">",
+	print "<FORM name=\"formulaire\" action=\"/cgi-bin/showGENFORM.pl\" method=\"get\">",
 		"<P class=\"boitegrise\" align=\"center\">",
 		"<B>$__{'Start Date'}:</B> ";
 	print "<SELECT name=\"y1\" size=\"1\">\n";
@@ -187,11 +187,11 @@ if ($QryParm->{'affiche'} ne "csv") {
 		else { print("<option value=$val>$cle</option>\n"); }
 	}
 	print("</select>",
-	" <INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"reset()\">",
-	" <INPUT type=\"submit\" value=\"$__{'Display'}\">");
+	" <INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"reset()\">");
+	#" <INPUT type=\"submit\" value=\"$__{'Display'}\">");	need to think about how to implement it. Idea : INPUT_TOGGLE key in the FORMs like INPUT_TOGGLE|INPUTX1,INPUTX2,etc.
 	#if ($clientAuth > 1) {
-		my $form_url = URI->new("/cgi-bin/".$FORM->conf('CGI_FORM'));
-		$form_url->query_form('form' => $form, 'id' => $nbData, 'return_url' => $return_url, 'action' => 'new');
+		my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
+		$form_url->query_form('form' => $form, 'id' => $nbData+1, 'return_url' => $return_url, 'action' => 'new');
 		print qq(<input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
 			qq( onClick="document.location='$form_url?form=$form'" value="$__{'Enter a new record'}">);
 	#}
@@ -245,7 +245,10 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
 		} else {
 			push(@colnam2, $name_input);
 		}
-		$csvTxt .= ";$name_input";
+		while ($name_input =~ /(<sup>|<\/sup>|<sub>|<\/sub>|\+|\-|\&|;)/) {
+            $name_input =~ s/(<sup>|<\/sup>|<sub>|<\/sub>|\+|\-|\&|;)//;
+        }
+		$csvTxt .= u2l(";$name_input");
 	}
 }
 #print @colnam2;
@@ -267,14 +270,14 @@ $entete .= "</TR>";
 
 my $nbLignesRetenues = 0;
 for (my $j = 0; $j <= $#lignes; $j++) {
-	my ($id, $date_beg, $heure_beg, $date_end, $heure_end, $site) = ($lignes[$j][0],$lignes[$j][1],$lignes[$j][2],$lignes[$j][3],$lignes[$j][4],$lignes[$j][5]);
+	my ($id, $trash, $site, $date_end, $heure_end, $date_beg, $heure_beg, $users, $rem, $ts0, $oper) = ($lignes[$j][0],$lignes[$j][1],$lignes[$j][2],$lignes[$j][3],$lignes[$j][4],$lignes[$j][5],$lignes[$j][6],$lignes[$j][7]);
 	my $date;
 	my $heure;
 	if (isok($ask_start)) {
-		$date = "$date_beg\T$heure_beg\Z/$date_end\T$heure_end\Z";
-		$heure = "$heure_beg/$heure_end";
+		$date = "$date_beg";
+		$heure = "$heure_beg";
 	} else {
-		$date = "$date_beg\T$heure_beg\Z";
+		$date = "$date_beg";
 		$heure = $heure_beg;
 	}
 	$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
@@ -285,7 +288,7 @@ for (my $j = 0; $j <= $#lignes; $j++) {
 	} else {
 		$lien = "$aliasSite";
 	}
-	my $form_url = URI->new("/cgi-bin/".$FORM->conf('CGI_FORM'));
+	my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
 	$form_url->query_form('form' => $form, 'id' => $id, 'return_url' => $return_url, 'action' => 'edit');
 	$modif = qq(<a href="$form_url"><img src="/icons/modif.png" title="Editer..." border=0></a>);
 	$efface = qq(<img src="/icons/no.png" title="Effacer..." onclick="checkRemove($id)">);
@@ -295,14 +298,14 @@ for (my $j = 0; $j <= $#lignes; $j++) {
 		$texte = $texte."<TD nowrap>$modif</TH>";
 	#}
 	$texte = $texte."<TD nowrap>$date</TD><TD align=center>$lien&nbsp;</TD>";
-	$csvTxt .= join(';', ($id,$date,$aliasSite));
+	$csvTxt .= join(';', ($date,$aliasSite));
 	$csvTxt .= ";";
 	my $nb_inputs = $#{ $lignes[$j] };
-	for (my $i = 6; $i <= $nb_inputs; $i++) {
+	for (my $i = 8; $i <= $nb_inputs-3; $i++) {
 		$texte = $texte."<TD align=center>$lignes[$j][$i]</TD>";
 		$csvTxt .= "$lignes[$j][$i];";
 	}
-	$csvTxt .= "\n";
+	$csvTxt .= "; $rem\n";
 	$texte = $texte."</TD><TD></TD></TR>";
 
 	$nbLignesRetenues++;
@@ -310,7 +313,7 @@ for (my $j = 0; $j <= $#lignes; $j++) {
 
 push(@csv,l2u($csvTxt));
 push(@html,"Number of records = <B>$nbLignesRetenues</B> / $nbData.</P>\n",
-	"<P>Download a CSV text file of these data <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?affiche=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&unite=$QryParm->{'unite'}&form=".$FORM->conf('NAME')."\"><B>$fileCSV</B></A></P>\n");
+	"<P>$__{'Download a CSV text file of these data'} <A href=\"/cgi-bin/showGENFORM.pl?affiche=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&unite=$QryParm->{'unite'}&form=".$FORM->conf('NAME')."\"><B>$fileCSV</B></A></P>\n");
 
 if ($texte ne "") {
 	push(@html,"<TABLE class=\"trData\" width=\"100%\"><TR>$entete\n</TR>$texte\n<TR>$entete\n</TR></TABLE>");

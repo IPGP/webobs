@@ -60,6 +60,8 @@ use warnings;
 use File::Basename;
 use File::Path qw(rmtree);
 use File::Copy qw(copy);
+use File::Temp ();
+use File::Path qw(mkpath rmtree);
 use CGI;
 my $cgi = new CGI;
 $CGI::POST_MAX = 1024;
@@ -169,7 +171,7 @@ if ($action eq 'save') {
 	if (! -e $formConfFile) {
 		# --- Form creation (config file does not exist)
 
-		if (!-d $formdir and !mkdir($formdir)) {
+		if (! -d $formdir and !mkdir($formdir)) {
 			htmlMsgNotOK("fedit: error while creating directory $formdir: $!");
 			exit;
 		}
@@ -180,41 +182,64 @@ if ($action eq 'save') {
 			htmlMsgNotOK("fedit: error creating $formConfFile: $!");
 			exit;
 		}
-		
+
 		# --- connecting to the database in order to create a table with the name of the FORM
-		my %FORM = readCfg("$WEBOBS{PATH_FORMS}/$FORMName/$FORMName.conf");
 		my $dbh = connectDbForms();
 
-		# --- creation of the DB table
-		my @keys = sort keys %FORM;
-		my $count_inputs = count_inputs(@keys)-1;
-		my @inputs;
-		for (my $i = 1; $i <= $count_inputs+1; $i++) {
-			my $input;
-			if ($i < 10) {
-				$input = "input0".$i;
-			} else {
-				$input = 'input'.$i;
-			}
-			push(@inputs, $input);
-		}
-
+		# --- checking if the table we want to edit exists
 		my $tbl = lc($FORMName);
-		my @db_columns = map {"$_ "} ("BEG_DATE text NOT NULL","BEG_HR","END_DATE","END_HR","SITE text NOT NULL");
-		my $db_columns = "";
-		$db_columns .= join(', ', @db_columns);
-		$db_columns .= " ,";
-		$db_columns .= join(',', map { " $_ text" } @inputs);
-
-		my $stmt = qq(create table if not exists $tbl ($db_columns););
-		#htmlMsgOK($db_columns);
+		my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
 		my $sth = $dbh->prepare( $stmt );
-		#htmlMsgOK($stmt);
 		my $rv = $sth->execute() or die $DBI::errstr;
+
+		if ($sth->fetchrow_array() == 0) {	# if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
+			# --- creation of the DB table
+			my @inputs = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
+
+			my @db_columns = map {"$_ "} ("trash boolean DEFAULT FALSE", "node text NOT NULL", "edate datetime","edate_min datetime","sdate1 datetime NOT NULL","sdate1_min datetime","users text NOT NULL");
+			my $db_columns = "";
+			$db_columns .= join(', ', @db_columns);
+			$db_columns .= " ,";
+			$db_columns .= join(',', map { " ".lc((split '_', $_)[0])." text" } @inputs);
+			$db_columns .= join(',', (", comment text, tsupd text NOT NULL, userupd text NOT NULL"));
+
+			my $stmt = qq(create table if not exists $tbl ($db_columns););
+			#htmlMsgOK($stmt);
+			my $sth = $dbh->prepare( $stmt );
+			my $rv = $sth->execute() or die $DBI::errstr;
+		}
 
 		htmlMsgOK("fedit: $FORMName created.");
 		exit;
 	} else {
+		my @inputs  = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
+		my $newKeys = $#inputs;
+		my $oldKeys = count_inputs(readCfg($formConfFile));
+
+		my $msg;
+		if ($newKeys + 1 > $oldKeys) {
+			$msg = "A new INPUT has been added to the FORM !";
+
+			# --- connecting to the database in order to add the new INPUT to the DB 
+			my $dbh = connectDbForms();
+			my $tbl = lc($FORMName);
+
+			my @db_columns = map {"$_ "} ("trash boolean DEFAULT FALSE", "node text NOT NULL", "edate datetime","edate_min datetime","sdate1 datetime NOT NULL","sdate1_min datetime","users text NOT NULL");
+			my $db_columns = "";
+			$db_columns .= join(', ', @db_columns);
+			$db_columns .= " ,";
+			$db_columns .= join(',', map { " ".lc((split '_', $_)[0])." text" } @inputs);
+			$db_columns .= join(',', (", comment text, tsupd text NOT NULL, userupd text NOT NULL"));
+
+			my $stmt = qq(create table if not exists $tbl ($db_columns););
+			my $sth = $dbh->prepare( $stmt );
+			my $rv = $sth->execute() or die $DBI::errstr;
+		} elsif ($newKeys + 1 < $oldKeys) {
+			$msg = "You can't remove an INPUT !";
+			htmlMsgNotOK($msg);
+			exit;
+		}
+
 		if ($TS0 != (stat("$formConfFile"))[9]) { 
 		htmlMsgNotOK("$FORMName $__{'has been modified while you were editing'}"); 
 		exit; 
@@ -232,12 +257,12 @@ if ($action eq 'save') {
 				push(@rawfile,u2l($text));
 				print FILE @rawfile ;
 				close(FILE);
-				htmlMsgOK($FORMName);
 			} else {
 				close(FILE);
 				htmlMsgNotOK("$me couldn't backup $FORMName");
 			}
 		} else { htmlMsgNotOK("$me opening $FORMName - $!") }
+		htmlMsgOK($msg);
 		exit;
 	}
 }
@@ -389,35 +414,35 @@ print "<div id=\"statusbar\">$FORMName</div>\n";
 print "</TD>\n<TD style=\"border:0; vertical-align:top\">\n";
 
 # ---- Lists
-my %FORM = readCfg($formConfFile);
-my @keys = sort keys %FORM;
-my $count_inputs = count_inputs(@keys)-1;
-my @inputs;
-for (my $i = 1; $i <= $count_inputs+1; $i++) {
-	my $input;
-	if ($i < 10) {
-		$input = "input0".$i;
-	} else {
-		$input = 'input'.$i;
-	}
-	push(@inputs, $input);
-}
-
-my @lists;
-foreach(@inputs) {
-	my $list = uc($_)."_LIST";
-	if (exists($FORM{$list})) {
-		if (-e $FORM{$list}) {
-			push(@lists, "$WEBOBS{PATH_FORMS}/$FORMName/$FORM{$list}");
-		} else {
-			push(@lists, "$WEBOBS{ROOT_CODE}/tplates/FORM_list.txt");
-		}
-	}
-}
+my @lists  = grep {/(INPUT[0-9]{2}_TYPE)/} split(/\n/, $txt);
 
 print "<FIELDSET><LEGEND>Lists</LEGEND>\n";
+
 foreach(@lists) {
-	print "<A href=\"/cgi-bin/xedit.pl?fs=$_\">$_</a>\n";
+	if ($_ =~ /list:/) {
+		$_ = (split /\: /, $_)[1];
+		my $dir  = "$WEBOBS{PATH_FORMS}/$FORMName/";
+		my $file = $dir.$_;
+		if (-e $file) {
+			$file = "CONF/FORMS/$FORMName/$_";
+			print "<A href=\"/cgi-bin/xedit.pl?fs=$file\">$file</a>\n";
+		} elsif ($template =~ /GENFORM/ && ! -e "$file"){
+			if (! -d $dir and !mkdir($dir)) {
+				print "fedit: error while creating directory $dir: $!";
+			}
+			qx(cp -a $WEBOBS{ROOT_CODE}/tplates/FORM_list.conf $file 2>&1);
+			$file = "CONF/FORMS/$FORMName/$_";
+			print "<A href=\"/cgi-bin/xedit.pl?fs=$file\">$file</a>\n";
+		} else {
+			my $suffix = lc((split /FORM\./, $template)[1]);
+			if (! -d $dir and !mkdir($dir)) {
+				print "fedit: error while creating directory $dir: $!";
+			}
+			qx(cp -a $WEBOBS{ROOT_CODE}/tplates/FORM_list$suffix.conf $file 2>&1);
+			$file = "CONF/FORMS/$FORMName/$_";
+			print "<A href=\"/cgi-bin/xedit.pl?fs=$file\">$file</a>\n";
+		}
+	}
 }
 print "</FIELDSET>\n";
 

@@ -346,11 +346,14 @@ print "<div id=\"noscrolldiv\">";
 							print "<TD style=\"text-align:center\">";
 							if (defined($G{$vp}{FORM}) && $G{$vp}{FORM} ne '') {
 								my %F = readCfg("$WEBOBS{PATH_FORMS}/$G{$vp}{FORM}/$G{$vp}{FORM}.conf");
+=pod obsolet code
 								if ($F{CGI_SHOW} eq "showGENFORM.pl") {
 									print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?form=$G{$vp}{FORM}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
 								} else {
 									print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?node={$vp}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
 								}
+=cut
+								print "<A HREF=\"/cgi-bin/showGENFORM.pl?form=$G{$vp}{FORM}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
 							} else {
 								if (defined($G{$vp}{URNDATA}) && $G{$vp}{URNDATA} ne '') {
 									print "<A HREF=\"$G{$vp}{URNDATA}\"><IMG border=\"0\" alt=\""
@@ -543,7 +546,7 @@ sub feditpopup {
 	closedir $dir;
 	$SP .= "  <select id=\"feditTpl\" name=\"feditT\" value=\"\">\n";	# select input, look into CODE/tplates to find the differents templates
 	for (my $i = 0; $i <= $#templates; $i++) {
-		if ($templates[$i] =~ /FORM./) {
+		if ($templates[$i] =~ /FORM\./) {
 			$SP .= "<option value=\"$templates[$i]\">$templates[$i]</option>";
 		}
 	}
