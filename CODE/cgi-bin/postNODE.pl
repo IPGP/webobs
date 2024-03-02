@@ -206,12 +206,12 @@ my $QryParm    = $cgi->Vars;    # used later; todo: replace cgi->param's below
 my $acqr       = $cgi->param('acqr')        // '';
 my $utcd       = $cgi->param('utcd')        // '';
 my $ldly       = $cgi->param('ldly')        // '';
-my $anneeD     = $cgi->param('anneeDepart') // '';
-my $moisD      = $cgi->param('moisDepart')  // '';
-my $jourD      = $cgi->param('jourDepart')  // '';
-my $anneeE     = $cgi->param('anneeEnd')    // '';
-my $moisE      = $cgi->param('moisEnd')     // '';
-my $jourE      = $cgi->param('jourEnd')     // '';
+my $anneeD     = $cgi->param('syear')       // '';
+my $moisD      = $cgi->param('smonth')      // '';
+my $jourD      = $cgi->param('sday')        // '';
+my $anneeE     = $cgi->param('eyear')       // '';
+my $moisE      = $cgi->param('emonth')      // '';
+my $jourE      = $cgi->param('eday')        // '';
 my $validite   = $cgi->param('valide')      // '';
 my $alias      = $cgi->param('alias')       // '';
 my $type       = $cgi->param('type')        // '';
@@ -246,9 +246,9 @@ my $filename   = $cgi->param('filename')    // '';
 my $alt        = $cgi->param('altitude')    // '';
 my $gnss_9char = $cgi->param('gnss_9char')  // '';
 my $m3g_check  = $cgi->param('m3g_check')   // '';
-my $anneeP     = $cgi->param('anneeMesure') // '';
-my $moisP      = $cgi->param('moisMesure')  // '';
-my $jourP      = $cgi->param('jourMesure')  // '';
+my $anneeP     = $cgi->param('pyear')       // '';
+my $moisP      = $cgi->param('pmonth')      // '';
+my $jourP      = $cgi->param('pday')        // '';
 my $typePos    = $cgi->param('typePos')     // '';
 my $rawKML     = $cgi->param('rawKML')      // '';
 my $features   = $cgi->param('features')    // '';
@@ -555,7 +555,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
