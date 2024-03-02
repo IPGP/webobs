@@ -11,6 +11,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ## v2.7 (under development)
 
 ### New features
+1. **Generic forms**: it is now possible to create any user-defined manual database associated to a form (for entering new data and editing), a table display and CSV export. This new feature intends replacing all the former forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, NOVAC, SOILSOLUTIONS, and RAINWATER). When upgrading, a migration of the former databanks is requested: it will create the corresponding configuration file and convert the .DAT text data file to a SQLite .db file. See the user manual documentation for details.
 1. In the **tremblemaps** procs (felt earthquakes), GSE message can be replaced by a JSON file with basic information about the event, with two new variables:
 ```
 GSE_EXPORT|N
@@ -28,8 +29,10 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
    The `MUTT_OPTIONS` is used to set the "From:" address (instead of Apache user who is the real sender), but other options can be added if needed (see **mutt** manual). `TRIGGER_EMAIL` and `TRIGGER_SUBJECT` is used to send the data to BCSF. It will use JSON file (if exists), or GSE file otherwise. The `REPORT_EMAIL`, `REPORT_SUBJECT`, and `REPORT_FOOTNOTE` are used to send the B3 report with a detailed text message on the event and potential macroseismic intensities. The PDF file of full report will be attached to the mail. Note that email will be sent to the operator and destination address will be in "Bcc:".
 
 ### Enhancements
-1. In showNODE.pl the links between node's feature displays a table of full feature content in the parent node.
+1. In showNODE.pl the links between node's feature displays a table of full children's feature content in the parent node.
 1. Search node events form accepts negative pattern (beginning with a `!`).
+1. Mat-file raw format allows import of any variable names as t, d, and e matrix (`FID_T`, `FID_D`, `FID_E`).
+1. Better check of the consistency of node start/end dates when editing the configuration.
 
 ### Fixed issues
 1. ``!!`` WebObs Perl modules have been moved from CODE/cgi-bin/WebObs to CODE/perl/lib. The system-wide installation **MUST** be executed when upgrading (answer Y to the appropriate question during setup) in order to make all CGI working.
@@ -49,6 +52,8 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
 1. The metadatabase has been separated from the THEIA|Ozcar pivot model summary table. From now on, when a NODE is created or edited, the datasets table is filled with the metadata concerning the NODE. Moreover, for each PROC, It is necessary to fill the `THEIA_SELECTED_NODESID` and `THEIA_SELECTED_TS` fields which respectively correspond to the NODEs associated to the given PROC and the timescale on which the given PROC produces the data, in order to send the data and metadata associated with the PROC.NODES and the selected timescale. Thus, the THEIA|Ozcar pivot model summary table only show the selected data producer, **PROC.NODEs** and **PROC.NODE_CHANNELs** that will be send to the pivot model. Finally, a JSON file is produced and a text file is created for each **PROC.NODE_CHANNELs** containing the data, included in the associated timescale, which will be send to the pivot model with the metadata. The JSON file contains only the metadata, and the text files the data. For each **PROC.NODE**, all the **PROC.NODE_CHANNEL** text files are compressed in a zip file named *producerId_DAT_PROC.NODE.zip*, and the the text files contained are named after *producerId_PROC.NODE_CHANNEL.txt*. At the end, a zip file containing the datasets zip files and the JSON metadata file is made and uploaded on the user computer.
 
 1. In the seismic bulletin Main Courante, graph has now a 28-day moving sum, an Y-axis label, and the plot size has been extended.
+
+1. When creating a new node, the *Start date* is now blank (previously it was current date), as the *End date*. Also, entering a Start date posterior to End date gives an error message (previously it was allowed).
 
 ### Fixed issues
 1. Fix an issue with author names in search node events (no result were found when search was made on a common part of multiple names).
