@@ -104,16 +104,18 @@ my @dateStartElements = split(/-/,$dateStart);
 my $dateEnd = $cgi->url_param('dateEnd');
 my @dateEndElements = split(/-/,$dateEnd);
 
-my $mc3URL = "http://195.83.188.56/cgi-bin/mc3.pl";
+my $mc3URL = "https://195.83.188.56/cgi-bin/mc3.pl";
 my $user = 'mc3';
 my $pass = 'MC3-0vpf';
-my $ua = new LWP::UserAgent;
+my $ua = LWP::UserAgent->new(ssl_opts => { verify_hostname => 0 });
+$ua->ssl_opts(SSL_verify_mode => 0x00);
+my $header = HTTP::Request->new(GET => $mc3URL);
+$header->authorization_basic($user, $pass);
 
 # DERNIER SEISME RESSENTI
 my @date1 = ('2020','01','01','00');
 my @date2 = ($dateEndElements[0],$dateEndElements[1],$dateEndElements[2],'23');
-my $req = new HTTP::Request(GET => "$mc3URL?slt=0&y1=$date1[0]&m1=$date1[1]&d1=$date1[2]&h1=$date1[3]&y2=$date2[0]&m2=$date2[1]&d2=$date2[2]&h2=$date2[3]&type=ALL&duree=ALL&ampoper=eq&amplitude=ALL&obs=ressenti&locstatus=0&located=0&mc=MC3_Mayotte&dump=bul&newts=&graph=movsum");
-$req->authorization_basic($user, $pass);
+my $req = new HTTP::Request(GET => "$mc3URL?slt=0&y1=$date1[0]&m1=$date1[1]&d1=$date1[2]&h1=$date1[3]&y2=$date2[0]&m2=$date2[1]&d2=$date2[2]&h2=$date2[3]&type=ALL&duree=ALL&ampoper=eq&amplitude=ALL&obs=ressenti&locstatus=0&located=0&mc=MC3_Mayotte&dump=bul&newts=&graph=movsum", $header);
 my $response = $ua->request($req);
 my $content = "";
 if ($response->is_success) {
@@ -131,9 +133,8 @@ my $loc_felt = "Latitude : $lat_felt - Longitude : $lon_felt";
 
 # EVENEMENTS DE LA VEILLE
 
-$req = new HTTP::Request(GET => "$mc3URL?slt=0&y1=$dateStartElements[0]&m1=$dateStartElements[1]&d1=$dateStartElements[2]&h1=00[3]&y2=$dateEndElements[0]&m2=$dateEndElements[1]&d2=$dateEndElements[2]&h2=23&type=ALL&duree=ALL&ampoper=eq&amplitude=ALL&obs=VOLCVT|VOLCVLP|VOLCLP&locstatus=0&located=0&mc=MC3_Mayotte&dump=bul&newts=&graph=movsum");
+$req = new HTTP::Request(GET => "$mc3URL?slt=0&y1=$dateStartElements[0]&m1=$dateStartElements[1]&d1=$dateStartElements[2]&h1=00[3]&y2=$dateEndElements[0]&m2=$dateEndElements[1]&d2=$dateEndElements[2]&h2=23&type=ALL&duree=ALL&ampoper=eq&amplitude=ALL&obs=VOLCVT|VOLCVLP|VOLCLP&locstatus=0&located=0&mc=MC3_Mayotte&dump=bul&newts=&graph=movsum", $header);
 
-$req->authorization_basic($user, $pass);
 $response = $ua->request($req);
 $content = "";
 if ($response->is_success) {
