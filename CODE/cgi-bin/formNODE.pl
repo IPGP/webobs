@@ -158,16 +158,16 @@ my $usrYearE = my $usrYearC = my $usrYearP = "";
 my $usrMonthE = my $usrMonthC = my $usrMonthP = "";
 my $usrDayE = my $usrDayC = my $usrDayP = "";
 my $usrTimeP = my $date = "";
-#      install date = (the one defined or "" if NA) OR today
-$date            = $NODE{INSTALL_DATE} // strftime('%Y-%m-%d',@tod);
+#      install date = (the one defined or "" if NA)
+$date = $NODE{INSTALL_DATE};
 if ($date eq "NA") { $date = "" }
 ($usrYearC,$usrMonthC,$usrDayC) = split(/-/,$date);
 #      end date = (the one defined or "" if NA) OR ""
-$date            = $NODE{END_DATE};
+$date = $NODE{END_DATE};
 if ($date eq "NA") { $date = "" }
 ($usrYearE,$usrMonthE,$usrDayE) = split(/-/,$date);
 #      positionning date = (the one defined or "" if NA) OR today
-$date            = $NODE{POS_DATE} // strftime('%Y-%m-%d',@tod);
+$date = $NODE{POS_DATE} // strftime('%Y-%m-%d',@tod);
 if ($date eq "NA") { $date = "" }
 ($usrYearP,$usrMonthP,$usrDayP,$usrTimeP) = split(/-|T/,$date);
 
@@ -308,6 +308,9 @@ print <<"FIN";
 function postIt()
 {
  var form = \$('#theform')[0];
+ var sdate = form.syear.value + form.smonth.value + form.sday.value;
+ var edate = form.eyear.value + form.emonth.value + form.eday.value;
+
  if(form.nouveau.value == 1 && form.message.value != "ok") {
    alert("NODE ID: Please enter a valid and new ID!");
    form.nodename.focus();
@@ -321,6 +324,11 @@ function postIt()
  if(form.alias.value == "") {
    alert("ALIAS: Please enter a short name (non-blank string)");
    form.alias.focus();
+   return false;
+ }
+ if(sdate != "" && edate != "" && sdate > edate) {
+   alert("Lifetime: Please enter an End date posterior to the Start date or leave it blank");
+   form.eyear.focus();
    return false;
  }
  if(form.latwgs84.value != "" && (isNaN(form.latwgs84.value) || form.latwgs84.value < -90 || form.latwgs84.value > 90)) {
@@ -492,21 +500,21 @@ function checkNode() {
 function latlonChange() {
 	if (document.form.typePos.value == 3) {
 		document.getElementById("rawKML").style.display = "block";
-		document.form.anneeMesure.disabled = true;
-		document.form.moisMesure.disabled = true;
-		document.form.jourMesure.disabled = true;
+		document.form.pyear.disabled = true;
+		document.form.pmonth.disabled = true;
+		document.form.pday.disabled = true;
 	} else {
 		document.getElementById("rawKML").style.display = "none";
 		var today = new Date();
 		var d  = today.getDate();
-		document.form.jourMesure.disabled = false;
-		document.form.jourMesure.value = (d < 10) ? '0' + d : d;
+		document.form.pday.disabled = false;
+		document.form.pday.value = (d < 10) ? '0' + d : d;
 		var m = today.getMonth() + 1;
-		document.form.moisMesure.disabled = false;
-		document.form.moisMesure.value = (m < 10) ? '0' + m : m;
+		document.form.pmonth.disabled = false;
+		document.form.pmonth.value = (m < 10) ? '0' + m : m;
 		var yy = today.getYear();
-		document.form.anneeMesure.disabled = false;
-		document.form.anneeMesure.value = (yy < 1000) ? yy + 1900 : yy;
+		document.form.pyear.disabled = false;
+		document.form.pyear.value = (yy < 1000) ? yy + 1900 : yy;
 	}
 }
 
@@ -932,23 +940,23 @@ print "<TR>";
     	print "<TR>";
 			print "<TD style=\"border:0;text-align:right\">";
     		print "<DIV class=parform>";
-				print "<B>$__{'Start date'}:</b> <SELECT name=\"anneeDepart\" size=\"1\">";
+				print "<B>$__{'Start date'}:</b> <SELECT name=\"syear\" size=\"1\">";
 				for ($usrYearC,@yearListC) { print "<OPTION".(($_ eq $usrYearC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
-				print " <SELECT name=\"moisDepart\" size=\"1\">";
+				print " <SELECT name=\"smonth\" size=\"1\">";
 				for (@monthList) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
-				print " <SELECT name=\"jourDepart\" size=\"1\">";
+				print " <SELECT name=\"sday\" size=\"1\">";
 				for (@dayList) { 	print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT><BR>";
-				print "<b>$__{'End date'}:</b> <SELECT name=\"anneeEnd\" size=\"1\">";
+				print "<b>$__{'End date'}:</b> <SELECT name=\"eyear\" size=\"1\">";
 				for ($usrYearE,@yearListE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "<OPTION value=NA>NA</option>\n";
 				print "</SELECT>";
-				print " <SELECT name=\"moisEnd\" size=\"1\">";
+				print " <SELECT name=\"emonth\" size=\"1\">";
 				for (@monthList) { print "<option".(($_ eq $usrMonthE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
-				print " <SELECT name=\"jourEnd\" size=\"1\">";
+				print " <SELECT name=\"eday\" size=\"1\">";
 				for (@dayList) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
 				print "</SELECT>";
 			print "</DIV></TD>";
@@ -1127,13 +1135,13 @@ print "<TR>";
 			print "<label for=\"altitude\">$__{'Elevation'}  (m):</label>";
 			print "<input size=\"8\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_alt}')\" id=\"altitude\" name=\"altitude\"><BR>\n";
 			# --- positioning date
-			print "<label for=\"datePos\">Date:</label> <select name=\"anneeMesure\" size=\"1\">";
+			print "<label for=\"datePos\">Date:</label> <select name=\"pyear\" size=\"1\">";
 			for ($usrYearP,@yearListP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";	}
 			print "</select>";
-			print " <select name=\"moisMesure\" size=\"1\">";
+			print " <select name=\"pmonth\" size=\"1\">";
 			for (@monthList) { print "<option".(($_ eq $usrMonthP)?" selected":"")." value=$_>$_</option>\n"; }
 			print "</select>";
-			print " <select name=\"jourMesure\" size=\"1\">";
+			print " <select name=\"pday\" size=\"1\">";
 			for (@dayList) { print "<option".(($_ eq $usrDayP)?" selected":"")." value=$_>$_</option>\n"; }
 			print "</select><BR>";
 			# --- Positioning type (unknown, map, GPS or auto)
