@@ -1,7 +1,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-a\chapter{WebObs metadata database interface} \label{metadata}
+\chapter{WebObs metadata database interface} \label{metadata}
 
 
 
@@ -35,6 +35,7 @@ Those informations are gathered by WebObs in a JSON file which respects the stru
 	\centering
 	\includegraphics[width=\textwidth]{figures/theia_pivot_model.png}
 	\caption{Figure from \url{https://github.com/theia-ozcar-is/csv-to-theia-ozcar-pivot-model}.}
+	\label{pivot_model}
 \end{figure}
 
 
@@ -113,7 +114,8 @@ First of all, one has to make sure (only user with administrator right) WEBOBS.r
 \begin{figure}[!h]
 	\centering
 	\includegraphics[width=\textwidth]{figures/webobs.rc.png}
-	\caption{THIEA_USER_FLAG must be 1 to display the metadata resume board and anything metadata related.}
+	\caption{THIEA_USER_FLAG must be $1$ to display the metadata resume board and anything metadata related.}
+	\label{webobs.rc}
 \end{figure}
 
 Each of these 3 objects (producer, datasets, observations) can be filled through WebObs, and some are even done automatically, for example when creating a \wo{node}, or when filling a line of a calibration file. A table to display the producer, datasets and observations metadata is available. To do so, an user with administrator right has to create a link towards the showTHEIA.pl script through +ADMIN -> Admin editors -> MAIN MENU EDIT. 
@@ -122,12 +124,14 @@ Each of these 3 objects (producer, datasets, observations) can be filled through
 	\centering
 	\includegraphics[width=\textwidth]{figures/theia_tab.png}
 	\caption{Click on the tab to open the metadata summary table.}
+	\label{showTHEIA}
 \end{figure}
 
 \begin{figure}[!h]
 	\centering
 	\includegraphics[width=\textwidth]{figures/theia_recap_table.png}
 	\caption{The table sums up the mandatory metadata that have been filled to create the JSON file that will be send to the Theia$\vert$OZCAR IS.}
+	\label{showTHEIA2}
 \end{figure}
 
 By clicking on each row on the pencil, you can get back to the edition menu of the clicked object. If you click on the delete symbol, the row wil be deleted from the resume board but not from the database (which will happens when deleting a NODE or a variable in a given .clb file). Thus, only the rows displayed on the resume board will be integrated in the JSON file. Then, to validate the data you want to send in the JSON file, you have to validate the form. If all the required metadata are  validated, a message will appear to confirm the edition of the file called *theia.rc*. When launching the job, a .zip file is created for each dataset, containing the observations in a .txt file. Finally, a .zip file is made with the JSON and the datasets .zip files by creating a job using *sendTHEIA.pl* script (as shown below).
@@ -138,12 +142,14 @@ By clicking on each row on the pencil, you can get back to the edition menu of t
 	\centering
 	\includegraphics[scale=0.25]{figures/theia_rc.png}
 	\caption{If it succeed, a configuration file containing all the information will be edited.}
+	\label{theia.rc}
 \end{figure}
 
 \begin{figure}[!h]
 	\centering
 	\includegraphics[scale=0.25]{figures/sendTHEIA.png}
 	\caption{If it succeed, a .zip file will be downloaded in the OUTE/theia/ directory, containing all the metadata and data ready to send to THEIA pivot model.}
+	\label{sendTHEIA}
 \end{figure}
 
 \newpage
@@ -157,6 +163,7 @@ The producer metadata can be filled throughout the \wo{domain} edition menu.
 	\centering
 	\includegraphics[width=\textwidth]{figures/gridsMgr.png}
 	\caption{The table sums up the information about the data producer.}
+	\label{girdsMgr}
 \end{figure}
 
 Each data producer can be edited or deleted. When creating, deleting or editing a producer, a local SQLite database is filled,  called WEBOBSMETA.db, which is only available for the admin. Only the mandatory metadata are necessary, in addition to the grids related to the producer (as several producer can co-exist on the same WebObs).Other metadata are optional even if some are more or less recommended.
@@ -172,6 +179,7 @@ Dataset metadata is entered when creating or editing an existing \wo{node}. The 
 	\centering
 	\includegraphics[width=\textwidth, scale=0.4]{figures/formNODE.png}
 	\caption{When creating or editing a NODE, fields appear in the left lower panel to fill required metadata in.}
+	\label{formNODE}
 \end{figure}
 
 
@@ -184,5 +192,6 @@ Observation metadata is entered when creating or editing an existing calibration
 	\centering
 	\includegraphics[width=\textwidth]{figures/calib_file_form.png}
 	\caption{You can click on the highlighted Theia word (on the top right) to get driven to the Theia thesaurus.}
+	\label{formCLB}
 \end{figure}
 
