@@ -487,7 +487,7 @@ sub geditpopup {
 	$SP .= "  </select>\n";
 	$SP .= "<br style=\"clear: left\"><br>";
 
-	$SP .= "<label for=\"geditN\">$__{'Grid Name'}: <span class=\"small\">short name (uppercase)</span></label>";
+	$SP .= "<label for=\"geditN\">$__{'Grid Name'}: <span class=\"small\">$__{'short name (uppercase)'}</span></label>";
 	$SP .= "  <input size=\"40\" id=\"geditN\" name=\"geditN\" value=\"\">\n";
 	$SP .= "<br style=\"clear: left\"><br>";
 
@@ -532,7 +532,7 @@ sub feditpopup {
 	$SP .= "  </select>\n";
 	$SP .= "<br style=\"clear: left\"><br>";
 =cut
-	$SP .= "<label for=\"feditN\">$__{'Form Name'}: <span class=\"small\">short name (uppercase)</span></label>";
+	$SP .= "<label for=\"feditN\">$__{'Form Name'}: <span class=\"small\">$__{'short name (uppercase)'}</span></label>";
 	$SP .= "  <input size=\"40\" id=\"feditN\" name=\"feditN\" value=\"\">\n";
 	$SP .= "<br style=\"clear: left\"><br>";
 =pod
@@ -540,7 +540,7 @@ sub feditpopup {
 	$SP .= "  <input size=\"40\" id=\"nbIn\" name=\"nbIn\" value=\"\">\n";
 	$SP .= "<br style=\"clear: left\"><br>";
 =cut
-	$SP .= "<label for=\"feditT\">$__{'Form template'}: <span class=\"small\">short name (uppercase)</span></label>";
+	$SP .= "<label for=\"feditT\">$__{'Form template'}: <span class=\"small\"></span></label>";
 	opendir my $dir, ("$WEBOBS{ROOT_CODE}/tplates/") or die "Cannot open directory: $!";
 	my @templates = grep (/FORM/, readdir($dir));
 	closedir $dir;
