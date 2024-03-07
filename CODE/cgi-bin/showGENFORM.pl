@@ -295,7 +295,7 @@ for (my $j = 0; $j <= $#lignes; $j++) {
 	$modif = qq(<a href="$form_url"><img src="/icons/modif.png" title="Editer..." border=0></a>);
 	$efface = qq(<img src="/icons/no.png" title="Effacer..." onclick="checkRemove($id)">);
 
-	$texte = $texte."<TR ".($id < 1 ? "class=\"node-disabled\"":"").">";
+	$texte = $texte."<TR ".($trash == 1 ? "class=\"node-disabled\"":"").">";
 	#if ($clientAuth > 1) {
 		$texte = $texte."<TD nowrap>$modif</TH>";
 	#}
