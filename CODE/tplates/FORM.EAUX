@@ -39,7 +39,7 @@ INPUT12_NAME|Ca<sup>++</sup>
 INPUT12_UNIT|ppm
 INPUT13_NAME|H<sup>+</sup>
 INPUT13_UNIT|ppm
-INPUT13_TYPE|formula: 1000*(10**(-INPUT03))
+INPUT13_TYPE|formula: 1000*(10**(-INPUT04))
 INPUT14_NAME|F<sup>-</sup>
 INPUT14_UNIT|ppm
 INPUT15_NAME|Cl<sup>-</sup>
