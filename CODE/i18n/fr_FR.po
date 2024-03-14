@@ -81,10 +81,10 @@ msgid "No filename specified"
 msgstr "Fichier non spécifié"
 
 msgid "Editing"
-msgstr "Édition"
+msgstr "Modification"
 
 msgid "Editing file"
-msgstr "Édition de"
+msgstr "Modification de"
 
 msgid "Creating"
 msgstr "Création"
@@ -1036,10 +1036,10 @@ msgid "level"
 msgstr "niveau"
 
 msgid "Editing event #"
-msgstr "Edition évènement n° "
+msgstr "Modification événement n° "
 
 msgid "Add a new event"
-msgstr "Ajout de nouvel évènement"
+msgstr "Ajout de nouvel événement"
 
 msgid "Edition of the file"
 msgstr "Edition du fichier"
@@ -1680,7 +1680,7 @@ msgid "Number of records"
 msgstr "Nombre d\\'enregistrements"
 
 msgid "Download a CSV text file of these data"
-msgstr "Télécharger un fichier CSV de ces données"
+msgstr "Télécharger ces données dans un fichier au format CSV"
 
 msgid "Request results"
 msgstr "Résultat des requêtes"
@@ -1822,20 +1822,8 @@ msgstr "Nom du Form"
 msgid "Form template"
 msgstr "Template de Form"
 
-msgid "Start Date"
-msgstr "Date de début"
-
-msgid "End Date"
-msgstr "Date de fin"
-
 msgid "Reset"
 msgstr "Réinitialiser"
-
-msgid "Display"
-msgstr "Afficher"
-
-msgid "Download a CSV text file of these data"
-msgstr "Télécharger ces données au format CSV"
 
 # ---- formGENFORM.pl
 
@@ -1848,19 +1836,8 @@ msgstr "Voulez-vous enlever cet enregistrement de"
 msgid "Do you want to restore this record in"
 msgstr "Voulez-vous restaurer cet enregistrement dans"
 
-msgid "Erase"
-msgstr "Effacer"
-
-msgid "Remove"
-msgstr "Enlever"
 
 # ---- fedit.pl
-
-msgid "Editing"
-msgstr "Modification"
-
-msgid "Creating"
-msgstr "Création"
 
 msgid "Delete this form"
 msgstr "Supprimer ce form"
