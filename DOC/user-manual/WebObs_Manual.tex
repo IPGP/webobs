@@ -14,7 +14,7 @@
 \usepackage{longtable}
 \usepackage{datenumber}
 \usepackage{calc}
-%\usepackage{numprint}
+\usepackage{datetime}
 
 \usepackage[usenames,dvipsnames]{color}
 \definecolor{snow}{gray}{0.98}
@@ -38,11 +38,13 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 %\includeonly{Chapter1}
 
 \renewcommand*{\familydefault}{\sfdefault}
+\newdateformat{mydate}{\monthname[\THEMONTH] \THEYEAR}
+
 
 % ------ local variables
 \newcommand{\release}{2.6.4}
-\newcommand{\releasename}{v2.6.4}
-\newcommand{\releasedate}{December, 2023}
+\newcommand{\releasename}{v\release}
+\newcommand{\releasedate}{\mydate\today}
 \newcommand{\webobs}{\textbf{WebObs }}
 \newcommand{\wo}[1]{\MakeTextUppercase{#1}}
 \newcommand{\wofile}[1]{\small{\textbf{#1}}}
