@@ -109,12 +109,12 @@ The observation metadata are :
 % ==================================================================
 \subsection{Filling the metadata file}
 
-First of all, one has to make sure (only user with administrator right) WEBOBS.rc is rightly configurated like it is shown below, in order to display anything Theia|OZCAR related and to make sure the file theia.rc will be filled. This last configuration file is important because it gathers the metadata the users want to send to Theia|OZCAR data portal.
+First of all, one has to make sure (only user with administrator right) WEBOBS.rc is rightly configurated like it is shown below, in order to display anything Theia$\vert$OZCAR related and to make sure the file theia.rc will be filled. This last configuration file is important because it gathers the metadata the users want to send to Theia$\vert$OZCAR data portal.
 
 \begin{figure}[!h]
 	\centering
 	\includegraphics[width=\textwidth]{figures/webobs.rc.png}
-	\caption{THIEA_USER_FLAG must be $1$ to display the metadata resume board and anything metadata related.}
+	\caption{$THIEA\_USER\_FLAG$ must be 1 to display the metadata resume board and anything metadata related.}
 	\label{webobs.rc}
 \end{figure}
 
@@ -134,7 +134,7 @@ Each of these 3 objects (producer, datasets, observations) can be filled through
 	\label{showTHEIA2}
 \end{figure}
 
-By clicking on each row on the pencil, you can get back to the edition menu of the clicked object. If you click on the delete symbol, the row wil be deleted from the resume board but not from the database (which will happens when deleting a NODE or a variable in a given .clb file). Thus, only the rows displayed on the resume board will be integrated in the JSON file. Then, to validate the data you want to send in the JSON file, you have to validate the form. If all the required metadata are  validated, a message will appear to confirm the edition of the file called *theia.rc*. When launching the job, a .zip file is created for each dataset, containing the observations in a .txt file. Finally, a .zip file is made with the JSON and the datasets .zip files by creating a job using *sendTHEIA.pl* script (as shown below).
+By clicking on each row on the pencil, you can get back to the edition menu of the clicked object. If you click on the delete symbol, the row will be deleted from the resume board but not from the database (which will happens when deleting a NODE or a variable in a given .clb file). Thus, only the rows displayed on the resume board will be integrated in the JSON file. Then, to validate the data you want to send in the JSON file, you have to validate the form. If all the required metadata are  validated, a message will appear to confirm the edition of the file called \wo{theia.rc}. When launching the job, a .zip file is created for each dataset, containing the observations in a .txt file. Finally, a .zip file is made with the JSON and the datasets .zip files by creating a job using \wo{sendTHEIA.pl} script (as shown below).
 
 \newpage
 
