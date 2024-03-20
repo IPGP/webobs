@@ -680,7 +680,7 @@ else
 	if [[ -z ${WEBOBSID} ]]; then
 		WEBOBSID="${YEARNOW}"
 	fi
-	sed -i -e "s=\${InstallYear\}=${YEARNOW}=g" ${DOCROOT}/CONF/WEBOBS.rc
+	sed -i -e "s=\${InstallYear\}=${YEARNOW}=g" ${DOCROOT}/DATA/WEB/HTML/Welcome_info.txt
 	sed -i -e "s=\${WebObsIdentification\}=${WEBOBSID}=g" ${DOCROOT}/CONF/WEBOBS.rc
 	sed -i -e "s=\${InstallDocumentRoot\}=${DOCROOT}=g" ${DOCROOT}/CONF/WEBOBS.rc
 	errexit "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallDocumentRoot)"
