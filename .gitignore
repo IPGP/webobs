@@ -7,6 +7,7 @@ DOC/user-manual/*
 !DOC/user-manual/*.bib
 !DOC/user-manual/figures
 PACK/*
+!PACK/make_wopack
 !PACK/build
 !PACK/build-mac
 !PACK/fpm*
