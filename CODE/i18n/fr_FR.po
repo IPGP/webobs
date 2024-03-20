@@ -1826,6 +1826,14 @@ msgid "Reset"
 msgstr "Réinitialiser"
 
 # ---- formGENFORM.pl
+msgid "Input new data"
+msgstr "Saisie de nouvelles données"
+
+msgid "Edit data n°"
+msgstr "Modification de l'entrée n°"
+
+msgid "Date and place of sampling"
+msgstr "Date et lieu du prélèvement"
 
 msgid "ATT: Do you want PERMANENTLY erase this record from"
 msgstr "ATT: Voulez-vous effacer cet enregistrement de manière permanente de"

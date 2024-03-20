@@ -1,29 +1,27 @@
 =key|value
 # Generic FORM template for use with cgi-bin/fedit.pl
-BANG|1789
-NAME|TESTEAUX
-FILE_NAME|${NAME}.DAT
-TITLE|Banque de données d'analyse chimique des eaux
+BANG|$WEBOBS{BIG_BANG}
+TITLE|Water chemical analysis database
 COLUMNS_NUMBER|2
 FIELDSETS_NUMBER|4
 STARTING_DATE|NO
 DEFAULT_DAYS|365
-LIST_USERS|!
+LIST_USERS|+DUTY
 
 # inputs names and units
 # for the type, chose between : text (size), list (link to a file containing the list) or formula (algebric formula)
-INPUT01_NAME|Type de prélèvement
+INPUT01_NAME|Sampling Type
 INPUT01_TYPE|list: FORM_listeaux.conf
-INPUT02_NAME|Température ambiante
+INPUT02_NAME|Air Temperature
 INPUT02_UNIT|°C
-INPUT03_NAME|Température du liquide
+INPUT03_NAME|Sample Temperature
 INPUT03_UNIT|°C
 INPUT04_NAME|pH
-INPUT05_NAME|Conductivité
+INPUT05_NAME|Conductivity
 INPUT05_UNIT|µS
-INPUT06_NAME|débit
+INPUT06_NAME|Flow Rate
 INPUT06_UNIT|l/min
-INPUT07_NAME|Niveau
+INPUT07_NAME|Level
 INPUT07_UNIT|m
 
 # fieldset 02
@@ -68,23 +66,23 @@ INPUT24_NAME|&delta;<sup>18</sup>O
 INPUT25_NAME|&delta;D
 
 # which inputs are contained in the first fieldset ?
-FIELDSET01_NAME|Mesures sur site
+FIELDSET01_NAME|On-Site Measurements
 FIELDSET01_COLUMNS|1
 FIELDSET01_C01|INPUT01,INPUT02,INPUT03,INPUT04,INPUT05,INPUT06,INPUT07
 
 # which inputs are contained in the second fieldset ?
-FIELDSET02_NAME|Concentrations en cations et anions
+FIELDSET02_NAME|Cation and Anion Concentrations
 FIELDSET02_COLUMNS|2
 FIELDSET02_C01|INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,INPUT13
 FIELDSET02_C02|INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,INPUT20,INPUT21
 
 # which inputs are contained in the third fieldset ?
-FIELDSET03_NAME|Concentration en autres éléments
+FIELDSET03_NAME|Other Elements Concentration
 FIELDSET03_COLUMNS|1
 FIELDSET03_C01|INPUT22
 
 # which inputs are contained in the fourth fieldset ?
-FIELDSET04_NAME|Concentrations en isotopes
+FIELDSET04_NAME|Isotopes Concentrations
 FIELDSET04_COLUMNS|1
 FIELDSET04_C01|INPUT23,INPUT24,INPUT25
 
@@ -93,8 +91,4 @@ COLUMN01_LIST|FIELDSET01
 
 # which fieldsets are contained in the second column ?
 COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
-
-
-# configuration file path
-CONF_FILE|$WEBOBS{PATH_FORMS}/${NAME}/${NAME}.conf
 
