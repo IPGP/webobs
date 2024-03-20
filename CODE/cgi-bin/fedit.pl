@@ -62,6 +62,8 @@ use File::Path qw(rmtree);
 use File::Copy qw(copy);
 use File::Temp ();
 use File::Path qw(mkpath rmtree);
+use HTML::Escape qw(escape_html);
+
 use CGI;
 my $cgi = new CGI;
 $CGI::POST_MAX = 1024;
@@ -135,7 +137,7 @@ my $template;			# type of template wanted by user
 # Read and check CGI parameters
 $FORMName = $cgi->param('fname');
 $action   = checkParam($cgi->param('action'), qr/(edit|save)/, 'action')  // "edit";
-$text	  = scalar($cgi->param('text')) // '';	# used only in print FILE $text;
+$text	  = $cgi->param('text') // '';	# used only in print FILE $text;
 $TS0      = checkParam($cgi->param('ts0'), qr/^[0-9]*$/, "TS0")    // 0;
 $delete   = checkParam($cgi->param('delete'), qr/^\d?$/, "delete") // 0;
 $template = $cgi->param('tpl') // "";
@@ -341,7 +343,7 @@ else {	# we are creating a new FORM
 
 # start building page
 #
-my $txt = l2u(join("",@rawfile));
+my $txt = l2u(escape_html(join("",@rawfile)));
 my $titrePage = "$__{'Editing'} form";
 if ( $newF == 1 ) { $titrePage = "$__{'Creating'} new form" }
 

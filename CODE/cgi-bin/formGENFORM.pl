@@ -72,8 +72,6 @@ my $FORMName = $cgi->param('form');      # name of the form
 
 my $FORM = new WebObs::Form($FORMName);
 
-my $fileDATA = $WEBOBS{PATH_DATA_DB}."/".$FORM->conf('FILE_NAME');
-
 my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
 
 my %Ns;
@@ -99,7 +97,7 @@ my $sel_hr    = "";
 my $sel_mn    = "";
 my $today = strftime('%F',@tod);
 
-# ---- Recuperation des donnees du formulaire
+# ---- Get the form data
 # 
 my @annee  = $cgi->param('annee');
 my @mois   = $cgi->param('mois');
@@ -331,7 +329,7 @@ function submit()
 
 # ---- read data file
 #
-my $message = "$__{'Saisie de nouvelles donn&eacute;es'}";
+my $message = "$__{'Input new data'}";
 my $id = $idTraite;
 my $val = "";
 my %prev_inputs;
@@ -354,7 +352,7 @@ if ($action eq "edit") {
             $prev_inputs{$colnam[$i]} = $row[$i];
         }
 	}
-    $message = "Modification donn&eacute;e n° $id";
+    $message = "$__{'Edit data n°'} $id";
     $val = "[$ts0 $oper]";
 } else { $val = "" ;}
 
@@ -392,12 +390,12 @@ print qq(</table>
   <tr>
     <td style="border: 0" valign="top">
       <fieldset>
-        <legend>Date et lieu du prélèvement</legend>
+        <legend>$__{'Date and place of sampling'}</legend>
         <p class="parform">
 );
     if (isok($ask_start)) {
         print qq(
-                <b>Date de début: </b>
+                <b>$__{'Start Date'}: </b>
                     <select name="annee" size="1">
         );
     	for (@anneeListe) {if ($_ == $sel_annee) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
@@ -409,7 +407,7 @@ print qq(</table>
 	    for (@jourListe) {if ($_ == $sel_jour) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print "</select>";
 
-	    print qq(&nbsp;&nbsp;<b>Heure: </b><select name=hr size="1">);
+	    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
 	    for (@heureListe) {if ($_ eq $sel_hr) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
 	    print qq(<select name=mn size="1">);
@@ -417,7 +415,7 @@ print qq(</table>
 	    print qq(</select><BR>);
 
 	    print qq(
-                <b>Date de fin: </b>
+                <b>$__{'End Date'}: </b>
                     <select name="annee" size="1">
         );
     	for (@anneeListe) {if ($_ == $sel_annee) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
@@ -429,7 +427,7 @@ print qq(</table>
 	    for (@jourListe) {if ($_ == $sel_jour) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print "</select>";
 
-	    print qq(&nbsp;&nbsp;<b>Heure: </b><select name=hr size="1">);
+	    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
 	    for (@heureListe) {if ($_ eq $sel_hr) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
 	    print qq(<select name=mn size="1">);
@@ -437,7 +435,7 @@ print qq(</table>
 
     } else {
         print qq(
-            <b>Date: </b>
+            <b>$__{'Date'}: </b>
                 <select name="annee" size="1">
         );
         for (@anneeListe) {
@@ -467,7 +465,7 @@ print qq(</table>
 	    }
 	    print "</select>";
 
-	    print qq(&nbsp;&nbsp;<b>Heure: </b><select name=hr size="1">);
+	    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
 	    for (@heureListe) {
 		    if ($_ eq $sel_hr) {
 			    print qq(<option selected value="$_">$_</option>);
@@ -533,7 +531,7 @@ foreach (@columns) {
                 my $unit = $FORM{"$inputs[$i]_UNIT"};
                 my $type = $FORM{"$inputs[$i]_TYPE"};
                 my $txt;
-                if ($unit ne "") {$txt = "<B>$name </B> (en $unit) = "} else {$txt = "<B>$name </B> = "};
+                if ($unit ne "") {$txt = "<B>$name </B> ($unit) = "} else {$txt = "<B>$name </B> = "};
                 while ($name =~ /(<sup>|<\/sup>|<sub>|<\/sub>|\+|\-|\&|;)/) {
                     $name =~ s/(<sup>|<\/sup>|<sub>|<\/sub>|\+|\-|\&|;)//;
                 }
@@ -602,9 +600,9 @@ print qq(</TD>
   <tr>
     <td style="border: 0" colspan="2">
       <P style="margin-top: 20px; text-align: center">
-        <input type="button" name=lien value="Annuler"
+        <input type="button" name=lien value="$__{'Cancel'}"
          onClick="document.location=') . $cgi->param('return_url') . qq('" style="font-weight: normal">
-        <input type="button" value="Soumettre" onClick="verif_formulaire();">
+        <input type="button" value="$__{'Submit'}" onClick="verif_formulaire();">
       </P>
     </td>
   </tr>
@@ -709,11 +707,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Lucas Dassin
+Lucas Dassin, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
