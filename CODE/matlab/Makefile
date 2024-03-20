@@ -1,6 +1,6 @@
 # make arch=32|64|mac target
 PATH := $(PATH):/sbin
-MCC32 := /usr/local/MATLAB/R2011b32/bin/mcc
+MCC32 := /usr/local/MATLAB/R2011b/bin/mcc
 MCC64 := /usr/local/MATLAB/R2011b/bin/mcc
 MCCmac := /Applications/MATLAB_R2011b.app/bin/mcc
 OPT32 := -glnx86
