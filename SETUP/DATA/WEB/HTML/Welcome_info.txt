@@ -1,2 +1,2 @@
-<H2><FONT color="black">Welcome to the 2012-2020 WebObs site ! </FONT></H2>
+<H2><FONT color="black">Welcome to the 2012-${InstallYear} WebObs site ! </FONT></H2>
 This is the demo/default version as bundled with the new WebObs package (whose release number should show up in the banner above).
