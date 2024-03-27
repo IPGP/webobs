@@ -401,19 +401,21 @@ if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
 	for (@trans[1 .. $#trans]) {
 		my $distelev = "<TD colspan=2 style='border:none'>&ensp;</TD>";
 		my $nodelink = "<B>$_</B> ($__{'unknown'})";
-		my %N = %{$allNodes{$_}};
-		if (!($N{LAT_WGS84}=="" && $N{LON_WGS84}=="")) {
-			my ($dist,$bear) = greatcircle($NODE{LAT_WGS84},$NODE{LON_WGS84},$N{LAT_WGS84},$N{LON_WGS84});
-			my $deniv = "";
-			if ($NODE{ALTITUDE} != 0 && $N{ALTITUDE} != 0) {
-				$deniv = $N{ALTITUDE} - $NODE{ALTITUDE};
-				$dist = sqrt($dist**2 + ($deniv/1000)**2);
+		if (exists $allNodes{$_}) {
+			my %N = %{$allNodes{$_}};
+			if (!($N{LAT_WGS84}=="" && $N{LON_WGS84}=="")) {
+				my ($dist,$bear) = greatcircle($NODE{LAT_WGS84},$NODE{LON_WGS84},$N{LAT_WGS84},$N{LON_WGS84});
+				my $deniv = "";
+				if ($NODE{ALTITUDE} != 0 && $N{ALTITUDE} != 0) {
+					$deniv = $N{ALTITUDE} - $NODE{ALTITUDE};
+					$dist = sqrt($dist**2 + ($deniv/1000)**2);
+				}
+				my $d = ($dist<1 ? sprintf("%8.0f&nbsp;m",1000*$dist):sprintf("%7.3f&nbsp;km",$dist));
+				$distelev = "<TD align=right style='border:none'><SMALL>&ensp;$d<IMG src=\"/icons/boussole/".lc(compass($bear)).".png\" align=\"top\"></SMALL></TD>"
+					."<TD align=right style='border:none'><SMALL>(<I>&Delta;h</I>&nbsp;".sprintf("%+1.0f&nbsp;m",$deniv).")&nbsp;</SMALL></TD>";
 			}
-			my $d = ($dist<1 ? sprintf("%8.0f&nbsp;m",1000*$dist):sprintf("%7.3f&nbsp;km",$dist));
-			$distelev = "<TD align=right style='border:none'><SMALL>&ensp;$d<IMG src=\"/icons/boussole/".lc(compass($bear)).".png\" align=\"top\"></SMALL></TD>"
-				."<TD align=right style='border:none'><SMALL>(<I>&Delta;h</I>&nbsp;".sprintf("%+1.0f&nbsp;m",$deniv).")&nbsp;</SMALL></TD>";
+			$nodelink = getNodeString(node=>$_,link=>'node').($N{PROJECT} ? "&nbsp;<IMG src='/icons/attention.gif' border='0'>":"");
 		}
-		$nodelink = getNodeString(node=>$_,link=>'node').($N{PROJECT} ? "&nbsp;<IMG src='/icons/attention.gif' border='0'>":"");
 		print "<TR>$distelev<TD style='border:none'><SMALL>$nodelink</SMALL></TD></TR>\n";
 	}
 	print "</TABLE></TD>\n";
@@ -486,7 +488,7 @@ if (uc($GRIDType) eq 'PROC') {
 			%FORM = readCfg("$WEBOBS{PATH_FORMS}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
 			my $txt = $FORM{TITLE} // "$__{'Data bank'}";
 			my $url = "/cgi-bin/$FORM{CGI_SHOW}";
-			print "$__{'Form'}: <A href=\"$url?site=$NODEName\"><B>$txt</B></A><BR>";
+			print "$__{'Form'}: <A href=\"$url?form=$GRID{'FORM'}&site=$NODEName\"><B>$txt</B></A><BR>";
 		}
 		if ($GRID{'URLDATA'} ne "") {
 			my $rep = "$GRID{'RAWDATA'}";
@@ -662,16 +664,6 @@ if ($editOK) {
 	print "<TR><TH valign=\"top\">$__{Access}</TH><TD colspan=\"2\">".wiki2html(join("",@txt))."</TD></TR>\n";
 }
 
-# ---- Build the hash of nodes' relationships from file $NODES{FILE_NODES2NODES} ---
-# ---- mainly used by the < Rows "Features" > functions below
-#
-my @file_node2node = readCfgFile("$NODES{FILE_NODES2NODES}");
-my %node2node; # hash key = 'parentnode|feature', hash value = 'childnode' or 'childnode1|childnode2|...'
-for (@file_node2node) {
- 	my ($parent_node,$feature,$children_node)=split(/\|/,$_);
-	my $key_link = $parent_node."|".$feature;
- 	$node2node{$key_link} .= (exists($node2node{$key_link}) ? "|":"").$children_node;
-}
 
 # Rows "Features"
 #

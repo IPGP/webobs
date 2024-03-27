@@ -33,10 +33,10 @@ use WebObs::Users qw(clientHasRead);
 use POSIX qw(strftime);
 
 #our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %DISCP, %GRIDS, %NODES);
-our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %GRIDS, %NODES);
+our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %GRIDS, %NODES, %node2node);
 require Exporter;
 @ISA        = qw(Exporter);
-@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS readDomain readGrid readSefran readProc readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode);
+@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS %node2node readDomain readGrid readSefran readProc readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode);
 $VERSION    = "1.00";
 
 %DOMAINS = readDomain();
@@ -55,6 +55,15 @@ if (-e $WEBOBS{CONF_GRIDS}) {
 	%GRIDS = readCfg($WEBOBS{CONF_GRIDS});
 }
 
+# %node2node: hash key = 'parentnode|feature', hash value = 'childnode' or 'childnode1|childnode2|...'
+if (-e $NODES{FILE_NODES2NODES}) {
+	my @file_node2node = readCfgFile("$NODES{FILE_NODES2NODES}");
+	for (@file_node2node) {
+		my ($parent_node,$feature,$children_node)=split(/\|/,$_);
+		my $key_link = $parent_node."|".$feature;
+		$node2node{$key_link} .= (exists($node2node{$key_link}) ? "|":"").$children_node;
+	}
+}
 
 =pod
 
@@ -601,12 +610,18 @@ sub getNodeString
 							."<div id=\"ID_$node\"><table class=\"fof\">";
 					for my $feature (split(/,/,$N{FILES_FEATURES})) {
 						my $f = "$NODES{PATH_NODES}/$node/$NODES{SPATH_FEATURES}/$feature.txt";
+						my $htm;
+						if (exists $node2node{"$node|$feature"}) {
+							for (split(/\|/,$node2node{"$node|$feature"})) {
+								$htm .= getNodeString(node=>$_, link=>'node')."<br>" if ($_ ne "");
+							}
+						}
 						if (-f $f) {
 							my @feat = readFile($f);
-							my $htm = WebObs::Wiki::wiki2html(join("",@feat));
+							$htm .= WebObs::Wiki::wiki2html(join("",@feat));
 							$htm =~ s/<br><br>/<br>/ig;
-							$sub .= "<tr><th class=\"fof\"><b>$feature</b></td><td class=\"fof\">".$htm."</td></tr>";
 						}
+						$sub .= "<tr><th class=\"fof\"><b>$feature</b></td><td class=\"fof\">".$htm."</td></tr>" if ($htm ne "");
 					}
 					$text .= $sub."</table></div>";
 				}
@@ -722,7 +737,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
