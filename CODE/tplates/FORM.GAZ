@@ -1,9 +1,7 @@
 =key|value
 # Generic FORM template for use with cgi-bin/fedit.pl
-BANG|1789
-NAME|TESTGAZ
-FILE_NAME|${NAME}.DAT
-TITLE|Édition - Banque de données de chimie des gaz
+BANG|$WEBOBS{BIG_BANG}
+TITLE|Gas database chemical analysys
 COLUMNS_NUMBER|2
 FIELDSETS_NUMBER|3
 STARTING_DATE|NO
@@ -12,11 +10,11 @@ LIST_USERS|!
 
 # inputs names and units
 # for the type, chose between : text (size), list (link to a file containing the list) or formula (algebric formula)
-INPUT01_NAME|Température de la fumerolle
+INPUT01_NAME|Gas Temperature
 INPUT01_UNIT|°C
 INPUT02_NAME|pH
 INPUT02_UNIT|
-INPUT03_NAME|Débit (qualitatif) 
+INPUT03_NAME|Flow Rate (qualitative) 
 INPUT03_TYPE|list: FORM_listgaz.conf
 
 # fieldset 02
@@ -50,18 +48,18 @@ INPUT16_NAME|&delta;<sup>18</sup>O
 INPUT16_UNIT|
 
 # which inputs are contained in the first fieldset ?
-FIELDSET01_NAME|Mesures sur site
+FIELDSET01_NAME|On-Site Measurements
 FIELDSET01_COLUMNS|1
 FIELDSET01_C01|INPUT01,INPUT02,INPUT03
 
 # which inputs are contained in the second fieldset ?
-FIELDSET02_NAME|Concentrations en majeures
+FIELDSET02_NAME|Major Concentration
 FIELDSET02_COLUMNS|2
 FIELDSET02_C01|INPUT04,INPUT05,INPUT06,INPUT07,INPUT08
 FIELDSET02_C02|INPUT09,INPUT10,INPUT11,INPUT12,INPUT13
 
 # which inputs are contained in the third fieldset ?
-FIELDSET03_NAME|Concentration en isotopes
+FIELDSET03_NAME|Isotope Concentration
 FIELDSET03_COLUMNS|1
 FIELDSET03_C01|INPUT14,INPUT15,INPUT16
 
@@ -72,6 +70,6 @@ COLUMN01_LIST|FIELDSET01
 COLUMN02_LIST|FIELDSET02,FIELDSET03
 
 
-# configuration file path
-CONF_FILE|$WEBOBS{PATH_FORMS}/${NAME}/${NAME}.conf
-
+# for backward compatibility - do not change
+CGI_FORM|formGENFORM.pl
+CGI_SHOW|showGENFORM.pl

@@ -92,3 +92,6 @@ COLUMN01_LIST|FIELDSET01
 # which fieldsets are contained in the second column ?
 COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
 
+# for backward compatibility - do not change
+CGI_FORM|formGENFORM.pl
+CGI_SHOW|showGENFORM.pl

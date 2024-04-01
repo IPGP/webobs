@@ -379,9 +379,11 @@ sub userMaxAuth {
         my $today = strftime("%Y-%m-%d",localtime(int(time())));
 		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND (ENDDATE='' OR ENDDATE>='$today')");
 		if ($validuser eq 'Y') {
+			my @inl="'*'";
+			while ($KWARGS{name} !~ m|^.?/$|) { push(@inl,"\'$KWARGS{name}\'"); $KWARGS{name}=dirname($KWARGS{name})."/"; };
 			my $sql  = "SELECT MAX(AUTH) FROM $KWARGS{type}";
 			$sql    .= " WHERE ( $KWARGS{type}.UID in (SELECT GID from $tblgroups WHERE UID='$KWARGS{user}') OR $KWARGS{type}.UID = '$KWARGS{user}') ";
-			$sql    .= " AND ($KWARGS{type}.RESOURCE IN $KWARGS{name} OR $KWARGS{type}.RESOURCE ='*')";
+			$sql    .= " AND $KWARGS{type}.RESOURCE in (".join(", ",@inl).")";
 
 			$rc     = $dbh->selectrow_array($sql);
 		}
