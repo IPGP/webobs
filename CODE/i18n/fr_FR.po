@@ -1825,7 +1825,15 @@ msgstr "Template de Form"
 msgid "Reset"
 msgstr "Réinitialiser"
 
+
+# ---- showGENFORM.pl
+
+msgid "Searching for data, please wait."
+msgstr "Recherche des données, merci de patienter."
+
+
 # ---- formGENFORM.pl
+
 msgid "Input new data"
 msgstr "Saisie de nouvelles données"
 

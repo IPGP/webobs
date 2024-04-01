@@ -14,7 +14,7 @@ Edit (create/update) a FORM specified by its fully qualified name, ie. fname.
 
 When creating a new FORM (if name does not exist), fedit starts editing from a predefined template file: filename $WEBOBS{ROOT_CODE}/tplates/FORM.GENFORM or specific template identified by form.template argument.
 
-To create a new FORM, user must have Admin rights for all VIEWS or PROCS. To update an existing FORM, user must have Edit rights for the concerned FORM.
+To create a new FORM, user must have Admin rights for all FORMS. To update/delete an existing FORM, user must have Edit rights for the concerned FORM.
 
 =head1 Query string parameters
 
@@ -123,16 +123,16 @@ set_message(\&webobs_cgi_msg);
 my $me = $ENV{SCRIPT_NAME};
 my $formConfFile;       # file name of the form's configuration file
 my $TS0;                # last modification time of the config file
-#my $editOK = 0;         # 1 if the user is allowed to edit the form
-#my $admOK = 0;          # 1 if the user is allowed to administrate the form
+my $editOK = 0;         # 1 if the user is allowed to edit the form
+my $admOK = 0;          # 1 if the user is allowed to create new form
 my @rawfile;            # raw content of the configuration file
-my $FORMName;			# name of the form
+my $FORMName;		# name of the form
 my $text;
-my $action;				# new|edit|save
-my $newF;        		# 1 if we are creating a new form
-my $delete;				# 1 to delete form
-my $inputs;				# number which indicates how many inputs we are storing in this form
-my $template;			# type of template wanted by user
+my $action;		# new|edit|save
+my $newF;        	# 1 if we are creating a new form
+my $delete;		# 1 to delete form
+my $inputs;		# number which indicates how many inputs we are storing in this form
+my $template;		# name of template wanted by user
 
 # Read and check CGI parameters
 $FORMName = $cgi->param('fname');
@@ -160,12 +160,18 @@ my $post_url = "/cgi-bin/fedit.pl";
 # ---- see what we've been called for and what the client is allowed to do
 # ---- init general-use variables on the way and quit if something's wrong
 #
-#if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
+$editOK = WebObs::Users::clientHasEdit(type => "authforms", name => "$FORMName");
+$admOK = WebObs::Users::clientHasAdm(type => "authforms", name => "*");
+if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
 
-#my $auth = 'forms';
-$template 	  = "$WEBOBS{ROOT_CODE}/tplates/$template";
 my $formdir   = "$WEBOBS{PATH_FORMS}/$FORMName/";			# path to the form configuration file we are creating, editing or deleting
 $formConfFile = "$formdir$FORMName.conf";
+
+my @db_columns0 = ("id integer PRIMARY KEY AUTOINCREMENT", "trash boolean DEFAULT FALSE", "node text NOT NULL",
+		   "edate datetime", "edate_min datetime",
+		   "sdate datetime NOT NULL", "sdate_min datetime",
+		   "users text NOT NULL");
+my @db_columns1 = ("comment text", "tsupd text NOT NULL", "userupd text NOT NULL");
 
 # ---- action is 'save'
 #
@@ -199,14 +205,11 @@ if ($action eq 'save') {
 			# --- creation of the DB table
 			my @inputs = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
 
-			my @db_columns = map {"$_ "} ("trash boolean DEFAULT FALSE", "node text NOT NULL", "edate datetime","edate_min datetime","sdate1 datetime NOT NULL","sdate1_min datetime","users text NOT NULL");
-			my $db_columns = "";
-			$db_columns .= join(', ', @db_columns);
-			$db_columns .= " ,";
-			$db_columns .= join(',', map { " ".lc((split '_', $_)[0])." text" } @inputs);
-			$db_columns .= join(',', (", comment text, tsupd text NOT NULL, userupd text NOT NULL"));
+			my @db_columns = @db_columns0;
+			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
+			push(@db_columns, @db_columns1);
 
-			my $stmt = qq(create table if not exists $tbl ($db_columns););
+			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
 			#htmlMsgOK($stmt);
 			my $sth = $dbh->prepare( $stmt );
 			my $rv = $sth->execute() or die $DBI::errstr;
@@ -232,20 +235,13 @@ if ($action eq 'save') {
 			# --- creation of the DB table
 			my @inputs = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
 
-			my @db_columns = map {"$_ "} ("trash boolean DEFAULT FALSE", "node text NOT NULL", "edate datetime","edate_min datetime","sdate1 datetime NOT NULL","sdate1_min datetime","users text NOT NULL");
-			my $db_columns = "";
-			$db_columns .= join(', ', @db_columns);
-			$db_columns .= " ,";
-			$db_columns .= join(',', map { " ".lc((split '_', $_)[0])." text" } @inputs);
-			$db_columns .= join(',', (", comment text, tsupd text NOT NULL, userupd text NOT NULL"));
+			my @db_columns = @db_columns0;
+			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
+			push(@db_columns, @db_columns1);
 
-			my $stmt = qq(create table if not exists $tbl ($db_columns););
-			#htmlMsgOK($stmt);
+			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
 			my $sth = $dbh->prepare( $stmt );
 			my $rv = $sth->execute() or die $DBI::errstr;
-		} else {
-			htmlMsgNotOK("Can't create the table !");
-			exit;
 		}
 		
 		# now we know if the table exists
@@ -259,14 +255,11 @@ if ($action eq 'save') {
 			$msg = "A new INPUT has been added to the FORM !";
 
 			# --- connecting to the database in order to add the new INPUT to the DB 
-			my @db_columns = map {"$_ "} ("trash boolean DEFAULT FALSE", "node text NOT NULL", "edate datetime","edate_min datetime","sdate1 datetime NOT NULL","sdate1_min datetime","users text NOT NULL");
-			my $db_columns = "";
-			$db_columns .= join(', ', @db_columns);
-			$db_columns .= " ,";
-			$db_columns .= join(',', map { " ".lc((split '_', $_)[0])." text" } @inputs);
-			$db_columns .= join(',', (", comment text, tsupd text NOT NULL, userupd text NOT NULL"));
+			my @db_columns = @db_columns0;
+			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
+			push(@db_columns, @db_columns1);
 
-			my $stmt = qq(create table if not exists $tbl ($db_columns););
+			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
 			my $sth = $dbh->prepare( $stmt );
 			my $rv = $sth->execute() or die $DBI::errstr;
 		} elsif ($newKeys + 1 < $oldKeys) {
@@ -276,8 +269,8 @@ if ($action eq 'save') {
 		}
 
 		if ($TS0 != (stat("$formConfFile"))[9]) { 
-		htmlMsgNotOK("$FORMName $__{'has been modified while you were editing'}"); 
-		exit; 
+			htmlMsgNotOK("$FORMName $__{'has been modified while you were editing'}"); 
+			exit; 
 		}
 		if ( sysopen(FILE, "$formConfFile", O_RDWR | O_CREAT) ) {
 			unless (flock(FILE, LOCK_EX|LOCK_NB)) {
@@ -305,7 +298,7 @@ if ($action eq 'save') {
 # --- Form delete or update (config file already exists)
 
 if ($delete == 1) {
-	# --- Delete the grid !
+	# --- Delete the form!
 
 	# delete the dir/file first
 	my $rmtree_errors;
@@ -322,23 +315,19 @@ if ($delete == 1) {
 
 # ---- action is 'edit' (default)
 #
-#$editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$FORMName") || WebObs::Users::clientHasEdit(type => "auth".$auth, name => "MC");
-#$admOK = WebObs::Users::clientHasAdm(type => "auth".$auth, name => "*");
 if ( -e "$formConfFile" ) {	# looking if the FORM already exists
-	#if ($editOK) {
+	if ($editOK) {
 		@rawfile = readFile($formConfFile);
 		$TS0 = (stat($formConfFile))[9] ;
-		#$editOK = 1;
-	#}
+	}
 }
 else {	# we are creating a new FORM
-	#if ($admOK) {
-		$formConfFile = $template;
+	if ($admOK) {
+		$formConfFile = "$WEBOBS{ROOT_CODE}/tplates/$template";
 		@rawfile = readFile($formConfFile);
 		$TS0 = (stat($formConfFile))[9] ;
-	#	$editOK = 1;
 		$newF = 1;
-	#}
+	}
 }
 
 # start building page
@@ -517,11 +506,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Lucas Dassin
+Lucas Dassin, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

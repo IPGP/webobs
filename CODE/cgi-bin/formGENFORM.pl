@@ -88,14 +88,20 @@ for my $p (keys(%Ps)) {
 my $QryParm = $cgi->Vars;
 
 # --- DateTime inits -------------------------------------
-my $Ctod  = time();  my @tod  = localtime($Ctod);
-my $sel_jour  = strftime('%d',@tod);
-my $sel_mois  = strftime('%m',@tod);
-my $sel_annee = strftime('%Y',@tod);
-my $anneeActuelle = strftime('%Y',@tod);
-my $sel_hr    = "";
-my $sel_mn    = "";
+my $Ctod  = time();
+my @tod  = localtime($Ctod);
 my $today = strftime('%F',@tod);
+my $currentYear = strftime('%Y',@tod);
+my $sel_d1  = strftime('%d',@tod);
+my $sel_m1  = strftime('%m',@tod);
+my $sel_y1 = strftime('%Y',@tod);
+my $sel_hr1 = "";
+my $sel_mn1 = "";
+my $sel_d2 = $sel_d1; 
+my $sel_m2 = $sel_m1; 
+my $sel_y2 = $sel_y1; 
+my $sel_hr2 = $sel_hr1;
+my $sel_mn2 = $sel_mn1;
 
 # ---- Get the form data
 # 
@@ -115,9 +121,7 @@ my $return_url = $cgi->param('return_url');
 my $delete = $cgi->param('delete');
 my @users  = $cgi->param('users');
 
-my $date   = $annee[0]."-".$mois[0]."-".$jour[0];
-my $heure  = "";
-if ($hr[0] ne "") { $heure = $hr[0].":".$mn[0]; }
+my ($sdate, $sdate_min) = datetime2maxmin($annee[0],$mois[0],$jour[0],$hr[0],$mn[0]);
 my $stamp = "[$today $oper]";
 if (index($val,$stamp) eq -1) { $val = "$stamp $val"; };
 
@@ -140,20 +144,18 @@ my @fieldsets = extract_fieldsets($fs_count);
 my $count_inputs = count_inputs(@keys)-1;
 
 # ---- Variables des menus
-my $ask_start   = $FORM->conf('STARTING_DATE');
-my @anneeListe = ($FORM->conf('BANG')..$anneeActuelle);
-my @moisListe  = ('01'..'12');
-my @jourListe  = ('01'..'31');
-my @heureListe = ("",'00'..'23');
-my @minuteListe= ("",'00'..'59');
+my $starting_date   = isok($FORM->conf('STARTING_DATE'));
+my @yearList = ($FORM->conf('BANG')..$currentYear);
+my @monthList = ("","01".."12");
+my @dayList   = ("","01".."31");
+my @hourList  = ("","00".."23");
+my @minuteList= ("","00".."59");
 
 # ---- if STARTING_DATE eq "yes"
-my $edate;
-my $edate_min;
-if (isok($ask_start)) {
-    $edate = $annee[1]."-".$mois[1]."-".$jour[1];
-    $edate_min  = "";
-    if ($hr[1] ne "") { $edate_min = $hr[1].":".$mn[1]; }
+my $edate = $sdate;
+my $edate_min = $sdate_min;
+if ($starting_date) {
+    ($edate, $edate_min) = datetime2maxmin($annee[1],$mois[1],$jour[1],$hr[1],$mn[1]);
 }
 
 # ---- action is 'save'
@@ -164,56 +166,43 @@ my $dbh = connectDbForms();
 my $tbl = lc($FORMName);
 
 if ($action eq 'save' && $delete < 1) {
-    my @lignes;
-    my $maxId = 0;
-    my $msg = "";
-    my $newID;
+	my @lignes;
+	my $msg = "";
+	my $newID;
 
-    my @inputs;
-    for (my $i = 1; $i <= $count_inputs+1; $i++) {
-        my $input;
-        if ($i < 10) {
-            $input = "input0".$i;
-        } else {
-            $input = 'input'.$i;
-        }
-        push(@inputs, $input);
-    }
+	my @inputs = map { sprintf("input%02d", $_) } (1..($count_inputs+1));
 
 	# ---- filling the database with the data from the form
 	my $row;
 	my $db_columns;
-	$db_columns = "trash, node, edate, edate_min, sdate1, sdate1_min, users";
-	$row = "false, \"$site\", \"$edate\", \"$edate_min\", \"$date\", \"$heure\", \"".join(/,/, @users)."\"";
-	#$db_columns = "BEG_DATE, END_DATE, BEG_HR, END_HR, SITE";
-	#push(@row, "\"$date\", \"$date2\", \"$heure\", \"$heure2\", \"$site\"");
+	$db_columns = "trash, node, edate, edate_min, sdate, sdate_min, users";
+	$row = "false, \"$site\", \"$edate\", \"$edate_min\", \"$sdate\", \"$sdate_min\", \"".join(/,/, @users)."\"";
 	for my $i (0 .. $#inputs) {
 	    my $input = $cgi->param($inputs[$i]);
 	    if ($input ne "") {
-	        $db_columns .= ", $inputs[$i]";
-	        $row .= ", \"$input\"";
+		$db_columns .= ", $inputs[$i]";
+		$row .= ", \"$input\"";
 	    }
 	}
 	$db_columns .= ", comment, tsupd, userupd";
 	$row .= ", \"$rem\", \"$today\", \"$oper\"";
 
-    my $stmt = qq(replace into $tbl($db_columns) values($row));
-    #htmlMsgOK($stmt);
-    my $sth  = $dbh->prepare( $stmt );
+	my $stmt = qq(replace into $tbl($db_columns) values($row));
+	my $sth  = $dbh->prepare( $stmt );
 	my $rv   = $sth->execute() or die $DBI::errstr;
 	my $msg;
-    if ($rv >= 1){
-        $msg = "new record #$newID has been created.";
-    } else {
-        $msg = "formGENFORM couldn't access the database.";
-    }
-    htmlMsgOK($msg);
+	if ($rv >= 1){
+		$msg = "new record #$newID has been created.";
+	} else {
+		$msg = "formGENFORM couldn't access the database.";
+	}
+	htmlMsgOK($msg);
 
 	$dbh->disconnect();
 	exit;
 } elsif ($action eq "save" && $delete > 0) {
     my $tbl = lc($FORMName);
-    my $stmt = qq(update $tbl set trash = true where rowid=$idTraite);
+    my $stmt = qq(update $tbl set trash = true where id=$idTraite);
     my $sth  = $dbh->prepare( $stmt );
 	my $rv   = $sth->execute() or die $DBI::errstr;
     htmlMsgOK("Delete/recover existing record #$idTraite (in/from trash).");
@@ -229,7 +218,7 @@ if ($action eq 'save' && $delete < 1) {
 
 $form_url->query_form('form' => $FORMName, 'id' => $idTraite, 'return_url' => $return_url, 'action' => 'save');
 
-# ---- Debut de l'affichage HTML
+# ---- Start HTML display
 #
 print qq[Content-type: text/html
 
@@ -339,18 +328,19 @@ if ($action eq "edit") {
 	my $dbh = connectDbForms();
 	my $tbl = lc($FORMName);
 
-	my $stmt = qq(SELECT rowid, * FROM $tbl WHERE rowid = $id;); # selecting the row corresponding to the id of the record we want to modify
+	my $stmt = qq(SELECT * FROM $tbl WHERE id = $id;); # selecting the row corresponding to the id of the record we want to modify
 	my $sth = $dbh->prepare( $stmt );
 	my @colnam = @{ $sth->{NAME_lc} };
-	#htmlMsgOK($stmt);
 	my $rv = $sth->execute() or die $DBI::errstr;
 
-	my ($id, $delete, $site, $edate, $edate_min, $date, $heure, $users, $rem, $ts0, $oper);
+	my ($id, $delete, $site, $edate, $edate_min, $sdate, $sdate_min, $users, $ts0, $oper);
 	while(my @row = $sth->fetchrow_array()) {
-        ($id, $delete, $site, $edate, $edate_min, $date, $heure, $users, $rem, $ts0, $oper) = ($row[0], $row[1], $row[2], $row[3], $row[4], $row[5], $row[6], $row[7], $row[-3], $row[-2], $row[-1]);
-        for (my $i = 7; $i <= $#row-3; $i++) {
-            $prev_inputs{$colnam[$i]} = $row[$i];
-        }
+		($id, $delete, $site, $edate, $edate_min, $sdate, $sdate_min, $users, $sel_rem, $ts0, $oper) = ($row[0], $row[1], $row[2], $row[3], $row[4], $row[5], $row[6], $row[7], $row[-3], $row[-2], $row[-1]);
+		($sel_y1,$sel_m1,$sel_d1,$sel_hr1,$sel_mn1) = datetime2array($edate, $edate_min);
+		($sel_y2,$sel_m2,$sel_d2,$sel_hr2,$sel_mn2) = datetime2array($sdate, $sdate_min);
+		for (my $i = 7; $i <= $#row-3; $i++) {
+		    $prev_inputs{$colnam[$i]} = $row[$i];
+		}
 	}
     $message = "$__{'Edit data n°'} $id";
     $val = "[$ts0 $oper]";
@@ -393,53 +383,54 @@ print qq(</table>
         <legend>$__{'Date and place of sampling'}</legend>
         <p class="parform">
 );
-    if (isok($ask_start)) {
+    if ($starting_date) {
         print qq(
                 <b>$__{'Start Date'}: </b>
                     <select name="annee" size="1">
         );
-    	for (@anneeListe) {if ($_ == $sel_annee) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+    	for (@yearList) {if ($_ == $sel_y1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
 	    print qq(<select name="mois" size="1">);
-	    for (@moisListe) {if ($_ == $sel_mois) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+	    for (@monthList) {if ($_ == $sel_m1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
 	    print qq( <select name=jour size="1">);
-	    for (@jourListe) {if ($_ == $sel_jour) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+	    for (@dayList) {if ($_ == $sel_d1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print "</select>";
 
 	    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
-	    for (@heureListe) {if ($_ eq $sel_hr) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+	    for (@hourList) {if ($_ eq $sel_hr1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+
 	    print qq(</select>);
 	    print qq(<select name=mn size="1">);
-	    for (@minuteListe) {if ($_ eq $sel_mn) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+	    for (@minuteList) {if ($_ eq $sel_mn1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select><BR>);
 
 	    print qq(
                 <b>$__{'End Date'}: </b>
                     <select name="annee" size="1">
         );
-    	for (@anneeListe) {if ($_ == $sel_annee) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+    	for (@yearList) {if ($_ == $sel_y2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
 	    print qq(<select name="mois" size="1">);
-	    for (@moisListe) {if ($_ == $sel_mois) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+	    for (@monthList) {if ($_ == $sel_m2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
 	    print qq( <select name=jour size="1">);
-	    for (@jourListe) {if ($_ == $sel_jour) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+	    for (@dayList) {if ($_ == $sel_d2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print "</select>";
 
 	    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
-	    for (@heureListe) {if ($_ eq $sel_hr) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+	    for (@hourList) {if ($_ eq $sel_hr2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
 	    print qq(<select name=mn size="1">);
-	    for (@minuteListe) {if ($_ eq $sel_mn) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+	    for (@minuteList) {if ($_ eq $sel_mn2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 
     } else {
         print qq(
             <b>$__{'Date'}: </b>
                 <select name="annee" size="1">
         );
-        for (@anneeListe) {
-		    if ($_ == $sel_annee) {
+        for (@yearList) {
+		    if ($_ == $sel_y2) {
 			    print qq(<option selected value="$_">$_</option>);
 		    } else {
 			    print qq(<option value="$_">$_</option>);
@@ -447,8 +438,8 @@ print qq(</table>
 	    }
 	    print qq(</select>);
 	    print qq(<select name="mois" size="1">);
-	    for (@moisListe) {
-		    if ($_ == $sel_mois) {
+	    for (@monthList) {
+		    if ($_ == $sel_m2) {
 			    print qq(<option selected value="$_">$_</option>);
 		    } else {
 			    print qq(<option value="$_">$_</option>);
@@ -456,8 +447,8 @@ print qq(</table>
 	    }
 	    print qq(</select>);
 	    print qq( <select name=jour size="1">);
-	    for (@jourListe) {
-		    if ($_ == $sel_jour) {
+	    for (@dayList) {
+		    if ($_ == $sel_d2) {
 			    print qq(<option selected value="$_">$_</option>);
 		    } else {
 			    print qq(<option value="$_">$_</option>);
@@ -466,8 +457,8 @@ print qq(</table>
 	    print "</select>";
 
 	    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
-	    for (@heureListe) {
-		    if ($_ eq $sel_hr) {
+	    for (@hourList) {
+		    if ($_ eq $sel_hr2) {
 			    print qq(<option selected value="$_">$_</option>);
 		    } else {
 			    print qq(<option value="$_">$_</option>);
@@ -475,8 +466,8 @@ print qq(</table>
 	    }
 	    print qq(</select>);
 	    print qq(<select name=mn size="1">);
-	    for (@minuteListe) {
-		    if ($_ eq $sel_mn) {
+	    for (@minuteList) {
+		    if ($_ eq $sel_mn2) {
 			    print qq(<option selected value="$_">$_</option>);
 		    } else {
 		       print qq(<option value="$_">$_</option>);
@@ -613,70 +604,106 @@ print qq(</TD>
 </body>
 </html>);
 
+# --- End of main script
+# -----------------------------------------------------------------------------
+
+sub datetime2array {
+	my $date = shift;
+	my $date_min = shift;
+	my @d  = split(/[-: ]/,$date);
+	my @dm = split(/[-: ]/,$date_min);
+	if ($date eq $date_min) { return @d };
+	@d = ($d[0],   "",   "",   "","") if ($d[1] ne $dm[1]);
+	@d = ($d[0],$d[1],   "",   "","") if ($d[2] ne $dm[2]);
+	@d = ($d[0],$d[1],$d[2],   "","") if ($d[3] ne $dm[3]);
+	@d = ($d[0],$d[1],$d[2],$d[3],"") if ($d[4] ne $dm[4]);
+	return @d;
+}
+
+sub datetime2maxmin {
+	my ($y,$m,$d,$hr,$mn) = @_;
+	my $date_min = "$y-$m-$d $hr:$mn";
+	my $date_max = "$y-$m-$d $hr:$mn";
+	if ($m eq "") {
+		$date_min = "$y-01-01";
+		$date_max = "$y-12-31";
+	} elsif ($d eq "") {
+		$date_min = qx(date -d "$y-$m-01" +%F);
+		$date_max = qx(date -d "$y-$m-01 1 month 1 day ago" +%F);
+	} elsif ($hr eq "") {
+		$date_min = "$y-$m-$d 00:00";
+		$date_max = "$y-$m-$d 23:59";
+	} elsif ($mn eq "") {  
+		$date_min = "$y-$m-$d $hr:00";
+		$date_max = "$y-$m-$d $hr:59";
+	}
+	return ("$date_max","$date_min");
+}
+
 sub extract_field_names {
-    my @names;
-    foreach (@_) {
-        if ($_ =~ "_NAME") {push(@names,$_);}
-    }
-    return @names;
+	my @names;
+	foreach (@_) {
+		if ($_ =~ "_NAME") {push(@names,$_);}
+	}
+	return @names;
 }
 
 sub extract_field_units {
-    my @units;
-    foreach (@_) {
-        if ($_ =~ "_UNIT") {push(@units,$_);}
-    }
-    return @units;
+	my @units;
+	foreach (@_) {
+		if ($_ =~ "_UNIT") {push(@units,$_);}
+	}
+	return @units;
 }
 
 sub extract_columns {
-    my $col_count = shift;
-    for (my $i = 1; $i <= $col_count; $i++) {
-        push(@columns, "COLUMN0".$i);
-    }
-    return @columns;
+	my $col_count = shift;
+	for (my $i = 1; $i <= $col_count; $i++) {
+		push(@columns, "COLUMN0".$i);
+	}
+	return @columns;
 }
 
 sub extract_fieldsets {
-    my $fs_count = shift;
-    for (my $i = 1; $i <= $fs_count; $i++) {
-        push(@fieldsets, "FIELDSET0".$i);
-    }
-    return @fieldsets;
+	my $fs_count = shift;
+	for (my $i = 1; $i <= $fs_count; $i++) {
+		push(@fieldsets, "FIELDSET0".$i);
+	}
+	return @fieldsets;
 }
 
 sub extract_formula {
-    my $formula = shift;
-    my @x;
-    my @form_x;
-    $formula = (split /\:/, $formula)[1];
-    while ($formula =~ /(INPUT[0-9]{2})/g) {
-        push(@x,$1);
-    }
-    return ($formula, @x);
+	my $formula = shift;
+	my @x;
+	my @form_x;
+	$formula = (split /\:/, $formula)[1];
+	while ($formula =~ /(INPUT[0-9]{2})/g) {
+		push(@x,$1);
+	}
+	return ($formula, @x);
 }
 
 sub extract_list {
-    my $list = shift;
-    my $filename = (split /\: /, $list)[1];
-    my %list = readCfg("$WEBOBS{PATH_FORMS}/$FORMName/$filename");
+	my $list = shift;
+	my $filename = (split /\: /, $list)[1];
+	my %list = readCfg("$WEBOBS{PATH_FORMS}/$FORMName/$filename");
 
-    return "$WEBOBS{PATH_FORMS}/$FORMName/$filename";
+	return "$WEBOBS{PATH_FORMS}/$FORMName/$filename";
 }
 
 sub extract_re {
-    my $re = shift;
-    return (split /txt\: /, $re)[1];
+	my $re = shift;
+	return (split /txt\: /, $re)[1];
 }
 
 sub count_inputs {
-    my $count = 0;
-    foreach(@_) {
-        if ($_ =~ /(INPUT[0-9]{2}_NAME)/) {
-            $count += 1;
-        }
-    }
-    return $count;
+	my $count = 0;
+	foreach(@_) {
+		if ($_ =~ /(INPUT[0-9]{2}_NAME)/) {
+			$count += 1;
+		}
+	}
+	return $count;
 }
 
 # --- return information when OK and registering metadata in the metadata database
@@ -688,17 +715,17 @@ sub htmlMsgOK {
 
 # --- return information when not OK
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	print "Update FAILED !\n $_[0] \n";
 }
 
 # Open an SQLite connection to the forms database
 sub connectDbForms {
 	return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
-		'AutoCommit' => 1,
-		'PrintError' => 1,
-		'RaiseError' => 1,
-		}) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
+	'AutoCommit' => 1,
+	'PrintError' => 1,
+	'RaiseError' => 1,
+	}) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
 }
 
 __END__

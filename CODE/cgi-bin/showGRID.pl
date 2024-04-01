@@ -289,7 +289,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		if (defined($GRID{'FORM'})) {
 			my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
 			if (%FORM) {
-				my $urnData = (defined($FORM{'CGI_SHOW'})) ? "/cgi-bin/$FORM{'CGI_SHOW'}?node={$GRIDName}" : "/cgi-bin/showGENFORM.pl?form=$FORM{'NAME'}";
+				my $urnData = "/cgi-bin/".(defined($FORM{'CGI_SHOW'}) ? "$FORM{'CGI_SHOW'}" : "showGENFORM.pl")."?form=$GRID{'FORM'}&node={$GRIDName}";
 				my $txtData = (defined($FORM{'TITLE'})) ? $FORM{'TITLE'} : "";
 				$htmlcontents .= "<LI>$__{'Access to data'}: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
 			}

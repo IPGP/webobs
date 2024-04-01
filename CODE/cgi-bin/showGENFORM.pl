@@ -1,5 +1,48 @@
 #!/usr/bin/perl
 
+
+=head1 NAME
+
+showGENFORM.pl
+
+=head1 SYNOPSIS
+
+http://..../showGENFORM.pl?.... see 'query string parameters' ...
+
+=head1 DESCRIPTION
+
+'GENFORM' is the generic WebObs FORM.
+
+This script allows displaying and editing data from any proc associated to a
+GENFORM form. See fedit.pl for description of configuration.
+
+=head1 Query string parameters
+
+=over
+
+=item B<date selection>
+
+time span of the data, including partial recordings.
+y1= , m1= , d1=
+ start date (year, month, day) included
+
+ y2= , m2= , d2=
+  end date (year, month, day) included
+
+=item B<node=>
+
+node (ID) to display. The format I<{procName}> will display all nodes associated
+to the proc 'procName'. Default: display all nodes associated to any proc using
+the form (and user having the read authorization).
+
+=item B<dump=>
+
+dump=csv will download a csv file of selected data, instead of display.
+
+=back
+
+=cut
+
 use strict;
 use warnings;
 use POSIX qw/strftime/;
@@ -11,53 +54,65 @@ use URI;
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users qw(clientHasRead clientHasEdit clientHasAdm);
+use WebObs::Users qw(clientMaxAuth);
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 use WebObs::Form;
 
-# ---- Return URL --------------------------------------------
+
 # Keep the URL where the user should be returned after edition
 # (this will keep the filters selected by the user)
 my $return_url = $cgi->url(-query_string => 1);
 
-# ---- standard FORMS inits ----------------------------------
-
 my $form = $cgi->param('form');
-=pod
-die "You can't view $form reports." if (!clientHasRead(type=>"authforms",name=>"$form"));
-my $clientAuth = clientHasEdit(type=>"authforms",name=>"$form") ? 2 : 0;
-$clientAuth = clientHasAdm(type=>"authforms",name=>"$form") ? 4 : $clientAuth;
-=cut
-my $FORM = new WebObs::Form($form);
-my %Ns;
-my @NODESSelList;
-my @NODESValidList;
-my %Ps = $FORM->procs;
-for my $p (sort keys(%Ps)) {
-	push(@NODESSelList,"\{$p\}|-- {PROC.$p} $Ps{$p} --");
-	my %N = $FORM->nodes($p);
-	for my $n (sort keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-		push(@NODESValidList,"$n");
-	}
-	%Ns = (%Ns, %N);
-}
 
-my $QryParm   = $cgi->Vars;
+# Stops early if not authorized
+my $clientAuth = clientMaxAuth(type=>"authforms",name=>"$form");
+die "You can't view $form reports." if (!$clientAuth);
+
+my $FORM = new WebObs::Form($form);
 
 # ---- DateTime inits ----------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
 my $day   = strftime('%d',@tod); 
 my $month = strftime('%m',@tod); 
 my $year  = strftime('%Y',@tod);
-my $endDate = strftime('%F',@tod);
+my $today = strftime('%F',@tod);
 my $delay = $FORM->conf('DEFAULT_DAYS') // 30;
 my $startDate = qx(date -d "$delay days ago" +%F);
+my $endDate;
 chomp($startDate);
 my ($y1,$m1,$d1) = split(/-/,$startDate);
+
+# ---- get CGI parameters
+my $QryParm   = $cgi->Vars;
+$QryParm->{'y1'}       //= $y1; 
+$QryParm->{'m1'}       //= $m1; 
+$QryParm->{'d1'}       //= $d1; 
+$QryParm->{'y2'}       //= $year; 
+$QryParm->{'m2'}       //= $month; 
+$QryParm->{'d2'}       //= $day; 
+$QryParm->{'node'}     //= "All"; 
+$QryParm->{'dump'}  //= ""; 
+
+my %Ns;
+my @NODESSelList;
+my @NODESValidList;
+my %Ps = $FORM->procs;
+for my $p (sort keys(%Ps)) {
+	if ($QryParm->{'node'} =~ /^All$|^{$p}$/) { 
+		push(@NODESSelList,"\{$p\}|-- {PROC.$p} $Ps{$p} --");
+		my %N = $FORM->nodes($p);
+		for my $n (sort keys(%N)) {
+			push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+			push(@NODESValidList,"$n");
+		}
+		%Ns = (%Ns, %N);
+	}
+}
+
 
 # ---- specific FORMS inits ----------------------------------
 my @html;
@@ -67,32 +122,12 @@ my $i = 0;
 
 $ENV{LANG} = $WEBOBS{LOCALE};
 
-my $fileCSV = $FORM->conf('NAME')."_$endDate.csv";
+my $fileCSV = $WEBOBS{WEBOBS_ID}."_".$form."_$today.csv";
 
-my $ask_start = $FORM->conf('STARTING_DATE');
+my $starting_date = isok($FORM->conf('STARTING_DATE'));
 
-my @cleParamAnnee = ("Ancien|Ancien");
-for ($FORM->conf('BANG')..$year) {
-	push(@cleParamAnnee,"$_|$_");
-}
-my @cleParamMois;
-for ('01'..'12') {
-	$s = l2u(qx(date -d "$year-$_-01" +"%B")); chomp($s);
-	push(@cleParamMois,"$_|$s");
-}
-my @cleParamUnite = ("ppm|en ppm","mmol|en mmol/l"); 
-my @cleParamSite;
-
-$QryParm->{'y1'}       //= $y1; 
-$QryParm->{'m1'}       //= $m1; 
-$QryParm->{'d1'}       //= $d1; 
-$QryParm->{'y2'}       //= $year; 
-$QryParm->{'m2'}       //= $month; 
-$QryParm->{'d2'}       //= $day; 
-$QryParm->{'node'}     //= "All"; 
-$QryParm->{'affiche'}  //= ""; 
-$startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'}";
-$endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'}";
+$startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'} 00:00:00";
+$endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'} 23:59:59";
 
 # ---- a site requested as {name} means "all nodes for proc 'name'"
 # 
@@ -104,13 +139,10 @@ if ($QryParm->{'node'} =~ /^{(.*)}$/) {
 	}
 }
 
-# ----
-
-push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type: text/csv\n\n");
 
 # ---- start html if not CSV output 
 
-if ($QryParm->{'affiche'} ne "csv") {
+if ($QryParm->{'dump'} ne "csv") {
 	print $cgi->header(-charset=>'utf-8');
 	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
 	"<html><head><title>".$FORM->conf('TITLE')."</title>\n",
@@ -119,10 +151,12 @@ if ($QryParm->{'affiche'} ne "csv") {
 
 	print "</head>\n",
 	"<body style=\"background-attachment: fixed\">\n",
-	"<div id=\"attente\">Recherche des donn&eacute;es, merci de patienter.</div>",
+	"<div id=\"waiting\">$__{'Searching for data, please wait.'}</div>\n",
 	"<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
 	"<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
 	"<!-- overLIB (c) Erik Bosrup -->\n";
+} else {
+	push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type: text/csv\n\n");
 }
 
 # ---- Read the data file 
@@ -132,24 +166,25 @@ if ($QryParm->{'affiche'} ne "csv") {
 my $dbh = connectDbForms();
 
 my $tbl = lc($form);
-my $stmt = qq(select rowid,* from $tbl;);
+my $stmt = qq(SELECT * FROM $tbl WHERE (sdate BETWEEN '$startDate' AND '$endDate') OR (edate BETWEEN '$startDate' AND '$endDate'););
 my $sth = $dbh->prepare( $stmt );
 my $rv = $sth->execute() or die $DBI::errstr;
 
 my $nbData = 0;
-my @lignes;
+my @rows;
 while(my @row = $sth->fetchrow_array()) {
 	$nbData++;
-	push(@lignes, \@row);
+	push(@rows, \@row);
 }
 
 $dbh->disconnect();
 
 # ---- Debut du formulaire pour la selection de l'affichage
 #  
-if ($QryParm->{'affiche'} ne "csv") {
+if ($QryParm->{'dump'} ne "csv") {
 	print "<FORM name=\"formulaire\" action=\"/cgi-bin/showGENFORM.pl\" method=\"get\">",
-		"<P class=\"boitegrise\" align=\"center\">",
+		"<INPUT name=\"form\" type=\"hidden\" value=\"$form\">";
+	print "<P class=\"boitegrise\" align=\"center\">",
 		"<B>$__{'Start Date'}:</B> ";
 	print "<SELECT name=\"y1\" size=\"1\">\n";
 	for ($FORM->conf('BANG')..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
@@ -179,24 +214,15 @@ if ($QryParm->{'affiche'} ne "csv") {
 			print("<option value=$val>$cle</option>\n");
 		}
 	}
-=pod
-	print("</select>\n",
-	"<select name=\"unite\" size=\"1\">");
-	for (@cleParamUnite) { 
-		my ($val,$cle) = split (/\|/,$_);
-		if ("$val" eq "$QryParm->{'unite'}") { print("<option selected value=$val>$cle</option>\n"); } 
-		else { print("<option value=$val>$cle</option>\n"); }
-	}
-=cut
-	print("</select>");
-	print(" <INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"reset()\">");
-	#" <INPUT type=\"submit\" value=\"$__{'Display'}\">");	need to think about how to implement it. Idea : INPUT_TOGGLE key in the FORMs like INPUT_TOGGLE|INPUTX1,INPUTX2,etc.
-	#if ($clientAuth > 1) {
+	print "</select>";
+	print " <INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"reset()\">";
+	print " <INPUT type=\"submit\" value=\"$__{'Display'}\" style=\"font-weight:bold\">";
+	if ($clientAuth > 1) {
 		my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
-		$form_url->query_form('form' => $form, 'id' => $nbData+1, 'return_url' => $return_url, 'action' => 'new');
+		$form_url->query_form('form' => $form, 'return_url' => $return_url, 'action' => 'new');
 		print qq(<input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
 			qq( onClick="document.location='$form_url?form=$form'" value="$__{'Enter a new record'}">);
-	#}
+	}
 	print("<BR>\n");
 	print "</B></P></FORM>\n",
 	"<H2>".$FORM->conf('TITLE')."</H2>\n",
@@ -205,12 +231,11 @@ if ($QryParm->{'affiche'} ne "csv") {
 
 # ---- Displaying data 
 #
-my $entete;
-my $pied;
-my $texte = "";
+my $header;
+my $text;
 my $csvTxt = "id;";
-my $modif;
-my $efface;
+my $edit;
+my $delete;
 my $lien;
 my $aliasSite;
 
@@ -230,10 +255,14 @@ foreach(@fieldsets) {
 	push(@inputs, \@fieldset);
 }
 
-my @colnam = ("Date","Site");
+my @colnam = ("Sampling Date","Site");
+my @colnam2;
+if ($starting_date) {
+	$colspan{"Sampling Date"} = 2;
+	push(@colnam2,("Start","End"));
+}
 $csvTxt .= join(';', @colnam);
 
-my @colnam2;
 for (my $i = 0; $i <= $#fs_names; $i++) {
 	push(@colnam, $fs_names[$i]);
 	my $nb_inputs = $#{$inputs[$i]};
@@ -253,36 +282,26 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
 		$csvTxt .= u2l(";$name_input");
 	}
 }
-#print @colnam2;
 $csvTxt .= "\n";
 
-$entete = "<TR>";
-#if ($clientAuth > 1) {
-	$entete = $entete."<TH rowspan=2></TH>";
-#}
+$header = "<TR>".($clientAuth > 1 ? "<TH rowspan=2></TH>":"");
 
 foreach(@colnam) { 
-	$entete .= "<TH ".( $colspan{$_} eq "" ? "rowspan=2" : "colspan=$colspan{$_}").">$_</TH>";
+	$header .= "<TH ".( $colspan{$_} eq "" ? "rowspan=2" : "colspan=$colspan{$_}").">$_</TH>";
 }
-$entete .= "<TH rowspan=2></TH></TR><TR>";
+$header .= "<TH rowspan=2></TH></TR><TR>";
 foreach(@colnam2) {
-		$entete .= "<TH>".$_."</TH>";
+		$header .= "<TH>".$_."</TH>";
 }
-$entete .= "</TR>";
+$header .= "</TR>";
 
 my $nbLignesRetenues = 0;
-for (my $j = 0; $j <= $#lignes; $j++) {
-	my ($id, $trash, $site, $date_end, $heure_end, $date_beg, $heure_beg, $users, $rem, $ts0, $oper) = ($lignes[$j][0],$lignes[$j][1],$lignes[$j][2],$lignes[$j][3],$lignes[$j][4],$lignes[$j][5],$lignes[$j][6],$lignes[$j][7]);
-	my $date;
-	my $heure;
-	if (isok($ask_start)) {
-		$date = "$date_beg";
-		$heure = "$heure_beg";
-	} else {
-		$date = "$date_beg";
-		$heure = $heure_beg;
-	}
+for (my $j = 0; $j <= $#rows; $j++) {
+	my ($id, $trash, $site, $edate0, $edate1, $sdate0, $sdate1, $users, $rem, $ts0, $oper) = ($rows[$j][0],$rows[$j][1],$rows[$j][2],$rows[$j][3],$rows[$j][4],$rows[$j][5],$rows[$j][6],$rows[$j][7],$rows[$j][-3],$rows[$j][-2],$rows[$j][-1]);
 	$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
+
+	my $edate = simplify_date($edate0,$edate1);
+	my $sdate = simplify_date($sdate0,$sdate1);
 
 	my $normSite = normNode(node=>"PROC.$site");
 	if ($normSite ne "") {
@@ -292,43 +311,61 @@ for (my $j = 0; $j <= $#lignes; $j++) {
 	}
 	my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
 	$form_url->query_form('form' => $form, 'id' => $id, 'return_url' => $return_url, 'action' => 'edit');
-	$modif = qq(<a href="$form_url"><img src="/icons/modif.png" title="Editer..." border=0></a>);
-	$efface = qq(<img src="/icons/no.png" title="Effacer..." onclick="checkRemove($id)">);
+	$edit = qq(<a href="$form_url"><img src="/icons/modif.png" title="Edit..." border=0></a>);
+	$delete = qq(<img src="/icons/no.png" title="Delete..." onclick="checkRemove($id)">);
 
-	$texte = $texte."<TR ".($trash == 1 ? "class=\"node-disabled\"":"").">";
-	#if ($clientAuth > 1) {
-		$texte = $texte."<TD nowrap>$modif</TH>";
-	#}
-	$texte = $texte."<TD nowrap>$date</TD><TD align=center>$lien&nbsp;</TD>";
-	$csvTxt .= join(';', ($date,$aliasSite));
+	$text .= "<TR ".($trash == 1 ? "class=\"node-disabled\"":"").">";
+	if ($clientAuth > 1) {
+		$text .= "<TD nowrap>$edit</TH>";
+	}
+	$text .= ($starting_date ? "<TD nowrap>$sdate</TD>":"")."<TD nowrap>$edate</TD>";
+	$text .= "<TD align=center>$lien&nbsp;</TD>";
+	$csvTxt .= "$sdate;$edate;$aliasSite;";
 	$csvTxt .= ";";
-	my $nb_inputs = $#{ $lignes[$j] };
+	my $nb_inputs = $#{ $rows[$j] };
 	for (my $i = 8; $i <= $nb_inputs-3; $i++) {
-		$texte = $texte."<TD align=center>$lignes[$j][$i]</TD>";
-		$csvTxt .= "$lignes[$j][$i];";
+		$text .= "<TD align=center>$rows[$j][$i]</TD>";
+		$csvTxt .= "$rows[$j][$i];";
 	}
 	$csvTxt .= "; $rem\n";
-	$texte = $texte."</TD><TD></TD></TR>";
+	$text .= "</TD><TD></TD></TR>";
 
 	$nbLignesRetenues++;
 }
 
-push(@csv,l2u($csvTxt));
 push(@html,"Number of records = <B>$nbLignesRetenues</B> / $nbData.</P>\n",
-	"<P>$__{'Download a CSV text file of these data'} <A href=\"/cgi-bin/showGENFORM.pl?affiche=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&unite=$QryParm->{'unite'}&form=".$FORM->conf('NAME')."\"><B>$fileCSV</B></A></P>\n");
+	"<P>$__{'Download a CSV text file of these data'} <A href=\"/cgi-bin/showGENFORM.pl?dump=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&unite=$QryParm->{'unite'}&form=".$FORM->conf('NAME')."\"><B>$fileCSV</B></A></P>\n");
 
-if ($texte ne "") {
-	push(@html,"<TABLE class=\"trData\" width=\"100%\"><TR>$entete\n</TR>$texte\n<TR>$entete\n</TR></TABLE>");
+if ($text ne "") {
+	push(@html,"<TABLE class=\"trData\" width=\"100%\"><TR>$header\n</TR>$text\n<TR>$header\n</TR></TABLE>");
 }
 
-if ($QryParm->{'affiche'} eq "csv") {
+if ($QryParm->{'dump'} eq "csv") {
+	push(@csv,l2u($csvTxt));
 	print @csv;
 } else {
 	print @html;
 	print "<style type=\"text/css\">
-		#attente { display: none; }
+		#waiting { display: none; }
 	</style>\n
 	<BR>\n</BODY>\n</HTML>\n";
+}
+
+
+
+sub simplify_date {
+	my $date0 = shift;
+	my $date1 = shift;
+	my ($y0,$m0,$d0,$H0,$M0) = split(/[-: ]/,$date0);
+	my ($y1,$m1,$d1,$H1,$M1) = split(/[-: ]/,$date1);
+	my $date = "$y1-$m1-$d1 $H1:$M1";
+	if ($date0 eq $date1 || $date1 eq "") { return $date0; }
+	if    ($y1 ne $y0) { $date = "$y0-$y1"; }
+	elsif ($m1 ne $m0) { $date = "$y1"; }
+	elsif ($d1 ne $d0) { $date = "$y1-$m1"; }
+	elsif ($H1 ne $H0) { $date = "$y1-$m1-$d1"; }
+	elsif ($M1 ne $M0) { $date = "$y1-$m1-$d1 $H1"; }
+	return $date;
 }
 
 # Open an SQLite connection to the forms database
@@ -354,11 +391,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Lucas Dassin
+Lucas Dassin, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
