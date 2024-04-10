@@ -1471,7 +1471,7 @@ msgstr "en cours"
 msgid "string"
 msgstr "texte"
 
-# showGRID.pl
+# --- showGRID.pl
 
 msgid "help_node_sampling"
 msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsquo;&eacute;chantillons valides au cours de la derni&egrave;re p&eacute;riode de temps, compar&eacute; &agrave; l&rsquo;acquisition th&eacute;orique"
@@ -1479,7 +1479,81 @@ msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsqu
 msgid "help_node_status"
 msgstr "Status (en %): existence d&rsquo;&eacute;chantillons valides dans le dernier d&eacute;lai d&rsquo;acquisition pour tous les canaux"
 
-# showREQ.pl
+# ---- formREQ.pl
+
+msgid "No PROCS eligible for requests submission."
+msgstr "Aucune PROC disponible pour soumettre une requête."
+
+msgid "No PROC eligible for this user. Please ask an administrator."
+msgstr "Aucune PROC n'est accessible pour cet utilisateur. Demandez à un administrateur."
+
+msgid "Results"
+msgstr "Résultats"
+
+msgid "PROC Request"
+msgstr "Requête de PROCS"
+
+msgid "Available PROCS"
+msgstr "PROCS disponibles"
+
+msgid "Date and time span (UT)"
+msgstr "Intervalle de date et heure (TU)"
+
+msgid "Preset dates"
+msgstr "Intervalles prédéfinis"
+
+msgid "Last full month"
+msgstr "Dernier mois révolu"
+
+msgid "Last full year"
+msgstr "Dernière année révolue"
+
+msgid "Current year"
+msgstr "Année courante"
+
+msgid "Output parameters"
+msgstr "Paramètres"
+
+msgid "Date format"
+msgstr "Format de dates"
+
+msgid "Cumulate"
+msgstr "Cumul"
+
+msgid "days"
+msgstr "jours"
+
+msgid "Decimate"
+msgstr "Décimation"
+
+msgid "Marker size"
+msgstr "Taille des marqueurs"
+
+msgid "Line width"
+msgstr "Épaisseur des lignes"
+
+msgid "Grid"
+msgstr "Grille"
+
+msgid "PPI"
+msgstr "Résolution PPI"
+
+msgid "PDF"
+msgstr "Export PDF"
+
+msgid "SVG"
+msgstr "Export SVG"
+
+msgid "Data exports"
+msgstr "Export de données"
+
+msgid "Anonymous"
+msgstr "Anonyme"
+
+msgid "Verbose logs"
+msgstr "Logs détaillés"
+
+# ---- showREQ.pl
 
 msgid "Date & Time"
 msgstr "Date & Heure"
@@ -1502,7 +1576,7 @@ msgstr "Job"
 msgid "Archive"
 msgstr "Archive"
 
-# formGRID.pl
+# --- formGRID.pl
 
 msgid "Form"
 msgstr "Form"
@@ -1516,7 +1590,7 @@ msgstr "Utiliser le mode vim"
 msgid "Check to enable vim mode in the editor"
 msgstr "Cocher pour activer le mode vim dans l\\'éditeur"
 
-# vsearch.pl
+# --- vsearch.pl
 
 msgid "Grid Name"
 msgstr "Grid/Réseau"

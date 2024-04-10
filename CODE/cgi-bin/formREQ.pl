@@ -282,7 +282,7 @@ function preSet()
 <DIV ID=\"helpBox\"></DIV>";
 
 print "<h2>$pagetitle</h2>";
-print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ <a href=\"/cgi-bin/showREQ.pl\">Results</a> ]</P>";
+print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ <a href=\"/cgi-bin/showREQ.pl\">$__{'Results'}</a> ]</P>";
 
 print "<form id=\"theform\" name=\"form\" action=\"\">";
 
@@ -404,7 +404,7 @@ print "<TR>";
 		print "<label style=\"width:80px\" for=\"svgoutput\">$__{'SVG'}:</label>";
 		print "<input id=\"svgoutput\" name=\"svgoutput\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{SVGOUTPUT}) ? " checked":"")."><BR>&nbsp;<BR>";
 	#	EXPORTS|
-		print "<label style=\"width:80px\" for=\"exports\">$__{'Exports'}:</label>";
+		print "<label style=\"width:80px\" for=\"exports\">$__{'Data exports'}:</label>";
 		print "<input id=\"exports\" name=\"exports\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{EXPORTS}) ? " checked":"")."><BR>&nbsp;<BR>";
 	#	ANONYMOUS|
 		print "<label style=\"width:80px\" for=\"anonymous\">$__{'Anonymous'}:</label>";
