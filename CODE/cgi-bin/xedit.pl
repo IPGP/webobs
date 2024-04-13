@@ -161,8 +161,8 @@ if ($action eq 'save') {
 			truncate(FILE, 0);
 			seek(FILE, 0, SEEK_SET);
 			$txt =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
-			push(@lignes,$txt);
-			print FILE @lignes ;
+			push(@lignes,u2l($txt));
+			print FILE @lignes;
 			close(FILE);
 			htmlMsgOK($relfile);
 		} else {
@@ -177,7 +177,7 @@ if ($action eq 'save') {
 #
 @lignes = readFile($absfile);
 $TS0 = (stat($absfile))[9] ;
-$txt = join("",@lignes);
+$txt = l2u(join("",@lignes));
 
 # build html page
 # - page, common
@@ -221,14 +221,14 @@ var CODEMIRROR_CONF = {
 ";
 print "</HEAD>\n";
 # - page, body
-print "<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.txt.focus()\">";
+print "<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.form.txt.focus()\">";
 print <<html;
 <script type=\"text/javascript\" >
 </script>
 html
 # - page, edit or browse area
 print "<h3>$relfile</h3>"; 
-print "<form id=\"theform\" name=\"formulaire\" action=\"\" style=\"margin: 0px 0px 0px 10px; width: 650px;\">
+print "<form id=\"theform\" name=\"form\" action=\"\" style=\"margin: 0px 0px 0px 10px; width: 650px;\">
 <input type=\"hidden\" name=\"fs\" value=\"$fs\">
 <input type=\"hidden\" name=\"action\" value=\"save\">
 <input type=\"hidden\" name=\"ts0\" value=\"$TS0\">\n";
@@ -276,7 +276,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
