@@ -6,7 +6,7 @@ formGENFORM.pl
 
 =head1 SYNOPSIS
 
-http://..../formGENFORM.pl?form=FORMName[&id=id&return_url=url&action={edit|save}]
+http://..../formGENFORM.pl?form=FORMName[&id=id&return_url=url&action={new|edit|save|delete|restore|erase}]
 
 =head1 DESCRIPTION
 
@@ -34,7 +34,7 @@ URL to go back to showGENFORM.pl.
 
 =item B<action=string>
 
-action can be selected between [new|edit|save].
+action can be selected between [new|edit|save|delete|restore|erase].
 
 =back
 
@@ -57,22 +57,23 @@ set_message(\&webobs_cgi_msg);
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users qw($CLIENT %USERS clientHasRead clientHasEdit clientHasAdm);
+use WebObs::Users qw($CLIENT %USERS clientIsValid clientHasRead clientHasEdit clientHasAdm);
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 use WebObs::Form;
 
+die "$__{'die_client_not_valid'}" if ( !clientIsValid );
+
 # ---- standard FORMS inits ----------------------------------
 
 my $FORMName = $cgi->param('form');      # name of the form
 
-#die "You can't edit GENFORM reports." if (!clientHasEdit(type=>"authforms",name=>"GENFORM"));
-
 my $FORM = new WebObs::Form($FORMName);
 
 my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
+my $client = $USERS{$CLIENT}{UID};
 
 my %Ns;
 my @NODESSelList;
@@ -105,24 +106,23 @@ my $sel_mn2 = $sel_mn1;
 
 # ---- Get the form data
 # 
-my @annee  = $cgi->param('annee');
-my @mois   = $cgi->param('mois');
-my @jour   = $cgi->param('jour');
-my @hr     = $cgi->param('hr');
-my @mn     = $cgi->param('mn');
-my $site   = $cgi->param('site');
-my $rem    = $cgi->param('rem') // "";
+my @year    = $cgi->param('year');
+my @month   = $cgi->param('month');
+my @day     = $cgi->param('day');
+my @hr      = $cgi->param('hr');
+my @mn      = $cgi->param('mn');
+my $site    = $cgi->param('site');
+my $comment = $cgi->param('comment') // "";
 
-my $val    = $cgi->param('val');
-my $oper   = $cgi->param('oper');
-my $idTraite = $cgi->param('id') // "";
-my $action   = checkParam($cgi->param('action'), qr/(new|edit|save)/, 'action')  // "edit";
+my $val     = $cgi->param('val');
+my $user    = $cgi->param('user');
+my $id      = $cgi->param('id') // "";
+my $action   = checkParam($cgi->param('action'), qr/(new|edit|save|delete|restore|erase)/, 'action')  // "edit";
 my $return_url = $cgi->param('return_url');
-my $delete = $cgi->param('delete');
-my @users  = $cgi->param('users');
+my @operators  = $cgi->param('operators');
 
-my ($sdate, $sdate_min) = datetime2maxmin($annee[0],$mois[0],$jour[0],$hr[0],$mn[0]);
-my $stamp = "[$today $oper]";
+my ($sdate, $sdate_min) = datetime2maxmin($year[0],$month[0],$day[0],$hr[0],$mn[0]);
+my $stamp = "[$today $user]";
 if (index($val,$stamp) eq -1) { $val = "$stamp $val"; };
 
 # ---- specific FORM inits -----------------------------------
@@ -130,7 +130,7 @@ my %FORM = readCfg("$WEBOBS{PATH_FORMS}/$FORMName/$FORMName.conf");
 
 $ENV{LANG} = $WEBOBS{LOCALE};
 
-my $sel_site = my $sel_rem = "";
+my $sel_site = my $sel_comment = "";
 
 # ----
 
@@ -144,8 +144,8 @@ my @fieldsets = extract_fieldsets($fs_count);
 my $count_inputs = count_inputs(@keys)-1;
 
 # ---- Variables des menus
-my $starting_date   = isok($FORM->conf('STARTING_DATE'));
-my @yearList = ($FORM->conf('BANG')..$currentYear);
+my $starting_date   = isok($FORM{STARTING_DATE});
+my @yearList = ($FORM{BANG}..$currentYear);
 my @monthList = ("","01".."12");
 my @dayList   = ("","01".."31");
 my @hourList  = ("","00".."23");
@@ -155,7 +155,7 @@ my @minuteList= ("","00".."59");
 my $edate = $sdate;
 my $edate_min = $sdate_min;
 if ($starting_date) {
-    ($edate, $edate_min) = datetime2maxmin($annee[1],$mois[1],$jour[1],$hr[1],$mn[1]);
+    ($edate, $edate_min) = datetime2maxmin($year[1],$month[1],$day[1],$hr[1],$mn[1]);
 }
 
 # ---- action is 'save'
@@ -165,18 +165,24 @@ if ($starting_date) {
 my $dbh = connectDbForms();
 my $tbl = lc($FORMName);
 
-if ($action eq 'save' && $delete < 1) {
+if ($action eq 'save') {
 	my @lignes;
-	my $msg = "";
-	my $newID;
+	my $msg;
 
 	my @inputs = map { sprintf("input%02d", $_) } (1..($count_inputs+1));
 
 	# ---- filling the database with the data from the form
 	my $row;
 	my $db_columns;
-	$db_columns = "trash, node, edate, edate_min, sdate, sdate_min, users";
-	$row = "false, \"$site\", \"$edate\", \"$edate_min\", \"$sdate\", \"$sdate_min\", \"".join(/,/, @users)."\"";
+	$db_columns = "trash, node, edate, edate_min, sdate, sdate_min, operators";
+	$row = "false, \"$site\", \"$edate\", \"$edate_min\", \"$sdate\", \"$sdate_min\", \"".join(",", @operators)."\"";
+        if ($id ne "") {
+		$db_columns = "id, ".$db_columns;
+		$row = "$id, ".$row;
+		$msg = "record #$id has been updated.";
+	} else {
+		$msg = "new record has been created.";
+	}
 	for my $i (0 .. $#inputs) {
 	    my $input = $cgi->param($inputs[$i]);
 	    if ($input ne "") {
@@ -185,38 +191,50 @@ if ($action eq 'save' && $delete < 1) {
 	    }
 	}
 	$db_columns .= ", comment, tsupd, userupd";
-	$row .= ", \"$rem\", \"$today\", \"$oper\"";
+	$row .= ", \"$comment\", \"$today\", \"$user\"";
 
-	my $stmt = qq(replace into $tbl($db_columns) values($row));
+	my $stmt = qq(REPLACE INTO $tbl($db_columns) values($row));
 	my $sth  = $dbh->prepare( $stmt );
 	my $rv   = $sth->execute() or die $DBI::errstr;
-	my $msg;
-	if ($rv >= 1){
-		$msg = "new record #$newID has been created.";
-	} else {
-		$msg = "formGENFORM couldn't access the database.";
+	if ($rv < 1){
+		$msg = "ERROR: formGENFORM couldn't access the database $FORMName.";
 	}
 	htmlMsgOK($msg);
 
 	$dbh->disconnect();
 	exit;
-} elsif ($action eq "save" && $delete > 0) {
-    my $tbl = lc($FORMName);
-    my $stmt = qq(update $tbl set trash = true where id=$idTraite);
+} elsif ($action eq "delete" && $id ne "") {
+    my $stmt = qq(UPDATE $tbl SET trash = true WHERE id = $id);
     my $sth  = $dbh->prepare( $stmt );
 	my $rv   = $sth->execute() or die $DBI::errstr;
-    htmlMsgOK("Delete/recover existing record #$idTraite (in/from trash).");
+    htmlMsgOK("Record #$id has been moved to trash.");
+
+    $dbh->disconnect();
+    exit;
+} elsif ($action eq "restore" && $id ne "") {
+    my $stmt = qq(UPDATE $tbl SET trash = false WHERE id = $id);
+    my $sth  = $dbh->prepare( $stmt );
+	my $rv   = $sth->execute() or die $DBI::errstr;
+    htmlMsgOK("Record #$id has been recoverd from trash.");
+
+    $dbh->disconnect();
+    exit;
+} elsif ($action eq "erase" && $id ne "") {
+    my $stmt = qq(DELETE FROM $tbl WHERE id = $id);
+    my $sth  = $dbh->prepare( $stmt );
+	my $rv   = $sth->execute() or die $DBI::errstr;
+    htmlMsgOK("Record #$id has been permanently erased from database $FORMName.");
 
     $dbh->disconnect();
     exit;
 }
 
-# ---- action is 'edit' (default) or new
+# ---- if we reach this point action is 'edit' (default) or 'new'
 #
 #$editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$FORMName") || WebObs::Users::clientHasEdit(type => "auth".$auth, name => "MC");
 #$admOK = WebObs::Users::clientHasAdm(type => "auth".$auth, name => "*");
 
-$form_url->query_form('form' => $FORMName, 'id' => $idTraite, 'return_url' => $return_url, 'action' => 'save');
+$form_url->query_form('form' => $FORMName, 'id' => $id, 'return_url' => $return_url, 'action' => 'save');
 
 # ---- Start HTML display
 #
@@ -225,7 +243,7 @@ print qq[Content-type: text/html
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<title>] . $FORM->conf('TITLE') . qq[</title>
+<title>] . $FORM{TITLE} . qq[</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
@@ -234,28 +252,31 @@ print qq[Content-type: text/html
 <!--
 function update_form()
 {
-    var formulaire = document.formulaire;
+    var form = document.form;
 }
 
 function suppress(level)
 {
-    var str = "]  . u2l($FORM->conf('TITLE')) . qq[ ?";
+    var str = "$FORM{TITLE} ?";
     if (level > 1) {
         if (!confirm("$__{'ATT: Do you want PERMANENTLY erase this record from '}" + str)) {
             return false;
         }
+        document.form.action.value = 'erase';
     } else {
-        if (document.formulaire.id.value > 0) {
+        if (level == 1) {
             if (!confirm("$__{'Do you want to remove this record from '}" + str)) {
                 return false;
             }
+            document.form.action.value = 'delete';
         } else {
             if (!confirm("$__{'Do you want to restore this record in '}" + str)) {
                 return false;
             }
+            document.form.action.value = 'restore';
         }
     }
-    document.formulaire.delete.value = level;
+    document.form.delete.value = level;
     submit();
 }
 
@@ -264,12 +285,12 @@ function verif_re(element)
     
 }
 
-function verif_formulaire()
+function verif_form()
 {
     console.log(\$("#theform"));
-    if(document.formulaire.site.value == "") {
-        alert("Veuillez spécifier le site de prélèvement!");
-        document.formulaire.site.focus();
+    if(document.form.site.value == "") {
+        alert("$__{'You must select a node associated to this record!'}");
+        document.form.site.focus();
         return false;
     }
     console.log(\$("#theform").serialize());
@@ -318,50 +339,60 @@ function submit()
 
 # ---- read data file
 #
-my $message = "$__{'Input new data'}";
-my $id = $idTraite;
-my $val = "";
+my $message;
+my $val;
 my %prev_inputs;
+my $trash;
 
 if ($action eq "edit") {
-    # --- connecting to the database
+	# --- connecting to the database
 	my $dbh = connectDbForms();
 	my $tbl = lc($FORMName);
 
-	my $stmt = qq(SELECT * FROM $tbl WHERE id = $id;); # selecting the row corresponding to the id of the record we want to modify
+	my $stmt = qq(SELECT * FROM $tbl WHERE id = $id); # selecting the row corresponding to the id of the record we want to modify
 	my $sth = $dbh->prepare( $stmt );
 	my @colnam = @{ $sth->{NAME_lc} };
 	my $rv = $sth->execute() or die $DBI::errstr;
 
-	my ($id, $delete, $site, $edate, $edate_min, $sdate, $sdate_min, $users, $ts0, $oper);
+	my ($edate, $edate_min, $sdate, $sdate_min, $opers, $ts0, $user);
 	while(my @row = $sth->fetchrow_array()) {
-		($id, $delete, $site, $edate, $edate_min, $sdate, $sdate_min, $users, $sel_rem, $ts0, $oper) = ($row[0], $row[1], $row[2], $row[3], $row[4], $row[5], $row[6], $row[7], $row[-3], $row[-2], $row[-1]);
-		($sel_y1,$sel_m1,$sel_d1,$sel_hr1,$sel_mn1) = datetime2array($edate, $edate_min);
-		($sel_y2,$sel_m2,$sel_d2,$sel_hr2,$sel_mn2) = datetime2array($sdate, $sdate_min);
+		($trash, $site, $edate, $edate_min, $sdate, $sdate_min, $opers, $sel_comment, $ts0, $user) = ($row[1], $row[2], $row[3], $row[4], $row[5], $row[6], $row[7], $row[-3], $row[-2], $row[-1]);
+		($sel_y1,$sel_m1,$sel_d1,$sel_hr1,$sel_mn1) = datetime2array($sdate, $sdate_min);
+		($sel_y2,$sel_m2,$sel_d2,$sel_hr2,$sel_mn2) = datetime2array($edate, $edate_min);
+		@operators = split(/,/,$opers);
 		for (my $i = 7; $i <= $#row-3; $i++) {
 		    $prev_inputs{$colnam[$i]} = $row[$i];
 		}
 	}
-    $message = "$__{'Edit data n°'} $id";
-    $val = "[$ts0 $oper]";
-} else { $val = "" ;}
+	$message = "$__{'Edit data n°'} $id";
+	$val = "[$ts0 $user]";
+} else {
+	$message = "$__{'Input new data'}";
+	@operators = ("$client");
+}
 
-if ($action eq "edit") {
-	print qq(<input type="hidden" name="id" value="$QryParm->{id}">);
-	print qq(<tr><td style="border: 0"><hr>);
-	if ($val ne "") {
-		print qq(<p><b>Information de saisie:</b> $val
-		<input type="hidden" name="val" value="$val"></p>);
+print qq(<input type="hidden" name="id" value="$id">);
+print qq(<tr><td style="border: 0"><hr>);
+if ($val ne "") {
+	print qq(<p><b>Record timestamp:</b> $val
+	<input type="hidden" name="val" value="$val"></p>);
+}
+if ($action eq "edit" && $id ne "") {
+	if ($trash eq "1") {
+		print qq(<input type="button" value="$__{'Restore'}" onClick="suppress(-1);">);
+	} else {
+		print qq(<input type="button" value="$__{'Remove'}" onClick="suppress(1);">);
 	}
-	print qq(<input type="button" value=") . ($id < 0 ? "Reset":"$__{'Remove'}") . qq(" onClick="suppress(1);">);
 	#if (clientHasAdm(type=>"authforms",name=>"EAUX")) {
 		print qq(<input type="button" value="$__{'Erase'}" onClick="suppress(2);">);
 	#}
-	print qq(<hr></td></tr>);
 }
+print qq(<hr></td></tr>);
 
-print qq(<form name="formulaire" id="theform" action="">
-<input type="hidden" name="oper" value="$USERS{$CLIENT}{UID}">
+print qq[<form name="form" id="theform" action="">
+<input type="hidden" name="id" value="$id">
+<input type="hidden" name="user" value="$client">
+<input type="hidden" name="trash" value="$trash">
 <input type="hidden" name="delete" value="">
 <input type=\"hidden\" name=\"action\" value="save">
 <input type=\"hidden\" name=\"form\" value=\"$FORMName\">
@@ -369,31 +400,31 @@ print qq(<form name="formulaire" id="theform" action="">
 <table width="100%">
   <tr>
     <td style="border: 0">
-     <h1>) . $FORM->conf('TITLE') . qq(</h1>\
+     <h1>$FORM{TITLE}</h1>
      <h2>$message</h2>
     </td>
   </tr>
-);
 
-print qq(</table>
+</table>
 <table style="border: 0" >
   <tr>
     <td style="border: 0" valign="top">
       <fieldset>
         <legend>$__{'Date and place of sampling'}</legend>
         <p class="parform">
-);
+];
+
     if ($starting_date) {
         print qq(
                 <b>$__{'Start Date'}: </b>
-                    <select name="annee" size="1">
+                    <select name="year" size="1">
         );
     	for (@yearList) {if ($_ == $sel_y1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
-	    print qq(<select name="mois" size="1">);
+	    print qq(<select name="month" size="1">);
 	    for (@monthList) {if ($_ == $sel_m1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
-	    print qq( <select name=jour size="1">);
+	    print qq( <select name=day size="1">);
 	    for (@dayList) {if ($_ == $sel_d1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print "</select>";
 
@@ -407,14 +438,14 @@ print qq(</table>
 
 	    print qq(
                 <b>$__{'End Date'}: </b>
-                    <select name="annee" size="1">
+                    <select name="year" size="1">
         );
     	for (@yearList) {if ($_ == $sel_y2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
-	    print qq(<select name="mois" size="1">);
+	    print qq(<select name="month" size="1">);
 	    for (@monthList) {if ($_ == $sel_m2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print qq(</select>);
-	    print qq( <select name=jour size="1">);
+	    print qq( <select name=day size="1">);
 	    for (@dayList) {if ($_ == $sel_d2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
 	    print "</select>";
 
@@ -427,78 +458,71 @@ print qq(</table>
     } else {
         print qq(
             <b>$__{'Date'}: </b>
-                <select name="annee" size="1">
+                <select name="year" size="1">
         );
         for (@yearList) {
-		    if ($_ == $sel_y2) {
-			    print qq(<option selected value="$_">$_</option>);
-		    } else {
-			    print qq(<option value="$_">$_</option>);
-		    }
+		    my $sel = ($_ eq $sel_y2 ? "selected":"");
+		    print qq(<option $sel value="$_">$_</option>);
 	    }
 	    print qq(</select>);
-	    print qq(<select name="mois" size="1">);
+	    print qq(<select name="month" size="1">);
 	    for (@monthList) {
-		    if ($_ == $sel_m2) {
-			    print qq(<option selected value="$_">$_</option>);
-		    } else {
-			    print qq(<option value="$_">$_</option>);
-		    }
+		    my $sel = ($_ eq $sel_m2 ? "selected":"");
+		    print qq(<option $sel value="$_">$_</option>);
 	    }
 	    print qq(</select>);
-	    print qq( <select name=jour size="1">);
+	    print qq( <select name=day size="1">);
 	    for (@dayList) {
-		    if ($_ == $sel_d2) {
-			    print qq(<option selected value="$_">$_</option>);
-		    } else {
-			    print qq(<option value="$_">$_</option>);
-		    }
+		    my $sel = ($_ eq $sel_d2 ? "selected":"");
+		    print qq(<option $sel value="$_">$_</option>);
 	    }
 	    print "</select>";
 
 	    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
 	    for (@hourList) {
-		    if ($_ eq $sel_hr2) {
-			    print qq(<option selected value="$_">$_</option>);
-		    } else {
-			    print qq(<option value="$_">$_</option>);
-		    }
+		    my $sel = ($_ eq $sel_hr2 ? "selected":"");
+		    print qq(<option $sel value="$_">$_</option>);
 	    }
 	    print qq(</select>);
 	    print qq(<select name=mn size="1">);
 	    for (@minuteList) {
-		    if ($_ eq $sel_mn2) {
-			    print qq(<option selected value="$_">$_</option>);
-		    } else {
-		       print qq(<option value="$_">$_</option>);
-		    }
+		my $sel = ($_ eq $sel_mn2 ? "selected":"");
+	        print qq(<option $sel value="$_">$_</option>);
 	    }
     }
 	print qq(</select><BR>
 	<B>Site: </B>
 	  <select name="site" size="1"
-		onMouseOut="nd()"onmouseover="overlib('S&eacute;lectionner le site du prélèvement')">
+		onMouseOut="nd()"onmouseover="overlib('Select a node for this record')">
 	  <option value=""></option>);
     print @NODESSelList;
 	for (@NODESSelList) {
 		my @cle = split(/\|/,$_);
-		if ($cle[0] eq $site) {
-			print qq(<option selected value="$cle[0]">$cle[1]</option>);
-		} else {
-			print qq(<option value="$cle[0]">$cle[1]</option>);
-		}
+		my $sel = ($cle[0] eq $site ? "selected":"");
+		print qq(<option $sel value="$cle[0]">$cle[1]</option>);
 	}
 
 print qq(</select><BR>
-        <B>$__{'Users'}: </B>
-            <select name="users" size="1"
-                onMouseOut="nd()" onmouseover="overlib('$__{'Select users'}')">);
-        my @users = split(/,/, $FORM->conf('LIST_USERS'));
-        foreach(@users){
-            print "<option value=\"$_\" >$_</option>";
+	<table><tr><td style="border:0"><B>$__{'Operator(s)'}:</B> </td><td style="border:0">
+            <select name="operators" size="5" multiple="multiple"
+                onMouseOut="nd()" onmouseover="overlib('$__{'Select operator(s)'}')">);
+        my @uid = @operators; # $client if 'new', or @operators if 'edit'
+       	foreach my $op (split(/,/, $FORM{OPERATORS_LIST})) {
+		if ($op =~ /^+/) {
+			foreach my $u (WebObs::Users::groupListUser("$op")) {
+				push(@uid, $u) if (!grep(/^$u$/, @uid));
+			}
+		} else {
+			push(@uid, $op) if (!grep(/^$op$/, @uid));
+		}
+	}
+        foreach my $u (@uid){
+	    my $sel = (grep(/^$u$/, @operators) ? "selected":"");
+            print "<option value=\"$u\" $sel>$u: ".join('',WebObs::Users::userName($u))."</option>\n";
         }
 print qq(</select>
-        </P>
+	</td></tr></table>
+	</P>
       </fieldset>);
 
 foreach (@columns) {
@@ -521,27 +545,26 @@ foreach (@columns) {
                 my $name = $FORM{"$inputs[$i]_NAME"};
                 my $unit = $FORM{"$inputs[$i]_UNIT"};
                 my $type = $FORM{"$inputs[$i]_TYPE"};
-                my $txt;
-                if ($unit ne "") {$txt = "<B>$name </B> ($unit) = "} else {$txt = "<B>$name </B> = "};
+                my $txt = "<B>$name </B>".($unit ne "" ? " ($unit)":"")." = ";
                 while ($name =~ /(<sup>|<\/sup>|<sub>|<\/sub>|\+|\-|\&|;)/) {
                     $name =~ s/(<sup>|<\/sup>|<sub>|<\/sub>|\+|\-|\&|;)//;
                 }
                 $inputs[$i] = lc($inputs[$i]);
                 print $FORM{"$inputs[$i]_LIST"};
                 print exists($FORM{"$inputs[$i]_LIST"});
-                if ($type =~ "formula:") {
+                if ($type =~ /^formula:/) {
                     (my $formula, my @x) = extract_formula($type);
                     foreach (@x) {
                         my $form_input = lc($_);
-                        $formula =~ s/$_/Number(formulaire.$form_input.value)/g;
+                        $formula =~ s/$_/Number(form.$form_input.value)/g;
                     }
                     foreach (@x) {
                         my $form_input = lc($_);
                         print qq(
                             <script>
-                                formulaire.$form_input.onchange = function() {
-                                    formulaire.$form_input.value = formulaire.$form_input.value;
-                                    formulaire.$inputs[$i].value = parseFloat($formula).toFixed(2);
+                                form.$form_input.onchange = function() {
+                                    form.$form_input.value = form.$form_input.value;
+                                    form.$inputs[$i].value = parseFloat($formula).toFixed(2);
                                 }
                             </script>
                         );
@@ -549,25 +572,25 @@ foreach (@columns) {
                     print qq($txt<input size=6 readOnly class=inputNumNoEdit name="$inputs[$i]"
                         onMouseOut="nd()" onmouseover="overlib('$formula')"><BR>
                         <script>
-                            formulaire.$_.value = parseFloat($formula).toFixed(2);
+                            form.$_.value = parseFloat($formula).toFixed(2);
                         </script>);
                 } elsif ($type =~ "list") {
-                    my $list = extract_list($type);
-                    my %list = readCfg($list);
-                    my $list_size = keys %list;
+                    my %list = extract_list($type,$FORMName);
+                    my @list_keys = keys %list;
                     print qq($txt<select name="$inputs[$i]" size=1
-                        onMouseOut="nd()" onmouseover="overlib('Select one value')"><option value=""></option>);
-                    for (my $j = 1; $j <= $list_size; $j++) {
-                        print "<option value=\"".u2l($list{"opt$j"})."\">".u2l($list{"opt$j"})."</option>";
+                        onMouseOut="nd()" onmouseover="overlib('Select a value for $inputs[$i]')"><option value=""></option>);
+                    for (@list_keys) {
+			my $selected = ($prev_inputs{$inputs[$i]} eq "$_" ? "selected":"");
+                        print "<option value=\"$_\" $selected>$_: $list{$_}</option>";
                     }
                     print qq(</select><BR>);
                 } elsif ($type =~ "text"){
                     my $re = extract_re($type);
                     print qq($txt<input type=\"text\" size=5 class=inputNum name=\"$inputs[$i]\" value=\"$prev_inputs{$inputs[$i]}\"
-                        onMouseOut="nd()" onchange=\"verif_re()\" onmouseover="overlib('Entrer la valeur de $name')"><BR>);
+                        onMouseOut="nd()" onchange=\"verif_re()\" onmouseover="overlib('Enter a value for $inputs[$i]')"><BR>);
                 } else {
                     print qq($txt<input size=5 name=\"$inputs[$i]\" value=\"$prev_inputs{$inputs[$i]}\"
-                        onMouseOut="nd()" onmouseover="overlib('Entrer la valeur de $name')"><BR>);
+                        onMouseOut="nd()" onmouseover="overlib('Enter a value for $inputs[$i]')"><BR>);
                 }
             }
             print "</p></td>";
@@ -584,8 +607,8 @@ print qq(</TD>
   <tr>
     <td style="border: 0" colspan="2">
       <B>Observations</B> :<BR>
-      <input size=80 name=rem value="$sel_rem"
-      onMouseOut="nd()" onmouseover="overlib('Noter toute présence d&rsquo;odeur, gaz, précipité, etc...')"><BR>
+      <input size=80 name="comment" value="$sel_comment"
+      onMouseOut="nd()" onmouseover="overlib(').$FORM{COMMENT_HELPER}.qq(')"><BR>
     </td>
   </tr>
   <tr>
@@ -593,7 +616,7 @@ print qq(</TD>
       <P style="margin-top: 20px; text-align: center">
         <input type="button" name=lien value="$__{'Cancel'}"
          onClick="document.location=') . $cgi->param('return_url') . qq('" style="font-weight: normal">
-        <input type="button" value="$__{'Submit'}" onClick="verif_formulaire();">
+        <input type="button" value="$__{'Submit'}" onClick="verif_form();">
       </P>
     </td>
   </tr>
@@ -607,104 +630,6 @@ print qq(</TD>
 # --- End of main script
 # -----------------------------------------------------------------------------
 
-sub datetime2array {
-	my $date = shift;
-	my $date_min = shift;
-	my @d  = split(/[-: ]/,$date);
-	my @dm = split(/[-: ]/,$date_min);
-	if ($date eq $date_min) { return @d };
-	@d = ($d[0],   "",   "",   "","") if ($d[1] ne $dm[1]);
-	@d = ($d[0],$d[1],   "",   "","") if ($d[2] ne $dm[2]);
-	@d = ($d[0],$d[1],$d[2],   "","") if ($d[3] ne $dm[3]);
-	@d = ($d[0],$d[1],$d[2],$d[3],"") if ($d[4] ne $dm[4]);
-	return @d;
-}
-
-sub datetime2maxmin {
-	my ($y,$m,$d,$hr,$mn) = @_;
-	my $date_min = "$y-$m-$d $hr:$mn";
-	my $date_max = "$y-$m-$d $hr:$mn";
-	if ($m eq "") {
-		$date_min = "$y-01-01";
-		$date_max = "$y-12-31";
-	} elsif ($d eq "") {
-		$date_min = qx(date -d "$y-$m-01" +%F);
-		$date_max = qx(date -d "$y-$m-01 1 month 1 day ago" +%F);
-	} elsif ($hr eq "") {
-		$date_min = "$y-$m-$d 00:00";
-		$date_max = "$y-$m-$d 23:59";
-	} elsif ($mn eq "") {  
-		$date_min = "$y-$m-$d $hr:00";
-		$date_max = "$y-$m-$d $hr:59";
-	}
-	return ("$date_max","$date_min");
-}
-
-sub extract_field_names {
-	my @names;
-	foreach (@_) {
-		if ($_ =~ "_NAME") {push(@names,$_);}
-	}
-	return @names;
-}
-
-sub extract_field_units {
-	my @units;
-	foreach (@_) {
-		if ($_ =~ "_UNIT") {push(@units,$_);}
-	}
-	return @units;
-}
-
-sub extract_columns {
-	my $col_count = shift;
-	for (my $i = 1; $i <= $col_count; $i++) {
-		push(@columns, "COLUMN0".$i);
-	}
-	return @columns;
-}
-
-sub extract_fieldsets {
-	my $fs_count = shift;
-	for (my $i = 1; $i <= $fs_count; $i++) {
-		push(@fieldsets, "FIELDSET0".$i);
-	}
-	return @fieldsets;
-}
-
-sub extract_formula {
-	my $formula = shift;
-	my @x;
-	my @form_x;
-	$formula = (split /\:/, $formula)[1];
-	while ($formula =~ /(INPUT[0-9]{2})/g) {
-		push(@x,$1);
-	}
-	return ($formula, @x);
-}
-
-sub extract_list {
-	my $list = shift;
-	my $filename = (split /\: /, $list)[1];
-	my %list = readCfg("$WEBOBS{PATH_FORMS}/$FORMName/$filename");
-
-	return "$WEBOBS{PATH_FORMS}/$FORMName/$filename";
-}
-
-sub extract_re {
-	my $re = shift;
-	return (split /txt\: /, $re)[1];
-}
-
-sub count_inputs {
-	my $count = 0;
-	foreach(@_) {
-		if ($_ =~ /(INPUT[0-9]{2}_NAME)/) {
-			$count += 1;
-		}
-	}
-	return $count;
-}
 
 # --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
@@ -738,7 +663,7 @@ Lucas Dassin, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

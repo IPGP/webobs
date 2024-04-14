@@ -379,11 +379,9 @@ sub userMaxAuth {
         my $today = strftime("%Y-%m-%d",localtime(int(time())));
 		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND (ENDDATE='' OR ENDDATE>='$today')");
 		if ($validuser eq 'Y') {
-			my @inl="'*'";
-			while ($KWARGS{name} !~ m|^.?/$|) { push(@inl,"\'$KWARGS{name}\'"); $KWARGS{name}=dirname($KWARGS{name})."/"; };
 			my $sql  = "SELECT MAX(AUTH) FROM $KWARGS{type}";
 			$sql    .= " WHERE ( $KWARGS{type}.UID in (SELECT GID from $tblgroups WHERE UID='$KWARGS{user}') OR $KWARGS{type}.UID = '$KWARGS{user}') ";
-			$sql    .= " AND $KWARGS{type}.RESOURCE in (".join(", ",@inl).")";
+			$sql    .= " AND ($KWARGS{type}.RESOURCE IN $KWARGS{name} OR $KWARGS{type}.RESOURCE ='*')";
 
 			$rc     = $dbh->selectrow_array($sql);
 		}
@@ -483,6 +481,42 @@ returns an Hash of arrays of all UID or GID's for each authorization levels
 	$HoA{authlevel} = array of all UID/GID for authlevel
 
 =cut
+
+=pod
+
+=head2 groupListUser
+
+Given a group ID 'GID' (starts with a '+'), returns an array of all associated user's UID:
+
+	@Users = groupListUser('+DUTY');
+
+=cut
+
+sub groupListUser {
+	my (@users, $dbh, $sql, $sth);
+
+	if (defined($_[0]))  {
+		my $dbname    = $WEBOBS{SQL_DB_USERS};
+		my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
+
+		$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+			'AutoCommit' => 1,
+			'PrintError' => 1,
+			'RaiseError' => 1,
+			}) or die "DB error connecting to $dbname: ".DBI->errstr;
+
+		$sql  = "SELECT UID";
+		$sql .= " FROM $tblgroups";
+		$sql .= " WHERE GID = '$_[0]'" ;
+
+		$sth = $dbh->prepare($sql);
+		$sth->execute();
+		my $tmp = $sth->fetchall_arrayref();
+		foreach (@$tmp) {push @users, @$_}
+		$dbh->disconnect;
+	}
+	return @users;
+}
 
 sub resListAuth {
 	my %KWARGS = @_;
@@ -637,7 +671,7 @@ Francois Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
