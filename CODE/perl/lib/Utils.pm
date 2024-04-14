@@ -71,13 +71,14 @@ converts $textin B<" \< \>> to resp. html entities B<&quot; &lt; &gt;> :
 
 sub htmlspecialchars
 {
-	my $texte=$_[0];
+	my $txt=$_[0];
 
-	$texte =~ s/"/&quot;/g;
-	$texte =~ s/</&lt;/g;
-	$texte =~ s/>/&gt;/g;
-#  	print "<div style=\"border: 1px dotted gray;\">".$texte."</div>";
-	return $texte;
+	$txt =~ s/"/&quot;/g;
+	$txt =~ s/'/&rsquo;/g;
+	$txt =~ s/</&lt;/g;
+	$txt =~ s/>/&gt;/g;
+#  	print "<div style=\"border: 1px dotted gray;\">".$txt."</div>";
+	return $txt;
 }
 
 
@@ -379,7 +380,7 @@ Alexis Bosson, Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
