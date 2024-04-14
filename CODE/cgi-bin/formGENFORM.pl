@@ -112,6 +112,7 @@ my $id      = $cgi->param('id') // "";
 my $action   = checkParam($cgi->param('action'), qr/(new|edit|save|delete|restore|erase)/, 'action')  // "edit";
 my $return_url = $cgi->param('return_url');
 my @operators  = $cgi->param('operators');
+my $debug  = $cgi->param('debug');
 
 my ($sdate, $sdate_min) = datetime2maxmin($year[0],$month[0],$day[0],$hr[0],$mn[0]);
 my $stamp = "[$today $user]";
@@ -130,7 +131,6 @@ for my $p (keys(%Ps)) {
 	}
 }
 
-
 my $sel_site = my $sel_comment = "";
 
 # ----
@@ -138,8 +138,9 @@ my $sel_site = my $sel_comment = "";
 my $col_count = $FORM{COLUMNS_NUMBER};
 my $fs_count  = $FORM{FIELDSETS_NUMBER};
 my @keys = sort keys %FORM;
-my @names = extract_field_names(@keys);
-my @units = extract_field_units(@keys);
+my @names = extract_fields(\@keys, '_NAME');
+my @units = extract_fields(\@keys, '_UNIT');
+my @types = extract_fields(\@keys, '_TYPE');
 my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$col_count);
 my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
 my $count_inputs = count_inputs(@keys)-1;
@@ -235,6 +236,15 @@ if ($action eq 'save') {
 
 $form_url->query_form('form' => $form, 'id' => $id, 'return_url' => $return_url, 'action' => 'save');
 
+# make a list of formulas
+my @formulas;
+foreach (@types) {
+	if ($FORM{$_} =~ /^formula:/) {
+		push(@formulas, (split /_TYPE/, $_)[0]);
+	}
+}
+
+
 # ---- Start HTML display
 #
 print qq[Content-type: text/html
@@ -252,6 +262,17 @@ print qq[Content-type: text/html
 function update_form()
 {
     var form = document.form;
+];
+foreach my $f (@formulas) {
+	(my $formula, my @x) = extract_formula($FORM{$f."_TYPE"});
+	foreach (@x) {
+		my $form_input = lc($_);
+		$formula =~ s/$_/Number(form.$form_input.value)/g;
+	}
+	print "    form.".lc($f).".value = parseFloat($formula).toFixed(2);\n";
+}
+
+print qq[
 }
 
 function suppress(level)
@@ -368,6 +389,10 @@ if ($action eq "edit") {
 } else {
 	$message = "$__{'Input new data'}";
 	@operators = ("$client");
+}
+
+if ($debug) {
+	print "<h2>".join(',',@formulas)."</h2>\n";
 }
 
 print qq(<input type="hidden" name="id" value="$id">);
@@ -549,27 +574,11 @@ foreach (@columns) {
                     $name =~ s/(<sup>|<\/sup>|<sub>|<\/sub>|\+|\-|\&|;)//;
                 }
                 $inputs[$i] = lc($inputs[$i]);
-                print $FORM{"$inputs[$i]_LIST"};
-                print exists($FORM{"$inputs[$i]_LIST"});
                 if ($type =~ /^formula:/) {
                     (my $formula, my @x) = extract_formula($type);
-                    foreach (@x) {
-                        my $form_input = lc($_);
-                        $formula =~ s/$_/Number(form.$form_input.value)/g;
-                    }
-                    foreach (@x) {
-                        my $form_input = lc($_);
-                        print qq(
-                            <script>
-                                form.$form_input.onchange = function() {
-                                    form.$inputs[$i].value = parseFloat($formula).toFixed(2);
-                                }
-                            </script>
-                        );
-                    }
                     print qq($txt<input size=6 readOnly class=inputNumNoEdit name="$inputs[$i]"
                         onMouseOut="nd()" onmouseover="overlib('$formula')"><BR>);
-                } elsif ($type =~ "list") {
+                } elsif ($type =~ /^list:/) {
                     my %list = extract_list($type,$form);
                     my @list_keys = keys %list;
                     print qq($txt<select name="$inputs[$i]" size=1
