@@ -221,14 +221,14 @@ var CODEMIRROR_CONF = {
 ";
 print "</HEAD>\n";
 # - page, body
-print "<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.txt.focus()\">";
+print "<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.form.txt.focus()\">";
 print <<html;
 <script type=\"text/javascript\" >
 </script>
 html
 # - page, edit or browse area
 print "<h3>$relfile</h3>"; 
-print "<form id=\"theform\" name=\"formulaire\" action=\"\" style=\"margin: 0px 0px 0px 10px; width: 650px;\">
+print "<form id=\"theform\" name=\"form\" action=\"\" style=\"margin: 0px 0px 0px 10px; width: 650px;\">
 <input type=\"hidden\" name=\"fs\" value=\"$fs\">
 <input type=\"hidden\" name=\"action\" value=\"save\">
 <input type=\"hidden\" name=\"ts0\" value=\"$TS0\">\n";
@@ -276,7 +276,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

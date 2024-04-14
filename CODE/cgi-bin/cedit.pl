@@ -113,7 +113,7 @@ if ($action eq 'save') {
 		if ( $?  == 0 ) { 
 			truncate(FILE, 0);
 			seek(FILE, 0, SEEK_SET);
-			push(@lignes,$txt);
+			push(@lignes,u2l($txt));
 			print FILE @lignes ;
 			close(FILE);
 			htmlMsgOK($relfile);
@@ -130,7 +130,7 @@ if ($action eq 'save') {
 @lignes = readFile($absfile);
 $TS0 = (stat($absfile))[9] ;
 chomp(@lignes);
-$txt = join("\n",@lignes);
+$txt = l2u(join("",@lignes));
 
 # start building page
 print "Content-type: text/html; charset=utf-8

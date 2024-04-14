@@ -35,7 +35,7 @@ else
     use_chirp = 0;
 end
 
-if numel(nfft) == 1 || use_chirp
+if isscalar(nfft) || use_chirp
     y = zeros(nwind,ncol);
     y(:) = x(rowindex(:,ones(1,ncol))+colindex(ones(nwind,1),:)-1);
     y = window(:,ones(1,ncol)).*y;
@@ -77,7 +77,7 @@ t = (colindex-1)'/Fs;
 switch nargout
 	case 0
 		newplot
-		if numel(t)==1
+		if isscalar(t)
 			imagesc([0 1/f(2)],f,20*log10(abs(y)+eps))
 		else
 			t = ((colindex-1)+((nwind)/2)')/Fs; 
@@ -116,30 +116,30 @@ end
 if numel(P) > 3 && ~isempty(P{4})
     window = P{4}(:); 
 else
-    if numel(nfft) == 1
-        window = hanning(nfft);
+    if isscalar(nfft)
+		window = hanning(nfft);
     else
       error('Needs window.');
     end
 end
-if numel(window) == 1
+if isscalar(window)
 	window = hanning(window);
 end
-if (numel(P) > 4) && ~isempty(P{5})
+if numel(P) > 4 && ~isempty(P{5})
     noverlap = P{5};
 else
     noverlap = ceil(numel(window)/2);
 end
-if (numel(nfft) == 1) && (nfft<numel(window))
+if isscalar(nfft) && nfft<numel(window)
     error('Window is too big.');
 end
-if (noverlap >= length(window))
+if noverlap >= length(window)
     error('Overlap is too big.');
 end
-if (numel(nfft) == 1) && (nfft ~= abs(round(nfft)))
+if isscalar(nfft) && (nfft ~= abs(round(nfft)))
     error('FFT must be a positive integer.');
 end
-if (noverlap ~= abs(round(noverlap)))
+if noverlap ~= abs(round(noverlap))
     error('Overlap must be a positive integer.');
 end
 if min(size(x)) ~= 1
