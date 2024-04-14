@@ -58,7 +58,7 @@ require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
 @EXPORT = qw(datetime2array datetime2maxmin
-	extract_field_names extract_field_units extract_columns extract_fieldsets
+	extract_field_names extract_field_units 
        	extract_formula extract_list extract_re count_inputs);
 
 # FORM constructor
@@ -199,24 +199,6 @@ sub extract_field_units {
 		if ($_ =~ "_UNIT") {push(@units,$_);}
 	}
 	return @units;
-}
-
-sub extract_columns {
-	my $col_count = shift;
-	my @columns;
-	for (my $i = 1; $i <= $col_count; $i++) {
-		push(@columns, "COLUMN0".$i);
-	}
-	return @columns;
-}
-
-sub extract_fieldsets {
-	my $fs_count = shift;
-	my @fieldsets;
-	for (my $i = 1; $i <= $fs_count; $i++) {
-		push(@fieldsets, "FIELDSET0".$i);
-	}
-	return @fieldsets;
 }
 
 sub extract_formula {

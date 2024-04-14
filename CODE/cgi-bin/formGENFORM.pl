@@ -57,34 +57,26 @@ set_message(\&webobs_cgi_msg);
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users qw($CLIENT %USERS clientIsValid clientHasRead clientHasEdit clientHasAdm);
+use WebObs::Users qw($CLIENT %USERS clientMaxAuth);
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 use WebObs::Form;
 
-die "$__{'die_client_not_valid'}" if ( !clientIsValid );
+$ENV{LANG} = $WEBOBS{LOCALE};
 
 # ---- standard FORMS inits ----------------------------------
+my $form = $cgi->param('form');      # name of the form
 
-my $FORMName = $cgi->param('form');      # name of the form
+# ---- Stops early if not authorized
+my $clientAuth = clientMaxAuth(type=>"authforms",name=>"('$form')");
+die "You can't edit records of the form $form. Please contact an administrator." if ($clientAuth < 2);
 
-my $FORM = new WebObs::Form($FORMName);
+my $FORM = new WebObs::Form($form);
 
 my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
 my $client = $USERS{$CLIENT}{UID};
-
-my %Ns;
-my @NODESSelList;
-my %Ps = $FORM->procs;
-for my $p (keys(%Ps)) {
-	my %N = $FORM->nodes($p);
-	for my $n (keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-	}
-	%Ns = (%Ns, %N);
-}
 
 my $QryParm = $cgi->Vars;
 
@@ -126,9 +118,18 @@ my $stamp = "[$today $user]";
 if (index($val,$stamp) eq -1) { $val = "$stamp $val"; };
 
 # ---- specific FORM inits -----------------------------------
-my %FORM = readCfg("$WEBOBS{PATH_FORMS}/$FORMName/$FORMName.conf");
+my %FORM = readCfg("$WEBOBS{PATH_FORMS}/$form/$form.conf");
 
-$ENV{LANG} = $WEBOBS{LOCALE};
+
+my @NODESSelList;
+my %Ps = $FORM->procs;
+for my $p (keys(%Ps)) {
+	my %N = $FORM->nodes($p);
+	for my $n (keys(%N)) {
+		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+	}
+}
+
 
 my $sel_site = my $sel_comment = "";
 
@@ -139,8 +140,8 @@ my $fs_count  = $FORM{FIELDSETS_NUMBER};
 my @keys = sort keys %FORM;
 my @names = extract_field_names(@keys);
 my @units = extract_field_units(@keys);
-my @columns   = map {$_."_LIST"} extract_columns($col_count);
-my @fieldsets = extract_fieldsets($fs_count);
+my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$col_count);
+my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
 my $count_inputs = count_inputs(@keys)-1;
 
 # ---- Variables des menus
@@ -163,7 +164,7 @@ if ($starting_date) {
 # ---- registering data in WEBOBSFORMS.db
 # --- connecting to the database
 my $dbh = connectDbForms();
-my $tbl = lc($FORMName);
+my $tbl = lc($form);
 
 if ($action eq 'save') {
 	my @lignes;
@@ -197,7 +198,7 @@ if ($action eq 'save') {
 	my $sth  = $dbh->prepare( $stmt );
 	my $rv   = $sth->execute() or die $DBI::errstr;
 	if ($rv < 1){
-		$msg = "ERROR: formGENFORM couldn't access the database $FORMName.";
+		$msg = "ERROR: formGENFORM couldn't access the database $form.";
 	}
 	htmlMsgOK($msg);
 
@@ -223,7 +224,7 @@ if ($action eq 'save') {
     my $stmt = qq(DELETE FROM $tbl WHERE id = $id);
     my $sth  = $dbh->prepare( $stmt );
 	my $rv   = $sth->execute() or die $DBI::errstr;
-    htmlMsgOK("Record #$id has been permanently erased from database $FORMName.");
+    htmlMsgOK("Record #$id has been permanently erased from database $form.");
 
     $dbh->disconnect();
     exit;
@@ -231,10 +232,8 @@ if ($action eq 'save') {
 
 # ---- if we reach this point action is 'edit' (default) or 'new'
 #
-#$editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$FORMName") || WebObs::Users::clientHasEdit(type => "auth".$auth, name => "MC");
-#$admOK = WebObs::Users::clientHasAdm(type => "auth".$auth, name => "*");
 
-$form_url->query_form('form' => $FORMName, 'id' => $id, 'return_url' => $return_url, 'action' => 'save');
+$form_url->query_form('form' => $form, 'id' => $id, 'return_url' => $return_url, 'action' => 'save');
 
 # ---- Start HTML display
 #
@@ -347,7 +346,7 @@ my $trash;
 if ($action eq "edit") {
 	# --- connecting to the database
 	my $dbh = connectDbForms();
-	my $tbl = lc($FORMName);
+	my $tbl = lc($form);
 
 	my $stmt = qq(SELECT * FROM $tbl WHERE id = $id); # selecting the row corresponding to the id of the record we want to modify
 	my $sth = $dbh->prepare( $stmt );
@@ -383,9 +382,9 @@ if ($action eq "edit" && $id ne "") {
 	} else {
 		print qq(<input type="button" value="$__{'Remove'}" onClick="suppress(1);">);
 	}
-	#if (clientHasAdm(type=>"authforms",name=>"EAUX")) {
+	if ($clientAuth > 2) {
 		print qq(<input type="button" value="$__{'Erase'}" onClick="suppress(2);">);
-	#}
+	}
 }
 print qq(<hr></td></tr>);
 
@@ -395,7 +394,7 @@ print qq[<form name="form" id="theform" action="">
 <input type="hidden" name="trash" value="$trash">
 <input type="hidden" name="delete" value="">
 <input type=\"hidden\" name=\"action\" value="save">
-<input type=\"hidden\" name=\"form\" value=\"$FORMName\">
+<input type=\"hidden\" name=\"form\" value=\"$form\">
 
 <table width="100%">
   <tr>
@@ -498,7 +497,7 @@ print qq[<form name="form" id="theform" action="">
     print @NODESSelList;
 	for (@NODESSelList) {
 		my @cle = split(/\|/,$_);
-		my $sel = ($cle[0] eq $site ? "selected":"");
+		my $sel = ($cle[0] eq $site ? "selected":($action eq "edit" ? "disabled":""));
 		print qq(<option $sel value="$cle[0]">$cle[1]</option>);
 	}
 
@@ -534,7 +533,7 @@ foreach (@columns) {
     my @list = split(/,/, $FORM{$_});
     for (my $i = 0; $i <= $#list; $i++) {
         print "<fieldset><legend>$FORM{\"$list[$i]\_NAME\"}</legend>";
-        print "<table>";
+        print "<table width=\"100%\">";
         my @inputs;
         my @j = (1..$FORM{"$list[$i]\_COLUMNS"});
         for (@j) {
@@ -563,19 +562,15 @@ foreach (@columns) {
                         print qq(
                             <script>
                                 form.$form_input.onchange = function() {
-                                    form.$form_input.value = form.$form_input.value;
                                     form.$inputs[$i].value = parseFloat($formula).toFixed(2);
                                 }
                             </script>
                         );
                     }
                     print qq($txt<input size=6 readOnly class=inputNumNoEdit name="$inputs[$i]"
-                        onMouseOut="nd()" onmouseover="overlib('$formula')"><BR>
-                        <script>
-                            form.$_.value = parseFloat($formula).toFixed(2);
-                        </script>);
+                        onMouseOut="nd()" onmouseover="overlib('$formula')"><BR>);
                 } elsif ($type =~ "list") {
-                    my %list = extract_list($type,$FORMName);
+                    my %list = extract_list($type,$form);
                     my @list_keys = keys %list;
                     print qq($txt<select name="$inputs[$i]" size=1
                         onMouseOut="nd()" onmouseover="overlib('Select a value for $inputs[$i]')"><option value=""></option>);
@@ -603,12 +598,12 @@ foreach (@columns) {
     }
 }
 
+my $comhlp = htmlspecialchars($FORM{COMMENT_HELPER});
 print qq(</TD>
   <tr>
     <td style="border: 0" colspan="2">
-      <B>Observations</B> :<BR>
-      <input size=80 name="comment" value="$sel_comment"
-      onMouseOut="nd()" onmouseover="overlib(').$FORM{COMMENT_HELPER}.qq(')"><BR>
+      <B>$__{'Observations'}</B>:&nbsp;<input size=80 name="comment" value="$sel_comment"
+      onMouseOut="nd()" onmouseover="overlib('$comhlp')"><BR>
     </td>
   </tr>
   <tr>
@@ -616,7 +611,7 @@ print qq(</TD>
       <P style="margin-top: 20px; text-align: center">
         <input type="button" name=lien value="$__{'Cancel'}"
          onClick="document.location=') . $cgi->param('return_url') . qq('" style="font-weight: normal">
-        <input type="button" value="$__{'Submit'}" onClick="verif_form();">
+        <input type="button" value="$__{'Submit'}" onClick="verif_form();" style="font-weight: bold">
       </P>
     </td>
   </tr>
