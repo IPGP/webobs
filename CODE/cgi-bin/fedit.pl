@@ -170,7 +170,7 @@ $formConfFile = "$formdir$FORMName.conf";
 my @db_columns0 = ("id integer PRIMARY KEY AUTOINCREMENT", "trash boolean DEFAULT FALSE", "node text NOT NULL",
 		   "edate datetime", "edate_min datetime",
 		   "sdate datetime NOT NULL", "sdate_min datetime",
-		   "users text NOT NULL");
+		   "operators text NOT NULL");
 my @db_columns1 = ("comment text", "tsupd text NOT NULL", "userupd text NOT NULL");
 
 # ---- action is 'save'

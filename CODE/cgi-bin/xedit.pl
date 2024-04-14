@@ -161,7 +161,7 @@ if ($action eq 'save') {
 			truncate(FILE, 0);
 			seek(FILE, 0, SEEK_SET);
 			$txt =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
-			push(@lignes,$txt);
+			push(@lignes,u2l($txt)); # forces ISO encoding in any conf file
 			print FILE @lignes ;
 			close(FILE);
 			htmlMsgOK($relfile);
@@ -177,7 +177,7 @@ if ($action eq 'save') {
 #
 @lignes = readFile($absfile);
 $TS0 = (stat($absfile))[9] ;
-$txt = join("",@lignes);
+$txt = l2u(join("",@lignes));
 
 # build html page
 # - page, common

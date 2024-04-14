@@ -54,6 +54,13 @@ use WebObs::Grids;
 use CGI::Carp qw(fatalsToBrowser set_message);
 set_message(\&webobs_cgi_msg);
 
+require Exporter;
+our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
+@ISA = qw(Exporter);
+@EXPORT = qw(datetime2array datetime2maxmin
+	extract_field_names extract_field_units extract_columns extract_fieldsets
+       	extract_formula extract_list extract_re count_inputs);
+
 # FORM constructor
 sub new {
     my ( $class, $Name ) = @_;
@@ -141,17 +148,123 @@ sub dump {
 
 1;
 
+# ---- GENFORM sub
+
+sub datetime2array {
+	my $date = shift;
+	my $date_min = shift;
+	my @d  = split(/[-: ]/,$date);
+	my @dm = split(/[-: ]/,$date_min);
+	if ($date eq $date_min) { return @d };
+	@d = ($d[0],   "",   "",   "","") if ($d[1] ne $dm[1]);
+	@d = ($d[0],$d[1],   "",   "","") if ($d[2] ne $dm[2]);
+	@d = ($d[0],$d[1],$d[2],   "","") if ($d[3] ne $dm[3]);
+	@d = ($d[0],$d[1],$d[2],$d[3],"") if ($d[4] ne $dm[4]);
+	return @d;
+}
+
+sub datetime2maxmin {
+	my ($y,$m,$d,$hr,$mn) = @_;
+	my $date_min = "$y-$m-$d $hr:$mn";
+	my $date_max = "$y-$m-$d $hr:$mn";
+	if ($m eq "") {
+		$date_min = "$y-01-01";
+		$date_max = "$y-12-31";
+	} elsif ($d eq "") {
+		$date_min = qx(date -d "$y-$m-01" "+%Y-%m-%d 00:00");
+		chomp($date_min);
+		$date_max = qx(date -d "$y-$m-01 1 month 1 day ago" "+%Y-%m-%d 23:59");
+		chomp($date_max);
+	} elsif ($hr eq "") {
+		$date_min = "$y-$m-$d 00:00";
+		$date_max = "$y-$m-$d 23:59";
+	} elsif ($mn eq "") {  
+		$date_min = "$y-$m-$d $hr:00";
+		$date_max = "$y-$m-$d $hr:59";
+	}
+	return ("$date_max","$date_min");
+}
+
+sub extract_field_names {
+	my @names;
+	foreach (@_) {
+		if ($_ =~ "_NAME") {push(@names,$_);}
+	}
+	return @names;
+}
+
+sub extract_field_units {
+	my @units;
+	foreach (@_) {
+		if ($_ =~ "_UNIT") {push(@units,$_);}
+	}
+	return @units;
+}
+
+sub extract_columns {
+	my $col_count = shift;
+	my @columns;
+	for (my $i = 1; $i <= $col_count; $i++) {
+		push(@columns, "COLUMN0".$i);
+	}
+	return @columns;
+}
+
+sub extract_fieldsets {
+	my $fs_count = shift;
+	my @fieldsets;
+	for (my $i = 1; $i <= $fs_count; $i++) {
+		push(@fieldsets, "FIELDSET0".$i);
+	}
+	return @fieldsets;
+}
+
+sub extract_formula {
+	my $formula = shift;
+	my @x;
+	my @form_x;
+	$formula = (split /\:/, $formula)[1];
+	while ($formula =~ /(INPUT[0-9]{2})/g) {
+		push(@x,$1);
+	}
+	return ($formula, @x);
+}
+
+sub extract_list {
+	my $list = shift;
+	my $form = shift;
+	my $filename = (split /\: /, $list)[1];
+	my %list = readCfg("$WEBOBS{PATH_FORMS}/$form/$filename");
+
+	return %list;
+}
+
+sub extract_re {
+	my $re = shift;
+	return (split /txt\: /, $re)[1];
+}
+
+sub count_inputs {
+	my $count = 0;
+	foreach(@_) {
+		if ($_ =~ /(INPUT[0-9]{2}_NAME)/) {
+			$count += 1;
+		}
+	}
+	return $count;
+}
+
 __END__
 
 =pod
 
 =head1 AUTHOR
 
-Didier Lafon
+Didier Lafon, François Beauducel, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
