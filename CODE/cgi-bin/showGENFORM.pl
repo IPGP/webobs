@@ -114,6 +114,15 @@ for my $p (sort keys(%Ps)) {
 	}
 }
 
+# make a list of formulas
+my @formulas;
+my %conf = $FORM->conf;
+my @keys = sort keys %conf;
+foreach (extract_fields(\@keys, '_TYPE')) {
+	if ($_ =~ /^OUTPUT/ && $conf{$_} =~ /^formula/) {
+		push(@formulas, (split /_TYPE/, $_)[0]);
+	}
+}
 
 # ---- specific FORMS inits ----------------------------------
 my @html;
@@ -291,7 +300,7 @@ my $fs_count  = $FORM->conf('FIELDSETS_NUMBER');
 my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
 my @fs_names;
 my %colspan;
-my @fields;
+my @field_names;
 
 foreach(@fieldsets) {
 	push(@fs_names, $FORM->conf("$_\_NAME"));
@@ -300,7 +309,7 @@ foreach(@fieldsets) {
 	for (my $i = 0; $i <= $nb_col; $i++) {
 		push(@fieldset, split(/,/, $FORM->conf("$_\_C0".$i)));
 	}
-	push(@fields, \@fieldset);
+	push(@field_names, \@fieldset);
 }
 
 my @colnam = ("Sampling Date","Site","Oper");
@@ -315,10 +324,10 @@ if ($starting_date) {
 
 for (my $i = 0; $i <= $#fs_names; $i++) {
 	push(@colnam, $fs_names[$i]);
-	my $nb_fields = $#{$fields[$i]};
+	my $nb_fields = $#{$field_names[$i]};
 	$colspan{$fs_names[$i]} = $nb_fields+1;
 	for (my $j = 0; $j <= $nb_fields; $j++) {
-		my $field = $fields[$i][$j];
+		my $field = $field_names[$i][$j];
 		my $name_field = $FORM->conf("$field\_NAME");
 		my $unit_field = $FORM->conf("$field\_UNIT");
 		push(@colnam2, "$name_field".($unit_field ne "" ? " ($unit_field)":""));
@@ -341,10 +350,21 @@ $header .= "</TR>";
 
 for (my $j = 0; $j <= $#rows; $j++) {
 	my ($id, $trash, $site, $edate0, $edate1, $sdate0, $sdate1, $opers, $rem, $ts0, $user) = ($rows[$j][0],$rows[$j][1],$rows[$j][2],$rows[$j][3],$rows[$j][4],$rows[$j][5],$rows[$j][6],$rows[$j][7],$rows[$j][-3],$rows[$j][-2],$rows[$j][-1]);
-	# stores input db rows in a hash
-	my %inputs;
+	
+	# makes a hash of all fields values (input and output)
+	my %fields;
+	# stores input db rows
 	for (my $i = 8; $i <= $#{$rows[$j]}; $i++) {
-		$inputs{$rownames[$i]} = $rows[$j][$i];
+		$fields{$rownames[$i]} = $rows[$j][$i];
+	}
+	# stores formulas
+	foreach (@formulas) {
+		my ($formula, @x) = extract_formula($conf{$_."_TYPE"});
+		foreach (@x) {
+			my $f = lc($_);
+			$formula =~ s/$_/\$fields{$f}/g;
+		}
+		$fields{lc($_)} = eval $formula;
 	}
 
 	$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
@@ -378,15 +398,15 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	$text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>";
 	$csvTxt .= "$id,$sdate,$edate,\"$aliasSite\",\"$opers\",";
 	for (my $f = 0; $f <= $#fs_names; $f++) {
-		my $nb_fields = $#{$fields[$f]};
+		my $nb_fields = $#{$field_names[$f]};
 		for (my $n = 0; $n <= $nb_fields; $n++) {
-			my $field = lc($fields[$f][$n]);
+			my $field = lc($field_names[$f][$n]);
 			my $ov;
 			if (defined $lists{$field}) {
-				$ov = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$inputs{$field}</B>: $lists{$field}{$inputs{$field}}')\"";
+				$ov = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$fields{$field}</B>: $lists{$field}{$fields{$field}}')\"";
 			}
-			$text .= "<TD align=center $ov>$inputs{$field}</TD>";
-			$csvTxt .= "$inputs{$field},";
+			$text .= "<TD align=center $ov>$fields{$field}</TD>";
+			$csvTxt .= "$fields{$field},";
 		}
 	}
 	$csvTxt .= ",\"".u2l($rem)."\"\n";
@@ -399,6 +419,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 
 if ($QryParm->{'debug'}) {
 	push(@html,"<P>Columns = ".join(',',@rownames)."</P>\n");
+	push(@html,"<P>Formulas = ".join(',',@formulas)."</P>\n");
 	push(@html,"<P>Filter = $filter</P>\n");
 }
 push(@html,"<P>$__{'Date interval'} = <B>$delay days.</B><BR>\n");

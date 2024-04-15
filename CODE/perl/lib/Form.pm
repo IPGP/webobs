@@ -95,6 +95,7 @@ sub path {
 sub conf {
 	my ($self, $k) = @_;
 	return $self->{_conf}{$k} if (defined($k));
+	return %{$self->{_conf}};
 }
 
 # get data (all or matching $id) for this FORM using WebObs::xreadFile
