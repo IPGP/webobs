@@ -6,7 +6,7 @@ COLUMNS_NUMBER|2
 FIELDSETS_NUMBER|3
 STARTING_DATE|NO
 DEFAULT_DAYS|365
-LIST_USERS|!
+OPERATORS_LIST|+DUTY
 
 # inputs names and units
 # for the type, chose between : text (size), list (link to a file containing the list) or formula (algebric formula)

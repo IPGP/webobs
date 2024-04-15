@@ -129,6 +129,7 @@ my $starting_date = isok($FORM->conf('STARTING_DATE'));
 
 $startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'} 00:00:00";
 $endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'} 23:59:59";
+$delay = qx[echo \$(( ( \$(date -d "$endDate" +%s) - \$(date -d "$startDate" +%s) )/86400 ))];
 
 # ---- a site requested as PROC.name means "all nodes for proc 'name'"
  
@@ -287,10 +288,10 @@ my $nodelink;
 my $aliasSite;
 
 my $fs_count  = $FORM->conf('FIELDSETS_NUMBER');
-my @fieldsets = extract_fieldsets($fs_count);
+my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
 my @fs_names;
 my %colspan;
-my @inputs;
+my @fields;
 
 foreach(@fieldsets) {
 	push(@fs_names, $FORM->conf("$_\_NAME"));
@@ -299,7 +300,7 @@ foreach(@fieldsets) {
 	for (my $i = 0; $i <= $nb_col; $i++) {
 		push(@fieldset, split(/,/, $FORM->conf("$_\_C0".$i)));
 	}
-	push(@inputs, \@fieldset);
+	push(@fields, \@fieldset);
 }
 
 my @colnam = ("Sampling Date","Site","Oper");
@@ -314,15 +315,15 @@ if ($starting_date) {
 
 for (my $i = 0; $i <= $#fs_names; $i++) {
 	push(@colnam, $fs_names[$i]);
-	my $nb_inputs = $#{$inputs[$i]};
-	$colspan{$fs_names[$i]} = $nb_inputs+1;
-	for (my $j = 0; $j <= $nb_inputs; $j++) {
-		my $input = $inputs[$i][$j];
-		my $name_input = $FORM->conf("$input\_NAME");
-		my $unit_input = $FORM->conf("$input\_UNIT");
-		push(@colnam2, "$name_input".($unit_input ne "" ? " ($unit_input)":""));
-		$name_input =~ s/(<su[bp]>|<\/su[bp]>|\&[^;]*;)//g;
-		$csvTxt .= ',"'.u2l($name_input).'"';
+	my $nb_fields = $#{$fields[$i]};
+	$colspan{$fs_names[$i]} = $nb_fields+1;
+	for (my $j = 0; $j <= $nb_fields; $j++) {
+		my $field = $fields[$i][$j];
+		my $name_field = $FORM->conf("$field\_NAME");
+		my $unit_field = $FORM->conf("$field\_UNIT");
+		push(@colnam2, "$name_field".($unit_field ne "" ? " ($unit_field)":""));
+		$name_field =~ s/(<su[bp]>|<\/su[bp]>|\&[^;]*;)//g;
+		$csvTxt .= ',"'.u2l($name_field).'"';
 	}
 }
 $csvTxt .= "\n";
@@ -340,6 +341,12 @@ $header .= "</TR>";
 
 for (my $j = 0; $j <= $#rows; $j++) {
 	my ($id, $trash, $site, $edate0, $edate1, $sdate0, $sdate1, $opers, $rem, $ts0, $user) = ($rows[$j][0],$rows[$j][1],$rows[$j][2],$rows[$j][3],$rows[$j][4],$rows[$j][5],$rows[$j][6],$rows[$j][7],$rows[$j][-3],$rows[$j][-2],$rows[$j][-1]);
+	# stores input db rows in a hash
+	my %inputs;
+	for (my $i = 8; $i <= $#{$rows[$j]}; $i++) {
+		$inputs{$rownames[$i]} = $rows[$j][$i];
+	}
+
 	$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
 
 	my $edate = simplify_date($edate0,$edate1);
@@ -370,14 +377,17 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	$text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite')\">$nodelink&nbsp;</TD>";
 	$text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>";
 	$csvTxt .= "$id,$sdate,$edate,\"$aliasSite\",\"$opers\",";
-	my $nb_inputs = $#{ $rows[$j] };
-	for (my $i = 8; $i <= $nb_inputs-3; $i++) {
-		my $ov;
-		if (defined $lists{$rownames[$i]}) {
-			$ov = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$rows[$j][$i]</B>: $lists{$rownames[$i]}{$rows[$j][$i]}')\"";
+	for (my $f = 0; $f <= $#fs_names; $f++) {
+		my $nb_fields = $#{$fields[$f]};
+		for (my $n = 0; $n <= $nb_fields; $n++) {
+			my $field = lc($fields[$f][$n]);
+			my $ov;
+			if (defined $lists{$field}) {
+				$ov = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$inputs{$field}</B>: $lists{$field}{$inputs{$field}}')\"";
+			}
+			$text .= "<TD align=center $ov>$inputs{$field}</TD>";
+			$csvTxt .= "$inputs{$field},";
 		}
-		$text .= "<TD align=center $ov>$rows[$j][$i]</TD>";
-		$csvTxt .= "$rows[$j][$i],";
 	}
 	$csvTxt .= ",\"".u2l($rem)."\"\n";
 	my $remTxt = "<TD></TD>";
@@ -391,7 +401,8 @@ if ($QryParm->{'debug'}) {
 	push(@html,"<P>Columns = ".join(',',@rownames)."</P>\n");
 	push(@html,"<P>Filter = $filter</P>\n");
 }
-push(@html,"<P>Number of records = <B>".($#rows+1)."</B> / $nbData.</P>\n");
+push(@html,"<P>$__{'Date interval'} = <B>$delay days.</B><BR>\n");
+push(@html,"$__{'Number of records'} = <B>".($#rows+1)."</B> / $nbData.</P>\n");
 push(@html,"<P>$__{'Download a CSV text file of these data'}: <A href=\"/cgi-bin/showGENFORM.pl?dump=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&trash=$QryParm->{'trash'}&form=$form\"><B>$fileCSV</B></A></P>\n");
 
 if ($text ne "") {
@@ -433,14 +444,6 @@ sub connectDbForms {
 		'PrintError' => 1,
 		'RaiseError' => 1,
 		}) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
-}
-
-sub extract_fieldsets {
-    my $fs_count = shift;
-    for (my $i = 1; $i <= $fs_count; $i++) {
-        push(@fieldsets, "FIELDSET0".$i);
-    }
-    return @fieldsets;
 }
 
 __END__
