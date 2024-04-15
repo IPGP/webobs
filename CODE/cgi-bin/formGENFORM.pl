@@ -143,7 +143,7 @@ my @units = extract_fields(\@keys, '_UNIT');
 my @types = extract_fields(\@keys, '_TYPE');
 my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$col_count);
 my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
-my $count_inputs = count_inputs(@keys)-1;
+my $max_inputs = count_inputs(@keys);
 
 # ---- Variables des menus
 my $starting_date   = isok($FORM{STARTING_DATE});
@@ -168,10 +168,7 @@ my $dbh = connectDbForms();
 my $tbl = lc($form);
 
 if ($action eq 'save') {
-	my @lignes;
 	my $msg;
-
-	my @inputs = map { sprintf("input%02d", $_) } (1..($count_inputs+1));
 
 	# ---- filling the database with the data from the form
 	my $row;
@@ -185,10 +182,10 @@ if ($action eq 'save') {
 	} else {
 		$msg = "new record has been created.";
 	}
-	for my $i (0 .. $#inputs) {
-	    my $input = $cgi->param($inputs[$i]);
+	foreach (map { sprintf("input%02d", $_) } (1..$max_inputs)) {
+	    my $input = $cgi->param($_);
 	    if ($input ne "") {
-		$db_columns .= ", $inputs[$i]";
+		$db_columns .= ", $_";
 		$row .= ", \"$input\"";
 	    }
 	}
@@ -239,7 +236,7 @@ $form_url->query_form('form' => $form, 'id' => $id, 'return_url' => $return_url,
 # make a list of formulas
 my @formulas;
 foreach (@types) {
-	if ($FORM{$_} =~ /^formula:/) {
+	if ($_ =~ /^OUTPUT/ && $FORM{$_} =~ /^formula/) {
 		push(@formulas, (split /_TYPE/, $_)[0]);
 	}
 }
@@ -351,8 +348,8 @@ function submit()
      // Also update the form when any of its element is changed
      \$('#theform').on("change", update_form);
      // Also update when a key is pressed in the form
-     // but wait 1s for the previous handler execution to finish
-     \$('#theform').on("keydown", function() { setTimeout(update_form, 1000); });
+     // but wait 0.5s for the previous handler execution to finish
+     \$('#theform').on("keydown", function() { setTimeout(update_form, 500); });
    });
  </script>
 ];
@@ -392,7 +389,8 @@ if ($action eq "edit") {
 }
 
 if ($debug) {
-	print "<h2>".join(',',@formulas)."</h2>\n";
+	print "<P>".join(',',@formulas)."</P>\n";
+	print "<P>max_inputs = $max_inputs</P>\n";
 }
 
 print qq(<input type="hidden" name="id" value="$id">);
@@ -555,46 +553,41 @@ foreach (@columns) {
         print "<TD style=\"border:0\" valign=\"top\">";
         $side = "right";
     }
-    my @list = split(/,/, $FORM{$_});
-    for (my $i = 0; $i <= $#list; $i++) {
-        print "<fieldset><legend>$FORM{\"$list[$i]\_NAME\"}</legend>";
+    foreach my $fieldset (split(/,/, $FORM{$_})) {
+        print "<fieldset><legend>".$FORM{"$fieldset\_NAME"}."</legend>";
         print "<table width=\"100%\">";
-        my @inputs;
-        my @j = (1..$FORM{"$list[$i]\_COLUMNS"});
-        for (@j) {
+        foreach (1..$FORM{"$fieldset\_COLUMNS"}) {
             print qq(<td style=\"border:0\" valign=\"top\">
                         <p class=\"parform\" align=$side>);
-            @inputs  = split(/,/, $FORM{"$list[$i]\_C0$_"});
-            for (my $i = 0; $i <= $#inputs; $i++) {
-                my $name = $FORM{"$inputs[$i]_NAME"};
-                my $unit = $FORM{"$inputs[$i]_UNIT"};
-                my $type = $FORM{"$inputs[$i]_TYPE"};
+            foreach my $field (split(/,/, $FORM{sprintf("$fieldset\_C%02d", $_)})) {
+                my $name = $FORM{"$field\_NAME"};
+                my $unit = $FORM{"$field\_UNIT"};
+                my $type = $FORM{"$field\_TYPE"};
+	        my $size = extract_size($type);
                 my $txt = "<B>$name </B>".($unit ne "" ? " ($unit)":"")." = ";
-                while ($name =~ /(<sup>|<\/sup>|<sub>|<\/sub>|\+|\-|\&|;)/) {
-                    $name =~ s/(<sup>|<\/sup>|<sub>|<\/sub>|\+|\-|\&|;)//;
-                }
-                $inputs[$i] = lc($inputs[$i]);
-                if ($type =~ /^formula:/) {
-                    (my $formula, my @x) = extract_formula($type);
-                    print qq($txt<input size=6 readOnly class=inputNumNoEdit name="$inputs[$i]"
-                        onMouseOut="nd()" onmouseover="overlib('$formula')"><BR>);
-                } elsif ($type =~ /^list:/) {
+                $field = lc($field);
+                if ($field =~ /^input/ && $type =~ /^list:/) {
                     my %list = extract_list($type,$form);
                     my @list_keys = keys %list;
-                    print qq($txt<select name="$inputs[$i]" size=1
-                        onMouseOut="nd()" onmouseover="overlib('Select a value for $inputs[$i]')"><option value=""></option>);
+                    print qq($txt<select name="$field" size=1
+                        onMouseOut="nd()" onmouseover="overlib('Select a value for $field')"><option value=""></option>);
                     for (@list_keys) {
-			my $selected = ($prev_inputs{$inputs[$i]} eq "$_" ? "selected":"");
-                        print "<option value=\"$_\" $selected>$_: $list{$_}</option>";
+			my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
+                        print qq(<option value="$_" $selected>$_: $list{$_}</option>);
                     }
                     print qq(</select><BR>);
-                } elsif ($type =~ "text"){
-                    my $re = extract_re($type);
-                    print qq($txt<input type=\"text\" size=5 class=inputNum name=\"$inputs[$i]\" value=\"$prev_inputs{$inputs[$i]}\"
-                        onMouseOut="nd()" onchange=\"verif_re()\" onmouseover="overlib('Enter a value for $inputs[$i]')"><BR>);
-                } else {
-                    print qq($txt<input size=5 name=\"$inputs[$i]\" value=\"$prev_inputs{$inputs[$i]}\"
-                        onMouseOut="nd()" onmouseover="overlib('Enter a value for $inputs[$i]')"><BR>);
+                } elsif ($field =~ /^input/ && $type =~ /^numeric/){
+                    print qq($txt<input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
+                        onMouseOut="nd()" onmouseover="overlib('Enter a numeric value for $field')"><BR>);
+                } elsif ($field =~ /^input/) {
+                    print qq($txt<input type="text" size=$size name="$field" value="$prev_inputs{$field}"
+                        onMouseOut="nd()" onmouseover="overlib('Enter a value for $field')"><BR>);
+		} elsif ($field =~ /^output/ && $type =~ /^formula/) {
+                    my ($formula, @x) = extract_formula($type);
+                    print qq($txt<input size=$size readOnly class=inputNumNoEdit name="$field"
+                        onMouseOut="nd()" onmouseover="overlib('$formula')"><BR>);
+	        } else {
+                    print qq(<input type="hidden" name="$field">\n);
                 }
             }
             print "</p></td>";

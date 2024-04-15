@@ -58,7 +58,7 @@ require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
 @EXPORT = qw(datetime2array datetime2maxmin
-	extract_fields extract_formula extract_list extract_re count_inputs);
+	extract_fields extract_formula extract_list extract_size extract_re count_inputs);
 
 # FORM constructor
 sub new {
@@ -188,17 +188,18 @@ sub extract_fields {
 	my @fields;
 	my $suffix = $_[1];
 	foreach (@{$_[0]}) {
-		if ($_ =~ $suffix) {push(@fields,$_);}
+		if ($_ =~ /$suffix$/) {push(@fields,$_);}
 	}
 	return @fields;
 }
 
+# extract_formula ($type) returns $formula and @x an array of used fields (input or output)
 sub extract_formula {
 	my $formula = shift;
 	my @x;
 	my @form_x;
 	$formula = (split /\:/, $formula)[1];
-	while ($formula =~ /(INPUT[0-9]{2})/g) {
+	while ($formula =~ /((IN|OUT)PUT[0-9]{2})/g) {
 		push(@x,$1);
 	}
 	return ($formula, @x);
@@ -213,16 +214,28 @@ sub extract_list {
 	return %list;
 }
 
+sub extract_size {
+	my $type = shift;
+	my $size = (split /:/, $type)[0];
+	if ($size =~ /\(.+\)$/) {
+		$size =~ s/^[a-z]+\((.+)\)/$1/;
+	} else {
+		$size = 5;
+	}
+	return $size;
+}
+
 sub extract_re {
 	my $re = shift;
 	return (split /txt\: /, $re)[1];
 }
 
+# count_inputs (@keys) returns max index of INPUTnn fields in array @keys
 sub count_inputs {
 	my $count = 0;
 	foreach(@_) {
-		if ($_ =~ /(INPUT[0-9]{2}_NAME)/) {
-			$count += 1;
+		if ($_ =~ /INPUT([0-9]{2})_NAME/) {
+			$count = $1 if ($count < $1);
 		}
 	}
 	return $count;
