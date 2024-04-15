@@ -261,7 +261,7 @@ function update_form()
     var form = document.form;
 ];
 foreach my $f (@formulas) {
-	(my $formula, my @x) = extract_formula($FORM{$f."_TYPE"});
+	my ($formula, $size, @x) = extract_formula($FORM{$f."_TYPE"});
 	foreach (@x) {
 		my $form_input = lc($_);
 		$formula =~ s/$_/Number(form.$form_input.value)/g;
@@ -583,7 +583,7 @@ foreach (@columns) {
                     print qq($txt<input type="text" size=$size name="$field" value="$prev_inputs{$field}"
                         onMouseOut="nd()" onmouseover="overlib('Enter a value for $field')"><BR>);
 		} elsif ($field =~ /^output/ && $type =~ /^formula/) {
-                    my ($formula, @x) = extract_formula($type);
+                    my ($formula, $size, @x) = extract_formula($type);
                     print qq($txt<input size=$size readOnly class=inputNumNoEdit name="$field"
                         onMouseOut="nd()" onmouseover="overlib('$formula')"><BR>);
 	        } else {

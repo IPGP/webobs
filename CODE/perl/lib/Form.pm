@@ -198,12 +198,12 @@ sub extract_fields {
 sub extract_formula {
 	my $formula = shift;
 	my @x;
-	my @form_x;
+	my $size = extract_size($formula);
 	$formula = (split /\:/, $formula)[1];
 	while ($formula =~ /((IN|OUT)PUT[0-9]{2})/g) {
 		push(@x,$1);
 	}
-	return ($formula, @x);
+	return ($formula, $size, @x);
 }
 
 sub extract_list {

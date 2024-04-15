@@ -359,12 +359,12 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	}
 	# stores formulas
 	foreach (@formulas) {
-		my ($formula, @x) = extract_formula($conf{$_."_TYPE"});
+		my ($formula, $size, @x) = extract_formula($conf{$_."_TYPE"});
 		foreach (@x) {
 			my $f = lc($_);
 			$formula =~ s/$_/\$fields{$f}/g;
 		}
-		$fields{lc($_)} = eval $formula;
+		$fields{lc($_)} = substr(eval $formula, 0, $size);
 	}
 
 	$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
