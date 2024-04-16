@@ -14,6 +14,7 @@ use WebObs::Utils
 
 use strict;
 use warnings;
+use POSIX;
 use Encode;
 use File::Basename;
 
@@ -22,7 +23,7 @@ require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
             rtrim tri_date_avec_id isok romain pga2msk attenuation txt2htm tex2utf
-            qrcode url2target checkParam);
+            roundsd qrcode url2target checkParam);
 $VERSION = "1.00";
 
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -260,6 +261,21 @@ sub attenuation ($$)
 	my $pga = 1000*10**(0.620986*$mag - 0.00345256*$hyp - log($hyp)/log(10) - 3.374841);
 	return $pga;
 }
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub roundsd
+# Round with significant digits
+{
+	my ($x, $n) = @_;
+	$n = 1 if ($n < 1);
+	my $e = floor(log(abs($x))/log(10) - $n + 1);
+	my $og = 10**abs($e);
+	my $y = floor($x/$og + 0.5)*$og;
+	$y = floor($x*$og + 0.5)/$og if ($e < 0);
+	$y = 0 if ($x = 0);
+	return $y;
+}
+
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 sub qrcode ($)

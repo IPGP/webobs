@@ -364,7 +364,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 			my $f = lc($_);
 			$formula =~ s/$_/\$fields{$f}/g;
 		}
-		$fields{lc($_)} = substr(eval $formula, 0, $size);
+		$fields{lc($_)} = roundsd(eval $formula, $size - 3); # results is rounded with $size-3 digits
 	}
 
 	$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
@@ -404,6 +404,9 @@ for (my $j = 0; $j <= $#rows; $j++) {
 			my $ov;
 			if (defined $lists{$field}) {
 				$ov = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$fields{$field}</B>: $lists{$field}{$fields{$field}}')\"";
+			}
+			if ( grep(/^$field$/i, @formulas)) {
+				$ov = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$field</B>:')\"";
 			}
 			$text .= "<TD align=center $ov>$fields{$field}</TD>";
 			$csvTxt .= "$fields{$field},";
