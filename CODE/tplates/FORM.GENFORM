@@ -1,46 +1,64 @@
 =key|value
-# Generic FORM template for use with cgi-bin/fedit.pl
+# Generic FORM template for use with {fedit,showGENFORM,formGENFORM}.pl
+#
+# ############################### WARNING #####################################
+# Once the database form has been created and the first data has been recorded,
+# you MAY BE VERY CAREFUL IN MODIFYING the keys of this file.
+# ############################### WARNING #####################################
+#
 BANG|$WEBOBS{BIG_BANG}
 TITLE|Generic database form
-COLUMNS_NUMBER|2
-FIELDSETS_NUMBER|2
-STARTING_DATE|YES
-DEFAULT_DAYS|365
+
+# if YES, use start and end date for each record
+STARTING_DATE|NO
+
+# may contain any +GID and/or UID list (coma separated)
 OPERATORS_LIST|+DUTY
 
-# inputs names and units
-# for the type, chose between : text(size), numeric(size), list: (link to a file containing the list) or formula (algebric formula)
-INPUT01_NAME|Text input
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+# inputs names, units, and types
+# valid types: text(size), numeric(size), list: filename
+### WARNING: once created, you cannot remove or rename any input since it will
+### corrupt the database. You might only add new inputs, increasing the number
+INPUT01_NAME|Text input1
 INPUT01_UNIT|Unit1
 INPUT01_TYPE|text(10)
-INPUT02_NAME|List input
+INPUT02_NAME|List input2
 INPUT02_UNIT|Unit2
 INPUT02_TYPE|list: FORM_list.conf
-INPUT03_NAME|Numeric input
+INPUT03_NAME|Numeric input3
 INPUT03_UNIT|Unit3
 INPUT03_TYPE|numeric(5)
-# outputs names and units
-# for the type, chose between : formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display), 
-OUTPUT01_NAME|Formula output
-OUTPUT01_UNIT|no unit
-OUTPUT01_TYPE|formula: (INPUT01+2)
 
+# outputs names, units, and types
+# valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
+OUTPUT01_NAME|Formula output1
+OUTPUT01_UNIT|no unit
+OUTPUT01_TYPE|formula: (INPUT02+INPUT03)*2
+
+# --- Form layout
+# number of columns and list of fieldsets for each
+COLUMNS_NUMBER|2
+# note: first column starts with the mandatory date/site/operator fieldset
+COLUMN01_LIST|
+COLUMN02_LIST|FIELDSET01,FIELDSET02
+
+# number of fieldsets
+FIELDSETS_NUMBER|2
+
+# first fieldset name, number of columns and list of fields for each column
 FIELDSET01_NAME|Fieldset n°1
 FIELDSET01_COLUMNS|1
-
-# which inputs are contained in the first fieldset of the first column ?
 FIELDSET01_C01|INPUT01
-# which inputs are contained in the first fieldset of the second column ?
+
+# second fieldset name, number of columns and list of fields for each column
 FIELDSET02_NAME|Fieldset n°2
 FIELDSET02_COLUMNS|1
 FIELDSET02_C01|INPUT02,INPUT03,OUTPUT01
 
-# which fieldsets are contained in the first column ?
-COLUMN01_LIST|
 
-# which fieldsets are contained in the second column ?
-COLUMN02_LIST|FIELDSET01,FIELDSET02
-
-# for backward compatibility - do not change
+# --- for backward compatibility - do not change
 CGI_FORM|formGENFORM.pl
 CGI_SHOW|showGENFORM.pl
