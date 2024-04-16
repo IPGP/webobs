@@ -401,14 +401,16 @@ for (my $j = 0; $j <= $#rows; $j++) {
 		my $nb_fields = $#{$field_names[$f]};
 		for (my $n = 0; $n <= $nb_fields; $n++) {
 			my $field = lc($field_names[$f][$n]);
-			my $ov;
+			my $opt;
 			if (defined $lists{$field}) {
-				$ov = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$fields{$field}</B>: $lists{$field}{$fields{$field}}')\"";
+				my $val = $lists{$field}{$fields{$field}};
+				$val = "<I>$__{'unknown key list!'}</I>" if ($val eq "");
+				$opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$fields{$field}</B>: $val')\"";
 			}
 			if ( grep(/^$field$/i, @formulas)) {
-				$ov = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$field</B>:')\"";
+				$opt = " class=\"tdResult\" onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$field</B>:')\"";
 			}
-			$text .= "<TD align=center $ov>$fields{$field}</TD>";
+			$text .= "<TD align=center $opt>$fields{$field}</TD>";
 			$csvTxt .= "$fields{$field},";
 		}
 	}

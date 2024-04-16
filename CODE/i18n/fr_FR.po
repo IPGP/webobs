@@ -1751,7 +1751,7 @@ msgstr "Noter toute présence d&rsquo;odeur, gaz, précipité, etc..."
 # ---- showRAINWATER.pl
 
 msgid "Number of records"
-msgstr "Nombre d\\'enregistrements"
+msgstr "Nombre d'enregistrements"
 
 msgid "Download a CSV text file of these data"
 msgstr "Télécharger ces données dans un fichier au format CSV"
@@ -1902,9 +1902,20 @@ msgstr "Réinitialiser"
 
 # ---- showGENFORM.pl
 
+msgid "Enter a new record"
+msgstr "Nouvel enregistrement"
+
 msgid "Searching for data, please wait."
 msgstr "Recherche des données, merci de patienter."
 
+msgid "Trash"
+msgstr "Corbeille"
+
+msgid "unknown key list!"
+msgstr "clef inconnue dans la liste !"
+
+msgid "Date interval"
+msgstr "Intervalle de dates"
 
 # ---- formGENFORM.pl
 
@@ -1926,6 +1937,23 @@ msgstr "Voulez-vous enlever cet enregistrement de"
 msgid "Do you want to restore this record in"
 msgstr "Voulez-vous restaurer cet enregistrement dans"
 
+msgid "Select a node for this record"
+msgstr "Sélectionner un node pour cet enregistrement"
+
+msgid "Operator(s)"
+msgstr "Opérateur(s)"
+
+msgid "Select operator(s)"
+msgstr "Sélectionner le (ou les) opérateur(s)"
+
+msgid "Select a value for"
+msgstr "Sélectionner une valeur pour"
+
+msgid "Enter a numeric value for"
+msgstr "Entrer une valeur numérique pour"
+
+msgid "Enter a value for"
+msgstr "Entrer une valeur pour"
 
 # ---- fedit.pl
 
