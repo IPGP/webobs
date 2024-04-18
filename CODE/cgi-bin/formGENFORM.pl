@@ -515,7 +515,7 @@ print qq[<form name="form" id="theform" action="">
 	print qq(</select><BR>
 	<B>Site: </B>
 	  <select name="site" size="1"
-		onMouseOut="nd()"onmouseover="overlib('Select a node for this record')">
+		onMouseOut="nd()"onmouseover="overlib('$__{'Select a node for this record'}')">
 	  <option value=""></option>);
     print @NODESSelList;
 	for (@NODESSelList) {
@@ -570,7 +570,7 @@ foreach (@columns) {
                     my %list = extract_list($type,$form);
                     my @list_keys = keys %list;
                     print qq($txt<select name="$field" size=1
-                        onMouseOut="nd()" onmouseover="overlib('Select a value for $field')"><option value=""></option>);
+                        onMouseOut="nd()" onmouseover="overlib('$__{'Select a value for'} $field')"><option value=""></option>);
                     for (@list_keys) {
 			my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
                         print qq(<option value="$_" $selected>$_: $list{$_}</option>);
@@ -578,10 +578,10 @@ foreach (@columns) {
                     print qq(</select><BR>);
                 } elsif ($field =~ /^input/ && $type =~ /^numeric/){
                     print qq($txt<input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
-                        onMouseOut="nd()" onmouseover="overlib('Enter a numeric value for $field')"><BR>);
+                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a numeric value for'} $field')"><BR>);
                 } elsif ($field =~ /^input/) {
                     print qq($txt<input type="text" size=$size name="$field" value="$prev_inputs{$field}"
-                        onMouseOut="nd()" onmouseover="overlib('Enter a value for $field')"><BR>);
+                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a value for'} $field')"><BR>);
 		} elsif ($field =~ /^output/ && $type =~ /^formula/) {
                     my ($formula, $size, @x) = extract_formula($type);
                     print qq($txt<input size=$size readOnly class=inputNumNoEdit name="$field"

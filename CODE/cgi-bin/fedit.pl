@@ -388,7 +388,7 @@ print <<_EOD_;
  function delete_form()
  {
 	if ( confirm("$__{'The FORM will be deleted. Are you sure?'}") ) {
-		document.formulaire.delete.value = 1;
+		document.form.delete.value = 1;
 		\$.post("$post_url", \$("#theform").serialize(), function(data) {
 			if (data != '') alert(data);
 			location.href = "$GRIDS{CGI_SHOW_GRIDS}";
@@ -397,10 +397,10 @@ print <<_EOD_;
 		return false;
 	}
 }
-function verif_formulaire()
+function verif_form()
 {
 	// postform() from cmtextarea.js will submit the form to $post_url
-	console.log(document.formulaire);
+	console.log(document.form);
 	postform();
 	//\$.post("/cgi-bin/fedit.pl", \$("#theform").serialize(), function(data) {
 	//	if (data != '') alert(data);
@@ -409,14 +409,14 @@ function verif_formulaire()
 }
  </script>
 </HEAD>
-<BODY style="background-color:#E0E0E0" onLoad="document.formulaire.text.focus()">
+<BODY style="background-color:#E0E0E0" onLoad="document.form.text.focus()">
 <!-- <script type="text/javascript" src="/js/jquery.js"></script> -->
 <!-- overLIB (c) Erik Bosrup -->
 <script language="JavaScript" src="/js/overlib/overlib.js"></script>
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <div id="helpbox"></div>
 
-<FORM id="theform" name="formulaire" action="">
+<FORM id="theform" name="form" action="">
 <input type="hidden" name="ts0" value="$TS0">
 <input type="hidden" name="fname" value="$FORMName">
 <input type=\"hidden\" name=\"action\" value=\"save\">
@@ -442,7 +442,7 @@ print "</TD>\n<TD style=\"border:0; vertical-align:top\">\n";
 my @lists  = grep {/(INPUT[0-9]{2,3}_TYPE\|list:)/} split(/\n/, $txt);
 chomp(@lists);
 
-print "<FIELDSET><LEGEND>Lists</LEGEND><UL>\n";
+print "<FIELDSET><LEGEND>Lists</LEGEND>\n<UL>";
 
 foreach(@lists) {
 	$_ = (split /list\: /, $_)[1];
@@ -481,7 +481,7 @@ print <<_EOD_;
  <TD style="border: 0">
   <p align=center>
    <input type="button" name="lien" value="$__{'Cancel'}" onClick="history.go(-1)">
-   <input type="button" class=\"submit-button\" value="$__{'Save'}" onClick="verif_formulaire();">
+   <input type="button" class=\"submit-button\" value="$__{'Save'}" onClick="verif_form();">
   </p>
  </TD>
 </TR>
