@@ -1,100 +1,160 @@
 =key|value
-# Generic FORM template for use with cgi-bin/fedit.pl
+# Generic FORM template for use with {fedit,showGENFORM,formGENFORM}.pl
+# Model: water chemical analysis (EAUX)
+#
+# ############################### WARNING #####################################
+# Once the database form has been created and the first data has been recorded,
+# you MAY BE VERY CAREFUL IN MODIFYING the keys of this file.
+# ############################### WARNING #####################################
+
 BANG|$WEBOBS{BIG_BANG}
 TITLE|Water chemical analysis database
-COLUMNS_NUMBER|2
-FIELDSETS_NUMBER|4
+
+# if YES, use start and end date for each record
 STARTING_DATE|NO
-DEFAULT_DAYS|365
+
+# may contain any +GID and/or UID list (coma separated)
 OPERATORS_LIST|+DUTY
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
 COMMENT_HELPER|Note any presence of odour, gas or precipitate, etc...
 
+# -----------------------------------------------------------------------------
+# --- Inputs names, units, and types
+# valid types: text(size), numeric(size), list: filename
+#
+# ############################### WARNING #####################################
+# once created, you cannot remove or rename any input since it will corrupt
+# the database. You might only add new inputs, increasing the number
+# ############################### WARNING #####################################
 
-# inputs names and units
-# for the type, chose between : text (size), list (link to a file containing the list) or formula (algebric formula)
 INPUT01_NAME|Sampling Type
-INPUT01_TYPE|list: FORM_listeaux.conf
+INPUT01_TYPE|list: FORM_waters_sampling_list.conf
+
 INPUT02_NAME|Air Temperature
 INPUT02_UNIT|°C
+
 INPUT03_NAME|Sample Temperature
 INPUT03_UNIT|°C
+
 INPUT04_NAME|pH
+
 INPUT05_NAME|Conductivity
 INPUT05_UNIT|µS
+
 INPUT06_NAME|Flow Rate
 INPUT06_UNIT|l/min
+
 INPUT07_NAME|Level
 INPUT07_UNIT|m
 
-# fieldset 02
 INPUT08_NAME|Li<sup>+</sup>
 INPUT08_UNIT|ppm
+
 INPUT09_NAME|Na<sup>+</sup>
 INPUT09_UNIT|ppm
+
 INPUT10_NAME|K<sup>++</sup>
 INPUT10_UNIT|ppm
+
 INPUT11_NAME|Mg<sup>++</sup>
 INPUT11_UNIT|ppm
+
 INPUT12_NAME|Ca<sup>++</sup>
 INPUT12_UNIT|ppm
+
 INPUT13_NAME|F<sup>-</sup>
 INPUT13_UNIT|ppm
+
 INPUT14_NAME|Cl<sup>-</sup>
 INPUT14_UNIT|ppm
+
 INPUT15_NAME|Br<sup>-</sup>
 INPUT15_UNIT|ppm
-INPUT16_NAME|NO3<sup>-</sup>
+
+INPUT16_NAME|NO<sub>3</sub><sup>-</sup>
 INPUT16_UNIT|ppm
-INPUT17_NAME|SO4<sup>-</sup>
+
+INPUT17_NAME|SO<sub>4</sub><sup>-</sup>
 INPUT17_UNIT|ppm
-INPUT18_NAME|HCO3<sup>-</sup>
+
+INPUT18_NAME|HCO<sub>3</sub><sup>-</sup>
 INPUT18_UNIT|ppm
+
 INPUT19_NAME|I<sup>-</sup>
-INPUT19_UNIT|ppm
+INPUT19_UNIT|ppb
+
+INPUT21_NAME|SiO<sub>2</sub>
+INPUT21_UNIT|ppm
+
+INPUT22_NAME|&delta;<sup>13</sup>C
+
+INPUT23_NAME|&delta;<sup>18</sup>O
+
+INPUT24_NAME|&delta;D
+
+# -----------------------------------------------------------------------------
+# --- Outputs names, units, and types
+# valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 
 OUTPUT01_NAME|H<sup>+</sup>
 OUTPUT01_UNIT|ppm
 OUTPUT01_TYPE|formula: 1000*(10**(-INPUT04))
 OUTPUT02_NAME|NICB
 OUTPUT02_UNIT|%
-OUTPUT02_TYPE|formula: 100*((INPUT08/6.941+INPUT09/22.990+INPUT10/39.098+2*INPUT11/40.078+2*INPUT12/24.305+OUTPUT01)-(INPUT13/18.998+INPUT14/35.453+INPUT15/79.904+INPUT16/62.004+2*INPUT17/96.062+INPUT18/61.0159+1e-3*INPUT19/126.904468))/((INPUT08/6.941+INPUT09/22.990+INPUT10/39.098+2*INPUT11/40.078+2*INPUT12/24.305+OUTPUT01)+(INPUT13/18.998+INPUT14/35.453+INPUT15/79.904+INPUT16/62.004+2*INPUT17/96.062+INPUT18/61.0159+1e-3*INPUT19/126.904468))
+OUTPUT02_TYPE|formula(6): 100*((INPUT08/6.941+INPUT09/22.990+INPUT10/39.098+2*INPUT11/40.078+2*INPUT12/24.305+OUTPUT01)-(INPUT13/18.998+INPUT14/35.453+INPUT15/79.904+INPUT16/62.004+2*INPUT17/96.062+INPUT18/61.0159+1e-3*INPUT19/126.904468))/((INPUT08/6.941+INPUT09/22.990+INPUT10/39.098+2*INPUT11/40.078+2*INPUT12/24.305+OUTPUT01)+(INPUT13/18.998+INPUT14/35.453+INPUT15/79.904+INPUT16/62.004+2*INPUT17/96.062+INPUT18/61.0159+1e-3*INPUT19/126.904468))
+OUTPUT03_NAME|SO<sub>4</sub>/Cl
+OUTPUT03_TYPE|formula(6): (INPUT18/96.062)/(INPUT15/35.453)
+OUTPUT04_NAME|HCO<sub>3</sub>/Cl
+OUTPUT04_TYPE|formula(6): (INPUT19/61.0159)/(INPUT15/35.453)
+OUTPUT05_NAME|Ca</sub>/Cl
+OUTPUT05_TYPE|formula(6): (INPUT12/24.305)/(INPUT15/35.453)
+OUTPUT06_NAME|Na</sub>/Cl
+OUTPUT06_TYPE|formula(6): (INPUT09/22.990)/(INPUT15/35.453)
+OUTPUT07_NAME|Mg/Cl
+OUTPUT07_TYPE|formula(6): (INPUT11/40.078)/(INPUT15/35.453)
+OUTPUT08_NAME|HCO<sub>3</sub>/SO<sub>4</sub>
+OUTPUT08_TYPE|formula(6): (INPUT19/61.0159)/(INPUT18/96.062)
 
-#fieldset 03
-INPUT21_NAME|SiO<sub>2</sub>
-INPUT21_UNIT|ppm
+# -----------------------------------------------------------------------------
+# --- Form layout
 
-#fieldset 04
-INPUT22_NAME|&delta;<sup>13</sup>C
-INPUT23_NAME|&delta;<sup>18</sup>O
-INPUT24_NAME|&delta;D
+# number of columns and list of fieldsets for each
+COLUMNS_NUMBER|3
 
-# which inputs are contained in the first fieldset ?
+# note: first column starts with the mandatory date/site/operator fieldset
+COLUMN01_LIST|FIELDSET01
+COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
+COLUMN03_LIST|FIELDSET05
+
+# number of fieldsets
+FIELDSETS_NUMBER|5
+
+# fieldset contains
 FIELDSET01_NAME|On-Site Measurements
 FIELDSET01_COLUMNS|1
 FIELDSET01_C01|INPUT01,INPUT02,INPUT03,INPUT04,INPUT05,INPUT06,INPUT07
 
-# which inputs are contained in the second fieldset ?
 FIELDSET02_NAME|Cation and Anion Concentrations
 FIELDSET02_COLUMNS|2
 FIELDSET02_C01|INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,OUTPUT01
 FIELDSET02_C02|INPUT13,INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,OUTPUT02
 
-# which inputs are contained in the third fieldset ?
 FIELDSET03_NAME|Other Elements Concentration
 FIELDSET03_COLUMNS|1
 FIELDSET03_C01|INPUT21
 
-# which inputs are contained in the fourth fieldset ?
 FIELDSET04_NAME|Isotopes Concentrations
 FIELDSET04_COLUMNS|1
 FIELDSET04_C01|INPUT22,INPUT23,INPUT24
 
-# which fieldsets are contained in the first column ?
-COLUMN01_LIST|FIELDSET01
+FIELDSET05_NAME|Ratios
+FIELDSET05_TOGGLE|YES
+FIELDSET05_COLUMNS|1
+FIELDSET05_C01|OUTPUT03,OUTPUT04,OUTPUT05,OUTPUT06,OUTPUT07,OUTPUT08
 
-# which fieldsets are contained in the second column ?
-COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
-
-# for backward compatibility - do not change
+# --- For backward compatibility - do not change
 CGI_FORM|formGENFORM.pl
 CGI_SHOW|showGENFORM.pl
