@@ -203,7 +203,7 @@ if ($action eq 'save') {
 
 		if ($sth->fetchrow_array() == 0) {	# if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
 			# --- creation of the DB table
-			my @inputs = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
+			my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 
 			my @db_columns = @db_columns0;
 			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
@@ -233,7 +233,7 @@ if ($action eq 'save') {
 
 		if ($sth->fetchrow_array() == 0) {	# if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
 			# --- creation of the DB table
-			my @inputs = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
+			my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 
 			my @db_columns = @db_columns0;
 			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
@@ -246,7 +246,7 @@ if ($action eq 'save') {
 		
 		# now we know if the table exists
 		# we want to look at the modification of $text
-		my @inputs  = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
+		my @inputs  = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 		my $newKeys = $#inputs;
 		my $oldKeys = count_inputs(readCfg($formConfFile));
 
@@ -439,37 +439,30 @@ print "<div id=\"statusbar\">$FORMName</div>\n";
 print "</TD>\n<TD style=\"border:0; vertical-align:top\">\n";
 
 # ---- Lists
-my @lists  = grep {/(INPUT[0-9]{2}_TYPE)/} split(/\n/, $txt);
+my @lists  = grep {/(INPUT[0-9]{2,3}_TYPE\|list:)/} split(/\n/, $txt);
+chomp(@lists);
 
-print "<FIELDSET><LEGEND>Lists</LEGEND>\n";
+print "<FIELDSET><LEGEND>Lists</LEGEND><UL>\n";
 
 foreach(@lists) {
-	if ($_ =~ /list:/) {
-		$_ = (split /\: /, $_)[1];
-		my $dir  = "$WEBOBS{PATH_FORMS}/$FORMName/";
-		my $file = $dir.$_;
-		if (-e $file) {
-			$file = "CONF/FORMS/$FORMName/$_";
-			print "<A href=\"/cgi-bin/xedit.pl?fs=$file\">$file</a>\n";
-		} elsif ($template =~ /GENFORM/ && ! -e "$file"){
-			if (! -d $dir and !mkdir($dir)) {
-				print "fedit: error while creating directory $dir: $!";
-			}
-			qx(cp -a $WEBOBS{ROOT_CODE}/tplates/FORM_list.conf $file 2>&1);
-			$file = "CONF/FORMS/$FORMName/$_";
-			print "<A href=\"/cgi-bin/xedit.pl?fs=$file\">$file</a>\n";
-		} else {
-			my $suffix = lc((split /FORM\./, $template)[1]);
-			if (! -d $dir and !mkdir($dir)) {
-				print "fedit: error while creating directory $dir: $!";
-			}
-			qx(cp -a $WEBOBS{ROOT_CODE}/tplates/FORM_list$suffix.conf $file 2>&1);
-			$file = "CONF/FORMS/$FORMName/$_";
-			print "<A href=\"/cgi-bin/xedit.pl?fs=$file\">$file</a>\n";
-		}
+	$_ = (split /list\: /, $_)[1];
+	$_ =~ s/^\s+|\s+$//g; # removes spaces
+	my $tdir = "$WEBOBS{ROOT_CODE}/tplates"; 
+	my $fdir  = "$WEBOBS{PATH_FORMS}/$FORMName";
+	if (! -d $fdir and !mkdir($fdir)) {
+		print "fedit: error while creating directory $fdir: $!";
 	}
+	my $file = "$fdir/$_";
+	if ((! -e $file) && -e "$tdir/$_") {
+		# if the file exists only in the template directory, copy it
+		qx(cp $tdir/$_ $file 2>&1);
+	} elsif (! -e $file) {
+		# if the file does not exist anywhere, copy the generic FORM_list
+		qx(cp $tdir/FORM_list.conf $file 2>&1);
+	}
+	print "<LI><A href=\"/cgi-bin/xedit.pl?fs=CONF/FORMS/$FORMName/$_\">$_</A></LI>\n";
 }
-print "</FIELDSET>\n";
+print "</UL></FIELDSET>\n";
 
 print "</TD>\n";
 print "<TR><TD style=\"border:0\">\n";
