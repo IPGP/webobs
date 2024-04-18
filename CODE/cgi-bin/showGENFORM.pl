@@ -225,6 +225,23 @@ while(my @row = $sth->fetchrow_array()) {
 
 $dbh->disconnect();
 
+# ---- Prepare form contains
+#
+my $fs_count  = $FORM->conf('FIELDSETS_NUMBER');
+my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
+my @fs_names;
+my @field_names;
+
+foreach(@fieldsets) {
+	push(@fs_names, $FORM->conf("$_\_NAME"));
+	my $nb_col = $FORM->conf("$_\_COLUMNS");
+	my @fieldset;
+	for (my $i = 0; $i <= $nb_col; $i++) {
+		push(@fieldset, split(/,/, $FORM->conf("$_\_C0".$i)));
+	}
+	push(@field_names, \@fieldset);
+}
+
 # ---- Form for display selection
 #  
 if ($QryParm->{'dump'} ne "csv") {
@@ -276,10 +293,17 @@ if ($QryParm->{'dump'} ne "csv") {
 		}
 		print "</SELECT>\n";
 	}
+	foreach (@fieldsets) {
+		if (isok($conf{$_.'_TOGGLE'})) {
+			my $fs = lc($_);
+			print " <INPUT type=\"checkbox\" name=\"$fs\" value=\"1\"".($QryParm->{$fs} ? " checked":"").">&nbsp;<B>$conf{$_.'_NAME'}</B>";
+		}
+	}
+
 	if ($clientAuth > 1) {
-		print "<INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"").">&nbsp;<B>$__{'Trash'}</B>";
+		print " <INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"").">&nbsp;<B>$__{'Trash'}</B>";
 	} else {
-		print "<INPUT type=\"hidden\" name=\"trash\">";
+		print " <INPUT type=\"hidden\" name=\"trash\">";
 	}
 	print "</P></FORM>\n",
 	"<H2>".$FORM->conf('TITLE')."$editForm</H2>\n",
@@ -296,24 +320,9 @@ my $delete;
 my $nodelink;
 my $aliasSite;
 
-my $fs_count  = $FORM->conf('FIELDSETS_NUMBER');
-my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
-my @fs_names;
-my %colspan;
-my @field_names;
-
-foreach(@fieldsets) {
-	push(@fs_names, $FORM->conf("$_\_NAME"));
-	my $nb_col = $FORM->conf("$_\_COLUMNS");
-	my @fieldset;
-	for (my $i = 0; $i <= $nb_col; $i++) {
-		push(@fieldset, split(/,/, $FORM->conf("$_\_C0".$i)));
-	}
-	push(@field_names, \@fieldset);
-}
-
 my @colnam = ("Sampling Date","Site","Oper");
 my @colnam2;
+my %colspan;
 if ($starting_date) {
 	$colspan{"Sampling Date"} = 2;
 	push(@colnam2,("Start","End"));
@@ -323,14 +332,16 @@ if ($starting_date) {
 }
 
 for (my $i = 0; $i <= $#fs_names; $i++) {
-	push(@colnam, $fs_names[$i]);
+	my $fs = $fieldsets[$i];
+	my $showfs = ((!isok($conf{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)}) ? "1":"0");
+	push(@colnam, $fs_names[$i]) if ($showfs);
 	my $nb_fields = $#{$field_names[$i]};
 	$colspan{$fs_names[$i]} = $nb_fields+1;
 	for (my $j = 0; $j <= $nb_fields; $j++) {
 		my $field = $field_names[$i][$j];
 		my $name_field = $FORM->conf("$field\_NAME");
 		my $unit_field = $FORM->conf("$field\_UNIT");
-		push(@colnam2, "$name_field".($unit_field ne "" ? " ($unit_field)":""));
+		push(@colnam2, "$name_field".($unit_field ne "" ? " ($unit_field)":"")) if ($showfs);
 		$name_field =~ s/(<su[bp]>|<\/su[bp]>|\&[^;]*;)//g;
 		$csvTxt .= ',"'.u2l($name_field).'"';
 	}
@@ -397,18 +408,21 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	$text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite')\">$nodelink&nbsp;</TD>";
 	$text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>";
 	$csvTxt .= "$id,$sdate,$edate,\"$aliasSite\",\"$opers\",";
-	for (my $f = 0; $f <= $#fs_names; $f++) {
+	for (my $f = 0; $f <= $#fieldsets; $f++) {
+		my $fs = $fieldsets[$f];
 		my $nb_fields = $#{$field_names[$f]};
 		for (my $n = 0; $n <= $nb_fields; $n++) {
 			my $field = lc($field_names[$f][$n]);
-			my $ov;
+			my $opt;
 			if (defined $lists{$field}) {
-				$ov = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$fields{$field}</B>: $lists{$field}{$fields{$field}}')\"";
+				my $val = $lists{$field}{$fields{$field}};
+				$val = "<I>$__{'unknown key list!'}</I>" if ($val eq "");
+				$opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$fields{$field}</B>: $val')\"";
 			}
 			if ( grep(/^$field$/i, @formulas)) {
-				$ov = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$field</B>:')\"";
+				$opt = " class=\"tdResult\" onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$field</B>:')\"";
 			}
-			$text .= "<TD align=center $ov>$fields{$field}</TD>";
+			$text .= "<TD align=center $opt>$fields{$field}</TD>" if (!isok($conf{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
 			$csvTxt .= "$fields{$field},";
 		}
 	}
