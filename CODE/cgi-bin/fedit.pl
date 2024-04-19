@@ -443,8 +443,7 @@ chomp(@lists);
 print "<FIELDSET><LEGEND>Lists</LEGEND>\n<UL>";
 
 foreach(@lists) {
-	$_ = (split /list\: /, $_)[1];
-	$_ =~ s/^\s+|\s+$//g; # removes spaces
+	$_ = trim((split /list\: /, $_)[1]);
 	my $tdir = "$WEBOBS{ROOT_CODE}/tplates"; 
 	my $fdir  = "$WEBOBS{PATH_FORMS}/$FORMName";
 	if (! -d $fdir and !mkdir($fdir)) {
