@@ -14,7 +14,7 @@ Edit (create/update) a FORM specified by its fully qualified name, ie. fname.
 
 When creating a new FORM (if name does not exist), fedit starts editing from a predefined template file: filename $WEBOBS{ROOT_CODE}/tplates/FORM.GENFORM or specific template identified by form.template argument.
 
-To create a new FORM, user must have Admin rights for all FORMS. To update/delete an existing FORM, user must have Edit rights for the concerned FORM.
+To create a new FORM, user must have Admin rights for all FORMS. To update an existing FORM, user must have Edit rights for the concerned FORM.
 
 =head1 Query string parameters
 
@@ -221,6 +221,23 @@ if ($action eq 'save') {
 		htmlMsgOK("fedit: $FORMName created.");
 		exit;
 	} else {
+		# --- Form delete or update (config file already exists)
+		
+		# --- Delete the form!
+		if ($delete == 1) {
+			# delete the dir/file first
+			my $rmtree_errors;
+			rmtree($formdir, {'safe' => 1, 'error' => \$rmtree_errors});
+			if ($rmtree_errors  && @$rmtree_errors) {
+				htmlMsgNotOK("fedit couldn't delete directory $formdir");
+				print STDERR "fedit.pl: unable to delete directory $formdir: "
+					.join(", ", @$rmtree_errors)."\n";
+				exit;
+			}
+			htmlMsgOK("$FORMName deleted");
+			exit;
+		}
+
 		# --- connecting to the database in order to create a table with the name of the FORM
 		my $dbh = connectDbForms();
 
@@ -295,24 +312,6 @@ if ($action eq 'save') {
 	}
 }
 
-# --- Form delete or update (config file already exists)
-
-if ($delete == 1) {
-	# --- Delete the form!
-
-	# delete the dir/file first
-	my $rmtree_errors;
-	rmtree($formdir, {'safe' => 1, 'error' => \$rmtree_errors});
-	if ($rmtree_errors  && @$rmtree_errors) {
-		htmlMsgNotOK("fedit couldn't delete directory $formdir");
-		print STDERR "fedit.pl: unable to delete directory $formdir: "
-			.join(", ", @$rmtree_errors)."\n";
-		exit;
-	}
-	htmlMsgOK("$FORMName deleted");
-	exit;
-}
-
 # ---- action is 'edit' (default)
 #
 if ( -e "$formConfFile" ) {	# looking if the FORM already exists
@@ -336,8 +335,6 @@ my $txt = l2u(escape_html(join("",@rawfile)));
 my $titrePage = "$__{'Editing'} form";
 if ( $newF == 1 ) { $titrePage = "$__{'Creating'} new form" }
 
-#my $cm_edit = ($editOK || $admOK) ? 1 : 0;
-my $cm_edit = 1;
 print <<_EOD_;
 Content-type: text/html; charset=utf-8
 
@@ -377,7 +374,7 @@ print <<_EOD_;
 	READONLY_THEME: '$CM_browsing_theme',
 	LANGUAGE_MODE: '$CM_language_mode',
 	AUTO_VIM_MODE: '$CM_auto_vim_mode',
-	EDIT_PERM: $cm_edit,
+	EDIT_PERM: $editOK,
 	FORM: '#theform',
 	POST_URL: '$post_url',
   };
@@ -387,7 +384,7 @@ print <<_EOD_;
  <script type="text/javascript">
  function delete_form()
  {
-	if ( confirm("$__{'The FORM will be deleted. Are you sure?'}") ) {
+	if ( confirm("$__{'This FORM will be deleted (associated table in DB will remain, but useless). Are you sure?'}") ) {
 		document.form.delete.value = 1;
 		\$.post("$post_url", \$("#theform").serialize(), function(data) {
 			if (data != '') alert(data);
@@ -424,7 +421,8 @@ function verif_form()
 _EOD_
 
 print "<H2>$titrePage $FORMName";
-if ($newF == 0) {
+# delete an existing form is only for the WO Owner!
+if ($newF == 0 && $USERS{$CLIENT}{UID} eq "!") {
 	print " <A href=\"#\"><IMG src=\"/icons/no.png\" onClick=\"delete_form();\" title=\"$__{'Delete this form'}\"></A>";
 }
 print "</H2>\n";
