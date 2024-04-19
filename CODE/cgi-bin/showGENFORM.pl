@@ -339,7 +339,7 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
 	$colspan{$fs_names[$i]} = $nb_fields+1;
 	for (my $j = 0; $j <= $nb_fields; $j++) {
 		my $field = $field_names[$i][$j];
-		my $name_field = $FORM->conf("$field\_NAME");
+		my $name_field = htm2frac($FORM->conf("$field\_NAME"));
 		my $unit_field = $FORM->conf("$field\_UNIT");
 		push(@colnam2, "$name_field".($unit_field ne "" ? " ($unit_field)":"")) if ($showfs);
 		$name_field =~ s/(<su[bp]>|<\/su[bp]>|\&[^;]*;)//g;

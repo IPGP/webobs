@@ -23,7 +23,7 @@ require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
             rtrim tri_date_avec_id isok romain pga2msk attenuation txt2htm tex2utf
-            roundsd qrcode url2target checkParam);
+            roundsd htm2frac qrcode url2target checkParam);
 $VERSION = "1.00";
 
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -215,6 +215,7 @@ sub tri_date_avec_id ($$) {
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
+# Returns true for some known strings
 sub isok ($)
 {
     my $ok = shift;
@@ -300,6 +301,18 @@ sub url2target
 		return "bas";
 	} else {
 		return "_blank";
+	}
+}
+
+# -------------------------------------------------------------------------------------------------
+sub htm2frac
+{
+	my $s = shift;
+	if ($s =~ /[^< ]\//) {
+		my ($n, $d) = split(/[^< ]\//,$s);
+		return "<table align=center><th style=\"border:0;border-bottom-style:solid;border-bottom-width:1px;text-align:center\">$n</th><tr><tr><th style=\"border:0;text-align:center\">$d</th></tr></table>";
+	} else {
+		return $s;
 	}
 }
 
