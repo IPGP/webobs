@@ -272,7 +272,7 @@ sub roundsd
 	my $og = 10**abs($e);
 	my $y = floor($x/$og + 0.5)*$og;
 	$y = floor($x*$og + 0.5)/$og if ($e < 0);
-	$y = 0 if ($x = 0);
+	$y = 0 if ($x == 0);
 	return $y;
 }
 
