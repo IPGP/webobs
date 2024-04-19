@@ -563,7 +563,7 @@ foreach (@columns) {
                 my $name = $FORM{"$Field\_NAME"};
                 my $unit = $FORM{"$Field\_UNIT"};
                 my $type = $FORM{"$Field\_TYPE"};
-	        my $size = extract_size($type);
+				my $size = extract_size($type);
                 my $txt = "<B>$name </B>".($unit ne "" ? " ($unit)":"")." = ";
                 my $field = lc($Field);
                 if ($field =~ /^input/ && $type =~ /^list:/) {
@@ -571,8 +571,8 @@ foreach (@columns) {
                     my @list_keys = keys %list;
                     print qq($txt<select name="$field" size=1
                         onMouseOut="nd()" onmouseover="overlib('$__{'Select a value for'} $field')"><option value=""></option>);
-                    for (@list_keys) {
-			my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
+                    for (sort @list_keys) {
+					my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
                         print qq(<option value="$_" $selected>$_: $list{$_}</option>);
                     }
                     print qq(</select><BR>);
@@ -582,11 +582,11 @@ foreach (@columns) {
                 } elsif ($field =~ /^input/) {
                     print qq($txt<input type="text" size=$size name="$field" value="$prev_inputs{$field}"
                         onMouseOut="nd()" onmouseover="overlib('$__{'Enter a value for'} $Field')"><BR>);
-		} elsif ($field =~ /^output/ && $type =~ /^formula/) {
+				} elsif ($field =~ /^output/ && $type =~ /^formula/) {
                     my ($formula, $size, @x) = extract_formula($type);
                     print qq($txt<input size=$size readOnly class=inputNumNoEdit name="$field"
                         onMouseOut="nd()" onmouseover="overlib('$Field = $formula')"><BR>);
-	        } else {
+				} else {
                     print qq(<input type="hidden" name="$field">\n);
                 }
             }
