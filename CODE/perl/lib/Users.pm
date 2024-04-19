@@ -471,19 +471,6 @@ sub clientIsWO {
 
 =pod
 
-=head2 resListAuth
-
-Given a given resource-type and resource-name (as defined in 'users' table),
-returns an Hash of arrays of all UID or GID's for each authorization levels
-(1,2,4):
-
-	%HoA = WebObs::Users::resListAuth(type=>'authprocs',name=>'res1');
-	$HoA{authlevel} = array of all UID/GID for authlevel
-
-=cut
-
-=pod
-
 =head2 groupListUser
 
 Given a group ID 'GID' (starts with a '+'), returns an array of all associated user's UID:
@@ -517,6 +504,18 @@ sub groupListUser {
 	}
 	return @users;
 }
+=pod
+
+=head2 resListAuth
+
+Given a given resource-type and resource-name (as defined in 'users' table),
+returns an Hash of arrays of all UID or GID's for each authorization levels
+(1,2,4):
+
+	%HoA = WebObs::Users::resListAuth(type=>'authprocs',name=>'res1');
+	$HoA{authlevel} = array of all UID/GID for authlevel
+
+=cut
 
 sub resListAuth {
 	my %KWARGS = @_;
