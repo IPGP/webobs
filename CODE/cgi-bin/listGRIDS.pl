@@ -541,13 +541,16 @@ sub feditpopup {
 	$SP .= "<br style=\"clear: left\"><br>";
 =cut
 	$SP .= "<label for=\"feditT\">$__{'Form template'}: <span class=\"small\"></span></label>";
-	opendir my $dir, ("$WEBOBS{ROOT_CODE}/tplates/") or die "Cannot open directory: $!";
-	my @templates = grep (/FORM/, readdir($dir));
+	my $tdir = "$WEBOBS{ROOT_CODE}/tplates";
+	opendir my $dir, ($tdir) or die "Cannot open directory: $!";
+	my @templates = sort grep (/FORM\./, readdir($dir));
 	closedir $dir;
 	$SP .= "  <select id=\"feditTpl\" name=\"feditT\" value=\"\">\n";	# select input, look into CODE/tplates to find the differents templates
-	for (my $i = 0; $i <= $#templates; $i++) {
-		if ($templates[$i] =~ /FORM\./) {
-			$SP .= "<option value=\"$templates[$i]\">$templates[$i]</option>";
+	foreach my $f (@templates) {
+		if ($f =~ /FORM\./) {
+			my %cfg = readCfg("$tdir/$f");
+			my $sel = ($f eq "FORM.GENFORM" ? "selected":"");
+			$SP .= "<option value=\"$f\" $sel>$f: $cfg{TITLE}</option>";
 		}
 	}
 	$SP .= "</select>";
