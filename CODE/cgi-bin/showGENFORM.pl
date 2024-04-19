@@ -287,7 +287,7 @@ if ($QryParm->{'dump'} ne "csv") {
 		my @key = keys %{$lists{$i}};
 		print "<B>".$FORM->conf(uc($i)."_NAME").":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
 		print "<OPTION value=\"\"></OPTION>\n";
-		foreach (@key) {
+		foreach (sort @key) {
 			my $sel = ($QryParm->{$i} eq $_ ? "selected":"");
 			print "<OPTION value=\"$_\" $sel>$_: $lists{$i}{$_}</OPTION>\n";
 		}
