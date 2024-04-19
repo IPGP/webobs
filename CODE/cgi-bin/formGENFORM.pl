@@ -559,13 +559,13 @@ foreach (@columns) {
         foreach (1..$FORM{"$fieldset\_COLUMNS"}) {
             print qq(<td style=\"border:0\" valign=\"top\">
                         <p class=\"parform\" align=$side>);
-            foreach my $field (split(/,/, $FORM{sprintf("$fieldset\_C%02d", $_)})) {
-                my $name = $FORM{"$field\_NAME"};
-                my $unit = $FORM{"$field\_UNIT"};
-                my $type = $FORM{"$field\_TYPE"};
+            foreach my $Field (split(/,/, $FORM{sprintf("$fieldset\_C%02d", $_)})) {
+                my $name = $FORM{"$Field\_NAME"};
+                my $unit = $FORM{"$Field\_UNIT"};
+                my $type = $FORM{"$Field\_TYPE"};
 	        my $size = extract_size($type);
                 my $txt = "<B>$name </B>".($unit ne "" ? " ($unit)":"")." = ";
-                $field = lc($field);
+                my $field = lc($Field);
                 if ($field =~ /^input/ && $type =~ /^list:/) {
                     my %list = extract_list($type,$form);
                     my @list_keys = keys %list;
@@ -578,14 +578,14 @@ foreach (@columns) {
                     print qq(</select><BR>);
                 } elsif ($field =~ /^input/ && $type =~ /^numeric/){
                     print qq($txt<input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
-                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a numeric value for'} $field')"><BR>);
+                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a numeric value for'} $Field')"><BR>);
                 } elsif ($field =~ /^input/) {
                     print qq($txt<input type="text" size=$size name="$field" value="$prev_inputs{$field}"
-                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a value for'} $field')"><BR>);
+                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a value for'} $Field')"><BR>);
 		} elsif ($field =~ /^output/ && $type =~ /^formula/) {
                     my ($formula, $size, @x) = extract_formula($type);
                     print qq($txt<input size=$size readOnly class=inputNumNoEdit name="$field"
-                        onMouseOut="nd()" onmouseover="overlib('$formula')"><BR>);
+                        onMouseOut="nd()" onmouseover="overlib('$Field = $formula')"><BR>);
 	        } else {
                     print qq(<input type="hidden" name="$field">\n);
                 }
