@@ -468,7 +468,7 @@ sub geditpopup {
             my %G = @conf;
 		    $t =~ s/$WEBOBS{ROOT_CODE}\/tplates\///;
 		    my ($gt,$gn) = split(/\./,$t);
-		    push(@tplates,"$gt|$gn|".u2l($G{NAME}));
+		    push(@tplates,"$gt|$gn|$G{NAME}");
         }
 	}
 
@@ -476,7 +476,7 @@ sub geditpopup {
 	$SP .= "<div id=\"geditovly\" style=\"display:none\"></div>";
 	$SP .= "<form id=\"geditoverlay_form\" style=\"display:none\">";
 	$SP .= "<p><b><i>Create/edit a GRID</i></b></p>";
-	$SP .= "<label for=\"geditN\">$__{'Grid Type'}: <span class=\"small\">select a template</span></label>";
+	$SP .= "<label for=\"geditN\">$__{'Grid type'}: <span class=\"small\">$__{'select a template'}</span></label>";
 	$SP .= "  <select size=\"1\" id=\"geditT\" name=\"geditT\">\n";
 	foreach (@tplates) {
 		my ($gt,$gn,$gl) = split(/\|/,$_);
@@ -487,12 +487,12 @@ sub geditpopup {
 	$SP .= "  </select>\n";
 	$SP .= "<br style=\"clear: left\"><br>";
 
-	$SP .= "<label for=\"geditN\">$__{'Grid Name'}: <span class=\"small\">$__{'short name (uppercase)'}</span></label>";
+	$SP .= "<label for=\"geditN\">$__{'Grid mame'}: <span class=\"small\">$__{'short name (uppercase)'}</span></label>";
 	$SP .= "  <input size=\"40\" id=\"geditN\" name=\"geditN\" value=\"\">\n";
 	$SP .= "<br style=\"clear: left\"><br>";
 
 	$SP .= "<p style=\"margin: 0px; text-align: center\">";
-	$SP .= "<input type=\"button\" name=\"sendbutton\" value=\"$__{'Edit'}\" onclick=\"geditsendPopup(); return false;\" style=\"font-weight:bold\" />";
+	$SP .= "<input type=\"button\" name=\"sendbutton\" value=\"$__{'Create'}\" onclick=\"geditsendPopup(); return false;\" style=\"font-weight:bold\" />";
 	$SP .= "<input type=\"button\" value=\"cancel\" onclick=\"geditclosePopup(); return false\" />";
 	$SP .= "</p>";
 	$SP .= "</form>";
@@ -502,45 +502,11 @@ sub geditpopup {
 # ---- helper edit form popup
 sub feditpopup {
 	# prepares a list of form's templates
-=pod
-	my @tplates;
-	my @tmp = glob("$WEBOBS{ROOT_CODE}/tplates/{VIEW,PROC,SEFRAN}.*");
-	foreach my $t (@tmp) {
-        if (! -l $t) {
-		    my @conf = readCfg($t);
-            next if (@conf == 1);  # readCfg returns [0] if the file is empty
-            my %G = @conf;
-		    $t =~ s/$WEBOBS{ROOT_CODE}\/tplates\///;
-		    my ($gt,$gn) = split(/\./,$t);
-		    push(@tplates,"$gt|$gn|".u2l($G{NAME}));
-        }
-	}
-=cut
 	my $SP = "";
 	$SP .= "<div id=\"feditovly\" style=\"display:none\"></div>";
 	$SP .= "<form id=\"feditoverlay_form\" style=\"display:none\">";
 	$SP .= "<p><b><i>Create/edit a FORM</i></b></p>";
-=pod
-	$SP .= "<label for=\"geditN\">$__{'Grid Type'}: <span class=\"small\">select a template</span></label>";
-	$SP .= "  <select size=\"1\" id=\"geditT\" name=\"geditT\">\n";
-	foreach (@tplates) {
-		my ($gt,$gn,$gl) = split(/\|/,$_);
-		my $sel = "";
-		$sel = "selected" if (($subsetType eq 'all' && $gt eq 'VIEW') || ($gt eq uc($subsetType) && $gn eq 'DEFAULT'));
-		$SP .= "  <option value=\"$gt.$gn\" $sel>$gt: $gl</option>\n";
-	}
-	$SP .= "  </select>\n";
-	$SP .= "<br style=\"clear: left\"><br>";
-=cut
-	$SP .= "<label for=\"feditN\">$__{'Form Name'}: <span class=\"small\">$__{'short name (uppercase)'}</span></label>";
-	$SP .= "  <input size=\"40\" id=\"feditN\" name=\"feditN\" value=\"\">\n";
-	$SP .= "<br style=\"clear: left\"><br>";
-=pod
-	$SP .= "<label for=\"nbIn\">$__{'Number of inputs'}: <span class=\"small\">number of inputs to inform</span></label>";
-	$SP .= "  <input size=\"40\" id=\"nbIn\" name=\"nbIn\" value=\"\">\n";
-	$SP .= "<br style=\"clear: left\"><br>";
-=cut
-	$SP .= "<label for=\"feditT\">$__{'Form template'}: <span class=\"small\"></span></label>";
+	$SP .= "<label for=\"feditT\">$__{'Form type'}: <span class=\"small\">$__{'select a template'}</span></label>";
 	my $tdir = "$WEBOBS{ROOT_CODE}/tplates";
 	opendir my $dir, ($tdir) or die "Cannot open directory: $!";
 	my @templates = sort grep (/FORM\./, readdir($dir));
@@ -555,6 +521,8 @@ sub feditpopup {
 	}
 	$SP .= "</select>";
 	$SP .= "<br style=\"clear: left\"><br>";
+	$SP .= "<label for=\"feditN\">$__{'Form name'}: <span class=\"small\">$__{'short name (uppercase)'}</span></label>";
+	$SP .= "  <input size=\"40\" id=\"feditN\" name=\"feditN\" value=\"\">\n";
 
 	$SP .= "<p style=\"margin: 0px; text-align: center\">";
 	$SP .= "<input type=\"button\" name=\"sendbutton\" value=\"$__{'Create'}\" onclick=\"feditsendPopup(); return false;\" style=\"font-weight:bold\" />";
