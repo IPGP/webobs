@@ -556,7 +556,10 @@ foreach (@columns) {
     foreach my $fieldset (split(/,/, $FORM{$_})) {
         print "<fieldset><legend>".$FORM{"$fieldset\_NAME"}."</legend>";
         print "<table width=\"100%\">";
-        foreach (1..$FORM{"$fieldset\_COLUMNS"}) {
+		my ($fscells,$fsdir) = split(/[, ]/,$FORM{"$fieldset\_CELLS"});
+		my $row = ($fsdir =~ /ROW/i ? "1":"0"); # true if splitted into rows
+		my $dlm = ($row ? " ":"<BR>");
+        foreach (1..$fscells) {
             print qq(<td style=\"border:0\" valign=\"top\">
                         <p class=\"parform\" align=$side>);
             foreach my $Field (split(/,/, $FORM{sprintf("$fieldset\_C%02d", $_)})) {
@@ -564,28 +567,31 @@ foreach (@columns) {
                 my $unit = $FORM{"$Field\_UNIT"};
                 my $type = $FORM{"$Field\_TYPE"};
 				my $size = extract_size($type);
-                my $txt = "<B>$name </B>".($unit ne "" ? " ($unit)":"")." = ";
+                my $txt = "<B>$name</B>".($unit ne "" ? " ($unit)":"");
                 my $field = lc($Field);
                 if ($field =~ /^input/ && $type =~ /^list:/) {
                     my %list = extract_list($type,$form);
                     my @list_keys = keys %list;
-                    print qq($txt<select name="$field" size=1
+                    print qq($txt = <select name="$field" size=1
                         onMouseOut="nd()" onmouseover="overlib('$__{'Select a value for'} $field')"><option value=""></option>);
                     for (sort @list_keys) {
 					my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
                         print qq(<option value="$_" $selected>$_: $list{$_}</option>);
                     }
-                    print qq(</select><BR>);
+                    print qq(</select>$dlm);
                 } elsif ($field =~ /^input/ && $type =~ /^numeric/){
-                    print qq($txt<input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
-                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a numeric value for'} $Field')"><BR>);
+                    print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
+                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a numeric value for'} $Field')">$dlm);
                 } elsif ($field =~ /^input/) {
-                    print qq($txt<input type="text" size=$size name="$field" value="$prev_inputs{$field}"
-                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a value for'} $Field')"><BR>);
+                    print qq($txt = <input type="text" size=$size name="$field" value="$prev_inputs{$field}"
+                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a value for'} $Field')">$dlm);
 				} elsif ($field =~ /^output/ && $type =~ /^formula/) {
                     my ($formula, $size, @x) = extract_formula($type);
-                    print qq($txt<input size=$size readOnly class=inputNumNoEdit name="$field"
-                        onMouseOut="nd()" onmouseover="overlib('$Field = $formula')"><BR>);
+                    print qq($txt = <input size=$size readOnly class=inputNumNoEdit name="$field"
+                        onMouseOut="nd()" onmouseover="overlib('$Field = $formula')">$dlm);
+				} elsif ($field =~ /^output/ && $type =~ /^text/) {
+                    my $text = extract_text($type);
+                    print $txt.($text ne "" ? ": $text":"").$dlm;
 				} else {
                     print qq(<input type="hidden" name="$field">\n);
                 }
