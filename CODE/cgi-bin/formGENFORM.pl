@@ -555,7 +555,7 @@ foreach (@columns) {
     }
     foreach my $fieldset (split(/,/, $FORM{$_})) {
         print "<fieldset><legend>".$FORM{"$fieldset\_NAME"}."</legend>";
-        print "<table width=\"100%\">";
+        print "<table width=\"100%\"><tr>";
 		my ($fscells,$fsdir) = split(/[, ]/,$FORM{"$fieldset\_CELLS"});
 		my $row = ($fsdir =~ /ROW/i ? "1":"0"); # true if splitted into rows
 		my $dlm = ($row ? " ":"<BR>");
@@ -597,8 +597,9 @@ foreach (@columns) {
                 }
             }
             print "</p></td>";
+			print "</tr><tr>" if ($row && $_ ne $fscells);
         }
-        print "</table>";
+        print "</tr></table>";
         print "</fieldset>";
     }
     unless ($_ =~ "01") {
