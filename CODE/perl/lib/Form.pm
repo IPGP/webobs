@@ -51,6 +51,7 @@ use strict;
 use warnings;
 use WebObs::Config;
 use WebObs::Grids;
+use WebObs::Utils;
 use CGI::Carp qw(fatalsToBrowser set_message);
 set_message(\&webobs_cgi_msg);
 
@@ -58,7 +59,7 @@ require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
 @EXPORT = qw(datetime2array datetime2maxmin
-	extract_fields extract_formula extract_list extract_size extract_re count_inputs);
+	extract_fields extract_formula extract_list extract_size extract_text count_inputs);
 
 # FORM constructor
 sub new {
@@ -226,9 +227,10 @@ sub extract_size {
 	return $size;
 }
 
-sub extract_re {
-	my $re = shift;
-	return (split /txt\: /, $re)[1];
+sub extract_text {
+	my $text = shift;
+	$text =~ s/^text[:]*//;
+	return (trim($text));
 }
 
 # count_inputs (@keys) returns max index of INPUTnn fields in array @keys

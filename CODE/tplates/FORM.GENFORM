@@ -9,7 +9,7 @@
 BANG|$WEBOBS{BIG_BANG}
 TITLE|Generic database form
 
-# if YES, use start and end date for each record
+# if YES, use start and end date/time for each record
 STARTING_DATE|NO
 
 # may contain any +GID and/or UID list (coma separated)
@@ -39,7 +39,7 @@ INPUT04_TYPE|numeric(5)
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 OUTPUT01_NAME|Formula output1
 OUTPUT01_UNIT|no unit
-OUTPUT01_TYPE|formula: (INPUT01+INPUT03)*2
+OUTPUT01_TYPE|formula: (INPUT01-INPUT03)*2
 OUTPUT02_NAME|Formula output2
 OUTPUT02_UNIT|no unit
 OUTPUT02_TYPE|formula: (INPUT04+OUTPUT01)/10
@@ -54,20 +54,20 @@ COLUMN02_LIST|FIELDSET02,FIELDSET03
 # number of fieldsets
 FIELDSETS_NUMBER|3
 
-# first fieldset name, number of columns and list of fields for each column
+# first fieldset name, number of cells and list of fields for each column
 FIELDSET01_NAME|Fieldset n°1
-FIELDSET01_COLUMNS|1
+FIELDSET01_CELLS|1,COLS
 FIELDSET01_C01|INPUT01,INPUT02
 
 # second fieldset with 2 columns
 FIELDSET02_NAME|Fieldset n°2
-FIELDSET02_COLUMNS|2
+FIELDSET02_CELLS|2,COLS
 FIELDSET02_C01|INPUT03,INPUT04
 FIELDSET02_C02|OUTPUT01
 
 # third fieldset with toggle view
 FIELDSET03_NAME|Fieldset n°3
-FIELDSET03_COLUMNS|1
+FIELDSET03_CELLS|1
 FIELDSET03_TOGGLE|YES
 FIELDSET03_C01|OUTPUT02
 
