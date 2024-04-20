@@ -9,15 +9,12 @@ DEFAULT_DAYS|365
 OPERATORS_LIST|+DUTY
 
 # inputs names and units
-# for the type, chose between : text (size), list (link to a file containing the list) or formula (algebric formula)
 INPUT01_NAME|Gas Temperature
 INPUT01_UNIT|°C
 INPUT02_NAME|pH
 INPUT02_UNIT|
 INPUT03_NAME|Flow Rate (qualitative) 
-INPUT03_TYPE|list: FORM_listgaz.conf
-
-# fieldset 02
+INPUT03_TYPE|list: FORM_listVOLCGAS_type.conf
 INPUT04_NAME|H<sub>2</sub>
 INPUT04_UNIT|%
 INPUT05_NAME|He
@@ -49,18 +46,18 @@ INPUT16_UNIT|
 
 # which inputs are contained in the first fieldset ?
 FIELDSET01_NAME|On-Site Measurements
-FIELDSET01_COLUMNS|1
+FIELDSET01_CELLS|1
 FIELDSET01_C01|INPUT01,INPUT02,INPUT03
 
 # which inputs are contained in the second fieldset ?
 FIELDSET02_NAME|Major Concentration
-FIELDSET02_COLUMNS|2
+FIELDSET02_CELLS|2
 FIELDSET02_C01|INPUT04,INPUT05,INPUT06,INPUT07,INPUT08
 FIELDSET02_C02|INPUT09,INPUT10,INPUT11,INPUT12,INPUT13
 
 # which inputs are contained in the third fieldset ?
 FIELDSET03_NAME|Isotope Concentration
-FIELDSET03_COLUMNS|1
+FIELDSET03_CELLS|1
 FIELDSET03_C01|INPUT14,INPUT15,INPUT16
 
 # which fieldsets are contained in the first column ?
