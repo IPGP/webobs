@@ -1887,17 +1887,29 @@ msgstr "Modifier/Créer une Grid"
 msgid "Edit/Create a Form"
 msgstr "Modifier/Créer un Form"
 
+msgid "select a template"
+msgstr "sélectionner un modèle"
+
 msgid "short name (uppercase)"
 msgstr "nom court (en majuscules)"
+
+msgid "Grid name"
+msgstr "Nom de la Grid"
+
+msgid "Grid type"
+msgstr "Type de Grid"
 
 msgid "Form name"
 msgstr "Nom du Form"
 
-msgid "Form template"
-msgstr "Template de Form"
+msgid "Form type"
+msgstr "Type de Form"
 
 msgid "Reset"
 msgstr "Réinitialiser"
+
+msgid "Create"
+msgstr "Créer"
 
 
 # ---- showGENFORM.pl
