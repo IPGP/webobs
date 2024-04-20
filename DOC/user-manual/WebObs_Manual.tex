@@ -21,6 +21,7 @@
 
 \usepackage{listings}
 \lstset{
+inputencoding=latin1,
 basicstyle=\scriptsize\ttfamily\color{BrickRed}\bfseries,
 frame=single,
 backgroundcolor=\color{snow},
@@ -48,7 +49,7 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 \newcommand{\webobs}{\textbf{WebObs }}
 \newcommand{\wo}[1]{\MakeTextUppercase{#1}}
 \newcommand{\wofile}[1]{\small{\textbf{#1}}}
-\newcommand{\wokey}[1]{\small{	\texttt{#1}}}
+\newcommand{\wokey}[1]{\fontfamily{lmtt}\fontseries{b}\selectfont\small#1\fontfamily{\sfdefault}\selectfont}
 \newcommand{\wocmd}[1]{\textbf{#1}}
 
 \newcounter{dateone}\newcounter{datetwo}
