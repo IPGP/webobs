@@ -120,7 +120,7 @@ my @validity = split(/[, ]/, ($conf{VALIDITY_COLORS} ? $conf{VALIDITY_COLORS}:"#
 # make a list of formulas and threshods
 my @formulas;
 my @thresh;
-foreach (keys %conf) {
+foreach (sort keys %conf) {
 	if ($_ =~ /^OUTPUT.*_TYPE/ && $conf{$_} =~ /^formula/) {
 		push(@formulas, (split /_TYPE/, $_)[0]);
 	}
@@ -381,6 +381,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 			$formula =~ s/$_/\$fields{$f}/g;
 		}
 		$fields{lc($_)} = roundsd(eval $formula, $size - 3); # results is rounded with $size-3 digits
+		#$fields{lc($_)} = $formula;
 	}
 
 	$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
@@ -430,9 +431,9 @@ for (my $j = 0; $j <= $#rows; $j++) {
 			}
 			if (grep(/^$Field$/, @thresh) ) {
 				my @tv = split(/[, ]/,$conf{$Field."_THRESHOLD"});
-				if (abs($fields{$field}) > $tv[0]) {
+				if (abs($fields{$field}) >= $tv[0] && abs($fields{$field}) < $tv[1]) {
 					$opt .= " style=\"background-color:$validity[1]\"";
-				} elsif (abs($fields{$field}) > $tv[2]) { 
+				} elsif (abs($fields{$field}) >= $tv[1]) { 
 					$opt .= " style=\"background-color:$validity[2]\"";
 				}
 			}
