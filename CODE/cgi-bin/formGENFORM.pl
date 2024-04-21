@@ -278,10 +278,10 @@ foreach (@thresh) {
 	if ($#tv > 0) {
 		print qq(
 	form.$f.style.background = "$validity[0]";
-	if (Math.abs(form.$f.value) > $tv[0]) {
+	if (Math.abs(form.$f.value) >= $tv[0]) {
 		form.$f.style.background = "$validity[1]";
 	}
-	if (Math.abs(form.$f.value) > $tv[1]) {
+	if (Math.abs(form.$f.value) >= $tv[1]) {
 		form.$f.style.background = "$validity[2]";
 	}
 		);
