@@ -62,43 +62,67 @@ If you want to edit a \wo{form}, you just need to go in the GENFORM creation men
 
 \section{The GENFORM language}
 
-The GENFORM form layout is separated into \wokey{COLUMNS} number of columns, and a total of \wokey{FIELDSETS} field sets. Each field xx set contains \wokey{FIELDSET\_xx\_COLUMNS} sub-columns, and each sub-column contains several fields of inputs \wokey{INPUTxx} or outputs \wokey{OUTPUTxx}. Inputs and outputs fields have a NAME (mandatory), and optional UNIT, TYPE, THRESHOLD, and HELP.
+\subsection{General parameters}
 
-The NAME contains the full name of the field, but it is recommended to use short names since it will be used in the table column header.
+A GENFORM \wo{form} has general parameters:
+\begin{itemize}
+	\item a \wokey{TITLE} (long string) displayed on the pages referring to the \wo{form},
+	\item a \wokey{BANG}, which is the oldest year of potential record in the \wo{form},
+	\item a \wokey{STARTING\_DATE} flag which is a boolean, allowing GENFORM to define a starting date of each record in addition to end date,
+	\item an \wokey{OPERATORS\_LIST}, list of operators as user UIDs and/or group +GIDs,
+	\item the number of \wokey{COLUMNS} separating the form layout,
+	\item the number of \wokey{FIELDSETS} used to group fields (inputs and outputs, see below) into categories.
+\end{itemize}
 
-The UNIT contains unit of the field (if revelant).
+\subsection{Fieldsets}
 
-Valid types for an INPUT field are:
+Each FIELDSET is referenced with a 2-digit number {\it xx}, has a name, a number of CELLS dividing it, and the list of the fields (INPUT or OUTPUT) you want to display in each CELL. CELLS are arranged into columns (the default), or into rows inside the FIELDSET. Finally, each CELL has a list of the fields you want to display in: \wokey{INPUTzz} and/or outputs \wokey{OUTPUTzz}. Fields are arranged vertically in the CELL if the FIELDSET is splitter into columns, or horizontally if splitted into rows.
+
+FIELDSET parameters are for the fieldset {\it xx}:
+\begin{itemize}
+	\item \wokey{FIELDSETxx\_NAME}: full name of the fieldset, but it is recommended to use short string since it will be used in the table column header,
+	\item \wokey{FIELDSETxx\_CELLS}: the number of cells inside the fieldset, followed by optional tag COLS (default) or ROWS,
+	\item \wokey{FIELDSETxx\_Cyy}: list of INPUT and/or OUTPUT to display into the CELL {\it yy},
+	\item \wokey{FIELDSETxx\_TOGGLE}: if YES, indicates that the fieldset will not be displayed by default in the table.
+\end{itemize}
+
+\subsection{Inputs and outputs fields}
+The FIELDS in a GENFORM can be INPUTS, referencing to data that will be recorded into the database, and OUTPUTS, text or products to be displayed, like formulas, but not recorded.
+
+INPUTS and OUTPUTS are referenced with a 2-digit number {\it zz}, have a name (mandatory), a unit, and a type. Common parameters are defined as suffix of \wokey{INPUTzz} or \wokey{OUTPUTzz}:
+\begin{itemize}
+	\item \wokey{\_NAME}: name of the field, preferably short since it is used in the table headers,
+	\item \wokey{\_UNIT}: unit of the field (if relevant), indicated into parenthesis,
+	\item \wokey{\_TYPE}: type of the field (see below),
+	\item \wokey{\_VALID}: 2 threshold values in a list {\it a, b} (see below),
+	\item \wokey{\_HELP}: a string to be displayed as window popup to explain the field containt.
+\end{itemize}
+
+Valid TYPE for an INPUT field is:
 \begin{itemize}
 	\item \wokey{text(size)} : text string, optional size in characters (default is 5);
 	\item \wokey{numeric(size)}: numeric input, optional size in characters (default is 5);
 	\item \wokey{list:\textit{filename}}: points to a config file containing a \wokey{key|value} list of selectable items.
 \end{itemize}
 
-Valid types for an OUTPUT field are:
+Valid TYPE for an OUTPUT field is:
 \begin{itemize}
-	\item \wokey{formula(size):\textit{formula}}, which allows to make simple mathematical operations between the different inputs and/or outputs. Optional size of the result in characters (default is 6), and size$-3$ significant digits;
+	\item \wokey{formula(size):\textit{formula}}, which allows to make simple mathematical operations between the different inputs and/or outputs (see below). Optional size of the result in characters (default is 6), and size$-3$ significant digits;
 	\item \wokey{text} : text string (HTML allowed).
 \end{itemize}
 
-The THRESHOLD applies to input or output of numeric/formula types. It contains a coma-separated list of 2 threshold values {\it a, b} to display color background associated to a level of validity of the field absolute value. Three levels are defined: normal (green), warning (orange), and error (red). The criteria are, where {\it x} is the field value:
+In formulas, the use of previous outputs is allowed but they must precede the current formula (with lower output numbers). The syntax must remain simple since the same formula is interpreted by Javascript in the form page and by Perl in the table page. Use of plus (+), minus (-), divide (/), multiply (*), exponent (**) operators, numbers and parenthesis is admitted. An input must be referenced as \wokey{INPUTzz}, an output as \wokey{OUTPUTzz}.
+ 
+The VALID parameters applies to input or output of numeric/formula types. It contains a coma-separated list of 2 threshold values {\it a, b} to display color background associated to a level of validity of the field absolute value. Three levels of validity are defined: normal (green), warning (orange), and error (red). The criteria are, where {\it x} is the field value:
 \begin{itemize}
 	\item normal for abs({\it x}) $<=$ {\it a},
 	\item warning for {\it a} $<$ abs({\it x}) $<=$ {\it b},
 	\item error for abs({\it x}) $>$ {\it b}.
 \end{itemize}
 
-The 3 threshold colors can be defined in \wokey{THRESHOLD\_COLORS} variable, for normal, warning, and error levels, respectively. Note that normal level color applies only in the form; for table display of data the normal level value has no background color (for readability).
+The 3 validity level colors can be defined in \wokey{VALIDITY\_COLORS} variable, for normal, warning, and error levels, respectively. Note that normal level color applies only in the form; for table display of data the normal level value has no background color (for readability).
 
-Each FIELDSET has a NAME, a number of CELLS dividing it, and the NAME of the fields (INPUT or OUTPUT) you want to display in each CELL. CELLS are arranged into columns (the default), or into rows inside the FIELDSET. Finally, each CELL has a list of the fields you want to display in: fields are arranged vertically in the CELL if the FIELDSET is splitted into columns, or horizontally if splitted into rows.
 
-Finally, the configuration file of the \wo{form} has:
-\begin{itemize}
-	\item a \wokey{TITLE} (long string),
-	\item a \wokey{BANG}, which is the oldest year of potential record in the \wo{form},
-	\item a \wokey{STARTING\_DATE} flag which is a boolean, allowing GENFORM to define a starting date of each record in addition to end date,
-	\item an \wokey{OPERATORS\_LIST}, list of operators as user UIDs and/or group +GIDs.
-\end{itemize}
 
 % ==================================================================
 
