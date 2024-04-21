@@ -59,7 +59,7 @@ require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
 @EXPORT = qw(datetime2array datetime2maxmin
-	extract_fields extract_formula extract_list extract_size extract_text count_inputs);
+	extract_formula extract_list extract_size extract_text count_inputs);
 
 # FORM constructor
 sub new {
@@ -184,15 +184,6 @@ sub datetime2maxmin {
 		$date_max = "$y-$m-$d $hr:59";
 	}
 	return ("$date_max","$date_min");
-}
-
-sub extract_fields {
-	my @fields;
-	my $suffix = $_[1];
-	foreach (@{$_[0]}) {
-		if ($_ =~ /$suffix$/) {push(@fields,$_);}
-	}
-	return @fields;
 }
 
 # extract_formula ($type) returns $formula and @x an array of used fields (input or output)

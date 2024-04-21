@@ -137,13 +137,10 @@ my $sel_site = my $sel_comment = "";
 
 my $col_count = $FORM{COLUMNS_NUMBER};
 my $fs_count  = $FORM{FIELDSETS_NUMBER};
-my @keys = sort keys %FORM;
-my @names = extract_fields(\@keys, '_NAME');
-my @units = extract_fields(\@keys, '_UNIT');
-my @types = extract_fields(\@keys, '_TYPE');
 my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$col_count);
 my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
-my $max_inputs = count_inputs(@keys);
+my $max_inputs = count_inputs(keys %FORM);
+my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
 
 # ---- Variables des menus
 my $starting_date   = isok($FORM{STARTING_DATE});
@@ -235,9 +232,16 @@ $form_url->query_form('form' => $form, 'id' => $id, 'return_url' => $return_url,
 
 # make a list of formulas
 my @formulas;
-foreach (@types) {
-	if ($_ =~ /^OUTPUT/ && $FORM{$_} =~ /^formula/) {
+foreach (sort keys %FORM) {
+	if ($_ =~ /^OUTPUT.*_TYPE/ && $FORM{$_} =~ /^formula/) {
 		push(@formulas, (split /_TYPE/, $_)[0]);
+	}
+}
+# make a list of thresholds
+my @thresh;
+foreach (keys %FORM) {
+	if ($_ =~ /^(IN|OUT)PUT.*_THRESHOLD/) {
+		push(@thresh, (split /_THRESHOLD/, $_)[0]);
 	}
 }
 
@@ -267,6 +271,21 @@ foreach my $f (@formulas) {
 		$formula =~ s/$_/Number(form.$form_input.value)/g;
 	}
 	print "    form.".lc($f).".value = parseFloat($formula).toFixed(2);\n";
+}
+foreach (@thresh) {
+	my $f = lc($_);
+	my @tv = split(/[, ]/,$FORM{$_."_THRESHOLD"});
+	if ($#tv > 0) {
+		print qq(
+	form.$f.style.background = "$validity[0]";
+	if (Math.abs(form.$f.value) > $tv[0]) {
+		form.$f.style.background = "$validity[1]";
+	}
+	if (Math.abs(form.$f.value) > $tv[1]) {
+		form.$f.style.background = "$validity[2]";
+	}
+		);
+	}
 }
 
 print qq[
@@ -390,6 +409,7 @@ if ($action eq "edit") {
 
 if ($debug) {
 	print "<P>".join(',',@formulas)."</P>\n";
+	print "<P>".join(',',@thresh)."</P>\n";
 	print "<P>max_inputs = $max_inputs</P>\n";
 }
 
