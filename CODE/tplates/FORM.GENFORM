@@ -18,7 +18,11 @@ OPERATORS_LIST|+DUTY
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
 
-# inputs names, units, and types
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
+
+
+# --- Inputs names, units, and types
 # valid types: text(size), numeric(size), list: filename
 ### WARNING: once created, you cannot remove or rename any input since it will
 ### corrupt the database. You might only add new inputs, increasing the number
@@ -35,7 +39,7 @@ INPUT04_NAME|Numeric input4
 INPUT04_UNIT|Unit4
 INPUT04_TYPE|numeric(5)
 
-# outputs names, units, and types
+# --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 OUTPUT01_NAME|Formula output1
 OUTPUT01_UNIT|no unit
@@ -43,6 +47,7 @@ OUTPUT01_TYPE|formula: (INPUT01-INPUT03)*2
 OUTPUT02_NAME|Formula output2
 OUTPUT02_UNIT|no unit
 OUTPUT02_TYPE|formula: (INPUT04+OUTPUT01)/10
+OUTPUT02_THRESHOLD|0.5,2
 
 # --- Form layout
 # number of columns and list of fieldsets for each

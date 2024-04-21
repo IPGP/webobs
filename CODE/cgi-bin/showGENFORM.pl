@@ -113,14 +113,19 @@ for my $p (sort keys(%Ps)) {
 		%Ns = (%Ns, %N);
 	}
 }
-
-# make a list of formulas
-my @formulas;
 my %conf = $FORM->conf;
-my @keys = sort keys %conf;
-foreach (extract_fields(\@keys, '_TYPE')) {
-	if ($_ =~ /^OUTPUT/ && $conf{$_} =~ /^formula/) {
+
+my @validity = split(/[, ]/, ($conf{VALIDITY_COLORS} ? $conf{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
+
+# make a list of formulas and threshods
+my @formulas;
+my @thresh;
+foreach (keys %conf) {
+	if ($_ =~ /^OUTPUT.*_TYPE/ && $conf{$_} =~ /^formula/) {
 		push(@formulas, (split /_TYPE/, $_)[0]);
+	}
+	if ($_ =~ /^(IN|OUT)PUT.*_THRESHOLD/) {
+		push(@thresh, (split /_THRESHOLD/, $_)[0]);
 	}
 }
 
@@ -234,7 +239,7 @@ my @field_names;
 
 foreach(@fieldsets) {
 	push(@fs_names, $FORM->conf("$_\_NAME"));
-	my $nb_col = $FORM->conf("$_\_COLUMNS");
+	my $nb_col = $FORM->conf("$_\_CELLS");
 	my @fieldset;
 	for (my $i = 0; $i <= $nb_col; $i++) {
 		push(@fieldset, split(/,/, $FORM->conf("$_\_C0".$i)));
@@ -353,11 +358,11 @@ $header = "<TR>".($clientAuth > 1 ? "<TH rowspan=2></TH>":"");
 foreach(@colnam) { 
 	$header .= "<TH ".( $colspan{$_} eq "" ? "rowspan=2" : "colspan=$colspan{$_}").">$_</TH>";
 }
-$header .= "<TH rowspan=2></TH></TR><TR>";
+$header .= "<TH rowspan=2></TH></TR>";
 foreach(@colnam2) {
 		$header .= "<TH>".$_."</TH>";
 }
-$header .= "</TR>";
+$header .= "</TR>\n";
 
 for (my $j = 0; $j <= $#rows; $j++) {
 	my ($id, $trash, $site, $edate0, $edate1, $sdate0, $sdate1, $opers, $rem, $ts0, $user) = ($rows[$j][0],$rows[$j][1],$rows[$j][2],$rows[$j][3],$rows[$j][4],$rows[$j][5],$rows[$j][6],$rows[$j][7],$rows[$j][-3],$rows[$j][-2],$rows[$j][-1]);
@@ -402,7 +407,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 
 	$text .= "<TR ".($trash == 1 ? "class=\"node-disabled\"":"").">";
 	if ($clientAuth > 1) {
-		$text .= "<TD nowrap>$edit</TH>";
+		$text .= "<TH nowrap>$edit</TH>";
 	}
 	$text .= ($starting_date ? "<TD nowrap>$sdate</TD>":"")."<TD nowrap>$edate</TD>";
 	$text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite')\">$nodelink&nbsp;</TD>";
@@ -412,15 +417,24 @@ for (my $j = 0; $j <= $#rows; $j++) {
 		my $fs = $fieldsets[$f];
 		my $nb_fields = $#{$field_names[$f]};
 		for (my $n = 0; $n <= $nb_fields; $n++) {
-			my $field = lc($field_names[$f][$n]);
+			my $Field = $field_names[$f][$n];
+			my $field = lc($Field);
 			my $opt;
 			if (defined $lists{$field}) {
 				my $val = $lists{$field}{$fields{$field}};
 				$val = "<I>$__{'unknown key list!'}</I>" if ($val eq "");
 				$opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$fields{$field}</B>: $val')\"";
 			}
-			if ( grep(/^$field$/i, @formulas)) {
+			if (grep(/^$field$/i, @formulas)) {
 				$opt = " class=\"tdResult\" onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$field</B>:')\"";
+			}
+			if (grep(/^$Field$/, @thresh) ) {
+				my @tv = split(/[, ]/,$conf{$Field."_THRESHOLD"});
+				if (abs($fields{$field}) > $tv[0]) {
+					$opt .= " style=\"background-color:$validity[1]\"";
+				} elsif (abs($fields{$field}) > $tv[2]) { 
+					$opt .= " style=\"background-color:$validity[2]\"";
+				}
 			}
 			$text .= "<TD align=center $opt>$fields{$field}</TD>" if (!isok($conf{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
 			$csvTxt .= "$fields{$field},";
@@ -431,7 +445,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	if ($rem ne "") {
 		$remTxt = "<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('".htmlspecialchars($rem)."',CAPTION,'Observations $aliasSite')\"><IMG src=\"/icons/attention.gif\" border=0></TD>";
 	}
-	$text .= "</TD>$remTxt</TR>";
+	$text .= "</TD>$remTxt</TR>\n";
 }
 
 if ($QryParm->{'debug'}) {
@@ -444,7 +458,7 @@ push(@html,"$__{'Number of records'} = <B>".($#rows+1)."</B> / $nbData.</P>\n");
 push(@html,"<P>$__{'Download a CSV text file of these data'}: <A href=\"/cgi-bin/showGENFORM.pl?dump=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&trash=$QryParm->{'trash'}&form=$form\"><B>$fileCSV</B></A></P>\n");
 
 if ($text ne "") {
-	push(@html,"<TABLE class=\"trData\" width=\"100%\"><TR>$header\n</TR>$text\n<TR>$header\n</TR></TABLE>");
+	push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text\n$header\n</TABLE>\n");
 }
 
 if ($QryParm->{'dump'} eq "csv") {
