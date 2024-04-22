@@ -31,7 +31,7 @@ COMMENT_HELPER|Noter toute présence d'odeur, gaz, précipité, etc...
 # ############################### WARNING #####################################
 
 INPUT01_NAME|Type
-INPUT01_TYPE|list: FORM_listWATERS_type_fr.conf
+INPUT01_TYPE|list: FORM_listEAUX_type.conf
 
 INPUT02_NAME|Temp. ambiante
 INPUT02_UNIT|°C
