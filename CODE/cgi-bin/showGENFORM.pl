@@ -381,7 +381,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 			$formula =~ s/$_/\$fields{$f}/g;
 		}
 		$fields{lc($_)} = roundsd(eval $formula, $size - 3); # results is rounded with $size-3 digits
-		#$fields{lc($_)} = $formula;
+		#$fields{lc($_)} = eval $formula;
 	}
 
 	$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
