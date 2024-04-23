@@ -572,7 +572,8 @@ table.Dcalnd a:hover
 }
 
 /* 'wait for data being loaded' (attente) in show forms  */
-#attente
+#attente,
+#waiting
 {
 	 color: gray;
 	 background: white;
