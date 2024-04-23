@@ -44,7 +44,7 @@ tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" ' { if ($1 != "
 	printf ",\""$28" "$29"\""; \
 	if ($29 ~ /^\[.*\] /) {
 		n = split($29,vv,/\] \[/);
-		split(vv[n],v," ");
+		split(vv[1],v," ");
 		gsub(/\]/, "", v[2]); \
 		printf ",\""v[1]"\",\""v[2]"\"" \
 	} else { printf ",\"\",\"\"" }; \
