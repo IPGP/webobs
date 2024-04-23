@@ -268,15 +268,15 @@ sub roundsd
 # Round with significant digits
 {
 	my ($x, $n) = @_;
-	$n = 1 if ($n < 1);
-	my $y = 0;
-	if ($x != 0) { 
-		my $e = floor(log(abs($x))/log(10) - $n + 1);
-		my $og = 10**abs($e);
-		$y = floor($x/$og + 0.5)*$og;
-		$y = floor($x*$og + 0.5)/$og if ($e < 0);
+	$n = 1 if ($n eq "" || $n < 1);
+	return 0 if ($x == 0);
+	my $e = floor(log(abs($x))/log(10) - $n + 1);
+	my $og = 10**abs($e);
+	if ($e > 0) {
+		return floor($x/$og + 0.5)*$og;
+	} else {
+		return floor($x*$og + 0.5)/$og;
 	}
-	return $y;
 }
 
 

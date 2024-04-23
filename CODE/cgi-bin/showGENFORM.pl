@@ -376,12 +376,17 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	# stores formulas
 	foreach (@formulas) {
 		my ($formula, $size, @x) = extract_formula($conf{$_."_TYPE"});
+		my $nan = 0;
 		foreach (@x) {
 			my $f = lc($_);
 			$formula =~ s/$_/\$fields{$f}/g;
 		}
-		$fields{lc($_)} = roundsd(eval $formula, $size - 3); # results is rounded with $size-3 digits
-		#$fields{lc($_)} = eval $formula;
+		my $res = eval($formula);
+		if ($res ne "") {
+			$fields{lc($_)} = roundsd($res, $size - 3); # results is rounded with $size-3 digits
+		} else {
+			$fields{lc($_)} = "";
+		}
 	}
 
 	$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
