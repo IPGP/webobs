@@ -60,7 +60,7 @@ my @clbNote;
 my @fieldCLB;
 my $fileDATA = "";
 my @newChan;
-my @donnees;
+my @data;
 my $nb = 0;
 my $nouveau = 0;
 my $QryParm = $cgi->Vars;
@@ -88,7 +88,7 @@ if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
 					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
 					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $fileDATA ); # for backwards compatibility
 					if ( -s $fileDATA ) {
-						@donnees = map { my @e = split /\|/; \@e; } readCfgFile($fileDATA);
+						@data = map { my @e = split /\|/; \@e; } readCfgFile($fileDATA);
 					} else {
 						$nouveau = 1; @newChan = (1..$QryParm->{'nbc'});
 					}
@@ -122,18 +122,18 @@ if ($NODE{INSTALL_DATE} and $NODE{INSTALL_DATE} =~ /\d{4}-\d{2}-\d{2}/) {
 	$firstyear = substr($NODE{INSTALL_DATE},0,4);
 }
 
-my @anneeListe  = ($firstyear..$todayyear);
-my @moisListe   = ('01'..'12');
-my @jourListe   = ('01'..'31');
-my @heureListe  = ('00'..'23');
-my @minuteListe = ('00'..'59');
+my @yearList  = ($firstyear..$todayyear);
+my @monthList   = ('01'..'12');
+my @dayList   = ('01'..'31');
+my @hourList  = ('00'..'23');
+my @minuteList = ('00'..'59');
 
 # ---- Start HTML page
-my $titrePage = "Edit - $CLBS{TITLE}";
+my $titlePage = "Edit - $CLBS{TITLE}";
 print "Content-type: text/html\n\n
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n
 <HTML><HEAD>\n
-<title>$titrePage</title>\n
+<title>$titlePage</title>\n
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n
 <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n
 <script language=\"JavaScript\" src=\"/js/jquery.js\"></script>
@@ -144,16 +144,20 @@ print "Content-type: text/html\n\n
 </HEAD>";
 my $jvs = ($QryParm->{'submit'}) ? 'onLoad="calc()"' : "";
 print "<BODY style=\"background-color:#E0E0E0\" $jvs>\n";
-print "<H1>$titrePage</H1>\n<H2>$titre2</H2>\n";
+print "<H1>$titlePage</H1>\n<H2>$titre2</H2>\n";
 
 # ---- take care of new "lines" if any
 #
 for (@newChan) {
-	my $s;
-	if ($NODE{INSTALL_DATE} and $NODE{INSTALL_DATE} =~ /\d{4}-\d{2}-\d{2}/) {
-		$s = $NODE{INSTALL_DATE}
-	} else {
-		$s = $today;
+	my $s = $today;
+	if ($NODE{INSTALL_DATE} =~ /^\d{4}/) {
+		if ($NODE{INSTALL_DATE} =~ /^\d{4}-\d{2}-\d{2}$/) {
+			$s = $NODE{INSTALL_DATE}
+		} elsif ($NODE{INSTALL_DATE} =~ /^\d{4}-\d{2}$/) {
+			$s = $NODE{INSTALL_DATE}."-01";
+		} elsif ($NODE{INSTALL_DATE} =~ /^\d{4}$/) {
+			$s = $NODE{INSTALL_DATE}."-01-01";
+		}
 	}
 	$s .= "|$fieldCLB[1][1]|$_";
 	for (3..($#fieldCLB)) {
@@ -163,9 +167,9 @@ for (@newChan) {
 		else { $s .= "|".$fieldCLB[$_][1]; }
 	}
 	my @s = split(/\|/, $s);
-	push(@donnees, \@s);
+	push(@data, \@s);
 }
-$nb = @donnees;  # number of elements in @donnees
+$nb = @data;  # number of elements in @data
 
 # ---- now inject some js code
 #
@@ -179,7 +183,7 @@ function verif_formulaire()
 	var j;
 	var v;
 	
-	for (i=1;i<=".scalar(@donnees).";i++) {
+	for (i=1;i<=".scalar(@data).";i++) {
 		for (j=1;j<=".($#fieldCLB-1).";j++) {
 			eval('v = document.formulaire.v' + i + '_' + j + '.value');
 			if (v.indexOf(\"#\") != -1) {
@@ -213,7 +217,7 @@ function calc()
 		ok = 0;
 	}
 
-	for (i=1;i<=".scalar(@donnees).";i++) {
+	for (i=1;i<=".scalar(@data).";i++) {
 		// Note: not really sure if the fix of this nonsense is ok, but it
 		// was useless anyway, as sX.value is always 'on' as the 'value' HTML
 		// attribute of the checkbox is not defined.
@@ -270,39 +274,39 @@ print "</TR>\n";
 my $i    = 0;
 my $nbc  = 0;
 
-for my $line (sort sort_clb_lines @donnees) {
+for my $line (sort sort_clb_lines @data) {
 	$i++;
 	print "<TR>";
 
 	my @date = split(/-/, $line->[0]);
 	my @heure = split(/:/, $line->[1]);
 	print "<TD nowrap onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[0][3]}')\"><select name=\"y$i\" size=\"$fieldCLB[0][0]\">";
-	for (@anneeListe) {
+	for (@yearList) {
 		my $sel = "";
 			if ($_ eq $date[0]) { $sel = "selected"; }
 			print "<option $sel value=$_>$_</option>";
 	}
 	print "</select><select name=\"m$i\" size=\"$fieldCLB[0][0]\">";
-	for (@moisListe) {
+	for (@monthList) {
 		my $sel = "";
 			if ($_ eq $date[1]) { $sel = "selected"; }
 			print "<option $sel value=$_>$_</option>";
 	}
 	print "</select><select name=\"d$i\" size=\"$fieldCLB[0][0]\">";
-	for (@jourListe) {
+	for (@dayList) {
 		my $sel = "";
 			if ($_ eq $date[2]) { $sel = "selected"; }
 			print "<option $sel value=$_>$_</option>";
 	}
 	print "</select></TD>\n";
 	print "<TD nowrap onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB[1][3]}')\"><select name=\"h$i\" size=\"$fieldCLB[1][0]\">";
-	for (@heureListe) {
+	for (@hourList) {
 		my $sel = "";
 			if ($_ eq $heure[0]) { $sel = "selected"; }
 			print "<option $sel value=$_>$_</option>";
 	}
 	print "</select><select name=\"n$i\" size=\"$fieldCLB[1][0]\">";
-	for (@minuteListe) {
+	for (@minuteList) {
 		my $sel = "";
 			if ($_ eq $heure[1]) { $sel = "selected"; }
 			print "<option $sel value=$_>$_</option>";
@@ -353,7 +357,7 @@ Didier Mallarino, François Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
