@@ -453,7 +453,7 @@ print qq[<form name="form" id="theform" action="">
     <td style="border: 0" valign="top">
       <fieldset>
         <legend>$__{'Date and place of sampling'}</legend>
-        <p class="parform">
+        <p class="parform" align=\"right\">
 ];
 
     if ($starting_date) {
@@ -568,10 +568,8 @@ print qq(</select>
       </fieldset>);
 
 foreach (@columns) {
-    my $side;
     unless ($_ =~ "01") {
-        print "<TD style=\"border:0\" valign=\"top\">";
-        $side = "right";
+        print "</TD>\n<TD style=\"border:0\" valign=\"top\">";
     }
     foreach my $fieldset (split(/,/, $FORM{$_})) {
         print "<fieldset><legend>".$FORM{"$fieldset\_NAME"}."</legend>";
@@ -581,7 +579,7 @@ foreach (@columns) {
 		my $dlm = ($row ? " ":"<BR>");
         foreach (1..$fscells) {
             print qq(<td style=\"border:0\" valign=\"top\">
-                        <p class=\"parform\" align=$side>);
+                        <p class=\"parform\" align=\"right\">);
             foreach my $Field (split(/,/, $FORM{sprintf("$fieldset\_C%02d", $_)})) {
                 my $name = $FORM{"$Field\_NAME"};
                 my $unit = $FORM{"$Field\_UNIT"};
