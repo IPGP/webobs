@@ -72,13 +72,15 @@ converts $textin B<" \< \>> to resp. html entities B<&quot; &lt; &gt;> :
 
 sub htmlspecialchars
 {
-	my $txt=$_[0];
+	my $txt = $_[0];
+	my $re = $_[1];
 
 	$txt =~ s/"/&quot;/g;
 	$txt =~ s/'/&rsquo;/g;
 	$txt =~ s/</&lt;/g;
 	$txt =~ s/>/&gt;/g;
 #  	print "<div style=\"border: 1px dotted gray;\">".$txt."</div>";
+	$txt =~ s/($re)/<b>\1<\/b>/g if ($re ne "");
 	return $txt;
 }
 
