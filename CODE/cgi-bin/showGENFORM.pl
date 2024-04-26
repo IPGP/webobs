@@ -100,6 +100,8 @@ $QryParm->{'node'}     //= "";
 $QryParm->{'trash'}    //= "0";
 $QryParm->{'dump'}     //= ""; 
 
+my $re = $QryParm->{'filter'}; 
+
 my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
@@ -174,6 +176,17 @@ if ($QryParm->{'dump'} ne "csv") {
 	"<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
 	"<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
 	"<!-- overLIB (c) Erik Bosrup -->\n";
+	
+	print <<"EOF";
+	<script type="text/javascript">
+	<!--
+	function eraseFilter()
+	{
+		document.form.filter.value = "";
+	}
+	//-->
+	</script>
+EOF
 } else {
 	push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type: text/csv\n\n");
 }
@@ -219,7 +232,8 @@ foreach (keys %lists) {
 	my $sel_list = $QryParm->{$_};
 	$filter .= " AND $_ = \"$sel_list\"" if ($sel_list ne "");
 }
-$stmt = qq(SELECT * FROM $tbl WHERE $filter;);
+$filter .= " AND comment REGEXP '$re'" if ($re ne "");
+$stmt = qq(SELECT * FROM $tbl WHERE $filter ORDER BY edate DESC;);
 $sth = $dbh->prepare( $stmt );
 $rv = $sth->execute() or die $DBI::errstr;
 
@@ -250,7 +264,7 @@ foreach(@fieldsets) {
 # ---- Form for display selection
 #  
 if ($QryParm->{'dump'} ne "csv") {
-	print "<FORM name=\"formulaire\" action=\"/cgi-bin/showGENFORM.pl\" method=\"get\">",
+	print "<FORM name=\"form\" action=\"/cgi-bin/showGENFORM.pl\" method=\"get\">",
 		"<INPUT name=\"form\" type=\"hidden\" value=\"$form\">";
 	print "<P class=\"boitegrise\" align=\"center\">",
 		"<B>$__{'Start Date'}:</B> ";
@@ -287,7 +301,12 @@ if ($QryParm->{'dump'} ne "csv") {
 		print qq(<input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
 			qq( onClick="document.location='$form_url?form=$form'" value="$__{'Enter a new record'}">);
 	}
-	print("<BR>\n");
+	print "<BR>\n";
+	print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"10\" value=\"$re\">";
+	if ($re ne "") {
+		print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
+	}
+	print " \n";
 	foreach my $i (keys %lists) {
 		my @key = keys %{$lists{$i}};
 		print "<B>".$FORM->conf(uc($i)."_NAME").":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
@@ -449,7 +468,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	$csvTxt .= ",\"".u2l($rem)."\"\n";
 	my $remTxt = "<TD></TD>";
 	if ($rem ne "") {
-		$remTxt = "<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('".htmlspecialchars($rem)."',CAPTION,'Observations $aliasSite')\"><IMG src=\"/icons/attention.gif\" border=0></TD>";
+		$remTxt = "<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('".htmlspecialchars($rem,$re)."',CAPTION,'Observations $aliasSite')\"><IMG src=\"/icons/attention.gif\" border=0></TD>";
 	}
 	$text .= "</TD>$remTxt</TR>\n";
 }
