@@ -1323,7 +1323,7 @@ FIN
 		# --- DATA (FID)
 		print "<TR><TD style=\"border:0\">";
 		print "<LABEL for=\"data\">FID:</LABEL>";
-		print "<INPUT size=\"15\" value=\"$usrDataFile\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_fid}')\" name=\"data\" id=\"data\"><BR>\n";
+		print "<INPUT size=\"15\" value=\"$usrDataFile\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_fid}')\" name=\"fid\" id=\"data\"><BR>\n";
 		# --- DATA (FID_x)
 		# first displays any user defined FID_x (that are NOT in the rawformats list)
 		my @usrFIDshort = map {$_ =~ s/^$GRIDType\.$GRIDName\.//g; $_} @usrFID;
