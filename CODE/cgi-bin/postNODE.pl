@@ -29,7 +29,7 @@ Process NODE Update or Create from formNODE submitted info
  ldly=
  LAST_DELAY|  configuration value
 
- data=
+ fid=
  FID|  configuration value - string
 
  rawformat=
@@ -226,7 +226,7 @@ my @emails	   = $cgi->param('email');
 my @topics     = $cgi->param('topics');
 my $lineage    = $cgi->param('lineage')     // '';
 my $tz         = $cgi->param('tz')          // '';
-my $data       = $cgi->param('data')        // '';
+my $fid        = $cgi->param('fid')         // '';
 my $rawformat  = $cgi->param('rawformat')   // '';
 my $rawdata    = $cgi->param('rawdata')     // '';
 my @chanlist   = $cgi->param('chanlist');
@@ -332,7 +332,7 @@ push(@lines,"TRANSMISSION|".u2l($typeTrans)."\n");
 
 # ---- procs parameters
 if ($GRIDType eq "PROC") {
-	push(@lines,"$GRIDType.$GRIDName.FID|".u2l($data)."\n");
+	push(@lines,"$GRIDType.$GRIDName.FID|".u2l($fid)."\n");
 	grep { $_ =~ /^FID_/ && (push(@lines,"$GRIDType.$GRIDName.$_|$QryParm->{$_}\n")) } (keys(%$QryParm));
 	push(@lines,"$GRIDType.$GRIDName.FDSN_NETWORK_CODE|$fdsn\n");
 	push(@lines,"$GRIDType.$GRIDName.RAWFORMAT|".u2l($rawformat)."\n");
