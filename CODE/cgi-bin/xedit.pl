@@ -227,8 +227,8 @@ print <<html;
 </script>
 html
 # - page, edit or browse area
-print "<h3>$relfile</h3>"; 
-print "<form id=\"theform\" name=\"form\" action=\"\" style=\"margin: 0px 0px 0px 10px; width: 650px;\">
+print "<h2>$relfile</h2>"; 
+print "<form id=\"theform\" name=\"form\" action=\"\" style=\"margin: 0px 0px 0px 10px; height:600px; width: 650px;\">
 <input type=\"hidden\" name=\"fs\" value=\"$fs\">
 <input type=\"hidden\" name=\"action\" value=\"save\">
 <input type=\"hidden\" name=\"ts0\" value=\"$TS0\">\n";
