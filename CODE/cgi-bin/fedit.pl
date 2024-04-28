@@ -63,6 +63,7 @@ use File::Copy qw(copy);
 use File::Temp ();
 use File::Path qw(mkpath rmtree);
 use HTML::Escape qw(escape_html);
+use List::MoreUtils qw(uniq);
 
 use CGI;
 my $cgi = new CGI;
@@ -437,13 +438,13 @@ print "<div id=\"statusbar\">$FORMName</div>\n";
 print "</TD>\n<TD style=\"border:0; vertical-align:top\">\n";
 
 # ---- Lists
-my @lists  = grep {/(INPUT[0-9]{2,3}_TYPE\|list:)/} split(/\n/, $txt);
-chomp(@lists);
+my @lists  = grep {/_TYPE\|list:/} split(/\n/, $txt);
+@lists = uniq(map {s/^.*\|list:\s*(.*)$/$1/g; $_} @lists);	
 
 print "<FIELDSET><LEGEND>Lists</LEGEND>\n<UL>";
 
-foreach(@lists) {
-	$_ = trim((split /list\: /, $_)[1]);
+foreach (@lists) {
+	$_ = trim($_);
 	my $tdir = "$WEBOBS{ROOT_CODE}/tplates"; 
 	my $fdir  = "$WEBOBS{PATH_FORMS}/$FORMName";
 	if (! -d $fdir and !mkdir($fdir)) {
