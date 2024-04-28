@@ -74,7 +74,8 @@ my $clientAuth = clientMaxAuth(type=>"authforms",name=>"('$form')");
 die "You can't view $form reports." if ($clientAuth < 1);
 my $editForm = ($clientAuth > 2 ? " <A href=\"/cgi-bin/fedit.pl?fname=$form&action=edit\"><IMG src=\"/icons/modif.png\" title=\"Edit...\" border=0></A>":"");
 
-my $FORM = new WebObs::Form($form);
+my $F = new WebObs::Form($form);
+my %FORM = $F->conf;
 
 # ---- DateTime inits ----------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
@@ -82,7 +83,7 @@ my $day   = strftime('%d',@tod);
 my $month = strftime('%m',@tod); 
 my $year  = strftime('%Y',@tod);
 my $today = strftime('%F',@tod);
-my $delay = $FORM->conf('DEFAULT_DAYS') // 30;
+my $delay = $FORM{DEFAULT_DAYS} // 30;
 my $startDate = qx(date -d "$delay days ago" +%F);
 my $endDate;
 chomp($startDate);
@@ -104,26 +105,25 @@ my $re = $QryParm->{'filter'};
 
 my %Ns;
 my @NODESSelList;
-my %Ps = $FORM->procs;
+my %Ps = $F->procs;
 for my $p (sort keys(%Ps)) {
 	if ($QryParm->{'node'} =~ /^$|^PROC\.$p(\.|$)/) { 
 		push(@NODESSelList,"PROC.$p|-- {PROC.$p} $Ps{$p} --");
-		my %N = $FORM->nodes($p);
+		my %N = $F->nodes($p);
 		for my $n (sort keys(%N)) {
 			push(@NODESSelList,"PROC.$p.$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
 		}
 		%Ns = (%Ns, %N);
 	}
 }
-my %conf = $FORM->conf;
 
-my @validity = split(/[, ]/, ($conf{VALIDITY_COLORS} ? $conf{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
+my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
 
 # make a list of formulas and threshods
 my @formulas;
 my @thresh;
-foreach (sort keys %conf) {
-	if ($_ =~ /^OUTPUT.*_TYPE/ && $conf{$_} =~ /^formula/) {
+foreach (sort keys %FORM) {
+	if ($_ =~ /^OUTPUT.*_TYPE/ && $FORM{$_} =~ /^formula/) {
 		push(@formulas, (split /_TYPE/, $_)[0]);
 	}
 	if ($_ =~ /^(IN|OUT)PUT.*_THRESHOLD/) {
@@ -141,7 +141,7 @@ $ENV{LANG} = $WEBOBS{LOCALE};
 
 my $fileCSV = $WEBOBS{WEBOBS_ID}."_".$form."_$today.csv";
 
-my $starting_date = isok($FORM->conf('STARTING_DATE'));
+my $starting_date = isok($FORM{STARTING_DATE});
 
 $startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'} 00:00:00";
 $endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'} 23:59:59";
@@ -151,7 +151,7 @@ $delay = qx[echo \$(( ( \$(date -d "$endDate" +%s) - \$(date -d "$startDate" +%s
  
 my @procnodes;
 if ($QryParm->{'node'} =~ /^PROC\.([^.]*)$/) {
-	my %tmpN = $FORM->nodes($1);
+	my %tmpN = $F->nodes($1);
 	for (keys(%tmpN)) {
 		push(@procnodes,"$_");
 	}
@@ -166,7 +166,7 @@ if ($QryParm->{'node'} =~ /^PROC\.[^.]*\.(.*)$/) {
 if ($QryParm->{'dump'} ne "csv") {
 	print $cgi->header(-charset=>'utf-8');
 	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
-	"<html><head><title>".$FORM->conf('TITLE')."</title>\n",
+	"<html><head><title>".$FORM{TITLE}."</title>\n",
 	"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
 	"<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
 
@@ -217,7 +217,7 @@ $sth->finish();
 # make an hash of hash of input type lists
 my %lists;
 foreach my $k (@rownames) {
-	my $list = $FORM->conf(uc("$k")."_TYPE");
+	my $list = $FORM{uc("$k")."_TYPE"};
 	if ($list =~ /^list:/) {
 		my %l = extract_list($list,$form); 
 		$lists{$k} = {%l};
@@ -246,17 +246,22 @@ $dbh->disconnect();
 
 # ---- Prepare form contains
 #
-my $fs_count  = $FORM->conf('FIELDSETS_NUMBER');
+my $fs_count  = $FORM{FIELDSETS_NUMBER};
 my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
 my @fs_names;
 my @field_names;
 
 foreach(@fieldsets) {
-	push(@fs_names, $FORM->conf("$_\_NAME"));
-	my $nb_col = $FORM->conf("$_\_CELLS");
+	push(@fs_names, $FORM{"$_\_NAME"});
 	my @fieldset;
-	for (my $i = 0; $i <= $nb_col; $i++) {
-		push(@fieldset, split(/,/, $FORM->conf("$_\_C0".$i)));
+	for (my $i = 0; $i <= $FORM{"$_\_CELLS"}; $i++) {
+		my @fields;
+		foreach (split(/,/, $FORM{sprintf("$_\_C%02d",$i)})) {
+			if (! ($_ =~ /^OUTPUT/ && $FORM{$_."_TYPE"} =~ /^text/)) {
+				push(@fields, $_);
+			}
+		}
+		push(@fieldset, @fields);
 	}
 	push(@field_names, \@fieldset);
 }
@@ -269,7 +274,7 @@ if ($QryParm->{'dump'} ne "csv") {
 	print "<P class=\"boitegrise\" align=\"center\">",
 		"<B>$__{'Start Date'}:</B> ";
 	print "<SELECT name=\"y1\" size=\"1\">\n";
-	for ($FORM->conf('BANG')..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+	for ($FORM{BANG}..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
 	print "</SELECT>\n";
 	print "<SELECT name=\"m1\" size=\"1\">\n";
 	for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
@@ -279,7 +284,7 @@ if ($QryParm->{'dump'} ne "csv") {
 	print "</SELECT>\n";
 	print "&nbsp;&nbsp;<B>$__{'End Date'}:</B> ";
 	print "<SELECT name=\"y2\" size=\"1\">\n";
-	for ($FORM->conf('BANG')..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+	for ($FORM{BANG}..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
 	print "</SELECT>\n";
 	print "<SELECT name=\"m2\" size=\"1\">\n";
 	for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
@@ -309,7 +314,7 @@ if ($QryParm->{'dump'} ne "csv") {
 	print " \n";
 	foreach my $i (keys %lists) {
 		my @key = keys %{$lists{$i}};
-		print "<B>".$FORM->conf(uc($i)."_NAME").":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
+		print "<B>".$FORM{uc($i)."_NAME"}.":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
 		print "<OPTION value=\"\"></OPTION>\n";
 		foreach (sort @key) {
 			my $sel = ($QryParm->{$i} eq $_ ? "selected":"");
@@ -318,9 +323,9 @@ if ($QryParm->{'dump'} ne "csv") {
 		print "</SELECT>\n";
 	}
 	foreach (@fieldsets) {
-		if (isok($conf{$_.'_TOGGLE'})) {
+		if (isok($FORM{$_.'_TOGGLE'})) {
 			my $fs = lc($_);
-			print " <INPUT type=\"checkbox\" name=\"$fs\" value=\"1\"".($QryParm->{$fs} ? " checked":"").">&nbsp;<B>$conf{$_.'_NAME'}</B>";
+			print " <INPUT type=\"checkbox\" name=\"$fs\" value=\"1\"".($QryParm->{$fs} ? " checked":"").">&nbsp;<B>$FORM{$_.'_NAME'}</B>";
 		}
 	}
 
@@ -330,7 +335,7 @@ if ($QryParm->{'dump'} ne "csv") {
 		print " <INPUT type=\"hidden\" name=\"trash\">";
 	}
 	print "</P></FORM>\n",
-	"<H2>".$FORM->conf('TITLE')."$editForm</H2>\n",
+	"<H2>".$FORM{TITLE}."$editForm</H2>\n",
 	"<P>";
 }
 
@@ -357,14 +362,14 @@ if ($starting_date) {
 
 for (my $i = 0; $i <= $#fs_names; $i++) {
 	my $fs = $fieldsets[$i];
-	my $showfs = ((!isok($conf{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)}) ? "1":"0");
+	my $showfs = ((!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)}) ? "1":"0");
 	push(@colnam, $fs_names[$i]) if ($showfs);
 	my $nb_fields = $#{$field_names[$i]};
 	$colspan{$fs_names[$i]} = $nb_fields+1;
 	for (my $j = 0; $j <= $nb_fields; $j++) {
 		my $field = $field_names[$i][$j];
-		my $name_field = htm2frac($FORM->conf("$field\_NAME"));
-		my $unit_field = $FORM->conf("$field\_UNIT");
+		my $name_field = htm2frac($FORM{"$field\_NAME"});
+		my $unit_field = $FORM{"$field\_UNIT"};
 		push(@colnam2, "$name_field".($unit_field ne "" ? " ($unit_field)":"")) if ($showfs);
 		$name_field =~ s/(<su[bp]>|<\/su[bp]>|\&[^;]*;)//g;
 		$csvTxt .= ',"'.u2l($name_field).'"';
@@ -372,14 +377,14 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
 }
 $csvTxt .= "\n";
 
-$header = "<TR>".($clientAuth > 1 ? "<TH rowspan=2></TH>":"");
+$header = "<TR>".($clientAuth > 1 ? "<TH rowspan=2></TH>\n":"");
 
 foreach(@colnam) { 
-	$header .= "<TH ".( $colspan{$_} eq "" ? "rowspan=2" : "colspan=$colspan{$_}").">$_</TH>";
+	$header .= "<TH ".( $colspan{$_} eq "" ? "rowspan=2" : "colspan=$colspan{$_}").">$_</TH>\n";
 }
-$header .= "<TH rowspan=2></TH></TR>";
+$header .= "<TH rowspan=2></TH></TR>\n";
 foreach(@colnam2) {
-		$header .= "<TH>".$_."</TH>";
+		$header .= "<TH>".$_."</TH>\n";
 }
 $header .= "</TR>\n";
 
@@ -394,7 +399,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	}
 	# stores formulas
 	foreach (@formulas) {
-		my ($formula, $size, @x) = extract_formula($conf{$_."_TYPE"});
+		my ($formula, $size, @x) = extract_formula($FORM{$_."_TYPE"});
 		my $nan = 0;
 		foreach (@x) {
 			my $f = lc($_);
@@ -435,8 +440,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
 		$text .= "<TH nowrap>$edit</TH>";
 	}
 	$text .= ($starting_date ? "<TD nowrap>$sdate</TD>":"")."<TD nowrap>$edate</TD>";
-	$text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite')\">$nodelink&nbsp;</TD>";
-	$text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>";
+	$text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite')\">$nodelink&nbsp;</TD>\n";
+	$text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>\n";
 	$csvTxt .= "$id,$sdate,$edate,\"$aliasSite\",\"$opers\",";
 	for (my $f = 0; $f <= $#fieldsets; $f++) {
 		my $fs = $fieldsets[$f];
@@ -454,14 +459,14 @@ for (my $j = 0; $j <= $#rows; $j++) {
 				$opt = " class=\"tdResult\" onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$field</B>:')\"";
 			}
 			if (grep(/^$Field$/, @thresh) ) {
-				my @tv = split(/[, ]/,$conf{$Field."_THRESHOLD"});
+				my @tv = split(/[, ]/,$FORM{$Field."_THRESHOLD"});
 				if (abs($fields{$field}) >= $tv[0] && abs($fields{$field}) < $tv[1]) {
 					$opt .= " style=\"background-color:$validity[1]\"";
 				} elsif (abs($fields{$field}) >= $tv[1]) { 
 					$opt .= " style=\"background-color:$validity[2]\"";
 				}
 			}
-			$text .= "<TD align=center $opt>$fields{$field}</TD>" if (!isok($conf{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
+			$text .= "<TD align=center $opt>$fields{$field}</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
 			$csvTxt .= "$fields{$field},";
 		}
 	}

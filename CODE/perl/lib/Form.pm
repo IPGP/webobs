@@ -59,7 +59,7 @@ require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
 @EXPORT = qw(datetime2array datetime2maxmin
-	extract_formula extract_list extract_size extract_text count_inputs);
+	extract_formula extract_list extract_type extract_text count_inputs);
 
 # FORM constructor
 sub new {
@@ -156,7 +156,7 @@ sub datetime2array {
 	my $date_min = shift;
 	my @d  = split(/[-: ]/,$date);
 	my @dm = split(/[-: ]/,$date_min);
-	if ($date eq $date_min) { return @d };
+	if ($date eq $date_min || $date_min eq "") { return @d };
 	@d = ($d[0],   "",   "",   "","") if ($d[1] ne $dm[1]);
 	@d = ($d[0],$d[1],   "",   "","") if ($d[2] ne $dm[2]);
 	@d = ($d[0],$d[1],$d[2],   "","") if ($d[3] ne $dm[3]);
@@ -188,10 +188,9 @@ sub datetime2maxmin {
 
 # extract_formula ($type) returns $formula and @x an array of used fields (input or output)
 sub extract_formula {
-	my $formula = shift;
+	my $type = shift;
 	my @x;
-	my $size = extract_size($formula);
-	$formula = (split /\:/, $formula)[1];
+	my ($size, $formula) = extract_type($type);
 	while ($formula =~ /((IN|OUT)PUT[0-9]{2})/g) {
 		push(@x,$1);
 	}
@@ -207,15 +206,15 @@ sub extract_list {
 	return %list;
 }
 
-sub extract_size {
+sub extract_type {
 	my $type = shift;
-	my $size = (split /:/, $type)[0];
+	my ($size, $default) = (split /:/, $type);
 	if ($size =~ /\(.+\)$/) {
 		$size =~ s/^[a-z]+\((.+)\)/$1/;
 	} else {
 		$size = 5;
 	}
-	return $size;
+	return ($size, $default);
 }
 
 sub extract_text {
