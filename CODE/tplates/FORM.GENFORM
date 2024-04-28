@@ -9,6 +9,9 @@
 BANG|$WEBOBS{BIG_BANG}
 TITLE|Generic database form
 
+# Time zone of the data (in hour from UT)
+TZ|0
+
 # if YES, use start and end date/time for each record
 STARTING_DATE|NO
 
@@ -23,7 +26,7 @@ VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
 
 # --- Inputs names, units, and types
-# valid types: text(size), numeric(size), list: filename
+# valid types: text(size), numeric(size), list: filename, radio: filename
 ### WARNING: once created, you cannot remove or rename any input since it will
 ### corrupt the database. You might only add new inputs, increasing the number
 INPUT01_NAME|Text input1

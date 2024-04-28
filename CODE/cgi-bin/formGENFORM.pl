@@ -73,7 +73,7 @@ my $form = $cgi->param('form');      # name of the form
 my $clientAuth = clientMaxAuth(type=>"authforms",name=>"('$form')");
 die "You can't edit records of the form $form. Please contact an administrator." if ($clientAuth < 2);
 
-my $FORM = new WebObs::Form($form);
+my $F = new WebObs::Form($form);
 
 my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
 my $client = $USERS{$CLIENT}{UID};
@@ -119,13 +119,12 @@ my $stamp = "[$today $user]";
 if (index($val,$stamp) eq -1) { $val = "$stamp $val"; };
 
 # ---- specific FORM inits -----------------------------------
-my %FORM = readCfg("$WEBOBS{PATH_FORMS}/$form/$form.conf");
-
+my %FORM = $F->conf;
 
 my @NODESSelList;
-my %Ps = $FORM->procs;
+my %Ps = $F->procs;
 for my $p (keys(%Ps)) {
-	my %N = $FORM->nodes($p);
+	my %N = $F->nodes($p);
 	for my $n (keys(%N)) {
 		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
 	}
@@ -135,10 +134,7 @@ my $sel_site = my $sel_comment = "";
 
 # ----
 
-my $col_count = $FORM{COLUMNS_NUMBER};
-my $fs_count  = $FORM{FIELDSETS_NUMBER};
-my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$col_count);
-my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
+my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$FORM{COLUMNS_NUMBER});
 my $max_inputs = count_inputs(keys %FORM);
 my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
 
@@ -266,6 +262,7 @@ function update_form()
 ];
 foreach my $f (@formulas) {
 	my ($formula, $size, @x) = extract_formula($FORM{$f."_TYPE"});
+	$formula =~ s/(\w+\()/Math.$1/g;
 	foreach (@x) {
 		my $form_input = lc($_);
 		$formula =~ s/$_/Number(form.$form_input.value)/g;
@@ -408,6 +405,7 @@ if ($action eq "edit") {
 }
 
 if ($debug) {
+	print "<P>".join(',',sort(keys(%FORM)))."</P>\n";
 	print "<P>".join(',',@formulas)."</P>\n";
 	print "<P>".join(',',@thresh)."</P>\n";
 	print "<P>max_inputs = $max_inputs</P>\n";
@@ -571,38 +569,41 @@ foreach (@columns) {
     unless ($_ =~ "01") {
         print "</TD>\n<TD style=\"border:0\" valign=\"top\">";
     }
-    foreach my $fieldset (split(/,/, $FORM{$_})) {
+    foreach my $fieldset (split(/[, ]/, $FORM{$_})) {
         print "<fieldset><legend>".$FORM{"$fieldset\_NAME"}."</legend>";
         print "<table width=\"100%\"><tr>";
 		my ($fscells,$fsdir) = split(/[, ]/,$FORM{"$fieldset\_CELLS"});
-		my $row = ($fsdir =~ /ROW/i ? "1":"0"); # true if splitted into rows
+		my $row = ($fsdir =~ /ROWS/i ? "1":"0"); # true if splitted into rows
 		my $dlm = ($row ? " ":"<BR>");
-        foreach (1..$fscells) {
-            print qq(<td style=\"border:0\" valign=\"top\">
-                        <p class=\"parform\" align=\"right\">);
-            foreach my $Field (split(/,/, $FORM{sprintf("$fieldset\_C%02d", $_)})) {
+        foreach my $fs (1..$fscells) {
+            print qq(<td style=\"border:0\" valign=\"top\"><p class=\"parform\" align=\"right\">);
+			my $fsc = sprintf("$fieldset\_C%02d", $fs);
+            foreach my $Field (split(/[, ]/, $FORM{$fsc})) {
                 my $name = $FORM{"$Field\_NAME"};
                 my $unit = $FORM{"$Field\_UNIT"};
                 my $type = $FORM{"$Field\_TYPE"};
-				my $size = extract_size($type);
-                my $txt = "<B>$name</B>".($unit ne "" ? " ($unit)":"");
                 my $field = lc($Field);
+				my ($size, $default) = extract_type($type);
+				if ($action ne 'edit' && $default ne "") {
+					$prev_inputs{$field} = $default;
+				}
+                my $txt = "<B>$name</B>".($unit ne "" ? " ($unit)":"");
                 if ($field =~ /^input/ && $type =~ /^list:/) {
                     my %list = extract_list($type,$form);
                     my @list_keys = keys %list;
                     print qq($txt = <select name="$field" size=1
                         onMouseOut="nd()" onmouseover="overlib('$__{'Select a value for'} $field')"><option value=""></option>);
                     for (sort @list_keys) {
-					my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
+						my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
                         print qq(<option value="$_" $selected>$_: $list{$_}</option>);
                     }
                     print qq(</select>$dlm);
-                } elsif ($field =~ /^input/ && $type =~ /^numeric/){
-                    print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
-                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a numeric value for'} $Field')">$dlm);
-                } elsif ($field =~ /^input/) {
+                } elsif ($field =~ /^input/ && $type =~ /^text/) {
                     print qq($txt = <input type="text" size=$size name="$field" value="$prev_inputs{$field}"
                         onMouseOut="nd()" onmouseover="overlib('$__{'Enter a value for'} $Field')">$dlm);
+                } elsif ($field =~ /^input/) {
+                    print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
+                        onMouseOut="nd()" onmouseover="overlib('$__{'Enter a numeric value for'} $Field')">$dlm);
 				} elsif ($field =~ /^output/ && $type =~ /^formula/) {
                     my ($formula, $size, @x) = extract_formula($type);
                     print qq($txt = <input size=$size readOnly class=inputNumNoEdit name="$field"
@@ -615,10 +616,9 @@ foreach (@columns) {
                 }
             }
             print "</p></td>";
-			print "</tr><tr>" if ($row && $_ ne $fscells);
+			print "</tr>\n<tr>" if ($row && $fs ne $fscells);
         }
-        print "</tr></table>";
-        print "</fieldset>";
+        print "</tr></table></fieldset>\n";
     }
     unless ($_ =~ "01") {
         print "</TD>";
