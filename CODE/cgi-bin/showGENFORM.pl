@@ -319,8 +319,9 @@ if ($QryParm->{'dump'} ne "csv") {
 			print "<B>".$FORM{uc($i)."_NAME"}.":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
 			print "<OPTION value=\"\"></OPTION>\n";
 			foreach (sort @key) {
+				my $nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$lists{$i}{$_});
 				my $sel = ($QryParm->{$i} eq $_ ? "selected":"");
-				print "<OPTION value=\"$_\" $sel>$_: $lists{$i}{$_}</OPTION>\n";
+				print "<OPTION value=\"$_\" $sel>$_: $nam</OPTION>\n";
 			}
 			print "</SELECT>\n";
 		}
@@ -457,10 +458,18 @@ for (my $j = 0; $j <= $#rows; $j++) {
 			my $Field = $field_names[$f][$n];
 			my $field = lc($Field);
 			my $opt;
+			my $val = $fields{$field};
+			my $hlp;
 			if (defined $lists{$field}) {
-				my $val = $lists{$field}{$fields{$field}};
-				$val = "<I>$__{'unknown key list!'}</I>" if ($val eq "");
-				$opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$fields{$field}</B>: $val')\"";
+				if ($lists{$field}{$fields{$field}}{name}) {
+					my %v = %{$lists{$field}{$fields{$field}}}; # list is a HoH
+					$hlp = "<B>$fields{$field}</B>: $v{name}";
+					if ($v{icon}) {
+						$val = "<IMG src=\"$v{icon}\">";
+					}
+				}
+				$hlp = "<I>$__{'unknown key list!'}</I>" if ($val eq "");
+				$opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$hlp')\"";
 			}
 			if (grep(/^$field$/i, @formulas)) {
 				$opt = " class=\"tdResult\" onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$field</B>:')\"";
@@ -473,7 +482,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 					$opt .= " style=\"background-color:$validity[2]\"";
 				}
 			}
-			$text .= "<TD align=center $opt>$fields{$field}</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
+			$text .= "<TD align=center $opt>$val</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
 			$csvTxt .= "$fields{$field},";
 		}
 	}
