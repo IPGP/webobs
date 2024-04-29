@@ -80,7 +80,7 @@ Each FIELDSET is referenced with a 2-digit number {\it xx}, has a name, a number
 
 FIELDSET parameters are for the fieldset {\it xx}:
 \begin{itemize}
-	\item \wokey{FIELDSETxx\_NAME}: full name of the fieldset, but it is recommended to use short string since it will be used in the table column header,
+	\item \wokey{FIELDSETxx\_NAME}: full name of the fieldset, used in the form layout and table column header,
 	\item \wokey{FIELDSETxx\_CELLS}: the number of cells inside the fieldset, followed by optional tag COLS (default) or ROWS,
 	\item \wokey{FIELDSETxx\_Cyy}: list of INPUT and/or OUTPUT to display into the CELL {\it yy},
 	\item \wokey{FIELDSETxx\_TOGGLE}: if YES, indicates that the fieldset will not be displayed by default in the table.
@@ -94,24 +94,26 @@ INPUTS and OUTPUTS are referenced with a 2-digit number {\it zz}, have a name (m
 	\item \wokey{\_NAME}: name of the field, preferably short since it is used in the table headers,
 	\item \wokey{\_UNIT}: unit of the field (if relevant), indicated into parenthesis,
 	\item \wokey{\_TYPE}: type of the field (see below),
+	\item \wokey{\_FILT}: for list only, if \wokey{YES}, the list will be used as a filter in the table show,
 	\item \wokey{\_VALID}: 2 threshold values in a list {\it a, b} (see below),
 	\item \wokey{\_HELP}: a string to be displayed as window popup to explain the field containt.
 \end{itemize}
 
 Valid TYPE for an INPUT field is:
 \begin{itemize}
-	\item \wokey{text(size)} : text string, optional size in characters (default is 5);
-	\item \wokey{numeric(size)}: numeric input, optional size in characters (default is 5);
-	\item \wokey{list:\textit{filename}}: points to a config file containing a \wokey{key|value} list of selectable items.
+	\item \wokey{text(size): \textit{default value}} : text string, optional size in characters (default is 5), then optional default value;
+	\item \wokey{numeric(size): \textit{default value}}: numeric input, optional size in characters (default is 5), optional default value;
+	\item \wokey{list: \textit{filename}}: name of a config file containing a \wokey{key|value} list of selectable items. It is also possible to use a \wokey{key|name|icon} 3-column config file, so that small icons will be displayed in table (instead of key), and radio button will replace the selectable list. If not exist, the file will be created after the first form save, from a template, and an edit link will be available;
+	\item \wokey{checkbox: \textit{checked}}: boolean value as check box, optional default checked.
 \end{itemize}
 
 Valid TYPE for an OUTPUT field is:
 \begin{itemize}
-	\item \wokey{formula(size):\textit{formula}}, which allows to make simple mathematical operations between the different inputs and/or outputs (see below). Optional size of the result in characters (default is 6), and size$-3$ significant digits;
+	\item \wokey{formula(size): \textit{formula}}, which allows to make simple mathematical operations between the different inputs and/or outputs (see below). Optional size of the result in characters (default is 6), and (size-3) significant digits; set the size to \wokey{0} to hide the formula (see below).
 	\item \wokey{text} : text string (HTML allowed).
 \end{itemize}
 
-In formulas, the use of previous outputs is allowed but they must precede the current formula (with lower output numbers). The syntax must remain simple since the same formula is interpreted by Javascript in the form page and by Perl in the table page. Use of plus (+), minus (-), divide (/), multiply (*), exponent (**) operators, numbers and parenthesis is admitted. An input must be referenced as \wokey{INPUTzz}, an output as \wokey{OUTPUTzz}.
+In formulas, the use of previous outputs is allowed but they must precede the current formula (with lower output numbers). The syntax must remain simple since the same formula is interpreted by Javascript in the form page and by Perl in the table page. Use of plus (+), minus (-), divide (/), multiply (*), exponent (**) operators, numbers and parenthesis is admitted, also some basic functions like \wokey{sqrt()}, \wokey{log()}, etc. An input must be referenced as \wokey{INPUTzz}, an output as \wokey{OUTPUTzz}, uppercase. It is possible to define hidden formula by setting the size to zero (0), but the field still MUST be included in a fieldset cell in order to be computed properly; this can be useful to calculate intermediate results used in other formula and not display it.
  
 The VALID parameters applies to input or output of numeric/formula types. It contains a coma-separated list of 2 threshold values {\it a, b} to display color background associated to a level of validity of the field absolute value. Three levels of validity are defined: normal (green), warning (orange), and error (red). The criteria are, where {\it x} is the field value:
 \begin{itemize}
