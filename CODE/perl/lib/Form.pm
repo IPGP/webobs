@@ -209,8 +209,8 @@ sub extract_list {
 sub extract_type {
 	my $type = shift;
 	my ($size, $default) = (split /:/, $type);
-	if ($size =~ /\(.+\)$/) {
-		$size =~ s/^[a-z]+\((.+)\)/$1/;
+	if ($size =~ /\(\d+\)$/) {
+		$size =~ s/^[a-z]+\((\d+)\)/$1/;
 	} else {
 		$size = 5;
 	}

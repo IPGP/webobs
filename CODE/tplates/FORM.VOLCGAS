@@ -2,8 +2,6 @@
 # Generic FORM template for use with cgi-bin/fedit.pl
 BANG|$WEBOBS{BIG_BANG}
 TITLE|Gas database chemical analysys
-COLUMNS_NUMBER|2
-FIELDSETS_NUMBER|3
 STARTING_DATE|NO
 DEFAULT_DAYS|365
 OPERATORS_LIST|+DUTY
@@ -15,6 +13,7 @@ INPUT02_NAME|pH
 INPUT02_UNIT|
 INPUT03_NAME|Flow Rate (qualitative) 
 INPUT03_TYPE|list: FORM_listVOLCGAS_type.conf
+INPUT03_FILT|YES
 INPUT04_NAME|H<sub>2</sub>
 INPUT04_UNIT|%
 INPUT05_NAME|He
@@ -44,6 +43,17 @@ INPUT15_UNIT|
 INPUT16_NAME|&delta;<sup>18</sup>O
 INPUT16_UNIT|
 
+# --- Form layout
+# number of columns and list of fieldsets for each
+COLUMNS_NUMBER|2
+
+# note: first column starts with the mandatory date/site/operator fieldset
+COLUMN01_LIST|FIELDSET01
+COLUMN02_LIST|FIELDSET02,FIELDSET03
+
+# number of fieldsets
+FIELDSETS_NUMBER|3
+
 # which inputs are contained in the first fieldset ?
 FIELDSET01_NAME|On-Site Measurements
 FIELDSET01_CELLS|1
@@ -59,12 +69,6 @@ FIELDSET02_C02|INPUT09,INPUT10,INPUT11,INPUT12,INPUT13
 FIELDSET03_NAME|Isotope Concentration
 FIELDSET03_CELLS|1
 FIELDSET03_C01|INPUT14,INPUT15,INPUT16
-
-# which fieldsets are contained in the first column ?
-COLUMN01_LIST|FIELDSET01
-
-# which fieldsets are contained in the second column ?
-COLUMN02_LIST|FIELDSET02,FIELDSET03
 
 
 # for backward compatibility - do not change
