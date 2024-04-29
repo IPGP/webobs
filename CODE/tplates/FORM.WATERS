@@ -10,6 +10,9 @@
 BANG|$WEBOBS{BIG_BANG}
 TITLE|Water chemical analysis database
 
+# Time zone of the data (in hour from UT)
+TZ|0
+
 # if YES, use start and end date for each record
 STARTING_DATE|NO
 
@@ -19,7 +22,7 @@ OPERATORS_LIST|+DUTY
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
 
-COMMENT_HELPER|Note any presence of odour, gas or precipitate, etc...
+COMMENT_HELP|Note any presence of odour, gas or precipitate, etc...
 
 # -----------------------------------------------------------------------------
 # --- Inputs names, units, and types
@@ -32,6 +35,7 @@ COMMENT_HELPER|Note any presence of odour, gas or precipitate, etc...
 
 INPUT01_NAME|Type of samp.
 INPUT01_TYPE|list: FORM_listWATERS_type.conf
+INPUT01_FILT|YES
 
 INPUT02_NAME|Air Temp.
 INPUT02_UNIT|°C

@@ -257,7 +257,8 @@ foreach(@fieldsets) {
 	for (my $i = 0; $i <= $FORM{"$_\_CELLS"}; $i++) {
 		my @fields;
 		foreach (split(/,/, $FORM{sprintf("$_\_C%02d",$i)})) {
-			if (! ($_ =~ /^OUTPUT/ && $FORM{$_."_TYPE"} =~ /^text/)) {
+			my ($size, $default) = extract_type($FORM{$_."_TYPE"});
+			if ($size ne "0" && ! ($_ =~ /^OUTPUT/ && $FORM{$_."_TYPE"} =~ /^text/)) {
 				push(@fields, $_);
 			}
 		}
@@ -312,15 +313,17 @@ if ($QryParm->{'dump'} ne "csv") {
 		print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
 	}
 	print " \n";
-	foreach my $i (keys %lists) {
-		my @key = keys %{$lists{$i}};
-		print "<B>".$FORM{uc($i)."_NAME"}.":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
-		print "<OPTION value=\"\"></OPTION>\n";
-		foreach (sort @key) {
-			my $sel = ($QryParm->{$i} eq $_ ? "selected":"");
-			print "<OPTION value=\"$_\" $sel>$_: $lists{$i}{$_}</OPTION>\n";
+	foreach my $i (sort keys %lists) {
+		if (isok($FORM{uc($i)."_FILT"})) {
+			my @key = keys %{$lists{$i}};
+			print "<B>".$FORM{uc($i)."_NAME"}.":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
+			print "<OPTION value=\"\"></OPTION>\n";
+			foreach (sort @key) {
+				my $sel = ($QryParm->{$i} eq $_ ? "selected":"");
+				print "<OPTION value=\"$_\" $sel>$_: $lists{$i}{$_}</OPTION>\n";
+			}
+			print "</SELECT>\n";
 		}
-		print "</SELECT>\n";
 	}
 	foreach (@fieldsets) {
 		if (isok($FORM{$_.'_TOGGLE'})) {
@@ -407,7 +410,11 @@ for (my $j = 0; $j <= $#rows; $j++) {
 		}
 		my $res = eval($formula);
 		if ($res ne "") {
-			$fields{lc($_)} = roundsd($res, $size - 3); # results is rounded with $size-3 digits
+			if ($size > 0) {
+				$fields{lc($_)} = roundsd($res, $size - 3); # results is rounded with $size-3 digits
+			} else {
+				$fields{lc($_)} = $res; # hidden formula
+			}
 		} else {
 			$fields{lc($_)} = "";
 		}
