@@ -1,4 +1,4 @@
-#!gawk -f
+#!/usr/bin/gawk -f
 #
 # Default preprocessor filter for 'dsv' data format, called by
 # readfmtdata_dsv.m.
