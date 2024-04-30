@@ -1,4 +1,4 @@
-#!/usr/bin/gawk -f
+#!gawk -f
 #
 # Default preprocessor filter for 'dsv' data format, called by
 # readfmtdata_dsv.m.
@@ -25,9 +25,9 @@
 # 	  all additional separators have been applied
 #
 #
-# Authors: Xavier Béguin (EOS), François Beauducel (IPGP) / WEBOBS
+# Authors: Xavier Béguin (EOS/OVSG/IPGP), François Beauducel (IPGP) / WEBOBS
 # Created: 2018-06-18
-# Updated: 2020-12-25
+# Updated: 2024-04-30
 
 BEGIN {
 	# Read input parameters
@@ -85,7 +85,7 @@ FNR <= header_line { next }
 		# Remove any non-numerical character
 		gsub(/[^0-9eE.+-]/, "", $i)
 		# Replace fields that are empty or with no digit by NaN
-		gsub(/^[\seE.-]*$/, "NaN", $i)
+		gsub(/^[\seE.+-]*$/, "NaN", $i)
 	}
 
 	# Force substitution of all FS occurrences by OFS
