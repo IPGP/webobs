@@ -80,23 +80,12 @@ if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
 		%NODE = %{$S{$NODEName}};
 		if (%NODE) {
 			%CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
-			if (%CLBS) {
-				@clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
-				@fieldCLB = readCfg($CLBS{FIELDS_FILE});
-				unless ( isok($theiaAuth) ) { pop(@fieldCLB); }
-				if (@fieldCLB) {
-					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
-					$fileDATA = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $fileDATA ); # for backwards compatibility
-					if ( -s $fileDATA ) {
-						@data = map { my @e = split /\|/; \@e; } readCfgFile($fileDATA);
-					} else {
-						$nouveau = 1; @newChan = (1..$QryParm->{'nbc'});
-					}
-				} else {
-					die "$__{'Could not read'} $__{'calibration data-fields definition'}";
-				}
-			} else {
-				die "$__{'Could not read'} $__{'calibration-files configuration'}";
+			@clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
+			@fieldCLB = readCfg($CLBS{FIELDS_FILE});
+			unless ( isok($theiaAuth) ) { pop(@fieldCLB); }
+			@data = readCLB("$GRIDType.$GRIDName.$NODEName");
+			if (!@data) {
+				$nouveau = 1; @newChan = (1..$QryParm->{'nbc'});
 			}
 		} else {
 			die "$__{'Could not read'} $QryParm->{'node'} $__{'node configuration'}";
@@ -129,7 +118,7 @@ my @hourList  = ('00'..'23');
 my @minuteList = ('00'..'59');
 
 # ---- Start HTML page
-my $titlePage = "Edit - $CLBS{TITLE}";
+my $titlePage = "Edit - $__{'Calibration file'}";
 print "Content-type: text/html\n\n
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n
 <HTML><HEAD>\n
