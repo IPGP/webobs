@@ -113,7 +113,7 @@ if (scalar(@NID) == 3) {
 } else { die "$__{'Not a fully qualified node name (gridtype.gridname.nodename)'}" }
 
 # ---- Looking for THEIA user flag
-my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
+my $theiaAuth = isok($WEBOBS{THEIA_USER_FLAG});
 
 my %allNodes = readNode;
 my $NODENameLower = lc($NODEName);
@@ -526,10 +526,7 @@ if (uc($GRIDType) eq 'PROC') {
 	print "</TD></TR>\n";
 
 	# channels (calibration file)
-	my $clbFile = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
-	$clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $clbFile ); # for backwards compatibility
-	my @carCLB;
-	@carCLB = readCfgFile($clbFile) if ( -s $clbFile );
+	my @carCLB = readCLB("$GRIDType.$GRIDName.$NODEName");
 	print "<TR><TD valign=\"top\" width=\"10%\"><B>";
 	my $txt = $__{'Channels'};
 	if ($editOK) {
@@ -545,7 +542,7 @@ if (uc($GRIDType) eq 'PROC') {
 	if ($#carCLB >= 0) {
 		my @clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
 		my @fieldCLB = readCfg($CLBS{FIELDS_FILE});
-		if ( $theiaAuth != 1 ) {pop(@fieldCLB); }
+		pop(@fieldCLB) if ( !$theiaAuth );
 		print "<TABLE><TR>";
 		for (0..($#fieldCLB)) {
 			print "<TH><SMALL>",$fieldCLB[$_][2]."</SMALL></TH>";
@@ -555,21 +552,18 @@ if (uc($GRIDType) eq 'PROC') {
 		my $dateCLB = "";
 		my $sepCLB;
 		for (@carCLB) {
-			if ( $theiaAuth != 1 ) {
-				@_ = split(/\|/, $_);
-				pop(@_);
-				$_ = join('|', @_);
+			my @chpCLB = @{$_};
+			if ($#chpCLB < $#fieldCLB) {
+				push(@chpCLB, ("") x ($#fieldCLB - $#chpCLB));
 			}
-			my (@chpCLB) = split(/\|/,$_);
+			pop(@chpCLB) if ( !$theiaAuth && $#chpCLB > $#fieldCLB );
 			if ($dateCLB ne "" && $dateCLB ne $chpCLB[0]) {
 				$sepCLB = "<TR><TH colspan=\"".(@fieldCLB)."\"></TH></TR>\n";
 				print $sepCLB;
 			}
 			$dateCLB = $chpCLB[0];
 			my $active = "style=\"".($chpCLB[2] ~~ @select || $chanlist == "" ? "font-weight:bold":"color:gray")."\"";
-			my $ligneCLB = "<TR><TD $active><SMALL>$_</SMALL></TD></TR>";
-			$ligneCLB =~ s/\|/<\/SMALL><\/TD><TD $active><SMALL>/g;
-			print $ligneCLB;
+			print "<TR><TD $active><SMALL>".join("</SMALL></TD><TD $active><SMALL>",@chpCLB)."</SMALL></TD></TR>";
 		}
 		print "$sepCLB</TABLE>\n";
 		print "<BR><SMALL>@clbNote</SMALL>";

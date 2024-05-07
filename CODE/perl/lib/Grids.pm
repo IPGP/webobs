@@ -36,7 +36,7 @@ use POSIX qw(strftime);
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %GRIDS, %NODES, %node2node);
 require Exporter;
 @ISA        = qw(Exporter);
-@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS %node2node readDomain readGrid readSefran readProc readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode);
+@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS %node2node readDomain readGrid readSefran readProc readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode readCLB);
 $VERSION    = "1.00";
 
 %DOMAINS = readDomain();
@@ -725,6 +725,27 @@ sub codesFDSN {
 	return %codes;
 }
 
+=pod
+=head2 readCLB
+Reads calibration file of a node (fullid) and return an array
+=cut
+
+sub readCLB {
+	my $node = shift;
+	my @data;
+	my ($GRIDType, $GRIDName, $NODEName) = split(/\./, $node);
+
+	my $file = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb"; # standard CLB file name
+	my $legclb = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
+	$file = $legclb if ( ! -e $file && -e $legclb); # for backwards compatibility
+	(my $autoclb = $file) =~ s/\.clb/_auto.clb/; # auto-generated CLB
+	$file = $autoclb if ( -e $autoclb && ! -s $file );
+	if ( -s $file ) {
+		@data = map { my @e = split /\|/; \@e; } readCfgFile($file);
+	}
+	return @data;
+}
+
 1;
 
 __END__
@@ -733,7 +754,7 @@ __END__
 
 =head1 AUTHOR
 
-Francois Beauducel, Didier Lafon
+François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
