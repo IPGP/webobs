@@ -15,6 +15,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %	Some additional keys are also added:
 %	          ID: self reference
+%         FULLID: full ID
 %	   TIMESTAMP: timestamp of the .cnf file (local time)
 %	         CLB: data table from calibration .clb file (if exists)
 %	TRANSMISSION: a structure containing following fields (if defined):
@@ -29,11 +30,11 @@ function N=readnode(WO,nodefullid,NODES);
 %	                  lw: default linewidth (from NODES.rc)
 %	                 rgb: default color (from NODES.rc)
 %	                 out: data outcome flag
-%
+%	          WO: copy of the WO structure
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2023-08-28
+%   Updated: 2024-05-06
 
 
 if ~exist('NODES','var')
@@ -72,6 +73,7 @@ end
 
 % adds a self-reference
 N.ID = id;
+N.FULLID = nodefullid;
 
 % adds a timestamp (in the local server time)
 X = dir(f);
@@ -121,8 +123,15 @@ end
 
 % --- reads .clb calibration file (if exists)
 clb = sprintf('%s/%s.clb',p,nodefullid);
+autoclb = sprintf('%s/%s_auto.clb',p,nodefullid); % auto-generated clb
+legclb = sprintf('%s/%s.clb',p,id); % legacy clb name (for backwards compatibility)
 if ~exist(clb,'file')
-	clb = sprintf('%s/%s.clb',p,id); % for backwards compatibility
+	if exist(legclb,'file')
+		clb = legclb;
+	end
+	if exist(autoclb,'file')
+		clb = autoclb;
+	end
 end
 if exist(clb,'file')
 	C = readdatafile(clb,'CommentStyle','#')';
@@ -225,3 +234,6 @@ if ~s && ~isempty(w)
 else
 	N.EVENTS = [];
 end
+
+% adds the WO structure
+N.WO = WO;
