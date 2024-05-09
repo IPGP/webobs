@@ -246,7 +246,7 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 	if ( $?  == 0 ) {
 		truncate(FILE, 0);
 		seek(FILE, 0, SEEK_SET);
-		print FILE $entete;
+		print FILE $entete if (@donnees);
 		for (@donnees) {
 			print FILE u2l("$_");
 		}
