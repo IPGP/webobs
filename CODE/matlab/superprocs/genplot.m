@@ -135,7 +135,7 @@ for n = 1:length(N)
 			if p < length(GN)
 				set(gca,'XTickLabel',[]);
 			end
-			ylabel(sprintf('%s %s',D(n).CLB.nm{i},regexprep(D(n).CLB.un{i},'(.+)','($1)')))
+			ylabel(nameunit(D(n).CLB.nm{i},D(n).CLB.un{i}))
 			if isempty(D(n).d) || all(isnan(D(n).d(k,i)))
 				nodata(tlim)
 			end
@@ -252,7 +252,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 			if p < length(GS)
 				set(gca,'XTickLabel',[]);
 			end
-			ylabel(sprintf('%s %s',D(1).CLB.nm{c},regexprep(D(1).CLB.un{c},'(.+)','($1)')))
+			ylabel(nameunit(D(1).CLB.nm{c},D(1).CLB.un{c}))
 
 			% legend: station aliases
 			xlim = get(gca,'XLim');
@@ -286,3 +286,8 @@ timelog(procmsg,2)
 if nargout > 0
 	DOUT = D;
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function s = nameunit(nm,un)
+s = sprintf('%s %s',nm,regexprep(un,'(.+)','($1)'));
+s = regexprep(s,'([_^])','\\$1'); % escapes any underscore or exponent
