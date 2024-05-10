@@ -64,12 +64,17 @@ case {'toa5','t0a5'}
 	if N.CLB.nx == 0
 		[s,w] = wosystem(sprintf('y=%s && cat %s | head -3',years{1},pdat),'chomp');
 		ww = split(w,'\n');
-		chname = split(ww{2},',');	
-		chunit = split(ww{3},',');
-		k = find(~strcmp(chname,'TIMESTAMP'));
-		N.CLB = mkautoclb(N,chname(k),regexprep(chunit(k),'^"|"$',''));
-		nx = length(k); 
-		ncol = 6 + nx;
+		header = split(ww{1},',');	
+		if strcmpi(header{1},'"TOA5"')
+			chname = split(ww{2},',');	
+			chunit = split(ww{3},',');
+			k = find(~strcmp(chname,'TIMESTAMP'));
+			N.CLB = mkautoclb(N,chname(k),regexprep(chunit(k),'^"|"$',''));
+			nx = length(k); 
+			ncol = 6 + nx;
+		else
+			error('no header in data files... needs a calibration file for this node.');
+		end
 	else
 		if isfield(N.CLB,'cd') && ~any(isnan(str2double(N.CLB.cd)))
 			ncol = 6 + max(str2double(N.CLB.cd));

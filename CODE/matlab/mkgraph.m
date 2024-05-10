@@ -17,7 +17,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03 in Gourbeyre, Guadeloupe
-%	Updated: 2024-05-05
+%	Updated: 2024-05-10
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -112,6 +112,7 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 			pt = et(1) + et(3) + .05;
 		end
 		st = [G.INFOS(i:min([i+nl-1,length(G.INFOS)])),{' '}];
+		st = regexprep(st,'([_^])','\\$1'); % escapes any underscore or exponent
 		ht = text(pt,0,st,'HorizontalAlignment','left','VerticalAlignment','bottom','FontSize',8);
 	end
 	if isfield(G,'INFOS2')
