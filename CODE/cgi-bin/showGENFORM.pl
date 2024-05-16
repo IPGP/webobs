@@ -461,7 +461,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 			my $val = $fields{$field};
 			my $hlp;
 			if (defined $lists{$field}) {
-				if ($lists{$field}{$fields{$field}}{name}) {
+				if (ref $lists{$field}{$fields{$field}}) {
 					my %v = %{$lists{$field}{$fields{$field}}}; # list is a HoH
 					$hlp = "<B>$fields{$field}</B>: $v{name}";
 					if ($v{icon}) {
