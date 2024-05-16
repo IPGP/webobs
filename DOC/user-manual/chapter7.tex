@@ -101,8 +101,8 @@ INPUTS and OUTPUTS are referenced with a 2-digit number {\it zz}, have a name (m
 
 Valid TYPE for an INPUT field is:
 \begin{itemize}
+	\item \wokey{numeric(size): \textit{default value}}: numeric input, optional size in characters (default is 5), and optional default value. This is the default input type if not specified;
 	\item \wokey{text(size): \textit{default value}} : text string, optional size in characters (default is 5), then optional default value;
-	\item \wokey{numeric(size): \textit{default value}}: numeric input, optional size in characters (default is 5), optional default value;
 	\item \wokey{list: \textit{filename}}: name of a config file containing a \wokey{key|value} list of selectable items. It is also possible to use a \wokey{key|name|icon} 3-column config file, so that small icons will be displayed in table (instead of key), and radio button will replace the selectable list. If not exist, the file will be created after the first form save, from a template, and an edit link will be available;
 	\item \wokey{checkbox: \textit{checked}}: boolean value as check box, optional default checked.
 \end{itemize}

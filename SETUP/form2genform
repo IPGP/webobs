@@ -19,25 +19,30 @@ if [[ $(id -u) != 0 ]]; then
 #	exit 64
 fi
 
-TMP=/tmp/webobs_genform_migration
 WOROOT=$1
+DBF=$WOROOT/DATA/DB/WEBOBSFORMS.db
+TMP=/tmp/webobs_genform_migration
 
 # =============================================================================
 # === EAUX --> modèle WATERS_fr
 
-DBF=$1/DATA/DB/WEBOBSFORMS.db
 DBT=eaux
 DAT=$1/DATA/DB/OVSG/EAUX.DAT
+NBI=24
 
 echo  -n "Creating/populating $DBT table ..."
 
 echo "BEGIN TRANSACTION;" > $TMP
 echo "DROP TABLE if exists $DBT;" >> $TMP
-echo "CREATE TABLE $DBT (id integer PRIMARY KEY AUTOINCREMENT, trash boolean DEFAULT FALSE, node text NOT NULL, edate datetime, edate_min datetime, sdate datetime NOT NULL, sdate_min datetime, operators text NOT NULL, input01 text, input02 text, input03 text, input04 text, input05 text, input06 text, input07 text, input08 text, input09 text, input10 text, input11 text, input12 text, input13 text, input14 text, input15 text, input16 text, input17 text, input18 text, input19 text, input21 text, input22 text, input23 text, input24 text, comment text, tsupd text NOT NULL, userupd text NOT NULL);" >> $TMP
-tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" ' { if ($1 != "ID") { \
+printf "CREATE TABLE $DBT (id integer PRIMARY KEY AUTOINCREMENT, trash boolean DEFAULT FALSE, node text NOT NULL, edate datetime, edate_min datetime, sdate datetime NOT NULL, sdate_min datetime, operators text NOT NULL" >> $TMP
+for i in {1..$NBI}; do printf "input%02d text" >> $TMP; done
+echo ", comment text, tsupd text NOT NULL, userupd text NOT NULL);" >> $TMP
+tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
 	bin = ($1<0) ? 1:0; \
-	printf "INSERT INTO "t"(trash,node,edate,edate_min,sdate,sdate_min,operators,input01,input02,input03,input04,input05,input06,input07,input08,input09,input10,input11,input12,input13,input14,input15,input16,input17,input18,input19,input21,input22,input23,input24,comment,tsupd,userupd) ";\
-	printf "VALUES(\""bin"\",\""$4"\",\""$2" "$3"\",\"\",\"\",\"\",\"!\""; \
+	printf "INSERT INTO "t"(trash,node,edate,edate_min,sdate,sdate_min,operators"; \
+	for (i=1;i<=n;i++) printf ",input%02d",$i; \
+	printf ",comment,tsupd,userupd) ";\
+	printf "VALUES(\""bin"\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\"!\""; \
 	for (i=5;i<28;i++) printf ",\""$i"\""; \
 	gsub(/"/,"\"\"", $28); \
 	gsub(/\045/,"\045\045", $28); \

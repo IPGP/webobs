@@ -17,7 +17,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03 in Gourbeyre, Guadeloupe
-%	Updated: 2024-05-10
+%	Updated: 2024-05-15
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
