@@ -160,7 +160,7 @@ POSTBOARD_MAILER_DEFSUBJECT|WebObs notification
 
 # ---- DOMAINS DataBase -----------------------
 # ---------------------------------------------
-SQL_DOMAINS|${ROOT_DATA}/WEBOBSDOMAINS.db
+SQL_DOMAINS|${ROOT_CONF}/WEBOBSDOMAINS.db
 SQL_TABLE_DOMAINS|domains
 SQL_TABLE_GRIDS|grids2domains
 

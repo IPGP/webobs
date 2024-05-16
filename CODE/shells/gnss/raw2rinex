@@ -26,8 +26,11 @@
 #
 # **** Updates
 # ** 2023-08-07 Pierre Sakic 
-# - Handle the RINEX3 at it is
+# - Handle the RINEX3 as it is
 #   (no downgrade to RNX2, but no modification of the header either)
+# ** 2024-05-05 Pierre Sakic
+# - Handle gzip compression for RINEX2 
+#   (NB: RINEX3 are always gzipped by design)
 #
 
 ### comment the variable to disable the verbose mode
@@ -108,12 +111,12 @@ if [ ! -z "$rf" ]; then
 fi
 
 # --- try RINEX2 Hatanaka files
-rf=$(find $tmpdir -name "*.??d.Z" -o -name "*.??d" | sort )
+rf=$(find $tmpdir -name "*.??d.Z" -o -name "*.??d.gz" -o -name "*.??d" | sort )
 if [ ! -z "$rf" ]; then
 	echo "   Found some RINEX2 Hatanaka files in $rawdir: proceeding..."
 	# must convert ??d to ??o
 	for f in $rf; do
-		if [[ $f == *".Z" ]]; then
+		if [[ $f == *".Z" ]] || [[ $f == *".gz" ]]; then
 			gunzip -f $f
 			f=${f%.*}
 		fi

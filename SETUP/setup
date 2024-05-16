@@ -257,8 +257,9 @@ elif [ "${SYS_OS}" = "Darwin" ] ; then
 	SYS_ARCH=`uname -m`
 	SYS_STR="${SYS_OS} ${SYS_REV}(${SYS_ARCH} `uname -v`)"
 	SYS_ALIASES=0;
-	U=$(which sfind); if [[ ! -z $U ]]; then alias find=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
-	if [[ -e /opt/local/bin/grep ]] ; then alias grep='/opt/local/bin/grep'; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which gfind); if [[ ! -z $U ]]; then alias find=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	#if [[ -e /opt/local/bin/grep ]] ; then alias grep='/opt/local/bin/grep'; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which ggrep); if [[ ! -z $U ]]; then alias grep=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
 	U=$(which gcp); if [[ ! -z $U ]]; then alias cp=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
 	U=$(which ghead); if [[ ! -z $U ]]; then alias head=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
 	U=$(which greadlink); if [[ ! -z $U ]]; then alias readlink=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
@@ -269,7 +270,7 @@ elif [ "${SYS_OS}" = "Darwin" ] ; then
 	U=$(which gsort); if [[ ! -z $U ]] ; then alias sort=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
 	SYS_ALIASES=`echo ${SYS_ALIASES}|bc`
 	if [[ ${SYS_ALIASES} != 10 ]]; then
-		echo "${SYS_OS} - missing some MacPorts (GNU-*) and/or grep/sfind commands. Bye."
+		echo "${SYS_OS} - missing some MacPorts/Brew (GNU-*) and/or grep/sfind commands. Bye."
 		exit 64;
 	fi
 	shopt -s expand_aliases
@@ -396,7 +397,7 @@ echo -n 'Python...';      APP_PYTHON="$(which python)"
 echo -n 'Sqlite...';      APP_SQLITE=$(sqlite3 -version 2>/dev/null)
 echo -n 'ImageMagick...'; APP_IMAGICK=$(convert --version 2>/dev/null)
 echo -n 'pngquant...';    APP_PNGQUANT="$(which pngquant)"
-echo -n 'Ghostscript...'; APP_GHOSTSCRIPT=$(ghostscript --version 2>/dev/null)
+echo -n 'Ghostscript...'; APP_GHOSTSCRIPT=$(gs --version 2>/dev/null)
 echo -n 'Mutt...';        APP_MUTT=$(mutt -v 2>/dev/null | head -1 )
 echo -n 'Xvfb...';        APP_XVFB="$(which Xvfb 2>/dev/null)"
 echo -n 'gawk...';        APP_GAWK="$(which gawk 2>/dev/null)"
