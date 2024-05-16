@@ -124,6 +124,14 @@ Content-type: text/html
       border-color: #d6d8db;
   }
   </style>
+	<script type="text/javascript">
+	<!--
+  function copy2Clipboard() {
+	  var copyText = document.getElementById("forBCSF");
+	  copyText.select();
+	  navigator.clipboard.writeText(copyText.value);
+	  alert("Text copied to clipboard:\\n\\n" + copyText.value);
+  }
   </script>
 </head>
 <body>
@@ -177,6 +185,13 @@ sub print_form {
     $triggerOK = 0;
     $trigger_check = 'disabled';
   }
+  my $trigger_content = "Time: $evt_origin\n"
+                      ."Latitude: $evt_latitude\n"
+                      ."Longitude: $evt_longitude\n"
+                      ."Depth: $evt_depth\n"
+                      ."Magnitude: $evt_magnitude\n"
+                      ."Department: $evt_department\n"
+                      ."Region: $evt_region\n";
 
   if (-e "$b3.msg") {
     my @msg = readFile("$b3.msg");
@@ -193,7 +208,7 @@ sub print_form {
   <p>$__{'Operator'}: <b>"$operator_name" &lt;$operator_email&gt;</b></p>
   </td></tr></table>
   
-  <form class="chpass_form" name="changePass" id="changePass"
+  <form class="chpass_form" name="mailB3" id="mailB3"
     method="POST" action="$submit_url">
   <input type="hidden" name="grid" value="$grid"/>
   
@@ -271,6 +286,8 @@ sub print_form {
   <div class="form_elem form_input">
       <input size=50 name="event_region" value="$evt_region" class="auto"/><br>
   </div>
+  <input type="hidden" value="$trigger_content" id="forBCSF">
+  <input type="button" onclick="copy2Clipboard()" value="$__{'Copy BCSF info to the clipboard'}"></button>
   </fieldset>
 
   </td><td style="border:0; vertical-align:top">
@@ -409,7 +426,7 @@ François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
