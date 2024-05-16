@@ -51,7 +51,7 @@ use WebObs::Form;
 
 die "You can't edit EXTENSO reports." if (!clientHasEdit(type=>"authforms",name=>"EXTENSO"));
 
-my $FORM = new WebObs::Form('EXTENSO');
+my $FORM = new WebObs::Form('EXTENSO_LEG');
 my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
@@ -86,7 +86,7 @@ my @donneeListe = ('1'.."$nbData");
 my @meteo    = readCfgFile($FORM->path."/".$FORM->conf('FILE_METEO'));
 my @vent     = readCfgFile($FORM->path."/".$FORM->conf('FILE_WIND'));
 
-my @vitres   = ("0|Ouverte","1|Fermée");
+my @vitres   = ("0|Ouverte","1|Fermï¿½e");
 
 $ENV{LANG} = $WEBOBS{LOCALE};
 

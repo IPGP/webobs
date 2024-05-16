@@ -79,11 +79,12 @@ use Locale::TextDomain('webobs');
 use WebObs::Form;
 
 # ---- standard FORMS inits ----------------------------------
+my $QP       = $cgi->Vars;
 
-die "You can't view EXTENSO reports." if (!clientHasRead(type=>"authforms",name=>"EXTENSO"));
-my $displayOnly = clientHasEdit(type=>"authforms",name=>"EXTENSO") ? 0 : 1;
+die "You can't view EXTENSO reports." if (!clientHasRead(type=>"authforms",name=>$QP->{form}));
+my $displayOnly = clientHasEdit(type=>"authforms",name=>$QP->{form}) ? 0 : 1;
 
-my $FORM = new WebObs::Form('EXTENSO');
+my $FORM = new WebObs::Form($QP->{form});
 my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
@@ -95,8 +96,6 @@ for my $p (keys(%Ps)) {
 	}
 	%Ns = (%Ns, %N);
 }
-
-my $QP       = $cgi->Vars;
 
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
@@ -395,13 +394,13 @@ for ("1".."9") {
 }
 $entete = $entete."<TH><SPAN style=\"text-decoration:overline\"><I>x</I></SPAN><br>(mm)</TH><TH>2&sigma;<br>(mm)</TH><TH><SPAN style=\"text-decoration:overline\">v</TH></TR>\n";
 
-push(@csv,l2u("Date;Heure;Code;Site;Operateurs;Temp. Air (°C);Meteo;Dist. Moy (mm);2*Sigma (mm);Vent Moy;Remarques\n"));
+push(@csv,l2u("Date;Heure;Code;Site;Operateurs;Temp. Air (ï¿½C);Meteo;Dist. Moy (mm);2*Sigma (mm);Vent Moy;Remarques\n"));
 
 for(@finalLignes) {
 	($id,$date,$heure,$site,$ope,$tAir,$tMeteo,$ruban,$offset,$d[0][0],$d[0][1],$d[0][2],$d[1][0],$d[1][1],$d[1][2],$d[2][0],$d[2][1],$d[2][2],$d[3][0],$d[3][1],$d[3][2],$d[4][0],$d[4][1],$d[4][2],$d[5][0],$d[5][1],$d[5][2],$d[6][0],$d[6][1],$d[6][2],$d[7][0],$d[7][1],$d[7][2],$d[8][0],$d[8][1],$d[8][2],$rem,$val) = split(/\|/,$_);
 	$tMeteo = lc($tMeteo);
 	chomp($val);
-	# trie les données pour mettre les champs vides à la fin...
+	# trie les donnï¿½es pour mettre les champs vides ï¿½ la fin...
 	#@d = sort { ($a eq "") <=> ($b eq "") } @d;
 	my $VM = 0;
 	my $DM = 0;
@@ -410,7 +409,7 @@ for(@finalLignes) {
 	for (@nd) {
 		if ($d[$_][0] ne "") {
 			my $dd = 0;
-			$DM += $offset + $ruban + $d[$_][0] + $d[$_][1];		# $DM = momentanément somme des x
+			$DM += $offset + $ruban + $d[$_][0] + $d[$_][1];		# $DM = momentanï¿½ment somme des x
 			$DS += ($offset + $ruban + $d[$_][0] + $d[$_][1])**2;	# $DS = momentanement somme des xÂ²
 			$VM += $d[$_][2];
 			$n++;
@@ -418,7 +417,7 @@ for(@finalLignes) {
 	}
 	if ($n > 0) {
 		$DM = $DM/$n;						# $DM = moyenne mesure
-		$DS = 2 * sqrt($DS/$n - $DM*$DM);	# $DS = 2 * écart-type
+		$DS = 2 * sqrt($DS/$n - $DM*$DM);	# $DS = 2 * ï¿½cart-type
 		$VM = $VM/$n;						# $VM = moyenne vent
 	}
 
