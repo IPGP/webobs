@@ -70,7 +70,7 @@ sub new {
 	$self->{_name} = $Name;
 
 	$self->{_path}  = "$WEBOBS{PATH_FORMS}/$Name";
-	die "No configuration found for $Name" if !(-e $self->{_path}."/$Name.conf");
+	die "No configuration found for FORM.$Name" if !(-e $self->{_path}."/$Name.conf");
 	$self->{_conf}  = { readCfg($self->{_path}."/$Name.conf") };
 	$self->{_fnam}  = "$WEBOBS{PATH_DATA_DB}/".$self->{_conf}{FILE_NAME}; 
 
