@@ -141,12 +141,19 @@ if (scalar(@procavailable)>0) {
 
 if (scalar(@proclist)==0) { die "$__{'No PROC eligible for this user. Please ask an administrator.'}" }
 
+# ---- read in excluded proc key list
+my @REQEXCL;
+my $reqexcl = "$WEBOBS{ROOT_CODE}/etc/request-excluded-keylist";
+if (-e $reqexcl ) {
+	@REQEXCL = readFile($reqexcl);
+}
+
 # ---- read in default values for initializing
 # ---- form fields used for request.rc creation
 my %REQDFLT;
 my $reqdflt = "$WEBOBS{ROOT_CODE}/tplates/request-template";
 if (-e $reqdflt ) {
-	%REQDFLT = readCfg($reqdflt)
+	%REQDFLT = readCfg($reqdflt);
 }
 
 # ---- retrieve the last requests for current user
@@ -438,10 +445,14 @@ sub pkeys {
 	my ($pn,$PP) = @_;
 	if (defined($pn) && defined($PP->{$pn}{REQUEST_KEYLIST})) {
 		my $div = "<div id='pkeysdrawer$pn' class='pkeysdrawer' style='display: none'>";
-		foreach (split(/,/,$PP->{$pn}{REQUEST_KEYLIST})) {
+		my @pk = split(/,/,$PP->{$pn}{REQUEST_KEYLIST});
+		foreach my $k (sort keys %{$PP->{$pn}}) {
+			push(@pk,$k) if (! grep(/^$k$/,@pk) && ! grep(/^$k$/,@REQEXCL));
+		}
+		foreach (@pk) {
 			s/^\s+|\s+$//g;
 			$div .= sprintf("<label for='PROC.%s.%s'>%s:</label>",$pn,$_,$_);
-			$div .= sprintf("<input disabled id='PROC.%s.%s' name='PROC.%s.%s' maxlength='200' size='30' value='%s'><br>",$pn,$_,$pn,$_,defined($PP->{$pn}{$_})?$PP->{$pn}{$_}:"");
+			$div .= sprintf("<input disabled id='PROC.%s.%s' name='PROC.%s.%s' maxlength='200' size='40' value='%s'><br>",$pn,$_,$pn,$_,defined($PP->{$pn}{$_})?$PP->{$pn}{$_}:"");
 		}
 		$div .= "</div>";
 		return $div;
@@ -459,7 +470,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

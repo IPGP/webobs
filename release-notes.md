@@ -11,7 +11,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ## v2.7 (under development)
 
 ### New features
-1. **Generic forms**: it is now possible to create any user-defined manual database associated to a form (for entering new data and editing), a table display and CSV export. This new feature intends replacing all the former forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, NOVAC, SOILSOLUTIONS, and RAINWATER). When upgrading, a migration of the former databanks is requested: it will create the corresponding configuration file and convert the .DAT text data file to a SQLite .db file. See the user manual documentation for details.
+1. **Generic forms**: it is now possible to create any user-defined manual database associated to a form (for entering new data and editing), a table display, and CSV export of data. This new feature is replacing all the former forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, NOVAC, SOILSOLUTIONS, and RAINWATER). When upgrading, a migration of the former databanks is requested: it will create the corresponding configuration files and convert the .DAT text data file to a SQLite .db file. See the user manual documentation for details. 
 1. In the **tremblemaps** procs (felt earthquakes), GSE message can be replaced by a JSON file with basic information about the event, with two new variables:
 ```
 GSE_EXPORT|N
@@ -29,7 +29,8 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
    The `MUTT_OPTIONS` is used to set the "From:" address (instead of Apache user who is the real sender), but other options can be added if needed (see **mutt** manual). `TRIGGER_EMAIL` and `TRIGGER_SUBJECT` is used to send the data to BCSF. It will use JSON file (if exists), or GSE file otherwise. The `REPORT_EMAIL`, `REPORT_SUBJECT`, and `REPORT_FOOTNOTE` are used to send the B3 report with a detailed text message on the event and potential macroseismic intensities. The PDF file of full report will be attached to the mail. Note that email will be sent to the operator and destination address will be in "Bcc:".
 
 ### Enhancements
-1. In showNODE.pl the links between node's feature displays a table of full children's feature content in the parent node.
+1. In the proc request form, all keys are now available for edition, sorted alphabetically, following the `REQUEST_KEYLIST`.
+1. In showNODE.pl the links between node's feature displays a table of full children's feature content, including possible link to grandchildren.
 1. Search node events form accepts negative pattern (beginning with a `!`).
 1. Mat-file raw format allows import of any variable names as t, d, and e matrix (`FID_T`, `FID_D`, `FID_E`).
 1. Better check of the consistency of node start/end dates when editing the configuration.
