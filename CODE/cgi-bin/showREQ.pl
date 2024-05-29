@@ -96,11 +96,11 @@ for (reverse sort @reqlist) {
 	my $dir = my $reqdir = $_;
 	$reqdir =~ s|$WEBOBS{ROOT_OUTR}/||;
 	my ($date,$time,$host,$user) = split(/_/,$reqdir);
-	my $date1 = qx(grep "^DATE1|" $dir/REQUEST.rc | sed -e "s/DATE1|//");
-	my $date2 = qx(grep "^DATE2|" $dir/REQUEST.rc | sed -e "s/DATE2|//");
+	my $date1 = qx(grep -a "^DATE1|" $dir/REQUEST.rc | sed -e "s/DATE1|//");
+	my $date2 = qx(grep -a "^DATE2|" $dir/REQUEST.rc | sed -e "s/DATE2|//");
 	my (@procs) = grep {-d} glob("$dir/{PROC.*,GRIDMAPS}"); # first list of procs from output directories
 	$_ =~ s|$dir/|| for @procs; # keeps only the PROC.NAME part
-	my @procreq = qx(grep "^PROC\." $dir/REQUEST.rc | sed -e "s/\.[^.]*|.*//"); # second list of procs from the request parameters
+	my @procreq = qx(grep -a "^PROC\." $dir/REQUEST.rc | sed -e "s/\.[^.]*|.*//"); # second list of procs from the request parameters
 	chomp(@procreq);
 	push(@procs,@procreq); # merging output directories and request parameters
 	@procs = do { my %seen; grep { !$seen{$_}++ } @procs }; # uniq
@@ -166,7 +166,7 @@ François Beauducel, Baptiste Camus
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
