@@ -94,6 +94,7 @@ $CGI::POST_MAX = 1024;
 use CGI::Carp qw(fatalsToBrowser set_message);
 use Locale::TextDomain('webobs');
 use POSIX qw/strftime/;
+use List::MoreUtils qw(uniq);
 
 # ---- webobs stuff
 #
@@ -219,6 +220,7 @@ function postIt()
 {
 	\$.post(\"/cgi-bin/postREQ.pl\", \$(\"#theform\").serialize(), function(data) {
 		alert(data);
+		location.href = \"/cgi-bin/showREQ.pl\";
 	});
 }
 function preSet()
@@ -445,12 +447,11 @@ sub pkeys {
 	my ($pn,$PP) = @_;
 	if (defined($pn) && defined($PP->{$pn}{REQUEST_KEYLIST})) {
 		my $div = "<div id='pkeysdrawer$pn' class='pkeysdrawer' style='display: none'>";
-		my @pk = split(/,/,$PP->{$pn}{REQUEST_KEYLIST});
+		my @pk = uniq map { s/^\s+|\s+$//g; $_ } split(/,/,$PP->{$pn}{REQUEST_KEYLIST});
 		foreach my $k (sort keys %{$PP->{$pn}}) {
 			push(@pk,$k) if (! grep(/^$k$/,@pk) && ! grep(/^$k$/,@REQEXCL));
 		}
 		foreach (@pk) {
-			s/^\s+|\s+$//g;
 			$div .= sprintf("<label for='PROC.%s.%s'>%s:</label>",$pn,$_,$_);
 			$div .= sprintf("<input disabled id='PROC.%s.%s' name='PROC.%s.%s' maxlength='200' size='40' value='%s'><br>",$pn,$_,$pn,$_,defined($PP->{$pn}{$_})?$PP->{$pn}{$_}:"");
 		}
