@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2024-02-21
+%   Updated: 2024-06-12
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -486,7 +486,7 @@ for r = 1:numel(P.GTABLE)
 			voffset = sstr2num(vref);
 			mode = 'fixed';
 		else
-			[kvref,knref] = ismember(split(vref,','),{N.FID});
+			[kvref,knref] = ismemberlist(split(vref,','),{N.FID});
 			if ~isempty(vref) && all(kvref);
 				mode = vref;
 				if numel(knref) > 1
@@ -856,7 +856,9 @@ for r = 1:numel(P.GTABLE)
 		% puts arrows on top
 		h = get(gca,'Children');
 		ko = find(ismember(h,ha),1);
-		set(gca,'Children',[ha;h(1:ko-1)])
+		if ~isempty(ko)
+			set(gca,'Children',[ha;h(1:ko-1)])
+		end
 
 		% plots error ellipse, vertical component and station name
 		for nn = 1:numel(knv)
