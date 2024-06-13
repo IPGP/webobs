@@ -76,7 +76,7 @@ sub htmlspecialchars
 	my $re = $_[1];
 
 	$txt =~ s/"/&quot;/g;
-	$txt =~ s/'/&rsquo;/g;
+	$txt =~ s/'/&apos;/g;
 	$txt =~ s/</&lt;/g;
 	$txt =~ s/>/&gt;/g;
 #  	print "<div style=\"border: 1px dotted gray;\">".$txt."</div>";

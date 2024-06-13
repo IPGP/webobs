@@ -56,11 +56,12 @@ sudo ./install -mode silent
 A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:
 
 ```sh
-sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq mutt xvfb \
+sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq vim mutt xvfb \
    curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
-   libtext-multimarkdown-perl libswitch-perl libintl-perl libncurses5 \
+   libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl \
    wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
+sudo apt install libncurses5
 ```
 
 Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
@@ -80,6 +81,11 @@ Create the target WebObs directory:
 sudo mkdir -p /opt/webobs
 ```
 
+Create the webobs user:
+```sh
+sudo adduser wo
+```
+
 <a name="update"></a>
 ### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
 
@@ -94,14 +100,13 @@ Configuration files will be updaded and displayed/editabled at the end of the up
 
 ### C) Procedure for both A) and B) above
 
-With root privileges, in your target WebObs directory:
-1. execute `cd /opt/webobs`
-2. execute `tar xf WebObs-<version>.tar.gz`
-3. execute `WebObs-<version>/SETUP/setup`
-4. (re)start Apache
-5. launch the scheduler and postboard
-
-For users of systemd-base GNU/Linux distributions, the `setup` proposes an automatic installation for _scheduler_ and the _postboard_ services. If you accepted it, you can launch both systemd services with the following commands:
+In your target WebObs directory with root privileges:
+```sh
+cd /opt/webobs
+sudo tar xf WebObs-<version>.tar.gz
+sudo WebObs-<version>/SETUP/setup
+```
+Then (re)start Apache (for example `sudo service apache2 restart`) and launch the scheduler and postboard. For users of systemd-base GNU/Linux distributions, the `setup` proposes an automatic installation for _scheduler_ and the _postboard_ services. If you accepted it, you can launch both systemd services with the following commands:
 ```sh
 sudo service woscheduler start
 sudo service wopostboard start
