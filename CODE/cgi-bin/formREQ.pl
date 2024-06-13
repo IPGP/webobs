@@ -303,7 +303,7 @@ print "<TR>";
 	print "<fieldset><legend>$__{'Available PROCS'}</legend>";
 	print "<div style=\"overflow-y: scroll;height: 400px\">";
 	for my $p (@proclist) {
-		%P = readProc($p,"novsub");
+		%P = readProc($p,'novsub','escape'); # reads the proc conf without modifying content (no variable substitution, keep escaped char)
 		my $nn = scalar(@{$P{$p}{NODESLIST}});
 		print "<INPUT type=\"checkbox\" name=\"p_$p\" title=\"$p\" onclick=\"selProc('$p')\" value=\"0\"> <B>{$p}:</B> $P{$p}{NAME} (<B>$nn</B> node".($nn>1?"s":"").")<BR>\n";
 		print pkeys($p,\%P);
@@ -452,8 +452,9 @@ sub pkeys {
 			push(@pk,$k) if (! grep(/^$k$/,@pk) && ! grep(/^$k$/,@REQEXCL));
 		}
 		foreach (@pk) {
-			$div .= sprintf("<label for='PROC.%s.%s'>%s:</label>",$pn,$_,$_);
-			$div .= sprintf("<input disabled id='PROC.%s.%s' name='PROC.%s.%s' maxlength='200' size='40' value='%s'><br>",$pn,$_,$pn,$_,defined($PP->{$pn}{$_})?$PP->{$pn}{$_}:"");
+			my $v = (defined($PP->{$pn}{$_})?$PP->{$pn}{$_}:"");
+			$div .= "<label for='PROC.$pn.$_'>$_:</label>";
+			$div .= "<input disabled id='PROC.$pn.$_' name='PROC.$pn.$_' maxlength='200' size='40' value='".htmlspecialchars($v)."'><br>";
 		}
 		$div .= "</div>";
 		return $div;

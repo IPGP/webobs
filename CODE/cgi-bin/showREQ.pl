@@ -67,11 +67,10 @@ print "Content-type: text/html; charset=utf-8
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
 <HTML>
 <HEAD>
-<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
-<TITLE>$pagetitle</TITLE>
-<script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
-<script type=\"text/javascript\">
-
+  <link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
+  <TITLE>$pagetitle</TITLE>
+  <script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
+  <meta http-equiv=\"refresh\" content=\"60\">
 </HEAD>
 <BODY style=\"background-color:#E0E0E0\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>

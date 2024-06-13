@@ -94,9 +94,15 @@ install_systemd_services() {
 	local postboard_service="/etc/systemd/system/wopostboard.service"
 	local scheduler_service="/etc/systemd/system/woscheduler.service"
 
-	if ! ( command -v systemctl > /dev/null && systemctl is-system-running --quiet ); then
-		echo "You system does not seem to be running systemd. Skipping installation of systemd services."
+	if ! ( command -v systemctl > /dev/null ); then
+		echo "Your system does not seem to be running systemd. Skipping installation of systemd services."
 		return
+	fi
+
+	if ! ( systemctl is-system-running --quiet ); then
+		echo "Warning: Your systemd is not fully functional. Status is:"
+		systemctl is-system-running
+		echo "WebObs systemd services will be installed anyway, but might not working properly."
 	fi
 
 	if ! [[ -r "$postboard_tmpl" && -r "$scheduler_tmpl" ]]; then
