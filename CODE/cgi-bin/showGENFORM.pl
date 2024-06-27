@@ -83,11 +83,8 @@ my $day   = strftime('%d',@tod);
 my $month = strftime('%m',@tod); 
 my $year  = strftime('%Y',@tod);
 my $today = strftime('%F',@tod);
-my $delay = $FORM{DEFAULT_DAYS} // 30;
-my $startDate = qx(date -d "$delay days ago" +%F);
-my $endDate;
-chomp($startDate);
-my ($y1,$m1,$d1) = split(/-/,$startDate);
+my $default_days = $FORM{DEFAULT_DAYS} // 30;
+my ($y1,$m1,$d1) = split(/[-T]/,DateTime->today()->subtract(days => $default_days - 1));
 
 # ---- get CGI parameters
 my $QryParm = $cgi->Vars;
@@ -100,6 +97,7 @@ $QryParm->{'d2'}       //= $day;
 $QryParm->{'node'}     //= ""; 
 $QryParm->{'trash'}    //= "0";
 $QryParm->{'dump'}     //= ""; 
+$QryParm->{'debug'}    //= ""; 
 
 my $re = $QryParm->{'filter'}; 
 
@@ -143,9 +141,9 @@ my $fileCSV = $WEBOBS{WEBOBS_ID}."_".$form."_$today.csv";
 
 my $starting_date = isok($FORM{STARTING_DATE});
 
-$startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'} 00:00:00";
-$endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'} 23:59:59";
-$delay = qx[echo \$(( ( \$(date -d "$endDate" +%s) - \$(date -d "$startDate" +%s) )/86400 ))];
+my $startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'} 00:00:00";
+my $endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'} 23:59:59";
+my $delay = datediffdays($startDate,$endDate);
 
 # ---- a site requested as PROC.name means "all nodes for proc 'name'"
  
@@ -495,9 +493,11 @@ for (my $j = 0; $j <= $#rows; $j++) {
 }
 
 if ($QryParm->{'debug'}) {
-	push(@html,"<P>Columns = ".join(',',@rownames)."</P>\n");
-	push(@html,"<P>Formulas = ".join(',',@formulas)."</P>\n");
-	push(@html,"<P>Filter = $filter</P>\n");
+	print("<P>y1 = ".$QryParm->{'y1'}.", m1 = ".$QryParm->{'m1'}.", d1 = ".$QryParm->{'d1'}."</P>\n");
+	print("<P>startDate = $startDate, endDate = $endDate, default days = $FORM{DEFAULT_DAYS}</P>\n");
+	print("<P>Columns = ".join(',',@rownames)."</P>\n");
+	print("<P>Formulas = ".join(',',@formulas)."</P>\n");
+	print("<P>Filter = $filter</P>\n");
 }
 push(@html,"<P>$__{'Date interval'} = <B>$delay days.</B><BR>\n");
 push(@html,"$__{'Number of records'} = <B>".($#rows+1)."</B> / $nbData.</P>\n");
