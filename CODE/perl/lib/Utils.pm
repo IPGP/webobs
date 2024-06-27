@@ -22,7 +22,7 @@ our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
-            rtrim tri_date_avec_id isok romain pga2msk attenuation txt2htm tex2utf
+            rtrim tri_date_avec_id datediffdays isok romanx pga2msk attenuation num2roman txt2htm tex2utf
             roundsd htm2frac qrcode url2target checkParam);
 $VERSION = "1.00";
 
@@ -44,12 +44,15 @@ my $l2u = Locale::Recode->new (from => 'ISO-8859-15', to => 'UTF-8');
 die $u2l->getError if $u2l->getError;
 die $l2u->getError if $l2u->getError;
 
+
+# -------------------------------------------------------------------------------------------------
 sub u2l ($) {
 	my $texte = shift;
 	$u2l->recode($texte) or die $u2l->getError;
 	return $texte;
 }
 
+# -------------------------------------------------------------------------------------------------
 sub l2u ($) {
 	my $texte = shift;
 	$l2u->recode($texte) or die $l2u->getError;
@@ -203,17 +206,48 @@ sub rtrim($)
 
 
 #--------------------------------------------------------------------------------------------------------------------------------------
+# sort array of strings in the form "ID|yyyy-mm-dd|HH:MM|..." on date and time (second and third column)
+# (for use with mc3.pl)
 sub tri_date_avec_id ($$) {
-	#my $c = $a;
-	#my $d = $b;
 	my ($c,$d) = @_;
-	# supprime le premier champ Id
+	# removes first column (ID)
 	$c =~ s/^[\-0-9]+\|//;
 	$d =~ s/^[\-0-9]+\|//;
-	# remplace tous les champs vides par '00:00' pour que les événements sans heure apparaissent en premier
+	# replaces empty time by '00:00' so events without time appear first
 	$c =~ s/\|\|/00:00/;
 	$d =~ s/\|\|/00:00/;
 	return $d cmp $c;
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+#
+sub datediffdays {
+	use DateTime::Duration;
+	
+	my ($y1,$m1,$d1,$h1,$n1,$s1) = split(/[- :]/,$_[0]);
+	my ($y2,$m2,$d2,$h2,$n2,$s2) = split(/[- :]/,$_[1]);
+	my $dt1 = DateTime->new(
+		year   => $y1,
+        month  => $m1,
+        day    => $d1,
+        hour   => $h1,
+        minute => $n1,
+        second => $s1,
+        time_zone => 'local',
+	);
+	my $dt2 = DateTime->new(
+		year   => $y2,
+        month  => $m2,
+        day    => $d2,
+        hour   => $h2,
+        minute => $n2,
+        second => $s2,
+        time_zone => 'local',
+	) + DateTime::Duration->new(seconds => "1"); # add 1 second
+	
+	my $dur = $dt2->subtract_datetime_absolute($dt1);
+	#return "$dt1,$dt2";
+	return sprintf("%1.0f", ($dur->in_units('seconds'))/86400);
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -226,10 +260,10 @@ sub isok ($)
 
 
 #--------------------------------------------------------------------------------------------------------------------------------------
-sub romain ($)
-# Input: intensite MSK (en numerique de 1 a 0 ou 10)
-# Output: intensite MSK (en chiffres romains)
-# Equivalent Matlab: romanx.m
+sub romanx ($)
+# Input: intensity MSK (numerical from 1 to 0 or 10)
+# Output: intensity MSK (in roman numbers)
+# Proc equivalent: matlab/romanx.m
 {
 	my @msk = ("X","I","II","III","IV","V","VI","VII","VIII","IX");
 	my $string = shift;
@@ -239,10 +273,10 @@ sub romain ($)
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 sub pga2msk ($)
-# Input: acceleration (en mg)
-# Output: niveau d'intensite MSK (en chiffres romains)
-# Equivalent Matlab: pga2msk.m
-# Auteur: F. Beauducel, IPGP, 2009-06-24
+# Input: ground acceleration (in mg)
+# Output: intensity level MSK (in roman numbers)
+# Proc equivalent matlab/pga2msk.m
+# Author: F. Beauducel, IPGP, 2009-06-24
 {
 	my @msk = ('I','I-II','II','II-III','III','III-IV','IV','IV-V','V','V-VI','VI','VI-VII','VII','VII-VIII','VIII','VIII-IX','IX','IX-X','X','X-XI','XI','XI-XII','XII');
 	my $pga = shift;
@@ -256,8 +290,8 @@ sub pga2msk ($)
 sub attenuation ($$)
 # Input: magnitude et distance hypocentrale (en km)
 # Ouput: acceleration PGA (en g)
-# Equivalent Matlab: attenuation.m
-# Auteur: F. Beauducel, IPGP, 2009-06-24
+# Proc equivalent: matlab/attenuation.m
+# Author: F. Beauducel, IPGP, 2009-06-24
 {
 	my ($mag,$hyp) = @_;
 	if ($hyp < 5) { $hyp = 5; }
@@ -266,8 +300,36 @@ sub attenuation ($$)
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
+=pod
+=head2 num2roman
+$roman = num2roman($number);
+converts integer (range [1-4999]) to roman string.
+Proc equivalent: matlab/num2roman.m
+# Author: F. Beauducel, IPGP
+=cut
+
+sub num2roman ($)
+{
+	my @r = (["I","X","C","M"],["V","L","D"," "," "]);
+	my $n = shift;
+	my $x;
+
+	for my $i (reverse(0 .. floor(log10($n)))) {
+		my $ii = int($n/10**$i);
+		$x .= $r[0][$i] x $ii if ($ii < 4 || ($ii == 4 && $i == 3));
+		$x .= $r[0][$i] if ($ii == 9 || ($ii == 4 && $i < 3));
+		$x .= $r[1][$i].($r[0][$i] x ($ii - 5)) if ($ii >= 4 && $ii <= 8 && $i != 3);
+		$x .= $r[0][$i+1] if ($ii == 9);
+		$n -= $ii*10**$i;
+	}
+	return $x;
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
 sub roundsd
 # Round with significant digits
+# Proc equivalent: matlab/roundsd.m
+# Author: F. Beauducel, IPGP
 {
 	my ($x, $n) = @_;
 	$n = 1 if ($n eq "" || $n < 1);
@@ -309,6 +371,8 @@ sub url2target
 }
 
 # -------------------------------------------------------------------------------------------------
+# format a fraction 'a/b' using html table and cell border so it looks like a real fraction
+# Author: F. Beauducel, IPGP
 sub htm2frac
 {
 	my $s = shift;
@@ -409,7 +473,7 @@ __END__
 
 =head1 AUTHOR
 
-Alexis Bosson, Francois Beauducel, Didier Lafon
+Alexis Bosson, François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 

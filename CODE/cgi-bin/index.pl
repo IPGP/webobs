@@ -77,7 +77,6 @@ use WebObs::Config;
 use WebObs::Utils;
 use WebObs::Users;
 use WebObs::i18n;
-use WebObs::MathUtils;
 use Locale::TextDomain('webobs');
 
 
@@ -214,7 +213,7 @@ if ( $menunav =~ m/.rc$/) {
 }
 # ---- 'signature' that will show up at bottom
 #
-my $year = WebObs::MathUtils::num2roman(strftime("%Y", localtime));
+my $year = WebObs::Utils::num2roman(strftime("%Y", localtime));
 my $signature = join(' ', readFile("$MENU{SIGNATURE}"));
 $signature =~ s/\(c\)|©/© $year,/g;
 

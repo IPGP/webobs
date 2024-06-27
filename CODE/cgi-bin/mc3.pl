@@ -1296,7 +1296,7 @@ for (@finalLignes) {
 					}
 					# cas d'une loc au format hyp71sum2k
 					if ($HYPO_USE_FMT0_PATH && (substr($typ[$ii],2,1) =~ /[2-9]{1}/)) {
-						$msk[$ii] = romain(substr($typ[$ii],2,1));
+						$msk[$ii] = romanx(substr($typ[$ii],2,1));
 					}
 				}
 			}
