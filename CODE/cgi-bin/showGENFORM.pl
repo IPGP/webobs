@@ -316,8 +316,13 @@ if ($QryParm->{'dump'} ne "csv") {
 			my @key = keys %{$lists{$i}};
 			print "<B>".$FORM{uc($i)."_NAME"}.":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
 			print "<OPTION value=\"\"></OPTION>\n";
+			my $nam;
 			foreach (sort @key) {
-				my $nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$lists{$i}{$_});
+				if (ref $lists{$i}{$_}) {
+					$nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$_);
+				} else {
+					$nam = ($lists{$i}{$_} ? $lists{$i}{$_}:$_);
+				}
 				my $sel = ($QryParm->{$i} eq $_ ? "selected":"");
 				print "<OPTION value=\"$_\" $sel>$_: $nam</OPTION>\n";
 			}
@@ -465,6 +470,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
 					if ($v{icon}) {
 						$val = "<IMG src=\"$v{icon}\">";
 					}
+				} else {
+					$hlp = "<B>$fields{$field}</B>: $lists{$field}{$fields{$field}}";
 				}
 				$hlp = "<I>$__{'unknown key list!'}</I>" if ($val eq "");
 				$opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$hlp')\"";
