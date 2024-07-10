@@ -360,10 +360,9 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				% plots the signal
 				for n = 1:nchan
 						% clips signal (forces saturation)
-						ds = min(D(n).d,.5);
-						ds = max(ds,-.5);
+						ds = max(min(D(n).d,0.5),-0.5);
 						if ~isempty(D(n).d)
-							plotregsamp(D(n).t - t0,ds - (n - .5)*hsig,'LineWidth',lw,'Color',scol(n,:))
+							timeplot(D(n).t - t0,ds - (n - .5)*hsig,[],'LineWidth',lw,'Color',scol(n,:))
 						end
 				end
 				hold off
