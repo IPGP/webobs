@@ -93,10 +93,13 @@ FILTER_MAX_ERROR_M|0.05
 ORBIT_ERROR_RATIO|1,2
 
 PICKS_CLEAN_PERCENT|0
-TREND_ERROR_MODE|1
+PICKS_CLEAN_STD|0
+
 # minimum time window (in percent and/or days) needed to compute a trend
 TREND_MIN_PERCENT|50
 TREND_MIN_DAYS|5
+# error mode: 1 = lscov, 2 = std, 3 = corrcoef
+TREND_ERROR_MODE|2
 
 # ITRF reference (this is a string displayed on graph title, not functional)
 ITRF_REF|ITRF08

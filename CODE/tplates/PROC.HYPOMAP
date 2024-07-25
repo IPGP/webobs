@@ -121,7 +121,7 @@ MAP_Area1_MAGLIM|3,7
 # depth limits (for color scale only, not a filter)
 MAP_Area1_DEPLIM|-2,200
 # 1 or 2 optional profile(s)
-# Profile 1 (bottom): center latitude, center longitude, azimuth (degree North), lateral distance (km), depth (km)
+# Profile 1 (bottom): center longitude, center latitude, azimuth (degree North), lateral distance (km), depth (km)
 MAP_Area1_PROFILE1|-61.4651,16.5138,55,100,200
 # Profile 2 (right): same parameters as profile1, but drawn on the right side of the map
 # Colormap used: must specify the number of colors
