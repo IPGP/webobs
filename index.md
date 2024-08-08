@@ -62,6 +62,7 @@ sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq 
    libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl \
    wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
 sudo apt install libncurses5
+sudo apt install python-is-python3
 ```
 
 Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
@@ -103,7 +104,7 @@ Configuration files will be updaded and displayed/editabled at the end of the up
 In your target WebObs directory with root privileges:
 ```sh
 cd /opt/webobs
-sudo tar xf WebObs-<version>.tar.gz
+sudo tar xf <download_directory>/WebObs-<version>.tar.gz
 sudo WebObs-<version>/SETUP/setup
 ```
 Then (re)start Apache (for example `sudo service apache2 restart`) and launch the scheduler and postboard. For users of systemd-base GNU/Linux distributions, the `setup` proposes an automatic installation for _scheduler_ and the _postboard_ services. If you accepted it, you can launch both systemd services with the following commands:
