@@ -42,7 +42,9 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
 1. ``!`` User manager form: now only the WebObs Owner is allowed to delete a user, edit any user UID, or modify authorizations for the WebObs Owner himself. Admin level on the resource **user** allows everything else except these. As a reminder, modification/deletion of any user UID is not recommended since it might result in WebObs data corruption (grid or node events, manual data banks, Gazette, ...).
 1. Fix an issue to display attached photos in grid events.
 1. Fix the issue producing a black background for PDF image thumbnails.
-1. Fix an issue with the DECIMATE parameter in superproc **gnss**.
+1. Fix an issue with the `DECIMATE` parameter in superproc **gnss**.
+1. Fix some graphical issues in **sefran3** with messy data packets in miniseed.
+1. Fix an issue with proc name that uses the word "PROC".
 
 ## v2.6.4 (December 2023)
 
