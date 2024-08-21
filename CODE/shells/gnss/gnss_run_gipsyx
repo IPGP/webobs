@@ -437,7 +437,7 @@ for station in $NODES; do
 						fi
 					fi
 				done
-				if [ -z $ERROR ]; then
+				if [[ -z $ERROR && -e $LOG ]]; then
 					mv -f $LOG $gipsylog
 					gzip -f $gipsylog
 				fi
