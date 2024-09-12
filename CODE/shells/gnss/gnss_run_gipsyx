@@ -450,12 +450,12 @@ for station in $NODES; do
 				fi
                                 
                                 if [[ -n $FULLOG ]]; then
-					curdir=`pwd`
-					cd $tmpdir
-					ntmpfil=`ls | wc -l`
+					ntmpfil=`ls $tmpdir | wc -l`
 					if [[ $ntmpfil -le 1 ]]; then
 						echo "   full log not saved (tmp folder contains only the input RINEX)"
 					else
+						curdir=`pwd`
+						cd $tmpdir
                                        		tar -zcf $gipsyfullog_targz * 
 						cd $curdir
 						echo "   full log saved in $gipsyfullog_targz" 
