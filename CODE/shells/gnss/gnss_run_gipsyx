@@ -75,7 +75,7 @@ if [ $# -lt 2 ]; then
 	echo "       -debug"
 	echo "            verbose mode & temporary folders will not be deleted"
 	echo "       -fullog"
-	echo "            Full log record. Temporary folders are stored in a .fullog.tar.gz zip file"
+	echo "            Full log record. Temporary folders are stored in a .fullog.tar.gz file"
 	echo ""
 	exit 0;
 fi
@@ -449,9 +449,18 @@ for station in $NODES; do
 					gzip -f $gipsylog
 				fi
                                 
-                                if [ -z $FULLOG ]; then
-                                        tar -zcf $gipsyfullog_targz $tmpdir
-                                fi
+                                if [[ -n $FULLOG ]]; then
+					curdir=`pwd`
+					cd $tmpdir
+					ntmpfil=`ls | wc -l`
+					if [[ $ntmpfil -le 1 ]]; then
+						echo "   full log not saved (tmp folder contains only the input RINEX)"
+					else
+                                       		tar -zcf $gipsyfullog_targz * 
+						cd $curdir
+						echo "   full log saved in $gipsyfullog_targz" 
+                	                fi
+				fi
 			else
 				echo "   no data to process in $RAW."
 			fi
