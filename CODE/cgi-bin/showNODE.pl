@@ -676,7 +676,7 @@ for my $key_link (keys %node2node) {
  			my $parent_node = $data[0];
  			my $feature = $data[1];
 			$pseudoFileName = "ISOF:$feature";
-			$lienNode{$pseudoFileName} .= ($lienNode{$pseudoFileName} eq "" ? "" : "<br>").getNodeString(node=>$parent_node, link=>'node');
+			$lienNode{$pseudoFileName} .= (exists($lienNode{$pseudoFileName}) ? "<br>":"").getNodeString(node=>$parent_node, link=>'node');
  		}
 	}
 }
@@ -743,7 +743,8 @@ if ($lignes > 0) {
 		} else {
 			print "<TD valign=\"top\" width=\"10%\"><B>".ucfirst($carFileName)."</B></TD>\n";
 		}
-		print "<TD>$lienNode{$carFileName}@carNode</TD></TR>\n";
+		my $lien = (exists($lienNode{$carFileName}) ? $lienNode{$carFileName}:"");
+		print "<TD>$lien@carNode</TD></TR>\n";
 	}
 }
 

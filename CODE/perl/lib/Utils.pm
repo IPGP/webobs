@@ -83,7 +83,7 @@ sub htmlspecialchars
 	$txt =~ s/</&lt;/g;
 	$txt =~ s/>/&gt;/g;
 #  	print "<div style=\"border: 1px dotted gray;\">".$txt."</div>";
-	$txt =~ s/($re)/<b>\1<\/b>/g if ($re ne "");
+	$txt =~ s/($re)/<b>$1<\/b>/g if ($re ne "");
 	return $txt;
 }
 
