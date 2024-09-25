@@ -59,9 +59,11 @@ if (-e $WEBOBS{CONF_GRIDS}) {
 if (-e $NODES{FILE_NODES2NODES}) {
 	my @file_node2node = readCfgFile("$NODES{FILE_NODES2NODES}");
 	for (@file_node2node) {
-		my ($parent_node,$feature,$children_node)=split(/\|/,$_);
-		my $key_link = $parent_node."|".$feature;
-		$node2node{$key_link} .= (exists($node2node{$key_link}) ? "|":"").$children_node;
+		if ($_ =~ /.+\|.+\|.+/) {
+			my ($parent_node,$feature,$children_node) = split(/\|/,$_);
+			my $key_link = $parent_node."|".$feature;
+			$node2node{$key_link} .= (exists($node2node{$key_link}) ? "|":"").$children_node;
+		}
 	}
 }
 
