@@ -22,7 +22,6 @@ use JSON;
 use Encode qw(decode encode);
 use File::Path qw(make_path rmtree);
 use IO::Compress::Zip qw(zip $ZipError);
-use LWP::UserAgent;
 
 # ---- webobs stuff
 use WebObs::Config;
@@ -55,23 +54,6 @@ sub compressTxtFiles {
 	FilterName => sub { s[^$tmpdir/][] };
 }
 
-sub getTimescale {
-	my $timescale = "";
-	my $procfile = shift @_;
-	open(my $data, '<', $procfile) or die "Could not open '$procfile' $!\n";
-	while (my $line = <$data>) {
-		chomp $line;
-		if ( $line =~ /^THEIA_SELECTED_TS\|/ ) {
-			my @fields = split "THEIA_SELECTED_TS\\|" , $line;
-			$timescale = $fields[1];
-			$timescale =~ s/\R//g;
-			last;
-		}
-	}
-	close $data;
-	return $timescale;
-}
-
 # ---- creating tmp and exports/theia directories if required
 my $tmpdir = "$WEBOBS{PATH_TMP_WEBOBS}/theia";
 my $theiadir = "$WEBOBS{ROOT_OUTE}/theia/$datedir";
@@ -83,8 +65,13 @@ if ( ! -e $theiadir ) {
 	make_path($theiadir, {chmod => 0775});
 }
 
+my $json_validator_path = "$WEBOBS{ROOT_CODE}/bin/java/JSON-schema-validation-0-jar-with-dependencies.jar";
+if ( ! -e $json_validator_path ) {
+	die "Please install $json_validator_path\n";
+}
+
 my @zip_files;
-my $empty;	# checking if empty ref or not
+my $empty; # checking if empty ref or not
 
 # ---- start the creation of the JSON object ----------------------------------------------------
 #
@@ -232,6 +219,8 @@ foreach (@channels) {
 		my $GRIDType = 'PROC';
 		my $GRIDName = (split /\./, $row[6])[0];
 		my $NODEName = (split /\./, $row[6])[1];
+		my $timescale = (split /\_/, $row[8])[-1];
+		$timescale = (split /\./, $timescale)[0];
 		my %datafile = (
 			name => $producer{'producerId'}."_OBS_$GRIDName.$NODEName\_$observedProperty{'name'}.txt",
 		);
@@ -240,13 +229,7 @@ foreach (@channels) {
 		);
 
 		# ---- now generating the .txt file
-		my $procfile = "$WEBOBS{PATH_PROCS}/$GRIDName/$GRIDName.conf";
-		my $tscale =  getTimescale($procfile);
-		if ( $tscale eq "" ) {
-			print "THEIA_SELECTED_TS key is not defined in $procfile\n";
-			next;
-		}
-		my $dataname = "$NODEName\_$tscale.txt";
+		my $dataname = "$NODEName\_$timescale.txt";
 		my $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/";
 		my $chan_nb = 5 + $row[16];
 		my $obsfile = "$tmpdir/$datafile{'name'}";
@@ -365,11 +348,11 @@ foreach (@nodes) {
 					my $filename = decode_json encode_json $_->{'result'}->{'dataFile'}->{'name'};
 					# ---- adding the title dataset into $filename
 					# ---- first we open $filename while creating a new $filename where we will write the line we want to insert
-					open my $in,  '<', "$tmpdir/$filename" or die "Can't read old file: $!";
+					open my $in, '<', "$tmpdir/$filename" or die "Can't read old file: $!";
 					open my $out, '>', "$tmpdir/$filename.new" or die "Can't write new file: $!";
 					my $title = decode("utf8", $row[1]);
 					while( <$in> ){
-						s/Dataset_title;/Dataset_title;$title/;	# ---- writing the dataset title in the right row
+						s/Dataset_title;/Dataset_title;$title/; # ---- writing the dataset title in the right row
 						print $out $_;
 					}
 					close $in;
@@ -420,37 +403,20 @@ my $filepath = "$tmpdir/$filename";
 
 chmod 0755, $filepath;
 open(FH, '>', $filepath) or die $!;
-
 print FH encode_json \%json;
-
 close(FH);
 
 #print encode_json \%json;
+
 # ---- checking if the final json file is conform to the recommandations
-my $output = "";
-# $output = "java -jar $WEBOBS{ROOT_CODE}/bin/java/JSON-schema-validation-0-jar-with-dependencies.jar ".$filepath;
-# $output = qx($output);
 
-# curl -i -v -XPOST -F "json=@OBSE_en.json" https://in-situ.theia-land.fr/api-validation/validate
-my $url      = "https://in-situ.theia-land.fr/api-validation/validate";
-my $ua       = LWP::UserAgent->new( timeout => 30 );
-my $response = $ua->post(
-    $url,
-    Content_Type => 'form-data',
-    Content      => [ json => [$filepath] ]
-);
+my $output = qx(java -jar $json_validator_path $filepath);
 
-$output = $response->message;
-if ( $response->is_error ) {
-	printf "[%d] %s\n", $response->code, $response->message;
-	print "The JSON metadata file is not valid.\n";
-	die;
-}
+# ---- Create a data archive
 
 my $producerId = $producer{'producerId'};
-
 my $zipfile   = $producerId . "_THEIA.zip";
-if ( $output =~ /success|OK/ ) {
+if ( $output =~ /success/ ) {
 	zip [ <$tmpdir/*DAT*.zip>, $filepath ] => "$theiadir/$zipfile",
 	FilterName => sub { s[^$tmpdir/][] } or die "zip failed: $ZipError\n";
 	rmtree($tmpdir);
@@ -458,7 +424,7 @@ if ( $output =~ /success|OK/ ) {
 
 # ---- Send archive to Theia/OZCAR
 
-if ( $output =~ /success|OK/ ) {
+if ( $output =~ /success/ ) {
 	my $url = "https://in-situ.theia-land.fr/data/$producerId/new/";
 	my $password = $WEBOBS{PASSWORD_THEIA};
 	my $response = qx(curl -T "$theiadir/$zipfile" -u $producerId:$password -s -o /dev/null -w "%{http_code}" $url);
@@ -492,10 +458,10 @@ the Free Software Foundation, either version 3 of the License, or
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 =cut
