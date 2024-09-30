@@ -421,6 +421,9 @@ if ( $output =~ /success/ ) {
 	FilterName => sub { s[^$tmpdir/][] } or die "zip failed: $ZipError\n";
 	rmtree($tmpdir);
 }
+else {
+	print "The JSON metadata file is not valid :\n".$output;
+};
 
 # ---- Send archive to Theia/OZCAR
 
