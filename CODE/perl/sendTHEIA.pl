@@ -75,12 +75,12 @@ sub getTimescale {
 # ---- creating tmp and exports/theia directories if required
 my $tmpdir = "$WEBOBS{PATH_TMP_WEBOBS}/theia";
 my $theiadir = "$WEBOBS{ROOT_OUTE}/theia/$datedir";
-umask 0002;
-if ( ! -e $tmpdir) {
-	print "couldn't create ($!) $tmpdir" if (! make_path($tmpdir, {chmod => 0775}));
+
+if ( ! -e $tmpdir ) {
+	make_path($tmpdir, {chmod => 0775});
 }
-if ( ! -e $theiadir) {
-	print "couldn't create ($!) $theiadir" if (! mkdir($theiadir, 0775)) ;
+if ( ! -e $theiadir ) {
+	make_path($theiadir, {chmod => 0775});
 }
 
 my @zip_files;
