@@ -282,7 +282,7 @@ foreach (@nodes) {
 	while( my @row = $sth->fetchrow_array() ) {
 		my $topicCategories = (split '_', $row[3])[0];
 		my @topicCategories;
-		foreach(split('_,', $topicCategories)){
+		foreach(split('_,', $topicCategories)) {
 			my $category = (split(':', $_))[1];
 			#$category =~ s/(\r\n)//g;
 			push(@topicCategories, $category);
@@ -342,8 +342,9 @@ foreach (@nodes) {
 		foreach(@observations) {
 			if (defined($_->{'observationId'})) {
 				my $obsId = (split /\./, $_->{'observationId'})[1];
+				$obsId = (split /\_/, $obsId)[0];
 				my $datId = (split /\./, $row[0])[1];
-				if ($obsId=~ /$datId/) {
+				if ($obsId eq $datId) {
 					push(@ds_obs, $_);
 					my $filename = decode_json encode_json $_->{'result'}->{'dataFile'}->{'name'};
 					# ---- adding the title dataset into $filename
@@ -351,7 +352,7 @@ foreach (@nodes) {
 					open my $in, '<', "$tmpdir/$filename" or die "Can't read old file: $!";
 					open my $out, '>', "$tmpdir/$filename.new" or die "Can't write new file: $!";
 					my $title = decode("utf8", $row[1]);
-					while( <$in> ){
+					while( <$in> ) {
 						s/Dataset_title;/Dataset_title;$title/; # ---- writing the dataset title in the right row
 						print $out $_;
 					}
