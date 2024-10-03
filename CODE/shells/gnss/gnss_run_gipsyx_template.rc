@@ -8,7 +8,7 @@
 # main temporary directory (/tmp per default, change is recommended)
 TMPDIRMAIN=/tmp
 
-# prepares GIPSYX processing
+# prepares GIPSYX processing (this is GipsyX's rc file, in the GipsyX folder)
 source /home/wo/GipsyX-1.2/rc_GipsyX.sh
 
 # grid of a local WebObs that contains the station list (nodes)

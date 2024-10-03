@@ -24,7 +24,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2022-10-26
+%	Updated: 2024-07-02
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -33,9 +33,13 @@ F.ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
 wosystem(sprintf('mkdir -p %s',F.ptmp));
 
 if isfield(P,'FORM')
-
-	D = readfmtdata_woform(WO,P,N);
-
+	% legacy forms (datafile)
+	f = sprintf('%s/%s',WO.PATH_DATA_DB,P.FORM.FILE_NAME);
+	if exist(f,'file')
+		D = readfmtdata_woform(WO,P,N);
+	else
+		D = readfmtdata_genform(WO,P,N);
+	end
 else
 
 	for n = 1:length(N)
