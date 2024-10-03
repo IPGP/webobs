@@ -279,8 +279,8 @@ while(my @row = $sth->fetchrow_array()){
 	if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
 		my $subject = join(',', split(/_/,$row[3]));
 		print "<TR class=\"channel\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>";
-		print $row[0] =~ /Batt/ ? "<TD width=1%><input type='checkbox'></TD>" : "<TD width=1%><input type='checkbox' checked></TD>"
-			."<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
+		print $row[0] =~ /Batt/ ? "<TD width=1%><input type='checkbox'></TD>" : "<TD width=1%><input type='checkbox' checked></TD>";
+		print "<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
 			."<TD width=6%  align=center><SMALL>$row[1]</SMALL></TD>"
 			."<TD width=6%  align=center><SMALL>$row[2]</SMALL></TD>"
 			."<TD width=12% align=center><SMALL>$row[3]</SMALL></TD>"
