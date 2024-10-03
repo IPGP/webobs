@@ -48,9 +48,9 @@ my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DB
 # Compress $tmpdir's files into $zipfile without the whole path in the compress archive
 sub compressTxtFiles {
 	my $dataset = shift;
-	my $NODEName = (split /\./, $dataset)[1];
+	my $dataName = (split /\_/, $dataset)[-1];
 	my $tmpdir   = shift;
-	zip [ <$tmpdir/*$NODEName*.txt> ] => "$tmpdir/$dataset.zip",
+	zip [ <$tmpdir/*$dataName\_*.txt> ] => "$tmpdir/$dataset.zip",
 	FilterName => sub { s[^$tmpdir/][] };
 }
 
