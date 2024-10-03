@@ -23,7 +23,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2022-10-26
+%	Updated: 2024-08-06
 
 
 proc = varargin{1};
@@ -32,7 +32,7 @@ wofun = sprintf('WEBOBS{%s}',mfilename);
 if strncmp(proc,'/',1)	% if argument contains a path filename, will read it as is...
 	f = proc;
 else
-	proc = regexprep(proc,'PROC.','');
+	proc = regexprep(proc,'PROC\.','');
 	f = sprintf('%s/%s/%s.conf',WO.PATH_PROCS,proc,proc);
 end
 

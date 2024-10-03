@@ -343,6 +343,7 @@ for station in $NODES; do
 						echo "   file $gipsyres [$orbit] already exists..."
 						break
 					else
+						NFORBLOOP=0 ### we force the standard case here (fiducial orbits)
 						if [ "$ORBITSDIR" != "" ]; then #running Gipsy from local orbit
 							case $orbit in
 							flinn)
@@ -369,7 +370,6 @@ for station in $NODES; do
 
 						else #running Gipsy from direct download
 							ORBITOPT=$orbit
-							NFORBLOOP=0 ### we force the standard case here (fiducial orbits)
 						fi
 						
 						# if we use NF orbits, add the necessary options -prodTypeGNSS nf -gdCov

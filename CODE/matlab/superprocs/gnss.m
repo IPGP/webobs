@@ -197,9 +197,7 @@ rr = field2num(P,'MODELLING_GRID_SIZE',50);
 modelling_cmap = field2num(P,'MODELLING_COLORMAP',ryb(256));
 modelling_colorshading = field2num(P,'MODELLING_COLOR_SHADING',0.3);
 modelling_topo_rgb = field2num(P,'MODELLING_TOPO_RGB',.5*[1,1,1]);
-% color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
 modelling_coloref = lower(field2str(P,'MODELLING_COLORREF','volpdf'));
-% colors for displacement arrows
 datarrcol = field2num(P,'MODELLING_DATA_COLOR',[0,0,0]); % color of model arrows
 modarrcol = field2num(P,'MODELLING_MODEL_COLOR',[.7,0,0]); % color of model arrows
 resarrcol = field2num(P,'MODELLING_RESIDUAL_COLOR',[0,.5,0]); % color of residual arrows
@@ -220,6 +218,8 @@ modelling_shape = field2shape(P,'MODELLING_SHAPE_FILE');
 
 modelling_source_type = field2str(P,'MODELLING_SOURCE_TYPE','isotropic','notempty');
 
+tickfactorlim = 5e3; % above 5 km width/depth axis will be in km
+
 % some modelling parameters are structure fields to pass them to other functions
 modelopt.horizonly = isok(P,'MODELLING_HORIZONTAL_ONLY');
 modelopt.minerror = field2num(P,'MODELLING_MINERROR_MM',5); % minimum error on data (in mm)
@@ -228,58 +228,30 @@ modelopt.enuerror = field2num(P,'MODELLING_ENU_ERROR_RATIO'); % factor ratio to 
 if numel(modelopt.enuerror) < 3
 	modelopt.enuerror = ones(1,3);
 end
-% a priori source depth (value, gaussian STD in m)
 modelopt.apriori_depth = field2num(P,'MODELLING_APRIORI_DEPTH_M');
-% a priori horizontal error around the target (in STD, km), 0 or NaN = no a priori
 modelopt.apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 modelopt.msig = field2num(P,'MODELLING_SIGMAS',1);
 modelopt.misfitnorm = field2str(P,'MODELLING_MISFITNORM','L1');
 modelopt.multi = field2num(P,'MODELLING_MULTIPLE_SOURCES',1,'notempty');
 
-% MODELLING pCDM parameters (see invpcdm.m)
-% number of iterations (adjusting the parameter's limits)
+% MODELLING pCDM parameters (see invpcdm.m and PROC.GNSS template)
 PCDM.iterations = field2num(P,'MODELLING_PCDM_ITERATIONS',5);
-% number of random samples: scalar or list for each iteration
 PCDM.random_sampling = field2num(P,'MODELLING_PCDM_RANDOM_SAMPLING',200000);
-% elastic parameter (Poisson's ratio) nu
 PCDM.nu = field2num(P,'MODELLING_PCDM_NU',0.25);
-% dV parameter limits: total volume variation (in m3)
 PCDM.dvlim = field2num(P,'MODELLING_PCDM_DVLIM',[-1e7,1e7]);
-% A parameter limits: horizontal over total volume variation ratio
-% A = dVZ/(dVX+dVY+dVZ)
-% 	0 = vertical (dyke or pipe following B value)
-% 	1 = horizontal (sill)
-% 	1/3 = isotrop if B = 0.5
 PCDM.alim = field2num(P,'MODELLING_PCDM_ALIM',[0,1]);
-% B parameter limits: vertical volume variation ratio
-% B = dVY/(dVX+dVY)
-% 	0 = dyke if A = 0, dyke+sill otherwise
-% 	1 = dyke if A = 0, dyke+sill otherwise
-% 	0.5 = isotrop if A = 1/3, pipe if A = 0
 PCDM.blim = field2num(P,'MODELLING_PCDM_BLIM',[0,1]);
-% OmegaX parameter limits: rotation angle around X axis (West-East)
 PCDM.oxlim = field2num(P,'MODELLING_PCDM_OXLIM',[-45,45]);
-% OmegaY parameter limits: rotation angle around Y axis (South-North)
 PCDM.oylim = field2num(P,'MODELLING_PCDM_OYLIM',[-45,45]);
-% OmegaZ parameter limits: rotation angle around Z axis (Bottom-Up)
 PCDM.ozlim = field2num(P,'MODELLING_PCDM_OZLIM',[-45,45]);
-% number of bins for probability vs parameter map (heatmap)
 PCDM.heatmap_grid = field2num(P,'MODELLING_PCDM_HEATMAP_GRID',50);
-% graphical parameter for heatmaps
 PCDM.heatmap_saturation = field2num(P,'MODELLING_PCDM_HEATMAP_SATURATION',0.4);
-% number of bins used to smooth the maximum probability curve
 PCDM.heatmap_smooth_span = field2num(P,'MODELLING_PCDM_HEATMAP_SMOOTH_SPAN',5);
-% polynomial degree to smooth the maximum probability curve
 PCDM.heatmap_smooth_degree = field2num(P,'MODELLING_PCDM_HEATMAP_SMOOTH_DEGREE',1);
-% minimum number of models to compute maximum probability curve
 PCDM.newlimit_threshold = field2num(P,'MODELLING_PCDM_NEW_THRESHOLD',2);
-% tolerance ratio to extend the edge limits
 PCDM.newlimit_edge_ratio = field2num(P,'MODELLING_PCDM_NEW_LIMIT_EDGE_RATIO',20);
-% factor of extension (from the previous interval) when reaching an edge
 PCDM.newlimit_extend = field2num(P,'MODELLING_PCDM_NEW_LIMIT_EXTEND',1);
-% option to export supplementary graphs (intermediate results per iteration)
 PCDM.supplementary_graphs = isok(P,'MODELLING_PCDM_SUPPLEMENTARY_GRAPHS');
-tickfactorlim = 5e3; % above 5 km width/depth axis will be in km
 
 % MODELTIME parameters
 modeltime_source_type = field2str(P,'MODELTIME_SOURCE_TYPE','isotropic','notempty');
