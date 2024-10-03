@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2023-08-25
+%	Updated: 2024-07-12
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -57,12 +57,12 @@ for fn = {'LAT','LON','MAG','DEP','MSK','GAP','RMS','ERH','ERZ','NPH','CLA'}
 		P.(fd) = [-Inf,Inf];
 	end
 end
-if isfield(P,'EVENTTYPE_EXCLUDED_LIST')
+if isfield(P,'EVENTTYPE_EXCLUDED_LIST') && ~isempty(P.EVENTTYPE_EXCLUDED_LIST)
 	extypes = split(P.EVENTTYPE_EXCLUDED_LIST,',');
 else
 	extypes = {''};
 end
-if isfield(P,'EVENTSTATUS_EXCLUDED_LIST')
+if isfield(P,'EVENTSTATUS_EXCLUDED_LIST') && ~isempty(P.EVENTSTATUS_EXCLUDED_LIST)
 	exstatus = split(P.EVENTSTATUS_EXCLUDED_LIST,',');
 else
 	exstatus = {''};
