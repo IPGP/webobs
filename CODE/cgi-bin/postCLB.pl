@@ -182,7 +182,11 @@ if ( isok($theiaAuth)) {
 		my $unit  = $obs[4];
 		my $theia = $obs[$#obs];
 		my $chan  = $obs[2];
-		    
+		if ( $theia =~ /^\s*$/ ) {
+			htmlMsgNotOK("Theia category cannot be empty.");
+			exit 1;
+		}
+
 		# observations table
 		my $obsid        = "$producerId\_OBS_$GRIDName.$NODEName\_$id";
 		my @first_date   = split(/ /,$obs[0]);

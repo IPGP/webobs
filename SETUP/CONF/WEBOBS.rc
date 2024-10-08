@@ -200,6 +200,8 @@ THEIA_USER_FLAG|0
 # ---- THEIA portal configuration file --------
 # ---------------------------------------------
 CONF_THEIA|${ROOT_CONF}/theia.rc
+ROOT_OUTE|${ROOT_SITE}/OUTE
+PASSWORD_THEIA|XXXXXXXX
 
 # ---- Internalization ------------------------
 # ---------------------------------------------
