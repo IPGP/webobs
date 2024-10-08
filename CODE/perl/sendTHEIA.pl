@@ -2,40 +2,30 @@
 
 =head1 NAME
 
-postNODE.pl
+sendTHEIA.pl
 
 =head1 SYNOPSIS
 
-http://..../postTHEIA.pl?nodes=nodes,channels=channels
+$ perl sendTHEIA.pl
 
 =head1 DESCRIPTION
 
-Create a JSON metadata file from the showTHEIA submitted informations.
-
-=head1 Query string parameters
-
- nodes=
- the NODEs names that we want to send the metadata to THEIA.
- 
- channels=
- the CHANNELs names that we want to send the metadata to THEIA.
+Create a JSON metadata file according to the NODEs and CHANNELs names written in theia.rc with showTHEIA and postTHEIA.
+JSON metadata are validated and sent with associated data to Theia/OZCAR server.
 
 =cut
 
 use strict;
 use warnings;
 use POSIX qw/strftime/;
-use CGI;
 use JSON;
 use Encode qw(decode encode);
-use feature 'say';
-use File::Path qw(mkpath rmtree);
-use IO::Compress::Zip qw(zip $ZipError) ;
+use File::Path qw(make_path rmtree);
+use IO::Compress::Zip qw(zip $ZipError);
 
 # ---- webobs stuff
 use WebObs::Config;
 use WebObs::Grids;
-use WebObs::Users qw(clientHasRead clientHasEdit clientHasAdm);
 use WebObs::i18n;
 
 my $today = strftime("%Y-%m-%dT%H:%M:%SZ", localtime);
@@ -52,32 +42,36 @@ my $database = $WEBOBS{SQL_METADATA};
 my $dsn = "DBI:$driver:dbname=$database";
 my $userid = "";
 my $password = "";
-my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-   or die $DBI::errstr;
+my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
 
 # ---- local functions
 # Compress $tmpdir's files into $zipfile without the whole path in the compress archive
 sub compressTxtFiles {
-    my $dataset = shift ;
-    my $NODEName = (split /\./, $dataset)[1];
-    my $tmpdir     = shift ;
-    zip [ <$tmpdir/*$NODEName*.txt> ] => "$tmpdir/$dataset.zip",
-        FilterName => sub { s[^$tmpdir/][] } ;
+	my $dataset = shift;
+	my $dataName = (split /\_/, $dataset)[-1];
+	my $tmpdir   = shift;
+	zip [ <$tmpdir/*$dataName\_*.txt> ] => "$tmpdir/$dataset.zip",
+	FilterName => sub { s[^$tmpdir/][] };
 }
 
 # ---- creating tmp and exports/theia directories if required
 my $tmpdir = "$WEBOBS{PATH_TMP_WEBOBS}/theia";
 my $theiadir = "$WEBOBS{ROOT_OUTE}/theia/$datedir";
-umask 0002;
-if ( ! -e $tmpdir) {
-	print "couldn't create ($!) $tmpdir" if (! mkdir($tmpdir, 0775)) ;
+
+if ( ! -e $tmpdir ) {
+	make_path($tmpdir, {chmod => 0775});
 }
-if ( ! -e $theiadir) {
-	print "couldn't create ($!) $theiadir" if (! mkdir($theiadir, 0775)) ;
+if ( ! -e $theiadir ) {
+	make_path($theiadir, {chmod => 0775});
+}
+
+my $json_validator_path = "$WEBOBS{ROOT_CODE}/bin/java/JSON-schema-validation-0-jar-with-dependencies.jar";
+if ( ! -e $json_validator_path ) {
+	die "Please install $json_validator_path\n";
 }
 
 my @zip_files;
-my $empty;	# checking if empty ref or not
+my $empty; # checking if empty ref or not
 
 # ---- start the creation of the JSON object ----------------------------------------------------
 #
@@ -87,78 +81,66 @@ my $stmt = qq(SELECT * FROM producer INNER JOIN contacts ON producer.identifier 
 my $sth = $dbh->prepare( $stmt );
 my $rv = $sth->execute() or die $DBI::errstr;
 
-if($rv < 0) {
-   print $DBI::errstr;
-}
-
 my %producer;
 
 while( my @row = $sth->fetchrow_array() ) {
 	%producer = (
 		producerId => $row[0],
-		name => decode("utf8",$row[1]),
-		title => decode("utf8",$row[2]),
-		description => decode("utf8",$row[3]),
+		name => decode("utf8", $row[1]),
+		title => decode("utf8", $row[2]),
+		description => decode("utf8", $row[3]),
 		email => $row[6]
 	);
 	if ($row[4] ne "") {
-		$producer{'objectives'} = decode("utf8",$row[4]);
+		$producer{'objectives'} = decode("utf8", $row[4]);
 	}
 	if ($row[5] ne "") {
-		$producer{'measuredVariables'} = decode("utf8",$row[5]);
+		$producer{'measuredVariables'} = decode("utf8", $row[5]);
 	}
 	if ($row[9] ne "") {
-    	# ---- parsing online resources
-	    my %resource;
-	    foreach(split(/_,/, $row[9])) {
-		    my $typeUrl =(split '@',$_)[0];
-		    my $url = (split '@',$_)[1];
-		    if ($typeUrl =~ /download/) {
-			    $resource{'urlDownload'} = $url;
-		    } elsif ($typeUrl =~ /info/) {
-			    $resource{'urlInfo'} = $url;
-		    } elsif ($typeUrl =~ /doi/) {
-			    $resource{'doi'} = $url;
-		    }
-	    }
-	    $producer{'onlineResource'} = \%resource;
+		# ---- parsing online resources
+		my %resource;
+		foreach(split(/_,/, $row[9])) {
+			my $typeUrl =(split '@', $_)[0];
+			my $url = (split '@', $_)[1];
+			if ($typeUrl =~ /download/) {
+				$resource{'urlDownload'} = $url;
+			} elsif ($typeUrl =~ /info/) {
+				$resource{'urlInfo'} = $url;
+			} elsif ($typeUrl =~ /doi/) {
+				$resource{'doi'} = $url;
+			}
+		}
+		$producer{'onlineResource'} = \%resource;
 	}
-	
+
 	# ---- extracting contacts data
 
 	my $stmt2 = qq(SELECT * FROM contacts;);
 	my $sth2 = $dbh->prepare( $stmt2 );
 	my $rv2 = $sth2->execute() or die $DBI::errstr;
 
-	if($rv2 < 0) {
-	   print $DBI::errstr;
-	}
-	
 	my @contacts;
-	
+
 	while( my @row2 = $sth2->fetchrow_array() ) {
 		if ($row2[4] eq $producer{'producerId'}) {
 			# ---- parsing contacts
 			my %contact = (
-				firstName => decode("utf8",$row2[1]),
-				lastName => decode("utf8",$row2[2]),
+				firstName => decode("utf8", $row2[1]),
+				lastName => decode("utf8", $row2[2]),
 				email => $row2[0],
 				role => $row2[3],
 			);
 			push(@contacts, \%contact);
 		}
 	}
-	
+
 	$producer{'contacts'} = \@contacts;
 }
 
 $stmt = qq(SELECT * FROM organisations;);
 $sth = $dbh->prepare( $stmt );
 $rv = $sth->execute() or die $DBI::errstr;
-
-if($rv < 0) {
-   print $DBI::errstr;
-}
 
 my @fundings;
 
@@ -168,7 +150,7 @@ while( my @row = $sth->fetchrow_array() ) {
 		type => $row[0],
 		iso3166 => $row[1],
 		idScanR => $row[4],
-		name => decode("utf8",$row[3]),
+		name => decode("utf8", $row[3]),
 		acronym => $row[2],
 	);
 	push(@fundings, \%funding);
@@ -185,23 +167,21 @@ foreach (@channels) {
 	$stmt  = "SELECT * FROM observations ";
 	$stmt .= "INNER JOIN sampling_features ON observations.stationname = sampling_features.identifier ";
 	$stmt .= "INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
+	$stmt .= " WHERE observations.identifier = '$_'";
 	$stmt  = qq($stmt);
 	$sth   = $dbh->prepare( $stmt );
 	$rv    = $sth->execute() or die $DBI::errstr;
-	
-	if($rv < 0) {
-	   print $DBI::errstr;
-	}
 
 	while( my @row = $sth->fetchrow_array() ) {
+		# print "\n", join(" ", @row[0 .. $#row-6]), "\n";
 		# ---- data from observed_properties table
 		my %observedProperty = (
-			name => decode("utf8",$row[13]),
+			name => decode("utf8", $row[13]),
 			unit => decode("utf8", $row[14])
 		);
 
 		my @theiaCategories;
-		foreach (split(',',$row[15])) {
+		foreach (split(',', $row[15])) {
 			$_ =~ s/(\n)//g;
 			push(@theiaCategories, $_);
 		}
@@ -220,7 +200,7 @@ foreach (@channels) {
 		$coordinates[2] += 0;
 		my $alt = $coordinates[2];
 
-		my @new_crds = ($coordinates[1],$coordinates[0]);
+		my @new_crds = ($coordinates[1], $coordinates[0]);
 
 		my %geometry = (
 			type => (split '\(|\)', $geometry)[0],
@@ -235,21 +215,21 @@ foreach (@channels) {
 		my %featureOfInterest = (
 			samplingFeature => \%samplingFeature,
 		);
-		
+
 		my $GRIDType = 'PROC';
-		my $GRIDName = (split /\./,$row[6])[0];
-		my $NODEName = (split /\./,$row[6])[1];
+		my $GRIDName = (split /\./, $row[6])[0];
+		my $NODEName = (split /\./, $row[6])[1];
+		my $timescale = (split /\_/, $row[8])[-1];
+		$timescale = (split /\./, $timescale)[0];
 		my %datafile = (
 			name => $producer{'producerId'}."_OBS_$GRIDName.$NODEName\_$observedProperty{'name'}.txt",
 		);
 		my %result = (
 			dataFile => \%datafile,
 		);
-		
+
 		# ---- now generating the .txt file
-		my %G = readProc($GRIDName);
-		my %GRID = %{$G{$GRIDName}};
-		my $dataname = "$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
+		my $dataname = "$NODEName\_$timescale.txt";
 		my $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/";
 		my $chan_nb = 5 + $row[16];
 		my $obsfile = "$tmpdir/$datafile{'name'}";
@@ -273,7 +253,7 @@ foreach (@channels) {
 			dateBeg => (split '/', $row[3])[0],
 			dateEnd => (split '/', $row[3])[1],
 		);
-		
+
 		my %observation = (
 			observationId => $row[0],
 			observedProperty => \%observedProperty,
@@ -284,7 +264,7 @@ foreach (@channels) {
 			temporalExtent => \%temporalExtent,
 			processingLevel => $row[1],
 		);
-		
+
 		push(@observations, \%observation);
 	}
 }
@@ -294,22 +274,18 @@ foreach (@channels) {
 my @datasets;
 
 foreach (@nodes) {
-	chomp($_); 
+	chomp($_);
 	$stmt = qq(SELECT * FROM datasets WHERE datasets.identifier = '$_';);
 	$sth = $dbh->prepare( $stmt );
 	$rv = $sth->execute() or die $DBI::errstr;
 
-	if($rv < 0) {
-	   print $DBI::errstr;
-	}
-	
 	while( my @row = $sth->fetchrow_array() ) {
-		my $topicCategories = (split '_',$row[3])[0];
+		my $topicCategories = (split '_', $row[3])[0];
 		my @topicCategories;
-		foreach(split('_,',$topicCategories)){
-			my $category = (split(':',$_))[1];
+		foreach(split('_,', $topicCategories)) {
+			my $category = (split(':', $_))[1];
 			#$category =~ s/(\r\n)//g;
-			push(@topicCategories,$category);
+			push(@topicCategories, $category);
 		}
 		my %geometry = (
 			type => JSON->new->utf8->decode($row[4])->{'type'},
@@ -324,10 +300,10 @@ foreach (@nodes) {
 		my %dataConstraint = (
 			accessUseConstraint => "No conditions to access and use",
 		);
-		
+
 		my %metadata = (
-			title => decode("utf8",$row[1]),
-			description => decode("utf8",$row[2]),
+			title => decode("utf8", $row[1]),
+			description => decode("utf8", $row[2]),
 			datasetLineage => $row[5],
 			dataConstraint => \%dataConstraint,
 			topicCategories => \@topicCategories,
@@ -338,25 +314,20 @@ foreach (@nodes) {
 		my %dataset = (
 			datasetId => $row[0],
 		);
-		
+
 		# ---- extracting contacts data
 
 		my $stmt2 = qq(SELECT * FROM contacts;);
 		my $sth2 = $dbh->prepare( $stmt2 );
 		my $rv2 = $sth2->execute() or die $DBI::errstr;
 
-		if($rv2 < 0) {
-		   print $DBI::errstr;
-		}
-		
 		my @contacts;
-		
 		while( my @row2 = $sth2->fetchrow_array() ) {
 			if ($row2[4] eq $dataset{'datasetId'}) {
 				# ---- parsing contacts
 				my %contact = (
-					firstName => decode("utf8",$row2[1]),
-					lastName => decode("utf8",$row2[2]),
+					firstName => decode("utf8", $row2[1]),
+					lastName => decode("utf8", $row2[2]),
 					email => $row2[0],
 					role => $row2[3],
 				);
@@ -370,24 +341,23 @@ foreach (@nodes) {
 		my @ds_obs;
 		foreach(@observations) {
 			if (defined($_->{'observationId'})) {
-				my $obsId = (split /\./,$_->{'observationId'})[1];
-				my $datId = (split /\./,$row[0])[1];
-				if ($obsId=~ /$datId/) {
+				my $obsId = (split /\./, $_->{'observationId'})[1];
+				$obsId = (split /\_/, $obsId)[0];
+				my $datId = (split /\./, $row[0])[1];
+				if ($obsId eq $datId) {
 					push(@ds_obs, $_);
 					my $filename = decode_json encode_json $_->{'result'}->{'dataFile'}->{'name'};
 					# ---- adding the title dataset into $filename
 					# ---- first we open $filename while creating a new $filename where we will write the line we want to insert
-					open my $in,  '<',  "$tmpdir/$filename"      or die "Can't read old file: $!";
+					open my $in, '<', "$tmpdir/$filename" or die "Can't read old file: $!";
 					open my $out, '>', "$tmpdir/$filename.new" or die "Can't write new file: $!";
-					my $title = decode("utf8",$row[1]);
-					while( <$in> ){
-						s/Dataset_title;/Dataset_title;$title/;	# ---- writing the dataset title in the right row
+					my $title = decode("utf8", $row[1]);
+					while( <$in> ) {
+						s/Dataset_title;/Dataset_title;$title/; # ---- writing the dataset title in the right row
 						print $out $_;
 					}
-					
 					close $in;
 					close $out;
-					
 					rename "$tmpdir/$filename.new", "$tmpdir/$filename";
 				}
 			}
@@ -395,14 +365,19 @@ foreach (@nodes) {
 
 		#print encode_json $ds_obs[0];
 		$dataset{'observations'} = \@ds_obs;
+		#print scalar(@{$dataset{'observations'}}), "\n";
 		$empty = $dataset{'observations'} ? "yup" : "nope";
-		push(@datasets, \%dataset);
 		# ---- compressing observations files into OBSE_DAT_PROC.NODE.zip
 		if ($empty eq "yup") {
-			compressTxtFiles("$dataset{'datasetId'}",$tmpdir)
-				or die "$dataset{'datasetId'} needs to be associated with at least one observation !\n";
+			if (@{$dataset{'observations'}}) {
+				push(@datasets, \%dataset);
+				compressTxtFiles("$dataset{'datasetId'}", $tmpdir)
+				#or die "$dataset{'datasetId'} needs to be associated with at least one observation !\n";
+			} else {
+				print "$_ was discarded. There are no observations for this dataset!\n";
+			}
 		} else {
-			compressTxtFiles("$dataset{'datasetId'}",$tmpdir)
+			compressTxtFiles("$dataset{'datasetId'}", $tmpdir)
 				or die "zip failed: $ZipError\n";
 		}
 	}
@@ -422,35 +397,49 @@ $dbh->disconnect();
 
 $filename = "$json{'producer'}{'producerId'}_en.json";
 my $filepath = "$tmpdir/$filename";
-#print $cgi->header(-type=>'text/html',-charset=>'utf-8');
+#print $cgi->header(-type=>'text/html', -charset=>'utf-8');
 #print $filepath;
-#print encode_json $json{'datasets'}->[0]{'metadata'}{'contacts'}; 
+#print encode_json $json{'datasets'}->[0]{'metadata'}{'contacts'};
 #print "\n";
 
 chmod 0755, $filepath;
 open(FH, '>', $filepath) or die $!;
-
 print FH encode_json \%json;
-
 close(FH);
 
 #print encode_json \%json;
-# ---- checking if the final json file is conform to the recommandations
-my $output = "java -jar $WEBOBS{ROOT_CODE}/bin/java/JSON-schema-validation-0-jar-with-dependencies.jar ".$filepath;
-print qx($output);
 
-if (qx($output) =~ /success/) {
-	push(@zip_files, $filepath);
-	my $zip_files = \@zip_files;
-	my $zipfile   = "$producer{'producerId'}_THEIA.zip";
+# ---- checking if the final json file is conform to the recommandations
+
+my $output = qx(java -jar $json_validator_path $filepath);
+
+# ---- Create a data archive
+
+my $producerId = $producer{'producerId'};
+my $zipfile   = $producerId . "_THEIA.zip";
+if ( $output =~ /success/ ) {
 	zip [ <$tmpdir/*DAT*.zip>, $filepath ] => "$theiadir/$zipfile",
-        FilterName => sub { s[^$tmpdir/][] }
-        or die "zip failed: $ZipError\n" ;
+	FilterName => sub { s[^$tmpdir/][] } or die "zip failed: $ZipError\n";
 	rmtree($tmpdir);
 }
 else {
-	print "The JSON metadata file is not valid :\n".qx($output);
+	print "The JSON metadata file is not valid :\n".$output;
 };
+
+# ---- Send archive to Theia/OZCAR
+
+if ( $output =~ /success/ ) {
+	my $url = "https://in-situ.theia-land.fr/data/$producerId/new/";
+	my $password = $WEBOBS{PASSWORD_THEIA};
+	my $response = qx(curl -T "$theiadir/$zipfile" -u $producerId:$password -s -o /dev/null -w "%{http_code}" $url);
+	if ( $response eq "200" ) {
+		print "Data upload successful. Data are available at https://in-situ.theia-land.fr/data/OBSE/previous/", "\n";
+	}
+	else {
+		print "Data upload failed: ", $response, "\n";
+		die;
+	}
+}
 
 #print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
 
@@ -460,7 +449,7 @@ __END__
 
 =head1 AUTHOR(S)
 
-Lucas Dassin
+Lucas Dassin, Jérôme Touvier
 
 =head1 COPYRIGHT
 
@@ -473,10 +462,10 @@ the Free Software Foundation, either version 3 of the License, or
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 =cut
