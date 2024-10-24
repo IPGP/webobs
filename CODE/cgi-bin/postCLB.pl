@@ -131,10 +131,10 @@ if ($nbc > $maxc) {
 		my $s = $today;
 		$s .= "|$fieldCLB{'TIME'}{'Default'}|$_";
 		foreach my $k ( @params ) {
-			if    ($k eq "LATITUDE") { $s .= "|$NODE{LAT_WGS84}" }
-			elsif ($k eq "LONGITUDE") { $s .= "|$NODE{LON_WGS84}" }
-			elsif ($k eq "ELEVATION") { $s .= "|$NODE{ALTITUDE}" }
-			elsif (not $k ~~ ["DATE", "TIME", "CHANNEL_NUMBER"]) { $s .= "|$fieldCLB{$k}{'Default'}" }
+			if    ($k eq "la") { $s .= "|$NODE{LAT_WGS84}" }
+			elsif ($k eq "lo") { $s .= "|$NODE{LON_WGS84}" }
+			elsif ($k eq "al") { $s .= "|$NODE{ALTITUDE}" }
+			elsif (not $k ~~ ["DATE", "TIME", "nv"]) { $s .= "|$fieldCLB{$k}{'Default'}" }
 		}
 
 		push(@donnees,"$s\n");

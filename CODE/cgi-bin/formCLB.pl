@@ -52,7 +52,7 @@ sub sort_clb_lines {
 	# and channel number, using a numerical sort for the latter.
 	$data{$a}{'DATE'} cmp $data{$b}{'DATE'} or
 	$data{$a}{'TIME'} cmp $data{$b}{'TIME'} or
-	$data{$a}{'CHANNEL_NUMBER'} <=> $data{$b}{'CHANNEL_NUMBER'} or
+	$data{$a}{'nv'} <=> $data{$b}{'nv'} or
 	$a cmp $b; # final comparison to make sure the ordering is always well defined
 }
 
@@ -68,7 +68,7 @@ my %data;
 my $nb = 0;
 my $nouveau = 0;
 my $QryParm = $cgi->Vars;
-my @hiden_params = ("AZIMUTH", "LATITUDE", "LONGITUDE", "ELEVATION", "DEPTH", "SAMPLING_FREQUENCY", "DYNAMIC_RANGE", "LOCATION_CODE", "THEIA_CATEGORY");
+my @hiden_params = ("az", "la", "lo", "al", "dp", "sf", "db", "lc", "THEIA_CATEGORY");
 
 # ---- looking for THEIA user flag
 my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
@@ -87,6 +87,7 @@ if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
 			%CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 			@clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
 			%fieldCLB = readCfg($CLBS{FIELDS_FILE}, "sorted");
+			unless ( isok($theiaAuth) ) { delete($fieldCLB{"THEIA_CATEGORY"}); }
 			my $clbfile = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb";
 			%data = readCfg($clbfile);
 		} else {
@@ -298,14 +299,14 @@ foreach my $id (sort sort_clb_lines keys %data) {
 	}
 	print "</select></TD>\n";
 	print "<TD nowrap><input type=checkbox name=\"s$i\" onChange=\"calc()\">
-		<input name=\"v"."$i"."_1\" readonly value=\"$line{'CHANNEL_NUMBER'}\" size=\"$fieldCLB{'CHANNEL_NUMBER'}{'NbCar'}\" style=\"font-weight:bold;background-color:#E0E0E0;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'CHANNEL_NUMBER'}{'MSGID'}}')\">";
-	if ($line{'CHANNEL_NUMBER'} > $nbc) {
-		$nbc = $line{'CHANNEL_NUMBER'};
+		<input name=\"v"."$i"."_1\" readonly value=\"$line{'nv'}\" size=\"$fieldCLB{'nv'}{'NbCar'}\" style=\"font-weight:bold;background-color:#E0E0E0;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'nv'}{'MSGID'}}')\">";
+	if ($line{'nv'} > $nbc) {
+		$nbc = $line{'nv'};
 	}
 	my $ki = 2;
 	foreach my $k ( @params ) {
 		if ($k ~~ @hiden_params) { $c = ' class="CLBshowhide"' } else { $c = '' }
-		if (not $k ~~ ["DATE", "TIME", "CHANNEL_NUMBER"]) {
+		if (not $k ~~ ["DATE", "TIME", "nv"]) {
 			print "<TD$c onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{$k}{'MSGID'}}')\"><input name=\"v".$i."_".$ki++
 				."\" value=\"".($line{$k} // '')."\" size=\"$fieldCLB{$k}{'NbCar'}\"></TD>\n";
 		}

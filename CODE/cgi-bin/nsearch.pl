@@ -105,7 +105,7 @@ my $resultOK = 0;
 my $scanlist = 1;
 my $grepopt  = "-s ";
 my %CLBS     = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
-my @fieldCLB = readCfg($CLBS{FIELDS_FILE});
+my %fieldCLB = readCfg($CLBS{FIELDS_FILE}, "sorted");
 my @clbNote  = readFile($CLBS{NOTES});
 
 
@@ -188,6 +188,9 @@ if ($scanlist) {
 }
 
 my $FHits = 0;
+
+# ---- Looking for THEIA user flag
+my $theiaAuth = isok($WEBOBS{THEIA_USER_FLAG});
 
 # ---- scan requested grids (GRIDS DOCs)
 # --------------------------------------------------------
@@ -278,6 +281,9 @@ for my $aNode (keys(%nodes)) {
 	# search within CLB file
 	# ------
 	my $fileCLB = "$pathNode/$aNode.clb";
+	my @params;
+	unless ( isok($theiaAuth) ) { delete($fieldCLB{"THEIA_CATEGORY"}); }
+	foreach my $k (sort { $fieldCLB{$a}{'_SO_'} <=> $fieldCLB{$b}{'_SO_'} } keys %fieldCLB) { push(@params, $k); }
 	if ( $QryParm->{'clbinfo'} eq "OK" && -e $fileCLB) {
 		my $CLB;
 		my $resultOK = 0;
@@ -294,9 +300,8 @@ for my $aNode (keys(%nodes)) {
 			$CLB .= "<BLOCKQUOTE class=\"contentEvent\">";
 		}
 		$CLB .= "<TABLE><TR>";
-		for (@fieldCLB) {
-			my @clb = split(/\|/,$_);
-			$CLB .= "<TH>$clb[2]</TH>";
+		foreach ( @params ) {
+			$CLB .= "<TH>$fieldCLB{$_}{'Name'}</TH>";
 		}
 		$CLB .= "</TR>\n";
 		for (@info) {

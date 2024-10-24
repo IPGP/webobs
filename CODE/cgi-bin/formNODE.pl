@@ -1299,14 +1299,13 @@ FIN
 		# --- CHANNEL_LIST
 		print "<TD rowspan=2 style=\"border:0;text-valign:top\">";
 		print "<LABEL for=\"chanlist\">$__{'Channel list'}: </LABEL>";
-		my @carCLB = readCLB("$GRIDType.$GRIDName.$NODEName");
-		if (@carCLB) {
+		my %carCLB = readCfg("$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb");
+		if (%carCLB) {
 			my @select = split(/,/,$usrCHAN);
 			# make a list of available channels and label them with last Chan. + Loc. codes
 			my %chan;
-			for (@carCLB) {
-				my (@chpCLB) = @{$_};
-				$chan{$chpCLB[2]} = "$chpCLB[3] ($chpCLB[6] $chpCLB[19])";
+			foreach my $k (keys %carCLB) {
+				$chan{$k} = "$carCLB{$k}{'nm'} ($carCLB{$k}{'cd'} $carCLB{$k}{'lc'})";
 			}
 			print "<SELECT name=\"chanlist\" multiple size=\"5\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_chanlist}')\" id=\"chanlist\">";
 			for (sort{ $a <=> $b } (keys(%chan))) {
