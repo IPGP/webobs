@@ -35,7 +35,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2024-02-20
+%	Updated: 2024-10-31
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -80,7 +80,13 @@ cmd = 'for f in $(ls %s);do cat $f | %s %s.%s \\%s %d %d >> %s; done'; % format 
 
 % if RAWDATA contains '$yyyy' internal variable, makes a loop on years
 if ~isempty(regexpi(F.raw{1},'\$yyyy'))
-	Y = dir(regexprep(F.raw{1},'\$yyyy.*$','*'));
+	Y = dir(regexprep(F.raw{1},'\$yyyy.*$','*','ignorecase')); % list of existing years in rawdata root directory
+	Y = Y(cellfun(@length,{Y.name})==4 & cat(1,Y.isdir)');
+	if length(Y)>0
+		years = unique(str2num(cat(1,Y.name)))';
+	else
+		years = [];
+	end	
 	years = str2num(cat(1,Y(cellfun(@length,{Y.name})==4 & cat(1,Y.isdir)').name))';
 	for yyyy = years
 		if (isnan(P.DATELIM(1)) || datenum(yyyy,12,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,1) <= P.DATELIM(2))
