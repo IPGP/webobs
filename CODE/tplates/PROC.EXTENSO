@@ -10,7 +10,7 @@ URNDATA|
 TZ|-4
 URL|
 
-# lists of parameters (number of coma-separated rows must be consistent)
+# lists of parameters (number of comma-separated rows must be consistent)
 TIMESCALELIST|10y,all
 DECIMATELIST|
 CUMULATELIST|

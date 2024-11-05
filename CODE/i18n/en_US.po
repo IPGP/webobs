@@ -86,7 +86,7 @@ msgid "help_creationstation_tele_type"
 msgstr "Type of data transmission"
 
 msgid "help_creationstation_tele_acq"
-msgstr "Enter the station IDs of repeater(s) and acquisition stations, coma or space-delimited, in the order from station to acquisition"
+msgstr "Enter the station IDs of repeater(s) and acquisition stations, comma or space-delimited, in the order from station to acquisition"
 
 msgid "help_creationstation_proc_tz"
 msgstr "Enter the time zone of data, in hours from GMT (ex: +0)"
@@ -101,13 +101,13 @@ msgid "help_creationstation_chanlist"
 msgstr "Select the channels associated to the proc (hold ctrl/cmd key for multiple selection)"
 
 msgid "help_creationstation_spec"
-msgstr "Enter the features keywords list, coma delimited. Spaces are allowed. Please use short names and avoid special characters."
+msgstr "Enter the features keywords list, comma delimited. Spaces are allowed. Please use short names and avoid special characters."
 
 msgid "help_creationstation_featrefresh"
 msgstr "Click to refresh the list of features below"
 
 msgid "help_creationstation_n2n"
-msgstr "Enter the children node ID for this feature, coma delimited"
+msgstr "Enter the children node ID for this feature, comma delimited"
 
 # formCLB.pl
 

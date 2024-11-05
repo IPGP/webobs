@@ -5,7 +5,7 @@ function [P,N,D] = readproc(WO,varargin)
 %	or full path name of the PROC.conf.
 %
 %	P = READPROC(WO,PROC,TSCALE) returns in P.GTABLE a selection timescales TSCALE found
-%	in TIMESCALELIST. TSCALE must be in the form of coma-separated string
+%	in TIMESCALELIST. TSCALE must be in the form of comma-separated string
 %	'ts1,ts2,...,tsn'. Default is '%' to return all the TIMESCALELIST.
 %
 %	P = READPROC(WO,PROC,PARAMS) uses struct PARAMS to replace selected proc's

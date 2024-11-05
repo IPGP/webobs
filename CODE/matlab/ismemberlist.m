@@ -1,5 +1,5 @@
 function [lia,locb] = ismemberlist(A,B)
-%ISMEMBERLIST True for set member in coma-separated list A
+%ISMEMBERLIST True for set member in comma-separated list A
 %
 %   Author: F. Beauducel, WEBOBS/IPGP
 %   Created: 2014-07-15

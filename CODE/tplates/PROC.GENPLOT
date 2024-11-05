@@ -128,7 +128,7 @@ CONTINUOUS_PLOT|NO
 YLOGSCALE|NO
 
 # --- per node graphs
-# coma separated list of channels to plot (default is all channels)
+# comma separated list of channels to plot (default is all channels)
 PERNODE_CHANNELS|${NODE_CHANNELS}
 # graph title
 PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
@@ -143,7 +143,7 @@ PERNODE_PLOT_EVENTS|YES
 # --- summary graph (all nodes together)
 # empty or comment this key to not plot the summary graph
 SUMMARYLIST|SUMMARY
-# coma separated list of channels to plot (default is all channels)
+# comma separated list of channels to plot (default is all channels)
 SUMMARY_CHANNELS|
 # graph title
 SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
