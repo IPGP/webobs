@@ -16,7 +16,7 @@ TZ|0
 # if YES, use start and end date for each record
 STARTING_DATE|NO
 
-# may contain any +GID and/or UID list (coma separated)
+# may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
 
 # default window time for showGENFORM.pl (in days)

@@ -42,7 +42,7 @@ TZ|0
 # additionnal external link(s): TEXT1,URL1;TEXT2,URL2;...
 URL|
 
-# lists of parameters (number of coma-separated rows must be consistent)
+# lists of parameters (number of comma-separated rows must be consistent)
 TIMESCALELIST|24h,07d,30d,01y,all
 DECIMATELIST|1,1,6,12,30
 CUMULATELIST|1/24,1/24,1/24,1,1

@@ -1,6 +1,6 @@
 function varargout=timescales(varargin)
 %TIMESCALES Returns information about time scales
-%       P=TIMESCALES(P) interprets the P.TIMESCALELIST (coma-separated key list) and 
+%       P=TIMESCALES(P) interprets the P.TIMESCALELIST (comma-separated key list) and 
 %       other PROC's variables and returns a cell array of date limits in P.DATELIST.
 %
 %	TIMESCALES(EXT) where EXT is a single key string, returns the corresponding

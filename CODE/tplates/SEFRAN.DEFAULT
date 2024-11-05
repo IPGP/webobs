@@ -60,7 +60,7 @@ MAX_IMAGES_IN_RUN|10
 
 # --- Broomwagon: reprocess incomplete images if needed, after a while
 BROOMWAGON_ACTIVE|0
-# minimum age(s) of an image to be considered (in hour); multiple broomwagon allowed in a coma-separated list
+# minimum age(s) of an image to be considered (in hour); multiple broomwagon allowed in a comma-separated list
 BROOMWAGON_DELAY_HOURS|2,12
 # time window which will be processed
 BROOMWAGON_UPDATE_HOURS|1
@@ -128,7 +128,7 @@ SGRAM_PNGQUANT_NCOLORS|32
 NOTES|$WEBOBS{PATH_USERS_HTML}/Sefran3_Notes.htm
 MENU_FILE|$WEBOBS{PATH_USERS_HTML}/Sefran3_Menu.htm
 
-# display time intervals menu (coma-separated list in hours, 0 = "last MC events")
+# display time intervals menu (comma-separated list in hours, 0 = "last MC events")
 TIME_INTERVALS_LIST|0,6,12,24,48,168
 TIME_INTERVALS_DEFAULT_VALUE|6
 

@@ -24,7 +24,7 @@ function DOUT=genplot(varargin)
 %       be set with 'SUMMARYLIST|SUMMARY' parameter. Default is all channels, but
 %       selection can be made with following option:
 %          SUMMARY_CHANNELS|1,,4,3
-%       using coma-separated channel number list, and optional multiple comas to extend
+%       using comma-separated channel number list, and optional multiple commas to extend
 %       the previous subplot height in proportion to others. In the example the first
 %       suplot will contain the channel number 1 and will be double-height compared to
 %       the second (channel 4) and third subplot (channel 3).

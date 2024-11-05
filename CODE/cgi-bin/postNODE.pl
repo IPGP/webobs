@@ -287,7 +287,7 @@ if ($lon ne "" && $lat ne "") {
 	if ($latN eq "S") { $lat *= -1; }
 	$lon = $lon + $lonmin/60 + $lonsec/3600;
 	if ($lonE eq "W") { $lon *= -1; }
-	# locale might have replaced decimal point by coma...
+	# locale might have replaced decimal point by comma...
 	$lat =~ s/,/./g;
 	$lon =~ s/,/./g;
 }

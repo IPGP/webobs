@@ -8,7 +8,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %	               reference and data columns, all numeric
 %	    P.RAWDATA: full path and filename(s) using bash wildcard facilities
 %	               (may includes $FID, $yyyy, $mm, $dd or $doy variables)
-%	  data format: date&time;data1;data2; ... ;dataN (semi-colon, coma or space separated values)
+%	  data format: date&time;data1;data2; ... ;dataN (semi-colon, comma or space separated values)
 %	node channels: if no calibration file defined, will use the first line
 %	               header of data file
 %	Specific node's FID_* key:

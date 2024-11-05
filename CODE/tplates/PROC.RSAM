@@ -120,7 +120,7 @@ PERNODE_LINESTYLE|-
 # comment this key to not plot the summary graph
 SUMMARYLIST|SOURCEMAP
 
-# coma separated list of channels to plot (default is all channels)
+# comma separated list of channels to plot (default is all channels)
 SUMMARY_CHANNELS|1
 # graph title
 SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}

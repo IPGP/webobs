@@ -11,7 +11,7 @@ function varargout=plotevent(tz,evtfile,evt)
 %	
 %	PLOTEVENT(TZ,FILE,EVENTS) plots additionnal events from structure EVENTS.
 %
-%	FILE can be a list of coma separated files, e.g. 'events1.conf,events2.conf', in
+%	FILE can be a list of comma separated files, e.g. 'events1.conf,events2.conf', in
 %	that case all files are loaded and plotted together.
 %
 %

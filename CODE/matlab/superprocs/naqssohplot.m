@@ -20,7 +20,7 @@ function DOUT=naqssohplot(varargin)
 %       uses RAWFORMAT and and nodes' calibration file channels definition.
 %       In addition to each single node graph, a summary graph with all nodes can
 %       be set with 'SUMMARYLIST|' parameter. Default is all channels, but selection
-%       can be made with 'SUMMARY_CHANNELS|' followed by a coma-separated channel
+%       can be made with 'SUMMARY_CHANNELS|' followed by a comma-separated channel
 %       number list (example: 1,4,2,3,6). Other specific paramaters are:
 %           PAGE_MAX_NODE|8
 %
