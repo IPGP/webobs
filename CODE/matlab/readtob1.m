@@ -14,7 +14,7 @@ function X = readtob1(filename)
 %
 %	Author: François Beauducel, IPGP / WEBOBS
 %	Created: 2018-06-13 in Jakarta, Indonesia
-%	Updated: 2023-12-31
+%	Updated: 2024-11-06
 
 if ~exist(filename,'file')
 	error('file %s not exists.',filename)
@@ -98,7 +98,7 @@ for c = 1:length(mclass)
 				rbytes(c) = a;
 				mclass{c} = 'char';
 			else
-				fprintf('** WARNING ** unkonwn data type "%s" in file "%s".\n',dtypes{c},filename);
+				fprintf('{readtob1}: ** WARNING ** unkonwn data type "%s" in file "%s".\n',dtypes{c},filename);
 			end
 	end
 end
@@ -118,16 +118,20 @@ fclose(fid);
 dd = nan(nr,length(mclass));
 cc = cell(nr,length(mclass));
 
-% loop on the data rows
-for c = 1:size(dd,2)
-	bk = bb(sum(rbytes(1:c-1)) + (1:rbytes(c)),:); % selected bytes for all records of row c
-	if strcmp(mclass{c},'char')
-		% for ascii type, simply reshapes the matrix
-		cc(:,c) = cellstr(reshape(char(bk(:)),rbytes(c),nr)');
-	else
-		% for numerical, use typecast and converts to double
-		dd(:,c) = double(reshape(typecast(bk(:),mclass{c}),1,nr));
+if nr > 0
+	% loop on the data rows
+	for c = 1:size(dd,2)
+		bk = bb(sum(rbytes(1:c-1)) + (1:rbytes(c)),:); % selected bytes for all records of row c
+		if strcmp(mclass{c},'char')
+			% for ascii type, simply reshapes the matrix
+			cc(:,c) = cellstr(reshape(char(bk(:)),rbytes(c),nr)');
+		else
+			% for numerical, use typecast and converts to double
+			dd(:,c) = double(reshape(typecast(bk(:),mclass{c}),1,nr));
+		end
 	end
+else
+	fprintf('{readtob1}: ** WARNING ** file "%s" has no data.\n',filename);
 end
 
 % must re-convert all 'FP2' data type (unknown by typecast...)
