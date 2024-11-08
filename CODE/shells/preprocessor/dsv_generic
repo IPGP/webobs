@@ -6,12 +6,13 @@
 # The script takes stdin for input data stream and outputs processed data
 # to stdout. It needs several arguments:
 #
-#	    node_id : the WebObs node ID
-#	         fs : field separator in input data
-#	header_line : number of uncommented header lines to be discarded
-#	   limit_nf : number of fields on the output. Lines that don't have that
-#	              number of fields will be discarded (0 will not filter
-#	              the number of fields)
+#	    node_id: the WebObs node ID
+#	         fs: field separator in input data
+#	header_line: number of uncommented header lines to be discarded
+#	   limit_nf: number of fields on the output. Lines that don't have that
+#	             number of fields will be discarded (0 will not filter
+#	             the number of fields)
+# decimal_comma: 1 if numbers use decimal comma (0 for decimal point)
 #
 # General behavior:
 #	- lines starting with # or % are discarded (comments)
@@ -27,7 +28,7 @@
 #
 # Authors: Xavier Béguin (EOS/OVSG/IPGP), François Beauducel (IPGP) / WEBOBS
 # Created: 2018-06-18
-# Updated: 2024-04-30
+# Updated: 2024-11-08
 
 BEGIN {
 	# Read input parameters
@@ -41,9 +42,11 @@ BEGIN {
 	# Fixed number of fields for a valid line
 	# (0 forces a minimum of 3)
 	test_fields = ARGV[4]
+	# Flag for decimal comma
+	decimal_comma = ARGV[5]
 
 	# Tell awk to not consider the above input parameters as input files
-	for (i=1; i < 5; i++) {
+	for (i=1; i < 6; i++) {
 		delete ARGV[i]
 	}
 
@@ -66,6 +69,10 @@ FNR <= header_line { next }
 	# Replace letter 'T' by FS for ISO date format yyyy-mm-ddThh:mm
 	$0 = gensub(/([0-9])T([0-9])/, "\\1" FS "\\2","g");
 
+	# change decimal comma to decimal point (whole line)
+	if(decimal_comma) {
+		gsub(/,/, ".")
+	}
 	# Reduce multiple spaces
 	gsub(/ +/, " ")
 

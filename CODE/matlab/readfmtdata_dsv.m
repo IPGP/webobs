@@ -56,6 +56,7 @@ datacols = field2num(N,'FID_DATACOLS');
 % Input field separator
 fs = field2str(N,'FID_FS',';','notempty');
 header = field2num(N,'FID_HEADERLINES',1,'notempty');
+decimalcomma = isok(N,'FID_DECIMAL_COMMA');
 datadecim = field2num(N,'FID_DATA_DECIMATE',1,'notempty');
 flagcol = field2num(N,'FID_FLAGCOL');
 flagaction = field2str(N,'FID_FLAGACTION','valid');
@@ -74,7 +75,7 @@ if ~exist(ppfile,'file')
 	error('FID_PREPROCESSOR "%s" not found. Please check or make it empty to use default.',ppscript);
 end
 % full command of preprocessor with arguments
-ppcmd = sprintf('%s %s.%s \\%s %d %d',ppfile,P.SELFREF,N.ID,fs,header,nftest);
+ppcmd = sprintf('%s %s.%s \\%s %d %d %d',ppfile,P.SELFREF,N.ID,fs,header,nftest,decimalcomma);
 
 % runs the preprocessor and writes to the temporary file
 
@@ -133,8 +134,6 @@ if ~isempty(regexpi(F.raw{1},'\$yyyy'))
 else
 	wosystem(sprintf(cmd, F.raw{1}, ppcmd, fdat), P);
 end
-
-%wosystem(sprintf('for f in $(ls %s);do awk -F''%s'' ''NR>%d {print $0}'' $f | sed -e ''s/  */ /g;s/ *%s */%s/g;s/[%s\\/: ]/;/g;s/[^0-9.+\\-eE;]//g;s/^;/NaN;/g;s/;\\s*;/;NaN;/g;s/;;/;NaN;/g;s/;\\s*$/;NaN/g'' | awk -F'';'' ''%s {print $0}'' >> %s;done',F.raw{1},fs,header,fs,fs,fs,nftest,fdat),P);
 
 t = [];
 d = [];
