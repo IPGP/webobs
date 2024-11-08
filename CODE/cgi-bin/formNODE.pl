@@ -53,9 +53,9 @@ my @VIEWS;
 my @PROCS;
 my $adminOK = 0;
 my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
-my $newnode   = 0;
+my $newnode = 0;
 my $titre2 = "";
-my $QryParm   = $cgi->Vars;
+my $QryParm = $cgi->Vars;
 my $theiaAuth = $WEBOBS{THEIA_USER_FLAG}	// 0;
 
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
@@ -78,6 +78,9 @@ if ( $GRIDType ne "" && $GRIDName ne "" ) {
 				} else { die "$__{'Could not read'} $GRIDType.$GRIDName configuration" }
 			} else { die "$__{'Could not read'} $__{'node configuration'} $NODEName" }
 		} else { die "$GRIDType.$GRIDName.$NODEName unknown" }
+		if ( $QryParm->{'duplicate'} ) {
+			if ( $adminOK == 1 ) { $newnode = 2; } else { die "$__{'Not authorized'} $__{'to create a node in'} $GRIDType.$GRIDName" }
+		}
 	} else {
 		if ( $adminOK == 1 ) {
 			$newnode = 1;
@@ -911,7 +914,7 @@ print "<TR>";
 	print "<FIELDSET><LEGEND>$__{'Name and Description'}</LEGEND>";
 	# --- Codes, Name, Alias, Type
 	print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code/ID'}:</label>$GRIDType.$GRIDName.";
-	if ($newnode == 1) {
+	if ($newnode) {
 		print "<INPUT id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\" onKeyUp=\"checkNode()\">";
 	 	print "<INPUT size=\"15\" id=\"message\" name=\"message\" readOnly style=\"background-color:#E0E0E0;border:0\">";
 		print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"1\"\n>";
@@ -1021,7 +1024,7 @@ print "<TR>";
 	print "</TD>";
 	print "<TD style=\"border:0\">";
 	print "<SELECT name=\"SELs\" size=\"5\" multiple style=\"font-weight:bold\">";
-	if  ($newnode == 1) { print "<option selected value=\"$GRIDType.$GRIDName\">$GRIDType.$GRIDName</option>"; }
+	if  ($newnode) { print "<option selected value=\"$GRIDType.$GRIDName\">$GRIDType.$GRIDName</option>"; }
 	for (@{$allNodeGrids{$NODEName}}) { print "<option selected value=\"$_\">$_</option>"; }
 	print "</SELECT></td>";
 	print "</TR>";
