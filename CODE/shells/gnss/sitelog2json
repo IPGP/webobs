@@ -1,0 +1,76 @@
+#!/bin/bash
+# sitelog2json
+#
+# Author: F. Beauducel <beauducel@ipgp.fr>
+# Created: 2021-03-15 in Yogyakarta
+# Updated: 2021-03-17
+
+# Helper
+if [ $# -lt 2 ]; then
+	echo "      Syntax: sitelog2json FILE SITE [DATE]"
+	echo " Description: reads sitelog file(s) and returns data as JSON"
+	echo "   Arguments: FILE = path or filename(s) of sitelog(s)"
+	echo "              SITE = site code (4 characters)"
+	echo "              DATE = date as YYYY-MM-DD[Thh:mm] (default is current time)"
+	echo "     Outputs: JSON string with following fields:"
+	echo "              mo = monument site code (4 characters)"
+	echo "              sn = site name"
+	echo "              px = approximate position (WGS84xyz,m)"
+	echo "              rt = receiver type"
+	echo "              rv = receiver version"
+	echo "              rn = receiver S/N"
+	echo "              at = antenna type"
+	echo "              an = antenna S/N"
+	echo "              pe = antenna Marker->ARP (hEN,m)"
+	echo "              op = operator"
+	echo "              ag = agency"
+	echo ""
+	exit 0;
+fi
+
+if [ -z "$3" ]; then
+	DATE=$(date -u +"%Y-%m-%d %H:%M") # current date and time, UT
+else
+	DATE="$3"
+fi
+
+# upper and lower case site code
+site=$(echo $2 | tr '[:upper:]' '[:lower:]')
+SITE=$(echo $2 | tr '[:lower:]' '[:upper:]')
+
+# selects the last sitelog file for the site
+if [ -d "$1" ]; then
+	FILE=$(ls $1/${site}*_????????.log 2>/dev/null | sort -t '_' -k 2 | tail -n1)
+else
+	FILE=$(ls $1 | sort -t '_' -k 2 | tail -n1)
+fi
+if [[ -z "${FILE}" || -z "$(grep "Four Character ID.*: ${SITE}" ${FILE})" ]]; then
+	exit
+fi
+
+# makes the JSON string
+if [ ! -z "$FILE" ]; then
+	#******************* site *******************
+	JSON={\"mo\":\"${SITE}\"
+	#******************* Serial number *******************
+	JSON=$JSON,\"sn\":\"$(sed -n "/^1\. /,/Site Name/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"
+	#******************* Approximative position *******************
+	JSON=$JSON,\"px\":\"$(sed -n "/^2\. /,/Z coordinate/p" ${FILE} | tail -n3 | sed -e 's/^.*: //g')\"
+	#******************* receiver *******************
+	JSON=$JSON$(sed -n "/^3\.[1-9]. /,/Date Removed/p" ${FILE} |\
+		sed -e 's/^.*: //g' | paste -d '\t' - - - - - - - |\
+		awk -F '\t' -v date="${DATE}" '{ if (date >= $6  && date <= $7) \
+			printf ",\"rt\":\"%s\",\"rv\":\"%s\",\"rn\":\"%s\"", $1, $2, $3 }'
+	)
+	#******************* Antenna *******************
+	JSON=$JSON$(sed -n "/^4\.[1-9]. /,/Date Removed/p" ${FILE} |\
+		sed -e 's/^.*: //g' | sed -e 's/\s*NONE//g'| paste -d '\t' - - - - - - - - - - - - - |\
+		awk -F '\t' -v date="${DATE}" '{ if (date >= $12  && date <= $13) \
+			printf ",\"at\":\"%s\",\"an\":\"%s\",\"pe\":\"%1.4f %1.4f %1.4f\"", $1, $2, $4, $5, $6 }'
+    )
+	#******************* Observer *******************
+	JSON=$JSON,\"op\":\"$(sed -n "/^11\. /,/Abbreviation/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"
+	#******************* Agency ******************
+	JSON=$JSON,\"ag\":\"$(sed -n "/^12\. /,/Abbreviation/p" ${FILE} | tail -n1 | sed -e 's/^.*: //g')\"}
+	echo $JSON
+fi

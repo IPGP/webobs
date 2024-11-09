@@ -29,15 +29,18 @@ use warnings;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use POSIX qw/strftime/;
-
-my $todayDate = strftime('%Y-%m-%d',localtime());
+use WebObs::Users qw(clientHasAdm);
 
 my $cgi = new CGI;
 my $QryParm = $cgi->Vars;
 $QryParm->{'cmd'}    ||= "help";
 
-#my @results = qx(perl woc.pl $QryParm->{'cmd'});
-my @results = qx( perl woc.pl $QryParm->{'cmd'});
+# MUST have admin level (authmisc woc 4)
+if ( ! clientHasAdm(type=>"authmisc",name=>"woc")) {
+	die "Sorry, you cannot display this page.";
+}
+
+my @results = qx( perl ../perl/woc.pl $QryParm->{'cmd'});
 foreach (@results) { 
 	s/\n/<br>/g; 
 	s/\s/&nbsp;/g;
@@ -56,7 +59,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

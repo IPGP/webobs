@@ -43,7 +43,7 @@ function X=readcfg(varargin);
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2021-08-12
+%   Updated: 2022-11-26
 
 if nargin > 0 && isstruct(varargin{1})
 	WO = varargin{1};
@@ -86,17 +86,22 @@ else
 		end
 	% --- returns a key|value structure from file f
 	else
-		X = rfile(WO,f,0);
+		if nargin > 1 && any(strcmp(varargin,'novsub'))
+			X = rfile(WO,f,0,'nobsub');
+		else
+			X = rfile(WO,f,0);
+		end
 	end
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function X = rfile(WO,f,mode)
+function X = rfile(WO,f,mode,novsub)
 %RF actually read the configuration file f
 %  mode = 0 : key|value conf file (default)
 %  mode = 1 : key array
+%    novsub : no internal variable substitution
 
 if nargin < 2
 	f = '/etc/webobs.d/WEBOBS.rc';
@@ -104,13 +109,21 @@ end
 if nargin < 3
 	mode = 0;
 end
+if nargin < 4
+	novsub = false;
+else
+	novsub = true;
+end
 
 
 fprintf('%s ... ',f);
 
 % reads all the file content in a single string
-% and clears escaped new lines
-sraw = regexprep(fileread(f),'\\(\r\n|\n)\s*','');
+sraw = fileread(f);
+if ~isoctave
+	% clears escaped new lines
+	sraw = regexprep(sraw,'\\(\r\n|\n)\s*','');
+end
 
 s = textscan(sraw,'%s','CommentStyle','#','Delimiter','\n');
 
@@ -145,8 +158,10 @@ for i = 1:size(s{:},1)
 			val = '';
 			if length(wrk{1}) > 1
 				val = strtrim(stresc(wrk{1}{2}));
-				% deletes end-line comment (if # not escaped as \#)
-				val = regexprep(val,'[^\\]#.*$','');
+				if ~isoctave
+					% deletes end-line comment (if # not escaped as \#)
+					val = regexprep(val,'[^\\]#.*$','');
+				end
 			end
 			% if key contains dots, produces sub-structures
 			skey = split(key,'.');
@@ -178,8 +193,10 @@ end
 
 if length(df{1}) <= 2 && mode==0
 
-	% makes internal KEY variable substitution
-	X = vsub(X,'[\$][\{](.*?)[\}]');
+	if ~novsub
+		% makes internal KEY variable substitution
+		X = vsub(X,'[\$][\{](.*?)[\}]');
+	end
 
 	% makes WEBOBS variable substitution
 	if exist('WO','var')
@@ -195,8 +212,7 @@ function s = stresc(x)
 %STRESC Replaces escape characters in string X.
 
 if ~isempty(x)
-	s = strrep(x,'''','''''');
-	s = strrep(s,'\#','#');
+	s = strrep(x,'\#','#');
 	s = strrep(s,'\|','|');
 else
 	s = '';
@@ -206,7 +222,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function X = vsub(X,pat,W)
-%VARSUB Variable substitution in structure X, pattern PAT
+%VSUB Variable substitution in structure X, pattern PAT
 %	If W provided, uses it to substitute $WEBOBS{} variables
 
 keys = fieldnames(X);

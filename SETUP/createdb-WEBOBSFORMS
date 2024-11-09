@@ -1,0 +1,19 @@
+#!/bin/bash
+P=`dirname $0`
+. $P/dutils.sh
+
+# can be run for fresh installation or within a legacy Webobs migration
+# current directory (pwd) MUST be the target webob's CONF/ directory
+
+echo "Creating/populating forms tables ..."
+sqlite3 WEBOBSFORMS.db <<EOF
+BEGIN TRANSACTION;
+
+COMMIT;
+EOF
+
+echo "Done."
+exit 0
+
+#drop table if exists grids2forms;
+#create table grids2forms (TYPE text NOT NULL, GRID text NOT NULL, NAME integer NOT NULL, FOREIGN KEY(NAME) REFERENCES forms(NAME));

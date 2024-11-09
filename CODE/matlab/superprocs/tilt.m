@@ -37,7 +37,7 @@ function DOUT=tilt(varargin)
 %   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet,
 %            V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
 %   Created: 2015-08-24 in Yogyakarta, Indonesia
-%   Updated: 2021-01-01
+%   Updated: 2022-06-12
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -264,6 +264,7 @@ for n = 1:length(N)
 		end
 
 		% makes graph
+		OPT.EVENTS = N(n).EVENTS;
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
 		close
 

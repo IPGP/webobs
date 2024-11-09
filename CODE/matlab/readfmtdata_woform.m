@@ -25,6 +25,10 @@ function D = readfmtdata_woform(WO,P,N)
 %		D.d (Distance Temp Wind)
 %		D.e (Distance Temp Wind)
 %
+%	form 'RIVERS'
+%		D.t (datenum)
+%		D.d (18 columns)
+%
 %	form 'RAINWATER'
 %		D.t (datenum)
 %		D.d (18 columns)
@@ -33,22 +37,23 @@ function D = readfmtdata_woform(WO,P,N)
 %		D.t (datenum)
 %		D.d (18 columns)
 %
+%	**WARNING** this file must be iso-8859 (unicode) encoded and NOT utf-8
 %
-%	Author: FranÃ§ois Beauducel, WEBOBS/IPGP
+%	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2021-08-12
+%	Updated: 2024-10-03
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
 GMOL = readcfg(WO,sprintf('%s/etc/gmol.conf',WO.ROOT_CODE));
 
-f = sprintf('%s/%s',WO.PATH_DATA_DB,P.FORM.FILE_NAME);
-if ~exist(f,'file')
-	error('%s: %s not found [%s].',wofun,f,P.FORM.SELFREF);
+if ~ismember(P.FORM.SELFREF,{'EAUX','GAZ','EXTENSO','RAINWATER','SOILSOLUTION','RIVERS'})
+	error('%s: unknown woform [%s].',wofun,P.FORM.SELFREF);
 end
 
 fprintf('%s: importing FORM data [%s] ...\n',wofun,P.FORM.SELFREF);
 
+f = sprintf('%s/%s',WO.PATH_DATA_DB,P.FORM.FILE_NAME);
 data = readdatafile(f,[],'HeaderLines',1);
 
 % replaces missing hours by default time, converts to datenum
@@ -85,8 +90,8 @@ case 'EAUX'
 	e = zeros(size(d));
 	nm = {'type','TA','TS','pH','Flux','Cond','Level','Li+','Na+','K+','Mg++','Ca++','F-','Cl-','Br-','NO3-','SO4--','HCO3-','I-', ...
 		'\delta^{13}C','\delta^{18}O','{\delta}D','Cl-/SO4-- ','HCO3-/SO4--','Mg++/Cl-','Cond_{25}','NICB'};
-	un = {    '','ï¿½C','ï¿½C',  '','l/mn',  'ï¿½S',    'm','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l', ...
-		    '',    '',  '',          '',           '',        '',    'ï¿½S',   '%'};
+	un = {    '','°C','°C',  '','l/mn',  'µS',    'm','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l', ...
+		    '',    '',  '',          '',           '',        '',    'µS',   '%'};
 
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
 
@@ -106,12 +111,12 @@ case 'GAZ'
 
 	e = zeros(size(d));
 	nm = {'Temperature','pH','Flux',  'Rn','type','H_2','He','CO','CH_4','N_2','H_2S','Ar','CO_2','SO_2','O_2','\delta^{13}C','\delta^{18}O','S/C'};
-	un = {  'ï¿½C',  '',   '-','#/mn',    '', '%', '%', '%',  '%', '%',  '%', '%',  '%',  '%', '%',    '',    '',   ''};
+	un = {  '°C',  '',   '-','#/mn',    '', '%', '%', '%',  '%', '%',  '%', '%',  '%',  '%', '%',    '',    '',   ''};
 
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
 
 case 'EXTENSO'
-	d1 = str2double(data(:,10:3:34)); % windows (fenï¿½tre)
+	d1 = str2double(data(:,10:3:34)); % windows (fentre)
 	d2 = str2double(data(:,11:3:35)); % faces (cadran)
 	d2(isnan(d2)) = 0;	% forces void faces to 0
 	d3 = str2double(data(:,12:3:36)); % wind speed
@@ -124,7 +129,7 @@ case 'EXTENSO'
 	e(e==0) = 1;	% forces error = 1
 
 	nm = {'Distance','TempAir','Wind'};
-	un = {      'mm',     'ï¿½C',   '-'};
+	un = {      'mm',     '°C',   '-'};
 
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
 
@@ -140,7 +145,7 @@ case 'FISSURO'
 	e(e==0) = 1;	% forces error = 1
 
 	nm = {'Perp.','Para.','Vert.','TempAir'};
-	un = {   'mm',   'mm',   'mm',  'ï¿½C'};
+	un = {   'mm',   'mm',   'mm',  '°C'};
 
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
 
@@ -169,7 +174,7 @@ case 'RAINWATER'
 	e = zeros(size(d));
 	nm = {'Rainmeter','pH','Cond','Na+','K+','Mg++','Ca++','HCO3-','Cl-','SO4--', ...
 		'{\delta}D','\delta^{18}O','Cl-/Na+ ','SO4--/Na+','Mg++/Na+','NICB'};
-	un = {    'mm/day',  '',  'ï¿½S', 'mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l', ...
+	un = {    'mm/day',  '',  'µS', 'mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l', ...
 		    '%{\fontsize{5}o}',    '%{\fontsize{5}o}',    '',      '',      '',  '%'};
 
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
@@ -197,8 +202,48 @@ case 'SOILSOLUTION'
 	e = zeros(size(d));
 	nm = {'Duration','Depth','Level','pH','Cond','Na+',  'K+',    'Mg++',  'Ca++',  'HCO3-', 'Cl-',   'NO3-',  'SO4--', ...
 		'SiO2','DOC','Cl-/Na+ ','SO4--/Na+','Mg++/Na+','NICB'};
-	un = {    'day', 'cm'   , ''    ,'',  'ï¿½S', 'mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l', ...
+	un = {    'day', 'cm'   , ''    ,'',  'µS', 'mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l', ...
 		'ppm', 'ppm','',        '',         '',        '%'};
+
+	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
+
+case 'RIVERS'
+	% type of sampling
+	FT = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_TYPE));
+	tcod = fieldnames(FT);
+	% replaces type of sampling by a number
+	for i = 1:length(tcod)
+		data(strcmp(data(:,6),tcod(i)),6) = {num2str(i)};
+	end
+	% type of flacon (bottle)
+	FB = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_FLACONS));
+	tcod = fieldnames(FB);
+	% replaces type of bottle by a number
+	for i = 1:length(tcod)
+		data(strcmp(data(:,7),tcod(i)),7) = {num2str(i)};
+	end
+	% converts all fields to numbers (after replacing french decimal points)
+	d = str2double(regexprep(data(:,5:end),',','.'));
+	% converts concentrations to mmol/l
+	elm = {'Na','K','Mg','Ca','HCO3','Cl','SO4'};
+	for i = 1:length(elm)
+		d(:,i+7) = d(:,i+7)/str2double(GMOL.(elm{i}));
+	end
+	% adds 5 new columns with chemical ratios an NICB
+	d(:,19) = d(:,14)./d(:,8); % SO4/Na
+	d(:,20) = d(:,13)./d(:,8); % Cl/Na
+	d(:,21) = d(:,11)./d(:,8); % Ca/Na
+	d(:,22) = d(:,10)./d(:,8); % Mg/Na
+	% computes NICB (Mg++, Ca++ and SO4-- are double counted)
+	cations = rsum(d(:,[8,9,10,10,11,11])');
+	anions = rsum(d(:,[12,13,14,14])');
+	d(:,23) = 100*((cations - anions)./(cations + anions))';
+
+	e = zeros(size(d));
+	nm = {'level','type','flacon','TR','Sload','pH','Cond25','Cond','Na+','K+','Mg++','Ca++','HCO3-','Cl-','SO4--','SiO2','DOC','POC', ...
+		'SO4/Na','Cl/Na','Ca/Na','Mg/Na','NICB'};
+	un = { 'm','','','°C','mg/L',  '','µS',  'µS','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','mmol/l','ppm','ppm','ppm', ...
+		    '',    '',  '',      '',   '%'};
 
 	D = share2nodes(t,d,e,data(:,4),P,N,nm,un);
 
@@ -218,9 +263,9 @@ si = si(k);
 
 for n = 1:length(N)
 	k = find(strcmp(si,N(n).ID));	% selects data from site (node's ID)
+	D(n).t = t(k) - N(n).UTC_DATA;
 	D(n).d = d(k,:);
 	D(n).e = e(k,:);
-	D(n).t = t(k) - N(n).UTC_DATA;
 	% set default names and units to inexistant/unappropriate calibration files of node
 	if N(n).CLB.nx ~= length(nm)
 		D(n).CLB.nx = length(nm);

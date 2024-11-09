@@ -1,0 +1,18 @@
+CHECKLIST for new release x.y.z
+
+
+- git pull (master branch)
+- update mods.html (if new scripts)
+- update .tex user manual (version + date)
+- update release-notes.md (under development section ==> x.y.z)
+- commit all modified files + git push (!)
+- compile:
+    - user manual (LaTeX)
+    - i18n (make)
+    - Matlab (make)
+- PACK/build-mac x.y.z (for MacOS: needs packages md5sha1sum and gnutar)
+- test SETUP/setup on a dev VM
+- tag new release + notes + upload package .tgz + PDF user manual
+- update index.md + commit
+- send an email to webobs-users@services.cnrs.fr
+

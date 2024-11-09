@@ -20,10 +20,11 @@ function DOUT = waters(varargin)
 %	by the FORM "EAUX" and associated configuration files. See readfmtdata_wodbform.m for
 %	further information.
 %
+%	**WARNING** this file must be iso-8859 (unicode) encoded and NOT utf-8
 %
 %	Authors: F. Beauducel + G. Hammouya + J.C. Komorowski + C. Dessert + O. Crispi, OVSG-IPGP
 %	Created: 2001-12-21, in Guadeloupe (French West Indies)
-%	Updated: 2021-01-01
+%	Updated: 2024-01-04
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -54,15 +55,15 @@ end
 % --- index of columns in matrix d
 %   1 = type of site
 i_ty = 1;
-%   2 = temperature of air (ï¿½C)
+%   2 = temperature of air (°C)
 i_ta = 2;
-%   3 = temperature of water (ï¿½C)
+%   3 = temperature of water (°C)
 i_ts = 3;
 %   4 = pH
 i_ph = 4;
 %   5 = flux (l/mn)
 i_db = 5;
-%   6 = conductivity (ï¿½S)
+%   6 = conductivity (µS)
 i_cd = 6;
 %   7 = level (m)
 i_nv = 7;
@@ -82,10 +83,10 @@ i_so4 = 17;
 i_hco3 = 18;
 i_i = 19;
 %   20-22 = isotopes d13C, d18O,dD
-%   23 = ratio Cl-/SO4-- (calculï¿½)
-%   24 = ratio HCO3-/SO4-- (calculï¿½)
-%   25 = ratio Mg++/Cl- (calculï¿½)
-%   26 = conductivity at 25ï¿½C
+%   23 = ratio Cl-/SO4-- (computed)
+%   24 = ratio HCO3-/SO4-- (computed)
+%   25 = ratio Mg++/Cl- (computed)
+%   26 = conductivity at 25°C
 %   27 = ion budget (NICB)
 i_bi = 27;
 
@@ -110,15 +111,13 @@ for n = 1:length(N)
 
 		figure(1), clf, orient tall
 
-		if isempty(k), break; end
-
 		if d(ke,i_db) == 0, sdb = 'TARIE'; else sdb = sprintf('%1.1f l/mn',d(ke,i_db)); end
 		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ), ...
-			sprintf('Twater = {\\bf%1.1f ï¿½C}',d(ke,i_ts)), ...
-			sprintf('Tair = {\\bf%1.1f ï¿½C}',d(ke,i_ta)), ...
+			sprintf('Twater = {\\bf%1.1f °C}',d(ke,i_ts)), ...
+			sprintf('Tair = {\\bf%1.1f °C}',d(ke,i_ta)), ...
 			sprintf('pH = {\\bf%1.2f}',d(ke,i_ph)), ...
-			sprintf('Cond. = {\\bf%1.1f ï¿½S}',d(ke,i_cd)), ...
-			sprintf('Cond_{25} = {\\bf%1.1f ï¿½S}',d(ke,25)), ...
+			sprintf('Cond. = {\\bf%1.1f µS}',d(ke,i_cd)), ...
+			sprintf('Cond_{25} = {\\bf%1.1f µS}',d(ke,25)), ...
 			sprintf('Flux = {\\bf%s}',sdb), ...
 			sprintf('Ion analysis ({\\bfmmol/l}) :'), ...
 			sprintf('Na^+ = {\\bf%1.1f}',d(ke,i_na)), ...
@@ -144,7 +143,7 @@ for n = 1:length(N)
 		set(gca,'XLim',tlim,'FontSize',8)
 		legend('Air','Location','SouthWest')
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Temperatures (ï¿½C)')
+		ylabel('Temperatures (°C)')
 
 		% Legend for site types
 		pos = get(gca,'position');
@@ -211,7 +210,7 @@ for n = 1:length(N)
 		set(gca,'XLim',tlim,'FontSize',8)
 		extylim(dd);
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Dï¿½bit (l/mn)')
+		ylabel('Flux (l/mn)')
 
 		% Conductivity
 		subplot(12,1,11:12), extaxes
@@ -226,11 +225,12 @@ for n = 1:length(N)
 			legend([h1(1),h2(1)],'Cond.','Cond_{25}','Location','SouthWest')
 		end
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cond. & Cond_{25} (ï¿½S)')
+		ylabel('Cond. & Cond_{25} (µS)')
 
 		tlabel(tlim,P.TZ)
 
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		OPT.EVENTS = N(n).EVENTS;
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
 	end
 
 end
@@ -253,16 +253,12 @@ if isfield(P,'SUMMARYLIST')
 
 		figure(1), clf, orient tall
 
-		if isempty(k), break; end
-
 		% Ternary diagram Ca/Na/Mg
 		subplot(9,2,[1 3])
 		for n = 1:length(N)
 			k = D(n).G(r).k;
-			if ~isempty(k)
-				h = ternplot(D(n).d(k,i_ca),D(n).d(k,i_na),D(n).d(k,i_mg),'.',0);
-				set(h,'Color',scolor(n));
-			end
+			h = ternplot(D(n).d(k,i_ca),D(n).d(k,i_na),D(n).d(k,i_mg),'.',0);
+			set(h,'Color',scolor(n));
 			set(gca,'FontSize',8)
 			hold on
 		end
@@ -274,10 +270,8 @@ if isfield(P,'SUMMARYLIST')
 		subplot(9,2,[2 4])
 		for n = 1:length(N)
 			k = D(n).G(r).k;
-			if ~isempty(k)
-				h = ternplot(D(n).d(k,i_so4),D(n).d(k,i_hco3),D(n).d(k,i_cl),'.',0);
-				set(h,'Color',scolor(n));
-			end
+			h = ternplot(D(n).d(k,i_so4),D(n).d(k,i_hco3),D(n).d(k,i_cl),'.',0);
+			set(h,'Color',scolor(n));
 			set(gca,'FontSize',8)
 			hold on
 		end
@@ -311,7 +305,7 @@ if isfield(P,'SUMMARYLIST')
 		hold off, box on
 		set(gca,'XLim',tlim,'FontSize',8)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Temperatures (ï¿½C)'))
+		ylabel(sprintf('Temperatures (°C)'))
 
 		% Legend for site types
 		pos = get(gca,'position');
@@ -340,7 +334,7 @@ if isfield(P,'SUMMARYLIST')
 		datetick2('x',P.GTABLE(r).DATESTR)
 		ylabel(sprintf('pH'))
 
-		% Conductivity at 25ï¿½C
+		% Conductivity at 25C
 		subplot(13,1,8:9), extaxes
 		ddmm = nan(2,1);
 		hold on
@@ -355,7 +349,7 @@ if isfield(P,'SUMMARYLIST')
 		hold off, box on, extylim(ddmm)
 		set(gca,'YScale','linear','XLim',tlim,'FontSize',8)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cond. 25ï¿½C (ï¿½S)')
+		ylabel('Cond. 25°C (µS)')
 
 		% Ratio Cl-/SO4-
 		subplot(13,1,10:11), extaxes

@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# This script helps to produce a new release package of WebObs.
+# Usage: make_wopack X.Y.Z
+#
+# Dependencies:
+#    - Matlab R2011b with Compiler
+#    - make
+#    - gettext
+#    - texlive
+#
+# Author: Francois Beauducel <beauducel@ipgp.fr>
+# Created: 2024-03-14
+
+
+SCRIPT_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+PWD=$(pwd)
+
+# Script argument: version of the release
+RELEASE_VERSION="$1"
+
+function ask() {
+	# Usage: ask "prompt question [y/n] ?" [default answer] [pattern for returning true]
+	local prompt="${1:-Are you sure? [Y/n]}" default="${2:-y}" true_ans="${3:-[yY]}" ans
+	read -r -p "$prompt " ans
+	[[ -z "$ans" ]] && ans="$default"
+	[[ $ans =~ ^$true_ans$ ]]
+	return $?
+}
+
+if ask "--> Compile all the Matlab procs [y/N]" "n"
+then
+	cd "$SCRIPT_DIR/../CODE/matlab"
+	sudo -u wo -- make arch=64
+	sudo -u wo -- make arch=32
+	cd "$PWD"
+fi
+
+if ask "--> Compile i18n dictionaries [y/N]" "n"
+then
+	cd "$SCRIPT_DIR/../CODE/i18n"
+	make
+	cd "$PWD"
+fi
+
+if ask "--> Compile LaTeX documentation [y/N]" "n"
+then
+	cd "$SCRIPT_DIR/../DOC/user-manual"
+	fman="WebObs_Manual.tex"
+	ver=$(grep '\\newcommand{\\release}{' $fman | sed -e 's/.*{\(.*\)}/\1/')
+	echo -n "    The current doc release is '$ver'. "
+	if [[ $RELEASE_VERSION != "" && $ver != $RELEASE_VERSION ]]
+	then
+		if ask "Update with '$RELEASE_VERSION' [y/N]" "n"
+		then
+			sed -i -e "s/$ver/$RELEASE_VERSION/" $fman
+		fi
+	else
+		echo ""
+	fi
+	pdflatex $fman >/dev/null
+	cd "$PWD"
+fi
+
+if [ ! -z $RELEASE_VERSION ]
+then
+	if ask "--> Build the package v$RELEASE_VERSION [y/N]" "n"
+	then
+		cd "$SCRIPT_DIR"
+		./build "$RELEASE_VERSION" 
+		cd "$PWD"
+	fi
+fi
+

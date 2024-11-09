@@ -45,7 +45,7 @@ function DOUT=helicorder(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2016-12-30 in Yogyakarta, Indonesia
-%	Updated: 2021-01-01
+%	Updated: 2022-06-12
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -68,8 +68,8 @@ r = 1;
 hd = field2num(P,'HELICORDER_DURATION_DAYS',1);
 ht = field2num(P,'HELICORDER_TURNS',24*4);
 hscale = field2num(P,'HELICORDER_SCALE',100);
-hpaper = htm2rgb(field2str(P,'HELICORDER_PAPER_COLOR','white'));
-hcolors = htm2rgb(split(field2str(P,'HELICORDER_TRACE_COLOR'),','));
+hpaper = field2num(P,'HELICORDER_PAPER_COLOR',rgb('white'));
+hcolors = rgb(split(field2str(P,'HELICORDER_TRACE_COLOR'),','));
 hytick = field2num(P,'HELICORDER_YTICK_HOURS',1);
 hradius = field2num(P,'HELICORDER_RADIUS',1);
 htrend = isok(P,'HELICORDER_TREND');

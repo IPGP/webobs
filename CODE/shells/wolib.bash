@@ -25,5 +25,5 @@ function woconf() {
 	# Export configuration variables read by exposerc.pl
 	while IFS='' read -r definition; do
 		export "$definition"
-	done < <(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' "$prefix" "$src_config")
+	done < <(perl /etc/webobs.d/../CODE/perl/exposerc.pl '=' "$prefix" "$src_config")
 }

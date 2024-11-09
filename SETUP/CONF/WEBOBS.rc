@@ -2,7 +2,7 @@
 
 VERSION|nd
 WEBOBS_ID|${WebObsIdentification}
-BIG_BANG|${InstallYear}
+BIG_BANG|2001
 WEBOBS_TITLE|WEBOBS ${WEBOBS_ID}
 COPYRIGHT|${WEBOBS_TITLE} / IPGP
 
@@ -52,7 +52,7 @@ HTTP_PASSWORD_FILE|${ROOT_CONF}/htpasswd
 # Minium length for user password
 HTPASSWORD_MIN_LENGTH|8
 # Whether to allow users to change their own password
-ALLOW_HTPASSWORD_CHANGE|1
+ALLOW_HTPASSWORD_CHANGE|Y
 # Path to the htpasswd command
 PRGM_HTPASSWD|/usr/bin/htpasswd
 # Encryption format to use when creating/updating passwords:
@@ -93,6 +93,7 @@ TERMSOFUSE|${ROOT_DATA}/WEB/terms.txt
 EVENTS_TO_GAZETTE|ALL
 EVENTS_GAZETTE_DELETE|YES
 EVENTS_ACTIVE_GID|+ADMIN,+DUTY
+EVENTS_NOTIFY_FULL_MESSAGE|YES
 
 # Uncomment this line to disable MultiMarkDown facilities for all 'wiki' contents
 #WIKI_MMD|NO
@@ -119,6 +120,7 @@ URN_CGI|/cgi-bin
 URN_CSS|/css
 URN_HTML|/html
 URN_NODES|/nodes
+URN_DATA|/data
 URN_ICONS|/icons
 URN_JS|/js
 URN_SEFRAN|/sefran
@@ -162,6 +164,43 @@ SQL_DOMAINS|${ROOT_CONF}/WEBOBSDOMAINS.db
 SQL_TABLE_DOMAINS|domains
 SQL_TABLE_GRIDS|grids2domains
 
+# ---- FORMS DataBase -----------------------
+# ---------------------------------------------
+SQL_FORMS|${PATH_DATA_DB}/WEBOBSFORMS.db
+SQL_TABLE_FGRIDS|grids2forms    # not used yet (working in progress !)
+
+# ---- METADATA DataBase -----------------------
+# ---------------------------------------------
+SQL_METADATA|${ROOT_CONF}/WEBOBSMETA.db
+SQL_TABLE_PRODUCER|producer
+SQL_TABLE_CONTACTS|contacts
+SQL_TABLE_ORGANISATIONS|organisations
+SQL_TABLE_DATASETS|datasets
+SQL_TABLE_OBSERVATIONS|observations
+SQL_TABLE_OBSERVED_PROPERTIES|observed_properties
+SQL_TABLE_SAMPLING_FEATURES|sampling_features
+SQL_TABLE_PGRIDS|grids2producers
+
+# ---- Creator roles -------------------------
+# ---------------------------------------------
+CREATOR|${ROOT_CONF}/EnumContactPersonRoles.conf
+
+# ---- INSPIRE themes -------------------------
+# ---------------------------------------------
+THEME|${ROOT_CONF}/EnumInspireTheme.conf
+
+# ---- Topic categories -------------------------
+# ---------------------------------------------
+TOPIC|${ROOT_CONF}/EnumTopicCategories.conf
+
+# ---- THEIA user flag ------------------------
+# ---------------------------------------------
+THEIA_USER_FLAG|0
+
+# ---- THEIA portal configuration file --------
+# ---------------------------------------------
+CONF_THEIA|${ROOT_CONF}/theia.rc
+
 # ---- Internalization ------------------------
 # ---------------------------------------------
 ROOT_I18N|${ROOT_SITE}/CODE/i18n
@@ -183,7 +222,6 @@ CGI_CONFIRM_SUCCESSFUL|NO
 # ---- External resources ---------------------
 # ---------------------------------------------
 PLOTERUP_FILE|${ROOT_CONF}/ERUPTIONS_SHM.conf
-MAP_EXTENSION_ORDER|ANT,GUA,SBT,SOU,DOM
 
 PATH_MCR|/usr/local/MATLAB/MATLAB_Compiler_Runtime/v716
 PATH_MCC|${ROOT_CODE}/bin/linux-64
@@ -277,18 +315,18 @@ GOOGLE_EARTH_LINK|1
 GOOGLE_EARTH_LINK_INFO|KML file for Google Earth (ATTENTION: error ~20 m)
 IMAGE_LOGO_GOOGLE_EARTH|/icons/google/google_earth.gif
 
-# Google Maps ---------------------------------
-CGI_GOOGLE_MAPS|googleMAPS.pl
-GOOGLE_MAPS_LINK|1
-GOOGLE_MAPS_API|https://maps.google.com/maps?file=api
-# NOTE: API key can be obtained at http://code.google.com/apis/maps/signup.html entering domain address
-GOOGLE_MAPS_API_KEY|
-GOOGLE_MAPS_LINK_INFO|See with Google Maps (ATTENTION: error ~20 m)
-GOOGLE_MAPS_ICON|/icons/gdot.png
-GOOGLE_MAPS_TYPE|G_HYBRID_MAP
-GOOGLE_MAPS_WIDTH_VALUE|800
-GOOGLE_MAPS_HEIGHT_VALUE|600
-GOOGLE_MAPS_ZOOM_VALUE|17
+# OpenStreetMap ---------------------------------
+CGI_OSM|OSM.pl
+OSM_LINK|1
+OSM_INFO|See with OpenStreetMap
+OSM_NODE_ICON|/icons/gdot.png
+OSM_WIDTH_VALUE|800
+OSM_HEIGHT_VALUE|600
+OSM_ZOOM_VALUE|17
+
+# QR code module size (in pixels) / empty or zero to not display in grid/node pages
+QRCODE_SIZE|2
+QRCODE_LOGOS|/icons/ipgp/logo_WebObs_C413.png,/icons/ipgp/logo_IPGP_2022.png
 
 # Digital Elevation Models --------------------
 # ---------------------------------------------
@@ -299,7 +337,7 @@ PATH_DATA_DEM_SRTM1|${PATH_DATA_DEM}/SRTM1
 SRTM_COPYRIGHT|DEM: SRTM/NASA
 SRTM_MAX_TILES|25
 SRTM1_MAX_TILES|4
-# Authentication needed to download new SRTM tiles (see https://urs.earthdata.nasa.gov)
+# Authentication needed to download new SRTM1 tiles (see https://urs.earthdata.nasa.gov)
 # alternative is to empty this variable and put login information in .netrc
 EARTHDATA_LOGIN|usr,pwd
 # ETOPO Global Relief Data: ETOPO1 can be downloaded at http://www.ngdc.noaa.gov/mgg/global/global.html (.bin and .hdr)
@@ -326,4 +364,12 @@ MKGRAPH_THUMBNAIL_HEIGHT|112
 LOGO_DEFAULT|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 LOGO_HEIGHT|0.04
 # URN to LOGO_DEFAULT
-URN_LOGO_DEFAULT|/icons/ipgp/logo_WOVS.png
+URN_LOGO_DEFAULT|/icons/ipgp/logo_WOVS.pngv
+
+# M3G (European GNSS metadata database)
+# --------------------------------------------
+M3G_URL|https://gnss-metadata.eu/sitelog
+M3G_EDIT|${M3G_URL}/modify?station=   
+M3G_EXPORTXML|${M3G_URL}/exportxml?station=
+M3G_EXPORTLOG|${M3G_URL}/exportlog?station=
+

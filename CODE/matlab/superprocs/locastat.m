@@ -243,7 +243,7 @@ for i = 1:length(k)
 
 			% profil NS
 			ax21 = axes('Position',[.455,(.1+pcart)/(1+pcart),.045,.4/(1+pcart)]);
-			xp = zz2(:,round(size(zz2,2)/2))'; yp = yy2(:,1);
+			xp = zz2(:,round(size(zz2,2)/2))'; yp = yy2(:,1)';
 			xp(find(isnan(xp))) = 0;
 			fill([mmz(1),xp,mmz(1),mmz(1)],yp([1,1:end,end,1]),gris)
 			set(gca,'XLim',mmz,'YLim',xy2(3:4),'XDir','reverse'), axis off
@@ -380,7 +380,7 @@ for i = 1:length(k)
 		end
 
 		% --- frame 3: user-defined DEM or interpolated SRTM
-		if f3dem & utm(ki,1) >= min(xdem) & utm(ki,1) <= max(xdem) & utm(ki,2) >= min(ydem) & utm(ki,2) <= max(ydem)
+		if f3dem && utm(ki,1) >= min(xdem) && utm(ki,1) <= max(xdem) && utm(ki,2) >= min(ydem) && utm(ki,2) <= max(ydem)
 			x3 = xdem;
 			y3 = ydem;
 			z3 = zdem;
@@ -405,10 +405,10 @@ for i = 1:length(k)
 			dem(x3(kx),y3(ky),z3(ky,kx),demoptions{:}); axis off
 			hold on
 			[cs,h] = contour(x3(kx),y3(ky),z3(ky,kx),[0,0,50:100:zmax],'-k');
-			set(h,'LineWidth',.1,'Color',gris2);
+			set(h,'LineWidth',.1,'LineColor',gris2);
 			if zmax >= 100
 				[cs,h] = contour(x3(kx),y3(ky),z3(ky,kx),[100,100,100:100:zmax],'-k');
-				set(h,'LineWidth',1.5,'Color',gris2);
+				set(h,'LineWidth',1.5,'LineColor',gris2);
 				clabel(cs,h,'FontSize',7,'FontWeight','bold','LabelSpacing',288,'Color',gris2)
 			end
 			if trans, plottrans(WO,N(ki),15,'utm'); end
@@ -435,7 +435,8 @@ for i = 1:length(k)
 		hold off
 
 		% ---- copyright (cartouche bas)
-		message = sprintf(' {\\bf%s}  \\copyright %s - %s / %s ',N(ki).ID,WO.COPYRIGHT,demcopyright,datestr(now,0));
+		message = sprintf(' {\\bf%s}  \\copyright %s, %s - %s / %s ',N(ki).ID,num2roman(str2double(datestr(now,'yyyy'))), ...
+			WO.COPYRIGHT,demcopyright,datestr(now,0));
 		axes('Position',[0,0,1,pcart/(1+pcart)]); axis([0,1,0,1]); axis off
 		text(0,.5,message,'FontSize',9,'HorizontalAlignment','left')
 		if ign
@@ -448,8 +449,8 @@ for i = 1:length(k)
 
 		% ---- exports figure
 		ftmp = sprintf('%s/locastat',ptmp);
-		print(gcf,'-depsc2','-loose','-painters',sprintf('%s.ps',ftmp));
-		wosystem(sprintf('%s %s -density %dx%d %s.ps %s.png',WO.PRGM_CONVERT,convertopt,dpi,dpi,ftmp,ftmp));
+		print(sprintf('%s.eps',ftmp),'-depsc','-loose','-painters');
+		wosystem(sprintf('%s %s -density %dx%d %s.eps %s.png',WO.PRGM_CONVERT,convertopt,dpi,dpi,ftmp,ftmp));
 		wosystem(sprintf('mv -f %s.png %s',ftmp,fimg));
 
 		fprintf('done.\n');

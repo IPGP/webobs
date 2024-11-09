@@ -73,6 +73,8 @@ my $today = strftime("%Y-%m-%d", localtime);
 
 my $htmlcontents = "";
 my $editOK   = 0;
+my $admVIEWS = 0;
+my $admPROCS = 0;
 my $descGridType = my $descGridName = my $descLegacy = "";
 
 
@@ -147,10 +149,12 @@ if ($subsetDomain ne '') {
 	}
 }
 
-# edition is allowed only if the user has edit authorization for ALL grids (views and procs)
-if ( WebObs::Users::clientHasEdit(type=>"authviews",name=>"*") && WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*")) {
-	$editOK = 1
-};
+# creation of new view or proc is allowed only if the user has admin authorization for ALL grids (views and/or procs)
+$admVIEWS = 1 if ( WebObs::Users::clientHasAdm(type=>"authviews",name=>"*") );
+$admPROCS = 1 if ( WebObs::Users::clientHasAdm(type=>"authprocs",name=>"*") );
+
+# content edition is allowed only if the user has edit authorization for ALL grids (views and procs)
+$editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"authviews",name=>"*") && WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*") );
 
 # Regroup all database queries here for optimisation
 my $dbh = connectDbDomains();
@@ -187,6 +191,7 @@ print "<H1 style=\"margin-bottom:6px\">";
 	print "$GRIDS{SHOW_GRIDS_TITLE}\n" if ($subsetType eq 'all');
 	print "Views" if ($subsetType eq 'view');
 	print "Procs" if ($subsetType eq 'proc');
+	print "Sefrans" if ($subsetType eq 'sefran');
 print "</H1>\n";
 
 # ---- Subtitle menu to other domains/grids displays
@@ -223,6 +228,7 @@ print "<div id=\"noscrolldiv\">";
 		print "<a name=\"popupY\"></a>";
 		print WebObs::Search::searchpopup();
 		print geditpopup();
+		print feditpopup();
 
 		# ---- The GRIDS table
 		#
@@ -232,13 +238,13 @@ print "<div id=\"noscrolldiv\">";
 		if ($subsetDomain eq "") {
 			print "<TH>";
 			if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"*")) {
-				print "&nbsp;<a href='/cgi-bin/gridsMgr.pl' title=\"$__{'Edit/Create a Domain'}\"><img class='ic' src='/icons/modif.png'></a>&nbsp;&nbsp;&nbsp;";
+				print "&nbsp;<a href='/cgi-bin/gridsMgr.pl' title=\"$__{'Edit/Create a Domain/Producer'}\"><img class='ic' src='/icons/modif.png'></a>&nbsp;&nbsp;&nbsp;";
 			}
 			print "Domain</TH>";
 		}
 		print "<TH>Grid</TH>" if ($subsetType ne "");
 		print "<TH><a href='#popupY' title=\"$__{'Find text in Grids'}\" onclick='srchopenPopup(\"*ALL\");return false'><img class='ic' src='/icons/search.png'></a>";
-		if (WebObs::Users::clientHasAdm(type=>"authviews",name=>"*") && WebObs::Users::clientHasAdm(type=>"authprocs",name=>"*") ) {
+		if ($admVIEWS || $admPROCS) {
 			print "&nbsp;<a href='#popupY' title=\"$__{'Edit/Create a Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/modif.png'></a>"
 		}
 		print     "&nbsp;&nbsp;&nbsp;Name</TH>";
@@ -246,7 +252,13 @@ print "<div id=\"noscrolldiv\">";
 		print "<TH>Type</TH>"  if ($showType);
 		print "<TH>Owner</TH>" if ($showOwnr);
 		print "<TH>Graphs</TH>";
-		print "<TH>Raw Data</TH>" if ($wantProcs || $wantSefrans);
+		if ($wantProcs || $wantSefrans) {
+			print "<TH>";
+			if ( $admPROCS ) {
+				print "<a href='#popupY' title=\"$__{'Edit/Create a Form'}\" onclick='feditopenPopup(); return false;'><img class='ic' src='/icons/modif.png'></a>";
+			}
+			print "&nbsp;&nbsp;&nbsp;Raw Data</TH>";
+		}
 		print "</TR>\n";
 		for my $d (@$domains) {
 			my ($dc, $dn) = @$d;
@@ -296,7 +308,7 @@ print "<div id=\"noscrolldiv\">";
 							print "<TD style=\"text-align:center\">";
 							if (defined($G{$vs}{MC3_NAME}) && $G{$vs}{MC3_NAME} ne '') {
 								my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$G{$vs}{MC3_NAME}.conf");
-								print "<A HREF=\"/cgi-bin/mc3.pl?mc3=$G{$vs}{MC3_NAME}\" title=\"$MC3{TITLE}\"><IMG border=\"0\" alt=\"$G{$vs}{MC3_NAME}\" SRC=\"/icons/form.png\"></A>";
+								print "<A HREF=\"/cgi-bin/mc3.pl?mc=$G{$vs}{MC3_NAME}\" title=\"$MC3{TITLE}\"><IMG border=\"0\" alt=\"$G{$vs}{MC3_NAME}\" SRC=\"/icons/form.png\"></A>";
 							}
 							print "</TD>";
 						}
@@ -334,7 +346,14 @@ print "<div id=\"noscrolldiv\">";
 							print "<TD style=\"text-align:center\">";
 							if (defined($G{$vp}{FORM}) && $G{$vp}{FORM} ne '') {
 								my %F = readCfg("$WEBOBS{PATH_FORMS}/$G{$vp}{FORM}/$G{$vp}{FORM}.conf");
-								print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?node={$vp}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
+=pod obsolet code
+								if ($F{CGI_SHOW} eq "showGENFORM.pl") {
+									print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?form=$G{$vp}{FORM}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
+								} else {
+									print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?node={$vp}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
+								}
+=cut
+								print "<A HREF=\"/cgi-bin/showGENFORM.pl?form=$G{$vp}{FORM}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
 							} else {
 								if (defined($G{$vp}{URNDATA}) && $G{$vp}{URNDATA} ne '') {
 									print "<A HREF=\"$G{$vp}{URNDATA}\"><IMG border=\"0\" alt=\""
@@ -438,14 +457,19 @@ sub printdesc {
 sub geditpopup {
 	# prepares a list of grid's templates
 	my @tplates;
-	my @tmp = glob("$WEBOBS{ROOT_CODE}/tplates/{VIEW,PROC,SEFRAN}.*");
+	my @gt;
+	push(@gt,"VIEW") if ($admVIEWS);
+	push(@gt,"PROC,SEFRAN") if ($admPROCS);
+	my @tmp = glob("$WEBOBS{ROOT_CODE}/tplates/{".join(',',@gt)."}.*");
 	foreach my $t (@tmp) {
-		my @conf = readCfg($t);
-		next if (@conf == 1);  # readCfg returns [0] if the file is empty
-		my %G = @conf;
-		$t =~ s/$WEBOBS{ROOT_CODE}\/tplates\///;
-		my ($gt,$gn) = split(/\./,$t);
-		push(@tplates,"$gt|$gn|".u2l($G{NAME}));
+        if (! -l $t) {
+		    my @conf = readCfg($t);
+            next if (@conf == 1);  # readCfg returns [0] if the file is empty
+            my %G = @conf;
+		    $t =~ s/$WEBOBS{ROOT_CODE}\/tplates\///;
+		    my ($gt,$gn) = split(/\./,$t);
+		    push(@tplates,"$gt|$gn|".u2l($G{NAME}));
+        }
 	}
 
 	my $SP = "";
@@ -463,13 +487,75 @@ sub geditpopup {
 	$SP .= "  </select>\n";
 	$SP .= "<br style=\"clear: left\"><br>";
 
-	$SP .= "<label for=\"geditN\">$__{'Grid Name'}: <span class=\"small\">short name (uppercase)</span></label>";
+	$SP .= "<label for=\"geditN\">$__{'Grid Name'}: <span class=\"small\">$__{'short name (uppercase)'}</span></label>";
 	$SP .= "  <input size=\"40\" id=\"geditN\" name=\"geditN\" value=\"\">\n";
 	$SP .= "<br style=\"clear: left\"><br>";
 
 	$SP .= "<p style=\"margin: 0px; text-align: center\">";
 	$SP .= "<input type=\"button\" name=\"sendbutton\" value=\"$__{'Edit'}\" onclick=\"geditsendPopup(); return false;\" style=\"font-weight:bold\" />";
 	$SP .= "<input type=\"button\" value=\"cancel\" onclick=\"geditclosePopup(); return false\" />";
+	$SP .= "</p>";
+	$SP .= "</form>";
+	return $SP;
+}
+
+# ---- helper edit form popup
+sub feditpopup {
+	# prepares a list of form's templates
+=pod
+	my @tplates;
+	my @tmp = glob("$WEBOBS{ROOT_CODE}/tplates/{VIEW,PROC,SEFRAN}.*");
+	foreach my $t (@tmp) {
+        if (! -l $t) {
+		    my @conf = readCfg($t);
+            next if (@conf == 1);  # readCfg returns [0] if the file is empty
+            my %G = @conf;
+		    $t =~ s/$WEBOBS{ROOT_CODE}\/tplates\///;
+		    my ($gt,$gn) = split(/\./,$t);
+		    push(@tplates,"$gt|$gn|".u2l($G{NAME}));
+        }
+	}
+=cut
+	my $SP = "";
+	$SP .= "<div id=\"feditovly\" style=\"display:none\"></div>";
+	$SP .= "<form id=\"feditoverlay_form\" style=\"display:none\">";
+	$SP .= "<p><b><i>Create/edit a FORM</i></b></p>";
+=pod
+	$SP .= "<label for=\"geditN\">$__{'Grid Type'}: <span class=\"small\">select a template</span></label>";
+	$SP .= "  <select size=\"1\" id=\"geditT\" name=\"geditT\">\n";
+	foreach (@tplates) {
+		my ($gt,$gn,$gl) = split(/\|/,$_);
+		my $sel = "";
+		$sel = "selected" if (($subsetType eq 'all' && $gt eq 'VIEW') || ($gt eq uc($subsetType) && $gn eq 'DEFAULT'));
+		$SP .= "  <option value=\"$gt.$gn\" $sel>$gt: $gl</option>\n";
+	}
+	$SP .= "  </select>\n";
+	$SP .= "<br style=\"clear: left\"><br>";
+=cut
+	$SP .= "<label for=\"feditN\">$__{'Form Name'}: <span class=\"small\">$__{'short name (uppercase)'}</span></label>";
+	$SP .= "  <input size=\"40\" id=\"feditN\" name=\"feditN\" value=\"\">\n";
+	$SP .= "<br style=\"clear: left\"><br>";
+=pod
+	$SP .= "<label for=\"nbIn\">$__{'Number of inputs'}: <span class=\"small\">number of inputs to inform</span></label>";
+	$SP .= "  <input size=\"40\" id=\"nbIn\" name=\"nbIn\" value=\"\">\n";
+	$SP .= "<br style=\"clear: left\"><br>";
+=cut
+	$SP .= "<label for=\"feditT\">$__{'Form template'}: <span class=\"small\"></span></label>";
+	opendir my $dir, ("$WEBOBS{ROOT_CODE}/tplates/") or die "Cannot open directory: $!";
+	my @templates = grep (/FORM/, readdir($dir));
+	closedir $dir;
+	$SP .= "  <select id=\"feditTpl\" name=\"feditT\" value=\"\">\n";	# select input, look into CODE/tplates to find the differents templates
+	for (my $i = 0; $i <= $#templates; $i++) {
+		if ($templates[$i] =~ /FORM\./) {
+			$SP .= "<option value=\"$templates[$i]\">$templates[$i]</option>";
+		}
+	}
+	$SP .= "</select>";
+	$SP .= "<br style=\"clear: left\"><br>";
+
+	$SP .= "<p style=\"margin: 0px; text-align: center\">";
+	$SP .= "<input type=\"button\" name=\"sendbutton\" value=\"$__{'Create'}\" onclick=\"feditsendPopup(); return false;\" style=\"font-weight:bold\" />";
+	$SP .= "<input type=\"button\" value=\"cancel\" onclick=\"feditclosePopup(); return false;\" />";
 	$SP .= "</p>";
 	$SP .= "</form>";
 	return $SP;

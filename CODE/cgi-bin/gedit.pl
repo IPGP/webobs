@@ -167,7 +167,6 @@ print "Content-type: text/html; charset=utf-8
 <HEAD>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
 <TITLE>Text edit form</TITLE>
-<script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <script type=\"text/javascript\">
 function verif_formulaire()
 {
@@ -186,7 +185,7 @@ function convert2MMD()
 </script>
 </HEAD>
 <BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.texte.focus()\">
-<script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
+<script type=\"text/javascript\" src=\"/js/jquery-1.8.2.min.js\"></script>
 <!-- markitup -->
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>
 <script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>

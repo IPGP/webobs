@@ -34,7 +34,7 @@ function DOUT=genplot(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2014-07-13
-%	Updated: 2021-01-01
+%	Updated: 2022-11-24
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -58,7 +58,7 @@ summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
 pagemaxsubplot = field2num(P,'PAGE_MAX_SUBPLOT',8);
 ylogscale = isok(P,'YLOGSCALE');
-movingaverage = field2num(P,'MOVING_AVERAGE_SAMPLES',1);
+movingaverage = round(field2num(P,'MOVING_AVERAGE_SAMPLES',1));
 
 exthax = [.08,.02];
 nxm = 0; % max number of channels
@@ -77,6 +77,10 @@ for n = 1:length(N)
 	% ===================== makes the proc's job
 
 	for r = 1:length(P.GTABLE)
+
+		% adjusts moving average filter to decimated data (keeps the cut-off frequency)
+		movingaverage_dec = round(movingaverage/P.GTABLE(r).DECIMATE);
+		movingaverage_dec(movingaverage_dec<2) = []; % removes any non integer or lower than 2 values
 
 		figure
 		if length(N) > pagemaxsubplot
@@ -113,26 +117,42 @@ for n = 1:length(N)
 				col = scolor(p);
 				timeplot(tk,dk(:,i),samp,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
 					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
-				if movingaverage > 1
-					hold on
-					col = .5+scolor(p)/2;
-					timeplot(tk,mavr(dk(:,i),movingaverage),samp,'-', ...
-						'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',col,'MarkerFaceColor',col)
-					hold off
+				hold on
+				for j = 1:length(movingaverage_dec)
+					if movingaverage_dec(j) > 1
+						col = j/(j+1) + scolor(p)/(j+1);
+						timeplot(tk,mavr(dk(:,i),movingaverage_dec(j)),samp,'-', ...
+							'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',col,'MarkerFaceColor',col)
+					end
 				end
+				hold off
 			end
 			if ylogscale
 				set(gca,'YScale','log')
 			end
 			set(gca,'XLim',tlim,'FontSize',8)
 			datetick2('x',P.GTABLE(r).DATESTR)
-			if i < nx
+			if p < length(GN)
 				set(gca,'XTickLabel',[]);
 			end
 			ylabel(sprintf('%s %s',D(n).CLB.nm{i},regexprep(D(n).CLB.un{i},'(.+)','($1)')))
 			if isempty(D(n).d) || all(isnan(D(n).d(k,i)))
 				nodata(tlim)
 			end
+
+			% legend: moving average
+			xlim = get(gca,'XLim');
+			ylim = get(gca,'YLim');
+			nn = length(movingaverage_dec);
+			for j = 1:nn
+				if movingaverage_dec(j) > 1
+					col = j/(j+1) + scolor(p)/(j+1);
+					text(xlim(1)+j*diff(xlim)/(nn+1),ylim(2)+diff(ylim)/100,sprintf('mov. avg %g',movingaverage_dec(j)),'Color',col, ...
+						'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',max(10-nn,6),'FontWeight','bold')
+				end
+			end
+			set(gca,'YLim',ylim);
+
 		end
 
 		tlabel(tlim,P.GTABLE(r).TZ)
@@ -153,7 +173,8 @@ for n = 1:length(N)
 		end
 
 		% makes graph
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		OPT.EVENTS = N(n).EVENTS;
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
 		close
 
 		% exports data
@@ -205,14 +226,14 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 			for n = 1:length(N)
 				k = D(n).G(r).k;
 				if ~isempty(k)
-					if isok(P,'CONTINUOUS_PLOT') || ~isfield(D(n).CLB,'sf')
-						samp = 0;
-					else
-						samp = D(n).CLB.sf(c);
-					end
 					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,c),P.GTABLE(r).DECIMATE,P);
 					if isok(P,'SUMMARY_RELATIVE')
 						dk = rf(dk);
+					end
+					if isok(P,'CONTINUOUS_PLOT') || ~isfield(D(n).CLB,'sf')
+						samp = 0;
+					else
+						samp = D(n).CLB.sf(c)/P.GTABLE(r).DECIMATE;
 					end
 					col = scolor(n);
 					timeplot(tk,dk,samp,summary_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
@@ -238,8 +259,8 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 			ylim = get(gca,'YLim');
 			nn = length(aliases);
 			for n = 1:nn
-				text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
+				text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2)+diff(ylim)/100,aliases(n),'Color',scolor(ncolors(n)), ...
+					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',max(11-nn,6),'FontWeight','bold')
 			end
 			set(gca,'YLim',ylim);
 		end

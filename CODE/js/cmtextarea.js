@@ -111,7 +111,6 @@ function postform() {
 	editor.save();
 	$.post(CODEMIRROR_CONF.POST_URL, $(CODEMIRROR_CONF.FORM).serialize(), function(data) {
 		if (data != '') alert(data);
-		history.go(-1);
+		location.href = document.referrer;
 	});
 }
-

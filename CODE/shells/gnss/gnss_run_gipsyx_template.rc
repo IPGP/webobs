@@ -1,0 +1,83 @@
+###############################################################################
+# Template configuration file for script gnss_run_gipsyx (must be in the same
+# directory). Please copy, rename and edit it for each "network".
+#
+# Created: 2019-02-25
+# Updated: 2021-02-09
+
+# main temporary directory (/tmp per default, change is recommended)
+TMPDIRMAIN=/tmp
+
+# prepares GIPSYX processing (this is GipsyX's rc file, in the GipsyX folder)
+source /home/wo/GipsyX-1.2/rc_GipsyX.sh
+
+# grid of a local WebObs that contains the station list (nodes)
+#GRID=PROC.GIPSYX
+#NODEROOT=/opt/webobs.d/GRID2NODES/$GRID.
+# ... or empty $GRID and default list of station codes (space separated)
+NODES=
+
+# optional site logs to overwrite rinex headers (antenna and receiver codes)
+# - option 1: station.info file (Gamit)
+STATION_INFO=
+# - option 2: site log directory (recommended)
+SITELOG=
+
+# base directory that contains the raw data
+FROM=/home/wo/rawdata/GNSS
+
+# directory structure of the raw data (will be evaluated using eval...)
+# valid variables are: $FID, $sta (lowercase FID), $yyyy, $yy, $mm, $dd, $doy,
+# $bb. Example for station BABA on September 07, 2022:
+#    $FID: BABA
+#    $sta: baba
+#   $yyyy: 2022
+#     $yy: 22
+#     $mm: 09
+#     $dd: 07
+#    $doy: 250
+#     $bb: Sep
+FMT='$FROM/$FID/$yyyy/$mm/$dd'
+
+# base directory for output results
+DEST=/home/wo/GNSS/gipsyx
+
+# base directory to store local orbits (optional)
+ORBITSDIR=/home/wo/GNSS/JPL_Local_Orbits
+
+# download_orbit options (see download_orbit)
+DOWNLOAD_OPTIONS="-r 30"
+
+# gd2e.py options
+GIPSYOPTIONS="-runType PPP"
+
+# teqc options: Please take a deep look at www.unavco.org TEQC tutorial!
+TEQCOPTIONS="+quiet -O.pe 0 0 0 -C2 -O.-obs C2 -O.-obs C5 -O.dec 30s -max_rx_SVs 50 -n_GLONASS 27"
+
+# not empty value will add troposphere results in .tdp files (.Trop.*)
+TROP_TDP=
+
+# display some rinex header in case of error
+ERROR_REGEX_RINEX="REC #|ANT #|# / TYPES OF OBSERV|MARKER NAME|APPROX POSITION XYZ"
+
+# realtime processing (put "Y" if wanted)
+REALTIME=""
+
+# data delay for realtime processing
+DATA_DELAY="5 min"
+
+### use fiducial (regular) or non-fiducial (NF) orbits. 
+# NFORB option will add '-prodTypeGNSS nf -gdCov' in the GIPSYOPTIONS
+# and will perform the post-processing re-alignement 
+# leave NFORB=0 if you are not sure of what you are doing
+# *** Detailed Note:
+# JPL's Fiducial orbits are directly aligned to ITRF.
+# But the usage of Non-fiducial orbits are recommended by
+# the JPL and the geodetic community
+# Coordinates computed with non Fiducial orbits requiries
+# a re-alignement to the ITRF with external Helmert parameters 
+NFORB=0
+
+
+
+

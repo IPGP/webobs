@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 #
 =head1 NAME
 
-showREQ.pl 
+showREQ.pl
 
 =head1 SYNOPSIS
 
@@ -13,10 +13,10 @@ http://..../cgi-bin/showREQ.pl
 Shows the list of results from html-form for 'B<Request for Graphs>'.
 
 A submitted B<Request for Graphs> will have all of its results (outputs) files grouped into the
-OUTR directory, under a subdirectory whose name uniquely identifies the Request: 
+OUTR directory, under a subdirectory whose name uniquely identifies the Request:
 
 	OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
-		REQUEST.rc  
+		REQUEST.rc
 		PROC.PROCa/
 			{exports,graphs,maps,logs}/
 		....
@@ -36,7 +36,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use Locale::TextDomain('webobs');
 use POSIX qw/strftime/;
 
-# ---- webobs stuff 
+# ---- webobs stuff
 #
 use WebObs::Config;
 use WebObs::Users;
@@ -44,7 +44,7 @@ use WebObs::Grids;
 use WebObs::i18n;
 
 # ---- misc inits
-# 
+#
 set_message(\&webobs_cgi_msg);
 
 my @reqlist;
@@ -89,16 +89,22 @@ print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ Forms: "
 ."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'>"
 ." ]</P>";
 
-$table = "<TABLE><TR><TH>Date & Time</TH><TH>Host</TH><TH>User</TH><TH>Time Span</TH><TH>Job</TH><TH>Graphs</TH><TH>Status</TH></TR>\n";
+$table = "<TABLE><TR><TH>$__{'Date & Time'}</TH><TH>$__{'Host'}</TH><TH>$__{'User'}</TH><TH>$__{'Time Span'}</TH><TH>$__{'Params'}</TH>
+	.<TH>$__{'Job logs'}</TH><TH>$__{'Status'}</TH><TH>$__{'Graphs'}</TH><TH>$__{'Archive'}</TH></TR>\n";
 
 for (reverse sort @reqlist) {
 	my $dir = my $reqdir = $_;
-	$reqdir =~ s/$WEBOBS{ROOT_OUTR}\///;
+	$reqdir =~ s|$WEBOBS{ROOT_OUTR}/||;
 	my ($date,$time,$host,$user) = split(/_/,$reqdir);
 	my $date1 = qx(grep "^DATE1|" $dir/REQUEST.rc | sed -e "s/DATE1|//");
 	my $date2 = qx(grep "^DATE2|" $dir/REQUEST.rc | sed -e "s/DATE2|//");
-	my (@procs) = grep {-d} glob("$dir/{PROC.*,GRIDMAPS}");
-	my $rowspan = scalar(@procs)+1;
+	my (@procs) = grep {-d} glob("$dir/{PROC.*,GRIDMAPS}"); # first list of procs from output directories
+	$_ =~ s|$dir/|| for @procs; # keeps only the PROC.NAME part
+	my @procreq = qx(grep "^PROC\." $dir/REQUEST.rc | sed -e "s/\.[^.]*|.*//"); # second list of procs from the request parameters
+	chomp(@procreq);
+	push(@procs,@procreq); # merging output directories and request parameters
+	@procs = do { my %seen; grep { !$seen{$_}++ } @procs }; # uniq
+	my $rowspan = scalar(@procs);
 	if ($user eq $CLIENT || (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$_") && $QryParm->{'usr'} eq "all")) {
 		if (length($date)==8 && length($time)==6) {
 			$date = substr($date,0,4)."-".substr($date,4,2)."-".substr($date,6,2);
@@ -108,19 +114,20 @@ for (reverse sort @reqlist) {
 			."<TD rowspan='$rowspan' align=center>$date $time</TD>"
 			."<TD rowspan='$rowspan' align=center>$host</TD>"
 			."<TD rowspan='$rowspan' align=center>$user</TD>"
-			."<TD rowspan='$rowspan' align=center>$date1 - $date2</TD>";
+			."<TD rowspan='$rowspan' align=center>$date1 - $date2</TD>"
+			."<TD rowspan='$rowspan' align=center><A href='$WEBOBS{URN_OUTR}/$reqdir/REQUEST.rc'><IMG src='/icons/params.png'></A></TD>";
 		for (@procs) {
-			$_ =~ s/$dir\///;
 			(my $proc = $_) =~ s/PROC\.//;
 			if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"$proc") || $_ eq "GRIDMAPS") {
-				$table .= "<TD align=center>$_</TD>"
-					."<TD align=center><A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A></TD>";
-				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
+				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,stdpath,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
 				chomp($rreq);
 				if ($rreq eq "") {
-					$table .= "<TD></TD>";
+					$table .= ("<TD></TD>" x 2);
 				} else {
-					my ($rcmd,$rc) = split(/\|/,$rreq);
+					my ($rcmd,$rlog,$rc) = split(/\|/,$rreq);
+					my $log_filename = $rlog =~ s/^[><] +//r;
+					my $log_name = $log_filename =~ s|/$reqdir/||r;
+					$table .= "<TD align=center><A href='/cgi-bin/schedulerLogs.pl?log=$log_filename'>$log_name</a></TD>";
 					if ($rc eq "0") {
 						$table .= "<TD align=center bgcolor=green>OK</TD>";
 					} elsif ($rc > 0) {
@@ -129,12 +136,14 @@ for (reverse sort @reqlist) {
 						$table .= "<TD align=center bgcolor=orange>wait...</TD>";
 					}
 				}
+				$table .= "<TD align=center>".(-d "$dir/$_" ? "<A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A>":"")."</TD>";
+				$table .= "<TD align=center>".(-e "$dir/$_.tgz" ? "<A download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></A>":"")."</TD>";
+			} else {
+				$table .= "<TD colspan=4></TD>";
 			}
 			$table .= "</TR>\n<TR>";
 		}
-		if ($rowspan==1) {
-			$table .= ("<TD style='background-color: #EEEEDD'></TD>" x 3)."</TD></TR>\n";
-		}
+		$table .= "<TD colspan=9 style='background-color: #EEEEDD'></TD></TR>\n";
 	}
 }
 
@@ -153,11 +162,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel
+François Beauducel, Baptiste Camus
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -173,4 +182,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

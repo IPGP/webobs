@@ -83,9 +83,7 @@ woperlmod_system_install () {
   # install webobs modules in the system
   local installsitelib="$1"
   mkdir -p $installsitelib
-  for m in "WebObs" $(cd $RELBASE/CODE/cgi-bin; echo *.pm); do
-    ln -vsf $DOCROOT/CODE/cgi-bin/$m $installsitelib/
-  done
+  ln -vsf $DOCROOT/CODE/perl/lib $installsitelib/WebObs
 }
 
 install_systemd_services() {
@@ -259,8 +257,9 @@ elif [ "${SYS_OS}" = "Darwin" ] ; then
 	SYS_ARCH=`uname -m`
 	SYS_STR="${SYS_OS} ${SYS_REV}(${SYS_ARCH} `uname -v`)"
 	SYS_ALIASES=0;
-	U=$(which sfind); if [[ ! -z $U ]]; then alias find=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
-	if [[ -e /opt/local/bin/grep ]] ; then alias grep='/opt/local/bin/grep'; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which gfind); if [[ ! -z $U ]]; then alias find=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	#if [[ -e /opt/local/bin/grep ]] ; then alias grep='/opt/local/bin/grep'; SYS_ALIASES=${SYS_ALIASES}+1; fi
+	U=$(which ggrep); if [[ ! -z $U ]]; then alias grep=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
 	U=$(which gcp); if [[ ! -z $U ]]; then alias cp=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
 	U=$(which ghead); if [[ ! -z $U ]]; then alias head=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
 	U=$(which greadlink); if [[ ! -z $U ]]; then alias readlink=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
@@ -271,7 +270,7 @@ elif [ "${SYS_OS}" = "Darwin" ] ; then
 	U=$(which gsort); if [[ ! -z $U ]] ; then alias sort=$U; SYS_ALIASES=${SYS_ALIASES}+1; fi
 	SYS_ALIASES=`echo ${SYS_ALIASES}|bc`
 	if [[ ${SYS_ALIASES} != 10 ]]; then
-		echo "${SYS_OS} - missing some MacPorts (GNU-*) and/or grep/sfind commands. Bye."
+		echo "${SYS_OS} - missing some MacPorts/Brew (GNU-*) and/or grep/sfind commands. Bye."
 		exit 64;
 	fi
 	shopt -s expand_aliases
@@ -398,7 +397,7 @@ echo -n 'Python...';      APP_PYTHON="$(which python)"
 echo -n 'Sqlite...';      APP_SQLITE=$(sqlite3 -version 2>/dev/null)
 echo -n 'ImageMagick...'; APP_IMAGICK=$(convert --version 2>/dev/null)
 echo -n 'pngquant...';    APP_PNGQUANT="$(which pngquant)"
-echo -n 'Ghostscript...'; APP_GHOSTSCRIPT=$(ghostscript --version 2>/dev/null)
+echo -n 'Ghostscript...'; APP_GHOSTSCRIPT=$(gs --version 2>/dev/null)
 echo -n 'Mutt...';        APP_MUTT=$(mutt -v 2>/dev/null | head -1 )
 echo -n 'Xvfb...';        APP_XVFB="$(which Xvfb 2>/dev/null)"
 echo -n 'gawk...';        APP_GAWK="$(which gawk 2>/dev/null)"
@@ -514,15 +513,14 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 	USERID=$(readkbn "Enter WebObs userid (default will be wo): ")
 	if [[ -z ${USERID} ]];then
 		USERID="wo"
+	fi
+	if [[ $(id ${USERID} 2>/dev/null) ]]; then
+		echo "${USERID} already exists"
 	else
-		if [[ $(id ${USERID} 2>/dev/null) ]]; then
-			echo "${USERID} already exists"
-		else
-			rcmd="useradd -r -U ${USERID}"
-			if $(confirmy "Confirm create WebObs user (${rcmd}) [Y/n] ? ") ; then
-				${rcmd}
-				errexit "creating user ${USERID}"
-			fi
+		rcmd="useradd -r -U ${USERID}"
+		if $(confirmy "Confirm create WebObs user (${rcmd}) [Y/n] ? ") ; then
+			${rcmd}
+			errexit "creating user ${USERID}"
 		fi
 	fi
 	USERGID=$(id -n -g ${USERID})
@@ -628,6 +626,20 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 		verbosecho "adding ENDDATE and COMMENT fields in WEBOBSUSERS.db"
 		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS-enddate+comment.sql
 	fi
+	if [ ! -s ${DOCROOT}/CONF/WEBOBSMETA.db ]; then
+	 	verbosecho "creating WEBOBSMETA.db"
+		cd ${DOCROOT}/CONF
+		$RELBASE/SETUP/createdb-WEBOBSMETA >/dev/null
+		chown ${USER_APACHE[0]}:${USER_APACHE[1]} WEBOBSMETA.db
+		cd -
+	fi
+	if [ ! -s ${DOCROOT}/DATA/DB/WEBOBSFORMS.db ]; then
+	 	verbosecho "creating WEBOBSFORMS.db"
+		cd ${DOCROOT}/CONF
+		$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
+		chown ${USER_APACHE[0]}:${USER_APACHE[1]} WEBOBSFORMS.db
+		cd -
+	fi
 
 	db_temp_dir="tmp-$$-$RANDOM"
 	mkdir $db_temp_dir || exit 1
@@ -640,6 +652,10 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSUSERS.db WEBOBSUSERS.db >>$REPORT
 	$RELBASE/SETUP/createdb-WEBOBSDOMAINS >/dev/null
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSDOMAINS.db WEBOBSDOMAINS.db >>$REPORT
+	$RELBASE/SETUP/createdb-WEBOBSMETA >/dev/null
+	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSMETA.db WEBOBSMETA.db >>$REPORT
+		$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
+	$RELBASE/SETUP/cmpsql $DOCROOT/DATA/DB/WEBOBSFORMS.db WEBOBSFORMS.db >>$REPORT
 	cd ..
 	rm -rf $db_temp_dir
 
@@ -665,7 +681,7 @@ else
 	if [[ -z ${WEBOBSID} ]]; then
 		WEBOBSID="${YEARNOW}"
 	fi
-	sed -i -e "s=\${InstallYear\}=${YEARNOW}=g" ${DOCROOT}/CONF/WEBOBS.rc
+	sed -i -e "s=\${InstallYear\}=${YEARNOW}=g" ${DOCROOT}/DATA/WEB/HTML/Welcome_info.txt
 	sed -i -e "s=\${WebObsIdentification\}=${WEBOBSID}=g" ${DOCROOT}/CONF/WEBOBS.rc
 	sed -i -e "s=\${InstallDocumentRoot\}=${DOCROOT}=g" ${DOCROOT}/CONF/WEBOBS.rc
 	errexit "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallDocumentRoot)"
@@ -696,6 +712,12 @@ else
 
 		verbosecho "creating WEBOBSDOMAINS.db"
 		${RELBASE}/SETUP/createdb-WEBOBSDOMAINS
+		
+		verbosecho "creating WEBOBSMETA.db"
+		${RELBASE}/SETUP/createdb-WEBOBSMETA
+		
+		verbosecho "creating WEBOBSFORMS.db"
+		${RELBASE}/SETUP/createdb-WEBOBSFORMS
 	cd -
 
 fi
@@ -1052,7 +1074,7 @@ fi
 # Insert this 'installation' event in Gazette
 GAZETTENOW=$(date -u "+%F %T")
 GAZETTED=${GAZETTENOW:0:10}; GAZETTET=${GAZETTENOW:11:5}
-sqlite3 ${DOCROOT}/DATA/DB/Gazette.db "insert into Gazette values(null,'${GAZETTED}','${GAZETTET}','${GAZETTED}','${GAZETTET}','Misc','!','','','Setup ${NEWVERSION}','${GAZETTENOW}','!');"
+sqlite3 ${DOCROOT}/DATA/DB/Gazette.db "insert into Gazette values(null,'${GAZETTED}','${GAZETTET}','${GAZETTED}','${GAZETTET}','Misc','!','','','${SETUPTYPE} from ${PREVREL} to ${RELREL}','${GAZETTENOW}','!');"
 
 echo
 echo "---- calling webobs system status (qsys)"

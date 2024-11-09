@@ -1,8 +1,8 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 #
 =head1 NAME
 
-formGRIDMAPS.pl 
+formGRIDMAPS.pl
 
 =head1 SYNOPSIS
 
@@ -18,19 +18,19 @@ Available GRIDS (VIEWS and PROCS) are those containing at least one NODE with a 
 and for which the USER has at least read authorization.
 
 A submitted B<Gridmaps Request> will have its results (output maps) files grouped into the
-OUTR directory, under a subdirectory whose name uniquely identifies the Request: 
+OUTR directory, under a subdirectory whose name uniquely identifies the Request:
 
 	OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
-		REQUEST.rc  
+		REQUEST.rc
 		GRIDMAPS/{exports,maps}/
 
 See postGRIDMAPS.pl documentation for further Gridmaps Request's execution/parameters description.
 
 =head1 RELATED GRID CONFIGURATION PARAMETERS
 
-Individual GRID's configuration parameters related to B<Gridmaps Request> are those indicated in the 
-B<REQUEST_GRID_KEYLIST> of GRIDMAPS.rc configuration file. This key is used to specify a list of 
-comma-separated keys of some parameters, that will be presented to the user so that (s)he will have 
+Individual GRID's configuration parameters related to B<Gridmaps Request> are those indicated in the
+B<REQUEST_GRID_KEYLIST> of GRIDMAPS.rc configuration file. This key is used to specify a list of
+comma-separated keys of some parameters, that will be presented to the user so that (s)he will have
 a chance to overwrite corresponding values for request execution.
 Such parameters will be appended to the REQUEST.rc file as 'GRID.gridname.originalKey|user's value'
 
@@ -42,11 +42,11 @@ Such parameters will be appended to the REQUEST.rc file as 'GRID.gridname.origin
 	GRID.THISGRID.NODE_FONTSIZE|0
 	GRID.THIDGRID.NODE_MARKER|o
 
-=head1 DATE SPAN AND PARAMETERS 
+=head1 DATE SPAN AND PARAMETERS
 
 Date span allows to select the validity interval of NODES:
 
-	A start date 
+	A start date
 	An end date
 
 Parameters (list of keys and default values are taken from GRIDMAPS.rc).
@@ -63,7 +63,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use Locale::TextDomain('webobs');
 use POSIX qw/strftime/;
 
-# ---- webobs stuff 
+# ---- webobs stuff
 #
 use WebObs::Config;
 use WebObs::Users;
@@ -71,7 +71,7 @@ use WebObs::Grids;
 use WebObs::i18n;
 
 # ---- misc inits
-# 
+#
 set_message(\&webobs_cgi_msg);
 my @tod = localtime();
 my $QryParm   = $cgi->Vars;
@@ -81,7 +81,7 @@ my @gridavailable;
 my @gridlist;
 my %G;
 
-# ---- Things to populate select dropdown fields 
+# ---- Things to populate select dropdown fields
 my $year = strftime('%Y',@tod);
 my @yearList = reverse($WEBOBS{BIG_BANG}..$year+1);
 my @monthList = ('01'..'12');
@@ -89,7 +89,7 @@ my @dayList = ('01'..'31');
 
 # ---- dates
 #      default to full previous month
-my @tm = gmtime(time); 
+my @tm = gmtime(time);
 $tm[3] = 1;
 my ($usrYearE,$usrMonthE,$usrDayE) = split(/-/,strftime("%Y-%m-%d",@tm));
 if ($tm[4]==0) { $tm[5]--; $tm[4] = 11;} else { $tm[4]--; }
@@ -117,7 +117,7 @@ my %GRIDMAPS = readCfg($WEBOBS{GRIDMAPS});
 # ---- passed all checkings above ...
 # ---- build/process the form HTML page
 #
-my $pagetitle = "$__{'Gridmaps Request'}";
+my $pagetitle = "$__{'Gridmaps Request'} (under development)";
 
 print "Content-type: text/html; charset=utf-8
 
@@ -180,7 +180,7 @@ print "<form id=\"theform\" name=\"formulaire\" action=\"\">";
 
 print "<TABLE style=\"border:0\" width=\"100%\">";
 print "<TR>";
-	print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column 
+	print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column
 
 	# ---- Display list of PROCS that are eligible for requests
 	print "<fieldset><legend>$__{'Available GRIDS'}</legend>";
@@ -198,9 +198,9 @@ print "<TR>";
 	print "</div>";
 	print "</TD>\n";                                             # end left column
 
-	print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # right column 
+	print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # right column
 
-	print "<fieldset><legend>$__{'Date span (NODES validity)'}</legend>"; 
+	print "<fieldset><legend>$__{'Date span (NODES validity)'}</legend>";
 	#	DATE1|  DATE2|
   	print "<TABLE>";
     	print "<TR>";
@@ -233,15 +233,15 @@ print "<TR>";
 	print "</TABLE>\n";
 	print "</fieldset>";
 
-	print "<fieldset><legend>$__{'Basemap parameters'}</legend>"; 
+	print "<fieldset><legend>$__{'Basemap parameters'}</legend>";
   	print "<TABLE>";
     	print "<TR>";
 		print "<TD style=\"border:0\">";
 		foreach (sort keys(%GRIDMAPS)) {
 			if ($_ ne 'REQUEST_GRID_KEYLIST' && $_ !~ /^SUBMIT_/) {
 				print "<LABEL style=\"width:200px\" for=\"$_\">$_:</LABEL>";
-				if (uc($GRIDMAPS{$_}) =~ /^(Y|N|YES|NO|OK|KO|ON|OFF)$/) {
-					print "<INPUT type=\"checkbox\" name=\"$_\" id=\"$_\" value=\"Y\" ".(uc($GRIDMAPS{$_}) =~ /^(Y|YES|OK|ON)$/ ? "checked":"").">";
+				if ($GRIDMAPS{$_} =~ /^(Y|N|YES|NO|OK|KO|ON|OFF)$/i) {
+					print "<INPUT type=\"checkbox\" name=\"$_\" id=\"$_\" value=\"Y\" ".(isok($GRIDMAPS{$_}) ? "checked":"").">";
 				} else {
 					print "<INPUT id=\"$_\" name=\"$_\" size=\"20\" value=\"$GRIDMAPS{$_}\">";
 				}
@@ -258,7 +258,7 @@ print "<TR>";
 	print "</TD>\n";                                             # end right column
 
 print "</TR></TABLE>\n";
-print "<P align=center>"; 
+print "<P align=center>";
 print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 print "<input type=\"button\" value=\"$__{'Submit'}\" onClick=\"checkForm();\" style=\"font-weight:bold\">";
 print "<input type=\"hidden\" id=\"origin\" name=\"origin\" value=\"\">";
@@ -267,7 +267,7 @@ print "</P>";
 print "</form>";
 
 # ---- end HTML
-#  
+#
 print "\n</BODY>\n</HTML>\n";
 
 # ---- build a div for a grid's keylist input fields
@@ -314,4 +314,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

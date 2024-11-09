@@ -49,7 +49,9 @@ DEM_SRTM1|N
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
-# do not show node alias in zoom map(s)
+# additional options for gridmaps background map
+GRIDMAPS_DEM_OPT|
+# show node alias in insert sub-map(s)
 NODE_SUBMAP_ALIAS|N
 
 # file for background time referenced events
@@ -61,8 +63,10 @@ LANDSCAPE|N
 PLOT_GRID|N
 
 FONTSIZE|8
-POSTSCRIPT|1
-EXPORTS|1
+EXPORTS|YES
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
+PDFOUTPUT|NO
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 LOGO2_FILE|
 COPYRIGHT|
@@ -84,13 +88,18 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 
 # maximum error on position (in m) before excluding the data from graphs and calculations
 FILTER_MAX_ERROR_M|0.05
+# minimum error for each component East, North, and Up (in m)
+ENU_MIN_ERROR_M|0.01,0.01,0.01
 
-# vector of ratios applied to data errors for each orbit (0,1,2 = Final,Rapid,Ultra)
-ORBIT_ERROR_RATIO|1,2
+# vector of ratios applied to data errors for each orbit (Final,Rapid,Ultra)
+ORBIT_ERROR_RATIO|1,2,2
 
 PICKS_CLEAN_PERCENT|0
-TREND_ERROR_MODE|1
-# minimum time window (in days) needed to compute a trend
+
+# trend error mode: 1 = scolv, 2 = STD, 3 = corrcoef
+TREND_ERROR_MODE|2
+# minimum time window (in percent and/or days) needed to compute a trend
+TREND_MIN_PERCENT|50
 TREND_MIN_DAYS|5
 
 # ITRF reference (this is a string displayed on graph title, not functional)
@@ -100,8 +109,22 @@ ITRF_REF|ITRF08
 VELOCITY_REF|0,0,0
 VELOCITY_REF_ORIGIN_DATE|2000-01-01
 
+# defines a main target (latitude,longitude coordinates)
+GNSS_TARGET_LATLON|
+
 # component names used as Y-label for SUMMARY and PERNODE graphs (use '\ ' to avoid word splitting)
 COMPONENT_NAMELIST|Relative Eastern,Relative Northern,Relative Vertical
+# Y-scale for displacement time series plots (in m, 0 is automatic)
+DISP_YSCALE_M|0
+
+# --- Harmonic correction
+HARMONIC_ORIGIN_DATE|
+# period list (day)
+HARMONIC_PERIOD_DAY|
+# pairs of sine,cosine (mm) for each period
+HARMONIC_EAST_SINCOS_MM|
+HARMONIC_NORTH_SINCOS_MM|
+HARMONIC_UP_SINCOS_MM|
 
 # --- PERNODE graphs
 PERNODE_LINESTYLE|o
@@ -122,19 +145,25 @@ SUMMARY_COMPONENT_OFFSET_M|0.01
 SUMMARY_STATION_OFFSET_M|0.01
 
 # --- BASELINES graphs
-# ignores vertical component
-BASELINES_HORIZONTAL_ONLY|Y
-# - default behavior: all pairs of nodes, with possible node exclusion and/or node reference list
-BASELINES_EXCLUDED_NODELIST|
-BASELINES_REF_NODELIST|
-# - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
-BASELINES_NODEPAIRS|
-# interpolation method between nodes: none (empty), linear or nearest
-BASELINES_INTERP_METHOD|
 BASELINES_TITLE|{\fontsize{14}{\bf${NAME} - Baselines} ($timescale)}
 BASELINES_UNIT|mm
 BASELINES_YLABEL|Ref.\ $ref_node_alias (${BASELINES_UNIT})
-BASELINES_LINESTYLE|-
+BASELINES_LINESTYLE|.
+# ignores vertical component in computation
+BASELINES_HORIZONTAL_ONLY|Y
+# interpolation method between nodes: none (empty), linear or nearest
+BASELINES_INTERP_METHOD|
+# - default behavior: all pairs of nodes, with possible node exclusion and/or node reference list
+BASELINES_EXCLUDED_NODELIST|
+BASELINES_EXCLUDED_FROM_TARGET_KM|
+BASELINES_INCLUDED_NODELIST|
+BASELINES_REF_NODELIST|
+# - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
+BASELINES_NODEPAIRS|
+# plots a moving average filter (raw data in background with lighter color)
+BASELINES_MOVING_AVERAGE|1
+# graph type: 'ref' (group pairs with same reference) or 'all' (pairs in order, default)
+BASELINES_GRAPH_TYPE|ref
 # offset between references (in m)
 BASELINES_REF_OFFSET_M|0.01
 # offset between stations (in m)
@@ -144,6 +173,8 @@ BASELINES_TIMEZOOM|
 
 # --- VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|
+VECTORS_EXCLUDED_FROM_TARGET_KM|
+VECTORS_INCLUDED_NODELIST|
 VECTORS_RELATIVE|N
 # VECTORS: if VECTORS_RELATIVE is Y, substracts a reference vector in VECTORS_VELOCITY_REF:
 # - 'auto' (default): automatic mean velocity (average vector of all NODES)
@@ -160,12 +191,13 @@ VECTORS_MAX_XYRATIO|1
 VECTORS_VELOCITY_SCALE|0
 VECTORS_ARROWSHAPE|.15,.15,.12,.03
 VECTORS_TARGET_INCLUDED|Y
-
-# defines a main target (latitude,longitude coordinates)
-GNSS_TARGET_LATLON|
+# amplitude vs distance plot: used components to compute the amplitude (1,2 = horizontal only)
+VECTORS_AMPLITUDE_COMPONENTS|1,2
 
 # --- MOTION summary graph
 MOTION_EXCLUDED_NODELIST|
+MOTION_EXCLUDED_FROM_TARGET_KM|
+MOTION_INCLUDED_NODELIST|
 MOTION_MAFILTER|10
 MOTION_SCALE_MM|0
 MOTION_MIN_SIZE_KM|10
@@ -202,13 +234,19 @@ MODELLING_HORIZONTAL_ONLY|N
 MODELLING_ENU_ERROR_RATIO|1,1,2
 # recomputes relative velocities before modelling (instead of vectors results)
 MODELLING_FORCE_RELATIVE|N
-# modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
+# model space depth (upper limit automaticaly adjusted to topography)
+MODELLING_MAX_DEPTH|8000
+# model space additional borders in meter (from stations rectangle boundaries)
+MODELLING_BORDERS|5000
+# model space width (warning: will be cubed, so 100 is already 1 million points!)
+MODELLING_GRID_SIZE|50
+# modelling source: 'isotropic' (formerly 'mogi'), 'pcdm' (point Compound Dislocation Model), or 'okada' (fault slip)
 MODELLING_SOURCE_TYPE|isotropic
 # sets 2 to model the residuals with a secondary source (EXPERIMENTAL)
 MODELLING_MULTIPLE_SOURCES|1
 # misfit norm calculation: 'L1' (default) or 'L2'
 MODELLING_MISFITNORM|L1
-% a priori source depth, gaussian STD (both in m), empty = no apriori
+# a priori source depth, gaussian STD (both in m), empty = no apriori
 MODELLING_APRIORI_DEPTH_M|
 # a priori horizontal error around the target or grid center (in STD, km), 0 = no a priori
 MODELLING_APRIORI_HSTD_KM|0
@@ -227,48 +265,117 @@ MODELLING_PLOT_BEST|Y
 MODELLING_PLOT_RESIDUAL|Y
 # number of sigma (STD) to compute uncertainty intervals for best model
 MODELLING_SIGMAS|1
+# plots the data and model partial vectors (1 or 2 component missing) replacing NaN by 0
+MODELLING_PLOT_NAN_COMPONENT|Y
 # RGB color for topo/bathy basemap
 MODELLING_TOPO_RGB|.5,.5,.5
 # color reference for model space: 'pdf' or 'volpdf' (source volume sign x pdf, new default)
 MODELLING_COLORREF|volpdf
 MODELLING_COLORMAP|ryb(256)
 MODELLING_COLOR_SHADING|0.3
-MODELLING_DATA_COLOR|0,0,0       # color of model arrows
-MODELLING_MODEL_COLOR|.7,0,0     # color of model arrows
-MODELLING_RESIDUAL_COLOR|0,.5,0  # color of residual arrows
-MODELLING_MAX_DEPTH|8000
-MODELLING_BORDERS|5000
-MODELLING_GRID_SIZE|50
+# colors for displacement arrows (data, model, and residual) in R,G,B or color name
+MODELLING_DATA_COLOR|0,0,0       # data arrows
+MODELLING_MODEL_COLOR|.7,0,0     # model arrows
+MODELLING_RESIDUAL_COLOR|0,.5,0  # residual arrows
 MODELLING_TITLE|{\fontsize{14}{\bf${NAME} - Source modelling} ($timescale)}
+MODELLING_EXPORT_MAT|
 
-# specific pCDM parameters for MODELLING
+# --- specific pCDM parameters for MODELLING (see pcdm.m)
+# number of iterations (adjusting the parameter's limits at each step)
 MODELLING_PCDM_ITERATIONS|5
+# number of random samples per iteration: scalar or list of values for each iteration
 MODELLING_PCDM_RANDOM_SAMPLING|100000
+# elastic parameter (Poisson's ratio) nu
 MODELLING_PCDM_NU|0.25
+# dV parameter limits: total volume variation (in m3)
 MODELLING_PCDM_DVLIM|-1e7,1e7
+# A parameter limits: horizontal over total volume variation ratio
+# A = dVZ/(dVX+dVY+dVZ)
+# 	0 = vertical (dyke or pipe following B value)
+# 	1 = horizontal (sill)
+# 	1/3 = isotrop if B = 0.5
 MODELLING_PCDM_ALIM|0,1
+# B parameter limits: vertical volume variation ratio
+# B = dVY/(dVX+dVY)
+# 	0 = dyke if A = 0, dyke+sill otherwise
+# 	1 = dyke if A = 0, dyke+sill otherwise
+# 	0.5 = isotrop if A = 1/3, pipe if A = 0
 MODELLING_PCDM_BLIM|0,1
+# OmegaX parameter limits: rotation angle (in degree) around X axis (West-East)
 MODELLING_PCDM_OXLIM|-45,45
+# OmegaY parameter limits: rotation angle (in degree) around Y axis (South-North)
 MODELLING_PCDM_OYLIM|-45,45
+# OmegaZ parameter limits: rotation angle (in degree) around Z axis (Bottom-Up)
 MODELLING_PCDM_OZLIM|-45,45
+# number of bins for probability vs parameter map (heatmap)
 MODELLING_PCDM_HEATMAP_GRID|50
+# graphical parameter for heatmaps
 MODELLING_PCDM_HEATMAP_SATURATION|0.4
+# number of bins used to smooth the maximum probability curve
 MODELLING_PCDM_HEATMAP_SMOOTH_SPAN|5
+# polynomial degree to smooth the maximum probability curve
 MODELLING_PCDM_HEATMAP_SMOOTH_DEGREE|1
+# minimum number of models to compute maximum probability curve
 MODELLING_PCDM_NEW_THRESHOLD|2
+# tolerance ratio to extend the edge limits
 MODELLING_PCDM_NEW_LIMIT_EDGE_RATIO|20
+# factor of extension (from the previous interval) when reaching an edge
 MODELLING_PCDM_NEW_LIMIT_EXTEND|1
+# option to export supplementary graphs (intermediate results per iteration)
 MODELLING_PCDM_SUPPLEMENTARY_GRAPHS|N
 
+# --- specific Okada parameters for MODELLING (see okada85.m)
+# number of iterations (adjusting the parameter's limits at each step)
+MODELLING_OKADA_ITERATIONS|5
+# number of random samples per iteration: scalar or list for each iteration
+MODELLING_OKADA_RANDOM_SAMPLING|100000
+# elastic parameter (Poisson's ratio) nu
+MODELLING_OKADA_NU|0.25
+# strike parameter limits: fault trace direction (degrees relative to North), defined so that the fault dips to the right side of the trace
+MODELLING_OKADA_STRIKE|0,180
+# dip parameter limits: angle between the fault and a horizontal plane (in degree)
+MODELLING_OKADA_DIP|30,90
+# length parameter limits: fault length in the STRIKE direction (in meter)
+MODELLING_OKADA_LENGTH|10,100000
+# width parameter limits: fault width in the DIP direction (in meter)
+MODELLING_OKADA_WIDTH|1,20000
+# rake parameter limits: direction the hanging wall moves during rupture (in degree)
+MODELLING_OKADA_RAKE|-90,90
+# slip parameter limits: dislocation in RAKE direction (in meter)
+MODELLING_OKADA_SLIP|0,15
+# open parameter limits: dislocation in tensile component (in meter)
+MODELLING_OKADA_OPEN|0,0
+# minimum length/width ratio
+MODELLING_OKADA_MIN_L2W_RATIO|1
+# number of bins for probability vs parameter map (heatmap)
+MODELLING_OKADA_HEATMAP_GRID|50
+# graphical parameter for heatmaps
+MODELLING_OKADA_HEATMAP_SATURATION|0.4
+# number of bins used to smooth the maximum probability curve
+MODELLING_OKADA_HEATMAP_SMOOTH_SPAN|5
+# polynomial degree to smooth the maximum probability curve
+MODELLING_OKADA_HEATMAP_SMOOTH_DEGREE|1
+# minimum number of models to compute maximum probability curve
+MODELLING_OKADA_NEW_THRESHOLD|2
+# tolerance ratio to extend the edge limits
+MODELLING_OKADA_NEW_LIMIT_EDGE_RATIO|20
+# factor of extension (from the previous interval) when reaching an edge
+MODELLING_OKADA_NEW_LIMIT_EXTEND|1
+# option to export supplementary graphs (intermediate results per iteration)
+MODELLING_OKADA_SUPPLEMENTARY_GRAPHS|N
+
 # --- MODELTIME: defines the moving periods, minimum sampling, maximum models
-# [NOTE] MODELTIME uses all MODELLING parameters but forces an isotropic source
+# [NOTE] MODELTIME uses most of MODELLING parameters
+MODELTIME_SOURCE_TYPE|isotropic
 MODELTIME_PERIOD_DAY|30,15
 MODELTIME_SAMPLING_DAY|1
 MODELTIME_MAX_MODELS|50
 MODELTIME_GRID_SIZE|${MODELLING_GRID_SIZE}
+MODELTIME_PCDM_RANDOM_SAMPLING|100000
 MODELTIME_FLOWRATE|Y
 MODELTIME_FLIM|
 MODELTIME_LINESTYLE|-
+# selected periods for mapping plot (empty is all periods)
 MODELTIME_MAP_PERIODLIST|
 MODELTIME_MARKER_LINEWIDTH|1
 MODELTIME_COLORMAP|spectral(256)

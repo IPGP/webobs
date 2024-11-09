@@ -1,7 +1,7 @@
 
 $(document).ready(function() {
 	// common event handlers
-	$(window).unload(function() {
+	$(window).on("unload", function() {
 		if (window.opener && SCB.NOREFRESH == 0) {
 			if (window.opener.parent.document.getElementById("wmtarget")) {
 				window.opener.parent.document.getElementById("wmtarget").contentWindow.location.reload();
@@ -20,24 +20,20 @@ $(document).ready(function() {
 	}
 	if (typeof MECB  === 'undefined') {
 		// event handlers
-		$(window).load(function() {
-			init_ref();
-			fsx(SCB.SX);
-			//$('.submenu').innerWidth($('#refrow').width()-3);
-			$('#rtclock').css('background','white');
-		});
+		init_ref();
+		fsx(SCB.SX);
+		//$('.submenu').innerWidth($('#refrow').width()-3);
+		$('#rtclock').css('background','white');
 	} else {
 		// event handlers
-		$(window).load(function() {
-			init_MECB();
-			maj_formulaire();
-			if (MECB.FORM.secondeEvenement.value!="") {
-				sec = MECB.FORM.secondeEvenement.value;
-				pos_x = Math.round((sec - 2)*1000*SCB.WIDTH/60000);
-				window.scrollBy(pos_x,0);
-			}
-			shrinkmctags();
-		});
+		init_MECB();
+		maj_formulaire();
+		if (MECB.FORM.secondeEvenement.value!="") {
+			sec = MECB.FORM.secondeEvenement.value;
+			pos_x = Math.round((sec - 2)*1000*SCB.WIDTH/60000);
+			window.scrollBy(pos_x,0);
+		}
+		shrinkmctags();
 		$(window).keyup(maj_formulaire);
 		$(window).change(maj_formulaire);
 		// event handlers for crosshair
@@ -54,26 +50,37 @@ $(document).ready(function() {
   	$('.sgram').css('opacity',y/10); // updates opacity when refreshing page
 });
 
-// ---- get keypress events but outside any form
-$(document).keypress(function(event) {
-	event = event || window.event;
-	var target = event.target || event.srcElement;
+// ---- get keypress events
+$(document).keydown(function(e) {
+	e = e || window.event;
+	var target = e.target || e.srcElement;
+	// Enter key works everywhere
+	if (e.key == 'Enter') {
+		verif_formulaire();
+		MECB.FORM.submit();
+	}
+	// other keys only outside any form
 	if ( !/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName) ) {
-		var x = event.charCode || event.keyCode;
-		var y = parseInt($('#sgramslider').val());
-		if (x == 115) showsgram(); // s key
-		if (x == 83) { // S key
+		if (e.key == "e") showmctags();
+		if (e.key == "s") showsgram();
+		if (e.key == "S") {
 			$('#sgramslider').val(10);
   			$('.sgram').css('opacity',1);
 		}
-		if (x == 101 || x == 69) showmctags(); // e or E key
-		if (x == 116 || x == 84 || x == 114 || x == 82) {
-			if (x == 116 || x == 84) y = 1 + y % 10; // t or T key
-			if (x == 114 || x == 82)  y = 1 + (y + 8) % 10; // r or R key
+		if (e.key == "t" || e.key == "r") {
+			var y = parseInt($('#sgramslider').val());
+			if (e.key == "t") y = 1 + y % 10;
+			if (e.key == "r")  y = 1 + (y + 8) % 10;
 			$('#sgramslider').val(y);
   			$('.sgram').css('opacity',y/10);
 			$('#sgramopacity').val(y/10);
 		}
+		Object.keys(MECB.KBtyp).forEach(function (key) {
+			if (e.key === MECB.KBtyp[key]) MECB.FORM.typeEvenement.value = key;
+		});
+		Object.keys(MECB.KBamp).forEach(function (key) {
+			if (e.key === MECB.KBamp[key]) MECB.FORM.amplitudeEvenement.value = key;
+		});
 	}
 });
 
@@ -577,7 +584,7 @@ predict_seismic_event(PSE.PSE_ROOT_CONF, PSE.PSE_ROOT_DATA, PSE.PSE_ALGO_FILEPAT
 }
 
 
-// ---- Compute probabilities of seismic events when the end of the signal is selected 
+// ---- Compute probabilities of seismic events when the end of the signal is selected
 function predict_seismic_event_automatic(){
     $('#wait').show();
     $.when(
@@ -586,4 +593,3 @@ predict_seismic_event(PSE.PSE_ROOT_CONF, PSE.PSE_ROOT_DATA, PSE.PSE_ALGO_FILEPAT
     $('#wait').hide();
     });
 }
-

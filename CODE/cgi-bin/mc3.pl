@@ -27,6 +27,9 @@ y1= , m1= , d1= , h1=
 y2= , m2= , d2= , h2=
  end date (year, month, day) and hour (included)
 
+routine=
+ last full day, month or year (overwrites any other dates arguments)
+
 type=
  see valid key values in EVENT_CODES_CONF conf file
 
@@ -65,7 +68,9 @@ obs=
 graph=
   hbars Hourly Histogram
    bars Daily Histogram
- movsum Daily Moving Histogram
+ movsum Daily Moving Histogram (24 hours)
+   wsum Weekly Moving Histogram (7 days)
+   msum Monthy Moving Histogram (28 days)
    ncum Cumulated
    mcum Seismic moment cum.
      gr Gutenberg-Richter (log)
@@ -145,10 +150,11 @@ use WebObs::Config;
 use WebObs::Users qw(clientHasRead clientHasEdit clientHasAdm $CLIENT);
 use WebObs::Grids;
 use WebObs::Utils;
+use WebObs::Mapping;
 use WebObs::i18n;
 use WebObs::Wiki;
+use WebObs::QML;
 use Locale::TextDomain('webobs');
-use QML;
 
 set_message(\&webobs_cgi_msg);
 #DL-TBD: no strict "subs";
@@ -179,35 +185,32 @@ my @infoTexte  = readFile("$MC3{NOTES}");
 $QryParm->{'y1'}        //= "";
 $QryParm->{'m1'}        //= "";
 $QryParm->{'d1'}        //= "";
-$QryParm->{'h1'}        //= "00";
+$QryParm->{'h1'}        //= "";
 $QryParm->{'y2'}        //= "";
 $QryParm->{'m2'}        //= "";
 $QryParm->{'d2'}        //= "";
-$QryParm->{'h2'}        //= "23";
+$QryParm->{'h2'}        //= "";
 $QryParm->{'type'}      //= "";
+$QryParm->{'routine'}   //= "";
 $QryParm->{'duree'}     //= "";
 $QryParm->{'amplitude'} //= "ALL";
 $QryParm->{'ampoper'}   //= "eq";
 $QryParm->{'located'}   //= "";
-$QryParm->{'locstatus'}  //= $MC3{DISPLAY_LOCATION_STATUS_DEFAULT};
+$QryParm->{'locstatus'} //= $MC3{DISPLAY_LOCATION_STATUS_DEFAULT};
 $QryParm->{'hideloc'}   //= !$MC3{DISPLAY_LOCATION_DEFAULT};
 $QryParm->{'obs'}       //= "";
 $QryParm->{'graph'}     //= "movsum";
-$QryParm->{'slt'}       //= "$MC3{DEFAULT_SELECT_LOCAL}";
+$QryParm->{'slt'}       //= $MC3{DEFAULT_SELECT_LOCAL};
 $QryParm->{'newts'}     //= "";
 $QryParm->{'dump'}      //= "";
 $QryParm->{'trash'}     //= "";
 
 # ---- DateTime inits ---------------------------------------------------------
 #
-#my $Ctod  = time();  my @tod  = localtime($Ctod);
-#my $today = strftime('%F',@tod);
-#my $currentYear = strftime('%Y',gmtime);
 my $now = DateTime->now( time_zone => 'UTC' );
 my $currentYear = $now->strftime('%Y');
 my $currentMonth = $now->strftime('%m');
 my $currentDay = $now->strftime('%d');
-my $today = DateTime->today();
 my @month_list = ("01".."12");
 my @day_list = ("01".."31");
 my @hour_list = ("00".."23");
@@ -243,7 +246,18 @@ sub compute_energy {
 #    - handle 28-31 days/month by re-evaluating  with "YYYY-MM-01 (DD-1) day"
 #      (ie. 2012-02-30 ==> 2012-03-02)
 #    - check range-start < range-end , otherwise swap
-if (($QryParm->{'y1'} ne "") && ($QryParm->{'m1'} ne "") && ($QryParm->{'d1'} ne "")
+if ($QryParm->{'routine'} =~ /^(day|month|year)$/) {
+	if ($QryParm->{'routine'} eq "day") {
+		$start_datetime = DateTime->today()->subtract(days => 1);
+		$end_datetime = DateTime->today()->subtract(hours => 1);
+	} elsif ($QryParm->{'routine'} eq "month") {
+		$start_datetime = DateTime->today()->set_day(1)->subtract(months => 1);
+		$end_datetime = DateTime->today()->set_day(1)->subtract(hours => 1);
+	} elsif ($QryParm->{'routine'} eq "year") {
+		$start_datetime = DateTime->today()->subtract(years => 1)->set_month(1)->set_day(1);
+		$end_datetime = DateTime->today()->set_month(1)->set_day(1)->subtract(hours => 1);
+	}
+} elsif (($QryParm->{'y1'} ne "") && ($QryParm->{'m1'} ne "") && ($QryParm->{'d1'} ne "")
 	&& ($QryParm->{'y2'} ne "") && ($QryParm->{'m2'} ne "") && ($QryParm->{'d2'} ne "")) {
 
 	# We chose to handle short months by converting (e.g.) 30 February to 02 March, or 31 June to 01 July.
@@ -259,7 +273,7 @@ if (($QryParm->{'y1'} ne "") && ($QryParm->{'m1'} ne "") && ($QryParm->{'d1'} ne
 			+ DateTime::Duration->new(days => ($QryParm->{d2}-1))
 			+ DateTime::Duration->new(hours => ($QryParm->{h2}));
 } else {
-	$start_datetime = $today - DateTime::Duration->new(days => $MC3{DEFAULT_TABLE_DAYS});
+	$start_datetime = DateTime->now()->subtract(hours => (24*$MC3{DEFAULT_TABLE_DAYS}-1));
 	$end_datetime = $now;
 }
 
@@ -321,12 +335,12 @@ if ($QryParm->{'dump'} eq "") {
 	$html .= "<H1>$MC3{TITLE}</H1><P>";
 	$html .= "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ Associated Sefran3: ";
 	# adds links to all associated Sefran
-	my @Sefran = qx(grep -H -E 'MC3_NAME\\|$mc3\$' /etc/webobs.d/SEFRAN3*.conf);
+	my @Sefran = qx(grep -H -E 'MC3_NAME\|$mc3\$' $WEBOBS{PATH_SEFRANS}/*/*.conf);
 	my @SefranLinks;
 	for my $s3 (@Sefran) {
 		chomp $s3;
-		$s3 =~ s/^.*webobs\.d\///g;
-		$s3 =~ s/\.conf.*//g;
+		$s3 =~ s/^$WEBOBS{PATH_SEFRANS}\///g;
+		$s3 =~ s/\/.*//g;
 		push(@SefranLinks, "<A href=\"/cgi-bin/$WEBOBS{CGI_SEFRAN3}?header=1&s3=$s3&mc3=$mc3\"><B>$s3</B></A>");
 	}
 	$html .= join(" | ",@SefranLinks)." - <A href=\"#Note\">Notes</A> ]</P>";
@@ -480,16 +494,20 @@ if ($QryParm->{'dump'} eq "") {
 
 	$html .= "<TABLE width=\"100%\"><TR><TD width=700>";
 	if ($QryParm->{'nograph'} == 0) {
-		$html .= "<DIV id=\"mcgraph\" style=\"width:700px;height:200px;float:left;\"></DIV>\n"
-			."<DIV id=\"showall\" style=\"width:50px;height:15px;position:relative;float:left;font-size:smaller;\"><A href=\"#\" onClick=\"plotAll()\">plot all</A></DIV>\n"
-			."<DIV id=\"graphinfo\" style=\"width:600px;height:15px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
-			."<TD nowrap style=\"text-align:left\"><DIV id=\"graphlegend\" style=\"width:200px;height:200px;position:static;\"></DIV></TD>\n"
+		$html .= "<DIV id=\"mcgraph\" style=\"width:900px;height:250px;float:left;\"></DIV>\n"
+			."<DIV id=\"showall\" style=\"width:150px;height:15px;position:relative;float:left;font-size:smaller;\">"
+			."<A href=\"#\" onClick=\"plotAll()\">plot all</A>"
+			#."<BR><A href=\"#\" id=\"tlsavelink\">download image</A></DIV>\n"
+			."<DIV id=\"graphinfo\" style=\"width:750px;height:15px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
+			."<TD nowrap style=\"text-align:left\"><DIV id=\"graphlegend\" style=\"width:200px;height:250px;position:static;\"></DIV></TD>\n"
 			."<TD nowrap style=\"text-align:left;vertical-align:top\">";
 		# ----- selection box graph-type
 		$html .= "<P><B>Graph:</B>&nbsp;<SELECT name=\"graph\" size=\"1\" onChange=\"plotFlot(document.formulaire.graph.value)\">";
 		foreach my $menu_opts ("hbars|Hourly Histogram",
 		                       "bars|Daily Histogram",
 		                       "movsum|Daily Moving Histogram",
+		                       "wsum|Weekly Moving Histogram",
+		                       "msum|Monthly Moving Histogram",
 		                       "ncum|Cumulated",
 		                       "mcum|Seismic moment cumul.",
 		                       "ecum|Energy cumul. by type (J)",
@@ -613,12 +631,12 @@ my @ligneTitre;
 # ---- Process request to dump a bulletin -------------------------------------
 #
 if ($QryParm->{'dump'} eq 'bul') {
-	$dumpFile = "${mc3}_dump_bulletin.csv";
+	$dumpFile = "WO_$WEBOBS{WEBOBS_ID}_${mc3}_dump_bulletin.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
 	push(@csv,"#YYYYmmdd HHMMSS.ss;Nb(#);Duration;Amplitude;Magnitude;E(J);Longitude;Latitude;Depth;Type;File;LocMode;LocType;Projection;Operator;Timestamp;ID\n");
 }
 if ($QryParm->{'dump'} eq 'cum') {
-	$dumpFile = "${mc3}_dump_daily_total.csv";
+	$dumpFile = "WO_$WEBOBS{WEBOBS_ID}_${mc3}_dump_daily_total.csv";
 	push(@csv,"#WEBOBS-$WEBOBS{WEBOBS_ID}: $MC3{TITLE}\n");
 	push(@csv,"#Daily histogram counted from ".(($start_datetime)->strftime('%F %H:00:00'))."\n");
 	push(@csv,"#YYYY-mm-dd Daily_Total(#);Daily_Count;Daily_Moment(N.m);Daily_Energy(J)\n");
@@ -814,49 +832,39 @@ foreach my $line (@lignes) {
 
 # ---- Statistics on number of seisms (for flot-graph and dump CSV) -----------
 #
-#XB-was: my $timeS = timegm(0,0,0,substr($dateStart,8,2),substr($dateStart,5,2)-1,substr($dateStart,0,4)-1900);
-#XB-was: my $timeE = timegm(0,0,0,substr($dateEnd,8,2),substr($dateEnd,5,2)-1,substr($dateEnd,0,4)-1900);
-#my $timeS = $start_datetime->epoch();
-#my $timeE = $end_datetime->epoch();
-#my $nbDays = ($timeE - $timeS)/86400;
 my $nbDays = $end_datetime->subtract_datetime_absolute($start_datetime)->seconds/86400 + 1/24;
 
 my @stat_t; # Dates in YYYY-MM-DD format
 my @stat_j; # Javascript dates (in ms since 1970-01-01)
 for my $d (0..($nbDays - 1/24)) {
-	#push(@stat_t, strftime('%F',gmtime($timeS + $_*86400)));
-	#push(@stat_j, ($timeS + ($_ + 0.5)*86400)*1000);
 	push(@stat_t, ($start_datetime + DateTime::Duration->new(days => $d))->strftime('%F'));
-	#FB-was: push(@stat_j, ($start_datetime + DateTime::Duration->new(days => ($d+0.5)))->epoch * 1000);
 	push(@stat_j, ($start_datetime + DateTime::Duration->new(days => $d) + DateTime::Duration->new(hours => 12))->epoch * 1000);
 }
 my @stat_th;
 my @stat_jh;     # Javascript dates hourly (in ms since 1970-01-01)
 for my $h (0 .. ($nbDays*24 - 1)) {
-	#push(@stat_th, strftime('%F %H',gmtime($timeS + $_*3600)));
-	#push(@stat_th1, strftime('%F %H',gmtime($timeS + $_*3600 - 86400)));
-	#push(@stat_jh, ($timeS + $_*3600)*1000);
 	my $d = $start_datetime + DateTime::Duration->new(hours => $h);
-	#my $d1 = $d - DateTime::Duration->new(days => 1);
 	if ($d <= $now) {
 		push(@stat_th, $d->strftime('%F %H'));
-		#push(@stat_jh, $d1->epoch*1000);
-		#push(@stat_jh, ($d + DateTime::Duration->new(minutes => 30))->epoch*1000);
 		push(@stat_jh, $d->epoch*1000);
 	}
 }
 my %stat_m;      # hash of event types seismic moment per day
 my %stat_energy; # hash of event types seismic energy per day
-my %stat_mh;     # hash of event types seismic moment per hour
+my %stat_smh;     # hash of event types seismic moment per hour
 my %stat_d;      # hash of event types per day
 my %stat_dh;     # hash of event types per hour
 my %stat_vh;     # hash of daily moving histogram event types (per hour)
+my %stat_wh;     # hash of weekly moving histogram event types (per hour)
+my %stat_mh;     # hash of monthly moving histogram event types (per hour)
 my %stat_ch;     # hash of cumulated event types (per hour)
 my %stat;        # hash of event types total number
 my %stat_gr;     # hash of event types Gutenberg-Richter number
 my @stat_grm;    # array of magnitudes bin
 my $stat_max_duration = 0;
 my $stat_max_magnitude = 0;
+my $stat_max_duration_loc = 0;
+my $stat_max_magnitude_loc = 0;
 foreach (@finalLignes) {
 	if ( $_ ne "" ) {
 		my ($id_evt,$date,$heure,$type,$amplitude,$duree,$unite,$duree_sat,$nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$event_img,$signature,$comment,$origin) = split(/\|/,$_);
@@ -870,8 +878,6 @@ foreach (@finalLignes) {
 					    hour => substr($heure,0,2),
 					    minute => substr($heure,3,2),
 					    second => substr($heure,6,2));
-		#my $kd = int(($time - $timeS)/86400);
-		#my $kh = int(($time - $timeS)/3600);
 		my $kd = int($time_dt->subtract_datetime_absolute($start_datetime)->seconds/86400);
 		my $kh = int($time_dt->subtract_datetime_absolute($start_datetime)->seconds/3600);
 		if ($origin) {
@@ -884,7 +890,7 @@ foreach (@finalLignes) {
 				if ($mag) {
 					$M0 = 10**(1.5*$mag + 9.1); # unit = N.m
 					$stat_m{$type}[$kd] += $M0;
-					$stat_mh{$type}[$kh] += $M0;
+					$stat_smh{$type}[$kh] += $M0;
 					$km = int($mag*10);
 					# negative magnitudes are counted in the first histogram bin
 					if ($km < 0) { $km = 0; }
@@ -902,31 +908,41 @@ foreach (@finalLignes) {
 		$stat{TOTAL} += $nombre;
 		$stat{VTcount} += ($types{$type}{asVT} ? $nombre * $types{$type}{asVT}:0);
 		$stat{RFcount} += ($types{$type}{asRF} ? $nombre * $types{$type}{asRF}:0);
+		if ($type eq "LOCAL") { 
+			$stat{LOCcount} += $nombre;
+		}
 
 		$stat_d{$type}[$kd] += $nombre;
 		if ($QryParm->{'nograph'} == 0) {
 			$stat_ch{$type}[$kh] += $nombre;
 			$stat_dh{$type}[$kh] += $nombre;
 			for ($kh .. ($kh+23)) {
-				if ($_ <= $#stat_th) {
-					$stat_vh{$type}[$_] += $nombre;
-				}
+				$stat_vh{$type}[$_] += $nombre if ($_ <= $#stat_th);
+			}
+			for ($kh .. ($kh+(7*24-1))) {
+				$stat_wh{$type}[$_] += $nombre if ($_ <= $#stat_th);
+			}
+			for ($kh .. ($kh+(28*24-1))) {
+				$stat_mh{$type}[$_] += $nombre if ($_ <= $#stat_th);
 			}
 		}
-		if ($types{$type}{asVT} && $duree_s > $stat_max_duration) {
-			my $dist;
-			my $Pvel = 6;
-			$Pvel = $MC3{P_WAVE_VELOCITY} if (defined $MC3{P_WAVE_VELOCITY});
-			my $VpVs = 1.75;
-			$VpVs = $MC3{VP_VS_RATIO} if (defined $MC3{VP_VS_RATIO});
-			if ($s_moins_p ne "NA" && $s_moins_p ne "") {
-				# $dist = 8*$s_moins_p;
+		my $dist;
+		my $Pvel = 6;
+		$Pvel = $MC3{P_WAVE_VELOCITY} if (defined $MC3{P_WAVE_VELOCITY});
+		my $VpVs = 1.75;
+		$VpVs = $MC3{VP_VS_RATIO} if (defined $MC3{VP_VS_RATIO});
+		if ($s_moins_p ne "NA" && $s_moins_p ne "") {
     			$dist = $Pvel*$s_moins_p/($VpVs-1);
-			} else {
-				$dist = 0;
-			}
+		} else {
+			$dist = 0;
+		}
+		if ($types{$type}{asVT} && $duree_s > $stat_max_duration) {
 			$stat_max_duration = $duree_s;
 			$stat_max_magnitude = 2*log($duree_s)/log(10)+0.0035*$dist-0.87;
+		}
+		if ($type eq "LOCAL" && $duree_s > $stat_max_duration_loc) {
+			$stat_max_duration_loc = $duree_s;
+			$stat_max_magnitude_loc = 2*log($duree_s)/log(10)+0.0035*$dist-0.87;
 		}
 	}
 }
@@ -958,8 +974,8 @@ foreach my $day (@stat_t) {
 }
 if ($QryParm->{'nograph'} == 0) {
 	for ($i = 1; $i <= $#stat_th; $i++) {
-		foreach (keys(%stat_mh)) {
-			$stat_mh{$_}[$i] += ($stat_mh{$_}[$i-1] ? $stat_mh{$_}[$i-1]:0);
+		foreach (keys(%stat_smh)) {
+			$stat_smh{$_}[$i] += ($stat_smh{$_}[$i-1] ? $stat_smh{$_}[$i-1]:0);
 		}
 		foreach (keys(%stat_ch)) {
 			$stat_ch{$_}[$i] += ($stat_ch{$_}[$i-1] ? $stat_ch{$_}[$i-1]:0);
@@ -1015,6 +1031,14 @@ if ($MC3{DISPLAY_INFO_MAIL} && (clientHasAdm(type=>"authprocs",name=>"MC") || cl
 	$html .= "<INPUT type=\"hidden\" name=\"stat_max_magnitude\" value=\"".$stat_max_magnitude."\"/>";
 	$html .= "<INPUT type=\"hidden\" name=\"RFcount\" value=\"".$stat{RFcount}."\"/>";
 	$html .= "<INPUT type=\"hidden\" name=\"VTcount\" value=\"".$stat{VTcount}."\"/>";
+	$html .= "<INPUT type=\"hidden\" name=\"stat_max_duration_loc\" value=\"".$stat_max_duration_loc."\"/>";
+	$html .= "<INPUT type=\"hidden\" name=\"stat_max_magnitude_loc\" value=\"".$stat_max_magnitude_loc."\"/>";
+	$html .= "<INPUT type=\"hidden\" name=\"LOCcount\" value=\"".$stat{LOCcount}."\"/>";
+	$html .= "</FORM>\n";
+	$html .= "<FORM name=\"formulaire_mail_revosime\" action=\"/cgi-bin/$MC3{CGI_REVOSIMA_MAIL_INFO}\" method=\"get\">";
+	$html .= "<P><B>Mail d'information REVOSIMA</B>: <INPUT type=\"submit\" value=\"G&eacute;n&eacute;rer\"/></P>";
+	$html .= "<INPUT type=\"hidden\" name=\"dateStart\" value=\"".$start_datetime->strftime("%F")."\"/>";
+	$html .= "<INPUT type=\"hidden\" name=\"dateEnd\" value=\"".$end_datetime->strftime("%F")."\"/>";
 	$html .= "</FORM>\n";
 }
 # ---- END of HTML-form
@@ -1057,6 +1081,20 @@ if ($QryParm->{'nograph'} == 0) {
 				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
 			}
 			$html .= "]});\n";
+			$html .= " dataw.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
+				." data: [";
+			for (my $i=0; $i<=$#stat_th; $i++) {
+				my $d = $stat_wh{$key}[$i];
+				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
+			}
+			$html .= "]});\n";
+			$html .= " datam.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
+				." data: [";
+			for (my $i=0; $i<=$#stat_th; $i++) {
+				my $d = $stat_mh{$key}[$i];
+				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
+			}
+			$html .= "]});\n";
 			$html .= " datac.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
 				." data: [";
 			for (my $i=0; $i<=$#stat_th; $i++) {
@@ -1064,10 +1102,10 @@ if ($QryParm->{'nograph'} == 0) {
 				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
 			}
 			$html .= "]});\n";
-			$html .= " datam.push({ label: \"$types{$key}{Name} = ".sprintf("%1.1f",($stat_mh{$key}[$#stat_th] ? $stat_mh{$key}[$#stat_th]:0))." (10^18 dyn.cm)\", color: \"$types{$key}{Color}\","
+			$html .= " datasm.push({ label: \"$types{$key}{Name} = ".sprintf("%1.1f",($stat_smh{$key}[$#stat_th] ? $stat_smh{$key}[$#stat_th]:0))."\", color: \"$types{$key}{Color}\","
 				." data: [";
 			for (my $i=0; $i<=$#stat_th; $i++) {
-				my $d = $stat_mh{$key}[$i];
+				my $d = $stat_smh{$key}[$i];
 				$html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
 			}
 			$html .= "]});\n";
@@ -1245,9 +1283,11 @@ for (@finalLignes) {
 				for ($ii = 0; $ii <= $#dat; $ii++) {
 					# calcul de la distance epicentrale minimum (et azimut epicentre/villes)
 					for (0..$#b3_lat) {
-						my $dx = ($lon[$ii] - $b3_lon[$_])*111.18*cos($lat[$ii]*0.01745);
-						my $dy = ($lat[$ii] - $b3_lat[$_])*111.18;
-						$b3_dat[$_] = sprintf("%06.1f|%g|%s|%s|%g",sqrt($dx**2 + $dy**2),atan2($dy,$dx),$b3_nam[$_],$b3_isl[$_],$b3_sit[$_]);
+						my ($dist,$bear) = greatcircle($b3_lat[$_],$b3_lon[$_],$lat[$ii],$lon[$ii]);
+						#my $dx = ($lon[$ii] - $b3_lon[$_])*111.18*cos($lat[$ii]*0.01745);
+						#my $dy = ($lat[$ii] - $b3_lat[$_])*111.18;
+						#$b3_dat[$_] = sprintf("%06.1f|%g|%s|%s|%g",sqrt($dx**2 + $dy**2),atan2($dy,$dx),$b3_nam[$_],$b3_isl[$_],$b3_sit[$_]);
+						$b3_dat[$_] = sprintf("%06.1f|%g|%s|%s|%g",$dist,$bear,$b3_nam[$_],$b3_isl[$_],$b3_sit[$_]);
 					}
 					my @xx = sort { $a cmp $b } @b3_dat;
 					$bcube[$ii] = $xx[0];
@@ -1450,7 +1490,7 @@ for (@finalLignes) {
 					#DL-was: my $pgamax = $pga*$WEBOBS{SHAKEMAPS_SITE_EFFECTS};
 					#FB-was: $pgamax = $pga*$MC3{CITIES_SITE_EFFECTS};
 					$pgamax = $pga*($b3[4] > 0 ? $b3[4]:3);
-					$dir = boussole($b3[1]);
+					$dir = compass($b3[1]);
 					$dkm = sprintf("%5.1f",$b3[0]);
 					$dkm =~ s/\s/&nbsp;&nbsp;/g;
 					$ems = pga2msk($pga);
@@ -1594,13 +1634,15 @@ if ($QryParm->{'dump'} eq "") {
 <script language="JavaScript" src="/js/overlib/overlib.js"></script>
 
 <!-- jQuery & FLOT http://code.google.com/p/flot -->
-<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/js/flot/excanvas.min.js"></script><![endif]-->
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.js"></script>
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.js"></script>
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.time.js"></script>
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.stack.js"></script>
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.crosshair.js"></script>
-<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.selection.js"></script>
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/js/flot/excanvas.min.jsn"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.time.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.stack.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.crosshair.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.selection.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.axislabels.js"></script>
+<script language="javascript" type="text/javascript" src="/js/html2canvas.min.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/mc3.js"></script>
 
 <script language="javascript" type="text/javascript" src="/js/wolb.js"></script>
@@ -1683,7 +1725,7 @@ Francois Beauducel, Didier Mallarino, Alexis Bosson, Jean-Marie Saurel, Patrice 
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+WebObs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

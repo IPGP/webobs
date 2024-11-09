@@ -103,7 +103,8 @@ if ($QryParm->{'g'} =~ s!^lastevent(\b|$)!!) {
 	# replace it with the directory the 'lastevent' symlink links to.
 	my $lastevent_dir = abs_path("$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/lastevent");
 	# Remove ^$OUTG/events/ from the path to only keep "yyyy/mm/dd/eventid"
-	$lastevent_dir =~ s!^$OUTG/.*?/!!;
+	my $OUTGabs = abs_path("$OUTG/$WEBOBS{PATH_OUTG_EVENTS}");
+	$lastevent_dir =~ s!$OUTGabs/!!;
 	# Replace 'g' with this link and append the remaining of the original 'g', if any
 	# (so that both g=lastevent and g=lastevent/b3 work).
 	$QryParm->{'g'} = $lastevent_dir.$QryParm->{'g'};
@@ -146,9 +147,9 @@ print "<!-- overLIB (c) Erik Bosrup --><div id=\"overDiv\" style=\"position:abso
 <link href=\"/css/wolb.css\" rel=\"stylesheet\" />";
 
 print "<A NAME=\"MYTOP\"></A>";
+print "<TABLE width=100%><TR><TD style='border:0'>\n";
 print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME}</H1>\n" if ($QryParm->{'header'} ne 'no');
 my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
-
 
 # ---- build the top-of-page outputs selection banner:
 # 1st line for timescale selection
@@ -224,6 +225,9 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 	# build @elist = the list of available .eps graphs for timescale $tslist[$tsSelected]
 	my (@elist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.eps";
 
+	# build @slist = the list of available .svg graphs for timescale $tslist[$tsSelected]
+	my (@slist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.svg";
+
 	# build @plist = the list of available .pdf graphs for timescale $tslist[$tsSelected]
 	my (@plist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.pdf";
 
@@ -286,6 +290,7 @@ print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-
 		print "<BR><B>[ ".$glistHtml." ]</B>\n";
 	}
 print "</DIV>";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode(2)."</TD></TR></TABLE>\n";
 
 
 # ---- now show the selected item
@@ -306,7 +311,7 @@ if ($QryParm->{'ts'} eq 'map') {
 		print "<IMG style=\"margin-bottom: 15px; background-color: beige;\" src=\"$MAPurn/$mapname.png\" usemap=\"#map\"><BR>\n";
 		if (-e "$MAPpath/$mapname.map") {
 			@htmlarea = readFile("$MAPpath/$mapname.map");
-			print "<map name=\"map\">@htmlarea</map>\n";
+			print "<map name=\"map\">\n@htmlarea</map>\n";
 		}
 	}
 
@@ -365,10 +370,15 @@ if ($QryParm->{'ts'} eq 'map') {
 		(my $EVENTid = $short) =~ s/$OUTG\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
 		(my @evt) = split(/\//,$EVENTid);
 		my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
-		foreach ("eps","pdf","gse","txt","kml") {
+		foreach ("eps","svg","pdf","gse","txt","kml") {
 			if ( -e "$short.$_" ) {
 				$addlinks .= " <A href=\"$urn.$_\"><IMG alt=\"$urn.$_\" src=\"/icons/f$_.png\"></A> ";
 			}
+		}
+		# special case of .msg file (tremblemaps)
+		if ( -e "$short.msg" ) {
+				$addlinks .= " <A href=\"/cgi-bin/mailB3.pl?grid=$QryParm->{'grid'}&ts=events&g=$EVENTid\">"
+					."<IMG alt=\"$urn.msg\" src=\"/icons/fmail.png\"></A> ";
 		}
 		print "<H2>$dte: <I>$evt[3]&nbsp;/&nbsp;$evt[4]</I></H2>\n";
 		print "$addlinks<BR>" if ($QryParm->{'header'} ne 'no');
@@ -406,7 +416,7 @@ if ($QryParm->{'ts'} eq 'map') {
 
 
 	} else {
-		# prepare additional links to eps, pdf and data
+		# prepare additional links to eps, svg, pdf and data
 		my $addlinks = "";
 		for my $i (0..$#elist) {
 			if (-f $elist[$i]) {
@@ -415,6 +425,16 @@ if ($QryParm->{'ts'} eq 'map') {
 				$elist[$i] =~ s/^$/$GRIDName/;
 				if ($elist[$i] eq $QryParm->{'g'}) {
 					$addlinks .= " <A href=\"$surn\"><IMG alt=\"$QryParm->{'g'}.eps\" src=\"/icons/feps.png\"></A> ";
+				}
+			}
+		}
+		for my $i (0..$#slist) {
+			if (-f $slist[$i]) {
+				(my $surn = $slist[$i]) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
+				$slist[$i] =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+				$slist[$i] =~ s/^$/$GRIDName/;
+				if ($slist[$i] eq $QryParm->{'g'}) {
+					$addlinks .= " <A href=\"$surn\"><IMG alt=\"$QryParm->{'g'}.svg\" src=\"/icons/fsvg.png\"></A> ";
 				}
 			}
 		}
@@ -461,7 +481,7 @@ if ($QryParm->{'ts'} eq 'map') {
 				print "<IMG style=\"margin-bottom: 15px; margin-top: 5 px; background-color: beige;\" src=\"$urn\" usemap=\"#map\"><BR>";
 				if (-e "$map") {
 					my @htmlarea = readFile("$map");
-					print "<map name=\"map\">@htmlarea</map>\n";
+					print "<map name=\"map\">\n@htmlarea</map>\n";
 				}
 			}
 		}

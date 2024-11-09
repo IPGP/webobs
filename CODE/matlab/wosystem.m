@@ -1,11 +1,11 @@
 function varargout = wosystem(cmd,varargin)
 %WOSYSTEM Execute system command and return result.
-%	[status,result] = WOSYSTEM('command') works exactly like SYSTEM() 
+%	[status,result] = WOSYSTEM('command') works exactly like SYSTEM()
 %	function excepted it displays the result string in case of command
 %	error, i.e., non-null exit status (return code).
 %
-%	WOSYSTEM('command') without output argument, or 
-%	[status,result] = WOSYSTEM('command','error') both will produce a 
+%	WOSYSTEM('command') without output argument, or
+%	[status,result] = WOSYSTEM('command','error') both will produce a
 %	Matlab error if the command is unsuccessful.
 %
 %	WOSYSTEM('command','warning') without output argument forces the
@@ -25,7 +25,7 @@ function varargout = wosystem(cmd,varargin)
 %
 %	Author: F. Beauducel, WEBOBS
 %	Created: 2017-02-02 in Yogyakarta, Indonesia
-%	Updated: 2017-09-11
+%	Updated: 2022-07-22
 
 if nargin < 1
 	error('Not enough input argument.');
@@ -44,12 +44,12 @@ msg = sprintf('\n%s%s\n',wofun,cmd);
 [s,w] = system(cmd);
 
 if s || any(strcmpi(varargin,'debug')) || (nargin > 1 && (isok(varargin{1},'DEBUG')))
-	display(regexprep(msg,'\','\\'));
+	display(regexprep(msg,'\\','\\\'));
 end
 
 % if unsuccessful, displays the result
 if s
-	% ERROR mode: will stop with error if command unsuccessful 
+	% ERROR mode: will stop with error if command unsuccessful
 	if (nargout == 0 || any(strcmpi(varargin,'error'))) && ~any(strcmpi(varargin,'warning'))
 		error('%s command unsuccessful [rc = %d]: %s',wofun,s,w);
 	else

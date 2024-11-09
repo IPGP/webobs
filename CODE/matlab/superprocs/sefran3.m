@@ -1,5 +1,5 @@
 function sefran3(name,fdate)
-%SEFRAN3 Continuous seismogram using SeedLink/ArcLink data request
+%SEFRAN3 Continuous stripchart seismogram using waveform data request
 %
 %	SEFRAN3 by itself creates/updates seismogram images in real time:
 %		- creates all 1-minute images for selected channels
@@ -20,7 +20,7 @@ function sefran3(name,fdate)
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France
 %	         (based on legacy sefran.m, 2002 and sefran2.m, 2007)
-%	Updated: 2021-08-17
+%	Updated: 2022-07-24
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -137,7 +137,7 @@ daymn = 1/1440; % 1 minute (in days)
 
 % imports SEFRAN3 channel parameters
 fid = fopen(SEFRAN3.CHANNEL_CONF,'rt');
-C = textscan(fid,'%q%q%q%q%q%q%q%*[^\n]','CommentStyle','#');
+C = textscan(fid,'%q%q%q%q%q%q%q','CommentStyle','#');
 fclose(fid);
 % C{1} = channel name (alias)
 % C{2} = channel stream
@@ -147,7 +147,7 @@ nchan = length(sfr);
 % C{4} = filter: offset value (in counts) or 'median','trend','spN','lpbuN,F','hpbuN,F','bpbuN,FL,FH'
 % C{5} = peak-to-peak amplitude (numeric)
 % C{6} = RGB color string (hexa form #RRGGBB)
-scol = htm2rgb(C{6});
+scol = rgb(C{6});
 % C{7} = spectrogram parameters (W,Fmin,Fmax,YScale)
 sgp = C{7};
 sgp(cellfun(@isempty,sgp)) = {sgramparams};
@@ -191,7 +191,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 		t1 = t0 + daymn;
 		tv = datevec(t0);
 		pdat = sprintf('%s/%4d/%4d%02d%02d',SEFRAN3.ROOT,tv(1),tv(1:3));
-		f = sprintf('%s/%s/%4d%02d%02d%02d%02d%02d',pdat,SEFRAN3.PATH_IMAGES_MINUTE,tv);
+		f = sprintf('%s/%s/%4d%02d%02d%02d%02d%02.0f',pdat,SEFRAN3.PATH_IMAGES_MINUTE,tv);
 		fpng = sprintf('%s.png',f);
 		fpng_high = sprintf('%s_high.png',f);
 
@@ -339,12 +339,11 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					text(xlim(2)/2,0,{s,''}, ...
 						'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',7,'FontWeight','bold','Color',.8*[1,1,1],'Interpreter','none')
 				end
-				text(xlim(2)/2,0,datestr(t0,'yyyy-mm-dd HH:MM'), ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',9,'Color','k','Interpreter','none')
-				text(xlim,[0,0],{'|','|'}, ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',9,'Fontweight','Bold','Color','k')
-				text(xlim,repmat(ylim(1),[1,2]),{datestr(t0,'|\nHH:MM\nyyyy-mm-dd');datestr(t1,'|\nHH:MM\nyyyy-mm-dd')}, ...
-					'HorizontalAlignment','center','VerticalAlignment','top','FontSize',9,'Fontweight','Bold','Color','k')
+				opt = {'HorizontalAlignment','center','FontSize',9,'Color','k','Interpreter','none'};
+				text(xlim(2)/2,0,datestr(t0,'yyyy-mm-dd HH:MM'),'VerticalAlignment','bottom',opt{:})
+				text(xlim,[0,0],{'|','|'},'VerticalAlignment','bottom',opt{:})
+				text(xlim(1),ylim(1),{'|',datestr(t0,'HH:MM'),datestr(t0,'yyyy-mm-dd')},'FontWeight','bold','VerticalAlignment','top',opt{:})
+				text(xlim(2),ylim(1),{'|',datestr(t1,'HH:MM'),datestr(t1,'yyyy-mm-dd')},'FontWeight','bold','VerticalAlignment','top',opt{:})
 				if xtickinterval
 					xt = (0:xtickinterval:60)/86400;
 					plot(repmat(xt,[2,1]),ylim(1)-repmat([0;.01*ylim(1)],[1,size(xt,2)]),'-','Color','k','LineWidth',.2);
@@ -466,7 +465,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 					else
 						pngq = '';
 					end
-					fpng = sprintf('%s/%s/%4d%02d%02d%02d%02d%02ds.png',pdat,sgrampath,tv);
+					fpng = sprintf('%s/%s/%4d%02d%02d%02d%02d%02.0fs.png',pdat,sgrampath,tv);
 					fprintf('%s: creating %s ... ',wofun,fpng);
 					ftmp3 = sprintf('%s/sgram.eps',ptmp);
 					fsxy = [vits,hip]; % image size (in inches)
@@ -691,7 +690,7 @@ case 'seedlink'
 			dt = 0;
 		end
 		% makes SeedLink request and save to temporary miniseed file
-		wosystem(sprintf('%s -d -o %s -S "%s" -tw %d,%d,%d,%d,%d,%d:%g,%d,%d,%d,%d,%g %s', ...
+		wosystem(sprintf('%s -d -o %s -S "%s" -tw %d,%d,%d,%d,%d,%1.0f:%d,%d,%d,%d,%d,%1.0f %s', ...
 			slinktool,fmsd,streams,datevec(t0-max(dt)),datevec(t1),datasource),SEFRAN3,'warning');
 	else
 		fprintf('%s: ** WARNING ** SEEDLINK server %s at %s has no channel available !\n',wofun,datasource,datestr(t1));
@@ -709,7 +708,7 @@ case 'arclink'
 	fid = fopen(freq,'wt');
 	for n = 1:length(sfr)
 		c = textscan(sfr{n},'%s','Delimiter','.:'); % splits Network, Station, Loc and Channel codes
-		fprintf(fid,'%d,%d,%d,%d,%d,%g %d,%d,%d,%d,%d,%g %s %s %s %s\n',datevec(t0-dt0(n)),datevec(t1),c{1}{1},c{1}{2},c{1}{4},c{1}{3});
+		fprintf(fid,'%d,%d,%d,%d,%d,%1.0f %d,%d,%d,%d,%d,%1.0f %s %s %s %s\n',datevec(t0-dt0(n)),datevec(t1),c{1}{1},c{1}{2},c{1}{4},c{1}{3});
 	end
 	fclose(fid);
 	% makes ArcLink request and save to temporary miniseed file
@@ -732,6 +731,7 @@ case 'fdsnws-dataselect'
 		% builds request line for dataselect WebService POST file
 		fprintf(fid,'%s %s %s %s %04d-%02d-%02dT%02d:%02d:%02.0f %04d-%02d-%02dT%02d:%02d:%02.0f\n',c{1}{1},c{1}{2},c{1}{3},c{1}{4},datevec(t0-dt0(n)),datevec(t1));
 	end
+	fclose(fid);
 	% request the data
 	wosystem(sprintf('wget -nv -O %s --post-file %s "%s"',fmsd,fpost,datasource),SEFRAN3);
 
