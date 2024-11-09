@@ -31,8 +31,8 @@ function ask() {
 if ask "--> Compile all the Matlab procs [y/N]" "n"
 then
 	cd "$SCRIPT_DIR/../CODE/matlab"
-	make arch=64
-	make arch=32
+	make arch=64 all
+	make arch=32 all
 	cd "$PWD"
 fi
 

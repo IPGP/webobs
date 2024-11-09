@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2023-01-13
+%   Updated: 2024-11-08
 
 
 WO = readcfg;
@@ -338,17 +338,18 @@ for g = 1:length(grids)
 				end
 			end
 
+			% plots inactive nodes first
+			k0m = [];
+			if ~isempty(k0)
+				k0m = k0(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
+				target(geo(k0m,2),geo(k0m,1),nodesize,nodecolor,nodetype,2)
+			end
+
 			% plots active nodes
 			kam = [];
 			if ~isempty(ka)
 				kam = ka(isinto(geo(ka,2),dlon) & isinto(geo(ka,1),dlat));
 				target(geo(kam,2),geo(kam,1),nodesize,nodecolor,nodetype)
-			end
-			% plots inactive nodes
-			k0m = [];
-			if ~isempty(k0)
-				k0m = k0(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
-				target(geo(k0m,2),geo(k0m,1),nodesize,nodecolor,nodetype,2)
 			end
 
 			% writes node names for current map but excluded other maps

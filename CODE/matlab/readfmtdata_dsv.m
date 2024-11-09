@@ -56,6 +56,7 @@ datacols = field2num(N,'FID_DATACOLS');
 % Input field separator
 fs = field2str(N,'FID_FS',';','notempty');
 header = field2num(N,'FID_HEADERLINES',1,'notempty');
+decimalcomma = isok(N,'FID_DECIMAL_COMMA');
 datadecim = field2num(N,'FID_DATA_DECIMATE',1,'notempty');
 flagcol = field2num(N,'FID_FLAGCOL');
 flagaction = field2str(N,'FID_FLAGACTION','valid');
@@ -65,18 +66,20 @@ ppscript = field2str(N,'FID_PREPROCESSOR','dsv_generic','notempty');
 % for security reasons : keeps only the basename
 ppscript = regexprep(ppscript,'^.*/','');
 % absolute path
-preprocessor = sprintf('%s/shells/preprocessor/%s',WO.ROOT_CODE,ppscript);
-if ~exist(preprocessor,'file') && ~isempty(field2str(WO,'ROOT_PREPROCESSOR'))
-	preprocessor = sprintf('%s/%s',field2str(WO,'ROOT_PREPROCESSOR'),ppscript);
+ppfile = sprintf('%s/shells/preprocessor/%s',WO.ROOT_CODE,ppscript);
+if ~exist(ppfile,'file') && ~isempty(field2str(WO,'ROOT_PREPROCESSOR'))
+	ppfile = sprintf('%s/%s',field2str(WO,'ROOT_PREPROCESSOR'),ppscript);
 end
 
-if ~exist(preprocessor,'file')
+if ~exist(ppfile,'file')
 	error('FID_PREPROCESSOR "%s" not found. Please check or make it empty to use default.',ppscript);
 end
+% full command of preprocessor with arguments
+ppcmd = sprintf('%s %s.%s \\%s %d %d %d',ppfile,P.SELFREF,N.ID,fs,header,nftest,decimalcomma);
 
 % runs the preprocessor and writes to the temporary file
 
-cmd = 'for f in $(ls %s);do cat $f | %s %s.%s \\%s %d %d >> %s; done'; % format string used with sprintf to generate the final command
+cmd = 'for f in $(ls %s);do cat $f | %s >> %s; done'; % format string used with sprintf to generate the final command
 
 % if RAWDATA contains '$yyyy' internal variable, makes a loop on years
 if ~isempty(regexpi(F.raw{1},'\$yyyy'))
@@ -92,46 +95,45 @@ if ~isempty(regexpi(F.raw{1},'\$yyyy'))
 		if (isnan(P.DATELIM(1)) || datenum(yyyy,12,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,1) <= P.DATELIM(2))
 			if ~isempty(regexpi(F.raw{1},'\$mm'))
 				for mm = 1:12
-					if (isnan(P.DATELIM(1)) || datenum(yyyy,mm,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,1) <= P.DATELIM(2))
+					ldm = datevec(datenum(yyyy,mm+1,0)); % last day of the month mm (as date vector)
+					if (isnan(P.DATELIM(1)) || datenum(ldm) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,1) <= P.DATELIM(2))
 						if ~isempty(regexpi(F.raw{1},'\$dd'))
-							for dd = 1:31
+							for dd = 1:ldm(3)
 								if (isnan(P.DATELIM(1)) || datenum(yyyy,mm,dd) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,dd) <= P.DATELIM(2))
 									fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
 									fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
 									fraw = regexprep(fraw,'\$dd',sprintf('%02d',dd),'ignorecase');
-									wosystem(sprintf('cat %s | %s %s.%s \\%s %d %d >> %s', ...
-										fraw, preprocessor, P.SELFREF, N.ID, fs, header, nftest, fdat), P);
+									wosystem(sprintf(cmd,fraw, ppcmd, fdat), P);
 								end
 							end
 						else
 							fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
 							fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
-							wosystem(sprintf(cmd,fraw, preprocessor, P.SELFREF, N.ID, fs, header, nftest, fdat), P);
+							wosystem(sprintf(cmd,fraw, ppcmd, fdat), P);
 						end
 					end
 				end
 			else
 				if ~isempty(regexpi(F.raw{1},'\$doy'))
-					for doy = 1:366
+					ndy = datenum(yyyy+1,1,1) - datenum(yyyy,1,1); % number of days in year yyyy
+					for doy = 1:ndy
 						if (isnan(P.DATELIM(1)) || datenum(yyyy,1,doy) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,doy) <= P.DATELIM(2))
 							fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
 							fraw = regexprep(fraw,'\$doy',sprintf('%03d',doy),'ignorecase');
-							wosystem(sprintf(cmd, fraw, preprocessor, P.SELFREF, N.ID, fs, header, nftest, fdat), P);
+							wosystem(sprintf(cmd, fraw, ppcmd, fdat), P);
 						end
 					end
 				else
 					fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
-					wosystem(sprintf(cmd, fraw, preprocessor, P.SELFREF, N.ID, fs, header, nftest, fdat), P);
+					wosystem(sprintf(cmd, fraw, ppcmd, fdat), P);
 				end
 			end
 			fprintf('.');
 		end
 	end
 else
-	wosystem(sprintf(cmd, F.raw{1}, preprocessor, P.SELFREF, N.ID, fs, header, nftest, fdat), P);
+	wosystem(sprintf(cmd, F.raw{1}, ppcmd, fdat), P);
 end
-
-%wosystem(sprintf('for f in $(ls %s);do awk -F''%s'' ''NR>%d {print $0}'' $f | sed -e ''s/  */ /g;s/ *%s */%s/g;s/[%s\\/: ]/;/g;s/[^0-9.+\\-eE;]//g;s/^;/NaN;/g;s/;\\s*;/;NaN;/g;s/;;/;NaN;/g;s/;\\s*$/;NaN/g'' | awk -F'';'' ''%s {print $0}'' >> %s;done',F.raw{1},fs,header,fs,fs,fs,nftest,fdat),P);
 
 t = [];
 d = [];

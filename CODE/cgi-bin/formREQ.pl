@@ -445,9 +445,10 @@ print "\n</BODY>\n</HTML>\n";
 # (args: procName, \%procConf)
 sub pkeys {
 	my ($pn,$PP) = @_;
-	if (defined($pn) && defined($PP->{$pn}{REQUEST_KEYLIST})) {
+	if (defined($pn)) {
 		my $div = "<div id='pkeysdrawer$pn' class='pkeysdrawer' style='display: none'>";
-		my @pk = uniq map { s/^\s+|\s+$//g; $_ } split(/,/,$PP->{$pn}{REQUEST_KEYLIST});
+		my @pk;
+		push(@pk, uniq map { s/^\s+|\s+$//g; $_ } split(/,/,$PP->{$pn}{REQUEST_KEYLIST})) if (defined($PP->{$pn}{REQUEST_KEYLIST}));
 		foreach my $k (sort keys %{$PP->{$pn}}) {
 			push(@pk,$k) if (! grep(/^$k$/,@pk) && ! grep(/^$k$/,@REQEXCL));
 		}
