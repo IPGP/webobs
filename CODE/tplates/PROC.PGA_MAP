@@ -1,0 +1,69 @@
+=key|value
+
+NAME|Strong Motion mapping
+TYPE|
+OWNCODE|I
+RAWDATA|$WEBOBS{ROOT_RAWD}/Sismologie/PgaPgv
+URNDATA|
+RAWFORMAT|shakemap
+
+TZ|0
+
+# lists of parameters (number of comma-separated rows must be consistent)
+TIMESCALELIST|06h,24h,01w
+DECIMATELIST|1,10,60
+CUMULATELIST|1,1,1
+DATESTRLIST|-1,-1,-1
+MARKERSIZELIST|2,2,1
+STATUSLIST|1,0,0
+#SUMMARYLIST|
+SUMMARY_CHANNELS|4,5
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} genplot GEOSCOPE -
+SUBMIT_RESOURCE|geoscope
+
+# node parameters
+NODE_NAME|station
+NODE_SIZE|10
+NODE_RGB|1,0,0
+NODE_FONTSIZE|10
+NODE_MARKER|o
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+PPI|100
+POSTSCRIPT|1
+EXPORTS|1
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+LOGO2_FILE|
+COPYRIGHT|OVSM
+COPYRIGHT2|IPGP
+
+# -----------------------------------------------------------------------
+# --- specific parameter for this proc
+# Min max PGA (in mg) for the plot colorbar
+COLORBAR_PGA_MIN_MAX|0.,10.
+
+# Alternatively, use the BCSF colormap
+# COLORBAR_BCSF|1
+
+# Region name
+REGION|Martinique
+
+# Map configuration for Martinique
+MAP_XYLIM|-61.3,-60.75,14.35,14.92
+
+# Map configuration for Guadeloupe
+#MAP_XYLIM|-61.90,-60.95,15.80,16.55
+
+# Map legend location
+#  LL: lower-left
+#  LR: lower-right
+#  UL: upper-left
+#  UR: upper-right
+MAP_LEGEND_LOC|LL
