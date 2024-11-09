@@ -225,7 +225,9 @@ FIN
 #
 print "<A NAME=\"MYTOP\"></A>";
 print "<TABLE width=100%><TR><TD style='border:0'>\n";
-print "<H1 style=\"margin-bottom:3pt\">$nodeName".($editOK ? " <A href='$cgiConf'><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
+print "<H1 style=\"margin-bottom:3pt\">$nodeName".($editOK ? " <A href='$cgiConf'><IMG src=\"/icons/modif.png\"></A>":"")
+	.($editOK > 1 ? " <A href='$cgiConf&duplicate=1' title=\"$__{'Duplicate this node'}\"><IMG src=\"/icons/duplicate.png\"></A>":"")
+	."</H1>\n";
 print "<P class=\"subMenu\"> <B>&raquo;&raquo;</B> [";
 if (uc($GRIDType) eq 'VIEW' || uc($GRIDType) eq 'PROC') {
 	print " <A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRIDS}?domain=$GRID{DOMAIN}&type=all\">$DOMAINS{$GRID{DOMAIN}}{NAME}</A> / "

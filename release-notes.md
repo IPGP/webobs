@@ -11,7 +11,8 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 ## v2.7 (under development)
 
 ### New features
-1. **Generic forms**: it is now possible to create any user-defined manual database associated to a form (for entering new data and editing), a table display, and CSV export of data. This new feature is replacing all the former forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, NOVAC, SOILSOLUTIONS, and RAINWATER). When upgrading, a migration of the former databanks is requested: it will create the corresponding configuration files and convert the .DAT text data file to a SQLite .db file. See the user manual documentation for details. 
+1. **Generic forms**: see section *Under development* below.
+1. In showNODE.pl, the links between node's feature displays a table of full children's feature content, including possible link to grandchildren. A toggle icon allows to switch mask/display of this table.
 1. In the **tremblemaps** procs (felt earthquakes), GSE message can be replaced by a JSON file with basic information about the event, with two new variables:
 ```
 GSE_EXPORT|N
@@ -30,10 +31,11 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
 
 ### Enhancements
 1. In the proc request form, all keys are now available for edition, sorted alphabetically, following the `REQUEST_KEYLIST`.
-1. In showNODE.pl the links between node's feature displays a table of full children's feature content, including possible link to grandchildren.
 1. Search node events form accepts negative pattern (beginning with a `!`).
 1. Mat-file raw format allows import of any variable names as t, d, and e matrix (`FID_T`, `FID_D`, `FID_E`).
+1. DSV generic raw format has new option `FID_DECIMAL_COMMA` to read data files using decimal comma (not decimal point).
 1. Better check of the consistency of node start/end dates when editing the configuration.
+1. Exported list of geolocated nodes as KML file has now extended data (start/end dates, active flag).
 
 ### Fixed issues
 1. ``!!`` WebObs Perl modules have been moved from CODE/cgi-bin/WebObs to CODE/perl/lib. The system-wide installation **MUST** be executed when upgrading (answer Y to the appropriate question during setup) in order to make all CGI working.
@@ -45,6 +47,11 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
 1. Fix an issue with the `DECIMATE` parameter in superproc **gnss**.
 1. Fix some graphical issues in **sefran3** with messy data packets in miniseed.
 1. Fix an issue with proc name that uses the word "PROC".
+1. Fix an issue with data files Campbell binary format TOB1 that contain no data but a header.
+1. Fix an issue in **gridmaps** with inactive nodes plotted over active ones.
+
+### Under development
+1. **Generic forms**: it is now possible to create any user-defined manual database associated to a form (for entering new data and editing), a table display, and CSV export of data, using SQLite database. This new feature will replace all the actuel forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, NOVAC, SOILSOLUTIONS, and RAINWATER) in future release, with an automatic migration tool. Creating and using the new forms is functional, but reading the data from PROCS is not yet implemented. See the user manual documentation for details. 
 
 ## v2.6.4 (December 2023)
 
