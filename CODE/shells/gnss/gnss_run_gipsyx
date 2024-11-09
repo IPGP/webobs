@@ -73,7 +73,9 @@ if [ $# -lt 2 ]; then
 	echo "       -lock"
 	echo "            creates a lock file to prevent multiple process of gnss_run_gipsyx"
 	echo "       -debug"
-	echo "            verbose mode"
+	echo "            verbose mode & temporary folders will not be deleted"
+	echo "       -fullog"
+	echo "            Full log record. Temporary folders are stored in a .fullog.tar.gz file"
 	echo ""
 	exit 0;
 fi
@@ -170,8 +172,12 @@ for (( i=1; i<=$#; i++)); do
 		;;
    	-debug)
       		DEBUG=1
-		export VERBOSE=Y
-      		echo "Debug mode: temporary directories will NOT be deleted!"
+		export VERBOSE=1 ## make raw2rinex VERBOSE
+      		echo "Debug mode: temporary folders will NOT be deleted!"
+		;;
+   	-fullog)
+      		FULLOG=1
+      		echo "Full log record: temporary folders will be stored in zip files"
 		;;
    	-s)
       		j=$((i+1))
@@ -269,6 +275,7 @@ for station in $NODES; do
 		gipsyres="$res.tdp"
 		gipsycov="$res.gdcov"
 		gipsylog="$res.log"
+		gipsyfullog_targz="$res.fullog.tar.gz" # will be used only if $FULLOG is activated
 
 		if [[ $FORCE == 0 && -s "$gipsyres" ]]; then
 			echo "   file $gipsyres [flinn] already exists..."
@@ -440,6 +447,19 @@ for station in $NODES; do
 				if [[ -z $ERROR && -e $LOG ]]; then
 					mv -f $LOG $gipsylog
 					gzip -f $gipsylog
+				fi
+                                
+                                if [[ -n $FULLOG ]]; then
+					ntmpfil=`ls $tmpdir | wc -l`
+					if [[ $ntmpfil -le 1 ]]; then
+						echo "   full log not saved (tmp folder contains only the input RINEX)"
+					else
+						curdir=`pwd`
+						cd $tmpdir
+                                       		tar -zcf $gipsyfullog_targz * 
+						cd $curdir
+						echo "   full log saved in $gipsyfullog_targz" 
+                	                fi
 				fi
 			else
 				echo "   no data to process in $RAW."
