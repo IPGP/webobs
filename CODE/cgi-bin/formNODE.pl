@@ -314,7 +314,7 @@ function postIt()
  var sdate = form.syear.value + form.smonth.value + form.sday.value;
  var edate = form.eyear.value + form.emonth.value + form.eday.value;
 
- if(form.nouveau.value == 1 && form.message.value != "ok") {
+ if(form.newnode.value > 0 && form.message.value != "ok") {
    alert("NODE ID: Please enter a valid and new ID!");
    form.nodename.focus();
    return false;
@@ -420,6 +420,9 @@ function postIt()
 	
 	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
 		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
+		if (document.form.newnode.value == 2) {
+			document.form.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
+		}
 		if (document.getElementById("fidx")) {
 			var fidx = document.getElementById("fidx").getElementsByTagName("div");
 			for (var i=0; i<fidx.length; i++) {
@@ -494,7 +497,7 @@ function checkNode() {
 		document.form.nodename.style.background = 'cornsilk';
 		document.form.message.value = "";
 	}
-	if (document.form.nouveau.value == 0) {
+	if (document.form.newnode.value == 0) {
 		document.form.nodename.style.background = 'none';
 		document.form.message.value = "";
 	}
@@ -917,11 +920,11 @@ print "<TR>";
 	if ($newnode) {
 		print "<INPUT id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\" onKeyUp=\"checkNode()\">";
 	 	print "<INPUT size=\"15\" id=\"message\" name=\"message\" readOnly style=\"background-color:#E0E0E0;border:0\">";
-		print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"1\"\n>";
+		print "<INPUT type=\"hidden\" name=\"newnode\" value=\"$newnode\"\n>";
 	} else {
 		print "<INPUT readonly=\"readonly\" style=\"font-family:monospace;font-weight:bold;font-size:120%;background-color:transparent;border:none\" id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\"><BR>";
 	 	print "<INPUT type=\"hidden\" name=\"message\" value=\"0\">";
-	 	print "<INPUT type=\"hidden\" name=\"nouveau\" value=\"0\">";
+	 	print "<INPUT type=\"hidden\" name=\"newnode\" value=\"0\">";
 	}
 	print "<INPUT type=\"hidden\" name=\"grid\" value=\"$GRIDType.$GRIDName.\">";
 	print "<INPUT type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">";
