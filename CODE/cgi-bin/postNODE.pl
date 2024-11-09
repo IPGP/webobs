@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-postNODE.pl 
+postNODE.pl
 
 =head1 SYNOPSIS
 
@@ -10,17 +10,17 @@ http://..../postNODE.pl?....see query string list below ....
 
 =head1 DESCRIPTION
 
-Process NODE Update or Create from formNODE submitted info 
+Process NODE Update or Create from formNODE submitted info
 
 =head1 Query string parameters
 
- node=  
+ node=
  the fully qualified NODE name (ie. gridtype.gridname.nodename) to create or update
 
  delete=
  if present and =1, deletes the NODE.
 
- acqr= 
+ acqr=
  ACQ_RATE|  configuration value
 
  utcd=
@@ -30,13 +30,13 @@ Process NODE Update or Create from formNODE submitted info
  LAST_DELAY|  configuration value
 
  data=
- FID|  configuration value - string 
+ FID|  configuration value - string
 
  rawformat=
- RAWFORMAT|  configuration value - string 
+ RAWFORMAT|  configuration value - string
 
  rawdata=
- RAWDATA|  configuration value - string 
+ RAWDATA|  configuration value - string
 
  chanlist=
  CHANNEL_LIST|  list of selected channels - comma-separated integers
@@ -47,16 +47,16 @@ Process NODE Update or Create from formNODE submitted info
  moisD=
  INSTALL_DATE|  configuration value - month component
 
- jourD= 
+ jourD=
  INSTALL_DATE|  configuration value - day component
 
  anneeE=
  END_DATE|  configuration value - year component
 
- moisE= 
+ moisE=
  END_DATE|  configuration value - month component
 
- jourE= 
+ jourE=
  END_DATE|  configuration value - day component
 
  validite=
@@ -72,7 +72,7 @@ Process NODE Update or Create from formNODE submitted info
  NAME|  configuration value - string
 
  fdsn=
- FDSN_NETWORK_CODE|  configuration value - string 
+ FDSN_NETWORK_CODE|  configuration value - string
 
  lat=
  LAT_WGS84|  configuration value
@@ -84,28 +84,31 @@ Process NODE Update or Create from formNODE submitted info
  ALTITUDE|  configuration value
 
  anneeP=
- POS_DATE|  configuration - year component 
+ POS_DATE|  configuration - year component
 
  moisP=
- POS_DATE|  configuration - month component 
+ POS_DATE|  configuration - month component
 
  jourP=
- POS_DATE|  configuration - day component 
+ POS_DATE|  configuration - day component
 
  typePos=
  POS_TYPE|  configuration value
 
- features= 
+ rawKML=
+ POS_RAWKML|  configuration value (URL)
+
+ features=
  FILES_FEATURES|  configuration value - string file1[|file2[....|filen]]
 
  typeTrans=
  TRANSMISSION|  configuration value - string type
 
  pathTrans=
- TRANSMISSION|  configuration value component - string 
+ TRANSMISSION|  configuration value component - string
 
  SELs=
- PROC| and VIEW| configuration lists 
+ PROC| and VIEW| configuration lists
 
 =cut
 
@@ -115,7 +118,7 @@ use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
 use POSIX qw/strftime/;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
-$CGI::POST_MAX = 1024 * 10;
+$CGI::POST_MAX = 1024 * 1000;
 $CGI::DISABLE_UPLOADS = 1;
 my $cgi = new CGI;
 
@@ -133,6 +136,7 @@ use Locale::TextDomain('webobs');
 #
 my $delete = $cgi->param('delete') // 0;
 my $GRIDName  = my $GRIDType  = my $NODEName = "";
+my @lines;
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($cgi->param('node')));
 if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
 	if ( $delete && !clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
@@ -141,69 +145,125 @@ if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
 	if ( !clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
 		htmlMsgNotOK("You cannot edit $GRIDType.$GRIDName.$NODEName");
 	}
-} else { htmlMsgNotOK ("Invalid NODE posted for create/update/delete")  }
+} else { htmlMsgNotOK ("Invalid NODE (".$cgi->param('node').") posted for create/update/delete")  }
+
+# ---- checking if user is a THEIA user and if he wants to save data in metadatabase
+#
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
+my $saveAuth   = $cgi->param('saveAuth')	// '';
 
 # ---- where are the NODE's directory and NODE's conf file ?
 my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
 my $nodepath = "$NODES{PATH_NODES}/$NODEName";
 my $nodefile = "$nodepath/$NODEName.cnf";
+my $n2nfile = "$NODES{FILE_NODES2NODES}";
 
 # ---- If deleting NODE, do not wait for further information
 #
+my $producer   = $cgi->param('producer')    // '';	# information needed to delete the NODE's related row in the metadata DB
+
 if ($delete) {
-	# NOTE: this removes the node directory and association to grids, but not any reference to it in other nodes...
-	mkdir $NODES{PATH_NODE_TRASH};
-	system("rm -rf $NODES{PATH_NODE_TRASH}/$NODEName");
+	# NOTE: this removes only the node directory, association to grids and node feature associations
+	qx(/bin/mkdir -p $NODES{PATH_NODE_TRASH});
+	qx(/bin/rm -rf $NODES{PATH_NODE_TRASH}/$NODEName);
 	if (system("/bin/mv $nodepath $NODES{PATH_NODE_TRASH}/") == 0) {
 		unlink glob "$WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName";
 		#system("/bin/rm -f $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName");
+		# reads all but feature children nodes
+		@lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
+		saveN2N(@lines);
+		
+		if ( isok($theiaAuth) and isok($saveAuth) ) {
+			# --- connecting to the database
+			my $driver   = "SQLite";
+			my $database = $WEBOBS{SQL_METADATA};
+			my $dsn 	 = "DBI:$driver:dbname=$database";
+			my $userid 	 = "";
+			my $password = "";
+			my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+		    	or die $DBI::errstr;
+			
+			my $stmt = qq(delete from datasets WHERE datasets.identifier = "$producer\_DAT_$GRIDName.$NODEName");
+			my $sth = $dbh->prepare( $stmt );
+			my $rv = $sth->execute() or die $DBI::errstr;
+
+			if($rv < 0) {
+			   print $DBI::errstr;
+			}
+			
+			$dbh->disconnect();
+		}
 	} else {
 		htmlMsgNotOK("postNODE couldn't move directory $nodepath to trash... [$!]");
 	}
 	htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n deleted");
+	exit;
 }
 
-# ---- What are we supposed to do ?: find it out in the query string 
+# ---- What are we supposed to do ?: find it out in the query string
 #
-my $QryParm   = $cgi->Vars;    # used later; todo: replace cgi->param's below
-my $acqr      = $cgi->param('acqr')        // ''; 
-my $utcd      = $cgi->param('utcd')        // ''; 
-my $ldly      = $cgi->param('ldly')        // ''; 
-my $anneeD    = $cgi->param('anneeDepart') // '';
-my $moisD     = $cgi->param('moisDepart')  // '';
-my $jourD     = $cgi->param('jourDepart')  // '';
-my $anneeE    = $cgi->param('anneeEnd')    // '';
-my $moisE     = $cgi->param('moisEnd')     // '';
-my $jourE     = $cgi->param('jourEnd')     // '';
-my $validite  = $cgi->param('valide')      // '';
-my $alias     = $cgi->param('alias')       // '';
-my $type      = $cgi->param('type')        // '';
-my $data      = $cgi->param('data')        // '';
-my $rawformat = $cgi->param('rawformat')   // '';
-my $rawdata   = $cgi->param('rawdata')     // '';
-my @chanlist  = $cgi->param('chanlist');
-my $name      = $cgi->param('fullName')    // '';
-my $fdsn      = $cgi->param('fdsn')        // '';
-my $latN      = $cgi->param('latwgs84n')   // '';
-my $lat       = $cgi->param('latwgs84')    // '';
-my $latmin    = $cgi->param('latwgs84min') // '';
-my $latsec    = $cgi->param('latwgs84sec') // '';
-my $lonE      = $cgi->param('lonwgs84e')   // '';
-my $lon       = $cgi->param('lonwgs84')    // '';
-my $lonmin    = $cgi->param('lonwgs84min') // '';
-my $lonsec    = $cgi->param('lonwgs84sec') // '';
-my $alt       = $cgi->param('altitude')    // '';
-my $anneeP    = $cgi->param('anneeMesure') // '';
-my $moisP     = $cgi->param('moisMesure')  // '';
-my $jourP     = $cgi->param('jourMesure')  // '';
-my $typePos   = $cgi->param('typePos')     // '';
-my $features  = $cgi->param('features')    // ''; 
+my $QryParm    = $cgi->Vars;    # used later; todo: replace cgi->param's below
+my $acqr       = $cgi->param('acqr')        // '';
+my $utcd       = $cgi->param('utcd')        // '';
+my $ldly       = $cgi->param('ldly')        // '';
+my $anneeD     = $cgi->param('syear')       // '';
+my $moisD      = $cgi->param('smonth')      // '';
+my $jourD      = $cgi->param('sday')        // '';
+my $anneeE     = $cgi->param('eyear')       // '';
+my $moisE      = $cgi->param('emonth')      // '';
+my $jourE      = $cgi->param('eday')        // '';
+my $validite   = $cgi->param('valide')      // '';
+my $alias      = $cgi->param('alias')       // '';
+my $type       = $cgi->param('type')        // '';
+my $desc       = $cgi->param('description') // ''; $desc =~ s/\<\<//g;
+my $desc1 = $desc; $desc1 =~ s/\r\n/<br>/g;
+my $creator    = $cgi->param('creators')    // '';
+my $theme      = $cgi->param('theme')       // '';
+my @roles	   = $cgi->param('role');
+my @firstNames = $cgi->param('firstName');
+my @lastNames  = $cgi->param('lastName');
+my @emails	   = $cgi->param('email');
+my @topics     = $cgi->param('topics');
+my $lineage    = $cgi->param('lineage')     // '';
+my $tz         = $cgi->param('tz')          // '';
+my $data       = $cgi->param('data')        // '';
+my $rawformat  = $cgi->param('rawformat')   // '';
+my $rawdata    = $cgi->param('rawdata')     // '';
+my @chanlist   = $cgi->param('chanlist');
+my $name       = $cgi->param('fullName')    // '';
+my $fdsn       = $cgi->param('fdsn')        // '';
+my $latN       = $cgi->param('latwgs84n')   // '';
+my $lat        = $cgi->param('latwgs84')    // '';
+my $latmin     = $cgi->param('latwgs84min') // '';
+my $latsec     = $cgi->param('latwgs84sec') // '';
+my $lonE       = $cgi->param('lonwgs84e')   // '';
+my $lon        = $cgi->param('lonwgs84')    // '';
+my $lonmin     = $cgi->param('lonwgs84min') // '';
+my $lonsec     = $cgi->param('lonwgs84sec') // '';
+my $spatialcov = $cgi->param('outWKT')      // '';
+my $geojson    = $cgi->param('geojson')     // '';
+my $filename   = $cgi->param('filename')    // '';
+my $alt        = $cgi->param('altitude')    // '';
+my $gnss_9char = $cgi->param('gnss_9char')  // '';
+my $m3g_check  = $cgi->param('m3g_check')   // '';
+my $anneeP     = $cgi->param('pyear')       // '';
+my $moisP      = $cgi->param('pmonth')      // '';
+my $jourP      = $cgi->param('pday')        // '';
+my $typePos    = $cgi->param('typePos')     // '';
+my $rawKML     = $cgi->param('rawKML')      // '';
+my $features   = $cgi->param('features')    // '';
+$features =~ s/\|/,/g;
+my %n2n;
+for (split(',',lc($features))) {
+	$n2n{$_} = $cgi->param($_) if $cgi->param($_) ne '';
+}
 my $typeTrans = $cgi->param('typeTrans')   // '';
+$typeTrans =~ s/\|/,/g;
 my $typeTele  = $cgi->param('pathTrans')   // '';
 if ($typeTele ne "") { $typeTrans = "$typeTrans,$typeTele"; }
 my @SELs      = $cgi->param('SELs');
 
-# ---- pre-set actions to be run soon under control of 
+# ---- pre-set actions to be run soon under control of
 # ---- lock-exclusive on the configuration file.
 # ----
 
@@ -232,11 +292,17 @@ if ($lon ne "" && $lat ne "") {
 	$lon =~ s/,/./g;
 }
 
+# ---- parsing dataset contacts
+my @creators = split('\|', $creator);
+
 # ---- NODE's validity flag
 my $valide = "";
 if ( $validite eq "NA" ) { $valide = 1; } else { $valide = 0; }
+# ---- 2nd checkbox: M3G avaiability flag
+my $m3g_avaiable = "";
+if ( $m3g_check eq "NA" ) { $m3g_avaiable = 1; } else { $m3g_avaiable = 0; }
 # ---- NODES' Feature Files: "system" always present, and "user" defined
-my @FFsys = ('acces.txt', 'info.txt', 'installation.txt', 'type.txt', "$NODEName.clb"); 
+my @FFsys = ('acces.txt', 'info.txt', 'installation.txt', 'type.txt', "$NODEName.clb");
 my @FFusr = map { "$NODES{SPATH_FEATURES}/".lc($_).'.txt'} split(/\||,/,$features);
 my @FFnew = map { $_ if(! -e "$nodepath/$_") } (@FFsys, @FFusr);
 # ---- NODE's documents subdirectories
@@ -244,23 +310,24 @@ my @docs  = ($NODES{SPATH_INTERVENTIONS}, $NODES{SPATH_PHOTOS}, $NODES{SPATH_DOC
 my @Dnew  = map { $_ if(! -e "$nodepath/$_") } (@docs);
 # ---- build the NODE's configuration file. There is no 'true update' of this .cnf,
 # ---- each time it is rebuilt from scratch (hum...from query-string parameters)
-my @lines;
 #my @Ps; my @Vs;
 push(@lines,"=key|value\n");
 push(@lines,"NAME|\"".u2l($name)."\"\n");
 push(@lines,"ALIAS|".u2l($alias)."\n");
 push(@lines,"TYPE|".u2l($type)."\n");
 push(@lines,"VALID|$valide\n");
+push(@lines,"TZ|$tz\n");
 push(@lines,"LAT_WGS84|$lat\n");
 push(@lines,"LON_WGS84|$lon\n");
 push(@lines,"ALTITUDE|$alt\n");
+push(@lines,"GNSS_9CHAR|$gnss_9char\n");
+push(@lines,"M3G_AVAIABLE|$m3g_avaiable\n");
 push(@lines,"POS_DATE|$datePos\n");
-push(@lines,"POS_TYPE|".u2l($typePos)."\n");
+push(@lines,"POS_TYPE|$typePos\n");
+push(@lines,"POS_RAWKML|$rawKML\n");
 push(@lines,"INSTALL_DATE|$dateInstall\n");
 push(@lines,"END_DATE|$dateEnd\n");
-$features =~ s/\|/,/g;
-push(@lines,"FILES_FEATURES|".u2l(lc($features))."\n");
-$typeTrans =~ s/\|/,/g;
+push(@lines,"FILES_FEATURES|".u2l(lc(join(",",map {trim($_)} split(/[,\|]/,$features))))."\n");
 push(@lines,"TRANSMISSION|".u2l($typeTrans)."\n");
 
 # ---- procs parameters
@@ -274,6 +341,7 @@ if ($GRIDType eq "PROC") {
 	push(@lines,"$GRIDType.$GRIDName.ACQ_RATE|$acqr\n");
 	push(@lines,"$GRIDType.$GRIDName.LAST_DELAY|$ldly\n");
 	push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
+	push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|".u2l($desc1)."\n");
 }
 
 # ---- other grid's parameters (not linked to the active grid) are transfered "as is"
@@ -296,12 +364,6 @@ foreach my $g (@{$allNodeGrids{$NODEName}}) {
 	}
 }
 
-# ---- [FB-was]: no need to store PROC and VIEW in .cnf
-#for (@SELs) { if (/^PROC\./) { (my $u = $_) =~ s/^PROC\.//g ; push(@Ps,$u) }};
-#for (@SELs) { if (/^VIEW\./) { (my $u = $_) =~ s/^VIEW\.//g ; push(@Vs,$u) }};
-#push(@lines,"PROC|".join(',',@Ps)."\n");
-#push(@lines,"VIEW|".join(',',@Vs)."\n");
-# push(@lines,u2l("CALIB_FILE $stationName.clb\n"));
 
 # ---- create NODE's directory if required
 umask 0002;
@@ -333,7 +395,7 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 	}
 	# ---- delete any existing GRIDS to NODE symbolic links
 	qx(rm -f $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName);
- 
+
 	# ---- create GRIDS to NODE symbolic link(s) if required
 	for (@SELs) {
 		qx(ln -s $nodepath $WEBOBS{PATH_GRIDS2NODES}/$_.$NODEName);
@@ -350,14 +412,128 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 	if (-e "$nodepath/type.txt") {
 		qx(rm -f $nodepath/type.txt);
 	}
-	htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n created/updated");
 
 } else { htmlMsgNotOK("$nodefile $!") }
 
-# --- return information when OK 
+# ---- saving geojson from the .shp file
+#
+
+my $geojsonfile = "$nodepath/$NODEName.geojson";
+
+if ($geojson ne "") {
+	if ( sysopen(FILE, "$geojsonfile", O_RDWR | O_CREAT) ) {
+		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+			warn "postNODE waiting for lock on $geojsonfile...";
+			flock(FILE, LOCK_EX);
+		}
+		
+		truncate FILE, 0;
+		print FILE $geojson;
+		close(FILE);
+		
+	} else { htmlMsgNotOK("$geojsonfile $!") }
+}
+
+if ( isok($theiaAuth) and $saveAuth == 1 ) {
+	# --- connecting to the database
+	my $driver   = "SQLite";
+	my $database = $WEBOBS{SQL_METADATA};
+	my $dsn 	 = "DBI:$driver:dbname=$database";
+	my $userid 	 = "";
+	my $password = "";
+		
+	# --- station informations, coordinates are saved in WKT format
+	my $point;
+	if ($alt ne "") {
+		$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
+	} else {
+		$point = "wkt:Point(".$lat.",".$lon.")";
+	}
+		
+	# --- dataset informations
+	my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
+	my $topics = 'topicCategories:'.join(',',@topics);
+	my $subject = $topics.'_inspireTheme:'.$theme;
+		
+	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+	   or die $DBI::errstr;
+		   
+	# inserting creators into contacts table
+	my @contacts = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
+	my $stmt = qq(select * from contacts where related_id=\"$id\");
+	my $sth = $dbh->prepare( $stmt );
+	my $rv = $sth->execute() or die $DBI::errstr;
+
+	if($rv < 0) {
+	   print $DBI::errstr;
+	}
+	while(my @row = $sth->fetchrow_array()) {
+		my $email = $row[0];
+		if ($email !~ @emails) {
+			my $stmt2 = "delete from contacts where email=\"$email\" AND related_id=\"$id\"";
+			$dbh->do($stmt2);
+		}
+	}
+		
+	my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
+	$dbh->do($q);
+	
+	my $station_name = $GRIDName.'.'.$NODEName;
+
+	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
+	$sth->execute($station_name,$alias,$point);
+	
+	if ($spatialcov eq "") {
+		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, LINEAGE) VALUES (?,?,?,?,?);');
+		$sth->execute($id,$name,$desc,$subject,$lineage);
+	} else {
+		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
+		$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
+	}
+		
+	$dbh->disconnect();
+}
+
+# ---- node2node update: only if there is something to do!
+#
+if (%n2n) {
+	# reads all but current node
+	@lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
+	for my $key (keys(%n2n)) {
+		for my $n (split(/,/,$n2n{$key})) {
+			push(@lines,"$NODEName|$key|$n\n");
+		}
+	}
+	saveN2N(@lines);
+}
+htmlMsgOK("$GRIDType.$GRIDName.$NODEName created/updated");
+
+# ---- saving NODE informations in sampling_features tables
+
+
+# ---- node2node edit: lock-exclusive the file during update process
+sub saveN2N {
+	if ( sysopen(FILE, "$n2nfile", O_RDWR | O_CREAT) ) {
+		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+			warn "postNODE waiting for lock on $n2nfile...";
+			flock(FILE, LOCK_EX);
+		}
+		# ---- backup the file (To Be Removed: lifecycle too short)
+		if ( -e $n2nfile ) {
+			qx(cp -a $n2nfile $n2nfile~ 2>&1);
+		}
+		# ---- actually create the NODE's configuration file and release lock!
+		truncate FILE, 0;
+		print FILE @_;
+		close(FILE);
+
+	} else { htmlMsgNotOK("$n2nfile $!") }
+
+}
+# --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 	exit;
 }
 
@@ -375,11 +551,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
+Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -395,4 +571,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-

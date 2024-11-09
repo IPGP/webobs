@@ -1,0 +1,5 @@
+%graphics_toolkit gnuplot
+addpath superprocs
+javaaddpath ('../bin/java/xercesImpl.jar')
+javaaddpath ('../bin/java/xml-apis.jar')
+pkg load io

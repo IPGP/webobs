@@ -3,7 +3,7 @@
 P=`dirname $0`
 
 oIFS=${IFS}; IFS=$'\n'
-L=( $(perl ${P}/../cgi-bin/exposerc.pl '=' 'WO__') )
+L=( $(perl ${P}/../perl/exposerc.pl '=' 'WO__') )
 for i in $(seq 0 1 ${#L[@]}); do export ${L[$i]}; done
 IFS=${oIFS}
 

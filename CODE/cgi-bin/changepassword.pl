@@ -36,8 +36,8 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users qw(%USERS $CLIENT clientHasRead clientHasEdit clientHasAdm
-           htpasswd_verify htpasswd_update);
+use WebObs::Users qw(%USERS $CLIENT clientIsValid htpasswd_verify htpasswd_update);
+use WebObs::Utils qw(isok);
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 
@@ -113,8 +113,7 @@ sub print_form {
   my $submit_url = $cgi->url();
   my $min_length_msg = "";
     if ($WEBOBS{'HTPASSWORD_MIN_LENGTH'}) {
-    $min_length_msg = sprintf($__{'Note:'}." "
-      .$__{'your password must be at least %s characters long'},
+    $min_length_msg = sprintf($__{'Note: your password must be at least %s characters long.'},
       $WEBOBS{'HTPASSWORD_MIN_LENGTH'});
   }
   print <<__EOD__;
@@ -129,6 +128,14 @@ sub print_form {
 
   <form class="chpass_form" name="changePass" id="changePass"
     method="POST" action="$submit_url">
+  <div class="form_elem form_label">
+      <label for="current_login">$__{'Your login name'}:</label>
+  </div>
+  <div class="form_elem form_input">
+      <b>$CLIENT</b><br/>\n
+  </div>
+  <br>
+
   <div class="form_elem form_label">
       <label for="current_password">$__{'Your current password'}:</label>
   </div>
@@ -188,15 +195,19 @@ sub print_secondary {
 
 
 ##---- Main script
-
+# ends here if the client is not valid
+if ( !clientIsValid ) {
+  die "$__{'die_client_not_valid'}";
+}
+ 
 my $current_password = $cgi->param('current_password') // "";
 my $new_password  = $cgi->param('new_password')        // "";
 my $new_password2 = $cgi->param('new_password2')       // "";
 
 
-# If ALLOW_HTPASSWORD_CHANGE is not set to 1 in WEBOBS.rc,
+# If ALLOW_HTPASSWORD_CHANGE is not set to true in WEBOBS.rc,
 # we won't allow users to change their password.
-if ($WEBOBS{'ALLOW_HTPASSWORD_CHANGE'} != 1) {
+if (!isok($WEBOBS{'ALLOW_HTPASSWORD_CHANGE'})) {
   print_head();
   print("<h2>$__{'Password change disabled'}</h2>\n");
   print_secondary($__{'Sorry, password change is disabled on this platform. Please contact your administrator.'});
@@ -270,7 +281,7 @@ Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

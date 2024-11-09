@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2021-01-01
+%	Updated: 2024-01-11
 
 
 WO = readcfg;
@@ -97,9 +97,10 @@ cmap = field2num(P,'COLORMAP',jet(256));
 amap = field2num(P,'COLORMAP_ALPHA',[0,1]);
 twmsk = field2num(P,'TABLE_WHITE_MSK',10:12);
 
-forced = isok(P,'FELT_FORCED',0);
+forced = isok(P,'FELT_FORCED');
 mskmin = field2num(P,'FELT_MSK_MIN',2);
-citiesdisplaylist = field2num(P,'CITIES_DISPLAY_LIST',0);
+magerrmin = field2num(P,'MAG_ERROR_MIN',0.1);
+citiesdisplaylist = isok(P,'CITIES_DISPLAY_LIST',true);
 
 % loads description and parameters for MSK and MAG tables
 mskscale = sprintf('%s/etc/mskscale.%s',WO.ROOT_CODE,P.LOCALE);
@@ -114,6 +115,7 @@ region = P.REGION;
 
 % loads cities (with elevations for P.REGION)
 CITIES = readcities(WO,P,'elevation');
+cradius = field2num(P,'CITIES_RADIUS_KM',0);
 
 if isfield(P,'SHAPE_FILE') && exist(P.SHAPE_FILE,'file')
 	faults = ibln(P.SHAPE_FILE);
@@ -128,6 +130,9 @@ A3 = imread(P.LOGO2_FILE);
 [suser,wuser] = wosystem('echo "$(whoami)@$(hostname)"','chomp');
 nbsig = 2;                                       % nombre de chiffres significatifs pour PGA affichés
 lastb3 = '';
+
+% fixes the minimum magnitude error
+d(:,12) = max(d(:,12),magerrmin);
 
 % main loop on each data event
 for n = 1:length(t)
@@ -146,9 +151,9 @@ for n = 1:length(t)
 
 	if all(~isnan(d(n,1:4))) && ~exist(fdat,'file') && e(n) >= 0
 
-		depi = greatcircle(CITIES.lat,CITIES.lon,d(n,1),d(n,2));	% epicentral distance to all cities
-		dhyp = sqrt(depi.^2 + (CITIES.alt/1e3 + d(n,3)).^2);	% hypocentral distance to all cities
-		pga = 1e3*repmat(gmpe(P.GMPE,d(n,4),dhyp,d(n,3)),1,2).*[ones(size(depi)),CITIES.factor];	% predicted PGA (in mg) and PGAmax (with amplification factor)
+		depi = max(greatcircle(CITIES.lat,CITIES.lon,d(n,1),d(n,2)) - cradius,0);	% epicentral distance to all cities
+		dhyp = sqrt(depi.^2 + (CITIES.alt/1e3 + d(n,3) - znan(d(n,8))).^2);	% hypocentral distance to all cities
+		pga = 1e3*repmat(gmpe(P.GMPE,d(n,4) + znan(d(n,12)),dhyp,d(n,3)),1,2).*[ones(size(depi)),CITIES.factor];	% predicted PGA (in mg) and PGAmax (with amplification factor)
 		msk = gmice(pga,P.GMICE);	% predicted intensity (MSK scale)
 		% sort all pga values in decreasing order
 		[~,k] = sort(pga(:,2),1,'descend');
@@ -577,25 +582,48 @@ for n = 1:length(t)
 
 			% ===========================================================
 			% exports GSE file
-			fgse = sprintf('%s/%s.gse',pdat,fnam);
-			fprintf('%s: exporting GSE file %s ...',wofun,fgse);
-			fid = fopen(fgse,'wt');
-			fprintf(fid,'BEGIN GSE2.0\n');
-			fprintf(fid,'MSG_TYPE DATA\n');
-			fprintf(fid,'MSG_ID %s %s\n',fnam,WO.WEBOBS_ID);
-			fprintf(fid,'DATA_TYPE EVENT GSE2.0\n');
-			fprintf(fid,'%s\n',varsub(gse_title,E));
-			fprintf(fid,'EVENT %s\n',id);
-			fprintf(fid,'   Date       Time       Latitude Longitude    Depth    Ndef Nsta Gap    Mag1  N    Mag2  N    Mag3  N  Author          ID \n');
-			fprintf(fid,'     rms   OT_Error      Smajor Sminor Az        Err   mdist  Mdist     Err        Err        Err     Quality\n\n');
-			fprintf(fid,'%4d/%02d/%02d %02d:%02d:%04.1f    %8.4f %9.4f    %5.1f              %03d  %2s%4.1f                           %-8.8s  %02.0f%03.0f%03.0f\n', ...
-				datevec(t(n)),d(n,[1,2,3,5]),c{n,2},d(n,4),WO.WEBOBS_ID,d(n,[1,2,3]));
-			fprintf(fid,'     %5.2f   +-          %6.1f %6.1f         +-%5.1f                                                  %-1.1s i %s\n', ...
-				d(n,[6,7,7,8]),c{n,5},gse_evtype);
-			fprintf(fid,'\n%s\n',upper(varsub(P.GSE_COMMENT,E)));
-			fprintf(fid,'\n\nSTOP\n');
-			fclose(fid);
-			fprintf(' done.\n');
+			if isok(P,'GSE_EXPORT')
+				fgse = sprintf('%s/%s.gse',pdat,fnam);
+				fprintf('%s: exporting GSE file %s ...',wofun,fgse);
+				fid = fopen(fgse,'wt');
+				fprintf(fid,'BEGIN GSE2.0\n');
+				fprintf(fid,'MSG_TYPE DATA\n');
+				fprintf(fid,'MSG_ID %s %s\n',fnam,WO.WEBOBS_ID);
+				fprintf(fid,'DATA_TYPE EVENT GSE2.0\n');
+				fprintf(fid,'%s\n',varsub(gse_title,E));
+				fprintf(fid,'EVENT %s\n',id);
+				fprintf(fid,'   Date       Time       Latitude Longitude    Depth    Ndef Nsta Gap    Mag1  N    Mag2  N    Mag3  N  Author          ID \n');
+				fprintf(fid,'     rms   OT_Error      Smajor Sminor Az        Err   mdist  Mdist     Err        Err        Err     Quality\n\n');
+				fprintf(fid,'%4d/%02d/%02d %02d:%02d:%04.1f    %8.4f %9.4f    %5.1f              %03.0f  %2s%4.1f                           %-8.8s  %02.0f%03.0f%03.0f\n', ...
+					datevec(t(n)),d(n,[1,2,3,5]),c{n,2},d(n,4),WO.WEBOBS_ID,d(n,[1,2,3]));
+				fprintf(fid,'     %5.2f   +-          %6.1f %6.1f         +-%5.1f                                                  %-1.1s i %s\n', ...
+					d(n,[6,7,7,8]),c{n,5},gse_evtype);
+				fprintf(fid,'\n%s\n',upper(varsub(P.GSE_COMMENT,E)));
+				fprintf(fid,'\n\nSTOP\n');
+				fclose(fid);
+				fprintf(' done.\n');
+			end
+
+			% ===========================================================
+			% exports JSON file (for BCSF trigger protocol)
+			% [FB-NOTE]: strings should be encoded UTF-8 in the JSON format... 
+			if isok(P,'JSON_EXPORT')
+				fjson = sprintf('%s/%s.json',pdat,fnam);
+				fprintf('%s: exporting JSON file %s ...',wofun,fjson);
+				fid = fopen(fjson,'wt');
+				fprintf(fid,'{\n');
+				fprintf(fid,'  "eventid": "%s",\n',id);
+				fprintf(fid,'  "time": "%4d/%02d/%02d %02d:%02d:%04.1f",\n',datevec(t(n)));
+				fprintf(fid,'  "latitude": "%1.4f",\n',d(n,1));
+				fprintf(fid,'  "longitude": "%1.4f",\n',d(n,2));
+				fprintf(fid,'  "depth": "%1.1f",\n',d(n,3));
+				fprintf(fid,'  "magnitude": "%1.1f",\n',d(n,4));
+				fprintf(fid,'  "department": "%s",\n',upper(E.region));
+				fprintf(fid,'  "region": "%s"\n',upper(varsub('$azimuth de $city',E)));
+				fprintf(fid,'}\n');
+				fclose(fid);
+				fprintf(' done.\n');
+			end
 
 			% ===========================================================
 			% exports a comprehensive text message (for notification)

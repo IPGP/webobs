@@ -76,8 +76,8 @@ progress, end, and/or results:
 	CUMULATE|
 	DECIMATE|
 	PLOTGRID|
-	POSTSCRIPT|
 	PDFOUTPUT|
+	SVGOUTPUT|
 	EXPORTS|
 	ANONYMOUS|
 	DEBUG|
@@ -112,7 +112,7 @@ $|=1;
 # ---- webobs stuff
 #
 use WebObs::Config;
-use WebObs::Users;
+use WebObs::Users qw(%USERS $CLIENT clientHasRead);
 use WebObs::Grids;
 use WebObs::i18n;
 use WebObs::Utils qw(u2l);
@@ -131,6 +131,13 @@ my $box = ($ENV{REMOTE_HOST} ne '') ? "$ENV{REMOTE_HOST}" : "$ENV{REMOTE_ADDR}";
 my $QryParm   = $cgi->Vars;
 my @procnames = grep( /^p_/, keys %$QryParm );
 map(s/^p_//g,@procnames);
+
+# --- checks authorization for each proc
+for (@procnames) {
+	if ( !clientHasRead(type=>"authprocs",name=>"$_") ) {
+		die "Sorry, you don't have authorization to read data from proc $_.";
+	}
+}
 
 my $reqpath  = "$WEBOBS{ROOT_OUTR}/$now"."_".$box."_"."$CLIENT";
 my $reqfn    = "$reqpath/REQUEST.rc";
@@ -168,8 +175,8 @@ if ( (open REQ, ">$reqfn") ) {
 	print REQ "CUMULATE|".$QryParm->{'cumulate'}."\n";
 	print REQ "DECIMATE|".$QryParm->{'decimate'}."\n";
 	print REQ "PLOTGRID|".$QryParm->{'gridon'}."\n";
-	print REQ "POSTSCRIPT|".$QryParm->{'postscript'}."\n";
 	print REQ "PDFOUTPUT|".$QryParm->{'pdfoutput'}."\n";
+	print REQ "SVGOUTPUT|".$QryParm->{'svgoutput'}."\n";
 	print REQ "EXPORTS|".$QryParm->{'exports'}."\n";
 	print REQ "ANONYMOUS|".$QryParm->{'anonymous'}."\n";
 	print REQ "DEBUG|".$QryParm->{'debug'}."\n";
@@ -262,7 +269,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2020 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

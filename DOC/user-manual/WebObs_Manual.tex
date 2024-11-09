@@ -1,10 +1,10 @@
 \documentclass[10pt]{book}
-\usepackage[margin=2cm]{geometry}   
-\usepackage[font=small]{caption}     
-\geometry{a4paper}    
+\usepackage[margin=2cm]{geometry}
+\usepackage[font=small]{caption}
+\geometry{a4paper}
 \usepackage[utf8]{inputenc}
 %\usepackage[T1]{fontenc}
-\usepackage[parfill]{parskip}  
+\usepackage[parfill]{parskip}
 \usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage{epstopdf}
@@ -14,7 +14,7 @@
 \usepackage{longtable}
 \usepackage{datenumber}
 \usepackage{calc}
-%\usepackage{numprint}
+\usepackage{datetime}
 
 \usepackage[usenames,dvipsnames]{color}
 \definecolor{snow}{gray}{0.98}
@@ -32,17 +32,19 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 
-\usepackage[colorlinks=true, pdfstartview=FitV, linkcolor=blue, 
+\usepackage[colorlinks=true, pdfstartview=FitV, linkcolor=blue,
             citecolor=blue, urlcolor=blue]{hyperref}
 
 %\includeonly{Chapter1}
 
 \renewcommand*{\familydefault}{\sfdefault}
+\newdateformat{mydate}{\monthname[\THEMONTH] \THEYEAR}
+
 
 % ------ local variables
-\newcommand{\release}{2.4}
-\newcommand{\releasename}{v2.4}
-\newcommand{\releasedate}{October 22, 2021}
+\newcommand{\release}{2.6.4}
+\newcommand{\releasename}{v\release}
+\newcommand{\releasedate}{\mydate\today}
 \newcommand{\webobs}{\textbf{WebObs }}
 \newcommand{\wo}[1]{\MakeTextUppercase{#1}}
 \newcommand{\wofile}[1]{\small{\textbf{#1}}}
@@ -79,15 +81,17 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 
 % ------------------- Title and Author -----------------------------
 \title{
-	\includegraphics[height=3cm]{figures/logo_WebObs_C413.png}\quad
-	\includegraphics[height=3cm]{figures/LogoIPGP_petit.png}\quad
+	\includegraphics[height=5cm]{figures/logo_WebObs_C413.png}\\[1cm]
+	%\includegraphics[height=3cm]{figures/LogoIPGP_petit.png}\quad
 	%\includegraphics[height=2.5cm]{figures/LogoPRES.png}\quad
 	%\includegraphics[height=2.5cm]{figures/logo_p7.png}\quad
 	%\includegraphics[height=2.5cm]{figures/CNRSfilaire-grand.jpg}
-	\\[4cm]
+	%\\[3cm]
 	{\Huge \textbf{WebObs: An integrated web-based system for networks management and data monitoring in observatories}\\[.5cm]
-\huge User and Administration Manual}\\[3cm]}
-\author{\textit{François Beauducel and Didier Lafon}\\Institut de Physique du Globe de Paris Observatories\\}
+\huge User and Administration Manual}\\[3cm]
+	\includegraphics[height=3cm]{figures/ipgp_up_verticaux_rvb.png}
+}
+\author{\textit{François Beauducel, Didier Lafon and Lucas Dassin}\\Institut de Physique du Globe de Paris Observatories\\}
 \date{Release \releasename, \releasedate}
 
 
@@ -108,6 +112,8 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 \include{chapter3}
 \include{chapter4}
 \include{chapter5}
+\include{chapter6}
+\include{chapter7}
 
 % ==================================================================
 \backmatter
@@ -120,4 +126,3 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 
 \end{document}
 \end
-

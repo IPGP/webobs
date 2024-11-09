@@ -12,9 +12,9 @@ function X = readtob1(filename)
 %	and any ascii as NaN.
 %
 %
-%	Author: François Beauducel, IPGP / WEBOBS
+%	Author: FranÃ§ois Beauducel, IPGP / WEBOBS
 %	Created: 2018-06-13 in Jakarta, Indonesia
-%	Updated: 2018-07-31
+%	Updated: 2023-12-31
 
 if ~exist(filename,'file')
 	error('file %s not exists.',filename)
@@ -26,11 +26,21 @@ fid = fopen(filename,'rb');
 
 % --- reads header
 % must check first the file type
+nok = false;
 line = fgets(fid);
-hd = strrep(split(line,','),'"','');
-if ~strcmpi(hd{1},'tob1')
+if ~ischar(line)
+	nok = true;
+else
+	hd = strrep(split(line,','),'"','');
+	if ~strcmpi(hd{1},'tob1')
+		nok = true;
+	end
+end
+if nok
 	fclose(fid);
-	error('File %s is not a valid TOB1 format.\n',filename);
+	warning('File %s is not a valid TOB1 format.\n',filename);
+	X = struct('HEADER',[],'t',[],'d',[]);
+	return
 end
 
 X.HEADER.file_type     = hd{1}; % file type
@@ -48,7 +58,7 @@ header_bytes = length(line);
 field_headers = {'field_names','field_units','field_processing','data_types'};
 
 for fd = 1:length(field_headers)
-	line = fgets(fid);
+	line = fgetl(fid);
 	X.HEADER.(field_headers{fd}) = strrep(split(line,','),'"','');
 	header_bytes = header_bytes + length(line);
 end
@@ -96,7 +106,7 @@ X.HEADER.data_mclass = mclass;
 X.HEADER.data_bytes = rbytes;
 
 record_bytes = sum(rbytes); % record length (in byte)
-nr = (F.bytes - header_bytes)/record_bytes; % number of records in the file
+nr = floor((F.bytes - header_bytes)/record_bytes); % number of records in the file
 
 % --- reads the entire file (after header) into memory - VERY fast! -
 bb = fread(fid,[record_bytes,nr],'*uint8');

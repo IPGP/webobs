@@ -19,13 +19,13 @@ function T = mktides(prgm,opt,t,lat,lon,alt,ptmp)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2015
-%	Updated: 2017-02-03
+%	Updated: 2024-08-26
 
 
 g = 9.81;
 
 
-if numel(opt) == 1
+if isscalar(opt)
 	tidemode = opt;
 	wavemode = 'ALL';
 	kindmode = 'TL';
@@ -72,13 +72,17 @@ if exist(fdat,'file')
 	wosystem(sprintf('sed "s/[:\\/]/ /g" %s > %s',fdat,ftmp));
 	dd = load(ftmp);
 	T.t = datenum(dd(:,1),dd(:,2),dd(:,3),dd(:,4),dd(:,5),0);
-	T.d = g*dd(:,[7,6]);
+	switch kindmode
+		case 'TL'
+			T.d = g*dd(:,[7,6]);
+		otherwise
+			T.d = dd(:,6);
+	end
 	fprintf('done.\n');
 else
 	fprintf('** WARNING ** tides file does not exist!\n');
 end
 
 if delflag
-	rmdir(ptmp,'s');
+	wosystem(sprintf('rm -rf %s',ptmp));
 end
-

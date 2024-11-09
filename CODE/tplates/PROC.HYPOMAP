@@ -59,15 +59,18 @@ DEM_COPYRIGHT|
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
-# do not show node alias in zoom map(s)
+# additional options for gridmaps background map
+GRIDMAPS_DEM_OPT|
+# show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
 # graphical density for PNG outputs (in pixel per inches)
 PPI|100
-# value = 1 to produce EPS graphs
-POSTSCRIPT|1
-# value = 1 to export text data files
-EXPORTS|1
+# exports text data files
+EXPORTS|YES
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
+PDFOUTPUT|NO
 # main logo file
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 # secondary logo file
@@ -83,6 +86,10 @@ EVENTTYPE_EXCLUDED_LIST|not existing,not locatable,outside of network interest,s
 EVENTSTATUS_EXCLUDED_LIST|automatic
 EVENTCOMMENT_INCLUDED_REGEXP|
 EVENTCOMMENT_EXCLUDED_REGEXP|AUTOMATIC
+# search for string in the event comment to tag it as felt EQ
+EVENTCOMMENT_FELT_REGEXP|
+# search for event code (xxNrr) in the catalog comment
+FELT_EVENTCODE_OK|NO
 SC3_LISTEVT|
 LATLIM|13,19
 LONLIM|-64,-58

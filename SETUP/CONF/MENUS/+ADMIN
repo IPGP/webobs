@@ -29,7 +29,12 @@
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES">NODES.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CLB_CONF">CLB.conf</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_TELE)">TRANStypes.conf</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_NODES2NODES)">node2node.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF/events_World.conf">events_World.conf</a></li>
+			  <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumContactPersonRoles.conf">EnumContactPersonRoles.conf</a></li>
+			  <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumFundingTypes.conf">EnumFundingTypes.conf</a></li>
+              <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumInspireTheme.conf">EnumInspireTheme.conf</a></li>
+              <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumTopicCategories.conf">EnumTopicCategories.conf</a></li>
 *         </ul>
 *       </li>
         <li><a href="#">Gazette Editors</a>
@@ -42,8 +47,7 @@
        </li>
 *       <li><a href="#">Sefran/MC Editors</a>
 *         <ul>
-*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/SEFRAN3.conf">SEFRAN3.conf</a></li>
-*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/SEFRAN3_Channels.conf">SEFRAN3_Channels.conf</a></li>
+*           <li><a href="/cgi-bin/formGRID.pl?grid=SEFRAN.SEFRAN3">SEFRAN3</a></li>
 *           <li><hr></li>
 *           <li><a href="/cgi-bin/xedit.pl?fs=CONF/MC3.conf">MC3.conf</a></li>
 *           <li><a href="/cgi-bin/xedit.pl?fs=CONF/MC3_Codes.conf">MC3_Codes.conf</a></li>
@@ -54,5 +58,7 @@
 *      <li><a href="../DOC/mods.html">Doc Modules</a></li>
 *      <li><hr></li>
        <li><a href="/cgi-bin/changepassword.pl">Change your password</a></li>
+       <li><hr></li>
+       <li><a href="/cgi-bin/showTHEIA.pl">Theia|OZCAR pivot model</a></li>
    </ul>
 </li>

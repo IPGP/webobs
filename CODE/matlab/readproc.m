@@ -23,7 +23,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2021-01-01
+%	Updated: 2024-08-06
 
 
 proc = varargin{1};
@@ -32,7 +32,7 @@ wofun = sprintf('WEBOBS{%s}',mfilename);
 if strncmp(proc,'/',1)	% if argument contains a path filename, will read it as is...
 	f = proc;
 else
-	proc = regexprep(proc,'PROC.','');
+	proc = regexprep(proc,'PROC\.','');
 	f = sprintf('%s/%s/%s.conf',WO.PATH_PROCS,proc,proc);
 end
 
@@ -43,7 +43,13 @@ if ~exist(f,'file')
 end
 
 % reads .conf main conf file
-P = readcfg(WO,f);
+if nargin < 4
+	P = readcfg(WO,f);
+	request = false;
+else
+	P = readcfg(WO,f,'novsub');
+	request = true;
+end
 
 % replaces any fields in P by optional argument PARAMS
 if nargin > 2 && isstruct(varargin{2})
@@ -83,16 +89,18 @@ P.DEBUG = isok(field2str(P,'DEBUG',field2str(WO,'DEBUG')));
 
 % appends the list of nodes (i.e., creates field P.NODESLIST)
 % list directory WO.PATH_GRIDS2NODES for PROC.n, appends to P as NODESLIST
-X = dir(sprintf('%s/PROC.%s.*',WO.PATH_GRIDS2NODES,proc));
+X = dir(WO.PATH_GRIDS2NODES);
+k = find(strncmp(['PROC.' proc],{X.name},length(proc)+5));
 P.NODESLIST = {};
-for j = 1:length(X)
-	nj = split(X(j).name,'.');
+for j = 1:length(X(k))
+	nj = split(X(k(j)).name,'.');
 	P.NODESLIST{end+1} = nj{3};
 end
 % appends the associated FORM (if exists) by listing directory WO.PATH_GRIDS2FORMS
-X = dir(sprintf('%s/PROC.%s.*',WO.PATH_GRIDS2FORMS,proc));
-if ~isempty(X)
-	form = split(X(1).name,'.');
+X = dir(WO.PATH_GRIDS2FORMS);
+k = find(strncmp(['PROC.' proc],{X.name},length(proc)+5));
+if ~isempty(k)
+	form = split(X(k).name,'.');
 	formname = form{3};
 	formroot = sprintf('%s/%s',WO.PATH_FORMS,formname);
 	P.FORM = readcfg(WO,sprintf('%s/%s.conf',formroot,formname));
@@ -128,10 +136,10 @@ P = tnorm(P,'STATUSLIST',nlist,0);
 
 % makes the GTABLE
 % case A: TIMESCALELIST all or selection
-if nargin < 4
+if ~request
 	tscale = {'%'};
 	if nargin > 2
-		if isstr(varargin{2})
+		if ischar(varargin{2})
 			% in deployed application, input arguments are only string
 			if isdeployed && numel(str2num(varargin{2}))==2
 				tscale = str2num(varargin{2});
@@ -195,7 +203,7 @@ else
 		error('%s: cannot find request file %s.',wofun,freq);
 	end
 
-	P.GTABLE = readcfg(WO,freq);
+	P.GTABLE = readcfg(WO,freq,'novsub');
 
 	% converts dates in DATENUM format
 	P.GTABLE.DATE1 = isodatenum(P.GTABLE.DATE1);
@@ -230,6 +238,9 @@ else
 		P = structmerge(P,P.GTABLE.PROC.(proc));
 	end
 
+	% makes internal KEY variable substitution
+	P = vsub(P,'[\$][\{](.*?)[\}]');
+
 	P.REQUEST = 1;
 end
 
@@ -261,6 +272,7 @@ if nargout > 1
 	N = readnodes(WO,P.SELFREF,P.DATELIM);
 	% list of complete node's FID (expands multiple FIDs)
 	%[FB-was] P.FID_LIST = split(char(strcat({N.FID},{','}))',',');
+	N = fid_proc2nodes(P,N);
 end
 
 if nargout > 2
@@ -290,4 +302,27 @@ end
 if lf < nlist
 	P.(fd)(lf+1:nlist) = dv(lf+1:nlist);
 	fprintf('WEBOBS{readproc:tnorm}: ** WARNING ** inconsistent length or inexisting %s in %s timescale table. Fill with default value.\n',fd,P.SELFREF);
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function X = vsub(X,pat)
+%VSUB Variable substitution in structure X, pattern PAT
+
+keys = fieldnames(X);
+for i = 1:length(keys)
+	if ~isempty(X.(keys{i})) && ischar(X.(keys{i}))
+		s = regexp(X.(keys{i}),pat,'tokens');
+		if ~isempty(s)
+			for j = 1:length(s)
+				if isfield(X,s{j}{:})
+					X.(keys{i}) = regexprep(X.(keys{i}),['\${' s{j}{:} '}'],regexprep(X.(s{j}{:}),'\${','\\${'));
+				end
+			end
+			if ~isempty(strfind(X.(keys{i}),'${'))
+				fprintf(' ** WARNING ** key %s contains undefined variable "%s", replaces with empty value! ',keys{i},X.(keys{i}));
+				X.(keys{i}) = '';
+			end
+		end
+	end
 end

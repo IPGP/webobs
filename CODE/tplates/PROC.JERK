@@ -57,7 +57,9 @@ DEM_COPYRIGHT|
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
 #MAP1_XYLIM|
 #MAP2_XYLIM|
-# do not show node alias in zoom map(s)
+# additional options for gridmaps background map
+GRIDMAPS_DEM_OPT|
+# show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
 # file for background time referenced events 
@@ -67,10 +69,11 @@ EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 PPI|100
 # landscape format for all outputs
 LANDSCAPE|N
-# value = 1 to produce EPS graphs
-POSTSCRIPT|1
-# value = 1 to export text data files
-EXPORTS|1
+# exports text data files
+EXPORTS|YES
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
+PDFOUTPUT|NO
 # main logo file
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 # secondary logo file

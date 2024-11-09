@@ -1,21 +1,24 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: WebOBS 2.0\n"
-"Report-Msgid-Bugs-To: webobs@ovsg.univ-ag.fr\n"
+"Project-Id-Version: WebObs 2.6.4\n"
+"Report-Msgid-Bugs-To: webobs-dev@ipgp.fr\n"
 "POT-Creation-Date: 2007-05-25 09:10-0400\n"
-"PO-Revision-Date: 2016-04-20 11:21-0400\n"
-"Last-Translator: Francois Beauducel <beauducel@ipgp.fr>\n"
-"Language-Team: WebOBS Traduction fr <webobs-fr@ovsg.univ-ag.fr>\n"
+"PO-Revision-Date: 2024-01-06 15:00+0400\n"
+"Last-Translator: François Beauducel <beauducel@ipgp.fr>\n"
+"Language-Team: WebOBS Traduction fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+msgid "die_client_not_valid"
+msgstr "Désolé, votre identifiant n'est pas activé/validé sur ce WebObs."
+
 msgid "Node"
 msgstr "Node"
 
 msgid "WebObs pages require JavaScript enabled"
-msgstr "Les pages WebObs n&eacute;cessitent l'activation de JavaScript"
+msgstr "Les pages WebObs n&eacute;cessitent l\\'activation de JavaScript"
 
 msgid "Node Configuration"
 msgstr "Configuration de Node"
@@ -24,13 +27,13 @@ msgid "No grid context specified"
 msgstr "Contexte grid non spécifié"
 
 msgid "Could not open"
-msgstr "Impossible d'ouvrir"
+msgstr "Impossible d\\'ouvrir"
 
 msgid "Could not read"
 msgstr "Impossible de lire"
 
 msgid "Could not access"
-msgstr "Impossible d'accéder à"
+msgstr "Impossible d\\'accéder à"
 
 msgid "Could not create"
 msgstr "Impossible de créer"
@@ -48,7 +51,7 @@ msgid "new filename"
 msgstr "nouveau fichier"
 
 msgid "File is currently being edited"
-msgstr "Fichier en cours d'édition"
+msgstr "Fichier en cours d\\'édition"
 
 msgid "by"
 msgstr "par"
@@ -78,10 +81,10 @@ msgid "No filename specified"
 msgstr "Fichier non spécifié"
 
 msgid "Editing"
-msgstr "Édition"
+msgstr "Modification"
 
 msgid "Editing file"
-msgstr "Édition de"
+msgstr "Modification de"
 
 msgid "Creating"
 msgstr "Création"
@@ -119,8 +122,8 @@ msgstr "définitions des champs de fichier calibration"
 msgid "calibration-files configuration"
 msgstr "configuration calibration"
 
-msgid "show/hide Loc"
-msgstr "(de)masque Loc"
+msgid "show/hide extra columns"
+msgstr "(de)masque colonnes supplémentaires"
 
 msgid "node configuration"
 msgstr "configuration de node"
@@ -135,7 +138,7 @@ msgid "to create a node in"
 msgstr "de créer un node dans"
 
 msgid "Cannot edit a NODE outside of GRID context"
-msgstr "Impossible d'éditer un node hors d'un contexte grid"
+msgstr "Impossible d\\'éditer un node hors d\\'un contexte grid"
 
 msgid "select"
 msgstr "choisir"
@@ -150,7 +153,7 @@ msgid "Purpose"
 msgstr "Objectifs"
 
 msgid "Domain"
-msgstr "Domaines"
+msgstr "Domaine"
 
 msgid "Grid code"
 msgstr "Code Grid"
@@ -177,10 +180,10 @@ msgid "Time reference"
 msgstr "Fuseau de référence"
 
 msgid "Sampling Frequency"
-msgstr "Fréquence d'échantillonnage"
+msgstr "Fréquence d\\'échantillonnage"
 
 msgid "Acquisition period"
-msgstr "Période d'acquisition"
+msgstr "Période d\\'acquisition"
 
 msgid "Access to data"
 msgstr "Accès aux données"
@@ -275,6 +278,9 @@ msgstr "Dernière donnée"
 msgid "Last status check on"
 msgstr "Dernier état effectué le"
 
+msgid "Code/ID"
+msgstr "Code/ID"
+
 msgid "Name"
 msgstr "Nom"
 
@@ -282,10 +288,10 @@ msgid "Lifetime"
 msgstr "Durée de vie"
 
 msgid "Started on"
-msgstr "Installé le"
+msgstr "Débute le"
 
 msgid "Ended on"
-msgstr "Desinstallé le "
+msgstr "Termine le "
 
 msgid "Start / Installation"
 msgstr "Début / Installation"
@@ -308,8 +314,23 @@ msgstr "Canal"
 msgid "See also the following maps"
 msgstr "Voir aussi les cartes suivantes"
 
+msgid "Location"
+msgstr "Localisation"
+
 msgid "Maps"
 msgstr "Cartes"
+
+msgid "Distance (beeline)"
+msgstr "Distance (vol d'oiseau)"
+
+msgid "Elev. gain"
+msgstr "Dénivelée"
+
+msgid "Transmission"
+msgstr "Transmission"
+
+msgid "Installation"
+msgstr "Installation"
 
 msgid "Information"
 msgstr "Informations"
@@ -356,9 +377,6 @@ msgstr "Graphes"
 msgid "Click to enlarge"
 msgstr "Cliquer pour agrandir"
 
-msgid "Location"
-msgstr "Localisation"
-
 msgid "Longitude"
 msgstr "Longitude"
 
@@ -391,6 +409,12 @@ msgstr "Nord"
 
 msgid "Location map"
 msgstr "Carte de localisation"
+
+msgid "Neighbour nodes"
+msgstr "Nœuds voisins"
+
+msgid "This node has a project"
+msgstr "Ce node a un projet actif"
 
 msgid "Access"
 msgstr "Accès"
@@ -663,7 +687,7 @@ msgid "E-mail address"
 msgstr "Adresse électronique"
 
 msgid "Login user name"
-msgstr "Nom d'utilisateur"
+msgstr "Nom d\\'utilisateur"
 
 msgid "Password"
 msgstr "Mot de passe"
@@ -675,13 +699,83 @@ msgid "Create a new individual account"
 msgstr "Demande de compte personnel"
 
 msgid "I do accept the terms of use"
-msgstr "J'accepte les conditions d'utilisation"
+msgstr "J\\'accepte les conditions d\\'utilisation"
+
+# --- changepassword.pl
+msgid "Please fill in the form below to update your WebObs password."
+msgstr "Veuillez remplir le formulaire ci-dessous pour mettre à jour votre mot de passe WebObs."
+
+msgid "Note: your password must be at least %s characters long."
+msgstr "Note: votre mot de passe doit comporter au moins %s caractères."
+
+msgid "Change your WebObs password"
+msgstr "Modifier votre mot de passe WebObs"
+
+msgid "Update your password"
+msgstr "Mise à jour de votre mot de passe"
+
+msgid "Your login name"
+msgstr "Votre identifiant"
+
+msgid "Your current password"
+msgstr "Mot de passe actuel"
+
+msgid "Your new password"
+msgstr "Nouveau mot de passe"
+
+msgid "Your new password for verification"
+msgstr "Nouveau mot de passe (vérification)"
+
+msgid "Password change disabled"
+msgstr "Modification de mot de passe désactivée"
+
+msgid "Sorry, password change is disabled on this platform. Please contact your administrator."
+msgstr "Désolé, la modification de mot de passe a été désactivée sur cette plateforme. Veuillez contacter votre adminstrateur."
+
+msgid "Password change forbidden"
+msgstr "Modification de mot de passe non autorisée"
+
+msgid "Sorry, the special user 'guest' cannot change his password."
+msgstr "Désolé, l'utilisateur spécial 'invité' ne peut modifier son mot de passe."
+
+msgid "Sorry, your new password does not match the second entry."
+msgstr "Désolé, les deux nouveaux mots de passe sont différents."
+
+msgid "Please try again below."
+msgstr "Veuillez réessayer."
+
+msgid "Sorry"
+msgstr "Désolé"
+
+msgid "your password must be at least %s characters long"
+msgstr "votre mot de passe doit comporter au moins %s caractères"
+
+msgid "Sorry, your current password is incorrect."
+msgstr "Désolé, votre mot de passe actuel est incorrect."
+
+msgid "Sorry, an error occured. Your password could not be updated."
+msgstr "Désolé, une erreur s'est produite. Votre mot de passe n'a pas pu être mis à jour."
+
+msgid "Password updated"
+msgstr "Mot de passe mis à jour"
+
+msgid "Your password has been successfully updated!"
+msgstr "Votre mot de passe a été mis à jour !"
+
+msgid "You will be asked for your new password on"
+msgstr "Votre nouveau mot de passe vous sera demandé"
+
+msgid "the next requested page"
+msgstr "sur la page suivante"
+
+# ---
+
 
 msgid "Names and Description"
 msgstr "Noms et description"
 
-msgid "Lifetime and Validity"
-msgstr "Durée de vie et validité"
+msgid "Lifetime and Time Zone"
+msgstr "Durée de vie et fuseau horaire"
 
 msgid "Acquisition and Repeater"
 msgstr "Acquisition et relais"
@@ -701,8 +795,14 @@ msgstr "Déplacer cet événement vers un autre node"
 msgid "currently selected people"
 msgstr "actuellement sélectionné(s)"
 
+msgid "featureA,featureB,featureC"
+msgstr "caract_A,caract_B,caract_C"
+
+msgid "help_creationstation_featrefresh"
+msgstr "Cliquez pour rafraîchir la liste des caractéristiques ci-dessous"
+
 msgid "Edit the node-features-nodes associations list"
-msgstr "Éditer la liste des associatiions node-feature-nodes"
+msgstr "Éditer la liste des associations node-feature-nodes"
 
 msgid "Send an e-mail to inform Webobs users"
 msgstr "Informer par e-mail les utilisateurs WebObs"
@@ -713,17 +813,17 @@ msgstr "Dupliquer cet événement dans un autre node"
 msgid "Select the target node"
 msgstr "Choisir le node cible"
 
-msgid "Check to mark node as valid"
-msgstr "Cocher pour marquer le node comme valide"
+msgid "help_creationstation_valid"
+msgstr "Cocher pour marquer le node comme valide. Un node invalide ne sera pas utilisé par les procs et sera masqué aux utilisateurs non admin."
 
 msgid "Time zone (h)"
 msgstr "Fuseau horaire"
 
 msgid "Acquisition period (days)"
-msgstr "Période d'acquisition (jours)"
+msgstr "Période d\\'acquisition (jours)"
 
 msgid "Acquisition delay (days)"
-msgstr "Délai d'acquisition (jours)"
+msgstr "Délai d\\'acquisition (jours)"
 
 msgid "help_creationstation_network"
 msgstr "Sélectioner le réseau concerné"
@@ -735,13 +835,13 @@ msgid "help_creationstation_name"
 msgstr "Entrez le nom long de la fiche (champ libre pour affichage)"
 
 msgid "help_creationstation_alias"
-msgstr "Le champ ALIAS est le code/nom court donné à la fiche (préférablement unique au sein du réseau) mais n'est pas fonctionnel"
+msgstr "Le champ ALIAS est le code/nom court donné à la fiche (préférablement unique au sein du réseau) mais n\\'est pas fonctionnel"
 
-msgid "help_creationstation_fid"
-msgstr "Le champ FID correspond à un code/identifiant utilisé dans le traitement des données (fonctionnel)"
+msgid "help_creationstation_type"
+msgstr "La champ TYPE est une description courte du node qui complète le nom long (par ex., le modèle d\\'un équipement)"
 
-msgid "help_creationstation_fdsn"
-msgstr "Code officiel de l'International Federation of Digital Seismograph Network (FDSN/IRIS)"
+msgid "help_creationstation_tz"
+msgstr "Entrez le fuseau horaire (utilisé pour les dates d\\'activité et les événements du node), en heures par rapport à GMT (ex: +0)"
 
 msgid "help_creationstation_lat"
 msgstr "Latitude de la station (WGS84, degrés décimaux OU deg/minOU deg/min/sec- les 3 champs seront pris en compte)"
@@ -759,10 +859,28 @@ msgid "help_creationstation_tele_type"
 msgstr "Type de transmission pour la station"
 
 msgid "help_creationstation_tele_acq"
-msgstr "Entrez le code ID (7 caract.) des Éventuels relais et de la station d'acquisition, séparés par une virgule, dans l'ordre de la station vers l'acquisition"
+msgstr "Entrez la liste des codes ID de chaque node utilisé pour la transmission, séparés par une virgule, dans l\\'ordre de la station vers l\\'acquisition finale"
 
 msgid "help_creationstation_spec"
 msgstr "Entrez les mots clés sans accent ou caractères spéciaux et séparés par une virgule"
+
+msgid "help_creationstation_n2n"
+msgstr "Entrez le(s) code/ID du(des) node(s) enfant(s) pour cette caractéristique, séparés par une virgule"
+
+msgid "help_creationstation_fid"
+msgstr "Le champ FID correspond à un code/identifiant utilisé dans le traitement des données (fonctionnel)"
+
+msgid "help_creationstation_fdsn"
+msgstr "Code officiel de l\\'International Federation of Digital Seismograph Network (FDSN/IRIS)"
+
+msgid "help_creationstation_proc_tz"
+msgstr "Entrez le fuseau horaire des données, en heures par rapport à GMT (ex: +0)"
+
+msgid "help_creationstation_proc_acqrate"
+msgstr "Entrez la période d\\'acquisition en jours, les formules arithmétiques simples sont autorisées (ex: 1/86400 pour 1 seconde)"
+
+msgid "help_creationstation_proc_acqdelay"
+msgstr "Entrez le délai d\\'acquisition en jours, les formules arithmétiques simples sont autorisées (ex: 1/86400 pour 1 seconde)"
 
 msgid "Language selection"
 msgstr "Choix de la langue"
@@ -783,7 +901,7 @@ msgid "to"
 msgstr "au"
 
 msgid "Today"
-msgstr "Aujourd'hui"
+msgstr "Aujourd\\'hui"
 
 msgid "Tomorrow"
 msgstr "Demain"
@@ -807,7 +925,7 @@ msgid "all events since"
 msgstr "tous les événements depuis le"
 
 msgid "all year"
-msgstr "toute l'année"
+msgstr "toute l\\'année"
 
 msgid "by type"
 msgstr "par type"
@@ -834,7 +952,7 @@ msgid "Type of event"
 msgstr "Type d'événement"
 
 msgid "hebdo_help_type_event"
-msgstr "Sélectionner le type d\\'événement"
+msgstr "Sélectionner le type d'événement"
 
 msgid "Delete this event"
 msgstr "Supprimer cet événement"
@@ -918,10 +1036,10 @@ msgid "level"
 msgstr "niveau"
 
 msgid "Editing event #"
-msgstr "Edition évènement n° "
+msgstr "Modification événement n° "
 
 msgid "Add a new event"
-msgstr "Ajout de nouvel évènement"
+msgstr "Ajout de nouvel événement"
 
 msgid "Edition of the file"
 msgstr "Edition du fichier"
@@ -1083,7 +1201,7 @@ msgid "Click on End of signal or enter duration"
 msgstr "Cliquez sur la fin du signal ou entrez la durée"
 
 msgid "Enter number of events"
-msgstr "Entrez le nombre d'évènements"
+msgstr "Entrez le nombre d'événements"
 
 msgid "Select amplitude"
 msgstr "Choisissez une amplitude"
@@ -1098,7 +1216,7 @@ msgid "Event type is unknown/undetermined. Validate as is ?"
 msgstr "Type d'événement inconnu/indéterminé. Valider tel quel ?"
 
 msgid "You cannot validate an event of type AUTO"
-msgstr "Vous ne pouvez pas valider un évènement de type AUTO"
+msgstr "Vous ne pouvez pas valider un événement de type AUTO"
 
 msgid "ATT: Do you want PERMANENTLY erase this event from"
 msgstr "ATT: Voulez-vous supprimer DÉFINITIVEMENT cet événement de"
@@ -1127,21 +1245,8 @@ msgstr "fin du signal"
 
 # formulaireCREATION_STATION.pl
 
-msgid "help_creationstation_valid_check"
-msgstr "Select to indicate a valid data sheet"
 
-msgid "help_creationstation_proc_tz"
-msgstr "Enter the time zone of data, in hours from UT (ex: +0)"
-
-msgid "help_creationstation_proc_acqrate"
-msgstr "Enter the acquisition period in days, simple arithmetics allowed (ex: 1/86400 for 1 second)"
-
-msgid "help_creationstation_proc_acqdelay"
-msgstr "Enter the acquisition delay in days, simple arithmetics allowed (ex: 1/24 for 1 hour)"
-
-
-
-# formCLB.pl
+# --- formCLB.pl
 
 msgid "help_clb_date"
 msgstr "Date d&rsquo;installation/modification (début de validité des paramètres)"
@@ -1165,13 +1270,13 @@ msgid "help_clb_chcode"
 msgstr "Identifiant du canal pour traitement (champ libre)"
 
 msgid "help_clb_offset"
-msgstr "Offset à appliquer aux données calibrées (valeur numérique)"
+msgstr "Offset à appliquer aux données calibrées après calibration et gain (valeur numérique)"
 
 msgid "help_clb_factor"
-msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique)"
+msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique), ou expression arithmétique utilisant la variable x comme donnée brute (opérateurs autorisés +, -, /, *, ^ et parenthèses)"
 
 msgid "help_clb_gain"
-msgstr "Facteur multiplicatif à appliquer aux données brutes (valeur numérique)"
+msgstr "Facteur multiplicatif à appliquer au résultat de la calibration avant offset (valeur numérique)"
 
 msgid "help_clb_minvalue"
 msgstr "Valeur numérique minimale des données brutes (filtre)"
@@ -1203,7 +1308,10 @@ msgstr "Dynamique du numériseur (en bits)"
 msgid "help_clb_lc"
 msgstr "Location code (SEED dataless)"
 
-# formulaireHEBDO.pl
+msgid "help_clb_cat"
+msgstr "Catégorie du thésaurus THEIA correspondant à la variable du channel (chaine de caractère)"
+
+# --- formulaireHEBDO.pl
 
 msgid "help_hebdo_select_nodate"
 msgstr "Tick to create entry without date"
@@ -1217,7 +1325,7 @@ msgstr "Select the names of those involved (Hold CTRL to select multiple names)"
 msgid "help_hebdo_select_external"
 msgstr "Enter names of EXTERNAL people"
 
-# gazette
+# --- gazette
 
 msgid "gzt_fmt_long_date"
 msgstr "%A %-d %B %Y <i>(jour %j, sem %V)</i>"
@@ -1232,7 +1340,7 @@ msgid "gzt_fmt_long_year"
 msgstr "Ann&eacute;e %Y"
 
 msgid "until"
-msgstr "jusqu'&agrave;"
+msgstr "jusqu\\'&agrave;"
 
 msgid "since"
 msgstr "depuis"
@@ -1253,7 +1361,7 @@ msgid "No match found"
 msgstr "Aucun article trouv&eacute;"
 
 msgid "from now on"
-msgstr "&#192; partir d'aujourd'hui"
+msgstr "&#192; partir d\\'aujourd\\'hui"
 
 msgid "saved as"
 msgstr "sauvegard&eacute; sous"
@@ -1277,13 +1385,13 @@ msgid "List by categories"
 msgstr "Liste par Cat&eacute;gories"
 
 msgid "All year"
-msgstr "Toute l' ann&eacute;e"
+msgstr "Toute l\\'ann&eacute;e"
 
 msgid "From today"
-msgstr "&#192; partir d'aujourd'hui"
+msgstr "&#192; partir d\\'aujourd\\'hui"
 
 msgid "Until today"
-msgstr "Jusqu'&agrave; aujourd'hui"
+msgstr "Jusqu\\'&agrave; aujourd\\'hui"
 
 msgid "Shortcuts"
 msgstr "Raccourcis"
@@ -1363,7 +1471,7 @@ msgstr "en cours"
 msgid "string"
 msgstr "texte"
 
-# showGRID.pl
+# --- showGRID.pl
 
 msgid "help_node_sampling"
 msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsquo;&eacute;chantillons valides au cours de la derni&egrave;re p&eacute;riode de temps, compar&eacute; &agrave; l&rsquo;acquisition th&eacute;orique"
@@ -1371,15 +1479,118 @@ msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsqu
 msgid "help_node_status"
 msgstr "Status (en %): existence d&rsquo;&eacute;chantillons valides dans le dernier d&eacute;lai d&rsquo;acquisition pour tous les canaux"
 
-# formGRID.pl
+# ---- formREQ.pl
+
+msgid "No PROCS eligible for requests submission."
+msgstr "Aucune PROC disponible pour soumettre une requête."
+
+msgid "No PROC eligible for this user. Please ask an administrator."
+msgstr "Aucune PROC n'est accessible pour cet utilisateur. Demandez à un administrateur."
+
+msgid "Results"
+msgstr "Résultats"
+
+msgid "PROC Request"
+msgstr "Requête de PROCS"
+
+msgid "Available PROCS"
+msgstr "PROCS disponibles"
+
+msgid "Date and time span (UT)"
+msgstr "Intervalle de date et heure (TU)"
+
+msgid "Preset dates"
+msgstr "Intervalles prédéfinis"
+
+msgid "Last full month"
+msgstr "Dernier mois révolu"
+
+msgid "Last full year"
+msgstr "Dernière année révolue"
+
+msgid "Current year"
+msgstr "Année courante"
+
+msgid "Output parameters"
+msgstr "Paramètres"
+
+msgid "Date format"
+msgstr "Format de dates"
+
+msgid "Cumulate"
+msgstr "Cumul"
+
+msgid "days"
+msgstr "jours"
+
+msgid "Decimate"
+msgstr "Décimation"
+
+msgid "Marker size"
+msgstr "Taille des marqueurs"
+
+msgid "Line width"
+msgstr "Épaisseur des lignes"
+
+msgid "Grid"
+msgstr "Grille"
+
+msgid "PPI"
+msgstr "Résolution PPI"
+
+msgid "PDF"
+msgstr "Export PDF"
+
+msgid "SVG"
+msgstr "Export SVG"
+
+msgid "Data exports"
+msgstr "Export de données"
+
+msgid "Anonymous"
+msgstr "Anonyme"
+
+msgid "Verbose logs"
+msgstr "Logs détaillés"
+
+# ---- showREQ.pl
+
+msgid "Date & Time"
+msgstr "Date & Heure"
+
+msgid "Host"
+msgstr "Serveur"
+
+msgid "User"
+msgstr "Utilisateur"
+
+msgid "Time Span"
+msgstr "Plage temporelle"
+
+msgid "Params"
+msgstr "Params"
+
+msgid "Job"
+msgstr "Job"
+
+msgid "Archive"
+msgstr "Archive"
+
+# --- formGRID.pl
+
+msgid "Form"
+msgstr "Form"
+
+msgid "Available/Associated nodes"
+msgstr "Nodes disponibles/associés"
 
 msgid "Use vim mode"
 msgstr "Utiliser le mode vim"
 
 msgid "Check to enable vim mode in the editor"
-msgstr "Cocher pour activer le mode vim dans l'éditeur"
+msgstr "Cocher pour activer le mode vim dans l\\'éditeur"
 
-# vsearch.pl
+# --- vsearch.pl
 
 msgid "Grid Name"
 msgstr "Grid/Réseau"
@@ -1423,11 +1634,11 @@ msgstr "Dates croissantes"
 msgid "Search Node Events"
 msgstr "Recherche d'événements"
 
-msgid "Search for"
-msgstr "Chercher"
+msgid "Search for:"
+msgstr "Chercher :"
 
-msgid "in"
-msgstr "dans"
+msgid "in:"
+msgstr "dans :"
 
 msgid "OR"
 msgstr "OU"
@@ -1435,11 +1646,29 @@ msgstr "OU"
 msgid "AND"
 msgstr "ET"
 
-msgid "sorted by"
-msgstr "trié par"
+msgid "sorted by:"
+msgstr "trié par :"
 
-msgid "max diplayed"
-msgstr "max affiché"
+msgid "max diplayed:"
+msgstr "max affiché :"
+
+msgid "Show:"
+msgstr "Afficher :"
+
+msgid "node's name"
+msgstr "nom du node"
+
+msgid "help_vsearch_str"
+msgstr "Mot ou chaîne de caractères à rechercher. Pour la négation, ajouter un ! en début de chaîne. La plupart des catégories utilisent une expression rationnelle, hormis les auteurs/opérateurs pour lesquels il s\\'agit d\\'une commande \\'LIKE\\' SQLite."
+
+msgid "help_vsearch_in"
+msgstr "Sélectionner la catégorie dans laquelle la recherche s\\'effectue."
+
+msgid "help_vsearch_showg"
+msgstr "Afficher le nom de la grid."
+
+msgid "help_vsearch_shown"
+msgstr "Afficher le nom complet du node."
 
 
 # ---- formRAINWATER.pl
@@ -1448,13 +1677,13 @@ msgid "Edit existing data"
 msgstr "Modifier une donnée existante"
 
 msgid "Sampling Location and Time"
-msgstr "Lieu et période d'échantillonnage"
+msgstr "Lieu et période d\\'échantillonnage"
 
 msgid "Rain Collector"
 msgstr "Pluviométrie"
 
 msgid "Funnel Diameter"
-msgstr "Diamètre de l'entonnoir"
+msgstr "Diamètre de l\\'entonnoir"
 
 msgid "Cumulated Rainfall"
 msgstr "Pluviométrie cumulée"
@@ -1475,10 +1704,10 @@ msgid "Isotopic Ratios"
 msgstr "Rapports isotopiques"
 
 msgid "help_rainwater_date1"
-msgstr "Entrer la date et l'heure de début de prélèvement"
+msgstr "Entrer la date et l\\'heure de début de prélèvement"
 
 msgid "help_rainwater_date2"
-msgstr "Entrer la date et l'heure de fin de prélèvement"
+msgstr "Entrer la date et l\\'heure de fin de prélèvement"
 
 msgid "help_rainwater_site"
 msgstr "Sélectionner le site du prélèvement"
@@ -1522,7 +1751,178 @@ msgstr "Noter toute présence d&rsquo;odeur, gaz, précipité, etc..."
 # ---- showRAINWATER.pl
 
 msgid "Number of records"
-msgstr "Nombre d'enregistrements"
+msgstr "Nombre d\\'enregistrements"
 
 msgid "Download a CSV text file of these data"
-msgstr "Télécharger un fichier CSV de ces données"
+msgstr "Télécharger ces données dans un fichier au format CSV"
+
+msgid "Request results"
+msgstr "Résultat des requêtes"
+
+# ---- formNODE.pl
+
+msgid "help_creationstation_description"
+msgstr "Décrit les propriétés observées du jeu de données, telles que la définition, la couverture spatiale ou la méthodologie d'acquisition des mesures. Résumé des objectifs scientifiques."
+
+msgid "show/hide THEIA metadata fields"
+msgstr "montrer/cacher les champs de métadonnées THEIA"
+
+msgid "Producer"
+msgstr "Producteur"
+
+msgid "help_creationstation_producer"
+msgstr "Nom du producteur de données."
+
+msgid "Creator"
+msgstr "Créateur"
+
+msgid "Add a cretor"
+msgstr "Ajouter un créateur"
+
+msgid "Remove a creator"
+msgstr "Supprimer un créateur"
+
+msgid "help_creationstation_creator"
+msgstr "Personnes en charge du jeu de données. 2 rôles existent : L'éditeur et le chercheur principal. L'éditeur est la personne en charge de la gestion des données, le chercheur principal est le référent scientifique du jeu de données. Au moins un chercheur principal est requis"
+
+msgid "help_creationstation_subject"
+msgstr "Le thème INSPIRE fait référence à la description du modèle de données pour les différents thèmes INSPIRE disponibles; Les catégories thématiques font référence aux mots-clés représentant les catégories thématiques du jeu de données."
+
+msgid "help_creationstation_lineage"
+msgstr "Décrit la généalogie du jeu de données, c'est-à-dire l'histoire du jeu de données et, s'il est connu, son cycle de vie, depuis l'acquisition et la capture d'informations jusqu'à sa compilation avec d'autres jeux de données et les variantes de sa forme actuelle."
+
+msgid "Auto-locatation"
+msgstr "Géolocalisation"
+
+msgid "beware_approximate_position"
+msgstr "Utilise l'API de géolocalisation HTML pour localiser l'utilisateur. Attention : la position peut être approximée de quelques mètres à plusieurs milliers de mètres, en fonction de votre localisation."
+
+msgid "help_creationstation_shapefile"
+msgstr "Pour ajouter une couche de fichier de forme (.zip uniquement), cliquez ici"
+
+# ---- mailB3.pl
+
+msgid "Event origin"
+msgstr "Date de l'événement"
+
+msgid "Event ID/name"
+msgstr "ID/nom de l'événement"
+
+msgid "Unauthorized action"
+msgstr "Action non autorisée"
+
+msgid "Send felt earthquake report information"
+msgstr "Envoyer des informations sur un séisme ressenti"
+
+msgid "Send trigger email"
+msgstr "Envoyer l'email de déclenchement"
+
+msgid "Destination email"
+msgstr "Email du destinataire"
+
+msgid "Trigger email subject"
+msgstr "Sujet de l'email"
+
+msgid "Origin time (UT)"
+msgstr "Temps origine (TU)"
+
+msgid "Depth (km)"
+msgstr "Profondeur (km)"
+
+msgid "Magnitude"
+msgstr "Magnitude"
+
+msgid "Department"
+msgstr "Département"
+
+msgid "Region"
+msgstr "Région (zone)"
+
+msgid "Send the B3 report"
+msgstr "Envoyer le rapport B3"
+
+msgid "Attached file name"
+msgstr "Fichier attaché"
+
+msgid "Report subject"
+msgstr "Sujet de l'email"
+
+msgid "Report message"
+msgstr "Message"
+
+msgid "Send emails"
+msgstr "Envoyer les emails"
+
+msgid "Are you sure?"
+msgstr "Êtes-vous sûr ?"
+
+msgid "Sending emails"
+msgstr "Envoi des emails"
+
+msgid "Trigger email has been successfully sent!"
+msgstr "L'email de déclenchement a été envoyé avec succès !"
+
+msgid "Sorry, an error occured during report email sending. Please contact an administator."
+msgstr "Désolé, une erreur est survenue lors de l'envoi de l'email. Veuillez contactez un administrateur."
+
+msgid "Report email has been successfully sent!"
+msgstr "L'email du rapport a été envoyé avec succès !"
+
+# ---- showNODES.pl
+
+msgid "All nodes"
+msgstr "Tous les nodes"
+
+msgid "orphan nodes"
+msgstr "node(s) orphelin(s)"
+
+# ---- listGRIDS.pl
+
+msgid "Edit/Create a Domain/Producer"
+msgstr "Modifier/Créer un Domaine/Producteur"
+
+msgid "Edit/Create a Grid"
+msgstr "Modifier/Créer une Grid"
+
+msgid "Edit/Create a Form"
+msgstr "Modifier/Créer un Form"
+
+msgid "short name (uppercase)"
+msgstr "nom court (en majuscules)"
+
+msgid "Form name"
+msgstr "Nom du Form"
+
+msgid "Form template"
+msgstr "Template de Form"
+
+msgid "Reset"
+msgstr "Réinitialiser"
+
+# ---- formGENFORM.pl
+msgid "Input new data"
+msgstr "Saisie de nouvelles données"
+
+msgid "Edit data n°"
+msgstr "Modification de l'entrée n°"
+
+msgid "Date and place of sampling"
+msgstr "Date et lieu du prélèvement"
+
+msgid "ATT: Do you want PERMANENTLY erase this record from"
+msgstr "ATT: Voulez-vous effacer cet enregistrement de manière permanente de"
+
+msgid "Do you want to remove this record from"
+msgstr "Voulez-vous enlever cet enregistrement de"
+
+msgid "Do you want to restore this record in"
+msgstr "Voulez-vous restaurer cet enregistrement dans"
+
+
+# ---- fedit.pl
+
+msgid "Delete this form"
+msgstr "Supprimer ce form"
+
+msgid "The FORM will be deleted. Are you sure?"
+msgstr "Le FORM sera supprimé. Etes-vous sur ?"

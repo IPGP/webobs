@@ -23,7 +23,7 @@ function DOUT = volcgas(varargin)
 %
 %	Authors: F. Beauducel + G. Hammouya + C. Dessert + A. Bosson, OVSG-IPGP
 %	Created: 2003-04-14, in Guadeloupe (French West Indies)
-%	Updated: 2021-01-01
+%	Updated: 2023-12-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -67,7 +67,7 @@ FF = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_DEBITS));
 
 
 % --- index of columns in matrix d
-i_tf = 1;	% fumarole temperature (ï¿½C)
+i_tf = 1;	% fumarole temperature (°C)
 i_ph = 2;	% pH
 i_fx = 3;	% flux (0 = none to 4 = very high)
 i_rn = 4;	% Rn (count/min)
@@ -115,7 +115,7 @@ for n = 1:length(N)
 		end
 
 		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),'','','', ...
-			sprintf('Tfum = {\\bf%1.1f ï¿½C}',d(ke,i_tf)), ...
+			sprintf('Tfum = {\\bf%1.1f °C}',d(ke,i_tf)), ...
 			sprintf('pH = {\\bf%1.2f}',d(ke,i_ph)), ...
 			sprintf('Flux = {\\bf%d} (%s)',d(ke,i_fx),s_flux), ...
 			sprintf('S/C = {\\bf%+1.2f %%}',d(ke,i_rsc)), ...
@@ -149,7 +149,8 @@ for n = 1:length(N)
 
 		tlabel(tlim,P.TZ)
 
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		OPT.EVENTS = N(n).EVENTS;
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
 	end
 
 end

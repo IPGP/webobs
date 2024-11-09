@@ -74,10 +74,14 @@ my $authMsg="$buildTS ";
 my $authMsgColor='black';
 my $refMsg = my $refMsgColor = "";
 
+# ---- special functions only for the WebObs Owner
+my $isWO = WebObs::Users::clientIsWO;
+
+
 # ---- any reasons why we couldn't go on ?
 # ----------------------------------------
 if ( ! WebObs::Users::clientHasAdm(type=>"authmisc",name=>"users")) {
-	die "You are not authorized" ;
+	die "You are not authorized." ;
 }
 
 # ---- parse/defaults query string
@@ -132,6 +136,7 @@ if ($QryParm->{'action'} eq 'insert') {
 	}
 	elsif ($authtable ne "") {
 		$q = "insert into $authtable values(\'$QryParm->{'uid'}\',\'$QryParm->{'res'}\',\'$QryParm->{'auth'}\')";
+		$q = "" if ( $QryParm->{'uid'} eq '!' && !$isWO );
 		$refMsg = \$authMsg; $refMsgColor = \$authMsgColor;
 	} else { die "$QryParm->{'action'} for unknown table"; }
 
@@ -333,13 +338,16 @@ $db_rows = fetch_all($WEBOBS{SQL_DB_USERS},
 			         ." GROUP BY u.UID ORDER BY u.UID");
 my $dusers = '';
 my $dusersCount = 0;
+my $dusersCountValid = 0;
 my $dusersId = '';
 
 for my $row (@$db_rows) {
 	my ($dusers_uid, $dusers_fullname, $dusers_login, $dusers_email,
 		$dusers_validity, $dusers_enddate, $dusers_comment, $dusers_groups) = @$row;
 	$dusers_groups //= '';
+	$dusers_groups =~ s/,/ /g;
 	$dusersCount++;
+	$dusersCountValid++ if ($dusers_validity eq 'Y' && ($dusers_enddate eq '' || $dusers_enddate gt $today));
 	$dusersId = "udef".$dusersCount;
 
 	# Webobs owner and visitor user row should be grayed and have no edition/deletion link
@@ -355,7 +363,7 @@ for my $row (@$db_rows) {
 		$edit_link = "<a href=\"#IDENT\" onclick=\"openPopupUser('#$dusersId');return false\">"
 					 ."<img title=\"edit user\" src=\"/icons/modif.png\"></a>";
 		$del_link = "<a href=\"#IDENT\" onclick=\"postDeleteUser('#$dusersId');return false\">"
-					."<img title=\"delete user\" src=\"/icons/no.png\"></a>";
+					."<img title=\"delete user\" src=\"/icons/no.png\"></a>" if ($isWO);
 	}
 
 	# Build user table row (also used as input for the user edition form)
@@ -412,6 +420,7 @@ my $SdgrpsId = '';
 
 for my $row (@$db_rows) {
 	my ($Sdgrps_gid, $Sdgrps_uids) = @$row;
+	$Sdgrps_uids =~ s/,/ /g;
 	$SdgrpsCount++;
 	$SdgrpsId="gdef".$SdgrpsCount;
 
@@ -530,20 +539,20 @@ for my $an (qw(proc view form wiki misc)) {
 	for my $row (@$db_rows) {
 		my ($dauth_uid, $dauth_res, $dauth_auth) = @$row;
 
+		my $td_modif_auth = '';
+		my $td_delete_auth = '';
 		$TA{$an}{dauthCount}++;
 		my $dauthId="adef$an".$TA{$an}{dauthCount};
+		if ($dauth_uid ne '!' || $isWO) {
+			$td_modif_auth = "<a href=\"#AUTH\" onclick=\"openPopupAuth('$an', '#$dauthId');return false\">"
+				."<img title=\"edit grp\" src=\"/icons/modif.png\"></a>";
+			$td_delete_auth = "<a href=\"#AUTH\" onclick=\"postDeleteAuth('$an', '#$dauthId');return false\">"
+				."<img title=\"delete autorisation\" src=\"/icons/no.png\"></a>";
+		}
 		$TA{$an}{dauth} .= <<_EOD_;
 <tr id="$dauthId">
-	<td style="width:12px" class="tdlock">
-		<a href="#AUTH" onclick="openPopupAuth('$an', '#$dauthId');return false">
-			<img title="edit grp" src="/icons/modif.png">
-		</a>
-	</td>
-	<td style="width:12px" class="tdlock">
-		<a href="#AUTH" onclick="postDeleteAuth('$an', '#$dauthId');return false">
-			<img title="delete autorisation" src="/icons/no.png">
-		</a>
-	</td>
+	<td style="width:12px" class="tdlock">$td_modif_auth</td>
+	<td style="width:12px" class="tdlock">$td_delete_auth</td>
 	<td class="auth-uid">$dauth_uid</td>
 	<td class="auth-res">$dauth_res</td>
 	<td class="auth-auth">$dauth_auth</td>
@@ -580,6 +589,7 @@ Identifications&nbsp;$go2top
 	<input type="hidden" name="tbl" value="">
 	<input type="hidden" name="OLDuid" value="">
 	<input type="hidden" name="OLDgid" value="">
+	<input type="hidden" name="isWO" value="$isWO">
 	<p><b><i>Edit user definition</i></b></p>
 	<label>Uid:<span class="small">WebObs userid</span></label>
 	<input type="text" name="uid" value=""/><br/>
@@ -623,7 +633,7 @@ Identifications&nbsp;$go2top
 
 	<fieldset id="users-field"><legend><b>Users</b></A></legend>
 		<div style="background: #BBB">
-			<b>$dusersCount</b> users defined
+			<b>$dusersCountValid</b>/$dusersCount users valid/defined
 		</div>
 		<div class="dusers-container">
 			<div class="dusers">
@@ -978,7 +988,7 @@ Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

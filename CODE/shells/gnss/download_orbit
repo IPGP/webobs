@@ -1,0 +1,138 @@
+#!/bin/bash
+# 	Script: download_orbit
+#
+#
+# Authors: Edgar Lenhof, François Beauducel
+# Created: 2019-07-31 at OVPF, La Réunion Island
+# Updated: 2023-08-24
+# 
+# **** Updates
+# ** 2023-08-24 Pierre Sakic 
+# - Download Rapid_GE orbits
+#
+if [ $# -lt 2 ]; then
+	echo "     Syntax: download_orbit DAYS DEST [options]"
+	echo "Description: downloads best available orbit for chosen dates from the"
+	echo "             JPL secured web server (see "
+	echo "             https://sideshow.jpl.nasa.gov/pub/JPL_GNSS_Products)"
+	echo "  Arguments:"
+	echo "        DAYS = number of days to process (from start day)"
+	echo "        DEST = root directory where orbits shall be saved"
+	echo "    Options:"
+	echo "        -o ORBIT = type of orbit (Ultra, Rapid, Final, or Rapid_GE)"
+	echo "        -d STARTDAY = days to start retrieving (YYYY/mm/dd)"
+   	echo "        -r DAYS = remove orbit files older than DAYS days"
+	echo "        -v = verbose mode"
+	echo ""
+	echo "Needs the companion file download_orbit.rc"
+	exit 0;
+fi
+
+PROGDIR=$( cd "$( dirname "$0" )" && pwd )
+
+DAYS=$1
+DEST=$2
+DAYLIST=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago" +%Y/%m/%d;done)
+ORBIT=("Final" "Rapid" "Ultra" "Rapid_GE")
+delete="FALSE"
+verbose="FALSE"
+quiet="-q"
+
+# Optionnal parameters
+for (( i=1; i<=$#; i++)); do
+
+   case ${!i} in
+
+	-d)
+		k=$((i+1))
+		IFS=',' read -ra arrayDay <<< "${!k}"
+		STARTDAYS=${arrayDay[@]}
+		DAYLIST= $()
+		for start in $STARTDAYS;do
+			L=$(for d in $(seq $DAYS -1 0);do date -d "$d day ago $start" +%Y/%m/%d;done)
+			DAYLIST=("${DAYLIST[@]}" "${L[@]}")
+		done
+		DAYLIST=($(printf "%s\n" "${DAYLIST[@]}" | sort -u | tr '\n' ' '))
+		DAYLIST=${DAYLIST[@]} #converting to proper format
+	;;
+
+	-o)
+		k=$((i+1))
+		ORBIT=( "${!k}" )
+		# Check correct orbit input
+		if [ "$ORBIT" != "Ultra" ]; then
+			if [ "$ORBIT" != "Rapid" ]; then
+				if [ "$ORBIT" != "Final" ]; then
+					if [ "$ORBIT" != "Rapid_GE" ]; then
+						echo "Error : Please enter orbit as Ultra, Rapid, Final, or Rapid_GE"
+						exit 0
+					fi
+				fi
+			fi
+		fi
+	;;
+
+	-r)
+		k=$((i+1))
+		delete="TRUE"
+      	nb_delete=( "${!k}" )
+	;;
+
+	-v)
+		verbose="TRUE"
+		quiet=""
+
+	esac
+done
+
+
+# deleting too ancient orbits
+if [ $delete == "TRUE" ]; then
+	files=$(find $DEST -type f -mtime +$nb_delete)
+	for f in $files; do
+    	rm $f
+   		if [ $verbose == "TRUE" ]; then
+         	echo "removed $f"
+		fi
+   done
+fi
+
+for day in $DAYLIST; do
+
+	year=${day:0:4}
+	month=${day:5:2}
+	day=${day:8:2}
+
+	for orbit in "${ORBIT[@]}"; do
+		LOCAL="$DEST/$orbit/$year/$year-$month-$day.eo.gz"
+
+		if [[ ! -e $LOCAL || "$orbit" == "Ultra" ]]; then
+
+			echo -n "   Downloading orbit $orbit for $year-$month-$day..."
+			URL="https://sideshow.jpl.nasa.gov/pub/JPL_GNSS_Products/$orbit/$year/"
+
+			if [ -e "$0.rc" ]; then
+				for f in $(cat "$0.rc"); do
+					wget $quiet -q -N -P $DEST/$orbit/$year -r -l1 -nd "$URL/$year-$month-$day$f"
+					if [ $? -ne 0 ]; then
+						break
+					fi
+				done
+			else
+				wget $quiet -q -N -P $DEST/$orbit/$year -r -l1 -nd $URL -A "$year-$month-$day*"
+			fi
+
+			if [ -e $LOCAL ]; then # if download succeed
+				echo " OK."
+				break
+			else
+				echo " not yet available!"
+			fi
+
+		else
+			echo "   Orbit $orbit for $day-$month-$year is locally available."
+		fi
+
+	done
+
+done

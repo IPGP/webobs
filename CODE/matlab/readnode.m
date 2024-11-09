@@ -10,7 +10,7 @@ function N=readnode(WO,nodefullid,NODES);
 %	Some specific treatments are applied:
 %		- numerical parameters are converted to scalar or vectors,
 %		- dates are converted to datenum,
-%		- UTC_DATA is converted from hours to days,
+%		- TZ and UTC_DATA is converted from hours to days,
 %		- ALIAS underscores are escaped (\_) for display purpose.
 %
 %	Some additional keys are also added:
@@ -21,11 +21,19 @@ function N=readnode(WO,nodefullid,NODES);
 %	               TYPE: index in FILE_TELE (NODES.rc)
 %	              NODES: cell array of NODES ID
 %	          REPEATERi: all base keys of repeater NODE i in a structure
+%	      EVENTS: a structure array containing some node's events data:
+%	                 dt1: start_date (datenum format, node's TZ)
+%	                 dt2: end_date (datenum format, node's TZ)
+%	                 nam: node alias, node name and authors
+%	                 com: event's title
+%	                  lw: default linewidth (from NODES.rc)
+%	                 rgb: default color (from NODES.rc)
+%	                 out: data outcome flag
 %
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2020-12-19
+%   Updated: 2023-08-28
 
 
 if ~exist('NODES','var')
@@ -81,12 +89,23 @@ N.CHANNEL_LIST = field2str(N,'CHANNEL_LIST');
 N.TYPE = field2str(N,'TYPE');
 
 % --- converts to numeric some fields
-c2num = {'VALID' 'LAT_WGS84' 'LON_WGS84' 'ALTITUDE' 'UTC_DATA' 'POS_TYPE','ACQ_RATE','LAST_DELAY','CHANNEL_LIST'};
+c2num = {'VALID' 'LAT_WGS84' 'LON_WGS84' 'ALTITUDE' 'TZ' 'UTC_DATA' 'POS_TYPE','ACQ_RATE','LAST_DELAY','CHANNEL_LIST'};
 for j = 1:length(c2num)
 	if isfield(N,c2num{j}) && ~isempty(N.(c2num{j}))
 		N.(c2num{j}) = sstr2num(N.(c2num{j})); %NOTE: str2num() allows some syntax interpretation like '5/1440' (5 mn expressed in days)
 	else
 		N.(c2num{j}) = NaN;
+	end
+end
+
+% TZ in days (format +HH or +HHMM)
+if isnan(N.TZ)
+	N.TZ = 0;
+else
+	if abs(N.TZ) > 100
+		N.TZ = N.TZ/2400;
+	else
+		N.TZ = N.TZ/24;
 	end
 end
 
@@ -106,41 +125,42 @@ if ~exist(clb,'file')
 	clb = sprintf('%s/%s.clb',p,id); % for backwards compatibility
 end
 if exist(clb,'file')
-	fid = fopen(clb);
-	C = textscan(fid,'%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%*[^\n]','Delimiter','|','CommentStyle','#');
-	fclose(fid);
-	%[y,m,d,h,n,nv,nm,un,ns,cc,of,et,ga,vn,vm,az,la,lo,al] = textread(f,'%d-%d-%d%d:%d%s%s%s%s%s%s%s%s%s%s%s%s%s%s%*[^\n]','delimiter','|','commentstyle','shell');
+	C = readdatafile(clb,'CommentStyle','#')';
+	nf = size(C,1);
+	if nf < 20
+		C = cat(1,C,repmat({''},20-nf,size(C,2)));
+	end
 	nn = 1;
-	for j = 1:length(C{1})
-		k = strfind(C{3}{j},'-');
+	for j = 1:size(C,2)
+		k = strfind(C{3,j},'-');
 		if isempty(k)
-			j1 = str2double(C{3}{j});
+			j1 = str2double(C{3,j});
 			j2 = j1;
 		else
-			j1 = str2double(C{3}{j}(1:(k-1)));
-			j2 = str2double(C{3}{j}((k+1):end));
+			j1 = str2double(C{3,j}(1:(k-1)));
+			j2 = str2double(C{3,j}((k+1):end));
 		end
 		for jj = j1:j2
 			if any(isnan(N.CHANNEL_LIST)) || any(N.CHANNEL_LIST==jj)
-				CC.dt(nn) = isodatenum(strcat(C{1}(j),{' '},C{2}(j)));
+				CC.dt(nn) = isodatenum(strcat(C{1,j},{' '},C{2,j}));
 				CC.nv(nn) = jj;
-				CC.nm{nn} = C{4}{j};
-				CC.un{nn} = C{5}{j};
-				CC.ns{nn} = C{6}{j};
-				CC.cd{nn} = C{7}{j};
-				CC.of(nn) = sstr2num(C{8}{j});
-				CC.et(nn) = sstr2num(C{9}{j});
-				CC.ga(nn) = sstr2num(C{10}{j});
-				CC.vn(nn) = sstr2num(C{11}{j});
-				CC.vm(nn) = sstr2num(C{12}{j});
-				CC.az(nn) = sstr2num(C{13}{j});
-				CC.la(nn) = sstr2num(C{14}{j});
-				CC.lo(nn) = sstr2num(C{15}{j});
-				CC.al(nn) = sstr2num(C{16}{j});
-				CC.dp(nn) = sstr2num(C{17}{j});
-				CC.sf(nn) = sstr2num(C{18}{j});
-				CC.db{nn} = C{19}{j};
-				CC.lc{nn} = C{20}{j};
+				CC.nm{nn} = C{4,j};
+				CC.un{nn} = C{5,j};
+				CC.ns{nn} = C{6,j};
+				CC.cd{nn} = C{7,j};
+				CC.of(nn) = sstr2num(C{8,j});
+				CC.et{nn} = C{9,j};
+				CC.ga(nn) = sstr2num(C{10,j});
+				CC.vn(nn) = sstr2num(C{11,j});
+				CC.vm(nn) = sstr2num(C{12,j});
+				CC.az(nn) = sstr2num(C{13,j});
+				CC.la(nn) = sstr2num(C{14,j});
+				CC.lo(nn) = sstr2num(C{15,j});
+				CC.al(nn) = sstr2num(C{16,j});
+				CC.dp(nn) = sstr2num(C{17,j});
+				CC.sf(nn) = sstr2num(C{18,j});
+				CC.db{nn} = C{19,j};
+				CC.lc{nn} = C{20,j};
 				nn = nn + 1;
 			end
 		end
@@ -153,16 +173,16 @@ if exist(clb,'file')
 	N.CLB = CC;
 end
 
-if ~exist('CC','var') | isempty(CC)
-	N.CLB = struct('nx',0,'dt',0,'nv',0,'nm','','un','','ns','','cd','','of',0,'et',0,'ga',0,'vn',0,'vm',0,'az',0,'la',0,'lo',0,'al',0,'dp',0,'sf',NaN,'db','','lc','');
+if ~exist('CC','var') || isempty(CC)
+	N.CLB = struct('nx',0,'dt',0,'nv',0,'nm','','un','','ns','','cd','','of',0,'et','','ga',0,'vn',0,'vm',0,'az',0,'la',0,'lo',0,'al',0,'dp',0,'sf',NaN,'db','','lc','');
 end
 
 % --- transmission type and nodes' list
 tr = split(N.TRANSMISSION,'|, ');
 
-if length(tr) > 0 & ~isempty(tr{1})
+if ~isempty(tr) && ~isempty(tr{1})
 	rmfield(N,'TRANSMISSION');	% needed since R2015... (?)
-	N.TRANSMISSION = struct('TYPE',str2num(tr{1}));
+	N.TRANSMISSION = struct('TYPE',str2double(tr{1}));
 	nn = 0;
 	for n = 2:length(tr)
 		f = sprintf('%s/%s/%s.cnf',NODES.PATH_NODES,tr{n},tr{n});
@@ -173,4 +193,35 @@ if length(tr) > 0 & ~isempty(tr{1})
 			fprintf('WEBOBS{readnode}: %s read (repeater %d).\n',f,nn);
 		end
 	end
+end
+
+% --- node events
+evtpath = sprintf('%s/%s/%s',NODES.PATH_NODES,id,NODES.SPATH_INTERVENTIONS);
+if exist(evtpath,'dir')
+	[s,w] = wosystem(sprintf('find %s -name "*_????-??-??_??-??*.txt"',evtpath));
+else
+	s = 1;
+end
+if ~s && ~isempty(w)
+	evtlist = split(w,'\n');
+	for e = 1:length(evtlist);
+		E = readnodeevent(evtlist{e});
+		N.EVENTS(e).dt1 = E.date1 - N.TZ; % TLIM in UTC
+		N.EVENTS(e).dt2 = E.date2 - N.TZ; % TLIM in UTC
+		N.EVENTS(e).nam = {sprintf('%s: %s (%s)',N.ALIAS,N.NAME,E.author)};
+		N.EVENTS(e).com = {E.title};
+		N.EVENTS(e).lw = field2num(NODES,'EVENTNODE_PLOT_LINEWIDTH',.1);
+		N.EVENTS(e).rgb = field2num(NODES,'EVENTNODE_PLOT_COLOR',rgb('Silver'));
+		N.EVENTS(e).hex = rgb2hex(N.EVENTS(e).rgb);
+		if isfield(E,'outcome')
+			N.EVENTS(e).out = E.outcome;
+		else
+			N.EVENTS(e).out = false;
+		end
+	end
+	if isok(NODES,'EVENTNODE_PLOT_OUTCOME_ONLY')
+		N.EVENTS(~cat(1,N.EVENTS.out)) = [];
+	end
+else
+	N.EVENTS = [];
 end

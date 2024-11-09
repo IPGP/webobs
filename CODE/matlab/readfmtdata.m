@@ -15,14 +15,16 @@ function [D,P] = readfmtdata(WO,P,N)
 %	PROC's parameters P.RAWFORMAT and P.RAWDATA apply to all associated NODES, excepted if those
 %	parameters are defined into the NODE itself.
 %
+%	RAWDATA can contain variables $FID and $NET (FDSN network code).
+%
 %	The RAWFORMAT string is case insensitive.
 %
 %	List of formats selectable by users must be set in CODE/etc/rawformats.conf
 %
 %
-%	Authors: Fran?ois Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
+%	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2019-12-24
+%	Updated: 2024-07-02
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -31,15 +33,20 @@ F.ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
 wosystem(sprintf('mkdir -p %s',F.ptmp));
 
 if isfield(P,'FORM')
-
-	D = readfmtdata_woform(WO,P,N);
-
+	% legacy forms (datafile)
+	f = sprintf('%s/%s',WO.PATH_DATA_DB,P.FORM.FILE_NAME);
+	if exist(f,'file')
+		D = readfmtdata_woform(WO,P,N);
+	else
+		D = readfmtdata_genform(WO,P,N);
+	end
 else
 
 	for n = 1:length(N)
 
 		F.fmt = lower(field2str(N(n),'RAWFORMAT',P.RAWFORMAT,'notempty'));
 		fraw = field2str(N(n),'RAWDATA',P.RAWDATA,'notempty');
+		fraw = regexprep(fraw,'\$NET',field2str(N(n),'FDSN_NETWORK_CODE',''));
 		F.raw = {fraw};
 		lfid = split(N(n).FID,',');	% possible comma separated list of FID
 		for a = 1:length(lfid)
@@ -98,6 +105,8 @@ else
 			D(n) = readfmtdata_mc3(WO,P,N(n),F);
 
 		otherwise
+			D(n).t = [];
+			[D(n).d,D(n).CLB] = calib([],[],N(n).CLB);
 			fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);
 
 		end

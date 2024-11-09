@@ -48,7 +48,7 @@ case "$1" in
 			echo "Scheduler already running with PID $savedpid"
 			exit 1
 		fi
-		cd /etc/webobs.d/../CODE/cgi-bin
+		cd /etc/webobs.d/../CODE/perl
 		if [ -n "${SC__ERROR_FILE}" ]; then
 			echo "--- Scheduler started $(date +'%F %T')" >> $SC__ERROR_FILE
 			perl $DAEMON_SCRIPT $SC__CMD_OPTS 2>> $SC__ERROR_FILE &
@@ -84,7 +84,7 @@ case "$1" in
 
 	status)
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd stat"'
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl 'msg=>"cmd stat"'
 		;;
 
 	ps)
@@ -93,71 +93,71 @@ case "$1" in
 
 	qs)
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd qs"'
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl 'msg=>"cmd qs"'
 		;;
 
 	runq)
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd runq"'
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl 'msg=>"cmd runq"'
 		;;
 
 	jobq)
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd jobq"'
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl 'msg=>"cmd jobq"'
 		;;
 
 	verbose)
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd verbose"'
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl 'msg=>"cmd verbose"'
 		;;
 
 	quiet)
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd quiet"'
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl 'msg=>"cmd quiet"'
 		;;
 
 	stop)
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd stop"'
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl 'msg=>"cmd stop"'
 		;;
 
 	pause)
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd pause"'
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl 'msg=>"cmd pause"'
 		;;
 
 	resume)
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd resume"'
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl 'msg=>"cmd resume"'
 		;;
 
 	flog)
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl 'msg=>"cmd flog"'
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl 'msg=>"cmd flog"'
 		;;
 
 	submit)
 		shift
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"job $@\""
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl "msg=>\"job $@\""
 		;;
 
 	killjob)
 		shift
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"killjob $@\""
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl "msg=>\"killjob $@\""
 		;;
 
 	enq)
 		shift
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"enq $@\""
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl "msg=>\"enq $@\""
 		;;
 
 	deq)
 		shift
 		echo $holdon
-		perl /etc/webobs.d/../CODE/cgi-bin/wsudp.pl "msg=>\"deq $@\""
+		perl /etc/webobs.d/../CODE/perl/wsudp.pl "msg=>\"deq $@\""
 		;;
 
 	kill)

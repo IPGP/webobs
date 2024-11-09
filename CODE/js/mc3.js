@@ -3,12 +3,15 @@ var bars = true;
 var datad = [];
 var datah = [];
 var datav = [];
-var datac = [];
+var dataw = [];
 var datam = [];
+var datac = [];
+var datasm = [];
 var datag = [];
 var data_energy = [];
 var data_energy_total = [];
 var plot;
+var ylabel;
 
 function plotFlot(gtype) {
 	xmode = 'time';
@@ -24,37 +27,52 @@ function plotFlot(gtype) {
 	shadowsize = 2;
 	if (gtype == 'bars') {
 		data = datad;
+		ylabel = '# events per day';
 		lines = false;
 		bars = true;
 	} else if (gtype == 'hbars') {
 		data = datah;
+		ylabel = '# events per hour';
 		lines = false;
 		bars = true;
 		bw = 3300000;
 	} else if (gtype == 'mcum') {
-		data = datam;
+		data = datasm;
+		ylabel = 'cum. seismic moment (Edyn.cm)';
 	} else if (gtype == 'ncum') {
 		data = datac;
+		ylabel = 'cum. # events';
 	} else if (gtype == 'ecum') {
 		data = data_energy;
+		ylabel = 'cum. energy (MJ)';
 	} else if (gtype == 'ecum_total') {
 		data = data_energy_total;
+		ylabel = 'cum. energy (MJ)';
 		fill = false;
 		linewidth = 2;
 		timeformat = '%Y-%m-%d';
 		shadowsize = 0;
 	} else if (gtype == 'gr') {
 		data = datag;
+		ylabel = '# events';
 		xmode = null;
 		stack = null;
 		fill = null;
 		linewidth = 2;
 		points = true;
 		ymin = -0.2;
+	} else if (gtype == 'wsum') {
+		data = dataw;
+		ylabel = '# events per week';
+	} else if (gtype == 'msum') {
+		data = datam;
+		ylabel = '# events per 28 days';
 	} else {
 		data = datav;
+		ylabel = '# events per day';
 	}
 	options = {
+		canvas: true,
 		xaxis: {
 			mode: xmode,
 			timeformat: timeformat
@@ -62,8 +80,16 @@ function plotFlot(gtype) {
 		yaxis: {
 			min: ymin,
 			minTickSize: 1,
-			tickDecimals: 0
+			tickDecimals: 0,
 		},
+		axisLabels: {
+            show: true
+        },
+		yaxes: [{
+			axisLabelUseCanvas: true,
+			position: 'left',
+			axisLabel: ylabel
+		}],
 		series: {
 			stack: stack,
 			shadowSize: shadowsize,
@@ -166,9 +192,29 @@ function plotFlot(gtype) {
 			legends.eq(i).text(series.label.replace(/=.*\//, '= ' + y + '/'));
 		}
 	}
+	cop();
 }
 
 function plotAll() {
 	plot.setSelection({ xaxis: { from: options.xaxis.min, to: options.xaxis.max } },true);
 	plot = $.plot($('#mcgraph'), data, options);
+}
+
+function cop(color) {
+	var bgcolor = (typeof color == "undefined") ? "#fff" : color ;
+	var link = $("#tlsavelink");
+	link.hidden;
+	try {
+		var canvas = plot.getCanvas();
+		var context = canvas.getContext("2d");
+		context.globalCompositeOperation = "destination-over";
+		//context.fillStyle = "#fff";
+		//context.fillRect(0,0,canvas.width,canvas.height);
+		var canvasimg = canvas.toDataURL();
+		link.attr('href',canvasimg);
+		link.attr('download','WebObsMCgraph.png');
+		link.show;
+	} catch(e) {
+		console.log("canvas op failed: "+e);
+	}
 }

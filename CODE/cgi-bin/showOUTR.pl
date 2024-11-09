@@ -27,7 +27,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 
 use WebObs::Config;
 use WebObs::Grids;
-use WebObs::Users;
+use WebObs::Users qw($CLIENT clientHasAdm);
 use WebObs::Utils;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
@@ -45,6 +45,12 @@ my @OUTGList;
 my $QryParm   = $cgi->Vars;
 my $OUTR;
 my $OUTDIR = trim($QryParm->{'dir'});
+my ($date,$time,$host,$user) = split(/_/,$OUTDIR);
+
+# ---- check authorization: request owner or administrator
+if ($user ne $CLIENT && !clientHasAdm(type=>"authprocs",name=>"*")) {
+	die "Sorry, you're not the owner of this proc request.";
+}
 
 # ---- what grids do we have to process ?
 my @GL = qx(find $WEBOBS{ROOT_OUTR}/$OUTDIR -type d \\( -name "PROC.*" -o -name "VIEW.*" -o -name "GRIDMAPS" \\) -maxdepth 1);

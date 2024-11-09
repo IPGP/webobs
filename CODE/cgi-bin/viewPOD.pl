@@ -7,10 +7,18 @@ use CGI::Carp qw/fatalsToBrowser/;
 use File::Find;
 use Pod::Html;
 use WebObs::Config;
+use WebObs::i18n;
+use Locale::TextDomain('webobs');
+use WebObs::Users qw(clientIsValid);
 
 my $cgi = new CGI;
-my $pod = $cgi->param('pod') // '';
 
+# --- ends here if the client is not valid
+if ( !clientIsValid ) {
+  die "$__{'die_client_not_valid'}";
+}
+
+my $pod = $cgi->param('pod') // '';
 if ($pod) {
     my $fname = scan4($pod);
 	if ($fname) {

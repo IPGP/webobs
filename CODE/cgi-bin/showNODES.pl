@@ -22,14 +22,26 @@ my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 set_message(\&webobs_cgi_msg);
 use WebObs::Config;
+use WebObs::i18n;
+use Locale::TextDomain('webobs');
 use WebObs::Grids;
+use WebObs::Users qw($CLIENT clientIsValid clientHasRead);
 
-# get all GRIDs
+# --- ends here if the client is not valid
+if ( !clientIsValid ) {
+  die "$__{'die_client_not_valid'}";
+}
+
+# get all GRIDs with a minimum read auth
 my @T;
-push(@T, map({"VIEW.$_"} sort(WebObs::Grids::listViewNames())));
-push(@T, map({"PROC.$_"} sort(WebObs::Grids::listProcNames())));
+for (sort(WebObs::Grids::listViewNames())) {
+	push(@T, "VIEW.$_") if (clientHasRead(type=>"authviews",name=>"$_"));
+}
+for (sort(WebObs::Grids::listProcNames())) {
+	push(@T, "PROC.$_") if (clientHasRead(type=>"authprocs",name=>"$_"));
+};
 
-# get all NODEs configurations !!
+# get all NODE IDs with grid association
 my %N = WebObs::Grids::listNodeGrids();
 my $row = "";
 
@@ -60,6 +72,14 @@ print <<"FIN";
 <body>
 FIN
 
+print "<TABLE width=\"100%\"><TR><TD style=\"border:0;vert-align:top\"><H1>$WEBOBS{WEBOBS_ID}: $__{'All nodes'}</H1></TD>\n";
+print "<TD style=\"border:0;text-align:right\"><TABLE>";
+print "<TR><TD style=\"border:0;text-align:right\"><B>".(grep { $_ =~ /^VIEW/ } @T)."</B></TD><TD style=\"border:0\">views</TD></TR>\n";
+print "<TR><TD style=\"border:0;text-align:right\"><B>".(grep { $_ =~ /^PROC/ } @T)."</B></TD><TD style=\"border:0\">procs</TD></TR>\n";
+print "<TR><TD style=\"border:0;text-align:right\"><B>".(keys %N)."</B></TD><TD style=\"border:0\">$__{'nodes'}</TD></TR>\n";
+print "<TR><TD style=\"border:0;text-align:right\"><B>".(grep(/^1$/,map { @{$_} == 0 } values %N))."</B></TD><TD style=\"border:0\">$__{'orphan nodes'}</TD></TR>\n";
+print "</TABLE></TD></TR></TABLE>\n";
+
 # ---- build matrix as a <TABLE>
 print "<DIV class=\"nodetbl\">";
 print "<TABLE cellspacing=0>\n";
@@ -72,22 +92,26 @@ print "<TABLE cellspacing=0>\n";
 		$oddeven = $oddeven eq "even" ? "odd" : "even";
 	}
 	print "$row\n";
-	print "</THEAD>";
+	print "</THEAD>\n";
 
 	print "<TBODY>";
 	for my $node (sort keys(%N)) {
 		my $oddeven = "even";
 		$row = "<TR><TD class=\"nodeid\">$node</TD>";
-		for (@T) {
-			$what = ($_ =~ m/^VIEW./) ? 'view' : 'proc';
-			if ($_ ~~ @{$N{$node}}) {
-				my $link = "\"$NODES{CGI_SHOW}?node=$_.$node\"";
-				$row .= "<TD class=\"otimes $what $oddeven\"><a href=$link>&cir;</a></TD>" 
+		if (@{$N{$node}}) {
+			for (@T) {
+				$what = ($_ =~ m/^VIEW./) ? 'view' : 'proc';
+				if ($_ ~~ @{$N{$node}}) {
+					my $link = "\"$NODES{CGI_SHOW}?node=$_.$node\"";
+					$row .= "<TD class=\"otimes $what $oddeven\"><a href=$link>&cir;</a></TD>" 
+				}
+				else {
+					$row .= "<TD class=\"oempty $what $oddeven\">&empty;</TD>"
+				}
+				$oddeven = $oddeven eq "even" ? "odd" : "even";
 			}
-			else {
-				$row .= "<TD class=\"oempty $what $oddeven\">&empty;</TD>"
-			}
-			$oddeven = $oddeven eq "even" ? "odd" : "even";
+		} else {
+			$row .= "<TD class=\"oorphan\" colspan=\"".(@T)."\"></TD></TR>\n";
 		}
 		print $row;
 	}
@@ -104,11 +128,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Lafon
+Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+Webobs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

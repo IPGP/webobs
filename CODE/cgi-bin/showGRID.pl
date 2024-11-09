@@ -6,11 +6,49 @@ showGRID.pl
 
 =head1 SYNOPSIS
 
-http://..../showGRID.pl?grid=gridtype.gridname[,nodes=][,coord=][,project=][,procparam=]
+http://..../showGRID.pl?grid=gridtype.gridname[,nodes=][,coord=][,project=][,procparam=][,sortby=][,map=][,invalid=]
 
 =head1 DESCRIPTION
 
 Display a GRID
+
+=head1 Query string parameters
+
+grid=
+ grid full name to display as gridtype.gridname
+
+nodes=
+ filter on the node activity status. Default value is DEFAULT_NODES_FILTER variable in GRIDS.rc. Options are:
+   active  only active nodes (current time is between the start and end dates)
+ inactive  only inactive nodes (end date in the past or start date in the future)
+      all  all nodes
+
+coord=
+ specify the coordonates. Default value is DEFAULT_COORDINATES variable in GRIDS.rc. Options are:
+  latlon  latitude and longitude
+     utm  Universal Transverse Mercator projection (WGS84)
+	 xyz  geocentric X, Y and Z
+
+project=
+ show/hide the project column. Default value is DEFAULT_PROJECT_FILTER variable in GRIDS.rc. Options are:
+   on
+   off
+
+procparam=
+ show/hide the proc parameters columns. Default value is DEFAULT_PROCPARAM_FILTER variable in GRIDS.rc. Options are:
+   on
+   off
+
+sortby=
+ how to sort the grid events. Options are:
+   event  sub-events are displayed below the parent event (default)
+    date  all events in reversed chronological order
+
+map=
+ map number in case of submaps. Default is the main grid map.
+
+invalid=
+ show/hide invalid nodes. This option is for administrator level only.
 
 =cut
 
@@ -35,7 +73,7 @@ use WebObs::Utils;
 use WebObs::Search;
 use WebObs::Wiki;
 use WebObs::i18n;
-use WebObs::IGN;
+use WebObs::Mapping;
 use Locale::TextDomain('webobs');
 
 
@@ -46,10 +84,10 @@ set_message(\&webobs_cgi_msg);
 my $htmlcontents = "";  # HTML page that will be returned to the browser
 my $editOK   = 0;       # 1 if the user is allowed to edit the grid
 my $admOK    = 0;       # 1 if the user has admin rights in the grid
-my $seeInvOK = 0;       # 1 if the user is allowed to see invalid nodes
 my $GRIDType = "";      # grid type ("PROC" or "VIEW")
 my $GRIDName = "";      # name of the grid
 my %GRID;               # structure describing the grid
+my $theiaAuth = isok($WEBOBS{THEIA_USER_FLAG});
 
 my @GID = split(/[\.\/]/, trim(checkParam($cgi->param('grid'),
 			qr{^(VIEW|PROC)(\.|/)|[a-zA-Z0-9]+$}, "grid") // ''));
@@ -65,6 +103,7 @@ my $usrProcparam = checkParam($cgi->param('procparam'),
 my $usrSortby = checkParam($cgi->param('sortby'), qr/^[a-z]*$/, 'sortby')
 			// "event";
 my $usrMap = checkParam($cgi->param('map'), qr/^[0-9]*$/, 'map') // '';
+my $usrInvalid = checkParam($cgi->param('invalid'), qr/^(on|off)?$/, 'invalid') // "off";
 
 if (scalar(@GID) == 2) {
 	($GRIDType, $GRIDName) = @GID;
@@ -80,9 +119,6 @@ if (scalar(@GID) == 2) {
 			if ( WebObs::Users::clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
 				$admOK = 1;
 			}
-			if ( WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"SEEINVALIDNODES") ) {
-				$seeInvOK = 1;
-			}
 		} else { die "You cannot display $GRIDType.$GRIDName"}
 	} else { die "Couldn't get $GRIDType.$GRIDName configuration." }
 } else { die "No valid GRID requested (NOT gridtype.gridname)." }
@@ -93,11 +129,14 @@ my $grid = "$GRIDType.$GRIDName";
 my $isProc = ($GRIDType eq "PROC" ? '1':'0');
 my @procTS = ();
 my $procOUTG;
+my %authUsers;
 if ($isProc) {
+	%authUsers = WebObs::Users::resListAuth(type=>'authprocs',name=>$GRIDName);
 	$procOUTG = '1' if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_GRAPHS}" );
 	$procOUTG = 'events' if ( -d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EVENTS}" );
  	@procTS = split(/,/,$GRID{TIMESCALELIST});
 } else {
+	%authUsers = WebObs::Users::resListAuth(type=>'authviews',name=>$GRIDName);
 	$usrProcparam = '';
 }
 my @domain = split(/\|/,$GRID{DOMAIN});
@@ -167,21 +206,25 @@ print "<script language=\"javascript\" type=\"text/javascript\" src=\"/js/wolb.j
 # ---- header (GRID name) and internal links within page
 #
 print "<A NAME=\"MYTOP\"></A>";
+print "<TABLE width=100%><TR><TD style='border:0'>\n";
 my $domain_title = ($#domain > 0 ? "#":$DOMAINS{$domain[0]}{NAME});
 print "<H1 style=\"margin-bottom:6pt\"> $domain_title / $GRID{NAME}".($admOK ? " <A href=\"/cgi-bin/formGRID.pl?grid=$grid\"><IMG src=\"/icons/modif.png\"></A>":"")."</H1>\n";
 print WebObs::Search::searchpopup();
-#if ($admOK == 1) { print "<A class=\"gridname\" href=\"/cgi-bin/formGRID.pl?grid=$grid\">{$grid}</A>"; }
 
 my $ilinks = "[ ";
 $ilinks .= "<A href=\"/cgi-bin/listGRIDS.pl?type=$GRIDType\">".ucfirst(lc($GRIDType))."s</A>";
-$ilinks .= " | <A href='#MYTOP' title=\"$__{'Find text in Grid'}\" onclick='srchopenPopup(\"+$GRIDType.$GRIDName\");return false'><img class='ic' src='/icons/search.png'></A>";
-$ilinks .= " | <A href=\"/cgi-bin/gvTransit.pl?grid=$GRIDType.$GRIDName\"><IMG src=\"/icons/tmap.png\" title=\"Tmap\" style=\"vertical-align:middle;border:0\"></A>";
-$ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_GOOGLE_MAPS}?grid=$grid','$GRIDName','width="
-		.($WEBOBS{GOOGLE_MAPS_WIDTH_VALUE}+15).",height="
-		.($WEBOBS{GOOGLE_MAPS_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">
-		<IMG src=\"$WEBOBS{GOOGLE_MAPS_ICON}\" title=\"$WEBOBS{GOOGLE_MAPS_LINK_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
+$ilinks .= " | <A href='#MYTOP' title=\"$__{'Find text in Grid'}\" onclick='srchopenPopup(\"+$GRIDType.$GRIDName\");return false'>\
+               <img class='ic' src='/icons/search.png'></A>";
+$ilinks .= " | <A href=\"/cgi-bin/gvTransit.pl?grid=$GRIDType.$GRIDName\"><IMG src=\"/icons/tmap.png\" \
+               title=\"Tmap\" style=\"vertical-align:middle;border:0\"></A>";
+$ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$grid','$GRIDName','width="
+		.($WEBOBS{OSM_WIDTH_VALUE}+15).",height="
+		.($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">
+		<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
 if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
-	$ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml')\" title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
+	$ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml')\" \
+	               title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" \
+				   src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
 }
 $ilinks .= " | <A href=\"#SPECS\">$__{Specifications}</A>";
 $ilinks .= " | <A href=\"#MAPS\">$__{'Location'}</A>";
@@ -189,8 +232,12 @@ $ilinks .= " | <A href=\"#INFO\">$__{'Information'}</A>";
 $ilinks .= " | <A href=\"#PROJECT\">$__{'Project'}</A>";
 $ilinks .= " | <A href=\"#EVENTS\">$__{'Events'}</A>";
 $ilinks .= " | <A href=\"#REF\">$__{'References'}</A>";
+$ilinks .= " | <A href=\"/cgi-bin/showTHEIA.pl\">$__{'Theia board'}</A>" if ($theiaAuth);
+$ilinks .= " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle\" title=\"Refresh\" \
+               onclick=\"document.location.reload(false)\">";
 $ilinks .= " ]";
-print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks";
+print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks</P>";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
 
 # ---- Objectives
 #
@@ -228,19 +275,10 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	}
 	# -----------
 	$htmlcontents .= "<LI>$__{'Grid code'}: <B>$grid</B></LI>\n";
-        # -----------
+    # -----------
 	if ($showOwnr && defined($GRID{OWNCODE})) {
 		$htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n"
 	}
-	# -----------
-	$htmlcontents .= "<LI>$__{'Node(s)'}: <B>$nbNodes</B> \"$snm\"";
-	if ($admOK) {
-		$htmlcontents .= " [ "
-			."<A href=\"/cgi-bin/formGRID.pl?grid=$grid\">$__{'Associate existing node(s)'}</A> | "
-			."<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\">$__{'Create a new node'}</A> "
-			."]";
-	}
-	$htmlcontents   .= "</LI>";
 	if ($showType && $GRID{TYPE} ne "") {
 		$htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n";
 	}
@@ -251,7 +289,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		if (defined($GRID{'FORM'})) {
 			my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
 			if (%FORM) {
-				my $urnData = (defined($FORM{'CGI_SHOW'})) ? "/cgi-bin/$FORM{'CGI_SHOW'}?node={$GRIDName}" : "";
+				my $urnData = (defined($FORM{'CGI_SHOW'})) ? "/cgi-bin/$FORM{'CGI_SHOW'}?node={$GRIDName}" : "/cgi-bin/showGENFORM.pl?form=$FORM{'NAME'}";
 				my $txtData = (defined($FORM{'TITLE'})) ? $FORM{'TITLE'} : "";
 				$htmlcontents .= "<LI>$__{'Access to data'}: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
 			}
@@ -298,6 +336,13 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	# -----------
 	# only for PROCs: link to output pages and time scale parameters
 	if ($isProc) {
+		if (grep(/^FID_/,keys(%GRID))) {
+			$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH colspan=2>$__{'Nodes Default FIDs'}</TH></TR>\n";
+			foreach (grep(/^FID_/,sort(keys(%GRID)))) {
+				$htmlcontents .= "<TR><TD>$_</TD><TD><B>$GRID{$_}</B></TD></TR>\n";
+			}
+			$htmlcontents .= "</TABLE></TD>\n";
+		}
 		if ($procOUTG) {
 			my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
 			$htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Graphs'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
@@ -308,6 +353,11 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 					my $outg = join('',map {$_ = "<TD align=\"center\"><A href=\"$urn&amp;ts=$_&amp;g=$g\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>"} split(/,/,$GRID{TIMESCALELIST}));
 					$htmlcontents .= "<TR><TD align=\"right\">".($g eq ""?"Overview":"$g")."</TD>$outg</TR>\n";
 				}
+			}
+			if ($theiaAuth) {
+				$htmlcontents .= "<TR><TD>$__{'Send to Theia'}\n";
+				$htmlcontents .= join('', map { checkingTS($_,$GRID{THEIA_SELECTED_TS}) } @procTS);
+				$htmlcontents .= "</TD></TR>";
 			}
 			$htmlcontents .= "</TABLE></TD>\n";
 		}
@@ -336,7 +386,7 @@ print $htmlcontents;
 print "<BR>";
 $htmlcontents = "<A name=\"NODES\"></A>";
 $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#nodesID');\">&nbsp;&nbsp;";
-	$htmlcontents .= "$__{'List of'} $snm(s)&nbsp;$go2top";
+	$htmlcontents .= "$nbNodes $snm(s)&nbsp;$go2top";
 	$htmlcontents .= "</div><div id=\"nodesID\">";
 
 		$htmlcontents .= "<P class=\"subTitleMenu\" style=\"margin-left: 5px\">";
@@ -348,15 +398,16 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 
 		# -- Nodes list submenu Nodes
 		$htmlcontents .= "$__{'Nodes'} [ ";
-		if ($usrNodes eq "active") {
-			$htmlcontents .= "<B>$__{'Active'}</B>" ;
-		} else {
-			$htmlcontents .= "<A href=\"$myself&amp;nodes=active&amp;coord=$usrCoord&amp;project=$usrProject&amp;$procParm#NODES\">$__{'Active'}</A>";
+		$htmlcontents .= ($usrNodes eq "active" ? "<B>$__{'Active'}</B>":"<A href=\"$myself&amp;nodes=active&amp;coord=$usrCoord&amp;project=$usrProject&amp;$procParm#NODES\">$__{'Active'}</A>");
+		$htmlcontents .= " | ";
+		$htmlcontents .= ($usrNodes eq "inactive" ? "<B>$__{'Inactive'}</B>":"<A href=\"$myself&amp;nodes=inactive&amp;coord=$usrCoord&amp;project=$usrProject&amp;$procParm#NODES\">$__{'Inactive'}</A>");
+		$htmlcontents .= " | ";
+		$htmlcontents .= ($usrNodes eq "all" ? "<B>$__{'All'}</B>":"<A href=\"$myself&amp;nodes=all&amp;coord=$usrCoord&amp;project=$usrProject$procParm#NODES\">$__{'All'}</A>");
+		if ( $admOK ) {
+			$htmlcontents .= " | ".($usrInvalid eq "on" ? "<A href=\"$myself&amp;invalid=off&amp;coord=$usrCoord&amp;project=$usrProject&amp;nodes=$usrNodes$procParm#NODES\">$__{'Hide invalid'}</A>"
+			                                             :"<A href=\"$myself&amp;invalid=on&amp;coord=$usrCoord&amp;project=$usrProject&amp;nodes=$usrNodes$procParm#NODES\">$__{'Show invalid'}</A>");
 		}
-		if ( $seeInvOK ) {
-			$htmlcontents .= " | ".($usrNodes eq "valid" ? "<B>$__{'Valid'}</B>":"<A href=\"$myself&amp;?coord=$usrCoord&amp;project=$usrProject&amp;nodes=valid$procParm#NODES\">$__{'Valid'}</A>");
-		}
-		$htmlcontents .= " | ".($usrNodes eq "all" ? "<B>$__{'All'}</B>":"<A href=\"$myself&amp;coord=$usrCoord&amp;project=$usrProject&amp;nodes=all$procParm#NODES\">$__{'All'}</A>")." ] ";
+		$htmlcontents .= " ] ";
 
 		# -- Nodes list submenu Coordinates
 		$htmlcontents .= "- $__{Coordinates} [ "
@@ -392,15 +443,16 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 
 		# ---- then, the Nodes' table
 		#
-		my $nbValides=0;
-		my $nbNonValides=0;
+		my $nbValides = 0;
+		my $nbNonValides = 0;
 		my $tcolor;
 		my %NODE;
+		my $newNODE = "<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\"><IMG title=\"$__{'Create a new node'}\" src=\"/icons/modif.png\"></A>";
 
 		#$htmlcontents .= "<TABLE width=\"100%\" style=\"margin-left: 5px\">";
 		$htmlcontents .= "<TABLE width=\"100%\">";
 		$htmlcontents .= "<TR>";
-			$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2></TH>":"")
+			$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
 				."<TH rowspan=2>$__{'Alias'}</TH>"
 				."<TH rowspan=2>$__{'Name'}</TH>"
 				."<TH colspan=3>$__{'Coordinates'}</TH>"
@@ -449,9 +501,9 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			if (%NODE) {
 
 				# is VALID ? do we display INVALID ?
-				if ($NODE{VALID} == 0) {
+				if (!isok($NODE{VALID})) {
 					$tcolor="node-disabled";
-					if ($usrNodes eq "valid" || !$seeInvOK) {
+					if ($usrInvalid ne "on") {
 						$nbNonValides++;
 						$displayNode = 0;
 					}
@@ -461,9 +513,13 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				}
 
 				# is NOT active if already 'ended' OR not yet 'installed' ? do we display ?
-				if ($NODE{VALID} && ($NODE{END_DATE} ne "NA" && $NODE{END_DATE} lt $today) || ($NODE{INSTALL_DATE} ne "NA" && $NODE{INSTALL_DATE} gt $today)) {
+				if (isok($NODE{VALID}) && ($NODE{END_DATE} ne "NA" && $NODE{END_DATE} lt $today) || ($NODE{INSTALL_DATE} ne "NA" && $NODE{INSTALL_DATE} gt $today)) {
 					$tcolor="node-inactive";
 					if ($usrNodes eq "active") {
+						$displayNode = 0;
+					}
+				} else {
+					if ($usrNodes eq "inactive") {
 						$displayNode = 0;
 					}
 				}
@@ -471,11 +527,12 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				# trick: execute display logic even if we don't display, but html-comment out first
 				$htmlcontents .= (!$displayNode ? "<!--":"");
 				$htmlcontents .= "<TR class=\"$tcolor\">";
-				$htmlcontents .= ($editOK ? "<TH><A href=\"/cgi-bin/formNODE.pl?node=$grid.$NODEName\"><IMG title=\"Edit node\" src=\"/icons/modif.png\"></TH>":"");
+				$htmlcontents .= ($editOK ? "<TH><A href=\"/cgi-bin/formNODE.pl?node=$grid.$NODEName\"><IMG title=\"Edit node $NODEName\" src=\"/icons/modif.png\"></TH>":"");
 				# Node's code and name
 				my $lienNode="/cgi-bin/$NODES{CGI_SHOW}?node=$grid.$NODEName";
-				$htmlcontents .= "<TD align=center><B>$NODE{ALIAS}</B></TD><TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
-
+				$htmlcontents .= "<TD align=center><B>$NODE{ALIAS}</B></TD>";
+				$htmlcontents .= "<TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
+				
 				# Node's localization
 				if ($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0) {
 					$htmlcontents .= "<TD colspan=3> </TD>";
@@ -528,7 +585,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 						my $fileProj = "$pathInter/$fileProjName";
 						if ((-e $fileProj) && (-s $fileProj)) {
 							my @proj = readFile($fileProj);
-							@proj = grep(!/^$/, @proj);
+							@proj = grep(!/^$|^WebObs: /, @proj);
 							chomp(@proj);
 							if ($proj[0] =~ "|") {
 								my @pLigne = split(/\|/,$proj[0]);
@@ -736,8 +793,30 @@ $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\
 	$htmlcontents .= "</div></div>";
 print $htmlcontents;
 
+# ----- Authorization access ------
+print "<P class=\"subTitleMenu\" style=\"margin-top:20px\">$__{'Authorization access'} for <B>$GRIDType.$GRIDName</B>:";
+print " administrators = <B>".join(", ", @{$authUsers{4}})."</B>;";
+print " editors = <B>".join(", ", @{$authUsers{2}})."</B>;";
+print " readers = <B>".join(", ", @{$authUsers{1}})."</B></P>\n";
+
 # ---- We're done !
 print "</BODY>\n</HTML>\n";
+
+sub checkingTS {
+	if ( $_[0] eq $_[1] ) {
+		return "<TD><input type=\"checkbox\" checked=true disabled=\"disabled\" id=\"check_$_[0]\[\]\"/></TD>";
+	} else {
+		return "<TD><input type=\"checkbox\" disabled=\"disabled\" id=\"check_$_[0]\[\]\"/></TD>";
+	}
+}
+
+sub checkingNODELIST {
+	if ( $_[1] =~ /$_[0]/ ) {
+		return "<TD align=center><input type=\"checkbox\" checked=true disabled=\"disabled\" id=\"check_$NODE{ALIAS}\[\]\"/></TD>";
+	} else {
+		return "<TD align=center><input type=\"checkbox\" disabled=\"disabled\" id=\"check_$NODE{ALIAS}\[\]\"/></TD>";
+	}
+}
 
 __END__
 
@@ -745,11 +824,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
+Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2021 - Institut de Physique du Globe Paris
+Webobs - 2012-2023 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

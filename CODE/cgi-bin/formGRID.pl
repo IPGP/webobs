@@ -248,7 +248,7 @@ print <<_EOD_;
 	}
 }
 function verif_formulaire()
-{
+{	
 	for (var i=0; i<document.formulaire.SELs.length; i++) {
 		document.formulaire.SELs[i].selected = true;
 	}
@@ -294,7 +294,7 @@ print "</TD>\n";
 
 # ---- Domains
 print "<TD style=\"border:0; vertical-align:top\">";
-print "<FIELDSET><LEGEND>Domain</LEGEND><SELECT name=\"domain\" size=\"10\" multiple>\n";
+print "<FIELDSET><LEGEND>$__{'Domain'}</LEGEND><SELECT name=\"domain\" size=\"10\" multiple>\n";
 foreach my $d (sort(keys(%DOMAINS))) {
 	print "<option value=\"$d\"".(grep(/^$d$/, @domain) ? " selected":"").">{$d}: $DOMAINS{$d}{NAME}</option>\n";
 }
@@ -303,7 +303,7 @@ print "</SELECT></FIELDSET>\n";
 
 # ---- Forms
 if ($GRIDType eq "PROC") {
-	print "<FIELDSET><LEGEND>Form</LEGEND><SELECT name=\"form\" size=\"1\">\n";
+	print "<FIELDSET><LEGEND>$__{'Form'}</LEGEND><SELECT name=\"form\" size=\"1\">\n";
 	print "<option value=\"\"> --- none --- </option>\n";
 	for (sort(keys(%FORMS))) {
 		print "<option value=\"$_\"".($form eq $_ ? " selected":"").">{$_}: $FORMS{$_}</option>\n";
@@ -313,7 +313,7 @@ if ($GRIDType eq "PROC") {
 
 # ---- Nodes
 if ($GRIDType eq "PROC" || $GRIDType eq "VIEW") {
-	print "<FIELDSET><LEGEND>Associated nodes</LEGEND>";
+	print "<FIELDSET><LEGEND>$__{'Available/Associated nodes'}</LEGEND>";
 	print "<TABLE cellpadding=\"3\" cellspacing=\"0\" style=\"border:0\">";
 	print "<TR><TD style=\"border:0\">";
 	print "<SELECT name=\"INs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%\">";
@@ -342,6 +342,7 @@ if ($GRIDType eq "PROC" || $GRIDType eq "VIEW") {
 } else {
 	print "<INPUT name=\"SELs\" type=\"hidden\" value=\"-\">";
 }
+
 # ---- Sefrans
 if ($GRIDType eq "SEFRAN") {
 	my $chconf = (exists($GRID{CHANNEL_CONF}) && -e $GRID{CHANNEL_CONF} ? "$GRID{CHANNEL_CONF}":"$WEBOBS{PATH_SEFRANS}/$GRIDName/channels.conf");
@@ -391,7 +392,7 @@ Francois Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2020 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

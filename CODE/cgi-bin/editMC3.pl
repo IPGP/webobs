@@ -80,11 +80,11 @@ $CGI::DISABLE_UPLOADS = 1;
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users;
+use WebObs::Users qw(clientHasEdit clientHasAdm);
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
-use WebObs::IGN;
+use WebObs::Mapping;
 use WebObs::Wiki;
 use Locale::TextDomain('webobs');
 use IO::Socket;
@@ -137,6 +137,13 @@ my %SEFRAN3 = readCfg("$WEBOBS{ROOT_CONF}/$s3.conf");
 # ---- loads requested MC3 configuration file or default one
 $mc3 ||= $WEBOBS{MC3_DEFAULT_NAME};
 my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$mc3.conf");
+
+my $userLevel = 0;
+$userLevel = 2 if (clientHasEdit(type=>"authprocs",name=>"MC") || clientHasEdit(type=>"authprocs",name=>"$mc3"));
+$userLevel = 4 if (clientHasAdm(type=>"authprocs",name=>"MC") || clientHasAdm(type=>"authprocs",name=>"$mc3"));
+
+# --- ends here if the client has not edit level
+if ( $userLevel < 2 ) { die "Sorry, you must have edit level on $mc3 to modify events."; }
 
 # ------------------------------------------------------------------
 # !!!!!!!!!!!!!!  MC3 non-blocking LOCK !!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -267,6 +274,9 @@ if ($delete < 2) {
 		."|$typeEvnt|$amplitudeEvnt|$dureeEvnt|$uniteEvnt|$dureeSatEvnt|$nbrEvnt|$smoinsp|$stationEvnt|$arrivee"
 		."|$fileNameSUDS|$idSC3|".join(',', @image_list)."|$operator/$timestamp|$comment";
 	push(@lignes, u2l($chaine));
+} else {
+	# --- ends here if the client has no admin level
+	if ( $userLevel < 4 ) { die "Sorry, you must have an admin level on $mc3 to delete an event."; }
 }
 
 # Create the new file
@@ -487,7 +497,7 @@ frameMC2.pl and formulaireMC2.pl [2004-2009] by Didier Mallarino, Francois Beaud
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2022 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
