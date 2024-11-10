@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script helps to produce a new release package of WebObs.
-# Usage: make_wopack X.Y.Z
+# Usage: make_wopack X.Y.Z [proc_list_to_compile]
 #
 # Dependencies:
 #    - Matlab R2011b with Compiler
@@ -11,13 +11,18 @@
 #
 # Author: Francois Beauducel <beauducel@ipgp.fr>
 # Created: 2024-03-14
-
+# Updated: 2024-11-10
 
 SCRIPT_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 PWD=$(pwd)
 
 # Script argument: version of the release
 RELEASE_VERSION="$1"
+MCC_OPT="${@:2}"
+if [ -z $MCC_OPT]
+then
+	MCC_OPT="all"
+fi
 
 function ask() {
 	# Usage: ask "prompt question [y/n] ?" [default answer] [pattern for returning true]
@@ -28,11 +33,11 @@ function ask() {
 	return $?
 }
 
-if ask "--> Compile all the Matlab procs [y/N]" "n"
+if ask "--> Compile the Matlab procs '$MCC_OPT' [y/N]" "n"
 then
 	cd "$SCRIPT_DIR/../CODE/matlab"
-	make arch=64 all
-	make arch=32 all
+	make arch=64 $MCC_OPT
+	make arch=32 $MCC_OPT
 	cd "$PWD"
 fi
 
