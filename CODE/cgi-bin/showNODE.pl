@@ -148,7 +148,7 @@ my $desc = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"} // $NODE{DESCRIPTION};
 my $fdsn = trim($NODE{"$GRIDType.$GRIDName.FDSN_NETWORK_CODE"} // $NODE{FDSN_NETWORK_CODE});
 my $fid = $NODE{"$GRIDType.$GRIDName.FID"} // $NODE{FID};
 my $fids = join(" - ", map { my $v; ($v = $_) =~ s/$GRIDType\.$GRIDName\.//;
-                             "$v: <B>$NODE{$_}</B> "; }
+                             "$v: <SPAN class='code'>$NODE{$_}</SPAN> "; }
                             sort grep(/$GRIDType\.$GRIDName\.FID_|^FID_/, keys(%NODE)));
 my $rawformat = $NODE{"$GRIDType.$GRIDName.RAWFORMAT"} // $NODE{RAWFORMAT};
 my $rawdata = $NODE{"$GRIDType.$GRIDName.RAWDATA"} // $NODE{RAWDATA};
@@ -440,11 +440,11 @@ if (uc($GRIDType) eq 'PROC') {
 	else { print "$txt" }
 	print "</B></TD><TD>";
 	#print "ID: <B>$NODEName</B>";
-	print "FID: ".($fid ne "" ? "<B>$fid</B>":"<I>$__{undefined}</I>")."\n";
+	print "FID: ".($fid ne "" ? "<SPAN class='code'>$fid</SPAN>":"<I>$__{undefined}</I>")."\n";
 	print "<BR>Network: <B>$fdsn</B> ($FDSN{$fdsn})\n" if ($fdsn ne "");
 	print "<BR>$fids" if ($fids ne "");
 	print "<BR>Raw Format: $rawFormats{$rawformat}{supfmt} / <B>$rawformat</B> ($rawFormats{$rawformat}{name})" if ($rawformat ne "");
-	print "<BR>Raw Data Source: <B>$rawdata</B>" if ($rawdata ne "");
+	print "<BR>Raw Data Source: <SPAN class='code'>$rawdata</SPAN>" if ($rawdata ne "");
 	print "</TD></TR>\n";
 	
 	# --- description
