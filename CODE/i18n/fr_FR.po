@@ -534,7 +534,10 @@ msgid "Notify"
 msgstr "Notifier"
 
 msgid "New node"
-msgstr "Nouveau Node"
+msgstr "Nouveau node"
+
+msgid "duplicated from"
+msgstr "dupliqué depuis"
 
 msgid "New event"
 msgstr "Nouvel événement"
