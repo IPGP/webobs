@@ -8,11 +8,13 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## v2.7 (under development)
+## v2.7
 
 ### New features
 1. **Generic forms**: see section *Under development* below.
-1. In showNODE.pl, the links between node's feature displays a table of full children's feature content, including possible link to grandchildren. A toggle icon allows to switch mask/display of this table.
+1. **Nodes**:
+    1. Links between node's feature now display a table of full children's feature content, including possible link to grandchildren. A toggle icon allows to switch hidden/displayed of this table.
+    1. With admin level on a grid, it is possible to duplicate a node configuration (small icon on the right of node's title): all the configuration fields will be copied, including the node's ID that must be modified to become valid. Note that calibration file, feature's content and events will not be copied.
 1. In the **tremblemaps** procs (felt earthquakes), GSE message can be replaced by a JSON file with basic information about the event, with two new variables:
 ```
 GSE_EXPORT|N

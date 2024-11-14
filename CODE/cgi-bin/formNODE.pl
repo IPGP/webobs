@@ -98,6 +98,9 @@ if ($newnode == 0) {
 	}
 } else {
 	$titre2 = "$__{'New node'}";
+	if ($newnode == 2) {
+		$titre2 .= " $__{'duplicated from'}"." <I>$GRIDType.$GRIDName.$NODEName</I>";
+	}
 }
 
 my $Ctod = time(); my @tod  = localtime($Ctod);
@@ -1027,7 +1030,7 @@ print "<TR>";
 	print "</TD>";
 	print "<TD style=\"border:0\">";
 	print "<SELECT name=\"SELs\" size=\"5\" multiple style=\"font-weight:bold\">";
-	if  ($newnode) { print "<option selected value=\"$GRIDType.$GRIDName\">$GRIDType.$GRIDName</option>"; }
+	if  ($newnode==1) { print "<option selected value=\"$GRIDType.$GRIDName\">$GRIDType.$GRIDName</option>"; }
 	for (@{$allNodeGrids{$NODEName}}) { print "<option selected value=\"$_\">$_</option>"; }
 	print "</SELECT></td>";
 	print "</TR>";
@@ -1380,7 +1383,7 @@ print "<TR><TD style=border:0 colspan=2><HR>";
 # --- buttons zone
 print "<P align=center>";
 print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-print "<INPUT type=\"button\" value=\"$__{'Save'}\" style=\"font-weight:bold\" onClick=\"postIt();\">";
+print "<INPUT type=\"button\" value=\"".($newnode ? $__{'Create'}:$__{'Save'})."\" style=\"font-weight:bold\" onClick=\"postIt();\">";
 print "</P></TD></TR></TABLE>";
 print "</FORM>";
 
@@ -1396,7 +1399,7 @@ Francois Beauducel, Didier Mallarino, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
