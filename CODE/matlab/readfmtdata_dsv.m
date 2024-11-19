@@ -35,7 +35,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2024-10-31
+%	Updated: 2024-11-19
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -90,7 +90,6 @@ if ~isempty(regexpi(F.raw{1},'\$yyyy'))
 	else
 		years = [];
 	end	
-	years = str2num(cat(1,Y(cellfun(@length,{Y.name})==4 & cat(1,Y.isdir)').name))';
 	for yyyy = years
 		if (isnan(P.DATELIM(1)) || datenum(yyyy,12,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,1) <= P.DATELIM(2))
 			if ~isempty(regexpi(F.raw{1},'\$mm'))
