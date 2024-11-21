@@ -422,10 +422,9 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 		
 		# copy calibration file
 		if ($cgi->param('copyclb')) {
-			my $clb = "$nodepath/$GRIDType.$GRIDName.$NODEName.clb";
+			my $clb = "$nnodepath/$GRIDType.$GRIDName.$nnid.clb";
 			if (-e $clb) {
-				my $nclb = ($clb =~ s/$NODEName/$nnid/g);
-				qx(cp -a $clb $nclb 2>&1);
+				qx(cp -a $clb $nodepath/$GRIDType.$GRIDName.$NODEName.clb 2>&1);
 			}
 		}
 
