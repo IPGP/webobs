@@ -262,6 +262,7 @@ $typeTrans =~ s/\|/,/g;
 my $typeTele  = $cgi->param('pathTrans')   // '';
 if ($typeTele ne "") { $typeTrans = "$typeTrans,$typeTele"; }
 my @SELs      = $cgi->param('SELs');
+my $newnode = $cgi->param('newnode')   // '';
 
 # ---- pre-set actions to be run soon under control of
 # ---- lock-exclusive on the configuration file.
@@ -407,6 +408,34 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 	truncate FILE, 0;
 	print FILE @lines;
 	close(FILE);
+
+	# ---- if this is a duplication of existing, get the origine fullid node
+	if ($newnode == 2) {
+		my ($nngt, $nngn, $nnid) = split(/[\.\/]/, trim($cgi->param('nodeorigin')));
+		my $nnodepath = "$NODES{PATH_NODES}/$nnid";
+
+		# copy features and other files content
+		if ($cgi->param('copymeta')) {
+			qx(cp -a $nnodepath/$NODES{SPATH_FEATURES} $nodepath/ 2>&1);
+			qx(cp -a $nnodepath/*.txt $nodepath/ 2>&1);
+		}
+		
+		# copy calibration file
+		if ($cgi->param('copyclb')) {
+			my $clb = "$nodepath/$GRIDType.$GRIDName.$NODEName.clb";
+			if (-e $clb) {
+				my $nclb = ($clb =~ s/$NODEName/$nnid/g);
+				qx(cp -a $clb $nclb 2>&1);
+			}
+		}
+
+		# copy photos, images and documents
+		if ($cgi->param('copydoc')) {
+			qx(cp -a $nnodepath/$NODES{SPATH_PHOTOS} $nodepath/ 2>&1);
+			qx(cp -a $nnodepath/$NODES{SPATH_DOCUMENTS} $nodepath/ 2>&1);
+			qx(cp -a $nnodepath/$NODES{SPATH_SCHEMES} $nodepath/ 2>&1);
+		}
+	}
 
 	# ---- legacy: if everything ran OK, erase the old type.txt file
 	if (-e "$nodepath/type.txt") {

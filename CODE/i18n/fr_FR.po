@@ -1803,6 +1803,16 @@ msgstr "Utilise l'API de géolocalisation HTML pour localiser l'utilisateur. Att
 msgid "help_creationstation_shapefile"
 msgstr "Pour ajouter une couche de fichier de forme (.zip uniquement), cliquez ici"
 
+msgid "Features content"
+msgstr "Contenu des caractéristiques"
+
+msgid "Calibration file"
+msgstr "Fichier de calibration"
+
+msgid "Photos & documents"
+msgstr "Photos & documents"
+
+
 # ---- mailB3.pl
 
 msgid "Event origin"
@@ -1928,6 +1938,9 @@ msgstr "Corbeille"
 
 msgid "unknown key list!"
 msgstr "clef inconnue dans la liste !"
+
+msgid "Genform code"
+msgstr "Code genform"
 
 msgid "Date interval"
 msgstr "Intervalle de dates"

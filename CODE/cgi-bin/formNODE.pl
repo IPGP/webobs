@@ -931,6 +931,7 @@ print "<TR>";
 	}
 	print "<INPUT type=\"hidden\" name=\"grid\" value=\"$GRIDType.$GRIDName.\">";
 	print "<INPUT type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">";
+	print "<INPUT type=\"hidden\" name=\"nodeorigin\" value=\"$QryParm->{'node'}\">";
 		print "<BR>";
 		# --- Nom complet/TITLE
 		print "<LABEL style=\"width:80px\" for=\"fullName\">$__{'Name'}:</LABEL>";
@@ -1381,6 +1382,12 @@ FIN
 print "</TD></TR>";
 print "<TR><TD style=border:0 colspan=2><HR>";
 # --- buttons zone
+if ($newnode==2) {
+	print "<P align=center>$__{'Copy'}:&emsp;";
+	print "<INPUT name=\"copymeta\" type=\"checkbox\" checked>$__{'Features content'} ";
+	print "<INPUT name=\"copyclb\" type=\"checkbox\" checked>$__{'Calibration file'} ";
+	print "<INPUT name=\"copydoc\" type=\"checkbox\">$__{'Photos &amp; documents'} ";
+}
 print "<P align=center>";
 print "<INPUT type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 print "<INPUT type=\"button\" value=\"".($newnode ? $__{'Create'}:$__{'Save'})."\" style=\"font-weight:bold\" onClick=\"postIt();\">";
