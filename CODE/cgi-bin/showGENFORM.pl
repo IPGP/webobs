@@ -506,7 +506,8 @@ if ($QryParm->{'debug'}) {
 	print("<P>Formulas = ".join(',',@formulas)."</P>\n");
 	print("<P>Filter = $filter</P>\n");
 }
-push(@html,"<P>$__{'Date interval'} = <B>$delay days.</B><BR>\n");
+push(@html,"<P>$__{'Genform code'}: <B class='code'>FORM.$form</B><BR>\n");
+push(@html,"$__{'Date interval'} = <B>$delay days.</B><BR>\n");
 push(@html,"$__{'Number of records'} = <B>".($#rows+1)."</B> / $nbData.</P>\n");
 push(@html,"<P>$__{'Download a CSV text file of these data'}: <A href=\"/cgi-bin/showGENFORM.pl?dump=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&trash=$QryParm->{'trash'}&form=$form\"><B>$fileCSV</B></A></P>\n");
 

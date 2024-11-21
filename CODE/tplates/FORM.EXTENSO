@@ -3,9 +3,9 @@
 #
 # ############################### WARNING #####################################
 # Once the database form has been created and the first data has been recorded,
-# you MAY BE VERY CAREFUL IN MODIFYING the keys of this file.
+# you MUST BE VERY CAREFUL IN MODIFYING the keys of this file.
 # ############################### WARNING #####################################
-#
+
 BANG|$WEBOBS{BIG_BANG}
 TITLE|Extensometer
 
@@ -27,15 +27,17 @@ VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 COMMENT_HELP|Enter any observations made during the measurements
 
 
+# ############################### WARNING #####################################
+# Once created, you cannot remove or rename any input since it will corrupt
+# the database. You might only add new inputs, increasing the index XX
+# ############################### WARNING #####################################
 # --- Inputs names, units, and types
 # valid types: text(size), numeric(size), list: filename, radio: filename
-### WARNING: once created, you cannot remove or rename any input since it will
-### corrupt the database. You might only add new inputs, increasing the number
 INPUT01_NAME|Meteo
 INPUT01_TYPE|list: FORM_listEXTENSO_meteo.conf
 INPUT01_FILT|YES
 INPUT02_NAME|T<sub>Air</sub>
-INPUT02_UNIT|°C
+INPUT02_UNIT|ï¿½C
 INPUT03_NAME|Offset
 INPUT03_UNIT|mm
 INPUT04_NAME|D<sub>Ribbon</sub>
@@ -70,7 +72,7 @@ INPUT22_TYPE|list: FORM_listEXTENSO_wind.conf
 
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
-UTPUT01_NAME|Measurements
+OUTPUT01_NAME|Measurements
 OUTPUT01_UNIT|mm
 OUTPUT01_TYPE|text: 
 OUTPUT02_NAME|d<sub>mean</sub>
@@ -84,6 +86,10 @@ OUTPUT04_NAME|2&sigma;
 OUTPUT04_UNIT|mm
 OUTPUT04_TYPE|formula: 2*sqrt(((INPUT05-OUTPUT02)**2+(INPUT06-OUTPUT02)**2+(INPUT07-OUTPUT02)**2+(INPUT08-OUTPUT02)**2+(INPUT09-OUTPUT02)**2+(INPUT10-OUTPUT02)**2+(INPUT11-OUTPUT02)**2+(INPUT12-OUTPUT02)**2+(INPUT13-OUTPUT02)**2)/9)
 OUTPUT04_THRESHOLD|1,2
+OUTPUT05_NAME|Wind
+OUTPUT05_UNIT|
+OUTPUT05_TYPE|formula(2): (INPUT14+INPUT15+INPUT16+INPUT17+INPUT18+INPUT19+INPUT20+INPUT21+INPUT22)/9
+OUTPUT05_HELP|Average of all wind estimations 
 
 # --- Form layout
 # number of columns and list of fieldsets for each
@@ -117,6 +123,13 @@ FIEDLSET02_C11|INPUT12,INPUT21
 FIEDLSET02_C12|INPUT13,INPUT22
 FIELDSET02_C13|OUTPUT02,OUTPUT03,OUTPUT04
 
+# ############################### WARNING #####################################
+# Export list of inputs/outputs must fit the associated procs channels.
+# ############################### WARNING #####################################
+# list of fields that will be exported to the associated procs (must be numeric)
+PROC_DATA_LIST|OUTPUT03,INPUT02,OUTPUT05
+# optional error list of fields (same as PROC_DATA_LIST size!)
+PROC_ERROR_LIST|OUTPUT04,,
 
 # --- for backward compatibility - do not change
 CGI_FORM|formGENFORM.pl

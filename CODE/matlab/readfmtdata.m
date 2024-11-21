@@ -32,16 +32,17 @@ wofun = sprintf('WEBOBS{%s}',mfilename);
 F.ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
 wosystem(sprintf('mkdir -p %s',F.ptmp));
 
+% FORMs will read data from all associated nodes
 if isfield(P,'FORM')
-	% legacy forms (datafile)
 	f = sprintf('%s/%s',WO.PATH_DATA_DB,P.FORM.FILE_NAME);
 	if exist(f,'file')
+		% legacy forms (datafile)
 		D = readfmtdata_woform(WO,P,N);
 	else
 		D = readfmtdata_genform(WO,P,N);
 	end
 else
-
+% for all other formats: loop on the nodes
 	for n = 1:length(N)
 
 		F.fmt = lower(field2str(N(n),'RAWFORMAT',P.RAWFORMAT,'notempty'));
