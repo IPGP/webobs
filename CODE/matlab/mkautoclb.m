@@ -5,7 +5,7 @@ function CLB = mkautoclb(N,nm,un)
 %   (same length).
 %
 %   Author: F. Beauducel, WEBOBS/IPGP
-%   Created: 2024-05-06 
+%   Created: 2024-05-06 in Paris (France) 
 %   Updated: 2024-05-09
 
 if nargin < 3 || length(nm) ~= length(un)
