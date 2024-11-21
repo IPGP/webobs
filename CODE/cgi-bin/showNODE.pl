@@ -717,10 +717,8 @@ my $carFile;
 if ($lignes > 0) {
 	print "<TR><TH valign=\"top\" rowspan=\"$lignes\">";
 	if ($editOK) {
-		#print "<A href=\"$cgiConf\">$__{Specifications}</A>";
 		print "<A href=\"$cgiConf\">$__{Features}</A>";
 	} else {
-		#print "$__{Specifications}";
 		print "$__{Features}";
 	}
 	print "</TH>";
@@ -741,9 +739,9 @@ if ($lignes > 0) {
 		}
 		print "<TR>" if ($_ ne $listeFinaleCarFiles[0]);
 		if ($editOK && !($carFileName =~ / of$/)) {
-			print "<TD valign=\"top\" width=\"10%\"><a href=\"$cgiEtxt?file=$NODES{SPATH_FEATURES}/$carFileName.txt&node=$GRIDType.$GRIDName.$NODEName\"><B>".ucfirst($carFileName)."</B></a></TD>\n";
+			print "<TD valign=\"top\" width=\"10%\"><a href=\"$cgiEtxt?file=$NODES{SPATH_FEATURES}/$carFileName.txt&node=$GRIDType.$GRIDName.$NODEName\"><B>$carFileName</B></a></TD>\n";
 		} else {
-			print "<TD valign=\"top\" width=\"10%\"><B>".ucfirst($carFileName)."</B></TD>\n";
+			print "<TD valign=\"top\" width=\"10%\"><B>$carFileName</B></TD>\n";
 		}
 		my $lien = (exists($lienNode{$carFileName}) ? $lienNode{$carFileName}:"");
 		print "<TD>$lien@carNode</TD></TR>\n";
