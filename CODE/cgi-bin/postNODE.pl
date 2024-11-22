@@ -411,18 +411,18 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 
 	# ---- if this is a duplication of existing, get the origine fullid node
 	if ($newnode == 2) {
-		my ($nngt, $nngn, $nnid) = split(/[\.\/]/, trim($cgi->param('nodeorigin')));
-		my $nnodepath = "$NODES{PATH_NODES}/$nnid";
+		my ($ongt, $ongn, $onid) = split(/[\.\/]/, trim($cgi->param('nodeorigin')));
+		my $onodepath = "$NODES{PATH_NODES}/$onid";
 
 		# copy features and other files content
 		if ($cgi->param('copymeta')) {
-			qx(cp -a $nnodepath/$NODES{SPATH_FEATURES} $nodepath/ 2>&1);
-			qx(cp -a $nnodepath/*.txt $nodepath/ 2>&1);
+			qx(cp -a $onodepath/$NODES{SPATH_FEATURES} $nodepath/ 2>&1);
+			qx(cp -a $onodepath/*.txt $nodepath/ 2>&1);
 		}
 		
 		# copy calibration file
 		if ($cgi->param('copyclb')) {
-			my $clb = "$nnodepath/$GRIDType.$GRIDName.$nnid.clb";
+			my $clb = "$onodepath/$GRIDType.$GRIDName.$onid.clb";
 			if (-e $clb) {
 				qx(cp -a $clb $nodepath/$GRIDType.$GRIDName.$NODEName.clb 2>&1);
 			}
@@ -430,9 +430,9 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 
 		# copy photos, images and documents
 		if ($cgi->param('copydoc')) {
-			qx(cp -a $nnodepath/$NODES{SPATH_PHOTOS} $nodepath/ 2>&1);
-			qx(cp -a $nnodepath/$NODES{SPATH_DOCUMENTS} $nodepath/ 2>&1);
-			qx(cp -a $nnodepath/$NODES{SPATH_SCHEMES} $nodepath/ 2>&1);
+			qx(cp -a $onodepath/$NODES{SPATH_PHOTOS} $nodepath/ 2>&1);
+			qx(cp -a $onodepath/$NODES{SPATH_DOCUMENTS} $nodepath/ 2>&1);
+			qx(cp -a $onodepath/$NODES{SPATH_SCHEMES} $nodepath/ 2>&1);
 		}
 	}
 
