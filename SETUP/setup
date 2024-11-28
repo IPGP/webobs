@@ -480,6 +480,15 @@ if ${DEPMISS}; then
 fi
 echo
 
+# Update CLB files if needed
+if [[ -d "${DOCROOT}/DATA/NODES/" ]]; then
+	export DOCROOT
+	export RELBASE
+	export USERID
+	${RELBASE}/SETUP/migration/migration_clb.sh || { exit 1; }
+	echo
+fi
+
 # Webobs perl modules system-wide installation --------------------------------
 # -----------------------------------------------------------------------------
 if ! perlmod_installed "WebObs::Config"; then

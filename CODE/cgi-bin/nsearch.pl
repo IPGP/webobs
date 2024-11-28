@@ -105,7 +105,7 @@ my $resultOK = 0;
 my $scanlist = 1;
 my $grepopt  = "-s ";
 my %CLBS     = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
-my @fieldCLB = readCfg($CLBS{FIELDS_FILE});
+my %fieldCLB = readCfg($CLBS{FIELDS_FILE}, "sorted");
 my @clbNote  = readFile($CLBS{NOTES});
 
 
@@ -197,7 +197,7 @@ for my $aGrid (@grids) {
 	my ($gt,$gn) = split(/\./,$aGrid);
 	my $gridDocs = "$WEBOBS{PATH_GRIDS_DOCS}/$gt.$gn*";
 	print "*** grep -l $grepopt \"$QryParm->{'searchW'}\" $gridDocs<BR>" if(defined($QryParm->{'dbg'}));
-	my @matchFiles = qx(/bin/grep -l $grepopt "$QryParm->{'searchW'}" $gridDocs);
+	my @matchFiles = qx(grep -l $grepopt "$QryParm->{'searchW'}" $gridDocs);
 	chomp(@matchFiles);
 	for my $matchFile (@matchFiles) {
 		my @matchFileContents;
@@ -205,7 +205,7 @@ for my $aGrid (@grids) {
 		$HTMLresults .= "<LI><P class=\"titleEvent\"><b>".uc($matchFileName)."</b> ($__{'Grid doc'}) </P>\n";
 		if ( $QryParm->{'extend'} eq "0" ) {
 			print "*** grep $grepopt \"$QryParm->{'searchW'}\" $matchFile<BR>" if(defined($QryParm->{'dbg'}));
-			@matchFileContents = qx(/bin/grep $grepopt "$QryParm->{'searchW'}" $matchFile);
+			@matchFileContents = qx(grep $grepopt "$QryParm->{'searchW'}" $matchFile);
 			for (@matchFileContents) {
 				$FHits++;
 				s/($hilite)/<span class="searchResult">$1<\/span>/gi;
@@ -249,7 +249,7 @@ for my $aNode (keys(%nodes)) {
 	}
 
 	print "*** grep -l $grepopt \"$QryParm->{'searchW'}\" $FileList<BR>" if(defined($QryParm->{'dbg'}));
-	my @matchFiles = qx(/bin/grep -l $grepopt "$QryParm->{'searchW'}" $FileList);
+	my @matchFiles = qx(grep -l $grepopt "$QryParm->{'searchW'}" $FileList);
 	chomp(@matchFiles);
 	for my $matchFile (@matchFiles) {
 		my @matchFileContents;
@@ -260,7 +260,7 @@ for my $aNode (keys(%nodes)) {
 		$HTMLresults .= "<LI><P class=\"titleEvent\"><b>".uc($matchFileName)."</b> ($explain) </P>\n";
 		if ( $QryParm->{'extend'} eq "0" ) {
 			print "*** grep $grepopt \"$QryParm->{'searchW'}\" $matchFile<BR>" if(defined($QryParm->{'dbg'}));
-			@matchFileContents = qx(/bin/grep $grepopt $QryParm->{'searchW'} $matchFile);
+			@matchFileContents = qx(grep $grepopt $QryParm->{'searchW'} $matchFile);
 			for (@matchFileContents) {
 				$FHits++;
 				s/($hilite)/<span class="searchResult">$1<\/span>/gi;
@@ -277,30 +277,39 @@ for my $aNode (keys(%nodes)) {
 
 	# search within CLB file
 	# ------
-	my $fileCLB = "$pathNode/$aNode.clb";
+	my @fileCLB = glob "$pathNode/PROC.*.clb";
+	my $fileCLB = @fileCLB ? @fileCLB[0] : "$pathNode/$aNode.clb";
+	my @params;
+	foreach my $k (sort { $fieldCLB{$a}{'_SO_'} <=> $fieldCLB{$b}{'_SO_'} } keys %fieldCLB) { push(@params, $k); }
 	if ( $QryParm->{'clbinfo'} eq "OK" && -e $fileCLB) {
 		my $CLB;
 		my $resultOK = 0;
-		my @info = grep(!/^#/, readFile($fileCLB));
+		my @info;
+		if ( $QryParm->{'majmin'} eq "OK" ) {
+			@info = grep(/\Q$QryParm->{'searchW'}\E/, readFile($fileCLB));
+		} else {
+			@info = grep(/\Q$QryParm->{'searchW'}\E/i, readFile($fileCLB));
+		}
 		chomp(@info);
 			### $modif = "<a href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$aNode\"><img src=\"/icons/modif.png\" title=\"$__{'Edit...'}\" border=0 alt=\"$__{'Edit...'}\"></a>";
 		$CLB .= "<LI><P class=\"titleEvent\"><b>Calibration File</b> (".basename($fileCLB).")</P>\n";
 		if ($QryParm->{'extend'} eq "0") {
 			print "*** grep $grepopt \"$QryParm->{'searchW'}\" $fileCLB<BR>" if(defined($QryParm->{'dbg'}));
-			@info = (qx(/bin/grep $grepopt "$QryParm->{'searchW'}" $fileCLB));
+			@info = (qx(grep $grepopt "$QryParm->{'searchW'}" $fileCLB));
 			chomp(@info);
 			$CLB .= "<BLOCKQUOTE class=\"contentPartialEvent\">";
 		} else {
 			$CLB .= "<BLOCKQUOTE class=\"contentEvent\">";
 		}
 		$CLB .= "<TABLE><TR>";
-		for (@fieldCLB) {
-			my @clb = split(/\|/,$_);
-			$CLB .= "<TH>$clb[2]</TH>";
+		foreach ( @params ) {
+			$CLB .= "<TH>$fieldCLB{$_}{'Name'}</TH>";
 		}
 		$CLB .= "</TR>\n";
+
 		for (@info) {
-			my @clb = split(/\|/,$_);
+			my @clb = split(/\|/, $_, -1);
+			shift @clb;
 			if ($clb[0] le "$QryParm->{'year2'}-$QryParm->{'month2'}-$QryParm->{'$day2'}" || $QryParm->{'year2'} eq "" ) {
 				$CLB .= "<TR>";
 				for (@clb) {
@@ -321,14 +330,14 @@ for my $aNode (keys(%nodes)) {
 	# -----
     if ( $QryParm->{'evtinfo'} eq "OK") {
 		my $pathInterventions = "$NODES{PATH_NODES}/$aNode/$NODES{SPATH_INTERVENTIONS}";
-		my @listFileInterventions = qx(/usr/bin/find $pathInterventions -name "$aNode*.txt" | sort -dr 2>/dev/null);
+		my @listFileInterventions = qx(find $pathInterventions -name "$aNode*.txt" | sort -dr 2>/dev/null);
 		chomp(@listFileInterventions);
 
 		if ($#listFileInterventions >= 0) {
 			my @searchEvent;
 			for (@listFileInterventions) {
 				print "*** grep -l $grepopt \"$QryParm->{'searchW'}\" $_<BR>" if(defined($QryParm->{'dbg'}));
-				my $g = qx(/bin/grep -l $grepopt "$QryParm->{'searchW'}" $_);
+				my $g = qx(grep -l $grepopt "$QryParm->{'searchW'}" $_);
 				chomp($g);
 				if ($g ne "") {
 					push (@searchEvent,$g);
@@ -366,8 +375,8 @@ for my $aNode (keys(%nodes)) {
 					$HTMLresults .= "<LI><P class=\"titleEvent\"><b>$titre</b> $date $heure <I>($noms)</I> $modif</P>\n"
 		  				   ."<P class=\"subEvent\">".parentEvents($file)."</P>\n";
 					if ($QryParm->{'extend'} eq "0") {
-						# lit le fichier sans la première ligne (opérateurs|titre)
-						@intervention = (qx(/bin/sed '1d' $fileInterventions | /bin/grep $grepopt "$QryParm->{'searchW'}"));
+						# lit le fichier sans la premiÃ¨re ligne (opÃ©rateurs|titre)
+						@intervention = (qx(sed '1d' $fileInterventions | /bin/grep $grepopt "$QryParm->{'searchW'}"));
 						for (@intervention) {
 							s/($hilite)/<span class="searchResult">$1<\/span>/gi;
 							$HTMLresults .= "<BLOCKQUOTE class=\"contentPartialEvent\">".$_."</BLOCKQUOTE>\n";

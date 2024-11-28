@@ -52,7 +52,6 @@ drop table if exists datasets;
 create table datasets (
     IDENTIFIER text NOT NULL,
     TITLE text NOT NULL, 
-    DESCRIPTION text NOT NULL, 
     SUBJECT text NOT NULL, 
     SPATIALCOVERAGE text NOT NULL, 
     LINEAGE text NOT NULL, 
