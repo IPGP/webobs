@@ -139,6 +139,10 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 <a name="whatsnew"></a>
 ## What's new and release history
 
+### What's new in the 2.7?
+- new calibration files;
+- finalization of the interface between WebObs and the Theia\|OZCAR data portal;
+
 ### What's new in the 2.6?
 - first effort for an interface between WebObs and the Theia\|OZCAR data portal;
 - node form has interactive map for manual/automatic location and import of a shapefile;

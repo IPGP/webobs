@@ -29,6 +29,7 @@ This is the official repository for WebObs project source code development. For 
 * **Christophe Brunet** - [BrunetChristophe](https://github.com/BrunetChristophe/webobs)
 * **Philippe Catherine** - [CPS97410](https://github.com/CPS97410)
 * **Pierre Sakic** - [PierreS-alpha](https://github.com/PierreS-alpha)
+* **Jérôme Touvier** - [jtouvier](https://github.com/jtouvier)
 
 See also the list of active [contributors](https://github.com/IPGP/webobs/contributors).
 
