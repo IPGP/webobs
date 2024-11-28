@@ -32,12 +32,14 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
    The `MUTT_OPTIONS` is used to set the "From:" address (instead of Apache user who is the real sender), but other options can be added if needed (see **mutt** manual). `TRIGGER_EMAIL` and `TRIGGER_SUBJECT` is used to send the data to BCSF. It will use JSON file (if exists), or GSE file otherwise. The `REPORT_EMAIL`, `REPORT_SUBJECT`, and `REPORT_FOOTNOTE` are used to send the B3 report with a detailed text message on the event and potential macroseismic intensities. The PDF file of full report will be attached to the mail. Note that email will be sent to the operator and destination address will be in "Bcc:".
 
 ### Enhancements
+1. !! The format of the calibration files has been changed. Data are now handled with a hash. This provides greater flexibility to add new variables.
 1. In the proc request form, all keys are now available for edition, sorted alphabetically, following the `REQUEST_KEYLIST`.
 1. Search node events form accepts negative pattern (beginning with a `!`).
 1. Mat-file raw format allows import of any variable names as t, d, and e matrix (`FID_T`, `FID_D`, `FID_E`).
 1. DSV generic raw format has new option `FID_DECIMAL_COMMA` to read data files using decimal comma (not decimal point).
 1. Better check of the consistency of node start/end dates when editing the configuration.
 1. Exported list of geolocated nodes as KML file has now extended data (start/end dates, active flag).
+1. Metadata can now be uploaded to the Theia|OZCAR data portal. A checkbox has been added to select and save channels to be uploaded.
 
 ### Fixed issues
 1. ``!!`` WebObs Perl modules have been moved from CODE/cgi-bin/WebObs to CODE/perl/lib. The system-wide installation **MUST** be executed when upgrading (answer Y to the appropriate question during setup) in order to make all CGI working.
