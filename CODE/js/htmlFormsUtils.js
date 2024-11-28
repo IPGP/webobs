@@ -184,6 +184,12 @@ function srchsendPopup() {
 	$("#srchoverlay_form").fadeOut(500);
 	$("#srchovly").fadeOut(500);
 	//alert($("#srchoverlay_form").serialize());
+	var cboxs = document.querySelectorAll("input[type=checkbox]");
+	Array.from(cboxs).forEach((cbox) => {
+		if (cbox.checked) {
+			cbox.value="OK";
+		} else { cbox.value="KO"; }
+	});
 	location.href = "/cgi-bin/nsearch.pl?"+$("#srchoverlay_form").serialize();
 }
 

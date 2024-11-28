@@ -134,42 +134,40 @@ if ~exist(clb,'file')
 	end
 end
 if exist(clb,'file')
-	C = readdatafile(clb,'CommentStyle','#')';
-	nf = size(C,1);
-	if nf < 20
-		C = cat(1,C,repmat({''},20-nf,size(C,2)));
-	end
+	C = readcfg(WO, clb);
+	keys = fieldnames(C);
 	nn = 1;
-	for j = 1:size(C,2)
-		k = strfind(C{3,j},'-');
+	for j = 1:numel(keys)
+		key = sprintf('KEY%d',j);
+		k = strfind(C.(key).nv,'-');
 		if isempty(k)
-			j1 = str2double(C{3,j});
+			j1 = str2double(C.(key).nv);
 			j2 = j1;
 		else
-			j1 = str2double(C{3,j}(1:(k-1)));
-			j2 = str2double(C{3,j}((k+1):end));
+			j1 = str2double(C.(key).nv(1:(k-1)));
+			j2 = str2double(C.(key).nv((k+1):end));
 		end
 		for jj = j1:j2
 			if any(isnan(N.CHANNEL_LIST)) || any(N.CHANNEL_LIST==jj)
-				CC.dt(nn) = isodatenum(strcat(C{1,j},{' '},C{2,j}));
+				CC.dt(nn) = isodatenum(strcat(C.(key).DATE,{' '},C.(key).TIME));
 				CC.nv(nn) = jj;
-				CC.nm{nn} = C{4,j};
-				CC.un{nn} = C{5,j};
-				CC.ns{nn} = C{6,j};
-				CC.cd{nn} = C{7,j};
-				CC.of(nn) = sstr2num(C{8,j});
-				CC.et{nn} = C{9,j};
-				CC.ga(nn) = sstr2num(C{10,j});
-				CC.vn(nn) = sstr2num(C{11,j});
-				CC.vm(nn) = sstr2num(C{12,j});
-				CC.az(nn) = sstr2num(C{13,j});
-				CC.la(nn) = sstr2num(C{14,j});
-				CC.lo(nn) = sstr2num(C{15,j});
-				CC.al(nn) = sstr2num(C{16,j});
-				CC.dp(nn) = sstr2num(C{17,j});
-				CC.sf(nn) = sstr2num(C{18,j});
-				CC.db{nn} = C{19,j};
-				CC.lc{nn} = C{20,j};
+				CC.nm{nn} = C.(key).nm;
+				CC.un{nn} = C.(key).un;
+				CC.ns{nn} = C.(key).ns;
+				CC.cd{nn} = C.(key).cd;
+				CC.of(nn) = sstr2num(C.(key).of);
+				CC.et{nn} = C.(key).et;
+				CC.ga(nn) = sstr2num(C.(key).ga);
+				CC.vn(nn) = sstr2num(C.(key).vn);
+				CC.vm(nn) = sstr2num(C.(key).vm);
+				CC.az(nn) = sstr2num(C.(key).az);
+				CC.la(nn) = sstr2num(C.(key).la);
+				CC.lo(nn) = sstr2num(C.(key).lo);
+				CC.al(nn) = sstr2num(C.(key).al);
+				CC.dp(nn) = sstr2num(C.(key).dp);
+				CC.sf(nn) = sstr2num(C.(key).sf);
+				CC.db{nn} = C.(key).db;
+				CC.lc{nn} = C.(key).lc;
 				nn = nn + 1;
 			end
 		end

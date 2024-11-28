@@ -171,7 +171,8 @@ msgstr "Digitizer dynamic range (in bit)"
 msgid "help_clb_lc"
 msgstr "Location code (SEED dataless)"
 
-
+msgid "help_clb_theia"
+msgstr "Click on the link to select and copy/paste a Theia category"
 
 # ---- formulaireHEBDO.pl
 

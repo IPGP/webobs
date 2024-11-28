@@ -1314,6 +1314,9 @@ msgstr "Location code (SEED dataless)"
 msgid "help_clb_cat"
 msgstr "Catégorie du thésaurus THEIA correspondant à la variable du channel (chaine de caractère)"
 
+msgid "help_clb_theia"
+msgstr "Cliquez sur le lien pour sélectionner et copiez/collez la catégorie Theia"
+
 # --- formulaireHEBDO.pl
 
 msgid "help_hebdo_select_nodate"

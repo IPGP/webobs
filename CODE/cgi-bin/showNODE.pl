@@ -528,11 +528,11 @@ if (uc($GRIDType) eq 'PROC') {
 	print "</TD></TR>\n";
 
 	# channels (calibration file)
-	my @carCLB = readCLB("$GRIDType.$GRIDName.$NODEName");
+	my %carCLB = readCLB("$GRIDType.$GRIDName.$NODEName");
 	print "<TR><TD valign=\"top\" width=\"10%\"><B>";
 	my $txt = $__{'Channels'};
 	if ($editOK) {
-		if ($#carCLB >= 0) {
+		if (scalar(keys %carCLB) >= 0) {
 			print "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$GRIDType.$GRIDName.$NODEName\">$txt</A>";
 		} else {
 			print "<A href=\"#\" onclick=\"askChanNb();\$(this).closest('form').submit();\"><B>$txt</B></A>";
@@ -541,26 +541,30 @@ if (uc($GRIDType) eq 'PROC') {
 		print "$txt";
 	}
 	print "</B></TD><TD>";
-	if ($#carCLB >= 0) {
+	if (scalar(keys %carCLB) >= 0) {
 		my @clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
-		my @fieldCLB = readCfg($CLBS{FIELDS_FILE});
-		pop(@fieldCLB) if ( !$theiaAuth );
+		my %fieldCLB = readCfg($CLBS{FIELDS_FILE}, "sorted");
+		unless ( isok($theiaAuth) ) { delete($fieldCLB{"THEIA_CATEGORY"}); }
+		my @params;
+		foreach my $k (sort { $fieldCLB{$a}{'_SO_'} <=> $fieldCLB{$b}{'_SO_'} } keys %fieldCLB) { push(@params, $k); }
+
 		print "<TABLE><TR>";
-		for (0..($#fieldCLB)) {
-			print "<TH><SMALL>",$fieldCLB[$_][2]."</SMALL></TH>";
+		foreach my $k ( @params ) {
+			print "<TH><SMALL>",$fieldCLB{$k}{"Name"}."</SMALL></TH>";
 		}
 		print "</TR>\n";
 		my @select = split(/,/,$chanlist);
 		my $dateCLB = "";
 		my $sepCLB;
-		for (@carCLB) {
-			my @chpCLB = @{$_};
-			if ($#chpCLB < $#fieldCLB) {
-				push(@chpCLB, ("") x ($#fieldCLB - $#chpCLB));
+		foreach my $k (sort keys %carCLB) {
+			my @chpCLB;
+			foreach my $p ( @params ) { push(@chpCLB, $carCLB{$k}{$p}) }
+			if ($#chpCLB < $#params) {
+				push(@chpCLB, ("") x ($#params - $#chpCLB));
 			}
-			pop(@chpCLB) if ( !$theiaAuth && $#chpCLB > $#fieldCLB );
+			pop(@chpCLB) if ( !$theiaAuth && $#chpCLB > $#params );
 			if ($dateCLB ne "" && $dateCLB ne $chpCLB[0]) {
-				$sepCLB = "<TR><TH colspan=\"".(@fieldCLB)."\"></TH></TR>\n";
+				$sepCLB = "<TR><TH colspan=\"".(@params)."\"></TH></TR>\n";
 				print $sepCLB;
 			}
 			$dateCLB = $chpCLB[0];

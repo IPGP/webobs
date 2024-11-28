@@ -734,7 +734,7 @@ Reads calibration file of a node (fullid) and return an array
 
 sub readCLB {
 	my $node = shift;
-	my @data;
+	my %data;
 	my ($GRIDType, $GRIDName, $NODEName) = split(/\./, $node);
 
 	my $file = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb"; # standard CLB file name
@@ -743,9 +743,9 @@ sub readCLB {
 	(my $autoclb = $file) =~ s/\.clb/_auto.clb/; # auto-generated CLB
 	$file = $autoclb if ( -e $autoclb && ! -s $file );
 	if ( -s $file ) {
-		@data = map { my @e = split /\|/; \@e; } readCfgFile($file);
+		%data = readCfg($file);
 	}
-	return @data;
+	return %data;
 }
 
 1;
