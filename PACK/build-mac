@@ -413,7 +413,7 @@ fi
 log "Building tar archive and checksum files"
 echo -n "Creating $ARCHIVES_SUBDIR/$ARCHIVE_TAR_FILENAME... "
 ( cd $ARCHIVES_SUBDIR && \
-  gnutar czf "./$ARCHIVE_TAR_FILENAME" \
+  gtar czf "./$ARCHIVE_TAR_FILENAME" \
     --owner=0 --group=0 --numeric-owner --no-recursion \
     --verbatim-files-from --files-from="$manifest_filename" )
 echo "done."
