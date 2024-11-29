@@ -541,7 +541,7 @@ if (uc($GRIDType) eq 'PROC') {
 		print "$txt";
 	}
 	print "</B></TD><TD>";
-	if (scalar(keys %carCLB) >= 0) {
+	if (scalar(keys %carCLB) > 0) {
 		my @clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
 		my %fieldCLB = readCfg($CLBS{FIELDS_FILE}, "sorted");
 		unless ( isok($theiaAuth) ) { delete($fieldCLB{"THEIA_CATEGORY"}); }
