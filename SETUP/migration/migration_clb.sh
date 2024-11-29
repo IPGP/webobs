@@ -49,7 +49,7 @@ main() {
 
 update_clb() {
 	while read -r LINE; do
-		if ! ( [[ "${LINE}" =~ ^#.* ]] || [[ "${LINE}" =~ ^=key.* ]] || [[ -z "${LINE}" ]] ); then
+		if ! ( [[ "${LINE}" =~ ^# ]] || [[ "${LINE}" =~ ^=key ]] || [[ -z "${LINE}" ]] ); then
 			KEYS+="|$(echo "${LINE}" | cut -d "|" -f 1)"
 		fi
 	done < "${CLBFIELDS_FILE}"
@@ -65,16 +65,17 @@ update_clb() {
 		fi
 
 		COUNTER=0
-		HASHLINE=0
 		while read -r LINE; do
 			#printf '%s\n' "${LINE}"
-			if [[ "${LINE}" =~ ^#.* ]]; then
+			if [[ "${LINE}" =~ ^# ]]; then
 				printf "%s\n" "${LINE}" >> "${TMP_CLB}"
-			elif [[ -n "${LINE}" ]]; then
-				if [[ ${HASHLINE} == 0 ]]; then
-					HASHLINE=$((HASHLINE+1))
-					echo "${KEYS}" >> "${TMP_CLB}"
-				fi
+			fi
+		done < "${INFILE}"
+
+		echo "${KEYS}" >> "${TMP_CLB}"
+
+		while read -r LINE; do
+			if ( [[ -n "${LINE}" ]] && [[ ! "${LINE}" =~ ^# ]] ); then
 				COUNTER=$((COUNTER+1))
 				DIFF=$(("${NUM_SEP}" - $(grep -o "|" <<< "${LINE}" | wc -l)))
 				SEPARATORS=$(printf '|%.0s' $(seq "${DIFF}"))
@@ -86,8 +87,12 @@ update_clb() {
 			fi
 		done < "${INFILE}"
 
-		if [[ -f "${TMP_CLB}" ]]; then
-			cp "${INFILE}" "${INFILE}.bak"
+		cp "${INFILE}" "${INFILE}.bak"
+
+		if [[ $COUNTER == 0 ]]; then
+			rm "${INFILE}"
+			> "${TMP_CLB}"
+		elif [[ -f "${TMP_CLB}" ]]; then
 			mv "${TMP_CLB}" "${INFILE}"
 			echo "${INFILE} updated."
 		fi
