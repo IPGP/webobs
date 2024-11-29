@@ -135,6 +135,8 @@ if ~exist(clb,'file')
 end
 if exist(clb,'file')
 	C = readcfg(WO, clb);
+end
+if ~isempty(C)
 	keys = fieldnames(C);
 	nn = 1;
 	for j = 1:numel(keys)
