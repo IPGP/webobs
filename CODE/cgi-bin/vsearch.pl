@@ -121,11 +121,13 @@ my $dump   = $QryParm->{'dump'}   // "";
 # predefined lists
 my @catlist = split(/,/,$NODES{EVENT_SEARCH_CATEGORY_LIST});
 if ($#catlist < 0) {
-	@catlist = split(/,/,"grid,alias,feature,author,remote,startdate,title,comment,notebook,outcome");
+	@catlist = split(/,/,"grid,alias,name,feature,author,remote,startdate,title,comment,notebook,outcome");
 }
+
 my %category = (
 	"grid"      => $__{'Grid Name'},
-	"alias"     => $__{'Node Alias/Name'},
+	"alias"     => $__{'Node Alias'},
+	"name"     => $__{'Node Name'},
 	"feature"   => $__{'Node Feature'},
 	"author"    => $__{'Author'},
 	"remote"    => $__{'Remote Operator'},
@@ -190,7 +192,7 @@ foreach(@events1) {
 		my ($GRIDType,$GRIDName) = split(/\./,$_);
 		$ok = 1 if (clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
 	}
-	# avoid duplicates and keeps only vents common to the 2 requests in case of AND logical operator
+	# avoid duplicates and keeps only events common to the 2 requests in case of AND logical operator
 	if (! grep(/$fname/,@events) && ($lop ne "AND" || $str2 eq "" || grep(/$fname/,@events2))) {
 		push(@events,$evfname);
 	}
@@ -295,7 +297,7 @@ print "<DIV id=\"attente\">$__{'Searching for the data... please wait'}.</DIV>";
 push(@html,"<TABLE width=\"100%\"><TR><TH></TH>");
 foreach (sort(keys(%catdisplay))) {
 	my ($n,$k) = split(/\|/,$_);
-	push(@html,"<TH>$catdisplay{$_}</TH>") if ($_ != 0 || $showg);
+	push(@html,"<TH>$catdisplay{$_}</TH>") if ($k ne "grid" || $showg);
 }
 push(@html,"<TH></TH></TR>\n");
 
@@ -325,7 +327,7 @@ foreach(@finalevents) {
 	my $dp = $evfname;
 	$dp =~ s/\.txt/\/PHOTOS/g;
 	if (-d $dp) {
-		opendir my $dh, $dp;
+		opendir (my $dh, $dp);
 		@attach = grep {!/^\./} readdir $dh;
 		closedir $dh;
 	}
@@ -400,8 +402,20 @@ foreach(@finalevents) {
 					push(@aliascsv,$N{ALIAS});
 				}
 				@alias = ($alias[0]) if (!$showg);
-				push(@html,"<TD $tds title=\"$N{NAME}\">".join("<BR>",@alias)."</TD>");
+				push(@html,"<TD $tds>".join(",",@alias)."</TD>");
 				push(@csvf,"\"".join(",",@aliascsv)."\"");
+			}
+			case "name"     {
+				my @name;
+				my @namecsv;
+				foreach (@{$NG{$node}}) {
+					push(@name,"<A href=\"/cgi-bin/showNODE.pl?node=$_.$node\" title=\"$_.$node\">$N{NAME}</A>");
+					$N{NAME} =~ s/\"//g;
+					push(@namecsv,$N{NAME});
+				}
+				@name = ($name[0]) if (!$showg);
+				push(@html,"<TD $tds>".join(",",@name)."</TD>");
+				push(@csvf,"\"".join(",",@namecsv)."\"");
 			}
 			case "feature"   {
 				push(@html,"<TD $tds nowrap>$hfeature</TD>");
@@ -454,6 +468,7 @@ print(join("\n",@html));
 
 my $csvstring = join('\\n',@csv);
 $csvstring =~ s/'/\\'/g;
+$csvstring =~ s/\n/\\n/g;
 
 print <<"ENDBOTOFPAGE";
 <SCRIPT type="text/javascript">
@@ -496,7 +511,10 @@ sub searchEvents {
 
 	# alias will look for $str in the node's ALIAS and NAME configuration
 	if ($in eq "alias") {
-		$cmd = "find $WEBOBS{PATH_NODES}/$node -name \"*.cnf\" | xargs awk -F'|' '\$1 ~ /^ALIAS|NAME\$/ && toupper(\$2) $not~ /$struc/ { print FILENAME }' | awk -F'/[^/]*\$' '{ print \$1 \"/$NODES{SPATH_INTERVENTIONS}\" }' | xargs find | grep \".txt\$\" | grep -v \"_Projet.txt\"";
+		$cmd = "find $WEBOBS{PATH_NODES}/$node -name \"*.cnf\" | xargs awk -F'|' '\$1 ~ /^ALIAS\$/ && toupper(\$2) $not~ /$struc/ { print FILENAME }' | awk -F'/[^/]*\$' '{ print \$1 \"/$NODES{SPATH_INTERVENTIONS}\" }' | xargs find | grep \".txt\$\" | grep -v \"_Projet.txt\"";
+	}
+	if ($in eq "name") {
+		$cmd = "find $WEBOBS{PATH_NODES}/$node -name \"*.cnf\" | xargs awk -F'|' '\$1 ~ /^NAME\$/ && toupper(\$2) $not~ /$struc/ { print FILENAME }' | awk -F'/[^/]*\$' '{ print \$1 \"/$NODES{SPATH_INTERVENTIONS}\" }' | xargs find | grep \".txt\$\" | grep -v \"_Projet.txt\"";
 	}
 	# grid will look for $str in the grid's NAME configuration
 	if ($in eq "grid") {
