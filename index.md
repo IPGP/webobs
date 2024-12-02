@@ -145,6 +145,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - improvement in DSV data format;
 - new button to duplicate a node;
 - content of cross link node features displayed;
+- proc request form shows all variables;
 - new interface for publishing B3 reports;
 - finalization of the interface between WebObs and the Theia\|OZCAR data portal;
 - new format for calibration files;
