@@ -34,7 +34,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2024-05-06
+%   Updated: 2024-11-30
 
 
 if ~exist('NODES','var')
@@ -136,7 +136,7 @@ end
 if exist(clb,'file')
 	C = readcfg(WO, clb);
 end
-if ~isempty(C)
+if exist('C','var') && ~isempty(C)
 	keys = fieldnames(C);
 	nn = 1;
 	for j = 1:numel(keys)
