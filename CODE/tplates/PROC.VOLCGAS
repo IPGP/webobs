@@ -4,8 +4,11 @@
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/volcgas.m for further information.
 
 
-# long name of the PROC
+# name of the PROC
 NAME|Volcanic gas analysis
+
+# description of what the proc does
+DESCRIPTION|Volcanic gas analysis
 
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 TYPE|

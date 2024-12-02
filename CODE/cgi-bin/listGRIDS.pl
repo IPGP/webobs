@@ -174,14 +174,19 @@ $dbh->disconnect();
 #
 print "Content-type: text/html\n\n";
 print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
-print "<HTML><HEAD><title>GRIDS</title>";
-print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
-<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">";
-print "<script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>";
-print "<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\" type=\"text/javascript\"></script>";
-print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/search.css\">";
-print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/listGRIDS.css\">";
+print "<HTML><HEAD><title>GRIDS</title>
+<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
+<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">
+<script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>
+<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\" type=\"text/javascript\"></script>
+<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/search.css\">
+<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/listGRIDS.css\">";
+
 print "</head><body onLoad=\"scrolldivHeight()\">";
+print "<!-- overLIB (c) Erik Bosrup -->
+<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
+<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\" type=\"text/javascript\"></script>";
+
 
 # ---- Title is = selected type (aka subsetType)
 #
@@ -263,6 +268,7 @@ print "<div id=\"noscrolldiv\">";
 		for my $d (@$domains) {
 			my ($dc, $dn) = @$d;
 			my @procs;
+			my $ovl;
 			if ($wantProcs) {
 				@procs = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_),
                               @{$domainProcs{$dc}});
@@ -290,7 +296,8 @@ print "<div id=\"noscrolldiv\">";
 						if (%G) {
 							print "<TR>" if ($vs ne $sefrans[0]);
 							print "<TD style=\"text-align: center\">SEFRAN</TD>" if ($subsetType ne "");
-							print "<TD>";
+							$ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vs}{DESCRIPTION}."',CAPTION,'PROC.$vs')\"";
+							print "<TD $ovl>";
 							if (WebObs::Users::clientHasEdit(type=>"authprocs",name=>$G{$vs}{MC3_NAME})) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$vs\" title=\"$__{'Edit Sefran'}\" ><img src='/icons/modif.png'></a>" }
 							print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/sefran3.pl?s3=$vs&header=1\">$G{$vs}{NAME}</a>";
 							print "</TD>";
@@ -321,7 +328,8 @@ print "<div id=\"noscrolldiv\">";
 						if (%G) {
 							print "<TR>" if ($vp ne $procs[0]);
 							print "<TD style=\"text-align: center\">PROC</TD>" if ($subsetType ne "");
-							print "<TD><a href='#popupY' title=\"$__{'Find text in Proc'}\" onclick='srchopenPopup(\"+PROC.$vp\");return false'><img class='ic' src='/icons/search.png'></a>";
+							$ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vp}{DESCRIPTION}."',CAPTION,'PROC.$vp')\"";
+							print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in Proc'}\" onclick='srchopenPopup(\"+PROC.$vp\");return false'><img class='ic' src='/icons/search.png'></a>";
 							print     "<a href='/cgi-bin/gvTransit.pl?grid=PROC.$vp')><img src=\"/icons/tmap.png\"></a>";
 							if (WebObs::Users::clientHasEdit(type=>"authprocs",name=>$vp)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=PROC.$vp\" title=\"$__{'Edit Proc'}\" ><img src='/icons/modif.png'></a>" }
 							print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=PROC.$vp\">$G{$vp}{NAME}</a>";
@@ -346,13 +354,6 @@ print "<div id=\"noscrolldiv\">";
 							print "<TD style=\"text-align:center\">";
 							if (defined($G{$vp}{FORM}) && $G{$vp}{FORM} ne '') {
 								my %F = readCfg("$WEBOBS{PATH_FORMS}/$G{$vp}{FORM}/$G{$vp}{FORM}.conf");
-=pod obsolet code
-								if ($F{CGI_SHOW} eq "showGENFORM.pl") {
-									print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?form=$G{$vp}{FORM}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
-								} else {
-									print "<A HREF=\"/cgi-bin/$F{CGI_SHOW}?node={$vp}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
-								}
-=cut
 								print "<A HREF=\"/cgi-bin/showGENFORM.pl?form=$G{$vp}{FORM}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
 							} else {
 								if (defined($G{$vp}{URNDATA}) && $G{$vp}{URNDATA} ne '') {
@@ -372,7 +373,8 @@ print "<div id=\"noscrolldiv\">";
 						if (%G) {
 							print "<TR>" if ($np > 0 || $vn ne $views[0]);
 							print "<TD style=\"text-align: center\">VIEW</TD>";
-							print "<TD><a href='#popupY' title=\"$__{'Find text in View'}\" onclick='srchopenPopup(\"+VIEW.$vn\");return false'><img class='ic' src='/icons/search.png'></a>";
+							$ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vn}{DESCRIPTION}."',CAPTION,'PROC.$vn')\"";
+							print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in View'}\" onclick='srchopenPopup(\"+VIEW.$vn\");return false'><img class='ic' src='/icons/search.png'></a>";
 							print     "<a href='/cgi-bin/gvTransit.pl?grid=VIEW.$vn')><img src=\"/icons/tmap.png\"></a>";
 							if (WebObs::Users::clientHasEdit(type=>"authviews",name=>$vn)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=VIEW.$vn\" title=\"$__{'Edit View'}\" ><img src='/icons/modif.png'></a>" }
 							print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=VIEW.$vn\">$G{$vn}{NAME}</a>";
@@ -468,7 +470,7 @@ sub geditpopup {
             my %G = @conf;
 		    $t =~ s/$WEBOBS{ROOT_CODE}\/tplates\///;
 		    my ($gt,$gn) = split(/\./,$t);
-		    push(@tplates,"$gt|$gn|$G{NAME}");
+		    push(@tplates,"$gt|$gn|$G{DESCRIPTION}");
         }
 	}
 
@@ -542,7 +544,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2021 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

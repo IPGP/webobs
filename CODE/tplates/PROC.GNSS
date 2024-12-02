@@ -5,8 +5,12 @@
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/gnss.m for further information.
 
 
-# long name of the PROC
-NAME|GNSS time series, vectors and modelling
+# name of the PROC
+NAME|GNSS
+
+# description of what the proc does
+DESCRIPTION|GNSS time series, vectors and modelling
+
 RAWFORMAT|gipsyx
 RAWDATA|$WEBOBS{ROOT_RAWD}/gipsyx
 URNDATA|$WEBOBS{URN_RAWD}/gipsyx

@@ -1,8 +1,10 @@
 =key|value
 # SEFRAN3 default configuration file
 
-NAME|Seismic multichannel stripchart
-BANG|2020
+NAME|SEFRAN
+DESCRIPTION|Seismic multichannel stripchart
+
+BANG|$WEBOBS{BIGBANG}
 ROOT|$WEBOBS{SEFRAN_ROOT}/sefran3
 # starting release v2.4, channel's configuration file is 'channels.conf'
 # (CHANNEL_CONF still functional for backward compatibility)

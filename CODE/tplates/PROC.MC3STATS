@@ -2,8 +2,12 @@
 # Generic PROC template for superproc mc3stats
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/mc3stats.m for further information.
 
-# long name of the PROC
-NAME|Main Courante statistics
+# name of the PROC
+NAME|Seismic bulletin
+
+# description of what the proc does
+DESCRIPTION|Seismic statistics from Main Courante bulletin
+
 # proc TYPE and OWNER
 TYPE|
 OWNCODE|?

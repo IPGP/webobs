@@ -3,8 +3,11 @@
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/afm.m for further information.
 
 
-# long name of the PROC
-NAME|AFM time series
+# name of the PROC
+NAME|AFM
+
+# description of what the PROC does
+DESCRIPTION|AFM time series and alert
 
 # raw data path
 RAWDATA|$WEBOBS{ROOT_RAWD}/afm

@@ -274,6 +274,8 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		$htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$_\"><B>$DOMAINS{$_}{NAME}</B></A></LI>\n";
 	}
 	# -----------
+	$htmlcontents .= "<LI>$__{'Description'}: <I>$GRID{DESCRIPTION}</I></LI>\n" if ($GRID{DESCRIPTION});
+	# -----------
 	$htmlcontents .= "<LI>$__{'Grid code'}: <B>$grid</B></LI>\n";
     # -----------
 	if ($showOwnr && defined($GRID{OWNCODE})) {
