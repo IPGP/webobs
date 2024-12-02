@@ -35,7 +35,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2024-11-19
+%	Updated: 2024-12-02
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -55,7 +55,7 @@ errorcols = field2num(N,'FID_ERRORCOLS');
 datacols = field2num(N,'FID_DATACOLS');
 % Input field separator
 fs = field2str(N,'FID_FS',';','notempty');
-header = field2num(N,'FID_HEADERLINES',1,'notempty');
+header = field2num(N,'FID_HEADERLINES',0,'notempty');
 decimalcomma = isok(N,'FID_DECIMAL_COMMA');
 datadecim = field2num(N,'FID_DATA_DECIMATE',1,'notempty');
 flagcol = field2num(N,'FID_FLAGCOL');
