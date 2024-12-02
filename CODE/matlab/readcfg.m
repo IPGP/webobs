@@ -43,7 +43,7 @@ function X=readcfg(varargin);
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2024-11-28
+%   Updated: 2024-12-02
 
 if nargin > 0 && isstruct(varargin{1})
 	WO = varargin{1};
@@ -125,10 +125,12 @@ if ~isoctave
 	sraw = regexprep(sraw,'\\(\r\n|\n)\s*','');
 end
 
-s = textscan(sraw,'%s','CommentStyle','#','Delimiter','\n');
-
 X = struct;
+s{1} = [];
 df{1} = [];
+if ~isempty(sraw)
+	s = textscan(sraw,'%s','CommentStyle','#','Delimiter','\n');
+end
 
 for i = 1:size(s{:},1)
 	ss = s{1}{i};
