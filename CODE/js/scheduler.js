@@ -190,8 +190,8 @@ function postDelete(jix) {
 		location.href = "/cgi-bin/schedulerMgr.pl?action=delete&jid="+jid
 	}
 }
-function postSubmit(jix) {
-	var jid =  $("td",jix)[3].textContent;
+function postSubmit(jix, col=3) {
+	var jid =  $("td",jix)[col].textContent;
 	var answer = confirm("do you really want to submit jid "+jid+ " ?")
 	if (answer) {
 		location.href = "/cgi-bin/schedulerMgr.pl?action=submit&jid="+jid
