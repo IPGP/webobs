@@ -532,7 +532,7 @@ if (uc($GRIDType) eq 'PROC') {
 	print "<TR><TD valign=\"top\" width=\"10%\"><B>";
 	my $txt = $__{'Channels'};
 	if ($editOK) {
-		if (scalar(keys %carCLB) >= 0) {
+		if (scalar(keys %carCLB) > 0) {
 			print "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$GRIDType.$GRIDName.$NODEName\">$txt</A>";
 		} else {
 			print "<A href=\"#\" onclick=\"askChanNb();\$(this).closest('form').submit();\"><B>$txt</B></A>";
