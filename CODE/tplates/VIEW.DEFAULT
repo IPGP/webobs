@@ -1,7 +1,9 @@
 =key|value
 # Generic VIEW template for use with cgi-bin/formGRID.pl
 
-NAME|Generic View
+NAME|My nodes
+DESCRIPTION|Generic view of nodes
+
 OWNCODE|MyCompany
 TYPE|A Group of nodes
 URL|http://myview.org

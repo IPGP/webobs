@@ -3,25 +3,22 @@
 # It can be used for instance with superproc genplot (generic time series).
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/genplot.m for further information.
 
-# long name of the PROC
-NAME|Generic time series
+# name of the PROC
+NAME|My time series
+
+# description of what the proc does
+DESCRIPTION|Generic time series
+
 # proc TYPE and OWNER
 TYPE|
 OWNCODE|?
+
 # default raw data format (might be overwritten in each node)
 RAWFORMAT|
 # raw data path (might be overwritten in each node configuration)
 RAWDATA|$WEBOBS{ROOT_RAWD}/mydatasource
 # URN link to data
 URNDATA|$WEBOBS{URN_RAWD}/mydatasource
-
-# proc TITLE and DESCRIPTION
-TITLE|
-DESCRIPTION|
-
-# proc THEME and TOPICS
-THEME|
-TOPICS|
 
 DEM_SRTM1|N
 # optional user-defined DEM (Arcinfo format, lat/lon, overwrites SRTM/ETOPO default)

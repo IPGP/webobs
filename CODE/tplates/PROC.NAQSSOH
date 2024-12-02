@@ -3,7 +3,10 @@
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/naqssohplot.m for further information.
 
 # long name of the PROC
-NAME|Naqs SOH time series
+NAME|Naqs SOH
+
+# description of what the proc does
+DESCRIPTION|Naqs SOH time series
 
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 TYPE|

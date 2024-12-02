@@ -2,8 +2,12 @@
 # Generic PROC template for superproc tilt
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/tilt.m for further information.
 
-# long name of the PROC
-NAME|Tiltmetry time series, vectors and modelling
+# name of the PROC
+NAME|Tilt
+
+# description of what the proc does
+DESCRIPTION|Tiltmetry time series, vectors and modelling
+
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 TYPE|
 OWNCODE|?
