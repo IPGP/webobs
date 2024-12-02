@@ -140,8 +140,15 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 ## What's new and release history
 
 ### What's new in the 2.7?
-- new calibration files;
+- first effort of generic form for manual database management (under development);
+- better security checking in user authentication and script access;
+- improvement in DSV data format;
+- new button to duplicate a node;
+- content of cross link node features displayed;
+- new interface for publishing B3 reports;
 - finalization of the interface between WebObs and the Theia\|OZCAR data portal;
+- new format for calibration files;
+- some minor to moderate fixes and other minor improvements.
 
 ### What's new in the 2.6?
 - first effort for an interface between WebObs and the Theia\|OZCAR data portal;

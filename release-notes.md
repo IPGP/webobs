@@ -8,7 +8,7 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## v2.7
+## v2.7 (December 2024)
 
 ### New features
 1. **Generic forms**: see section *Under development* below.
