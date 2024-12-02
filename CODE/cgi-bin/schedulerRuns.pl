@@ -304,6 +304,8 @@ my @run_day_list = map { $_->[0] } (@{fetch_all($SCHED{SQL_DB_JOBS},
 # ---- Prepare the HTML table of job runs for selected day
 # --------------------------------------------------------
 my $jobsruns;
+my $jobsdefsCount = 0;
+my $jobsdefsId = '';
 my $maxdcmdl = 70; # max string length for command in table
 my $rdate = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 00:00:00");
 my @jid_list;
@@ -328,6 +330,8 @@ for my $run (@$run_list) {
 		my $bgcolor = "transparent";
 		# Running jobs have an undefined end date
 		my $is_running = not defined($job_end);
+		$jobsdefsCount++;
+		$jobsdefsId="jdef".$jobsdefsCount;
 
 		if ($is_running) {
 			$job_rc = '';
@@ -347,9 +351,12 @@ for my $run (@$run_list) {
 		}
 		$job_start =~ s/^.* //;
 		$job_end =~ s/^.* //;
-		$jobsruns .= qq(<tr><td class="ic tdlock">);
+		$jobsruns .= qq(<tr id="$jobsdefsId"><td class="ic tdlock">);
 		if ($is_running && $admOK) {
 			$jobsruns .= qq(<a href="#" onclick="postKill($job_kid);return false"><img title="kill job" src="/icons/no.png"></a>);
+		}
+		if (!$is_running && $admOK) {
+			$jobsruns .= qq(</td><td class="ic tdlock"><a href="#" onclick="postSubmit($jobsdefsId,2);return false"><img title="submit job" src="/icons/submits.png"></a>);
 		}
 		$jobsruns .= qq(</td><td>$job_jid<td>$job_kid<td>$org<td>$job_start<td>$job_end<td>$job_cmd);
 		my $log_filename = $job_stdpath =~ s/^[><] +//r;
@@ -447,17 +454,17 @@ print <<"EOP4";
 		<div class="jobsdefs-container" style="height: 300px; display: block;">
 			<div class="jobsruns">
 				<table class="jobsruns" id="t1">
-				<thead><tr><th></th>
-				<th onclick="sortTable('t1',1)"><img src="/icons/sort_both.svg"> JID</th>
-				<th onclick="sortTable('t1',2)"><img src="/icons/sort_both.svg"> Kid</th>
-				<th onclick="sortTable('t1',3)"><img src="/icons/sort_both.svg"> Org</th>
-				<th onclick="sortTable('t1',4)"><img src="/icons/sort_both.svg"> Started</th>
-				<th onclick="sortTable('t1',5)"><img src="/icons/sort_both.svg"> Ended</th>
-				<th onclick="sortTable('t1',6)"><img src="/icons/sort_both.svg"> Command</th>
-				<th onclick="sortTable('t1',7)"><img src="/icons/sort_both.svg"> Logs</th>
-				<th onclick="sortTable('t1',8)" align=center><img src="/icons/sort_both.svg"> RC</th>
-				<th onclick="sortTable('t1',9)"><img src="/icons/sort_both.svg"> RCmsg</th>
-				<th onclick="sortTable('t1',10)"><img src="/icons/sort_both.svg"> Elapsed</th>
+				<thead><tr><th></th><th></th>
+				<th onclick="sortTable('t1',2)"><img src="/icons/sort_both.svg"> JID</th>
+				<th onclick="sortTable('t1',3)"><img src="/icons/sort_both.svg"> Kid</th>
+				<th onclick="sortTable('t1',4)"><img src="/icons/sort_both.svg"> Org</th>
+				<th onclick="sortTable('t1',5)"><img src="/icons/sort_both.svg"> Started</th>
+				<th onclick="sortTable('t1',6)"><img src="/icons/sort_both.svg"> Ended</th>
+				<th onclick="sortTable('t1',7)"><img src="/icons/sort_both.svg"> Command</th>
+				<th onclick="sortTable('t1',8)"><img src="/icons/sort_both.svg"> Logs</th>
+				<th onclick="sortTable('t1',9)" align=center><img src="/icons/sort_both.svg"> RC</th>
+				<th onclick="sortTable('t1',10)"><img src="/icons/sort_both.svg"> RCmsg</th>
+				<th onclick="sortTable('t1',11)"><img src="/icons/sort_both.svg"> Elapsed</th>
 				</tr></thead>
 				<tbody>
 				$jobsruns
