@@ -355,7 +355,7 @@ for my $run (@$run_list) {
 		if ($is_running && $admOK) {
 			$jobsruns .= qq(<a href="#" onclick="postKill($job_kid);return false"><img title="kill job" src="/icons/no.png"></a>);
 		}
-		if (!$is_running && $admOK) {
+		if (!$is_running && $admOK && $job_jid =~ /^\w/) {
 			$jobsruns .= qq(</td><td class="ic tdlock"><a href="#" onclick="postSubmit($jobsdefsId,2);return false"><img title="submit job" src="/icons/submits.png"></a>);
 		}
 		$jobsruns .= qq(</td><td>$job_jid<td>$job_kid<td>$org<td>$job_start<td>$job_end<td>$job_cmd);
