@@ -33,13 +33,12 @@ Those informations are gathered by WebObs in a JSON file which respects the stru
 
 \begin{figure}[!h]
 	\centering
-	\includegraphics[width=\textwidth]{figures/theia_pivot_model.png}
+	\includegraphics[width=\textwidth]{figures/theia/pivot_model.png}
 	\caption{Figure from \url{https://github.com/theia-ozcar-is/csv-to-theia-ozcar-pivot-model}.}
 	\label{pivot_model}
 \end{figure}
 
-
-At the highest in the hierarchy are 3 JSON objects : 
+At the highest in the hierarchy are 3 JSON objects :
 
 \begin{itemize}
 \item 	 producer;
@@ -47,7 +46,7 @@ At the highest in the hierarchy are 3 JSON objects :
 \item 	 version.
 \end{itemize}
 
-datasets is a collection of dataset JSON object. Each dataset contains 3 informations : 
+datasets is a collection of dataset JSON object. Each dataset contains 3 informations :
 
 \begin{itemize}
 \item 	 identifier;
@@ -55,7 +54,7 @@ datasets is a collection of dataset JSON object. Each dataset contains 3 informa
 \item 	 observations
 \end{itemize}
 
-observations is a collection of observation JSON object. producer, dataset and observation parameters are detailed in the sections below. 
+observations is a collection of observation JSON object. producer, dataset and observation parameters are detailed in the sections below.
 
 % ==================================================================
 \subsubsection{Producer metadata}
@@ -106,92 +105,95 @@ The observation metadata are :
 \item 	 Data file name (M) : name of the file containing the observations (.csv, .txt, .dat, etc.).
 \end{itemize}
 
+For a complete description, please refer to the official documentation of the \href{https://theia-ozcar.gricad-pages.univ-grenoble-alpes.fr/doc-producer/producer-documentation.html#modele-de-donnees-pivot}{Theia$\vert$OZCAR pivot model}.
+
 % ==================================================================
 \subsection{Filling the metadata file}
-
-First of all, one has to make sure (only user with administrator right) WEBOBS.rc is rightly configurated like it is shown below, in order to display anything Theia$\vert$OZCAR related and to make sure the file theia.rc will be filled. This last configuration file is important because it gathers the metadata the users want to send to Theia$\vert$OZCAR data portal.
+First of all, one has to make sure (only user with administrator right) WEBOBS.rc is rightly configurated like it is shown below \ref{webobs.rc}, in order to display anything Theia$\vert$OZCAR related and to make sure the file theia.rc will be filled. This last configuration file is important because it gathers the metadata the users want to send to Theia$\vert$OZCAR data portal. ROOT\_OUTE is the path name where the data will be saved. For each upload, a sub directory will be created with a zip archive containing the metadata file in JSON format and zip archives with the data files. PASSWORD\_THEIA is the password you have to ask to the Theia$\vert$OZCAR team to upload data.
 
 \begin{figure}[!h]
 	\centering
-	\includegraphics[width=\textwidth]{figures/webobs.rc.png}
+	\includegraphics[width=\textwidth]{figures/theia/webobs.rc.png}
 	\caption{$THIEA\_USER\_FLAG$ must be 1 to display the metadata resume board and anything metadata related.}
 	\label{webobs.rc}
 \end{figure}
 
-Each of these 3 objects (producer, datasets, observations) can be filled through WebObs, and some are even done automatically, for example when creating a \wo{node}, or when filling a line of a calibration file. A table to display the producer, datasets and observations metadata is available. To do so, an user with administrator right has to create a link towards the showTHEIA.pl script through +ADMIN -> Admin editors -> MAIN MENU EDIT. 
+Each of the three main objects of the pivot model (producer, datasets, observations) can be filled through WebObs, and some are even done automatically, for example when creating a \wo{node}, or when filling the THEIA category. When this has been configured \ref{menu_config}, a link \ref{showTHEIA} to a summary table displaying the metadata is available \ref{recap_table}. To do so, an user with administrator right has to create a link towards the showTHEIA.pl script through +ADMIN $\rightarrow$ Admin editors $\rightarrow$ MAIN MENU EDIT.
 
 \begin{figure}[!h]
 	\centering
-	\includegraphics[width=\textwidth]{figures/theia_tab.png}
+	\includegraphics[width=\textwidth]{figures/theia/menu_config.png}
+	\caption{An editor allows you to add a personalized tab for the Theia board}
+	\label{menu_config}
+\end{figure}
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=\textwidth]{figures/theia/theia_menu.png}
 	\caption{Click on the tab to open the metadata summary table.}
 	\label{showTHEIA}
 \end{figure}
 
 \begin{figure}[!h]
 	\centering
-	\includegraphics[width=\textwidth]{figures/theia_recap_table.png}
+	\includegraphics[width=\textwidth]{figures/theia/recap_table.png}
 	\caption{The table sums up the mandatory metadata that have been filled to create the JSON file that will be send to the Theia$\vert$OZCAR IS.}
-	\label{showTHEIA2}
+	\label{recap_table}
 \end{figure}
 
-By clicking on each row on the pencil, you can get back to the edition menu of the clicked object. If you click on the delete symbol, the row will be deleted from the resume board but not from the database (which will happens when deleting a NODE or a variable in a given .clb file). Thus, only the rows displayed on the resume board will be integrated in the JSON file. Then, to validate the data you want to send in the JSON file, you have to validate the form. If all the required metadata are  validated, a message will appear to confirm the edition of the file called \wo{theia.rc}. When launching the job, a .zip file is created for each dataset, containing the observations in a .txt file. Finally, a .zip file is made with the JSON and the datasets .zip files by creating a job using \wo{sendTHEIA.pl} script (as shown below).
-
-\newpage
+By clicking on each row on the pencil, you can get back to the edition menu of the clicked object. If you click on the delete symbol, the row will be deleted from the resume board but not from the database (which will happens when deleting a NODE or a variable in a given .clb file). Moreover, only the rows selected on the resume board will be integrated in the JSON file. Concerning the Theia topic categories, an hyperlink is provided towards the Theia$\vert$OZCAR Skosmos thesaurus. Then, to validate the data you want to send in the JSON file, you have to validate the form. If all the required metadata are validated, a message will appear to confirm the edition of the file called \wo{theia.rc} \ref{theia.rc}.
 
 \begin{figure}[!h]
 	\centering
-	\includegraphics[scale=0.25]{figures/theia_rc.png}
+	\includegraphics[scale=0.25]{figures/theia/theia_rc.png}
 	\caption{If it succeed, a configuration file containing all the information will be edited.}
 	\label{theia.rc}
 \end{figure}
 
+When launching the job, a .zip file is created for each dataset, containing the observations in a .txt file. Finally, a .zip file is made with the JSON and the datasets .zip files by creating a job using \wo{sendTHEIA.pl} script \ref{sendTHEIA}.
+
 \begin{figure}[!h]
 	\centering
-	\includegraphics[scale=0.25]{figures/sendTHEIA.png}
+	\includegraphics[scale=0.25]{figures/theia/sendTHEIA.png}
 	\caption{If it succeed, a .zip file will be downloaded in the OUTE/theia/ directory, containing all the metadata and data ready to send to THEIA pivot model.}
 	\label{sendTHEIA}
 \end{figure}
 
-\newpage
-
 % ==================================================================
 \subsubsection{Producer metadata}
 
-The producer metadata can be filled throughout the \wo{domain} edition menu. 
+The producer metadata can be filled throughout the \wo{domain} edition menu \ref{gridsMgr}.
 
 \begin{figure}[!h]
 	\centering
-	\includegraphics[width=\textwidth]{figures/gridsMgr.png}
+	\includegraphics[width=\textwidth]{figures/theia/gridsMgr.png}
 	\caption{The table sums up the information about the data producer.}
-	\label{girdsMgr}
+	\label{gridsMgr}
 \end{figure}
 
-Each data producer can be edited or deleted. When creating, deleting or editing a producer, a local SQLite database is filled,  called WEBOBSMETA.db, which is only available for the admin. Only the mandatory metadata are necessary, in addition to the grids related to the producer (as several producer can co-exist on the same WebObs).Other metadata are optional even if some are more or less recommended.
-
-\newpage
+Each data producer can be edited or deleted. When creating, deleting or editing a producer, a local SQLite database is filled, called WEBOBSMETA.db, which is only available for the admin. Only the mandatory metadata are necessary, in addition to the grids related to the producer (as several producer can co-exist on the same WebObs).Other metadata are optional even if some are more or less recommended.
 
 % ==================================================================
 \subsubsection{Dataset metadata}
 
-Dataset metadata is entered when creating or editing an existing \wo{node}. The \textbf{Name} WebObs \wo{node} fields correspond to the \textbf{dataset.Title} Theia$\vert$OZCAR IS field.
+Dataset metadata is entered when creating or editing an existing \wo{node} \ref{formNODE}. The \textbf{Name} WebObs \wo{node} fields correspond to the \textbf{dataset.Title} Theia$\vert$OZCAR IS field.
 
 \begin{figure}[!h]
 	\centering
-	\includegraphics[width=\textwidth, scale=0.4]{figures/formNODE.png}
+	\includegraphics[width=\textwidth, scale=0.4]{figures/theia/formNODE.png}
 	\caption{When creating or editing a NODE, fields appear in the left lower panel to fill required metadata in.}
 	\label{formNODE}
 \end{figure}
 
-
 % ==================================================================
 \subsubsection{Observation metadata}
 
-Observation metadata is entered when creating or editing an existing calibration file. Concerning the Theia topic categories, an hyperlink is provided towards the Theia$\vert$OZCAR Skosmos thesaurus.
+Observation metadata is entered when creating or editing an existing calibration file \ref{formCLB}.
 
 \begin{figure}[!h]
 	\centering
-	\includegraphics[width=\textwidth]{figures/calib_file_form.png}
-	\caption{You can click on the highlighted Theia word (on the top right) to get driven to the Theia thesaurus.}
+	\includegraphics[width=\textwidth]{figures/theia/calib_file_form.png}
+	\caption{Calibration file editor}
 	\label{formCLB}
 \end{figure}
 
