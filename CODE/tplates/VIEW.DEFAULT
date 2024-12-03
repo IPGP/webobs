@@ -25,8 +25,8 @@ DEM_SRTM1|NO
 #DEM_COPYRIGHT|DEM: myDEM
 
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
-MAP1_XYLIM|
-MAP2_XYLIM|
+#MAP1_XYLIM|
+#MAP2_XYLIM|
 
 # additional options for gridmaps background map
 GRIDMAPS_DEM_OPT|
