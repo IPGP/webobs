@@ -12,9 +12,9 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.6.4.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.6.4/WebObs-2.6.4.tar.gz) (109 Mb) updated December 18, 2023
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.6.4/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.6.4/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.6.4.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.7.0/WebObs-2.7.0.tar.gz) (102 Mb) updated December 3, 2024
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.7.0/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.7.0/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
