@@ -252,8 +252,8 @@ case 'fdsnws-event'
 					if eventNode.getElementsByTagName('quality').item(0).getElementsByTagName('standardError').getLength
 						dd(evt,6) = str2double(eventNode.getElementsByTagName('quality').item(0).getElementsByTagName('standardError').item(0).getTextContent);
 					end
-					if eventNode.getElementsByTagName('quality').item(0).getElementsByTagName('associatedPhaseCount').getLength
-						dd(evt,9) = str2double(eventNode.getElementsByTagName('quality').item(0).getElementsByTagName('associatedPhaseCount').item(0).getTextContent);
+					if eventNode.getElementsByTagName('quality').item(0).getElementsByTagName('usedPhaseCount').getLength
+						dd(evt,9) = str2double(eventNode.getElementsByTagName('quality').item(0).getElementsByTagName('usedPhaseCount').item(0).getTextContent);
 					end
 				end
 				if eventNode.getElementsByTagName('originUncertainty').getLength
@@ -385,6 +385,13 @@ case 'scevtlog-xml'
 		end
 		if originNode.getElementsByTagName('horizontalUncertainty').getLength
 			d(evt,7) = str2double(originNode.getElementsByTagName('horizontalUncertainty').item(0).getTextContent);
+		end
+		if originNode.getElementsByTagName('usedPhaseCount').getLength
+<<<<<<< HEAD
+			d(evt,9) = str2double(originNode.getElementsByTagName('usedPhaseCount').item(0).getTextContent);
+=======
+			d(evt,9) = str2double(originNode.getElementsByTagName('UsedPhaseCount').item(0).getTextContent);
+>>>>>>> 3e61eca (Correct read of phase count for quakeml and sc3ml formats)
 		end
 		if originNode.getElementsByTagName('evaluationMode').getLength
 			c{evt,5} = char(originNode.getElementsByTagName('evaluationMode').item(0).getTextContent);
