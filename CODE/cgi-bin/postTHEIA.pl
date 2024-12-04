@@ -53,7 +53,7 @@ print CGI::header();
 # Return information when OK
 # (Reminder: we use text/plain as this is an ajax action)
 sub htmlMsgOK {
-	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
+	print "$_[0] successfully !\n";
 }
 # Return information when not OK
 # (Reminder: we use text/plain as this is an ajax action)
