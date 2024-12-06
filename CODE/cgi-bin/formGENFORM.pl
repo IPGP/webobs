@@ -320,6 +320,12 @@ function verif_re(element)
 
 function verif_form()
 {
+    var cboxs = document.querySelectorAll("input[type=checkbox]");
+    Array.from(cboxs).forEach((cbox) => {
+        if (cbox.checked) {
+        cbox.value="checked";
+        } else { cbox.value="unchecked"; }
+    });
     console.log(\$("#theform"));
     if(document.form.site.value == "") {
         alert("$__{'You must select a node associated to this record!'}");
@@ -617,6 +623,10 @@ foreach (@columns) {
 					$hlp = ($help ne "" ? $help:"$__{'Enter a value for'} $Field");
                     print qq($txt = <input type="text" size=$size name="$field" value="$prev_inputs{$field}"
                         onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+                } elsif ($field =~ /^input/ && $type =~ /^boolean/) {
+                    $hlp = ($help ne "" ? $help:"$__{'Click to select'} $Field");
+                    my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
+                    print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
                 } elsif ($field =~ /^input/) {
 					$hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
