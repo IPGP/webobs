@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2024-07-12
+%	Updated: 2024-12-09
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -290,8 +290,9 @@ case 'scevtlog-xml'
 
 	fdat = sprintf('%s/%s.list',F.ptmp,N.ID);
 
-	% makes a single and homogeneous space-separated numeric file from the raw data
-	for day = floor(F.datelim(1)):floor(F.datelim(2))
+	% --- makes a single and homogeneous space-separated numeric file from the raw data
+	% the loop ends tonight (UTC) because directory is the date of event creation and not event origin
+	for day = floor(F.datelim(1)):ceil(P.NOW - P.TZ/24)
 		tv = datevec(day);
 		wosystem(sprintf('d=%s/%4d/%02d/%02d;if [ -d "$d" ]; then for evt in $d/*;do evtid=`basename ${evt}`;echo ${evt}/${evtid}.last.xml >> %s;done;fi',F.raw{1},tv(1:3),fdat),P);
 	end
