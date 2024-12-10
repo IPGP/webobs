@@ -212,6 +212,10 @@ if ($action eq 'save') {
     $dbh->disconnect();
     exit;
 } elsif ($action eq "erase" && $id ne "") {
+	if ( $form ne "" ) {
+        my $erase_dir = "$WEBOBS{ROOT_DATA}".uc("/formdocs/FORM_".$form."_data".$id )."*";
+		qx(rm -rf $erase_dir);
+	}
     my $stmt = qq(DELETE FROM $tbl WHERE id = $id);
     my $sth  = $dbh->prepare( $stmt );
 	my $rv   = $sth->execute() or die $DBI::errstr;
@@ -572,6 +576,7 @@ print qq(</select>
       </fieldset>);
 
 foreach (@columns) {
+    my $col = $_ =~ s/_LIST//r;
     unless ($_ =~ "01") {
         print "</TD>\n<TD style=\"border:0\" valign=\"top\">";
     }
@@ -623,10 +628,25 @@ foreach (@columns) {
 					$hlp = ($help ne "" ? $help:"$__{'Enter a value for'} $Field");
                     print qq($txt = <input type="text" size=$size name="$field" value="$prev_inputs{$field}"
                         onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
-                } elsif ($field =~ /^input/ && $type =~ /^boolean/) {
+                } elsif ($field =~ /^input/ && $type =~ /^checkbox/) {
                     $hlp = ($help ne "" ? $help:"$__{'Click to select'} $Field");
                     my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+                } elsif ($field =~ /^input/ && $type =~ /^image/) {
+                    my $img_id = uc("FORM_".$form."_data".$id."_".$col."_".$fieldset);
+                    if ($action eq "edit") {
+                        my @dim = split(/,/, $size);
+                        my $width = ($dim[0] >= 60 && $dim[0] <= 1024 ? $dim[0] : $NODES{THUMBNAILS_PIXV});
+                        my $height = ($dim[1] >= 60 && $dim[1] <= 1024 ? $dim[1] : $NODES{THUMBNAILS_PIXV});
+                        my $pathThumb = "/formdocs/$img_id/THUMBNAILS";
+                        print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&width=$width&height=$height&delay=$default'"
+                            type="button"> Upload images or files</button><br><br>);
+                        if ( -e "$WEBOBS{ROOT_DATA}".uc($pathThumb)."/movie.gif") {
+                            print qq(<img width=$width height=$height src="$pathThumb/movie.gif"></img>);
+                        }
+                    } else {
+                        print qq(Image upload is available once the form has been submitted.);
+                    }
                 } elsif ($field =~ /^input/) {
 					$hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
