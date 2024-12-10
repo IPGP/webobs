@@ -11,7 +11,7 @@
 #
 # Author: Francois Beauducel <beauducel@ipgp.fr>
 # Created: 2024-03-14
-# Updated: 2024-11-10
+# Updated: 2024-12-04
 
 SCRIPT_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 PWD=$(pwd)
@@ -19,7 +19,7 @@ PWD=$(pwd)
 # Script argument: version of the release
 RELEASE_VERSION="$1"
 MCC_OPT="${@:2}"
-if [ -z $MCC_OPT]
+if [ -z "$MCC_OPT" ]
 then
 	MCC_OPT="all"
 fi
