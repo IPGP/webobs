@@ -109,8 +109,10 @@ closedir($formDH)
 
 # Load form titles into %FORMS
 for my $f (@ALL_FORMS) {
-	my $F = new WebObs::Form("$f");
-	$FORMS{"$f"} = $F->conf('TITLE');
+	if (-e "$WEBOBS{PATH_FORMS}/$f/$f.conf") {
+		my $F = new WebObs::Form("$f");
+		$FORMS{"$f"} = $F->conf('TITLE');
+	}
 }
 
 # Read the list of all nodes
@@ -388,11 +390,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon, Xavier Béguin
+François Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

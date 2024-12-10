@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2024-11-08
+%   Updated: 2024-12-04
 
 
 WO = readcfg;
@@ -215,17 +215,19 @@ for g = 1:length(grids)
 	else
 		fd = fieldnames(G);
 		k = find(~cellfun(@isempty,regexp(fd,'^MAP\d+_XYLIM$')));
-		maps = cell(1 + length(k),2);
 		maps(1,:) = {'MAP',[]};
 		for ii = 1:length(k)
 			x = split(fd{k(ii)},'_');
-			maps{ii+1,1} = x{1};
-			maps{ii+1,2} = sstr2num(G.(fd{k(ii)}));
-			if numel(maps{ii+1,2}) == 3
-				maps{ii+1,2} = xyw2lim(maps{ii+1,2},1/cosd(maps{ii+1,2}(2)));
-			end
-			if numel(maps{ii+1,2}) ~= 4
-				error('%s: %s key must contain 3 or 4 elements: (LON,LAT,WIDTH) or (LON1,LON2,LAT1,LAT2). Abort.',wofun,fd{k});
+			v = G.(fd{k(ii)});
+			if ~isempty(v)
+				maps{ii+1,1} = x{1};
+				maps{ii+1,2} = sstr2num(v);
+				if numel(maps{ii+1,2}) == 3
+					maps{ii+1,2} = xyw2lim(maps{ii+1,2},1/cosd(maps{ii+1,2}(2)));
+				end
+				if numel(maps{ii+1,2}) ~= 4
+					error('%s: %s key must contain 3 or 4 elements: (LON,LAT,WIDTH) or (LON1,LON2,LAT1,LAT2). Abort.',wofun,fd{k});
+				end
 			end
 		end
 	end

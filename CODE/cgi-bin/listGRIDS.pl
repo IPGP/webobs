@@ -296,7 +296,7 @@ print "<div id=\"noscrolldiv\">";
 						if (%G) {
 							print "<TR>" if ($vs ne $sefrans[0]);
 							print "<TD style=\"text-align: center\">SEFRAN</TD>" if ($subsetType ne "");
-							$ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vs}{DESCRIPTION}."',CAPTION,'PROC.$vs')\"";
+							$ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vs}{DESCRIPTION}."',CAPTION,'SEFRAN.$vs')\"";
 							print "<TD $ovl>";
 							if (WebObs::Users::clientHasEdit(type=>"authprocs",name=>$G{$vs}{MC3_NAME})) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$vs\" title=\"$__{'Edit Sefran'}\" ><img src='/icons/modif.png'></a>" }
 							print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/sefran3.pl?s3=$vs&header=1\">$G{$vs}{NAME}</a>";
@@ -373,7 +373,7 @@ print "<div id=\"noscrolldiv\">";
 						if (%G) {
 							print "<TR>" if ($np > 0 || $vn ne $views[0]);
 							print "<TD style=\"text-align: center\">VIEW</TD>";
-							$ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vn}{DESCRIPTION}."',CAPTION,'PROC.$vn')\"";
+							$ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vn}{DESCRIPTION}."',CAPTION,'VIEW.$vn')\"";
 							print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in View'}\" onclick='srchopenPopup(\"+VIEW.$vn\");return false'><img class='ic' src='/icons/search.png'></a>";
 							print     "<a href='/cgi-bin/gvTransit.pl?grid=VIEW.$vn')><img src=\"/icons/tmap.png\"></a>";
 							if (WebObs::Users::clientHasEdit(type=>"authviews",name=>$vn)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=VIEW.$vn\" title=\"$__{'Edit View'}\" ><img src='/icons/modif.png'></a>" }
