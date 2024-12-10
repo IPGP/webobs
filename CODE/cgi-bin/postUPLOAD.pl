@@ -72,6 +72,7 @@ my $typeDoc = $QryParm->{'doc'}    // "";
 my $object  = $QryParm->{'object'} // "";
 my $event   = $QryParm->{'event'}  // "";
 my $nb      = $QryParm->{'nb'}     // 0;
+my $form    = $QryParm->{'form'};      # name of the form
 
 # ---- validate target subir (doc=) and http-client authorizations
 #
@@ -84,30 +85,38 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my @NID;
 my $pobj;
 
-@NID = split(/[\.\/]/, trim($object));
-($GRIDType, $GRIDName, $NODEName) = @NID;
-if (defined($GRIDType) || defined($GRIDName)) {
-	$editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
-	htmlMsgNotOK("$__{'Not authorized'}") if ($editOK == 0);
-} else { htmlMsgNotOK("$__{'Invalid object'} '$object'") }
+my $refer = $ENV{HTTP_REFERER};
+if ( $refer =~ /formUPLOAD.pl/ ) {
+    my $clientAuth = WebObs::Users::clientMaxAuth(type=>"authforms",name=>"('$form')");
+    htmlMsgNotOK("$__{'Not authorized'}") if ($clientAuth < 1);
+} else {
+    @NID = split(/[\.\/]/, trim($object));
+    ($GRIDType, $GRIDName, $NODEName) = @NID;
+    if (defined($GRIDType) || defined($GRIDName)) {
+	    $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
+	    htmlMsgNotOK("$__{'Not authorized'}") if ($editOK == 0);
+    } else { htmlMsgNotOK("$__{'Invalid object'} '$object'") }
 
-# ---- find out wether object is a grid or a node
-#
-if (scalar(@NID) == 3) {
-	$pobj = \%NODES;
-	$pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
-}
-if (scalar(@NID) == 2) {
-	$pobj = \%GRIDS;
-	$pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
+    # ---- find out wether object is a grid or a node
+    #
+    if (scalar(@NID) == 3) {
+	    $pobj = \%NODES;
+	    $pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
+    }
+    if (scalar(@NID) == 2) {
+	    $pobj = \%GRIDS;
+	    $pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
+    }
 }
 
 # ---- more checkings on type of document to be uploaded
 #
-my @allowed = ("SPATH_PHOTOS","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS");
+my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS");
 htmlMsgNotOK("$__{'Cannot upload to'} $typeDoc") if ( "@allowed" !~ /\b$typeDoc\b/ );
 
-if ($typeDoc ne "SPATH_INTERVENTIONS") {
+if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
+	$pathTarget = "$WEBOBS{ROOT_DATA}/FORMDOCS/$object";
+} elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
 	$pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
 	htmlMsgNotOK("$__{'intervention event not specified'}") if ($event eq "");

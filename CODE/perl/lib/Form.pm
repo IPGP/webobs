@@ -211,6 +211,8 @@ sub extract_type {
 	my ($size, $default) = (split /:/, $type);
 	if ($size =~ /\(\d+\)$/) {
 		$size =~ s/^[a-z]+\((\d+)\)/$1/;
+	} elsif ($size =~ /\(\d+,\d+\)$/) {
+		$size =~ s/^[a-z]+\((\d+,\d+)\)/$1/;
 	} else {
 		$size = 5;
 	}

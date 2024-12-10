@@ -57,9 +57,15 @@ use Locale::TextDomain('webobs');
 #
 my @tod = localtime(); 
 my $QryParm = $cgi->Vars;
-my $typeDoc = $QryParm->{'doc'}    // "";
-my $object  = $QryParm->{'object'} // "";
-my $event   = $QryParm->{'event'}  // "";
+my $typeDoc = $QryParm->{'doc'}     // "";
+my $object  = $QryParm->{'object'}  // "";
+my $event   = $QryParm->{'event'}   // "";
+my $form    = $QryParm->{'form'}    // "";  # name of the form
+my $delay   = $QryParm->{'delay'}   // 0;   # delay rate (in seconds)
+my $width   = $QryParm->{'width'}   // 0;
+my $height  = $QryParm->{'height'}  // 0;
+
+$delay = 100 * $delay;  # delay rate (in hundredths of a seconds)
 
 # ---- validate target subir (doc=) and http-client authorizations
 #
@@ -72,30 +78,38 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my @NID;
 my $pobj;
 
-@NID = split(/[\.\/]/, trim($object));
-($GRIDType, $GRIDName, $NODEName) = @NID;
-if (defined($GRIDType) || defined($GRIDName)) {
-	$editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
-	die "$__{'Not authorized'}" if ($editOK == 0);
-} else { die "$__{'Invalid object'} '$object'" }
+my $refer = $ENV{HTTP_REFERER};
+if ( $refer =~ /formGENFORM.pl/ ) {
+    my $clientAuth = WebObs::Users::clientMaxAuth(type=>"authforms",name=>"('$form')");
+    die "$__{'Not authorized'}" if ($clientAuth < 1);
+} else {
+    @NID = split(/[\.\/]/, trim($object));
+    ($GRIDType, $GRIDName, $NODEName) = @NID;
+    if (defined($GRIDType) || defined($GRIDName)) {
+	    $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
+	    die "$__{'Not authorized'}" if ($editOK == 0);
+    } else { die "$__{'Invalid object'} '$object'" }
 
-# ---- find out wether object is a grid or a node
-#
-if (scalar(@NID) == 3) {
-	$pobj = \%NODES;
-	$pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
-}
-if (scalar(@NID) == 2) {
-	$pobj = \%GRIDS;
-	$pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
+    # ---- find out wether object is a grid or a node
+    #
+    if (scalar(@NID) == 3) {
+	    $pobj = \%NODES;
+	    $pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
+    }
+    if (scalar(@NID) == 2) {
+	    $pobj = \%GRIDS;
+	    $pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
+    }
 }
 
 # ---- more checkings on type of document to be uploaded
 #
-my @allowed = ("SPATH_PHOTOS","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS");
+my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS");
 die "$__{'Cannot upload to'} $typeDoc" if ( "@allowed" !~ /\b$typeDoc\b/ );
 
-if ($typeDoc ne "SPATH_INTERVENTIONS") {
+if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
+	$pathTarget = "$WEBOBS{ROOT_DATA}/FORMDOCS/$object";
+} elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
 	$pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
 	die "$__{'intervention event not specified'}" if ($event eq "");
@@ -105,7 +119,7 @@ if ($typeDoc ne "SPATH_INTERVENTIONS") {
 # ---- at that point $pathTarget is where uploaded documents will be sent to
 #
 die "$__{'Do not know where to upload'}" if ( $pathTarget eq "" );
-$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}";
+$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || "THUMBNAILS";
 make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down THUMBNAILS exist
 (my $urnTarget  = $pathTarget) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
 my @listeTarget = <$pathTarget/*.*> ;
@@ -201,12 +215,22 @@ print "<form id=\"theform\" name=\"formulaire\" action=\"\" ENCTYPE=\"multipart/
 		my $turn = "$urnTarget/$thumbnailsPath/$name$extension";
 		my $file = "$pathTarget/$name$extension";
 		print "<TD style='border:none; border-right: 1px solid gray' align=center valign=top>";
+		if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
+			$urn  =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
+		}
 		print "<A href=\"$urn\">";
-		my $th = makeThumbnail( $file, "x$NODES{THUMBNAILS_PIXV}", "$pathTarget/$thumbnailsPath","$NODES{THUMBNAILS_EXT}");
-		if ( $th ne "" ) { 
-			(my $turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
-			print "<IMG src=\"$turn\"/>";
-		} 
+		my $hght = ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $height : $NODES{THUMBNAILS_PIXV});
+		my $th = makeThumbnail( $file, "x$hght", "$pathTarget/$thumbnailsPath", $NODES{THUMBNAILS_EXT});
+		if ( $th ne "" ) {
+			if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
+				(my $turn = $th) =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
+				print "<IMG src=\"$turn\"/>";
+				qx(cd "$pathTarget/$thumbnailsPath/" && convert -resize $width x $height -delay $delay -loop 0 "*.jpg" movie.gif 2>/dev/null);
+			} else {
+				(my $turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
+				print "<IMG src=\"$turn\"/>";
+			}
+		}
 		print "</A>";
 		print "<P>$name$extension<BR/>";
 		print "<INPUT type=checkbox name=del$i value=\"$name$extension\"> $__{'Delete'}</TD>";
