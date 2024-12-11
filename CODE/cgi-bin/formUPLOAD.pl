@@ -225,7 +225,7 @@ print "<form id=\"theform\" name=\"formulaire\" action=\"\" ENCTYPE=\"multipart/
 			if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
 				(my $turn = $th) =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
 				print "<IMG src=\"$turn\"/>";
-				qx(cd "$pathTarget/$thumbnailsPath/" && convert -resize $width x $height -delay $delay -loop 0 "*.jpg" movie.gif 2>/dev/null);
+				qx(cd "$pathTarget/$thumbnailsPath/" && convert -resize $width x $height -delay $delay -loop 0 "*.jpg" _anim.apng 2>/dev/null);
 			} else {
 				(my $turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
 				print "<IMG src=\"$turn\"/>";
