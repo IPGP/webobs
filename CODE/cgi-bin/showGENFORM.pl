@@ -52,6 +52,7 @@ my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 set_message(\&webobs_cgi_msg);
 use URI;
+use Math::Trig 'pi';
 
 # ---- webobs stuff
 use WebObs::Config;
