@@ -633,7 +633,7 @@ foreach (@columns) {
                     my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
-                    my $img_id = uc("FORM_".$form."_data".$id."_".$col."_".$fieldset);
+                    my $img_id = uc($form."/record".$id."/".$Field);
                     if ($action eq "edit") {
                         my @dim = split(/,/, $size);
                         my $width = ($dim[0] >= 60 && $dim[0] <= 1024 ? $dim[0] : $NODES{THUMBNAILS_PIXV});
@@ -641,8 +641,8 @@ foreach (@columns) {
                         my $pathThumb = "/formdocs/$img_id/THUMBNAILS";
                         print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&width=$width&height=$height&delay=$default'"
                             type="button"> Upload images or files</button><br><br>);
-                        if ( -e "$WEBOBS{ROOT_DATA}".uc($pathThumb)."/movie.gif") {
-                            print qq(<img width=$width height=$height src="$pathThumb/movie.gif"></img>);
+                        if ( -e "$WEBOBS{ROOT_DATA}".uc($pathThumb)."/_anim.apng") {
+                            print qq(<img width=$width height=$height src="$pathThumb/_anim.apng"></img>);
                         }
                     } else {
                         print qq(Image upload is available once the form has been submitted.);
