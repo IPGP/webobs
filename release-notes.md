@@ -8,7 +8,7 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## v2.7 (December 2024)
+## v2.7.1 (December 2024)
 
 ### New features
 1. **Generic forms**: see section *Under development* below.
@@ -53,6 +53,7 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
 1. Fix an issue with proc name that uses the word "PROC".
 1. Fix an issue with data files Campbell binary format TOB1 that contain no data but a header.
 1. Fix an issue in **gridmaps** with inactive nodes plotted over active ones.
+1. Fix a possible issue with **scevtlog-xml** data format (ignoring events created late after origin time).
 
 ### Under development
 1. **Generic forms**: it is now possible to create any user-defined manual database associated to a form (for entering new data and editing), a table display, and CSV export of data, using SQLite database. This new feature will replace all the actuel forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, NOVAC, SOILSOLUTIONS, and RAINWATER) in future release, with an automatic migration tool. Creating and using the new forms is functional, but reading the data from PROCS is not yet implemented. See the user manual documentation for details. 
