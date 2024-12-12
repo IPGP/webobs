@@ -23,7 +23,7 @@ require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
             rtrim tri_date_avec_id datediffdays isok romanx pga2msk attenuation num2roman txt2htm tex2utf
-            roundsd htm2frac qrcode url2target checkParam);
+            roundsd htm2frac qrcode url2target checkParam mean median std);
 $VERSION = "1.00";
 
 #--------------------------------------------------------------------------------------------------------------------------------------
@@ -341,6 +341,38 @@ sub roundsd
 	} else {
 		return floor($x*$og + 0.5)/$og;
 	}
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub mean {
+    my (@array) = @_;
+    my $sum;
+    foreach (@array) {
+        $sum += $_;
+    }
+    return ( $sum / @array );
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub median {
+    my (@array) = sort { $a <=> $b } @_;
+    my $center = @array / 2;
+    if ( scalar(@array) % 2 ) {
+        return ( $array[$center] );
+    } else {
+        return ( mean( $array[$center - 1], $array[$center] ) );
+    }
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub std {
+    my (@array) = @_;
+    my ( $sum2, $avg ) = ( 0, 0 );
+    $avg = mean(@array);
+    foreach my $elem (@array) {
+        $sum2 += ( $avg - $elem )**2;
+    }
+    return ( sqrt( $sum2 / ( @array - 1 ) ) );
 }
 
 
