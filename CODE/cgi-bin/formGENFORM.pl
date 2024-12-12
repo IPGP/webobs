@@ -258,6 +258,7 @@ print qq[Content-type: text/html
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
+<script language="javascript" type="text/javascript" src="/js/math.js"></script>
 <script type="text/javascript">
 <!--
 function update_form()
@@ -269,11 +270,14 @@ foreach my $f (@formulas) {
 	# any word followed by an open parenthesis is supposed to be a Math function...
 	$formula =~ s/(\w+\()/Math.$1/g;
 	$formula =~ s/\b(pi)\b/Math.PI/ig;
+	foreach my $fcn ( 'mean', 'median', 'std', 'min', 'max', 'sum' ) {
+		$formula =~ s/Math.$fcn/math.$fcn/g;
+	}
 	foreach (@x) {
 		my $form_input = lc($_);
 		$formula =~ s/$_/Number(form.$form_input.value)/g;
 	}
-	print "    form.".lc($f).".value = parseFloat($formula).toFixed(2);\n";
+	print "form.".lc($f).".value = parseFloat($formula).toFixed(2);\n";
 }
 foreach (@thresh) {
 	my $f = lc($_);

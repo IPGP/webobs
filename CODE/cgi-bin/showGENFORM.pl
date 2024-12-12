@@ -53,6 +53,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message(\&webobs_cgi_msg);
 use URI;
 use Math::Trig 'pi';
+use List::Util qw[min max sum];
 
 # ---- webobs stuff
 use WebObs::Config;
