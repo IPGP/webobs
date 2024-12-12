@@ -280,6 +280,7 @@ if ($action eq 'save') {
 			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
 			my $sth = $dbh->prepare( $stmt );
 			my $rv = $sth->execute() or die $DBI::errstr;
+			htmlMsgOK($msg);
 		} elsif ($newKeys + 1 < $oldKeys) {
 			$msg = "You can't remove an INPUT !";
 			htmlMsgNotOK($msg);
