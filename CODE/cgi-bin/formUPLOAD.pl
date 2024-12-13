@@ -176,6 +176,7 @@ function verif_formulaire()
 
 	var yesno = confirm("$__{'Confirm your request'}"+fdtext);
 	if (yesno == true) {
+		\$("#progress").html('<b>Uploaded</b>').css("color", "black");
 		\$('#progress-bar').show();
 		\$('#uploadFile').prop("disabled", true);
 		\$('#save').prop("disabled", true);
@@ -186,7 +187,7 @@ function verif_formulaire()
 			contentType: false,
 			processData: false,
 			type: 'POST',
-			timeout: 2000,
+			timeout: 2 * 60 * 1000,
 			xhr: function() {
 				var xhr = new XMLHttpRequest();
 				xhr.upload.addEventListener("progress", function(evt) {
@@ -203,7 +204,7 @@ function verif_formulaire()
 			//alert(data);
 			location.href = document.referrer;
 		}).fail(function(xhr, status, error) {
-			\$("#progress").html('<b>Upload failed: ' + xhr.status + ' ' + error + '</b>').css("color", "red");
+			\$("#progress").html('<b>Upload failed: ' + (xhr.status >= 100 ? xhr.status + ' ' : '') + error + '</b>').css("color", "red");
 		}).always(function(data) {
 			\$('#progress-bar').hide();
 			\$('#uploadFile').prop("disabled", false);
