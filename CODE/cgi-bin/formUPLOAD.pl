@@ -136,6 +136,7 @@ print <<"FIN";
 <script type="text/javascript">
 \$(document).ready(function(){
 	\$('#uploadFile',\$('#theform')).change(function() {
+		\$("#progress").html('<b>Uploaded</b>').css("color", "black");
 		if (this.files.length > 0) {
 			var l = "<B>Selected :</B> ";
 			\$(this.files).each(function(i) { 
@@ -143,6 +144,7 @@ print <<"FIN";
 			});
 			\$('#multiloadmsg').html(l);
 			\$('#multiloadmsg').css('visibility','visible');
+			\$("#progress").html('Click on save to upload.');
 		} else {
 			\$('#multiloadmsg').css('visibility','hidden');
 		}
@@ -174,18 +176,39 @@ function verif_formulaire()
 
 	var yesno = confirm("$__{'Confirm your request'}"+fdtext);
 	if (yesno == true) {
+		\$('#progress-bar').show();
+		\$('#uploadFile').prop("disabled", true);
+		\$('#save').prop("disabled", true);
 		\$.ajax({
-		   	url: "/cgi-bin/$WEBOBS{CGI_UPLOAD_POST}",
-    		data: fd,
-    		cache: false,
-	    	contentType: false,
-    		processData: false,
-    		type: 'POST',
-	    	success: function(data){
-    	    	alert(data);
-				location.href = document.referrer;
-    		}
-		});
+			url: "/cgi-bin/$WEBOBS{CGI_UPLOAD_POST}",
+			data: fd,
+			cache: false,
+			contentType: false,
+			processData: false,
+			type: 'POST',
+			timeout: 2000,
+			xhr: function() {
+				var xhr = new XMLHttpRequest();
+				xhr.upload.addEventListener("progress", function(evt) {
+					if (evt.lengthComputable) {
+						var percentComplete = evt.loaded / evt.total;
+						console.log(percentComplete);
+						\$('#progress').html('<b> Uploading ' + (Math.round(percentComplete * 100)) + '% </b>');
+						\$('#progress-bar').val(Math.round(percentComplete * 100));
+					}
+				}, false);
+				return xhr;
+			}
+		}).done(function(data) {
+			//alert(data);
+			location.href = document.referrer;
+		}).fail(function(xhr, status, error) {
+			\$("#progress").html('<b>Upload failed: ' + xhr.status + ' ' + error + '</b>').css("color", "red");
+		}).always(function(data) {
+			\$('#progress-bar').hide();
+			\$('#uploadFile').prop("disabled", false);
+			\$('#save').prop("disabled", false);
+		})
 	} else {
 		return;
 	}	
@@ -241,6 +264,8 @@ print "<form id=\"theform\" name=\"formulaire\" action=\"\" ENCTYPE=\"multipart/
 	print "<BR><fieldset><legend style=\"color: black; font-size:8pt\">$__{'Upload new file(s)'} <i><small>Note: $__{'Avoid special characters and spaces in filename'}</small></i></legend>
 	<INPUT type=\"file\" id=\"uploadFile\" name=\"uploadFile\" multiple><BR>
 	<div id=\"multiloadmsg\" style=\"visibility: hidden;color: green;\"></div></P>";
+	print qq(<div id="progress"></div>);
+	print qq(<progress id="progress-bar" value="0" max="100" hidden></progress>);
 	print "</fieldset>";
 
 	print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
@@ -250,7 +275,7 @@ print "<form id=\"theform\" name=\"formulaire\" action=\"\" ENCTYPE=\"multipart/
 
 	print "<p>";
 	print "<input type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-	print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\"></p>";
+	print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\" id=\"save\"></p>";
 print "</form><BR>&nbsp;<BR>";
 
 # ---- We're done with the page
