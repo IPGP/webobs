@@ -644,12 +644,15 @@ foreach (@columns) {
                         my @dim = split(/,/, $size);
                         my $width = ($dim[0] >= 60 && $dim[0] <= 1024 ? $dim[0] : $NODES{THUMBNAILS_PIXV});
                         my $height = ($dim[1] >= 60 && $dim[1] <= 1024 ? $dim[1] : $NODES{THUMBNAILS_PIXV});
-                        my $pathThumb = "/formdocs/$img_id/THUMBNAILS";
+                        my $path = "/formdocs/$img_id";
                         print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&width=$width&height=$height&delay=$default'"
                             type="button"> Upload images or files</button><br><br>);
-                        if ( -e "$WEBOBS{ROOT_DATA}".uc($pathThumb)."/_anim.apng") {
-                            print qq(<img width=$width height=$height src="$pathThumb/_anim.apng"></img>);
+                        if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/_anim.apng") {
+                            print qq(<img width=$width height=$height src="$path/THUMBNAILS/_anim.apng"></img>);
                         }
+                        my $imgdir = "$WEBOBS{ROOT_DATA}".uc($path);
+                        my $nb = qx(ls $imgdir -p | grep -v / | wc -l);
+                        print qq(<input type="hidden" name="$field" value=$nb>\n);
                     } else {
                         print qq(Image upload is available once the form has been submitted.);
                     }
