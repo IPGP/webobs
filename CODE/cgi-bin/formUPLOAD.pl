@@ -119,7 +119,7 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
 # ---- at that point $pathTarget is where uploaded documents will be sent to
 #
 die "$__{'Do not know where to upload'}" if ( $pathTarget eq "" );
-$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || "THUMBNAILS";
+$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || "$NODES{SPATH_THUMBNAILS}";
 make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down THUMBNAILS exist
 (my $urnTarget  = $pathTarget) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
 my @listeTarget = <$pathTarget/*.*> ;

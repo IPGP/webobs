@@ -647,8 +647,8 @@ foreach (@columns) {
                         my $path = "/formdocs/$img_id";
                         print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&width=$width&height=$height&delay=$default'"
                             type="button"> Upload images or files</button><br><br>);
-                        if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/_anim.apng") {
-                            print qq(<img width=$width height=$height src="$path/THUMBNAILS/_anim.apng"></img>);
+                        if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/$NODES{THUMBNAILS_ANIM}") {
+                            print qq(<img width=$width height=$height src="$path/THUMBNAILS/$NODES{THUMBNAILS_ANIM}"></img>);
                         }
                         my $imgdir = "$WEBOBS{ROOT_DATA}".uc($path);
                         my $nb = qx(ls $imgdir -p | grep -v / | wc -l);
