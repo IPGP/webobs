@@ -126,7 +126,7 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
 # ---- at that point $pathTarget is where uploaded documents will be sent to
 #
 htmlMsgNotOK("$__{'Do not know where to upload'}") if ( $pathTarget eq "" );
-$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}";
+$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || "$NODES{SPATH_THUMBNAILS}";
 make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down to PHOTOS/THUMBNAILS exist
 (my $urnTarget  = $pathTarget) =~ s/$WEBOBS{ROOT_SITE}/../g;
 
@@ -172,8 +172,12 @@ while ($ix <= $nb) {
 		if ($?) { htmlMsgNotOK("Couldn't delete $filename; $!") }
 		$progress .= "$filename has been deleted\n"; 
 		if (-e "$pathTarget/$thumbnailsPath/$filename.$NODES{THUMBNAILS_EXT}") {
-			qx(rm "$pathTarget/$thumbnailsPath/$filename.jpg");
+			qx(rm "$pathTarget/$thumbnailsPath/$filename.$NODES{THUMBNAILS_EXT}");
 			if ($?) { htmlMsgNotOK("Couldn't delete $filename.$NODES{THUMBNAILS_EXT} thumbnail; $!") }
+		}
+		if (-e "$pathTarget/$thumbnailsPath/$NODES{THUMBNAILS_ANIM}") {
+			qx(rm "$pathTarget/$thumbnailsPath/$NODES{THUMBNAILS_ANIM}");
+			if ($?) { htmlMsgNotOK("Couldn't delete $NODES{THUMBNAILS_ANIM} thumbnail; $!") }
 		}
 	}
 	$ix++;
