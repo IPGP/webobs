@@ -89,7 +89,7 @@ use WebObs::i18n;
 # (Reminder: we use text/plain as this is an ajax action)
 sub htmlMsgOK {
  	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+	print "$_[0] successfully !\n";
 }
 
 # Return information when not OK
@@ -108,14 +108,14 @@ sub connectDbForms {
 		}) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
 }
 
-sub count_inputs {
-    my $count = 0;
+sub get_inputs {
+    my %inputs;
     foreach(@_) {
         if ($_ =~ /(INPUT[0-9]{2}_NAME)/) {
-            $count += 1;
+           $inputs{$_} = 1;
         }
     }
-    return $count;
+    return %inputs;
 }
 
 # ---- misc inits
@@ -171,8 +171,7 @@ $formConfFile = "$formdir$FORMName.conf";
 my @db_columns0 = ("id integer PRIMARY KEY AUTOINCREMENT", "trash boolean DEFAULT FALSE", "node text NOT NULL",
 		   "edate datetime", "edate_min datetime",
 		   "sdate datetime NOT NULL", "sdate_min datetime",
-		   "operators text NOT NULL");
-my @db_columns1 = ("comment text", "tsupd text NOT NULL", "userupd text NOT NULL");
+		   "operators text NOT NULL, comment text", "tsupd text NOT NULL", "userupd text NOT NULL");
 
 # ---- action is 'save'
 #
@@ -207,7 +206,6 @@ if ($action eq 'save') {
 			my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 
 			my @db_columns = @db_columns0;
-			push(@db_columns, @db_columns1);
 			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
 
 			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
@@ -254,7 +252,6 @@ if ($action eq 'save') {
 			my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 
 			my @db_columns = @db_columns0;
-			push(@db_columns, @db_columns1);
 			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
 
 			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
@@ -265,26 +262,33 @@ if ($action eq 'save') {
 		# now we know if the table exists
 		# we want to look at the modification of $text
 		my @inputs  = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
-		my $newKeys = $#inputs;
-		my $oldKeys = count_inputs(readCfg($formConfFile));
+		my %old_inputs = get_inputs(readCfg($formConfFile));
+		my %new_inputs = map { (split /\|/, $_, 2) } @inputs;
 
-		my $msg;
-		if ($newKeys + 1 > $oldKeys) {
-			$msg = "A new INPUT has been added to the FORM !";
+		foreach (keys %old_inputs) {
+			if (not exists $new_inputs{$_}) {
+				htmlMsgNotOK("You can't remove an INPUT !");
+				exit;
+			}
+		}
 
-			# --- connecting to the database in order to add the new INPUT to the DB 
-			my @db_columns = @db_columns0;
-			push(@db_columns, @db_columns1);
-			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
+		my @new_columns;
+		foreach (keys %new_inputs) {
+			if (not exists $old_inputs{$_}) {
+				push(@new_columns, lc((split '_', $_)[0])." TEXT");
+			}
+		}
 
-			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
-			my $sth = $dbh->prepare( $stmt );
-			my $rv = $sth->execute() or die $DBI::errstr;
-			htmlMsgOK($msg);
-		} elsif ($newKeys + 1 < $oldKeys) {
-			$msg = "You can't remove an INPUT !";
-			htmlMsgNotOK($msg);
-			exit;
+		my $msg = "Update";
+		if (@new_columns) {
+			$msg = "New INPUT has been added to the FORM !";
+
+			# --- connecting to the database in order to add new INPUT to the DB
+			foreach (sort @new_columns) {
+				my $stmt = "ALTER TABLE $tbl ADD COLUMN $_;";
+				my $sth = $dbh->prepare( $stmt );
+				my $rv = $sth->execute() or die $DBI::errstr;
+			}
 		}
 
 		if ($TS0 != (stat("$formConfFile"))[9]) { 
