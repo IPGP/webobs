@@ -398,7 +398,7 @@ foreach(@colnam2) {
 $header .= "</TR>\n";
 
 for (my $j = 0; $j <= $#rows; $j++) {
-	my ($id, $trash, $site, $edate0, $edate1, $sdate0, $sdate1, $opers, $rem, $ts0, $user) = ($rows[$j][0],$rows[$j][1],$rows[$j][2],$rows[$j][3],$rows[$j][4],$rows[$j][5],$rows[$j][6],$rows[$j][7],$rows[$j][-3],$rows[$j][-2],$rows[$j][-1]);
+	my ($id, $trash, $site, $edate0, $edate1, $sdate0, $sdate1, $opers, $rem, $ts0, $user) = ($rows[$j][0],$rows[$j][1],$rows[$j][2],$rows[$j][3],$rows[$j][4],$rows[$j][5],$rows[$j][6],$rows[$j][7],$rows[$j][8],$rows[$j][9],$rows[$j][10]);
 	
 	# makes a hash of all fields values (input and output)
 	my %fields;

@@ -207,8 +207,8 @@ if ($action eq 'save') {
 			my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 
 			my @db_columns = @db_columns0;
-			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
 			push(@db_columns, @db_columns1);
+			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
 
 			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
 			#htmlMsgOK($stmt);
@@ -254,8 +254,8 @@ if ($action eq 'save') {
 			my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 
 			my @db_columns = @db_columns0;
-			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
 			push(@db_columns, @db_columns1);
+			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
 
 			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
 			my $sth = $dbh->prepare( $stmt );
@@ -274,8 +274,8 @@ if ($action eq 'save') {
 
 			# --- connecting to the database in order to add the new INPUT to the DB 
 			my @db_columns = @db_columns0;
-			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
 			push(@db_columns, @db_columns1);
+			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
 
 			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
 			my $sth = $dbh->prepare( $stmt );
