@@ -168,7 +168,7 @@ if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
 my $formdir   = "$WEBOBS{PATH_FORMS}/$FORMName/";			# path to the form configuration file we are creating, editing or deleting
 $formConfFile = "$formdir$FORMName.conf";
 
-my @db_columns0 = ("id integer PRIMARY KEY AUTOINCREMENT", "trash boolean DEFAULT FALSE", "node text NOT NULL",
+my @db_columns0 = ("id integer PRIMARY KEY AUTOINCREMENT", "quality integer" , "trash boolean DEFAULT FALSE", "node text NOT NULL",
 		   "edate datetime", "edate_min datetime",
 		   "sdate datetime NOT NULL", "sdate_min datetime",
 		   "operators text NOT NULL, comment text", "tsupd text NOT NULL", "userupd text NOT NULL");

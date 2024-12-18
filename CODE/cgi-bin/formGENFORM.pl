@@ -103,6 +103,7 @@ my @month   = $cgi->param('month');
 my @day     = $cgi->param('day');
 my @hr      = $cgi->param('hr');
 my @mn      = $cgi->param('mn');
+my $quality = $cgi->param('quality') // 0;
 my $site    = $cgi->param('site');
 my $comment = $cgi->param('comment') // "";
 
@@ -160,14 +161,17 @@ if ($starting_date) {
 my $dbh = connectDbForms();
 my $tbl = lc($form);
 
+# Number of columns in the table without the primary key
+my $ncol = 11;
+
 if ($action eq 'save') {
 	my $msg;
 
 	# ---- filling the database with the data from the form
 	my $row;
 	my $db_columns;
-	$db_columns = "trash, node, edate, edate_min, sdate, sdate_min, operators";
-	$row = "false, \"$site\", \"$edate\", \"$edate_min\", \"$sdate\", \"$sdate_min\", \"".join(",", @operators)."\"";
+	$db_columns = "trash, quality, node, edate, edate_min, sdate, sdate_min, operators";
+	$row = "false, \"$quality\", \"$site\", \"$edate\", \"$edate_min\", \"$sdate\", \"$sdate_min\", \"".join(",", @operators)."\"";
         if ($id ne "") {
 		$db_columns = "id, ".$db_columns;
 		$row = "$id, ".$row;
@@ -405,11 +409,11 @@ if ($action eq "edit") {
 
 	my ($edate, $edate_min, $sdate, $sdate_min, $opers, $ts0, $user);
 	while(my @row = $sth->fetchrow_array()) {
-		($trash, $site, $edate, $edate_min, $sdate, $sdate_min, $opers, $sel_comment, $ts0, $user) = ($row[1], $row[2], $row[3], $row[4], $row[5], $row[6], $row[7], $row[8], $row[9], $row[10]);
+		($trash, $quality, $site, $edate, $edate_min, $sdate, $sdate_min, $opers, $sel_comment, $ts0, $user) = @row[1..$ncol];
 		($sel_y1,$sel_m1,$sel_d1,$sel_hr1,$sel_mn1) = datetime2array($sdate, $sdate_min);
 		($sel_y2,$sel_m2,$sel_d2,$sel_hr2,$sel_mn2) = datetime2array($edate, $edate_min);
 		@operators = split(/,/,$opers);
-		for (my $i = 11; $i <= $#row; $i++) {
+		for (my $i = $ncol+1; $i <= $#row; $i++) {
 		    $prev_inputs{$colnam[$i]} = $row[$i];
 		}
 	}
