@@ -1,7 +1,8 @@
-A GRID is a group or network of elementary NODES. Each NODE can be associated to one or multiple GRIDS. There is two kind of GRIDS:
+A GRID is a group or network of elementary NODES. Each NODE can be associated to one or multiple GRIDS. There is three types of GRIDS:
 <ul>
-<li>A VIEW is a list of NODES we simply want to group to be seen or accessed together,</li>
-<li>PROC is a list of NODES associated to a common data processing that produces outputs (graphs
-and/or elaborated data), and/or optional editable data FORMS.</li>
+<li>a VIEW is a list of NODES we simply want to group to be seen or accessed together,</li>
+<li>a PROC is a list of NODES associated to a common data processing that produces outputs (graphs
+and/or elaborated data),</li>
+<li>a FORM is a list of NODES with manual data in an editable database.</li>
 </ul>
 
