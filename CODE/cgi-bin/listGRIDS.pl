@@ -6,12 +6,12 @@ listGRIDS.pl
 
 =head1 SYNOPSIS
 
-http://..../listGRIDS.pl[?type={all | view | proc | sefran}][&domain=domspec]
+http://..../listGRIDS.pl[?type={all | view | proc | form | sefran}][&domain=domspec]
 
 =head1 DESCRIPTION
 
 Displays GRIDS names and summary (specifications), grouped by DOMAINS, themselves ordered by their OOA (Order Of Appearance).
-Default, when no type= specified, is to display all GRIDS (VIEWS, PROCS and SEFRAN)
+Default, when no type= specified, is to display all GRIDS (VIEWS, PROCS, FORMS, and SEFRAN)
 
 =head1 Query string parameters
 
@@ -19,7 +19,7 @@ Default, when no type= specified, is to display all GRIDS (VIEWS, PROCS and SEFR
 
 =item B<type={all | view | proc | sefran}>
 
-list B<all> GRIDS or B<view>s only or B<proc>s only or B<sefran>s only
+list B<all> GRIDS or B<view>s only or B<proc>s only or B<form>s only or B<sefran>s only
 
 =item B<domain=domspec>
 
@@ -61,9 +61,10 @@ my $GRIDName = my $GRIDType = my $RESOURCE = "";
 
 my $subsetDomain = checkParam(scalar($cgi->param('domain')), qr/^[a-zA-Z0-9_-]*$/, "domain")  // "";
 my $subsetType = checkParam(scalar($cgi->param('type')), qr/^[a-zA-Z0-9_-]*$/, "type") // "all";
-   $subsetType = 'all' if ( $subsetType ne 'proc' && $subsetType ne 'view' && $subsetType ne 'sefran');
+   $subsetType = 'all' if ( $subsetType ne 'proc' && $subsetType ne 'form' && $subsetType ne 'view' && $subsetType ne 'sefran');
 my $wantViews   = ($subsetType eq 'all' || $subsetType eq 'view')   ? 1 : 0;
 my $wantProcs   = ($subsetType eq 'all' || $subsetType eq 'proc')   ? 1 : 0;
+my $wantForms   = ($subsetType eq 'all' || $subsetType eq 'form')   ? 1 : 0;
 my $wantSefrans = ($subsetType eq 'all' || $subsetType eq 'sefran') ? 1 : 0;
 
 my $showType = (defined($GRIDS{SHOW_TYPE}) && ($GRIDS{SHOW_TYPE} eq 'N')) ? 0 : 1;
@@ -75,6 +76,7 @@ my $htmlcontents = "";
 my $editOK   = 0;
 my $admVIEWS = 0;
 my $admPROCS = 0;
+my $admFORMS = 0;
 my $descGridType = my $descGridName = my $descLegacy = "";
 
 
@@ -105,7 +107,7 @@ sub getDomains {
 
 sub getDomainGrids {
 	# Return the list of names of grids from the grids2domains table
-	# for the provided type ('PROC' or 'VIEW') and domain code.
+	# for the provided type ('PROC', 'FORM' or 'VIEW') and domain code.
 	# Returns a reference to a list of grid names.
 	my $dbh = shift;
 	my $type = shift;
@@ -121,6 +123,13 @@ sub getDomainProcs {
 	my $dbh = shift;
 	my $domain_code = shift;
 	return getDomainGrids($dbh, 'PROC', $domain_code);
+}
+
+sub getDomainForms {
+	# Return the list of forms for a domain using getDomainGrids
+	my $dbh = shift;
+	my $domain_code = shift;
+	return getDomainGrids($dbh, 'FORM', $domain_code);
 }
 
 sub getDomainViews {
@@ -146,25 +155,31 @@ if ($subsetDomain ne '') {
 		case 'all' { $descGridName = 'ALL'; }
 		case 'view' { $descGridName = 'VIEWS'; $descLegacy = 'VIEW.VIEWS'; }
 		case 'proc' { $descGridName = 'PROCS'; $descLegacy = 'PROC.PROCS'; };
+		case 'form' { $descGridName = 'FORMS'; $descLegacy = 'FORM.FORMS'; };
 	}
 }
 
-# creation of new view or proc is allowed only if the user has admin authorization for ALL grids (views and/or procs)
+# creation of new view, proc or form is allowed only if the user has admin authorization for ALL grids (views and/or procs and/or forms)
 $admVIEWS = 1 if ( WebObs::Users::clientHasAdm(type=>"authviews",name=>"*") );
 $admPROCS = 1 if ( WebObs::Users::clientHasAdm(type=>"authprocs",name=>"*") );
+$admFORMS = 1 if ( WebObs::Users::clientHasAdm(type=>"authforms",name=>"*") );
 
-# content edition is allowed only if the user has edit authorization for ALL grids (views and procs)
-$editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"authviews",name=>"*") && WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*") );
+# content edition is allowed only if the user has edit authorization for ALL grids (views, forms and procs)
+$editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"authviews",name=>"*")
+              && WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*")
+			  && WebObs::Users::clientHasEdit(type=>"authforms",name=>"*") );
 
 # Regroup all database queries here for optimisation
 my $dbh = connectDbDomains();
 my $domains = getDomains($dbh, $subsetDomain);
 my %domainProcs   = map(($_->[0] => []), @$domains);
+my %domainForms   = map(($_->[0] => []), @$domains);
 my %domainViews   = map(($_->[0] => []), @$domains);
 my %domainSefrans = map(($_->[0] => []), @$domains);
 for my $d (@$domains) {
 	my ($code, $name) = @$d;
 	push @{$domainProcs{$code}},   @{getDomainProcs($dbh, $code)}   if $wantProcs;
+	push @{$domainForms{$code}},   @{getDomainForms($dbh, $code)}   if $wantForms;
 	push @{$domainViews{$code}},   @{getDomainViews($dbh, $code)}   if $wantViews;
 	push @{$domainSefrans{$code}}, @{getDomainSefrans($dbh, $code)} if $wantSefrans;
 }
@@ -196,6 +211,7 @@ print "<H1 style=\"margin-bottom:6px\">";
 	print "$GRIDS{SHOW_GRIDS_TITLE}\n" if ($subsetType eq 'all');
 	print "Views" if ($subsetType eq 'view');
 	print "Procs" if ($subsetType eq 'proc');
+	print "Forms" if ($subsetType eq 'form');
 	print "Sefrans" if ($subsetType eq 'sefran');
 print "</H1>\n";
 
@@ -204,6 +220,7 @@ print "</H1>\n";
 print "<P>»» [ <A href=\"/cgi-bin/vsearch.pl\"><IMG src=\"/icons/rsearch.png\" border=0 title=\"Search node's events\"></A> All";
 print " ".($subsetType ne 'all' || $subsetDomain ne '' ? "<A href=\"$me\">Grids</A>":"<B>Grids</B>");
 print " | ".($subsetType ne 'proc' || $subsetDomain ne '' ? "<A href=\"$me?type=proc\">Procs</A>":"<B>Procs</B>");
+print " | ".($subsetType ne 'form' || $subsetDomain ne '' ? "<A href=\"$me?type=form\">Forms</A>":"<B>Forms</B>");
 print " | ".($subsetType ne 'view' || $subsetDomain ne '' ? "<A href=\"$me?type=view\">Views</A>":"<B>Views</B>");
 print " | ".($subsetType ne 'sefran' || $subsetDomain ne '' ? "<A href=\"$me?type=sefran\">Sefrans</A>":"<B>Sefrans</B>");
 if ($subsetDomain eq '') {
@@ -213,6 +230,7 @@ if ($subsetDomain eq '') {
 	print " - $DOMAINS{$subsetDomain}{NAME}";
 	print " ".($subsetType ne 'all' ? "<A href=\"$me?domain=$subsetDomain\">Grids</A>":"<B>Grids</B>");
 	print " | ".($subsetType ne 'proc' ? "<A href=\"$me?domain=$subsetDomain&type=proc\">Procs</A>":"<B>Procs</B>");
+	print " | ".($subsetType ne 'form' ? "<A href=\"$me?domain=$subsetDomain&type=form\">Forms</A>":"<B>Forms</B>");
 	print " | ".($subsetType ne 'view' ? "<A href=\"$me?domain=$subsetDomain&type=view\">Views</A>":"<B>Views</B>");
 	print " | ".($subsetType ne 'sefran' ? "<A href=\"$me?domain=$subsetDomain&type=sefran\">Sefrans</A>":"<B>Sefrans</B>");
 }
@@ -249,7 +267,7 @@ print "<div id=\"noscrolldiv\">";
 		}
 		print "<TH>Grid</TH>" if ($subsetType ne "");
 		print "<TH><a href='#popupY' title=\"$__{'Find text in Grids'}\" onclick='srchopenPopup(\"*ALL\");return false'><img class='ic' src='/icons/search.png'></a>";
-		if ($admVIEWS || $admPROCS) {
+		if ($admVIEWS || $admPROCS || $admFORMS) {
 			print "&nbsp;<a href='#popupY' title=\"$__{'Edit/Create a Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/modif.png'></a>"
 		}
 		print     "&nbsp;&nbsp;&nbsp;Name</TH>";
@@ -274,6 +292,12 @@ print "<div id=\"noscrolldiv\">";
                               @{$domainProcs{$dc}});
 			}
 			my $np = scalar(@procs);
+			my @views;
+			if ($wantForms) {
+				@views = grep(WebObs::Users::clientHasRead(type=>"authforms", name=>$_),
+                              @{$domainForms{$dc}});
+			}
+			my $nf = scalar(@forms);
 			my @views;
 			if ($wantViews) {
 				@views = grep(WebObs::Users::clientHasRead(type=>"authviews", name=>$_),
