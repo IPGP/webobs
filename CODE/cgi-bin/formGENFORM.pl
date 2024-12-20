@@ -271,12 +271,8 @@ function update_form()
 ];
 foreach my $f (@formulas) {
 	my ($formula, $size, @x) = extract_formula($FORM{$f."_TYPE"});
-	# any word followed by an open parenthesis is supposed to be a Math function...
-	$formula =~ s/(\w+\()/Math.$1/g;
-	$formula =~ s/\b(pi)\b/Math.PI/ig;
-	foreach my $fcn ( 'mean', 'median', 'std', 'min', 'max', 'sum' ) {
-		$formula =~ s/Math.$fcn/math.$fcn/g;
-	}
+	# any word followed by an open parenthesis is supposed to be a math function (see math.js)...
+	$formula =~ s/(\w+\()/math.$1/g;
 	foreach (@x) {
 		my $form_input = lc($_);
 		$formula =~ s/$_/Number(form.$form_input.value)/g;
