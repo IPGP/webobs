@@ -274,6 +274,8 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 		$htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$_\"><B>$DOMAINS{$_}{NAME}</B></A></LI>\n";
 	}
 	# -----------
+	$htmlcontents .= "<LI>$__{'Description'}: <I>$GRID{DESCRIPTION}</I></LI>\n" if ($GRID{DESCRIPTION});
+	# -----------
 	$htmlcontents .= "<LI>$__{'Grid code'}: <B>$grid</B></LI>\n";
     # -----------
 	if ($showOwnr && defined($GRID{OWNCODE})) {
@@ -611,22 +613,13 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 
 				# Node's proc parameters
 				if ($usrProcparam eq 'on') {
-					my $clbFile = "$NODES{PATH_NODES}/$NODEName/$grid.$NODEName.clb";
-					$clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb" if ( ! -e $clbFile ); # for backwards compatibility
 					$htmlcontents .= "<TD align=\"center\"><SPAN class=\"code\">".($NODE{"$grid.FID"} ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>"
 						."<TD align=\"center\">".($NODE{"$grid.RAWFORMAT"} ? $NODE{"$grid.RAWFORMAT"}
 							: ($NODE{RAWFORMAT} ? $NODE{RAWFORMAT} : ($GRID{RAWFORMAT} // '')))."</TD>"
 						."<TD align=\"center\">";
-					if ( -s $clbFile ) {
-						# if a calibration file exists, reads it and count the number of channels
-						my @carCLB = readCfgFile($clbFile);
-						my %chan;
-						for (@carCLB) {
-							my (@chpCLB) = split(/\|/,$_);
-							$chan{$chpCLB[2]} = $chpCLB[3];
-						}
-						$htmlcontents .= "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">".(keys(%chan))."</A>";
-					}
+					my %carCLB = readCLB("$grid.$NODEName");
+					my $maxchid = ( sort { $carCLB{$a}{"nv"} <=> $carCLB{$b}{"nv"} } keys %carCLB )[-1];
+					$htmlcontents .= "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">".$carCLB{$maxchid}{"nv"}."</A>";
 					$htmlcontents .= "</TD>";
 				}
 				if ($procOUTG) {

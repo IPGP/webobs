@@ -172,8 +172,7 @@ fi
 
 # Abort if the current branch is not master
 if [[ $(git rev-parse --abbrev-ref HEAD) != "master" ]]; then
-  log_err "the current branch is not 'master'. Exiting."
-  exit 1
+  echo "WARNING: The current branch is not 'master'."
 fi
 
 # Abort if release-name.tar.gz is already present

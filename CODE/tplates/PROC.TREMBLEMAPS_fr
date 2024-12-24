@@ -4,8 +4,12 @@
 # in associated NODE's RAWFORMAT field
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/tremblemaps.m for further information.
 
-# long name of the PROC
-NAME|Rapports séisme ressenti B3 (FR)
+# name of the PROC
+NAME|Rapports séisme ressenti B3
+
+# description of what the proc does
+DESCRIPTION|Rapports séisme ressenti B3 (FR)
+
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 RAWFORMAT|quakes
 TYPE|
