@@ -379,7 +379,7 @@ print "Content-type: text/html; charset=utf-8
 <TITLE>Event Edit</TITLE>
 </HEAD>
 <BODY style=\"background-color:#E0E0E0\" onLoad=\"document.theform.contents.focus()\">
-<script type=\"text/javascript\" src=\"/js/jquery-1.8.2.min.js\"></script>
+<script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- markitup -->
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>
 <script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>

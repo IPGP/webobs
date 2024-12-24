@@ -31,6 +31,7 @@ my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 $CGI::POST_MAX = 1024 * 1000;
 use feature 'say';
+use DBI;
 
 # ---- webobs stuff
 use WebObs::Config;
@@ -42,6 +43,9 @@ use WebObs::Utils;
 my $QryParm  = $cgi->Vars;
 my @nodes    = split(/,/, $QryParm->{'nodes'});
 my @channels = split(/,/, $QryParm->{'channels'});
+my @allChannels = split(/,/, $QryParm->{'allChannels'});
+
+print CGI::header();
 
 # ---- local functions
 #
@@ -49,15 +53,12 @@ my @channels = split(/,/, $QryParm->{'channels'});
 # Return information when OK
 # (Reminder: we use text/plain as this is an ajax action)
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
-	exit;
+	print "$_[0] successfully !\n";
 }
 # Return information when not OK
 # (Reminder: we use text/plain as this is an ajax action)
 sub htmlMsgNotOK {
 	close(FILE);
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
  	print "(create/)update FAILED !\n $_[0] \n";
 	exit;
 }
@@ -81,6 +82,33 @@ if ( sysopen(FILE, "$filename", O_RDWR | O_CREAT) ) {
 } else { htmlMsgNotOK("$filename $!") }
 
 htmlMsgOK("$filename has been edited !");
+
+
+# ---- connecting to the database
+my $driver   = "SQLite";
+my $database = $WEBOBS{SQL_METADATA};
+my $dsn = "DBI:$driver:dbname=$database";
+my $userid = "";
+my $password = "";
+my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+			or die "Couldn't connect to database: " . DBI->errstr;
+
+foreach (@allChannels) {
+	my ($ch, $level, $theia) = split(/\|/, $_);
+	my $stmt  = "UPDATE observations SET processinglevel = '$level' WHERE identifier = '$ch'";
+	$stmt  = qq($stmt);
+	my $sth   = $dbh->prepare( $stmt );
+	my $rv    = $sth->execute() or die DBI->errstr;
+
+	my $name = (split /_/, $ch)[-1];
+	my $stmt  = "UPDATE observed_properties SET theiacategories = '$theia' WHERE identifier = '$name'";
+	$stmt  = qq($stmt);
+	my $sth   = $dbh->prepare( $stmt );
+	my $rv    = $sth->execute() or die DBI->errstr;
+}
+
+$dbh->disconnect();
+
 
 __END__
 

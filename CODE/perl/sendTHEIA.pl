@@ -35,6 +35,7 @@ my $filename = "$WEBOBS{CONF_THEIA}";
 my %conf = readCfg($filename);
 my @nodes = split(/,/, $conf{NODES});
 my @channels = split(/,/, $conf{CHANNELS});
+my $GRIDType = "PROC";  # grid type ("PROC" in the THEIA case use)
 
 # ---- connecting to the database
 my $driver   = "SQLite";
@@ -242,7 +243,7 @@ foreach (@channels) {
 		$header .= "#Variable_name;".$row[5].";\n";
 		$header .= "dateBeg;dateEnd;latitude;longitude;altitude;value;qualityFlags;\n";
 		# ---- content
-		my $content = "grep -v '^#' $filepath$dataname | awk 'FS=\" \" {print \";\"\$1\"-\"\$2\"-\"\$3\"T\"\$4\":\"\$5\"Z\",\"$lat\",\"$lon\",\"$alt\",\$$chan_nb\";\"}' OFS=\";\"";
+		my $content = "grep -v '^#' $filepath$dataname | awk 'FS=\" \" {print \";\"\$1\"-\"\$2\"-\"\$3\"T\"\$4\":\"\$5\":\"\$6\"Z\",\"$lat\",\"$lon\",\"$alt\",\$$chan_nb\";\"}' OFS=\";\"";
 		$content = qx($content);
 		$header .= $content;
 		open(FILE, '>', $obsfile);
@@ -280,7 +281,13 @@ foreach (@nodes) {
 	$rv = $sth->execute() or die $DBI::errstr;
 
 	while( my @row = $sth->fetchrow_array() ) {
-		my $topicCategories = (split '_', $row[3])[0];
+		my $datasetId = (split /_DAT_/, $row[0]) [1];
+		(my $GRIDName, my $NODEName) = (split /\./, $datasetId);
+		my %S = readNode($NODEName, "novsub");
+		my %NODE = %{$S{$NODEName}};
+		my $desc = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
+
+		my $topicCategories = (split '_', $row[2])[0];
 		my @topicCategories;
 		foreach(split('_,', $topicCategories)) {
 			my $category = (split(':', $_))[1];
@@ -288,8 +295,8 @@ foreach (@nodes) {
 			push(@topicCategories, $category);
 		}
 		my %geometry = (
-			type => JSON->new->utf8->decode($row[4])->{'type'},
-			coordinates => JSON->new->utf8->decode($row[4])->{'coordinates'}
+			type => JSON->new->utf8->decode($row[3])->{'type'},
+			coordinates => JSON->new->utf8->decode($row[3])->{'coordinates'}
 		);
 		my %spatialExtent = (
 			type => "Feature",
@@ -303,14 +310,15 @@ foreach (@nodes) {
 
 		my %metadata = (
 			title => decode("utf8", $row[1]),
-			description => decode("utf8", $row[2]),
-			datasetLineage => $row[5],
+			datasetLineage => $row[4],
 			dataConstraint => \%dataConstraint,
 			topicCategories => \@topicCategories,
-			inspireTheme => (split '_inspireTheme:', $row[3])[1],
+			inspireTheme => (split '_inspireTheme:', $row[2])[1],
 			spatialExtent => \%spatialExtent,
 		);
 		$metadata{'inspireTheme'} =~ s/(\r\n)//g;
+		$metadata{'description'} = $desc;
+
 		my %dataset = (
 			datasetId => $row[0],
 		);
@@ -432,7 +440,7 @@ if ( $output =~ /success/ ) {
 	my $url = "https://in-situ.theia-land.fr/data/$producerId/new/";
 	my $password = $WEBOBS{PASSWORD_THEIA};
 	my $response = qx(curl -T "$theiadir/$zipfile" -u $producerId:$password -s -o /dev/null -w "%{http_code}" $url);
-	if ( $response eq "200" ) {
+	if ( rindex($response,"2", 0) eq 0 ) {
 		print "Data upload successful. Data are available at https://in-situ.theia-land.fr/data/OBSE/previous/", "\n";
 	}
 	else {

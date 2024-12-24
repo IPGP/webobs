@@ -4,8 +4,12 @@
 # in associated NODE's RAWFORMAT field
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/hypomap.m for further information.
 
-# long name of the PROC
-NAME|Earthquake hypocenter maps from seismic catalog
+# name of the PROC
+NAME|Seismicity
+
+# description of what the proc does
+DESCRIPTION|Earthquake hypocenter maps from seismic catalog
+
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 RAWFORMAT|quakes
 TYPE|

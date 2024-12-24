@@ -2,8 +2,12 @@
 # RSAM PROC template
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/rsam.m for further information.
 
-# long name of the PROC
-NAME|Realtime Seismic Amplitude Measurement
+# name of the PROC
+NAME|RSAM
+
+# description of what the proc does
+DESCRIPTION|RSAM time series and source location maps
+
 # proc TYPE and OWNER
 TYPE|
 OWNCODE|?

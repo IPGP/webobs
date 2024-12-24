@@ -243,10 +243,9 @@ if($rv < 0) {
 
 while(my @row = $sth->fetchrow_array()) {
 	$usrProducer = (split /_/, $row[0])[0];
-	$usrDesc     = $row[2];
-	$usrTheme    = (split /:|_/, $row[3])[3];
-	push(@usrTopic, split(/,/, (split /:|_/, $row[3])[1]));
-	$usrLineage  = $row[5];
+	$usrTheme    = (split /:|_/, $row[2])[3];
+	push(@usrTopic, split(/,/, (split /:|_/, $row[2])[1]));
+	$usrLineage  = $row[4];
 }
 
 # ---- load the database information if NODE is already filled out in the contacts table
@@ -281,10 +280,10 @@ my @yearListE = reverse($WEBOBS{BIG_BANG}..$currentYear+1,'');
 my @monthList = ('','01'..'12');
 my @dayList = ('','01'..'31');
 
-my $text = "<B>$NODE{ALIAS}: $NODE{NAME}</B><BR>"
+my $text = "<div style=\"text-align:center\"><B>$NODE{NAME}</B><BR>"
 	.($NODE{TYPE} ne "" ? "<I>($NODE{TYPE})</I><br>":"")
 	."&nbspfrom <B>$NODE{INSTALL_DATE}</B>".($NODE{END_DATE} ne "NA" ? " to <B>$NODE{END_DATE}</B>":"")."<br>"
-	."&nbsp;<B>$NODE{LAT_WGS84}&deg;</B>, <B>$NODE{LON_WGS84}&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
+	."&nbsp;<B>$NODE{LAT_WGS84}&deg;</B>, <B>$NODE{LON_WGS84}&deg;</B>, <B>$NODE{ALTITUDE} m</B></div>";
 $text =~ s/\"//g;  # fix ticket #166
 
 # ---- Preparing geojson related variables
@@ -1204,9 +1203,16 @@ print "<TR>";
 				var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
 				var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
 
-				map.flyTo([lat, lon], 18);
+				map.setView([lat, lon]);
+				map.flyTo([lat, lon], 14, {
+					animate: false,
+					//animate: true,
+					//duration: 1
+				});
+
 				var marker = L.marker([lat, lon]).addTo(map);
 				marker.bindPopup(\"$text\").openPopup();
+				L.control.scale().addTo(map);
 			}
 			
 			var layerControl = L.control.layers(basemaps, overlays).addTo(map);
@@ -1309,14 +1315,13 @@ FIN
 		# --- CHANNEL_LIST
 		print "<TD rowspan=2 style=\"border:0;text-valign:top\">";
 		print "<LABEL for=\"chanlist\">$__{'Channel list'}: </LABEL>";
-		my @carCLB = readCLB("$GRIDType.$GRIDName.$NODEName");
-		if (@carCLB) {
+		my %carCLB = readCfg("$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb");
+		if (%carCLB) {
 			my @select = split(/,/,$usrCHAN);
 			# make a list of available channels and label them with last Chan. + Loc. codes
 			my %chan;
-			for (@carCLB) {
-				my (@chpCLB) = @{$_};
-				$chan{$chpCLB[2]} = "$chpCLB[3] ($chpCLB[6] $chpCLB[19])";
+			foreach my $k (keys %carCLB) {
+				$chan{$k} = "$carCLB{$k}{'nm'} ($carCLB{$k}{'cd'} $carCLB{$k}{'lc'})";
 			}
 			print "<SELECT name=\"chanlist\" multiple size=\"5\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_chanlist}')\" id=\"chanlist\">";
 			for (sort{ $a <=> $b } (keys(%chan))) {

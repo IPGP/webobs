@@ -37,19 +37,20 @@ set_message(\&webobs_cgi_msg);
 $ENV{LANG} = $WEBOBS{LOCALE};
 
 # ---- inits
-my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
+my $GRIDName = my $GRIDType = my $NODEName = my $RESOURCE = "";
 my %NODE;
 my %GRID;
 my $fileDATA = "";
 my %CLBS;
-my @fieldCLB;
+my %fieldCLB;
 my @donnees;
 
-my $Ctod  = time();  my @tod  = localtime($Ctod);
+my $Ctod = time();
+my @tod = localtime($Ctod);
 my $today = strftime('%F',@tod);
 
 my $QryParm = $cgi->Vars;
-$QryParm->{'node'}   //= "";
+$QryParm->{'node'} //= "";
 
 # ---- can we ? should we ? do we have all we need ?
 #
@@ -67,7 +68,7 @@ if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
 		if (%NODE) {
 			$fileDATA = "$NODES{PATH_NODES}/$NODEName/$QryParm->{'node'}.clb";
 			%CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
-			@fieldCLB = readCfg($CLBS{FIELDS_FILE});
+			%fieldCLB = readCfg($CLBS{FIELDS_FILE}, "sorted");
 		} else { htmlMsgNotOK("Couldn't get $QryParm->{'node'} node configuration."); exit 1; }
 	} else { htmlMsgNotOK("no node specified. "); exit 1; }
 } else { htmlMsgNotOK("You can't edit calibration files !"); exit 1; }
@@ -75,6 +76,13 @@ if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
 my $nb      = $cgi->param('nb');
 my $nbc     = $cgi->param('nbc');
 my $action  = $cgi->param('action');
+
+my @params;
+foreach my $k (sort { $fieldCLB{$a}{'_SO_'} <=> $fieldCLB{$b}{'_SO_'} } keys %fieldCLB) {
+	push(@params, $k);
+}
+my $params_str = join '|', @params;
+my $max_index = scalar(keys %fieldCLB);
 
 # ---- build data file from querystring !
 
@@ -89,7 +97,7 @@ for my $i ("1"..$nb) {
 	my $h = $cgi->param('h'.$i);
 	my $n = $cgi->param('n'.$i);
 	$dh[$i-1] = "$h:$n";
-	for my $j ("1"..($#fieldCLB-1)) {
+	for my $j ("1"..$max_index-2) {
 		$dv[$i-1][$j-1] = $cgi->param('v'.$i.'_'.$j);
 	}
 	$ds[$i-1] = $cgi->param('s'.$i);
@@ -102,9 +110,9 @@ for ("1"..$nb) {
 	my $i = ($_-1);
 	my $ligne = "$dd[$i]|$dh[$i]";
 	if ($nbc >= 10) {
-		$dv[$i][0] = sprintf("%02d",$dv[$i][0]);
+		$dv[$i][0] = sprintf("%02d", $dv[$i][0]);
 	}
-	for ("0"..($#fieldCLB-2)) {
+	for ("0"..$max_index-3) {
 		$ligne .= "|$dv[$i][$_]";
 	}
 	if (($action eq "delete" && $ds[$i] ne "") || $dv[$i][0] > $nbc) {
@@ -117,57 +125,56 @@ for ("1"..$nb) {
 		$modify = 1;
 	}
 }
+
 if ($nbc > $maxc) {
 	for (($maxc+1)..$nbc) {
 		my $s = $today;
-		$s .= "|$fieldCLB[1][1]|$_";
-		for (3..($#fieldCLB)) {
-			switch ($_) {
-				case 13 { $s .= "|$NODE{LAT_WGS84}" }
-				case 14 { $s .= "|$NODE{LON_WGS84}" }
-				case 15 { $s .= "|$NODE{ALTITUDE}" }
-				else    { $s .= "|$fieldCLB[$_][1]" }
-			}
+		$s .= "|$fieldCLB{'TIME'}{'Default'}|$_";
+		foreach my $k ( @params ) {
+			if    ($k eq "la") { $s .= "|$NODE{LAT_WGS84}" }
+			elsif ($k eq "lo") { $s .= "|$NODE{LON_WGS84}" }
+			elsif ($k eq "al") { $s .= "|$NODE{ALTITUDE}" }
+			elsif (not $k ~~ ["DATE", "TIME", "nv"]) { $s .= "|$fieldCLB{$k}{'Default'}" }
 		}
+
 		push(@donnees,"$s\n");
 	}
 	$nb = $#donnees + 1;
-	@donnees = sort(@donnees);
 	$modify = 1;
 }
 
+@donnees = sort(@donnees);
+
 # stamp (date and staff)
 my $stamp  = "[$today $USERS{$CLIENT}{UID}]";
-my $entete = "# WebObs - $WEBOBS{WEBOBS_ID} : calibration file $QryParm->{'node'}\n# $stamp\n";
+my $entete = "# WebObs - $WEBOBS{WEBOBS_ID} : calibration file $QryParm->{'node'}\n# $stamp\n=key|$params_str\n";
 
 # ---- looking after THEIA user flag
 my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
 
-if ( isok($theiaAuth)) {
+if ( isok($theiaAuth) ) {
 	# --- connecting to the database
 	my $driver   = "SQLite";
 	my $database = $WEBOBS{SQL_METADATA};
 	my $dsn = "DBI:$driver:dbname=$database";
 	my $userid = "";
 	my $password = "";
-	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-	   or die $DBI::errstr;
-	
+	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+
 	# reading the NODEName dataset row to get the producer id
 	my $stmt = qq(SELECT identifier FROM datasets WHERE identifier LIKE "\%$GRIDName.$NODEName");
 	my $sth = $dbh->prepare( $stmt );
 	my $rv = $sth->execute() or die $DBI::errstr;
 
 	if($rv < 0) {
-	   print $DBI::errstr;
+		print $DBI::errstr;
 	}
 
 	my $producerId;
-
 	while( my @row = $sth->fetchrow_array() ) {
 		$producerId = (split /_/, $row[0])[0];
 	}
-		
+
 	my $station   = $GRIDName.'.'.$NODEName;
 	my $dataset   = "$producerId\_DAT_$GRIDName.$NODEName";
 	my $dataname  = "$producerId\_OBS_$GRIDName.$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
@@ -180,12 +187,13 @@ if ( isok($theiaAuth)) {
 		my $id    = $obs[3];
 		my $name  = $obs[3];
 		my $unit  = $obs[4];
-		my $theia = $obs[$#obs];
 		my $chan  = $obs[2];
-		if ( $theia =~ /^\s*$/ ) {
-			htmlMsgNotOK("Theia category cannot be empty.");
-			exit 1;
-		}
+		my $theia = "";
+
+		my $stmt2  = "SELECT theiacategories FROM observed_properties WHERE name='$name'";
+		my $sth2   = $dbh->prepare( qq($stmt2) );
+		my $rv2  = $sth2->execute();
+		while(my @row = $sth2->fetchrow_array()) { $theia = $row[0]; }
 
 		# observations table
 		my $obsid        = "$producerId\_OBS_$GRIDName.$NODEName\_$id";
@@ -194,7 +202,7 @@ if ( isok($theiaAuth)) {
 		my $first_hour   = $first_date[3] || "00";
 		my $first_minute = $first_date[4] || "00";
 		my $first_second = $first_date[5] || "00";
-		   
+
 		# read data file to know end date of observations
 		$filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$extension";
 		if ( -e $filepath) {
@@ -210,7 +218,7 @@ if ( isok($theiaAuth)) {
 			my $first_minute = $first_date[4] || "00";
 			my $first_second = $first_date[5];
 			if ($first_second =~ /./) { $first_second = "00" };
-				
+
 			my $last_year   = $last_date[0];
 			my $last_month  = $last_date[1];
 			my $last_day    = $last_date[2];
@@ -222,13 +230,13 @@ if ( isok($theiaAuth)) {
 			my $first_obs_date = "$first_year-$first_month-$first_day\T$first_hour:$first_minute:$first_second\Z";
 			my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
 			my $obs_date = "$first_obs_date/$last_obs_date";
-				
+
 			# --- completing observed_properties table
 			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES,CHANNEL_NB) VALUES (?,?,?,?,?);');
 			$sth->execute($id, $name, $unit, $theia, $chan);
-				
-			my $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
-			$sth->execute($obsid,$obs_date,$station,$id,$dataset,$dataname);
+
+			$sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
+			$sth->execute($obsid, $obs_date, $station, $id, $dataset, $dataname);
 		} else {
 			#htmlMsgFileNotOK("$filepath does not exists (yet) !");
 			#exit 1;
@@ -247,12 +255,14 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 	# ---- backup file (To Be Removed: lifecycle too short to be used )
 	if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
 	# ---- rewrite all file from previously built '@donnees'
-	if ( $?  == 0 ) {
+	if ( $? == 0 ) {
 		truncate(FILE, 0);
 		seek(FILE, 0, SEEK_SET);
 		print FILE $entete if (@donnees);
+		my $id = 1;
 		for (@donnees) {
-			print FILE u2l("$_");
+			print FILE u2l("$id|$_");
+			$id++;
 		}
 		close(FILE);
 		if ($nbc == $maxc && $modify == 0) { htmlMsgOK(); }
@@ -276,8 +286,8 @@ sub htmlMsgOK {
 
 # --- return information when not OK
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	print "Update FAILED !\n $_[0] \n";
 }
 
 # --- return information when not OK
@@ -305,10 +315,10 @@ the Free Software Foundation, either version 3 of the License, or
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 =cut

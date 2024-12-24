@@ -241,7 +241,7 @@ print <<"EOHEADER";
 <link rel="stylesheet" type="text/css" href="/css/transit.css">
 <link rel="stylesheet" type="text/css" href="/css/scheduler.css">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
-<script language="JavaScript" src="/js/flot/jquery.flot.js" type="text/javascript"></script>
+<script language="JavaScript" src="/js/flot/jquery.flot.min.js" type="text/javascript"></script>
 <script language="JavaScript" src="/js/scheduler.js" type="text/javascript"></script>
 <script language="JavaScript" src="/js/htmlFormsUtils.js" type="text/javascript"></script>
 EOHEADER

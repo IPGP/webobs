@@ -43,7 +43,7 @@ function X=readcfg(varargin);
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2022-11-26
+%   Updated: 2024-12-02
 
 if nargin > 0 && isstruct(varargin{1})
 	WO = varargin{1};
@@ -125,9 +125,12 @@ if ~isoctave
 	sraw = regexprep(sraw,'\\(\r\n|\n)\s*','');
 end
 
-s = textscan(sraw,'%s','CommentStyle','#','Delimiter','\n');
-
-df = [];
+X = struct;
+s{1} = [];
+df{1} = [];
+if ~isempty(sraw)
+	s = textscan(sraw,'%s','CommentStyle','#','Delimiter','\n');
+end
 
 for i = 1:size(s{:},1)
 	ss = s{1}{i};
@@ -204,7 +207,11 @@ if length(df{1}) <= 2 && mode==0
 	end
 end
 
-fprintf('read.\n');
+if isempty(fieldnames(X))
+	fprintf('** WARNING ** file empty!\n');
+else
+	fprintf('read.\n');
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

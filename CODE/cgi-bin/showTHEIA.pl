@@ -166,6 +166,7 @@ my $filename = "$WEBOBS{CONF_THEIA}";
 my %conf = readCfg($filename);
 my @nodes = split(/,/, $conf{NODES});
 my @channels = split(/,/, $conf{CHANNELS});
+my %processing_level = ("Raw data" => 0, "Quality-controlled data" => 1, "Derived products" => 2);
 
 # ---- extracting datasets data
 $stmt = qq(SELECT * FROM datasets;);
@@ -192,16 +193,13 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
 
 while(my @row = $sth->fetchrow_array()){
 	my $datasetId = (split /_DAT_/, $row[0]) [1];
-	#print $datasetId." || ";
 	($GRIDName, $NODEName) = (split /\./, $datasetId);
-	my %G = readProc($GRIDName);
-	if ($G{$GRIDName}) {
-		%GRID = %{$G{$GRIDName}};
-	}
-	#print $G{$GRIDName}."\n";
-	#print $GRIDName."\n";
+	my %S = readNode($NODEName, "novsub");
+	my %NODE = %{$S{$NODEName}};
+	my $desc = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
+
 	if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ){
-		my $subject = join(',', split(/_/,$row[3]));
+		my $subject = join(',', split(/_/,$row[2]));
 			
 		# ---- extracting datasets contacts data
 		my $stmt2 = qq(SELECT * FROM contacts WHERE related_id LIKE '$row[0]%';);
@@ -221,11 +219,11 @@ while(my @row = $sth->fetchrow_array()){
 			."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
 			."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[2]</SMALL></TD>"
+			."<TD width=14% align=center><SMALL>$desc</SMALL></TD>"
 			."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
 			."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[4]</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[5]</SMALL></TD></TR>";
+			."<TD width=14% align=center><SMALL>$row[3]</SMALL></TD>"
+			."<TD width=14% align=center><SMALL>$row[4]</SMALL></TD></TR>";
 	} else {
 		print "<TR class=\"node\" id=$row[0]>"
 				."<TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
@@ -246,7 +244,8 @@ print "</TR></TABLE>\n";
 print "<BR><BR>\n";
 
 # ---- extracting observations data
-$stmt = qq(SELECT * FROM observations;);
+$stmt = "SELECT observations.*, observed_properties.theiacategories ";
+$stmt .= "FROM observations INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
 $sth = $dbh->prepare( $stmt );
 $rv = $sth->execute() or die $DBI::errstr;
 
@@ -268,46 +267,33 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
 		."<TH><SMALL>Observed property</SMALL></TH>"
 		."<TH><SMALL>Station name</SMALL></TH>"
 		."<TH><SMALL>Dataset</SMALL></TH>"
-		."<TH><SMALL>Data file name</SMALL></TH></TR>";
+		."<TH><SMALL>Data file name</SMALL></TH>"
+		."<TH><SMALL><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">THEIA category</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
 	my $datasetId = $row[7];
 	my $channelId = $row[5];
 	($GRIDName, $NODEName) = (split /\./, $datasetId);
 	$GRIDName = (split /_DAT_/, $GRIDName)[1];
-	my %G = readProc($GRIDName);
-	my %S = readNode($NODEName);
-	#print $NODEName."\n";
-	%GRID = %{$G{$GRIDName}};
-	%NODE = %{$S{$NODEName}};
-	my $fileDATA = "$NODES{PATH_NODES}/$NODEName/PROC.$GRIDName.$NODEName.clb";
-	my @donnees = map { my @e = split /\|/; \@e; } readCfgFile($fileDATA);
 	if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
 		my $subject = join(',', split(/_/,$row[3]));
 		print "<TR class=\"channel\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>";
 		print $row[0] ~~ @channels ? "<TD width=1%><input type='checkbox' checked></TD>" : "<TD width=1%><input type='checkbox'></TD>";
 		print "<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
-			."<TD width=6%  align=center><SMALL>$row[1]</SMALL></TD>"
-			."<TD width=6%  align=center><SMALL>$row[2]</SMALL></TD>"
-			."<TD width=12% align=center><SMALL>$row[3]</SMALL></TD>"
-			."<TD width=4%  align=center><SMALL>$row[4]</SMALL></TD>"
-			."<TD width=8%  align=center><SMALL>$row[5]</SMALL></TD>"
-			."<TD width=10% align=center><SMALL>$row[6]</SMALL></TD>"
-			."<TD width=12% align=center><SMALL>$row[7]</SMALL></TD>"
-			."<TD width=8%  align=center><SMALL>$row[8]</SMALL></TD></TR>";
+			."<TD width=6%  align=center><select>";
+		foreach my $k (keys %processing_level) { print "<option value=$processing_level{$k}".(($k eq $row[1]) ? " selected" : "").">$k</option>\n"; }
+		print "</select></TD>"
+			."<TD align=center><SMALL>$row[2]</SMALL></TD>"
+			."<TD align=center><SMALL>$row[3]</SMALL></TD>"
+			."<TD align=center><SMALL>$row[4]</SMALL></TD>"
+			."<TD align=center><SMALL>$row[5]</SMALL></TD>"
+			."<TD align=center><SMALL>$row[6]</SMALL></TD>"
+			."<TD align=center><SMALL>$row[7]</SMALL></TD>"
+			."<TD align=center><SMALL>$row[8]</SMALL></TD>"
+			."<TD align=center><SMALL><input name=theia size=35 value=$row[9]></SMALL></TD></TR>";
 	} else {
 		print "<TR class=\"node\" id=$row[0]>"
-				."<TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
-				."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
-				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
-				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
-				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
-				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
-				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
-				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
-				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
-				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
-				."<TD>No access to $GRIDName.$NODEName\_$channelId !</TD>"
+				."<TD colspan='12'>No access to $GRIDName.$NODEName\_$channelId !</TD>"
 				."</TR>";
 	}
 };
@@ -318,6 +304,7 @@ print "<BR><BR>\n";
 
 print "<input type=\"hidden\" name=\"nodes\">";
 print "<input type=\"hidden\" name=\"channels\">";
+print "<input type=\"hidden\" name=\"allChannels\">";
 
 print <<"FIN";
 <script>
@@ -354,13 +341,20 @@ print <<"FIN";
 		
 		const channels = document.getElementsByClassName('channel');
 		const channelList = [];
+		const allChannelList = [];
 		Array.from(channels).forEach((channel) => {
 			if (channel.querySelector("input").checked) {
 				channelList.push(channel.id);
 			}
+			var cs = channel.querySelector("select");
+			var ci = channel.querySelector("input[name='theia']");
+			allChannelList.push([channel.id, cs.options[cs.selectedIndex].text, ci.value].join('|'));
 		});
 		channelList.join(',');
+		allChannelList.join(',');
 		form.channels.value = channelList;
+		const allChannels = "";
+		form.allChannels.value = allChannelList;
 	}
 </script>
 FIN

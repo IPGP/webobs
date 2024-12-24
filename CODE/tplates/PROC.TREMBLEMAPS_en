@@ -4,8 +4,12 @@
 # in associated NODE's RAWFORMAT field
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/tremblemaps.m for further information.
 
-# long name of the PROC
-NAME|Earthquake Felt Report (EN)
+# name of the PROC
+NAME|Earthquake Felt Report
+
+# description of what the proc does
+DESCRIPTION|B3 Earthquake Felt Report (EN)
+
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 RAWFORMAT|quakes
 TYPE|

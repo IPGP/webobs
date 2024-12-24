@@ -3,8 +3,12 @@
 # Makes helicorders from node channels, using "events" output type.
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/helicorder.m for further information.
 
-# long name of the PROC
+# name of the PROC
 NAME|Helicorder
+
+# description of what the proc does
+DESCRIPTION|Helicorder of seismic data stream
+
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 TYPE|
 OWNCODE|?
