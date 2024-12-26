@@ -106,54 +106,11 @@ function geditsendPopup() {
 		alert('Grid name is alphanumerical and underscore characters only, case insensitive, and the first character must be a letter.');
 		return false;
 	}
-	//FBwas: if ( gname.match(/PROC\./i) || gname.match(/VIEW\./i) ) {
-	//FBwas:	$("#geditoverlay_form").fadeOut(500);
-	//FBwas:	$("#geditovly").fadeOut(500);
-	//FBwas:	location.href = "/cgi-bin/formGRID.pl?grid="+gname;
-	//FBwas: } else {
-	//FBwas:	alert('Grid name must be VIEW.name or PROC.name');
-	//FBwas:	return false;
-	//FBwas: }
 }
 
 function geditclosePopup() {
 	$("#geditoverlay_form").fadeOut(500);
 	$("#geditovly").fadeOut(500);
-}
-
-function feditopenPopup() {
-	$("#feditoverlay_form").fadeIn(500);
-	feditpositionPopup();
-}
-
-function feditpositionPopup(){
-	$("#feditovly").css('display','block');
-	$("#feditoverlay_form").css({
-		left: (($(window).width() - $('#feditoverlay_form').outerWidth()) / 2)+$(window).scrollLeft() + "px",
-		position:'fixed'
-	});
-}
-
-function feditsendPopup() {
-	if ( $('#feditoverlay_form')[0].feditN.value == "" ) {
-		alert('Please specify a form name') ;
-		return false;
-	}
-	var fname = $('#feditoverlay_form')[0].feditN.value;
-	var tplte = $('#feditoverlay_form')[0].feditT.value;
-	if ( fname.match(/^[A-Za-z]/) && !fname.match(/[^A-Za-z_0-9]/g) ) {
-		$("#feditoverlay_form").fadeOut(500);
-		$("#feditovly").fadeOut(500);
-		location.href = "/cgi-bin/fedit.pl?fname=" + fname.toUpperCase() + "&action=edit&tpl=" + tplte;
-	} else {
-		alert('Form name is alphanumerical and underscore characters only, case insensitive, and the first character must be a letter.');
-		return false;
-	}
-}
-
-function feditclosePopup() {
-	$("#feditoverlay_form").fadeOut(500);
-	$("#feditovly").fadeOut(500);
 }
 
 function srchopenPopup(g) {
