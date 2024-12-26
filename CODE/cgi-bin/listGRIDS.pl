@@ -276,11 +276,8 @@ print "<div id=\"noscrolldiv\">";
 		print "<TH>Owner</TH>" if ($showOwnr);
 		print "<TH>Graphs</TH>";
 		if ($wantProcs || $wantSefrans) {
-			print "<TH>";
-			if ( $admPROCS ) {
-				print "<a href='#popupY' title=\"$__{'Edit/Create a Form'}\" onclick='feditopenPopup(); return false;'><img class='ic' src='/icons/modif.png'></a>";
-			}
-			print "&nbsp;&nbsp;&nbsp;Raw Data</TH>";
+			#	print "<a href='#popupY' title=\"$__{'Edit/Create a Form'}\" onclick='feditopenPopup(); return false;'><img class='ic' src='/icons/modif.png'></a>";
+			print "<TH>Raw Data</TH>";
 		}
 		print "</TR>\n";
 		for my $d (@$domains) {
@@ -288,20 +285,17 @@ print "<div id=\"noscrolldiv\">";
 			my @procs;
 			my $ovl;
 			if ($wantProcs) {
-				@procs = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_),
-                              @{$domainProcs{$dc}});
+				@procs = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_), @{$domainProcs{$dc}});
 			}
 			my $np = scalar(@procs);
-			my @views;
+			my @forms;
 			if ($wantForms) {
-				@views = grep(WebObs::Users::clientHasRead(type=>"authforms", name=>$_),
-                              @{$domainForms{$dc}});
+				@forms = grep(WebObs::Users::clientHasRead(type=>"authforms", name=>$_), @{$domainForms{$dc}});
 			}
 			my $nf = scalar(@forms);
 			my @views;
 			if ($wantViews) {
-				@views = grep(WebObs::Users::clientHasRead(type=>"authviews", name=>$_),
-                              @{$domainViews{$dc}});
+				@views = grep(WebObs::Users::clientHasRead(type=>"authviews", name=>$_), @{$domainViews{$dc}});
 			}
 			my $nv = scalar(@views);
 			my @sefrans;
@@ -386,6 +380,40 @@ print "<div id=\"noscrolldiv\">";
 											."\" SRC=\"/icons/data.png\"></A>";
 								}
 							}
+							print "</TD>";
+						}
+						print "</TR>\n";
+					}
+				}
+				if ( $nf > 0 ) {
+					for my $vf (@forms) {
+						my %G = readForm($vf);
+						if (%G) {
+							print "<TR>" if ($vf ne $forms[0]);
+							print "<TD style=\"text-align: center\">FORM</TD>" if ($subsetType ne "");
+							$ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vf}{DESCRIPTION}."',CAPTION,'FORM.$vf')\"";
+							print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in Form'}\" onclick='srchopenPopup(\"+FORM.$vf\");return false'><img class='ic' src='/icons/search.png'></a>";
+							print     "<a href='/cgi-bin/gvTransit.pl?grid=FORM.$vf')><img src=\"/icons/tmap.png\"></a>";
+							if (WebObs::Users::clientHasEdit(type=>"authforms",name=>$vf)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=FORM.$vf\" title=\"$__{'Edit Form'}\" ><img src='/icons/modif.png'></a>" }
+							print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=FORM.$vf\">$G{$vf}{NAME}</a>";
+							print "</TD>";
+							print "<TD>".scalar(@{$G{$vf}{NODESLIST}})."&nbsp;";
+							if (defined($G{$vf}{NODE_NAME})) { printf ("%s%s","$G{$vf}{NODE_NAME}",scalar(@{$G{$vf}{NODESLIST}})>1?"s":"") }
+							else                            { printf ("node%s",scalar(@{$G{$vf}{NODESLIST}})>1?"s":"") }
+							print "</TD>";
+							print "<TD>".(defined($G{$vf}{TYPE}) ? $G{$vf}{TYPE} : "")
+									."</TD>"  if ($showType);
+							print "<TD>".(defined($G{$vf}{OWNCODE}) ?
+										  (defined($OWNRS{$G{$vf}{OWNCODE}})
+										   ? $OWNRS{$G{$vf}{OWNCODE}}
+										   : $G{$vf}{OWNCODE}) : "")
+									."</TD>"  if ($showOwnr);
+							if ( -d "$WEBOBS{ROOT_OUTG}/FORM.$vf/$WEBOBS{PATH_OUTG_MAPS}" ) {
+								print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vf\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/visu.png\"></A>";
+							} else { print "<TD style=\"background-color: #EEEEDD\">&nbsp;" }
+							print "</TD>";
+							print "<TD style=\"text-align:center\">";
+							print "<A HREF=\"/cgi-bin/showGENFORM.pl?form=$vf\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/form.png\"></A>";
 							print "</TD>";
 						}
 						print "</TR>\n";
