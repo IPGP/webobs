@@ -1,10 +1,10 @@
 #!/bin/bash
-# Ojective: migration of existing former FORM (.DAT text file based) to GENFORM (.db based)
-# and the new grid FORM structure
+# Ojective: migration of existing former FORM (.DAT text file based) associated to
+# PROCS, to GENFORM (.db based) associated to NODES (new grid FORM structure).
 #
 # Author: François Beauducel
 # Created: 2024-04-21
-# Updated: 2024-12-26
+# Updated: 2024-12-27
 
 
 if [ -z "$1" ]; then
@@ -33,16 +33,79 @@ if ! [[ -e $P/../dutils.sh ]]; then
 fi
 . $P/../dutils.sh
 
+wousr=$(stat -f '%Su' $WOROOT/CONF/GRIDS2NODES)
+wogrp=$(stat -f '%Sg' $WOROOT/CONF/GRIDS2NODES)
 
 
 # =============================================================================
+# make a loop on all PROC associated to FORM
+for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
+ 
+	# -----------------------------------------------------------------------------
+	# get the names of proc, form and nodes
+	proc=$(echo $p | cut -d '.' -f 2)
+	form=$(echo $p | cut -d '.' -f 3)
+	nodes=()
+	for n in $(ls -d CONF/GRIDS2NODES/PROC.$proc*); do
+		nodes+=($(echo $n | cut -d '.' -f 3))
+	done
+
+	# will process only known forms...
+	if [[ $form =~ ^DISTANCE\|BOJAP\|EAUX\|EXTENSO\|FISSURO\|GAZ\|RIVERS\|SOILSOLUTIONS$ ]]; then
+
+		echo ">> migrating PROC '$proc'..."
+		echo " FORM = $form"
+		echo -n " NODES ="
+		printf " %s" ${nodes[@]}
+		echo ""
+
+		# -----------------------------------------------------------------------------
+		# make the form conf
+		if [ $form = $conf ]; then
+			echo " mv $WOROOT/CONF/FORMS/$form $WOROOT/CONF/FORMS/${form}_LEG"
+			dconf0="$WOROOT/CONF/FORMS/${form}_LEG"
+		else
+			dconf0="$WOROOT/CONF/FORMS/$form"
+		fi
+		dconf1="$WOROOT/CONF/FORMS/$proc"
+
+		echo " mkdir $dconf1"
+
+		# database table (lowercase)
+		DBT=${proc,,}
+
+		# data filename
+		DAT=$(grep ^FILE_NAME $dconf0/$form.conf | cut -d '|' -f 2
+
+		echo  -n "Creating/populating $DBT table with former $DAT..."
+
+		case $form in
+			"EAUX")
+				NBI=24
+
+				;;
+
+		esac
+
+		echo " chown -R $wousr:$wogrp $WOROOT/CONF/FORMS/$proc"
+
+		# -----------------------------------------------------------------------------
+		# make the new links form2nodes
+		for n in ${nodes[@]}; do
+			echo " ln -s $WOROOT/DATA/NODES/$n $WOROOT/CONF/GRIDS2NODES/FORM.$proc.$n"
+		done
+		echo " chown $wousr:$wogrp $WOROOT/CONF/GRIDS2NODES/FORM.$proc.*"
+	fi
+
+done
+
+exit 1
+
+# -----------------------------------------------------------------------------
+
 # === EAUX --> modèle WATERS_fr
 
-DBT=eaux
-DAT=$1/DATA/DB/OVSG/EAUX.DAT 
-NBI=24
 
-echo  -n "Creating/populating $DBT table with former $DAT ($NBI inputs)..."
 
 echo "BEGIN TRANSACTION;" > $TMP
 echo "DROP TABLE if exists $DBT;" >> $TMP
