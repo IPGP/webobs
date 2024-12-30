@@ -1,0 +1,191 @@
+=key|value
+# Generic FORM template for use with {fedit,showGENFORM,formGENFORM}.pl
+# Model: water chemical analysis (formerly EAUX)
+#
+# ############################### WARNING #####################################
+# Once the database form has been created and the first data has been recorded,
+# you MAY BE VERY CAREFUL IN MODIFYING the keys of this file.
+# ############################### WARNING #####################################
+
+# -----------------------------------------------------------------------------
+# --- GRID standard parameters
+
+NAME|Banque de données chimie des eaux
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|MyForm
+
+# --- node parameters (display and maps)
+NODE_NAME|station
+NODE_SIZE|10
+NODE_RGB|1,0,0
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
+BANG|$WEBOBS{BIG_BANG}
+
+# Time zone of the data (in hour from UT)
+TZ|0
+
+# if YES, use start and end date for each record
+STARTING_DATE|NO
+
+# may contain any +GID and/or UID list (comma separated)
+OPERATORS_LIST|+DUTY
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+COMMENT_HELP|Noter toute présence d'odeur, gaz, précipité, etc...
+
+
+# -----------------------------------------------------------------------------
+# --- Inputs names, units, and types
+# valid types: text(size), numeric(size), list: filename
+#
+# ############################### WARNING #####################################
+# once created, you cannot remove or rename any input since it will corrupt
+# the database. You might only add new inputs, increasing the number
+# ############################### WARNING #####################################
+
+INPUT01_NAME|Type d'échantillon
+INPUT01_TYPE|list: FORM.WATERS_fr.list_type.conf
+INPUT01_FILT|YES
+
+INPUT02_NAME|Temp. ambiante
+INPUT02_UNIT|°C
+
+INPUT03_NAME|Temp. liquide
+INPUT03_UNIT|°C
+
+INPUT04_NAME|pH
+
+INPUT05_NAME|Conductivité
+INPUT05_UNIT|µS
+
+INPUT06_NAME|Débit
+INPUT06_UNIT|l/min
+
+INPUT07_NAME|Niveau
+INPUT07_UNIT|m
+
+INPUT08_NAME|Li<sup>+</sup>
+INPUT08_UNIT|ppm
+
+INPUT09_NAME|Na<sup>+</sup>
+INPUT09_UNIT|ppm
+
+INPUT10_NAME|K<sup>++</sup>
+INPUT10_UNIT|ppm
+
+INPUT11_NAME|Mg<sup>++</sup>
+INPUT11_UNIT|ppm
+
+INPUT12_NAME|Ca<sup>++</sup>
+INPUT12_UNIT|ppm
+
+INPUT13_NAME|F<sup>-</sup>
+INPUT13_UNIT|ppm
+
+INPUT14_NAME|Cl<sup>-</sup>
+INPUT14_UNIT|ppm
+
+INPUT15_NAME|Br<sup>-</sup>
+INPUT15_UNIT|ppm
+
+INPUT16_NAME|NO<sub>3</sub><sup>-</sup>
+INPUT16_UNIT|ppm
+
+INPUT17_NAME|SO<sub>4</sub><sup>-</sup>
+INPUT17_UNIT|ppm
+
+INPUT18_NAME|HCO<sub>3</sub><sup>-</sup>
+INPUT18_UNIT|ppm
+
+INPUT19_NAME|I<sup>-</sup>
+INPUT19_UNIT|ppb
+
+INPUT21_NAME|SiO<sub>2</sub>
+INPUT21_UNIT|ppm
+
+INPUT22_NAME|&delta;<sup>13</sup>C
+
+INPUT23_NAME|&delta;<sup>18</sup>O
+
+INPUT24_NAME|&delta;D
+
+# -----------------------------------------------------------------------------
+# --- Outputs names, units, and types
+# valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
+
+OUTPUT01_NAME|Cond. @25°C
+OUTPUT01_UNIT|µS
+OUTPUT01_TYPE|formula: INPUT05/(1 + 0.02*(INPUT03 - 25))
+OUTPUT02_NAME|H<sup>+</sup>
+OUTPUT02_UNIT|ppm
+OUTPUT02_TYPE|formula: 1000*(10**(-INPUT04))
+OUTPUT03_NAME|NICB
+OUTPUT03_UNIT|%
+OUTPUT03_TYPE|formula(6): 100*((INPUT08/6.941+INPUT09/22.990+INPUT10/39.098+2*INPUT11/40.078+2*INPUT12/24.305+OUTPUT02)-(INPUT13/18.998+INPUT14/35.453+INPUT15/79.904+INPUT16/62.004+2*INPUT17/96.062+INPUT18/61.0159+1e-3*INPUT19/126.904468))/((INPUT08/6.941+INPUT09/22.990+INPUT10/39.098+2*INPUT11/40.078+2*INPUT12/24.305+OUTPUT02)+(INPUT13/18.998+INPUT14/35.453+INPUT15/79.904+INPUT16/62.004+2*INPUT17/96.062+INPUT18/61.0159+1e-3*INPUT19/126.904468))
+OUTPUT04_NAME|SO<sub>4</sub>/Cl
+OUTPUT04_TYPE|formula(6): (INPUT17/96.062)/(INPUT14/35.453)
+OUTPUT05_NAME|HCO<sub>3</sub>/Cl
+OUTPUT05_TYPE|formula(6): (INPUT18/61.0159)/(INPUT14/35.453)
+OUTPUT06_NAME|Ca/Cl
+OUTPUT06_TYPE|formula(6): (INPUT11/24.305)/(INPUT14/35.453)
+OUTPUT07_NAME|Na/Cl
+OUTPUT07_TYPE|formula(6): (INPUT08/22.990)/(INPUT14/35.453)
+OUTPUT08_NAME|Mg/Cl
+OUTPUT08_TYPE|formula(6): (INPUT10/40.078)/(INPUT14/35.453)
+OUTPUT09_NAME|HCO<sub>3</sub>/SO<sub>4</sub>
+OUTPUT09_TYPE|formula(6): (INPUT18/61.0159)/(INPUT17/96.062)
+
+# -----------------------------------------------------------------------------
+# --- Form layout
+
+# number of columns and list of fieldsets for each
+COLUMNS_NUMBER|3
+
+# note: first column starts with the mandatory date/site/operator fieldset
+COLUMN01_LIST|FIELDSET01
+COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
+COLUMN03_LIST|FIELDSET05
+
+# number of fieldsets
+FIELDSETS_NUMBER|5
+
+# fieldset contains
+FIELDSET01_NAME|Mesures sur site
+FIELDSET01_CELLS|1
+FIELDSET01_C01|INPUT01,INPUT02,INPUT03,INPUT04,INPUT05,OUTPUT01,INPUT06,INPUT07
+
+FIELDSET02_NAME|Concentrations en cations et anions
+FIELDSET02_CELLS|2
+FIELDSET02_C01|INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,OUTPUT02
+FIELDSET02_C02|INPUT13,INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,OUTPUT03
+
+FIELDSET03_NAME|Concentration en autres éléments
+FIELDSET03_CELLS|1
+FIELDSET03_C01|INPUT21
+
+FIELDSET04_NAME|Concentrations isotopiques 
+FIELDSET04_CELLS|1
+FIELDSET04_C01|INPUT22,INPUT23,INPUT24
+
+FIELDSET05_NAME|Rapports
+FIELDSET05_TOGGLE|YES
+FIELDSET05_CELLS|1
+FIELDSET05_C01|OUTPUT04,OUTPUT05,OUTPUT06,OUTPUT07,OUTPUT08,OUTPUT09
+
+# --- For backward compatibility - do not change
+CGI_FORM|formGENFORM.pl
+CGI_SHOW|showGENFORM.pl
