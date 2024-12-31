@@ -255,7 +255,7 @@ print qq[Content-type: text/html
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<title>] . $FORM{TITLE} . qq[</title>
+<title>] . $FORM{NAME} . qq[</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
@@ -298,7 +298,7 @@ print qq[
 
 function suppress(level)
 {
-    var str = "$FORM{TITLE} ?";
+    var str = "$FORM{NAME} ?";
     if (level > 1) {
         if (!confirm("$__{'ATT: Do you want PERMANENTLY erase this record from '}" + str)) {
             return false;
@@ -454,7 +454,7 @@ print qq[<form name="form" id="theform" action="">
 <table width="100%">
   <tr>
     <td style="border: 0">
-     <h1>$FORM{TITLE}</h1>
+     <h1>$FORM{NAME}</h1>
      <h2>$message</h2>
     </td>
   </tr>

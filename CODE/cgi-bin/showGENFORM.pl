@@ -79,7 +79,7 @@ my $editForm = ($clientAuth > 2 ? " <A href=\"/cgi-bin/fedit.pl?fname=$form&acti
 my %G = readForm($form);
 my %FORM = %{$G{$form}};
 
-my $title = ($FORM{NAME} ? $FORM{NAME}:$FORM{TITLE});
+my $title = ($FORM{NAME} ? $FORM{NAME}:$FORM{DESCRIPTION});
 
 # ---- DateTime inits ----------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
@@ -330,7 +330,7 @@ if ($QryParm->{'dump'} ne "csv") {
 		print " <INPUT type=\"hidden\" name=\"trash\">";
 	}
 	print "</P></FORM>\n",
-	"<H2>".$title."$editForm</H2>\n",
+	"<H1>".$title."$editForm</H1>\n",
 	"<P>";
 }
 
