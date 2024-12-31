@@ -73,7 +73,8 @@ my $form = $cgi->param('form');      # name of the form
 my $clientAuth = clientMaxAuth(type=>"authforms",name=>"('$form')");
 die "You can't edit records of the form $form. Please contact an administrator." if ($clientAuth < 2);
 
-my $F = new WebObs::Form($form);
+my %G = readForm($form);
+my %FORM = %{$G{$form}};
 
 my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
 my $client = $USERS{$CLIENT}{UID};
@@ -120,15 +121,12 @@ my $stamp = "[$today $user]";
 if (index($val,$stamp) eq -1) { $val = "$stamp $val"; };
 
 # ---- specific FORM inits -----------------------------------
-my %FORM = $F->conf;
 
 my @NODESSelList;
-my %Ps = $F->procs;
-for my $p (keys(%Ps)) {
-	my %N = $F->nodes($p);
-	for my $n (keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-	}
+for (@{$FORM{NODESLIST}}) {
+	my $id = $_;
+	my %N = readNode($id);
+	push(@NODESSelList,"$id|$N{$id}{ALIAS}: $N{$id}{NAME}");
 }
 
 my $sel_site = my $sel_comment = "";
