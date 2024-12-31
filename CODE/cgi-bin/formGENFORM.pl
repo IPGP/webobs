@@ -684,11 +684,12 @@ foreach (@columns) {
     }
 }
 
+my $comsz = ($FORM{COMMENT_SIZE} > 0 ? $FORM{COMMENT_SIZE}:80);
 my $comhlp = htmlspecialchars($FORM{COMMENT_HELP});
 print qq(</TD>
   <tr>
     <td style="border: 0" colspan="2">
-      <B>$__{'Observations'}</B>:&nbsp;<input size=80 name="comment" value="$sel_comment"
+      <B>$__{'Observations'}</B>:&nbsp;<input size=$comsz name="comment" value="$sel_comment"
       onMouseOut="nd()" onmouseover="overlib('$comhlp')"><BR>
     </td>
   </tr>
