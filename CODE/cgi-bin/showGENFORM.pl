@@ -76,8 +76,6 @@ my $clientAuth = clientMaxAuth(type=>"authforms",name=>"('$form')");
 die "You can't view $form reports." if ($clientAuth < 1);
 my $editForm = ($clientAuth > 2 ? " <A href=\"/cgi-bin/fedit.pl?fname=$form&action=edit\"><IMG src=\"/icons/modif.png\" title=\"Edit...\" border=0></A>":"");
 
-#my $F = new WebObs::Form($form);
-#my %FORM = $F->conf;
 my %G = readForm($form);
 my %FORM = %{$G{$form}};
 
@@ -113,9 +111,8 @@ my @NODESSelList;
 for (@{$FORM{NODESLIST}}) {
 	my $id = $_;
 	my %N = readNode($id);
-	my %NODE = %{$N{$id}};
-	push(@NODESSelList,"$id|$NODE{ALIAS}: $NODE{NAME}");
-	%Ns = (%Ns, %NODE);
+	push(@NODESSelList,"$id|$N{$id}{ALIAS}: $N{$id}{NAME}");
+	%Ns = (%Ns, %N);
 	push(@formnodes, $id) if ($QryParm->{'node'} =~ /^($id|)$/)
 }
 
@@ -421,7 +418,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	my $sdate = simplify_date($sdate0,$sdate1);
 
 	my $nameSite = htmlspecialchars(getNodeString(node=>$site,style=>'html'));
-	my $normSite = normNode(node=>"PROC.$site");
+	my $normSite = normNode(node=>"FORM.$site");
 	if ($normSite ne "") {
 		$nodelink = "<A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normSite\"><B>$aliasSite</B></A>";
 	} else {
@@ -442,7 +439,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 		$text .= "<TH nowrap>$edit</TH>";
 	}
 	$text .= ($starting_date ? "<TD nowrap>$sdate</TD>":"")."<TD nowrap>$edate</TD>";
-	$text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite')\">$nodelink&nbsp;</TD>\n";
+	$text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite',CAPTION,'$site')\">$nodelink&nbsp;</TD>\n";
 	$text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>\n";
 	$csvTxt .= "$id,$sdate,$edate,\"$aliasSite\",\"$opers\",";
 	for (my $f = 0; $f <= $#fieldsets; $f++) {
