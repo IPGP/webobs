@@ -76,8 +76,12 @@ my $clientAuth = clientMaxAuth(type=>"authforms",name=>"('$form')");
 die "You can't view $form reports." if ($clientAuth < 1);
 my $editForm = ($clientAuth > 2 ? " <A href=\"/cgi-bin/fedit.pl?fname=$form&action=edit\"><IMG src=\"/icons/modif.png\" title=\"Edit...\" border=0></A>":"");
 
-my $F = new WebObs::Form($form);
-my %FORM = $F->conf;
+#my $F = new WebObs::Form($form);
+#my %FORM = $F->conf;
+my %G = readForm($form);
+my %FORM = %{$G{$form}};
+
+my $title = ($FORM{NAME} ? $FORM{NAME}:$FORM{TITLE});
 
 # ---- DateTime inits ----------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
@@ -103,18 +107,16 @@ $QryParm->{'debug'}    //= "";
 
 my $re = $QryParm->{'filter'}; 
 
+my @formnodes;
 my %Ns;
 my @NODESSelList;
-my %Ps = $F->procs;
-for my $p (sort keys(%Ps)) {
-	if ($QryParm->{'node'} =~ /^$|^PROC\.$p(\.|$)/) { 
-		push(@NODESSelList,"PROC.$p|-- {PROC.$p} $Ps{$p} --");
-		my %N = $F->nodes($p);
-		for my $n (sort keys(%N)) {
-			push(@NODESSelList,"PROC.$p.$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-		}
-		%Ns = (%Ns, %N);
-	}
+for (@{$FORM{NODESLIST}}) {
+	my $id = $_;
+	my %N = readNode($id);
+	my %NODE = %{$N{$id}};
+	push(@NODESSelList,"$id|$NODE{ALIAS}: $NODE{NAME}");
+	%Ns = (%Ns, %NODE);
+	push(@formnodes, $id) if ($QryParm->{'node'} =~ /^($id|)$/)
 }
 
 my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
@@ -147,26 +149,13 @@ my $startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'} 00:00:00";
 my $endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'} 23:59:59";
 my $delay = datediffdays($startDate,$endDate);
 
-# ---- a site requested as PROC.name means "all nodes for proc 'name'"
- 
-my @procnodes;
-if ($QryParm->{'node'} =~ /^PROC\.([^.]*)$/) {
-	my %tmpN = $F->nodes($1);
-	for (keys(%tmpN)) {
-		push(@procnodes,"$_");
-	}
-}
-if ($QryParm->{'node'} =~ /^PROC\.[^.]*\.(.*)$/) {
-	push(@procnodes,"$1");
-}
-
 
 # ---- start html if not CSV output 
 
 if ($QryParm->{'dump'} ne "csv") {
 	print $cgi->header(-charset=>'utf-8');
 	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
-	"<html><head><title>".$FORM{TITLE}."</title>\n",
+	"<html><head><title>".$title."</title>\n",
 	"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
 	"<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
 
@@ -227,7 +216,7 @@ foreach my $k (@rownames) {
 # get the requested data
 my $filter = "((sdate BETWEEN '$startDate' AND '$endDate') OR (edate BETWEEN '$startDate' AND '$endDate'))";
 $filter .= " AND trash = false" if (!$QryParm->{'trash'});
-$filter .= " AND node IN ('".join("','",@procnodes)."')" if ($#procnodes >= 0); 
+$filter .= " AND node IN ('".join("','",@formnodes)."')" if ($#formnodes >= 0); 
 foreach (keys %lists) {
 	my $sel_list = $QryParm->{$_};
 	$filter .= " AND $_ = \"$sel_list\"" if ($sel_list ne "");
@@ -344,7 +333,7 @@ if ($QryParm->{'dump'} ne "csv") {
 		print " <INPUT type=\"hidden\" name=\"trash\">";
 	}
 	print "</P></FORM>\n",
-	"<H2>".$FORM{TITLE}."$editForm</H2>\n",
+	"<H2>".$title."$editForm</H2>\n",
 	"<P>";
 }
 

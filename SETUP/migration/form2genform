@@ -84,6 +84,7 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 			dconf0="$WOROOT/CONF/FORMS/$form"
 		fi
 		dconf1="$WOROOT/CONF/FORMS/$proc"
+		confp="$WOROOT/CONF/PROCS/$proc/$proc.conf"
 		conf0="$dconf0/$form.conf"
 		conf="$dconf1/$proc.conf"
 
@@ -111,8 +112,7 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 
 		case "$form" in
 			"EAUX")
-				NBI=24
-				$conf0=
+				NBI=23
 
 				# uses French or English template
 				if grep -iq "^TITLE.*eaux" $conf0; then
@@ -124,9 +124,6 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 				# copy template files
 				cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
 				cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE.*.conf $dconf1/"
-
-				# copy some variable values
-				cmd "LC_ALL=C sed -i -e 's/^BANG|.*$/$(grep '^BANG' $conf0)/g' $conf"
 
 			 	# ID|Date|Heure|Site|Type|Tair (°C)|Teau (°C)|pH|Débit (l/min)|Cond. (°C)|Niveau (m)|Li|Na|K |Mg|Ca|F |Cl|Br|NO3|SO4|HCO3|I |SiO2|d13C|d18O|dD|Remarques|Valider
 			 	# 1 |2   |3    |4   |5   |6        |7        |8 |9            |10        |11        |12|13|14|15|16|17|18|19|20 |21 |22  |23|24  |25  |26  |27|28       |29
@@ -154,9 +151,20 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 		
 		# -- end of SQL script
 		echo "COMMIT;" >> $TMP
-
 		cmd "cat $TMP | sqlite3 $DBF && rm -f $TMP" 
 		echo " Done."
+
+		# copy some variable values from former FORM and PROC conf
+		for key in BANG DEFAULT_DAYS; do
+			cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$(grep ^$key\| $conf0)/g' $conf"
+		done
+
+		for key in TZ OWNCODE TYPE URL COPYRIGHT NODE_NAME NODE_SIZE NODE_MARKER NODE_RGB DEM_FILE DEM_TYPE DEM_COPYRIGHT; do
+			v=$(grep ^$key\| $confp)
+			if [ ! -z $v ]; then
+				cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$v/g' $conf"
+			fi
+		done
 
 		cmd "chown -R $wousr:$wogrp $WOROOT/CONF/FORMS/$proc" 
 

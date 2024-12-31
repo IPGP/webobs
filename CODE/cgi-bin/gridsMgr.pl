@@ -333,6 +333,7 @@ EOHEADER
 my @T;
 push(@T, map({"VIEW.$_"} sort(WebObs::Grids::listViewNames())));
 push(@T, map({"PROC.$_"} sort(WebObs::Grids::listProcNames())));
+push(@T, map({"FORM.$_"} sort(WebObs::Grids::listFormNames())));
 push(@T, map({"SEFRAN.$_"} sort(WebObs::Grids::listSefranNames())));
 my $selgrids = ""; map { $selgrids .= "<option>$_</option>" } @T;
 
