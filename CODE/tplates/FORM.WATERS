@@ -7,8 +7,33 @@
 # you MAY BE VERY CAREFUL IN MODIFYING the keys of this file.
 # ############################### WARNING #####################################
 
+# -----------------------------------------------------------------------------
+# --- GRID common parameters
+
+NAME|Water chemical analysis database
+DESCRIPTION|Waters physico-chemical analysis 
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|MyForm
+
+# --- node parameters (display and maps)
+NODE_NAME|site
+NODE_MARKER|s
+NODE_SIZE|10
+NODE_RGB|0,1,1
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
 BANG|$WEBOBS{BIG_BANG}
-TITLE|Water chemical analysis database
 
 # Time zone of the data (in hour from UT)
 TZ|0
@@ -21,6 +46,9 @@ OPERATORS_LIST|+DUTY
 
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
 COMMENT_HELP|Note any presence of odour, gas or precipitate, etc...
 
@@ -112,6 +140,7 @@ OUTPUT02_TYPE|formula: 1000*(10**(-INPUT04))
 OUTPUT03_NAME|NICB
 OUTPUT03_UNIT|%
 OUTPUT03_TYPE|formula(6): 100*((INPUT08/6.941+INPUT09/22.990+INPUT10/39.098+2*INPUT11/40.078+2*INPUT12/24.305+OUTPUT02)-(INPUT13/18.998+INPUT14/35.453+INPUT15/79.904+INPUT16/62.004+2*INPUT17/96.062+INPUT18/61.0159+1e-3*INPUT19/126.904468))/((INPUT08/6.941+INPUT09/22.990+INPUT10/39.098+2*INPUT11/40.078+2*INPUT12/24.305+OUTPUT02)+(INPUT13/18.998+INPUT14/35.453+INPUT15/79.904+INPUT16/62.004+2*INPUT17/96.062+INPUT18/61.0159+1e-3*INPUT19/126.904468))
+OUTPUT03_THRESHOLD|7,20
 OUTPUT04_NAME|SO<sub>4</sub>/Cl
 OUTPUT04_TYPE|formula(6): (INPUT17/96.062)/(INPUT14/35.453)
 OUTPUT05_NAME|HCO<sub>3</sub>/Cl
