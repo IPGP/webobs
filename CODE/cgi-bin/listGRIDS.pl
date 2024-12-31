@@ -304,7 +304,7 @@ print "<div id=\"noscrolldiv\">";
                               @{$domainSefrans{$dc}});
 			}
 			my $ns = scalar(@sefrans);
-			my $domrows = $np+$nv+$ns;
+			my $domrows = $np+$nv+$nf+$ns;
 			if ( $domrows > 0 ) {
 				print "<TR>";
 				print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\"><A href=\"$me?domain=$dc&type=$subsetType\">$dn</A></h2>" if ($subsetDomain eq "");

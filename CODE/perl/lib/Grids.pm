@@ -36,7 +36,7 @@ use POSIX qw(strftime);
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %GRIDS, %NODES, %node2node);
 require Exporter;
 @ISA        = qw(Exporter);
-@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS %node2node readDomain readGrid readSefran readProc readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode readCLB);
+@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS %node2node readDomain readGrid readSefran readProc readForm readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode readCLB);
 $VERSION    = "1.00";
 
 %DOMAINS = readDomain();
@@ -137,6 +137,45 @@ sub readProc {
 	}
 	return %ret;
 }
+
+=pod
+
+=head2 readForm
+
+Reads one or more 'forms' configurations into a HoH.
+Adds uppercase NODESLIST hash key to point to the list of linked-to NODES for a FORM.
+Adds DOMAIN code from grids2domains db
+
+    %N = readForm("^S");           # all FORMS whose names start in S
+    $x = $N{SOURCES}{NAME}        # value of 'NAME' field of SOURCES form
+    $d = $N{SOURCES}{DOMAIN}      # value of 'DOMAIN' field of SISMOHYP form
+    @s = $N{EXTENSO}{NODESLIST}     # list of linked-to nodes for EXTENSO form
+
+Internally uses WebObs::listFormNames.
+
+=cut
+
+sub readForm {
+	my %ret;
+	for my $f (listFormNames($_[0])) {
+		my %tmp = readCfg("$WEBOBS{PATH_FORMS}/$f/$f.conf",@_[1..$#_]);
+		# --- get list of associated NODES
+		opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
+		my @lSn = grep {/^FORM\.($f)\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
+		foreach (@lSn) {s/^FORM\.($f)\.//g};
+		@lSn =  sort {$a cmp $b} @lSn ;
+		$tmp{'NODESLIST'} = \@lSn;
+		closedir(DIR);
+		# --- get DOMAIN
+		my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'FORM' and NAME = '$f'");
+		chomp(@qx);
+		$tmp{'DOMAIN'} = join('|',@qx);
+		$ret{$f}=\%tmp;
+	}
+	return %ret;
+}
+
+=pod
 
 =head2 readSefran
 
@@ -328,6 +367,32 @@ sub listProcNames {
 
 =pod
 
+=head2 listFormNames
+
+Returns a list of names of 'FORMS' defined in $WEBOBS{PATH_FORMS}.
+
+Input is optional, as it defaults to 'all forms'. If it is specified,
+it will be used as a regexp to select form names.
+
+  @L = listFormNames("^WATERS");  # all forms named WATERS*
+
+=cut
+
+sub listFormNames {
+	#$_[0] will be used as a regexp
+	my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
+	opendir(DIR, $WEBOBS{PATH_FORMS}) or die "can't opendir $WEBOBS{PATH_FORMS}: $!";
+	my @list = grep {/($filter)/ && -d $WEBOBS{PATH_FORMS}."/".$_} readdir(DIR);
+	closedir(DIR);
+	my @finallist;
+	for (@list) {
+		push(@finallist, $_) if (WebObs::Users::clientHasRead(name=>$_,type=>'authforms'));
+	}
+	return @finallist;
+}
+
+=pod
+
 =head2 listSefranNames
 
 Returns a list of names of 'SEFRAN3' found in $WEBOBS{ROOT_CONF}.
@@ -401,8 +466,7 @@ type, if not specified, will default to ALL grid types (ie. VIEW and PROC).
 
 sub listNodeGrids {
 	my %KWARGS = @_;
-	my $filterT = $KWARGS{type} && $KWARGS{type} =~ /^VIEW$|^PROC$/ ? $KWARGS{type} : '';
-	#my $filterS = $KWARGS{node} ? $KWARGS{node} : '';
+	my $filterT = $KWARGS{type} && $KWARGS{type} =~ /^VIEW|PROC|FORM$/ ? $KWARGS{type} : '';
 	my $filterS = $KWARGS{node} ? $KWARGS{node} : undef;
 
 	my @s = listNodeNames($filterS);

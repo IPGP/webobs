@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2024-12-04
+%   Updated: 2024-12-28
 
 
 WO = readcfg;
@@ -62,6 +62,9 @@ if nargin > 1 && exist([outd '/REQUEST.rc'],'file')
 	if isfield(P,'PROC')
 		grids = [grids;strcat('PROC.',fieldnames(P.PROC))];
 	end
+	if isfield(P,'FORM')
+		grids = [grids;strcat('FORM.',fieldnames(P.PROC))];
+	end
 	merge = 1;
 	request = 1;
 else
@@ -74,12 +77,14 @@ end
 % loads transmission information
 trans = isok(P,'PLOT_TRANSMISSION');
 
-% gets all VIEWS and PROCS looks inside the GRIDS directories avoiding . .. and non-directory files
+% gets all VIEWS, PROCS, and FORMS looks inside the GRIDS directories avoiding . .. and non-directory files
 if ~request && (nargin < 1 || isempty(grids))
 	VIEWS = dir(sprintf('%s/*',WO.PATH_VIEWS));
 	PROCS = dir(sprintf('%s/*',WO.PATH_PROCS));
+	FORMS = dir(sprintf('%s/*',WO.PATH_FORMS));
 	grids = [strcat('VIEW.',{VIEWS(~strncmp({VIEWS.name},{'.'},1) & cat(2,VIEWS.isdir)).name}), ...
-		 strcat('PROC.',{PROCS(~strncmp({PROCS.name},{'.'},1) & cat(2,PROCS.isdir)).name})];
+		 strcat('PROC.',{PROCS(~strncmp({PROCS.name},{'.'},1) & cat(2,PROCS.isdir)).name}), ...
+		 strcat('FORM.',{FORMS(~strncmp({FORMS.name},{'.'},1) & cat(2,FORMS.isdir)).name})];
 else
 	if ~iscell(grids)
 		grids = cellstr(grids);

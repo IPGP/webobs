@@ -6,7 +6,7 @@ formGRID.pl
 
 =head1 SYNOPSIS
 
-http://..../formGRID.pl?grid=gridtype.gridname[,type=gridtype.template]
+http://..../formGRID.pl?grid=gridtype.gridname[&tpl=gridtype.template]
 
 =head1 DESCRIPTION
 
@@ -14,15 +14,35 @@ Edit (create/update) a GRID specified by its fully qualified name, ie. gridtype.
 
 When creating a new GRID (if name does not exist), formGRID starts editing from a predefined template file for the gridtype: filename $WEBOBS{ROOT_CODE}/tplates/<gridtype>_DEFAULT or specific template identified by gridtype.template argument.
 
-To create a new GRID, user must have Admin rights for all VIEWS or PROCS. To update an existing GRID, user must have Edit rights for the concerned GRID.
+To create a new GRID, user must have Admin rights for all VIEWS, PROCS, or FORMS. To update an existing GRID, user must have Edit rights for the concerned GRID.
 
 =head1 QUERY-STRING
 
-grid=gridtype.gridname
- where gridtype either VIEW, PROC, or SEFRAN.
+=item grid=gridtype.gridname
+	where gridtype either VIEW, PROC, FORM, or SEFRAN.
 
-type=gridtype.template
- where gridtype either VIEW, PROC, or SEFRAN.
+=item action={edit|save|delete}
+	'edit' (default when action is not specified) to display edit html-form edit
+	'save' internaly used to save the file after html-form edition
+	'delete' if present and =1, deletes the GRID.
+
+=item tpl=gridtype.template
+	where template is the template selected to create the new grid, and  gridtype
+	either VIEW, PROC, FORM, or SEFRAN.
+
+=item text=
+	inline text to be saved under file= filename
+
+=item ts0=
+	if present, interpreted as being the grid's configuration 'last-modified timestamp' at the time
+	the user entered the modification form (formGRID). If the current 'last-modified timestamp'
+	is more recent than ts0, abort current update !
+
+=item domain=
+	specifies the DOMAINs (list).
+
+=item SELs=
+	associated NODES list.
 
 =head1 EDITOR
 
@@ -50,12 +70,15 @@ Optional customization variables in B<WEBOBS.rc> are shown below with their defa
 
 use strict;
 use warnings;
-use File::Basename;
 use CGI;
 my $cgi = new CGI;
 $CGI::POST_MAX = 1024;
+$CGI::DISABLE_UPLOADS = 1;
 use CGI::Carp qw(fatalsToBrowser set_message);
-use Locale::TextDomain('webobs');
+use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
+use File::Basename;
+use File::Copy qw(copy);
+use File::Path qw(rmtree);
 use POSIX qw/strftime/;
 
 # ---- webobs stuff
@@ -66,6 +89,84 @@ use WebObs::Grids;
 use WebObs::Form;
 use WebObs::Utils;
 use WebObs::i18n;
+use Locale::TextDomain('webobs');
+
+
+# ---- local functions
+#
+
+# Return information when OK
+# (Reminder: we use text/plain as this is an ajax action)
+sub htmlMsgOK {
+ 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+}
+
+# Return information when not OK
+# (Reminder: we use text/plain as this is an ajax action)
+sub htmlMsgNotOK {
+ 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+ 	print "Update FAILED !\n $_[0] \n";
+}
+
+# Print a DB error message to STDERR and show it to the user
+sub htmlMsgDBError {
+	my ($dbh, $errmsg) = @_;
+	print STDERR $errmsg.": ".$dbh->errstr;
+	htmlMsgNotOK($errmsg);
+}
+
+# Open an SQLite connection to the domains database
+sub connectDbDomains {
+	return DBI->connect("dbi:SQLite:$WEBOBS{SQL_DOMAINS}", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+		}) || die "Error connecting to $WEBOBS{SQL_DOMAINS}: $DBI::errstr";
+}
+
+# Delete any existing GRIDS to NODES symbolic links and creates the required links
+sub update_grid2nodes_links {
+	my $GRIDType = shift;
+	my $GRIDName = shift;
+	my $SELs_ref = shift;
+	if ($GRIDType =~ /^PROC|VIEW|FORM$/) {
+		unlink(glob("$WEBOBS{PATH_GRIDS2NODES}/$GRIDType.$GRIDName.*"));
+		for my $nodeid (@$SELs_ref) {
+			symlink("$NODES{PATH_NODES}/$nodeid",
+				"$WEBOBS{PATH_GRIDS2NODES}/$GRIDType.$GRIDName.$nodeid")
+		}
+	}
+}
+
+# Update the domains in database
+# Note: seems better to delete+insert than update (in case of corrupted DB)
+sub update_grid2domains {
+	my $GRIDType = shift;
+	my $GRIDName = shift;
+	my $domains_ref = shift;
+
+   my $dbh = connectDbDomains();
+   my ($q, $rows);
+   $q = "delete from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = ? and NAME = ?";
+   $rows = $dbh->do($q, undef, $GRIDType, $GRIDName);
+   if (!$rows) {
+	     htmlMsgDBError($dbh, "postGRID: unable to delete grid"
+						." $GRIDType.$GRIDName for update into domains");
+   exit;
+   }
+   $q = "insert into $WEBOBS{SQL_TABLE_GRIDS} VALUES(?, ?, ?)";
+	for my $domain (@$domains_ref) {
+      $rows = $dbh->do($q, undef, $GRIDType, $GRIDName, $domain);
+      if (!$rows || $rows == 0) {
+	        htmlMsgDBError($dbh, "postGRID: unable to insert grid"
+					  ." $GRIDType.$GRIDName into domain $domain");
+	      exit;
+      }
+   }
+   $dbh->disconnect();
+}
+
 
 # ---- misc inits
 #
@@ -76,7 +177,7 @@ my $editOK  = 0;        # 1 if the user is allowed to edit the grid
 my $admOK = 0;          # 1 if the user is allowed to administrate the grid
 my $newG    = 0;        # 1 if we are creating a new grid
 my @rawfile;            # raw content of the configuration file
-my $GRIDType = "";      # grid type ("PROC", "VIEW", or "SEFRAN")
+my $GRIDType = "";      # grid type ("PROC", "VIEW", "FORM", or "SEFRAN")
 my $GRIDName = "";      # name of the grid
 my %GRID;               # structure describing the grid
 my @domain;             # the domain array of the grid
@@ -93,10 +194,10 @@ my $CM_auto_vim_mode = $WEBOBS{JS_EDITOR_AUTO_VIM_MODE} // "yes";
 my $post_url = "/cgi-bin/postGRID.pl";
 
 # Read and check CGI parameters
-my $type = checkParam($cgi->param('type'),
-			qr{^((VIEW|PROC|SEFRAN)(\.|/)[a-zA-Z0-9_]+)?$}, 'type') // "";
+my $tpl = checkParam($cgi->param('tpl'),
+			qr{^((VIEW|PROC|FORM|SEFRAN)(\.|/)[a-zA-Z0-9_]+)?$}, 'tpl') // "";
 my $grid = checkParam($cgi->param('grid'),
-			qr{^(VIEW|PROC|SEFRAN)(\.|/)[a-zA-Z0-9_]+$}, 'grid');
+			qr{^(VIEW|PROC|FORM|SEFRAN)(\.|/)[a-zA-Z0-9_]+$}, 'grid');
 my @GID = split(/[\.\/]/, $grid);
 
 
@@ -143,8 +244,12 @@ if (scalar(@GID) == 2) {
 		$gridConfFile = "$WEBOBS{PATH_PROCS}/$GRIDName/$GRIDName.conf";
 		$auth = 'procs';
 	}
-	if ($type ne '') {
-		$template = "$WEBOBS{ROOT_CODE}/tplates/$type";
+	if ($GRIDType eq 'FORM') {
+		$gridConfFile = "$WEBOBS{PATH_FORMS}/$GRIDName/$GRIDName.conf";
+		$auth = 'forms';
+	}
+	if ($tpl ne '') {
+		$template = "$WEBOBS{ROOT_CODE}/tplates/$tpl";
 	} else {
 		$template = "$WEBOBS{ROOT_CODE}/tplates/$GRIDType.DEFAULT";
 	}
@@ -159,6 +264,7 @@ if (scalar(@GID) == 2) {
 		if (uc($GRIDType) eq 'SEFRAN') { %GRID = readSefran($GRIDName) };
 		if (uc($GRIDType) eq 'VIEW') { %GRID = readView($GRIDName) };
 		if (uc($GRIDType) eq 'PROC') { %GRID = readProc($GRIDName) };
+		if (uc($GRIDType) eq 'FORM') { %GRID = readForm($GRIDName) };
 	}
 	else {
 		if ($admOK) {
@@ -173,6 +279,9 @@ if (scalar(@GID) == 2) {
 } else { die "$__{'Not a valid GRID requested (NOT gridtype.gridname)'}" }
 if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
 
+# ---- good, passed all checkings above
+#
+
 if (!$newG) {
 	%GRID = %{$GRID{$GRIDName}};
 	@domain = split(/\|/, $GRID{'DOMAIN'});
@@ -181,8 +290,6 @@ if (!$newG) {
 	%gridnodeslist = map(($_ => 1), @{$GRID{'NODESLIST'}});
 }
 
-# ---- good, passed all checkings above
-#
 # ---- start HTML
 #
 my $text = l2u(join("",@rawfile));
@@ -314,7 +421,7 @@ if ($GRIDType eq "PROC") {
 }
 
 # ---- Nodes
-if ($GRIDType eq "PROC" || $GRIDType eq "VIEW") {
+if ($GRIDType =~ /^PROC|VIEW|FORM$/) {
 	print "<FIELDSET><LEGEND>$__{'Available/Associated nodes'}</LEGEND>";
 	print "<TABLE cellpadding=\"3\" cellspacing=\"0\" style=\"border:0\">";
 	print "<TR><TD style=\"border:0\">";

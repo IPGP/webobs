@@ -45,11 +45,11 @@ INPUT03_UNIT|°C
 
 INPUT04_NAME|pH
 
-INPUT05_NAME|Cond.
-INPUT05_UNIT|µS
+INPUT05_NAME|Flow Rate
+INPUT05_UNIT|l/min
 
-INPUT06_NAME|Flow Rate
-INPUT06_UNIT|l/min
+INPUT06_NAME|Cond.
+INPUT06_UNIT|µS
 
 INPUT07_NAME|Level
 INPUT07_UNIT|m
@@ -90,14 +90,14 @@ INPUT18_UNIT|ppm
 INPUT19_NAME|I<sup>-</sup>
 INPUT19_UNIT|ppb
 
-INPUT21_NAME|SiO<sub>2</sub>
-INPUT21_UNIT|ppm
+INPUT20_NAME|SiO<sub>2</sub>
+INPUT20_UNIT|ppm
 
-INPUT22_NAME|&delta;<sup>13</sup>C
+INPUT21_NAME|&delta;<sup>13</sup>C
 
-INPUT23_NAME|&delta;<sup>18</sup>O
+INPUT22_NAME|&delta;<sup>18</sup>O
 
-INPUT24_NAME|&delta;D
+INPUT23_NAME|&delta;D
 
 # -----------------------------------------------------------------------------
 # --- Outputs names, units, and types
@@ -105,7 +105,7 @@ INPUT24_NAME|&delta;D
 
 OUTPUT01_NAME|Cond. @25°C
 OUTPUT01_UNIT|µS
-OUTPUT01_TYPE|formula: INPUT05/(1 + 0.02*(INPUT03 - 25))
+OUTPUT01_TYPE|formula: INPUT06/(1 + 0.02*(INPUT03 - 25))
 OUTPUT02_NAME|H<sup>+</sup>
 OUTPUT02_UNIT|ppm
 OUTPUT02_TYPE|formula: 1000*(10**(-INPUT04))
