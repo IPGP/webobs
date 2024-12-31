@@ -8,10 +8,10 @@
 # ############################### WARNING #####################################
 
 # -----------------------------------------------------------------------------
-# --- GRID standard parameters
+# --- GRID common parameters
 
 NAME|Banque de données chimie des eaux
-DESCRIPTION|Databank of waters chemical analysis 
+DESCRIPTION|Waters physico-chemical analysis 
 OWNCODE|
 TYPE|
 URL|
@@ -46,6 +46,9 @@ OPERATORS_LIST|+DUTY
 
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
 COMMENT_HELP|Noter toute présence d'odeur, gaz, précipité, etc...
 
@@ -138,6 +141,7 @@ OUTPUT02_TYPE|formula: 1000*(10**(-INPUT04))
 OUTPUT03_NAME|NICB
 OUTPUT03_UNIT|%
 OUTPUT03_TYPE|formula(6): 100*((INPUT08/6.941+INPUT09/22.990+INPUT10/39.098+2*INPUT11/40.078+2*INPUT12/24.305+OUTPUT02)-(INPUT13/18.998+INPUT14/35.453+INPUT15/79.904+INPUT16/62.004+2*INPUT17/96.062+INPUT18/61.0159+1e-3*INPUT19/126.904468))/((INPUT08/6.941+INPUT09/22.990+INPUT10/39.098+2*INPUT11/40.078+2*INPUT12/24.305+OUTPUT02)+(INPUT13/18.998+INPUT14/35.453+INPUT15/79.904+INPUT16/62.004+2*INPUT17/96.062+INPUT18/61.0159+1e-3*INPUT19/126.904468))
+OUTPUT03_THRESHOLD|7,20
 OUTPUT04_NAME|SO<sub>4</sub>/Cl
 OUTPUT04_TYPE|formula(6): (INPUT17/96.062)/(INPUT14/35.453)
 OUTPUT05_NAME|HCO<sub>3</sub>/Cl
