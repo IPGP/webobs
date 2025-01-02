@@ -1081,7 +1081,7 @@ msgid "Reference"
 msgstr "Référence"
 
 msgid "Real-time refresh every"
-msgstr "Temps réel, rafraîchissement: "
+msgstr "Temps réel, rafraîchissement"
 
 msgid "Increase speed"
 msgstr "Augmente vitesse"
@@ -1096,7 +1096,7 @@ msgid "Click to see miniseed file"
 msgstr "Cliquer pour voir le fichier miniseed"
 
 msgid "Sorry, there is no more data available for this request:"
-msgstr "Désolé, plus de données disponibles pour cette requête:"
+msgstr "Désolé, plus de données disponibles pour cette requête :"
 
 msgid "Operator"
 msgstr "Opérateur"
@@ -1950,14 +1950,14 @@ msgstr "Intervalle de dates"
 
 # ---- formGENFORM.pl
 
-msgid "Input new data"
-msgstr "Saisie de nouvelles données"
+msgid "Input new record"
+msgstr "Saisie d'un nouvel enregistrement"
 
-msgid "Edit data n°"
-msgstr "Modification de l'entrée n°"
+msgid "Edit record n°"
+msgstr "Modification de l'enregistrement n°"
 
-msgid "Date and place of sampling"
-msgstr "Date et lieu du prélèvement"
+msgid "Date, site, and operators"
+msgstr "Date, site et opérateurs"
 
 msgid "ATT: Do you want PERMANENTLY erase this record from"
 msgstr "ATT: Voulez-vous effacer cet enregistrement de manière permanente de"
@@ -1985,6 +1985,9 @@ msgstr "Entrer une valeur numérique pour"
 
 msgid "Enter a value for"
 msgstr "Entrer une valeur pour"
+
+msgid "Record timestamp:"
+msgstr "Horodatage de l'enregistrement :"
 
 # ---- fedit.pl
 

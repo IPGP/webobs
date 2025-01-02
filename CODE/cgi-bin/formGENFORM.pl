@@ -209,7 +209,7 @@ if ($action eq 'save') {
     my $stmt = qq(UPDATE $tbl SET trash = false WHERE id = $id);
     my $sth  = $dbh->prepare( $stmt );
 	my $rv   = $sth->execute() or die $DBI::errstr;
-    htmlMsgOK("Record #$id has been recoverd from trash.");
+    htmlMsgOK("Record #$id has been recovered from trash.");
 
     $dbh->disconnect();
     exit;
@@ -386,7 +386,8 @@ function submit()
 
 # ---- read data file
 #
-my $message;
+my $title2;
+my $recinfo;
 my $val;
 my %prev_inputs;
 my $trash;
@@ -407,14 +408,28 @@ if ($action eq "edit") {
 		($sel_y1,$sel_m1,$sel_d1,$sel_hr1,$sel_mn1) = datetime2array($sdate, $sdate_min);
 		($sel_y2,$sel_m2,$sel_d2,$sel_hr2,$sel_mn2) = datetime2array($edate, $edate_min);
 		@operators = split(/,/,$opers);
+		push(@operators,$user) if (@operators =~ /^$user$/);
 		for (my $i = $ncol+1; $i <= $#row; $i++) {
 		    $prev_inputs{$colnam[$i]} = $row[$i];
 		}
 	}
-	$message = "$__{'Edit data n°'} $id";
-	$val = "[$ts0 $user]";
+	$title2 = "$__{'Edit record n°'} $id";
+	$val = "$ts0 [$user]";
+	if ($val ne "") {
+		$recinfo = "<P><B>$__{'Record timestamp:'}</B> $val</P>";
+	}
+	if ($action eq "edit" && $id ne "") {
+		if ($trash eq "1") {
+			$title2 .= qq(&nbsp;<A href="#"><IMG src="/icons/restore.png" onClick="suppress(-1);" title="$__{'Restore'}"></A>);
+		} else {
+			$title2 .= qq(&nbsp;<A href="#"><IMG src="/icons/trash.png" onClick="suppress(1);" title="$__{'Remove'}"></A>);
+		}
+		if ($clientAuth > 2) {
+			$title2 .= qq(&nbsp;<A href="#"><IMG src="/icons/no.png" onClick="suppress(2);" title="$__{'Erase'}"></A>);
+		}
+	}
 } else {
-	$message = "$__{'Input new data'}";
+	$title2 = "$__{'Input new record'}";
 	@operators = ("$client");
 }
 
@@ -425,25 +440,8 @@ if ($debug) {
 	print "<P>max_inputs = $max_inputs</P>\n";
 }
 
-print qq(<input type="hidden" name="id" value="$id">);
-print qq(<tr><td style="border: 0"><hr>);
-if ($val ne "") {
-	print qq(<p><b>Record timestamp:</b> $val
-	<input type="hidden" name="val" value="$val"></p>);
-}
-if ($action eq "edit" && $id ne "") {
-	if ($trash eq "1") {
-		print qq(<input type="button" value="$__{'Restore'}" onClick="suppress(-1);">);
-	} else {
-		print qq(<input type="button" value="$__{'Remove'}" onClick="suppress(1);">);
-	}
-	if ($clientAuth > 2) {
-		print qq(<input type="button" value="$__{'Erase'}" onClick="suppress(2);">);
-	}
-}
-print qq(<hr></td></tr>);
-
 print qq[<form name="form" id="theform" action="">
+<input type="hidden" name="val" value="$val">
 <input type="hidden" name="id" value="$id">
 <input type="hidden" name="user" value="$client">
 <input type="hidden" name="trash" value="$trash">
@@ -455,16 +453,21 @@ print qq[<form name="form" id="theform" action="">
   <tr>
     <td style="border: 0">
      <h1>$FORM{NAME}</h1>
-     <h2>$message</h2>
-    </td>
-  </tr>
+     <h2>$title2</h2>
+];
 
+print "<P><input type=\"checkbox\"".($quality ? " checked":"")
+		." name=\"quality\" value=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_genform_quality'}')\">"
+		."<b>$__{'Record Quality'}</b></P><BR>";
+
+print qq[</td>
+  </tr>
 </table>
 <table style="border: 0" >
   <tr>
     <td style="border: 0" valign="top">
-      <fieldset>
-        <legend>$__{'Date and place of sampling'}</legend>
+        <fieldset>
+        <legend>$__{'Date, site, and operators'}</legend>
         <p class="parform" align=\"right\">
 ];
 
@@ -688,17 +691,19 @@ my $comsz = ($FORM{COMMENT_SIZE} > 0 ? $FORM{COMMENT_SIZE}:80);
 my $comhlp = htmlspecialchars($FORM{COMMENT_HELP});
 print qq(</TD>
   <tr>
-    <td style="border: 0" colspan="2">
-      <B>$__{'Observations'}</B>:&nbsp;<input size=$comsz name="comment" value="$sel_comment"
-      onMouseOut="nd()" onmouseover="overlib('$comhlp')"><BR>
+    <td style="border:0" colspan="2">
+      <P><B>$__{'Observations'}</B>:&nbsp;<input size=$comsz name="comment" value="$sel_comment"
+      onMouseOut="nd()" onmouseover="overlib('$comhlp')"><P>
+	  $recinfo
     </td>
   </tr>
   <tr>
-    <td style="border: 0" colspan="2">
+    <td style="border:0" colspan="$FORM{COLUMNS_NUMBER}">
+	  <HR>
       <P style="margin-top: 20px; text-align: center">
         <input type="button" name=lien value="$__{'Cancel'}"
          onClick="document.location=') . $cgi->param('return_url') . qq('" style="font-weight: normal">
-        <input type="button" value="$__{'Submit'}" onClick="verif_form();" style="font-weight: bold">
+        <input type="button" value="$__{'Save'}" onClick="verif_form();" style="font-weight: bold">
       </P>
     </td>
   </tr>

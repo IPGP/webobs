@@ -134,16 +134,16 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 					printf "INSERT INTO "t"(trash,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
 					for (i=1;i<=n;i++) printf ",input%02d",i; \
 					printf ") ";\
-					printf "VALUES(\""bin"\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\"!\""; \
+					printf "VALUES(\""bin"\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
 					gsub(/"/,"\"\"", $28); \
 					gsub(/\045/,"\045\045", $28); \
-					printf ",\""$28" "$29"\""; \
 					if ($29 ~ /^\[.*\] /) {
 						nn = split($29,vv,/\] \[/);
 						split(vv[1],v," ");
+						gsub(/\[/, "", v[1]); \
 						gsub(/\]/, "", v[2]); \
-						printf ",\""v[1]"\",\""v[2]"\"" \
-					} else { printf ",\"\",\"\"" }; \
+						printf ",\""v[2]"\",\""$28" "$29"\",\""v[1]"\",\""v[2]"\"" \
+					} else { printf ",\"!\",\""$28" "$29"\",\"\",\"\"" }; \
 					for (i=5;i<n+5;i++) printf ",\""$i"\""; \
 					print ");" }}' >> $TMP 
 				;;
@@ -152,15 +152,15 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 		# -- end of SQL script
 		echo "COMMIT;" >> $TMP
 		cmd "cat $TMP | sqlite3 $DBF && rm -f $TMP" 
-		echo " Done."
 
 		# copy some variable values from former FORM and PROC conf
+		cmd "LC_ALL=C LANG=fr_FR.iso88591 sed -i -e 's/^NAME|.*$/$(grep ^TITLE\| $conf0)/g;s/^TITLE/NAME/g' $conf"
 		for key in BANG DEFAULT_DAYS; do
 			cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$(grep ^$key\| $conf0)/g' $conf"
 		done
 
 		for key in TZ OWNCODE TYPE URL COPYRIGHT NODE_NAME NODE_SIZE NODE_MARKER NODE_RGB DEM_FILE DEM_TYPE DEM_COPYRIGHT; do
-			v=$(grep ^$key\| $confp)
+			v=$(grep '^$key|' $confp)
 			if [ ! -z $v ]; then
 				cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$v/g' $conf"
 			fi
@@ -175,6 +175,7 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 		done
 		cmd "chown $wousr:$wogrp $WOROOT/CONF/GRIDS2NODES/FORM.$proc.*" 
 	fi
+	echo "Done."
 
 done
 
