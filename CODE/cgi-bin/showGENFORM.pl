@@ -259,6 +259,7 @@ if ($QryParm->{'dump'} ne "csv") {
 	print "<FORM name=\"form\" action=\"/cgi-bin/showGENFORM.pl\" method=\"get\">",
 		"<INPUT name=\"form\" type=\"hidden\" value=\"$form\">";
 	print "<P class=\"boitegrise\" align=\"center\">",
+		"<TABLE width=\"100%\"><TR><TD style=\"border:0;text-align:center\">",
 		"<B>$__{'Start Date'}:</B> ";
 	print "<SELECT name=\"y1\" size=\"1\">\n";
 	for ($FORM{BANG}..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
@@ -287,12 +288,6 @@ if ($QryParm->{'dump'} ne "csv") {
 	}
 	print "</select>";
 	print " <INPUT type=\"submit\" value=\"$__{'Display'}\" style=\"font-weight:bold\">";
-	if ($clientAuth > 1) {
-		my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
-		$form_url->query_form('form' => $form, 'return_url' => $return_url, 'action' => 'new');
-		print qq(<input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
-			qq( onClick="document.location='$form_url?form=$form'" value="$__{'Enter a new record'}">);
-	}
 	print "<BR>\n";
 	print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"10\" value=\"$re\">";
 	if ($re ne "") {
@@ -329,7 +324,14 @@ if ($QryParm->{'dump'} ne "csv") {
 	} else {
 		print " <INPUT type=\"hidden\" name=\"trash\">";
 	}
-	print "</P></FORM>\n",
+	print "</TD><TD style=\"border:0;text-align:center\">";
+	if ($clientAuth > 1) {
+		my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
+		$form_url->query_form('form' => $form, 'return_url' => $return_url, 'action' => 'new');
+		print qq(<input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
+			qq( onClick="document.location='$form_url?form=$form'" value="$__{'Enter a new record'}">);
+	}
+	print "</TD></TR></TABLE></P></FORM>\n",
 	"<H1>".$title."$editForm</H1>\n",
 	"<P>";
 }
