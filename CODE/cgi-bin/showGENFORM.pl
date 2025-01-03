@@ -281,18 +281,13 @@ if ($QryParm->{'dump'} ne "csv") {
 	for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
 	print "</SELECT>\n";
 	print "&nbsp;&nbsp;<select name=\"node\" size=\"1\">";
-	for ("|All nodes",@NODESSelList) { 
+	for ("|$__{'All nodes'}",@NODESSelList) { 
 		my ($key,$val) = split (/\|/,$_);
 		my $sel = ("$key" eq "$QryParm->{'node'}" ? "selected":"");
 		print "<option $sel value=$key>$val</option>\n";
 	}
 	print "</select>";
-	print " <INPUT type=\"submit\" value=\"$__{'Display'}\" style=\"font-weight:bold\">";
 	print "<BR>\n";
-	print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"10\" value=\"$re\">";
-	if ($re ne "") {
-		print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
-	}
 	print " \n";
 	foreach my $i (sort keys %lists) {
 		if (isok($FORM{uc($i)."_FILT"})) {
@@ -319,18 +314,18 @@ if ($QryParm->{'dump'} ne "csv") {
 		}
 	}
 
+	print "</TD><TD style=\"border:0;text-align:center\">";
+	print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"10\" value=\"$re\">";
+	if ($re ne "") {
+		print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
+	}
 	if ($clientAuth > 1) {
-		print " <INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"").">&nbsp;<B>$__{'Trash'}</B>";
+		print "<BR><INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"").">&nbsp;<B>$__{'Trash'}</B>";
 	} else {
-		print " <INPUT type=\"hidden\" name=\"trash\">";
+		print "<INPUT type=\"hidden\" name=\"trash\">";
 	}
 	print "</TD><TD style=\"border:0;text-align:center\">";
-	if ($clientAuth > 1) {
-		my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
-		$form_url->query_form('form' => $form, 'return_url' => $return_url, 'action' => 'new');
-		print qq(<input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
-			qq( onClick="document.location='$form_url?form=$form'" value="$__{'Enter a new record'}">);
-	}
+	print "<INPUT type=\"submit\" value=\"$__{'Display'}\">";
 	print "</TD></TR></TABLE></P></FORM>\n",
 	"<H1>".$title."$editForm</H1>\n",
 	"<P>";
@@ -374,14 +369,19 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
 }
 $csvTxt .= "\n";
 
-$header = "<TR>".($clientAuth > 1 ? "<TH rowspan=2></TH>\n":"");
-
+# makes the table header
+$header = "<TR>";
+if ($clientAuth > 1) {
+	my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
+	$form_url->query_form('form' => $form, 'return_url' => $return_url, 'action' => 'new');
+	$header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
+}
 foreach(@colnam) { 
 	$header .= "<TH ".( $colspan{$_} eq "" ? "rowspan=2" : "colspan=$colspan{$_}").">$_</TH>\n";
 }
 $header .= "<TH rowspan=2></TH></TR>\n";
 foreach(@colnam2) {
-		$header .= "<TH>".$_."</TH>\n";
+	$header .= "<TH>".$_."</TH>\n";
 }
 $header .= "</TR>\n";
 
@@ -501,8 +501,28 @@ push(@html,"$__{'Date interval'} = <B>$delay days.</B><BR>\n");
 push(@html,"$__{'Number of records'} = <B>".($#rows+1)."</B> / $nbData.</P>\n");
 push(@html,"<P>$__{'Download a CSV text file of these data'}: <A href=\"/cgi-bin/showGENFORM.pl?dump=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&trash=$QryParm->{'trash'}&form=$form\"><B>$fileCSV</B></A></P>\n");
 
+# displays all lists explicitely
+my $listoflist = "<BR><BR><div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#listID');\">&nbsp;&nbsp;";
+$listoflist .= "$__{'Lists'}\n";
+$listoflist .= "</div><div id=\"listID\"><UL>";
+foreach my $i (sort keys %lists) {
+	my @key = keys %{$lists{$i}};
+	my @kv;
+	my $nam;
+	foreach (sort @key) {
+		if (ref $lists{$i}{$_}) {
+			$nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$_);
+		} else {
+			$nam = ($lists{$i}{$_} ? $lists{$i}{$_}:$_);
+		}
+		push(@kv, "<B>$_</B> = $nam");
+	}
+	$listoflist .= "<LI><I>".$FORM{uc($i)."_NAME"}.":</I> ".join(", ", @kv)."</LI>\n";
+}
+$listoflist .= "</UL>\n</div></div>";
+
 if ($text ne "") {
-	push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text\n$header\n</TABLE>\n");
+	push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text\n$header\n</TABLE>\n$listoflist");
 }
 
 if ($QryParm->{'dump'} eq "csv") {

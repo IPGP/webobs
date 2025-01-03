@@ -457,9 +457,13 @@ print qq[<form name="form" id="theform" action="">
      <h2>$title2</h2>
 ];
 
-print "<P><input type=\"checkbox\"".($quality ? " checked":"")
+if (isok($FORM{QUALITY_CHECK})) {
+	print "<P><input type=\"checkbox\"".($quality ? " checked":"")
 		." name=\"quality\" value=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_genform_quality'}')\">"
 		."<b>$__{'Validated record'}</b></P><BR>";
+} else {
+	print "<input type=\"hidden\" name=\"quality\" value=\"$quality\">";
+}
 
 print qq[</td>
   </tr>

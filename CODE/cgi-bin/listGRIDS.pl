@@ -268,14 +268,14 @@ print "<div id=\"noscrolldiv\">";
 		print "<TH>Grid</TH>" if ($subsetType ne "");
 		print "<TH><a href='#popupY' title=\"$__{'Find text in Grids'}\" onclick='srchopenPopup(\"*ALL\");return false'><img class='ic' src='/icons/search.png'></a>";
 		if ($admVIEWS || $admPROCS || $admFORMS) {
-			print "&nbsp;<a href='#popupY' title=\"$__{'Edit/Create a Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/modif.png'></a>"
+			print "&nbsp;<a href='#popupY' title=\"$__{'Create a new Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/new.png'></a>"
 		}
 		print     "&nbsp;&nbsp;&nbsp;Name</TH>";
 		print "<TH>Nodes</TH>";
 		print "<TH>Type</TH>"  if ($showType);
 		print "<TH>Owner</TH>" if ($showOwnr);
 		print "<TH>Graphs</TH>";
-		if ($wantProcs || $wantSefrans) {
+		if ($wantProcs || $wantSefrans || $wantForms) {
 			#	print "<a href='#popupY' title=\"$__{'Edit/Create a Form'}\" onclick='feditopenPopup(); return false;'><img class='ic' src='/icons/modif.png'></a>";
 			print "<TH>Raw Data</TH>";
 		}
@@ -514,6 +514,7 @@ sub geditpopup {
 	my @gt;
 	push(@gt,"VIEW") if ($admVIEWS);
 	push(@gt,"PROC,SEFRAN") if ($admPROCS);
+	push(@gt,"FORM") if ($admFORMS);
 	my @tmp = glob("$WEBOBS{ROOT_CODE}/tplates/{".join(',',@gt)."}.*");
 	foreach my $t (@tmp) {
         if (! -l $t) {
