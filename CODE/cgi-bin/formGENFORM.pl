@@ -414,6 +414,7 @@ if ($action eq "edit") {
 		}
 	}
 	$title2 = "$__{'Edit record n°'} $id";
+	$title2 = "<SPAN class=\"inTrash\">$title2</SPAN>" if ($trash);
 	$val = "$ts0 [$user]";
 	if ($val ne "") {
 		$recinfo = "<P><B>$__{'Record timestamp:'}</B> $val</P>";
@@ -458,7 +459,7 @@ print qq[<form name="form" id="theform" action="">
 
 print "<P><input type=\"checkbox\"".($quality ? " checked":"")
 		." name=\"quality\" value=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_genform_quality'}')\">"
-		."<b>$__{'Record Quality'}</b></P><BR>";
+		."<b>$__{'Validated record'}</b></P><BR>";
 
 print qq[</td>
   </tr>
