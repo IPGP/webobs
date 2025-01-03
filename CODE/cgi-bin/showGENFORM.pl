@@ -436,7 +436,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	$edit = qq(<a href="$form_url"><img src="/icons/modif.png" title="Edit..." border=0></a>);
 	$delete = qq(<img src="/icons/no.png" title="Delete..." onclick="checkRemove($id)">);
 
-	$text .= "<TR ".($trash == 1 ? "class=\"node-disabled\"":"").">";
+	$text .= "<TR ".($trash == 1 ? "class=\"inTrash\"":"").">";
 	if ($clientAuth > 1) {
 		$text .= "<TH nowrap>$edit</TH>";
 	}

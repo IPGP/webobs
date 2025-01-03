@@ -1956,6 +1956,9 @@ msgstr "Saisie d'un nouvel enregistrement"
 msgid "Edit record n°"
 msgstr "Modification de l'enregistrement n°"
 
+msgid "Validated record"
+msgstr "Enregistrement validé"
+
 msgid "Date, site, and operators"
 msgstr "Date, site et opérateurs"
 

@@ -772,3 +772,7 @@ td.fof {
 .hl {
         background-color: #EEFF5E;
 }
+
+.inTrash {
+		text-decoration: line-through 2px gray;
+}
