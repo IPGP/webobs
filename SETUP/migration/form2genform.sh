@@ -4,7 +4,7 @@
 #
 # Author: François Beauducel
 # Created: 2024-04-21
-# Updated: 2024-12-27
+# Updated: 2025-01-03
 
 
 if [ -z "$1" ]; then
@@ -64,6 +64,8 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 	for n in $(ls -d CONF/GRIDS2NODES/PROC.$proc*); do
 		nodes+=($(echo $n | cut -d '.' -f 3))
 	done
+	RE=$(printf "|%s" ${nodes[@]})
+	RE=${RE:1}
 
 	# will process only known forms...
 	#if [[ $form =~ ^DISTANCE|BOJAP|EAUX|EXTENSO|FISSURO|GAZ|RIVERS|SOILSOLUTIONS$ ]]; then
@@ -129,7 +131,7 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 			 	# 1 |2   |3    |4   |5   |6        |7        |8 |9            |10        |11        |12|13|14|15|16|17|18|19|20 |21 |22  |23|24  |25  |26  |27|28       |29
 				for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
 				echo ");" >> $TMP
-				tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
+				tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
 					bin = ($1<0) ? 1:0; \
 					printf "INSERT INTO "t"(trash,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
 					for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -154,7 +156,8 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 		cmd "cat $TMP | sqlite3 $DBF && rm -f $TMP" 
 
 		# copy some variable values from former FORM and PROC conf
-		cmd "LC_ALL=C LANG=fr_FR.iso88591 sed -i -e 's/^NAME|.*$/$(grep ^TITLE\| $conf0)/g;s/^TITLE/NAME/g' $conf"
+		v=$(grep ^TITLE\| $conf0 | iconv -f UTF-8 -t ISO-8859-1)
+		cmd "LC_ALL=C sed -i -e 's/^NAME|.*$/$v/g;s/^TITLE/NAME/g' $conf"
 		for key in BANG DEFAULT_DAYS; do
 			cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$(grep ^$key\| $conf0)/g' $conf"
 		done
