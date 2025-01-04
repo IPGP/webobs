@@ -1,13 +1,39 @@
 =key|value
-# Generic FORM template for use with {fedit,showGENFORM,formGENFORM}.pl
+# Generic FORM template for use with {formGRID.pl,showGENFORM,formGENFORM}.pl
 #
 # ############################### WARNING #####################################
 # Once the database form has been created and the first data has been recorded,
 # you MAY BE VERY CAREFUL IN MODIFYING the keys of this file.
 # ############################### WARNING #####################################
 #
+# -----------------------------------------------------------------------------
+# --- GRID common parameters
+
+NAME|Demo database form
+DESCRIPTION|Demo/example of simple database form
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|MyForm
+
+# --- node parameters (display and maps)
+NODE_NAME|site
+NODE_MARKER|s
+NODE_SIZE|10
+NODE_RGB|0,1,1
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
 BANG|$WEBOBS{BIG_BANG}
-TITLE|Generic database form
 
 # Time zone of the data (in hour from UT)
 TZ|0
@@ -64,18 +90,18 @@ COLUMN02_LIST|FIELDSET02,FIELDSET03
 FIELDSETS_NUMBER|3
 
 # first fieldset name, number of cells and list of fields for each column
-FIELDSET01_NAME|Fieldset n°1
+FIELDSET01_NAME|Fieldset nï¿½1
 FIELDSET01_CELLS|1,COLS
 FIELDSET01_C01|INPUT01,INPUT02
 
 # second fieldset with 2 columns
-FIELDSET02_NAME|Fieldset n°2
+FIELDSET02_NAME|Fieldset nï¿½2
 FIELDSET02_CELLS|2,COLS
 FIELDSET02_C01|INPUT03,INPUT04
 FIELDSET02_C02|OUTPUT01
 
 # third fieldset with toggle view
-FIELDSET03_NAME|Fieldset n°3
+FIELDSET03_NAME|Fieldset nï¿½3
 FIELDSET03_CELLS|1
 FIELDSET03_TOGGLE|YES
 FIELDSET03_C01|OUTPUT02
