@@ -110,6 +110,7 @@ if (scalar(@GID) == 2) {
 	my %G;
 	if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
 	elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+	elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
 	if (%G) {
 		%GRID = %{$G{$GRIDName}} ;
 		if ( WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
@@ -127,6 +128,7 @@ if (scalar(@GID) == 2) {
 #
 my $grid = "$GRIDType.$GRIDName";
 my $isProc = ($GRIDType eq "PROC" ? '1':'0');
+my $isForm = ($GRIDType eq "FORM" ? '1':'0');
 my @procTS = ();
 my $procOUTG;
 my %authUsers;
@@ -276,7 +278,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	# -----------
 	$htmlcontents .= "<LI>$__{'Description'}: <I>$GRID{DESCRIPTION}</I></LI>\n" if ($GRID{DESCRIPTION});
 	# -----------
-	$htmlcontents .= "<LI>$__{'Grid code'}: <B>$grid</B></LI>\n";
+	$htmlcontents .= "<LI>$__{'Grid code'}: <B class='code'>$grid</B></LI>\n";
     # -----------
 	if ($showOwnr && defined($GRID{OWNCODE})) {
 		$htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n"
@@ -324,6 +326,14 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			}
 			$htmlcontents .= "</LI>\n";
 		}
+	}
+	# -----------
+	# only for FORMs
+	if ($isForm) {
+		my $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
+		$htmlcontents .= "<LI>$__{'Access to data'}: <B><A href=\"$urnData\">$__{'Database'}</A></B></LI>\n";
+		$htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
+		$htmlcontents .= "<LI>$__{'Number of inputs in database:'} <B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B></LI>\n";
 	}
 	# -----------
 	if (defined($GRID{URL})) {

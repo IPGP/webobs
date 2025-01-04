@@ -293,8 +293,7 @@ if (!$newG) {
 # ---- start HTML
 #
 my $text = l2u(join("",@rawfile));
-my $titrePage = "$__{'Editing'} grid";
-if ( $newG == 1 ) { $titrePage = "$__{'Creating'} new grid" }
+my $titrePage = ($newG == 1 ? "$__{'Creating new grid'}":"$__{'Editing grid'}");
 
 my $cm_edit = ($editOK || $admOK) ? 1 : 0;
 print <<_EOD_;

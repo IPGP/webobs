@@ -200,6 +200,9 @@ msgstr "Accès aux données brutes"
 msgid "Graphical routine"
 msgstr "Routine graphique"
 
+msgid "First year of data:"
+msgstr "Première année des données :"
+
 msgid "Events File(s)"
 msgstr "Fichier(s) d'événements"
 
@@ -1584,6 +1587,12 @@ msgstr "Archive"
 
 # --- formGRID.pl
 
+msgid "Creating new grid"
+msgstr "Création de nouvelle grid"
+
+msgid "Editing grid"
+msgstr "Modification de la grid"
+
 msgid "Form"
 msgstr "Form"
 
@@ -1950,6 +1959,9 @@ msgstr "Intervalle de dates"
 
 msgid "Lists"
 msgstr "Listes"
+
+msgid "Formulas"
+msgstr "Formules"
 
 # ---- formGENFORM.pl
 

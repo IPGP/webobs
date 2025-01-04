@@ -523,8 +523,24 @@ foreach my $i (sort keys %lists) {
 }
 $listoflist .= "</UL>\n</div></div>";
 
+# displays all formulas explicitely
+my $listofformula = "<BR><BR><div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#formulaID');\">&nbsp;&nbsp;";
+$listofformula .= "$__{'Formulas'}\n";
+$listofformula .= "</div><div id=\"formulaID\"><UL>";
+foreach (@formulas) {
+	my ($formula, $size, @x) = extract_formula($FORM{$_."_TYPE"});
+	my $name = $FORM{$_."_NAME"};
+	my $unit = ($FORM{$_."_UNIT"} ne "" ? " (".$FORM{$_."_UNIT"}.")":"");
+	foreach (@x) {
+		my $v = $FORM{$_."_NAME"};
+		$formula =~ s/$_/<b>$v<\/b>/g;
+	}
+	$listofformula .= "<LI><B>$name</B>$unit = $formula</LI>\n";
+}
+$listofformula .= "</UL>\n</div></div>";
+
 if ($text ne "") {
-	push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text\n$header\n</TABLE>\n$listoflist");
+	push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text\n$header\n</TABLE>\n$listoflist\n$listofformula");
 }
 
 if ($QryParm->{'dump'} eq "csv") {
