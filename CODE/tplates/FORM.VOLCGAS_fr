@@ -10,8 +10,8 @@
 # -----------------------------------------------------------------------------
 # --- GRID common parameters
 
-NAME|Gas database chemical analysis
-DESCRIPTION|Volcanic gas physico-chemical database form
+NAME|Volcanic gas database chemical analysis
+DESCRIPTION|Analyse physico-chimique des gaz volcaniques (FR)
 OWNCODE|
 TYPE|
 URL|
