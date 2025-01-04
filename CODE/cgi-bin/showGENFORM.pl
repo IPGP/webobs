@@ -160,6 +160,8 @@ if ($QryParm->{'dump'} ne "csv") {
 	"<body style=\"background-attachment: fixed\">\n",
 	"<div id=\"waiting\">$__{'Searching for data, please wait.'}</div>\n",
 	"<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
+	"<script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>",
+	"<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\" type=\"text/javascript\"></script>\n",
 	"<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
 	"<!-- overLIB (c) Erik Bosrup -->\n";
 	
