@@ -217,7 +217,7 @@ print "<H1 style=\"margin-bottom:6pt\"> $domain_title / $GRID{NAME}".($admOK ? "
 print WebObs::Search::searchpopup();
 
 my $ilinks = "[ ";
-$ilinks .= "<A href=\"/cgi-bin/listGRIDS.pl?type=$GRIDType\">".ucfirst(lc($GRIDType))."s</A>";
+$ilinks .= "<A href=\"/cgi-bin/listGRIDS.pl?type=".lc($GRIDType)."\">".ucfirst(lc($GRIDType))."s</A>";
 $ilinks .= " | <A href='#MYTOP' title=\"$__{'Find text in Grid'}\" onclick='srchopenPopup(\"+$GRIDType.$GRIDName\");return false'>\
                <img class='ic' src='/icons/search.png'></A>";
 $ilinks .= " | <A href=\"/cgi-bin/gvTransit.pl?grid=$GRIDType.$GRIDName\"><IMG src=\"/icons/tmap.png\" \
