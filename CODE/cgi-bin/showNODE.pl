@@ -96,6 +96,7 @@ if (scalar(@NID) == 3) {
 		if (%NODE) {
 			if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
 			elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+			elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
 			if (%G) {
 				%GRID = %{$G{$GRIDName}} ;
 				if ( clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
@@ -909,7 +910,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
