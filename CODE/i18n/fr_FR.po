@@ -203,11 +203,20 @@ msgstr "Routine graphique"
 msgid "First year of data:"
 msgstr "Première année des données :"
 
-msgid "Number of inputs in database:"
-msgstr "Nombre d'entrées dans la base de données :"
+msgid "Form structure:"
+msgstr "Structure du form :"
 
-msgid "Number of records in database:"
-msgstr "Nombre d'enregistrements dans la base de données :"
+msgid "inputs"
+msgstr "entrées"
+
+msgid "outputs"
+msgstr "sorties"
+
+msgid "Total number of records:"
+msgstr "Nombre total d'enregistrements :"
+
+msgid "including"
+msgstr "dont"
 
 msgid "in trash"
 msgstr "dans la corbeille"

@@ -354,9 +354,10 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 
 		my $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
 		$htmlcontents .= "<LI>$__{'Access to data'}: <B><A href=\"$urnData\">$__{'Database'}</A></B></LI>\n";
+		$htmlcontents .= "<LI>$__{'Form structure:'} <B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B> $__{'inputs'},"
+						." <B>".grep(/^OUTPUT.._NAME/,keys(%GRID))."</B> $__{'outputs'}</LI>\n";
 		$htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
-		$htmlcontents .= "<LI>$__{'Number of inputs in database:'} <B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B></LI>\n";
-		$htmlcontents .= "<LI>$__{'Number of records in database:'} <B>$nbData</B> (<B>$nbTrash</B> $__{'in trash'})</LI>\n";
+		$htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'})</LI>\n";
 	}
 	# -----------
 	if (defined($GRID{URL})) {
