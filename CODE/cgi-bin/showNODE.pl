@@ -230,7 +230,7 @@ print "<H1 style=\"margin-bottom:3pt\">$nodeName".($editOK ? " <A href='$cgiConf
 	.($editOK > 1 ? " <A href='$cgiConf&duplicate=1' title=\"$__{'Duplicate this node'}\"><IMG src=\"/icons/duplicate.png\"></A>":"")
 	."</H1>\n";
 print "<P class=\"subMenu\"> <B>&raquo;&raquo;</B> [";
-if (uc($GRIDType) eq 'VIEW' || uc($GRIDType) eq 'PROC') {
+if (uc($GRIDType) =~ /^VIEW|PROC|FORM$/) {
 	print " <A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRIDS}?domain=$GRID{DOMAIN}&type=all\">$DOMAINS{$GRID{DOMAIN}}{NAME}</A> / "
 		."<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName\">$GRID{NAME}</A> |";
 }
@@ -252,10 +252,10 @@ print "<TABLE style=\"background: white;\">";
 # ---- Row "Grids" ------------------------------------------------------------
 #
 print "<TR><TH valign=\"top\" width=\"10%\">Grids</TH>";
-print "<TD colspan=\"2\"><B>$QryParm->{'node'}</B>";
+print "<TD colspan=\"2\"><B class=\"code\">$QryParm->{'node'}</B>";
 for (@{$allNodeGrids{$NODEName}}) {
 	my $fullnode = "$_.$NODEName";
-	print "<BR><A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$fullnode\"><B>$fullnode</B></A>" if ($fullnode ne $QryParm->{'node'});
+	print "<BR><A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$fullnode\"><B class=\"code\">$fullnode</B></A>" if ($fullnode ne $QryParm->{'node'});
 }
 print "</TD></TR>\n";
 
