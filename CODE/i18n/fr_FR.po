@@ -311,6 +311,9 @@ msgstr "Début / Installation"
 msgid "End / Stop"
 msgstr "Fin / Arrêt"
 
+msgid "Raw Format"
+msgstr "Format"
+
 msgid "Parameters"
 msgstr "Paramètres"
 
@@ -320,8 +323,23 @@ msgstr "Données"
 msgid "Channels"
 msgstr "Canaux"
 
+msgid "Chan."
+msgstr "Canaux"
+
 msgid "Channel"
 msgstr "Canal"
+
+msgid "Form Information"
+msgstr "Informations du Form"
+
+msgid "Nb Rec."
+msgstr "Nb Enr."
+
+msgid "Last Record"
+msgstr "Dernier Enreg."
+
+msgid "Raw Data"
+msgstr "Données"
 
 msgid "See also the following maps"
 msgstr "Voir aussi les cartes suivantes"
