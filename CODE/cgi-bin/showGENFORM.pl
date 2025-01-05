@@ -380,7 +380,7 @@ $csvTxt .= "\n";
 $header = "<TR>";
 if ($clientAuth > 1) {
 	my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
-	$form_url->query_form('form' => $form, 'return_url' => $return_url, 'action' => 'new');
+	$form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
 	$header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
 }
 foreach(@colnam) { 
