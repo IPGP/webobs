@@ -263,21 +263,21 @@ print "<div id=\"noscrolldiv\">";
 			if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"*")) {
 				print "&nbsp;<a href='/cgi-bin/gridsMgr.pl' title=\"$__{'Edit/Create a Domain/Producer'}\"><img class='ic' src='/icons/modif.png'></a>&nbsp;&nbsp;&nbsp;";
 			}
-			print "Domain</TH>";
+			print "$__{'Domain'}</TH>";
 		}
-		print "<TH>Grid</TH>" if ($subsetType ne "");
+		print "<TH>$__{'Grid'}</TH>" if ($subsetType ne "");
 		print "<TH><a href='#popupY' title=\"$__{'Find text in Grids'}\" onclick='srchopenPopup(\"*ALL\");return false'><img class='ic' src='/icons/search.png'></a>";
 		if ($admVIEWS || $admPROCS || $admFORMS) {
 			print "&nbsp;<a href='#popupY' title=\"$__{'Create a new Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/new.png'></a>"
 		}
-		print     "&nbsp;&nbsp;&nbsp;Name</TH>";
-		print "<TH>Nodes</TH>";
-		print "<TH>Type</TH>"  if ($showType);
-		print "<TH>Owner</TH>" if ($showOwnr);
-		print "<TH>Graphs</TH>";
+		print     "&nbsp;&nbsp;&nbsp;$__{'Name'}</TH>";
+		print "<TH>$__{'Nodes'}</TH>";
+		print "<TH>$__{'Type'}</TH>"  if ($showType);
+		print "<TH>$__{'Owner'}</TH>" if ($showOwnr);
+		print "<TH>$__{'Graphs'}</TH>";
 		if ($wantProcs || $wantSefrans || $wantForms) {
 			#	print "<a href='#popupY' title=\"$__{'Edit/Create a Form'}\" onclick='feditopenPopup(); return false;'><img class='ic' src='/icons/modif.png'></a>";
-			print "<TH>Raw Data</TH>";
+			print "<TH>$__{'Raw Data'}</TH>";
 		}
 		print "</TR>\n";
 		for my $d (@$domains) {
@@ -597,7 +597,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
