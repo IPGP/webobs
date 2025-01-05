@@ -16,7 +16,7 @@ Optionaly specify the graph to display:
 ts=	can be any key defined in the GRID configuration TIMESCALELIST or 'map' or 'events'
 g=	any key defined in SUMMARYLIST, or one of the NODE ID
 	void (default) means an overview of all thumbnails for the first available timescale
-	for a PROC, and map for a VIEW
+	for a PROC, and map for a VIEW or FORM
 	g=col shows all graphs in one column at full scale
 
 	if ts=events, YYYY or YYYY/MM or YYYY/MM/DD to display available events
@@ -79,6 +79,7 @@ if (scalar(@GID) == 2) {
 	($GRIDType, $GRIDName) = @GID;
 	if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
 	elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+	elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
 	if (%G) {
 		%GRID = %{$G{$GRIDName}} ;
 		if ( WebObs::Users::clientHasRead(type=>"authprocs",name=>"$GRIDName") || WebObs::Users::clientHasRead(type=>"authviews",name=>"$GRIDName") ) {
@@ -517,7 +518,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2020 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

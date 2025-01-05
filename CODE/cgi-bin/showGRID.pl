@@ -67,6 +67,7 @@ use POSIX qw(strftime);
 
 use WebObs::Config;
 use WebObs::Grids;
+use WebObs::Form;
 use WebObs::Events;
 use WebObs::Users;
 use WebObs::Utils;
@@ -145,6 +146,8 @@ my @domain = split(/\|/,$GRID{DOMAIN});
 
 my $myself = "/cgi-bin/".basename($0)."?grid=$grid";
 my $nbNodes = scalar(@{$GRID{NODESLIST}});
+my $tbl = lc($GRIDName); # form table name
+my $dbh;
 
 my $titrePage = "";
 my $editCGI = "/cgi-bin/gedit.pl";
@@ -173,7 +176,7 @@ my $overallStatus = 1;
 my $statusDB = $NODES{SQL_DB_STATUS} || "$WEBOBS{PATH_DATA_DB}/NODESSTATUS.db";
 my $statusNODES;
 if (-e $statusDB) {
-	my $dbh = DBI->connect("dbi:SQLite:$statusDB", "", "", {
+	$dbh = DBI->connect("dbi:SQLite:$statusDB", "", "", {
 		'AutoCommit' => 1,
 		'PrintError' => 1,
 		'RaiseError' => 1,
@@ -330,10 +333,30 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	# -----------
 	# only for FORMs
 	if ($isForm) {
+		# connect to the database
+		$dbh = connectDbForms();
+
+		# get the total number or records
+		my $stmt = "SELECT COUNT(id) FROM $tbl";
+		my $sth = $dbh->prepare($stmt);
+		my $rv = $sth->execute() or die $DBI::errstr;
+		my @row = $sth->fetchrow_array();
+		my $nbData = join('',@row);
+		$sth->finish();
+
+		# get the total number or records in trash
+		$stmt = "SELECT COUNT(id) FROM $tbl WHERE trash=1";
+		$sth = $dbh->prepare($stmt);
+		$rv = $sth->execute() or die $DBI::errstr;
+		@row = $sth->fetchrow_array();
+		my $nbTrash = join('',@row);
+		$sth->finish();
+
 		my $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
 		$htmlcontents .= "<LI>$__{'Access to data'}: <B><A href=\"$urnData\">$__{'Database'}</A></B></LI>\n";
 		$htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
 		$htmlcontents .= "<LI>$__{'Number of inputs in database:'} <B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B></LI>\n";
+		$htmlcontents .= "<LI>$__{'Number of records in database:'} <B>$nbData</B> (<B>$nbTrash</B> $__{'in trash'})</LI>\n";
 	}
 	# -----------
 	if (defined($GRID{URL})) {
@@ -480,6 +503,7 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 				my @tsp = split(/,/,$GRID{"STATUSLIST"});
 				$htmlcontents .= "<TH colspan=3>$__{'Proc Status'} (".$procTS[first { $tsp[$_] eq '1' } reverse(0..$#tsp)].")</TH>";
 			}
+			$htmlcontents .= "<TH colspan=3>$__{'Form Information'}</TH>" if ($isForm);
 			$htmlcontents .= "</TR>\n<TR>";
 			if ($usrCoord eq "utm") {
 				$htmlcontents .= "<TH>UTM Eastern (m)</TH><TH>UTM Northern (m)</TH><TH>$__{'Elev.'} (m)</TH>";
@@ -499,6 +523,9 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 			}
 			if ($overallStatus) {
 				$htmlcontents .= "<TH>$__{'Last Data'} (TZ $GRID{TZ})</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
+			}
+			if ($isForm) {
+				$htmlcontents .= "<TH>$__{'Nb Rec.'}</TH><TH>$__{'Last Record'}</TH><TH>$__{'Raw Data'}</TH>";
 			}
 		$htmlcontents .= "</TR>\n";
 
@@ -676,12 +703,38 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 						$htmlcontents .= "<TD colspan=\"3\"> </TD>";
 					}
 				}
+				# Form information
+				if ($isForm) {
+					# get the total number or records for this node
+					my $stmt = "SELECT COUNT(id) FROM $tbl WHERE trash=0 AND node='$NODEName'";
+					my $sth = $dbh->prepare($stmt);
+					my $rv = $sth->execute() or die $DBI::errstr;
+					my @row = $sth->fetchrow_array();
+					my $nbRec = join('',@row);
+					$sth->finish();
+
+					# get the last datetime for this node
+					$stmt = "SELECT edate,edate_min FROM $tbl WHERE trash=0 AND node='$NODEName' ORDER BY edate DESC LIMIT 1";
+					$sth = $dbh->prepare($stmt);
+					$rv = $sth->execute() or die $DBI::errstr;
+					@row = $sth->fetchrow_array();
+					my ($ly,$lm,$ld,$lhr,$lmn) = datetime2array($row[0], $row[1]);
+					my $lastRec = "$ly".($lm ? "-$lm":"").($ld ? "-$ld":"").($lhr ? " $lhr":"").($lmn ? ":$lmn":"");
+					$sth->finish();
+
+					$htmlcontents .= "<TD align=\"center\">$nbRec</TD>";
+					$htmlcontents .= "<TD align=\"center\">$lastRec</TD>";
+					$htmlcontents .= "<TD align=\"center\"><A href=\"/cgi-bin/showGENFORM.pl?form=$GRIDName&node=$NODEName\" title=\"$__{'Access to form data'}\"><IMG src=\"/icons/form.png\"></A></TD>";
+				}
 				$htmlcontents .= "</TR>\n".(!$displayNode ? "-->":"");
 			}
 		}
 		$htmlcontents .= "</TABLE>";
 	$htmlcontents .= "</div></div>";
 print $htmlcontents;
+
+# disconnect the DB
+$dbh->disconnect() if ($isForm);
 
 
 # ---- now the grid's MAPs
@@ -831,7 +884,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

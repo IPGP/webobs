@@ -329,8 +329,13 @@ if ($QryParm->{'dump'} ne "csv") {
 	print "</TD><TD style=\"border:0;text-align:center\">";
 	print "<INPUT type=\"submit\" value=\"$__{'Display'}\">";
 	print "</TD></TR></TABLE></P></FORM>\n",
-	"<H1>".$title."$editForm</H1>\n",
-	"<P>";
+		"<H1 style=\"margin-bottom:6pt\">".$title."$editForm</H1>\n",
+		"<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-bottom:10px'>",
+		"<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=FORM.$form\"><B>Form</B></A>";
+	if (-d "$WEBOBS{ROOT_OUTG}/FORM.$form/$WEBOBS{PATH_OUTG_MAPS}") {
+		print " | <B><A href=\"/cgi-bin/showOUTG.pl?grid=FORM.$form&ts=map\">Map</A></B>";
+	}
+	print " ]</DIV>\n<P>";
 }
 
 # ---- Displaying data 
@@ -571,15 +576,6 @@ sub simplify_date {
 	return $date;
 }
 
-# Open an SQLite connection to the forms database
-sub connectDbForms {
-	return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
-		'AutoCommit' => 1,
-		'PrintError' => 1,
-		'RaiseError' => 1,
-		}) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
-}
-
 __END__
 
 =pod
@@ -590,7 +586,7 @@ Lucas Dassin, François Beauducel
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
