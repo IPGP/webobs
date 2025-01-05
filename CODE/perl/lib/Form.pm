@@ -59,7 +59,8 @@ require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
 @EXPORT = qw(datetime2array datetime2maxmin
-	extract_formula extract_list extract_type extract_text count_inputs);
+	extract_formula extract_list extract_type extract_text count_inputs
+	connectDbForms);
 
 # FORM constructor
 sub new {
@@ -236,6 +237,16 @@ sub count_inputs {
 	return $count;
 }
 
+
+# Open an SQLite connection to the forms database
+sub connectDbForms {
+	return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
+		'AutoCommit' => 1,
+		'PrintError' => 1,
+		'RaiseError' => 1,
+		}) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
+}
+
 __END__
 
 =pod
@@ -246,7 +257,7 @@ Didier Lafon, François Beauducel, Lucas Dassin
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
