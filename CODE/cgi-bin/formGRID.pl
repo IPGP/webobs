@@ -72,14 +72,15 @@ use strict;
 use warnings;
 use CGI;
 my $cgi = new CGI;
-$CGI::POST_MAX = 1024;
-$CGI::DISABLE_UPLOADS = 1;
 use CGI::Carp qw(fatalsToBrowser set_message);
 use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
 use File::Basename;
 use File::Copy qw(copy);
 use File::Path qw(rmtree);
 use POSIX qw/strftime/;
+use List::MoreUtils qw(uniq);
+$CGI::POST_MAX = 1024;
+$CGI::DISABLE_UPLOADS = 1;
 
 # ---- webobs stuff
 #
@@ -98,8 +99,8 @@ use Locale::TextDomain('webobs');
 # Return information when OK
 # (Reminder: we use text/plain as this is an ajax action)
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+	print "$_[0] successfully !\n" ;
 }
 
 # Return information when not OK
@@ -151,7 +152,7 @@ sub update_grid2domains {
    $q = "delete from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = ? and NAME = ?";
    $rows = $dbh->do($q, undef, $GRIDType, $GRIDName);
    if (!$rows) {
-	     htmlMsgDBError($dbh, "postGRID: unable to delete grid"
+	     htmlMsgDBError($dbh, "formGRID: unable to delete grid"
 						." $GRIDType.$GRIDName for update into domains");
    exit;
    }
@@ -159,7 +160,7 @@ sub update_grid2domains {
 	for my $domain (@$domains_ref) {
       $rows = $dbh->do($q, undef, $GRIDType, $GRIDName, $domain);
       if (!$rows || $rows == 0) {
-	        htmlMsgDBError($dbh, "postGRID: unable to insert grid"
+	        htmlMsgDBError($dbh, "formGRID: unable to insert grid"
 					  ." $GRIDType.$GRIDName into domain $domain");
 	      exit;
       }
@@ -167,13 +168,23 @@ sub update_grid2domains {
    $dbh->disconnect();
 }
 
+# Extract INPUTs from FORM's conf
+sub get_inputs {
+    my %inputs;
+    foreach(@_) {
+        if ($_ =~ /(INPUT[0-9]{2}_NAME)/) {
+           $inputs{$_} = 1;
+        }
+    }
+    return %inputs;
+}
 
 # ---- misc inits
 #
 set_message(\&webobs_cgi_msg);
 my $gridConfFile;       # file name of the grid's configuration file
 my $gridConfFileMtime;  # last modification time of the config file
-my $editOK  = 0;        # 1 if the user is allowed to edit the grid
+my $editOK = 0;         # 1 if the user is allowed to edit the grid
 my $admOK = 0;          # 1 if the user is allowed to administrate the grid
 my $newG    = 0;        # 1 if we are creating a new grid
 my @rawfile;            # raw content of the configuration file
@@ -181,6 +192,7 @@ my $GRIDType = "";      # grid type ("PROC", "VIEW", "FORM", or "SEFRAN")
 my $GRIDName = "";      # name of the grid
 my %GRID;               # structure describing the grid
 my @domain;             # the domain array of the grid
+my $text;
 my $template;           # the template for a new grid
 my %FORMS;              # titles of existing forms
 my $form = "";          # the form ID of the grid (if any)
@@ -191,9 +203,11 @@ my $CM_edit_theme = $WEBOBS{JS_EDITOR_EDIT_THEME} // "default";
 my $CM_browsing_theme = $WEBOBS{JS_EDITOR_BROWSING_THEME} // "neat";
 my $CM_language_mode = "cmwocfg";
 my $CM_auto_vim_mode = $WEBOBS{JS_EDITOR_AUTO_VIM_MODE} // "yes";
-my $post_url = "/cgi-bin/postGRID.pl";
+my $post_url = "/cgi-bin/formGRID.pl";
 
 # Read and check CGI parameters
+my $action   = checkParam($cgi->param('action'),
+			qr/(edit|save|delete)/, 'action')  // "edit";
 my $tpl = checkParam($cgi->param('tpl'),
 			qr{^((VIEW|PROC|FORM|SEFRAN)(\.|/)[a-zA-Z0-9_]+)?$}, 'tpl') // "";
 my $grid = checkParam($cgi->param('grid'),
@@ -268,20 +282,138 @@ if (scalar(@GID) == 2) {
 	}
 	else {
 		if ($admOK) {
-			$gridConfFile = $template;
-			@rawfile = readFile($gridConfFile);
-			$gridConfFileMtime = (stat($gridConfFile))[9] ;
+			@rawfile = readFile($template);
 			$editOK = 1;
 			$newG = 1;
 		}
 	}
 
 } else { die "$__{'Not a valid GRID requested (NOT gridtype.gridname)'}" }
-if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
+
+# ---- ends here if client is not authorized
+if (!$editOK) { die "$__{'Sorry, you must have an edit level to modify'} ".$cgi->param('grid')."." }
 
 # ---- good, passed all checkings above
 #
 
+# ===========================================================================
+if ($action eq 'delete') {
+
+	if (!$admOK) { die "$__{'Sorry, you must have an admin level to delete'} ".$cgi->param('grid')."." };
+
+	# delete the dir/file first
+	my $dir = dirname($gridConfFile);
+	my $rmtree_errors;
+	rmtree($dir, {'safe' => 1, 'error' => \$rmtree_errors});
+	if ($rmtree_errors  && @$rmtree_errors) {
+		htmlMsgNotOK("formGRID couldn't delete directory $dir");
+		print STDERR "formGRID.pl: unable to delete directory $dir: "
+			.join(", ", @$rmtree_errors)."\n";
+		exit;
+	}
+	# NOTE: this removes the grid from tables,
+	# but not in the nodes association conf files...
+	unlink(glob("$WEBOBS{PATH_GRIDS2NODES}/$GRIDType.$GRIDName.*"));
+	my $dbh = connectDbDomains();
+	my $q = "delete from $WEBOBS{SQL_TABLE_GRIDS}"
+			." where TYPE = ? and NAME = ?";
+	my $rows = $dbh->do($q, undef, $GRIDType, $GRIDName);
+	if (!$rows || $rows == 0) {
+		htmlMsgDBError($dbh, "formGRID: unable to delete grid"
+						  ." $GRIDType.$GRIDName into domains");
+		exit;
+	}
+	$dbh->disconnect();
+	htmlMsgOK("$grid deleted");
+	exit;
+
+}
+
+
+# ===========================================================================
+if ($action eq 'save') {
+
+	my @tod = localtime();
+
+	$text = scalar($cgi->param('text')) // '';  # used only in print FILE $text;
+	@domain = checkParam([$cgi->multi_param('domain')], qr/^[a-zA-Z0-9_-]*$/,
+			"domain");
+	my $TS0 = checkParam($cgi->param('ts0'), qr/^[0-9]*$/, "TS0") // 0;
+	my @SELs = checkParam([$cgi->multi_param('SELs')],
+				qr/^[0-9A-Za-z_-]+$/, "SELs");
+
+	my $griddir = dirname($gridConfFile);
+
+	if (! -e $gridConfFile) {
+		# --- Grid creation (config file does not exist)
+
+		if (!-d $griddir and !mkdir($griddir)) {
+			htmlMsgNotOK("formGRID: error while creating directory $griddir: $!");
+			exit;
+		}
+		if ( open(FILE,">$gridConfFile") ) {
+			print FILE u2l($text);
+			close(FILE);
+		} else {
+			htmlMsgNotOK("formGRID: error creating $gridConfFile: $!");
+			exit;
+		}
+		update_grid2domains($GRIDType, $GRIDName, \@domain);
+		update_grid2nodes_links($GRIDType, $GRIDName, \@SELs);
+
+		htmlMsgOK("formGRID: $grid created.");
+		exit;
+	}
+
+	# --- Grid update (config file already exists)
+
+	# Additional integrity check: abort if file has changed
+	# (well actually, if its last-modified timestamp has changed!)
+	# since the client opened it to enter his(her) modification(s)
+	if ($TS0 != (stat("$gridConfFile"))[9]) {
+		htmlMsgNotOK("$gridConfFile has been modified while you were editing ! Please retry later...");
+		exit;
+	}
+
+
+	# Use an exclusive lock on the config file during the process
+	if (!sysopen(FILE, "$gridConfFile", O_RDWR | O_CREAT)) {
+		# Unable to open the configuration file
+		htmlMsgNotOK("formGRID: error opening $gridConfFile: $!");
+		exit;
+	}
+	unless(flock(FILE, LOCK_EX|LOCK_NB)) {
+		warn "formGRID: waiting for lock on $gridConfFile...";
+		flock(FILE, LOCK_EX);
+	}
+
+	# Backup the configuration file (To Be Removed: lifecycle too short)
+	local $File::Copy::Recursive::CopyLink = 0;
+	if (copy($gridConfFile, "$gridConfFile~") != 1) {
+		# Unable to backup of the configuration file
+		close(FILE);
+		htmlMsgNotOK("formGRID: couldn't backup $gridConfFile");
+		exit;
+	}
+
+	# Write the updated configuration to the configuration file
+	truncate(FILE, 0);
+	seek(FILE, 0, SEEK_SET);
+	print FILE u2l($text);
+	close(FILE);
+
+	# Update domains and links to nodes and forms
+	update_grid2domains($GRIDType, $GRIDName, \@domain);
+	update_grid2nodes_links($GRIDType, $GRIDName, \@SELs);
+
+	htmlMsgOK("formGRID: $grid updated");
+	exit;
+
+}
+
+
+# ===========================================================================
+# if we reached this point it's the default edit action...
 if (!$newG) {
 	%GRID = %{$GRID{$GRIDName}};
 	@domain = split(/\|/, $GRID{'DOMAIN'});
@@ -293,7 +425,7 @@ if (!$newG) {
 # ---- start HTML
 #
 my $text = l2u(join("",@rawfile));
-my $titrePage = ($newG == 1 ? "$__{'Creating new grid'}":"$__{'Editing grid'}");
+my $title = ($newG == 1 ? "$__{'Creating new grid'}":"$__{'Editing grid'}");
 
 my $cm_edit = ($editOK || $admOK) ? 1 : 0;
 print <<_EOD_;
@@ -346,7 +478,7 @@ print <<_EOD_;
  function delete_grid()
  {
 	if ( confirm("$__{'The GRID will be deleted (but not associated nodes). Are you sure?'}") ) {
-		document.formulaire.delete.value = 1;
+		document.formulaire.action.value = 'delete';
 		\$.post("$post_url", \$("#theform").serialize(), function(data) {
 			if (data != '') alert(data);
 			location.href = "$GRIDS{CGI_SHOW_GRIDS}";
@@ -365,7 +497,7 @@ function verif_formulaire()
 	}
 	// postform() from cmtextarea.js will submit the form to $post_url
 	postform();
-	//\$.post("/cgi-bin/postGRID.pl", \$("#theform").serialize(), function(data) {
+	//\$.post("$post_url", \$("#theform").serialize(), function(data) {
 	//	if (data != '') alert(data);
 	//	location.href = document.referrer;
 	//});
@@ -382,11 +514,11 @@ function verif_formulaire()
 <FORM id="theform" name="formulaire" action="">
 <input type="hidden" name="ts0" value="$gridConfFileMtime">
 <input type="hidden" name="grid" value="$grid">
-<input type="hidden" name="delete" value="0">
+<input type="hidden" name="action" value="save">
 _EOD_
 
-print "<H2>$titrePage $GRIDType.$GRIDName";
-if ($newG == 0) {
+print "<H2>$title $GRIDType.$GRIDName";
+if ($admOK && !$newG) {
 	print " <A href=\"#\"><IMG src=\"/icons/no.png\" onClick=\"delete_grid();\" title=\"$__{'Delete this grid'}\"></A>";
 }
 print "</H2>\n";
@@ -394,7 +526,6 @@ print "</H2>\n";
 # ---- Display file contents into a "textarea" so that it can be edited
 print "<TABLE style=\"\">\n";
 print "<TR><TD style=\"border:0;\">\n";
-#print "<TEXTAREA class=\"editfmono\" id=\"tarea\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$text</TEXTAREA><br>\n";
 print "<TEXTAREA class=\"editfmono\" id=\"textarea-editor\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$text</TEXTAREA>\n";
 print "<div id=\"statusbar\">$GRIDType.$GRIDName</div>\n";
 
@@ -407,16 +538,32 @@ foreach my $d (sort(keys(%DOMAINS))) {
 	print "<option value=\"$d\"".(grep(/^$d$/, @domain) ? " selected":"").">{$d}: $DOMAINS{$d}{NAME}</option>\n";
 }
 print "</SELECT></FIELDSET>\n";
-#[DEBUG:] print "<p>domain = +".join('+',@domain)."+</p>";
 
-# ---- Forms
-if ($GRIDType eq "PROC") {
-	print "<FIELDSET><LEGEND>$__{'Form'}</LEGEND><SELECT name=\"form\" size=\"1\">\n";
-	print "<option value=\"\"> --- none --- </option>\n";
-	for (sort(keys(%FORMS))) {
-		print "<option value=\"$_\"".($form eq $_ ? " selected":"").">{$_}: $FORMS{$_}</option>\n";
+# ---- Form lists
+if ($GRIDType eq "FORM") {
+	my @lists  = grep {/_TYPE\|list:/} split(/\n/, $text);
+	@lists = uniq(map {s/^.*\|list:\s*(.*)$/$1/g; $_} @lists);	
+
+	print "<FIELDSET><LEGEND>$__{'Associated lists'}</LEGEND>\n<UL style=\"margin-top:0; margin-bottom:0\">";
+
+	foreach (@lists) {
+		$_ = trim($_);
+		my $tdir = "$WEBOBS{ROOT_CODE}/tplates"; 
+		my $fdir  = "$WEBOBS{PATH_FORMS}/$GRIDName";
+		if (! -d $fdir and !mkdir($fdir)) {
+			print "fedit: error while creating directory $fdir: $!";
+		}
+		my $file = "$fdir/$_";
+		if ((! -e $file) && -e "$tdir/$_") {
+			# if the file exists only in the template directory, copy it
+			qx(cp $tdir/$_ $file 2>&1);
+		} elsif (! -e $file) {
+			# if the file does not exist anywhere, copy the generic FORM_list
+			qx(cp $tdir/FORM_list.conf $file 2>&1);
+		}
+		print "<LI><A href=\"/cgi-bin/xedit.pl?fs=CONF/FORMS/$GRIDName/$_\">$_</A></LI>\n";
 	}
-	print "</SELECT></FIELDSET>\n";
+	print "</UL></FIELDSET>\n";
 }
 
 # ---- Nodes
@@ -500,7 +647,7 @@ François Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
