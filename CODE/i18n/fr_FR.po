@@ -68,6 +68,12 @@ msgstr "erreur unlink lockfile"
 msgid "Not authorized"
 msgstr "Pas autorisé"
 
+msgid "Sorry, you must have an edit level to modify"
+msgstr "Désolé, vous devez avoir un niveau éditeur pour modifier"
+
+msgid "Sorry, you must have an admin level to delete"
+msgstr "Désolé, vous devez avoir un niveau administrateur pour supprimer"
+
 msgid "Invalid resource name"
 msgstr "Ressource invalide"
 
@@ -591,7 +597,7 @@ msgid "Names and Codes"
 msgstr "Noms et Codes"
 
 msgid "Associated Grids"
-msgstr "Grids associés"
+msgstr "Grids associées"
 
 msgid "Procs Parameters"
 msgstr "Paramètres de Proc"
@@ -660,7 +666,7 @@ msgid "Search"
 msgstr "Recherche"
 
 msgid "Search in selected grids below"
-msgstr "Recherche dans les Grids cochés ci-dessous"
+msgstr "Recherche dans les Grids cochées ci-dessous"
 
 msgid "Advanced Search"
 msgstr "Recherche avancée"
@@ -1578,7 +1584,7 @@ msgid "Line width"
 msgstr "Épaisseur des lignes"
 
 msgid "Grid"
-msgstr "Grille"
+msgstr "Grid"
 
 msgid "PPI"
 msgstr "Résolution PPI"
@@ -1631,6 +1637,9 @@ msgstr "Modification de la grid"
 
 msgid "Form"
 msgstr "Form"
+
+msgid "Associated lists"
+msgstr "Listes associées"
 
 msgid "Available/Associated nodes"
 msgstr "Nodes disponibles/associés"
