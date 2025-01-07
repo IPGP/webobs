@@ -443,7 +443,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
 	$edit = qq(<a href="$form_url"><img src="/icons/modif.png" title="Edit..." border=0></a>);
 	$delete = qq(<img src="/icons/no.png" title="Delete..." onclick="checkRemove($id)">);
 
-	$text .= "<TR ".($trash == 1 ? "class=\"inTrash\"":"").">";
+	$text .= "<TR".($trash == 1 ? " class=\"inTrash\"":"").">";
 	if ($clientAuth > 1) {
 		$text .= "<TH nowrap>$edit</TH>";
 	}
@@ -544,9 +544,7 @@ foreach (@formulas) {
 }
 $listofformula .= "</UL>\n</div></div>";
 
-if ($text ne "") {
-	push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text\n$header\n</TABLE>\n$listoflist\n$listofformula");
-}
+push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n":"")."</TABLE>\n$listoflist\n$listofformula");
 
 if ($QryParm->{'dump'} eq "csv") {
 	push(@csv,l2u($csvTxt));
