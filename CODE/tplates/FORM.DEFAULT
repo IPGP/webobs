@@ -39,10 +39,14 @@ BANG|$WEBOBS{BIG_BANG}
 TZ|0
 
 # if YES, use start and end date/time for each record
-STARTING_DATE|NO
+STARTING_DATE|YES
 
 # may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
+
+# if YES, use a quality check for each record
+QUALITY_CHECK|YES
+QUALITY_OPERATORS|+ADMIN
 
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
@@ -50,6 +54,9 @@ DEFAULT_DAYS|365
 # list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
 VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
+# comment input field
+COMMENT_SIZE|80
+COMMENT_HELP|Note here any important things that complement the data!
 
 # --- Inputs names, units, and types
 # valid types: text(size), numeric(size), list: filename, radio: filename

@@ -14,7 +14,7 @@ http://..../showGENFORM.pl?.... see 'query string parameters' ...
 'GENFORM' is the generic WebObs FORM.
 
 This script allows displaying and editing data from any proc associated to a
-GENFORM form. See fedit.pl for description of configuration.
+GENFORM form. See formGRID.pl for description of configuration.
 
 =head1 Query string parameters
 
@@ -74,7 +74,6 @@ my $form = $cgi->param('form');
 # Stops early if not authorized
 my $clientAuth = clientMaxAuth(type=>"authforms",name=>"('$form')");
 die "You can't view $form reports." if ($clientAuth < 1);
-my $editForm = ($clientAuth > 2 ? " <A href=\"/cgi-bin/fedit.pl?fname=$form&action=edit\"><IMG src=\"/icons/modif.png\" title=\"Edit...\" border=0></A>":"");
 
 my %G = readForm($form);
 my %FORM = %{$G{$form}};
@@ -329,7 +328,7 @@ if ($QryParm->{'dump'} ne "csv") {
 	print "</TD><TD style=\"border:0;text-align:center\">";
 	print "<INPUT type=\"submit\" value=\"$__{'Display'}\">";
 	print "</TD></TR></TABLE></P></FORM>\n",
-		"<H1 style=\"margin-bottom:6pt\">".$title."$editForm</H1>\n",
+		"<H1 style=\"margin-bottom:6pt\">$title</H1>\n",
 		"<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-bottom:10px'>",
 		"<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=FORM.$form\"><B>Form</B></A>";
 	if (-d "$WEBOBS{ROOT_OUTG}/FORM.$form/$WEBOBS{PATH_OUTG_MAPS}") {

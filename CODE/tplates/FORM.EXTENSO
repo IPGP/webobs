@@ -45,12 +45,18 @@ STARTING_DATE|NO
 # may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
 
+# if YES, use a quality check for each record
+QUALITY_CHECK|NO
+QUALITY_OPERATORS|+ADMIN
+
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
 
 # list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
 VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
+# comment input field
+COMMENT_SIZE|80
 COMMENT_HELP|Enter any observations made during the measurements
 
 
