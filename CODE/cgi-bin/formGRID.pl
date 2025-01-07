@@ -367,6 +367,66 @@ if ($action eq 'save') {
 
 	# --- Grid update (config file already exists)
 
+	if ($GRIDType eq 'FORM') {
+		my @db_columns = ("id integer PRIMARY KEY AUTOINCREMENT", "trash boolean DEFAULT FALSE", "quality integer", "node text NOT NULL",
+				"edate datetime", "edate_min datetime",
+				"sdate datetime NOT NULL", "sdate_min datetime",
+				"operators text NOT NULL, comment text", "tsupd text NOT NULL", "userupd text NOT NULL");
+
+		# Connecting to the database in order to create a table with the name of the FORM
+		my $dbh = connectDbForms();
+
+		# Checking if the table we want to edit exists
+		my $tbl = lc($GRIDName);
+
+		my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
+		my $sth = $dbh->prepare( $stmt );
+		my $rv = $sth->execute() or die $DBI::errstr;
+
+		if ($sth->fetchrow_array() == 0) {	# if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
+			# --- creation of the DB table
+			my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
+
+			push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
+
+			my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
+			my $sth = $dbh->prepare( $stmt );
+			my $rv = $sth->execute() or die $DBI::errstr;
+		}
+		
+		# now we know if the table exists
+		# we want to look at the modification of $text
+		my @inputs  = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
+		my %old_inputs = get_inputs(readCfg($gridConfFile));
+		my %new_inputs = map { (split /\|/, $_, 2) } @inputs;
+
+		foreach (keys %old_inputs) {
+			if (not exists $new_inputs{$_}) {
+				htmlMsgNotOK("You can't remove an INPUT !");
+				exit;
+			}
+		}
+
+		my @new_columns;
+		foreach (keys %new_inputs) {
+			if (not exists $old_inputs{$_}) {
+				push(@new_columns, lc((split '_', $_)[0])." TEXT");
+			}
+		}
+
+		my $msg = "Update";
+		if (@new_columns) {
+			$msg = "New INPUT has been added to the FORM !";
+
+			# --- connecting to the database in order to add new INPUT to the DB
+			foreach (sort @new_columns) {
+				my $stmt = "ALTER TABLE $tbl ADD COLUMN $_;";
+				my $sth = $dbh->prepare( $stmt );
+				my $rv = $sth->execute() or die $DBI::errstr;
+			}
+		}
+	}
+
 	# Additional integrity check: abort if file has changed
 	# (well actually, if its last-modified timestamp has changed!)
 	# since the client opened it to enter his(her) modification(s)
