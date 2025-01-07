@@ -37,9 +37,28 @@ DEM_COPYRIGHT|
 # Generic FORM template for use with cgi-bin/fedit.pl
 BANG|$WEBOBS{BIG_BANG}
 
+# Time zone of the data (in hour from UT)
+TZ|0
+
+# if YES, use start and end date/time for each record
 STARTING_DATE|NO
-DEFAULT_DAYS|365
+
+# may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
+
+# if YES, use a quality check for each record
+QUALITY_CHECK|NO
+QUALITY_OPERATORS|+ADMIN
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
+
+# comment input field
+COMMENT_SIZE|80
+COMMENT_HELP|Enter any observations made during the measurements
 
 # inputs names and units
 INPUT01_NAME|Gas Temperature
@@ -47,7 +66,7 @@ INPUT01_UNIT|�C
 INPUT02_NAME|pH
 INPUT02_UNIT|
 INPUT03_NAME|Flow Rate (qualitative) 
-INPUT03_TYPE|list: FORM_listVOLCGAS_type.conf
+INPUT03_TYPE|list: FORM_VOLCGAS_list_type.conf
 INPUT03_FILT|YES
 INPUT04_NAME|H<sub>2</sub>
 INPUT04_UNIT|%

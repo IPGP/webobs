@@ -44,12 +44,17 @@ STARTING_DATE|NO
 # may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
 
+# if YES, use a quality check for each record
+QUALITY_CHECK|YES
+QUALITY_OPERATORS|+ADMIN
+
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
 
 # list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
 VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
+# comment input field
 COMMENT_SIZE|80
 COMMENT_HELP|Note any presence of odour, gas or precipitate, etc...
 
@@ -63,14 +68,14 @@ COMMENT_HELP|Note any presence of odour, gas or precipitate, etc...
 # ############################### WARNING #####################################
 
 INPUT01_NAME|Type of samp.
-INPUT01_TYPE|list: FORM_listWATERS_type.conf
+INPUT01_TYPE|list: FORM_WATERS_list_type.conf
 INPUT01_FILT|YES
 
 INPUT02_NAME|Air Temp.
-INPUT02_UNIT|°C
+INPUT02_UNIT|ï¿½C
 
 INPUT03_NAME|Sample Temp.
-INPUT03_UNIT|°C
+INPUT03_UNIT|ï¿½C
 
 INPUT04_NAME|pH
 
@@ -78,7 +83,7 @@ INPUT05_NAME|Flow Rate
 INPUT05_UNIT|l/min
 
 INPUT06_NAME|Cond.
-INPUT06_UNIT|µS
+INPUT06_UNIT|ï¿½S
 
 INPUT07_NAME|Level
 INPUT07_UNIT|m
@@ -132,8 +137,8 @@ INPUT23_NAME|&delta;D
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 
-OUTPUT01_NAME|Cond. @25°C
-OUTPUT01_UNIT|µS
+OUTPUT01_NAME|Cond. @25ï¿½C
+OUTPUT01_UNIT|ï¿½S
 OUTPUT01_TYPE|formula: INPUT06 / (1 + 0.02*(INPUT03 - 25))
 OUTPUT02_NAME|H<sup>+</sup>
 OUTPUT02_UNIT|ppm
