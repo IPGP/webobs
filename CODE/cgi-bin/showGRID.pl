@@ -273,15 +273,14 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	$htmlcontents .= "</div><div id=\"specID\">";
 	# should 'nodes' be called differently (than 'nodes'!) ?
 	my $snm = defined($GRID{NODE_NAME}) ? $GRID{NODE_NAME} : "$__{'node'}";
-	$htmlcontents .= "<TABLE width=\"100%\"><TR><TD style=\"border:0\"><UL>";
+	$htmlcontents .= "<TABLE width=\"100%\"><TR><TD style=\"border:0;vertical-align:top\"><UL>";
+	$htmlcontents .= "<LI>$__{'Grid code'}: <B class='code'>$grid</B></LI>\n";
+	# -----------
+	$htmlcontents .= "<LI>$__{'Description'}: <I>$GRID{DESCRIPTION}</I></LI>\n" if ($GRID{DESCRIPTION});
 	# -----------
 	foreach (@domain) {
 		$htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$_\"><B>$DOMAINS{$_}{NAME}</B></A></LI>\n";
 	}
-	# -----------
-	$htmlcontents .= "<LI>$__{'Description'}: <I>$GRID{DESCRIPTION}</I></LI>\n" if ($GRID{DESCRIPTION});
-	# -----------
-	$htmlcontents .= "<LI>$__{'Grid code'}: <B class='code'>$grid</B></LI>\n";
     # -----------
 	if ($showOwnr && defined($GRID{OWNCODE})) {
 		$htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n"
@@ -292,24 +291,25 @@ $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=
 	# -----------
 	# only for PROCs
 	if ($isProc) {
-		# 'old' ddb-key superseeded: use FORM (FORMS) definitions instead!
-		if (defined($GRID{'FORM'})) {
-			my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
-			if (%FORM) {
-				my $urnData = "/cgi-bin/".($FORM{'CGI_SHOW'} !~ /GENFORM/ ? "$FORM{'CGI_SHOW'}?form=$GRID{'FORM'}&node={$GRIDName}" : "showGENFORM.pl?form=$GRID{'FORM'}&node=PROC.$GRIDName");
-				my $txtData = (defined($FORM{'TITLE'})) ? $FORM{'TITLE'} : "";
-				$htmlcontents .= "<LI>$__{'Access to data'}: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
+		# -----------
+		if ($GRID{RAWFORMAT}) {
+			$htmlcontents .= "<LI>$__{'Default data format'}: ";
+			if ($GRID{RAWFORMAT} =~ /^FORM./) {
+				my $form = (split(/\./,$GRID{RAWFORMAT}))[1];
+				my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$form/$form.conf");
+				my $lnk = "";
+				$lnk = "/cgi-bin/showGENFORM.pl?form=$form" if (%FORM);
+				$htmlcontents .= "<B class='code'>".($lnk ne "" ? "<A href=\"$lnk\">$GRID{RAWFORMAT}</A>":"$GRID{RAWFORMAT}")."</B>";
+			} else {
+				$htmlcontents .= "<B class='code'>$GRID{RAWFORMAT}</B>";
 			}
-		} else {
-			# -----------
-			$htmlcontents .= "<LI>$__{'Default data format'}: <B>"
-						.($GRID{RAWFORMAT} // '')."</B></LI>\n";
-			$htmlcontents .= "<LI>$__{'Default data source'}: <B>"
-						.($GRID{RAWDATA} // '')."</B></LI>\n";
-			if (defined($GRID{URNDATA})) {
-				my $urnData = "$GRID{URNDATA}";
-				$htmlcontents .= "<LI>$__{'Access to rawdata'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
-			}
+		}
+		$htmlcontents .= "</LI>\n";
+		# -----------
+		$htmlcontents .= "<LI>$__{'Default data source'}: <B>".($GRID{RAWDATA} // '')."</B></LI>\n";
+		if (defined($GRID{URNDATA})) {
+			my $urnData = "$GRID{URNDATA}";
+			$htmlcontents .= "<LI>$__{'Access to rawdata'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
 		}
 		# -----------
 		if (defined($GRID{EVENTS_FILE})) {
