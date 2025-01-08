@@ -18,23 +18,23 @@ Configuration-file editor. Browse/Edit the file pointed to by the WEBOBS.rc key 
 
 =item fs={ wokey | wokey(indkey) }
 
-	wokey is a WEBOBS.rc key, that points to the full-path-filename to be edited.
-	wokey(indkey) is a 1-level indirection, where wokey points to someind file key <indkey> that points to the full-path-filename to be edited
+    wokey is a WEBOBS.rc key, that points to the full-path-filename to be edited.
+    wokey(indkey) is a 1-level indirection, where wokey points to someind file key <indkey> that points to the full-path-filename to be edited
 
-	target full-path-filename must reside in $WEBOBS{CONF_NODES}
-	authorization resource is authmisc.subpath/filename (see Users.pm for path-like resource names)
+    target full-path-filename must reside in $WEBOBS{CONF_NODES}
+    authorization resource is authmisc.subpath/filename (see Users.pm for path-like resource names)
 
-	eg. : fs=CONF_NODES
-	will browse/edit the file pointed to by $WEBOBS{CONF_NODES} 
+    eg. : fs=CONF_NODES
+    will browse/edit the file pointed to by $WEBOBS{CONF_NODES} 
 
-	eg. : fs=CONF_NODES(FILE_NODES2NODES)
-	will browse/edit the file pointed to by FILE_NODES2NODES in the file pointed to by $WEBOBS{CONF_NODES}
+    eg. : fs=CONF_NODES(FILE_NODES2NODES)
+    will browse/edit the file pointed to by FILE_NODES2NODES in the file pointed to by $WEBOBS{CONF_NODES}
 
 =item action={save | edit}
 
-	'edit' (default when action is not specified) to display edit html-form edit 
-	'save' internaly used to save the file after html-form edition
-	(other parameters are used along with 'save': ts0, txt)
+    'edit' (default when action is not specified) to display edit html-form edit 
+    'save' internaly used to save the file after html-form edition
+    (other parameters are used along with 'save': ts0, txt)
 
 =back
 
@@ -65,7 +65,7 @@ my @lignes;
 
 # ---- see what file has to be edited, and corresponding authorization for client
 #
-my $me = $ENV{SCRIPT_NAME}; 
+my $me = $ENV{SCRIPT_NAME};
 my $QryParm   = $cgi->Vars;
 my $fs     = $QryParm->{'fs'} // "";
 my $action = $QryParm->{'action'} // "edit";
@@ -78,51 +78,52 @@ my $editOK = my $admOK = my $readOK = 0;
 my $fsmsg = "";
 
 if ($fs ne "") {
-	#my @u = split(/->/,$fs);
-	my @u = split(/[()]/, $fs);
-	if (scalar(@u) == 2) { 
-		my %l = readCfg($WEBOBS{$u[0]}); 
-		$absfile = $l{$u[1]};
-	} else { $absfile = "$WEBOBS{$fs}"; }
-	if ( $absfile =~ /^$WEBOBS{ROOT_CONF}\//) {
-		($relfile = $absfile) =~ s/^$WEBOBS{ROOT_CONF}\/+//;
-		$readOK = clientHasRead(type=>"authmisc",name=>"$relfile");
-		if ( $readOK ) { 
-			$editOK = clientHasEdit(type=>"authmisc",name=>"$relfile");
-			$admOK  = clientHasAdm(type=>"authmisc",name=>"$relfile");
-			unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
-			if ( (!-e $absfile) && $admOK ) { qx(/bin/touch $absfile); $fsmsg="$relfile created empty" }
-			if ( (!$editOK) && (!-e $absfile) ) { die "$relfile $__{'not found'} or $__{'not authorized'}" }
-		} else { die "$relfile $__{'not authorized'}" }
-	} else { die "$relfile $__{'Not a CONF/ file'}" }
+
+    #my @u = split(/->/,$fs);
+    my @u = split(/[()]/, $fs);
+    if (scalar(@u) == 2) {
+        my %l = readCfg($WEBOBS{$u[0]});
+        $absfile = $l{$u[1]};
+    } else { $absfile = "$WEBOBS{$fs}"; }
+    if ( $absfile =~ /^$WEBOBS{ROOT_CONF}\//) {
+        ($relfile = $absfile) =~ s/^$WEBOBS{ROOT_CONF}\/+//;
+        $readOK = clientHasRead(type=>"authmisc",name=>"$relfile");
+        if ( $readOK ) {
+            $editOK = clientHasEdit(type=>"authmisc",name=>"$relfile");
+            $admOK  = clientHasAdm(type=>"authmisc",name=>"$relfile");
+            unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
+            if ( (!-e $absfile) && $admOK ) { qx(/bin/touch $absfile); $fsmsg="$relfile created empty" }
+            if ( (!$editOK) && (!-e $absfile) ) { die "$relfile $__{'not found'} or $__{'not authorized'}" }
+        } else { die "$relfile $__{'not authorized'}" }
+    } else { die "$relfile $__{'Not a CONF/ file'}" }
 } else { die "$__{'No filename specified'}" }
 
 # ---- action is 'save'
 #
 if ($action eq 'save') {
-	if ($TS0 != (stat("$absfile"))[9]) { 
-		htmlMsgNotOK("$relfile has been modified while you were editing !"); 
-		exit; 
-	}
-	if ( sysopen(FILE, "$absfile", O_RDWR | O_CREAT) ) {
-		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "$me waiting for lock on $relfile...";
-			flock(FILE, LOCK_EX);
-		}
-		qx(cp -a $absfile $absfile~ 2>&1); 
-		if ( $?  == 0 ) { 
-			truncate(FILE, 0);
-			seek(FILE, 0, SEEK_SET);
-			push(@lignes,u2l($txt));
-			print FILE @lignes ;
-			close(FILE);
-			htmlMsgOK($relfile);
-		} else {
-			close(FILE);
-			htmlMsgNotOK("$me couldn't backup $relfile");
-		}
-	} else { htmlMsgNotOK("$me opening $relfile - $!") }
-	exit;
+    if ($TS0 != (stat("$absfile"))[9]) {
+        htmlMsgNotOK("$relfile has been modified while you were editing !");
+        exit;
+    }
+    if ( sysopen(FILE, "$absfile", O_RDWR | O_CREAT) ) {
+        unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+            warn "$me waiting for lock on $relfile...";
+            flock(FILE, LOCK_EX);
+        }
+        qx(cp -a $absfile $absfile~ 2>&1);
+        if ( $?  == 0 ) {
+            truncate(FILE, 0);
+            seek(FILE, 0, SEEK_SET);
+            push(@lignes,u2l($txt));
+            print FILE @lignes ;
+            close(FILE);
+            htmlMsgOK($relfile);
+        } else {
+            close(FILE);
+            htmlMsgNotOK("$me couldn't backup $relfile");
+        }
+    } else { htmlMsgNotOK("$me opening $relfile - $!") }
+    exit;
 }
 
 # ---- action is 'edit' (default)
@@ -140,14 +141,14 @@ print "Content-type: text/html; charset=utf-8
 <HEAD>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
 <STYLE type=\"text/css\">
-	#ta {
-		border:none;
-	}
-	#statusbar {
-		border: solid 1px grey;
-		background-color: grey;
-		color: white;
-	}
+    #ta {
+        border:none;
+    }
+    #statusbar {
+        border: solid 1px grey;
+        background-color: grey;
+        color: white;
+    }
 </STYLE>
 <TITLE>Text edit form</TITLE>
 <script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
@@ -155,18 +156,18 @@ print "Content-type: text/html; charset=utf-8
 function verif_formulaire()
 {
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-		   if (data != '') alert(data);
-       	   //location.href = document.referrer;
-		   history.go(-1);
-   	});
+           if (data != '') alert(data);
+              //location.href = document.referrer;
+           history.go(-1);
+       });
 }
 </script>
 </HEAD>
 <BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.txt.focus()\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <script type=\"text/javascript\" >
-	\$(document).ready(function() {
-	});
+    \$(document).ready(function() {
+    });
 </script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
@@ -183,20 +184,21 @@ print "<h2>$__{'Editing file'} \"$relfile\"</h2>";
 # Display file contents into a textarea 
 print "<TABLE><TR><TD style=\"border:0\">";
 if ($editOK || $admOK) {
-	print "<TR><TD><TEXTAREA id=\"ta\" class=\"editfmono\" rows=\"25\" cols=\"100\" name=\"txt\" dataformatas=\"plaintext\">$txt</TEXTAREA></TD></TR>\n";
-	print "<TR><TD id=\"statusbar\">Edit | $fsmsg</TD></TR>";
+    print "<TR><TD><TEXTAREA id=\"ta\" class=\"editfmono\" rows=\"25\" cols=\"100\" name=\"txt\" dataformatas=\"plaintext\">$txt</TEXTAREA></TD></TR>\n";
+    print "<TR><TD id=\"statusbar\">Edit | $fsmsg</TD></TR>";
 } else {
-	print "<TR><TD><TEXTAREA readonly id=\"ta\" class=\"editfmono\" rows=\"25\" cols=\"100\" name=\"txt\" dataformatas=\"plaintext\">$txt</TEXTAREA></TD></TR>\n";
-	print "<TR><TD id=\"statusbar\">Browse | $fsmsg</TD></TR>";
+    print "<TR><TD><TEXTAREA readonly id=\"ta\" class=\"editfmono\" rows=\"25\" cols=\"100\" name=\"txt\" dataformatas=\"plaintext\">$txt</TEXTAREA></TD></TR>\n";
+    print "<TR><TD id=\"statusbar\">Browse | $fsmsg</TD></TR>";
 }
 print "</TABLE>\n";
+
 # button(s) area
-print "<p align=center>"; 
+print "<p align=center>";
 if ($editOK || $admOK) {
-	print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-	print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"verif_formulaire();\">";
+    print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
+    print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"verif_formulaire();\">";
 } else {
-	print "<input type=\"button\" name=lien value=\"$__{'Quit'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
+    print "<input type=\"button\" name=lien value=\"$__{'Quit'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 }
 print "</p></form>";
 
@@ -206,12 +208,12 @@ print "\n</BODY>\n</HTML>\n";
 # ---- helpers fns for returning 'save' information to client
 #
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] updated successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "$_[0] updated successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
 }
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 =pod

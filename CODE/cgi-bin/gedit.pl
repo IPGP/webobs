@@ -21,21 +21,21 @@ Authorization resources checked for edit or adm are those of the grid.
 
 =item B<grid=normgrid>
 
-	normgrid := gridtype.gridname
-	The fully qualified normalized gridname
+    normgrid := gridtype.gridname
+    The fully qualified normalized gridname
 
 =item B<file=filesuffix>
 
-	The file to be edited will be WEBOBS{PATH_GRIDS_DOCS}/gridtype.gridname||filesuffix
-	eg. ...?grid=VIEW.MYVIEW&file=_protocole.txt 
-	==> $WEBOBS{PATH_GRIDS_DOCS}/VIEW.MYVIEW_protocole.txt
+    The file to be edited will be WEBOBS{PATH_GRIDS_DOCS}/gridtype.gridname||filesuffix
+    eg. ...?grid=VIEW.MYVIEW&file=_protocole.txt 
+    ==> $WEBOBS{PATH_GRIDS_DOCS}/VIEW.MYVIEW_protocole.txt
 
 =item B<action=string>
 
-	string := { edit | save }
-	'edit' (default when action is not specified) to display edit html-form edit 
-	'save' internaly used to save the file after html-form edition
-	(other parameters are used along with 'save': ts0, txt)
+    string := { edit | save }
+    'edit' (default when action is not specified) to display edit html-form edit 
+    'save' internaly used to save the file after html-form edition
+    (other parameters are used along with 'save': ts0, txt)
 
 =back
 
@@ -76,7 +76,7 @@ set_message(\&webobs_cgi_msg);
 #
 my @lignes;
 
-my $me = $ENV{SCRIPT_NAME}; 
+my $me = $ENV{SCRIPT_NAME};
 my $QryParm   = $cgi->Vars;
 my $grid   = $QryParm->{'grid'}   // "";
 my $file   = $QryParm->{'file'}   // "";
@@ -99,53 +99,53 @@ my $MDMeta = ($mmd ne 'NO' ? "WebObs: created by gedit  " : "");
 # ---- see what file has to be edited, and corresponding authorization for client
 # ---- new file (create) initialization
 #
-if (scalar(@GID) == 2) { 
-	if ($file ne "") {
-		$absfile = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName$file";
-		if ($GRIDType eq 'DOMAIN' || $GRIDType eq 'GRIDS') {
-			$editOK = (clientHasEdit(type=>"authviews",name=>"*") && clientHasEdit(type=>"authprocs",name=>"*"));
-			$admOK  =  (clientHasAdm(type=>"authviews",name=>"*") &&  clientHasAdm(type=>"authprocs",name=>"*"));
-		} else {
-			$editOK = clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
-			$admOK  = clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
-		}
-		unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
-		if ( (!-e $absfile) && $admOK ) { qx(echo "$MDMeta\n\n" > $absfile) } 
-		if ( (!$editOK) && (!-e $absfile) ) { die "$name $__{'not found'} or $__{'not authorized'}" }
-	} else { die "$__{'No filename specified'}" }
+if (scalar(@GID) == 2) {
+    if ($file ne "") {
+        $absfile = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName$file";
+        if ($GRIDType eq 'DOMAIN' || $GRIDType eq 'GRIDS') {
+            $editOK = (clientHasEdit(type=>"authviews",name=>"*") && clientHasEdit(type=>"authprocs",name=>"*"));
+            $admOK  =  (clientHasAdm(type=>"authviews",name=>"*") &&  clientHasAdm(type=>"authprocs",name=>"*"));
+        } else {
+            $editOK = clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
+            $admOK  = clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
+        }
+        unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
+        if ( (!-e $absfile) && $admOK ) { qx(echo "$MDMeta\n\n" > $absfile) }
+        if ( (!$editOK) && (!-e $absfile) ) { die "$name $__{'not found'} or $__{'not authorized'}" }
+    } else { die "$__{'No filename specified'}" }
 } else { die "$__{'Not a valid GRID requested (NOT gridtype.gridname)'}" }
 
 # ---- action is 'save'
 #
 if ($action eq 'save') {
-	if ($TS0 != (stat("$absfile"))[9]) { 
-		htmlMsgNotOK("$name $_{'has been modified while you were editing'}"); 
-		exit; 
-	}
-	if ( sysopen(FILE, "$absfile", O_RDWR | O_CREAT) ) {
-		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "$me waiting for lock on $name...";
-			flock(FILE, LOCK_EX);
-		}
-		qx(cp -a $absfile $absfile~ 2>&1); 
-		if ( $?  == 0 ) { 
-			truncate(FILE, 0);
-			seek(FILE, 0, SEEK_SET);
-			if ($conv eq "1") {
-				$txt = WebObs::Wiki::wiki2MMD($txt);
-				$txt = "WebObs: converted with wiki2MMD\n\n$txt";
-			}
-			$txt =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
-			push(@lignes,$txt);
-			print FILE @lignes ;
-			close(FILE);
-			htmlMsgOK($name);
-		} else {
-			close(FILE);
-			htmlMsgNotOK("$me couldn't backup $name");
-		}
-	} else { htmlMsgNotOK("$me opening $name - $!") }
-	exit;
+    if ($TS0 != (stat("$absfile"))[9]) {
+        htmlMsgNotOK("$name $_{'has been modified while you were editing'}");
+        exit;
+    }
+    if ( sysopen(FILE, "$absfile", O_RDWR | O_CREAT) ) {
+        unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+            warn "$me waiting for lock on $name...";
+            flock(FILE, LOCK_EX);
+        }
+        qx(cp -a $absfile $absfile~ 2>&1);
+        if ( $?  == 0 ) {
+            truncate(FILE, 0);
+            seek(FILE, 0, SEEK_SET);
+            if ($conv eq "1") {
+                $txt = WebObs::Wiki::wiki2MMD($txt);
+                $txt = "WebObs: converted with wiki2MMD\n\n$txt";
+            }
+            $txt =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
+            push(@lignes,$txt);
+            print FILE @lignes ;
+            close(FILE);
+            htmlMsgOK($name);
+        } else {
+            close(FILE);
+            htmlMsgNotOK("$me couldn't backup $name");
+        }
+    } else { htmlMsgNotOK("$me opening $name - $!") }
+    exit;
 }
 
 # ---- action is 'edit' (default)
@@ -154,6 +154,7 @@ if ($action eq 'save') {
 @lignes = readFile($absfile);
 $TS0 = (stat($absfile))[9] ;
 chomp(@lignes);
+
 # file contents as a string and determine markup type (WO or MMD)
 $txt = join("\n",@lignes);
 ($txt, my $meta) = WebObs::Wiki::stripMDmetadata($txt);
@@ -171,16 +172,16 @@ print "Content-type: text/html; charset=utf-8
 function verif_formulaire()
 {
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-		   if (data != '') alert(data);
-       	   location.href = document.referrer;	   
-   	});
+           if (data != '') alert(data);
+              location.href = document.referrer;       
+       });
 }
 function convert2MMD()
 {
-	if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
-		\$(\"#theform\")[0].conv.value = \"1\";
-		verif_formulaire();
-	}
+    if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
+        \$(\"#theform\")[0].conv.value = \"1\";
+        verif_formulaire();
+    }
 }
 </script>
 </HEAD>
@@ -190,18 +191,18 @@ function convert2MMD()
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>
 <script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/skins/markitup/style.css\" />
-"; 
+";
 if (length($meta) > 0) {
-	print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
-		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
+    print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
+           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
 } else {
-	print "<script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
-		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
+    print "<script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
+           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
 }
 print "<script type=\"text/javascript\" >
-	\$(document).ready(function() {
-		\$(\"#markItUp\").markItUp(mySettings);
-	});
+    \$(document).ready(function() {
+        \$(\"#markItUp\").markItUp(mySettings);
+    });
 </script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
@@ -222,10 +223,10 @@ print "<h2>$__{'Editing file'} \"$name\"</h2>";
 print "<TABLE><TR><TD style=\"border:0\">";
 print "<P><TEXTAREA id=\"markItUp\" class=\"markItUp\" rows=\"30\" cols=\"110\" name=\"txt\" dataformatas=\"plaintext\">$txt</TEXTAREA></P></TD>\n";
 print "</TR></TABLE>\n";
-print "<p align=center>"; 
+print "<p align=center>";
 print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 if (length($meta) == 0 && $mmd ne 'NO') {
-	print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
+    print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
 }
 print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"verif_formulaire();\">";
 print "</p></form>";
@@ -236,12 +237,12 @@ print "\n</BODY>\n</HTML>\n";
 # ---- helpers fns for returning 'save' information to client
 #
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] updated successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "$_[0] updated successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
 }
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 =pod

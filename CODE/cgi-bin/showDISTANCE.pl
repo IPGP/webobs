@@ -88,20 +88,20 @@ my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
 for my $p (keys(%Ps)) {
-	push(@NODESSelList,"\{$p\}|-- $Ps{$p} --");
-	my %N = $FORM->nodes($p);
-	for my $n (keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-	}
-	%Ns = (%Ns, %N);
+    push(@NODESSelList,"\{$p\}|-- $Ps{$p} --");
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
 }
 
 my $QryParm   = $cgi->Vars;
 
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
-my $jour  = strftime('%d',@tod); 
-my $mois  = strftime('%m',@tod); 
+my $jour  = strftime('%d',@tod);
+my $mois  = strftime('%m',@tod);
 my $annee = strftime('%Y',@tod);
 my $moisActuel = strftime('%Y-%m',@tod);
 my $displayMoisActuel = strftime('%B %Y',@tod);
@@ -148,10 +148,10 @@ $QryParm->{'affiche'}  ||= "";
 # 
 my @gridsites;
 if ($QryParm->{'site'} =~ /^{(.*)}$/) {
-	my %tmpN = $FORM->nodes($1);
-	for (keys(%tmpN)) {
-		push(@gridsites,"$_");
-	}
+    my %tmpN = $FORM->nodes($1);
+    for (keys(%tmpN)) {
+        push(@gridsites,"$_");
+    }
 }
 
 push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type: text/csv\n\n");
@@ -159,62 +159,62 @@ push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type
 # ---- start html if not csv output requested
 
 if ($QryParm->{'affiche'} ne "csv") {
-	print $cgi->header(-charset=>'utf-8');
-	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
-	"<html><head><title>".$FORM->conf('TITLE')."</title>\n",
-	"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
-	"<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
-	
-	print "</head>\n",
-	"<body style=\"background-attachment: fixed\">\n",
-	"<div id=\"attente\">Recherche des donn&eacute;es, merci de patienter.</div>",
-	"<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
-	"<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
-	"<!-- overLIB (c) Erik Bosrup -->\n";
+    print $cgi->header(-charset=>'utf-8');
+    print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
+      "<html><head><title>".$FORM->conf('TITLE')."</title>\n",
+      "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
+      "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
+
+    print "</head>\n",
+      "<body style=\"background-attachment: fixed\">\n",
+      "<div id=\"attente\">Recherche des donn&eacute;es, merci de patienter.</div>",
+      "<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
+      "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
+      "<!-- overLIB (c) Erik Bosrup -->\n";
 }
 
 # ---- selection-form for display 
 # 
 if ($QryParm->{'affiche'} ne "csv") {
-	print("<FORM name=\"formulaire\" action=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\" method=\"get\">",
-	"<P class=\"boitegrise\" align=\"center\">",
-	"<B>S&eacute;lectionner: <select name=\"annee\" size=\"1\">\n");
-	for ("Tout|Tout",reverse(@cleParamAnnee)) { 
-		my ($val,$cle) = split (/\|/,$_);
-		if ("$val" eq "$QryParm->{'annee'}") { print("<option selected value=$val>$cle</option>\n"); } 
-		else { print("<option value=$val>$cle</option>\n"); }
-	}
-	print("</select>\n",
-	"<select name=\"mois\" size=\"1\">");
-	for ("Tout|Toute l'année",@cleParamMois) { 
-		my ($val,$cle) = split (/\|/,$_);
-		if ("$val" eq "$QryParm->{'mois'}") {
-			print("<option selected value=$val>$cle</option>\n");
-			$afficheMois = $cle;
-		} else {
-			print("<option value=$val>$cle</option>\n");
-		}
-	}
-	print("</select>\n",
-	"<select name=\"site\" size=\"1\">");
-	for ("Tout|Tous les sites",@NODESSelList) { 
-		my ($val,$cle) = split (/\|/,$_);
-		if ("$val" eq "$QryParm->{'site'}") {
-			print("<option selected value=$val>$cle</option>\n");
-			$afficheSite = "$cle ($val)";
-		} else {
-			print("<option value=$val>$cle</option>\n");
-		}
-	}
-	print("</select>",
-	" <input type=\"submit\" value=\"Afficher\">");
-	if ($editOK) {
-		print("<input type=\"button\" style=\"margin-left:15px;color:blue;\" onClick=\"document.location='/cgi-bin/".$FORM->conf('CGI_FORM')."'\" value=\"nouvel enregistrement\">");
-	}
-	print "</B></P></FORM>\n",
-	"<H2>".$FORM->conf('TITLE')."</H2>\n",
-	"<P>Intervalle s&eacute;lectionn&eacute;: <B>$afficheMois $QryParm->{'annee'}</B><BR>",
-	"Sites s&eacute;lectionn&eacute;s: <B>$afficheSite</B><BR>";
+    print("<FORM name=\"formulaire\" action=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\" method=\"get\">",
+        "<P class=\"boitegrise\" align=\"center\">",
+        "<B>S&eacute;lectionner: <select name=\"annee\" size=\"1\">\n");
+    for ("Tout|Tout",reverse(@cleParamAnnee)) {
+        my ($val,$cle) = split (/\|/,$_);
+        if ("$val" eq "$QryParm->{'annee'}") { print("<option selected value=$val>$cle</option>\n"); }
+        else { print("<option value=$val>$cle</option>\n"); }
+    }
+    print("</select>\n",
+        "<select name=\"mois\" size=\"1\">");
+    for ("Tout|Toute l'année",@cleParamMois) {
+        my ($val,$cle) = split (/\|/,$_);
+        if ("$val" eq "$QryParm->{'mois'}") {
+            print("<option selected value=$val>$cle</option>\n");
+            $afficheMois = $cle;
+        } else {
+            print("<option value=$val>$cle</option>\n");
+        }
+    }
+    print("</select>\n",
+        "<select name=\"site\" size=\"1\">");
+    for ("Tout|Tous les sites",@NODESSelList) {
+        my ($val,$cle) = split (/\|/,$_);
+        if ("$val" eq "$QryParm->{'site'}") {
+            print("<option selected value=$val>$cle</option>\n");
+            $afficheSite = "$cle ($val)";
+        } else {
+            print("<option value=$val>$cle</option>\n");
+        }
+    }
+    print("</select>",
+        " <input type=\"submit\" value=\"Afficher\">");
+    if ($editOK) {
+        print("<input type=\"button\" style=\"margin-left:15px;color:blue;\" onClick=\"document.location='/cgi-bin/".$FORM->conf('CGI_FORM')."'\" value=\"nouvel enregistrement\">");
+    }
+    print "</B></P></FORM>\n",
+      "<H2>".$FORM->conf('TITLE')."</H2>\n",
+      "<P>Intervalle s&eacute;lectionn&eacute;: <B>$afficheMois $QryParm->{'annee'}</B><BR>",
+      "Sites s&eacute;lectionn&eacute;s: <B>$afficheSite</B><BR>";
 }
 
 # ---- Lecture du fichier data dans tableau @lignes
@@ -238,116 +238,117 @@ my $aliasSite;
 
 $entete = "<TR>";
 if ($editOK) {
-	$entete = $entete."<TH rowspan=2></TH>";
+    $entete = $entete."<TH rowspan=2></TH>";
 }
 $entete = $entete."<TH rowspan=2>Date</TH><TH rowspan=2>Site</TH>"
-	."<TH rowspan=2>AEMD</TH>"
-    ."<TH colspan=5>Infos Tourelle</TH><TH colspan=21>Mesures de distance: D<sub>0</sub> (m) + d<sub>n</sub> (mm)</TH><TH colspan=2>Moyenne (m)</TH><TH rowspan=2></TH></TR>\n"
-	."<TR><TH>Patm<br>(mmHg)</TH><TH>Tair<br>(°C)</TH><TH>H.R.<br>(%)</TH><TH>N&eacute;bul</TH><TH>Vitre</TH><TH>D<sub>0</sub><br>(m)";
+  ."<TH rowspan=2>AEMD</TH>"
+  ."<TH colspan=5>Infos Tourelle</TH><TH colspan=21>Mesures de distance: D<sub>0</sub> (m) + d<sub>n</sub> (mm)</TH><TH colspan=2>Moyenne (m)</TH><TH rowspan=2></TH></TR>\n"
+  ."<TR><TH>Patm<br>(mmHg)</TH><TH>Tair<br>(°C)</TH><TH>H.R.<br>(%)</TH><TH>N&eacute;bul</TH><TH>Vitre</TH><TH>D<sub>0</sub><br>(m)";
 for ("01".."20") { $entete = $entete."<TH>d<sub>$_</sub></TH>" }
 $entete = $entete."<TH><SPAN style=\"text-decoration:overline\"><I>x</I></SPAN></TH><TH>2&sigma;</TH></TR>\n";
 
 $i = 0;
 my $nbLignesRetenues = 0;
 for(@lignes) {
-	($id,$date,$heure,$site,$aemd,$pAtm,$tAir,$HR,$nebul,$vitre,$d0,$d[0],$d[1],$d[2],$d[3],$d[4],$d[5],$d[6],$d[7],$d[8],$d[9],$d[10],$d[11],$d[12],$d[13],$d[14],$d[15],$d[16],$d[17],$d[18],$d[19],$rem,$val) = split(/\|/,$_);
-	# trie les données pour mettre les champs vides à la fin...
-	@d = sort { ($a eq "") <=> ($b eq "") } @d;
-	my $DM = "";
-	my $DS = "";
-	my $n = 0;
-	if ($i eq 0) {
-		push(@csv,u2l("$date;$heure;Code Site;$site;$aemd;$pAtm;$tAir;$HR;$nebul;$vitre;Dist. Moy (m);2*Sigma (m);\"$rem\";$val"));
-	}
-	elsif (($_ ne "") 
-		&& (($QryParm->{'site'}  eq "Tout") || ($site =~ $QryParm->{'site'}) || ($site ~~ @gridsites)) 
-		&& (($QryParm->{'annee'} eq "Tout") || ($QryParm->{'annee'} eq substr($date,0,4)) || (($QryParm->{'annee'} eq "Ancien") && ($date lt $FORM->conf('BANG'))))
-		&& (($QryParm->{'mois'}  eq "Tout") || ($QryParm->{'mois'} eq substr($date,5,2)))) { 
+    ($id,$date,$heure,$site,$aemd,$pAtm,$tAir,$HR,$nebul,$vitre,$d0,$d[0],$d[1],$d[2],$d[3],$d[4],$d[5],$d[6],$d[7],$d[8],$d[9],$d[10],$d[11],$d[12],$d[13],$d[14],$d[15],$d[16],$d[17],$d[18],$d[19],$rem,$val) = split(/\|/,$_);
 
-		for $j(@nd) {
-			if ($d[$j] ne "") {
-				my $dd = 0;
-				if (($d[$j] - $d[0]) > 500) { $dd = -1; }
-				if (($d[$j] - $d[0]) < -500) { $dd = 1; }
-				$DM += $d0 + $d[$j]/1000 + $dd;		  # $DM = momentanément somme des x
-				$DS += ($d0 + $d[$j]/1000 + $dd)**2;  # $DS = momentanément somme des x²
-				$n++;
-			}
-		}
-		if ($n > 0) {
-			$DM = $DM/$n;	# $DM = moyenne
-			$DS = 2 * sqrt($DS/$n - $DM*$DM);	# $DS = 2 * écart-type
-		}
+    # trie les données pour mettre les champs vides à la fin...
+    @d = sort { ($a eq "") <=> ($b eq "") } @d;
+    my $DM = "";
+    my $DS = "";
+    my $n = 0;
+    if ($i eq 0) {
+        push(@csv,u2l("$date;$heure;Code Site;$site;$aemd;$pAtm;$tAir;$HR;$nebul;$vitre;Dist. Moy (m);2*Sigma (m);\"$rem\";$val"));
+    }
+    elsif (($_ ne "")
+        && (($QryParm->{'site'}  eq "Tout") || ($site =~ $QryParm->{'site'}) || ($site ~~ @gridsites))
+        && (($QryParm->{'annee'} eq "Tout") || ($QryParm->{'annee'} eq substr($date,0,4)) || (($QryParm->{'annee'} eq "Ancien") && ($date lt $FORM->conf('BANG'))))
+        && (($QryParm->{'mois'}  eq "Tout") || ($QryParm->{'mois'} eq substr($date,5,2)))) {
 
-		$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
+        for $j(@nd) {
+            if ($d[$j] ne "") {
+                my $dd = 0;
+                if (($d[$j] - $d[0]) > 500) { $dd = -1; }
+                if (($d[$j] - $d[0]) < -500) { $dd = 1; }
+                $DM += $d0 + $d[$j]/1000 + $dd;          # $DM = momentanément somme des x
+                $DS += ($d0 + $d[$j]/1000 + $dd)**2;  # $DS = momentanément somme des x²
+                $n++;
+            }
+        }
+        if ($n > 0) {
+            $DM = $DM/$n;    # $DM = moyenne
+            $DS = 2 * sqrt($DS/$n - $DM*$DM);    # $DS = 2 * écart-type
+        }
 
-		my $normSite = normNode(node=>"PROC.$site");
-		if ($normSite ne "") {
-			$lien = "<A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normSite\"><B>$aliasSite</B></A>";
-		} else { $lien = "$aliasSite"  }
-		$modif = "<a href=\"/cgi-bin/".$FORM->conf('CGI_FORM')."?id=$id\"><img src=\"/icons/modif.png\" title=\"Editer...\" border=0></a>";
-		$efface = "<img src=\"/icons/no.png\" title=\"Effacer...\" onclick=\"checkRemove($id)\">";
+        $aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
 
-		$texte = $texte."<TR>";
-		if ($editOK) {
-			$texte = $texte."<TD nowrap>$modif</TD>";
-		}
-		$texte = $texte."<TD nowrap>$date $heure</TD><TD align=center>$lien</TD>"
-			."<TD align=center>$aemd</TD><TD align=center>$pAtm</TD><TD align=center>$tAir</TD><TD align=center>$HR</TD>"
-			."<TD align=center>$nebul</TD><TD align=center>$vitre</TD><TD align=center>$d0</TD>";
-		for (@nd) {
-			$texte = $texte."<TD align=center>$d[$_]</TD>";
-		}
-		$texte = $texte."<TD class=tdResult>".sprintf("%1.3f",$DM)."</TD>";
-		if (($DS > 0.1) || ($DS == 0)) {
-			$texte .= "<TD class=tdResult style=\"background-color:#FFAAAA\">";
-		} elsif ($DS > 0.02 ) {
-			$texte .= "<TD class=tdResult style=\"background-color:#FFEBAA\">";
-		} else {
-			$texte .= "<TD class=tdResult>";
-		}
-		$texte .= sprintf("%1.3f",$DS)."</TD><TD>";
-		$txt = "$date;$heure;$site;$aliasSite;$aemd;$pAtm;$tAir;$HR;$nebul;$vitre;$DM;$DS;";
-		if ($rem ne "") {
-			$rem =~ s/\'/&rsquo;/g;
-			$rem =~ s/\"/&quot;/g;
-			$texte = $texte."<IMG src=\"/icons/attention.gif\" border=0 onMouseOut=\"nd()\" onMouseOver=\"overlib('$rem',CAPTION,'Observations $aliasSite')\">";
-		}
-		$texte = $texte."</TD></TR>\n";
-		$txt = $txt."\"$rem\"\n";
-		push(@csv,u2l($txt));
-		
-		$nbLignesRetenues++;
-	}
-	$i++;
+        my $normSite = normNode(node=>"PROC.$site");
+        if ($normSite ne "") {
+            $lien = "<A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normSite\"><B>$aliasSite</B></A>";
+        } else { $lien = "$aliasSite"  }
+        $modif = "<a href=\"/cgi-bin/".$FORM->conf('CGI_FORM')."?id=$id\"><img src=\"/icons/modif.png\" title=\"Editer...\" border=0></a>";
+        $efface = "<img src=\"/icons/no.png\" title=\"Effacer...\" onclick=\"checkRemove($id)\">";
+
+        $texte = $texte."<TR>";
+        if ($editOK) {
+            $texte = $texte."<TD nowrap>$modif</TD>";
+        }
+        $texte = $texte."<TD nowrap>$date $heure</TD><TD align=center>$lien</TD>"
+          ."<TD align=center>$aemd</TD><TD align=center>$pAtm</TD><TD align=center>$tAir</TD><TD align=center>$HR</TD>"
+          ."<TD align=center>$nebul</TD><TD align=center>$vitre</TD><TD align=center>$d0</TD>";
+        for (@nd) {
+            $texte = $texte."<TD align=center>$d[$_]</TD>";
+        }
+        $texte = $texte."<TD class=tdResult>".sprintf("%1.3f",$DM)."</TD>";
+        if (($DS > 0.1) || ($DS == 0)) {
+            $texte .= "<TD class=tdResult style=\"background-color:#FFAAAA\">";
+        } elsif ($DS > 0.02 ) {
+            $texte .= "<TD class=tdResult style=\"background-color:#FFEBAA\">";
+        } else {
+            $texte .= "<TD class=tdResult>";
+        }
+        $texte .= sprintf("%1.3f",$DS)."</TD><TD>";
+        $txt = "$date;$heure;$site;$aliasSite;$aemd;$pAtm;$tAir;$HR;$nebul;$vitre;$DM;$DS;";
+        if ($rem ne "") {
+            $rem =~ s/\'/&rsquo;/g;
+            $rem =~ s/\"/&quot;/g;
+            $texte = $texte."<IMG src=\"/icons/attention.gif\" border=0 onMouseOut=\"nd()\" onMouseOver=\"overlib('$rem',CAPTION,'Observations $aliasSite')\">";
+        }
+        $texte = $texte."</TD></TR>\n";
+        $txt = $txt."\"$rem\"\n";
+        push(@csv,u2l($txt));
+
+        $nbLignesRetenues++;
+    }
+    $i++;
 }
 
 push(@html,"Nombre de donn&eacute;es affich&eacute;es = <B>$nbLignesRetenues</B> / $nbData.</P>\n",
-	"<P>T&eacute;l&eacute;charger un fichier Excel de ces donn&eacute;es: <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?affiche=csv&annee=$QryParm->{'annee'}&mois=$QryParm->{'mois'}&site=$QryParm->{'site'}\"><B>$fileCSV</B></A></P>\n");
+    "<P>T&eacute;l&eacute;charger un fichier Excel de ces donn&eacute;es: <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?affiche=csv&annee=$QryParm->{'annee'}&mois=$QryParm->{'mois'}&site=$QryParm->{'site'}\"><B>$fileCSV</B></A></P>\n");
 
 if ($texte ne "") {
-	push(@html,"<TABLE class=\"trData\" width=\"100%\">$entete\n$texte\n$entete\n</TABLE>",
-		"<P>Types de Distancem&egrave;tres: ");
-	for (@types) {
-		my ($tpi,$tpn) = split(/\|/,$_);
-		push(@html,"<B>$tpi</B> = $tpn, ");
-	}
-	push(@html,"\n<P>N&eacute;bulosit&eacute;: ");
-	for (@meteo) {
-		my ($tpi,$tpn) = split(/\|/,$_);
-		push(@html,"<B>$tpi</B> = $tpn, ");
-	}
-	push(@html,"</P>\n");
+    push(@html,"<TABLE class=\"trData\" width=\"100%\">$entete\n$texte\n$entete\n</TABLE>",
+        "<P>Types de Distancem&egrave;tres: ");
+    for (@types) {
+        my ($tpi,$tpn) = split(/\|/,$_);
+        push(@html,"<B>$tpi</B> = $tpn, ");
+    }
+    push(@html,"\n<P>N&eacute;bulosit&eacute;: ");
+    for (@meteo) {
+        my ($tpi,$tpn) = split(/\|/,$_);
+        push(@html,"<B>$tpi</B> = $tpn, ");
+    }
+    push(@html,"</P>\n");
 }
 
 if ($QryParm->{'affiche'} eq "csv") {
-	print @csv;
+    print @csv;
 } else {
-	print @html;
-	print "<style type=\"text/css\">
-		#attente { display: none; }
-	</style>\n
-	<BR>\n</BODY>\n</HTML>\n";
+    print @html;
+    print "<style type=\"text/css\">
+        #attente { display: none; }
+    </style>\n
+    <BR>\n</BODY>\n</HTML>\n";
 }
 
 __END__
