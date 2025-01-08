@@ -446,7 +446,7 @@ sub listNodeNames {
 
 =head2 listNodeGrids
 
- %HoA = listNodeGrids(node=>'nodename' [, type=>{'VIEW'|'PROC'}]
+ %HoA = listNodeGrids(node=>'nodename' [, type=>{'VIEW'|'PROC|FORM'}]
 
 Returns a hash of list of grids (of type type) a node belongs to.
 

@@ -315,17 +315,23 @@
 	text-align: center;
 }
 
-.nodetbl table th.skew.view.odd > div {
-	background-color: #FFFFFF;
-}
 .nodetbl table th.skew.view.even > div  {
 	background-color: #EBEBE0;
 }
-.nodetbl table th.skew.proc.odd > div {
+.nodetbl table th.skew.view.odd > div {
+	background-color: #FFFFFF;
+}
+.nodetbl table th.skew.proc.even > div {
 	background-color: #EAECD8;
 }
-.nodetbl table th.skew.proc.even > div  {
+.nodetbl table th.skew.proc.odd > div  {
 	background-color: #DEE0CC;
+}
+.nodetbl table th.skew.form.even > div {
+	background-color: #FFFFFF;
+}
+.nodetbl table th.skew.form.odd > div  {
+	background-color: #EBEBE0;
 }
 .nodetbl table td.view.otimes {
 	background-color: green;
@@ -334,6 +340,11 @@
 }
 .nodetbl table td.proc.otimes {
 	background-color: red;
+	color: white;
+	text-align: center;
+}
+.nodetbl table td.form.otimes {
+	background-color: orange;
 	color: white;
 	text-align: center;
 }
@@ -355,6 +366,16 @@
 	background-color:  #EAECD8;
 	color: transparent;
 }
+
+.nodetbl table td.oempty.form.even {
+	background-color:  transparent;
+	color: transparent;
+}
+.nodetbl table td.oempty.form.odd {
+	background-color: #EBEBE0;
+	color: transparent;
+}
+
 .nodetbl table td.oorphan {
 	background-color: transparent;
 	color: transparent;
