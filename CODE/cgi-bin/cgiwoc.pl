@@ -17,10 +17,10 @@ If no cmd= specified, it will default to 'cmd=help'.
 
 cgiwoc.pl is part of the html-based woc execution/display page, ie.: 
 
-	1) html/cgiwoc.html to start html-base woc, setting up page with
-	2) css/cgiwoc.css 
-	3) js/cgiwoc.js to call (ajax load) cgiwoc.pl and add output DIV to page,
-	taking care of scrolling
+    1) html/cgiwoc.html to start html-base woc, setting up page with
+    2) css/cgiwoc.css 
+    3) js/cgiwoc.js to call (ajax load) cgiwoc.pl and add output DIV to page,
+    taking care of scrolling
 
 =cut
 
@@ -37,13 +37,13 @@ $QryParm->{'cmd'}    ||= "help";
 
 # MUST have admin level (authmisc woc 4)
 if ( ! clientHasAdm(type=>"authmisc",name=>"woc")) {
-	die "Sorry, you cannot display this page.";
+    die "Sorry, you cannot display this page.";
 }
 
 my @results = qx( perl ../perl/woc.pl $QryParm->{'cmd'});
-foreach (@results) { 
-	s/\n/<br>/g; 
-	s/\s/&nbsp;/g;
+foreach (@results) {
+    s/\n/<br>/g;
+    s/\s/&nbsp;/g;
 }
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 print "<DIV>@results</DIV>";

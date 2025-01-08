@@ -1,5 +1,6 @@
 #!/usr/bin/perl 
 #
+
 =head1 NAME
 
 formUPLOAD.pl 
@@ -18,18 +19,18 @@ for GRIDS/NODES, ie. http-client must have Edit access to the GRID or a GRID tha
 
 =head1 QUERY-STRING  
 
-	object=
- 		fully qualified grid name OR node name, ie. gridtype.gridname[.nodename]
-		Document root path will be derived from object= , either:
-			$GRIDS{PATH_GRIDS}/gridtype/gridname  or
-			$NODES{PATH_NODES}/nodename
+    object=
+         fully qualified grid name OR node name, ie. gridtype.gridname[.nodename]
+        Document root path will be derived from object= , either:
+            $GRIDS{PATH_GRIDS}/gridtype/gridname  or
+            $NODES{PATH_NODES}/nodename
 
-	doc= 
- 		type of document, ie. target directory for document to be uploaded, within the root path derived from object=  
- 		one of: "SPATH_DOCUMENTS", "SPATH_PHOTOS", "SPATH_SCHEMES", "SPATH_INTERVENTIONS" 
+    doc= 
+         type of document, ie. target directory for document to be uploaded, within the root path derived from object=  
+         one of: "SPATH_DOCUMENTS", "SPATH_PHOTOS", "SPATH_SCHEMES", "SPATH_INTERVENTIONS" 
 
-	event=
- 		only required if doc is SPATH_INTERVENTIONS: filename of Event or Project (intervention)
+    event=
+         only required if doc is SPATH_INTERVENTIONS: filename of Event or Project (intervention)
 
 =cut
 
@@ -55,7 +56,7 @@ use Locale::TextDomain('webobs');
 
 # ---- calling stuff 
 #
-my @tod = localtime(); 
+my @tod = localtime();
 my $QryParm = $cgi->Vars;
 my $typeDoc = $QryParm->{'doc'}     // "";
 my $object  = $QryParm->{'object'}  // "";
@@ -86,19 +87,19 @@ if ( $refer =~ /formGENFORM.pl/ ) {
     @NID = split(/[\.\/]/, trim($object));
     ($GRIDType, $GRIDName, $NODEName) = @NID;
     if (defined($GRIDType) || defined($GRIDName)) {
-	    $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
-	    die "$__{'Not authorized'}" if ($editOK == 0);
+        $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
+        die "$__{'Not authorized'}" if ($editOK == 0);
     } else { die "$__{'Invalid object'} '$object'" }
 
     # ---- find out wether object is a grid or a node
     #
     if (scalar(@NID) == 3) {
-	    $pobj = \%NODES;
-	    $pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
+        $pobj = \%NODES;
+        $pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
     }
     if (scalar(@NID) == 2) {
-	    $pobj = \%GRIDS;
-	    $pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
+        $pobj = \%GRIDS;
+        $pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
     }
 }
 
@@ -108,12 +109,12 @@ my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SC
 die "$__{'Cannot upload to'} $typeDoc" if ( "@allowed" !~ /\b$typeDoc\b/ );
 
 if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
-	$pathTarget = "$WEBOBS{ROOT_DATA}/FORMDOCS/$object";
+    $pathTarget = "$WEBOBS{ROOT_DATA}/FORMDOCS/$object";
 } elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
-	$pathTarget  .= "/$pobj->{$typeDoc}";
+    $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
-	die "$__{'intervention event not specified'}" if ($event eq "");
-	$pathTarget  .= "/$pobj->{$typeDoc}/$event/PHOTOS";
+    die "$__{'intervention event not specified'}" if ($event eq "");
+    $pathTarget  .= "/$pobj->{$typeDoc}/$event/PHOTOS";
 }
 
 # ---- at that point $pathTarget is where uploaded documents will be sent to
@@ -129,90 +130,90 @@ my @listeTarget = <$pathTarget/*.*> ;
 my $titrePage = "Manage $pobj->{$typeDoc}";
 
 print $cgi->header(-charset=>"utf-8"),
-$cgi->start_html("$titrePage");
+  $cgi->start_html("$titrePage");
 print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">";
 print <<"FIN";
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript">
 \$(document).ready(function(){
-	\$('#uploadFile',\$('#theform')).change(function() {
-		\$("#progress").html('<b>Uploaded</b>').css("color", "black");
-		if (this.files.length > 0) {
-			var l = "<B>Selected :</B> ";
-			\$(this.files).each(function(i) { 
-				l += this.name + " ("+ this.size +"), "; 
-			});
-			\$('#multiloadmsg').html(l);
-			\$('#multiloadmsg').css('visibility','visible');
-			\$("#progress").html('Click on save to upload.');
-		} else {
-			\$('#multiloadmsg').css('visibility','hidden');
-		}
-	});
+    \$('#uploadFile',\$('#theform')).change(function() {
+        \$("#progress").html('<b>Uploaded</b>').css("color", "black");
+        if (this.files.length > 0) {
+            var l = "<B>Selected :</B> ";
+            \$(this.files).each(function(i) { 
+                l += this.name + " ("+ this.size +"), "; 
+            });
+            \$('#multiloadmsg').html(l);
+            \$('#multiloadmsg').css('visibility','visible');
+            \$("#progress").html('Click on save to upload.');
+        } else {
+            \$('#multiloadmsg').css('visibility','hidden');
+        }
+    });
 });
 function verif_formulaire()
 {
-	var f      = \$('#theform');
-	var fd     = new FormData();
-	var fdtext = "\\n";
-	// all requested uploads from system's files-selector
-	for (var i = 0, len = \$('#uploadFile',f).prop('files').length; i < len; i++) {
+    var f      = \$('#theform');
+    var fd     = new FormData();
+    var fdtext = "\\n";
+    // all requested uploads from system's files-selector
+    for (var i = 0, len = \$('#uploadFile',f).prop('files').length; i < len; i++) {
         fd.append("uploadFile"+(i+1), \$('#uploadFile',f).prop('files')[i]);
-		fdtext += "upload " + \$('#uploadFile',f).prop('files')[i].name + "\\n";
+        fdtext += "upload " + \$('#uploadFile',f).prop('files')[i].name + "\\n";
     }
-	// all requested deletes from delete checkboxes named 'delX'
-	var dels = \$('input[name^="del"]',f);
-	dels.each(function() {
-		if (this.checked == true) {
-			fd.append(this.name, this.value);
-			fdtext += 'delete ' + this.value + "\\n";
-		}
-	});
-	// other specifically named inputs
-	fd.append("object",\$('input[name="object"],f').val());
-	fd.append("doc",\$('input[name="doc"],f').val());
-	fd.append("event",\$('input[name="event"],f').val());
-	fd.append("nb",\$('input[name="nb"],f').val());
+    // all requested deletes from delete checkboxes named 'delX'
+    var dels = \$('input[name^="del"]',f);
+    dels.each(function() {
+        if (this.checked == true) {
+            fd.append(this.name, this.value);
+            fdtext += 'delete ' + this.value + "\\n";
+        }
+    });
+    // other specifically named inputs
+    fd.append("object",\$('input[name="object"],f').val());
+    fd.append("doc",\$('input[name="doc"],f').val());
+    fd.append("event",\$('input[name="event"],f').val());
+    fd.append("nb",\$('input[name="nb"],f').val());
 
-	var yesno = confirm("$__{'Confirm your request'}"+fdtext);
-	if (yesno == true) {
-		\$("#progress").html('<b>Uploaded</b>').css("color", "black");
-		\$('#progress-bar').show();
-		\$('#uploadFile').prop("disabled", true);
-		\$('#save').prop("disabled", true);
-		\$.ajax({
-			url: "/cgi-bin/$WEBOBS{CGI_UPLOAD_POST}",
-			data: fd,
-			cache: false,
-			contentType: false,
-			processData: false,
-			type: 'POST',
-			timeout: 2 * 60 * 1000,
-			xhr: function() {
-				var xhr = new XMLHttpRequest();
-				xhr.upload.addEventListener("progress", function(evt) {
-					if (evt.lengthComputable) {
-						var percentComplete = evt.loaded / evt.total;
-						console.log(percentComplete);
-						\$('#progress').html('<b> Uploading ' + (Math.round(percentComplete * 100)) + '% </b>');
-						\$('#progress-bar').val(Math.round(percentComplete * 100));
-					}
-				}, false);
-				return xhr;
-			}
-		}).done(function(data) {
-			//alert(data);
-			location.href = document.referrer;
-		}).fail(function(xhr, status, error) {
-			\$("#progress").html('<b>Upload failed: ' + (xhr.status >= 100 ? xhr.status + ' ' : '') + error + '</b>').css("color", "red");
-		}).always(function(data) {
-			\$('#progress-bar').hide();
-			\$('#uploadFile').prop("disabled", false);
-			\$('#save').prop("disabled", false);
-		})
-	} else {
-		return;
-	}	
+    var yesno = confirm("$__{'Confirm your request'}"+fdtext);
+    if (yesno == true) {
+        \$("#progress").html('<b>Uploaded</b>').css("color", "black");
+        \$('#progress-bar').show();
+        \$('#uploadFile').prop("disabled", true);
+        \$('#save').prop("disabled", true);
+        \$.ajax({
+            url: "/cgi-bin/$WEBOBS{CGI_UPLOAD_POST}",
+            data: fd,
+            cache: false,
+            contentType: false,
+            processData: false,
+            type: 'POST',
+            timeout: 2 * 60 * 1000,
+            xhr: function() {
+                var xhr = new XMLHttpRequest();
+                xhr.upload.addEventListener("progress", function(evt) {
+                    if (evt.lengthComputable) {
+                        var percentComplete = evt.loaded / evt.total;
+                        console.log(percentComplete);
+                        \$('#progress').html('<b> Uploading ' + (Math.round(percentComplete * 100)) + '% </b>');
+                        \$('#progress-bar').val(Math.round(percentComplete * 100));
+                    }
+                }, false);
+                return xhr;
+            }
+        }).done(function(data) {
+            //alert(data);
+            location.href = document.referrer;
+        }).fail(function(xhr, status, error) {
+            \$("#progress").html('<b>Upload failed: ' + (xhr.status >= 100 ? xhr.status + ' ' : '') + error + '</b>').css("color", "red");
+        }).always(function(data) {
+            \$('#progress-bar').hide();
+            \$('#uploadFile').prop("disabled", false);
+            \$('#save').prop("disabled", false);
+        })
+    } else {
+        return;
+    }    
 }
 </script>
 FIN
@@ -223,60 +224,61 @@ print "
  <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
  <!-- overLIB (c) Erik Bosrup -->
  <DIV ID=\"helpBox\"></DIV>";
- print "\n<H2>$titrePage</H2>";
+print "\n<H2>$titrePage</H2>";
 print "<H3>$__{'for'} [$object] $event</H3>\n";
+
 #was:print "<h2>[$NODEName] ".getNodeString(node=>$NODEName,style=>'short')."</h2>";
 #debug: print "target= $pathTarget <br>";
 
 print "<form id=\"theform\" name=\"formulaire\" action=\"\" ENCTYPE=\"multipart/form-data\">";
-	print "<DIV id='strip' style='width: auto; border: 1px solid gray; overflow-x: auto; overflow-y: hidden'>\n";
-	print "<TABLE><TR>";
-	my $i = 0;
-	foreach (@listeTarget) {
-		$i++;
-		my ( $name, $path, $extension ) = fileparse ( $_, '\..*' );
-		my $urn  = "$urnTarget/$name$extension";
-		my $turn = "$urnTarget/$thumbnailsPath/$name$extension";
-		my $file = "$pathTarget/$name$extension";
-		print "<TD style='border:none; border-right: 1px solid gray' align=center valign=top>";
-		if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
-			$urn  =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
-		}
-		print "<A href=\"$urn\">";
-		my $hght = ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $height : $NODES{THUMBNAILS_PIXV});
-		my $th = makeThumbnail( $file, "x$hght", "$pathTarget/$thumbnailsPath", $NODES{THUMBNAILS_EXT});
-		if ( $th ne "" ) {
-			if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
-				(my $turn = $th) =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
-				print "<IMG src=\"$turn\"/>";
-				qx(cd "$pathTarget/$thumbnailsPath/" && convert -resize $width x $height -delay $delay -loop 0 "*.jpg" $GRIDS{THUMBNAILS_ANIM} 2>/dev/null);
-			} else {
-				(my $turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
-				print "<IMG src=\"$turn\"/>";
-			}
-		}
-		print "</A>";
-		print "<P>$name$extension<BR/>";
-		print "<INPUT type=checkbox name=del$i value=\"$name$extension\"> $__{'Delete'}</TD>";
-	}
-	print "</TR></TABLE>";
-	print "</DIV>";
+print "<DIV id='strip' style='width: auto; border: 1px solid gray; overflow-x: auto; overflow-y: hidden'>\n";
+print "<TABLE><TR>";
+my $i = 0;
+foreach (@listeTarget) {
+    $i++;
+    my ( $name, $path, $extension ) = fileparse ( $_, '\..*' );
+    my $urn  = "$urnTarget/$name$extension";
+    my $turn = "$urnTarget/$thumbnailsPath/$name$extension";
+    my $file = "$pathTarget/$name$extension";
+    print "<TD style='border:none; border-right: 1px solid gray' align=center valign=top>";
+    if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
+        $urn  =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
+    }
+    print "<A href=\"$urn\">";
+    my $hght = ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $height : $NODES{THUMBNAILS_PIXV});
+    my $th = makeThumbnail( $file, "x$hght", "$pathTarget/$thumbnailsPath", $NODES{THUMBNAILS_EXT});
+    if ( $th ne "" ) {
+        if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
+            (my $turn = $th) =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
+            print "<IMG src=\"$turn\"/>";
+            qx(cd "$pathTarget/$thumbnailsPath/" && convert -resize $width x $height -delay $delay -loop 0 "*.jpg" $GRIDS{THUMBNAILS_ANIM} 2>/dev/null);
+        } else {
+            (my $turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
+            print "<IMG src=\"$turn\"/>";
+        }
+    }
+    print "</A>";
+    print "<P>$name$extension<BR/>";
+    print "<INPUT type=checkbox name=del$i value=\"$name$extension\"> $__{'Delete'}</TD>";
+}
+print "</TR></TABLE>";
+print "</DIV>";
 
-	print "<BR><fieldset><legend style=\"color: black; font-size:8pt\">$__{'Upload new file(s)'} <i><small>Note: $__{'Avoid special characters and spaces in filename'}</small></i></legend>
-	<INPUT type=\"file\" id=\"uploadFile\" name=\"uploadFile\" multiple><BR>
-	<div id=\"multiloadmsg\" style=\"visibility: hidden;color: green;\"></div></P>";
-	print qq(<div id="progress"></div>);
-	print qq(<progress id="progress-bar" value="0" max="100" hidden></progress>);
-	print "</fieldset>";
+print "<BR><fieldset><legend style=\"color: black; font-size:8pt\">$__{'Upload new file(s)'} <i><small>Note: $__{'Avoid special characters and spaces in filename'}</small></i></legend>
+    <INPUT type=\"file\" id=\"uploadFile\" name=\"uploadFile\" multiple><BR>
+    <div id=\"multiloadmsg\" style=\"visibility: hidden;color: green;\"></div></P>";
+print qq(<div id="progress"></div>);
+print qq(<progress id="progress-bar" value="0" max="100" hidden></progress>);
+print "</fieldset>";
 
-	print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
-	print "<input type=\"hidden\" name=\"doc\" value=\"$typeDoc\">";
-	print "<input type=\"hidden\" name=\"event\" value=\"$event\">";
-	print "<input type=\"hidden\" name=\"nb\" value=\"$i\">";
+print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
+print "<input type=\"hidden\" name=\"doc\" value=\"$typeDoc\">";
+print "<input type=\"hidden\" name=\"event\" value=\"$event\">";
+print "<input type=\"hidden\" name=\"nb\" value=\"$i\">";
 
-	print "<p>";
-	print "<input type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-	print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\" id=\"save\"></p>";
+print "<p>";
+print "<input type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
+print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\" id=\"save\"></p>";
 print "</form><BR>&nbsp;<BR>";
 
 # ---- We're done with the page

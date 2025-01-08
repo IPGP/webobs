@@ -29,19 +29,19 @@ use WebObs::Users qw($CLIENT clientIsValid clientHasRead);
 
 # --- ends here if the client is not valid
 if ( !clientIsValid ) {
-  die "$__{'die_client_not_valid'}";
+    die "$__{'die_client_not_valid'}";
 }
 
 # get all GRIDs with a minimum read auth
 my @T;
 for (sort(WebObs::Grids::listViewNames())) {
-	push(@T, "VIEW.$_") if (clientHasRead(type=>"authviews",name=>"$_"));
+    push(@T, "VIEW.$_") if (clientHasRead(type=>"authviews",name=>"$_"));
 }
 for (sort(WebObs::Grids::listProcNames())) {
-	push(@T, "PROC.$_") if (clientHasRead(type=>"authprocs",name=>"$_"));
+    push(@T, "PROC.$_") if (clientHasRead(type=>"authprocs",name=>"$_"));
 };
 for (sort(WebObs::Grids::listFormNames())) {
-	push(@T, "FORM.$_") if (clientHasRead(type=>"authforms",name=>"$_"));
+    push(@T, "FORM.$_") if (clientHasRead(type=>"authforms",name=>"$_"));
 };
 
 # get all NODE IDs with grid association
@@ -61,14 +61,14 @@ print <<"FIN";
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
 <script language="JavaScript">
 \$(document).ready(function() {
-	\$('.nodetbl table tr').hover(
-		function(e) {
-			\$(this).addClass("hover");
-		},
-		function(e) {
-			\$(this).removeClass("hover");
-		}
-	);
+    \$('.nodetbl table tr').hover(
+        function(e) {
+            \$(this).addClass("hover");
+        },
+        function(e) {
+            \$(this).removeClass("hover");
+        }
+    );
 });
 </script>
 </head>
@@ -88,40 +88,40 @@ print "</TABLE></TD></TR></TABLE>\n";
 # ---- build matrix as a <TABLE>
 print "<DIV class=\"nodetbl\">";
 print "<TABLE cellspacing=0>\n";
-	print "<THEAD>";
-	my $what;
-	my $oddeven = "even";
-	$row = "<TR><TH></TH>";
-	for (@T) {
-		$what = ($_ =~ m/^PROC./ ? 'proc':($_ =~ m/^FORM./ ? 'form':'view'));
-		$row .= "<TH class=\"skew $what $oddeven\"><div><span>$_</span></div></TH>";
-		$oddeven = $oddeven eq "even" ? "odd" : "even";
-	}
-	print "$row\n";
-	print "</THEAD>\n";
+print "<THEAD>";
+my $what;
+my $oddeven = "even";
+$row = "<TR><TH></TH>";
+for (@T) {
+    $what = ($_ =~ m/^PROC./ ? 'proc':($_ =~ m/^FORM./ ? 'form':'view'));
+    $row .= "<TH class=\"skew $what $oddeven\"><div><span>$_</span></div></TH>";
+    $oddeven = $oddeven eq "even" ? "odd" : "even";
+}
+print "$row\n";
+print "</THEAD>\n";
 
-	print "<TBODY>";
-	for my $node (sort keys(%N)) {
-		my $oddeven = "even";
-		$row = "<TR><TD class=\"nodeid\">$node</TD>";
-		if (@{$N{$node}}) {
-			for (@T) {
-				$what = ($_ =~ m/^PROC./ ? 'proc':($_ =~ m/^FORM./ ? 'form':'view'));
-				if ($_ ~~ @{$N{$node}}) {
-					my $link = "\"$NODES{CGI_SHOW}?node=$_.$node\"";
-					$row .= "<TD class=\"otimes $what $oddeven\"><a href=$link>&cir;</a></TD>" 
-				}
-				else {
-					$row .= "<TD class=\"oempty $what $oddeven\">&empty;</TD>"
-				}
-				$oddeven = $oddeven eq "even" ? "odd" : "even";
-			}
-		} else {
-			$row .= "<TD class=\"oorphan\" colspan=\"".(@T)."\"></TD></TR>\n";
-		}
-		print $row;
-	}
-	print "</TBODY>";
+print "<TBODY>";
+for my $node (sort keys(%N)) {
+    my $oddeven = "even";
+    $row = "<TR><TD class=\"nodeid\">$node</TD>";
+    if (@{$N{$node}}) {
+        for (@T) {
+            $what = ($_ =~ m/^PROC./ ? 'proc':($_ =~ m/^FORM./ ? 'form':'view'));
+            if ($_ ~~ @{$N{$node}}) {
+                my $link = "\"$NODES{CGI_SHOW}?node=$_.$node\"";
+                $row .= "<TD class=\"otimes $what $oddeven\"><a href=$link>&cir;</a></TD>"
+            }
+            else {
+                $row .= "<TD class=\"oempty $what $oddeven\">&empty;</TD>"
+            }
+            $oddeven = $oddeven eq "even" ? "odd" : "even";
+        }
+    } else {
+        $row .= "<TD class=\"oorphan\" colspan=\"".(@T)."\"></TD></TR>\n";
+    }
+    print $row;
+}
+print "</TBODY>";
 print "</TABLE>";
 print "</DIV>\n";
 

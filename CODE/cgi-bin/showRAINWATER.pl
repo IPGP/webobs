@@ -115,13 +115,13 @@ my @NODESSelList;
 my @NODESValidList;
 my %Ps = $FORM->procs;
 for my $p (sort keys(%Ps)) {
-	push(@NODESSelList,"\{$p\}|-- {PROC.$p} $Ps{$p} --");
-	my %N = $FORM->nodes($p);
-	for my $n (sort keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-		push(@NODESValidList,"$n");
-	}
-	%Ns = (%Ns, %N);
+    push(@NODESSelList,"\{$p\}|-- {PROC.$p} $Ps{$p} --");
+    my %N = $FORM->nodes($p);
+    for my $n (sort keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+        push(@NODESValidList,"$n");
+    }
+    %Ns = (%Ns, %N);
 }
 
 my $QryParm   = $cgi->Vars;
@@ -179,22 +179,22 @@ $endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'}";
 
 $i = 0;
 for (@ratios) {
-	my $rapn = "rap$i";
-	if (defined($QryParm->{$rapn})) {
-		$rap[$i] = 1;
-		$nbRap++;
-	} else { $rap[$i] = 0 }
-	$i++;
+    my $rapn = "rap$i";
+    if (defined($QryParm->{$rapn})) {
+        $rap[$i] = 1;
+        $nbRap++;
+    } else { $rap[$i] = 0 }
+    $i++;
 }
 
 # ---- a site requested as {name} means "all nodes for proc 'name'"
 #
 my @gridsites;
 if ($QryParm->{'node'} =~ /^{(.*)}$/) {
-	my %tmpN = $FORM->nodes($1);
-	for (keys(%tmpN)) {
-		push(@gridsites,"$_");
-	}
+    my %tmpN = $FORM->nodes($1);
+    for (keys(%tmpN)) {
+        push(@gridsites,"$_");
+    }
 }
 
 # ----
@@ -204,83 +204,83 @@ push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type
 # ---- start html if not CSV output
 
 if ($QryParm->{'dump'} ne "csv") {
-	print $cgi->header(-charset=>'utf-8');
-	print qq(<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-	<html><head><title>).$FORM->conf('TITLE').qq(</title>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	<link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">);
+    print $cgi->header(-charset=>'utf-8');
+    print qq(<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <html><head><title>).$FORM->conf('TITLE').qq(</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">);
 
-	print qq(</head>
-	<body style="background-attachment: fixed">
-	<div id="attente">$__{'Searching for the data... please wait'}.</div>
-	<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
-	<script language="JavaScript" src="/js/overlib/overlib.js"></script>
-	<!-- overLIB (c) Erik Bosrup -->\n);
+    print qq(</head>
+    <body style="background-attachment: fixed">
+    <div id="attente">$__{'Searching for the data... please wait'}.</div>
+    <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+    <script language="JavaScript" src="/js/overlib/overlib.js"></script>
+    <!-- overLIB (c) Erik Bosrup -->\n);
 }
 
 # ---- Debut du formulaire pour la selection de l'affichage
 #
 if ($QryParm->{'dump'} ne "csv") {
-	print "<FORM name=\"formulaire\" action=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\" method=\"get\">",
-		"<TABLE width=\"100%\"><TR><TD class=\"boitegrise\" style=\"border:0;text-align:center\">",
-		"<B>$__{'Start Date'}:</B> ";
-	print "<SELECT name=\"y1\" size=\"1\">\n";
-	for ($FORM->conf('BANG')..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-	print "</SELECT>\n";
-	print "<SELECT name=\"m1\" size=\"1\">\n";
-	for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-	print "</SELECT>\n";
-	print "<SELECT name=\"d1\" size=\"1\">\n";
-	for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-	print "</SELECT>\n";
-	print "&nbsp;&nbsp;<B>$__{'End Date'}:</B> ";
-	print "<SELECT name=\"y2\" size=\"1\">\n";
-	for ($FORM->conf('BANG')..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-	print "</SELECT>\n";
-	print "<SELECT name=\"m2\" size=\"1\">\n";
-	for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-	print "</SELECT>\n";
-	print "<SELECT name=\"d2\" size=\"1\">\n";
-	for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-	print "</SELECT>\n";
-	print "&nbsp;&nbsp;<select name=\"node\" size=\"1\">";
-	for ("All|All nodes",@NODESSelList) {
-		my ($val,$cle) = split (/\|/,$_);
-		if ("$val" eq "$QryParm->{'node'}") {
-			print("<option selected value=$val>$cle</option>\n");
-		} else {
-			print("<option value=$val>$cle</option>\n");
-		}
-	}
-	print qq(</select>
-	<select name="unit" size="1">);
-	for (@cleParamUnite) {
-		my ($val,$cle) = split (/\|/,$_);
-		if ("$val" eq "$QryParm->{'unit'}") { print qq(<option selected value=$val>$cle</option>\n); }
-		else { print qq(<option value=$val>$cle</option>\n); }
-	}
-	print qq(</select>&nbsp;&nbsp;&nbsp;
-	<INPUT type="button" value="$__{'Reset'}" onClick="reset()">
-	<INPUT type="submit" value="$__{'Display'}" style="font-weight: bold"><BR>
-	&nbsp;&nbsp;\n<B>$__{'Ratios'}:</B>);
+    print "<FORM name=\"formulaire\" action=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\" method=\"get\">",
+      "<TABLE width=\"100%\"><TR><TD class=\"boitegrise\" style=\"border:0;text-align:center\">",
+      "<B>$__{'Start Date'}:</B> ";
+    print "<SELECT name=\"y1\" size=\"1\">\n";
+    for ($FORM->conf('BANG')..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "<SELECT name=\"m1\" size=\"1\">\n";
+    for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "<SELECT name=\"d1\" size=\"1\">\n";
+    for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "&nbsp;&nbsp;<B>$__{'End Date'}:</B> ";
+    print "<SELECT name=\"y2\" size=\"1\">\n";
+    for ($FORM->conf('BANG')..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "<SELECT name=\"m2\" size=\"1\">\n";
+    for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "<SELECT name=\"d2\" size=\"1\">\n";
+    for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "&nbsp;&nbsp;<select name=\"node\" size=\"1\">";
+    for ("All|All nodes",@NODESSelList) {
+        my ($val,$cle) = split (/\|/,$_);
+        if ("$val" eq "$QryParm->{'node'}") {
+            print("<option selected value=$val>$cle</option>\n");
+        } else {
+            print("<option value=$val>$cle</option>\n");
+        }
+    }
+    print qq(</select>
+    <select name="unit" size="1">);
+    for (@cleParamUnite) {
+        my ($val,$cle) = split (/\|/,$_);
+        if ("$val" eq "$QryParm->{'unit'}") { print qq(<option selected value=$val>$cle</option>\n); }
+        else { print qq(<option value=$val>$cle</option>\n); }
+    }
+    print qq(</select>&nbsp;&nbsp;&nbsp;
+    <INPUT type="button" value="$__{'Reset'}" onClick="reset()">
+    <INPUT type="submit" value="$__{'Display'}" style="font-weight: bold"><BR>
+    &nbsp;&nbsp;\n<B>$__{'Ratios'}:</B>);
 
-	$i = 0;
-	for (@ratios) {
-		my ($num,$den,$nhtm,$dhtm) = split(/\|/,$_);
-		my $sel_rap = "";
-		if ($rap[$i] == 1) { $sel_rap = "checked"; }
-		print qq(<input type="checkbox" name="rap$i" $sel_rap>$nhtm/$dhtm&nbsp;&nbsp;);
-		$i++;
-	}
-	print "</TD>";
-	if ($clientAuth > 1) {
-		my $form_url = URI->new("/cgi-bin/".$FORM->conf('CGI_FORM'));
-		$form_url->query_form('return_url' => $return_url);
-		print qq(<TD class="boitegrise" style="border:0"><input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
-			qq( onClick="document.location='$form_url'" value="$__{'Enter a new record'}"></TD>);
-	}
-	print qq(</B></TR></TABLE></FORM>
-	<H1>).$FORM->conf('TITLE').qq(</H1>\n);
+    $i = 0;
+    for (@ratios) {
+        my ($num,$den,$nhtm,$dhtm) = split(/\|/,$_);
+        my $sel_rap = "";
+        if ($rap[$i] == 1) { $sel_rap = "checked"; }
+        print qq(<input type="checkbox" name="rap$i" $sel_rap>$nhtm/$dhtm&nbsp;&nbsp;);
+        $i++;
+    }
+    print "</TD>";
+    if ($clientAuth > 1) {
+        my $form_url = URI->new("/cgi-bin/".$FORM->conf('CGI_FORM'));
+        $form_url->query_form('return_url' => $return_url);
+        print qq(<TD class="boitegrise" style="border:0"><input type="button" style="margin-left:15px;color:blue;font-weight:bold"),
+          qq( onClick="document.location='$form_url'" value="$__{'Enter a new record'}"></TD>);
+    }
+    print qq(</B></TR></TABLE></FORM>
+    <H1>).$FORM->conf('TITLE').qq(</H1>\n);
 }
 
 # ---- Read the data file
@@ -300,39 +300,39 @@ my $aliasSite;
 
 $header = "<TR>";
 if ($clientAuth > 1) {
-	$header = $header."<TH rowspan=2></TH>";
+    $header = $header."<TH rowspan=2></TH>";
 }
 $header = $header."<TH colspan=3>Sampling Time Collection</TH>"
-	."<TH rowspan=2>Site</TH>"
-	."<TH colspan=2>Rainfall</TH>"
-	."<TH colspan=2>Laboratory Meas.</TH>"
-	."<TH colspan=4>Cations ($unit)</TH>"
-	."<TH colspan=3>Anions ($unit)</TH>"
-	."<TH colspan=2>Isotopes (‰)</TH>"
-	."<TH rowspan=2>NICB<br>(%)</TH>"
-	.($nbRap > 0 ? "<TH colspan=".$nbRap."> Ratios</TH>":"")
-	."<TH rowspan=2></TH></TR>\n"
-	."<TR><TH>Start<br>Date &amp; Time</TH><TH>End<br>Date &amp; Time</TH><TH>Days</TH>"
-	."<TH>Cum.<br>(mm)</TH><TH>Avr.<br>(mm/day)</TH>"
-	."<TH>pH</TH>"
-	."<TH>Cond.<br>(µS)</TH>"
-	."<TH>Na<sup>+</sup></TH>"
-	."<TH>K<sup>+</sup></TH>"
-	."<TH>Mg<sup>++</sup></TH>"
-	."<TH>Ca<sup>++</sup></TH>"
-	."<TH>HCO<sub>3</sub><sup>-</sup></TH>"
-	."<TH>Cl<sup>-</sup></TH>"
-	."<TH>SO<sub>4</sub><sup>--</sup></TH>"
-	."<TH>&delta;D</TH><TH>&delta;<sup>18</sup>O</TH>";
+  ."<TH rowspan=2>Site</TH>"
+  ."<TH colspan=2>Rainfall</TH>"
+  ."<TH colspan=2>Laboratory Meas.</TH>"
+  ."<TH colspan=4>Cations ($unit)</TH>"
+  ."<TH colspan=3>Anions ($unit)</TH>"
+  ."<TH colspan=2>Isotopes (‰)</TH>"
+  ."<TH rowspan=2>NICB<br>(%)</TH>"
+  .($nbRap > 0 ? "<TH colspan=".$nbRap."> Ratios</TH>":"")
+  ."<TH rowspan=2></TH></TR>\n"
+  ."<TR><TH>Start<br>Date &amp; Time</TH><TH>End<br>Date &amp; Time</TH><TH>Days</TH>"
+  ."<TH>Cum.<br>(mm)</TH><TH>Avr.<br>(mm/day)</TH>"
+  ."<TH>pH</TH>"
+  ."<TH>Cond.<br>(µS)</TH>"
+  ."<TH>Na<sup>+</sup></TH>"
+  ."<TH>K<sup>+</sup></TH>"
+  ."<TH>Mg<sup>++</sup></TH>"
+  ."<TH>Ca<sup>++</sup></TH>"
+  ."<TH>HCO<sub>3</sub><sup>-</sup></TH>"
+  ."<TH>Cl<sup>-</sup></TH>"
+  ."<TH>SO<sub>4</sub><sup>--</sup></TH>"
+  ."<TH>&delta;D</TH><TH>&delta;<sup>18</sup>O</TH>";
 $i = 0;
 for (@ratios) {
-	my ($num,$den,$nhtm,$dthm) = split(/\|/,$_);
-	if ($rap[$i] == 1) {
-		$header = $header."<TH><table align=center><TR>"
-		."<TH style=\"border:0;border-bottom-style:solid;border-bottom-width:1px;text-align:center\">$nhtm</TH></TR>"
-		."<TR><TH style=\"border:0;text-align:center\">$dthm</TH></TR></TABLE></TH>";
-	}
-	$i++;
+    my ($num,$den,$nhtm,$dthm) = split(/\|/,$_);
+    if ($rap[$i] == 1) {
+        $header = $header."<TH><table align=center><TR>"
+          ."<TH style=\"border:0;border-bottom-style:solid;border-bottom-width:1px;text-align:center\">$nhtm</TH></TR>"
+          ."<TR><TH style=\"border:0;text-align:center\">$dthm</TH></TR></TABLE></TH>";
+    }
+    $i++;
 }
 
 $header = $header."</TR>\n";
@@ -340,141 +340,141 @@ $header = $header."</TR>\n";
 $i = 0;
 my $nbLignesRetenues = 0;
 for (@lines) {
-	my ($id,$date2,$time2,$site,$date1,$time1,$volume,$diameter,$pH,$cond,$cNa,$cK,$cMg,$cCa,$cHCO3,$cCl,$cSO4,$dD,$d18O,$rem,$val) = split (/\|/,$_);
-	if ($i eq 0) {
-		push(@csv,l2u("$date1;$time1;$date2;$time2;Site ID;$site;$volume;$diameter;Total Rain (mm);Daily Rain (mm/day);$pH;$cond;$cNa;$cK;$cMg;$cCa;$cHCO3;$cCl;$cSO4;$dD;$d18O;NICB (%);\"$rem\";$val"));
-	}
-	elsif (($_ ne "")
-		&& ($site eq $QryParm->{'node'} || grep(/^$site$/, @gridsites) || ($QryParm->{'node'} eq "All" && grep(/^$site$/, @NODESValidList)))
-		&& ($id > 0 || $clientAuth == 4)
-		&& ($date1 le $endDate) && ($date2 ge $startDate)) { # here we accept any data partially included in the time span
+    my ($id,$date2,$time2,$site,$date1,$time1,$volume,$diameter,$pH,$cond,$cNa,$cK,$cMg,$cCa,$cHCO3,$cCl,$cSO4,$dD,$d18O,$rem,$val) = split (/\|/,$_);
+    if ($i eq 0) {
+        push(@csv,l2u("$date1;$time1;$date2;$time2;Site ID;$site;$volume;$diameter;Total Rain (mm);Daily Rain (mm/day);$pH;$cond;$cNa;$cK;$cMg;$cCa;$cHCO3;$cCl;$cSO4;$dD;$d18O;NICB (%);\"$rem\";$val"));
+    }
+    elsif (($_ ne "")
+        && ($site eq $QryParm->{'node'} || grep(/^$site$/, @gridsites) || ($QryParm->{'node'} eq "All" && grep(/^$site$/, @NODESValidList)))
+        && ($id > 0 || $clientAuth == 4)
+        && ($date1 le $endDate) && ($date2 ge $startDate)) { # here we accept any data partially included in the time span
 
-		my ($y,$m,$d) = split(/-/,$date1);
-		my ($hr,$mn) = split(/:/,($time1 eq "" ? $FORM->conf('DEFAULT_SAMPLING_TIME'):$time1));
-		my $d1 = DateTime->new(year => $y, month => $m, day => $d, hour => ($hr eq "" ? "00":$hr), minute => ($mn eq "" ? "00":$mn));
-		my ($y,$m,$d) = split(/-/,$date2);
-		my ($hr,$mn) = split(/:/,($time2 eq "" ? $FORM->conf('DEFAULT_SAMPLING_TIME'):$time2));
-		my $d2 = DateTime->new(year => $y, month => $m, day => $d, hour => ($hr eq "" ? "00":$hr), minute => ($mn eq "" ? "00":$mn));
-		my $dur = $d1->delta_days($d2)->delta_days;
-		my $total_rain = "";
-		my $daily_rain = "";
-		my ($cNa_mmol,$cK_mmol,$cMg_mmol,$cCa_mmol,$cCl_mmol,$cSO4_mmol,$cHCO3_mmol);
-		    $cNa_mmol=$cK_mmol=$cMg_mmol=$cCa_mmol=$cCl_mmol=$cSO4_mmol=$cHCO3_mmol=0;
-		my $cH_mmol = "";
-		my $tzp = "";
-		my $tzn = "";
-		my $nicb = "";
-		my @rapv;
-		my $rapport = "";
+        my ($y,$m,$d) = split(/-/,$date1);
+        my ($hr,$mn) = split(/:/,($time1 eq "" ? $FORM->conf('DEFAULT_SAMPLING_TIME'):$time1));
+        my $d1 = DateTime->new(year => $y, month => $m, day => $d, hour => ($hr eq "" ? "00":$hr), minute => ($mn eq "" ? "00":$mn));
+        my ($y,$m,$d) = split(/-/,$date2);
+        my ($hr,$mn) = split(/:/,($time2 eq "" ? $FORM->conf('DEFAULT_SAMPLING_TIME'):$time2));
+        my $d2 = DateTime->new(year => $y, month => $m, day => $d, hour => ($hr eq "" ? "00":$hr), minute => ($mn eq "" ? "00":$mn));
+        my $dur = $d1->delta_days($d2)->delta_days;
+        my $total_rain = "";
+        my $daily_rain = "";
+        my ($cNa_mmol,$cK_mmol,$cMg_mmol,$cCa_mmol,$cCl_mmol,$cSO4_mmol,$cHCO3_mmol);
+        $cNa_mmol=$cK_mmol=$cMg_mmol=$cCa_mmol=$cCl_mmol=$cSO4_mmol=$cHCO3_mmol=0;
+        my $cH_mmol = "";
+        my $tzp = "";
+        my $tzn = "";
+        my $nicb = "";
+        my @rapv;
+        my $rapport = "";
 
-		if ($volume gt 0 && $diameter gt 0) {
-			$total_rain = 10*$volume/(pi()*($diameter/2)**2);
-			$daily_rain = $total_rain/$dur if ($dur > 0);
-		}
-		if ($cNa ne "") { $cNa_mmol = $cNa/$GMOL{Na}; };
-		if ($cK ne "") { $cK_mmol = $cK/$GMOL{K}; };
-		if ($cMg ne "") { $cMg_mmol = $cMg/$GMOL{Mg}; };
-		if ($cCa ne "") { $cCa_mmol = $cCa/$GMOL{Ca}; };
-		if ($cCl ne "") { $cCl_mmol = $cCl/$GMOL{Cl}; };
-		if ($cSO4 ne "") { $cSO4_mmol = $cSO4/$GMOL{SO4}; };
-		if ($cHCO3 ne "") { $cHCO3_mmol = $cHCO3/$GMOL{HCO3}; };
-		if ($pH ne "") { $cH_mmol = 1000*10**(-$pH); }
-		$tzp = $cNa_mmol + $cK_mmol + 2*$cMg_mmol + 2*$cCa_mmol;
-		if ($tzp != 0) { $tzp += $cH_mmol; }
-		$tzn = $cCl_mmol + 2*$cSO4_mmol + $cHCO3_mmol;
-		if (($tzp != 0) && ($tzn != 0)) { $nicb = 100*($tzp - $tzn)/($tzp + $tzn); }
+        if ($volume gt 0 && $diameter gt 0) {
+            $total_rain = 10*$volume/(pi()*($diameter/2)**2);
+            $daily_rain = $total_rain/$dur if ($dur > 0);
+        }
+        if ($cNa ne "") { $cNa_mmol = $cNa/$GMOL{Na}; };
+        if ($cK ne "") { $cK_mmol = $cK/$GMOL{K}; };
+        if ($cMg ne "") { $cMg_mmol = $cMg/$GMOL{Mg}; };
+        if ($cCa ne "") { $cCa_mmol = $cCa/$GMOL{Ca}; };
+        if ($cCl ne "") { $cCl_mmol = $cCl/$GMOL{Cl}; };
+        if ($cSO4 ne "") { $cSO4_mmol = $cSO4/$GMOL{SO4}; };
+        if ($cHCO3 ne "") { $cHCO3_mmol = $cHCO3/$GMOL{HCO3}; };
+        if ($pH ne "") { $cH_mmol = 1000*10**(-$pH); }
+        $tzp = $cNa_mmol + $cK_mmol + 2*$cMg_mmol + 2*$cCa_mmol;
+        if ($tzp != 0) { $tzp += $cH_mmol; }
+        $tzn = $cCl_mmol + 2*$cSO4_mmol + $cHCO3_mmol;
+        if (($tzp != 0) && ($tzn != 0)) { $nicb = 100*($tzp - $tzn)/($tzp + $tzn); }
 
-		my $iv = 0;
-		for (@ratios) {
-			if ($rap[$iv] == 1) {
-				my ($num,$den,$nrp) = split(/\|/,$_);
-				$rapv[$iv] = eval("sprintf(\"%1.3f\",\$c".$num."_mmol/\$c".$den."_mmol)");
-				$rapport = $rapport."<TD class=tdResult>$rapv[$iv]</TD>";
-			}
-			$iv++;
-		}
+        my $iv = 0;
+        for (@ratios) {
+            if ($rap[$iv] == 1) {
+                my ($num,$den,$nrp) = split(/\|/,$_);
+                $rapv[$iv] = eval("sprintf(\"%1.3f\",\$c".$num."_mmol/\$c".$den."_mmol)");
+                $rapport = $rapport."<TD class=tdResult>$rapv[$iv]</TD>";
+            }
+            $iv++;
+        }
 
-		$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
+        $aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
 
-		my $normSite = normNode(node=>"PROC.$site");
-		if ($normSite ne "") {
-			$lien = "<A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normSite\"><B>$aliasSite</B></A>";
-		} else {
-			$lien = "$aliasSite";
-		}
-		my $form_url = URI->new("/cgi-bin/".$FORM->conf('CGI_FORM'));
-		$form_url->query_form('id' => $id, 'return_url' => $return_url);
-		$modif = qq(<a href="$form_url"><img src="/icons/modif.png" title="Edit..." border=0></a>);
-		$efface = qq(<img src="/icons/no.png" title="Remove..." onclick="checkRemove($id)">);
+        my $normSite = normNode(node=>"PROC.$site");
+        if ($normSite ne "") {
+            $lien = "<A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normSite\"><B>$aliasSite</B></A>";
+        } else {
+            $lien = "$aliasSite";
+        }
+        my $form_url = URI->new("/cgi-bin/".$FORM->conf('CGI_FORM'));
+        $form_url->query_form('id' => $id, 'return_url' => $return_url);
+        $modif = qq(<a href="$form_url"><img src="/icons/modif.png" title="Edit..." border=0></a>);
+        $efface = qq(<img src="/icons/no.png" title="Remove..." onclick="checkRemove($id)">);
 
-		$texte = $texte."<TR ".($id < 1 ? "class=\"node-disabled\"":"").">";
-		if ($clientAuth > 1) {
-			$texte = $texte."<TD nowrap>$modif</TD>";
-		}
-		$texte = $texte."<TD nowrap>$date1 $time1</TD><TD nowrap>$date2 $time2</TD><TD align=center>$dur</TD><TD align=center>$lien</TD>"
-			."<TD align=center>".sprintf("%0.1f",$total_rain)."</TD><TD align=center>".sprintf("%0.1f",$daily_rain)."</TD>"
-			."<TD align=center>$pH</TD><TD align=center>$cond</TD>";
-		$txt = "$date1;$time1;$date2;$time2;$site;$aliasSite;$volume;$diameter;"
-			.sprintf("%0.1f",$total_rain).";".sprintf("%0.1f",$daily_rain).";$pH;$cond;";
-		if ($QryParm->{'unit'} eq "mmol") {
-			for ("Na","K","Mg","Ca","HCO3","Cl","SO4") {
-				$texte .= "<TD align=center>";
-				if (eval("\$c$_ ne \"\"")) {
-					$texte .= sprintf($fmt,eval("\$c".$_."_mmol"));
-				}
-				$texte .= "</TD>";
-			}
-			$txt .= "$cNa_mmol;$cMg_mmol;$cCa_mmol;$cHCO3_mmol;$cCl_mmol;$cSO4_mmol;";
-		} else {
-			$texte .= "<TD align=center>$cNa</TD><TD align=center>$cK</TD><TD align=center>$cMg</TD><TD align=center>$cCa</TD>"
-				."<TD align=center>$cHCO3</TD><TD align=center>$cCl</TD><TD align=center>$cSO4</TD>";
-			$txt .= "$cNa;$cK;$cMg;$cCa;$cHCO3;$cCl;$cSO4;";
-		}
-		if ($QryParm->{'isotopes'} ne "") {
-			$texte .= "<TD align=center>$dD</TD><TD align=center>$d18O</TD>";
-		}
-		if ($nicb and ($nicb < -20) || ($nicb > 20)) {
-			$texte .= "<TD class=tdResult style=\"background-color:#FFAAAA\">";
-		} elsif ($nicb and ($nicb < -10) || ($nicb > 10)) {
-			$texte .= "<TD class=tdResult style=\"background-color:#FFEBAA\">";
-		} else {
-			$texte .= "<TD class=tdResult>";
-		}
-		if ($nicb ne "") {
-			$texte .= sprintf("%1.1f",$nicb);
-		}
-		$texte .= "</TD>$rapport<TD>";
-		$txt = $txt."$dD;$d18O;".sprintf("%0.1f",$nicb).";\"$rem\"\n";
-		if ($rem ne "") {
-			$rem =~ s/\'/&rsquo;/g;
-			$rem =~ s/\"/&quot;/g;
-			$texte = $texte."<IMG src=\"/icons/attention.gif\" border=0 onMouseOut=\"nd()\" onMouseOver=\"overlib('".l2u($rem)."',CAPTION,'Observations $aliasSite')\">";
-		}
-		$texte = $texte."</TD></TR>\n";
-		push(@csv,l2u($txt));
+        $texte = $texte."<TR ".($id < 1 ? "class=\"node-disabled\"":"").">";
+        if ($clientAuth > 1) {
+            $texte = $texte."<TD nowrap>$modif</TD>";
+        }
+        $texte = $texte."<TD nowrap>$date1 $time1</TD><TD nowrap>$date2 $time2</TD><TD align=center>$dur</TD><TD align=center>$lien</TD>"
+          ."<TD align=center>".sprintf("%0.1f",$total_rain)."</TD><TD align=center>".sprintf("%0.1f",$daily_rain)."</TD>"
+          ."<TD align=center>$pH</TD><TD align=center>$cond</TD>";
+        $txt = "$date1;$time1;$date2;$time2;$site;$aliasSite;$volume;$diameter;"
+          .sprintf("%0.1f",$total_rain).";".sprintf("%0.1f",$daily_rain).";$pH;$cond;";
+        if ($QryParm->{'unit'} eq "mmol") {
+            for ("Na","K","Mg","Ca","HCO3","Cl","SO4") {
+                $texte .= "<TD align=center>";
+                if (eval("\$c$_ ne \"\"")) {
+                    $texte .= sprintf($fmt,eval("\$c".$_."_mmol"));
+                }
+                $texte .= "</TD>";
+            }
+            $txt .= "$cNa_mmol;$cMg_mmol;$cCa_mmol;$cHCO3_mmol;$cCl_mmol;$cSO4_mmol;";
+        } else {
+            $texte .= "<TD align=center>$cNa</TD><TD align=center>$cK</TD><TD align=center>$cMg</TD><TD align=center>$cCa</TD>"
+              ."<TD align=center>$cHCO3</TD><TD align=center>$cCl</TD><TD align=center>$cSO4</TD>";
+            $txt .= "$cNa;$cK;$cMg;$cCa;$cHCO3;$cCl;$cSO4;";
+        }
+        if ($QryParm->{'isotopes'} ne "") {
+            $texte .= "<TD align=center>$dD</TD><TD align=center>$d18O</TD>";
+        }
+        if ($nicb and ($nicb < -20) || ($nicb > 20)) {
+            $texte .= "<TD class=tdResult style=\"background-color:#FFAAAA\">";
+        } elsif ($nicb and ($nicb < -10) || ($nicb > 10)) {
+            $texte .= "<TD class=tdResult style=\"background-color:#FFEBAA\">";
+        } else {
+            $texte .= "<TD class=tdResult>";
+        }
+        if ($nicb ne "") {
+            $texte .= sprintf("%1.1f",$nicb);
+        }
+        $texte .= "</TD>$rapport<TD>";
+        $txt = $txt."$dD;$d18O;".sprintf("%0.1f",$nicb).";\"$rem\"\n";
+        if ($rem ne "") {
+            $rem =~ s/\'/&rsquo;/g;
+            $rem =~ s/\"/&quot;/g;
+            $texte = $texte."<IMG src=\"/icons/attention.gif\" border=0 onMouseOut=\"nd()\" onMouseOver=\"overlib('".l2u($rem)."',CAPTION,'Observations $aliasSite')\">";
+        }
+        $texte = $texte."</TD></TR>\n";
+        push(@csv,l2u($txt));
 
-		$nbLignesRetenues++;
-	}
-	$i++;
+        $nbLignesRetenues++;
+    }
+    $i++;
 }
 
 push(@html,"$__{'Number of records'} = <B>$nbLignesRetenues</B> / $nbData.</P>\n",
-	"<P>$__{'Download a CSV text file of these data'} <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?dump=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&unit=$QryParm->{'unit'}\"><B>$fileCSV</B></A></P>\n");
+    "<P>$__{'Download a CSV text file of these data'} <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?dump=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&unit=$QryParm->{'unit'}\"><B>$fileCSV</B></A></P>\n");
 
 if ($texte ne "") {
-	push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$texte\n$header\n</TABLE>");
-	push(@html,"</P>");
+    push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$texte\n$header\n</TABLE>");
+    push(@html,"</P>");
 }
 push(@html,@notes);
 
 if ($QryParm->{'dump'} eq "csv") {
-	print @csv;
+    print @csv;
 } else {
-	print @html;
-	print "<style type=\"text/css\">
-		#attente { display: none; }
-	</style>\n
-	<BR>\n</BODY>\n</HTML>\n";
+    print @html;
+    print "<style type=\"text/css\">
+        #attente { display: none; }
+    </style>\n
+    <BR>\n</BODY>\n</HTML>\n";
 }
 
 __END__
