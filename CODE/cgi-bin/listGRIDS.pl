@@ -376,15 +376,8 @@ if (@$domains) {
                         } else { print "<TD style=\"background-color: #EEEEDD\">&nbsp;" }
                         print "</TD>";
                         print "<TD style=\"text-align:center\">";
-                        if (defined($G{$vp}{FORM}) && $G{$vp}{FORM} ne '') {
-                            my %F = readCfg("$WEBOBS{PATH_FORMS}/$G{$vp}{FORM}/$G{$vp}{FORM}.conf");
-                            print "<A HREF=\"/cgi-bin/showGENFORM.pl?form=$G{$vp}{FORM}\" title=\"$F{TITLE}\"><IMG border=\"0\" alt=\"$G{$vp}{FORM}\" SRC=\"/icons/form.png\"></A>";
-                        } else {
-                            if (defined($G{$vp}{URNDATA}) && $G{$vp}{URNDATA} ne '') {
-                                print "<A HREF=\"$G{$vp}{URNDATA}\"><IMG border=\"0\" alt=\""
-                                  .(defined($G{$vp}{FORM}) ? $G{$vp}{FORM} : "")
-                                  ."\" SRC=\"/icons/data.png\"></A>";
-                            }
+                        if (defined($G{$vp}{URNDATA}) && $G{$vp}{URNDATA} ne '') {
+                            print "<A HREF=\"$G{$vp}{URNDATA}\"><IMG border=\"0\" alt=\"\" SRC=\"/icons/data.png\"></A>";
                         }
                         print "</TD>";
                     }
