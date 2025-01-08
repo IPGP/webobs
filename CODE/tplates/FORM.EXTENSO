@@ -131,9 +131,6 @@ COLUMNS_NUMBER|2
 COLUMN01_LIST|FIELDSET01
 COLUMN02_LIST|FIELDSET02,FIELDSET03
 
-# number of fieldsets
-FIELDSETS_NUMBER|2
-
 # first fieldset name, number of cells and list of fields for each column
 FIELDSET01_NAME|Weather conditions
 FIELDSET01_CELLS|1,COLS
@@ -163,7 +160,3 @@ FIELDSET02_C13|OUTPUT02,OUTPUT03,OUTPUT04
 PROC_DATA_LIST|OUTPUT03,INPUT02,OUTPUT05
 # optional error list of fields (same as PROC_DATA_LIST size!)
 PROC_ERROR_LIST|OUTPUT04,,
-
-# --- for backward compatibility - do not change
-CGI_FORM|formGENFORM.pl
-CGI_SHOW|showGENFORM.pl
