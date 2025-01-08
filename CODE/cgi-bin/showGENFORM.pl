@@ -230,8 +230,10 @@ $dbh->disconnect();
 
 # ---- Prepare form contains
 #
-my $fs_count  = $FORM{FIELDSETS_NUMBER};
-my @fieldsets = map { sprintf("FIELDSET%02d", $_) } (1..$fs_count);
+my @fieldsets;
+foreach (map { sprintf("COLUMN%02d_LIST", $_) } (1..$FORM{COLUMNS_NUMBER})) {
+    push(@fieldsets, split(/,/, $FORM{$_}));
+}
 my @fs_names;
 my @field_names;
 
