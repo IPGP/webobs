@@ -586,9 +586,9 @@ foreach my $u (@uid){
     print "<option value=\"$u\" $sel>$u: ".join('',WebObs::Users::userName($u))."</option>\n";
 }
 print qq(</select>
-    </td></tr></table>
-    </P>
-      </fieldset>);
+	</td></tr></table>
+	</P>
+    </fieldset>);
 
 foreach (@columns) {
     my $col = $_ =~ s/_LIST//r;
