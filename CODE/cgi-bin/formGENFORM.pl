@@ -270,6 +270,7 @@ function update_form()
 foreach my $f (@formulas) {
 	my ($formula, $size, @x) = extract_formula($FORM{$f."_TYPE"});
 	# any word followed by an open parenthesis is supposed to be a math function (see math.js)...
+	$formula =~ s/\b(pi)\b/Math.PI/ig;
 	$formula =~ s/(\w+\()/math.$1/g;
 	foreach (@x) {
 		my $form_input = lc($_);
@@ -648,13 +649,14 @@ foreach (@columns) {
                     my $img_id = uc($form."/record".$id."/".$Field);
                     if ($action eq "edit") {
                         my @dim = split(/,/, $size);
-                        my $width = ($dim[0] >= 60 && $dim[0] <= 1024 ? $dim[0] : $NODES{THUMBNAILS_PIXV});
-                        my $height = ($dim[1] >= 60 && $dim[1] <= 1024 ? $dim[1] : $NODES{THUMBNAILS_PIXV});
+                        my $width = ($dim[0] >= $GRIDS{THUMB_MIN_WIDTH} && $dim[0] <= $GRIDS{THUMB_MAX_WIDTH} ? $dim[0] : $GRIDS{THUMB_DEFAULT_WIDTH});
+                        my $height = ($dim[1] >= $GRIDS{THUMB_MIN_HEIGHT} && $dim[1] <= $GRIDS{THUMB_MAX_HEIGHT} ? $dim[1] : $GRIDS{THUMB_DEFAULT_HEIGHT});
+                        $default = ($default >= $GRIDS{THUMB_MIN_DELAY} && $default <= $GRIDS{THUMB_MAX_DELAY} ? $default : $GRIDS{THUMB_DEFAULT_DELAY});
                         my $path = "/formdocs/$img_id";
                         print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&width=$width&height=$height&delay=$default'"
                             type="button"> Upload images or files</button><br><br>);
-                        if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/$NODES{THUMBNAILS_ANIM}") {
-                            print qq(<img width=$width height=$height src="$path/THUMBNAILS/$NODES{THUMBNAILS_ANIM}"></img>);
+                        if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/$GRIDS{THUMBNAILS_ANIM}") {
+                            print qq(<img width=$width height=$height src="$path/THUMBNAILS/$GRIDS{THUMBNAILS_ANIM}"></img>);
                         }
                         my $imgdir = "$WEBOBS{ROOT_DATA}".uc($path);
                         my $nb = qx(ls $imgdir -p | grep -v / | wc -l);
