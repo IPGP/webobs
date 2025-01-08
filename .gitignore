@@ -18,3 +18,5 @@ PACK/*
 !PACK/CHECKLIST.txt
 .DS_Store
 **/.DS_Store
+.swo
+.swp
