@@ -393,7 +393,7 @@ if ($action eq 'save') {
 		# we want to look at the modification of $text
 		my @inputs  = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 		my %old_inputs = get_inputs(readCfg($gridConfFile));
-		my %new_inputs = map { (split "\|", $_, 2) } @inputs;
+		my %new_inputs = map { split(/\|/, $_, 2) } @inputs;
 
 		foreach (keys %old_inputs) {
 			if (not exists $new_inputs{$_}) {

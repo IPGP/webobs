@@ -175,9 +175,9 @@ while ($ix <= $nb) {
 			qx(rm "$pathTarget/$thumbnailsPath/$filename.$NODES{THUMBNAILS_EXT}");
 			if ($?) { htmlMsgNotOK("Couldn't delete $filename.$NODES{THUMBNAILS_EXT} thumbnail; $!") }
 		}
-		if (-e "$pathTarget/$thumbnailsPath/$NODES{THUMBNAILS_ANIM}") {
-			qx(rm "$pathTarget/$thumbnailsPath/$NODES{THUMBNAILS_ANIM}");
-			if ($?) { htmlMsgNotOK("Couldn't delete $NODES{THUMBNAILS_ANIM} thumbnail; $!") }
+		if (-e "$pathTarget/$thumbnailsPath/$GRIDS{THUMBNAILS_ANIM}") {
+			qx(rm "$pathTarget/$thumbnailsPath/$GRIDS{THUMBNAILS_ANIM}");
+			if ($?) { htmlMsgNotOK("Couldn't delete $GRIDS{THUMBNAILS_ANIM} thumbnail; $!") }
 		}
 	}
 	$ix++;

@@ -75,6 +75,10 @@ INPUT03_TYPE|numeric(5)
 INPUT04_NAME|Numeric input4
 INPUT04_UNIT|Unit4
 INPUT04_TYPE|numeric(5)
+INPUT05_NAME|Checkbox input5
+INPUT05_TYPE|checkbox:checked
+INPUT06_NAME|Image input6
+INPUT06_TYPE|image(120,120)
 
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
@@ -91,27 +95,32 @@ OUTPUT02_THRESHOLD|0.5,2
 COLUMNS_NUMBER|2
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
-COLUMN02_LIST|FIELDSET02,FIELDSET03
+COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
 
 # number of fieldsets
 FIELDSETS_NUMBER|3
 
 # first fieldset name, number of cells and list of fields for each column
-FIELDSET01_NAME|Fieldset n�1
+FIELDSET01_NAME|Fieldset A
 FIELDSET01_CELLS|1,COLS
-FIELDSET01_C01|INPUT01,INPUT02
+FIELDSET01_C01|INPUT01,INPUT02,INPUT05
 
 # second fieldset with 2 columns
-FIELDSET02_NAME|Fieldset n�2
+FIELDSET02_NAME|Fieldset B
 FIELDSET02_CELLS|2,COLS
 FIELDSET02_C01|INPUT03,INPUT04
 FIELDSET02_C02|OUTPUT01
 
 # third fieldset with toggle view
-FIELDSET03_NAME|Fieldset n�3
+FIELDSET03_NAME|Fieldset C
 FIELDSET03_CELLS|1
 FIELDSET03_TOGGLE|YES
 FIELDSET03_C01|OUTPUT02
+
+# Image type Fieldset
+FIELDSET04_NAME|Fieldset D
+FIELDSET04_CELLS|1,COLS
+FIELDSET04_C01|INPUT06
 
 
 # --- for backward compatibility - do not change
