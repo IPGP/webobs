@@ -608,7 +608,7 @@ foreach (@columns) {
                 my $name = $FORM{"$Field\_NAME"};
                 my $unit = $FORM{"$Field\_UNIT"};
                 my $type = $FORM{"$Field\_TYPE"};
-                my $help = $FORM{"$Field\_HELP"};
+                my $help = htmlspecialchars($FORM{"$Field\_HELP"});
                 my $field = lc($Field);
                 my ($size, $default) = extract_type($type);
                 if ($action ne 'edit' && $default ne "") {

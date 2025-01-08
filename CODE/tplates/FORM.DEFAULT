@@ -84,11 +84,13 @@ INPUT06_TYPE|image(120,120)
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 OUTPUT01_NAME|Formula output1
 OUTPUT01_UNIT|no unit
-OUTPUT01_TYPE|formula: (INPUT01-INPUT03)*2
+OUTPUT01_TYPE|formula: (INPUT01-INPUT03)*2 + INPUT04/10
+OUTPUT01_HELP|this is a formula with simple arithmetics
 OUTPUT02_NAME|Formula output2
 OUTPUT02_UNIT|no unit
-OUTPUT02_TYPE|formula: (INPUT04+OUTPUT01)/10
+OUTPUT02_TYPE|formula: mean(INPUT03,INPUT04,OUTPUT01)
 OUTPUT02_THRESHOLD|0.5,2
+OUTPUT02_HELP|this is a formula with MEAN function
 
 # --- Form layout
 # number of columns and list of fieldsets for each
