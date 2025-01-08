@@ -422,7 +422,7 @@ print $htmlcontents;
 print "<BR>";
 $htmlcontents = "<A name=\"NODES\"></A>";
 $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#nodesID');\">&nbsp;&nbsp;";
-	$htmlcontents .= "$nbNodes $snm(s)&nbsp;$go2top";
+	$htmlcontents .= "$nbNodes $snm".($nbNodes > 1 ? "s":"")."&nbsp;$go2top";
 	$htmlcontents .= "</div><div id=\"nodesID\">";
 
 		$htmlcontents .= "<P class=\"subTitleMenu\" style=\"margin-left: 5px\">";

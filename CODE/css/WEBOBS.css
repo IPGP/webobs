@@ -9,17 +9,18 @@ body
 a:link
 {
 	text-decoration: none;
-	color: #309060;
+	font-weight: bold;
+	color: #333333;
+	padding: 1px;
 }
 a:visited
 {
 	text-decoration: none;
-	color: #309060;
+	color: #333333;
 }
 a:hover
 {
-	text-decoration: overline underline;
-	color: #309060;
+    background-color: #DDDDDD ;
 }
 h1
 {
@@ -82,6 +83,7 @@ th
 	color: #777777;
 	background-color: #DDDDDD;
 }
+
 ul
 {
 	list-style-type: square;
@@ -525,6 +527,10 @@ table.Dcalnd a:hover
 	border-color: #ffffff;
 }
 /* Styles for showGRID(s)  */
+.gridtype-view { font-style:italic; color: darkgreen; }
+.gridtype-proc { font-style:italic; color:firebrick; }
+.gridtype-form { font-style:italic; color: darkorange; }
+.gridtype-sefran { font-style:italic; color: purple; }
 .gridname { color: #8DB8E6; font-size: 14pt; }
 .node-active { color: #000000; }
 .node-inactive { color: #808080; }
