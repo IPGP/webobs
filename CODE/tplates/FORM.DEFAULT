@@ -98,7 +98,7 @@ COLUMN01_LIST|FIELDSET01
 COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
 
 # number of fieldsets
-FIELDSETS_NUMBER|3
+FIELDSETS_NUMBER|4
 
 # first fieldset name, number of cells and list of fields for each column
 FIELDSET01_NAME|Fieldset A
