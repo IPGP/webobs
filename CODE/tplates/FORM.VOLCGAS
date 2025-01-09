@@ -62,7 +62,7 @@ COMMENT_HELP|Enter any observations made during the measurements
 
 # inputs names and units
 INPUT01_NAME|Gas Temperature
-INPUT01_UNIT|�C
+INPUT01_UNIT|&deg;C
 INPUT02_NAME|pH
 INPUT02_UNIT|
 INPUT03_NAME|Flow Rate (qualitative) 

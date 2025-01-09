@@ -72,10 +72,10 @@ INPUT01_TYPE|list: FORM_WATERS_list_type.conf
 INPUT01_FILT|YES
 
 INPUT02_NAME|Air Temp.
-INPUT02_UNIT|�C
+INPUT02_UNIT|@deg;C
 
 INPUT03_NAME|Sample Temp.
-INPUT03_UNIT|�C
+INPUT03_UNIT|&deg;C
 
 INPUT04_NAME|pH
 
@@ -83,7 +83,7 @@ INPUT05_NAME|Flow Rate
 INPUT05_UNIT|l/min
 
 INPUT06_NAME|Cond.
-INPUT06_UNIT|�S
+INPUT06_UNIT|&mu;S
 
 INPUT07_NAME|Level
 INPUT07_UNIT|m
@@ -137,8 +137,8 @@ INPUT23_NAME|&delta;D
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 
-OUTPUT01_NAME|Cond. @25�C
-OUTPUT01_UNIT|�S
+OUTPUT01_NAME|Cond. @25&deg;C
+OUTPUT01_UNIT|&deg;S
 OUTPUT01_TYPE|formula: INPUT06 / (1 + 0.02*(INPUT03 - 25))
 OUTPUT02_NAME|H<sup>+</sup>
 OUTPUT02_UNIT|ppm

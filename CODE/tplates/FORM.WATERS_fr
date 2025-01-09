@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 # --- GRID common parameters
 
-NAME|Banque de données chimie des eaux
+NAME|Banque de donn&eacute;es chimie des eaux
 DESCRIPTION|Analyse physico-chimique des eaux (FR) 
 OWNCODE|
 TYPE|
@@ -51,7 +51,7 @@ DEFAULT_DAYS|365
 VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
 COMMENT_SIZE|80
-COMMENT_HELP|Noter toute présence d'odeur, gaz, précipité, etc...
+COMMENT_HELP|Noter toute pr&eacute;sence d'odeur, gaz, pr&eacute;cipit&eacute;, etc...
 
 
 # -----------------------------------------------------------------------------
@@ -63,23 +63,23 @@ COMMENT_HELP|Noter toute présence d'odeur, gaz, précipité, etc...
 # the database. You might only add new inputs, increasing the number
 # ############################### WARNING #####################################
 
-INPUT01_NAME|Type d'échantillon
+INPUT01_NAME|Type d'&eacute;chantillon
 INPUT01_TYPE|list: FORM.WATERS_fr.list_type.conf
 INPUT01_FILT|YES
 
 INPUT02_NAME|Temp. ambiante
-INPUT02_UNIT|°C
+INPUT02_UNIT|&deg;C
 
 INPUT03_NAME|Temp. liquide
-INPUT03_UNIT|°C
+INPUT03_UNIT|&deg;C
 
 INPUT04_NAME|pH
 
-INPUT05_NAME|Débit
+INPUT05_NAME|D&eacute;bit
 INPUT05_UNIT|l/min
 
-INPUT06_NAME|Conductivité
-INPUT06_UNIT|µS
+INPUT06_NAME|Conductivit&eacute;
+INPUT06_UNIT|&mu;S
 
 INPUT07_NAME|Niveau
 INPUT07_UNIT|m
@@ -133,8 +133,8 @@ INPUT23_NAME|&delta;D
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 
-OUTPUT01_NAME|Cond. @25°C
-OUTPUT01_UNIT|µS
+OUTPUT01_NAME|Cond. @25&deg;C
+OUTPUT01_UNIT|&deg;S
 OUTPUT01_TYPE|formula: INPUT06 / (1 + 0.02*(INPUT03 - 25))
 OUTPUT02_NAME|H<sup>+</sup>
 OUTPUT02_UNIT|ppm
@@ -178,7 +178,7 @@ FIELDSET02_CELLS|2
 FIELDSET02_C01|INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,OUTPUT02
 FIELDSET02_C02|INPUT13,INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,OUTPUT05
 
-FIELDSET03_NAME|Concentration en autres éléments
+FIELDSET03_NAME|Concentration en autres &eacute;l&eacute;ments
 FIELDSET03_CELLS|1
 FIELDSET03_C01|INPUT20
 
@@ -190,3 +190,4 @@ FIELDSET05_NAME|Rapports
 FIELDSET05_TOGGLE|YES
 FIELDSET05_CELLS|1
 FIELDSET05_C01|OUTPUT06,OUTPUT07,OUTPUT08,OUTPUT09,OUTPUT10,OUTPUT11
+

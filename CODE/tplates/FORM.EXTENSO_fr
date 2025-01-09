@@ -10,8 +10,8 @@
 # -----------------------------------------------------------------------------
 # --- GRID common parameters
 
-NAME|Extensométrie
-DESCRIPTION|Extensométrie manuelle (FR)
+NAME|Extensom&eacute;trie
+DESCRIPTION|Extensom&eacute;trie manuelle (FR)
 OWNCODE|
 TYPE|
 URL|
@@ -64,7 +64,7 @@ INPUT01_NAME|Meteo
 INPUT01_TYPE|list: FORM_EXTENSO_list_meteo.conf
 INPUT01_FILT|YES
 INPUT02_NAME|T<sub>Air</sub>
-INPUT02_UNIT|ï¿½C
+INPUT02_UNIT|&deg;C
 INPUT03_NAME|Offset
 INPUT03_UNIT|mm
 INPUT04_NAME|D<sub>Ribbon</sub>
@@ -153,3 +153,4 @@ FIELDSET02_C13|OUTPUT02,OUTPUT03,OUTPUT04
 PROC_DATA_LIST|OUTPUT03,INPUT02,OUTPUT05
 # optional error list of fields (same as PROC_DATA_LIST size!)
 PROC_ERROR_LIST|OUTPUT04,,
+
