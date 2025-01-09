@@ -125,8 +125,7 @@ OUTPUT05_TYPE|formula(2): (INPUT14+INPUT15+INPUT16+INPUT17+INPUT18+INPUT19+INPUT
 OUTPUT05_HELP|Average of all wind estimations 
 
 # --- Form layout
-# number of columns and list of fieldsets for each
-COLUMNS_NUMBER|2
+
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
 COLUMN02_LIST|FIELDSET02,FIELDSET03

@@ -167,9 +167,6 @@ OUTPUT11_TYPE|formula(6): (INPUT18/61.0159) / (INPUT17/96.062)
 # -----------------------------------------------------------------------------
 # --- Form layout
 
-# number of columns and list of fieldsets for each
-COLUMNS_NUMBER|3
-
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
 COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
@@ -197,3 +194,4 @@ FIELDSET05_NAME|Ratios
 FIELDSET05_TOGGLE|YES
 FIELDSET05_CELLS|1
 FIELDSET05_C01|OUTPUT06,OUTPUT07,OUTPUT08,OUTPUT09,OUTPUT10,OUTPUT11
+

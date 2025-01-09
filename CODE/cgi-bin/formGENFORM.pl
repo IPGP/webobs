@@ -133,7 +133,8 @@ my $sel_site = my $sel_comment = "";
 
 # ----
 
-my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$FORM{COLUMNS_NUMBER});
+my $max_columns = count_columns(keys %FORM);
+my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$max_columns);
 my $max_inputs = count_inputs(keys %FORM);
 my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
 
@@ -708,7 +709,7 @@ print qq(</TD>
     </td>
   </tr>
   <tr>
-    <td style="border:0" colspan="$FORM{COLUMNS_NUMBER}">
+    <td style="border:0" colspan="$max_columns">
       <HR>
       <P style="margin-top: 20px; text-align: center">
         <input type="button" name=lien value="$__{'Cancel'}"

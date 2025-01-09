@@ -59,7 +59,7 @@ require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
 @EXPORT = qw(datetime2array datetime2maxmin
-  extract_formula extract_list extract_type extract_text count_inputs
+  extract_formula extract_list extract_type extract_text count_inputs count_columns
   connectDbForms);
 
 # FORM constructor
@@ -236,6 +236,18 @@ sub count_inputs {
     }
     return $count;
 }
+
+# count_columns (@keys) returns max index of COLUMNnn fields in array @keys
+sub count_columns {
+    my $count = 0;
+    foreach(@_) {
+        if ($_ =~ /COLUMN([0-9]{2})_LIST/) {
+            $count = $1 if ($count < $1);
+        }
+    }
+    return $count;
+}
+
 
 # Open an SQLite connection to the forms database
 sub connectDbForms {
