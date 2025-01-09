@@ -70,6 +70,7 @@ if ( $GRIDType ne "" && $GRIDName ne "" ) {
             if (%NODE) {
                 if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
                 elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+                elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
                 if (%G) {
                     %GRID = %{$G{$GRIDName}} ;
                     if ( !clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
