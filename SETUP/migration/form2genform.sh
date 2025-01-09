@@ -133,10 +133,10 @@ for p in $(ls $WOROOT/CONF/GRIDS2FORMS/); do
 				echo ");" >> $TMP
 				tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
 					bin = ($1<0) ? 1:0; \
-					printf "INSERT INTO "t"(trash,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+					printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
 					for (i=1;i<=n;i++) printf ",input%02d",i; \
 					printf ") ";\
-					printf "VALUES(\""bin"\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+					printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
 					gsub(/"/,"\"\"", $28); \
 					gsub(/\045/,"\045\045", $28); \
 					if ($29 ~ /^\[.*\] /) {
