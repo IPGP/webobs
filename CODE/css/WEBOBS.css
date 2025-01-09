@@ -26,14 +26,14 @@ h1
 {
     /*display: table-caption;*/
     /*border-top: 4px solid #8DB8E6;*/
-    color: #8DB8E6;
+    color: #7DA8D6;
     font-size: 20pt;
 }
 h2
 {
     /*display: table-caption;*/
     /*border-top: 3px solid #FF6666;*/
-    color: #AA4444;
+    color: #DD5555;
     font-size: 14pt;
 }
 h3
@@ -99,9 +99,9 @@ table.trData tr:hover td {
 }
 
 .subMenu {
-    background-color: #fAf4dE ;
+    background-color: #E4E4E4;
     border-radius: 3px 3px 3px 3px;
-    border: thin solid #eAe4cE;
+    border: thin solid #DEDEDE
     padding-top: 2px;
     padding-bottom: 2px;
     padding-left: 5px;
@@ -675,10 +675,11 @@ td.ic, th.ic { width: 1%}
 }
 
 .drawerh2 {
-    border-bottom: 1px solid #EAE4CE;
+    border-bottom: 1px solid #E4E4E4;
+    border-radius: 4px;
     font-size: 14pt; font-weight: bold;
-    background: #FAF4DE;
-    color: #FF6666
+    background: #F4F4F4;
+    color: #DD5555;
 }
 .drawerh2 > img {
     cursor: pointer;
