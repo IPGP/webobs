@@ -30,30 +30,30 @@
 }
 
 .wolbPrev, .wolbNext {
-	visibility: hidden;
-	cursor: pointer;
-	border: 0px;
-	border-radius: 4px;
-	padding: 2px;
-	color: transparent; /*coz divs can't be empty*/
+    visibility: hidden;
+    cursor: pointer;
+    border: 0px;
+    border-radius: 4px;
+    padding: 2px;
+    color: transparent; /*coz divs can't be empty*/
 }
-.wolbPrev { 
-	background: url(/icons/l13.png) no-repeat center #ccc; 
-	min-width: 13px;
-	float: left;
+.wolbPrev {
+    background: url(/icons/l13.png) no-repeat center #ccc;
+    min-width: 13px;
+    float: left;
 }
-.wolbNext { 
-	background: url(/icons/r13.png) no-repeat center #ccc; 
-	min-width: 13px;
-	float: right;
+.wolbNext {
+    background: url(/icons/r13.png) no-repeat center #ccc;
+    min-width: 13px;
+    float: right;
 }
 .wolbId {
-	float: left;
-	margin-left: 5px;
+    float: left;
+    margin-left: 5px;
 }
-.wolbBox img { 
-	clear: float;
-	background: url(/icons/wait.gif) no-repeat center;
+.wolbBox img {
+    clear: float;
+    background: url(/icons/wait.gif) no-repeat center;
 }
 
 area[wolbsrc] {cursor: pointer}

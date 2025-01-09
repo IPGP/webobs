@@ -30,7 +30,7 @@ configuration parameter UTM_LOCAL pointing to its own definitions file.
 
  Author: François Beauducel, IPGP
      Created:  2009-10-21 (translated from Matlab 2003 author's toolbox)
-	 Updated:  2022-05-29
+     Updated:  2022-05-29
 
  I.G.N., Changement de système géodésique: Algorithmes, Notes Techniques NT/G 80, janvier 1995.
  I.G.N., Projection cartographique Mercator Transverse: Algorithmes, Notes Techniques NT/G 76, janvier 1995.
@@ -69,25 +69,25 @@ Sets the %UTM structure with the contents of $utmfilename (if provided and exist
 or with the contents of $WEBOBS{UTM_LOCAL} -the default definitions- (if it exists).
 Returns %UTM address if loaded successfully, 0 otherwise.
 
-	print "OK" if ( setUTMLOCAL($utmfilename) ); # try load $utmfilename or default settings
+    print "OK" if ( setUTMLOCAL($utmfilename) ); # try load $utmfilename or default settings
 
-	print Dumper setUTMLOCAL();                  # try load + dump the default UTM settings
+    print Dumper setUTMLOCAL();                  # try load + dump the default UTM settings
 
 =cut
 
 sub setUTMLOCAL {
-	if ($_[0] && -e "$_[0]") {
-		%UTM = ();
-		%UTM = readCfg($_[0]);
-	}
-	else {
-		if ((exists $WEBOBS{UTM_LOCAL}) && -e $WEBOBS{UTM_LOCAL}) {
-			%UTM = ();
-			%UTM = readCfg($WEBOBS{UTM_LOCAL}) ;
-		}
-	}
-	if (scalar(keys(%UTM))) { return \%UTM }
-	else                    { return 0 }
+    if ($_[0] && -e "$_[0]") {
+        %UTM = ();
+        %UTM = readCfg($_[0]);
+    }
+    else {
+        if ((exists $WEBOBS{UTM_LOCAL}) && -e $WEBOBS{UTM_LOCAL}) {
+            %UTM = ();
+            %UTM = readCfg($WEBOBS{UTM_LOCAL}) ;
+        }
+    }
+    if (scalar(keys(%UTM))) { return \%UTM }
+    else                    { return 0 }
 }
 
 =pod
@@ -96,22 +96,22 @@ sub setUTMLOCAL {
 
 Calcul de la latitude isométrique
 
-	$L = IGN0001(PHi,E);  # $L = altitude isométrique (PHI = latitude, E = première excentricité de l'ellpsoide)
+    $L = IGN0001(PHi,E);  # $L = altitude isométrique (PHI = latitude, E = première excentricité de l'ellpsoide)
 
-	References:
-	I.G.N., Projection cartographique Mercator Transverse: Algorithmes, Notes Techniques NT/G 76, janvier 1995.
+    References:
+    I.G.N., Projection cartographique Mercator Transverse: Algorithmes, Notes Techniques NT/G 76, janvier 1995.
 
 =cut
 
 sub ign0001 {
 
-	my $p = shift;
-	my $e = shift;
+    my $p = shift;
+    my $e = shift;
 
-	# Jeux d'essai
-	#$e = 0.08199188998; $p = 0.872664626;
-	my $l = log(tan(pi/4 + $p/2)*(((1.0 - $e*sin($p))/(1.0 + $e*sin($p)))**($e/2)));
-	return $l;
+    # Jeux d'essai
+    #$e = 0.08199188998; $p = 0.872664626;
+    my $l = log(tan(pi/4 + $p/2)*(((1.0 - $e*sin($p))/(1.0 + $e*sin($p)))**($e/2)));
+    return $l;
 }
 
 =pod
@@ -138,21 +138,20 @@ sub ign0001 {
 =cut
 
 sub ign0009 {
-	my $l = shift;
-	my $p = shift;
-	my $he = shift;
-	my $a = shift;
-	my $e = shift;
+    my $l = shift;
+    my $p = shift;
+    my $he = shift;
+    my $a = shift;
+    my $e = shift;
 
-	my $N = ign0021($p,$a,$e);
+    my $N = ign0021($p,$a,$e);
 
-	my $x = ($N + $he)*cos($p)*cos($l);
-	my $y = ($N + $he)*cos($p)*sin($l);
-	my $z = ($N*(1 - $e*$e) + $he)*sin($p);
+    my $x = ($N + $he)*cos($p)*cos($l);
+    my $y = ($N + $he)*cos($p)*sin($l);
+    my $z = ($N*(1 - $e*$e) + $he)*sin($p);
 
-	return ($x,$y,$z);
+    return ($x,$y,$z);
 }
-
 
 =pod
 
@@ -175,45 +174,43 @@ sub ign0009 {
 =cut
 
 sub ign0012 {
-	my $x = shift;
-	my $y = shift;
-	my $z = shift;
-	my $a = shift;
-	my $e = shift;
+    my $x = shift;
+    my $y = shift;
+    my $z = shift;
+    my $a = shift;
+    my $e = shift;
 
+# Jeu d'essai
+#$a = 6378249.2; $e = 0.08248325679; $x = 6376064.695; $y = 111294.623; $z = 128984.725;
 
-	# Jeu d'essai
-	#$a = 6378249.2; $e = 0.08248325679; $x = 6376064.695; $y = 111294.623; $z = 128984.725;
+    my $EPS = 1e-11;    # EPS = tolérance de convergence, en rad
+    my $IMAX = 10;               # Imax = nombre maximum d'itérations
 
-	my $EPS = 1e-11;	# EPS = tolérance de convergence, en rad
-	my $IMAX = 10;               # Imax = nombre maximum d'itérations
+    my $R = sqrt($x*$x + $y*$y);
+    my $l = 2*atan($y/($x + $R));
+    my $p;
+    my $h;
+    my $p0 = atan($z/sqrt($x*$x + $y*$y*(1 - ($a*$e*$e)/sqrt($x*$x + $y*$y + $z*$z))));
+    my $p1;
+    my $i = 0;
+    my $fin = 0;
+    while ($i < $IMAX && !$fin) {
+        $i++;
+        $p1 = atan(($z/$R)/(1 - ($a*$e*$e*cos($p0))/($R*sqrt(1 - $e*$e*sin($p0)**2))));
+        my $res = abs($p1-$p0);
+        if ($res < $EPS) {
+            $fin = 1;
+        }
+        $p0 = $p1;
+    }
+    if ($fin) {
+        $p = $p1;
+        $h = $R/cos($p) - $a/sqrt(1 - $e*$e*sin($p)**2);
+    }
 
-	my $R = sqrt($x*$x + $y*$y);
-	my $l = 2*atan($y/($x + $R));
-	my $p;
-	my $h;
-	my $p0 = atan($z/sqrt($x*$x + $y*$y*(1 - ($a*$e*$e)/sqrt($x*$x + $y*$y + $z*$z))));
-	my $p1;
-	my $i = 0;
-	my $fin = 0;
-	while ($i < $IMAX && !$fin) {
-		$i++;
-		$p1 = atan(($z/$R)/(1 - ($a*$e*$e*cos($p0))/($R*sqrt(1 - $e*$e*sin($p0)**2))));
-		my $res = abs($p1-$p0);
-		if ($res < $EPS) {
-			$fin = 1;
-		}
-		$p0 = $p1;
-	}
-	if ($fin) {
-		$p = $p1;
-		$h = $R/cos($p) - $a/sqrt(1 - $e*$e*sin($p)**2);
-	}
-
-	return ($l,$p,$h);
+    return ($l,$p,$h);
 
 }
-
 
 =pod
 
@@ -240,27 +237,27 @@ sub ign0012 {
 =cut
 
 sub ign0013b {
-	my $tx = shift;
-	my $ty = shift;
-	my $tz = shift;
-	my $d = shift;
-	my $rx = shift;
-	my $ry = shift;
-	my $rz = shift;
-	my $ux = shift;
-	my $uy = shift;
-	my $uz = shift;
+    my $tx = shift;
+    my $ty = shift;
+    my $tz = shift;
+    my $d = shift;
+    my $rx = shift;
+    my $ry = shift;
+    my $rz = shift;
+    my $ux = shift;
+    my $uy = shift;
+    my $uz = shift;
 
-	my @v;
+    my @v;
 
-	# jeux d'essai
-	#$u = [4154005.81,-80587.328,4823289.532]; $tx = -69.4; $ty = 18; $tz = 452.2; $d = -3.21e-6; $rx = 0; $ry = 0; $rz = 0.00000499358;
+# jeux d'essai
+#$u = [4154005.81,-80587.328,4823289.532]; $tx = -69.4; $ty = 18; $tz = 452.2; $d = -3.21e-6; $rx = 0; $ry = 0; $rz = 0.00000499358;
 
-	$v[0] = ($tx - $ux)*($d - 1) + ($tz - $uz)*$ry - ($ty - $uy)*$rz;
-	$v[1] = ($ty - $uy)*($d - 1) + ($tx - $ux)*$rz - ($tz - $uz)*$rx;
-	$v[2] = ($tz - $uz)*($d - 1) + ($ty - $uy)*$rx - ($tx - $ux)*$ry;
+    $v[0] = ($tx - $ux)*($d - 1) + ($tz - $uz)*$ry - ($ty - $uy)*$rz;
+    $v[1] = ($ty - $uy)*($d - 1) + ($tx - $ux)*$rz - ($tz - $uz)*$rx;
+    $v[2] = ($tz - $uz)*($d - 1) + ($ty - $uy)*$rx - ($tx - $ux)*$ry;
 
-	return @v;
+    return @v;
 }
 
 =pod
@@ -284,15 +281,14 @@ sub ign0013b {
 =cut
 
 sub ign0021 {
-	my $p = shift;
-	my $a = shift;
-	my $e = shift;
+    my $p = shift;
+    my $a = shift;
+    my $e = shift;
 
-	my $n =  $a/sqrt(1 - $e*$e*sin($p)**2);
+    my $n =  $a/sqrt(1 - $e*$e*sin($p)**2);
 
-	return $n;
+    return $n;
 }
-
 
 =pod
 
@@ -311,20 +307,20 @@ sub ign0021 {
 =cut
 
 sub ign0025 {
-	my $e = shift;
-	# Jeux d'essai
-	#$e = 0.08199188998;
+    my $e = shift;
 
-	my @c;
-	$c[0] = -175.0/16384*$e**8 - 5.0/256*$e**6 - 3.0/64*$e**4 - 1.0/4*$e**2 + 1;
-	$c[1] = -105.0/4096*$e**8 - 45.0/1024*$e**6 - 3.0/32*$e**4 - 3.0/8*$e**2;
-	$c[2] = 525.0/16384*$e**8 + 45.0/1024*$e**6 + 15.0/256*$e**4;
-	$c[3] = -175.0/12288*$e**8 - 35.0/3072*$e**6;
-	$c[4] = 315.0/131072*$e**8;
+    # Jeux d'essai
+    #$e = 0.08199188998;
 
-	return @c;
+    my @c;
+    $c[0] = -175.0/16384*$e**8 - 5.0/256*$e**6 - 3.0/64*$e**4 - 1.0/4*$e**2 + 1;
+    $c[1] = -105.0/4096*$e**8 - 45.0/1024*$e**6 - 3.0/32*$e**4 - 3.0/8*$e**2;
+    $c[2] = 525.0/16384*$e**8 + 45.0/1024*$e**6 + 15.0/256*$e**4;
+    $c[3] = -175.0/12288*$e**8 - 35.0/3072*$e**6;
+    $c[4] = 315.0/131072*$e**8;
+
+    return @c;
 }
-
 
 =pod
 
@@ -344,14 +340,13 @@ sub ign0025 {
 =cut
 
 sub ign0026 {
-	my $p = shift;
-	my @c = shift;
+    my $p = shift;
+    my @c = shift;
 
-	my $b = $c[0]*$p + $c[1]*sin(2*$p) + $c[2]*sin(4*$p) + $c[3]*sin(6*$p) + $c[4]*sin(8*$p);
+    my $b = $c[0]*$p + $c[1]*sin(2*$p) + $c[2]*sin(4*$p) + $c[3]*sin(6*$p) + $c[4]*sin(8*$p);
 
-	return $b;
+    return $b;
 }
-
 
 =pod
 
@@ -370,21 +365,21 @@ sub ign0026 {
 =cut
 
 sub ign0028 {
-	my $e = shift;
-	# Jeux d'essai
-	#$e = 0.08199188998;
+    my $e = shift;
 
-	my @c;
-	$c[0] = -175.0/16384*$e**8 - 5.0/256*$e**6 - 3.0/64*$e**4 - 1.0/4*$e**2 + 1;
-	$c[1] = -901.0/184320*$e**8 - 9.0/1024*$e**6 - 1.0/96*$e**4 + 1.0/8*$e**2;
-	$c[2] = -311.0/737280*$e**8 + 17.0/5120*$e**6 + 13.0/768*$e**4;
-	$c[3] = 899.0/430080*$e**8 + 61.0/15360*$e**6;
-	$c[4] = 49561.0/41287680*$e**8;
+    # Jeux d'essai
+    #$e = 0.08199188998;
 
-	return @c;
+    my @c;
+    $c[0] = -175.0/16384*$e**8 - 5.0/256*$e**6 - 3.0/64*$e**4 - 1.0/4*$e**2 + 1;
+    $c[1] = -901.0/184320*$e**8 - 9.0/1024*$e**6 - 1.0/96*$e**4 + 1.0/8*$e**2;
+    $c[2] = -311.0/737280*$e**8 + 17.0/5120*$e**6 + 13.0/768*$e**4;
+    $c[3] = 899.0/430080*$e**8 + 61.0/15360*$e**6;
+    $c[4] = 49561.0/41287680*$e**8;
+
+    return @c;
 
 }
-
 
 =pod
 
@@ -411,33 +406,32 @@ sub ign0028 {
 =cut
 
 sub ign0030 {
-	my $lc = shift;
-	my $n = shift;
-	my $xs = shift;
-	my $ys = shift;
-	my $e = shift;
-	my $l = shift;
-	my $p = shift;
+    my $lc = shift;
+    my $n = shift;
+    my $xs = shift;
+    my $ys = shift;
+    my $e = shift;
+    my $l = shift;
+    my $p = shift;
 
-	# Jeux d'essai
-	#$lc = -0.05235987756; $n = 6375697.8456; $xs = 500000; $ys = 0; $e = 0.08248340004; $l = -0.0959931089; $p = 0.6065019151;
+# Jeux d'essai
+#$lc = -0.05235987756; $n = 6375697.8456; $xs = 500000; $ys = 0; $e = 0.08248340004; $l = -0.0959931089; $p = 0.6065019151;
 
-	my @c = ign0028($e);
-	my $L = ign0001($p,$e);
-	my $P = asin(sin($l - $lc)/cosh($L));
-	my $LS = ign0001($P,0);
-	$L = atan(sinh($L)/cos($l - $lc));
+    my @c = ign0028($e);
+    my $L = ign0001($p,$e);
+    my $P = asin(sin($l - $lc)/cosh($L));
+    my $LS = ign0001($P,0);
+    $L = atan(sinh($L)/cos($l - $lc));
 
-	my $z = Math::Complex->new($L,$LS);
-	my $Z = $n*$c[0]*$z + $n*($c[1]*sin(2*$z) + $c[2]*sin(4*$z) + $c[3]*sin(6*$z) + $c[4]*sin(8*$z));
+    my $z = Math::Complex->new($L,$LS);
+    my $Z = $n*$c[0]*$z + $n*($c[1]*sin(2*$z) + $c[2]*sin(4*$z) + $c[3]*sin(6*$z) + $c[4]*sin(8*$z));
 
-	my $x = $Z->Im() + $xs;
-	my $y = $Z->Re() + $ys;
+    my $x = $Z->Im() + $xs;
+    my $y = $Z->Re() + $ys;
 
-	return ($x,$y);
+    return ($x,$y);
 
 }
-
 
 =pod
 
@@ -465,27 +459,26 @@ sub ign0030 {
 =cut
 
 sub ign0052 {
-	my $a = shift;
-	my $e = shift;
-	my $k0 = shift;
-	my $l0 = shift;
-	my $p0 = shift;
-	my $x0 = shift;
-	my $y0 = shift;
+    my $a = shift;
+    my $e = shift;
+    my $k0 = shift;
+    my $l0 = shift;
+    my $p0 = shift;
+    my $x0 = shift;
+    my $y0 = shift;
 
-	# Jeux d'essai
-	#$a = 6377563.3963; $e = 0.08167337382; $k0 = 0.9996012; $l0 = -0.03490658504; $p0 = 0.85521133347; $x0 = 400000; $y0 = -100000;
+# Jeux d'essai
+#$a = 6377563.3963; $e = 0.08167337382; $k0 = 0.9996012; $l0 = -0.03490658504; $p0 = 0.85521133347; $x0 = 400000; $y0 = -100000;
 
-	my $lc = $l0;
-	my $n = $k0*$a;
-	my $xs = $x0;
-	my @C = ign0025($e);
-	my $B = ign0026($p0,@C);
-	my $ys = $y0 - $n*$B;
+    my $lc = $l0;
+    my $n = $k0*$a;
+    my $xs = $x0;
+    my @C = ign0025($e);
+    my $B = ign0026($p0,@C);
+    my $ys = $y0 - $n*$B;
 
-	return ($lc,$n,$xs,$ys);
+    return ($lc,$n,$xs,$ys);
 }
-
 
 =pod
 
@@ -508,31 +501,29 @@ sub ign0052 {
 =cut
 
 sub geo2utm {
-	my $p1 = shift;
-	my $l1 = shift;
-	my $D0 = 180/pi;
-	my ($F0,$K0,$P0,$L0,$X0,$Y0) = utmwgs($p1,$l1);
+    my $p1 = shift;
+    my $l1 = shift;
+    my $D0 = 180/pi;
+    my ($F0,$K0,$P0,$L0,$X0,$Y0) = utmwgs($p1,$l1);
 
-	# Définition des constantes
-	my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};	# WGS84 demi grand axe
-	my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};	# WGS84 aplatissement
+    # Définition des constantes
+    my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};    # WGS84 demi grand axe
+    my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};    # WGS84 aplatissement
 
-	# Conversion des données
-	$P0 /= $D0;
-	my $B1 = $A1*(1 - $F1);
-	my $E1 = sqrt(($A1*$A1 - $B1*$B1)/($A1*$A1));
+    # Conversion des données
+    $P0 /= $D0;
+    my $B1 = $A1*(1 - $F1);
+    my $E1 = sqrt(($A1*$A1 - $B1*$B1)/($A1*$A1));
 
-	$p1 = $p1/$D0;        # Phi = Latitude (rad)
-	$l1 = $l1/$D0;        # Lambda = Longitude (rad)
+    $p1 = $p1/$D0;        # Phi = Latitude (rad)
+    $l1 = $l1/$D0;        # Lambda = Longitude (rad)
 
-	# Transformation Géographiques => UTM20 (WGS84)
-	my ($LC,$N,$XS,$YS) = ign0052($A1,$E1,$K0,$L0,$P0,$X0,$Y0);
-	my ($e,$n) = ign0030($LC,$N,$XS,$YS,$E1,$l1,$p1);
+    # Transformation Géographiques => UTM20 (WGS84)
+    my ($LC,$N,$XS,$YS) = ign0052($A1,$E1,$K0,$L0,$P0,$X0,$Y0);
+    my ($e,$n) = ign0030($LC,$N,$XS,$YS,$E1,$l1,$p1);
 
-
-	return ($e,$n,$F0);
+    return ($e,$n,$F0);
 }
-
 
 =pod
 
@@ -555,49 +546,49 @@ sub geo2utm {
 =cut
 
 sub geo2utml {
-	my $p1 = shift;
-	my $l1 = shift;
-	my $h1 = shift;
+    my $p1 = shift;
+    my $l1 = shift;
+    my $h1 = shift;
 
-	# Définition des constantes
-	my $D0 = 180/pi;
-	my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};	# WGS84 demi grand axe
-	my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};	# WGS84 aplatissement
-	my $A2 = $UTM{ELLIPSOID_LOCAL_SEMIMAJOR_AXIS};	# HAYFORD 1909 demi grand axe
-	my $F2 = 1/$UTM{ELLIPSOID_LOCAL_INVERSE_FLATTENING};	# HAYFORD 1909 aplatissement
-	my ($F0,$K0,$P0,$L0,$X0,$Y0) = utm($p1,$l1);
+    # Définition des constantes
+    my $D0 = 180/pi;
+    my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};    # WGS84 demi grand axe
+    my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};    # WGS84 aplatissement
+    my $A2 = $UTM{ELLIPSOID_LOCAL_SEMIMAJOR_AXIS};    # HAYFORD 1909 demi grand axe
+    my $F2 = 1/$UTM{ELLIPSOID_LOCAL_INVERSE_FLATTENING};    # HAYFORD 1909 aplatissement
+    my ($F0,$K0,$P0,$L0,$X0,$Y0) = utm($p1,$l1);
 
-	my $TX = $UTM{GEODETIC_LOCAL2WGS84_TRANSLATION_X};               # HAYFORD 1909 => WGS84 : Translation X (m)
-	my $TY = $UTM{GEODETIC_LOCAL2WGS84_TRANSLATION_Y};                 # HAYFORD 1909 => WGS84 : Translation Y (m)
-	my $TZ = $UTM{GEODETIC_LOCAL2WGS84_TRANSLATION_Z};               # HAYFORD 1909 => WGS84 : Translation Z (m)
-	my $D = $UTM{GEODETIC_LOCAL2WGS84_SCALE_FACTOR};              # HAYFORD 1909 => WGS84 : Facteur d'échelle (ppm)
-	my $RX = $UTM{GEODETIC_LOCAL2WGS84_ROTATION_X}*pi/(180*3600);  # HAYFORD 1909 => WGS84 : Rotation X (")
-	my $RY = $UTM{GEODETIC_LOCAL2WGS84_ROTATION_Y}*pi/(180*3600); # HAYFORD 1909 => WGS84 : Rotation Y (")
-	my $RZ = $UTM{GEODETIC_LOCAL2WGS84_ROTATION_Z}*pi/(180*3600);  # HAYFORD 1909 => WGS84 : Rotation Z (")
+    my $TX = $UTM{GEODETIC_LOCAL2WGS84_TRANSLATION_X};               # HAYFORD 1909 => WGS84 : Translation X (m)
+    my $TY = $UTM{GEODETIC_LOCAL2WGS84_TRANSLATION_Y};                 # HAYFORD 1909 => WGS84 : Translation Y (m)
+    my $TZ = $UTM{GEODETIC_LOCAL2WGS84_TRANSLATION_Z};               # HAYFORD 1909 => WGS84 : Translation Z (m)
+    my $D = $UTM{GEODETIC_LOCAL2WGS84_SCALE_FACTOR};              # HAYFORD 1909 => WGS84 : Facteur d'échelle (ppm)
+    my $RX = $UTM{GEODETIC_LOCAL2WGS84_ROTATION_X}*pi/(180*3600);  # HAYFORD 1909 => WGS84 : Rotation X (")
+    my $RY = $UTM{GEODETIC_LOCAL2WGS84_ROTATION_Y}*pi/(180*3600); # HAYFORD 1909 => WGS84 : Rotation Y (")
+    my $RZ = $UTM{GEODETIC_LOCAL2WGS84_ROTATION_Z}*pi/(180*3600);  # HAYFORD 1909 => WGS84 : Rotation Z (")
 
-	# Conversion des données
-	my $B1 = $A1*(1 - $F1);
-	my $E1 = sqrt(($A1*$A1 - $B1*$B1)/($A1*$A1));
-	my $B2 = $A2*(1 - $F2);
-	my $E2 = sqrt(($A2*$A2 - $B2*$B2)/($A2*$A2));
+    # Conversion des données
+    my $B1 = $A1*(1 - $F1);
+    my $E1 = sqrt(($A1*$A1 - $B1*$B1)/($A1*$A1));
+    my $B2 = $A2*(1 - $F2);
+    my $E2 = sqrt(($A2*$A2 - $B2*$B2)/($A2*$A2));
 
-	$p1 = $p1/$D0;        # Phi = Latitude (rad)
-	$l1 = $l1/$D0;        # Lambda = Longitude (rad)
+    $p1 = $p1/$D0;        # Phi = Latitude (rad)
+    $l1 = $l1/$D0;        # Lambda = Longitude (rad)
 
-	# Transformation Géographiques => Cartésiennes WGS84
-	my ($x1,$y1,$z1) = ign0009($l1,$p1,$h1,$A1,$E1);
+    # Transformation Géographiques => Cartésiennes WGS84
+    my ($x1,$y1,$z1) = ign0009($l1,$p1,$h1,$A1,$E1);
 
-	# Transformation par similitude 3D à 7 paramètres WGS84 => HAYFORD 1909
-	my ($x2,$y2,$z2) = ign0013b($TX,$TY,$TZ,$D,$RX,$RY,$RZ,$x1,$y1,$z1);
+    # Transformation par similitude 3D à 7 paramètres WGS84 => HAYFORD 1909
+    my ($x2,$y2,$z2) = ign0013b($TX,$TY,$TZ,$D,$RX,$RY,$RZ,$x1,$y1,$z1);
 
-	# Transformation Cartésiennes => Géographiques (HAYFORD 1909)
-	my ($l2,$p2,$h2) = ign0012($x2,$y2,$z2,$A2,$E2);
+    # Transformation Cartésiennes => Géographiques (HAYFORD 1909)
+    my ($l2,$p2,$h2) = ign0012($x2,$y2,$z2,$A2,$E2);
 
-	# Transformation Géographiques => UTM20 (HAYFORD 1909)
-	my ($LC,$N,$XS,$YS) = ign0052($A2,$E2,$K0,$L0,$P0,$X0,$Y0);
-	my ($e2,$n2) = ign0030($LC,$N,$XS,$YS,$E2,$l2,$p2);
+    # Transformation Géographiques => UTM20 (HAYFORD 1909)
+    my ($LC,$N,$XS,$YS) = ign0052($A2,$E2,$K0,$L0,$P0,$X0,$Y0);
+    my ($e2,$n2) = ign0030($LC,$N,$XS,$YS,$E2,$l2,$p2);
 
-	return ($e2,$n2,$F0);
+    return ($e2,$n2,$F0);
 }
 
 =pod
@@ -609,25 +600,26 @@ Returns UTM WGS84 parameters (zone, false easting and northing) from latitude an
 =cut
 
 sub utmwgs {
-	my $p1 = shift;
-	my $l1 = shift;
+    my $p1 = shift;
+    my $l1 = shift;
 
-	my $D0 = 180/pi;
-	my $F0 = $UTM{UTM_ZONE};		# utm zone
-	my $K0 = $UTM{UTM_SCALE_FACTOR};	# scale factor (0.9996)
-	if ($F0 le 0) {
-		#$F0 = int(($l1 + 183)/6);
-		$F0 = int(($l1 + 183)/6 + .5);
-	}
-	my $L0 = (6*$F0 - 183)/$D0;	# longitude origin (rad)
-	my $P0 = 0;			# latitude origin (rad) / UTM20 = 0
-	my $X0 = 500000;		# false easting
-	my $Y0 = 0;			# false northing
-	if ($p1 lt 0) {
-		$Y0 = 10000000;
-	}
+    my $D0 = 180/pi;
+    my $F0 = $UTM{UTM_ZONE};        # utm zone
+    my $K0 = $UTM{UTM_SCALE_FACTOR};    # scale factor (0.9996)
+    if ($F0 le 0) {
 
-	return ($F0,$K0,$P0,$L0,$X0,$Y0);
+        #$F0 = int(($l1 + 183)/6);
+        $F0 = int(($l1 + 183)/6 + .5);
+    }
+    my $L0 = (6*$F0 - 183)/$D0;    # longitude origin (rad)
+    my $P0 = 0;            # latitude origin (rad) / UTM20 = 0
+    my $X0 = 500000;        # false easting
+    my $Y0 = 0;            # false northing
+    if ($p1 lt 0) {
+        $Y0 = 10000000;
+    }
+
+    return ($F0,$K0,$P0,$L0,$X0,$Y0);
 }
 
 =pod
@@ -639,24 +631,24 @@ returns UTM parameters (zone, false easting and northing) from latitude and long
 =cut
 
 sub utm {
-	my $p1 = shift;
-	my $l1 = shift;
+    my $p1 = shift;
+    my $l1 = shift;
 
-	my $D0 = 180/pi;
-	#my $F0 = int(($l1 + 183)/6);			# UTM zone
-	my $F0 = int(($l1 + 183)/6 + .5);       # UTM zone
-	my $K0 = $UTM{UTM_LOCAL_SCALE_FACTOR};	# scale factor
-	my $L0 = $UTM{UTM_LOCAL_MERIDIAN_ORIGIN}/$D0;	# longitude origin (rad)
-	my $P0 = 0;			# latitude origin (rad) / UTM20 = 0
-	my $X0 = $UTM{UTM_LOCAL_FALSE_EASTING};		# false easting
-	my $Y0 = 0;			# false northing
-	if ($p1 lt 0) {
-		$Y0 = 10000000;
-	}
+    my $D0 = 180/pi;
 
-	return ($F0,$K0,$P0,$L0,$X0,$Y0);
+    #my $F0 = int(($l1 + 183)/6);            # UTM zone
+    my $F0 = int(($l1 + 183)/6 + .5);       # UTM zone
+    my $K0 = $UTM{UTM_LOCAL_SCALE_FACTOR};    # scale factor
+    my $L0 = $UTM{UTM_LOCAL_MERIDIAN_ORIGIN}/$D0;    # longitude origin (rad)
+    my $P0 = 0;            # latitude origin (rad) / UTM20 = 0
+    my $X0 = $UTM{UTM_LOCAL_FALSE_EASTING};        # false easting
+    my $Y0 = 0;            # false northing
+    if ($p1 lt 0) {
+        $Y0 = 10000000;
+    }
+
+    return ($F0,$K0,$P0,$L0,$X0,$Y0);
 }
-
 
 =pod
 
@@ -668,98 +660,96 @@ sub utm {
 =cut
 
 sub geo2cart {
-	my $p1 = shift;
-	my $l1 = shift;
-	my $h1 = shift;
-	my $D0 = 180/pi;
+    my $p1 = shift;
+    my $l1 = shift;
+    my $h1 = shift;
+    my $D0 = 180/pi;
 
-	# Définition des constantes
-	my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};	# WGS84 demi grand axe
-	my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};	# WGS84 aplatissement
+    # Définition des constantes
+    my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};    # WGS84 demi grand axe
+    my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};    # WGS84 aplatissement
 
-	# Conversion des données
-	my $B1 = $A1*(1 - $F1);
-	my $E1 = sqrt(($A1*$A1 - $B1*$B1)/($A1*$A1));
+    # Conversion des données
+    my $B1 = $A1*(1 - $F1);
+    my $E1 = sqrt(($A1*$A1 - $B1*$B1)/($A1*$A1));
 
-	# Transformation Géographiques (WGS84) => géocentriques
-	my ($x,$y,$z) = ign0009($l1/$D0,$p1/$D0,$h1,$A1,$E1);
+    # Transformation Géographiques (WGS84) => géocentriques
+    my ($x,$y,$z) = ign0009($l1/$D0,$p1/$D0,$h1,$A1,$E1);
 
-
-	return ($x,$y,$z);
+    return ($x,$y,$z);
 }
-
 
 =pod
 
 =head2 greatcircle
 
-#	greatcircle(lat1,lon1,lat2,lon2) computes the distance (in km) between two
-#	geographic coordinates lat/lon (greatcircle Haversin formula). It returns
-#	also the bear angle (in °).
+#    greatcircle(lat1,lon1,lat2,lon2) computes the distance (in km) between two
+#    geographic coordinates lat/lon (greatcircle Haversin formula). It returns
+#    also the bear angle (in °).
 #
-#	Reference: modified from greatcircle.m by F. Beauducel, IPGP
+#    Reference: modified from greatcircle.m by F. Beauducel, IPGP
 
 =cut
 
 sub greatcircle {
-	my $k = pi/180;
+    my $k = pi/180;
 
-	my $lat1 = shift;
-	my $lon1 = shift;
-	my $lat2 = shift;
-	my $lon2 = shift;
+    my $lat1 = shift;
+    my $lon1 = shift;
+    my $lat2 = shift;
+    my $lon2 = shift;
 
-	my $dlat = ($lat2 - $lat1)*$k;
-	my $dlon = ($lon2 - $lon1)*$k;
+    my $dlat = ($lat2 - $lat1)*$k;
+    my $dlon = ($lon2 - $lon1)*$k;
 
-	my $rearth = 6371;	# volumetric Earth radius (in km)
+    my $rearth = 6371;    # volumetric Earth radius (in km)
 
-	my $dist = $rearth*2*asin(sqrt(sin($dlat/2)**2 + cos($lat1*$k)*cos($lat2*$k)*sin($dlon/2)**2));
-	my $bear = atan2(sin($dlon)*cos($lat2*$k),cos($lat1*$k)*sin($lat2*$k) - sin($lat1*$k)*cos($lat2*$k)*cos($dlon))/$k;
+    my $dist = $rearth*2*asin(sqrt(sin($dlat/2)**2 + cos($lat1*$k)*cos($lat2*$k)*sin($dlon/2)**2));
+    my $bear = atan2(sin($dlon)*cos($lat2*$k),cos($lat1*$k)*sin($lat2*$k) - sin($lat1*$k)*cos($lat2*$k)*cos($dlon))/$k;
 
-	return $dist, $bear;
+    return $dist, $bear;
 }
 
 =pod
 
 =head2 compass
 
-#	compass(azimuth) returns a short string indicating geographical orientation from azimuth in
-#	degrees from North, clockwise
+#    compass(azimuth) returns a short string indicating geographical orientation from azimuth in
+#    degrees from North, clockwise
 
 =cut
+
 sub compass {
-       my @nesw = ('N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW');
-       my $az = shift;
-       $az = ($az*16/360)%16;
-       return $nesw[$az];
+    my @nesw = ('N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW');
+    my $az = shift;
+    $az = ($az*16/360)%16;
+    return $nesw[$az];
 
 }
-
 
 =pod
 
 =head2 KMLfeed
 
-#	KMLfeed(URL) dowloads a KML string from URL and returns latitude, longitude,
-#	altitude, and timestamp.
+#    KMLfeed(URL) dowloads a KML string from URL and returns latitude, longitude,
+#    altitude, and timestamp.
 
 =cut
 
 sub KMLfeed {
 
-	my $url = shift;
-	my ($lat, $lon, $alt, $date);
+    my $url = shift;
+    my ($lat, $lon, $alt, $date);
 
-	if ($url =~ /^http/) {
-		my @kml = qx(curl -s "$url" | $WEBOBS{XML2_PRGM});
-		my $root = '/q:quakeml/eventParameters/event';
-		my $pos = findvalue("$root/Point/coordinates=",\@kml);
-		($lon,$lat,$alt) = split(/,/,$pos);
-		$date = findvalue("$root/TimeStamp/when=",\@kml);
-	}
+    if ($url =~ /^http/) {
+        my @kml = qx(curl -s "$url" | $WEBOBS{XML2_PRGM});
+        my $root = '/q:quakeml/eventParameters/event';
+        my $pos = findvalue("$root/Point/coordinates=",\@kml);
+        ($lon,$lat,$alt) = split(/,/,$pos);
+        $date = findvalue("$root/TimeStamp/when=",\@kml);
+    }
 
-	return $lat, $lon, $alt, $date;
+    return $lat, $lon, $alt, $date;
 }
 
 1;

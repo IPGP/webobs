@@ -24,48 +24,48 @@
   CodeMirror.defineMode("cmwocfg", function() {
     return {
 
-	token: function(stream, state) {
-		var m;
-		if (stream.match(/\s*#.*$/)) return "comment";
-		if (stream.sol() && (m = stream.match(/^\=.*\|.*$/))) {
-			state.type = "keys";
-			return "qualifier";
-		}
-		if (state.type == "keys") {
-			if (stream.sol()) {
-			 	if (stream.match(/.+?(?=[\|#])/)) return "keyword";
-			}
-			if (stream.next() == '|') return "operator"; 
-			if (stream.match(/.+?(?=[\|#])/)) return null;
-			if (stream.match(/.+?\s$/)) return null;
-		} else {
-			if (stream.sol()) {
-				if (stream.peek() == '*') state.admin = 1;
-				else state.admin = null;
-			}
-			if (stream.match(/<a[^>]*>/)) {
-				state.href = 1;
-				return state.admin ? "keyword" : "operator";
-			}
-			if (stream.match(/<\/a>/)) {
-				state.href = null;
-				return state.admin ? "keyword" : "operator";
-			} else {
-				if (state.href) {
-					stream.next();
-					return state.admin ? "atom" : "qualifier";
-				}
-			}
-			stream.next();
-			return state.admin ? "special" : null;
-		}
-		stream.skipToEnd();
-		return null;
-	},
+    token: function(stream, state) {
+        var m;
+        if (stream.match(/\s*#.*$/)) return "comment";
+        if (stream.sol() && (m = stream.match(/^\=.*\|.*$/))) {
+            state.type = "keys";
+            return "qualifier";
+        }
+        if (state.type == "keys") {
+            if (stream.sol()) {
+                 if (stream.match(/.+?(?=[\|#])/)) return "keyword";
+            }
+            if (stream.next() == '|') return "operator";
+            if (stream.match(/.+?(?=[\|#])/)) return null;
+            if (stream.match(/.+?\s$/)) return null;
+        } else {
+            if (stream.sol()) {
+                if (stream.peek() == '*') state.admin = 1;
+                else state.admin = null;
+            }
+            if (stream.match(/<a[^>]*>/)) {
+                state.href = 1;
+                return state.admin ? "keyword" : "operator";
+            }
+            if (stream.match(/<\/a>/)) {
+                state.href = null;
+                return state.admin ? "keyword" : "operator";
+            } else {
+                if (state.href) {
+                    stream.next();
+                    return state.admin ? "atom" : "qualifier";
+                }
+            }
+            stream.next();
+            return state.admin ? "special" : null;
+        }
+        stream.skipToEnd();
+        return null;
+    },
 
-	startState: function() {
-		return { state: "top", type: null, href: null, admin: null }
-	}
+    startState: function() {
+        return { state: "top", type: null, href: null, admin: null }
+    }
 
     }
   });
