@@ -295,26 +295,26 @@ if ($showType && $GRID{TYPE} ne "") {
 # only for PROCs
 if ($isProc) {
 
-    # -----------
-    if ($GRID{RAWFORMAT}) {
-        $htmlcontents .= "<LI>$__{'Default data format'}: ";
-        if ($GRID{RAWFORMAT} =~ /^FORM./) {
-            my $form = (split(/\./,$GRID{RAWFORMAT}))[1];
-            my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$form/$form.conf");
-            my $lnk = "";
-            $lnk = "/cgi-bin/showGENFORM.pl?form=$form" if (%FORM);
-            $htmlcontents .= "<B class='code'>".($lnk ne "" ? "<A href=\"$lnk\">$GRID{RAWFORMAT}</A>":"$GRID{RAWFORMAT}")."</B>";
-        } else {
-            $htmlcontents .= "<B class='code'>$GRID{RAWFORMAT}</B>";
-        }
-    }
-    $htmlcontents .= "</LI>\n";
+    my $form;
 
     # -----------
-    $htmlcontents .= "<LI>$__{'Default data source'}: <B>".($GRID{RAWDATA} // '')."</B></LI>\n";
-    if (defined($GRID{URNDATA})) {
-        my $urnData = "$GRID{URNDATA}";
-        $htmlcontents .= "<LI>$__{'Access to rawdata'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
+    if ($GRID{RAWFORMAT}) {
+        $htmlcontents .= "<LI>$__{'Default data format'}: <B class='code'>$GRID{RAWFORMAT}</B></LI>\n";
+        $htmlcontents .= "<LI>$__{'Default data source'}: <B>".($GRID{RAWDATA} // '')."</B></LI>\n";
+        if ($GRID{RAWFORMAT} eq "genform" && defined($GRID{RAWDATA})) {
+            $form = uc($GRID{RAWDATA});
+        }
+    }
+
+    # -----------
+    if (defined($GRID{URNDATA}) || $form ne "") {
+        $htmlcontents .= "<LI>$__{'Access to rawdata'}: <B>";
+        if ($form ne "") {
+            $htmlcontents .= "<A href=\"/cgi-bin/showGENFORM.pl?form=$form\">$form database</A>";
+        } else {
+            $htmlcontents .= "<A href=\"$GRID{URNDATA}\">$GRID{URNDATA}</A>";
+        }
+        $htmlcontents .= "</B></LI>\n";
     }
 
     # -----------
