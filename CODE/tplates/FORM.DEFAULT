@@ -93,8 +93,7 @@ OUTPUT02_THRESHOLD|0.5,2
 OUTPUT02_HELP|this is a formula with MEAN function
 
 # --- Form layout
-# number of columns and list of fieldsets for each
-COLUMNS_NUMBER|2
+
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
 COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
@@ -120,3 +119,4 @@ FIELDSET03_C01|OUTPUT02
 FIELDSET04_NAME|Fieldset D
 FIELDSET04_CELLS|1,COLS
 FIELDSET04_C01|INPUT06
+

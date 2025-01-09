@@ -79,8 +79,6 @@ INPUT16_NAME|&delta;<sup>18</sup>O
 INPUT16_UNIT|
 
 # --- Form layout
-# number of columns and list of fieldsets for each
-COLUMNS_NUMBER|2
 
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
@@ -101,3 +99,4 @@ FIELDSET02_C02|INPUT09,INPUT10,INPUT11,INPUT12,INPUT13
 FIELDSET03_NAME|Isotope Concentration
 FIELDSET03_CELLS|1
 FIELDSET03_C01|INPUT14,INPUT15,INPUT16
+

@@ -231,7 +231,8 @@ $dbh->disconnect();
 # ---- Prepare form contains
 #
 my @fieldsets;
-foreach (map { sprintf("COLUMN%02d_LIST", $_) } (1..$FORM{COLUMNS_NUMBER})) {
+my $max_columns = count_columns(keys %FORM);
+foreach (map { sprintf("COLUMN%02d_LIST", $_) } (1..$max_columns)) {
     push(@fieldsets, split(/,/, $FORM{$_}));
 }
 my @fs_names;
