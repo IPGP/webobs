@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 # --- GRID common parameters
 
-NAME|Volcanic gas database chemical analysis
+NAME|Analyse des gaz volcaniques
 DESCRIPTION|Analyse physico-chimique des gaz volcaniques (FR)
 OWNCODE|
 TYPE|
@@ -42,12 +42,12 @@ DEFAULT_DAYS|365
 OPERATORS_LIST|+DUTY
 
 # inputs names and units
-INPUT01_NAME|Gas Temperature
-INPUT01_UNIT|�C
+INPUT01_NAME|Temp&eacute;rature du gaz
+INPUT01_UNIT|&deg;C
 INPUT02_NAME|pH
 INPUT02_UNIT|
-INPUT03_NAME|Flow Rate (qualitative) 
-INPUT03_TYPE|list: FORM_listVOLCGAS_type.conf
+INPUT03_NAME|Flux (qualitatif)
+INPUT03_TYPE|list: FORM_VOLCGAS_fr_type.conf
 INPUT03_FILT|YES
 INPUT04_NAME|H<sub>2</sub>
 INPUT04_UNIT|%
