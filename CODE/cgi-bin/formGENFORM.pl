@@ -196,6 +196,17 @@ if ($action eq 'save') {
     }
     htmlMsgOK($msg);
 
+    my $tmpPath = "$WEBOBS{ROOT_DATA}/FORMDOCS/".uc($form."/record");
+    if (-e $tmpPath) {
+        my $stmt = qq(SELECT seq FROM sqlite_sequence WHERE name='$tbl');
+        my $sth = $dbh->prepare( $stmt );
+        my $rv = $sth->execute() or die $DBI::errstr;
+        my $new_id = $sth->fetchrow_array();
+        my $finalPath = "$WEBOBS{ROOT_DATA}/FORMDOCS/".uc($form."/record".$new_id);
+        qx(mv $tmpPath $finalPath);
+        if ($?) { htmlMsgNotOK("Couldn't move $tmpPath to $finalPath; $!"); }
+    }
+
     $dbh->disconnect();
     exit;
 } elsif ($action eq "delete" && $id ne "") {
@@ -622,7 +633,7 @@ foreach (@columns) {
                     my @list_keys = sort keys %list;
                     $hlp = ($help ne "" ? $help:"$__{'Select a value for'} $Field");
 
-# if list contains an icon column (HoH), displays radio button instead of select list
+                    # if list contains an icon column (HoH), displays radio button instead of select list
                     if (ref($list{$list_keys[0]})) {
                         print "$txt =";
                         for (@list_keys) {
@@ -651,23 +662,18 @@ foreach (@columns) {
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
                     my $img_id = uc($form."/record".$id."/".$Field);
-                    if ($action eq "edit") {
-                        my @dim = split(/,/, $size);
-                        my $width = ($dim[0] >= $GRIDS{THUMB_MIN_WIDTH} && $dim[0] <= $GRIDS{THUMB_MAX_WIDTH} ? $dim[0] : $GRIDS{THUMB_DEFAULT_WIDTH});
-                        my $height = ($dim[1] >= $GRIDS{THUMB_MIN_HEIGHT} && $dim[1] <= $GRIDS{THUMB_MAX_HEIGHT} ? $dim[1] : $GRIDS{THUMB_DEFAULT_HEIGHT});
-                        $default = ($default >= $GRIDS{THUMB_MIN_DELAY} && $default <= $GRIDS{THUMB_MAX_DELAY} ? $default : $GRIDS{THUMB_DEFAULT_DELAY});
-                        my $path = "/formdocs/$img_id";
-                        print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&width=$width&height=$height&delay=$default'"
-                            type="button"> Upload images or files</button><br><br>);
-                        if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/$GRIDS{THUMBNAILS_ANIM}") {
-                            print qq(<img width=$width height=$height src="$path/THUMBNAILS/$GRIDS{THUMBNAILS_ANIM}"></img>);
-                        }
-                        my $imgdir = "$WEBOBS{ROOT_DATA}".uc($path);
-                        my $nb = qx(ls $imgdir -p | grep -v / | wc -l);
-                        print qq(<input type="hidden" name="$field" value=$nb>\n);
-                    } else {
-                        print qq(Image upload is available once the form has been submitted.);
+                    my @dim = split(/,/, $size);
+                    my $height = ($dim[1] >= $GRIDS{THUMB_MIN_HEIGHT} && $dim[1] <= $GRIDS{THUMB_MAX_HEIGHT} ? $dim[1] : $GRIDS{THUMB_DEFAULT_HEIGHT});
+                    $default = ($default >= $GRIDS{THUMB_MIN_DELAY} && $default <= $GRIDS{THUMB_MAX_DELAY} ? $default : $GRIDS{THUMB_DEFAULT_DELAY});
+                    my $path = "/formdocs/$img_id";
+                    print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$default'"
+                        type="button"> Upload images or files</button><br><br>);
+                    if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/$GRIDS{THUMBNAILS_ANIM}") {
+                        print qq(<img height=$height src="$path/THUMBNAILS/$GRIDS{THUMBNAILS_ANIM}"></img>);
                     }
+                    my $imgdir = "$WEBOBS{ROOT_DATA}".uc($path);
+                    my $nb = qx(ls $imgdir -p | grep -v / | wc -l);
+                    print qq(<input type="hidden" name="$field" value=$nb>\n);
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"

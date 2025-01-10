@@ -63,7 +63,6 @@ my $object  = $QryParm->{'object'}  // "";
 my $event   = $QryParm->{'event'}   // "";
 my $form    = $QryParm->{'form'}    // "";  # name of the form
 my $delay   = $QryParm->{'delay'}   // 0;   # delay rate (in seconds)
-my $width   = $QryParm->{'width'}   // 0;
 my $height  = $QryParm->{'height'}  // 0;
 
 $delay = 100 * $delay;  # delay rate (in hundredths of a seconds)
@@ -122,6 +121,7 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
 die "$__{'Do not know where to upload'}" if ( $pathTarget eq "" );
 $thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || "$NODES{SPATH_THUMBNAILS}";
 make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down THUMBNAILS exist
+make_path("$pathTarget/$NODES{SPATH_SLICES}");
 (my $urnTarget  = $pathTarget) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
 my @listeTarget = <$pathTarget/*.*> ;
 
@@ -137,15 +137,25 @@ print <<"FIN";
 <script type="text/javascript">
 \$(document).ready(function(){
     \$('#uploadFile',\$('#theform')).change(function() {
-        \$("#progress").html('<b>Uploaded</b>').css("color", "black");
         if (this.files.length > 0) {
             var l = "<B>Selected :</B> ";
-            \$(this.files).each(function(i) { 
-                l += this.name + " ("+ this.size +"), "; 
+            \$(this.files).each(function(i) {
+                l += this.name + " ("+ this.size +"), ";
+                const fileSize = this.size;
+                const fileMb = fileSize / 1024 ** 2;
+                if (fileMb > $WEBOBS{MAX_UPLOAD_SIZE}) {
+                    l += "<br>Please select a file less than $WEBOBS{MAX_UPLOAD_SIZE}MB.";
+                    \$("#multiloadmsg").css("color", "red");
+                    \$("#progress").html('');
+                    \$("#save").prop("disabled", true);
+                } else {
+                    \$("#multiloadmsg").css("color", "green");
+                    \$("#progress").html('Click on save to upload.');
+                    \$("#save").prop("disabled", false);
+                }
             });
             \$('#multiloadmsg').html(l);
             \$('#multiloadmsg').css('visibility','visible');
-            \$("#progress").html('Click on save to upload.');
         } else {
             \$('#multiloadmsg').css('visibility','hidden');
         }
@@ -177,7 +187,6 @@ function verif_formulaire()
 
     var yesno = confirm("$__{'Confirm your request'}"+fdtext);
     if (yesno == true) {
-        \$("#progress").html('<b>Uploaded</b>').css("color", "black");
         \$('#progress-bar').show();
         \$('#uploadFile').prop("disabled", true);
         \$('#save').prop("disabled", true);
@@ -203,7 +212,9 @@ function verif_formulaire()
             }
         }).done(function(data) {
             //alert(data);
-            location.href = document.referrer;
+            \$("#progress").html('<b>Uploaded</b>').css("color", "black");
+            window.location.reload();
+            setTimeout(function(){location.href=document.referrer}, 100);
         }).fail(function(xhr, status, error) {
             \$("#progress").html('<b>Upload failed: ' + (xhr.status >= 100 ? xhr.status + ' ' : '') + error + '</b>').css("color", "red");
         }).always(function(data) {
@@ -246,12 +257,13 @@ foreach (@listeTarget) {
     }
     print "<A href=\"$urn\">";
     my $hght = ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $height : $NODES{THUMBNAILS_PIXV});
-    my $th = makeThumbnail( $file, "x$hght", "$pathTarget/$thumbnailsPath", $NODES{THUMBNAILS_EXT});
+    my $th = makeThumbnail($file, "x$GRIDS{SLIDE_HEIGHT}", "$pathTarget/$NODES{SPATH_SLICES}", $NODES{THUMBNAILS_EXT});
+    my $th = makeThumbnail($file, "x$hght", "$pathTarget/$thumbnailsPath", $NODES{THUMBNAILS_EXT});
     if ( $th ne "" ) {
         if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
             (my $turn = $th) =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
             print "<IMG src=\"$turn\"/>";
-            qx(cd "$pathTarget/$thumbnailsPath/" && convert -resize $width x $height -delay $delay -loop 0 "*.jpg" $GRIDS{THUMBNAILS_ANIM} 2>/dev/null);
+            qx(cd "$pathTarget/$thumbnailsPath/" && convert -resize $height -delay $delay -loop 0 "*.jpg" $GRIDS{THUMBNAILS_ANIM} 2>/dev/null);
         } else {
             (my $turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
             print "<IMG src=\"$turn\"/>";
