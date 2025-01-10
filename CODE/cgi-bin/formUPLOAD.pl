@@ -248,6 +248,7 @@ my $i = 0;
 foreach (@listeTarget) {
     $i++;
     my ( $name, $path, $extension ) = fileparse ( $_, '\..*' );
+    my $image_height = qx(identify -format '%h' $_);
     my $urn  = "$urnTarget/$name$extension";
     my $turn = "$urnTarget/$thumbnailsPath/$name$extension";
     my $file = "$pathTarget/$name$extension";
@@ -257,22 +258,22 @@ foreach (@listeTarget) {
     }
     print "<A href=\"$urn\">";
     my $hght = ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $height : $NODES{THUMBNAILS_PIXV});
-    my $th = makeThumbnail($file, "x$GRIDS{SLIDE_HEIGHT}", "$pathTarget/$NODES{SPATH_SLICES}", $NODES{THUMBNAILS_EXT});
+    my $slide_height = $GRIDS{SLIDE_HEIGHT} < $image_height ? $GRIDS{SLIDE_HEIGHT} : $image_height;
+    my $th = makeThumbnail($file, "x$slide_height" , "$pathTarget/$NODES{SPATH_SLICES}", $NODES{THUMBNAILS_EXT});
     my $th = makeThumbnail($file, "x$hght", "$pathTarget/$thumbnailsPath", $NODES{THUMBNAILS_EXT});
     if ( $th ne "" ) {
         if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
-            (my $turn = $th) =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
-            print "<IMG src=\"$turn\"/>";
-            qx(cd "$pathTarget/$thumbnailsPath/" && convert -dispose previous -resize x$height -delay $delay -loop 0 "*.jpg" $GRIDS{THUMBNAILS_ANIM} 2>/dev/null);
+            ($turn = $th) =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
         } else {
-            (my $turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
-            print "<IMG src=\"$turn\"/>";
+            ($turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
         }
+        print "<IMG src=\"$turn\"/>";
     }
     print "</A>";
     print "<P>$name$extension<BR/>";
     print "<INPUT type=checkbox name=del$i value=\"$name$extension\"> $__{'Delete'}</TD>";
 }
+qx(cd "$pathTarget/$thumbnailsPath/" && convert -strip -dispose background -resize x$height -delay $delay -loop 0 *.* $GRIDS{THUMBNAILS_ANIM} 2>/dev/null);
 print "</TR></TABLE>";
 print "</DIV>";
 
