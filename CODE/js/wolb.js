@@ -77,15 +77,22 @@ function openPopup(i) {
     var id = ""; var prev = ""; var next = "";
     if (typeof i.attr('wolbset') != 'undefined') {
         var album = i.attr('wolbset');
-        var s = "";
-        s = i.prev("[wolbset="+album+"]");
+        var s = i.prev("[wolbset="+album+"]");
+        var images = i.closest('tbody').find("[wolbset="+album+"]")
+        if (s.length == 0 && i.attr("index")) {
+            var index = parseInt(i.attr("index")) > 0 ? parseInt(i.attr("index")) - 1 : images.length - 1;
+            s = [images.get(index)];
+        }
         if (s.length > 0) {
             prev = $(s);
             $(".wolbPrev").css('visibility','visible')
                           .on('click', function() { openPopup(prev); });
         }
-        s = "";
         s = i.next("[wolbset="+album+"]");
+        if (s.length == 0 && i.attr("index")) {
+            var index = parseInt(i.attr("index")) < images.length - 1 ? parseInt(i.attr("index")) + 1 : 0;
+            s = [images.get(index)];
+        }
         if (s.length > 0) {
             next = $(s);
             $(".wolbNext").css('visibility','visible')
