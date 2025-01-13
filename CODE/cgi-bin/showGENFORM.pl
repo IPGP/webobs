@@ -51,6 +51,7 @@ my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
 set_message(\&webobs_cgi_msg);
 use URI;
+use File::Basename qw(basename fileparse);
 use Math::Trig 'pi';
 use List::Util qw[min max sum];
 
@@ -156,7 +157,10 @@ if ($QryParm->{'dump'} ne "csv") {
       "<body style=\"background-attachment: fixed\">\n",
       "<div id=\"waiting\">$__{'Searching for data, please wait.'}</div>\n",
       "<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
+      "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\" type=\"text/javascript\"></script>",
       "<script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>",
+      "<script language=\"JavaScript\" src=\"/js/wolb.js\" type=\"text/javascript\"></script>",
+      "<link href=\"/css/wolb.css\" rel=\"stylesheet\" />";
       "<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\" type=\"text/javascript\"></script>\n",
       "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
       "<!-- overLIB (c) Erik Bosrup -->\n";
@@ -484,6 +488,25 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 } elsif (abs($fields{$field}) >= $tv[1]) {
                     $opt .= " style=\"background-color:$validity[2]\"";
                 }
+            }
+            if ($FORM{$Field."_TYPE"} =~ /^image/) {
+                my $olmsg = "Click to enlarge";
+                my $img_id = uc($form."/record".$id."/".$Field);
+                my @listeTarget = <"$WEBOBS{ROOT_DATA}/FORMDOCS/$img_id"/*.*> ;
+                my $pathSource = "/formdocs/$img_id";
+                $val = "<div><a><b>$val images</b></a></div><br><table>";
+                my $ncols = %GRIDS{THUMBNAILS_MAX_COLUMNS};
+                foreach my $index (0..$#listeTarget) {
+                    my ( $name, $path, $extension ) = fileparse ( $listeTarget[$index], '\..*' );
+                    my $urn = "$pathSource/$NODES{SPATH_SLICES}/$name$extension.jpg";
+                    my $Turn = "$pathSource/$NODES{SPATH_THUMBNAILS}/$name$extension.jpg";
+                    if ($index % $ncols == 0) { $val .= "<tr>"; }
+                    $val .= $index+1 > %GRIDS{THUMBNAILS_MAX_IMAGES} ? qq(<td style="display:none;">) : "<td>";
+                    $val .= qq(<img height=20 wolbset=SLIDES index=$index wolbsrc=$urn src=$Turn onMouseOver=\"overlib('$olmsg')\"></td>);
+                    if ($index % $ncols + 1 == 0) { $val .= "</tr>"; }
+                }
+                $val .= "</table>";
+                if ($#listeTarget+1 > %GRIDS{THUMBNAILS_MAX_IMAGES}) { $val .= "<br><b>... </b><i>gallery limited to ".%GRIDS{THUMBNAILS_MAX_IMAGES}." images</i>"; }
             }
             $text .= "<TD align=center $opt>$val</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
             $csvTxt .= "$fields{$field},";
