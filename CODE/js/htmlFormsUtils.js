@@ -101,7 +101,7 @@ function geditsendPopup() {
         var tt = gtype.split(".");
         $("#geditoverlay_form").fadeOut(500);
         $("#geditovly").fadeOut(500);
-        location.href = "/cgi-bin/formGRID.pl?grid=" + tt[0] + "." + gname.toUpperCase() + "&type=" + gtype;
+        location.href = "/cgi-bin/formGRID.pl?grid=" + tt[0] + "." + gname.toUpperCase() + "&tpl=" + gtype;
     } else {
         alert('Grid name is alphanumerical and underscore characters only, case insensitive, and the first character must be a letter.');
         return false;
