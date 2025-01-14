@@ -79,7 +79,7 @@ function openPopup(i) {
         var album = i.attr('wolbset');
         var s = i.prev("[wolbset="+album+"]");
         var images = i.closest('tbody').find("[wolbset="+album+"]")
-        if (s.length == 0 && i.attr("index")) {
+        if (s.length == 0 && i.attr("index") && images.length > 1) {
             var index = parseInt(i.attr("index")) > 0 ? parseInt(i.attr("index")) - 1 : images.length - 1;
             s = [images.get(index)];
         }
@@ -89,7 +89,7 @@ function openPopup(i) {
                           .on('click', function() { openPopup(prev); });
         }
         s = i.next("[wolbset="+album+"]");
-        if (s.length == 0 && i.attr("index")) {
+        if (s.length == 0 && i.attr("index") && images.length > 1) {
             var index = parseInt(i.attr("index")) < images.length - 1 ? parseInt(i.attr("index")) + 1 : 0;
             s = [images.get(index)];
         }

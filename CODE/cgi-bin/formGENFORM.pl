@@ -670,11 +670,11 @@ foreach (@columns) {
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
                     my $img_id = uc($form."/record".$id."/".$Field);
-                    my @dim = split(/,/, $size);
-                    my $height = ($dim[1] >= $MIN_HEIGHT && $dim[1] <= $MAX_HEIGHT ? $dim[1] : $DEFAULT_HEIGHT);
-                    $default = ($default >= $MIN_DELAY && $default <= $MAX_DELAY ? $default : $DEFAULT_DELAY);
+                    my $height = $size ? $size : $DEFAULT_HEIGHT;
+                    $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
+                    my $delay = ( ( $default >= $MIN_DELAY && $default <= $MAX_DELAY ) ? $default : $DEFAULT_DELAY );
                     my $path = "/formdocs/$img_id";
-                    print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$default'"
+                    print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay'"
                         type="button"> Upload images or files</button><br><br>);
                     if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/$THUMB_ANIM") {
                         print qq(<img height=$height src="$path/THUMBNAILS/$THUMB_ANIM"></img>);
