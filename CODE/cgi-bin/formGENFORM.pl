@@ -204,6 +204,7 @@ if ($action eq 'save') {
     }
     htmlMsgOK($msg);
 
+    # rename images tmp directory
     my $tmpPath = "$WEBOBS{ROOT_DATA}/FORMDOCS/".uc($form."/record");
     if (-e $tmpPath) {
         my $stmt = qq(SELECT seq FROM sqlite_sequence WHERE name='$tbl');
@@ -242,6 +243,10 @@ if ($action eq 'save') {
     my $sth  = $dbh->prepare( $stmt );
     my $rv   = $sth->execute() or die $DBI::errstr;
     htmlMsgOK("Record #$id has been permanently erased from database $form.");
+
+    # delete images directory
+    my $path = "$WEBOBS{ROOT_DATA}/FORMDOCS/".uc($form."/record".$id);
+    qx(rm $path -R);
 
     $dbh->disconnect();
     exit;
