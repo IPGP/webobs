@@ -138,6 +138,14 @@ my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$max_columns);
 my $max_inputs = count_inputs(keys %FORM);
 my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
 
+my $MIN_HEIGHT = $GRIDS{GENFORM_THUMB_MIN_HEIGHT} || 10;
+my $MAX_HEIGHT = $GRIDS{GENFORM_THUMB_MAX_HEIGHT} || 640;
+my $DEFAULT_HEIGHT = $GRIDS{GENFORM_THUMB_DEFAULT_HEIGHT} || 50;
+my $MIN_DELAY = $GRIDS{GENFORM_THUMB_MIN_DELAY} || 1;
+my $MAX_DELAY = $GRIDS{GENFORM_THUMB_MAX_DELAY} || 5;
+my $DEFAULT_DELAY = $GRIDS{GENFORM_THUMB_DEFAULT_DELAY} || 2;
+my $THUMB_ANIM = $GRIDS{GENFORM_THUMB_ANIM} || "_anim.gif";
+
 # ---- Variables des menus
 my $starting_date   = isok($FORM{STARTING_DATE});
 my @yearList = ($FORM{BANG}..$currentYear);
@@ -663,13 +671,13 @@ foreach (@columns) {
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
                     my $img_id = uc($form."/record".$id."/".$Field);
                     my @dim = split(/,/, $size);
-                    my $height = ($dim[1] >= $GRIDS{THUMB_MIN_HEIGHT} && $dim[1] <= $GRIDS{THUMB_MAX_HEIGHT} ? $dim[1] : $GRIDS{THUMB_DEFAULT_HEIGHT});
-                    $default = ($default >= $GRIDS{THUMB_MIN_DELAY} && $default <= $GRIDS{THUMB_MAX_DELAY} ? $default : $GRIDS{THUMB_DEFAULT_DELAY});
+                    my $height = ($dim[1] >= $MIN_HEIGHT && $dim[1] <= $MAX_HEIGHT ? $dim[1] : $DEFAULT_HEIGHT);
+                    $default = ($default >= $MIN_DELAY && $default <= $MAX_DELAY ? $default : $DEFAULT_DELAY);
                     my $path = "/formdocs/$img_id";
                     print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$default'"
                         type="button"> Upload images or files</button><br><br>);
-                    if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/$GRIDS{THUMBNAILS_ANIM}") {
-                        print qq(<img height=$height src="$path/THUMBNAILS/$GRIDS{THUMBNAILS_ANIM}"></img>);
+                    if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/$THUMB_ANIM") {
+                        print qq(<img height=$height src="$path/THUMBNAILS/$THUMB_ANIM"></img>);
                     }
                     my $imgdir = "$WEBOBS{ROOT_DATA}".uc($path);
                     my $nb = qx(ls $imgdir -p | grep -v / | wc -l);

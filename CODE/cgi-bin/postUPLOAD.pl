@@ -126,7 +126,7 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
 # ---- at that point $pathTarget is where uploaded documents will be sent to
 #
 htmlMsgNotOK("$__{'Do not know where to upload'}") if ( $pathTarget eq "" );
-$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || "$NODES{SPATH_THUMBNAILS}";
+$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $GRIDS{SPATH_THUMBNAILS} : $NODES{SPATH_THUMBNAILS});
 make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down to PHOTOS/THUMBNAILS exist
 (my $urnTarget  = $pathTarget) =~ s/$WEBOBS{ROOT_SITE}/../g;
 
@@ -175,12 +175,12 @@ while ($ix <= $nb) {
             qx(rm "$pathTarget/$thumbnailsPath/$filename.$NODES{THUMBNAILS_EXT}");
             if ($?) { htmlMsgNotOK("Couldn't delete $filename.$NODES{THUMBNAILS_EXT} thumbnail; $!") }
         }
-        if (-e "$pathTarget/$thumbnailsPath/$GRIDS{THUMBNAILS_ANIM}") {
-            qx(rm "$pathTarget/$thumbnailsPath/$GRIDS{THUMBNAILS_ANIM}");
-            if ($?) { htmlMsgNotOK("Couldn't delete $GRIDS{THUMBNAILS_ANIM}; $!") }
+        if (-e "$pathTarget/$thumbnailsPath/$GRIDS{GENFORM_THUMB_ANIM}") {
+            qx(rm "$pathTarget/$thumbnailsPath/$GRIDS{GENFORM_THUMB_ANIM}");
+            if ($?) { htmlMsgNotOK("Couldn't delete $GRIDS{GENFORM_THUMB_ANIM}; $!") }
         }
-        if (-e "$pathTarget/$NODES{SPATH_SLICES}/$filename.$NODES{THUMBNAILS_EXT}") {
-            qx(rm "$pathTarget/$NODES{SPATH_SLICES}/$filename.$NODES{THUMBNAILS_EXT}");
+        if (-e "$pathTarget/$NODES{SPATH_SLIDES}/$filename.$NODES{THUMBNAILS_EXT}") {
+            qx(rm "$pathTarget/$NODES{SPATH_SLIDES}/$filename.$NODES{THUMBNAILS_EXT}");
             if ($?) { htmlMsgNotOK("Couldn't delete $filename.$NODES{THUMBNAILS_EXT}; $!") }
         }
     }

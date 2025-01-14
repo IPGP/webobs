@@ -71,7 +71,7 @@ $delay = 100 * $delay;  # delay rate (in hundredths of a seconds)
 #
 my @targets;
 my $pathTarget = "";
-my $thumbnailsPath = "";
+my $thumbnailsPath = my $slidesPath = "";
 my $editOK = 0;
 my %GRID;
 my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
@@ -119,9 +119,10 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
 # ---- at that point $pathTarget is where uploaded documents will be sent to
 #
 die "$__{'Do not know where to upload'}" if ( $pathTarget eq "" );
-$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || "$NODES{SPATH_THUMBNAILS}";
+$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $GRIDS{SPATH_THUMBNAILS} : $NODES{SPATH_THUMBNAILS});
+$slidesPath = $typeDoc eq "SPATH_GENFORM_IMAGES" ? $GRIDS{SPATH_SLIDES} : $NODES{SPATH_SLIDES};
 make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down THUMBNAILS exist
-make_path("$pathTarget/$NODES{SPATH_SLICES}");
+make_path("$pathTarget/$slidesPath");
 (my $urnTarget  = $pathTarget) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
 my @listeTarget = <$pathTarget/*.*> ;
 
@@ -257,9 +258,9 @@ foreach (@listeTarget) {
         $urn  =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
     }
     print "<A href=\"$urn\">";
-    my $hght = ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $height : $NODES{THUMBNAILS_PIXV});
-    my $slide_height = $GRIDS{SLIDE_HEIGHT} < $image_height ? $GRIDS{SLIDE_HEIGHT} : $image_height;
-    my $th = makeThumbnail($file, "x$slide_height" , "$pathTarget/$NODES{SPATH_SLICES}", $NODES{THUMBNAILS_EXT});
+    my $hght = $typeDoc eq "SPATH_GENFORM_IMAGES" ? $height : $NODES{THUMBNAILS_PIXV};
+    my $slide_height = $GRIDS{GENFORM_SLIDE_HEIGHT} < $image_height ? $GRIDS{GENFORM_SLIDE_HEIGHT} : $image_height;
+    my $th = makeThumbnail($file, "x$slide_height" , "$pathTarget/$slidesPath", $NODES{THUMBNAILS_EXT});
     my $th = makeThumbnail($file, "x$hght", "$pathTarget/$thumbnailsPath", $NODES{THUMBNAILS_EXT});
     if ( $th ne "" ) {
         if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
@@ -273,7 +274,7 @@ foreach (@listeTarget) {
     print "<P>$name$extension<BR/>";
     print "<INPUT type=checkbox name=del$i value=\"$name$extension\"> $__{'Delete'}</TD>";
 }
-qx(cd "$pathTarget/$thumbnailsPath/" && convert -strip -dispose background -resize x$height -delay $delay -loop 0 *.* $GRIDS{THUMBNAILS_ANIM} 2>/dev/null);
+qx(cd "$pathTarget/$thumbnailsPath/" && convert -strip -dispose background -resize x$height -delay $delay -loop 0 *.* $GRIDS{GENFORM_THUMB_ANIM} 2>/dev/null);
 print "</TR></TABLE>";
 print "</DIV>";
 
