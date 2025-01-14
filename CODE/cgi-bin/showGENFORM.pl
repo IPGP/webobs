@@ -144,6 +144,9 @@ my $startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'} 00:00:00";
 my $endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'} 23:59:59";
 my $delay = datediffdays($startDate,$endDate);
 
+my $MAX_IMAGES = %GRIDS{GENFORM_THUMB_MAX_IMAGES} || 20;
+my $MAX_COLS = %GRIDS{GENFORM_THUMB_MAX_COLUMNS} || 4;
+
 # ---- start html if not CSV output 
 
 if ($QryParm->{'dump'} ne "csv") {
@@ -341,7 +344,7 @@ if ($QryParm->{'dump'} ne "csv") {
     print " ]</DIV>\n<P>";
 }
 
-# ---- Displaying data 
+# ---- Displaying data
 #
 my $header;
 my $text;
@@ -495,18 +498,17 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 my @listeTarget = <"$WEBOBS{ROOT_DATA}/FORMDOCS/$img_id"/*.*> ;
                 my $pathSource = "/formdocs/$img_id";
                 $val = "<div><a><b>$val images</b></a></div><br><table>";
-                my $ncols = %GRIDS{THUMBNAILS_MAX_COLUMNS};
                 foreach my $index (0..$#listeTarget) {
                     my ( $name, $path, $extension ) = fileparse ( $listeTarget[$index], '\..*' );
-                    my $urn = "$pathSource/$NODES{SPATH_SLICES}/$name$extension.jpg";
-                    my $Turn = "$pathSource/$NODES{SPATH_THUMBNAILS}/$name$extension.jpg";
-                    if ($index % $ncols == 0) { $val .= "<tr>"; }
-                    $val .= $index+1 > %GRIDS{THUMBNAILS_MAX_IMAGES} ? qq(<td style="display:none;">) : "<td>";
+                    my $urn = "$pathSource/$GRIDS{SPATH_SLIDES}/$name$extension.jpg";
+                    my $Turn = "$pathSource/$GRIDS{SPATH_THUMBNAILS}/$name$extension.jpg";
+                    if ($index % $MAX_COLS == 0) { $val .= "<tr>"; }
+                    $val .= $index+1 > $MAX_IMAGES ? qq(<td style="display:none;">) : "<td>";
                     $val .= qq(<img height=20 wolbset=SLIDES index=$index wolbsrc=$urn src=$Turn onMouseOver=\"overlib('$olmsg')\"></td>);
-                    if ($index % $ncols + 1 == 0) { $val .= "</tr>"; }
+                    if ($index % $MAX_COLS + 1 == 0) { $val .= "</tr>"; }
                 }
                 $val .= "</table>";
-                if ($#listeTarget+1 > %GRIDS{THUMBNAILS_MAX_IMAGES}) { $val .= "<br><b>... </b><i>gallery limited to ".%GRIDS{THUMBNAILS_MAX_IMAGES}." images</i>"; }
+                if ($#listeTarget+1 > $MAX_IMAGES) { $val .= "<br><b>... </b><i>gallery limited to ".$MAX_IMAGES." images</i>"; }
             }
             $text .= "<TD align=center $opt>$val</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
             $csvTxt .= "$fields{$field},";
