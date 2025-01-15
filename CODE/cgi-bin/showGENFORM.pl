@@ -146,6 +146,7 @@ my $delay = datediffdays($startDate,$endDate);
 
 my $MAX_IMAGES = %GRIDS{GENFORM_THUMB_MAX_IMAGES} || 20;
 my $MAX_COLS = %GRIDS{GENFORM_THUMB_MAX_COLUMNS} || 4;
+my $THUMB_DISPLAYED_HEIGHT = 16;
 
 # ---- start html if not CSV output 
 
@@ -494,18 +495,18 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 }
             }
             if ($FORM{$Field."_TYPE"} =~ /^image/) {
-                my $olmsg = "Click to enlarge";
                 my $img_id = uc($form."/record".$id."/".$Field);
                 my @listeTarget = <"$WEBOBS{ROOT_DATA}/FORMDOCS/$img_id"/*.*> ;
                 my $pathSource = "/formdocs/$img_id";
-                $val = "<div><a><b>$val images</b></a></div><br><table>";
+                $val = "<table>";
                 foreach my $index (0..$#listeTarget) {
+                    my $olmsg = "Click to enlarge ".($index+1)." / ".scalar(@listeTarget);
                     my ( $name, $path, $extension ) = fileparse ( $listeTarget[$index], '\..*' );
                     my $urn = "$pathSource/$GRIDS{SPATH_SLIDES}/$name$extension.jpg";
                     my $Turn = "$pathSource/$GRIDS{SPATH_THUMBNAILS}/$name$extension.jpg";
                     if ($index % $MAX_COLS == 0) { $val .= "<tr>"; }
                     $val .= $index+1 > $MAX_IMAGES ? qq(<td style="display:none;">) : "<td>";
-                    $val .= qq(<img height=20 wolbset=SLIDES index=$index wolbsrc=$urn src=$Turn onMouseOver=\"overlib('$olmsg')\"></td>);
+                    $val .= qq(<img height=$THUMB_DISPLAYED_HEIGHT wolbset=SLIDES index=$index wolbsrc=$urn src=$Turn onMouseOver=\"overlib('$olmsg')\"></td>);
                     if ($index % $MAX_COLS + 1 == 0) { $val .= "</tr>"; }
                 }
                 $val .= "</table>";
