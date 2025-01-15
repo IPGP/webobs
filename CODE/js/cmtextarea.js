@@ -47,7 +47,10 @@ $(document).ready(function() {
     textarea = $("#textarea-editor")[0];
     statusbar = $("#statusbar")[0];
     statusfmsg = statusbar.innerHTML;
-    CodeMirror.commands.save = function(){ alert('submitting'); postform(); };
+    CodeMirror.commands.save = function() {
+        alert('submitting');
+        postform();
+    };
 
     if (CODEMIRROR_CONF.EDIT_PERM) {
         editor = CodeMirror.fromTextArea(textarea, {
@@ -82,7 +85,7 @@ $(document).ready(function() {
     // (also 'vim' for backward-compatibility reason with WebObs <= 2.1.4c)
     var auto_vim_mode = CODEMIRROR_CONF.AUTO_VIM_MODE.toLowerCase();
     if (auto_vim_mode == 'yes' || auto_vim_mode == 'true' || auto_vim_mode == 'vim') {
-        editor.setOption('vimMode',true);
+        editor.setOption('vimMode', true);
         // Check the checkbox to show vim mode is on
         $("#toggle-vim-mode").attr('checked', true);
     }
@@ -100,10 +103,10 @@ function toggleVim() {
 function editorStatus() {
     // editbrowse | vimonoff | filemessage
     var xm = "";
-    xm += editor.getOption('readOnly') ? 'Browse' : 'Edit' ;
+    xm += editor.getOption('readOnly') ? 'Browse' : 'Edit';
     xm += editor.getOption('vimMode') ? ' | Vim' : '';
     xm += editor.isClean() ? '' : ' | +';
-    xm += (statusfmsg != '') ? ' | '+statusfmsg : '';
+    xm += (statusfmsg != '') ? ' | ' + statusfmsg : '';
     return xm;
 }
 

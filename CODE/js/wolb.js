@@ -1,55 +1,59 @@
-
-$(document).ready(function(){
+$(document).ready(function() {
     // Set a click handler for thumbnail img and image area
-    $('img[wolbsrc],area[wolbsrc]').click( function() {
+    $('img[wolbsrc],area[wolbsrc]').click(function() {
         openPopup($(this));
     });
     // Set a click handler for icons opening an album designated by wolbtarget
-    $('img[wolbtarget]').click( function() {
-        openPopup($("[wolbset="+$(this).attr('wolbtarget')+"]").first());
+    $('img[wolbtarget]').click(function() {
+        openPopup($("[wolbset=" + $(this).attr('wolbtarget') + "]").first());
     });
-    wolbHtml="<div id='wolbOvly' class='wolbOvly' onClick='closePopup()'></div>"+
-      "<div id='wolbBox' class='wolbBox'>"+
-        "<div class='wolbNav'>"+
-            "<div class='wolbPrev'>_&nbsp;</div>"+
-            "<div class='wolbId'></div>"+
-            "<div class='wolbNext'>&nbsp;_</div>"+
-        "</div>"+
-          "<img src='' />"+
-      "</div>";
+    wolbHtml = "<div id='wolbOvly' class='wolbOvly' onClick='closePopup()'></div>" +
+        "<div id='wolbBox' class='wolbBox'>" +
+        "<div class='wolbNav'>" +
+        "<div class='wolbPrev'>_&nbsp;</div>" +
+        "<div class='wolbId'></div>" +
+        "<div class='wolbNext'>&nbsp;_</div>" +
+        "</div>" +
+        "<img src='' />" +
+        "</div>";
     $(wolbHtml).appendTo($('body'));
 });
 
-function getImage(i){
+function getImage(i) {
     $("#wolbBox img")
-        .attr('src','')
+        .attr('src', '')
         .one('load', function() {
             fitVisible($(this));
         })
         .attr('src', i)
-        .each(function() { if(this.complete) $(this).trigger('load'); });
+        .each(function() {
+            if (this.complete) $(this).trigger('load');
+        });
 }
 
 function fitVisible(that) {
     var margins = 8;
     var img = that[0];
-    var iw = img.naturalWidth; var ih = img.naturalHeight;
+    var iw = img.naturalWidth;
+    var ih = img.naturalHeight;
     var box = $("#wolbBox");
     var winY = window.parent.pageYOffset;
-    var viewH = window.parent.innerHeight-$('#wm',window.parent.document).outerHeight();
-    var winH = Math.min($("#wolbOvly").innerHeight(),viewH);
+    var viewH = window.parent.innerHeight - $('#wm', window.parent.document).outerHeight();
+    var winH = Math.min($("#wolbOvly").innerHeight(), viewH);
     var winW = $("#wolbOvly").innerWidth();
-    box.show();var decoH = box.outerHeight()-box.innerHeight()+(2*margins)+$('.wolbNav').height();box.hide();
-    var decoW = box.outerWidth()-box.innerWidth();
-    if (iw >= winW-decoW || ih >= winH-decoH ) {
-        var ratioH = (winH-decoH) / ih;
-        var ratioW = (winW-decoW) / iw;
+    box.show();
+    var decoH = box.outerHeight() - box.innerHeight() + (2 * margins) + $('.wolbNav').height();
+    box.hide();
+    var decoW = box.outerWidth() - box.innerWidth();
+    if (iw >= winW - decoW || ih >= winH - decoH) {
+        var ratioH = (winH - decoH) / ih;
+        var ratioW = (winW - decoW) / iw;
         if (ratioH < ratioW) {
-            img.height = winH-decoH;
-            img.width  = iw*ratioH;
+            img.height = winH - decoH;
+            img.width = iw * ratioH;
         } else {
-            img.width = winW-decoW;
-            img.height = ih*ratioW;
+            img.width = winW - decoW;
+            img.height = ih * ratioW;
         }
     } else {
         img.width = iw;
@@ -57,59 +61,67 @@ function fitVisible(that) {
     }
     box.css({
         left: ((winW - box.outerWidth()) / 2) + "px",
-        top:  winY + ((winH - margins - box.outerHeight()) / 2) + "px",
+        top: winY + ((winH - margins - box.outerHeight()) / 2) + "px",
     });
     box.fadeIn(10);
 }
 
 function dokey(event) {
     if (event.keyCode == 27) closePopup();
-    if (event.keyCode == 37 && event.data.prev != '') openPopup(event.data.prev) ;
-    if (event.keyCode == 39 && event.data.next != '') openPopup(event.data.next) ;
+    if (event.keyCode == 37 && event.data.prev != '') openPopup(event.data.prev);
+    if (event.keyCode == 39 && event.data.next != '') openPopup(event.data.next);
 }
 
 function openPopup(i) {
-    $(".wolbPrev, .wolbNext").css('visibility','hidden');
+    $(".wolbPrev, .wolbNext").css('visibility', 'hidden');
     $(".wolbPrev, .wolbNext").off('click');
     $(document).off('.wolb');
-    $("#wolbOvly").css('display','block');
+    $("#wolbOvly").css('display', 'block');
     getImage(i.attr('wolbsrc'));
-    var id = ""; var prev = ""; var next = "";
+    var id = "";
+    var prev = "";
+    var next = "";
     if (typeof i.attr('wolbset') != 'undefined') {
         var album = i.attr('wolbset');
-        var s = i.prev("[wolbset="+album+"]");
-        var images = i.closest('tbody').find("[wolbset="+album+"]")
+        var s = i.prev("[wolbset=" + album + "]");
+        var images = i.closest('tbody').find("[wolbset=" + album + "]")
         if (s.length == 0 && i.attr("index") && images.length > 1) {
             var index = parseInt(i.attr("index")) > 0 ? parseInt(i.attr("index")) - 1 : images.length - 1;
             s = [images.get(index)];
         }
         if (s.length > 0) {
             prev = $(s);
-            $(".wolbPrev").css('visibility','visible')
-                          .on('click', function() { openPopup(prev); });
+            $(".wolbPrev").css('visibility', 'visible')
+                .on('click', function() {
+                    openPopup(prev);
+                });
         }
-        s = i.next("[wolbset="+album+"]");
+        s = i.next("[wolbset=" + album + "]");
         if (s.length == 0 && i.attr("index") && images.length > 1) {
             var index = parseInt(i.attr("index")) < images.length - 1 ? parseInt(i.attr("index")) + 1 : 0;
             s = [images.get(index)];
         }
         if (s.length > 0) {
             next = $(s);
-            $(".wolbNext").css('visibility','visible')
-                          .on('click', function() { openPopup(next); });
+            $(".wolbNext").css('visibility', 'visible')
+                .on('click', function() {
+                    openPopup(next);
+                });
         }
     }
-    $(document).on('keyup.wolb', { next: next, prev: prev }, dokey);
+    $(document).on('keyup.wolb', {
+        next: next,
+        prev: prev
+    }, dokey);
     id += i.attr('wolbsrc').split(/(\\|\/)/g).pop();
     $(".wolbId").text(id);
-    $(".wolbNav").css('display','block');
+    $(".wolbNav").css('display', 'block');
 }
 
 function closePopup() {
     $(".wolbPrev, .wolbNext").off('click');
     $("#wolbBox").fadeOut(100);
-    $(".wolbNav").css('display','none');
+    $(".wolbNav").css('display', 'none');
     $("#wolbOvly").fadeOut(500);
     $(document).off('.wolb');
 }
-

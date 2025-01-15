@@ -1,20 +1,21 @@
-$(document).ready(function(){
-});
+$(document).ready(function() {});
 
 // ATT: the global javascript variable 'Gscriptname' MUST HAVE BEEN defined/set
 // at page-build time (it is a self-reference to the script that built the page)
 
 function UidGidExists(id) {
-    var q1 = $("div.dusers:contains("+id+")");
-    var q2 = $("div.dugrps:contains("+id+")");
-    if (q1.length > 0 || q2.length > 0) { return true }
+    var q1 = $("div.dusers:contains(" + id + ")");
+    var q2 = $("div.dugrps:contains(" + id + ")");
+    if (q1.length > 0 || q2.length > 0) {
+        return true
+    }
     return false;
 }
 
-function positionPopup(){
-    $("#ovly").css('display','block');
+function positionPopup() {
+    $("#ovly").css('display', 'block');
     $(".overlay_form").css({
-        left: (($(window).width() - $('.overlay_form').outerWidth()) / 2)+$(window).scrollLeft() + "px",
+        left: (($(window).width() - $('.overlay_form').outerWidth()) / 2) + $(window).scrollLeft() + "px",
     });
 }
 
@@ -36,12 +37,12 @@ function openPopupUser(user_row) {
         listgids = $(user_row + ' .user-groups').text().split(' ');
         $('#overlay_form_user #gid option').each(function() {
             $(this).removeProp('selected');
-            if (jQuery.inArray( this.value, listgids ) != -1) {
-                $(this).prop('selected',true)
+            if (jQuery.inArray(this.value, listgids) != -1) {
+                $(this).prop('selected', true)
             }
         });
-        $('label[for=gid]').css('display','block');
-        $(form.gid).css('display','block');
+        $('label[for=gid]').css('display', 'block');
+        $(form.gid).css('display', 'block');
         form.OLDgid.value = $(user_row + ' .user-groups').text();
         $(form.valid).prop("checked",
             ($(user_row + ' .user-validity').text() == 'Y' ? "checked" : ""));
@@ -66,7 +67,7 @@ function openPopupUser(user_row) {
         form.action.value = "insert";
     }
     form.tbl.value = "user";
-    $('#overlay_form_user[name=sendbutton]').attr('onclick',"sendPopupUser(); return false");
+    $('#overlay_form_user[name=sendbutton]').attr('onclick', "sendPopupUser(); return false");
     $("#overlay_form_user").fadeIn(500);
     positionPopup();
     form.uid.focus();
@@ -85,12 +86,12 @@ function openPopupGroup(group_row) {
         listuids = $(group_row + ' .group-uids').text().split(' ');
         $('#overlay_form_group #uid option').each(function() {
             $(this).removeProp('selected');
-            if (jQuery.inArray( this.value, listuids ) != -1) {
-                $(this).prop('selected',true);
+            if (jQuery.inArray(this.value, listuids) != -1) {
+                $(this).prop('selected', true);
             }
         });
-        $('label[for=uid]').css('display','block');
-        $(form.uid).css('display','block');
+        $('label[for=uid]').css('display', 'block');
+        $(form.uid).css('display', 'block');
         form.OLDgid.value = $(group_row + ' .group-gid').text();
         form.OLDuid.value = $(group_row + ' .group-uids').text();
         form.action.value = "updgrp";
@@ -98,13 +99,13 @@ function openPopupGroup(group_row) {
     } else {
         // populate a blank form to edit a new group
         form.uid.value = "!";
-        $('label[for=uid]').css('display','none');
-        $(form.uid).css('display','none');
+        $('label[for=uid]').css('display', 'none');
+        $(form.uid).css('display', 'none');
         form.gid.value = "";
         form.action.value = "insert";
     }
     form.tbl.value = "group";
-    $('#overlay_form_group[name=sendbutton]').attr('onclick',"sendPopupGroup(); return false");
+    $('#overlay_form_group[name=sendbutton]').attr('onclick', "sendPopupGroup(); return false");
     $("#overlay_form_group").fadeIn(500);
     positionPopup();
     form.gid.focus();
@@ -119,7 +120,7 @@ function openPopupNotf(notif_row) {
         form.OLDevent.value = $(notif_row + " .notif-event").text();
         form.event.style.backgroundColor = "#EEEEEE";
         $(form.valid).prop("checked",
-          ($(notif_row + " .notif-validity").text() == 'Y' ? "checked" : ""));
+            ($(notif_row + " .notif-validity").text() == 'Y' ? "checked" : ""));
         form.uid.value = $(notif_row + " .notif-emailuid").text();
         form.OLDuid.value = $(notif_row + " .notif-emailuid").text();
         form.uid.style.backgroundColor = "#EEEEEE";
@@ -143,7 +144,7 @@ function openPopupNotf(notif_row) {
         form.action.value = "insert";
     }
     form.tbl.value = "notification";
-    $('#overlay_form_notf[name=sendbutton]').attr('onclick',"sendPopupNotf(); return false");
+    $('#overlay_form_notf[name=sendbutton]').attr('onclick', "sendPopupNotf(); return false");
     $("#overlay_form_notf").fadeIn(500);
     positionPopup();
     form.event.focus();
@@ -172,7 +173,7 @@ function openPopupAuth(auth_table, auth_row) {
         form.action.value = "insert";
     }
     form.tbl.value = auth_table;
-    $('#overlay_form_auth[name=sendbutton]').attr('onclick',"sendPopupAuth(); return false");
+    $('#overlay_form_auth[name=sendbutton]').attr('onclick', "sendPopupAuth(); return false");
     $("#overlay_form_auth").fadeIn(500);
     positionPopup();
     form.uid.focus();
@@ -180,101 +181,111 @@ function openPopupAuth(auth_table, auth_row) {
 
 function sendPopupUser() {
     var form = $('#overlay_form_user')[0];
-    if ( form.uid.value == "" ) {
-        alert ("uid can't be empty");
+    if (form.uid.value == "") {
+        alert("uid can't be empty");
         return false;
     }
-    if ( form.fullname.value == "" ) {
-        alert ("fullname can't be empty");
+    if (form.fullname.value == "") {
+        alert("fullname can't be empty");
         return false;
     }
-    if ( form.login.value == "" ) {
-        alert ("login can't be empty");
+    if (form.login.value == "") {
+        alert("login can't be empty");
         return false;
     }
     $("#overlay_form_user").fadeOut(500);
     $("#ovly").fadeOut(500);
-    if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-    location.href = Gscriptname+"?"+$("#overlay_form_user").serialize()+"\#IDENT";
+    if (Gscriptname == "") {
+        Gscriptname = "/cgi-bin/usersMgr.pl";
+    }
+    location.href = Gscriptname + "?" + $("#overlay_form_user").serialize() + "\#IDENT";
 }
 
 function sendPopupGroup() {
     var form = $('#overlay_form_group')[0];
-    if ( form.gid.value ==  "" ) {
-        alert ("gid can't be empty");
+    if (form.gid.value == "") {
+        alert("gid can't be empty");
         return false;
     }
-    if ( !form.gid.value.match(/^\+/) ) {
-        alert ("gid must start with '+'");
+    if (!form.gid.value.match(/^\+/)) {
+        alert("gid must start with '+'");
         return false;
     }
-    var usels='';
-    for (i=0;i<form.uid.length;i++) {
-        if (form.uid[i].selected) usels += form.uid[i].value+',';
+    var usels = '';
+    for (i = 0; i < form.uid.length; i++) {
+        if (form.uid[i].selected) usels += form.uid[i].value + ',';
     }
-    usels=usels.slice(0,-1);
-    if ( usels.length == 0 ) {
-        alert ("uid can't be empty");
+    usels = usels.slice(0, -1);
+    if (usels.length == 0) {
+        alert("uid can't be empty");
         return false;
     }
-    var answer = confirm("confirm that group "+form.gid.value+" will contain "+usels+" ?");
+    var answer = confirm("confirm that group " + form.gid.value + " will contain " + usels + " ?");
     if (answer) {
         $("#overlay_form_group").fadeOut(500);
         $("#ovly").fadeOut(500);
-        if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-        location.href = Gscriptname+"?"+$("#overlay_form_group").serialize()+"\#IDENT";
-    } else { return false; }
+        if (Gscriptname == "") {
+            Gscriptname = "/cgi-bin/usersMgr.pl";
+        }
+        location.href = Gscriptname + "?" + $("#overlay_form_group").serialize() + "\#IDENT";
+    } else {
+        return false;
+    }
 }
 
 function sendPopupNotf() {
     var form = $('#overlay_form_notf')[0];
-    if ( form.event.value  == "" ) {
-        alert ("event can't be empty");
+    if (form.event.value == "") {
+        alert("event can't be empty");
         return false;
     }
-    if ( form.uid.value == "" ) {
-        alert ("uid can't be empty (set to '-' disable email)");
+    if (form.uid.value == "") {
+        alert("uid can't be empty (set to '-' disable email)");
         return false;
     }
-    if ( form.act.value == "" ) {
-        alert ("action can't be empty (set to '-' to disable)");
+    if (form.act.value == "") {
+        alert("action can't be empty (set to '-' to disable)");
         return false;
     }
-    if ( UidGidExists(form.uid.value) ) {
+    if (UidGidExists(form.uid.value)) {
         $("#overlay_form_notf").fadeOut(500);
         $("#ovly").fadeOut(500);
-        if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-        location.href = Gscriptname+"?"+$("#overlay_form_notf").serialize()+"\#POSTBOARD";
+        if (Gscriptname == "") {
+            Gscriptname = "/cgi-bin/usersMgr.pl";
+        }
+        location.href = Gscriptname + "?" + $("#overlay_form_notf").serialize() + "\#POSTBOARD";
     } else {
-        alert (form.uid.value+" is not a uid/gid ");
+        alert(form.uid.value + " is not a uid/gid ");
     }
 }
 
 function sendPopupAuth() {
     var form = $('#overlay_form_auth')[0];
-    if ( form.uid.value == "" ) {
-        alert ("uid can't be empty");
+    if (form.uid.value == "") {
+        alert("uid can't be empty");
         return false;
     }
-    if ( UidGidExists(form.uid.value) ) {
-        if ( form.res.value == "" ) {
-            alert ("resource can't be empty");
+    if (UidGidExists(form.uid.value)) {
+        if (form.res.value == "") {
+            alert("resource can't be empty");
             return false;
         }
-        if ( form.auth.value == "" ) {
-            alert ("authorization can't be empty");
+        if (form.auth.value == "") {
+            alert("authorization can't be empty");
             return false;
         }
-        if ( ['1','2','4'].indexOf(form.auth.value) == -1 ) {
-            alert ("authorization must be one of 1,2,4");
+        if (['1', '2', '4'].indexOf(form.auth.value) == -1) {
+            alert("authorization must be one of 1,2,4");
             return false;
         }
         $("#overlay_form_auth").fadeOut(500);
         $("#ovly").fadeOut(500);
-        if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-        location.href = Gscriptname+"?"+$("#overlay_form_auth").serialize()+"\#AUTH";
+        if (Gscriptname == "") {
+            Gscriptname = "/cgi-bin/usersMgr.pl";
+        }
+        location.href = Gscriptname + "?" + $("#overlay_form_auth").serialize() + "\#AUTH";
     } else {
-        alert (form.uid.value+" is not a uid/gid ");
+        alert(form.uid.value + " is not a uid/gid ");
     }
 }
 
@@ -282,19 +293,23 @@ function postDeleteUser(user) {
     var uid = $(user + ' .user-uid').text();
     var answer = confirm("do you really want to delete userid " + uid + " ? If so, you might first delete the corresponding line in htpasswd.")
     if (answer) {
-        uid = uid.replace(/\+/g,'%2B');
-        if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-        location.href = Gscriptname+"?action=delete&tbl=user&uid="+uid+"\#IDENT"
+        uid = uid.replace(/\+/g, '%2B');
+        if (Gscriptname == "") {
+            Gscriptname = "/cgi-bin/usersMgr.pl";
+        }
+        location.href = Gscriptname + "?action=delete&tbl=user&uid=" + uid + "\#IDENT"
     }
 }
 
 function postDeleteUGroup(group) {
     var gid = $(group + ' .group-gid').text();
-    var answer = confirm("do you really want to delete group "+gid+" ?")
+    var answer = confirm("do you really want to delete group " + gid + " ?")
     if (answer) {
-        gid = gid.replace(/\+/g,'%2B');
-        if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-        location.href = Gscriptname+"?action=deleteU&tbl=group&gid="+gid+"\#IDENT"
+        gid = gid.replace(/\+/g, '%2B');
+        if (Gscriptname == "") {
+            Gscriptname = "/cgi-bin/usersMgr.pl";
+        }
+        location.href = Gscriptname + "?action=deleteU&tbl=group&gid=" + gid + "\#IDENT"
     }
 }
 
@@ -302,31 +317,37 @@ function postDeleteNotf(notif) {
     var evt = $(notif + ' .notif-event').text();
     var uid = $(notif + ' .notif-emailuid').text();
     var act = $(notif + ' .notif-action').text();
-    var answer = confirm("do you really want to delete event "+evt+"/"+uid+"/"+act+" ?")
+    var answer = confirm("do you really want to delete event " + evt + "/" + uid + "/" + act + " ?")
     if (answer) {
-        uid =  uid.replace(/\+/g,'%2B');
-        if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-        location.href = Gscriptname+"?action=delete&tbl=notification&event="+evt+"&uid="+uid+"&act="+act+"\#POSTBOARD"
+        uid = uid.replace(/\+/g, '%2B');
+        if (Gscriptname == "") {
+            Gscriptname = "/cgi-bin/usersMgr.pl";
+        }
+        location.href = Gscriptname + "?action=delete&tbl=notification&event=" + evt + "&uid=" + uid + "&act=" + act + "\#POSTBOARD"
     }
 }
 
 function postDeleteUNotf(unotif) {
     var evt = $(unotif + ' .unotif-event').text();
-    var answer = confirm("do you really want to delete event "+evt+" ?")
+    var answer = confirm("do you really want to delete event " + evt + " ?")
     if (answer) {
-        if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-        location.href = Gscriptname+"?action=deleteU&tbl=notification&event="+evt+"\#POSTBOARD"
+        if (Gscriptname == "") {
+            Gscriptname = "/cgi-bin/usersMgr.pl";
+        }
+        location.href = Gscriptname + "?action=deleteU&tbl=notification&event=" + evt + "\#POSTBOARD"
     }
 }
 
 function postDeleteAuth(auth_table, auth) {
-    var uid =  $(auth + ' .auth-uid').text();
-    var res =  $(auth + ' .auth-res').text();
-    var answer = confirm("do you really want to delete auth "+uid+"/"+res+" ?")
+    var uid = $(auth + ' .auth-uid').text();
+    var res = $(auth + ' .auth-res').text();
+    var answer = confirm("do you really want to delete auth " + uid + "/" + res + " ?")
     if (answer) {
-        uid = uid.replace(/\+/g,'%2B');
-        if (Gscriptname == "") { Gscriptname = "/cgi-bin/usersMgr.pl"; }
-        location.href = Gscriptname+"?action=delete&tbl="+auth_table+"&uid="+uid+"&res="+res+"\#AUTH"
+        uid = uid.replace(/\+/g, '%2B');
+        if (Gscriptname == "") {
+            Gscriptname = "/cgi-bin/usersMgr.pl";
+        }
+        location.href = Gscriptname + "?action=delete&tbl=" + auth_table + "&uid=" + uid + "&res=" + res + "\#AUTH"
     }
 }
 
