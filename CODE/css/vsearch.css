@@ -1,31 +1,29 @@
-table
-{
+table {
     border-collapse: collapse;
-/*    background: white;*/
+    /*    background: white;*/
 }
-td, th
-{
+td,
+th {
     font-size: 8pt;
     border-width: 2px;
-    border-color: #FFFFFF;
+    border-color: #ffffff;
     border-style: solid;
     padding: 3px;
     text-align: center;
 }
-th
-{
+th {
     color: #777777;
-    background-color: #DDDDDD;
+    background-color: #dddddd;
 }
 .sr1 {
-        background-color: #EEFF5E;
+    background-color: #eeff5e;
 }
 .sr2 {
-        background-color: #FFD367;
+    background-color: #ffd367;
 }
 .td0 {
-    background-color: #EEEEEE;
+    background-color: #eeeeee;
 }
 .td1 {
-    background-color: #DDDDDD;
+    background-color: #dddddd;
 }
