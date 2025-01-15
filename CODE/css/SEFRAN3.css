@@ -1,14 +1,13 @@
-
 /* rules/properties may be dynamically defined/overriden by perl-cgi */
 /* such modifications are marked with comment 'DYNAMIC <perl's code> */
 
 .noImage {
-    font-size:14pt;
-    font-style:italic;
-    font-weight:bold;
-    color: #CCCCCC;
-    text-align:center;
-    background-color: #F5F5F5;
+    font-size: 14pt;
+    font-style: italic;
+    font-weight: bold;
+    color: #cccccc;
+    text-align: center;
+    background-color: #f5f5f5;
     /*border: solid 1px #AFAFAF;*/
     border: 0;
 }
@@ -23,7 +22,8 @@
     position: float;
 }
 
-html,body {
+html,
+body {
     padding: 0;
     border-collapse: collapse;
     border: 0;
@@ -43,11 +43,15 @@ img.voies-dynamiques {
 
 table.sefran {
     /*DYNAMIC margin-left: ${largeur_voies}px*/
-    display: block;            /*DL*/
-    position: absolute;        /*DL*/
+    display: block; /*DL*/
+    position: absolute; /*DL*/
     left: 0px;
 }
-td.sefran, td.signals, td.bouton, td.rien, td.fin {
+td.sefran,
+td.signals,
+td.bouton,
+td.rien,
+td.fin {
     padding: 0;
     margin: 0;
     border-collapse: collapse;
@@ -57,15 +61,17 @@ td.bouton {
     font-size: 1.5em;
     font-weight: bold;
 }
-td.rien,td.fin {
+td.rien,
+td.fin {
     color: white;
-    text-align:center;
+    text-align: center;
     padding: 1ex;
     border: 1px solid white;
     font-size: 15px;
-    white-space:nowrap;
+    white-space: nowrap;
 }
-td.rien div,td.fin div {
+td.rien div,
+td.fin div {
     /*DYNAMIC width: ${largeur_image}px*/
 }
 td.rien {
@@ -85,7 +91,7 @@ td.fin {
     /*DYNAMIC width: ${largeur_image}px*/
     /*DYNAMIC height: ${hauteur_image}px*/
 }
-.signals map:hover img{
+.signals map:hover img {
     border-bottom: 10px solid lightblue;
 }
 div.keysbox {
@@ -95,7 +101,7 @@ div.keysbox {
     top: 1px;
     border: 2px solid #888888;
     border-radius: 5px;
-    background-color: #DDD;
+    background-color: #ddd;
     width: auto;
     text-align: center;
 }
@@ -104,16 +110,16 @@ div.keys {
     margin-bottom: 2px;
 }
 .keytitle {
-    background-color: #DDD;
+    background-color: #ddd;
     margin: 2px;
     border: none;
     font-weight: bold;
     text-align: left;
 }
 .keycap {
-    background-color: #FFFFFF;
+    background-color: #ffffff;
     padding: 0px 2px;
-    border: solid 2px #AFAFAF;
+    border: solid 2px #afafaf;
     margin: 1px 1px 1px 1px;
     border-radius: 3px;
     -webkit-border-radius: 3px;
@@ -121,17 +127,17 @@ div.keys {
     font-weight: bold;
 }
 .mcbouton {
-    cursor:pointer;
+    cursor: pointer;
     display: inline-block;
     margin: 3px 1px;
 }
 .mcbouton.greyed {
-    background-color: #BBBBBB;
+    background-color: #bbbbbb;
     cursor: default;
 }
 .mcbouton span.keycap.greyed {
-    background-color: #BBBBBB;
-    color: #999999
+    background-color: #bbbbbb;
+    color: #999999;
 }
 .mcbouton span.keycap:hover {
     text-decoration: none;
@@ -139,8 +145,8 @@ div.keys {
 }
 .mcbouton span.keycap.greyed:hover {
     text-decoration: none;
-    background-color: #BBBBBB;
-    color: #999999
+    background-color: #bbbbbb;
+    color: #999999;
 }
 
 .mcform {
@@ -153,7 +159,7 @@ div.keys {
     margin: 0;
     padding: 5;
     background-color: lightgray;
-    border: solid 2px #AFAFAF;
+    border: solid 2px #afafaf;
     border-radius: 5px;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
@@ -259,7 +265,7 @@ div.keys {
     z-index: 4;
     /*DYNAMIC height: ${hauteur_image}px*/
 }
-input[type=submit] {
+input[type="submit"] {
     font-weight: bold;
 }
 
@@ -273,9 +279,10 @@ input[type=submit] {
     position: fixed;
     top: 0px;
     opacity: 0;
-    background: #EAE4CE url("/icons/arrow_left.png") no-repeat center center;
+    background: #eae4ce url("/icons/arrow_left.png") no-repeat center center;
     width: 50px;
-    height: 0px; left: 0px;
+    height: 0px;
+    left: 0px;
     /*height to be computed at runtime*/
 }
 
@@ -284,9 +291,10 @@ input[type=submit] {
     position: fixed;
     top: 0px;
     opacity: 0;
-    background: #EAE4CE url("/icons/arrow_right.png") no-repeat center center;
+    background: #eae4ce url("/icons/arrow_right.png") no-repeat center center;
     width: 50px;
-    height: 0px; left: 0px;
+    height: 0px;
+    left: 0px;
     /*height and left to be computed at runtime*/
 }
 .sgram {
@@ -301,6 +309,6 @@ input[type=submit] {
     /*DYNAMIC opacity: $SEFRAN3{SGRAM_OPACITY}*/
 }
 .slidecontainer {
-      width: 100%; /* Width of the outside container */
+    width: 100%; /* Width of the outside container */
     vertical-align: middle;
 }

@@ -1,35 +1,35 @@
-
 .wolbOvly {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9999;
-  background-color: black;
-  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=40);
-  opacity: 0.4;
-  display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background-color: black;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=40);
+    opacity: 0.4;
+    display: none;
 }
 
 .wolbBox {
-  position: absolute;
-  top: 8px;
-  z-index: 10000;
-  font-weight: normal;
-  border: 6px solid snow;
-  display: none;
-  background: snow;
+    position: absolute;
+    top: 8px;
+    z-index: 10000;
+    font-weight: normal;
+    border: 6px solid snow;
+    display: none;
+    background: snow;
 }
 
 .wolbNav {
-  color: black;
-  background: snow;
-  min-height: 20px;
-  text-align: center;
+    color: black;
+    background: snow;
+    min-height: 20px;
+    text-align: center;
 }
 
-.wolbPrev, .wolbNext {
+.wolbPrev,
+.wolbNext {
     visibility: hidden;
     cursor: pointer;
     border: 0px;
@@ -56,4 +56,6 @@
     background: url(/icons/wait.gif) no-repeat center;
 }
 
-area[wolbsrc] {cursor: pointer}
+area[wolbsrc] {
+    cursor: pointer;
+}
