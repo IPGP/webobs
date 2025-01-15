@@ -126,7 +126,7 @@ function plotFlot(gtype) {
     };
     plot = $.plot($('#mcgraph'), data, options);
 
-    $('#mcgraph').bind('plothover', function (event, pos, item) {
+    $('#mcgraph').bind('plothover', function(event, pos, item) {
         latestPosition = pos;
         if (!updateLegendTimeout) updateLegendTimeout = setTimeout(updateLegend, 50);
     });
@@ -157,7 +157,7 @@ function plotFlot(gtype) {
 
         var axes = plot.getAxes();
         if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
-                pos.y < axes.yaxis.min || pos.y > axes.yaxis.max)
+            pos.y < axes.yaxis.min || pos.y > axes.yaxis.max)
             return;
 
         var i, j, dataset = plot.getData();
@@ -165,7 +165,7 @@ function plotFlot(gtype) {
         if (xmode == 'time') {
             time.setTime(p);
             //if (document.formulaire.slt.value == 0) {
-                info.textContent = time.toUTCString();
+            info.textContent = time.toUTCString();
             //} else {
             //    info.textContent = time.toLocaleString();
             //}
@@ -173,7 +173,7 @@ function plotFlot(gtype) {
             info.innerHTML = 'M &ge; ' + p.toFixed(1);
         }
         if (gtype == 'bars') {
-            p -= 1000*86400/2;
+            p -= 1000 * 86400 / 2;
         }
         for (i = 0; i < dataset.length; ++i) {
             var series = dataset[i];
@@ -187,7 +187,7 @@ function plotFlot(gtype) {
                 y = y.toFixed(1) + ' (10^18 dyn.cm)';
             }
             if (gtype == 'gr') {
-                y = Math.pow(10,y).toFixed(0);
+                y = Math.pow(10, y).toFixed(0);
             }
             legends.eq(i).text(series.label.replace(/=.*\//, '= ' + y + '/'));
         }
@@ -196,12 +196,17 @@ function plotFlot(gtype) {
 }
 
 function plotAll() {
-    plot.setSelection({ xaxis: { from: options.xaxis.min, to: options.xaxis.max } },true);
+    plot.setSelection({
+        xaxis: {
+            from: options.xaxis.min,
+            to: options.xaxis.max
+        }
+    }, true);
     plot = $.plot($('#mcgraph'), data, options);
 }
 
 function cop(color) {
-    var bgcolor = (typeof color == "undefined") ? "#fff" : color ;
+    var bgcolor = (typeof color == "undefined") ? "#fff" : color;
     var link = $("#tlsavelink");
     link.hidden;
     try {
@@ -211,10 +216,10 @@ function cop(color) {
         //context.fillStyle = "#fff";
         //context.fillRect(0,0,canvas.width,canvas.height);
         var canvasimg = canvas.toDataURL();
-        link.attr('href',canvasimg);
-        link.attr('download','WebObsMCgraph.png');
+        link.attr('href', canvasimg);
+        link.attr('download', 'WebObsMCgraph.png');
         link.show;
-    } catch(e) {
-        console.log("canvas op failed: "+e);
+    } catch (e) {
+        console.log("canvas op failed: " + e);
     }
 }
