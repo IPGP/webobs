@@ -245,12 +245,13 @@ foreach (map { sprintf("COLUMN%02d_LIST", $_) } (1..$max_columns)) {
 my @fs_names;
 my @field_names;
 
-foreach(@fieldsets) {
-    push(@fs_names, $FORM{"$_\_NAME"});
+foreach my $f (@fieldsets) {
+    push(@fs_names, $FORM{"$f\_NAME"});
     my @fieldset;
-    for (my $i = 0; $i <= $FORM{"$_\_CELLS"}; $i++) {
+    my ($fscells,$fsdir) = split(/[, ]/,$FORM{"$f\_CELLS"});
+    for (my $i = 1; $i <= $fscells; $i++) {
         my @fields;
-        foreach (split(/,/, $FORM{sprintf("$_\_C%02d",$i)})) {
+        foreach (split(/,/, $FORM{sprintf("$f\_C%02d",$i)})) {
             my ($size, $default) = extract_type($FORM{$_."_TYPE"});
             if ($size ne "0" && ! ($_ =~ /^OUTPUT/ && $FORM{$_."_TYPE"} =~ /^text/)) {
                 push(@fields, $_);
@@ -523,11 +524,16 @@ for (my $j = 0; $j <= $#rows; $j++) {
 }
 
 if ($QryParm->{'debug'}) {
-    print("<P>y1 = ".$QryParm->{'y1'}.", m1 = ".$QryParm->{'m1'}.", d1 = ".$QryParm->{'d1'}."</P>\n");
-    print("<P>startDate = $startDate, endDate = $endDate, default days = $FORM{DEFAULT_DAYS}</P>\n");
-    print("<P>Columns = ".join(',',@rownames)."</P>\n");
-    print("<P>Formulas = ".join(',',@formulas)."</P>\n");
-    print("<P>Filter = $filter</P>\n");
+    print("<H3>Debug</H3><UL>
+    <LI>y1 = ".$QryParm->{'y1'}.", m1 = ".$QryParm->{'m1'}.", d1 = ".$QryParm->{'d1'}."</LI>
+    <LI>startDate = $startDate, endDate = $endDate, default days = $FORM{DEFAULT_DAYS}</LI>
+    <LI>Conf = ".join(',',sort keys %FORM)."</LI>
+    <LI>Columns = ".join(',',@rownames)."</LI>
+    <LI>Formulas = ".join(',',@formulas)."</LI>
+    <LI>Fieldsets = ".join(',',@fieldsets)."</LI>
+    <LI>Field names = ".join(";", map { join(",", @$_) } @field_names)."</LI>
+    <LI>Filter = $filter</LI>
+    </UL>\n");
 }
 push(@html,"<P>$__{'Genform code'}: <B class='code'>FORM.$form</B><BR>\n");
 push(@html,"$__{'Date interval'} = <B>$delay days.</B><BR>\n");
