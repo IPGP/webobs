@@ -108,7 +108,7 @@ my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SC
 die "$__{'Cannot upload to'} $typeDoc" if ( "@allowed" !~ /\b$typeDoc\b/ );
 
 if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
-    $pathTarget = "$WEBOBS{ROOT_DATA}/FORMDOCS/$object";
+    $pathTarget = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/$object";
 } elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
     $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
@@ -255,7 +255,7 @@ foreach (@listeTarget) {
     my $file = "$pathTarget/$name$extension";
     print "<TD style='border:none; border-right: 1px solid gray' align=center valign=top>";
     if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
-        $urn  =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
+        $urn  =~ s/$WEBOBS{ROOT_DATA}/\/data/;
     }
     print "<A href=\"$urn\">";
     my $hght = $typeDoc eq "SPATH_GENFORM_IMAGES" ? $height : $NODES{THUMBNAILS_PIXV};
@@ -264,7 +264,7 @@ foreach (@listeTarget) {
     my $th = makeThumbnail($file, "x$hght", "$pathTarget/$thumbnailsPath", $NODES{THUMBNAILS_EXT});
     if ( $th ne "" ) {
         if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
-            ($turn = $th) =~ s/$WEBOBS{ROOT_DATA}\/FORMDOCS/$WEBOBS{URN_FORMDOCS}/;
+            ($turn = $th) =~ s/$WEBOBS{ROOT_DATA}/\/data/;
         } else {
             ($turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
         }
