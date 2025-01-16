@@ -205,13 +205,13 @@ if ($action eq 'save') {
     htmlMsgOK($msg);
 
     # rename images tmp directory
-    my $tmpPath = "$WEBOBS{ROOT_DATA}/FORMDOCS/".uc($form."/record");
+    my $tmpPath = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/".uc($form."/record");
     if (-e $tmpPath) {
         my $stmt = qq(SELECT seq FROM sqlite_sequence WHERE name='$tbl');
         my $sth = $dbh->prepare( $stmt );
         my $rv = $sth->execute() or die $DBI::errstr;
         my $new_id = $sth->fetchrow_array();
-        my $finalPath = "$WEBOBS{ROOT_DATA}/FORMDOCS/".uc($form."/record".$new_id);
+        my $finalPath = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/".uc($form."/record".$new_id);
         qx(mv $tmpPath $finalPath);
         if ($?) { htmlMsgNotOK("Couldn't move $tmpPath to $finalPath; $!"); }
     }
@@ -235,18 +235,16 @@ if ($action eq 'save') {
     $dbh->disconnect();
     exit;
 } elsif ($action eq "erase" && $id ne "") {
-    if ( $form ne "" ) {
-        my $erase_dir = "$WEBOBS{ROOT_DATA}".uc("/formdocs/FORM_".$form."_data".$id )."*";
-        qx(rm -rf $erase_dir);
-    }
     my $stmt = qq(DELETE FROM $tbl WHERE id = $id);
     my $sth  = $dbh->prepare( $stmt );
     my $rv   = $sth->execute() or die $DBI::errstr;
     htmlMsgOK("Record #$id has been permanently erased from database $form.");
 
     # delete images directory
-    my $path = "$WEBOBS{ROOT_DATA}/FORMDOCS/".uc($form."/record".$id);
-    qx(rm $path -R);
+    if ($form ne "" && $id ne "") {
+        my $path = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/".uc($form."/record".$id);
+        qx(rm $path -R);
+    }
 
     $dbh->disconnect();
     exit;
@@ -678,13 +676,12 @@ foreach (@columns) {
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
                     my $delay = ( ( $default >= $MIN_DELAY && $default <= $MAX_DELAY ) ? $default : $DEFAULT_DELAY );
-                    my $path = "/formdocs/$img_id";
                     print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay'"
                         type="button"> Upload images or files</button><br><br>);
-                    if ( -e "$WEBOBS{ROOT_DATA}".uc($path)."/THUMBNAILS/$THUMB_ANIM") {
-                        print qq(<img height=$height src="$path/THUMBNAILS/$THUMB_ANIM"></img>);
+                    my $imgdir = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/$img_id";
+                    if ( -e "$imgdir/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM") {
+                        print qq(<img height=$height src=/data/$GRIDS{SPATH_FORMDOCS}/$img_id/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM></img>);
                     }
-                    my $imgdir = "$WEBOBS{ROOT_DATA}".uc($path);
                     my $nb = qx(ls $imgdir -p | grep -v / | wc -l);
                     print qq(<input type="hidden" name="$field" value=$nb>\n);
                 } elsif ($field =~ /^input/) {

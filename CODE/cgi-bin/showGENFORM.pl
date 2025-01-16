@@ -496,8 +496,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
             }
             if ($FORM{$Field."_TYPE"} =~ /^image/) {
                 my $img_id = uc($form."/record".$id."/".$Field);
-                my @listeTarget = <"$WEBOBS{ROOT_DATA}/FORMDOCS/$img_id"/*.*> ;
-                my $pathSource = "/formdocs/$img_id";
+                my @listeTarget = <"$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/$img_id"/*.*> ;
+                my $pathSource = "/data/$GRIDS{SPATH_FORMDOCS}/$img_id";
                 $val = "<table>";
                 foreach my $index (0..$#listeTarget) {
                     my $olmsg = "Click to enlarge ".($index+1)." / ".scalar(@listeTarget);

@@ -115,7 +115,7 @@ my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SC
 htmlMsgNotOK("$__{'Cannot upload to'} $typeDoc") if ( "@allowed" !~ /\b$typeDoc\b/ );
 
 if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
-    $pathTarget = "$WEBOBS{ROOT_DATA}/FORMDOCS/$object";
+    $pathTarget = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/$object";
 } elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
     $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
