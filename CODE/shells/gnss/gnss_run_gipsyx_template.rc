@@ -66,6 +66,9 @@ REALTIME=""
 # data delay for realtime processing
 DATA_DELAY="5 min"
 
+# save full log
+FULLOG=0
+
 ### use fiducial (regular) or non-fiducial (NF) orbits. 
 # NFORB option will add '-prodTypeGNSS nf -gdCov' in the GIPSYOPTIONS
 # and will perform the post-processing re-alignement 
@@ -77,6 +80,8 @@ DATA_DELAY="5 min"
 # Coordinates computed with non Fiducial orbits requiries
 # a re-alignement to the ITRF with external Helmert parameters 
 NFORB=0
+
+
 
 
 
