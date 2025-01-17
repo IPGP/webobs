@@ -138,14 +138,18 @@ if [ -z "$ERROR_REGEX_RINEX" ]; then
 fi
 
 # boolean for forcing process (default value doesn't force)
-if [ -z "$FORCE" ] && FORCE=0 
-
+if [ -z "$FORCE" ]; then 
+        FORCE=0 
+fi
 # boolean for enabling debug mode (default value doesn't)
-[ -z "$DEBUG" ] && DEBUG=0 
+if [ -z "$DEBUG" ]; then
+        DEBUG=0 
 
+fi
 # boolean for enabling full log mode (default value doesn't)
-[ -z "$FULLOG" ] && FULLOG=0
-
+if [ -z "$FULLOG" ]; then
+        FULLOG=0
+fi
 
 # do not use non fiducial (NF) orbits per default
 #
