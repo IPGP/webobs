@@ -3,7 +3,7 @@
 # directory). Please copy, rename and edit it for each "network".
 #
 # Created: 2019-02-25
-# Updated: 2021-02-09
+# Updated: 2025-01-17
 
 # main temporary directory (/tmp per default, change is recommended)
 TMPDIRMAIN=/tmp
@@ -47,6 +47,7 @@ ORBITSDIR=/home/wo/GNSS/JPL_Local_Orbits
 
 # download_orbit options (see download_orbit)
 DOWNLOAD_OPTIONS="-r 30"
+# "-r 30": orbits older than 30 day are removed
 
 # gd2e.py options
 GIPSYOPTIONS="-runType PPP"
@@ -66,8 +67,16 @@ REALTIME=""
 # data delay for realtime processing
 DATA_DELAY="5 min"
 
-# save full log
+###### Processing details management
+## activate debug mode
+# verbose mode & temporary folders will not be deleted
+DEBUG=0
+
+## Full log record
+# Temporary folders are stored in a .fullog.tar.gz file
 FULLOG=0
+
+###### Advenced geodetic modes
 
 ### use fiducial (regular) or non-fiducial (NF) orbits. 
 # NFORB option will add '-prodTypeGNSS nf -gdCov' in the GIPSYOPTIONS
