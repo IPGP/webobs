@@ -76,7 +76,7 @@ DEBUG=0
 # Temporary folders are stored in a .fullog.tar.gz file
 FULLOG=0
 
-###### Advenced geodetic modes
+###### Advanced geodetic modes
 
 ### use fiducial (regular) or non-fiducial (NF) orbits. 
 # NFORB option will add '-prodTypeGNSS nf -gdCov' in the GIPSYOPTIONS
