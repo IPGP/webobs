@@ -131,12 +131,20 @@ DAYLIST=$(for d in $(seq $DAYS -1 0);do date -u -d "$d day ago" +"%Y/%m/%d";done
 
 LOG=gd2e.log
 
-# boolean for forcing process (default value doesn't force)
-FORCE=0
+
 
 if [ -z "$ERROR_REGEX_RINEX" ]; then
 	ERROR_REGEX_RINEX="REC #|ANT #|# / TYPES OF OBSERV|MARKER NAME"
 fi
+
+# boolean for forcing process (default value doesn't force)
+if [ -z "$FORCE" ] && FORCE=0 
+
+# boolean for enabling debug mode (default value doesn't)
+[ -z "$DEBUG" ] && DEBUG=0 
+
+# boolean for enabling full log mode (default value doesn't)
+[ -z "$FULLOG" ] && FULLOG=0
 
 
 # do not use non fiducial (NF) orbits per default
@@ -388,7 +396,7 @@ for station in $NODES; do
 
 						cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITOPT $GIPSYOPTIONS $NFORBOPTIONS"
 						echo "   $cmd"
-						if [ -z $DEBUG ]; then
+						if [ $DEBUG -eq 0 ]; then
 							eval "$cmd > $LOG 2>&1"
 						else
 							eval $cmd
@@ -403,7 +411,7 @@ for station in $NODES; do
 							       	trsprm="$ORBITSDIR/$product/$yyyy/$yyyy-$mm-$dd.x.gz"
 							        cmdtrans="netApply.py -t -r -s -i $cov -o ${cov}_trs -x $trsprm"
 								echo "   $cmdtrans"
-								if [ -z $DEBUG ]; then
+								if [ $DEBUG -eq 0 ]; then
 									eval "$cmdtrans > $LOG 2>&1"
 								else
 									eval $cmdtrans
@@ -449,7 +457,7 @@ for station in $NODES; do
 					gzip -f $gipsylog
 				fi
                                 
-                                if [[ -n $FULLOG ]]; then
+                                if [[ $FULLOG -eq 1 ]]; then
 					ntmpfil=`ls $tmpdir | wc -l`
 					if [[ $ntmpfil -le 1 ]]; then
 						echo "   full log not saved (tmp folder contains only the input RINEX)"
@@ -470,7 +478,7 @@ done
 
 echo "*************************************"
 
-if [ -z $DEBUG ]; then
+if [ $DEBUG -eq 0 ]; then
 	rm -rf $tmpdir
 fi
 
