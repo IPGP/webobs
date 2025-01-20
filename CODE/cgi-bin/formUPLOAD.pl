@@ -214,8 +214,7 @@ function verif_formulaire()
         }).done(function(data) {
             //alert(data);
             \$("#progress").html('<b>Uploaded</b>').css("color", "black");
-            window.location.reload();
-            setTimeout(function(){location.href=document.referrer}, 100);
+            history.go(-1)
         }).fail(function(xhr, status, error) {
             \$("#progress").html('<b>Upload failed: ' + (xhr.status >= 100 ? xhr.status + ' ' : '') + error + '</b>').css("color", "red");
         }).always(function(data) {
