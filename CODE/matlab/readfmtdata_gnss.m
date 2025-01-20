@@ -23,19 +23,25 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		node calibration: no .CLB file or 3 components (East, North, Up) in meters
 %
 %	format 'gipsy'
-%		type: JPL/GIPSY GNSS .tdp results ITRF08
+%		type: JPL/GIPSY GNSS .tdp results ITRF
 %		filename: P.RAWDATA/FID/YYYY/FID/YYYY-MM-DD.FID.tdp*
 %		data format: extract from tdp_final output file (grep "STA [XYZ]" lines)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
 %	format 'gipsyx'
-%		type: JPL/GipsyX GNSS .tdp results ITRF08
+%		type: JPL/GipsyX GNSS .tdp results ITRF
 %		filename: P.RAWDATA/FID/YYYY/FID/YYYY-MM-DD.FID.tdp*
 %		data format: extract from SmoothFinal.tdp output file (grep "Station.SSSS.State.pos.[XYZ]" lines)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
+%	format 'gins-ippp'
+%		type: GINS IPPP solutions
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: ascii
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
 %	format 'usgs-rneu'
-%		type: USGS GPS results ITRF08
+%		type: USGS GPS results ITRF
 %		filename/url: P.RAWDATA (use $FID to point the right file/url)
 %		data format: ascii
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
@@ -55,10 +61,11 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2021-11-12
+%	Updated: 2025-01-20
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
+min_error = 1e-4; % minimum descent error is 0.1 mm!
 
 switch F.fmt
 % -----------------------------------------------------------------------------
@@ -183,8 +190,7 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 		% converts cartesian geocentric (X,Y,Z) to UTM, estimating errors
 		[enu,e] = cart2utm(dd(:,[2,6,10])*kmfact,dd(:,[3,7,11])*kmfact);
 		d = [enu,dd(:,4)];
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf(' %d data imported.\n',size(dd,1));
 	else
 		fprintf(' no data found!\n')
@@ -193,6 +199,49 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 		e = [];
 	end
 	%D.ITRF_YEAR = 'ITRF08';
+
+% -----------------------------------------------------------------------------
+case 'gins-ippp'
+	% format example
+	% !yyyymmdd hhmmss yyyy.yyyyyyyyy  jjjjj.jj        X_position        Y_position        Z_position            dX            dY            dZ             E             N             V            dE            dN            dV
+    %  20160723  65619 2016.558521561  57592.29    4182067.152057     570976.439258    4765940.539811      0.000611      0.000218      0.000673     -0.006574     -0.008848     -0.014844      0.000205      0.000307      0.000859
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		cmd0 = sprintf('awk ''/^[^!]/ {print}'' >> %s',fdat); % removes header lines
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = datenum(dd(:,3),1,1,0,0,0);
+		d = [dd(:,11:13),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		e = dd(:,14:16);
+		e(e<min_error) = min_error;
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
 
 % -----------------------------------------------------------------------------
 case 'usgs-rneu'
@@ -230,8 +279,7 @@ case 'usgs-rneu'
 		t = datenum(ty,tm,td,12,0,0);	% date is YYYYMMDD and we force time to 12:00:00
 		d = [dd(:,[3,2,4])/1e3,dd(:,5)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
 		e = dd(:,[7,6,8])/1e3;
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -274,8 +322,7 @@ case 'ies-neu'
 		t = datenum(dd(:,1),1,1,0,0,0);	% date is decimal year
 		d = [dd(:,[4,2,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
 		e = dd(:,[5,3,7]);
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -318,8 +365,7 @@ case 'ogc-neu'
 		t = datenum(dd(:,2),dd(:,3),dd(:,4),12,0,0);	% here we force time to noon
 		d = [dd(:,[6,5,7]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
 		e = dd(:,[9,8,10]);
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -367,8 +413,7 @@ case 'ingv-gps'
 		t = datenum(dd(:,1),1,1);	% here we force time to January 1st!
 		d = [dd(:,2:4),zeros(size(dd,1),1)];
 		e = dd(:,5:7);
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
