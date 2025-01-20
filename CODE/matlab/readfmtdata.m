@@ -72,7 +72,7 @@ else
 		case {'miniseed','seedlink','arclink','combined','fdsnws-dataselect'}
 			D(n) = readfmtdata_miniseed(WO,P,N(n),F);
 
-		case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii','gins-ippp'}
+		case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii','spotgins-ippp'}
 			D(n) = readfmtdata_gnss(WO,P,N(n),F);
 
 		case {'hyp71sum2k','fdsnws-event','scevtlog-xml'}
