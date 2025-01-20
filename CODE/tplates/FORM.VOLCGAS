@@ -1,18 +1,72 @@
 =key|value
+# Generic FORM template for use with {formGRID.pl,showGENFORM,formGENFORM}.pl
+#
+# ############################### WARNING #####################################
+# Once the database form has been created and the first data has been recorded,
+# you MUST BE VERY CAREFUL IN MODIFYING the keys of this file.
+# ############################### WARNING #####################################
+
+#
+# -----------------------------------------------------------------------------
+# --- GRID common parameters
+
+NAME|Gas database chemical analysis
+DESCRIPTION|Volcanic gas physico-chemical database form
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|MyForm
+
+# --- node parameters (display and maps)
+NODE_NAME|site
+NODE_MARKER|s
+NODE_SIZE|10
+NODE_RGB|1,0,0
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
 # Generic FORM template for use with cgi-bin/fedit.pl
 BANG|$WEBOBS{BIG_BANG}
-TITLE|Gas database chemical analysys
+
+# Time zone of the data (in hour from UT)
+TZ|0
+
+# if YES, use start and end date/time for each record
 STARTING_DATE|NO
-DEFAULT_DAYS|365
+
+# may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
+
+# if YES, use a quality check for each record
+QUALITY_CHECK|NO
+QUALITY_OPERATORS|+ADMIN
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
+
+# comment input field
+COMMENT_SIZE|80
+COMMENT_HELP|Enter any observations made during the measurements
 
 # inputs names and units
 INPUT01_NAME|Gas Temperature
-INPUT01_UNIT|°C
+INPUT01_UNIT|&deg;C
 INPUT02_NAME|pH
 INPUT02_UNIT|
 INPUT03_NAME|Flow Rate (qualitative) 
-INPUT03_TYPE|list: FORM_listVOLCGAS_type.conf
+INPUT03_TYPE|list: FORM_VOLCGAS_list_type.conf
 INPUT03_FILT|YES
 INPUT04_NAME|H<sub>2</sub>
 INPUT04_UNIT|%
@@ -44,15 +98,10 @@ INPUT16_NAME|&delta;<sup>18</sup>O
 INPUT16_UNIT|
 
 # --- Form layout
-# number of columns and list of fieldsets for each
-COLUMNS_NUMBER|2
 
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
 COLUMN02_LIST|FIELDSET02,FIELDSET03
-
-# number of fieldsets
-FIELDSETS_NUMBER|3
 
 # which inputs are contained in the first fieldset ?
 FIELDSET01_NAME|On-Site Measurements
@@ -70,7 +119,3 @@ FIELDSET03_NAME|Isotope Concentration
 FIELDSET03_CELLS|1
 FIELDSET03_C01|INPUT14,INPUT15,INPUT16
 
-
-# for backward compatibility - do not change
-CGI_FORM|formGENFORM.pl
-CGI_SHOW|showGENFORM.pl

@@ -19,22 +19,22 @@ See WebObs:Wiki::wiki2html for wiki language specifications.
 The authorization resource-name, in authwikis resource-type, that is checked for Read access to the file,
 is built from filespec following the 'path-like' resource-names rules as described in WebObs::Users.
 
-	Example: 
-	file = HTML/public/intro.wiki
-	==> actual file = $WEBOBS{PATH_DATA_WEB}/HTML/public/intro.wiki
-	==> resources   = authwikis.HTML/public/intro.wiki  OR
-	                = authwikis.HTML/public  OR
-					= authwikis.HTML/
+    Example: 
+    file = HTML/public/intro.wiki
+    ==> actual file = $WEBOBS{PATH_DATA_WEB}/HTML/public/intro.wiki
+    ==> resources   = authwikis.HTML/public/intro.wiki  OR
+                    = authwikis.HTML/public  OR
+                    = authwikis.HTML/
 
 =head1 Query string parameters 
 
 file=filespec
-	file to be interpreted/displayed.
-	B<filespec := [relpath/]name> 
-	filespec (with optional relpath) is relative to $WEBOBS{PATH_DATA_WEB}
+    file to be interpreted/displayed.
+    B<filespec := [relpath/]name> 
+    filespec (with optional relpath) is relative to $WEBOBS{PATH_DATA_WEB}
 
 css=cssfile
-	user-defined css file to include in output page; must be located in WebObs css directory
+    user-defined css file to include in output page; must be located in WebObs css directory
 
 =cut
 
@@ -64,31 +64,31 @@ my $file = $QryParm->{'file'} // "";
 my $css  = $QryParm->{'css'}  // "";
 
 if ($file ne "") {
-	$absfile = "$WEBOBS{PATH_DATA_WEB}/$file";
-	if ( -e $absfile ) { 
-		$editOK = WebObs::Users::clientHasEdit(type=>"authwikis",name=>$file);
-		if ( WebObs::Users::clientHasRead(type=>'authwikis',name=>$file) ) {
-			open(RDR, "<$absfile") || die "couldn't open $file";
-			push (@lines,$_) while(<RDR>); 
-			close RDR;
-			$html = 0;
-			if ($lines[0] =~ /^TITRE_HTML\|/) {
-				$titre = substr($lines[0],11);
-				shift(@lines);
-				$html = 1;
-			}
-			if ($lines[0] =~ /^TITRE\|/) {
-				$titre = substr($lines[0],6);
-				shift(@lines);
-			}
-			chomp($titre);
-			if ( $editOK ) {
-				$editor  = "<P align=\"right\">"; 
-				$editor .= "<A href=\"/cgi-bin/wedit.pl?file=$file\">"; 
-				$editor .= "<B>$__{'Edit this page'}</B></A></P>";
-			}
-		} else { die "$__{'Not authorized'}" }
-	} else { die "$file $__{'not found'}" }
+    $absfile = "$WEBOBS{PATH_DATA_WEB}/$file";
+    if ( -e $absfile ) {
+        $editOK = WebObs::Users::clientHasEdit(type=>"authwikis",name=>$file);
+        if ( WebObs::Users::clientHasRead(type=>'authwikis',name=>$file) ) {
+            open(RDR, "<$absfile") || die "couldn't open $file";
+            push (@lines,$_) while(<RDR>);
+            close RDR;
+            $html = 0;
+            if ($lines[0] =~ /^TITRE_HTML\|/) {
+                $titre = substr($lines[0],11);
+                shift(@lines);
+                $html = 1;
+            }
+            if ($lines[0] =~ /^TITRE\|/) {
+                $titre = substr($lines[0],6);
+                shift(@lines);
+            }
+            chomp($titre);
+            if ( $editOK ) {
+                $editor  = "<P align=\"right\">";
+                $editor .= "<A href=\"/cgi-bin/wedit.pl?file=$file\">";
+                $editor .= "<B>$__{'Edit this page'}</B></A></P>";
+            }
+        } else { die "$__{'Not authorized'}" }
+    } else { die "$file $__{'not found'}" }
 } else { die "$__{'No filename specified'}" }
 
 print "Content-type: text/html\n\n";
@@ -98,7 +98,7 @@ print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
 print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">";
 print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/$css\">" if ($css) ;
 print "<script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>";
-print "<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\"></script>"; 
+print "<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\"></script>";
 print "<title>$titre</title>
 <meta http-equiv=Content-Type content=\"text/html; charset=utf-8\">
 </head>
@@ -108,18 +108,17 @@ print "<title>$titre</title>
 <!-- overLIB (c) Erik Bosrup -->
 <DIV ID=\"helpBox\"></DIV>
 <DIV ID=\"editlink\">$editor</DIV>";
-print "<DIV ID=\"wikiDiv\" style=\"width:100%\">"; 
+print "<DIV ID=\"wikiDiv\" style=\"width:100%\">";
 if ($titre ne "") {
-	print "<H1>$titre</H1>";
+    print "<H1>$titre</H1>";
 }
 if ($html) {
-	print @lines;
+    print @lines;
 } else {
-	print WebObs::Wiki::wiki2html(join("",@lines));
+    print WebObs::Wiki::wiki2html(join("",@lines));
 }
 print "</DIV>\n";
 print "</BODY></HTML>";
-
 
 __END__
 

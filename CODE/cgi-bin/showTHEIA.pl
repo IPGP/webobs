@@ -44,7 +44,7 @@ use WebObs::i18n;
 # ---- checking if user has authorisation to create a JSON metadata file.
 # ----------------------------------------
 if ( ! WebObs::Users::clientHasAdm(type=>"authmisc",name=>"grids")) {
-	die "You are not authorized" ;
+    die "You are not authorized" ;
 }
 
 # ---- init general-use variables on the way and quit if something's wrong
@@ -61,7 +61,7 @@ my $dsn = "DBI:$driver:dbname=$database";
 my $userid = "";
 my $password = "";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-   or die $DBI::errstr;
+  or die $DBI::errstr;
 
 # ---- display HTML content
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
@@ -87,7 +87,7 @@ my $sth = $dbh->prepare( $stmt );
 my $rv = $sth->execute() or die $DBI::errstr;
 
 if($rv < 0) {
-   print $DBI::errstr;
+    print $DBI::errstr;
 }
 
 # ---- creating the panel
@@ -95,66 +95,66 @@ print "<TABLE style=\"background: white;\" width=\"100%\">";
 print "<TR><TH valign=\"middle\" width=\"5%\">Producer</TH>";
 print "<TD colspan=\"2\">";
 print "<TABLE width=\"100%\"><TR>"
-		."<TH><IMG \"title=\"edition\" src=\"/icons/modif.png\"></TH>"
-		."<TH></TH>"
-		."<TH><SMALL>Identifier</SMALL></TH>"
-		."<TH><SMALL>Name</SMALL></TH>"
-		."<TH><SMALL>Title</SMALL></TH>"
-		."<TH><SMALL>Description</SMALL></TH>"
-		."<TH><SMALL>Objective</SMALL></TH>"
-		."<TH><SMALL>Measured variables</SMALL></TH>"
-		."<TH><SMALL>Email</SMALL></TH>"
-		."<TH><SMALL>Contacts</SMALL></TH>"
-		."<TH><SMALL>Funders</SMALL></TH>"
-		."<TH><SMALL>Online resource</SMALL></TH></TR>";
-		
+  ."<TH><IMG \"title=\"edition\" src=\"/icons/modif.png\"></TH>"
+  ."<TH></TH>"
+  ."<TH><SMALL>Identifier</SMALL></TH>"
+  ."<TH><SMALL>Name</SMALL></TH>"
+  ."<TH><SMALL>Title</SMALL></TH>"
+  ."<TH><SMALL>Description</SMALL></TH>"
+  ."<TH><SMALL>Objective</SMALL></TH>"
+  ."<TH><SMALL>Measured variables</SMALL></TH>"
+  ."<TH><SMALL>Email</SMALL></TH>"
+  ."<TH><SMALL>Contacts</SMALL></TH>"
+  ."<TH><SMALL>Funders</SMALL></TH>"
+  ."<TH><SMALL>Online resource</SMALL></TH></TR>";
+
 my $contacts;
 my $funders;
 my @onlineRes;
-		
+
 while(my @row = $sth->fetchrow_array()) {
-	$funders   = join(', ',split(/_,/,$row[8]));
-	@onlineRes = split(/_,/,$row[9]);
-	foreach (@onlineRes) {
-		$_ = (split '@', $_)[1];
-	}
-	my $onlineRes = join(', ', @onlineRes);
-	
-	# ---- extracting datasets contacts data
-	my $stmt2 = qq(SELECT * FROM contacts WHERE related_id = '$row[0]';);
-	my $sth2 = $dbh->prepare( $stmt2 );
-	my $rv2 = $sth2->execute() or die $DBI::errstr;
+    $funders   = join(', ',split(/_,/,$row[8]));
+    @onlineRes = split(/_,/,$row[9]);
+    foreach (@onlineRes) {
+        $_ = (split '@', $_)[1];
+    }
+    my $onlineRes = join(', ', @onlineRes);
 
-	if($rv2 < 0) {
-	   print $DBI::errstr;
-	}
+    # ---- extracting datasets contacts data
+    my $stmt2 = qq(SELECT * FROM contacts WHERE related_id = '$row[0]';);
+    my $sth2 = $dbh->prepare( $stmt2 );
+    my $rv2 = $sth2->execute() or die $DBI::errstr;
 
-	my @contacts;
-	while(my @row2 = $sth2->fetchrow_array()){
-		push(@contacts, "($row2[3]) ".$row2[1]." ".$row2[2].": ".$row2[0]);
-	}
-	print "<TR><TD width=1%><A href=\"/cgi-bin/gridsMgr.pl\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit producer\" src=\"/icons/modif.png\"></A></TD>"
-			."<TD width=1%><A id=$row[0] class=\"producer\" onclick=\"alert(\"deprecated feature\");\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete producer\" src=\"/icons/no.png\"></A></TD>"
-			."<TD width=3% align=center><SMALL>$row[0]&nbsp&nbsp</SMALL></TD>"
-			."<p><input type=\"hidden\" name=\"producerId\" value=\"$row[0]\"></input></p></SMALL></TD>"
-			."<TD width=4% align=center><SMALL>$row[1]"
-			."<p><input type=\"hidden\" name=\"name\" value=\"$row[1]\"></input></p></SMALL></TD>"
-			."<TD width=10% align=center><SMALL>$row[2]"
-			."<p><input type=\"hidden\" name=\"title\" value=\"$row[2]\"></input></p></SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[3]"
-			."<p><input type=\"hidden\" name=\"description\" value=\"$row[3]\"></input></p></SMALL></TD>"
-			."<TD width=21% align=center><SMALL>$row[4]"
-			."<p><input type=\"hidden\" name=\"objectives\" value=\"$row[4]\"></input></p></SMALL></TD>"
-			."<TD width=10% align=center><SMALL>$row[5]"
-			."<p><input type=\"hidden\" name=\"measuredVariables\" value=\"$row[5]\"></input></p></SMALL></TD>"
-			."<TD width=5% align=center><SMALL>$row[6]"
-			."<p><input type=\"hidden\" name=\"email\" value=\"$row[6]\"></input></p></SMALL></TD>"
-			."<TD width=8% align=center><SMALL>".(join "\n", @contacts)
-			."<p><input type=\"hidden\" name=\"contacts\"></input></p></SMALL></TD>"
-			."<TD width=8% align=center><SMALL>$funders"
-			."<p><input type=\"hidden\" name=\"fundings\"></input></p></SMALL></TD>"
-			."<TD width=10% align=center><SMALL>$onlineRes"
-			."<p><input type=\"hidden\" name=\"onlineRes\"></input></p></SMALL></TD></TR>";
+    if($rv2 < 0) {
+        print $DBI::errstr;
+    }
+
+    my @contacts;
+    while(my @row2 = $sth2->fetchrow_array()){
+        push(@contacts, "($row2[3]) ".$row2[1]." ".$row2[2].": ".$row2[0]);
+    }
+    print "<TR><TD width=1%><A href=\"/cgi-bin/gridsMgr.pl\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit producer\" src=\"/icons/modif.png\"></A></TD>"
+      ."<TD width=1%><A id=$row[0] class=\"producer\" onclick=\"alert(\"deprecated feature\");\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete producer\" src=\"/icons/no.png\"></A></TD>"
+      ."<TD width=3% align=center><SMALL>$row[0]&nbsp&nbsp</SMALL></TD>"
+      ."<p><input type=\"hidden\" name=\"producerId\" value=\"$row[0]\"></input></p></SMALL></TD>"
+      ."<TD width=4% align=center><SMALL>$row[1]"
+      ."<p><input type=\"hidden\" name=\"name\" value=\"$row[1]\"></input></p></SMALL></TD>"
+      ."<TD width=10% align=center><SMALL>$row[2]"
+      ."<p><input type=\"hidden\" name=\"title\" value=\"$row[2]\"></input></p></SMALL></TD>"
+      ."<TD width=14% align=center><SMALL>$row[3]"
+      ."<p><input type=\"hidden\" name=\"description\" value=\"$row[3]\"></input></p></SMALL></TD>"
+      ."<TD width=21% align=center><SMALL>$row[4]"
+      ."<p><input type=\"hidden\" name=\"objectives\" value=\"$row[4]\"></input></p></SMALL></TD>"
+      ."<TD width=10% align=center><SMALL>$row[5]"
+      ."<p><input type=\"hidden\" name=\"measuredVariables\" value=\"$row[5]\"></input></p></SMALL></TD>"
+      ."<TD width=5% align=center><SMALL>$row[6]"
+      ."<p><input type=\"hidden\" name=\"email\" value=\"$row[6]\"></input></p></SMALL></TD>"
+      ."<TD width=8% align=center><SMALL>".(join "\n", @contacts)
+      ."<p><input type=\"hidden\" name=\"contacts\"></input></p></SMALL></TD>"
+      ."<TD width=8% align=center><SMALL>$funders"
+      ."<p><input type=\"hidden\" name=\"fundings\"></input></p></SMALL></TD>"
+      ."<TD width=10% align=center><SMALL>$onlineRes"
+      ."<p><input type=\"hidden\" name=\"onlineRes\"></input></p></SMALL></TD></TR>";
 };
 
 print "</TABLE></TD>\n";
@@ -174,69 +174,70 @@ $sth = $dbh->prepare( $stmt );
 $rv = $sth->execute() or die $DBI::errstr;
 
 if($rv < 0) {
-   print $DBI::errstr;
+    print $DBI::errstr;
 }
+
 # ---- creating the panel
 print "<TABLE style=\"background: white;\" width=\"100%\">";
 print "<TR><TH valign=\"middle\" width=\"5%\">Datasets</A></TH>";
 print "<TD colspan=\"2\" style=\"display:block\">";
 print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
-		."<TH><IMG \"title=\"edition\" src=\"/icons/modif.png\"></TH>"
-		."<TH></TH>"
-		."<TH><SMALL>Identifier</SMALL></TH>"
-		."<TH valign=\"top\"><SMALL>Title</SMALL></TH>"
-		."<TH><SMALL>Description</SMALL></TH>"
-		."<TH><SMALL>Subject</SMALL></TH>"
-		."<TH><SMALL>Creator(s)</SMALL></TH>"
-		."<TH><SMALL>Spatial coverage</SMALL></TH>"
-		."<TH><SMALL>Provenance</SMALL></TH></TR>";
+  ."<TH><IMG \"title=\"edition\" src=\"/icons/modif.png\"></TH>"
+  ."<TH></TH>"
+  ."<TH><SMALL>Identifier</SMALL></TH>"
+  ."<TH valign=\"top\"><SMALL>Title</SMALL></TH>"
+  ."<TH><SMALL>Description</SMALL></TH>"
+  ."<TH><SMALL>Subject</SMALL></TH>"
+  ."<TH><SMALL>Creator(s)</SMALL></TH>"
+  ."<TH><SMALL>Spatial coverage</SMALL></TH>"
+  ."<TH><SMALL>Provenance</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
-	my $datasetId = (split /_DAT_/, $row[0]) [1];
-	($GRIDName, $NODEName) = (split /\./, $datasetId);
-	my %S = readNode($NODEName, "novsub");
-	my %NODE = %{$S{$NODEName}};
-	my $desc = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
+    my $datasetId = (split /_DAT_/, $row[0]) [1];
+    ($GRIDName, $NODEName) = (split /\./, $datasetId);
+    my %S = readNode($NODEName, "novsub");
+    my %NODE = %{$S{$NODEName}};
+    my $desc = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
 
-	if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ){
-		my $subject = join(',', split(/_/,$row[2]));
-			
-		# ---- extracting datasets contacts data
-		my $stmt2 = qq(SELECT * FROM contacts WHERE related_id LIKE '$row[0]%';);
-		my $sth2 = $dbh->prepare( $stmt2 );
-		my $rv2 = $sth2->execute() or die $DBI::errstr;
+    if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ){
+        my $subject = join(',', split(/_/,$row[2]));
 
-		if($rv2 < 0) {
-			print $DBI::errstr;
-		}
+        # ---- extracting datasets contacts data
+        my $stmt2 = qq(SELECT * FROM contacts WHERE related_id LIKE '$row[0]%';);
+        my $sth2 = $dbh->prepare( $stmt2 );
+        my $rv2 = $sth2->execute() or die $DBI::errstr;
 
-		my @contacts;
-		while(my @row2 = $sth2->fetchrow_array()){
-			push(@contacts, $row2[1]." ".$row2[2].": ".$row2[0]);
-		}
-			
-		print "<TR class=\"node\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
-			."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
-			."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$desc</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
-			."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[3]</SMALL></TD>"
-			."<TD width=14% align=center><SMALL>$row[4]</SMALL></TD></TR>";
-	} else {
-		print "<TR class=\"node\" id=$row[0]>"
-				."<TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
-				."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."<TD>No access to $GRIDName.$NODEName !</TD>"
-				."</TR>";
-	}
+        if($rv2 < 0) {
+            print $DBI::errstr;
+        }
+
+        my @contacts;
+        while(my @row2 = $sth2->fetchrow_array()){
+            push(@contacts, $row2[1]." ".$row2[2].": ".$row2[0]);
+        }
+
+        print "<TR class=\"node\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
+          ."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
+          ."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
+          ."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
+          ."<TD width=14% align=center><SMALL>$desc</SMALL></TD>"
+          ."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
+          ."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
+          ."<TD width=14% align=center><SMALL>$row[3]</SMALL></TD>"
+          ."<TD width=14% align=center><SMALL>$row[4]</SMALL></TD></TR>";
+    } else {
+        print "<TR class=\"node\" id=$row[0]>"
+          ."<TD width=1%><A href=\"/cgi-bin/formNODE.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>"
+          ."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
+          ."<TD>No access to $GRIDName.$NODEName !</TD>"
+          ."<TD>No access to $GRIDName.$NODEName !</TD>"
+          ."<TD>No access to $GRIDName.$NODEName !</TD>"
+          ."<TD>No access to $GRIDName.$NODEName !</TD>"
+          ."<TD>No access to $GRIDName.$NODEName !</TD>"
+          ."<TD>No access to $GRIDName.$NODEName !</TD>"
+          ."<TD>No access to $GRIDName.$NODEName !</TD>"
+          ."</TR>";
+    }
 };
 
 print "</TABLE></TD>\n";
@@ -250,52 +251,53 @@ $sth = $dbh->prepare( $stmt );
 $rv = $sth->execute() or die $DBI::errstr;
 
 if($rv < 0) {
-   print $DBI::errstr;
+    print $DBI::errstr;
 }
+
 # ---- creating the panel
 print "<TABLE style=\"background: white;\" width=\"100%\">";
 print "<TR><TH valign=\"middle\" width=\"5%\">Observations</TH>";
 print "<TD colspan=\"2\" style=\"display:block\">";
 print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
-		."<TH><IMG \"title=\"edition\" src=\"/icons/modif.png\"></TH>"
-		."<TH></TH>"
-		."<TH><SMALL>Identifier</SMALL></TH>"
-		."<TH><SMALL>Processing level</SMALL></TH>"
-		."<TH><SMALL>Data type</SMALL></TH>"
-		."<TH><SMALL>Temporal extent</SMALL></TH>"
-		."<TH><SMALL>Time series</SMALL></TH>"
-		."<TH><SMALL>Observed property</SMALL></TH>"
-		."<TH><SMALL>Station name</SMALL></TH>"
-		."<TH><SMALL>Dataset</SMALL></TH>"
-		."<TH><SMALL>Data file name</SMALL></TH>"
-		."<TH><SMALL><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">THEIA category</SMALL></TH></TR>";
+  ."<TH><IMG \"title=\"edition\" src=\"/icons/modif.png\"></TH>"
+  ."<TH></TH>"
+  ."<TH><SMALL>Identifier</SMALL></TH>"
+  ."<TH><SMALL>Processing level</SMALL></TH>"
+  ."<TH><SMALL>Data type</SMALL></TH>"
+  ."<TH><SMALL>Temporal extent</SMALL></TH>"
+  ."<TH><SMALL>Time series</SMALL></TH>"
+  ."<TH><SMALL>Observed property</SMALL></TH>"
+  ."<TH><SMALL>Station name</SMALL></TH>"
+  ."<TH><SMALL>Dataset</SMALL></TH>"
+  ."<TH><SMALL>Data file name</SMALL></TH>"
+  ."<TH><SMALL><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">THEIA category</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
-	my $datasetId = $row[7];
-	my $channelId = $row[5];
-	($GRIDName, $NODEName) = (split /\./, $datasetId);
-	$GRIDName = (split /_DAT_/, $GRIDName)[1];
-	if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
-		my $subject = join(',', split(/_/,$row[3]));
-		print "<TR class=\"channel\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>";
-		print $row[0] ~~ @channels ? "<TD width=1%><input type='checkbox' checked></TD>" : "<TD width=1%><input type='checkbox'></TD>";
-		print "<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
-			."<TD width=6%  align=center><select>";
-		foreach my $k (keys %processing_level) { print "<option value=$processing_level{$k}".(($k eq $row[1]) ? " selected" : "").">$k</option>\n"; }
-		print "</select></TD>"
-			."<TD align=center><SMALL>$row[2]</SMALL></TD>"
-			."<TD align=center><SMALL>$row[3]</SMALL></TD>"
-			."<TD align=center><SMALL>$row[4]</SMALL></TD>"
-			."<TD align=center><SMALL>$row[5]</SMALL></TD>"
-			."<TD align=center><SMALL>$row[6]</SMALL></TD>"
-			."<TD align=center><SMALL>$row[7]</SMALL></TD>"
-			."<TD align=center><SMALL>$row[8]</SMALL></TD>"
-			."<TD align=center><SMALL><input name=theia size=35 value=$row[9]></SMALL></TD></TR>";
-	} else {
-		print "<TR class=\"node\" id=$row[0]>"
-				."<TD colspan='12'>No access to $GRIDName.$NODEName\_$channelId !</TD>"
-				."</TR>";
-	}
+    my $datasetId = $row[7];
+    my $channelId = $row[5];
+    ($GRIDName, $NODEName) = (split /\./, $datasetId);
+    $GRIDName = (split /_DAT_/, $GRIDName)[1];
+    if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
+        my $subject = join(',', split(/_/,$row[3]));
+        print "<TR class=\"channel\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>";
+        print $row[0] ~~ @channels ? "<TD width=1%><input type='checkbox' checked></TD>" : "<TD width=1%><input type='checkbox'></TD>";
+        print "<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
+          ."<TD width=6%  align=center><select>";
+        foreach my $k (keys %processing_level) { print "<option value=$processing_level{$k}".(($k eq $row[1]) ? " selected" : "").">$k</option>\n"; }
+        print "</select></TD>"
+          ."<TD align=center><SMALL>$row[2]</SMALL></TD>"
+          ."<TD align=center><SMALL>$row[3]</SMALL></TD>"
+          ."<TD align=center><SMALL>$row[4]</SMALL></TD>"
+          ."<TD align=center><SMALL>$row[5]</SMALL></TD>"
+          ."<TD align=center><SMALL>$row[6]</SMALL></TD>"
+          ."<TD align=center><SMALL>$row[7]</SMALL></TD>"
+          ."<TD align=center><SMALL>$row[8]</SMALL></TD>"
+          ."<TD align=center><SMALL><input name=theia size=35 value=$row[9]></SMALL></TD></TR>";
+    } else {
+        print "<TR class=\"node\" id=$row[0]>"
+          ."<TD colspan='12'>No access to $GRIDName.$NODEName\_$channelId !</TD>"
+          ."</TR>";
+    }
 };
 
 print "</TABLE></TD>\n";
@@ -308,54 +310,54 @@ print "<input type=\"hidden\" name=\"allChannels\">";
 
 print <<"FIN";
 <script>
-	function deleteRow(element) {
-		/**
-		 * Delete a row from the THEIA metadata resume board (but the metadata are still saved in the database !).
-		 * \@param {element} element DOM element (e.g. the "delete" sign)
-		 */
-		const form = document.forms[0];
-		var row = element.parentNode.parentNode;
-		const nodes = document.getElementsByClassName('node');
-		const channels = document.getElementsByClassName('channel');
-		if (confirm(\"Do you really want to delete \"+row.id+\" ?\")) {
-			const newNodes = [];
-			row.remove();
-			Array.from(nodes).forEach((node) => newNodes.push(node.id.split('.')[1]));
-			newNodes.join(',');
-			Array.from(channels).forEach( (chan) => { if (chan.id.split(/[\.|\_]/)[3] == row.id.split('.')[1]) {chan.remove();} } );
-			form.nodes.value = newNodes;
-		}
-	}
+    function deleteRow(element) {
+        /**
+         * Delete a row from the THEIA metadata resume board (but the metadata are still saved in the database !).
+         * \@param {element} element DOM element (e.g. the "delete" sign)
+         */
+        const form = document.forms[0];
+        var row = element.parentNode.parentNode;
+        const nodes = document.getElementsByClassName('node');
+        const channels = document.getElementsByClassName('channel');
+        if (confirm(\"Do you really want to delete \"+row.id+\" ?\")) {
+            const newNodes = [];
+            row.remove();
+            Array.from(nodes).forEach((node) => newNodes.push(node.id.split('.')[1]));
+            newNodes.join(',');
+            Array.from(channels).forEach( (chan) => { if (chan.id.split(/[\.|\_]/)[3] == row.id.split('.')[1]) {chan.remove();} } );
+            form.nodes.value = newNodes;
+        }
+    }
 
-	function gather() {
-		/**
-		 * Gather the rows ids to send the list of datasets and observations to postTHEIA.pl.
-		 */
-		const form = document.forms[0];
-		
-		const nodes = document.getElementsByClassName('node');
-		const nodeList = [];
-		Array.from(nodes).forEach((node) => nodeList.push(node.id));
-		nodeList.join(',');
-		form.nodes.value = nodeList;
-		
-		const channels = document.getElementsByClassName('channel');
-		const channelList = [];
-		const allChannelList = [];
-		Array.from(channels).forEach((channel) => {
-			if (channel.querySelector("input").checked) {
-				channelList.push(channel.id);
-			}
-			var cs = channel.querySelector("select");
-			var ci = channel.querySelector("input[name='theia']");
-			allChannelList.push([channel.id, cs.options[cs.selectedIndex].text, ci.value].join('|'));
-		});
-		channelList.join(',');
-		allChannelList.join(',');
-		form.channels.value = channelList;
-		const allChannels = "";
-		form.allChannels.value = allChannelList;
-	}
+    function gather() {
+        /**
+         * Gather the rows ids to send the list of datasets and observations to postTHEIA.pl.
+         */
+        const form = document.forms[0];
+        
+        const nodes = document.getElementsByClassName('node');
+        const nodeList = [];
+        Array.from(nodes).forEach((node) => nodeList.push(node.id));
+        nodeList.join(',');
+        form.nodes.value = nodeList;
+        
+        const channels = document.getElementsByClassName('channel');
+        const channelList = [];
+        const allChannelList = [];
+        Array.from(channels).forEach((channel) => {
+            if (channel.querySelector("input").checked) {
+                channelList.push(channel.id);
+            }
+            var cs = channel.querySelector("select");
+            var ci = channel.querySelector("input[name='theia']");
+            allChannelList.push([channel.id, cs.options[cs.selectedIndex].text, ci.value].join('|'));
+        });
+        channelList.join(',');
+        allChannelList.join(',');
+        form.channels.value = channelList;
+        const allChannels = "";
+        form.allChannels.value = allChannelList;
+    }
 </script>
 FIN
 

@@ -24,27 +24,27 @@ Arguments are passed as a unique string made up of comma separated hash
 
 Mandatory arguments:
 
-	msg => message to be sent to server
-	eg: msg=>"CMD STAT"
+    msg => message to be sent to server
+    eg: msg=>"CMD STAT"
 
 Optional arguments:
 
-	host => server addr , used as socket PeerAddr
-	default value: value of LISTEN_ADDR as set in the scheduler configuration,
-	               or 'localhost' if this configuration is not set.
+    host => server addr , used as socket PeerAddr
+    default value: value of LISTEN_ADDR as set in the scheduler configuration,
+                   or 'localhost' if this configuration is not set.
 
-	port => server port , used as socket PeerPort
-	default value: value of PORT as set in the scheduler configuration.
+    port => server port , used as socket PeerPort
+    default value: value of PORT as set in the scheduler configuration.
 
-	max_length => maximum reply length , used in socket recv
-	default value: value of SOCKET_MAXLEN as set in the scheduler
-	               configuration.
+    max_length => maximum reply length , used in socket recv
+    default value: value of SOCKET_MAXLEN as set in the scheduler
+                   configuration.
 
-	timeout => timeout , used as socket Timeout (in seconds)
-	default value: 5 seconds
+    timeout => timeout , used as socket Timeout (in seconds)
+    default value: 5 seconds
 
-	For backward compatibility with older version, the 'll' option is accepted
-	as an alias for 'max_length', and 'to' as an alias for 'timeout'.
+    For backward compatibility with older version, the 'll' option is accepted
+    as an alias for 'max_length', and 'to' as an alias for 'timeout'.
 
 =head1 OUTPUTS
 
@@ -53,11 +53,11 @@ returned by WebObs::Scheduler::scheduler_client is printed to stderr.
 
 Possible error message are (followed by lower level error message if any):
 
-	wsudp.pl error: empty command: nothing to send
-	wsudp.pl error: unable to create socket:
-	wsudp.pl error: failed to send request:
-	wsudp.pl error: failed to read answer:
-	wsudp.pl error: connection timeout after Xs:
+    wsudp.pl error: empty command: nothing to send
+    wsudp.pl error: unable to create socket:
+    wsudp.pl error: failed to send request:
+    wsudp.pl error: failed to read answer:
+    wsudp.pl error: connection timeout after Xs:
 
 =head1 EXIT CODES
 
@@ -72,9 +72,8 @@ use IO::Socket::INET;
 
 use WebObs::Scheduler qw(scheduler_client);
 
-
 sub usage {
-	print <<"_EOD_";
+    print <<"_EOD_";
 Usage: perl $0 'msg=>"COMMAND"' ['option=>value' ...]
 
 Send a message to a UDP server and print its reply to stdout.
@@ -111,57 +110,57 @@ _EOD_
 }
 
 if (not @ARGV) {
-	usage();
-	exit(1);
+    usage();
+    exit(1);
 }
 
 # Options allowed on the command line as <opt> => <value>
 # and the regexp the value must match.
 my %opts_regexp = (
-	'msg' => '[\w ]+',
-	'host' => '[\w.-]+',
-	'port' => '\d+',
-	'timeout' => '\d+',
-	'max_length' => '\d+',
-);
+    'msg' => '[\w ]+',
+    'host' => '[\w.-]+',
+    'port' => '\d+',
+    'timeout' => '\d+',
+    'max_length' => '\d+',
+  );
 
 # Backward compatibility aliases for options
 my %compat_aliases = (
-	'to' => 'timeout',
-	'll' => 'max_length',
-);
+    'to' => 'timeout',
+    'll' => 'max_length',
+  );
 
 my %opts = ();
 
 # Read and parse arguments from the command line as options
 foreach my $arg (@ARGV) {
 
-	# Read argument as "key => value"
-	my ($k, $v) = $arg =~ /^\s*([a-z]+)\s*=>\s*(?:'|")?(.+?)(?:'|")?\s*$/;
+    # Read argument as "key => value"
+    my ($k, $v) = $arg =~ /^\s*([a-z]+)\s*=>\s*(?:'|")?(.+?)(?:'|")?\s*$/;
 
-	if (not $k) {
-		print STDERR "Error: cannot read arguments, please check their format.\n";
-		usage();
-		exit(1);
-	}
+    if (not $k) {
+        print STDERR "Error: cannot read arguments, please check their format.\n";
+        usage();
+        exit(1);
+    }
 
-	# Apply any option name alias
-	if ($compat_aliases{$k}) {
-		$k = $compat_aliases{$k};
-	}
+    # Apply any option name alias
+    if ($compat_aliases{$k}) {
+        $k = $compat_aliases{$k};
+    }
 
-	# Make sure option exists and its value has a valid format
-	if (not $opts_regexp{$k} or $v !~ /$opts_regexp{$k}/) {
-		print STDERR "Error: invalid argument or format '$arg'\n";
-		exit(1);
-	}
+    # Make sure option exists and its value has a valid format
+    if (not $opts_regexp{$k} or $v !~ /$opts_regexp{$k}/) {
+        print STDERR "Error: invalid argument or format '$arg'\n";
+        exit(1);
+    }
 
-	# Explicitely reject duplicated options
-	if ($opts{$k}) {
-		print STDERR "Error: option '$k' defined more than once\n";
-		exit(1);
-	}
-	$opts{$k} = $v;
+    # Explicitely reject duplicated options
+    if ($opts{$k}) {
+        print STDERR "Error: option '$k' defined more than once\n";
+        exit(1);
+    }
+    $opts{$k} = $v;
 }
 
 # Submit the command and read the answer
@@ -173,11 +172,11 @@ print $response;
 # Use exit code of 1 in case of error, 0 otherwise
 my $exit_code;
 if ($error) {
-	(my $script_name = $0) =~ s|^.*/||;
-	print STDERR "$script_name error: $error\n";
-	$exit_code = 1;
+    (my $script_name = $0) =~ s|^.*/||;
+    print STDERR "$script_name error: $error\n";
+    $exit_code = 1;
 } else {
-	$exit_code = 0;
+    $exit_code = 0;
 }
 
 exit($exit_code);

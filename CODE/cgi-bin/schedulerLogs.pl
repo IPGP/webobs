@@ -33,7 +33,7 @@ my $QryParm = $cgi->Vars;
 
 # --- ends here if the client is not valid
 if ( !clientIsValid ) {
-  die "$__{'die_client_not_valid'}";
+    die "$__{'die_client_not_valid'}";
 }
 
 my %SCHED;
@@ -46,11 +46,11 @@ my $schedLog  = $QryParm->{'scheduler'}.".log";
 # ---- any reasons why we couldn't go on ?
 # ----------------------------------------
 if (defined($WEBOBS{ROOT_LOGS})) {
-	if ( -f "$WEBOBS{ROOT_LOGS}/$schedLog" ) {
-		if (defined($WEBOBS{CONF_SCHEDULER}) && -e $WEBOBS{CONF_SCHEDULER} ) {
-			%SCHED = readCfg($WEBOBS{CONF_SCHEDULER});
-		} else { die "Couldn't find scheduler configuration" }
-	} else { die "Couldn't find log $WEBOBS{ROOT_LOGS}/$schedLog" }
+    if ( -f "$WEBOBS{ROOT_LOGS}/$schedLog" ) {
+        if (defined($WEBOBS{CONF_SCHEDULER}) && -e $WEBOBS{CONF_SCHEDULER} ) {
+            %SCHED = readCfg($WEBOBS{CONF_SCHEDULER});
+        } else { die "Couldn't find scheduler configuration" }
+    } else { die "Couldn't find log $WEBOBS{ROOT_LOGS}/$schedLog" }
 } else { die "No ROOT_LOGS defined" }
 
 # ---- which log to display, defaulting to 'system' scheduler's log
@@ -60,9 +60,9 @@ $logname = "$WEBOBS{ROOT_LOGS}/$schedLog" if ( $QryParm->{'log'} eq "SCHED" );
 
 # ---- show the log 
 my @results=qx(bash -c "cat $logname");
-foreach (@results) { 
-	s/\n/<br>/g; 
-	s/\s/&nbsp;/g;
+foreach (@results) {
+    s/\n/<br>/g;
+    s/\s/&nbsp;/g;
 }
 
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
@@ -76,15 +76,15 @@ print <<"EOHEADER";
 <link rel="stylesheet" type="text/css" href="/css/schedulerLogs.css">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
 <script language="JavaScript" type="text/javascript">
-	\$(document).ready(function() {
-		\$('#wrapper').scrollTop(\$('#wrapper')[0].scrollHeight);
-	});
+    \$(document).ready(function() {
+        \$('#wrapper').scrollTop(\$('#wrapper')[0].scrollHeight);
+    });
 </script>
 </head>
 EOHEADER
 
 my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
-print <<"EOPAGE"; 
+print <<"EOPAGE";
 <body style="min-height: 600px;">
 <DIV id="logname">
 $logname - $buildTS
@@ -93,7 +93,7 @@ $logname - $buildTS
 <!-- <INPUT class="butfloat" type=button value="Scheduler Log" onClick="location.href='/cgi-bin/schedulerLogs.pl?log=SCHED';">-->
 </DIV>
 <DIV id="wrapper">
-	@results
+    @results
 </DIV>
 EOPAGE
 

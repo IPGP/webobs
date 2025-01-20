@@ -1,57 +1,105 @@
 table.wodp {
-	border-spacing: 0;
-	table-layout: fixed;
-	/*border-collapse: collapse;*/
-	padding: 2px;
-	border: 1px solid grey;
-	border-radius: 4px;
-	font-family: inherit;
-	font-size: 7pt;
-	background-color: white;
-	box-shadow: 3px 3px 5px black; 
-	position: absolute;
-	display: inline-block;
+    border-spacing: 0;
+    table-layout: fixed;
+    /*border-collapse: collapse;*/
+    padding: 2px;
+    border: 1px solid grey;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 7pt;
+    background-color: white;
+    box-shadow: 3px 3px 5px black;
+    position: absolute;
+    display: inline-block;
 }
 table.wodp th {
-	border: none;
-	font-size: inherit;
-	font-weight: bold;
-	text-align: center;
-	background-color: lightgrey;
-	color: grey;
+    border: none;
+    font-size: inherit;
+    font-weight: bold;
+    text-align: center;
+    background-color: lightgrey;
+    color: grey;
 }
 table.wodp td {
-	border: 1px solid lightgrey;
-	font-size: inherit;
-	text-align: center;
-	padding: 2px;
+    border: 1px solid lightgrey;
+    font-size: inherit;
+    text-align: center;
+    padding: 2px;
 }
 /*td color classes names: [today][SD][off][notInM] */
-table.wodp td.off { background-color: #BBCCBB; color: #CC0000; } 
-table.wodp td.SD  { background-color: #BBCCBB; }  
-table.wodp td.SDoff { background-color: #BBCCBB; color: #CC0000; } 
-table.wodp td.today    { background-color: #FF6666; } 
-table.wodp td.todaySD  { background-color: #FF6666; } 
-table.wodp td.todayoff { background-color: #BBCCBB; color: #CC0000; } 
-table.wodp td.todaynotInM  { background-color: #FF9999; color: grey; } 
-table.wodp td.notInM { color: grey; }
-table.wodp td.SDnotInM  { background-color: #CCDDCC; color: grey; } 
-table.wodp td.offnotInM  { background-color: #CCDDCC; color: #CC0000; }
+table.wodp td.off {
+    background-color: #bbccbb;
+    color: #cc0000;
+}
+table.wodp td.SD {
+    background-color: #bbccbb;
+}
+table.wodp td.SDoff {
+    background-color: #bbccbb;
+    color: #cc0000;
+}
+table.wodp td.today {
+    background-color: #ff6666;
+}
+table.wodp td.todaySD {
+    background-color: #ff6666;
+}
+table.wodp td.todayoff {
+    background-color: #bbccbb;
+    color: #cc0000;
+}
+table.wodp td.todaynotInM {
+    background-color: #ff9999;
+    color: grey;
+}
+table.wodp td.notInM {
+    color: grey;
+}
+table.wodp td.SDnotInM {
+    background-color: #ccddcc;
+    color: grey;
+}
+table.wodp td.offnotInM {
+    background-color: #ccddcc;
+    color: #cc0000;
+}
 
-table.wodp td.insel {background-color: #E7C195;}
-table.wodp td.offside { text-decoration: line-through; }
-table.wodp th.offside { text-decoration: line-through; }
+table.wodp td.insel {
+    background-color: #e7c195;
+}
+table.wodp td.offside {
+    text-decoration: line-through;
+}
+table.wodp th.offside {
+    text-decoration: line-through;
+}
 
-table.wodp th.wodpIdM { text-align: right;} 
-table.wodp th.wodpIdY { text-align: left;}
-span.wodpIdM { display: inline-block; width: 6em; }
-.wodpIdM:hover, .wodpIdY:hover, .wodpWeek { color: #C3794C; }
-.wodpPrevY:hover, .wodpPrevM:hover,
-.wodpNextM:hover, .wodpNextY:hover { color: #555; }
+table.wodp th.wodpIdM {
+    text-align: right;
+}
+table.wodp th.wodpIdY {
+    text-align: left;
+}
+span.wodpIdM {
+    display: inline-block;
+    width: 6em;
+}
+.wodpIdM:hover,
+.wodpIdY:hover,
+.wodpWeek {
+    color: #c3794c;
+}
+.wodpPrevY:hover,
+.wodpPrevM:hover,
+.wodpNextM:hover,
+.wodpNextY:hover {
+    color: #555;
+}
 
-.wodpIcon { 
-	background: url(../icons/wodp.png);
-	display: inline-block;
-	width:18px; height: 18px;
-	vertical-align: top;
+.wodpIcon {
+    background: url(../icons/wodp.png);
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    vertical-align: top;
 }

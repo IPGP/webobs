@@ -147,59 +147,61 @@ my $maxId = 0;
 my $entete = u2l("Id|Date1|Heure1|Date2|Heure2|Site|C_Cl|C_C02|C_SO4|M1|M2|M3|M4|H2O|KOH|Remarques|Valider\n");
 if (-e $fileDATA)  {
 
-	# ---- lock-exclusive the data file during all update process
-	#
-	if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
-		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "postBOJAP waiting for lock on $fileDATA...";
-			flock(FILE, LOCK_EX);
-		}
-		# ---- backup BOJAP file (To Be Removed: lifecycle too short to be used ) 
-		if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
-		if ( $?  == 0 ) { 
-			seek(FILE, 0, SEEK_SET);
-			while (<FILE>) {
-				chomp($_);
-				my ($id) = split(/\|/,$_);
-				if ($id =~ m/^[0-9]+$/) {
-					if ($id > $maxId) { $maxId = $id }	
-					#djl next if ( ($idTraite eq $id) && ($efface eq "oui") ); 
-					if ( ($idTraite eq "") || ($idTraite ne $id) ) { 
-						push(@lignes,$_."\n") ;
-					}
-				}
-			}
-			$maxId++;
-			my $chaine = u2l("$maxId|$date1|$hr1|$date2|$hr2|$site|$cCl|$cCO2|$cSO4|$m1|$m2|$m3|$m4|$h2o|$koh|$rem|$val\n");
-			push(@lignes, $chaine);
-			@lignes = sort tri_date_avec_id @lignes;
-			truncate(FILE, 0);
-			seek(FILE, 0, SEEK_SET);
-			print FILE $entete;
-			print FILE @lignes ;
-			close(FILE);
-			htmlMsgOK();
-		} else {
-			close(FILE);
-			htmlMsgNotOK("postBOJAP couldn't backup $fileDATA");
-		}
-	} else {
-		htmlMsgNotOK("postBOJAP opening - $!");
-	}
+    # ---- lock-exclusive the data file during all update process
+    #
+    if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
+        unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+            warn "postBOJAP waiting for lock on $fileDATA...";
+            flock(FILE, LOCK_EX);
+        }
+
+      # ---- backup BOJAP file (To Be Removed: lifecycle too short to be used ) 
+        if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
+        if ( $?  == 0 ) {
+            seek(FILE, 0, SEEK_SET);
+            while (<FILE>) {
+                chomp($_);
+                my ($id) = split(/\|/,$_);
+                if ($id =~ m/^[0-9]+$/) {
+                    if ($id > $maxId) { $maxId = $id }
+
+                    #djl next if ( ($idTraite eq $id) && ($efface eq "oui") ); 
+                    if ( ($idTraite eq "") || ($idTraite ne $id) ) {
+                        push(@lignes,$_."\n") ;
+                    }
+                }
+            }
+            $maxId++;
+            my $chaine = u2l("$maxId|$date1|$hr1|$date2|$hr2|$site|$cCl|$cCO2|$cSO4|$m1|$m2|$m3|$m4|$h2o|$koh|$rem|$val\n");
+            push(@lignes, $chaine);
+            @lignes = sort tri_date_avec_id @lignes;
+            truncate(FILE, 0);
+            seek(FILE, 0, SEEK_SET);
+            print FILE $entete;
+            print FILE @lignes ;
+            close(FILE);
+            htmlMsgOK();
+        } else {
+            close(FILE);
+            htmlMsgNotOK("postBOJAP couldn't backup $fileDATA");
+        }
+    } else {
+        htmlMsgNotOK("postBOJAP opening - $!");
+    }
 }
 
 # --- return information when OK 
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	if ($idTraite ne "") { 
- 		print "record #$idTraite has been updated (as #$maxId)"; 
- 	} else  { print "new record #$maxId has been created."; }
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    if ($idTraite ne "") {
+        print "record #$idTraite has been updated (as #$maxId)";
+    } else  { print "new record #$maxId has been created."; }
 }
 
 # --- return information when not OK
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 __END__

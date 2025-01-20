@@ -1,0 +1,193 @@
+=key|value
+# Generic FORM template for use with {fedit,showGENFORM,formGENFORM}.pl
+# Model: water chemical analysis (formerly EAUX)
+#
+# ############################### WARNING #####################################
+# Once the database form has been created and the first data has been recorded,
+# you MAY BE VERY CAREFUL IN MODIFYING the keys of this file.
+# ############################### WARNING #####################################
+
+# -----------------------------------------------------------------------------
+# --- GRID common parameters
+
+NAME|Banque de donn&eacute;es chimie des eaux
+DESCRIPTION|Analyse physico-chimique des eaux (FR) 
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|MyForm
+
+# --- node parameters (display and maps)
+NODE_NAME|site
+NODE_MARKER|s
+NODE_SIZE|10
+NODE_RGB|0,1,1
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
+BANG|$WEBOBS{BIG_BANG}
+
+# Time zone of the data (in hour from UT)
+TZ|0
+
+# if YES, use start and end date for each record
+STARTING_DATE|NO
+
+# may contain any +GID and/or UID list (comma separated)
+OPERATORS_LIST|+DUTY
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
+
+COMMENT_SIZE|80
+COMMENT_HELP|Noter toute pr&eacute;sence d'odeur, gaz, pr&eacute;cipit&eacute;, etc...
+
+
+# -----------------------------------------------------------------------------
+# --- Inputs names, units, and types
+# valid types: text(size), numeric(size), list: filename
+#
+# ############################### WARNING #####################################
+# once created, you cannot remove or rename any input since it will corrupt
+# the database. You might only add new inputs, increasing the number
+# ############################### WARNING #####################################
+
+INPUT01_NAME|Type d'&eacute;chantillon
+INPUT01_TYPE|list: FORM.WATERS_fr.list_type.conf
+INPUT01_FILT|YES
+
+INPUT02_NAME|Temp. ambiante
+INPUT02_UNIT|&deg;C
+
+INPUT03_NAME|Temp. liquide
+INPUT03_UNIT|&deg;C
+
+INPUT04_NAME|pH
+
+INPUT05_NAME|D&eacute;bit
+INPUT05_UNIT|l/min
+
+INPUT06_NAME|Conductivit&eacute;
+INPUT06_UNIT|&mu;S
+
+INPUT07_NAME|Niveau
+INPUT07_UNIT|m
+
+INPUT08_NAME|Li<sup>+</sup>
+INPUT08_UNIT|ppm
+
+INPUT09_NAME|Na<sup>+</sup>
+INPUT09_UNIT|ppm
+
+INPUT10_NAME|K<sup>++</sup>
+INPUT10_UNIT|ppm
+
+INPUT11_NAME|Mg<sup>++</sup>
+INPUT11_UNIT|ppm
+
+INPUT12_NAME|Ca<sup>++</sup>
+INPUT12_UNIT|ppm
+
+INPUT13_NAME|F<sup>-</sup>
+INPUT13_UNIT|ppm
+
+INPUT14_NAME|Cl<sup>-</sup>
+INPUT14_UNIT|ppm
+
+INPUT15_NAME|Br<sup>-</sup>
+INPUT15_UNIT|ppm
+
+INPUT16_NAME|NO<sub>3</sub><sup>-</sup>
+INPUT16_UNIT|ppm
+
+INPUT17_NAME|SO<sub>4</sub><sup>-</sup>
+INPUT17_UNIT|ppm
+
+INPUT18_NAME|HCO<sub>3</sub><sup>-</sup>
+INPUT18_UNIT|ppm
+
+INPUT19_NAME|I<sup>-</sup>
+INPUT19_UNIT|ppb
+
+INPUT20_NAME|SiO<sub>2</sub>
+INPUT20_UNIT|ppm
+
+INPUT21_NAME|&delta;<sup>13</sup>C
+
+INPUT22_NAME|&delta;<sup>18</sup>O
+
+INPUT23_NAME|&delta;D
+
+# -----------------------------------------------------------------------------
+# --- Outputs names, units, and types
+# valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
+
+OUTPUT01_NAME|Cond. @25&deg;C
+OUTPUT01_UNIT|&deg;S
+OUTPUT01_TYPE|formula: INPUT06 / (1 + 0.02*(INPUT03 - 25))
+OUTPUT02_NAME|H<sup>+</sup>
+OUTPUT02_UNIT|ppm
+OUTPUT02_TYPE|formula: 1000 * (10**(-INPUT04))
+OUTPUT03_NAME|S.C
+OUTPUT03_TYPE|formula(0): INPUT08/6.941 + INPUT09/22.990 + INPUT10/39.098 + 2*INPUT11/40.078 + 2*INPUT12/24.305 + OUTPUT02
+OUTPUT04_NAME|S.A
+OUTPUT04_TYPE|formula(0): INPUT13/18.998 + INPUT14/35.453 + INPUT15/79.904 + INPUT16/62.004 + 2*INPUT17/96.062 + INPUT18/61.0159 + 1e-3*INPUT19/126.904468
+OUTPUT05_NAME|NICB
+OUTPUT05_UNIT|%
+OUTPUT05_TYPE|formula(6): 100*(OUTPUT03 - OUTPUT04) / (OUTPUT03 + OUTPUT04)
+OUTPUT05_THRESHOLD|10,20
+OUTPUT06_NAME|SO<sub>4</sub>/Cl
+OUTPUT06_TYPE|formula(6): (INPUT17/96.062) / (INPUT14/35.453)
+OUTPUT07_NAME|HCO<sub>3</sub>/Cl
+OUTPUT07_TYPE|formula(6): (INPUT18/61.0159) / (INPUT14/35.453)
+OUTPUT08_NAME|Ca/Cl
+OUTPUT08_TYPE|formula(6): (INPUT12/24.305) / (INPUT14/35.453)
+OUTPUT09_NAME|Na/Cl
+OUTPUT09_TYPE|formula(6): (INPUT09/22.990) / (INPUT14/35.453)
+OUTPUT10_NAME|Mg/Cl
+OUTPUT10_TYPE|formula(6): (INPUT11/40.078) / (INPUT14/35.453)
+OUTPUT11_NAME|HCO<sub>3</sub>/SO<sub>4</sub>
+OUTPUT11_TYPE|formula(6): (INPUT18/61.0159) / (INPUT17/96.062)
+
+# -----------------------------------------------------------------------------
+# --- Form layout
+
+# note: first column starts with the mandatory date/site/operator fieldset
+COLUMN01_LIST|FIELDSET01
+COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
+COLUMN03_LIST|FIELDSET05
+
+# fieldset contains
+FIELDSET01_NAME|Mesures sur site
+FIELDSET01_CELLS|1
+FIELDSET01_C01|INPUT01,INPUT02,INPUT03,INPUT04,INPUT05,OUTPUT01,INPUT06,INPUT07
+
+FIELDSET02_NAME|Concentrations en cations et anions
+FIELDSET02_CELLS|2
+FIELDSET02_C01|INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,OUTPUT02
+FIELDSET02_C02|INPUT13,INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,OUTPUT05
+
+FIELDSET03_NAME|Concentration en autres &eacute;l&eacute;ments
+FIELDSET03_CELLS|1
+FIELDSET03_C01|INPUT20
+
+FIELDSET04_NAME|Concentrations isotopiques 
+FIELDSET04_CELLS|1
+FIELDSET04_C01|INPUT21,INPUT22,INPUT23
+
+FIELDSET05_NAME|Rapports
+FIELDSET05_TOGGLE|YES
+FIELDSET05_CELLS|1
+FIELDSET05_C01|OUTPUT06,OUTPUT07,OUTPUT08,OUTPUT09,OUTPUT10,OUTPUT11
+

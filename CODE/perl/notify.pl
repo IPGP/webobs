@@ -21,17 +21,16 @@ use strict;
 use warnings;
 use WebObs::Config;
 
-
 my $rc = WebObs::Config::notify($ARGV[0]);
 if ( $rc == 0) {
-	printf ("Sent.\n");
-	exit(0);
+    printf ("Sent.\n");
+    exit(0);
 } else {
-	if ($rc == 98) { printf ("Can't start: no POSTBOARD_NPIPE definition in WebObs configuration\n"); }
-	if ($rc == 96) { printf ("Couldn't open $WEBOBS{POSTBOARD_NPIPE}: $? $!\n"); }
-	if ($rc == 97) { printf ("Missing argument, nothing to notify.\n"); }
-	if ($rc == 99) { printf ("Invalid argument format, not a notify request\n"); }
-	exit($rc);
+    if ($rc == 98) { printf ("Can't start: no POSTBOARD_NPIPE definition in WebObs configuration\n"); }
+    if ($rc == 96) { printf ("Couldn't open $WEBOBS{POSTBOARD_NPIPE}: $? $!\n"); }
+    if ($rc == 97) { printf ("Missing argument, nothing to notify.\n"); }
+    if ($rc == 99) { printf ("Invalid argument format, not a notify request\n"); }
+    exit($rc);
 }
 
 __END__

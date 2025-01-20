@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 #
+
 =head1 NAME
 
 showNOVAC.pl
@@ -99,20 +100,20 @@ my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
 for my $p (keys(%Ps)) {
-  push(@NODESSelList,"\{$p\}|-- $Ps{$p} --");
-  my %N = $FORM->nodes($p);
-  for my $n (keys(%N)) {
-    push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-  }
-  %Ns = (%Ns, %N);
+    push(@NODESSelList,"\{$p\}|-- $Ps{$p} --");
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
 }
 
 my $QryParm   = $cgi->Vars;
 
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
-my $jour  = strftime('%d',@tod); 
-my $mois  = strftime('%m',@tod); 
+my $jour  = strftime('%d',@tod);
+my $mois  = strftime('%m',@tod);
 my $annee = strftime('%Y',@tod);
 my $moisActuel = strftime('%Y-%m',@tod);
 my $displayMoisActuel = strftime('%B %Y',@tod);
@@ -138,31 +139,31 @@ my $critereDate = "";
 my @cleParamAnnee = ("Old|Old");
 
 for ($FORM->conf('BANG')..$annee) {
-  push(@cleParamAnnee,"$_|$_");
+    push(@cleParamAnnee,"$_|$_");
 }
 my @cleParamMois;
 for ('01'..'12') {
-  $s = l2u(qx(date -d "$annee-$_-01" +"%B")); chomp($s);
-  push(@cleParamMois,"$_|$s");
+    $s = l2u(qx(date -d "$annee-$_-01" +"%B")); chomp($s);
+    push(@cleParamMois,"$_|$s");
 }
 
 my $titrePage = $FORM->conf('TITLE');
 
 my @option = ();
 
-$QryParm->{'annee'}    ||= $annee; 
-$QryParm->{'mois'}     ||= "All"; 
-$QryParm->{'site'}  ||= "All"; 
-$QryParm->{'affiche'}  ||= ""; 
+$QryParm->{'annee'}    ||= $annee;
+$QryParm->{'mois'}     ||= "All";
+$QryParm->{'site'}  ||= "All";
+$QryParm->{'affiche'}  ||= "";
 
 # ---- a site requested as {name} means "all nodes for grid (proc) 'name'"
 # 
 my @gridsites;
 if ($QryParm->{'site'} =~ /^{(.*)}$/) {
-  my %tmpN = $FORM->nodes($1);
-  for (keys(%tmpN)) {
-    push(@gridsites,"$_");
-  }
+    my %tmpN = $FORM->nodes($1);
+    for (keys(%tmpN)) {
+        push(@gridsites,"$_");
+    }
 }
 
 # ----
@@ -172,8 +173,8 @@ push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type
 # ---- start html if not CSV output 
 
 if ($QryParm->{'affiche'} ne "csv") {
-  print $cgi->header(-charset=>'utf-8');
-  print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n
+    print $cgi->header(-charset=>'utf-8');
+    print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n
 <html>\n
   <head>\n
     <title>$titrePage</title>\n
@@ -192,57 +193,57 @@ if ($QryParm->{'affiche'} ne "csv") {
 # ---- selection-form for display 
 # 
 if ($QryParm->{'affiche'} ne "csv") {
-  print "\n
+    print "\n
     <form name=\"formulaire\" action=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\" method=\"get\">\n
       <p class=\"boitegrise\" align=\"center\">\n
         <b>Select: </b>\n
         <select name=\"annee\" size=\"1\">\n";
-  for ("All|All",reverse(@cleParamAnnee)) { 
-    my ($val,$cle) = split (/\|/,$_);
-    if ("$val" eq "$QryParm->{'annee'}") { 
-      print "\n
+    for ("All|All",reverse(@cleParamAnnee)) {
+        my ($val,$cle) = split (/\|/,$_);
+        if ("$val" eq "$QryParm->{'annee'}") {
+            print "\n
           <option selected value=$val>$cle</option>\n";
-    } else { 
-      print "\n
+        } else {
+            print "\n
           <option value=$val>$cle</option>\n";
+        }
     }
-  }
-  print "\n
+    print "\n
         </select>\n
         <select name=\"mois\" size=\"1\">";
-  for ("All|All year",@cleParamMois) { 
-    my ($val,$cle) = split (/\|/,$_);
-    if ("$val" eq "$QryParm->{'mois'}") {
-      print "\n
+    for ("All|All year",@cleParamMois) {
+        my ($val,$cle) = split (/\|/,$_);
+        if ("$val" eq "$QryParm->{'mois'}") {
+            print "\n
           <option selected value=$val>$cle</option>\n";
-      $showMonth = $cle;
-    } else {
-      print "\n
+            $showMonth = $cle;
+        } else {
+            print "\n
           <option value=$val>$cle</option>\n";
+        }
     }
-  }
-  print "\n
-        </select>\n
-	<select name=\"site\" size=\"1\">";
-  for ("All|All sites",@NODESSelList) { 
-    my ($val,$cle) = split (/\|/,$_);
-    if ("$val" eq "$QryParm->{'site'}") {
-      print "\n
-          <option selected value=$val>$cle</option>\n";
-      $showSite = "$cle ($val)";
-    } else {
-      print "\n
-          <option value=$val>$cle</option>\n";
-    }
-  }
-  print "\n
-        </select>\n
-	<input type=\"submit\" value=\"Show\"/>";
-  if ($editOK) {
     print "\n
+        </select>\n
+    <select name=\"site\" size=\"1\">";
+    for ("All|All sites",@NODESSelList) {
+        my ($val,$cle) = split (/\|/,$_);
+        if ("$val" eq "$QryParm->{'site'}") {
+            print "\n
+          <option selected value=$val>$cle</option>\n";
+            $showSite = "$cle ($val)";
+        } else {
+            print "\n
+          <option value=$val>$cle</option>\n";
+        }
+    }
+    print "\n
+        </select>\n
+    <input type=\"submit\" value=\"Show\"/>";
+    if ($editOK) {
+        print "\n
         <input type=\"button\" style=\"margin-left:15px;color:blue;\" onClick=\"document.location='/cgi-bin/".$FORM->conf('CGI_FORM')."'\" value=\"new record\"/>";
-  }
-  print "\n
+    }
+    print "\n
       </p>\n
     </form>\n
     <h2>$titrePage</h2>\n
@@ -269,8 +270,9 @@ my $aliasSite;
 
 $tableHeader = "<tr>";
 if ($editOK) {
-	$tableHeader = $tableHeader."<th></th>";
+    $tableHeader = $tableHeader."<th></th>";
 }
+
 # ------------------------------------------------------------
 # ---- start of specific NOVAC form code ---------------------
 # ------------------------------------------------------------
@@ -286,47 +288,48 @@ $tableHeader = $tableHeader."</tr>\n";
 $i = 0;
 my $nbLignesRetenues = 0;
 for(@lignes) {
-	my ($id,$date,$site,$flux1,$flux2,$windSpeed,$windSpeedSource,$windDirection,$windDirectionSource,$compassDirection,$coneAngle,$tilt,$plumeHeight,$plumeHeightSource,$offset,$plumeCentre,$plumeEdge1,$plumeEdge2,$plumeCompleteness,$geomError,$spectrometerError,$scatteringError,$windError,$nbValidScans) = split(/\|/,$_);
-	if ($i eq 0) {
-		push(@csv,u2l("$date;Code Site;$flux1;$flux2;$windSpeed;$windSpeedSource;$windDirection;$windDirectionSource;$compassDirection;$coneAngle;$tilt;$plumeHeight;$plumeHeightSource;$offset;$plumeCentre;$plumeEdge1;$plumeEdge2;$plumeCompleteness;$geomError;$spectrometerError;$scatteringError;$windError;$nbValidScans"));
-	}
-	elsif (($_ ne "") 
-		&& (($QryParm->{'site'} eq "All") || ($site =~ $QryParm->{'site'}) || ($site ~~ @gridsites)) 
-		&& (($QryParm->{'annee'} eq "All") || ($QryParm->{'annee'} eq substr($date,0,4)) || (($QryParm->{'annee'} eq "Old") && ($date lt $FORM->conf('BANG'))))
-		&& (($QryParm->{'mois'} eq "All") || ($QryParm->{'mois'} eq substr($date,5,2)))) { 
+    my ($id,$date,$site,$flux1,$flux2,$windSpeed,$windSpeedSource,$windDirection,$windDirectionSource,$compassDirection,$coneAngle,$tilt,$plumeHeight,$plumeHeightSource,$offset,$plumeCentre,$plumeEdge1,$plumeEdge2,$plumeCompleteness,$geomError,$spectrometerError,$scatteringError,$windError,$nbValidScans) = split(/\|/,$_);
+    if ($i eq 0) {
+        push(@csv,u2l("$date;Code Site;$flux1;$flux2;$windSpeed;$windSpeedSource;$windDirection;$windDirectionSource;$compassDirection;$coneAngle;$tilt;$plumeHeight;$plumeHeightSource;$offset;$plumeCentre;$plumeEdge1;$plumeEdge2;$plumeCompleteness;$geomError;$spectrometerError;$scatteringError;$windError;$nbValidScans"));
+    }
+    elsif (($_ ne "")
+        && (($QryParm->{'site'} eq "All") || ($site =~ $QryParm->{'site'}) || ($site ~~ @gridsites))
+        && (($QryParm->{'annee'} eq "All") || ($QryParm->{'annee'} eq substr($date,0,4)) || (($QryParm->{'annee'} eq "Old") && ($date lt $FORM->conf('BANG'))))
+        && (($QryParm->{'mois'} eq "All") || ($QryParm->{'mois'} eq substr($date,5,2)))) {
 
-		$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
+        $aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
 
-		my $normSite = normNode(node=>"PROC.$site");
-		if ($normSite ne "") {
-			$lien = "<a href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normSite\"><b>$aliasSite</b></a>";
-		} else { $lien = "$aliasSite"  }
-		$modif = "<a href=\"/cgi-bin/".$FORM->conf('CGI_FORM')."?id=$id\"><img src=\"/icons/modif.png\" title=\"Edit...\" border=0/></a>";
-		$efface = "<img src=\"/icons/no.png\" title=\"Remove...\" onclick=\"checkRemove($id)\"/>";
+        my $normSite = normNode(node=>"PROC.$site");
+        if ($normSite ne "") {
+            $lien = "<a href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normSite\"><b>$aliasSite</b></a>";
+        } else { $lien = "$aliasSite"  }
+        $modif = "<a href=\"/cgi-bin/".$FORM->conf('CGI_FORM')."?id=$id\"><img src=\"/icons/modif.png\" title=\"Edit...\" border=0/></a>";
+        $efface = "<img src=\"/icons/no.png\" title=\"Remove...\" onclick=\"checkRemove($id)\"/>";
 
-		$texte = $texte."<tr>";
-		if ($editOK) {
-			$texte = $texte."<td>$modif</td>";
-		}
-		$texte = $texte."<td>$date</td><td align=center>$lien</td><td align=center>$flux1</td>"
-			."<td align=center>$flux2</td><td align=center>$windSpeed</td>"
-			."<td align=center>$windSpeedSource</td><td align=center>$windDirection</td>"
-			."<td align=center>$windDirectionSource</td><td align=center>$compassDirection</td>"
-			."<td align=center>$coneAngle</td><td align=center>$tilt</td>"
-			."<td align=center>$plumeHeight</td><td align=center>$plumeHeightSource</td>"
-			."<td align=center>$offset</td><td align=center>$plumeCentre</td>"
-			."<td align=center>$plumeEdge1</td><td align=center>$plumeEdge2</td>"
-			."<td align=center>$plumeCompleteness</td><td align=center>$geomError</td>"
-			."<td align=center>$spectrometerError</td><td align=center>$scatteringError</td>"
-			."<td align=center>$windError</td><td align=center>$nbValidScans</td>";
-		$texte = $texte."</tr>";
-		$txt = "$date;$site;$flux1;$flux2;$windSpeed;$windSpeedSource;$windDirection;$windDirectionSource;$compassDirection;$coneAngle;$tilt;$plumeHeight;$plumeHeightSource;$offset;$plumeCentre;$plumeEdge1;$plumeEdge2;$plumeCompleteness;$geomError;$spectrometerError;$scatteringError;$windError;$nbValidScans";
-		push(@csv,u2l($txt));
-		
-		$nbLignesRetenues++;
-	}
-	$i++;
+        $texte = $texte."<tr>";
+        if ($editOK) {
+            $texte = $texte."<td>$modif</td>";
+        }
+        $texte = $texte."<td>$date</td><td align=center>$lien</td><td align=center>$flux1</td>"
+          ."<td align=center>$flux2</td><td align=center>$windSpeed</td>"
+          ."<td align=center>$windSpeedSource</td><td align=center>$windDirection</td>"
+          ."<td align=center>$windDirectionSource</td><td align=center>$compassDirection</td>"
+          ."<td align=center>$coneAngle</td><td align=center>$tilt</td>"
+          ."<td align=center>$plumeHeight</td><td align=center>$plumeHeightSource</td>"
+          ."<td align=center>$offset</td><td align=center>$plumeCentre</td>"
+          ."<td align=center>$plumeEdge1</td><td align=center>$plumeEdge2</td>"
+          ."<td align=center>$plumeCompleteness</td><td align=center>$geomError</td>"
+          ."<td align=center>$spectrometerError</td><td align=center>$scatteringError</td>"
+          ."<td align=center>$windError</td><td align=center>$nbValidScans</td>";
+        $texte = $texte."</tr>";
+        $txt = "$date;$site;$flux1;$flux2;$windSpeed;$windSpeedSource;$windDirection;$windDirectionSource;$compassDirection;$coneAngle;$tilt;$plumeHeight;$plumeHeightSource;$offset;$plumeCentre;$plumeEdge1;$plumeEdge2;$plumeCompleteness;$geomError;$spectrometerError;$scatteringError;$windError;$nbValidScans";
+        push(@csv,u2l($txt));
+
+        $nbLignesRetenues++;
+    }
+    $i++;
 }
+
 # ------------------------------------------------------------
 # ---- end of specific NOVAC HTML code -----------------------
 # ------------------------------------------------------------
@@ -339,7 +342,7 @@ push(@html,"\n
     </p>\n");
 
 if ($texte ne "") {
-	push(@html,"\n
+    push(@html,"\n
     <table class=\"trData\" width=\"100%\">\n
       $tableHeader\n
       $texte\n
@@ -348,10 +351,10 @@ if ($texte ne "") {
 }
 
 if ($QryParm->{'affiche'} eq "csv") {
-	print @csv;
+    print @csv;
 } else {
-	print @html;
-	print "\n
+    print @html;
+    print "\n
     <style type=\"text/css\">\n
 #attente { display: none; }
     </style>\n

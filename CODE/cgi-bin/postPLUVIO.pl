@@ -69,11 +69,11 @@ my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
 for my $p (keys(%Ps)) {
-	my %N = $FORM->nodes($p);
-	for my $n (keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-	}
-	%Ns = (%Ns, %N);
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
 }
 my $fileDATA = $WEBOBS{PATH_DATA_DB}."/".$FORM->conf('FILE_NAME');
 
@@ -162,63 +162,66 @@ my @lignes;
 my $maxId = 0;
 my $entete = u2l("Id|Annee|Mois|Site|D01|V01|D02|V02|D03|V03|D04|V04|D05|V05|D06|V06|D07|V07|D08|V08|D09|V09|D10|V10|D11|V11|D12|V12|D13|V13|D14|V14|D15|V15|D16|V16|D17|V17|D18|V18|D19|V19|D20|V20|D21|V21|D22|V22|D23|V23|D24|V24|D25|V25|D26|V26|D27|V27|D28|V28|D29|V29|D30|V30|D31|V31|Valider\n");
 if (-e $fileDATA)  {
-	# ---- lock-exclusive the data file during all update process
-	#
-	if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
-		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "postPLUVIO waiting for lock on $fileDATA...";
-			flock(FILE, LOCK_EX);
-		}
-		# ---- backup file (To Be Removed: lifecycle too short to be used ) 
-		if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
-		if ( $?  == 0 ) { 
-			seek(FILE, 0, SEEK_SET);
-			while (<FILE>) {
-				chomp($_);
-				my ($id) = split(/\|/,$_);
-				if ($id =~ m/^[0-9]+$/) {
-					if ($id > $maxId) { $maxId = $id }	
-					#djl next if ( ($idTraite eq $id) && ($efface eq "oui") ); 
-					if ( ($idTraite eq "") || ($idTraite ne $id) ) { 
-						push(@lignes,$_."\n") ;
-					}
-				}
-			}
-			$maxId++;
-			my $chaine = "$maxId|$annee|$mois|$site";
-			for ("01".."31") {
-				$chaine = $chaine."|".eval("\$d$_")."|".eval("\$v$_");
-			}
-			$chaine = $chaine."|$val\n";
-			push(@lignes, $chaine);
-			@lignes = reverse sort tri_date_avec_id @lignes;
-			truncate(FILE, 0);
-			seek(FILE, 0, SEEK_SET);
-			print FILE $entete;
-			print FILE @lignes ;
-			close(FILE);
-			htmlMsgOK();
-		} else {
-			close(FILE);
-			htmlMsgNotOK("postPLUVIO couldn't backup $fileDATA");
-		}
-	} else {
-		htmlMsgNotOK("postPLUVIO opening - $!");
-	}
+
+    # ---- lock-exclusive the data file during all update process
+    #
+    if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
+        unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+            warn "postPLUVIO waiting for lock on $fileDATA...";
+            flock(FILE, LOCK_EX);
+        }
+
+        # ---- backup file (To Be Removed: lifecycle too short to be used ) 
+        if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
+        if ( $?  == 0 ) {
+            seek(FILE, 0, SEEK_SET);
+            while (<FILE>) {
+                chomp($_);
+                my ($id) = split(/\|/,$_);
+                if ($id =~ m/^[0-9]+$/) {
+                    if ($id > $maxId) { $maxId = $id }
+
+                    #djl next if ( ($idTraite eq $id) && ($efface eq "oui") ); 
+                    if ( ($idTraite eq "") || ($idTraite ne $id) ) {
+                        push(@lignes,$_."\n") ;
+                    }
+                }
+            }
+            $maxId++;
+            my $chaine = "$maxId|$annee|$mois|$site";
+            for ("01".."31") {
+                $chaine = $chaine."|".eval("\$d$_")."|".eval("\$v$_");
+            }
+            $chaine = $chaine."|$val\n";
+            push(@lignes, $chaine);
+            @lignes = reverse sort tri_date_avec_id @lignes;
+            truncate(FILE, 0);
+            seek(FILE, 0, SEEK_SET);
+            print FILE $entete;
+            print FILE @lignes ;
+            close(FILE);
+            htmlMsgOK();
+        } else {
+            close(FILE);
+            htmlMsgNotOK("postPLUVIO couldn't backup $fileDATA");
+        }
+    } else {
+        htmlMsgNotOK("postPLUVIO opening - $!");
+    }
 }
 
 # --- return information when OK 
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	if ($idTraite ne "") { 
- 		print "record #$idTraite has been updated (as #$maxId)"; 
- 	} else  { print "new record #$maxId has been created."; }
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    if ($idTraite ne "") {
+        print "record #$idTraite has been updated (as #$maxId)";
+    } else  { print "new record #$maxId has been created."; }
 }
 
 # --- return information when not OK
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 __END__
