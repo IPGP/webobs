@@ -356,7 +356,7 @@ function verif_form()
     var cboxs = document.querySelectorAll("input[type=checkbox]");
     Array.from(cboxs).forEach((cbox) => {
         if (cbox.checked) {
-        cbox.value="checked";
+            cbox.value="checked";
         } else { cbox.value="unchecked"; }
     });
     console.log(\$("#theform"));
@@ -676,8 +676,8 @@ foreach (@columns) {
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
                     my $delay = ( ( $default >= $MIN_DELAY && $default <= $MAX_DELAY ) ? $default : $DEFAULT_DELAY );
-                    print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay'"
-                        type="button"> Upload images or files</button><br><br>);
+                    my $base_url = "formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay";
+                    print qq(<button onclick="location.href='$base_url'" type="button"> Upload images or files</button><br><br>);
                     my $imgdir = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/$img_id";
                     if ( -e "$imgdir/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM") {
                         print qq(<img height=$height src=/data/$GRIDS{SPATH_FORMDOCS}/$img_id/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM></img>);
