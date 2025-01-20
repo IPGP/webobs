@@ -149,6 +149,7 @@ print <<"FIN";
                     \$("#multiloadmsg").css("color", "red");
                     \$("#progress").html('');
                     \$("#save").prop("disabled", true);
+                    return false;
                 } else {
                     \$("#multiloadmsg").css("color", "green");
                     \$("#progress").html('Click on save to upload.');
@@ -214,7 +215,8 @@ function verif_formulaire()
         }).done(function(data) {
             //alert(data);
             \$("#progress").html('<b>Uploaded</b>').css("color", "black");
-            history.go(-1)
+            window.location.reload();
+            setTimeout(function(){ history.go(-1) }, 100);
         }).fail(function(xhr, status, error) {
             \$("#progress").html('<b>Upload failed: ' + (xhr.status >= 100 ? xhr.status + ' ' : '') + error + '</b>').css("color", "red");
         }).always(function(data) {
