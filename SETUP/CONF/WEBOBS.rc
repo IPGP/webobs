@@ -375,3 +375,6 @@ M3G_EDIT|${M3G_URL}/modify?station=
 M3G_EXPORTXML|${M3G_URL}/exportxml?station=
 M3G_EXPORTLOG|${M3G_URL}/exportlog?station=
 
+# Maximum upload size in MB ----------------
+# ------------------------------------------
+MAX_UPLOAD_SIZE|10

@@ -145,63 +145,65 @@ my $maxId = 0;
 my $entete = u2l("Id|Date|Heure|Site|AEMD|Patm (mmHg)|Tair (°C)|H.R. (%)|Nébulosité|Vitre|D0|d01|d02|d03|d04|d05|d06|d07|d08|d09|d10|d11|d12|d13|d14|d15|d16|d17|d18|d19|d20|Remarques|Valide\n");
 if (-e $fileDATA)  {
 
-	# ---- lock-exclusive the data file during all update process
-	#
-	if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
-		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "postDISTANCE waiting for lock on $fileDATA...";
-			flock(FILE, LOCK_EX);
-		}
-		# ---- backup file (To Be Removed: lifecycle too short to be used ) 
-		if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
-		if ( $?  == 0 ) { 
-			seek(FILE, 0, SEEK_SET);
-			while (<FILE>) {
-				chomp($_);
-				my ($id) = split(/\|/,$_);
-				if ($id =~ m/^[0-9]+$/) {
-					if ($id > $maxId) { $maxId = $id }	
-					#djl next if ( ($idTraite eq $id) && ($efface eq "oui") ); 
-					if ( ($idTraite eq "") || ($idTraite ne $id) ) { 
-						push(@lignes,$_."\n") ;
-					}
-				}
-			}
-			$maxId++;
-			my $chaine = "$maxId|$date|$heure|$site|$aemd|$pAtm|$tAir|$HR|$nebul|$vitre|$D0";
-			for ('01'..'20') {
-				$chaine = $chaine."|".eval("\$d$_");
-			}
-			$chaine = $chaine."|$rem|$val\n";
-			push(@lignes, $chaine);
-			@lignes = sort tri_date_avec_id @lignes;
-			truncate(FILE, 0);
-			seek(FILE, 0, SEEK_SET);
-			print FILE $entete;
-			print FILE @lignes ;
-			close(FILE);
-			htmlMsgOK();
-		} else {
-			close(FILE);
-			htmlMsgNotOK("postDISTANCE couldn't backup $fileDATA");
-		}
-	} else {
-		htmlMsgNotOK("postDISTANCE opening - $!");
-	}
+    # ---- lock-exclusive the data file during all update process
+    #
+    if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
+        unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+            warn "postDISTANCE waiting for lock on $fileDATA...";
+            flock(FILE, LOCK_EX);
+        }
+
+        # ---- backup file (To Be Removed: lifecycle too short to be used ) 
+        if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
+        if ( $?  == 0 ) {
+            seek(FILE, 0, SEEK_SET);
+            while (<FILE>) {
+                chomp($_);
+                my ($id) = split(/\|/,$_);
+                if ($id =~ m/^[0-9]+$/) {
+                    if ($id > $maxId) { $maxId = $id }
+
+                    #djl next if ( ($idTraite eq $id) && ($efface eq "oui") ); 
+                    if ( ($idTraite eq "") || ($idTraite ne $id) ) {
+                        push(@lignes,$_."\n") ;
+                    }
+                }
+            }
+            $maxId++;
+            my $chaine = "$maxId|$date|$heure|$site|$aemd|$pAtm|$tAir|$HR|$nebul|$vitre|$D0";
+            for ('01'..'20') {
+                $chaine = $chaine."|".eval("\$d$_");
+            }
+            $chaine = $chaine."|$rem|$val\n";
+            push(@lignes, $chaine);
+            @lignes = sort tri_date_avec_id @lignes;
+            truncate(FILE, 0);
+            seek(FILE, 0, SEEK_SET);
+            print FILE $entete;
+            print FILE @lignes ;
+            close(FILE);
+            htmlMsgOK();
+        } else {
+            close(FILE);
+            htmlMsgNotOK("postDISTANCE couldn't backup $fileDATA");
+        }
+    } else {
+        htmlMsgNotOK("postDISTANCE opening - $!");
+    }
 }
 
 # --- return information when OK 
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	if ($idTraite ne "") { 
- 		print "record #$idTraite has been updated (as #$maxId)"; 
- 	} else  { print "new record #$maxId has been created."; }
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    if ($idTraite ne "") {
+        print "record #$idTraite has been updated (as #$maxId)";
+    } else  { print "new record #$maxId has been created."; }
 }
 
 # --- return information when not OK
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 __END__

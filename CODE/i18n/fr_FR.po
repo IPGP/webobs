@@ -68,6 +68,12 @@ msgstr "erreur unlink lockfile"
 msgid "Not authorized"
 msgstr "Pas autorisé"
 
+msgid "Sorry, you must have an edit level to modify"
+msgstr "Désolé, vous devez avoir un niveau éditeur pour modifier"
+
+msgid "Sorry, you must have an admin level to delete"
+msgstr "Désolé, vous devez avoir un niveau administrateur pour supprimer"
+
 msgid "Invalid resource name"
 msgstr "Ressource invalide"
 
@@ -200,6 +206,27 @@ msgstr "Accès aux données brutes"
 msgid "Graphical routine"
 msgstr "Routine graphique"
 
+msgid "First year of data:"
+msgstr "Première année des données :"
+
+msgid "Form structure:"
+msgstr "Structure du form :"
+
+msgid "inputs"
+msgstr "entrées"
+
+msgid "outputs"
+msgstr "sorties"
+
+msgid "Total number of records:"
+msgstr "Nombre total d'enregistrements :"
+
+msgid "including"
+msgstr "dont"
+
+msgid "in trash"
+msgstr "dans la corbeille"
+
 msgid "Events File(s)"
 msgstr "Fichier(s) d'événements"
 
@@ -299,6 +326,9 @@ msgstr "Début / Installation"
 msgid "End / Stop"
 msgstr "Fin / Arrêt"
 
+msgid "Raw Format"
+msgstr "Format"
+
 msgid "Parameters"
 msgstr "Paramètres"
 
@@ -308,8 +338,23 @@ msgstr "Données"
 msgid "Channels"
 msgstr "Canaux"
 
+msgid "Chan."
+msgstr "Canaux"
+
 msgid "Channel"
 msgstr "Canal"
+
+msgid "Form Information"
+msgstr "Informations du Form"
+
+msgid "Nb Rec."
+msgstr "Nb Enr."
+
+msgid "Last Record"
+msgstr "Dernier Enreg."
+
+msgid "Raw Data"
+msgstr "Données"
 
 msgid "See also the following maps"
 msgstr "Voir aussi les cartes suivantes"
@@ -552,7 +597,7 @@ msgid "Names and Codes"
 msgstr "Noms et Codes"
 
 msgid "Associated Grids"
-msgstr "Grids associés"
+msgstr "Grids associées"
 
 msgid "Procs Parameters"
 msgstr "Paramètres de Proc"
@@ -621,7 +666,7 @@ msgid "Search"
 msgstr "Recherche"
 
 msgid "Search in selected grids below"
-msgstr "Recherche dans les Grids cochés ci-dessous"
+msgstr "Recherche dans les Grids cochées ci-dessous"
 
 msgid "Advanced Search"
 msgstr "Recherche avancée"
@@ -1081,7 +1126,7 @@ msgid "Reference"
 msgstr "Référence"
 
 msgid "Real-time refresh every"
-msgstr "Temps réel, rafraîchissement: "
+msgstr "Temps réel, rafraîchissement"
 
 msgid "Increase speed"
 msgstr "Augmente vitesse"
@@ -1096,7 +1141,7 @@ msgid "Click to see miniseed file"
 msgstr "Cliquer pour voir le fichier miniseed"
 
 msgid "Sorry, there is no more data available for this request:"
-msgstr "Désolé, plus de données disponibles pour cette requête:"
+msgstr "Désolé, plus de données disponibles pour cette requête :"
 
 msgid "Operator"
 msgstr "Opérateur"
@@ -1539,7 +1584,7 @@ msgid "Line width"
 msgstr "Épaisseur des lignes"
 
 msgid "Grid"
-msgstr "Grille"
+msgstr "Grid"
 
 msgid "PPI"
 msgstr "Résolution PPI"
@@ -1584,8 +1629,17 @@ msgstr "Archive"
 
 # --- formGRID.pl
 
+msgid "Creating new grid"
+msgstr "Création de nouvelle grid"
+
+msgid "Editing grid"
+msgstr "Modification de la grid"
+
 msgid "Form"
 msgstr "Form"
+
+msgid "Associated lists"
+msgstr "Listes associées"
 
 msgid "Available/Associated nodes"
 msgstr "Nodes disponibles/associés"
@@ -1897,8 +1951,8 @@ msgstr "node(s) orphelin(s)"
 msgid "Edit/Create a Domain/Producer"
 msgstr "Modifier/Créer un Domaine/Producteur"
 
-msgid "Edit/Create a Grid"
-msgstr "Modifier/Créer une Grid"
+msgid "Create a new Grid"
+msgstr "Créer une nouvelle Grid"
 
 msgid "Edit/Create a Form"
 msgstr "Modifier/Créer un Form"
@@ -1948,16 +2002,25 @@ msgstr "Code genform"
 msgid "Date interval"
 msgstr "Intervalle de dates"
 
+msgid "Lists"
+msgstr "Listes"
+
+msgid "Formulas"
+msgstr "Formules"
+
 # ---- formGENFORM.pl
 
-msgid "Input new data"
-msgstr "Saisie de nouvelles données"
+msgid "Input new record"
+msgstr "Saisie d'un nouvel enregistrement"
 
-msgid "Edit data n°"
-msgstr "Modification de l'entrée n°"
+msgid "Edit record n°"
+msgstr "Modification de l'enregistrement n°"
 
-msgid "Date and place of sampling"
-msgstr "Date et lieu du prélèvement"
+msgid "Validated record"
+msgstr "Enregistrement validé"
+
+msgid "Date, site, and operators"
+msgstr "Date, site et opérateurs"
 
 msgid "ATT: Do you want PERMANENTLY erase this record from"
 msgstr "ATT: Voulez-vous effacer cet enregistrement de manière permanente de"
@@ -1985,6 +2048,9 @@ msgstr "Entrer une valeur numérique pour"
 
 msgid "Enter a value for"
 msgstr "Entrer une valeur pour"
+
+msgid "Record timestamp:"
+msgstr "Horodatage de l'enregistrement :"
 
 # ---- fedit.pl
 

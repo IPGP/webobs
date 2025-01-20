@@ -16,7 +16,7 @@ HTML page with QR code of the referer URL.
 
 no query string parameters needed, but logos will be displayed on the side of
 QR code, using the WEBOBS.rc variables:
-	QRCODE_LOGOS|URI_logo1,URI_logo2,...
+    QRCODE_LOGOS|URI_logo1,URI_logo2,...
 
 =cut
 
@@ -37,7 +37,7 @@ use MIME::Base64;
 
 # --- ends here if the client is not valid
 if ( !clientIsValid ) {
-  die "$__{'die_client_not_valid'}";
+    die "$__{'die_client_not_valid'}";
 }
 
 my $title = "$ENV{HTTP_REFERER}";
@@ -51,7 +51,7 @@ print <<"END";
 <HTML><HEAD><TITLE>$title</TITLE></HEAD>
 <STYLE>
 html, body {
-	background-color: white;
+    background-color: white;
     height: 100%;
     margin: 0;
     padding: 0;
@@ -67,7 +67,7 @@ img {
 <TD width="20%" style="border:0;text-align:center">
 END
 for (@logos) {
-	print "<P><IMG width=\"100px\" src=\"$_\"></P>";
+    print "<P><IMG width=\"100px\" src=\"$_\"></P>";
 }
 print "</TD></TR></TABLE>\n</BODY>\n</HTML>\n";
 

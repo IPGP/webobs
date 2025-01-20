@@ -1,22 +1,52 @@
 =key|value
-# Generic FORM template for use with {fedit,showGENFORM,formGENFORM}.pl
+# Generic FORM template for use with {formGRID.pl,showGENFORM,formGENFORM}.pl
 #
 # ############################### WARNING #####################################
 # Once the database form has been created and the first data has been recorded,
 # you MAY BE VERY CAREFUL IN MODIFYING the keys of this file.
 # ############################### WARNING #####################################
 #
+# -----------------------------------------------------------------------------
+# --- GRID common parameters
+
+NAME|Demo database form
+DESCRIPTION|Demo/example of simple database form
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|MyForm
+
+# --- node parameters (display and maps)
+NODE_NAME|site
+NODE_MARKER|s
+NODE_SIZE|10
+NODE_RGB|0,1,1
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
 BANG|$WEBOBS{BIG_BANG}
-TITLE|Generic database form
 
 # Time zone of the data (in hour from UT)
 TZ|0
 
 # if YES, use start and end date/time for each record
-STARTING_DATE|NO
+STARTING_DATE|YES
 
 # may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
+
+# if YES, use a quality check for each record
+QUALITY_CHECK|YES
+QUALITY_OPERATORS|+ADMIN
 
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
@@ -24,6 +54,9 @@ DEFAULT_DAYS|365
 # list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
 VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
+# comment input field
+COMMENT_SIZE|80
+COMMENT_HELP|Note here any important things that complement the data!
 
 # --- Inputs names, units, and types
 # valid types: text(size), numeric(size), list: filename, radio: filename
@@ -34,7 +67,7 @@ INPUT01_UNIT|Unit1
 INPUT01_TYPE|text(10)
 INPUT02_NAME|List input2
 INPUT02_UNIT|Unit2
-INPUT02_TYPE|list: FORM_list.conf
+INPUT02_TYPE|list: FORM_DEMO_list.conf
 INPUT02_FILT|YES
 INPUT03_NAME|Numeric input3
 INPUT03_UNIT|Unit3
@@ -42,45 +75,48 @@ INPUT03_TYPE|numeric(5)
 INPUT04_NAME|Numeric input4
 INPUT04_UNIT|Unit4
 INPUT04_TYPE|numeric(5)
+INPUT05_NAME|Checkbox input5
+INPUT05_TYPE|checkbox:checked
+INPUT06_NAME|Image input6
+INPUT06_TYPE|image(120)
 
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 OUTPUT01_NAME|Formula output1
 OUTPUT01_UNIT|no unit
-OUTPUT01_TYPE|formula: (INPUT01-INPUT03)*2
+OUTPUT01_TYPE|formula: (INPUT01-INPUT03)*2 + INPUT04/10
+OUTPUT01_HELP|this is a formula with simple arithmetics
 OUTPUT02_NAME|Formula output2
 OUTPUT02_UNIT|no unit
-OUTPUT02_TYPE|formula: (INPUT04+OUTPUT01)/10
+OUTPUT02_TYPE|formula: mean(INPUT03,INPUT04,OUTPUT01)
 OUTPUT02_THRESHOLD|0.5,2
+OUTPUT02_HELP|this is a formula with MEAN function
 
 # --- Form layout
-# number of columns and list of fieldsets for each
-COLUMNS_NUMBER|2
+
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
-COLUMN02_LIST|FIELDSET02,FIELDSET03
-
-# number of fieldsets
-FIELDSETS_NUMBER|3
+COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
 
 # first fieldset name, number of cells and list of fields for each column
-FIELDSET01_NAME|Fieldset n°1
+FIELDSET01_NAME|Fieldset A
 FIELDSET01_CELLS|1,COLS
-FIELDSET01_C01|INPUT01,INPUT02
+FIELDSET01_C01|INPUT01,INPUT02,INPUT05
 
 # second fieldset with 2 columns
-FIELDSET02_NAME|Fieldset n°2
+FIELDSET02_NAME|Fieldset B
 FIELDSET02_CELLS|2,COLS
 FIELDSET02_C01|INPUT03,INPUT04
 FIELDSET02_C02|OUTPUT01
 
 # third fieldset with toggle view
-FIELDSET03_NAME|Fieldset n°3
+FIELDSET03_NAME|Fieldset C
 FIELDSET03_CELLS|1
 FIELDSET03_TOGGLE|YES
 FIELDSET03_C01|OUTPUT02
 
+# Image type Fieldset
+FIELDSET04_NAME|Fieldset D
+FIELDSET04_CELLS|1,COLS
+FIELDSET04_C01|INPUT06
 
-# --- for backward compatibility - do not change
-CGI_FORM|formGENFORM.pl
-CGI_SHOW|showGENFORM.pl

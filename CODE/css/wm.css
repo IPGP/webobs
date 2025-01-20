@@ -1,132 +1,138 @@
-
 #wm {
-	margin:0;
-	padding:0;
-	width: 100%;
+    margin: 0;
+    padding: 0;
+    width: 100%;
 }
 
-	#wmlogos {
-		float: left;
-		width: 10%;
-	}
+#wmlogos {
+    float: left;
+    width: 10%;
+}
 
-	#wmwrapnav {
-		float: left;
-		margin: 0;
-		padding: 0;
-		width: 80%;
-		font-size: 1em;
-		font-family: sans-serif;
-		font-style: bold;
-		background-color: #201A16;
-		color: #43372F;
-	}
+#wmwrapnav {
+    float: left;
+    margin: 0;
+    padding: 0;
+    width: 80%;
+    font-size: 1em;
+    font-family: sans-serif;
+    font-style: bold;
+    background-color: #201a16;
+    color: #43372f;
+}
 
-		#wmnav {
-		margin: 0;
-		padding: 0;
-		}
+#wmnav {
+    margin: 0;
+    padding: 0;
+}
 
-	#wmflags {
-		float: right;
-		width: 10%;
-	}
+#wmflags {
+    float: right;
+    width: 10%;
+}
 
 /*************************************************/
 
 #wmflags img {
-	border : 2px solid;
-	margin: 1px;
+    border: 2px solid;
+    margin: 1px;
 }
-#wmflags .actif   { border-color: #00ff00; }
-#wmflags .inactif { border-color: #ffffff; }
+#wmflags .actif {
+    border-color: #00ff00;
+}
+#wmflags .inactif {
+    border-color: #ffffff;
+}
 
-#wmlogos a, #wmflags a {
-	display: inline;
-	width: auto;
+#wmlogos a,
+#wmflags a {
+    display: inline;
+    width: auto;
 }
 
 /*************************************************/
 
-.clear { clear: both }
+.clear {
+    clear: both;
+}
 
 .haut {
-	font-variant: small-caps;
+    font-variant: small-caps;
 }
 .haut.inactif {
-	background-color:#ADD8E6;
+    background-color: #add8e6;
 }
 .haut.actif {
-	background-color:#8DB8E6;
+    background-color: #8db8e6;
 }
 .bas.inactif {
-	background-color:#FFAAAA;
+    background-color: #ffaaaa;
 }
 .bas.actif {
-	background-color:#FF8888;
+    background-color: #ff8888;
 }
 .externe.inactif {
-	background-color:#FFEEEE;
+    background-color: #ffeeee;
 }
 .externe.actif {
-	background-color:#FFCCCC;
+    background-color: #ffcccc;
 }
 .externe span {
-	background-color: transparent;
-	background-image: url(/icons/external.png);
-	background-repeat: no-repeat;
-	background-attachment: scroll;
-	background-position: right center;
-	padding-top: 0;
-	padding-right: 13px;
-	padding-bottom: 0;
-	padding-left: 0;
+    background-color: transparent;
+    background-image: url(/icons/external.png);
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-position: right center;
+    padding-top: 0;
+    padding-right: 13px;
+    padding-bottom: 0;
+    padding-left: 0;
 }
 .actif a:link,
 .actif a:hover,
 .actif a:active,
 .actif a:visited {
-	color: blue !important;
+    color: blue !important;
 }
 
 /*************************************************/
 
 #wmnav a {
-	display:block;
-	padding:0px 5px;
-	border:1px solid #ddd;
-	color:#fff;
-	text-decoration:none;
-	background-color:#333;
+    display: block;
+    padding: 0px 5px;
+    border: 1px solid #ddd;
+    color: #fff;
+    text-decoration: none;
+    background-color: #333;
 }
 
-#wmnav a:hover { 
-	background-color:#fff;
-	color:#333;
+#wmnav a:hover {
+    background-color: #fff;
+    color: #333;
 }
 
 #wmnav li {
-	float:left;
-	position:relative;
-	list-style: none;
+    float: left;
+    position: relative;
+    list-style: none;
 }
 
 #wmnav li ul li {
-	float: none;
+    float: none;
 }
 
 #wmnav ul {
-position:relative;
-display:none;
-/*width:12em;*/
-width: auto;
-/*top:1.5em;*/
+    position: relative;
+    display: none;
+    /*width:12em;*/
+    width: auto;
+    /*top:1.5em;*/
 }
 
 #wmnav li ul a {
-width:12em;
-/*height:auto;*/
-/*float:left;*/
+    width: 12em;
+    /*height:auto;*/
+    /*float:left;*/
 }
 
 /*

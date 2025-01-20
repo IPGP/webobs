@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 #
+
 =head1 NAME
 
 formVEHICLES.pl 
@@ -57,11 +58,11 @@ my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
 for my $p (keys(%Ps)) {
-	my %N = $FORM->nodes($p);
-	for my $n (keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-	}
-	%Ns = (%Ns, %N);
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
 }
 
 my $titrePage = "&Eacute;dition - ".$FORM->conf('TITLE');
@@ -70,8 +71,8 @@ my $QryParm   = $cgi->Vars;
 
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
-my $sel_jour  = strftime('%d',@tod); 
-my $sel_mois  = strftime('%m',@tod); 
+my $sel_jour  = strftime('%d',@tod);
+my $sel_mois  = strftime('%m',@tod);
 my $sel_annee = strftime('%Y',@tod);
 my $anneeActuelle = strftime('%Y',@tod);
 my $sel_hr    = "";
@@ -114,22 +115,22 @@ print "<html><head>
 
 function verif_formulaire()
 {
-	if(document.formulaire.site.value == \"\") {
-		alert(\"Veuillez spécifier le site de prélèvement!\");
-		document.formulaire.site.focus();
-		return false;
-	}
-	if(document.formulaire.type.value == \"\") {
-		alert(\"Veuillez entrer un type d'ampoule!\");
-		document.formulaire.type.focus();
-		return false;
-	}
+    if(document.formulaire.site.value == \"\") {
+        alert(\"Veuillez spécifier le site de prélèvement!\");
+        document.formulaire.site.focus();
+        return false;
+    }
+    if(document.formulaire.type.value == \"\") {
+        alert(\"Veuillez entrer un type d'ampoule!\");
+        document.formulaire.type.focus();
+        return false;
+    }
     \$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
-	   //var contents = \$( data ).find( '#contents' ).text(); 
-	   alert(data);
-	   document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
-	   }
-	);
+       //var contents = \$( data ).find( '#contents' ).text(); 
+       alert(data);
+       document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
+       }
+    );
 }
 
 function calc()
@@ -167,23 +168,23 @@ my $ptr='';
 my $fts-1;
 my ($id,$date,$heure,$vehicle,$mileage,$type,$site,$driver,$oil) = split(/\|/,$_);
 if (defined($QryParm->{id})) {
-	($ptr, $fts) = $FORM->data($QryParm->{id});
-	@ligne = @$ptr;
-	if (scalar(@ligne) == 1) {
-		chomp(@ligne);
-		($id,$date,$heure,$vehicle,$mileage,$type,$site,$driver,$oil) =  split (/\|/,l2u($ligne[0]));
-		if ($QryParm->{id} eq $id) { 
-			($sel_annee,$sel_mois,$sel_jour) = split (/-/,$date);
-			($sel_hr,$sel_mn) = split (/:/,$heure);
-			$sel_vehicle = $vehicle;
-			$sel_mileage = $mileage;
-			$sel_type = $type;
-			$sel_site = $site;
-			$sel_driver = $driver;
-			$sel_oil = $oil;
-			$message = "Modification donn&eacute;e n° $QryParm->{id}";
-		} else { $QryParm->{id} = ""; }
-	} else { $QryParm->{id} = ""; }
+    ($ptr, $fts) = $FORM->data($QryParm->{id});
+    @ligne = @$ptr;
+    if (scalar(@ligne) == 1) {
+        chomp(@ligne);
+        ($id,$date,$heure,$vehicle,$mileage,$type,$site,$driver,$oil) =  split (/\|/,l2u($ligne[0]));
+        if ($QryParm->{id} eq $id) {
+            ($sel_annee,$sel_mois,$sel_jour) = split (/-/,$date);
+            ($sel_hr,$sel_mn) = split (/:/,$heure);
+            $sel_vehicle = $vehicle;
+            $sel_mileage = $mileage;
+            $sel_type = $type;
+            $sel_site = $site;
+            $sel_driver = $driver;
+            $sel_oil = $oil;
+            $message = "Modification donn&eacute;e n° $QryParm->{id}";
+        } else { $QryParm->{id} = ""; }
+    } else { $QryParm->{id} = ""; }
 }
 
 print "<TABLE width=\"100%\"><TR><TD style=\"border:0\">
@@ -193,7 +194,7 @@ print "</TD></TR></TABLE>";
 
 print "<FORM name=formulaire id=\"theform\" action=\"\">";
 if ($QryParm->{id} ne "") {
-   print "<input type=\"hidden\" name=\"id\" value=\"$QryParm->{id}\">";
+    print "<input type=\"hidden\" name=\"id\" value=\"$QryParm->{id}\">";
 }
 
 print "<input type=\"hidden\" name=\"oper\" value=\"$CLIENT\">\n";
@@ -201,80 +202,82 @@ print "<input type=\"hidden\" name=\"oper\" value=\"$CLIENT\">\n";
 print "<TABLE style=border:0 onMouseOver=\"calc()\">";
 print "<TR>";
 print "<TD style=border:0 valign=top>
-	<fieldset><legend>Date et lieu du d&eacute;placement</legend>
-		<P class=parform>
-		<B>Date: </b><select name=annee size=\"1\">";
-		for (@anneeListe) {
-		    if ($_ == $sel_annee) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
-		}
-		print "</select>";
-		print " <select name=mois size=\"1\">";
-		for (@moisListe) {
-		    if ($_ == $sel_mois) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
-		}
-		print "</select>";
-		print " <select name=jour size=\"1\">";
-		for (@jourListe) { 
-		    if ($_ == $sel_jour) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
-		}
-		print "</select>";
-		
-		print "&nbsp;&nbsp;<b>Heure: </b><select name=hr size=\"1\">";
-		for (@heureListe) { 
-		    if ($_ eq $sel_hr) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
-		}      
-		print "</select>";
-		print " <select name=mn size=\"1\">";
-		for (@minuteListe) {
-		    if ($_ eq $sel_mn) {
-		       print "<option selected value=$_>$_</option>";
-		    } else {
-		       print "<option value=$_>$_</option>";
-		    }
-		}
-		print "</select><BR>";
+    <fieldset><legend>Date et lieu du d&eacute;placement</legend>
+        <P class=parform>
+        <B>Date: </b><select name=annee size=\"1\">";
+for (@anneeListe) {
+    if ($_ == $sel_annee) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
+}
+print "</select>";
+print " <select name=mois size=\"1\">";
+for (@moisListe) {
+    if ($_ == $sel_mois) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
+}
+print "</select>";
+print " <select name=jour size=\"1\">";
+for (@jourListe) {
+    if ($_ == $sel_jour) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
+}
+print "</select>";
 
-                print "<B>V&eacute;hicule: </B><select onMouseOut=\"nd()\" onmouseover=\"overlib('Selectionner le vehicule')\" name=\"vehicle\" size=\"1\"><option value=\"\"></option>";
-                for (@NODESSelList) {
-                        my @cle = split(/\|/,$_);
-                        if ($cle[0] eq $sel_site) {
-                                print "<option selected value=$cle[0]>$cle[1]</option>";
-                        } else {
-                                print "<option value=$cle[0]>$cle[1]</option>";
-                        }
-                }
-		print "</select><BR>\n";
-		
-		print "<B>Lieu: </B><input size=30 name=\"site\" value=\"$sel_site\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer le lieu du d&eacute;placement')\"><BR>\n";
-		print "</P>";
-	print "</fieldset>";
+print "&nbsp;&nbsp;<b>Heure: </b><select name=hr size=\"1\">";
+for (@heureListe) {
+    if ($_ eq $sel_hr) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
+}
+print "</select>";
+print " <select name=mn size=\"1\">";
+for (@minuteListe) {
+    if ($_ eq $sel_mn) {
+        print "<option selected value=$_>$_</option>";
+    } else {
+        print "<option value=$_>$_</option>";
+    }
+}
+print "</select><BR>";
 
-	print "<fieldset><legend>Informations sur le d&eacute;placement</legend>\n 
-		<P class=parform>";
-		print "<B>Type de d&eacute;placement: </B><select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le type e d&eacute;placement')\" name=\"type\" size=\"1\"><option value=\"\"></option>";
-		for (@types) {
-			my @cle = split(/\|/,$_);
-			print "<option";
-			if ($cle[0] eq $sel_type) {
-				print " selected";
-			}
-			print " value=$cle[0]>$cle[1]</option>";
-		}
-		print "</select><BR/>";
-		print " <B>Conducteur: <input size=30 name=\"driver\" value=\"$driver\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer le nom du conducteur')\"><BR>\n
-		<B>Kilom&egrave;tre au compteur</B> = <input size=10 class=inputNum name=\"mileage\" value=\"$mileage\" onKeyUp=\"nicb()\" onChange=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du compteur')\"> km<BR>\n
-		<B>Carburant</B> = <input size=5 class=inputNum name=\"oil\" value=\"$oil\" onKeyUp=\"nicb()\" onChange=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du plein')\">&euro;<BR>\n";
-#		print "<B>Débit </B> (qualitatif) = <select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le débit')\" name=\"debit\" size=\"1\"><option value=\"\"></option>";
-#		print "</select>\n";
-	print "</fieldset>";
+print "<B>V&eacute;hicule: </B><select onMouseOut=\"nd()\" onmouseover=\"overlib('Selectionner le vehicule')\" name=\"vehicle\" size=\"1\"><option value=\"\"></option>";
+for (@NODESSelList) {
+    my @cle = split(/\|/,$_);
+    if ($cle[0] eq $sel_site) {
+        print "<option selected value=$cle[0]>$cle[1]</option>";
+    } else {
+        print "<option value=$cle[0]>$cle[1]</option>";
+    }
+}
+print "</select><BR>\n";
+
+print "<B>Lieu: </B><input size=30 name=\"site\" value=\"$sel_site\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer le lieu du d&eacute;placement')\"><BR>\n";
+print "</P>";
+print "</fieldset>";
+
+print "<fieldset><legend>Informations sur le d&eacute;placement</legend>\n
+        <P class=parform>";
+print "<B>Type de d&eacute;placement: </B><select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le type e d&eacute;placement')\" name=\"type\" size=\"1\"><option value=\"\"></option>";
+for (@types) {
+    my @cle = split(/\|/,$_);
+    print "<option";
+    if ($cle[0] eq $sel_type) {
+        print " selected";
+    }
+    print " value=$cle[0]>$cle[1]</option>";
+}
+print "</select><BR/>";
+print " <B>Conducteur: <input size=30 name=\"driver\" value=\"$driver\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer le nom du conducteur')\"><BR>\n
+        <B>Kilom&egrave;tre au compteur</B> = <input size=10 class=inputNum name=\"mileage\" value=\"$mileage\" onKeyUp=\"nicb()\" onChange=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du compteur')\"> km<BR>\n
+        <B>Carburant</B> = <input size=5 class=inputNum name=\"oil\" value=\"$oil\" onKeyUp=\"nicb()\" onChange=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du plein')\">&euro;<BR>\n";
+
+#        print "<B>Débit </B> (qualitatif) = <select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le débit')\" name=\"debit\" size=\"1\"><option value=\"\"></option>";
+#        print "</select>\n";
+print "</fieldset>";
 print "</TD>";
+
 #print "<TR>";
 #print "<TD style=border:0 colspan=2>";
-#	print "<B>Observations</B> : <BR><input size=80 name=rem value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter la phénoménologie (dépôts, couleur, etc...)')\"><BR>";
-#	if ($val ne "") {
-#		print "<BR><B>Information de saisie:</B> $val
-#		<INPUT type=hidden name=val value=\"$val\"></P>";
-#	}
+#    print "<B>Observations</B> : <BR><input size=80 name=rem value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter la phénoménologie (dépôts, couleur, etc...)')\"><BR>";
+#    if ($val ne "") {
+#        print "<BR><B>Information de saisie:</B> $val
+#        <INPUT type=hidden name=val value=\"$val\"></P>";
+#    }
 print "</TR><TR>";
 print "<TD style=border:0 colspan=2>";
 print "<P style=\"margin-top:20px;text-align:center\">";
