@@ -687,11 +687,13 @@ foreach (@columns) {
                     $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
                     my $delay = ( ( $default >= $MIN_DELAY && $default <= $MAX_DELAY ) ? $default : $DEFAULT_DELAY );
                     my $base_url = "formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay";
-                    print qq(<button onclick="location.href='$base_url'" type="button"> Upload images or files</button><br><br>);
+                    print qq(<tr><td style="border:0">$txt = );
                     $upload_path = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}$img_id";
                     if ( -e "$upload_path/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM" ) {
                         print qq(<img height=$height src=/data/$GRIDS{SPATH_FORMDOCS}$img_id/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM></img>);
                     }
+                    print qq(</td><td style="border:0"><button onclick="location.href='$base_url'" type="button">);
+                    print qq(<img src="/icons/down.png" style="vertical-align: middle;"> Upload</button></td></tr>);
                     my $nb = qx(ls $upload_path -p | grep -v / | wc -l);
                     print qq(<input type="hidden" name="$field" value=$nb>\n);
                     print qq(<input type="hidden" name="upload_path" value=$upload_path>\n);
