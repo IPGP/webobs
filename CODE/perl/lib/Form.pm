@@ -210,7 +210,9 @@ sub extract_list {
 sub extract_type {
     my $type = shift;
     my ($size, $default) = (split /:/, $type);
-    if ($size =~ /\(\d+\)$/) {
+    if ($type =~ /^list\(multiple\)/) {
+        $size = "multiple";
+    } elsif ($size =~ /\(\d+\)$/) {
         $size =~ s/^[a-z]+\((\d+)\)/$1/;
     } else {
         $size = 5;

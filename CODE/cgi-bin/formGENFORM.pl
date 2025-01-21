@@ -301,7 +301,7 @@ foreach my $f (@formulas) {
     $formula =~ s/(\w+\()/math.$1/g;
     foreach (@x) {
         my $form_input = lc($_);
-        $formula =~ s/$_/Number(form.$form_input.value)/g;
+        $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : NaN)/g;
     }
     print "form.".lc($f).".value = parseFloat($formula).toFixed(2);\n";
 }
@@ -647,7 +647,7 @@ foreach (@columns) {
                 }
                 my $txt = "<B>$name</B>".($unit ne "" ? " ($unit)":"");
                 my $hlp;
-                if ($field =~ /^input/ && $type =~ /^list:/) {
+                if ($field =~ /^input/ && $type =~ /^list/) {
                     my %list = extract_list($type,$form);
                     my @list_keys = sort keys %list;
                     $hlp = ($help ne "" ? $help:"$__{'Select a value for'} $Field");
@@ -662,8 +662,9 @@ foreach (@columns) {
                         }
                         print "$dlm";
                     } else {
-                        print qq($txt = <select name="$field" size=1
-                            onMouseOut="nd()" onmouseover="overlib('$hlp')"><option value=""></option>);
+                        my $multi = ( $size eq "multiple" ? "multiple" : "" );
+                        print qq($txt = <select name="$field"
+                            onMouseOut="nd()" onmouseover="overlib('$hlp')" $multi><option value=""></option>);
                         for (@list_keys) {
                             my $nam = (ref($list{$_}) ? $list{$_}{name}:$list{$_});
                             my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
