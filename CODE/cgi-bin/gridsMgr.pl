@@ -505,7 +505,7 @@ Domains&nbsp;$go2top
         <div class="ddomains-container">
             <div class="ddomains">
                 <table class="ddomains">
-                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupDomain(-1);return false"><img title="define a new domain" src="/icons/modif.png"></a>
+                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupDomain(-1);return false"><img title="define a new domain" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
                 <th>Id</th><th>Rank</th><th>Name</th><th>Marker</th><th>Grids</th>
                 </tr></thead>
@@ -626,7 +626,7 @@ Producers&nbsp;$go2top
         <div class="pproducers-container">
             <div class="pproducers">
                 <table class="pproducers">
-                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupProducer(-1);return false"><img title="define a new grid" src="/icons/modif.png"></a>
+                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupProducer(-1);return false"><img title="define a new grid" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
                 <th>Id</th><th>Name</th><th>Title</th><th>Description</th><th>Objective</th><th>MeasuredVariables</th><th>Email</th><th>Contacts</th><th>Funders</th><th>Resources</th><th>Grids</th>
                 </tr></thead>
@@ -698,7 +698,7 @@ Didier Lafon, François Beauducel, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
