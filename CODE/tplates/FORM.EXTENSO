@@ -126,7 +126,7 @@ OUTPUT04_HELP|Average of all wind estimations
 
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
-COLUMN02_LIST|FIELDSET02,FIELDSET03
+COLUMN02_LIST|FIELDSET02
 
 # first fieldset name, number of cells and list of fields for each column
 FIELDSET01_NAME|Weather conditions
