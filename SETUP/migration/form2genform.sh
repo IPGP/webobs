@@ -4,7 +4,7 @@
 #
 # Author: François Beauducel
 # Created: 2024-04-21
-# Updated: 2025-01-03
+# Updated: 2025-01-21
 
 
 if [ -z "$1" ]; then
@@ -18,7 +18,7 @@ fi
 DRY_RUN=$2
 # -----------------------------------------------------------------------------
 function cmd {
-	if [[ $DRY_RUN != 1 ]]; then
+	if [[ $DRY_RUN != 1 && ! -z "$1" ]]; then
 		echo $1
 		eval $1
 	else
@@ -59,7 +59,7 @@ cmd "mkdir -p $LFPATH $LFDB"
 # =============================================================================
 # make a loop on all known legacy FORMs
 #for form in DISTANCE BOJAP EAUX EXTENSO FISSURO GAZ RIVERS SOILSOLUTIONS RAINWATER NOVAC
-for form in EAUX EXTENSO
+for form in EAUX EXTENSO; do
     
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
@@ -67,8 +67,9 @@ for form in EAUX EXTENSO
     if [[ ! -e "$conf" ]]; then
         continue
     fi
+    FDAT=$(grep ^FILE_NAME $conf | cut -d '|' -f 2)
     DAT="$WOROOT/DATA/DB/"$(grep ^FILE_NAME $conf | cut -d '|' -f 2)
-    if [[ ! -e "$DAT" ]]; then
+    if [[ -z "$FDAT" || ! -e "$DAT" ]]; then
         echo "---> No legacy data found in $conf... nothing to do for $form."
         continue
     fi
@@ -138,7 +139,7 @@ for form in EAUX EXTENSO
                     printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\""$5"\",\"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
                     gsub(/"/,"\"\"", $37); \
                     gsub(/\045/,"\045\045", $37); \
                     if ($38 ~ /^\[.*\] /) {
@@ -146,9 +147,9 @@ for form in EAUX EXTENSO
                         split(vv[1],v," ");
                         gsub(/\[/, "", v[1]); \
                         gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$37" "$38"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$37" "$38"\",\"\",\"\"" }; \
-                    for (i=5;i<10;i++) printf ",\""$i"\""; \
+                        printf ",\""$37" "$38"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\""$37" "$38"\",\"\",\"\"" }; \
+                    for (i=6;i<10;i++) printf ",\""$i"\""; \
                     for (i=10;i<35;i+=3) {
                         j = i+1; k = i+2;
                         d = $i + $j;
@@ -203,7 +204,10 @@ for form in EAUX EXTENSO
         v=$(grep ^TITLE\| $conf0 | iconv -f UTF-8 -t ISO-8859-1)
         cmd "LC_ALL=C sed -i -e 's/^NAME|.*$/$v/g;s/^TITLE/NAME/g' $conf"
         for key in BANG DEFAULT_DAYS; do
-            cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$(grep ^$key\| $conf0)/g' $conf"
+            okey=$(grep ^$key\| $conf0)
+            if [[ ! -z "$okey" ]]; then
+                cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$okey/g' $conf"
+            fi
         done
 
         for key in TZ OWNCODE TYPE URL COPYRIGHT NODE_NAME NODE_SIZE NODE_MARKER NODE_RGB DEM_FILE DEM_TYPE DEM_COPYRIGHT; do
@@ -224,10 +228,10 @@ for form in EAUX EXTENSO
         
         # -----------------------------------------------------------------------------
         # finally moves the original data file
-        cmd "mv $DAT $LFDB/"
+        #cmd "mv $DAT $LFDB/"
 
         echo "Done."
-
+    done
 done
 
 exit 1
