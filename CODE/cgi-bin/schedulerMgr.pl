@@ -404,7 +404,7 @@ Jobs definitions&nbsp;<A href="#MYTOP"><img src="/icons/go2top.png"></A>
 EOPAGE
 
 if ($admOK) {
-    print "<a href=\"#JOBSDEFS\" onclick=\"openPopup(-1);return false\"><img title=\"define a new job\" src=\"/icons/modif.png\"></a>"
+    print "<a href=\"#JOBSDEFS\" onclick=\"openPopup(-1);return false\"><img title=\"define a new job\" src=\"/icons/new.png\"></a>"
 } else {
     print "&nbsp;";
 }
@@ -438,7 +438,7 @@ Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
