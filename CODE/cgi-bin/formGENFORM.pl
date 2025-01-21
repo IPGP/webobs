@@ -171,6 +171,9 @@ my $tbl = lc($form);
 # Number of columns in the table without the primary key
 my $ncol = 11;
 
+# Image upload path
+my $upload_path = $cgi->param('upload_path');
+
 if ($action eq 'save') {
     my $msg;
 
@@ -205,15 +208,15 @@ if ($action eq 'save') {
     htmlMsgOK($msg);
 
     # rename images tmp directory
-    my $tmpPath = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/".uc($form."/record");
-    if (-e $tmpPath) {
+    if ($id eq "" && -e $upload_path) {
         my $stmt = qq(SELECT seq FROM sqlite_sequence WHERE name='$tbl');
         my $sth = $dbh->prepare( $stmt );
         my $rv = $sth->execute() or die $DBI::errstr;
         my $new_id = $sth->fetchrow_array();
         my $finalPath = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/".uc($form."/record".$new_id);
-        qx(mv $tmpPath $finalPath);
-        if ($?) { htmlMsgNotOK("Couldn't move $tmpPath to $finalPath; $!"); }
+        $upload_path =~ s/INPUT.*//g;
+        qx(mv -f $upload_path $finalPath);
+        if ($?) { htmlMsgNotOK("Couldn't move $upload_path to $finalPath; $!"); }
     }
 
     $dbh->disconnect();
@@ -406,6 +409,11 @@ function submit()
      // but wait 0.5s for the previous handler execution to finish
      \$('#theform').on("keydown", function() { setTimeout(update_form, 500); });
    });
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
  </script>
 ];
 
@@ -672,18 +680,20 @@ foreach (@columns) {
                     my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
-                    my $img_id = uc($form."/record".$id."/".$Field);
+                    my $tempdir = "/tmp/".$CLIENT."/".uc($form."/".$Field);
+                    my $img_id = ( $action eq "new" ? $tempdir : "/".uc($form."/record".$id."/".$Field) );
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
                     my $delay = ( ( $default >= $MIN_DELAY && $default <= $MAX_DELAY ) ? $default : $DEFAULT_DELAY );
                     my $base_url = "formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay";
                     print qq(<button onclick="location.href='$base_url'" type="button"> Upload images or files</button><br><br>);
-                    my $imgdir = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/$img_id";
-                    if ( -e "$imgdir/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM") {
-                        print qq(<img height=$height src=/data/$GRIDS{SPATH_FORMDOCS}/$img_id/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM></img>);
+                    $upload_path = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}$img_id";
+                    if ( -e "$upload_path/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM" ) {
+                        print qq(<img height=$height src=/data/$GRIDS{SPATH_FORMDOCS}$img_id/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM></img>);
                     }
-                    my $nb = qx(ls $imgdir -p | grep -v / | wc -l);
+                    my $nb = qx(ls $upload_path -p | grep -v / | wc -l);
                     print qq(<input type="hidden" name="$field" value=$nb>\n);
+                    print qq(<input type="hidden" name="upload_path" value=$upload_path>\n);
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
