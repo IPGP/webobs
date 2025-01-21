@@ -51,7 +51,7 @@ use WebObs::Form;
 
 die "You can't edit EXTENSO reports." if (!clientHasEdit(type=>"authforms",name=>"EXTENSO"));
 
-my $FORM = new WebObs::Form('EXTENSO_LEG');
+my $FORM = new WebObs::Form('EXTENSO');
 my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
