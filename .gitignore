@@ -16,5 +16,7 @@ PACK/*
 !PACK/fpm*
 !PACK/showi18id
 !PACK/CHECKLIST.txt
+*.swo
+*.swp
 .DS_Store
 **/.DS_Store
