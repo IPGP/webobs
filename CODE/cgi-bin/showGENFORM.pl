@@ -57,7 +57,7 @@ use List::Util qw[min max sum];
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users qw(clientMaxAuth);
+use WebObs::Users qw($CLIENT clientMaxAuth);
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
@@ -147,6 +147,12 @@ my $delay = datediffdays($startDate,$endDate);
 my $MAX_IMAGES = %GRIDS{GENFORM_THUMB_MAX_IMAGES} || 20;
 my $MAX_COLS = %GRIDS{GENFORM_THUMB_MAX_COLUMNS} || 4;
 my $THUMB_DISPLAYED_HEIGHT = 16;
+
+# ---- Temporary file cleanup
+if ($WEBOBS{ROOT_DATA} && $GRIDS{SPATH_FORMDOCS} && $CLIENT && $form) {
+    my $path = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/.tmp/".$CLIENT."/".uc($form);
+    qx(rm $path -R);
+}
 
 # ---- start html if not CSV output 
 
@@ -578,6 +584,11 @@ foreach (@formulas) {
 $listofformula .= "</UL>\n</div></div>";
 
 push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n":"")."</TABLE>\n$listoflist\n$listofformula");
+push(@html, qq(<form action="/cgi-bin/postFormData.pl?form=$form" method="post"><hr>
+  <input type="submit" value="Download form data" onmouseover="overlib('Download form data (Files, Images,...)')">
+  <input type="hidden" name="form" value=$form>
+</form>));
+
 
 if ($QryParm->{'dump'} eq "csv") {
     push(@csv,l2u($csvTxt));

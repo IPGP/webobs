@@ -681,7 +681,7 @@ foreach (@columns) {
                     my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
-                    my $tempdir = "/tmp/".$CLIENT."/".uc($form."/".$Field);
+                    my $tempdir = "/.tmp/".$CLIENT."/".uc($form."/".$Field);
                     my $img_id = ( $action eq "new" ? $tempdir : "/".uc($form."/record".$id."/".$Field) );
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
