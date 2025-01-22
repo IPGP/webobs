@@ -26,8 +26,9 @@ require Exporter;
   roundsd htm2frac qrcode url2target checkParam mean median std);
 $VERSION = "1.00";
 
-#--------------------------------------------------------------------------------------------------------------------------------------
-
+#------------------------------------------------------------------------------
+# [FB-comment 2025-01-22]: these 2 functions will disapear in the future since 
+#  we plan to use UTF-8 only in all conf files (needs a migration process)
 =pod
 
 =head2 u2l, l2u
