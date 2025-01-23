@@ -34,6 +34,18 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: extract from SmoothFinal.tdp output file (grep "Station.SSSS.State.pos.[XYZ]" lines)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
+%	format 'gins-ippp'
+%		type: GINS IPPP solutions
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: yyyymmdd hhmmss yyyy.yyyyyyyyy jjjjj.jj X Y Z dX dY dZ E N V dE dN dV
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
+%	format 'gamit-pos'
+%		type: GAMIT/GLOBK POS file
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: yyyymmdd jjjjj.jjjj E N U dE dN dU
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
 %	format 'usgs-rneu'
 %		type: USGS GPS results ITRF08
 %		filename/url: P.RAWDATA (use $FID to point the right file/url)
@@ -118,6 +130,50 @@ case 'globkval'
 	%end
 	%D.ITRF_YEAR = itrf;
 
+
+% -----------------------------------------------------------------------------
+case 'gamit-pos'
+	% format example
+	% yyyymmdd jjjjj.jjjj  E       N        U       dE      dN      dU
+    % 20100101 55197.4993 -0.09875 -0.11953 0.00075 0.00198 0.00161 0.00645
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		cmd0 = sprintf('awk ''/^[^!]/ {print}'' >> %s',fdat); % removes header lines
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = dd(:,3) + 678941.5007; % converts MJD to datenum
+		d = [dd(:,3:5),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		e = dd(:,6:8);
+		e(e<min_error) = min_error;
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
+
 % -----------------------------------------------------------------------------
 case {'gipsy','gipsy-tdp','gipsyx'}
 
@@ -193,6 +249,49 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 		e = [];
 	end
 	%D.ITRF_YEAR = 'ITRF08';
+
+% -----------------------------------------------------------------------------
+case 'spotgins-ippp'
+	% format example
+	% !yyyymmdd hhmmss yyyy.yyyyyyyyy  jjjjj.jj        X_position        Y_position        Z_position            dX            dY            dZ             E             N             V            dE            dN            dV
+    %  20160723  65619 2016.558521561  57592.29    4182067.152057     570976.439258    4765940.539811      0.000611      0.000218      0.000673     -0.006574     -0.008848     -0.014844      0.000205      0.000307      0.000859
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		cmd0 = sprintf('awk ''/^[^!]/ {print}'' >> %s',fdat); % removes header lines
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = datenum(dd(:,3),1,1,0,0,0);
+		d = [dd(:,11:13),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		e = dd(:,14:16);
+		e(e<min_error) = min_error;
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
 
 % -----------------------------------------------------------------------------
 case 'usgs-rneu'
