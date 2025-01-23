@@ -67,10 +67,12 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2021-11-12
+%	Updated: 2025-01-23
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
+% minimum decent error is 0.1 mm (!)
+min_error = 1e-4;
 
 switch F.fmt
 % -----------------------------------------------------------------------------
@@ -162,7 +164,7 @@ case 'gamit-pos'
 		dd = [];
 	end
 	if ~isempty(dd)
-		t = dd(:,3) + 678941.5007; % converts MJD to datenum
+		t = dd(:,2) + 678941.5007; % converts MJD to datenum
 		d = [dd(:,3:5),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
 		e = dd(:,6:8);
 		e(e<min_error) = min_error;
@@ -239,8 +241,7 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 		% converts cartesian geocentric (X,Y,Z) to UTM, estimating errors
 		[enu,e] = cart2utm(dd(:,[2,6,10])*kmfact,dd(:,[3,7,11])*kmfact);
 		d = [enu,dd(:,4)];
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf(' %d data imported.\n',size(dd,1));
 	else
 		fprintf(' no data found!\n')
@@ -329,8 +330,7 @@ case 'usgs-rneu'
 		t = datenum(ty,tm,td,12,0,0);	% date is YYYYMMDD and we force time to 12:00:00
 		d = [dd(:,[3,2,4])/1e3,dd(:,5)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
 		e = dd(:,[7,6,8])/1e3;
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -373,8 +373,7 @@ case 'ies-neu'
 		t = datenum(dd(:,1),1,1,0,0,0);	% date is decimal year
 		d = [dd(:,[4,2,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
 		e = dd(:,[5,3,7]);
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -417,8 +416,7 @@ case 'ogc-neu'
 		t = datenum(dd(:,2),dd(:,3),dd(:,4),12,0,0);	% here we force time to noon
 		d = [dd(:,[6,5,7]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
 		e = dd(:,[9,8,10]);
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -466,8 +464,7 @@ case 'ingv-gps'
 		t = datenum(dd(:,1),1,1);	% here we force time to January 1st!
 		d = [dd(:,2:4),zeros(size(dd,1),1)];
 		e = dd(:,5:7);
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
