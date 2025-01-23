@@ -245,7 +245,7 @@ MODELLING_MAX_DEPTH|8000
 MODELLING_BORDERS|5000
 # model space width (warning: will be cubed, so 100 is already 1 million points!)
 MODELLING_GRID_SIZE|50
-# modelling source: 'isotropic' (formerly 'mogi'), 'pcdm' (point Compound Dislocation Model), or 'okada' (fault slip)
+# modelling source: 'isotropic' (formerly 'mogi'), 'pcdm' (point Compound Dislocation Model)
 MODELLING_SOURCE_TYPE|isotropic
 # sets 2 to model the residuals with a secondary source (EXPERIMENTAL)
 MODELLING_MULTIPLE_SOURCES|1
@@ -328,46 +328,6 @@ MODELLING_PCDM_NEW_LIMIT_EDGE_RATIO|20
 MODELLING_PCDM_NEW_LIMIT_EXTEND|1
 # option to export supplementary graphs (intermediate results per iteration)
 MODELLING_PCDM_SUPPLEMENTARY_GRAPHS|N
-
-# --- specific Okada parameters for MODELLING (see okada85.m)
-# number of iterations (adjusting the parameter's limits at each step)
-MODELLING_OKADA_ITERATIONS|5
-# number of random samples per iteration: scalar or list for each iteration
-MODELLING_OKADA_RANDOM_SAMPLING|100000
-# elastic parameter (Poisson's ratio) nu
-MODELLING_OKADA_NU|0.25
-# strike parameter limits: fault trace direction (degrees relative to North), defined so that the fault dips to the right side of the trace
-MODELLING_OKADA_STRIKE|0,180
-# dip parameter limits: angle between the fault and a horizontal plane (in degree)
-MODELLING_OKADA_DIP|30,90
-# length parameter limits: fault length in the STRIKE direction (in meter)
-MODELLING_OKADA_LENGTH|10,100000
-# width parameter limits: fault width in the DIP direction (in meter)
-MODELLING_OKADA_WIDTH|1,20000
-# rake parameter limits: direction the hanging wall moves during rupture (in degree)
-MODELLING_OKADA_RAKE|-90,90
-# slip parameter limits: dislocation in RAKE direction (in meter)
-MODELLING_OKADA_SLIP|0,15
-# open parameter limits: dislocation in tensile component (in meter)
-MODELLING_OKADA_OPEN|0,0
-# minimum length/width ratio
-MODELLING_OKADA_MIN_L2W_RATIO|1
-# number of bins for probability vs parameter map (heatmap)
-MODELLING_OKADA_HEATMAP_GRID|50
-# graphical parameter for heatmaps
-MODELLING_OKADA_HEATMAP_SATURATION|0.4
-# number of bins used to smooth the maximum probability curve
-MODELLING_OKADA_HEATMAP_SMOOTH_SPAN|5
-# polynomial degree to smooth the maximum probability curve
-MODELLING_OKADA_HEATMAP_SMOOTH_DEGREE|1
-# minimum number of models to compute maximum probability curve
-MODELLING_OKADA_NEW_THRESHOLD|2
-# tolerance ratio to extend the edge limits
-MODELLING_OKADA_NEW_LIMIT_EDGE_RATIO|20
-# factor of extension (from the previous interval) when reaching an edge
-MODELLING_OKADA_NEW_LIMIT_EXTEND|1
-# option to export supplementary graphs (intermediate results per iteration)
-MODELLING_OKADA_SUPPLEMENTARY_GRAPHS|N
 
 # --- MODELTIME: defines the moving periods, minimum sampling, maximum models
 # [NOTE] MODELTIME uses most of MODELLING parameters
