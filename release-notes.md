@@ -40,6 +40,7 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
 1. Better check of the consistency of node start/end dates when editing the configuration.
 1. Exported list of geolocated nodes as KML file has now extended data (start/end dates, active flag).
 1. Metadata can now be uploaded to the Theia|OZCAR data portal. A checkbox has been added to select and save channels to be uploaded.
+1. New GNSS solutions data formats: `spotgins-ippp`and `gamit-pos`.
 
 ### Fixed issues
 1. ``!!`` WebObs Perl modules have been moved from CODE/cgi-bin/WebObs to CODE/perl/lib. The system-wide installation **MUST** be executed when upgrading (answer Y to the appropriate question during setup) in order to make all CGI working.
@@ -57,7 +58,7 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
 1. Fix forgotten binaries for Arclink rawformat.
 
 ### Under development
-1. **Generic forms**: it is now possible to create any user-defined manual database associated to a form (for entering new data and editing), a table display, and CSV export of data, using SQLite database. This new feature will replace all the actuel forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, NOVAC, SOILSOLUTIONS, and RAINWATER) in future release, with an automatic migration tool. Creating and using the new forms is functional, but reading the data from PROCS is not yet implemented. See the user manual documentation for details. 
+1. **Generic forms**: it is now possible to create any user-defined manual database associated to a form (for entering new data and editing), a table display, and CSV export of data, using SQLite database. This new feature will replace all the actuel forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, SOILSOLUTIONS, and RAINWATER) in future release, with an automatic migration tool. Creating and using the new forms is functional, but reading the data from PROCS is not yet implemented. See the user manual documentation for details. 
 
 ## v2.6.4 (December 2023)
 
