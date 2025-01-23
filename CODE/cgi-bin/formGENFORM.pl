@@ -192,7 +192,13 @@ if ($action eq 'save') {
     $db_columns .= ", comment, tsupd, userupd";
     $row .= ", \"$comment\", \"$today\", \"$user\"";
     foreach (map { sprintf("input%02d", $_) } (1..$max_inputs)) {
-        my $input = $cgi->param($_);
+        my $input;
+        my @input = $cgi->param($_);
+        if (scalar(@input) > 1) {
+             $input = join(",", @input);
+        } else {
+            $input = $cgi->param($_);
+        }
         if ($input ne "") {
             $db_columns .= ", $_";
             $row .= ", \"$input\"";
@@ -359,8 +365,8 @@ function verif_form()
     var cboxs = document.querySelectorAll("input[type=checkbox]");
     Array.from(cboxs).forEach((cbox) => {
         if (cbox.checked) {
-            cbox.value="checked";
-        } else { cbox.value="unchecked"; }
+            cbox.value = "checked";
+        } else { cbox.value = ""; }
     });
     console.log(\$("#theform"));
     if(document.form.site.value == "") {
@@ -667,7 +673,7 @@ foreach (@columns) {
                             onMouseOut="nd()" onmouseover="overlib('$hlp')" $multi><option value=""></option>);
                         for (@list_keys) {
                             my $nam = (ref($list{$_}) ? $list{$_}{name}:$list{$_});
-                            my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
+                            my $selected = ( $prev_inputs{$field} =~ /$_/ ? "selected" : "" );
                             print qq(<option value="$_" $selected>$_: $nam</option>);
                         }
                         print "</select>$dlm";

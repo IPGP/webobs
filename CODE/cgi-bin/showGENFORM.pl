@@ -585,7 +585,7 @@ $listofformula .= "</UL>\n</div></div>";
 
 push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n":"")."</TABLE>\n$listoflist\n$listofformula");
 push(@html, qq(<form action="/cgi-bin/postFormData.pl?form=$form" method="post"><hr>
-  <input type="submit" value="Download form data" onmouseover="overlib('Download form data (Files, Images,...)')">
+  <input type="submit" value="Download form data" title="Download form data (Files, Images,...)">
   <input type="hidden" name="form" value=$form>
 </form>));
 
