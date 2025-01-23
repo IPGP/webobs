@@ -27,34 +27,57 @@ use WebObs::Config;
 use WebObs::Grids;
 use WebObs::i18n;
 
-# get data from formGENFORM.pl
-my $form = $cgi->param('form');
+# ---- get data from formGENFORM.pl
+my $all = $cgi->param("all") || "";
+my $csv  = $cgi->param("csv");
+my $form = $cgi->param("form");
+if ( $form eq "" ) {
+    print CGI::header();
+    print "No valid form found !\n";
+    exit;
+}
 
+my $time     = strftime "%Y%m%d_%H%M%S", localtime time;
+my $filename = $form . "_" . $time;
+my $root     = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}";
+my $source   = "$root/$form";
+my $dest     = "/tmp/$filename.zip";
+my $csvfile  = "/tmp/$filename.csv";
+
+# ---- compress function
+sub compressFormFiles {
+    my $source = shift;
+    my $dest   = shift;
+    if ( $all ) {
+        zip [ <$source/*/*/*.*>, $csvfile ] => $dest, FilterName => sub { s[(^$source/|tmp/)][] };
+    } else {
+        zip [ $csvfile ] => $dest, FilterName => sub { s[(^$source/|tmp/)][] };
+    }
+}
+
+# ---- response header
 print $cgi->header(
-    -type => 'application/zip',
-    -attachment => 'test.zip',
+    -type       => "application/zip",
+    -attachment => $filename . ".zip",
 );
 
-my $root = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}";
-my $dest = "/tmp/$form.zip";
-my $source = "$root/$form";
+# ---- create csv file
+open( CSVFILE, ">", $csvfile ) || die "problem opening $csvfile \n";
+print CSVFILE $csv;
+close(CSVFILE);
 
-compressFormFiles($source, $dest) or die "zip failed: $ZipError\n";
-open FILE, '<', $dest or die "can't open : $!";
+# ---- create archive
+compressFormFiles( $source, $dest, $all ) or die "zip failed: $ZipError\n";
+
+# ---- append compressed files to the response
+open FILE, "<", $dest or die "can't open : $!";
 binmode FILE;
-while (<FILE>){
+while (<FILE>) {
     print $_;
 }
 close FILE;
+
+# ---- cleanup
 unlink $dest;
-
-
-# ---- local functions
-#
-
-sub compressFormFiles {
-    my $source = shift;
-    my $dest = shift;
-    zip [ <$source/*/*/*.*> ] => $dest, FilterName => sub { s[^$source/][] } ;
-}
+unlink $csvfile;
 

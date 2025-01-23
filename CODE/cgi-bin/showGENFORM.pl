@@ -35,10 +35,6 @@ PROC.I<procName> will display all nodes associated to the proc 'procName'. The d
 is to display all nodes associated to any proc using the form (and user having the
 read authorization).
 
-=item B<dump=>
-
-dump=csv will download a csv file of selected data, instead of display.
-
 =back
 
 =cut
@@ -98,7 +94,6 @@ $QryParm->{'m2'}       //= $month;
 $QryParm->{'d2'}       //= $day;
 $QryParm->{'node'}     //= "";
 $QryParm->{'trash'}    //= "0";
-$QryParm->{'dump'}     //= "";
 $QryParm->{'debug'}    //= "";
 
 my $re = $QryParm->{'filter'};
@@ -156,38 +151,34 @@ if ($WEBOBS{ROOT_DATA} && $GRIDS{SPATH_FORMDOCS} && $CLIENT && $form) {
 
 # ---- start html if not CSV output 
 
-if ($QryParm->{'dump'} ne "csv") {
-    print $cgi->header(-charset=>'utf-8');
-    print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
-      "<html><head><title>".$title."</title>\n",
-      "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
-      "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
+print $cgi->header(-charset=>'utf-8');
+print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
+  "<html><head><title>".$title."</title>\n",
+  "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
+  "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
 
-    print "</head>\n",
-      "<body style=\"background-attachment: fixed\">\n",
-      "<div id=\"waiting\">$__{'Searching for data, please wait.'}</div>\n",
-      "<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
-      "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\" type=\"text/javascript\"></script>",
-      "<script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>",
-      "<script language=\"JavaScript\" src=\"/js/wolb.js\" type=\"text/javascript\"></script>",
-      "<link href=\"/css/wolb.css\" rel=\"stylesheet\" />";
-      "<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\" type=\"text/javascript\"></script>\n",
-      "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
-      "<!-- overLIB (c) Erik Bosrup -->\n";
+print "</head>\n",
+  "<body style=\"background-attachment: fixed\">\n",
+  "<div id=\"waiting\">$__{'Searching for data, please wait.'}</div>\n",
+  "<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
+  "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\" type=\"text/javascript\"></script>",
+  "<script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>",
+  "<script language=\"JavaScript\" src=\"/js/wolb.js\" type=\"text/javascript\"></script>",
+  "<link href=\"/css/wolb.css\" rel=\"stylesheet\" />";
+  "<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\" type=\"text/javascript\"></script>\n",
+  "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
+  "<!-- overLIB (c) Erik Bosrup -->\n";
 
-    print <<"EOF";
-    <script type="text/javascript">
-    <!--
-    function eraseFilter()
-    {
-        document.form.filter.value = "";
-    }
-    //-->
-    </script>
-EOF
-} else {
-    push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type: text/csv\n\n");
+print <<"EOF";
+<script type="text/javascript">
+<!--
+function eraseFilter()
+{
+    document.form.filter.value = "";
 }
+//-->
+</script>
+EOF
 
 # ---- Read the data file 
 #
@@ -270,87 +261,86 @@ foreach my $f (@fieldsets) {
 }
 
 # ---- Form for display selection
-#  
-if ($QryParm->{'dump'} ne "csv") {
-    print "<FORM name=\"form\" action=\"/cgi-bin/showGENFORM.pl\" method=\"get\">",
-      "<INPUT name=\"form\" type=\"hidden\" value=\"$form\">";
-    print "<P class=\"boitegrise\" align=\"center\">",
-      "<TABLE width=\"100%\"><TR><TD style=\"border:0;text-align:center\">",
-      "<B>$__{'Start Date'}:</B> ";
-    print "<SELECT name=\"y1\" size=\"1\">\n";
-    for ($FORM{BANG}..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-    print "</SELECT>\n";
-    print "<SELECT name=\"m1\" size=\"1\">\n";
-    for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-    print "</SELECT>\n";
-    print "<SELECT name=\"d1\" size=\"1\">\n";
-    for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-    print "</SELECT>\n";
-    print "&nbsp;&nbsp;<B>$__{'End Date'}:</B> ";
-    print "<SELECT name=\"y2\" size=\"1\">\n";
-    for ($FORM{BANG}..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-    print "</SELECT>\n";
-    print "<SELECT name=\"m2\" size=\"1\">\n";
-    for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-    print "</SELECT>\n";
-    print "<SELECT name=\"d2\" size=\"1\">\n";
-    for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-    print "</SELECT>\n";
-    print "&nbsp;&nbsp;<select name=\"node\" size=\"1\">";
-    for ("|$__{'All nodes'}",@NODESSelList) {
-        my ($key,$val) = split (/\|/,$_);
-        my $sel = ("$key" eq "$QryParm->{'node'}" ? "selected":"");
-        print "<option $sel value=$key>$val</option>\n";
-    }
-    print "</select>";
-    print "<BR>\n";
-    print " \n";
-    foreach my $i (sort keys %lists) {
-        if (isok($FORM{uc($i)."_FILT"})) {
-            my @key = keys %{$lists{$i}};
-            print "<B>".$FORM{uc($i)."_NAME"}.":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
-            print "<OPTION value=\"\"></OPTION>\n";
-            my $nam;
-            foreach (sort @key) {
-                if (ref $lists{$i}{$_}) {
-                    $nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$_);
-                } else {
-                    $nam = ($lists{$i}{$_} ? $lists{$i}{$_}:$_);
-                }
-                my $sel = ($QryParm->{$i} eq $_ ? "selected":"");
-                print "<OPTION value=\"$_\" $sel>$_: $nam</OPTION>\n";
-            }
-            print "</SELECT>\n";
-        }
-    }
-    foreach (@fieldsets) {
-        if (isok($FORM{$_.'_TOGGLE'})) {
-            my $fs = lc($_);
-            print " <INPUT type=\"checkbox\" name=\"$fs\" value=\"1\"".($QryParm->{$fs} ? " checked":"").">&nbsp;<B>$FORM{$_.'_NAME'}</B>";
-        }
-    }
+#
 
-    print "</TD><TD style=\"border:0;text-align:center\">";
-    print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"10\" value=\"$re\">";
-    if ($re ne "") {
-        print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
-    }
-    if ($clientAuth > 1) {
-        print "<BR><INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"").">&nbsp;<B>$__{'Trash'}</B>";
-    } else {
-        print "<INPUT type=\"hidden\" name=\"trash\">";
-    }
-    print "</TD><TD style=\"border:0;text-align:center\">";
-    print "<INPUT type=\"submit\" value=\"$__{'Display'}\">";
-    print "</TD></TR></TABLE></P></FORM>\n",
-      "<H1 style=\"margin-bottom:6pt\">$title</H1>\n",
-      "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-bottom:10px'>",
-      "<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=FORM.$form\"><B>Form</B></A>";
-    if (-d "$WEBOBS{ROOT_OUTG}/FORM.$form/$WEBOBS{PATH_OUTG_MAPS}") {
-        print " | <B><A href=\"/cgi-bin/showOUTG.pl?grid=FORM.$form&ts=map\">Map</A></B>";
-    }
-    print " ]</DIV>\n<P>";
+print "<FORM name=\"form\" action=\"/cgi-bin/showGENFORM.pl\" method=\"get\">",
+  "<INPUT name=\"form\" type=\"hidden\" value=\"$form\">";
+print "<P class=\"boitegrise\" align=\"center\">",
+  "<TABLE width=\"100%\"><TR><TD style=\"border:0;text-align:center\">",
+  "<B>$__{'Start Date'}:</B> ";
+print "<SELECT name=\"y1\" size=\"1\">\n";
+for ($FORM{BANG}..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+print "</SELECT>\n";
+print "<SELECT name=\"m1\" size=\"1\">\n";
+for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+print "</SELECT>\n";
+print "<SELECT name=\"d1\" size=\"1\">\n";
+for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+print "</SELECT>\n";
+print "&nbsp;&nbsp;<B>$__{'End Date'}:</B> ";
+print "<SELECT name=\"y2\" size=\"1\">\n";
+for ($FORM{BANG}..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+print "</SELECT>\n";
+print "<SELECT name=\"m2\" size=\"1\">\n";
+for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+print "</SELECT>\n";
+print "<SELECT name=\"d2\" size=\"1\">\n";
+for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+print "</SELECT>\n";
+print "&nbsp;&nbsp;<select name=\"node\" size=\"1\">";
+for ("|$__{'All nodes'}",@NODESSelList) {
+    my ($key,$val) = split (/\|/,$_);
+    my $sel = ("$key" eq "$QryParm->{'node'}" ? "selected":"");
+    print "<option $sel value=$key>$val</option>\n";
 }
+print "</select>";
+print "<BR>\n";
+print " \n";
+foreach my $i (sort keys %lists) {
+    if (isok($FORM{uc($i)."_FILT"})) {
+        my @key = keys %{$lists{$i}};
+        print "<B>".$FORM{uc($i)."_NAME"}.":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
+        print "<OPTION value=\"\"></OPTION>\n";
+        my $nam;
+        foreach (sort @key) {
+            if (ref $lists{$i}{$_}) {
+                $nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$_);
+            } else {
+                $nam = ($lists{$i}{$_} ? $lists{$i}{$_}:$_);
+            }
+            my $sel = ($QryParm->{$i} eq $_ ? "selected":"");
+            print "<OPTION value=\"$_\" $sel>$_: $nam</OPTION>\n";
+        }
+        print "</SELECT>\n";
+    }
+}
+foreach (@fieldsets) {
+    if (isok($FORM{$_.'_TOGGLE'})) {
+        my $fs = lc($_);
+        print " <INPUT type=\"checkbox\" name=\"$fs\" value=\"1\"".($QryParm->{$fs} ? " checked":"").">&nbsp;<B>$FORM{$_.'_NAME'}</B>";
+    }
+}
+
+print "</TD><TD style=\"border:0;text-align:center\">";
+print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"10\" value=\"$re\">";
+if ($re ne "") {
+    print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
+}
+if ($clientAuth > 1) {
+    print "<BR><INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"").">&nbsp;<B>$__{'Trash'}</B>";
+} else {
+    print "<INPUT type=\"hidden\" name=\"trash\">";
+}
+print "</TD><TD style=\"border:0;text-align:center\">";
+print "<INPUT type=\"submit\" value=\"$__{'Display'}\">";
+print "</TD></TR></TABLE></P></FORM>\n",
+  "<H1 style=\"margin-bottom:6pt\">$title</H1>\n",
+  "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-bottom:10px'>",
+  "<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=FORM.$form\"><B>Form</B></A>";
+if (-d "$WEBOBS{ROOT_OUTG}/FORM.$form/$WEBOBS{PATH_OUTG_MAPS}") {
+    print " | <B><A href=\"/cgi-bin/showOUTG.pl?grid=FORM.$form&ts=map\">Map</A></B>";
+}
+print " ]</DIV>\n<P>";
 
 # ---- Displaying data
 #
@@ -545,7 +535,6 @@ if ($QryParm->{'debug'}) {
 push(@html,"<P>$__{'Genform code'}: <B class='code'>FORM.$form</B><BR>\n");
 push(@html,"$__{'Date interval'} = <B>$delay days.</B><BR>\n");
 push(@html,"$__{'Number of records'} = <B>".($#rows+1)."</B> / $nbData.</P>\n");
-push(@html,"<P>$__{'Download a CSV text file of these data'}: <A href=\"/cgi-bin/showGENFORM.pl?dump=csv&y1=$QryParm->{'y1'}&m1=$QryParm->{'m1'}&d1=$QryParm->{'d1'}&y2=$QryParm->{'y2'}&m2=$QryParm->{'m2'}&d2=$QryParm->{'d2'}&node=$QryParm->{'node'}&trash=$QryParm->{'trash'}&form=$form\"><B>$fileCSV</B></A></P>\n");
 
 # displays all lists explicitely
 my $listoflist = "<BR><BR><div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#listID');\">&nbsp;&nbsp;";
@@ -583,23 +572,21 @@ foreach (@formulas) {
 }
 $listofformula .= "</UL>\n</div></div>";
 
+push(@csv,l2u($csvTxt));
+
 push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n":"")."</TABLE>\n$listoflist\n$listofformula");
-push(@html, qq(<form action="/cgi-bin/postFormData.pl?form=$form" method="post"><hr>
-  <input type="submit" value="Download form data" title="Download form data (Files, Images,...)">
-  <input type="hidden" name="form" value=$form>
+push(@html, qq(<hr><form action="/cgi-bin/postFormData.pl?form=$form" method="post">
+<input type="submit" value="Download a CSV text file of these data">
+<input type="hidden" name="form" value=$form>
+<input type="hidden" name="csv" value='@csv'>
+<span" title="Include associated form data (Files, Images,...)"><input type="checkbox" name="all"> Include associated form data</span>
 </form>));
 
-
-if ($QryParm->{'dump'} eq "csv") {
-    push(@csv,l2u($csvTxt));
-    print @csv;
-} else {
-    print @html;
-    print "<style type=\"text/css\">
-        #waiting { display: none; }
-    </style>\n
-    <BR>\n</BODY>\n</HTML>\n";
-}
+print @html;
+print "<style type=\"text/css\">
+    #waiting { display: none; }
+</style>\n
+<BR>\n</BODY>\n</HTML>\n";
 
 sub simplify_date {
     my $date0 = shift;
