@@ -18,7 +18,7 @@ URL|
 COPYRIGHT|MyForm
 
 # --- node parameters (display and maps)
-NODE_NAME|site
+NODE_NAME|fumerolle
 NODE_MARKER|s
 NODE_SIZE|10
 NODE_RGB|1,0,0
@@ -37,16 +37,29 @@ DEM_COPYRIGHT|
 # Generic FORM template for use with cgi-bin/fedit.pl
 BANG|$WEBOBS{BIG_BANG}
 
+# Time zone of the data (in hour from UT)
+TZ|0
+
+# if YES, use start and end date/time for each record
 STARTING_DATE|NO
-DEFAULT_DAYS|365
+
+# may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
+
+COMMENT_HELP|Noter toutes observations effectuées durant les mesures
 
 # inputs names and units
 INPUT01_NAME|Temp&eacute;rature du gaz
 INPUT01_UNIT|&deg;C
 INPUT02_NAME|pH
 INPUT02_UNIT|
-INPUT03_NAME|Flux (qualitatif)
+INPUT03_NAME|D&eacute;bit (qualitatif)
 INPUT03_TYPE|list: FORM_VOLCGAS_fr_type.conf
 INPUT03_FILT|YES
 INPUT04_NAME|H<sub>2</sub>
@@ -69,8 +82,6 @@ INPUT12_NAME|SO<sub>2</sub>
 INPUT12_UNIT|%
 INPUT13_NAME|O<sub>2</sub>
 INPUT13_UNIT|%
-
-#fieldset 03
 INPUT14_NAME|<sup>222</sup>Rn
 INPUT14_UNIT|cp/mn
 INPUT15_NAME|&delta;<sup>13</sup>C
@@ -85,18 +96,25 @@ COLUMN01_LIST|FIELDSET01
 COLUMN02_LIST|FIELDSET02,FIELDSET03
 
 # which inputs are contained in the first fieldset ?
-FIELDSET01_NAME|On-Site Measurements
+FIELDSET01_NAME|Mesures sur site
 FIELDSET01_CELLS|1
 FIELDSET01_C01|INPUT01,INPUT02,INPUT03
 
 # which inputs are contained in the second fieldset ?
-FIELDSET02_NAME|Major Concentration
-FIELDSET02_CELLS|2
+FIELDSET02_NAME|Concentration en majeurs
+FIELDSET02_CELLS|2,COLS
 FIELDSET02_C01|INPUT04,INPUT05,INPUT06,INPUT07,INPUT08
 FIELDSET02_C02|INPUT09,INPUT10,INPUT11,INPUT12,INPUT13
 
 # which inputs are contained in the third fieldset ?
-FIELDSET03_NAME|Isotope Concentration
+FIELDSET03_NAME|Concentration en isotopes 
 FIELDSET03_CELLS|1
 FIELDSET03_C01|INPUT14,INPUT15,INPUT16
 
+# ############################### WARNING #####################################
+# Export list of inputs/outputs must fit the associated procs channels.
+# ############################### WARNING #####################################
+# list of fields that will be exported to the associated procs (must be numeric)
+PROC_DATA_LIST|INPUT01,INPUT02,INPUT03,INPUT04,INPUT05,INPUT06,NPUT07,INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,NPUT13,INPUT14,INPUT15,INPUT16
+# optional error list of fields (same as PROC_DATA_LIST size!)
+PROC_ERROR_LIST|
