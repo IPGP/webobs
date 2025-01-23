@@ -194,6 +194,43 @@ for form in EAUX EXTENSO; do
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }}' >> $TMP 
                 ;;
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            "GAZ")
+                NBI=16
+
+                # uses French or English template
+                if grep -iq "^TITLE.*gaz" $conf0; then
+                    TEMPLATE="VOLCGAS_fr"
+                else
+                    TEMPLATE="VOLCGAS"
+                fi
+
+                # copy template files
+                cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
+                cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
+
+                # Id|Date|Heure|Site|Tfum|pH|Debit|Rn|Amp|H2|He|CO|CH4|N2|H2S|Ar|CO2|SO2|O2|d13C|d18O|Observations|Valider
+                # 1 |2   |3    |4   |5   |6 |7    |8 |9  |10|11|12|13 |14|15 |16|17 |18 |19|20  |21  |22          |23
+                for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                echo ");" >> $TMP
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
+                    bin = ($1<0) ? 1:0; \
+                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    for (i=1;i<=n;i++) printf ",input%02d",i; \
+                    printf ") ";\
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    gsub(/"/,"\"\"", $28); \
+                    gsub(/\045/,"\045\045", $28); \
+                    if ($29 ~ /^\[.*\] /) {
+                        nn = split($29,vv,/\] \[/);
+                        split(vv[1],v," ");
+                        gsub(/\[/, "", v[1]); \
+                        gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$28" "$29"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$28" "$29"\",\"\",\"\"" }; \
+                    for (i=5;i<n+5;i++) printf ",\""$i"\""; \
+                    print ");" }}' >> $TMP 
+                ;;
         esac
         
         # -- end of SQL script

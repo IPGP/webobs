@@ -51,7 +51,7 @@ DEFAULT_DAYS|365
 # list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
 VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
-COMMENT_HELP|Enter any observations made during the measurements
+COMMENT_HELP|Noter toutes observations effectuées durant les mesures
 
 
 # ############################### WARNING #####################################
