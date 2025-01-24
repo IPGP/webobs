@@ -436,7 +436,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
     my $sdate = simplify_date($sdate0,$sdate1);
 
     my $nameSite = htmlspecialchars(getNodeString(node=>$site,style=>'html'));
-    my $normSite = normNode(node=>"FORM.$site");
+    my $normSite = "FORM.$form.$site";
     if ($normSite ne "") {
         $nodelink = "<A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normSite\"><B>$aliasSite</B></A>";
     } else {
