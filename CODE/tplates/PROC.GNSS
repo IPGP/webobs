@@ -245,7 +245,7 @@ MODELLING_MAX_DEPTH|8000
 MODELLING_BORDERS|5000
 # model space width (warning: will be cubed, so 100 is already 1 million points!)
 MODELLING_GRID_SIZE|50
-# modelling source: 'isotropic' (formerly 'mogi'), 'pcdm' (point Compound Dislocation Model)
+# modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
 MODELLING_SOURCE_TYPE|isotropic
 # sets 2 to model the residuals with a secondary source (EXPERIMENTAL)
 MODELLING_MULTIPLE_SOURCES|1

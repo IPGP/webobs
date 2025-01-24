@@ -81,6 +81,8 @@ use WebObs::Form;
 # ---- standard FORMS inits ----------------------------------
 my $QP       = $cgi->Vars;
 
+$QP->{'form'}    ||= "EXTENSO";
+
 die "You can't view EXTENSO reports." if (!clientHasRead(type=>"authforms",name=>$QP->{form}));
 my $displayOnly = clientHasEdit(type=>"authforms",name=>$QP->{form}) ? 0 : 1;
 
