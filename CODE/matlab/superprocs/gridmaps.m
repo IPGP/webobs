@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2024-12-28
+%   Updated: 2025-01-23
 
 
 WO = readcfg;
@@ -216,11 +216,11 @@ for g = 1:length(grids)
 
 	% looks for supplementary maps (MAP*_XYLIM|LON1,LON2,LAT1,LAT2 keys)
 	if merge
-		maps(1,:) = {'MAP',mmaplim};
+		maps = {'MAP',mmaplim};
 	else
 		fd = fieldnames(G);
 		k = find(~cellfun(@isempty,regexp(fd,'^MAP\d+_XYLIM$')));
-		maps(1,:) = {'MAP',[]};
+		maps = {'MAP',[]};
 		for ii = 1:length(k)
 			x = split(fd{k(ii)},'_');
 			v = G.(fd{k(ii)});
