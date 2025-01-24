@@ -39,7 +39,8 @@ if ( $form eq "" ) {
 
 my $time     = strftime "%Y%m%d_%H%M%S", localtime time;
 my $filename = $form . "_" . $time;
-my $root     = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}";
+my $formdocs = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
+my $root     = "$WEBOBS{ROOT_DATA}/$formdocs";
 my $source   = "$root/$form";
 my $dest     = "/tmp/$filename.zip";
 my $csvfile  = "/tmp/$filename.csv";
