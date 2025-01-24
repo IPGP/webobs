@@ -378,7 +378,7 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
         my $unit_field = $FORM{"$field\_UNIT"};
         push(@colnam2, "$name_field".($unit_field ne "" ? " ($unit_field)":"")) if ($showfs);
         $name_field =~ s/(<su[bp]>|<\/su[bp]>|\&[^;]*;)//g;
-        $csvTxt .= ',"'.u2l($name_field).'"';
+        $csvTxt .= ',"'.u2l($FORM{"$field\_NAME"}).($unit_field ne "" ? " ($unit_field)":"").'"';
     }
 }
 $csvTxt .= "\n";
