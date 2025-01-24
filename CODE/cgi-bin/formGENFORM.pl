@@ -45,6 +45,7 @@ use warnings;
 use Time::Local;
 use POSIX qw/strftime/;
 use File::Basename;
+use File::Path qw/make_path/;
 use CGI;
 my $cgi = new CGI;
 $CGI::POST_MAX = 1024;
@@ -222,7 +223,7 @@ if ($action eq 'save') {
         my $rv = $sth->execute() or die $DBI::errstr;
         my $new_id = $sth->fetchrow_array();
         my $finalPath = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$new_id);
-        $upload_path =~ s/INPUT.*//g;
+        make_path("$finalPath");
         qx(mv -f $upload_path $finalPath);
         if ($?) { htmlMsgNotOK("Couldn't move $upload_path to $finalPath; $!"); }
     }
