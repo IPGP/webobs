@@ -4,7 +4,7 @@
 #
 # Author: François Beauducel
 # Created: 2024-04-21
-# Updated: 2025-01-21
+# Updated: 2025-01-24
 
 
 if [ -z "$1" ]; then
@@ -59,7 +59,7 @@ cmd "mkdir -p $LFPATH $LFDB"
 # =============================================================================
 # make a loop on all known legacy FORMs
 #for form in DISTANCE BOJAP EAUX EXTENSO FISSURO GAZ RIVERS SOILSOLUTIONS RAINWATER NOVAC
-for form in EAUX EXTENSO; do
+for form in EAUX GAZ EXTENSO; do
     
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
@@ -196,7 +196,7 @@ for form in EAUX EXTENSO; do
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "GAZ")
-                NBI=16
+                NBI=17
 
                 # uses French or English template
                 if grep -iq "^TITLE.*gaz" $conf0; then
@@ -219,15 +219,15 @@ for form in EAUX EXTENSO; do
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
-                    gsub(/"/,"\"\"", $28); \
-                    gsub(/\045/,"\045\045", $28); \
-                    if ($29 ~ /^\[.*\] /) {
-                        nn = split($29,vv,/\] \[/);
+                    gsub(/"/,"\"\"", $22); \
+                    gsub(/\045/,"\045\045", $22); \
+                    if ($23 ~ /^\[.*\] /) {
+                        nn = split($23,vv,/\] \[/);
                         split(vv[1],v," ");
                         gsub(/\[/, "", v[1]); \
                         gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$28" "$29"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$28" "$29"\",\"\",\"\"" }; \
+                        printf ",\""v[2]"\",\""$22" "$23"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$22" "$23"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }}' >> $TMP 
                 ;;
