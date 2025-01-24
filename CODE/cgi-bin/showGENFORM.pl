@@ -139,13 +139,16 @@ my $startDate = "$QryParm->{'y1'}-$QryParm->{'m1'}-$QryParm->{'d1'} 00:00:00";
 my $endDate = "$QryParm->{'y2'}-$QryParm->{'m2'}-$QryParm->{'d2'} 23:59:59";
 my $delay = datediffdays($startDate,$endDate);
 
-my $MAX_IMAGES = %GRIDS{GENFORM_THUMB_MAX_IMAGES} || 20;
-my $MAX_COLS = %GRIDS{GENFORM_THUMB_MAX_COLUMNS} || 4;
+my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
+my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
+my $PATH_SLIDES = $GRIDS{SPATH_SLIDES} || "SLIDES";
+my $MAX_IMAGES = $GRIDS{GENFORM_THUMB_MAX_IMAGES} || 20;
+my $MAX_COLS = $GRIDS{GENFORM_THUMB_MAX_COLUMNS} || 4;
 my $THUMB_DISPLAYED_HEIGHT = 16;
 
 # ---- Temporary file cleanup
-if ($WEBOBS{ROOT_DATA} && $GRIDS{SPATH_FORMDOCS} && $CLIENT && $form) {
-    my $path = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/.tmp/".$CLIENT."/".uc($form);
+if ($WEBOBS{ROOT_DATA} && $PATH_FORMDOCS && $CLIENT && $form) {
+    my $path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/.tmp/".$CLIENT."/".uc($form);
     qx(rm $path -R);
 }
 
@@ -492,14 +495,14 @@ for (my $j = 0; $j <= $#rows; $j++) {
             }
             if ($FORM{$Field."_TYPE"} =~ /^image/) {
                 my $img_id = uc($form."/record".$id."/".$Field);
-                my @listeTarget = <"$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/$img_id"/*.*> ;
-                my $pathSource = "/data/$GRIDS{SPATH_FORMDOCS}/$img_id";
+                my @listeTarget = <"$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$img_id"/*.*> ;
+                my $pathSource = "/data/$PATH_FORMDOCS/$img_id";
                 $val = "<table>";
                 foreach my $index (0..$#listeTarget) {
                     my $olmsg = "Click to enlarge ".($index+1)." / ".scalar(@listeTarget);
                     my ( $name, $path, $extension ) = fileparse ( $listeTarget[$index], '\..*' );
-                    my $urn = "$pathSource/$GRIDS{SPATH_SLIDES}/$name$extension.jpg";
-                    my $Turn = "$pathSource/$GRIDS{SPATH_THUMBNAILS}/$name$extension.jpg";
+                    my $urn = "$pathSource/$PATH_SLIDES/$name$extension.jpg";
+                    my $Turn = "$pathSource/$PATH_THUMBNAILS/$name$extension.jpg";
                     if ($index % $MAX_COLS == 0) { $val .= "<tr>"; }
                     $val .= $index+1 > $MAX_IMAGES ? qq(<td style="display:none;">) : "<td>";
                     $val .= qq(<img height=$THUMB_DISPLAYED_HEIGHT wolbset=SLIDES index=$index wolbsrc=$urn src=$Turn onMouseOver=\"overlib('$olmsg')\"></td>);

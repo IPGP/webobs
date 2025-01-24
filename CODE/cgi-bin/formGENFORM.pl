@@ -145,6 +145,8 @@ my $MIN_DELAY = $GRIDS{GENFORM_THUMB_MIN_DELAY} || 1;
 my $MAX_DELAY = $GRIDS{GENFORM_THUMB_MAX_DELAY} || 5;
 my $DEFAULT_DELAY = $GRIDS{GENFORM_THUMB_DEFAULT_DELAY} || 2;
 my $THUMB_ANIM = $GRIDS{GENFORM_THUMB_ANIM} || "_anim.gif";
+my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
+my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
 
 # ---- Variables des menus
 my $starting_date   = isok($FORM{STARTING_DATE});
@@ -219,7 +221,7 @@ if ($action eq 'save') {
         my $sth = $dbh->prepare( $stmt );
         my $rv = $sth->execute() or die $DBI::errstr;
         my $new_id = $sth->fetchrow_array();
-        my $finalPath = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/".uc($form."/record".$new_id);
+        my $finalPath = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$new_id);
         $upload_path =~ s/INPUT.*//g;
         qx(mv -f $upload_path $finalPath);
         if ($?) { htmlMsgNotOK("Couldn't move $upload_path to $finalPath; $!"); }
@@ -251,7 +253,7 @@ if ($action eq 'save') {
 
     # delete images directory
     if ($form ne "" && $id ne "") {
-        my $path = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/".uc($form."/record".$id);
+        my $path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$id);
         qx(rm $path -R);
     }
 
@@ -687,16 +689,16 @@ foreach (@columns) {
                     my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
-                    my $tempdir = "/.tmp/".$CLIENT."/".uc($form."/".$Field);
-                    my $img_id = ( $action eq "new" ? $tempdir : "/".uc($form."/record".$id."/".$Field) );
+                    my $tempdir = ".tmp/".$CLIENT."/".uc($form."/".$Field);
+                    my $img_id = ( $action eq "new" ? $tempdir : uc($form."/record".$id."/".$Field) );
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
                     my $delay = ( ( $default >= $MIN_DELAY && $default <= $MAX_DELAY ) ? $default : $DEFAULT_DELAY );
                     my $base_url = "formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay";
                     print qq(<tr><td style="border:0">$txt = );
-                    $upload_path = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}$img_id";
-                    if ( -e "$upload_path/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM" ) {
-                        print qq(<img height=$height src=/data/$GRIDS{SPATH_FORMDOCS}$img_id/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM></img>);
+                    $upload_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$img_id";
+                    if ( -e "$upload_path/$PATH_THUMBNAILS/$THUMB_ANIM" ) {
+                        print qq(<img height=$height src=/data/$PATH_FORMDOCS/$img_id/$PATH_THUMBNAILS/$THUMB_ANIM></img>);
                     }
                     print qq(</td><td style="border:0"><button onclick="location.href='$base_url'" type="button">);
                     print qq(<img src="/icons/down.png" style="vertical-align: middle;"> Upload</button></td></tr>);
