@@ -116,15 +116,15 @@ if ($QryParm->{'g'} =~ s!^lastevent(\b|$)!!) {
 
 # ---- initialize 'timescales' definitions
 my %TIMESCALES = (
-    xxx => 'Manual',
-    r => 'Reference',
-    all => 'All Data',
-    s => 'second',
-    h => 'hour',
-    d => 'day',
-    w => 'week',
-    m => 'month',
-    y => 'year',
+    xxx => $__{'Manual'},
+    r => $__{'Reference'},
+    all => $__{'All Data'},
+    s => $__{'second'},
+    h => $__{'hour'},
+    d => $__{'day'},
+    w => $__{'week'},
+    m => $__{'month'},
+    y => $__{'year'},
   );
 
 # ---- get the list of nodes currently belonging to grid
@@ -196,14 +196,14 @@ for my $i (0..$#tslist) {
 chop($tsHtml);
 print "<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=$GRIDType.$GRIDName\"><B>".ucfirst(lc($GRIDType))."</B></A> ";
 if ($QryParm->{'ts'} eq 'map' ) {
-    print "| <B>Map</B> ";
+    print "| <B>$__{'Map'}</B> ";
 } elsif (-d "$OUTG/$WEBOBS{PATH_OUTG_MAPS}") {
-    print "| <B><A href=\"$baseurl&ts=map\">Map</A></B> ";
+    print "| <B><A href=\"$baseurl&ts=map\">$__{'Map'}</A></B> ";
 }
 if ($QryParm->{'ts'} eq 'events' ) {
-    print "| <B>Events</B> ";
+    print "| <B>$__{'Events'}</B> ";
 } elsif (-d "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}") {
-    print "| <B><A href=\"$baseurl&ts=events\">Events</A></B> ";
+    print "| <B><A href=\"$baseurl&ts=events\">$__{'Events'}</A></B> ";
 }
 if (-d "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}") {
     (my $EVTurn = $OUTG) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
@@ -224,7 +224,7 @@ if (-d "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}") {
     }
 }
 if ($#tslist >= 0 && -d "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}") {
-    print "| Time scales: $tsHtml ";
+    print "| $__{'Time scales:'} $tsHtml ";
 }
 print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle\" title=\"Refresh\" onclick=\"document.location.reload(false)\"> ]\n";
 

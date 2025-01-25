@@ -985,7 +985,7 @@ msgid "calendar"
 msgstr "calendrier"
 
 msgid "week"
-msgstr "sem"
+msgstr "semaine"
 
 msgid "All"
 msgstr "Tout"
@@ -1731,6 +1731,35 @@ msgid "help_vsearch_shown"
 msgstr "Afficher le nom complet du node."
 
 
+# ---- showOUTG.pl
+
+msgid "Map"
+msgstr "Carte"
+
+msgid "Time scales:"
+msgstr "Fenêtres temporelles :"
+
+msgid "Manual"
+msgstr "Manuelle"
+
+msgid "All Data"
+msgstr "Toutes les données"
+
+msgid "second"
+msgstr "seconde"
+
+msgid "hour"
+msgstr "heure"
+
+msgid "day"
+msgstr "jour"
+
+msgid "month"
+msgstr "mois"
+
+msgid "year"
+msgstr "année"
+
 # ---- formRAINWATER.pl
 
 msgid "Edit existing data"
@@ -1989,6 +2018,24 @@ msgstr "Recherche des données, merci de patienter."
 
 msgid "Trash"
 msgstr "Corbeille"
+
+msgid "Site map"
+msgstr "Carte des sites"
+
+msgid "Download data"
+msgstr "Télécharger"
+
+msgid "Oper"
+msgstr "Opér."
+
+msgid "Sampling Date"
+msgstr "Date d'échantillonnage"
+
+msgid "Start"
+msgstr "Début"
+
+msgid "End"
+msgstr "Fin"
 
 msgid "unknown key list!"
 msgstr "clef inconnue dans la liste !"
