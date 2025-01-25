@@ -58,7 +58,7 @@ cmd "mkdir -p $LFPATH $LFDB"
 
 # =============================================================================
 # make a loop on all known legacy FORMs
-#for form in DISTANCE BOJAP EAUX EXTENSO FISSURO GAZ RIVERS SOILSOLUTIONS RAINWATER NOVAC
+#for form in EAUX RIVERS SOILSOLUTIONS RAINWATER EXTENSO FISSURO GAZ DISTANCE BOJAP 
 for form in EAUX GAZ EXTENSO; do
     
     # -----------------------------------------------------------------------------
@@ -191,6 +191,38 @@ for form in EAUX GAZ EXTENSO; do
                         gsub(/\]/, "", v[2]); \
                         printf ",\""v[2]"\",\""$28" "$29"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$28" "$29"\",\"\",\"\"" }; \
+                    for (i=5;i<n+5;i++) printf ",\""$i"\""; \
+                    print ");" }}' >> $TMP 
+                ;;
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            "RIVERS")
+                NBI=22
+
+                TEMPLATE="RIVERS"
+
+                # copy template files
+                cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
+                cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
+
+                # ID|Date|Hour|Site|Level|Type|Flask|Twater (C)|Suspended Load|pH|Conductivity at 25C|Conductivity|Na|K |Mg|Ca|HCO3|Cl|SO4|SiO2|DOC|POC|Comment|Validate
+                # 1 |2   |3   |4   |5    |6   |7    |8         |9             |10|11                 |12          |13|14|15|16|17  |18|19 |20  |21 |22 |23     |24
+                for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                echo ");" >> $TMP
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
+                    bin = ($1<0) ? 1:0; \
+                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    for (i=1;i<=n;i++) printf ",input%02d",i; \
+                    printf ") ";\
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    gsub(/"/,"\"\"", $23); \
+                    gsub(/\045/,"\045\045", $23); \
+                    if ($24 ~ /^\[.*\] /) {
+                        nn = split($24,vv,/\] \[/);
+                        split(vv[1],v," ");
+                        gsub(/\[/, "", v[1]); \
+                        gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$23" "$24"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$23" "$24"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }}' >> $TMP 
                 ;;
