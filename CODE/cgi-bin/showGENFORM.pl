@@ -325,7 +325,7 @@ foreach (@fieldsets) {
 }
 
 print "</TD><TD style=\"border:0;text-align:center\">";
-print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"10\" value=\"$re\">";
+print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"15\" value=\"$re\">";
 if ($re ne "") {
     print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
 }
@@ -341,7 +341,7 @@ print "</TD></TR></TABLE></P></FORM>\n",
   "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-bottom:10px'>",
   "<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=FORM.$form\"><B>Form</B></A>";
 if (-d "$WEBOBS{ROOT_OUTG}/FORM.$form/$WEBOBS{PATH_OUTG_MAPS}") {
-    print " | <B><A href=\"/cgi-bin/showOUTG.pl?grid=FORM.$form&ts=map\">Map</A></B>";
+    print " | <B><A href=\"/cgi-bin/showOUTG.pl?grid=FORM.$form&ts=map\">$__{'Site map'}</A></B>";
 }
 print " | <A href=\"#download\">$__{'Download data'}</A> ]</DIV>\n<P>";
 
@@ -355,12 +355,12 @@ my $delete;
 my $nodelink;
 my $aliasSite;
 
-my @colnam = ("Sampling Date","Site","Oper");
+my @colnam = ($__{'Sampling Date'},$__{'Site'},$__{'Oper'});
 my @colnam2;
 my %colspan;
 if ($starting_date) {
-    $colspan{"Sampling Date"} = 2;
-    push(@colnam2,("Start","End"));
+    $colspan{$__{'Sampling Date'}} = 2;
+    push(@colnam2,($__{'Start'},$__{'End'}));
     $csvTxt .= '"'.join('","', @colnam2, @colnam[1,2]).'"';
 } else {
     $csvTxt .= '"'.join('","', @colnam).'"';
