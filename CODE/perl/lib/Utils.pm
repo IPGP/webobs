@@ -50,7 +50,9 @@ die $l2u->getError if $l2u->getError;
 sub u2l ($) {
     my $texte = shift;
     # converts some characters in HTML since they don't exist in latin
+    $texte =~ s/µ/&mu;/g;
     $texte =~ s/σ/&sigma;/g;
+    $texte =~ s/δ/&delta;/g;
     $u2l->recode($texte) or die $u2l->getError;
     return $texte;
 }
