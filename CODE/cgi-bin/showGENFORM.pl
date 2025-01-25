@@ -526,7 +526,6 @@ for (my $j = 0; $j <= $#rows; $j++) {
         $remTxt = "<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('".htmlspecialchars($rem,$re)."',CAPTION,'Observations $aliasSite')\"><IMG src=\"/icons/attention.gif\" border=0></TD>";
     }
     $text .= "</TD>$remTxt</TR>\n";
-    print "<h2>$csvTxt</h2>" if ($j == 0);
 }
 
 if ($QryParm->{'debug'}) {
