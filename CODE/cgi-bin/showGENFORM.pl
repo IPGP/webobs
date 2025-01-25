@@ -585,10 +585,10 @@ push(@csv,$csvTxt);
 
 push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n":"")."</TABLE>\n$listoflist\n$listofformula");
 push(@html, qq(<hr><a name="download"></a><form action="/cgi-bin/postFormData.pl?form=$form" method="post">
-<input type="submit" value="Download a CSV text file of these data">
+<input type="submit" value="$__{'Download a CSV text file of these data'}">
 <input type="hidden" name="form" value=$form>
 <input type="hidden" name="csv" value='@csv'>
-<span" title="Include associated form data (Files, Images,...)"><input type="checkbox" name="all"> Include associated form data</span>
+<span" title="$__{'Include associated form data (files, images,...)'}"><input type="checkbox" name="all">&nbsp;$__{'Include associated form data'}</span>
 </form>));
 
 print @html;

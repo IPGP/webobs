@@ -2008,6 +2008,15 @@ msgstr "Listes"
 msgid "Formulas"
 msgstr "Formules"
 
+msgid "Download a CSV text file of these data"
+msgstr "Télécharger un fichier texte CSV de ces données"
+
+msgid "Include associated form data (files, images,...)"
+msgstr "Inclure les données associées au FORM (fichiers, images, ...)"
+
+msgid "Include associated form data"
+msgstr "Inclure les données associées"
+
 # ---- formGENFORM.pl
 
 msgid "Input new record"
