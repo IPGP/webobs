@@ -1813,9 +1813,6 @@ msgstr "Noter toute présence d&rsquo;odeur, gaz, précipité, etc..."
 msgid "Number of records"
 msgstr "Nombre d'enregistrements"
 
-msgid "Download a CSV text file of these data"
-msgstr "Télécharger ces données dans un fichier au format CSV"
-
 msgid "Request results"
 msgstr "Résultat des requêtes"
 
@@ -2009,13 +2006,13 @@ msgid "Formulas"
 msgstr "Formules"
 
 msgid "Download a CSV text file of these data"
-msgstr "Télécharger un fichier texte CSV de ces données"
+msgstr "Télécharger ces données au format CSV"
 
 msgid "Include associated form data (files, images,...)"
 msgstr "Inclure les données associées au FORM (fichiers, images, ...)"
 
-msgid "Include associated form data"
-msgstr "Inclure les données associées"
+msgid "Include attached data files"
+msgstr "Inclure les fichiers attachés"
 
 # ---- formGENFORM.pl
 

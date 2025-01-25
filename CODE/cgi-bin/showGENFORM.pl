@@ -588,7 +588,7 @@ push(@html, qq(<hr><a name="download"></a><form action="/cgi-bin/postFormData.pl
 <input type="submit" value="$__{'Download a CSV text file of these data'}">
 <input type="hidden" name="form" value=$form>
 <input type="hidden" name="csv" value='@csv'>
-<span" title="$__{'Include associated form data (files, images,...)'}"><input type="checkbox" name="all">&nbsp;$__{'Include associated form data'}</span>
+<span" title="$__{'Include associated form data (files, images,...)'}"><input type="checkbox" name="all">&nbsp;$__{'Include attached data files'}</span>
 </form>));
 
 print @html;
