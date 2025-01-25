@@ -343,7 +343,7 @@ print "</TD></TR></TABLE></P></FORM>\n",
 if (-d "$WEBOBS{ROOT_OUTG}/FORM.$form/$WEBOBS{PATH_OUTG_MAPS}") {
     print " | <B><A href=\"/cgi-bin/showOUTG.pl?grid=FORM.$form&ts=map\">Map</A></B>";
 }
-print " ]</DIV>\n<P>";
+print " | <A href=\"#download\">$__{'Download data'}</A> ]</DIV>\n<P>";
 
 # ---- Displaying data
 #
@@ -374,11 +374,12 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
     $colspan{$fs_names[$i]} = $nb_fields+1;
     for (my $j = 0; $j <= $nb_fields; $j++) {
         my $field = $field_names[$i][$j];
-        my $name_field = htm2frac($FORM{"$field\_NAME"});
+        my $name_field = $FORM{"$field\_NAME"};
         my $unit_field = $FORM{"$field\_UNIT"};
-        push(@colnam2, "$name_field".($unit_field ne "" ? " ($unit_field)":"")) if ($showfs);
-        $name_field =~ s/(<su[bp]>|<\/su[bp]>|\&[^;]*;)//g;
-        $csvTxt .= ',"'.u2l($FORM{"$field\_NAME"}).($unit_field ne "" ? " ($unit_field)":"").'"';
+        $unit_field = ($unit_field ne "" ? " ($unit_field)":"");
+        push(@colnam2, htm2frac($name_field).$unit_field) if ($showfs);
+        $name_field =~ s/<su[bp]>|<\/su[bp]>|\&[^;]*;//g; # removes HTML tags or characters
+        $csvTxt .= ',"'.$name_field.$unit_field.'"';
     }
 }
 $csvTxt .= "\n";
@@ -459,7 +460,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
     $text .= ($starting_date ? "<TD nowrap>$sdate</TD>":"")."<TD nowrap>$edate</TD>";
     $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite',CAPTION,'$site')\">$nodelink&nbsp;</TD>\n";
     $text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>\n";
-    $csvTxt .= "$id,$sdate,$edate,\"$aliasSite\",\"$opers\",";
+    $csvTxt .= "$id".($starting_date ? ",\"$sdate\"":"").",\"$edate\",\"$aliasSite\",\"$opers\",";
     for (my $f = 0; $f <= $#fieldsets; $f++) {
         my $fs = $fieldsets[$f];
         my $nb_fields = $#{$field_names[$f]};
@@ -512,15 +513,20 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 if ($#listeTarget+1 > $MAX_IMAGES) { $val .= "<br><b>... </b><i>gallery limited to ".$MAX_IMAGES." images</i>"; }
             }
             $text .= "<TD align=center $opt>$val</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
-            $csvTxt .= "$fields{$field},";
+            if ($FORM{$Field."_TYPE"} =~ /^numeric|^$/) {
+                $csvTxt .= "$fields{$field},";
+            } else {
+                $csvTxt .= "\"$fields{$field}\",";
+            }
         }
     }
-    $csvTxt .= ",\"".u2l($rem)."\"\n";
+    $csvTxt .= ",\"".$rem."\"\n";
     my $remTxt = "<TD></TD>";
     if ($rem ne "") {
         $remTxt = "<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('".htmlspecialchars($rem,$re)."',CAPTION,'Observations $aliasSite')\"><IMG src=\"/icons/attention.gif\" border=0></TD>";
     }
     $text .= "</TD>$remTxt</TR>\n";
+    print "<h2>$csvTxt</h2>" if ($j == 0);
 }
 
 if ($QryParm->{'debug'}) {
@@ -575,10 +581,11 @@ foreach (@formulas) {
 }
 $listofformula .= "</UL>\n</div></div>";
 
-push(@csv,l2u($csvTxt));
+$csvTxt =~ s/'/&#39;/g; # escapes any single quote
+push(@csv,$csvTxt);
 
 push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n":"")."</TABLE>\n$listoflist\n$listofformula");
-push(@html, qq(<hr><form action="/cgi-bin/postFormData.pl?form=$form" method="post">
+push(@html, qq(<hr><a name="download"></a><form action="/cgi-bin/postFormData.pl?form=$form" method="post">
 <input type="submit" value="Download a CSV text file of these data">
 <input type="hidden" name="form" value=$form>
 <input type="hidden" name="csv" value='@csv'>
