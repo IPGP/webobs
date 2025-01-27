@@ -368,7 +368,7 @@ if ($QryParm->{'ts'} eq 'map') {
         }
 
 # single file: displays .png (or .jpg) and links to other files (.eps,.pdf,.gse,.txt)
-    } else {
+    } elsif ($#plist == 1) {
         my $addlinks = "";
         (my $short = $plist[0]) =~ s/\.jpg//g;
         (my $urn = $short) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
