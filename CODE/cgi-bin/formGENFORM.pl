@@ -304,15 +304,17 @@ function update_form()
 ];
 foreach my $f (@formulas) {
     my ($formula, $size, @x) = extract_formula($FORM{$f."_TYPE"});
-
-# any word followed by an open parenthesis is supposed to be a math function (see math.js)...
+    # any word followed by an open parenthesis is supposed to be a math function (see math.js)...
     $formula =~ s/\b(pi)\b/Math.PI/ig;
     $formula =~ s/(\w+\()/math.$1/g;
+    $formula =~ s/\((.*)\)/([$1].filter(x => !Number.isNaN(x)))/g;
     foreach (@x) {
         my $form_input = lc($_);
         $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : NaN)/g;
     }
+    print "try {";
     print "form.".lc($f).".value = parseFloat($formula).toFixed(2);\n";
+    print "} catch(err) { form.".lc($f).".value = NaN; console.error(err.message); };\n";
 }
 foreach (@thresh) {
     my $f = lc($_);
