@@ -181,7 +181,7 @@ window.onkeydown = calc();
 </script>
 
 </head>
-<body style=\"background-color:#E0E0E0\" onLoad=\"calc()\">";
+<body onLoad=\"calc()\">";
 
 print <<"FIN";
 

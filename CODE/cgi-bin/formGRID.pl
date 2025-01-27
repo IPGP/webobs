@@ -558,7 +558,7 @@ function verif_formulaire()
 }
  </script>
 </HEAD>
-<BODY style="background-color:#E0E0E0" onLoad="document.formulaire.text.focus()">
+<BODY onLoad="document.formulaire.text.focus()">
 <!-- <script type="text/javascript" src="/js/jquery.js"></script> -->
 <!-- overLIB (c) Erik Bosrup -->
 <script language="JavaScript" src="/js/overlib/overlib.js"></script>

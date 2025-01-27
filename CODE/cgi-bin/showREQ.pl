@@ -73,7 +73,7 @@ print "Content-type: text/html; charset=utf-8
   <script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
   <meta http-equiv=\"refresh\" content=\"60\">
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\">
+<BODY>
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>

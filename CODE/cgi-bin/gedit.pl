@@ -185,7 +185,7 @@ function convert2MMD()
 }
 </script>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.texte.focus()\">
+<BODY onLoad=\"document.formulaire.texte.focus()\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- markitup -->
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>

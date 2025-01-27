@@ -163,7 +163,7 @@ function verif_formulaire()
 }
 </script>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.txt.focus()\">
+<BODY onLoad=\"document.formulaire.txt.focus()\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <script type=\"text/javascript\" >
     \$(document).ready(function() {

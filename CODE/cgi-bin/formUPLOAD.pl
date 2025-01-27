@@ -237,7 +237,7 @@ function verif_formulaire()
 FIN
 
 print "
- <body style=\"background-color:#E0E0E0\">
+ <body>
  <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
  <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
  <!-- overLIB (c) Erik Bosrup -->

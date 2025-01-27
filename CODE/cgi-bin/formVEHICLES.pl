@@ -142,7 +142,7 @@ window.onkeydown = nicb();
 </script>
 
 </head>
-<body style=\"background-color:#E0E0E0\" onLoad=\"calc()\">";
+<body onLoad=\"calc()\">";
 
 print <<"FIN";
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>

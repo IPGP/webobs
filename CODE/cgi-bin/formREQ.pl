@@ -284,7 +284,7 @@ function preSet()
 }
 </script>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.form.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');preSet();document.form.timezone.focus();\">
+<BODY onLoad=\"document.form.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');preSet();document.form.timezone.focus();\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>

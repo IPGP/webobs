@@ -130,7 +130,7 @@ print "Content-type: text/html\n\n
 <!-- overLIB (c) Erik Bosrup -->
 </HEAD>";
 my $jvs = ($QryParm->{'submit'}) ? 'onLoad="calc()"' : "";
-print "<BODY style=\"background-color:#E0E0E0\" $jvs>\n";
+print "<BODY $jvs>\n";
 print "<H1>$titlePage</H1>\n<H2>$titre2</H2>\n";
 
 # ---- take care of new "lines" if any
@@ -290,7 +290,7 @@ foreach my $id (sort sort_clb_lines keys %data) {
     }
     print "</select></TD>\n";
     print "<TD nowrap><input type=checkbox name=\"s$i\" onChange=\"calc()\">
-        <input name=\"v"."$i"."_1\" readonly value=\"$line{'nv'}\" size=\"$fieldCLB{'nv'}{'NbCar'}\" style=\"font-weight:bold;background-color:#E0E0E0;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'nv'}{'MSGID'}}')\">";
+        <input name=\"v"."$i"."_1\" readonly value=\"$line{'nv'}\" size=\"$fieldCLB{'nv'}{'NbCar'}\" style=\"font-weight:bold;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'nv'}{'MSGID'}}')\">";
     if ($line{'nv'} > $nbc) {
         $nbc = $line{'nv'};
     }

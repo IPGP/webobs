@@ -183,7 +183,7 @@ window.onkeydown = check_values();
 
     </script>\n
   </head>\n
-  <body style=\"background-color:#E0E0E0\" onLoad=\"calc()\">\n";
+  <body onLoad=\"calc()\">\n";
 
 # ------------------------------------------------------------
 # ---- end of specific NOVAC javascript form validation ------
