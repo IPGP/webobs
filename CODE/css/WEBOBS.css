@@ -16,9 +16,9 @@ a:visited {
     text-decoration: none;
     color: #333333;
 }
-a:hover {
-    background-color: #dddddd;
-}
+/*a:hover {*/
+/*    background-color: #dddddd;*/
+/*}*/
 h1 {
     /*display: table-caption;*/
     /*border-top: 4px solid #8DB8E6;*/

@@ -131,7 +131,6 @@ URN_OUTR|/OUTR
 # ---- HTML/PAGE ------------------------------
 # ---------------------------------------------
 FILE_HTML_CSS|css/WEBOBS.css
-FILE_HTML_WMCSS|css/wm2.css
 FILE_MENU|${ROOT_CONF}/menu.rc
 
 # ---- USERS DataBase--------------------------
