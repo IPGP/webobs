@@ -418,7 +418,7 @@ function verif_form()
 }
  </script>
 </HEAD>
-<BODY style="background-color:#E0E0E0" onLoad="document.form.text.focus()">
+<BODY onLoad="document.form.text.focus()">
 <!-- <script type="text/javascript" src="/js/jquery.js"></script> -->
 <!-- overLIB (c) Erik Bosrup -->
 <script language="JavaScript" src="/js/overlib/overlib.js"></script>

@@ -202,7 +202,7 @@ function submit()
 </script>
 </head>
 
-<body style="background-color:#E0E0E0">
+<body>
  <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
  <!-- overLIB (c) Erik Bosrup -->
  <script language="javascript" src="/js/overlib/overlib.js"></script>

@@ -391,7 +391,7 @@ print "Content-type: text/html; charset=utf-8
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
 <TITLE>Event Edit</TITLE>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.theform.contents.focus()\">
+<BODY onLoad=\"document.theform.contents.focus()\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- markitup -->
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>
