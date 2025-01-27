@@ -577,6 +577,9 @@ table.Dcalnd a:hover {
     font-weight: bold;
 }
 
+#theform {
+    background-color: #f6f6f6;
+}
 #theform select[name="fdsn"],
 #formNode input[name="tele"] {
     width: 26em;
@@ -716,7 +719,7 @@ th.ic {
     border: solid 1px #00008b;
     border-radius: 4px;
     background: white;
-    margin: 2px;
+    margin: 4px;
 }
 
 .drawerh2 {
@@ -731,10 +734,10 @@ th.ic {
     cursor: pointer;
 }
 .welcomedrawer {
-    border-bottom: 2px solid #00008b;
+    border-bottom: 1px solid #00008b;
     font-size: 12pt;
     font-weight: bold;
-    background: #c5ccd2;
+    background: #dce0e4;
     color: #cc5157;
     text-align: left;
 }

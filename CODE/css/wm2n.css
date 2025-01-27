@@ -19,7 +19,7 @@
 }
 
 #ident {
-    background-color: #c5ccd2;
+    background-color: #dce0e4;
     border: 0 solid grey;
     border-radius: 5px 5px 5px 5px;
     box-shadow: 3px 4px 3px #555555;
@@ -155,7 +155,7 @@ ul.dropdown ul {
 }
 ul.dropdown ul li {
     font-weight: normal;
-    background: #b0c4de;
+    background: #e4e0dc;
     color: #000;
     float: none;
 }
@@ -169,11 +169,11 @@ ul.dropdown ul li a {
     display: inline-block;
 }
 ul.dropdown ul li:hover {
-    background: #edccc0;
+    background: #b9d2f0;
     border-radius: 0px;
 }
 ul.dropdown ul li:last-child:hover {
-    background: #edccc0;
+    background: #b9d2f0;
     border-radius: 0px 0px 5px 5px;
 }
 
