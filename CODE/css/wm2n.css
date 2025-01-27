@@ -4,10 +4,13 @@
     padding: 0;
     padding-top: 5px;
     width: 100%;
-    background: url("/icons/bgH.png");
     position: fixed;
     top: 0px;
     outline: 0 none;
+}
+
+#wm a {
+        background-color: inherit;
 }
 
 #wmlogos {
@@ -16,7 +19,7 @@
 }
 
 #ident {
-    background-color: #eae4ce;
+    background-color: #c5ccd2;
     border: 0 solid grey;
     border-radius: 5px 5px 5px 5px;
     box-shadow: 3px 4px 3px #555555;
@@ -152,7 +155,7 @@ ul.dropdown ul {
 }
 ul.dropdown ul li {
     font-weight: normal;
-    background: #d3a8a2;
+    background: #b0c4de;
     color: #000;
     float: none;
 }
