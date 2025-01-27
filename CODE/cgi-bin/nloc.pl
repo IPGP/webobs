@@ -64,7 +64,7 @@ my $file = "WEBOBS-$WEBOBS{WEBOBS_ID}.$grid";
 my $GRIDName  = my $GRIDType  = my $NODEName = my $msk = "";
 my @NID = split(/[\.\/]/, trim($grid));
 ($GRIDType, $GRIDName, $NODEName) = @NID;
-if ( scalar(@NID) < 2 || !($GRIDType =~ /^PROC|VIEW/i) ) {
+if ( scalar(@NID) < 2 || !($GRIDType =~ /^PROC|VIEW|FORM/i) ) {
     die "No valid grid requested (NOT= gridtype.gridname[.node])." ;
 }
 
@@ -79,6 +79,7 @@ my %G;
 my %GRID;
 if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
 elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
 if (%G) {
     %GRID = %{$G{$GRIDName}} ;
 } else {
@@ -196,7 +197,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
