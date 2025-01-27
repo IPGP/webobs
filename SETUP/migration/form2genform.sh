@@ -33,6 +33,8 @@ if [[ $(id -u) != 0 && $DRY_RUN != 1  ]]; then
 	exit 64
 fi
 
+today=$(date)
+
 WOROOT=$1
 DBF=$WOROOT/DATA/DB/WEBOBSFORMS.db
 TMP=/tmp/webobs_genform_migration
@@ -122,6 +124,8 @@ for form in EAUX GAZ EXTENSO; do
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "EXTENSO")
                 NBI=22
+                ICOM=37
+                IVAL=38
 
                 # uses French template
                 TEMPLATE="EXTENSO_fr"
@@ -134,21 +138,18 @@ for form in EAUX GAZ EXTENSO; do
                 # 1 |2   |3    |4   |5         |6          |7    |8    |9     |10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37       |38
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
-                    gsub(/"/,"\"\"", $37); \
-                    gsub(/\045/,"\045\045", $37); \
-                    if ($38 ~ /^\[.*\] /) {
-                        nn = split($38,vv,/\] \[/);
-                        split(vv[1],v," ");
-                        gsub(/\[/, "", v[1]); \
-                        gsub(/\]/, "", v[2]); \
-                        printf ",\""$37" "$38"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\""$37" "$38"\",\"\",\"\"" }; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=6;i<10;i++) printf ",\""$i"\""; \
                     for (i=10;i<35;i+=3) {
                         j = i+1; k = i+2;
@@ -160,6 +161,8 @@ for form in EAUX GAZ EXTENSO; do
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "EAUX")
                 NBI=23
+                ICOM=28
+                IVAL=29
 
                 # uses French or English template
                 if grep -iq "^TITLE.*eaux" $conf0; then
@@ -182,21 +185,20 @@ for form in EAUX GAZ EXTENSO; do
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
-                    gsub(/"/,"\"\"", $28); \
-                    gsub(/\045/,"\045\045", $28); \
-                    if ($29 ~ /^\[.*\] /) {
-                        nn = split($29,vv,/\] \[/);
-                        split(vv[1],v," ");
-                        gsub(/\[/, "", v[1]); \
-                        gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$28" "$29"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$28" "$29"\",\"\",\"\"" }; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }}' >> $TMP 
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "RIVERS")
-                NBI=22
+                NBI=18
+                ICOM=23
+                IVAL=24
 
                 TEMPLATE="RIVERS"
 
@@ -208,27 +210,26 @@ for form in EAUX GAZ EXTENSO; do
                 # 1 |2   |3   |4   |5    |6   |7    |8         |9             |10|11                 |12          |13|14|15|16|17  |18|19 |20  |21 |22 |23     |24
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
-                    gsub(/"/,"\"\"", $23); \
-                    gsub(/\045/,"\045\045", $23); \
-                    if ($24 ~ /^\[.*\] /) {
-                        nn = split($24,vv,/\] \[/);
-                        split(vv[1],v," ");
-                        gsub(/\[/, "", v[1]); \
-                        gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$23" "$24"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$23" "$24"\",\"\",\"\"" }; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }}' >> $TMP 
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "GAZ")
                 NBI=17
+                ICOM=22
+                IVAL=23
 
                 # uses French or English template
                 if grep -iq "^TITLE.*gaz" $conf0; then
@@ -245,21 +246,18 @@ for form in EAUX GAZ EXTENSO; do
                 # 1 |2   |3    |4   |5   |6 |7    |8 |9  |10|11|12|13 |14|15 |16|17 |18 |19|20  |21  |22          |23
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
-                    gsub(/"/,"\"\"", $22); \
-                    gsub(/\045/,"\045\045", $22); \
-                    if ($23 ~ /^\[.*\] /) {
-                        nn = split($23,vv,/\] \[/);
-                        split(vv[1],v," ");
-                        gsub(/\[/, "", v[1]); \
-                        gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$22" "$23"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$22" "$23"\",\"\",\"\"" }; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }}' >> $TMP 
                 ;;
@@ -269,8 +267,9 @@ for form in EAUX GAZ EXTENSO; do
         echo "COMMIT;" >> $TMP
         cmd "cat $TMP | sqlite3 $DBF && rm -f $TMP" 
 
+        # -----------------------------------------------------------------------------
         # copy some variable values from former FORM and PROC conf
-        v=$(grep ^TITLE\| $conf0 | iconv -f UTF-8 -t ISO-8859-1)
+        v=$(grep ^TITLE\| $conf0 | sed -e 's/&/\\&/g' | iconv -f UTF-8 -t ISO-8859-1)
         cmd "LC_ALL=C sed -i -e 's/^NAME|.*$/$v/g;s/^TITLE/NAME/g' $conf"
         for key in BANG DEFAULT_DAYS; do
             okey=$(grep ^$key\| $conf0)
@@ -285,6 +284,16 @@ for form in EAUX GAZ EXTENSO; do
                 cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$v/g' $conf"
             fi
         done
+
+        # -----------------------------------------------------------------------------
+        # add default data format to the PROC conf
+        cmd "sed -i -e 's/^RAWDATA\|.*$//g;s/^RAWFORMAT\|.*$//g' $confp" # removes any RAWFORMAT/RAWDATA
+        cmd "echo '################################################################################\
+        # Migrate legacy form $form to new FORM.$proc on $today\
+        RAWFORMAT|genform\
+        RAWDATA|$proc\
+        ################################################################################' >> $confp"
+
 
         cmd "chown -R $wousr:$wogrp $WOROOT/CONF/FORMS/$proc" 
 
