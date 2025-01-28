@@ -932,7 +932,7 @@ print "<FIELDSET><LEGEND>$__{'Name and Description'}</LEGEND>";
 print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code/ID'}:</label>$GRIDType.$GRIDName.";
 if ($newnode) {
     print "<INPUT id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\" onKeyUp=\"checkNode()\">";
-    print "<INPUT size=\"15\" id=\"message\" name=\"message\" readOnly;border:0\">";
+    print "<INPUT size=\"15\" id=\"message\" name=\"message\" readOnly;>";
     print "<INPUT type=\"hidden\" name=\"newnode\" value=\"$newnode\"\n>";
 } else {
     print "<INPUT readonly=\"readonly\" style=\"font-family:monospace;font-weight:bold;font-size:120%;background-color:transparent;border:none\" id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\"><BR>";

@@ -477,7 +477,7 @@ print "</P>\n";
 
 print "<P class=parform><B>Moyenne</B> (mm) = <input name=\"moy\" size=7 readOnly class=inputNumNoEdit>
     <B>2 &times; &Eacute;cart-type</B> (mm) = <input name=\"sig\" size=4 readOnly class=inputNumNoEdit></P>\n";
-print "<P class=parform><B>Derni&egrave;re mesure du site</B> = <input name=\"prevmes\" size=25 readOnly;border:0\"></P>\n";
+print "<P class=parform><B>Derni&egrave;re mesure du site</B> = <input name=\"prevmes\" size=25 readOnly;></P>\n";
 
 # Hidden variables
 $i = 0;
