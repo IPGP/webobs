@@ -307,7 +307,7 @@ foreach my $f (@formulas) {
     # any word followed by an open parenthesis is supposed to be a math function (see math.js)...
     $formula =~ s/\b(pi)\b/Math.PI/ig;
     $formula =~ s/(\w+\()/math.$1/g;
-    $formula =~ s/\((.*)\)/([$1].filter(x => !Number.isNaN(x)))/g;
+    $formula = filter_nan($formula);
     foreach (@x) {
         my $form_input = lc($_);
         $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : NaN)/g;

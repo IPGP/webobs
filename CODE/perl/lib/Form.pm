@@ -59,7 +59,7 @@ require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
 @EXPORT = qw(datetime2array datetime2maxmin
-  extract_formula extract_list extract_type extract_text count_inputs count_columns
+  extract_formula extract_list extract_type extract_text count_inputs count_columns filter_nan
   connectDbForms);
 
 # FORM constructor
@@ -248,6 +248,23 @@ sub count_columns {
     return $count;
 }
 
+# filter js array for NaN values in formula outputs
+sub filter_nan {
+    my $new = "";
+    my $formula = shift;
+    foreach my $char ( split //, $formula ) {
+        if ( $char eq "(" ) {
+            $new .= $char;
+            $new .= "[";
+        } elsif ( $char eq ")" ) {
+            $new .= "].filter(x => !Number.isNaN(x))";
+            $new .= $char;
+        } else {
+            $new .= $char;
+        }
+    }
+    return $new;
+}
 
 # Open an SQLite connection to the forms database
 sub connectDbForms {
