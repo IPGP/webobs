@@ -103,6 +103,7 @@ FELTOTHERPLACES_OK|YES
 CITIES_DISPLAY_LIST|YES
 PDFOUTPUT|YES
 AUTOPRINT|NO
+
 # event must be defined in the postboard
 NOTIFY_EVENT|feltquake.
 NOTIFY_EMAIL_SUBJECT|$quake_strength M=$quake_magnitude - B3=$msk ($msk_max max) @ $city
@@ -110,8 +111,12 @@ REPORT_TEXT_ROOT|$WEBOBS{ROOT_CONF}/TREMBLEMAPS
 REPORT_TEXT_FILE|${REPORT_TEXT_ROOT}_TEXT_en.txt
 REPORT_FELT_FILE|${REPORT_TEXT_ROOT}_FELT_en.txt
 REPORT_AUTO_FILE|${REPORT_TEXT_ROOT}_AUTO_en.txt
+
+# watermark text for AUTO and others
 WATERMARK_AUTO|AUTOMATIQUE
 WATERMARK|
+
+# report text content
 TITLE1|Preliminary earthquale report for
 TITLE2|${AREA}
 SUBTITLE1|{\bfInstitut de Physique du Globe de Paris}
@@ -125,21 +130,23 @@ LIST_TITLE2|{\bf(and maximum)}
 LIST_OUTOF|{\bfOut of ${AREA}}
 LIST_UNFELT1|not felt in the cities
 LIST_UNFELT2|of ${AREA}
-
 TABLE_HEADERS|Perceived Shaking,Potential Damage,Acceleration (mg),Intensiy
 TABLE_WHITE_MSK|10:12
 FOOTNOTE1|(*) {\bfmg} = "milli G" is a physical unit for acceleration and equals one thousandth of the earth gravity.
 FOOTNOTE2|Dashed line shows potential limit of the felt event zone.
-
 LESS_1KM_TEXT|less than 1 km
 ADDITIONAL_TEXT|
-GSE_EXPORT|N
+
+# GSE file report
+GSE_EXPORT|Y
 GSE_TITLE|${REGION}: $quake_strength $quake_type $epicentral $azimuth of $city ($region)
 GSE_TITLE|${REGION}: $quake_strength $epicentral $azimuth of $city ($region)
 GSE_COMMENT|$azimuth of $city ($region)
 
+# JSON file
 JSON_EXPORT|Y
 
+# trigger email
 MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
 TRIGGER_EMAIL|
 TRIGGER_SUBJECT|FELT EARTHQUAKE
