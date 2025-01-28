@@ -66,6 +66,8 @@ th {
     border-width: 1px;
     border-color: #999999;
     border-style: solid;
+    border-left: none;
+    border-right: none;
     padding: 2px;
 }
 th {
@@ -716,7 +718,7 @@ th.ic {
 }
 
 .drawer {
-    border: solid 1px #00008b;
+    border: solid 1px #e4e4e4;
     border-radius: 4px;
     background: white;
     margin: 4px;
@@ -734,11 +736,10 @@ th.ic {
     cursor: pointer;
 }
 .welcomedrawer {
-    border-bottom: 1px solid #00008b;
-    font-size: 12pt;
+    font-size: 14pt;
     font-weight: bold;
     background: #dce0e4;
-    color: #cc5157;
+    color: #dd5555;
     text-align: left;
 }
 .welcomedrawer > img {
