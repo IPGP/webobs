@@ -399,7 +399,7 @@ fi
 # could add [ rpm -qa | grep xxx   --or-- dpkg --get-selections | grep xxx ]
 echo    'Gathering main software dependencies info ...'
 echo    'Perl...';        APP_PERL=$(perl -e 'print "$^V"' 2>/dev/null)
-echo -n 'Python...';      APP_PYTHON="$(which python)"
+echo -n 'Python...';      APP_PYTHON="$(which python3)"
 echo -n 'Sqlite...';      APP_SQLITE=$(sqlite3 -version 2>/dev/null)
 echo -n 'ImageMagick...'; APP_IMAGICK=$(convert --version 2>/dev/null)
 echo -n 'pngquant...';    APP_PNGQUANT="$(which pngquant)"
@@ -419,24 +419,27 @@ if [[ -z "${APP_PERL}" ]] ; then DEPMISS=true; echo '**** need Perl install';
 else
 	# some more checkings for PERL modules (not blocking install)
 	verbosecho "Perl ${APP_PERL}"
-	if [[ -f ${RELBASE}/CODE/cgi-bin/out-scandeps ]]; then
+	if [[ -f ${RELBASE}/SETUP/out-scandeps ]]; then
 		echo -n "Scanning installed perl modules vs cgi-bin requirements ... "
 		# test module presence (using perlmod_installed defined above), append to notinst if not loadable
 		notinst=()
 		while read mname; do
 			perlmod_installed ${mname} || notinst[${#notinst[@]}]="${mname}"
-		done< ${RELBASE}/CODE/cgi-bin/out-scandeps
+		done< ${RELBASE}/SETUP/out-scandeps
 		echo "done."
 		# print notinst list
 		if [[ ${#notinst[@]} != 0 ]]; then
 			echo
-			echo "**** Warning: some required perl modules could not be found, please check:"
+			echo "**** Warning: some required perl modules could not be found:"
+			echo
 			for t in "${notinst[@]}"; do
 				# there could be added the linux distro's package containing module !
 				# (eg. yum search module (or yum provides) OR apt-file search module
 				echo "  " ${t}
 			done
 			echo
+			echo "Aborted."
+			exit
 		fi
 	else
 		echo "missing out-scandeps - skipping perl modules checkings"
