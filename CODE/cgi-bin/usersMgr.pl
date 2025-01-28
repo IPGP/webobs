@@ -647,7 +647,7 @@ Identifications&nbsp;$go2top
                 <thead>
                 <tr>
                     <th style=\"width:12px\"><a href="#IDENT" onclick="openPopupUser(); return false">
-                        <img title="define a new user" src="/icons/modif.png"></a></th>
+                        <img title="define a new user" src="/icons/new.png"></a></th>
                     <th style=\"width:12px\" class="tdlock">&nbsp;</th>
                     <th>Uid</th>
                     <th>Name</th>
@@ -673,7 +673,7 @@ Identifications&nbsp;$go2top
         <div class="dugrps-container">
             <div class="dugrps">
                 <table class="dugrps">
-                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupGroup();return false"><img title="define new group/user" src="/icons/modif.png"></a>
+                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupGroup();return false"><img title="define new group" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
                 <th>Gid<th>Uids
                 </tr></thead>
@@ -752,7 +752,7 @@ PostBoard subscriptions&nbsp;$go2top
         <div class="dnotf-container">
             <div class="dnotf">
                 <table class="dnotf">
-                <thead><tr><th style=\"width:12px\"><a href="#POSTBOARD" onclick="openPopupNotf();return false"><img title="define new notification" src="/icons/modif.png"></a>
+                <thead><tr><th style=\"width:12px\"><a href="#POSTBOARD" onclick="openPopupNotf();return false"><img title="define new notification" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
                 <th>Event<th>V<th>Uid<th>Mail<br>Subject<th>Mail<br>Attachm.<th>Action
                 </tr></thead>
@@ -803,7 +803,7 @@ for my $i (qw(view proc form)) {
         <div class="dauth-container" style="float: left">
             <div class="dauth">
                 <table class="dauth">
-                <thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/modif.png"></a>
+                <thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
                 <th>Uid<th>Rname<th>Auth
                 </tr></thead>
@@ -826,7 +826,7 @@ for my $i (qw(wiki misc)) {
         <div class="dauth-container" style="float: left">
             <div class="dauth">
                 <table class="dauth">
-                <thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/modif.png"></a>
+                <thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
                 <th>Uid<th>Rname<th>Auth
                 </tr></thead>
@@ -996,7 +996,7 @@ Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
