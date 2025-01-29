@@ -500,7 +500,7 @@ $htmlcontents .= "<TABLE width=\"100%\">";
 $htmlcontents .= "<TR>";
 $htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
   ."<TH rowspan=2>$__{'Alias'}</TH>"
-  ."<TH rowspan=2>$__{'Name'}</TH>"
+  ."<TH rowspan=2 style=\"text-align: left\">$__{'Name'}</TH>"
   ."<TH colspan=3>$__{'Coordinates'}</TH>"
   ."<TH colspan=2>$__{'Lifetime and Validity'}"
   ."<TH rowspan=2>$__{'Type'}</TH>";

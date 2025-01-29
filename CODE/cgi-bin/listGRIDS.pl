@@ -262,21 +262,21 @@ if (@$domains) {
 
     print "<TR>";
     if ($subsetDomain eq "") {
-        print "<TH>";
+        print "<TH style=\"text-align: left\">";
         if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"*")) {
             print "&nbsp;<a href='/cgi-bin/gridsMgr.pl' title=\"$__{'Edit/Create a Domain/Producer'}\"><img class='ic' src='/icons/modif.png'></a>&nbsp;&nbsp;&nbsp;";
         }
         print "$__{'Domain'}</TH>";
     }
     print "<TH>$__{'Grid'}</TH>" if ($subsetType ne "");
-    print "<TH><a href='#popupY' title=\"$__{'Find text in Grids'}\" onclick='srchopenPopup(\"*ALL\");return false'><img class='ic' src='/icons/search.png'></a>";
+    print "<TH style=\"text-align: left\"><a href='#popupY' title=\"$__{'Find text in Grids'}\" onclick='srchopenPopup(\"*ALL\");return false'><img class='ic' src='/icons/search.png'></a>";
     if ($admVIEWS || $admPROCS || $admFORMS) {
         print "&nbsp;<a href='#popupY' title=\"$__{'Create a new Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/new.png'></a>"
     }
     print     "&nbsp;&nbsp;&nbsp;$__{'Name'}</TH>";
-    print "<TH>$__{'Nodes'}</TH>";
-    print "<TH>$__{'Type'}</TH>"  if ($showType);
-    print "<TH>$__{'Owner'}</TH>" if ($showOwnr);
+    print "<TH style=\"text-align: left\">$__{'Nodes'}</TH>";
+    print "<TH style=\"text-align: left\">$__{'Type'}</TH>"  if ($showType);
+    print "<TH style=\"text-align: left\">$__{'Owner'}</TH>" if ($showOwnr);
     print "<TH>$__{'Graphs'}</TH>";
     if ($wantProcs || $wantSefrans || $wantForms) {
 
