@@ -95,7 +95,7 @@ for (sort keys(%fuseaux_horaires)) {
     my $bullet = "<span style=\"font-weight: bolder; color: $DNcolors[$DNc]\">&#8226;&nbsp;</span>";
     if (isok($DN)) {
         push(@liste_heures,sprintf("<div style=\"padding-bottom: 4px;background-color:%s\">%s<b>%s</b>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<i>%s</i></div>",
-                ($DNc%2)?"#EAE4CE":"transparent",
+                ($DNc%2)?"#E4E4E4":"transparent",
                 $bullet,
                 $fuseaux_horaires{$_},
                 l2u(qx(date -d "$today" +"\%A \%-d \%B \%Y - \%H:\%M"))));
