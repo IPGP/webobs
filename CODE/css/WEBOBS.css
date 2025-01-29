@@ -71,8 +71,11 @@ th {
     padding: 2px;
 }
 th {
-    color: #777777;
+    font-style: italic;
+    color: #666666;
     background-color: #dddddd;
+    padding-left: 3px;
+    padding-right: 3px;
 }
 
 ul {

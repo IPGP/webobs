@@ -334,7 +334,7 @@ if (@$domains) {
                           ."</TD>"  if ($showOwnr);
                         if ( -d "$G{$vs}{ROOT}" ) {
                             print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/sefran3.pl?s3=$vs&header=1\"><IMG border=\"0\" alt=\"$vs\" SRC=\"/icons/visu.png\"></A>";
-                        } else { print "<TD style=\"background-color: #EEEEDD\">&nbsp;" }
+                        } else { print "<TD>&nbsp;" }
                         print "</TD>";
                         print "<TD style=\"text-align:center\">";
                         if (defined($G{$vs}{MC3_NAME}) && $G{$vs}{MC3_NAME} ne '') {
@@ -373,7 +373,7 @@ if (@$domains) {
                             print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vp\"><IMG border=\"0\" alt=\"$vp\" SRC=\"/icons/visu.png\"></A>";
                         } elsif ( -d "$WEBOBS{ROOT_OUTG}/PROC.$vp/$WEBOBS{PATH_OUTG_EVENTS}" ) {
                             print "<TD  style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vp&ts=events\"><IMG border=\"0\" alt=\"$vp\" SRC=\"/icons/visu.png\"></A>";
-                        } else { print "<TD style=\"background-color: #EEEEDD\">&nbsp;" }
+                        } else { print "<TD>&nbsp;" }
                         print "</TD>";
                         print "<TD style=\"text-align:center\">";
                         if (defined($G{$vp}{URNDATA}) && $G{$vp}{URNDATA} ne '') {
@@ -409,7 +409,7 @@ if (@$domains) {
                           ."</TD>"  if ($showOwnr);
                         if ( -d "$WEBOBS{ROOT_OUTG}/FORM.$vf/$WEBOBS{PATH_OUTG_MAPS}" ) {
                             print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vf\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/visu.png\"></A>";
-                        } else { print "<TD style=\"background-color: #EEEEDD\">&nbsp;" }
+                        } else { print "<TD>&nbsp;" }
                         print "</TD>";
                         print "<TD style=\"text-align:center\">";
                         print "<A HREF=\"/cgi-bin/showGENFORM.pl?form=$vf\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/form.png\"></A>";
@@ -444,7 +444,7 @@ if (@$domains) {
                         } else { print "<TD>&nbsp;" }
                         print "</TD>";
                         if ($wantProcs) {
-                            print "<TD style=\"background-color: #EEEEDD\"></TD>";
+                            print "<TD></TD>";
                         }
                     }
                     print "</TR>\n";

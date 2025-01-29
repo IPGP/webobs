@@ -19,7 +19,7 @@
 }
 
 #ident {
-    background-color: #dce0e4;
+    background-color: #e4e0dc;
     border: 0 solid grey;
     border-radius: 5px 5px 5px 5px;
     box-shadow: 3px 4px 3px #555555;
@@ -73,7 +73,7 @@
     margin: 1px;
 }
 #wmflags .actif {
-    border-color: #00ff00;
+    border-color: #8db8e6;
 }
 #wmflags .inactif {
     border-color: #ffffff;
