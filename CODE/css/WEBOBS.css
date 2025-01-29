@@ -68,7 +68,7 @@ th {
     border-style: solid;
     border-left: none;
     border-right: none;
-    padding: 2px;
+    padding: 2px 3px 2px 3px;
 }
 th {
     font-style: italic;
@@ -77,7 +77,6 @@ th {
     padding-left: 3px;
     padding-right: 3px;
 }
-
 ul {
     list-style-type: square;
 }
