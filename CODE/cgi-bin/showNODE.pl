@@ -876,7 +876,7 @@ if ($editOK || $#listeDocuments >= 0) {
 }
 #
 # ---- end of node table ------------------------------------------------------
-print "</TABLE>";
+print "<TR><TH colspan=\"3\" class=\"th-bottom\"></TH></TR></TABLE>\n";
 
 # ---- Project ----------------------------------------------------------------
 #
