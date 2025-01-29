@@ -1,0 +1,151 @@
+:root {
+  --form_color: 255, 140, 0; /* darkorange */
+  --proc_color: 162, 38, 49; /* firebrick */
+  --view_color: 0, 100, 0; /* darkgreen */
+}
+
+.nodeid {
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 110%;
+}
+
+.nodetbl {
+    position: relative;
+    background-color: #ffffff;
+    font-size: 10px;
+    font-family: sans;
+}
+
+.nodetbl a {
+    color: #333333;
+    text-decoration: none;
+    font-size: 10px;
+    font-family: sans;
+}
+
+.nodetbl table th {
+    border: 0px;
+    padding: 0px;
+    background: white;
+    color: #444444;
+}
+
+.nodetbl table th.skew {
+    height: 100px;
+    width: 40px;
+    border: 0px;
+    /*position: relative;*/
+    vertical-align: bottom;
+    background-color: white;
+}
+
+.nodetbl table th.skew > div {
+    position: relative;
+    top: 0px;
+    left: 50px;
+    height: 100%;
+    transform: skew(-45deg, 0deg);
+    -moz-transform: skew(-45deg, 0deg);
+    -webkit-transform: skew(-45deg, 0deg);
+    overflow: hidden;
+}
+
+.nodetbl table th.skew span {
+    transform: skew(45deg, 0deg) rotate(315deg);
+    -moz-transform: skew(45deg, 0deg) rotate(315deg);
+    -webkit-transform: skew(45deg, 0deg) rotate(315deg);
+    position: absolute;
+    bottom: 15px;
+    left: 1px;
+    display: inline-block;
+    width: 100%;
+    text-align: left;
+    font-size: 10px;
+}
+
+.nodetbl table td {
+    width: 50px;
+    text-align: left;
+    vertical-align: middle;
+    border: 1px solid #cccccc;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 0px;
+}
+
+.nodetbl table td a {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
+.nodetbl table th.skew.view.even > div {
+    background-color: rgba(var(--view_color), 0.1);
+}
+.nodetbl table th.skew.view.odd > div {
+    background-color: rgba(var(--view_color), 0.2);
+}
+.nodetbl table th.skew.proc.even > div {
+    background-color: rgba(var(--proc_color), 0.1);
+}
+.nodetbl table th.skew.proc.odd > div {
+    background-color: rgba(var(--proc_color), 0.2);
+}
+.nodetbl table th.skew.form.even > div {
+    background-color: rgba(var(--form_color), 0.1);
+}
+.nodetbl table th.skew.form.odd > div {
+    background-color: rgba(var(--form_color), 0.2);
+}
+.nodetbl table td.view.otimes {
+    background-color: rgba(var(--view_color), 0.8);
+    color: white;
+    text-align: center;
+}
+.nodetbl table td.proc.otimes {
+    background-color: rgba(var(--proc_color), 0.8);
+    color: white;
+    text-align: center;
+}
+.nodetbl table td.form.otimes {
+    background-color: rgba(var(--form_color), 0.8);
+    color: white;
+    text-align: center;
+}
+
+.nodetbl table td.oempty.view.even {
+    background-color: transparent;
+    color: transparent;
+}
+.nodetbl table td.oempty.view.odd {
+    background-color: transparent;
+    color: transparent;
+}
+
+.nodetbl table td.oempty.proc.even {
+    background-color: transparent;
+    color: transparent;
+}
+.nodetbl table td.oempty.proc.odd {
+    background-color: transparent;
+    color: transparent;
+}
+
+.nodetbl table td.oempty.form.even {
+    background-color: transparent;
+    color: transparent;
+}
+.nodetbl table td.oempty.form.odd {
+    background-color: transparent;
+    color: transparent;
+}
+
+.nodetbl table td.oorphan {
+    background-color: transparent;
+    color: transparent;
+}
+
+.hover {
+    background-color: #e0e0e0;
+}
