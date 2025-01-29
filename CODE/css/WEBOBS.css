@@ -63,8 +63,8 @@ table {
 td,
 th {
     font-size: 8pt;
-    border-width: 1px;
     border-color: #999999;
+    border-width: 1px;
     border-style: solid;
     border-left: none;
     border-right: none;
@@ -76,6 +76,13 @@ th {
     background-color: #dddddd;
     padding-left: 3px;
     padding-right: 3px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+}
+.th-bottom {
+    padding: 0px;
+    border-top-width: 0px;
+    border-bottom-width: 1px;
 }
 ul {
     list-style-type: square;

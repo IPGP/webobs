@@ -748,7 +748,7 @@ for (@{$GRID{NODESLIST}}) {
         $htmlcontents .= "</TR>\n".(!$displayNode ? "-->":"");
     }
 }
-$htmlcontents .= "</TABLE>";
+$htmlcontents .= "<TR><TH colspan=\"15\" class=\"th-bottom\"></TH></TR></TABLE>";
 $htmlcontents .= "</div></div>";
 print $htmlcontents;
 
