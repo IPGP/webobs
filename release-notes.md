@@ -8,6 +8,15 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
+## v.2.8 (under development)
+
+### Enhancements
+1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
+
+### Fixed issues
+1. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
+
+
 ## v2.7.2 (January 2025)
 
 ### New features
