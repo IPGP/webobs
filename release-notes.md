@@ -10,7 +10,19 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 ## v.2.8 (under development)
 
+### New features
+1. **New grids FORM**: manual databases (formerly dedicated forms) are now fully integrated as a grid type along with PROCs and VIEWs. A FORM is then associated to a DOMAIN and some NODES, appears in the GRIDs table and has its own page with description, nodes table list, map location, and events. FORM is based on the new GENFORM user-defined manual database tool (introduced in the previous release): a freely configurazble SQLite database managed through a GUI form (for entering new data, editing and deleting), a table data display with options and filters, data export as CSV file or as raw data source for PROCs. Creating a FORM becomes as simple as creating a PROC or VIEW, by selecting a template (a dozen are available), if necessary modifying it partially or completely, associating a DOMAIN, associating or creating NODES, and editing the configuration file to set the database structure (inputs and outputs) and the form layout. GENFORM is able to store numerical values, checkboxes, lists, text strings, images, and mathematical output formulas. It aims to replace spreadsheets files for (potentially) any structured scientific data. See the user manual for more details.
+
+    `!!` **Update note**: This new feature replaces definitively all the previous forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, BOJAP, RIVERS, SOILSOLUTIONS, and RAINWATER) for which an automatic migration is made during the setup/update. PROCS using the legacy forms databases will be adapted to point to new FORM which become a RAWFORMAT/RAWDATA attribute instead of hard link to legacy form. Each PROC will have its own FORM with the same grid name and the same associated nodes. Old data files `DATA/DB/*.DAT` will be moved in the directory `DATA/LEGACY_FORMS_BACKUP`. All the legacy scripts `CODE/cgi-bin/{form,post,show}FORMNAME.pl` have been removed from this release. Any link/URL (for example in the WebObs menu) pointing to these scripts must be modified as follows:
+    * `showFORMNAME.pl` => `showGENFORM.pl?form=PROCNAME`
+    * `showFORMNAME.pl?node={PROCNAME}` => `showGENFORM.pl?form=PROCNAME`
+    * `showFORMNAME.pl?node=NODEID` => `showGENFORM.pl?form=PROCNAME&node=NODEID`
+    * `formFORMNAME.pl` => `formGENFORM.pl?form=PROCNAME`
+
+    where FORMNAME is the legacy form name, and PROCNAME is the associated PROC which becomes also the new FORM name. Note that previous link `showFORMNAME.pl` without argument, when legacy form was associated to more than one PROC (for instance the `EAUX` database), has no strict equivalent in the new structure; it must be replaced by as many links as there are procs associated to this form.
+
 ### Enhancements
+1. New CSS!
 1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
 
 ### Fixed issues
