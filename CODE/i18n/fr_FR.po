@@ -1606,6 +1606,12 @@ msgstr "Logs détaillés"
 
 # ---- showREQ.pl
 
+msgid "Requests results"
+msgstr "Résultats de requêtes"
+
+msgid "Request Forms:"
+msgstr "Formulaires de requêtes :"
+
 msgid "Date & Time"
 msgstr "Date & Heure"
 
