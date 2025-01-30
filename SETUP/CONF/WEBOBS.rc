@@ -328,7 +328,7 @@ OSM_ZOOM_VALUE|17
 # QR code module size (in pixels) / empty or zero to not display in grid/node pages
 QRCODE_BIN|qrencode
 QRCODE_SIZE|2
-QRCODE_LOGOS|/icons/ipgp/logo_WebObs_C413.png,/icons/ipgp/logo_IPGP_2022.png
+QRCODE_LOGOS|/icons/ipgp/logo_WebObs_C413.png,/icons/ipgp/logo_IPGP_2022.png,/icons/ipgp/logo_CNRSfilaire-grand.jpg
 
 # Digital Elevation Models --------------------
 # ---------------------------------------------
