@@ -56,7 +56,7 @@ wogrp=$(stat -f '%Sg' $WOROOT/CONF/GRIDS2NODES)
 FPATH=$WOROOT/CONF/FORMS
 LFPATH=$WOROOT/CONF/LEGACY_FORMS
 LFDB=$WOROOT/DATA/LEGACY_FORMS_BACKUP
-cmd "mkdir -p $LFPATH $LFDB"
+cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 
 # =============================================================================
 # make a loop on all known legacy FORMs
@@ -77,8 +77,8 @@ for form in EAUX GAZ EXTENSO; do
     fi
         
     # move the legacy conf and data first
-    cmd "mv -f $FPATH/$form $LFPATH/"
-    conf0="$LFPATH/$form/$form.conf"
+    cmd "mv -f $FPATH/$form $LFPATH/FORMS/"
+    conf0="$LFPATH/FORMS/$form/$form.conf"
 
     # make a loop on all PROCs associated to this FORM
     for p in $(ls -d $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form); do
@@ -148,8 +148,8 @@ for form in EAUX GAZ EXTENSO; do
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                        printf ",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=6;i<10;i++) printf ",\""$i"\""; \
                     for (i=10;i<35;i+=3) {
                         j = i+1; k = i+2;
@@ -179,7 +179,7 @@ for form in EAUX GAZ EXTENSO; do
                 # 1 |2   |3    |4   |5   |6        |7        |8 |9            |10        |11        |12|13|14|15|16|17|18|19|20 |21 |22  |23|24  |25  |26  |27|28       |29
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -287,13 +287,12 @@ for form in EAUX GAZ EXTENSO; do
 
         # -----------------------------------------------------------------------------
         # add default data format to the PROC conf
-        cmd "sed -i -e 's/^RAWDATA\|.*$//g;s/^RAWFORMAT\|.*$//g' $confp" # removes any RAWFORMAT/RAWDATA
-        cmd "echo '################################################################################\
-        # Migrate legacy form $form to new FORM.$proc on $today\
-        RAWFORMAT|genform\
-        RAWDATA|$proc\
-        ################################################################################' >> $confp"
-
+        cmd "LC_ALL=C sed -i -e 's/^RAWDATA|.*//g;s/^RAWFORMAT|.*//g' $confp" # removes any RAWFORMAT/RAWDATA
+        cmd "echo '################################################################################' >> $confp"
+        cmd "echo '# Migrate legacy form $form to new FORM.$proc on $today' >> $confp"
+        cmd "echo 'RAWFORMAT|genform' >> $confp"
+        cmd "echo 'RAWDATA|$proc' >> $confp"
+        cmd "echo '################################################################################' >> $confp"
 
         cmd "chown -R $wousr:$wogrp $WOROOT/CONF/FORMS/$proc" 
 
@@ -305,7 +304,8 @@ for form in EAUX GAZ EXTENSO; do
         cmd "chown $wousr:$wogrp $WOROOT/CONF/GRIDS2NODES/FORM.$proc.*" 
         
         # -----------------------------------------------------------------------------
-        # finally moves the original data file
+        # finally moves legacy conf 
+        cmd "mv $WOROOT/CONF/GRIDS2FORMS/PROC.$proc.$form $LFPATH/GRIDS2FORMS/"
         #cmd "mv $DAT $LFDB/"
 
         echo "Done."
