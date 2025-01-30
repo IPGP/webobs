@@ -81,7 +81,7 @@ print "Content-type: text/html; charset=utf-8
 <DIV ID=\"helpBox\"></DIV>";
 
 print "<h2>$pagetitle</h2>";
-print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ Forms: "
+print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ $__{'Request Forms:'} "
   ."<a href=\"/cgi-bin/formREQ.pl\"><b>Procs</b></a> | "
   ."<a href=\"/cgi-bin/formGRIDMAPS.pl\"><b>Gridmaps</b></a> | "
   ."Users: "
