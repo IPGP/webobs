@@ -55,13 +55,13 @@ wogrp=$(stat -f '%Sg' $WOROOT/CONF/GRIDS2NODES)
 
 FPATH=$WOROOT/CONF/FORMS
 LFPATH=$WOROOT/CONF/LEGACY_FORMS
-LFDB=$WOROOT/DATA/LEGACY_FORMS_BACKUP
+LFDB=$WOROOT/DATA/BACKUP_LEGACY_FORMS
 cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 
 # =============================================================================
 # make a loop on all known legacy FORMs
 #for form in EAUX RIVERS SOILSOLUTIONS RAINWATER EXTENSO FISSURO GAZ DISTANCE BOJAP 
-for form in EAUX GAZ EXTENSO; do
+for form in EAUX_DEMO; do
     
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
@@ -159,7 +159,7 @@ for form in EAUX GAZ EXTENSO; do
                     print ");" }}' >> $TMP 
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            "EAUX")
+            "EAUX_DEMO")
                 NBI=23
                 ICOM=28
                 IVAL=29
@@ -306,7 +306,7 @@ for form in EAUX GAZ EXTENSO; do
         # -----------------------------------------------------------------------------
         # finally moves legacy conf 
         cmd "mv $WOROOT/CONF/GRIDS2FORMS/PROC.$proc.$form $LFPATH/GRIDS2FORMS/"
-        #cmd "mv $DAT $LFDB/"
+        cmd "mv $DAT $LFDB/"
 
         echo "Done."
     done
