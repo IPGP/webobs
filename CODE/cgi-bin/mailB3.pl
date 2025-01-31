@@ -403,6 +403,7 @@ if ($q->param('send_trigger') eq '' and $q->param('send_report') eq '') {
     } else {
       print_error($__{'Sorry, an error occured during report email sending. Please contact an administator.'});
     }
+  }
 
     # send report email
     if ($q->param('send_report')) {
