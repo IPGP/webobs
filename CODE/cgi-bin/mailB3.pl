@@ -159,6 +159,7 @@ sub print_form {
   my $report_file = "$evt.pdf";
   my $report_subject = "$P{REPORT_SUBJECT}";
   my $report_message;
+  my $trigger_agency = "$P{TRIGGER_AGENCY}";
     
   # reads needed information from the event
   my $triggerOK = 1;
@@ -191,7 +192,8 @@ sub print_form {
                       ."Depth: $evt_depth\n"
                       ."Magnitude: $evt_magnitude\n"
                       ."Department: $evt_department\n"
-                      ."Region: $evt_region\n";
+                      ."Region: $evt_region\n"
+                      ."Agency: $trigger_agency\n";
 
   if (-e "$b3.msg") {
     my @msg = readFile("$b3.msg");
@@ -285,6 +287,14 @@ sub print_form {
   </div>
   <div class="form_elem form_input">
       <input size=50 name="event_region" value="$evt_region" class="auto"/><br>
+  </div>
+  <br>
+  
+  <div class="form_elem form_label">
+      <label for="agency">$__{'Agency'}:</label>
+  </div>
+  <div class="form_elem form_input">
+      <input size=50 name="agency" value="$trigger_agency" class="auto"/><br>
   </div>
   <input type="hidden" value="$trigger_content" id="forBCSF">
   <input type="button" onclick="copy2Clipboard()" value="$__{'Copy BCSF info to the clipboard'}"></button>
@@ -388,7 +398,8 @@ if ($q->param('send_trigger') eq '' and $q->param('send_report') eq '') {
                        ."Depth: ".$q->param('event_depth')."\n"
                        ."Magnitude: ".$q->param('event_magnitude')."\n"
                        ."Department: ".u2l($q->param('event_department'))."\n"
-                       ."Region: ".u2l($q->param('event_region'))."\n";
+                       ."Region: ".u2l($q->param('event_region'))."\n"
+                       ."Agency: ".u2l($q->param('agency'))."\n";
     my $cmd = "$replyto;echo \"$mail_content\" | mutt -s \"$mail_subject\" $mutt_options $mail_address $operator_email";
     if ( ! system($cmd) ) {
       print_success($__{'Trigger email has been successfully sent!'});
@@ -426,7 +437,7 @@ François Beauducel
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
