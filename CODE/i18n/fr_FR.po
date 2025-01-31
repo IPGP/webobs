@@ -1940,6 +1940,9 @@ msgstr "Département"
 msgid "Region"
 msgstr "Région (zone)"
 
+msgid "Agency"
+msgstr "Agence"
+
 msgid "Send the B3 report"
 msgstr "Envoyer le rapport B3"
 
