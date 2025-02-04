@@ -8,7 +8,7 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## v2.7.2 (January 2025)
+## v2.7.3 (February 2025)
 
 ### New features
 1. **Generic forms**: see section *Under development* below.
@@ -25,6 +25,8 @@ JSON_EXPORT|Y
 MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
 TRIGGER_EMAIL|
 TRIGGER_SUBJECT|SÉISME RESSENTI
+TRIGGER_DEPARTMENT|
+TRIGGER_AGENCY|
 REPORT_EMAIL|
 REPORT_SUBJECT|[OVS-IPGP] Séisme ressenti
 REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le site du BCSF à l'adresse suivante : www.franceseisme.fr
