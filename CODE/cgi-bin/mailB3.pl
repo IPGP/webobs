@@ -48,21 +48,21 @@ my $ts = $q->param('ts');
 my $g = $q->param('g');
 my $b3 = "$WEBOBS{'ROOT_OUTG'}/$grid/$ts/$g";
 if ( -l "$b3.png") {
-  my $b3png = readlink("$b3.png");
-  $b3png =~ s/\.png$//g;
-  $b3 =~ s/b3/$b3png/g;
-  $g =~ s/b3/$b3png/g;
+    my $b3png = readlink("$b3.png");
+    $b3png =~ s/\.png$//g;
+    $b3 =~ s/b3/$b3png/g;
+    $g =~ s/b3/$b3png/g;
 }
 
 my ($GRIDType, $GRIDName) = split(/\./,$grid);
 
 # before continuing, verify consistancy and authorization
 if (not (clientHasAdm(type=>"authprocs",name=>"$GRIDName"))) {
-  print_head();
-  print("<h2>$__{'Unauthorized action'}</h2>\n");
-  print_secondary("Sorry, you cannot use this script on $grid. Please contact your administrator.");
-  print_foot();
-  exit(0);
+    print_head();
+    print("<h2>$__{'Unauthorized action'}</h2>\n");
+    print_secondary("Sorry, you cannot use this script on $grid. Please contact your administrator.");
+    print_foot();
+    exit(0);
 }
 
 my $submit_url = $q->url();
@@ -75,7 +75,7 @@ my $mutt_options = "$P{MUTT_OPTIONS}";
 ##---- Script functions
 
 sub print_head {
-  print <<__EOD__;
+    print <<__EOD__;
 Content-type: text/html
 
 <!DOCTYPE html>
@@ -124,13 +124,13 @@ Content-type: text/html
       border-color: #d6d8db;
   }
   </style>
-	<script type="text/javascript">
-	<!--
+    <script type="text/javascript">
+    <!--
   function copy2Clipboard() {
-	  var copyText = document.getElementById("forBCSF");
-	  copyText.select();
-	  navigator.clipboard.writeText(copyText.value);
-	  alert("Text copied to clipboard:\\n\\n" + copyText.value);
+      var copyText = document.getElementById("forBCSF");
+      copyText.select();
+      navigator.clipboard.writeText(copyText.value);
+      alert("Text copied to clipboard:\\n\\n" + copyText.value);
   }
   </script>
 </head>
@@ -138,14 +138,12 @@ Content-type: text/html
 __EOD__
 }
 
-
 sub print_foot {
-  print <<__EOD__;
+    print <<__EOD__;
 </BODY>
 </HTML>
 __EOD__
 }
-
 
 sub print_form {
 
@@ -155,11 +153,10 @@ sub print_form {
   my $evt_email = $P{TRIGGER_EMAIL};
   my $evt_subject = $P{TRIGGER_SUBJECT};
   my $report_email = $P{REPORT_EMAIL};
-  my ($evt_latitude,$evt_longitude,$evt_magnitude,$evt_depth,$evt_department,$evt_region);
+  my ($evt_latitude,$evt_longitude,$evt_magnitude,$evt_depth,$evt_region,$evt_department,$evt_agency);
   my $report_file = "$evt.pdf";
   my $report_subject = "$P{REPORT_SUBJECT}";
   my $report_message;
-  my $trigger_agency = "$P{TRIGGER_AGENCY}";
     
   # reads needed information from the event
   my $triggerOK = 1;
@@ -171,8 +168,9 @@ sub print_form {
     $evt_longitude = $json{'longitude'};
     $evt_depth = $json{'depth'};
     $evt_magnitude = $json{'magnitude'};
-    $evt_department = l2u($json{'department'});
     $evt_region = l2u($json{'region'});
+    $evt_department = l2u($json{'department'});
+    $evt_agency = l2u($json{'agency'});
 
   } elsif (-e "$b3.gse") {
     my @gse = readFile("$b3.gse");
@@ -180,12 +178,14 @@ sub print_form {
     $evt_longitude = trim(substr($gse[9],34,9));
     $evt_depth = trim(substr($gse[9],47,7));
     $evt_magnitude = trim(substr($gse[9],74,4));
-    ($evt_region,$evt_department) = split(/ \(|\)/,l2u(trim($gse[12])));
-    $evt_department = $P{REGION} if ($evt_department eq "");
+    $evt_region = l2u(trim($gse[12])));
+    $evt_agency = trim(substr($gse[9],105,8));
   } else {
     $triggerOK = 0;
     $trigger_check = 'disabled';
   }
+  $evt_department = $P{TRIGGER_DEPARTMENT} if ($evt_department eq "");
+  $evt_agency = $P{TRIGGER_AGENCY} if ($evt_agency eq "");
   my $trigger_content = "Time: $evt_origin\n"
                       ."Latitude: $evt_latitude\n"
                       ."Longitude: $evt_longitude\n"
@@ -195,14 +195,14 @@ sub print_form {
                       ."Region: $evt_region\n"
                       ."Agency: $trigger_agency\n";
 
-  if (-e "$b3.msg") {
-    my @msg = readFile("$b3.msg");
-    $report_message = tex2utf(l2u(join("",@msg))."\n\n$P{REPORT_FOOTNOTE}\n");
-    $report_message =~ s/[ ]+/ /g;
-  }
-  print_secondary("Sorry, event $evt does not have json or gse file info. Will not be able to send the trigger email.") if (!$triggerOK);
+    if (-e "$b3.msg") {
+        my @msg = readFile("$b3.msg");
+        $report_message = tex2utf(l2u(join("",@msg))."\n\n$P{REPORT_FOOTNOTE}\n");
+        $report_message =~ s/[ ]+/ /g;
+    }
+    print_secondary("Sorry, event $evt does not have json or gse file info. Will not be able to send the trigger email.") if (!$triggerOK);
 
-  print <<__EOD__;
+    print <<__EOD__;
   <table><tr><td stype="border:2"><img src="$b3_urn.jpg"></td>
   <td style="border:0;padding-left:10px"><h2>$__{'Send felt earthquake report information'}</h2>
   <p>$__{'Event origin'}: <b>$evt_y-$evt_m-$evt_d $evt_H:$evt_M:$evt_S UT</b></p>
@@ -351,11 +351,10 @@ sub print_form {
 __EOD__
 }
 
-
 sub print_alert {
     my $alert_class = shift;
-  my $msg = join(" ", @_);
-  print <<__EOD__;
+    my $msg = join(" ", @_);
+    print <<__EOD__;
   <p class="$alert_class">
     $msg
   </p>
@@ -363,17 +362,16 @@ __EOD__
 }
 
 sub print_success {
-  return print_alert("alert-success", @_);
+    return print_alert("alert-success", @_);
 }
 
 sub print_error {
-  return print_alert("alert-error", @_);
+    return print_alert("alert-error", @_);
 }
 
 sub print_secondary {
-  return print_alert("alert-secondary", @_);
+    return print_alert("alert-secondary", @_);
 }
-
 
 ##---- Main script
 
@@ -381,12 +379,13 @@ sub print_secondary {
 print_head();
 
 if ($q->param('send_trigger') eq '' and $q->param('send_report') eq '') {
-  # No action provided (from the form): simply print the form
-  print_form();
+
+    # No action provided (from the form): simply print the form
+    print_form();
 
 } else {
-  print "<h2>$__{'Sending emails'}</h2>\n";
-  my $replyto = "export REPLYTO=$operator_email";
+    print "<h2>$__{'Sending emails'}</h2>\n";
+    my $replyto = "export REPLYTO=$operator_email";
 
   # send trigger email
   if ($q->param('send_trigger')) {
@@ -408,19 +407,19 @@ if ($q->param('send_trigger') eq '' and $q->param('send_report') eq '') {
     }
   }
 
-  # send report email
-  if ($q->param('send_report')) {
-    my $mail_address = $q->param('report_email');
-    my $mail_subject = u2l($q->param('report_subject'));
-    my $mail_content = u2l($q->param('report_message'));
-    my $mail_attach = $q->param('report_file');
-    my $cmd = "$replyto;echo \"$mail_content\" | mutt -s \"$mail_subject\" -a \"$mail_attach\" -b \"$mail_address\" $mutt_options -- $operator_email";
-    if ( ! system($cmd) ) {
-      print_success($__{'Report email has been successfully sent!'});
-    } else {
-      print_error($__{'Sorry, an error occured during report email sending. Please contact an administator.'});
+    # send report email
+    if ($q->param('send_report')) {
+        my $mail_address = $q->param('report_email');
+        my $mail_subject = u2l($q->param('report_subject'));
+        my $mail_content = u2l($q->param('report_message'));
+        my $mail_attach = $q->param('report_file');
+        my $cmd = "$replyto;echo \"$mail_content\" | mutt -s \"$mail_subject\" -a \"$mail_attach\" -b \"$mail_address\" $mutt_options -- $operator_email";
+        if ( ! system($cmd) ) {
+            print_success($__{'Report email has been successfully sent!'});
+        } else {
+            print_error($__{'Sorry, an error occured during report email sending. Please contact an administator.'});
+        }
     }
-  }
 
 }
 
