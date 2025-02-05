@@ -149,7 +149,7 @@ if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
 # ---- checking if user is a THEIA user and if he wants to save data in metadatabase
 #
 my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
-my $saveAuth   = $cgi->param('saveAuth')	// '';
+my $saveAuth   = $cgi->param('saveAuth')    // '';
 
 # ---- where are the NODE's directory and NODE's conf file ?
 my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
@@ -159,7 +159,7 @@ my $n2nfile = "$NODES{FILE_NODES2NODES}";
 
 # ---- If deleting NODE, do not wait for further information
 #
-my $producer   = $cgi->param('producer')    // '';	# information needed to delete the NODE's related row in the metadata DB
+my $producer   = $cgi->param('producer')    // '';    # information needed to delete the NODE's related row in the metadata DB
 
 if ($delete) {
 
@@ -179,8 +179,8 @@ if ($delete) {
             # --- connecting to the database
             my $driver   = "SQLite";
             my $database = $WEBOBS{SQL_METADATA};
-            my $dsn 	 = "DBI:$driver:dbname=$database";
-            my $userid 	 = "";
+            my $dsn      = "DBI:$driver:dbname=$database";
+            my $userid      = "";
             my $password = "";
             my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
               or die $DBI::errstr;
@@ -221,10 +221,10 @@ my $desc       = $cgi->param('description') // ''; $desc =~ s/\<\<//g;
 my $desc1 = $desc; $desc1 =~ s/\r\n/<br>/g;
 my $creator    = $cgi->param('creators')    // '';
 my $theme      = $cgi->param('theme')       // '';
-my @roles	   = $cgi->param('role');
+my @roles       = $cgi->param('role');
 my @firstNames = $cgi->param('firstName');
 my @lastNames  = $cgi->param('lastName');
-my @emails	   = $cgi->param('email');
+my @emails       = $cgi->param('email');
 my @topics     = $cgi->param('topics');
 my $lineage    = $cgi->param('lineage')     // '';
 my $tz         = $cgi->param('tz')          // '';
@@ -480,8 +480,8 @@ if ( isok($theiaAuth) and $saveAuth == 1 ) {
     # --- connecting to the database
     my $driver   = "SQLite";
     my $database = $WEBOBS{SQL_METADATA};
-    my $dsn 	 = "DBI:$driver:dbname=$database";
-    my $userid 	 = "";
+    my $dsn      = "DBI:$driver:dbname=$database";
+    my $userid      = "";
     my $password = "";
 
     # --- station informations, coordinates are saved in WKT format

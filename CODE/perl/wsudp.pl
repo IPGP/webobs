@@ -24,27 +24,27 @@ Arguments are passed as a unique string made up of comma separated hash
 
 Mandatory arguments:
 
-	msg => message to be sent to server
-	eg: msg=>"CMD STAT"
+    msg => message to be sent to server
+    eg: msg=>"CMD STAT"
 
 Optional arguments:
 
-	host => server addr , used as socket PeerAddr
-	default value: value of LISTEN_ADDR as set in the scheduler configuration,
-	               or 'localhost' if this configuration is not set.
+    host => server addr , used as socket PeerAddr
+    default value: value of LISTEN_ADDR as set in the scheduler configuration,
+                   or 'localhost' if this configuration is not set.
 
-	port => server port , used as socket PeerPort
-	default value: value of PORT as set in the scheduler configuration.
+    port => server port , used as socket PeerPort
+    default value: value of PORT as set in the scheduler configuration.
 
-	max_length => maximum reply length , used in socket recv
-	default value: value of SOCKET_MAXLEN as set in the scheduler
-	               configuration.
+    max_length => maximum reply length , used in socket recv
+    default value: value of SOCKET_MAXLEN as set in the scheduler
+                   configuration.
 
-	timeout => timeout , used as socket Timeout (in seconds)
-	default value: 5 seconds
+    timeout => timeout , used as socket Timeout (in seconds)
+    default value: 5 seconds
 
-	For backward compatibility with older version, the 'll' option is accepted
-	as an alias for 'max_length', and 'to' as an alias for 'timeout'.
+    For backward compatibility with older version, the 'll' option is accepted
+    as an alias for 'max_length', and 'to' as an alias for 'timeout'.
 
 =head1 OUTPUTS
 
@@ -53,11 +53,11 @@ returned by WebObs::Scheduler::scheduler_client is printed to stderr.
 
 Possible error message are (followed by lower level error message if any):
 
-	wsudp.pl error: empty command: nothing to send
-	wsudp.pl error: unable to create socket:
-	wsudp.pl error: failed to send request:
-	wsudp.pl error: failed to read answer:
-	wsudp.pl error: connection timeout after Xs:
+    wsudp.pl error: empty command: nothing to send
+    wsudp.pl error: unable to create socket:
+    wsudp.pl error: failed to send request:
+    wsudp.pl error: failed to read answer:
+    wsudp.pl error: connection timeout after Xs:
 
 =head1 EXIT CODES
 

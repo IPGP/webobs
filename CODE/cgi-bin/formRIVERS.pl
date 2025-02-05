@@ -114,35 +114,35 @@ print "<html><head>
 <!--
 function nicb()
 {
-	var anions;
-	var cations;
-	var cations_chromato;
-	var hydrogene = 0;
-	var nicb;
-	if (formulaire.pH.value != \"\") {
-		hydrogene = 1000*Math.pow(10,-formulaire.pH.value);
-	}
-	cations_chromato = formulaire.cNa.value/$GMOL{Na}
-		   + formulaire.cK.value/$GMOL{K}
-		   + 2*formulaire.cMg.value/$GMOL{Mg}
-		   + 2*formulaire.cCa.value/$GMOL{Ca};
-	cations = cations_chromato + hydrogene;
-	anions = formulaire.cHCO3.value/$GMOL{HCO3}
-		   + formulaire.cCl.value/$GMOL{Cl}
-		   + 2*formulaire.cSO4.value/$GMOL{SO4}
-	formulaire.cH.value = hydrogene.toFixed(2);
-	nicb = 100*(cations - anions)/(cations + anions);
-	//pHcalcule=-(Math.log((anions - cations_chromato)/1000))/Math.log(10);
-	//document.getElementById(\"pHcalcule\").innerHTML = \"<i>pour NICB=0%, pH=\</i>\" + pHcalcule.toFixed(2);
-	//document.getElementById(\"pHcalcule\").style.background = \"#EEEEEE\";
-	formulaire.NICB.value = nicb.toFixed(1);
-	formulaire.NICB.style.background = \"#66FF66\";
-	if (nicb > 10 || nicb < -10) {
-		formulaire.NICB.style.background = \"#FFD800\";
-	}
-	if (nicb > 20 || nicb < -20) {
-		formulaire.NICB.style.background = \"#FF0000\";
-	}
+    var anions;
+    var cations;
+    var cations_chromato;
+    var hydrogene = 0;
+    var nicb;
+    if (formulaire.pH.value != \"\") {
+        hydrogene = 1000*Math.pow(10,-formulaire.pH.value);
+    }
+    cations_chromato = formulaire.cNa.value/$GMOL{Na}
+           + formulaire.cK.value/$GMOL{K}
+           + 2*formulaire.cMg.value/$GMOL{Mg}
+           + 2*formulaire.cCa.value/$GMOL{Ca};
+    cations = cations_chromato + hydrogene;
+    anions = formulaire.cHCO3.value/$GMOL{HCO3}
+           + formulaire.cCl.value/$GMOL{Cl}
+           + 2*formulaire.cSO4.value/$GMOL{SO4}
+    formulaire.cH.value = hydrogene.toFixed(2);
+    nicb = 100*(cations - anions)/(cations + anions);
+    //pHcalcule=-(Math.log((anions - cations_chromato)/1000))/Math.log(10);
+    //document.getElementById(\"pHcalcule\").innerHTML = \"<i>pour NICB=0%, pH=\</i>\" + pHcalcule.toFixed(2);
+    //document.getElementById(\"pHcalcule\").style.background = \"#EEEEEE\";
+    formulaire.NICB.value = nicb.toFixed(1);
+    formulaire.NICB.style.background = \"#66FF66\";
+    if (nicb > 10 || nicb < -10) {
+        formulaire.NICB.style.background = \"#FFD800\";
+    }
+    if (nicb > 20 || nicb < -20) {
+        formulaire.NICB.style.background = \"#FF0000\";
+    }
 }
 
 function suppress(level)
@@ -164,37 +164,37 @@ function suppress(level)
                 }
         }
         document.formulaire.delete.value = level;
-	submit();
+    submit();
 }
 
 function verif_formulaire()
 {
-	if(document.formulaire.site.value == \"\") {
-		alert(\"Veuillez spécifier le site de prélèvement!\");
-		document.formulaire.site.focus();
-		return false;
-	}
-	if(document.formulaire.type.value == \"\") {
-		alert(\"Veuillez entrer un type de prélèvement!\");
-		document.formulaire.type.focus();
-		return false;
-	}
-	if(document.formulaire.flacon.value == \"\") {
-		alert(\"Veuillez entrer un type de flacon!\");
-		document.formulaire.flacon.focus();
-		return false;
-	}
-	submit();
+    if(document.formulaire.site.value == \"\") {
+        alert(\"Veuillez spécifier le site de prélèvement!\");
+        document.formulaire.site.focus();
+        return false;
+    }
+    if(document.formulaire.type.value == \"\") {
+        alert(\"Veuillez entrer un type de prélèvement!\");
+        document.formulaire.type.focus();
+        return false;
+    }
+    if(document.formulaire.flacon.value == \"\") {
+        alert(\"Veuillez entrer un type de flacon!\");
+        document.formulaire.flacon.focus();
+        return false;
+    }
+    submit();
 }
 
 function submit()
 {
-	\$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
-			//var contents = \$( data ).find( '#contents' ).text(); 
-			alert(data);
-			document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
-		}
-	);
+    \$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
+            //var contents = \$( data ).find( '#contents' ).text(); 
+            alert(data);
+            document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
+        }
+    );
 }
 window.captureEvents(Event.KEYDOWN);
 window.onkeydown = nicb();
@@ -220,8 +220,8 @@ function stopRKey(evt) {
 }
 document.onkeypress = stopRKey;
 \$(document).ready(function(){
-	nicb();
-	\$('input.inputNum').change(nicb).keyup(nicb);
+    nicb();
+    \$('input.inputNum').change(nicb).keyup(nicb);
 });
 </script>
 FIN
@@ -282,7 +282,7 @@ if ($QryParm->{id} ne "") {
     print "<TR><TD style=\"border:0\"><HR>";
     if ($val ne "") {
         print "<P><B>Information de saisie:</B> $val
-		<INPUT type=hidden name=val value=\"$val\"></P>";
+        <INPUT type=hidden name=val value=\"$val\"></P>";
     }
     print "<INPUT type=\"button\" value=\"".($id < 0 ? "Reset":"$__{'Remove'}")."\" onClick=\"suppress(1);\">";
     if (clientHasAdm(type=>"authforms",name=>"RIVERS")) {
@@ -296,9 +296,9 @@ print "</TABLE>";
 print "<TABLE style=border:0 onMouseOver=\"nicb()\">";
 print "<TR>";
 print "<TD style=border:0 valign=top>
-	<fieldset><legend>Date et lieu du prélèvement</legend>
-		<P class=parform>
-		<B>Date: </b><select name=annee size=\"1\">";
+    <fieldset><legend>Date et lieu du prélèvement</legend>
+        <P class=parform>
+        <B>Date: </b><select name=annee size=\"1\">";
 for (@anneeListe) {
     if ($_ == $sel_annee) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
 }

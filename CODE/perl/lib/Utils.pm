@@ -83,7 +83,7 @@ sub htmlspecialchars
     $txt =~ s/</&lt;/g;
     $txt =~ s/>/&gt;/g;
 
-    #  	print "<div style=\"border: 1px dotted gray;\">".$txt."</div>";
+    #      print "<div style=\"border: 1px dotted gray;\">".$txt."</div>";
     $txt =~ s/($re)/<b>$1<\/b>/g if ($re ne "");
     return $txt;
 }
@@ -397,17 +397,17 @@ should be used to check CGI parameters security.
 
 Examples:
 
-	# Pass a scalar parameter:
-	my $param = checkParam($q->param('myparam'), qr/^[0-9A-Za-z_-]+i$/", "myparam");
+    # Pass a scalar parameter:
+    my $param = checkParam($q->param('myparam'), qr/^[0-9A-Za-z_-]+i$/", "myparam");
 
-	# This is actually the same as:
-	my $param = checkParam(scalar($q->param('myparam')), qr/^[0-9A-Za-z_-]+$/", "myparam");
+    # This is actually the same as:
+    my $param = checkParam(scalar($q->param('myparam')), qr/^[0-9A-Za-z_-]+$/", "myparam");
 
-	# A list of param should be passed by reference:
-	my $param = checkParam([$q->param('myparam')], qr/^[\w_-]+$/, "myparamlist");
+    # A list of param should be passed by reference:
+    my $param = checkParam([$q->param('myparam')], qr/^[\w_-]+$/, "myparamlist");
 
-	# The param name is only used in the error message and is optional
-	my $param = checkParam($q->param('myparam'), qr/^[0-9]*$/);
+    # The param name is only used in the error message and is optional
+    my $param = checkParam($q->param('myparam'), qr/^[0-9]*$/);
 
 Notes:
 
@@ -421,9 +421,9 @@ parameter is allowed to be empty (in which you will usually provide a default
 value).  In the following example, the default value "default" will never be
 set and an error will be raised if no value are provided for the CGI parameter
 'myparam':
-	my $param = checkParam($q->param('myparam'), qr/^[0-9]+$/) // "default";
+    my $param = checkParam($q->param('myparam'), qr/^[0-9]+$/) // "default";
 Use this instead:
-	my $param = checkParam($q->param('myparam'), qr/^[0-9]*$/) // "default";
+    my $param = checkParam($q->param('myparam'), qr/^[0-9]*$/) // "default";
 
 =cut
 

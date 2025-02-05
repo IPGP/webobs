@@ -76,9 +76,9 @@ print <<"EOHEADER";
 <link rel="stylesheet" type="text/css" href="/css/schedulerLogs.css">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
 <script language="JavaScript" type="text/javascript">
-	\$(document).ready(function() {
-		\$('#wrapper').scrollTop(\$('#wrapper')[0].scrollHeight);
-	});
+    \$(document).ready(function() {
+        \$('#wrapper').scrollTop(\$('#wrapper')[0].scrollHeight);
+    });
 </script>
 </head>
 EOHEADER
@@ -93,7 +93,7 @@ $logname - $buildTS
 <!-- <INPUT class="butfloat" type=button value="Scheduler Log" onClick="location.href='/cgi-bin/schedulerLogs.pl?log=SCHED';">-->
 </DIV>
 <DIV id="wrapper">
-	@results
+    @results
 </DIV>
 EOPAGE
 

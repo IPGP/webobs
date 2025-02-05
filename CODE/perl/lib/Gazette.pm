@@ -14,7 +14,7 @@ Webobs' Gazette management.
 
 Gazette DB table columns:
 
-	ID,STARTDATE,STARTTIME,ENDDATE,ENDTIME,CATEGORY,UID,OTHERS,PLACE,SUBJECT
+    ID,STARTDATE,STARTTIME,ENDDATE,ENDTIME,CATEGORY,UID,OTHERS,PLACE,SUBJECT
 
 =cut
 
@@ -84,22 +84,22 @@ Builds html code to display Gazette articles for a given period.
 
 Returns an array of html strings. 
 
-	Show(view=>, from=>, to=>, categories=>, textfilter=>, jseditor=>, jsevent=>)
+    Show(view=>, from=>, to=>, categories=>, textfilter=>, jseditor=>, jsevent=>)
 
 Arguments:
 
-	Required:
-		view=>        { calendar | datelist | categorylist | ical | dump | stats}
-		from=>        YYYY-MM-DD start date
+    Required:
+        view=>        { calendar | datelist | categorylist | ical | dump | stats}
+        from=>        YYYY-MM-DD start date
 
-	Optional:
-		to=>          YYYY-MM-DD end date (defaults to from)
-		categories=>  { '' | 'categoryName(,categoryName(,...))' }
-		textfilter=>  regexp to keep matching articles
-		jseditor=>    a javascript function name to be called when click on article for edition;
-		              automatically passed arguments will be (this,article's ID).
-		jsevent=>     a javascript function name to be called when click on 'event' article;
-		              automatically passed argument will be (objectname), ie: (gridtype.gridname[.nodename]).
+    Optional:
+        to=>          YYYY-MM-DD end date (defaults to from)
+        categories=>  { '' | 'categoryName(,categoryName(,...))' }
+        textfilter=>  regexp to keep matching articles
+        jseditor=>    a javascript function name to be called when click on article for edition;
+                      automatically passed arguments will be (this,article's ID).
+        jsevent=>     a javascript function name to be called when click on 'event' article;
+                      automatically passed argument will be (objectname), ie: (gridtype.gridname[.nodename]).
 
 =cut
 
@@ -548,19 +548,19 @@ NOTE: checkings for valid and user-authorized categories, if desired, must be ha
 
 Arguments: 
 
-	Required: 
-		from=>       startdate YYYY-MM-DD 
-		to=>         enddate YYYY-MM-DD 
+    Required: 
+        from=>       startdate YYYY-MM-DD 
+        to=>         enddate YYYY-MM-DD 
 
-	Optional:
-		categories=> sql 'in' clause, ie. if omitted or '' will select all categories  
-		order=>      sql 'order by' clause
+    Optional:
+        categories=> sql 'in' clause, ie. if omitted or '' will select all categories  
+        order=>      sql 'order by' clause
 
 Example:
 
-	$Gazette = WebObs::Gazette::getRaw(from=>'2014-12-26',to=>'2015-01-20',order=>'STARTDATE,ENDDATE');
-	print("Number of articles = ".@{$Gazette}."\n");
-	map { print join(", ",@{$_}), "\n" } @{$Gazette};  # print each article with comma-separated fields 
+    $Gazette = WebObs::Gazette::getRaw(from=>'2014-12-26',to=>'2015-01-20',order=>'STARTDATE,ENDDATE');
+    print("Number of articles = ".@{$Gazette}."\n");
+    map { print join(", ",@{$_}), "\n" } @{$Gazette};  # print each article with comma-separated fields 
 
 =cut 
 
@@ -623,9 +623,9 @@ to build the article fields.
 setEventArticle will then use setArticle().  
 Also refer to vedit.pl for Event management considerations.
 
-	objectname: GRIDType.GRIDName[.NODEName]. 
-	filename:   NODEName_YYYY-MM-DD_HH-MM[_version].txt  or 
-	            GRIDName_YYYY-MM-DD_HH-MM[_version].txt
+    objectname: GRIDType.GRIDName[.NODEName]. 
+    filename:   NODEName_YYYY-MM-DD_HH-MM[_version].txt  or 
+                GRIDName_YYYY-MM-DD_HH-MM[_version].txt
 
 =cut
 
@@ -689,9 +689,9 @@ This function identifies the article by contents (ie. date,time,,category,place,
 internal ID column.
 Also refer to vedit.pl for Event management considerations.
 
-	objectname: GRIDType.GRIDName[.NODEName]. 
-	filename:   NODEName_YYYY-MM-DD_HH-MM[_version].txt  or 
-	            GRIDName_YYYY-MM-DD_HH-MM[_version].txt
+    objectname: GRIDType.GRIDName[.NODEName]. 
+    filename:   NODEName_YYYY-MM-DD_HH-MM[_version].txt  or 
+                GRIDName_YYYY-MM-DD_HH-MM[_version].txt
 
 Returns 0 or number of rows deleted. 
 
@@ -884,15 +884,15 @@ sub articleTip {
 ixApplicable(rs,from,to) list the articles indexes of a getRaw() result set array corresponding to articles appearing in the [from-to] period.
 The list of 'applicable' indexes of 'rs' is returned as an array. 
 
-	Required arguments:
-	rs     Reference to a getRaw() result set array
-	from   Time::Piece object of the first day of the period as a Time::Piece object
-	to     Time::Piece object of the  last day of the period; if omitted, will default to from
+    Required arguments:
+    rs     Reference to a getRaw() result set array
+    from   Time::Piece object of the first day of the period as a Time::Piece object
+    to     Time::Piece object of the  last day of the period; if omitted, will default to from
 
-	@ix = ixApplicable(\@Gazette, $fromTimePiece, $toTimePiece);
-	# printing all corresponding article-IDs ([G_ID]) would then be :
-	map { print "@{$Gazette}[$_]->[G_ID]\n" } @ix;
-	
+    @ix = ixApplicable(\@Gazette, $fromTimePiece, $toTimePiece);
+    # printing all corresponding article-IDs ([G_ID]) would then be :
+    map { print "@{$Gazette}[$_]->[G_ID]\n" } @ix;
+    
 =cut 
 
 sub ixApplicable {
@@ -931,4 +931,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-				
+                

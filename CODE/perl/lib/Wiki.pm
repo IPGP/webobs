@@ -44,12 +44,12 @@ Note that WebObs::Wiki uses the special 'WebObs:' metadata (whose value has curr
 - metadata section follow the syntax as described in http://fletcher.github.io/MultiMarkdown-4/metadata.html ,
 with these special considerations:
 
-	- keys are case sensitive
-	- keys are NOT 'compressed', ie. embedded blanks are preserved in keys
-	- must contain one 'WebObs:' key , otherwise input will be considered has NOT having metadata
-	- WO's specific 'TITRE.*|xxx' optional as very first line of $txt is stripped off (ie.
-	  ignored, so that MMD parsing/markup is allowed after a TITRE*| )
-	- non 'key:value' lines preceeding a valid metadata section will be discarded
+    - keys are case sensitive
+    - keys are NOT 'compressed', ie. embedded blanks are preserved in keys
+    - must contain one 'WebObs:' key , otherwise input will be considered has NOT having metadata
+    - WO's specific 'TITRE.*|xxx' optional as very first line of $txt is stripped off (ie.
+      ignored, so that MMD parsing/markup is allowed after a TITRE*| )
+    - non 'key:value' lines preceeding a valid metadata section will be discarded
 
 - WebObs extra line containing the special tags TITRE and TITRE_HTML (always 1st line) are still recognized,
 even for MMD files: WebObs::Wiki ignores it; any associated processing must be handled outside of Wiki processing.
@@ -182,14 +182,14 @@ sub wiki {
     $txt =~ s/<__row__>/<TR>/g;                              # take care of leftover temporary rows
 
     # --- - ==>  <ul></ul>
-    $txt =~ s/^-/\n-/;	        # to find start of list
-    $txt =~ s/([^\n]$)/$1\n/;	# to find end of list
+    $txt =~ s/^-/\n-/;            # to find start of list
+    $txt =~ s/([^\n]$)/$1\n/;    # to find end of list
     $txt =~ s/\n-((?:.|\n)+?)\n([^-]|$)/\n<UL><LI>$1<\/UL>$2/g;
     $txt =~ s/\n-/<li>/g;
 
     # --- # ==>  <ol></ol>
-    $txt =~ s/^#/\n#/;	        # to find start of list
-    $txt =~ s/([^\n]$)/$1\n/;	# to find end of list
+    $txt =~ s/^#/\n#/;            # to find start of list
+    $txt =~ s/([^\n]$)/$1\n/;    # to find end of list
     $txt =~ s/\n#((?:.|\n)+?)\n([^#]|$)/\n<OL><LI>$1<\/OL>$2/g;
     $txt =~ s/\n#/<LI>/g;
 
@@ -240,9 +240,9 @@ sub wiki {
     $txt =~ s/\*\*(.*?)\*\*/<B>$1<\/B>/g;
 
     # --- //italic// ==> <i>italic</i>
-    $txt =~ s/(http|https|ftp|file):\/\//$1:_DoubleSlash_/g;	# temporary substitution of URLs //...
+    $txt =~ s/(http|https|ftp|file):\/\//$1:_DoubleSlash_/g;    # temporary substitution of URLs //...
     $txt =~ s/\/\/(.*?)\/\//<I>$1<\/I>/g;
-    $txt =~ s/_DoubleSlash_/\/\//g;					            # backup of // ...
+    $txt =~ s/_DoubleSlash_/\/\//g;                                # backup of // ...
 
     # --- __underscore__ ==> <u>underscore</u>
     $txt =~ s/__(.*?)__/<U>$1<\/U>/g;
@@ -346,10 +346,10 @@ sub wiki2MMD {
 
 # --- automatic links to WEBOBS configuration files
 # --- if not immediately preceeded with a /, some filename-like strings will generate an href
-#	$txt =~ s/\b(?<!\/)(\w+\.conf\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
-#	$txt =~ s/\b(?<!\/)(\w+\.rc\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
-#	$txt =~ s/\b(?<!\/)(\w+\.m)\b/<a HREF="$WEBOBS{ROOT_CODE}\/matlab\/$1">$1<\/A>/g;
-#	$txt =~ s/\b(?<!\/)(\w+\.p[l|m]\b)/<A HREF="$WEBOBS{ROOT_CODE}\/cgi-bin\/$1">$1<\/A>/g;
+#    $txt =~ s/\b(?<!\/)(\w+\.conf\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
+#    $txt =~ s/\b(?<!\/)(\w+\.rc\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
+#    $txt =~ s/\b(?<!\/)(\w+\.m)\b/<a HREF="$WEBOBS{ROOT_CODE}\/matlab\/$1">$1<\/A>/g;
+#    $txt =~ s/\b(?<!\/)(\w+\.p[l|m]\b)/<A HREF="$WEBOBS{ROOT_CODE}\/cgi-bin\/$1">$1<\/A>/g;
 
         # --- + ==> not useful anymore
         $txt =~ s/\n\+/\n/g;

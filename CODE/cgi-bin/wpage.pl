@@ -19,22 +19,22 @@ See WebObs:Wiki::wiki2html for wiki language specifications.
 The authorization resource-name, in authwikis resource-type, that is checked for Read access to the file,
 is built from filespec following the 'path-like' resource-names rules as described in WebObs::Users.
 
-	Example: 
-	file = HTML/public/intro.wiki
-	==> actual file = $WEBOBS{PATH_DATA_WEB}/HTML/public/intro.wiki
-	==> resources   = authwikis.HTML/public/intro.wiki  OR
-	                = authwikis.HTML/public  OR
-					= authwikis.HTML/
+    Example: 
+    file = HTML/public/intro.wiki
+    ==> actual file = $WEBOBS{PATH_DATA_WEB}/HTML/public/intro.wiki
+    ==> resources   = authwikis.HTML/public/intro.wiki  OR
+                    = authwikis.HTML/public  OR
+                    = authwikis.HTML/
 
 =head1 Query string parameters 
 
 file=filespec
-	file to be interpreted/displayed.
-	B<filespec := [relpath/]name> 
-	filespec (with optional relpath) is relative to $WEBOBS{PATH_DATA_WEB}
+    file to be interpreted/displayed.
+    B<filespec := [relpath/]name> 
+    filespec (with optional relpath) is relative to $WEBOBS{PATH_DATA_WEB}
 
 css=cssfile
-	user-defined css file to include in output page; must be located in WebObs css directory
+    user-defined css file to include in output page; must be located in WebObs css directory
 
 =cut
 

@@ -236,15 +236,15 @@ if (($ENV{"REDIRECT_QUERY_STRING"} // '') =~ /\blogout\b/
     print <<__EOD__;
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-	<head>
-		<title>WebObs logout</title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8">
-		<link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
-	</head>
-	<body>
-		<img src="$WEBOBS{'URN_LOGO_DEFAULT'}">
-		<h2>You are now logged Out</h2>
-	</body>
+    <head>
+        <title>WebObs logout</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+    </head>
+    <body>
+        <img src="$WEBOBS{'URN_LOGO_DEFAULT'}">
+        <h2>You are now logged Out</h2>
+    </body>
 </html>
 __EOD__
     exit;
@@ -269,120 +269,120 @@ print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 print <<__EOD__;
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-	<head>
-		<title>WebObs registration form</title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8">
-		<script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
-		<link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
-		<link rel="stylesheet" type="text/css" href="/css/register.css">
-		<script type="text/javascript">
-		function postReg() {
-		  var errors = [];  // keep tuples of [errmsg, element_to_focus]
-		  if (document.form.name.value == "") {
-			 errors.push(['you must enter your name', document.form.name]);
-		  }
-		  // Unicode classes are not supported on all browsers
-		  //if (/^[\\p{Letter} ,'’-]*\$/.test(document.form.pass.value)) {
-		  // As a workaround, we only support latin letters
-		  else if (! /^[a-zA-Z\\u00C0-\\u017F ,'’-]+\$/.test(document.form.name.value)) {
-			 errors.push(['the name uses forbidden characters', document.form.name]);
-		  }
-		  if (document.form.login.value == "") {
-			 errors.push(['you must enter a login', document.form.login]);
-		  } else if (! /^\\w+\$/.test(document.form.login.value)) {
-			 errors.push(['the login user name uses forbidden characters', document.form.name]);
-		  }
-		  if (document.form.pass.value == "") {
-			 errors.push(['you must choose a password', document.form.pass]);
-		  }
-		  else if (document.form.pass.value.length < $pass_minlength) {
-			 errors.push(['your password must be at least $pass_minlength characters long', document.form.pass]);
-		  }
-		  // Unicode classes are not supported on all browsers
-		  //else if (/^[\\p{Letter}!\\?=_#%@\\/()_=-]+]*\$/.document.form.pass.value) {
-		  // Only support latin letters as a workaround
-		  if (! /^[a-zA-Z0-9\\u00C0-\\u017F!\\?=_#%@\\/()_=-]*\$/.test(document.form.pass.value)) {
-			 errors.push(['your password uses forbidden characters', document.form.pass]);
-		  }
-		  if (document.form.pass.value != document.form.pass2.value) {
-			 errors.push(['the passwords differ', document.form.pass]);
-		  }
-		  if ((document.form.mail.value == "")
-			  || !/\\S+@\\S+\\.\\S+/.test(document.form.mail.value)) {
-			 errors.push(['you must enter your e-mail address', document.form.mail]);
-		  }
-		  if (document.form.conditions.checked == false) {
-			 errors.push(['you must accept the terms of use', document.form.conditions]);
-		  }
-		  if (errors.length) {
-			 var msg = 'Sorry, there is at least one error in your form.\\n\\n'
-				   + 'Please correct the errors below and submit the form again:\\n';
-			 var first_elem;
-			 errors.forEach(function(item, index, array) {
-				msg += '- ' + item[0] + '\\n';
-				if (!first_elem) { first_elem = item[1] }
-			 });
-			 alert(msg);
-			 first_elem.focus();
-			 return false;
-		  }
-		  \$.post(\"/cgi-bin/register.pl\", \$(\"#register_form\").serialize(), function(data) {
-		  alert(data);
-		  //location.href = document.referrer;
-		  history.go(-1);
-		  });
-		}
-		</script>
-	</head>
-		<body>
-			<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
-			<script language="JavaScript" src="/js/overlib/overlib.js"></script>
-			<!-- overLIB (c) Erik Bosrup -->
-			<img src="$WEBOBS{'URN_LOGO_DEFAULT'}">
-			<h2>Access to $WEBOBS{WEBOBS_TITLE}</h2>
-			<fieldset>
-				<p>
-					<b>Access to this website is restricted to registered staff
-					members and associated researchers.</b>
-				</p>
-				<p>
-					If you need access to this website, please read the
-					<b>"Terms of Use"</b> then fill in and submit the
-					<b>registration form</b> below.
-				</p>
-			</fieldset>
-			<br>
-			<fieldset>
-				<legend><b>Terms of Use</b></legend>
-				<p>@charte</p>
-			</fieldset>
-			<br>
-			<fieldset>
-			<legend><b>$WEBOBS{WEBOBS_TITLE} registration form</b></legend>
-			<form name="form" id="register_form">
-			  <input type="hidden" name="action" value="reg">
-			  <label>$__{'Full name'}:<span class="small">First and last name</span></label>
-			  <input type="text" name="name" maxlength="30" value=""/><br/>
-			  <label>$__{'Login user name'}:<span class="small">Short lowercase single word</span></label>
-			  <input type="text" name="login" maxlength="10" value=""/><br/>
-			  <label>$__{'Password'}:<span class="small">Please choose a strong password</span></label>
-			  <input onmouseout="nd()" onmouseover="overlib('$pass_restriction',CAPTION,'Please choose a strong password!')" type="password" name="pass" value=""/><br/>
-			  <label>$__{'Password again'}:<span class="small"></span></label>
-			  <input type="password" name="pass2" value=""/><br/>
-			  <label>$__{'Email address'}:<span class="small">Valid e-mail needed</span></label>
-			  <input type="text" name="mail" maxlength="80" value=""/><br/>
-			  <br>
-			  <label for="conditions">
-			     $__{'I do accept the terms of use'}:<span class="small"></span>
-			  </label>
-			  <input type="checkbox" id="conditions" name="conditions" value="1">
-			  <p style="clear: both; margin: 0px; text-align: center">
-			    <input type="button" name="sendbutton" onclick="postReg(); return false;"
+    <head>
+        <title>WebObs registration form</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
+        <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+        <link rel="stylesheet" type="text/css" href="/css/register.css">
+        <script type="text/javascript">
+        function postReg() {
+          var errors = [];  // keep tuples of [errmsg, element_to_focus]
+          if (document.form.name.value == "") {
+             errors.push(['you must enter your name', document.form.name]);
+          }
+          // Unicode classes are not supported on all browsers
+          //if (/^[\\p{Letter} ,'’-]*\$/.test(document.form.pass.value)) {
+          // As a workaround, we only support latin letters
+          else if (! /^[a-zA-Z\\u00C0-\\u017F ,'’-]+\$/.test(document.form.name.value)) {
+             errors.push(['the name uses forbidden characters', document.form.name]);
+          }
+          if (document.form.login.value == "") {
+             errors.push(['you must enter a login', document.form.login]);
+          } else if (! /^\\w+\$/.test(document.form.login.value)) {
+             errors.push(['the login user name uses forbidden characters', document.form.name]);
+          }
+          if (document.form.pass.value == "") {
+             errors.push(['you must choose a password', document.form.pass]);
+          }
+          else if (document.form.pass.value.length < $pass_minlength) {
+             errors.push(['your password must be at least $pass_minlength characters long', document.form.pass]);
+          }
+          // Unicode classes are not supported on all browsers
+          //else if (/^[\\p{Letter}!\\?=_#%@\\/()_=-]+]*\$/.document.form.pass.value) {
+          // Only support latin letters as a workaround
+          if (! /^[a-zA-Z0-9\\u00C0-\\u017F!\\?=_#%@\\/()_=-]*\$/.test(document.form.pass.value)) {
+             errors.push(['your password uses forbidden characters', document.form.pass]);
+          }
+          if (document.form.pass.value != document.form.pass2.value) {
+             errors.push(['the passwords differ', document.form.pass]);
+          }
+          if ((document.form.mail.value == "")
+              || !/\\S+@\\S+\\.\\S+/.test(document.form.mail.value)) {
+             errors.push(['you must enter your e-mail address', document.form.mail]);
+          }
+          if (document.form.conditions.checked == false) {
+             errors.push(['you must accept the terms of use', document.form.conditions]);
+          }
+          if (errors.length) {
+             var msg = 'Sorry, there is at least one error in your form.\\n\\n'
+                   + 'Please correct the errors below and submit the form again:\\n';
+             var first_elem;
+             errors.forEach(function(item, index, array) {
+                msg += '- ' + item[0] + '\\n';
+                if (!first_elem) { first_elem = item[1] }
+             });
+             alert(msg);
+             first_elem.focus();
+             return false;
+          }
+          \$.post(\"/cgi-bin/register.pl\", \$(\"#register_form\").serialize(), function(data) {
+          alert(data);
+          //location.href = document.referrer;
+          history.go(-1);
+          });
+        }
+        </script>
+    </head>
+        <body>
+            <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+            <script language="JavaScript" src="/js/overlib/overlib.js"></script>
+            <!-- overLIB (c) Erik Bosrup -->
+            <img src="$WEBOBS{'URN_LOGO_DEFAULT'}">
+            <h2>Access to $WEBOBS{WEBOBS_TITLE}</h2>
+            <fieldset>
+                <p>
+                    <b>Access to this website is restricted to registered staff
+                    members and associated researchers.</b>
+                </p>
+                <p>
+                    If you need access to this website, please read the
+                    <b>"Terms of Use"</b> then fill in and submit the
+                    <b>registration form</b> below.
+                </p>
+            </fieldset>
+            <br>
+            <fieldset>
+                <legend><b>Terms of Use</b></legend>
+                <p>@charte</p>
+            </fieldset>
+            <br>
+            <fieldset>
+            <legend><b>$WEBOBS{WEBOBS_TITLE} registration form</b></legend>
+            <form name="form" id="register_form">
+              <input type="hidden" name="action" value="reg">
+              <label>$__{'Full name'}:<span class="small">First and last name</span></label>
+              <input type="text" name="name" maxlength="30" value=""/><br/>
+              <label>$__{'Login user name'}:<span class="small">Short lowercase single word</span></label>
+              <input type="text" name="login" maxlength="10" value=""/><br/>
+              <label>$__{'Password'}:<span class="small">Please choose a strong password</span></label>
+              <input onmouseout="nd()" onmouseover="overlib('$pass_restriction',CAPTION,'Please choose a strong password!')" type="password" name="pass" value=""/><br/>
+              <label>$__{'Password again'}:<span class="small"></span></label>
+              <input type="password" name="pass2" value=""/><br/>
+              <label>$__{'Email address'}:<span class="small">Valid e-mail needed</span></label>
+              <input type="text" name="mail" maxlength="80" value=""/><br/>
+              <br>
+              <label for="conditions">
+                 $__{'I do accept the terms of use'}:<span class="small"></span>
+              </label>
+              <input type="checkbox" id="conditions" name="conditions" value="1">
+              <p style="clear: both; margin: 0px; text-align: center">
+                <input type="button" name="sendbutton" onclick="postReg(); return false;"
                   value="$__{'Submit'}">
-			  </p>
-			  </form>
-			</fieldset>
-	</body>
+              </p>
+              </form>
+            </fieldset>
+    </body>
 </html>
 __EOD__
 

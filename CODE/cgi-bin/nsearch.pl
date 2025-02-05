@@ -17,38 +17,38 @@ Search for word or expression into WebObs files
 =over
 
 =item B<searchW=regexp>
-	The regexp to be searched for
+    The regexp to be searched for
 
 =item B<grid={*VIEW | *PROC | *ALL | +list}>
-	one of the keywords above, selecting all grids by type, OR a list of grids 
-	(list of '+' delimited grid names. eg: +VIEW.SISMCEA+VIEW.SISMMAR)
+    one of the keywords above, selecting all grids by type, OR a list of grids 
+    (list of '+' delimited grid names. eg: +VIEW.SISMCEA+VIEW.SISMMAR)
 
 =item B<clbinfo>
-	= OK to search into CLB files. Default is "OK"
+    = OK to search into CLB files. Default is "OK"
 
 =item B<evtinfo>
-	= OK to search into EVENTS files. Default is "OK"
+    = OK to search into EVENTS files. Default is "OK"
 
 =item B<stainfo> 
-	= OK to search into node's information files (*.txt and FEATURES/*.txt). Default is "OK"
+    = OK to search into node's information files (*.txt and FEATURES/*.txt). Default is "OK"
 
-=item B<entireW>	
-	= 
+=item B<entireW>    
+    = 
 
-=item B<majmin>	
-	= case sensitivity
+=item B<majmin>    
+    = case sensitivity
 
-=item B<extend>	
-	= for a hit, show immediate context (grep output line), or extend to show all file.
+=item B<extend>    
+    = for a hit, show immediate context (grep output line), or extend to show all file.
 
 =item B<day1> + B<month1> + B<year1>
-	search starting from year1/month1/day1
+    search starting from year1/month1/day1
 
 =item B<day2> + B<month2> + B<year2>
-	search ending on year2/month2/day2
+    search ending on year2/month2/day2
 
 =item B<dbg>
-	internal developer's switch to turn on debug messages
+    internal developer's switch to turn on debug messages
 
 =back
 
@@ -360,9 +360,9 @@ for my $aNode (keys(%nodes)) {
 
                 if (($QryParm->{'year1'} eq "" || $date ge "$QryParm->{'year1'}-$QryParm->{'month1'}-$QryParm->{'day1'}") && ($QryParm->{'year2'} eq "" || $date le "$QryParm->{'year2'}-$QryParm->{'month2'}-$QryParm->{'day2'}")) {
                     my $fileInterventions = "$pathInterventions/$file";
-                    my @intervention = grep(!/^$/, readFile($fileInterventions));	# lit le fichier et vire les lignes vides
+                    my @intervention = grep(!/^$/, readFile($fileInterventions));    # lit le fichier et vire les lignes vides
                     chomp(@intervention);
-                    my @pLigne = split(/\|/,$intervention[0]);		# ligne de titre/operateurs
+                    my @pLigne = split(/\|/,$intervention[0]);        # ligne de titre/operateurs
                     my @listeNoms = split(/\+/,$pLigne[0]);
 
                     #my $noms = join(", ",nomOperateur(@listeNoms));
@@ -371,7 +371,7 @@ for my $aNode (keys(%nodes)) {
                     shift(@intervention);
                     my $modif = "";
                     ##if ($editOK == 1) {
-                    ##	$modif = "<a href=\"/cgi-bin/formulaireINTERVENTIONS_STATIONS.pl?file=$file\"><img src=\"/icons-webobs/modif.png\" title=\"$__{'Edit...'}\" border=0 alt=\"$__{'Edit...'}\"></a>";
+                    ##    $modif = "<a href=\"/cgi-bin/formulaireINTERVENTIONS_STATIONS.pl?file=$file\"><img src=\"/icons-webobs/modif.png\" title=\"$__{'Edit...'}\" border=0 alt=\"$__{'Edit...'}\"></a>";
                     ##}
                     $FHits++;
                     $HTMLresults .= "<LI><P class=\"titleEvent\"><b>$titre</b> $date $heure <I>($noms)</I> $modif</P>\n"

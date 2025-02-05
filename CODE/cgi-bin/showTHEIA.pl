@@ -310,54 +310,54 @@ print "<input type=\"hidden\" name=\"allChannels\">";
 
 print <<"FIN";
 <script>
-	function deleteRow(element) {
-		/**
-		 * Delete a row from the THEIA metadata resume board (but the metadata are still saved in the database !).
-		 * \@param {element} element DOM element (e.g. the "delete" sign)
-		 */
-		const form = document.forms[0];
-		var row = element.parentNode.parentNode;
-		const nodes = document.getElementsByClassName('node');
-		const channels = document.getElementsByClassName('channel');
-		if (confirm(\"Do you really want to delete \"+row.id+\" ?\")) {
-			const newNodes = [];
-			row.remove();
-			Array.from(nodes).forEach((node) => newNodes.push(node.id.split('.')[1]));
-			newNodes.join(',');
-			Array.from(channels).forEach( (chan) => { if (chan.id.split(/[\.|\_]/)[3] == row.id.split('.')[1]) {chan.remove();} } );
-			form.nodes.value = newNodes;
-		}
-	}
+    function deleteRow(element) {
+        /**
+         * Delete a row from the THEIA metadata resume board (but the metadata are still saved in the database !).
+         * \@param {element} element DOM element (e.g. the "delete" sign)
+         */
+        const form = document.forms[0];
+        var row = element.parentNode.parentNode;
+        const nodes = document.getElementsByClassName('node');
+        const channels = document.getElementsByClassName('channel');
+        if (confirm(\"Do you really want to delete \"+row.id+\" ?\")) {
+            const newNodes = [];
+            row.remove();
+            Array.from(nodes).forEach((node) => newNodes.push(node.id.split('.')[1]));
+            newNodes.join(',');
+            Array.from(channels).forEach( (chan) => { if (chan.id.split(/[\.|\_]/)[3] == row.id.split('.')[1]) {chan.remove();} } );
+            form.nodes.value = newNodes;
+        }
+    }
 
-	function gather() {
-		/**
-		 * Gather the rows ids to send the list of datasets and observations to postTHEIA.pl.
-		 */
-		const form = document.forms[0];
-		
-		const nodes = document.getElementsByClassName('node');
-		const nodeList = [];
-		Array.from(nodes).forEach((node) => nodeList.push(node.id));
-		nodeList.join(',');
-		form.nodes.value = nodeList;
-		
-		const channels = document.getElementsByClassName('channel');
-		const channelList = [];
-		const allChannelList = [];
-		Array.from(channels).forEach((channel) => {
-			if (channel.querySelector("input").checked) {
-				channelList.push(channel.id);
-			}
-			var cs = channel.querySelector("select");
-			var ci = channel.querySelector("input[name='theia']");
-			allChannelList.push([channel.id, cs.options[cs.selectedIndex].text, ci.value].join('|'));
-		});
-		channelList.join(',');
-		allChannelList.join(',');
-		form.channels.value = channelList;
-		const allChannels = "";
-		form.allChannels.value = allChannelList;
-	}
+    function gather() {
+        /**
+         * Gather the rows ids to send the list of datasets and observations to postTHEIA.pl.
+         */
+        const form = document.forms[0];
+        
+        const nodes = document.getElementsByClassName('node');
+        const nodeList = [];
+        Array.from(nodes).forEach((node) => nodeList.push(node.id));
+        nodeList.join(',');
+        form.nodes.value = nodeList;
+        
+        const channels = document.getElementsByClassName('channel');
+        const channelList = [];
+        const allChannelList = [];
+        Array.from(channels).forEach((channel) => {
+            if (channel.querySelector("input").checked) {
+                channelList.push(channel.id);
+            }
+            var cs = channel.querySelector("select");
+            var ci = channel.querySelector("input[name='theia']");
+            allChannelList.push([channel.id, cs.options[cs.selectedIndex].text, ci.value].join('|'));
+        });
+        channelList.join(',');
+        allChannelList.join(',');
+        form.channels.value = channelList;
+        const allChannels = "";
+        form.allChannels.value = allChannelList;
+    }
 </script>
 FIN
 

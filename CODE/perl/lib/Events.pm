@@ -19,40 +19,40 @@ Subevents are themselves events, thus building up a tree structure for each even
 
 B<WebObs' events> live in B<dedicated directories> of nodes and/or grids:  B<INTERVENTIONS> subdirectories.
 
-	Events base directories (interventions):
-		$GRIDS{PATH_GRIDS}/gridtype/gridname/$GRIDS{SPATH_INTERVENTIONS}/
-		$NODES{PATH_NODES}/nodename/$NODES{SPATH_INTERVENTIONS}/
+    Events base directories (interventions):
+        $GRIDS{PATH_GRIDS}/gridtype/gridname/$GRIDS{SPATH_INTERVENTIONS}/
+        $NODES{PATH_NODES}/nodename/$NODES{SPATH_INTERVENTIONS}/
 
-	Events 'trash' directories (for deleted events):
-		$NODES{PATH_EVENTNODE_TRASH}
-		$GRIDS{PATH_EVENTGRID_TRASH}
+    Events 'trash' directories (for deleted events):
+        $NODES{PATH_EVENTNODE_TRASH}
+        $GRIDS{PATH_EVENTGRID_TRASH}
 
-	Events files and extensions naming conventions:
-		event_file       :=  event.txt
-		event_extensions :=  event/
-		event            :=  name_YYYY-MM-DD_HH-MM{_v}  |  name_YYYY-MM-DD_NA{_v}
-		name             :=  { gridname | nodename }
-		v                :=  so-called version number (automatically generated to make event name unique)
-		NA               :=  "NA" for unknown/undefined HH-MM
+    Events files and extensions naming conventions:
+        event_file       :=  event.txt
+        event_extensions :=  event/
+        event            :=  name_YYYY-MM-DD_HH-MM{_v}  |  name_YYYY-MM-DD_NA{_v}
+        name             :=  { gridname | nodename }
+        v                :=  so-called version number (automatically generated to make event name unique)
+        NA               :=  "NA" for unknown/undefined HH-MM
 
-	Special event file: the Project; only one allowed per Node or Grid, at the first level
-		project_file     :=  name_Projet.txt
+    Special event file: the Project; only one allowed per Node or Grid, at the first level
+        project_file     :=  name_Projet.txt
 
-	Unfolded example for node NODEA events:
-		$NODES{PATH_NODES}/NODEA/$NODES{SPATH_INTERVENTIONS}/
-			NODEA_Projet.txt
-			NODEA_2001-01-01_20-00.txt         Event 2001-01-01 20:00 file
-			NODEA_2001-01-01_20-00/            Event 2001-01-01 20:00 extensions
-				PHOTOS/                            Event 2001-01-01 20:00 photos
-					*.[jpg,pdf]
-					THUMBNAILS/
-				NODEA_2002-02-02_02-02.txt         subEvent 2002-02-02 02:02
-				NODEA_2002-02-02_02-02/            subEvent 2002-02-02 02:02 extensions
-					PHOTOS/                             subEvent 2002-02-02 02:02 photos
-						*.[jpg,pdf]
-						THUMBNAILS
-					NODEA_2003-03-03_03-03.txt          subsubEvent 2003-03-03 03:03
-			NODEA_2010-02-02_22-30.txt         Event 2010-02-02 22:30
+    Unfolded example for node NODEA events:
+        $NODES{PATH_NODES}/NODEA/$NODES{SPATH_INTERVENTIONS}/
+            NODEA_Projet.txt
+            NODEA_2001-01-01_20-00.txt         Event 2001-01-01 20:00 file
+            NODEA_2001-01-01_20-00/            Event 2001-01-01 20:00 extensions
+                PHOTOS/                            Event 2001-01-01 20:00 photos
+                    *.[jpg,pdf]
+                    THUMBNAILS/
+                NODEA_2002-02-02_02-02.txt         subEvent 2002-02-02 02:02
+                NODEA_2002-02-02_02-02/            subEvent 2002-02-02 02:02 extensions
+                    PHOTOS/                             subEvent 2002-02-02 02:02 photos
+                        *.[jpg,pdf]
+                        THUMBNAILS
+                    NODEA_2003-03-03_03-03.txt          subsubEvent 2003-03-03 03:03
+            NODEA_2010-02-02_22-30.txt         Event 2010-02-02 22:30
 
 =cut
 
@@ -90,11 +90,11 @@ $VERSION    = "1.00";
 struct(objectname) takes objectname as a normalized grid name OR normalized node name and
 returns an array whose elements are:
 
-	[0] = gridtype
-	[1] = gridname
-	[2] = nodename
-	[3] = path-to-event-directory
-	[4] = path-to-trash-directory
+    [0] = gridtype
+    [1] = gridname
+    [2] = nodename
+    [3] = path-to-event-directory
+    [4] = path-to-trash-directory
 
 struct returns 'undef' if 1) objectname is not a well-formed normalized object or 2) it is a grid but
 $GRIDS{PATH_GRIDS} is not defined (ie. events for grids are not enabled).
@@ -121,10 +121,10 @@ sub struct {
 
 eventnameSplit(eventname) decodes event name string and returns an array of elements:
 
-	[0] = object (node ID or grid name)
-	[1] = date (yyyy-mm-dd)
-	[2] = time (HH:MM or void)
-	[3] = version
+    [0] = object (node ID or grid name)
+    [1] = date (yyyy-mm-dd)
+    [2] = time (HH:MM or void)
+    [3] = version
 
 =cut
 
@@ -152,15 +152,15 @@ sub eventnameSplit {
 
 headersplit(header) decodes header string and returns an array of elements:
 
-	[0] = author UID (array)
-	[1] = remote operator UID (array)
-	[2] = title
-	[3] = end date & time
-	[4] = feature
-	[5] = channel
-	[6] = outcome flag
-	[7] = notebook number
-	[8] = notebook forward flag
+    [0] = author UID (array)
+    [1] = remote operator UID (array)
+    [2] = title
+    [3] = end date & time
+    [4] = feature
+    [5] = channel
+    [6] = outcome flag
+    [7] = notebook number
+    [8] = notebook forward flag
 
 =cut
 
@@ -168,7 +168,7 @@ sub headersplit {
     my ($title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = "";
 
 # event metadata are stored in the header line of file as pipe-separated fields:
-# 	UID1[+UID2+...][/RUID1[+RUID2+...]]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
+#     UID1[+UID2+...][/RUID1[+RUID2+...]]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
     my $pipes = $_[0] =~ tr/\|//; # count the number of pipes in header
     my @header = split(/\|/,$_[0]); # splits pipe-separated arguments
     my @people = split(/\//,$header[0]); # splits authors and remotes (forward slash separator)
@@ -199,12 +199,12 @@ sub headersplit {
 eventsTree(list, path) appends to list the events filenames tree starting path and
 sorted by descending dates.
 
-	list          is a reference to the array of Events filenames (*.txt)
-	path          the objectname
+    list          is a reference to the array of Events filenames (*.txt)
+    path          the objectname
 
-	Example:
-		my @treeInterventions;
-		eventsTree(\@listInterventions, "/webobs/path/DATA/NODES/node/INTERVENTIONS");
+    Example:
+        my @treeInterventions;
+        eventsTree(\@listInterventions, "/webobs/path/DATA/NODES/node/INTERVENTIONS");
 
 =cut
 
@@ -232,12 +232,12 @@ sub eventsTree {
 
 eventsChrono(list, path) appends to list the sorted (dates descending) events filenames in path.
 
-	list         is a reference to the target array of events filenames (*.txt)
-	path         path to events directory structure
+    list         is a reference to the target array of events filenames (*.txt)
+    path         path to events directory structure
 
-	Example:
-		my @listInterventions;
-		eventsChrono(\@listInterventions, "/webobs/path/DATA/NODES/node/INTERVENTIONS");
+    Example:
+        my @listInterventions;
+        eventsChrono(\@listInterventions, "/webobs/path/DATA/NODES/node/INTERVENTIONS");
 
 =cut
 
@@ -308,9 +308,9 @@ sub countEvents { return existEvents(@_) }
 eventsShow(sortedBy, objectname, editYN) returns the html string displaying the sortedBy events of objectname.
 editYN indicates wether current viewing client has authorization to edit events (0/1).
 
-	$contents = eventsShow("events", "PROC.PNAME", 0 );
+    $contents = eventsShow("events", "PROC.PNAME", 0 );
 
-	$contents = eventsShow("date", "VIEW.MYVIEW.NODE1", 1);
+    $contents = eventsShow("date", "VIEW.MYVIEW.NODE1", 1);
 
 =cut
 
@@ -421,7 +421,7 @@ sub eventsShow {
 projectShow(objectname, editYN) returns the html string displaying the Project contents of objectname.
 editYN indicates wether current viewing client has authorization to edit Project (0/1).
 
-	$contents = projectShow("PROC.PNAME", 0 );
+    $contents = projectShow("PROC.PNAME", 0 );
 
 =cut
 
@@ -513,8 +513,8 @@ returns an html-tagged string describing all parent events of an event:
 path is the events directory 'root' path, as can be obtained via a call to struct routine;
 event is the relative (to path) event path.
 
-	$path = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";
-	$html = parents($path, "$NODEName_2000-01-01_01-01/$NODEName_2002-12-11_01-01");
+    $path = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";
+    $html = parents($path, "$NODEName_2000-01-01_01-01/$NODEName_2002-12-11_01-01");
 
 This routine replaces the WebObs::Grids::parentEvents() method to
 account for grids events as well as nodes events

@@ -21,17 +21,17 @@ want the keys exposed.
 
 example from a bash script exporting WEBOBS.rc variables following WEBOBS' readCfg rules: 
 
-	oIFS=${IFS}; IFS=$'\n'
-	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'WO__'))
-	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
-	IFS=${oIFS}
+    oIFS=${IFS}; IFS=$'\n'
+    LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'WO__'))
+    for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+    IFS=${oIFS}
 
 example from a bash script exportng $WEBOBS{CONF_SCHEDULER} file's variables : 
 
-	oIFS=${IFS}; IFS=$'\n'
-	LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'SC__' 'CONF_SCHEDULER'))
-	for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
-	IFS=${oIFS}
+    oIFS=${IFS}; IFS=$'\n'
+    LEXP=($(perl /etc/webobs.d/../CODE/cgi-bin/exposerc.pl '=' 'SC__' 'CONF_SCHEDULER'))
+    for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
+    IFS=${oIFS}
 
 =cut
 

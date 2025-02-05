@@ -581,7 +581,7 @@ if (defined $MC3{HYPO_USE_FMT1} and length $MC3{HYPO_USE_FMT1}) {
 # ---- Load hypocentres -------------------------------------------------------
 #
 #DL-was: if ($MC3{SISMOHYP_HYPO_USE}) {
-#DL-was: 	my $fileHypo = "$WEBOBS{RACINE_FTP}/$WEBOBS{SISMOHYP_PATH_FTP}/$WEBOBS{SISMOHYP_HYPO_FILE}";
+#DL-was:     my $fileHypo = "$WEBOBS{RACINE_FTP}/$WEBOBS{SISMOHYP_PATH_FTP}/$WEBOBS{SISMOHYP_HYPO_FILE}";
 if ($HYPO_USE_FMT0_PATH) {
     my $fileHypo = "$HYPO_USE_FMT0_PATH/$HYPO_USE_FMT0_FILE";
     if (-e $fileHypo) {
@@ -605,7 +605,7 @@ for my $y ($start_datetime->year..$end_datetime->year) {
     }
 
     #DL-was: if ($MC3{OVPF_HYPO_USE}) {
-    #DL-was:	my $fileHypo3 = "$WEBOBS{OVPFHYP_PATH}/$y.hyp"
+    #DL-was:    my $fileHypo3 = "$WEBOBS{OVPFHYP_PATH}/$y.hyp"
     if ($HYPO_USE_FMT1_PATH) {
         my $fileHypo3 = "$HYPO_USE_FMT1_PATH/$y.hyp";
         if (-e $fileHypo3) {
@@ -1078,7 +1078,7 @@ if ($MC3{DISPLAY_INFO_MAIL} && (clientHasAdm(type=>"authprocs",name=>"MC") || cl
 
 #print "<TABLE><tr>";
 #for(sort(keys(%stat))) {
-#	print "<th style=\"font-size:8\"><b>$_</b></th>";
+#    print "<th style=\"font-size:8\"><b>$_</b></th>";
 #}
 #print "<th><b>Total</b></th></tr><tr>";
 #print "<td style=\"color:red;\"><b>$total</b></td></tr></TABLE>",
@@ -1230,26 +1230,26 @@ for (@finalLignes) {
         }
 
 # JMS was
-#		$dirTrigger    = "$WEBOBS{SISMOCP_PATH_FTP}/$evt_annee4/".substr($evt_annee4,2,2)."$evt_mois";
-#		$dirTriggerUrn = "$WEBOBS{SISMOCP_PATH_FTP_URN}/$evt_annee4/".substr($evt_annee4,2,2)."$evt_mois";
-#		my @loca;
-#		my @suds_liste;
-#		my $suds_sans_seconde;
-#		my $suds_racine;
-#		my $suds_ext;
-#		my $suds2_pointe;
+#        $dirTrigger    = "$WEBOBS{SISMOCP_PATH_FTP}/$evt_annee4/".substr($evt_annee4,2,2)."$evt_mois";
+#        $dirTriggerUrn = "$WEBOBS{SISMOCP_PATH_FTP_URN}/$evt_annee4/".substr($evt_annee4,2,2)."$evt_mois";
+#        my @loca;
+#        my @suds_liste;
+#        my $suds_sans_seconde;
+#        my $suds_racine;
+#        my $suds_ext;
+#        my $suds2_pointe;
 #djl-was: if (length($suds)==12 && substr($suds,10,1) eq '.') {
-#		if (length($suds)==12 && substr($suds,8,1) eq '.') {
-#			# ne prend que les premiers caractères du nom de fichier
-#			$suds_sans_seconde = substr($suds,0,7);
-#			@suds_liste = <$dirTrigger/$suds_sans_seconde*>;
-#			@loca = grep(/ $suds_sans_seconde/,grep(/^$evt_annee4$evt_mois/,@hypo));
-#		} elsif (length($suds)==19) {
-#			$suds_racine = substr($suds,0,15);
-#			$suds_ext = substr($suds,16,3);
-#			$suds2_pointe = "${suds_racine}_a.${suds_ext}";
-#			@loca = grep(/ $suds_racine/,grep(/^$evt_annee4$evt_mois/,@hypo));
-#		}
+#        if (length($suds)==12 && substr($suds,8,1) eq '.') {
+#            # ne prend que les premiers caractères du nom de fichier
+#            $suds_sans_seconde = substr($suds,0,7);
+#            @suds_liste = <$dirTrigger/$suds_sans_seconde*>;
+#            @loca = grep(/ $suds_sans_seconde/,grep(/^$evt_annee4$evt_mois/,@hypo));
+#        } elsif (length($suds)==19) {
+#            $suds_racine = substr($suds,0,15);
+#            $suds_ext = substr($suds,16,3);
+#            $suds2_pointe = "${suds_racine}_a.${suds_ext}";
+#            @loca = grep(/ $suds_racine/,grep(/^$evt_annee4$evt_mois/,@hypo));
+#        }
 
         my @lat;
         my @lon;
@@ -1275,43 +1275,43 @@ for (@finalLignes) {
         if ($QryParm->{'hideloc'} == 0) {
 
 # JMS was
-#			if ($HYPO_USE_FMT0_PATH) {
-#				$ii = 0;
-#				for (@loca) {
-#					$dat[$ii] = sprintf("%d-%02d-%02d %02d:%02d:%02.2f TU",substr($_,0,4),substr($_,4,2),substr($_,6,2),substr($_,9,2),substr($_,11,2),substr($_,14,5));
-#					$mag[$ii] = substr($_,47,5);
-#					$mty[$ii] = 'Md';
-#					$lat[$ii] = substr($_,20,2) + substr($_,23,5)/60;
-#					$lon[$ii] = -(substr($_,30,2) + substr($_,33,5)/60);
-#					$dep[$ii] = substr($_,39,6);
-#					#$qua[$ii] = sprintf("%d phases - classe %s",substr($_,53,2),substr($_,80,1));
-#					$pha[$ii] = substr($_,53,2);
-#					$qua[$ii] = substr($_,80,1);
-#					$cod[$ii] = substr($_,83,5);
-#					$mod[$ii] = 'manual';
-#					if ($cod[$ii] ne "XXX  ") { $isNotManuel = 0; }
-#					if (substr($cod[$ii],2,1) ne "1") { $msk[$ii] = romain(substr($cod[$ii],2,1)); }
-#					if ($isNotManuel) {
-#						$nomB3[$ii] = $WEBOBS{SISMORESS_AUTO_PATH_FTP}."/".substr($_,0,4)."/".substr($_,4,2)."/"
-#						.substr($_,0,8)."T".sprintf("%02.0f",substr($_,9,2)).sprintf("%02.0f",substr($_,11,2))
-#						.sprintf("%02.0f",substr($_,14,5))."_b3";
-#					}
-#					else {
-#						$nomB3[$ii] = $WEBOBS{SISMORESS_PATH_FTP}."/".substr($_,0,4)."/".substr($_,4,2)."/"
-#						.substr($_,0,8)."T".sprintf("%02.0f",substr($_,9,2)).sprintf("%02.0f",substr($_,11,2))
-#						.sprintf("%02.0f",substr($_,14,5))."_b3";
-#					}
+#            if ($HYPO_USE_FMT0_PATH) {
+#                $ii = 0;
+#                for (@loca) {
+#                    $dat[$ii] = sprintf("%d-%02d-%02d %02d:%02d:%02.2f TU",substr($_,0,4),substr($_,4,2),substr($_,6,2),substr($_,9,2),substr($_,11,2),substr($_,14,5));
+#                    $mag[$ii] = substr($_,47,5);
+#                    $mty[$ii] = 'Md';
+#                    $lat[$ii] = substr($_,20,2) + substr($_,23,5)/60;
+#                    $lon[$ii] = -(substr($_,30,2) + substr($_,33,5)/60);
+#                    $dep[$ii] = substr($_,39,6);
+#                    #$qua[$ii] = sprintf("%d phases - classe %s",substr($_,53,2),substr($_,80,1));
+#                    $pha[$ii] = substr($_,53,2);
+#                    $qua[$ii] = substr($_,80,1);
+#                    $cod[$ii] = substr($_,83,5);
+#                    $mod[$ii] = 'manual';
+#                    if ($cod[$ii] ne "XXX  ") { $isNotManuel = 0; }
+#                    if (substr($cod[$ii],2,1) ne "1") { $msk[$ii] = romain(substr($cod[$ii],2,1)); }
+#                    if ($isNotManuel) {
+#                        $nomB3[$ii] = $WEBOBS{SISMORESS_AUTO_PATH_FTP}."/".substr($_,0,4)."/".substr($_,4,2)."/"
+#                        .substr($_,0,8)."T".sprintf("%02.0f",substr($_,9,2)).sprintf("%02.0f",substr($_,11,2))
+#                        .sprintf("%02.0f",substr($_,14,5))."_b3";
+#                    }
+#                    else {
+#                        $nomB3[$ii] = $WEBOBS{SISMORESS_PATH_FTP}."/".substr($_,0,4)."/".substr($_,4,2)."/"
+#                        .substr($_,0,8)."T".sprintf("%02.0f",substr($_,9,2)).sprintf("%02.0f",substr($_,11,2))
+#                        .sprintf("%02.0f",substr($_,14,5))."_b3";
+#                    }
 # calcul de la distance epicentrale minimum (et azimut epicentre/villes)
-#					for (0..$#b3_lat) {
-#						my $dx = ($lon[$ii] - $b3_lon[$_])*111.18*cos($lat[$ii]*0.01745);
-#						my $dy = ($lat[$ii] - $b3_lat[$_])*111.18;
-#						$b3_dat[$_] = sprintf("%06.1f|%g|%s|%s|%g",sqrt($dx**2 + $dy**2),atan2($dy,$dx),$b3_nam[$_],$b3_isl[$_],$b3_sit[$_]);
-#					}
-#					my @xx = sort { $a cmp $b } @b3_dat;
-#					$bcube[$ii] = $xx[0];
-#					$ii ++;
-#				}
-#			}
+#                    for (0..$#b3_lat) {
+#                        my $dx = ($lon[$ii] - $b3_lon[$_])*111.18*cos($lat[$ii]*0.01745);
+#                        my $dy = ($lat[$ii] - $b3_lat[$_])*111.18;
+#                        $b3_dat[$_] = sprintf("%06.1f|%g|%s|%s|%g",sqrt($dx**2 + $dy**2),atan2($dy,$dx),$b3_nam[$_],$b3_isl[$_],$b3_sit[$_]);
+#                    }
+#                    my @xx = sort { $a cmp $b } @b3_dat;
+#                    $bcube[$ii] = $xx[0];
+#                    $ii ++;
+#                }
+#            }
 
             # si le séisme a été localisé, les infos sont dans le champ $origin
             if ($origin) {
@@ -1365,7 +1365,7 @@ for (@finalLignes) {
         if ($QryParm->{'obs'} ne "") {
 
             #if (grep(/$QryParm->{'obs'}/i,$type)) {
-            #	$typeAff =~ s/($QryParm->{'obs'})/<span $search>$1<\/span>/ig;
+            #    $typeAff =~ s/($QryParm->{'obs'})/<span $search>$1<\/span>/ig;
             #}
             if (grep(/$QryParm->{'obs'}/i,$station)) {
                 $station =~ s/($QryParm->{'obs'})/<span $search>$1<\/span>/ig;
@@ -1445,31 +1445,31 @@ for (@finalLignes) {
 
 #djl-was: if (length($suds)==12 && substr($suds,10,1) eq '.') {
 #if (length($suds)==12 && substr($suds,8,1) eq '.') {
-#	for(@suds_liste) {
-#		$html .= "<a href=\"$dirTriggerUrn/$_\"><img title=\"Pointés $_\" src=\"/icons/signal_pointe.png\" border=\"0\"></a>";
-#	}
+#    for(@suds_liste) {
+#        $html .= "<a href=\"$dirTriggerUrn/$_\"><img title=\"Pointés $_\" src=\"/icons/signal_pointe.png\" border=\"0\"></a>";
+#    }
 #} elsif (-f "$dirTrigger/$suds2_pointe") {
-#	for my $lettre ("a".."z") {
-#		$suds2_pointe = "${suds_racine}_${lettre}.${suds_ext}";
-#		if (-f "$dirTrigger/$suds2_pointe") {
-#			$html .= "<a href=\"$dirTriggerUrn/$suds2_pointe\"><img title=\"Pointés $suds2_pointe\" src=\"/icons/signal_pointe.png\" border=\"0\"></a>";
-#		}
-#	}
+#    for my $lettre ("a".."z") {
+#        $suds2_pointe = "${suds_racine}_${lettre}.${suds_ext}";
+#        if (-f "$dirTrigger/$suds2_pointe") {
+#            $html .= "<a href=\"$dirTriggerUrn/$suds2_pointe\"><img title=\"Pointés $suds2_pointe\" src=\"/icons/signal_pointe.png\" border=\"0\"></a>";
+#        }
+#    }
 #} elsif (-f "$MC3{PATH_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds") {
-#	$html .= "<a href=\"$MC3{WEB_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds\" title=\"Signaux $suds\"><img src=\"/icons/signal_non_pointe.png\" border=\"0\"></a>";
+#    $html .= "<a href=\"$MC3{WEB_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds\" title=\"Signaux $suds\"><img src=\"/icons/signal_non_pointe.png\" border=\"0\"></a>";
 #} elsif (-f "$MC3{PATH_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds") {
-#	$html .= "<a href=\"$MC3{WEB_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds\" title=\"Signaux $suds\"><img src=\"/icons/signal_non_pointe.png\" border=\"0\"></a>";
+#    $html .= "<a href=\"$MC3{WEB_DESTINATION_SIGNAUX}/${evt_annee4}-${evt_mois}/$suds\" title=\"Signaux $suds\"><img src=\"/icons/signal_non_pointe.png\" border=\"0\"></a>";
 #} elsif (-f "$WEBOBS{RACINE_SIGNAUX_SISMO}/$diriaspei/$suds") {
-#	$html .= "<a href=\"$WEBOBS{WEB_RACINE_SIGNAUX}/$diriaspei/$suds\" title=\"Signaux $suds\"><img src=\"/icons/signal_non_pointe.png\" border=\"0\"></a>";
+#    $html .= "<a href=\"$WEBOBS{WEB_RACINE_SIGNAUX}/$diriaspei/$suds\" title=\"Signaux $suds\"><img src=\"/icons/signal_non_pointe.png\" border=\"0\"></a>";
 #} elsif ($suds eq $nosuds) {
-#	$html .= "<img src=\"/icons/nofile.gif\" title=\"Pas de fichier\">";
+#    $html .= "<img src=\"/icons/nofile.gif\" title=\"Pas de fichier\">";
 #} elsif ($seedlink) {
 # [FXB] AJOUTER &all=1 lorsque le serveur ArcLink acceptera les wildcards...
         $html .= "<A href=\"$mseedreq&s3=$suds&t1=$begin&ds=$durmseed\" target=\"_blank\" onMouseOut=\"nd()\" onMouseOver=\"overlib('miniSEED file',WIDTH,110)\"><IMG src=\"/icons/"
           .($mod[0] && $mod[0] eq "manual" ? "signal_pointe.png":"signal_non_pointe.png")."\" border=\"0\"></A>";
 
         #} else {
-        #	$html .= "<span style=\"font-size:6pt\">($suds)</span>";
+        #    $html .= "<span style=\"font-size:6pt\">($suds)</span>";
         #}
         $html .= "</td>";
 
@@ -1712,33 +1712,33 @@ valFile0 = "$MC3{ROOT}/$MC3{PATH_FILES}/";
 
 function resetDate1(x)
 {
-	if (x == 0) document.formulaire.m1.value = "01";
-	if (x <= 1) document.formulaire.d1.value = "01";
-	if (x <= 2) document.formulaire.h1.value = "00";
+    if (x == 0) document.formulaire.m1.value = "01";
+    if (x <= 1) document.formulaire.d1.value = "01";
+    if (x <= 2) document.formulaire.h1.value = "00";
 }
 
 function resetDate2(x)
 {
-	if (x == 0) document.formulaire.m2.value = "12";
-	if (x <= 1) document.formulaire.d2.value = "31";
-	if (x <= 2) document.formulaire.h2.value = "23";
+    if (x == 0) document.formulaire.m2.value = "12";
+    if (x <= 1) document.formulaire.d2.value = "31";
+    if (x <= 2) document.formulaire.h2.value = "23";
 }
 
 function effaceFiltre()
 {
-	document.formulaire.obs.value = "";
+    document.formulaire.obs.value = "";
 }
 
 function dumpData(d) {
-	document.formulaire.dump.value = d;
-	document.formulaire.setAttribute("target", "_blank");
-	document.formulaire.submit();
+    document.formulaire.dump.value = d;
+    document.formulaire.setAttribute("target", "_blank");
+    document.formulaire.submit();
 }
 
 function display() {
-	document.formulaire.dump.value = "";
-	document.formulaire.setAttribute("target", "");
-	document.formulaire.submit();
+    document.formulaire.dump.value = "";
+    document.formulaire.setAttribute("target", "");
+    document.formulaire.submit();
 }
 
 //-->
@@ -1750,14 +1750,14 @@ ENDTOPOFPAGE
 
     print <<"ENDBOTOFPAGE";
 <script type="text/javascript">
-	document.getElementById("attente").style.display = "none";
-	plotFlot(document.formulaire.graph.value);
+    document.getElementById("attente").style.display = "none";
+    plotFlot(document.formulaire.graph.value);
 </script>
 <style type="text/css">
-	#attente
-	{
-		display: none;
-	}
+    #attente
+    {
+        display: none;
+    }
 </style>
 <br>
 </body>

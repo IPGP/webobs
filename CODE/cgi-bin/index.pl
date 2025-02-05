@@ -45,7 +45,7 @@ the $WEBOBS{FILE_MENU}->{WELCOME} page.
         ! :     same as + but item only made available to administrator(s)
 
         * :     same as omitting this first character, but item only made available
-		        to administrator(s)
+                to administrator(s)
 
         menu-text : item's name as displayed
 
@@ -141,7 +141,7 @@ my @liste_url   = split(/;/,$MENU{"LOGO_URLS"});
 my @liste_title = split(/;/,$MENU{"LOGO_TITLES"});
 my $logos="";
 for my $i (0..$#liste_logos) {
-    i	$logos .= "<a href=\"$liste_url[$i]\"><img src=\"$liste_logos[$i]\" alt=\"$liste_title[$i]\" title=\"$liste_title[$i]\"></a>";
+    i    $logos .= "<a href=\"$liste_url[$i]\"><img src=\"$liste_logos[$i]\" alt=\"$liste_title[$i]\" title=\"$liste_title[$i]\"></a>";
 }
 $logos =~ s/'/\\'/g;
 
@@ -226,20 +226,20 @@ my $iframepage = defined($cgi->param('page'))?$cgi->param('page'):"$MENU{WELCOME
 print <<"FIN";
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8">
-		<title>$WEBOBS{WEBOBS_TITLE}</title>
-		<meta name="description" content="WebObs $WEBOBS{WEBOBS_ID}">
-		<meta name="keywords" content="">
-		<meta name="revisit-after" content="1days">
-		<meta name="robot" content="NoIndex,NoFollow">
-		<link href="../icons/ipgp/logo_WebObs_C16.ico" rel="shortcut icon">
-		<link rel="stylesheet" type=text/css href="/$WEBOBS{FILE_HTML_CSS}">
-		<link rel="stylesheet" type=text/css href="/css/$wmcss">
-		<script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
-		<script language="javascript" type="text/javascript" src="/js/wm.js"></script>
-	</head>
-	<body>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <title>$WEBOBS{WEBOBS_TITLE}</title>
+        <meta name="description" content="WebObs $WEBOBS{WEBOBS_ID}">
+        <meta name="keywords" content="">
+        <meta name="revisit-after" content="1days">
+        <meta name="robot" content="NoIndex,NoFollow">
+        <link href="../icons/ipgp/logo_WebObs_C16.ico" rel="shortcut icon">
+        <link rel="stylesheet" type=text/css href="/$WEBOBS{FILE_HTML_CSS}">
+        <link rel="stylesheet" type=text/css href="/css/$wmcss">
+        <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="/js/wm.js"></script>
+    </head>
+    <body>
     <script type="text/javascript">
     if ( window.self !== window.top ) {
         window.top.location.href=window.location.href;
@@ -247,27 +247,27 @@ print <<"FIN";
     </script>
 FIN
 print <<"FIN";
-		<div id="wm">
-			<div id="ident">
-				<div id="wmlogos">$logos</div>
-				<div id="i0">
-					<span id="identVer"><B>&nbsp;[$ENV{SERVER_NAME}]&nbsp;$WEBOBS{VERSION}</B></span>
-					<span id="identLog" style="text-align:right">$logout</span>
-					<span id="wmflags">$drapeaux</span>
-					<div style="clear: right"></div>
-				</div>
-				<div class="menu" id="wmwrapnav">$menuhtml</div>
-			</div>
-		</div>
+        <div id="wm">
+            <div id="ident">
+                <div id="wmlogos">$logos</div>
+                <div id="i0">
+                    <span id="identVer"><B>&nbsp;[$ENV{SERVER_NAME}]&nbsp;$WEBOBS{VERSION}</B></span>
+                    <span id="identLog" style="text-align:right">$logout</span>
+                    <span id="wmflags">$drapeaux</span>
+                    <div style="clear: right"></div>
+                </div>
+                <div class="menu" id="wmwrapnav">$menuhtml</div>
+            </div>
+        </div>
 FIN
 print <<"FIN";
-		<div style="clear: both"></div>
-		<iframe name="wmtarget" id="wmtarget" src="$iframepage" width="100%" height="100%" frameborder=0>no iframe!!</iframe>
-		<!--<iframe name="wmtarget" id="wmtarget" width="100%" height="100%" frameborder=0>no iframe!!</iframe>-->
-		<hr/>
-		<div id="wmsig">$signature</div>
-		<noscript><div id="nojsMsg">$__{'WebObs pages require JavaScript enabled'}</div></noscript>
-	</body>
+        <div style="clear: both"></div>
+        <iframe name="wmtarget" id="wmtarget" src="$iframepage" width="100%" height="100%" frameborder=0>no iframe!!</iframe>
+        <!--<iframe name="wmtarget" id="wmtarget" width="100%" height="100%" frameborder=0>no iframe!!</iframe>-->
+        <hr/>
+        <div id="wmsig">$signature</div>
+        <noscript><div id="nojsMsg">$__{'WebObs pages require JavaScript enabled'}</div></noscript>
+    </body>
 </html>
 FIN
 

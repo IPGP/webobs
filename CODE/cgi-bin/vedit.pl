@@ -27,30 +27,30 @@ There's only one B<Project> associated to a grid or node: B<base-path/projectNam
 WebObs::Gazette::setArticle is used by vedit 'new' action, based on the $WEBOBS{EVENTS_TO_GAZETTE} settings.
 WebObs::Gazette::delEventArticle is used by vedit 'del' action, based on $WEBOBS{EVENTS_GAZETTE_DELETE} settings.
 
-	$WEBOBS{EVENTS_TO_GAZETTE}|ALL       # ALL    = insert all created events into Gazette (= default)
+    $WEBOBS{EVENTS_TO_GAZETTE}|ALL       # ALL    = insert all created events into Gazette (= default)
                                          # NONE   = events are not inserted into Gazette
 
-	$WEBOBS{EVENTS_GAZETTE_DELETE}|YES   # when deleting Event, try to delete it from Gazette too
+    $WEBOBS{EVENTS_GAZETTE_DELETE}|YES   # when deleting Event, try to delete it from Gazette too
 
 =head1 Query string parameters
 
-	object = gridType.gridName{.nodeName}
-	event  = eventName{.txt} | eventName{/subeventName/...}/subeventName{.txt} | projectName.txt
+    object = gridType.gridName{.nodeName}
+    event  = eventName{.txt} | eventName{/subeventName/...}/subeventName{.txt} | projectName.txt
 
-	object="VIEW.SOURCES.GCSCBM1",
-	event="GCSCBM1_2012-01-01_20-10/GCSCBM1_2012-02-01_13-20.txt"
-	is: $WEBOBS{ROOT_PATH}/GCSCBM1/$NODES{SPATH_INTERVENTIONS}/GCSCBM1_2012-01-01_20-10/GCSCBM1_2012-02-01_13-20.txt
+    object="VIEW.SOURCES.GCSCBM1",
+    event="GCSCBM1_2012-01-01_20-10/GCSCBM1_2012-02-01_13-20.txt"
+    is: $WEBOBS{ROOT_PATH}/GCSCBM1/$NODES{SPATH_INTERVENTIONS}/GCSCBM1_2012-01-01_20-10/GCSCBM1_2012-02-01_13-20.txt
 
 =over
 
 =item B<object=normnode|normgrid>
 
-	normnode := gridtype.gridname.nodename
-	normgrid := gridtype.gridname
+    normnode := gridtype.gridname.nodename
+    normgrid := gridtype.gridname
 
 =item B<action=>
 
-	{ upd | del | new | save }
+    { upd | del | new | save }
 
 B<save> is 'called' to actually process a previous B<new> or B<upd> or B<del> request from the user.
 
@@ -60,12 +60,12 @@ event must be the parent's event (ie. may be "" if event is not a subevent).
 
 =item B<event=eventrelpath>
 
-	eventrelpath := relative path to event file (.txt) if action is 'upd' or 'del' ,
-	                OR relative path to event's parent's extensions dir if action is 'new'
+    eventrelpath := relative path to event file (.txt) if action is 'upd' or 'del' ,
+                    OR relative path to event's parent's extensions dir if action is 'new'
 
 =item B<event=projectName>
 
-	projectName  := NODEName_Projet.txt
+    projectName  := NODEName_Projet.txt
 
 =back
 
@@ -209,7 +209,7 @@ if ($action =~ /save/i ) {
         if ($evname eq "") { # no *txt specified, use $formname (new event)
             $target = "$evbase/$evpath/$formname";
             WebObs::Events::versionit(\$target);
-            my $fp = dirname($target);	qx(mkdir -p "$fp" 2>/dev/null);
+            my $fp = dirname($target);    qx(mkdir -p "$fp" 2>/dev/null);
         } else {
 
             # moving an event
@@ -354,9 +354,9 @@ if ($action =~ /upd/i ) {
     }
 
 # event metadata are stored in the header line of file as pipe-separated fields:
-# 	UID1[+UID2+...]/RUID1[+RUID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
-#	event text content
-#	...
+#     UID1[+UID2+...]/RUID1[+RUID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
+#    event text content
+#    ...
     @lines = readFile("$evbase/$evpath");
     chomp(@lines);
     (my $authors,my $remotes,$titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
@@ -400,10 +400,10 @@ print "Content-type: text/html; charset=utf-8
 ";
 if (length($meta) > 0) {
     print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
-		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
+           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
 } else {
     print "<script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
-		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
+           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
 }
 print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/wodp.css\">
 <script language=\"javascript\" type=\"text/javascript\" src=\"/js/wodp.js\"></script>";
@@ -413,64 +413,64 @@ print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/wodp.css\">
 if (!$isProject) {
     print "<script language=\"javascript\" type=\"text/javascript\">
 \$(document).ready(function() {
-	\$(\"#markItUp\").markItUp(mySettings);
-	var h = \$(\"textarea#markItUp\").css('line-height').match(/(\\d+)(.*)/);
-	\$(\"textarea#markItUp\").css('height',(h[1]*\$(\"textarea#markItUp\").attr('rows'))+h[2]);
-	\$('input#date').wodp({
-		icon: true,
-		//range: {from: min, to: max},
-		days: $wodp_d2,
-		months: $wodp_m,
-		holidays: $wodp_holidays,
-		//onpicked: function(i) { \$('input#date').val().replace(/,.*\$/,''); },
-	});
-	\$('input#date2').wodp({
-		icon: true,
-		//range: {from: min, to: max},
-		days: $wodp_d2,
-		months: $wodp_m,
-		holidays: $wodp_holidays,
-		//onpicked: function(i) { \$('input#date2').val().replace(/,.*\$/,''); },
-	});
+    \$(\"#markItUp\").markItUp(mySettings);
+    var h = \$(\"textarea#markItUp\").css('line-height').match(/(\\d+)(.*)/);
+    \$(\"textarea#markItUp\").css('height',(h[1]*\$(\"textarea#markItUp\").attr('rows'))+h[2]);
+    \$('input#date').wodp({
+        icon: true,
+        //range: {from: min, to: max},
+        days: $wodp_d2,
+        months: $wodp_m,
+        holidays: $wodp_holidays,
+        //onpicked: function(i) { \$('input#date').val().replace(/,.*\$/,''); },
+    });
+    \$('input#date2').wodp({
+        icon: true,
+        //range: {from: min, to: max},
+        days: $wodp_d2,
+        months: $wodp_m,
+        holidays: $wodp_holidays,
+        //onpicked: function(i) { \$('input#date2').val().replace(/,.*\$/,''); },
+    });
 });
 
 function postform() {
-	var form = \$(\"#theform\")[0];
-	var bad = false;
-	\$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
-	if (!form.date.value.match(/^[1-2]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|1\\d|2\\d|3[01])\$/)) {bad=true; form.date.style.background='red';};
-	if (form.time.value == '') {
-		form.time.value = 'NA';
-		} else {
-			if (!form.time.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {bad=true; form.time.style.background='red';};
-		}
-	console.log(\"0 - time=\" + form.time.value);
-	if (form.date2.value != '' && !form.date2.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date2.style.background='red';};
-	if (form.date2.value == '') {form.date2.value = form.date.value;}
-	if (form.time2.value == '') {form.time2.value = form.time.value;}
-	if (!form.time2.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {bad=true; form.time2.style.background='red';};
-	if (form.oper.value == '' && form.roper.value == '') {
-		bad=true;
-		form.oper.style.background='red';
-		form.roper.style.background='red';
-	}
-	if (form.titre.value == '') {bad=true; form.titre.style.background='red';}
-	form.s2g.value = $s2g;
-	if (bad) {
-		//\$('html,body').animate({ scrollTop: 0 }, 400);
-		return false;
-	}
+    var form = \$(\"#theform\")[0];
+    var bad = false;
+    \$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
+    if (!form.date.value.match(/^[1-2]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|1\\d|2\\d|3[01])\$/)) {bad=true; form.date.style.background='red';};
+    if (form.time.value == '') {
+        form.time.value = 'NA';
+        } else {
+            if (!form.time.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {bad=true; form.time.style.background='red';};
+        }
+    console.log(\"0 - time=\" + form.time.value);
+    if (form.date2.value != '' && !form.date2.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date2.style.background='red';};
+    if (form.date2.value == '') {form.date2.value = form.date.value;}
+    if (form.time2.value == '') {form.time2.value = form.time.value;}
+    if (!form.time2.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {bad=true; form.time2.style.background='red';};
+    if (form.oper.value == '' && form.roper.value == '') {
+        bad=true;
+        form.oper.style.background='red';
+        form.roper.style.background='red';
+    }
+    if (form.titre.value == '') {bad=true; form.titre.style.background='red';}
+    form.s2g.value = $s2g;
+    if (bad) {
+        //\$('html,body').animate({ scrollTop: 0 }, 400);
+        return false;
+    }
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-		 if (data != '') alert(\$(\"<div/>\").html(data).text());
-       	 location.href = document.referrer;
-   	});
+         if (data != '') alert(\$(\"<div/>\").html(data).text());
+            location.href = document.referrer;
+       });
 }
 function convert2MMD()
 {
-	if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
-		\$(\"#theform\")[0].conv.value = \"1\";
-		postform();
-	}
+    if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
+        \$(\"#theform\")[0].conv.value = \"1\";
+        postform();
+    }
 }
 </script>";
 
@@ -479,32 +479,32 @@ function convert2MMD()
 } else {
     print "<script language=\"javascript\" type=\"text/javascript\">
 \$(document).ready(function() {
-	\$(\"#markItUp\").markItUp(mySettings);
-	var h = \$(\"textarea#markItUp\").css('line-height').match(/(\\d+)(.*)/);
-	\$(\"textarea#markItUp\").css('height',(h[1]*\$(\"textarea#markItUp\").attr('rows'))+h[2]);
+    \$(\"#markItUp\").markItUp(mySettings);
+    var h = \$(\"textarea#markItUp\").css('line-height').match(/(\\d+)(.*)/);
+    \$(\"textarea#markItUp\").css('height',(h[1]*\$(\"textarea#markItUp\").attr('rows'))+h[2]);
 });
 
 function postform() {
-	var form = \$(\"#theform\")[0];
-	var bad = false;
-	\$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
-	if (form.oper.value == '') {bad=true; form.oper.style.background='red';}
-	if (form.titre.value == '') {bad=true; form.titre.style.background='red';}
-	if (bad) {
-		//\$('html,body').animate({ scrollTop: 0 }, 400);
-		return false;
-	}
+    var form = \$(\"#theform\")[0];
+    var bad = false;
+    \$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
+    if (form.oper.value == '') {bad=true; form.oper.style.background='red';}
+    if (form.titre.value == '') {bad=true; form.titre.style.background='red';}
+    if (bad) {
+        //\$('html,body').animate({ scrollTop: 0 }, 400);
+        return false;
+    }
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-		 alert(\$(\"<div/>\").html(data).text());
-       	 location.href = document.referrer;
-   	});
+         alert(\$(\"<div/>\").html(data).text());
+            location.href = document.referrer;
+       });
 }
 function convert2MMD()
 {
-	if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
-		\$(\"#theform\")[0].conv.value = \"1\";
-		postform();
-	}
+    if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
+        \$(\"#theform\")[0].conv.value = \"1\";
+        postform();
+    }
 }
 </script>";
 }

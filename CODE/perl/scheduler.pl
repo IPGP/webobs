@@ -66,28 +66,28 @@ in the common WebObs structure B<$WEBOBS>. The file is 'readCfg()' interpretable
 Changes to the configuration file are NOT dynamically read/used by the running scheduler;
 scheduler.pl MUST be stopped/started to load new configuration values.
 
-	# CONF_SCHEDULER|${ROOT_CONF}/scheduler.rc    # in WEBOBS.rc
+    # CONF_SCHEDULER|${ROOT_CONF}/scheduler.rc    # in WEBOBS.rc
 
-	# scheduler.rc example configuration file
-	#
-	=key|value                                    # readCfg() specification
-	BEAT|2                                        # find/start jobs each BEAT seconds
-	MAX_CHILDREN|10                               # maximum simultaneous jobs running
-	LISTEN_ADDR|localhost                         # client-command interface address
-	PORT|7761                                     # client-command UDP port number
-	SOCKET_MAXLEN|1500;                           # client-command max msg length
-	SQL_DB_JOBS|$WEBOBS{ROOT_CONF}/WEBOBSJOBS.db  # sqlite DataBase name for JOBS table
-	LOADAVG1_THRESHOLD|0.7                        # 1' max system load averages
-	LOADAVG5_THRESHOLD|0.7                        # 5' =
-	LOADAVG15_THRESHOLD|0.7                       #15' =
-	PATH_STD|$WEBOBS{ROOT_CONF}/jobslogs          # root directory for all jobs STDOUT/ERR
-	PATH_RES|$WEBOBS{ROOT_CONF}/res               # root directory for jobs resources (==ENQ ==LOCKS)
-	DITTO_LOG_MAX|500                             # how many occurences of a msg to log before forcing a write
-	DITTO_NTF_MAX|1000                            # how many occurences of a msg to notify before forcing a notify
-	CANCEL_SUBMIT|3600                            # how long (seconds) a submited job can be waiting in JOBQ
-	DAYS_IN_RUN|30                                # number of days that jobs stay in runs table
-	LMISS_BIAS|10                                 # number of seconds to delay candidates not run because of load-threshold
-	EMISS_BIAS|4                                  # number of seconds to delay candidates not run because of enq busy
+    # scheduler.rc example configuration file
+    #
+    =key|value                                    # readCfg() specification
+    BEAT|2                                        # find/start jobs each BEAT seconds
+    MAX_CHILDREN|10                               # maximum simultaneous jobs running
+    LISTEN_ADDR|localhost                         # client-command interface address
+    PORT|7761                                     # client-command UDP port number
+    SOCKET_MAXLEN|1500;                           # client-command max msg length
+    SQL_DB_JOBS|$WEBOBS{ROOT_CONF}/WEBOBSJOBS.db  # sqlite DataBase name for JOBS table
+    LOADAVG1_THRESHOLD|0.7                        # 1' max system load averages
+    LOADAVG5_THRESHOLD|0.7                        # 5' =
+    LOADAVG15_THRESHOLD|0.7                       #15' =
+    PATH_STD|$WEBOBS{ROOT_CONF}/jobslogs          # root directory for all jobs STDOUT/ERR
+    PATH_RES|$WEBOBS{ROOT_CONF}/res               # root directory for jobs resources (==ENQ ==LOCKS)
+    DITTO_LOG_MAX|500                             # how many occurences of a msg to log before forcing a write
+    DITTO_NTF_MAX|1000                            # how many occurences of a msg to notify before forcing a notify
+    CANCEL_SUBMIT|3600                            # how long (seconds) a submited job can be waiting in JOBQ
+    DAYS_IN_RUN|30                                # number of days that jobs stay in runs table
+    LMISS_BIAS|10                                 # number of seconds to delay candidates not run because of load-threshold
+    EMISS_BIAS|4                                  # number of seconds to delay candidates not run because of enq busy
 
 =head2 JOBS DATABASE
 
@@ -96,15 +96,15 @@ A job is identified by its unique B<JID> and by its 3-tuple B<XEQ1 XEQ2 XEQ3> th
 the 'PROGRAM LIST' passed to 'exec' for job's execution (see 'exec' syntax in perldoc).
 Each row of B<JOBS> is a single job definition consisting of the following columns/information:
 
-	JID            char, unique jobid (length <= 20 chars, no blanks allowed),
-	VALIDITY       char, Y|N : wether this definition is currently valid (Y), ie. processed or ignored
-	XEQ1           text, 1st element of 'exec'
-	XEQ2           text, 2nd element of 'exec'
-	XEQ3           text, 3rd element of 'exec'
-	RUNINTERVAL    int, how many seconds between two runs of the job
-	MAXSYSLOAD     real, system load 5'-average above which the job shouldn't be executed
-	LOGPATH        text, subdirectory of scheduler's PATH_STD to store job's STDOUT & STDERR
-	LASTSTRTS      real, timestamp when last run was started
+    JID            char, unique jobid (length <= 20 chars, no blanks allowed),
+    VALIDITY       char, Y|N : wether this definition is currently valid (Y), ie. processed or ignored
+    XEQ1           text, 1st element of 'exec'
+    XEQ2           text, 2nd element of 'exec'
+    XEQ3           text, 3rd element of 'exec'
+    RUNINTERVAL    int, how many seconds between two runs of the job
+    MAXSYSLOAD     real, system load 5'-average above which the job shouldn't be executed
+    LOGPATH        text, subdirectory of scheduler's PATH_STD to store job's STDOUT & STDERR
+    LASTSTRTS      real, timestamp when last run was started
 
 XEQ1, XEQ2 and XEQ3 can reference variables from WEBOBS.rc configuration. Such a reference
 is coded $WEBOBS{key} (eg. $WEBOBS{MYXEQ1S}/matlab p1 p2).
@@ -112,15 +112,15 @@ is coded $WEBOBS{key} (eg. $WEBOBS{MYXEQ1S}/matlab p1 p2).
 Executing and executed jobs (aka 'runs') are kept in the summary/history B<RUNS> table.
 Each row of B<RUNS> reflects one (1) execution of a job (identified by it's JID and KID) :
 
-	JID            int,  unique jobid (see table B<JOBS>)
-	KID            int,  linux process id forked by scheduler
-	ORG            text, 'S' selected by Scheduler, 'R' selected on [user's] Request
-	STARTTS        int,  time this run was started
-	ENDTS          int,  time this run has ended
-	CMD            text, executed command
-	STDPATH        text, location of this run's stdout and stderr
-	RC             int,  return code of this run
-	RCMSG          text, text return code
+    JID            int,  unique jobid (see table B<JOBS>)
+    KID            int,  linux process id forked by scheduler
+    ORG            text, 'S' selected by Scheduler, 'R' selected on [user's] Request
+    STARTTS        int,  time this run was started
+    ENDTS          int,  time this run has ended
+    CMD            text, executed command
+    STDPATH        text, location of this run's stdout and stderr
+    RC             int,  return code of this run
+    RCMSG          text, text return code
 
 
 =head2 COMMANDS
@@ -149,12 +149,12 @@ a job dynamically defined inline with a job-definition-string.
 2) a B<job-definition-string> is a comma-separated list of jobdef's I<keyword:value>
 ("keyword1:value,....,keywordN:value"), where allowed keywords are:
 
-	XEQ1:, XEQ2:, XEQ3:           (same as jobs table columns)
-	LOGPATH:, RES:, MAXSYSLOAD:   (same as jobs table columns)
-	UID:                          (submitter uid to be used for end of job notification)
+    XEQ1:, XEQ2:, XEQ3:           (same as jobs table columns)
+    LOGPATH:, RES:, MAXSYSLOAD:   (same as jobs table columns)
+    UID:                          (submitter uid to be used for end of job notification)
 
-	Example:
-	$ scheduler submit 'XEQ1:perl,XEQ2:/path/to/jobtst.pl,RES:mylock,UID:DL'
+    Example:
+    $ scheduler submit 'XEQ1:perl,XEQ2:/path/to/jobtst.pl,RES:mylock,UID:DL'
 
 Each time a job-definition-string is submitted, the job will automatically be assigned a unique
 numeric negative jid, for reporting/database identification purposes.
@@ -212,37 +212,37 @@ The following table shows B<LOGPATH> syntax (left) interpretation (right), where
 any subdirectories defined in the path will be dynamically created if needed,
 and pid is the job's pid.
 
-	name					PATH_STD/name.std{out,err}
-	name/					PATH_STD/name/pid.std{out,err}
-	name/name/out			PATH_STD/name/name/name/out.std{out,err}
-	<null>					PATH_STD/pid.std{out,err}
+    name                    PATH_STD/name.std{out,err}
+    name/                    PATH_STD/name/pid.std{out,err}
+    name/name/out            PATH_STD/name/name/name/out.std{out,err}
+    <null>                    PATH_STD/pid.std{out,err}
 
 The following two rules apply to any one of the above syntaxes:
 
-	>name					overwrite previous file with same name
-	>>name					append to previous file with same name
+    >name                    overwrite previous file with same name
+    >>name                    append to previous file with same name
 
 
 The following B<tags> are also available in the name(s) you supply for easier
 specification of unique log files:
 
-	{TS}					replaced with job's start-timestamp
-	{RTNE}					replaced with job's XEQ2 string, with any blanks (spaces) chars
-							changed to '_' underscores.
+    {TS}                    replaced with job's start-timestamp
+    {RTNE}                    replaced with job's XEQ2 string, with any blanks (spaces) chars
+                            changed to '_' underscores.
 
 =head2 NOTIFICATIONS
 
 The scheduler currently send the following B<notifications events> to the WebObs B<Postboard> system
 Following is the list of "event-name => situation" of these notifications:
 
-	scheduler.critical  => system loadavg thresholds have been reached, before selecting candidates jobs
-	scheduler.critical  => maximum # of process kids already running, before selecting candidates jobs
-	scheduler.critical  => couldn't fork for executing a job
-	scheduler.warning   => a job is candidate, but already in the runQ and its maxintances don't allow
-	scheduler.warning   => a job is candidate, but its maxsysload has been reached
-	scheduler.critical  => scheduler has been stopped from a 'STOP' command
-	scheduler.critical  => scheduler has been killed (sigint received)
-	submitrc.<jid>      => jid has ended (see postboard.pl documentation)
+    scheduler.critical  => system loadavg thresholds have been reached, before selecting candidates jobs
+    scheduler.critical  => maximum # of process kids already running, before selecting candidates jobs
+    scheduler.critical  => couldn't fork for executing a job
+    scheduler.warning   => a job is candidate, but already in the runQ and its maxintances don't allow
+    scheduler.warning   => a job is candidate, but its maxsysload has been reached
+    scheduler.critical  => scheduler has been stopped from a 'STOP' command
+    scheduler.critical  => scheduler has been killed (sigint received)
+    submitrc.<jid>      => jid has ended (see postboard.pl documentation)
 
 =head2 VERBOSITY
 
@@ -251,26 +251,26 @@ These lists are indicative only; they might not be accurate/comprehensive.
 
 messages logged, ignoring verbosity setting:
 
-	- received commands
-	- failed to fork a kid, failed to exec a kid
-	- main loop drift > tick interval
-	- maximum number of kids executing
-	- locked job's resource
-	- loadavg above job's threshold
-	- all messages during the stop sequence
+    - received commands
+    - failed to fork a kid, failed to exec a kid
+    - main loop drift > tick interval
+    - maximum number of kids executing
+    - locked job's resource
+    - loadavg above job's threshold
+    - all messages during the stop sequence
 
 messages logged when verbosity on (-v or verbose cmd)
 
-	- forked kids detailed info
-	- reaper details
-	- system's sysload warnings
-	- enq and deq job's resources
+    - forked kids detailed info
+    - reaper details
+    - system's sysload warnings
+    - enq and deq job's resources
 
 messages logged when verbosity level 2 on (-V)
 
-	- RUNQ status at each beat
-	- CANDIDATES list at each beat
-	- paused status and adjust-loop on each beat
+    - RUNQ status at each beat
+    - CANDIDATES list at each beat
+    - paused status and adjust-loop on each beat
 
 =head2 SCHEDULER EXIT
 
@@ -353,21 +353,21 @@ if (! open(LOG, ">>$LOGNAME")) {
 # -----------------------------------------------------------------------------
 our $STRT = time;              # when I was started
 our $STRTTS = strftime("%Y-%m-%d %H:%M:%S (UTC%z)",localtime($STRT)); # when I was started
-our $PID = $$;				   # my own pid (parent of all running kids)
+our $PID = $$;                   # my own pid (parent of all running kids)
 our $PUID= (getpwuid($<))[0];  # who am I after all
-our $PAUSED = 0;			   # tick but don't schedule anything if PAUSED
-our %kids;					   # 'running' kids hash: $kids{kid_pid} = internal kid_id
-our $kidcmd;				   # command to be executed by currently forked kid
-our $rid = 0;				   # a run id
-our $dcd = 0;				   # ended kid_pid in the REAPER's waitpid loop
-our $utick    = 1000000;	   # base tick (microseconds)
-our $adjutick =  $utick;	   # utick adjusted for drift
-our %CANDIDATES;			   # jobs, candidates for this 'tick' from DB and Q
-our %RUNQ;					   # jobs, running ()
-our %JOBRQ;					   # queued jobs requests (from udp submits)
-our @CMDRQ;					   # queued cmds from udp client
-our $JSTARTED=0;			   # number of jobs started so far, for this scheduler's session
-our $JENDED=0;             	   # number of jobs ended so far, for this scheduler's session
+our $PAUSED = 0;               # tick but don't schedule anything if PAUSED
+our %kids;                       # 'running' kids hash: $kids{kid_pid} = internal kid_id
+our $kidcmd;                   # command to be executed by currently forked kid
+our $rid = 0;                   # a run id
+our $dcd = 0;                   # ended kid_pid in the REAPER's waitpid loop
+our $utick    = 1000000;       # base tick (microseconds)
+our $adjutick =  $utick;       # utick adjusted for drift
+our %CANDIDATES;               # jobs, candidates for this 'tick' from DB and Q
+our %RUNQ;                       # jobs, running ()
+our %JOBRQ;                       # queued jobs requests (from udp submits)
+our @CMDRQ;                       # queued cmds from udp client
+our $JSTARTED=0;               # number of jobs started so far, for this scheduler's session
+our $JENDED=0;                    # number of jobs ended so far, for this scheduler's session
 our $CFGF='';                  # active configuration filename
 our %SCHED;                    # active configuration
 our $lldate = '';              # date of last record written to log

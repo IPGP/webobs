@@ -4,12 +4,12 @@
 # mail_info.pl
 # ------
 # Usage: Prepare an information mail based on the Main Courante 
-#	(MC) seismological database
+#    (MC) seismological database
 #
 # Arguments
-#	mc= MC conf name (optional)
-#	dateStart= Start date (mandatory)
-#	dateEnd= End date (mandatory)
+#    mc= MC conf name (optional)
+#    dateStart= Start date (mandatory)
+#    dateEnd= End date (mandatory)
 # 
 # Author: Patrice Boissier <boissier@ipgp.fr>
 # Acknowledgments:
@@ -365,7 +365,7 @@ function showCredits() {
                   </li><li>
                   <b>D&eacute;formation:</b> Depuis juillet 2018, l'&icirc;le de Mayotte est affect&eacute;e par des d&eacute;placements de surface li&eacute;s &agrave; l'activit&eacute; volcano-tectonique. Ces d&eacute;formations sont li&eacute;es &agrave; des circulations de fluides en profondeur se produisant &agrave; l'est de Mayotte, en lien avec l'activit&eacute; volcanique.
                   </li></ul>
-	          </p>
+              </p>
                   <hr/>
                   <p id=legend>
                     <a href=https://www.facebook.com/ReseauVolcanoSismoMayotte>Page Facebook du ReVoSiMa</a>
@@ -396,53 +396,53 @@ Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans c
     print $fh $htmlOutput;
     close $fh;
 
-    #	print "Envoie du mail";
+    #    print "Envoie du mail";
 
-#	my $from = $MC3{MAIL_FROM_REVOSIMA};
-#	my $smtpServer = $MC3{MAIL_SMTP_SERVER};
-#	my $smtpPort = $MC3{MAIL_SMTP_PORT};
-#	my $user = $MC3{MAIL_USER_REVOSIMA};
-#	my $passwd = $MC3{MAIL_PASSWD_REVOSIMA};
+#    my $from = $MC3{MAIL_FROM_REVOSIMA};
+#    my $smtpServer = $MC3{MAIL_SMTP_SERVER};
+#    my $smtpPort = $MC3{MAIL_SMTP_PORT};
+#    my $user = $MC3{MAIL_USER_REVOSIMA};
+#    my $passwd = $MC3{MAIL_PASSWD_REVOSIMA};
 #
-#	my $mailList = '';
-#	my @mailConf = readCfgFile("$WEBOBS{ROOT_CONF}/$MC3{MAIL_REVOSIMA_INFO_CONF}");
-#	for (@mailConf) {
-#		my @liste = split(/\|/,$_);
-#		my %hash;
-#		@hash{@mail}=();
-#		if (exists $hash{$liste[0]}){
-#			if ($mailList eq '') {
-#				$mailList = $mailList.$liste[4]
-#			} else {
-#				$mailList = $mailList.','.$liste[4]
-#			}
-#		}
-#	}
-#	
-#	my $message = Email::MIME->create_html(
-#		header => [
-#			From => $from,
-#			'Reply-To' => $from,
-#			Subject => $subject,
-#			Type    => 'text/html; charset=UTF-8',
-#		],
-#		body => $htmlMail,
-#	);
-#	
-#	my @mailingList = split(/,/,$mailList);
-#	for(@mailingList) {
-#		if($MC3{MAIL_USE_SMTP_REVOSIMA}) {
-#			my $transport = Email::Sender::Transport::SMTP::TLS->new(
-#				host     => $smtpServer,
-#				port     => $smtpPort,
-#				username => $user,
-#				password => $passwd,
-#			);
-#			sendmail($message, { from => $from, to => $_, transport => $transport});
-#		} else {
-#			sendmail($message, { from => $from, to => $_});
-#		}
-#	}
+#    my $mailList = '';
+#    my @mailConf = readCfgFile("$WEBOBS{ROOT_CONF}/$MC3{MAIL_REVOSIMA_INFO_CONF}");
+#    for (@mailConf) {
+#        my @liste = split(/\|/,$_);
+#        my %hash;
+#        @hash{@mail}=();
+#        if (exists $hash{$liste[0]}){
+#            if ($mailList eq '') {
+#                $mailList = $mailList.$liste[4]
+#            } else {
+#                $mailList = $mailList.','.$liste[4]
+#            }
+#        }
+#    }
+#    
+#    my $message = Email::MIME->create_html(
+#        header => [
+#            From => $from,
+#            'Reply-To' => $from,
+#            Subject => $subject,
+#            Type    => 'text/html; charset=UTF-8',
+#        ],
+#        body => $htmlMail,
+#    );
+#    
+#    my @mailingList = split(/,/,$mailList);
+#    for(@mailingList) {
+#        if($MC3{MAIL_USE_SMTP_REVOSIMA}) {
+#            my $transport = Email::Sender::Transport::SMTP::TLS->new(
+#                host     => $smtpServer,
+#                port     => $smtpPort,
+#                username => $user,
+#                password => $passwd,
+#            );
+#            sendmail($message, { from => $from, to => $_, transport => $transport});
+#        } else {
+#            sendmail($message, { from => $from, to => $_});
+#        }
+#    }
 } else {
     print $cgi->header(-charset=>'utf-8');
     print <<"PART1";

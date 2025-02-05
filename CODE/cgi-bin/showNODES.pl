@@ -58,14 +58,14 @@ print <<"FIN";
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
 <script language="JavaScript">
 \$(document).ready(function() {
-	\$('.nodetbl table tr').hover(
-		function(e) {
-			\$(this).addClass("hover");
-		},
-		function(e) {
-			\$(this).removeClass("hover");
-		}
-	);
+    \$('.nodetbl table tr').hover(
+        function(e) {
+            \$(this).addClass("hover");
+        },
+        function(e) {
+            \$(this).removeClass("hover");
+        }
+    );
 });
 </script>
 </head>

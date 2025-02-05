@@ -9,8 +9,8 @@ scheduler process and submit it with commands.
 
 =head1 SYNOPSIS
 
-	use WebObs::Scheduler qw(scheduler_client);
-	my ($response, $error) = scheduler_client($opts{'msg'}, \%opts);
+    use WebObs::Scheduler qw(scheduler_client);
+    my ($response, $error) = scheduler_client($opts{'msg'}, \%opts);
 
 =head1 DESCRIPTION
 

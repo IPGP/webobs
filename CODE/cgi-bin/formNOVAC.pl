@@ -134,13 +134,13 @@ print "\n
     <script type=\"text/javascript\">\n
 function check_values()
 {
-	var flux_ton = 0;
-	if(document.formulaire.flux1.value == \"\") { 
-		flux_ton = 0;
-	} else {
-		flux_ton = document.formulaire.flux1.value * 86.4;
-	}
-	document.formulaire.flux2.value = flux_ton.toFixed(2);
+    var flux_ton = 0;
+    if(document.formulaire.flux1.value == \"\") { 
+        flux_ton = 0;
+    } else {
+        flux_ton = document.formulaire.flux1.value * 86.4;
+    }
+    document.formulaire.flux2.value = flux_ton.toFixed(2);
 }
 
 function verif_formulaire() {
@@ -274,10 +274,10 @@ print "\n
       <table style=border:0 onMouseOver=\"calc()\">\n
         <tr>\n
           <td style=border:0 valign=top>\n
-	    <fieldset>
+        <fieldset>
               <legend>Main data</legend>\n
-	      <p class=parform>\n
-	        <b>Date: </b>\n
+          <p class=parform>\n
+            <b>Date: </b>\n
                 <select name=annee size=\"1\">";
 for (@anneeListe) {
     if ($_ == $sel_annee) {

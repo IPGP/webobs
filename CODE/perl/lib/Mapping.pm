@@ -30,7 +30,7 @@ configuration parameter UTM_LOCAL pointing to its own definitions file.
 
  Author: François Beauducel, IPGP
      Created:  2009-10-21 (translated from Matlab 2003 author's toolbox)
-	 Updated:  2022-05-29
+     Updated:  2022-05-29
 
  I.G.N., Changement de système géodésique: Algorithmes, Notes Techniques NT/G 80, janvier 1995.
  I.G.N., Projection cartographique Mercator Transverse: Algorithmes, Notes Techniques NT/G 76, janvier 1995.
@@ -69,9 +69,9 @@ Sets the %UTM structure with the contents of $utmfilename (if provided and exist
 or with the contents of $WEBOBS{UTM_LOCAL} -the default definitions- (if it exists).
 Returns %UTM address if loaded successfully, 0 otherwise.
 
-	print "OK" if ( setUTMLOCAL($utmfilename) ); # try load $utmfilename or default settings
+    print "OK" if ( setUTMLOCAL($utmfilename) ); # try load $utmfilename or default settings
 
-	print Dumper setUTMLOCAL();                  # try load + dump the default UTM settings
+    print Dumper setUTMLOCAL();                  # try load + dump the default UTM settings
 
 =cut
 
@@ -96,10 +96,10 @@ sub setUTMLOCAL {
 
 Calcul de la latitude isométrique
 
-	$L = IGN0001(PHi,E);  # $L = altitude isométrique (PHI = latitude, E = première excentricité de l'ellpsoide)
+    $L = IGN0001(PHi,E);  # $L = altitude isométrique (PHI = latitude, E = première excentricité de l'ellpsoide)
 
-	References:
-	I.G.N., Projection cartographique Mercator Transverse: Algorithmes, Notes Techniques NT/G 76, janvier 1995.
+    References:
+    I.G.N., Projection cartographique Mercator Transverse: Algorithmes, Notes Techniques NT/G 76, janvier 1995.
 
 =cut
 
@@ -183,7 +183,7 @@ sub ign0012 {
 # Jeu d'essai
 #$a = 6378249.2; $e = 0.08248325679; $x = 6376064.695; $y = 111294.623; $z = 128984.725;
 
-    my $EPS = 1e-11;	# EPS = tolérance de convergence, en rad
+    my $EPS = 1e-11;    # EPS = tolérance de convergence, en rad
     my $IMAX = 10;               # Imax = nombre maximum d'itérations
 
     my $R = sqrt($x*$x + $y*$y);
@@ -507,8 +507,8 @@ sub geo2utm {
     my ($F0,$K0,$P0,$L0,$X0,$Y0) = utmwgs($p1,$l1);
 
     # Définition des constantes
-    my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};	# WGS84 demi grand axe
-    my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};	# WGS84 aplatissement
+    my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};    # WGS84 demi grand axe
+    my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};    # WGS84 aplatissement
 
     # Conversion des données
     $P0 /= $D0;
@@ -552,10 +552,10 @@ sub geo2utml {
 
     # Définition des constantes
     my $D0 = 180/pi;
-    my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};	# WGS84 demi grand axe
-    my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};	# WGS84 aplatissement
-    my $A2 = $UTM{ELLIPSOID_LOCAL_SEMIMAJOR_AXIS};	# HAYFORD 1909 demi grand axe
-    my $F2 = 1/$UTM{ELLIPSOID_LOCAL_INVERSE_FLATTENING};	# HAYFORD 1909 aplatissement
+    my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};    # WGS84 demi grand axe
+    my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};    # WGS84 aplatissement
+    my $A2 = $UTM{ELLIPSOID_LOCAL_SEMIMAJOR_AXIS};    # HAYFORD 1909 demi grand axe
+    my $F2 = 1/$UTM{ELLIPSOID_LOCAL_INVERSE_FLATTENING};    # HAYFORD 1909 aplatissement
     my ($F0,$K0,$P0,$L0,$X0,$Y0) = utm($p1,$l1);
 
     my $TX = $UTM{GEODETIC_LOCAL2WGS84_TRANSLATION_X};               # HAYFORD 1909 => WGS84 : Translation X (m)
@@ -604,17 +604,17 @@ sub utmwgs {
     my $l1 = shift;
 
     my $D0 = 180/pi;
-    my $F0 = $UTM{UTM_ZONE};		# utm zone
-    my $K0 = $UTM{UTM_SCALE_FACTOR};	# scale factor (0.9996)
+    my $F0 = $UTM{UTM_ZONE};        # utm zone
+    my $K0 = $UTM{UTM_SCALE_FACTOR};    # scale factor (0.9996)
     if ($F0 le 0) {
 
         #$F0 = int(($l1 + 183)/6);
         $F0 = int(($l1 + 183)/6 + .5);
     }
-    my $L0 = (6*$F0 - 183)/$D0;	# longitude origin (rad)
-    my $P0 = 0;			# latitude origin (rad) / UTM20 = 0
-    my $X0 = 500000;		# false easting
-    my $Y0 = 0;			# false northing
+    my $L0 = (6*$F0 - 183)/$D0;    # longitude origin (rad)
+    my $P0 = 0;            # latitude origin (rad) / UTM20 = 0
+    my $X0 = 500000;        # false easting
+    my $Y0 = 0;            # false northing
     if ($p1 lt 0) {
         $Y0 = 10000000;
     }
@@ -636,13 +636,13 @@ sub utm {
 
     my $D0 = 180/pi;
 
-    #my $F0 = int(($l1 + 183)/6);			# UTM zone
+    #my $F0 = int(($l1 + 183)/6);            # UTM zone
     my $F0 = int(($l1 + 183)/6 + .5);       # UTM zone
-    my $K0 = $UTM{UTM_LOCAL_SCALE_FACTOR};	# scale factor
-    my $L0 = $UTM{UTM_LOCAL_MERIDIAN_ORIGIN}/$D0;	# longitude origin (rad)
-    my $P0 = 0;			# latitude origin (rad) / UTM20 = 0
-    my $X0 = $UTM{UTM_LOCAL_FALSE_EASTING};		# false easting
-    my $Y0 = 0;			# false northing
+    my $K0 = $UTM{UTM_LOCAL_SCALE_FACTOR};    # scale factor
+    my $L0 = $UTM{UTM_LOCAL_MERIDIAN_ORIGIN}/$D0;    # longitude origin (rad)
+    my $P0 = 0;            # latitude origin (rad) / UTM20 = 0
+    my $X0 = $UTM{UTM_LOCAL_FALSE_EASTING};        # false easting
+    my $Y0 = 0;            # false northing
     if ($p1 lt 0) {
         $Y0 = 10000000;
     }
@@ -666,8 +666,8 @@ sub geo2cart {
     my $D0 = 180/pi;
 
     # Définition des constantes
-    my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};	# WGS84 demi grand axe
-    my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};	# WGS84 aplatissement
+    my $A1 = $UTM{ELLIPSOID_WGS84_SEMIMAJOR_AXIS};    # WGS84 demi grand axe
+    my $F1 = 1/$UTM{ELLIPSOID_WGS84_INVERSE_FLATTENING};    # WGS84 aplatissement
 
     # Conversion des données
     my $B1 = $A1*(1 - $F1);
@@ -683,11 +683,11 @@ sub geo2cart {
 
 =head2 greatcircle
 
-#	greatcircle(lat1,lon1,lat2,lon2) computes the distance (in km) between two
-#	geographic coordinates lat/lon (greatcircle Haversin formula). It returns
-#	also the bear angle (in °).
+#    greatcircle(lat1,lon1,lat2,lon2) computes the distance (in km) between two
+#    geographic coordinates lat/lon (greatcircle Haversin formula). It returns
+#    also the bear angle (in °).
 #
-#	Reference: modified from greatcircle.m by F. Beauducel, IPGP
+#    Reference: modified from greatcircle.m by F. Beauducel, IPGP
 
 =cut
 
@@ -702,7 +702,7 @@ sub greatcircle {
     my $dlat = ($lat2 - $lat1)*$k;
     my $dlon = ($lon2 - $lon1)*$k;
 
-    my $rearth = 6371;	# volumetric Earth radius (in km)
+    my $rearth = 6371;    # volumetric Earth radius (in km)
 
     my $dist = $rearth*2*asin(sqrt(sin($dlat/2)**2 + cos($lat1*$k)*cos($lat2*$k)*sin($dlon/2)**2));
     my $bear = atan2(sin($dlon)*cos($lat2*$k),cos($lat1*$k)*sin($lat2*$k) - sin($lat1*$k)*cos($lat2*$k)*cos($dlon))/$k;
@@ -714,8 +714,8 @@ sub greatcircle {
 
 =head2 compass
 
-#	compass(azimuth) returns a short string indicating geographical orientation from azimuth in
-#	degrees from North, clockwise
+#    compass(azimuth) returns a short string indicating geographical orientation from azimuth in
+#    degrees from North, clockwise
 
 =cut
 
@@ -731,8 +731,8 @@ sub compass {
 
 =head2 KMLfeed
 
-#	KMLfeed(URL) dowloads a KML string from URL and returns latitude, longitude,
-#	altitude, and timestamp.
+#    KMLfeed(URL) dowloads a KML string from URL and returns latitude, longitude,
+#    altitude, and timestamp.
 
 =cut
 

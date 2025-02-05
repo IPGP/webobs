@@ -85,8 +85,8 @@ if ($QryParm->{'send'} eq "Envoyer" && $QryParm->{'action'} ne "nothing") {
         my $commandStatus = "?RLY";
 
         #$telnetClient->cmd(
-        #	String => $commandStatus,
-        #	Prompt => '/[01]{8}$/',
+        #    String => $commandStatus,
+        #    Prompt => '/[01]{8}$/',
         #);
         #$statusBefore = $telnetClient->last_prompt;
 
@@ -102,8 +102,8 @@ if ($QryParm->{'send'} eq "Envoyer" && $QryParm->{'action'} ne "nothing") {
         #sleep(1);
 
         #$telnetClient->cmd(
-        #	String => $commandStatus,
-        #	Prompt => '/[01]{8}$/',
+        #    String => $commandStatus,
+        #    Prompt => '/[01]{8}$/',
         #);
         #$statusAfter = $telnetClient->last_prompt;
 
@@ -119,16 +119,16 @@ if ($QryParm->{'send'} eq "Envoyer" && $QryParm->{'action'} ne "nothing") {
             #sleep(1);
 
             #$telnetClient->cmd(
-            #	String => $commandStatus,
-            #	Prompt => '/[01]{8}$/',
+            #    String => $commandStatus,
+            #    Prompt => '/[01]{8}$/',
             #);
             #$statusReboot = $telnetClient->last_prompt;
         }
 
         print "Location: $relayParams{$QryParm->{'action'}}[5]\n\n";
 
-     #		print $cgi->header(-charset=>'utf-8');
-     #		print <<"PART1";
+     #        print $cgi->header(-charset=>'utf-8');
+     #        print <<"PART1";
      #<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
      #<html>
      #  <head>
@@ -169,7 +169,7 @@ if ($QryParm->{'send'} eq "Envoyer" && $QryParm->{'action'} ne "nothing") {
           return false;
         } else {
           return true;
-	}
+    }
       }
     </script>
   </head>
@@ -186,19 +186,19 @@ PART1
       <tr><th>Piton de Bert</th><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
       <tr>
         <td>Camera Bert IRT</td>
-	<td>&nbsp;</td>
-	<td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
         <td class="status-warning">
           <input type="radio" id="ber_camerairt_reboot" name="action" value="ber_camerairt_reboot">
-	</td>
+    </td>
       </tr>
       <tr>
         <td>Camera Bert OVPF</td>
-	<td>&nbsp;</td>
-	<td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
         <td class="status-warning">
           <input type="radio" id="ber_cameraovpf_reboot" name="action" value="ber_cameraovpf_reboot">
-	</td>
+    </td>
       </tr>
 PART2
     if (clientHasAdm(type=>"authprocs",name=>"RELAYADM")) {
@@ -208,21 +208,21 @@ PART2
         <td>Capteur de vent de BERT (IRT)</td>
         <td class="status-ok">
           <input type="radio" id="ber_vent_on" name="action" value="ber_vent_on">
-	</td>
+    </td>
         <td class="status-critical">
           <input type="radio" id="ber_vent_off" name="action" value="ber_vent_off">
-	</td>
-	<td>&nbsp;</td>
+    </td>
+    <td>&nbsp;</td>
       </tr>
       <tr>
         <td>Relai analogique de NTR</td>
         <td class="status-ok">
           <input type="radio" id="ber_relaintr_on" name="action" value="ber_relaintr_on">
-	</td>
+    </td>
         <td class="status-critical">
           <input type="radio" id="ber_relaintr_off" name="action" value="ber_relaintr_off">
-	</td>
-	<td>&nbsp;</td>
+    </td>
+    <td>&nbsp;</td>
       </tr>
 PART3
     }
@@ -231,11 +231,11 @@ PART3
         <td>Relai phonie de Bert</td>
         <td class="status-ok">
           <input type="radio" id="ber_phonie_on" name="action" value="ber_phonie_on">
-	</td>
+    </td>
         <td class="status-critical">
           <input type="radio" id="ber_phonie_off" name="action" value="ber_phonie_off">
-	</td>
-	<td>&nbsp;</td>
+    </td>
+    <td>&nbsp;</td>
       </tr>
 
       <tr><th colspan=4>Piton des Basaltes</th></tr>
@@ -243,21 +243,21 @@ PART3
         <td>Relai phonie de Basaltes</td>
         <td class="status-ok">
           <input type="radio" id="bas_phonie_on" name="action" value="bas_phonie_on">
-	</td>
+    </td>
         <td class="status-critical">
           <input type="radio" id="bas_phonie_off" name="action" value="bas_phonie_off">
-	</td>
-	<td>&nbsp;</td>
+    </td>
+    <td>&nbsp;</td>
       </tr>
       <tr>
         <td>Relai radio SDIS de Basaltes</td>
         <td class="status-ok">
           <input type="radio" id="bas_sdis_on" name="action" value="bas_sdis_on">
-	</td>
+    </td>
         <td class="status-critical">
           <input type="radio" id="bas_sdis_off" name="action" value="bas_sdis_off">
-	</td>
-	<td>&nbsp;</td>
+    </td>
+    <td>&nbsp;</td>
       </tr>
 
       <tr><th colspan=4>Hubert Delisle</th></tr>
@@ -265,21 +265,21 @@ PART3
         <td>Camera de HDL</td>
         <td class="status-ok">
           <input type="radio" id="hdl_camera_on" name="action" value="hdl_camera_on">
-	</td>
+    </td>
         <td class="status-critical">
           <input type="radio" id="hdl_camera_off" name="action" value="hdl_camera_off">
-	</td>
-	<td>&nbsp;</td>
+    </td>
+    <td>&nbsp;</td>
       </tr>
 
       <tr><th colspan=4>Cratere Bory</th></tr>
       <tr>
         <td>Camera IR de Cratere Bory OVPF</td>
-	<td>&nbsp;</td>
-	<td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
         <td class="status-warning">
           <input type="radio" id="cboh_camera_reboot" name="action" value="cboh_camera_reboot">
-	</td>
+    </td>
       </tr>
     </table>
 

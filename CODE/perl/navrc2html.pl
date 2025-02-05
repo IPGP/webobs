@@ -14,8 +14,8 @@ for (@menu) {
     next if(/^[ ]*#/ || /^$/);
     my ($titre,$lien)=split(/\|/,$_);
 
-    #	$lien =~ s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g ;
-    #	my $xtrn = ($lien =~ m/http.?:\/\//) ? " externe ": "";
+    #    $lien =~ s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g ;
+    #    my $xtrn = ($lien =~ m/http.?:\/\//) ? " externe ": "";
     if (substr($titre,0,1) eq "+" || substr($titre,0,1) eq "!") {
         if ($l2==1) { print "    </ul>\n"; $l2 = 0; }
         if ($l1==1) { print "</li>\n"; }

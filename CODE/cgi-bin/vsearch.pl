@@ -25,7 +25,7 @@ Text string to be searched (regex for any category but author/remote user)
 
 =item B<in=category>
 
-	{ notebook | author | remote | alias | grid | feature | startdate | enddate | title | comment | outcome }
+    { notebook | author | remote | alias | grid | feature | startdate | enddate | title | comment | outcome }
 
 B<notebook> is notebook number.
 
@@ -477,15 +477,15 @@ $csvstring =~ s/\n/\\n/g;
 
 print <<"ENDBOTOFPAGE";
 <SCRIPT type="text/javascript">
-	document.getElementById("attente").style.display = "none";
-	var text = '$csvstring';
-	var data = new Blob([text], { type: 'text/csv;charset=utf-8;' });
-	var url = window.URL.createObjectURL(data);
-	document.getElementById('download_link').href = url;
+    document.getElementById("attente").style.display = "none";
+    var text = '$csvstring';
+    var data = new Blob([text], { type: 'text/csv;charset=utf-8;' });
+    var url = window.URL.createObjectURL(data);
+    document.getElementById('download_link').href = url;
 </SCRIPT>
 <STYLE type="text/css">
-	#attente
-	{ display: none;}
+    #attente
+    { display: none;}
 </STYLE>
 <BR>
 </BODY>

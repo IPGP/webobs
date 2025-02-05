@@ -4,11 +4,11 @@ package WebObs::DBForm;
 
 DBForm Perl object: interface to a WebObs 'Form' SQLite DataBase  
 
-	use WebObs::DBForm;
-	$F = new WebObs::DBForm('yourFormName');
+    use WebObs::DBForm;
+    $F = new WebObs::DBForm('yourFormName');
 
-	CONF/FORMS/yourFormName/yourFormName.conf   -->  DATA/DB/yourFormName.db
-	                       /yourFormName.ddl
+    CONF/FORMS/yourFormName/yourFormName.conf   -->  DATA/DB/yourFormName.db
+                           /yourFormName.ddl
 
 =head1 DEVELOPPER NOTES 
 
@@ -29,109 +29,109 @@ DBForm Perl object: interface to a WebObs 'Form' SQLite DataBase
 
 =head1 USING DBForm OBJECT
 
-	## Path to DBFORMSdirectory/thisform
-	print $F->{path};        # eg: /webobs/site/path/to/dbforms/DBF     
+    ## Path to DBFORMSdirectory/thisform
+    print $F->{path};        # eg: /webobs/site/path/to/dbforms/DBF     
 
-	## full name of DBFORM's database file
-	print $F->{dbname};      # eg: /webobs/site/DATA/DB/DBF.db
+    ## full name of DBFORM's database file
+    print $F->{dbname};      # eg: /webobs/site/DATA/DB/DBF.db
 
-	## access the DBFORM's DataBase Handle (presumably to issue your own sql queries?)
-	$F->{dbh}
+    ## access the DBFORM's DataBase Handle (presumably to issue your own sql queries?)
+    $F->{dbh}
 
-	## any parameter from DBFORM's conf file
-	print $F->conf(BANG);    # eg: 2000
+    ## any parameter from DBFORM's conf file
+    print $F->conf(BANG);    # eg: 2000
 
-	## last DBFORM's sql-related method call error
-	print $F->{errstr}
+    ## last DBFORM's sql-related method call error
+    print $F->{errstr}
 
-	## the sql select where clause (no leading 'and')
-	$F->{where} = " ids.node = 'MYNODE' ";       # select for MYNODE only
-	$F->{where} = " ids.ts1 like '2014-07%' or ids.ts1 is null "; # only Jul 2014 or unknown date1   
-	$F->{where} = " ids.id = 25 ";               # select unique row 25 ($F->select(25) would do the same)         
-	# the default {where} is : " ids.hidden = 'N' " (check, may change over releases)
+    ## the sql select where clause (no leading 'and')
+    $F->{where} = " ids.node = 'MYNODE' ";       # select for MYNODE only
+    $F->{where} = " ids.ts1 like '2014-07%' or ids.ts1 is null "; # only Jul 2014 or unknown date1   
+    $F->{where} = " ids.id = 25 ";               # select unique row 25 ($F->select(25) would do the same)         
+    # the default {where} is : " ids.hidden = 'N' " (check, may change over releases)
 
-	## the sql select order by clause 
-	$F->{order} = " order by ids.node,data.val1 ASC ";   
-	# the default {order} is : " ORDER BY ids.ts1 ASC" (check, may change over releases)
+    ## the sql select order by clause 
+    $F->{order} = " order by ids.node,data.val1 ASC ";   
+    # the default {order} is : " ORDER BY ids.ts1 ASC" (check, may change over releases)
 
-	## read and process all rows
-	$F->select;
-	if (! $self->{errstr}) {
-		while ( my $row = $F->fetch ) { 
-			print Dumper $row;
-		}
-	}
+    ## read and process all rows
+    $F->select;
+    if (! $self->{errstr}) {
+        while ( my $row = $F->fetch ) { 
+            print Dumper $row;
+        }
+    }
 
-	## processing a single row $row returned by 'fetch' method
-	## $row is a reference to a hash of columnName => value
-	## null sql values are Perl's undef
-	if ($row->{columnName}) {  do sthg, $row->{columnName} is the value }
-	else { do your own defaulting/processing for such undef value}
+    ## processing a single row $row returned by 'fetch' method
+    ## $row is a reference to a hash of columnName => value
+    ## null sql values are Perl's undef
+    if ($row->{columnName}) {  do sthg, $row->{columnName} is the value }
+    else { do your own defaulting/processing for such undef value}
 
-	## returns array of column names that have been used in select
-	print $F->cols;         # eg: (id,ts1,.....,val1,val2,val3)
+    ## returns array of column names that have been used in select
+    print $F->cols;         # eg: (id,ts1,.....,val1,val2,val3)
 
-	## insert a row from an Html QueryString parameters hash 
-	## the QueryString hash reference is your CGI's  $cgi->Vars
-	## also returns a scalar = the inserted row id on success 
-	$QS = $cgi->Vars;
-	$i = $F->insert($QP);
-	if ($F->{errstr)) { your own error processing, $F->{errstr} containing the error string }
+    ## insert a row from an Html QueryString parameters hash 
+    ## the QueryString hash reference is your CGI's  $cgi->Vars
+    ## also returns a scalar = the inserted row id on success 
+    $QS = $cgi->Vars;
+    $i = $F->insert($QP);
+    if ($F->{errstr)) { your own error processing, $F->{errstr} containing the error string }
 
-	## delete the row ID=10
-	$F->delete(10);
+    ## delete the row ID=10
+    $F->delete(10);
 
-	## get array of CHECK constraints in DATA table
-	print map { "$_\n" } $F->datachecks;
-	# eg: val2 > 10
-	#     val3 between 0.0 and 1.0
+    ## get array of CHECK constraints in DATA table
+    print map { "$_\n" } $F->datachecks;
+    # eg: val2 > 10
+    #     val3 between 0.0 and 1.0
 
-	## get list of all procs pointing to this FORM, along with their 'long' name
-	%P = $F->procs
-	print $P{SOURCES};                 #eg: 'Analyse Sources Thermales'
-	map { print "$_ ... " } keys(%P);  #eg: 'TRACAGE2010 ... SOURCES ...' 
+    ## get list of all procs pointing to this FORM, along with their 'long' name
+    %P = $F->procs
+    print $P{SOURCES};                 #eg: 'Analyse Sources Thermales'
+    map { print "$_ ... " } keys(%P);  #eg: 'TRACAGE2010 ... SOURCES ...' 
 
-	## get all NODEs (and its ALIAS,NAME and FID) of a PROC pointing to this FORM 
-	%N = $F->nodes(SOURCES); 
-	map {print "$_ ... "} keys(%N);    #eg: GCSGAL1 ... GCSTAR1 ... GCSACQ0 ...  
-	print $N{GCSGAL1}{ALIAS};          #eg: 'GA'
+    ## get all NODEs (and its ALIAS,NAME and FID) of a PROC pointing to this FORM 
+    %N = $F->nodes(SOURCES); 
+    map {print "$_ ... "} keys(%N);    #eg: GCSGAL1 ... GCSTAR1 ... GCSACQ0 ...  
+    print $N{GCSGAL1}{ALIAS};          #eg: 'GA'
 
-	## dump the DBFORM object
-	print $F->dump; 
+    ## dump the DBFORM object
+    print $F->dump; 
 
 =head1 DBFORM CONFIGURATION
 
 A DBFORM is defined by its configuration file: $WEBOBS{PATH_FORMS}/DBFORMName/DBFORMName.conf  
 
-	=key|value
-	BANG|2000
-	DBNAME|DBF.db
-	TITLE|DB-based Form Model  
-	FILE_CSV_PREFIX|DBF
+    =key|value
+    BANG|2000
+    DBNAME|DBF.db
+    TITLE|DB-based Form Model  
+    FILE_CSV_PREFIX|DBF
 
 =head1 DBFORM DB SCHEMA
 
 A DBFORM DataBase ( $WEBOBS{PATH_DATA_DB}/DBNAME ) has the following basic structure:
 
-	Required TABLE 'ids'
-	* note: ts1, ts2 not timestamps because of required nullable components
-	------------------
-	id       INTEGER PRIMARY KEY AUTOINCREMENT,
-	ts1      TEXT,
-	ts2      TEXT,
-	node     TEXT NOT NULL,
-	comment  TEXT,
-	hidden   TEXT DEFAULT 'N',
-	tsupd    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	userupd  TEXT NOT NULL DEFAULT '!'
+    Required TABLE 'ids'
+    * note: ts1, ts2 not timestamps because of required nullable components
+    ------------------
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts1      TEXT,
+    ts2      TEXT,
+    node     TEXT NOT NULL,
+    comment  TEXT,
+    hidden   TEXT DEFAULT 'N',
+    tsupd    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    userupd  TEXT NOT NULL DEFAULT '!'
 
     Required TABLE 'data' example
-	* note: data fields may not be all known at once, so define them then as 'nullable'
-	---------------------------
-	id       INTEGER REFERENCES ids(id) ON DELETE CASCADE ON UPDATE CASCADE
-	val1     TEXT
-	val2     INTEGER CHECK(val2 > 10)
-	val3     REAL CHECK(val3 BETWEEN 0.0 AND 1.0)
+    * note: data fields may not be all known at once, so define them then as 'nullable'
+    ---------------------------
+    id       INTEGER REFERENCES ids(id) ON DELETE CASCADE ON UPDATE CASCADE
+    val1     TEXT
+    val2     INTEGER CHECK(val2 > 10)
+    val3     REAL CHECK(val3 BETWEEN 0.0 AND 1.0)
 
 =cut
 
@@ -391,4 +391,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-				
+                

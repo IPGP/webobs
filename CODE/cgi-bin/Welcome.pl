@@ -20,29 +20,29 @@ the contents of predefined areas on the page: see PAGE LAYOUT below.
 
 =head1 PAGE LAYOUT
 
-	----------------------------------------------
-	Header
-	----------------------------------------------
-	|Actu           |Info                        |
-	|               |                            |
-	|               |----------------------------|
-	|               |Gazette today as catg-list  |
-	|               |                            |
-	|               |                            |
-	|               |----------------------------|
-	|               |Calendar |                  |
-	|               |  wodp   |      timezone(s) |
-	|               |         |                  |
-	----------------------------------------------
+    ----------------------------------------------
+    Header
+    ----------------------------------------------
+    |Actu           |Info                        |
+    |               |                            |
+    |               |----------------------------|
+    |               |Gazette today as catg-list  |
+    |               |                            |
+    |               |                            |
+    |               |----------------------------|
+    |               |Calendar |                  |
+    |               |  wodp   |      timezone(s) |
+    |               |         |                  |
+    ----------------------------------------------
 
 =head1 {WELCOME_CONF} format
 
-	TITLE|        html page title
-	HEAD|         the file containing html for Header
-	ACTU|         the file containing html for Actu
-	INFO|         the file containing html (wiki) for Info
-	TIMEZONES|    the configuration file for timezone(s)
-	DAYLIGHT|     option to display a world map
+    TITLE|        html page title
+    HEAD|         the file containing html for Header
+    ACTU|         the file containing html for Actu
+    INFO|         the file containing html (wiki) for Info
+    TIMEZONES|    the configuration file for timezone(s)
+    DAYLIGHT|     option to display a world map
 
 =cut
 
@@ -176,16 +176,16 @@ if (isok($DN)) { print "<script language=\"JavaScript\" src=\"/js/daynight.js\">
 print <<"FIN";
 <script language="JavaScript">
 \$(document).ready(function() {
-	\$('input#d0').css('display','none').wodp({
-		popup: false,
-		days: $wodp_d2,
-		months: $wodp_m,
-		holidays: $wodp_holidays,
-		onpicked: function() { if (! \$('input#d0').data('wodpdesc').match(/init|ranging/)) location.href='/cgi-bin/Gazette.pl?gview=calendar&gdate='+\$('input#d0').val(); },
-	});
-	if(\$('#DNmap').length != 0) {
-		initDN($jstoday, \"/icons/DN2.png\", $DNcoords);
-	}
+    \$('input#d0').css('display','none').wodp({
+        popup: false,
+        days: $wodp_d2,
+        months: $wodp_m,
+        holidays: $wodp_holidays,
+        onpicked: function() { if (! \$('input#d0').data('wodpdesc').match(/init|ranging/)) location.href='/cgi-bin/Gazette.pl?gview=calendar&gdate='+\$('input#d0').val(); },
+    });
+    if(\$('#DNmap').length != 0) {
+        initDN($jstoday, \"/icons/DN2.png\", $DNcoords);
+    }
 });
 </script>
 FIN

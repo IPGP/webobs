@@ -371,7 +371,7 @@ for(@lignes) {
         my $tzp = "";
         my $tzn = "";
 
-        #		my $cond25 = "";
+        #        my $cond25 = "";
         my $nicb = "";
         my @rapv;
         my $iv = 0;
@@ -389,7 +389,7 @@ for(@lignes) {
         if (($cond ne "") && ($tRiver ne "")) { $cond25 = sprintf("%4.1f",$cond/(1 + 0.02*($tRiver - 25))); };
         $tzp = $cNa_mmol + $cK_mmol + 2*$cMg_mmol + 2*$cCa_mmol;
 
-        #		if ($tzp != 0) { $tzp += $cH_mmol; }
+        #        if ($tzp != 0) { $tzp += $cH_mmol; }
         $tzn = $cHCO3_mmol + $cCl_mmol + 2*$cSO4_mmol;
         if (($tzp != 0) && ($tzn != 0)) { $nicb = 100*($tzp - $tzn)/($tzp + $tzn); }
 
@@ -498,9 +498,9 @@ if ($QryParm->{'affiche'} eq "csv") {
 } else {
     print @html;
     print "<style type=\"text/css\">
-		#attente { display: none; }
-	</style>\n
-	<BR>\n</BODY>\n</HTML>\n";
+        #attente { display: none; }
+    </style>\n
+    <BR>\n</BODY>\n</HTML>\n";
 }
 
 __END__

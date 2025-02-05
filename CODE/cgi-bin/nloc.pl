@@ -90,15 +90,15 @@ switch (lc($format)) {
         print $cgi->header(-type=>'application/vnd.google-earth.kml+xml', -attachment=>"$file.kml",-charset=>'utf-8');
         print "<?xml version=\"1.0\" encoding=\"UTF-8\"?><kml xmlns=\"http://earth.google.com/kml/2.0\">\n";
         print "<Document>\n<Style id=\"webobs\">
-		<IconStyle>
-			<color>ff1313f3</color>
-			<scale>1.0</scale>
-			<Icon>\n<href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon>
-		</IconStyle>
-		<LabelStyle>
-			<scale>1</scale>
-		</LabelStyle>
-		</Style>\n";
+        <IconStyle>
+            <color>ff1313f3</color>
+            <scale>1.0</scale>
+            <Icon>\n<href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon>
+        </IconStyle>
+        <LabelStyle>
+            <scale>1</scale>
+        </LabelStyle>
+        </Style>\n";
         if (scalar(@NID)==2) {
             print "<Folder>\n<name>$grid</name>\n";
         }
@@ -145,25 +145,25 @@ for (keys(%N)) {
             switch (lc($format)) {
                 case 'kml' {
                     print "<Placemark id=\"$sta\">
-	<name>$alias : $name</name>
-	<ExtendedData>
-		<Data name=\"active\">
-			<value>$active</value>
-		</Data>
-		<Data name=\"start\">
-			<value>$start</value>
-		</Data>
-		<Data name=\"end\">
-			<value>$end</value>
-		</Data>
-	</ExtendedData>
-	<description>
-		<![CDATA[<i>$type</i><br>$DOMAINS{$GRID{DOMAIN}}{NAME} / $GRID{NAME}<br><small>($GRIDType.$GRIDName.$sta)</small>]]>
-	</description>
-	<open>1</open>\n<styleUrl>#webobs</styleUrl>
-	<Point>
-		<coordinates>$NODE{$sta}{LON_WGS84},$NODE{$sta}{LAT_WGS84},$NODE{$sta}{ALTITUDE}</coordinates>
-	</Point>
+    <name>$alias : $name</name>
+    <ExtendedData>
+        <Data name=\"active\">
+            <value>$active</value>
+        </Data>
+        <Data name=\"start\">
+            <value>$start</value>
+        </Data>
+        <Data name=\"end\">
+            <value>$end</value>
+        </Data>
+    </ExtendedData>
+    <description>
+        <![CDATA[<i>$type</i><br>$DOMAINS{$GRID{DOMAIN}}{NAME} / $GRID{NAME}<br><small>($GRIDType.$GRIDName.$sta)</small>]]>
+    </description>
+    <open>1</open>\n<styleUrl>#webobs</styleUrl>
+    <Point>
+        <coordinates>$NODE{$sta}{LON_WGS84},$NODE{$sta}{LAT_WGS84},$NODE{$sta}{ALTITUDE}</coordinates>
+    </Point>
 </Placemark>\n";
                 }
                 case 'csv' {

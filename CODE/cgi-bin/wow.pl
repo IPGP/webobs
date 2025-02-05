@@ -18,22 +18,22 @@ http to remotely query WebObs objects and definitions, reserved for WebObs admin
 
 =head2 SYNTAX
 
-	curl -u userid:password  'siteUrl/wow.pl?F=functionCall{&F=functionCall}'
+    curl -u userid:password  'siteUrl/wow.pl?F=functionCall{&F=functionCall}'
 
-	functionCall := functionName(functionArgs)
-	functionName := webobs | grids | proc | view | nodes | node | nloc
-	functionArgs := argument {, argument {, argument ...} }
+    functionCall := functionName(functionArgs)
+    functionName := webobs | grids | proc | view | nodes | node | nloc
+    functionArgs := argument {, argument {, argument ...} }
 
-	argument     := functionName-specific
-	argument     := nodeSpecs
-	argument     := filter (regexp to select configuration variables)
+    argument     := functionName-specific
+    argument     := nodeSpecs
+    argument     := filter (regexp to select configuration variables)
 
-	nodeSpecs    := nodeName{|nodeName{|nodeName}...}
-	nodeSpecs    := grid{|validonly|active}
+    nodeSpecs    := nodeName{|nodeName{|nodeName}...}
+    nodeSpecs    := grid{|validonly|active}
 
-	grid         := gridType.gridName
-	validonly    := 0 | 1
-	active       := today | YYYY-MM-DD | YYYY-MM-DD:YYYY-MM-DD
+    grid         := gridType.gridName
+    validonly    := 0 | 1
+    active       := today | YYYY-MM-DD | YYYY-MM-DD:YYYY-MM-DD
 
 =cut
 
@@ -90,8 +90,8 @@ exit;
 
 dump WEBOBS.rc contents as $WEBOBS{name}=value , where name(s) match filter.
 
-	$ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=webobs(SCHED)'
-	$WEBOBS{CONF_SCHEDULER}=/opt/webobs/CONF/scheduler.rc
+    $ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=webobs(SCHED)'
+    $WEBOBS{CONF_SCHEDULER}=/opt/webobs/CONF/scheduler.rc
 
 =cut
 
@@ -110,11 +110,11 @@ sub do_webobs {
 
 dump GRIDS.rc contents as $GRIDS{name}=value , where name(s) match filter
 
-	$ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=grids(SPATH_)'
-	$GRIDS{SPATH_DOCUMENTS}=DOCUMENTS
-	$GRIDS{SPATH_FEATURES}=FEATURES
-	$GRIDS{SPATH_INTERVENTIONS}=INTERVENTIONS
-	...etc...
+    $ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=grids(SPATH_)'
+    $GRIDS{SPATH_DOCUMENTS}=DOCUMENTS
+    $GRIDS{SPATH_FEATURES}=FEATURES
+    $GRIDS{SPATH_INTERVENTIONS}=INTERVENTIONS
+    ...etc...
 
 =cut
 
@@ -134,8 +134,8 @@ sub do_grids {
 dump procname.rc contents as PROC.procname{name}=value, with names(s) ordered alphabetically.
 Optional filter to select the dumped name(s).
 
-	$ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=proc(CGPSWI,COPYRIGHT)'
-	PROC.CGPSWI{COPYRIGHT}=OVS/IPGP
+    $ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=proc(CGPSWI,COPYRIGHT)'
+    PROC.CGPSWI{COPYRIGHT}=OVS/IPGP
 
 =cut
 
@@ -166,9 +166,9 @@ sub do_dumpproc {
 dump viewname.rc contents as VIEW.viewname{name}=value, with names(s) ordered alphabetically.
 Optional filter to select the dumped name(s).
 
-	$ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=view(CGPSWI,^TYPE|^NAME)'
-	VIEW.CGPSWI{NAME}=GNSS West Indies
-	VIEW.CGPSWI{TYPE}=
+    $ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=view(CGPSWI,^TYPE|^NAME)'
+    VIEW.CGPSWI{NAME}=GNSS West Indies
+    VIEW.CGPSWI{TYPE}=
 
 =cut
 
@@ -199,14 +199,14 @@ sub do_dumpview {
 dump node(s) configuration file(s) (*cnf) contents as nodename{name}=value ,
 for all nodes matching nodeSpecs. Only variables whose names match nodeFilter are dumped.
 
-	$ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=node(PROC.CGPSWI|1|today)'
-	WDCABD0{ALIAS}=ABD0
-	WDCABD0{ALTITUDE}=12
-	...
-	WDCBIM0{ALIAS}=BIM0
-	...
-	WDCCBE0{ALIAS}=CBE0
-	...
+    $ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=node(PROC.CGPSWI|1|today)'
+    WDCABD0{ALIAS}=ABD0
+    WDCABD0{ALTITUDE}=12
+    ...
+    WDCBIM0{ALIAS}=BIM0
+    ...
+    WDCCBE0{ALIAS}=CBE0
+    ...
 
 =cut
 
@@ -231,11 +231,11 @@ sub do_dumpnode {
 
 list nodes (ie. nodenames) matching nodeSpecs
 
-	$ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=nodes(PROC.CGPSWI)'
-	WDCABD0
-	WDCBIM0
-	WDCCBE0
-	...etc...
+    $ curl -su user:pass 'webobs.site/cgi-bin/wow.pl?F=nodes(PROC.CGPSWI)'
+    WDCABD0
+    WDCBIM0
+    WDCCBE0
+    ...etc...
 
 =cut
 
@@ -254,19 +254,19 @@ sub do_listnodes {
 
 dump locations of nodes of a grid in different formats.
 
-	nodeSpecs must be of the form grid{|validonly|active} (ie. nodes list not allowed).
+    nodeSpecs must be of the form grid{|validonly|active} (ie. nodes list not allowed).
 
-	coord :=   geo | utm | local | xyz
-		for txt and csv formats, specifies the type of coordinates:
-		geo is latitude,longitude,altitude WGS84 (default)
-		utm is eastern,northern,altitude UTM WGS84 (Universal Transverse Mercator)
-		local is UTM in a local geodetic system (see UTM.rc)
-		xyz is geocentric X,Y,Z coordinates (in m)
+    coord :=   geo | utm | local | xyz
+        for txt and csv formats, specifies the type of coordinates:
+        geo is latitude,longitude,altitude WGS84 (default)
+        utm is eastern,northern,altitude UTM WGS84 (Universal Transverse Mercator)
+        local is UTM in a local geodetic system (see UTM.rc)
+        xyz is geocentric X,Y,Z coordinates (in m)
 
-	format :=   txt | csv | kml
-		txt returns a tab-delimited text file of nodes (default)
-		csv returns a semicolon-delimited text file of nodes (Excel compatible)
-		kml returns a KML file of nodes (Google Earth compatible)
+    format :=   txt | csv | kml
+        txt returns a tab-delimited text file of nodes (default)
+        csv returns a semicolon-delimited text file of nodes (Excel compatible)
+        kml returns a KML file of nodes (Google Earth compatible)
 
 =cut
 
@@ -286,15 +286,15 @@ sub do_nloc {
                 push(@out, $cgi->header(-type=>'application/vnd.google-earth.kml+xml', -attachment=>"$attachFn.kml",-charset=>'utf-8'));
                 push(@out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><kml xmlns=\"http://earth.google.com/kml/2.0\">\n");
                 push(@out, "<Document>\n<Style id=\"webobs\">
-				<IconStyle>
-					<color>ff1313f3</color>
-					<scale>1.0</scale>
-					<Icon>\n<href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon>
-				</IconStyle>
-				<LabelStyle>
-					<scale>1</scale>
-				</LabelStyle>
-				</Style>\n");
+                <IconStyle>
+                    <color>ff1313f3</color>
+                    <scale>1.0</scale>
+                    <Icon>\n<href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon>
+                </IconStyle>
+                <LabelStyle>
+                    <scale>1</scale>
+                </LabelStyle>
+                </Style>\n");
                 push(@out, "<Folder>\n<name>$grid[0].$grid[1]</name>\n");
             }
             if ( $fmt =~ /csv/i ) {

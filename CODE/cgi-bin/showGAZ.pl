@@ -372,9 +372,9 @@ if ($QryParm->{'affiche'} eq "csv") {
 } else {
     print @html;
     print "<style type=\"text/css\">
-		#attente { display: none; }
-	</style>\n
-	<BR>\n</BODY>\n</HTML>\n";
+        #attente { display: none; }
+    </style>\n
+    <BR>\n</BODY>\n</HTML>\n";
 }
 
 __END__

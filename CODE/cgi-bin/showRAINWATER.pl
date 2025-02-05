@@ -206,16 +206,16 @@ push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type
 if ($QryParm->{'dump'} ne "csv") {
     print $cgi->header(-charset=>'utf-8');
     print qq(<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-	<html><head><title>).$FORM->conf('TITLE').qq(</title>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	<link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">);
+    <html><head><title>).$FORM->conf('TITLE').qq(</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">);
 
     print qq(</head>
-	<body style="background-attachment: fixed">
-	<div id="attente">$__{'Searching for the data... please wait'}.</div>
-	<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
-	<script language="JavaScript" src="/js/overlib/overlib.js"></script>
-	<!-- overLIB (c) Erik Bosrup -->\n);
+    <body style="background-attachment: fixed">
+    <div id="attente">$__{'Searching for the data... please wait'}.</div>
+    <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+    <script language="JavaScript" src="/js/overlib/overlib.js"></script>
+    <!-- overLIB (c) Erik Bosrup -->\n);
 }
 
 # ---- Debut du formulaire pour la selection de l'affichage
@@ -253,16 +253,16 @@ if ($QryParm->{'dump'} ne "csv") {
         }
     }
     print qq(</select>
-	<select name="unit" size="1">);
+    <select name="unit" size="1">);
     for (@cleParamUnite) {
         my ($val,$cle) = split (/\|/,$_);
         if ("$val" eq "$QryParm->{'unit'}") { print qq(<option selected value=$val>$cle</option>\n); }
         else { print qq(<option value=$val>$cle</option>\n); }
     }
     print qq(</select>&nbsp;&nbsp;&nbsp;
-	<INPUT type="button" value="$__{'Reset'}" onClick="reset()">
-	<INPUT type="submit" value="$__{'Display'}" style="font-weight: bold"><BR>
-	&nbsp;&nbsp;\n<B>$__{'Ratios'}:</B>);
+    <INPUT type="button" value="$__{'Reset'}" onClick="reset()">
+    <INPUT type="submit" value="$__{'Display'}" style="font-weight: bold"><BR>
+    &nbsp;&nbsp;\n<B>$__{'Ratios'}:</B>);
 
     $i = 0;
     for (@ratios) {
@@ -280,7 +280,7 @@ if ($QryParm->{'dump'} ne "csv") {
           qq( onClick="document.location='$form_url'" value="$__{'Enter a new record'}"></TD>);
     }
     print qq(</B></TR></TABLE></FORM>
-	<H1>).$FORM->conf('TITLE').qq(</H1>\n);
+    <H1>).$FORM->conf('TITLE').qq(</H1>\n);
 }
 
 # ---- Read the data file
@@ -472,9 +472,9 @@ if ($QryParm->{'dump'} eq "csv") {
 } else {
     print @html;
     print "<style type=\"text/css\">
-		#attente { display: none; }
-	</style>\n
-	<BR>\n</BODY>\n</HTML>\n";
+        #attente { display: none; }
+    </style>\n
+    <BR>\n</BODY>\n</HTML>\n";
 }
 
 __END__

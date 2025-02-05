@@ -225,13 +225,13 @@ print <<_EOD_;
  <script type=\"text/javascript\">
   // Configuration used in cmtextarea.js
   var CODEMIRROR_CONF = {
-	READWRITE_THEME: '$CM_edit_theme',
-	READONLY_THEME: '$CM_browsing_theme',
-	LANGUAGE_MODE: '$CM_language_mode',
-	AUTO_VIM_MODE: '$CM_auto_vim_mode',
-	EDIT_PERM: $cm_edit,
-	FORM: '#theform',
-	POST_URL: '$post_url',
+    READWRITE_THEME: '$CM_edit_theme',
+    READONLY_THEME: '$CM_browsing_theme',
+    LANGUAGE_MODE: '$CM_language_mode',
+    AUTO_VIM_MODE: '$CM_auto_vim_mode',
+    EDIT_PERM: $cm_edit,
+    FORM: '#theform',
+    POST_URL: '$post_url',
   };
  </script>
  <script src="/js/cmtextarea.js"></script>
@@ -239,30 +239,30 @@ print <<_EOD_;
  <script type="text/javascript">
  function delete_grid()
  {
-	if ( confirm("$__{'The GRID will be deleted (but not associated nodes). Are you sure?'}") ) {
-		document.formulaire.delete.value = 1;
-		\$.post("$post_url", \$("#theform").serialize(), function(data) {
-			if (data != '') alert(data);
-			location.href = "$GRIDS{CGI_SHOW_GRIDS}";
-		});
-	} else {
-		return false;
-	}
+    if ( confirm("$__{'The GRID will be deleted (but not associated nodes). Are you sure?'}") ) {
+        document.formulaire.delete.value = 1;
+        \$.post("$post_url", \$("#theform").serialize(), function(data) {
+            if (data != '') alert(data);
+            location.href = "$GRIDS{CGI_SHOW_GRIDS}";
+        });
+    } else {
+        return false;
+    }
 }
 function verif_formulaire()
-{	
-	for (var i=0; i<document.formulaire.SELs.length; i++) {
-		document.formulaire.SELs[i].selected = true;
-	}
-	if (document.formulaire.domain.value == '') {
-		if ( !confirm("$__{'No associated domain: the grid will be hidden. Are you sure?'}") ) return false;
-	}
-	// postform() from cmtextarea.js will submit the form to $post_url
-	postform();
-	//\$.post("/cgi-bin/postGRID.pl", \$("#theform").serialize(), function(data) {
-	//	if (data != '') alert(data);
-	//	location.href = document.referrer;
-	//});
+{    
+    for (var i=0; i<document.formulaire.SELs.length; i++) {
+        document.formulaire.SELs[i].selected = true;
+    }
+    if (document.formulaire.domain.value == '') {
+        if ( !confirm("$__{'No associated domain: the grid will be hidden. Are you sure?'}") ) return false;
+    }
+    // postform() from cmtextarea.js will submit the form to $post_url
+    postform();
+    //\$.post("/cgi-bin/postGRID.pl", \$("#theform").serialize(), function(data) {
+    //    if (data != '') alert(data);
+    //    location.href = document.referrer;
+    //});
 }
  </script>
 </HEAD>
@@ -362,11 +362,11 @@ print "<TR><TD style=\"border:0\">\n";
 
 # Vim mode checkbox
 print <<_EOD_;
-	<div class="js-editor-controls">
-		<input type="checkbox" id="toggle-vim-mode" title="$__{'Check to enable vim mode in the editor'}" onClick="toggleVim()">
-		<label for="toggle-vim-mode" id="toggle-vim-mode-label" title="$__{'Check to enable vim mode in the editor'}">$__{'Use vim mode'}</label>
-	</div>
-	</TD>
+    <div class="js-editor-controls">
+        <input type="checkbox" id="toggle-vim-mode" title="$__{'Check to enable vim mode in the editor'}" onClick="toggleVim()">
+        <label for="toggle-vim-mode" id="toggle-vim-mode-label" title="$__{'Check to enable vim mode in the editor'}">$__{'Use vim mode'}</label>
+    </div>
+    </TD>
 _EOD_
 
 # Form buttons

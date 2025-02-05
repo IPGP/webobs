@@ -274,14 +274,14 @@ foreach (@thresh) {
     my @tv = split(/[, ]/,$FORM{$_."_THRESHOLD"});
     if ($#tv > 0) {
         print qq(
-	form.$f.style.background = "$validity[0]";
-	if (Math.abs(form.$f.value) >= $tv[0]) {
-		form.$f.style.background = "$validity[1]";
-	}
-	if (Math.abs(form.$f.value) >= $tv[1]) {
-		form.$f.style.background = "$validity[2]";
-	}
-		);
+    form.$f.style.background = "$validity[0]";
+    if (Math.abs(form.$f.value) >= $tv[0]) {
+        form.$f.style.background = "$validity[1]";
+    }
+    if (Math.abs(form.$f.value) >= $tv[1]) {
+        form.$f.style.background = "$validity[2]";
+    }
+        );
     }
 }
 
@@ -416,7 +416,7 @@ print qq(<input type="hidden" name="id" value="$id">);
 print qq(<tr><td style="border: 0"><hr>);
 if ($val ne "") {
     print qq(<p><b>Record timestamp:</b> $val
-	<input type="hidden" name="val" value="$val"></p>);
+    <input type="hidden" name="val" value="$val"></p>);
 }
 if ($action eq "edit" && $id ne "") {
     if ($trash eq "1") {
@@ -532,10 +532,10 @@ if ($starting_date) {
     }
 }
 print qq(</select><BR>
-	<B>Site: </B>
-	  <select name="site" size="1"
-		onMouseOut="nd()"onmouseover="overlib('$__{'Select a node for this record'}')">
-	  <option value=""></option>);
+    <B>Site: </B>
+      <select name="site" size="1"
+        onMouseOut="nd()"onmouseover="overlib('$__{'Select a node for this record'}')">
+      <option value=""></option>);
 print @NODESSelList;
 for (@NODESSelList) {
     my @cle = split(/\|/,$_);
@@ -544,7 +544,7 @@ for (@NODESSelList) {
 }
 
 print qq(</select><BR>
-	<table><tr><td style="border:0"><B>$__{'Operator(s)'}:</B> </td><td style="border:0">
+    <table><tr><td style="border:0"><B>$__{'Operator(s)'}:</B> </td><td style="border:0">
             <select name="operators" size="5" multiple="multiple"
                 onMouseOut="nd()" onmouseover="overlib('$__{'Select operator(s)'}')">);
 my @uid = @operators; # $client if 'new', or @operators if 'edit'
@@ -562,8 +562,8 @@ foreach my $u (@uid){
     print "<option value=\"$u\" $sel>$u: ".join('',WebObs::Users::userName($u))."</option>\n";
 }
 print qq(</select>
-	</td></tr></table>
-	</P>
+    </td></tr></table>
+    </P>
       </fieldset>);
 
 foreach (@columns) {
@@ -602,12 +602,12 @@ foreach (@columns) {
                         for (@list_keys) {
                             my $selected = ($prev_inputs{$field} eq "$_" ? "checked":"");
                             print qq(&nbsp;<input name="$field" type=radio value="$_" $selected
-							onMouseOut="nd()" onmouseover="overlib('$list{$_}{name}')"><IMG src="$list{$_}{icon}">);
+                            onMouseOut="nd()" onmouseover="overlib('$list{$_}{name}')"><IMG src="$list{$_}{icon}">);
                         }
                         print "$dlm";
                     } else {
                         print qq($txt = <select name="$field" size=1
-							onMouseOut="nd()" onmouseover="overlib('$hlp')"><option value=""></option>);
+                            onMouseOut="nd()" onmouseover="overlib('$hlp')"><option value=""></option>);
                         for (@list_keys) {
                             my $nam = (ref($list{$_}) ? $list{$_}{name}:$list{$_});
                             my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");

@@ -107,17 +107,17 @@ print "<html><head>
 <!--
 function verif_formulaire()
 {
-	if(document.formulaire.site.value == \"\") {
-		alert(\"Veuillez spécifier le site de prélèvement!\");
-		document.formulaire.site.focus();
-		return false;
-	}
+    if(document.formulaire.site.value == \"\") {
+        alert(\"Veuillez spécifier le site de prélèvement!\");
+        document.formulaire.site.focus();
+        return false;
+    }
     \$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
-	   //var contents = \$( data ).find( '#contents' ).text(); 
-	   alert(data);
-	   document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
-	   }
-	);
+       //var contents = \$( data ).find( '#contents' ).text(); 
+       alert(data);
+       document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
+       }
+    );
 }
 
 function zeros()
@@ -131,76 +131,76 @@ print "}
 
 function nbj()
 {
-	var m = formulaire.mois.value;
-	switch(m) {
-	case \"01\": case \"03\": case \"05\": case \"07\": case \"08\": case \"10\": case \"12\":
-		formulaire.d30.disabled = false;
-		formulaire.v30.disabled = false;
-		formulaire.d31.disabled = false;
-		formulaire.v31.disabled = false;
-		break;
-	case \"04\": case \"06\": case \"09\": case \"11\":
-		formulaire.d30.disabled = false;
-		formulaire.v30.disabled = false;
-		formulaire.d31.value = \"\";
-		formulaire.d31.disabled = true;
-		formulaire.v31.disabled = true;
-		break;
-	case \"02\":
-		formulaire.d30.value = \"\";
-		formulaire.d30.disabled = true;
-		formulaire.v30.disabled = true;
-		formulaire.d31.value = \"\";
-		formulaire.d31.disabled = true;
-		formulaire.v31.disabled = true;
-		break;
-	}
+    var m = formulaire.mois.value;
+    switch(m) {
+    case \"01\": case \"03\": case \"05\": case \"07\": case \"08\": case \"10\": case \"12\":
+        formulaire.d30.disabled = false;
+        formulaire.v30.disabled = false;
+        formulaire.d31.disabled = false;
+        formulaire.v31.disabled = false;
+        break;
+    case \"04\": case \"06\": case \"09\": case \"11\":
+        formulaire.d30.disabled = false;
+        formulaire.v30.disabled = false;
+        formulaire.d31.value = \"\";
+        formulaire.d31.disabled = true;
+        formulaire.v31.disabled = true;
+        break;
+    case \"02\":
+        formulaire.d30.value = \"\";
+        formulaire.d30.disabled = true;
+        formulaire.v30.disabled = true;
+        formulaire.d31.value = \"\";
+        formulaire.d31.disabled = true;
+        formulaire.v31.disabled = true;
+        break;
+    }
 }
 function calc()
 {
-	var dec1 = 0;
-	var dec2 = 0;
-	var dec3 = 0;
-	var tot = 0;
-	
-	dec1 = formulaire.d01.value*1
-		 + formulaire.d02.value*1
-		 + formulaire.d03.value*1
-		 + formulaire.d04.value*1
-		 + formulaire.d05.value*1
-		 + formulaire.d06.value*1
-		 + formulaire.d07.value*1
-		 + formulaire.d08.value*1
-		 + formulaire.d09.value*1
-		 + formulaire.d10.value*1;
-	formulaire.sum1.value = dec1.toFixed(1);
-	dec2 = formulaire.d11.value*1
-		 + formulaire.d12.value*1
-		 + formulaire.d13.value*1
-		 + formulaire.d14.value*1
-		 + formulaire.d15.value*1
-		 + formulaire.d16.value*1
-		 + formulaire.d17.value*1
-		 + formulaire.d18.value*1
-		 + formulaire.d19.value*1
-		 + formulaire.d20.value*1;
-	formulaire.sum2.value = dec2.toFixed(1);
-	dec3 = formulaire.d21.value*1
-		 + formulaire.d22.value*1
-		 + formulaire.d23.value*1
-		 + formulaire.d24.value*1
-		 + formulaire.d25.value*1
-		 + formulaire.d26.value*1
-		 + formulaire.d27.value*1
-		 + formulaire.d28.value*1
-		 + formulaire.d29.value*1
-		 + formulaire.d30.value*1
-		 + formulaire.d31.value*1;
-	formulaire.sum3.value = dec3.toFixed(1);
-	tot = formulaire.sum1.value*1
-		+ formulaire.sum2.value*1
-		+ formulaire.sum3.value*1;
-	formulaire.sumtotal.value = tot.toFixed(1);
+    var dec1 = 0;
+    var dec2 = 0;
+    var dec3 = 0;
+    var tot = 0;
+    
+    dec1 = formulaire.d01.value*1
+         + formulaire.d02.value*1
+         + formulaire.d03.value*1
+         + formulaire.d04.value*1
+         + formulaire.d05.value*1
+         + formulaire.d06.value*1
+         + formulaire.d07.value*1
+         + formulaire.d08.value*1
+         + formulaire.d09.value*1
+         + formulaire.d10.value*1;
+    formulaire.sum1.value = dec1.toFixed(1);
+    dec2 = formulaire.d11.value*1
+         + formulaire.d12.value*1
+         + formulaire.d13.value*1
+         + formulaire.d14.value*1
+         + formulaire.d15.value*1
+         + formulaire.d16.value*1
+         + formulaire.d17.value*1
+         + formulaire.d18.value*1
+         + formulaire.d19.value*1
+         + formulaire.d20.value*1;
+    formulaire.sum2.value = dec2.toFixed(1);
+    dec3 = formulaire.d21.value*1
+         + formulaire.d22.value*1
+         + formulaire.d23.value*1
+         + formulaire.d24.value*1
+         + formulaire.d25.value*1
+         + formulaire.d26.value*1
+         + formulaire.d27.value*1
+         + formulaire.d28.value*1
+         + formulaire.d29.value*1
+         + formulaire.d30.value*1
+         + formulaire.d31.value*1;
+    formulaire.sum3.value = dec3.toFixed(1);
+    tot = formulaire.sum1.value*1
+        + formulaire.sum2.value*1
+        + formulaire.sum3.value*1;
+    formulaire.sumtotal.value = tot.toFixed(1);
 }
 window.captureEvents(Event.KEYDOWN);
 window.onkeydown = calc();
@@ -267,10 +267,10 @@ if ($QryParm->{id} ne "") {
 print "<input type=\"hidden\" name=\"oper\" value=\"$CLIENT\">\n";
 
 print "<TABLE style=border:0 onMouseOver=\"calc()\">
-	<TR><TD style=border:0 valign=top>
-	<fieldset><legend>Mois et Site</legend>
-	<P class=parform>
-	<B>Ann&eacute;e:</B> <select name=annee size=\"1\">";
+    <TR><TD style=border:0 valign=top>
+    <fieldset><legend>Mois et Site</legend>
+    <P class=parform>
+    <B>Ann&eacute;e:</B> <select name=annee size=\"1\">";
 for (@anneeListe) {
     $sel = "";
     if ($_ == $sel_annee) { $sel = "selected"; }
@@ -285,7 +285,7 @@ for (@moisListe) {
 }
 print "</select>\n";
 print "&nbsp;&nbsp;
-		<B>Site:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le site')\" name=\"site\" size=\"1\"><option value=\"\"></option>\n";
+        <B>Site:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le site')\" name=\"site\" size=\"1\"><option value=\"\"></option>\n";
 for (@NODESSelList) {
     my @cle = split(/\|/,$_);
     $sel = "";
@@ -297,20 +297,20 @@ print "</fieldset>";
 print "</TD></TR>\n";
 
 print "<TR><TD style=border:0>
-	<fieldset><legend>Pluviom&eacute;trie journali&egrave;re (mm)</legend>\n";
+    <fieldset><legend>Pluviom&eacute;trie journali&egrave;re (mm)</legend>\n";
 print "<table>";
 print "<TR>";
 print "<TD style=\"border:0; padding-right: 30px; \" valign=top>";
 for (@jourListe) {
     print "<B>$_.</B> <input size=5 class=inputNum name=\"d$_\" tabindex=1 value=\"".eval("\$sel_d$_")."\"
-			onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de pluie du $_')\">";
+            onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de pluie du $_')\">";
     print "&nbsp;<select onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner le type de donn&eacute;e')\" name=\"v$_\" size=\"1\">";
     my $v = "";
     $v = eval("\$sel_v$_");
     for (@types) {
         my @cle = split(/\|/,$_);
         $sel = "";
-        if ($cle[0] eq $v) {	$sel = "selected"; }
+        if ($cle[0] eq $v) {    $sel = "selected"; }
         print "<option $sel value=$cle[0]>$cle[1]</option>";
     }
     print "</select><BR>";
@@ -318,9 +318,9 @@ for (@jourListe) {
 }
 print "</TD></TR>\n";
 print "<TR><TD style=\"border:0; padding-right: 30px; \"><B>Cumul 1<sup>&egrave;re</sup> d&eacute;cade</B> <input name=\"sum1\" size=5 readOnly class=inputNumNoEdit></TD>
-		<TD style=\"border:0; padding-right: 30px; \"><B>Cumul 2<sup>ème</sup> décade</B> <input name=\"sum2\" size=5 readOnly class=inputNumNoEdit></TD>
-		<TD style=\"border:0; padding-right: 30px; \"><B>Cumul 3<sup>ème</sup> décade</B> <input name=\"sum3\" size=5 readOnly class=inputNumNoEdit></TD>
-		</TR>\n";
+        <TD style=\"border:0; padding-right: 30px; \"><B>Cumul 2<sup>ème</sup> décade</B> <input name=\"sum2\" size=5 readOnly class=inputNumNoEdit></TD>
+        <TD style=\"border:0; padding-right: 30px; \"><B>Cumul 3<sup>ème</sup> décade</B> <input name=\"sum3\" size=5 readOnly class=inputNumNoEdit></TD>
+        </TR>\n";
 print "<TR><TD style=border:0><B>Cumul mensuel</B> (mm) = <input name=\"sumtotal\" size=5 readOnly class=inputNumNoEdit></P></TD></TR>\n";
 print "</table>";
 print "</fieldset>";

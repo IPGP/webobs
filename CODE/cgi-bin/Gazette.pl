@@ -20,10 +20,10 @@ Also used to update the Gazette DB.
 Query String's select/display arguments (match the Display Options Form's fields)
 
  gview=       [ calendar | datelist | categorylist | iCalendar ]
-			  calendar: display week(s) calendar
-			  dateList: display as a list of dates
-			  categoryList: display as a list of categories
-			  iCalendar: display as iCal
+              calendar: display week(s) calendar
+              dateList: display as a list of dates
+              categoryList: display as a list of categories
+              iCalendar: display as iCal
 
  gdate=       date selection, single day or range, compatible with wodp format (YYYY-MM-DD[,YYYY-MM-DD])
 
@@ -33,29 +33,29 @@ Query String's select/display arguments (match the Display Options Form's fields
 
  wodpdesc=    optional description of how the date was selected by user with wodp (see wodp.js) :
               [ day | range | init | year | month | week ]
-			  wodpdesc will be used to format a title for the gazette's page
+              wodpdesc will be used to format a title for the gazette's page
 
 Query String's management arguments (optional)
 
  getid=      specifies an article's id whose DB row will be returned
              as a json object. No select/display performed (g* arguments above are ignored).
-			 See Gazette.js
+             See Gazette.js
 
  setid=      specifies an article's id whose DB row will be updated with a
              posted json object (all row's columns) before processing select/display.
-			 See Gazette.js
+             See Gazette.js
 
  delid=      specifies an article's id whose DB row will be deleted
              before processing select/display.
-			 See Gazette.js
+             See Gazette.js
 
  getical=    specifies an ical file name (as previously built/saved with a gview=ical)
              to be downloaded
 
  create=yes  automatically enters the article creation process, displaying the "create new article" form popup;
              can be used with other view-related arguments. Primarily used in 'menunav' direct links to creation.
-			 Note: the creation form keeps popping up once processed, allowing successive creations, until
-			 user explicitly dismiss the form (ie. choose its 'cancel' button)
+             Note: the creation form keeps popping up once processed, allowing successive creations, until
+             user explicitly dismiss the form (ie. choose its 'cancel' button)
 
 =head1 LOCALIZATION
 
@@ -63,13 +63,13 @@ Date formats and date texts use Locale::TextDomain('webobs') specifications/tran
 
 Holidays are defined in $WEBOBS{FILE_DAYSOFF} file, as a collection of <date-expression|name>
 
-	date-expression | name
+    date-expression | name
 
-	date-expression := [ $Y-MM-DD | $P | $P n ]
-	name            := string, name of holiday
-	$Y              := current year
-	$PQ             := Easter Sunday
-	$PQ n           := n days from Easter Sunday
+    date-expression := [ $Y-MM-DD | $P | $P n ]
+    name            := string, name of holiday
+    $Y              := current year
+    $PQ             := Easter Sunday
+    $PQ n           := n days from Easter Sunday
 
 =cut
 
@@ -117,11 +117,11 @@ $setmsg = setId($QryParm->{'setid'}) if ($QryParm->{'setid'}  ne "");
 $setmsg = delId($QryParm->{'delid'}) if ($QryParm->{'delid'}  ne "");
 ### ---- if no select/display parms, special requests return DB update message only
 ##if (!defined($QryParm->{'gview'})) {
-##	if ($setmsg ne "") {
-## 		print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-## 		print "Gazette update returned: $setmsg \n";
-##		exit;
-##	}
+##    if ($setmsg ne "") {
+##         print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+##         print "Gazette update returned: $setmsg \n";
+##        exit;
+##    }
 ##}
 $setmsg = "<span>".$today->strftime('%Y-%m-%d %H:%M:%S')." $__{'last DB update'}: $setmsg</span>" if ($setmsg ne "");
 
@@ -278,28 +278,28 @@ grep { if ($GAZETTECAT{$_}{Auto} ne "1") {$selcat .= "<option style=\"color: $GA
 
 # form
 print <<"FIN";
-	<form id="overlay_form_article" class="overlay_form" style="display:none; width: auto;">
-	<input type="hidden" name="setid" value="">
-	<p><b><i id="formTitle">$__{'Edit Gazette'}</i></b></p>
-	<label for="STARTDATE">$__{'Start date'}:<span class="small">YYYY-MM-DD</span></label><input style="width:70px;" type="text" name="STARTDATE" id="STARTDATE" value=""/>
-	<label for="STARTTIME">$__{'Start time'}:<span class="small">HH:MM</span></label><input style="width:70px;" type="text" name="STARTTIME" id="STARTTIME" value=""/><br/>
+    <form id="overlay_form_article" class="overlay_form" style="display:none; width: auto;">
+    <input type="hidden" name="setid" value="">
+    <p><b><i id="formTitle">$__{'Edit Gazette'}</i></b></p>
+    <label for="STARTDATE">$__{'Start date'}:<span class="small">YYYY-MM-DD</span></label><input style="width:70px;" type="text" name="STARTDATE" id="STARTDATE" value=""/>
+    <label for="STARTTIME">$__{'Start time'}:<span class="small">HH:MM</span></label><input style="width:70px;" type="text" name="STARTTIME" id="STARTTIME" value=""/><br/>
 
-	<label for="ENDDATE">$__{'End date'}:<span class="small">YYYY-MM-DD</span></label><input style="width:70px;" type="text" name="ENDDATE" id="ENDDATE" value=""/>
-	<label for="ENDTIME">$__{'End time'}:<span class="small">HH:MM</span></label><input style="width:70px;" type="text" name="ENDTIME" id="ENDTIME" value=""/><br/>
+    <label for="ENDDATE">$__{'End date'}:<span class="small">YYYY-MM-DD</span></label><input style="width:70px;" type="text" name="ENDDATE" id="ENDDATE" value=""/>
+    <label for="ENDTIME">$__{'End time'}:<span class="small">HH:MM</span></label><input style="width:70px;" type="text" name="ENDTIME" id="ENDTIME" value=""/><br/>
 
-	<label for="CATEGORY">$__{'category'}:<span class="small">$__{'Choose one'}</span></label><select style="width:auto;" name="CATEGORY" id="CATEGORY" size="5">$selcat</select><br/>
+    <label for="CATEGORY">$__{'category'}:<span class="small">$__{'Choose one'}</span></label><select style="width:auto;" name="CATEGORY" id="CATEGORY" size="5">$selcat</select><br/>
 
-	<label for="UID">$__{'Name(s)'}:<span class="small">$__{'Ctrl for multiple'}</span></label><select style="width:auto;" name="UID" id="UID" size="5" multiple>$selusers</select>
-	<label for="OTHERS">$__{'Other(s)'}:<span class="small">$__{'names list'}</span></label><input style="width:200px;" type="text" name="OTHERS" id="OTHERS" value=""><br/>
+    <label for="UID">$__{'Name(s)'}:<span class="small">$__{'Ctrl for multiple'}</span></label><select style="width:auto;" name="UID" id="UID" size="5" multiple>$selusers</select>
+    <label for="OTHERS">$__{'Other(s)'}:<span class="small">$__{'names list'}</span></label><input style="width:200px;" type="text" name="OTHERS" id="OTHERS" value=""><br/>
 
-	<label for="PLACE">$__{'Place'}:<span class="small">$__{'string'}</span></label><input type="text" name="PLACE" id="PLACE" value=""><br/>
-	<label for="SUBJECT">$__{'Subject'}:<span class="small">$__{'string'}</span></label><input type="text" name="SUBJECT" id="SUBJECT" value=""><br/>
+    <label for="PLACE">$__{'Place'}:<span class="small">$__{'string'}</span></label><input type="text" name="PLACE" id="PLACE" value=""><br/>
+    <label for="SUBJECT">$__{'Subject'}:<span class="small">$__{'string'}</span></label><input type="text" name="SUBJECT" id="SUBJECT" value=""><br/>
 
-	<p style="margin: 0px; text-align: center">
-		<input type="button" id="sendbutton" name="sendbutton" value="$__{'Save'}" onclick="sendPopup(); return false;" />&nbsp;
-		<input type="button" value="$__{'Cancel'}" onclick="closePopup(); return false" />
-	</p>
-	</form>
+    <p style="margin: 0px; text-align: center">
+        <input type="button" id="sendbutton" name="sendbutton" value="$__{'Save'}" onclick="sendPopup(); return false;" />&nbsp;
+        <input type="button" value="$__{'Cancel'}" onclick="closePopup(); return false" />
+    </p>
+    </form>
 FIN
 
 # ---- JavaScript inits
@@ -318,9 +318,9 @@ var gazette_usrI = $jsnamesI;
 var gazette_remove_text = '$__{"Remove"}';
 var gazette_create_text = '$__{"Create Article"}';
 \$(document).ready(function() {
-	\$('div.thepage').css('margin-bottom', '400px'); // room for form-popup near end of page
-	set_wodp($wodp_d2, $wodp_m, $wodp_holidays, $mindate, $maxdate);
-	$clickcreate
+    \$('div.thepage').css('margin-bottom', '400px'); // room for form-popup near end of page
+    set_wodp($wodp_d2, $wodp_m, $wodp_holidays, $mindate, $maxdate);
+    $clickcreate
 });
 </script>
 FIN

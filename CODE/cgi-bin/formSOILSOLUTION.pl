@@ -145,14 +145,14 @@ print qq[
     var form = document.formulaire;
 
     if (form.site.value != "") {
-	    var array = lastData[form.site.value + "_" + form.depth.value].split("|");
-	    var date = array[1].split("-");
-	    var time = array[2].split(":");
-	    form.y1.value = date[0];
-	    form.m1.value = date[1];
-	    form.d1.value = date[2];
-	    form.hr1.value = time[0];
-	    form.mn1.value = time[1];
+        var array = lastData[form.site.value + "_" + form.depth.value].split("|");
+        var date = array[1].split("-");
+        var time = array[2].split(":");
+        form.y1.value = date[0];
+        form.m1.value = date[1];
+        form.d1.value = date[2];
+        form.hr1.value = time[0];
+        form.mn1.value = time[1];
     }
     update_form();
 }
@@ -323,7 +323,7 @@ if ($QryParm->{id} ne "") {
     print qq(<tr><td style="border: 0"><hr>);
     if ($val ne "") {
         print qq(<p><b>$__{'Input Information'}:</b> $val
-		<input type="hidden" name="val" value="$val"></p>);
+        <input type="hidden" name="val" value="$val"></p>);
     }
     print qq(<input type="button" style="font-weight: bold" value=") . ($id < 0 ? "Reset":"$__{'Remove'}") . qq(" onClick="suppress(1);">);
     if (clientHasAdm(type=>"authforms",name=>"SOILSOLUTION")) {
@@ -339,9 +339,9 @@ print qq(</table>
       <fieldset>
         <legend>$__{'Sampling Location and Time'}</legend>
        <P class="parform" align="right">
-	<B>$__{'Site'}: </B>
-	<select name="site" size="1" onChange="update_site()"
-		onMouseOut="nd()" onmouseover="overlib('$__{help_soilsolution_site}')">);
+    <B>$__{'Site'}: </B>
+    <select name="site" size="1" onChange="update_site()"
+        onMouseOut="nd()" onmouseover="overlib('$__{help_soilsolution_site}')">);
 print qq(<option value=""></option>) if ($QryParm->{id} eq "");
 
 for (@NODESSelList) {
@@ -466,8 +466,8 @@ for (@depth) {
     }
 }
 print qq(
-	   </select><BR>
-	   <B>$__{'Water Level'}</B> (filled) = <input type="checkbox" name=level).($sel_level == "1" ? " checked":"")
+       </select><BR>
+       <B>$__{'Water Level'}</B> (filled) = <input type="checkbox" name=level).($sel_level == "1" ? " checked":"")
   .qq( onMouseOut="nd()" onmouseover="overlib('$__{help_soilsolution_level}')"><BR>
         </P>
       </fieldset>

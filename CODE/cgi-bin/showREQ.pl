@@ -16,13 +16,13 @@ Shows the list of results from html-form for 'B<Request for Graphs>'.
 A submitted B<Request for Graphs> will have all of its results (outputs) files grouped into the
 OUTR directory, under a subdirectory whose name uniquely identifies the Request:
 
-	OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
-		REQUEST.rc
-		PROC.PROCa/
-			{exports,graphs,maps,logs}/
-		....
-		PROC.PROCz/
-			{exports,graphs,maps,logs}/
+    OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
+        REQUEST.rc
+        PROC.PROCa/
+            {exports,graphs,maps,logs}/
+        ....
+        PROC.PROCz/
+            {exports,graphs,maps,logs}/
 
 
 =cut
@@ -90,7 +90,7 @@ print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ Forms: "
   ." ]</P>";
 
 $table = "<TABLE><TR><TH>$__{'Date & Time'}</TH><TH>$__{'Host'}</TH><TH>$__{'User'}</TH><TH>$__{'Time Span'}</TH><TH>$__{'Params'}</TH>
-	.<TH>$__{'Job logs'}</TH><TH>$__{'Status'}</TH><TH>$__{'Graphs'}</TH><TH>$__{'Archive'}</TH></TR>\n";
+    .<TH>$__{'Job logs'}</TH><TH>$__{'Status'}</TH><TH>$__{'Graphs'}</TH><TH>$__{'Archive'}</TH></TR>\n";
 
 for (reverse sort @reqlist) {
     my $dir = my $reqdir = $_;

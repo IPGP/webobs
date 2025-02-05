@@ -294,7 +294,7 @@ if ($QryParm->{id} ne "") {
     print qq(<tr><td style="border: 0"><hr>);
     if ($val ne "") {
         print qq(<p><b>Information de saisie:</b> $val
-		<input type="hidden" name="val" value="$val"></p>);
+        <input type="hidden" name="val" value="$val"></p>);
     }
     print qq(<input type="button" value=") . ($id < 0 ? "Reset":"$__{'Remove'}") . qq(" onClick="suppress(1);">);
     if (clientHasAdm(type=>"authforms",name=>"EAUX")) {
@@ -359,10 +359,10 @@ for (@minuteListe) {
     }
 }
 print qq(</select><BR>
-	<B>Site: </B>
-	  <select name="site" size="1"
-		onMouseOut="nd()"onmouseover="overlib('S&eacute;lectionner le site du prélèvement')">
-	  <option value=""></option>);
+    <B>Site: </B>
+      <select name="site" size="1"
+        onMouseOut="nd()"onmouseover="overlib('S&eacute;lectionner le site du prélèvement')">
+      <option value=""></option>);
 
 for (@NODESSelList) {
     my @cle = split(/\|/,$_);
@@ -373,10 +373,10 @@ for (@NODESSelList) {
     }
 }
 print qq(</select><BR>
-	<B>Type: </B>
+    <B>Type: </B>
       <select name="type" size="1"
-		onMouseOut="nd()" onmouseover="overlib('S&eacute;lectionner le type')">
-	  <option value=""></option>);
+        onMouseOut="nd()" onmouseover="overlib('S&eacute;lectionner le type')">
+      <option value=""></option>);
 
 for (sort(keys(%types))) {
     print qq(<option) . ($_ eq $sel_type ? " selected" : "") . qq( value=$_>$_: $types{$_}{name}</option>);

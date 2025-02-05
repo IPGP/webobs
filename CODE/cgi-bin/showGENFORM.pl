@@ -173,14 +173,14 @@ if ($QryParm->{'dump'} ne "csv") {
       "<!-- overLIB (c) Erik Bosrup -->\n";
 
     print <<"EOF";
-	<script type="text/javascript">
-	<!--
-	function eraseFilter()
-	{
-		document.form.filter.value = "";
-	}
-	//-->
-	</script>
+    <script type="text/javascript">
+    <!--
+    function eraseFilter()
+    {
+        document.form.filter.value = "";
+    }
+    //-->
+    </script>
 EOF
 } else {
     push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type: text/csv\n\n");
@@ -520,9 +520,9 @@ if ($QryParm->{'dump'} eq "csv") {
 } else {
     print @html;
     print "<style type=\"text/css\">
-		#waiting { display: none; }
-	</style>\n
-	<BR>\n</BODY>\n</HTML>\n";
+        #waiting { display: none; }
+    </style>\n
+    <BR>\n</BODY>\n</HTML>\n";
 }
 
 sub simplify_date {

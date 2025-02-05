@@ -198,36 +198,36 @@ if ($QP->{'affiche'} ne "csv") {
       "<!-- overLIB (c) Erik Bosrup -->\n",
 
       print <<"FIN";
-	<script type="text/javascript">
-	<!--
-	function resetMois1()
-	{
-		document.formulaire.m1.value = "01";
-	        document.formulaire.d1.value = "01";
-	}
+    <script type="text/javascript">
+    <!--
+    function resetMois1()
+    {
+        document.formulaire.m1.value = "01";
+            document.formulaire.d1.value = "01";
+    }
 
-	function resetJour1()
-	{
-	        document.formulaire.d1.value = "01";
-	}
+    function resetJour1()
+    {
+            document.formulaire.d1.value = "01";
+    }
 
-	function resetMois2()
-	{
-	        document.formulaire.m2.value = "12";
-	        document.formulaire.d2.value = "31";
-	}
+    function resetMois2()
+    {
+            document.formulaire.m2.value = "12";
+            document.formulaire.d2.value = "31";
+    }
 
-	function resetJour2()
-	{
-	        document.formulaire.d2.value = "31";
-	}
+    function resetJour2()
+    {
+            document.formulaire.d2.value = "31";
+    }
 
-	function effaceFiltre()
-	{
-		document.formulaire.obs.value = "";
-	}
-	//-->
-	</script>
+    function effaceFiltre()
+    {
+        document.formulaire.obs.value = "";
+    }
+    //-->
+    </script>
 FIN
 }
 
@@ -419,16 +419,16 @@ for(@finalLignes) {
     for $i(@nd) {
         for $j(0..2) {
             if ($d[$i][$j] ne "") {
-                $DM[$j] +=  $d[$i][$j];		# $DM = momentanément somme des x
-                $DS[$j] += ($d[$i][$j])**2;	# $DS = momentanément somme des x²
+                $DM[$j] +=  $d[$i][$j];        # $DM = momentanément somme des x
+                $DS[$j] += ($d[$i][$j])**2;    # $DS = momentanément somme des x²
                 $n[$j]++;
             }
         }
     }
     for $j(0..2) {
         if ($n[$j] > 0) {
-            $DM[$j] = $DM[$j]/$n[$j];					# $DM = moyenne mesure
-            $DS[$j] = 2 * sqrt($DS[$j]/$n[$j] - ($DM[$j]*$DM[$j]));	# $DS = 2 * écart-type
+            $DM[$j] = $DM[$j]/$n[$j];                    # $DM = moyenne mesure
+            $DS[$j] = 2 * sqrt($DS[$j]/$n[$j] - ($DM[$j]*$DM[$j]));    # $DS = 2 * écart-type
             if ($DS[$j] < $err) {
                 $DS[$j] = $err;
             }
@@ -442,10 +442,10 @@ for(@finalLignes) {
     $aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
     my @listenoms = split(/\+/,$ope);
 
-    #djl-TBD	my $noms = join(", ",nomOperateur(@listenoms));
-    #djl-TBD	for (@listenoms) {
-    #djl-TBD		$operStat{$_} += 1;
-    #djl-TBD	}
+    #djl-TBD    my $noms = join(", ",nomOperateur(@listenoms));
+    #djl-TBD    for (@listenoms) {
+    #djl-TBD        $operStat{$_} += 1;
+    #djl-TBD    }
 
     my $normsite = WebObs::Grids::normNode(node=>"PROC.FISSURO.$site");
     if ($normsite eq "") { $normsite =  WebObs::Grids::normNode(node=>".FISSURO.$site") }
@@ -503,7 +503,7 @@ for(@finalLignes) {
         $infoImg = "<IMG src=\"/images/attention.gif\" border=0>";
     }
 
-#djl-TBD	$texte = $texte."<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('$infoRem<i>Op&eacute;rateurs:</i> $noms<br>___<br><i>Saisie:</i> $val',CAPTION,'Observations $aliasSite')\">$infoImg</TD></TR>\n";
+#djl-TBD    $texte = $texte."<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('$infoRem<i>Op&eacute;rateurs:</i> $noms<br>___<br><i>Saisie:</i> $val',CAPTION,'Observations $aliasSite')\">$infoImg</TD></TR>\n";
     push(@csv,"$date;$heure;$site;$aliasSite;$ope;$tAir;$tMeteo;$instr;$comp;$DM[0];$DS[0];$DM[1];$DS[1];$DM[2];$DS[2];\"".u2l($rem)."\"\n");
 }
 
@@ -527,16 +527,16 @@ if ($QP->{'affiche'} eq "csv") {
 } else {
     print @html;
 
-#djl-TBD	for ($nb=0;$nb<$#operateurs;$nb++) {
-#djl-TBD		$operNb[$nb] = sprintf("%5d x %s",$operStat{$operateurs[$nb][0]},$operateurs[$nb][1]);
-#djl-TBD	}
-#djl-TBD	@operNb = reverse(sort(grep(!/   0 x/,@operNb)));
-#djl-TBD	print "<P align=right><SPAN onMouseOut=\"nd()\" onMouseOver=\"overlib('".join("<br>",@operNb)."',CAPTION,'Top op&eacute;rateurs',ABOVE)\"><small>?</small></SPAN></P>";
+#djl-TBD    for ($nb=0;$nb<$#operateurs;$nb++) {
+#djl-TBD        $operNb[$nb] = sprintf("%5d x %s",$operStat{$operateurs[$nb][0]},$operateurs[$nb][1]);
+#djl-TBD    }
+#djl-TBD    @operNb = reverse(sort(grep(!/   0 x/,@operNb)));
+#djl-TBD    print "<P align=right><SPAN onMouseOut=\"nd()\" onMouseOver=\"overlib('".join("<br>",@operNb)."',CAPTION,'Top op&eacute;rateurs',ABOVE)\"><small>?</small></SPAN></P>";
 
     print "<style type=\"text/css\">
-		#attente { display: none; }
-	</style>\n
-	<BR>\n</BODY>\n</HTML>\n";
+        #attente { display: none; }
+    </style>\n
+    <BR>\n</BODY>\n</HTML>\n";
 }
 
 __END__

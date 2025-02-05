@@ -236,7 +236,7 @@ if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
 # ---- order by jid so that unique jid occurences appear on a single graph line
 my $timelineD1 = int(time());
 if ( $QryParm->{'runsdate'} ne $today ) { $timelineD1 = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 23:59:00"); }
-my $timelineD0 = 	$timelineD1 - 86400;
+my $timelineD0 =     $timelineD1 - 86400;
 my $query_timeline_runs = "SELECT jid, DATETIME(cast(startts as integer),'unixepoch','localtime'),"
   . " CASE WHEN endts != 0 THEN DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime') ELSE NULL END,"
   . " cmd, rc FROM runs"
@@ -388,24 +388,24 @@ print <<"EOP1";
 <script language="JavaScript" src="/js/overlib/overlib.js" type="text/javascript"></script>
 -->
 <script language="JavaScript" type="text/javascript">
-	\$(document).ready(function() {
-		\$('div.jobsdefs-container').scrollTop(\$('div.jobsdefs-container')[0].scrollHeight);
-	});
-	function reload() {
-		var dl = \$('#indate').val();
-		var j = \$('#injid').val();
-		location.href=\"/cgi-bin/schedulerRuns.pl?runsdate=\"+dl+"&jid="+j ;
-	}
+    \$(document).ready(function() {
+        \$('div.jobsdefs-container').scrollTop(\$('div.jobsdefs-container')[0].scrollHeight);
+    });
+    function reload() {
+        var dl = \$('#indate').val();
+        var j = \$('#injid').val();
+        location.href=\"/cgi-bin/schedulerRuns.pl?runsdate=\"+dl+"&jid="+j ;
+    }
 EOP1
 if ($admOK) {
     print <<"EOP2";
-	function delADate() {
-		var d1 = \$('#indate').val();
-		var answer = confirm("do you really want to delete all records for "+d1+" ?");
-		if (answer) {
-			location.href=\"/cgi-bin/schedulerRuns.pl?action=delete&runsdate=\"+d1 ;
-		}
-	}
+    function delADate() {
+        var d1 = \$('#indate').val();
+        var answer = confirm("do you really want to delete all records for "+d1+" ?");
+        if (answer) {
+            location.href=\"/cgi-bin/schedulerRuns.pl?action=delete&runsdate=\"+d1 ;
+        }
+    }
 EOP2
 }
 print <<"EOP3";
@@ -422,9 +422,9 @@ print <<"EOP3";
 <div class="drawerh2" >&nbsp;<img src="/icons/drawer.png">
 Scheduler status
 </div>
-	<div class="status-container">
-		<div class="schedstatus">$schedstatus</div>
-	</div>
+    <div class="status-container">
+        <div class="schedstatus">$schedstatus</div>
+    </div>
 </div>
 
 <BR>
@@ -435,8 +435,8 @@ Runs <small><sub>($buildTS)</sub></small>
 &nbsp;&nbsp;<A href="#MYTOP"><img src="/icons/go2top.png"></A>
 &nbsp;<img src="/icons/refresh.png" title="Refresh" onClick=\"d=new Date().getTime();location.href='/cgi-bin/schedulerRuns.pl?'+d+'#JOBSRUNS'\">
 </div>
-	<div id="runsID">
-		<div style="padding: 5px; background: #DDDDDD">
+    <div id="runsID">
+        <div style="padding: 5px; background: #DDDDDD">
 EOP3
 print "&nbsp;&bull;&nbsp; Job: ";
 print "<select id=\"injid\" name=\"injid\" size=\"1\" maxlength=\"10\" onChange=\"reload(); return false\">";
@@ -462,30 +462,30 @@ if ($admOK) {
     print "<input type='button' onclick='delADate(); return false' value='delete date' />";
 }
 print <<"EOP4";
-			<span style="padding-left: 20px; color: red;font-weight:bold">$jobsrunsMsg</span>
-		</div>
-		<div class="jobsdefs-container" style="height: 300px; display: block;">
-			<div class="jobsruns">
-				<table class="jobsruns" id="t1">
-				<thead><tr><th></th><th></th>
-				<th onclick="sortTable('t1',2)"><img src="/icons/sort_both.svg"> JID</th>
-				<th onclick="sortTable('t1',3)"><img src="/icons/sort_both.svg"> Kid</th>
-				<th onclick="sortTable('t1',4)"><img src="/icons/sort_both.svg"> Org</th>
-				<th onclick="sortTable('t1',5)"><img src="/icons/sort_both.svg"> Started</th>
-				<th onclick="sortTable('t1',6)"><img src="/icons/sort_both.svg"> Ended</th>
-				<th onclick="sortTable('t1',7)"><img src="/icons/sort_both.svg"> Command</th>
-				<th onclick="sortTable('t1',8)"><img src="/icons/sort_both.svg"> Logs</th>
-				<th onclick="sortTable('t1',9)" align=center><img src="/icons/sort_both.svg"> RC</th>
-				<th onclick="sortTable('t1',10)"><img src="/icons/sort_both.svg"> RCmsg</th>
-				<th onclick="sortTable('t1',11)"><img src="/icons/sort_both.svg"> Elapsed</th>
-				</tr></thead>
-				<tbody>
-				$jobsruns
-				</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+            <span style="padding-left: 20px; color: red;font-weight:bold">$jobsrunsMsg</span>
+        </div>
+        <div class="jobsdefs-container" style="height: 300px; display: block;">
+            <div class="jobsruns">
+                <table class="jobsruns" id="t1">
+                <thead><tr><th></th><th></th>
+                <th onclick="sortTable('t1',2)"><img src="/icons/sort_both.svg"> JID</th>
+                <th onclick="sortTable('t1',3)"><img src="/icons/sort_both.svg"> Kid</th>
+                <th onclick="sortTable('t1',4)"><img src="/icons/sort_both.svg"> Org</th>
+                <th onclick="sortTable('t1',5)"><img src="/icons/sort_both.svg"> Started</th>
+                <th onclick="sortTable('t1',6)"><img src="/icons/sort_both.svg"> Ended</th>
+                <th onclick="sortTable('t1',7)"><img src="/icons/sort_both.svg"> Command</th>
+                <th onclick="sortTable('t1',8)"><img src="/icons/sort_both.svg"> Logs</th>
+                <th onclick="sortTable('t1',9)" align=center><img src="/icons/sort_both.svg"> RC</th>
+                <th onclick="sortTable('t1',10)"><img src="/icons/sort_both.svg"> RCmsg</th>
+                <th onclick="sortTable('t1',11)"><img src="/icons/sort_both.svg"> Elapsed</th>
+                </tr></thead>
+                <tbody>
+                $jobsruns
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <BR>
@@ -496,16 +496,16 @@ Timeline <small><sub>($buildTS)</sub></small>
 &nbsp;&nbsp;<A href="#MYTOP"><img src="/icons/go2top.png"></A>
 &nbsp;<img src="/icons/refresh.png" title="Refresh" onClick=\"d=new Date().getTime();location.href='/cgi-bin/schedulerRuns.pl?'+d+'#TIMELINE'\"></A>
 </div>
-	<div id="tlID">
-		<div class="timeline-container">
-			<div id="placeholder" class="timeline-placeholder"></div>
-		</div>
-		<div style="background: #BBB">
-			click & drag on graph to zoom in &nbsp;or&nbsp;
-			<a href=\"#\" onclick=\"plotall();return false;\">here to zoom out</a><br>
-			<a id=\"tlsavelink\" href=\"#\"><img src=\"/icons/d13.png\">download timeline image</a>
-			<span id="jsmsg"></span>
-		</div>
+    <div id="tlID">
+        <div class="timeline-container">
+            <div id="placeholder" class="timeline-placeholder"></div>
+        </div>
+        <div style="background: #BBB">
+            click & drag on graph to zoom in &nbsp;or&nbsp;
+            <a href=\"#\" onclick=\"plotall();return false;\">here to zoom out</a><br>
+            <a id=\"tlsavelink\" href=\"#\"><img src=\"/icons/d13.png\">download timeline image</a>
+            <span id="jsmsg"></span>
+        </div>
 </div>
 EOP4
 

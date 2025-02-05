@@ -118,33 +118,33 @@ my $meas_var  = $QryParm->{'measVar'};
 $meas_var  =~ s/'/\'/g;
 
 my @contacts    = $cgi->param('contacts');
-my @roles		= $cgi->param('roles');
+my @roles        = $cgi->param('roles');
 my @firstNames  = $cgi->param('firstName');
 my @lastNames   = $cgi->param('lastName');
 my @emails      = $cgi->param('emails');
 
 =pod
 foreach (@contacts) {
-	my @elements = split(/ /, $_);
-	push(@roles, (split '\(|\)', $_)[1]);
-	push(@firstNames, $elements[2]);
-	push(@lastNames, $elements[3]);
-	push(@emails, $elements[4]);
+    my @elements = split(/ /, $_);
+    push(@roles, (split '\(|\)', $_)[1]);
+    push(@firstNames, $elements[2]);
+    push(@lastNames, $elements[3]);
+    push(@emails, $elements[4]);
 }
 =cut
 
 my @funders     = $cgi->param('funders');
 my @typeFunders = $cgi->param('typeFunders');
-my @idScanR		= $cgi->param('scanR');
-my @nameFunders	= $cgi->param('nameFunders');
-my @acronyms	= $cgi->param('acronyms');
+my @idScanR        = $cgi->param('scanR');
+my @nameFunders    = $cgi->param('nameFunders');
+my @acronyms    = $cgi->param('acronyms');
 
 =pod
 foreach (@funders) {
-	push(@typeFunders, (split ':', $_)[0]);
-	push(@idScanR, (split '/', $_)[1]);
-	push(@nameFunders, (split ':|\(', $_)[1]);
-	push(@acronyms, (split '\(|\)', $_)[1]);
+    push(@typeFunders, (split ':', $_)[0]);
+    push(@idScanR, (split '/', $_)[1]);
+    push(@nameFunders, (split ':|\(', $_)[1]);
+    push(@acronyms, (split '\(|\)', $_)[1]);
 }
 =cut
 
@@ -413,7 +413,7 @@ if($rv < 0) {
     print $DBI::errstr;
 }
 
-my @roles;	# creating a role list for the contacts informations part
+my @roles;    # creating a role list for the contacts informations part
 
 while(my @row = $sth->fetchrow_array()) {
     my $role = $row[0];
@@ -428,7 +428,7 @@ if($rv < 0) {
     print $DBI::errstr;
 }
 
-my @types;	# creating a funding types list for the fundings informations part
+my @types;    # creating a funding types list for the fundings informations part
 
 while(my @row = $sth->fetchrow_array()) {
     my $type = $row[0];
@@ -443,7 +443,7 @@ if($rv < 0) {
     print $DBI::errstr;
 }
 
-my @resources;	 # creating a resource types list for the online resources informations part
+my @resources;     # creating a resource types list for the online resources informations part
 my @resNames;
 
 while(my @row = $sth->fetchrow_array()) {
@@ -475,46 +475,46 @@ print <<"EOPART1";
 Domains&nbsp;$go2top
 </div>
 <div id="id1">
-	<div id="domainMsg" style="font-weight: bold; color: $domainMsgColor">&bull; $domainMsg</div><br/>
-	<form id="overlay_form_domain" class="overlay_form" style="display:none">
-	<input type="hidden" name="action" value="">
-	<input type="hidden" name="tbl" value="">
-	<input type="hidden" name="OLDcode" value="">
-	<input type="hidden" name="OLDgrid" value="">
-	<p><b><i>Edit domain definition</i></b></p>
-	<label>Id:<span class="small">Code (short)</span></label>
-	<input type="text" name="code" value=""/><br/>
-	<label>Name:<span class="small">Domain name</span></label>
-	<input type="text" name="name" value=""/><br/>
-	<label>Rank:<span class="small">display order</span></label>
-	<input type="text" name="ooa" value=""/><br/>
-	<label>Marker:<span class="small">marker symbol</span></label>
-	<input type="text" name="marker" value=""/><br/>
-	<label for="gid">Grid(s):<span class="small">associated grid(s)<br>Ctrl for multiple</span></label>
-	<!--<input type="text" name="grid" id="grid" value=""/><br/>-->
-	<select name="grid" id="grid" size="5" multiple>$selgrids</select><br/>
-	<p style="margin: 0px; text-align: center">
-		<input type="button" name="sendbutton" value="send" onclick="sendPopupDomain(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
-	</p>
-	</form>
-	<fieldset id="domains-field"><legend><b>Domains</b></legend>
-		<div style="background: #BBB">
-			<b>$ddomainsCount</b> domains defined
-		</div>
-		<div class="ddomains-container">
-			<div class="ddomains">
-				<table class="ddomains">
-				<thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupDomain(-1);return false"><img title="define a new domain" src="/icons/modif.png"></a>
-				<th style=\"width:12px\" class="tdlock">&nbsp;
-				<th>Id</th><th>Rank</th><th>Name</th><th>Marker</th><th>Grids</th>
-				</tr></thead>
-				<tbody>
-				$ddomains
-				</tbody>
-				</table>
-			</div>
-		</div>
-	</fieldset>
+    <div id="domainMsg" style="font-weight: bold; color: $domainMsgColor">&bull; $domainMsg</div><br/>
+    <form id="overlay_form_domain" class="overlay_form" style="display:none">
+    <input type="hidden" name="action" value="">
+    <input type="hidden" name="tbl" value="">
+    <input type="hidden" name="OLDcode" value="">
+    <input type="hidden" name="OLDgrid" value="">
+    <p><b><i>Edit domain definition</i></b></p>
+    <label>Id:<span class="small">Code (short)</span></label>
+    <input type="text" name="code" value=""/><br/>
+    <label>Name:<span class="small">Domain name</span></label>
+    <input type="text" name="name" value=""/><br/>
+    <label>Rank:<span class="small">display order</span></label>
+    <input type="text" name="ooa" value=""/><br/>
+    <label>Marker:<span class="small">marker symbol</span></label>
+    <input type="text" name="marker" value=""/><br/>
+    <label for="gid">Grid(s):<span class="small">associated grid(s)<br>Ctrl for multiple</span></label>
+    <!--<input type="text" name="grid" id="grid" value=""/><br/>-->
+    <select name="grid" id="grid" size="5" multiple>$selgrids</select><br/>
+    <p style="margin: 0px; text-align: center">
+        <input type="button" name="sendbutton" value="send" onclick="sendPopupDomain(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
+    </p>
+    </form>
+    <fieldset id="domains-field"><legend><b>Domains</b></legend>
+        <div style="background: #BBB">
+            <b>$ddomainsCount</b> domains defined
+        </div>
+        <div class="ddomains-container">
+            <div class="ddomains">
+                <table class="ddomains">
+                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupDomain(-1);return false"><img title="define a new domain" src="/icons/modif.png"></a>
+                <th style=\"width:12px\" class="tdlock">&nbsp;
+                <th>Id</th><th>Rank</th><th>Name</th><th>Marker</th><th>Grids</th>
+                </tr></thead>
+                <tbody>
+                $ddomains
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </fieldset>
 
 </div>
 </div>
@@ -525,52 +525,52 @@ Domains&nbsp;$go2top
 Producers&nbsp;$go2top
 </div>
 <div id="id2">
-	<div id="domainMsg" style="font-weight: bold; color: $producerMsgColor">&bull; $producerMsg</div><br/>
-	<form id="overlay_form_producer" class="overlay_form" style="display:none">
-	<input type="hidden" name="action" value="">
-	<input type="hidden" name="tbl" value="">
-	<input type="hidden" name="OLDid" value="">
-	<input type="hidden" name="OLDgrid" value="">
-	
-	<!-- Champs obligatoires du formulaire -->
-	<p><b><i>Edit producer definition</i><span class="small">Mandatory fields</span></b></p>
-	<label>Identifier:<span class="small"></span></label>
-	<input type="text" name="id" value=""/><br/>
-	<label>Name:<span class="small"></span></label>
-	<input type="text" name="prodName" value=""/><br/>
-	<label>Title:<span class="small"></span></label>
-	<input type="text" name="title" value=""/><br/>
-	<label>Description:<span class="small"></span></label>
-	<input type="text" name="desc" value=""/><br/><br/>
-	<label>Email:<span class="small"></span></label>
-	<input type="text" name="email" value=""/><br/><br/>
+    <div id="domainMsg" style="font-weight: bold; color: $producerMsgColor">&bull; $producerMsg</div><br/>
+    <form id="overlay_form_producer" class="overlay_form" style="display:none">
+    <input type="hidden" name="action" value="">
+    <input type="hidden" name="tbl" value="">
+    <input type="hidden" name="OLDid" value="">
+    <input type="hidden" name="OLDgrid" value="">
+    
+    <!-- Champs obligatoires du formulaire -->
+    <p><b><i>Edit producer definition</i><span class="small">Mandatory fields</span></b></p>
+    <label>Identifier:<span class="small"></span></label>
+    <input type="text" name="id" value=""/><br/>
+    <label>Name:<span class="small"></span></label>
+    <input type="text" name="prodName" value=""/><br/>
+    <label>Title:<span class="small"></span></label>
+    <input type="text" name="title" value=""/><br/>
+    <label>Description:<span class="small"></span></label>
+    <input type="text" name="desc" value=""/><br/><br/>
+    <label>Email:<span class="small"></span></label>
+    <input type="text" name="email" value=""/><br/><br/>
 
-	<label>Contacts:</label>
-	<button onclick="addMgr();return false;">Add a contact</button>
-	<button onclick="removeMgr();return false;">Remove a contact</button></br></br>
-	<input type='hidden' name="count_mgr" value='1'></input>
-	<input type='hidden' name="contacts" value=''></input>
-	<div id='div_mgr'>
-		<label>Contact:<span class="small">first name / last name</span></label>
-		<input type="text" name="firstName" style="width:33%;" placeholder="first name" value=""/>
-		<input type="text" name="lastName" style="width:33%;" placeholder="last name" value=""/><br/><br/>
-		<label>Contact:<span class="small">role / email</span></label>
-		<select name="roles" style="width:33%;">
-			<option value=\"$roles[1]\">$roles[1]</option>
+    <label>Contacts:</label>
+    <button onclick="addMgr();return false;">Add a contact</button>
+    <button onclick="removeMgr();return false;">Remove a contact</button></br></br>
+    <input type='hidden' name="count_mgr" value='1'></input>
+    <input type='hidden' name="contacts" value=''></input>
+    <div id='div_mgr'>
+        <label>Contact:<span class="small">first name / last name</span></label>
+        <input type="text" name="firstName" style="width:33%;" placeholder="first name" value=""/>
+        <input type="text" name="lastName" style="width:33%;" placeholder="last name" value=""/><br/><br/>
+        <label>Contact:<span class="small">role / email</span></label>
+        <select name="roles" style="width:33%;">
+            <option value=\"$roles[1]\">$roles[1]</option>
             <option value=\"$roles[3]\">$roles[3]</option>
         </select>
         <input type="text" name="emails" value="" style="width:33%;" placeholder="email"/><br/><br/>
-	</div><div id='div_mgr_add'></div>
-	
-	<label>Funders:</label>
-	<button onclick="addFnd();return false;">Add a funder</button>
-	<button onclick="removeFnd();return false;">Remove a funder</button></br></br>
-	<input type='hidden' name='count_fnd' value='1'></input>
-	<input type='hidden' name='funders' value=''></input>
-	<div id='div_fnd'>
-		<label>Funder:<span class="small">type / id scanR</span></label>
-		<select name="typeFunders" style="width:33%">
-			<option value=\"$types[0]\">$types[0]</option>
+    </div><div id='div_mgr_add'></div>
+    
+    <label>Funders:</label>
+    <button onclick="addFnd();return false;">Add a funder</button>
+    <button onclick="removeFnd();return false;">Remove a funder</button></br></br>
+    <input type='hidden' name='count_fnd' value='1'></input>
+    <input type='hidden' name='funders' value=''></input>
+    <div id='div_fnd'>
+        <label>Funder:<span class="small">type / id scanR</span></label>
+        <select name="typeFunders" style="width:33%">
+            <option value=\"$types[0]\">$types[0]</option>
             <option value=\"$types[1]\">$types[1]</option>
             <option value=\"$types[2]\">$types[2]</option>
             <option value=\"$types[3]\">$types[3]</option>
@@ -578,64 +578,64 @@ Producers&nbsp;$go2top
             <option value=\"$types[5]\">$types[5]</option>
             <option value=\"$types[6]\">$types[6]</option>
             <option value=\"$types[7]\">$types[7]</option>
-		</select>
-		<input type='text' name="scanR" style="width:33%" placeholder="idSscanR"></input><br/><br/>
-		<label>Funder:<span class="small">name / acronym</span></label>
-		<input type='text' name="nameFunders" style="width:33%" placeholder="name"></input>
-		<input type='text' name="acronyms" style="width:33%" placeholder="acronym"></input><br/><br/>
-	</div><div id='div_fnd_add'></div>
-	
-	<label for="gid">Grid(s):<span class="small">associated grid(s)<br>Ctrl for multiple</span></label>
-	<select name="grid" id="grid" size="5" multiple>$selgrids</select><br/>
-	
-	<!-- Champs recommandés du formulaire -->
-	<p><b><i>Edit producer definition</i><span class="small">Recommended fields</span></b></p>
-	<label>Objective:<span class="small"></span></label>
-	<input type="text" name="objective" value=""/><br/>
-	<label>Measured variables:<span class="small"></span></label>
-	<input type="text" name="measVar" value=""/><br/>
-	
-	<!-- Champs optionnels du formulaire -->
-	<p><b><i>Edit producer definition</i><span class="small">Optional fields</span></b></p>
-	<label>Online resources:</label>
-	<button onclick="addRes();return false;">Add a resource</button>
-	<button onclick="removeRes();return false;">Remove a resource</button></br></br>
-	<input type='hidden' name="count_res" value='1'></input>
-	<input type='hidden' name='onlineRes' value=''></input>
-	<div id='div_res'>
-		<label>Online resource:<span class="small">type</span></label>
-		<select name='typeRes' id='typeRes'>
-			<option value=$resources[0]>$resNames[0]</option>
+        </select>
+        <input type='text' name="scanR" style="width:33%" placeholder="idSscanR"></input><br/><br/>
+        <label>Funder:<span class="small">name / acronym</span></label>
+        <input type='text' name="nameFunders" style="width:33%" placeholder="name"></input>
+        <input type='text' name="acronyms" style="width:33%" placeholder="acronym"></input><br/><br/>
+    </div><div id='div_fnd_add'></div>
+    
+    <label for="gid">Grid(s):<span class="small">associated grid(s)<br>Ctrl for multiple</span></label>
+    <select name="grid" id="grid" size="5" multiple>$selgrids</select><br/>
+    
+    <!-- Champs recommandés du formulaire -->
+    <p><b><i>Edit producer definition</i><span class="small">Recommended fields</span></b></p>
+    <label>Objective:<span class="small"></span></label>
+    <input type="text" name="objective" value=""/><br/>
+    <label>Measured variables:<span class="small"></span></label>
+    <input type="text" name="measVar" value=""/><br/>
+    
+    <!-- Champs optionnels du formulaire -->
+    <p><b><i>Edit producer definition</i><span class="small">Optional fields</span></b></p>
+    <label>Online resources:</label>
+    <button onclick="addRes();return false;">Add a resource</button>
+    <button onclick="removeRes();return false;">Remove a resource</button></br></br>
+    <input type='hidden' name="count_res" value='1'></input>
+    <input type='hidden' name='onlineRes' value=''></input>
+    <div id='div_res'>
+        <label>Online resource:<span class="small">type</span></label>
+        <select name='typeRes' id='typeRes'>
+            <option value=$resources[0]>$resNames[0]</option>
             <option value=$resources[1]>$resNames[1]</option>
             <option value=$resources[2]>$resNames[2]</option>
             <option value=$resources[3]>$resNames[3]</option>
-		</select>
-		<label>Online resource:<span class="small">URL</span></label>
-		<input type='text' name='nameRes' id='nameRes'></input>
-	</div><div id='div_res_add'></div>
-	
-	<p style="margin: 0px; text-align: center">
-		<input type="button" name="sendbutton" value="send" onclick="sendPopupProducer(); return false; " /> <input type="button" value="cancel" onclick="closePopup(); return false" />
-	</p>
-	</form>
-	<fieldset id="producerss-field"><legend><b>Producers</b></legend>
-		<div style="background: #BBB">
-			<b>$pproducersCount</b> producers defined
-		</div>
-		<div class="pproducers-container">
-			<div class="pproducers">
-				<table class="pproducers">
-				<thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupProducer(-1);return false"><img title="define a new grid" src="/icons/modif.png"></a>
-				<th style=\"width:12px\" class="tdlock">&nbsp;
-				<th>Id</th><th>Name</th><th>Title</th><th>Description</th><th>Objective</th><th>MeasuredVariables</th><th>Email</th><th>Contacts</th><th>Funders</th><th>Resources</th><th>Grids</th>
-				</tr></thead>
-				<tbody>
-				$pproducers
-				</tbody>
-				</table>
-			</div>
-		</div>
-	</fieldset>
+        </select>
+        <label>Online resource:<span class="small">URL</span></label>
+        <input type='text' name='nameRes' id='nameRes'></input>
+    </div><div id='div_res_add'></div>
+    
+    <p style="margin: 0px; text-align: center">
+        <input type="button" name="sendbutton" value="send" onclick="sendPopupProducer(); return false; " /> <input type="button" value="cancel" onclick="closePopup(); return false" />
+    </p>
+    </form>
+    <fieldset id="producerss-field"><legend><b>Producers</b></legend>
+        <div style="background: #BBB">
+            <b>$pproducersCount</b> producers defined
+        </div>
+        <div class="pproducers-container">
+            <div class="pproducers">
+                <table class="pproducers">
+                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupProducer(-1);return false"><img title="define a new grid" src="/icons/modif.png"></a>
+                <th style=\"width:12px\" class="tdlock">&nbsp;
+                <th>Id</th><th>Name</th><th>Title</th><th>Description</th><th>Objective</th><th>MeasuredVariables</th><th>Email</th><th>Contacts</th><th>Funders</th><th>Resources</th><th>Grids</th>
+                </tr></thead>
+                <tbody>
+                $pproducers
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </fieldset>
 
 </div>
 </div>
@@ -669,7 +669,7 @@ sub dbuow {
     my $rv = 0;
     my $dbh = DBI->connect("dbi:SQLite:dbname=".$_[0], '', '',{AutoCommit => 0, RaiseError => 1,}) or die "$DBI::errstr" ;
     eval {
-        $dbh->do("PRAGMA foreign_keys = ON;");	# query to make sure FOREIGN KEY are bounded
+        $dbh->do("PRAGMA foreign_keys = ON;");    # query to make sure FOREIGN KEY are bounded
         $dbh->do($_[1]);
         $dbh->do($_[2]);
         $rv = $dbh->do($_[3]) if ($_[3] ne "");

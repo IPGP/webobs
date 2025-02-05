@@ -121,59 +121,59 @@ print "<html><head>
 <!--
 function verif_formulaire()
 {
-	if(document.formulaire.site.value == \"\") {
-		alert(\"Veuillez spécifier le site de prélèvement!\");
-		document.formulaire.site.focus();
-		return false;
-	}
-	if(document.formulaire.annee1.value == \"\") {
-		alert(\"Veuillez spécifier l'année de début!\");
-		document.formulaire.annee1.focus();
-		return false;
-	}
-	if(document.formulaire.mois1.value == \"\") {
-		alert(\"Veuillez spécifier le mois de début!\");
-		document.formulaire.mois1.focus();
-		return false;
-	}
-	if(document.formulaire.jour1.value == \"\") {
-		alert(\"Veuillez spécifier le jour de début!\");
-		document.formulaire.jour1.focus();
-		return false;
-	}
-	if(document.formulaire.annee2.value == \"\") {
-		alert(\"Veuillez spécifier l'année de fin!\");
-		document.formulaire.annee2.focus();
-		return false;
-	}
-	if(document.formulaire.mois2.value == \"\") {
-		alert(\"Veuillez spécifier le mois de fin!\");
-		document.formulaire.mois2.focus();
-		return false;
-	}
-	if(document.formulaire.jour2.value == \"\") {
-		alert(\"Veuillez spécifier le jour de fin!\");
-		document.formulaire.jour2.focus();
-		return false;
-	}
+    if(document.formulaire.site.value == \"\") {
+        alert(\"Veuillez spécifier le site de prélèvement!\");
+        document.formulaire.site.focus();
+        return false;
+    }
+    if(document.formulaire.annee1.value == \"\") {
+        alert(\"Veuillez spécifier l'année de début!\");
+        document.formulaire.annee1.focus();
+        return false;
+    }
+    if(document.formulaire.mois1.value == \"\") {
+        alert(\"Veuillez spécifier le mois de début!\");
+        document.formulaire.mois1.focus();
+        return false;
+    }
+    if(document.formulaire.jour1.value == \"\") {
+        alert(\"Veuillez spécifier le jour de début!\");
+        document.formulaire.jour1.focus();
+        return false;
+    }
+    if(document.formulaire.annee2.value == \"\") {
+        alert(\"Veuillez spécifier l'année de fin!\");
+        document.formulaire.annee2.focus();
+        return false;
+    }
+    if(document.formulaire.mois2.value == \"\") {
+        alert(\"Veuillez spécifier le mois de fin!\");
+        document.formulaire.mois2.focus();
+        return false;
+    }
+    if(document.formulaire.jour2.value == \"\") {
+        alert(\"Veuillez spécifier le jour de fin!\");
+        document.formulaire.jour2.focus();
+        return false;
+    }
     \$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
-	   //var contents = \$( data ).find( '#contents' ).text(); 
-	   alert(data);
-	   document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
-	   }
-	);
+       //var contents = \$( data ).find( '#contents' ).text(); 
+       alert(data);
+       document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
+       }
+    );
 }
 
 function calc()
 {
-	var mtotale = 0;
-	if (formulaire.m1.value != \"\") {
-		mtotale = formulaire.m1.value*1
-			+ formulaire.m2.value*1
-			+ formulaire.m3.value*1
-			+ formulaire.m4.value*1;
-		formulaire.MTOT.value = mtotale.toFixed(2);
-	}
+    var mtotale = 0;
+    if (formulaire.m1.value != \"\") {
+        mtotale = formulaire.m1.value*1
+            + formulaire.m2.value*1
+            + formulaire.m3.value*1
+            + formulaire.m4.value*1;
+        formulaire.MTOT.value = mtotale.toFixed(2);
+    }
 }
 window.captureEvents(Event.KEYDOWN);
 window.onkeydown = calc();
@@ -253,7 +253,7 @@ print "<TABLE style=border:0 onMouseOver=\"calc()\">";
 print "<TR><TD style=border:0 valign=top>";
 print "<fieldset><legend>Date et lieu du pr&eacute;l&egrave;vement</legend>";
 print "<P class=parform align=right>
-	<B>Date d&eacute;but: </b><select name=annee1 size=\"1\">";
+    <B>Date d&eacute;but: </b><select name=annee1 size=\"1\">";
 for (@anneeListe) {
     if ($_ == $sel_annee1) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
 }
@@ -328,7 +328,7 @@ print "</fieldset>\n";
 print "<fieldset><legend>Solution initiale</legend>";
 print "<P class=parform>";
 print "<B>Volume H<sub>2</sub>O</B> (en ml) = <input size=6 class=inputNum name=h2o value=\"$sel_h2o\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer le volume d&rsquo;eau')\"><BR>\n
-	<B>Concentration KOH</B> (en mol/l) = <input size=3 class=inputNum name=koh value=\"$sel_koh\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la concentration en KOH')\"><BR>\n";
+    <B>Concentration KOH</B> (en mol/l) = <input size=3 class=inputNum name=koh value=\"$sel_koh\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la concentration en KOH')\"><BR>\n";
 print "</P>";
 print "</fieldset>\n";
 print "</TD>";
@@ -363,7 +363,7 @@ print "<P class=parform>",
   "<B>Observations</B> : <BR><input size=80 name=rem value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter les problèmes éventuels (particules solides, contamination, pertes ...)')\"><BR>";
 if ($val ne "") {
     print "<B>Information de saisie:</B> $val
-		<INPUT type=hidden name=val value=\"$val\"></P>";
+        <INPUT type=hidden name=val value=\"$val\"></P>";
 }
 print "</TR><TR>";
 print "<TD style=border:0 colspan=2>";

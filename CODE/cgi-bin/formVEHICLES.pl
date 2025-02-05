@@ -115,22 +115,22 @@ print "<html><head>
 
 function verif_formulaire()
 {
-	if(document.formulaire.site.value == \"\") {
-		alert(\"Veuillez spécifier le site de prélèvement!\");
-		document.formulaire.site.focus();
-		return false;
-	}
-	if(document.formulaire.type.value == \"\") {
-		alert(\"Veuillez entrer un type d'ampoule!\");
-		document.formulaire.type.focus();
-		return false;
-	}
+    if(document.formulaire.site.value == \"\") {
+        alert(\"Veuillez spécifier le site de prélèvement!\");
+        document.formulaire.site.focus();
+        return false;
+    }
+    if(document.formulaire.type.value == \"\") {
+        alert(\"Veuillez entrer un type d'ampoule!\");
+        document.formulaire.type.focus();
+        return false;
+    }
     \$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
-	   //var contents = \$( data ).find( '#contents' ).text(); 
-	   alert(data);
-	   document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
-	   }
-	);
+       //var contents = \$( data ).find( '#contents' ).text(); 
+       alert(data);
+       document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
+       }
+    );
 }
 
 function calc()
@@ -202,9 +202,9 @@ print "<input type=\"hidden\" name=\"oper\" value=\"$CLIENT\">\n";
 print "<TABLE style=border:0 onMouseOver=\"calc()\">";
 print "<TR>";
 print "<TD style=border:0 valign=top>
-	<fieldset><legend>Date et lieu du d&eacute;placement</legend>
-		<P class=parform>
-		<B>Date: </b><select name=annee size=\"1\">";
+    <fieldset><legend>Date et lieu du d&eacute;placement</legend>
+        <P class=parform>
+        <B>Date: </b><select name=annee size=\"1\">";
 for (@anneeListe) {
     if ($_ == $sel_annee) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
 }
@@ -251,7 +251,7 @@ print "</P>";
 print "</fieldset>";
 
 print "<fieldset><legend>Informations sur le d&eacute;placement</legend>\n
-		<P class=parform>";
+        <P class=parform>";
 print "<B>Type de d&eacute;placement: </B><select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le type e d&eacute;placement')\" name=\"type\" size=\"1\"><option value=\"\"></option>";
 for (@types) {
     my @cle = split(/\|/,$_);
@@ -263,21 +263,21 @@ for (@types) {
 }
 print "</select><BR/>";
 print " <B>Conducteur: <input size=30 name=\"driver\" value=\"$driver\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer le nom du conducteur')\"><BR>\n
-		<B>Kilom&egrave;tre au compteur</B> = <input size=10 class=inputNum name=\"mileage\" value=\"$mileage\" onKeyUp=\"nicb()\" onChange=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du compteur')\"> km<BR>\n
-		<B>Carburant</B> = <input size=5 class=inputNum name=\"oil\" value=\"$oil\" onKeyUp=\"nicb()\" onChange=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du plein')\">&euro;<BR>\n";
+        <B>Kilom&egrave;tre au compteur</B> = <input size=10 class=inputNum name=\"mileage\" value=\"$mileage\" onKeyUp=\"nicb()\" onChange=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du compteur')\"> km<BR>\n
+        <B>Carburant</B> = <input size=5 class=inputNum name=\"oil\" value=\"$oil\" onKeyUp=\"nicb()\" onChange=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du plein')\">&euro;<BR>\n";
 
-#		print "<B>Débit </B> (qualitatif) = <select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le débit')\" name=\"debit\" size=\"1\"><option value=\"\"></option>";
-#		print "</select>\n";
+#        print "<B>Débit </B> (qualitatif) = <select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le débit')\" name=\"debit\" size=\"1\"><option value=\"\"></option>";
+#        print "</select>\n";
 print "</fieldset>";
 print "</TD>";
 
 #print "<TR>";
 #print "<TD style=border:0 colspan=2>";
-#	print "<B>Observations</B> : <BR><input size=80 name=rem value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter la phénoménologie (dépôts, couleur, etc...)')\"><BR>";
-#	if ($val ne "") {
-#		print "<BR><B>Information de saisie:</B> $val
-#		<INPUT type=hidden name=val value=\"$val\"></P>";
-#	}
+#    print "<B>Observations</B> : <BR><input size=80 name=rem value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter la phénoménologie (dépôts, couleur, etc...)')\"><BR>";
+#    if ($val ne "") {
+#        print "<BR><B>Information de saisie:</B> $val
+#        <INPUT type=hidden name=val value=\"$val\"></P>";
+#    }
 print "</TR><TR>";
 print "<TD style=border:0 colspan=2>";
 print "<P style=\"margin-top:20px;text-align:center\">";

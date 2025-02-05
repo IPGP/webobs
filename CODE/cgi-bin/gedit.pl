@@ -21,21 +21,21 @@ Authorization resources checked for edit or adm are those of the grid.
 
 =item B<grid=normgrid>
 
-	normgrid := gridtype.gridname
-	The fully qualified normalized gridname
+    normgrid := gridtype.gridname
+    The fully qualified normalized gridname
 
 =item B<file=filesuffix>
 
-	The file to be edited will be WEBOBS{PATH_GRIDS_DOCS}/gridtype.gridname||filesuffix
-	eg. ...?grid=VIEW.MYVIEW&file=_protocole.txt 
-	==> $WEBOBS{PATH_GRIDS_DOCS}/VIEW.MYVIEW_protocole.txt
+    The file to be edited will be WEBOBS{PATH_GRIDS_DOCS}/gridtype.gridname||filesuffix
+    eg. ...?grid=VIEW.MYVIEW&file=_protocole.txt 
+    ==> $WEBOBS{PATH_GRIDS_DOCS}/VIEW.MYVIEW_protocole.txt
 
 =item B<action=string>
 
-	string := { edit | save }
-	'edit' (default when action is not specified) to display edit html-form edit 
-	'save' internaly used to save the file after html-form edition
-	(other parameters are used along with 'save': ts0, txt)
+    string := { edit | save }
+    'edit' (default when action is not specified) to display edit html-form edit 
+    'save' internaly used to save the file after html-form edition
+    (other parameters are used along with 'save': ts0, txt)
 
 =back
 
@@ -172,16 +172,16 @@ print "Content-type: text/html; charset=utf-8
 function verif_formulaire()
 {
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-		   if (data != '') alert(data);
-       	   location.href = document.referrer;	   
-   	});
+           if (data != '') alert(data);
+              location.href = document.referrer;       
+       });
 }
 function convert2MMD()
 {
-	if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
-		\$(\"#theform\")[0].conv.value = \"1\";
-		verif_formulaire();
-	}
+    if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
+        \$(\"#theform\")[0].conv.value = \"1\";
+        verif_formulaire();
+    }
 }
 </script>
 </HEAD>
@@ -194,15 +194,15 @@ function convert2MMD()
 ";
 if (length($meta) > 0) {
     print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
-		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
+           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
 } else {
     print "<script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
-		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
+           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
 }
 print "<script type=\"text/javascript\" >
-	\$(document).ready(function() {
-		\$(\"#markItUp\").markItUp(mySettings);
-	});
+    \$(document).ready(function() {
+        \$(\"#markItUp\").markItUp(mySettings);
+    });
 </script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
