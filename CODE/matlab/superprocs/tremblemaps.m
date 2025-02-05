@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2025-02-04
+%	Updated: 2025-02-05
 
 
 WO = readcfg;
@@ -618,7 +618,7 @@ for n = 1:length(t)
 				fprintf(fid,'  "longitude": "%1.4f",\n',d(n,2));
 				fprintf(fid,'  "depth": "%1.1f",\n',d(n,3));
 				fprintf(fid,'  "magnitude": "%1.1f",\n',d(n,4));
-				fprintf(fid,'  "region": "%s (%s)"\n',upper(varsub('$azimuth de $city',E)),upper(E.region));
+				fprintf(fid,'  "region": "%s (%s)",\n',upper(varsub('$azimuth de $city',E)),upper(E.region));
 				fprintf(fid,'  "department": "%s",\n',P.TRIGGER_DEPARTMENT);
 				fprintf(fid,'  "agency": "%s",\n',P.TRIGGER_AGENCY);
 				fprintf(fid,'}\n');
