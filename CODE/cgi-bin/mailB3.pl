@@ -193,7 +193,7 @@ sub print_form {
       ."Magnitude: $evt_magnitude\n"
       ."Department: $evt_department\n"
       ."Region: $evt_region\n"
-      ."Agency: $trigger_agency\n";
+      ."Agency: $evt_agency\n";
 
     if (-e "$b3.msg") {
         my @msg = readFile("$b3.msg");
@@ -294,7 +294,7 @@ sub print_form {
       <label for="agency">$__{'Agency'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input size=50 name="agency" value="$trigger_agency" class="auto"/><br>
+      <input size=50 name="agency" value="$evt_agency" class="auto"/><br>
   </div>
   <input type="hidden" value="$trigger_content" id="forBCSF">
   <input type="button" onclick="copy2Clipboard()" value="$__{'Copy BCSF info to the clipboard'}"></button>
