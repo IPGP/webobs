@@ -72,7 +72,6 @@ my $showOwnr = (defined($GRIDS{SHOW_OWNER}) && ($GRIDS{SHOW_OWNER} eq 'N')) ? 0 
 
 my $today = strftime("%Y-%m-%d", localtime);
 
-my $htmlcontents = "";
 my $editOK   = 0;
 my $admVIEWS = 0;
 my $admPROCS = 0;
@@ -251,39 +250,32 @@ my $d = my $p = my $v = 0;
 if (@$domains) {
 
     # ---- The invisible-until-triggered-by-js popups ;-)
-    print "<a name=\"popupY\"></a>";
+    print "<a name=\"popupY\"></a>\n";
     print WebObs::Search::searchpopup();
     print geditpopup();
     print feditpopup();
 
     # ---- The GRIDS table
     #
-    print "\n<CENTER><TABLE WIDTH=\"90%\" id=\"gtable\" style=\"vertical-align: top\">\n";
+    my $htmlcontents = "<CENTER><TABLE WIDTH=\"90%\" id=\"gtable\" style=\"vertical-align: top\">\n<TR>";
 
-    print "<TR>";
     if ($subsetDomain eq "") {
-        print "<TH>";
+        $htmlcontents .= "<TH style=\"text-align: left\">";
         if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"*")) {
-            print "&nbsp;<a href='/cgi-bin/gridsMgr.pl' title=\"$__{'Edit/Create a Domain/Producer'}\"><img class='ic' src='/icons/modif.png'></a>&nbsp;&nbsp;&nbsp;";
+            $htmlcontents .= "&nbsp;<a href='/cgi-bin/gridsMgr.pl' title=\"$__{'Edit/Create a Domain/Producer'}\"><img class='ic' src='/icons/modif.png'></a>&nbsp;&nbsp;&nbsp;";
         }
-        print "$__{'Domain'}</TH>";
+        $htmlcontents .= "$__{'Domain'}</TH>";
     }
-    print "<TH>$__{'Grid'}</TH>" if ($subsetType ne "");
-    print "<TH><a href='#popupY' title=\"$__{'Find text in Grids'}\" onclick='srchopenPopup(\"*ALL\");return false'><img class='ic' src='/icons/search.png'></a>";
-    if ($admVIEWS || $admPROCS || $admFORMS) {
-        print "&nbsp;<a href='#popupY' title=\"$__{'Create a new Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/new.png'></a>"
-    }
-    print     "&nbsp;&nbsp;&nbsp;$__{'Name'}</TH>";
-    print "<TH>$__{'Nodes'}</TH>";
-    print "<TH>$__{'Type'}</TH>"  if ($showType);
-    print "<TH>$__{'Owner'}</TH>" if ($showOwnr);
-    print "<TH>$__{'Graphs'}</TH>";
-    if ($wantProcs || $wantSefrans || $wantForms) {
-
-#    print "<a href='#popupY' title=\"$__{'Edit/Create a Form'}\" onclick='feditopenPopup(); return false;'><img class='ic' src='/icons/modif.png'></a>";
-        print "<TH>$__{'Raw Data'}</TH>";
-    }
-    print "</TR>\n";
+    $htmlcontents .= "<TH>$__{'Grid'}</TH>" if ($subsetType ne "");
+    $htmlcontents .= "<TH style=\"text-align: left\"><a href='#popupY' title=\"$__{'Find text in Grids'}\" onclick='srchopenPopup(\"*ALL\");return false'><img class='ic' src='/icons/search.png'></a>";
+    $htmlcontents .= "&nbsp;<a href='#popupY' title=\"$__{'Create a new Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/new.png'></a>" if ($admVIEWS || $admPROCS || $admFORMS);
+    $htmlcontents .= "&nbsp;&nbsp;&nbsp;$__{'Name'}</TH>";
+    $htmlcontents .= "<TH style=\"text-align: left\">$__{'Nodes'}</TH>";
+    $htmlcontents .= "<TH style=\"text-align: left\">$__{'Type'}</TH>" if ($showType);
+    $htmlcontents .= "<TH style=\"text-align: left\">$__{'Owner'}</TH>" if ($showOwnr);
+    $htmlcontents .= "<TH>$__{'Graphs'}</TH>";
+    $htmlcontents .= "<TH>$__{'Raw Data'}</TH>" if ($wantProcs || $wantSefrans || $wantForms);
+    print "$htmlcontents</TR>\n";
     for my $d (@$domains) {
         my ($dc, $dn) = @$d;
         my @procs;
@@ -334,7 +326,7 @@ if (@$domains) {
                           ."</TD>"  if ($showOwnr);
                         if ( -d "$G{$vs}{ROOT}" ) {
                             print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/sefran3.pl?s3=$vs&header=1\"><IMG border=\"0\" alt=\"$vs\" SRC=\"/icons/visu.png\"></A>";
-                        } else { print "<TD style=\"background-color: #EEEEDD\">&nbsp;" }
+                        } else { print "<TD>&nbsp;" }
                         print "</TD>";
                         print "<TD style=\"text-align:center\">";
                         if (defined($G{$vs}{MC3_NAME}) && $G{$vs}{MC3_NAME} ne '') {
@@ -373,7 +365,7 @@ if (@$domains) {
                             print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vp\"><IMG border=\"0\" alt=\"$vp\" SRC=\"/icons/visu.png\"></A>";
                         } elsif ( -d "$WEBOBS{ROOT_OUTG}/PROC.$vp/$WEBOBS{PATH_OUTG_EVENTS}" ) {
                             print "<TD  style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vp&ts=events\"><IMG border=\"0\" alt=\"$vp\" SRC=\"/icons/visu.png\"></A>";
-                        } else { print "<TD style=\"background-color: #EEEEDD\">&nbsp;" }
+                        } else { print "<TD>&nbsp;" }
                         print "</TD>";
                         print "<TD style=\"text-align:center\">";
                         if (defined($G{$vp}{URNDATA}) && $G{$vp}{URNDATA} ne '') {
@@ -409,7 +401,7 @@ if (@$domains) {
                           ."</TD>"  if ($showOwnr);
                         if ( -d "$WEBOBS{ROOT_OUTG}/FORM.$vf/$WEBOBS{PATH_OUTG_MAPS}" ) {
                             print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vf\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/visu.png\"></A>";
-                        } else { print "<TD style=\"background-color: #EEEEDD\">&nbsp;" }
+                        } else { print "<TD>&nbsp;" }
                         print "</TD>";
                         print "<TD style=\"text-align:center\">";
                         print "<A HREF=\"/cgi-bin/showGENFORM.pl?form=$vf\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/form.png\"></A>";
@@ -444,7 +436,7 @@ if (@$domains) {
                         } else { print "<TD>&nbsp;" }
                         print "</TD>";
                         if ($wantProcs) {
-                            print "<TD style=\"background-color: #EEEEDD\"></TD>";
+                            print "<TD></TD>";
                         }
                     }
                     print "</TR>\n";
@@ -452,7 +444,7 @@ if (@$domains) {
             }
         }
     }
-    print "</TABLE></CENTER><BR>";
+    print "<TR><TH colspan=\"8\" class=\"th-bottom\"></TH></TR></TABLE></CENTER><BR>";
 } else {
     print "<h3>** No domain defined or matching '$subsetDomain' **</h3>";
 }

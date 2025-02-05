@@ -167,7 +167,7 @@ function postIt()
 }
 </script>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');\">
+<BODY onLoad=\"document.formulaire.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>

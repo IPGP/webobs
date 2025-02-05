@@ -57,7 +57,7 @@ print <<"FIN";
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <title>Nodes Map</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
-<link rel="stylesheet" type="text/css" href="/css/wm2.css">
+<link rel="stylesheet" type="text/css" href="/css/shownodes.css">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
 <script language="JavaScript">
 \$(document).ready(function() {

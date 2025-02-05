@@ -163,53 +163,23 @@ my $group;
 for (@groups) {
     $group = $_;
     chomp $group;
-    push(@menu,readCfgFile("$WEBOBS{ROOT_CONF}/MENUS/$group","utf8"));
+    push(@menu, readCfgFile("$WEBOBS{ROOT_CONF}/MENUS/$group","utf8"));
 }
 
 # adds optional additionnal menu for USER
-push(@menu,readCfgFile("$WEBOBS{ROOT_CONF}/MENUS/$USERS{$CLIENT}{UID}","utf8"));
+push(@menu, readCfgFile("$WEBOBS{ROOT_CONF}/MENUS/$USERS{$CLIENT}{UID}","utf8"));
 
-# legacy format .rc
-if ( $menunav =~ m/.rc$/) {
-    my $l1 = my $l2 = 0;
-    $menuhtml = "<ul class=\"haut inactif\">";
-    for (@menu) {
-        my ($titre,$lien)=split(/\|/,$_);
-        $lien =~ s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g ;
-        my $xtrn = ($lien =~ m/http.?:\/\//) ? " externe ": "";
-        if (substr($titre,0,1) eq "+" || (substr($titre,0,1) eq "!" && $admOK)) {
-            if ($l2==1) { $menuhtml .= "</ul>"; $l2 = 0; }
-            if ($l1==1) { $menuhtml .= "</li>"; }
-            $l1 = 1;
-            $menuhtml .= "<li class=\"haut inactif $xtrn\"><a href=".(defined($lien)?"$lien":"").">".substr($titre,1)."</a>\n";
-            next;
-        }
-        if ( substr($titre,0,1) eq "*" ){
-            next if (! $admOK);
-            $titre = substr($titre,1);
-        }
-        if ($l2==0) { $menuhtml .= "<ul class=\"bas inactif\">"; $l2 = 1; }
-        $menuhtml .= "<li class=\"bas inactif $xtrn\"><a href=".(defined($lien)?"$lien":"").">$titre</a></li>\n";
-    }
-    if ($l2==1) { $menuhtml .= "</ul>"; }
-    if ($l1==1) { $menuhtml .= "</li>"; }
-    $menuhtml .="</ul>";
-    $wmcss="wm2.css";
-
-    # new format .html (CSS)
-} else {
-    @menu = grep { $_ !~ /^\*/ } @menu if (! $admOK);
-    for(@menu) {
-        s/^\*//;
-        s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g ;
-        my $xtrn = ($_ =~ m/http.?:\/\//) ? " class=\"externe\" ": "";
-        s/<a/<a$xtrn/g;
-    }
-    unshift(@menu, "\n<ul class=\"dropdown\">");
-    push(@menu,"</ul>");
-    $menuhtml = join("\n",@menu);
-    $wmcss="wm2n.css";
+@menu = grep { $_ !~ /^\*/ } @menu if (! $admOK);
+for(@menu) {
+    s/^\*//;
+    s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g ;
+    my $xtrn = ($_ =~ m/http.?:\/\//) ? " class=\"externe\" ": "";
+    s/<a/<a$xtrn/g;
 }
+unshift(@menu, "\n<ul class=\"dropdown\">");
+push(@menu,"</ul>");
+$menuhtml = join("\n",@menu);
+$wmcss="wm2n.css";
 
 # ---- 'signature' that will show up at bottom
 #

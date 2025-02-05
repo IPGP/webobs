@@ -78,7 +78,7 @@ INPUT04_TYPE|numeric(5)
 INPUT05_NAME|Checkbox input5
 INPUT05_TYPE|checkbox:checked
 INPUT06_NAME|Image input6
-INPUT06_TYPE|image(120)
+INPUT06_TYPE|image(60)
 
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)

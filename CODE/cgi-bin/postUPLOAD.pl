@@ -85,6 +85,9 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my @NID;
 my $pobj;
 
+my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
+my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
+
 my $refer = $ENV{HTTP_REFERER};
 if ( $refer =~ /formUPLOAD.pl/ ) {
     my $clientAuth = WebObs::Users::clientMaxAuth(type=>"authforms",name=>"('$form')");
@@ -115,7 +118,7 @@ my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SC
 htmlMsgNotOK("$__{'Cannot upload to'} $typeDoc") if ( "@allowed" !~ /\b$typeDoc\b/ );
 
 if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
-    $pathTarget = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/$object";
+    $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
 } elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
     $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
@@ -126,7 +129,7 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
 # ---- at that point $pathTarget is where uploaded documents will be sent to
 #
 htmlMsgNotOK("$__{'Do not know where to upload'}") if ( $pathTarget eq "" );
-$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $GRIDS{SPATH_THUMBNAILS} : $NODES{SPATH_THUMBNAILS});
+$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $PATH_THUMBNAILS : $NODES{SPATH_THUMBNAILS});
 make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down to PHOTOS/THUMBNAILS exist
 (my $urnTarget  = $pathTarget) =~ s/$WEBOBS{ROOT_SITE}/../g;
 

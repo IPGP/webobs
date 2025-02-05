@@ -78,6 +78,11 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my @NID;
 my $pobj;
 
+my $MAX_UPLOAD_SIZE = $WEBOBS{MAX_UPLOAD_SIZE} || 1;
+my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
+my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
+my $PATH_SLIDES = $GRIDS{SPATH_SLIDES} || "SLIDES";
+
 my $refer = $ENV{HTTP_REFERER};
 if ( $refer =~ /formGENFORM.pl/ ) {
     my $clientAuth = WebObs::Users::clientMaxAuth(type=>"authforms",name=>"('$form')");
@@ -108,7 +113,7 @@ my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SC
 die "$__{'Cannot upload to'} $typeDoc" if ( "@allowed" !~ /\b$typeDoc\b/ );
 
 if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
-    $pathTarget = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/$object";
+    $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
 } elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
     $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
@@ -119,8 +124,8 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
 # ---- at that point $pathTarget is where uploaded documents will be sent to
 #
 die "$__{'Do not know where to upload'}" if ( $pathTarget eq "" );
-$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $GRIDS{SPATH_THUMBNAILS} : $NODES{SPATH_THUMBNAILS});
-$slidesPath = $typeDoc eq "SPATH_GENFORM_IMAGES" ? $GRIDS{SPATH_SLIDES} : $NODES{SPATH_SLIDES};
+$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $PATH_THUMBNAILS : $NODES{SPATH_THUMBNAILS});
+$slidesPath = $typeDoc eq "SPATH_GENFORM_IMAGES" ? $PATH_SLIDES : $NODES{SPATH_SLIDES};
 make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down THUMBNAILS exist
 make_path("$pathTarget/$slidesPath");
 (my $urnTarget  = $pathTarget) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
@@ -144,11 +149,12 @@ print <<"FIN";
                 l += this.name + " ("+ this.size +"), ";
                 const fileSize = this.size;
                 const fileMb = fileSize / 1024 ** 2;
-                if (fileMb > $WEBOBS{MAX_UPLOAD_SIZE}) {
-                    l += "<br>Please select a file less than $WEBOBS{MAX_UPLOAD_SIZE}MB.";
+                if (fileMb > $MAX_UPLOAD_SIZE) {
+                    l += "<br>Please select a file less than $MAX_UPLOAD_SIZE MB.";
                     \$("#multiloadmsg").css("color", "red");
                     \$("#progress").html('');
                     \$("#save").prop("disabled", true);
+                    return false;
                 } else {
                     \$("#multiloadmsg").css("color", "green");
                     \$("#progress").html('Click on save to upload.');
@@ -215,7 +221,7 @@ function verif_formulaire()
             //alert(data);
             \$("#progress").html('<b>Uploaded</b>').css("color", "black");
             window.location.reload();
-            setTimeout(function(){location.href=document.referrer}, 100);
+            setTimeout(function(){ history.go(-1) }, 100);
         }).fail(function(xhr, status, error) {
             \$("#progress").html('<b>Upload failed: ' + (xhr.status >= 100 ? xhr.status + ' ' : '') + error + '</b>').css("color", "red");
         }).always(function(data) {
@@ -231,7 +237,7 @@ function verif_formulaire()
 FIN
 
 print "
- <body style=\"background-color:#E0E0E0\">
+ <body>
  <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
  <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
  <!-- overLIB (c) Erik Bosrup -->

@@ -203,7 +203,7 @@ window.onkeydown = nicb();
 
 </head>
 
-<body style=\"background-color:#E0E0E0\">";
+<body>";
 
 print <<"FIN";
 

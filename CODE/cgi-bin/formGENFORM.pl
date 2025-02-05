@@ -45,6 +45,7 @@ use warnings;
 use Time::Local;
 use POSIX qw/strftime/;
 use File::Basename;
+use File::Path qw/make_path/;
 use CGI;
 my $cgi = new CGI;
 $CGI::POST_MAX = 1024;
@@ -145,6 +146,8 @@ my $MIN_DELAY = $GRIDS{GENFORM_THUMB_MIN_DELAY} || 1;
 my $MAX_DELAY = $GRIDS{GENFORM_THUMB_MAX_DELAY} || 5;
 my $DEFAULT_DELAY = $GRIDS{GENFORM_THUMB_DEFAULT_DELAY} || 2;
 my $THUMB_ANIM = $GRIDS{GENFORM_THUMB_ANIM} || "_anim.gif";
+my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
+my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
 
 # ---- Variables des menus
 my $starting_date   = isok($FORM{STARTING_DATE});
@@ -171,6 +174,9 @@ my $tbl = lc($form);
 # Number of columns in the table without the primary key
 my $ncol = 11;
 
+# Image upload path
+my $upload_path = $cgi->param('upload_path');
+
 if ($action eq 'save') {
     my $msg;
 
@@ -189,7 +195,13 @@ if ($action eq 'save') {
     $db_columns .= ", comment, tsupd, userupd";
     $row .= ", \"$comment\", \"$today\", \"$user\"";
     foreach (map { sprintf("input%02d", $_) } (1..$max_inputs)) {
-        my $input = $cgi->param($_);
+        my $input;
+        my @input = $cgi->param($_);
+        if (scalar(@input) > 1) {
+             $input = join(",", @input);
+        } else {
+            $input = $cgi->param($_);
+        }
         if ($input ne "") {
             $db_columns .= ", $_";
             $row .= ", \"$input\"";
@@ -205,15 +217,15 @@ if ($action eq 'save') {
     htmlMsgOK($msg);
 
     # rename images tmp directory
-    my $tmpPath = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/".uc($form."/record");
-    if (-e $tmpPath) {
+    if ($id eq "" && -e $upload_path) {
         my $stmt = qq(SELECT seq FROM sqlite_sequence WHERE name='$tbl');
         my $sth = $dbh->prepare( $stmt );
         my $rv = $sth->execute() or die $DBI::errstr;
         my $new_id = $sth->fetchrow_array();
-        my $finalPath = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/".uc($form."/record".$new_id);
-        qx(mv $tmpPath $finalPath);
-        if ($?) { htmlMsgNotOK("Couldn't move $tmpPath to $finalPath; $!"); }
+        my $finalPath = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$new_id);
+        make_path("$finalPath");
+        qx(mv -f $upload_path $finalPath);
+        if ($?) { htmlMsgNotOK("Couldn't move $upload_path to $finalPath; $!"); }
     }
 
     $dbh->disconnect();
@@ -242,7 +254,7 @@ if ($action eq 'save') {
 
     # delete images directory
     if ($form ne "" && $id ne "") {
-        my $path = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/".uc($form."/record".$id);
+        my $path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$id);
         qx(rm $path -R);
     }
 
@@ -292,15 +304,17 @@ function update_form()
 ];
 foreach my $f (@formulas) {
     my ($formula, $size, @x) = extract_formula($FORM{$f."_TYPE"});
-
-# any word followed by an open parenthesis is supposed to be a math function (see math.js)...
+    # any word followed by an open parenthesis is supposed to be a math function (see math.js)...
     $formula =~ s/\b(pi)\b/Math.PI/ig;
     $formula =~ s/(\w+\()/math.$1/g;
+    $formula = filter_nan($formula);
     foreach (@x) {
         my $form_input = lc($_);
-        $formula =~ s/$_/Number(form.$form_input.value)/g;
+        $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : NaN)/g;
     }
+    print "try {";
     print "form.".lc($f).".value = parseFloat($formula).toFixed(2);\n";
+    print "} catch(err) { form.".lc($f).".value = NaN; console.error(err.message); };\n";
 }
 foreach (@thresh) {
     my $f = lc($_);
@@ -356,8 +370,8 @@ function verif_form()
     var cboxs = document.querySelectorAll("input[type=checkbox]");
     Array.from(cboxs).forEach((cbox) => {
         if (cbox.checked) {
-        cbox.value="checked";
-        } else { cbox.value="unchecked"; }
+            cbox.value = "checked";
+        } else { cbox.value = ""; }
     });
     console.log(\$("#theform"));
     if(document.form.site.value == "") {
@@ -382,7 +396,7 @@ function submit()
 </script>
 </head>
 
-<body style="background-color:#E0E0E0">
+<body>
  <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
  <!-- overLIB (c) Erik Bosrup -->
  <script language="javascript" src="/js/overlib/overlib.js"></script>
@@ -406,6 +420,11 @@ function submit()
      // but wait 0.5s for the previous handler execution to finish
      \$('#theform').on("keydown", function() { setTimeout(update_form, 500); });
    });
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
  </script>
 ];
 
@@ -639,7 +658,7 @@ foreach (@columns) {
                 }
                 my $txt = "<B>$name</B>".($unit ne "" ? " ($unit)":"");
                 my $hlp;
-                if ($field =~ /^input/ && $type =~ /^list:/) {
+                if ($field =~ /^input/ && $type =~ /^list/) {
                     my %list = extract_list($type,$form);
                     my @list_keys = sort keys %list;
                     $hlp = ($help ne "" ? $help:"$__{'Select a value for'} $Field");
@@ -654,11 +673,12 @@ foreach (@columns) {
                         }
                         print "$dlm";
                     } else {
-                        print qq($txt = <select name="$field" size=1
-                            onMouseOut="nd()" onmouseover="overlib('$hlp')"><option value=""></option>);
+                        my $multi = ( $size eq "multiple" ? "multiple" : "" );
+                        print qq($txt = <select name="$field"
+                            onMouseOut="nd()" onmouseover="overlib('$hlp')" $multi><option value=""></option>);
                         for (@list_keys) {
                             my $nam = (ref($list{$_}) ? $list{$_}{name}:$list{$_});
-                            my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
+                            my $selected = ( $prev_inputs{$field} =~ /$_/ ? "selected" : "" );
                             print qq(<option value="$_" $selected>$_: $nam</option>);
                         }
                         print "</select>$dlm";
@@ -672,18 +692,22 @@ foreach (@columns) {
                     my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
-                    my $img_id = uc($form."/record".$id."/".$Field);
+                    my $tempdir = ".tmp/".$CLIENT."/".uc($form."/".$Field);
+                    my $img_id = ( $action eq "new" ? $tempdir : uc($form."/record".$id."/".$Field) );
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
                     my $delay = ( ( $default >= $MIN_DELAY && $default <= $MAX_DELAY ) ? $default : $DEFAULT_DELAY );
-                    print qq(<button onclick="location.href='formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay'"
-                        type="button"> Upload images or files</button><br><br>);
-                    my $imgdir = "$WEBOBS{ROOT_DATA}/$GRIDS{SPATH_FORMDOCS}/$img_id";
-                    if ( -e "$imgdir/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM") {
-                        print qq(<img height=$height src=/data/$GRIDS{SPATH_FORMDOCS}/$img_id/$GRIDS{SPATH_THUMBNAILS}/$THUMB_ANIM></img>);
+                    my $base_url = "formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay";
+                    print qq(<tr><td style="border:0">$txt = );
+                    $upload_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$img_id";
+                    if ( -e "$upload_path/$PATH_THUMBNAILS/$THUMB_ANIM" ) {
+                        print qq(<img height=$height src=/data/$PATH_FORMDOCS/$img_id/$PATH_THUMBNAILS/$THUMB_ANIM></img>);
                     }
-                    my $nb = qx(ls $imgdir -p | grep -v / | wc -l);
+                    print qq(</td><td style="border:0"><button onclick="location.href='$base_url'" type="button">);
+                    print qq(<img src="/icons/down.png" style="vertical-align: middle;"> Upload</button></td></tr>);
+                    my $nb = qx(ls $upload_path -p | grep -v / | wc -l);
                     print qq(<input type="hidden" name="$field" value=$nb>\n);
+                    print qq(<input type="hidden" name="upload_path" value=$upload_path>\n);
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"

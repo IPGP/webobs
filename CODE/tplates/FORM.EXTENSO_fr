@@ -51,7 +51,7 @@ DEFAULT_DAYS|365
 # list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
 VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
-COMMENT_HELP|Enter any observations made during the measurements
+COMMENT_HELP|Noter toutes observations effectuées durant les mesures
 
 
 # ############################### WARNING #####################################
@@ -60,11 +60,11 @@ COMMENT_HELP|Enter any observations made during the measurements
 # ############################### WARNING #####################################
 # --- Inputs names, units, and types
 # valid types: text(size), numeric(size), list: filename, radio: filename
-INPUT01_NAME|Meteo
-INPUT01_TYPE|list: FORM_EXTENSO_fr_list_meteo.conf
-INPUT01_FILT|YES
-INPUT02_NAME|T<sub>Air</sub>
-INPUT02_UNIT|&deg;C
+INPUT01_NAME|T<sub>Air</sub>
+INPUT01_UNIT|&deg;C
+INPUT02_NAME|M&eacute;t&eacute;o
+INPUT02_TYPE|list: FORM_EXTENSO_fr_list_meteo.conf
+INPUT02_FILT|YES
 INPUT03_NAME|Offset
 INPUT03_UNIT|mm
 INPUT03_TYPE|numeric(6): +34.51
@@ -73,38 +73,38 @@ INPUT04_UNIT|mm
 INPUT04_HELP|Entrer la valeur du ruban (multiple de 25 mm!)
 INPUT05_NAME|d<sub>1</sub>
 INPUT05_HELP|Pour l'extenso TELEMAC entrer la somme de la fen&ecirc;tre (partie enti&egrave;re) et du cadran (fraction) en mm
-INPUT06_NAME|d<sub>2</sub>
-INPUT06_HELP|${INPUT05_HELP}
-INPUT07_NAME|d<sub>3</sub>
+INPUT06_NAME|v<sub>1</sub>
+INPUT06_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
+INPUT07_NAME|d<sub>2</sub>
 INPUT07_HELP|${INPUT05_HELP}
-INPUT08_NAME|d<sub>4</sub>
-INPUT08_HELP|${INPUT05_HELP}
-INPUT09_NAME|d<sub>5</sub>
+INPUT08_NAME|v<sub>2</sub>
+INPUT08_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
+INPUT09_NAME|d<sub>3</sub>
 INPUT09_HELP|${INPUT05_HELP}
-INPUT10_NAME|d<sub>6</sub>
-INPUT10_HELP|${INPUT05_HELP}
-INPUT11_NAME|d<sub>7</sub>
+INPUT10_NAME|v<sub>3</sub>
+INPUT10_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
+INPUT11_NAME|d<sub>4</sub>
 INPUT11_HELP|${INPUT05_HELP}
-INPUT12_NAME|d<sub>8</sub>
-INPUT12_HELP|${INPUT05_HELP}
-INPUT13_NAME|d<sub>9</sub>
+INPUT12_NAME|v<sub>4</sub>
+INPUT12_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
+INPUT13_NAME|d<sub>5</sub>
 INPUT13_HELP|${INPUT05_HELP}
-INPUT14_NAME|v<sub>1</sub>
+INPUT14_NAME|v<sub>5</sub>
 INPUT14_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
-INPUT15_NAME|v<sub>2</sub>
-INPUT15_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
-INPUT16_NAME|v<sub>3</sub>
+INPUT15_NAME|d<sub>6</sub>
+INPUT15_HELP|${INPUT05_HELP}
+INPUT16_NAME|v<sub>6</sub>
 INPUT16_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
-INPUT17_NAME|v<sub>4</sub>
-INPUT17_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
-INPUT18_NAME|v<sub>5</sub>
+INPUT17_NAME|d<sub>7</sub>
+INPUT17_HELP|${INPUT05_HELP}
+INPUT18_NAME|v<sub>7</sub>
 INPUT18_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
-INPUT19_NAME|v<sub>6</sub>
-INPUT19_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
-INPUT20_NAME|v<sub>7</sub>
+INPUT19_NAME|d<sub>8</sub>
+INPUT19_HELP|${INPUT05_HELP}
+INPUT20_NAME|v<sub>8</sub>
 INPUT20_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
-INPUT21_NAME|v<sub>8</sub>
-INPUT21_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
+INPUT21_NAME|d<sub>9</sub>
+INPUT21_HELP|${INPUT05_HELP}
 INPUT22_NAME|v<sub>9</sub>
 INPUT22_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
 
@@ -113,54 +113,52 @@ INPUT22_TYPE|list: FORM_EXTENSO_fr_list_wind.conf
 OUTPUT01_NAME|Mesures
 OUTPUT01_UNIT|mm
 OUTPUT01_TYPE|text: 
-OUTPUT02_NAME|d<sub>moy</sub>
+OUTPUT02_NAME|D<sub>moy</sub>
 OUTPUT02_UNIT|mm
-OUTPUT02_TYPE|formula(0): mean(INPUT05,INPUT06,INPUT07,INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,INPUT13)
-OUTPUT03_NAME|D<sub>total</sub>
+OUTPUT02_TYPE|formula(9): INPUT03 + INPUT04 + mean(INPUT05,INPUT07,INPUT09,INPUT11,INPUT13,INPUT15,INPUT17,INPUT19,INPUT21)
+OUTPUT02_HELP|Moyenne des mesures
+OUTPUT03_NAME|2&sigma;
 OUTPUT03_UNIT|mm
-OUTPUT03_TYPE|formula(9): INPUT03+INPUT04+OUTPUT02
-OUTPUT03_HELP|Moyenne des mesures
-OUTPUT04_UNIT|mm
-OUTPUT04_TYPE|formula: 2*std(INPUT05,INPUT06,INPUT07,INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,INPUT13)
-OUTPUT04_THRESHOLD|1,2
-OUTPUT05_NAME|Vent
-OUTPUT05_UNIT|
-OUTPUT05_TYPE|formula(2): mean(INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,INPUT20,INPUT21,INPUT22)
-OUTPUT05_HELP|Moyenne du vent 
+OUTPUT03_TYPE|formula: 2*std(INPUT05,INPUT07,INPUT09,INPUT11,INPUT13,INPUT15,INPUT17,INPUT19,INPUT21)
+OUTPUT03_THRESHOLD|1,2
+OUTPUT03_HELP|2 * &eacute;cart-type des mesures
+OUTPUT04_NAME|V<sub>moy</sub>
+OUTPUT04_UNIT|
+OUTPUT04_TYPE|formula(2): mean(INPUT06,INPUT08,INPUT10,INPUT12,INPUT14,INPUT16,INPUT18,INPUT20,INPUT22)
+OUTPUT04_HELP|Average of all wind estimations 
 
 # --- Form layout
 
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
-COLUMN02_LIST|FIELDSET02,FIELDSET03
+COLUMN02_LIST|FIELDSET02
 
 # first fieldset name, number of cells and list of fields for each column
-FIELDSET01_NAME|Weather conditions
+FIELDSET01_NAME|Conditions m&eacute;t&eacute;orologiques
 FIELDSET01_CELLS|1,COLS
 FIELDSET01_C01|INPUT01,INPUT02
 
 # second fieldset with 2 columns
-FIELDSET02_NAME|Distance measurements
+FIELDSET02_NAME|Mesures de distance et de vent
 FIELDSET02_CELLS|13,ROWS
 FIELDSET02_C01|INPUT03
 FIELDSET02_C02|INPUT04
 FIELDSET02_C03|OUTPUT01
-FIELDSET02_C04|INPUT05,INPUT14
-FIELDSET02_C05|INPUT06,INPUT15
-FIELDSET02_C06|INPUT07,INPUT16
-FIELDSET02_C07|INPUT08,INPUT17
-FIELDSET02_C08|INPUT09,INPUT18
-FIELDSET02_C09|INPUT10,INPUT19
-FIELDSET02_C10|INPUT11,INPUT20
-FIELDSET02_C11|INPUT12,INPUT21
-FIELDSET02_C12|INPUT13,INPUT22
+FIELDSET02_C04|INPUT05,INPUT06
+FIELDSET02_C05|INPUT07,INPUT08
+FIELDSET02_C06|INPUT09,INPUT10
+FIELDSET02_C07|INPUT11,INPUT12
+FIELDSET02_C08|INPUT13,INPUT14
+FIELDSET02_C09|INPUT15,INPUT16
+FIELDSET02_C10|INPUT17,INPUT18
+FIELDSET02_C11|INPUT19,INPUT20
+FIELDSET02_C12|INPUT21,INPUT22
 FIELDSET02_C13|OUTPUT02,OUTPUT03,OUTPUT04
 
 # ############################### WARNING #####################################
 # Export list of inputs/outputs must fit the associated procs channels.
 # ############################### WARNING #####################################
 # list of fields that will be exported to the associated procs (must be numeric)
-PROC_DATA_LIST|OUTPUT03,INPUT02,OUTPUT05
+PROC_DATA_LIST|OUTPUT02,INPUT02,OUTPUT04
 # optional error list of fields (same as PROC_DATA_LIST size!)
-PROC_ERROR_LIST|OUTPUT04,,
-
+PROC_ERROR_LIST|OUTPUT03,,
