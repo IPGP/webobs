@@ -517,7 +517,7 @@ sub feditpopup {
     opendir my $dir, ($tdir) or die "Cannot open directory: $!";
     my @templates = sort grep (/FORM\./, readdir($dir));
     closedir $dir;
-    $SP .= "  <select id=\"feditTpl\" name=\"feditT\" value=\"\">\n";	# select input, look into CODE/tplates to find the differents templates
+    $SP .= "  <select id=\"feditTpl\" name=\"feditT\" value=\"\">\n";    # select input, look into CODE/tplates to find the differents templates
     foreach my $f (@templates) {
         if ($f =~ /FORM\./) {
             my %cfg = readCfg("$tdir/$f");

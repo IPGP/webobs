@@ -13,26 +13,26 @@ http://..../showOUTG.pl?grid=gridname[,ts=][,g=][,refresh=]
 Displays contents of OUTG directory for the GRID gridname (ie. gridType.gridName).
 Optionaly specify the graph to display:
 
-ts=	can be any key defined in the GRID configuration TIMESCALELIST or 'map' or 'events'
-g=	any key defined in SUMMARYLIST, or one of the NODE ID
-	void (default) means an overview of all thumbnails for the first available timescale
-	for a PROC, and map for a VIEW
-	g=col shows all graphs in one column at full scale
+ts=    can be any key defined in the GRID configuration TIMESCALELIST or 'map' or 'events'
+g=    any key defined in SUMMARYLIST, or one of the NODE ID
+    void (default) means an overview of all thumbnails for the first available timescale
+    for a PROC, and map for a VIEW
+    g=col shows all graphs in one column at full scale
 
-	if ts=events, YYYY or YYYY/MM or YYYY/MM/DD to display available events
-	void (default) is last available year
+    if ts=events, YYYY or YYYY/MM or YYYY/MM/DD to display available events
+    void (default) is last available year
 
 refresh=
-	defines the number of seconds for automatic reloading of the page. This
-	overwrites default PROC's value AUTO_REFRESH_SECONDS
+    defines the number of seconds for automatic reloading of the page. This
+    overwrites default PROC's value AUTO_REFRESH_SECONDS
 
 header=no
-	hides the title, menu links and icons above the image
+    hides the title, menu links and icons above the image
 
 Directory paths of OUTG content is defined by the following variables:
-	- ROOT_OUTG (disk root path) in WEBOBS.rc (default is /opt/webobs/OUTG)
-	- URN_OUTG (web root path) in WEBOBS.rc (default is /OUTG)
-	- an alias in Apache configuration (must be URN_OUTG pointing to ROOT_OUTG!)
+    - ROOT_OUTG (disk root path) in WEBOBS.rc (default is /opt/webobs/OUTG)
+    - URN_OUTG (web root path) in WEBOBS.rc (default is /OUTG)
+    - an alias in Apache configuration (must be URN_OUTG pointing to ROOT_OUTG!)
 =cut
 
 use strict;
@@ -59,7 +59,7 @@ use POSIX qw/setlocale LC_ALL strftime/;
 #use Encode;
 #my ($strftime_encoding)= setlocale(LC_ALL);
 #sub strftime2 {    # try to return an utf8 value from strftime
-#	$strftime_encoding ? Encode::decode($strftime_encoding, &strftime) : &strftime;
+#    $strftime_encoding ? Encode::decode($strftime_encoding, &strftime) : &strftime;
 #}
 
 # ---- see what we've been called for and what the client is allowed to do

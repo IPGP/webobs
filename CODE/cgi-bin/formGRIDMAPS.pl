@@ -21,9 +21,9 @@ and for which the USER has at least read authorization.
 A submitted B<Gridmaps Request> will have its results (output maps) files grouped into the
 OUTR directory, under a subdirectory whose name uniquely identifies the Request:
 
-	OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
-		REQUEST.rc
-		GRIDMAPS/{exports,maps}/
+    OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
+        REQUEST.rc
+        GRIDMAPS/{exports,maps}/
 
 See postGRIDMAPS.pl documentation for further Gridmaps Request's execution/parameters description.
 
@@ -35,20 +35,20 @@ comma-separated keys of some parameters, that will be presented to the user so t
 a chance to overwrite corresponding values for request execution.
 Such parameters will be appended to the REQUEST.rc file as 'GRID.gridname.originalKey|user's value'
 
-	Example:
-	REQUEST_GRID_KEYLIST|NODE_SIZE,NODE_RGB,NODE_FONTSIZE,NODE_MARKER
-	will appear in REQUEST.rc as:
-	GRID.THISGRID.NODE_SIZE|15
-	GRID.THISGRID.NODE_RGB|1,0,0
-	GRID.THISGRID.NODE_FONTSIZE|0
-	GRID.THIDGRID.NODE_MARKER|o
+    Example:
+    REQUEST_GRID_KEYLIST|NODE_SIZE,NODE_RGB,NODE_FONTSIZE,NODE_MARKER
+    will appear in REQUEST.rc as:
+    GRID.THISGRID.NODE_SIZE|15
+    GRID.THISGRID.NODE_RGB|1,0,0
+    GRID.THISGRID.NODE_FONTSIZE|0
+    GRID.THIDGRID.NODE_MARKER|o
 
 =head1 DATE SPAN AND PARAMETERS
 
 Date span allows to select the validity interval of NODES:
 
-	A start date
-	An end date
+    A start date
+    An end date
 
 Parameters (list of keys and default values are taken from GRIDMAPS.rc).
 
@@ -131,39 +131,39 @@ print "Content-type: text/html; charset=utf-8
 <script type=\"text/javascript\">
 
 function selGrid(grid) {
-	obj = \"#pkeysdrawer\"+grid;
-	//toggle to show/hide; prop(disabled) to (not)serialize in post
-	//all inputs of a grd must start as  display:none AND disabled
-	\$(obj).toggle();
-	\$(obj).find('input').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
+    obj = \"#pkeysdrawer\"+grid;
+    //toggle to show/hide; prop(disabled) to (not)serialize in post
+    //all inputs of a grd must start as  display:none AND disabled
+    \$(obj).toggle();
+    \$(obj).find('input').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
 }
 
 function checkForm()
 {
-	var d1 = document.formulaire.startY.value.concat(document.formulaire.startM.value,document.formulaire.startD.value);
-	var d2 = document.formulaire.endY.value.concat(document.formulaire.endM.value,document.formulaire.endD.value);
-	if (d1 >= d2) {
-		alert(\"End date must not be before Start date!\");
-		return false;
-	}
-	var checkboxes = document.formulaire.querySelectorAll(\"input[type=checkbox]\");
-	var requestgrids = 0;
-	for (index = 0; index < checkboxes.length; ++index) {
-		if (checkboxes[index].name.substring(0, 2) == \"g_\" && checkboxes[index].checked) {
-			requestgrids++;
-		}
-	}
-	if (requestgrids == 0) {
-		alert(\"You must select at least one GRID to execute...\");
-	} else {
-		postIt();
-	}
+    var d1 = document.formulaire.startY.value.concat(document.formulaire.startM.value,document.formulaire.startD.value);
+    var d2 = document.formulaire.endY.value.concat(document.formulaire.endM.value,document.formulaire.endD.value);
+    if (d1 >= d2) {
+        alert(\"End date must not be before Start date!\");
+        return false;
+    }
+    var checkboxes = document.formulaire.querySelectorAll(\"input[type=checkbox]\");
+    var requestgrids = 0;
+    for (index = 0; index < checkboxes.length; ++index) {
+        if (checkboxes[index].name.substring(0, 2) == \"g_\" && checkboxes[index].checked) {
+            requestgrids++;
+        }
+    }
+    if (requestgrids == 0) {
+        alert(\"You must select at least one GRID to execute...\");
+    } else {
+        postIt();
+    }
 }
 function postIt()
 {
-	\$.post(\"/cgi-bin/postGRIDMAPS.pl\", \$(\"#theform\").serialize(), function(data) {
-		alert(data);
-	});
+    \$.post(\"/cgi-bin/postGRIDMAPS.pl\", \$(\"#theform\").serialize(), function(data) {
+        alert(data);
+    });
 }
 </script>
 </HEAD>
@@ -203,7 +203,7 @@ print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # right column
 
 print "<fieldset><legend>$__{'Date span (NODES validity)'}</legend>";
 
-#	DATE1|  DATE2|
+#    DATE1|  DATE2|
 print "<TABLE>";
 print "<TR>";
 print "<TD style=\"border:0;text-align:right\">";
@@ -215,7 +215,7 @@ print " <select name=\"startM\" size=\"1\">";
 for (@monthList) { print "<option".(($_ eq $usrMonthS)?" selected":"")." value=$_>$_</option>\n"; }
 print "</select>";
 print " <select name=\"startD\" size=\"1\">";
-for (@dayList) { 	print "<option".(($_ eq $usrDayS)?" selected":"")." value=$_>$_</option>\n"; }
+for (@dayList) {     print "<option".(($_ eq $usrDayS)?" selected":"")." value=$_>$_</option>\n"; }
 print "</select><BR>";
 print "<b>$__{'End date'}:</b> <select name=\"endY\" size=\"1\">";
 for (@yearList) { print "<option".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }

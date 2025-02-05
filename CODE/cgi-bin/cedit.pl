@@ -18,23 +18,23 @@ Configuration-file editor. Browse/Edit the file pointed to by the WEBOBS.rc key 
 
 =item fs={ wokey | wokey(indkey) }
 
-	wokey is a WEBOBS.rc key, that points to the full-path-filename to be edited.
-	wokey(indkey) is a 1-level indirection, where wokey points to someind file key <indkey> that points to the full-path-filename to be edited
+    wokey is a WEBOBS.rc key, that points to the full-path-filename to be edited.
+    wokey(indkey) is a 1-level indirection, where wokey points to someind file key <indkey> that points to the full-path-filename to be edited
 
-	target full-path-filename must reside in $WEBOBS{CONF_NODES}
-	authorization resource is authmisc.subpath/filename (see Users.pm for path-like resource names)
+    target full-path-filename must reside in $WEBOBS{CONF_NODES}
+    authorization resource is authmisc.subpath/filename (see Users.pm for path-like resource names)
 
-	eg. : fs=CONF_NODES
-	will browse/edit the file pointed to by $WEBOBS{CONF_NODES} 
+    eg. : fs=CONF_NODES
+    will browse/edit the file pointed to by $WEBOBS{CONF_NODES} 
 
-	eg. : fs=CONF_NODES(FILE_NODES2NODES)
-	will browse/edit the file pointed to by FILE_NODES2NODES in the file pointed to by $WEBOBS{CONF_NODES}
+    eg. : fs=CONF_NODES(FILE_NODES2NODES)
+    will browse/edit the file pointed to by FILE_NODES2NODES in the file pointed to by $WEBOBS{CONF_NODES}
 
 =item action={save | edit}
 
-	'edit' (default when action is not specified) to display edit html-form edit 
-	'save' internaly used to save the file after html-form edition
-	(other parameters are used along with 'save': ts0, txt)
+    'edit' (default when action is not specified) to display edit html-form edit 
+    'save' internaly used to save the file after html-form edition
+    (other parameters are used along with 'save': ts0, txt)
 
 =back
 
@@ -141,14 +141,14 @@ print "Content-type: text/html; charset=utf-8
 <HEAD>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
 <STYLE type=\"text/css\">
-	#ta {
-		border:none;
-	}
-	#statusbar {
-		border: solid 1px grey;
-		background-color: grey;
-		color: white;
-	}
+    #ta {
+        border:none;
+    }
+    #statusbar {
+        border: solid 1px grey;
+        background-color: grey;
+        color: white;
+    }
 </STYLE>
 <TITLE>Text edit form</TITLE>
 <script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
@@ -156,18 +156,18 @@ print "Content-type: text/html; charset=utf-8
 function verif_formulaire()
 {
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-		   if (data != '') alert(data);
-       	   //location.href = document.referrer;
-		   history.go(-1);
-   	});
+           if (data != '') alert(data);
+              //location.href = document.referrer;
+           history.go(-1);
+       });
 }
 </script>
 </HEAD>
 <BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.txt.focus()\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <script type=\"text/javascript\" >
-	\$(document).ready(function() {
-	});
+    \$(document).ready(function() {
+    });
 </script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>

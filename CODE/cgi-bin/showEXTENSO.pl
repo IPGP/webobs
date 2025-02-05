@@ -197,36 +197,36 @@ if ($QP->{'affiche'} ne "csv") {
 
     # Javascript for selection's form 
     print <<"FIN";
-	<script type="text/javascript">
-	<!--
-	function resetMois1()
-	{
-		document.formulaire.m1.value = "01";
-	        document.formulaire.d1.value = "01";
-	}
+    <script type="text/javascript">
+    <!--
+    function resetMois1()
+    {
+        document.formulaire.m1.value = "01";
+            document.formulaire.d1.value = "01";
+    }
 
-	function resetJour1()
-	{
-	        document.formulaire.d1.value = "01";
-	}
+    function resetJour1()
+    {
+            document.formulaire.d1.value = "01";
+    }
 
-	function resetMois2()
-	{
-	        document.formulaire.m2.value = "12";
-	        document.formulaire.d2.value = "31";
-	}
+    function resetMois2()
+    {
+            document.formulaire.m2.value = "12";
+            document.formulaire.d2.value = "31";
+    }
 
-	function resetJour2()
-	{
-	        document.formulaire.d2.value = "31";
-	}
+    function resetJour2()
+    {
+            document.formulaire.d2.value = "31";
+    }
 
-	function effaceFiltre()
-	{
-		document.formulaire.obs.value = "";
-	}
-	//-->
-	</script>
+    function effaceFiltre()
+    {
+        document.formulaire.obs.value = "";
+    }
+    //-->
+    </script>
 FIN
 }
 
@@ -412,25 +412,25 @@ for(@finalLignes) {
     for (@nd) {
         if ($d[$_][0] ne "") {
             my $dd = 0;
-            $DM += $offset + $ruban + $d[$_][0] + $d[$_][1];		# $DM = momentan�ment somme des x
-            $DS += ($offset + $ruban + $d[$_][0] + $d[$_][1])**2;	# $DS = momentanement somme des x²
+            $DM += $offset + $ruban + $d[$_][0] + $d[$_][1];        # $DM = momentan�ment somme des x
+            $DS += ($offset + $ruban + $d[$_][0] + $d[$_][1])**2;    # $DS = momentanement somme des x²
             $VM += $d[$_][2];
             $n++;
         }
     }
     if ($n > 0) {
-        $DM = $DM/$n;						# $DM = moyenne mesure
-        $DS = 2 * sqrt($DS/$n - $DM*$DM);	# $DS = 2 * �cart-type
-        $VM = $VM/$n;						# $VM = moyenne vent
+        $DM = $DM/$n;                        # $DM = moyenne mesure
+        $DS = 2 * sqrt($DS/$n - $DM*$DM);    # $DS = 2 * �cart-type
+        $VM = $VM/$n;                        # $VM = moyenne vent
     }
 
     $aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
     my @listenoms = split(/\+/,$ope);
 
-    #djl-TBD 	my $noms = join(", ",nomOperateur(@listenoms));
-    #djl-TBD 	for (@listenoms) {
-    #djl-TBD 		$operStat{$_} += 1;
-    #djl-TBD 	}
+    #djl-TBD     my $noms = join(", ",nomOperateur(@listenoms));
+    #djl-TBD     for (@listenoms) {
+    #djl-TBD         $operStat{$_} += 1;
+    #djl-TBD     }
 
     my $normsite = WebObs::Grids::normNode(node=>"PROC.EXTENSO.$site");
     if ($normsite eq "") { $normsite =  WebObs::Grids::normNode(node=>".EXTENSO.$site") }
@@ -495,16 +495,16 @@ if ($QP->{'affiche'} eq "csv") {
 } else {
     print @html;
 
-#djl-TBD 	for ($nb=0;$nb<$#operateurs;$nb++) {
-#djl-TBD 		$operNb[$nb] = sprintf("%5d x %s",$operStat{$operateurs[$nb][0]},$operateurs[$nb][1]);
-#djl-TBD 	}
-#djl-TBD 	@operNb = reverse(sort(grep(!/   0 x/,@operNb)));
-#djl-TBD 	print "<P align=right><SPAN onMouseOut=\"nd()\" onMouseOver=\"overlib('".join("<br>",@operNb)."',CAPTION,'Top op&eacute;rateurs',ABOVE)\"><small>?</small></SPAN></P>";
+#djl-TBD     for ($nb=0;$nb<$#operateurs;$nb++) {
+#djl-TBD         $operNb[$nb] = sprintf("%5d x %s",$operStat{$operateurs[$nb][0]},$operateurs[$nb][1]);
+#djl-TBD     }
+#djl-TBD     @operNb = reverse(sort(grep(!/   0 x/,@operNb)));
+#djl-TBD     print "<P align=right><SPAN onMouseOut=\"nd()\" onMouseOver=\"overlib('".join("<br>",@operNb)."',CAPTION,'Top op&eacute;rateurs',ABOVE)\"><small>?</small></SPAN></P>";
 
     print "<style type=\"text/css\">
-		#attente { display: none; }
-	</style>\n
-	<BR>\n</BODY>\n</HTML>\n";
+        #attente { display: none; }
+    </style>\n
+    <BR>\n</BODY>\n</HTML>\n";
 }
 
 __END__

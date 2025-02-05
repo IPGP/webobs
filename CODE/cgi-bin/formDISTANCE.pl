@@ -125,60 +125,60 @@ print "<html><head>
 
 function verif_formulaire()
 {
-	if(document.formulaire.site.value == \"\") {
-		alert(\"Veuillez spécifier le site de mesure!\");
-		document.formulaire.site.focus();
-		return false;
-	}
-	if(document.formulaire.D0.value == \"\") {
-		alert(\"Veuillez indiquer la distance initiale!\");
-		document.formulaire.D0.focus();
-		return false;
-	}
-	if(document.formulaire.moy.value == 0) {
-		alert(\"Veuillez indiquer au moins une mesure!\");
-		document.formulaire.d01.focus();
-		return false;
-	}
+    if(document.formulaire.site.value == \"\") {
+        alert(\"Veuillez spécifier le site de mesure!\");
+        document.formulaire.site.focus();
+        return false;
+    }
+    if(document.formulaire.D0.value == \"\") {
+        alert(\"Veuillez indiquer la distance initiale!\");
+        document.formulaire.D0.focus();
+        return false;
+    }
+    if(document.formulaire.moy.value == 0) {
+        alert(\"Veuillez indiquer au moins une mesure!\");
+        document.formulaire.d01.focus();
+        return false;
+    }
     \$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
-	   //var contents = \$( data ).find( '#contents' ).text(); 
-	   alert(data);
-	   document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
-	   }
-	);
+       //var contents = \$( data ).find( '#contents' ).text(); 
+       alert(data);
+       document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
+       }
+    );
 }
 
 function calc()
 {
-	var moy = 0;
-	var sig = 0;
-	var n = 0;
-	var v = 0;
-	var dd;";
+    var moy = 0;
+    var sig = 0;
+    var n = 0;
+    var v = 0;
+    var dd;";
 
 for ('01'..'20') {
     print "if (formulaire.d$_.value != \"\") {
-		dd = 0;
-		v = formulaire.D0.value*1 + formulaire.d$_.value/1000;
-		if ((formulaire.d$_.value - formulaire.d01.value) < -500) { v += 1; }
-		if ((formulaire.d$_.value - formulaire.d01.value) > 500) { v -= 1; }
-		moy += v; sig += v*v; n++;
-		}\n";
+        dd = 0;
+        v = formulaire.D0.value*1 + formulaire.d$_.value/1000;
+        if ((formulaire.d$_.value - formulaire.d01.value) < -500) { v += 1; }
+        if ((formulaire.d$_.value - formulaire.d01.value) > 500) { v -= 1; }
+        moy += v; sig += v*v; n++;
+        }\n";
 }
 
-print "	if (n != 0) {
-		moy = moy/n;
-		sig = 2*Math.sqrt(sig/n - (moy*moy));
-	}
-	formulaire.moy.value = moy.toFixed(3);
-	formulaire.sig.value = sig.toFixed(3);
-	formulaire.sig.style.background = \"#66FF66\";
-	if (sig > 0.02) {
-		formulaire.sig.style.background = \"#FFD800\";
-	}
-	if (sig > 0.1) {
-		formulaire.sig.style.background = \"#FF0000\";
-	}
+print "    if (n != 0) {
+        moy = moy/n;
+        sig = 2*Math.sqrt(sig/n - (moy*moy));
+    }
+    formulaire.moy.value = moy.toFixed(3);
+    formulaire.sig.value = sig.toFixed(3);
+    formulaire.sig.style.background = \"#66FF66\";
+    if (sig > 0.02) {
+        formulaire.sig.style.background = \"#FFD800\";
+    }
+    if (sig > 0.1) {
+        formulaire.sig.style.background = \"#FF0000\";
+    }
 }
 window.captureEvents(Event.KEYDOWN);
 window.onkeydown = calc();
@@ -255,10 +255,10 @@ if ($QryParm->{id} ne "") {
 print "<input type=\"hidden\" name=\"oper\" value=\"$CLIENT\">\n";
 
 print "<TABLE style=border:0 onMouseOver=\"calc()\">
-	<TR><TD style=border:0 valign=top nowrap>";
+    <TR><TD style=border:0 valign=top nowrap>";
 print "<fieldset><legend>Date et site visé</legend>
-		<P class=parform>
-		<B>Date: </b><select name=annee size=\"1\">";
+        <P class=parform>
+        <B>Date: </b><select name=annee size=\"1\">";
 for (@anneeListe) {
     if ($_ == $sel_annee) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
 }
@@ -299,11 +299,11 @@ print "</select></P>\n";
 print "</fieldset>";
 
 print "<fieldset><legend>Mesures et param&egrave;tres m&eacute;t&eacute;o</legend>
-		<P class=parform>
-		<B>Pression atmosph&eacute;rique </B> (en mmHg) = <input size=5 class=inputNum name=pAtm value=\"$sel_pAtm\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de pression atmosphérique')\"><BR>\n
-		<B>Temp&eacute;rature de l'air</B> (en °C) = <input size=5 class=inputNum name=tAir value=\"$sel_tAir\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de température de l&apos;air')\"><BR>\n
-		<B>H.R.</B> (en %) = <input size=5 class=inputNum name=HR value=\"$sel_HR\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur d&apos;humidité relative')\"><BR>
-		<B>N&eacute;bulosit&eacute; sur le trajet:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner la n&eacute;bulosit&eacute;')\" name=\"nebul\" size=\"1\">\n";
+        <P class=parform>
+        <B>Pression atmosph&eacute;rique </B> (en mmHg) = <input size=5 class=inputNum name=pAtm value=\"$sel_pAtm\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de pression atmosphérique')\"><BR>\n
+        <B>Temp&eacute;rature de l'air</B> (en °C) = <input size=5 class=inputNum name=tAir value=\"$sel_tAir\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de température de l&apos;air')\"><BR>\n
+        <B>H.R.</B> (en %) = <input size=5 class=inputNum name=HR value=\"$sel_HR\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur d&apos;humidité relative')\"><BR>
+        <B>N&eacute;bulosit&eacute; sur le trajet:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner la n&eacute;bulosit&eacute;')\" name=\"nebul\" size=\"1\">\n";
 for (@meteo) {
     my @cle = split(/\|/,$_);
     $sel = "";
@@ -316,8 +316,8 @@ print "</TD>\n";
 
 print "<TD style=border:0 valign=top>";
 print "<fieldset><legend>Mesures de distance (m)</legend>
-	<P class=parform>
-	<B>Type d'appareil:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner le type d&apos;appareil')\" name=\"aemd\" size=\"1\">\n";
+    <P class=parform>
+    <B>Type d'appareil:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner le type d&apos;appareil')\" name=\"aemd\" size=\"1\">\n";
 for (@types) {
     my @cle = split(/\|/,$_);
     $sel = "";
@@ -325,7 +325,7 @@ for (@types) {
     print "<option $sel value=$cle[0]>$cle[1]</option>\n";
 }
 print "</select><BR>
-	<B>Vitre:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('Indiquer si la vitre est ouverte ou ferm&eacute;e')\" name=\"vitre\" size=\"1\">";
+    <B>Vitre:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('Indiquer si la vitre est ouverte ou ferm&eacute;e')\" name=\"vitre\" size=\"1\">";
 for (@vitres) {
     my @cle = split(/\|/,$_);
     $sel = "";
@@ -334,17 +334,17 @@ for (@vitres) {
 }
 print "</select></P>";
 print "<P class=parform>
-		<B>Distance initiale:</B> (en m) <input size=4 class=inputNum name=\"D0\" tabindex=1 value=\"$sel_D0\"
-			onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la mesure de distance initiale')\"></P>\n";
+        <B>Distance initiale:</B> (en m) <input size=4 class=inputNum name=\"D0\" tabindex=1 value=\"$sel_D0\"
+            onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la mesure de distance initiale')\"></P>\n";
 print "<P class=parform><B>Fractions:</B> (en mm)<BR>";
 for (@donneeListe) {
     print "<input size=3 class=inputNum name=\"d$_\" tabindex=1 value=\"".eval("\$sel_d$_")."\"
-			onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la fraction de chaque mesure (en mm)')\">";
+            onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la fraction de chaque mesure (en mm)')\">";
 }
 print "</P>\n";
 
 print "<P class=parform><B>Moyenne</B> (m) = <input name=\"moy\" size=8 readOnly class=inputNumNoEdit>
-	<B>2 &times; &Eacute;cart-type</B> (m) = <input name=\"sig\" size=5 readOnly class=inputNumNoEdit></P>\n";
+    <B>2 &times; &Eacute;cart-type</B> (m) = <input name=\"sig\" size=5 readOnly class=inputNumNoEdit></P>\n";
 print "</fieldset>\n";
 print "</TD>\n";
 print "</TR>\n";
@@ -353,8 +353,8 @@ print "<TR><TD style=\"border: none\">";
 print "<fieldset><legend>Observations</legend>";
 print "<P class=parform>";
 print "<input size=70 name=rem value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter vos observations')\"><BR>
-	<B>Information de saisie:</B> $val
-	<INPUT type=hidden name=val value=\"$val\"></P>";
+    <B>Information de saisie:</B> $val
+    <INPUT type=hidden name=val value=\"$val\"></P>";
 print "</fieldset>\n";
 print "</TD></TR>\n";
 

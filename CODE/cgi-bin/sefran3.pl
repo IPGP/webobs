@@ -12,10 +12,10 @@ http://..../sefran3.pl?... see query string parameters below ...
 
 Display SEFRAN3 data and "Main Courante" form editor. This unique script can generate/manage three
 types of HTML pages:
-	- p0: low resolution front page (default), a catalog of available hourly images as thumbnails
-	- p1: normal resolution hour image page, typically selected from p0
-	- p2: high resolution analysis/Event form page (MC event input or update), typically
-	      selected from p1
+    - p0: low resolution front page (default), a catalog of available hourly images as thumbnails
+    - p1: normal resolution hour image page, typically selected from p0
+    - p2: high resolution analysis/Event form page (MC event input or update), typically
+          selected from p1
 
 =head1 Query string parameters
 
@@ -260,7 +260,7 @@ my $hauteur_label_haut = $SEFRAN3{LABEL_TOP_HEIGHT};
 my $hauteur_label_bas = $SEFRAN3{LABEL_BOTTOM_HEIGHT};
 my $largeur_fleche = 50;
 my $hauteur_titre = 20;
-my $dx_mctag = 1*$SEFRAN3{VALUE_PPI};	# channel names image is 1 inch wide
+my $dx_mctag = 1*$SEFRAN3{VALUE_PPI};    # channel names image is 1 inch wide
 my $sefran_streams = join('","',@streams);
 
 # ---- Start building HTML page -----------------------------------------------
@@ -284,22 +284,22 @@ print <<html;
 
 // SCB = Sefran Control Block: javascript global variables shared with cgi
 var SCB = {
-	PPI : $SEFRAN3{VALUE_PPI},
-	SPEED : $speed,
-	WIDTHREF : $largeur_image,
-	WIDTH : $largeur_image,
-	HEIGHT : $SEFRAN3{HEIGHT_INCH},
+    PPI : $SEFRAN3{VALUE_PPI},
+    SPEED : $speed,
+    WIDTHREF : $largeur_image,
+    WIDTH : $largeur_image,
+    HEIGHT : $SEFRAN3{HEIGHT_INCH},
    HEIGHTIMG : $hauteur_image,
-	LABELTOP : $SEFRAN3{LABEL_TOP_HEIGHT},
-	LABELBOTTOM : $SEFRAN3{LABEL_BOTTOM_HEIGHT},
-	WIDTHVOIES : $largeur_voies,
-	CHANNELNB : $#streams + 1,
-	STREAMS : ["$sefran_streams"],
-	SGRAMOPACITY : $SEFRAN3{SGRAM_OPACITY},
-	DX : $dx_mctag,
-	SX : $sx,
-	PROG : '$prog',
-	NOREFRESH: 0
+    LABELTOP : $SEFRAN3{LABEL_TOP_HEIGHT},
+    LABELBOTTOM : $SEFRAN3{LABEL_BOTTOM_HEIGHT},
+    WIDTHVOIES : $largeur_voies,
+    CHANNELNB : $#streams + 1,
+    STREAMS : ["$sefran_streams"],
+    SGRAMOPACITY : $SEFRAN3{SGRAM_OPACITY},
+    DX : $dx_mctag,
+    SX : $sx,
+    PROG : '$prog',
+    NOREFRESH: 0
 };
 
 // PSE = Predict seismic-events
@@ -324,44 +324,44 @@ if ($dep) {
 // MECB = MC3 Event Control Block: javascript global variables for Sefran analysis page
 // gets initialized/updated by cgi and/or javascript
 var MECB = {
-	FORM: null,
-	MFC: null,
-	MINUTE: null,
-	PROX: 10,
-	CHWIDTH: 120,
-	MSEEDREQ: '$mseedreq',
-	COLORS: { true: '#ccffcc', false: '#ffcccc' },
-	SC3ARR: $typesJSARR,
-	MSGS: {
-			'staevt': "$__{'Click on first arrival or select station'}",
-			'secevt': "$__{'Click on first arrival or enter seconds'}",
-			'durevt': "$__{'Click on End of signal or enter duration'}",
-			'nbevt' : "$__{'Enter number of event(s)'}",
-			'ampevt': "$__{'Select amplitude'}",
-			'ovrdur': "$__{'Enter overscale duration'}",
-			'notovr': "$__{'Event not flagged OVERSCALE'}",
-			'unkevt': "$__{'Event type is unknown/undetermined. Validate as is ?'}",
-			'notval': "$__{'You cannot validate an event of type AUTO'}",
-			'delete': "$__{'ATT: Do you want PERMANENTLY erase this event from'}",
-			'hidevt': "$__{'Do you want to hide this event from'}",
-			'resevt': "$__{'Do you want to restore this event in'}"
-	      },
-	CROSSHAIR: '<span id=crosshairUp></span><span id=crosshairDown></span>',
-	NEWPCLEARS: $MC3{NEW_P_CLEAR_S},
-	TITLE: '$MC3{TITLE}',
+    FORM: null,
+    MFC: null,
+    MINUTE: null,
+    PROX: 10,
+    CHWIDTH: 120,
+    MSEEDREQ: '$mseedreq',
+    COLORS: { true: '#ccffcc', false: '#ffcccc' },
+    SC3ARR: $typesJSARR,
+    MSGS: {
+            'staevt': "$__{'Click on first arrival or select station'}",
+            'secevt': "$__{'Click on first arrival or enter seconds'}",
+            'durevt': "$__{'Click on End of signal or enter duration'}",
+            'nbevt' : "$__{'Enter number of event(s)'}",
+            'ampevt': "$__{'Select amplitude'}",
+            'ovrdur': "$__{'Enter overscale duration'}",
+            'notovr': "$__{'Event not flagged OVERSCALE'}",
+            'unkevt': "$__{'Event type is unknown/undetermined. Validate as is ?'}",
+            'notval': "$__{'You cannot validate an event of type AUTO'}",
+            'delete': "$__{'ATT: Do you want PERMANENTLY erase this event from'}",
+            'hidevt': "$__{'Do you want to hide this event from'}",
+            'resevt': "$__{'Do you want to restore this event in'}"
+          },
+    CROSSHAIR: '<span id=crosshairUp></span><span id=crosshairDown></span>',
+    NEWPCLEARS: $MC3{NEW_P_CLEAR_S},
+    TITLE: '$MC3{TITLE}',
 html
 
-    print "	KBtyp: {\n";
+    print "    KBtyp: {\n";
     for (keys(%types)) {
-        print "		'$_': \"$types{$_}{KBcode}\",\n" if ($types{$_}{KBcode} ne "");
+        print "        '$_': \"$types{$_}{KBcode}\",\n" if ($types{$_}{KBcode} ne "");
     }
-    print "		},\n";
-    print "	KBamp: {\n";
+    print "        },\n";
+    print "    KBamp: {\n";
     for (sort keys(%amplitudes)) {
         (my $key = $_) =~ s/^.._//g; # removes the xx_ prefix
-        print "		'$key': \"$amplitudes{$_}{KBcode}\",\n" if ($amplitudes{$_}{KBcode} ne "");
+        print "        '$key': \"$amplitudes{$_}{KBcode}\",\n" if ($amplitudes{$_}{KBcode} ne "");
     }
-    print "		}\n};\n\n";
+    print "        }\n};\n\n";
 
 } # endif dep
 
@@ -376,34 +376,34 @@ my $opacityIE = int($SEFRAN3{MC3_EVENT_OPACITY}*100);
 print <<html;
 <style type="text/css">
 table.sefran {
-	margin-left: $SEFRAN3{VALUE_PPI}px;
+    margin-left: $SEFRAN3{VALUE_PPI}px;
 }
 td.rien div,td.fin div {
-	width: ${largeur_image}px;
+    width: ${largeur_image}px;
 }
 .signals img {
-	width: ${largeur_image}px;
-	height: ${hauteur_image}px;
+    width: ${largeur_image}px;
+    height: ${hauteur_image}px;
 }
 .mctag {
-	opacity: $SEFRAN3{MC3_EVENT_OPACITY};
-	filter:alpha(opacity=$opacityIE); /* For IE8 and earlier */
+    opacity: $SEFRAN3{MC3_EVENT_OPACITY};
+    filter:alpha(opacity=$opacityIE); /* For IE8 and earlier */
 }
 #eventStart {
-	height: ${hauteur_image}px;
+    height: ${hauteur_image}px;
 }
 #eventEnd {
-	height: ${hauteur_image}px;
+    height: ${hauteur_image}px;
 }
 #eventSP {
-	height: ${hauteur_image}px;
+    height: ${hauteur_image}px;
 }
 #crosshairUp {
-	top: ${crosshair_dy};
-	height: ${hauteur_image}px;
+    top: ${crosshair_dy};
+    height: ${hauteur_image}px;
 }
 #crosshairDown {
-	height: ${hauteur_image}px;
+    height: ${hauteur_image}px;
 }
 </style>
 </HEAD>
@@ -517,7 +517,7 @@ if (!$date) {
     print "</TH></TR>";
     print "</TABLE>";
     if ($sgramOK) {
-        print	"<INPUT type=hidden name=\"sgramslider\" id=\"sgramslider\" value=\"0\">",
+        print    "<INPUT type=hidden name=\"sgramslider\" id=\"sgramslider\" value=\"0\">",
           "<INPUT type=hidden name=\"sgram\" id=\"sgramopacity\" value=\"$SEFRAN3{SGRAM_OPACITY}\">";
     }
 
@@ -535,7 +535,7 @@ if (!$date) {
         for (@listeHeures) {
             my $hh = $_;
             if (($today ne $dd)||($Ha ge $hh)) {
-                if (($limit != 0 && ++$nb_heures <= $limit)	|| ($limit == 0 && ($nb_heures++ <= $limit_lastmc))) {
+                if (($limit != 0 && ++$nb_heures <= $limit)    || ($limit == 0 && ($nb_heures++ <= $limit_lastmc))) {
                     $nb_heures_jour++;
                     $nb_vign++;
                     my $f = "$da/$ddd/$SEFRAN3{PATH_IMAGES_HOUR}/$ddd$hh";
@@ -555,7 +555,7 @@ if (!$date) {
                             }
                         }
                         print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:".($nb_vign < 2 ? "left":"right")."\"><DIV style=\"position:relative\">";
-                        print	"$sgramimg<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" style=\"cursor:pointer\" $imgopt>";
+                        print    "$sgramimg<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" style=\"cursor:pointer\" $imgopt>";
                     } else {
                         print "<TD style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px\" class=\"noImage\"><DIV style=\"position:relative;height:100%\">no image";
                     }
@@ -769,7 +769,7 @@ if ($date) {
     my $idarg = "";
 
     if ($dep) {
-        if ($id) { 	# read event ID from MC + set number of minute-files containing signal + 1
+        if ($id) {     # read event ID from MC + set number of minute-files containing signal + 1
             my @mc_evt = qx(grep "^$id|" $MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$fileMC);
             %MC = mcinfo($mc_evt[0],1);
             $date_nbm = 1 + int(1 + ($MC{duration}*$duration_s{$MC{unit}} + $MC{second})/60);
@@ -860,8 +860,8 @@ if ($date) {
                   " href=\"$prog&date=$Y$m$d$H$M&s3=$s3\" target=\"_blank\" rel=\"opener\"";
             }
             print " shape=rect coords=\"0,".($hauteur_label_haut + 1).",$largeur_image,".($hauteur_image - $hauteur_label_haut)."\"></map>";
-            print	"<img id=\"sgram\" class=\"sgram\" src=\"$png_sgram\" usemap=\"#$png\">" if ($sgramOK);
-            print	"<img id=\"png\" class=\"png\" src=\"$png_web\" usemap=\"#$png\">";
+            print    "<img id=\"sgram\" class=\"sgram\" src=\"$png_sgram\" usemap=\"#$png\">" if ($sgramOK);
+            print    "<img id=\"png\" class=\"png\" src=\"$png_web\" usemap=\"#$png\">";
         } elsif ( "$Y$m$d$H$M" >= "$Ya$ma$da$Ha$Ma") {
             if (!$fin) {
                 print "</div></td><td class=\"fin\"><div>Now<br>$Ya-$ma-$da<br>$Ha:$Ma:$Sa UTC</div></td><td class=\"signals\">";

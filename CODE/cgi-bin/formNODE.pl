@@ -56,7 +56,7 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my $newnode = 0;
 my $titre2 = "";
 my $QryParm = $cgi->Vars;
-my $theiaAuth = $WEBOBS{THEIA_USER_FLAG}	// 0;
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG}    // 0;
 
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($QryParm->{'node'}));
 if ( $GRIDType ne "" && $GRIDName ne "" ) {
@@ -150,7 +150,7 @@ my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
 
 # THEIA metadata
-my $usrDesc		 = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}		  // $NODE{DESCRIPTION}; $usrDesc =~ s/\"//g; $usrDesc =~ s/\<\<//g; $usrDesc =~ s/\>\>//g; $usrDesc =~ s/\<br\>/\n/g;
+my $usrDesc         = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}          // $NODE{DESCRIPTION}; $usrDesc =~ s/\"//g; $usrDesc =~ s/\<\<//g; $usrDesc =~ s/\>\>//g; $usrDesc =~ s/\<br\>/\n/g;
 my $usrProducer;
 my @usrRole;
 my @usrFirstName;
@@ -386,505 +386,505 @@ function postIt()
   }
 
   for (var i=0; i<form.elements['allNodes'].length; i++) {
-  	form.elements['allNodes'][i].disabled = true;
+      form.elements['allNodes'][i].disabled = true;
   }
   for (var i=0; i<form.SELs.length; i++) {
-  	form.SELs[i].selected = true;
+      form.SELs[i].selected = true;
   }
-	
-	console.log(\$(\"#theform\").serialize());
-	console.log(form.outWKT.value)
-	
-	if (form.saveAuth.value == 1) {
-		console.log(form.count_creator);
-		if ( form.producer.value == "" ) {
-			alert("Producer can't be empty !");
-			return false;
-		}
-		var nb_creators = form.count_creator.value;
-		if (nb_creators>1) {
-			for (var i=0; i<nb_creators; i++) {
-				if ( form.firstName[i].value == "" ) {
-					alert("First name can't be empty (make sure the right role is selected too) !");
-					return false;
-				}
-				if ( form.lastName[i].value == "" ) {
-					alert("Last name can't be empty (make sure the right role is selected too) !");
-					return false;
-				}
-				if ( form.email[i].value == "" ) {
-					alert("Email can't be empty (make sure the right role is selected too) !");
-					return false;
-				}
-			}
-		}
-		if ( form.topics.value == "" ) {
-			alert("You have to chose at least one topic category (check that you selected the right INSPIRE theme too) !");
-			return false;
-		}
-		if ( form.lineage.value == "" ) {
-			alert("Lineage can't be empty !");
-			return false;
-		}
-	}
-	
-	if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
-		form.node.value = form.grid.value + form.nodename.value.toUpperCase();
-		if (document.form.newnode.value == 2) {
-			document.form.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
-		}
-		if (document.getElementById("fidx")) {
-			var fidx = document.getElementById("fidx").getElementsByTagName("div");
-			for (var i=0; i<fidx.length; i++) {
-				if (form.rawformat.value == "" || fidx[i].id.indexOf(form.rawformat.value + "-") == -1) {
-					var nested = document.getElementById("input-" + fidx[i].id);
-					nested.parentNode.removeChild(nested);
-				}
-			}
-		}
-		\$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
-		     if (data != '') alert(data);
-			 if (form.refresh.value == 1) {
-				 location.reload();
-		     } else { location.href = form.referer.value; }
-		})
-		  .fail( function() {
-		     alert( \"postNode couldn't execute\" );
-		     location.href = document.referrer; });
-	} else {
-		alert(\"No changes, save ignored\");
-		return false;
-	}
+    
+    console.log(\$(\"#theform\").serialize());
+    console.log(form.outWKT.value)
+    
+    if (form.saveAuth.value == 1) {
+        console.log(form.count_creator);
+        if ( form.producer.value == "" ) {
+            alert("Producer can't be empty !");
+            return false;
+        }
+        var nb_creators = form.count_creator.value;
+        if (nb_creators>1) {
+            for (var i=0; i<nb_creators; i++) {
+                if ( form.firstName[i].value == "" ) {
+                    alert("First name can't be empty (make sure the right role is selected too) !");
+                    return false;
+                }
+                if ( form.lastName[i].value == "" ) {
+                    alert("Last name can't be empty (make sure the right role is selected too) !");
+                    return false;
+                }
+                if ( form.email[i].value == "" ) {
+                    alert("Email can't be empty (make sure the right role is selected too) !");
+                    return false;
+                }
+            }
+        }
+        if ( form.topics.value == "" ) {
+            alert("You have to chose at least one topic category (check that you selected the right INSPIRE theme too) !");
+            return false;
+        }
+        if ( form.lineage.value == "" ) {
+            alert("Lineage can't be empty !");
+            return false;
+        }
+    }
+    
+    if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
+        form.node.value = form.grid.value + form.nodename.value.toUpperCase();
+        if (document.form.newnode.value == 2) {
+            document.form.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
+        }
+        if (document.getElementById("fidx")) {
+            var fidx = document.getElementById("fidx").getElementsByTagName("div");
+            for (var i=0; i<fidx.length; i++) {
+                if (form.rawformat.value == "" || fidx[i].id.indexOf(form.rawformat.value + "-") == -1) {
+                    var nested = document.getElementById("input-" + fidx[i].id);
+                    nested.parentNode.removeChild(nested);
+                }
+            }
+        }
+        \$.post(\"/cgi-bin/postNODE.pl\", \$(\"#theform\").serialize(), function(data) {
+             if (data != '') alert(data);
+             if (form.refresh.value == 1) {
+                 location.reload();
+             } else { location.href = form.referer.value; }
+        })
+          .fail( function() {
+             alert( \"postNode couldn't execute\" );
+             location.href = document.referrer; });
+    } else {
+        alert(\"No changes, save ignored\");
+        return false;
+    }
 }
 
 function maj_rawformat() {
-	var fidx = document.getElementById("fidx").getElementsByTagName("div"), fid;
-	for (var i=0; i<fidx.length; i++) {
-		if (document.form.rawformat.value != "" && fidx[i].id.indexOf(document.form.rawformat.value + "-") != -1) {
-			fidx[i].style.display = "block";
-		} else {
-			fidx[i].style.display = "none";
-		}
-	}
+    var fidx = document.getElementById("fidx").getElementsByTagName("div"), fid;
+    for (var i=0; i<fidx.length; i++) {
+        if (document.form.rawformat.value != "" && fidx[i].id.indexOf(document.form.rawformat.value + "-") != -1) {
+            fidx[i].style.display = "block";
+        } else {
+            fidx[i].style.display = "none";
+        }
+    }
 }
 
 function maj_transmission() {
-	if (document.form.typeTrans.value==0) {
-		document.getElementById("pathTrans").style.display="none";
-	} else {
-		document.getElementById("pathTrans").style.display="block";
-	}
+    if (document.form.typeTrans.value==0) {
+        document.getElementById("pathTrans").style.display="none";
+    } else {
+        document.getElementById("pathTrans").style.display="block";
+    }
 }
 
 function checkNode() {
-	document.form.nodename.value = document.form.nodename.value.toUpperCase();
-	var nodeSyntax=/[^A-Za-z0-9\.@]+/;
-	var ok = 1;
-	var rouge = '#EE0000';
-	var vert = '#66DD66';
+    document.form.nodename.value = document.form.nodename.value.toUpperCase();
+    var nodeSyntax=/[^A-Za-z0-9\.@]+/;
+    var ok = 1;
+    var rouge = '#EE0000';
+    var vert = '#66DD66';
 
-	var node = document.form.nodename.value;
-	if (nodeSyntax.test(node)) {
-		ok = 0;
-		document.form.message.value = "invalid char. !";
-	} else {
-		for (var i=0; i<document.form.elements['allNodes'].length; i++) {
-			if (document.form.elements['allNodes'][i].value == node) {
-				ok = 0;
-				document.form.message.value = "already exists !";
-			}
-		}
-	}
-	if (ok==1) {
-		document.form.nodename.style.background = vert;
-		document.form.message.value = "ok";
-		document.form.message.style.color = vert;
-	} else {
-		document.form.nodename.style.background = rouge;
-		document.form.message.style.color = rouge;
-	}
-	if (document.form.nodename.value == "") {
-		document.form.nodename.style.background = 'cornsilk';
-		document.form.message.value = "";
-	}
-	if (document.form.newnode.value == 0) {
-		document.form.nodename.style.background = 'none';
-		document.form.message.value = "";
-	}
+    var node = document.form.nodename.value;
+    if (nodeSyntax.test(node)) {
+        ok = 0;
+        document.form.message.value = "invalid char. !";
+    } else {
+        for (var i=0; i<document.form.elements['allNodes'].length; i++) {
+            if (document.form.elements['allNodes'][i].value == node) {
+                ok = 0;
+                document.form.message.value = "already exists !";
+            }
+        }
+    }
+    if (ok==1) {
+        document.form.nodename.style.background = vert;
+        document.form.message.value = "ok";
+        document.form.message.style.color = vert;
+    } else {
+        document.form.nodename.style.background = rouge;
+        document.form.message.style.color = rouge;
+    }
+    if (document.form.nodename.value == "") {
+        document.form.nodename.style.background = 'cornsilk';
+        document.form.message.value = "";
+    }
+    if (document.form.newnode.value == 0) {
+        document.form.nodename.style.background = 'none';
+        document.form.message.value = "";
+    }
 }
 
 function latlonChange() {
-	if (document.form.typePos.value == 3) {
-		document.getElementById("rawKML").style.display = "block";
-		document.form.pyear.disabled = true;
-		document.form.pmonth.disabled = true;
-		document.form.pday.disabled = true;
-	} else {
-		document.getElementById("rawKML").style.display = "none";
-		var today = new Date();
-		var d  = today.getDate();
-		document.form.pday.disabled = false;
-		document.form.pday.value = (d < 10) ? '0' + d : d;
-		var m = today.getMonth() + 1;
-		document.form.pmonth.disabled = false;
-		document.form.pmonth.value = (m < 10) ? '0' + m : m;
-		var yy = today.getYear();
-		document.form.pyear.disabled = false;
-		document.form.pyear.value = (yy < 1000) ? yy + 1900 : yy;
-	}
+    if (document.form.typePos.value == 3) {
+        document.getElementById("rawKML").style.display = "block";
+        document.form.pyear.disabled = true;
+        document.form.pmonth.disabled = true;
+        document.form.pday.disabled = true;
+    } else {
+        document.getElementById("rawKML").style.display = "none";
+        var today = new Date();
+        var d  = today.getDate();
+        document.form.pday.disabled = false;
+        document.form.pday.value = (d < 10) ? '0' + d : d;
+        var m = today.getMonth() + 1;
+        document.form.pmonth.disabled = false;
+        document.form.pmonth.value = (m < 10) ? '0' + m : m;
+        var yy = today.getYear();
+        document.form.pyear.disabled = false;
+        document.form.pyear.value = (yy < 1000) ? yy + 1900 : yy;
+    }
 }
 
 function fetchKML() {
-	var credentials = btoa("webobs:0vpf1pgp");
-	var auth = {
-		'Origin': 'http://localhost',
-		'Access-Control-Request-Method': 'POST',
-		'Access-Control-Allow-Origin': 'http://localhost',
-		'Authorization': `Basic \${credentials}`,
-	};
-	var url = "https://share.garmin.com/Feed/Share/6DOQM";
+    var credentials = btoa("webobs:0vpf1pgp");
+    var auth = {
+        'Origin': 'http://localhost',
+        'Access-Control-Request-Method': 'POST',
+        'Access-Control-Allow-Origin': 'http://localhost',
+        'Authorization': `Basic \${credentials}`,
+    };
+    var url = "https://share.garmin.com/Feed/Share/6DOQM";
     return fetch(url, {
-		credentials: 'include',
-		mode: 'cors',
-		headers: auth,
-	})
+        credentials: 'include',
+        mode: 'cors',
+        headers: auth,
+    })
         .then(response => response.text())
         .then(xmlString => \$.parseXML(xmlString))
         .then(data => console.log(data))
 }
 
 function fc() {
-	\$(\"#theform\").formChanges();
+    \$(\"#theform\").formChanges();
 }
 
 function refresh_form()
 {
-	document.form.refresh.value = 1;
-	postIt();
+    document.form.refresh.value = 1;
+    postIt();
 }
 
 function delete_node()
 {
-	if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative.\\n\\n Are you sure you want to move this NODE to trash ?\") ) {
-		document.form.delete.value = 1;
-		document.form.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
-		postIt();
-	} else {
-		return false;
-	}
+    if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative.\\n\\n Are you sure you want to move this NODE to trash ?\") ) {
+        document.form.delete.value = 1;
+        document.form.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
+        postIt();
+    } else {
+        return false;
+    }
 }
 
 // functions to make the interactive map works
 
 function onMapClick(e) {
-	/**
-	 * Places a marker on the interactive map and fills the coordinates fields in the NODE form
-	 * \@param {Event} e Click event
-	 */
-	var lat = e.latlng['lat'].toFixed(6);
-	var lon = e.latlng['lng'].toFixed(6);
+    /**
+     * Places a marker on the interactive map and fills the coordinates fields in the NODE form
+     * \@param {Event} e Click event
+     */
+    var lat = e.latlng['lat'].toFixed(6);
+    var lon = e.latlng['lng'].toFixed(6);
 
-	/* need to rework this function !
-	var p = document.createElement('p');
-	
-	p.innerHTML = "<B>$NODE{ALIAS}: "+$NODE{NAME}+"</B><BR><I>($NODE{TYPE})</I><BR>&nbspfrom <B>$NODE{INSTALL_DATE}</B> to <B>$NODE{END_DATE}</B><BR>&nbsp;<B>"+lat+"&deg;</B>, <B>"+lon+"&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
-	var txt = p.innerHTML;
-	if (typeof(marker) != "undefined") {
-		map.removeLayer(marker);
-	}
-	
-	marker.bindPopup(txt).openPopup();
-	*/
-	
-	if (typeof(marker) != "undefined") {
-		map.removeLayer(marker);
-	}
-	marker = L.marker([lat, lon]).addTo(map);
+    /* need to rework this function !
+    var p = document.createElement('p');
+    
+    p.innerHTML = "<B>$NODE{ALIAS}: "+$NODE{NAME}+"</B><BR><I>($NODE{TYPE})</I><BR>&nbspfrom <B>$NODE{INSTALL_DATE}</B> to <B>$NODE{END_DATE}</B><BR>&nbsp;<B>"+lat+"&deg;</B>, <B>"+lon+"&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
+    var txt = p.innerHTML;
+    if (typeof(marker) != "undefined") {
+        map.removeLayer(marker);
+    }
+    
+    marker.bindPopup(txt).openPopup();
+    */
+    
+    if (typeof(marker) != "undefined") {
+        map.removeLayer(marker);
+    }
+    marker = L.marker([lat, lon]).addTo(map);
 
-	document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
-	document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
-	document.form.locMap.value = 1;	// added a third variable to make the DOM perceived the changes in the webpage when clicking on the interactive map
+    document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
+    document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
+    document.form.locMap.value = 1;    // added a third variable to make the DOM perceived the changes in the webpage when clicking on the interactive map
 
-	document.form.typePos.value="1";
-	return false;
+    document.form.typePos.value="1";
+    return false;
 }
 function getLocation() {
-	event.preventDefault();
-	if (navigator.geolocation) {
-		navigator.geolocation.getCurrentPosition(getCurrent, error);
-		document.form.typePos.value="4";
-	} else {
-		alert('Geolocation is not supported by this browser');
-	}
+    event.preventDefault();
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(getCurrent, error);
+        document.form.typePos.value="4";
+    } else {
+        alert('Geolocation is not supported by this browser');
+    }
 }
 function getCurrent (pos) {
-	/**
-	 * Get the position of the current user and focus the map on it
-	 */
-	var lat = pos.coords.latitude;
-	var lon = pos.coords.longitude;
+    /**
+     * Get the position of the current user and focus the map on it
+     */
+    var lat = pos.coords.latitude;
+    var lon = pos.coords.longitude;
 
-	document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
-	document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
-	document.form.altitude.value = "";
-	document.form.locMap.value = 1;
+    document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
+    document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
+    document.form.altitude.value = "";
+    document.form.locMap.value = 1;
 
-	map.flyTo([lat, lon], 18);
-	document.form.typePos.value="4";
+    map.flyTo([lat, lon], 18);
+    document.form.typePos.value="4";
 }
 function error (err) {
-	switch (err.code) {
-		case err.TIMEOUT:
-		break;
-		case err.PERMISSION_DENIED:
-		break;
-		case err.POSITION_UNAVAILABLE:
-		break;
-		case err.UNKNOWN_ERROR:
-		break;
-	}
+    switch (err.code) {
+        case err.TIMEOUT:
+        break;
+        case err.PERMISSION_DENIED:
+        break;
+        case err.POSITION_UNAVAILABLE:
+        break;
+        case err.UNKNOWN_ERROR:
+        break;
+    }
 }
 function onInputWrite(e) {
-	/**
-	 * Zoom/dezoom the map following the number of decimals in the latitude and longitude fields
-	 * \@param {Event} e Input event
-	 */
-	var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
-	var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
+    /**
+     * Zoom/dezoom the map following the number of decimals in the latitude and longitude fields
+     * \@param {Event} e Input event
+     */
+    var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
+    var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
 
-	if (lat.toString().includes('.')){
-			var latZoom = lat.toString().split(".")[1].length;
-	}
-	if (lon.toString().includes('.')){
-			var lonZoom = lon.toString().split(".")[1].length;
-	}
-	
-	if (Math.min(latZoom, lonZoom) == 0) {
-		map.flyTo([lat, lon], 4);
-	} 
-	if (Math.min(latZoom, lonZoom) == 1) {
-		map.flyTo([lat, lon], 9);
-	}
-	if (Math.min(latZoom, lonZoom) == 2) {
-		map.flyTo([lat, lon], 10);
-	} 
-	if (Math.min(latZoom, lonZoom) == 3) {
-		map.flyTo([lat, lon], 12);
-	}
-	if (Math.min(latZoom, lonZoom) == 4) {
-		map.flyTo([lat, lon], 14);
-	}
-	if (Math.min(latZoom, lonZoom) == 5) {
-		map.flyTo([lat, lon], 16);
-	}
-	if (Math.min(latZoom, lonZoom) == 6) {
-		map.flyTo([lat, lon], 18);
-	}
+    if (lat.toString().includes('.')){
+            var latZoom = lat.toString().split(".")[1].length;
+    }
+    if (lon.toString().includes('.')){
+            var lonZoom = lon.toString().split(".")[1].length;
+    }
+    
+    if (Math.min(latZoom, lonZoom) == 0) {
+        map.flyTo([lat, lon], 4);
+    } 
+    if (Math.min(latZoom, lonZoom) == 1) {
+        map.flyTo([lat, lon], 9);
+    }
+    if (Math.min(latZoom, lonZoom) == 2) {
+        map.flyTo([lat, lon], 10);
+    } 
+    if (Math.min(latZoom, lonZoom) == 3) {
+        map.flyTo([lat, lon], 12);
+    }
+    if (Math.min(latZoom, lonZoom) == 4) {
+        map.flyTo([lat, lon], 14);
+    }
+    if (Math.min(latZoom, lonZoom) == 5) {
+        map.flyTo([lat, lon], 16);
+    }
+    if (Math.min(latZoom, lonZoom) == 6) {
+        map.flyTo([lat, lon], 18);
+    }
 }
 function createShp(geojson) {
-	var shpfile = new L.Shapefile(geojson,{
-		onEachFeature: function(feature, layer) {
-			if (feature.properties) {
-				layer.bindPopup(Object.keys(feature.properties).map(function(k) {
-					return k + ": " + feature.properties[k];
-				}).join("<br />"), {
-						maxHeight: 200
-					});
-			}
-		}
-	}); 
-	
-	return shpfile;
+    var shpfile = new L.Shapefile(geojson,{
+        onEachFeature: function(feature, layer) {
+            if (feature.properties) {
+                layer.bindPopup(Object.keys(feature.properties).map(function(k) {
+                    return k + ": " + feature.properties[k];
+                }).join("<br />"), {
+                        maxHeight: 200
+                    });
+            }
+        }
+    }); 
+    
+    return shpfile;
 }
-function handleFiles() {	
-	/**
-	 * Read .zip shpfiles and calculate the bounding box coordinates of the spatial coverage of the shapefile
-	 */
-	var fichierSelectionne = document.getElementById('shpfile').files[0];
-	form.filename.value = fichierSelectionne.name;
+function handleFiles() {    
+    /**
+     * Read .zip shpfiles and calculate the bounding box coordinates of the spatial coverage of the shapefile
+     */
+    var fichierSelectionne = document.getElementById('shpfile').files[0];
+    form.filename.value = fichierSelectionne.name;
 
-	var fr = new FileReader();
-	fr.onload = function () {
-		shp(this.result).then(function(geojson) {
-	  		console.log('loaded geojson:', geojson);
-			
-	  		/*for (var i = 0; i <= geojson.features.length-1; i++) {
-	  			// applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
-	  			var geometry = geojson.features[i].geometry;
-	  			var coordinates = simplifyGeometry(geometry.coordinates[0], 0.000001);
-	  			if (coordinates.length < 4) {
-	  				geometry.coordinates[0] = [[geometry.bbox[0],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[1]]];
-	  			}
-	  			else { geometry.coordinates[0] = coordinates; }
-				
-	  			var lonLat = [];
-	  			for (var j = 0; j <= coordinates.length-1; j++) {
-	  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]); 
-	  			} outWKT.push('((' + lonLat + '))');
-				
-	  		}*/
-			
-	  		/* document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]); */
-	  		
-			var shpfile = createShp(geojson);
-			shpfile.addTo(map);
-			// geojson.features = geojson.features[0];	// test with a Polygon;
-			var geometry = JSON.stringify(getGeometry(geojson));
-			// console.log(geometry);
-			document.form.outWKT.value = geometry;
-			document.form.geojson.value = JSON.stringify(geojson);
-			return geojson;
-	  })
-	};
-	fr.readAsArrayBuffer(fichierSelectionne);
+    var fr = new FileReader();
+    fr.onload = function () {
+        shp(this.result).then(function(geojson) {
+              console.log('loaded geojson:', geojson);
+            
+              /*for (var i = 0; i <= geojson.features.length-1; i++) {
+                  // applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
+                  var geometry = geojson.features[i].geometry;
+                  var coordinates = simplifyGeometry(geometry.coordinates[0], 0.000001);
+                  if (coordinates.length < 4) {
+                      geometry.coordinates[0] = [[geometry.bbox[0],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[1]]];
+                  }
+                  else { geometry.coordinates[0] = coordinates; }
+                
+                  var lonLat = [];
+                  for (var j = 0; j <= coordinates.length-1; j++) {
+                      lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]); 
+                  } outWKT.push('((' + lonLat + '))');
+                
+              }*/
+            
+              /* document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]); */
+              
+            var shpfile = createShp(geojson);
+            shpfile.addTo(map);
+            // geojson.features = geojson.features[0];    // test with a Polygon;
+            var geometry = JSON.stringify(getGeometry(geojson));
+            // console.log(geometry);
+            document.form.outWKT.value = geometry;
+            document.form.geojson.value = JSON.stringify(geojson);
+            return geojson;
+      })
+    };
+    fr.readAsArrayBuffer(fichierSelectionne);
 }
 function getGeometry(geojson) {
-	/**
-	 * Create a geoJSON object
-	 * \@param  {GeoJSON} geojson  GeoJSON object with a given number of points
-	 * \@return {GeoJSON} geometry GeoJSON object which has its coordinates corresponding to the bounding box of the geometry of the input
-	 */
-	var geometry = {"type":"", "coordinates":""};
+    /**
+     * Create a geoJSON object
+     * \@param  {GeoJSON} geojson  GeoJSON object with a given number of points
+     * \@return {GeoJSON} geometry GeoJSON object which has its coordinates corresponding to the bounding box of the geometry of the input
+     */
+    var geometry = {"type":"", "coordinates":""};
 
-	if (geojson.features.length > 1) {
-		geometry.type = "MultiPolygon";
-		var coordinates = [];
-		
-		for (var i = 0; i < geojson.features.length-1; i++) {
-			coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
-		} geometry.coordinates = coordinates; return geometry;
-	} else {
-		geometry.type = "Polygon";
-		geometry.coordinates = [getBoundingBox(geojson.features[0].geometry.coordinates)];
-		return geometry;
-	}
+    if (geojson.features.length > 1) {
+        geometry.type = "MultiPolygon";
+        var coordinates = [];
+        
+        for (var i = 0; i < geojson.features.length-1; i++) {
+            coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
+        } geometry.coordinates = coordinates; return geometry;
+    } else {
+        geometry.type = "Polygon";
+        geometry.coordinates = [getBoundingBox(geojson.features[0].geometry.coordinates)];
+        return geometry;
+    }
 }
 function getBoundingBox(coordinates) {
-	/**
-	 * Calculate the bounding box of given coordinates
-	 * \@param  {Array} coordinates Array of coordinates
-	 * \@return {Array} The calculated bounding box as an array of coordinates
-	 */
-	var bounds = {}, coords, point, latitude, longitude;
+    /**
+     * Calculate the bounding box of given coordinates
+     * \@param  {Array} coordinates Array of coordinates
+     * \@return {Array} The calculated bounding box as an array of coordinates
+     */
+    var bounds = {}, coords, point, latitude, longitude;
 
     coords = coordinates;
 
-	for (var j = 0; j < coords.length; j++) {
-		longitude = coords[j][0];
-    	latitude = coords[j][1];
-    	bounds.xMin = bounds.xMin < longitude ? bounds.xMin : longitude;
-    	bounds.xMax = bounds.xMax > longitude ? bounds.xMax : longitude;
-		bounds.yMin = bounds.yMin < latitude ? bounds.yMin : latitude;
-    	bounds.yMax = bounds.yMax > latitude ? bounds.yMax : latitude;
+    for (var j = 0; j < coords.length; j++) {
+        longitude = coords[j][0];
+        latitude = coords[j][1];
+        bounds.xMin = bounds.xMin < longitude ? bounds.xMin : longitude;
+        bounds.xMax = bounds.xMax > longitude ? bounds.xMax : longitude;
+        bounds.yMin = bounds.yMin < latitude ? bounds.yMin : latitude;
+        bounds.yMax = bounds.yMax > latitude ? bounds.yMax : latitude;
     }
     var coordinates = [bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.xMin];
     return coordinates;
 }
 
 function addCreator() {
-	/**
-	 * Add a creator row to fill in the form
-	 */
+    /**
+     * Add a creator row to fill in the form
+     */
     var form = \$('#theform')[0];
     form.locMap.value = 1;
-	form.count_creator.value = parseInt(form.count_creator.value)+1;
-	var new_div = document.createElement('div');
-	new_div.id = 'new_creator'+form.count_creator.value;
+    form.count_creator.value = parseInt(form.count_creator.value)+1;
+    var new_div = document.createElement('div');
+    new_div.id = 'new_creator'+form.count_creator.value;
     new_div.innerHTML = \$('#creator')[0].innerHTML;
     for (let i = 1; i <= new_div.childElementCount-1; i++) {
-    	new_div.children[i].value = "";
+        new_div.children[i].value = "";
     }
     \$('#creator_add')[0].append(new_div);
 }
 function removeCreator() {
-	/**
-	 * Remove a creator row (if there are more than one row) to fill in the form
-	 */
-	var form = \$('#theform')[0];
-	form.locMap.value = 1;
-	var id = '#new_creator'+form.count_creator.value;
-	if (\$(id)[0] === null) {
-		return false;
-	} else if (form.count_creator.value > 1) {
-		\$(id)[0].remove();
-		form.count_creator.value -= 1;
-	}
+    /**
+     * Remove a creator row (if there are more than one row) to fill in the form
+     */
+    var form = \$('#theform')[0];
+    form.locMap.value = 1;
+    var id = '#new_creator'+form.count_creator.value;
+    if (\$(id)[0] === null) {
+        return false;
+    } else if (form.count_creator.value > 1) {
+        \$(id)[0].remove();
+        form.count_creator.value -= 1;
+    }
 }
 
 function go_back_node() {
-	location.href  = document.form.referer.value;
+    location.href  = document.form.referer.value;
 }
 
 function check_9char_code() {
-	const regex_9char = new RegExp('^[A-Z0-9]{4}[0-9]{2}[A-Z]{3}\$') ;
-	const gnss9char_for_test = document.form.gnss_9char.value;
-	const m3g_link = document.getElementById("m3g_link");
-	m3g_link.href += gnss9char_for_test;
-	if(gnss9char_for_test == "" || ! gnss9char_for_test.match(regex_9char)) {
-		alert("The GNSS 9 character code is not defined or does not fit \\n\<4 letters/numbers\>\<2 numbers\>\<3 letters ISO country code\>");
-		document.form.gnss_9char.focus();
-		return false;
-	}
+    const regex_9char = new RegExp('^[A-Z0-9]{4}[0-9]{2}[A-Z]{3}\$') ;
+    const gnss9char_for_test = document.form.gnss_9char.value;
+    const m3g_link = document.getElementById("m3g_link");
+    m3g_link.href += gnss9char_for_test;
+    if(gnss9char_for_test == "" || ! gnss9char_for_test.match(regex_9char)) {
+        alert("The GNSS 9 character code is not defined or does not fit \\n\<4 letters/numbers\>\<2 numbers\>\<3 letters ISO country code\>");
+        document.form.gnss_9char.focus();
+        return false;
+    }
 }
 
 function showHideTheia(checkbox){
-	const theia = document.getElementById("showHide");
+    const theia = document.getElementById("showHide");
 
-	if (checkbox.checked == false) {
-		theia.style.display = "none";
-		document.form.saveAuth.value = 0;
-	} else {
-		theia.style.display = "block";
-		document.form.saveAuth.value = 1;
-	}
+    if (checkbox.checked == false) {
+        theia.style.display = "none";
+        document.form.saveAuth.value = 0;
+    } else {
+        theia.style.display = "block";
+        document.form.saveAuth.value = 1;
+    }
 }
 
 // creating and parametring the map for the geographic location choice
 
-var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+var    esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
 var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-		
+        
 //Init Overlays
 var overlays = {};
-		
+        
 //Init BaseMaps
 var basemaps = {
-	'OpenStreetMaps': L.tileLayer(
-		"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-		{
-			attribution: osmAttribution,
-			minZoom: 2,
-			maxZoom: 19,
-			id: "osm"
-		}
-	),
-	'OpenTopoMap': L.tileLayer(
-		'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-		{
-			attribution: osmAttribution,
-			minZoom: 2,
-			maxZoom: 19,
-			id: "otm"
-		}
-	),
-	'ESRIWorldImagery': L.tileLayer(
-		'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-		{
-			attribution: osmAttribution,
-			minZoom: 2,
-			maxZoom: 19,
-			id: "esri.world"
-		}
-	)
+    'OpenStreetMaps': L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            attribution: osmAttribution,
+            minZoom: 2,
+            maxZoom: 19,
+            id: "osm"
+        }
+    ),
+    'OpenTopoMap': L.tileLayer(
+        'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+        {
+            attribution: osmAttribution,
+            minZoom: 2,
+            maxZoom: 19,
+            id: "otm"
+        }
+    ),
+    'ESRIWorldImagery': L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+            attribution: osmAttribution,
+            minZoom: 2,
+            maxZoom: 19,
+            id: "esri.world"
+        }
+    )
 };
-		
+        
 //Map Options
 var mapOptions = {
-	zoomControl: true,
-	attributionControl: false,
-	center: [0, 0],
-	zoom: 2,
-	layers: [basemaps.OpenStreetMaps]
+    zoomControl: true,
+    attributionControl: false,
+    center: [0, 0],
+    zoom: 2,
+    layers: [basemaps.OpenStreetMaps]
 };
 </script>
 
@@ -910,9 +910,9 @@ if (clientHasAdm(type=>"authmisc",name=>"NODES")) {
     $nodevalidity = "<INPUT type=\"hidden\" name=\"valide\" value=\"NA\">";
 }
 print "<TABLE width=\"100%\">
-	<TR><TD style=\"border:0\"><H1>$titrePage</H1>\n<H2>$titre2</H2>$nodevalidity</TD>
-	<TD style=\"border:0; text-align:right\"></TD></TR>
-	</TABLE>";
+    <TR><TD style=\"border:0\"><H1>$titrePage</H1>\n<H2>$titre2</H2>$nodevalidity</TD>
+    <TD style=\"border:0; text-align:right\"></TD></TR>
+    </TABLE>";
 
 print "<INPUT type=\"hidden\" name=\"referer\" value=\"$referer\">\n";
 print "<INPUT type=\"hidden\" name=\"refresh\" value=\"0\">\n";
@@ -970,7 +970,7 @@ print " <SELECT name=\"smonth\" size=\"1\">";
 for (@monthList) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
 print "</SELECT>";
 print " <SELECT name=\"sday\" size=\"1\">";
-for (@dayList) { 	print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
+for (@dayList) {     print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
 print "</SELECT><BR>";
 print "<b>$__{'End date'}:</b> <SELECT name=\"eyear\" size=\"1\">";
 for ($usrYearE,@yearListE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
@@ -1009,7 +1009,7 @@ for (@feat) {
 
 # edition of the node2node file needs an admin level
 #if (WebObs::Users::clientHasAdm(type => "auth".lc($GRIDType)."s", name => "*")) {
-#	print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
+#    print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
 #}
 print "</FIELDSET>";
 
@@ -1174,7 +1174,7 @@ print "<input size=\"8\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChang
 
 # --- positioning date
 print "<label for=\"datePos\">Date:</label> <select name=\"pyear\" size=\"1\">";
-for ($usrYearP,@yearListP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";	}
+for ($usrYearP,@yearListP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";    }
 print "</select>";
 print " <select name=\"pmonth\" size=\"1\">";
 for (@monthList) { print "<option".(($_ eq $usrMonthP)?" selected":"")." value=$_>$_</option>\n"; }
@@ -1211,50 +1211,50 @@ print "<label for=\"shpfile\">$__{'Shapefile'} (.zip): </label> "
 
 print "</TD>";
 print <<FIN;
-		<script>
-			const checked = document.getElementById("theiaChecked");
-			const auth = $theiaAuth;
-			
-			if (auth == 1) {
-				// console.log(theia);
-				checked.style.display = "block";
-			} else {
-				checked.style.display = "none";
-			}
-		
-			var map = L.map('map', mapOptions);
-			var popup = L.popup();
-			map.on('click', onMapClick);
-			
-			document.getElementById("auto-loc").addEventListener('click', getLocation);
-			// let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
-			
-			if ( document.form.latwgs84.value !== "" || document.form.lonwgs84.value !== "" ) {
-				var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
-				var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
+        <script>
+            const checked = document.getElementById("theiaChecked");
+            const auth = $theiaAuth;
+            
+            if (auth == 1) {
+                // console.log(theia);
+                checked.style.display = "block";
+            } else {
+                checked.style.display = "none";
+            }
+        
+            var map = L.map('map', mapOptions);
+            var popup = L.popup();
+            map.on('click', onMapClick);
+            
+            document.getElementById("auto-loc").addEventListener('click', getLocation);
+            // let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
+            
+            if ( document.form.latwgs84.value !== "" || document.form.lonwgs84.value !== "" ) {
+                var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
+                var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
 
-				map.setView([lat, lon]);
-				map.flyTo([lat, lon], 14, {
-					animate: false,
-					//animate: true,
-					//duration: 1
-				});
+                map.setView([lat, lon]);
+                map.flyTo([lat, lon], 14, {
+                    animate: false,
+                    //animate: true,
+                    //duration: 1
+                });
 
-				var marker = L.marker([lat, lon]).addTo(map);
-				marker.bindPopup(\"$text\").openPopup();
-				L.control.scale().addTo(map);
-			}
-			
-			var layerControl = L.control.layers(basemaps, overlays).addTo(map);
-			
-			if (typeof(\"$geojsonFile\") !== 'undefined') {
-				var shpfile = createShp($json); 
-				shpfile.addTo(map);
-				
-				var geometry = JSON.stringify(getGeometry($json));
-				document.form.outWKT.value = geometry;
-			}
-		</script>
+                var marker = L.marker([lat, lon]).addTo(map);
+                marker.bindPopup(\"$text\").openPopup();
+                L.control.scale().addTo(map);
+            }
+            
+            var layerControl = L.control.layers(basemaps, overlays).addTo(map);
+            
+            if (typeof(\"$geojsonFile\") !== 'undefined') {
+                var shpfile = createShp($json); 
+                shpfile.addTo(map);
+                
+                var geometry = JSON.stringify(getGeometry($json));
+                document.form.outWKT.value = geometry;
+            }
+        </script>
 FIN
 print "</TR></TABLE>";
 print "</FIELDSET>\n";
@@ -1405,9 +1405,9 @@ if (uc($GRIDType) eq "PROC") {
 }
 
 # --- Propagates any other Proc's parameters (hidden)
-#	PROC.*.* = other proc's parameters
-#	^* = list of selected parameters formerly associated with all proc): they have been used at the begining of this script
-#	to fill the default values in form, but will be also propagated to all other associated procs (see postNODE.pl)
+#    PROC.*.* = other proc's parameters
+#    ^* = list of selected parameters formerly associated with all proc): they have been used at the begining of this script
+#    to fill the default values in form, but will be also propagated to all other associated procs (see postNODE.pl)
 for (keys(%NODE)) {
     if ( !($_ =~ /^$GRIDType\.$GRIDName\./)
         && $_ =~ /^VIEW\.|^PROC\.|^FDSN_NETWORK_CODE$|^UTC_DATA$|^ACQ_RATE$|^RAWFORMAT$|^RAWDATA$|^CHANNEL_LIST$|^FID/ ) {
@@ -1417,11 +1417,11 @@ for (keys(%NODE)) {
 
 ## # --- "Validity"
 ## if ( clientHasAdm(type=>"authmisc",name=>"NODES")) {
-## 	print "<P class=parform><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
-## 		." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Check to mark node as valid'}')\">"
-## 		."<b>$__{'Valid Node'}</b></P>\n";
+##     print "<P class=parform><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
+##         ." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Check to mark node as valid'}')\">"
+##         ."<b>$__{'Valid Node'}</b></P>\n";
 ## } else {
-## 	print "<input type=\"hidden\" name=\"valide\" value=\"NA\">";
+##     print "<input type=\"hidden\" name=\"valide\" value=\"NA\">";
 ## }
 
 print "</TD></TR>";

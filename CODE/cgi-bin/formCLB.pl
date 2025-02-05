@@ -144,7 +144,7 @@ foreach my $k (sort { $fieldCLB{$a}{'_SO_'} <=> $fieldCLB{$b}{'_SO_'} } keys %fi
 }
 
 #foreach my $k (keys %{$fieldCLB{"DATE"}}) {
-#	print $k, ": ", $fieldCLB{"0"}{$k}, "<br>";
+#    print $k, ": ", $fieldCLB{"0"}{$k}, "<br>";
 #}
 
 # ---- now inject some js code
@@ -158,75 +158,75 @@ print "
 
 function verif_formulaire()
 {
-	var i;
-	var j;
-	var v;
+    var i;
+    var j;
+    var v;
 
-	for (i=1;i<=".scalar(keys %data).";i++) {
-		for (j=1;j<=".$max_index.";j++) {
-			eval('v = document.formulaire.v' + i + '_' + j + '.value');
-			if (v.indexOf(\"#\") != -1) {
-				alert(' # not allowed in any field');
-				eval('document.formulaire.v' + i + '_' + j + '.focus()');
-				return false;
-			}
-		}
-	}
+    for (i=1;i<=".scalar(keys %data).";i++) {
+        for (j=1;j<=".$max_index.";j++) {
+            eval('v = document.formulaire.v' + i + '_' + j + '.value');
+            if (v.indexOf(\"#\") != -1) {
+                alert(' # not allowed in any field');
+                eval('document.formulaire.v' + i + '_' + j + '.focus()');
+                return false;
+            }
+        }
+    }
     \$.post(\"/cgi-bin/postCLB.pl\", \$(\"#theform\").serialize(), function(data) {
-		if ( data.match(/auto reload edit form/gi) != null ) {
-			location.reload(true);
-		} else {
-			alert(data);
-			location.href = document.referrer;
-		}
-	   }
-	);
+        if ( data.match(/auto reload edit form/gi) != null ) {
+            location.reload(true);
+        } else {
+            alert(data);
+            location.href = document.referrer;
+        }
+       }
+    );
 }
 
 function calc()
 {
-	// This function should be changed to be run as a change callback
-	// First, one should make sure this all make any sense...
-	var i;
-	// I guess 'ok' should be 1 if changes are to be submitted/recorded
-	// and 0 if the form is to be updated.
-	var ok = 1;
+    // This function should be changed to be run as a change callback
+    // First, one should make sure this all make any sense...
+    var i;
+    // I guess 'ok' should be 1 if changes are to be submitted/recorded
+    // and 0 if the form is to be updated.
+    var ok = 1;
 
-	if (document.formulaire.nbc.value != document.formulaire.nbc.defaultValue) {
-		ok = 0;
-	}
+    if (document.formulaire.nbc.value != document.formulaire.nbc.defaultValue) {
+        ok = 0;
+    }
 
-	for (i=1;i<=".scalar(keys %data).";i++) {
-		// Note: not really sure if the fix of this nonsense is ok, but it
-		// was useless anyway, as sX.value is always 'on' as the 'value' HTML
-		// attribute of the checkbox is not defined.
-		//if (eval('document.formulaire.s' + i + '.value') != '') ok = 0;
-		if (eval('document.formulaire.s' + i + '.checked')) { ok = 0; }
-	}
+    for (i=1;i<=".scalar(keys %data).";i++) {
+        // Note: not really sure if the fix of this nonsense is ok, but it
+        // was useless anyway, as sX.value is always 'on' as the 'value' HTML
+        // attribute of the checkbox is not defined.
+        //if (eval('document.formulaire.s' + i + '.value') != '') ok = 0;
+        if (eval('document.formulaire.s' + i + '.checked')) { ok = 0; }
+    }
 
-	// Update the label of the submit button : I guess 'Submit' is supposed to
-	// be used when the form needs to be updated, and 'Validate' when
-	// calibration file is ready to be written (and, of course, the user is
-	// supposed to understand the difference. Poor, poor user.)
-	var sb = document.getElementById('submit_button')
-	if (ok) {
-		sb.value = '$__{'Validate'}';
-	} else {
-		sb.value = '$__{'Submit'}';
-	}
+    // Update the label of the submit button : I guess 'Submit' is supposed to
+    // be used when the form needs to be updated, and 'Validate' when
+    // calibration file is ready to be written (and, of course, the user is
+    // supposed to understand the difference. Poor, poor user.)
+    var sb = document.getElementById('submit_button')
+    if (ok) {
+        sb.value = '$__{'Validate'}';
+    } else {
+        sb.value = '$__{'Submit'}';
+    }
 }
 
 \$(function() { // Executed after page is loaded
 
-	// Not sure this is still useful
-	window.onkeydown = calc();
+    // Not sure this is still useful
+    window.onkeydown = calc();
 
-	// Prevent implicit submission of the form on pressing the Enter key
-	document.addEventListener('keypress', function(event) {
-		if (event.keyCode == 13) {
-			event.preventDefault();
-		}
-	});
+    // Prevent implicit submission of the form on pressing the Enter key
+    document.addEventListener('keypress', function(event) {
+        if (event.keyCode == 13) {
+            event.preventDefault();
+        }
+    });
 });
 
 </script>\n\n";
@@ -290,7 +290,7 @@ foreach my $id (sort sort_clb_lines keys %data) {
     }
     print "</select></TD>\n";
     print "<TD nowrap><input type=checkbox name=\"s$i\" onChange=\"calc()\">
-		<input name=\"v"."$i"."_1\" readonly value=\"$line{'nv'}\" size=\"$fieldCLB{'nv'}{'NbCar'}\" style=\"font-weight:bold;background-color:#E0E0E0;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'nv'}{'MSGID'}}')\">";
+        <input name=\"v"."$i"."_1\" readonly value=\"$line{'nv'}\" size=\"$fieldCLB{'nv'}{'NbCar'}\" style=\"font-weight:bold;background-color:#E0E0E0;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'nv'}{'MSGID'}}')\">";
     if ($line{'nv'} > $nbc) {
         $nbc = $line{'nv'};
     }
@@ -310,12 +310,12 @@ my $txt = "Number of channels for the node:<ul>"
   ."<li>decrease to remove all lines of channels with a greater number."
   ."</ul>";
 print "<TR><TD style=\"border:0\" colspan=2>
-		<P><B>Fix number of channels</B> =
-		<input type=\"text\" name=\"nbc\" size=2 value=\"$nbc\" onKeyUp=\"calc()\"
-		onMouseOut=\"nd()\" onMouseOver=\"overlib('$txt',CAPTION,'ATTENTION')\"></P>
-		</TD><TD style=\"border:0\" colspan=5>&nbsp;&uarr; <B>Selected lines :</B><BR>\n
-		<input type=radio name=action value=duplicate checked> <B>Duplicate</B> (add a new line)<BR>
-		<input type=radio name=action value=delete>            <B>Delete</B> (remove a line)<BR>";
+        <P><B>Fix number of channels</B> =
+        <input type=\"text\" name=\"nbc\" size=2 value=\"$nbc\" onKeyUp=\"calc()\"
+        onMouseOut=\"nd()\" onMouseOver=\"overlib('$txt',CAPTION,'ATTENTION')\"></P>
+        </TD><TD style=\"border:0\" colspan=5>&nbsp;&uarr; <B>Selected lines :</B><BR>\n
+        <input type=radio name=action value=duplicate checked> <B>Duplicate</B> (add a new line)<BR>
+        <input type=radio name=action value=delete>            <B>Delete</B> (remove a line)<BR>";
 
 print "<TD style=\"border:0\" colspan=".(keys %fieldCLB)."><P style=\"text-align:right\">";
 print "<input type=\"button\" onClick=\"CLBshowhide();\" value=\"$__{'show/hide extra columns'}\">";

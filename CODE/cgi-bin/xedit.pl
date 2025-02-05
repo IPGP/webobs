@@ -22,20 +22,20 @@ B<wokey> is the $WEBOBS{key} whose value is the filename to be edited.
 B<wokey(ikey)> is a 1-level indirection, where wokey is the $WEBOBS{key} that points to the configuration file that defines the ikey whose value is the filename to be edited.
 In both cases, the target filename must reside in $WEBOBS{ROOT_CONF} or $WEBOBS{ROOT_DATA}; its WebObs' authorization resource name is B<authmisc.path> (see Users.pm for path-like resources)
 
-	eg. : fs=CONF_NODES
-	will browse/edit the CONF/file pointed to by $WEBOBS{CONF_NODES} 
+    eg. : fs=CONF_NODES
+    will browse/edit the CONF/file pointed to by $WEBOBS{CONF_NODES} 
 
-	eg. : fs=CONF_NODES(FILE_NODES2NODES)
-	will browse/edit the file pointed to by FILE_NODES2NODES in the file pointed to by $WEBOBS{CONF_NODES}
+    eg. : fs=CONF_NODES(FILE_NODES2NODES)
+    will browse/edit the file pointed to by FILE_NODES2NODES in the file pointed to by $WEBOBS{CONF_NODES}
 
 B<CONF/path> or B<DATA/path> is the filename to be edited, in $WEBOBS{ROOT_CONF} or $WEBOBS{ROOT_DATA} respectively; 
 its WebObs' authorization resource name is B<authmisc.path> (see Users.pm for path-like resources)
 
 =item action={save | edit}
 
-	'edit' (default when action is not specified) to display edit html-form edit 
-	'save' internaly used to save the file after html-form edition
-	(other parameters are used along with 'save': ts0, txt)
+    'edit' (default when action is not specified) to display edit html-form edit 
+    'save' internaly used to save the file after html-form edition
+    (other parameters are used along with 'save': ts0, txt)
 
 =item browse=
 
@@ -210,13 +210,13 @@ print "<link rel=\"stylesheet\" href=\"/js/codemirror/lib/codemirror.css\">
 # - page, xedit scripts
 print "<script type=\"text/javascript\">
 var CODEMIRROR_CONF = {
-	READWRITE_THEME: '$CM_edit_theme',
-	READONLY_THEME: '$CM_browsing_theme',
-	LANGUAGE_MODE: '$CM_language_mode',
-	AUTO_VIM_MODE: '$CM_auto_vim_mode',
-	EDIT_PERM: ".($editOK || $admOK ? 1 : 0).",
-	FORM: '#theform',
-	POST_URL: '$me'
+    READWRITE_THEME: '$CM_edit_theme',
+    READONLY_THEME: '$CM_browsing_theme',
+    LANGUAGE_MODE: '$CM_language_mode',
+    AUTO_VIM_MODE: '$CM_auto_vim_mode',
+    EDIT_PERM: ".($editOK || $admOK ? 1 : 0).",
+    FORM: '#theform',
+    POST_URL: '$me'
 };
 </script>
 <script src=\"/js/cmtextarea.js\"></script>

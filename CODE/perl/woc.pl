@@ -87,8 +87,8 @@ my %vectors =
     'dbruns'     => {'rtne' => \&dbruns,   'seq' => 200, 'auth' => 'A' ,'help' => 'dbruns                : list all jobs last run info' },
     'sys'        => {'rtne' => \&sys,      'seq' => 300, 'auth' => 'R' ,'help' => 'sys                   : print system information' },
 
-#		'!'          => {'rtne' => \&xsys,     'seq' => 310, 'auth' => 'A' ,'help' => '! cmd                 : exec shell cmd (WebObs vars single-quoted for interpolation)' },
-#		'='          => {'rtne' => \&xsys,     'seq' => 310, 'auth' => 'A' ,'help' => '= expr                : exec perl expr (interactive mode only)' },
+#        '!'          => {'rtne' => \&xsys,     'seq' => 310, 'auth' => 'A' ,'help' => '! cmd                 : exec shell cmd (WebObs vars single-quoted for interpolation)' },
+#        '='          => {'rtne' => \&xsys,     'seq' => 310, 'auth' => 'A' ,'help' => '= expr                : exec perl expr (interactive mode only)' },
     'dd'         => {'rtne' => \&dd,       'seq' => 320, 'auth' => 'A' ,'help' => 'dd                    : keys of main hashes and their occurence' },
     'ddxref'     => {'rtne' => \&ddx,      'seq' => 321, 'auth' => 'A' ,'help' => 'ddxref                : keys of main hashes + their occurence + xref' },
     'help'       => {'rtne' => \&dhelp,    'seq' => 400, 'auth' => 'R' ,'help' => 'help                  : this help text !' },
@@ -745,8 +745,8 @@ sub ddev {
                         }
 
                         #if ( $lienNode{$carFileName} ne "" ) {
-                        #	$lienNode{$carFileName} .= "\n\n";
-                        #}	
+                        #    $lienNode{$carFileName} .= "\n\n";
+                        #}    
                         $lien_car = 1;
                     }
                     printf ("  %s  %s $NODES{FILE_NODES2NODES} , %s\n",$carFileName,($lien_car==1)?"in ":"not in" ,(-e $carFile)?"has $carFile":"has no txt file");
@@ -809,12 +809,12 @@ sub ddx {
     print Dumper \%keysWO;
     ddxrevcore(\%keysWO, "webobs");
 
-    #	print"\n**************************************************************\n";
-    #	print"* xrefs might NOT be comprehensive lists. They are built     *\n";
-    #	print"* using naming/coding conventions & also scan comments.      *\n";
-    #	print"* cgi: 'key' looked for in {key} or {'key'} case insensitive.*\n";
-    #	print"* mat: 'key' looked for in xx.key, xx 1 or 2 uppercase alpha.*\n";
-    #	print"**************************************************************\n";
+    #    print"\n**************************************************************\n";
+    #    print"* xrefs might NOT be comprehensive lists. They are built     *\n";
+    #    print"* using naming/coding conventions & also scan comments.      *\n";
+    #    print"* cgi: 'key' looked for in {key} or {'key'} case insensitive.*\n";
+    #    print"* mat: 'key' looked for in xx.key, xx 1 or 2 uppercase alpha.*\n";
+    #    print"**************************************************************\n";
 }
 
 # woc internal helpers functions for dd* commands
@@ -1037,44 +1037,44 @@ Square brackets denote optional parameters.
 
 dump %WEBOBS key or all keys - [key] is a regular expression.
 
-	<WOC> %WEBOBS POSTB
-	[[ %WEBOBS from /etc/webobs.d/WEBOBS.conf (1371052936) + /etc/webobs.d/WEBOBS.rc (1371114257) ]]
-	$WEBOBS{POSTBOARD_MAILER} => mutt
-	$WEBOBS{POSTBOARD_MAILER_DEFSUBJECT} => test
-	$WEBOBS{POSTBOARD_MAILER_OPTS} => -nx
-	$WEBOBS{POSTBOARD_NPIPE} => /tmp/WEBOBSNP
-	$WEBOBS{SQL_DB_POSTBOARD} => /data1/webobs/CONF/WEBOBSUSERS.db
+    <WOC> %WEBOBS POSTB
+    [[ %WEBOBS from /etc/webobs.d/WEBOBS.conf (1371052936) + /etc/webobs.d/WEBOBS.rc (1371114257) ]]
+    $WEBOBS{POSTBOARD_MAILER} => mutt
+    $WEBOBS{POSTBOARD_MAILER_DEFSUBJECT} => test
+    $WEBOBS{POSTBOARD_MAILER_OPTS} => -nx
+    $WEBOBS{POSTBOARD_NPIPE} => /tmp/WEBOBSNP
+    $WEBOBS{SQL_DB_POSTBOARD} => /data1/webobs/CONF/WEBOBSUSERS.db
 
 =item B<-%WEBOBS value>  
 
 which %WEBOBS key(s) holds value - value is a regular expression
 
-	<WOC> -%WEBOBS WEBOBSUSERS
-	[[ %WEBOBS from /etc/webobs.d/WEBOBS.conf (1371052936) + /etc/webobs.d/WEBOBS.rc (1371114257) ]]
-	$WEBOBS{SQL_DB_POSTBOARD} => /data1/webobs/CONF/WEBOBSUSERS.db
-	$WEBOBS{SQL_DB_USERS} => /data1/webobs/CONF/WEBOBSUSERS.db
+    <WOC> -%WEBOBS WEBOBSUSERS
+    [[ %WEBOBS from /etc/webobs.d/WEBOBS.conf (1371052936) + /etc/webobs.d/WEBOBS.rc (1371114257) ]]
+    $WEBOBS{SQL_DB_POSTBOARD} => /data1/webobs/CONF/WEBOBSUSERS.db
+    $WEBOBS{SQL_DB_USERS} => /data1/webobs/CONF/WEBOBSUSERS.db
 
 =item B<%OWNERS> 
 
 dump all %OWNRS hash
 
-	<WOC> %OWNERS
-	$OWNRS{B} => MVO
-	$OWNRS{M} => OVSM
-	$OWNRS{R} => OVPF
-	$OWNRS{I} => IPGP
+    <WOC> %OWNERS
+    $OWNRS{B} => MVO
+    $OWNRS{M} => OVSM
+    $OWNRS{R} => OVPF
+    $OWNRS{I} => IPGP
 
 =item B<%USERS [login]>
 
 dump %USERS entry for login or all
 
-	<WOC> %USERS webobs
-	[[ %USERS DB /data1/webobs/CONF/WEBOBSUSERS.db (1371053050) TABLE users ]]
-	$USERS{webobs} => HASH(0x866eae0)
-	UID ==> !
-	FULLNAME ==> WebObs Owner
-	EMAIL ==> webhost@somewhere.org
-	LOGIN ==> webobs
+    <WOC> %USERS webobs
+    [[ %USERS DB /data1/webobs/CONF/WEBOBSUSERS.db (1371053050) TABLE users ]]
+    $USERS{webobs} => HASH(0x866eae0)
+    UID ==> !
+    FULLNAME ==> WebObs Owner
+    EMAIL ==> webhost@somewhere.org
+    LOGIN ==> webobs
 
 =item B<authres>
 
@@ -1082,134 +1082,134 @@ list all authorizations resources as "resourceType / resourceName". This does NO
 all possible resources as used by WebObs programs, but ONLY those currently
 defined (active) in the database. 
 
-	<WOC> authres
-	authprocs / HEBDO
-	authprocs / HEBDOTout
-	...
+    <WOC> authres
+    authprocs / HEBDO
+    authprocs / HEBDOTout
+    ...
 
 =item B<dbuser login>
 
 query USERS database for login , ie. user definition + its current authorizations + its user-group(s)
 
-	<WOC> dbuser webobs
-	!,WebObs Owner,webobs,webobs@somewhere.org
-	authprocs: 
-	!           *           4         
-	authviews: 
-	!           *           4         
-	.... 
-	groups :
-	+BASE       ! 
+    <WOC> dbuser webobs
+    !,WebObs Owner,webobs,webobs@somewhere.org
+    authprocs: 
+    !           *           4         
+    authviews: 
+    !           *           4         
+    .... 
+    groups :
+    +BASE       ! 
 
 =item B<newuser>
 
 add (define) a new user
 
-	<WOC> newuser
-	enter new row as: 'UID','FULLNAME','LOGIN','EMAIL'
-	> 'JD','John Doe','jdoe','john.doe@somewhere.org'
-	= insert into users values('JD','John Doe','jdoe','john.doe@somewhere.org')
-	Y/N ? Y
+    <WOC> newuser
+    enter new row as: 'UID','FULLNAME','LOGIN','EMAIL'
+    > 'JD','John Doe','jdoe','john.doe@somewhere.org'
+    = insert into users values('JD','John Doe','jdoe','john.doe@somewhere.org')
+    Y/N ? Y
 
 =item B<deluser>
 
 delete a user
 
-	<WOC> deluser jdoe
-	= delete from users where login = jdoe
-	Y/N ? Y
+    <WOC> deluser jdoe
+    = delete from users where login = jdoe
+    Y/N ? Y
 
 =item B<newgroup>
 
 add (define) a new user's group
 
-	<WOC> newgroup
-	enter new row as: 'GID',UID
-	> 'myowngroup','DL'
-	= insert into groups values('myowngroup','DL')
-	Y/N ? Y
+    <WOC> newgroup
+    enter new row as: 'GID',UID
+    > 'myowngroup','DL'
+    = insert into groups values('myowngroup','DL')
+    Y/N ? Y
 
 =item B<delgroup>
 
 delete a user's group
 
-	<WOC> delgroup group
-	= delete from group where gid = group
-	Y/N ? Y
+    <WOC> delgroup group
+    = delete from group where gid = group
+    Y/N ? Y
 
 =item B<grant auth>
 
 define an access record into the 'auth' authorization table, ie. grant Read or Edit or Adm authorization to 
 a userid for a resourceName of the resourceType 'auth'. 
 
-	<WOC> grant authprocs
-	enter new row as: 'UID','RESOURCE',AUTH
-	> 'JD','SOURCES',4
-	= insert into authprocs values('JD','SOURCES',4)
-	Y/N ? Y
+    <WOC> grant authprocs
+    enter new row as: 'UID','RESOURCE',AUTH
+    > 'JD','SOURCES',4
+    = insert into authprocs values('JD','SOURCES',4)
+    Y/N ? Y
 
 =item B<auth login>
 
 another way to look at authorizations granted to 'login' user. 
 
-	<WOC> auth webobs
-	authprocs =>
-	* 4
-	authviews =>
-	* 4
-	authmisc =>
-	* 4
-	authforms =>
-	* 4
-	authwikis =>
-	* 4
+    <WOC> auth webobs
+    authprocs =>
+    * 4
+    authviews =>
+    * 4
+    authmisc =>
+    * 4
+    authforms =>
+    * 4
+    authwikis =>
+    * 4
 
 =item B<%NODES [key]> 
 
 dump %NODES key or all keys - [key] is a regular expression
 
-	<WOC> %NODES
-	$NODES{SPATH_SCHEMES} => SCHEMAS
-	$NODES{FILE_NODES2NODES} => /data1/webobs/CONF/nodes2nodes.rc
-	$NODES{CGI_FORM} => formNODE.pl
-	.....
-	$NODES{SPATH_DOCUMENTS} => DOCUMENTS
+    <WOC> %NODES
+    $NODES{SPATH_SCHEMES} => SCHEMAS
+    $NODES{FILE_NODES2NODES} => /data1/webobs/CONF/nodes2nodes.rc
+    $NODES{CGI_FORM} => formNODE.pl
+    .....
+    $NODES{SPATH_DOCUMENTS} => DOCUMENTS
 
 =item B<proc [proc]>
 
 dump a PROC proc or list all PROCs
 
-	<WOC> proc
-	SOURCES
-	CGPSWI
+    <WOC> proc
+    SOURCES
+    CGPSWI
 
-	<WOC> proc SO
-	SOURCES
-	ddb ==> CGI_AFFICHE_EAUX
-	net ==> 304
-	THUMBNAIL ==> 1
-	....
-	FORM ==> EAUX
+    <WOC> proc SO
+    SOURCES
+    ddb ==> CGI_AFFICHE_EAUX
+    net ==> 304
+    THUMBNAIL ==> 1
+    ....
+    FORM ==> EAUX
 
 =item B<form [form]>
 
 dump a FORM form or list all FORMS. Form is dump using the Form object's dump method 
 (ie. my $F = new WebObs::Form($_[0]); print $F->dump; )
 
-	<WOC> form EAUX
-	Form EAUX
-	Form configuration path: /data1/woz/CONF/FORMS/EAUX
-	FILE_NAME => EAUX.DAT
-	BANG => 1797
-	FILE_TYPE => typeSitesEaux.conf
-	TITLE => Databank of waters chemical analysis
-	CGI_POST => postEAUX.pl
-	CGI_SHOW => showEAUX.pl
-	CGI_FORM => formEAUX.pl
-	FILE_RAPPORTS => rapportsEaux.conf
-	FILE_CSV_PREFIX => OVSG_EAUX
-	Form data file is: /data1/woz/DATA/DB/EAUX.DAT
-	Related proc(s): SOURCES(Soufrière Hot Springs Analysis)
+    <WOC> form EAUX
+    Form EAUX
+    Form configuration path: /data1/woz/CONF/FORMS/EAUX
+    FILE_NAME => EAUX.DAT
+    BANG => 1797
+    FILE_TYPE => typeSitesEaux.conf
+    TITLE => Databank of waters chemical analysis
+    CGI_POST => postEAUX.pl
+    CGI_SHOW => showEAUX.pl
+    CGI_FORM => formEAUX.pl
+    FILE_RAPPORTS => rapportsEaux.conf
+    FILE_CSV_PREFIX => OVSG_EAUX
+    Form data file is: /data1/woz/DATA/DB/EAUX.DAT
+    Related proc(s): SOURCES(Soufrière Hot Springs Analysis)
 
 =item B<view [view]>
 
@@ -1219,18 +1219,18 @@ dump a VIEW view or list all VIEWS
 
 dump a NODE node or list all NODES names
 
-	<WOC> node
-	GCSBJN1  WDCBIM0  WDCMPOM  WDCDHS0  WDCTDB0  WDCABD0  WDCDSD0  WDCCBE0
-	DJLTEST  JTATEST  WDCILAM  GCSBCM1  WDCMGL0
+    <WOC> node
+    GCSBJN1  WDCBIM0  WDCMPOM  WDCDHS0  WDCTDB0  WDCABD0  WDCDSD0  WDCCBE0
+    DJLTEST  JTATEST  WDCILAM  GCSBCM1  WDCMGL0
 
 =item B<nodegrids [node]>
 
 list all GRIDS referenced by a NODE node, or all GRIDS of all NODES
 
-	<WOC> nodegrids GCSBCM1
-	GCSBCM1 :
-	PROC.SOURCES
-	VIEW.SOURCES
+    <WOC> nodegrids GCSBCM1
+    GCSBCM1 :
+    PROC.SOURCES
+    VIEW.SOURCES
 
 =item B<nodedev [node]>
 
@@ -1240,12 +1240,12 @@ list nodes2node.rc for NODE node
 
 statistics on node+grids
 
-	<WOC> statnodes 
-	    13 node directories
-	     2 nodes have no grid
-	       DJLTEST  JTATEST            
-	     0 node has no proc
-	     0 node has no view
+    <WOC> statnodes 
+        13 node directories
+         2 nodes have no grid
+           DJLTEST  JTATEST            
+         0 node has no proc
+         0 node has no view
 
 =item B<newnode gridtype.gridname.newnode {from|as} othernode>
 
@@ -1262,41 +1262,41 @@ delete node 'node'. Deletes all references to 'node' in CONF/GRIDS2NODES and the
 dump file using readCfg. Well-known WebObs hash (such as %WEBOBS, %USERS,...) keys may be used in place of 'file'.
 Example: 
 
-	<WOC> %WEBOBS HEBDO
-	[[ %WEBOBS from /etc/webobs.d/WEBOBS.conf (1381419055) + /etc/webobs.d/WEBOBS.rc (1381471427) ]]
-	$WEBOBS{HEBDO_CONF} => /data1/woz/CONF/HEBDO.conf
+    <WOC> %WEBOBS HEBDO
+    [[ %WEBOBS from /etc/webobs.d/WEBOBS.conf (1381419055) + /etc/webobs.d/WEBOBS.rc (1381471427) ]]
+    $WEBOBS{HEBDO_CONF} => /data1/woz/CONF/HEBDO.conf
 
-	<WOC> readcfg $WEBOBS{HEBDO_CONF}
-	/data1/woz/CONF/HEBDO.conf
-	$VAR1 = {
-	'FILE_NAME' => '/data1/woz/DATA/DB/HEBDO.DAT',
-	'BANG' => '2001',
-	'FILE_TYPE_EVENEMENTS' => '/data1/woz/CONF/HEBDOtypes.conf',
-	'CGI_FORM' => 'formHEBDO.pl',
-	'DEFAULT_TRI' => 'Calendar',
-	'DEFAULT_DATE' => 'semaineCourante',
-	'TITLE' => 'Hebdo',
-	'CGI_POST' => 'postHEBDO.pl',
-	'CGI_SHOW' => 'showHEBDO.pl',
-	'DEFAULT_TYPE' => 'Tout'
-	};
+    <WOC> readcfg $WEBOBS{HEBDO_CONF}
+    /data1/woz/CONF/HEBDO.conf
+    $VAR1 = {
+    'FILE_NAME' => '/data1/woz/DATA/DB/HEBDO.DAT',
+    'BANG' => '2001',
+    'FILE_TYPE_EVENEMENTS' => '/data1/woz/CONF/HEBDOtypes.conf',
+    'CGI_FORM' => 'formHEBDO.pl',
+    'DEFAULT_TRI' => 'Calendar',
+    'DEFAULT_DATE' => 'semaineCourante',
+    'TITLE' => 'Hebdo',
+    'CGI_POST' => 'postHEBDO.pl',
+    'CGI_SHOW' => 'showHEBDO.pl',
+    'DEFAULT_TYPE' => 'Tout'
+    };
 
 =item B<dbjobs>
 
 list all jobs definitions known to the scheduler.
 
-	<WOC> dbjobs
-	JID = 1
-	VALIDITY = N
-	XEQ1 = $WEBOBS{JOB_MLNODISPLAY} 
-	XEQ2 = -r "locastat;exit(0)"
-	XEQ3 = 
-	RUNINTERVAL = 86400
-	MAXSYSLOAD = 0.7
-	LOGPATH = locastat
+    <WOC> dbjobs
+    JID = 1
+    VALIDITY = N
+    XEQ1 = $WEBOBS{JOB_MLNODISPLAY} 
+    XEQ2 = -r "locastat;exit(0)"
+    XEQ3 = 
+    RUNINTERVAL = 86400
+    MAXSYSLOAD = 0.7
+    LOGPATH = locastat
 
-	JID = 2 
-	....
+    JID = 2 
+    ....
 
 
 =item B<newjob>

@@ -19,20 +19,20 @@ The file is created if it does not exist AND client has Adm access.
 
 =item B<node=normnode>
 
-	normnode := gridtype.gridname.nodename
-	The fully qualified (normalized) nodename in gridtype.gridname context
+    normnode := gridtype.gridname.nodename
+    The fully qualified (normalized) nodename in gridtype.gridname context
 
 =item B<file=filespec>
 
-	filespec := [relpath/]name
-	The file to be edited, relative to $NODES{PATH_NODES}/nodename/
+    filespec := [relpath/]name
+    The file to be edited, relative to $NODES{PATH_NODES}/nodename/
 
 =item B<action=string>
 
-	string := { edit | save }
-	'edit' (default when action is not specified) to display edit html-form edit 
-	'save' internaly used to save the file after html-form edition
-	(other parameters are used along with 'save': ts0, txt)
+    string := { edit | save }
+    'edit' (default when action is not specified) to display edit html-form edit 
+    'save' internaly used to save the file after html-form edition
+    (other parameters are used along with 'save': ts0, txt)
 
 =back
 
@@ -168,16 +168,16 @@ print "Content-type: text/html; charset=utf-8
 function verif_formulaire()
 {
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-		   if (data != '') alert(data);
-       	   location.href = document.referrer;	   
-   	});
+           if (data != '') alert(data);
+              location.href = document.referrer;       
+       });
 }
 function convert2MMD()
 {
-	if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
-		\$(\"#theform\")[0].conv.value = \"1\";
-		verif_formulaire();
-	}
+    if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
+        \$(\"#theform\")[0].conv.value = \"1\";
+        verif_formulaire();
+    }
 }
 </script>
 </HEAD>
@@ -190,15 +190,15 @@ function convert2MMD()
 ";
 if (length($meta) > 0) {
     print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
-		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
+           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
 } else {
     print "<script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
-		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
+           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
 }
 print "<script type=\"text/javascript\" >
-	\$(document).ready(function() {
-		\$(\"#markItUp\").markItUp(mySettings);
-	});
+    \$(document).ready(function() {
+        \$(\"#markItUp\").markItUp(mySettings);
+    });
 </script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>

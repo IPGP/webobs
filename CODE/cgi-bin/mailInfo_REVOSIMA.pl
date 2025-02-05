@@ -4,12 +4,12 @@
 # mail_info.pl
 # ------
 # Usage: Prepare an information mail based on the Main Courante
-#	(MC) seismological database
+#    (MC) seismological database
 #
 # Arguments
-#	mc= MC conf name (optional)
-#	dateStart= Start date (mandatory)
-#	dateEnd= End date (mandatory)
+#    mc= MC conf name (optional)
+#    dateStart= Start date (mandatory)
+#    dateEnd= End date (mandatory)
 #
 # Author: Patrice Boissier <boissier@ipgp.fr>
 # Acknowledgments:
@@ -326,7 +326,7 @@ function showCredits() {
     $html .= "Carte de localisation des &eacute;picentres (± 5 km) des s&eacute;ismes volcano-tectoniques avec les r&eacute;seaux sismiques &agrave; terre (IPGP-IFREMER-CNRS-BRGM-BCSF-R&eacute;NaSS, ITES) au cours du dernier mois (&eacute;chelle temporelle de couleur). Sont aussi repr&eacute;sent&eacute;es une projection des hypocentres des s&eacute;ismes le long de coupes transverses et axiales le long de la ride montrant la localisation estim&eacute;e en profondeur (pr&eacute;cision variant entre +-5km et +-15km) des s&eacute;ismes en fonction de la magnitude (taille des symboles) et de la date (&eacute;chelle temporelle de couleur). &copy;OVPF-IPGP / REVOSIMA<br/>";
     $html .= "La sismicit&eacute; d&eacute;termin&eacute;e et valid&eacute;e en continu par le REVOSIMA peut &ecirc;tre &eacute;galement suivie sur le <a href=\"https://renass.unistra.fr/fr/zones/mayotte/\">portail RENASS.</a>";
     $html .= "</p>";
-    $html .= '	<hr>';
+    $html .= '    <hr>';
     $htmlOutput .= $html;
     $htmlBrowser .= $html;
 
@@ -369,7 +369,7 @@ function showCredits() {
                   </li><li>
                   <b>D&eacute;formation:</b> Depuis juillet 2018, l'&icirc;le de Mayotte est affect&eacute;e par des d&eacute;placements de surface li&eacute;s &agrave; l'activit&eacute; volcano-tectonique. Ces d&eacute;formations sont li&eacute;es &agrave; des circulations de fluides en profondeur se produisant &agrave; l'est de Mayotte, en lien avec l'activit&eacute; volcanique.
                   </li></ul>
-	          </p>
+              </p>
                   <hr/>
                   <p id=legend>
                     <a href=https://www.facebook.com/ReseauVolcanoSismoMayotte>Page Facebook du ReVoSiMa</a>
@@ -399,7 +399,7 @@ Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans c
     print $fh $htmlOutput;
     close $fh;
 
-    #	print "Envoie du mail";
+    #    print "Envoie du mail";
 
     my $from = $MC3{MAIL_FROM_REVOSIMA};
     my $smtpServer = $MC3{MAIL_SMTP_SERVER};

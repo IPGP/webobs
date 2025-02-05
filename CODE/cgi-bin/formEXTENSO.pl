@@ -144,7 +144,7 @@ if ( defined($QryParm->{date}) && length($QryParm->{date}) == 10 ) {
     $sel_jour  = substr($QryParm->{date},8,2);
 }
 if (defined($QryParm->{oper})) {
-    @sel_oper = split(/\ /,$QryParm->{oper});	# note: GET replaces '+' with a space
+    @sel_oper = split(/\ /,$QryParm->{oper});    # note: GET replaces '+' with a space
 }
 
 # ---- if an id is passed in querystring, override defaults with data file for this id 
@@ -200,9 +200,9 @@ print "Content-type: text/html\n\n
 <!-- avoid validating the form when pressing ENTER -->
 <script type=\"text/javascript\">
 function stopRKey(evt) {
-	  var evt = (evt) ? evt : ((event) ? event : null);
-	  var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
-	  if ((evt.keyCode == 13) && (node.type==\"text\"))  {return false;}
+      var evt = (evt) ? evt : ((event) ? event : null);
+      var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+      if ((evt.keyCode == 13) && (node.type==\"text\"))  {return false;}
 }
 document.onkeypress = stopRKey;
 </script>
@@ -217,129 +217,129 @@ print "<BODY style=\"background-color:#E0E0E0\" onLoad=\"calc();derniere_mesure(
 
 function verif_formulaire()
 {
-	var i;
-	if(document.formulaire.hr.value == '') {
-		alert('Veuillez indiquer une heure!');
-		document.formulaire.hr.focus();
-		return false;
-	}
-	if(document.formulaire.mn.value == '') {
-		alert('Veuillez indiquer les minutes!');
-		document.formulaire.mn.focus();
-		return false;
-	}
-	if(document.formulaire.oper.value == '') {
-		alert('Veuillez choisir au moins 1 op&eacute;rateur dans la liste!');
-		document.formulaire.oper.focus();
-		return false;
-	}
-	if(document.formulaire.site.value == '') {
-		alert('Veuillez sp&eacute;cifier le site de mesure!');
-		document.formulaire.site.focus();
-		return false;
-	}
-	if(document.formulaire.ruban.value == '') {
-		alert('Veuillez indiquer une valeur de ruban!');
-		document.formulaire.ruban.focus();
-		return false;
-	}
-	if (document.formulaire.ruban.value/25 % 1 != 0) {
-		alert('La valeur du ruban doit etre multiple de 25 mm!');
-		document.formulaire.ruban.focus();
-		return false;
-	}
-	if(document.formulaire.moy.value == 0) {
-		alert('Veuillez indiquer au moins une mesure!');
-		document.formulaire.f1.focus();
-		return false;
-	}
-	
-	for (i=1;i<=9;i++) {
-		//djl missing c:if (eval('document.formulaire.c' + i.toFixed(0) + '.value') >= 1) {
-		//djl missing c:	alert('La valeur du cadran #' + i.toFixed(0) + ' doit etre inferieure a 1 !');
-		//djl missing c:	eval('document.formulaire.c' + i.toFixed(0) + '.focus()');
-		//djl missing c:	return false;
-		//djl missing c:}
-		if (eval('document.formulaire.f' + i.toFixed(0) + '.value') != '' && eval('document.formulaire.v' + i.toFixed(0) + '.value') == '') {
-			alert('Veuillez indiquer la force du vent pour la mesure #' + i.toFixed(0) + ' !');
-			eval('document.formulaire.v' + i.toFixed(0) + '.focus()');
-			return false;
-		}
-	}
+    var i;
+    if(document.formulaire.hr.value == '') {
+        alert('Veuillez indiquer une heure!');
+        document.formulaire.hr.focus();
+        return false;
+    }
+    if(document.formulaire.mn.value == '') {
+        alert('Veuillez indiquer les minutes!');
+        document.formulaire.mn.focus();
+        return false;
+    }
+    if(document.formulaire.oper.value == '') {
+        alert('Veuillez choisir au moins 1 op&eacute;rateur dans la liste!');
+        document.formulaire.oper.focus();
+        return false;
+    }
+    if(document.formulaire.site.value == '') {
+        alert('Veuillez sp&eacute;cifier le site de mesure!');
+        document.formulaire.site.focus();
+        return false;
+    }
+    if(document.formulaire.ruban.value == '') {
+        alert('Veuillez indiquer une valeur de ruban!');
+        document.formulaire.ruban.focus();
+        return false;
+    }
+    if (document.formulaire.ruban.value/25 % 1 != 0) {
+        alert('La valeur du ruban doit etre multiple de 25 mm!');
+        document.formulaire.ruban.focus();
+        return false;
+    }
+    if(document.formulaire.moy.value == 0) {
+        alert('Veuillez indiquer au moins une mesure!');
+        document.formulaire.f1.focus();
+        return false;
+    }
+    
+    for (i=1;i<=9;i++) {
+        //djl missing c:if (eval('document.formulaire.c' + i.toFixed(0) + '.value') >= 1) {
+        //djl missing c:    alert('La valeur du cadran #' + i.toFixed(0) + ' doit etre inferieure a 1 !');
+        //djl missing c:    eval('document.formulaire.c' + i.toFixed(0) + '.focus()');
+        //djl missing c:    return false;
+        //djl missing c:}
+        if (eval('document.formulaire.f' + i.toFixed(0) + '.value') != '' && eval('document.formulaire.v' + i.toFixed(0) + '.value') == '') {
+            alert('Veuillez indiquer la force du vent pour la mesure #' + i.toFixed(0) + ' !');
+            eval('document.formulaire.v' + i.toFixed(0) + '.focus()');
+            return false;
+        }
+    }
     \$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
-	   //var contents = \$( data ).find( '#contents' ).text(); 
-	   alert(data);
-	   document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
-	   }
-	);
+       //var contents = \$( data ).find( '#contents' ).text(); 
+       alert(data);
+       document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
+       }
+    );
 }
 
 function calc()
 {
-	var moy = 0;
-	var sig = 0;
-	var n = 0;
-	var v = 0;
-	var i;
-	var ns = '';
-	var rouge = '#FF0000';
-	var orange = '#FFD800';
-	var vert = '#66FF66';
-	var blanc = '#FFFFFF';
+    var moy = 0;
+    var sig = 0;
+    var n = 0;
+    var v = 0;
+    var i;
+    var ns = '';
+    var rouge = '#FF0000';
+    var orange = '#FFD800';
+    var vert = '#66FF66';
+    var blanc = '#FFFFFF';
 
-	for (i=0;i<formulaire.oper.length;i++) {
-		if (formulaire.oper.options[i].selected) {
-			if (ns != '') ns = ns + '+';
-			ns = ns + formulaire.oper.options[i].value;
-		}
-	}
-	formulaire.nomselect.value = ns;
-	
-	if (formulaire.ruban.value/25 % 1 != 0) {
-		formulaire.ruban.style.background = rouge;
-	} else {
-		formulaire.ruban.style.background = blanc;
-	}
-	
-	for (i=1;i<=$nbData;i++) {
-		if (formulaire['f' + i].value != '') {
-			v = formulaire.offset.value*1 + formulaire.ruban.value*1 + formulaire['f' + i].value*1;
-			moy += v; sig += v*v; n++;
-		}
-	}
+    for (i=0;i<formulaire.oper.length;i++) {
+        if (formulaire.oper.options[i].selected) {
+            if (ns != '') ns = ns + '+';
+            ns = ns + formulaire.oper.options[i].value;
+        }
+    }
+    formulaire.nomselect.value = ns;
+    
+    if (formulaire.ruban.value/25 % 1 != 0) {
+        formulaire.ruban.style.background = rouge;
+    } else {
+        formulaire.ruban.style.background = blanc;
+    }
+    
+    for (i=1;i<=$nbData;i++) {
+        if (formulaire['f' + i].value != '') {
+            v = formulaire.offset.value*1 + formulaire.ruban.value*1 + formulaire['f' + i].value*1;
+            moy += v; sig += v*v; n++;
+        }
+    }
 
-	if (n != 0) {
-		moy = moy/n;
-		sig = 2*Math.sqrt(sig/n - moy*moy);
-	}
-	formulaire.moy.value = moy.toFixed(2);
-	formulaire.sig.value = sig.toFixed(2);
-	formulaire.sig.style.background = vert;
-	if (sig > 1) {
-		formulaire.sig.style.background = orange;
-	}
-	if (sig > 2) {
-		formulaire.sig.style.background = rouge;
-	}
+    if (n != 0) {
+        moy = moy/n;
+        sig = 2*Math.sqrt(sig/n - moy*moy);
+    }
+    formulaire.moy.value = moy.toFixed(2);
+    formulaire.sig.value = sig.toFixed(2);
+    formulaire.sig.style.background = vert;
+    if (sig > 1) {
+        formulaire.sig.style.background = orange;
+    }
+    if (sig > 2) {
+        formulaire.sig.style.background = rouge;
+    }
 }
 
 function propagate_wind()
 {
-	var vv = '';
-	for (i=1;i<=$nbData;i++) {
-		if (vv == '' && formulaire['v' + i].value != '') { vv = formulaire['v' + i].value; }
-	}
-	if (vv != '') {
-		for (i=1;i<=$nbData;i++) {
-			if (formulaire['v' + i].value == '') { formulaire['v' + i].value = vv; }
-		}
-	}
-	
+    var vv = '';
+    for (i=1;i<=$nbData;i++) {
+        if (vv == '' && formulaire['v' + i].value != '') { vv = formulaire['v' + i].value; }
+    }
+    if (vv != '') {
+        for (i=1;i<=$nbData;i++) {
+            if (formulaire['v' + i].value == '') { formulaire['v' + i].value = vv; }
+        }
+    }
+    
 }
 
 function derniere_mesure()
 {
-	formulaire.prevmes.value = eval('formulaire.' + formulaire.site.value + '.value');
+    formulaire.prevmes.value = eval('formulaire.' + formulaire.site.value + '.value');
 }
 window.captureEvents(Event.KEYDOWN);
 window.onkeydown = calc();
@@ -357,9 +357,9 @@ print "<input type=\"hidden\" name=\"user\" value=\"$CLIENT\">\n";
 
 print "<TABLE style=border:0 onMouseOver=\"calc()\"><TR>";
 print "<TD style=border:0 valign=top nowrap>
-	<fieldset><legend>Date, site et op&eacute;rateurs</legend>
-	<P class=parform>
-	<B>Date: </b><select name=annee tabindex=1 size=\"1\">";
+    <fieldset><legend>Date, site et op&eacute;rateurs</legend>
+    <P class=parform>
+    <B>Date: </b><select name=annee tabindex=1 size=\"1\">";
 for (@anneeListe) {
     if ($_ == $sel_annee) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
 }
@@ -390,7 +390,7 @@ for (@minuteListe) {
 }
 print "</select><BR>";
 print "<B>Site:</B> <select name=site tabindex=6 onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner le site')\"
-		onChange=\"derniere_mesure()\" size=\"1\"><option value=\"\"></option>\n";
+        onChange=\"derniere_mesure()\" size=\"1\"><option value=\"\"></option>\n";
 for (@NODESSelList) {
     my @cle = split(/\|/,$_);
     $sel = "";
@@ -401,7 +401,7 @@ print "</select><BR>\n";
 
 print "<p><b>Op&eacute;rateur(s): </b>";
 print "<select name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\" onClick=\"calc()\"
-	      onMouseOut=\"nd()\" onmouseover=\"overlib('Select names of people involved; (hold CTRL key for multiple selection)')\">\n";
+          onMouseOut=\"nd()\" onmouseover=\"overlib('Select names of people involved; (hold CTRL key for multiple selection)')\">\n";
 my %ku;
 for (keys(%USERS)) { $ku{$USERS{$_}{FULLNAME}} = $_; }
 for (sort(keys(%ku))) {
@@ -410,21 +410,21 @@ for (sort(keys(%ku))) {
 }
 
 #FB-was: for my $ulogin (sort keys(%USERS)) {
-#FB-was:	my $sel = "";
-#FB-was:	if ($USERS{$ulogin}{UID} ~~ @sel_oper) { $sel = ' selected '}
-#FB-was:	print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME}</option>\n";
+#FB-was:    my $sel = "";
+#FB-was:    if ($USERS{$ulogin}{UID} ~~ @sel_oper) { $sel = ' selected '}
+#FB-was:    print "<option $sel value=\"$USERS{$ulogin}{UID}\">$USERS{$ulogin}{FULLNAME}</option>\n";
 #FB-was:}
 print "</select>";
 
 #djl-del: print "<textarea style=\"vertical-align:text-top; background-color:#E0E0E0;border:0;font-weight:bold;\" 
-#djl-del: 	readonly cols=\"20\" rows=\"10\" name=\"nomselect\" value=\"\"></textarea></p>";
+#djl-del:     readonly cols=\"20\" rows=\"10\" name=\"nomselect\" value=\"\"></textarea></p>";
 # currently read or selected people 
 print "<P><INPUT style=\"border:none\" type=\"text\" readonly name=\"nomselect\" size=\"40\" value=\"\"
-	      onMouseOut=\"nd()\" onmouseover=\"overlib('currently selected people')\">\n";
+          onMouseOut=\"nd()\" onmouseover=\"overlib('currently selected people')\">\n";
 print "</fieldset>\n";
 
 print "<fieldset><legend>M&eacute;t&eacute;o et Observations</legend>\n
-		<P class=parform><table border=0><tr><td style=\"border:0\"><B>Description m&eacute;t&eacute;o:</td>";
+        <P class=parform><table border=0><tr><td style=\"border:0\"><B>Description m&eacute;t&eacute;o:</td>";
 
 #print "<select name=meteo size=1 onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner un qualificatif repr&eacute;sentant la m&eacute;t&eacute;o')\">";
 for (@meteo) {
@@ -437,21 +437,21 @@ for (@meteo) {
 print "</tr></table></P>\n";
 
 print "<P class=parform><B>Temp&eacute;rature de l'air</B> (en &deg;C) = <input size=5 class=inputNum name=temp tabindex=9 value=\"$sel_temp\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de temp&eacute;rature de l&apos;air')\"><BR>\n
-		</select></P>\n";
+        </select></P>\n";
 print "<P class=parform>
-	<B>Observations</B>: <input size=60 name=rem tabindex=10 value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter vos observations')\"><BR>
-	<B>Information de saisie:</B> $val
-	<INPUT type=hidden name=val value=\"$val\"></P>";
+    <B>Observations</B>: <input size=60 name=rem tabindex=10 value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter vos observations')\"><BR>
+    <B>Information de saisie:</B> $val
+    <INPUT type=hidden name=val value=\"$val\"></P>";
 print "</fieldset></TD>\n";
 
 print "<TD style=border:0 valign=top>
-	<fieldset><legend>Mesures de distance (mm)</legend>\n";
+    <fieldset><legend>Mesures de distance (mm)</legend>\n";
 print "<P class=parform>
-		<B>Offset extensom&egrave;tre</B> (en mm) <input size=7 class=inputNum name=offset tabindex=11 value=\"$sel_offset\"
-			onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Modifier &eacute;ventuellement l&rsquo;offset')\"><BR>\n
-		<B>Ruban:</B> (en mm) <input size=5 class=inputNum name=\"ruban\" tabindex=12 value=\"$sel_ruban\"
-			onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du ruban (multiple de 25 mm!)')\"><BR>\n
-		<B>Mesures:</B> (mm)<BR>";
+        <B>Offset extensom&egrave;tre</B> (en mm) <input size=7 class=inputNum name=offset tabindex=11 value=\"$sel_offset\"
+            onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Modifier &eacute;ventuellement l&rsquo;offset')\"><BR>\n
+        <B>Ruban:</B> (en mm) <input size=5 class=inputNum name=\"ruban\" tabindex=12 value=\"$sel_ruban\"
+            onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du ruban (multiple de 25 mm!)')\"><BR>\n
+        <B>Mesures:</B> (mm)<BR>";
 for my $ix (@donneeListe) {
 
 #djl-was: print "$_. <input size=5 class=inputNum name=\"f$_\" tabindex=13 value=\"$sel_d[$_-1]\" 
@@ -476,7 +476,7 @@ for my $ix (@donneeListe) {
 print "</P>\n";
 
 print "<P class=parform><B>Moyenne</B> (mm) = <input name=\"moy\" size=7 readOnly class=inputNumNoEdit>
-	<B>2 &times; &Eacute;cart-type</B> (mm) = <input name=\"sig\" size=4 readOnly class=inputNumNoEdit></P>\n";
+    <B>2 &times; &Eacute;cart-type</B> (mm) = <input name=\"sig\" size=4 readOnly class=inputNumNoEdit></P>\n";
 print "<P class=parform><B>Derni&egrave;re mesure du site</B> = <input name=\"prevmes\" size=25 readOnly style=\"background-color:#E0E0E0;border:0\"></P>\n";
 
 # Hidden variables

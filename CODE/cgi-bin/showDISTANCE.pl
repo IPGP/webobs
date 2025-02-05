@@ -270,14 +270,14 @@ for(@lignes) {
                 my $dd = 0;
                 if (($d[$j] - $d[0]) > 500) { $dd = -1; }
                 if (($d[$j] - $d[0]) < -500) { $dd = 1; }
-                $DM += $d0 + $d[$j]/1000 + $dd;		  # $DM = momentanément somme des x
+                $DM += $d0 + $d[$j]/1000 + $dd;          # $DM = momentanément somme des x
                 $DS += ($d0 + $d[$j]/1000 + $dd)**2;  # $DS = momentanément somme des x²
                 $n++;
             }
         }
         if ($n > 0) {
-            $DM = $DM/$n;	# $DM = moyenne
-            $DS = 2 * sqrt($DS/$n - $DM*$DM);	# $DS = 2 * écart-type
+            $DM = $DM/$n;    # $DM = moyenne
+            $DS = 2 * sqrt($DS/$n - $DM*$DM);    # $DS = 2 * écart-type
         }
 
         $aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
@@ -346,9 +346,9 @@ if ($QryParm->{'affiche'} eq "csv") {
 } else {
     print @html;
     print "<style type=\"text/css\">
-		#attente { display: none; }
-	</style>\n
-	<BR>\n</BODY>\n</HTML>\n";
+        #attente { display: none; }
+    </style>\n
+    <BR>\n</BODY>\n</HTML>\n";
 }
 
 __END__

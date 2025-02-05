@@ -24,13 +24,13 @@ are presented to the user with default values taken from a B<template>: $WEBOBS{
 A submitted B<Request for Graphs> will have all of its results (outputs) files grouped into the
 OUTR directory, under a subdirectory whose name uniquely identifies the Request:
 
-	OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
-		REQUEST.rc
-		PROC.PROCa/
-			{exports,graphs,maps,logs}/
-		....
-		PROC.PROCz/
-			{exports,graphs,maps,logs}/
+    OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
+        REQUEST.rc
+        PROC.PROCa/
+            {exports,graphs,maps,logs}/
+        ....
+        PROC.PROCz/
+            {exports,graphs,maps,logs}/
 
 See postREQ.pl documentation for further Request's execution/parameters description.
 
@@ -45,44 +45,44 @@ supporting $WEBOBS parametres substitution.
 
 B<SUBMIT_RESOURCE> is the optional routine execution mutex name (process lock).
 
-	Example:
-	SUBMIT_COMMAND|$WEBOBS{JOB_MCC} superproc $SELFREF -
-	SUBMIT_RESOURCE|proc1
+    Example:
+    SUBMIT_COMMAND|$WEBOBS{JOB_MCC} superproc $SELFREF -
+    SUBMIT_RESOURCE|proc1
 
 B<REQUEST_KEYLIST> is used to specify a list of comma-separated keys of existing parameters, that will be
 presented to the user so that (s)he will have a chance to overwrite corresponding values for request execution.
 Such parameters will be appended to the REQUEST.rc file as 'PROC.procname.originalKey|user's value'
 
-	Example:
-	PARAM1|10
-	PARAM2|200
-	REQUEST_KEYLIST|PARAM1,PARAM2
-	will eventually appear in REQUEST.rc as:
-	PROC.THISPROC.PARAM1|11       (user's input 11)
-	PROC.THISPROC.PARAM2|200      (user's didn't overwrite value)
+    Example:
+    PARAM1|10
+    PARAM2|200
+    REQUEST_KEYLIST|PARAM1,PARAM2
+    will eventually appear in REQUEST.rc as:
+    PROC.THISPROC.PARAM1|11       (user's input 11)
+    PROC.THISPROC.PARAM2|200      (user's didn't overwrite value)
 
 =head1 DATE SPAN AND PARAMETERS
 
 Date span:
 
-	A start date
-	An end date
+    A start date
+    An end date
 
 Parameters:
 
-	TZ
-	DATESTR
-	PPI
-	MARKERSIZE
-	LINEWIDTH
-	PLOTGRID
-	CUMULATE
-	DECIMATE
-	PDFOUTPUT
-	POSTSCRIPT
-	EXPORTS
-	ANONYMOUS
-	DEBUG
+    TZ
+    DATESTR
+    PPI
+    MARKERSIZE
+    LINEWIDTH
+    PLOTGRID
+    CUMULATE
+    DECIMATE
+    PDFOUTPUT
+    POSTSCRIPT
+    EXPORTS
+    ANONYMOUS
+    DEBUG
 
 =cut
 
@@ -189,98 +189,98 @@ print "Content-type: text/html; charset=utf-8
 <script type=\"text/javascript\">
 
 function selProc(proc) {
-	obj = \"#pkeysdrawer\"+proc;
-	//toggle to show/hide; prop(disabled) to (not)serialize in post
-	//all inputs of a proc must start as  display:none AND disabled
-	\$(obj).toggle();
-	\$(obj).find('input').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
+    obj = \"#pkeysdrawer\"+proc;
+    //toggle to show/hide; prop(disabled) to (not)serialize in post
+    //all inputs of a proc must start as  display:none AND disabled
+    \$(obj).toggle();
+    \$(obj).find('input').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
 }
 
 function checkForm()
 {
-	var d1 = document.form.startY.value.concat(document.form.startM.value,document.form.startD.value,document.form.startH.value,document.form.startN.value);
-	var d2 = document.form.endY.value.concat(document.form.endM.value,document.form.endD.value,document.form.endH.value,document.form.endN.value);
-	if (d1 >= d2) {
-		alert(\"End date must not be before Start date!\");
-		return false;
-	}
-	var checkboxes = document.form.querySelectorAll(\"input[type=checkbox]\");
-	var requestprocs = 0;
-	for (index = 0; index < checkboxes.length; ++index) {
-		if (checkboxes[index].name.substring(0, 2) == \"p_\" && checkboxes[index].checked) {
-			requestprocs++;
-		}
-	}
-	if (requestprocs == 0) {
-		alert(\"You must select at least one PROC to execute...\");
-	} else {
-		postIt();
-	}
+    var d1 = document.form.startY.value.concat(document.form.startM.value,document.form.startD.value,document.form.startH.value,document.form.startN.value);
+    var d2 = document.form.endY.value.concat(document.form.endM.value,document.form.endD.value,document.form.endH.value,document.form.endN.value);
+    if (d1 >= d2) {
+        alert(\"End date must not be before Start date!\");
+        return false;
+    }
+    var checkboxes = document.form.querySelectorAll(\"input[type=checkbox]\");
+    var requestprocs = 0;
+    for (index = 0; index < checkboxes.length; ++index) {
+        if (checkboxes[index].name.substring(0, 2) == \"p_\" && checkboxes[index].checked) {
+            requestprocs++;
+        }
+    }
+    if (requestprocs == 0) {
+        alert(\"You must select at least one PROC to execute...\");
+    } else {
+        postIt();
+    }
 }
 function postIt()
 {
-	\$.post(\"/cgi-bin/postREQ.pl\", \$(\"#theform\").serialize(), function(data) {
-		alert(data);
-		location.href = \"/cgi-bin/showREQ.pl\";
-	});
+    \$.post(\"/cgi-bin/postREQ.pl\", \$(\"#theform\").serialize(), function(data) {
+        alert(data);
+        location.href = \"/cgi-bin/showREQ.pl\";
+    });
 }
 function preSet()
 {
-	var now = new Date;
-	var preset = document.form.preset.value;
-	if (preset == \"fullmonth\") {
-		document.form.endY.value = now.getUTCFullYear();
-		document.form.endM.value = ('0' + (now.getUTCMonth() + 1)).substring(-2);
-		document.form.endD.value = \"01\";
-		document.form.endH.value = \"00\";
-		document.form.endN.value = \"00\";
-		document.form.startY.value = now.getUTCFullYear();
-		if (now.getUTCMonth() > 0) {
-			document.form.startM.value = ('0' + now.getUTCMonth()).substring(-2);
-		} else {
-			document.form.startY.value -= 1;
-			document.form.startM.value = \"12\";
-		}
-		document.form.startD.value = \"01\";
-		document.form.startH.value = \"00\";
-		document.form.startN.value = \"00\";
-	}
-	if (preset == \"fullyear\") {
-		document.form.startY.value = now.getUTCFullYear() - 1;
-		document.form.startM.value = \"01\";
-		document.form.startD.value = \"01\";
-		document.form.startH.value = \"00\";
-		document.form.startN.value = \"00\";
-		document.form.endY.value = now.getUTCFullYear();
-		document.form.endM.value = \"01\";
-		document.form.endD.value = \"01\";
-		document.form.endH.value = \"00\";
-		document.form.endN.value = \"00\";
-	}
-	if (preset == \"currentyear\") {
-		document.form.startY.value = now.getUTCFullYear();
-		document.form.startM.value = \"01\";
-		document.form.startD.value = \"01\";
-		document.form.startH.value = \"00\";
-		document.form.startN.value = \"00\";
-		document.form.endY.value = now.getUTCFullYear() + 1;
-		document.form.endM.value = \"01\";
-		document.form.endD.value = \"01\";
-		document.form.endH.value = \"00\";
-		document.form.endN.value = \"00\";
-	}
-	if (preset.includes(\"_\") && preset.length == 25) {
-		document.form.startY.value = preset.substring(0,4);
-		document.form.startM.value = preset.substring(4,6);
-		document.form.startD.value = preset.substring(6,8);
-		document.form.startH.value = preset.substring(8,10);
-		document.form.startN.value = preset.substring(10,12);
-		document.form.endY.value = preset.substring(13,17);
-		document.form.endM.value = preset.substring(17,19);
-		document.form.endD.value = preset.substring(19,21);
-		document.form.endH.value = preset.substring(21,23);
-		document.form.endN.value = preset.substring(23,25);
-	}
+    var now = new Date;
+    var preset = document.form.preset.value;
+    if (preset == \"fullmonth\") {
+        document.form.endY.value = now.getUTCFullYear();
+        document.form.endM.value = ('0' + (now.getUTCMonth() + 1)).substring(-2);
+        document.form.endD.value = \"01\";
+        document.form.endH.value = \"00\";
+        document.form.endN.value = \"00\";
+        document.form.startY.value = now.getUTCFullYear();
+        if (now.getUTCMonth() > 0) {
+            document.form.startM.value = ('0' + now.getUTCMonth()).substring(-2);
+        } else {
+            document.form.startY.value -= 1;
+            document.form.startM.value = \"12\";
+        }
+        document.form.startD.value = \"01\";
+        document.form.startH.value = \"00\";
+        document.form.startN.value = \"00\";
+    }
+    if (preset == \"fullyear\") {
+        document.form.startY.value = now.getUTCFullYear() - 1;
+        document.form.startM.value = \"01\";
+        document.form.startD.value = \"01\";
+        document.form.startH.value = \"00\";
+        document.form.startN.value = \"00\";
+        document.form.endY.value = now.getUTCFullYear();
+        document.form.endM.value = \"01\";
+        document.form.endD.value = \"01\";
+        document.form.endH.value = \"00\";
+        document.form.endN.value = \"00\";
+    }
+    if (preset == \"currentyear\") {
+        document.form.startY.value = now.getUTCFullYear();
+        document.form.startM.value = \"01\";
+        document.form.startD.value = \"01\";
+        document.form.startH.value = \"00\";
+        document.form.startN.value = \"00\";
+        document.form.endY.value = now.getUTCFullYear() + 1;
+        document.form.endM.value = \"01\";
+        document.form.endD.value = \"01\";
+        document.form.endH.value = \"00\";
+        document.form.endN.value = \"00\";
+    }
+    if (preset.includes(\"_\") && preset.length == 25) {
+        document.form.startY.value = preset.substring(0,4);
+        document.form.startM.value = preset.substring(4,6);
+        document.form.startD.value = preset.substring(6,8);
+        document.form.startH.value = preset.substring(8,10);
+        document.form.startN.value = preset.substring(10,12);
+        document.form.endY.value = preset.substring(13,17);
+        document.form.endM.value = preset.substring(17,19);
+        document.form.endD.value = preset.substring(19,21);
+        document.form.endH.value = preset.substring(21,23);
+        document.form.endN.value = preset.substring(23,25);
+    }
 }
 </script>
 </HEAD>
@@ -316,7 +316,7 @@ print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # right column
 
 print "<fieldset><legend>$__{'Date and time span (UT)'}</legend>";
 
-#	DATE1|  DATE2|
+#    DATE1|  DATE2|
 print "<TABLE>";
 print "<TR>";
 print "<TD style=\"border:0;text-align:right\">";
@@ -328,13 +328,13 @@ print " <select name=\"startM\" size=\"1\">";
 for (@monthList) { print "<option".(($_ eq $usrMonthS)?" selected":"")." value=$_>$_</option>\n"; }
 print "</select>";
 print " <select name=\"startD\" size=\"1\">";
-for (@dayList) { 	print "<option".(($_ eq $usrDayS)?" selected":"")." value=$_>$_</option>\n"; }
+for (@dayList) {     print "<option".(($_ eq $usrDayS)?" selected":"")." value=$_>$_</option>\n"; }
 print "</select>";
 print " &nbsp;&nbsp; <select name=\"startH\" size=\"1\">";
-for (@hourList) { 	print "<option value=$_>$_</option>\n"; }
+for (@hourList) {     print "<option value=$_>$_</option>\n"; }
 print "</select>";
 print " <select name=\"startN\" size=\"1\">";
-for (@minuteList) { 	print "<option value=$_>$_</option>\n"; }
+for (@minuteList) {     print "<option value=$_>$_</option>\n"; }
 print "</select><BR>";
 print "<b>$__{'End date'}:</b> <select name=\"endY\" size=\"1\">";
 for (@yearList) { print "<option".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
@@ -346,10 +346,10 @@ print " <select name=\"endD\" size=\"1\">";
 for (@dayList) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
 print "</select>";
 print " &nbsp;&nbsp; <select name=\"endH\" size=\"1\">";
-for (@hourList) { 	print "<option value=$_>$_</option>\n"; }
+for (@hourList) {     print "<option value=$_>$_</option>\n"; }
 print "</select>";
 print " <select name=\"endN\" size=\"1\">";
-for (@minuteList) { 	print "<option value=$_>$_</option>\n"; }
+for (@minuteList) {     print "<option value=$_>$_</option>\n"; }
 print "</select>";
 print "</div></TD>";
 print "<TD style=\"border:0\"></TD>";
@@ -376,64 +376,64 @@ print "<TABLE>";
 print "<TR>";
 print "<TD style=\"border:0\">";
 
-#	TZ|
+#    TZ|
 print "<label style=\"width:80px\" for=\"timezone\">$__{'TZ (+/-H)'}:</label>";
 print "<input id=\"timezone\" name=\"timezone\" size=\"5\" value=\"$REQDFLT{TZ}\"><BR>&nbsp;<BR>";
 
-#	DATESTR|
+#    DATESTR|
 print "<label style=\"width:80px\" for=\"datestr\">$__{'Date format'}:</label>";
 print "<select id=\"datestr\" name=\"datestr\" size=\"1\">";
 for (keys(%datestr)) { print "<OPTION".(($_ eq "-1")?" selected":"")." value=\"$_\">$datestr{$_}</OPTION>" };
 print "</select><BR>&nbsp;<BR>";
 
-#	CUMULATE|
+#    CUMULATE|
 print "<label style=\"width:80px\" for=\"cumulate\">$__{'Cumulate'}:</label>";
 print "<input id=\"cumulate\" name=\"cumulate\" size=\"5\" value=\"$REQDFLT{CUMULATE}\"> $__{'days'}<BR>&nbsp;<BR>";
 
-#	DECIMATE|
+#    DECIMATE|
 print "<label style=\"width:80px\" for=\"decimate\">$__{'Decimate'}:</label>";
 print "1/<input id=\"decimate\" name=\"decimate\" size=\"5\" value=\"$REQDFLT{DECIMATE}\"><BR>&nbsp;<BR>";
 
-#	MARKERSIZE|
+#    MARKERSIZE|
 print "<label style=\"width:80px\" for=\"markersize\">$__{'Marker size'}:</label>";
 print "<select id=\"markersize\" name=\"markersize\" size=\"1\">";
 for (@marks) { print "<OPTION".(($_ eq $REQDFLT{MARKERSIZE})?" selected":"")." value=\"$_\">$_ pt</OPTION>" };
 print "</select><BR>&nbsp;<BR>";
 
-#	LINEWIDTH|
+#    LINEWIDTH|
 print "<label style=\"width:80px\" for=\"linewidth\">$__{'Line width'}:</label>";
 print "<select id=\"linewidth\" name=\"linewidth\" size=\"1\">";
 for (@linew) { print "<OPTION".(($_ eq $REQDFLT{LINEWIDTH})?" selected":"")." value=\"$_\">$_ pt</OPTION>" };
 print "</select><BR>&nbsp;<BR>";
 
-#	PLOTGRID|
+#    PLOTGRID|
 print "<label style=\"width:80px\" for=\"gridon\">$__{'Grid'}:</label>";
 print "<input id=\"gridon\" name=\"gridon\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{PLOTGRID}) ? " checked":"")."><BR>&nbsp;<BR>";
 print "</TD><TD style=\"border:0\">";
 
-#	PPI|
+#    PPI|
 print "<label style=\"width:80px\" for=\"ppi\">$__{'PPI'}:</label>";
 print "<select id=\"ppi\" name=\"ppi\" size=\"1\">";
 for (@ppis) { print "<OPTION".(($_ eq $REQDFLT{PPI})?" selected":"")." value=\"$_\">$_</OPTION>" };
 print "</select><BR>&nbsp;<BR>";
 
-#	PDFOUTPUT|
+#    PDFOUTPUT|
 print "<label style=\"width:80px\" for=\"pdfoutput\">$__{'PDF'}:</label>";
 print "<input id=\"pdfoutput\" name=\"pdfoutput\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{PDFOUTPUT}) ? " checked":"")."><BR>&nbsp;<BR>";
 
-#	SVGOUTPUT|
+#    SVGOUTPUT|
 print "<label style=\"width:80px\" for=\"svgoutput\">$__{'SVG'}:</label>";
 print "<input id=\"svgoutput\" name=\"svgoutput\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{SVGOUTPUT}) ? " checked":"")."><BR>&nbsp;<BR>";
 
-#	EXPORTS|
+#    EXPORTS|
 print "<label style=\"width:80px\" for=\"exports\">$__{'Data exports'}:</label>";
 print "<input id=\"exports\" name=\"exports\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{EXPORTS}) ? " checked":"")."><BR>&nbsp;<BR>";
 
-#	ANONYMOUS|
+#    ANONYMOUS|
 print "<label style=\"width:80px\" for=\"anonymous\">$__{'Anonymous'}:</label>";
 print "<input id=\"anonymous\" name=\"anonymous\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{ANONYMOUS}) ? " checked":"")."><BR>&nbsp;<BR>";
 
-#	DEBUG|
+#    DEBUG|
 print "<label style=\"width:80px\" for=\"debug\">$__{'Verbose logs'}:</label>";
 print "<input id=\"debug\" name=\"debug\" type=\"checkbox\" value=\"1\"".(isok($REQDFLT{DEBUG}) ? " checked":"")."><BR>&nbsp;<BR>";
 print "</TD>";

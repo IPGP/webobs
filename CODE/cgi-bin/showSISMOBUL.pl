@@ -152,27 +152,27 @@ if ($affiche ne "csv") {
       "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_CSS}\">\n";
 
     print "<style type=\"text/css\">
-	<!--
-		#attente
-		{
-			 color: gray;
-			 background: white;
-			 margin: 0.5em;
-			 padding: 0.5em;
-			 font-size: 1.5em;
-			 border: 1px solid gray;
-		}
-		.pre {
-			font-family: monospace;
-			white-space:pre;
-			border: 1px solid lightgray;
-			margin-left: 2px;
-		}
-		.debug {
-			color: gray;
-		}
-	-->
-	</style>\n";
+    <!--
+        #attente
+        {
+             color: gray;
+             background: white;
+             margin: 0.5em;
+             padding: 0.5em;
+             font-size: 1.5em;
+             border: 1px solid gray;
+        }
+        .pre {
+            font-family: monospace;
+            white-space:pre;
+            border: 1px solid lightgray;
+            margin-left: 2px;
+        }
+        .debug {
+            color: gray;
+        }
+    -->
+    </style>\n";
 
     print "</head>\n",
       "<body style=\"background-attachment: fixed\">\n",
@@ -293,7 +293,7 @@ for(@lignes) {
 
         $lien = "<A href=\"/cgi-bin/$WEBOBS{CGI_AFFICHE_STATION}?id=$sta\"><B>$aliasSite</B></A>";
 
-# 			my $ligne_txt = substr($sta,0,3).$php.$tps.substr($phs,0,6).substr($phs,9,1)."    ".$com.substr($dur,1,4).$dis;
+#             my $ligne_txt = substr($sta,0,3).$php.$tps.substr($phs,0,6).substr($phs,9,1)."    ".$com.substr($dur,1,4).$dis;
         my $ligne_txt = sprintf("%3s%4s%15s%6s%1s    %23s%4s%4s", substr($sta,0,3), $php, $tps, substr($phs,0,6), substr($phs,9,1), $com, substr($dur,1,4), $dis);
         $texte = $texte."<TR><TD align=center><span class=pre>$lien</span><span class=\"debug pre\">".substr($sta,0,3)."</span></TD>"
           ."<TD align=center><span class=pre>$php</span></TD>"
@@ -306,8 +306,8 @@ for(@lignes) {
           ."</TR>\n";
         $txt.=$ligne_txt;
 
-# 		$txt = $txt.substr($sta,0,3).$php.$tps.substr($phs,0,6).substr($phs,9,1)."    ".$com.substr($dur,1,4).$dis."\n";
-# 		$texte .= "<tr><td colspan=7><pre>".$ligne_txt."</pre></td></tr>";
+#         $txt = $txt.substr($sta,0,3).$php.$tps.substr($phs,0,6).substr($phs,9,1)."    ".$com.substr($dur,1,4).$dis."\n";
+#         $texte .= "<tr><td colspan=7><pre>".$ligne_txt."</pre></td></tr>";
 
         $nbLignesRetenues++;
     } else {
@@ -330,9 +330,9 @@ if ($affiche eq "csv") {
 } else {
     print @html;
     print "<style type=\"text/css\">
-		#attente { display: none; }
-	</style>\n
-	<BR>\n@signature\n</BODY>\n</HTML>\n";
+        #attente { display: none; }
+    </style>\n
+    <BR>\n@signature\n</BODY>\n</HTML>\n";
 }
 
 __END__

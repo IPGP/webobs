@@ -25,12 +25,12 @@ WebObs: MMD metadata.
 The authorization resource-name, in authwikis resource-type, that is checked for Edit/Adm access to the file,
 is built from filespec following the 'path-like' resource-names rules as described in WebObs::Users.
 
-	Example:
-	file = HTML/public/intro.wiki
-	==> actual file = $WEBOBS{PATH_DATA_WEB}/HTML/public/intro.wiki
-	==> resources   = authwikis.HTML/public/intro.wiki  OR
-	                = authwikis.HTML/public  OR
-					= authwikis.HTML/
+    Example:
+    file = HTML/public/intro.wiki
+    ==> actual file = $WEBOBS{PATH_DATA_WEB}/HTML/public/intro.wiki
+    ==> resources   = authwikis.HTML/public/intro.wiki  OR
+                    = authwikis.HTML/public  OR
+                    = authwikis.HTML/
 
 =head1 Query string parameters
 
@@ -38,15 +38,15 @@ is built from filespec following the 'path-like' resource-names rules as describ
 
 =item B<file=filespec>
 
-	filespec := [relpath/]name
-	filespec (with optional relpath) is relative to $WEBOBS{PATH_DATA_WEB}
+    filespec := [relpath/]name
+    filespec (with optional relpath) is relative to $WEBOBS{PATH_DATA_WEB}
 
 =item B<action=>
 
-	{ edit | save }
-	'edit' (default when action is not specified) to enter html-form edit
-	'save' internaly used to save the file after html-form edition
-	(other parameters are used along with 'save': ts0, txt, titre, html)
+    { edit | save }
+    'edit' (default when action is not specified) to enter html-form edit
+    'save' internaly used to save the file after html-form edition
+    (other parameters are used along with 'save': ts0, txt, titre, html)
 
 =back
 
@@ -194,16 +194,16 @@ print "Content-type: text/html; charset=utf-8
 function verif_formulaire()
 {
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-		   if (data != '') alert(data);
-       	   location.href = document.referrer;
-   	});
+           if (data != '') alert(data);
+              location.href = document.referrer;
+       });
 }
 function convert2MMD()
 {
-	if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
-		\$(\"#theform\")[0].conv.value = \"1\";
-		verif_formulaire();
-	}
+    if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
+        \$(\"#theform\")[0].conv.value = \"1\";
+        verif_formulaire();
+    }
 }
 </script>
 </HEAD>
@@ -215,15 +215,15 @@ function convert2MMD()
 ";
 if (length($meta) > 0) {
     print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
-		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
+           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
 } else {
     print "<script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
-		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
+           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
 }
 print "<script type=\"text/javascript\" >
-	\$(document).ready(function() {
-		\$(\"#markItUp\").markItUp(mySettings);
-	});
+    \$(document).ready(function() {
+        \$(\"#markItUp\").markItUp(mySettings);
+    });
 </script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>

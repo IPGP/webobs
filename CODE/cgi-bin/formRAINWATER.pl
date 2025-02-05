@@ -137,15 +137,15 @@ print qq[
     var form = document.formulaire;
 
     if (form.site.value != "") {
-	    var array = lastData[form.site.value].split("|");
-	    var date = array[1].split("-");
-	    var time = array[2].split(":");
-	    form.y1.value = date[0];
-	    form.m1.value = date[1];
-	    form.d1.value = date[2];
-	    form.hr1.value = time[0];
-	    form.mn1.value = time[	1];
-	    form.diameter.value = array[7];
+        var array = lastData[form.site.value].split("|");
+        var date = array[1].split("-");
+        var time = array[2].split(":");
+        form.y1.value = date[0];
+        form.m1.value = date[1];
+        form.d1.value = date[2];
+        form.hr1.value = time[0];
+        form.mn1.value = time[    1];
+        form.diameter.value = array[7];
     }
     update_form();
 }
@@ -162,8 +162,8 @@ function update_form()
     var nicb;
     var form = document.formulaire;
     if (form.volume.value != "" && form.diameter.value != "") {
-	    total_rain = 10*form.volume.value/(Math.PI*Math.pow(form.diameter.value/2,2));
-	    form.cumrainfall.value = total_rain.toFixed(0);
+        total_rain = 10*form.volume.value/(Math.PI*Math.pow(form.diameter.value/2,2));
+        form.cumrainfall.value = total_rain.toFixed(0);
     }
 
     var date1 = new Date(form.y1.value,form.m1.value-1,form.d1.value);
@@ -171,8 +171,8 @@ function update_form()
     duration = (date2.getTime() - date1.getTime())/86400000;
     form.duration.value = duration.toFixed(1);
     if (total_rain > 0 && duration > 0) {
-	    average_rain = total_rain/duration;
-	    form.dailyrainfall.value = average_rain.toFixed(1);
+        average_rain = total_rain/duration;
+        form.dailyrainfall.value = average_rain.toFixed(1);
     }
 
     if (form.pH.value != "") {
@@ -330,7 +330,7 @@ if ($QryParm->{id} ne "") {
     print qq(<tr><td style="border: 0"><hr>);
     if ($val ne "") {
         print qq(<p><b>$__{'Input Information'}:</b> $val
-		<input type="hidden" name="val" value="$val"></p>);
+        <input type="hidden" name="val" value="$val"></p>);
     }
     print qq(<input type="button" style="font-weight: bold" value=") . ($id < 0 ? "Reset":"$__{'Remove'}") . qq(" onClick="suppress(1);">);
     if (clientHasAdm(type=>"authforms",name=>"RAINWATER")) {
@@ -346,9 +346,9 @@ print qq(</table>
       <fieldset>
         <legend>$__{'Sampling Location and Time'}</legend>
        <P class="parform" align="right">
-	<B>$__{'Site'}: </B>
-	<select name="site" size="1" onChange="update_site()"
-		onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_site}')">);
+    <B>$__{'Site'}: </B>
+    <select name="site" size="1" onChange="update_site()"
+        onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_site}')">);
 print qq(<option value=""></option>) if ($QryParm->{id} eq "");
 
 for (@NODESSelList) {
@@ -469,7 +469,7 @@ print qq(</select>
           <B>$__{'Funnel Diameter'}</B> (cm) = <input size=5 class=inputNum name=diameter value="$sel_diameter"
               onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_diameter}')"><BR>
           <B>$__{'Cumulated Rainfall'}</B> = <input size=3 readOnly name="cumrainfall" class="inputNumNoEdit"> mm
-	       (over <input size=3 readOnly name="duration" class="inputNumNoEdit"> days)<BR>
+           (over <input size=3 readOnly name="duration" class="inputNumNoEdit"> days)<BR>
           <B>$__{'Average Daily Rainfall'}</B> = <input size=3 readOnly name="dailyrainfall" class="inputNumNoEdit"> mm/day<BR>
         </P>
       </fieldset>

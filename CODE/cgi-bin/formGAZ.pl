@@ -122,39 +122,39 @@ function nicb()
 
 function suppress(level)
 {
-		var str = '@{[ $FORM->conf('TITLE') ]} ?';
-		if (level > 1) {
-				if (!confirm('$__{'WARNING: do you want PERMANENTLY remove this record from '}' + str)) {
-						return false;
-				}
-		} else {
-				if (document.formulaire.id.value > 0) {
-						if (!confirm('$__{'Do you want to remove this record from '}' + str)) {
-								return false;
-						}
-				} else {
-						if (!confirm('$__{'Do you want to restore this record in '}' + str)) {
-								return false;
-						}
-				}
-		}
-		document.formulaire.delete.value = level;
-	submit();
+        var str = '@{[ $FORM->conf('TITLE') ]} ?';
+        if (level > 1) {
+                if (!confirm('$__{'WARNING: do you want PERMANENTLY remove this record from '}' + str)) {
+                        return false;
+                }
+        } else {
+                if (document.formulaire.id.value > 0) {
+                        if (!confirm('$__{'Do you want to remove this record from '}' + str)) {
+                                return false;
+                        }
+                } else {
+                        if (!confirm('$__{'Do you want to restore this record in '}' + str)) {
+                                return false;
+                        }
+                }
+        }
+        document.formulaire.delete.value = level;
+    submit();
 }
 
 function verif_formulaire()
 {
-	if(document.formulaire.site.value == "") {
-		alert("Veuillez spécifier le site de prélèvement!");
-		document.formulaire.site.focus();
-		return false;
-	}
-	if(document.formulaire.type.value == "") {
-		alert("Veuillez entrer un type d'ampoule!");
-		document.formulaire.type.focus();
-		return false;
-	}
-	submit();
+    if(document.formulaire.site.value == "") {
+        alert("Veuillez spécifier le site de prélèvement!");
+        document.formulaire.site.focus();
+        return false;
+    }
+    if(document.formulaire.type.value == "") {
+        alert("Veuillez entrer un type d'ampoule!");
+        document.formulaire.type.focus();
+        return false;
+    }
+    submit();
 }
 
 function calc()
@@ -163,12 +163,12 @@ function calc()
 
 function submit()
 {
-	\$.post("/cgi-bin/@{[ $FORM->conf('CGI_POST') ]}", \$("#theform").serialize(), function(data) {
-	   //var contents = \$( data ).find( '#contents' ).text();
-	   alert(data);
-	   document.location="/cgi-bin/@{[ $FORM->conf('CGI_SHOW') ]}";
-	   }
-	);
+    \$.post("/cgi-bin/@{[ $FORM->conf('CGI_POST') ]}", \$("#theform").serialize(), function(data) {
+       //var contents = \$( data ).find( '#contents' ).text();
+       alert(data);
+       document.location="/cgi-bin/@{[ $FORM->conf('CGI_SHOW') ]}";
+       }
+    );
 }
 
 //window.captureEvents(Event.KEYDOWN);
@@ -248,7 +248,7 @@ if ($QryParm->{id} ne "") {
     print "<input type=\"hidden\" name=\"id\" value=\"$QryParm->{id}\">";
     if ($val ne "") {
         print "<P><B>Information de saisie:</B> $val
-		<INPUT type=hidden name=val value=\"$val\"></P>";
+        <INPUT type=hidden name=val value=\"$val\"></P>";
     }
     print "<INPUT type=\"button\" value=\"".($id < 0 ? "Reset" : "$__{'Remove'}")."\" onClick=\"suppress(1);\">";
     if (clientHasAdm(type=>"authforms", name=>"GAZ")) {
@@ -262,9 +262,9 @@ print "</TABLE>";
 print "<TABLE style=border:0 onMouseOver=\"calc()\">";
 print "<TR>";
 print "<TD style=border:0 valign=top>
-	<fieldset><legend>Date et lieu du prélèvement</legend>
-		<P class=parform>
-		<B>Date: </b><select name=annee size=\"1\">";
+    <fieldset><legend>Date et lieu du prélèvement</legend>
+        <P class=parform>
+        <B>Date: </b><select name=annee size=\"1\">";
 for (@anneeListe) {
     if ($_ == $sel_annee) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
 }
@@ -313,9 +313,9 @@ print "</select></P>";
 print "</fieldset>";
 
 print "<fieldset><legend>Mesures sur site</legend>\n
-		<P class=parform>
-		<B>Température de la fumerolle</B> (en °C) = <input size=5 class=inputNum name=\"tFum\" value=\"$sel_tFum\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de température de la fumerolle')\"><BR>\n
-		<B>pH</B> = <input size=5 class=inputNum name=\"pH\" value=\"$sel_pH\" onKeyUp=\"nicb()\" onChange=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du pH')\"><BR>\n";
+        <P class=parform>
+        <B>Température de la fumerolle</B> (en °C) = <input size=5 class=inputNum name=\"tFum\" value=\"$sel_tFum\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de température de la fumerolle')\"><BR>\n
+        <B>pH</B> = <input size=5 class=inputNum name=\"pH\" value=\"$sel_pH\" onKeyUp=\"nicb()\" onChange=\"nicb()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur du pH')\"><BR>\n";
 print "<B>Débit </B> (qualitatif) = <select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le débit')\" name=\"debit\" size=\"1\"><option value=\"\"></option>";
 for (keys(%debits)) {
     print "<option".($_ eq $sel_debit ? " selected":"")." value=$_>$debits{$_} ($_)</option>";

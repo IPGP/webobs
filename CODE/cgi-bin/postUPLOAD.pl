@@ -21,27 +21,27 @@ belongs to.
 =head1 HTML-Form fields 
 
  object= 
- 	required fully qualified grid name OR node name, ie. gridtype.gridname[.nodename]
- 	Document root path will be derived from object= , either:
-		$GRIDS{PATH_GRIDS}/gridtype/gridname  or
-		$NODES{PATH_NODES}/nodename
+     required fully qualified grid name OR node name, ie. gridtype.gridname[.nodename]
+     Document root path will be derived from object= , either:
+        $GRIDS{PATH_GRIDS}/gridtype/gridname  or
+        $NODES{PATH_NODES}/nodename
 
  doc=
- 	type of document, ie. target directory for document to be uploaded, within the root path derived from object=  
- 	one of: "SPATH_DOCUMENTS", "SPATH_PHOTOS", "SPATH_SCHEMES", "SPATH_INTERVENTIONS" 
+     type of document, ie. target directory for document to be uploaded, within the root path derived from object=  
+     one of: "SPATH_DOCUMENTS", "SPATH_PHOTOS", "SPATH_SCHEMES", "SPATH_INTERVENTIONS" 
 
  event=
- 	only required if doc is SPATH_INTERVENTIONS: filename of Event or Project (intervention)
+     only required if doc is SPATH_INTERVENTIONS: filename of Event or Project (intervention)
 
  nb=
- 	required, number of existing files, is used as upper boundary for 'del{X}' below
+     required, number of existing files, is used as upper boundary for 'del{X}' below
 
  uploadFile{N}=  
- 	optional, one for each file to be uploaded (ie. saved to  subdirectory 'doc'), indexed with N
+     optional, one for each file to be uploaded (ie. saved to  subdirectory 'doc'), indexed with N
 
  del{X}= 
- 	optional, one for each existing file in 'doc' that will be deleted by this request, 
- 	indexed with X = {1..nb}
+     optional, one for each existing file in 'doc' that will be deleted by this request, 
+     indexed with X = {1..nb}
   
 =cut
 

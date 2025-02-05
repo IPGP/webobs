@@ -56,7 +56,7 @@ sub gmlarray2nodearray {
         }
         return @NodesList;
 
-        ## Case 2: we want a specific node (idx € int)	
+        ## Case 2: we want a specific node (idx € int)    
     } else {
         ## find id of the node we want
         my $id = @Ids[$idx];
@@ -130,7 +130,7 @@ sub gmlread_feature {
     }
 
     #### HARDCODED XML2
-    #	my @Gml = qx($WEBOBS{XML2_PRGM} < $file);
+    #    my @Gml = qx($WEBOBS{XML2_PRGM} < $file);
     my @Gml = qx(/usr/bin/xml2 < $file);
 
     ###### Receiver
@@ -220,7 +220,7 @@ sub gml2mmdtable {
     push(@outlines,"WebObs: converted with wiki2MMD\n\n");
 
     #### HARDCODED XML2
-    #	my @Gml = qx($WEBOBS{XML2_PRGM} < $file);
+    #    my @Gml = qx($WEBOBS{XML2_PRGM} < $file);
     my @Gml = qx(/usr/bin/xml2 < $gmlfile);
 
     ###### Receiver

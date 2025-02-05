@@ -53,29 +53,29 @@ If B<sender-id> looks like an email address, it will be used to override the 'fr
 
 B<message> syntax is B<[text][keyword=value[keyword=value...]]> where:
 
-	1) text is any string you want to be embedded in the mail contents
-	   blanks are allowed
-	   | (pipes) , \n , are forbidden.
-	   it is optional and stops when a keyword= string is encountered (see below) or end of string
+    1) text is any string you want to be embedded in the mail contents
+       blanks are allowed
+       | (pipes) , \n , are forbidden.
+       it is optional and stops when a keyword= string is encountered (see below) or end of string
 
-	2) available optional keywords in B<message> for any event-name:
-	   uid= a_webobs_uid_or_gid     : redefines (ie. overrides), if it is valid, the addressee's uid (or gid)
-	   file= an_absolute_filename>  : includes the contents of filename in the mail
+    2) available optional keywords in B<message> for any event-name:
+       uid= a_webobs_uid_or_gid     : redefines (ie. overrides), if it is valid, the addressee's uid (or gid)
+       file= an_absolute_filename>  : includes the contents of filename in the mail
 
-	3) available optional keywords in B<message> for the 'submitrc.jid' event-name (only used by the WebObs scheduler,
-	   but listed here for reference as you MUST avoid using them in your own text string):
-	   org= , log= , cmd= , rc=
+    3) available optional keywords in B<message> for the 'submitrc.jid' event-name (only used by the WebObs scheduler,
+       but listed here for reference as you MUST avoid using them in your own text string):
+       org= , log= , cmd= , rc=
 
 Example: perl script notifying an occurence of 'myevent', defined in 'notification' table as myevent,Y,UID,mysubject,-,- :
 
-	WebObs::Config::notify("myevent|dummy|my message with a file file=/opt/webobs/OUTR/requestid/mail.msg");
-	will result in the following email:
-		From: webobs@webobsaddr
-		To: UID-mailaddr
-		Subject: [WEBOBS_ID] mysubject
-		User-Agent: Mutt/1.x.xx (2000-01-01)
-		my message with a file
-		<contents of file /opt/webobs/OUTR/requestid/mail.msg>
+    WebObs::Config::notify("myevent|dummy|my message with a file file=/opt/webobs/OUTR/requestid/mail.msg");
+    will result in the following email:
+        From: webobs@webobsaddr
+        To: UID-mailaddr
+        Subject: [WEBOBS_ID] mysubject
+        User-Agent: Mutt/1.x.xx (2000-01-01)
+        my message with a file
+        <contents of file /opt/webobs/OUTR/requestid/mail.msg>
 
 =head1 ACTION
 
@@ -86,9 +86,9 @@ Column Uid and B<sender-id> are irrelevant for this 'action' processing.
 
 =head1 EVENTS NAMING CONVENTIONS
 
-	event-name    = string[.[string]]
-	string        = any alphanumeric string with no blank and no .,*?!/\(){};+
-	string.string = aka 'majorname.minorname' form of event-name
+    event-name    = string[.[string]]
+    string        = any alphanumeric string with no blank and no .,*?!/\(){};+
+    string.string = aka 'majorname.minorname' form of event-name
 
 'majorname.minorname' is used to define specific actions for each 'majorname.minorname' events AND
 also common actions applying to all of them using B<majorname.> event (don't forget the ending dot!).
@@ -100,7 +100,7 @@ internally by the WebObs scheduler (see scheduler.pl documentation) to notify en
 
 1) the WebObs Scheduler automatically emits a B<submitrc.jid> when job B<jid> ends:
 
-	notify("submitrc.jid|$$|org={S|R} rc={returncode} log={jid-std-logpath} uid={$CLIENTuid}")
+    notify("submitrc.jid|$$|org={S|R} rc={returncode} log={jid-std-logpath} uid={$CLIENTuid}")
 
 2) you control the B<submitrc.jid> email activation along with its default addressee with
 specific and/or global definitions of respectively B<submitrc.jid> and/or B<submitrc.> in the
@@ -113,15 +113,15 @@ for some standalone submit commands issued (anonymously from WebObs point of vie
 
 4) Example: a submit "job-definition-string" command sent to the scheduler (see scheduler.pl doc) and the corresponding mail sent:
 
-	$ scheduler submit 'XEQ1:perl,XEQ2:/path/to/jobtst.pl,RES:mylock,LOGPATH:/var/log/webobs/jobtst,UID:DL'
-	will built/sent the following email:
-		From: scheduleruid@webobsaddr
-		To: DL-mailaddr
-		Subject: [WebObs-WEBOBS_ID] request -8 has ended
-		User-Agent: Mutt/1.x.xx (2000-01-01)
-		Job = perl /path/to/jobtst.pl
-		Ended with rc=0
-		Log = /var/log/webobs/jobtst
+    $ scheduler submit 'XEQ1:perl,XEQ2:/path/to/jobtst.pl,RES:mylock,LOGPATH:/var/log/webobs/jobtst,UID:DL'
+    will built/sent the following email:
+        From: scheduleruid@webobsaddr
+        To: DL-mailaddr
+        Subject: [WebObs-WEBOBS_ID] request -8 has ended
+        User-Agent: Mutt/1.x.xx (2000-01-01)
+        Job = perl /path/to/jobtst.pl
+        Ended with rc=0
+        Log = /var/log/webobs/jobtst
 
 =head1 NOTES
 

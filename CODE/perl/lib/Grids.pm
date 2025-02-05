@@ -129,7 +129,7 @@ sub readProc {
         opendir(DIR, "$WEBOBS{PATH_GRIDS2FORMS}");
         my @lSf = grep {/^PROC\.($f)\./ && -l $WEBOBS{PATH_GRIDS2FORMS}."/".$_} readdir(DIR);
         foreach (@lSf) {s/^PROC\.($f)\.//g};
-        $tmp{'FORM'} = $lSf[0];	#NOTE: keeps only the first FORM
+        $tmp{'FORM'} = $lSf[0];    #NOTE: keeps only the first FORM
         closedir(DIR);
 
         # --- get DOMAIN

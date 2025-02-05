@@ -27,7 +27,7 @@ coord=
  specify the coordonates. Default value is DEFAULT_COORDINATES variable in GRIDS.rc. Options are:
   latlon  latitude and longitude
      utm  Universal Transverse Mercator projection (WGS84)
-	 xyz  geocentric X, Y and Z
+     xyz  geocentric X, Y and Z
 
 project=
  show/hide the project column. Default value is DEFAULT_PROJECT_FILTER variable in GRIDS.rc. Options are:
@@ -219,11 +219,11 @@ $ilinks .= " | <A href=\"/cgi-bin/gvTransit.pl?grid=$GRIDType.$GRIDName\"><IMG s
 $ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$grid','$GRIDName','width="
   .($WEBOBS{OSM_WIDTH_VALUE}+15).",height="
   .($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">
-		<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
+        <IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
 if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
     $ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml')\" \
-	               title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" \
-				   src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
+                   title=\"$WEBOBS{GOOGLE_EARTH_LINK_INFO}\"><IMG style=\"vertical-align:middle;border:0\" \
+                   src=\"$WEBOBS{IMAGE_LOGO_GOOGLE_EARTH}\" alt=\"KML\"></A>\n";
 }
 $ilinks .= " | <A href=\"#SPECS\">$__{Specifications}</A>";
 $ilinks .= " | <A href=\"#MAPS\">$__{'Location'}</A>";

@@ -225,7 +225,7 @@ print <<"FIN";
 <script language="JavaScript" src="/js/jquery-svgpan.js" type="text/javascript"></script>
 <script language="JavaScript">
 \$(document).ready(function() {
-	\$('svg').svgPan('graph1');
+    \$('svg').svgPan('graph1');
 });
 </script>
 --> 

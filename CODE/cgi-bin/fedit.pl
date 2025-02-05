@@ -20,16 +20,16 @@ To create a new FORM, user must have Admin rights for all FORMS. To update an ex
 
 =item fname=fname
 
-	where fname should be unique.
+    where fname should be unique.
 
 =item action={save|edit}
 
-	'edit' (default when action is not specified) to display edit html-form edit
-	'save' internaly used to save the file after html-form edition
+    'edit' (default when action is not specified) to display edit html-form edit
+    'save' internaly used to save the file after html-form edition
 
 =item tpl=tpl
 
-	where tpl is the template selected to create the new form
+    where tpl is the template selected to create the new form
 
 =head1 EDITOR
 
@@ -127,18 +127,18 @@ my $TS0;                # last modification time of the config file
 my $editOK = 0;         # 1 if the user is allowed to edit the form
 my $admOK = 0;          # 1 if the user is allowed to create new form
 my @rawfile;            # raw content of the configuration file
-my $FORMName;		# name of the form
+my $FORMName;        # name of the form
 my $text;
-my $action;		# new|edit|save
-my $newF;        	# 1 if we are creating a new form
-my $delete;		# 1 to delete form
-my $inputs;		# number which indicates how many inputs we are storing in this form
-my $template;		# name of template wanted by user
+my $action;        # new|edit|save
+my $newF;            # 1 if we are creating a new form
+my $delete;        # 1 to delete form
+my $inputs;        # number which indicates how many inputs we are storing in this form
+my $template;        # name of template wanted by user
 
 # Read and check CGI parameters
 $FORMName = $cgi->param('fname');
 $action   = checkParam($cgi->param('action'), qr/(edit|save)/, 'action')  // "edit";
-$text	  = $cgi->param('text') // '';	# used only in print FILE $text;
+$text      = $cgi->param('text') // '';    # used only in print FILE $text;
 $TS0      = checkParam($cgi->param('ts0'), qr/^[0-9]*$/, "TS0")    // 0;
 $delete   = checkParam($cgi->param('delete'), qr/^\d?$/, "delete") // 0;
 $template = $cgi->param('tpl') // "";
@@ -165,7 +165,7 @@ $editOK = WebObs::Users::clientHasEdit(type => "authforms", name => "$FORMName")
 $admOK = WebObs::Users::clientHasAdm(type => "authforms", name => "*");
 if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
 
-my $formdir   = "$WEBOBS{PATH_FORMS}/$FORMName/";			# path to the form configuration file we are creating, editing or deleting
+my $formdir   = "$WEBOBS{PATH_FORMS}/$FORMName/";            # path to the form configuration file we are creating, editing or deleting
 $formConfFile = "$formdir$FORMName.conf";
 
 my @db_columns0 = ("id integer PRIMARY KEY AUTOINCREMENT", "trash boolean DEFAULT FALSE", "node text NOT NULL",
@@ -197,13 +197,13 @@ if ($action eq 'save') {
         my $dbh = connectDbForms();
 
         # --- checking if the table we want to edit exists
-        my $tbl 	  = lc($FORMName);
+        my $tbl       = lc($FORMName);
 
         my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
         my $sth = $dbh->prepare( $stmt );
         my $rv = $sth->execute() or die $DBI::errstr;
 
-        if ($sth->fetchrow_array() == 0) {	# if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
+        if ($sth->fetchrow_array() == 0) {    # if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
 
             # --- creation of the DB table
             my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
@@ -248,13 +248,13 @@ if ($action eq 'save') {
         my $dbh = connectDbForms();
 
         # --- checking if the table we want to edit exists
-        my $tbl 	  = lc($FORMName);
+        my $tbl       = lc($FORMName);
 
         my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
         my $sth = $dbh->prepare( $stmt );
         my $rv = $sth->execute() or die $DBI::errstr;
 
-        if ($sth->fetchrow_array() == 0) {	# if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
+        if ($sth->fetchrow_array() == 0) {    # if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
 
             # --- creation of the DB table
             my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
@@ -321,13 +321,13 @@ if ($action eq 'save') {
 
 # ---- action is 'edit' (default)
 #
-if ( -e "$formConfFile" ) {	# looking if the FORM already exists
+if ( -e "$formConfFile" ) {    # looking if the FORM already exists
     if ($editOK) {
         @rawfile = readFile($formConfFile);
         $TS0 = (stat($formConfFile))[9] ;
     }
 }
-else {	# we are creating a new FORM
+else {    # we are creating a new FORM
     if ($admOK) {
         $formConfFile = "$WEBOBS{ROOT_CODE}/tplates/$template";
         @rawfile = readFile($formConfFile);
@@ -377,13 +377,13 @@ print <<_EOD_;
  <script type=\"text/javascript\">
   // Configuration used in cmtextarea.js
   var CODEMIRROR_CONF = {
-	READWRITE_THEME: '$CM_edit_theme',
-	READONLY_THEME: '$CM_browsing_theme',
-	LANGUAGE_MODE: '$CM_language_mode',
-	AUTO_VIM_MODE: '$CM_auto_vim_mode',
-	EDIT_PERM: $editOK,
-	FORM: '#theform',
-	POST_URL: '$post_url',
+    READWRITE_THEME: '$CM_edit_theme',
+    READONLY_THEME: '$CM_browsing_theme',
+    LANGUAGE_MODE: '$CM_language_mode',
+    AUTO_VIM_MODE: '$CM_auto_vim_mode',
+    EDIT_PERM: $editOK,
+    FORM: '#theform',
+    POST_URL: '$post_url',
   };
  </script>
  <script src="/js/cmtextarea.js"></script>
@@ -391,25 +391,25 @@ print <<_EOD_;
  <script type="text/javascript">
  function delete_form()
  {
-	if ( confirm("$__{'This FORM will be deleted (associated table in DB will remain, but useless). Are you sure?'}") ) {
-		document.form.delete.value = 1;
-		\$.post("$post_url", \$("#theform").serialize(), function(data) {
-			if (data != '') alert(data);
-			location.href = "$GRIDS{CGI_SHOW_GRIDS}";
-		});
-	} else {
-		return false;
-	}
+    if ( confirm("$__{'This FORM will be deleted (associated table in DB will remain, but useless). Are you sure?'}") ) {
+        document.form.delete.value = 1;
+        \$.post("$post_url", \$("#theform").serialize(), function(data) {
+            if (data != '') alert(data);
+            location.href = "$GRIDS{CGI_SHOW_GRIDS}";
+        });
+    } else {
+        return false;
+    }
 }
 function verif_form()
 {
-	// postform() from cmtextarea.js will submit the form to $post_url
-	console.log(document.form);
-	postform();
-	//\$.post("/cgi-bin/fedit.pl", \$("#theform").serialize(), function(data) {
-	//	if (data != '') alert(data);
-	//	location.href = document.referrer;
-	//});
+    // postform() from cmtextarea.js will submit the form to $post_url
+    console.log(document.form);
+    postform();
+    //\$.post("/cgi-bin/fedit.pl", \$("#theform").serialize(), function(data) {
+    //    if (data != '') alert(data);
+    //    location.href = document.referrer;
+    //});
 }
  </script>
 </HEAD>
@@ -477,11 +477,11 @@ print "<TR><TD style=\"border:0\">\n";
 
 # Vim mode checkbox
 print <<_EOD_;
-	<div class="js-editor-controls">
-		<input type="checkbox" id="toggle-vim-mode" title="$__{'Check to enable vim mode in the editor'}" onClick="toggleVim()">
-		<label for="toggle-vim-mode" id="toggle-vim-mode-label" title="$__{'Check to enable vim mode in the editor'}">$__{'Use vim mode'}</label>
-	</div>
-	</TD>
+    <div class="js-editor-controls">
+        <input type="checkbox" id="toggle-vim-mode" title="$__{'Check to enable vim mode in the editor'}" onClick="toggleVim()">
+        <label for="toggle-vim-mode" id="toggle-vim-mode-label" title="$__{'Check to enable vim mode in the editor'}">$__{'Use vim mode'}</label>
+    </div>
+    </TD>
 _EOD_
 
 # Form buttons

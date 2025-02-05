@@ -13,7 +13,7 @@ use WebObs::Dates
 
 @calhtml = WebObs::Dates::Calendar(month=>'2012-12',
                                    ptri=>'Calendar',
-								   today=>'2012-12-31');
+                                   today=>'2012-12-31');
 
 $monday = WebObs::Dates::lundi('2012-09-14');
 
@@ -152,10 +152,10 @@ sub Calendar
     my $lundiCalendrier = WebObs::Dates::lundi("$moisCalendrier-01");
 
     push(@contenu,"<TABLE class=\"calendar\"><TR>
-  	<TH><B><A href=\"$HEBDO{CGI_SHOW}?tri=$parametreTri&date=$moisPrecedent\">&lArr;</A></B></TH> 
-  	<TH colspan=6><B><A href=\"$HEBDO{CGI_SHOW}?tri=$parametreTri&date=$moisCalendrier\">$displayMoisCalendrier</A></B></TH>
-  	<TH><B><A href=\"$HEBDO{CGI_SHOW}?tri=$parametreTri&date=$moisSuivant\">&rArr;</A></B></TH>
-  	</TR>\n<TR><TH></TH>");
+      <TH><B><A href=\"$HEBDO{CGI_SHOW}?tri=$parametreTri&date=$moisPrecedent\">&lArr;</A></B></TH> 
+      <TH colspan=6><B><A href=\"$HEBDO{CGI_SHOW}?tri=$parametreTri&date=$moisCalendrier\">$displayMoisCalendrier</A></B></TH>
+      <TH><B><A href=\"$HEBDO{CGI_SHOW}?tri=$parametreTri&date=$moisSuivant\">&rArr;</A></B></TH>
+      </TR>\n<TR><TH></TH>");
     push(@contenu,"<TH>".join("</TH><TH>",split(/,/,"$__{'hebdo_weekday_first_letter'}"))."</TH>");
 
 # il faut balayer 6 semaines pour Ãªtre sÃ»r d'avoir le mois complet dans toutes les situations...

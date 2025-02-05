@@ -10,8 +10,8 @@ Package WebObs : Common perl-cgi variables and functions
 
 use WebObs::Users
 
-	$someoneaddr = $USERS{someone}{EMAIL};
-	if (clientHasEdit(name=>'HEBDO',type=>'authwikis')) {...}
+    $someoneaddr = $USERS{someone}{EMAIL};
+    if (clientHasEdit(name=>'HEBDO',type=>'authwikis')) {...}
 
 =head1 DESCRIPTION
 
@@ -161,8 +161,8 @@ sub allUsers {
 Gets the list of currently defined resources of a given type.
 Returns a reference to the list (or 0).
 
-	$pres = WebObs::Users::listRNames(type=>'authprocs');
-	for (@$pres) { print "=>$_\n" };   # ie., all @$pres[]
+    $pres = WebObs::Users::listRNames(type=>'authprocs');
+    for (@$pres) { print "=>$_\n" };   # ie., all @$pres[]
 
 =cut
 
@@ -219,7 +219,7 @@ sub userName {
 Given a user 'login' (as defined in 'users' table),returns an array of
 all known user's groups:
 
-	@Group = userListGroup('juntel');
+    @Group = userListGroup('juntel');
 
 =cut
 
@@ -256,8 +256,8 @@ sub userListGroup {
 Given a user 'login' (as defined in 'users' table),returns an Hash of arrays of
 all known user's authorizations:
 
-	%HoA = userListAuth('juntel');
-	$HoA{resource-type} = array of all juntel's authorizations for resource-type
+    %HoA = userListAuth('juntel');
+    $HoA{resource-type} = array of all juntel's authorizations for resource-type
 
 =cut
 
@@ -294,15 +294,15 @@ sub userListAuth {
 
 =head2 userHasAuth
 
- 	print "Yes" if (WebObs::Users::userHasAuth(user=>'juntel', type=>'authprocs', name=>'SISMOBUL',auth=>READAUTH);
+     print "Yes" if (WebObs::Users::userHasAuth(user=>'juntel', type=>'authprocs', name=>'SISMOBUL',auth=>READAUTH);
 
 returns true (1) if given 'user' login has given 'auth' access right to
 to resource-'type' named 'name'.
 
-	'user' has 'xAUTH'-access to resource-type/resource-name when :
-    	 1) resource-type has: user / resource-name / auth >= xAUTH
-	 OR  2) resource-type has: user / * /auth >= xAUTH
-	 OR  3) 'user' belongs to 'group' that verifies 1) OR 2) as above
+    'user' has 'xAUTH'-access to resource-type/resource-name when :
+         1) resource-type has: user / resource-name / auth >= xAUTH
+     OR  2) resource-type has: user / * /auth >= xAUTH
+     OR  3) 'user' belongs to 'group' that verifies 1) OR 2) as above
 
 =cut
 
@@ -351,7 +351,7 @@ sub userHasAuth {
 
 returns maximum authorization granted to user on resource type / resource name in name
 
-	$max = WebObs::Users::userMaxAuth(user=>'juntel', type=>'authprocs', name=>"('res1','res2')";
+    $max = WebObs::Users::userMaxAuth(user=>'juntel', type=>'authprocs', name=>"('res1','res2')";
 
 =cut
 
@@ -395,7 +395,7 @@ sub userMaxAuth {
 
 =head2 userIsValid
 
- 	print "Yes" if (WebObs::Users::userIsValid(user=>'juntel');
+     print "Yes" if (WebObs::Users::userIsValid(user=>'juntel');
 
 returns true (1) if given 'user' login has a validity status 'Y'
 
@@ -474,7 +474,7 @@ sub clientIsWO {
 
 Given a group ID 'GID' (starts with a '+'), returns an array of all associated user's UID:
 
-	@Users = groupListUser('+DUTY');
+    @Users = groupListUser('+DUTY');
 
 =cut
 
@@ -512,8 +512,8 @@ Given a given resource-type and resource-name (as defined in 'users' table),
 returns an Hash of arrays of all UID or GID's for each authorization levels
 (1,2,4):
 
-	%HoA = WebObs::Users::resListAuth(type=>'authprocs',name=>'res1');
-	$HoA{authlevel} = array of all UID/GID for authlevel
+    %HoA = WebObs::Users::resListAuth(type=>'authprocs',name=>'res1');
+    $HoA{authlevel} = array of all UID/GID for authlevel
 
 =cut
 

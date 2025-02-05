@@ -6,39 +6,39 @@ Package WebObs : Common perl-cgi variables and functions
 
 =head1 SYNOPSIS
 
-	use WebObs::Form;
-	$F = new WebObs::Form('EAUX');
+    use WebObs::Form;
+    $F = new WebObs::Form('EAUX');
 
-	# Path to FORMSdirectory/thisform
-	# eg: /webobs/site/path/to/forms/EAUX
-	print $F->path;     
+    # Path to FORMSdirectory/thisform
+    # eg: /webobs/site/path/to/forms/EAUX
+    print $F->path;     
 
-	# full name of FORM's data file
-	# eg: /webobs/site/data/EAUX.DAT
-	print $F->fnam
+    # full name of FORM's data file
+    # eg: /webobs/site/data/EAUX.DAT
+    print $F->fnam
 
-	# any parameter from FORM's conf file
-	# eg: CGI_SHOW : showEAUX.pl
-	print $F->conf(CGI-SHOW)
+    # any parameter from FORM's conf file
+    # eg: CGI_SHOW : showEAUX.pl
+    print $F->conf(CGI-SHOW)
 
-	# read FORM's data file's record id = 1130  
-	($recs, $ts) = $F->data(1130); @line = @$recs;  
+    # read FORM's data file's record id = 1130  
+    ($recs, $ts) = $F->data(1130); @line = @$recs;  
 
-	# read FORM's data file  
-	($recs, $ts) = $F->data; @lines = @$recs;  
+    # read FORM's data file  
+    ($recs, $ts) = $F->data; @lines = @$recs;  
 
-	# get list of all procs pointing to this FORM, along with their 'long' name
-	%P = $F->procs
-	print $P{SOURCES};                 #eg: 'Analyse Sources Thermales'
-	map { print "$_ ... " } keys(%P);  #eg: 'TRACAGE2010 ... SOURCES ...' 
+    # get list of all procs pointing to this FORM, along with their 'long' name
+    %P = $F->procs
+    print $P{SOURCES};                 #eg: 'Analyse Sources Thermales'
+    map { print "$_ ... " } keys(%P);  #eg: 'TRACAGE2010 ... SOURCES ...' 
 
-	# get all NODEs (and its ALIAS,NAME and FID) of a PROC pointing to this FORM 
-	%N = $F->nodes(SOURCES); 
-	map {print "$_ ... "} keys(%N);    #eg: GCSGAL1 ... GCSTAR1 ... GCSACQ0 ...  
-	print $N{GCSGAL1}{ALIAS};                 #eg: 'GA'
+    # get all NODEs (and its ALIAS,NAME and FID) of a PROC pointing to this FORM 
+    %N = $F->nodes(SOURCES); 
+    map {print "$_ ... "} keys(%N);    #eg: GCSGAL1 ... GCSTAR1 ... GCSACQ0 ...  
+    print $N{GCSGAL1}{ALIAS};                 #eg: 'GA'
 
-	# dump the FORM object
-	print $F->dump; 
+    # dump the FORM object
+    print $F->dump; 
 
 
 =head1 DESCRIPTION
@@ -260,4 +260,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-				
+                

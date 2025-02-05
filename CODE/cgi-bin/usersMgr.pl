@@ -376,16 +376,16 @@ for my $row (@$db_rows) {
     # Build user table row (also used as input for the user edition form)
     $dusers .= <<_EOD_;
 <tr id="$dusersId" class="$tr_classes">
-	<td style="width: 12px" class="tdlock">$edit_link</td>
-	<td style="width: 12px" class="tdlock">$del_link</td>
-	<td class="user-uid">$dusers_uid</td>
-	<td class="user-fullname" nowrap>$dusers_fullname</td>
-	<td class="user-login">$dusers_login</td>
-	<td class="user-email">$dusers_email</td>
-	<td class="user-groups">$dusers_groups</td>
-	<td class="user-validity">$dusers_validity</td>
-	<td class="user-enddate">$dusers_enddate</td>
-	<td class="user-comment">$dusers_comment</td>
+    <td style="width: 12px" class="tdlock">$edit_link</td>
+    <td style="width: 12px" class="tdlock">$del_link</td>
+    <td class="user-uid">$dusers_uid</td>
+    <td class="user-fullname" nowrap>$dusers_fullname</td>
+    <td class="user-login">$dusers_login</td>
+    <td class="user-email">$dusers_email</td>
+    <td class="user-groups">$dusers_groups</td>
+    <td class="user-validity">$dusers_validity</td>
+    <td class="user-enddate">$dusers_enddate</td>
+    <td class="user-comment">$dusers_comment</td>
 </tr>
 _EOD_
 }
@@ -404,14 +404,14 @@ for my $row (@$db_rows) {
     $dugrpsCount++;
     $dugrpsId="nudef".$dugrpsCount;
     $dugrps .= <<_EOD_
-	<tr id="$dugrpsId">
-	<td style="width:12px" class="tdlock">
-		<a href="#IDENT" onclick="postDeleteUGroup('#$dugrpsId');return false">
-			<img title="delete group" src="/icons/no.png">
-		</a>
-	</td>
-	<td class="tdlock">$gid</td>
-	</tr>
+    <tr id="$dugrpsId">
+    <td style="width:12px" class="tdlock">
+        <a href="#IDENT" onclick="postDeleteUGroup('#$dugrpsId');return false">
+            <img title="delete group" src="/icons/no.png">
+        </a>
+    </td>
+    <td class="tdlock">$gid</td>
+    </tr>
 _EOD_
 }
 
@@ -433,18 +433,18 @@ for my $row (@$db_rows) {
 
     $Sdgrps .= <<_EOD_;
 <tr id="$SdgrpsId">
-	<td style="width:12px" class="tdlock">
-		<a href="#IDENT" onclick="openPopupGroup('#$SdgrpsId');return false">
-			<img title="edit grp" src="/icons/modif.png">
-		</a>
-	</td>
-	<td style="width:12px" class="tdlock">
-		<a href="#IDENT" onclick="postDeleteUGroup('#$SdgrpsId');return false">
-			<img title="delete group" src="/icons/no.png">
-		</a>
-	</td>
-	<td class="group-gid">$Sdgrps_gid</td>
-	<td class="group-uids">$Sdgrps_uids</td>
+    <td style="width:12px" class="tdlock">
+        <a href="#IDENT" onclick="openPopupGroup('#$SdgrpsId');return false">
+            <img title="edit grp" src="/icons/modif.png">
+        </a>
+    </td>
+    <td style="width:12px" class="tdlock">
+        <a href="#IDENT" onclick="postDeleteUGroup('#$SdgrpsId');return false">
+            <img title="delete group" src="/icons/no.png">
+        </a>
+    </td>
+    <td class="group-gid">$Sdgrps_gid</td>
+    <td class="group-uids">$Sdgrps_uids</td>
 </tr>
 _EOD_
 }
@@ -466,12 +466,12 @@ for my $row (@$db_rows) {
     $dunotfId="nudef".$dunotfCount;
     $dunotf .= <<_EOD_;
 <tr id="$dunotfId">
-	<td style="width:12px" class="tdlock">
-		<a href="#POSTBOARD" onclick="postDeleteUNotf('#$dunotfId');return false">
-			<img title="delete group" src="/icons/no.png">
-		</a>
-	</td>
-	<td class="tdlock unotif-event">$event</td>
+    <td style="width:12px" class="tdlock">
+        <a href="#POSTBOARD" onclick="postDeleteUNotf('#$dunotfId');return false">
+            <img title="delete group" src="/icons/no.png">
+        </a>
+    </td>
+    <td class="tdlock unotif-event">$event</td>
 </tr>
 _EOD_
 }
@@ -494,22 +494,22 @@ for my $row (@$db_rows) {
     $dnotfId="ndef".$dnotfCount;
     $dnotf .= <<_EOD_;
 <tr id="$dnotfId">
-	<td style="width:12px" class="tdlock">
-		<a href="#POSTBOARD" onclick="openPopupNotf('#$dnotfId');return false">
-			<img title="edit grp" src="/icons/modif.png">
-		</a>
-	</td>
-	<td style="width:12px" class="tdlock">
-		<a href="#POSTBOARD" onclick="postDeleteNotf('#$dnotfId');return false">
-			<img title="delete notification" src="/icons/no.png">
-		</a>
-	</td>
-	<td class="notif-event">$dnotf_event</td>
-	<td class="notif-validity">$dnotf_valid</td>
-	<td class="notif-emailuid">$dnotf_mail</td>
-	<td class="notif-emailsubj">$dnotf_mailsubj</td>
-	<td class="notif-emailattach">$dnotf_mailatt</td>
-	<td class="notif-action">$dnotf_act</td>
+    <td style="width:12px" class="tdlock">
+        <a href="#POSTBOARD" onclick="openPopupNotf('#$dnotfId');return false">
+            <img title="edit grp" src="/icons/modif.png">
+        </a>
+    </td>
+    <td style="width:12px" class="tdlock">
+        <a href="#POSTBOARD" onclick="postDeleteNotf('#$dnotfId');return false">
+            <img title="delete notification" src="/icons/no.png">
+        </a>
+    </td>
+    <td class="notif-event">$dnotf_event</td>
+    <td class="notif-validity">$dnotf_valid</td>
+    <td class="notif-emailuid">$dnotf_mail</td>
+    <td class="notif-emailsubj">$dnotf_mailsubj</td>
+    <td class="notif-emailattach">$dnotf_mailatt</td>
+    <td class="notif-action">$dnotf_act</td>
 </tr>
 _EOD_
 }
@@ -557,11 +557,11 @@ for my $an (qw(proc view form wiki misc)) {
         }
         $TA{$an}{dauth} .= <<_EOD_;
 <tr id="$dauthId">
-	<td style="width:12px" class="tdlock">$td_modif_auth</td>
-	<td style="width:12px" class="tdlock">$td_delete_auth</td>
-	<td class="auth-uid">$dauth_uid</td>
-	<td class="auth-res">$dauth_res</td>
-	<td class="auth-auth">$dauth_auth</td>
+    <td style="width:12px" class="tdlock">$td_modif_auth</td>
+    <td style="width:12px" class="tdlock">$td_delete_auth</td>
+    <td class="auth-uid">$dauth_uid</td>
+    <td class="auth-res">$dauth_res</td>
+    <td class="auth-auth">$dauth_auth</td>
 </tr>
 _EOD_
     }
@@ -589,101 +589,101 @@ print <<"EOPART1";
 Identifications&nbsp;$go2top
 </div>
 <div id="idID">
-	<div id="userMsg" style="font-weight: bold; color: $userMsgColor">&bull; $userMsg</div><br/>
-	<form id="overlay_form_user" class="overlay_form" style="display:none">
-	<input type="hidden" name="action" value="">
-	<input type="hidden" name="tbl" value="">
-	<input type="hidden" name="OLDuid" value="">
-	<input type="hidden" name="OLDgid" value="">
-	<input type="hidden" name="isWO" value="$isWO">
-	<p><b><i>Edit user definition</i></b></p>
-	<label>Uid:<span class="small">WebObs userid</span></label>
-	<input type="text" name="uid" value=""/><br/>
-	<label>Name:<span class="small">full name</span></label>
-	<input type="text" name="fullname" value=""/><br/>
-	<label>Login:<span class="small">http userid</span></label>
-	<input type="text" name="login" value=""/><br/>
-	<label>Email:<span class="small">mail address</span></label>
-	<input type="text" name="email" value=""/><br/>
-	<label for="gid">Gid(s):<span class="small">group id(s)<br>Ctrl for multiple</span></label>
-	<select name="gid" id="gid" size="5" multiple>$selgrps</select><br/>
-	<label for="valid-user">Validity:
-		<span class="small">check to activate account</span></label>
-	<input type="checkbox" id="valid-user" name="valid" value="Y"/>
-	<label for="end-date">End Date:
-		<span class="small">YYYY-MM-DD</span></label>
-	<input type="text" name="enddate" maxlength="10" value="" style="width: 100px"/><br/>
-	<label for="comment">Comment:<span class="small">free string</span></label>
-	<input type="text" name="comment" value=""/><br/>
-	<p style="margin: 0px; text-align: center">
-		<input type="button" name="sendbutton" value="send" onclick="sendPopupUser(); return false;" />
-		<input type="button" value="cancel" onclick="closePopup(); return false" />
-	</p>
-	</form>
-	<form id="overlay_form_group" class="overlay_form" style="display:none">
-	<input type="hidden" name="action" value="">
-	<input type="hidden" name="tbl" value="">
-	<input type="hidden" name="OLDuid" value="">
-	<input type="hidden" name="OLDgid" value="">
-	<p><b><i>Edit group/user definition</i></b></p>
-	<label for="gid">Gid:<span class="small">group id</span></label>
-	<input type="text" name="gid" id="gid"value=""/><br/>
-	<label for="uid">Uid(s):<span class="small">WebObs userid(s)<br>Ctrl for multiple</span></label>
-	<!--<input type="text" name="uid" id="uid" value=""/><br/>-->
-	<select name="uid" id="uid" size="5" multiple>$selusers</select><br/>
-	<p style="margin: 0px; text-align: center">
-		<input type="button" name="sendbutton" value="send" onclick="sendPopupGroup(); return false;" />
-		<input type="button" value="cancel" onclick="closePopup(); return false" />
-	</p>
-	</form>
+    <div id="userMsg" style="font-weight: bold; color: $userMsgColor">&bull; $userMsg</div><br/>
+    <form id="overlay_form_user" class="overlay_form" style="display:none">
+    <input type="hidden" name="action" value="">
+    <input type="hidden" name="tbl" value="">
+    <input type="hidden" name="OLDuid" value="">
+    <input type="hidden" name="OLDgid" value="">
+    <input type="hidden" name="isWO" value="$isWO">
+    <p><b><i>Edit user definition</i></b></p>
+    <label>Uid:<span class="small">WebObs userid</span></label>
+    <input type="text" name="uid" value=""/><br/>
+    <label>Name:<span class="small">full name</span></label>
+    <input type="text" name="fullname" value=""/><br/>
+    <label>Login:<span class="small">http userid</span></label>
+    <input type="text" name="login" value=""/><br/>
+    <label>Email:<span class="small">mail address</span></label>
+    <input type="text" name="email" value=""/><br/>
+    <label for="gid">Gid(s):<span class="small">group id(s)<br>Ctrl for multiple</span></label>
+    <select name="gid" id="gid" size="5" multiple>$selgrps</select><br/>
+    <label for="valid-user">Validity:
+        <span class="small">check to activate account</span></label>
+    <input type="checkbox" id="valid-user" name="valid" value="Y"/>
+    <label for="end-date">End Date:
+        <span class="small">YYYY-MM-DD</span></label>
+    <input type="text" name="enddate" maxlength="10" value="" style="width: 100px"/><br/>
+    <label for="comment">Comment:<span class="small">free string</span></label>
+    <input type="text" name="comment" value=""/><br/>
+    <p style="margin: 0px; text-align: center">
+        <input type="button" name="sendbutton" value="send" onclick="sendPopupUser(); return false;" />
+        <input type="button" value="cancel" onclick="closePopup(); return false" />
+    </p>
+    </form>
+    <form id="overlay_form_group" class="overlay_form" style="display:none">
+    <input type="hidden" name="action" value="">
+    <input type="hidden" name="tbl" value="">
+    <input type="hidden" name="OLDuid" value="">
+    <input type="hidden" name="OLDgid" value="">
+    <p><b><i>Edit group/user definition</i></b></p>
+    <label for="gid">Gid:<span class="small">group id</span></label>
+    <input type="text" name="gid" id="gid"value=""/><br/>
+    <label for="uid">Uid(s):<span class="small">WebObs userid(s)<br>Ctrl for multiple</span></label>
+    <!--<input type="text" name="uid" id="uid" value=""/><br/>-->
+    <select name="uid" id="uid" size="5" multiple>$selusers</select><br/>
+    <p style="margin: 0px; text-align: center">
+        <input type="button" name="sendbutton" value="send" onclick="sendPopupGroup(); return false;" />
+        <input type="button" value="cancel" onclick="closePopup(); return false" />
+    </p>
+    </form>
 
-	<fieldset id="users-field"><legend><b>Users</b></A></legend>
-		<div style="background: #BBB">
-			<b>$dusersCountValid</b>/$dusersCount users valid/defined
-		</div>
-		<div class="dusers-container">
-			<div class="dusers">
-				<table class="dusers">
-				<thead>
-				<tr>
-					<th style=\"width:12px\"><a href="#IDENT" onclick="openPopupUser(); return false">
-						<img title="define a new user" src="/icons/modif.png"></a></th>
-					<th style=\"width:12px\" class="tdlock">&nbsp;</th>
-					<th>Uid</th>
-					<th>Name</th>
-					<th>Login</th>
-					<th>Email</th>
-					<th>Groups</th>
-					<th>Valid</th>
-					<th>Until</th>
-					<th>Comment</th>
-				</tr></thead>
-				<tbody>
-				$dusers
-				</tbody>
-				</table>
-			</div>
-		</div>
-	</fieldset>
+    <fieldset id="users-field"><legend><b>Users</b></A></legend>
+        <div style="background: #BBB">
+            <b>$dusersCountValid</b>/$dusersCount users valid/defined
+        </div>
+        <div class="dusers-container">
+            <div class="dusers">
+                <table class="dusers">
+                <thead>
+                <tr>
+                    <th style=\"width:12px\"><a href="#IDENT" onclick="openPopupUser(); return false">
+                        <img title="define a new user" src="/icons/modif.png"></a></th>
+                    <th style=\"width:12px\" class="tdlock">&nbsp;</th>
+                    <th>Uid</th>
+                    <th>Name</th>
+                    <th>Login</th>
+                    <th>Email</th>
+                    <th>Groups</th>
+                    <th>Valid</th>
+                    <th>Until</th>
+                    <th>Comment</th>
+                </tr></thead>
+                <tbody>
+                $dusers
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </fieldset>
 
-	<fieldset id="groups-field"><legend><b>Groups</b></A></legend>
-		<div style="background: #BBB">
-			<b>$SdgrpsCount</b> groups defined
-		</div>
-		<div class="dugrps-container">
-			<div class="dugrps">
-				<table class="dugrps">
-				<thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupGroup();return false"><img title="define new group/user" src="/icons/modif.png"></a>
-				<th style=\"width:12px\" class="tdlock">&nbsp;
-				<th>Gid<th>Uids
-				</tr></thead>
-				<tbody>
-				$Sdgrps
-				</tbody>
-				</table>
-			</div>
-		</div>
-	</fieldset>
+    <fieldset id="groups-field"><legend><b>Groups</b></A></legend>
+        <div style="background: #BBB">
+            <b>$SdgrpsCount</b> groups defined
+        </div>
+        <div class="dugrps-container">
+            <div class="dugrps">
+                <table class="dugrps">
+                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupGroup();return false"><img title="define new group/user" src="/icons/modif.png"></a>
+                <th style=\"width:12px\" class="tdlock">&nbsp;
+                <th>Gid<th>Uids
+                </tr></thead>
+                <tbody>
+                $Sdgrps
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </fieldset>
 
 </div>
 </div>
@@ -695,76 +695,76 @@ Identifications&nbsp;$go2top
 PostBoard subscriptions&nbsp;$go2top
 </div>
 <div id="pbID">
-	<div id="notfMsg" style="font-weight: bold; color: $notfMsgColor">&bull; $notfMsg</div><br/>
-	<form id="overlay_form_notf" class="overlay_form" style="display:none">
-	<input type="hidden" name="action" value="">
-	<input type="hidden" name="tbl" value="">
-	<input type="hidden" name="OLDevent" value="">
-	<input type="hidden" name="OLDuid" value="">
-	<input type="hidden" name="OLDact" value="">
-	<p><b><i>Edit notification definition</i></b></p>
-	<label>Event:<span class="small">Event ID (major[.minor])</span></label>
-	<input type="text" name="event" value=""/><br/>
-	<label for="valid-notif">Validity:
-		<span class="small">check to activate notification</span></label>
-	<input type="checkbox" id="valid-notif" name="valid" value="Y"/><br/>
-	<label>Uid:<span class="small">userid to send mail to</span></label>
-	<input type="text" name="uid" value=""/><br/>
-	<label>MailSubject:<span class="small">mail subject</span></label>
-	<input type="text" name="mailsub" value=""/><br/>
-	<label>MailAtt:<span class="small">mail attachment</span></label>
-	<input type="text" name="mailatt" value=""/><br/>
-	<label>Action:<span class="small">system() cmd</span></label>
-	<input type="text" name="act" value=""/><br/>
-	<p style="margin: 0px; text-align: center">
-		<input type="button" name="sendbutton" value="send" onclick="sendPopupNotf(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
-	</p>
-	</form>
+    <div id="notfMsg" style="font-weight: bold; color: $notfMsgColor">&bull; $notfMsg</div><br/>
+    <form id="overlay_form_notf" class="overlay_form" style="display:none">
+    <input type="hidden" name="action" value="">
+    <input type="hidden" name="tbl" value="">
+    <input type="hidden" name="OLDevent" value="">
+    <input type="hidden" name="OLDuid" value="">
+    <input type="hidden" name="OLDact" value="">
+    <p><b><i>Edit notification definition</i></b></p>
+    <label>Event:<span class="small">Event ID (major[.minor])</span></label>
+    <input type="text" name="event" value=""/><br/>
+    <label for="valid-notif">Validity:
+        <span class="small">check to activate notification</span></label>
+    <input type="checkbox" id="valid-notif" name="valid" value="Y"/><br/>
+    <label>Uid:<span class="small">userid to send mail to</span></label>
+    <input type="text" name="uid" value=""/><br/>
+    <label>MailSubject:<span class="small">mail subject</span></label>
+    <input type="text" name="mailsub" value=""/><br/>
+    <label>MailAtt:<span class="small">mail attachment</span></label>
+    <input type="text" name="mailatt" value=""/><br/>
+    <label>Action:<span class="small">system() cmd</span></label>
+    <input type="text" name="act" value=""/><br/>
+    <p style="margin: 0px; text-align: center">
+        <input type="button" name="sendbutton" value="send" onclick="sendPopupNotf(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
+    </p>
+    </form>
 
-	<TABLE><TR style="vertical-align: top;">
-	<TD style="border: none; vertical-align: top;">
-	<TR>
-	<TD style="border: none; vertical-align: top;">
+    <TABLE><TR style="vertical-align: top;">
+    <TD style="border: none; vertical-align: top;">
+    <TR>
+    <TD style="border: none; vertical-align: top;">
 
-	<fieldset><legend class="smanlegend">Postboard status</legend>
-		<div class="status-container">
-			<div class="schedstatus">$postboardstatus</div>
-		</div>
-	</fieldset>
+    <fieldset><legend class="smanlegend">Postboard status</legend>
+        <div class="status-container">
+            <div class="schedstatus">$postboardstatus</div>
+        </div>
+    </fieldset>
 
-	<fieldset><legend><b>Notifications</b></A></legend>
-		<div style="background: #BBB">
-			<b>$dnotfCount</b> notifications defined
-		</div>
-		<div class="dunotf-container">
-			<div class="dunotf">
-				<table class="dunotf">
-				<thead><tr>
-				<th style=\"width:12px\" class="tdlock">&nbsp;
-				<th class="tdlock">Event
-				</tr></thead>
-				<tbody>
-				$dunotf
-				</tbody>
-				</table>
-			</div>
-		</div>
-		<div class="dnotf-container">
-			<div class="dnotf">
-				<table class="dnotf">
-				<thead><tr><th style=\"width:12px\"><a href="#POSTBOARD" onclick="openPopupNotf();return false"><img title="define new notification" src="/icons/modif.png"></a>
-				<th style=\"width:12px\" class="tdlock">&nbsp;
-				<th>Event<th>V<th>Uid<th>Mail<br>Subject<th>Mail<br>Attachm.<th>Action
-				</tr></thead>
-				<tbody>
-				$dnotf
-				</tbody>
-				</table>
-			</div>
-		</div>
-	</fieldset>
+    <fieldset><legend><b>Notifications</b></A></legend>
+        <div style="background: #BBB">
+            <b>$dnotfCount</b> notifications defined
+        </div>
+        <div class="dunotf-container">
+            <div class="dunotf">
+                <table class="dunotf">
+                <thead><tr>
+                <th style=\"width:12px\" class="tdlock">&nbsp;
+                <th class="tdlock">Event
+                </tr></thead>
+                <tbody>
+                $dunotf
+                </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="dnotf-container">
+            <div class="dnotf">
+                <table class="dnotf">
+                <thead><tr><th style=\"width:12px\"><a href="#POSTBOARD" onclick="openPopupNotf();return false"><img title="define new notification" src="/icons/modif.png"></a>
+                <th style=\"width:12px\" class="tdlock">&nbsp;
+                <th>Event<th>V<th>Uid<th>Mail<br>Subject<th>Mail<br>Attachm.<th>Action
+                </tr></thead>
+                <tbody>
+                $dnotf
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </fieldset>
 
-	</TABLE>
+    </TABLE>
 </div>
 </div>
 EOPART1
@@ -777,43 +777,43 @@ print <<"EOPART2";
 Authorizations&nbsp;$go2top
 </div>
 <div id="authID">
-	<div id="authMsg" style="font-weight: bold; color: $authMsgColor">&bull; $authMsg</div><br/>
-	<form id="overlay_form_auth" class="overlay_form" style="display:none">
-	<input type="hidden" name="action" value="">
-	<input type="hidden" name="tbl" value="">
-	<input type="hidden" name="OLDuid" value="">
-	<input type="hidden" name="OLDres" value="">
-	<p><b><i>Edit authorization</i></b></p>
-	<label>Uid:<span class="small">Uid or Gid</span></label>
-	<input type="text" name="uid" value=""/><br/>
-	<label>Resource:<span class="small">resource name</span></label>
-	<input type="text" name="res" value=""/><br/>
-	<label>Authorization:<span class="small">1=Read,2=Edit,4=Adm</span></label>
-	<input type="text" name="auth" value=""/><br/>
-	<p style="margin: 0px; text-align: center">
-		<input type="button" name="sendbutton" value="send" onclick="sendPopupAuth(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
-	</p>
-	</form>
+    <div id="authMsg" style="font-weight: bold; color: $authMsgColor">&bull; $authMsg</div><br/>
+    <form id="overlay_form_auth" class="overlay_form" style="display:none">
+    <input type="hidden" name="action" value="">
+    <input type="hidden" name="tbl" value="">
+    <input type="hidden" name="OLDuid" value="">
+    <input type="hidden" name="OLDres" value="">
+    <p><b><i>Edit authorization</i></b></p>
+    <label>Uid:<span class="small">Uid or Gid</span></label>
+    <input type="text" name="uid" value=""/><br/>
+    <label>Resource:<span class="small">resource name</span></label>
+    <input type="text" name="res" value=""/><br/>
+    <label>Authorization:<span class="small">1=Read,2=Edit,4=Adm</span></label>
+    <input type="text" name="auth" value=""/><br/>
+    <p style="margin: 0px; text-align: center">
+        <input type="button" name="sendbutton" value="send" onclick="sendPopupAuth(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
+    </p>
+    </form>
 EOPART2
 print "<TABLE><TR style=\"vertical-align: top;\">";
 print "<TD style=\"border: none; vertical-align: top;\">";
 for my $i (qw(view proc form)) {
     print <<"EOAUTH1"
-		<fieldset style="float:left"><legend><b>$i</b></A></legend>
-		<div class="dauth-container" style="float: left">
-			<div class="dauth">
-				<table class="dauth">
-				<thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/modif.png"></a>
-				<th style=\"width:12px\" class="tdlock">&nbsp;
-				<th>Uid<th>Rname<th>Auth
-				</tr></thead>
-				<tbody>
-				$TA{$i}{dauth}
-				</tbody>
-				</table>
-			</div>
-		</div>
-		</fieldset>
+        <fieldset style="float:left"><legend><b>$i</b></A></legend>
+        <div class="dauth-container" style="float: left">
+            <div class="dauth">
+                <table class="dauth">
+                <thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/modif.png"></a>
+                <th style=\"width:12px\" class="tdlock">&nbsp;
+                <th>Uid<th>Rname<th>Auth
+                </tr></thead>
+                <tbody>
+                $TA{$i}{dauth}
+                </tbody>
+                </table>
+            </div>
+        </div>
+        </fieldset>
 EOAUTH1
 }
 print "</TR></TABLE>";
@@ -822,21 +822,21 @@ print "<TABLE><TR style=\"vertical-align: top;\">";
 print "<TD style=\"border: none; vertical-align: top;\">";
 for my $i (qw(wiki misc)) {
     print <<"EOAUTH2"
-		<fieldset style="float:left"><legend><b>$i</b></A></legend>
-		<div class="dauth-container" style="float: left">
-			<div class="dauth">
-				<table class="dauth">
-				<thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/modif.png"></a>
-				<th style=\"width:12px\" class="tdlock">&nbsp;
-				<th>Uid<th>Rname<th>Auth
-				</tr></thead>
-				<tbody>
-				$TA{$i}{dauth}
-				</tbody>
-				</table>
-			</div>
-		</div>
-		</fieldset>
+        <fieldset style="float:left"><legend><b>$i</b></A></legend>
+        <div class="dauth-container" style="float: left">
+            <div class="dauth">
+                <table class="dauth">
+                <thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/modif.png"></a>
+                <th style=\"width:12px\" class="tdlock">&nbsp;
+                <th>Uid<th>Rname<th>Auth
+                </tr></thead>
+                <tbody>
+                $TA{$i}{dauth}
+                </tbody>
+                </table>
+            </div>
+        </div>
+        </fieldset>
 EOAUTH2
 }
 print "</TR></TABLE>";

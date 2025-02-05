@@ -6,13 +6,13 @@ Package WebObs : Common perl-cgi variables and functions
 
 =head1 SYNOPSIS
 
-	use WebObs::Config;
+    use WebObs::Config;
 
-	$file = $WEBOBS{FILE_MYFILENAME};  # using %WEBOBS definitions
-	%myHash = readCfg($file);          # reading a key|value configuration file
+    $file = $WEBOBS{FILE_MYFILENAME};  # using %WEBOBS definitions
+    %myHash = readCfg($file);          # reading a key|value configuration file
 
-	use CGI::Carp qw(fatalsToBrowser set_message);
-	set_message(\&webobs_cgi_msg);     # using the dedicated cgi error messages formatter
+    use CGI::Carp qw(fatalsToBrowser set_message);
+    set_message(\&webobs_cgi_msg);     # using the dedicated cgi error messages formatter
 
 =head1 DESCRIPTION
 
@@ -61,13 +61,13 @@ Rule #6 : field value substitution is allowed in =key|value form:
 
 Rule #7 : line continuation (ie. field value spanning more than one line), if desired,
           is specified by a \ (backslash) as the last character of a line.
-		  Note: leading and trailing spaces in each line are preserved.
-		  Example:
+          Note: leading and trailing spaces in each line are preserved.
+          Example:
 
-		    LONGLIST|Element1,\
-			         Element2,\
-			Element3
-			is equivalent to: LONGLIST|Element1,         Element2,Element3
+            LONGLIST|Element1,\
+                     Element2,\
+            Element3
+            is equivalent to: LONGLIST|Element1,         Element2,Element3
 
 
 Rule #8 : configuration files are all considered ISO-8859-15 (latin) encoded
@@ -127,12 +127,12 @@ sub webobs_cgi_msg {
 
 =head2 readFile
 
-	# reading all lines from filepath/filename into @lines:
-	@lines = readFile("filepath/filename");
+    # reading all lines from filepath/filename into @lines:
+    @lines = readFile("filepath/filename");
 
-	# reading all lines starting with 1130| from /filepath/filename into @lines :
-	$filter = qr/^1130\|/;
-	@lines = readFile("/filepath/filename",$filter);
+    # reading all lines starting with 1130| from /filepath/filename into @lines :
+    $filter = qr/^1130\|/;
+    @lines = readFile("/filepath/filename",$filter);
 
 Reads file contents (optionaly filtered with $filter regex reference) into an array.
 All lines are read unfiltered, uninterpreted, unchanged.
@@ -168,9 +168,9 @@ sub readFile
 eXtended readFile(). Performs same functions as readFile, but returns
 both 1) a reference to the file contents and 2) the 'last-modified-timestamp' of the file
 
-	# reading all lines from filepath/filename :
-	($ptr, $ts) = readFile("filepath/filename");
-	print "filepath/filename timestamped ".strftime("%F %T",localtime($ts)).":\n @$ptr";
+    # reading all lines from filepath/filename :
+    ($ptr, $ts) = readFile("filepath/filename");
+    print "filepath/filename timestamped ".strftime("%F %T",localtime($ts)).":\n @$ptr";
 
 Follows all other rules of readFile().
 
@@ -205,7 +205,7 @@ sub xreadFile
 
 =head2 readCfgFile
 
-	@lines = readCfgFile("[filepath/]filename");
+    @lines = readCfgFile("[filepath/]filename");
 
 reads file contents into an array, converting lines to UTF8,
 and removing commented lines (# in col1), blank lines, and all \r (CR).
@@ -234,10 +234,10 @@ sub readCfgFile
 
 =head2 readCfg
 
-	%lines = readCfg("[filepath]/filename");  # for key|value[|value...] files
-	%lines = readCfg("[filepath]/filename",'sorted'); # adds $lines{}{_SO_} (sort order)
+    %lines = readCfg("[filepath]/filename");  # for key|value[|value...] files
+    %lines = readCfg("[filepath]/filename",'sorted'); # adds $lines{}{_SO_} (sort order)
 
-	@lines = readCfg("[filepath]/filename");  # other files
+    @lines = readCfg("[filepath]/filename");  # other files
 
 reads in a configuration file (defaults to main webobs WEBOBS.conf
 if none is specified). See DESCRIPTION above for a description of readCfg interpretation rules
@@ -259,11 +259,11 @@ sub readCfg
         s/(^\s+)||(\s+$)//g;        # remove leading & trailing blanks
         s/\r//g;                    # remove all CRs not only in CRLF
         next if /^$/ ;              # ignore empty lines
-        if (m/^=([^ ]*)/) {			# got a definition line ?
-            @df = split(/\|/);		# save it
-            next;					# and forget it
+        if (m/^=([^ ]*)/) {            # got a definition line ?
+            @df = split(/\|/);        # save it
+            next;                    # and forget it
         }
-        $l = l2u($_);				# force utf8 !
+        $l = l2u($_);                # force utf8 !
         @wrk = split(/(?<!\\)\|/,$l);  # parse with unescaped-| as delim
         if (!$escape) { s/\\//g for(@wrk) };          # remove escape chars (\)
         if (@df == 2) {             # key|value ? build Hash
@@ -324,10 +324,10 @@ translate them back after request is pulled out of the pipe.
 
 Return codes from notify:
 
-	96   can't open postboard named pipe (fifo)
-	97   no request specified (nothing to send)
-	98   postboard named pipe is unknown (no definition in config.)
-	99   notification request has an invalid format
+    96   can't open postboard named pipe (fifo)
+    97   no request specified (nothing to send)
+    98   postboard named pipe is unknown (no definition in config.)
+    99   notification request has an invalid format
 
 =cut
 

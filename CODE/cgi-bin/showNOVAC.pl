@@ -224,7 +224,7 @@ if ($QryParm->{'affiche'} ne "csv") {
     }
     print "\n
         </select>\n
-	<select name=\"site\" size=\"1\">";
+    <select name=\"site\" size=\"1\">";
     for ("All|All sites",@NODESSelList) {
         my ($val,$cle) = split (/\|/,$_);
         if ("$val" eq "$QryParm->{'site'}") {
@@ -238,7 +238,7 @@ if ($QryParm->{'affiche'} ne "csv") {
     }
     print "\n
         </select>\n
-	<input type=\"submit\" value=\"Show\"/>";
+    <input type=\"submit\" value=\"Show\"/>";
     if ($editOK) {
         print "\n
         <input type=\"button\" style=\"margin-left:15px;color:blue;\" onClick=\"document.location='/cgi-bin/".$FORM->conf('CGI_FORM')."'\" value=\"new record\"/>";

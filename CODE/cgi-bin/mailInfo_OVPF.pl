@@ -4,23 +4,23 @@
 # mail_info.pl
 # ------
 # Usage: Prepare an information mail based on the Main Courante
-#	(MC) seismological database
+#    (MC) seismological database
 #
 # Arguments
-#	mc= MC conf name (optional)
-#	dateStart= Start date (mandatory)
-#	dateEnd= End date (mandatory)
-#	stat_max_duration= Duration of the biggest VT for the
-#		selected time interval (mandatory)
-#	stat_max_magnitude= Magnitude of the biggest VT for the
-#		selected time interval (mandatory)
-#	stat_max_duration_loc= Duration of the biggest local
-#	        for the selected time interval (mandatory)
-#	stat_max_magnitude_loc= Magnitude of the biggest local
-#	        for the selected time interval (mandatory)
-#	RFcount = Number of rockfalls (mandatory)
-#	VTcount = number of VT (mandatory)
-#	LOCcount = number of VT (mandatory)
+#    mc= MC conf name (optional)
+#    dateStart= Start date (mandatory)
+#    dateEnd= End date (mandatory)
+#    stat_max_duration= Duration of the biggest VT for the
+#        selected time interval (mandatory)
+#    stat_max_magnitude= Magnitude of the biggest VT for the
+#        selected time interval (mandatory)
+#    stat_max_duration_loc= Duration of the biggest local
+#            for the selected time interval (mandatory)
+#    stat_max_magnitude_loc= Magnitude of the biggest local
+#            for the selected time interval (mandatory)
+#    RFcount = Number of rockfalls (mandatory)
+#    VTcount = number of VT (mandatory)
+#    LOCcount = number of VT (mandatory)
 #
 #
 # Author: Patrice Boissier <boissier@ipgp.fr>
@@ -325,12 +325,12 @@ PART1
     $html .= '    <hr>';
     $html .= "<h3>Glossaire</h3>";
     $html .= "<p>
-	          - S&eacute;isme volcano-tectonique sommital : s&eacute;isme localis&eacute; au dessus du niveau de la mer &agrave; l'aplomb du sommet du volcan.<br/>
+              - S&eacute;isme volcano-tectonique sommital : s&eacute;isme localis&eacute; au dessus du niveau de la mer &agrave; l'aplomb du sommet du volcan.<br/>
                   - S&eacute;isme volcano-tectonique profond : s&eacute;isme localis&eacute; sous le niveau de la mer &agrave; l'aplomb du volcan.<br/>
                   - S&eacute;isme local : s&eacute;isme localis&eacute; dans un rayon de 200km de l'&icirc;le.<br/>
                   - Signaux GPS sommitaux: t&eacute;moin de l'influence de sources de pression superficielles &agrave; l'aplomb du volcan.<br/>
                   - Signaux GPS lointains: t&eacute;moin de l'influence de sources de pression profondes &agrave; l'aplomb du volcan.
-	          </p>";
+              </p>";
     $html .= "    </div>";
     $html .= "  </div>";
     $html .= "  </body>";
@@ -349,7 +349,7 @@ PART1
     close $fh;
     print "Fin ECRITURE BULLETIN";
 
-    #	print "Envoie du mail";
+    #    print "Envoie du mail";
 
     my $from = $MC3{MAIL_FROM};
     my $smtpServer = $MC3{MAIL_SMTP_SERVER};

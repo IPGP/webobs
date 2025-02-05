@@ -307,24 +307,24 @@ for my $job (@$job_def_list) {
           .qq{<img title="edit job" src="/icons/modif.png"></a>};
     }
     $jobsdefs .= qq{
-	<tr id="$jobsdefsId" class="$tr_class">
-	  <td class="ic tdlock">$edit_link</td>
-	  <td class="ic tdlock">$delete_link</td>
-	  <td class="ic tdlock"><a href="#" onclick="postSubmit($jobsdefsId);return false">
-	    <img title="submit job" src="/icons/submits.png"></a>
-	  </td>
-	  <td>$djid</td>
-	  <td align=center>$dvalid</td>
-	  <td>$dres</td>
-	  <td>$xeq1</td>
-	  <td>$xeq2</td>
-	  <td>$dxeq3</td>
-	  <td align=right>$dintv</td>
-	  <td align=center>$dmaxs</td>
-	  <td>$dlogp</td>
-	  <td class="tdlock" nowrap>$dlstrun</td>
-	</tr>
-	};
+    <tr id="$jobsdefsId" class="$tr_class">
+      <td class="ic tdlock">$edit_link</td>
+      <td class="ic tdlock">$delete_link</td>
+      <td class="ic tdlock"><a href="#" onclick="postSubmit($jobsdefsId);return false">
+        <img title="submit job" src="/icons/submits.png"></a>
+      </td>
+      <td>$djid</td>
+      <td align=center>$dvalid</td>
+      <td>$dres</td>
+      <td>$xeq1</td>
+      <td>$xeq2</td>
+      <td>$dxeq3</td>
+      <td align=right>$dintv</td>
+      <td align=center>$dmaxs</td>
+      <td>$dlogp</td>
+      <td class="tdlock" nowrap>$dlstrun</td>
+    </tr>
+    };
 }
 
 print "</head>";
@@ -353,54 +353,54 @@ print <<"EOPAGE";
 <div class="drawerh2" >&nbsp;<img src="/icons/drawer.png"  onClick="toggledrawer('\#statID');">
 Scheduler status
 </div>
-	<div id="statID" class="status-container" style="background-color: white">
-		<div class="schedstatus">$schedstatus</div>
-	</div>
+    <div id="statID" class="status-container" style="background-color: white">
+        <div class="schedstatus">$schedstatus</div>
+    </div>
 </div>
 
 <BR>
 <A NAME="JOBSDEFS"></A>
-	<div id="ovly" style="display: none"></div>
-	<form id="overlay_form" style="display:none">
-	<input type="hidden" name="jid" value="">
-	<input type="hidden" name="action" value="">
-	<p><b><i>Edit job definition</i></b></p>
-	<label for="newjid">jid:<span class="small">unique name &le;20chars</span></label>
-	<input type="text" id="newjid" name="newjid" value=""/><br/>
-	<label for="res">resource:<span class="small">exclusive lock</span></label>
-	<input type="text" id="res" name="res" value=""/><br/>
-	<label for="xeq1">xeq1:<span class="small">environment cmd</span></label>
-	<input type="text" id="xeq1" name="xeq1" value=""/><br/>
-	<label for="xeq2">xeq2:<span class="small">procedure</span></label>
-	<input type="text" id="xeq2" name="xeq2" value=""/><br/>
-	<label for="xeq3">xeq3:<span class="small">post procedure</span></label>
-	<input type="text" id="xeq3" name="xeq3" value=""/><br/>
-	<label for="runinterval">interval:<span class="small">seconds from last run</span></label>
-	<input type="text" id="runinterval" name="runinterval" value=""/><br/>
-	<label for="maxsysload">maxsysload:<span class="small">prevent run above %cpu</span></label>
-	<input type="text" id="maxsysload" name="maxsysload" value="0.8"/><br/>
-	<label for="logpath">logpath:<span class="small">stdout/err subdir</span></label>
-	<input type="text" id="logpath" name="logpath" value=""/><br/>
-	<label for="validity">active:<span class="small">check to activate job</span></label>
-	<input type="checkbox" id="validity" name="validity" value="Y"/><br/>
-	<p style="margin: 0px; text-align: center">
-		<input type="button" name="sendbutton" value="send" onclick="sendPopup(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
-	</p>
-	</form>
+    <div id="ovly" style="display: none"></div>
+    <form id="overlay_form" style="display:none">
+    <input type="hidden" name="jid" value="">
+    <input type="hidden" name="action" value="">
+    <p><b><i>Edit job definition</i></b></p>
+    <label for="newjid">jid:<span class="small">unique name &le;20chars</span></label>
+    <input type="text" id="newjid" name="newjid" value=""/><br/>
+    <label for="res">resource:<span class="small">exclusive lock</span></label>
+    <input type="text" id="res" name="res" value=""/><br/>
+    <label for="xeq1">xeq1:<span class="small">environment cmd</span></label>
+    <input type="text" id="xeq1" name="xeq1" value=""/><br/>
+    <label for="xeq2">xeq2:<span class="small">procedure</span></label>
+    <input type="text" id="xeq2" name="xeq2" value=""/><br/>
+    <label for="xeq3">xeq3:<span class="small">post procedure</span></label>
+    <input type="text" id="xeq3" name="xeq3" value=""/><br/>
+    <label for="runinterval">interval:<span class="small">seconds from last run</span></label>
+    <input type="text" id="runinterval" name="runinterval" value=""/><br/>
+    <label for="maxsysload">maxsysload:<span class="small">prevent run above %cpu</span></label>
+    <input type="text" id="maxsysload" name="maxsysload" value="0.8"/><br/>
+    <label for="logpath">logpath:<span class="small">stdout/err subdir</span></label>
+    <input type="text" id="logpath" name="logpath" value=""/><br/>
+    <label for="validity">active:<span class="small">check to activate job</span></label>
+    <input type="checkbox" id="validity" name="validity" value="Y"/><br/>
+    <p style="margin: 0px; text-align: center">
+        <input type="button" name="sendbutton" value="send" onclick="sendPopup(); return false;" /> <input type="button" value="cancel" onclick="closePopup(); return false" />
+    </p>
+    </form>
 </div>
 <div class="drawer">
 <div class="drawerh2" >&nbsp;<img src="/icons/drawer.png"  onClick="toggledrawer('\#defsID');">
 Jobs definitions&nbsp;<A href="#MYTOP"><img src="/icons/go2top.png"></A>
 </div>
 <div id="defsID">
-	<div style="background: #BBB; margin: 4px 2px;">
-		&nbsp;Jobs defined: <b>$jobsdefsCount</b> (currently activated: <b>$jobsdefsCountValid</b>)
-		<span id="jobsdefsMsg" style="padding-left: 20px; font-weight: bold; color: $jobsdefsMsgColor">$jobsdefsMsg</span>
-	</div>
-	<div class="jobsdefs-container">
-		<div class="jobsdefs">
-			<table class="jobsdefs">
-			<thead><tr><th class="ic tdlock" rowspan=2>
+    <div style="background: #BBB; margin: 4px 2px;">
+        &nbsp;Jobs defined: <b>$jobsdefsCount</b> (currently activated: <b>$jobsdefsCountValid</b>)
+        <span id="jobsdefsMsg" style="padding-left: 20px; font-weight: bold; color: $jobsdefsMsgColor">$jobsdefsMsg</span>
+    </div>
+    <div class="jobsdefs-container">
+        <div class="jobsdefs">
+            <table class="jobsdefs">
+            <thead><tr><th class="ic tdlock" rowspan=2>
 EOPAGE
 
 if ($admOK) {
@@ -412,16 +412,16 @@ print "</th><th class=\"ic tdlock\" rowspan=2>&nbsp;</th>";
 print "</th><th class=\"ic tdlock\" rowspan=2>&nbsp;</th>";
 
 print <<"EOPAGE";
-			<th rowspan=2>JID</th><th rowspan=2 align=center>A</th><th rowspan=2>Resource</th><th colspan=3 align=center>Job command</th>
-			<th rowspan=2 align=right>Interval<br>(s)</th><th rowspan=2 align=center>Max.<br>load</th><th rowspan=2>Log Path</th>
-			<th class="tdlock" rowspan=2>Last Start</th></tr><tr><th>xeq1</th><th>xeq2</th><th>xeq3</th>
-			</tr></thead>
-			<tbody>
-			$jobsdefs
-			</tbody>
-			</table>
-		</div>
-	</div>
+            <th rowspan=2>JID</th><th rowspan=2 align=center>A</th><th rowspan=2>Resource</th><th colspan=3 align=center>Job command</th>
+            <th rowspan=2 align=right>Interval<br>(s)</th><th rowspan=2 align=center>Max.<br>load</th><th rowspan=2>Log Path</th>
+            <th class="tdlock" rowspan=2>Last Start</th></tr><tr><th>xeq1</th><th>xeq2</th><th>xeq3</th>
+            </tr></thead>
+            <tbody>
+            $jobsdefs
+            </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 EOPAGE

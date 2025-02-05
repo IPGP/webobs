@@ -16,7 +16,7 @@ HTML page with QR code of the referer URL.
 
 no query string parameters needed, but logos will be displayed on the side of
 QR code, using the WEBOBS.rc variables:
-	QRCODE_LOGOS|URI_logo1,URI_logo2,...
+    QRCODE_LOGOS|URI_logo1,URI_logo2,...
 
 =cut
 
@@ -51,7 +51,7 @@ print <<"END";
 <HTML><HEAD><TITLE>$title</TITLE></HEAD>
 <STYLE>
 html, body {
-	background-color: white;
+    background-color: white;
     height: 100%;
     margin: 0;
     padding: 0;

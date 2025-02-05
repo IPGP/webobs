@@ -190,21 +190,21 @@ print <<"FIN";
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
 <script language="JavaScript" type="text/javascript">
 function checkRemove(file) {
-	if (confirm (file + " $__{'to be deleted'}. $__{'Are you sure ?'}")) {
-		\$.post("/cgi-bin/postEVENTNODE.pl", {delf: file}, function(data) {
-			alert(data);
-			window.location.reload();
-		}
-		);
+    if (confirm (file + " $__{'to be deleted'}. $__{'Are you sure ?'}")) {
+        \$.post("/cgi-bin/postEVENTNODE.pl", {delf: file}, function(data) {
+            alert(data);
+            window.location.reload();
+        }
+        );
    } else {
       return false;
    }
 }
 function askChanNb() {
-	var nb = prompt(\"Please enter the number of channels\",\"3\");
-	if (nb > 0) {
-		document.form.nbc.value = nb;
-	}
+    var nb = prompt(\"Please enter the number of channels\",\"3\");
+    if (nb > 0) {
+        document.form.nbc.value = nb;
+    }
 }
 
 </script>
@@ -628,7 +628,7 @@ if ( $NODE{GNSS_9CHAR} && $NODE{M3G_AVAIABLE} ) {
         print "<A href=\"$cgiConf\">$txt</A>";
     } else {
         print "M3G GNSS Metadata</TH>";
-    }	#print "</TH><TD colspan=\"2\">".join("<br>",$m3g_link_sitelog,$m3g_link_gml,$m3g_xml,$txt_rec,$txt_ant)."</TD></TR>\n";
+    }    #print "</TH><TD colspan=\"2\">".join("<br>",$m3g_link_sitelog,$m3g_link_gml,$m3g_xml,$txt_rec,$txt_ant)."</TD></TR>\n";
     print "</TH><TD>".join("<br>",$m3g_link_sitelog,$m3g_link_gml,$m3g_xml)."<BR>\n";
     print "<TABLE><TR><TH>Receiver history feature</TH><TH>Antenna history feature</TH></TR><TR><TD>".wiki2html($txt_rec)."</TD><TD>".wiki2html($txt_ant)."</TD></TR></TABLE></TD>";
 }

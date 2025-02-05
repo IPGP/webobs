@@ -25,11 +25,11 @@ the scheduler's B<job-definition-string> submit command (see scheduler.pl perldo
 job-definition-string UID: parameter of each submit command will be identical to the REQUEST.rc UID.
 Example of a job-definition-string :
 
-	 XEQ1: Proc-SUBMIT_COMMAND,
-	 XEQ2: OUTR-Path,
-	 RES:  Proc-SUBMIT_RESOURCE,
-	 LOGPATH: Job-LogPath,
-	 UID:  $CLIENT's UID
+     XEQ1: Proc-SUBMIT_COMMAND,
+     XEQ2: OUTR-Path,
+     RES:  Proc-SUBMIT_RESOURCE,
+     LOGPATH: Job-LogPath,
+     UID:  $CLIENT's UID
 
 4) Processes executed from B<Request for Graphs> may choose to send their own 'notification' event
 to the WebObs PostBoard using perl's B<WebObs::Config::notify(msg)> or the B<matlab's notify(msg)> function.
@@ -47,54 +47,54 @@ progress, end, and/or results:
 
 2) Sending a notification to trigger email(s) from a PROC's routine, requires the following definitions and actions:
 
-	a) define an "event-id" identifying the notification so that PostBoard knows what to do with it: in this case, sending email
-	to who with what subject. This has to be defined in the WEBOBSUSERS.db database - table "NOTIFICATIONS".
+    a) define an "event-id" identifying the notification so that PostBoard knows what to do with it: in this case, sending email
+    to who with what subject. This has to be defined in the WEBOBSUSERS.db database - table "NOTIFICATIONS".
 
-	b) each PROC's routine can thus have their own "event-id" defined (with specific mail subject, mail recipients) BUT they also can use
-	the event-id "formreq." (don't forget the ending dot!), that is automatically defined as part of WebObs installation, and is intended to be
-	a 'common/default' event-id for all 'Requests for Graphs' routines.
+    b) each PROC's routine can thus have their own "event-id" defined (with specific mail subject, mail recipients) BUT they also can use
+    the event-id "formreq." (don't forget the ending dot!), that is automatically defined as part of WebObs installation, and is intended to be
+    a 'common/default' event-id for all 'Requests for Graphs' routines.
 
-	c) The WebOb's UID (or GID) defined as the addressee (recipient) of email in the NOTIFICATIONS table for the "event-id", may be OVERIDDEN
-	with a UID dynamically specified (ie. at PROC's routine run time) in the notification message itself (thru the uid= keyword, again read postboard.pl perldoc).
-	As an example, a typical PROC's routine notification will use the UID parameter found in its REQUEST.rc file to build its notification uid= keyword
-	(mainly because it references the WebObs $CLIENT's uid that submitted the PROC's request).
+    c) The WebOb's UID (or GID) defined as the addressee (recipient) of email in the NOTIFICATIONS table for the "event-id", may be OVERIDDEN
+    with a UID dynamically specified (ie. at PROC's routine run time) in the notification message itself (thru the uid= keyword, again read postboard.pl perldoc).
+    As an example, a typical PROC's routine notification will use the UID parameter found in its REQUEST.rc file to build its notification uid= keyword
+    (mainly because it references the WebObs $CLIENT's uid that submitted the PROC's request).
 
-	d) the 'sender-id' specified in a notification has no special meaning to the system, except if it is a valid email address, in which case
-	PostBoard will use it as the 'From:' mail's tag.
+    d) the 'sender-id' specified in a notification has no special meaning to the system, except if it is a valid email address, in which case
+    PostBoard will use it as the 'From:' mail's tag.
 
-	e) the 'file=' keyword in the notification message can be used to specify a filename whose contents will be inserted in the generated email text.
-	This is basically another (and optional) customization/standardization of the mail being sent from a PROC.
+    e) the 'file=' keyword in the notification message can be used to specify a filename whose contents will be inserted in the generated email text.
+    This is basically another (and optional) customization/standardization of the mail being sent from a PROC.
 
 =head1 REQUEST.rc
 
-	DATE1|
-	DATE2|
-	TZ|
-	DATESTR|
-	PPI|
-	MARKERSIZE|
-	LINEWIDTH|
-	CUMULATE|
-	DECIMATE|
-	PLOTGRID|
-	PDFOUTPUT|
-	SVGOUTPUT|
-	EXPORTS|
-	ANONYMOUS|
-	DEBUG|
-	ORIGIN|
-	UID|
-	PROC.procname.key|  (optional, as many as given by formREQ.pl)
+    DATE1|
+    DATE2|
+    TZ|
+    DATESTR|
+    PPI|
+    MARKERSIZE|
+    LINEWIDTH|
+    CUMULATE|
+    DECIMATE|
+    PLOTGRID|
+    PDFOUTPUT|
+    SVGOUTPUT|
+    EXPORTS|
+    ANONYMOUS|
+    DEBUG|
+    ORIGIN|
+    UID|
+    PROC.procname.key|  (optional, as many as given by formREQ.pl)
 
 =head1 OUTR REQUEST subdirectory
 
-	OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
-		REQUEST.rc
-		PROC.PROCa/
-			{exports,graphs,maps,logs}/
-		....
-		PROC.PROCz/
-			{exports,graphs,maps,logs}/
+    OUTR/YYYYMMDD_HHMMSS_HOSTNAME_UID
+        REQUEST.rc
+        PROC.PROCa/
+            {exports,graphs,maps,logs}/
+        ....
+        PROC.PROCz/
+            {exports,graphs,maps,logs}/
 
 =cut
 
