@@ -620,7 +620,7 @@ for n = 1:length(t)
 				fprintf(fid,'  "magnitude": "%1.1f",\n',d(n,4));
 				fprintf(fid,'  "region": "%s (%s)",\n',upper(varsub('$azimuth de $city',E)),upper(E.region));
 				fprintf(fid,'  "department": "%s",\n',P.TRIGGER_DEPARTMENT);
-				fprintf(fid,'  "agency": "%s",\n',P.TRIGGER_AGENCY);
+				fprintf(fid,'  "agency": "%s"\n',P.TRIGGER_AGENCY);
 				fprintf(fid,'}\n');
 				fclose(fid);
 				fprintf(' done.\n');
