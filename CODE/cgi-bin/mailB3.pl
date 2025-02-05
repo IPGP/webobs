@@ -147,51 +147,53 @@ __EOD__
 
 sub print_form {
 
-  my ($y,$m,$d,$id,$evt) = split(/\//,$g);
-  my ($evt_y,$evt_m,$evt_d,$evt_H,$evt_M,$evt_S,$evt_loc) = unpack("a4a2a2xa2a2a2xa*",$evt);
-  my $b3_urn = "$WEBOBS{'URN_OUTG'}/$grid/$ts/$g"; 
-  my $evt_email = $P{TRIGGER_EMAIL};
-  my $evt_subject = $P{TRIGGER_SUBJECT};
-  my $report_email = $P{REPORT_EMAIL};
-  my ($evt_latitude,$evt_longitude,$evt_magnitude,$evt_depth,$evt_department,$evt_region);
-  my $report_file = "$evt.pdf";
-  my $report_subject = "$P{REPORT_SUBJECT}";
-  my $report_message;
-  my $trigger_agency = "$P{TRIGGER_AGENCY}";
-    
-  # reads needed information from the event
-  my $triggerOK = 1;
-  my $trigger_check = 'checked';
-  my $evt_origin = "$evt_y/$evt_m/$evt_d $evt_H:$evt_M:$evt_S";
-  if (-e "$b3.json") {
-    my %json = %{decode_json(l2u(join("",readFile("$b3.json"))))};
-    $evt_latitude = $json{'latitude'};
-    $evt_longitude = $json{'longitude'};
-    $evt_depth = $json{'depth'};
-    $evt_magnitude = $json{'magnitude'};
-    $evt_department = l2u($json{'department'});
-    $evt_region = l2u($json{'region'});
+    my ($y,$m,$d,$id,$evt) = split(/\//,$g);
+    my ($evt_y,$evt_m,$evt_d,$evt_H,$evt_M,$evt_S,$evt_loc) = unpack("a4a2a2xa2a2a2xa*",$evt);
+    my $b3_urn = "$WEBOBS{'URN_OUTG'}/$grid/$ts/$g";
+    my $evt_email = $P{TRIGGER_EMAIL};
+    my $evt_subject = $P{TRIGGER_SUBJECT};
+    my $report_email = $P{REPORT_EMAIL};
+    my ($evt_latitude,$evt_longitude,$evt_magnitude,$evt_depth,$evt_region,$evt_department,$evt_agency);
+    my $report_file = "$evt.pdf";
+    my $report_subject = "$P{REPORT_SUBJECT}";
+    my $report_message;
 
-  } elsif (-e "$b3.gse") {
-    my @gse = readFile("$b3.gse");
-    $evt_latitude = trim(substr($gse[9],25,9));
-    $evt_longitude = trim(substr($gse[9],34,9));
-    $evt_depth = trim(substr($gse[9],47,7));
-    $evt_magnitude = trim(substr($gse[9],74,4));
-    ($evt_region,$evt_department) = split(/ \(|\)/,l2u(trim($gse[12])));
-    $evt_department = $P{REGION} if ($evt_department eq "");
-  } else {
-    $triggerOK = 0;
-    $trigger_check = 'disabled';
-  }
-  my $trigger_content = "Time: $evt_origin\n"
-                      ."Latitude: $evt_latitude\n"
-                      ."Longitude: $evt_longitude\n"
-                      ."Depth: $evt_depth\n"
-                      ."Magnitude: $evt_magnitude\n"
-                      ."Department: $evt_department\n"
-                      ."Region: $evt_region\n"
-                      ."Agency: $trigger_agency\n";
+    # reads needed information from the event
+    my $triggerOK = 1;
+    my $trigger_check = 'checked';
+    my $evt_origin = "$evt_y/$evt_m/$evt_d $evt_H:$evt_M:$evt_S";
+    if (-e "$b3.json") {
+        my %json = %{decode_json(l2u(join("",readFile("$b3.json"))))};
+        $evt_latitude = $json{'latitude'};
+        $evt_longitude = $json{'longitude'};
+        $evt_depth = $json{'depth'};
+        $evt_magnitude = $json{'magnitude'};
+        $evt_region = l2u($json{'region'});
+        $evt_department = l2u($json{'department'});
+        $evt_agency = l2u($json{'agency'});
+
+    } elsif (-e "$b3.gse") {
+        my @gse = readFile("$b3.gse");
+        $evt_latitude = trim(substr($gse[9],25,9));
+        $evt_longitude = trim(substr($gse[9],34,9));
+        $evt_depth = trim(substr($gse[9],47,7));
+        $evt_magnitude = trim(substr($gse[9],74,4));
+        $evt_region = l2u(trim($gse[12]));
+        $evt_agency = trim(substr($gse[9],105,8));
+    } else {
+        $triggerOK = 0;
+        $trigger_check = 'disabled';
+    }
+    $evt_department = $P{TRIGGER_DEPARTMENT} if ($evt_department eq "");
+    $evt_agency = $P{TRIGGER_AGENCY} if ($evt_agency eq "");
+    my $trigger_content = "Time: $evt_origin\n"
+      ."Latitude: $evt_latitude\n"
+      ."Longitude: $evt_longitude\n"
+      ."Depth: $evt_depth\n"
+      ."Magnitude: $evt_magnitude\n"
+      ."Department: $evt_department\n"
+      ."Region: $evt_region\n"
+      ."Agency: $evt_agency\n";
 
     if (-e "$b3.msg") {
         my @msg = readFile("$b3.msg");
@@ -292,7 +294,7 @@ sub print_form {
       <label for="agency">$__{'Agency'}:</label>
   </div>
   <div class="form_elem form_input">
-      <input size=50 name="agency" value="$trigger_agency" class="auto"/><br>
+      <input size=50 name="agency" value="$evt_agency" class="auto"/><br>
   </div>
   <input type="hidden" value="$trigger_content" id="forBCSF">
   <input type="button" onclick="copy2Clipboard()" value="$__{'Copy BCSF info to the clipboard'}"></button>
@@ -385,25 +387,25 @@ if ($q->param('send_trigger') eq '' and $q->param('send_report') eq '') {
     print "<h2>$__{'Sending emails'}</h2>\n";
     my $replyto = "export REPLYTO=$operator_email";
 
-  # send trigger email
-  if ($q->param('send_trigger')) {
-    my $mail_address = $q->param('trigger_email');
-    my $mail_subject = $q->param('trigger_subject');
-    my $mail_content = "Time: ".$q->param('event_time')."\n"
-                       ."Latitude: ".$q->param('event_latitude')."\n"
-                       ."Longitude: ".$q->param('event_longitude')."\n"
-                       ."Depth: ".$q->param('event_depth')."\n"
-                       ."Magnitude: ".$q->param('event_magnitude')."\n"
-                       ."Department: ".u2l($q->param('event_department'))."\n"
-                       ."Region: ".u2l($q->param('event_region'))."\n"
-                       ."Agency: ".u2l($q->param('agency'))."\n";
-    my $cmd = "$replyto;echo \"$mail_content\" | mutt -s \"$mail_subject\" $mutt_options $mail_address $operator_email";
-    if ( ! system($cmd) ) {
-      print_success($__{'Trigger email has been successfully sent!'});
-    } else {
-      print_error($__{'Sorry, an error occured during report email sending. Please contact an administator.'});
+    # send trigger email
+    if ($q->param('send_trigger')) {
+        my $mail_address = $q->param('trigger_email');
+        my $mail_subject = $q->param('trigger_subject');
+        my $mail_content = "Time: ".$q->param('event_time')."\n"
+          ."Latitude: ".$q->param('event_latitude')."\n"
+          ."Longitude: ".$q->param('event_longitude')."\n"
+          ."Depth: ".$q->param('event_depth')."\n"
+          ."Magnitude: ".$q->param('event_magnitude')."\n"
+          ."Department: ".u2l($q->param('event_department'))."\n"
+          ."Region: ".u2l($q->param('event_region'))."\n"
+          ."Agency: ".u2l($q->param('agency'))."\n";
+        my $cmd = "$replyto;echo \"$mail_content\" | mutt -s \"$mail_subject\" $mutt_options $mail_address $operator_email";
+        if ( ! system($cmd) ) {
+            print_success($__{'Trigger email has been successfully sent!'});
+        } else {
+            print_error($__{'Sorry, an error occured during report email sending. Please contact an administator.'});
+        }
     }
-  }
 
     # send report email
     if ($q->param('send_report')) {

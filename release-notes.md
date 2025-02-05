@@ -49,6 +49,8 @@ JSON_EXPORT|Y
 MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
 TRIGGER_EMAIL|
 TRIGGER_SUBJECT|SÉISME RESSENTI
+TRIGGER_DEPARTMENT|
+TRIGGER_AGENCY|
 REPORT_EMAIL|
 REPORT_SUBJECT|[OVS-IPGP] Séisme ressenti
 REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le site du BCSF à l'adresse suivante : www.franceseisme.fr
