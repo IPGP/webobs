@@ -37,7 +37,7 @@ use MIME::Base64;
 
 # --- ends here if the client is not valid
 if ( !clientIsValid ) {
-  die "$__{'die_client_not_valid'}";
+    die "$__{'die_client_not_valid'}";
 }
 
 my $title = "$ENV{HTTP_REFERER}";
@@ -67,7 +67,7 @@ img {
 <TD width="20%" style="border:0;text-align:center">
 END
 for (@logos) {
-	print "<P><IMG width=\"100px\" src=\"$_\"></P>";
+    print "<P><IMG width=\"100px\" src=\"$_\"></P>";
 }
 print "</TD></TR></TABLE>\n</BODY>\n</HTML>\n";
 

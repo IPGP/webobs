@@ -73,7 +73,7 @@ set_message(\&webobs_cgi_msg);
 #
 my @lignes;
 
-my $me = $ENV{SCRIPT_NAME}; 
+my $me = $ENV{SCRIPT_NAME};
 my $QryParm   = $cgi->Vars;
 my $node   = $QryParm->{'node'}       // "";
 my $file   = $QryParm->{'file'}       // "";
@@ -94,52 +94,52 @@ my $MDMeta = ($mmd ne 'NO') ? "WebObs: created by nedit  " : "";
 
 # ---- see what file has to be edited, and corresponding authorization for client
 #
-if (scalar(@NID) == 3) { 
-	if ($file ne "") {
-		($GRIDType, $GRIDName, $NODEName) = @NID;
-		$absfile = "$NODES{PATH_NODES}/$NODEName/$file";
-		$editOK = clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
-		$admOK  = clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
-		unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
-		if ( (!-e $absfile) && $admOK ) { qx(echo "$MDMeta\n\n" > $absfile) } 
-		if ( (!$editOK) && (!-e $absfile) ) { die "$file $__{'not found'} or $__{'not authorized'}" }
-	} else { die "$__{'No filename specified'}" }
+if (scalar(@NID) == 3) {
+    if ($file ne "") {
+        ($GRIDType, $GRIDName, $NODEName) = @NID;
+        $absfile = "$NODES{PATH_NODES}/$NODEName/$file";
+        $editOK = clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
+        $admOK  = clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
+        unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
+        if ( (!-e $absfile) && $admOK ) { qx(echo "$MDMeta\n\n" > $absfile) }
+        if ( (!$editOK) && (!-e $absfile) ) { die "$file $__{'not found'} or $__{'not authorized'}" }
+    } else { die "$__{'No filename specified'}" }
 } else { die "$__{'Not a fully qualified node name (gridtype.gridname.nodename)'}" }
 
 # ---- action is 'save'
 #
 if ($action eq 'save') {
-	if ($TS0 != (stat("$absfile"))[9]) { 
-		htmlMsgNotOK("$file has been modified while you were editing !"); 
-		exit; 
-	}
-	if ( sysopen(FILE, "$absfile", O_RDWR | O_CREAT) ) {
-		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "$me waiting for lock on $file...";
-			flock(FILE, LOCK_EX);
-		}
-		qx(cp -a "$absfile" "$absfile~" 2>&1); 
-		if ( $?  == 0 ) { 
-			truncate(FILE, 0);
-			seek(FILE, 0, SEEK_SET);
-			if ($conv eq "1") {
-				$txt = WebObs::Wiki::wiki2MMD($txt);
-				$txt = "WebObs: converted with wiki2MMD\n\n$txt";
-			}
-			$txt =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
-			if ($encode eq "iso") {
-				$txt = u2l($txt);
-			}
-			push(@lignes,$txt);
-			print FILE @lignes ;
-			close(FILE);
-			htmlMsgOK($file);
-		} else {
-			close(FILE);
-			htmlMsgNotOK("$me couldn't backup $file");
-		}
-	} else { htmlMsgNotOK("$me opening $file - $!") }
-	exit;
+    if ($TS0 != (stat("$absfile"))[9]) {
+        htmlMsgNotOK("$file has been modified while you were editing !");
+        exit;
+    }
+    if ( sysopen(FILE, "$absfile", O_RDWR | O_CREAT) ) {
+        unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+            warn "$me waiting for lock on $file...";
+            flock(FILE, LOCK_EX);
+        }
+        qx(cp -a "$absfile" "$absfile~" 2>&1);
+        if ( $?  == 0 ) {
+            truncate(FILE, 0);
+            seek(FILE, 0, SEEK_SET);
+            if ($conv eq "1") {
+                $txt = WebObs::Wiki::wiki2MMD($txt);
+                $txt = "WebObs: converted with wiki2MMD\n\n$txt";
+            }
+            $txt =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
+            if ($encode eq "iso") {
+                $txt = u2l($txt);
+            }
+            push(@lignes,$txt);
+            print FILE @lignes ;
+            close(FILE);
+            htmlMsgOK($file);
+        } else {
+            close(FILE);
+            htmlMsgNotOK("$me couldn't backup $file");
+        }
+    } else { htmlMsgNotOK("$me opening $file - $!") }
+    exit;
 }
 
 # ---- action is 'edit' (default)
@@ -148,10 +148,11 @@ if ($action eq 'save') {
 @lignes = readFile($absfile);
 $TS0 = (stat($absfile))[9] ;
 chomp(@lignes);
+
 # file contents as a string and determine markup type (WO or MMD)
 $txt = join("\n",@lignes);
 if ($encode eq "iso") {
-	$txt = l2u($txt);
+    $txt = l2u($txt);
 }
 ($txt, my $meta) = WebObs::Wiki::stripMDmetadata($txt);
 
@@ -186,12 +187,12 @@ function convert2MMD()
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>
 <script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/skins/markitup/style.css\" />
-"; 
+";
 if (length($meta) > 0) {
-	print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
+    print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
 		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
 } else {
-	print "<script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
+    print "<script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
 		   <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
 }
 print "<script type=\"text/javascript\" >
@@ -219,10 +220,10 @@ print "<h2>$__{'Editing file'} \"$file\"<br>$__{'of node'} $GRIDType.$GRIDName.$
 print "<TABLE><TR><TD style=\"border:0\">";
 print "<P><TEXTAREA id=\"markItUp\" class=\"markItUp\" rows=\"30\" cols=\"110\" name=\"txt\" dataformatas=\"plaintext\">$txt</TEXTAREA></P></TD>\n";
 print "</TR></TABLE>\n";
-print "<p align=center>"; 
+print "<p align=center>";
 print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 if (length($meta) == 0 && $mmd ne 'NO') {
-	print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
+    print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
 }
 print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\">";
 print "</p></form>";
@@ -233,12 +234,12 @@ print "\n</BODY>\n</HTML>\n";
 # ---- helpers fns for returning 'save' information to client
 #
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] updated successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "$_[0] updated successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
 }
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 =pod

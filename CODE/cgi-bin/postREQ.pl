@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 #
+
 =head1 NAME
 
 postREQ.pl
@@ -134,9 +135,9 @@ map(s/^p_//g,@procnames);
 
 # --- checks authorization for each proc
 for (@procnames) {
-	if ( !clientHasRead(type=>"authprocs",name=>"$_") ) {
-		die "Sorry, you don't have authorization to read data from proc $_.";
-	}
+    if ( !clientHasRead(type=>"authprocs",name=>"$_") ) {
+        die "Sorry, you don't have authorization to read data from proc $_.";
+    }
 }
 
 my $reqpath  = "$WEBOBS{ROOT_OUTR}/$now"."_".$box."_"."$CLIENT";
@@ -147,70 +148,71 @@ my $reqfn    = "$reqpath/REQUEST.rc";
 #
 umask 0002;
 if ( scalar(@procnames) !=0 ) {
-	if (mkdir $reqpath) {
-		if (schedconf()) {
-			# one place for clientAuth ???
-		} else { htmlMsg("$__{'Could not read scheduler conf.'}"); }
-	} else { htmlMsg("$__{'Request aborted'}: $__{'Failed creating '} $reqpath");}
-} else { htmlMsg("$__{'Request aborted'}: $__{'No PROC specified'}"); }
+    if (mkdir $reqpath) {
+        if (schedconf()) {
 
+            # one place for clientAuth ???
+        } else { htmlMsg("$__{'Could not read scheduler conf.'}"); }
+    } else { htmlMsg("$__{'Request aborted'}: $__{'Failed creating '} $reqpath");}
+} else { htmlMsg("$__{'Request aborted'}: $__{'No PROC specified'}"); }
 
 # ---- write the REQUEST.rc file from query-string
 #
 if ( (open REQ, ">$reqfn") ) {
-	my $datestart= sprintf("%s-%s-%s %s:%s",
-		$QryParm->{'startY'},$QryParm->{'startM'},$QryParm->{'startD'},$QryParm->{'startH'},$QryParm->{'startN'});
-	my $dateend  = sprintf("%s-%s-%s %s:%s",
-		$QryParm->{'endY'},$QryParm->{'endM'},$QryParm->{'endD'},$QryParm->{'endH'},$QryParm->{'endN'});
-	$QryParm->{'postscript'} ||= "";
-	$QryParm->{'exports'} ||= "";
-	print REQ "=key|value\n";
-	print REQ "DATE1|$datestart\n";
-	print REQ "DATE2|$dateend\n";
-	print REQ "TZ|".$QryParm->{'timezone'}."\n";
-	print REQ "DATESTR|".$QryParm->{'datestr'}."\n";
-	print REQ "PPI|".$QryParm->{'ppi'}."\n";
-	print REQ "MARKERSIZE|".$QryParm->{'markersize'}."\n";
-	print REQ "LINEWIDTH|".$QryParm->{'linewidth'}."\n";
-	print REQ "CUMULATE|".$QryParm->{'cumulate'}."\n";
-	print REQ "DECIMATE|".$QryParm->{'decimate'}."\n";
-	print REQ "PLOTGRID|".$QryParm->{'gridon'}."\n";
-	print REQ "PDFOUTPUT|".$QryParm->{'pdfoutput'}."\n";
-	print REQ "SVGOUTPUT|".$QryParm->{'svgoutput'}."\n";
-	print REQ "EXPORTS|".$QryParm->{'exports'}."\n";
-	print REQ "ANONYMOUS|".$QryParm->{'anonymous'}."\n";
-	print REQ "DEBUG|".$QryParm->{'debug'}."\n";
-	print REQ "ORIGIN|".$QryParm->{'origin'}."\n";
-	print REQ "UID|".$USERS{$CLIENT}{UID}."\n";
-	foreach (grep { /^PROC./ } keys(%$QryParm)) { print REQ "$_|".u2l($QryParm->{$_})."\n" }
-	close REQ;
+    my $datestart= sprintf("%s-%s-%s %s:%s",
+        $QryParm->{'startY'},$QryParm->{'startM'},$QryParm->{'startD'},$QryParm->{'startH'},$QryParm->{'startN'});
+    my $dateend  = sprintf("%s-%s-%s %s:%s",
+        $QryParm->{'endY'},$QryParm->{'endM'},$QryParm->{'endD'},$QryParm->{'endH'},$QryParm->{'endN'});
+    $QryParm->{'postscript'} ||= "";
+    $QryParm->{'exports'} ||= "";
+    print REQ "=key|value\n";
+    print REQ "DATE1|$datestart\n";
+    print REQ "DATE2|$dateend\n";
+    print REQ "TZ|".$QryParm->{'timezone'}."\n";
+    print REQ "DATESTR|".$QryParm->{'datestr'}."\n";
+    print REQ "PPI|".$QryParm->{'ppi'}."\n";
+    print REQ "MARKERSIZE|".$QryParm->{'markersize'}."\n";
+    print REQ "LINEWIDTH|".$QryParm->{'linewidth'}."\n";
+    print REQ "CUMULATE|".$QryParm->{'cumulate'}."\n";
+    print REQ "DECIMATE|".$QryParm->{'decimate'}."\n";
+    print REQ "PLOTGRID|".$QryParm->{'gridon'}."\n";
+    print REQ "PDFOUTPUT|".$QryParm->{'pdfoutput'}."\n";
+    print REQ "SVGOUTPUT|".$QryParm->{'svgoutput'}."\n";
+    print REQ "EXPORTS|".$QryParm->{'exports'}."\n";
+    print REQ "ANONYMOUS|".$QryParm->{'anonymous'}."\n";
+    print REQ "DEBUG|".$QryParm->{'debug'}."\n";
+    print REQ "ORIGIN|".$QryParm->{'origin'}."\n";
+    print REQ "UID|".$USERS{$CLIENT}{UID}."\n";
+    foreach (grep { /^PROC./ } keys(%$QryParm)) { print REQ "$_|".u2l($QryParm->{$_})."\n" }
+    close REQ;
 } else {  htmlMsg("$__{'Request aborted'}: $__{'Failed creating '} $reqfn") }
 
 # ---- submit a job for each PROC in requested proclist
 #
 my @submitreport;
 for my $aProc (@procnames) {
-	my %P = readProc($aProc);
-	if (%P) {
-		my $job="";
-		my %PROC = %{$P{$aProc}};
-		if (defined($PROC{SUBMIT_COMMAND}) && $PROC{SUBMIT_COMMAND} ne "") {
-			my $logpath  = "/$now"."_".$box."_"."$CLIENT/PROC.$aProc";
-			# $SELFREF can be used in the SUBMIT_COMMAND string to refer to the proc's name
-			$PROC{SUBMIT_COMMAND} =~ s/\$SELFREF/$aProc/g;
-			$job  = "XEQ1:$PROC{SUBMIT_COMMAND},LOGPATH:$logpath";
-			$job .= ",XEQ2:$reqpath";
-			$job .= ",RES:$PROC{SUBMIT_RESOURCE}" if ( defined($PROC{SUBMIT_RESOURCE}) && $PROC{SUBMIT_RESOURCE} ne "" );
-			$job .= ",UID:$USERS{$CLIENT}{UID}" ;
+    my %P = readProc($aProc);
+    if (%P) {
+        my $job="";
+        my %PROC = %{$P{$aProc}};
+        if (defined($PROC{SUBMIT_COMMAND}) && $PROC{SUBMIT_COMMAND} ne "") {
+            my $logpath  = "/$now"."_".$box."_"."$CLIENT/PROC.$aProc";
 
-			my $submitstatus = schedsubmit($job);
-			if ( $submitstatus eq "submitted" ) {
-				push(@submitreport,"$__{'submitted'}: $aProc\n  $reqpath\n");
-			} else {
-				push(@submitreport,"$__{'! NOT submitted'}: $aProc $submitstatus\n  $reqpath\n");
-			}
-		} else { push(@submitreport,"$__{'! Request aborted'}: $aProc undef SUBMIT_COMMAND\n") }
-	} else { push(@submitreport,"$__{'! Request aborted'}: $aProc config read error\n") }
+ # $SELFREF can be used in the SUBMIT_COMMAND string to refer to the proc's name
+            $PROC{SUBMIT_COMMAND} =~ s/\$SELFREF/$aProc/g;
+            $job  = "XEQ1:$PROC{SUBMIT_COMMAND},LOGPATH:$logpath";
+            $job .= ",XEQ2:$reqpath";
+            $job .= ",RES:$PROC{SUBMIT_RESOURCE}" if ( defined($PROC{SUBMIT_RESOURCE}) && $PROC{SUBMIT_RESOURCE} ne "" );
+            $job .= ",UID:$USERS{$CLIENT}{UID}" ;
+
+            my $submitstatus = schedsubmit($job);
+            if ( $submitstatus eq "submitted" ) {
+                push(@submitreport,"$__{'submitted'}: $aProc\n  $reqpath\n");
+            } else {
+                push(@submitreport,"$__{'! NOT submitted'}: $aProc $submitstatus\n  $reqpath\n");
+            }
+        } else { push(@submitreport,"$__{'! Request aborted'}: $aProc undef SUBMIT_COMMAND\n") }
+    } else { push(@submitreport,"$__{'! Request aborted'}: $aProc config read error\n") }
 }
 
 # ---- report submit statuses
@@ -220,9 +222,9 @@ htmlMsg($alertText);
 
 # --- return information for javascript alert
 sub htmlMsg {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0]";
-	exit;
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "$_[0]";
+    exit;
 }
 
 # ---- check/get scheduler configuration
@@ -237,24 +239,26 @@ sub schedconf {
 # ---- submit argument-string to scheduler on behalf of $CLIENT
 # ----------------------------------------------------------------------------
 sub schedsubmit {
-	my $SCHEDSRV = "localhost";
-	my $SCHEDROK = "job queued";
-	my @gna;
+    my $SCHEDSRV = "localhost";
+    my $SCHEDROK = "job queued";
+    my @gna;
     if ( scalar(@_) == 1 ) {
         my $UID = $USERS{$CLIENT}{UID};
         my $SCHEDREPLY = "";
-        #DL-was (but always 0 from cgi):if ( scalar(@gna=qx(lsof -Pni :$SCHED{PORT})) > 1 ) {
-            my $SCHEDSOCK  = IO::Socket::INET->new(Proto => 'udp', PeerPort => $SCHED{PORT}, PeerAddr => $SCHEDSRV );
-            if ( $SCHEDSOCK ) {
-                if ( $SCHEDSOCK->send("JOB $_[0]") ) {
-                    if ( $SCHEDSOCK->recv($SCHEDREPLY, $SCHED{SOCKET_MAXLEN}) ) {
-                        if ( $SCHEDREPLY =~ m/$SCHEDROK/i ) {
-                            close($SCHEDSOCK);
-                            return "submitted";
-                        } else { close($SCHEDSOCK); return "unexpected answer = [$SCHEDREPLY] " }
-                    } else { close($SCHEDSOCK); return "socket receive error" }
-                } else { close($SCHEDSOCK); return "socket send error" }
-            } else { return "create socket failed" }
+
+#DL-was (but always 0 from cgi):if ( scalar(@gna=qx(lsof -Pni :$SCHED{PORT})) > 1 ) {
+        my $SCHEDSOCK  = IO::Socket::INET->new(Proto => 'udp', PeerPort => $SCHED{PORT}, PeerAddr => $SCHEDSRV );
+        if ( $SCHEDSOCK ) {
+            if ( $SCHEDSOCK->send("JOB $_[0]") ) {
+                if ( $SCHEDSOCK->recv($SCHEDREPLY, $SCHED{SOCKET_MAXLEN}) ) {
+                    if ( $SCHEDREPLY =~ m/$SCHEDROK/i ) {
+                        close($SCHEDSOCK);
+                        return "submitted";
+                    } else { close($SCHEDSOCK); return "unexpected answer = [$SCHEDREPLY] " }
+                } else { close($SCHEDSOCK); return "socket receive error" }
+            } else { close($SCHEDSOCK); return "socket send error" }
+        } else { return "create socket failed" }
+
         #DL-was:} else { return "scheduler not listening" }
     } else { return "nothing to submit"}
 }

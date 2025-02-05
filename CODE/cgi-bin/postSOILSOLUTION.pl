@@ -168,68 +168,70 @@ my $header = u2l("ID|Date2|Time2|Site|Date1|Time1|Depth (cm)|Level|pH|Cond. (µS
 # ---- lock-exclusive the data file during all update process
 #
 if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
-	unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-		warn "postSOILSOLUTION waiting for lock on $fileDATA...";
-		flock(FILE, LOCK_EX);
-	}
-	# ---- backup file (To Be Removed: lifecycle too short to be used )
-	if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
-	if ( $?  == 0 ) {
-		seek(FILE, 0, SEEK_SET);
-		while (<FILE>) {
-	   		chomp($_);
-			my ($id) = split(/\|/,$_);
-			if ($id =~ m/^[0-9]+$/) {
-				if ($id > $maxId) { $maxId = $id }
-				if (($idTraite ne $id)) {
-					push(@lines,$_."\n") ;
-				}
-			}
-		}
-		if ($idTraite ne "") {
-			if ($delete > 0) {
-				# effacement: changement de signe de l'ID
-				$newID = -($idTraite);
-				$msg = "Delete/recover existing record #$idTraite (in/from trash).";
-			} else {
-				$newID = $idTraite;
-				$msg = "Record #$idTraite has been updated.";
-			}
-		} else {
-			$newID = ++$maxId;
-			$msg = "new record #$newID has been created.";
-		}
-		my $string = u2l("$newID|$date2|$time2|$site|$date1|$time1|$depth|$level|$pH|$cond|$cNa|$cK|$cMg|$cCa|$cHCO3|$cCl|$cNO3|$cSO4|$cSiO2|$cDOC|$rem|$val\n");
-		if ($delete < 2) {
-			push(@lines, $string);
-		} else {
-			$msg = "Record #$idTraite has been definitively deleted !";
-		}
-		@lines = sort tri_date_avec_id @lines;
-		truncate(FILE, 0);
-		seek(FILE, 0, SEEK_SET);
-		print FILE $header;
-		print FILE @lines ;
-		close(FILE);
-		htmlMsgOK();
-	} else {
-		close(FILE);
-		htmlMsgNotOK("postSOILSOLUTION couldn't backup $fileDATA ");
-	}
+    unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+        warn "postSOILSOLUTION waiting for lock on $fileDATA...";
+        flock(FILE, LOCK_EX);
+    }
+
+    # ---- backup file (To Be Removed: lifecycle too short to be used )
+    if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
+    if ( $?  == 0 ) {
+        seek(FILE, 0, SEEK_SET);
+        while (<FILE>) {
+            chomp($_);
+            my ($id) = split(/\|/,$_);
+            if ($id =~ m/^[0-9]+$/) {
+                if ($id > $maxId) { $maxId = $id }
+                if (($idTraite ne $id)) {
+                    push(@lines,$_."\n") ;
+                }
+            }
+        }
+        if ($idTraite ne "") {
+            if ($delete > 0) {
+
+                # effacement: changement de signe de l'ID
+                $newID = -($idTraite);
+                $msg = "Delete/recover existing record #$idTraite (in/from trash).";
+            } else {
+                $newID = $idTraite;
+                $msg = "Record #$idTraite has been updated.";
+            }
+        } else {
+            $newID = ++$maxId;
+            $msg = "new record #$newID has been created.";
+        }
+        my $string = u2l("$newID|$date2|$time2|$site|$date1|$time1|$depth|$level|$pH|$cond|$cNa|$cK|$cMg|$cCa|$cHCO3|$cCl|$cNO3|$cSO4|$cSiO2|$cDOC|$rem|$val\n");
+        if ($delete < 2) {
+            push(@lines, $string);
+        } else {
+            $msg = "Record #$idTraite has been definitively deleted !";
+        }
+        @lines = sort tri_date_avec_id @lines;
+        truncate(FILE, 0);
+        seek(FILE, 0, SEEK_SET);
+        print FILE $header;
+        print FILE @lines ;
+        close(FILE);
+        htmlMsgOK();
+    } else {
+        close(FILE);
+        htmlMsgNotOK("postSOILSOLUTION couldn't backup $fileDATA ");
+    }
 } else {
-	htmlMsgNotOK("postSOILSOLUTION opening - $!");
+    htmlMsgNotOK("postSOILSOLUTION opening - $!");
 }
 
 # --- return information when OK
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$msg";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "$msg";
 }
 
 # --- return information when not OK
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 __END__

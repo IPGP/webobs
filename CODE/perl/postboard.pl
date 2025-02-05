@@ -153,8 +153,9 @@ use WebObs::Config;
 use WebObs::Users;
 
 BEGIN {
-	# Suppress the default fatalsToBrowser from CGI::Carp
-	$CGI::Carp::TO_BROWSER = 0;
+
+    # Suppress the default fatalsToBrowser from CGI::Carp
+    $CGI::Carp::TO_BROWSER = 0;
 }
 
 # ---- parse options
@@ -171,15 +172,15 @@ $ME =~ s/\..*//;
 # ---- initialize : pid file and logging
 # ----------------------------------------------------------------------------
 if (!$WEBOBS{ROOT_LOGS}) {
-	printf(STDERR "Cannot start: ROOT_LOGS not found in WebObs configuration\n");
-	exit(98);
+    printf(STDERR "Cannot start: ROOT_LOGS not found in WebObs configuration\n");
+    exit(98);
 }
 
 # Open log file
 my $LOGNAME = "$WEBOBS{ROOT_LOGS}/$ME.log" ;
 if (! open(LOG, ">>", $LOGNAME)) {
-	print(STDERR "Cannot start: unable to open $LOGNAME: $!\n");
-	exit(98);
+    print(STDERR "Cannot start: unable to open $LOGNAME: $!\n");
+    exit(98);
 }
 select((select(LOG), $|=1)[0]);  # turn off buffering
 logit("------------------------------------------------------------------------");
@@ -187,9 +188,9 @@ logit("------------------------------------------------------------------------"
 # ---- is fifo name defined ?
 # ----------------------------------------------------------------------------
 if (!defined($WEBOBS{POSTBOARD_NPIPE})) {
-	logit("Can't start: no POSTBOARD_NPIPE definition in WebObs configuration");
-	printf("Can't start: no POSTBOARD_NPIPE definition in WebObs configuration\n");
-	exit(98);
+    logit("Can't start: no POSTBOARD_NPIPE definition in WebObs configuration");
+    printf("Can't start: no POSTBOARD_NPIPE definition in WebObs configuration\n");
+    exit(98);
 }
 
 # ---- should we (re)-create fifo (when missing or -c(lean) requested) ?
@@ -198,12 +199,12 @@ my $TS=0;
 my $FIFO = $WEBOBS{POSTBOARD_NPIPE};
 unlink $FIFO if (-p $FIFO && $clean);
 if (! -p $FIFO) {
-	umask 0011;
-	if (! mkfifo($FIFO, 0777)) {
-		logit("Can't start: couldn't mkfifo $FIFO: $!");
-		printf("Can't start: couldn't mkfifo $FIFO: $!\n");
-		exit(98);
-	}
+    umask 0011;
+    if (! mkfifo($FIFO, 0777)) {
+        logit("Can't start: couldn't mkfifo $FIFO: $!");
+        printf("Can't start: couldn't mkfifo $FIFO: $!\n");
+        exit(98);
+    }
 }
 
 # ---- need to tell someone when I'm taken down !
@@ -220,288 +221,297 @@ print("PostBoard PID=$$ now listening on $FIFO\n") if (-t STDOUT);
 
 while (1) {
 
-	my $queued = <FIFO>;       # input looks like "timestamp | event-name | emitting-pid | message"
-	$queued =~ tr/\0/\n/;      # x00 assumed instead of \n in pipe, translate back
-	chomp $queued;
-	#?? todo: check for queued enclosed in my defined-delimiters ==> my implementation of boundaries to
-	#?? validate non-interleaved msg from other writing-ends ???
-	my @REQ = split(/\|/, $queued);
+    my $queued = <FIFO>;       # input looks like "timestamp | event-name | emitting-pid | message"
+    $queued =~ tr/\0/\n/;      # x00 assumed instead of \n in pipe, translate back
+    chomp $queued;
 
-	# The message argument may be empty (in case of action without argument).
-	if (@REQ == 3) {
-		push(@REQ, '');
-	}
+#?? todo: check for queued enclosed in my defined-delimiters ==> my implementation of boundaries to
+#?? validate non-interleaved msg from other writing-ends ???
+    my @REQ = split(/\|/, $queued);
 
-	if (@REQ != 4) {
-		logit("ignoring invalid request [@REQ]");
-		next;
-	}
+    # The message argument may be empty (in case of action without argument).
+    if (@REQ == 3) {
+        push(@REQ, '');
+    }
 
-	WebObs::Users::refreshUsers();
+    if (@REQ != 4) {
+        logit("ignoring invalid request [@REQ]");
+        next;
+    }
 
-	# shorten the message just for verbose mode display
-	my $shortreq3 = (length($REQ[3]) > 33) ? substr($REQ[3],0,15)."...".substr($REQ[3],-15) : $REQ[3];
-	$shortreq3 =~ s/\n/<lf>/g;
-	logit("got event [$REQ[1]] from $REQ[2] saying [$REQ[0] - $shortreq3]") if ($verbose);
-	my $sql = my $eventclause = '';
-	my $validclause = " validity = 'Y' ";
+    WebObs::Users::refreshUsers();
 
-	# ---- process emailing if we know how to do it and have mailid(s) for this event $REQ[1]
-	if (defined($WEBOBS{POSTBOARD_MAILER})) {
-		$WEBOBS{POSTBOARD_MAILER_OPTS} ||= '';
-		$WEBOBS{POSTBOARD_MAILER_DEFSUBJECT} ||= "notify";
+    # shorten the message just for verbose mode display
+    my $shortreq3 = (length($REQ[3]) > 33) ? substr($REQ[3],0,15)."...".substr($REQ[3],-15) : $REQ[3];
+    $shortreq3 =~ s/\n/<lf>/g;
+    logit("got event [$REQ[1]] from $REQ[2] saying [$REQ[0] - $shortreq3]") if ($verbose);
+    my $sql = my $eventclause = '';
+    my $validclause = " validity = 'Y' ";
 
-		my $allMails = fetch_emails($REQ[1]);
+# ---- process emailing if we know how to do it and have mailid(s) for this event $REQ[1]
+    if (defined($WEBOBS{POSTBOARD_MAILER})) {
+        $WEBOBS{POSTBOARD_MAILER_OPTS} ||= '';
+        $WEBOBS{POSTBOARD_MAILER_DEFSUBJECT} ||= "notify";
 
-		if (not @$allMails) {
-			logit("no mailing for [$REQ[1]] in table $WEBOBS{SQL_TABLE_NOTIFICATIONS}") if ($verbose);
-		} else {
+        my $allMails = fetch_emails($REQ[1]);
 
-			for my $row (@$allMails) {
+        if (not @$allMails) {
+            logit("no mailing for [$REQ[1]] in table $WEBOBS{SQL_TABLE_NOTIFICATIONS}") if ($verbose);
+        } else {
 
-				my @oneMAIL = @$row;
-				my @oneREQ  = @REQ; # save original request (maybe overkill)
+            for my $row (@$allMails) {
 
-				# Parse the incoming request's message ($oneREQ[3]): look for special keywords
-				# Message syntax is: [any text][keyword=[value-allowing-embedded-blanks]...]
-				#                    no | allowed in message; no keyword in 'any text' of course
-				# $px will be set to 'any text'
-				# %sp will gather parsed keywords as $sp{'keyword='} = 'value' (trimmed)
-				my $re = join('|', ('rc', 'cmd', 'log', 'uid', 'org', 'file', 'subject', 'attach'));
-				my ($px, %sp) = map { s/^\s+|\s+$//gr } split(/((?:$re)=)\s*/, $oneREQ[3]);
+                my @oneMAIL = @$row;
+                my @oneREQ  = @REQ; # save original request (maybe overkill)
 
-				# Any event's message can override defaults found in table 'notifications'
-				#  uid=
-				if ($sp{'uid='}) {
-					if ($USERIDS{$sp{'uid='}}) {
-						$oneMAIL[0] = $sp{'uid='};
-					} else {
-						logit("warning: ignoring unknown recipient uid in $oneREQ[3]");
-					}
-				}
-				#  subject=
-				if (defined($sp{'subject='})) {
-					$oneMAIL[1] = $sp{'subject='};
-				}
-				#  attach=
-				if (defined($sp{'attach='})) {
-					$oneMAIL[2] = $sp{'attach='};
-				}
+# Parse the incoming request's message ($oneREQ[3]): look for special keywords
+# Message syntax is: [any text][keyword=[value-allowing-embedded-blanks]...]
+#                    no | allowed in message; no keyword in 'any text' of course
+# $px will be set to 'any text'
+# %sp will gather parsed keywords as $sp{'keyword='} = 'value' (trimmed)
+                my $re = join('|', ('rc', 'cmd', 'log', 'uid', 'org', 'file', 'subject', 'attach'));
+                my ($px, %sp) = map { s/^\s+|\s+$//gr } split(/((?:$re)=)\s*/, $oneREQ[3]);
 
-				# Intercept the special 'submitrc.jid' event for special email formatting
-				if ($oneREQ[1] =~ s/^submitrc\.//) {
-					$oneREQ[3] = "";  # create a brand new $oneREQ[3] for normal mail processing below
-					if (defined($sp{'org='}) && $sp{'org='} =~ m/^R/) {
-						# it is an end-of-request (submit) :
-						$oneMAIL[1] = "request $oneREQ[1] has ended";
-						$oneREQ[3] .= "request submitted by ";
-						$oneREQ[3] .= $sp{'uid='} ? "$sp{'uid='}\n" : "* unspecified uid *\n" ;
-					} else {
-						# it is an end-of-scheduled job :
-						$oneMAIL[1] = "scheduled job $oneREQ[1] has ended";
-						# ignore this mail (ie. do NOT send) if an rc-condition is not met
-						next if (defined($sp{'rc='}) && !rccond($oneMAIL[4],$sp{'rc='}));
-					}
-					if (defined($sp{'cmd='})) {
-						$oneREQ[3] .= "Command = $sp{'cmd='}\n";
-					}
-					if (defined($sp{'rc='})) {
-						$oneREQ[3] .= "Ended with rc=$sp{'rc='}\n";
-					}
-					if (defined($sp{'log='})) {
-						$sp{'log='} =~ s/[\[\] ]//g;
-						$oneREQ[3] .= "Log = $WEBOBS{ROOT_URL}/cgi-bin/index.pl?page=/cgi-bin/schedulerLogs.pl?log=$sp{'log='}\n";
-					}
-					if ($px ne '') {
-						$oneREQ[3] .= "\n$px\n";
-					}
-				} else {
-					# event other than '^submitrc\.'
-					$oneREQ[3] = $px  if ($px);
-				}
+      # Any event's message can override defaults found in table 'notifications'
+      #  uid=
+                if ($sp{'uid='}) {
+                    if ($USERIDS{$sp{'uid='}}) {
+                        $oneMAIL[0] = $sp{'uid='};
+                    } else {
+                        logit("warning: ignoring unknown recipient uid in $oneREQ[3]");
+                    }
+                }
 
-				# Continue with mail processing
-				my $allAddrs = fetch_email_addrs($oneMAIL[0]);
+                #  subject=
+                if (defined($sp{'subject='})) {
+                    $oneMAIL[1] = $sp{'subject='};
+                }
 
-				if (not @$allAddrs) {
-					logit("error: recipient uid/gid '$oneMAIL[0]' "
-					      ."not found in database, aborting mailing.");
-				} else {
-					my $addrlist = join(' ', map { $_->[0] } @$allAddrs);
-					if (not $addrlist) {
-						logit("warning: no email address defined for recipient"
-						      ." uid/gid '$oneMAIL[0]', aborting mailing.");
-					} else {
-						my $options  = $WEBOBS{POSTBOARD_MAILER_OPTS};
-							if ($oneMAIL[1] and $oneMAIL[1] ne '-') {
-								$options .= " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $oneMAIL[1]\'";
-							} else {
-								$options .= " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $WEBOBS{POSTBOARD_MAILER_DEFSUBJECT}\'";
-							}
-							if ($oneMAIL[2] and $oneMAIL[2] ne '-' and -e $oneMAIL[2]) {
-								$options .= " -a \'$oneMAIL[2]\'";
-							}
-						if ($oneREQ[2] =~ m/^([^.@]+)(\.[^.@]+)*@(([^.@]+\.)+([^.@]+))$/) {
-							my $domain = $3;
-							my $fulln = '';
-							for my $login (keys(%USERS)) {
-								if ($USERS{$login}{EMAIL} =~ m/^$oneREQ[2]/) {
-									$fulln = $USERS{$login}{FULLNAME};
-								}
-							}
-							if ($fulln ne '') {
-								$options .= qq( -e 'set from="$fulln <$oneREQ[2]>"');
-							}
-						}
-						my $tmp_email_body = sprintf ("$WEBOBS{PATH_TMP_APACHE}/WOPB.$$.%16.6f", time);
-						if (open(my $body_file, ">", $tmp_email_body)) {
-							print $body_file "$oneREQ[3]" ;
-							if ($sp{'file='} && -f "$sp{'file='}") {
-								print $body_file "\n", read_file($sp{'file='});
-							}
-							close $body_file
-								or logit("warning: an error occurred while closing $tmp_email_body");
-							logit("executing '$WEBOBS{POSTBOARD_MAILER} $options -- $addrlist < $tmp_email_body'") if ($verbose);
-							system("$WEBOBS{POSTBOARD_MAILER} $options -- $addrlist < $tmp_email_body");
-							if ($?) { logit("error: mailing failed: $?") }
-							unlink($tmp_email_body);
-						} else {
-							logit("error: couldn't open temporary file for mailing: $?");
-						}
-					} # end we have non-empty email address(es) for this mail
-				} # end we have recipient(s) for this mail
-			} # end for each mail
-		} # we have mailing(s) in table for this event
-	} # end we know how to mail from config setting
+                #  attach=
+                if (defined($sp{'attach='})) {
+                    $oneMAIL[2] = $sp{'attach='};
+                }
 
-	# ---- process action(s) if we have any for this event
-	my $allActions = fetch_actions($REQ[1]);
+       # Intercept the special 'submitrc.jid' event for special email formatting
+                if ($oneREQ[1] =~ s/^submitrc\.//) {
+                    $oneREQ[3] = "";  # create a brand new $oneREQ[3] for normal mail processing below
+                    if (defined($sp{'org='}) && $sp{'org='} =~ m/^R/) {
 
-	if (@$allActions) {
-		for my $action (@$allActions) {
-			my $cmd = sprintf("%s %s", $action->[0], $REQ[3]);
-			logit("executing action '$cmd'") if ($verbose);
-			system($cmd);
-			if ($?) { logit("action command [$cmd] failed: $?: $!") }
-		}
-	} else {
-		logit("no actions for [$REQ[1]] in table $WEBOBS{SQL_TABLE_NOTIFICATIONS}") if ($verbose);
-	}
+                        # it is an end-of-request (submit) :
+                        $oneMAIL[1] = "request $oneREQ[1] has ended";
+                        $oneREQ[3] .= "request submitted by ";
+                        $oneREQ[3] .= $sp{'uid='} ? "$sp{'uid='}\n" : "* unspecified uid *\n" ;
+                    } else {
+
+                        # it is an end-of-scheduled job :
+                        $oneMAIL[1] = "scheduled job $oneREQ[1] has ended";
+
+              # ignore this mail (ie. do NOT send) if an rc-condition is not met
+                        next if (defined($sp{'rc='}) && !rccond($oneMAIL[4],$sp{'rc='}));
+                    }
+                    if (defined($sp{'cmd='})) {
+                        $oneREQ[3] .= "Command = $sp{'cmd='}\n";
+                    }
+                    if (defined($sp{'rc='})) {
+                        $oneREQ[3] .= "Ended with rc=$sp{'rc='}\n";
+                    }
+                    if (defined($sp{'log='})) {
+                        $sp{'log='} =~ s/[\[\] ]//g;
+                        $oneREQ[3] .= "Log = $WEBOBS{ROOT_URL}/cgi-bin/index.pl?page=/cgi-bin/schedulerLogs.pl?log=$sp{'log='}\n";
+                    }
+                    if ($px ne '') {
+                        $oneREQ[3] .= "\n$px\n";
+                    }
+                } else {
+
+                    # event other than '^submitrc\.'
+                    $oneREQ[3] = $px  if ($px);
+                }
+
+                # Continue with mail processing
+                my $allAddrs = fetch_email_addrs($oneMAIL[0]);
+
+                if (not @$allAddrs) {
+                    logit("error: recipient uid/gid '$oneMAIL[0]' "
+                          ."not found in database, aborting mailing.");
+                } else {
+                    my $addrlist = join(' ', map { $_->[0] } @$allAddrs);
+                    if (not $addrlist) {
+                        logit("warning: no email address defined for recipient"
+                              ." uid/gid '$oneMAIL[0]', aborting mailing.");
+                    } else {
+                        my $options  = $WEBOBS{POSTBOARD_MAILER_OPTS};
+                        if ($oneMAIL[1] and $oneMAIL[1] ne '-') {
+                            $options .= " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $oneMAIL[1]\'";
+                        } else {
+                            $options .= " -s \'[WebObs-$WEBOBS{WEBOBS_ID}] $WEBOBS{POSTBOARD_MAILER_DEFSUBJECT}\'";
+                        }
+                        if ($oneMAIL[2] and $oneMAIL[2] ne '-' and -e $oneMAIL[2]) {
+                            $options .= " -a \'$oneMAIL[2]\'";
+                        }
+                        if ($oneREQ[2] =~ m/^([^.@]+)(\.[^.@]+)*@(([^.@]+\.)+([^.@]+))$/) {
+                            my $domain = $3;
+                            my $fulln = '';
+                            for my $login (keys(%USERS)) {
+                                if ($USERS{$login}{EMAIL} =~ m/^$oneREQ[2]/) {
+                                    $fulln = $USERS{$login}{FULLNAME};
+                                }
+                            }
+                            if ($fulln ne '') {
+                                $options .= qq( -e 'set from="$fulln <$oneREQ[2]>"');
+                            }
+                        }
+                        my $tmp_email_body = sprintf ("$WEBOBS{PATH_TMP_APACHE}/WOPB.$$.%16.6f", time);
+                        if (open(my $body_file, ">", $tmp_email_body)) {
+                            print $body_file "$oneREQ[3]" ;
+                            if ($sp{'file='} && -f "$sp{'file='}") {
+                                print $body_file "\n", read_file($sp{'file='});
+                            }
+                            close $body_file
+                              or logit("warning: an error occurred while closing $tmp_email_body");
+                            logit("executing '$WEBOBS{POSTBOARD_MAILER} $options -- $addrlist < $tmp_email_body'") if ($verbose);
+                            system("$WEBOBS{POSTBOARD_MAILER} $options -- $addrlist < $tmp_email_body");
+                            if ($?) { logit("error: mailing failed: $?") }
+                            unlink($tmp_email_body);
+                        } else {
+                            logit("error: couldn't open temporary file for mailing: $?");
+                        }
+                    } # end we have non-empty email address(es) for this mail
+                } # end we have recipient(s) for this mail
+            } # end for each mail
+        } # we have mailing(s) in table for this event
+    } # end we know how to mail from config setting
+
+    # ---- process action(s) if we have any for this event
+    my $allActions = fetch_actions($REQ[1]);
+
+    if (@$allActions) {
+        for my $action (@$allActions) {
+            my $cmd = sprintf("%s %s", $action->[0], $REQ[3]);
+            logit("executing action '$cmd'") if ($verbose);
+            system($cmd);
+            if ($?) { logit("action command [$cmd] failed: $?: $!") }
+        }
+    } else {
+        logit("no actions for [$REQ[1]] in table $WEBOBS{SQL_TABLE_NOTIFICATIONS}") if ($verbose);
+    }
 
 }  # end of while (1)
 
 endit(99);
 
-
 # Function definitions --------------------------------------------------------
 
 sub db_connect {
-	# Open a connection to a SQLite database
-	#
-	# Usage example:
-	#   my $dbh = db_connect($WEBOBS{SQL_DB_POSTBOARD})
-	#     || die "Error connecting to $dbname: $DBI::errstr";
-	#
-	my $dbname = shift;
-	return DBI->connect("dbi:SQLite:$dbname", "", "", {
-		'AutoCommit' => 1,
-		'PrintError' => 1,
-		'RaiseError' => 1,
-		})
-}
 
+    # Open a connection to a SQLite database
+    #
+    # Usage example:
+    #   my $dbh = db_connect($WEBOBS{SQL_DB_POSTBOARD})
+    #     || die "Error connecting to $dbname: $DBI::errstr";
+    #
+    my $dbname = shift;
+    return DBI->connect("dbi:SQLite:$dbname", "", "", {
+            'AutoCommit' => 1,
+            'PrintError' => 1,
+            'RaiseError' => 1,
+        })
+}
 
 sub get_subscriptions_clause {
-	# Build and return the SQL 'where' clause to select subscriptions
-	# corresponding to the event.
-	my $event_name = shift;
-	my $where;
 
-	if ($event_name =~ m/^submitrc\.(.*)$/) {
-		# Event is 'submitrc.{something}': grab subscriptions for
-		# 'submitrc.', 'submitrc.rc*', and 'submitrc.something.rc*'
-		return "(event = 'submitrc.' OR event LIKE 'submitrc.rc%' OR event LIKE 'submitrc.$1.rc%')";
-	}
-	if ($event_name =~ m/^([^\.]*)\.(.*)$/) {
-		# Event is 'majorid.{minorid}': grab 'majorid.' + 'majorid.minorid' subscriptions
-		return "(event = '$event_name' OR event = '$1.')";
-	}
-	# Event is 'majorid': grab 'majorid' subscriptions
-	return "event = '$event_name'";
+    # Build and return the SQL 'where' clause to select subscriptions
+    # corresponding to the event.
+    my $event_name = shift;
+    my $where;
+
+    if ($event_name =~ m/^submitrc\.(.*)$/) {
+
+        # Event is 'submitrc.{something}': grab subscriptions for
+        # 'submitrc.', 'submitrc.rc*', and 'submitrc.something.rc*'
+        return "(event = 'submitrc.' OR event LIKE 'submitrc.rc%' OR event LIKE 'submitrc.$1.rc%')";
+    }
+    if ($event_name =~ m/^([^\.]*)\.(.*)$/) {
+
+# Event is 'majorid.{minorid}': grab 'majorid.' + 'majorid.minorid' subscriptions
+        return "(event = '$event_name' OR event = '$1.')";
+    }
+
+    # Event is 'majorid': grab 'majorid' subscriptions
+    return "event = '$event_name'";
 }
-
 
 sub fetch_all {
-	# Connect to a database, run the given SQL statement, and
-	# return a reference to an array of array references.
-	my $dbname = shift;
-	my $query = shift;
 
-	my $dbh = db_connect($dbname);
-	if (not $dbh) {
-		logit("Error connecting to $dbname: $DBI::errstr");
-		return;
-	}
-	# Will raise an error if anything goes wrong
-	my $ref = $dbh->selectall_arrayref($query);
+    # Connect to a database, run the given SQL statement, and
+    # return a reference to an array of array references.
+    my $dbname = shift;
+    my $query = shift;
 
-	$dbh->disconnect()
-		or warn "Got warning while disconnecting from $dbname: "
-		        . $dbh->errstr;
-	return $ref;
+    my $dbh = db_connect($dbname);
+    if (not $dbh) {
+        logit("Error connecting to $dbname: $DBI::errstr");
+        return;
+    }
+
+    # Will raise an error if anything goes wrong
+    my $ref = $dbh->selectall_arrayref($query);
+
+    $dbh->disconnect()
+      or warn "Got warning while disconnecting from $dbname: "
+      . $dbh->errstr;
+    return $ref;
 }
-
 
 sub fetch_emails {
-	# Return the list of email subscriptions for an event
-	my $event_name = shift;
-	my $where_event = get_subscriptions_clause($event_name);
-	my $q = "SELECT uid,mailsubject,mailattach,validity,event"
-	        ." FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
-	        ." WHERE uid != '-' AND validity = 'Y' AND $where_event";
 
-	return fetch_all($WEBOBS{SQL_DB_POSTBOARD}, $q);
+    # Return the list of email subscriptions for an event
+    my $event_name = shift;
+    my $where_event = get_subscriptions_clause($event_name);
+    my $q = "SELECT uid,mailsubject,mailattach,validity,event"
+      ." FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
+      ." WHERE uid != '-' AND validity = 'Y' AND $where_event";
+
+    return fetch_all($WEBOBS{SQL_DB_POSTBOARD}, $q);
 }
-
 
 sub fetch_actions {
-	# Return the list of actions for an event
-	my $event_name = shift;
-	my $where_event = get_subscriptions_clause($event_name);
-	my $q = "SELECT action FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
-	        ." WHERE action != '-' AND validity = 'Y' AND $where_event";
 
-	return fetch_all($WEBOBS{SQL_DB_POSTBOARD}, $q);
+    # Return the list of actions for an event
+    my $event_name = shift;
+    my $where_event = get_subscriptions_clause($event_name);
+    my $q = "SELECT action FROM $WEBOBS{SQL_TABLE_NOTIFICATIONS}"
+      ." WHERE action != '-' AND validity = 'Y' AND $where_event";
+
+    return fetch_all($WEBOBS{SQL_DB_POSTBOARD}, $q);
 }
-
 
 sub fetch_email_addrs {
-	# Return the list of email addresses for a user or a group
-	my $id = shift;  # user or group id
-	my $q = "SELECT email FROM $WEBOBS{SQL_TABLE_USERS}"
-	        ." WHERE uid = '$id'"
-	        ." OR uid IN (SELECT uid FROM groups WHERE gid='$id')";
 
-	return fetch_all($WEBOBS{SQL_DB_USERS}, $q);
+    # Return the list of email addresses for a user or a group
+    my $id = shift;  # user or group id
+    my $q = "SELECT email FROM $WEBOBS{SQL_TABLE_USERS}"
+      ." WHERE uid = '$id'"
+      ." OR uid IN (SELECT uid FROM groups WHERE gid='$id')";
+
+    return fetch_all($WEBOBS{SQL_DB_USERS}, $q);
 }
-
-
 
 # ----------------------------------------------------------
 # read mail contents from a file into a scalar
 # ----------------------------------------------------------
 sub read_file {
-	my $filename = shift;
-	my $file;
-	my $content = "";
-	if (not (defined($filename) && open($file, $filename))) {
-		logit("warning: couldn't read $filename");
-		return;
-	}
-	local $/ = undef;
-	$content = <$file>;
-	close($file) or logit("warning: an error occured while closing $filename");
-	return $content;
+    my $filename = shift;
+    my $file;
+    my $content = "";
+    if (not (defined($filename) && open($file, $filename))) {
+        logit("warning: couldn't read $filename");
+        return;
+    }
+    local $/ = undef;
+    $content = <$file>;
+    close($file) or logit("warning: an error occured while closing $filename");
+    return $content;
 }
 
 # ----------------------------------------------------------
@@ -513,42 +523,42 @@ sub read_file {
 # eg: rccond ('submitrc.jidx.rc>=0, 0) returns true (1)
 # ----------------------------------------------------------
 sub rccond {
-	return 1 if (@_ != 2);
-	return eval "($_[1] $1 $2)"?1:0 if ($_[0] =~ m/submitrc\..*rc([=><!]{2})(\d*)$/);
-	return 1;
+    return 1 if (@_ != 2);
+    return eval "($_[1] $1 $2)"?1:0 if ($_[0] =~ m/submitrc\..*rc([=><!]{2})(\d*)$/);
+    return 1;
 }
 
 # ----------------------------------------------------------
 # write to log
 # ----------------------------------------------------------
 sub logit {
-	my ($logText) = @_;
-	my $TS=[gettimeofday];
-	$logText = sprintf ("%s.%-6s %s", strftime("%Y-%m-%d %H:%M:%S",localtime(@$TS[0])),@$TS[1],$logText);
-	print LOG "$logText\n";
+    my ($logText) = @_;
+    my $TS=[gettimeofday];
+    $logText = sprintf ("%s.%-6s %s", strftime("%Y-%m-%d %H:%M:%S",localtime(@$TS[0])),@$TS[1],$logText);
+    print LOG "$logText\n";
 }
 
 # ----------------------------------------------------------
 # return a signal handler that exits the script
 # ----------------------------------------------------------
 sub end_on_sig {
-	my $msg = shift;
-	my $code = shift // 1;
-	return sub {
-		print "$msg\n" if (-t STDOUT);
-		logit($msg);
-		endit($code);
-	}
+    my $msg = shift;
+    my $code = shift // 1;
+    return sub {
+        print "$msg\n" if (-t STDOUT);
+        logit($msg);
+        endit($code);
+      }
 }
 
 # ----------------------------------------------------------
 # clean exit
 # ----------------------------------------------------------
 sub endit {
-	my $exit_code = shift // 99;
-	close(FIFO);
-	close(LOG);
-	exit($exit_code);
+    my $exit_code = shift // 99;
+    close(FIFO);
+    close(LOG);
+    exit($exit_code);
 }
 
 __END__

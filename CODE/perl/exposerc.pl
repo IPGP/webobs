@@ -45,20 +45,21 @@ $sep    ||= '>';    $sep    =~ s/^\s+|\s+$//g ;
 $prefix ||= 'WO__'; $prefix =~ s/^\s+|\s+$//g ;
 $ptr    ||= '';     $ptr    =~ s/^\s+|\s+$//g ;
 
+if ( $ptr eq '' ) {
+    for (keys(%WEBOBS)) {
+        printf ("%s%s%s%s\n", $prefix, $_, $sep, $WEBOBS{$_});
 
-if ( $ptr eq '' ) { 
-	for (keys(%WEBOBS)) { 
-		printf ("%s%s%s%s\n", $prefix, $_, $sep, $WEBOBS{$_});
-		#[XB-r1240:] printf ("%s%s%s'%s'\n", $prefix, $_, $sep, $WEBOBS{$_}); 
-	}
+        #[XB-r1240:] printf ("%s%s%s'%s'\n", $prefix, $_, $sep, $WEBOBS{$_}); 
+    }
 } else {
-	if (defined($WEBOBS{$ptr})) { 
-		my %TGT = readCfg($WEBOBS{$ptr}); 
-		for (keys(%TGT)) { 
-			printf ("%s%s%s%s\n", $prefix, $_, $sep, $TGT{$_}) ;
-			#[XB-r1240:] printf ("%s%s%s'%s'\n", $prefix, $_, $sep, $TGT{$_}) ;
-		}
-	}
+    if (defined($WEBOBS{$ptr})) {
+        my %TGT = readCfg($WEBOBS{$ptr});
+        for (keys(%TGT)) {
+            printf ("%s%s%s%s\n", $prefix, $_, $sep, $TGT{$_}) ;
+
+            #[XB-r1240:] printf ("%s%s%s'%s'\n", $prefix, $_, $sep, $TGT{$_}) ;
+        }
+    }
 }
 
 __END__

@@ -80,81 +80,88 @@ my $buildTS = strftime("%Y-%m-%d %H:%M:%S %z",localtime(int(time())));
 
 # ---- any reasons why we couldn't go on ?
 if ( ! WebObs::Users::clientHasRead(type=>"authmisc",name=>"scheduler")) {
-	die "You are not authorized to access the Scheduler" ;
+    die "You are not authorized to access the Scheduler" ;
 }
 my $admOK = 0;
 $admOK  = 1 if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"scheduler"));
 if (defined($WEBOBS{ROOT_LOGS})) {
-	#if ( -f "$WEBOBS{ROOT_LOGS}/$schedLog" ) {
-		if (defined($WEBOBS{CONF_SCHEDULER}) && -e $WEBOBS{CONF_SCHEDULER} ) {
-			%SCHED = readCfg($WEBOBS{CONF_SCHEDULER});
-			if (! -e $SCHED{SQL_DB_JOBS} ) { die "Couldn't find jobs database"}
-		} else { die "Couldn't find scheduler configuration" }
-	#} else { die "Couldn't find log $WEBOBS{ROOT_LOGS}/$schedLog" }
+
+    #if ( -f "$WEBOBS{ROOT_LOGS}/$schedLog" ) {
+    if (defined($WEBOBS{CONF_SCHEDULER}) && -e $WEBOBS{CONF_SCHEDULER} ) {
+        %SCHED = readCfg($WEBOBS{CONF_SCHEDULER});
+        if (! -e $SCHED{SQL_DB_JOBS} ) { die "Couldn't find jobs database"}
+    } else { die "Couldn't find scheduler configuration" }
+
+    #} else { die "Couldn't find log $WEBOBS{ROOT_LOGS}/$schedLog" }
 } else { die "No ROOT_LOGS defined" }
 
 # Function definitions --------------------------------------------------------
 
 sub db_connect {
-	# Open a connection to a SQLite database using RaiseError.
-	#
-	# Usage example:
-	#   my $dbh = db_connect($WEBOBS{SQL_DB_POSTBOARD})
-	#     || die "Error connecting to $dbname: $DBI::errstr";
-	#
-	my $dbname = shift;
-	return DBI->connect("dbi:SQLite:$dbname", "", "", {
-		'AutoCommit' => 1,
-		'PrintError' => 1,
-		'RaiseError' => 1,
-		})
+
+    # Open a connection to a SQLite database using RaiseError.
+    #
+    # Usage example:
+    #   my $dbh = db_connect($WEBOBS{SQL_DB_POSTBOARD})
+    #     || die "Error connecting to $dbname: $DBI::errstr";
+    #
+    my $dbname = shift;
+    return DBI->connect("dbi:SQLite:$dbname", "", "", {
+            'AutoCommit' => 1,
+            'PrintError' => 1,
+            'RaiseError' => 1,
+        })
 }
 
 sub execute_query {
-	# Connect to a database and run the given SQL statement,
-	# raising an error if anything goes wrong.
-	my $dbname = shift;
-	my $query = shift;
 
-	my $dbh = db_connect($dbname);
-	if (not $dbh) {
-		logit("Error connecting to $dbname: $DBI::errstr");
-		return;
-	}
-	my $rv;
-	try {
-		$rv = $dbh->do($query);
-	} catch {
-		# Catch errors in update as they are handled in the script.
-		# Note: $sth->err and $DBI::err are true if error was from DBI.
-		# Try::Tiny puts the error into $_
-		warn "Error while executing query '$query': $_";
-	};
-	$dbh->disconnect()
-		or warn "Got warning while disconnecting from $dbname: "
-		        . $dbh->errstr;
+    # Connect to a database and run the given SQL statement,
+    # raising an error if anything goes wrong.
+    my $dbname = shift;
+    my $query = shift;
 
-	return $rv == 0E0 ? 0 : $rv;
+    my $dbh = db_connect($dbname);
+    if (not $dbh) {
+        logit("Error connecting to $dbname: $DBI::errstr");
+        return;
+    }
+    my $rv;
+    try {
+        $rv = $dbh->do($query);
+    } catch {
+
+        # Catch errors in update as they are handled in the script.
+        # Note: $sth->err and $DBI::err are true if error was from DBI.
+        # Try::Tiny puts the error into $_
+        warn "Error while executing query '$query': $_";
+    };
+    $dbh->disconnect()
+      or warn "Got warning while disconnecting from $dbname: "
+      . $dbh->errstr;
+
+    return $rv == 0E0 ? 0 : $rv;
 }
 
 sub fetch_all {
-	# Connect to a database, run the given SQL statement, and
-	# return a reference to an array of array references.
-	my $dbname = shift;
-	my $query = shift;
 
-	my $dbh = db_connect($dbname);
-	if (not $dbh) {
-		logit("Error connecting to $dbname: $DBI::errstr");
-		return;
-	}
-	# Will raise an error if anything goes wrong
-	my $ref = $dbh->selectall_arrayref($query);
+    # Connect to a database, run the given SQL statement, and
+    # return a reference to an array of array references.
+    my $dbname = shift;
+    my $query = shift;
 
-	$dbh->disconnect()
-		or warn "Got warning while disconnecting from $dbname: "
-		        . $dbh->errstr;
-	return $ref;
+    my $dbh = db_connect($dbname);
+    if (not $dbh) {
+        logit("Error connecting to $dbname: $DBI::errstr");
+        return;
+    }
+
+    # Will raise an error if anything goes wrong
+    my $ref = $dbh->selectall_arrayref($query);
+
+    $dbh->disconnect()
+      or warn "Got warning while disconnecting from $dbname: "
+      . $dbh->errstr;
+    return $ref;
 }
 
 # ---- now process special actions (delete all records for given date)
@@ -162,21 +169,21 @@ sub fetch_all {
 my $jobsrunsMsg='';
 
 if ($QryParm->{'action'} eq 'delete') {
-	my $startts = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 00:00:00");
-	my $rows = execute_query($SCHED{SQL_DB_JOBS},
-	   "DELETE FROM runs WHERE startts >= $startts AND startts <= $startts-86399");
-	$jobsrunsMsg  = $rows . ($rows >= 1) ? "  rows deleted " : "  no row deleted "
-	                ."for $QryParm->{'runsdate'}";
+    my $startts = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 00:00:00");
+    my $rows = execute_query($SCHED{SQL_DB_JOBS},
+        "DELETE FROM runs WHERE startts >= $startts AND startts <= $startts-86399");
+    $jobsrunsMsg  = $rows . ($rows >= 1) ? "  rows deleted " : "  no row deleted "
+      ."for $QryParm->{'runsdate'}";
 }
 if ($QryParm->{'action'} eq 'killjob') {
-	# query-string must contain the PID to be submitted to scheduler
-	my $cmd = "killjob kid=$QryParm->{'kid'}";
-	my ($response, $error) = scheduler_client($cmd);
-	my $timestamp = strftime("%H:%M:%S %z", localtime(int(time())));
-	$jobsrunsMsg = "$cmd run at $timestamp : $response"
-	               .($error ? " got error '$error'" : "");
-}
 
+    # query-string must contain the PID to be submitted to scheduler
+    my $cmd = "killjob kid=$QryParm->{'kid'}";
+    my ($response, $error) = scheduler_client($cmd);
+    my $timestamp = strftime("%H:%M:%S %z", localtime(int(time())));
+    $jobsrunsMsg = "$cmd run at $timestamp : $response"
+      .($error ? " got error '$error'" : "");
+}
 
 # ---- start html page
 # --------------------
@@ -207,19 +214,19 @@ my $schedstatus= "";
 my $SCHEDSRV   = "localhost";
 my $SCHEDREPLY = "";
 if (glob("$WEBOBS{ROOT_LOGS}/*sched*.pid")) {
-	my $SCHEDSOCK  = IO::Socket::INET->new(Proto => 'udp', PeerPort => $SCHED{PORT}, PeerAddr => $SCHEDSRV );
-	if ( $SCHEDSOCK ) {
-		if ( $SCHEDSOCK->send("CMD STAT") ) {
-			if ( $SCHEDSOCK->recv($SCHEDREPLY, $SCHED{SOCKET_MAXLEN}) ) {
-				my @xx = split(/(?<=\n)/,$SCHEDREPLY);
-				my @td1 = map {$_ =~ s/\n/<br>/; $_} (grep { /STARTED=|PID=|USER=|uTICK=|BEAT=|PAUSED=/ } @xx);
-				s/PAUSED=1/<span class=\"statusWNG\">PAUSED=1<\/span>/ for @td1;
-				my @td2 = map {$_ =~ s/\n/<br>/; $_} (grep { /#JOBSTART=|#JOBSEND=|KIDS=|ENQs=/ } @xx);
-				my @td3 = map {$_ =~ s/\n/<br>/; $_} (grep { /LOG=|JOBSDB=|JOBS STDio=|JOBS RESource=/ } @xx);
-				$schedstatus = "<table><tr valign=\"top\"><td class=\"status statusOK\">@td1<td class=\"status\">@td2<td class=\"status\">@td3</table>"
-			} else { $schedstatus = "</div class=\"status statusWNG\">STATUS NOT AVAILABLE (socket receive error)</div>"; }
-		} else { $schedstatus = "</div class=\"status statusWNG\">STATUS NOT AVAILABLE (socket send error)</div>"; }
-	} else { $schedstatus = "</div class=\"status statusWNG\">STATUS NOT AVAILABLE (create socket failed)</div>" }
+    my $SCHEDSOCK  = IO::Socket::INET->new(Proto => 'udp', PeerPort => $SCHED{PORT}, PeerAddr => $SCHEDSRV );
+    if ( $SCHEDSOCK ) {
+        if ( $SCHEDSOCK->send("CMD STAT") ) {
+            if ( $SCHEDSOCK->recv($SCHEDREPLY, $SCHED{SOCKET_MAXLEN}) ) {
+                my @xx = split(/(?<=\n)/,$SCHEDREPLY);
+                my @td1 = map {$_ =~ s/\n/<br>/; $_} (grep { /STARTED=|PID=|USER=|uTICK=|BEAT=|PAUSED=/ } @xx);
+                s/PAUSED=1/<span class=\"statusWNG\">PAUSED=1<\/span>/ for @td1;
+                my @td2 = map {$_ =~ s/\n/<br>/; $_} (grep { /#JOBSTART=|#JOBSEND=|KIDS=|ENQs=/ } @xx);
+                my @td3 = map {$_ =~ s/\n/<br>/; $_} (grep { /LOG=|JOBSDB=|JOBS STDio=|JOBS RESource=/ } @xx);
+                $schedstatus = "<table><tr valign=\"top\"><td class=\"status statusOK\">@td1<td class=\"status\">@td2<td class=\"status\">@td3</table>"
+            } else { $schedstatus = "</div class=\"status statusWNG\">STATUS NOT AVAILABLE (socket receive error)</div>"; }
+        } else { $schedstatus = "</div class=\"status statusWNG\">STATUS NOT AVAILABLE (socket send error)</div>"; }
+    } else { $schedstatus = "</div class=\"status statusWNG\">STATUS NOT AVAILABLE (create socket failed)</div>" }
 } else { $schedstatus = "<div class=\"status statusBAD\">JOBS SCHEDULER IS NOT RUNNING !</div>"}
 
 # ---- dynamic 'timeline' scripts
@@ -231,11 +238,11 @@ my $timelineD1 = int(time());
 if ( $QryParm->{'runsdate'} ne $today ) { $timelineD1 = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 23:59:00"); }
 my $timelineD0 = 	$timelineD1 - 86400;
 my $query_timeline_runs = "SELECT jid, DATETIME(cast(startts as integer),'unixepoch','localtime'),"
-		. " CASE WHEN endts != 0 THEN DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime') ELSE NULL END,"
-		. " cmd, rc FROM runs"
-		. " WHERE startts >= $timelineD0"
-		. ($QryParm->{'runsdate'} ne $today ? " AND startts <= $timelineD1" : "")
-		. " ORDER BY jid, startts";
+  . " CASE WHEN endts != 0 THEN DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime') ELSE NULL END,"
+  . " cmd, rc FROM runs"
+  . " WHERE startts >= $timelineD0"
+  . ($QryParm->{'runsdate'} ne $today ? " AND startts <= $timelineD1" : "")
+  . " ORDER BY jid, startts";
 my $timeline_run_list = fetch_all($SCHED{SQL_DB_JOBS}, $query_timeline_runs);
 print "<script language=\"JavaScript\">";
 print "function setData() {\n";
@@ -246,45 +253,51 @@ my $latest_timeline_jid = 0;
 
 # Print the timeline from the jobs
 for my $job_run (@$timeline_run_list) {
-	my ($job_jid, $job_start, $job_end, $job_cmd, $job_rc) = @$job_run;
+    my ($job_jid, $job_start, $job_end, $job_cmd, $job_rc) = @$job_run;
 
-	if ($QryParm->{'jid'} eq "" || $QryParm->{'jid'} eq $job_jid) {
-		my $job_color = "";
+    if ($QryParm->{'jid'} eq "" || $QryParm->{'jid'} eq $job_jid) {
+        my $job_color = "";
 
-		# Running jobs have an undefined end date
-		my $is_running = not defined($job_end);
+        # Running jobs have an undefined end date
+        my $is_running = not defined($job_end);
 
-		if ($job_jid ne $latest_timeline_jid) {
-			# New job to plot: bump Ytick to use a new line
-			$Ytick++;
-			$latest_timeline_jid = $job_jid;
-			print "options.yaxis.ticks[$Ytick-1] = [$Ytick, '$job_jid'];\n";
-		}
-		$job_start =~ s/-/\//g;
-		if ($is_running) {
-			# Running job: use a yellowish activity line
-			$job_end = strftime("%Y/%m/%d %H:%M:%S", localtime($timelineD1));
-			$job_color = "#ED9D13";
-		} else {
-			$job_end =~ s/-/\//g;
-			if ($job_rc == 0) {
-				# Successful return code: use a green activity line
-				$job_color = "#318308";
-			} else {
-				# Use a red activity line
-				$job_color = "#C8350C";
-			}
-		}
-		# Print the javascript line defining a job activity in the timeline
-		print qq(data[$dataX] = {color: "$job_color", data: [ [(new Date("$job_start")), $Ytick], [(new Date("$job_end")), $Ytick] ] };\n);
-		$dataX++;
-	}
+        if ($job_jid ne $latest_timeline_jid) {
+
+            # New job to plot: bump Ytick to use a new line
+            $Ytick++;
+            $latest_timeline_jid = $job_jid;
+            print "options.yaxis.ticks[$Ytick-1] = [$Ytick, '$job_jid'];\n";
+        }
+        $job_start =~ s/-/\//g;
+        if ($is_running) {
+
+            # Running job: use a yellowish activity line
+            $job_end = strftime("%Y/%m/%d %H:%M:%S", localtime($timelineD1));
+            $job_color = "#ED9D13";
+        } else {
+            $job_end =~ s/-/\//g;
+            if ($job_rc == 0) {
+
+                # Successful return code: use a green activity line
+                $job_color = "#318308";
+            } else {
+
+                # Use a red activity line
+                $job_color = "#C8350C";
+            }
+        }
+
+        # Print the javascript line defining a job activity in the timeline
+        print qq(data[$dataX] = {color: "$job_color", data: [ [(new Date("$job_start")), $Ytick], [(new Date("$job_end")), $Ytick] ] };\n);
+        $dataX++;
+    }
 }
 if ($dataX == 0) {
-	# define dummy data, spanning all xaxis, in case we have no data (ie. @$timeline_run_list was an empty set)
-	$Ytick++;
-	print "options.yaxis.ticks[$Ytick-1] = [$Ytick, \"* no start *   \"];\n";
-	print "data[$dataX] = {color: \"#5555ff\", data: [ [(new Date($timelineD0*1000)), $Ytick], [(new Date($timelineD1*1000)), $Ytick] ] };\n";
+
+# define dummy data, spanning all xaxis, in case we have no data (ie. @$timeline_run_list was an empty set)
+    $Ytick++;
+    print "options.yaxis.ticks[$Ytick-1] = [$Ytick, \"* no start *   \"];\n";
+    print "data[$dataX] = {color: \"#5555ff\", data: [ [(new Date($timelineD0*1000)), $Ytick], [(new Date($timelineD1*1000)), $Ytick] ] };\n";
 }
 print "yticks=$Ytick".($Ytick == 1 ? "+1":"").";"; # needs to add an Ytick in case of single job
 print "options.xaxis.min = (new Date($timelineD0*1000));\n";
@@ -293,13 +306,11 @@ print "}\n";
 print "</script>\n";
 print "</head>\n";
 
-
 # ---- List of available days in the 'runs' database table
 # --------------------------------------------------------
 my @run_day_list = map { $_->[0] } (@{fetch_all($SCHED{SQL_DB_JOBS},
-	"SELECT DISTINCT(DATE(CAST(startts AS INTEGER), 'unixepoch', 'localtime'))"
-	." FROM runs ORDER BY 1 DESC")});
-
+            "SELECT DISTINCT(DATE(CAST(startts AS INTEGER), 'unixepoch', 'localtime'))"
+              ." FROM runs ORDER BY 1 DESC")});
 
 # ---- Prepare the HTML table of job runs for selected day
 # --------------------------------------------------------
@@ -311,61 +322,62 @@ my $rdate = WebObs::Dates::ymdhms2s("$QryParm->{'runsdate'} 00:00:00");
 my @jid_list;
 
 my $query_runs  = "SELECT jid, kid, org, DATETIME(CAST(startts AS INTEGER), 'unixepoch', 'localtime'),"
-		. " CASE WHEN endts != 0 THEN DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime') ELSE NULL END,"
-		. " cmd, stdpath, rc, rcmsg, endts - startts AS elps FROM runs"
-		. " WHERE startts >= $rdate AND startts <= $rdate+86400"
-		. " ORDER BY startts, jid";
+  . " CASE WHEN endts != 0 THEN DATETIME(CAST(endts AS INTEGER), 'unixepoch', 'localtime') ELSE NULL END,"
+  . " cmd, stdpath, rc, rcmsg, endts - startts AS elps FROM runs"
+  . " WHERE startts >= $rdate AND startts <= $rdate+86400"
+  . " ORDER BY startts, jid";
 my $run_list = fetch_all($SCHED{SQL_DB_JOBS}, $query_runs);
 
 # Prepare the rows of the job run table
 for my $run (@$run_list) {
-	my ($job_jid, $job_kid, $org, $job_start, $job_end,
-	    $job_cmd, $job_stdpath, $job_rc, $job_rcmsg, $elapsed) = @$run;
+    my ($job_jid, $job_kid, $org, $job_start, $job_end,
+        $job_cmd, $job_stdpath, $job_rc, $job_rcmsg, $elapsed) = @$run;
 
-	push(@jid_list, $job_jid) unless grep{$_ eq $job_jid} @jid_list;
+    push(@jid_list, $job_jid) unless grep{$_ eq $job_jid} @jid_list;
 
-	if ($QryParm->{'jid'} eq "" || $QryParm->{'jid'} eq $job_jid) {
+    if ($QryParm->{'jid'} eq "" || $QryParm->{'jid'} eq $job_jid) {
 
-		my $elapsed_column = '';
-		my $bgcolor = "transparent";
-		# Running jobs have an undefined end date
-		my $is_running = not defined($job_end);
-		$jobsdefsCount++;
-		$jobsdefsId="jdef".$jobsdefsCount;
+        my $elapsed_column = '';
+        my $bgcolor = "transparent";
 
-		if ($is_running) {
-			$job_rc = '';
-			$job_rcmsg = '';
-			$job_end = 'Running';
-		} else {
-			my ($seconds, $ms) = split(/\./, ($elapsed));
-			my @time = reverse($seconds%60, ($seconds/=60) % 60, ($seconds/=60) % 24, ($seconds/=24) );
-			$elapsed_column = sprintf "%03d:%02d:%02d:%02d.%3.3s", @time, $ms;
-			# Return code shows success: use a green background in the RC column
-			$bgcolor = ($job_rc == 0 ? "green":"red");
-		}
+        # Running jobs have an undefined end date
+        my $is_running = not defined($job_end);
+        $jobsdefsCount++;
+        $jobsdefsId="jdef".$jobsdefsCount;
 
-		if (length($job_cmd) > $maxdcmdl) {
-			my $s = ($maxdcmdl-5)/2;
-			$job_cmd = substr($job_cmd,0,$s).'(...)'.substr($job_cmd,-$s);
-		}
-		$job_start =~ s/^.* //;
-		$job_end =~ s/^.* //;
-		$jobsruns .= qq(<tr id="$jobsdefsId"><td class="ic tdlock">);
-		if ($is_running && $admOK) {
-			$jobsruns .= qq(<a href="#" onclick="postKill($job_kid);return false"><img title="kill job" src="/icons/no.png"></a>);
-		}
-		$jobsruns .= qq(</td><td class="ic tdlock">);
-		if (!$is_running && $admOK && $job_jid =~ /^\w/) {
-			$jobsruns .= qq(<a href="#" onclick="postSubmit($jobsdefsId,2);return false"><img title="submit job" src="/icons/submits.png"></a>);
-		}
-		$jobsruns .= qq(</td><td>$job_jid<td>$job_kid<td>$org<td>$job_start<td>$job_end<td>$job_cmd);
-		my $log_filename = $job_stdpath =~ s/^[><] +//r;
-		$jobsruns .= qq(<td><a href="/cgi-bin/schedulerLogs.pl?log=$log_filename">$log_filename</a>);
-		$jobsruns .= qq(<td style="background-color: $bgcolor;text-align:center">$job_rc<td>$job_rcmsg<td>$elapsed_column</tr>\n);
-	}
+        if ($is_running) {
+            $job_rc = '';
+            $job_rcmsg = '';
+            $job_end = 'Running';
+        } else {
+            my ($seconds, $ms) = split(/\./, ($elapsed));
+            my @time = reverse($seconds%60, ($seconds/=60) % 60, ($seconds/=60) % 24, ($seconds/=24) );
+            $elapsed_column = sprintf "%03d:%02d:%02d:%02d.%3.3s", @time, $ms;
+
+            # Return code shows success: use a green background in the RC column
+            $bgcolor = ($job_rc == 0 ? "green":"red");
+        }
+
+        if (length($job_cmd) > $maxdcmdl) {
+            my $s = ($maxdcmdl-5)/2;
+            $job_cmd = substr($job_cmd,0,$s).'(...)'.substr($job_cmd,-$s);
+        }
+        $job_start =~ s/^.* //;
+        $job_end =~ s/^.* //;
+        $jobsruns .= qq(<tr id="$jobsdefsId"><td class="ic tdlock">);
+        if ($is_running && $admOK) {
+            $jobsruns .= qq(<a href="#" onclick="postKill($job_kid);return false"><img title="kill job" src="/icons/no.png"></a>);
+        }
+        $jobsruns .= qq(</td><td class="ic tdlock">);
+        if (!$is_running && $admOK && $job_jid =~ /^\w/) {
+            $jobsruns .= qq(<a href="#" onclick="postSubmit($jobsdefsId,2);return false"><img title="submit job" src="/icons/submits.png"></a>);
+        }
+        $jobsruns .= qq(</td><td>$job_jid<td>$job_kid<td>$org<td>$job_start<td>$job_end<td>$job_cmd);
+        my $log_filename = $job_stdpath =~ s/^[><] +//r;
+        $jobsruns .= qq(<td><a href="/cgi-bin/schedulerLogs.pl?log=$log_filename">$log_filename</a>);
+        $jobsruns .= qq(<td style="background-color: $bgcolor;text-align:center">$job_rc<td>$job_rcmsg<td>$elapsed_column</tr>\n);
+    }
 }
-
 
 # ---- Print the rest of the page
 # -------------------------------
@@ -386,7 +398,7 @@ print <<"EOP1";
 	}
 EOP1
 if ($admOK) {
-	print <<"EOP2";
+    print <<"EOP2";
 	function delADate() {
 		var d1 = \$('#indate').val();
 		var answer = confirm("do you really want to delete all records for "+d1+" ?");
@@ -426,29 +438,29 @@ Runs <small><sub>($buildTS)</sub></small>
 	<div id="runsID">
 		<div style="padding: 5px; background: #DDDDDD">
 EOP3
-			print "&nbsp;&bull;&nbsp; Job: ";
-			print "<select id=\"injid\" name=\"injid\" size=\"1\" maxlength=\"10\" onChange=\"reload(); return false\">";
-			for my $jid ("", sort @jid_list) {
-				my $selected = "";
-				if ($jid eq $QryParm->{'jid'}) {
-					$selected = 'selected="selected"';
-				}
-				print "<option value=\"$jid\" $selected>".($jid ne "" ? $jid:"--- all ---")."</option>\n";
-			}
-			print "</select> ";
-			print "&nbsp;&bull;&nbsp; Date: ";
-			print "<select id=\"indate\" name=\"indate\" size=\"1\" maxlength=\"10\" onChange=\"reload(); return false\">";
-			for my $day (@run_day_list) {
-				my $selected = "";
-				if ($day eq $QryParm->{'runsdate'}) {
-					$selected = 'selected="selected"';
-				}
-				print qq{<option value="$day" $selected>$day</option>\n};
-			}
-			print "</select>";
-			if ($admOK) {
-				print "<input type='button' onclick='delADate(); return false' value='delete date' />";
-			}
+print "&nbsp;&bull;&nbsp; Job: ";
+print "<select id=\"injid\" name=\"injid\" size=\"1\" maxlength=\"10\" onChange=\"reload(); return false\">";
+for my $jid ("", sort @jid_list) {
+    my $selected = "";
+    if ($jid eq $QryParm->{'jid'}) {
+        $selected = 'selected="selected"';
+    }
+    print "<option value=\"$jid\" $selected>".($jid ne "" ? $jid:"--- all ---")."</option>\n";
+}
+print "</select> ";
+print "&nbsp;&bull;&nbsp; Date: ";
+print "<select id=\"indate\" name=\"indate\" size=\"1\" maxlength=\"10\" onChange=\"reload(); return false\">";
+for my $day (@run_day_list) {
+    my $selected = "";
+    if ($day eq $QryParm->{'runsdate'}) {
+        $selected = 'selected="selected"';
+    }
+    print qq{<option value="$day" $selected>$day</option>\n};
+}
+print "</select>";
+if ($admOK) {
+    print "<input type='button' onclick='delADate(); return false' value='delete date' />";
+}
 print <<"EOP4";
 			<span style="padding-left: 20px; color: red;font-weight:bold">$jobsrunsMsg</span>
 		</div>

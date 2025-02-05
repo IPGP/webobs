@@ -57,11 +57,11 @@ my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
 for my $p (keys(%Ps)) {
-	my %N = $FORM->nodes($p);
-	for my $n (keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-	}
-	%Ns = (%Ns, %N);
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
 }
 
 my $titrePage = "&Eacute;dition - ".$FORM->conf('TITLE');
@@ -124,7 +124,7 @@ function zeros()
 {";
 
 for ("01".."31") {
-	print "if (formulaire.d$_.value == \"\" && formulaire.d$_.disabled == false) { formulaire.d$_.value = 0; }\n";
+    print "if (formulaire.d$_.value == \"\" && formulaire.d$_.disabled == false) { formulaire.d$_.value = 0; }\n";
 }
 
 print "}
@@ -236,22 +236,22 @@ my $fts = -1;
 my ($id,$aa,$mm,$site,$d01,$v01,$d02,$v02,$d03,$v03,$d04,$v04,$d05,$v05,$d06,$v06,$d07,$v07,$d08,$v08,$d09,$v09,$d10,$v10,$d11,$v11,$d12,$v12,$d13,$v13,$d14,$v14,$d15,$v15,$d16,$v16,$d17,$v17,$d18,$v18,$d19,$v19,$d20,$v20,$d21,$v21,$d22,$v22,$d23,$v23,$d24,$v24,$d25,$v25,$d26,$v26,$d27,$v27,$d28,$v28,$d29,$v29,$d30,$v30,$d31,$v31,$val);
 $id=$aa=$mm=$site=$d01=$v01=$d02=$v02=$d03=$v03=$d04=$v04=$d05=$v05=$d06=$v06=$d07=$v07=$d08=$v08=$d09=$v09=$d10=$v10=$d11=$v11=$d12=$v12=$d13=$v13=$d14=$v14=$d15=$v15=$d16=$v16=$d17=$v17=$d18=$v18=$d19=$v19=$d20=$v20=$d21=$v21=$d22=$v22=$d23=$v23=$d24=$v24=$d25=$v25=$d26=$v26=$d27=$v27=$d28=$v28=$d29=$v29=$d30=$v30=$d31=$v31=$val;
 if (defined($QryParm->{id})) {
-	($ptr, $fts) = $FORM->data($QryParm->{id});
-	@ligne = @$ptr;
-	if (scalar(@ligne) == 1) {
-		chomp(@ligne);
-		($id,$aa,$mm,$site,$d01,$v01,$d02,$v02,$d03,$v03,$d04,$v04,$d05,$v05,$d06,$v06,$d07,$v07,$d08,$v08,$d09,$v09,$d10,$v10,$d11,$v11,$d12,$v12,$d13,$v13,$d14,$v14,$d15,$v15,$d16,$v16,$d17,$v17,$d18,$v18,$d19,$v19,$d20,$v20,$d21,$v21,$d22,$v22,$d23,$v23,$d24,$v24,$d25,$v25,$d26,$v26,$d27,$v27,$d28,$v28,$d29,$v29,$d30,$v30,$d31,$v31,$val) = split(/\|/,l2u($ligne[0]));
-		if ($QryParm->{id} eq $id) {
-			$sel_annee = $aa;
-			$sel_mois = $mm;
-			$sel_site = $site;
-			for (@jourListe) {
-				eval("\$sel_d$_ = \$d$_;");
-				eval("\$sel_v$_ = \$v$_;");
-			}
-			$message = "Modification donn&eacute;e n° $QryParm->{id}";
-		} else { $QryParm->{id} = ""; $val = ""; }
-	} else { $QryParm->{id} = ""; $val = "" ;}
+    ($ptr, $fts) = $FORM->data($QryParm->{id});
+    @ligne = @$ptr;
+    if (scalar(@ligne) == 1) {
+        chomp(@ligne);
+        ($id,$aa,$mm,$site,$d01,$v01,$d02,$v02,$d03,$v03,$d04,$v04,$d05,$v05,$d06,$v06,$d07,$v07,$d08,$v08,$d09,$v09,$d10,$v10,$d11,$v11,$d12,$v12,$d13,$v13,$d14,$v14,$d15,$v15,$d16,$v16,$d17,$v17,$d18,$v18,$d19,$v19,$d20,$v20,$d21,$v21,$d22,$v22,$d23,$v23,$d24,$v24,$d25,$v25,$d26,$v26,$d27,$v27,$d28,$v28,$d29,$v29,$d30,$v30,$d31,$v31,$val) = split(/\|/,l2u($ligne[0]));
+        if ($QryParm->{id} eq $id) {
+            $sel_annee = $aa;
+            $sel_mois = $mm;
+            $sel_site = $site;
+            for (@jourListe) {
+                eval("\$sel_d$_ = \$d$_;");
+                eval("\$sel_v$_ = \$v$_;");
+            }
+            $message = "Modification donn&eacute;e n° $QryParm->{id}";
+        } else { $QryParm->{id} = ""; $val = ""; }
+    } else { $QryParm->{id} = ""; $val = "" ;}
 }
 
 print "<TABLE><TR><TD style=\"border:0\">
@@ -261,7 +261,7 @@ print "</TD></TR></TABLE>";
 
 print "<FORM name=formulaire id=\"theform\" action=\"\">";
 if ($QryParm->{id} ne "") {
-   print "<input type=\"hidden\" name=\"id\" value=\"$QryParm->{id}\">";
+    print "<input type=\"hidden\" name=\"id\" value=\"$QryParm->{id}\">";
 }
 
 print "<input type=\"hidden\" name=\"oper\" value=\"$CLIENT\">\n";
@@ -271,59 +271,59 @@ print "<TABLE style=border:0 onMouseOver=\"calc()\">
 	<fieldset><legend>Mois et Site</legend>
 	<P class=parform>
 	<B>Ann&eacute;e:</B> <select name=annee size=\"1\">";
-	for (@anneeListe) {
-		$sel = "";
-	    if ($_ == $sel_annee) { $sel = "selected"; }
-		print "<option $sel value=\"$_\">$_</option>\n";
-	}
-	print "</select>";
-	print " <B>Mois:</B> <select name=mois size=\"1\">";
-	for (@moisListe) {
-		$sel = "";
-	    if ($_ == $sel_mois) { $sel = "selected"; }
-		print "<option $sel onClick=\"nbj()\" value=\"$_\">".$nomMois[$_ - 1]."</option>\n";
-	}
-	print "</select>\n";
-	print "&nbsp;&nbsp;
+for (@anneeListe) {
+    $sel = "";
+    if ($_ == $sel_annee) { $sel = "selected"; }
+    print "<option $sel value=\"$_\">$_</option>\n";
+}
+print "</select>";
+print " <B>Mois:</B> <select name=mois size=\"1\">";
+for (@moisListe) {
+    $sel = "";
+    if ($_ == $sel_mois) { $sel = "selected"; }
+    print "<option $sel onClick=\"nbj()\" value=\"$_\">".$nomMois[$_ - 1]."</option>\n";
+}
+print "</select>\n";
+print "&nbsp;&nbsp;
 		<B>Site:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le site')\" name=\"site\" size=\"1\"><option value=\"\"></option>\n";
-	for (@NODESSelList) {
-		my @cle = split(/\|/,$_);
-		$sel = "";
-		if ($cle[0] eq $sel_site) { $sel = "selected"; }
-		print "<option $sel value=$cle[0]>$cle[1]</option>\n";
-	}
-	print "</select>";
-	print "</fieldset>";
+for (@NODESSelList) {
+    my @cle = split(/\|/,$_);
+    $sel = "";
+    if ($cle[0] eq $sel_site) { $sel = "selected"; }
+    print "<option $sel value=$cle[0]>$cle[1]</option>\n";
+}
+print "</select>";
+print "</fieldset>";
 print "</TD></TR>\n";
 
 print "<TR><TD style=border:0>
 	<fieldset><legend>Pluviom&eacute;trie journali&egrave;re (mm)</legend>\n";
-	print "<table>";
-	print "<TR>"; 
-	print "<TD style=\"border:0; padding-right: 30px; \" valign=top>";
-	for (@jourListe) {
-		print "<B>$_.</B> <input size=5 class=inputNum name=\"d$_\" tabindex=1 value=\"".eval("\$sel_d$_")."\"
+print "<table>";
+print "<TR>";
+print "<TD style=\"border:0; padding-right: 30px; \" valign=top>";
+for (@jourListe) {
+    print "<B>$_.</B> <input size=5 class=inputNum name=\"d$_\" tabindex=1 value=\"".eval("\$sel_d$_")."\"
 			onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de pluie du $_')\">";
-		print "&nbsp;<select onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner le type de donn&eacute;e')\" name=\"v$_\" size=\"1\">";
-		my $v = "";
-		$v = eval("\$sel_v$_");
-		for (@types) {
-			my @cle = split(/\|/,$_);
-			$sel = "";
-			if ($cle[0] eq $v) {	$sel = "selected"; }
-			print "<option $sel value=$cle[0]>$cle[1]</option>";
-		}
-		print "</select><BR>";
-		if (($_ eq "10") || ($_ eq "20")) { print "</TD><TD style=border:0 valign=top>"; }
-	}
-	print "</TD></TR>\n";
-	print "<TR><TD style=\"border:0; padding-right: 30px; \"><B>Cumul 1<sup>&egrave;re</sup> d&eacute;cade</B> <input name=\"sum1\" size=5 readOnly class=inputNumNoEdit></TD>
+    print "&nbsp;<select onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner le type de donn&eacute;e')\" name=\"v$_\" size=\"1\">";
+    my $v = "";
+    $v = eval("\$sel_v$_");
+    for (@types) {
+        my @cle = split(/\|/,$_);
+        $sel = "";
+        if ($cle[0] eq $v) {	$sel = "selected"; }
+        print "<option $sel value=$cle[0]>$cle[1]</option>";
+    }
+    print "</select><BR>";
+    if (($_ eq "10") || ($_ eq "20")) { print "</TD><TD style=border:0 valign=top>"; }
+}
+print "</TD></TR>\n";
+print "<TR><TD style=\"border:0; padding-right: 30px; \"><B>Cumul 1<sup>&egrave;re</sup> d&eacute;cade</B> <input name=\"sum1\" size=5 readOnly class=inputNumNoEdit></TD>
 		<TD style=\"border:0; padding-right: 30px; \"><B>Cumul 2<sup>ème</sup> décade</B> <input name=\"sum2\" size=5 readOnly class=inputNumNoEdit></TD>
 		<TD style=\"border:0; padding-right: 30px; \"><B>Cumul 3<sup>ème</sup> décade</B> <input name=\"sum3\" size=5 readOnly class=inputNumNoEdit></TD>
 		</TR>\n";
-	print "<TR><TD style=border:0><B>Cumul mensuel</B> (mm) = <input name=\"sumtotal\" size=5 readOnly class=inputNumNoEdit></P></TD></TR>\n";
-	print "</table>";
-	print "</fieldset>";
+print "<TR><TD style=border:0><B>Cumul mensuel</B> (mm) = <input name=\"sumtotal\" size=5 readOnly class=inputNumNoEdit></P></TD></TR>\n";
+print "</table>";
+print "</fieldset>";
 print "</TD></TR>";
 
 print "<TR><TD style=border:0 colspan=2><P class=parform><B>Information de saisie:</B> $val
