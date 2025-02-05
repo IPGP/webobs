@@ -61,7 +61,7 @@ cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 # =============================================================================
 # make a loop on all known legacy FORMs
 #for form in EAUX RIVERS SOILSOLUTIONS RAINWATER EXTENSO FISSURO GAZ DISTANCE BOJAP 
-for form in EAUX_DEMO; do
+for form in EAUX RIVERS EXTENSO GAZ; do
     
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
@@ -159,7 +159,7 @@ for form in EAUX_DEMO; do
                     print ");" }}' >> $TMP 
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            "EAUX_DEMO")
+            "EAUX")
                 NBI=23
                 ICOM=28
                 IVAL=29

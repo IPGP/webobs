@@ -32,7 +32,7 @@ If you have any question which is not answered in the user manual, do not hesita
 1. Add forgotten keys in **tremblemaps** superproc template, and fix an issue when updating procs with setup (new keys not added).
 
 
-## v2.7.2 (January 2025)
+## v2.7.3 (February 2025)
 
 ### New features
 1. **Generic forms**: see section *Under development* below.
