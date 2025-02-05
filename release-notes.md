@@ -8,7 +8,31 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## v2.7.2 (January 2025)
+If you have any question which is not answered in the user manual, do not hesitate to write to developpers through the mailing list [webobs-devs@services.cnrs.fr](mailto:webobs-devs@services.cnrs.fr), or start a public discussion thread at [github.com/IPGP/webobs/discussions](https://github.com/IPGP/webobs/discussions).
+
+## v.2.8 (under development)
+
+### New features
+1. **New grids FORM**: manual databases (formerly dedicated forms) are now fully integrated as a grid type along with PROCs and VIEWs. A FORM is then associated to a DOMAIN and some NODES, appears in the GRIDs table and has its own page with description, nodes table list, map location, and events. FORM is based on the new GENFORM user-defined manual database tool (introduced in the previous release): a freely configurazble SQLite database managed through a GUI form (for entering new data, editing and deleting), a table data display with options and filters, data export as CSV file or as raw data source for PROCs. Creating a FORM becomes as simple as creating a PROC or VIEW, by selecting a template (a dozen are available), if necessary modifying it partially or completely, associating a DOMAIN, associating or creating NODES, and editing the configuration file to set the database structure (inputs and outputs) and the form layout. GENFORM is able to store numerical values, checkboxes, lists, text strings, images, and mathematical output formulas. It aims to replace spreadsheets files for (potentially) any structured scientific data. See the user manual for more details.
+
+    `!!` **Update note**: This new feature replaces definitively all the previous forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, BOJAP, RIVERS, SOILSOLUTIONS, and RAINWATER) for which an automatic migration is made during the setup/update. PROCS using the legacy forms databases will be adapted to point to new FORM which become a RAWFORMAT/RAWDATA attribute instead of hard link to legacy form. Each PROC will have its own FORM with the same grid name and the same associated nodes. Former configuration files `CONF/FORMS` and `CONF/GRIDS2FORMS` will be moved in `CONF/LEGACY_FORMS/`directory, and old data files `DATA/DB/*.DAT` will be moved to `DATA/BACKUP_LEGACY_FORMS/`. All these files are not necessary anymore and might be removed/backuped anywhere outside the WebObs architecture. Corresponding legacy scripts `CODE/cgi-bin/{form,post,show}FORMNAME.pl` have been removed from this release. Any link/URL (for example in the WebObs menu) pointing to these scripts must be modified as follows:
+    * `showFORMNAME.pl` => `showGENFORM.pl?form=PROCNAME`
+    * `showFORMNAME.pl?node={PROCNAME}` => `showGENFORM.pl?form=PROCNAME`
+    * `showFORMNAME.pl?node=NODEID` => `showGENFORM.pl?form=PROCNAME&node=NODEID`
+    * `formFORMNAME.pl` => `formGENFORM.pl?form=PROCNAME`
+
+    where FORMNAME is the legacy form name, and PROCNAME is the associated PROC which becomes also the new FORM name. Note that previous link `showFORMNAME.pl` without argument, when legacy form was associated to more than one PROC (for instance the `EAUX` database), has no strict equivalent in the new structure; it must be replaced by as many links as there are procs associated to this form.
+
+### Enhancements
+1. New CSS!
+1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
+
+### Fixed issues
+1. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
+1. Add forgotten keys in **tremblemaps** superproc template, and fix an issue when updating procs with setup (new keys not added).
+
+
+## v2.7.3 (February 2025)
 
 ### New features
 1. **Generic forms**: see section *Under development* below.

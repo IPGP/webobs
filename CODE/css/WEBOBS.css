@@ -1,8 +1,7 @@
 body {
     font-family: sans-serif;
     font-size: 8pt;
-    background-image: url(/icons/bgH.png);
-    background-color: white;
+    background-color: #fdfefe;
     margin-left: 5px;
     margin-right: 5px;
 }
@@ -17,7 +16,7 @@ a:visited {
     color: #333333;
 }
 a:hover {
-    background-color: #dddddd;
+    color: #4169E1;
 }
 h1 {
     /*display: table-caption;*/
@@ -64,16 +63,27 @@ table {
 td,
 th {
     font-size: 8pt;
-    border-width: 1px;
     border-color: #999999;
+    border-width: 1px;
     border-style: solid;
-    padding: 2px;
+    border-left: none;
+    border-right: none;
+    padding: 2px 3px 2px 3px;
 }
 th {
-    color: #777777;
+    font-style: italic;
+    color: #666666;
     background-color: #dddddd;
+    padding-left: 3px;
+    padding-right: 3px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
 }
-
+.th-bottom {
+    padding: 0px;
+    border-top-width: 0px;
+    border-bottom-width: 1px;
+}
 ul {
     list-style-type: square;
 }
@@ -578,6 +588,9 @@ table.Dcalnd a:hover {
     font-weight: bold;
 }
 
+#theform {
+    background-color: #f6f6f6;
+}
 #theform select[name="fdsn"],
 #formNode input[name="tele"] {
     width: 26em;
@@ -714,9 +727,10 @@ th.ic {
 }
 
 .drawer {
-    border: solid 1px #eae4ce;
+    border: solid 1px #e4e4e4;
     border-radius: 4px;
     background: white;
+    margin: 4px;
 }
 
 .drawerh2 {
@@ -731,11 +745,10 @@ th.ic {
     cursor: pointer;
 }
 .welcomedrawer {
-    border-bottom: 1px solid #eae4ce;
-    font-size: 12pt;
+    font-size: 14pt;
     font-weight: bold;
-    background: #eae4ce;
-    color: #ff666d;
+    background: #dce0e4;
+    color: #dd5555;
     text-align: left;
 }
 .welcomedrawer > img {

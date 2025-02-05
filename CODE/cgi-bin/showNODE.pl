@@ -237,7 +237,7 @@ if (uc($GRIDType) =~ /^VIEW|PROC|FORM$/) {
 print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> "
   ."| <IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'> ]</P>";
 
-print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_BIN},$WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
 
 my %CLBS = readCfg("$WEBOBS{ROOT_CODE}/etc/clb.conf");
 
@@ -876,7 +876,7 @@ if ($editOK || $#listeDocuments >= 0) {
 }
 #
 # ---- end of node table ------------------------------------------------------
-print "</TABLE>";
+print "<TR><TH colspan=\"3\" class=\"th-bottom\"></TH></TR></TABLE>\n";
 
 # ---- Project ----------------------------------------------------------------
 #

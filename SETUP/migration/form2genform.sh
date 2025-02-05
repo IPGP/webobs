@@ -4,7 +4,7 @@
 #
 # Author: François Beauducel
 # Created: 2024-04-21
-# Updated: 2025-01-03
+# Updated: 2025-01-24
 
 
 if [ -z "$1" ]; then
@@ -18,7 +18,7 @@ fi
 DRY_RUN=$2
 # -----------------------------------------------------------------------------
 function cmd {
-	if [[ $DRY_RUN != 1 ]]; then
+	if [[ $DRY_RUN != 1 && ! -z "$1" ]]; then
 		echo $1
 		eval $1
 	else
@@ -32,6 +32,8 @@ if [[ $(id -u) != 0 && $DRY_RUN != 1  ]]; then
 	echo 'Need to have root privileges. Bye'
 	exit 64
 fi
+
+today=$(date)
 
 WOROOT=$1
 DBF=$WOROOT/DATA/DB/WEBOBSFORMS.db
@@ -53,13 +55,13 @@ wogrp=$(stat -f '%Sg' $WOROOT/CONF/GRIDS2NODES)
 
 FPATH=$WOROOT/CONF/FORMS
 LFPATH=$WOROOT/CONF/LEGACY_FORMS
-LFDB=$WOROOT/DATA/LEGACY_FORMS_BACKUP
-cmd "mkdir -p $LFPATH $LFDB"
+LFDB=$WOROOT/DATA/BACKUP_LEGACY_FORMS
+cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 
 # =============================================================================
 # make a loop on all known legacy FORMs
-#for form in DISTANCE BOJAP EAUX EXTENSO FISSURO GAZ RIVERS SOILSOLUTIONS RAINWATER NOVAC
-for form in EAUX EXTENSO
+#for form in EAUX RIVERS SOILSOLUTIONS RAINWATER EXTENSO FISSURO GAZ DISTANCE BOJAP 
+for form in EAUX RIVERS EXTENSO GAZ; do
     
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
@@ -67,15 +69,16 @@ for form in EAUX EXTENSO
     if [[ ! -e "$conf" ]]; then
         continue
     fi
+    FDAT=$(grep ^FILE_NAME $conf | cut -d '|' -f 2)
     DAT="$WOROOT/DATA/DB/"$(grep ^FILE_NAME $conf | cut -d '|' -f 2)
-    if [[ ! -e "$DAT" ]]; then
+    if [[ -z "$FDAT" || ! -e "$DAT" ]]; then
         echo "---> No legacy data found in $conf... nothing to do for $form."
         continue
     fi
         
     # move the legacy conf and data first
-    cmd "mv -f $FPATH/$form $LFPATH/"
-    conf0="$LFPATH/$form/$form.conf"
+    cmd "mv -f $FPATH/$form $LFPATH/FORMS/"
+    conf0="$LFPATH/FORMS/$form/$form.conf"
 
     # make a loop on all PROCs associated to this FORM
     for p in $(ls -d $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form); do
@@ -121,6 +124,8 @@ for form in EAUX EXTENSO
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "EXTENSO")
                 NBI=22
+                ICOM=37
+                IVAL=38
 
                 # uses French template
                 TEMPLATE="EXTENSO_fr"
@@ -133,22 +138,19 @@ for form in EAUX EXTENSO
                 # 1 |2   |3    |4   |5         |6          |7    |8    |9     |10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37       |38
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\""$5"\",\"\""; \
-                    gsub(/"/,"\"\"", $37); \
-                    gsub(/\045/,"\045\045", $37); \
-                    if ($38 ~ /^\[.*\] /) {
-                        nn = split($38,vv,/\] \[/);
-                        split(vv[1],v," ");
-                        gsub(/\[/, "", v[1]); \
-                        gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$37" "$38"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$37" "$38"\",\"\",\"\"" }; \
-                    for (i=5;i<10;i++) printf ",\""$i"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\""$ic" "$iv"\",\"\",\"\"" }; \
+                    for (i=6;i<10;i++) printf ",\""$i"\""; \
                     for (i=10;i<35;i+=3) {
                         j = i+1; k = i+2;
                         d = $i + $j;
@@ -159,6 +161,8 @@ for form in EAUX EXTENSO
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "EAUX")
                 NBI=23
+                ICOM=28
+                IVAL=29
 
                 # uses French or English template
                 if grep -iq "^TITLE.*eaux" $conf0; then
@@ -175,21 +179,85 @@ for form in EAUX EXTENSO
                 # 1 |2   |3    |4   |5   |6        |7        |8 |9            |10        |11        |12|13|14|15|16|17|18|19|20 |21 |22  |23|24  |25  |26  |27|28       |29
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" ' { if ($1 != "ID") { \
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
-                    gsub(/"/,"\"\"", $28); \
-                    gsub(/\045/,"\045\045", $28); \
-                    if ($29 ~ /^\[.*\] /) {
-                        nn = split($29,vv,/\] \[/);
-                        split(vv[1],v," ");
-                        gsub(/\[/, "", v[1]); \
-                        gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$28" "$29"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$28" "$29"\",\"\",\"\"" }; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                    for (i=5;i<n+5;i++) printf ",\""$i"\""; \
+                    print ");" }}' >> $TMP 
+                ;;
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            "RIVERS")
+                NBI=18
+                ICOM=23
+                IVAL=24
+
+                TEMPLATE="RIVERS"
+
+                # copy template files
+                cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
+                cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
+
+                # ID|Date|Hour|Site|Level|Type|Flask|Twater (C)|Suspended Load|pH|Conductivity at 25C|Conductivity|Na|K |Mg|Ca|HCO3|Cl|SO4|SiO2|DOC|POC|Comment|Validate
+                # 1 |2   |3   |4   |5    |6   |7    |8         |9             |10|11                 |12          |13|14|15|16|17  |18|19 |20  |21 |22 |23     |24
+                for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                echo ");" >> $TMP
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                    bin = ($1<0) ? 1:0; \
+                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    for (i=1;i<=n;i++) printf ",input%02d",i; \
+                    printf ") ";\
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                    for (i=5;i<n+5;i++) printf ",\""$i"\""; \
+                    print ");" }}' >> $TMP 
+                ;;
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            "GAZ")
+                NBI=17
+                ICOM=22
+                IVAL=23
+
+                # uses French or English template
+                if grep -iq "^TITLE.*gaz" $conf0; then
+                    TEMPLATE="VOLCGAS_fr"
+                else
+                    TEMPLATE="VOLCGAS"
+                fi
+
+                # copy template files
+                cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
+                cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
+
+                # Id|Date|Heure|Site|Tfum|pH|Debit|Rn|Amp|H2|He|CO|CH4|N2|H2S|Ar|CO2|SO2|O2|d13C|d18O|Observations|Valider
+                # 1 |2   |3    |4   |5   |6 |7    |8 |9  |10|11|12|13 |14|15 |16|17 |18 |19|20  |21  |22          |23
+                for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                echo ");" >> $TMP
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                    bin = ($1<0) ? 1:0; \
+                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    for (i=1;i<=n;i++) printf ",input%02d",i; \
+                    printf ") ";\
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }}' >> $TMP 
                 ;;
@@ -199,11 +267,15 @@ for form in EAUX EXTENSO
         echo "COMMIT;" >> $TMP
         cmd "cat $TMP | sqlite3 $DBF && rm -f $TMP" 
 
+        # -----------------------------------------------------------------------------
         # copy some variable values from former FORM and PROC conf
-        v=$(grep ^TITLE\| $conf0 | iconv -f UTF-8 -t ISO-8859-1)
+        v=$(grep ^TITLE\| $conf0 | sed -e 's/&/\\&/g' | iconv -f UTF-8 -t ISO-8859-1)
         cmd "LC_ALL=C sed -i -e 's/^NAME|.*$/$v/g;s/^TITLE/NAME/g' $conf"
         for key in BANG DEFAULT_DAYS; do
-            cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$(grep ^$key\| $conf0)/g' $conf"
+            okey=$(grep ^$key\| $conf0)
+            if [[ ! -z "$okey" ]]; then
+                cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$okey/g' $conf"
+            fi
         done
 
         for key in TZ OWNCODE TYPE URL COPYRIGHT NODE_NAME NODE_SIZE NODE_MARKER NODE_RGB DEM_FILE DEM_TYPE DEM_COPYRIGHT; do
@@ -212,6 +284,15 @@ for form in EAUX EXTENSO
                 cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$v/g' $conf"
             fi
         done
+
+        # -----------------------------------------------------------------------------
+        # add default data format to the PROC conf
+        cmd "LC_ALL=C sed -i -e 's/^RAWDATA|.*//g;s/^RAWFORMAT|.*//g' $confp" # removes any RAWFORMAT/RAWDATA
+        cmd "echo '################################################################################' >> $confp"
+        cmd "echo '# Migrate legacy form $form to new FORM.$proc on $today' >> $confp"
+        cmd "echo 'RAWFORMAT|genform' >> $confp"
+        cmd "echo 'RAWDATA|$proc' >> $confp"
+        cmd "echo '################################################################################' >> $confp"
 
         cmd "chown -R $wousr:$wogrp $WOROOT/CONF/FORMS/$proc" 
 
@@ -223,11 +304,12 @@ for form in EAUX EXTENSO
         cmd "chown $wousr:$wogrp $WOROOT/CONF/GRIDS2NODES/FORM.$proc.*" 
         
         # -----------------------------------------------------------------------------
-        # finally moves the original data file
+        # finally moves legacy conf 
+        cmd "mv $WOROOT/CONF/GRIDS2FORMS/PROC.$proc.$form $LFPATH/GRIDS2FORMS/"
         cmd "mv $DAT $LFDB/"
 
         echo "Done."
-
+    done
 done
 
 exit 1

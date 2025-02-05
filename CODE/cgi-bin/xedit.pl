@@ -224,7 +224,7 @@ var CODEMIRROR_CONF = {
 print "</HEAD>\n";
 
 # - page, body
-print "<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.form.txt.focus()\">";
+print "<BODY onLoad=\"document.form.txt.focus()\">";
 print <<html;
 <script type=\"text/javascript\" >
 </script>

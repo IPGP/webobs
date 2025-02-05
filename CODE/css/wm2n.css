@@ -4,10 +4,13 @@
     padding: 0;
     padding-top: 5px;
     width: 100%;
-    background: url("/icons/bgH.png");
     position: fixed;
     top: 0px;
     outline: 0 none;
+}
+
+#wm a {
+    background-color: initial;
 }
 
 #wmlogos {
@@ -16,7 +19,7 @@
 }
 
 #ident {
-    background-color: #eae4ce;
+    background-color: #e4e0dc;
     border: 0 solid grey;
     border-radius: 5px 5px 5px 5px;
     box-shadow: 3px 4px 3px #555555;
@@ -70,7 +73,7 @@
     margin: 1px;
 }
 #wmflags .actif {
-    border-color: #00ff00;
+    border-color: #8db8e6;
 }
 #wmflags .inactif {
     border-color: #ffffff;
@@ -152,7 +155,7 @@ ul.dropdown ul {
 }
 ul.dropdown ul li {
     font-weight: normal;
-    background: #d3a8a2;
+    background: #e4e0dc;
     color: #000;
     float: none;
 }
@@ -166,11 +169,11 @@ ul.dropdown ul li a {
     display: inline-block;
 }
 ul.dropdown ul li:hover {
-    background: #edccc0;
+    background: #b9d2f0;
     border-radius: 0px;
 }
 ul.dropdown ul li:last-child:hover {
-    background: #edccc0;
+    background: #b9d2f0;
     border-radius: 0px 0px 5px 5px;
 }
 

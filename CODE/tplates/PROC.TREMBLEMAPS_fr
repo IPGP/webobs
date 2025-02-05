@@ -77,10 +77,10 @@ CITIES|$WEBOBS{ROOT_CONF}/Cities.conf
 # see ${CITIES} file for valid regions
 REGION|Guadeloupe
 #REGION|Martinique
-#REGION|Réunion
-AREA|la Guadeloupe et îles du Nord
+#REGION|Rï¿½union
+AREA|la Guadeloupe et ï¿½les du Nord
 #AREA|la Martinique
-#AREA|la Réunion
+#AREA|la Rï¿½union
 # each city is considered as a circle around its lat/lon center
 CITIES_RADIUS_KM|1
 
@@ -112,7 +112,7 @@ AUTOPRINT|NO
 
 # event must be defined in the postboard
 NOTIFY_EVENT|feltquake.
-NOTIFY_EMAIL_SUBJECT|$quake_strength M=$quake_magnitude - B3=$msk ($msk_max max) ¿ $city
+NOTIFY_EMAIL_SUBJECT|$quake_strength M=$quake_magnitude - B3=$msk ($msk_max max) ï¿½ $city
 REPORT_TEXT_ROOT|$WEBOBS{ROOT_CONF}/TREMBLEMAPS
 REPORT_TEXT_FILE|${REPORT_TEXT_ROOT}_TEXT_fr.txt
 REPORT_FELT_FILE|${REPORT_TEXT_ROOT}_FELT_fr.txt
@@ -127,7 +127,7 @@ TITLE1|Rapport préliminaire de séisme concernant
 TITLE2|${AREA}
 SUBTITLE1|{\bfObservatoire Volcanologique et Sismologique de Guadeloupe - IPGP}
 SUBTITLE2|Le Houëlmont - 97113 Gourbeyre - Guadeloupe (FWI)
-SUBTITLE3|Tél: +590 (0)590 99 11 33 - Fax: +590 (0)590 99 11 34 - infos@ovsg.univ-ag.fr - www.ipgp.fr
+SUBTITLE3|Tï¿½l: +590 (0)590 99 11 33 - Fax: +590 (0)590 99 11 34 - infos@ovsg.univ-ag.fr - www.ipgp.fr
 REPORT_DATE|Paris, $report_date à $report_time (locale)
 EVENT_TITLE1|Magnitude $quake_magnitude, $quake_latitude, $quake_longitude, profondeur $quake_depth
 EVENT_TITLE2|$long_date $time
@@ -156,6 +156,7 @@ JSON_EXPORT|Y
 MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
 TRIGGER_EMAIL|
 TRIGGER_SUBJECT|SEISME RESSENTI
+TRIGGER_AGENCY|
 REPORT_EMAIL|
 REPORT_SUBJECT|[OVS-IPGP] Séisme ressenti
 REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le site du BCSF à l'adresse suivante : www.franceseisme.fr

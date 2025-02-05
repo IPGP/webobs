@@ -207,11 +207,11 @@ function stopRKey(evt) {
 document.onkeypress = stopRKey;
 </script>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" $jvs>\n";
+<BODY $jvs>\n";
 
 print "<H1>".$FORM->conf('TITLE')."</H1>\n<H2>$titre2</H2>";
 
-print "<BODY style=\"background-color:#E0E0E0\" onLoad=\"calc();derniere_mesure()\">
+print "<BODY onLoad=\"calc();derniere_mesure()\">
 <script type=\"text/javascript\">
 <!--
 
@@ -416,7 +416,7 @@ for (sort(keys(%ku))) {
 #FB-was:}
 print "</select>";
 
-#djl-del: print "<textarea style=\"vertical-align:text-top; background-color:#E0E0E0;border:0;font-weight:bold;\" 
+#djl-del: print "<textarea style=\"vertical-align:text-top;border:0;font-weight:bold;\" 
 #djl-del:     readonly cols=\"20\" rows=\"10\" name=\"nomselect\" value=\"\"></textarea></p>";
 # currently read or selected people 
 print "<P><INPUT style=\"border:none\" type=\"text\" readonly name=\"nomselect\" size=\"40\" value=\"\"
@@ -477,7 +477,7 @@ print "</P>\n";
 
 print "<P class=parform><B>Moyenne</B> (mm) = <input name=\"moy\" size=7 readOnly class=inputNumNoEdit>
     <B>2 &times; &Eacute;cart-type</B> (mm) = <input name=\"sig\" size=4 readOnly class=inputNumNoEdit></P>\n";
-print "<P class=parform><B>Derni&egrave;re mesure du site</B> = <input name=\"prevmes\" size=25 readOnly style=\"background-color:#E0E0E0;border:0\"></P>\n";
+print "<P class=parform><B>Derni&egrave;re mesure du site</B> = <input name=\"prevmes\" size=25 readOnly;></P>\n";
 
 # Hidden variables
 $i = 0;

@@ -686,9 +686,9 @@ sub getNodeString
             if ($style eq 'alias')    { $text = $N{ALIAS} }
             if ($style eq 'short')    { $text = "$N{ALIAS}: $N{NAME}" }
             if ($style eq 'html')     { $text = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ne "" && $N{TYPE} ne "-" ? " <i>($N{TYPE})</i>":"") }
-            if ($link eq 'node')      { $text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A>"; }
+            if ($link eq 'node')      { $text = ($nnode ne "" ? "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A>":"<SPAN title=\"orphan node $node\">$text</SPAN>"); }
             if ($link eq 'features') {
-                $text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A> ";
+                $text = ($nnode ne "" ? "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A> ":"<SPAN title=\"orphan node $node\">$text</SPAN>");
                 if ($N{FILES_FEATURES} ne "") {
                     $text = "<img src=\"/icons/drawersmall.png\" onClick=\"toggledrawer('\#ID_$node')\">&nbsp;".$text."\n"
                       ."<div id=\"ID_$node\"><table class=\"fof\">";
@@ -842,7 +842,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

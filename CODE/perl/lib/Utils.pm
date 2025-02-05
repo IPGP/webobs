@@ -26,8 +26,9 @@ require Exporter;
   roundsd htm2frac qrcode url2target checkParam mean median std);
 $VERSION = "1.00";
 
-#--------------------------------------------------------------------------------------------------------------------------------------
-
+#------------------------------------------------------------------------------
+# [FB-comment 2025-01-22]: these 2 functions will disapear in the future since 
+#  we plan to use UTF-8 only in all conf files (needs a migration process)
 =pod
 
 =head2 u2l, l2u
@@ -48,6 +49,10 @@ die $l2u->getError if $l2u->getError;
 # -------------------------------------------------------------------------------------------------
 sub u2l ($) {
     my $texte = shift;
+    # converts some characters in HTML since they don't exist in latin
+    $texte =~ s/µ/&mu;/g;
+    $texte =~ s/σ/&sigma;/g;
+    $texte =~ s/δ/&delta;/g;
     $u2l->recode($texte) or die $u2l->getError;
     return $texte;
 }
@@ -349,43 +354,51 @@ sub roundsd
 #--------------------------------------------------------------------------------------------------------------------------------------
 sub mean {
     my (@array) = @_;
+    @array = grep { ( $_ =~ /^(([0-9]*)|(([0-9]*)\.([0-9]*)))$/ ) && ( $_ ne "" ) } @array;
     my $sum;
     foreach (@array) {
         $sum += $_;
     }
-    return ( $sum / @array );
+    return ( @array ? $sum / @array : "NaN" );
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 sub median {
     my (@array) = sort { $a <=> $b } @_;
+    @array = grep { ( $_ =~ /^(([0-9]*)|(([0-9]*)\.([0-9]*)))$/ ) && ( $_ ne "" ) } @array;
     my $center = @array / 2;
     if ( scalar(@array) % 2 ) {
         return ( $array[$center] );
     } else {
-        return ( mean( $array[$center - 1], $array[$center] ) );
+        return ( mean( $array[ $center - 1 ], $array[$center] ) );
     }
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 sub std {
     my (@array) = @_;
+    @array = grep { ( $_ =~ /^(([0-9]*)|(([0-9]*)\.([0-9]*)))$/ ) && ( $_ ne "" ) } @array;
     my ( $sum2, $avg ) = ( 0, 0 );
     $avg = mean(@array);
     foreach my $elem (@array) {
         $sum2 += ( $avg - $elem )**2;
     }
-    return ( sqrt( $sum2 / ( @array - 1 ) ) );
+    if ( scalar(@array) == 0 ) {
+        return "NaN";
+    } elsif ( scalar(@array) == 1 ) {
+        return 0;
+    } else {
+        return sqrt( $sum2 / ( @array - 1 ) );
+    }
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
-sub qrcode ($)
+sub qrcode
 {
     use MIME::Base64;
-    my $s = shift;
-    return "" if ($s eq "");
+    return "" if ($_[1] eq "");
     my $url = "http://$ENV{HTTP_HOST}$ENV{REQUEST_URI}";
-    my $qr = encode_base64(qx(qrencode -s $s -o - "$url"));
+    my $qr = encode_base64(qx($_[0] -s $_[1] -o - "$url"));
     my $img = ($qr eq "" ? "":"<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/showQRcode.pl','$url',"
           ."'width=600,height=450,toolbar=no,menubar=no,status=no,location=no')\"><IMG src=\"data:image/png;base64,$qr\"></A>");
     return $img;

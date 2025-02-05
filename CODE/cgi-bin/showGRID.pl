@@ -241,7 +241,7 @@ $ilinks .= " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle\" t
                onclick=\"document.location.reload(false)\">";
 $ilinks .= " ]";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks</P>";
-print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_BIN},$WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
 
 # ---- Objectives
 #
@@ -500,7 +500,7 @@ $htmlcontents .= "<TABLE width=\"100%\">";
 $htmlcontents .= "<TR>";
 $htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
   ."<TH rowspan=2>$__{'Alias'}</TH>"
-  ."<TH rowspan=2>$__{'Name'}</TH>"
+  ."<TH rowspan=2 style=\"text-align: left\">$__{'Name'}</TH>"
   ."<TH colspan=3>$__{'Coordinates'}</TH>"
   ."<TH colspan=2>$__{'Lifetime and Validity'}"
   ."<TH rowspan=2>$__{'Type'}</TH>";
@@ -748,7 +748,7 @@ for (@{$GRID{NODESLIST}}) {
         $htmlcontents .= "</TR>\n".(!$displayNode ? "-->":"");
     }
 }
-$htmlcontents .= "</TABLE>";
+$htmlcontents .= "<TR><TH colspan=\"15\" class=\"th-bottom\"></TH></TR></TABLE>";
 $htmlcontents .= "</div></div>";
 print $htmlcontents;
 

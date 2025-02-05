@@ -4,6 +4,7 @@ use DBI;
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser); # just to make it easier to see errors
+use WebObs::Config;
 use WebObs::Utils;
 
 # ---- extracting data from OSM.pl

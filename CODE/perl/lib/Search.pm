@@ -94,7 +94,7 @@ sub searchpopup {
     $SP .= "  <input size=\"40\" id=\"searchW\" name=\"searchW\" value=\"\">\n";
     $SP .= "<br style=\"clear: left\"><br>";
 
-    $SP .= "<div class='advsearch' style='background-color: #ddddcc;'>";
+    $SP .= "<div class='advsearch'>";
     $SP .= "<label for=\"year1\">$__{'Start date'}:</label>";
     $SP .= "<select id=\"year1\" name=\"year1\" size=\"1\">";
 
