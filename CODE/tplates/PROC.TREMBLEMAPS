@@ -8,7 +8,7 @@
 NAME|Earthquake Felt Report
 
 # description of what the proc does
-DESCRIPTION|B3 Earthquake Felt Report (EN)
+DESCRIPTION|B3 Earthquake Felt Report
 
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 RAWFORMAT|quakes
