@@ -1,244 +1,331 @@
-
 #wm {
-	margin:0;
-	margin-left: -5px;
-	padding:0;
-	padding-top: 5px;
-	width: 100%;
-	background: url('/icons/bgH.png');
-	position: fixed;
-	top: 0px;
-	outline: 0 none;
+    margin: 0;
+    margin-left: -5px;
+    padding: 0;
+    padding-top: 5px;
+    width: 100%;
+    background: url("/icons/bgH.png");
+    position: fixed;
+    top: 0px;
+    outline: 0 none;
 }
 
-	#wmlogos {
-		float: left;
-		margin-left: 3px;
-	}
+#wmlogos {
+    float: left;
+    margin-left: 3px;
+}
 
-	#ident {
-		background-color: #EAE4CE; 
-		border: 0 solid grey;
-		border-radius: 5px 5px 5px 5px;
-		box-shadow: 3px 4px 3px #555555;
-		float:left; 
-		padding-top: 2px;
-		padding-bottom: 2px;
-		margin: 0px 3px;
-		width: 99%;
-	}
-	#identVer { float: left; font-style: italic; margin-left: 10px;}
-	#identLog { float: right; font-style: italic; margin-right: 5px;}
+#ident {
+    background-color: #eae4ce;
+    border: 0 solid grey;
+    border-radius: 5px 5px 5px 5px;
+    box-shadow: 3px 4px 3px #555555;
+    float: left;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin: 0px 3px;
+    width: 99%;
+}
+#identVer {
+    float: left;
+    font-style: italic;
+    margin-left: 10px;
+}
+#identLog {
+    float: right;
+    font-style: italic;
+    margin-right: 5px;
+}
 
-	#wmwrapnav {
-		margin: 0;
-		padding-top: 1px;    
-		padding-bottom: 1px; 
-		padding-left: 0px;
-		font-size: 11px;
-		font-family: sans-serif;
-		font-weight:bold;  
-		font-variant: small-caps; 
-	}
+#wmwrapnav {
+    margin: 0;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 0px;
+    font-size: 11px;
+    font-family: sans-serif;
+    font-weight: bold;
+    font-variant: small-caps;
+}
 
-		#wmnav {
-			margin: 0;
-			padding: 0;
-		}
+#wmnav {
+    margin: 0;
+    padding: 0;
+}
 
-	#wmflags {
-		float: right;
-		width: 10%;
-	}
+#wmflags {
+    float: right;
+    width: 10%;
+}
 
 #wmtarget {
-	margin-top: 70px; /* minimum also default until fully loaded */
+    margin-top: 70px; /* minimum also default until fully loaded */
 }
 
 #wmsig {
 }
 
-
 #wmflags img {
-	border : 2px solid;
-	margin: 1px;
+    border: 2px solid;
+    margin: 1px;
 }
-#wmflags .actif   { border-color: #00ff00; }
-#wmflags .inactif { border-color: #ffffff; }
-
-#wmlogos a, #wmflags a {
-	display: inline;
-	width: auto;
+#wmflags .actif {
+    border-color: #00ff00;
+}
+#wmflags .inactif {
+    border-color: #ffffff;
 }
 
+#wmlogos a,
+#wmflags a {
+    display: inline;
+    width: auto;
+}
 
-.clear { clear: both }
+.clear {
+    clear: both;
+}
 
 /* DROPDOWN MENU ********************************/
 
-ul.dropdown *               { padding: 0px; margin: 0px; 
-                              list-style-type: none; text-decoration: none; text-align: left; 
-							  outline: none; }
-ul.dropdown                 { position: relative; margin: 0px}
-ul.dropdown li a.externe    { background-image: url('/icons/externalgrey.png'); background-repeat: no-repeat; background-position: 87% 60%; } 
-ul.dropdown li              { font-weight: bold; float: left; zoom: 1; background: transparent; }
-ul.dropdown a:hover		    { color: #000; }
-ul.dropdown a:active        { color: #EDCCC0; }
-ul.dropdown li a            { display: block; padding: 2px 8px; color: #222; }
-ul.dropdown li:last-child   { border-radius: 0px 0px 5px 5px; }
-ul.dropdown li:first-child:last-child {border-radius: 0px 5px 5px 5px}
+ul.dropdown * {
+    padding: 0px;
+    margin: 0px;
+    list-style-type: none;
+    text-decoration: none;
+    text-align: left;
+    outline: none;
+}
+ul.dropdown {
+    position: relative;
+    margin: 0px;
+}
+ul.dropdown li a.externe {
+    background-image: url("/icons/externalgrey.png");
+    background-repeat: no-repeat;
+    background-position: 87% 60%;
+}
+ul.dropdown li {
+    font-weight: bold;
+    float: left;
+    zoom: 1;
+    background: transparent;
+}
+ul.dropdown a:hover {
+    color: #000;
+}
+ul.dropdown a:active {
+    color: #edccc0;
+}
+ul.dropdown li a {
+    display: block;
+    padding: 2px 8px;
+    color: #222;
+}
+ul.dropdown li:last-child {
+    border-radius: 0px 0px 5px 5px;
+}
+ul.dropdown li:first-child:last-child {
+    border-radius: 0px 5px 5px 5px;
+}
 ul.dropdown li.hover,
-ul.dropdown li:hover        { background: #89BDD3; color: black; 
-							  position: relative; border-radius: 5px 5px 0px 0px;
-							}
-ul.dropdown li.hover a      { color: black; }
-ul.sub_menu                 { box-shadow: 3px 5px 3px #555555; border-radius: 5px }
+ul.dropdown li:hover {
+    background: #89bdd3;
+    color: black;
+    position: relative;
+    border-radius: 5px 5px 0px 0px;
+}
+ul.dropdown li.hover a {
+    color: black;
+}
+ul.sub_menu {
+    box-shadow: 3px 5px 3px #555555;
+    border-radius: 5px;
+}
 
-
-ul.dropdown ul 				{ width: 160px; visibility: hidden; position: absolute; top: 100%; left: 0; }
-ul.dropdown ul li 			{ font-weight: normal; background: #D3A8A2; color: #000; 
-							  float: none; }
+ul.dropdown ul {
+    width: 160px;
+    visibility: hidden;
+    position: absolute;
+    top: 100%;
+    left: 0;
+}
+ul.dropdown ul li {
+    font-weight: normal;
+    background: #d3a8a2;
+    color: #000;
+    float: none;
+}
 ul.dropdown ul li:first-child:hover,
-ul.dropdown ul li:first-child {border-radius: 0px 5px 0px 0px}							  
-ul.dropdown ul li a			{ border-right: none; width: 100%; display: inline-block; }
-ul.dropdown ul li:hover     { background: #EDCCC0;  border-radius: 0px;	}     
-ul.dropdown ul li:last-child:hover { background: #EDCCC0;  border-radius: 0px 0px 5px 5px;	}     
+ul.dropdown ul li:first-child {
+    border-radius: 0px 5px 0px 0px;
+}
+ul.dropdown ul li a {
+    border-right: none;
+    width: 100%;
+    display: inline-block;
+}
+ul.dropdown ul li:hover {
+    background: #edccc0;
+    border-radius: 0px;
+}
+ul.dropdown ul li:last-child:hover {
+    background: #edccc0;
+    border-radius: 0px 0px 5px 5px;
+}
 
-ul.dropdown ul ul 			{ left: 100%; top: 0; }
-ul.dropdown ul ul li:first-child {border-radius: 0px 5px 0px 0px}
-ul.dropdown li:hover > ul 	{ visibility: visible; }
+ul.dropdown ul ul {
+    left: 100%;
+    top: 0;
+}
+ul.dropdown ul ul li:first-child {
+    border-radius: 0px 5px 0px 0px;
+}
+ul.dropdown li:hover > ul {
+    visibility: visible;
+}
 
 ul.dropdown li.menutitle:hover,
-ul.dropdown li.menutitle    { background: #b38a84; padding: 2px 0;
-                              text-align: center; border-bottom: 1px solid #936a64; }
-ul.dropdown li.menutitle a  { text-align: center; padding: 0; }
-ul.dropdown li hr           { border: 0; border-top: 1px solid #936a64; }
+ul.dropdown li.menutitle {
+    background: #b38a84;
+    padding: 2px 0;
+    text-align: center;
+    border-bottom: 1px solid #936a64;
+}
+ul.dropdown li.menutitle a {
+    text-align: center;
+    padding: 0;
+}
+ul.dropdown li hr {
+    border: 0;
+    border-top: 1px solid #936a64;
+}
 
 /* END DROPDOWN MENU ***************************/
 
 .nodeid {
-	font-family: monospace;
-	font-weight: bold;
-	font-size: 110%;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 110%;
 }
 
 .nodetbl {
-	position: relative;
-	background-color: #FFFFFF;
-	font-size: 10px;
-	font-family: sans;
-	/*padding: 20px 90px 20px 20px;*/
+    position: relative;
+    background-color: #ffffff;
+    font-size: 10px;
+    font-family: sans;
+    /*padding: 20px 90px 20px 20px;*/
 }
- 
+
 .nodetbl a {
-	color: #333333;
-	text-decoration: none;
-	font-size: 10px;
-	font-family: sans;
+    color: #333333;
+    text-decoration: none;
+    font-size: 10px;
+    font-family: sans;
 }
 
 .nodetbl table th {
-	border: 0px;
-	padding: 0px;
-	background: white;
-	color: #444444;
+    border: 0px;
+    padding: 0px;
+    background: white;
+    color: #444444;
 }
 
 .nodetbl table th.skew {
-	height: 100px;
-	width: 40px;
-	border: 0px;
-	/*position: relative;*/
-	vertical-align: bottom;
-	background-color: white;
+    height: 100px;
+    width: 40px;
+    border: 0px;
+    /*position: relative;*/
+    vertical-align: bottom;
+    background-color: white;
 }
- 
+
 .nodetbl table th.skew > div {
-	position: relative;
-	top: 0px;
-	left: 50px;
-	height: 100%;
-	transform:skew(-45deg,0deg);
-	-moz-transform:skew(-45deg,0deg);
-	-webkit-transform:skew(-45deg,0deg);
-	overflow: hidden;
-	/*
-	border-top: 1px solid #CCCCCC;
-	border-left: 1px solid #CCCCCC;
-	border-right: 1px solid #CCCCCC;
-	 */
+    position: relative;
+    top: 0px;
+    left: 50px;
+    height: 100%;
+    transform: skew(-45deg, 0deg);
+    -moz-transform: skew(-45deg, 0deg);
+    -webkit-transform: skew(-45deg, 0deg);
+    overflow: hidden;
+    /*
+    border-top: 1px solid #CCCCCC;
+    border-left: 1px solid #CCCCCC;
+    border-right: 1px solid #CCCCCC;
+     */
 }
 
 .nodetbl table th.skew span {
-	transform:skew(45deg,0deg) rotate(315deg);
-	-moz-transform:skew(45deg,0deg) rotate(315deg);
-	-webkit-transform:skew(45deg,0deg) rotate(315deg);
-	position: absolute;
-	bottom: 15px;
-	left: 1px;
-	display: inline-block;
-	width: 100%;
-	text-align: left;
-	font-size: 10px;
+    transform: skew(45deg, 0deg) rotate(315deg);
+    -moz-transform: skew(45deg, 0deg) rotate(315deg);
+    -webkit-transform: skew(45deg, 0deg) rotate(315deg);
+    position: absolute;
+    bottom: 15px;
+    left: 1px;
+    display: inline-block;
+    width: 100%;
+    text-align: left;
+    font-size: 10px;
 }
 
 .nodetbl table td {
-	width: 50px;
-	text-align: left;
-	vertical-align: middle;
-	border: 1px solid #CCCCCC;
-	font-size: 10px;
-	font-weight: bold;
-	padding: 0px;
+    width: 50px;
+    text-align: left;
+    vertical-align: middle;
+    border: 1px solid #cccccc;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 0px;
 }
 
 .nodetbl table td a {
-	display: block;
-	width: 100%;
-	text-align: center;
+    display: block;
+    width: 100%;
+    text-align: center;
 }
 
 .nodetbl table th.skew.view.odd > div {
-	background-color: #FFFFFF;
+    background-color: #ffffff;
 }
-.nodetbl table th.skew.view.even > div  {
-	background-color: #EBEBE0;
+.nodetbl table th.skew.view.even > div {
+    background-color: #ebebe0;
 }
 .nodetbl table th.skew.proc.odd > div {
-	background-color: #EAECD8;
+    background-color: #eaecd8;
 }
-.nodetbl table th.skew.proc.even > div  {
-	background-color: #DEE0CC;
+.nodetbl table th.skew.proc.even > div {
+    background-color: #dee0cc;
 }
 .nodetbl table td.view.otimes {
-	background-color: green;
-	color: white;
-	text-align: center;
+    background-color: green;
+    color: white;
+    text-align: center;
 }
 .nodetbl table td.proc.otimes {
-	background-color: red;
-	color: white;
-	text-align: center;
+    background-color: red;
+    color: white;
+    text-align: center;
 }
 
 .nodetbl table td.oempty.view.even {
-	background-color: #EBEBE0;
-	color: transparent;
+    background-color: #ebebe0;
+    color: transparent;
 }
 .nodetbl table td.oempty.view.odd {
-	background-color: transparent;
-	color: transparent;
+    background-color: transparent;
+    color: transparent;
 }
 
 .nodetbl table td.oempty.proc.even {
-	background-color: #DEE0CC;
-	color: transparent;
+    background-color: #dee0cc;
+    color: transparent;
 }
 .nodetbl table td.oempty.proc.odd {
-	background-color:  #EAECD8;
-	color: transparent;
+    background-color: #eaecd8;
+    color: transparent;
 }
 
 .hover {
-	background-color: #E0E0E0;
+    background-color: #e0e0e0;
 }
