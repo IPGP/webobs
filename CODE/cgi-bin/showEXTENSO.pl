@@ -91,18 +91,18 @@ my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
 for my $p (keys(%Ps)) {
-	push(@NODESSelList,"\{$p\}|-- $Ps{$p} --");
-	my %N = $FORM->nodes($p);
-	for my $n (keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-	}
-	%Ns = (%Ns, %N);
+    push(@NODESSelList,"\{$p\}|-- $Ps{$p} --");
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
 }
 
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
-my $jour  = strftime('%d',@tod); 
-my $mois  = strftime('%m',@tod); 
+my $jour  = strftime('%d',@tod);
+my $mois  = strftime('%m',@tod);
 my $annee = strftime('%Y',@tod);
 my $moisActuel = strftime('%Y-%m',@tod);
 my $displayMoisActuel = strftime('%B %Y',@tod);
@@ -144,23 +144,23 @@ my $nbData = @lignes - 1;
 # ---- Get most recent date, needed when using default dates range
 my (@dd) = split(/\|/,$lignes[$#lignes - 1]);
 my $lastDate = $dd[1];
-my ($lastY,$lastM,$lastD) = split(/-/,$lastDate); 
+my ($lastY,$lastM,$lastD) = split(/-/,$lastDate);
 
 # get query-string parameters 
 # ---------------------------------------------------------------
 if ($QP->{y1} && $QP->{m1} && $QP->{d1} && $QP->{y2} && $QP->{m2} && $QP->{d2} ) {
-	$dateStart = "$QP->{y1}-$QP->{m1}-$QP->{d1}" ;
-	$dateEnd   = "$QP->{y2}-$QP->{m2}-$QP->{d2}";
-	my $nbJours = sprintf("%1.0f",(qx(date -d "$dateEnd" +%s) - qx(date -d "$dateStart" +%s))/86400 + 1);
-	$afficheDates = "<b>$dateStart</b> &agrave; <b>$dateEnd</b> ($nbJours jours)";
+    $dateStart = "$QP->{y1}-$QP->{m1}-$QP->{d1}" ;
+    $dateEnd   = "$QP->{y2}-$QP->{m2}-$QP->{d2}";
+    my $nbJours = sprintf("%1.0f",(qx(date -d "$dateEnd" +%s) - qx(date -d "$dateStart" +%s))/86400 + 1);
+    $afficheDates = "<b>$dateStart</b> &agrave; <b>$dateEnd</b> ($nbJours jours)";
 } else {
-	my $u = $FORM->conf('DELAY');
-	$dateEnd = $lastDate;
-	$dateStart = qx(date -d "$dateEnd $u days ago" +"%Y-%m-%d");
-	chomp($dateStart);
-	($QP->{y1},$QP->{m1},$QP->{d1}) = split(/-/,$dateStart);
-	($QP->{y2},$QP->{m2},$QP->{d2}) = split(/-/,$dateEnd);
-	$afficheDates = "<b>$dateStart</b> &agrave; <b>$dateEnd</b> (d&eacute;faut = ".$FORM->conf('DELAY')." derniers jours de mesures)";
+    my $u = $FORM->conf('DELAY');
+    $dateEnd = $lastDate;
+    $dateStart = qx(date -d "$dateEnd $u days ago" +"%Y-%m-%d");
+    chomp($dateStart);
+    ($QP->{y1},$QP->{m1},$QP->{d1}) = split(/-/,$dateStart);
+    ($QP->{y2},$QP->{m2},$QP->{d2}) = split(/-/,$dateEnd);
+    $afficheDates = "<b>$dateStart</b> &agrave; <b>$dateEnd</b> (d&eacute;faut = ".$FORM->conf('DELAY')." derniers jours de mesures)";
 }
 
 $QP->{'site'}    ||= "Tout";
@@ -171,10 +171,10 @@ $QP->{'affiche'} ||= "";
 # 
 my @gridsites;
 if ($QP->{'site'} =~ /^{(.*)}$/) {
-	my %tmpN = $FORM->nodes($1);
-	for (keys(%tmpN)) {
-		push(@gridsites,"$_");
-	}
+    my %tmpN = $FORM->nodes($1);
+    for (keys(%tmpN)) {
+        push(@gridsites,"$_");
+    }
 }
 
 # ----
@@ -182,21 +182,21 @@ push(@csv,"Content-Disposition: attachment; filename=\"$fileCSV\";\nContent-type
 
 # ---- start html if not CSV output 
 if ($QP->{'affiche'} ne "csv") {
-	print $cgi->header(-charset=>'utf-8');
-	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
-	"<html><head><title>".$FORM->conf('TITLE')."</title>\n",
-	"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
-	"<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
-	
-	print "</head>\n",
-	"<body style=\"background-attachment: fixed\">\n",
-	"<div id=\"attente\">Recherche des donn&eacute;es, merci de patienter.</div>",
-	"<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
-	"<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
-	"<!-- overLIB (c) Erik Bosrup -->\n";
-	
-	# Javascript for selection's form 
-	print <<"FIN";
+    print $cgi->header(-charset=>'utf-8');
+    print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
+      "<html><head><title>".$FORM->conf('TITLE')."</title>\n",
+      "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
+      "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
+
+    print "</head>\n",
+      "<body style=\"background-attachment: fixed\">\n",
+      "<div id=\"attente\">Recherche des donn&eacute;es, merci de patienter.</div>",
+      "<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
+      "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
+      "<!-- overLIB (c) Erik Bosrup -->\n";
+
+    # Javascript for selection's form 
+    print <<"FIN";
 	<script type="text/javascript">
 	<!--
 	function resetMois1()
@@ -232,143 +232,143 @@ FIN
 
 # meteo stuff 
 for (@meteo) {
-	my ($cle,$nom,$ico) = split(/\|/,$_);
-	$nomMeteo{$cle} = $nom;
-	$iconeMeteo{$cle} = $ico;
+    my ($cle,$nom,$ico) = split(/\|/,$_);
+    $nomMeteo{$cle} = $nom;
+    $iconeMeteo{$cle} = $ico;
 }
 
 # File's records selection on string filter (all fields)
 if ($QP->{'obs'} ne "") {
-	if (substr($QP->{'obs'},0,1) eq "!") {
-		my $regex = substr($QP->{'obs'},1);
-		@lignes = grep(!/$regex/i, @lignes);
-	} else {
-		@lignes = grep(/$QP->{'obs'}/i, @lignes);
-	}
+    if (substr($QP->{'obs'},0,1) eq "!") {
+        my $regex = substr($QP->{'obs'},1);
+        @lignes = grep(!/$regex/i, @lignes);
+    } else {
+        @lignes = grep(/$QP->{'obs'}/i, @lignes);
+    }
 }
 
 # File's records selection on network / site
 if ($QP->{'site'} ne "" && $QP->{'site'} ne "Tout") {
-	@lignes = grep(/\|$QP->{'site'}/, @lignes);
-} 
+    @lignes = grep(/\|$QP->{'site'}/, @lignes);
+}
 
 # File's records selection on dates (from $dateStart to $dateEnd)
 my @finalLignes;
 my $l = 0;
 for (@lignes) {
-	my (@dd) = split(/\|/,$_);
-	if ($dd[0] ne "ID" && $dd[1] ge $dateStart && $dd[1] le $dateEnd) {
-		push(@finalLignes,$_);
-	}
-	$l++;
+    my (@dd) = split(/\|/,$_);
+    if ($dd[0] ne "ID" && $dd[1] ge $dateStart && $dd[1] le $dateEnd) {
+        push(@finalLignes,$_);
+    }
+    $l++;
 }
-
 
 # Start building html form for records selection 
 # 
 if ($QP->{'affiche'} ne "csv") {
-	print("<FORM name=\"formulaire\" action=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\" method=\"get\">",
-	"<P class=\"boitegrise\" align=\"center\">",
-	"<B>Date d&eacute;but: ");
-	# ----- YEAR1
-	print "<select name=\"y1\" size=\"1\" onChange=\"resetMois1()\">";
-	for ($FORM->conf('BANG')..$annee) {
-	        if ($_ == $QP->{y1}) {
-	                print "<option selected value=$_>$_</option>\n";
-	        } else {
-	                print "<option value=$_>$_</option>\n";
-	        }
-	}
-	print "</select>\n";
+    print("<FORM name=\"formulaire\" action=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\" method=\"get\">",
+        "<P class=\"boitegrise\" align=\"center\">",
+        "<B>Date d&eacute;but: ");
 
-	# -----MONTH1
-	print " - <select name=\"m1\" size=\"1\" onChange=\"resetJour1()\">";for (@mois) {
-		if ($_ == $QP->{m1}) {
-			print "<option selected value=$_>$_</option>\n";
-		} else {
-			print "<option value=$_>$_</option>\n";
-		}
-	}
-	print "</select>\n";
+    # ----- YEAR1
+    print "<select name=\"y1\" size=\"1\" onChange=\"resetMois1()\">";
+    for ($FORM->conf('BANG')..$annee) {
+        if ($_ == $QP->{y1}) {
+            print "<option selected value=$_>$_</option>\n";
+        } else {
+            print "<option value=$_>$_</option>\n";
+        }
+    }
+    print "</select>\n";
 
-	# ----- DAY1
-	print " - <select name=\"d1\" size=\"1\">";
-	for (@jour) {
-		if ($_ == $QP->{d1}) {
-			print "<option selected value=$_>$_</option>\n";
-		} else {
-			print "<option value=$_>$_</option>\n";
-		}
-	}
-	print "</select>\n";
+    # -----MONTH1
+    print " - <select name=\"m1\" size=\"1\" onChange=\"resetJour1()\">";for (@mois) {
+        if ($_ == $QP->{m1}) {
+            print "<option selected value=$_>$_</option>\n";
+        } else {
+            print "<option value=$_>$_</option>\n";
+        }
+    }
+    print "</select>\n";
 
-	# ----- YEAR2
-	print " Date fin: <select name=\"y2\" size=\"1\" onChange=\"resetMois2()\">";
-	for ($WEBOBS{EXTENSO_BANG}..$annee) {
-        	if ($_ == $QP->{y2}) {
-	                print "<option selected value=$_>$_</option>\n";
-		} else {
-	                print "<option value=$_>$_</option>\n";
-		}
-	}
-	print "</select>\n";
+    # ----- DAY1
+    print " - <select name=\"d1\" size=\"1\">";
+    for (@jour) {
+        if ($_ == $QP->{d1}) {
+            print "<option selected value=$_>$_</option>\n";
+        } else {
+            print "<option value=$_>$_</option>\n";
+        }
+    }
+    print "</select>\n";
 
-	# ----- MONTH2
-	print " - <select name=\"m2\" size=\"1\" onChange=\"resetJour2()\">";
-	for (@mois) {
-	        if ($_ == $QP->{m2}) {
-	                print "<option selected value=$_>$_</option>\n";
-	        } else {
-	                print "<option value=$_>$_</option>\n";
-	        }
-	}
-	print "</select>\n";
+    # ----- YEAR2
+    print " Date fin: <select name=\"y2\" size=\"1\" onChange=\"resetMois2()\">";
+    for ($WEBOBS{EXTENSO_BANG}..$annee) {
+        if ($_ == $QP->{y2}) {
+            print "<option selected value=$_>$_</option>\n";
+        } else {
+            print "<option value=$_>$_</option>\n";
+        }
+    }
+    print "</select>\n";
 
-	# ----- DAY2
-	print " - <select name=\"d2\" size=\"1\">";
-	for (reverse(@jour)) {
-	        if ($_ == $QP->{d2}) {
-	                print "<option selected value=$_>$_</option>\n";
-	        } else {
-	                print "<option value=$_>$_</option>\n";
-	        }
-}
-	print "</select>\n",
-	"<select name=\"site\" size=\"1\">";
-	for ("Tout|Tous les sites",@NODESSelList) { 
-		my ($val,$cle) = split (/\|/,$_);
-		if ("$val" eq "$QP->{'site'}") {
-			print("<option selected value=$val>$cle</option>\n");
-			$afficheSite = "$cle ($val)";
-		} else {
-			print("<option value=$val>$cle</option>\n");
-		}
-	}
-	print "</select>";
+    # ----- MONTH2
+    print " - <select name=\"m2\" size=\"1\" onChange=\"resetJour2()\">";
+    for (@mois) {
+        if ($_ == $QP->{m2}) {
+            print "<option selected value=$_>$_</option>\n";
+        } else {
+            print "<option value=$_>$_</option>\n";
+        }
+    }
+    print "</select>\n";
 
-	# ----- FILTER
-	my $msg = "Le filtre fonctionne avec une <a href=http://perl.enstimac.fr/DocFr/perlretut.html target=_blank>expression rationnelle</a> ".
-	"(<i>regular expression</i>) et un grep qui ne tient pas compte de la casse. ".
-	"Pour la n&eacute;gation, ajouter un point d&rsquo;exclamation en d&eacute;but d&rsquo;expression. ".
-	"Le filtre s&rsquo;applique &agrave; toute la ligne de donn&eacute;s: date, site, commentaire,... et valeurs num&eacute;riques.";
+    # ----- DAY2
+    print " - <select name=\"d2\" size=\"1\">";
+    for (reverse(@jour)) {
+        if ($_ == $QP->{d2}) {
+            print "<option selected value=$_>$_</option>\n";
+        } else {
+            print "<option value=$_>$_</option>\n";
+        }
+    }
+    print "</select>\n",
+      "<select name=\"site\" size=\"1\">";
+    for ("Tout|Tous les sites",@NODESSelList) {
+        my ($val,$cle) = split (/\|/,$_);
+        if ("$val" eq "$QP->{'site'}") {
+            print("<option selected value=$val>$cle</option>\n");
+            $afficheSite = "$cle ($val)";
+        } else {
+            print("<option value=$val>$cle</option>\n");
+        }
+    }
+    print "</select>";
 
-	print " Filtre: <input type=\"text\" name=\"obs\" size=15 value=\"$QP->{'obs'}\" onMouseOut=\"nd()\" onmouseover=\"overlib('$msg',CAPTION,'INFORMATIONS',STICKY,WIDTH,300,TIMEOUT,3000)\">";
-	if ($QP->{'obs'} ne "") {
-        	print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=effaceFiltre()>";
-	}
+    # ----- FILTER
+    my $msg = "Le filtre fonctionne avec une <a href=http://perl.enstimac.fr/DocFr/perlretut.html target=_blank>expression rationnelle</a> ".
+      "(<i>regular expression</i>) et un grep qui ne tient pas compte de la casse. ".
+      "Pour la n&eacute;gation, ajouter un point d&rsquo;exclamation en d&eacute;but d&rsquo;expression. ".
+      "Le filtre s&rsquo;applique &agrave; toute la ligne de donn&eacute;s: date, site, commentaire,... et valeurs num&eacute;riques.";
 
-	print ' <input type="submit" value=" Afficher">';
-	
-	if ($displayOnly ne 1) {
-		print("<input type=\"button\" style=\"margin-left:15px;color:blue;\" onClick=\"document.location='/cgi-bin/".$FORM->conf('CGI_FORM')."'\" value=\"nouvel enregistrement\">");
-	}
-	print "</B></P></FORM>\n",
-	"<H2>".$FORM->conf('TITLE')."</H2>\n",
-	"Intervalle des dates: $afficheDates<br>",
-	"Sites s&eacute;lectionn&eacute;s: <B>$afficheSite</B><BR>";
-	if ($QP->{'obs'} ne "") {
-		print "Filtre: &laquo;&nbsp;<B>$QP->{'obs'}</B>&nbsp;&raquo;<BR>";
-	}
+    print " Filtre: <input type=\"text\" name=\"obs\" size=15 value=\"$QP->{'obs'}\" onMouseOut=\"nd()\" onmouseover=\"overlib('$msg',CAPTION,'INFORMATIONS',STICKY,WIDTH,300,TIMEOUT,3000)\">";
+    if ($QP->{'obs'} ne "") {
+        print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=effaceFiltre()>";
+    }
+
+    print ' <input type="submit" value=" Afficher">';
+
+    if ($displayOnly ne 1) {
+        print("<input type=\"button\" style=\"margin-left:15px;color:blue;\" onClick=\"document.location='/cgi-bin/".$FORM->conf('CGI_FORM')."'\" value=\"nouvel enregistrement\">");
+    }
+    print "</B></P></FORM>\n",
+      "<H2>".$FORM->conf('TITLE')."</H2>\n",
+      "Intervalle des dates: $afficheDates<br>",
+      "Sites s&eacute;lectionn&eacute;s: <B>$afficheSite</B><BR>";
+    if ($QP->{'obs'} ne "") {
+        print "Filtre: &laquo;&nbsp;<B>$QP->{'obs'}</B>&nbsp;&raquo;<BR>";
+    }
 }
 
 my ($id,$date,$heure,$site,$ope,$tAir,$tMeteo,$ruban,$offset,$rem,$val) = ("")x11;
@@ -383,127 +383,129 @@ my $aliasSite = "";
 
 my $entete = "<TR>";
 if ($displayOnly ne 1) {
-	$entete = $entete."<TH rowspan=2></TH>";
+    $entete = $entete."<TH rowspan=2></TH>";
 }
 $entete = $entete."<TH rowspan=2>Date</TH><TH rowspan=2>Heure</TH><TH rowspan=2>Site</TH>"
-	."<TH colspan=2>M&eacute;t&eacute;orologie</TH>"
-	."<TH colspan=20>Mesures d'&eacute;cartement: Offset + D<sub>ruban</sub> + d<sub>i</sub> (mm) o&ugrave; d<sub>i</sub> = d<sub>fen&ecirc;tre</sub> + d<sub>cadran</sub></TH>"
-	."<TH colspan=3>Statistiques</TH><TH rowspan=2></TH></TR>\n"
-	."<TR><TH>Tair<br>(°C)</TH><TH>M&eacute;t&eacute;o</TH>"
-	."<TH>Offset<br>(mm)</TH><TH>D<sub>Ruban</sub><br>(mm)</TH>";
+  ."<TH colspan=2>M&eacute;t&eacute;orologie</TH>"
+  ."<TH colspan=20>Mesures d'&eacute;cartement: Offset + D<sub>ruban</sub> + d<sub>i</sub> (mm) o&ugrave; d<sub>i</sub> = d<sub>fen&ecirc;tre</sub> + d<sub>cadran</sub></TH>"
+  ."<TH colspan=3>Statistiques</TH><TH rowspan=2></TH></TR>\n"
+  ."<TR><TH>Tair<br>(°C)</TH><TH>M&eacute;t&eacute;o</TH>"
+  ."<TH>Offset<br>(mm)</TH><TH>D<sub>Ruban</sub><br>(mm)</TH>";
 for ("1".."9") {
-	$entete = $entete."<TH>d<sub>$_</sub></TH>"."<TH>v<sub>$_</sub></TH>";
+    $entete = $entete."<TH>d<sub>$_</sub></TH>"."<TH>v<sub>$_</sub></TH>";
 }
 $entete = $entete."<TH><SPAN style=\"text-decoration:overline\"><I>x</I></SPAN><br>(mm)</TH><TH>2&sigma;<br>(mm)</TH><TH><SPAN style=\"text-decoration:overline\">v</TH></TR>\n";
 
 push(@csv,l2u("Date;Heure;Code;Site;Operateurs;Temp. Air (�C);Meteo;Dist. Moy (mm);2*Sigma (mm);Vent Moy;Remarques\n"));
 
 for(@finalLignes) {
-	($id,$date,$heure,$site,$ope,$tAir,$tMeteo,$ruban,$offset,$d[0][0],$d[0][1],$d[0][2],$d[1][0],$d[1][1],$d[1][2],$d[2][0],$d[2][1],$d[2][2],$d[3][0],$d[3][1],$d[3][2],$d[4][0],$d[4][1],$d[4][2],$d[5][0],$d[5][1],$d[5][2],$d[6][0],$d[6][1],$d[6][2],$d[7][0],$d[7][1],$d[7][2],$d[8][0],$d[8][1],$d[8][2],$rem,$val) = split(/\|/,$_);
-	$tMeteo = lc($tMeteo);
-	chomp($val);
-	# trie les donn�es pour mettre les champs vides � la fin...
-	#@d = sort { ($a eq "") <=> ($b eq "") } @d;
-	my $VM = 0;
-	my $DM = 0;
-	my $DS = 0;
-	my $n = 0;
-	for (@nd) {
-		if ($d[$_][0] ne "") {
-			my $dd = 0;
-			$DM += $offset + $ruban + $d[$_][0] + $d[$_][1];		# $DM = momentan�ment somme des x
-			$DS += ($offset + $ruban + $d[$_][0] + $d[$_][1])**2;	# $DS = momentanement somme des x²
-			$VM += $d[$_][2];
-			$n++;
-		}
-	}
-	if ($n > 0) {
-		$DM = $DM/$n;						# $DM = moyenne mesure
-		$DS = 2 * sqrt($DS/$n - $DM*$DM);	# $DS = 2 * �cart-type
-		$VM = $VM/$n;						# $VM = moyenne vent
-	}
+    ($id,$date,$heure,$site,$ope,$tAir,$tMeteo,$ruban,$offset,$d[0][0],$d[0][1],$d[0][2],$d[1][0],$d[1][1],$d[1][2],$d[2][0],$d[2][1],$d[2][2],$d[3][0],$d[3][1],$d[3][2],$d[4][0],$d[4][1],$d[4][2],$d[5][0],$d[5][1],$d[5][2],$d[6][0],$d[6][1],$d[6][2],$d[7][0],$d[7][1],$d[7][2],$d[8][0],$d[8][1],$d[8][2],$rem,$val) = split(/\|/,$_);
+    $tMeteo = lc($tMeteo);
+    chomp($val);
 
-	$aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
-	my @listenoms = split(/\+/,$ope);
-#djl-TBD 	my $noms = join(", ",nomOperateur(@listenoms));
-#djl-TBD 	for (@listenoms) {
-#djl-TBD 		$operStat{$_} += 1;
-#djl-TBD 	}
+    # trie les donn�es pour mettre les champs vides � la fin...
+    #@d = sort { ($a eq "") <=> ($b eq "") } @d;
+    my $VM = 0;
+    my $DM = 0;
+    my $DS = 0;
+    my $n = 0;
+    for (@nd) {
+        if ($d[$_][0] ne "") {
+            my $dd = 0;
+            $DM += $offset + $ruban + $d[$_][0] + $d[$_][1];		# $DM = momentan�ment somme des x
+            $DS += ($offset + $ruban + $d[$_][0] + $d[$_][1])**2;	# $DS = momentanement somme des x²
+            $VM += $d[$_][2];
+            $n++;
+        }
+    }
+    if ($n > 0) {
+        $DM = $DM/$n;						# $DM = moyenne mesure
+        $DS = 2 * sqrt($DS/$n - $DM*$DM);	# $DS = 2 * �cart-type
+        $VM = $VM/$n;						# $VM = moyenne vent
+    }
 
-	my $normsite = WebObs::Grids::normNode(node=>"PROC.EXTENSO.$site");
-	if ($normsite eq "") { $normsite =  WebObs::Grids::normNode(node=>".EXTENSO.$site") }
-	if ($normsite eq "") { $normsite =  WebObs::Grids::normNode(node=>"..$site") }
-	$lien = "<A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normsite\"><B>$aliasSite</B></A>";
-	$modif = "<a href=\"/cgi-bin/".$FORM->conf('CGI_FORM')."?id=$id\"><img src=\"/icons/modif.png\" title=\"Editer...\" border=0></a>";
-	$efface = "<img src=\"/icons/no.png\" title=\"Effacer...\" onclick=\"checkRemove($id)\">";
+    $aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
+    my @listenoms = split(/\+/,$ope);
 
-	$texte = $texte."<TR>";
-	if ($displayOnly ne 1) {
-		$texte = $texte."<TD nowrap>$modif</TD>";
-	}
-	$texte = $texte."<TD nowrap align=center>$date</TD><TD align=center>$heure</TD><TD align=center>$lien</TD>"
-		."<TD align=center>$tAir</TD><TD align=center>";
-	if ($iconeMeteo{$tMeteo} ne "") {
-		$texte = $texte."<IMG src=\"/icons/meteo/$iconeMeteo{$tMeteo}\" title=\"$nomMeteo{$tMeteo}\">";
-	}
-	$texte = $texte."</TD>"
-		."<TD align=center>".sprintf("%+g",$offset)."</TD>"
-		."<TD align=center>$ruban</TD>";
-	for (@nd) {
-		if ($d[$_][0] ne "") {
-			$texte = $texte."<TD align=center>".sprintf("%5.2f",$d[$_][0]+$d[$_][1])."</TD><TD align=center>$d[$_][2]</TD>";
-		} else {
-			$texte = $texte."<TD>&nbsp;</TD><TD>&nbsp;</TD>";
-		}
-	}
-	$texte = $texte."<TD class=tdResult>".sprintf("%1.2f",$DM)."</TD>";
-	if (($DS > 2) || ($DS == 0)) {
-		$texte .= "<TD class=tdResult style=\"background-color:#FFAAAA\">";
-	} elsif ($DS > 1 ) {
-		$texte .= "<TD class=tdResult style=\"background-color:#FFEBAA\">";
-	} else {
-		$texte .= "<TD class=tdResult>";
-	}
-	$texte .= sprintf("%1.2f",$DS)."</TD><TD class=tdResult>".sprintf("%1.1f",$VM)."</TD>";
-	my $infoRem = "";
-	my $infoImg = "";
-	if ($rem ne "") {
-		$rem =~ s/\'/&rsquo;/g;
-		$rem =~ s/\"/&quot;/g;
-		$infoRem = l2u("$rem<br>___<br>");
-		$infoImg = "<IMG src=\"/icons/attention.gif\" border=0>";
-	}
- 	$texte = $texte."<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('$infoRem<i>Op&eacute;rateurs:</i> $ope<br>___<br><i>Saisie:</i> $val',CAPTION,'Observations $aliasSite')\">$infoImg</TD></TR>\n";
-	push(@csv,"$date;$heure;$site;$aliasSite;$ope;$tAir;$tMeteo;$DM;$DS;$VM;\"".l2u($rem)."\"\n");
+    #djl-TBD 	my $noms = join(", ",nomOperateur(@listenoms));
+    #djl-TBD 	for (@listenoms) {
+    #djl-TBD 		$operStat{$_} += 1;
+    #djl-TBD 	}
+
+    my $normsite = WebObs::Grids::normNode(node=>"PROC.EXTENSO.$site");
+    if ($normsite eq "") { $normsite =  WebObs::Grids::normNode(node=>".EXTENSO.$site") }
+    if ($normsite eq "") { $normsite =  WebObs::Grids::normNode(node=>"..$site") }
+    $lien = "<A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normsite\"><B>$aliasSite</B></A>";
+    $modif = "<a href=\"/cgi-bin/".$FORM->conf('CGI_FORM')."?id=$id\"><img src=\"/icons/modif.png\" title=\"Editer...\" border=0></a>";
+    $efface = "<img src=\"/icons/no.png\" title=\"Effacer...\" onclick=\"checkRemove($id)\">";
+
+    $texte = $texte."<TR>";
+    if ($displayOnly ne 1) {
+        $texte = $texte."<TD nowrap>$modif</TD>";
+    }
+    $texte = $texte."<TD nowrap align=center>$date</TD><TD align=center>$heure</TD><TD align=center>$lien</TD>"
+      ."<TD align=center>$tAir</TD><TD align=center>";
+    if ($iconeMeteo{$tMeteo} ne "") {
+        $texte = $texte."<IMG src=\"/icons/meteo/$iconeMeteo{$tMeteo}\" title=\"$nomMeteo{$tMeteo}\">";
+    }
+    $texte = $texte."</TD>"
+      ."<TD align=center>".sprintf("%+g",$offset)."</TD>"
+      ."<TD align=center>$ruban</TD>";
+    for (@nd) {
+        if ($d[$_][0] ne "") {
+            $texte = $texte."<TD align=center>".sprintf("%5.2f",$d[$_][0]+$d[$_][1])."</TD><TD align=center>$d[$_][2]</TD>";
+        } else {
+            $texte = $texte."<TD>&nbsp;</TD><TD>&nbsp;</TD>";
+        }
+    }
+    $texte = $texte."<TD class=tdResult>".sprintf("%1.2f",$DM)."</TD>";
+    if (($DS > 2) || ($DS == 0)) {
+        $texte .= "<TD class=tdResult style=\"background-color:#FFAAAA\">";
+    } elsif ($DS > 1 ) {
+        $texte .= "<TD class=tdResult style=\"background-color:#FFEBAA\">";
+    } else {
+        $texte .= "<TD class=tdResult>";
+    }
+    $texte .= sprintf("%1.2f",$DS)."</TD><TD class=tdResult>".sprintf("%1.1f",$VM)."</TD>";
+    my $infoRem = "";
+    my $infoImg = "";
+    if ($rem ne "") {
+        $rem =~ s/\'/&rsquo;/g;
+        $rem =~ s/\"/&quot;/g;
+        $infoRem = l2u("$rem<br>___<br>");
+        $infoImg = "<IMG src=\"/icons/attention.gif\" border=0>";
+    }
+    $texte = $texte."<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('$infoRem<i>Op&eacute;rateurs:</i> $ope<br>___<br><i>Saisie:</i> $val',CAPTION,'Observations $aliasSite')\">$infoImg</TD></TR>\n";
+    push(@csv,"$date;$heure;$site;$aliasSite;$ope;$tAir;$tMeteo;$DM;$DS;$VM;\"".l2u($rem)."\"\n");
 }
 
 push(@html,"Nombre de donn&eacute;es affich&eacute;es = <B>".($#finalLignes + 1)."</B> / $nbData</P>\n",
-	"<P>T&eacute;l&eacute;charger un fichier texte/Excel de ces donn&eacute;es: <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?affiche=csv&y1=$QP->{y1}&m1=$QP->{m1}&d1=$QP->{d1}&y2=$QP->{y2}&m2=$QP->{m2}&d2=$QP->{d2}&site=$QP->{'site'}&obs=$QP->{'obs'}\"><B>$fileCSV</B></A></P>\n");
+    "<P>T&eacute;l&eacute;charger un fichier texte/Excel de ces donn&eacute;es: <A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?affiche=csv&y1=$QP->{y1}&m1=$QP->{m1}&d1=$QP->{d1}&y2=$QP->{y2}&m2=$QP->{m2}&d2=$QP->{d2}&site=$QP->{'site'}&obs=$QP->{'obs'}\"><B>$fileCSV</B></A></P>\n");
 
 push(@html,"<TABLE class=\"trData\" width=\"100%\">$entete\n$texte\n$entete\n</TABLE>",
-	   "\n<P>Indice Vent: ");
+    "\n<P>Indice Vent: ");
 for (@vent) {
-	my ($tpi,$tpn) = split(/\|/,$_);
-	push(@html,"<B>$tpi</B> = $tpn, ");
+    my ($tpi,$tpn) = split(/\|/,$_);
+    push(@html,"<B>$tpi</B> = $tpn, ");
 }
 push(@html,"</P>\n");
 
 if ($QP->{'affiche'} eq "csv") {
-	print @csv;
+    print @csv;
 } else {
-	print @html;
+    print @html;
+
 #djl-TBD 	for ($nb=0;$nb<$#operateurs;$nb++) {
 #djl-TBD 		$operNb[$nb] = sprintf("%5d x %s",$operStat{$operateurs[$nb][0]},$operateurs[$nb][1]);
 #djl-TBD 	}
 #djl-TBD 	@operNb = reverse(sort(grep(!/   0 x/,@operNb)));
 #djl-TBD 	print "<P align=right><SPAN onMouseOut=\"nd()\" onMouseOver=\"overlib('".join("<br>",@operNb)."',CAPTION,'Top op&eacute;rateurs',ABOVE)\"><small>?</small></SPAN></P>";
-	
-	print "<style type=\"text/css\">
+
+    print "<style type=\"text/css\">
 		#attente { display: none; }
 	</style>\n
 	<BR>\n</BODY>\n</HTML>\n";
 }
-
 
 __END__
 

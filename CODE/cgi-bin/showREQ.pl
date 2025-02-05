@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 #
+
 =head1 NAME
 
 showREQ.pl
@@ -81,69 +82,69 @@ print "Content-type: text/html; charset=utf-8
 
 print "<h2>$pagetitle</h2>";
 print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ Forms: "
-."<a href=\"/cgi-bin/formREQ.pl\"><b>Procs</b></a> | "
-."<a href=\"/cgi-bin/formGRIDMAPS.pl\"><b>Gridmaps</b></a> | "
-."Users: "
-.($QryParm->{'usr'} eq "all" ? "<a href=\"$myself\"><b>$CLIENT</b></a> | all":"$CLIENT | <a href=\"$myself?usr=all\"><b>all</b></a>")." | "
-."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'>"
-." ]</P>";
+  ."<a href=\"/cgi-bin/formREQ.pl\"><b>Procs</b></a> | "
+  ."<a href=\"/cgi-bin/formGRIDMAPS.pl\"><b>Gridmaps</b></a> | "
+  ."Users: "
+  .($QryParm->{'usr'} eq "all" ? "<a href=\"$myself\"><b>$CLIENT</b></a> | all":"$CLIENT | <a href=\"$myself?usr=all\"><b>all</b></a>")." | "
+  ."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'>"
+  ." ]</P>";
 
 $table = "<TABLE><TR><TH>$__{'Date & Time'}</TH><TH>$__{'Host'}</TH><TH>$__{'User'}</TH><TH>$__{'Time Span'}</TH><TH>$__{'Params'}</TH>
 	.<TH>$__{'Job logs'}</TH><TH>$__{'Status'}</TH><TH>$__{'Graphs'}</TH><TH>$__{'Archive'}</TH></TR>\n";
 
 for (reverse sort @reqlist) {
-	my $dir = my $reqdir = $_;
-	$reqdir =~ s|$WEBOBS{ROOT_OUTR}/||;
-	my ($date,$time,$host,$user) = split(/_/,$reqdir);
-	my $date1 = qx(grep -a "^DATE1|" $dir/REQUEST.rc | sed -e "s/DATE1|//");
-	my $date2 = qx(grep -a "^DATE2|" $dir/REQUEST.rc | sed -e "s/DATE2|//");
-	my (@procs) = grep {-d} glob("$dir/{PROC.*,GRIDMAPS}"); # first list of procs from output directories
-	$_ =~ s|$dir/|| for @procs; # keeps only the PROC.NAME part
-	my @procreq = qx(grep -a "^PROC\." $dir/REQUEST.rc | sed -e "s/\.[^.]*|.*//"); # second list of procs from the request parameters
-	chomp(@procreq);
-	push(@procs,@procreq); # merging output directories and request parameters
-	@procs = do { my %seen; grep { !$seen{$_}++ } @procs }; # uniq
-	my $rowspan = scalar(@procs);
-	if ($user eq $CLIENT || (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$_") && $QryParm->{'usr'} eq "all")) {
-		if (length($date)==8 && length($time)==6) {
-			$date = substr($date,0,4)."-".substr($date,4,2)."-".substr($date,6,2);
-			$time = substr($time,0,2).":".substr($time,2,2).":".substr($time,4,2);
-		}
-		$table .= "<TR>"
-			."<TD rowspan='$rowspan' align=center>$date $time</TD>"
-			."<TD rowspan='$rowspan' align=center>$host</TD>"
-			."<TD rowspan='$rowspan' align=center>$user</TD>"
-			."<TD rowspan='$rowspan' align=center>$date1 - $date2</TD>"
-			."<TD rowspan='$rowspan' align=center><A href='$WEBOBS{URN_OUTR}/$reqdir/REQUEST.rc'><IMG src='/icons/params.png'></A></TD>";
-		for (@procs) {
-			(my $proc = $_) =~ s/PROC\.//;
-			if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"$proc") || $_ eq "GRIDMAPS") {
-				my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,stdpath,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
-				chomp($rreq);
-				if ($rreq eq "") {
-					$table .= ("<TD></TD>" x 2);
-				} else {
-					my ($rcmd,$rlog,$rc) = split(/\|/,$rreq);
-					my $log_filename = $rlog =~ s/^[><] +//r;
-					my $log_name = $log_filename =~ s|/$reqdir/||r;
-					$table .= "<TD align=center><A href='/cgi-bin/schedulerLogs.pl?log=$log_filename'>$log_name</a></TD>";
-					if ($rc eq "0") {
-						$table .= "<TD align=center bgcolor=green>OK</TD>";
-					} elsif ($rc > 0) {
-						$table .= "<TD align=center bgcolor=red>error</TD>";
-					} else {
-						$table .= "<TD align=center bgcolor=orange>wait...</TD>";
-					}
-				}
-				$table .= "<TD align=center>".(-d "$dir/$_" ? "<A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A>":"")."</TD>";
-				$table .= "<TD align=center>".(-e "$dir/$_.tgz" ? "<A download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></A>":"")."</TD>";
-			} else {
-				$table .= "<TD colspan=4></TD>";
-			}
-			$table .= "</TR>\n<TR>";
-		}
-		$table .= "<TD colspan=9 style='background-color: #EEEEDD'></TD></TR>\n";
-	}
+    my $dir = my $reqdir = $_;
+    $reqdir =~ s|$WEBOBS{ROOT_OUTR}/||;
+    my ($date,$time,$host,$user) = split(/_/,$reqdir);
+    my $date1 = qx(grep -a "^DATE1|" $dir/REQUEST.rc | sed -e "s/DATE1|//");
+    my $date2 = qx(grep -a "^DATE2|" $dir/REQUEST.rc | sed -e "s/DATE2|//");
+    my (@procs) = grep {-d} glob("$dir/{PROC.*,GRIDMAPS}"); # first list of procs from output directories
+    $_ =~ s|$dir/|| for @procs; # keeps only the PROC.NAME part
+    my @procreq = qx(grep -a "^PROC\." $dir/REQUEST.rc | sed -e "s/\.[^.]*|.*//"); # second list of procs from the request parameters
+    chomp(@procreq);
+    push(@procs,@procreq); # merging output directories and request parameters
+    @procs = do { my %seen; grep { !$seen{$_}++ } @procs }; # uniq
+    my $rowspan = scalar(@procs);
+    if ($user eq $CLIENT || (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$_") && $QryParm->{'usr'} eq "all")) {
+        if (length($date)==8 && length($time)==6) {
+            $date = substr($date,0,4)."-".substr($date,4,2)."-".substr($date,6,2);
+            $time = substr($time,0,2).":".substr($time,2,2).":".substr($time,4,2);
+        }
+        $table .= "<TR>"
+          ."<TD rowspan='$rowspan' align=center>$date $time</TD>"
+          ."<TD rowspan='$rowspan' align=center>$host</TD>"
+          ."<TD rowspan='$rowspan' align=center>$user</TD>"
+          ."<TD rowspan='$rowspan' align=center>$date1 - $date2</TD>"
+          ."<TD rowspan='$rowspan' align=center><A href='$WEBOBS{URN_OUTR}/$reqdir/REQUEST.rc'><IMG src='/icons/params.png'></A></TD>";
+        for (@procs) {
+            (my $proc = $_) =~ s/PROC\.//;
+            if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"$proc") || $_ eq "GRIDMAPS") {
+                my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,stdpath,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
+                chomp($rreq);
+                if ($rreq eq "") {
+                    $table .= ("<TD></TD>" x 2);
+                } else {
+                    my ($rcmd,$rlog,$rc) = split(/\|/,$rreq);
+                    my $log_filename = $rlog =~ s/^[><] +//r;
+                    my $log_name = $log_filename =~ s|/$reqdir/||r;
+                    $table .= "<TD align=center><A href='/cgi-bin/schedulerLogs.pl?log=$log_filename'>$log_name</a></TD>";
+                    if ($rc eq "0") {
+                        $table .= "<TD align=center bgcolor=green>OK</TD>";
+                    } elsif ($rc > 0) {
+                        $table .= "<TD align=center bgcolor=red>error</TD>";
+                    } else {
+                        $table .= "<TD align=center bgcolor=orange>wait...</TD>";
+                    }
+                }
+                $table .= "<TD align=center>".(-d "$dir/$_" ? "<A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A>":"")."</TD>";
+                $table .= "<TD align=center>".(-e "$dir/$_.tgz" ? "<A download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></A>":"")."</TD>";
+            } else {
+                $table .= "<TD colspan=4></TD>";
+            }
+            $table .= "</TR>\n<TR>";
+        }
+        $table .= "<TD colspan=9 style='background-color: #EEEEDD'></TD></TR>\n";
+    }
 }
 
 $table .= "</TABLE><BR><BR>\n";
@@ -153,7 +154,6 @@ print $table;
 #
 
 print "\n</BODY>\n</HTML>\n";
-
 
 __END__
 

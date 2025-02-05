@@ -72,9 +72,8 @@ use IO::Socket::INET;
 
 use WebObs::Scheduler qw(scheduler_client);
 
-
 sub usage {
-	print <<"_EOD_";
+    print <<"_EOD_";
 Usage: perl $0 'msg=>"COMMAND"' ['option=>value' ...]
 
 Send a message to a UDP server and print its reply to stdout.
@@ -111,57 +110,57 @@ _EOD_
 }
 
 if (not @ARGV) {
-	usage();
-	exit(1);
+    usage();
+    exit(1);
 }
 
 # Options allowed on the command line as <opt> => <value>
 # and the regexp the value must match.
 my %opts_regexp = (
-	'msg' => '[\w ]+',
-	'host' => '[\w.-]+',
-	'port' => '\d+',
-	'timeout' => '\d+',
-	'max_length' => '\d+',
-);
+    'msg' => '[\w ]+',
+    'host' => '[\w.-]+',
+    'port' => '\d+',
+    'timeout' => '\d+',
+    'max_length' => '\d+',
+  );
 
 # Backward compatibility aliases for options
 my %compat_aliases = (
-	'to' => 'timeout',
-	'll' => 'max_length',
-);
+    'to' => 'timeout',
+    'll' => 'max_length',
+  );
 
 my %opts = ();
 
 # Read and parse arguments from the command line as options
 foreach my $arg (@ARGV) {
 
-	# Read argument as "key => value"
-	my ($k, $v) = $arg =~ /^\s*([a-z]+)\s*=>\s*(?:'|")?(.+?)(?:'|")?\s*$/;
+    # Read argument as "key => value"
+    my ($k, $v) = $arg =~ /^\s*([a-z]+)\s*=>\s*(?:'|")?(.+?)(?:'|")?\s*$/;
 
-	if (not $k) {
-		print STDERR "Error: cannot read arguments, please check their format.\n";
-		usage();
-		exit(1);
-	}
+    if (not $k) {
+        print STDERR "Error: cannot read arguments, please check their format.\n";
+        usage();
+        exit(1);
+    }
 
-	# Apply any option name alias
-	if ($compat_aliases{$k}) {
-		$k = $compat_aliases{$k};
-	}
+    # Apply any option name alias
+    if ($compat_aliases{$k}) {
+        $k = $compat_aliases{$k};
+    }
 
-	# Make sure option exists and its value has a valid format
-	if (not $opts_regexp{$k} or $v !~ /$opts_regexp{$k}/) {
-		print STDERR "Error: invalid argument or format '$arg'\n";
-		exit(1);
-	}
+    # Make sure option exists and its value has a valid format
+    if (not $opts_regexp{$k} or $v !~ /$opts_regexp{$k}/) {
+        print STDERR "Error: invalid argument or format '$arg'\n";
+        exit(1);
+    }
 
-	# Explicitely reject duplicated options
-	if ($opts{$k}) {
-		print STDERR "Error: option '$k' defined more than once\n";
-		exit(1);
-	}
-	$opts{$k} = $v;
+    # Explicitely reject duplicated options
+    if ($opts{$k}) {
+        print STDERR "Error: option '$k' defined more than once\n";
+        exit(1);
+    }
+    $opts{$k} = $v;
 }
 
 # Submit the command and read the answer
@@ -173,11 +172,11 @@ print $response;
 # Use exit code of 1 in case of error, 0 otherwise
 my $exit_code;
 if ($error) {
-	(my $script_name = $0) =~ s|^.*/||;
-	print STDERR "$script_name error: $error\n";
-	$exit_code = 1;
+    (my $script_name = $0) =~ s|^.*/||;
+    print STDERR "$script_name error: $error\n";
+    $exit_code = 1;
 } else {
-	$exit_code = 0;
+    $exit_code = 0;
 }
 
 exit($exit_code);

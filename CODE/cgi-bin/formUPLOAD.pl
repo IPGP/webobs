@@ -1,5 +1,6 @@
 #!/usr/bin/perl 
 #
+
 =head1 NAME
 
 formUPLOAD.pl 
@@ -55,7 +56,7 @@ use Locale::TextDomain('webobs');
 
 # ---- calling stuff 
 #
-my @tod = localtime(); 
+my @tod = localtime();
 my $QryParm = $cgi->Vars;
 my $typeDoc = $QryParm->{'doc'}    // "";
 my $object  = $QryParm->{'object'} // "";
@@ -75,19 +76,19 @@ my $pobj;
 @NID = split(/[\.\/]/, trim($object));
 ($GRIDType, $GRIDName, $NODEName) = @NID;
 if (defined($GRIDType) || defined($GRIDName)) {
-	$editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
-	die "$__{'Not authorized'}" if ($editOK == 0);
+    $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
+    die "$__{'Not authorized'}" if ($editOK == 0);
 } else { die "$__{'Invalid object'} '$object'" }
 
 # ---- find out wether object is a grid or a node
 #
 if (scalar(@NID) == 3) {
-	$pobj = \%NODES;
-	$pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
+    $pobj = \%NODES;
+    $pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
 }
 if (scalar(@NID) == 2) {
-	$pobj = \%GRIDS;
-	$pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
+    $pobj = \%GRIDS;
+    $pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
 }
 
 # ---- more checkings on type of document to be uploaded
@@ -96,10 +97,10 @@ my @allowed = ("SPATH_PHOTOS","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENT
 die "$__{'Cannot upload to'} $typeDoc" if ( "@allowed" !~ /\b$typeDoc\b/ );
 
 if ($typeDoc ne "SPATH_INTERVENTIONS") {
-	$pathTarget  .= "/$pobj->{$typeDoc}";
+    $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
-	die "$__{'intervention event not specified'}" if ($event eq "");
-	$pathTarget  .= "/$pobj->{$typeDoc}/$event/PHOTOS";
+    die "$__{'intervention event not specified'}" if ($event eq "");
+    $pathTarget  .= "/$pobj->{$typeDoc}/$event/PHOTOS";
 }
 
 # ---- at that point $pathTarget is where uploaded documents will be sent to
@@ -115,7 +116,7 @@ my @listeTarget = <$pathTarget/*.*> ;
 my $titrePage = "Manage $pobj->{$typeDoc}";
 
 print $cgi->header(-charset=>"utf-8"),
-$cgi->start_html("$titrePage");
+  $cgi->start_html("$titrePage");
 print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">";
 print <<"FIN";
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
@@ -185,48 +186,49 @@ print "
  <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
  <!-- overLIB (c) Erik Bosrup -->
  <DIV ID=\"helpBox\"></DIV>";
- print "\n<H2>$titrePage</H2>";
+print "\n<H2>$titrePage</H2>";
 print "<H3>$__{'for'} [$object] $event</H3>\n";
+
 #was:print "<h2>[$NODEName] ".getNodeString(node=>$NODEName,style=>'short')."</h2>";
 #debug: print "target= $pathTarget <br>";
 
 print "<form id=\"theform\" name=\"formulaire\" action=\"\" ENCTYPE=\"multipart/form-data\">";
-	print "<DIV id='strip' style='width: auto; border: 1px solid gray; overflow-x: auto; overflow-y: hidden'>\n";
-	print "<TABLE><TR>";
-	my $i = 0;
-	foreach (@listeTarget) {
-		$i++;
-		my ( $name, $path, $extension ) = fileparse ( $_, '\..*' );
-		my $urn  = "$urnTarget/$name$extension";
-		my $turn = "$urnTarget/$thumbnailsPath/$name$extension";
-		my $file = "$pathTarget/$name$extension";
-		print "<TD style='border:none; border-right: 1px solid gray' align=center valign=top>";
-		print "<A href=\"$urn\">";
-		my $th = makeThumbnail( $file, "x$NODES{THUMBNAILS_PIXV}", "$pathTarget/$thumbnailsPath","$NODES{THUMBNAILS_EXT}");
-		if ( $th ne "" ) { 
-			(my $turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
-			print "<IMG src=\"$turn\"/>";
-		} 
-		print "</A>";
-		print "<P>$name$extension<BR/>";
-		print "<INPUT type=checkbox name=del$i value=\"$name$extension\"> $__{'Delete'}</TD>";
-	}
-	print "</TR></TABLE>";
-	print "</DIV>";
+print "<DIV id='strip' style='width: auto; border: 1px solid gray; overflow-x: auto; overflow-y: hidden'>\n";
+print "<TABLE><TR>";
+my $i = 0;
+foreach (@listeTarget) {
+    $i++;
+    my ( $name, $path, $extension ) = fileparse ( $_, '\..*' );
+    my $urn  = "$urnTarget/$name$extension";
+    my $turn = "$urnTarget/$thumbnailsPath/$name$extension";
+    my $file = "$pathTarget/$name$extension";
+    print "<TD style='border:none; border-right: 1px solid gray' align=center valign=top>";
+    print "<A href=\"$urn\">";
+    my $th = makeThumbnail( $file, "x$NODES{THUMBNAILS_PIXV}", "$pathTarget/$thumbnailsPath","$NODES{THUMBNAILS_EXT}");
+    if ( $th ne "" ) {
+        (my $turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
+        print "<IMG src=\"$turn\"/>";
+    }
+    print "</A>";
+    print "<P>$name$extension<BR/>";
+    print "<INPUT type=checkbox name=del$i value=\"$name$extension\"> $__{'Delete'}</TD>";
+}
+print "</TR></TABLE>";
+print "</DIV>";
 
-	print "<BR><fieldset><legend style=\"color: black; font-size:8pt\">$__{'Upload new file(s)'} <i><small>Note: $__{'Avoid special characters and spaces in filename'}</small></i></legend>
+print "<BR><fieldset><legend style=\"color: black; font-size:8pt\">$__{'Upload new file(s)'} <i><small>Note: $__{'Avoid special characters and spaces in filename'}</small></i></legend>
 	<INPUT type=\"file\" id=\"uploadFile\" name=\"uploadFile\" multiple><BR>
 	<div id=\"multiloadmsg\" style=\"visibility: hidden;color: green;\"></div></P>";
-	print "</fieldset>";
+print "</fieldset>";
 
-	print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
-	print "<input type=\"hidden\" name=\"doc\" value=\"$typeDoc\">";
-	print "<input type=\"hidden\" name=\"event\" value=\"$event\">";
-	print "<input type=\"hidden\" name=\"nb\" value=\"$i\">";
+print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
+print "<input type=\"hidden\" name=\"doc\" value=\"$typeDoc\">";
+print "<input type=\"hidden\" name=\"event\" value=\"$event\">";
+print "<input type=\"hidden\" name=\"nb\" value=\"$i\">";
 
-	print "<p>";
-	print "<input type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-	print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\"></p>";
+print "<p>";
+print "<input type=\"button\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
+print "<input type=\"button\" value=\"$__{'Save'}\" onClick=\"verif_formulaire();\" style=\"font-weight:bold\"></p>";
 print "</form><BR>&nbsp;<BR>";
 
 # ---- We're done with the page
