@@ -43,7 +43,7 @@ use warnings;
 my $cgi = CGI->new;
 $cgi->charset('UTF-8');
 
-my $pse_root_conf = $cgi->url_param('pse_root_conf');  
+my $pse_root_conf = $cgi->url_param('pse_root_conf');
 my $pse_root_data = $cgi->url_param('pse_root_data');
 my $pse_algo_filepath = $cgi->url_param('pse_algo_filepath');
 my $pse_conf_filename = $cgi->url_param('pse_conf_filename');
@@ -57,8 +57,8 @@ my $hour = $cgi->url_param('hour');
 my $minut = $cgi->url_param('minut');
 my $second = $cgi->url_param('second');
 my $duration = $cgi->url_param('duration');
-my $verbatim = $cgi->url_param('verbatim'); 
- 
+my $verbatim = $cgi->url_param('verbatim');
+
 print $cgi->header(-type => 'application/json', -charset => 'utf-8');
 my $AAA = qx($pse_algo_filepath $pse_root_conf $pse_root_data $pse_tmp_filepath $pse_conf_filename '$datasource' $slinktool_prgm $year $month $day $hour $minut $second $duration $verbatim);
 chomp($AAA);

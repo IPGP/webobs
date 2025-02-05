@@ -69,91 +69,94 @@ $relayParams{'hdl_camera_on'} = ['192.168.11.41','6001','S30','',0,"http://195.8
 $relayParams{'cboh_camera_reboot'} = ['10.10.30.20','6001','S11','S10',5,"http://195.83.188.56/cgi-bin/vedit.pl?action=new&object=VIEW.CAMERAS.RPVCBOH"];
 
 if ($QryParm->{'send'} eq "Envoyer" && $QryParm->{'action'} ne "nothing") {
-	my $statusBefore;
-	my $statusAfter;
-	my $statusReboot;
-	if( exists($relayParams{$QryParm->{'action'}}) ) {
-		my $telnetClient = new Net::Telnet (
-			Host => $relayParams{$QryParm->{'action'}}[0],
-			Port => $relayParams{$QryParm->{'action'}}[1],
-			Timeout => "4",
-			#Prompt => '/\?$/',         # Specific prompt for relay activation
-			#Prompt => '/[01]{8}$/',     # Specific prompt for status
-		);
+    my $statusBefore;
+    my $statusAfter;
+    my $statusReboot;
+    if( exists($relayParams{$QryParm->{'action'}}) ) {
+        my $telnetClient = new Net::Telnet (
+            Host => $relayParams{$QryParm->{'action'}}[0],
+            Port => $relayParams{$QryParm->{'action'}}[1],
+            Timeout => "4",
 
-		my $commandStatus = "?RLY";
-		#$telnetClient->cmd(
-		#	String => $commandStatus,
-		#	Prompt => '/[01]{8}$/',
-		#);
-		#$statusBefore = $telnetClient->last_prompt;
+            #Prompt => '/\?$/',         # Specific prompt for relay activation
+            #Prompt => '/[01]{8}$/',     # Specific prompt for status
+          );
 
-		sleep(1);
+        my $commandStatus = "?RLY";
 
-		my $command = $relayParams{$QryParm->{'action'}}[2];
-		$telnetClient->cmd(
-			String => $command,
-			Prompt => '/\?$/',
-			Errmode => "return",
-		);
+        #$telnetClient->cmd(
+        #	String => $commandStatus,
+        #	Prompt => '/[01]{8}$/',
+        #);
+        #$statusBefore = $telnetClient->last_prompt;
 
-		#sleep(1);
+        sleep(1);
 
-		#$telnetClient->cmd(
-		#	String => $commandStatus,
-		#	Prompt => '/[01]{8}$/',
-		#);
-		#$statusAfter = $telnetClient->last_prompt;
+        my $command = $relayParams{$QryParm->{'action'}}[2];
+        $telnetClient->cmd(
+            String => $command,
+            Prompt => '/\?$/',
+            Errmode => "return",
+          );
 
-		if ($relayParams{$QryParm->{'action'}}[4] > 0) {
-			sleep($relayParams{$QryParm->{'action'}}[4]);
-			$command = $relayParams{$QryParm->{'action'}}[3];
-			$telnetClient->cmd(
-				String => $command,
-				Prompt => '/\?$/',
-				Errmode => "return",
-			);
+        #sleep(1);
 
-			#sleep(1);
+        #$telnetClient->cmd(
+        #	String => $commandStatus,
+        #	Prompt => '/[01]{8}$/',
+        #);
+        #$statusAfter = $telnetClient->last_prompt;
 
-			#$telnetClient->cmd(
-			#	String => $commandStatus,
-			#	Prompt => '/[01]{8}$/',
-			#);
-			#$statusReboot = $telnetClient->last_prompt;
-		}
+        if ($relayParams{$QryParm->{'action'}}[4] > 0) {
+            sleep($relayParams{$QryParm->{'action'}}[4]);
+            $command = $relayParams{$QryParm->{'action'}}[3];
+            $telnetClient->cmd(
+                String => $command,
+                Prompt => '/\?$/',
+                Errmode => "return",
+              );
 
-		print "Location: $relayParams{$QryParm->{'action'}}[5]\n\n";
-#		print $cgi->header(-charset=>'utf-8');
-#		print <<"PART1";
-#<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-#<html>
-#  <head>
-#    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-#    <title>Gestion des relais</title>
-#    <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
-#  </head>
-#  <body>
-#    <h1>Commande des relais</h1>
-#    <p>
-#      Send : $QryParm->{'send'}<br>
-#      Action : $QryParm->{'action'}<br>
-#      IP : $relayParams{$QryParm->{'action'}}[0]<br>
-#      TCP Port : $relayParams{$QryParm->{'action'}}[1]<br>
-#      Command1 : $relayParams{$QryParm->{'action'}}[2]<br>
-#      Command2 : $relayParams{$QryParm->{'action'}}[3]<br>
-#      Sleep : $relayParams{$QryParm->{'action'}}[4]<br>
-#      Etat initial : $statusBefore<br>
-#      Etat apres la commande 1 : $statusAfter<br>
-#      Etat final : $statusBefore<br>
-#  </body>
-#</html>
-#PART1
+            #sleep(1);
 
-	}
+            #$telnetClient->cmd(
+            #	String => $commandStatus,
+            #	Prompt => '/[01]{8}$/',
+            #);
+            #$statusReboot = $telnetClient->last_prompt;
+        }
+
+        print "Location: $relayParams{$QryParm->{'action'}}[5]\n\n";
+
+     #		print $cgi->header(-charset=>'utf-8');
+     #		print <<"PART1";
+     #<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+     #<html>
+     #  <head>
+     #    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+     #    <title>Gestion des relais</title>
+     #    <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+     #  </head>
+     #  <body>
+     #    <h1>Commande des relais</h1>
+     #    <p>
+     #      Send : $QryParm->{'send'}<br>
+     #      Action : $QryParm->{'action'}<br>
+     #      IP : $relayParams{$QryParm->{'action'}}[0]<br>
+     #      TCP Port : $relayParams{$QryParm->{'action'}}[1]<br>
+     #      Command1 : $relayParams{$QryParm->{'action'}}[2]<br>
+     #      Command2 : $relayParams{$QryParm->{'action'}}[3]<br>
+     #      Sleep : $relayParams{$QryParm->{'action'}}[4]<br>
+     #      Etat initial : $statusBefore<br>
+     #      Etat apres la commande 1 : $statusAfter<br>
+     #      Etat final : $statusBefore<br>
+     #  </body>
+     #</html>
+     #PART1
+
+    }
 } else {
-	print $cgi->header(-charset=>'utf-8');
-	print <<"PART1";
+    print $cgi->header(-charset=>'utf-8');
+    print <<"PART1";
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
@@ -173,10 +176,10 @@ if ($QryParm->{'send'} eq "Envoyer" && $QryParm->{'action'} ne "nothing") {
   <body>
   <h1>Commande des relais</h1>
 PART1
-	if ($QryParm->{'sent'} eq "yes") {
-		print "<h2>Commande envoy&eacute;e avec succ&eacute;s</h2>";
-	}
-	print <<"PART2";
+    if ($QryParm->{'sent'} eq "yes") {
+        print "<h2>Commande envoy&eacute;e avec succ&eacute;s</h2>";
+    }
+    print <<"PART2";
     <table>
     <form action="relayMgr.pl" onsubmit="return validateCommand()" method="GET">
       <tr><th>Application</th><th>Commande ON</th><th>Commande OFF</th><th>Commande Reboot</th></tr>
@@ -198,8 +201,8 @@ PART1
 	</td>
       </tr>
 PART2
-	if (clientHasAdm(type=>"authprocs",name=>"RELAYADM")) {
-		print <<"PART3";
+    if (clientHasAdm(type=>"authprocs",name=>"RELAYADM")) {
+        print <<"PART3";
 
       <tr>
         <td>Capteur de vent de BERT (IRT)</td>
@@ -222,8 +225,8 @@ PART2
 	<td>&nbsp;</td>
       </tr>
 PART3
-	}
-	print <<"PART4";
+    }
+    print <<"PART4";
       <tr>
         <td>Relai phonie de Bert</td>
         <td class="status-ok">

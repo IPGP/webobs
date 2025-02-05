@@ -47,12 +47,12 @@ belongs to.
 
 use strict;
 use warnings;
-use File::Basename; 
+use File::Basename;
 use File::Path qw/make_path/;
-use CGI::Carp qw(fatalsToBrowser); 
-use CGI qw/:standard /; 
-my $cgi = new CGI; 
-$CGI::POST_MAX = 1024 * 5000; 
+use CGI::Carp qw(fatalsToBrowser);
+use CGI qw/:standard /;
+my $cgi = new CGI;
+$CGI::POST_MAX = 1024 * 5000;
 
 # ---- webobs stuff 
 #
@@ -66,7 +66,7 @@ use Locale::TextDomain('webobs');
 # ---- what are we here for ? ------------------------
 #
 my $progress = "";
-my @tod = localtime(); 
+my @tod = localtime();
 my $QryParm = $cgi->Vars;
 my $typeDoc = $QryParm->{'doc'}    // "";
 my $object  = $QryParm->{'object'} // "";
@@ -87,19 +87,19 @@ my $pobj;
 @NID = split(/[\.\/]/, trim($object));
 ($GRIDType, $GRIDName, $NODEName) = @NID;
 if (defined($GRIDType) || defined($GRIDName)) {
-	$editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
-	htmlMsgNotOK("$__{'Not authorized'}") if ($editOK == 0);
+    $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
+    htmlMsgNotOK("$__{'Not authorized'}") if ($editOK == 0);
 } else { htmlMsgNotOK("$__{'Invalid object'} '$object'") }
 
 # ---- find out wether object is a grid or a node
 #
 if (scalar(@NID) == 3) {
-	$pobj = \%NODES;
-	$pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
+    $pobj = \%NODES;
+    $pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
 }
 if (scalar(@NID) == 2) {
-	$pobj = \%GRIDS;
-	$pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
+    $pobj = \%GRIDS;
+    $pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
 }
 
 # ---- more checkings on type of document to be uploaded
@@ -108,10 +108,10 @@ my @allowed = ("SPATH_PHOTOS","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENT
 htmlMsgNotOK("$__{'Cannot upload to'} $typeDoc") if ( "@allowed" !~ /\b$typeDoc\b/ );
 
 if ($typeDoc ne "SPATH_INTERVENTIONS") {
-	$pathTarget  .= "/$pobj->{$typeDoc}";
+    $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
-	htmlMsgNotOK("$__{'intervention event not specified'}") if ($event eq "");
-	$pathTarget  .= "/$pobj->{$typeDoc}/$event/PHOTOS";
+    htmlMsgNotOK("$__{'intervention event not specified'}") if ($event eq "");
+    $pathTarget  .= "/$pobj->{$typeDoc}/$event/PHOTOS";
 }
 
 # ---- at that point $pathTarget is where uploaded documents will be sent to
@@ -126,48 +126,48 @@ make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down to PHOTOS
 my $fx = 1;
 my $filename = my $upload_filehandle = "";
 while($filename = $QryParm->{"uploadFile$fx"}) {
-	if ($filename ne "") {
-		my $safe_filename_characters = "a-zA-Z0-9_.-"; 
-		my $upload_tmp = "$WEBOBS{PATH_TMP_APACHE}"; 
-		$filename  = basename($filename); 
-		$filename =~ tr/ /_/; 
-		if ( $filename =~ /^[^a-zA-Z0-9_.-]+$/ ) {
-			htmlMsgNotOK("Uploaded filename contains invalid characters.");
-		}
-		$upload_filehandle = $cgi->upload("uploadFile$fx"); 
-		if (open ( UPLOADFILE, ">$upload_tmp/$filename") ) {
-			binmode UPLOADFILE; 
-			while ( <$upload_filehandle> ) { 
-				print UPLOADFILE; 
-			} 
-			close UPLOADFILE; 
-		} else {
-			htmlMsgNotOK("Couldn't open upload stream; $!");
-		}
-		qx(mv -f "$upload_tmp/$filename" $pathTarget);
-		if ($?) {
-			htmlMsgNotOK("Couldn't move uploaded file to $pathTarget; $!");
-		}
-		$progress .= "$filename has been uploaded\n";
-	}
-	$fx++;
+    if ($filename ne "") {
+        my $safe_filename_characters = "a-zA-Z0-9_.-";
+        my $upload_tmp = "$WEBOBS{PATH_TMP_APACHE}";
+        $filename  = basename($filename);
+        $filename =~ tr/ /_/;
+        if ( $filename =~ /^[^a-zA-Z0-9_.-]+$/ ) {
+            htmlMsgNotOK("Uploaded filename contains invalid characters.");
+        }
+        $upload_filehandle = $cgi->upload("uploadFile$fx");
+        if (open ( UPLOADFILE, ">$upload_tmp/$filename") ) {
+            binmode UPLOADFILE;
+            while ( <$upload_filehandle> ) {
+                print UPLOADFILE;
+            }
+            close UPLOADFILE;
+        } else {
+            htmlMsgNotOK("Couldn't open upload stream; $!");
+        }
+        qx(mv -f "$upload_tmp/$filename" $pathTarget);
+        if ($?) {
+            htmlMsgNotOK("Couldn't move uploaded file to $pathTarget; $!");
+        }
+        $progress .= "$filename has been uploaded\n";
+    }
+    $fx++;
 }
 
 # ---- take care of file(s) delete if requested ------
 #
 my $ix = 1;
 $filename = "";
-while ($ix <= $nb) { 
-	if ( $filename = $QryParm->{"del$ix"} ) {
-		qx(rm "$pathTarget/$filename");
-		if ($?) { htmlMsgNotOK("Couldn't delete $filename; $!") }
-		$progress .= "$filename has been deleted\n"; 
-		if (-e "$pathTarget/$thumbnailsPath/$filename.$NODES{THUMBNAILS_EXT}") {
-			qx(rm "$pathTarget/$thumbnailsPath/$filename.jpg");
-			if ($?) { htmlMsgNotOK("Couldn't delete $filename.$NODES{THUMBNAILS_EXT} thumbnail; $!") }
-		}
-	}
-	$ix++;
+while ($ix <= $nb) {
+    if ( $filename = $QryParm->{"del$ix"} ) {
+        qx(rm "$pathTarget/$filename");
+        if ($?) { htmlMsgNotOK("Couldn't delete $filename; $!") }
+        $progress .= "$filename has been deleted\n";
+        if (-e "$pathTarget/$thumbnailsPath/$filename.$NODES{THUMBNAILS_EXT}") {
+            qx(rm "$pathTarget/$thumbnailsPath/$filename.jpg");
+            if ($?) { htmlMsgNotOK("Couldn't delete $filename.$NODES{THUMBNAILS_EXT} thumbnail; $!") }
+        }
+    }
+    $ix++;
 }
 
 # ---- getting here if all's OK: we're done -----------
@@ -177,18 +177,18 @@ exit;
 
 # --- return information when OK 
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$progress" if ($progress ne "");
-	print "Update $typeDoc for $object SUCCESSFUL !\n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "$progress" if ($progress ne "");
+    print "Update $typeDoc for $object SUCCESSFUL !\n";
 }
 
 # --- return information when not OK
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$progress" if ($progress ne "");
-	print "$_[0]\n" if ($_[0]);
- 	print "Update $typeDoc for $object FAILED !\n";
-	exit;
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "$progress" if ($progress ne "");
+    print "$_[0]\n" if ($_[0]);
+    print "Update $typeDoc for $object FAILED !\n";
+    exit;
 }
 
 __END__

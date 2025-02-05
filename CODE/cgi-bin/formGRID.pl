@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 #
+
 =head1 NAME
 
 formGRID.pl
@@ -94,91 +95,90 @@ my $post_url = "/cgi-bin/postGRID.pl";
 
 # Read and check CGI parameters
 my $type = checkParam($cgi->param('type'),
-			qr{^((VIEW|PROC|SEFRAN)(\.|/)[a-zA-Z0-9_]+)?$}, 'type') // "";
+    qr{^((VIEW|PROC|SEFRAN)(\.|/)[a-zA-Z0-9_]+)?$}, 'type') // "";
 my $grid = checkParam($cgi->param('grid'),
-			qr{^(VIEW|PROC|SEFRAN)(\.|/)[a-zA-Z0-9_]+$}, 'grid');
+    qr{^(VIEW|PROC|SEFRAN)(\.|/)[a-zA-Z0-9_]+$}, 'grid');
 my @GID = split(/[\.\/]/, $grid);
-
 
 # Read the list of all forms
 opendir my $formDH, $WEBOBS{PATH_FORMS}
-	or die "Problem opening form list from '$WEBOBS{PATH_FORMS}': $!\n";
+  or die "Problem opening form list from '$WEBOBS{PATH_FORMS}': $!\n";
 my @ALL_FORMS = grep(!/^\./ && -d "$WEBOBS{PATH_FORMS}/$_", readdir($formDH));
 closedir($formDH)
-	or die "Problem closing form list from '$WEBOBS{PATH_FORMS}': $!\n";
+  or die "Problem closing form list from '$WEBOBS{PATH_FORMS}': $!\n";
 
 # Load form titles into %FORMS
 for my $f (@ALL_FORMS) {
-	if (-e "$WEBOBS{PATH_FORMS}/$f/$f.conf") {
-		my $F = new WebObs::Form("$f");
-		$FORMS{"$f"} = $F->conf('TITLE');
-	}
+    if (-e "$WEBOBS{PATH_FORMS}/$f/$f.conf") {
+        my $F = new WebObs::Form("$f");
+        $FORMS{"$f"} = $F->conf('TITLE');
+    }
 }
 
 # Read the list of all nodes
 opendir my $nodeDH, $NODES{PATH_NODES}
-	or die "Problem opening node list from '$NODES{PATH_NODES}': $!\n";
+  or die "Problem opening node list from '$NODES{PATH_NODES}': $!\n";
 my @ALL_NODES = sort grep(!/^\./ && -d "$NODES{PATH_NODES}/$_",
-						  readdir($nodeDH));
+    readdir($nodeDH));
 closedir($nodeDH)
-	or die "Problem closing node list from '$NODES{PATH_NODES}': $!\n";
-
+  or die "Problem closing node list from '$NODES{PATH_NODES}': $!\n";
 
 # ---- see what we've been called for and what the client is allowed to do
 # ---- init general-use variables on the way and quit if something's wrong
 #
 if (scalar(@GID) == 2) {
-	my $auth;
-	@GID = map { uc($_) } @GID;
-	($GRIDType, $GRIDName) = @GID;
-	if ($GRIDType eq 'SEFRAN') {
-		$gridConfFile = "$WEBOBS{PATH_SEFRANS}/$GRIDName/$GRIDName.conf";
-		$auth = 'procs';
-	}
-	if ($GRIDType eq 'VIEW') {
-		$gridConfFile = "$WEBOBS{PATH_VIEWS}/$GRIDName/$GRIDName.conf";
-		$auth = 'views';
-	}
-	if ($GRIDType eq 'PROC') {
-		$gridConfFile = "$WEBOBS{PATH_PROCS}/$GRIDName/$GRIDName.conf";
-		$auth = 'procs';
-	}
-	if ($type ne '') {
-		$template = "$WEBOBS{ROOT_CODE}/tplates/$type";
-	} else {
-		$template = "$WEBOBS{ROOT_CODE}/tplates/$GRIDType.DEFAULT";
-	}
-	$editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$GRIDName") || WebObs::Users::clientHasEdit(type => "auth".$auth, name => "MC");
-	$admOK = WebObs::Users::clientHasAdm(type => "auth".$auth, name => "*");
-	if ( -e "$gridConfFile" ) {
-		if ($editOK) {
-			@rawfile = readFile($gridConfFile);
-			$gridConfFileMtime = (stat($gridConfFile))[9] ;
-			$editOK = 1;
-		}
-		if (uc($GRIDType) eq 'SEFRAN') { %GRID = readSefran($GRIDName) };
-		if (uc($GRIDType) eq 'VIEW') { %GRID = readView($GRIDName) };
-		if (uc($GRIDType) eq 'PROC') { %GRID = readProc($GRIDName) };
-	}
-	else {
-		if ($admOK) {
-			$gridConfFile = $template;
-			@rawfile = readFile($gridConfFile);
-			$gridConfFileMtime = (stat($gridConfFile))[9] ;
-			$editOK = 1;
-			$newG = 1;
-		}
-	}
+    my $auth;
+    @GID = map { uc($_) } @GID;
+    ($GRIDType, $GRIDName) = @GID;
+    if ($GRIDType eq 'SEFRAN') {
+        $gridConfFile = "$WEBOBS{PATH_SEFRANS}/$GRIDName/$GRIDName.conf";
+        $auth = 'procs';
+    }
+    if ($GRIDType eq 'VIEW') {
+        $gridConfFile = "$WEBOBS{PATH_VIEWS}/$GRIDName/$GRIDName.conf";
+        $auth = 'views';
+    }
+    if ($GRIDType eq 'PROC') {
+        $gridConfFile = "$WEBOBS{PATH_PROCS}/$GRIDName/$GRIDName.conf";
+        $auth = 'procs';
+    }
+    if ($type ne '') {
+        $template = "$WEBOBS{ROOT_CODE}/tplates/$type";
+    } else {
+        $template = "$WEBOBS{ROOT_CODE}/tplates/$GRIDType.DEFAULT";
+    }
+    $editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$GRIDName") || WebObs::Users::clientHasEdit(type => "auth".$auth, name => "MC");
+    $admOK = WebObs::Users::clientHasAdm(type => "auth".$auth, name => "*");
+    if ( -e "$gridConfFile" ) {
+        if ($editOK) {
+            @rawfile = readFile($gridConfFile);
+            $gridConfFileMtime = (stat($gridConfFile))[9] ;
+            $editOK = 1;
+        }
+        if (uc($GRIDType) eq 'SEFRAN') { %GRID = readSefran($GRIDName) };
+        if (uc($GRIDType) eq 'VIEW') { %GRID = readView($GRIDName) };
+        if (uc($GRIDType) eq 'PROC') { %GRID = readProc($GRIDName) };
+    }
+    else {
+        if ($admOK) {
+            $gridConfFile = $template;
+            @rawfile = readFile($gridConfFile);
+            $gridConfFileMtime = (stat($gridConfFile))[9] ;
+            $editOK = 1;
+            $newG = 1;
+        }
+    }
 
 } else { die "$__{'Not a valid GRID requested (NOT gridtype.gridname)'}" }
 if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
 
 if (!$newG) {
-	%GRID = %{$GRID{$GRIDName}};
-	@domain = split(/\|/, $GRID{'DOMAIN'});
-	$form = $GRID{'FORM'} || '' if ($GRIDType eq "PROC");
-	# Build a hash to efficiently test the presence of a node ID later
-	%gridnodeslist = map(($_ => 1), @{$GRID{'NODESLIST'}});
+    %GRID = %{$GRID{$GRIDName}};
+    @domain = split(/\|/, $GRID{'DOMAIN'});
+    $form = $GRID{'FORM'} || '' if ($GRIDType eq "PROC");
+
+    # Build a hash to efficiently test the presence of a node ID later
+    %gridnodeslist = map(($_ => 1), @{$GRID{'NODESLIST'}});
 }
 
 # ---- good, passed all checkings above
@@ -204,10 +204,10 @@ Content-type: text/html; charset=utf-8
 _EOD_
 
 if ($CM_edit_theme != "default") {
-	print " <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_edit_theme.css\">\n";
+    print " <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_edit_theme.css\">\n";
 }
 if ($CM_browsing_theme != "default" && $CM_edit_theme != $CM_browsing_theme) {
-	print " <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_browsing_theme.css\">\n";
+    print " <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_browsing_theme.css\">\n";
 }
 
 print <<_EOD_;
@@ -281,13 +281,14 @@ _EOD_
 
 print "<H2>$titrePage $GRIDType.$GRIDName";
 if ($newG == 0) {
-	print " <A href=\"#\"><IMG src=\"/icons/no.png\" onClick=\"delete_grid();\" title=\"$__{'Delete this grid'}\"></A>";
+    print " <A href=\"#\"><IMG src=\"/icons/no.png\" onClick=\"delete_grid();\" title=\"$__{'Delete this grid'}\"></A>";
 }
 print "</H2>\n";
 
 # ---- Display file contents into a "textarea" so that it can be edited
 print "<TABLE style=\"\">\n";
 print "<TR><TD style=\"border:0;\">\n";
+
 #print "<TEXTAREA class=\"editfmono\" id=\"tarea\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$text</TEXTAREA><br>\n";
 print "<TEXTAREA class=\"editfmono\" id=\"textarea-editor\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$text</TEXTAREA>\n";
 print "<div id=\"statusbar\">$GRIDType.$GRIDName</div>\n";
@@ -298,61 +299,62 @@ print "</TD>\n";
 print "<TD style=\"border:0; vertical-align:top\">";
 print "<FIELDSET><LEGEND>$__{'Domain'}</LEGEND><SELECT name=\"domain\" size=\"10\" multiple>\n";
 foreach my $d (sort(keys(%DOMAINS))) {
-	print "<option value=\"$d\"".(grep(/^$d$/, @domain) ? " selected":"").">{$d}: $DOMAINS{$d}{NAME}</option>\n";
+    print "<option value=\"$d\"".(grep(/^$d$/, @domain) ? " selected":"").">{$d}: $DOMAINS{$d}{NAME}</option>\n";
 }
 print "</SELECT></FIELDSET>\n";
+
 #[DEBUG:] print "<p>domain = +".join('+',@domain)."+</p>";
 
 # ---- Forms
 if ($GRIDType eq "PROC") {
-	print "<FIELDSET><LEGEND>$__{'Form'}</LEGEND><SELECT name=\"form\" size=\"1\">\n";
-	print "<option value=\"\"> --- none --- </option>\n";
-	for (sort(keys(%FORMS))) {
-		print "<option value=\"$_\"".($form eq $_ ? " selected":"").">{$_}: $FORMS{$_}</option>\n";
-	}
-	print "</SELECT></FIELDSET>\n";
+    print "<FIELDSET><LEGEND>$__{'Form'}</LEGEND><SELECT name=\"form\" size=\"1\">\n";
+    print "<option value=\"\"> --- none --- </option>\n";
+    for (sort(keys(%FORMS))) {
+        print "<option value=\"$_\"".($form eq $_ ? " selected":"").">{$_}: $FORMS{$_}</option>\n";
+    }
+    print "</SELECT></FIELDSET>\n";
 }
 
 # ---- Nodes
 if ($GRIDType eq "PROC" || $GRIDType eq "VIEW") {
-	print "<FIELDSET><LEGEND>$__{'Available/Associated nodes'}</LEGEND>";
-	print "<TABLE cellpadding=\"3\" cellspacing=\"0\" style=\"border:0\">";
-	print "<TR><TD style=\"border:0\">";
-	print "<SELECT name=\"INs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%\">";
-	for my $nodeId (@ALL_NODES) {
-		if (!exists $gridnodeslist{$nodeId}) {
-			print "<option value=\"$nodeId\">$nodeId</option>\n";
-		}
-	}
-	print "</SELECT></RD>";
-	print "<TD align=\"center\" valign=\"middle\" style=\"border:0\">";
-	print "<INPUT type=\"Button\" value=\"Add >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.INs,document.formulaire.SELs)\"><br>";
-	print "<br>";
-	print "<INPUT type=\"Button\" value=\"<< Remove\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.SELs,document.formulaire.INs)\">";
-	print "</TD>";
-	print "<TD style=\"border:0\">";
-	print "<SELECT name=\"SELs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%;font-weight:bold\">";
-	if (!$newG) {
-		for my $nodeId (sort @{$GRID{NODESLIST}}) {
-			print "<option value=\"$nodeId\">$nodeId</option>";
-		}
-	}
-	print "</SELECT></td>";
-	print "</TR>";
-	print "</TABLE>";
-	print "</FIELDSET>";
+    print "<FIELDSET><LEGEND>$__{'Available/Associated nodes'}</LEGEND>";
+    print "<TABLE cellpadding=\"3\" cellspacing=\"0\" style=\"border:0\">";
+    print "<TR><TD style=\"border:0\">";
+    print "<SELECT name=\"INs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%\">";
+    for my $nodeId (@ALL_NODES) {
+        if (!exists $gridnodeslist{$nodeId}) {
+            print "<option value=\"$nodeId\">$nodeId</option>\n";
+        }
+    }
+    print "</SELECT></RD>";
+    print "<TD align=\"center\" valign=\"middle\" style=\"border:0\">";
+    print "<INPUT type=\"Button\" value=\"Add >>\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.INs,document.formulaire.SELs)\"><br>";
+    print "<br>";
+    print "<INPUT type=\"Button\" value=\"<< Remove\" style=\"width:100px\" onClick=\"SelectMoveRows(document.formulaire.SELs,document.formulaire.INs)\">";
+    print "</TD>";
+    print "<TD style=\"border:0\">";
+    print "<SELECT name=\"SELs\" size=\"10\" multiple style=\"font-family:monospace;font-size:110%;font-weight:bold\">";
+    if (!$newG) {
+        for my $nodeId (sort @{$GRID{NODESLIST}}) {
+            print "<option value=\"$nodeId\">$nodeId</option>";
+        }
+    }
+    print "</SELECT></td>";
+    print "</TR>";
+    print "</TABLE>";
+    print "</FIELDSET>";
 } else {
-	print "<INPUT name=\"SELs\" type=\"hidden\" value=\"-\">";
+    print "<INPUT name=\"SELs\" type=\"hidden\" value=\"-\">";
 }
 
 # ---- Sefrans
 if ($GRIDType eq "SEFRAN") {
-	my $chconf = (exists($GRID{CHANNEL_CONF}) && -e $GRID{CHANNEL_CONF} ? "$GRID{CHANNEL_CONF}":"$WEBOBS{PATH_SEFRANS}/$GRIDName/channels.conf");
-	qx(cp $WEBOBS{ROOT_CODE}/tplates/SEFRAN_channels.conf $chconf) if (! -e "$chconf");
-	$chconf =~ s|^.*/CONF/|CONF/|g;
-	print "<FIELDSET><LEGEND>Sefran Channels</LEGEND>\n";
-	print "<A href=\"/cgi-bin/xedit.pl?fs=$chconf\">$chconf</a>\n";
-	print "</FIELDSET>\n";
+    my $chconf = (exists($GRID{CHANNEL_CONF}) && -e $GRID{CHANNEL_CONF} ? "$GRID{CHANNEL_CONF}":"$WEBOBS{PATH_SEFRANS}/$GRIDName/channels.conf");
+    qx(cp $WEBOBS{ROOT_CODE}/tplates/SEFRAN_channels.conf $chconf) if (! -e "$chconf");
+    $chconf =~ s|^.*/CONF/|CONF/|g;
+    print "<FIELDSET><LEGEND>Sefran Channels</LEGEND>\n";
+    print "<A href=\"/cgi-bin/xedit.pl?fs=$chconf\">$chconf</a>\n";
+    print "</FIELDSET>\n";
 }
 
 print "</TD>\n</TR>\n";

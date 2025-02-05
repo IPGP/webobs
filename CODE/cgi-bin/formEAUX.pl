@@ -56,11 +56,11 @@ my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
 for my $p (keys(%Ps)) {
-	my %N = $FORM->nodes($p);
-	for my $n (keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-	}
-	%Ns = (%Ns, %N);
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
 }
 
 my $QryParm   = $cgi->Vars;
@@ -229,8 +229,6 @@ function submit()
  </script>
 ];
 
-
-
 # ---- read data file
 #
 my $message = "Saisie de nouvelles donn&eacute;es";
@@ -240,42 +238,42 @@ my $fts = -1;
 my ($id,$date,$heure,$site,$type,$tAir,$tSource,$pH,$debit,$cond,$niveau,$cLi,$cNa,$cK,$cMg,$cCa,$cF,$cCl,$cBr,$cNO3,$cSO4,$cHCO3,$cI,$cSiO2,$d13C,$d18O,$dD,$rem,$val);
 $id=$date=$heure=$site=$type=$tAir=$tSource=$pH=$debit=$cond=$niveau=$cLi=$cNa=$cK=$cMg=$cCa=$cF=$cCl=$cBr=$cNO3=$cSO4=$cHCO3=$cI=$cSiO2=$d13C=$d18O=$dD=$rem=$val = "";
 if (defined($QryParm->{id})) {
-	($ptr, $fts) = $FORM->data($QryParm->{id});
-	@ligne = @$ptr;
-	if (scalar(@ligne) >= 1) {
-		chomp(@ligne);
-		($id,$date,$heure,$site,$type,$tAir,$tSource,$pH,$debit,$cond,$niveau,$cLi,$cNa,$cK,$cMg,$cCa,$cF,$cCl,$cBr,$cNO3,$cSO4,$cHCO3,$cI,$cSiO2,$d13C,$d18O,$dD,$rem,$val) = split (/\|/,l2u($ligne[0]));
-		if ($QryParm->{id} eq $id) {
-			($sel_annee,$sel_mois,$sel_jour) = split (/-/,$date);
-			($sel_hr,$sel_mn) = split (/:/,$heure);
-			$sel_site = $site;
-			$sel_type = $type;
-			$sel_tAir = $tAir;
-			$sel_tSource = $tSource;
-			$sel_pH = $pH;
-			$sel_debit = $debit;
-			$sel_cond = $cond;
-			$sel_niveau = $niveau;
-			$sel_cLi = $cLi;
-			$sel_cNa = $cNa;
-			$sel_cK = $cK;
-			$sel_cMg = $cMg;
-			$sel_cCa = $cCa;
-			$sel_cF = $cF;
-			$sel_cCl = $cCl;
-			$sel_cBr = $cBr;
-			$sel_cNO3 = $cNO3;
-			$sel_cSO4 = $cSO4;
-			$sel_cHCO3 = $cHCO3;
-			$sel_cI = $cI;
-			$sel_cSiO2 = $cSiO2;
-			$sel_d13C = $d13C;
-			$sel_d18O = $d18O;
-			$sel_dD = $dD;
-			$sel_rem = $rem;
-			$message = "Modification donn&eacute;e n° $QryParm->{id}";
-		} else { $QryParm->{id} = ""; $val = "" ; }
-	} else { $QryParm->{id} = ""; $val = "" ;}
+    ($ptr, $fts) = $FORM->data($QryParm->{id});
+    @ligne = @$ptr;
+    if (scalar(@ligne) >= 1) {
+        chomp(@ligne);
+        ($id,$date,$heure,$site,$type,$tAir,$tSource,$pH,$debit,$cond,$niveau,$cLi,$cNa,$cK,$cMg,$cCa,$cF,$cCl,$cBr,$cNO3,$cSO4,$cHCO3,$cI,$cSiO2,$d13C,$d18O,$dD,$rem,$val) = split (/\|/,l2u($ligne[0]));
+        if ($QryParm->{id} eq $id) {
+            ($sel_annee,$sel_mois,$sel_jour) = split (/-/,$date);
+            ($sel_hr,$sel_mn) = split (/:/,$heure);
+            $sel_site = $site;
+            $sel_type = $type;
+            $sel_tAir = $tAir;
+            $sel_tSource = $tSource;
+            $sel_pH = $pH;
+            $sel_debit = $debit;
+            $sel_cond = $cond;
+            $sel_niveau = $niveau;
+            $sel_cLi = $cLi;
+            $sel_cNa = $cNa;
+            $sel_cK = $cK;
+            $sel_cMg = $cMg;
+            $sel_cCa = $cCa;
+            $sel_cF = $cF;
+            $sel_cCl = $cCl;
+            $sel_cBr = $cBr;
+            $sel_cNO3 = $cNO3;
+            $sel_cSO4 = $cSO4;
+            $sel_cHCO3 = $cHCO3;
+            $sel_cI = $cI;
+            $sel_cSiO2 = $cSiO2;
+            $sel_d13C = $d13C;
+            $sel_d18O = $d18O;
+            $sel_dD = $dD;
+            $sel_rem = $rem;
+            $message = "Modification donn&eacute;e n° $QryParm->{id}";
+        } else { $QryParm->{id} = ""; $val = "" ; }
+    } else { $QryParm->{id} = ""; $val = "" ;}
 }
 
 print qq(<form name="formulaire" id="theform" action="">
@@ -292,17 +290,17 @@ print qq(<form name="formulaire" id="theform" action="">
 );
 
 if ($QryParm->{id} ne "") {
-	print qq(<input type="hidden" name="id" value="$QryParm->{id}">);
-	print qq(<tr><td style="border: 0"><hr>);
-	if ($val ne "") {
-		print qq(<p><b>Information de saisie:</b> $val
+    print qq(<input type="hidden" name="id" value="$QryParm->{id}">);
+    print qq(<tr><td style="border: 0"><hr>);
+    if ($val ne "") {
+        print qq(<p><b>Information de saisie:</b> $val
 		<input type="hidden" name="val" value="$val"></p>);
-	}
-	print qq(<input type="button" value=") . ($id < 0 ? "Reset":"$__{'Remove'}") . qq(" onClick="suppress(1);">);
-	if (clientHasAdm(type=>"authforms",name=>"EAUX")) {
-		print qq(<input type="button" value="$__{'Erase'}" onClick="suppress(2);">);
-	}
-	print qq(<hr></td></tr>);
+    }
+    print qq(<input type="button" value=") . ($id < 0 ? "Reset":"$__{'Remove'}") . qq(" onClick="suppress(1);">);
+    if (clientHasAdm(type=>"authforms",name=>"EAUX")) {
+        print qq(<input type="button" value="$__{'Erase'}" onClick="suppress(2);">);
+    }
+    print qq(<hr></td></tr>);
 }
 
 print qq(</table>
@@ -316,73 +314,73 @@ print qq(</table>
           <select name="annee" size="1">
 );
 
-	for (@anneeListe) {
-		if ($_ == $sel_annee) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select>);
-	print qq(<select name="mois" size="1">);
-	for (@moisListe) {
-		if ($_ == $sel_mois) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select>);
-	print qq( <select name=jour size="1">);
-	for (@jourListe) {
-		if ($_ == $sel_jour) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print "</select>";
+for (@anneeListe) {
+    if ($_ == $sel_annee) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select>);
+print qq(<select name="mois" size="1">);
+for (@moisListe) {
+    if ($_ == $sel_mois) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select>);
+print qq( <select name=jour size="1">);
+for (@jourListe) {
+    if ($_ == $sel_jour) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print "</select>";
 
-	print qq(&nbsp;&nbsp;<b>Heure: </b><select name=hr size="1">);
-	for (@heureListe) {
-		if ($_ eq $sel_hr) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select>);
-	print qq(<select name=mn size="1">);
-	for (@minuteListe) {
-		if ($_ eq $sel_mn) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-		   print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select><BR>
+print qq(&nbsp;&nbsp;<b>Heure: </b><select name=hr size="1">);
+for (@heureListe) {
+    if ($_ eq $sel_hr) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select>);
+print qq(<select name=mn size="1">);
+for (@minuteListe) {
+    if ($_ eq $sel_mn) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select><BR>
 	<B>Site: </B>
 	  <select name="site" size="1"
 		onMouseOut="nd()"onmouseover="overlib('S&eacute;lectionner le site du prélèvement')">
 	  <option value=""></option>);
 
-	for (@NODESSelList) {
-		my @cle = split(/\|/,$_);
-		if ($cle[0] eq $sel_site) {
-			print qq(<option selected value="$cle[0]">$cle[1]</option>);
-		} else {
-			print qq(<option value="$cle[0]">$cle[1]</option>);
-		}
-	}
-	print qq(</select><BR>
+for (@NODESSelList) {
+    my @cle = split(/\|/,$_);
+    if ($cle[0] eq $sel_site) {
+        print qq(<option selected value="$cle[0]">$cle[1]</option>);
+    } else {
+        print qq(<option value="$cle[0]">$cle[1]</option>);
+    }
+}
+print qq(</select><BR>
 	<B>Type: </B>
       <select name="type" size="1"
 		onMouseOut="nd()" onmouseover="overlib('S&eacute;lectionner le type')">
 	  <option value=""></option>);
 
-	for (sort(keys(%types))) {
-		print qq(<option) . ($_ eq $sel_type ? " selected" : "") . qq( value=$_>$_: $types{$_}{name}</option>);
-	}
+for (sort(keys(%types))) {
+    print qq(<option) . ($_ eq $sel_type ? " selected" : "") . qq( value=$_>$_: $types{$_}{name}</option>);
+}
 
 print qq(</select>
         </P>
