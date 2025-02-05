@@ -43,26 +43,26 @@ my $langue_cookie;
 cherche_langue();
 
 sub cherche_langue {
-	my $langue = shift;
-	if ( defined $langue and $langue ne "" ){
-		$langue_utilisee = $langue;
-	} else {
-		%cookies = fetch CGI::Cookie;
-		$langue_cookie = exists($cookies{'langue_webobs'}) ? $cookies{'langue_webobs'}->value : "";
-		if ($langue_cookie ne "") {
-			$langue_utilisee = $langue_cookie;
-		} else {
-			$langue_utilisee = $langue_defaut;
-		}
-	}
-	setlocale (LC_ALL, $langue_utilisee);
-	$ENV{LC_ALL}=$langue_utilisee;
+    my $langue = shift;
+    if ( defined $langue and $langue ne "" ){
+        $langue_utilisee = $langue;
+    } else {
+        %cookies = fetch CGI::Cookie;
+        $langue_cookie = exists($cookies{'langue_webobs'}) ? $cookies{'langue_webobs'}->value : "";
+        if ($langue_cookie ne "") {
+            $langue_utilisee = $langue_cookie;
+        } else {
+            $langue_utilisee = $langue_defaut;
+        }
+    }
+    setlocale (LC_ALL, $langue_utilisee);
+    $ENV{LC_ALL}=$langue_utilisee;
 }
 
 sub aff_langues () {
-	print '<pre style="background-color: #eee; text-align: left;">'.Dumper('Fichier : '.__FILE__,'Ligne : '.__LINE__,'$langue_defaut',$langue_defaut).'</pre>';
-	print '<pre style="background-color: #eee; text-align: left;">'.Dumper('Fichier : '.__FILE__,'Ligne : '.__LINE__,'$langue_cookie',$langue_cookie).'</pre>';
-	print '<pre style="background-color: #eee; text-align: left;">'.Dumper('Fichier : '.__FILE__,'Ligne : '.__LINE__,'$langue_utilisee',$langue_utilisee).'</pre>';
+    print '<pre style="background-color: #eee; text-align: left;">'.Dumper('Fichier : '.__FILE__,'Ligne : '.__LINE__,'$langue_defaut',$langue_defaut).'</pre>';
+    print '<pre style="background-color: #eee; text-align: left;">'.Dumper('Fichier : '.__FILE__,'Ligne : '.__LINE__,'$langue_cookie',$langue_cookie).'</pre>';
+    print '<pre style="background-color: #eee; text-align: left;">'.Dumper('Fichier : '.__FILE__,'Ligne : '.__LINE__,'$langue_utilisee',$langue_utilisee).'</pre>';
 }
 
 binmode STDOUT, ':raw'; # Needed to make it work in UTF-8 locales in Perl-5.8.

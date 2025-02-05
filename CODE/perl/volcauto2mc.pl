@@ -25,10 +25,10 @@ use WebObs::Config qw(%WEBOBS);
 use VolcAuto qw(create_mc3_lock remove_mc3_lock process_autovolc_csv);
 
 BEGIN {
+
     # Suppress the default fatalsToBrowser from CGI::Carp
     $CGI::Carp::TO_BROWSER = 0;
 }
-
 
 # -----------------------------------------------------------------------------
 # Read script parameters
@@ -38,18 +38,18 @@ BEGIN {
 my $mc3_name = $ARGV[0] || $WEBOBS{'MC3_DEFAULT_NAME'};
 my $sefran_name = $ARGV[1] || $WEBOBS{'SEFRAN3_DEFAULT_NAME'};
 
-
 # -----------------------------------------------------------------------------
 # Make sure the lock will be removed however the script is ended
 #
 END {
+
     # Remove the lock (if we've created it ourself)
     remove_mc3_lock($mc3_name);
 }
+
 # Handle Ctrl-c event (the END block will then be called)
 $SIG{'INT'} = sub { say STDERR "SIGINT caught, exiting."; exit(130); };
 $SIG{'PIPE'} = sub { say STDERR "SIGPIPE caught, exiting."; exit(141); };
-
 
 # -----------------------------------------------------------------------------
 # Main instructions

@@ -56,11 +56,11 @@ my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
 for my $p (keys(%Ps)) {
-	my %N = $FORM->nodes($p);
-	for my $n (keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-	}
-	%Ns = (%Ns, %N);
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
 }
 
 my $titrePage = "&Eacute;dition - ".$FORM->conf('TITLE');
@@ -69,8 +69,8 @@ my $QryParm   = $cgi->Vars;
 
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
-my $sel_jour  = strftime('%d',@tod); 
-my $sel_mois  = strftime('%m',@tod); 
+my $sel_jour  = strftime('%d',@tod);
+my $sel_mois  = strftime('%m',@tod);
 my $sel_annee = strftime('%Y',@tod);
 my $anneeActuelle = strftime('%Y',@tod);
 my $sel_hr    = strftime('%H',@tod);
@@ -155,9 +155,9 @@ function calc()
 	var n = 0;
 	var v = 0;
 	var dd;";
-	
+
 for ('01'..'20') {
-	print "if (formulaire.d$_.value != \"\") {
+    print "if (formulaire.d$_.value != \"\") {
 		dd = 0;
 		v = formulaire.D0.value*1 + formulaire.d$_.value/1000;
 		if ((formulaire.d$_.value - formulaire.d01.value) < -500) { v += 1; }
@@ -213,33 +213,33 @@ my $fts-1;
 my ($id,$date,$heure,$site,$aemd,$pAtm,$tAir,$HR,$nebul,$vitre,$D0,$d01,$d02,$d03,$d04,$d05,$d06,$d07,$d08,$d09,$d10,$d11,$d12,$d13,$d14,$d15,$d16,$d17,$d18,$d19,$d20,$rem,$val);
 $id=$date=$heure=$site=$aemd=$pAtm=$tAir=$HR=$nebul=$vitre=$D0=$d01=$d02=$d03=$d04=$d05=$d06=$d07=$d08=$d09=$d10=$d11=$d12=$d13=$d14=$d15=$d16=$d17=$d18=$d19=$d20=$rem=$val = "";
 if (defined($QryParm->{id})) {
-	($ptr, $fts) = $FORM->data($QryParm->{id});
-	@ligne = @$ptr;
-	if (scalar(@ligne) == 1) {
-		chomp(@ligne);
-		($id,$date,$heure,$site,$aemd,$pAtm,$tAir,$HR,$nebul,$vitre,$D0,$d01,$d02,$d03,$d04,$d05,$d06,$d07,$d08,$d09,$d10,$d11,$d12,$d13,$d14,$d15,$d16,$d17,$d18,$d19,$d20,$rem,$val) = split (/\|/,l2u($ligne[0]));
-		if ($QryParm->{id} eq $id) { 
-			$sel_annee = substr($date,0,4);
-			$sel_mois = substr($date,5,2);
-			$sel_jour = substr($date,8,2);
-			$sel_hr = substr($heure,0,2);
-			$sel_mn = substr($heure,3,2);
-			$sel_site = $site;
-			$sel_aemd = $aemd;
-			$sel_pAtm = $pAtm;
-			$sel_tAir = $tAir;
-			$sel_HR = $HR;
-			$sel_nebul = $nebul;
-			$sel_vitre = $vitre;
-			$sel_D0 = $D0;
-			for (@donneeListe) {
-				eval("\$sel_d$_ = \$d$_;");
-			}
-			$sel_rem = $rem;
-			$sel_rem =~ s/"/&quot;/g;
-			$message = "Modification donn&eacute;e n° $QryParm->{id}";
-		} else { $QryParm->{id} = ""; $val = "" ; }
-	 } else { $QryParm->{id} = ""; $val = "" ;}
+    ($ptr, $fts) = $FORM->data($QryParm->{id});
+    @ligne = @$ptr;
+    if (scalar(@ligne) == 1) {
+        chomp(@ligne);
+        ($id,$date,$heure,$site,$aemd,$pAtm,$tAir,$HR,$nebul,$vitre,$D0,$d01,$d02,$d03,$d04,$d05,$d06,$d07,$d08,$d09,$d10,$d11,$d12,$d13,$d14,$d15,$d16,$d17,$d18,$d19,$d20,$rem,$val) = split (/\|/,l2u($ligne[0]));
+        if ($QryParm->{id} eq $id) {
+            $sel_annee = substr($date,0,4);
+            $sel_mois = substr($date,5,2);
+            $sel_jour = substr($date,8,2);
+            $sel_hr = substr($heure,0,2);
+            $sel_mn = substr($heure,3,2);
+            $sel_site = $site;
+            $sel_aemd = $aemd;
+            $sel_pAtm = $pAtm;
+            $sel_tAir = $tAir;
+            $sel_HR = $HR;
+            $sel_nebul = $nebul;
+            $sel_vitre = $vitre;
+            $sel_D0 = $D0;
+            for (@donneeListe) {
+                eval("\$sel_d$_ = \$d$_;");
+            }
+            $sel_rem = $rem;
+            $sel_rem =~ s/"/&quot;/g;
+            $message = "Modification donn&eacute;e n° $QryParm->{id}";
+        } else { $QryParm->{id} = ""; $val = "" ; }
+    } else { $QryParm->{id} = ""; $val = "" ;}
 }
 
 print "<TABLE ><TR><TD style=\"border:0\">
@@ -249,113 +249,113 @@ print "</TD></TR></TABLE>";
 
 print "<FORM name=formulaire id=\"theform\" action=\"\">";
 if ($QryParm->{id} ne "") {
-   print "<input type=\"hidden\" name=\"id\" value=\"$QryParm->{id}\">";
+    print "<input type=\"hidden\" name=\"id\" value=\"$QryParm->{id}\">";
 }
 
 print "<input type=\"hidden\" name=\"oper\" value=\"$CLIENT\">\n";
 
 print "<TABLE style=border:0 onMouseOver=\"calc()\">
 	<TR><TD style=border:0 valign=top nowrap>";
-	print "<fieldset><legend>Date et site visé</legend>
+print "<fieldset><legend>Date et site visé</legend>
 		<P class=parform>
 		<B>Date: </b><select name=annee size=\"1\">";
-		for (@anneeListe) {
-			if ($_ == $sel_annee) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
-		}
-		print "</select>";
-		print " <select name=mois size=\"1\">";
-		for (@moisListe) {
-			if ($_ == $sel_mois) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
-		}
-		print "</select>";
-		print " <select name=jour size=\"1\">";
-		for (@jourListe) { 
-			if ($_ == $sel_jour) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
-		}
-		print "</select>";
+for (@anneeListe) {
+    if ($_ == $sel_annee) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
+}
+print "</select>";
+print " <select name=mois size=\"1\">";
+for (@moisListe) {
+    if ($_ == $sel_mois) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
+}
+print "</select>";
+print " <select name=jour size=\"1\">";
+for (@jourListe) {
+    if ($_ == $sel_jour) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
+}
+print "</select>";
 
-		print "&nbsp;&nbsp;<b>Heure: </b><select name=hr size=\"1\">";
-		for (@heureListe) { 
-			if ($_ eq $sel_hr) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
-		}      
-		print "</select>";
-		print " <select name=mn size=\"1\">";
-		for (@minuteListe) {
-			if ($_ eq $sel_mn) {
-			   print "<option selected value=$_>$_</option>";
-			} else {
-			   print "<option value=$_>$_</option>";
-			}
-		}
-		print "</select><BR>";
-		print "<B>Site:</B> <select name=site onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le site')\" size=\"1\"><option value=\"\"></option>\n";
-		for (@NODESSelList) {
-			my @cle = split(/\|/,$_);
-			$sel = "";
-			if ($cle[0] eq $sel_site) { $sel = "selected"; }
-			print "<option $sel value=$cle[0]>$cle[1]</option>\n";
-		}
-		print "</select></P>\n";
-	print "</fieldset>";
+print "&nbsp;&nbsp;<b>Heure: </b><select name=hr size=\"1\">";
+for (@heureListe) {
+    if ($_ eq $sel_hr) { print "<option selected value=$_>$_</option>"; } else { print "<option value=$_>$_</option>"; }
+}
+print "</select>";
+print " <select name=mn size=\"1\">";
+for (@minuteListe) {
+    if ($_ eq $sel_mn) {
+        print "<option selected value=$_>$_</option>";
+    } else {
+        print "<option value=$_>$_</option>";
+    }
+}
+print "</select><BR>";
+print "<B>Site:</B> <select name=site onMouseOut=\"nd()\" onmouseover=\"overlib('Sélectionner le site')\" size=\"1\"><option value=\"\"></option>\n";
+for (@NODESSelList) {
+    my @cle = split(/\|/,$_);
+    $sel = "";
+    if ($cle[0] eq $sel_site) { $sel = "selected"; }
+    print "<option $sel value=$cle[0]>$cle[1]</option>\n";
+}
+print "</select></P>\n";
+print "</fieldset>";
 
-	print "<fieldset><legend>Mesures et param&egrave;tres m&eacute;t&eacute;o</legend>
+print "<fieldset><legend>Mesures et param&egrave;tres m&eacute;t&eacute;o</legend>
 		<P class=parform>
 		<B>Pression atmosph&eacute;rique </B> (en mmHg) = <input size=5 class=inputNum name=pAtm value=\"$sel_pAtm\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de pression atmosphérique')\"><BR>\n
 		<B>Temp&eacute;rature de l'air</B> (en °C) = <input size=5 class=inputNum name=tAir value=\"$sel_tAir\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur de température de l&apos;air')\"><BR>\n
 		<B>H.R.</B> (en %) = <input size=5 class=inputNum name=HR value=\"$sel_HR\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la valeur d&apos;humidité relative')\"><BR>
 		<B>N&eacute;bulosit&eacute; sur le trajet:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner la n&eacute;bulosit&eacute;')\" name=\"nebul\" size=\"1\">\n";
-		for (@meteo) {
-			my @cle = split(/\|/,$_);
-			$sel = "";
-			if ($cle[0] eq $sel_nebul) { $sel = "selected"; }
-			print "<option $sel value=$cle[0]>$cle[1]</option>\n";
-		}
-		print "</select></P>\n";
-	print "</fieldset>\n";
+for (@meteo) {
+    my @cle = split(/\|/,$_);
+    $sel = "";
+    if ($cle[0] eq $sel_nebul) { $sel = "selected"; }
+    print "<option $sel value=$cle[0]>$cle[1]</option>\n";
+}
+print "</select></P>\n";
+print "</fieldset>\n";
 print "</TD>\n";
 
 print "<TD style=border:0 valign=top>";
 print "<fieldset><legend>Mesures de distance (m)</legend>
 	<P class=parform>
 	<B>Type d'appareil:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('S&eacute;lectionner le type d&apos;appareil')\" name=\"aemd\" size=\"1\">\n";
-	for (@types) {
-		my @cle = split(/\|/,$_);
-		$sel = "";
-		if ($cle[0] eq $sel_aemd) { $sel = "selected"; }
-		print "<option $sel value=$cle[0]>$cle[1]</option>\n";
-	}
-	print "</select><BR>
+for (@types) {
+    my @cle = split(/\|/,$_);
+    $sel = "";
+    if ($cle[0] eq $sel_aemd) { $sel = "selected"; }
+    print "<option $sel value=$cle[0]>$cle[1]</option>\n";
+}
+print "</select><BR>
 	<B>Vitre:</B> <select onMouseOut=\"nd()\" onmouseover=\"overlib('Indiquer si la vitre est ouverte ou ferm&eacute;e')\" name=\"vitre\" size=\"1\">";
-	for (@vitres) {
-		my @cle = split(/\|/,$_);
-		$sel = "";
-		if ($_ eq $sel_vitre) { $sel = "checked"; }
-		print "<option $sel value=$cle[0]>$cle[1]</option>";
-	}
-	print "</select></P>";
-	print "<P class=parform>
+for (@vitres) {
+    my @cle = split(/\|/,$_);
+    $sel = "";
+    if ($_ eq $sel_vitre) { $sel = "checked"; }
+    print "<option $sel value=$cle[0]>$cle[1]</option>";
+}
+print "</select></P>";
+print "<P class=parform>
 		<B>Distance initiale:</B> (en m) <input size=4 class=inputNum name=\"D0\" tabindex=1 value=\"$sel_D0\"
 			onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la mesure de distance initiale')\"></P>\n";
-	print "<P class=parform><B>Fractions:</B> (en mm)<BR>";
-	for (@donneeListe) {
-		print "<input size=3 class=inputNum name=\"d$_\" tabindex=1 value=\"".eval("\$sel_d$_")."\"
+print "<P class=parform><B>Fractions:</B> (en mm)<BR>";
+for (@donneeListe) {
+    print "<input size=3 class=inputNum name=\"d$_\" tabindex=1 value=\"".eval("\$sel_d$_")."\"
 			onKeyUp=\"calc()\" onMouseOut=\"nd()\" onmouseover=\"overlib('Entrer la fraction de chaque mesure (en mm)')\">";
-	}
-	print "</P>\n";
+}
+print "</P>\n";
 
-	print "<P class=parform><B>Moyenne</B> (m) = <input name=\"moy\" size=8 readOnly class=inputNumNoEdit>
+print "<P class=parform><B>Moyenne</B> (m) = <input name=\"moy\" size=8 readOnly class=inputNumNoEdit>
 	<B>2 &times; &Eacute;cart-type</B> (m) = <input name=\"sig\" size=5 readOnly class=inputNumNoEdit></P>\n";
-	print "</fieldset>\n";
-	print "</TD>\n";
+print "</fieldset>\n";
+print "</TD>\n";
 print "</TR>\n";
 
-print "<TR><TD style=\"border: none\">"; 
+print "<TR><TD style=\"border: none\">";
 print "<fieldset><legend>Observations</legend>";
-	print "<P class=parform>";
-	print "<input size=70 name=rem value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter vos observations')\"><BR>
+print "<P class=parform>";
+print "<input size=70 name=rem value=\"$sel_rem\" onMouseOut=\"nd()\" onmouseover=\"overlib('Noter vos observations')\"><BR>
 	<B>Information de saisie:</B> $val
-	<INPUT type=hidden name=val value=\"$val\"></P>"; 
-	print "</fieldset>\n";
+	<INPUT type=hidden name=val value=\"$val\"></P>";
+print "</fieldset>\n";
 print "</TD></TR>\n";
 
 print "<TR><TD colspan=2 style=border:0>";

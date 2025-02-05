@@ -52,37 +52,38 @@ chomp($today);
 my $GRIDName  = my $GRIDType  = my $NODEName = my $msk = "";
 my @NID = split(/[\.\/]/, trim($grid));
 if (scalar(@NID) < 2) {
-	die "No valid grid requested (NOT= gridtype.gridname[.node])." ;
+    die "No valid grid requested (NOT= gridtype.gridname[.node])." ;
 }
 ($GRIDType, $GRIDName, $NODEName) = @NID;
 
 # ---- get all nodenames of grid (only VALID) and fullfill a HoH
 my %N = listGridNodes(grid=>"$GRIDType.$GRIDName");
+
 # lat/lon to center the map
 my $lat = my $lon = "";
 my $latsum = my $lonsum = my $n = 0;
 for (keys(%N)) {
-	my $sta = $_;
-	my %NODE = readNode($sta);
-	$N{$sta}{LAT_WGS84} = $NODE{$sta}{LAT_WGS84};
-	$N{$sta}{LON_WGS84} = $NODE{$sta}{LON_WGS84};
-	$N{$sta}{ALTITUDE}  = $NODE{$sta}{ALTITUDE};
-	$N{$sta}{INSTALL_DATE}  = $NODE{$sta}{INSTALL_DATE};
-	$N{$sta}{END_DATE}  = $NODE{$sta}{END_DATE};
-	$N{$sta}{TYPE}  = $NODE{$sta}{TYPE};
-	if ($sta eq $NODEName) {
-		$lat = $N{$sta}{LAT_WGS84};
-		$lon = $N{$sta}{LON_WGS84};
-		$titre = "$NODE{$sta}{ALIAS}: $NODE{$sta}{NAME}";
-	}
-	$latsum += $N{$sta}{LAT_WGS84};
-	$lonsum += $N{$sta}{LON_WGS84};
-	$n++;
+    my $sta = $_;
+    my %NODE = readNode($sta);
+    $N{$sta}{LAT_WGS84} = $NODE{$sta}{LAT_WGS84};
+    $N{$sta}{LON_WGS84} = $NODE{$sta}{LON_WGS84};
+    $N{$sta}{ALTITUDE}  = $NODE{$sta}{ALTITUDE};
+    $N{$sta}{INSTALL_DATE}  = $NODE{$sta}{INSTALL_DATE};
+    $N{$sta}{END_DATE}  = $NODE{$sta}{END_DATE};
+    $N{$sta}{TYPE}  = $NODE{$sta}{TYPE};
+    if ($sta eq $NODEName) {
+        $lat = $N{$sta}{LAT_WGS84};
+        $lon = $N{$sta}{LON_WGS84};
+        $titre = "$NODE{$sta}{ALIAS}: $NODE{$sta}{NAME}";
+    }
+    $latsum += $N{$sta}{LAT_WGS84};
+    $lonsum += $N{$sta}{LON_WGS84};
+    $n++;
 }
 if (scalar(@NID) == 2) {
-	$lat = $latsum/$n;
-	$lon = $lonsum/$n;
-	$titre = $grid;
+    $lat = $latsum/$n;
+    $lon = $lonsum/$n;
+    $titre = $grid;
 }
 
 # ---- build the HTML page calling OSM API once loaded ----
@@ -292,26 +293,27 @@ print <<"END";
 END
 
 for (keys(%N)) {
-	if (!($N{$_}{LAT_WGS84} eq "" && $N{$_}{LON_WGS84} eq "")
-		&& ( ($opt ne "active" || (($N{$_}{END_DATE} ge $today || $N{$_}{END_DATE} eq "NA")
-			&& ($N{$_}{INSTALL_DATE} le $today || $N{$_}{INSTALL_DATE} eq "NA"))))) {
-		my $text = "<B>$N{$_}{ALIAS}: $N{$_}{NAME}</B><BR>"
-			.($N{$_}{TYPE} ne "" ? "<I>($N{$_}{TYPE})</I><br>":"")
-			."&nbspfrom <B>$N{$_}{INSTALL_DATE}</B>".($N{$_}{END_DATE} ne "NA" ? " to <B>$N{$_}{END_DATE}</B>":"")."<br>"
-			."&nbsp;<B>$N{$_}{LAT_WGS84}&deg;</B>, <B>$N{$_}{LON_WGS84}&deg;</B>, <B>$N{$_}{ALTITUDE} m</B>";
-		$text =~ s/\"//g;  # fix ticket #166
-		print "var marker = L.marker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}]).addTo(map);\n";
-		print "marker.bindPopup(\"$text\").openPopup();\n";
-		print "markers.push(marker);\n";
-	}
+    if (!($N{$_}{LAT_WGS84} eq "" && $N{$_}{LON_WGS84} eq "")
+        && ( ($opt ne "active" || (($N{$_}{END_DATE} ge $today || $N{$_}{END_DATE} eq "NA")
+                    && ($N{$_}{INSTALL_DATE} le $today || $N{$_}{INSTALL_DATE} eq "NA"))))) {
+        my $text = "<B>$N{$_}{ALIAS}: $N{$_}{NAME}</B><BR>"
+          .($N{$_}{TYPE} ne "" ? "<I>($N{$_}{TYPE})</I><br>":"")
+          ."&nbspfrom <B>$N{$_}{INSTALL_DATE}</B>".($N{$_}{END_DATE} ne "NA" ? " to <B>$N{$_}{END_DATE}</B>":"")."<br>"
+          ."&nbsp;<B>$N{$_}{LAT_WGS84}&deg;</B>, <B>$N{$_}{LON_WGS84}&deg;</B>, <B>$N{$_}{ALTITUDE} m</B>";
+        $text =~ s/\"//g;  # fix ticket #166
+        print "var marker = L.marker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}]).addTo(map);\n";
+        print "marker.bindPopup(\"$text\").openPopup();\n";
+        print "markers.push(marker);\n";
+    }
 }
+
 # ---- if no node requested => map fits all nodes of grid
 if (scalar(@NID) == 2) {
-	print "var group = new L.featureGroup(markers);\n";
-	print "map.fitBounds(group.getBounds().pad(0.1));\n";
-	print "map.addLayer(markerClusters);\n";
+    print "var group = new L.featureGroup(markers);\n";
+    print "map.fitBounds(group.getBounds().pad(0.1));\n";
+    print "map.addLayer(markerClusters);\n";
 } else {
-	print "map.setView([$lat, $lon], $WEBOBS{OSM_ZOOM_VALUE});\n";
+    print "map.setView([$lat, $lon], $WEBOBS{OSM_ZOOM_VALUE});\n";
 }
 print "</script>\n";
 

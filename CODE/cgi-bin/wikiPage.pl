@@ -47,43 +47,42 @@ my $editor;
 my $QryParm   = $cgi->Vars;
 my $file = $QryParm->{'file'} // "";
 
-
 my $bfn = basename($file);
 $bfn =~ s/\..*$//;
 if (!WebObs::Users::clientHasRead(type=>'authwikis',name=>"*")
-	&& !WebObs::Users::clientHasRead(type=>'authwikis',name=>$bfn)) {
-	die "$__{'Not authorized'}";
+    && !WebObs::Users::clientHasRead(type=>'authwikis',name=>$bfn)) {
+    die "$__{'Not authorized'}";
 }
 
 # ---- read the requested wiki page ------------------------------------------ 
 if ($file ne "") {
-	if (! -f $file) {
-		$file="$WEBOBS{PATH_USERS_WIKI}/$file" if (-f "$WEBOBS{PATH_USERS_WIKI}/$file"); 
-		$file="$WEBOBS{PATH_USERS_HTML}/$file" if (-f "$WEBOBS{PATH_USERS_HTML}/$file"); 
-	}
-	open(RDR, "<$file") || die " couldn't open $file\n";
-	push (@lines,$_) while(<RDR>); 
-	close RDR;
+    if (! -f $file) {
+        $file="$WEBOBS{PATH_USERS_WIKI}/$file" if (-f "$WEBOBS{PATH_USERS_WIKI}/$file");
+        $file="$WEBOBS{PATH_USERS_HTML}/$file" if (-f "$WEBOBS{PATH_USERS_HTML}/$file");
+    }
+    open(RDR, "<$file") || die " couldn't open $file\n";
+    push (@lines,$_) while(<RDR>);
+    close RDR;
 } else { die " missing page name\n"; }
 
 # ---- legacy 1st line processing =? title and html/nothtml switch -- TBD --- 
 my $html  = 0;
 my $titre = "";
 if ($lines[0] =~ /^TITRE_HTML\|/) {
-	$titre = substr($lines[0],11);
-	$html = 1;
+    $titre = substr($lines[0],11);
+    $html = 1;
 }
 if ($lines[0] =~ /^TITRE\|/) {
-	$titre = substr($lines[0],6);
+    $titre = substr($lines[0],6);
 }
 shift(@lines) if ($titre ne "");
 chomp($titre);
 
 # ---- define/display a link to editor when permitted ------------------------
 if (WebObs::Users::clientHasEdit(type=>'authwikis',name=>"*") || WebObs::Users::clientHasEdit(type=>'authwikis',name=>"$bfn")) {
-	$editor  = "<P align=\"right\">"; 
-	$editor .= "<A href=\"/cgi-bin/editMIU.pl?file=$file&rn=authwikis.$bfn\">"; 
-	$editor .= "<B>$__{'Edit this page'}</B></A></P>";
+    $editor  = "<P align=\"right\">";
+    $editor .= "<A href=\"/cgi-bin/editMIU.pl?file=$file&rn=authwikis.$bfn\">";
+    $editor .= "<B>$__{'Edit this page'}</B></A></P>";
 }
 
 # ---- create the HTML now ! ------------------------------------------------- 
@@ -107,18 +106,17 @@ print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
 # -------- html or wiki things from input $file, in its own DIV ------------
 print "<DIV ID=\"wikiDiv\" style=\"width:100%\">";   # TBD: a specific css file ?
 if ($titre ne "") {
-	print "<H1>$titre</H1>";
+    print "<H1>$titre</H1>";
 }
 if ($html) {
-	print @lines;
+    print @lines;
 } else {
-	print WebObs::Wiki::wiki2html(join("",@lines));
+    print WebObs::Wiki::wiki2html(join("",@lines));
 }
 print "</DIV>\n";
 
 # -------- closing tags -----------------------------------------------------
 print "</BODY></HTML>";
-
 
 __END__
 

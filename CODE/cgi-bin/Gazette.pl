@@ -103,12 +103,16 @@ $QryParm->{'delid'}     //= "";
 # ---- special requests before querying/displaying gazette rows
 # ------------------------------------------------------------------
 my $setmsg = "";
+
 # ---- download an iCal file; will not return here
 getical($QryParm->{'getical'}) if defined($QryParm->{'getical'});
+
 # ---- getId() doesn't format results; will not return here
 getId($QryParm->{'getid'}) if ($QryParm->{'getid'}  ne "") ;
+
 # ---- DB update 'setid' (article row
 $setmsg = setId($QryParm->{'setid'}) if ($QryParm->{'setid'}  ne "");
+
 # ---- DB delete 'delid' (article) row
 $setmsg = delId($QryParm->{'delid'}) if ($QryParm->{'delid'}  ne "");
 ### ---- if no select/display parms, special requests return DB update message only
@@ -120,6 +124,7 @@ $setmsg = delId($QryParm->{'delid'}) if ($QryParm->{'delid'}  ne "");
 ##	}
 ##}
 $setmsg = "<span>".$today->strftime('%Y-%m-%d %H:%M:%S')." $__{'last DB update'}: $setmsg</span>" if ($setmsg ne "");
+
 # ---- end of special requests
 # ------------------------------------------------------------------
 
@@ -135,21 +140,21 @@ $QryParm->{'create'}    //= "";
 # ---- keywords are a subset of those handled by Gazette.js function shortcuts()
 # ---- (only for coherence/documentation ... ie. could differ)
 if ($QryParm->{'gdate'} =~ /today/i) {
-	$QryParm->{'gdate'} = $today->strftime('%Y-%m-%d');
+    $QryParm->{'gdate'} = $today->strftime('%Y-%m-%d');
 }
 elsif ($QryParm->{'gdate'} =~ /tomorrow/i) {
-	$QryParm->{'gdate'} = ($today+86400)->strftime('%Y-%m-%d');
+    $QryParm->{'gdate'} = ($today+86400)->strftime('%Y-%m-%d');
 }
 elsif ($QryParm->{'gdate'} =~ /yesterday/i) {
-	$QryParm->{'gdate'} = ($today-86400)->strftime('%Y-%m-%d');
+    $QryParm->{'gdate'} = ($today-86400)->strftime('%Y-%m-%d');
 }
 elsif ($QryParm->{'gdate'} =~ /allyear/i) {
-	$QryParm->{'gdate'} = $today->year."-01-01,".$today->year."-12-31";
+    $QryParm->{'gdate'} = $today->year."-01-01,".$today->year."-12-31";
 }
 elsif ($QryParm->{'gdate'} =~ /currWeek|thisweek/i) {
-	my $monday = $today-(($today->_wday+6)%7)*86400;
-	my $sunday = $today+(6-($today->_wday+6)%7)*86400;
-	$QryParm->{'gdate'} = $monday->strftime("%Y-%m-%d").",".$sunday->strftime("%Y-%m-%d");
+    my $monday = $today-(($today->_wday+6)%7)*86400;
+    my $sunday = $today+(6-($today->_wday+6)%7)*86400;
+    $QryParm->{'gdate'} = $monday->strftime("%Y-%m-%d").",".$sunday->strftime("%Y-%m-%d");
 }
 
 # ---- some defaults if needed for Gazette configuration
@@ -168,12 +173,12 @@ my $daynames      = join(',',map { l2u(($thismonday+86400*$_)->strftime('%A'))} 
 my $monthnames    = join(',',map { l2u((Time::Piece->strptime("$_",'%m'))->strftime('%B')) } (1..12)) ;
 
 my %prez = ('calendar' => $__{'Calendar'},
-			'dateList' => $__{'List by dates'},
-			'categoryList' => $__{'List by categories'},
-			'dump' => 'dump',
-			'stats' => 'stats',
-			'ical' => 'iCalendar',
-			) ;
+    'dateList' => $__{'List by dates'},
+    'categoryList' => $__{'List by categories'},
+    'dump' => 'dump',
+    'stats' => 'stats',
+    'ical' => 'iCalendar',
+  ) ;
 
 # ---- ... for wodp javascript
 my $wodp_d2 = "[".join(',',map { "'".substr($_,0,2)."'" } split(/,/,$daynames))."]";
@@ -183,6 +188,7 @@ my @holidaysdef;
 open(FILE, "<$WEBOBS{FILE_DAYSOFF}") || die "$__{'failed opening holidays definitions'}\n";
 while(<FILE>) { push(@holidaysdef,l2u($_)) if ($_ !~/^(#|$)/); }; close(FILE);
 chomp(@holidaysdef);
+
 # check/translate holidaysdef quote and accents ?
 my $wodp_holidays = "[".join(',',map { my ($d,$t)=split(/\|/,$_); "{d: \"$d\", t:\"$t\"}" } @holidaysdef)."]";
 
@@ -196,20 +202,20 @@ my @gazette=();
 my ($d1, $d2) = split(/,/,$QryParm->{'gdate'});
 my ($d1dt, $d2dt) = '';
 if (!$d1) {
-	$d1 = $today->strftime('%Y-%m-%d');
-	$d1dt = Time::Piece->strptime($d1,'%Y-%m-%d');
-	$d2 = $d1;
-	$d2dt = Time::Piece->strptime($d2,'%Y-%m-%d');
-	$reqdate = l2u($d1dt->strftime($fmt_long_date));
+    $d1 = $today->strftime('%Y-%m-%d');
+    $d1dt = Time::Piece->strptime($d1,'%Y-%m-%d');
+    $d2 = $d1;
+    $d2dt = Time::Piece->strptime($d2,'%Y-%m-%d');
+    $reqdate = l2u($d1dt->strftime($fmt_long_date));
 } else {
-	$d1dt = Time::Piece->strptime($d1,'%Y-%m-%d');
-	if (!$d2) {
-		$d2 = $d1;
-		$reqdate = l2u($d1dt->strftime($fmt_long_date));
-	} else {
-		$d2dt = Time::Piece->strptime($d2,'%Y-%m-%d');
-		$reqdate = "$__{'from'} ".l2u($d1dt->strftime($fmt_date))." $__{'to'} ". l2u($d2dt->strftime($fmt_date));
-	}
+    $d1dt = Time::Piece->strptime($d1,'%Y-%m-%d');
+    if (!$d2) {
+        $d2 = $d1;
+        $reqdate = l2u($d1dt->strftime($fmt_long_date));
+    } else {
+        $d2dt = Time::Piece->strptime($d2,'%Y-%m-%d');
+        $reqdate = "$__{'from'} ".l2u($d1dt->strftime($fmt_date))." $__{'to'} ". l2u($d2dt->strftime($fmt_date));
+    }
 }
 
 # ---- change the default "verbose" date expression based on wodpdesc if it exists
@@ -219,13 +225,14 @@ if ($QryParm->{'wodpdesc'} =~ /week/i) { $reqdate = l2u($d1dt->strftime($fmt_lon
 
 # ---- now build the article's page !
 if (grep /\Q$QryParm->{'gview'}/i , keys(%prez)) {
-	#@gazette = WebObs::Gazette::Show(view=>$QryParm->{'gview'},from=>$d1,to=>$d2,categories=>$QryParm->{'gcategory'},textfilter=>$QryParm->{'gfilter'},jseditor=>'openPopup');
-	@gazette = WebObs::Gazette::Show(view=>$QryParm->{'gview'},
-	                                 from=>$d1,to=>$d2,
-									 categories=>$QryParm->{'gcategory'},
-									 textfilter=>$QryParm->{'gfilter'},
-									 jseditor=>'openPopup',jsevent=>'showobject');
-	@gazette = ("<h3>$empty</h3>") if (!@gazette);
+
+#@gazette = WebObs::Gazette::Show(view=>$QryParm->{'gview'},from=>$d1,to=>$d2,categories=>$QryParm->{'gcategory'},textfilter=>$QryParm->{'gfilter'},jseditor=>'openPopup');
+    @gazette = WebObs::Gazette::Show(view=>$QryParm->{'gview'},
+        from=>$d1,to=>$d2,
+        categories=>$QryParm->{'gcategory'},
+        textfilter=>$QryParm->{'gfilter'},
+        jseditor=>'openPopup',jsevent=>'showobject');
+    @gazette = ("<h3>$empty</h3>") if (!@gazette);
 }
 
 # ---- Start HTML page output
@@ -233,14 +240,14 @@ if (grep /\Q$QryParm->{'gview'}/i , keys(%prez)) {
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
 print "<html><head><title>$GAZETTE{TITLE}</title>\n",
-      "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
-      "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">",
-      "<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/Gazette.css\">",
-      "<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/wodp.css\">",
-	  "<script language=\"JavaScript\" src=\"/js/jquery.js\"></script>",
-	  "<script language=\"JavaScript\" src=\"/js/wodp.js\"></script>",
-	  "<script language=\"JavaScript\" src=\"/js/Gazette.js\"></script>\n",
-	  "</head>" ;
+  "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
+  "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">",
+  "<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/Gazette.css\">",
+  "<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/wodp.css\">",
+  "<script language=\"JavaScript\" src=\"/js/jquery.js\"></script>",
+  "<script language=\"JavaScript\" src=\"/js/wodp.js\"></script>",
+  "<script language=\"JavaScript\" src=\"/js/Gazette.js\"></script>\n",
+  "</head>" ;
 print "<body>\n";
 
 # ---- articles management form
@@ -251,14 +258,15 @@ print "<body>\n";
 my %VUSERNAMES;
 my %IUSERNAMES;
 foreach (keys(%USERS)) {
-	my @grp = WebObs::Users::userListGroup($_);
-	my %gid = map { $_ => 1 } split(/,/,$GAZETTE{ACTIVE_GID});
-	if ((%gid && grep { $gid{$_} } @grp) || (!%gid && isok($USERS{$_}{VALIDITY}))) {
-		$VUSERNAMES{$USERS{$_}{UID}} = $USERS{$_}{FULLNAME}
-	} else {
-		$IUSERNAMES{$USERS{$_}{UID}} = $USERS{$_}{FULLNAME}
-	}
+    my @grp = WebObs::Users::userListGroup($_);
+    my %gid = map { $_ => 1 } split(/,/,$GAZETTE{ACTIVE_GID});
+    if ((%gid && grep { $gid{$_} } @grp) || (!%gid && isok($USERS{$_}{VALIDITY}))) {
+        $VUSERNAMES{$USERS{$_}{UID}} = $USERS{$_}{FULLNAME}
+    } else {
+        $IUSERNAMES{$USERS{$_}{UID}} = $USERS{$_}{FULLNAME}
+    }
 }
+
 #DL-was:my $selusers = ""; map { $selusers .= "<option value=\"$_\">$VUSERNAMES{$_}</option>" } sort keys(%VUSERNAMES);
 my $selusers = "";
 
@@ -296,6 +304,7 @@ FIN
 
 # ---- JavaScript inits
 my $jscat   = "{".join(',',map { " \"$_\": \"$QCAT{$_}\"" } keys(%QCAT))."}";
+
 #DL-was:my $jsnames = "{".join(',',map { " \"$_\": \"$USERNAMES{$_}\"" } keys(%USERNAMES))."}";
 my $jsnames  = "{".join(',',map { " \"$_\": \"$VUSERNAMES{$_} ($_)\"" } sort keys(%VUSERNAMES))."}";
 my $jsnamesI = "{".join(',',map { " \"$_\": \"$IUSERNAMES{$_} ($_)\"" } sort keys(%IUSERNAMES))."}";
@@ -324,55 +333,55 @@ $createOK = 1 if ( WebObs::Users::clientHasEdit(type=>"authmisc",name=>"GAZETTE"
 
 print "<A NAME=\"MYTOP\"></A>";
 print "<div id=\"banner\" class=\"banner\">\n";
-	print "<table width=\"100%\">";
-	print "<tr>";
-		print "<td style=\"width:15%; border: none; text-align: right; vertical-align: middle\">";
-		print "<FORM name=\"gztform\" id=\"gztform\" action=\"/cgi-bin/Gazette.pl\" method=\"get\">";
-		print "<label style=\"width:80px;font-weight:bold\" for=\"gdate\">$__{'Date(s)'}:</label> <input class=\"wodp\" size=\"25\" value=\"$QryParm->{'gdate'}\" name=\"gdate\" id=\"gdate\"/></p>";
-		# following 'shortcuts' values MUST MATCH those used/processed in Gazette.js,function shortcuts()
-		print "<p><select id=\"gcr\" name=\"gcr\" size=\"1\" onchange=\"shortcuts(this.value,'input#gdate');\">";
-			print "<option style=\"font-style: italic;\" value=\"dummy\" selected> - $__{'or choose a preset period'} - </option>";
-			print "<option value=\"today\">$__{'Today'}</option>";
-			print "<option value=\"tomorrow\">$__{'Tomorrow'}</option>";
-			print "<option value=\"yesterday\">$__{'Yesterday'}</option>";
-			print "<option value=\"currWeek\">$__{'This Week'}</option>";
-			print "<option value=\"all\">$__{'All'}</option>";
-			print "<option value=\"toEnd\">$__{'From today'}</option>";
-			print "<option value=\"fromStart\">$__{'Until today'}</option>";
-		print "</select></p></td>\n";
-		print "<td style=\"border: none; text-align: center; vertical-align: middle\">";
-		print "<label style=\"width:80px;font-weight:bold\" for=\"gview\">$__{'Presentation'}:</label> <select id=\"gview\" name=\"gview\" size=\"1\" >";
-		for my $i ('calendar','dateList','categoryList','ical') { # only these and ordered my way, not keys(%prez) perl's way
-    		if ("$i" eq "$QryParm->{'gview'}") { print "<option selected value=$i>$prez{$i}</option>"; }
-    		else                              { print "<option value=$i>$prez{$i}</option>"; }
-		}
-		if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"GAZETTE_")) {
-			if ("dump" eq "$QryParm->{'gview'}") { print "<option selected value=dump>$prez{dump}</option>"; }
-			else                                { print "<option value='dump'>$prez{dump}</option>"; }
-			if ("stats" eq "$QryParm->{'gview'}") { print "<option selected value=stats>$prez{stats}</option>"; }
-			else                                { print "<option value='stats'>$prez{stats}</option>"; }
-		}
-		print "</select></td>\n";
-		print "<td style=\"border: none; text-align: center; vertical-align: middle\">";
-		print "<label style=\"width:80px;font-weight:bold\" for=\"gcategory\">$__{'Category'}:</label> <select id=\"gcategory\" name=\"gcategory\" size=\"1\">";
-		my $selected='';
-		for (sort keys %GAZETTECAT) {
-			$selected = ("$_" eq "$QryParm->{'gcategory'}" ? "selected" : "");
-			print "<option $selected value=$_>$GAZETTECAT{$_}{Name}</option>";
-		}
-		print "</select></td>\n";
-		print "<td style=\"border: none; text-align: center; vertical-align: middle\">";
-		print "<label style=\"width:80px;font-weight:bold\" for=\"gfilter\">$__{'Filter'}:</label> <input id=\"gfilter\" name=\"gfilter\" size=\"30\" value=\"$QryParm->{'gfilter'}\">";
-		print "</FORM>\n";
+print "<table width=\"100%\">";
+print "<tr>";
+print "<td style=\"width:15%; border: none; text-align: right; vertical-align: middle\">";
+print "<FORM name=\"gztform\" id=\"gztform\" action=\"/cgi-bin/Gazette.pl\" method=\"get\">";
+print "<label style=\"width:80px;font-weight:bold\" for=\"gdate\">$__{'Date(s)'}:</label> <input class=\"wodp\" size=\"25\" value=\"$QryParm->{'gdate'}\" name=\"gdate\" id=\"gdate\"/></p>";
 
-		if ($createOK) {
-			print "<td style=\"border: none; text-align: right; vertical-align: center\">";
-			print "<input id=\"create\" type=\"button\" style=\"font-weight:bold\" value=\"$__{'Create New Event'}\" onclick=\"openPopup(this,-1); return false;\" />";
-		}
+# following 'shortcuts' values MUST MATCH those used/processed in Gazette.js,function shortcuts()
+print "<p><select id=\"gcr\" name=\"gcr\" size=\"1\" onchange=\"shortcuts(this.value,'input#gdate');\">";
+print "<option style=\"font-style: italic;\" value=\"dummy\" selected> - $__{'or choose a preset period'} - </option>";
+print "<option value=\"today\">$__{'Today'}</option>";
+print "<option value=\"tomorrow\">$__{'Tomorrow'}</option>";
+print "<option value=\"yesterday\">$__{'Yesterday'}</option>";
+print "<option value=\"currWeek\">$__{'This Week'}</option>";
+print "<option value=\"all\">$__{'All'}</option>";
+print "<option value=\"toEnd\">$__{'From today'}</option>";
+print "<option value=\"fromStart\">$__{'Until today'}</option>";
+print "</select></p></td>\n";
+print "<td style=\"border: none; text-align: center; vertical-align: middle\">";
+print "<label style=\"width:80px;font-weight:bold\" for=\"gview\">$__{'Presentation'}:</label> <select id=\"gview\" name=\"gview\" size=\"1\" >";
+for my $i ('calendar','dateList','categoryList','ical') { # only these and ordered my way, not keys(%prez) perl's way
+    if ("$i" eq "$QryParm->{'gview'}") { print "<option selected value=$i>$prez{$i}</option>"; }
+    else                              { print "<option value=$i>$prez{$i}</option>"; }
+}
+if (WebObs::Users::clientHasAdm(type=>"authmisc",name=>"GAZETTE_")) {
+    if ("dump" eq "$QryParm->{'gview'}") { print "<option selected value=dump>$prez{dump}</option>"; }
+    else                                { print "<option value='dump'>$prez{dump}</option>"; }
+    if ("stats" eq "$QryParm->{'gview'}") { print "<option selected value=stats>$prez{stats}</option>"; }
+    else                                { print "<option value='stats'>$prez{stats}</option>"; }
+}
+print "</select></td>\n";
+print "<td style=\"border: none; text-align: center; vertical-align: middle\">";
+print "<label style=\"width:80px;font-weight:bold\" for=\"gcategory\">$__{'Category'}:</label> <select id=\"gcategory\" name=\"gcategory\" size=\"1\">";
+my $selected='';
+for (sort keys %GAZETTECAT) {
+    $selected = ("$_" eq "$QryParm->{'gcategory'}" ? "selected" : "");
+    print "<option $selected value=$_>$GAZETTECAT{$_}{Name}</option>";
+}
+print "</select></td>\n";
+print "<td style=\"border: none; text-align: center; vertical-align: middle\">";
+print "<label style=\"width:80px;font-weight:bold\" for=\"gfilter\">$__{'Filter'}:</label> <input id=\"gfilter\" name=\"gfilter\" size=\"30\" value=\"$QryParm->{'gfilter'}\">";
+print "</FORM>\n";
 
-	print "</table>";
+if ($createOK) {
+    print "<td style=\"border: none; text-align: right; vertical-align: center\">";
+    print "<input id=\"create\" type=\"button\" style=\"font-weight:bold\" value=\"$__{'Create New Event'}\" onclick=\"openPopup(this,-1); return false;\" />";
+}
+
+print "</table>";
 print "</div>";
-
 
 # ---- display Gazette page
 #
@@ -391,53 +400,53 @@ exit;
 # ---- cleaned up some other housekeeping process
 #
 sub getical {
-	if (@_ == 1 && -f $_[0]) {
-		if (open(IN, "<$_[0]")) {
-			my @in = <IN>;
-			close(IN);
-			print $cgi->header(-type=>'text/calendar', -attachment=>"$_[0]",-charset=>'utf-8');
-			print @in;
-		} else { die "$__{'Could not open'} $_[0]" }
-	} else { die "$__{'invalid'} $_[0]" }
-	exit;
+    if (@_ == 1 && -f $_[0]) {
+        if (open(IN, "<$_[0]")) {
+            my @in = <IN>;
+            close(IN);
+            print $cgi->header(-type=>'text/calendar', -attachment=>"$_[0]",-charset=>'utf-8');
+            print @in;
+        } else { die "$__{'Could not open'} $_[0]" }
+    } else { die "$__{'invalid'} $_[0]" }
+    exit;
 }
 
 # ---- process a 'getid' query: simply return article #id row as json
 #
 sub getId {
-	print $cgi->header(-type=>'application/json',-charset=>'utf-8');
-	print getArticle($_[0]);
-	exit;
+    print $cgi->header(-type=>'application/json',-charset=>'utf-8');
+    print getArticle($_[0]);
+    exit;
 }
 
 # ---- process a 'setid' query: do the DB update, then back to normal page build processing
 #
 sub setId {
-	my $id = ($_[0] eq "-1") ? "null" : "$_[0]";
-	(my $others  = $QryParm->{'OTHERS'}) =~ s/\Q'\E/''/g;
-	(my $place   = $QryParm->{'PLACE'}) =~ s/\Q'\E/''/g;
-	(my $subject = $QryParm->{'SUBJECT'}) =~ s/\Q'\E/''/g;
-	my $values = sprintf("%s,'%s','%s','%s','%s','%s','%s','%s','%s','%s'",
-				 $id,
-				 $QryParm->{'STARTDATE'},
-				 $QryParm->{'STARTTIME'},
-				 $QryParm->{'ENDDATE'},
-				 $QryParm->{'ENDTIME'},
-				 $QryParm->{'CATEGORY'},
-				 $QryParm->{'UID'},
-				 $others,#$QryParm->{'OTHERS'},
-				 $place,#$QryParm->{'PLACE'},
-				 $subject);#$QryParm->{'SUBJECT'});
-	my $row = setArticle($values);
-	return $row;
+    my $id = ($_[0] eq "-1") ? "null" : "$_[0]";
+    (my $others  = $QryParm->{'OTHERS'}) =~ s/\Q'\E/''/g;
+    (my $place   = $QryParm->{'PLACE'}) =~ s/\Q'\E/''/g;
+    (my $subject = $QryParm->{'SUBJECT'}) =~ s/\Q'\E/''/g;
+    my $values = sprintf("%s,'%s','%s','%s','%s','%s','%s','%s','%s','%s'",
+        $id,
+        $QryParm->{'STARTDATE'},
+        $QryParm->{'STARTTIME'},
+        $QryParm->{'ENDDATE'},
+        $QryParm->{'ENDTIME'},
+        $QryParm->{'CATEGORY'},
+        $QryParm->{'UID'},
+        $others,#$QryParm->{'OTHERS'},
+        $place,#$QryParm->{'PLACE'},
+        $subject);#$QryParm->{'SUBJECT'});
+    my $row = setArticle($values);
+    return $row;
 }
 
 # ---- process a 'delid' query: delete in DB , then back to normal page build processing
 #
 sub delId {
-	my $id = ($_[0] eq "-1") ? "null" : "$_[0]";
-	my $row = delArticle($id);
-	return $row;
+    my $id = ($_[0] eq "-1") ? "null" : "$_[0]";
+    my $row = delArticle($id);
+    return $row;
 }
 
 =pod

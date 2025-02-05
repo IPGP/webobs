@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+
 =head1 NAME
 
 nloc.pl
@@ -64,12 +65,12 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $msk = "";
 my @NID = split(/[\.\/]/, trim($grid));
 ($GRIDType, $GRIDName, $NODEName) = @NID;
 if ( scalar(@NID) < 2 || !($GRIDType =~ /^PROC|VIEW/i) ) {
-	die "No valid grid requested (NOT= gridtype.gridname[.node])." ;
+    die "No valid grid requested (NOT= gridtype.gridname[.node])." ;
 }
 
 # user must have read authorization to use this function
 if ( ! clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
-	die "Sorry, you cannot display this page.";
+    die "Sorry, you cannot display this page.";
 }
 
 # ---- get all nodenames of grid (only VALID)
@@ -79,16 +80,16 @@ my %GRID;
 if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
 elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
 if (%G) {
-	%GRID = %{$G{$GRIDName}} ;
+    %GRID = %{$G{$GRIDName}} ;
 } else {
-	die "$grid does not exist."
+    die "$grid does not exist."
 }
 
 switch (lc($format)) {
-	case 'kml' {
-		print $cgi->header(-type=>'application/vnd.google-earth.kml+xml', -attachment=>"$file.kml",-charset=>'utf-8');
-		print "<?xml version=\"1.0\" encoding=\"UTF-8\"?><kml xmlns=\"http://earth.google.com/kml/2.0\">\n";
-		print "<Document>\n<Style id=\"webobs\">
+    case 'kml' {
+        print $cgi->header(-type=>'application/vnd.google-earth.kml+xml', -attachment=>"$file.kml",-charset=>'utf-8');
+        print "<?xml version=\"1.0\" encoding=\"UTF-8\"?><kml xmlns=\"http://earth.google.com/kml/2.0\">\n";
+        print "<Document>\n<Style id=\"webobs\">
 		<IconStyle>
 			<color>ff1313f3</color>
 			<scale>1.0</scale>
@@ -98,52 +99,52 @@ switch (lc($format)) {
 			<scale>1</scale>
 		</LabelStyle>
 		</Style>\n";
-		if (scalar(@NID)==2) {
-			print "<Folder>\n<name>$grid</name>\n";
-		}
-	}
-	case 'csv' {
-		print $cgi->header(-type=>'text/csv', -attachment=>"$file.csv",-charset=>'utf-8');
-		print "ALIAS;NAME;LATITUDE;LONGITUDE;ELEVATION;START_DATE;END_DATE;ACTIVE\r\n";
-	}
-	else {
-		print $cgi->header(-type=>'text/csv', -attachment=>"$file.txt",-charset=>'utf-8');
-	}
+        if (scalar(@NID)==2) {
+            print "<Folder>\n<name>$grid</name>\n";
+        }
+    }
+    case 'csv' {
+        print $cgi->header(-type=>'text/csv', -attachment=>"$file.csv",-charset=>'utf-8');
+        print "ALIAS;NAME;LATITUDE;LONGITUDE;ELEVATION;START_DATE;END_DATE;ACTIVE\r\n";
+    }
+    else {
+        print $cgi->header(-type=>'text/csv', -attachment=>"$file.txt",-charset=>'utf-8');
+    }
 }
 
 for (keys(%N)) {
-	my $sta = $_;
-	if ( scalar(@NID)==2 || $sta eq $NODEName ) {
-		my %NODE = readNode($sta);
-		my $active = (($NODE{$sta}{END_DATE} ge $today || $NODE{$sta}{END_DATE} eq "NA")
-				&& ($NODE{$sta}{INSTALL_DATE} le $today || $NODE{$sta}{INSTALL_DATE} eq "NA"));
-		if (!($NODE{$sta}{LAT_WGS84} eq "" && $NODE{$sta}{LON_WGS84} eq "" && $NODE{$sta}{ALTITUDE} eq "") && (($nodes ne "active" || $active))) {
-			my $alias = $NODE{$sta}{ALIAS};
-			my $name = $NODE{$sta}{NAME};
-			my $type = $NODE{$sta}{TYPE};
-			my $start = $NODE{$sta}{INSTALL_DATE};
-			my $end = $NODE{$sta}{END_DATE};
-			my $lat = $NODE{$sta}{LAT_WGS84};
-			my $lon = $NODE{$sta}{LON_WGS84};
-			my $alt = $NODE{$sta}{ALTITUDE};
-			if ($coord eq "utm") {
-				($lat,$lon) = geo2utm($lat,$lon);
-				$lat = sprintf("%.0f",$lat);
-				$lon = sprintf("%.0f",$lon);
-			} elsif ($coord eq "local") {
-				($lat,$lon) = geo2utml($lat,$lon);
-				$lat = sprintf("%.0f",$lat);
-				$lon = sprintf("%.0f",$lon);
-			} elsif ($coord eq "xyz") {
-				($lat,$lon,$alt) = geo2cart($lat,$lon,$alt);
-				$lat = sprintf("%.0f",$lat);
-				$lon = sprintf("%.0f",$lon);
-				$alt = sprintf("%.0f",$alt);
-			}
+    my $sta = $_;
+    if ( scalar(@NID)==2 || $sta eq $NODEName ) {
+        my %NODE = readNode($sta);
+        my $active = (($NODE{$sta}{END_DATE} ge $today || $NODE{$sta}{END_DATE} eq "NA")
+              && ($NODE{$sta}{INSTALL_DATE} le $today || $NODE{$sta}{INSTALL_DATE} eq "NA"));
+        if (!($NODE{$sta}{LAT_WGS84} eq "" && $NODE{$sta}{LON_WGS84} eq "" && $NODE{$sta}{ALTITUDE} eq "") && (($nodes ne "active" || $active))) {
+            my $alias = $NODE{$sta}{ALIAS};
+            my $name = $NODE{$sta}{NAME};
+            my $type = $NODE{$sta}{TYPE};
+            my $start = $NODE{$sta}{INSTALL_DATE};
+            my $end = $NODE{$sta}{END_DATE};
+            my $lat = $NODE{$sta}{LAT_WGS84};
+            my $lon = $NODE{$sta}{LON_WGS84};
+            my $alt = $NODE{$sta}{ALTITUDE};
+            if ($coord eq "utm") {
+                ($lat,$lon) = geo2utm($lat,$lon);
+                $lat = sprintf("%.0f",$lat);
+                $lon = sprintf("%.0f",$lon);
+            } elsif ($coord eq "local") {
+                ($lat,$lon) = geo2utml($lat,$lon);
+                $lat = sprintf("%.0f",$lat);
+                $lon = sprintf("%.0f",$lon);
+            } elsif ($coord eq "xyz") {
+                ($lat,$lon,$alt) = geo2cart($lat,$lon,$alt);
+                $lat = sprintf("%.0f",$lat);
+                $lon = sprintf("%.0f",$lon);
+                $alt = sprintf("%.0f",$alt);
+            }
 
-			switch (lc($format)) {
-				case 'kml' {
-					print "<Placemark id=\"$sta\">
+            switch (lc($format)) {
+                case 'kml' {
+                    print "<Placemark id=\"$sta\">
 	<name>$alias : $name</name>
 	<ExtendedData>
 		<Data name=\"active\">
@@ -164,23 +165,23 @@ for (keys(%N)) {
 		<coordinates>$NODE{$sta}{LON_WGS84},$NODE{$sta}{LAT_WGS84},$NODE{$sta}{ALTITUDE}</coordinates>
 	</Point>
 </Placemark>\n";
-				}
-				case 'csv' {
-					print "\"$alias\";$name;$lat;$lon;$alt;$start;$end;$active\r\n";
-				}
-				else {
-					print "$alias\t$name\t$lat\t$lon\t$alt\t$start\t$end\t$active\r\n";
-				}
-			}
-		}
-	}
+                }
+                case 'csv' {
+                    print "\"$alias\";$name;$lat;$lon;$alt;$start;$end;$active\r\n";
+                }
+                else {
+                    print "$alias\t$name\t$lat\t$lon\t$alt\t$start\t$end\t$active\r\n";
+                }
+            }
+        }
+    }
 }
 
 if (lc($format) eq 'kml') {
-	if (scalar(@NID)==2) {
-		print "</Folder>\n";
-	}
-	print "</Document>\n</kml>\n";
+    if (scalar(@NID)==2) {
+        print "</Folder>\n";
+    }
+    print "</Document>\n</kml>\n";
 }
 
 exit;

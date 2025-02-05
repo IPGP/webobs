@@ -95,9 +95,9 @@ $VERSION    = "1.00";
 refreshUsers();
 
 if ((!defined($ENV{"REMOTE_USER"})) or ($ENV{"REMOTE_USER"} eq "") or (!defined($USERS{$ENV{"REMOTE_USER"}}))) {
-	$CLIENT = "guest";
+    $CLIENT = "guest";
 } else {
-	$CLIENT = $ENV{"REMOTE_USER"};
+    $CLIENT = $ENV{"REMOTE_USER"};
 }
 
 our @validtbls = ($WEBOBS{SQL_TABLE_AUTHVIEWS}, $WEBOBS{SQL_TABLE_AUTHPROCS}, $WEBOBS{SQL_TABLE_AUTHFORMS}, $WEBOBS{SQL_TABLE_AUTHMISC}, $WEBOBS{SQL_TABLE_AUTHWIKIS});
@@ -113,9 +113,9 @@ Reloads %USERS and %USERIDS. Needed by WebObs daemons (such as PostBoard) to han
 =cut
 
 sub refreshUsers {
-	undef %USERS if (%USERS); undef %USERIDS if (%USERIDS);
-	%USERS = %{allUsers()};
-	$USERIDS{$USERS{$_}{UID}}=$_  foreach (keys(%USERS)) ;
+    undef %USERS if (%USERS); undef %USERIDS if (%USERIDS);
+    %USERS = %{allUsers()};
+    $USERIDS{$USERS{$_}{UID}}=$_  foreach (keys(%USERS)) ;
 }
 
 =head2 allUsers
@@ -133,25 +133,25 @@ Attributes names dynamically match the corresponding SQL table column names.
 =cut
 
 sub allUsers {
-	my ($rs, $dbh, $sql, $sth);
+    my ($rs, $dbh, $sql, $sth);
 
-	my $dbname    = $WEBOBS{SQL_DB_USERS};
-	my $tablename = $WEBOBS{SQL_TABLE_USERS};
-	$USERS_LFN = "DB $dbname (".(stat($dbname))[9].") TABLE $tablename";
+    my $dbname    = $WEBOBS{SQL_DB_USERS};
+    my $tablename = $WEBOBS{SQL_TABLE_USERS};
+    $USERS_LFN = "DB $dbname (".(stat($dbname))[9].") TABLE $tablename";
 
-	$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
-		'AutoCommit' => 1,
-		'PrintError' => 1,
-		'RaiseError' => 1,
-		}) or die "DB error connecting to $dbname: ".DBI->errstr;
+    $dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+            'AutoCommit' => 1,
+            'PrintError' => 1,
+            'RaiseError' => 1,
+        }) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-	$sql = "SELECT * FROM $tablename" ;
-	$sth = $dbh->prepare($sql);
-	$sth->execute();
-	$rs = $sth->fetchall_hashref('LOGIN');
+    $sql = "SELECT * FROM $tablename" ;
+    $sth = $dbh->prepare($sql);
+    $sth->execute();
+    $rs = $sth->fetchall_hashref('LOGIN');
 
-	$dbh->disconnect;
-	return $rs;
+    $dbh->disconnect;
+    return $rs;
 }
 
 =pod
@@ -167,29 +167,29 @@ Returns a reference to the list (or 0).
 =cut
 
 sub listRNames {
-	my %KWARGS = @_;
-	return 0 if (!exists($KWARGS{type}));
-	my (@rs, $dbh, $sql, $sth, $tmp);
+    my %KWARGS = @_;
+    return 0 if (!exists($KWARGS{type}));
+    my (@rs, $dbh, $sql, $sth, $tmp);
 
-	#if ($KWARGS{type} ~~ @validtbls) {
-	if (grep /^$KWARGS{type}$/i , @validtbls) {
-		my $dbname    = $WEBOBS{SQL_DB_USERS};
+    #if ($KWARGS{type} ~~ @validtbls) {
+    if (grep /^$KWARGS{type}$/i , @validtbls) {
+        my $dbname    = $WEBOBS{SQL_DB_USERS};
 
-		$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
-			'AutoCommit' => 1,
-			'PrintError' => 1,
-			'RaiseError' => 1,
-			}) or die "DB error connecting to $dbname: ".DBI->errstr;
+        $dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+                'AutoCommit' => 1,
+                'PrintError' => 1,
+                'RaiseError' => 1,
+            }) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-		$sql = "SELECT distinct(resource) FROM $KWARGS{type}" ;
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-		$tmp = $sth->fetchall_arrayref();
-		foreach (@$tmp) {push @rs, @$_}
+        $sql = "SELECT distinct(resource) FROM $KWARGS{type}" ;
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        $tmp = $sth->fetchall_arrayref();
+        foreach (@$tmp) {push @rs, @$_}
 
-		$dbh->disconnect;
-		return \@rs;
-	} else { return 0 }
+        $dbh->disconnect;
+        return \@rs;
+    } else { return 0 }
 }
 
 =pod
@@ -201,17 +201,16 @@ Given user(s) UID(s) (ie. initials) returns user(s) full-name(s)
 =cut
 
 sub userName {
-	my @name;
-	for (@_) {
-		if ( defined($USERIDS{$_}) ) {
-			push(@name,$USERS{$USERIDS{$_}}{FULLNAME});
-		} else {
-			push(@name,$_);
-		}
-	}
-	return @name;
+    my @name;
+    for (@_) {
+        if ( defined($USERIDS{$_}) ) {
+            push(@name,$USERS{$USERIDS{$_}}{FULLNAME});
+        } else {
+            push(@name,$_);
+        }
+    }
+    return @name;
 }
-
 
 =pod
 
@@ -225,29 +224,29 @@ all known user's groups:
 =cut
 
 sub userListGroup {
-	my (@groups, $dbh, $sql, $sth);
+    my (@groups, $dbh, $sql, $sth);
 
-	if (defined($_[0]))  {
-		my $dbname    = $WEBOBS{SQL_DB_USERS};
-		my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
+    if (defined($_[0]))  {
+        my $dbname    = $WEBOBS{SQL_DB_USERS};
+        my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
 
-		$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
-			'AutoCommit' => 1,
-			'PrintError' => 1,
-			'RaiseError' => 1,
-			}) or die "DB error connecting to $dbname: ".DBI->errstr;
+        $dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+                'AutoCommit' => 1,
+                'PrintError' => 1,
+                'RaiseError' => 1,
+            }) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-		$sql  = "SELECT GID";
-		$sql .= " FROM $tblgroups";
-		$sql .= " WHERE UID = '$USERS{$_[0]}{UID}'" ;
+        $sql  = "SELECT GID";
+        $sql .= " FROM $tblgroups";
+        $sql .= " WHERE UID = '$USERS{$_[0]}{UID}'" ;
 
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-		my $tmp = $sth->fetchall_arrayref();
-		foreach (@$tmp) {push @groups, @$_}
-		$dbh->disconnect;
-	}
-	return @groups;
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        my $tmp = $sth->fetchall_arrayref();
+        foreach (@$tmp) {push @groups, @$_}
+        $dbh->disconnect;
+    }
+    return @groups;
 }
 
 =pod
@@ -263,32 +262,32 @@ all known user's authorizations:
 =cut
 
 sub userListAuth {
-	my (%rs, $dbh, $sql, $sth);
+    my (%rs, $dbh, $sql, $sth);
 
-	if (defined($_[0]))  {
-		my $dbname    = $WEBOBS{SQL_DB_USERS};
-		my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
-		for my $tblauth (@validtbls) {
+    if (defined($_[0]))  {
+        my $dbname    = $WEBOBS{SQL_DB_USERS};
+        my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
+        for my $tblauth (@validtbls) {
 
-			$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
-				'AutoCommit' => 1,
-				'PrintError' => 1,
-				'RaiseError' => 1,
-				}) or die "DB error connecting to $dbname: ".DBI->errstr;
+            $dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+                    'AutoCommit' => 1,
+                    'PrintError' => 1,
+                    'RaiseError' => 1,
+                }) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-			$sql  = "SELECT $tblauth.RESOURCE, $tblauth.AUTH";
-			$sql .= " FROM $tblusers,$tblauth";
-			$sql .= " WHERE $tblusers.UID = '$USERS{$_[0]}{UID}' AND  $tblusers.UID = $tblauth.UID" ;
-			$sql .= " ORDER BY 1,2";
+            $sql  = "SELECT $tblauth.RESOURCE, $tblauth.AUTH";
+            $sql .= " FROM $tblusers,$tblauth";
+            $sql .= " WHERE $tblusers.UID = '$USERS{$_[0]}{UID}' AND  $tblusers.UID = $tblauth.UID" ;
+            $sql .= " ORDER BY 1,2";
 
-			$sth = $dbh->prepare($sql);
-			$sth->execute();
-			my $tmp = $sth->fetchall_arrayref();
-			$rs{$tblauth} = $tmp;
-		}
-		$dbh->disconnect;
-	}
-	return %rs;
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            my $tmp = $sth->fetchall_arrayref();
+            $rs{$tblauth} = $tmp;
+        }
+        $dbh->disconnect;
+    }
+    return %rs;
 }
 
 =pod
@@ -308,42 +307,42 @@ to resource-'type' named 'name'.
 =cut
 
 sub userHasAuth {
-	my %KWARGS = @_;
-	return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}) || !exists($KWARGS{user}) || !exists($KWARGS{auth}) );
+    my %KWARGS = @_;
+    return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}) || !exists($KWARGS{user}) || !exists($KWARGS{auth}) );
 
-	my ($rs, $dbh, $sql, $sth, $count);
-	my $rc = 0;
+    my ($rs, $dbh, $sql, $sth, $count);
+    my $rc = 0;
 
-	#if ($KWARGS{type} ~~ @validtbls)  {
-	if (grep /^$KWARGS{type}$/i , @validtbls) {
-		$KWARGS{user} = $USERS{$KWARGS{user}}{UID};
-		my $dbname    = $WEBOBS{SQL_DB_USERS};
-		my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
-		my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
+    #if ($KWARGS{type} ~~ @validtbls)  {
+    if (grep /^$KWARGS{type}$/i , @validtbls) {
+        $KWARGS{user} = $USERS{$KWARGS{user}}{UID};
+        my $dbname    = $WEBOBS{SQL_DB_USERS};
+        my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
+        my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
 
-		$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
-			'AutoCommit' => 1,
-			'PrintError' => 1,
-			'RaiseError' => 1,
-			}) or die "DB error connecting to $dbname: ".DBI->errstr;
+        $dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+                'AutoCommit' => 1,
+                'PrintError' => 1,
+                'RaiseError' => 1,
+            }) or die "DB error connecting to $dbname: ".DBI->errstr;
 
         my $today = strftime("%Y-%m-%d",localtime(int(time())));
-		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND (ENDDATE='' OR ENDDATE>='$today')");
-		if ($validuser eq 'Y') {
-			my @inl="'*'";
-			while ($KWARGS{name} !~ m|^.?/$|) { push(@inl,"\'$KWARGS{name}\'"); $KWARGS{name}=dirname($KWARGS{name})."/"; };
-			my $sql  = "SELECT COUNT(*) FROM $KWARGS{type}";
-			$sql    .= " WHERE ( $KWARGS{type}.UID in (SELECT GID from $tblgroups WHERE UID='$KWARGS{user}') OR $KWARGS{type}.UID = '$KWARGS{user}') ";
-			$sql    .= " AND $KWARGS{type}.RESOURCE in (".join(", ",@inl).") AND $KWARGS{type}.AUTH >= $KWARGS{auth}";
+        my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND (ENDDATE='' OR ENDDATE>='$today')");
+        if ($validuser eq 'Y') {
+            my @inl="'*'";
+            while ($KWARGS{name} !~ m|^.?/$|) { push(@inl,"\'$KWARGS{name}\'"); $KWARGS{name}=dirname($KWARGS{name})."/"; };
+            my $sql  = "SELECT COUNT(*) FROM $KWARGS{type}";
+            $sql    .= " WHERE ( $KWARGS{type}.UID in (SELECT GID from $tblgroups WHERE UID='$KWARGS{user}') OR $KWARGS{type}.UID = '$KWARGS{user}') ";
+            $sql    .= " AND $KWARGS{type}.RESOURCE in (".join(", ",@inl).") AND $KWARGS{type}.AUTH >= $KWARGS{auth}";
 
-			$count   = $dbh->selectrow_array($sql);
-			if ($count > 0) { $rc = 1 }
-		}
+            $count   = $dbh->selectrow_array($sql);
+            if ($count > 0) { $rc = 1 }
+        }
 
-		$dbh->disconnect;
+        $dbh->disconnect;
 
-	}
-	return $rc;
+    }
+    return $rc;
 }
 
 =pod
@@ -357,39 +356,39 @@ returns maximum authorization granted to user on resource type / resource name i
 =cut
 
 sub userMaxAuth {
-	my %KWARGS = @_;
-	return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}) || !exists($KWARGS{user}));
+    my %KWARGS = @_;
+    return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}) || !exists($KWARGS{user}));
 
-	my ($rs, $dbh, $sql, $sth);
-	my $rc = 0;
+    my ($rs, $dbh, $sql, $sth);
+    my $rc = 0;
 
-	#if ($KWARGS{type} ~~ @validtbls) {
-	if (grep /^$KWARGS{type}$/i , @validtbls) {
-		$KWARGS{user} = $USERS{$KWARGS{user}}{UID};
-		my $dbname    = $WEBOBS{SQL_DB_USERS};
-		my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
-		my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
+    #if ($KWARGS{type} ~~ @validtbls) {
+    if (grep /^$KWARGS{type}$/i , @validtbls) {
+        $KWARGS{user} = $USERS{$KWARGS{user}}{UID};
+        my $dbname    = $WEBOBS{SQL_DB_USERS};
+        my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
+        my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
 
-		$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
-			'AutoCommit' => 1,
-			'PrintError' => 1,
-			'RaiseError' => 1,
-			}) or die "DB error connecting to $dbname: ".DBI->errstr;
+        $dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+                'AutoCommit' => 1,
+                'PrintError' => 1,
+                'RaiseError' => 1,
+            }) or die "DB error connecting to $dbname: ".DBI->errstr;
 
         my $today = strftime("%Y-%m-%d",localtime(int(time())));
-		my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND (ENDDATE='' OR ENDDATE>='$today')");
-		if ($validuser eq 'Y') {
-			my $sql  = "SELECT MAX(AUTH) FROM $KWARGS{type}";
-			$sql    .= " WHERE ( $KWARGS{type}.UID in (SELECT GID from $tblgroups WHERE UID='$KWARGS{user}') OR $KWARGS{type}.UID = '$KWARGS{user}') ";
-			$sql    .= " AND ($KWARGS{type}.RESOURCE IN $KWARGS{name} OR $KWARGS{type}.RESOURCE ='*')";
+        my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND (ENDDATE='' OR ENDDATE>='$today')");
+        if ($validuser eq 'Y') {
+            my $sql  = "SELECT MAX(AUTH) FROM $KWARGS{type}";
+            $sql    .= " WHERE ( $KWARGS{type}.UID in (SELECT GID from $tblgroups WHERE UID='$KWARGS{user}') OR $KWARGS{type}.UID = '$KWARGS{user}') ";
+            $sql    .= " AND ($KWARGS{type}.RESOURCE IN $KWARGS{name} OR $KWARGS{type}.RESOURCE ='*')";
 
-			$rc     = $dbh->selectrow_array($sql);
-		}
+            $rc     = $dbh->selectrow_array($sql);
+        }
 
-		$dbh->disconnect;
+        $dbh->disconnect;
 
-	}
-	return $rc;
+    }
+    return $rc;
 }
 
 =pod
@@ -403,29 +402,29 @@ returns true (1) if given 'user' login has a validity status 'Y'
 =cut
 
 sub userIsValid {
-	my %KWARGS = @_;
-	return 0 if (!exists($KWARGS{user}));
+    my %KWARGS = @_;
+    return 0 if (!exists($KWARGS{user}));
 
-	my $dbh;
-	my $rc = 0;
+    my $dbh;
+    my $rc = 0;
 
-	$KWARGS{user} = $USERS{$KWARGS{user}}{UID};
-	my $dbname    = $WEBOBS{SQL_DB_USERS};
-	my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
+    $KWARGS{user} = $USERS{$KWARGS{user}}{UID};
+    my $dbname    = $WEBOBS{SQL_DB_USERS};
+    my $tblusers  = $WEBOBS{SQL_TABLE_USERS};
 
-	$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
-		'AutoCommit' => 1,
-		'PrintError' => 1,
-		'RaiseError' => 1,
-		}) or die "DB error connecting to $dbname: ".DBI->errstr;
+    $dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+            'AutoCommit' => 1,
+            'PrintError' => 1,
+            'RaiseError' => 1,
+        }) or die "DB error connecting to $dbname: ".DBI->errstr;
 
     my $today = strftime("%Y-%m-%d",localtime(int(time())));
-	my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND (ENDDATE='' OR ENDDATE>='$today')");
-	if ($validuser eq 'Y') { $rc = 1 }
+    my $validuser = $dbh->selectrow_array("SELECT VALIDITY FROM $tblusers WHERE UID='$KWARGS{user}' AND (ENDDATE='' OR ENDDATE>='$today')");
+    if ($validuser eq 'Y') { $rc = 1 }
 
-	$dbh->disconnect;
+    $dbh->disconnect;
 
-	return $rc;
+    return $rc;
 }
 
 =pod
@@ -437,36 +436,36 @@ wrappers for userHasAuth with user=$CLIENT.
 =cut
 
 sub clientHasRead {
-	my %KWARGS = @_;
-	return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
-	return userHasAuth(type=>$KWARGS{type}, user=>$CLIENT, name=>$KWARGS{name}, auth=>READAUTH);
+    my %KWARGS = @_;
+    return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
+    return userHasAuth(type=>$KWARGS{type}, user=>$CLIENT, name=>$KWARGS{name}, auth=>READAUTH);
 }
 
 sub clientHasEdit {
-	my %KWARGS = @_;
-	return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
-	return userHasAuth(type=>$KWARGS{type}, user=>$CLIENT, name=>$KWARGS{name}, auth=>EDITAUTH);
+    my %KWARGS = @_;
+    return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
+    return userHasAuth(type=>$KWARGS{type}, user=>$CLIENT, name=>$KWARGS{name}, auth=>EDITAUTH);
 }
 
 sub clientHasAdm {
-	my %KWARGS = @_;
-	return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
-	return userHasAuth(type=>$KWARGS{type}, user=>$CLIENT, name=>$KWARGS{name}, auth=>ADMAUTH);
+    my %KWARGS = @_;
+    return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
+    return userHasAuth(type=>$KWARGS{type}, user=>$CLIENT, name=>$KWARGS{name}, auth=>ADMAUTH);
 }
 
 sub clientMaxAuth {
-	my %KWARGS = @_;
-	return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
-	return userMaxAuth(type=>$KWARGS{type}, user=>$CLIENT, name=>$KWARGS{name});
+    my %KWARGS = @_;
+    return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
+    return userMaxAuth(type=>$KWARGS{type}, user=>$CLIENT, name=>$KWARGS{name});
 }
 
 sub clientIsValid {
-	return userIsValid(user=>$CLIENT);
+    return userIsValid(user=>$CLIENT);
 }
 
 sub clientIsWO {
-	return 0 if ($USERS{$CLIENT}{UID} ne '!');
-	return 1;
+    return 0 if ($USERS{$CLIENT}{UID} ne '!');
+    return 1;
 }
 
 =pod
@@ -480,30 +479,31 @@ Given a group ID 'GID' (starts with a '+'), returns an array of all associated u
 =cut
 
 sub groupListUser {
-	my (@users, $dbh, $sql, $sth);
+    my (@users, $dbh, $sql, $sth);
 
-	if (defined($_[0]))  {
-		my $dbname    = $WEBOBS{SQL_DB_USERS};
-		my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
+    if (defined($_[0]))  {
+        my $dbname    = $WEBOBS{SQL_DB_USERS};
+        my $tblgroups = $WEBOBS{SQL_TABLE_GROUPS};
 
-		$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
-			'AutoCommit' => 1,
-			'PrintError' => 1,
-			'RaiseError' => 1,
-			}) or die "DB error connecting to $dbname: ".DBI->errstr;
+        $dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+                'AutoCommit' => 1,
+                'PrintError' => 1,
+                'RaiseError' => 1,
+            }) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-		$sql  = "SELECT UID";
-		$sql .= " FROM $tblgroups";
-		$sql .= " WHERE GID = '$_[0]'" ;
+        $sql  = "SELECT UID";
+        $sql .= " FROM $tblgroups";
+        $sql .= " WHERE GID = '$_[0]'" ;
 
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-		my $tmp = $sth->fetchall_arrayref();
-		foreach (@$tmp) {push @users, @$_}
-		$dbh->disconnect;
-	}
-	return @users;
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        my $tmp = $sth->fetchall_arrayref();
+        foreach (@$tmp) {push @users, @$_}
+        $dbh->disconnect;
+    }
+    return @users;
 }
+
 =pod
 
 =head2 resListAuth
@@ -518,31 +518,31 @@ returns an Hash of arrays of all UID or GID's for each authorization levels
 =cut
 
 sub resListAuth {
-	my %KWARGS = @_;
-	return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
+    my %KWARGS = @_;
+    return 0 if (!exists($KWARGS{type}) || !exists($KWARGS{name}));
 
-	my (%rs, $dbh, $sql, $sth);
+    my (%rs, $dbh, $sql, $sth);
 
-	my $dbname    = $WEBOBS{SQL_DB_USERS};
+    my $dbname    = $WEBOBS{SQL_DB_USERS};
 
-	$dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
-		'AutoCommit' => 1,
-		'PrintError' => 1,
-		'RaiseError' => 1,
-	}) or die "DB error connecting to $dbname: ".DBI->errstr;
+    $dbh = DBI->connect("dbi:SQLite:$dbname", "", "", {
+            'AutoCommit' => 1,
+            'PrintError' => 1,
+            'RaiseError' => 1,
+        }) or die "DB error connecting to $dbname: ".DBI->errstr;
 
-	foreach my $authlevel (READAUTH,EDITAUTH,ADMAUTH) {
-		$sql  = "SELECT UID FROM $KWARGS{type} WHERE AUTH = $authlevel AND (RESOURCE = '$KWARGS{name}' OR RESOURCE = '*')";
-		$sth = $dbh->prepare($sql);
-		$sth->execute();
-		my $tmp = $sth->fetchall_arrayref();
-		my @users;
-		foreach (@$tmp) { push(@users, @$_) }
-		$rs{$authlevel} = \@users;
-	}
-	$dbh->disconnect;
+    foreach my $authlevel (READAUTH,EDITAUTH,ADMAUTH) {
+        $sql  = "SELECT UID FROM $KWARGS{type} WHERE AUTH = $authlevel AND (RESOURCE = '$KWARGS{name}' OR RESOURCE = '*')";
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        my $tmp = $sth->fetchall_arrayref();
+        my @users;
+        foreach (@$tmp) { push(@users, @$_) }
+        $rs{$authlevel} = \@users;
+    }
+    $dbh->disconnect;
 
-	return %rs;
+    return %rs;
 }
 
 =pod
@@ -557,34 +557,34 @@ error code otherwise).
 =cut
 
 sub htpasswd {
-	# Calls the htpasswd command with the provided command line
-	# options, login, and password.
-	# Arguments: (options, arg1, arg2, ..., password, output_ref)
-	# Returns the htpasswd exit code: 0 for success, > 0 otherwise.
-	my $htpw_opts = "-i".shift;  # force -i to read the password from stdin
-	my $output_ref = pop;  # reference where to store the output
-	my $pass = pop;  # the password to pass via stdin (the last argument)
-	my @htpw_args = @_;  # other arguments
 
-	# Note: use a list for command arguments to avoid using a shell
-	my @cmd = ($WEBOBS{PRGM_HTPASSWD}, $htpw_opts, @htpw_args);
-	carp "info: executing command '".join(" ", @cmd)."'\n";
+    # Calls the htpasswd command with the provided command line
+    # options, login, and password.
+    # Arguments: (options, arg1, arg2, ..., password, output_ref)
+    # Returns the htpasswd exit code: 0 for success, > 0 otherwise.
+    my $htpw_opts = "-i".shift;  # force -i to read the password from stdin
+    my $output_ref = pop;  # reference where to store the output
+    my $pass = pop;  # the password to pass via stdin (the last argument)
+    my @htpw_args = @_;  # other arguments
 
-	# Important: use IPC:Open3 to pass the password to stdin to the
-	# htpasswd command to avoid it being visible by other users.
-	my ($child_in, $child_out, $child_err);
-	my $pid = open3($child_in, $child_out, $child_err, @cmd);
-	print $child_in $pass;
-	close $child_in;  # end the subprocess
+    # Note: use a list for command arguments to avoid using a shell
+    my @cmd = ($WEBOBS{PRGM_HTPASSWD}, $htpw_opts, @htpw_args);
+    carp "info: executing command '".join(" ", @cmd)."'\n";
 
-	# Read all the output to $$output_ref
-	$$output_ref = do { local $/; <$child_out>; };
+    # Important: use IPC:Open3 to pass the password to stdin to the
+    # htpasswd command to avoid it being visible by other users.
+    my ($child_in, $child_out, $child_err);
+    my $pid = open3($child_in, $child_out, $child_err, @cmd);
+    print $child_in $pass;
+    close $child_in;  # end the subprocess
 
-	# Wait for the child to avoid zombies
-	waitpid($pid, 0);
-	return $? >> 8;
+    # Read all the output to $$output_ref
+    $$output_ref = do { local $/; <$child_out>; };
+
+    # Wait for the child to avoid zombies
+    waitpid($pid, 0);
+    return $? >> 8;
 }
-
 
 =head2 htpasswd_update
 
@@ -595,26 +595,29 @@ error code otherwise.
 =cut
 
 sub _get_htpasswd_encryption_opt {
-	# Auxiliary function that returns the htpasswd option to use according to
-	# the encryption format chosen in the configuration.
-	if (lc($WEBOBS{'HTPASSWD_ENCRYPTION'}) eq "bcrypt") {
-		return "B";
-	}
-	# $WEBOBS{'HTPASSWD_ENCRYPTION'} is "md5" or anything
-	return "m";
+
+    # Auxiliary function that returns the htpasswd option to use according to
+    # the encryption format chosen in the configuration.
+    if (lc($WEBOBS{'HTPASSWD_ENCRYPTION'}) eq "bcrypt") {
+        return "B";
+    }
+
+    # $WEBOBS{'HTPASSWD_ENCRYPTION'} is "md5" or anything
+    return "m";
 }
 
 sub htpasswd_update {
-	# Adds or update a login/password in the htpasswd file.
-	# Returns 0 if success, non-zero otherwise.
-	my $login = shift;  # the login to create
-	my $pass = shift;  # the new password to set
-	my $htpw_opt = _get_htpasswd_encryption_opt();  # options for htpasswd
-	my $output;  # a reference for the output
-	# Call htpasswd with the selected option
-	return htpasswd($htpw_opt, $WEBOBS{'HTTP_PASSWORD_FILE'}, $login, $pass, \$output);
-}
 
+    # Adds or update a login/password in the htpasswd file.
+    # Returns 0 if success, non-zero otherwise.
+    my $login = shift;  # the login to create
+    my $pass = shift;  # the new password to set
+    my $htpw_opt = _get_htpasswd_encryption_opt();  # options for htpasswd
+    my $output;  # a reference for the output
+
+    # Call htpasswd with the selected option
+    return htpasswd($htpw_opt, $WEBOBS{'HTTP_PASSWORD_FILE'}, $login, $pass, \$output);
+}
 
 =head2 htpasswd_verify
 
@@ -623,15 +626,15 @@ Verifies the password of a user in the $WEBOBS{'HTTP_PASSWORD_FILE'} file.
 =cut
 
 sub htpasswd_verify {
+
     # Calls the htpasswd command to verify the login/password.
-	# Returns 0 if success, non-zero otherwise.
-	my $login = shift;
-	my $pass = shift;
+    # Returns 0 if success, non-zero otherwise.
+    my $login = shift;
+    my $pass = shift;
 
-	my $output;  # a reference for the output
-	return htpasswd("v", $WEBOBS{'HTTP_PASSWORD_FILE'}, $login, $pass, \$output);
+    my $output;  # a reference for the output
+    return htpasswd("v", $WEBOBS{'HTTP_PASSWORD_FILE'}, $login, $pass, \$output);
 }
-
 
 =head2 htpasswd_display
 
@@ -641,22 +644,23 @@ file.
 =cut
 
 sub htpasswd_display {
-	# Calls the htpasswd command to display the line that should be added to
-	# the htpasswd file. Returns the output of the command.
-	my $login = shift;
-	my $pass = shift;
 
-	my $htpw_opts = "n"._get_htpasswd_encryption_opt();
-	my $output;  # a reference for the output
-	my $rc = htpasswd($htpw_opts, $login, $pass, \$output);
-	my @lines = split(/\n/, $output);
-	if ($rc != 0 or not @lines) {
-		return "[error while executing $WEBOBS{'HTTP_PASSWORD_FILE'}]";
-	}
-	# Returns the fist line of the output
-	return $lines[0];
+    # Calls the htpasswd command to display the line that should be added to
+    # the htpasswd file. Returns the output of the command.
+    my $login = shift;
+    my $pass = shift;
+
+    my $htpw_opts = "n"._get_htpasswd_encryption_opt();
+    my $output;  # a reference for the output
+    my $rc = htpasswd($htpw_opts, $login, $pass, \$output);
+    my @lines = split(/\n/, $output);
+    if ($rc != 0 or not @lines) {
+        return "[error while executing $WEBOBS{'HTTP_PASSWORD_FILE'}]";
+    }
+
+    # Returns the fist line of the output
+    return $lines[0];
 }
-
 
 1;
 

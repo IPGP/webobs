@@ -104,7 +104,7 @@ my $CM_language_mode = "cmwocfg";
 
 # ---- see what file has to be edited, and corresponding authorization for client
 #
-my $me = $ENV{SCRIPT_NAME}; 
+my $me = $ENV{SCRIPT_NAME};
 my $QryParm   = $cgi->Vars;
 my $fs     = $QryParm->{'fs'}     // "";
 my $action = $QryParm->{'action'} // "edit";
@@ -118,59 +118,59 @@ my $editOK = my $admOK = my $readOK = 0;
 my $fsmsg = "";
 
 if ($fs ne "") {
-	if ($fs =~ /^CONF\//) {
-		($absfile = $fs) =~ s/^CONF\//$WEBOBS{ROOT_CONF}\//; 
-	} elsif ($fs =~ /^DATA\//) {
-		($absfile = $fs) =~ s/^DATA\//$WEBOBS{ROOT_DATA}\//;
-	} else {
-		my @u = split(/[()]/, $fs);
-		if (scalar(@u) == 2) { 
-			my %l = readCfg($WEBOBS{$u[0]}); 
-			$absfile = $l{$u[1]};
-		} else { $absfile = "$WEBOBS{$fs}"; }
-	}
-	if (($relfile = $absfile) =~ s/^$WEBOBS{ROOT_CONF}\/+|^$WEBOBS{ROOT_DATA}\/+//) {
-		$readOK = clientHasRead(type=>"authmisc",name=>"$relfile");
-		if ( $readOK ) {
-			if ( !$fbrowse ) {
-				$editOK = clientHasEdit(type=>"authmisc",name=>"$relfile");
-				$admOK  = clientHasAdm(type=>"authmisc",name=>"$relfile");
-				unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
-				if ( (!-e $absfile) && $admOK ) { qx(/bin/touch $absfile); $fsmsg="New file" }
+    if ($fs =~ /^CONF\//) {
+        ($absfile = $fs) =~ s/^CONF\//$WEBOBS{ROOT_CONF}\//;
+    } elsif ($fs =~ /^DATA\//) {
+        ($absfile = $fs) =~ s/^DATA\//$WEBOBS{ROOT_DATA}\//;
+    } else {
+        my @u = split(/[()]/, $fs);
+        if (scalar(@u) == 2) {
+            my %l = readCfg($WEBOBS{$u[0]});
+            $absfile = $l{$u[1]};
+        } else { $absfile = "$WEBOBS{$fs}"; }
+    }
+    if (($relfile = $absfile) =~ s/^$WEBOBS{ROOT_CONF}\/+|^$WEBOBS{ROOT_DATA}\/+//) {
+        $readOK = clientHasRead(type=>"authmisc",name=>"$relfile");
+        if ( $readOK ) {
+            if ( !$fbrowse ) {
+                $editOK = clientHasEdit(type=>"authmisc",name=>"$relfile");
+                $admOK  = clientHasAdm(type=>"authmisc",name=>"$relfile");
+                unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
+                if ( (!-e $absfile) && $admOK ) { qx(/bin/touch $absfile); $fsmsg="New file" }
                 else { $fsmsg="$relfile"; }
-				if ( (!$editOK) && (!-e $absfile) ) { die "$relfile $__{'not found'} or $__{'not authorized'}" }
-			}
-		} else { die "$relfile $__{'not authorized'}" }
-	} else { die "$relfile $__{'Not a CONF/ nor DATA/ file'}" }
+                if ( (!$editOK) && (!-e $absfile) ) { die "$relfile $__{'not found'} or $__{'not authorized'}" }
+            }
+        } else { die "$relfile $__{'not authorized'}" }
+    } else { die "$relfile $__{'Not a CONF/ nor DATA/ file'}" }
 } else { die "$__{'No filename specified'}" }
 
 # ---- action is 'save'
 #
 if ($action eq 'save') {
-	if ($TS0 != (stat("$absfile"))[9]) { 
-		htmlMsgNotOK("$relfile has been modified while you were editing !"); 
-		exit; 
-	}
-	if ( sysopen(FILE, "$absfile", O_RDWR | O_CREAT) ) {
-		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "$me waiting for lock on $relfile...";
-			flock(FILE, LOCK_EX);
-		}
-		qx(cp -a $absfile $absfile~ 2>&1); 
-		if ( $?  == 0 ) { 
-			truncate(FILE, 0);
-			seek(FILE, 0, SEEK_SET);
-			$txt =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
-			push(@lignes,u2l($txt)); # forces ISO encoding in any conf file
-			print FILE @lignes ;
-			close(FILE);
-			htmlMsgOK($relfile);
-		} else {
-			close(FILE);
-			htmlMsgNotOK("$me couldn't backup $relfile");
-		}
-	} else { htmlMsgNotOK("$me opening $relfile - $!") }
-	exit;
+    if ($TS0 != (stat("$absfile"))[9]) {
+        htmlMsgNotOK("$relfile has been modified while you were editing !");
+        exit;
+    }
+    if ( sysopen(FILE, "$absfile", O_RDWR | O_CREAT) ) {
+        unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+            warn "$me waiting for lock on $relfile...";
+            flock(FILE, LOCK_EX);
+        }
+        qx(cp -a $absfile $absfile~ 2>&1);
+        if ( $?  == 0 ) {
+            truncate(FILE, 0);
+            seek(FILE, 0, SEEK_SET);
+            $txt =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
+            push(@lignes,u2l($txt)); # forces ISO encoding in any conf file
+            print FILE @lignes ;
+            close(FILE);
+            htmlMsgOK($relfile);
+        } else {
+            close(FILE);
+            htmlMsgNotOK("$me couldn't backup $relfile");
+        }
+    } else { htmlMsgNotOK("$me opening $relfile - $!") }
+    exit;
 }
 
 # ---- action is 'edit' (default)
@@ -189,6 +189,7 @@ print "Content-type: text/html; charset=utf-8
 <TITLE>WebObs xedit</TITLE>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
 ";
+
 # - page, codemirror defs
 print "<link rel=\"stylesheet\" href=\"/js/codemirror/lib/codemirror.css\">
 <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_edit_theme.css\">
@@ -205,6 +206,7 @@ print "<link rel=\"stylesheet\" href=\"/js/codemirror/lib/codemirror.css\">
 <link rel=\"stylesheet\" href=\"/js/codemirror/addon/dialog/dialog.css\">
 <script src=\"/js/codemirror/keymap/vim.js\"></script>
 ";
+
 # - page, xedit scripts
 print "<script type=\"text/javascript\">
 var CODEMIRROR_CONF = {
@@ -220,14 +222,16 @@ var CODEMIRROR_CONF = {
 <script src=\"/js/cmtextarea.js\"></script>
 ";
 print "</HEAD>\n";
+
 # - page, body
 print "<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.form.txt.focus()\">";
 print <<html;
 <script type=\"text/javascript\" >
 </script>
 html
+
 # - page, edit or browse area
-print "<h2>$relfile</h2>"; 
+print "<h2>$relfile</h2>";
 print "<form id=\"theform\" name=\"form\" action=\"\" style=\"margin: 0px 0px 0px 10px; height:600px; width: 650px;\">
 <input type=\"hidden\" name=\"fs\" value=\"$fs\">
 <input type=\"hidden\" name=\"action\" value=\"save\">
@@ -238,6 +242,7 @@ print "<TEXTAREA id=\"textarea-editor\" name=\"txt\"";
 print " readonly " if (not ($editOK || $admOK));
 print ">$txt</TEXTAREA>\n";
 print "<div id=\"statusbar\">$fsmsg</div>";
+
 # - page, button(s) area
 print "<p align=center>\n";
 print "<span class=\"js-editor-controls\">\n";
@@ -245,10 +250,10 @@ print "<input type=\"checkbox\" id=\"toggle-vim-mode\" title=\"$__{'Check to ena
 print "<label for=\"toggle-vim-mode\" id=\"toggle-vim-mode-label\" title=\"$__{'Check to enable vim mode in the editor'}\">$__{'Use vim mode'}</label>\n";
 print "</span>\n";
 if ($editOK || $admOK) {
-	print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\">\n";
-	print "<input type=\"button\" class=\"submit-button\" value=\"$__{'Save'}\" onClick=\"postform();\">\n";
+    print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\">\n";
+    print "<input type=\"button\" class=\"submit-button\" value=\"$__{'Save'}\" onClick=\"postform();\">\n";
 } else {
-	print "<input type=\"button\" name=lien value=\"$__{'Quit'}\" onClick=\"history.go(-1)\">\n";
+    print "<input type=\"button\" name=lien value=\"$__{'Quit'}\" onClick=\"history.go(-1)\">\n";
 }
 print "</p>";
 print "</form>";
@@ -259,13 +264,14 @@ print "\n</BODY>\n</HTML>\n";
 # ---- helpers fns for returning 'save' information to client
 #
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	#[FBnote: does not suppress alert() window...] print "$_[0] updated successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
-	print "$_[0] updated successfully !\n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+
+#[FBnote: does not suppress alert() window...] print "$_[0] updated successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+    print "$_[0] updated successfully !\n";
 }
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 =pod

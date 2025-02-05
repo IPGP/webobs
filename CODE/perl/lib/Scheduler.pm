@@ -44,71 +44,72 @@ $VERSION = "1.00";
 # Read the scheduler configuration
 my %SCHEDULER_CONF = readCfg($WEBOBS{'CONF_SCHEDULER'});
 
-
 sub scheduler_client {
-	# Submit a command to the scheduler process listening on UDP.
-	#
-	# @parameters:
-	# $opts (hash reference)
-	#   A reference to a hash defining the following options (missing options
-	#   use sensible defaults):
-	#   'host'       : hostname where the scheduler is listening
-	#                  (default: 'localhost')
-	#   'port'       : UDP port used by the scheduler (default: $SCHEDULER_CONF{'PORT'})
-	#   'max_length' : maximum number of characters read while reading the
-	#                  scheduler response (default: $SCHEDULER_CONF{'SOCKET_MAXLEN'})
-	#   'timeout'    : timeout to use while contacting the scheduler
-	#                  (default: 5)
-	# $cmd (string)
-	#   The command to be submitted to the scheduler.
-	#
-	my $cmd = shift;
-	my $opts = shift || {};
-	my ($response, $error);
-	local $| = 1;  # autoflush
 
-	if (not $cmd) {
-		return ("", "empty command: nothing to send\n");
-	}
+# Submit a command to the scheduler process listening on UDP.
+#
+# @parameters:
+# $opts (hash reference)
+#   A reference to a hash defining the following options (missing options
+#   use sensible defaults):
+#   'host'       : hostname where the scheduler is listening
+#                  (default: 'localhost')
+#   'port'       : UDP port used by the scheduler (default: $SCHEDULER_CONF{'PORT'})
+#   'max_length' : maximum number of characters read while reading the
+#                  scheduler response (default: $SCHEDULER_CONF{'SOCKET_MAXLEN'})
+#   'timeout'    : timeout to use while contacting the scheduler
+#                  (default: 5)
+# $cmd (string)
+#   The command to be submitted to the scheduler.
+#
+    my $cmd = shift;
+    my $opts = shift || {};
+    my ($response, $error);
+    local $| = 1;  # autoflush
 
-	my %opts = (
-		# Default values first
-		'host' => $SCHEDULER_CONF{'LISTEN_ADDR'} || 'localhost',
-		'port' => $SCHEDULER_CONF{'PORT'},
-		'max_length' => $SCHEDULER_CONF{'SOCKET_MAXLEN'},
-		'timeout' => 5,
-		# Override with values from argument
-		%$opts,
-	);
+    if (not $cmd) {
+        return ("", "empty command: nothing to send\n");
+    }
 
-	my $socket = IO::Socket::INET->new(
-			'PeerAddr' => $opts{'host'},
-			'PeerPort' => $opts{'port'},
-			'Proto' => 'udp',
-	);
-	if (not $socket) {
-		return ("", "unable to create socket: $!");
-	}
+    my %opts = (
 
-	eval {
-		local $SIG{'ALRM'} = sub { die 'Timed Out'; };
-		alarm $opts{'timeout'};
-		if ($socket->send($cmd)) {
-			if (not $socket->recv($response, $opts{'max_length'})) {
-				$error = "failed to read answer: $!";
-			}
-		} else {
-			$error = "failed to send request: $!";
-		}
-	};
-	alarm 0;
-	if ($@ && $@ =~ /Timed Out/ ) {
-		$error = "connection timeout after $opts{'timeout'}s";
-	}
-	$socket->close();
-	return ($response, $error);
+        # Default values first
+        'host' => $SCHEDULER_CONF{'LISTEN_ADDR'} || 'localhost',
+        'port' => $SCHEDULER_CONF{'PORT'},
+        'max_length' => $SCHEDULER_CONF{'SOCKET_MAXLEN'},
+        'timeout' => 5,
+
+        # Override with values from argument
+        %$opts,
+      );
+
+    my $socket = IO::Socket::INET->new(
+        'PeerAddr' => $opts{'host'},
+        'PeerPort' => $opts{'port'},
+        'Proto' => 'udp',
+      );
+    if (not $socket) {
+        return ("", "unable to create socket: $!");
+    }
+
+    eval {
+        local $SIG{'ALRM'} = sub { die 'Timed Out'; };
+        alarm $opts{'timeout'};
+        if ($socket->send($cmd)) {
+            if (not $socket->recv($response, $opts{'max_length'})) {
+                $error = "failed to read answer: $!";
+            }
+        } else {
+            $error = "failed to send request: $!";
+        }
+      };
+    alarm 0;
+    if ($@ && $@ =~ /Timed Out/ ) {
+        $error = "connection timeout after $opts{'timeout'}s";
+    }
+    $socket->close();
+    return ($response, $error);
 }
-
 
 1;
 

@@ -146,219 +146,221 @@ set_message(\&webobs_cgi_msg);
 # DBFORM constructor
 sub new {
     my ( $class, $Name ) = @_;
-	my $self  = {};
+    my $self  = {};
 
-	# name : Form name
+    # name : Form name
     die "Missing form name" if !defined($Name);
-	$self->{name} = $Name;
+    $self->{name} = $Name;
 
-	# path : path to configs dir
-	$self->{path}  = "$WEBOBS{PATH_FORMS}/$Name";
+    # path : path to configs dir
+    $self->{path}  = "$WEBOBS{PATH_FORMS}/$Name";
 
-	# conf : full path to this config
-	die "No configuration found for $Name" if (! -e $self->{path}."/$Name.conf");
-	$self->{conf}  = { readCfg($self->{path}."/$Name.conf") };
+    # conf : full path to this config
+    die "No configuration found for $Name" if (! -e $self->{path}."/$Name.conf");
+    $self->{conf}  = { readCfg($self->{path}."/$Name.conf") };
 
-	# dbname : database name - create if needed and ddl is available
-	$self->{dbname}  = "$WEBOBS{PATH_DATA_DB}/".$self->{conf}{DBNAME};
-	if (! -e $self->{dbname}) {
-		die "No database and no ddl to create it for $Name" if (! -e $self->{path}."/$Name.ddl");
-		xddl($self->{dbname}, $self->{path}."/$Name.ddl");
-	}
+    # dbname : database name - create if needed and ddl is available
+    $self->{dbname}  = "$WEBOBS{PATH_DATA_DB}/".$self->{conf}{DBNAME};
+    if (! -e $self->{dbname}) {
+        die "No database and no ddl to create it for $Name" if (! -e $self->{path}."/$Name.ddl");
+        xddl($self->{dbname}, $self->{path}."/$Name.ddl");
+    }
 
-	# _procs : PROCS referencing this form
-	opendir(DIR, "$WEBOBS{PATH_GRIDS2FORMS}"); 
-   	my @Ps = grep { s/\.$Name$//g && s/^PROC\.//g } readdir(DIR) ;
-	for my $proc ( @Ps ) {
-		my %P = readProc($proc);
-		$self->{_procs}{$proc} = $P{$proc}{NAME} ; 
-	}
+    # _procs : PROCS referencing this form
+    opendir(DIR, "$WEBOBS{PATH_GRIDS2FORMS}");
+    my @Ps = grep { s/\.$Name$//g && s/^PROC\.//g } readdir(DIR) ;
+    for my $proc ( @Ps ) {
+        my %P = readProc($proc);
+        $self->{_procs}{$proc} = $P{$proc}{NAME} ;
+    }
     closedir(DIR);
-	
-	# dbh  : DB Handle from connect to DB
-	my %dbattr = ( RaiseError => 0, PrintError => 0 );
-	$self->{dbh} = DBI->connect("dbi:SQLite:$self->{dbname}","","",\%dbattr) 
-		or die "couldn't connect to $self->{dbname}: $DBI::errstr\n";
-	$self->{dbh}->do("pragma foreign_keys = ON");
-    
-	# _icols , _dcols : resp. hash of IDS and DATA columns' info
-	$self->{_icols} = $self->{dbh}->selectall_hashref("pragma table_info(ids)","cid") ;
-	$self->{_dcols} = $self->{dbh}->selectall_hashref("pragma table_info(data)","cid");
 
-	# the sql 'where' clause used by select method (without leading "and")
-	$self->{where} = " ids.hidden = 'N' ";
+    # dbh  : DB Handle from connect to DB
+    my %dbattr = ( RaiseError => 0, PrintError => 0 );
+    $self->{dbh} = DBI->connect("dbi:SQLite:$self->{dbname}","","",\%dbattr)
+      or die "couldn't connect to $self->{dbname}: $DBI::errstr\n";
+    $self->{dbh}->do("pragma foreign_keys = ON");
 
-	# the sql 'order by' clause used by select method
-	$self->{order} = " ORDER BY ids.ts1 ASC";
+    # _icols , _dcols : resp. hash of IDS and DATA columns' info
+    $self->{_icols} = $self->{dbh}->selectall_hashref("pragma table_info(ids)","cid") ;
+    $self->{_dcols} = $self->{dbh}->selectall_hashref("pragma table_info(data)","cid");
 
-	bless $self, $class;
+    # the sql 'where' clause used by select method (without leading "and")
+    $self->{where} = " ids.hidden = 'N' ";
+
+    # the sql 'order by' clause used by select method
+    $self->{order} = " ORDER BY ids.ts1 ASC";
+
+    bless $self, $class;
     return $self;
 }
 
 # system's resource mngt might use DESTROY: make sure we disconnect from DB  
 sub DESTROY {
-	my $self = shift;
-	$self->{sth}->finish   if ($self->{sth});
-	$self->{dbh}->disconnect if $self->{dbh};
+    my $self = shift;
+    $self->{sth}->finish   if ($self->{sth});
+    $self->{dbh}->disconnect if $self->{dbh};
 }
 
 # get the configuration parameter named $k
 sub conf {
-	my ($self, $k) = @_;
-	return $self->{conf}{$k} if (defined($k));
-} 
+    my ($self, $k) = @_;
+    return $self->{conf}{$k} if (defined($k));
+}
 
 # select all rows or row matching the optional $id (ie. column 'id') argument
 # following a call to 'select', the 'fetch' method is used to retrieve 
 # results one row at a time. 
 sub select {
-	my ($self, $id) = @_;
-	undef($self->{errstr}) if ($self->{errstr});
-	undef($self->{cols}) if ($self->{cols});
-	$self->{sth}->finish if ($self->{sth});
-	my $where = ($self->{where} && $self->{where} ne "") ? " and $self->{where} " : "";
-	$where .= (defined($id)) ? " AND ids.id = $id " : "";
+    my ($self, $id) = @_;
+    undef($self->{errstr}) if ($self->{errstr});
+    undef($self->{cols}) if ($self->{cols});
+    $self->{sth}->finish if ($self->{sth});
+    my $where = ($self->{where} && $self->{where} ne "") ? " and $self->{where} " : "";
+    $where .= (defined($id)) ? " AND ids.id = $id " : "";
 
-	$self->{cols}  = join(',', map { "ids.$self->{_icols}{$_}{name}"  } sort keys($self->{_icols})) . ","  ;
-	$self->{cols} .= join(",", map { "data.$self->{_dcols}{$_}{name}"  } grep { $self->{_dcols}{$_}{name} !~ /ID/ } sort keys($self->{_dcols}));
+    $self->{cols}  = join(',', map { "ids.$self->{_icols}{$_}{name}"  } sort keys($self->{_icols})) . ","  ;
+    $self->{cols} .= join(",", map { "data.$self->{_dcols}{$_}{name}"  } grep { $self->{_dcols}{$_}{name} !~ /ID/ } sort keys($self->{_dcols}));
 
-	my $stmt  =  "SELECT $self->{cols} FROM ids, data WHERE ids.id = data.id $where $self->{order}";
+    my $stmt  =  "SELECT $self->{cols} FROM ids, data WHERE ids.id = data.id $where $self->{order}";
 
-	if ($self->{sth} = $self->{dbh}->prepare($stmt)) {
-		if (! $self->{sth}->execute) { $self->{errstr} = "failed to execute: $DBI::errstr"; }
-	} else { $self->{errstr} = "failed to prepare: $DBI::errstr"; }
-	return;
+    if ($self->{sth} = $self->{dbh}->prepare($stmt)) {
+        if (! $self->{sth}->execute) { $self->{errstr} = "failed to execute: $DBI::errstr"; }
+    } else { $self->{errstr} = "failed to prepare: $DBI::errstr"; }
+    return;
 }
 
 # fetch next single row of a previously 'select' result set
 # returns a reference to a hash of column => value
 sub fetch {
-	my $self = shift;
-	undef($self->{errstr}) if ($self->{errstr});
-	return $self->{sth}->fetchrow_hashref if ($self->{sth});
+    my $self = shift;
+    undef($self->{errstr}) if ($self->{errstr});
+    return $self->{sth}->fetchrow_hashref if ($self->{sth});
 }
 
 # returns array of column-names used in last select
 sub cols {
-	my ($self, $k) = @_;
-	return grep { s/^.*\.// } split(/,/,$self->{cols}) if ($self->{cols}); 
-} 
+    my ($self, $k) = @_;
+    return grep { s/^.*\.// } split(/,/,$self->{cols}) if ($self->{cols});
+}
 
 # insert : insert row from a CGI query-parameters reference $QP ($QP = $cgi->Vars)
 # returns ID of new row if successfull, -1 otherwise with {errstr} 
 sub insert {
-	my ($self, $QP) = @_;
-	undef($self->{errstr}) if ($self->{errstr});
-	$self->{sth}->finish if ($self->{sth});
-	my $value = my $id = '';
-	my $cIDS = my $cDATA = my $vIDS = my $vDATA = my $val = "";
-	# scanning all defined columns, build the cols and values lists of the insert statement : 
-	# only the columns found in QueryString (ie: colname=val); quote values when needed;  
-	for (sort keys($self->{_icols})) { 
-		next if ($_ == 0); # ignore 1st col that must be ID
-		$val = $QP->{$self->{_icols}{$_}{name}} || undef ;
-		next if ( !defined($val) );
-		$cIDS .= "$self->{_icols}{$_}{name},";
-		if ( uc($self->{_icols}{$_}{type}) eq 'TEXT' || uc($self->{_icols}{$_}{type}) eq 'TIMESTAMP' ) { 
-				 $vIDS .= "'".$val."'," ; 
-		} else { $vIDS .= $val."," } 
-	}
-	$cIDS =~ s/,$//; $vIDS =~ s/,$//; # remove extra trailing comma
-	for (sort keys($self->{_dcols})) { 
-		next if ($_ == 0); # ignore 1st col that must be ID
-		$val = $QP->{$self->{_dcols}{$_}{name}} || undef ;
-		next if ( !defined($val) );
-		$cDATA .= "$self->{_dcols}{$_}{name},";
-		if ( uc($self->{_dcols}{$_}{type}) eq 'TEXT' || uc($self->{_dcols}{$_}{type}) eq 'TIMESTAMP' ) {
-				 $vDATA .= "'".$val."'," ;
-		} else { $vDATA .= $val."," } 
-	}
-	$cDATA =~ s/,$//; $vDATA =~ s/,$//; # remove extra trailing comma
-	# inserts transaction  
-	my $i1 = "INSERT INTO ids($cIDS) VALUES($vIDS)"; 
-	$self->{dbh}->begin_work();
-	eval {
-		local $self->{dbh}->{RaiseError} = 1;
-		$self->{dbh}->do($i1);
-		$id = $self->{dbh}->last_insert_id(undef, undef, qw(ids id));
-		my $i2 = "INSERT INTO data(id,$cDATA) VALUES($id,$vDATA)\n";
-		$self->{dbh}->do($i2);
-		$self->{dbh}->commit();
-	};
-	if ($@) {
-		$self->{errstr} = "insert aborted: $@";
-		$id = -1;
-		eval { $self->{dbh}->rollback };
-	}
-	return $id;
+    my ($self, $QP) = @_;
+    undef($self->{errstr}) if ($self->{errstr});
+    $self->{sth}->finish if ($self->{sth});
+    my $value = my $id = '';
+    my $cIDS = my $cDATA = my $vIDS = my $vDATA = my $val = "";
+
+# scanning all defined columns, build the cols and values lists of the insert statement : 
+# only the columns found in QueryString (ie: colname=val); quote values when needed;  
+    for (sort keys($self->{_icols})) {
+        next if ($_ == 0); # ignore 1st col that must be ID
+        $val = $QP->{$self->{_icols}{$_}{name}} || undef ;
+        next if ( !defined($val) );
+        $cIDS .= "$self->{_icols}{$_}{name},";
+        if ( uc($self->{_icols}{$_}{type}) eq 'TEXT' || uc($self->{_icols}{$_}{type}) eq 'TIMESTAMP' ) {
+            $vIDS .= "'".$val."'," ;
+        } else { $vIDS .= $val."," }
+    }
+    $cIDS =~ s/,$//; $vIDS =~ s/,$//; # remove extra trailing comma
+    for (sort keys($self->{_dcols})) {
+        next if ($_ == 0); # ignore 1st col that must be ID
+        $val = $QP->{$self->{_dcols}{$_}{name}} || undef ;
+        next if ( !defined($val) );
+        $cDATA .= "$self->{_dcols}{$_}{name},";
+        if ( uc($self->{_dcols}{$_}{type}) eq 'TEXT' || uc($self->{_dcols}{$_}{type}) eq 'TIMESTAMP' ) {
+            $vDATA .= "'".$val."'," ;
+        } else { $vDATA .= $val."," }
+    }
+    $cDATA =~ s/,$//; $vDATA =~ s/,$//; # remove extra trailing comma
+
+    # inserts transaction  
+    my $i1 = "INSERT INTO ids($cIDS) VALUES($vIDS)";
+    $self->{dbh}->begin_work();
+    eval {
+        local $self->{dbh}->{RaiseError} = 1;
+        $self->{dbh}->do($i1);
+        $id = $self->{dbh}->last_insert_id(undef, undef, qw(ids id));
+        my $i2 = "INSERT INTO data(id,$cDATA) VALUES($id,$vDATA)\n";
+        $self->{dbh}->do($i2);
+        $self->{dbh}->commit();
+      };
+    if ($@) {
+        $self->{errstr} = "insert aborted: $@";
+        $id = -1;
+        eval { $self->{dbh}->rollback };
+    }
+    return $id;
 }
 
 # get an array of all CHECKS constraints in table DATA
 sub datachecks {
-	my $self = shift;
-	my $row = $self->{dbh}->selectrow_array("SELECT sql FROM sqlite_master WHERE type='table' and name='data' ;");
-	return ($row =~ m/check.*\((.*)\)/g);
+    my $self = shift;
+    my $row = $self->{dbh}->selectrow_array("SELECT sql FROM sqlite_master WHERE type='table' and name='data' ;");
+    return ($row =~ m/check.*\((.*)\)/g);
 }
 
 # delete data : delete row matching $id (ie. column 'id')
 # delete ID from both 'ids' and 'data' table (using on cascade)
 sub delete {
-	my ($self, $id) = @_;
-	undef($self->{errstr}) if ($self->{errstr});
-	$self->{sth}->finish if ($self->{sth});
-	if (defined($id)) {
-		$self->{dbh}->do("DELETE FROM ids WHERE id=$id");
-		$self->{errstr} = $self->{dbh}->errstr() if ($self->{dbh}->err());
-	}
-	return;
+    my ($self, $id) = @_;
+    undef($self->{errstr}) if ($self->{errstr});
+    $self->{sth}->finish if ($self->{sth});
+    if (defined($id)) {
+        $self->{dbh}->do("DELETE FROM ids WHERE id=$id");
+        $self->{errstr} = $self->{dbh}->errstr() if ($self->{dbh}->err());
+    }
+    return;
 }
 
 # get PROC(s) of this FORM as a hash of their 'long' name (NAME)
 sub procs {
     my ($self) = @_;
-	return %{$self->{_procs}} if ($self->{_procs});
+    return %{$self->{_procs}} if ($self->{_procs});
 }
 
 # get valid nodes of a PROC of this FORM, returned as a hash of their NAME, ALIAS and FID 
 sub nodes {
-	my ($self, $proc) = @_;
-	undef($self->{errstr}) if ($self->{errstr});
-	if (defined($proc)) {
-		if (! $proc ~~ [ map "$_", keys(%{$self->{_procs}})] ) {
-			my %L = listGridNodes(grid=>"PROC.$proc", valid=>1);
-			return %L;
-		} else {
-			$self->{errstr} = "$proc not in ".$self->{name}."\n" ;
-		}
-	} else {
-		$self->{errstr} = "no proc requested\n" if (!defined($proc));
-	}
+    my ($self, $proc) = @_;
+    undef($self->{errstr}) if ($self->{errstr});
+    if (defined($proc)) {
+        if (! $proc ~~ [ map "$_", keys(%{$self->{_procs}})] ) {
+            my %L = listGridNodes(grid=>"PROC.$proc", valid=>1);
+            return %L;
+        } else {
+            $self->{errstr} = "$proc not in ".$self->{name}."\n" ;
+        }
+    } else {
+        $self->{errstr} = "no proc requested\n" if (!defined($proc));
+    }
 }
 
 # get a dump of this DBFORM as a string
 # usage: print $F->dump
 sub dump {
     my ($self) = @_;
-	my $dmp = '';
+    my $dmp = '';
     $dmp .= sprintf( "Name: %s\n", $self->{name} );
     $dmp .= sprintf( "Configuration: %s\n", $self->{path} );
-	map { $dmp .= sprintf "  $_ => $self->{conf}{$_}\n" } keys %{ $self->{conf}};
+    map { $dmp .= sprintf "  $_ => $self->{conf}{$_}\n" } keys %{ $self->{conf}};
     $dmp .= sprintf( "Database: %s\n", $self->{dbname} );
     $dmp .= sprintf( "  specific columns: %s\n", join(', ', map { $self->{_dcols}{$_}{name}."($self->{_dcols}{$_}{type})" } sort keys($self->{_dcols})) );
-	$dmp .= sprintf( "  number of rows: %s\n", $self->{dbh}->selectrow_array( "SELECT COUNT(*) FROM ids") );
-	$dmp .= "Related PROC(s): ";
-	for ( keys(%{$self->{_procs}}) ) {
-		$dmp .= sprintf("  %s(%s) ", $_, $self->{_procs}{$_});
-	}
-	$dmp .= "\n";
-	return $dmp;
+    $dmp .= sprintf( "  number of rows: %s\n", $self->{dbh}->selectrow_array( "SELECT COUNT(*) FROM ids") );
+    $dmp .= "Related PROC(s): ";
+    for ( keys(%{$self->{_procs}}) ) {
+        $dmp .= sprintf("  %s(%s) ", $_, $self->{_procs}{$_});
+    }
+    $dmp .= "\n";
+    return $dmp;
 }
 
 # execute a DDL file $ddl for DataBase $db
 # ** not requiring db connection **
-sub xddl { 
-	my ($db, $ddl) = @_; 
-	my @qrs = qx(sqlite3 $db < $ddl);
+sub xddl {
+    my ($db, $ddl) = @_;
+    my @qrs = qx(sqlite3 $db < $ddl);
 }
 
 1;

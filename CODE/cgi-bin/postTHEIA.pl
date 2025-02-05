@@ -53,14 +53,15 @@ print CGI::header();
 # Return information when OK
 # (Reminder: we use text/plain as this is an ajax action)
 sub htmlMsgOK {
-	print "$_[0] successfully !\n";
+    print "$_[0] successfully !\n";
 }
+
 # Return information when not OK
 # (Reminder: we use text/plain as this is an ajax action)
 sub htmlMsgNotOK {
-	close(FILE);
- 	print "(create/)update FAILED !\n $_[0] \n";
-	exit;
+    close(FILE);
+    print "(create/)update FAILED !\n $_[0] \n";
+    exit;
 }
 
 my $filename = "$WEBOBS{CONF_THEIA}";   # the theia.rc configuration file where we will write the id of the selected nodes and channels
@@ -72,17 +73,16 @@ push(@lines,"CHANNELS|".join(',', @channels));
 
 if ( sysopen(FILE, "$filename", O_RDWR | O_CREAT) ) {
     unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-		warn "postTHEIA waiting for lock on $filename...";
-		flock(FILE, LOCK_EX);
-	}
+        warn "postTHEIA waiting for lock on $filename...";
+        flock(FILE, LOCK_EX);
+    }
 
     truncate FILE, 0;
     print FILE @lines;
-	close(FILE);
+    close(FILE);
 } else { htmlMsgNotOK("$filename $!") }
 
 htmlMsgOK("$filename has been edited !");
-
 
 # ---- connecting to the database
 my $driver   = "SQLite";
@@ -91,24 +91,23 @@ my $dsn = "DBI:$driver:dbname=$database";
 my $userid = "";
 my $password = "";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-			or die "Couldn't connect to database: " . DBI->errstr;
+  or die "Couldn't connect to database: " . DBI->errstr;
 
 foreach (@allChannels) {
-	my ($ch, $level, $theia) = split(/\|/, $_);
-	my $stmt  = "UPDATE observations SET processinglevel = '$level' WHERE identifier = '$ch'";
-	$stmt  = qq($stmt);
-	my $sth   = $dbh->prepare( $stmt );
-	my $rv    = $sth->execute() or die DBI->errstr;
+    my ($ch, $level, $theia) = split(/\|/, $_);
+    my $stmt  = "UPDATE observations SET processinglevel = '$level' WHERE identifier = '$ch'";
+    $stmt  = qq($stmt);
+    my $sth   = $dbh->prepare( $stmt );
+    my $rv    = $sth->execute() or die DBI->errstr;
 
-	my $name = (split /_/, $ch)[-1];
-	my $stmt  = "UPDATE observed_properties SET theiacategories = '$theia' WHERE identifier = '$name'";
-	$stmt  = qq($stmt);
-	my $sth   = $dbh->prepare( $stmt );
-	my $rv    = $sth->execute() or die DBI->errstr;
+    my $name = (split /_/, $ch)[-1];
+    my $stmt  = "UPDATE observed_properties SET theiacategories = '$theia' WHERE identifier = '$name'";
+    $stmt  = qq($stmt);
+    my $sth   = $dbh->prepare( $stmt );
+    my $rv    = $sth->execute() or die DBI->errstr;
 }
 
 $dbh->disconnect();
-
 
 __END__
 

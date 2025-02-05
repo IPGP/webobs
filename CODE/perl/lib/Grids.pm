@@ -42,29 +42,29 @@ $VERSION    = "1.00";
 %DOMAINS = readDomain();
 
 if (-e $WEBOBS{FILE_OWNERS}) {
-	%OWNRS = readCfg($WEBOBS{FILE_OWNERS});
+    %OWNRS = readCfg($WEBOBS{FILE_OWNERS});
 }
 
 #FB-was: if (-e $WEBOBS{FILE_DISCIPLINES}) { %DISCP = readCfg($WEBOBS{FILE_DISCIPLINES}); }
 
 if (-e $WEBOBS{CONF_NODES}) {
-	%NODES = readCfg($WEBOBS{CONF_NODES});
+    %NODES = readCfg($WEBOBS{CONF_NODES});
 }
 
 if (-e $WEBOBS{CONF_GRIDS}) {
-	%GRIDS = readCfg($WEBOBS{CONF_GRIDS});
+    %GRIDS = readCfg($WEBOBS{CONF_GRIDS});
 }
 
 # %node2node: hash key = 'parentnode|feature', hash value = 'childnode' or 'childnode1|childnode2|...'
 if (-e $NODES{FILE_NODES2NODES}) {
-	my @file_node2node = readCfgFile("$NODES{FILE_NODES2NODES}");
-	for (@file_node2node) {
-		if ($_ =~ /.+\|.+\|.+/) {
-			my ($parent_node,$feature,$children_node) = split(/\|/,$_);
-			my $key_link = $parent_node."|".$feature;
-			$node2node{$key_link} .= (exists($node2node{$key_link}) ? "|":"").$children_node;
-		}
-	}
+    my @file_node2node = readCfgFile("$NODES{FILE_NODES2NODES}");
+    for (@file_node2node) {
+        if ($_ =~ /.+\|.+\|.+/) {
+            my ($parent_node,$feature,$children_node) = split(/\|/,$_);
+            my $key_link = $parent_node."|".$feature;
+            $node2node{$key_link} .= (exists($node2node{$key_link}) ? "|":"").$children_node;
+        }
+    }
 }
 
 =pod
@@ -82,15 +82,15 @@ Reads all 'domains' configurations into a HoH.
 =cut
 
 sub readDomain {
-	my %ret;
-	my @dom = qx(sqlite3 $WEBOBS{SQL_DOMAINS}  "select CODE,OOA,NAME from $WEBOBS{SQL_TABLE_DOMAINS} order by OOA");
-	chomp(@dom);
-	for (@dom) {
-		my @tmp = split(/\|/,$_);
-		$ret{$tmp[0]}{OOA} = $tmp[1];
-		$ret{$tmp[0]}{NAME} = $tmp[2];
-	}
-	return %ret;
+    my %ret;
+    my @dom = qx(sqlite3 $WEBOBS{SQL_DOMAINS}  "select CODE,OOA,NAME from $WEBOBS{SQL_TABLE_DOMAINS} order by OOA");
+    chomp(@dom);
+    for (@dom) {
+        my @tmp = split(/\|/,$_);
+        $ret{$tmp[0]}{OOA} = $tmp[1];
+        $ret{$tmp[0]}{NAME} = $tmp[2];
+    }
+    return %ret;
 }
 
 =pod
@@ -113,29 +113,32 @@ Internally uses WebObs::listProcNames.
 =cut
 
 sub readProc {
-	my %ret;
-	for my $f (listProcNames($_[0])) {
-		my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf",@_[1..$#_]);
-		# --- get list of associated NODES
-		opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
-		my @lSn = grep {/^PROC\.($f)\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
-		foreach (@lSn) {s/^PROC\.($f)\.//g};
-		@lSn =  sort {$a cmp $b} @lSn ;
-		$tmp{'NODESLIST'} = \@lSn;
-		closedir(DIR);
-		# --- get list of associated FORMS
-		opendir(DIR, "$WEBOBS{PATH_GRIDS2FORMS}");
-		my @lSf = grep {/^PROC\.($f)\./ && -l $WEBOBS{PATH_GRIDS2FORMS}."/".$_} readdir(DIR);
-		foreach (@lSf) {s/^PROC\.($f)\.//g};
-		$tmp{'FORM'} = $lSf[0];	#NOTE: keeps only the first FORM
-		closedir(DIR);
-		# --- get DOMAIN
-		my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'PROC' and NAME = '$f'");
-		chomp(@qx);
-		$tmp{'DOMAIN'} = join('|',@qx);
-		$ret{$f}=\%tmp;
-	}
-	return %ret;
+    my %ret;
+    for my $f (listProcNames($_[0])) {
+        my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf",@_[1..$#_]);
+
+        # --- get list of associated NODES
+        opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
+        my @lSn = grep {/^PROC\.($f)\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
+        foreach (@lSn) {s/^PROC\.($f)\.//g};
+        @lSn =  sort {$a cmp $b} @lSn ;
+        $tmp{'NODESLIST'} = \@lSn;
+        closedir(DIR);
+
+        # --- get list of associated FORMS
+        opendir(DIR, "$WEBOBS{PATH_GRIDS2FORMS}");
+        my @lSf = grep {/^PROC\.($f)\./ && -l $WEBOBS{PATH_GRIDS2FORMS}."/".$_} readdir(DIR);
+        foreach (@lSf) {s/^PROC\.($f)\.//g};
+        $tmp{'FORM'} = $lSf[0];	#NOTE: keeps only the first FORM
+        closedir(DIR);
+
+        # --- get DOMAIN
+        my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'PROC' and NAME = '$f'");
+        chomp(@qx);
+        $tmp{'DOMAIN'} = join('|',@qx);
+        $ret{$f}=\%tmp;
+    }
+    return %ret;
 }
 
 =head2 readSefran
@@ -153,25 +156,27 @@ Internally uses WebObs::listSefranNames.
 =cut
 
 sub readSefran {
-	my %ret;
-	for my $f (listSefranNames($_[0])) {
-		my %tmp = readCfg("$WEBOBS{PATH_SEFRANS}/$f/$f.conf");
-		$tmp{NAME} ||= $tmp{TITRE};
-		# --- get channels list
-		my @ch = readCfgFile(exists($tmp{CHANNEL_CONF}) ? "$tmp{CHANNEL_CONF}":"$WEBOBS{PATH_SEFRANS}/$f/channels.conf");
-		my @st;
-		for (@ch) {
-			my ($ali,$cod) = split(/\s+/,$_);
-			push(@st,$ali);
-		}
-		$tmp{'CHANNELLIST'} = join('|',@st);
-		# --- get DOMAIN
-		my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'SEFRAN' and NAME = '$f'");
-		chomp(@qx);
-		$tmp{'DOMAIN'} = join('|',@qx);
-		$ret{$f}=\%tmp;
-	}
-	return %ret;
+    my %ret;
+    for my $f (listSefranNames($_[0])) {
+        my %tmp = readCfg("$WEBOBS{PATH_SEFRANS}/$f/$f.conf");
+        $tmp{NAME} ||= $tmp{TITRE};
+
+        # --- get channels list
+        my @ch = readCfgFile(exists($tmp{CHANNEL_CONF}) ? "$tmp{CHANNEL_CONF}":"$WEBOBS{PATH_SEFRANS}/$f/channels.conf");
+        my @st;
+        for (@ch) {
+            my ($ali,$cod) = split(/\s+/,$_);
+            push(@st,$ali);
+        }
+        $tmp{'CHANNELLIST'} = join('|',@st);
+
+        # --- get DOMAIN
+        my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'SEFRAN' and NAME = '$f'");
+        chomp(@qx);
+        $tmp{'DOMAIN'} = join('|',@qx);
+        $ret{$f}=\%tmp;
+    }
+    return %ret;
 }
 
 =pod
@@ -189,21 +194,21 @@ Internally uses WebObs::listViewNames.
 =cut
 
 sub readView {
-	my %ret;
-	for my $f (listViewNames($_[0])) {
-		my %tmp = readCfg("$WEBOBS{PATH_VIEWS}/$f/$f.conf");
-		opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
-		my @l = grep {/^VIEW\.($f)\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
-		foreach (@l) {s/^VIEW\.($f)\.//g};
-		@l =  sort {$a cmp $b} @l ;
-		$tmp{'NODESLIST'} = \@l;
-		closedir(DIR);
-		my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'VIEW' and NAME = '$f'");
-		chomp(@qx);
-		$tmp{'DOMAIN'} = $qx[0];
-		$ret{$f}=\%tmp;
-	}
-	return %ret;
+    my %ret;
+    for my $f (listViewNames($_[0])) {
+        my %tmp = readCfg("$WEBOBS{PATH_VIEWS}/$f/$f.conf");
+        opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
+        my @l = grep {/^VIEW\.($f)\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
+        foreach (@l) {s/^VIEW\.($f)\.//g};
+        @l =  sort {$a cmp $b} @l ;
+        $tmp{'NODESLIST'} = \@l;
+        closedir(DIR);
+        my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'VIEW' and NAME = '$f'");
+        chomp(@qx);
+        $tmp{'DOMAIN'} = $qx[0];
+        $ret{$f}=\%tmp;
+    }
+    return %ret;
 }
 
 =pod
@@ -217,23 +222,23 @@ Adds DOMAIN code from grids2domains db
 =cut
 
 sub readGrid {
-	my %ret;
-	my %tmp;
-	my $f = $_[0];
-	my ($gt,$gn) = split(/\./,$f);
-	my $z = "PATH_${gt}S";
-	%tmp = readCfg("$WEBOBS{$z}/$gn/$gn.conf");
-	opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
-	my @l = grep {/^$f\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
-	foreach (@l) {s/^$f\.//g};
-	@l =  sort {$a cmp $b} @l ;
-	$tmp{'NODESLIST'} = \@l;
-	closedir(DIR);
-	my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = '$gt' and NAME = '$gn'");
-	chomp(@qx);
-	$tmp{'DOMAIN'} = $qx[0];
-	$ret{$f}=\%tmp;
-	return %ret;
+    my %ret;
+    my %tmp;
+    my $f = $_[0];
+    my ($gt,$gn) = split(/\./,$f);
+    my $z = "PATH_${gt}S";
+    %tmp = readCfg("$WEBOBS{$z}/$gn/$gn.conf");
+    opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
+    my @l = grep {/^$f\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
+    foreach (@l) {s/^$f\.//g};
+    @l =  sort {$a cmp $b} @l ;
+    $tmp{'NODESLIST'} = \@l;
+    closedir(DIR);
+    my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = '$gt' and NAME = '$gn'");
+    chomp(@qx);
+    $tmp{'DOMAIN'} = $qx[0];
+    $ret{$f}=\%tmp;
+    return %ret;
 
 }
 
@@ -249,29 +254,33 @@ Internally uses WebObs::listNodeNames.
 =cut
 
 sub readNode {
-	my %ret;
-	for my $f (listNodeNames($_[0])) {
-		my %tmp = readCfg("$NODES{PATH_NODES}/$f/$f.cnf","escape",@_[1..$#_]);
-		#FB-legacy: if TYPE not defined and old type.txt exists, loads it
-		if (!$tmp{TYPE}) {
-			my $typ = "$NODES{PATH_NODES}/$f/type.txt";
-			if ((-e $typ) && (-s $typ != 0)) {
-				$tmp{TYPE} = trim(join("",readFile($typ)));
-			}
-		}
-		$tmp{PROJECT} = 1 if (-s "$NODES{PATH_NODES}/$f/$NODES{SPATH_INTERVENTIONS}/${f}_Projet.txt");
-		#substitutes possible decimal comma to point for numerics
-		$tmp{LAT_WGS84} =~ s/,/./g;
-		$tmp{LON_WGS84} =~ s/,/./g;
-		#FB-legacy: removes escape characters in feature's list
-		$tmp{FILES_FEATURES} =~ s/\\,/,/g;
-		$tmp{FILES_FEATURES} =~ s/\\\|/,/g;
-		# removes trailing blanks in each features
-		$tmp{FILES_FEATURES} = join(",",map {trim($_)} split(/[,\|]/,$tmp{FILES_FEATURES}));
+    my %ret;
+    for my $f (listNodeNames($_[0])) {
+        my %tmp = readCfg("$NODES{PATH_NODES}/$f/$f.cnf","escape",@_[1..$#_]);
 
-		$ret{$f}=\%tmp;
-	}
-	return %ret;
+        #FB-legacy: if TYPE not defined and old type.txt exists, loads it
+        if (!$tmp{TYPE}) {
+            my $typ = "$NODES{PATH_NODES}/$f/type.txt";
+            if ((-e $typ) && (-s $typ != 0)) {
+                $tmp{TYPE} = trim(join("",readFile($typ)));
+            }
+        }
+        $tmp{PROJECT} = 1 if (-s "$NODES{PATH_NODES}/$f/$NODES{SPATH_INTERVENTIONS}/${f}_Projet.txt");
+
+        #substitutes possible decimal comma to point for numerics
+        $tmp{LAT_WGS84} =~ s/,/./g;
+        $tmp{LON_WGS84} =~ s/,/./g;
+
+        #FB-legacy: removes escape characters in feature's list
+        $tmp{FILES_FEATURES} =~ s/\\,/,/g;
+        $tmp{FILES_FEATURES} =~ s/\\\|/,/g;
+
+        # removes trailing blanks in each features
+        $tmp{FILES_FEATURES} = join(",",map {trim($_)} split(/[,\|]/,$tmp{FILES_FEATURES}));
+
+        $ret{$f}=\%tmp;
+    }
+    return %ret;
 }
 
 =pod
@@ -288,16 +297,17 @@ it will be used as a regexp to select view names.
 =cut
 
 sub listViewNames {
-	#$_[0] will be used as a regexp
-	my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
-	opendir(DIR, $WEBOBS{PATH_VIEWS}) or die "can't opendir $WEBOBS{PATH_VIEWS}: $!";
-	my @list = grep {/($filter)/ && -d $WEBOBS{PATH_VIEWS}."/".$_} readdir(DIR);
-	closedir(DIR);
-	my @finallist;
-	for (@list) {
-		push(@finallist, $_) if (WebObs::Users::clientHasRead(name=>$_,type=>'authviews'));
-	}
-	return @finallist;
+
+    #$_[0] will be used as a regexp
+    my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
+    opendir(DIR, $WEBOBS{PATH_VIEWS}) or die "can't opendir $WEBOBS{PATH_VIEWS}: $!";
+    my @list = grep {/($filter)/ && -d $WEBOBS{PATH_VIEWS}."/".$_} readdir(DIR);
+    closedir(DIR);
+    my @finallist;
+    for (@list) {
+        push(@finallist, $_) if (WebObs::Users::clientHasRead(name=>$_,type=>'authviews'));
+    }
+    return @finallist;
 }
 
 =pod
@@ -314,16 +324,17 @@ it will be used as a regexp to select proc names.
 =cut
 
 sub listProcNames {
-	#$_[0] will be used as a regexp
-	my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
-	opendir(DIR, $WEBOBS{PATH_PROCS}) or die "can't opendir $WEBOBS{PATH_PROCS}: $!";
-	my @list = grep {/($filter)/ && -d $WEBOBS{PATH_PROCS}."/".$_} readdir(DIR);
-	closedir(DIR);
-	my @finallist;
-	for (@list) {
-		push(@finallist, $_) if (WebObs::Users::clientHasRead(name=>$_,type=>'authprocs'));
-	}
-	return @finallist;
+
+    #$_[0] will be used as a regexp
+    my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
+    opendir(DIR, $WEBOBS{PATH_PROCS}) or die "can't opendir $WEBOBS{PATH_PROCS}: $!";
+    my @list = grep {/($filter)/ && -d $WEBOBS{PATH_PROCS}."/".$_} readdir(DIR);
+    closedir(DIR);
+    my @finallist;
+    for (@list) {
+        push(@finallist, $_) if (WebObs::Users::clientHasRead(name=>$_,type=>'authprocs'));
+    }
+    return @finallist;
 }
 
 =pod
@@ -340,19 +351,20 @@ it will be used as a regexp to select proc names.
 =cut
 
 sub listSefranNames {
-	#$_[0] will be used as a regexp
-	my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
-	opendir(DIR, $WEBOBS{PATH_SEFRANS}) or die "can't opendir $WEBOBS{PATH_SEFRANS}: $!";
-	my @list = grep {/($filter)/ && -d $WEBOBS{PATH_SEFRANS}."/".$_} readdir(DIR);
-	closedir(DIR);
-	my @finallist;
-	for (@list) {
-		my $mc = qx(grep -E "^MC3_NAME\\|" $WEBOBS{PATH_SEFRANS}/$_/$_.conf);
-		chomp($mc);
-		$mc =~ s/^MC3_NAME\|//g;
-		push(@finallist, $_) if (WebObs::Users::clientHasRead(name=>$mc,type=>'authprocs'));
-	}
-	return @finallist;
+
+    #$_[0] will be used as a regexp
+    my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
+    opendir(DIR, $WEBOBS{PATH_SEFRANS}) or die "can't opendir $WEBOBS{PATH_SEFRANS}: $!";
+    my @list = grep {/($filter)/ && -d $WEBOBS{PATH_SEFRANS}."/".$_} readdir(DIR);
+    closedir(DIR);
+    my @finallist;
+    for (@list) {
+        my $mc = qx(grep -E "^MC3_NAME\\|" $WEBOBS{PATH_SEFRANS}/$_/$_.conf);
+        chomp($mc);
+        $mc =~ s/^MC3_NAME\|//g;
+        push(@finallist, $_) if (WebObs::Users::clientHasRead(name=>$mc,type=>'authprocs'));
+    }
+    return @finallist;
 }
 
 =pod
@@ -369,12 +381,13 @@ it will be used as a regexp to select node names.
 =cut
 
 sub listNodeNames {
-	#$_[0] will be used as a regexp
-	my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
-	opendir(DIR, $NODES{PATH_NODES}) or die "can't opendir $NODES{PATH_NODES}: $!";
-	my @list = grep {/($filter)/ && -d $NODES{PATH_NODES}."/".$_} readdir(DIR);
-	closedir(DIR);
-	return @list;
+
+    #$_[0] will be used as a regexp
+    my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
+    opendir(DIR, $NODES{PATH_NODES}) or die "can't opendir $NODES{PATH_NODES}: $!";
+    my @list = grep {/($filter)/ && -d $NODES{PATH_NODES}."/".$_} readdir(DIR);
+    closedir(DIR);
+    return @list;
 }
 
 =pod
@@ -400,19 +413,20 @@ type, if not specified, will default to ALL grid types (ie. VIEW and PROC).
 =cut
 
 sub listNodeGrids {
-	my %KWARGS = @_;
-	my $filterT = $KWARGS{type} && $KWARGS{type} =~ /^VIEW$|^PROC$/ ? $KWARGS{type} : '';
-	#my $filterS = $KWARGS{node} ? $KWARGS{node} : '';
-	my $filterS = $KWARGS{node} ? $KWARGS{node} : undef;
+    my %KWARGS = @_;
+    my $filterT = $KWARGS{type} && $KWARGS{type} =~ /^VIEW$|^PROC$/ ? $KWARGS{type} : '';
 
-	my @s = listNodeNames($filterS);
-	my $g = "$WEBOBS{PATH_GRIDS2NODES}/";
-	my %rs;
-	foreach (@s) {
-		my @l = grep(s{$g/}{}g, <$g/$filterT*$_>);
-		$rs{$_}=[grep(s{\.[^.]*$}{}, @l)];
-	}
-	return %rs;
+    #my $filterS = $KWARGS{node} ? $KWARGS{node} : '';
+    my $filterS = $KWARGS{node} ? $KWARGS{node} : undef;
+
+    my @s = listNodeNames($filterS);
+    my $g = "$WEBOBS{PATH_GRIDS2NODES}/";
+    my %rs;
+    foreach (@s) {
+        my @l = grep(s{$g/}{}g, <$g/$filterT*$_>);
+        $rs{$_}=[grep(s{\.[^.]*$}{}, @l)];
+    }
+    return %rs;
 }
 
 =pod
@@ -429,22 +443,22 @@ returns a hash of grid names:
 =cut
 
 sub listNameGrids {
-	my %rs;
-	my $n;
-	my %tmp;
-	my @V = listViewNames;
-	foreach (@V) {
-		$n = "VIEW.$_";
-		%tmp = readCfg("$WEBOBS{PATH_VIEWS}/$_/$_.conf");
-		$rs{$n} = $tmp{'NAME'};
-	}
-	my @P = listProcNames;
-	foreach (@P) {
-		$n = "PROC.$_";
-		%tmp = readCfg("$WEBOBS{PATH_PROCS}/$_/$_.conf");
-		$rs{$n} = $tmp{'NAME'};
-	}
-	return %rs;
+    my %rs;
+    my $n;
+    my %tmp;
+    my @V = listViewNames;
+    foreach (@V) {
+        $n = "VIEW.$_";
+        %tmp = readCfg("$WEBOBS{PATH_VIEWS}/$_/$_.conf");
+        $rs{$n} = $tmp{'NAME'};
+    }
+    my @P = listProcNames;
+    foreach (@P) {
+        $n = "PROC.$_";
+        %tmp = readCfg("$WEBOBS{PATH_PROCS}/$_/$_.conf");
+        $rs{$n} = $tmp{'NAME'};
+    }
+    return %rs;
 }
 
 =pod
@@ -488,45 +502,47 @@ is then considered 'active' if one of isodateStart and isodateEnd (or both) fall
 =cut
 
 sub listGridNodes {
-	use Time::Piece;
-	my %KWARGS = @_;
-	my $grid  = $KWARGS{grid} ? $KWARGS{grid} : undef;
-	my $valid = $KWARGS{valid} ? $KWARGS{valid} : undef;
-	my $acton = $KWARGS{active} ? $KWARGS{active} : undef;
-	my $today = my $deb = my $fin = '';
-	if (defined($acton))  {
-		$today = strftime( '%Y-%m-%d', localtime );
-		($deb,$fin) = split(/:/,$acton);
-		if (!$fin) {$fin = $deb}
-		$deb =~ s/today/$today/;
-		$fin =~ s/today/$today/;
-		eval { $deb = Time::Piece->strptime($deb,"%Y-%m-%d") }; if ($@) { $deb = Time::Piece->strptime("","%Y-%m-%d") }
-		# FIX: 2038 for Perl 32-bits dates; WAS: eval { $fin = Time::Piece->strptime($fin,"%Y-%m-%d") }; if ($@) { $fin = Time::Piece->strptime("9999","%Y-%m-%d") }
-		eval { $fin = Time::Piece->strptime($fin,"%Y-%m-%d") }; if ($@) { $fin = Time::Piece->strptime("2038","%Y-%m-%d") }
-	}
-	my %vlist;
-	if (defined($grid)) {
-		$grid = ($grid =~ /\./) ? $grid : "*.$grid";
-		my @list = qx (ls -L $WEBOBS{PATH_GRIDS2NODES}/$grid.*/*.cnf 2>/dev/null);
-		chomp(@list);
-		for my $n (@list) {
-			my $tINS = my $tEND = '';
-			my %tmp = readCfg("$n");
-			next if ( defined($valid) && $valid ne $tmp{VALID} ) ;
-			if ( defined($acton) ) {
-				#  Time::Piece->strptime(<date>, "%Y-%m-%d") accepts either %Y, %Y-%m or %Y-%m-%d (fills with '01' as necessary)
-				eval { $tINS = Time::Piece->strptime($tmp{INSTALL_DATE}, "%Y-%m-%d") } ; if ($@) { $tINS = Time::Piece->strptime("","%Y-%m-%d") }
-				# FIX: 2038 for Perl 32-bits dates; WAS: eval { $tEND = Time::Piece->strptime($tmp{END_DATE}, "%Y-%m-%d") }     ; if ($@) { $tEND = Time::Piece->strptime("9999","%Y-%m-%d") }
-				eval { $tEND = Time::Piece->strptime($tmp{END_DATE}, "%Y-%m-%d") }     ; if ($@) { $tEND = Time::Piece->strptime("2038","%Y-%m-%d") }
-				next if ( ($deb < $tINS) && ($fin < $tINS) );
-				next if ( ($deb > $tEND) && ($fin > $tEND) );
-			}
-			$vlist{ basename($n,'.cnf') } = { ALIAS => $tmp{ALIAS} , NAME => $tmp{NAME}, FID => $tmp{FID} };
-		}
-	}
-	return %vlist;
-}
+    use Time::Piece;
+    my %KWARGS = @_;
+    my $grid  = $KWARGS{grid} ? $KWARGS{grid} : undef;
+    my $valid = $KWARGS{valid} ? $KWARGS{valid} : undef;
+    my $acton = $KWARGS{active} ? $KWARGS{active} : undef;
+    my $today = my $deb = my $fin = '';
+    if (defined($acton))  {
+        $today = strftime( '%Y-%m-%d', localtime );
+        ($deb,$fin) = split(/:/,$acton);
+        if (!$fin) {$fin = $deb}
+        $deb =~ s/today/$today/;
+        $fin =~ s/today/$today/;
+        eval { $deb = Time::Piece->strptime($deb,"%Y-%m-%d") }; if ($@) { $deb = Time::Piece->strptime("","%Y-%m-%d") }
 
+# FIX: 2038 for Perl 32-bits dates; WAS: eval { $fin = Time::Piece->strptime($fin,"%Y-%m-%d") }; if ($@) { $fin = Time::Piece->strptime("9999","%Y-%m-%d") }
+        eval { $fin = Time::Piece->strptime($fin,"%Y-%m-%d") }; if ($@) { $fin = Time::Piece->strptime("2038","%Y-%m-%d") }
+    }
+    my %vlist;
+    if (defined($grid)) {
+        $grid = ($grid =~ /\./) ? $grid : "*.$grid";
+        my @list = qx (ls -L $WEBOBS{PATH_GRIDS2NODES}/$grid.*/*.cnf 2>/dev/null);
+        chomp(@list);
+        for my $n (@list) {
+            my $tINS = my $tEND = '';
+            my %tmp = readCfg("$n");
+            next if ( defined($valid) && $valid ne $tmp{VALID} ) ;
+            if ( defined($acton) ) {
+
+#  Time::Piece->strptime(<date>, "%Y-%m-%d") accepts either %Y, %Y-%m or %Y-%m-%d (fills with '01' as necessary)
+                eval { $tINS = Time::Piece->strptime($tmp{INSTALL_DATE}, "%Y-%m-%d") } ; if ($@) { $tINS = Time::Piece->strptime("","%Y-%m-%d") }
+
+# FIX: 2038 for Perl 32-bits dates; WAS: eval { $tEND = Time::Piece->strptime($tmp{END_DATE}, "%Y-%m-%d") }     ; if ($@) { $tEND = Time::Piece->strptime("9999","%Y-%m-%d") }
+                eval { $tEND = Time::Piece->strptime($tmp{END_DATE}, "%Y-%m-%d") }     ; if ($@) { $tEND = Time::Piece->strptime("2038","%Y-%m-%d") }
+                next if ( ($deb < $tINS) && ($fin < $tINS) );
+                next if ( ($deb > $tEND) && ($fin > $tEND) );
+            }
+            $vlist{ basename($n,'.cnf') } = { ALIAS => $tmp{ALIAS} , NAME => $tmp{NAME}, FID => $tmp{FID} };
+        }
+    }
+    return %vlist;
+}
 
 =pod
 
@@ -550,16 +566,16 @@ normNode may be used as a nodename validity (ie. well-formed AND existing) check
 =cut
 
 sub normNode {
-	my %KWARGS = @_;
-	my $node = $KWARGS{node} ? $KWARGS{node} : '';
-	my $ret = "";
-	if ($node) {
-		$node =~ s/\./*./g;
-		my @l = qx(ls -dr $WEBOBS{PATH_GRIDS2NODES}/$node 2>/dev/null);
-		chomp(@l);
-		if (scalar(@l) > 0) {$ret = basename($l[0])}
-	}
-	return $ret;
+    my %KWARGS = @_;
+    my $node = $KWARGS{node} ? $KWARGS{node} : '';
+    my $ret = "";
+    if ($node) {
+        $node =~ s/\./*./g;
+        my @l = qx(ls -dr $WEBOBS{PATH_GRIDS2NODES}/$node 2>/dev/null);
+        chomp(@l);
+        if (scalar(@l) > 0) {$ret = basename($l[0])}
+    }
+    return $ret;
 }
 
 =pod
@@ -589,49 +605,49 @@ and type.txt file-reads ...
 
 sub getNodeString
 {
-	my %KWARGS = @_;
-	my $node  = $KWARGS{node} ? $KWARGS{node} : '';
-	my $style = $KWARGS{style} && $KWARGS{style} =~ /^alias|^short|^html/ ? $KWARGS{style} : 'html';
-	my $link =  $KWARGS{link} && $KWARGS{link} =~ /^node|^features/ ? $KWARGS{link} : '';
+    my %KWARGS = @_;
+    my $node  = $KWARGS{node} ? $KWARGS{node} : '';
+    my $style = $KWARGS{style} && $KWARGS{style} =~ /^alias|^short|^html/ ? $KWARGS{style} : 'html';
+    my $link =  $KWARGS{link} && $KWARGS{link} =~ /^node|^features/ ? $KWARGS{link} : '';
 
-	my $text = "";
-	my $sub = "";
-	if ($node ne "" && -f "$NODES{PATH_NODES}/$node/$node.cnf") {
-		my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
-		if (isok($N{VALID})) {
-			my $nnode = normNode(node=>"..$node");
-			no warnings "uninitialized";
-			if ($style eq 'alias')    { $text = $N{ALIAS} }
-			if ($style eq 'short')    { $text = "$N{ALIAS}: $N{NAME}" }
-			if ($style eq 'html')     { $text = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ne "" && $N{TYPE} ne "-" ? " <i>($N{TYPE})</i>":"") }
-			if ($link eq 'node')      { $text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A>"; }
-			if ($link eq 'features') {
-				$text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A> ";
-				if ($N{FILES_FEATURES} ne "") {
-					$text = "<img src=\"/icons/drawersmall.png\" onClick=\"toggledrawer('\#ID_$node')\">&nbsp;".$text."\n"
-							."<div id=\"ID_$node\"><table class=\"fof\">";
-					for my $feature (split(/,/,$N{FILES_FEATURES})) {
-						my $f = "$NODES{PATH_NODES}/$node/$NODES{SPATH_FEATURES}/$feature.txt";
-						my $htm;
-						if (exists $node2node{"$node|$feature"}) {
-							for (split(/\|/,$node2node{"$node|$feature"})) {
-								$htm .= getNodeString(node=>$_, link=>'node')."<br>" if ($_ ne "");
-							}
-						}
-						if (-f $f) {
-							my @feat = readFile($f);
-							$htm .= WebObs::Wiki::wiki2html(join("",@feat));
-							$htm =~ s/<br><br>/<br>/ig;
-						}
-						$sub .= "<tr><th class=\"fof\"><b>$feature</b></td><td class=\"fof\">".$htm."</td></tr>" if ($htm ne "");
-					}
-					$text .= $sub."</table></div>";
-				}
-			}
-			use warnings;
-		}
-	}
-	return $text;
+    my $text = "";
+    my $sub = "";
+    if ($node ne "" && -f "$NODES{PATH_NODES}/$node/$node.cnf") {
+        my %N = readCfg("$NODES{PATH_NODES}/$node/$node.cnf");
+        if (isok($N{VALID})) {
+            my $nnode = normNode(node=>"..$node");
+            no warnings "uninitialized";
+            if ($style eq 'alias')    { $text = $N{ALIAS} }
+            if ($style eq 'short')    { $text = "$N{ALIAS}: $N{NAME}" }
+            if ($style eq 'html')     { $text = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ne "" && $N{TYPE} ne "-" ? " <i>($N{TYPE})</i>":"") }
+            if ($link eq 'node')      { $text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A>"; }
+            if ($link eq 'features') {
+                $text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A> ";
+                if ($N{FILES_FEATURES} ne "") {
+                    $text = "<img src=\"/icons/drawersmall.png\" onClick=\"toggledrawer('\#ID_$node')\">&nbsp;".$text."\n"
+                      ."<div id=\"ID_$node\"><table class=\"fof\">";
+                    for my $feature (split(/,/,$N{FILES_FEATURES})) {
+                        my $f = "$NODES{PATH_NODES}/$node/$NODES{SPATH_FEATURES}/$feature.txt";
+                        my $htm;
+                        if (exists $node2node{"$node|$feature"}) {
+                            for (split(/\|/,$node2node{"$node|$feature"})) {
+                                $htm .= getNodeString(node=>$_, link=>'node')."<br>" if ($_ ne "");
+                            }
+                        }
+                        if (-f $f) {
+                            my @feat = readFile($f);
+                            $htm .= WebObs::Wiki::wiki2html(join("",@feat));
+                            $htm =~ s/<br><br>/<br>/ig;
+                        }
+                        $sub .= "<tr><th class=\"fof\"><b>$feature</b></td><td class=\"fof\">".$htm."</td></tr>" if ($htm ne "");
+                    }
+                    $text .= $sub."</table></div>";
+                }
+            }
+            use warnings;
+        }
+    }
+    return $text;
 }
 
 =pod
@@ -648,32 +664,32 @@ to which $eventFileName belongs. Returns "" if no such list.
 
 sub parentEvents ($)
 {
-	my $eventFile = shift;
-	my $parent = "";
-	my @subParent = split(/\//,$eventFile);
-	if ($#subParent > 0) {
-		$parent = join("/",@subParent[0..($#subParent-1)]);
-	} else {
-		return "";
-	}
+    my $eventFile = shift;
+    my $parent = "";
+    my @subParent = split(/\//,$eventFile);
+    if ($#subParent > 0) {
+        $parent = join("/",@subParent[0..($#subParent-1)]);
+    } else {
+        return "";
+    }
 
-	my $station = substr($eventFile,0,7);
-	my $txt = "";
-	my @x = split(/\//,$parent);
-	for (my $i=$#x;$i>=0;$i--) {
-		my $f = "$NODES{PATH_NODES}/$station/$NODES{SPATH_INTERVENTIONS}/".join("/",@x[0..$i]).".txt";
-		my ($s,$d,$h) = split(/_/,$x[$i]);
-		$h =~ s/-/:/;
-		my $t = "???";
-		if (-e $f) {
-			my @xx = readFile($f);
-			chomp(@xx);
-			my $o;
-			($o,$t) = split(/\|/,$xx[0]);
-		}
-		$txt .= " \@ <B>$t</B> ($d".($h ne "NA" ? " $h":"").")";
-	}
-	return $txt;
+    my $station = substr($eventFile,0,7);
+    my $txt = "";
+    my @x = split(/\//,$parent);
+    for (my $i=$#x;$i>=0;$i--) {
+        my $f = "$NODES{PATH_NODES}/$station/$NODES{SPATH_INTERVENTIONS}/".join("/",@x[0..$i]).".txt";
+        my ($s,$d,$h) = split(/_/,$x[$i]);
+        $h =~ s/-/:/;
+        my $t = "???";
+        if (-e $f) {
+            my @xx = readFile($f);
+            chomp(@xx);
+            my $o;
+            ($o,$t) = split(/\|/,$xx[0]);
+        }
+        $txt .= " \@ <B>$t</B> ($d".($h ne "NA" ? " $h":"").")";
+    }
+    return $txt;
 }
 
 =pod
@@ -696,35 +712,35 @@ It appends and possibly overwrites codes from local configuration file CONF/netw
 =cut
 
 sub codesFDSN {
-	my %codes;
-	my @FDSN = readFile("$WEBOBS{ROOT_CODE}/etc/fdsncodes.csv",'^[^#].*');
-	chomp(@FDSN);
+    my %codes;
+    my @FDSN = readFile("$WEBOBS{ROOT_CODE}/etc/fdsncodes.csv",'^[^#].*');
+    chomp(@FDSN);
 
-	# process CSV file, result from IRIS web-service
-	# Example:
-	# AA,'Anchorage Strong Motion Network',
-	for (@FDSN) {
-		my ($cle,$val) = split(/,/,$_);
-		$val =~ s/^'//;
-		$val =~ s/'$//;
-		$codes{trim($cle)} = $val;
-	}
+    # process CSV file, result from IRIS web-service
+    # Example:
+    # AA,'Anchorage Strong Motion Network',
+    for (@FDSN) {
+        my ($cle,$val) = split(/,/,$_);
+        $val =~ s/^'//;
+        $val =~ s/'$//;
+        $codes{trim($cle)} = $val;
+    }
 
-	# overwrites with optional local configuration file
-	my @NET = readFile("$NODES{FILE_NETWORKS}",'^[^#].*');
-	chomp(@NET);
-	for (@NET) {
-		my ($cle,$val) = split(/,/,$_);
-		$val =~ s/^'//;
-		$val =~ s/'$//;
-		if (defined $codes{trim($cle)}) {
-			$codes{trim($cle)} = "$val !! overwritten FDSN \"$codes{trim($cle)}\" !!";
-		} else {
-			$codes{trim($cle)} = $val;
-		}
-	}
+    # overwrites with optional local configuration file
+    my @NET = readFile("$NODES{FILE_NETWORKS}",'^[^#].*');
+    chomp(@NET);
+    for (@NET) {
+        my ($cle,$val) = split(/,/,$_);
+        $val =~ s/^'//;
+        $val =~ s/'$//;
+        if (defined $codes{trim($cle)}) {
+            $codes{trim($cle)} = "$val !! overwritten FDSN \"$codes{trim($cle)}\" !!";
+        } else {
+            $codes{trim($cle)} = $val;
+        }
+    }
 
-	return %codes;
+    return %codes;
 }
 
 =pod
@@ -733,19 +749,19 @@ Reads calibration file of a node (fullid) and return an array
 =cut
 
 sub readCLB {
-	my $node = shift;
-	my %data;
-	my ($GRIDType, $GRIDName, $NODEName) = split(/\./, $node);
+    my $node = shift;
+    my %data;
+    my ($GRIDType, $GRIDName, $NODEName) = split(/\./, $node);
 
-	my $file = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb"; # standard CLB file name
-	my $legclb = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
-	$file = $legclb if ( ! -e $file && -e $legclb); # for backwards compatibility
-	(my $autoclb = $file) =~ s/\.clb/_auto.clb/; # auto-generated CLB
-	$file = $autoclb if ( -e $autoclb && ! -s $file );
-	if ( -s $file ) {
-		%data = readCfg($file);
-	}
-	return %data;
+    my $file = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb"; # standard CLB file name
+    my $legclb = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
+    $file = $legclb if ( ! -e $file && -e $legclb); # for backwards compatibility
+    (my $autoclb = $file) =~ s/\.clb/_auto.clb/; # auto-generated CLB
+    $file = $autoclb if ( -e $autoclb && ! -s $file );
+    if ( -s $file ) {
+        %data = readCfg($file);
+    }
+    return %data;
 }
 
 1;
