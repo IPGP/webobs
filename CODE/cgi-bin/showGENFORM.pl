@@ -338,7 +338,7 @@ print "</TD><TD style=\"border:0;text-align:center\">";
 print "<INPUT type=\"submit\" value=\"$__{'Display'}\">";
 print "</TD></TR></TABLE></P></FORM>\n",
   "<H1 style=\"margin-bottom:6pt\">$title</H1>\n",
-  "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-bottom:10px'>",
+  "<DIV id='selbanner' style='background-color: #EEEEEE; padding: 5px; margin-bottom:10px'>",
   "<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=FORM.$form\"><B>Form</B></A>";
 if (-d "$WEBOBS{ROOT_OUTG}/FORM.$form/$WEBOBS{PATH_OUTG_MAPS}") {
     print " | <B><A href=\"/cgi-bin/showOUTG.pl?grid=FORM.$form&ts=map\">$__{'Site map'}</A></B>";
@@ -392,7 +392,7 @@ if ($clientAuth > 1) {
     $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
 }
 foreach(@colnam) {
-    $header .= "<TH ".( $colspan{$_} eq "" ? "rowspan=2" : "colspan=$colspan{$_}").">$_</TH>\n";
+    $header .= "<TH ".( $colspan{$_} eq "" ? "rowspan=2" : "colspan=$colspan{$_}").">$_</TH>".($colspan{$_} ne "" ? "<TH rowspan=2></TH>":"")."\n";
 }
 $header .= "<TH rowspan=2></TH></TR>\n";
 foreach(@colnam2) {
@@ -519,13 +519,14 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $csvTxt .= "\"$fields{$field}\",";
             }
         }
+        $text .= "<TD></TD>" if ($nb_fields > 0); # end of fieldset
     }
     $csvTxt .= ",\"".$rem."\"\n";
     my $remTxt = "<TD></TD>";
     if ($rem ne "") {
         $remTxt = "<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('".htmlspecialchars($rem,$re)."',CAPTION,'Observations $aliasSite')\"><IMG src=\"/icons/attention.gif\" border=0></TD>";
     }
-    $text .= "</TD>$remTxt</TR>\n";
+    $text .= "$remTxt</TR>\n";
 }
 
 if ($QryParm->{'debug'}) {
