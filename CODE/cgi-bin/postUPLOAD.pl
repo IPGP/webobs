@@ -114,10 +114,12 @@ if ( $refer =~ /formUPLOAD.pl/ ) {
 
 # ---- more checkings on type of document to be uploaded
 #
-my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS");
+my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS","SHAPEFILE");
 htmlMsgNotOK("$__{'Cannot upload to'} $typeDoc") if ( "@allowed" !~ /\b$typeDoc\b/ );
 
 if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
+    $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
+} elsif ($typeDoc eq "SHAPEFILE") {
     $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
 } elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
     $pathTarget  .= "/$pobj->{$typeDoc}";
@@ -129,8 +131,11 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
 # ---- at that point $pathTarget is where uploaded documents will be sent to
 #
 htmlMsgNotOK("$__{'Do not know where to upload'}") if ( $pathTarget eq "" );
-$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $PATH_THUMBNAILS : $NODES{SPATH_THUMBNAILS});
-make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down to PHOTOS/THUMBNAILS exist
+make_path($pathTarget);
+if ($typeDoc ne "SHAPEFILE") {
+    $thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $PATH_THUMBNAILS : $NODES{SPATH_THUMBNAILS});
+    make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down to PHOTOS/THUMBNAILS exist
+}
 (my $urnTarget  = $pathTarget) =~ s/$WEBOBS{ROOT_SITE}/../g;
 
 # ---- take care of files upload if requested --------
@@ -157,6 +162,11 @@ while($filename = $QryParm->{"uploadFile$fx"}) {
             htmlMsgNotOK("Couldn't open upload stream; $!");
         }
         qx(mv -f "$upload_tmp/$filename" $pathTarget);
+        if ($typeDoc eq "SHAPEFILE") {
+            qx(unzip -u "$pathTarget/$filename" -d $pathTarget);
+            my @shapefile = glob "$pathTarget/*.shp";
+            qx(ogr2ogr -f "GEOJSON" -t_srs EPSG:4326 "$pathTarget/shape.json" $shapefile[0]);
+        }
         if ($?) {
             htmlMsgNotOK("Couldn't move uploaded file to $pathTarget; $!");
         }

@@ -77,6 +77,7 @@ my %GRID;
 my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my @NID;
 my $pobj;
+my $filetype = "image/*";
 
 my $MAX_UPLOAD_SIZE = $WEBOBS{MAX_UPLOAD_SIZE} || 1;
 my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
@@ -109,11 +110,14 @@ if ( $refer =~ /formGENFORM.pl/ ) {
 
 # ---- more checkings on type of document to be uploaded
 #
-my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS");
+my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS","SHAPEFILE");
 die "$__{'Cannot upload to'} $typeDoc" if ( "@allowed" !~ /\b$typeDoc\b/ );
 
 if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
     $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
+} elsif ($typeDoc eq "SHAPEFILE") {
+    $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
+    $filetype = ".json, .zip";
 } elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
     $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
@@ -124,10 +128,13 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
 # ---- at that point $pathTarget is where uploaded documents will be sent to
 #
 die "$__{'Do not know where to upload'}" if ( $pathTarget eq "" );
-$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $PATH_THUMBNAILS : $NODES{SPATH_THUMBNAILS});
-$slidesPath = $typeDoc eq "SPATH_GENFORM_IMAGES" ? $PATH_SLIDES : $NODES{SPATH_SLIDES};
-make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down THUMBNAILS exist
-make_path("$pathTarget/$slidesPath");
+make_path($pathTarget);
+if ($typeDoc ne "SHAPEFILE") {
+    $thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $PATH_THUMBNAILS : $NODES{SPATH_THUMBNAILS});
+    $slidesPath = $typeDoc eq "SPATH_GENFORM_IMAGES" ? $PATH_SLIDES : $NODES{SPATH_SLIDES};
+    make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down THUMBNAILS exist
+    make_path("$pathTarget/$slidesPath");
+}
 (my $urnTarget  = $pathTarget) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
 my @listeTarget = <$pathTarget/*.*> ;
 
@@ -285,7 +292,7 @@ print "</TR></TABLE>";
 print "</DIV>";
 
 print "<BR><fieldset><legend style=\"color: black; font-size:8pt\">$__{'Upload new file(s)'} <i><small>Note: $__{'Avoid special characters and spaces in filename'}</small></i></legend>
-    <INPUT type=\"file\" id=\"uploadFile\" name=\"uploadFile\" multiple><BR>
+    <INPUT type=\"file\" id=\"uploadFile\" name=\"uploadFile\" multiple accept='$filetype'><BR>
     <div id=\"multiloadmsg\" style=\"visibility: hidden;color: green;\"></div></P>";
 print qq(<div id="progress"></div>);
 print qq(<progress id="progress-bar" value="0" max="100" hidden></progress>);
