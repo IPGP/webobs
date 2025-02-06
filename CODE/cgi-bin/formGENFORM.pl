@@ -112,7 +112,7 @@ my $comment = $cgi->param('comment') // "";
 my $val     = $cgi->param('val');
 my $user    = $cgi->param('user');
 my $id      = $cgi->param('id') // "";
-my $action   = checkParam($cgi->param('action'), qr/(new|edit|save|delete|restore|erase)/, 'action')  // "edit";
+my $action   = checkParam($cgi->param('action'), qr/(new|edit|save|delete|restore|erase)/, 'action') // "edit";
 my $return_url = $cgi->param('return_url');
 my @operators  = $cgi->param('operators');
 my $debug  = $cgi->param('debug');
@@ -148,6 +148,10 @@ my $DEFAULT_DELAY = $GRIDS{GENFORM_THUMB_DEFAULT_DELAY} || 2;
 my $THUMB_ANIM = $GRIDS{GENFORM_THUMB_ANIM} || "_anim.gif";
 my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
 my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
+
+my $LL_MIN_HEIGHT = $GRIDS{GENFORM_SHAPE_MIN_HEIGHT} || 150;
+my $LL_MAX_HEIGHT = $GRIDS{GENFORM_SHAPE_MAX_HEIGHT} || 800;
+my $LL_DEFAULT_HEIGHT = $GRIDS{GENFORM_SHAPE_DEFAULT_HEIGHT} || 300;
 
 # ---- Variables des menus
 my $starting_date   = isok($FORM{STARTING_DATE});
@@ -292,10 +296,12 @@ print qq[Content-type: text/html
 <head>
 <title>] . $FORM{NAME} . qq[</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+<link rel="stylesheet" href="/css/leaflet.css" crossorigin=""/>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/math.js"></script>
+<script src="/js/leaflet.js" crossorigin=""></script>
 <script type="text/javascript">
 <!--
 function update_form()
@@ -392,6 +398,23 @@ function submit()
         }
     );
 }
+
+function updateMap(map_id, geojson, lat, lon, zoom=10) {
+    var map = L.map(map_id).setView([lat, lon], zoom);
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+    L.control.scale( { metric: true, imperial: false } ).addTo(map);
+    fetch(geojson)
+        .then((response) => {
+            return response.json()
+        })
+        .then((data) => {
+            console.log(data)
+            L.geoJson(data).addTo(map);
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+}
 //-->
 </script>
 </head>
@@ -406,7 +429,7 @@ function submit()
    function stopRKey(evt) {
      var evt = (evt) ? evt : ((event) ? event : null);
      var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
-     if ((evt.keyCode == 13) && (node.type=="text"))  {return false;}
+     if ((evt.keyCode == 13) && (node.type=="text")) {return false;}
    }
    document.onkeypress = stopRKey;
 
@@ -419,7 +442,17 @@ function submit()
      // Also update when a key is pressed in the form
      // but wait 0.5s for the previous handler execution to finish
      \$('#theform').on("keydown", function() { setTimeout(update_form, 500); });
+
+    const shapeInputs = document.querySelectorAll("div[id*='map_']");
+    shapeInputs.forEach((item) => {
+        var geojson = item.getAttribute("geojson");
+        var lat = item.getAttribute("lat");
+        var lon = item.getAttribute("lon");
+        updateMap(item, geojson, lat, lon);
+    });
+
    });
+
     window.addEventListener("pageshow", function (event) {
         if (event.persisted) {
             window.location.reload();
@@ -708,6 +741,25 @@ foreach (@columns) {
                     my $nb = qx(ls $upload_path -p | grep -v / | wc -l);
                     print qq(<input type="hidden" name="$field" value=$nb>\n);
                     print qq(<input type="hidden" name="upload_path" value=$upload_path>\n);
+                } elsif ($field =~ /^input/ && $type =~ /^shapefile/) {
+                    my $height = $size ? $size : $DEFAULT_HEIGHT;
+                    $height = ( ( $height >= $LL_MIN_HEIGHT && $height <= $LL_MAX_HEIGHT ) ? $height : $LL_DEFAULT_HEIGHT )."px";
+                    if ($site) {
+                        my %S = readNode($site, "novsub");
+                        if (%S) {
+                            my %node = %{$S{$site}};
+                            if (%node) {
+                                my ( $lat, $lon )= ( $node{LAT_WGS84}, $node{LON_WGS84} );
+                                my $tempdir = ".tmp/".$CLIENT."/".uc($form."/".$Field);
+                                my $shape_id = ( $action eq "new" ? $tempdir : uc($form."/record".$id."/".$Field) );
+                                my $base_url = "formUPLOAD.pl?object=$shape_id&doc=SHAPEFILE";
+                                my $geojson = "/data/$PATH_FORMDOCS/$shape_id/shape.json";
+                                print qq(<div id="map_$Field" geojson=$geojson lat=$lat lon=$lon style="height: $height;"></div>);
+                                print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:right;">);
+                                print qq(<img src="/icons/down.png" style="vertical-align: middle;"> Upload</button>);
+                            }
+                        }
+                    }
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
