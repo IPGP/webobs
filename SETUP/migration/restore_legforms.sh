@@ -11,6 +11,7 @@ for f in $(ls -d CONF/LEGACY_FORMS/FORMS/*); do
 	rm -rf CONF/FORMS/$form
 	mv $f CONF/FORMS/
 	mv -f CONF/LEGACY_FORMS/GRIDS2FORMS/PROC.*.$form CONF/GRIDS2FORMS/
-    mv -f DATA/BACKUP_LEGACY_FORMS/$form.DAT DATA/DB/
+    DAT=$(grep ^FILE_NAME CONF/FORMS/$form.conf | cut -d '|' -f 2)
+    mv -f DATA/BACKUP_LEGACY_FORMS/$DAT DATA/DB/
 	echo "--> legacy form $form restored. Downgrade WebObs to release 2.7 or previous."
 done
