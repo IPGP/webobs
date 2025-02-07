@@ -53,6 +53,7 @@ sub u2l ($) {
     $text =~ s/μ/&mu;/g;
     $text =~ s/σ/&sigma;/g;
     $text =~ s/δ/&delta;/g;
+    $text =~ s/‰/&permil;/g;
     $u2l->recode($text) or die $u2l->getError;
     return $text;
 }
