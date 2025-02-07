@@ -282,6 +282,9 @@ foreach (@listeTarget) {
             ($turn = $th) =~ s/$NODES{PATH_NODES}/$WEBOBS{URN_NODES}/;
         }
         print "<IMG src=\"$turn\"/>";
+
+    } else {
+        print "<IMG src=\"/icons/file.png\"/>";
     }
     print "</A>";
     print "<P>$name$extension<BR/>";
