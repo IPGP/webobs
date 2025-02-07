@@ -400,7 +400,7 @@ if (@$domains) {
                                 : $G{$vf}{OWNCODE}) : "")
                           ."</TD>"  if ($showOwnr);
                         if ( -d "$WEBOBS{ROOT_OUTG}/FORM.$vf/$WEBOBS{PATH_OUTG_MAPS}" ) {
-                            print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vf\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/visu.png\"></A>";
+                            print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=FORM.$vf&ts=map\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/visu.png\"></A>";
                         } else { print "<TD>&nbsp;" }
                         print "</TD>";
                         print "<TD style=\"text-align:center\">";
@@ -432,7 +432,7 @@ if (@$domains) {
                                 : $G{$vn}{OWNCODE}) : "")
                           ."</TD>"  if ($showOwnr);
                         if ( -d "$WEBOBS{ROOT_OUTG}/VIEW.$vn/$WEBOBS{PATH_OUTG_MAPS}" ) {
-                            print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=VIEW.$vn\"><IMG border=\"0\" alt=\"$vn\" SRC=\"/icons/visu.png\"></A>";
+                            print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=VIEW.$vn&ts=map\"><IMG border=\"0\" alt=\"$vn\" SRC=\"/icons/visu.png\"></A>";
                         } else { print "<TD>&nbsp;" }
                         print "</TD>";
                         if ($wantProcs) {
