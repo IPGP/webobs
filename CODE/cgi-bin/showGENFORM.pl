@@ -217,7 +217,7 @@ foreach my $k (@rownames) {
 }
 
 # get the requested data
-my $filter = "((sdate BETWEEN '$startDate' AND '$endDate') OR (edate BETWEEN '$startDate' AND '$endDate'))";
+my $filter = "((sdate BETWEEN '$startDate' AND '$endDate') OR (sdate_min BETWEEN '$startDate' AND '$endDate') OR (edate BETWEEN '$startDate' AND '$endDate') OR (edate_min BETWEEN '$startDate' AND '$endDate'))";
 $filter .= " AND trash = false" if (!$QryParm->{'trash'});
 $filter .= " AND node IN ('".join("','",@formnodes)."')" if ($#formnodes >= 0);
 foreach (keys %lists) {

@@ -343,6 +343,19 @@ foreach (@thresh) {
 }
 
 print qq[
+    var yy = document.getElementsByName("year");
+    var mm = document.getElementsByName("month");
+    var dd = document.getElementsByName("day");
+    var hr = document.getElementsByName("hr");
+    var mn = document.getElementsByName("mn");
+    var date1 = new Date(yy[0].value,mm[0].value-1,dd[0].value,hr[0].value,mn[0].value);
+    if (yy.length > 1) {
+        var date2 = new Date(yy[1].value,mm[1].value-1,dd[1].value,hr[1].value,mn[1].value);
+        duration = (date2.getTime() - date1.getTime())/86400000;
+        form.duration.value = duration.toFixed(1);
+    } else {
+        form.duration.value = "0";
+    }
 }
 
 function suppress(level)
@@ -559,9 +572,8 @@ print qq[</td>
 ];
 
 if ($starting_date) {
-    print qq(
-                <b>$__{'Start Date'}: </b>
-                    <select name="year" size="1">
+    print qq(<b>$__{'Start Date'}: </b>
+                <select name="year" size="1">
         );
     for (@yearList) {if ($_ == $sel_y1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
     print qq(</select>);
@@ -580,62 +592,35 @@ if ($starting_date) {
     for (@minuteList) {if ($_ eq $sel_mn1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
     print qq(</select><BR>);
 
-    print qq(
-                <b>$__{'End Date'}: </b>
-                    <select name="year" size="1">
+    print qq(<b>$__{'End Date'}: </b>
+            <select name="year" size="1">
         );
-    for (@yearList) {if ($_ == $sel_y2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select>);
-    print qq(<select name="month" size="1">);
-    for (@monthList) {if ($_ == $sel_m2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select>);
-    print qq( <select name=day size="1">);
-    for (@dayList) {if ($_ == $sel_d2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print "</select>";
-
-    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
-    for (@hourList) {if ($_ eq $sel_hr2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select>);
-    print qq(<select name=mn size="1">);
-    for (@minuteList) {if ($_ eq $sel_mn2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-
 } else {
-    print qq(
-            <b>$__{'Date'}: </b>
-                <select name="year" size="1">
+    print qq(<b>$__{'Date'}: </b>
+            <select name="year" size="1">
         );
-    for (@yearList) {
-        my $sel = ($_ eq $sel_y2 ? "selected":"");
-        print qq(<option $sel value="$_">$_</option>);
-    }
-    print qq(</select>);
-    print qq(<select name="month" size="1">);
-    for (@monthList) {
-        my $sel = ($_ eq $sel_m2 ? "selected":"");
-        print qq(<option $sel value="$_">$_</option>);
-    }
-    print qq(</select>);
-    print qq( <select name=day size="1">);
-    for (@dayList) {
-        my $sel = ($_ eq $sel_d2 ? "selected":"");
-        print qq(<option $sel value="$_">$_</option>);
-    }
-    print "</select>";
-
-    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
-    for (@hourList) {
-        my $sel = ($_ eq $sel_hr2 ? "selected":"");
-        print qq(<option $sel value="$_">$_</option>);
-    }
-    print qq(</select>);
-    print qq(<select name=mn size="1">);
-    for (@minuteList) {
-        my $sel = ($_ eq $sel_mn2 ? "selected":"");
-        print qq(<option $sel value="$_">$_</option>);
-    }
 }
-print qq(</select><BR>
-    <B>Site: </B>
+for (@yearList) {if ($_ == $sel_y2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+print qq(</select>);
+print qq(<select name="month" size="1">);
+for (@monthList) {if ($_ == $sel_m2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+print qq(</select>);
+print qq( <select name=day size="1">);
+for (@dayList) {if ($_ == $sel_d2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+print "</select>";
+
+print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
+for (@hourList) {if ($_ eq $sel_hr2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+print qq(</select>);
+print qq(<select name=mn size="1">);
+for (@minuteList) {if ($_ eq $sel_mn2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
+print qq(</select><BR>);
+
+if ($starting_date) {
+   print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
+}
+
+print qq(<B>Site: </B>
       <select name="site" size="1"
         onMouseOut="nd()"onmouseover="overlib('$__{'Select a node for this record'}')">
       <option value=""></option>);
