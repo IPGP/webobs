@@ -178,8 +178,8 @@ my $tbl = lc($form);
 # Number of columns in the table without the primary key
 my $ncol = 11;
 
-# Image upload path
-my $upload_path = $cgi->param('upload_path');
+# Local temp dir
+my $temp_dir = ".tmp/".$CLIENT."/".uc($form);
 
 if ($action eq 'save') {
     my $msg;
@@ -221,15 +221,16 @@ if ($action eq 'save') {
     htmlMsgOK($msg);
 
     # rename images tmp directory
-    if ($id eq "" && -e $upload_path) {
+    if ($id eq "") {
         my $stmt = qq(SELECT seq FROM sqlite_sequence WHERE name='$tbl');
         my $sth = $dbh->prepare( $stmt );
         my $rv = $sth->execute() or die $DBI::errstr;
         my $new_id = $sth->fetchrow_array();
-        my $finalPath = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$new_id);
-        make_path("$finalPath");
-        qx(mv -f $upload_path $finalPath);
-        if ($?) { htmlMsgNotOK("Couldn't move $upload_path to $finalPath; $!"); }
+        my $temp_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".$temp_dir."/*";
+        my $finalPath = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$new_id."/");
+        make_path($finalPath);
+        qx(mv -f $temp_path $finalPath);
+        if ($?) { htmlMsgNotOK("Couldn't move $temp_path to $finalPath; $!"); }
     }
 
     $dbh->disconnect();
@@ -685,6 +686,7 @@ foreach (@columns) {
                 my $type = $FORM{"$Field\_TYPE"};
                 my $help = htmlspecialchars($FORM{"$Field\_HELP"});
                 my $field = lc($Field);
+                my $input_id = ( $action eq "new" ? $temp_dir : uc($form."/record".$id) )."/".$Field;
                 my ($size, $default) = extract_type($type);
                 if ($action ne 'edit' && $default ne "") {
                     $prev_inputs{$field} = $default;
@@ -725,41 +727,35 @@ foreach (@columns) {
                     my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
-                    my $tempdir = ".tmp/".$CLIENT."/".uc($form."/".$Field);
-                    my $img_id = ( $action eq "new" ? $tempdir : uc($form."/record".$id."/".$Field) );
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
                     my $delay = ( ( $default >= $MIN_DELAY && $default <= $MAX_DELAY ) ? $default : $DEFAULT_DELAY );
-                    my $base_url = "formUPLOAD.pl?object=$img_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay";
-                    print qq(<tr><td style="border:0">$txt = );
-                    $upload_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$img_id";
+                    my $base_url = "formUPLOAD.pl?object=$input_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay";
+                    my $upload_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$input_id";
                     if ( -e "$upload_path/$PATH_THUMBNAILS/$THUMB_ANIM" ) {
-                        print qq(<img height=$height src=/data/$PATH_FORMDOCS/$img_id/$PATH_THUMBNAILS/$THUMB_ANIM></img>);
+                        print qq(<div><img height=$height src=/data/$PATH_FORMDOCS/$input_id/$PATH_THUMBNAILS/$THUMB_ANIM></img>);
                     }
-                    print qq(</td><td style="border:0"><button onclick="location.href='$base_url'" type="button">);
-                    print qq(<img src="/icons/down.png" style="vertical-align: middle;"> Upload</button></td></tr>);
+                    print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:right;">);
+                    print qq(<img src="/icons/upload.png" style="vertical-align: middle;">$txt</button>);
                     my $nb = qx(ls $upload_path -p | grep -v / | wc -l);
                     print qq(<input type="hidden" name="$field" value=$nb>\n);
-                    print qq(<input type="hidden" name="upload_path" value=$upload_path>\n);
                 } elsif ($field =~ /^input/ && $type =~ /^shapefile/) {
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $LL_MIN_HEIGHT && $height <= $LL_MAX_HEIGHT ) ? $height : $LL_DEFAULT_HEIGHT )."px";
+                    my $base_url = "formUPLOAD.pl?object=$input_id&doc=SHAPEFILE";
                     if ($site) {
                         my %S = readNode($site, "novsub");
                         if (%S) {
                             my %node = %{$S{$site}};
                             if (%node) {
                                 my ( $lat, $lon )= ( $node{LAT_WGS84}, $node{LON_WGS84} );
-                                my $tempdir = ".tmp/".$CLIENT."/".uc($form."/".$Field);
-                                my $shape_id = ( $action eq "new" ? $tempdir : uc($form."/record".$id."/".$Field) );
-                                my $base_url = "formUPLOAD.pl?object=$shape_id&doc=SHAPEFILE";
-                                my $geojson = "/data/$PATH_FORMDOCS/$shape_id/shape.json";
+                                my $geojson = "/data/$PATH_FORMDOCS/$input_id/shape.json";
                                 print qq(<div id="map_$Field" geojson=$geojson lat=$lat lon=$lon style="height: $height;"></div>);
-                                print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:right;">);
-                                print qq(<img src="/icons/down.png" style="vertical-align: middle;"> Upload</button>);
                             }
                         }
                     }
+                    print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:right;">);
+                    print qq(<img src="/icons/upload.png" style="vertical-align: middle;"> $txt</button>);
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
