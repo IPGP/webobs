@@ -48,20 +48,20 @@ die $l2u->getError if $l2u->getError;
 
 # -------------------------------------------------------------------------------------------------
 sub u2l ($) {
-    my $texte = shift;
+    my $text = shift;
     # converts some characters in HTML since they don't exist in latin
-    $texte =~ s/µ/&mu;/g;
-    $texte =~ s/σ/&sigma;/g;
-    $texte =~ s/δ/&delta;/g;
-    $u2l->recode($texte) or die $u2l->getError;
-    return $texte;
+    $text =~ s/μ/&mu;/g;
+    $text =~ s/σ/&sigma;/g;
+    $text =~ s/δ/&delta;/g;
+    $u2l->recode($text) or die $u2l->getError;
+    return $text;
 }
 
 # -------------------------------------------------------------------------------------------------
 sub l2u ($) {
-    my $texte = shift;
-    $l2u->recode($texte) or die $l2u->getError;
-    return $texte;
+    my $text = shift;
+    $l2u->recode($text) or die $l2u->getError;
+    return $text;
 }
 
 binmode STDOUT, ':raw'; # Needed to make it work in UTF-8 locales in Perl-5.8.

@@ -266,29 +266,33 @@ foreach my $f (@fieldsets) {
 # ---- Form for display selection
 #
 
+my @list_years = reverse($FORM{BANG} .. $year);
+my @list_months = reverse("01" .. "12"); 
+my @list_days = reverse("01" .. "31");
+
 print "<FORM name=\"form\" action=\"/cgi-bin/showGENFORM.pl\" method=\"get\">",
   "<INPUT name=\"form\" type=\"hidden\" value=\"$form\">";
 print "<P class=\"boitegrise\" align=\"center\">",
   "<TABLE width=\"100%\"><TR><TD style=\"border:0;text-align:center\">",
   "<B>$__{'Start Date'}:</B> ";
 print "<SELECT name=\"y1\" size=\"1\">\n";
-for ($FORM{BANG}..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+for (@list_years) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
 print "</SELECT>\n";
 print "<SELECT name=\"m1\" size=\"1\">\n";
-for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+for (@list_months) { print "<OPTION value=\"$_\"".($QryParm->{'m1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
 print "</SELECT>\n";
 print "<SELECT name=\"d1\" size=\"1\">\n";
-for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+for (@list_days) { print "<OPTION value=\"$_\"".($QryParm->{'d1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
 print "</SELECT>\n";
 print "&nbsp;&nbsp;<B>$__{'End Date'}:</B> ";
 print "<SELECT name=\"y2\" size=\"1\">\n";
-for ($FORM{BANG}..$year) { print "<OPTION value=\"$_\"".($QryParm->{'y2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+for (@list_years) { print "<OPTION value=\"$_\"".($QryParm->{'y2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
 print "</SELECT>\n";
 print "<SELECT name=\"m2\" size=\"1\">\n";
-for ("01".."12") { print "<OPTION value=\"$_\"".($QryParm->{'m2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+for (@list_months) { print "<OPTION value=\"$_\"".($QryParm->{'m2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
 print "</SELECT>\n";
 print "<SELECT name=\"d2\" size=\"1\">\n";
-for ("01".."31") { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+for (@list_days) { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
 print "</SELECT>\n";
 print "&nbsp;&nbsp;<select name=\"node\" size=\"1\">";
 for ("|$__{'All nodes'}",@NODESSelList) {
