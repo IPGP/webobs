@@ -1,6 +1,6 @@
 =key|value
 # Generic FORM template for use with {formGRID.pl, showGENFORM,formGENFORM}.pl
-# Model: rivers chemical analysis (formerly RIVERS)
+# Model: water chemical analysis (formerly RAINWATER)
 #
 # ############################### WARNING #####################################
 # Once the database form has been created and the first data has been recorded,
@@ -10,8 +10,8 @@
 # -----------------------------------------------------------------------------
 # --- GRID common parameters
 
-NAME|Rivers chemical analysis database
-DESCRIPTION|Rivers physico-chemical analysis 
+NAME|Rain water chemical analysis database
+DESCRIPTION|Rain waters physico-chemical analysis 
 OWNCODE|
 TYPE|
 URL|
@@ -39,7 +39,7 @@ BANG|$WEBOBS{BIG_BANG}
 TZ|0
 
 # if YES, use start and end date for each record
-STARTING_DATE|NO
+STARTING_DATE|YES
 
 # may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
@@ -67,103 +67,101 @@ COMMENT_HELP|Note any presence of odour, gas or precipitate, etc...
 # the database. You might only add new inputs, increasing the number
 # ############################### WARNING #####################################
 
-INPUT01_NAME|Water Level
-INPUT01_UNIT|cm
+INPUT01_NAME|Volume
+INPUT01_UNIT|ml
 
-INPUT02_NAME|Type of Sampling
-INPUT02_TYPE|list: FORM_RIVERS_list_type.conf
-INPUT02_FILT|YES
+INPUT02_NAME|Funnel Diameter
+INPUT02_UNIT|cm
 
-INPUT03_NAME|Flask
-INPUT03_TYPE|list: FORM_RIVERS_list_flask.conf
-INPUT03_FILT|YES
+INPUT03_NAME|pH
 
-INPUT04_NAME|Water Temperature
-INPUT04_UNIT|&deg;C
+INPUT04_NAME|Cond.
+INPUT04_UNIT|&mu;S
 
-INPUT05_NAME|Suspended Load
-INPUT05_UNIT|mg/L
+INPUT05_NAME|Na<sup>+</sup>
+INPUT05_UNIT|ppm
 
-INPUT06_NAME|pH
+INPUT06_NAME|K<sup>+</sup>
+INPUT06_UNIT|ppm
 
-INPUT07_NAME|Conductivity at 25C
-INPUT07_UNIT|&mu;S/cm
+INPUT07_NAME|Mg<sup>++</sup>
+INPUT07_UNIT|ppm
 
-INPUT08_NAME|Conductivity
-INPUT08_UNIT|&mu;S/cm
+INPUT08_NAME|Ca<sup>++</sup>
+INPUT08_UNIT|ppm
 
-INPUT09_NAME|Na<sup>+</sup>
+INPUT09_NAME|HCO<sub>3</sub><sup>-</sup>
 INPUT09_UNIT|ppm
 
-INPUT10_NAME|K<sup>+</sup>
+INPUT10_NAME|Cl<sup>-</sup>
 INPUT10_UNIT|ppm
 
-INPUT11_NAME|Mg<sup>++</sup>
+INPUT11_NAME|SO<sub>4</sub><sup>-</sup>
 INPUT11_UNIT|ppm
 
-INPUT12_NAME|Ca<sup>++</sup>
-INPUT12_UNIT|ppm
+INPUT12_NAME|&delta;D
+INPUT12_UNIT|&permil;
 
-INPUT13_NAME|HCO<sub>3</sub><sup>-</sup>
-INPUT13_UNIT|ppm
+INPUT13_NAME|&delta;<sup>18</sup>O
+INPUT13_UNIT|&permil;
 
-INPUT14_NAME|Cl<sup>-</sup>
-INPUT14_UNIT|ppm
-
-INPUT15_NAME|SO<sub>4</sub><sup>-</sup>
-INPUT15_UNIT|ppm
-
-INPUT16_NAME|SiO<sub>2</sub>
-INPUT16_UNIT|ppm
-
-INPUT17_NAME|DOC
-INPUT17_UNIT|ppm
-
-INPUT18_NAME|POC
-INPUT18_UNIT|ppm
 
 # -----------------------------------------------------------------------------
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 
-OUTPUT01_NAME|H<sup>+</sup>
-OUTPUT01_UNIT|ppm
-OUTPUT01_TYPE|formula: 1000 * (10**(-INPUT06))
-OUTPUT02_NAME|S.C
-OUTPUT02_TYPE|formula(0): INPUT09/22.990 + INPUT10/39.098 + 2*INPUT11/40.078 + 2*INPUT12/24.305 + OUTPUT01
-OUTPUT03_NAME|S.A
-OUTPUT03_TYPE|formula(0): INPUT13/61.0159 + INPUT14/35.453 + 2*INPUT15/96.062
-OUTPUT04_NAME|NICB
-OUTPUT04_UNIT|%
-OUTPUT04_TYPE|formula(6): 100*(OUTPUT02 - OUTPUT03) / (OUTPUT02 + OUTPUT03)
-OUTPUT04_THRESHOLD|10,20
-OUTPUT04_HELP|Normalized Inorganic Charge Balance
+OUTPUT01_NAME|Cumulated Rainfall
+OUTPUT01_UNIT|mm
+OUTPUT01_TYPE|formula: 10*INPUT01 / (PI*(INPUT02/2)**2)
+OUTPUT02_NAME|Average Daily Rainfall
+OUTPUT02_UNIT|mm/day
+OUTPUT02_TYPE|formula: OUTPUT01 / DURATION
+OUTPUT03_NAME|H<sup>+</sup>
+OUTPUT03_UNIT|ppm
+OUTPUT03_TYPE|formula: 1000 * (10**(-INPUT03))
+OUTPUT04_NAME|S.C
+OUTPUT04_TYPE|formula(0): INPUT05/22.990 + INPUT06/39.098 + 2*INPUT07/24.305 + 2*INPUT08/40.078 + OUTPUT03
+OUTPUT05_NAME|S.A
+OUTPUT05_TYPE|formula(0): INPUT09/61.0159 + INPUT10/35.453 + 2*INPUT11/96.062
+OUTPUT06_NAME|NICB
+OUTPUT06_UNIT|%
+OUTPUT06_TYPE|formula(6): 100*(OUTPUT04 - OUTPUT05) / (OUTPUT04 + OUTPUT05)
+OUTPUT06_THRESHOLD|10,20
+OUTPUT06_HELP|Normalized Inorganic Charge Balance
+OUTPUT07_NAME|Cl/Na
+OUTPUT07_TYPE|formula(6): (INPUT10/35.453) / (INPUT09/22.990)
+OUTPUT08_NAME|SO<sub>4</sub>/Na
+OUTPUT08_TYPE|formula(6): (INPUT11/96.062) / (INPUT09/22.990) 
+OUTPUT09_NAME|Mg/Na
+OUTPUT09_TYPE|formula(6): (INPUT07/40.078) / (INPUT09/22.990)
 
 # -----------------------------------------------------------------------------
 # --- Form layout
 
 # note: first column starts with the mandatory date/site/operator fieldset
-COLUMN01_LIST|FIELDSET01
-COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04,FIELDSET05
+COLUMN01_LIST|FIELDSET01,FIELDSET02
+COLUMN02_LIST|FIELDSET03,FIELDSET04,FIELDSET05
 
 # fieldset contains
-FIELDSET01_NAME|On-Site Measurements
+FIELDSET01_NAME|Rain Collector
 FIELDSET01_CELLS|1
-FIELDSET01_C01|INPUT02,INPUT03,INPUT01,INPUT04,INPUT06,INPUT08
+FIELDSET01_C01|INPUT01,INPUT02,OUTPUT01,OUTPUT02
 
-FIELDSET02_NAME|Cation and Anion Concentrations
-FIELDSET02_CELLS|2
-FIELDSET02_C01|INPUT09,INPUT10,INPUT11,INPUT12,OUTPUT01
-FIELDSET02_C02|INPUT13,INPUT14,INPUT15,OUTPUT02,OUTPUT03,OUTPUT04
+FIELDSET02_NAME|Physical Measurements
+FIELDSET02_CELLS|1
+FIELDSET02_C01|INPUT03,INPUT04
 
-FIELDSET03_NAME|Organic Concentrations
-FIELDSET03_CELLS|1
-FIELDSET03_C01|INPUT17,INPUT18
+FIELDSET03_NAME|Cation and Anion Concentrations
+FIELDSET03_CELLS|2
+FIELDSET03_C01|INPUT05,INPUT06,INPUT07,INPUT08,OUTPUT03
+FIELDSET03_C02|INPUT09,INPUT10,INPUT11,OUTPUT04,OUTPUT05,OUTPUT06
 
-FIELDSET04_NAME|Other Elements Concentration
+FIELDSET04_NAME|Isotopic Ratios
 FIELDSET04_CELLS|1
-FIELDSET04_C01|INPUT16,INPUT05
+FIELDSET04_C01|INPUT12,INPUT13
 
-FIELDSET05_NAME|Laboratory Measurements
+FIELDSET05_NAME|Ratios
+FIELDSET05_TOGGLE|YES
 FIELDSET05_CELLS|1
-FIELDSET05_C01|INPUT07
+FIELDSET05_C01|OUTPUT07,OUTPUT08,OUTPUT09
+
