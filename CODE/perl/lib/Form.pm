@@ -248,24 +248,6 @@ sub count_columns {
     return $count;
 }
 
-# filter js array for NaN values in formula outputs
-sub filter_nan {
-    my $new = "";
-    my $formula = shift;
-    foreach my $char ( split //, $formula ) {
-        if ( $char eq "(" ) {
-            $new .= $char;
-            $new .= "[";
-        } elsif ( $char eq ")" ) {
-            $new .= "].filter(x => !Number.isNaN(x))";
-            $new .= $char;
-        } else {
-            $new .= $char;
-        }
-    }
-    return $new;
-}
-
 # Open an SQLite connection to the forms database
 sub connectDbForms {
     return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
