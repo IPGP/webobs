@@ -94,7 +94,7 @@ INPUT08_UNIT|ppm
 INPUT09_NAME|Na<sup>+</sup>
 INPUT09_UNIT|ppm
 
-INPUT10_NAME|K<sup>++</sup>
+INPUT10_NAME|K<sup>+</sup>
 INPUT10_UNIT|ppm
 
 INPUT11_NAME|Mg<sup>++</sup>
