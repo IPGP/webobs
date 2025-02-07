@@ -290,7 +290,7 @@ foreach (@listeTarget) {
     print "<P>$name$extension<BR/>";
     print "<INPUT type=checkbox name=del$i value=\"$name$extension\"> $__{'Delete'}</TD>";
 }
-qx(cd "$pathTarget/$thumbnailsPath/" && convert -strip -dispose background -resize x$height -delay $delay -loop 0 *.* $GRIDS{GENFORM_THUMB_ANIM} 2>/dev/null);
+qx(cd "$pathTarget/$thumbnailsPath/" && rm -f $GRIDS{GENFORM_THUMB_ANIM} && convert -strip -dispose background -resize x$height -delay $delay -loop 0 *.* $GRIDS{GENFORM_THUMB_ANIM} 2>/dev/null);
 print "</TR></TABLE>";
 print "</DIV>";
 
