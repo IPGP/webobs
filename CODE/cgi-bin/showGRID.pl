@@ -501,18 +501,18 @@ $htmlcontents .= "<TR>";
 $htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
   ."<TH rowspan=2>$__{'Alias'}</TH>"
   ."<TH rowspan=2 style=\"text-align: left\">$__{'Name'}</TH>"
-  ."<TH colspan=3>$__{'Coordinates'}</TH>"
-  ."<TH colspan=2>$__{'Lifetime and Validity'}"
+  ."<TH colspan=3>$__{'Coordinates'}</TH><TH rowspan=2></TH>"
+  ."<TH colspan=2>$__{'Lifetime and Validity'}</TH>"
   ."<TH rowspan=2>$__{'Type'}</TH>";
 if ($CLIENT ne 'guest') {
     $htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
     $htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>" if ($usrProject eq "on");
 }
 $htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
-$htmlcontents .= "<TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
+$htmlcontents .= "<TH rowspan=2></TH><TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
 if ($overallStatus) {
     my @tsp = split(/,/,$GRID{"STATUSLIST"});
-    $htmlcontents .= "<TH colspan=3>$__{'Proc Status'} (".$procTS[first { $tsp[$_] eq '1' } reverse(0..$#tsp)].")</TH>";
+    $htmlcontents .= "<TH rowspan=2></TH><TH colspan=3>$__{'Proc Status'} (".$procTS[first { $tsp[$_] eq '1' } reverse(0..$#tsp)].")</TH>";
 }
 $htmlcontents .= "<TH colspan=3>$__{'Form Information'}</TH>" if ($isForm);
 $htmlcontents .= "</TR>\n<TR>";
@@ -609,6 +609,7 @@ for (@{$GRID{NODESLIST}}) {
         }
 
         # Node's dates
+        $htmlcontents .= "<TD></TD>";
         if ($NODE{INSTALL_DATE} eq "NA") {
             $htmlcontents .= "<TD> </TD>";
         } else {
@@ -674,6 +675,7 @@ for (@{$GRID{NODESLIST}}) {
         }
         if ($procOUTG) {
             my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
+            $htmlcontents .= "<TD></TD>";
             if ($procOUTG eq "events") {
                 $htmlcontents .= "<TD align=\"center\"><A href=\"$urn&amp;ts=events&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>\n";
             } else {
@@ -709,7 +711,7 @@ for (@{$GRID{NODESLIST}}) {
 
                 # $stState->[3..5] (Date, Time and TZ of last measurement)
                 # Display
-                $htmlcontents .= "<TD align=\"center\" nowrap>$stState->[3]</TD>\n"; # Date de l'analyse de l'etat
+                $htmlcontents .= "<TD></TD><TD align=\"center\" nowrap>$stState->[3]</TD>\n"; # Date de l'analyse de l'etat
                 if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
                     $htmlcontents .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stState->[2]</B></TD>"
                       ."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stState->[1]</B></TD>";
@@ -748,7 +750,7 @@ for (@{$GRID{NODESLIST}}) {
         $htmlcontents .= "</TR>\n".(!$displayNode ? "-->":"");
     }
 }
-$htmlcontents .= "<TR><TH colspan=\"15\" class=\"th-bottom\"></TH></TR></TABLE>";
+$htmlcontents .= "<TR><TH colspan=\"23\" class=\"th-bottom\"></TH></TR></TABLE>";
 $htmlcontents .= "</div></div>";
 print $htmlcontents;
 
