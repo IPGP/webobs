@@ -359,16 +359,11 @@ my $delete;
 my $nodelink;
 my $aliasSite;
 
-my @colnam = ($__{'Sampling Date'},$__{'Site'},$__{'Oper'});
+my @colnam;
 my @colnam2;
 my %colspan;
-if ($starting_date) {
-    $colspan{$__{'Sampling Date'}} = 2;
-    push(@colnam2,($__{'Start'},$__{'End'}));
-    $csvTxt .= '"'.join('","', @colnam2, @colnam[1,2]).'"';
-} else {
-    $csvTxt .= '"'.join('","', @colnam).'"';
-}
+
+$csvTxt .= ($starting_date ? "$__{'Start'},$__{'End'}":"$__{'Sampling Date'}")."$__{'Site'},$__{'Oper'}";
 
 for (my $i = 0; $i <= $#fs_names; $i++) {
     my $fs = $fieldsets[$i];
@@ -395,10 +390,13 @@ if ($clientAuth > 1) {
     $form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
     $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
 }
+$header .= "<TH ".($starting_date ? "colspan=2":"rowspan=2").">$__{'Sampling Date'}</TH>";
+$header .= "<TH rowspan=2>$__{'Site'}</TH><TH rowspan=2>$__{'Oper'}</TH>";
 foreach(@colnam) {
-    $header .= "<TH ".( $colspan{$_} eq "" ? "rowspan=2" : "colspan=$colspan{$_}").">$_</TH>".($colspan{$_} ne "" ? "<TH rowspan=2></TH>":"")."\n";
+    $header .= "<TH rowspan=2></TH><TH colspan=$colspan{$_}>$_</TH>\n";
 }
-$header .= "<TH rowspan=2></TH></TR>\n";
+$header .= "<TH rowspan=2></TH></TR>\n"; # end with comment column
+$header .= ($starting_date ? "<TH>$__{'Start'}</YH><TH>$__{'End'}</TH>":"");
 foreach(@colnam2) {
     $header .= "<TH>".$_."</TH>\n";
 }
@@ -468,12 +466,14 @@ for (my $j = 0; $j <= $#rows; $j++) {
     for (my $f = 0; $f <= $#fieldsets; $f++) {
         my $fs = $fieldsets[$f];
         my $nb_fields = $#{$field_names[$f]};
+        $text .= "<TD></TD>" if ($nb_fields >= 0); # end of fieldset
         for (my $n = 0; $n <= $nb_fields; $n++) {
             my $Field = $field_names[$f][$n];
             my $field = lc($Field);
             my $opt;
             my $val = $fields{$field};
             my $hlp;
+            # --- input type = list
             if (defined $lists{$field}) {
                 if (ref $lists{$field}{$fields{$field}}) {
                     my %v = %{$lists{$field}{$fields{$field}}}; # list is a HoH
@@ -487,6 +487,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $hlp = "<I>$__{'unknown key list!'}</I>" if ($val eq "");
                 $opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$hlp')\"";
             }
+            # --- input type = formula
             if (grep(/^$field$/i, @formulas)) {
                 $opt = " class=\"tdResult\" onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$field</B>:')\"";
             }
@@ -498,6 +499,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                     $opt .= " style=\"background-color:$validity[2]\"";
                 }
             }
+            # --- input type = image
             if ($FORM{$Field."_TYPE"} =~ /^image/) {
                 my $img_id = uc($form."/record".$id."/".$Field);
                 my @listeTarget = <"$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$img_id"/*.*> ;
@@ -523,7 +525,6 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $csvTxt .= "\"$fields{$field}\",";
             }
         }
-        $text .= "<TD></TD>" if ($nb_fields > 0); # end of fieldset
     }
     $csvTxt .= ",\"".$rem."\"\n";
     my $remTxt = "<TD></TD>";
