@@ -49,6 +49,7 @@ use strict;
 use warnings;
 use File::Basename;
 use File::Path qw/make_path/;
+use File::Temp qw/tempdir/;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard /;
 my $cgi = new CGI;
@@ -164,8 +165,9 @@ while($filename = $QryParm->{"uploadFile$fx"}) {
         qx(mv -f "$upload_tmp/$filename" $pathTarget);
         if ($typeDoc eq "SHAPEFILE") {
             if ($filename =~ m/.zip/) {
-                qx(unzip -u "$pathTarget/$filename" -d $pathTarget);
-                my @shapefile = glob "$pathTarget/*.shp";
+                my $tempdir = tempdir(CLEANUP => 1);
+                qx(unzip -u "$pathTarget/$filename" -d $tempdir);
+                my @shapefile = glob "$tempdir/*.shp";
                 qx(ogr2ogr -f "GEOJSON" -t_srs EPSG:4326 "$pathTarget/shape.json" $shapefile[0]);
             } elsif ($filename =~ m/.json/) {
                 qx(mv -f "$pathTarget/$filename" "$pathTarget/shape.json");
