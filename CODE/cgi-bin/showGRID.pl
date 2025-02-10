@@ -496,7 +496,7 @@ my %NODE;
 my $newNODE = "<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\"><IMG title=\"$__{'Create a new node'}\" src=\"/icons/new.png\"></A>";
 
 #$htmlcontents .= "<TABLE width=\"100%\" style=\"margin-left: 5px\">";
-$htmlcontents .= "<TABLE width=\"100%\">";
+$htmlcontents .= "<TABLE width=\"100%\" class=\"trData\"";
 $htmlcontents .= "<TR>";
 $htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
   ."<TH rowspan=2>$__{'Alias'}</TH>"

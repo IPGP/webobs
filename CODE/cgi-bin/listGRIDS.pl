@@ -257,7 +257,7 @@ if (@$domains) {
 
     # ---- The GRIDS table
     #
-    my $htmlcontents = "<CENTER><TABLE WIDTH=\"90%\" id=\"gtable\" style=\"vertical-align: top\">\n<TR>";
+    my $htmlcontents = "<CENTER><TABLE WIDTH=\"90%\" id=\"gtable\" style=\"vertical-align: top\" class=\"trData\">\n<TR>";
 
     if ($subsetDomain eq "") {
         $htmlcontents .= "<TH style=\"text-align: left\">";
