@@ -420,17 +420,21 @@ function updateMap(map_id, geojson, lat, lon, zoom=10) {
     var map = L.map(map_id).setView([lat, lon], zoom);
     L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
     L.control.scale( { metric: true, imperial: false } ).addTo(map);
-    fetch(geojson)
-        .then((response) => {
-            return response.json()
-        })
-        .then((data) => {
-            console.log(data)
-            L.geoJson(data).addTo(map);
-        })
-        .catch((error) => {
-            console.log(error)
-        })
+    if (geojson == "not_found") {
+        console.error("No valid shape file found.")
+    } else {
+        fetch(geojson)
+            .then((response) => {
+                return response.json()
+            })
+            .then((data) => {
+                // console.log(data)
+                L.geoJson(data).addTo(map);
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    }
 }
 //-->
 </script>
@@ -736,8 +740,9 @@ foreach (@columns) {
                         if (%S) {
                             my %node = %{$S{$site}};
                             if (%node) {
-                                my ( $lat, $lon )= ( $node{LAT_WGS84}, $node{LON_WGS84} );
-                                my $geojson = "/data/$PATH_FORMDOCS/$input_id/shape.json";
+                                my ( $lat, $lon ) = ( $node{LAT_WGS84}, $node{LON_WGS84} );
+                                my $geojson = "$PATH_FORMDOCS/$input_id/shape.json";
+                                $geojson = ( ( -f "$WEBOBS{ROOT_DATA}/$geojson" ) ? "/data/$geojson" : "not_found" );
                                 print qq(<div id="map_$Field" geojson=$geojson lat=$lat lon=$lon style="height: $height;"></div>);
                             }
                         }
