@@ -192,7 +192,7 @@ sub extract_formula {
     my $type = shift;
     my @x;
     my ($size, $formula) = extract_type($type);
-    while ($formula =~ /((IN|OUT)PUT[0-9]{2})/g) {
+    while ($formula =~ /((IN|OUT)PUT[0-9]{2}|DURATION)/g) {
         push(@x,$1);
     }
     return ($formula, $size, @x);

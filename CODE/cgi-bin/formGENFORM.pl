@@ -622,6 +622,8 @@ print qq(</select><BR>);
 
 if ($starting_date) {
    print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
+} else {
+    print qq(<input type="hidden" name="duration">);
 }
 
 print qq(<B>Site: </B>
