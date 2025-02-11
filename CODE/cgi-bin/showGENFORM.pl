@@ -369,9 +369,9 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
     my $fs = $fieldsets[$i];
     my $showfs = ((!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)}) ? "1":"0");
     push(@colnam, $fs_names[$i]) if ($showfs);
-    my $nb_fields = $#{$field_names[$i]};
-    $colspan{$fs_names[$i]} = $nb_fields+1;
-    for (my $j = 0; $j <= $nb_fields; $j++) {
+    my $nb_fields = $#{$field_names[$i]} + 1;
+    $colspan{$fs_names[$i]} = $nb_fields;
+    for (my $j = 0; $j < $nb_fields; $j++) {
         my $field = $field_names[$i][$j];
         my $name_field = $FORM{"$field\_NAME"};
         my $unit_field = $FORM{"$field\_UNIT"};
@@ -465,9 +465,9 @@ for (my $j = 0; $j <= $#rows; $j++) {
     $csvTxt .= "$id".($starting_date ? ",\"$sdate\"":"").",\"$edate\",\"$aliasSite\",\"$opers\",";
     for (my $f = 0; $f <= $#fieldsets; $f++) {
         my $fs = $fieldsets[$f];
-        my $nb_fields = $#{$field_names[$f]};
-        $text .= "<TD></TD>" if ($nb_fields >= 0); # end of fieldset
-        for (my $n = 0; $n <= $nb_fields; $n++) {
+        my $nb_fields = $#{$field_names[$f]} + 1;
+        $text .= "<TD></TD>" if ($nb_fields > 0 && (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)})); # begin of fieldset
+        for (my $n = 0; $n < $nb_fields; $n++) {
             my $Field = $field_names[$f][$n];
             my $field = lc($Field);
             my $opt;
