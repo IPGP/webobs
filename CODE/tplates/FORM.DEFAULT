@@ -81,6 +81,8 @@ INPUT06_NAME|Image input6
 INPUT06_TYPE|image(60)
 INPUT07_NAME|Shapefile input7
 INPUT07_TYPE|shapefile(350)
+INPUT08_NAME|Sample analysis
+INPUT08_TYPE|datetime
 
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
@@ -98,7 +100,7 @@ OUTPUT02_HELP|this is a formula with MEAN function
 
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
-COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04,FIELDSET05
+COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04,FIELDSET05,FIELDSET06
 
 # first fieldset name, number of cells and list of fields for each column
 FIELDSET01_NAME|Fieldset A
@@ -126,3 +128,8 @@ FIELDSET04_C01|INPUT06
 FIELDSET05_NAME|Fieldset E
 FIELDSET05_CELLS|1,COLS
 FIELDSET05_C01|INPUT07
+
+# Date Time type Fieldset
+FIELDSET06_NAME|Fieldset F
+FIELDSET06_CELLS|1,COLS
+FIELDSET06_C01|INPUT08

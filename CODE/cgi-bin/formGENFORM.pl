@@ -155,11 +155,6 @@ my $LL_DEFAULT_HEIGHT = $GRIDS{GENFORM_SHAPE_DEFAULT_HEIGHT} || 300;
 
 # ---- Variables des menus
 my $starting_date   = isok($FORM{STARTING_DATE});
-my @yearList = ($FORM{BANG}..$currentYear);
-my @monthList = ("","01".."12");
-my @dayList   = ("","01".."31");
-my @hourList  = ("","00".."23");
-my @minuteList= ("","00".."59");
 
 # ---- if STARTING_DATE eq "yes"
 my $edate = $sdate;
@@ -177,6 +172,9 @@ my $tbl = lc($form);
 
 # Number of columns in the table without the primary key
 my $ncol = 11;
+
+# Date input index (0 and 1 are allocated to the mandatory date inputs)
+my $ndi = 2;
 
 # Local temp dir
 my $temp_dir = ".tmp/".$CLIENT."/".uc($form);
@@ -202,9 +200,14 @@ if ($action eq 'save') {
         my $input;
         my @input = $cgi->param($_);
         if (scalar(@input) > 1) {
-             $input = join(",", @input);
+            $input = join(",", @input);
         } else {
-            $input = $cgi->param($_);
+            if ($FORM{uc($_."_TYPE")} =~ /^datetime/) {
+                my $di = $cgi->param($_);
+                $input = datetime2maxmin($year[$di], $month[$di], $day[$di], $hr[$di], $mn[$di]);
+            } else {
+                $input = $cgi->param($_);
+            }
         }
         if ($input ne "") {
             $db_columns .= ", $_";
@@ -226,11 +229,12 @@ if ($action eq 'save') {
         my $sth = $dbh->prepare( $stmt );
         my $rv = $sth->execute() or die $DBI::errstr;
         my $new_id = $sth->fetchrow_array();
-        my $temp_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".$temp_dir."/*";
-        my $finalPath = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$new_id."/");
-        make_path($finalPath);
-        qx(mv -f $temp_path $finalPath);
-        if ($?) { htmlMsgNotOK("Couldn't move $temp_path to $finalPath; $!"); }
+        my $temp_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".$temp_dir."/";
+        my $final_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$new_id);
+        make_path($temp_path);
+        make_path($final_path);
+        qx(mv -f "$temp_path."*" $final_path);
+        if ($?) { htmlMsgNotOK("Couldn't move $temp_path to $final_path; $!"); }
     }
 
     $dbh->disconnect();
@@ -576,50 +580,10 @@ print qq[</td>
         <p class="parform" align=\"right\">
 ];
 
-if ($starting_date) {
-    print qq(<b>$__{'Start Date'}: </b>
-                <select name="year" size="1">
-        );
-    for (@yearList) {if ($_ == $sel_y1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select>);
-    print qq(<select name="month" size="1">);
-    for (@monthList) {if ($_ == $sel_m1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select>);
-    print qq( <select name=day size="1">);
-    for (@dayList) {if ($_ == $sel_d1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print "</select>";
-
-    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
-    for (@hourList) {if ($_ eq $sel_hr1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-
-    print qq(</select>);
-    print qq(<select name=mn size="1">);
-    for (@minuteList) {if ($_ eq $sel_mn1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select><BR>);
-
-    print qq(<b>$__{'End Date'}: </b>
-            <select name="year" size="1">
-        );
-} else {
-    print qq(<b>$__{'Date'}: </b>
-            <select name="year" size="1">
-        );
-}
-for (@yearList) {if ($_ == $sel_y2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-print qq(</select>);
-print qq(<select name="month" size="1">);
-for (@monthList) {if ($_ == $sel_m2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-print qq(</select>);
-print qq( <select name=day size="1">);
-for (@dayList) {if ($_ == $sel_d2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-print "</select>";
-
-print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
-for (@hourList) {if ($_ eq $sel_hr2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-print qq(</select>);
-print qq(<select name=mn size="1">);
-for (@minuteList) {if ($_ eq $sel_mn2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-print qq(</select><BR>);
+# Add mandatory date input
+my @sdate = ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1);
+my @edate = ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2);
+datetime_input($form, \@sdate, \@edate);
 
 if ($starting_date) {
    print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
@@ -627,6 +591,7 @@ if ($starting_date) {
     print qq(<input type="hidden" name="duration">);
 }
 
+# Add mandatory site input
 print qq(<B>Site: </B>
       <select name="site" size="1"
         onMouseOut="nd()"onmouseover="overlib('$__{'Select a node for this record'}')">
@@ -638,6 +603,7 @@ for (@NODESSelList) {
     print qq(<option $sel value="$cle[0]">$cle[1]</option>);
 }
 
+# Add mandatory operator input
 print qq(</select><BR>
     <table><tr><td style="border:0"><B>$__{'Operator(s)'}:</B> </td><td style="border:0">
             <select name="operators" size="5" multiple="multiple"
@@ -657,10 +623,11 @@ foreach my $u (@uid){
     print "<option value=\"$u\" $sel>$u: ".join('',WebObs::Users::userName($u))."</option>\n";
 }
 print qq(</select>
-	</td></tr></table>
-	</P>
+    </td></tr></table>
+    </P>
     </fieldset>);
 
+# Add user defined inputs
 foreach (@columns) {
     my $col = $_ =~ s/_LIST//r;
     unless ($_ =~ "01") {
@@ -752,6 +719,12 @@ foreach (@columns) {
                     }
                     print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:right;">);
                     print qq(<img src="/icons/upload.png" style="vertical-align: middle;"> $txt</button>);
+                } elsif ($field =~ /^input/ && $type =~ /^datetime/) {
+                    print qq(<span style="float:left">$txt</span>);
+                    my @date = datetime2array(($prev_inputs{$field}, $prev_inputs{$field}));
+                    datetime_input($form, \@date);
+                    print qq(<input type="hidden" name="$field" value="$ndi">\n);
+                    $ndi++;
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
