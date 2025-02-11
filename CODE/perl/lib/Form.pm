@@ -49,16 +49,19 @@ FORM object. See SYNOPSIS examples above.
 
 use strict;
 use warnings;
+use Date::Parse;
 use WebObs::Config;
 use WebObs::Grids;
 use WebObs::Utils;
+use WebObs::i18n;
+use Locale::TextDomain('webobs');
 use CGI::Carp qw(fatalsToBrowser set_message);
 set_message(\&webobs_cgi_msg);
 
 require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
-@EXPORT = qw(datetime2array datetime2maxmin
+@EXPORT = qw(datetime2array datetime2maxmin simplify_date date_duration
   extract_formula extract_list extract_type extract_text count_inputs count_columns filter_nan
   connectDbForms);
 
@@ -152,6 +155,7 @@ sub dump {
 
 # ---- GENFORM sub
 
+# from (date_max,date_min) interval, returns an array of (year,month,day,hour,minute)
 sub datetime2array {
     my $date = shift;
     my $date_min = shift;
@@ -165,6 +169,7 @@ sub datetime2array {
     return @d;
 }
 
+# from full/partial date string, returns interval array (date_max,date_min)
 sub datetime2maxmin {
     my ($y,$m,$d,$hr,$mn) = @_;
     my $date_min = "$y-$m-$d $hr:$mn";
@@ -185,6 +190,33 @@ sub datetime2maxmin {
         $date_max = "$y-$m-$d $hr:59";
     }
     return ("$date_max","$date_min");
+}
+
+# from (date_max,date_min) interval, returns a string of full/partial date "yyyy[-mm[-dd[ HH[:MM]]]]"
+sub simplify_date {
+    my $date0 = shift;
+    my $date1 = shift;
+    my ($y0,$m0,$d0,$H0,$M0) = split(/[-: ]/,$date0);
+    my ($y1,$m1,$d1,$H1,$M1) = split(/[-: ]/,$date1);
+    my $date = "$y1-$m1-$d1 $H1:$M1";
+    if ($date0 eq $date1 || $date1 eq "") { return $date0; }
+    if    ($y1 ne $y0) { $date = "$y0-$y1"; }
+    elsif ($m1 ne $m0) { $date = "$y1"; }
+    elsif ($d1 ne $d0) { $date = "$y1-$m1"; }
+    elsif ($H1 ne $H0) { $date = "$y1-$m1-$d1"; }
+    elsif ($M1 ne $M0) { $date = "$y1-$m1-$d1 $H1"; }
+    return $date;
+}
+
+# from 2 date intervals ($sdate_min, $sdate_max, $edate_min, $edate_max), returns min/max duration in days
+sub date_duration {
+    my $dur_min = sprintf("%+.1f",(str2time($_[2]) - str2time($_[1]))/86400);
+    my $dur_max = sprintf("%+.1f",(str2time($_[3]) - str2time($_[0]))/86400);
+    if ($dur_min < $dur_max) {
+        return "$dur_min $__{'to_num'} $dur_max";
+    } else {
+        return $dur_max;
+    }
 }
 
 # extract_formula ($type) returns $formula and @x an array of used fields (input or output)

@@ -222,6 +222,11 @@ msgid "showsgram_help"
 msgstr "Show/Hide Spectrogram (or S key)<br>Use R/T keys to increase/decrease transparency"
 
 
+# ---- showGENFORM.pl
+
+msgid "to_num"
+msgstr "to"
+
 # ---- formRAINWATER.pl
 
 msgid "help_rainwater_date1"

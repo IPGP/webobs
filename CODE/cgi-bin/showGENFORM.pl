@@ -390,20 +390,20 @@ if ($clientAuth > 1) {
     $form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
     $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
 }
-$header .= "<TH ".($starting_date ? "colspan=2":"rowspan=2").">$__{'Sampling Date'}</TH>";
+$header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}":"rowspan=2>$__{'Sampling Date'}")."</TH>";
 $header .= "<TH rowspan=2>$__{'Site'}</TH><TH rowspan=2>$__{'Oper'}</TH>";
 foreach(@colnam) {
     $header .= "<TH rowspan=2></TH><TH colspan=$colspan{$_}>$_</TH>\n";
 }
 $header .= "<TH rowspan=2></TH></TR>\n"; # end with comment column
-$header .= ($starting_date ? "<TH>$__{'Start'}</YH><TH>$__{'End'}</TH>":"");
+$header .= ($starting_date ? "<TH>$__{'Start'}</YH><TH>$__{'End'}</TH><TH align=right>$__{'Days'}</TH>":"");
 foreach(@colnam2) {
     $header .= "<TH>".$_."</TH>\n";
 }
 $header .= "</TR>\n";
 
 for (my $j = 0; $j <= $#rows; $j++) {
-    my ($id, $trash, $quality, $site, $edate0, $edate1, $sdate0, $sdate1, $opers, $rem, $ts0, $user) = ($rows[$j][0],$rows[$j][1],$rows[$j][2],$rows[$j][3],$rows[$j][4],$rows[$j][5],$rows[$j][6],$rows[$j][7],$rows[$j][8],$rows[$j][9],$rows[$j][10],$rows[$j][11]);
+    my ($id, $trash, $quality, $site, $edate_max, $edate_min, $sdate_max, $sdate_min, $opers, $rem, $ts0, $user) = ($rows[$j][0],$rows[$j][1],$rows[$j][2],$rows[$j][3],$rows[$j][4],$rows[$j][5],$rows[$j][6],$rows[$j][7],$rows[$j][8],$rows[$j][9],$rows[$j][10],$rows[$j][11]);
 
     # makes a hash of all fields values (input and output)
     my %fields;
@@ -412,6 +412,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
     for (my $i = 8; $i <= $#{$rows[$j]}; $i++) {
         $fields{$rownames[$i]} = $rows[$j][$i];
     }
+    # adds duration
+    $fields{DURATION} = ($starting_date ? date_duration($sdate_min, $sdate_max, $edate_min, $edate_max):0);
 
     # stores formulas
     foreach (@formulas) {
@@ -435,8 +437,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
 
     $aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
 
-    my $edate = simplify_date($edate0,$edate1);
-    my $sdate = simplify_date($sdate0,$sdate1);
+    my $edate = simplify_date($edate_max,$edate_min);
+    my $sdate = simplify_date($sdate_max,$sdate_min);
 
     my $nameSite = htmlspecialchars(getNodeString(node=>$site,style=>'html'));
     my $normSite = "FORM.$form.$site";
@@ -459,7 +461,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
     if ($clientAuth > 1) {
         $text .= "<TH nowrap>$edit</TH>";
     }
-    $text .= ($starting_date ? "<TD nowrap>$sdate</TD>":"")."<TD nowrap>$edate</TD>";
+    $text .= ($starting_date ? "<TD nowrap>$sdate</TD><TD nowrap>$edate</TD><TD class=\"tdResult\">$fields{DURATION}</TD>":"<TD nowrap>$edate</TD>");
     $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite',CAPTION,'$site')\">$nodelink&nbsp;</TD>\n";
     $text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>\n";
     $csvTxt .= "$id".($starting_date ? ",\"$sdate\"":"").",\"$edate\",\"$aliasSite\",\"$opers\",";
@@ -579,7 +581,7 @@ foreach (@formulas) {
     my $name = $FORM{$_."_NAME"};
     my $unit = ($FORM{$_."_UNIT"} ne "" ? " (".$FORM{$_."_UNIT"}.")":"");
     foreach (@x) {
-        my $v = $FORM{$_."_NAME"};
+        my $v = ($_ =~ /(IN|OUT)PUT[0-9]{2}/ ? $FORM{$_."_NAME"}:$_);
         $formula =~ s/$_/<b>$v<\/b>/g;
     }
     $listofformula .= "<LI><B>$name</B>$unit = $formula</LI>\n";
@@ -603,28 +605,13 @@ print "<style type=\"text/css\">
 </style>\n
 <BR>\n</BODY>\n</HTML>\n";
 
-sub simplify_date {
-    my $date0 = shift;
-    my $date1 = shift;
-    my ($y0,$m0,$d0,$H0,$M0) = split(/[-: ]/,$date0);
-    my ($y1,$m1,$d1,$H1,$M1) = split(/[-: ]/,$date1);
-    my $date = "$y1-$m1-$d1 $H1:$M1";
-    if ($date0 eq $date1 || $date1 eq "") { return $date0; }
-    if    ($y1 ne $y0) { $date = "$y0-$y1"; }
-    elsif ($m1 ne $m0) { $date = "$y1"; }
-    elsif ($d1 ne $d0) { $date = "$y1-$m1"; }
-    elsif ($H1 ne $H0) { $date = "$y1-$m1-$d1"; }
-    elsif ($M1 ne $M0) { $date = "$y1-$m1-$d1 $H1"; }
-    return $date;
-}
-
 __END__
 
 =pod
 
 =head1 AUTHOR(S)
 
-Lucas Dassin, François Beauducel
+Lucas Dassin, François Beauducel, Jérôme Touvier
 
 =head1 COPYRIGHT
 

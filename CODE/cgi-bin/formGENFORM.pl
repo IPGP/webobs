@@ -308,6 +308,20 @@ print qq[Content-type: text/html
 function update_form()
 {
     var form = document.form;
+
+    var yy = document.getElementsByName("year");
+    var mm = document.getElementsByName("month");
+    var dd = document.getElementsByName("day");
+    var hr = document.getElementsByName("hr");
+    var mn = document.getElementsByName("mn");
+    var date1 = new Date(yy[0].value,mm[0].value-1,dd[0].value,hr[0].value,mn[0].value);
+    if (yy.length > 1) {
+        var date2 = new Date(yy[1].value,mm[1].value-1,dd[1].value,hr[1].value,mn[1].value);
+        duration = (date2.getTime() - date1.getTime())/86400000;
+        form.duration.value = duration.toFixed(1);
+    } else {
+        form.duration.value = "0";
+    }
 ];
 foreach my $f (@formulas) {
     my ($formula, $size, @x) = extract_formula($FORM{$f."_TYPE"});
@@ -343,19 +357,6 @@ foreach (@thresh) {
 }
 
 print qq[
-    var yy = document.getElementsByName("year");
-    var mm = document.getElementsByName("month");
-    var dd = document.getElementsByName("day");
-    var hr = document.getElementsByName("hr");
-    var mn = document.getElementsByName("mn");
-    var date1 = new Date(yy[0].value,mm[0].value-1,dd[0].value,hr[0].value,mn[0].value);
-    if (yy.length > 1) {
-        var date2 = new Date(yy[1].value,mm[1].value-1,dd[1].value,hr[1].value,mn[1].value);
-        duration = (date2.getTime() - date1.getTime())/86400000;
-        form.duration.value = duration.toFixed(1);
-    } else {
-        form.duration.value = "0";
-    }
 }
 
 function suppress(level)
