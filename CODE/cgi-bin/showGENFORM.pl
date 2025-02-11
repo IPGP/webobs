@@ -413,7 +413,9 @@ for (my $j = 0; $j <= $#rows; $j++) {
         $fields{$rownames[$i]} = $rows[$j][$i];
     }
     # adds duration
-    $fields{DURATION} = ($starting_date ? date_duration($sdate_min, $sdate_max, $edate_min, $edate_max):0);
+    my @dur = ("0","0");
+    @dur = date_duration($sdate_min, $sdate_max, $edate_min, $edate_max) if ($starting_date);
+    $fields{DURATION} = ($dur[0] + $dur[1])/2; # uses the mean of possible durations
 
     # stores formulas
     foreach (@formulas) {
@@ -461,7 +463,12 @@ for (my $j = 0; $j <= $#rows; $j++) {
     if ($clientAuth > 1) {
         $text .= "<TH nowrap>$edit</TH>";
     }
-    $text .= ($starting_date ? "<TD nowrap>$sdate</TD><TD nowrap>$edate</TD><TD class=\"tdResult\">$fields{DURATION}</TD>":"<TD nowrap>$edate</TD>");
+    if ($starting_date) {
+        my $dur_str = ($dur[0] < $dur[1] ? "$dur[0] $__{'to_num'} $dur[1]":$dur[0]);
+        $text .= "<TD nowrap>$sdate</TD><TD nowrap>$edate</TD><TD class=\"tdResult\">$dur_str</TD>";
+    } else {
+        $text .= "<TD nowrap>$edate</TD>";
+    }
     $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite',CAPTION,'$site')\">$nodelink&nbsp;</TD>\n";
     $text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>\n";
     $csvTxt .= "$id".($starting_date ? ",\"$sdate\"":"").",\"$edate\",\"$aliasSite\",\"$opers\",";
