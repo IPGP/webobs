@@ -53,7 +53,6 @@ use Date::Parse;
 use WebObs::Config;
 use WebObs::Grids;
 use WebObs::Utils;
-use WebObs::i18n;
 use Locale::TextDomain('webobs');
 use CGI::Carp qw(fatalsToBrowser set_message);
 set_message(\&webobs_cgi_msg);
@@ -208,15 +207,11 @@ sub simplify_date {
     return $date;
 }
 
-# from 2 date intervals ($sdate_min, $sdate_max, $edate_min, $edate_max), returns min/max duration in days
+# from 2 date intervals ($sdate_min, $sdate_max, $edate_min, $edate_max), returns an array of min/max duration in days
 sub date_duration {
     my $dur_min = sprintf("%+.1f",(str2time($_[2]) - str2time($_[1]))/86400);
     my $dur_max = sprintf("%+.1f",(str2time($_[3]) - str2time($_[0]))/86400);
-    if ($dur_min < $dur_max) {
-        return "$dur_min $__{'to_num'} $dur_max";
-    } else {
-        return $dur_max;
-    }
+    return ($dur_min, $dur_max);
 }
 
 # extract_formula ($type) returns $formula and @x an array of used fields (input or output)
