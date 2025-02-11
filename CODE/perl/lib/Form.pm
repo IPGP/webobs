@@ -55,13 +55,14 @@ use WebObs::Grids;
 use WebObs::Utils;
 use Locale::TextDomain('webobs');
 use CGI::Carp qw(fatalsToBrowser set_message);
+use POSIX qw/strftime/;
 set_message(\&webobs_cgi_msg);
 
 require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
 @EXPORT = qw(datetime2array datetime2maxmin simplify_date date_duration
-  extract_formula extract_list extract_type extract_text count_inputs count_columns filter_nan
+  extract_formula extract_list extract_type extract_text count_inputs count_columns datetime_input
   connectDbForms);
 
 # FORM constructor
@@ -189,6 +190,139 @@ sub datetime2maxmin {
         $date_max = "$y-$m-$d $hr:59";
     }
     return ("$date_max","$date_min");
+}
+
+sub datetime_input {
+    my ($form, $arg0, $arg1) = @_;
+    my ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1, $sel_sec1);
+    my ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2);
+
+    if ( defined $arg0 && defined $arg1 ) {
+        if ( scalar(@$arg0) == 5 && scalar(@$arg1 == 5) ) {
+            ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1) = @$arg0;
+            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2) = @$arg1;
+        } elsif ( scalar(@$arg0) == 6 && scalar(@$arg1 == 6) ) {
+            ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1, $sel_sec1) = @$arg0;
+            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2) = @$arg1;
+        } else {
+            die("Datetime array must have the same dimensions");
+        }
+    } elsif ( defined $arg0 ) {
+        if ( scalar(@$arg0) == 5 ) {
+            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2) = @$arg0;
+        } elsif ( scalar(@$arg0) == 6 ) {
+            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2) = @$arg0;
+        }
+    } else {
+        die("No datetime array to process");
+    }
+
+    my $Ctod = time();
+    my @tod = localtime($Ctod);
+    my $currentYear = strftime('%Y',@tod);
+
+    my %G = readForm($form);
+    my %FORM = %{$G{$form}};
+    my @yearList = ($FORM{BANG}..$currentYear);
+    my @monthList  = ("","01".."12");
+    my @dayList    = ("","01".."31");
+    my @hourList   = ("","00".."23");
+    my @minuteList = ("","00".."59");
+    my @secondList = ("","00".."59");
+
+    if ( defined $arg1 ) {
+        print qq(<b>$__{'Start Date'}: </b><select name="year" size="1">);
+        for (@yearList) {
+            if   ( $_ == $sel_y1 ) { print qq(<option selected value="$_">$_</option>); }
+            else                   { print qq(<option value="$_">$_</option>); }
+        }
+        print qq(</select>);
+
+        print qq(<select name="month" size="1">);
+        for (@monthList) {
+            if   ( $_ == $sel_m1 ) { print qq(<option selected value="$_">$_</option>); }
+            else                   { print qq(<option value="$_">$_</option>); }
+        }
+        print qq(</select>);
+
+        print qq( <select name=day size="1">);
+        for (@dayList) {
+            if   ( $_ == $sel_d1 ) { print qq(<option selected value="$_">$_</option>); }
+            else                   { print qq(<option value="$_">$_</option>); }
+        }
+        print "</select>";
+
+        print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
+        for (@hourList) {
+            if   ( $_ eq $sel_hr1 ) { print qq(<option selected value="$_">$_</option>); }
+            else                    { print qq(<option value="$_">$_</option>); }
+        }
+        print qq(</select>);
+
+        print qq(<select name=mn size="1">);
+        for (@minuteList) {
+            if   ( $_ eq $sel_mn1 ) { print qq(<option selected value="$_">$_</option>); }
+            else                    { print qq(<option value="$_">$_</option>); }
+        }
+        print qq(</select>);
+
+        if ( scalar(@$arg0) == 6 ) {
+            print qq(<select name=sec size="1">);
+            for (@secondList) {
+                if   ( $_ eq $sel_sec1 ) { print qq(<option selected value="$_">$_</option>); }
+                else                     { print qq(<option value="$_">$_</option>); }
+            }
+            print qq(</select>);
+        }
+        print qq(<br>);
+        print qq(<b>$__{'End Date'}: </b><select name="year" size="1">);
+    }
+    else {
+        print qq(<b>$__{'Date'}: </b><select name="year" size="1">);
+    }
+    for (@yearList) {
+        if   ( $_ == $sel_y2 ) { print qq(<option selected value="$_">$_</option>); }
+        else                   { print qq(<option value="$_">$_</option>); }
+    }
+    print qq(</select>);
+
+    print qq(<select name="month" size="1">);
+    for (@monthList) {
+        if   ( $_ == $sel_m2 ) { print qq(<option selected value="$_">$_</option>); }
+        else                   { print qq(<option value="$_">$_</option>); }
+    }
+    print qq(</select>);
+
+    print qq( <select name=day size="1">);
+    for (@dayList) {
+        if   ( $_ == $sel_d2 ) { print qq(<option selected value="$_">$_</option>); }
+        else                   { print qq(<option value="$_">$_</option>); }
+    }
+    print "</select>";
+
+    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
+    for (@hourList) {
+        if   ( $_ eq $sel_hr2 ) { print qq(<option selected value="$_">$_</option>); }
+        else                    { print qq(<option value="$_">$_</option>); }
+    }
+    print qq(</select>);
+
+    print qq(<select name=mn size="1">);
+    for (@minuteList) {
+        if   ( $_ eq $sel_mn2 ) { print qq(<option selected value="$_">$_</option>); }
+        else                    { print qq(<option value="$_">$_</option>); }
+    }
+    print qq(</select>);
+
+    if ( scalar(@$arg0) == 6 ) {
+        print qq(<select name=sec size="1">);
+        for (@secondList) {
+            if   ( $_ eq $sel_sec2 ) { print qq(<option selected value="$_">$_</option>); }
+            else                     { print qq(<option value="$_">$_</option>); }
+        }
+        print qq(</select>);
+    }
+    print qq(<br>);
 }
 
 # from (date_max,date_min) interval, returns a string of full/partial date "yyyy[-mm[-dd[ HH[:MM]]]]"
