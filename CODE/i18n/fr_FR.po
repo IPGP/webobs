@@ -2040,11 +2040,17 @@ msgstr "Opér."
 msgid "Sampling Date"
 msgstr "Date d'échantillonnage"
 
+msgid "Sampling Interval"
+msgstr "Période d'échantillonnage"
+
 msgid "Start"
 msgstr "Début"
 
 msgid "End"
 msgstr "Fin"
+
+msgid "to_num"
+msgstr "à"
 
 msgid "unknown key list!"
 msgstr "clef inconnue dans la liste !"
