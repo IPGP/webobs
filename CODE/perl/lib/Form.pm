@@ -193,7 +193,7 @@ sub datetime2maxmin {
 }
 
 sub datetime_input {
-    my ($form, $arg0, $arg1) = @_;
+    my ($form, $name, $arg0, $arg1) = @_;
     my ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1, $sel_sec1);
     my ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2);
 
@@ -217,6 +217,13 @@ sub datetime_input {
         die("No datetime array to process");
     }
 
+    my %names = ("year" => "year", "month" => "month", "day" => "day", "hr" => "hr", "mn" => "mn", "sec" => "sec");
+    if ( $name ) {
+        foreach ( keys %names ) {
+            $names{$_} = $name."_$names{$_}"
+        }
+    }
+
     my $Ctod = time();
     my @tod = localtime($Ctod);
     my $currentYear = strftime('%Y',@tod);
@@ -231,35 +238,35 @@ sub datetime_input {
     my @secondList = ("","00".."59");
 
     if ( defined $arg1 ) {
-        print qq(<b>$__{'Start Date'}: </b><select name="year" size="1">);
+        print qq(<b>$__{'Start Date'}: </b><select name=$names{year} size="1">);
         for (@yearList) {
             if   ( $_ == $sel_y1 ) { print qq(<option selected value="$_">$_</option>); }
             else                   { print qq(<option value="$_">$_</option>); }
         }
         print qq(</select>);
 
-        print qq(<select name="month" size="1">);
+        print qq(<select name=$names{month} size="1">);
         for (@monthList) {
             if   ( $_ == $sel_m1 ) { print qq(<option selected value="$_">$_</option>); }
             else                   { print qq(<option value="$_">$_</option>); }
         }
         print qq(</select>);
 
-        print qq( <select name=day size="1">);
+        print qq( <select name=$names{day} size="1">);
         for (@dayList) {
             if   ( $_ == $sel_d1 ) { print qq(<option selected value="$_">$_</option>); }
             else                   { print qq(<option value="$_">$_</option>); }
         }
         print "</select>";
 
-        print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
+        print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=$names{hr} size="1">);
         for (@hourList) {
             if   ( $_ eq $sel_hr1 ) { print qq(<option selected value="$_">$_</option>); }
             else                    { print qq(<option value="$_">$_</option>); }
         }
         print qq(</select>);
 
-        print qq(<select name=mn size="1">);
+        print qq(<select name=$names{mn} size="1">);
         for (@minuteList) {
             if   ( $_ eq $sel_mn1 ) { print qq(<option selected value="$_">$_</option>); }
             else                    { print qq(<option value="$_">$_</option>); }
@@ -267,7 +274,7 @@ sub datetime_input {
         print qq(</select>);
 
         if ( scalar(@$arg0) == 6 ) {
-            print qq(<select name=sec size="1">);
+            print qq(<select name=$names{sec} size="1">);
             for (@secondList) {
                 if   ( $_ eq $sel_sec1 ) { print qq(<option selected value="$_">$_</option>); }
                 else                     { print qq(<option value="$_">$_</option>); }
@@ -275,10 +282,10 @@ sub datetime_input {
             print qq(</select>);
         }
         print qq(<br>);
-        print qq(<b>$__{'End Date'}: </b><select name="year" size="1">);
+        print qq(<b>$__{'End Date'}: </b><select name=$names{year} size="1">);
     }
     else {
-        print qq(<b>$__{'Date'}: </b><select name="year" size="1">);
+        print qq(<b>$__{'Date'}: </b><select name=$names{year} size="1">);
     }
     for (@yearList) {
         if   ( $_ == $sel_y2 ) { print qq(<option selected value="$_">$_</option>); }
@@ -286,28 +293,28 @@ sub datetime_input {
     }
     print qq(</select>);
 
-    print qq(<select name="month" size="1">);
+    print qq(<select name=$names{month} size="1">);
     for (@monthList) {
         if   ( $_ == $sel_m2 ) { print qq(<option selected value="$_">$_</option>); }
         else                   { print qq(<option value="$_">$_</option>); }
     }
     print qq(</select>);
 
-    print qq( <select name=day size="1">);
+    print qq( <select name=$names{day} size="1">);
     for (@dayList) {
         if   ( $_ == $sel_d2 ) { print qq(<option selected value="$_">$_</option>); }
         else                   { print qq(<option value="$_">$_</option>); }
     }
     print "</select>";
 
-    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
+    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=$names{hr} size="1">);
     for (@hourList) {
         if   ( $_ eq $sel_hr2 ) { print qq(<option selected value="$_">$_</option>); }
         else                    { print qq(<option value="$_">$_</option>); }
     }
     print qq(</select>);
 
-    print qq(<select name=mn size="1">);
+    print qq(<select name=$names{mn} size="1">);
     for (@minuteList) {
         if   ( $_ eq $sel_mn2 ) { print qq(<option selected value="$_">$_</option>); }
         else                    { print qq(<option value="$_">$_</option>); }
@@ -315,7 +322,7 @@ sub datetime_input {
     print qq(</select>);
 
     if ( scalar(@$arg0) == 6 ) {
-        print qq(<select name=sec size="1">);
+        print qq(<select name=$names{sec} size="1">);
         for (@secondList) {
             if   ( $_ eq $sel_sec2 ) { print qq(<option selected value="$_">$_</option>); }
             else                     { print qq(<option value="$_">$_</option>); }
