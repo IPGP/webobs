@@ -12,9 +12,9 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.7.1.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.7.1/WebObs-2.7.1.tar.gz) (102 Mb) updated December 23, 2024
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.7.1/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.7.1/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.7.3.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.7.3/WebObs-2.7.3.tar.gz) (103 Mb) updated February 5, 2025
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.7.3/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.7.3/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
@@ -149,6 +149,7 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 - new interface for publishing B3 reports;
 - finalization of the interface between WebObs and the Theia\|OZCAR data portal;
 - new format for calibration files;
+- new GNSS raw data formats;
 - some minor to moderate fixes and other minor improvements.
 
 ### What's new in the 2.6?
