@@ -229,12 +229,14 @@ if ($action eq 'save') {
         my $sth = $dbh->prepare( $stmt );
         my $rv = $sth->execute() or die $DBI::errstr;
         my $new_id = $sth->fetchrow_array();
-        my $temp_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".$temp_dir."/";
+        my $temp_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".$temp_dir;
         my $final_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$new_id);
         make_path($temp_path);
-        make_path($final_path);
-        qx(mv -f "$temp_path."*" $final_path);
-        if ($?) { htmlMsgNotOK("Couldn't move $temp_path to $final_path; $!"); }
+        if ( $CLIENT && $form && scalar <$temp_path/*> ) {
+            make_path($final_path);
+            qx(mv -T $temp_path $final_path);
+            if ($?) { htmlMsgNotOK("Couldn't move $temp_path to $final_path; $!"); }
+        }
     }
 
     $dbh->disconnect();
