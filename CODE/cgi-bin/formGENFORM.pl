@@ -105,6 +105,7 @@ my @month   = $cgi->param('month');
 my @day     = $cgi->param('day');
 my @hr      = $cgi->param('hr');
 my @mn      = $cgi->param('mn');
+my @sec     = $cgi->param('sec');
 my $quality = $cgi->param('quality') // 0;
 my $site    = $cgi->param('site');
 my $comment = $cgi->param('comment') // "";
@@ -201,14 +202,26 @@ if ($action eq 'save') {
         my @input = $cgi->param($_);
         if (scalar(@input) > 1) {
             $input = join(",", @input);
-        } else {
-            if ($FORM{uc($_."_TYPE")} =~ /^datetime/) {
-                my $di = $cgi->param($_);
-                $input = datetime2maxmin($year[$di], $month[$di], $day[$di], $hr[$di], $mn[$di]);
+        } elsif ($FORM{uc($_."_TYPE")} =~ /^datetime/) {
+            my $year = $cgi->param($_."_year");
+            my $month = $cgi->param($_."_month");
+            my $day = $cgi->param($_."_day");
+            my $hr = $cgi->param($_."_hr");
+            my $mn = $cgi->param($_."_mn");
+            my $is_sec = defined $cgi->param($_."_sec");
+            my $sec = $cgi->param($_."_sec");
+            my $ymd = join("-", $year, $month, $day);
+            my $hms;
+            if ( $is_sec ) {
+                $hms = $hr && $mn ? join(":", $hr, $mn, ($sec ? $sec : "00")) : "";
             } else {
-                $input = $cgi->param($_);
+                $hms = $hr ? join(":", $hr, ($mn ? $mn : "00")) : "";
             }
+            $input = $ymd." ".$hms;
+        } else {
+            $input = $cgi->param($_);
         }
+
         if ($input ne "") {
             $db_columns .= ", $_";
             $row .= ", \"$input\"";
@@ -585,7 +598,7 @@ print qq[</td>
 # Add mandatory date input
 my @sdate = ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1);
 my @edate = ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2);
-datetime_input($form, \@sdate, \@edate);
+datetime_input($form, "", \@sdate, \@edate);
 
 if ($starting_date) {
    print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
@@ -722,11 +735,11 @@ foreach (@columns) {
                     print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:right;">);
                     print qq(<img src="/icons/upload.png" style="vertical-align: middle;"> $txt</button>);
                 } elsif ($field =~ /^input/ && $type =~ /^datetime/) {
-                    print qq(<span style="float:left">$txt</span>);
-                    my @date = datetime2array(($prev_inputs{$field}, $prev_inputs{$field}));
-                    datetime_input($form, \@date);
-                    print qq(<input type="hidden" name="$field" value="$ndi">\n);
-                    $ndi++;
+                    print qq(<span style="margin-right:20px">$txt</span>);
+                    my $limit = $default eq "sec" ? 6 : 5;
+                    my @date = split( /[-: ]/, $prev_inputs{$field}, $limit );
+                    if ( scalar(@date) < $limit ) { $date[$limit-1] = ""; }
+                    datetime_input($form, $field, \@date);
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
