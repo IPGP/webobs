@@ -271,7 +271,8 @@ my @list_months = reverse("01" .. "12");
 my @list_days = reverse("01" .. "31");
 
 print "<FORM name=\"form\" action=\"/cgi-bin/showGENFORM.pl\" method=\"get\">",
-  "<INPUT name=\"form\" type=\"hidden\" value=\"$form\">";
+  "<INPUT name=\"form\" type=\"hidden\" value=\"$form\">",
+  "<INPUT name=\"debug\" type=\"hidden\" value=\"$QryParm->{'debug'}\">";
 print "<P class=\"boitegrise\" align=\"center\">",
   "<TABLE width=\"100%\"><TR><TD style=\"border:0;text-align:center\">",
   "<B>$__{'Start Date'}:</B> ";
