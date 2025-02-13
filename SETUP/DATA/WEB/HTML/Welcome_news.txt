@@ -1,5 +1,5 @@
 <div class="emphase-frame" style="text-align: center;">
-  <h3 class="emphase-title">Real-time cameras</h3>
+  <h3 class="emphase-title">Real-time volcano cameras</h3>
    <A href="https://www.ipgp.fr/volcanoweb/guadeloupe/Cameras/soufriere.jpg">
       <IMG src="https://www.ipgp.fr/volcanoweb/guadeloupe/Cameras/soufriere.jpg" height="100" border="1" onMouseOut="nd()" onMouseOver="overlib('La Soufrière volcano (Guadeloupe) in real-time',CAPTION,'Updated every 5 minutes')"></A>
    <A href="https://www.ipgp.fr/volcanoweb/martinique/Cameras/pelee.jpg">
