@@ -179,7 +179,8 @@ for my $i (0..$#tslist) {
     $ts =~ s/j$/d/;
     my $n = 1*substr($ts,0,-1);
     if ($n > 0) {
-        $tsName = "$n $TIMESCALES{substr($ts,-1)}".($n > 1 ? "s":"");
+        my $u = $TIMESCALES{substr($ts,-1)};
+        $tsName = "$n $u".($n > 1 && substr($u,-1,1) ne "s" ? "s":"");
     } elsif (substr($ts,0,1) eq "r") {
         my $r = 1*substr($ts,1);
         $tsName = "$TIMESCALES{r}".($r > 0 ? " $r":"");
