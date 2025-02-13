@@ -110,6 +110,26 @@ table.trData tr:hover td {
     border: none;
 }
 
+select[multiple] {
+    border-radius: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 3px;
+    min-height: 3rem;
+    max-height: 12rem;
+    min-width: 8rem;
+    max-width: 20rem;
+}
+
+select[multiple]:focus {
+    border: thin solid blue;
+}
+
+select[multiple] option:checked {
+    border-radius: 3px;
+    border: 1px ridge #152150;
+}
+
 button,
 input,
 select,
