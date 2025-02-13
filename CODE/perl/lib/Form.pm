@@ -201,20 +201,19 @@ sub datetime_input {
         if ( scalar(@$arg0) == 5 && scalar(@$arg1 == 5) ) {
             ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1) = @$arg0;
             ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2) = @$arg1;
-        } elsif ( scalar(@$arg0) == 6 && scalar(@$arg1 == 6) ) {
-            ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1, $sel_sec1) = @$arg0;
-            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2) = @$arg1;
         } else {
-            die("Datetime array must have the same dimensions");
+            die("Invalid array dimensions");
         }
     } elsif ( defined $arg0 ) {
-        if ( scalar(@$arg0) == 5 ) {
+        if ( scalar(@$arg0) == 3 ) {
+            ($sel_y2, $sel_m2, $sel_d2) = @$arg0;
+        } elsif ( scalar(@$arg0) == 5 ) {
             ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2) = @$arg0;
         } elsif ( scalar(@$arg0) == 6 ) {
             ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2) = @$arg0;
         }
     } else {
-        die("No datetime array to process");
+        die("No array to process");
     }
 
     my %names = ("year" => "year", "month" => "month", "day" => "day", "hr" => "hr", "mn" => "mn", "sec" => "sec");
@@ -272,15 +271,6 @@ sub datetime_input {
             else                    { print qq(<option value="$_">$_</option>); }
         }
         print qq(</select>);
-
-        if ( scalar(@$arg0) == 6 ) {
-            print qq(<select name=$names{sec} size="1">);
-            for (@secondList) {
-                if   ( $_ eq $sel_sec1 ) { print qq(<option selected value="$_">$_</option>); }
-                else                     { print qq(<option value="$_">$_</option>); }
-            }
-            print qq(</select>);
-        }
         print qq(<br>);
         print qq(<b>$__{'End Date'}: </b><select name=$names{year} size="1">);
     }
@@ -307,27 +297,29 @@ sub datetime_input {
     }
     print "</select>";
 
-    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=$names{hr} size="1">);
-    for (@hourList) {
-        if   ( $_ eq $sel_hr2 ) { print qq(<option selected value="$_">$_</option>); }
-        else                    { print qq(<option value="$_">$_</option>); }
-    }
-    print qq(</select>);
-
-    print qq(<select name=$names{mn} size="1">);
-    for (@minuteList) {
-        if   ( $_ eq $sel_mn2 ) { print qq(<option selected value="$_">$_</option>); }
-        else                    { print qq(<option value="$_">$_</option>); }
-    }
-    print qq(</select>);
-
-    if ( scalar(@$arg0) == 6 ) {
-        print qq(<select name=$names{sec} size="1">);
-        for (@secondList) {
-            if   ( $_ eq $sel_sec2 ) { print qq(<option selected value="$_">$_</option>); }
-            else                     { print qq(<option value="$_">$_</option>); }
+    if ( scalar(@$arg0) > 3 ) {
+        print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=$names{hr} size="1">);
+        for (@hourList) {
+            if   ( $_ eq $sel_hr2 ) { print qq(<option selected value="$_">$_</option>); }
+            else                    { print qq(<option value="$_">$_</option>); }
         }
         print qq(</select>);
+
+        print qq(<select name=$names{mn} size="1">);
+        for (@minuteList) {
+            if   ( $_ eq $sel_mn2 ) { print qq(<option selected value="$_">$_</option>); }
+            else                    { print qq(<option value="$_">$_</option>); }
+        }
+        print qq(</select>);
+
+        if ( scalar(@$arg0) == 6 ) {
+            print qq(<select name=$names{sec} size="1">);
+            for (@secondList) {
+                if   ( $_ eq $sel_sec2 ) { print qq(<option selected value="$_">$_</option>); }
+                else                     { print qq(<option value="$_">$_</option>); }
+            }
+            print qq(</select>);
+        }
     }
     print qq(<br>);
 }
@@ -378,10 +370,10 @@ sub extract_list {
 sub extract_type {
     my $type = shift;
     my ($size, $default) = (split /:/, $type);
-    if ($type =~ /^list\(multiple\)/) {
-        $size = "multiple";
-    } elsif ($size =~ /\(\d+\)$/) {
+    if ($size =~ /\(\d+\)$/) {
         $size =~ s/^[a-z]+\((\d+)\)/$1/;
+    } elsif ($size =~ /\(\w+\)$/) {
+        $size =~ s/^[a-z]+\((\w+)\)/$1/;
     } else {
         $size = 5;
     }

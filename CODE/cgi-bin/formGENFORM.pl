@@ -174,8 +174,8 @@ my $tbl = lc($form);
 # Number of columns in the table without the primary key
 my $ncol = 11;
 
-# Date input index (0 and 1 are allocated to the mandatory date inputs)
-my $ndi = 2;
+# Array size mapping for Date/Time inputs
+my %datetime_length = ("ymd" => 3, "hm" => 5, "hms" => 6);
 
 # Local temp dir
 my $temp_dir = ".tmp/".$CLIENT."/".uc($form);
@@ -736,9 +736,9 @@ foreach (@columns) {
                     print qq(<img src="/icons/upload.png" style="vertical-align: middle;"> $txt</button>);
                 } elsif ($field =~ /^input/ && $type =~ /^datetime/) {
                     print qq(<span style="margin-right:20px">$txt</span>);
-                    my $limit = $default eq "sec" ? 6 : 5;
-                    my @date = split( /[-: ]/, $prev_inputs{$field}, $limit );
-                    if ( scalar(@date) < $limit ) { $date[$limit-1] = ""; }
+                    my $len = %datetime_length{$size ? $size : "ymd"};
+                    my @date = split( /[-: ]/, $prev_inputs{$field}, $len );
+                    if ( scalar(@date) < $len ) { $date[$len-1] = ""; }
                     datetime_input($form, $field, \@date);
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
