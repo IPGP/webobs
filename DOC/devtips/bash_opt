@@ -4,8 +4,8 @@
 # your online doc for this shell follows:
 
 usage() {
-	echo $0 is my name
-	echo that's all I know
+    echo $0 is my name
+    echo that's all I know
 }
 
 TEMP=`getopt -o vdm: --long verbose,debug,memory:,debugfile:,minheap:,maxheap: \

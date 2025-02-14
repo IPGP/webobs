@@ -11,7 +11,7 @@ cgi models to display and update typical WebObs FORM data
 Use this model as a guide to write your own WebObs FORM's data display and update Perl cgis.
 
 This document will use 'ME' as the name of an example WebObs FORM .
-'ME' is thus defined/pointed-to by WebObs PROC(s) 'frm' configuration parameter, and 
+'ME' is thus defined/pointed-to by WebObs PROC(s) 'frm' configuration parameter, and
 its own configuration files are located in $WEBOBS{ROOT_FORM}/ME directory.
 FORM's actual data file is located in $WEBOBS{PATH_DATA_DB}/ME/.
 
@@ -19,7 +19,7 @@ The 3 cgis needed to setup 'ME' data edit functions are: 1) showME.pl (display/s
 2) formME (data record input html form) and 3) postME.pl (update ME data file from formME).
 
 CGIs use the WebObs Perl's FORM object to represent/access FORMs configuration and data.
-See WebObs/Form.pm documentation for available FORM-object methods. 
+See WebObs/Form.pm documentation for available FORM-object methods.
 
 =head1 FORM CONFIGURATION
 
@@ -47,8 +47,8 @@ Typical FORM's configuration file: $WEBOBS{ROOT_FORM}/ME/ME.conf
   my $cgi = new CGI;
   use CGI::Carp qw(fatalsToBrowser set_message);
   set_message(\&webobs_cgi_msg);
-  
-  # ---- webobs 
+
+  # ---- webobs
   use WebObs::Config;
   use WebObs::Users qw(clientHasRead clientHasEdit clientHasAdm);
   use WebObs::Grids;
@@ -57,33 +57,33 @@ Typical FORM's configuration file: $WEBOBS{ROOT_FORM}/ME/ME.conf
   use Locale::TextDomain('webobs');
 
   use WebObs::Form;
-  
+
   # ---- user (ie. WebObs CLIENT) authorization checkings ----------------------------
   die "You can't view ME reports." if (!clientHasRead(type=>"authforms",name=>"ME"));
   my $editOK = clientHasEdit(type=>"authforms",name=>"ME");
-  
+
   # ---- Access thru Form object -----------------------------------------------------
   my $FORM = new WebObs::Form('ME');
-  
-  # ---- read in specific additional configuration files ----------------------------- 
+
+  # ---- read in specific additional configuration files -----------------------------
   my @types    = readCfgFile($FORM->path."/".$FORM->conf('FILE_TYPE'));
-  
+
   # ---- setup from QueryString ------------------------------------------------------
   my $QryParm   = $cgi->Vars;
-  $QryParm->{'parm1name'}   ||= 'aDefaultValue'; 
-  $QryParm->{'parmNname'}   ||= ""; 
-  
-  # ---- you might need a list of associated nodes to select data records ------------ 
+  $QryParm->{'parm1name'}   ||= 'aDefaultValue';
+  $QryParm->{'parmNname'}   ||= "";
+
+  # ---- you might need a list of associated nodes to select data records ------------
   my %Ns;
   my @NODESSelList;
   my %Ps = $FORM->procs;
   for my $p (keys(%Ps)) {
-  	push(@NODESSelList,"\{$p\}|-- $Ps{$p} --");
-  	my %N = $FORM->nodes($p);
-  	for my $n (keys(%N)) {
-  		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-  	}
-  	%Ns = (%Ns, %N);
+    push(@NODESSelList,"\{$p\}|-- $Ps{$p} --");
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+      push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
   }
 
   # ---- you have data to process and show (what are you here for after all ?) -------
@@ -91,66 +91,66 @@ Typical FORM's configuration file: $WEBOBS{ROOT_FORM}/ME/ME.conf
   my @lignes = @$fptr;
   # ---- now filter out data from @lignes (probably based on QueryString parameters) -
 
-  # ---- now you're all set to push html output --------------------------------------  
-  	print $cgi->header(-charset=>'utf-8');
-  	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n";
-  	print "<html><head><title>$titrePage</title>\n";
-  
-  	# presumably with a link to html-form input !----------------------------------
-	print "<a href=\"/cgi-bin/".$FORM->conf('CGI_FORM')."
-  
-  	print "</head><body>\n";
-  	print "<BR>\n</BODY>\n</HTML>\n";
-  
+  # ---- now you're all set to push html output --------------------------------------
+    print $cgi->header(-charset=>'utf-8');
+    print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n";
+    print "<html><head><title>$titrePage</title>\n";
+
+    # presumably with a link to html-form input !----------------------------------
+  print "<a href=\"/cgi-bin/".$FORM->conf('CGI_FORM')."
+
+    print "</head><body>\n";
+    print "<BR>\n</BODY>\n</HTML>\n";
+
 
 =head1 formME.pl
 
   # ---- system required and suggested modules
   # ---- see showME.pl above -----------------
-  
+
   # ---- user (ie. WebObs CLIENT) authorization checkings ----------------------------
   # ---- yes, check again even if 'coming' from showME.pl until we have http sessions
   die "You can't edit ME reports." if (!clientHasEdit(type=>"authforms",name=>"ME"));
-  
+
   # ---- Access thru Form object -----------------------------------------------------
   my $FORM = new WebObs::Form('ME');
-  
-  # ---- read in specific additional configuration files ----------------------------- 
+
+  # ---- read in specific additional configuration files -----------------------------
   my @types    = readCfgFile($FORM->path."/".$FORM->conf('FILE_TYPE'));
-  
-  # ---- find out what to do in QueryString ------------------------------------------ 
-  # ---- typically a record id to update this record, OR nothing to create new record  
+
+  # ---- find out what to do in QueryString ------------------------------------------
+  # ---- typically a record id to update this record, OR nothing to create new record
   my $QryParm   = $cgi->Vars;
   $QryParm->{'id'}   ||= '';
- 
+
   # ---- read the record to be updated (if id in QuryString)
   if (defined($QryParm->{id})) {
-    	($ptr, $fts) = $FORM->data($QryParm->{id});
-	    @ligne = @$ptr;
-	    if (scalar(@ligne) == 1) {
-		    chomp(@ligne);
-			# init record variables ($id, ....)
-			if ($QryParm->{id} eq $id) {
-				.....
-	    	} else { $QryParm->{id} = ""; $val = "" ; }
-    	} else { $QryParm->{id} = ""; $val = "" ;}
+      ($ptr, $fts) = $FORM->data($QryParm->{id});
+      @ligne = @$ptr;
+      if (scalar(@ligne) == 1) {
+        chomp(@ligne);
+      # init record variables ($id, ....)
+      if ($QryParm->{id} eq $id) {
+        .....
+        } else { $QryParm->{id} = ""; $val = "" ; }
+      } else { $QryParm->{id} = ""; $val = "" ;}
   }
-  
-  # ---- now build the HTML page with the html form within 
+
+  # ---- now build the HTML page with the html form within
   print "Content-type: text/html\n\n";
   print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
   print "<html><head>";
   print "<script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>";
-  
-        # ... including any javascript you need such as 'form validation'  
-        # ... and a function to 'ajax' jquery post on user click, so as to submit form 
-  	    # ... and 'alert' the resulting message (following sample requires jquery.js): 
-  
-		\$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
-      	   alert(data); // to let user visualize and hit enter 
-  	       document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
-  	    });
-  
+
+        # ... including any javascript you need such as 'form validation'
+        # ... and a function to 'ajax' jquery post on user click, so as to submit form
+        # ... and 'alert' the resulting message (following sample requires jquery.js):
+
+    \$.post(\"/cgi-bin/".$FORM->conf('CGI_POST')."\", \$(\"#theform\").serialize(), function(data) {
+           alert(data); // to let user visualize and hit enter
+           document.location=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."\";
+        });
+
   print "<body>";
   print "<FORM name=formulaire id=\"theform\" action=\"\">";
   print "</FORM>";
@@ -163,69 +163,69 @@ Typical FORM's configuration file: $WEBOBS{ROOT_FORM}/ME/ME.conf
   # ---- see showME.pl & formME.pl above -----
   # ---- but also use:
   use Fcntl qw(SEEK_SET O_RDWR O_CREAT LOCK_EX LOCK_NB);
-  
+
   my $FORM = new WebObs::Form('ME');
   my $fileDATA = $WEBOBS{PATH_DATA_DB}."/".$FORM->conf('FILE_NAME');
-  
+
   # ---- lock-exclusive the data file during all update process ----------------------
   # ----------------------------------------------------------------------------------
   if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
-  	unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-  		warn "postME waiting for lock on $fileDATA...";
-  		flock(FILE, LOCK_EX);
-  	}
-  	# ---- backup DATA file (? might not be necessary .... ) 
-  	if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
-  
-  	# ---- read data file, skipping the record being updated if this is the case 
-  	# ---- noting the highest record id currently defined (maxId)  
-  	if ( $?  == 0 ) { 
-  		seek(FILE, 0, SEEK_SET);
-  		while (<FILE>) {
-  	   		chomp($_);
-  			my ($id) = split(/\|/,$_);
-  			if ($id =~ m/^[0-9]+$/) {
-  				if ($id > $maxId) { $maxId = $id }	
-  				#djl next if ( ($idTraite eq $id) && ($efface eq "oui") ); 
-  				if ( ($idTraite eq "") || ($idTraite ne $id) ) { 
-  					push(@lignes,$_."\n") ;
-  				}
-  			}
-  		}
-  
-  	# ---- finalize (format) our updated (or new) record, giving it a new Id  
-  	# ---- implying sorting records again, if required 
-  		$maxId++;
-  		my $data = u2l("$maxId|$d..........\n");
-  		push(@lignes, $data);
-  		@lignes = sort tri_date_avec_id @lignes;
-  	# ---- erase current file contents before writing new ones just read and built 
-  		truncate(FILE, 0);
-  		seek(FILE, 0, SEEK_SET);
-  		print FILE $header;
-  		print FILE @lignes ;
-  		close(FILE);
-  		htmlMsgOK();
-  	} else {
-  		close(FILE);
-  		htmlMsgNotOK("postME couldn't backup $fileME");
-  	}
+    unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+      warn "postME waiting for lock on $fileDATA...";
+      flock(FILE, LOCK_EX);
+    }
+    # ---- backup DATA file (? might not be necessary .... )
+    if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
+
+    # ---- read data file, skipping the record being updated if this is the case
+    # ---- noting the highest record id currently defined (maxId)
+    if ( $?  == 0 ) {
+      seek(FILE, 0, SEEK_SET);
+      while (<FILE>) {
+           chomp($_);
+        my ($id) = split(/\|/,$_);
+        if ($id =~ m/^[0-9]+$/) {
+          if ($id > $maxId) { $maxId = $id }
+          #djl next if ( ($idTraite eq $id) && ($efface eq "oui") );
+          if ( ($idTraite eq "") || ($idTraite ne $id) ) {
+            push(@lignes,$_."\n") ;
+          }
+        }
+      }
+
+    # ---- finalize (format) our updated (or new) record, giving it a new Id
+    # ---- implying sorting records again, if required
+      $maxId++;
+      my $data = u2l("$maxId|$d..........\n");
+      push(@lignes, $data);
+      @lignes = sort tri_date_avec_id @lignes;
+    # ---- erase current file contents before writing new ones just read and built
+      truncate(FILE, 0);
+      seek(FILE, 0, SEEK_SET);
+      print FILE $header;
+      print FILE @lignes ;
+      close(FILE);
+      htmlMsgOK();
+    } else {
+      close(FILE);
+      htmlMsgNotOK("postME couldn't backup $fileME");
+    }
   } else {
-  	htmlMsgNotOK("postME opening - $!");
+    htmlMsgNotOK("postME opening - $!");
   }
-  
-  # --- these are the routines to send back an answer to the initial 'post' request 
-  # --- return information when OK 
+
+  # --- these are the routines to send back an answer to the initial 'post' request
+  # --- return information when OK
   sub htmlMsgOK {
-   	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-   	if ($idTraite ne "") { 
-   		print "record #$idTraite has been updated (as #$maxId)"; 
-   	} else  { print "new record #$maxId has been created."; }
+     print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+     if ($idTraite ne "") {
+       print "record #$idTraite has been updated (as #$maxId)";
+     } else  { print "new record #$maxId has been created."; }
   }
   # --- return information when not OK
   sub htmlMsgNotOK {
-   	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-   	print "Update FAILED !\n $_[0] \n";
+     print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+     print "Update FAILED !\n $_[0] \n";
   }
 
 =pod
