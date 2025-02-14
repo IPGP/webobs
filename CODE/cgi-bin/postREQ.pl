@@ -116,7 +116,6 @@ use WebObs::Config;
 use WebObs::Users qw(%USERS $CLIENT clientHasRead);
 use WebObs::Grids;
 use WebObs::i18n;
-use WebObs::Utils qw(u2l);
 use Locale::TextDomain('webobs');
 set_message(\&webobs_cgi_msg);
 

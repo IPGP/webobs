@@ -78,8 +78,7 @@ use warnings;
 use DBI;
 use File::Basename;
 use POSIX qw/strftime/;
-use WebObs::Utils qw(u2l l2u);
-use WebObs::Config qw( %WEBOBS );
+use WebObs::Config qw( %WEBOBS u2l l2u );
 
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %USERS, %USERIDS, $USERS_LFN, $CLIENT);
 use constant READAUTH => 1;

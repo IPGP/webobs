@@ -170,7 +170,7 @@ M2G.6GK: (6=follow M2G.5--)
 use strict;
 use warnings;
 use POSIX qw(strftime);
-use WebObs::Utils qw(u2l l2u);
+use WebObs::Config qw(u2l l2u);
 use File::Basename;
 ## use WebObs::Config qw(%WEBOBS readCfg);
 

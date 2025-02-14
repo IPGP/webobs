@@ -17,57 +17,15 @@ use warnings;
 use POSIX;
 use Encode;
 use File::Basename;
+use WebObs::Config qw(%WEBOBS);
 
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 require Exporter;
 @ISA     = qw(Exporter);
-@EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
+@EXPORT  = qw(htmlspecialchars getImageInfo makeThumbnail trim ltrim
   rtrim tri_date_avec_id datediffdays isok romanx pga2msk attenuation num2roman txt2htm tex2utf
   roundsd htm2frac qrcode url2target checkParam mean median std);
 $VERSION = "1.00";
-
-#------------------------------------------------------------------------------
-# [FB-comment 2025-01-22]: these 2 functions will disapear in the future since 
-#  we plan to use UTF-8 only in all conf files (needs a migration process)
-=pod
-
-=head2 u2l, l2u
-
- $latin = u2l("utf8-text");
- $utf = l2u("latin-text");
-
- uses legacy routines from i18n.pl for compatible behavior
-
-=cut
-
-use Locale::Recode;
-my $u2l = Locale::Recode->new (from => 'UTF-8', to => 'ISO-8859-15');
-my $l2u = Locale::Recode->new (from => 'ISO-8859-15', to => 'UTF-8');
-die $u2l->getError if $u2l->getError;
-die $l2u->getError if $l2u->getError;
-
-# -------------------------------------------------------------------------------------------------
-sub u2l ($) {
-    my $text = shift;
-    # converts some characters in HTML since they don't exist in latin
-    $text =~ s/μ/&mu;/g;
-    $text =~ s/σ/&sigma;/g;
-    $text =~ s/δ/&delta;/g;
-    $text =~ s/‰/&permil;/g;
-    $u2l->recode($text) or die $u2l->getError;
-    return $text;
-}
-
-# -------------------------------------------------------------------------------------------------
-sub l2u ($) {
-    my $text = shift;
-    $l2u->recode($text) or die $l2u->getError;
-    return $text;
-}
-
-binmode STDOUT, ':raw'; # Needed to make it work in UTF-8 locales in Perl-5.8.
-
-# -------------------------------------------------------------------------------------------------
 
 =pod
 
@@ -160,7 +118,7 @@ sub makeThumbnail
         #DL-was:if ($ext ~~ @needsel) { $img .= '[0]' }
         if (grep /\Q$ext/i , @needsel) { $img .= '[0]' }
         if ( !-e $thumb ) {
-            qx(/usr/bin/convert "$path$img" -thumbnail $_[1] -background white -alpha remove "$thumb" 2>/dev/null);
+            qx($WEBOBS{PRGM_CONVERT} "$path$img" -thumbnail $_[1] -background white -alpha remove "$thumb" 2>/dev/null);
             if ( $? == 0 ) {
                 $ret = $thumb;
             }
@@ -175,7 +133,7 @@ sub getImageInfo
     my $ret = "",
       my $img = $_[0];
     if (-e $img) {
-        $ret = qx(/usr/bin/identify -format "%[EXIF:DateTimeOriginal]|%G" "$img");
+        $ret = qx($WEBOBS{PRGM_IDENTIFY} -format "%[EXIF:DateTimeOriginal]|%G" "$img");
         chomp($ret);
     }
     return $ret;

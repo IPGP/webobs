@@ -76,8 +76,7 @@ end the line with two or more spaces, then line break.
 
 use strict;
 use warnings;
-use WebObs::Utils qw(u2l l2u);
-use WebObs::Config qw(%WEBOBS readCfg);
+use WebObs::Config qw(%WEBOBS readCfg u2l l2u);
 use WebObs::Grids;
 use WebObs::Users;
 if ($WEBOBS{WIKI_MMD} ne 'NO') {

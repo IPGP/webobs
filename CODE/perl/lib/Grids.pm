@@ -27,8 +27,8 @@ Package WebObs : Common perl-cgi variables and functions
 use strict;
 use warnings;
 use File::Basename;
-use WebObs::Utils qw(u2l l2u trim isok);
-use WebObs::Config qw(%WEBOBS readCfg readCfgFile readFile);
+use WebObs::Utils qw(trim isok);
+use WebObs::Config qw(%WEBOBS readCfg readCfgFile readFile u2l l2u);
 use WebObs::Users qw(clientHasRead);
 use POSIX qw(strftime);
 

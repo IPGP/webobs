@@ -10,7 +10,6 @@ use warnings;
 use POSIX qw(strftime);
 use WebObs::Config;
 use WebObs::Grids;
-use WebObs::Utils qw(u2l l2u);
 use File::Basename;
 
 our $dry = 1;    # default is dry-run
