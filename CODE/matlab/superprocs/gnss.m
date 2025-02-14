@@ -198,6 +198,10 @@ modelling_cmap = field2num(P,'MODELLING_COLORMAP',ryb(256));
 modelling_colorshading = field2num(P,'MODELLING_COLOR_SHADING',0.3);
 modelling_topo_rgb = field2num(P,'MODELLING_TOPO_RGB',.5*[1,1,1]);
 modelling_coloref = lower(field2str(P,'MODELLING_COLORREF','volpdf'));
+stasize = field2num(P,'MODELLING_STATION_SIZE',6);
+datarrowshape = field2num(P,'MODELLING_DATA_ARROWSHAPE',[.1,.1,.08,.02]);
+modarrowshape = field2num(P,'MODELLING_MODEL_ARROWSHAPE',[.1,.1,.08,.04]);
+resarrowshape = field2num(P,'MODELLING_RESIDUAL_ARROWSHAPE',[.1,.1,.08,.04]);
 datarrcol = field2num(P,'MODELLING_DATA_COLOR',[0,0,0]); % color of model arrows
 modarrcol = field2num(P,'MODELLING_MODEL_COLOR',[.7,0,0]); % color of model arrows
 resarrcol = field2num(P,'MODELLING_RESIDUAL_COLOR',[0,.5,0]); % color of residual arrows
@@ -1460,12 +1464,7 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% computes the maximum displacement for vector scale
-		%if modelopt.horizonly
-		%	%vmax = rmax([abs(complex(d(:,1),d(:,2)));abs(complex(d(:,4),d(:,5)))/2]);
-		%	vmax = rmax(abs(reshape(d(:,1:2),1,[])))/2;
-		%else
-			vmax = rmax(abs(reshape(d(:,1:3),[],1)))/2;
-		%end
+        vmax = rmax(abs(reshape(d(:,1:3),[],1)))/2;
 		if modelling_vmax_mm > 0
 			vmax = modelling_vmax_mm;
 		end
@@ -1488,9 +1487,6 @@ for r = 1:numel(P.GTABLE)
 		% --- plots the results
 		figure, orient tall
 
-		stasize = 6;
-		arrowshapemod = [.1,.1,.08,.02];
-		arrowshapedat = [.1,.1,.08,.04];
 		arrowref = vsc*vmax;
 
 		% X-Y top view
@@ -1515,12 +1511,13 @@ for r = 1:numel(P.GTABLE)
 		end
 		target(xsta,ysta,stasize)
 		if ~isnan(vmax)
-			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),arrowshapedat,'Cartesian','Ref',arrowref,'Clipping',vclip)
+			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),datarrowshape,'Cartesian','Ref',arrowref, ...
+                'EdgeColor',datarrcol,'FaceColor',datarrcol,'Clipping',vclip)
 			ellipse(xsta + vsc*d(:,1),ysta + vsc*d(:,2),vsc*d(:,4),vsc*d(:,5),'LineWidth',.2,'Clipping','on')
-			arrows(xsta,ysta,vsc*ux,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref, ...
+			arrows(xsta,ysta,vsc*ux,vsc*uy,modarrowshape,'Cartesian','Ref',arrowref, ...
 				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping',vclip)
 			if plotresidual
-				arrows(xsta,ysta,vsc*(d(:,1)-ux),vsc*(d(:,2)-uy),arrowshapemod,'Cartesian','Ref',arrowref, ...
+				arrows(xsta,ysta,vsc*(d(:,1)-ux),vsc*(d(:,2)-uy),resarrowshape,'Cartesian','Ref',arrowref, ...
 					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping',vclip)
 			end
 		end
@@ -1562,12 +1559,13 @@ for r = 1:numel(P.GTABLE)
 		hold on
 		target(zsta,ysta,stasize)
 		if ~isnan(vmax)
-			arrows(zsta,ysta,vsc*d(:,3),vsc*d(:,2),arrowshapedat,'Cartesian','Ref',arrowref,'Clipping',vclip)
+			arrows(zsta,ysta,vsc*d(:,3),vsc*d(:,2),datarrowshape,'Cartesian','Ref',arrowref, ...
+                'EdgeColor',datarrcol,'FaceColor',datarrcol,'Clipping',vclip)
 			ellipse(zsta + vsc*d(:,3),ysta + vsc*d(:,2),vsc*d(:,6),vsc*d(:,5),'LineWidth',.2,'Clipping','on')
-			arrows(zsta,ysta,vsc*uz,vsc*uy,arrowshapemod,'Cartesian','Ref',arrowref, ...
+			arrows(zsta,ysta,vsc*uz,vsc*uy,modarrowshape,'Cartesian','Ref',arrowref, ...
 				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping',vclip)
 			if plotresidual
-				arrows(zsta,ysta,vsc*(d(:,3)-uz),vsc*(d(:,2)-uy),arrowshapemod,'Cartesian','Ref',arrowref, ...
+				arrows(zsta,ysta,vsc*(d(:,3)-uz),vsc*(d(:,2)-uy),resarrowshape,'Cartesian','Ref',arrowref, ...
 					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping',vclip)
 			end
 		end
@@ -1603,12 +1601,13 @@ for r = 1:numel(P.GTABLE)
 		hold on
 		target(xsta,zsta,stasize)
 		if ~isnan(vmax)
-			arrows(xsta,zsta,vsc*d(:,1),vsc*d(:,3),arrowshapedat,'Cartesian','Ref',arrowref,'Clipping',vclip)
+			arrows(xsta,zsta,vsc*d(:,1),vsc*d(:,3),datarrowshape,'Cartesian','Ref',arrowref, ...
+                'EdgeColor',datarrcol,'FaceColor',datarrcol,'Clipping',vclip)
 			ellipse(xsta + vsc*d(:,1),zsta + vsc*d(:,3),vsc*d(:,4),vsc*d(:,6),'LineWidth',.2,'Clipping','on')
-			arrows(xsta,zsta,vsc*ux,vsc*uz,arrowshapemod,'Cartesian','Ref',arrowref, ...
+			arrows(xsta,zsta,vsc*ux,vsc*uz,modarrowshape,'Cartesian','Ref',arrowref, ...
 				'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping',vclip)
 			if plotresidual
-				arrows(xsta,zsta,vsc*(d(:,1)-ux),vsc*(d(:,3)-uz),arrowshapemod,'Cartesian','Ref',arrowref, ...
+				arrows(xsta,zsta,vsc*(d(:,1)-ux),vsc*(d(:,3)-uz),resarrowshape,'Cartesian','Ref',arrowref, ...
 					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping',vclip)
 			end
 		end
@@ -1746,10 +1745,12 @@ for r = 1:numel(P.GTABLE)
 		axes('position',[0.33,.05,.25,.015])
 		if strcmp(modelling_coloref,'volpdf')
 			imagesc(linspace(-1,1,256),[0;1],repmat(linspace(0,1,256),2,1))
-			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{'High (Deflate)','Low','High (Inflate)'},'TickDir','out','FontSize',8)
+			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{'High (Deflate)','Low','High (Inflate)'}, ...
+                'TickDir','out','XTickLabelRotation',20,'FontSize',8)
 		else
 			imagesc(linspace(0,1,256),[0;1],repmat(linspace(0,1,256),2,1))
-			set(gca,'XTick',[0,1],'YTick',[],'XTickLabel',{'Low','High'},'TickDir','out','FontSize',8)
+			set(gca,'XTick',[0,1],'YTick',[],'XTickLabel',{'Low','High'},'TickDir','out', ...
+                'XTickLabelRotation',20,'FontSize',8)
 		end
 		title('Model Probability','FontSize',10)
 
@@ -1760,13 +1761,14 @@ for r = 1:numel(P.GTABLE)
 		hold on
 		if ~isnan(arrowref)
 			vlegend = roundsd(2*vmax,1);
-			arrows(dxl/2,dyl,vsc*vlegend,0,arrowshapedat,'Cartesian','Ref',arrowref,'Clipping','off')
+			arrows(dxl/2,dyl,vsc*vlegend,0,datarrowshape,'Cartesian','Ref',arrowref, ...
+                'EdgeColor',datarrcol,'FaceColor',datarrcol,'Clipping',vclip)
 			text(dxl/2 + vsc*vlegend/2,dyl,sprintf('{\\bf%g mm}',vlegend),'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8)
 			%ellipse(xsta + vsc*d(:,1),zsta + vsc*d(:,3),vsc*d(:,4),vsc*d(:,6),'LineWidth',.2,'Clipping','on')
-			arrows(dxl/2,dyl/2,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref,'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
+			arrows(dxl/2,dyl/2,vsc*vlegend,0,modarrowshape,'Cartesian','Ref',arrowref,'EdgeColor',modarrcol,'FaceColor',modarrcol,'Clipping','off')
 			text([dxl/2,dxl/2],[dyl,dyl/2],{'data   ','model   '},'HorizontalAlignment','right','FontSize',8)
 			if plotresidual
-				arrows(dxl/2,0,vsc*vlegend,0,arrowshapemod,'Cartesian','Ref',arrowref, ...
+				arrows(dxl/2,0,vsc*vlegend,0,resarrowshape,'Cartesian','Ref',arrowref, ...
 					'EdgeColor',resarrcol,'FaceColor',resarrcol,'Clipping','off')
 				text(dxl/2,0,'residual   ','HorizontalAlignment','right','FontSize',8)
 			end
