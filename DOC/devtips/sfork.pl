@@ -28,7 +28,7 @@ if ($kid == 0) { # kid's code
     $drc = qx(lsof -a -p $$ -d0,1,2);
     print MYLOG "$drc\n";
 
-    #open STDOUT, $redir, "/home/lafon/sandbox/sfork.out"; 
+    #open STDOUT, $redir, "/home/lafon/sandbox/sfork.out";
     #open STDERR, $redir, "/home/lafon/sandbox/sfork.err";
     open(STDOUT, $redir, "/home/lafon/sandbox/sfork.out") or die "Can't redirect STDOUT: $!";
     open(STDERR, $redir, "/home/lafon/sandbox/sfork.err") or die "Can't redirect STDERR: $!";
