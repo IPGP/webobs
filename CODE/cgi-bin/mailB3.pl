@@ -36,7 +36,7 @@ use JSON;
 # ---- webobs stuff
 use WebObs::Config;
 use WebObs::Users qw(%USERS $CLIENT clientIsValid clientHasAdm);
-use WebObs::Utils qw(isok trim l2u u2l tex2utf);
+use WebObs::Utils qw(isok trim tex2utf);
 use WebObs::Grids;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
