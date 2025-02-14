@@ -278,6 +278,10 @@ MODELLING_TOPO_RGB|.5,.5,.5
 MODELLING_COLORREF|volpdf
 MODELLING_COLORMAP|ryb(256)
 MODELLING_COLOR_SHADING|0.3
+# arrow parameters (see arrowshape.m) for displacement arrows (data, model, and residual)
+MODELLING_DATA_ARROWSHAPE|.2,.2,.15,.05
+MODELLING_MODEL_ARROWSHAPE|.1,.1,.08,.02
+MODELLING_RESIDUAL_ARROWSHAPE|.1,.1,.08,.02
 # colors for displacement arrows (data, model, and residual) in R,G,B or color name
 MODELLING_DATA_COLOR|0,0,0       # data arrows
 MODELLING_MODEL_COLOR|.7,0,0     # model arrows
