@@ -211,12 +211,7 @@ if ($action eq 'save') {
             my $is_sec = defined $cgi->param($_."_sec");
             my $sec = $cgi->param($_."_sec");
             my $ymd = join("-", $year, $month, $day);
-            my $hms;
-            if ( $is_sec ) {
-                $hms = $hr && $mn ? join(":", $hr, $mn, ($sec ? $sec : "00")) : "";
-            } else {
-                $hms = $hr ? join(":", $hr, ($mn ? $mn : "00")) : "";
-            }
+            my $hms = $is_sec ? join(":", $hr, $mn, $sec) : join(":", $hr, $mn);
             $input = $ymd." ".$hms;
         } else {
             $input = $cgi->param($_);
@@ -461,37 +456,52 @@ function updateMap(map_id, geojson, lat, lon, zoom=10) {
 </head>
 
 <body>
- <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
- <!-- overLIB (c) Erik Bosrup -->
- <script language="javascript" src="/js/overlib/overlib.js"></script>
- <div id="helpBox"></div>
- <script type="text/javascript">
-   // Prevent the Return key from submitting the form
-   function stopRKey(evt) {
-     var evt = (evt) ? evt : ((event) ? event : null);
-     var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
-     if ((evt.keyCode == 13) && (node.type=="text")) {return false;}
-   }
-   document.onkeypress = stopRKey;
+    <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+    <!-- overLIB (c) Erik Bosrup -->
+    <script language="javascript" src="/js/overlib/overlib.js"></script>
+    <div id="helpBox"></div>
+    <script type="text/javascript">
 
-   // Once the document is loaded
-   \$(document).ready(function(){
-     // Update the form immediately
-     update_form();
-     // Also update the form when any of its element is changed
-     \$('#theform').on("change", update_form);
-     // Also update when a key is pressed in the form
-     // but wait 0.5s for the previous handler execution to finish
-     \$('#theform').on("keydown", function() { setTimeout(update_form, 500); });
+    // Prevent the Return key from submitting the form
+    function stopRKey(evt) {
+        var evt = (evt) ? evt : ((event) ? event : null);
+        var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+        if ((evt.keyCode == 13) && (node.type=="text")) {return false;}
+    }
+    document.onkeypress = stopRKey;
 
-    const shapeInputs = document.querySelectorAll("div[id*='map_']");
-    shapeInputs.forEach((item) => {
-        var geojson = item.getAttribute("geojson");
-        var lat = item.getAttribute("lat");
-        var lon = item.getAttribute("lon");
-        updateMap(item, geojson, lat, lon);
-    });
+    // Once the document is loaded
+    \$(document).ready(function() {
+        // Update the form immediately
+        update_form();
+        // Also update the form when any of its element is changed
+        \$('#theform').on("change", update_form);
+        // Also update when a key is pressed in the form
+        // but wait 0.5s for the previous handler execution to finish
+        \$('#theform').on("keydown", function() { setTimeout(update_form, 500); });
 
+        document.querySelectorAll("div[id*='map_']").forEach((item) => {
+            var geojson = item.getAttribute("geojson");
+            var lat = item.getAttribute("lat");
+            var lon = item.getAttribute("lon");
+            updateMap(item, geojson, lat, lon);
+        });
+
+        const dateInputs = document.querySelectorAll("select[name*='_month'], select[name*='_day']").forEach(item => {
+            item.addEventListener("change", function() {
+                if (item.value == "") {
+                    const name = item.name.split("_")[0];
+                    const day = document.querySelector("select[name=" + name + "_day]");
+                    const hr = document.querySelector("select[name=" + name + "_hr]");
+                    const mn = document.querySelector("select[name=" + name + "_mn]");
+                    const sec = document.querySelector("select[name=" + name + "_sec]");
+                    if (hr) { hr.value = ""; }
+                    if (mn) { mn.value = ""; }
+                    if (sec) { sec.value = ""; }
+                    if (day && item.name.match(/month/)) { day.value = ""; }
+                }
+            });
+        });
    });
 
     window.addEventListener("pageshow", function (event) {
@@ -499,7 +509,7 @@ function updateMap(map_id, geojson, lat, lon, zoom=10) {
             window.location.reload();
         }
     });
- </script>
+    </script>
 ];
 
 # ---- read data file
