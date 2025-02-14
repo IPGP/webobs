@@ -263,9 +263,9 @@ WEB_RACINE_SIGNAUX|
 
 # --- executables ----------------------------
 # ---------------------------------------------
-PRGM_CONVERT|magick convert
+PRGM_CONVERT|convert
 CONVERT_COLORSPACE|-colorspace sRGB
-PRGM_IDENTIFY|magick identify
+PRGM_IDENTIFY|identify
 PRGM_PNGQUANT|pngquant
 
 # Earth tide prediction program GOTIC2, downloadable at http://www.miz.nao.ac.jp/staffs/nao99/index_En.html
