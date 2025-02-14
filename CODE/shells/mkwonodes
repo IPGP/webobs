@@ -42,15 +42,15 @@
 #
 #
 # Author: François Beauducel <beauducel@ipgp.fr>
-# Created: 2023-12-24
-# Updated: 2025-01-25
+# Created: 2023-12-24 in Saint-Pierre (Martinique, FWI)
+# Updated: 2025-02-14
 
 if [ $# -lt 1 ]; then
     echo "Syntax: mkwonodes prefix code [ALIAS NAME TYPE LAT LON ALT START STOP FEATURES]"
     exit
 fi
 prefix=$1
-code=$2
+cCODE=$2
 cALIAS=$3
 cNAME=$4
 cTYPE=$5
@@ -58,11 +58,11 @@ cLAT=$6
 cLON=$7
 cALT=$8
 cSTART=$9
-cSTOP=$10
+cSTOP=${10}
 cFEAT=${11}
 
 while read -r line; do
-    for v in code ALIAS NAME TYPE LAT LON ALT START STOP FEAT; do
+    for v in CODE ALIAS NAME TYPE LAT LON ALT START STOP FEAT; do
         eval 'vv=$c'$v
         if [ -n "$vv" ]; then
             # if variable is an integer, search for column from stdin, otherwise use the string
@@ -73,11 +73,11 @@ while read -r line; do
             fi
         fi
     done
-    code=$(echo $code | sed -E 's/[ .-]|°//g')
+    CODE=$(echo $CODE | sed -E 's/[ .-]|°//g')
     ALIAS=$(echo $ALIAS | iconv -c -f UTF-8 -t ISO-8859-1)
     NAME=$(echo $NAME | iconv -c -f UTF-8 -t ISO-8859-1)
     TYPE=$(echo $TYPE | iconv -c -f UTF-8 -t ISO-8859-1)
-    id="$prefix$code"
+    id="$prefix$CODE"
     if [ -n "$ALIAS" ]; then
         mkdir -p $id
         cnf="$id/$id.cnf"
