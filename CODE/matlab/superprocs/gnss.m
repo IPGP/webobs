@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2024-06-12
+%   Updated: 2024-06-16
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -1791,7 +1791,8 @@ for r = 1:numel(P.GTABLE)
 	% --- Modelling in time
 	summary = 'MODELTIME';
 	if any(strcmp(P.SUMMARYLIST,summary))
-		% remakes the model space
+        modelopt.verbose = 'quiet';
+		% rebuilds the model space if necessary
 		if modeltime_gridsize ~= rr
 			rr = modeltime_gridsize;
 			xlim = linspace(0,wid,rr) - wid/2 - (lon0 - mean(lonlim))*degkm(lat0)*1e3;
@@ -1853,6 +1854,9 @@ for r = 1:numel(P.GTABLE)
 			M(m).e = nan(numel(M(m).t),5);
 			M(m).o = nan(numel(M(m).t),1);
 			M(m).type = cell(numel(M(m).t),1);
+
+            % initiates the vectors matrix
+            M(m).v = nan(numel(M(m).t),numel(kn),6); % time x station x components
 
 			for w = 1:numel(M(m).t)
 				t2 = M(m).t(w);
@@ -1925,8 +1929,10 @@ for r = 1:numel(P.GTABLE)
 				end
 				% computes absolute displacement in mm (from velocity in mm/yr)
 				d = d*diff(wlim)/365.25;
-				modelopt.verbose = 'quiet';
 				d(:,4:6) = adjerrors(d,modelopt);
+
+                % stores vector data for export
+                M(m).v(w,:,:) = d;
 
 				% --- computes the model (and stores only the source #1) !
 				switch mt
@@ -2245,6 +2251,26 @@ for r = 1:numel(P.GTABLE)
 		% exports data
 		if isok(P.GTABLE(r),'EXPORTS')
 			E.t = M(1).t;
+
+            % vectortime (1 file per station)
+            n = 6;
+            for s = 1:numel(kn)
+                E.d = nan(size(M(1).v,1),numel(M)*n);
+                E.header = cell(1,numel(M)*n);
+                for m = 1:numel(M)
+                    k = (m-1)*n + (1:n);
+                    E.d(:,k) = squeeze(M(m).v(:,s,:));
+                    E.header(k) = strcat({'dE_(mm)','dN_(mm)','dU_(mm)','s_dE','s_dN','s_dU'},sprintf('_%d',m));
+                end
+                E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s_VECTORS',proc,summary)));
+                E.infos = {};
+                for m = 1:numel(modeltime_period)
+                    E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
+                end
+                mkexport(WO,sprintf('%s_VECTORS_%s_%s',summary,lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+            end
+
+            % modeltime results
 			n = size(M(1).d,2) + size(M(1).e,2);
 			E.d = nan(size(M(1).d,1),numel(M)*n);
 			E.header = cell(size(M(1).d,1),numel(M)*size(M(1).d,2)*2);
@@ -2263,23 +2289,23 @@ for r = 1:numel(P.GTABLE)
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			E.infos = {sprintf('Source type: %s',mt)};
 			for m = 1:numel(modeltime_period)
-			E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
-		end
-		mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
-	end
+                E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
+            end
+            mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+        end
 
-	if isok(P,'MODELTIME_EXPORT_MAT')
-		f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
-		fprintf('%s: saving workspace in %s...',wofun,f);
-		save(sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
-		fprintf(' done.\n');
-	end
-end
+        if isok(P,'MODELTIME_EXPORT_MAT')
+            f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
+            fprintf('%s: saving workspace in %s...',wofun,f);
+            save(sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
+            fprintf(' done.\n');
+        end
+    end
 end
 end
 
 if P.REQUEST
-mkendreq(WO,P);
+    mkendreq(WO,P);
 end
 
 timelog(procmsg,2)
@@ -2287,7 +2313,7 @@ timelog(procmsg,2)
 
 % Returns data in DOUT
 if nargout > 0
-DOUT = D;
+    DOUT = D;
 end
 
 
@@ -2302,27 +2328,27 @@ e = d(:,4:6);
 emin = abs(d(:,1:3))*opt.minerrorrel/100;
 k = (e < emin | isnan(d(:,1:3)) | isnan(e));
 if any(k)
-e(k) = emin(k);
-if ~strcmpi(opt.verbose,'quiet')
-	fprintf('---> %d data errors have been increased to %g%%.\n',sum(k(:)),opt.minerrorrel);
-end
+    e(k) = emin(k);
+    if ~strcmpi(opt.verbose,'quiet')
+        fprintf('---> %d data errors have been increased to %g%%.\n',sum(k(:)),opt.minerrorrel);
+    end
 end
 
 % forces a minimum relative error
 k = (e < opt.minerror);
 if any(k)
-e(k) = opt.minerror; % forces a minimum absolute error
-if ~strcmpi(opt.verbose,'quiet')
-	fprintf('---> %d data errors have been set to %g mm.\n',sum(k(:)),opt.minerror);
-end
+    e(k) = opt.minerror; % forces a minimum absolute error
+    if ~strcmpi(opt.verbose,'quiet')
+        fprintf('---> %d data errors have been set to %g mm.\n',sum(k(:)),opt.minerror);
+    end
 end
 
 % ajusts component errors using a priori factor ratio
 if any(opt.enuerror ~= 1)
-e = e.*repmat(opt.enuerror(1:3),size(e,1),1);
-if ~strcmpi(opt.verbose,'quiet')
-	fprintf('---> all data errors dE,dN,dU have been multiplied by %g,%g,%g.\n',opt.enuerror);
-end
+    e = e.*repmat(opt.enuerror(1:3),size(e,1),1);
+    if ~strcmpi(opt.verbose,'quiet')
+        fprintf('---> all data errors dE,dN,dU have been multiplied by %g,%g,%g.\n',opt.enuerror);
+    end
 end
 
 
@@ -2337,15 +2363,15 @@ sz = size(x);
 idx = 1:numel(id3);
 
 switch dim
-case 1
-[j,k] = ind2sub(sz([2,3]),idx);
-y = x(sub2ind(sz,id3(:),j(:),k(:)));
-case 2
-[i,k] = ind2sub(sz([1,3]),idx);
-y = x(sub2ind(sz,i(:),id3(:),k(:)));
-case 3
-[i,j] = ind2sub(sz([1,2]),idx);
-y = x(sub2ind(sz,i(:),j(:),id3(:)));
+    case 1
+        [j,k] = ind2sub(sz([2,3]),idx);
+        y = x(sub2ind(sz,id3(:),j(:),k(:)));
+    case 2
+        [i,k] = ind2sub(sz([1,3]),idx);
+        y = x(sub2ind(sz,i(:),id3(:),k(:)));
+    case 3
+        [i,j] = ind2sub(sz([1,2]),idx);
+        y = x(sub2ind(sz,i(:),j(:),id3(:)));
 end
 y = reshape(y,size(id3));
 
