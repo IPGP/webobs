@@ -276,6 +276,9 @@ pp = get(gcf,'PaperPosition');
 
 if ~isempty(f)
 	ff = split(f,',');
+    if strcmp(pos,'right')
+        ff = fliplr(ff);
+    end
 	pos0 = 0;
 	for i = 1:length(ff)
 		if exist(ff{i},'file')

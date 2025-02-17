@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2024-06-16
+%   Updated: 2024-06-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -96,6 +96,22 @@ if isnumeric(harm_refdate) && all(harm_period > 0)
 	else
 		fprintf('*** Warning: inconsistent pairs of sine/cosine for harmonic correction!\n');
 	end
+end
+
+% Active fault correction: fault geometry and dislocation (Okada model)
+faultcorr = false;
+X.fault_lld = field2num(P,'FAULT_CENTROID_LATLONDEP');
+X.fault_wl = field2num(P,'FAULT_WIDTH_LENGTH_KM');
+X.fault_strike = field2num(P,'FAULT_STRIKE_DEG',0);
+X.fault_dip = field2num(P,'FAULT_DIP_DEG',90);
+X.fault_rake = field2num(P,'FAULT_RAKE_DEG',0);
+X.fault_slip = field2num(P,'FAULT_SLIP_M',0);
+X.fault_open = field2num(P,'FAULT_OPEN_M',0);
+X.fault_tlim = field2num(P,'FAULT_DISLOCATION_TLIM');
+X.fault_model = field2str(P,'FAULT_DISLOCATION_TIME_MODEL','linear');
+if numel(X.fault_lld)==3 && numel(X.fault_wl)==2
+    X.fault_utm = ll2utm(X.fault_lld(1:2));
+    faultcorr = true;
 end
 
 % PERNODE graphs parameters
@@ -300,12 +316,12 @@ for n = 1:numel(N)
 		end
 	end
 
-	% --- add a default orbit column to data if needed
+	% --- adds a default orbit column to data if needed
 	if ~isempty(D(n).d) && size(D(n).d,2) < 4
 		D(n).d(:,4) = zeros(size(D(n).d(:,1)));
 	end
 
-	% --- filter the data at once and adjust errors
+	% --- filters the data at once and adjust errors
 	if ~isempty(D(n).d)
 		if ~isnan(maxerror)
 			D(n).d(any(D(n).e>maxerror,2),:) = NaN;
@@ -321,20 +337,37 @@ for n = 1:numel(N)
 		end
 	end
 
-	% --- duplicate raw data in columns 5:7
+	% --- raw data corrections
 	if ~isempty(D(n).d)
+        % duplicates raw data in columns 5:7
 		D(n).d = D(n).d(:,[1:4,1:3]);
-	end
 
-	% --- harmonic correction
-	if harmcorr && ~isempty(D(n).d)
-		tharm = D(n).t - harm_refdate;
-		for i = 1:3
-			for c = 1:length(harm_period)
-				a = 2*pi*tharm/harm_period(c);
-				D(n).d(:,i+4) = D(n).d(:,i+4) - sin(a)*harm(i).x(1+(c-1)*2) - cos(a)*harm(i).x(2+(c-1)*2);
-			end
-		end
+        % harmonic correction
+        if harmcorr
+            tharm = D(n).t - harm_refdate;
+            for i = 1:3
+                for c = 1:length(harm_period)
+                    a = 2*pi*tharm/harm_period(c);
+                    D(n).d(:,i+4) = D(n).d(:,i+4) - sin(a)*harm(i).x(1+(c-1)*2) - cos(a)*harm(i).x(2+(c-1)*2);
+                end
+            end
+        end
+
+        % fault correction
+        if faultcorr
+            % dislocation factor (from 0 to 1)
+            fdis = zeros(size(D(n).t));
+            fdis(D(n).t>=X.fault_tlim(2)) = 1;
+            k = isinto(D(n).t,X.fault_tlim);
+            fdis(k) = linspace(0,1,sum(k));
+
+            sta_utm = ll2utm(N(n).LAT_WGS84,N(n).LON_WGS84);
+            [uE,uN,uZ] = okada85(sta_utm(1)-X.fault_utm(1),sta_utm(2)-X.fault_utm(2), ...
+                X.fault_lld(3)*1e3,X.fault_strike,X.fault_dip,X.fault_wl(2)*1e3,X.fault_wl(1)*1e3, ...
+                X.fault_rake,X.fault_slip*fdis,X.fault_open*fdis);
+            D(n).d(:,5:7) = D(n).d(:,5:7) + [uE,uN,uZ];
+
+        end
 	end
 
 end
@@ -513,7 +546,7 @@ for r = 1:numel(P.GTABLE)
 				if i == 3
 					X(1).w = D(n).d(k,4);
 				end
-				if harmcorr || vrelmode
+				if harmcorr || faultcorr || vrelmode
 					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
 					X(2).t = tk;
 					X(2).d(:,i) = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
@@ -524,12 +557,11 @@ for r = 1:numel(P.GTABLE)
 				end
 			end
 		end
-		if harmcorr || vrelmode
+		if harmcorr || faultcorr || vrelmode
 			X(1).nam = 'original';
 			X(1).rgb = scolor(1);
 			X(1).trd = 0;
-			%X(2).nam = sprintf('relative (%s)',mode);
-			X(2).nam = sprintf('corrected (%s%s%s)',repmat('harmonic',harmcorr),repmat('+',harmcorr&&vrelmode),repmat('relative',vrelmode));
+			X(2).nam = sprintf('corrected (%s)',strjoin({repmat('relative',vrelmode),repmat('harmonic',harmcorr),repmat('fault',faultcorr)},'+');
 			X(2).rgb = scolor(3);
 			X(2).trd = 1;
 		else
