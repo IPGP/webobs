@@ -1746,11 +1746,10 @@ for r = 1:numel(P.GTABLE)
 		if strcmp(modelling_coloref,'volpdf')
 			imagesc(linspace(-1,1,256),[0;1],repmat(linspace(0,1,256),2,1))
 			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{'High (Deflate)','Low','High (Inflate)'}, ...
-                'TickDir','out','XTickLabelRotation',20,'FontSize',8)
+                'TickDir','out','FontSize',8)
 		else
 			imagesc(linspace(0,1,256),[0;1],repmat(linspace(0,1,256),2,1))
-			set(gca,'XTick',[0,1],'YTick',[],'XTickLabel',{'Low','High'},'TickDir','out', ...
-                'XTickLabelRotation',20,'FontSize',8)
+			set(gca,'XTick',[0,1],'YTick',[],'XTickLabel',{'Low','High'},'TickDir','out','FontSize',8)
 		end
 		title('Model Probability','FontSize',10)
 
