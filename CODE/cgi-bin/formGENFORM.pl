@@ -480,7 +480,7 @@ function updateMap(map_id, geojson, lat, lon, zoom=10) {
         // but wait 0.5s for the previous handler execution to finish
         \$('#theform').on("keydown", function() { setTimeout(update_form, 500); });
 
-        document.querySelectorAll("div[id*='map_']").forEach((item) => {
+        document.querySelectorAll("div[id*='_shape']").forEach((item) => {
             var geojson = item.getAttribute("geojson");
             var lat = item.getAttribute("lat");
             var lon = item.getAttribute("lon");
@@ -738,7 +738,7 @@ foreach (@columns) {
                                 my ( $lat, $lon ) = ( $node{LAT_WGS84}, $node{LON_WGS84} );
                                 my $geojson = "$PATH_FORMDOCS/$input_id/shape.json";
                                 $geojson = ( ( -f "$WEBOBS{ROOT_DATA}/$geojson" ) ? "/data/$geojson" : "not_found" );
-                                print qq(<div id="map_$Field" geojson=$geojson lat=$lat lon=$lon style="height: $height;"></div>);
+                                print qq(<div id=$field\_shape geojson=$geojson lat=$lat lon=$lon style="height: $height;"></div>);
                             }
                         }
                     }
