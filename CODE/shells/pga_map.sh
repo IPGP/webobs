@@ -55,8 +55,21 @@ do
 	dat_file=${updated_files[k]}
 	if [ -s ${evt_file} ] && [ -s ${dat_file} ]
 	then
+		options="-c ${WO__PATH_PROCS}/${PROC}/${PROC}.conf"
+		if [ ${WO__MKGRAPH_THUMBNAIL_HEIGHT} ]
+		then
+			options="${options} -t ${WO__MKGRAPH_THUMBNAIL_HEIGHT}"
+		fi
+		if [ ${WO__ROOT_CODE} ]
+		then
+			options="${options} -w ${WO__ROOT_CODE}"
+		fi
 		echo "  --- working on $(dirname ${updated_files[k]}) ---"
-		${WO__PYTHON_PRGM} ${WO__ROOT_CODE}/python/pga_map.py ${evt_file} ${dat_file} ${outROOT} -c ${WO__PATH_PROCS}/${PROC}/${PROC}.conf
+		if [[ ${P_DEBUG} =~ Y|YES|OK|ON|1 ]]
+		then
+			echo "${WO__PYTHON_PRGM} ${WO__ROOT_CODE}/python/pga_map.py ${evt_file} ${dat_file} ${outROOT} ${options}"
+		fi
+		${WO__PYTHON_PRGM} ${WO__ROOT_CODE}/python/pga_map.py ${evt_file} ${dat_file} ${outROOT} ${options}
 		echo "  --- $(echo $k | awk '{print $0+1}') / ${#updated_files[*]} finished ---"
 
 	else
@@ -72,4 +85,3 @@ echo ""
 
 
 exit 0
-
