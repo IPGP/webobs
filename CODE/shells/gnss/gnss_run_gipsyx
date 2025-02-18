@@ -20,12 +20,12 @@
 #
 #	For all other parameters see the gnss_run_gipsyx.rc template.
 #
-# Authors: François BEAUDUCEL, Edgar LENHOF, Patrice BOISSIER
+# Authors: François BEAUDUCEL, Edgar LENHOF, Patrice BOISSIER, Pierre SAKIC
 #
 # Created: 2019-02-11 at PVMBG, Bandung (Indonesia)
 #          Based on Gipsy-Oasis version by Francois BEAUDUCEL (IPGP) and Ahmad Ali FAHMI (IRD),
 #          Domerapi/WebObs Project, 2014.
-# Updated: 2022-09-22
+# Updated: 2024-07-22
 #
 # **** Updates
 # ** 2023-06-xx Pierre Sakic 
@@ -73,7 +73,9 @@ if [ $# -lt 2 ]; then
 	echo "       -lock"
 	echo "            creates a lock file to prevent multiple process of gnss_run_gipsyx"
 	echo "       -debug"
-	echo "            verbose mode"
+	echo "            verbose mode & temporary folders will not be deleted"
+	echo "       -fullog"
+	echo "            Full log record. Temporary folders are stored in a .fullog.tar.gz file"
 	echo ""
 	exit 0;
 fi
@@ -129,13 +131,25 @@ DAYLIST=$(for d in $(seq $DAYS -1 0);do date -u -d "$d day ago" +"%Y/%m/%d";done
 
 LOG=gd2e.log
 
-# boolean for forcing process (default value doesn't force)
-FORCE=0
+
 
 if [ -z "$ERROR_REGEX_RINEX" ]; then
 	ERROR_REGEX_RINEX="REC #|ANT #|# / TYPES OF OBSERV|MARKER NAME"
 fi
 
+# boolean for forcing process (default value doesn't force)
+if [ -z "$FORCE" ]; then 
+        FORCE=0 
+fi
+# boolean for enabling debug mode (default value doesn't)
+if [ -z "$DEBUG" ]; then
+        DEBUG=0 
+
+fi
+# boolean for enabling full log mode (default value doesn't)
+if [ -z "$FULLOG" ]; then
+        FULLOG=0
+fi
 
 # do not use non fiducial (NF) orbits per default
 #
@@ -170,8 +184,12 @@ for (( i=1; i<=$#; i++)); do
 		;;
    	-debug)
       		DEBUG=1
-		export VERBOSE=Y
-      		echo "Debug mode: temporary directories will NOT be deleted!"
+		export VERBOSE=1 ## make raw2rinex VERBOSE
+      		echo "Debug mode: temporary folders will NOT be deleted!"
+		;;
+   	-fullog)
+      		FULLOG=1
+      		echo "Full log record: temporary folders will be stored in zip files"
 		;;
    	-s)
       		j=$((i+1))
@@ -269,6 +287,7 @@ for station in $NODES; do
 		gipsyres="$res.tdp"
 		gipsycov="$res.gdcov"
 		gipsylog="$res.log"
+		gipsyfullog_targz="$res.fullog.tar.gz" # will be used only if $FULLOG is activated
 
 		if [[ $FORCE == 0 && -s "$gipsyres" ]]; then
 			echo "   file $gipsyres [flinn] already exists..."
@@ -381,7 +400,7 @@ for station in $NODES; do
 
 						cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITOPT $GIPSYOPTIONS $NFORBOPTIONS"
 						echo "   $cmd"
-						if [ -z $DEBUG ]; then
+						if [ $DEBUG -eq 0 ]; then
 							eval "$cmd > $LOG 2>&1"
 						else
 							eval $cmd
@@ -396,7 +415,7 @@ for station in $NODES; do
 							       	trsprm="$ORBITSDIR/$product/$yyyy/$yyyy-$mm-$dd.x.gz"
 							        cmdtrans="netApply.py -t -r -s -i $cov -o ${cov}_trs -x $trsprm"
 								echo "   $cmdtrans"
-								if [ -z $DEBUG ]; then
+								if [ $DEBUG -eq 0 ]; then
 									eval "$cmdtrans > $LOG 2>&1"
 								else
 									eval $cmdtrans
@@ -441,6 +460,19 @@ for station in $NODES; do
 					mv -f $LOG $gipsylog
 					gzip -f $gipsylog
 				fi
+                                
+                                if [[ $FULLOG -eq 1 ]]; then
+					ntmpfil=`ls $tmpdir | wc -l`
+					if [[ $ntmpfil -le 1 ]]; then
+						echo "   full log not saved (tmp folder contains only the input RINEX)"
+					else
+						curdir=`pwd`
+						cd $tmpdir
+                                       		tar -zcf $gipsyfullog_targz * 
+						cd $curdir
+						echo "   full log saved in $gipsyfullog_targz" 
+                	                fi
+				fi
 			else
 				echo "   no data to process in $RAW."
 			fi
@@ -450,7 +482,7 @@ done
 
 echo "*************************************"
 
-if [ -z $DEBUG ]; then
+if [ $DEBUG -eq 0 ]; then
 	rm -rf $tmpdir
 fi
 

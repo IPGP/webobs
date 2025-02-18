@@ -83,7 +83,7 @@ my $FORM = new WebObs::Form('EXTENSO');
 my $fileDATA = $WEBOBS{PATH_DATA_DB}."/".$FORM->conf('FILE_NAME');
 
 my $today = qx(date -I); chomp($today);
-my @donneeListe = ('1'..'9');	
+my @donneeListe = ('1'..'9');
 
 my $date;
 my $heure;
@@ -105,9 +105,9 @@ my $ruban    = $cgi->param('ruban');
 my $offset   = $cgi->param('offset');
 my @d;
 for (@donneeListe) {
-	$d[$_-1][0] = $cgi->param('f'.$_);
-	$d[$_-1][1] = $cgi->param('c'.$_);
-	$d[$_-1][2] = $cgi->param('v'.$_);
+    $d[$_-1][0] = $cgi->param('f'.$_);
+    $d[$_-1][1] = $cgi->param('c'.$_);
+    $d[$_-1][2] = $cgi->param('v'.$_);
 }
 my $rem = $cgi->param('rem');
 my $val = $cgi->param('val');
@@ -126,63 +126,65 @@ for (@donneeListe) { $entete = $entete."|F$_|C$_|V$_" }
 $entete .= "|Remarques|Validation\n";
 
 if (-e $fileDATA)  {
-	# ---- lock-exclusive the data file during all update process
-	#
-	if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
-		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "postEXTENSO waiting for lock on $fileDATA...";
-			flock(FILE, LOCK_EX);
-		}
-		# ---- backup file (To Be Removed: lifecycle too short to be used ) 
-		if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
-		if ( $?  == 0 ) { 
-			seek(FILE, 0, SEEK_SET);
-			while (<FILE>) {
-				chomp($_);
-				my ($id) = split(/\|/,$_);
-				if ($id =~ m/^[0-9]+$/) {
-					if ($id > $maxId) { $maxId = $id }	
-					if ( ($idTraite eq "") || ($idTraite ne $id) ) { 
-						push(@lignes,$_."\n") ;
-					}
-				}
-			}
-			$maxId++;
-			my $chaine = u2l("$maxId|$date|$heure|$site|$operateurs|$temp|$meteo|$ruban|$offset");
 
-			for (@donneeListe) {
-				$chaine = $chaine."|$d[$_-1][0]|$d[$_-1][1]|$d[$_-1][2]";
-			}
-			$chaine = u2l($chaine."|$rem|$val\n");
-			push(@lignes, $chaine);
-			@lignes = reverse sort tri_date_avec_id @lignes;
-			truncate(FILE, 0);
-			seek(FILE, 0, SEEK_SET);
-			print FILE $entete;
-			print FILE @lignes ;
-			close(FILE);
-			htmlMsgOK();
-		} else {
-			close(FILE);
-			htmlMsgNotOK("postEXTENSO couldn't backup $fileDATA");
-		}
-	} else {
-		htmlMsgNotOK("postEXTENSO opening - $!");
-	}
+    # ---- lock-exclusive the data file during all update process
+    #
+    if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
+        unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+            warn "postEXTENSO waiting for lock on $fileDATA...";
+            flock(FILE, LOCK_EX);
+        }
+
+        # ---- backup file (To Be Removed: lifecycle too short to be used ) 
+        if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
+        if ( $?  == 0 ) {
+            seek(FILE, 0, SEEK_SET);
+            while (<FILE>) {
+                chomp($_);
+                my ($id) = split(/\|/,$_);
+                if ($id =~ m/^[0-9]+$/) {
+                    if ($id > $maxId) { $maxId = $id }
+                    if ( ($idTraite eq "") || ($idTraite ne $id) ) {
+                        push(@lignes,$_."\n") ;
+                    }
+                }
+            }
+            $maxId++;
+            my $chaine = u2l("$maxId|$date|$heure|$site|$operateurs|$temp|$meteo|$ruban|$offset");
+
+            for (@donneeListe) {
+                $chaine = $chaine."|$d[$_-1][0]|$d[$_-1][1]|$d[$_-1][2]";
+            }
+            $chaine = u2l($chaine."|$rem|$val\n");
+            push(@lignes, $chaine);
+            @lignes = reverse sort tri_date_avec_id @lignes;
+            truncate(FILE, 0);
+            seek(FILE, 0, SEEK_SET);
+            print FILE $entete;
+            print FILE @lignes ;
+            close(FILE);
+            htmlMsgOK();
+        } else {
+            close(FILE);
+            htmlMsgNotOK("postEXTENSO couldn't backup $fileDATA");
+        }
+    } else {
+        htmlMsgNotOK("postEXTENSO opening - $!");
+    }
 }
 
 # --- return information when OK 
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	if ($idTraite ne "") { 
- 		print "record #$idTraite has been updated (as #$maxId)"; 
- 	} else  { print "new record #$maxId has been created."; }
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    if ($idTraite ne "") {
+        print "record #$idTraite has been updated (as #$maxId)";
+    } else  { print "new record #$maxId has been created."; }
 }
 
 # --- return information when not OK
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 __END__

@@ -382,8 +382,9 @@ An event can include one or more sub-events (children). Event files  accept the 
 A \wo{grid} is a group of \wo{nodes}. Each \wo{node} can be associated to one or multiple \wo{grids}. There is two kind of \wo{grids}:
 
 \begin{itemize}
-\item    A \wo{view} is a list of \wo{nodes} we simply want to group to be seen or accessed together,
-\item    A \wo{proc} is a list of \wo{nodes} associated to a common data processing that produces outputs (graphs and/or elaborated data), and/or optional editable data FORMS.
+\item  A \wo{view} is a list of \wo{nodes} we simply want to group to be seen or accessed together,
+\item  A \wo{proc} is a list of \wo{nodes} associated to a dedicated data processing named a \wo{superproc} that produces outputs (graphs and/or elaborated data),
+\item  A \wo{form} is a list of \wo{nodes} associated to manual data, stored and editable through a \wo{genform}, a user-defined database structure.   
 \end{itemize}
 
 \wo{grids} are presented through a sorted table allowing access to dedicated page for each \wo{grid} with:

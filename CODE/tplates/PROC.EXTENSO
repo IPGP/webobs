@@ -4,13 +4,17 @@
 # compatible data and needed complementary configuration files.
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/extenso.m for further information.
 
-NAME|Extensometry time series and vectors
+# name of the proc
+NAME|Extensometry
+# description of what the proc does
+DESCRIPTION|Extensometry time series and vectors
+
 RAWDATA|
 URNDATA|
 TZ|-4
 URL|
 
-# lists of parameters (number of coma-separated rows must be consistent)
+# lists of parameters (number of comma-separated rows must be consistent)
 TIMESCALELIST|10y,all
 DECIMATELIST|
 CUMULATELIST|

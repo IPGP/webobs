@@ -20,7 +20,7 @@ function X = graphstr(s)
 %	Updated: 2020-12-28
 
 
-% splits the graphs (coma separated)
+% splits the graphs (comma separated)
 x = split(regexprep(s,'[^0-9,]',''),',');
 
 if ~isempty(x)

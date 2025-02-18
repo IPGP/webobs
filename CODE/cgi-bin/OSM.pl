@@ -52,37 +52,38 @@ chomp($today);
 my $GRIDName  = my $GRIDType  = my $NODEName = my $msk = "";
 my @NID = split(/[\.\/]/, trim($grid));
 if (scalar(@NID) < 2) {
-	die "No valid grid requested (NOT= gridtype.gridname[.node])." ;
+    die "No valid grid requested (NOT= gridtype.gridname[.node])." ;
 }
 ($GRIDType, $GRIDName, $NODEName) = @NID;
 
 # ---- get all nodenames of grid (only VALID) and fullfill a HoH
 my %N = listGridNodes(grid=>"$GRIDType.$GRIDName");
+
 # lat/lon to center the map
 my $lat = my $lon = "";
 my $latsum = my $lonsum = my $n = 0;
 for (keys(%N)) {
-	my $sta = $_;
-	my %NODE = readNode($sta);
-	$N{$sta}{LAT_WGS84} = $NODE{$sta}{LAT_WGS84};
-	$N{$sta}{LON_WGS84} = $NODE{$sta}{LON_WGS84};
-	$N{$sta}{ALTITUDE}  = $NODE{$sta}{ALTITUDE};
-	$N{$sta}{INSTALL_DATE}  = $NODE{$sta}{INSTALL_DATE};
-	$N{$sta}{END_DATE}  = $NODE{$sta}{END_DATE};
-	$N{$sta}{TYPE}  = $NODE{$sta}{TYPE};
-	if ($sta eq $NODEName) {
-		$lat = $N{$sta}{LAT_WGS84};
-		$lon = $N{$sta}{LON_WGS84};
-		$titre = "$NODE{$sta}{ALIAS}: $NODE{$sta}{NAME}";
-	}
-	$latsum += $N{$sta}{LAT_WGS84};
-	$lonsum += $N{$sta}{LON_WGS84};
-	$n++;
+    my $sta = $_;
+    my %NODE = readNode($sta);
+    $N{$sta}{LAT_WGS84} = $NODE{$sta}{LAT_WGS84};
+    $N{$sta}{LON_WGS84} = $NODE{$sta}{LON_WGS84};
+    $N{$sta}{ALTITUDE}  = $NODE{$sta}{ALTITUDE};
+    $N{$sta}{INSTALL_DATE}  = $NODE{$sta}{INSTALL_DATE};
+    $N{$sta}{END_DATE}  = $NODE{$sta}{END_DATE};
+    $N{$sta}{TYPE}  = $NODE{$sta}{TYPE};
+    if ($sta eq $NODEName) {
+        $lat = $N{$sta}{LAT_WGS84};
+        $lon = $N{$sta}{LON_WGS84};
+        $titre = "$NODE{$sta}{ALIAS}: $NODE{$sta}{NAME}";
+    }
+    $latsum += $N{$sta}{LAT_WGS84};
+    $lonsum += $N{$sta}{LON_WGS84};
+    $n++;
 }
 if (scalar(@NID) == 2) {
-	$lat = $latsum/$n;
-	$lon = $lonsum/$n;
-	$titre = $grid;
+    $lat = $latsum/$n;
+    $lon = $lonsum/$n;
+    $titre = $grid;
 }
 
 # ---- build the HTML page calling OSM API once loaded ----
@@ -113,205 +114,206 @@ print <<"END";
 <BODY>
 <DIV id="map" style="height: ${height}px"></DIV>
 <script type="text/javascript">
-	var	esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
-	var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-	var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-		maxZoom: 17,
-		attribution: osmAttribution});
-	var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-		attribution: esriAttribution});
-	var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    	attribution: osmAttribution,
-		maxZoom: 19});
-	var map = L.map('map', {
-		center: [$lat, $lon],
-		zoom: $WEBOBS{OSM_ZOOM_VALUE},
-		layers: [topo,osm,satellite]});
-	var baseMaps = {
-    	"OpenTopoMap": topo,
-    	"OpenStreetMap": osm,
-		"ESRI World Imagery": satellite,
-	};
-	var layerControl = L.control.layers(baseMaps).addTo(map);
-	var markers = [];
-	
-	var editableLayers = new L.FeatureGroup();
-	map.addLayer(editableLayers);
-	
-	var drawControl = new L.Control.Draw({
-	  position: 'topright',
-	  draw: {
-		polyline: true,
-		polygon: {
-		  allowIntersection: false, \/\/ Restricts shapes to simple polygons 
-		  drawError: {
-		    color: '#e1e100', \/\/ Color the shape will turn when intersects 
-		    message: \"<strong>Oh snap!<strong> you can\'t draw that!\" \/\/ Message that will show when intersect 
-		  }
-		},
-		circle: true, \/\/ Turns off this drawing tool 
-		rectangle: true,
-		marker: true
-	  },
-	  edit: {
-		featureGroup: editableLayers, \/\/REQUIRED!! 
-		remove: true
-	  }
-	});
+    var    esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+    var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+    var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 17,
+        attribution: osmAttribution});
+    var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: esriAttribution});
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: osmAttribution,
+        maxZoom: 19});
+    var map = L.map('map', {
+        center: [$lat, $lon],
+        zoom: $WEBOBS{OSM_ZOOM_VALUE},
+        layers: [topo,osm,satellite]});
+    var baseMaps = {
+        "OpenTopoMap": topo,
+        "OpenStreetMap": osm,
+        "ESRI World Imagery": satellite,
+    };
+    var layerControl = L.control.layers(baseMaps).addTo(map);
+    var markers = [];
+    
+    var editableLayers = new L.FeatureGroup();
+    map.addLayer(editableLayers);
+    
+    var drawControl = new L.Control.Draw({
+      position: 'topright',
+      draw: {
+        polyline: true,
+        polygon: {
+          allowIntersection: false, \/\/ Restricts shapes to simple polygons 
+          drawError: {
+            color: '#e1e100', \/\/ Color the shape will turn when intersects 
+            message: \"<strong>Oh snap!<strong> you can\'t draw that!\" \/\/ Message that will show when intersect 
+          }
+        },
+        circle: true, \/\/ Turns off this drawing tool 
+        rectangle: true,
+        marker: true
+      },
+      edit: {
+        featureGroup: editableLayers, \/\/REQUIRED!! 
+        remove: true
+      }
+    });
 
-	map.addControl(drawControl);
-	
-	var outGeoJSON = '';
-	var outWKT = "POINT("+$lat+" "+$lon+")";
-	
-	console.log(outGeoJSON);
-	
-	\/\/On Draw Create Event
-	map.on(L.Draw.Event.CREATED, function(e) {
-	  var type = e.layerType,
-		layer = e.layer;
+    map.addControl(drawControl);
+    
+    var outGeoJSON = '';
+    var outWKT = "POINT("+$lat+" "+$lon+")";
+    
+    console.log(outGeoJSON);
+    
+    \/\/On Draw Create Event
+    map.on(L.Draw.Event.CREATED, function(e) {
+      var type = e.layerType,
+        layer = e.layer;
 
-	  if (type === 'marker') {
-		layer.bindPopup('LatLng: ' + layer.getLatLng().lat + ',' + layer.getLatLng().lng).openPopup();
-	  }
+      if (type === 'marker') {
+        layer.bindPopup('LatLng: ' + layer.getLatLng().lat + ',' + layer.getLatLng().lng).openPopup();
+      }
 
-	  editableLayers.addLayer(layer);
-	  layerGeoJSON = editableLayers.toGeoJSON();
-	  outGeoJSON = JSON.stringify(layerGeoJSON);
+      editableLayers.addLayer(layer);
+      layerGeoJSON = editableLayers.toGeoJSON();
+      outGeoJSON = JSON.stringify(layerGeoJSON);
 
-	  var wkt_options = {};
-	  var geojson_format = new OpenLayers.Format.GeoJSON();
-	  var testFeature = geojson_format.read(layerGeoJSON);
-	  var wkt = new OpenLayers.Format.WKT(wkt_options);
-	  var out = wkt.write(testFeature);
-	  
+      var wkt_options = {};
+      var geojson_format = new OpenLayers.Format.GeoJSON();
+      var testFeature = geojson_format.read(layerGeoJSON);
+      var wkt = new OpenLayers.Format.WKT(wkt_options);
+      var out = wkt.write(testFeature);
+      
       outWKT = out;
-	});
+    });
 
-	//On Draw Edit Event
-	map.on(L.Draw.Event.EDITED, function(e) {
-	  var type = e.layerType,
-		layer = e.layer;
+    //On Draw Edit Event
+    map.on(L.Draw.Event.EDITED, function(e) {
+      var type = e.layerType,
+        layer = e.layer;
 
-	  layerGeoJSON = editableLayers.toGeoJSON();
-	  outGeoJSON = JSON.stringify(layerGeoJSON);
+      layerGeoJSON = editableLayers.toGeoJSON();
+      outGeoJSON = JSON.stringify(layerGeoJSON);
 
-	  var wkt_options = {};
-	  var geojson_format = new OpenLayers.Format.GeoJSON();
-	  var testFeature = geojson_format.read(layerGeoJSON);
-	  var wkt = new OpenLayers.Format.WKT(wkt_options);
-	  var out = wkt.write(testFeature);
+      var wkt_options = {};
+      var geojson_format = new OpenLayers.Format.GeoJSON();
+      var testFeature = geojson_format.read(layerGeoJSON);
+      var wkt = new OpenLayers.Format.WKT(wkt_options);
+      var out = wkt.write(testFeature);
 
       outWKT = out;
-	});
+    });
 
-	\/\/On Draw Delete Event
-	map.on(L.Draw.Event.DELETED, function(e) {
-	  var type = e.layerType,
-		layer = e.layer;
+    \/\/On Draw Delete Event
+    map.on(L.Draw.Event.DELETED, function(e) {
+      var type = e.layerType,
+        layer = e.layer;
 
-	  layerGeoJSON = editableLayers.toGeoJSON();
-	  outGeoJSON = JSON.stringify(layerGeoJSON);
+      layerGeoJSON = editableLayers.toGeoJSON();
+      outGeoJSON = JSON.stringify(layerGeoJSON);
 
-	  var wkt_options = {};
-	  var geojson_format = new OpenLayers.Format.GeoJSON();
-	  var testFeature = geojson_format.read(layerGeoJSON);
-	  var wkt = new OpenLayers.Format.WKT(wkt_options);
-	  var out = wkt.write(testFeature);
+      var wkt_options = {};
+      var geojson_format = new OpenLayers.Format.GeoJSON();
+      var testFeature = geojson_format.read(layerGeoJSON);
+      var wkt = new OpenLayers.Format.WKT(wkt_options);
+      var out = wkt.write(testFeature);
 
       outWKT = out;
       
-	});
+    });
 
-	function handleFiles() {	// read .zip shpfiles 
-		var fichierSelectionne = document.getElementById('input').files[0];
+    function handleFiles() {    // read .zip shpfiles 
+        var fichierSelectionne = document.getElementById('input').files[0];
 
-		var fr = new FileReader();
-		fr.onload = function () {
-			shp(this.result).then(function(geojson) {
-		  		console.log('loaded geojson:', geojson);
-		  		outWKT = [];
-		  		for (var i = 0; i <= geojson.features.length-1; i++) {
-		  			var coordinates = simplifyGeometry(geojson.features[i].geometry.coordinates[0], 0.0005);
-		  			var lonLat = [];
-		  			for (var j = 0; j <= coordinates.length-1; j++) {
-		  				lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]);
-		  			} outWKT.push('((' + lonLat + '))');
-		  		} outWKT = 'wkt:MULTIPOLYGON('+outWKT+')';
-				var shpfile = new L.Shapefile(geojson,{
-					onEachFeature: function(feature, layer) {
-						if (feature.properties) {
-							layer.bindPopup(Object.keys(feature.properties).map(function(k) {
-								return k + ": " + feature.properties[k];
-							}).join("<br />"), {
-								maxHeight: 200
-							});
-						}
-					}
-				});
-				shpfile.addTo(map);
-				var geometry = JSON.stringify(getGeometry(geojson));
-				document.form.outWKT.value = geometry;
-		  })
-		};
-		fr.readAsArrayBuffer(fichierSelectionne);
-	};
-	
-	function getGeometry(geojson) {
-		var geometry = {"type":"", "coordinates":""};
+        var fr = new FileReader();
+        fr.onload = function () {
+            shp(this.result).then(function(geojson) {
+                  console.log('loaded geojson:', geojson);
+                  outWKT = [];
+                  for (var i = 0; i <= geojson.features.length-1; i++) {
+                      var coordinates = simplifyGeometry(geojson.features[i].geometry.coordinates[0], 0.0005);
+                      var lonLat = [];
+                      for (var j = 0; j <= coordinates.length-1; j++) {
+                          lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]);
+                      } outWKT.push('((' + lonLat + '))');
+                  } outWKT = 'wkt:MULTIPOLYGON('+outWKT+')';
+                var shpfile = new L.Shapefile(geojson,{
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties) {
+                            layer.bindPopup(Object.keys(feature.properties).map(function(k) {
+                                return k + ": " + feature.properties[k];
+                            }).join("<br />"), {
+                                maxHeight: 200
+                            });
+                        }
+                    }
+                });
+                shpfile.addTo(map);
+                var geometry = JSON.stringify(getGeometry(geojson));
+                document.form.outWKT.value = geometry;
+          })
+        };
+        fr.readAsArrayBuffer(fichierSelectionne);
+    };
+    
+    function getGeometry(geojson) {
+        var geometry = {"type":"", "coordinates":""};
 
-		if (geojson.features.length > 1) {
-			geometry.type = "MultiPolygon";
-			var coordinates = [];
-			
-			for (var i = 0; i < geojson.features.length; i++) {
-				coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
-			} geometry.coordinates = coordinates; return geometry;
-		} else {
-			geometry.type = "Polygon";
-			geometry.coordinates = [getBoundingBox(geojson.features.geometry.coordinates)];
-			return geometry;
-		}
-	}
-	function getBoundingBox(coordinates) {
-		var bounds = {}, coords, point, latitude, longitude;
+        if (geojson.features.length > 1) {
+            geometry.type = "MultiPolygon";
+            var coordinates = [];
+            
+            for (var i = 0; i < geojson.features.length; i++) {
+                coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
+            } geometry.coordinates = coordinates; return geometry;
+        } else {
+            geometry.type = "Polygon";
+            geometry.coordinates = [getBoundingBox(geojson.features.geometry.coordinates)];
+            return geometry;
+        }
+    }
+    function getBoundingBox(coordinates) {
+        var bounds = {}, coords, point, latitude, longitude;
 
-		coords = coordinates;
+        coords = coordinates;
 
-		for (var j = 0; j < coords.length; j++) {
-			longitude = coords[j][0];
-			latitude = coords[j][1];
-			bounds.xMin = bounds.xMin < longitude ? bounds.xMin : longitude;
-			bounds.xMax = bounds.xMax > longitude ? bounds.xMax : longitude;
-			bounds.yMin = bounds.yMin < latitude ? bounds.yMin : latitude;
-			bounds.yMax = bounds.yMax > latitude ? bounds.yMax : latitude;
-		}
-		var coordinates = [bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.xMin];
-		return coordinates;
-	}
+        for (var j = 0; j < coords.length; j++) {
+            longitude = coords[j][0];
+            latitude = coords[j][1];
+            bounds.xMin = bounds.xMin < longitude ? bounds.xMin : longitude;
+            bounds.xMax = bounds.xMax > longitude ? bounds.xMax : longitude;
+            bounds.yMin = bounds.yMin < latitude ? bounds.yMin : latitude;
+            bounds.yMax = bounds.yMax > latitude ? bounds.yMax : latitude;
+        }
+        var coordinates = [bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.xMin];
+        return coordinates;
+    }
 END
 
 for (keys(%N)) {
-	if (!($N{$_}{LAT_WGS84} eq "" && $N{$_}{LON_WGS84} eq "")
-		&& ( ($opt ne "active" || (($N{$_}{END_DATE} ge $today || $N{$_}{END_DATE} eq "NA")
-			&& ($N{$_}{INSTALL_DATE} le $today || $N{$_}{INSTALL_DATE} eq "NA"))))) {
-		my $text = "<B>$N{$_}{ALIAS}: $N{$_}{NAME}</B><BR>"
-			.($N{$_}{TYPE} ne "" ? "<I>($N{$_}{TYPE})</I><br>":"")
-			."&nbspfrom <B>$N{$_}{INSTALL_DATE}</B>".($N{$_}{END_DATE} ne "NA" ? " to <B>$N{$_}{END_DATE}</B>":"")."<br>"
-			."&nbsp;<B>$N{$_}{LAT_WGS84}&deg;</B>, <B>$N{$_}{LON_WGS84}&deg;</B>, <B>$N{$_}{ALTITUDE} m</B>";
-		$text =~ s/\"//g;  # fix ticket #166
-		print "var marker = L.marker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}]).addTo(map);\n";
-		print "marker.bindPopup(\"$text\").openPopup();\n";
-		print "markers.push(marker);\n";
-	}
+    if (!($N{$_}{LAT_WGS84} eq "" && $N{$_}{LON_WGS84} eq "")
+        && ( ($opt ne "active" || (($N{$_}{END_DATE} ge $today || $N{$_}{END_DATE} eq "NA")
+                    && ($N{$_}{INSTALL_DATE} le $today || $N{$_}{INSTALL_DATE} eq "NA"))))) {
+        my $text = "<B>$N{$_}{ALIAS}: $N{$_}{NAME}</B><BR>"
+          .($N{$_}{TYPE} ne "" ? "<I>($N{$_}{TYPE})</I><br>":"")
+          ."&nbspfrom <B>$N{$_}{INSTALL_DATE}</B>".($N{$_}{END_DATE} ne "NA" ? " to <B>$N{$_}{END_DATE}</B>":"")."<br>"
+          ."&nbsp;<B>$N{$_}{LAT_WGS84}&deg;</B>, <B>$N{$_}{LON_WGS84}&deg;</B>, <B>$N{$_}{ALTITUDE} m</B>";
+        $text =~ s/\"//g;  # fix ticket #166
+        print "var marker = L.marker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}]).addTo(map);\n";
+        print "marker.bindPopup(\"$text\").openPopup();\n";
+        print "markers.push(marker);\n";
+    }
 }
+
 # ---- if no node requested => map fits all nodes of grid
 if (scalar(@NID) == 2) {
-	print "var group = new L.featureGroup(markers);\n";
-	print "map.fitBounds(group.getBounds().pad(0.1));\n";
-	print "map.addLayer(markerClusters);\n";
+    print "var group = new L.featureGroup(markers);\n";
+    print "map.fitBounds(group.getBounds().pad(0.1));\n";
+    print "map.addLayer(markerClusters);\n";
 } else {
-	print "map.setView([$lat, $lon], $WEBOBS{OSM_ZOOM_VALUE});\n";
+    print "map.setView([$lat, $lon], $WEBOBS{OSM_ZOOM_VALUE});\n";
 }
 print "</script>\n";
 

@@ -2,8 +2,12 @@
 # RSAM PROC template
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/rsam.m for further information.
 
-# long name of the PROC
-NAME|Realtime Seismic Amplitude Measurement
+# name of the PROC
+NAME|RSAM
+
+# description of what the proc does
+DESCRIPTION|RSAM time series and source location maps
+
 # proc TYPE and OWNER
 TYPE|
 OWNCODE|?
@@ -120,7 +124,7 @@ PERNODE_LINESTYLE|-
 # comment this key to not plot the summary graph
 SUMMARYLIST|SOURCEMAP
 
-# coma separated list of channels to plot (default is all channels)
+# comma separated list of channels to plot (default is all channels)
 SUMMARY_CHANNELS|1
 # graph title
 SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}

@@ -5,8 +5,11 @@
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/waters.m for further information.
 
 
-# long name of the PROC
+# name of the PROC
 NAME|Waters chemical analysis
+
+# description of what the PROC does
+DESCRIPTION|Waters chemical analysis
 
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 TYPE|

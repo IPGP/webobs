@@ -20,7 +20,7 @@ See the scheduler.pl perldoc for an up-to-date description of cmd.
 use strict;
 use warnings;
 use FindBin;
-use lib $FindBin::Bin; 
+use lib $FindBin::Bin;
 use Time::HiRes qw/time gettimeofday tv_interval usleep/;
 use POSIX qw/strftime :signal_h :errno_h :sys_wait_h/;
 use IO::Socket;
@@ -44,34 +44,35 @@ my $msg     = defined($options{m}) ? $options{m} : '';
 our %SCHED;
 if ($configf ne '' && -e $configf) { %SCHED = readCfg($configf) }
 else { if (defined($WEBOBS{CONF_SCHEDULER})) { %SCHED = readCfg($WEBOBS{CONF_SCHEDULER}) }}
-if ( scalar(keys(%SCHED)) <= 1 ) { 
-	printf ("%16.6f %s",time,"can't start: no|invalid configuration file\n");
-	exit(1);
+if ( scalar(keys(%SCHED)) <= 1 ) {
+    printf ("%16.6f %s",time,"can't start: no|invalid configuration file\n");
+    exit(1);
 }
 
 # ---- send command / receive reply from scheduler
 # ----------------------------------------------------------------------------
 my $SOCK = undef;
-my $server = "localhost"; 
+my $server = "localhost";
 my $TIMEOUT=5;
 
 # create socket 
 $SOCK = IO::Socket::INET->new(Proto => 'udp', PeerPort  => $SCHED{PORT}, PeerAddr  => $server );
 if ( !$SOCK ) {
-	printf "couldn't create socket on port $SCHED{PORT}\n";
-	exit(2);
+    printf "couldn't create socket on port $SCHED{PORT}\n";
+    exit(2);
 }
+
 # send / receive
 if ( $SOCK->send($msg) ) {
-	if ( $SOCK->recv($msg, $SCHED{SOCKET_MAXLEN}) ) { 
-		print "Server ".$SOCK->peerhost.":".$SOCK->peerport." replied:\n$msg\n";
-	} else {
-		print "socket recv error\n";
-		exit(3);
-	}
+    if ( $SOCK->recv($msg, $SCHED{SOCKET_MAXLEN}) ) {
+        print "Server ".$SOCK->peerhost.":".$SOCK->peerport." replied:\n$msg\n";
+    } else {
+        print "socket recv error\n";
+        exit(3);
+    }
 } else {
-	print "socket send error\n";
-	exit(3);
+    print "socket send error\n";
+    exit(3);
 }
 exit(0);
 

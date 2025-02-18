@@ -8,10 +8,37 @@ The latest release contains improvements, new features, bug fixes, and sometimes
 
 Sections with `!!` prefix must be carefully read in case of upgrade. It usually means that the upgrade could change some behavior from previous release installations (i.e., not a bug fix). An appropriate configuration to keep the former behavior is usually proposed.
 
-## v2.7 (under development)
+If you have any question which is not answered in the user manual, do not hesitate to write to developpers through the mailing list [webobs-devs@services.cnrs.fr](mailto:webobs-devs@services.cnrs.fr), or start a public discussion thread at [github.com/IPGP/webobs/discussions](https://github.com/IPGP/webobs/discussions).
+
+## v.2.8 (under development)
 
 ### New features
-1. **Generic forms**: it is now possible to create any user-defined manual database associated to a form (for entering new data and editing), a table display and CSV export. This new feature intends replacing all the former forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, NOVAC, SOILSOLUTIONS, and RAINWATER). When upgrading, a migration of the former databanks is requested: it will create the corresponding configuration file and convert the .DAT text data file to a SQLite .db file. See the user manual documentation for details.
+1. **New grids FORM**: manual databases (formerly dedicated forms) are now fully integrated as a grid type along with PROCs and VIEWs. A FORM is then associated to a DOMAIN and some NODES, appears in the GRIDs table and has its own page with description, nodes table list, map location, and events. FORM is based on the new GENFORM user-defined manual database tool (introduced in the previous release): a freely configurazble SQLite database managed through a GUI form (for entering new data, editing and deleting), a table data display with options and filters, data export as CSV file or as raw data source for PROCs. Creating a FORM becomes as simple as creating a PROC or VIEW, by selecting a template (a dozen are available), if necessary modifying it partially or completely, associating a DOMAIN, associating or creating NODES, and editing the configuration file to set the database structure (inputs and outputs) and the form layout. GENFORM is able to store numerical values, checkboxes, lists, text strings, images, and mathematical output formulas. It aims to replace spreadsheets files for (potentially) any structured scientific data. See the user manual for more details.
+
+    `!!` **Update note**: This new feature replaces definitively all the previous forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, BOJAP, RIVERS, SOILSOLUTIONS, and RAINWATER) for which an automatic migration is made during the setup/update. PROCS using the legacy forms databases will be adapted to point to new FORM which become a RAWFORMAT/RAWDATA attribute instead of hard link to legacy form. Each PROC will have its own FORM with the same grid name and the same associated nodes. Former configuration files `CONF/FORMS` and `CONF/GRIDS2FORMS` will be moved in `CONF/LEGACY_FORMS/`directory, and old data files `DATA/DB/*.DAT` will be moved to `DATA/BACKUP_LEGACY_FORMS/`. All these files are not necessary anymore and might be removed/backuped anywhere outside the WebObs architecture. Corresponding legacy scripts `CODE/cgi-bin/{form,post,show}FORMNAME.pl` have been removed from this release. Any link/URL (for example in the WebObs menu) pointing to these scripts must be modified as follows:
+    * `showFORMNAME.pl` => `showGENFORM.pl?form=PROCNAME`
+    * `showFORMNAME.pl?node={PROCNAME}` => `showGENFORM.pl?form=PROCNAME`
+    * `showFORMNAME.pl?node=NODEID` => `showGENFORM.pl?form=PROCNAME&node=NODEID`
+    * `formFORMNAME.pl` => `formGENFORM.pl?form=PROCNAME`
+
+    where FORMNAME is the legacy form name, and PROCNAME is the associated PROC which becomes also the new FORM name. Note that previous link `showFORMNAME.pl` without argument, when legacy form was associated to more than one PROC (for instance the `EAUX` database), has no strict equivalent in the new structure; it must be replaced by as many links as there are procs associated to this form.
+
+### Enhancements
+1. New CSS!
+1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
+
+### Fixed issues
+1. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
+1. Add forgotten keys in **tremblemaps** superproc template, and fix an issue when updating procs with setup (new keys not added).
+
+
+## v2.7.3 (February 2025)
+
+### New features
+1. **Generic forms**: see section *Under development* below.
+1. **Nodes**:
+    1. Links between node's feature now display a table of full children's feature content, including possible link to grandchildren. A toggle icon allows to switch hidden/displayed of this table.
+    1. With admin level on a grid, it is possible to duplicate a node configuration (small icon on the right of node's title): all the configuration fields will be copied, including the node's ID that must be modified to become valid. Note that calibration file, feature's content and events will not be copied.
 1. In the **tremblemaps** procs (felt earthquakes), GSE message can be replaced by a JSON file with basic information about the event, with two new variables:
 ```
 GSE_EXPORT|N
@@ -22,6 +49,8 @@ JSON_EXPORT|Y
 MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
 TRIGGER_EMAIL|
 TRIGGER_SUBJECT|SÉISME RESSENTI
+TRIGGER_DEPARTMENT|
+TRIGGER_AGENCY|
 REPORT_EMAIL|
 REPORT_SUBJECT|[OVS-IPGP] Séisme ressenti
 REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le site du BCSF à l'adresse suivante : www.franceseisme.fr
@@ -29,10 +58,15 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
    The `MUTT_OPTIONS` is used to set the "From:" address (instead of Apache user who is the real sender), but other options can be added if needed (see **mutt** manual). `TRIGGER_EMAIL` and `TRIGGER_SUBJECT` is used to send the data to BCSF. It will use JSON file (if exists), or GSE file otherwise. The `REPORT_EMAIL`, `REPORT_SUBJECT`, and `REPORT_FOOTNOTE` are used to send the B3 report with a detailed text message on the event and potential macroseismic intensities. The PDF file of full report will be attached to the mail. Note that email will be sent to the operator and destination address will be in "Bcc:".
 
 ### Enhancements
-1. In showNODE.pl the links between node's feature displays a table of full children's feature content in the parent node.
+1. ``!!`` The format of the calibration files has been changed. Data are now handled with a hash. This provides greater flexibility to add new variables.
+1. In the proc request form, all keys are now available for edition, sorted alphabetically, following the `REQUEST_KEYLIST`.
 1. Search node events form accepts negative pattern (beginning with a `!`).
 1. Mat-file raw format allows import of any variable names as t, d, and e matrix (`FID_T`, `FID_D`, `FID_E`).
+1. DSV generic raw format has new option `FID_DECIMAL_COMMA` to read data files using decimal comma (not decimal point).
 1. Better check of the consistency of node start/end dates when editing the configuration.
+1. Exported list of geolocated nodes as KML file has now extended data (start/end dates, active flag).
+1. Metadata can now be uploaded to the Theia|OZCAR data portal. A checkbox has been added to select and save channels to be uploaded.
+1. New GNSS solutions data formats: `spotgins-ippp`and `gamit-pos`.
 
 ### Fixed issues
 1. ``!!`` WebObs Perl modules have been moved from CODE/cgi-bin/WebObs to CODE/perl/lib. The system-wide installation **MUST** be executed when upgrading (answer Y to the appropriate question during setup) in order to make all CGI working.
@@ -41,7 +75,16 @@ REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le sit
 1. ``!`` User manager form: now only the WebObs Owner is allowed to delete a user, edit any user UID, or modify authorizations for the WebObs Owner himself. Admin level on the resource **user** allows everything else except these. As a reminder, modification/deletion of any user UID is not recommended since it might result in WebObs data corruption (grid or node events, manual data banks, Gazette, ...).
 1. Fix an issue to display attached photos in grid events.
 1. Fix the issue producing a black background for PDF image thumbnails.
-1. Fix an issue with the DECIMATE parameter in superproc **gnss**.
+1. Fix an issue with the `DECIMATE` parameter in superproc **gnss**.
+1. Fix some graphical issues in **sefran3** with messy data packets in miniseed.
+1. Fix an issue with proc name that uses the word "PROC".
+1. Fix an issue with data files Campbell binary format TOB1 that contain no data but a header.
+1. Fix an issue in **gridmaps** with inactive nodes plotted over active ones.
+1. Fix a possible issue with **scevtlog-xml** data format (ignoring events created late after origin time).
+1. Fix forgotten binaries for Arclink rawformat.
+
+### Under development
+1. **Generic forms**: it is now possible to create any user-defined manual database associated to a form (for entering new data and editing), a table display, and CSV export of data, using SQLite database. This new feature will replace all the actuel forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, SOILSOLUTIONS, and RAINWATER) in future release, with an automatic migration tool. Creating and using the new forms is functional, but reading the data from PROCS is not yet implemented. See the user manual documentation for details. 
 
 ## v2.6.4 (December 2023)
 

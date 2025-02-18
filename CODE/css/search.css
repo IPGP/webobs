@@ -1,63 +1,68 @@
-
-#srchovly { 
-	display: none;
-	position: fixed;
-	top:0px; left:0px; width:100%; height:100%; 
-	text-align:center; vertical-align:middle;
-	opacity: 0.4;
-	background-color:#000000;
-	z-index: 10000;
+#srchovly {
+    display: none;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    vertical-align: middle;
+    opacity: 0.4;
+    background-color: #000000;
+    z-index: 10000;
 }
 
 #srchoverlay_form {
-	position: absolute;
-	border: 3px solid gray;
-	border-radius: 5px;
-	padding: 10px;
-	background: #FFFFEE;
-	width: 440px;
-	height: auto;
-	opacity: 1;
-	z-index: 10001;
+    position: absolute;
+    border: 3px solid gray;
+    border-radius: 10px;
+    padding: 10px;
+    background: #fbfbfb;
+    width: 440px;
+    height: auto;
+    opacity: 1;
+    z-index: 10001;
 }
-#srchoverlay_form label{
-	display:block;
-	font-weight:bold;
-	text-align:right;
-	width:120px;
-	float:left;
+#srchoverlay_form label {
+    display: block;
+    font-weight: bold;
+    text-align: right;
+    width: 120px;
+    float: left;
 }
-#srchoverlay_form .small{
-	color: #666666;
-	display:block;
-	font-size: x-small;
-	font-weight: lighter;
-	text-align:right;
-	width:120px;
+#srchoverlay_form .small {
+    color: #666666;
+    display: block;
+    font-size: x-small;
+    font-weight: lighter;
+    text-align: right;
+    width: 120px;
 }
-#srchoverlay_form input[type=text]{
-	float:left;
-	padding:4px 2px;
-	border:solid 1px #aacfe4;
-	width:300px;
-	margin:2px 0 15px 10px;
+#srchoverlay_form input[type="text"] {
+    float: left;
+    padding: 4px 2px;
+    border: solid 1px #aacfe4;
+    width: 300px;
+    margin: 2px 0 15px 10px;
 }
-#srchoverlay_form input[type=checkbox]{
-	float:left;
-	padding:4px 2px;
-	/*
-	border:solid 1px #aacfe4;
-	margin:2px 0 15px 10px;
-	*/
+#srchoverlay_form input[type="checkbox"] {
+    float: left;
+    padding: 4px 2px;
+    /*
+    border:solid 1px #aacfe4;
+    margin:2px 0 15px 10px;
+    */
 }
-#srchoverlay_form select{
-	float:left;
-	padding:1px 1px;
+#srchoverlay_form select {
+    float: left;
+    padding: 1px 1px;
 }
 #srchoverlay_form p {
-	background: #EAE4CE;
-	width: 100%;
-	height: 20px;
-	padding: 5px 0 5px 2px;
-	float: left;
+    background: #fbfbfb;
+    color: #a91434;
+    width: 100%;
+    height: 20px;
+    padding: 5px 0 5px 2px;
+    float: left;
+    border-radius: 5px;
 }

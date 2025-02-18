@@ -14,22 +14,22 @@ Edit (create/update) a FORM specified by its fully qualified name, ie. fname.
 
 When creating a new FORM (if name does not exist), fedit starts editing from a predefined template file: filename $WEBOBS{ROOT_CODE}/tplates/FORM.GENFORM or specific template identified by form.template argument.
 
-To create a new FORM, user must have Admin rights for all VIEWS or PROCS. To update an existing FORM, user must have Edit rights for the concerned FORM.
+To create a new FORM, user must have Admin rights for all FORMS. To update an existing FORM, user must have Edit rights for the concerned FORM.
 
 =head1 Query string parameters
 
 =item fname=fname
 
-	where fname should be unique.
+    where fname should be unique.
 
 =item action={save|edit}
 
-	'edit' (default when action is not specified) to display edit html-form edit
-	'save' internaly used to save the file after html-form edition
+    'edit' (default when action is not specified) to display edit html-form edit
+    'save' internaly used to save the file after html-form edition
 
 =item tpl=tpl
 
-	where tpl is the template selected to create the new form
+    where tpl is the template selected to create the new form
 
 =head1 EDITOR
 
@@ -63,6 +63,7 @@ use File::Copy qw(copy);
 use File::Temp ();
 use File::Path qw(mkpath rmtree);
 use HTML::Escape qw(escape_html);
+use List::MoreUtils qw(uniq);
 
 use CGI;
 my $cgi = new CGI;
@@ -87,34 +88,34 @@ use WebObs::i18n;
 # Return information when OK
 # (Reminder: we use text/plain as this is an ajax action)
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] successfully !\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "$_[0] successfully !\n";
 }
 
 # Return information when not OK
 # (Reminder: we use text/plain as this is an ajax action)
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 # Open an SQLite connection to the forms database
 sub connectDbForms {
-	return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
-		'AutoCommit' => 1,
-		'PrintError' => 1,
-		'RaiseError' => 1,
-		}) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
+    return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
+            'AutoCommit' => 1,
+            'PrintError' => 1,
+            'RaiseError' => 1,
+        }) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
 }
 
-sub count_inputs {
-    my $count = 0;
+sub get_inputs {
+    my %inputs;
     foreach(@_) {
         if ($_ =~ /(INPUT[0-9]{2}_NAME)/) {
-            $count += 1;
+            $inputs{$_} = 1;
         }
     }
-    return $count;
+    return %inputs;
 }
 
 # ---- misc inits
@@ -123,32 +124,32 @@ set_message(\&webobs_cgi_msg);
 my $me = $ENV{SCRIPT_NAME};
 my $formConfFile;       # file name of the form's configuration file
 my $TS0;                # last modification time of the config file
-#my $editOK = 0;         # 1 if the user is allowed to edit the form
-#my $admOK = 0;          # 1 if the user is allowed to administrate the form
+my $editOK = 0;         # 1 if the user is allowed to edit the form
+my $admOK = 0;          # 1 if the user is allowed to create new form
 my @rawfile;            # raw content of the configuration file
-my $FORMName;			# name of the form
+my $FORMName;        # name of the form
 my $text;
-my $action;				# new|edit|save
-my $newF;        		# 1 if we are creating a new form
-my $delete;				# 1 to delete form
-my $inputs;				# number which indicates how many inputs we are storing in this form
-my $template;			# type of template wanted by user
+my $action;        # new|edit|save
+my $newF;            # 1 if we are creating a new form
+my $delete;        # 1 to delete form
+my $inputs;        # number which indicates how many inputs we are storing in this form
+my $template;        # name of template wanted by user
 
 # Read and check CGI parameters
 $FORMName = $cgi->param('fname');
 $action   = checkParam($cgi->param('action'), qr/(edit|save)/, 'action')  // "edit";
-$text	  = $cgi->param('text') // '';	# used only in print FILE $text;
+$text      = $cgi->param('text') // '';    # used only in print FILE $text;
 $TS0      = checkParam($cgi->param('ts0'), qr/^[0-9]*$/, "TS0")    // 0;
 $delete   = checkParam($cgi->param('delete'), qr/^\d?$/, "delete") // 0;
 $template = $cgi->param('tpl') // "";
 
 # Read the list of all nodes
 opendir my $nodeDH, $NODES{PATH_NODES}
-	or die "Problem opening node list from '$NODES{PATH_NODES}': $!\n";
+  or die "Problem opening node list from '$NODES{PATH_NODES}': $!\n";
 my @ALL_NODES = sort grep(!/^\./ && -d "$NODES{PATH_NODES}/$_",
-						  readdir($nodeDH));
+    readdir($nodeDH));
 closedir($nodeDH)
-	or die "Problem closing node list from '$NODES{PATH_NODES}': $!\n";
+  or die "Problem closing node list from '$NODES{PATH_NODES}': $!\n";
 
 # codemirror configuration
 my $CM_edit_theme = $WEBOBS{JS_EDITOR_EDIT_THEME} // "default";
@@ -160,185 +161,184 @@ my $post_url = "/cgi-bin/fedit.pl";
 # ---- see what we've been called for and what the client is allowed to do
 # ---- init general-use variables on the way and quit if something's wrong
 #
-#if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
+$editOK = WebObs::Users::clientHasEdit(type => "authforms", name => "$FORMName");
+$admOK = WebObs::Users::clientHasAdm(type => "authforms", name => "*");
+if ( $editOK == 0 ) { die "$__{'Not authorized'}" }
 
-#my $auth = 'forms';
-$template 	  = "$WEBOBS{ROOT_CODE}/tplates/$template";
-my $formdir   = "$WEBOBS{PATH_FORMS}/$FORMName/";			# path to the form configuration file we are creating, editing or deleting
+my $formdir   = "$WEBOBS{PATH_FORMS}/$FORMName/";            # path to the form configuration file we are creating, editing or deleting
 $formConfFile = "$formdir$FORMName.conf";
+
+my @db_columns0 = ("id integer PRIMARY KEY AUTOINCREMENT", "quality integer" , "trash boolean DEFAULT FALSE", "node text NOT NULL",
+    "edate datetime", "edate_min datetime",
+    "sdate datetime NOT NULL", "sdate_min datetime",
+    "operators text NOT NULL, comment text", "tsupd text NOT NULL", "userupd text NOT NULL");
 
 # ---- action is 'save'
 #
 if ($action eq 'save') {
-	if (! -e $formConfFile) {
-		# --- Form creation (config file does not exist)
+    if (! -e $formConfFile) {
 
-		if (! -d $formdir and !mkdir($formdir)) {
-			htmlMsgNotOK("fedit: error while creating directory $formdir: $!");
-			exit;
-		}
-		if (open(FILE,">", $formConfFile) ) {
-			print FILE u2l($text);
-			close(FILE);
-		} else {
-			htmlMsgNotOK("fedit: error creating $formConfFile: $!");
-			exit;
-		}
+        # --- Form creation (config file does not exist)
 
-		# --- connecting to the database in order to create a table with the name of the FORM
-		my $dbh = connectDbForms();
+        if (! -d $formdir and !mkdir($formdir)) {
+            htmlMsgNotOK("fedit: error while creating directory $formdir: $!");
+            exit;
+        }
+        if (open(FILE,">", $formConfFile) ) {
+            print FILE u2l($text);
+            close(FILE);
+        } else {
+            htmlMsgNotOK("fedit: error creating $formConfFile: $!");
+            exit;
+        }
 
-		# --- checking if the table we want to edit exists
-		my $tbl 	  = lc($FORMName);
+# --- connecting to the database in order to create a table with the name of the FORM
+        my $dbh = connectDbForms();
 
-		my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
-		my $sth = $dbh->prepare( $stmt );
-		my $rv = $sth->execute() or die $DBI::errstr;
+        # --- checking if the table we want to edit exists
+        my $tbl       = lc($FORMName);
 
-		if ($sth->fetchrow_array() == 0) {	# if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
-			# --- creation of the DB table
-			my @inputs = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
+        my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
+        my $sth = $dbh->prepare( $stmt );
+        my $rv = $sth->execute() or die $DBI::errstr;
 
-			my @db_columns = map {"$_ "} ("trash boolean DEFAULT FALSE", "node text NOT NULL", "edate datetime","edate_min datetime","sdate1 datetime NOT NULL","sdate1_min datetime","users text NOT NULL");
-			my $db_columns = "";
-			$db_columns .= join(', ', @db_columns);
-			$db_columns .= " ,";
-			$db_columns .= join(',', map { " ".lc((split '_', $_)[0])." text" } @inputs);
-			$db_columns .= join(',', (", comment text, tsupd text NOT NULL, userupd text NOT NULL"));
+        if ($sth->fetchrow_array() == 0) {    # if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
 
-			my $stmt = qq(create table if not exists $tbl ($db_columns););
-			#htmlMsgOK($stmt);
-			my $sth = $dbh->prepare( $stmt );
-			my $rv = $sth->execute() or die $DBI::errstr;
-		} else {
-			htmlMsgNotOK("Can't create the table !");
-			exit;
-		}
+            # --- creation of the DB table
+            my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 
-		htmlMsgOK("fedit: $FORMName created.");
-		exit;
-	} else {
-		# --- connecting to the database in order to create a table with the name of the FORM
-		my $dbh = connectDbForms();
+            my @db_columns = @db_columns0;
+            push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
 
-		# --- checking if the table we want to edit exists
-		my $tbl 	  = lc($FORMName);
+            my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
 
-		my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
-		my $sth = $dbh->prepare( $stmt );
-		my $rv = $sth->execute() or die $DBI::errstr;
+            #htmlMsgOK($stmt);
+            my $sth = $dbh->prepare( $stmt );
+            my $rv = $sth->execute() or die $DBI::errstr;
+        } else {
+            htmlMsgNotOK("Can't create the table !");
+            exit;
+        }
 
-		if ($sth->fetchrow_array() == 0) {	# if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
-			# --- creation of the DB table
-			my @inputs = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
+        htmlMsgOK("fedit: $FORMName created.");
+        exit;
+    } else {
 
-			my @db_columns = map {"$_ "} ("trash boolean DEFAULT FALSE", "node text NOT NULL", "edate datetime","edate_min datetime","sdate1 datetime NOT NULL","sdate1_min datetime","users text NOT NULL");
-			my $db_columns = "";
-			$db_columns .= join(', ', @db_columns);
-			$db_columns .= " ,";
-			$db_columns .= join(',', map { " ".lc((split '_', $_)[0])." text" } @inputs);
-			$db_columns .= join(',', (", comment text, tsupd text NOT NULL, userupd text NOT NULL"));
+        # --- Form delete or update (config file already exists)
 
-			my $stmt = qq(create table if not exists $tbl ($db_columns););
-			#htmlMsgOK($stmt);
-			my $sth = $dbh->prepare( $stmt );
-			my $rv = $sth->execute() or die $DBI::errstr;
-		} else {
-			htmlMsgNotOK("Can't create the table !");
-			exit;
-		}
-		
-		# now we know if the table exists
-		# we want to look at the modification of $text
-		my @inputs  = grep {/(INPUT[0-9]{2}_NAME)/} split(/\n/, $text);
-		my $newKeys = $#inputs;
-		my $oldKeys = count_inputs(readCfg($formConfFile));
+        # --- Delete the form!
+        if ($delete == 1) {
 
-		my $msg;
-		if ($newKeys + 1 > $oldKeys) {
-			$msg = "A new INPUT has been added to the FORM !";
+            # delete the dir/file first
+            my $rmtree_errors;
+            rmtree($formdir, {'safe' => 1, 'error' => \$rmtree_errors});
+            if ($rmtree_errors  && @$rmtree_errors) {
+                htmlMsgNotOK("fedit couldn't delete directory $formdir");
+                print STDERR "fedit.pl: unable to delete directory $formdir: "
+                  .join(", ", @$rmtree_errors)."\n";
+                exit;
+            }
+            htmlMsgOK("$FORMName deleted");
+            exit;
+        }
 
-			# --- connecting to the database in order to add the new INPUT to the DB 
-			my @db_columns = map {"$_ "} ("trash boolean DEFAULT FALSE", "node text NOT NULL", "edate datetime","edate_min datetime","sdate1 datetime NOT NULL","sdate1_min datetime","users text NOT NULL");
-			my $db_columns = "";
-			$db_columns .= join(', ', @db_columns);
-			$db_columns .= " ,";
-			$db_columns .= join(',', map { " ".lc((split '_', $_)[0])." text" } @inputs);
-			$db_columns .= join(',', (", comment text, tsupd text NOT NULL, userupd text NOT NULL"));
+# --- connecting to the database in order to create a table with the name of the FORM
+        my $dbh = connectDbForms();
 
-			my $stmt = qq(create table if not exists $tbl ($db_columns););
-			my $sth = $dbh->prepare( $stmt );
-			my $rv = $sth->execute() or die $DBI::errstr;
-		} elsif ($newKeys + 1 < $oldKeys) {
-			$msg = "You can't remove an INPUT !";
-			htmlMsgNotOK($msg);
-			exit;
-		}
+        # --- checking if the table we want to edit exists
+        my $tbl       = lc($FORMName);
 
-		if ($TS0 != (stat("$formConfFile"))[9]) { 
-		htmlMsgNotOK("$FORMName $__{'has been modified while you were editing'}"); 
-		exit; 
-		}
-		if ( sysopen(FILE, "$formConfFile", O_RDWR | O_CREAT) ) {
-			unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-				warn "$me waiting for lock on $FORMName...";
-				flock(FILE, LOCK_EX);
-			}
-			qx(cp -a $formConfFile $formConfFile~ 2>&1); 
-			if ( $?  == 0 ) { 
-				truncate(FILE, 0);
-				seek(FILE, 0, SEEK_SET);
-				$text =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
-				push(@rawfile,u2l($text));
-				print FILE @rawfile ;
-				close(FILE);
-			} else {
-				close(FILE);
-				htmlMsgNotOK("$me couldn't backup $FORMName");
-			}
-		} else { htmlMsgNotOK("$me opening $FORMName - $!") }
-		htmlMsgOK($msg);
-		exit;
-	}
-}
+        my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
+        my $sth = $dbh->prepare( $stmt );
+        my $rv = $sth->execute() or die $DBI::errstr;
 
-# --- Form delete or update (config file already exists)
+        if ($sth->fetchrow_array() == 0) {    # if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
 
-if ($delete == 1) {
-	# --- Delete the grid !
+            # --- creation of the DB table
+            my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 
-	# delete the dir/file first
-	my $rmtree_errors;
-	rmtree($formdir, {'safe' => 1, 'error' => \$rmtree_errors});
-	if ($rmtree_errors  && @$rmtree_errors) {
-		htmlMsgNotOK("fedit couldn't delete directory $formdir");
-		print STDERR "fedit.pl: unable to delete directory $formdir: "
-			.join(", ", @$rmtree_errors)."\n";
-		exit;
-	}
-	htmlMsgOK("$FORMName deleted");
-	exit;
+            my @db_columns = @db_columns0;
+            push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
+
+            my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
+            my $sth = $dbh->prepare( $stmt );
+            my $rv = $sth->execute() or die $DBI::errstr;
+        }
+
+        # now we know if the table exists
+        # we want to look at the modification of $text
+        my @inputs  = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
+        my %old_inputs = get_inputs(readCfg($formConfFile));
+        my %new_inputs = map { (split /\|/, $_, 2) } @inputs;
+
+        foreach (keys %old_inputs) {
+            if (not exists $new_inputs{$_}) {
+                htmlMsgNotOK("You can't remove an INPUT !");
+                exit;
+            }
+        }
+
+        my @new_columns;
+        foreach (keys %new_inputs) {
+            if (not exists $old_inputs{$_}) {
+                push(@new_columns, lc((split '_', $_)[0])." TEXT");
+            }
+        }
+
+        my $msg = "Update";
+        if (@new_columns) {
+            $msg = "New INPUT has been added to the FORM !";
+
+            # --- connecting to the database in order to add new INPUT to the DB
+            foreach (sort @new_columns) {
+                my $stmt = "ALTER TABLE $tbl ADD COLUMN $_;";
+                my $sth = $dbh->prepare( $stmt );
+                my $rv = $sth->execute() or die $DBI::errstr;
+            }
+        }
+
+        if ($TS0 != (stat("$formConfFile"))[9]) {
+            htmlMsgNotOK("$FORMName $__{'has been modified while you were editing'}");
+            exit;
+        }
+        if ( sysopen(FILE, "$formConfFile", O_RDWR | O_CREAT) ) {
+            unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+                warn "$me waiting for lock on $FORMName...";
+                flock(FILE, LOCK_EX);
+            }
+            qx(cp -a $formConfFile $formConfFile~ 2>&1);
+            if ( $?  == 0 ) {
+                truncate(FILE, 0);
+                seek(FILE, 0, SEEK_SET);
+                $text =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
+                push(@rawfile,u2l($text));
+                print FILE @rawfile ;
+                close(FILE);
+            } else {
+                close(FILE);
+                htmlMsgNotOK("$me couldn't backup $FORMName");
+            }
+        } else { htmlMsgNotOK("$me opening $FORMName - $!") }
+        htmlMsgOK($msg);
+        exit;
+    }
 }
 
 # ---- action is 'edit' (default)
 #
-#$editOK = WebObs::Users::clientHasEdit(type => "auth".$auth, name => "$FORMName") || WebObs::Users::clientHasEdit(type => "auth".$auth, name => "MC");
-#$admOK = WebObs::Users::clientHasAdm(type => "auth".$auth, name => "*");
-if ( -e "$formConfFile" ) {	# looking if the FORM already exists
-	#if ($editOK) {
-		@rawfile = readFile($formConfFile);
-		$TS0 = (stat($formConfFile))[9] ;
-		#$editOK = 1;
-	#}
+if ( -e "$formConfFile" ) {    # looking if the FORM already exists
+    if ($editOK) {
+        @rawfile = readFile($formConfFile);
+        $TS0 = (stat($formConfFile))[9] ;
+    }
 }
-else {	# we are creating a new FORM
-	#if ($admOK) {
-		$formConfFile = $template;
-		@rawfile = readFile($formConfFile);
-		$TS0 = (stat($formConfFile))[9] ;
-	#	$editOK = 1;
-		$newF = 1;
-	#}
+else {    # we are creating a new FORM
+    if ($admOK) {
+        $formConfFile = "$WEBOBS{ROOT_CODE}/tplates/$template";
+        @rawfile = readFile($formConfFile);
+        $TS0 = (stat($formConfFile))[9] ;
+        $newF = 1;
+    }
 }
 
 # start building page
@@ -347,8 +347,6 @@ my $txt = l2u(escape_html(join("",@rawfile)));
 my $titrePage = "$__{'Editing'} form";
 if ( $newF == 1 ) { $titrePage = "$__{'Creating'} new form" }
 
-#my $cm_edit = ($editOK || $admOK) ? 1 : 0;
-my $cm_edit = 1;
 print <<_EOD_;
 Content-type: text/html; charset=utf-8
 
@@ -363,10 +361,10 @@ Content-type: text/html; charset=utf-8
 _EOD_
 
 if ($CM_edit_theme != "default") {
-	print " <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_edit_theme.css\">\n";
+    print " <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_edit_theme.css\">\n";
 }
 if ($CM_browsing_theme != "default" && $CM_edit_theme != $CM_browsing_theme) {
-	print " <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_browsing_theme.css\">\n";
+    print " <link rel=\"stylesheet\" href=\"/js/codemirror/theme/$CM_browsing_theme.css\">\n";
 }
 
 print <<_EOD_;
@@ -384,13 +382,13 @@ print <<_EOD_;
  <script type=\"text/javascript\">
   // Configuration used in cmtextarea.js
   var CODEMIRROR_CONF = {
-	READWRITE_THEME: '$CM_edit_theme',
-	READONLY_THEME: '$CM_browsing_theme',
-	LANGUAGE_MODE: '$CM_language_mode',
-	AUTO_VIM_MODE: '$CM_auto_vim_mode',
-	EDIT_PERM: $cm_edit,
-	FORM: '#theform',
-	POST_URL: '$post_url',
+    READWRITE_THEME: '$CM_edit_theme',
+    READONLY_THEME: '$CM_browsing_theme',
+    LANGUAGE_MODE: '$CM_language_mode',
+    AUTO_VIM_MODE: '$CM_auto_vim_mode',
+    EDIT_PERM: $editOK,
+    FORM: '#theform',
+    POST_URL: '$post_url',
   };
  </script>
  <script src="/js/cmtextarea.js"></script>
@@ -398,36 +396,36 @@ print <<_EOD_;
  <script type="text/javascript">
  function delete_form()
  {
-	if ( confirm("$__{'The FORM will be deleted. Are you sure?'}") ) {
-		document.formulaire.delete.value = 1;
-		\$.post("$post_url", \$("#theform").serialize(), function(data) {
-			if (data != '') alert(data);
-			location.href = "$GRIDS{CGI_SHOW_GRIDS}";
-		});
-	} else {
-		return false;
-	}
+    if ( confirm("$__{'This FORM will be deleted (associated table in DB will remain, but useless). Are you sure?'}") ) {
+        document.form.delete.value = 1;
+        \$.post("$post_url", \$("#theform").serialize(), function(data) {
+            if (data != '') alert(data);
+            location.href = "$GRIDS{CGI_SHOW_GRIDS}";
+        });
+    } else {
+        return false;
+    }
 }
-function verif_formulaire()
+function verif_form()
 {
-	// postform() from cmtextarea.js will submit the form to $post_url
-	console.log(document.formulaire);
-	postform();
-	//\$.post("/cgi-bin/fedit.pl", \$("#theform").serialize(), function(data) {
-	//	if (data != '') alert(data);
-	//	location.href = document.referrer;
-	//});
+    // postform() from cmtextarea.js will submit the form to $post_url
+    console.log(document.form);
+    postform();
+    //\$.post("/cgi-bin/fedit.pl", \$("#theform").serialize(), function(data) {
+    //    if (data != '') alert(data);
+    //    location.href = document.referrer;
+    //});
 }
  </script>
 </HEAD>
-<BODY style="background-color:#E0E0E0" onLoad="document.formulaire.text.focus()">
+<BODY onLoad="document.form.text.focus()">
 <!-- <script type="text/javascript" src="/js/jquery.js"></script> -->
 <!-- overLIB (c) Erik Bosrup -->
 <script language="JavaScript" src="/js/overlib/overlib.js"></script>
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <div id="helpbox"></div>
 
-<FORM id="theform" name="formulaire" action="">
+<FORM id="theform" name="form" action="">
 <input type="hidden" name="ts0" value="$TS0">
 <input type="hidden" name="fname" value="$FORMName">
 <input type=\"hidden\" name=\"action\" value=\"save\">
@@ -435,14 +433,17 @@ function verif_formulaire()
 _EOD_
 
 print "<H2>$titrePage $FORMName";
-if ($newF == 0) {
-	print " <A href=\"#\"><IMG src=\"/icons/no.png\" onClick=\"delete_form();\" title=\"$__{'Delete this form'}\"></A>";
+
+# delete an existing form is only for the WO Owner!
+if ($newF == 0 && $USERS{$CLIENT}{UID} eq "!") {
+    print " <A href=\"#\"><IMG src=\"/icons/no.png\" onClick=\"delete_form();\" title=\"$__{'Delete this form'}\"></A>";
 }
 print "</H2>\n";
 
 # ---- Display file contents into a "textarea" so that it can be edited
 print "<TABLE style=\"\">\n";
 print "<TR><TD style=\"border:0;\">\n";
+
 #print "<TEXTAREA class=\"editfmono\" id=\"tarea\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$text</TEXTAREA><br>\n";
 print "<TEXTAREA class=\"editfmono\" id=\"textarea-editor\" rows=\"30\" cols=\"80\" name=\"text\" dataformatas=\"plaintext\">$txt</TEXTAREA>\n";
 print "<div id=\"statusbar\">$FORMName</div>\n";
@@ -450,48 +451,42 @@ print "<div id=\"statusbar\">$FORMName</div>\n";
 print "</TD>\n<TD style=\"border:0; vertical-align:top\">\n";
 
 # ---- Lists
-my @lists  = grep {/(INPUT[0-9]{2}_TYPE)/} split(/\n/, $txt);
+my @lists  = grep {/_TYPE\|list:/} split(/\n/, $txt);
+@lists = uniq(map {s/^.*\|list:\s*(.*)$/$1/g; $_} @lists);
 
-print "<FIELDSET><LEGEND>Lists</LEGEND>\n";
+print "<FIELDSET><LEGEND>Lists</LEGEND>\n<UL>";
 
-foreach(@lists) {
-	if ($_ =~ /list:/) {
-		$_ = (split /\: /, $_)[1];
-		my $dir  = "$WEBOBS{PATH_FORMS}/$FORMName/";
-		my $file = $dir.$_;
-		if (-e $file) {
-			$file = "CONF/FORMS/$FORMName/$_";
-			print "<A href=\"/cgi-bin/xedit.pl?fs=$file\">$file</a>\n";
-		} elsif ($template =~ /GENFORM/ && ! -e "$file"){
-			if (! -d $dir and !mkdir($dir)) {
-				print "fedit: error while creating directory $dir: $!";
-			}
-			qx(cp -a $WEBOBS{ROOT_CODE}/tplates/FORM_list.conf $file 2>&1);
-			$file = "CONF/FORMS/$FORMName/$_";
-			print "<A href=\"/cgi-bin/xedit.pl?fs=$file\">$file</a>\n";
-		} else {
-			my $suffix = lc((split /FORM\./, $template)[1]);
-			if (! -d $dir and !mkdir($dir)) {
-				print "fedit: error while creating directory $dir: $!";
-			}
-			qx(cp -a $WEBOBS{ROOT_CODE}/tplates/FORM_list$suffix.conf $file 2>&1);
-			$file = "CONF/FORMS/$FORMName/$_";
-			print "<A href=\"/cgi-bin/xedit.pl?fs=$file\">$file</a>\n";
-		}
-	}
+foreach (@lists) {
+    $_ = trim($_);
+    my $tdir = "$WEBOBS{ROOT_CODE}/tplates";
+    my $fdir  = "$WEBOBS{PATH_FORMS}/$FORMName";
+    if (! -d $fdir and !mkdir($fdir)) {
+        print "fedit: error while creating directory $fdir: $!";
+    }
+    my $file = "$fdir/$_";
+    if ((! -e $file) && -e "$tdir/$_") {
+
+        # if the file exists only in the template directory, copy it
+        qx(cp $tdir/$_ $file 2>&1);
+    } elsif (! -e $file) {
+
+        # if the file does not exist anywhere, copy the generic FORM_list
+        qx(cp $tdir/FORM_list.conf $file 2>&1);
+    }
+    print "<LI><A href=\"/cgi-bin/xedit.pl?fs=CONF/FORMS/$FORMName/$_\">$_</A></LI>\n";
 }
-print "</FIELDSET>\n";
+print "</UL></FIELDSET>\n";
 
 print "</TD>\n";
 print "<TR><TD style=\"border:0\">\n";
 
 # Vim mode checkbox
 print <<_EOD_;
-	<div class="js-editor-controls">
-		<input type="checkbox" id="toggle-vim-mode" title="$__{'Check to enable vim mode in the editor'}" onClick="toggleVim()">
-		<label for="toggle-vim-mode" id="toggle-vim-mode-label" title="$__{'Check to enable vim mode in the editor'}">$__{'Use vim mode'}</label>
-	</div>
-	</TD>
+    <div class="js-editor-controls">
+        <input type="checkbox" id="toggle-vim-mode" title="$__{'Check to enable vim mode in the editor'}" onClick="toggleVim()">
+        <label for="toggle-vim-mode" id="toggle-vim-mode-label" title="$__{'Check to enable vim mode in the editor'}">$__{'Use vim mode'}</label>
+    </div>
+    </TD>
 _EOD_
 
 # Form buttons
@@ -499,7 +494,7 @@ print <<_EOD_;
  <TD style="border: 0">
   <p align=center>
    <input type="button" name="lien" value="$__{'Cancel'}" onClick="history.go(-1)">
-   <input type="button" class=\"submit-button\" value="$__{'Save'}" onClick="verif_formulaire();">
+   <input type="button" class=\"submit-button\" value="$__{'Save'}" onClick="verif_form();">
   </p>
  </TD>
 </TR>
@@ -517,11 +512,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Lucas Dassin
+Lucas Dassin, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+WebObs - 2012-2024 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -24,7 +24,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2024-07-02
+%	Updated: 2025-01-23
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -32,16 +32,17 @@ wofun = sprintf('WEBOBS{%s}',mfilename);
 F.ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
 wosystem(sprintf('mkdir -p %s',F.ptmp));
 
+% FORMs will read data from all associated nodes
 if isfield(P,'FORM')
-	% legacy forms (datafile)
 	f = sprintf('%s/%s',WO.PATH_DATA_DB,P.FORM.FILE_NAME);
 	if exist(f,'file')
+		% legacy forms (datafile)
 		D = readfmtdata_woform(WO,P,N);
 	else
 		D = readfmtdata_genform(WO,P,N);
 	end
 else
-
+% for all other formats: loop on the nodes
 	for n = 1:length(N)
 
 		F.fmt = lower(field2str(N(n),'RAWFORMAT',P.RAWFORMAT,'notempty'));
@@ -71,7 +72,7 @@ else
 		case {'miniseed','seedlink','arclink','combined','fdsnws-dataselect'}
 			D(n) = readfmtdata_miniseed(WO,P,N(n),F);
 
-		case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii'}
+		case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii','spotgins-ippp','gamit-pos'}
 			D(n) = readfmtdata_gnss(WO,P,N(n),F);
 
 		case {'hyp71sum2k','fdsnws-event','scevtlog-xml'}
