@@ -113,7 +113,7 @@ P.fault_plot = isok(P,'FAULT_PLOT');
 P.fault_rgb = field2num(P,'FAULT_PLOT_COLOR',[.8,.8,.8]);
 if numel(P.fault_lld)==3 && numel(P.fault_lw)==2
     P.fault_utm = ll2utm(P.fault_lld(1:2));
-    txt = sprintf('%gN, %gE, depth %gkm, length %gkm, width %gkm, strike %g°, dip %g°, rake %g°, slip %gm, open %gm', ...
+    txt = sprintf('%gN, %gE, depth %gkm, length %gkm, width %gkm, strike %g°N, dip %g°, rake %g°, slip %gm, open %gm', ...
         P.fault_lld, P.fault_lw, P.fault_strike, P.fault_dip, P.fault_rake, P.fault_slip, P.fault_open);
     fprintf('---> Fault correction: %s, from %s to %s\n', txt, datestr(P.fault_tlim(1)), datestr(P.fault_tlim(2)));
 	evt.dt1 = P.fault_tlim(1) - P.TZ;
@@ -374,16 +374,17 @@ for n = 1:numel(N)
             fdis(D(n).t>=P.fault_tlim(2)) = 1;
             k = find(isinto(D(n).t,P.fault_tlim));
             if length(k)>1
-                fdis(k) = linspace((D(n).t(k(1))-P.fault_tlim(1))/diff(P.fault_tlim),(P.fault_tlim(2)-D(n).t(k(end)))/diff(P.fault_tlim),length(k));
+                fdis(k) = linspace((D(n).t(k(1))-P.fault_tlim(1))/diff(P.fault_tlim),(D(n).t(k(end))-P.fault_tlim(1))/diff(P.fault_tlim),length(k));
             end
             sta_utm = ll2utm(N(n).LAT_WGS84,N(n).LON_WGS84);
             dx = sta_utm(1) - P.fault_utm(1);
             dy = sta_utm(2) - P.fault_utm(2);
             [uE,uN,uZ] = okada85(dx, dy, N(n).ALTITUDE + P.fault_lld(3)*1e3, P.fault_strike, P.fault_dip, P.fault_lw(1)*1e3, P.fault_lw(2)*1e3, ...
                 P.fault_rake, P.fault_slip*fdis, P.fault_open*fdis);
-            D(n).d(:,5:7) = D(n).d(:,5:7) + [uE,uN,uZ];
+            D(n).d(:,5:7) = D(n).d(:,5:7) - [uE,uN,uZ];
+            % note: real(max(complex(x,0))) gives maximum of x in terms of absolute value
             fprintf('---> Fault correction: station %s (%g km) max. disp. ENU = %+gm, %+gm, %+gm\n', ...
-                N(n).ALIAS, sqrt(dx^2+dy^2)/1e3, uE(end), uN(end), uZ(end));
+                N(n).ALIAS, sqrt(dx^2+dy^2)/1e3, real(max(complex(uE(end),0))), real(max(complex(uN(end),0))), real(max(complex(uZ(end),0))));
         end
 	end
 
@@ -565,7 +566,7 @@ for r = 1:numel(P.GTABLE)
 					X(1).w = D(n).d(k,4);
 				end
 				if harmcorr || faultcorr || vrelmode
-					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
+					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i)),P.GTABLE(r).DECIMATE,P);
 					X(2).t = tk;
 					X(2).d(:,i) = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
 					X(2).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
@@ -2488,8 +2489,8 @@ W = P.fault_lw(2)*1e3;
 % coordinates of the fault rectangle
 x_fault = x0 + L/2*cosd(strike)*[-1,1,1,-1] + sind(strike)*cosd(dip)*W/2*[-1,-1,1,1];
 y_fault = y0 + L/2*sind(strike)*[-1,1,1,-1] + cosd(strike)*cosd(dip)*W/2*[1,1,-1,-1];
-z_fault = z0 + sind(dip)*W*[1,1,0,0];
-opt = {P.fault_rgb,'EdgeColor','k','LineWidth',2,'FaceAlpha',.5,'EdgeAlpha',.5};
+z_fault = z0 + sind(dip)*W*[1,1,-1,-1]/2;
+opt = {P.fault_rgb,'FaceColor','none','LineWidth',2,'EdgeAlpha',.5};
 
 switch geometry
 case 'xy'
