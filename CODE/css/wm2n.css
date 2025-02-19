@@ -113,6 +113,7 @@ ul.dropdown li {
     float: left;
     zoom: 1;
     background: transparent;
+    transition: all 50ms ease-in-out 30ms;
 }
 ul.dropdown a:hover {
     color: #000;
@@ -151,7 +152,6 @@ ul.dropdown ul {
     visibility: hidden;
     position: absolute;
     top: 100%;
-    left: 0;
 }
 ul.dropdown ul li {
     font-weight: normal;
