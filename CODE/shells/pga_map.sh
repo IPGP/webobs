@@ -69,7 +69,7 @@ do
 		then
 			echo "${WO__PYTHON_PRGM} ${WO__ROOT_CODE}/python/pga_map.py ${evt_file} ${dat_file} ${outROOT} ${options}"
 		fi
-		${WO__PYTHON_PRGM} ${WO__ROOT_CODE}/python/pga_map.py ${evt_file} ${dat_file} ${outROOT} ${options}
+		${WO__PYTHON_PRGM} ${WO__ROOT_CODE}/python/pgamap/pga_map.py ${evt_file} ${dat_file} ${outROOT} ${options}
 		echo "  --- $(echo $k | awk '{print $0+1}') / ${#updated_files[*]} finished ---"
 
 	else
