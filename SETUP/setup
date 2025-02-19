@@ -525,17 +525,6 @@ if ${LOCMISS}; then
 fi
 echo
 
-# Python environment ----------------------------------------------------------
-# -----------------------------------------------------------------------------
-echo 'Python environment installation'
-if $(confirmy "Confirm create Python environment [Y/n] ?") ; then
-    python3 -m venv ${DOCROOT}/venv/
-    chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
-    source ${DOCROOT}/venv/bin/activate
-    pip install -r ${DOCROOT}/CODE/python/requirements.txt
-fi
-echo
-
 # webobs user -----------------------------------------------------------------
 # -----------------------------------------------------------------------------
 if [[ ${SETUPTYPE} == "install" ]]; then
@@ -560,6 +549,17 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 	fi
 fi
 echo "WebObs user: ${USERID} , group: ${USERGID}, email: ${USERMAIL}"
+echo
+
+# Python environment ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+echo 'Python environment installation'
+if $(confirmy "Confirm create Python environment [Y/n] ?") ; then
+    python3 -m venv ${DOCROOT}/venv/
+    chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
+    source ${DOCROOT}/venv/bin/activate
+    pip install -r ${DOCROOT}/CODE/python/requirements.txt
+fi
 echo
 
 # setup (new) CODE and DOC paths, wether install or upgrade
