@@ -506,7 +506,7 @@ function updateMap(map_id, geojson, lat, lon, zoom=10) {
 
     window.addEventListener("pageshow", function (event) {
         if (event.persisted) {
-            window.location.reload();
+            setTimeout(() => { window.location.reload(); }, "500");
         }
     });
     </script>
