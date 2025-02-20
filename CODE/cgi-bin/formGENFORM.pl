@@ -443,8 +443,18 @@ function updateMap(map_id, geojson, lat, lon, zoom=10) {
                 return response.json()
             })
             .then((data) => {
-                // console.log(data)
-                L.geoJson(data).addTo(map);
+                L.geoJson(data, {
+                    pointToLayer: function(feature, latlng){
+                        return L.circleMarker(latlng, {color: '#3d85c6', radius: 4});
+                    },
+                    onEachFeature: function (feature, layer) {
+                        var popupcontent = [];
+                        for (var prop in feature.properties) {
+                            popupcontent.push(prop + ": " + feature.properties[prop]);
+                        }
+                        layer.bindPopup(popupcontent.join("<br />"));
+                    }
+                }).addTo(map);
             })
             .catch((error) => {
                 console.log(error)
