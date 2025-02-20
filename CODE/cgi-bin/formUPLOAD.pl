@@ -117,7 +117,7 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
     $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
 } elsif ($typeDoc eq "SHAPEFILE") {
     $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
-    $filetype = ".json, .zip";
+    $filetype = ".json, .geojson, .zip, .shz";
 } elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
     $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {

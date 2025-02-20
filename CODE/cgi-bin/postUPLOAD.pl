@@ -164,12 +164,12 @@ while($filename = $QryParm->{"uploadFile$fx"}) {
         }
         qx(mv -f "$upload_tmp/$filename" $pathTarget);
         if ($typeDoc eq "SHAPEFILE") {
-            if ($filename =~ m/.zip/) {
+            if ($filename =~ m/.zip/ or $filename =~ m/.shz/) {
                 my $tempdir = tempdir(CLEANUP => 1);
                 qx(unzip -u "$pathTarget/$filename" -d $tempdir);
                 my @shapefile = glob "$tempdir/*.shp";
                 qx(ogr2ogr -f "GEOJSON" -t_srs EPSG:4326 "$pathTarget/shape.json" $shapefile[0]);
-            } elsif ($filename =~ m/.json/) {
+            } elsif ($filename =~ m/.json/ or $filename =~ m/.geojson/) {
                 qx(mv -f "$pathTarget/$filename" "$pathTarget/shape.json");
             }
         }
