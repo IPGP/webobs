@@ -556,7 +556,7 @@ if (uc($GRIDType) eq 'PROC') {
         my @select = split(/,/,$chanlist);
         my $dateCLB = "";
         my $sepCLB;
-        foreach my $k (sort keys %carCLB) {
+        foreach my $k (sort_clb(\%carCLB)) {
             my @chpCLB;
             foreach my $p ( @params ) { push(@chpCLB, $carCLB{$k}{$p}) }
             if ($#chpCLB < $#params) {
