@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2024-06-18
+%   Updated: 2024-06-19
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -111,6 +111,7 @@ P.fault_tlim = field2num(P,'FAULT_DISLOCATION_TLIM');
 P.fault_model = field2str(P,'FAULT_DISLOCATION_TIME_MODEL','linear');
 P.fault_plot = isok(P,'FAULT_PLOT');
 P.fault_rgb = field2num(P,'FAULT_PLOT_COLOR',[.8,.8,.8]);
+P.fault_topo = isok(P,'FAULT_WITH_TOPOGRAPHY',true);
 if numel(P.fault_lld)==3 && numel(P.fault_lw)==2
     P.fault_utm = ll2utm(P.fault_lld(1:2));
     txt = sprintf('%gN, %gE, depth %gkm, length %gkm, width %gkm, strike %g°N, dip %g°, rake %g°, slip %gm, open %gm', ...
@@ -379,7 +380,7 @@ for n = 1:numel(N)
             sta_utm = ll2utm(N(n).LAT_WGS84,N(n).LON_WGS84);
             dx = sta_utm(1) - P.fault_utm(1);
             dy = sta_utm(2) - P.fault_utm(2);
-            [uE,uN,uZ] = okada85(dx, dy, N(n).ALTITUDE + P.fault_lld(3)*1e3, P.fault_strike, P.fault_dip, P.fault_lw(1)*1e3, P.fault_lw(2)*1e3, ...
+            [uE,uN,uZ] = okada85(dx, dy, P.fault_lld(3)*1e3 + N(n).ALTITUDE*P.fault_topo, P.fault_strike, P.fault_dip, P.fault_lw(1)*1e3, P.fault_lw(2)*1e3, ...
                 P.fault_rake, P.fault_slip*fdis, P.fault_open*fdis);
             D(n).d(:,5:7) = D(n).d(:,5:7) - [uE,uN,uZ];
             % note: real(max(complex(x,0))) gives maximum of x in terms of absolute value

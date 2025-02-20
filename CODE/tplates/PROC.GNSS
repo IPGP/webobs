@@ -150,6 +150,8 @@ FAULT_OPEN_M|0
 FAULT_DISLOCATION_TLIM|
 # dislocation time model: linear (default), log, or exp
 FAULT_DISLOCATION_TIME_MODEL|linear
+# dislocation model uses station's elevation to correct topography effect
+FAULT_WITH_TOPOGRAPHY|Y
 # plot the fault on graphs (MOTION, VECTORS, MODELLING, MODELTIME)
 FAULT_PLOT|Y
 FAULT_PLOT_COLOR|lightgray
