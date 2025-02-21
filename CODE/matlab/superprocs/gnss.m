@@ -99,7 +99,7 @@ if isnumeric(harm_refdate) && all(harm_period > 0)
 end
 
 % Active fault correction: fault geometry and dislocation (Okada model)
-faultcorr = false;
+faultcorr = isok(P,'FAULT_ACTIVATE');
 P.fault_lld = field2num(P,'FAULT_CENTROID_LATLONDEP');
 P.fault_lw = field2num(P,'FAULT_LENGTH_WIDTH_KM');
 P.fault_strike = field2num(P,'FAULT_STRIKE_DEG',0);
@@ -112,7 +112,7 @@ P.fault_model = field2str(P,'FAULT_DISLOCATION_TIME_MODEL','linear');
 P.fault_plot = isok(P,'FAULT_PLOT');
 P.fault_rgb = field2num(P,'FAULT_PLOT_COLOR',[.8,.8,.8]);
 P.fault_topo = isok(P,'FAULT_WITH_TOPOGRAPHY',true);
-if numel(P.fault_lld)==3 && numel(P.fault_lw)==2
+if faultcorr
     P.fault_utm = ll2utm(P.fault_lld(1:2));
     txt = sprintf('%gN, %gE, depth %gkm, length %gkm, width %gkm, strike %g°N, dip %g°, rake %g°, slip %gm, open %gm', ...
         P.fault_lld, P.fault_lw, P.fault_strike, P.fault_dip, P.fault_rake, P.fault_slip, P.fault_open);
@@ -126,7 +126,6 @@ if numel(P.fault_lld)==3 && numel(P.fault_lw)==2
     evt.hex = rgb2hex(evt.rgb);
     evt.out = false;
     P.fault_event = evt;
-    faultcorr = true;
 end
 
 % PERNODE graphs parameters
