@@ -24,7 +24,7 @@ require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(htmlspecialchars getImageInfo makeThumbnail trim ltrim
   rtrim tri_date_avec_id datediffdays isok romanx pga2msk attenuation num2roman txt2htm tex2utf
-  roundsd htm2frac qrcode url2target checkParam mean median std);
+  roundsd htm2frac qrcode url2target checkParam sort_clb mean median std);
 $VERSION = "1.00";
 
 =pod
@@ -181,6 +181,21 @@ sub tri_date_avec_id ($$) {
     $c =~ s/\|\|/00:00/;
     $d =~ s/\|\|/00:00/;
     return $d cmp $c;
+}
+
+# -------------------------------------------------------------------------------------------------
+# Sort the calibration data by date, time and channel number.
+sub sort_clb {
+    my $data_ref = shift;
+    if ( ref $data_ref ne "HASH" ) {
+        die("You need to pass data in a hash reference \n");
+    }
+    my %data = %{$data_ref};
+    return sort { $data{$a}{'DATE'} cmp $data{$b}{'DATE'} or
+        $data{$a}{'TIME'} cmp $data{$b}{'TIME'} or
+        $data{$a}{'nv'} <=> $data{$b}{'nv'} or
+        $a <=> $b; # final comparison to make sure the ordering is always well defined
+    } keys %data;
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------

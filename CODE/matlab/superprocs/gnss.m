@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2024-06-16
+%   Updated: 2024-06-19
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -96,6 +96,36 @@ if isnumeric(harm_refdate) && all(harm_period > 0)
 	else
 		fprintf('*** Warning: inconsistent pairs of sine/cosine for harmonic correction!\n');
 	end
+end
+
+% Active fault correction: fault geometry and dislocation (Okada model)
+faultcorr = isok(P,'FAULT_ACTIVATE');
+P.fault_lld = field2num(P,'FAULT_CENTROID_LATLONDEP');
+P.fault_lw = field2num(P,'FAULT_LENGTH_WIDTH_KM');
+P.fault_strike = field2num(P,'FAULT_STRIKE_DEG',0);
+P.fault_dip = field2num(P,'FAULT_DIP_DEG',90);
+P.fault_rake = field2num(P,'FAULT_RAKE_DEG',0);
+P.fault_slip = field2num(P,'FAULT_SLIP_M',0);
+P.fault_open = field2num(P,'FAULT_OPEN_M',0);
+P.fault_tlim = field2num(P,'FAULT_DISLOCATION_TLIM');
+P.fault_model = field2str(P,'FAULT_DISLOCATION_TIME_MODEL','linear');
+P.fault_plot = isok(P,'FAULT_PLOT');
+P.fault_rgb = field2num(P,'FAULT_PLOT_COLOR',[.8,.8,.8]);
+P.fault_topo = isok(P,'FAULT_WITH_TOPOGRAPHY',true);
+if faultcorr
+    P.fault_utm = ll2utm(P.fault_lld(1:2));
+    txt = sprintf('%gN, %gE, depth %gkm, length %gkm, width %gkm, strike %g°N, dip %g°, rake %g°, slip %gm, open %gm', ...
+        P.fault_lld, P.fault_lw, P.fault_strike, P.fault_dip, P.fault_rake, P.fault_slip, P.fault_open);
+    fprintf('---> Fault correction: %s, from %s to %s\n', txt, datestr(P.fault_tlim(1)), datestr(P.fault_tlim(2)));
+	evt.dt1 = P.fault_tlim(1) - P.TZ;
+	evt.dt2 = P.fault_tlim(2) - P.TZ;
+    evt.nam = {'Fault correction'};
+    evt.com = {txt};
+    evt.lw = .1;
+    evt.rgb = rgb('blood')/10 + .9;
+    evt.hex = rgb2hex(evt.rgb);
+    evt.out = false;
+    P.fault_event = evt;
 end
 
 % PERNODE graphs parameters
@@ -300,12 +330,12 @@ for n = 1:numel(N)
 		end
 	end
 
-	% --- add a default orbit column to data if needed
+	% --- adds a default orbit column to data if needed
 	if ~isempty(D(n).d) && size(D(n).d,2) < 4
 		D(n).d(:,4) = zeros(size(D(n).d(:,1)));
 	end
 
-	% --- filter the data at once and adjust errors
+	% --- filters the data at once and adjust errors
 	if ~isempty(D(n).d)
 		if ~isnan(maxerror)
 			D(n).d(any(D(n).e>maxerror,2),:) = NaN;
@@ -321,20 +351,41 @@ for n = 1:numel(N)
 		end
 	end
 
-	% --- duplicate raw data in columns 5:7
+	% --- raw data corrections
 	if ~isempty(D(n).d)
+        % duplicates raw data in columns 5:7
 		D(n).d = D(n).d(:,[1:4,1:3]);
-	end
 
-	% --- harmonic correction
-	if harmcorr && ~isempty(D(n).d)
-		tharm = D(n).t - harm_refdate;
-		for i = 1:3
-			for c = 1:length(harm_period)
-				a = 2*pi*tharm/harm_period(c);
-				D(n).d(:,i+4) = D(n).d(:,i+4) - sin(a)*harm(i).x(1+(c-1)*2) - cos(a)*harm(i).x(2+(c-1)*2);
-			end
-		end
+        % harmonic correction
+        if harmcorr
+            tharm = D(n).t - harm_refdate;  
+            for i = 1:3
+                for c = 1:length(harm_period)
+                    a = 2*pi*tharm/harm_period(c);
+                    D(n).d(:,i+4) = D(n).d(:,i+4) - sin(a)*harm(i).x(1+(c-1)*2) - cos(a)*harm(i).x(2+(c-1)*2);
+                end
+            end
+        end
+
+        % fault correction
+        if faultcorr
+            % dislocation factor (from 0 to 1)
+            fdis = zeros(size(D(n).t));
+            fdis(D(n).t>=P.fault_tlim(2)) = 1;
+            k = find(isinto(D(n).t,P.fault_tlim));
+            if length(k)>1
+                fdis(k) = linspace((D(n).t(k(1))-P.fault_tlim(1))/diff(P.fault_tlim),(D(n).t(k(end))-P.fault_tlim(1))/diff(P.fault_tlim),length(k));
+            end
+            sta_utm = ll2utm(N(n).LAT_WGS84,N(n).LON_WGS84);
+            dx = sta_utm(1) - P.fault_utm(1);
+            dy = sta_utm(2) - P.fault_utm(2);
+            [uE,uN,uZ] = okada85(dx, dy, P.fault_lld(3)*1e3 + N(n).ALTITUDE*P.fault_topo, P.fault_strike, P.fault_dip, P.fault_lw(1)*1e3, P.fault_lw(2)*1e3, ...
+                P.fault_rake, P.fault_slip*fdis, P.fault_open*fdis);
+            D(n).d(:,5:7) = D(n).d(:,5:7) - [uE,uN,uZ];
+            % note: real(max(complex(x,0))) gives maximum of x in terms of absolute value
+            fprintf('---> Fault correction: station %s (%g km) max. disp. ENU = %+gm, %+gm, %+gm\n', ...
+                N(n).ALIAS, sqrt(dx^2+dy^2)/1e3, real(max(complex(uE(end),0))), real(max(complex(uN(end),0))), real(max(complex(uZ(end),0))));
+        end
 	end
 
 end
@@ -457,6 +508,7 @@ for r = 1:numel(P.GTABLE)
 	else
 		mvv = tr;
 	end
+    voffset = zeros(1,3);
 	if vrelmode
 		if numel(sstr2num(vref)) == 3
 			voffset = sstr2num(vref);
@@ -513,8 +565,8 @@ for r = 1:numel(P.GTABLE)
 				if i == 3
 					X(1).w = D(n).d(k,4);
 				end
-				if harmcorr || vrelmode
-					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
+				if harmcorr || faultcorr || vrelmode
+					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i)),P.GTABLE(r).DECIMATE,P);
 					X(2).t = tk;
 					X(2).d(:,i) = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
 					X(2).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
@@ -524,12 +576,11 @@ for r = 1:numel(P.GTABLE)
 				end
 			end
 		end
-		if harmcorr || vrelmode
+		if harmcorr || faultcorr || vrelmode
 			X(1).nam = 'original';
 			X(1).rgb = scolor(1);
 			X(1).trd = 0;
-			%X(2).nam = sprintf('relative (%s)',mode);
-			X(2).nam = sprintf('corrected (%s%s%s)',repmat('harmonic',harmcorr),repmat('+',harmcorr&&vrelmode),repmat('relative',vrelmode));
+			X(2).nam = sprintf('corrected (%s)',strjoin({repmat('relative',vrelmode),repmat('harmonic',harmcorr),repmat('fault',faultcorr)},'+'));
 			X(2).rgb = scolor(3);
 			X(2).trd = 1;
 		else
@@ -576,6 +627,9 @@ for r = 1:numel(P.GTABLE)
 
 		% makes graph
 		OPT.EVENTS = N(n).EVENTS;
+        if faultcorr
+            OPT.EVENTS = cat(1,OPT.EVENTS,P.fault_event);
+        end
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
 		close
 
@@ -585,7 +639,7 @@ for r = 1:numel(P.GTABLE)
 			E.d = [D(n).d(k,1:3),D(n).e(k,:),D(n).d(k,4)];
 			E.header = {'Eastern(m)','Northern(m)','Up(m)','dE','dN','dU','Orbit'};
 			E.infos = {};
-			if harmcorr || vrelmode
+			if harmcorr || faultcorr || vrelmode
 				E.d = [E.d,	...
 			   		D(n).d(k,5) - polyval([voffset(1)/365250,0],E.t - tlim(1)), ...
 			   		D(n).d(k,6) - polyval([voffset(2)/365250,0],E.t - tlim(1)), ...
@@ -1509,6 +1563,10 @@ for r = 1:numel(P.GTABLE)
 		if ~isempty(modelling_shape)
 			plotbln(modelling_shape,.4*ones(1,3),[],.5);
 		end
+        % plot fault
+        if faultcorr
+            plotfault(lat0,lon0,P,'xy')
+        end
 		target(xsta,ysta,stasize)
 		if ~isnan(vmax)
 			arrows(xsta,ysta,vsc*d(:,1),vsc*d(:,2),datarrowshape,'Cartesian','Ref',arrowref, ...
@@ -1557,6 +1615,10 @@ for r = 1:numel(P.GTABLE)
 		axis xy; caxis(clim);
 		%pcolor(zlim,ylim,squeeze(max(vv,[],2)));shading flat
 		hold on
+        % plot fault
+        if faultcorr
+            plotfault(lat0,lon0,P,'zy')
+        end
 		target(zsta,ysta,stasize)
 		if ~isnan(vmax)
 			arrows(zsta,ysta,vsc*d(:,3),vsc*d(:,2),datarrowshape,'Cartesian','Ref',arrowref, ...
@@ -1599,6 +1661,10 @@ for r = 1:numel(P.GTABLE)
 		axis xy; caxis(clim);
 		%pcolor(xlim,zlim,fliplr(rot90(squeeze(max(vv,[],1)),-1)));shading flat
 		hold on
+        % plot fault
+        if faultcorr
+            plotfault(lat0,lon0,P,'xz')
+        end
 		target(xsta,zsta,stasize)
 		if ~isnan(vmax)
 			arrows(xsta,zsta,vsc*d(:,1),vsc*d(:,3),datarrowshape,'Cartesian','Ref',arrowref, ...
@@ -2072,6 +2138,10 @@ for r = 1:numel(P.GTABLE)
 				     ':k')
 			end
 		end
+        % plot fault
+        if faultcorr
+            plotfault(lat0,lon0,P,'xy')
+        end
 		for m = plist
 			col = scolor(m);
 			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
@@ -2094,7 +2164,7 @@ for r = 1:numel(P.GTABLE)
 			for n = 1:numel(IMAP(nimap).s)
 				IMAP(nimap).s{n} = sprintf('''%g km (%s)<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
 					roundsd(M(m).d(n,3)/1e3,2),	M(m).type{n}, ...
-					vtype,roundsd(M(m).d(n,4)/vfactor,2), ...
+					regexprep(vtype,'\','\\'),roundsd(M(m).d(n,4)/vfactor,2), ...
 					regexprep(vunit,'\^3','<sup>3</sup>'),roundsd(M(m).e(n,5),2), ...
 					datestr(M(m).t(n),'dd-mmm-yyyy HH:MM'),mtlabel{m});
 			end
@@ -2112,6 +2182,10 @@ for r = 1:numel(P.GTABLE)
 		if numel(modelopt.apriori_depth) == 2
 			plot(repmat(-modelopt.apriori_depth(1),1,2),ylim([1,end]),':k')
 		end
+        % plot fault
+        if faultcorr
+            plotfault(lat0,lon0,P,'zy')
+        end
 		for m = plist
 			col = scolor(m);
 			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
@@ -2144,6 +2218,10 @@ for r = 1:numel(P.GTABLE)
 		if numel(modelopt.apriori_depth) == 2
 			plot(xlim([1,end]),repmat(-modelopt.apriori_depth(1),1,2),':k')
 		end
+        % plot fault
+        if faultcorr
+            plotfault(lat0,lon0,P,'xz')
+        end
 		for m = plist
 			col = scolor(m);
 			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
@@ -2392,3 +2470,33 @@ function h = errorarea(x,y,e,c)
 
 h = fill([x(:);flipud(x(:))],[y(:)+e(:);flipud(y(:)-e(:))],'k');
 set(h,'EdgeColor','none','FaceColor',c/3+2/3,'FaceAlpha',.1);
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function h = plotfault(lat0,lon0,P,geometry)
+
+% fault centroid in the graph coordinates
+x0 = (P.fault_lld(2) - lon0)*degkm(lat0)*1e3;
+y0 = (P.fault_lld(1) - lat0)*degkm*1e3;
+z0 = -P.fault_lld(3)*1e3;
+
+strike = 90 - P.fault_strike;
+dip = P.fault_dip;
+L = P.fault_lw(1)*1e3;
+W = P.fault_lw(2)*1e3;
+
+% coordinates of the fault rectangle
+x_fault = x0 + L/2*cosd(strike)*[-1,1,1,-1] + sind(strike)*cosd(dip)*W/2*[-1,-1,1,1];
+y_fault = y0 + L/2*sind(strike)*[-1,1,1,-1] + cosd(strike)*cosd(dip)*W/2*[1,1,-1,-1];
+z_fault = z0 + sind(dip)*W*[1,1,-1,-1]/2;
+opt = {P.fault_rgb,'FaceColor','none','LineWidth',2,'EdgeAlpha',.5};
+
+switch geometry
+case 'xy'
+    patch(x_fault,y_fault,opt{:});
+case 'xz'
+    patch(x_fault,z_fault,opt{:});
+case 'zy'
+    patch(z_fault,y_fault,opt{:});
+end
