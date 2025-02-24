@@ -22,3 +22,4 @@ PACK/*
 **/.DS_Store
 .swo
 .swp
+__pycache__
