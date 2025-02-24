@@ -915,9 +915,11 @@ for r = 1:numel(P.GTABLE)
 				text(geo(n,2),geo(n,1),svc,'Color',scolor(n),'FontSize',7,'FontWeight','bold', ...
 					'VerticalAlignment','Middle','HorizontalAlignment','Center')
 			end
-			% station name
-			text(geo(n,2),geo(n,1),stn,'FontSize',7,'FontWeight','bold', ...
-				'VerticalAlignment','Middle','HorizontalAlignment','Center')
+			% station name (only if there is data)
+            if ~any(isnan(tr(n,1:2)))
+                text(geo(n,2),geo(n,1),stn,'FontSize',7,'FontWeight','bold', ...
+                    'VerticalAlignment','Middle','HorizontalAlignment','Center')
+            end
 		end
 
 		% plots legend scale
