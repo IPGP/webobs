@@ -443,7 +443,7 @@ function updateMap(map_id, geojson, lat, lon, zoom=10) {
                 return response.json()
             })
             .then((data) => {
-                L.geoJson(data, {
+                var geojsonLayer = L.geoJson(data, {
                     pointToLayer: function(feature, latlng){
                         return L.circleMarker(latlng, {color: '#3d85c6', radius: 4});
                     },
@@ -455,6 +455,7 @@ function updateMap(map_id, geojson, lat, lon, zoom=10) {
                         layer.bindPopup(popupcontent.join("<br />"));
                     }
                 }).addTo(map);
+                map.fitBounds(geojsonLayer.getBounds());
             })
             .catch((error) => {
                 console.log(error)
