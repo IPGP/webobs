@@ -117,7 +117,7 @@ if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
     $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
 } elsif ($typeDoc eq "SHAPEFILE") {
     $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
-    $filetype = ".json, .zip";
+    $filetype = ".json, .geojson, .zip, .shz";
 } elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
     $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
@@ -173,6 +173,13 @@ print <<"FIN";
         } else {
             \$('#multiloadmsg').css('visibility','hidden');
         }
+    });
+
+    const deleteAll = document.getElementById("delall");
+    deleteAll.addEventListener("change", function() {
+        document.querySelectorAll("input[type=checkbox][name*='del']").forEach(item => {
+            item.checked = deleteAll.checked;
+        });
     });
 });
 function verif_formulaire()
@@ -294,6 +301,7 @@ qx(cd "$pathTarget/$thumbnailsPath/" && rm -f $GRIDS{GENFORM_THUMB_ANIM} && $WEB
 print "</TR></TABLE>";
 print "</DIV>";
 
+if (@listeTarget) { print "<INPUT type=checkbox id=delall> $__{'Delete all'}"; }
 print "<BR><fieldset><legend style=\"color: black; font-size:8pt\">$__{'Upload new file(s)'} <i><small>Note: $__{'Avoid special characters and spaces in filename'}</small></i></legend>
     <INPUT type=\"file\" id=\"uploadFile\" name=\"uploadFile\" multiple accept='$filetype'><BR>
     <div id=\"multiloadmsg\" style=\"visibility: hidden;color: green;\"></div></P>";
