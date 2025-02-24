@@ -819,8 +819,11 @@ def main():
     pgamap.write_pdf()
     pgamap.write_images(args.thumbnail_height)
     pgamap.write_attributes()
-    pgamap.make_symlinks()
-    pgamap.clean_intermediate_files()
+    try:
+        pgamap.make_symlinks()
+        pgamap.clean_intermediate_files()
+    except OSError as oer:
+        print(oer)
 
 
 if __name__ == '__main__':
