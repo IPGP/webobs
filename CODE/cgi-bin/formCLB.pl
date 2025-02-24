@@ -44,19 +44,6 @@ use Locale::TextDomain('webobs');
 set_message(\&webobs_cgi_msg);
 $ENV{LANG} = $WEBOBS{LOCALE};
 
-# --- subroutine
-
-sub sort_clb_lines {
-    my %data = shift(@_);
-
-    # Sort the list of lines of the calibration file by date, time,
-    # and channel number, using a numerical sort for the latter.
-    $data{$a}{'DATE'} cmp $data{$b}{'DATE'} or
-      $data{$a}{'TIME'} cmp $data{$b}{'TIME'} or
-      $data{$a}{'nv'} <=> $data{$b}{'nv'} or
-      $a cmp $b; # final comparison to make sure the ordering is always well defined
-}
-
 # ---- inits and checkings
 my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my %NODE;
@@ -250,7 +237,7 @@ my $i    = 0;
 my $nbc  = 0;
 
 my $line;
-foreach my $id (sort sort_clb_lines keys %data) {
+foreach my $id (sort_clb(\%data)) {
     $i++;
     my %line = %{$data{$id}};
     print "<TR>";
