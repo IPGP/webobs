@@ -12,6 +12,9 @@ $(document).ready(function() {
 
     //all links will load to wmtarget iframe (except for index.pl AND http[s]:)
     $("a").on("click", function(event) {
+        if ($(this).attr("href").match(/^#$/gi)) {
+            return true;
+        }
         if ($(this).attr("href").match(/^http.*:/gi) ||
             $(this).hasClass("externe")) {
             $(this).attr('target', '_blank');
