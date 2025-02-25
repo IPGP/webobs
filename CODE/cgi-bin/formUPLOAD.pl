@@ -176,11 +176,13 @@ print <<"FIN";
     });
 
     const deleteAll = document.getElementById("delall");
-    deleteAll.addEventListener("change", function() {
-        document.querySelectorAll("input[type=checkbox][name*='del']").forEach(item => {
-            item.checked = deleteAll.checked;
+    if (deleteAll) {
+        deleteAll.addEventListener("change", function() {
+            document.querySelectorAll("input[type=checkbox][name*='del']").forEach(item => {
+                item.checked = deleteAll.checked;
+            });
         });
-    });
+    }
 });
 function verif_formulaire()
 {
