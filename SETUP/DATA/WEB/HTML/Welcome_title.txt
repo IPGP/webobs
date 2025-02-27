@@ -1,4 +1,4 @@
-<TABLE width="100%" border="0"><TR><TD width="180" style="border:0"><IMG src="/icons/ipgp/logo_OVS.png"></TD>
+<TABLE width="100%" border="0"><TR><TD width="180" style="border:0"><IMG src="/icons/ipgp/logo_WebObs_C413.png" height="150"></TD>
 <TD style="border:0">
 <H1>WebObs: An integrated web-based system for data monitoring and networks management.</H1>
 <P><B>Institut de Physique du Globe de Paris / Université Paris Cité / CNRS</B><BR>

@@ -98,9 +98,9 @@ for (sort keys(%fuseaux_horaires)) {
                 ($DNc%2)?"transparent":"transparent",
                 $bullet,
                 $fuseaux_horaires{$_},
-                l2u(qx(date -d "$today" +"\%A \%-d \%B \%Y - \%H:\%M"))));
+                qx(date -d "$today" +"\%A \%-d \%B \%Y - \%H:\%M")));
     } else {
-        push(@liste_heures,sprintf("<b>%s</b>, %s<br>",$fuseaux_horaires{$_},l2u(qx(date -d "$today" +"\%A \%-d \%B \%Y - \%H:\%M"))));
+        push(@liste_heures,sprintf("<b>%s</b>, %s<br>",$fuseaux_horaires{$_},qx(date -d "$today" +"\%A \%-d \%B \%Y - \%H:\%M")));
     }
     my @ztab = split(/\t/, qx(grep $_ /usr/share/zoneinfo/zone.tab)); # code \t LatLon \t TZname
     if (@ztab) {
@@ -128,8 +128,8 @@ $displayListeHeures .= "</TABLE>";
 
 # ---- prepare a wodp (datepicker) with calendar display
 my $thismonday = $today-($today->day_of_week+6)%7*86400;
-my $daynames   = join(',',map { l2u(($thismonday+86400*$_)->strftime('%A'))} (0..6)) ;
-my $monthnames = join(',',map { l2u((Time::Piece->strptime("$_",'%m'))->strftime('%B')) } (1..12)) ;
+my $daynames   = join(',',map { ($thismonday+86400*$_)->strftime('%A') } (0..6)) ;
+my $monthnames = join(',',map { (Time::Piece->strptime("$_",'%m'))->strftime('%B') } (1..12)) ;
 my $wodp_d2    = "[".join(',',map { "'".substr($_,0,2)."'" } split(/,/,$daynames))."]";
 my @months = split(/,/,$monthnames);
 my $wodp_m     = "[".join(',',map { "'$_'" } @months)."]";
@@ -217,7 +217,7 @@ if ( isok($APARMS{WETON}) ) {
     my $weton = "<H2><small><i>~ ".WebObs::Dates::weton($today->strftime('%Y-%m-%d'))." ~</i></small></H2>";
     print $weton;
 }
-print "<h3 style=\"color: #ff6666\">".l2u($today->strftime($fmt_long_date))."</h3>";
+print "<h3 style=\"color: #ff6666\">".$today->strftime($fmt_long_date)."</h3>";
 print @gazette;
 print "</div></div>";
 
@@ -245,11 +245,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Alexis Bosson, Francois Beauducel, Didier Mallarino, Didier Lafon
+Alexis Bosson, François Beauducel, Didier Mallarino, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
