@@ -101,11 +101,20 @@ ORBIT_ERROR_RATIO|1,2,2
 PICKS_CLEAN_PERCENT|0
 PICKS_CLEAN_STD|0
 
+# dimensionless factor applied to the trend value initially in m/day
+TREND_FACTOR|365.25*1e3
+# displayed trend unit string (must coherent with trend factor!)
+TREND_UNIT|mm/yr
 # minimum time window (in percent and/or days) needed to compute a trend
 TREND_MIN_PERCENT|50
 TREND_MIN_DAYS|5
+# trend time limits: extreme parts (in percent and/or days) of time window to be used in trend computation (default is to use full time window)
+TREND_TLIM_PERCENT|
+TREND_TLIM_DAYS|
 # trend error mode: 1 = lscov, 2 = std, 3 = corrcoef
 TREND_ERROR_MODE|2
+# apply a factor based on data completion on trend error
+TREND_ERROR_COMPLETION|Y
 
 # ITRF reference (this is a string displayed on graph title, not functional)
 ITRF_REF|ITRF08

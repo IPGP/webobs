@@ -61,7 +61,7 @@ cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 # =============================================================================
 # make a loop on all known legacy FORMs
 #for form in EAUX RIVERS SOILSOLUTIONS RAINWATER EXTENSO FISSURO GAZ DISTANCE BOJAP 
-for form in EAUX RIVERS EXTENSO GAZ; do
+for form in EAUX RIVERS RAINWATER EXTENSO GAZ; do
     
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
@@ -185,6 +185,37 @@ for form in EAUX RIVERS EXTENSO GAZ; do
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                    for (i=5;i<n+5;i++) printf ",\""$i"\""; \
+                    print ");" }}' >> $TMP 
+                ;;
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            "RAINWATER")
+                NBI=13
+                ICOM=20
+                IVAL=21
+
+                TEMPLATE="RAINWATER"
+
+                # copy template files
+                cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
+                cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
+
+                # ID|Date2|Time2|Site|Date1|Time1|Volume (ml)|Diameter (cm)|pH|Cond. (C)|Na (ppm)|K (ppm)|Mg (ppm)|Ca (pmm)|HCO3 (ppm)|Cl (ppm)|SO4 (ppm)|dD (?)|d18O (?)|Comments|Valid
+                # 1 |2    |3    |4   |5    |6    |7          |8            |9 |10       |11      |12     |13      |14      |15        |16      |17       |18    |19      |20      |21
+                for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                echo ");" >> $TMP
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                    bin = ($1<0) ? 1:0; \
+                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    for (i=1;i<=n;i++) printf ",input%02d",i; \
+                    printf ") ";\
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\""$5" "$6"\",\""$5" "$6"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \

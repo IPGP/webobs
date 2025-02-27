@@ -36,16 +36,15 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %	    choffset: scalar defining the space between each channel subplots
 %	     zoompca: scalar defining the ratio of zoom if positive or PCA if negative.
 %	      movavr: number of samples to compute and plot a moving average
-%	trendmindays: minimum time interval (in days) of data limits to compute a trend.
-%	trendminperc: minimum time interval (in percent) of data limits to compute a trend.
 %	 yscalevalue: fixes the Y-scale (value in data unit)
 %	  yscaleunit: name of the scale unit (default is 'cm')
 %	  yscalefact: factor of the scale unit (default is 100)
+%	     TREND_*: several parameters passed to treatsignal function to compute trend.
 %
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 203-07-21
+%	Updated: 2025-02-27
 
 linestyle = field2str(OPT,'linestyle','-');
 fontsize = field2num(OPT,'fontsize',8);
@@ -53,8 +52,6 @@ chnames = OPT.chnames;
 choffset = field2num(OPT,'choffset');
 zoompca = field2num(OPT,'zoompca');
 movavr = field2num(OPT,'movavr',1);
-trendmindays = field2num(OPT,'trendmindays');
-trendminperc = field2num(OPT,'trendminperc');
 yscalevalue = field2num(OPT,'yscalevalue');
 yscaleunit = field2str(OPT,'yscaleunit','cm');
 yscalefact = field2num(OPT,'yscalefact',100);
@@ -119,13 +116,9 @@ for ii = 0:(tzoom+(zoompca<0))
 					plotorbit(X(n).t,mavr(d(:,1),10),X(n).w,'-',G.LINEWIDTH,G.MARKERSIZE/2,scolor(2));
 				end
 				kk = find(~isnan(d(:,1)));
-				if ii == 0 && X(n).trd && length(kk) >= 2 && diff(minmax(X(n).t(kk))) >= trendmindays && 100*diff(minmax(X(n).t(kk))) >= trendminperc
-					if size(d,2) > 1 && all(d(kk,2)~=0)
-						lr = wls(X(n).t(kk)-tlim(1),d(kk,1),1./d(kk,2).^2);
-					else
-						lr = wls(X(n).t(kk)-tlim(1),d(kk,1),ones(size(d(kk,1))));
-					end
-					lre(i,:) = [lr(1),std(d(kk,1) - polyval(lr,X(n).t(kk)-tlim(1)))/diff(tlim)]*365.25*1e3;
+				if ii == 0 && X(n).trd && length(kk) >= 2
+                    [~,~,lr,tre] = treatsignal(X(n).t(kk) - tlim(1),d(kk,:),1,OPT);
+					lre(i,:) = [lr(1),tre];
 					plot(tlim,polyval(lr,tlim - tlim(1)),'--k','LineWidth',.2)
 				end
 			end

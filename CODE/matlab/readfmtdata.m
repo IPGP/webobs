@@ -24,7 +24,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2025-01-23
+%	Updated: 2025-02-27
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -108,6 +108,7 @@ else
 		otherwise
 			D(n).t = [];
 			[D(n).d,D(n).CLB] = calib([],[],N(n).CLB);
+            D(n).e = ones(size(D(n).d));
 			fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);
 
 		end
