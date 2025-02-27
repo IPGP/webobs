@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2024-06-19
+%   Updated: 2025-02-27
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -59,14 +59,13 @@ timelog(procmsg,1);
 G = cat(1,D.G);
 
 % PROC's parameters
-border = .1;
+P.border = .1;
 fontsize = field2num(P,'FONTSIZE',7);
 maxerror = field2num(P,'FILTER_MAX_ERROR_M',NaN);
 minerror = field2num(P,'ENU_MIN_ERROR_M',[0.01,0.01,0.01]);
 orbiterr = field2num(P,'ORBIT_ERROR_RATIO',[1,2]);
-terrmod = field2num(P,'TREND_ERROR_MODE',1);
-trendmindays = field2num(P,'TREND_MIN_DAYS',1);
-trendminperc = field2num(P,'TREND_MIN_PERCENT',50);
+P.trendfact = field2num(P,'TREND_FACTOR',365.25*1e3);
+P.trendunit = field2str(P,'TREND_UNIT','mm/yr');
 targetll = field2num(P,'GNSS_TARGET_LATLON');
 if numel(targetll)~=2 || any(isnan(targetll))
 	targetll = [];
@@ -420,34 +419,9 @@ for r = 1:numel(P.GTABLE)
 
 			k = D(n).G(r).k;
 			if ~isempty(k)% && ~all(isnan(D(n).d(k,i)))
-				[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
-
-				% computes yearly trends (in mm/yr)
-				kk = find(~isnan(dk));
-				if numel(kk) >= 2 && diff(minmax(tk(kk))) >= trendmindays && 100*diff(minmax(tk(kk)))/diff(tlim) >= trendminperc && ~all(isnan(dk(kk)))
-					[b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./D(n).e(k(kk),i));
-					tr(n,i) = b(1)*365.25*1e3;
-					% different modes for error estimation
-					switch terrmod
-					case 2
-						tre(n,i) = std(dk(kk) - polyval(b,tk(kk)-tk(1)))*365.25*1e3/diff(tlim);
-					case 3
-						cc = corrcoef(tk(kk)-tk(1),dk(kk));
-						r2 = sqrt(abs(cc(2)));
-						tre(n,i) = stdx(1)*365.25*1e3/r2;
-						fprintf('%s: R = %g\n',N(n).ALIAS,r2);
-					otherwise
-						tre(n,i) = stdx(1)*365.25*1e3;
-					end
-					% all errors are adjusted with sampling completeness factor
-					if N(n).ACQ_RATE > 0
-						acq = numel(kk)*N(n).ACQ_RATE/abs(diff(tlim));
-						tre(n,i) = tre(n,i)/sqrt(acq);
-					end
-				else
-					tr(n,i) = NaN;
-					tre(n,i) = NaN;
-				end
+				[tk,dk,lr,tre(n,i)] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
+				tr(n,i) = lr(1)*P.trendfact;
+				tre(n,i) = tre(n,i)*P.trendfact;
 				X(n).t = tk;
 				X(n).d(:,i) = dk + staoffset(n);
 				if i == 3
@@ -474,17 +448,17 @@ for r = 1:numel(P.GTABLE)
 		OPT.chnames = cmpnames;
 		OPT.choffset = summary_cmpoff;
 		OPT.zoompca = summary_timezoom;
-		OPT.trendmindays = trendmindays;
-		OPT.trendminperc = trendminperc;
 		OPT.yscalevalue = disp_yscale;
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 100;
+        OPT = structmerge(OPT,structselect(P,'^TREND_'));
 		smartplot(X,tlim,P.GTABLE(r),OPT);
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
 		P.GTABLE(r).GTITLE = varsub(summary_title,V);
-		P.GTABLE(r).INFOS = {sprintf('Referential: {\\bf%s}',itrf),sprintf('  E {\\bf%+g} mm/yr\n  N {\\bf%+g} mm/yr\n  U {\\bf%+g} mm/yr',velref)};
+		P.GTABLE(r).INFOS = {sprintf('Referential: {\\bf%s}',itrf), ...
+            sprintf('  E {\\bf%+g} %s\n  N {\\bf%+g} %s\n  U {\\bf%+g} %s',velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit)};
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
 	end
@@ -533,7 +507,7 @@ for r = 1:numel(P.GTABLE)
 			end
 		end
 		tr = tr - repmat(voffset,numel(N),1);
-		fprintf('---> Relative mode "%s" - velocity reference = %1.2f, %1.2f, %1.2f mm/yr\n',mode,voffset);
+		fprintf('---> Relative mode "%s" - velocity reference = %1.2f, %1.2f, %1.2f %s\n',mode,voffset,P.trendunit);
 	end
 
 	% --- per node plots
@@ -600,12 +574,12 @@ for r = 1:numel(P.GTABLE)
 		OPT.chnames = cmpnames;
 		OPT.choffset = pernode_cmpoff;
 		OPT.zoompca = pernode_timezoom;
-		OPT.trendmindays = trendmindays;
-		OPT.trendminperc = trendminperc;
 		OPT.yscalevalue = disp_yscale;
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 100;
+        OPT = structmerge(OPT,structselect(P,'^TREND_'));
 		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),OPT);
+        lre = lre*P.trendfact;
 		if ~isempty(rev)
 			axes('Position',[.8,.02,.18,.07])
 			plotcube([0,0,0],eye(3),[0,0,0],{'E','N','U'}), hold on
@@ -620,8 +594,8 @@ for r = 1:numel(P.GTABLE)
 		if ~isempty(k)
 			P.GTABLE(r).INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),'(median)',' ',' '};
 			for i = 1:3
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%1.3f %s} (%1.3f) - Vel. = {\\bf%+1.1f \\pm %1.1f mm/yr}', ...
-					i, enu{i},D(n).d(ke,i+4),D(n).CLB.un{i},rmedian(D(n).d(k,i+4)),lre(i,:))}];
+				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%1.3f %s} (%1.3f) - Vel. = {\\bf%+1.1f \\pm %1.1f %s}', ...
+					i, enu{i},D(n).d(ke,i+4),D(n).CLB.un{i},rmedian(D(n).d(k,i+4)),lre(i,:),P.trendunit)}];
 			end
 		end
 
@@ -786,11 +760,10 @@ for r = 1:numel(P.GTABLE)
 		OPT.chnames = refnames;
 		OPT.choffset = baselines_refoff;
 		OPT.zoompca = baselines_timezoom;
-		OPT.trendmindays = trendmindays;
-		OPT.trendminperc = trendminperc;
 		OPT.yscalevalue = disp_yscale;
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 1/siprefix(OPT.yscaleunit,'m');
+        OPT = structmerge(OPT,structselect(P,'^TREND_'));
 		smartplot(X,tlim,P.GTABLE(r),OPT);
 
 		if isok(P,'PLOT_GRID')
@@ -810,17 +783,18 @@ for r = 1:numel(P.GTABLE)
 
 		P.GTABLE(r).GTITLE = varsub(vectors_title,V);
 		P.GTABLE(r).INFOS = [ ' ', ' ', tsinfo, ...
-			sprintf('Referential: {\\bf%s}',itrf),sprintf('   E {\\bf%+g} mm/yr\n   N {\\bf%+g} mm/yr\n   U {\\bf%+g} mm/yr',velref), ...
+			sprintf('Referential: {\\bf%s}',itrf),sprintf('   E {\\bf%+g} %s\n   N {\\bf%+g} %s\n   U {\\bf%+g} %s', ...
+                velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit), ...
 			' ', ...
 			sprintf('Mean velocity (%s):',itrf) ...
 		];
 		for i = 1:3
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',enu{i},mvv(i))}];
+			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},mvv(i),P.trendunit)}];
 		end
 		if vrelmode
 			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('Velocity ref. vector ({\\bf%s}):',mode)}];
 			for i = 1:3
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f mm/yr}',enu{i},voffset(i))}];
+				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},voffset(i),P.trendunit)}];
 			end
 		end
 
@@ -853,7 +827,7 @@ for r = 1:numel(P.GTABLE)
 		axl = axis;
 
 		% determines X-Y limits of the map
-		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),minkm,maxxy,border);
+		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),minkm,maxxy,P.border);
 
 		set(gca,'XLim',xlim,'YLim',ylim);
 
@@ -927,7 +901,7 @@ for r = 1:numel(P.GTABLE)
 		ysc = ylim(2) + .04*diff(ylim);
 		lsc = vscale*vsc;
 		arrows(xsc,ysc,lsc,90,[arrowshape*vmax/vscale,xyr],'FaceColor','none','LineWidth',1,'Clipping','off');
-		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g mm/yr',vscale),'FontWeight','bold')
+		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g %s',vscale,P.trendunit),'FontWeight','bold')
 
 
 		hold off
@@ -951,7 +925,7 @@ for r = 1:numel(P.GTABLE)
 				set(gca,'YLim',[0,max(sta_amp+sta_err)])
 			end
 			xlabel('Distance from Target (km)')
-			ylabel({sprintf('Velocity Amplitude (%s)',vectors_ampstr),'(mm/yr)'})
+			ylabel({sprintf('Velocity Amplitude (%s)',vectors_ampstr),sprintf('(%s)',P.trendunit)})
 		end
 
 
@@ -962,7 +936,8 @@ for r = 1:numel(P.GTABLE)
 		% exports data
 		if isok(P.GTABLE(r),'EXPORTS')
 			E.infos = { ...
-				sprintf('Velocity reference (%s):  E %+g mm/yr, N %+g mm/yr, U %+g mm/yr',datestr(velrefdate),velref), ...
+				sprintf('Velocity reference (%s):  E %+g %s, N %+g %s, U %+g %s',datestr(velrefdate), ...
+                    velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit), ...
 				sprintf('Stations'' aliases: %s',strjoin(cat(1,{N(knv).ALIAS}),',')), ...
 				};
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
@@ -1049,7 +1024,7 @@ for r = 1:numel(P.GTABLE)
 		axl = axis;
 
 		% determines X-Y limits of the map
-		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),motion_minkm,1,border);
+		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),motion_minkm,1,P.border);
 
 		set(gca,'XLim',xlim,'YLim',ylim);
 
@@ -1944,13 +1919,9 @@ for r = 1:numel(P.GTABLE)
 						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
 							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
 							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
-							[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
-							kk = find(~isnan(dk));
-							if numel(kk) >= 2 && diff(minmax(D(n).t(kk))) >= trendmindays && 100*diff(minmax(D(n).t(kk)))/diff(wlim) >= trendminperc
-								[b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./D(n).e(k(kk),i));
-								tr(j,i) = b(1)*365.25*1e3;
-								tre(j,i) = stdx(1)*365.25*1e3;
-							end
+							[tk,dk,lr,tre(j,i)] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
+							tr(j,i) = lr(1)*P.trendfact;
+                            tre(j,i) = tre(j,i)*P.trendfact;
 							% sets a lower orbit if there is not enough data
 							%if D(n).t(D(n).G(r).ke) >= M(m).t(w)
 							if (D(n).t(ke) + 1) < M(m).t(w)
