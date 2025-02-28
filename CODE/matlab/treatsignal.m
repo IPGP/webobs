@@ -1,4 +1,4 @@
-function [tc,dc,lr,tre] = treatsignal(t,d,r,OPT)
+function [tc,dc,lr,tr] = treatsignal(t,d,r,OPT)
 % TREATSIGNAL Signal treatment: decimating and cleaning
 % 	[TC,DC]=TREATSIGNAL(T,D,R,OPT) processes vector signal D(T) in the following order:
 % 	   1. if OPT.FLAT_IS_NAN is OK, removes flat signals
@@ -8,8 +8,9 @@ function [tc,dc,lr,tre] = treatsignal(t,d,r,OPT)
 % 	   5. decimates by a factor of R (integer) using moving average,
 % 	   6. if OPT.UNDERSAMPLING is OK, decimation is undersampling instead of averaging
 %
-%   [TC,DC,LR,TRE]=TREATSIGNAL(...) also returns linear regression LR and trend error TRE, using
-%   optional second column of D as errors, and some optional parameters:
+%   [TC,DC,LR,TR]=TREATSIGNAL(...) also returns linear regression LR and trend value TRD 
+%   and associated error TRE as TR = [TRD TRE], using optional second column of D as errors,
+%   and some other parameters:
 %       OPT.TREND_FACTOR is a dimensionless factor applied to the trend value initially in data unit/day
 %       OPT.TREND_MIN_DAYS is minimum time window (in days) needed to compute a trend
 %       OPT.TREND_MIN_PERC is minimum time window (in percent) needed to compute a trend
@@ -22,7 +23,7 @@ function [tc,dc,lr,tre] = treatsignal(t,d,r,OPT)
 %
 %	Author: F. Beauducel / WEBOBS
 % 	Created: 2015-08-24
-% 	Updated: 2025-02-27
+% 	Updated: 2025-02-28
 
 if size(d,2) > 1
     e = d(:,2); % data error vector
@@ -61,9 +62,12 @@ end
 
 % linear trend
 k = find(~isnan(dc));
-tlim = minmax(t);
-if nargout > 3 && ~isempty(k) && diff(tlim) > 0
+dtlim = diff(minmax(t));
+if nargout > 3 && ~isempty(k) && dtlim > 0
+    lr = nan(1,2);
+    tr = nan(1,2);
     terrmod = field2num(OPT,'TREND_ERROR_MODE',1);
+    trendfact = field2num(OPT,'TREND_FACTOR',1);
     trendmindays = field2num(OPT,'TREND_MIN_DAYS',1);
     trendminperc = field2num(OPT,'TREND_MIN_PERCENT',50);
     trendtlimdays = field2num(OPT,'TREND_TLIM_DAYS');
@@ -73,31 +77,37 @@ if nargout > 3 && ~isempty(k) && diff(tlim) > 0
     tk = tc(k);
     dk = dc(k);
     ek = ec(k);
-    dt = diff(minmax(tk));
-    if numel(k) >= 2 && dt >= trendmindays && 100*dt/diff(tlim) >= trendminperc && ~all(isnan(dk))
-        kk = find(tk);
+    tlim = minmax(tk);
+    dt = diff(tlim);
+    if numel(k) >= 2 && dt >= trendmindays && 100*dt/dtlim >= trendminperc && ~all(isnan(dk))
+        if trendtlimdays > 0
+            kk = find((tk-tlim(1)) <= trendtlimdays | (tlim(2)-tk) <= trendtlimdays);
+        elseif trendtlimperc > 0
+            kk = find(100*(tk-tlim(1))/dt <= trendtlimperc | 100*(tlim(2)-tk)/dt <= trendtlimperc);
+        else
+            kk = find(tk);
+        end
         [lr,stdx] = wls(tk(kk)-tk(1),dk(kk),1./ek(kk));
         % different modes for error estimation
         switch terrmod
         case 2
-            tre = std(dk(kk) - polyval(lr,tk(kk)-tk(1)))/diff(tlim);
+            tr(2) = std(dk(kk) - polyval(lr,tk(kk)-tk(1)))/dtlim;
         case 3
             cc = corrcoef(tk(kk)-tk(1),dk(kk));
             r2 = sqrt(abs(cc(2)));
-            tre = stdx(1)/r2;
+            tr(2) = stdx(1)/r2;
         otherwise
-            tre = stdx(1);
+            tr(2) = stdx(1);
         end
         % all errors are adjusted with sampling completeness factor
         if trendcompletion
-            acq = numel(kk)*median(diff(tk))/abs(diff(tlim));
+            acq = numel(kk)*median(diff(tk))/dtlim;
             if acq > 0
-                tre = tre/sqrt(acq);
+                tr(2) = tr(2)/sqrt(acq);
             end
         end
-    else
-        lr = [NaN,0];
-        tre = NaN;
+        tr(1) = lr(1);
+        tr = tr*trendfact; % multiplies by trend factor (from data unit/day)
     end
 
 end

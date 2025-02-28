@@ -44,7 +44,7 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 2025-02-27
+%	Updated: 2025-02-28
 
 linestyle = field2str(OPT,'linestyle','-');
 fontsize = field2num(OPT,'fontsize',8);
@@ -117,9 +117,8 @@ for ii = 0:(tzoom+(zoompca<0))
 				end
 				kk = find(~isnan(d(:,1)));
 				if ii == 0 && X(n).trd && length(kk) >= 2
-                    [~,~,lr,tre] = treatsignal(X(n).t(kk) - tlim(1),d(kk,:),1,OPT);
-					lre(i,:) = [lr(1),tre];
-					plot(tlim,polyval(lr,tlim - tlim(1)),'--k','LineWidth',.2)
+                    [~,~,lr,lre(i,:)] = treatsignal(X(n).t(kk),d(kk,:),1,OPT);
+					plot(tlim,polyval(lr,tlim - X(n).t(kk(1))),'--k','LineWidth',.2)
 				end
 			end
 		end
