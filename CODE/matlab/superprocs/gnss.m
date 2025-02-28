@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2025-02-27
+%   Updated: 2025-02-28
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -64,7 +64,6 @@ fontsize = field2num(P,'FONTSIZE',7);
 maxerror = field2num(P,'FILTER_MAX_ERROR_M',NaN);
 minerror = field2num(P,'ENU_MIN_ERROR_M',[0.01,0.01,0.01]);
 orbiterr = field2num(P,'ORBIT_ERROR_RATIO',[1,2]);
-P.trendfact = field2num(P,'TREND_FACTOR',365.25*1e3);
 P.trendunit = field2str(P,'TREND_UNIT','mm/yr');
 targetll = field2num(P,'GNSS_TARGET_LATLON');
 if numel(targetll)~=2 || any(isnan(targetll))
@@ -419,9 +418,9 @@ for r = 1:numel(P.GTABLE)
 
 			k = D(n).G(r).k;
 			if ~isempty(k)% && ~all(isnan(D(n).d(k,i)))
-				[tk,dk,lr,tre(n,i)] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
-				tr(n,i) = lr(1)*P.trendfact;
-				tre(n,i) = tre(n,i)*P.trendfact;
+				[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
+				tr(n,i) = trd(1);
+				tre(n,i) = trd(2);
 				X(n).t = tk;
 				X(n).d(:,i) = dk + staoffset(n);
 				if i == 3
@@ -579,7 +578,6 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscalefact = 100;
         OPT = structmerge(OPT,structselect(P,'^TREND_'));
 		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),OPT);
-        lre = lre*P.trendfact;
 		if ~isempty(rev)
 			axes('Position',[.8,.02,.18,.07])
 			plotcube([0,0,0],eye(3),[0,0,0],{'E','N','U'}), hold on
@@ -1919,9 +1917,9 @@ for r = 1:numel(P.GTABLE)
 						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
 							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
 							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
-							[tk,dk,lr,tre(j,i)] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
-							tr(j,i) = lr(1)*P.trendfact;
-                            tre(j,i) = tre(j,i)*P.trendfact;
+							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
+							tr(j,i) = trd(1);
+                            tre(j,i) = trd(2);
 							% sets a lower orbit if there is not enough data
 							%if D(n).t(D(n).G(r).ke) >= M(m).t(w)
 							if (D(n).t(ke) + 1) < M(m).t(w)
