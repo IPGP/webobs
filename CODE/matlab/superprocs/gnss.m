@@ -450,7 +450,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscalevalue = disp_yscale;
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 100;
-        OPT = structmerge(OPT,structselect(P,'^TREND_'));
+        OPT = structmerge(OPT,P,'^TREND_');
 		smartplot(X,tlim,P.GTABLE(r),OPT);
 		if isok(P,'PLOT_GRID')
 			grid on
@@ -576,7 +576,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscalevalue = disp_yscale;
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 100;
-        OPT = structmerge(OPT,structselect(P,'^TREND_'));
+        OPT = structmerge(OPT,P,'^TREND_');
 		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),OPT);
 		if ~isempty(rev)
 			axes('Position',[.8,.02,.18,.07])
@@ -761,7 +761,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscalevalue = disp_yscale;
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 1/siprefix(OPT.yscaleunit,'m');
-        OPT = structmerge(OPT,structselect(P,'^TREND_'));
+        OPT = structmerge(OPT,P,'^TREND_');
 		smartplot(X,tlim,P.GTABLE(r),OPT);
 
 		if isok(P,'PLOT_GRID')
