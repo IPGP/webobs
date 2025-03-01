@@ -118,7 +118,8 @@ for ii = 0:(tzoom+(zoompca<0))
 				kk = find(~isnan(d(:,1)));
 				if ii == 0 && X(n).trd && length(kk) >= 2
                     [~,~,lr,lre(i,:)] = treatsignal(X(n).t(kk),d(kk,:),1,OPT);
-					plot(tlim,polyval(lr,tlim - X(n).t(kk(1))),'--k','LineWidth',.2)
+					plot(tlim,polyval(lr,tlim - X(n).t(kk(1))),'--','Color',.5*[1,1,1],'LineWidth',.1)
+					plot(X(n).t(kk),polyval(lr,X(n).t(kk) - X(n).t(kk(1))),'--k','LineWidth',.2) % intervals used for linear trend calculation
 				end
 			end
 		end
@@ -167,9 +168,9 @@ for ii = 0:(tzoom+(zoompca<0))
 
 	if ii==0
 		% node aliases (not empty elements only)
-		ka = find(~cellfun(@isempty,{X.nam}));
+		ka = find(~cellfun(@isempty,{X.t}));
 		nl = length(ka);
-		fs = fontsize*max(min(50/length(strjoin({X.nam})),1),0.5);
+		fs = fontsize*max(min(50/length(strjoin({X(ka).nam})),1),0.5);
 		for n = 1:nl
 			text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),X(ka(n)).nam,'Color',X(ka(n)).rgb, ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',fs,'FontWeight','bold')

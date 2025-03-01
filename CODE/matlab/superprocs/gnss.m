@@ -443,6 +443,7 @@ for r = 1:numel(P.GTABLE)
 	if any(strcmp(P.SUMMARYLIST,summary))
 		figure, clf, orient tall
 		OPT.linestyle = summary_linestyle;
+		OPT.movavr = 1;
 		OPT.fontsize = fontsize;
 		OPT.chnames = cmpnames;
 		OPT.choffset = summary_cmpoff;
@@ -569,6 +570,7 @@ for r = 1:numel(P.GTABLE)
 
 		% makes the plot
 		OPT.linestyle = pernode_linestyle;
+		OPT.movavr = 1;
 		OPT.fontsize = fontsize;
 		OPT.chnames = cmpnames;
 		OPT.choffset = pernode_cmpoff;
