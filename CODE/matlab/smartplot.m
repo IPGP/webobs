@@ -117,9 +117,10 @@ for ii = 0:(tzoom+(zoompca<0))
 				end
 				kk = find(~isnan(d(:,1)));
 				if ii == 0 && X(n).trd && length(kk) >= 2
-                    [~,~,lr,lre(i,:)] = treatsignal(X(n).t(kk),d(kk,:),1,OPT);
-					plot(tlim,polyval(lr,tlim - X(n).t(kk(1))),'--','Color',.5*[1,1,1],'LineWidth',.1)
-					plot(X(n).t(kk),polyval(lr,X(n).t(kk) - X(n).t(kk(1))),'--k','LineWidth',.2) % intervals used for linear trend calculation
+                    [~,~,lr,lre(i,:),klr] = treatsignal(X(n).t(kk),d(kk,:),1,OPT);
+					plot(tlim,polyval(lr,tlim - X(n).t(kk(1))),':','Color',.5*[1,1,1],'MarkerSize',1)
+					timeplot(X(n).t(klr),polyval(lr,X(n).t(klr) - X(n).t(kk(1))),[], ...
+                        'LineStyle',':','Color','k','MarkerSize',2) % intervals used for linear trend calculation
 				end
 			end
 		end

@@ -1,4 +1,4 @@
-function [tc,dc,lr,tr] = treatsignal(t,d,r,OPT)
+function [tc,dc,lr,tr,kk] = treatsignal(t,d,r,OPT)
 % TREATSIGNAL Signal treatment: decimating and cleaning
 % 	[TC,DC]=TREATSIGNAL(T,D,R,OPT) processes vector signal D(T) in the following order:
 % 	   1. if OPT.FLAT_IS_NAN is OK, removes flat signals
@@ -8,7 +8,7 @@ function [tc,dc,lr,tr] = treatsignal(t,d,r,OPT)
 % 	   5. decimates by a factor of R (integer) using moving average,
 % 	   6. if OPT.UNDERSAMPLING is OK, decimation is undersampling instead of averaging
 %
-%   [TC,DC,LR,TR]=TREATSIGNAL(...) also returns linear regression LR and trend value TRD 
+%   [TC,DC,LR,TR,K]=TREATSIGNAL(...) also returns linear regression LR and trend value TRD 
 %   and associated error TRE as TR = [TRD TRE], using optional second column of D as errors,
 %   and some other parameters:
 %       OPT.TREND_FACTOR is a dimensionless factor applied to the trend value initially in data unit/day
@@ -23,7 +23,7 @@ function [tc,dc,lr,tr] = treatsignal(t,d,r,OPT)
 %
 %	Author: F. Beauducel / WEBOBS
 % 	Created: 2015-08-24
-% 	Updated: 2025-02-28
+% 	Updated: 2025-03-01
 
 if size(d,2) > 1
     e = d(:,2); % data error vector
@@ -61,11 +61,11 @@ else
 end
 
 % linear trend
+lr = nan(1,2);
+tr = nan(1,2);
 k = find(~isnan(dc));
 dtlim = diff(minmax(t));
 if nargout > 3 && ~isempty(k) && dtlim > 0
-    lr = nan(1,2);
-    tr = nan(1,2);
     terrmod = field2num(OPT,'TREND_ERROR_MODE',1);
     trendfact = field2num(OPT,'TREND_FACTOR',1);
     trendmindays = field2num(OPT,'TREND_MIN_DAYS',1);
