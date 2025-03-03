@@ -18,9 +18,9 @@ function varargout=timescales(varargin)
 %	length (from 28 to 31 days), and variable year length (from 365 to 366 days).
 %
 %
-%   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
+%   Authors: F. Beauducel, D. Lafon, WebObs/IPGP
 %   Created: 2010-06-12 in Paris, France
-%   Updated: 2017-12-12
+%   Updated: 2025-03-03
 
 
 if nargin < 1
@@ -101,11 +101,14 @@ case {'s','n','h','d','w','m','y'}
 otherwise
 	if key(1) == 'r' && length(key) > 1
 		name = 'Ref.';
+        skey = key(2:end);
 		if nargin > 1
 			if strcmp(key,'ref')
 				sref = 'REF_DATE';
+                name = field2str(P,'REF_NAME','Ref.');
 			else
-				sref = sprintf('REF%s_DATE',key(2:end));
+				sref = sprintf('REF%s_DATE',skey);
+                name = field2str(P,sprintf('REF%s_NAME',skey),sprintf('Ref. %s',skey));
 			end
 			ref = field2num(P,sref);
 			if isempty(ref)
@@ -114,7 +117,7 @@ otherwise
 			datelim = [ref,P.NOW];
 		else
 			if ~strcmp(key,'ref')
-				name = sprintf('Ref. %s',key(2:end));
+				name = sprintf('Ref. %s',skey);
 			end
 		end
 	else
@@ -128,7 +131,6 @@ end
 
 if nargin > 1
 	varargout{1} = datelim;
-	
 else
 	varargout{1} = name;
 end
