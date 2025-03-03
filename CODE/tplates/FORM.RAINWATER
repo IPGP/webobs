@@ -129,11 +129,11 @@ OUTPUT06_TYPE|formula(6): 100*(OUTPUT04 - OUTPUT05) / (OUTPUT04 + OUTPUT05)
 OUTPUT06_THRESHOLD|10,20
 OUTPUT06_HELP|Normalized Inorganic Charge Balance
 OUTPUT07_NAME|Cl/Na
-OUTPUT07_TYPE|formula(6): (INPUT10/35.453) / (INPUT09/22.990)
+OUTPUT07_TYPE|formula(6): (INPUT10/35.453) / (INPUT05/22.990)
 OUTPUT08_NAME|SO<sub>4</sub>/Na
-OUTPUT08_TYPE|formula(6): (INPUT11/96.062) / (INPUT09/22.990) 
+OUTPUT08_TYPE|formula(6): (INPUT11/96.062) / (INPUT05/22.990) 
 OUTPUT09_NAME|Mg/Na
-OUTPUT09_TYPE|formula(6): (INPUT07/40.078) / (INPUT09/22.990)
+OUTPUT09_TYPE|formula(6): (INPUT07/40.078) / (INPUT05/22.990)
 
 # -----------------------------------------------------------------------------
 # --- Form layout
