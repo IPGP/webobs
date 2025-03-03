@@ -612,20 +612,9 @@ print qq[</td>
   <tr>
     <td style="border: 0" valign="top">
         <fieldset>
-        <legend>$__{'Date, site, and operators'}</legend>
+        <legend>$__{'Where, When, and Who'}</legend>
         <p class="parform" align=\"right\">
 ];
-
-# Add mandatory date input
-my @sdate = ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1);
-my @edate = ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2);
-datetime_input($form, "", \@sdate, \@edate);
-
-if ($starting_date) {
-   print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
-} else {
-    print qq(<input type="hidden" name="duration">);
-}
 
 # Add mandatory site input
 print qq(<B>Site: </B>
@@ -638,10 +627,21 @@ for (@NODESSelList) {
     my $sel = ($cle[0] eq $site ? "selected":($action eq "edit" ? "disabled":""));
     print qq(<option $sel value="$cle[0]">$cle[1]</option>);
 }
+print qq(</select><BR>);
+
+# Add mandatory date input
+my @sdate = ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1);
+my @edate = ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2);
+datetime_input($form, "", \@sdate, \@edate);
+
+if ($starting_date) {
+   print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
+} else {
+    print qq(<input type="hidden" name="duration">);
+}
 
 # Add mandatory operator input
-print qq(</select><BR>
-    <table><tr><td style="border:0"><B>$__{'Operator(s)'}:</B> </td><td style="border:0">
+print qq(<table><tr><td style="border:0"><B>$__{'Operator(s)'}:</B> </td><td style="border:0">
             <select name="operators" size="5" multiple="multiple"
                 onMouseOut="nd()" onmouseover="overlib('$__{'Select operator(s)'}')">);
 my @uid = @operators; # $client if 'new', or @operators if 'edit'
