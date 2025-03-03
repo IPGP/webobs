@@ -712,7 +712,7 @@ foreach (@columns) {
                         for (@list_keys) {
                             my $nam = (ref($list{$_}) ? $list{$_}{name}:$list{$_});
                             my $selected = ( $prev_inputs{$field} =~ /$_/ ? "selected" : "" );
-                            print qq(<option value="$_" $selected>$_: $nam</option>);
+                            print qq(<option value="$_" $selected>$nam</option>);
                         }
                         print "</select>$dlm";
                     }
