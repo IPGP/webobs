@@ -1,0 +1,160 @@
+=key|value
+# Generic FORM template for use with {formGRID.pl, showGENFORM,formGENFORM}.pl
+# Model: soil solution chemical analysis (formerly SOILSOLUTION)
+#
+# ############################### WARNING #####################################
+# Once the database form has been created and the first data has been recorded,
+# you MAY BE VERY CAREFUL IN MODIFYING the keys of this file.
+# ############################### WARNING #####################################
+
+# -----------------------------------------------------------------------------
+# --- GRID common parameters
+
+NAME|Soil solution chemical analysis database
+DESCRIPTION|Soil solution physico-chemical analysis 
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|MyForm
+
+# --- node parameters (display and maps)
+NODE_NAME|site
+NODE_MARKER|s
+NODE_SIZE|10
+NODE_RGB|0,1,1
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
+BANG|$WEBOBS{BIG_BANG}
+
+# Time zone of the data (in hour from UT)
+TZ|0
+
+# if YES, use start and end date for each record
+STARTING_DATE|YES
+
+# may contain any +GID and/or UID list (comma separated)
+OPERATORS_LIST|+DUTY
+
+# if YES, use a quality check for each record
+QUALITY_CHECK|YES
+QUALITY_OPERATORS|+ADMIN
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
+
+# comment input field
+COMMENT_SIZE|120
+COMMENT_HELP|Note any presence of odour, gas or precipitate, etc...
+
+# -----------------------------------------------------------------------------
+# --- Inputs names, units, and types
+# valid types: text(size), numeric(size), list: filename
+#
+# ############################### WARNING #####################################
+# once created, you cannot remove or rename any input since it will corrupt
+# the database. You might only add new inputs, increasing the number
+# ############################### WARNING #####################################
+
+INPUT01_NAME|Sampling Depth
+INPUT01_TYPE|list: FORM_SOILSOLUTION_list_depth.conf
+
+INPUT02_NAME|Water Level
+INPUT02_TYPE|checkbox:checked
+
+INPUT03_NAME|pH
+
+INPUT04_NAME|Cond. at 25&deg;C
+INPUT04_UNIT|&mu;S/cm
+
+INPUT05_NAME|Na<sup>+</sup>
+INPUT05_UNIT|ppm
+
+INPUT06_NAME|K<sup>+</sup>
+INPUT06_UNIT|ppm
+
+INPUT07_NAME|Mg<sup>++</sup>
+INPUT07_UNIT|ppm
+
+INPUT08_NAME|Ca<sup>++</sup>
+INPUT08_UNIT|ppm
+
+INPUT09_NAME|HCO<sub>3</sub><sup>-</sup>
+INPUT09_UNIT|ppm
+
+INPUT10_NAME|Cl<sup>-</sup>
+INPUT10_UNIT|ppm
+
+INPUT11_NAME|NO<sub>3</sub><sup>-</sup>
+INPUT11_UNIT|ppm
+
+INPUT12_NAME|SO<sub>4</sub><sup>--</sup>
+INPUT12_UNIT|ppm
+
+INPUT13_NAME|SiO<sub>2</sub>
+INPUT13_UNIT|ppm
+
+INPUT14_NAME|DOC
+INPUT14_UNIT|ppm
+
+
+# -----------------------------------------------------------------------------
+# --- Outputs names, units, and types
+# valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
+
+OUTPUT01_NAME|H<sup>+</sup>
+OUTPUT01_UNIT|ppm
+OUTPUT01_TYPE|formula: 1000 * (10**(-INPUT03))
+OUTPUT02_NAME|S.C
+OUTPUT02_TYPE|formula(0): INPUT05/22.990 + INPUT06/39.098 + 2*INPUT07/24.305 + 2*INPUT08/40.078 + OUTPUT01
+OUTPUT03_NAME|S.A
+OUTPUT03_TYPE|formula(0): INPUT09/61.0159 + INPUT10/35.453 + INPUT11/62.004 + 2*INPUT12/96.062
+OUTPUT04_NAME|NICB
+OUTPUT04_UNIT|%
+OUTPUT04_TYPE|formula(6): 100*(OUTPUT02 - OUTPUT03) / (OUTPUT02 + OUTPUT03)
+OUTPUT04_THRESHOLD|10,20
+OUTPUT04_HELP|Normalized Inorganic Charge Balance
+OUTPUT05_NAME|Cl/Na
+OUTPUT05_TYPE|formula(6): (INPUT10/35.453) / (INPUT05/22.990)
+OUTPUT06_NAME|SO<sub>4</sub>/Na
+OUTPUT06_TYPE|formula(6): (INPUT11/96.062) / (INPUT05/22.990) 
+OUTPUT07_NAME|Mg/Na
+OUTPUT07_TYPE|formula(6): (INPUT07/40.078) / (INPUT05/22.990)
+
+# -----------------------------------------------------------------------------
+# --- Form layout
+
+# note: first column starts with the mandatory date/site/operator fieldset
+COLUMN01_LIST|FIELDSET01,FIELDSET02
+COLUMN02_LIST|FIELDSET03,FIELDSET04
+
+# fieldset contains
+FIELDSET01_NAME|Lysimeter
+FIELDSET01_CELLS|1
+FIELDSET01_C01|INPUT01,INPUT02
+
+FIELDSET02_NAME|Physical Measurements
+FIELDSET02_CELLS|1
+FIELDSET02_C01|INPUT03,INPUT04,INPUT13,INPUT14
+
+FIELDSET03_NAME|Cation and Anion Concentrations
+FIELDSET03_CELLS|2
+FIELDSET03_C01|INPUT05,INPUT06,INPUT07,INPUT08,OUTPUT01
+FIELDSET03_C02|INPUT09,INPUT10,INPUT11,INPUT12,OUTPUT02,OUTPUT03,OUTPUT04
+
+FIELDSET04_NAME|Ratios
+FIELDSET04_TOGGLE|YES
+FIELDSET04_CELLS|1
+FIELDSET04_C01|OUTPUT05,OUTPUT06,OUTPUT07
+
