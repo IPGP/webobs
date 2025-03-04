@@ -293,7 +293,7 @@ sub readCfg
     my $escape = grep ( /^escape$/, @_[1..$#_] );
     my $novsub = grep ( /^novsub$/, @_[1..$#_] );
     my $id = 0;
-    my (@df, @wrk, $i, $l, %H, @A);
+    my (@df, @wrk, $i, $l, %H, @A, @key);
     my @fraw = readFile($fn);
     chomp(@fraw);
     for (@fraw) {
@@ -307,6 +307,7 @@ sub readCfg
         }
         $l = l2u($_);                # force utf8 !
         @wrk = split(/(?<!\\)\|/,$l);  # parse with unescaped-| as delim
+        push(@key, $wrk[0]);
         if (!$escape) { s/\\//g for(@wrk) };          # remove escape chars (\)
         if (@df == 2) {             # key|value ? build Hash
             $H{$wrk[0]} = $wrk[1];
@@ -336,7 +337,11 @@ sub readCfg
             }
         }
         use warnings;
-        return %H;
+        if (wantarray) {
+            return %H;
+        } else {
+            return \%H;
+        }
     }
 
     # Use an explicit return in case $fn is undefined or the file is empty
