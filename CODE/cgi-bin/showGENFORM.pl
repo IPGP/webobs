@@ -528,6 +528,13 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $val .= "</table>";
                 if ($#listeTarget+1 > $MAX_IMAGES) { $val .= "<br><b>... </b><i>gallery limited to ".$MAX_IMAGES." images</i>"; }
             }
+            # --- input type = shapefile
+            if ($FORM{$Field."_TYPE"} =~ /^shapefile/) {
+                my $input_id = uc($form."/record".$id)."/".$Field;
+                my $shape_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$input_id/shape.json";
+                my $status = ( -e "$shape_path" ? "yes" : "no" );
+                $val = qq(<a href="$form_url#$field\_shape">$status</a>);
+            }
             $text .= "<TD align=center $opt>$val</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
             if ($FORM{$Field."_TYPE"} =~ /^numeric|^$/) {
                 $csvTxt .= "$fields{$field},";
