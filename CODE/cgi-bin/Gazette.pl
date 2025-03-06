@@ -169,8 +169,8 @@ my $fmt_date      = $__{'gzt_fmt_date'};
 my $fmt_long_week = $__{'gzt_fmt_long_week'};
 my $fmt_long_year = $__{'gzt_fmt_long_year'};
 my $thismonday    = $today-($today->day_of_week+6)%7*86400;
-my $daynames      = join(',',map { l2u(($thismonday+86400*$_)->strftime('%A'))} (0..6)) ;
-my $monthnames    = join(',',map { l2u((Time::Piece->strptime("$_",'%m'))->strftime('%B')) } (1..12)) ;
+my $daynames      = join(',',map { ($thismonday+86400*$_)->strftime('%A')} (0..6)) ;
+my $monthnames    = join(',',map { (Time::Piece->strptime("$_",'%m'))->strftime('%B') } (1..12)) ;
 
 my %prez = ('calendar' => $__{'Calendar'},
     'dateList' => $__{'List by dates'},
@@ -206,22 +206,22 @@ if (!$d1) {
     $d1dt = Time::Piece->strptime($d1,'%Y-%m-%d');
     $d2 = $d1;
     $d2dt = Time::Piece->strptime($d2,'%Y-%m-%d');
-    $reqdate = l2u($d1dt->strftime($fmt_long_date));
+    $reqdate = $d1dt->strftime($fmt_long_date);
 } else {
     $d1dt = Time::Piece->strptime($d1,'%Y-%m-%d');
     if (!$d2) {
         $d2 = $d1;
-        $reqdate = l2u($d1dt->strftime($fmt_long_date));
+        $reqdate = $d1dt->strftime($fmt_long_date);
     } else {
         $d2dt = Time::Piece->strptime($d2,'%Y-%m-%d');
-        $reqdate = "$__{'from'} ".l2u($d1dt->strftime($fmt_date))." $__{'to'} ". l2u($d2dt->strftime($fmt_date));
+        $reqdate = "$__{'from'} ".$d1dt->strftime($fmt_date)." $__{'to'} ". $d2dt->strftime($fmt_date);
     }
 }
 
 # ---- change the default "verbose" date expression based on wodpdesc if it exists
-if ($QryParm->{'wodpdesc'} =~ /year/i) { $reqdate = l2u($d1dt->strftime($fmt_long_year)) }
-if ($QryParm->{'wodpdesc'} =~ /month/i) { $reqdate = l2u($d1dt->strftime('%B %Y')) }
-if ($QryParm->{'wodpdesc'} =~ /week/i) { $reqdate = l2u($d1dt->strftime($fmt_long_week)) }
+if ($QryParm->{'wodpdesc'} =~ /year/i) { $reqdate = $d1dt->strftime($fmt_long_year) }
+if ($QryParm->{'wodpdesc'} =~ /month/i) { $reqdate = $d1dt->strftime('%B %Y') }
+if ($QryParm->{'wodpdesc'} =~ /week/i) { $reqdate = $d1dt->strftime($fmt_long_week) }
 
 # ---- now build the article's page !
 if (grep /\Q$QryParm->{'gview'}/i , keys(%prez)) {
@@ -453,11 +453,11 @@ sub delId {
 
 =head1 AUTHOR(S)
 
-Didier Lafon from HEBDO by Didier Mallarino, Francois Beauducel, Alexis Bosson
+Didier Lafon, base on former HEBDO by Didier Mallarino, François Beauducel, Alexis Bosson
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2015 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

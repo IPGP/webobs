@@ -182,7 +182,7 @@ sub Show {
                 $dclass .= "\"holidays\"" if (grep(/$tst/,@daysoff));
                 $dclass .= " today" if ($tst eq $today->strftime('%Y-%m-%d'));
                 $dclass = "class=$dclass" if($dclass ne "");
-                push(@html,"<th $dclass>".l2u($ww->strftime('%a %d %b'))."</th>");
+                push(@html,"<th $dclass>".$ww->strftime('%a %d %b')."</th>");
             }
             my @prehtml = ([(undef)x7]);
 
@@ -286,7 +286,7 @@ sub Show {
         $prevnextbar .= "<span class=\"gzt-pnbar\" style=\"float: right;\"><a href=\"/cgi-bin/Gazette.pl?gdate=$nextday&gview=calendar\"><sup>$nextday</sup></a><img src=\"/icons/r13.png\"/></span>";
         push(@html, "<div width=\"100%\" class=\"gzt-pndiv\">$prevnextbar</div>");
         push(@html,"<table class='gzt-cal'>");
-        push(@html,'<tr><td class="gzt-calweekhead">'.l2u($dtfrom->strftime("$__{'gzt_fmt_long_date'}")).'</td></tr>');
+        push(@html,'<tr><td class="gzt-calweekhead">'.$dtfrom->strftime("$__{'gzt_fmt_long_date'}").'</td></tr>');
 
         # now 1 row per article
         for my $art (@{$articles}) {
@@ -364,7 +364,7 @@ sub Show {
                 $dayhtml .= $li;
             }
             if ($dayhtml ne "") { # found things to display for this day
-                push(@html, "<h3>".l2u($d->strftime("$__{gzt_fmt_date}"))."</h3>"."<ul class=\"gzt-list\">$dayhtml</ul>");
+                push(@html, "<h3>".$d->strftime("$__{gzt_fmt_date}")."</h3>"."<ul class=\"gzt-list\">$dayhtml</ul>");
             }
 
         }
@@ -915,7 +915,7 @@ Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -552,7 +552,10 @@ for (my $j = 0; $j <= $#rows; $j++) {
 }
 
 if ($QryParm->{'debug'}) {
+    my $env = qx(env);
+    $env = join(', ', map {s/^([^=]*=)/<b>$1<\/b>/g; $_;} split(/\n/, $env));
     print("<H3>Debug</H3><UL>
+    <LI>env: $env</LI>
     <LI>y1 = ".$QryParm->{'y1'}.", m1 = ".$QryParm->{'m1'}.", d1 = ".$QryParm->{'d1'}."</LI>
     <LI>startDate = $startDate, endDate = $endDate, default days = $FORM{DEFAULT_DAYS}</LI>
     <LI>Conf = ".join(',',sort keys %FORM)."</LI>
