@@ -141,21 +141,16 @@ HARMONIC_NORTH_SINCOS_MM|
 HARMONIC_UP_SINCOS_MM|
 
 # --- Active fault correction (okada85 source forward modelling)
-# fault centroid coordinates as latitude (degree), longitude (degree) and depth (km>0 below sea level)
+FAULT_ACTIVATE|N
+# LAT,LON,DEP: fault centroid coordinates as latitude (degree), longitude (degree) and depth (km>0 below sea level)
 FAULT_CENTROID_LATLONDEP|
-# WIDTH: fault length in the STRIKE direction, and width in the DIP direction (in km, >0)
+# LENGTH,WIDTH: fault length in the STRIKE direction, and width in the DIP direction (coma separated values in km, >0)
 FAULT_LENGTH_WIDTH_KM|
-# STRIKE: fault trace direction (0 to 360° relative to North), defined so that the fault dips to the right side of the trace
-FAULT_STRIKE_DEG|
-# DIP: angle between the fault and a horizontal plane (0 to 90°)
-FAULT_DIP_DEG|
-# RAKE: direction the hanging wall moves during rupture, measured relative to the fault STRIKE (-180 to 180°).
-FAULT_RAKE_DEG|
-# SLIP: dislocation in RAKE direction (in m)
-FAULT_SLIP_M|0
-# dislocation in tensile component (in m)
-FAULT_OPEN_M|0
-# t1,t2: dislocation occurs between t1 and t2 (datenum format); t: dislocation occurs at t 
+# STRIKE,DIP,RAKE: fault trace azimuth (0 to 360°), dip angle (0 to 90°), and rake direction of rupture (-180 to 180°)
+FAULT_STRIKE_DIP_RAKE_DEG|
+# SLIP,OPEN: dislocation in RAKE direction, and in tensile component (coma separated values, in m)
+FAULT_SLIP_OPEN_M|0,0
+# t1,t2: dislocation occurs between datetimes t1 and t2, or t: dislocation occurs instantanously at datetime t 
 FAULT_DISLOCATION_TLIM|
 # dislocation time model: linear (default), log, or exp
 FAULT_DISLOCATION_TIME_MODEL|linear

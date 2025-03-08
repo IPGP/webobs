@@ -22,6 +22,21 @@ If you have any question which is not answered in the user manual, do not hesita
     * `formFORMNAME.pl` => `formGENFORM.pl?form=PROCNAME`
 
     where FORMNAME is the legacy form name, and PROCNAME is the associated PROC which becomes also the new FORM name. Note that previous link `showFORMNAME.pl` without argument, when legacy form was associated to more than one PROC (for instance the `EAUX` database), has no strict equivalent in the new structure; it must be replaced by as many links as there are procs associated to this form.
+1. **GNSS superproc**: active fault slip/open can be set as a priori correction on displacement data, using the Okada (1985) model, as rectangular fault in elastic medium:
+```
+FAULT_ACTIVATE|N
+FAULT_CENTROID_LATLONDEP|
+FAULT_LENGTH_WIDTH_KM|
+FAULT_STRIKE_DIP_RAKE_DEG|
+FAULT_SLIP_OPEN_M|0,0
+FAULT_DISLOCATION_TLIM|
+FAULT_DISLOCATION_TIME_MODEL|linear
+FAULT_WITH_TOPOGRAPHY|Y
+FAULT_PLOT|Y
+FAULT_PLOT_COLOR|lightgray
+```
+    Fault geometry is defined by `FAULT_CENTROID_LATLONDEP` with centroid coordinates as latitude (degree), longitude (degree) and depth (km>0 below sea level), `FAULT_LENGTH_WIDTH_KM` as fault length in the strike direction, and width in the dip direction (both in km), and `FAULT_STRIKE_DIP_RAKE_DEG` the fault trace azimuth/strike (0 to 360° from North clockwise) defined so that the fault dips to the right side of the trace, dip angle (0 to 90°) from horizontal plane, and rake direction as the hanging wall moves during rupture measured relative to the fault strike (-180 to 180°). `FAULT_SLIP_OPEN_M` defines the slip dislocation in rake direction, and open dislocation in the tensile component (both in m).
+    The dislocation occurs at a date/time or between two date/time if `FAULT_DISLOCATION_TLIM` contains one or two values, respectively. `FAULT_DISLOCATION_TIME_MODEL` is presently only linear. `FAULT_WITH_TOPOGRAPHY` set to `Y` will use station's elevation to approximately correct topography effect. `FAULT_PLOT` will plot the fault limits on graphs, using `FAULT_PLOT_COLOR` for line.
 
 ### Enhancements
 1. New CSS!
