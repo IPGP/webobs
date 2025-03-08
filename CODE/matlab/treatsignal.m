@@ -23,7 +23,7 @@ function [tc,dc,lr,tr,kk] = treatsignal(t,d,r,OPT)
 %
 %	Author: F. Beauducel / WEBOBS
 % 	Created: 2015-08-24
-% 	Updated: 2025-03-01
+% 	Updated: 2025-03-05
 
 if size(d,2) > 1
     e = d(:,2); % data error vector
@@ -79,6 +79,7 @@ if nargout > 3 && ~isempty(k) && dtlim > 0
     ek = ec(k);
     tlim = minmax(tk);
     dt = diff(tlim);
+    kk = [];
     if numel(k) >= 2 && dt >= trendmindays && 100*dt/dtlim >= trendminperc && ~all(isnan(dk))
         if trendtlimdays > 0
             kk = find((tk-tlim(1)) <= trendtlimdays | (tlim(2)-tk) <= trendtlimdays);
