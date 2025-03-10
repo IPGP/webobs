@@ -309,15 +309,15 @@ sub readCfg
         @wrk = split(/(?<!\\)\|/,$l);  # parse with unescaped-| as delim
         push(@key, $wrk[0]);
         if (!$escape) { s/\\//g for(@wrk) };          # remove escape chars (\)
-        if (@df == 2) {             # key|value ? build Hash
-            $H{$wrk[0]} = $wrk[1];
-            next;
-        }
-        if (@df > 2) {              # key|val1|...|valN ? build an HoH
+        if (@df > 2 || $sort) {              # key|val1|...|valN ? build an HoH
             for ($i = 1; $i < @df; $i++) {
                 $H{$wrk[0]}{$df[$i]} = $wrk[$i];
             }
             $H{$wrk[0]}{_SO_} = sprintf("%03d",++$id) if ($sort);
+            next;
+        }
+        if (@df == 2) {             # key|value ? build Hash
+            $H{$wrk[0]} = $wrk[1];
             next;
         }
         push(@A, [@wrk]);           # otherwise build an AoA
@@ -337,11 +337,7 @@ sub readCfg
             }
         }
         use warnings;
-        if (wantarray) {
-            return %H;
-        } else {
-            return \%H;
-        }
+        return %H;
     }
 
     # Use an explicit return in case $fn is undefined or the file is empty
