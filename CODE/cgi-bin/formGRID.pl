@@ -605,7 +605,7 @@ if ($GRIDType eq "FORM") {
         my $tdir = "$WEBOBS{ROOT_CODE}/tplates";
         my $fdir  = "$WEBOBS{PATH_FORMS}/$GRIDName";
         if (! -d $fdir and !mkdir($fdir)) {
-            print "fedit: error while creating directory $fdir: $!";
+            print "formGRID: error while creating directory $fdir: $!";
         }
         my $file = "$fdir/$_";
         if ((! -e $file) && -e "$tdir/$_") {
