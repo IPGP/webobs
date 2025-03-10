@@ -4,7 +4,7 @@
 #
 # Author: François Beauducel
 # Created: 2024-04-21
-# Updated: 2025-01-24
+# Updated: 2025-03-10
 
 
 if [ -z "$1" ]; then
@@ -60,8 +60,8 @@ cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 
 # =============================================================================
 # make a loop on all known legacy FORMs
-#for form in EAUX RIVERS RAINWATER SOILSOLUTION EXTENSO FISSURO GAZ DISTANCE BOJAP 
-for form in EAUX RIVERS RAINWATER EXTENSO GAZ; do
+#for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO DISTANCE BOJAP 
+for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO; do
     
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
@@ -121,43 +121,6 @@ for form in EAUX RIVERS RAINWATER EXTENSO GAZ; do
         printf ", comment text, tsupd text NOT NULL, userupd text NOT NULL" >> $TMP
 
         case "$form" in
-            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            "EXTENSO")
-                NBI=22
-                ICOM=37
-                IVAL=38
-
-                # uses French template
-                TEMPLATE="EXTENSO_fr"
-
-                # copy template files
-                cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
-                cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
-
-                # ID|Date|Heure|Site|Opérateurs|Température|Météo|Ruban|Offset|F1|C1|V1|F2|C2|V2|F3|C3|V3|F4|C4|V4|F5|C5|V5|F6|C6|V6|F7|C7|V7|F8|C8|V8|F9|C9|V9|Remarques|Validation
-                # 1 |2   |3    |4   |5         |6          |7    |8    |9     |10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37       |38
-                for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
-                echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
-                    bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
-                    for (i=1;i<=n;i++) printf ",input%02d",i; \
-                    printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
-                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
-                    if ($iv ~ /^\[.*\] /) { \
-                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
-                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
-                        printf ",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\""$ic" "$iv"\",\"\",\"\"" }; \
-                    for (i=6;i<10;i++) printf ",\""$i"\""; \
-                    for (i=10;i<35;i+=3) {
-                        j = i+1; k = i+2;
-                        d = $i + $j;
-                        printf ",\""d"\",\""$k"\""; \
-                    }
-                    print ");" }}' >> $TMP 
-                ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "EAUX")
                 NBI=23
@@ -321,6 +284,80 @@ for form in EAUX RIVERS RAINWATER EXTENSO GAZ; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
+                    print ");" }}' >> $TMP 
+                ;;
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            "EXTENSO")
+                NBI=22
+                ICOM=37
+                IVAL=38
+
+                # uses French template
+                TEMPLATE="EXTENSO_fr"
+
+                # copy template files
+                cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
+                cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
+
+                # ID|Date|Heure|Site|Opérateurs|Température|Météo|Ruban|Offset|F1|C1|V1|F2|C2|V2|F3|C3|V3|F4|C4|V4|F5|C5|V5|F6|C6|V6|F7|C7|V7|F8|C8|V8|F9|C9|V9|Remarques|Validation
+                # 1 |2   |3    |4   |5         |6          |7    |8    |9     |10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37       |38
+                for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                echo ");" >> $TMP
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                    bin = ($1<0) ? 1:0; \
+                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    for (i=1;i<=n;i++) printf ",input%02d",i; \
+                    printf ") ";\
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\""$ic" "$iv"\",\"\",\"\"" }; \
+                    for (i=6;i<10;i++) printf ",\""$i"\""; \
+                    for (i=10;i<35;i+=3) {
+                        j = i+1; k = i+2;
+                        d = $i + $j;
+                        printf ",\""d"\",\""$k"\""; \
+                    }
+                    print ");" }}' >> $TMP 
+                ;;
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            "FISSURO")
+                NBI=40
+                ICOM=46
+                IVAL=47
+
+                # uses French template
+                TEMPLATE="EXTENSO_fr"
+
+                # copy template files
+                cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
+                cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
+
+                #ID|Date|Heure|Site|Opérateurs|Température|Météo|Instrument|Composante|P1|L1|V1|P2|L2|V2|P3|L3|V3|P4|L4|V4|P5|L5|V5|P6|L6|V6|P7|L7|V7|P8|L8|V8|P9|L9|V9|P10|L10|V10|P11|L11|V11|P12|L12|V12|Remarques|Validation
+                #1 |2   |3    |4   |5         |6          |7    |8         |9         |10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37 |38 |39 |40 |41 |42 |43 |44 |45 |46       |47 
+                for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                echo ");" >> $TMP
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                    bin = ($1<0) ? 1:0; \
+                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    for (i=1;i<=n;i++) printf ",input%02d",i; \
+                    printf ") ";\
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\""$ic" "$iv"\",\"\",\"\"" }; \
+                    for (i=6;i<10;i++) printf ",\""$i"\""; \
+                    for (i=10;i<35;i+=3) {
+                        j = i+1; k = i+2;
+                        d = $i + $j;
+                        printf ",\""d"\",\""$k"\""; \
+                    }
                     print ");" }}' >> $TMP 
                 ;;
         esac
