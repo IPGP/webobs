@@ -719,7 +719,7 @@ for (@{$GRID{NODESLIST}}) {
                     $htmlcontents .= "<TD align=\"center\" colspan=\"2\"><I>$__{'Stopped'}</I></TD>";
                 }
             } else {
-                $htmlcontents .= "<TD colspan=\"3\"> </TD>";
+                $htmlcontents .= "<TD colspan=\"4\"> </TD>";
             }
         }
 
@@ -750,7 +750,7 @@ for (@{$GRID{NODESLIST}}) {
         $htmlcontents .= "</TR>\n".(!$displayNode ? "-->":"");
     }
 }
-$htmlcontents .= "<TR><TH colspan=\"23\" class=\"th-bottom\"></TH></TR></TABLE>";
+$htmlcontents .= "<TR><TH colspan=\"24\" class=\"th-bottom\"></TH></TR></TABLE>";
 $htmlcontents .= "</div></div>";
 print $htmlcontents;
 
