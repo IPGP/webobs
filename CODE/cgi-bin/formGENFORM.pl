@@ -693,11 +693,11 @@ foreach (@columns) {
                 my $hlp;
                 if ($field =~ /^input/ && $type =~ /^list/) {
                     my %list = extract_list($type,$form);
-                    my @list_keys = sort keys %list;
+                    my @list_keys = sort { $list{$a}{'_SO_'} <=> $list{$b}{'_SO_'} } keys %list;
                     $hlp = ($help ne "" ? $help:"$__{'Select a value for'} $Field");
 
                     # if list contains an icon column (HoH), displays radio button instead of select list
-                    if (ref($list{$list_keys[0]})) {
+                    if (ref($list{$list_keys[0]}{icon})) {
                         print "$txt =";
                         for (@list_keys) {
                             my $selected = ($prev_inputs{$field} eq "$_" ? "checked":"");
@@ -710,7 +710,7 @@ foreach (@columns) {
                         print qq($txt = <select name="$field"
                             onMouseOut="nd()" onmouseover="overlib('$hlp')" $multi><option value=""></option>);
                         for (@list_keys) {
-                            my $nam = (ref($list{$_}) ? $list{$_}{name}:$list{$_});
+                            my $nam = (ref($list{$_}{name}) ? $list{$_}{name}:$list{$_}{value});
                             my $selected = ( $prev_inputs{$field} =~ /$_/ ? "selected" : "" );
                             print qq(<option value="$_" $selected>$nam</option>);
                         }

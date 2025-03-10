@@ -358,11 +358,12 @@ sub extract_formula {
     return ($formula, $size, @x);
 }
 
+# extract_list ($type,$form) returns %list (HoH) with $list{}{_SO_} additional key for sorting
 sub extract_list {
-    my $list = shift;
+    my $type = shift;
     my $form = shift;
-    my $filename = (split /\: /, $list)[1];
-    my %list = readCfg("$WEBOBS{PATH_FORMS}/$form/$filename");
+    my $filename = (split /\: /, $type)[1];
+    my %list = readCfg("$WEBOBS{PATH_FORMS}/$form/$filename",'sorted');
 
     return %list;
 }
