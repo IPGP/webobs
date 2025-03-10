@@ -1,0 +1,162 @@
+=key|value
+# Generic FORM template for use with {formGRID.pl,showGENFORM,formGENFORM}.pl
+# Model: fissurometer measurements (formerly FISSURO)
+#
+# ############################### WARNING #####################################
+# Once the database form has been created and the first data has been recorded,
+# you MUST BE VERY CAREFUL IN MODIFYING the keys of this file.
+# ############################### WARNING #####################################
+
+#
+# -----------------------------------------------------------------------------
+# --- GRID common parameters
+
+NAME|Fissurometer
+DESCRIPTION|Fissurometer database form
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|MyForm
+
+# --- node parameters (display and maps)
+NODE_NAME|site
+NODE_MARKER|^
+NODE_SIZE|10
+NODE_RGB|0,1,0
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
+BANG|$WEBOBS{BIG_BANG}
+
+# Time zone of the data (in hour from UT)
+TZ|0
+
+# if YES, use start and end date/time for each record
+STARTING_DATE|NO
+
+# may contain any +GID and/or UID list (comma separated)
+OPERATORS_LIST|+DUTY
+
+# if YES, use a quality check for each record
+QUALITY_CHECK|NO
+QUALITY_OPERATORS|+ADMIN
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
+
+# comment input field
+COMMENT_SIZE|80
+COMMENT_HELP|Enter any observations made during the measurements
+
+
+# ############################### WARNING #####################################
+# Once created, you cannot remove or rename any input since it will corrupt
+# the database. You might only add new inputs, increasing the index XX
+# ############################### WARNING #####################################
+# --- Inputs names, units, and types
+# valid types: text(size), numeric(size), list: filename, radio: filename
+INPUT01_NAME|T<sub>Air</sub>
+INPUT01_UNIT|&deg;C
+INPUT02_NAME|Meteo
+INPUT02_TYPE|list: FORM_EXTENSO_list_meteo.conf
+INPUT02_FILT|YES
+INPUT03_NAME|Instrument
+INPUT03_TYPE|list: FORM_FISSURO_list_type.conf
+INPUT03_FILT|YES
+INPUT04_NAME|Component
+INPUT04_TYPE|list: FORM_FISSURO_list_component.conf
+INPUT04_FILT|YES
+INPUT05_NAME|d<sub>1</sub>
+INPUT06_NAME|d<sub>2</sub>
+INPUT07_NAME|d<sub>3</sub>
+INPUT08_NAME|d<sub>4</sub>
+INPUT09_NAME|d<sub>5</sub>
+INPUT10_NAME|d<sub>6</sub>
+INPUT11_NAME|d<sub>7</sub>
+INPUT12_NAME|d<sub>8</sub>
+INPUT13_NAME|d<sub>9</sub>
+INPUT14_NAME|v<sub>1</sub>
+INPUT14_TYPE|list: FORM_EXTENSO_list_wind.conf
+INPUT15_NAME|v<sub>2</sub>
+INPUT15_TYPE|list: FORM_EXTENSO_list_wind.conf
+INPUT16_NAME|v<sub>3</sub>
+INPUT16_TYPE|list: FORM_EXTENSO_list_wind.conf
+INPUT17_NAME|v<sub>4</sub>
+INPUT17_TYPE|list: FORM_EXTENSO_list_wind.conf
+INPUT18_NAME|v<sub>5</sub>
+INPUT18_TYPE|list: FORM_EXTENSO_list_wind.conf
+INPUT19_NAME|v<sub>6</sub>
+INPUT19_TYPE|list: FORM_EXTENSO_list_wind.conf
+INPUT20_NAME|v<sub>7</sub>
+INPUT20_TYPE|list: FORM_EXTENSO_list_wind.conf
+INPUT21_NAME|v<sub>8</sub>
+INPUT21_TYPE|list: FORM_EXTENSO_list_wind.conf
+INPUT22_NAME|v<sub>9</sub>
+INPUT22_TYPE|list: FORM_EXTENSO_list_wind.conf
+
+# --- Outputs names, units, and types
+# valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
+OUTPUT01_NAME|Measurements
+OUTPUT01_UNIT|mm
+OUTPUT01_TYPE|text: 
+OUTPUT02_NAME|d<sub>mean</sub>
+OUTPUT02_UNIT|mm
+OUTPUT02_TYPE|formula(9): INPUT03 + INPUT04 + mean(INPUT05,INPUT06,INPUT07,INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,INPUT13)
+OUTPUT02_HELP|Average of all measurements
+OUTPUT03_NAME|2&sigma;
+OUTPUT03_UNIT|mm
+OUTPUT03_TYPE|formula: 2*std(INPUT05,INPUT06,INPUT07,INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,INPUT13)
+OUTPUT03_THRESHOLD|1,2
+OUTPUT03_HELP|2 * standard-deviation
+OUTPUT04_NAME|Wind
+OUTPUT04_UNIT|
+OUTPUT04_TYPE|formula(2): mean(INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,INPUT20,INPUT21,INPUT22)
+OUTPUT04_HELP|Average of all wind estimations 
+
+# --- Form layout
+
+# note: first column starts with the mandatory date/site/operator fieldset
+COLUMN01_LIST|FIELDSET01
+COLUMN02_LIST|FIELDSET02
+
+# first fieldset name, number of cells and list of fields for each column
+FIELDSET01_NAME|Weather conditions
+FIELDSET01_CELLS|1,COLS
+FIELDSET01_C01|INPUT01,INPUT02
+
+# second fieldset with 2 columns
+FIELDSET02_NAME|Distance measurements
+FIELDSET02_CELLS|13,ROWS
+FIELDSET02_C01|INPUT03
+FIELDSET02_C02|INPUT04
+FIELDSET02_C03|OUTPUT01
+FIELDSET02_C04|INPUT05,INPUT06
+FIELDSET02_C05|INPUT07,INPUT08
+FIELDSET02_C06|INPUT09,INPUT10
+FIELDSET02_C07|INPUT11,INPUT12
+FIELDSET02_C08|INPUT13,INPUT14
+FIELDSET02_C09|INPUT15,INPUT16
+FIELDSET02_C10|INPUT17,INPUT18
+FIELDSET02_C11|INPUT19,INPUT20
+FIELDSET02_C12|INPUT21,INPUT22
+FIELDSET02_C13|OUTPUT02,OUTPUT03,OUTPUT04
+
+# ############################### WARNING #####################################
+# Export list of inputs/outputs must fit the associated procs channels.
+# ############################### WARNING #####################################
+# list of fields that will be exported to the associated procs (must be numeric)
+PROC_DATA_LIST|OUTPUT02,INPUT02,OUTPUT04
+# optional error list of fields (same as PROC_DATA_LIST size!)
+PROC_ERROR_LIST|OUTPUT03,,
