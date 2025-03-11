@@ -149,7 +149,7 @@ my $tbl = lc($GRIDName); # form table name
 my $dbh;
 
 my $titrePage = "";
-my $editCGI = "/cgi-bin/gedit.pl";
+my $editCGI = "/cgi-bin/nedit.pl";
 
 $GRID{UTM_LOCAL} ||= '';
 my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};

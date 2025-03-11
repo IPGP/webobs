@@ -466,7 +466,7 @@ print "</BODY>\n</HTML>\n";
 # printdesc (title,suffix,type,name,legacy,[top])
 sub printdesc {
     my @desc;
-    my $editCGI = "/cgi-bin/gedit.pl";
+    my $editCGI = "/cgi-bin/nedit.pl";
     my $go2top = "";
 
     my $title = $_[0];
