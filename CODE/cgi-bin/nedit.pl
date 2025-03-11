@@ -1,36 +1,47 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 =head1 NAME
 
-nedit.pl 
+nedit.pl
 
 =head1 SYNOPSIS
 
-http://..../nedit.pl?node=normnode&file=filespec
+http://..../nedit.pl?grid=normname&file=filesuffix
 
 =head1 DESCRIPTION
 
-Edit the file named <filespec> of node <normnode>, if client has Edit access to it.
+Edit the file of grid <normgrid> or node <normnode>, defined by its <filesuffix>, if client has Edit access to it.
 The file is created if it does not exist AND client has Adm access.
+
+Authorization resources checked for edit or adm are those of the grid.
 
 =head1 Query string parameters
 
-=over 
+=over
 
 =item B<node=normnode>
 
     normnode := gridtype.gridname.nodename
     The fully qualified (normalized) nodename in gridtype.gridname context
 
-=item B<file=filespec>
+=item B<grid=normgrid>
+    normgrid := gridtype.gridname
+    The fully qualified normalized gridname
 
-    filespec := [relpath/]name
+=item B<file=filesuffix>
+
+    FOR GRID
+    The file to be edited will be WEBOBS{PATH_GRIDS_DOCS}/gridtype.gridname||filesuffix
+    eg. ...?grid=VIEW.MYVIEW&file=_protocole.txt
+    ==> $WEBOBS{PATH_GRIDS_DOCS}/VIEW.MYVIEW_protocole.txt
+
+    FOR NODE
     The file to be edited, relative to $NODES{PATH_NODES}/nodename/
 
 =item B<action=string>
 
     string := { edit | save }
-    'edit' (default when action is not specified) to display edit html-form edit 
+    'edit' (default when action is not specified) to display edit html-form edit
     'save' internaly used to save the file after html-form edition
     (other parameters are used along with 'save': ts0, txt)
 
@@ -38,10 +49,10 @@ The file is created if it does not exist AND client has Adm access.
 
 =head1 Markitup customization
 
-The JQuery plugin 'markitup' is customized for WebObs: 
+The JQuery plugin 'markitup' is customized for WebObs:
 
-A wiki editor, markitup namespace 'wiki', with    
-CODE/js/markitup/sets/wiki/set.js and CODE/js/markitup/sets/wiki/style.css 
+A wiki editor, markitup namespace 'wiki', with
+CODE/js/markitup/sets/wiki/set.js and CODE/js/markitup/sets/wiki/style.css
 
 A MultiMarkdown editor, markiptup namespace 'markdown', with
 CODE/js/markitup/sets/markdown/set.js and CODE/js/markitup/sets/markdown/style.css
@@ -75,6 +86,7 @@ my @lignes;
 
 my $me = $ENV{SCRIPT_NAME};
 my $QryParm   = $cgi->Vars;
+my $grid   = $QryParm->{'grid'}       // "";
 my $node   = $QryParm->{'node'}       // "";
 my $file   = $QryParm->{'file'}       // "";
 my $action = $QryParm->{'action'}     // "edit";
@@ -84,9 +96,13 @@ my $metain = $QryParm->{'meta'}       // "";
 my $conv   = $cgi->param('conv')      // "0";
 my $encode   = $cgi->param('encode')  // "utf8";
 $txt = "$metain$txt";
-my @NID = split(/[\.\/]/, trim($QryParm->{'node'}));
 
-my $GRIDName = my $GRIDType = my $NODEName = "";
+my @NID = split(/[\.\/]/, trim($QryParm->{'node'}));
+my @GID    = split(/[\.\/]/, trim($QryParm->{'grid'}));
+my $GRIDName = my $GRIDType = my $NODEName = my $name = "";
+my ($GRIDType, $GRIDName) = @GID;
+my $name = "$GRIDType.$GRIDName$file";
+
 my $absfile ="";
 my $editOK = my $admOK = 0;
 my $mmd = $WEBOBS{WIKI_MMD} // 'YES';
@@ -96,6 +112,7 @@ my $MDMeta = ($mmd ne 'NO') ? "WebObs: created by nedit  " : "";
 #
 if (scalar(@NID) == 3) {
     if ($file ne "") {
+        my $name = $file;
         ($GRIDType, $GRIDName, $NODEName) = @NID;
         $absfile = "$NODES{PATH_NODES}/$NODEName/$file";
         $editOK = clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
@@ -104,18 +121,32 @@ if (scalar(@NID) == 3) {
         if ( (!-e $absfile) && $admOK ) { qx(echo "$MDMeta\n\n" > $absfile) }
         if ( (!$editOK) && (!-e $absfile) ) { die "$file $__{'not found'} or $__{'not authorized'}" }
     } else { die "$__{'No filename specified'}" }
-} else { die "$__{'Not a fully qualified node name (gridtype.gridname.nodename)'}" }
+} elsif (scalar(@GID) == 2) {
+    if ($file ne "") {
+        $absfile = "$WEBOBS{PATH_GRIDS_DOCS}/$GRIDType.$GRIDName$file";
+        if ($GRIDType eq 'DOMAIN' || $GRIDType eq 'GRIDS') {
+            $editOK = (clientHasEdit(type=>"authviews",name=>"*") && clientHasEdit(type=>"authprocs",name=>"*"));
+            $admOK  =  (clientHasAdm(type=>"authviews",name=>"*") &&  clientHasAdm(type=>"authprocs",name=>"*"));
+        } else {
+            $editOK = clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
+            $admOK  = clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName");
+        }
+        unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
+        if ( (!-e $absfile) && $admOK ) { qx(echo "$MDMeta\n\n" > $absfile) }
+        if ( (!$editOK) && (!-e $absfile) ) { die "$name $__{'not found'} or $__{'not authorized'}" }
+    } else { die "$__{'No filename specified'}" }
+} else { die "$__{'Not a valid GRID or NODE requested (NOT gridtype.gridname OR NOT gridtype.gridname.nodename)'}" }
 
 # ---- action is 'save'
 #
 if ($action eq 'save') {
-    if ($TS0 != (stat("$absfile"))[9]) {
-        htmlMsgNotOK("$file has been modified while you were editing !");
+    if ($TS0 && $TS0 != (stat("$absfile"))[9]) {
+        htmlMsgNotOK("$name $_{'has been modified while you were editing'}");
         exit;
     }
     if ( sysopen(FILE, "$absfile", O_RDWR | O_CREAT) ) {
         unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-            warn "$me waiting for lock on $file...";
+            warn "$me waiting for lock on $name...";
             flock(FILE, LOCK_EX);
         }
         qx(cp -a "$absfile" "$absfile~" 2>&1);
@@ -133,18 +164,18 @@ if ($action eq 'save') {
             push(@lignes,$txt);
             print FILE @lignes ;
             close(FILE);
-            htmlMsgOK($file);
+            htmlMsgOK($name);
         } else {
             close(FILE);
-            htmlMsgNotOK("$me couldn't backup $file");
+            htmlMsgNotOK("$me couldn't backup $name");
         }
-    } else { htmlMsgNotOK("$me opening $file - $!") }
+    } else { htmlMsgNotOK("$me opening $name - $!") }
     exit;
 }
 
 # ---- action is 'edit' (default)
 #
-# read file (with lock) into @lignes 
+# read file (with lock) into @lignes
 @lignes = readFile($absfile);
 $TS0 = (stat($absfile))[9] ;
 chomp(@lignes);
@@ -169,7 +200,7 @@ function verif_formulaire()
 {
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
            if (data != '') alert(data);
-              location.href = document.referrer;       
+              location.href = document.referrer;
        });
 }
 function convert2MMD()
@@ -208,15 +239,20 @@ print "<script type=\"text/javascript\" >
 print "<form id=\"theform\" name=\"formulaire\" action=\"\">
 <input type=\"hidden\" name=\"file\" value=\"$file\">
 <input type=\"hidden\" name=\"action\" value=\"save\">
+<input type=\"hidden\" name=\"grid\" value=\"$GRIDType.$GRIDName\">
 <input type=\"hidden\" name=\"node\" value=\"$GRIDType.$GRIDName.$NODEName\">
 <input type=\"hidden\" name=\"ts0\" value=\"$TS0\">
 <input type=\"hidden\" name=\"conv\" value=\"0\">
 <input type=\"hidden\" name=\"encode\" value=\"$encode\">
 <input type=\"hidden\" name=\"meta\" value=\"$meta\">\n";
 
-print "<h2>$__{'Editing file'} \"$file\"<br>$__{'of node'} $GRIDType.$GRIDName.$NODEName</h2>";
+if (scalar(@NID) == 3) {
+    print "<h2>$__{'Editing file'} \"$file\"<br>$__{'of node'} $GRIDType.$GRIDName.$NODEName</h2>";
+} else {
+    print "<h2>$__{'Editing file'} \"$name\"</h2>";
+}
 
-# Display file contents into a markitup-textarea 
+# Display file contents into a markitup-textarea
 print "<TABLE><TR><TD style=\"border:0\">";
 print "<P><TEXTAREA id=\"markItUp\" class=\"markItUp\" rows=\"30\" cols=\"110\" name=\"txt\" dataformatas=\"plaintext\">$txt</TEXTAREA></P></TD>\n";
 print "</TR></TABLE>\n";
