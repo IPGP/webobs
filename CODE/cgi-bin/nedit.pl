@@ -216,6 +216,7 @@ function convert2MMD()
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- markitup -->
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>
+<script src=\"https://code.jquery.com/jquery-migrate-1.2.1.js\"></script>
 <script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/skins/markitup/style.css\" />
 ";
