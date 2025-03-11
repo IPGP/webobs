@@ -168,6 +168,8 @@ fi
 # boolean for enabling Center-of-Mass > Center-of-Figure
 # transformation (default value doesn't)
 if [ -z "$CM2CF" ]; then
+        echo "WARN: CM2CF option is not set, but Center-of-Mass > Center-of-Figure"
+        echo "      transformation is recommended since IGS20 switch (2024-08)"
         CM2CF=0
 fi
 
@@ -405,27 +407,15 @@ for station in $NODES; do
 						fi
 						
 						# if we use NF orbits, add the necessary options -prodTypeGNSS nf -gdCov
-						if [ $NFORBLOOP -eq 1 ]; then
-							NFORBOPTS="-prodTypeGNSS nf -gdCov" 
-						else
-							NFORBOPTS="" 
-						fi
+                                                [ $NFORBLOOP -eq 1 ] && NFORBOPTS="-prodTypeGNSS nf -gdCov" || NFORBOPTS=""
 
 						# if we use CM2CF transformation, add the necessary option -gdCov
-						if [[ $CM2CF -eq 1 && $NFORBLOOP -eq 0 ]]; then
-							CM2CFOPTS="-gdCov" 
-						else
-							CM2CFOPTS="" 
-						fi
+                                                [[ $CM2CF -eq 1 && $NFORBLOOP -eq 0 ]] && CM2CFOPTS="-gdCov" || CM2CFOPTS=""
 
                                                 # vvvvvvvvvv RUN GIPSYX HERE vvvvvvvvvv 
 						cmd="gd2e.py -rnxFile $rinex -GNSSproducts $ORBITOPT $GIPSYOPTIONS $NFORBOPTS $CM2CFOPTS"
 						echo "   $cmd"
-						if [ $DEBUG -eq 0 ]; then
-							eval "$cmd > $LOG 2>&1"
-						else
-							eval $cmd
-						fi
+                                                [ $DEBUG -eq 0 ] && eval "$cmd > $LOG 2>&1" || eval "$cmd"
                                                 # ^^^^^^^^^^ RUN GIPSYX HERE ^^^^^^^^^^ 
 						rc=$?
 						if [[ $rc == 0 && -s $tdp ]]; then
@@ -435,7 +425,8 @@ for station in $NODES; do
 							if [ $CM2CF -eq 1 ]; then
                                                                 echo "   Apply Center-of-Mass > Center-of-Figure transformation"
                                                                 cp ${cov} ${cov}_cm 
-                                                                netApplyNonLinear.py ${cov} -cmFile $GOA_VAR/sta_info/IGS20.cm -reverse
+                                                                cmdcm2cf="netApplyNonLinear.py ${cov} -cmFile $GOA_VAR/sta_info/IGS20.cm -reverse"
+                                                                [ $DEBUG -eq 0 ] && eval "$cmdcm2cf >> $LOG 2>&1" || eval "$cmdcm2cf"
                                                                 cp ${cov} ${cov}_cf
                                                                 label="${label}.CF"
                                                         fi
@@ -447,11 +438,7 @@ for station in $NODES; do
 							       	trsprm="$ORBITSDIR/$product/$yyyy/$yyyy-$mm-$dd.x.gz"
 							        cmdtrans="netApply.py -t -r -s -i $cov -o ${cov}_trs -x $trsprm"
 								echo "   $cmdtrans"
-								if [ $DEBUG -eq 0 ]; then
-									eval "$cmdtrans > $LOG 2>&1"
-								else
-									eval $cmdtrans
-								fi
+                                                                [ $DEBUG -eq 0 ] && eval "$cmdtrans >> $LOG 2>&1" || eval "$cmdtrans"
                                                                 # save nf anf transformed versions, but regular cov is now the transformed
                                                                 mv ${cov} ${cov}_nf
                                                                 cp ${cov}_trs ${cov}
