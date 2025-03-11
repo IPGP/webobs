@@ -44,7 +44,7 @@
 # 
 # ** 2025-03-10 Pierre Sakic
 # - store full log in 7zip (easier to extract stuffs from it)
-# - add CM/CF option
+# - add CM2CF option
 
 
 #Check lock file
@@ -166,9 +166,9 @@ if [ -z "$NFORB" ]; then
 fi
 
 # boolean for enabling Center-of-Mass > Center-of-Figure
-# transformation (enabled per default)
+# transformation (default value doesn't)
 if [ -z "$CM2CF" ]; then
-        CM2CF=1
+        CM2CF=0
 fi
 
 echo "*** GipsyX / WebObs $GRID GNSS File Processing ***"
@@ -412,7 +412,7 @@ for station in $NODES; do
 						fi
 
 						# if we use CM2CF transformation, add the necessary option -gdCov
-						if [ $CM2CF -eq 1 ]; then
+						if [[ $CM2CF -eq 1 && $NFORBLOOP -eq 0 ]]; then
 							CM2CFOPTS="-gdCov" 
 						else
 							CM2CFOPTS="" 
@@ -437,7 +437,7 @@ for station in $NODES; do
                                                                 cp ${cov} ${cov}_cm 
                                                                 netApplyNonLinear.py ${cov} -cmFile $GOA_VAR/sta_info/IGS20.cm -reverse
                                                                 cp ${cov} ${cov}_cf
-                                                                label="${label}CF"
+                                                                label="${label}.CF"
                                                         fi
 
 							### handle non-fiducial orbits: a further transformation has to be applied
@@ -455,7 +455,7 @@ for station in $NODES; do
                                                                 # save nf anf transformed versions, but regular cov is now the transformed
                                                                 mv ${cov} ${cov}_nf
                                                                 cp ${cov}_trs ${cov}
-                                                                label="${label}NFtrs"
+                                                                label="${label}.NFtrs"
 							fi
 
 							if [[ $NFORBLOOP -eq 0 && $CM2CF -eq 0 ]]; then
@@ -467,11 +467,11 @@ for station in $NODES; do
 								# 1) get the coordinates
 								# 2) 1st awk to reorder the fields
 								# 3) 2nd awk to format the fields (issue when trying to  merge both awk)
-								# 4) Substitute the label field and customize it with WebObs internal custom code
-                                                                # 
-                                                                # NFtrs => Non Fiducial transformed
-                                                                # CF => Center-of-Figure
-								grep ".STA.[XYZ]" ${cov} | awk '{print $3,0,$4,$5,".Station."$2}' | awk '{printf "%9d %+22.15e %+22.15e %+22.15e %s\n",$1,$2,$3,$4,$5}' | sed "s/.STA./.State.Pos.${label}./g" > $gipsyres
+								# 4) Substitute the label field
+                                                                # 5) Customize it with WebObs internal custom code
+                                                                #    NFtrs => Non Fiducial transformed
+                                                                #    CF => Center-of-Figure
+								grep ".STA.[XYZ]" ${cov} | awk '{print $3,0,$4,$5,".Station."$2}' | awk '{printf "%9d %+22.15e %+22.15e %+22.15e %s\n",$1,$2,$3,$4,$5}' | sed "s/.STA./.State.Pos./g" | sed  "s/$/${label}/"   > $gipsyres
 							fi
 
 							if [ ! -z $TROP_TDP ]; then
