@@ -19,7 +19,7 @@ if [ $# -lt 2 ]; then
 	echo "        DAYS = number of days to process (from start day)"
 	echo "        DEST = root directory where orbits shall be saved"
 	echo "    Options:"
-	echo "        -o ORBIT = type of orbit (Ultra, Rapid or Final)"
+	echo "        -o ORBIT = type of orbit (Ultra, Rapid, Final, or Rapid_GE)"
 	echo "        -d STARTDAY = days to start retrieving (YYYY/mm/dd)"
    	echo "        -r DAYS = remove orbit files older than DAYS days"
 	echo "        -v = verbose mode"
@@ -64,7 +64,7 @@ for (( i=1; i<=$#; i++)); do
 			if [ "$ORBIT" != "Rapid" ]; then
 				if [ "$ORBIT" != "Final" ]; then
 					if [ "$ORBIT" != "Rapid_GE" ]; then
-						echo "Error : Please enter orbit as Ultra, Rapid or Final"
+						echo "Error : Please enter orbit as Ultra, Rapid, Final, or Rapid_GE"
 						exit 0
 					fi
 				fi
