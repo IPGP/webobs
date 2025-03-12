@@ -1,6 +1,7 @@
-function [tc,dc,lr,tr,kk] = treatsignal(t,d,r,OPT)
+function [tc,dc,lr,tr,kk] = treatsignal(varargin)
 % TREATSIGNAL Signal treatment: decimating and cleaning
-% 	[TC,DC]=TREATSIGNAL(T,D,R,OPT) processes vector signal D(T) in the following order:
+% 	[TC,DC]=TREATSIGNAL(T,D,E,R,OPT) processes vector signal D(T) with optional 
+%   errors E(T) in the following order:
 % 	   1. if OPT.FLAT_IS_NAN is OK, removes flat signals
 % 	   2. if OPT.PICKS_CLEAN_PERCENT exists and >0, removes picks above the value %
 % 	   3. if OPT.PICKS_CLEAN_STD exists and >0, removes picks above value*STD around mean
@@ -23,13 +24,18 @@ function [tc,dc,lr,tr,kk] = treatsignal(t,d,r,OPT)
 %
 %	Author: F. Beauducel / WEBOBS
 % 	Created: 2015-08-24
-% 	Updated: 2025-03-05
+% 	Updated: 2025-03-12
 
-if size(d,2) > 1
-    e = d(:,2); % data error vector
-    d = d(:,1);
-else
+t = varargin{1};
+d = varargin{2};
+if nargin < 5
     e = ones(size(d));
+    r = varargin{3};
+    OPT = varargin{4};
+else
+    e = varargin{3};
+    r = varargin{4};
+    OPT = varargin{5};
 end
 
 % removes flat intervals

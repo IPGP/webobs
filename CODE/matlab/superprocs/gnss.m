@@ -416,7 +416,7 @@ for r = 1:numel(P.GTABLE)
 
 			k = D(n).G(r).k;
 			if ~isempty(k)% && ~all(isnan(D(n).d(k,i)))
-				[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
+				[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P);
 				tr(n,i) = trd(1);
 				tre(n,i) = trd(2);
 				X(n).t = tk;
@@ -530,7 +530,7 @@ for r = 1:numel(P.GTABLE)
 		X = repmat(struct('t',[],'d',[],'e',[],'w',[]),1+vrelmode,1);
 		for i = 1:3
 			if ~isempty(k)
-				[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i) - rmedian(D(n).d(k,i)),P.GTABLE(r).DECIMATE,P);
+				[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i) - rmedian(D(n).d(k,i)),[],P.GTABLE(r).DECIMATE,P);
 				X(1).t = tk;
 				X(1).d(:,i) = dk;
 				X(1).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
@@ -538,7 +538,7 @@ for r = 1:numel(P.GTABLE)
 					X(1).w = D(n).d(k,4);
 				end
 				if harmcorr || faultcorr || vrelmode
-					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i)),P.GTABLE(r).DECIMATE,P);
+					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i)),[],P.GTABLE(r).DECIMATE,P);
 					X(2).t = tk;
 					X(2).d(:,i) = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
 					X(2).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
@@ -1917,7 +1917,7 @@ for r = 1:numel(P.GTABLE)
 						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
 							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
 							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
-							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
+							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P);
 							tr(j,i) = trd(1);
                             tre(j,i) = trd(2);
 							% sets a lower orbit if there is not enough data
@@ -2311,7 +2311,13 @@ for r = 1:numel(P.GTABLE)
                     E.header(k) = strcat({'dE_(mm)','dN_(mm)','dU_(mm)','s_dE','s_dN','s_dU'},sprintf('_%d',m));
                 end
                 E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s_VECTORS',proc,summary)));
-                E.infos = {};
+                E.infos = { ...
+                    sprintf('Station code = %s',N(kn(s)).FID), ...
+                    sprintf('Station name = %s',N(kn(s)).NAME), ...
+                    sprintf('Station latitude = %1.6f',N(kn(s)).LAT_WGS84), ...
+                    sprintf('Station longitude = %1.6f',N(kn(s)).LON_WGS84), ...
+                    sprintf('Station elevation (m) = %1.2f',N(kn(s)).ALTITUDE), ...
+                };
                 for m = 1:numel(modeltime_period)
                     E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
                 end
