@@ -46,6 +46,12 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: yyyymmdd jjjjj.jjjj E N U dE dN dU
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
+%	format 'pbogps-pos'
+%		type: PBO GPS POS file
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: yyyymmdd HHMMSS jjjjj.jjjj X Y Z Sx Sy Sz Rxy Rxz Ryz NLat Elong Height dN dE dU Sn Se Su Rne Rnu Reu Soln
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
 %	format 'usgs-rneu'
 %		type: USGS GPS results ITRF08
 %		filename/url: P.RAWDATA (use $FID to point the right file/url)
@@ -172,6 +178,45 @@ case 'gamit-pos'
 	else
 		fprintf('no data found!\n')
 		t = [];
+		d = [];
+		e = [];
+	end
+
+% -----------------------------------------------------------------------------
+case 'pbogps-pos'
+	% format example
+    % yyyymmdd HHMMSS jjjjj.jjjj X Y Z Sx Sy Sz Rxy Rxz Ryz NLat Elong Height dN dE dU Sn Se Su Rne Rnu Reu Soln
+    % 20250212 115945 60718.4998  4618597.03234  2220590.27859  3784545.63876  0.00112  0.00059  0.00095  0.745  0.870  0.711      36.6296744507   25.6779335081   89.43296     0.00000   0.00000   0.00000    0.00037  0.00036  0.00149 -0.045  0.050 -0.118 final
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('curl -s -S "%s" >> %s',fraw,fdat),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat %s >> %s',fraw,fdat),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		X = readpbopos(fdat);
+		t = X.t;
+		d = [X.dE,X.dN,X.dU]; % North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		e = [X.Se,X.Sn,X.Su];
+		e(e<min_error) = min_error;
+		fprintf('%d data imported.\n',size(t,1));
+	else
+		t = [];
+	end
+	if isempty(t)
+		fprintf('no data found!\n')
 		d = [];
 		e = [];
 	end
