@@ -57,10 +57,11 @@ A number of programs and Perl modules are needed to run webobs. During the C) in
 
 ```sh
 sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq vim mutt xvfb \
-   curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
+   curl gawk unzip graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
    libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl \
-   wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
+   wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl \
+   libsocket6-perl libdigest-perl-md5-perl
 sudo apt install libncurses5
 sudo apt install python-is-python3
 ```
