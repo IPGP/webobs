@@ -60,16 +60,10 @@ for (( i=1; i<=$#; i++)); do
 		k=$((i+1))
 		ORBIT=( "${!k}" )
 		# Check correct orbit input
-		if [ "$ORBIT" != "Ultra" ]; then
-			if [ "$ORBIT" != "Rapid" ]; then
-				if [ "$ORBIT" != "Final" ]; then
-					if [ "$ORBIT" != "Rapid_GE" ]; then
-						echo "Error : Please enter orbit as Ultra, Rapid, Final, or Rapid_GE"
-						exit 0
-					fi
-				fi
-			fi
-		fi
+                if [[ "$ORBIT" != "Ultra" && "$ORBIT" != "Rapid" && "$ORBIT" != "Final" && "$ORBIT" != "Rapid_GE" ]]; then
+                    echo "Error: Please enter orbit as Ultra, Rapid, Final, or Rapid_GE"
+                    exit 1
+                fi
 	;;
 
 	-r)
