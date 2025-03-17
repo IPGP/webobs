@@ -339,7 +339,7 @@ print <<__EOD__;
             <script language="JavaScript" src="/js/overlib/overlib.js"></script>
             <!-- overLIB (c) Erik Bosrup -->
             <img src="$WEBOBS{'URN_LOGO_DEFAULT'}">
-            <h2>Access to $WEBOBS{WEBOBS_TITLE}</h2>
+            <h2>$WEBOBS{REGISTRATION_TITLE}</h2>
             <fieldset>
                 <p>
                     <b>Access to this website is restricted to registered staff

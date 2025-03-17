@@ -145,6 +145,7 @@ SQL_TABLE_AUTHMISC|authmisc
 SQL_TABLE_GROUPS|groups
 SQL_DB_USERS_AUTOREGISTER|Y
 REGISTRATION_LOGFILE|${PATH_DATA_DB}/reglog
+REGISTRATION_TITLE|Access to WEBOBS ${WEBOBS_ID}
 
 # ---- Notifications/postboard -----------------
 # ---------------------------------------------
