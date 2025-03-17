@@ -219,12 +219,14 @@ VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 # background map parameters (see CODE/matlab/dem.m for available options)
 VECTORS_DEM_OPT|'watermark',1.5,'saturation',0.7,'interp','legend','seacolor',[0.7,0.9,1]
 VECTORS_TITLE|{\fontsize{14}{\bf${NAME} - Velocity vectors} ($timescale)}
+VECTORS_TARGET_INCLUDED|Y
 VECTORS_MIN_SIZE_KM|5
 VECTORS_MAX_XYRATIO|1
+# map XY limits as lon0,lat0,width (in degrees). Will overwrite automatic limits and associated options
+VECTORS_MAP_XYLIM|
 # vectors velocity scale, in mm/yr for 25% of the graph width (default is 0 for automatic)
 VECTORS_VELOCITY_SCALE|0
 VECTORS_ARROWSHAPE|.15,.15,.12,.03
-VECTORS_TARGET_INCLUDED|Y
 # amplitude vs distance plot: used components to compute the amplitude (1,2 = horizontal only)
 VECTORS_AMPLITUDE_COMPONENTS|1,2
 
@@ -235,6 +237,8 @@ MOTION_INCLUDED_NODELIST|
 MOTION_MAFILTER|10
 MOTION_SCALE_MM|0
 MOTION_MIN_SIZE_KM|10
+# map XY limits as lon0,lat0,width (in degrees). Will overwrite automatic limits and associated options
+MOTION_MAP_XYLIM|
 MOTION_COLORMAP|spectral(256)
 MOTION_DEM_OPT|'saturation',0,'watermark',2,'interp'
 MOTION_TITLE|{\fontsize{14}{\bf${NAME} - Motion} ($timescale)}
@@ -268,10 +272,12 @@ MODELLING_HORIZONTAL_ONLY|N
 MODELLING_ENU_ERROR_RATIO|1,1,2
 # recomputes relative velocities before modelling (instead of vectors results)
 MODELLING_FORCE_RELATIVE|N
-# model space depth (upper limit automaticaly adjusted to topography)
-MODELLING_MAX_DEPTH|8000
+# model space XY limits as lon0,lat0,width (in degrees). Will overwrite automatic limits
+MODELLING_MAP_XYLIM|
 # model space additional borders in meter (from stations rectangle boundaries)
 MODELLING_BORDERS|5000
+# model space depth (upper limit automaticaly adjusted to topography)
+MODELLING_MAX_DEPTH|8000
 # model space width (warning: will be cubed, so 100 is already 1 million points!)
 MODELLING_GRID_SIZE|50
 # modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
