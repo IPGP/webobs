@@ -15,6 +15,7 @@
 *             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU">menu.rc</a></li>
 *             <li><hr></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=WELCOME_CONF">Welcome.conf</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=DATA/WEB/terms.txt">Terms.txt</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU(NAVIGATION)">Main Menu Edit</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BADMIN">+ADMIN Menu Edit</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BDUTY">+DUTY Menu Edit</a></li>
