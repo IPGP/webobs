@@ -44,7 +44,7 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 2025-02-28
+%	Updated: 2025-03-11
 
 linestyle = field2str(OPT,'linestyle','-');
 fontsize = field2num(OPT,'fontsize',8);
@@ -117,7 +117,7 @@ for ii = 0:(tzoom+(zoompca<0))
 				end
 				kk = find(~isnan(d(:,1)));
 				if ii == 0 && X(n).trd && length(kk) >= 2
-                    [~,~,lr,lre(i,:),klr] = treatsignal(X(n).t(kk),d(kk,:),1,OPT);
+                    [~,~,lr,lre(i,:),klr] = treatsignal(X(n).t(kk),d(kk,1),d(kk,2),1,OPT);
 					plot(tlim,polyval(lr,tlim - X(n).t(kk(1))),':','Color',.5*[1,1,1],'MarkerSize',1)
 					timeplot(X(n).t(klr),polyval(lr,X(n).t(klr) - X(n).t(kk(1))),[], ...
                         'LineStyle',':','Color','k','MarkerSize',2) % intervals used for linear trend calculation

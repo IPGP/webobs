@@ -38,7 +38,7 @@ To run WebObs you need to install the package which contains a setup script that
 You create/choose your WebObs directory within which you will execute the setup process. We suggest `/opt/webobs` (default). This directory will contain both
 WebObs code and WebObs data, and will be the DocumentRoot of the WebObs Apache's Virtual Host.
 
-setup will prompt you for a Linux WebObs userid (aka WebObs Owner) that it will create. The WebObs userid's group will also be added to Apache's user. See the WebObs user manual if you need to create your own WebObs owner. 	
+setup will prompt you for a Linux WebObs userid (aka WebObs Owner) that it will create. The WebObs userid's group will also be added to Apache's user. See the WebObs user manual if you need to create your own WebObs owner.
 
 The system-wide /etc/webobs.d symbolic link will identify your WebObs 'active' (production) installation.
 
@@ -57,11 +57,13 @@ A number of programs and Perl modules are needed to run webobs. During the C) in
 
 ```sh
 sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq vim mutt xvfb \
-   curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
+   curl gawk unzip graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
    libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl \
-   wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
+   wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl \
+   libsocket6-perl libdigest-perl-md5-perl
 sudo apt install libncurses5 gdal-bin unzip
+>>>>>>> dev
 sudo apt install python-is-python3
 ```
 

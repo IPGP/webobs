@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2025-02-28
+%   Updated: 2025-03-08
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -100,11 +100,8 @@ end
 faultcorr = isok(P,'FAULT_ACTIVATE');
 P.fault_lld = field2num(P,'FAULT_CENTROID_LATLONDEP');
 P.fault_lw = field2num(P,'FAULT_LENGTH_WIDTH_KM');
-P.fault_strike = field2num(P,'FAULT_STRIKE_DEG',0);
-P.fault_dip = field2num(P,'FAULT_DIP_DEG',90);
-P.fault_rake = field2num(P,'FAULT_RAKE_DEG',0);
-P.fault_slip = field2num(P,'FAULT_SLIP_M',0);
-P.fault_open = field2num(P,'FAULT_OPEN_M',0);
+P.fault_strikediprake = field2num(P,'FAULT_STRIKE_DIP_RAKE_DEG');
+P.fault_slipopen = field2num(P,'FAULT_SLIP_OPEN_M',[0,0]);
 P.fault_tlim = field2num(P,'FAULT_DISLOCATION_TLIM');
 P.fault_model = field2str(P,'FAULT_DISLOCATION_TIME_MODEL','linear');
 P.fault_plot = isok(P,'FAULT_PLOT');
@@ -113,7 +110,7 @@ P.fault_topo = isok(P,'FAULT_WITH_TOPOGRAPHY',true);
 if faultcorr
     P.fault_utm = ll2utm(P.fault_lld(1:2));
     txt = sprintf('%gN, %gE, depth %gkm, length %gkm, width %gkm, strike %g°N, dip %g°, rake %g°, slip %gm, open %gm', ...
-        P.fault_lld, P.fault_lw, P.fault_strike, P.fault_dip, P.fault_rake, P.fault_slip, P.fault_open);
+        P.fault_lld, P.fault_lw, P.fault_strikediprake, P.fault_slipopen);
     fprintf('---> Fault correction: %s, from %s to %s\n', txt, datestr(P.fault_tlim(1)), datestr(P.fault_tlim(2)));
 	evt.dt1 = P.fault_tlim(1) - P.TZ;
 	evt.dt2 = P.fault_tlim(2) - P.TZ;
@@ -377,8 +374,9 @@ for n = 1:numel(N)
             sta_utm = ll2utm(N(n).LAT_WGS84,N(n).LON_WGS84);
             dx = sta_utm(1) - P.fault_utm(1);
             dy = sta_utm(2) - P.fault_utm(2);
-            [uE,uN,uZ] = okada85(dx, dy, P.fault_lld(3)*1e3 + N(n).ALTITUDE*P.fault_topo, P.fault_strike, P.fault_dip, P.fault_lw(1)*1e3, P.fault_lw(2)*1e3, ...
-                P.fault_rake, P.fault_slip*fdis, P.fault_open*fdis);
+            [uE,uN,uZ] = okada85(dx, dy, P.fault_lld(3)*1e3 + N(n).ALTITUDE*P.fault_topo, ...
+                P.fault_strikediprake(1), P.fault_strikediprake(2), P.fault_lw(1)*1e3, P.fault_lw(2)*1e3, ...
+                P.fault_strikediprake(3), P.fault_slipopen(1)*fdis, P.fault_slipopen(2)*fdis);
             D(n).d(:,5:7) = D(n).d(:,5:7) - [uE,uN,uZ];
             % note: real(max(complex(x,0))) gives maximum of x in terms of absolute value
             fprintf('---> Fault correction: station %s (%g km) max. disp. ENU = %+gm, %+gm, %+gm\n', ...
@@ -418,7 +416,7 @@ for r = 1:numel(P.GTABLE)
 
 			k = D(n).G(r).k;
 			if ~isempty(k)% && ~all(isnan(D(n).d(k,i)))
-				[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
+				[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P);
 				tr(n,i) = trd(1);
 				tre(n,i) = trd(2);
 				X(n).t = tk;
@@ -532,7 +530,7 @@ for r = 1:numel(P.GTABLE)
 		X = repmat(struct('t',[],'d',[],'e',[],'w',[]),1+vrelmode,1);
 		for i = 1:3
 			if ~isempty(k)
-				[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i) - rmedian(D(n).d(k,i)),P.GTABLE(r).DECIMATE,P);
+				[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i) - rmedian(D(n).d(k,i)),[],P.GTABLE(r).DECIMATE,P);
 				X(1).t = tk;
 				X(1).d(:,i) = dk;
 				X(1).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
@@ -540,7 +538,7 @@ for r = 1:numel(P.GTABLE)
 					X(1).w = D(n).d(k,4);
 				end
 				if harmcorr || faultcorr || vrelmode
-					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i)),P.GTABLE(r).DECIMATE,P);
+					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i)),[],P.GTABLE(r).DECIMATE,P);
 					X(2).t = tk;
 					X(2).d(:,i) = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
 					X(2).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
@@ -1919,7 +1917,7 @@ for r = 1:numel(P.GTABLE)
 						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
 							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
 							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
-							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),P.GTABLE(r).DECIMATE,P);
+							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P);
 							tr(j,i) = trd(1);
                             tre(j,i) = trd(2);
 							% sets a lower orbit if there is not enough data
@@ -2313,7 +2311,13 @@ for r = 1:numel(P.GTABLE)
                     E.header(k) = strcat({'dE_(mm)','dN_(mm)','dU_(mm)','s_dE','s_dN','s_dU'},sprintf('_%d',m));
                 end
                 E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s_VECTORS',proc,summary)));
-                E.infos = {};
+                E.infos = { ...
+                    sprintf('Station code = %s',N(kn(s)).FID), ...
+                    sprintf('Station name = %s',N(kn(s)).NAME), ...
+                    sprintf('Station latitude = %1.6f',N(kn(s)).LAT_WGS84), ...
+                    sprintf('Station longitude = %1.6f',N(kn(s)).LON_WGS84), ...
+                    sprintf('Station elevation (m) = %1.2f',N(kn(s)).ALTITUDE), ...
+                };
                 for m = 1:numel(modeltime_period)
                     E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
                 end
@@ -2454,8 +2458,8 @@ x0 = (P.fault_lld(2) - lon0)*degkm(lat0)*1e3;
 y0 = (P.fault_lld(1) - lat0)*degkm*1e3;
 z0 = -P.fault_lld(3)*1e3;
 
-strike = 90 - P.fault_strike;
-dip = P.fault_dip;
+strike = 90 - P.fault_strikediprake(1);
+dip = P.fault_strikediprake(2);
 L = P.fault_lw(1)*1e3;
 W = P.fault_lw(2)*1e3;
 
