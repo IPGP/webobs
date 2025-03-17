@@ -94,7 +94,7 @@ my $today = strftime("%c",localtime(int(time())));
 
 # List of accepted characters for the password for display to the user
 # (should reflect the regex in javascript and checkParam call below)
-my $passwd_accepted_chars = "!?=_#%@/()_=-";
+my $passwd_accepted_chars = "-!?=_#%@/()_=&*+,.:;^{}~\$";
 
 my $action = checkParam($cgi->param('action'), qr/^\w*$/, 'action') // '';
 
@@ -116,7 +116,7 @@ if ($action eq "reg") {
 
     # Password: only letters & allowed special chars
     my $passwd = checkParam(decode("utf-8", scalar($cgi->param('pass'))),
-        qr/^[\p{Letter}\d!\?=_#%@\/()_=-]*$/, 'pass') // '';
+        qr/^[\p{Letter}\d-!\?=_#%@\/()_=&*+,.:;^{}~\$]*$/, 'pass') // '';
 
     # Email address: most chars that are allowed in specs (minus a few)
     my $mailaddr = checkParam($cgi->param('mail'),
