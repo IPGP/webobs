@@ -366,7 +366,7 @@ MKGRAPH_THUMBNAIL_HEIGHT|112
 LOGO_DEFAULT|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 LOGO_HEIGHT|0.04
 # URN to LOGO_DEFAULT
-URN_LOGO_DEFAULT|/icons/ipgp/logo_WOVS.pngv
+URN_LOGO_DEFAULT|/icons/ipgp/logo_WOVS.png
 
 # M3G (European GNSS metadata database)
 # --------------------------------------------
