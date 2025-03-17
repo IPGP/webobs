@@ -62,8 +62,7 @@ sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq 
    libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl \
    wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl \
    libsocket6-perl libdigest-perl-md5-perl
-sudo apt install libncurses5 gdal-bin unzip
->>>>>>> dev
+sudo apt install libncurses5 gdal-bin
 sudo apt install python-is-python3
 ```
 
