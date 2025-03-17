@@ -153,8 +153,9 @@ if vrelmode
 end
 vrelhorizonly = isok(P,'VECTORS_RELATIVE_HORIZONTAL_ONLY',1);
 velscale = field2num(P,'VECTORS_VELOCITY_SCALE',0);
-minkm = field2num(P,'VECTORS_MIN_SIZE_KM',10);
-maxxy = field2num(P,'VECTORS_MAX_XYRATIO',1);
+vectors_minkm = field2num(P,'VECTORS_MIN_SIZE_KM',10);
+vectors_maxxy = field2num(P,'VECTORS_MAX_XYRATIO',1);
+vectors_xylim = field2num(P,'VECTORS_MAP_XYLIM');
 arrowshape = field2num(P,'VECTORS_ARROWSHAPE',[.1,.1,.08,.02]);
 vectors_title = field2str(P,'VECTORS_TITLE','{\fontsize{14}{\bf$name - Vectors} ($timescale)}');
 vectors_demopt = field2cell(P,'VECTORS_DEM_OPT','watermark',2,'saturation',.8,'interp','legend','seacolor',[0.7,0.9,1]);
@@ -190,6 +191,7 @@ motion_excluded_target = field2num(P,'MOTION_EXCLUDED_FROM_TARGET_KM',0,'notempt
 motion_filter = field2num(P,'MOTION_MAFILTER',10);
 motion_scale = field2num(P,'MOTION_SCALE_MM',0);
 motion_minkm = field2num(P,'MOTION_MIN_SIZE_KM',10);
+motion_xylim = field2num(P,'MOTION_MAP_XYLIM');
 motion_colormap = field2num(P,'MOTION_COLORMAP',spectral(256));
 motion_demopt = field2cell(P,'MOTION_DEM_OPT','watermark',1.5,'saturation',0,'interp');
 motion_title = field2str(P,'MOTION_TITLE','{\fontsize{14}{\bf$name - Motion} ($timescale)}');
@@ -217,7 +219,8 @@ modelling_excluded_target = field2num(P,'MODELLING_EXCLUDED_FROM_TARGET_KM',0,'n
 modelling_force_relative = isok(P,'MODELLING_FORCE_RELATIVE');
 modrelauto = strcmpi(field2str(P,'MODELLING_FORCE_RELATIVE'),'auto');
 maxdep = field2num(P,'MODELLING_MAX_DEPTH',8e3);
-bm = field2num(P,'MODELLING_BORDERS',5000);
+modelling_xylim = field2num(P,'MODELLING_MAP_XYLIM');
+modelling_bm = field2num(P,'MODELLING_BORDERS',5000);
 rr = field2num(P,'MODELLING_GRID_SIZE',50);
 modelling_cmap = field2num(P,'MODELLING_COLORMAP',ryb(256));
 modelling_colorshading = field2num(P,'MODELLING_COLOR_SHADING',0.3);
@@ -803,7 +806,7 @@ for r = 1:numel(P.GTABLE)
 			vmax = rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]);
 		end
 		vscale = roundsd(vmax,1);
-		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,minkm/degkm])/vmax;
+		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/vmax;
 
 		ha = plot(geo(knv,2),geo(knv,1),'k.');  extaxes(gca,[.04,.08])
 		hold on
@@ -825,7 +828,7 @@ for r = 1:numel(P.GTABLE)
 		axl = axis;
 
 		% determines X-Y limits of the map
-		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),minkm,maxxy,P.border);
+        [ylim,xlim] = ll2lim(axl(3:4),axl(1:2),vectors_minkm,vectors_maxxy,P.border,vectors_xylim);
 
 		set(gca,'XLim',xlim,'YLim',ylim);
 
@@ -997,7 +1000,7 @@ for r = 1:numel(P.GTABLE)
 			mscale = 1;
 		end
 		vscale = roundsd(mscale,1);
-		vsc = .3*max([diff(latlim),diff(lonlim)*xyr,minkm/degkm])/mscale; % scale in degree/m
+		vsc = .3*max([diff(latlim),diff(lonlim)*xyr,motion_minkm/degkm])/mscale; % scale in degree/m
 
 		% --- X-Y view with background map
 		pos = [.04,.35,.7,.65];
@@ -1022,7 +1025,7 @@ for r = 1:numel(P.GTABLE)
 		axl = axis;
 
 		% determines X-Y limits of the map
-		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),motion_minkm,1,P.border);
+		[ylim,xlim] = ll2lim(axl(3:4),axl(1:2),motion_minkm,1,P.border,motion_xylim);
 
 		set(gca,'XLim',xlim,'YLim',ylim);
 
@@ -1256,21 +1259,19 @@ for r = 1:numel(P.GTABLE)
 
 		modelopt.msigp = erf(modelopt.msig/sqrt(2));
 
-		% center coordinates
+		% determines the center coordinates
 		if ~isempty(targetll)
-			latlim = minmax([geo(kn,1);targetll(1)]);
-			lonlim = minmax([geo(kn,2);targetll(2)]);
+            [latlim,lonlim] = ll2lim([geo(kn,1);targetll(1)],[geo(kn,2);targetll(2)],modelling_bm/1e3,1,0,modelling_xylim);
 			lat0 = targetll(1);
 			lon0 = targetll(2);
 		else
-			latlim = minmax(geo(kn,1));
-			lonlim = minmax(geo(kn,2));
+            [latlim,lonlim] = ll2lim(geo(kn,1),geo(kn,2),modelling_bm/1e3,1,0,modelling_xylim);
 			targetll = [mean(latlim),mean(lonlim)];
 			lat0 = mean(latlim);
 			lon0 = mean(lonlim);
 		end
 
-		wid = max(diff(latlim)*degkm*1e3,diff(lonlim)*degkm(lat0)*1e3) + bm;
+		wid = max(diff(latlim)*degkm*1e3,diff(lonlim)*degkm(lat0)*1e3) + modelling_bm;
 		wbest = wid/20;
 
 		ysta = (geo(kn,1) - lat0)*degkm*1e3;
