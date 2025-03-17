@@ -15,8 +15,8 @@ Builds/Manages the input html-form for 'B<Gridmaps Request>' and processes it wi
 A B<Gridmaps Request> is the execution of Gridmaps routine for merged GRIDS and optional set of
 B<Date-span and Parameters>.
 
-Available GRIDS (VIEWS and PROCS) are those containing at least one NODE with a geographic location
-and for which the USER has at least read authorization.
+Available GRIDS (VIEWS, PROCS, and FORMS) are those containing at least one NODE
+with a geographic location and for which the USER has at least read authorization.
 
 A submitted B<Gridmaps Request> will have its results (output maps) files grouped into the
 OUTR directory, under a subdirectory whose name uniquely identifies the Request:
@@ -69,6 +69,7 @@ use POSIX qw/strftime/;
 use WebObs::Config;
 use WebObs::Users;
 use WebObs::Grids;
+use WebObs::Utils;
 use WebObs::i18n;
 
 # ---- misc inits
@@ -98,21 +99,18 @@ my ($usrYearS,$usrMonthS,$usrDayS) = split(/-/,strftime("%Y-%m-%d",@tm));
 
 map (push(@gridavailable,"VIEW.".basename($_,".conf")), qx(ls $WEBOBS{PATH_VIEWS}/*/*.conf ));
 map (push(@gridavailable,"PROC.".basename($_,".conf")), qx(ls $WEBOBS{PATH_PROCS}/*/*.conf ));
+map (push(@gridavailable,"FORM.".basename($_,".conf")), qx(ls $WEBOBS{PATH_FORMS}/*/*.conf ));
 chomp(@gridavailable);
 if (scalar(@gridavailable)==0) { die "$__{'No GRID eligible for requests submission.'}" }
 foreach (@gridavailable) {
     push(@gridlist,$_) if ($_ =~ /^VIEW/ && WebObs::Users::clientHasRead(type=>"authviews",name=>"$_"));
     push(@gridlist,$_) if ($_ =~ /^PROC/ && WebObs::Users::clientHasRead(type=>"authprocs",name=>"$_"));
+    push(@gridlist,$_) if ($_ =~ /^FORM/ && WebObs::Users::clientHasRead(type=>"authforms",name=>"$_"));
 }
 if (scalar(@gridlist)==0) { die "$__{'No GRID eligible for this user. Please ask an administrator.'}" }
 
-# ---- read in default values for initializing
+# ---- read in default values from GRIDMAPS.rc for initializing
 # ---- form fields used for request.rc creation
-my %REQDFLT;
-my $reqdflt = "$WEBOBS{ROOT_CODE}/tplates/request-template";
-if (-e $reqdflt ) {
-    %REQDFLT = readCfg($reqdflt)
-}
 my %GRIDMAPS = readCfg($WEBOBS{GRIDMAPS});
 
 # ---- passed all checkings above ...
@@ -183,7 +181,7 @@ print "<TABLE style=\"border:0\" width=\"100%\">";
 print "<TR>";
 print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column
 
-# ---- Display list of PROCS that are eligible for requests
+# ---- Display list of grids that are eligible for requests
 print "<fieldset><legend>$__{'Available GRIDS'}</legend>";
 print "<div style=\"overflow-y: scroll;height: 400px\">";
 for my $g (@gridlist) {

@@ -23,7 +23,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2024-08-06
+%	Updated: 2025-03-12
 
 
 proc = varargin{1};
@@ -278,11 +278,7 @@ end
 if nargout > 2
 	D = repmat(struct('t',[],'d',[],'CLB',struct('nx',0,'nm',[])),[length(N),1]);
 	if ~isempty(P.GTABLE)
-		if isfield(P,'RAWFORMAT')
-			[D,P] = readfmtdata(WO,P,N);
-		else
-			fprintf('%s: ** WARNING ** no RAWFORMAT defined for PROC.%s! Cannot import data.\n',wofun,proc);
-		end
+        [D,P] = readfmtdata(WO,P,N);
 	end
 end
 
