@@ -50,7 +50,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2023-08-30
+%	Updated: 2025-03-18
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -222,8 +222,15 @@ case 'fdsnws-dataselect'
 				else
 					t2 = min(dt(kc(ii+1)),F.datelim(2));
 				end
-				fprintf(fid,'%s %s %s %s %04d-%02d-%02dT%02d:%02d:%02.0f %04d-%02d-%02dT%02d:%02d:%02.0f\n', ...
-					N.FDSN_NETWORK_CODE,N.FID,N.CLB.lc{kc(ii)},N.CLB.cd{kc(ii)},datevec(t1),datevec(t2));
+                cha = N.CLB.cd{kc(ii)};
+                loc = N.CLB.lc{kc(ii)};
+                if isempty(loc)
+                    loc = '--';
+                end
+                if ~isempty(cha)
+                    fprintf(fid,'%s %s %s %s %04d-%02d-%02dT%02d:%02d:%02.0f %04d-%02d-%02dT%02d:%02d:%02.0f\n', ...
+                        N.FDSN_NETWORK_CODE,N.FID,loc,cha,datevec(t1),datevec(t2));
+                end
 			end
 		end
 	end
