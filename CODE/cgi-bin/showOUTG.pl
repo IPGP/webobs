@@ -498,6 +498,10 @@ if ($QryParm->{'ts'} eq 'map') {
 }
 print "<BR>$go2top</BR>";
 
+if ($QryParm->{'debug'}) {
+    print "<P><B>plist</B> = @plist</P>";
+}
+
 # ---- We're done !
 print "</BODY>\n</HTML>\n";
 
