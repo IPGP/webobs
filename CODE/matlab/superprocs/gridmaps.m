@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2025-01-23
+%   Updated: 2025-03-19
 
 
 WO = readcfg;
@@ -151,7 +151,7 @@ demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz, ...
 for g = 1:length(grids)
 	s = split(grids{g},'/.');
 	if length(s) < 2
-		error('Must use the full grid name PROC.NAME or VIEW.NAME');
+		error('Invalid grid "%s": must use the full grid name GridType.GridName',grids{g});
 	end
 	GRIDS.(s{1}).(s{2}) = readcfg(WO,sprintf('/etc/webobs.d/%sS/%s/%s.conf',s{1},s{2},s{2}));
 	% Loads all existing and valid NODES (declared at least in one VIEW)
