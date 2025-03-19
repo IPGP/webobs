@@ -82,9 +82,13 @@ if ~request && (nargin < 1 || isempty(grids))
 	VIEWS = dir(sprintf('%s/*',WO.PATH_VIEWS));
 	PROCS = dir(sprintf('%s/*',WO.PATH_PROCS));
 	FORMS = dir(sprintf('%s/*',WO.PATH_FORMS));
-	grids = [strcat('VIEW.',{VIEWS(~strncmp({VIEWS.name},{'.'},1) & cat(2,VIEWS.isdir)).name}), ...
-		 strcat('PROC.',{PROCS(~strncmp({PROCS.name},{'.'},1) & cat(2,PROCS.isdir)).name}), ...
-		 strcat('FORM.',{FORMS(~strncmp({FORMS.name},{'.'},1) & cat(2,FORMS.isdir)).name})];
+    vl = {VIEWS(~strncmp({VIEWS.name},{'.'},1) & cat(2,VIEWS.isdir)).name};
+    pl = {PROCS(~strncmp({PROCS.name},{'.'},1) & cat(2,PROCS.isdir)).name};
+    fl = {FORMS(~strncmp({FORMS.name},{'.'},1) & cat(2,FORMS.isdir)).name};
+    grids = {};
+    if ~isempty(vl), grids = [grids,strcat('VIEW.',vl)]; end
+    if ~isempty(pl), grids = [grids,strcat('PROC.',pl)]; end
+    if ~isempty(fl), grids = [grids,strcat('FORM.',fl)]; end
 else
 	if ~iscell(grids)
 		grids = cellstr(grids);
@@ -151,8 +155,7 @@ demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz, ...
 for g = 1:length(grids)
 	s = split(grids{g},'/.');
 	if length(s) < 2
-		fprintf('%s: ** WARNING ** Invalid grid "%s": must use the full grid name GridType.GridName',wofun,grids{g});
-        continue
+		error('%s: ** WARNING ** Invalid grid "%s": must use the full grid name GridType.GridName',wofun,grids{g});
 	end
 	GRIDS.(s{1}).(s{2}) = readcfg(WO,sprintf('/etc/webobs.d/%sS/%s/%s.conf',s{1},s{2},s{2}));
 	% Loads all existing and valid NODES (declared at least in one VIEW)
