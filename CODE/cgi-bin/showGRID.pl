@@ -677,7 +677,7 @@ for (@{$GRID{NODESLIST}}) {
             my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
             $htmlcontents .= "<TD></TD>";
             if ($procOUTG eq "events") {
-                $htmlcontents .= "<TD align=\"center\"><A href=\"$urn&amp;ts=events&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>\n";
+                $htmlcontents .= "<TD align=\"center\"><A href=\"$urn&amp;ts=events&amp;g=*/*/*/$NODEName\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>\n";
             } else {
                 $htmlcontents .= join('',map {$_ = "<TD align=\"center\">".( -e "$WEBOBS{ROOT_OUTG}/$grid/$WEBOBS{PATH_OUTG_GRAPHS}/".lc($NODEName)."_$_.png" ? "<A href=\"$urn&amp;ts=$_&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A>":"" )."</TD>"} split(/,/,$GRID{TIMESCALELIST}))."\n";
             }
