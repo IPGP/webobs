@@ -151,7 +151,8 @@ demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz, ...
 for g = 1:length(grids)
 	s = split(grids{g},'/.');
 	if length(s) < 2
-		error('Invalid grid "%s": must use the full grid name GridType.GridName',grids{g});
+		fprintf('%s: ** WARNING ** Invalid grid "%s": must use the full grid name GridType.GridName',wofun,grids{g});
+        continue
 	end
 	GRIDS.(s{1}).(s{2}) = readcfg(WO,sprintf('/etc/webobs.d/%sS/%s/%s.conf',s{1},s{2},s{2}));
 	% Loads all existing and valid NODES (declared at least in one VIEW)
