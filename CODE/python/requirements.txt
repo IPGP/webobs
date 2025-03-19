@@ -1,0 +1,8 @@
+numpy
+scipy
+matplotlib
+cartopy
+pyproj
+adjusttext
+pdf2image
+pdfkit

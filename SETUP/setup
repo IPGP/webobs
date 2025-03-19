@@ -551,6 +551,17 @@ fi
 echo "WebObs user: ${USERID} , group: ${USERGID}, email: ${USERMAIL}"
 echo
 
+# Python environment ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+echo 'Python environment installation'
+if $(confirmy "Confirm create Python environment [Y/n] ?") ; then
+    python3 -m venv ${DOCROOT}/venv/
+    chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
+    source ${DOCROOT}/venv/bin/activate
+    pip install -r ${DOCROOT}/CODE/python/requirements.txt
+fi
+echo
+
 # setup (new) CODE and DOC paths, wether install or upgrade
 # symlinks from DOCROOT to RELBASE code and doc
 # -----------------------------------------------------------------------------
@@ -672,12 +683,10 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSDOMAINS.db WEBOBSDOMAINS.db >>$REPORT
 	$RELBASE/SETUP/createdb-WEBOBSMETA >/dev/null
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSMETA.db WEBOBSMETA.db >>$REPORT
-		$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
+	$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
 	$RELBASE/SETUP/cmpsql $DOCROOT/DATA/DB/WEBOBSFORMS.db WEBOBSFORMS.db >>$REPORT
 	cd ..
 	rm -rf $db_temp_dir
-
-
 else
 	MIGRATION=$(confirm "Do you want to migrate some old (pre-2012) WebObs stuff [y/N] ?")
 
