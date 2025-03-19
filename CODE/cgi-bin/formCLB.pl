@@ -73,6 +73,10 @@ if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
             @clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
             %fieldCLB = readCfg($CLBS{FIELDS_FILE}, "sorted");
             %data = readCLB("$GRIDType.$GRIDName.$NODEName");
+            if (!%data) {
+                $nouveau = 1; @newChan = (1..$QryParm->{'nbc'});
+            }
+
         } else {
             die "$__{'Could not read'} $QryParm->{'node'} $__{'node configuration'}";
         }
@@ -122,6 +126,24 @@ print "<H1>$titlePage</H1>\n<H2>$titre2</H2>\n";
 
 # ---- take care of new "lines" if any
 #
+for (@newChan) {
+    my $s = $today;
+    if ($NODE{INSTALL_DATE} =~ /^\d{4}/) {
+        if ($NODE{INSTALL_DATE} =~ /^\d{4}-\d{2}-\d{2}$/) {
+            $s = $NODE{INSTALL_DATE}
+        } elsif ($NODE{INSTALL_DATE} =~ /^\d{4}-\d{2}$/) {
+            $s = $NODE{INSTALL_DATE}."-01";
+        } elsif ($NODE{INSTALL_DATE} =~ /^\d{4}$/) {
+            $s = $NODE{INSTALL_DATE}."-01-01";
+        }
+    }
+
+    $data{$_}{"DATE"} = $s;
+    $data{$_}{"nv"} = $_;
+    $data{$_}{"la"} = $NODE{LAT_WGS84};
+    $data{$_}{"lo"} = $NODE{LON_WGS84};
+    $data{$_}{"al"} = $NODE{ALTITUDE};
+}
 
 $nb = keys %data;  # number of elements in @data
 
