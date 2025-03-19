@@ -50,7 +50,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2025-03-18
+%	Updated: 2025-03-19
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -252,7 +252,8 @@ end
 
 % =============================================================================
 % loads the miniseed file
-if exist(fdat,'file')
+FD = dir(fdat);
+if ~isempty(FD) && FD(1).bytes > 0 
 	fprintf('%s: data file %s ...',wofun,fdat);
 	[X,I] = rdmseedfast(fdat,mseed2sac);
 	fprintf(' loaded.\n');

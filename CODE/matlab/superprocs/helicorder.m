@@ -59,8 +59,8 @@ proc = varargin{1};
 procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
-% gets PROC's configuration, associated nodes for any TSCALE and/or REQDIR and the data
-[P,N,D] = readproc(WO,varargin{:});
+% gets PROC's configuration, associated nodes for any TSCALE and/or REQDIR 
+[P,N] = readproc(WO,varargin{:});
 
 % event mode: only the first TSCALE is considered
 r = 1;
@@ -68,6 +68,7 @@ r = 1;
 hd = field2num(P,'HELICORDER_DURATION_DAYS',1);
 ht = field2num(P,'HELICORDER_TURNS',24*4);
 hscale = field2num(P,'HELICORDER_SCALE',100);
+hscaleref = field2num(P,'HELICORDER_SCALE_REF');
 hpaper = field2num(P,'HELICORDER_PAPER_COLOR',rgb('white'));
 hcolors = rgb(split(field2str(P,'HELICORDER_TRACE_COLOR'),','));
 hytick = field2num(P,'HELICORDER_YTICK_HOURS',1);
@@ -80,29 +81,36 @@ fontsize = field2num(P,'FONTSIZE',8);
 
 for n = 1:length(N)
 
-	C = D(n).CLB;
-	nx = C.nx;
 	V.node_name = N(n).NAME;
 	V.node_alias = N(n).ALIAS;
-
-	% compute the scales over whole period TSCALE
-	scale = 1e10*ones(1,nx);
-	for c = 1:nx
-		dd = diff(D(n).d(:,c));
-		dd(isnan(dd)) = [];
-		mstd = median(abs(dd - median(dd)));
-		if ~isnan(mstd) && mstd ~= 0
-			scale(c) = hscale*ht*mstd;
-		else
-			scale(c) = 1e10;
-		end
-	end
 
 	% ===================== loops on TSCALE period with DURATION_DAYS steps
 
 	for t0 = floor(P.GTABLE(r).DATE1/hd)*hd:hd:floor(P.GTABLE(r).DATE2/hd)*hd
 
 		tlim = t0 + [0,hd];
+
+        P.DATELIM = tlim;
+        % reads the data for time period only
+        [D,P] = readfmtdata(WO,P,N);
+
+        C = D(n).CLB;
+        nx = C.nx;
+        % compute the scales over whole period TSCALE
+        scale = 1e10*ones(1,nx);
+        for c = 1:nx
+            dd = diff(D(n).d(:,c));
+            dd(isnan(dd)) = [];
+            mstd = median(abs(dd - median(dd)));
+            scale(c) = 1e10;
+            if hscaleref > 0
+                scale(c) = hscale*ht*hscaleref;
+            else
+                if ~isnan(mstd) && mstd ~= 0
+                    scale(c) = hscale*ht*mstd;
+                end
+            end
+        end
 		k = find(isinto(D(n).t,tlim));
 		tk = [];
 		dk = nan(0,nx);

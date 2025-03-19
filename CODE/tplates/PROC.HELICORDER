@@ -68,9 +68,6 @@ GRIDMAPS_DEM_OPT|
 # show node alias in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
-# file for background time referenced events 
-EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
-
 # graphical density for PNG outputs (in pixel per inches)
 PPI|100
 # landscape format for all outputs
@@ -97,7 +94,9 @@ COPYRIGHT2|
 HELICORDER_DURATION_DAYS|1
 # number of turns per duration
 HELICORDER_TURNS|24*2
-# vertical scale (relative to the signal standard deviation)
+# vertical scale reference in signal unit (default is standard deviation)
+HELICORDER_SCALE_REF|
+# vertical relative scale to above reference
 HELICORDER_SCALE|100
 # background paper color (accepts html names, see CODE/matlab/htm2rgb.m)
 HELICORDER_PAPER_COLOR|#0F0F0F
