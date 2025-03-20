@@ -1,13 +1,16 @@
 import re
-import numpy as np
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 
 from read_proc import read_data, read_proc
-from utils import get_pernode_title, timescale, filter_signal
+from utils import filter_signal, get_pernode_title, timescale
 
 plt.rcParams["text.usetex"] = True
-plt.rcParams.update({"font.size": "5", "lines.linewidth": "0.2"})
+plt.rcParams["figure.dpi"] = 600
+plt.rcParams["font.size"] = 5
+plt.rcParams["lines.linewidth"] = 0.1
 cmap = mpl.colormaps["brg"]
 
 
@@ -15,16 +18,14 @@ cmap = mpl.colormaps["brg"]
 proc = read_proc("GEOSCOPE")
 # print(proc)
 conf = proc["conf"]
+print(conf)
 
 # Main graphical options
 pernode_linestyle = conf.get("PERNODE_LINESTYLE", "-")
 pernode_title = conf.get("PERNODE_TITLE", "{\fontsize{14}{\bf $node_alias: $node_name} ($timescale)}")
-
-# pernode_title = r"\fontsize{14} \bf{$node_alias: $node_name} ($timescale)"
-
 summary_linestyle = conf.get("SUMMARY_LINESTYLE", "-")
 summary_title = conf.get("SUMMARY_TITLE", "{\fontsize{14}{\bf$name} ($timescale)}")
-pagemaxsubplot = int(conf.get("PAGE_MAX_SUBPLOT", 8))
+pagemaxsubplot = 2  # int(conf.get("PAGE_MAX_SUBPLOT", 8))
 # ylogscale = isok(P,'YLOGSCALE');
 movingaverage = round(float(conf.get("MOVING_AVERAGE_SAMPLES", 1)))
 
@@ -37,7 +38,7 @@ linewidthlist = conf["LINEWIDTHLIST"].split(",")
 statuslist = conf["STATUSLIST"].split(",")
 
 print(timescalelist)
-for code in timescalelist:
+for code in timescalelist[:1]:
     start_time, end_time = timescale(code)
     proc = read_data(proc, start_time, end_time)
     nodes = proc["nodes"].items()
@@ -63,5 +64,17 @@ for code in timescalelist:
         fontsize = re.search(r"\\fontsize{(\d+)}", pernode_title)
         fontsize = fontsize.group(1) if fontsize else 10
         title = get_pernode_title(pernode_title, code, node)
-        fig.suptitle(title, fontsize=fontsize)
+        fig.suptitle(title, fontsize=fontsize, y=0.95)
+        logo1_size = 0.10
+        logo1_axis = fig.add_axes([0.01, 0.99 - logo1_size, logo1_size, logo1_size], anchor="NW")
+        logo1 = plt.imread(conf["LOGO_FILE"])
+        logo1_axis.imshow(logo1)
+        logo1_axis.axis("off")
+
+        logo2_size = 0.09
+        logo2 = plt.imread(conf["LOGO2_FILE"])
+        logo2_axis = fig.add_axes([0.99 - logo2_size, 0.99 - logo2_size, logo2_size, logo2_size], anchor="NW")
+        logo2_axis.imshow(logo2)
+        logo2_axis.axis("off")
+
         plt.savefig(f"{nid}_{code}.pdf")
