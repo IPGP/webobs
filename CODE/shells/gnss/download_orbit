@@ -9,7 +9,10 @@
 # **** Updates
 # ** 2023-08-24 Pierre Sakic 
 # - Download Rapid_GE orbits
-#
+# ** 2025-03-20 PS
+# - Hotfix to solve JPL's sideshow 
+#   certificate issue with wget
+
 if [ $# -lt 2 ]; then
 	echo "     Syntax: download_orbit DAYS DEST [options]"
 	echo "Description: downloads best available orbit for chosen dates from the"
@@ -37,6 +40,7 @@ ORBIT=("Final" "Rapid" "Ultra" "Rapid_GE")
 delete="FALSE"
 verbose="FALSE"
 quiet="-q"
+xtra_opts="--no-check-certificate"
 
 # Optionnal parameters
 for (( i=1; i<=$#; i++)); do
@@ -107,13 +111,13 @@ for day in $DAYLIST; do
 
 			if [ -e "$0.rc" ]; then
 				for f in $(cat "$0.rc"); do
-					wget $quiet -q -N -P $DEST/$orbit/$year -r -l1 -nd "$URL/$year-$month-$day$f"
+					wget $xtra_opts $quiet -N -P $DEST/$orbit/$year -r -l1 -nd "$URL/$year-$month-$day$f"
 					if [ $? -ne 0 ]; then
 						break
 					fi
 				done
 			else
-				wget $quiet -q -N -P $DEST/$orbit/$year -r -l1 -nd $URL -A "$year-$month-$day*"
+				wget $xtra_opts $quiet -N -P $DEST/$orbit/$year -r -l1 -nd $URL -A "$year-$month-$day*"
 			fi
 
 			if [ -e $LOCAL ]; then # if download succeed
