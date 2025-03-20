@@ -34,12 +34,12 @@ if ~isempty(sraw)
     D.FirstEpoch = datenum(value(s{1}{5}),'yyyymmdd HHMMSS');
     D.LastEpoch = datenum(value(s{1}{6}),'yyyymmdd HHMMSS');
     D.ReleaseDate = datenum(value(s{1}{7}),'yyyymmdd HHMMSS');
-    ss = strsplit(value(s{1}{8}),' ');
+    ss = split(value(s{1}{8}),' ');
     D.XYZReferencePosition = str2double(ss(1:3));
     if length(ss) > 3
         D.XYZReferenceFrame = regexprep(ss{4},'[()]','');
     end
-    ss = strsplit(value(s{1}{9}),' ');
+    ss = split(value(s{1}{9}),' ');
     D.NEUReferencePosition = str2double(ss(1:3));
     if length(ss) > 3
         D.NEUReferenceFrame = regexprep(ss{4},'[()]','');
@@ -55,5 +55,5 @@ if ~isempty(sraw)
 end
 
 function v=value(s)
-    ss = strsplit(s,':');
+    ss = split(s,':');
     v = strtrim(ss{2});
