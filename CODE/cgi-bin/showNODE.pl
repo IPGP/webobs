@@ -363,7 +363,7 @@ if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
         my %proj;
         for (keys(%allNodes)) {
             my %N = %{$allNodes{$_}};
-            if (isok($N{VALID}) && (!isok($NODES{NEIGHBOUR_NODES_ACTIVE_ONLY}) || (($N{END_DATE} ge $today || $N{END_DATE} eq "NA")
+            if (isok($N{VALID}) && ($N{LAT_WGS84} ne "" && $N{LON_WGS84} ne "") && (!isok($NODES{NEIGHBOUR_NODES_ACTIVE_ONLY}) || (($N{END_DATE} ge $today || $N{END_DATE} eq "NA")
                         && ($N{INSTALL_DATE} le $today || $N{INSTALL_DATE} eq "NA")))) {
                 ($dist{$_},$bear{$_}) = greatcircle($lat,$lon,$N{LAT_WGS84},$N{LON_WGS84});
                 if ($alt != 0 && $N{ALTITUDE} != 0) {
