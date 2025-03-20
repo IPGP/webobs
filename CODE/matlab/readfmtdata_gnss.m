@@ -208,9 +208,13 @@ case 'pbogps-pos'
 	if exist(fdat,'file')
 		X = readpbopos(fdat);
 		t = X.t;
-		d = [X.dE,X.dN,X.dU]; % North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		d = [X.dE,X.dN,X.dU,zeros(length(t),1)]; % dE,dN,dU,Orbit
+        utm = ll2utm(X.NEUReferencePosition(1:2));
+		d(:,1:3) = d(:,1:3) + repmat([utm,X.NEUReferencePosition(3)],length(t),1); % dE,dN,dU => E_UTM(m),N_UTM(m),U(m)
+        d(~strcmpi(X.Soln,'final'),4) = 1; % non-final orbits
 		e = [X.Se,X.Sn,X.Su];
 		e(e<min_error) = min_error;
+
 		fprintf('%d data imported.\n',size(t,1));
 	else
 		t = [];

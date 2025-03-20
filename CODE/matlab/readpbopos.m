@@ -19,7 +19,7 @@ function D=readpbopos(f,varargin)
 %
 %	Author: François Beauducel, IPGP
 %	Created: 2025-03-10 in Paris (France)
-%   Updated: 2025-03-12
+%   Updated: 2025-03-20
 
 D = struct;
 sraw = fileread(f);
@@ -45,7 +45,7 @@ if ~isempty(sraw)
         D.NEUReferenceFrame = regexprep(ss{4},'[()]','');
     end
     % finds start of the data table
-	k = find(strcmp(s{1},'') | strncmp(s{1},'*YYYYMMDD',9))
+	k = find(strcmp(s{1},'') | strncmp(s{1},'*YYYYMMDD',9));
 	d = textscan(sraw,['%15c',repmat('%n',1,22),'%s%[^\n]'],'HeaderLines',k);
 	D.t = datenum(d{1},'yyyymmdd HHMMSS');
 	fn = {'MJD','X','Y','Z','Sx','Sy','Sz','Rxy','Rxz','Ryz','NLat','Elong','Height','dN','dE','dU','Sn','Se','Su','Rne','Rnu','Reu','Soln'};
