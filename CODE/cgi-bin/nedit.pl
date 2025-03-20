@@ -51,9 +51,6 @@ Authorization resources checked for edit or adm are those of the grid.
 
 The JQuery plugin 'markitup' is customized for WebObs:
 
-A wiki editor, markitup namespace 'wiki', with
-CODE/js/markitup/sets/wiki/set.js and CODE/js/markitup/sets/wiki/style.css
-
 A MultiMarkdown editor, markiptup namespace 'markdown', with
 CODE/js/markitup/sets/markdown/set.js and CODE/js/markitup/sets/markdown/style.css
 
@@ -153,7 +150,7 @@ if ($action eq 'save') {
         if ( $?  == 0 ) {
             truncate(FILE, 0);
             seek(FILE, 0, SEEK_SET);
-            if ($conv eq "1") {
+            if ($txt && $conv eq "1") {
                 $txt = WebObs::Wiki::wiki2MMD($txt);
                 $txt = "WebObs: converted with wiki2MMD\n\n$txt";
             }
@@ -217,16 +214,11 @@ function convert2MMD()
 <!-- markitup -->
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>
 <script src=\"https://code.jquery.com/jquery-migrate-1.2.1.js\"></script>
-<script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/skins/markitup/style.css\" />
 ";
-if (length($meta) > 0) {
-    print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
-           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
-} else {
-    print "<script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
-           <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/wiki/style.css\" />";
-}
+
+print "<script type=\"text/javascript\" src=\"/js/markitup/sets/markdown/set.js\"></script>
+       <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/sets/markdown/style.css\" />";
 print "<script type=\"text/javascript\" >
     \$(document).ready(function() {
         \$(\"#markItUp\").markItUp(mySettings);
