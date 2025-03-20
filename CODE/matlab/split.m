@@ -8,9 +8,9 @@ function c = split(s,d)
 %	Any escaped delimiter character (preceeded by \) in the string will not
 %	be splitted.
 %
-%	Author: François BEAUDUCEL, IPGP
+%	Author: FranÃ§ois BEAUDUCEL, IPGP
 %	Created: 2009-10-09
-%	Updated: 2019-08-01
+%	Updated: 2025-03-20
 
 
 if nargin < 1
@@ -42,7 +42,7 @@ for i = 1:length(ss)
 	else
 		% substitutes escaped delimiters
 		ss{i} = strrep(ss{i},['\',d],us);
-		c(i) = textscan(ss{i},'%s','Delimiter',d);
+		c(i) = textscan(ss{i},'%s','Delimiter',d,'Whitespace','');
 		% puts back escaped delimiters
 		c{i} = strrep(c{i},us,d);
 	end

@@ -21,7 +21,7 @@ function D = readfmtdata_genform(WO,P,N)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2024-07-03, in Surabaya (Indonesia)
-%	Updated: 2025-01-08
+%	Updated: 2025-03-20
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -78,8 +78,8 @@ for n = 1:length(N)
 	end
 
 	% export data, errors, names and units
-	pdn = strsplit(F.PROC_DATA_LIST,',','CollapseDelimiters',false);
-	pen = strsplit(F.PROC_ERROR_LIST,',','CollapseDelimiters',false);
+	pdn = split(F.PROC_DATA_LIST,',');
+	pen = split(F.PROC_ERROR_LIST,',');
 	nx = length(pdn);
 	d = nan(size(data,1),nx);
 	e = d; % error have same size as data
