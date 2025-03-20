@@ -42,7 +42,10 @@ for i = 1:length(ss)
 	else
 		% substitutes escaped delimiters
 		ss{i} = strrep(ss{i},['\',d],us);
-		c(i) = textscan(ss{i},'%s','Delimiter',d,'Whitespace','');
+        if d == ' '
+            ss{i} = regexprep(ss{i},'[ ]+',' ');
+        end
+        c(i) = textscan(ss{i},'%s','Delimiter',d,'Whitespace','');
 		% puts back escaped delimiters
 		c{i} = strrep(c{i},us,d);
 	end
