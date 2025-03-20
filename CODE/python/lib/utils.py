@@ -1,6 +1,9 @@
 import re
 from datetime import datetime, timedelta
 
+import numpy as np
+from scipy.signal import detrend
+
 
 def timescale(code):
     """Return a tuple of datetime objects from a duration until now.
@@ -40,12 +43,21 @@ def timescale(code):
 
 
 def get_pernode_title(title, timescale, node):
+    title = re.sub("(\w)\$", r"\1 $", title)
+    title = re.sub(r"\\fontsize{\d+}", "", title)
     title = title.replace("$timescale", timescale)
     title = title.replace("$node_alias", node["ALIAS"])
     title = title.replace("$node_name", node["NAME"])
-    title = re.sub(r"\\fontsize{\d+}", "", title)
     title = re.sub(r"\"", "", title)
     return title
+
+
+def filter_signal(data):
+    nan_mask = np.isnan(data)
+    data_valid = data[~nan_mask]
+    if data_valid.any():
+        data[~nan_mask] = detrend(data_valid)
+    return data
 
 
 if __name__ == "__main__":

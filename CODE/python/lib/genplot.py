@@ -1,11 +1,10 @@
 import re
-
+import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import numpy as np
 
 from read_proc import read_data, read_proc
-from utils import get_pernode_title, timescale
+from utils import get_pernode_title, timescale, filter_signal
 
 plt.rcParams["text.usetex"] = True
 plt.rcParams.update({"font.size": "5", "lines.linewidth": "0.2"})
@@ -25,7 +24,7 @@ pernode_title = conf.get("PERNODE_TITLE", "{\fontsize{14}{\bf $node_alias: $node
 
 summary_linestyle = conf.get("SUMMARY_LINESTYLE", "-")
 summary_title = conf.get("SUMMARY_TITLE", "{\fontsize{14}{\bf$name} ($timescale)}")
-pagemaxsubplot = conf.get("PAGE_MAX_SUBPLOT", 8)
+pagemaxsubplot = int(conf.get("PAGE_MAX_SUBPLOT", 8))
 # ylogscale = isok(P,'YLOGSCALE');
 movingaverage = round(float(conf.get("MOVING_AVERAGE_SAMPLES", 1)))
 
@@ -47,15 +46,19 @@ for code in timescalelist:
         datetime = proc["data"]["t"][n]
         chs_data = proc["data"]["d"][n]
         chs_cal = node["CLB"].values()
-        nc = chs_data.shape
-        colors = cmap(np.linspace(0, 1, nc[1] + 1))
-        fig, axs = plt.subplots(nc[1], 1, sharex=True, constrained_layout=True)
+        nc = min(chs_data.shape[1], pagemaxsubplot)
+        colors = cmap(np.linspace(0, 1, nc + 1))
+        fig, axs = plt.subplots(nc, 1, sharex=True)
         for c, cal in enumerate(chs_cal):
             cha = cal["nm"]
             unit = cal["un"]
-            axs[c].plot(datetime, chs_data[:, c], color=colors[c])
+            zz = np.array(chs_data[:, c])
+            data = filter_signal(chs_data[:, c])
+            axs[c].plot(datetime, data, color=colors[c])
             # axs[i].plot(datetime, chX_mean)
             axs[c].set_ylabel(f"{cha} {unit}")
+            if c == pagemaxsubplot - 1:
+                break
         fig.align_ylabels(axs)
         fontsize = re.search(r"\\fontsize{(\d+)}", pernode_title)
         fontsize = fontsize.group(1) if fontsize else 10
