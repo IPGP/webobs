@@ -1,9 +1,12 @@
+from signal import filter_signal
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
+from graphs import plot_copyright, plot_logo, plot_title
 from read_proc import read_data, read_proc
-from utils import filter_signal, plot_copyright, plot_logo, plot_title, timescale
+from utils import timescale
 
 plt.rcParams["text.usetex"] = True
 plt.rcParams["figure.dpi"] = 300
