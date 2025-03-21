@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from read_proc import read_data, read_proc
-from utils import filter_signal, plot_logo, plot_title, timescale
+from utils import filter_signal, plot_copyright, plot_logo, plot_title, timescale
 
 plt.rcParams["text.usetex"] = True
 plt.rcParams["figure.dpi"] = 300
@@ -51,7 +51,6 @@ for code in timescalelist[:1]:
         for c, cal in enumerate(chs_cal):
             cha = cal["nm"]
             unit = cal["un"]
-            zz = np.array(chs_data[:, c])
             data = filter_signal(chs_data[:, c])
             axs[c].plot(datetime, data, color=colors[c])
             # axs[i].plot(datetime, chX_mean)
@@ -62,4 +61,5 @@ for code in timescalelist[:1]:
         plot_title(pernode_title, code, node)
         plot_logo(name=conf["LOGO_FILE"], size=conf["LOGO_HEIGHT"], pos="left")
         plot_logo(name=conf["LOGO2_FILE"], size=conf["LOGO2_HEIGHT"], pos="right")
+        plot_copyright(conf)
         plt.savefig(f"{nid}_{code}.pdf")

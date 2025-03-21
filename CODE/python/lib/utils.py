@@ -72,7 +72,20 @@ def plot_title(title, timescale="", node=None):
     title = title.replace("$node_alias", node.get("ALIAS", ""))
     title = title.replace("$node_name", node.get("NAME", ""))
     title = re.sub(r"\"", "", title)
-    fig.suptitle(title, fontsize=fontsize, y=0.95)
+    fig.suptitle(title, fontsize=fontsize, y=0.98)
+
+
+def plot_copyright(conf, fontsize=8):
+    if conf is None:
+        conf = {}
+    fig = plt.gcf()
+    date = datetime.today().strftime("%Y")
+    title = ""
+    if conf.get("COPYRIGHT"):
+        title += f'\N{COPYRIGHT SIGN} {conf.get("COPYRIGHT")} {date}'
+    if conf.get("COPYRIGHT2", " "):
+        title += f' + {conf.get("COPYRIGHT2")} {date}'
+    fig.text(0.5, 0.9, title, horizontalalignment="center", fontsize=fontsize)
 
 
 def filter_signal(data):
