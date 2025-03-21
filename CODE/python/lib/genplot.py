@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from read_proc import read_data, read_proc
-from utils import filter_signal, get_pernode_title, timescale
+from utils import filter_signal, get_pernode_title, plot_logo, timescale
 
 plt.rcParams["text.usetex"] = True
-plt.rcParams["figure.dpi"] = 600
+plt.rcParams["figure.dpi"] = 300
 plt.rcParams["font.size"] = 5
 plt.rcParams["lines.linewidth"] = 0.1
 cmap = mpl.colormaps["brg"]
@@ -49,7 +49,7 @@ for code in timescalelist[:1]:
         chs_cal = node["CLB"].values()
         nc = min(chs_data.shape[1], pagemaxsubplot)
         colors = cmap(np.linspace(0, 1, nc + 1))
-        fig, axs = plt.subplots(nc, 1, sharex=True)
+        fig, axs = plt.subplots(nc, 1, sharex=True, num="genplot")
         for c, cal in enumerate(chs_cal):
             cha = cal["nm"]
             unit = cal["un"]
@@ -65,16 +65,6 @@ for code in timescalelist[:1]:
         fontsize = fontsize.group(1) if fontsize else 10
         title = get_pernode_title(pernode_title, code, node)
         fig.suptitle(title, fontsize=fontsize, y=0.95)
-        logo1_size = 0.10
-        logo1_axis = fig.add_axes([0.01, 0.99 - logo1_size, logo1_size, logo1_size], anchor="NW")
-        logo1 = plt.imread(conf["LOGO_FILE"])
-        logo1_axis.imshow(logo1)
-        logo1_axis.axis("off")
-
-        logo2_size = 0.09
-        logo2 = plt.imread(conf["LOGO2_FILE"])
-        logo2_axis = fig.add_axes([0.99 - logo2_size, 0.99 - logo2_size, logo2_size, logo2_size], anchor="NW")
-        logo2_axis.imshow(logo2)
-        logo2_axis.axis("off")
-
+        plot_logo(name=conf["LOGO_FILE"], size=conf["LOGO_HEIGHT"], pos="left")
+        plot_logo(name=conf["LOGO2_FILE"], size=conf["LOGO2_HEIGHT"], pos="right")
         plt.savefig(f"{nid}_{code}.pdf")

@@ -1,6 +1,7 @@
 import re
 from datetime import datetime, timedelta
 
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import detrend
 
@@ -50,6 +51,24 @@ def get_pernode_title(title, timescale, node):
     title = title.replace("$node_name", node["NAME"])
     title = re.sub(r"\"", "", title)
     return title
+
+
+def plot_logo(name, size=0.05, pos="right"):
+    fig = plt.figure("genplot")
+    width, height = plt.gcf().get_size_inches()
+    logo = plt.imread(name)
+    logo_height, logo_width, _ = logo.shape
+    ratio = (min(width, height) / max(width, height)) * (fig.get_dpi() / 100.0)
+    ax_height = float(size) * ratio
+    ax_width = float(size) * ratio
+    if pos == "left":
+        rect, anchor = ((0, 1 - ax_height, ax_width, ax_height), "NE")
+    else:
+        rect, anchor = ((1 - ax_width, 1 - ax_height, ax_width, ax_height), "NW")
+    logo_axis = fig.add_axes(rect, anchor=anchor)
+    logo_axis.imshow(logo)
+    logo_axis.axis("off")
+    return fig
 
 
 def filter_signal(data):
