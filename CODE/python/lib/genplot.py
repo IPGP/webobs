@@ -26,7 +26,7 @@ pernode_linestyle = conf.get("PERNODE_LINESTYLE", "-")
 pernode_title = conf.get("PERNODE_TITLE", "{\fontsize{14}{\bf $node_alias: $node_name} ($timescale)}")
 summary_linestyle = conf.get("SUMMARY_LINESTYLE", "-")
 summary_title = conf.get("SUMMARY_TITLE", "{\fontsize{14}{\bf$name} ($timescale)}")
-pagemaxsubplot = 2  # int(conf.get("PAGE_MAX_SUBPLOT", 8))
+pagemaxsubplot = int(conf.get("PAGE_MAX_SUBPLOT", 8))
 # ylogscale = isok(P,'YLOGSCALE');
 movingaverage = round(float(conf.get("MOVING_AVERAGE_SAMPLES", 1)))
 
@@ -39,7 +39,7 @@ linewidthlist = conf["LINEWIDTHLIST"].split(",")
 statuslist = conf["STATUSLIST"].split(",")
 
 print(timescalelist)
-for code in timescalelist[:1]:
+for code in timescalelist:
     start_time, end_time = timescale(code)
     proc = read_data(proc, start_time, end_time)
     nodes = proc["nodes"].items()
@@ -50,7 +50,7 @@ for code in timescalelist[:1]:
         chs_cal = node["CLB"].values()
         nc = min(chs_data.shape[1], pagemaxsubplot)
         colors = cmap(np.linspace(0, 1, nc + 1))
-        fig, axs = plt.subplots(nc, 1, sharex=True, num="genplot")
+        fig, axs = plt.subplots(nc, 1, sharex=True)
         for c, cal in enumerate(chs_cal):
             cha = cal["nm"]
             unit = cal["un"]
