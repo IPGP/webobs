@@ -43,18 +43,8 @@ def timescale(code):
     return (start_time, end_time)
 
 
-def get_pernode_title(title, timescale, node):
-    title = re.sub("(\w)\$", r"\1 $", title)
-    title = re.sub(r"\\fontsize{\d+}", "", title)
-    title = title.replace("$timescale", timescale)
-    title = title.replace("$node_alias", node["ALIAS"])
-    title = title.replace("$node_name", node["NAME"])
-    title = re.sub(r"\"", "", title)
-    return title
-
-
 def plot_logo(name, size=0.05, pos="right"):
-    fig = plt.figure("genplot")
+    fig = plt.gcf()
     width, height = plt.gcf().get_size_inches()
     logo = plt.imread(name)
     logo_height, logo_width, _ = logo.shape
@@ -68,7 +58,21 @@ def plot_logo(name, size=0.05, pos="right"):
     logo_axis = fig.add_axes(rect, anchor=anchor)
     logo_axis.imshow(logo)
     logo_axis.axis("off")
-    return fig
+
+
+def plot_title(title, timescale="", node=None):
+    if node is None:
+        node = {}
+    fig = plt.gcf()
+    fontsize = re.search(r"\\fontsize{(\d+)}", title)
+    fontsize = fontsize.group(1) if fontsize else 10
+    title = re.sub("(\w)\$", r"\1 $", title)
+    title = re.sub(r"\\fontsize{\d+}", "", title)
+    title = title.replace("$timescale", timescale)
+    title = title.replace("$node_alias", node.get("ALIAS", ""))
+    title = title.replace("$node_name", node.get("NAME", ""))
+    title = re.sub(r"\"", "", title)
+    fig.suptitle(title, fontsize=fontsize, y=0.95)
 
 
 def filter_signal(data):

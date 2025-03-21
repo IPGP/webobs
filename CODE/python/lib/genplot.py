@@ -1,11 +1,9 @@
-import re
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
 from read_proc import read_data, read_proc
-from utils import filter_signal, get_pernode_title, plot_logo, timescale
+from utils import filter_signal, plot_logo, plot_title, timescale
 
 plt.rcParams["text.usetex"] = True
 plt.rcParams["figure.dpi"] = 300
@@ -61,10 +59,7 @@ for code in timescalelist[:1]:
             if c == pagemaxsubplot - 1:
                 break
         fig.align_ylabels(axs)
-        fontsize = re.search(r"\\fontsize{(\d+)}", pernode_title)
-        fontsize = fontsize.group(1) if fontsize else 10
-        title = get_pernode_title(pernode_title, code, node)
-        fig.suptitle(title, fontsize=fontsize, y=0.95)
+        plot_title(pernode_title, code, node)
         plot_logo(name=conf["LOGO_FILE"], size=conf["LOGO_HEIGHT"], pos="left")
         plot_logo(name=conf["LOGO2_FILE"], size=conf["LOGO2_HEIGHT"], pos="right")
         plt.savefig(f"{nid}_{code}.pdf")
