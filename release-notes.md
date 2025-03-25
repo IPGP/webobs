@@ -45,7 +45,11 @@ FAULT_PLOT_COLOR|lightgray
 ### Fixed issues
 1. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
 1. Add forgotten keys in **tremblemaps** superproc template, and fix an issue when updating procs with setup (new keys not added).
+1. Fix display of non-geolocated nodes as neighbours (as lat=lon=0).
+1. Fix issue with empty location code for fdsnws-dataselect format.
 
+### Code improvement
+1. `!!` remove cedit.pl and fedit.pl. Replace former links with nedit.pl and formGENFORM.pl, respectively.
 
 ## v2.7.3 (February 2025)
 
