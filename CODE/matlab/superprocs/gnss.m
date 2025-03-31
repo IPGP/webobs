@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2025-03-08
+%   Updated: 2025-03-31
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -64,6 +64,7 @@ fontsize = field2num(P,'FONTSIZE',7);
 maxerror = field2num(P,'FILTER_MAX_ERROR_M',NaN);
 minerror = field2num(P,'ENU_MIN_ERROR_M',[0.01,0.01,0.01]);
 orbiterr = field2num(P,'ORBIT_ERROR_RATIO',[1,2]);
+P.trendfact = field2num(P,'TREND_FACTOR','365.25*1e3'); % default in mm/yr
 P.trendunit = field2str(P,'TREND_UNIT','mm/yr');
 targetll = field2num(P,'GNSS_TARGET_LATLON');
 if numel(targetll)~=2 || any(isnan(targetll))
@@ -1326,8 +1327,8 @@ for r = 1:numel(P.GTABLE)
 			end
 		end
 
-		% computes absolute displacement in mm (from velocity in mm/yr)
-		d = d*diff(tlim)/365.25;
+		% computes absolute displacement in mm (from velocity in mm/yr or TREND_FACTOR)
+		d = d*diff(tlim)*1e3/P.trendfact;
 
 		modelopt.verbose = '';
 		d(:,4:6) = adjerrors(d,modelopt);
@@ -1964,8 +1965,8 @@ for r = 1:numel(P.GTABLE)
 					d(:,1:3) = d(:,1:3) - repmat([mvv(1:2),0],size(d,1),1);
 					modrelforced = 1;
 				end
-				% computes absolute displacement in mm (from velocity in mm/yr)
-				d = d*diff(wlim)/365.25;
+				% computes absolute displacement in mm (from velocity in mm/yr or TREND_FACTOR)
+				d = d*diff(wlim)*1e3/P.trendfact;
 				d(:,4:6) = adjerrors(d,modelopt);
 
                 % stores vector data for export

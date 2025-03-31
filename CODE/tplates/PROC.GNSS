@@ -118,7 +118,7 @@ TREND_ERROR_COMPLETION|Y
 
 # ITRF reference (this is a string displayed on graph title, not functional)
 ITRF_REF|ITRF08
-# Relative velocity reference E,N,U (mm/yr) from ITRF = constant trend
+# Relative velocity reference E,N,U (mm/yr or TREND_FACTOR/TREND_UNIT) from ITRF = constant trend
 # substracted to all data before any other processing
 VELOCITY_REF|0,0,0
 VELOCITY_REF_ORIGIN_DATE|2000-01-01
@@ -213,7 +213,7 @@ VECTORS_RELATIVE|N
 # VECTORS: if VECTORS_RELATIVE is Y, substracts a reference vector in VECTORS_VELOCITY_REF:
 # - 'auto' (default): automatic mean velocity (average vector of all NODES)
 # - NODE's FID name or list of NODES: use the velocity vector (or mean velocity vector)
-# - E,N,U: sets fixed offset values (in mm/yr)
+# - E,N,U: sets fixed offset values (in mm/yr or TREND_FACTOR/TREND_UNIT)
 VECTORS_VELOCITY_REF|
 VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 # background map parameters (see CODE/matlab/dem.m for available options)
