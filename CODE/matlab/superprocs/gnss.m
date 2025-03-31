@@ -487,7 +487,7 @@ for r = 1:numel(P.GTABLE)
     voffset = zeros(1,3);
 	if vrelmode
 		if numel(sstr2num(vref)) == 3
-			voffset = sstr2num(vref);
+			voffset = sstr2num(vref)*P.trendfact/365250;
 			mode = 'fixed';
 		else
 			[kvref,knref] = ismemberlist(split(vref,','),{N.FID});
@@ -544,7 +544,7 @@ for r = 1:numel(P.GTABLE)
 				if harmcorr || faultcorr || vrelmode
 					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i)),[],P.GTABLE(r).DECIMATE,P);
 					X(2).t = tk;
-					X(2).d(:,i) = dk - polyval([voffset(i)/365250,0],tk - tlim(1));
+					X(2).d(:,i) = dk - polyval([voffset(i)/P.trendfact,0],tk - tlim(1));
 					X(2).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
 					if i == 3
 						X(2).w = D(n).d(k,4);
@@ -617,9 +617,9 @@ for r = 1:numel(P.GTABLE)
 			E.infos = {};
 			if harmcorr || faultcorr || vrelmode
 				E.d = [E.d,	...
-			   		D(n).d(k,5) - polyval([voffset(1)/365250,0],E.t - tlim(1)), ...
-			   		D(n).d(k,6) - polyval([voffset(2)/365250,0],E.t - tlim(1)), ...
-			   		D(n).d(k,7) - polyval([voffset(3)/365250,0],E.t - tlim(1)), ...
+			   		D(n).d(k,5) - polyval([voffset(1)/P.trendfact,0],E.t - tlim(1)), ...
+			   		D(n).d(k,6) - polyval([voffset(2)/P.trendfact,0],E.t - tlim(1)), ...
+			   		D(n).d(k,7) - polyval([voffset(3)/P.trendfact,0],E.t - tlim(1)), ...
 			   	];
 				E.header = {E.header{:},'East_treat(m)','North_treat(m)','Up_treat(m)'};
 			end
@@ -1946,7 +1946,7 @@ for r = 1:numel(P.GTABLE)
 						end
 					end
 					if numel(sstr2num(vref)) == 3
-						voffset = sstr2num(vref);
+						voffset = sstr2num(vref)*P.trendfact/365250;
 					end
 					tr = tr - repmat(voffset,numel(kn),1);
 				end

@@ -43,8 +43,7 @@ FAULT_PLOT_COLOR|lightgray
 TREND_FACTOR|365.25*1e3
 TREND_UNIT|mm/yr
 ```
-where `TREND_FACTOR` is a dimensionless factor applied to the trend value initially in m/day, and `TREND_UNIT` is the resulting unit string (for display purposes).
-`!!` You must use the same unit in `VELOCITY_REF` and `VECTORS_VELOCITY_REF` to define velocity values. Default is mm/yr.
+where `TREND_FACTOR` is a dimensionless factor applied to the trend value initially in m/day, and `TREND_UNIT` is the resulting unit string (for display purposes) for individual node timeseries and VECTORS graph.
 
 ### Enhancements
 1. New CSS!
