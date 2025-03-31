@@ -20,11 +20,11 @@ function [tc,dc,lr,tr,kk] = treatsignal(varargin)
 %       OPT.TREND_ERROR_MODE is trend error calculation mode: 1 = lscov, 2 = std, 3 = corrcoef
 %       OPT.TREND_ERROR_COMPLETION is trend error factor based on the data completion
 %
-%   TREATSIGNAL uses ISOK, FIELD2NUM, CLEANPICKS, MMED, and RDECIM functions.
+%   TREATSIGNAL uses ISOK, FIELD2NUM, CLEANPICKS, MMED, and DECIM functions.
 %
 %	Author: F. Beauducel / WEBOBS
 % 	Created: 2015-08-24
-% 	Updated: 2025-03-12
+% 	Updated: 2025-03-31
 
 t = varargin{1};
 d = varargin{2};
@@ -61,9 +61,9 @@ if isok(OPT,'UNDERSAMPLING')
 	dc = d(1:r:end);
 	ec = e(1:r:end);
 else
-	tc = rdecim(t,r);
-	dc = rdecim(d,r);
-	ec = rdecim(e,r);
+	tc = decim(t,r);
+	dc = decim(d,r);
+	ec = decim(e,r);
 end
 
 % linear trend

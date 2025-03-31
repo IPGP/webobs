@@ -537,7 +537,7 @@ for r = 1:numel(P.GTABLE)
 				[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i) - rmedian(D(n).d(k,i)),[],P.GTABLE(r).DECIMATE,P);
 				X(1).t = tk;
 				X(1).d(:,i) = dk;
-				X(1).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
+				X(1).e(:,i) = decim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
 				if i == 3
 					X(1).w = D(n).d(k,4);
 				end
@@ -545,7 +545,7 @@ for r = 1:numel(P.GTABLE)
 					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i)),[],P.GTABLE(r).DECIMATE,P);
 					X(2).t = tk;
 					X(2).d(:,i) = dk - polyval([voffset(i)/P.trendfact,0],tk - tlim(1));
-					X(2).e(:,i) = rdecim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
+					X(2).e(:,i) = decim(D(n).e(k,i),P.GTABLE(r).DECIMATE);
 					if i == 3
 						X(2).w = D(n).d(k,4);
 					end

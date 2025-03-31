@@ -29,7 +29,7 @@ function DOUT=naqssohplot(varargin)
 %
 %   Authors: J.M. Saurel / WEBOBS, IPGP
 %   Created: 2014-07-13
-%   Updated: 2021-01-01
+%   Updated: 2025-03-31
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -118,8 +118,8 @@ for n = 1:length(N)
 				acqui = round(100*length(k)*ACQ_RATE/(t(k(end)) - LAST_DELAY - xlim(1)));
 			end
 			if P.GTABLE(r).DECIMATE > 1
-				tk = rdecim(t(k),P.GTABLE(r).DECIMATE);
-				dk = rdecim(d(k,:),P.GTABLE(r).DECIMATE);
+				tk = decim(t(k),P.GTABLE(r).DECIMATE);
+				dk = decim(d(k,:),P.GTABLE(r).DECIMATE);
 			else
 				tk = t(k);
 				dk = d(k,:);
@@ -288,8 +288,8 @@ if isfield(P,'SUMMARYLIST')
 				k = find(D(n).t>=xlim(1) & D(n).t<=xlim(2));
 				if ~isempty(k)
 					if P.GTABLE(r).DECIMATE > 1
-						tk = rdecim(D(n).t(k),P.GTABLE(r).DECIMATE);
-						dk = rdecim(D(n).d(k,so(i)),P.GTABLE(r).DECIMATE);
+						tk = decim(D(n).t(k),P.GTABLE(r).DECIMATE);
+						dk = decim(D(n).d(k,so(i)),P.GTABLE(r).DECIMATE);
 					else
 						tk = D(n).t(k);
 						dk = D(n).d(k,so(i));

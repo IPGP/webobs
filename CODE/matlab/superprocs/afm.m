@@ -27,7 +27,7 @@ function DOUT=afm(varargin)
 %
 %	Authors: F. Beauducel + V. Clouard + J.M. Saurel / WEBOBS, IPGP
 %	Created: 2014-01-03
-%	Updated: 2022-06-12
+%	Updated: 2025-03-25
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -138,8 +138,8 @@ for n = 1:length(N)
 			end
 			acqui = round(100*length(k)*N(n).ACQ_RATE/abs(t(k(end)) - N(n).LAST_DELAY - xlim(1)));
 			if P.GTABLE(r).DECIMATE > 1
-				tk = rdecim(t(k),P.GTABLE(r).DECIMATE);
-				dk = rdecim(d(k,:),P.GTABLE(r).DECIMATE);
+				tk = decim(t(k),P.GTABLE(r).DECIMATE);
+				dk = decim(d(k,:),P.GTABLE(r).DECIMATE);
 			else
 				tk = t(k);
 				dk = d(k,:);
@@ -265,8 +265,8 @@ if isfield(P,'SUMMARYLIST')
 				k = find(D(n).t>=xlim(1) & D(n).t<=xlim(2));
 				if ~isempty(k)
 					if P.GTABLE(r).DECIMATE > 1
-						tk = rdecim(D(n).t(k),P.GTABLE(r).DECIMATE);
-						dk = rdecim(D(n).d(k,so(i)),P.GTABLE(r).DECIMATE);
+						tk = decim(D(n).t(k),P.GTABLE(r).DECIMATE);
+						dk = decim(D(n).d(k,so(i)),P.GTABLE(r).DECIMATE);
 					else
 						tk = D(n).t(k);
 						dk = D(n).d(k,so(i));
