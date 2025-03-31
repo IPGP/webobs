@@ -499,18 +499,19 @@ end
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [xp,yp]=plotcross(prof,xylim,a,b)
 %PLOTCROSS Plots cross-section
+%   prof = [lon0,lat0,az,dist,dep]
 
 lw = .5;
 
 % if profile azimuth above 45°, plots the cross section lines from X axis limits
 if abs(tand(prof(3))) >= 1
 	xp = xylim(1:2);
-	yp = prof(2) + [xylim(1)-prof(1),xylim(2)-prof(1)]*tand(90-prof(3));
+	yp = prof(2) + [xylim(1)-prof(1),xylim(2)-prof(1)]*tand(90-prof(3))*cosd(prof(2));
 	plot(repmat(xp,2,1)',repmat(yp,2,1)' + [1,-1;1,-1]*prof(4)/degkm(prof(2))/cosd(90-prof(3)),':k','LineWidth',lw)
 % else from Y axis...
 else
 	yp = xylim(3:4);
-	xp = prof(1) + [xylim(3)-prof(2),xylim(4)-prof(2)]*tand(prof(3));
+	xp = prof(1) + [xylim(3)-prof(2),xylim(4)-prof(2)]*tand(prof(3))/cosd(prof(2));
 	plot(repmat(xp,2,1)' + [1,-1;1,-1]*prof(4)/degkm(prof(2))/cosd(prof(3)),repmat(yp,2,1)',':k','LineWidth',lw)
 end
 plot(xp,yp,'-.k','LineWidth',lw)
