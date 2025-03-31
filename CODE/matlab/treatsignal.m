@@ -14,9 +14,9 @@ function [tc,dc,lr,tr,kk] = treatsignal(varargin)
 %   and some other parameters:
 %       OPT.TREND_FACTOR is a dimensionless factor applied to the trend value initially in data unit/day
 %       OPT.TREND_MIN_DAYS is minimum time window (in days) needed to compute a trend
-%       OPT.TREND_MIN_PERC is minimum time window (in percent) needed to compute a trend
+%       OPT.TREND_MIN_PERCENT is minimum time window (in percent) needed to compute a trend
 %       OPT.TREND_TLIM_DAYS is trend time limits: extreme parts (in days) of time window to be used in trend computation
-%       OPT.TREND_TLIM_PERC is trend time limits: extreme parts (in percent) of time window to be used in trend computation
+%       OPT.TREND_TLIM_PERCENT is trend time limits: extreme parts (in percent) of time window to be used in trend computation
 %       OPT.TREND_ERROR_MODE is trend error calculation mode: 1 = lscov, 2 = std, 3 = corrcoef
 %       OPT.TREND_ERROR_COMPLETION is trend error factor based on the data completion
 %
@@ -74,10 +74,10 @@ dtlim = diff(minmax(t));
 if nargout > 3 && ~isempty(k) && dtlim > 0
     terrmod = field2num(OPT,'TREND_ERROR_MODE',1);
     trendfact = field2num(OPT,'TREND_FACTOR',1);
-    trendmindays = field2num(OPT,'TREND_MIN_DAYS',1);
+    trendmindays = field2num(OPT,'TREND_MIN_DAYS',2);
     trendminperc = field2num(OPT,'TREND_MIN_PERCENT',50);
     trendtlimdays = field2num(OPT,'TREND_TLIM_DAYS');
-    trendtlimperc = field2num(OPT,'TREND_TLIM_PERC');
+    trendtlimperc = field2num(OPT,'TREND_TLIM_PERCENT');
     trendcompletion = isok(OPT,'TREND_ERROR_COMPLETION',0);
 
     tk = tc(k);
