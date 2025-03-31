@@ -38,6 +38,14 @@ FAULT_PLOT_COLOR|lightgray
     Fault geometry is defined by `FAULT_CENTROID_LATLONDEP` with centroid coordinates as latitude (degree), longitude (degree) and depth (km>0 below sea level), `FAULT_LENGTH_WIDTH_KM` as fault length in the strike direction, and width in the dip direction (both in km), and `FAULT_STRIKE_DIP_RAKE_DEG` the fault trace azimuth/strike (0 to 360° from North clockwise) defined so that the fault dips to the right side of the trace, dip angle (0 to 90°) from horizontal plane, and rake direction as the hanging wall moves during rupture measured relative to the fault strike (-180 to 180°). `FAULT_SLIP_OPEN_M` defines the slip dislocation in rake direction, and open dislocation in the tensile component (both in m).
     The dislocation occurs at a date/time or between two date/time if `FAULT_DISLOCATION_TLIM` contains one or two values, respectively. `FAULT_DISLOCATION_TIME_MODEL` is presently only linear. `FAULT_WITH_TOPOGRAPHY` set to `Y` will use station's elevation to approximately correct topography effect. `FAULT_PLOT` will plot the fault limits on graphs, using `FAULT_PLOT_COLOR` for line.
 
+1. **GNSS superproc**: trend unit (velocity) is now configurable with two new parameters:
+```
+TREND_FACTOR|365.25*1e3
+TREND_UNIT|mm/yr
+```
+where `TREND_FACTOR` is a dimensionless factor applied to the trend value initially in m/day, and `TREND_UNIT` is the resulting unit string (for display purposes).
+`!!` You must use the same unit in `VELOCITY_REF` and `VECTORS_VELOCITY_REF` to define velocity values. Default is mm/yr.
+
 ### Enhancements
 1. New CSS!
 1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
