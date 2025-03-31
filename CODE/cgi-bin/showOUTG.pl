@@ -114,22 +114,6 @@ if ($QryParm->{'g'} =~ s!^lastevent(\b|$)!!) {
     $QryParm->{'g'} = $lastevent_dir.$QryParm->{'g'};
 }
 
-# ---- initialize 'timescales' definitions
-my %TIMESCALES = (
-    xxx => $__{'Manual'},
-    r => $__{'Reference'},
-    all => $__{'All Data'},
-    s => $__{'second'},
-    h => $__{'hour'},
-    d => $__{'day'},
-    w => $__{'week'},
-    m => $__{'month'},
-    y => $__{'year'},
-  );
-if (substr($QryParm->{'ts'},0,1) eq 'r') {
-    $TIMESCALES{$QryParm->{'ts'}} = $__{'Reference'}." ".1*substr($QryParm->{'ts'},1);
-}
-
 # ---- get the list of nodes currently belonging to grid
 # ---- and the list of possible summary grid's summary filenames
 my %DefinedNodes = listGridNodes(grid=>"$GRIDType.$GRIDName");
@@ -155,7 +139,7 @@ print "<!-- overLIB (c) Erik Bosrup --><div id=\"overDiv\" style=\"position:abso
 
 print "<A NAME=\"MYTOP\"></A>";
 print "<TABLE width=100%><TR><TD style='border:0'>\n";
-print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME} <I>(".$TIMESCALES{$QryParm->{'ts'}}.")</I></H1>\n" if ($QryParm->{'header'} ne 'no');
+print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME} <I>(".timescale_name($QryParm->{'ts'}).")</I></H1>\n" if ($QryParm->{'header'} ne 'no');
 my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 
 # ---- build the top-of-page outputs selection banner:
@@ -175,21 +159,8 @@ my $tsSelected = 0 ;
 my $tsHtml = "";
 for my $i (0..$#tslist) {
     my $ts = $tslist[$i];
-    my $tsName = $ts;
+    my $tsName = timescale_name($ts);
 
-# for backward compatibility (replaces some of old "timescales.conf" definitions)
-    $ts =~ s/a$|an$|yr$/y/;
-    $ts =~ s/j$/d/;
-    my $n = 1*substr($ts,0,-1);
-    if ($n > 0) {
-        my $u = $TIMESCALES{substr($ts,-1)};
-        $tsName = "$n $u".($n > 1 && substr($u,-1,1) ne "s" ? "s":"");
-    } elsif (substr($ts,0,1) eq "r") {
-        my $r = 1*substr($ts,1);
-        $tsName = "$TIMESCALES{r}".($r > 0 ? " $r":"");
-    } elsif (defined($TIMESCALES{$ts})) {
-        $tsName = $TIMESCALES{$ts};
-    }
     if ($QryParm->{'ts'} eq $tslist[$i] ) {
         $tsSelected = $i;
         $tsHtml .= " <B>$tsName</B> |";
@@ -463,9 +434,10 @@ if ($QryParm->{'ts'} eq 'map') {
                 (my $surn = $dlist[$i]) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
                 $dlist[$i] =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_EXPORT}\/(.*)_.*$/$1/;
                 $dlist[$i] =~ s/^$/$GRIDName/;
-                ##if ($dlist[$i] eq $QryParm->{'g'}) {
-                if ( ($dlist[$i]=~m/$QryParm->{'g'}/i) ) {
-                    $addlinks .= " <A href=\"$surn\"><IMG alt=\"$QryParm->{'g'}.txt\" src=\"/icons/fdata.png\"></A> ";
+                my $gts = $QryParm->{'g'}.'_'.$QryParm->{'ts'};
+                #if ( ($dlist[$i]=~m/$QryParm->{'g'}/i) ) {
+                if ($dlist[$i] eq $QryParm->{'g'}) {
+                    $addlinks .= " <A href=\"$surn\"><IMG title=\"$dlist[$i]\" src=\"/icons/fdata.png\"></A> ";
                 }
             }
         }

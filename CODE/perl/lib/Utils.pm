@@ -18,12 +18,15 @@ use POSIX;
 use Encode;
 use File::Basename;
 use WebObs::Config qw(%WEBOBS);
+use WebObs::i18n;
+use Locale::TextDomain('webobs');
+use POSIX qw/setlocale/;
 
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(htmlspecialchars getImageInfo makeThumbnail trim ltrim
-  rtrim tri_date_avec_id datediffdays isok romanx pga2msk attenuation num2roman txt2htm tex2utf
+  rtrim tri_date_avec_id datediffdays timescale_name isok romanx pga2msk attenuation num2roman txt2htm tex2utf
   roundsd htm2frac qrcode url2target checkParam sort_clb mean median std);
 $VERSION = "1.00";
 
@@ -228,6 +231,40 @@ sub datediffdays {
 
     #return "$dt1,$dt2";
     return sprintf("%1.0f", ($dur->in_units('seconds'))/86400);
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+#
+sub timescale_name {
+    my $ts = shift;
+    my $tsName = $ts;
+
+    my %TIMESCALES = (
+        xxx => $__{'Manual'},
+        r => $__{'Reference'},
+        all => $__{'All Data'},
+        s => $__{'second'},
+        h => $__{'hour'},
+        d => $__{'day'},
+        w => $__{'week'},
+        m => $__{'month'},
+        y => $__{'year'},
+    );
+    
+    # for backward compatibility (replaces some of old "timescales.conf" definitions)
+    $ts =~ s/a$|an$|yr$/y/;
+    $ts =~ s/j$/d/;
+    my $n = 1*substr($ts,0,-1);
+    if ($n > 0) {
+        my $u = $TIMESCALES{substr($ts,-1)};
+        $tsName = "$n $u".($n > 1 && substr($u,-1,1) ne "s" ? "s":"");
+    } elsif (substr($ts,0,1) eq "r") {
+        my $r = 1*substr($ts,1);
+        $tsName = "$TIMESCALES{r}".($r > 0 ? " $r":"");
+    } elsif (defined($TIMESCALES{$ts})) {
+        $tsName = $TIMESCALES{$ts};
+    }
+    return $tsName;
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
