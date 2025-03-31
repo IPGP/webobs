@@ -126,6 +126,9 @@ my %TIMESCALES = (
     m => $__{'month'},
     y => $__{'year'},
   );
+if (substr($QryParm->{'ts'},0,1) eq 'r') {
+    $TIMESCALES{$QryParm->{'ts'}} = $__{'Reference'}." ".1*substr($QryParm->{'ts'},1);
+}
 
 # ---- get the list of nodes currently belonging to grid
 # ---- and the list of possible summary grid's summary filenames
@@ -152,7 +155,7 @@ print "<!-- overLIB (c) Erik Bosrup --><div id=\"overDiv\" style=\"position:abso
 
 print "<A NAME=\"MYTOP\"></A>";
 print "<TABLE width=100%><TR><TD style='border:0'>\n";
-print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME}</H1>\n" if ($QryParm->{'header'} ne 'no');
+print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME} <I>(".$TIMESCALES{$QryParm->{'ts'}}.")</I></H1>\n" if ($QryParm->{'header'} ne 'no');
 my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 
 # ---- build the top-of-page outputs selection banner:
