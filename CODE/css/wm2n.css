@@ -190,10 +190,10 @@ ul.dropdown li:hover > ul {
 
 ul.dropdown li.menutitle:hover,
 ul.dropdown li.menutitle {
-    background: #b38a84;
+    background: #d4d0cc;
     padding: 2px 0;
     text-align: center;
-    border-bottom: 1px solid #936a64;
+    border-bottom: 1px solid #c4c0bc;
 }
 ul.dropdown li.menutitle a {
     text-align: center;
@@ -201,7 +201,7 @@ ul.dropdown li.menutitle a {
 }
 ul.dropdown li hr {
     border: 0;
-    border-top: 1px solid #936a64;
+    border-top: 1px solid #c4c0bc;
 }
 
 /* END DROPDOWN MENU ***************************/
