@@ -435,7 +435,7 @@ for my $row (@$db_rows) {
 <tr id="$SdgrpsId">
     <td style="width:12px" class="tdlock">
         <a href="#IDENT" onclick="openPopupGroup('#$SdgrpsId');return false">
-            <img title="edit grp" src="/icons/modif.png">
+            <img title="edit group" src="/icons/modif.png">
         </a>
     </td>
     <td style="width:12px" class="tdlock">
@@ -496,7 +496,7 @@ for my $row (@$db_rows) {
 <tr id="$dnotfId">
     <td style="width:12px" class="tdlock">
         <a href="#POSTBOARD" onclick="openPopupNotf('#$dnotfId');return false">
-            <img title="edit grp" src="/icons/modif.png">
+            <img title="edit notification" src="/icons/modif.png">
         </a>
     </td>
     <td style="width:12px" class="tdlock">
@@ -551,9 +551,9 @@ for my $an (qw(proc view form wiki misc)) {
         my $dauthId="adef$an".$TA{$an}{dauthCount};
         if ($dauth_uid ne '!' || $isWO) {
             $td_modif_auth = "<a href=\"#AUTH\" onclick=\"openPopupAuth('$an', '#$dauthId');return false\">"
-              ."<img title=\"edit grp\" src=\"/icons/modif.png\"></a>";
+              ."<img title=\"edit authorization\" src=\"/icons/modif.png\"></a>";
             $td_delete_auth = "<a href=\"#AUTH\" onclick=\"postDeleteAuth('$an', '#$dauthId');return false\">"
-              ."<img title=\"delete autorisation\" src=\"/icons/no.png\"></a>";
+              ."<img title=\"delete authorization\" src=\"/icons/no.png\"></a>";
         }
         $TA{$an}{dauth} .= <<_EOD_;
 <tr id="$dauthId">
@@ -754,7 +754,7 @@ PostBoard subscriptions&nbsp;$go2top
                 <table class="dnotf">
                 <thead><tr><th style=\"width:12px\"><a href="#POSTBOARD" onclick="openPopupNotf();return false"><img title="define new notification" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
-                <th>Event<th>V<th>Uid<th>Mail<br>Subject<th>Mail<br>Attachm.<th>Action
+                <th>Event<th>V<th>Uid<th>Mail Subject<th>Mail Attachm.<th>Action
                 </tr></thead>
                 <tbody>
                 $dnotf
