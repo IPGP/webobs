@@ -128,8 +128,10 @@ P = tnorm(P,'LINEWIDTHLIST',nlist,P.MARKERSIZELIST/5);
 % CUMULATELIST to num vector, from arithmetic operations if specified by user
 P = tnorm(P,'CUMULATELIST',nlist,1);
 
+P.DECIMATELIST
 % DECIMATELIST to num vector
 P = tnorm(P,'DECIMATELIST',nlist,1);
+P.DECIMATELIST
 
 % STATUSLIST to num vector
 P = tnorm(P,'STATUSLIST',nlist,0);
@@ -288,7 +290,7 @@ end
 % Normalize table list from P.*LIST strings
 function P = tnorm(P,fd,nlist,dv)
 
-P.(fd) = field2num(P,fd,[]);
+P.(fd) = field2num(P,fd,dv,'notempty');
 lf = length(P.(fd));
 
 if numel(dv) < nlist

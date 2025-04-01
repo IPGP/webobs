@@ -24,7 +24,7 @@ function [tc,dc,lr,tr,kk] = treatsignal(varargin)
 %
 %	Author: F. Beauducel / WEBOBS
 % 	Created: 2015-08-24
-% 	Updated: 2025-03-31
+% 	Updated: 2025-04-01
 
 t = varargin{1};
 d = varargin{2};
@@ -60,10 +60,14 @@ if isok(OPT,'UNDERSAMPLING')
 	tc = t(1:r:end);
 	dc = d(1:r:end);
 	ec = e(1:r:end);
-else
+elseif r > 1
 	tc = decim(t,r);
 	dc = decim(d,r);
 	ec = decim(e,r);
+else
+    tc = t;
+    dc = d;
+    ec = e;
 end
 
 % linear trend
