@@ -30,7 +30,6 @@
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES">NODES.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CLB_CONF">CLB.conf</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_TELE)">TRANStypes.conf</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_NODES2NODES)">node2node.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF/events_World.conf">events_World.conf</a></li>
 			  <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumContactPersonRoles.conf">EnumContactPersonRoles.conf</a></li>
 			  <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumFundingTypes.conf">EnumFundingTypes.conf</a></li>

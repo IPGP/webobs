@@ -215,8 +215,8 @@ if ($action eq "reg") {
     my $rcn = WebObs::Config::notify(
         "register.warning|$$|received request from $fullname ($login)");
     if ($rcn != 0 ) {
-        send_ajax_content("Your request has been registered but WebObs "
-              ."administrators could not be notified.");
+        send_ajax_content("Your request has been correctly registered and waits for "
+            ."validation by an administrator.")
         print STDERR "register.pl: postboard notify error: rc=$rcn\n";
         exit;
     }
@@ -396,7 +396,7 @@ Didier Lafon, François Beauducel, Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2019 - Institut de Physique du Globe Paris
+Webobs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
