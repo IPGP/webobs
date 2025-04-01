@@ -190,6 +190,7 @@ ul.dropdown li:hover > ul {
 
 ul.dropdown li.menutitle:hover,
 ul.dropdown li.menutitle {
+    font-style: italic;
     background: #d4d0cc;
     padding: 2px 0;
     text-align: center;

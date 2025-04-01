@@ -10,19 +10,11 @@
 *       <li><a href="#">Admin Editors</a>
 *         <ul>
 *             <li><a href="/cgi-bin/usersMgr.pl">Users Admin / Postboard</a></li>
+*             <li class="menutitle">Configurations</li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF/WEBOBS.rc">WEBOBS.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_SCHEDULER">scheduler.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU">menu.rc</a></li>
-*             <li><hr></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=WELCOME_CONF">Welcome.conf</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=DATA/WEB/terms.txt">Terms.txt</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU(NAVIGATION)">Main Menu Edit</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BADMIN">+ADMIN Menu Edit</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BDUTY">+DUTY Menu Edit</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BOBSERVER">+OBSERVER Menu Edit</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BVISITOR">+VISITOR Menu Edit</a></li>
-*             <li><a href="/cgi-bin/wdir.pl?dir=HTML">Html Contents</a></li>
-*             <li><hr></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=GRIDMAPS">GRIDMAPS.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=LOCASTAT">LOCASTAT.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=UTM_LOCAL">UTM.rc</a></li>
@@ -30,11 +22,16 @@
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES">NODES.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CLB_CONF">CLB.conf</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_TELE)">TRANStypes.conf</a></li>
+*             <li class="menutitle">Menus</li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU(NAVIGATION)">Main Menu Edit</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BADMIN">+ADMIN Menu Edit</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BDUTY">+DUTY Menu Edit</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BOBSERVER">+OBSERVER Menu Edit</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BVISITOR">+VISITOR Menu Edit</a></li>
+*             <li class="menutitle">Contents</li>
+*             <li><a href="/cgi-bin/wdir.pl?dir=HTML">Html Contents</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF/events_World.conf">events_World.conf</a></li>
-			  <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumContactPersonRoles.conf">EnumContactPersonRoles.conf</a></li>
-			  <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumFundingTypes.conf">EnumFundingTypes.conf</a></li>
-              <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumInspireTheme.conf">EnumInspireTheme.conf</a></li>
-              <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumTopicCategories.conf">EnumTopicCategories.conf</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=DATA/WEB/terms.txt">Registration Terms of Use</a></li>
 *         </ul>
 *       </li>
         <li><a href="#">Gazette Editors</a>
@@ -55,10 +52,15 @@
 *           <li><a href="/cgi-bin/xedit.pl?fs=CONF/MC3_Durations.conf">MC3_Durations.conf</a></li>
 *        </ul>
 *      </li>
+*      <li><a href="#">Theia|OZCAR</a>
+*        <ul>
+*	        <li><a href="/cgi-bin/showTHEIA.pl">Theia|OZCAR pivot model</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumContactPersonRoles.conf">EnumContactPersonRoles.conf</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumFundingTypes.conf">EnumFundingTypes.conf</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumInspireTheme.conf">EnumInspireTheme.conf</a></li>
+*           <li><a href="/cgi-bin/xedit.pl?fs=CONF/EnumTopicCategories.conf">EnumTopicCategories.conf</a></li>
+*        </ul>
+*      </li> 
 *      <li><a href="../DOC/mods.html">Doc Modules</a></li>
-*      <li><hr></li>
-       <li><a href="/cgi-bin/changepassword.pl">Change your password</a></li>
-       <li><hr></li>
-       <li><a href="/cgi-bin/showTHEIA.pl">Theia|OZCAR pivot model</a></li>
    </ul>
 </li>
