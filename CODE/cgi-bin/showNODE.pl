@@ -356,7 +356,6 @@ if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
     # ----------------------------------------------
     if ($NODES{NEIGHBOUR_NODES_MAX} > 0) {
 
-        # loads all existing nodes
         my %dist;
         my %deniv;
         my %bear;
@@ -582,18 +581,7 @@ if (uc($GRIDType) eq 'PROC') {
 
 # Row "installation"
 #
-my $RinfoInstallFile = "installation.txt";
-my $infoInstallFile = "$NODES{PATH_NODES}/$NODEName/$RinfoInstallFile";
-my @infosInstallNode = ("");
-if ((-e $infoInstallFile) && (-s $infoInstallFile != 0)) {
-    @infosInstallNode = grep(!/^$/,readFile($infoInstallFile));
-}
-if ($editOK || $#infosInstallNode >=0) {
-    print "<TR><TH valign=\"top\">";
-    my $txt = $__{'Installation'};
-    print ($editOK ? "<a href=\"$cgiEtxt?file=$RinfoInstallFile&node=$GRIDType.$GRIDName.$NODEName\">$txt</a>":$txt);
-    print "</TH><TD colspan=\"2\">".wiki2html(join("",@infosInstallNode))."</TD></TR>\n";
-}
+printInfo("installation.txt","Installation",$editOK,"$GRIDType.$GRIDName.$NODEName");
 
 # Row "M3G"
 #
@@ -636,31 +624,11 @@ if ( $NODE{GNSS_9CHAR} && $NODE{M3G_AVAIABLE} ) {
 
 # Row "infos"
 #
-my $RinfoFile = "info.txt";
-my $infoFile = "$NODES{PATH_NODES}/$NODEName/$RinfoFile";
-my @txt = ("");
-if ((-e $infoFile) && (-s $infoFile != 0)) {
-    @txt = readFile("$infoFile");
-}
-if ($editOK) {
-    print "<TR><TH valign=\"top\"><a href=\"$cgiEtxt?file=$RinfoFile&node=$GRIDType.$GRIDName.$NODEName\">$__{Information}</a></TH><TD colspan=\"2\">".wiki2html(join("",@txt))."</TD></TR>\n";
-} elsif ($#txt >= 0) {
-    print "<TR><TH valign=\"top\">$__{Information}</TH><TD colspan=\"2\">".wiki2html(join("",@txt))."</TD></TR>\n";
-}
+printInfo("info.txt","Information",$editOK,"$GRIDType.$GRIDName.$NODEName");
 
 # Row "access"
 #
-my $RaccessFile="acces.txt";
-my $accessFile="$NODES{PATH_NODES}/$NODEName/$RaccessFile";
-@txt = ("");
-if ((-e $accessFile) && (-s $accessFile != 0)) {
-    @txt = readFile("$accessFile");
-}
-if ($editOK) {
-    print "<TR><TH valign=\"top\"><a href=\"$cgiEtxt?file=$RaccessFile&node=$GRIDType.$GRIDName.$NODEName\">$__{Access}</a></TH><TD colspan=\"2\">".wiki2html(join("",@txt))."</TD></TR>\n";
-} elsif ($#txt >= 0) {
-    print "<TR><TH valign=\"top\">$__{Access}</TH><TD colspan=\"2\">".wiki2html(join("",@txt))."</TD></TR>\n";
-}
+printInfo("acces.txt","Access",$editOK,"$GRIDType.$GRIDName.$NODEName");
 
 # Rows "Features"
 #
@@ -904,6 +872,28 @@ print "</div></div>";
 
 # --- we're done !!!!
 print "</FORM><BR>\n</BODY>\n</HTML>\n";
+
+###############################################################################
+# print html from info file
+# printInfo(filename,title,editOK,node)
+sub printInfo {
+    my $RinfoFile = shift;
+    my $title = shift;
+    my $editOK = shift;
+    my $node = shift;
+
+    my $infoFile = "$NODES{PATH_NODES}/$NODEName/$RinfoFile";
+    my @infos = ("");
+    if ((-e $infoFile) && (-s $infoFile != 0)) {
+        @infos = readFile($infoFile);
+    }
+    if ($editOK || $#infos >=0) {
+        print "<TR><TH valign=\"top\">";
+        my $txt = $__{$title};
+        print ($editOK ? "<a href=\"$cgiEtxt?file=$RinfoFile&node=$node\">$txt</a>":$txt);
+        print "</TH><TD colspan=\"2\">".wiki2html(join("",@infos))."</TD></TR>\n";
+    }
+}
 
 __END__
 
