@@ -139,7 +139,10 @@ print "<!-- overLIB (c) Erik Bosrup --><div id=\"overDiv\" style=\"position:abso
 
 print "<A NAME=\"MYTOP\"></A>";
 print "<TABLE width=100%><TR><TD style='border:0'>\n";
-print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME} <I>(".timescale_name($QryParm->{'ts'}).")</I></H1>\n" if ($QryParm->{'header'} ne 'no');
+if ($QryParm->{'header'} ne 'no') {
+    my $tsName = timescale_name($QryParm->{'ts'});
+    print "<H1 style=\"margin-bottom:6pt\">$GRID{NAME}".($tsName ne "" ? " <I>($tsName)</I>":"")."</H1>\n";
+}
 my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 
 # ---- build the top-of-page outputs selection banner:
