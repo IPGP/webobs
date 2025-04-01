@@ -19,7 +19,7 @@ function y = decim(x,r,method)
 %
 %	Author: François Beauducel, IPGP
 %	Created: 1996
-%	Updated: 2025-03-31
+%	Updated: 2025-04-01
 
 %	Copyright (c) 2025, François Beauducel, covered by BSD License.
 %	All rights reserved.
@@ -52,7 +52,8 @@ if nargin < 2
 end
 
 if ~isscalar(r) || r ~= abs(round(r))
-	error('R must be an positive integer scalar!')
+    r = 1;
+	warning('R must be an positive integer scalar!')
 end
 
 if nargin > 2
