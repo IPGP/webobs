@@ -34,10 +34,9 @@ table.dusers td.tdoff {
 }
 
 .dugrps-container {
-    margin: 10px auto 10px 0px;
-    padding: 10px 10px 10px 10px;
+    margin: 10px auto 10px auto;
     overflow-y: scroll;
-    height: 130px;
+    height: 200px;
     background-color: transparent;
 }
 .dugrps {
@@ -106,7 +105,7 @@ table.dnotf td.tdlock {
     margin: 10px auto 10px auto;
     padding: 10px 10px 10px 10px;
     overflow-y: scroll;
-    height: 130px;
+    height: 200px;
     background-color: transparent;
     float: left;
 }
