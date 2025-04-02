@@ -4,6 +4,6 @@ svg {
 
 svg title,
 svg text {
-    font-family: sans;
+    font-family: monospace;
     font-size: 8;
 }

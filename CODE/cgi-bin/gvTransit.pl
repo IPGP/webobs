@@ -113,32 +113,37 @@ if (scalar(@GID) == 2) {
 
 # ---- clusters draw styles
 #
-my $cluster_node   = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#DDDDDD'};
+my $cluster_node   = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'darkgray'};
 my $cluster_trans  = {style=>'filled', fillcolor=>'#8888AA',  color=>'#8888AA'};
 my $cluster_2trans = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#8888AA'};
 my $cluster_isof   = {style=>'filled', fillcolor=>'#AA8888',  color=>'#AA8888'};
-my $cluster_2isof  = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#88CC88'};
+my $cluster_2isof  = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#AA8888'};
 my $cluster_has    = {style=>'filled', fillcolor=>'#AAAA88',  color=>'#AAAA88'};
 my $cluster_2has   = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#AAAA88'};
-my $cluster_procs  = {style=>'filled', fillcolor=>'#C16E76',  color=>'#C16E76'}; # firebrick 2/3
-my $cluster_views  = {style=>'filled', fillcolor=>'#559855',  color=>'#559855'}; # darkgreen 2/3
-my $cluster_forms  = {style=>'filled', fillcolor=>'#FFB255',  color=>'#FFB255'}; # darkorange 2/3
+my $cluster_procs  = {style=>'filled', fillcolor=>'#C16E76',  color=>'firebrick'};
+my $cluster_views  = {style=>'filled', fillcolor=>'#559855',  color=>'darkgreen'};
+my $cluster_forms  = {style=>'filled', fillcolor=>'#FFB255',  color=>'darkorange'};
 
 my $legend  = "<table border=\"0\" style=\"border-collapse: separate; padding: 0 5px\">";
-$legend .= "<tr><td style=\"background-color:$cluster_node->{'color'}\">$GRIDType.$GRIDName nodes</td>";
-$legend .= "<td style=\"background-color:$cluster_trans->{'color'}\">transmission nodes</td>";
-$legend .= "<td style=\"background-color:$cluster_isof->{'color'}\">'is feature of' nodes</td>";
-$legend .= "<td style=\"background-color:$cluster_has->{'color'}\">'has feature' nodes</td>";
-$legend .= "<td style=\"background-color:$cluster_views->{'color'}\">associated views</td>";
-$legend .= "<td style=\"background-color:$cluster_procs->{'color'}\">associated procs</td>";
-$legend .= "<td style=\"background-color:$cluster_forms->{'color'}\">associated forms</td>";
+$legend .= "<tr><td style=\"background-color:$cluster_node->{'fillcolor'}\">$GRIDType.$GRIDName nodes</td>";
+$legend .= "<td style=\"background-color:$cluster_trans->{'fillcolor'}\">transmission nodes</td>";
+$legend .= "<td style=\"background-color:$cluster_isof->{'fillcolor'}\">'is feature of' nodes</td>";
+$legend .= "<td style=\"background-color:$cluster_has->{'fillcolor'}\">'has feature' nodes</td>";
+$legend .= "<td style=\"background-color:$cluster_views->{'fillcolor'}\">associated views</td>";
+$legend .= "<td style=\"background-color:$cluster_procs->{'fillcolor'}\">associated procs</td>";
+$legend .= "<td style=\"background-color:$cluster_forms->{'fillcolor'}\">associated forms</td>";
 $legend .= "</table>";
 
 # ---- build a directed graph starting from a WebObs' VIEW (aka root-VIEW)
 #
 
 my $rankdir = 'TB';
-$gv = GraphViz->new(layout => 'dot', rankdir => $rankdir, name => "$GRIDType$GRIDName", node => { height=>'.10', width=>'0.3',  fontsize=>'8', color=>'none', shape =>'plaintext'}, stylesheet => "/css/transit.css");
+$gv = GraphViz->new(
+    layout => 'dot',
+    rankdir => $rankdir,
+    name => "$GRIDType$GRIDName",
+    node => { height=>'.10', width=>'0.3',  fontsize=>'8', color=>'none', shape=>'plaintext'},
+    stylesheet => "/css/transit.css");
 
 # first tree = GRIDName -> all of its NODES (valid and active today)
 
@@ -157,9 +162,9 @@ for my $Nn (@gs) {
         # associated VIEWS from NODE's list of "transmission nodes"
         if (defined($NODE{TRANSMISSION})) {
             $NODE{TRANSMISSION} =~ s/(^[0-9][,]?)?//;
-            for (split(/\|/,$NODE{TRANSMISSION})) {
+            for (split(/[\|,]/,$NODE{TRANSMISSION})) {
                 next if ( (!defined($QryParm->{'iref'})) && $_ ~~ $GRID{NODESLIST} );
-                @tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/VIEW.*.$_ 2>/dev/null);
+                @tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/*.*.$_ 2>/dev/null);
                 for (@tl) {s/$WEBOBS{PATH_GRIDS2NODES}\/(.*)\..*$/$1/g;}
                 chomp(@tl);
                 tree($Nn, \$cluster_trans, \@tl, \$cluster_2trans, $_);
@@ -167,29 +172,29 @@ for my $Nn (@gs) {
         }
 
         # associated VIEWS from NODE's list from nodes2nodes.rc with NODE as RHS
-        for (qx(grep ".*\|.*\|$Nn" $WEBOBS{ROOT_CONF}/nodes2nodes.rc)) {
+        for (qx(grep ".*\|.*\|$Nn" $NODES{FILE_NODES2NODES})) {
             chomp($_);
             my($n1,$junk) = split(/\|/,$_);
             next if ( (!defined($QryParm->{'iref'})) && $n1 ~~ $GRID{NODESLIST} );
-            @tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/VIEW.*.$n1 2>/dev/null);
+            @tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/*.*.$n1 2>/dev/null);
             for (@tl) {s/$WEBOBS{PATH_GRIDS2NODES}\/(.*)\..*$/$1/g;}
             chomp(@tl);
             tree($Nn, \$cluster_isof, \@tl, \$cluster_2isof, $n1);
         }
 
         # associated VIEWS from NODE's list from nodes2nodes.rc with NODE as LHS
-        for (qx(grep "$Nn\|.*\|.*" $WEBOBS{ROOT_CONF}/nodes2nodes.rc)) {
+        for (qx(grep "$Nn\|.*\|.*" $NODES{FILE_NODES2NODES})) {
             chomp($_);
             my($junka,$junkb,$n1) = split(/\|/,$_);
             $n1 =~ s/^(.*)[\n\t\r]$/$1/g;
             next if ( (!defined($QryParm->{'iref'})) && $n1 ~~ $GRID{NODESLIST} );
-            @tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/VIEW.*.$n1 2>/dev/null);
+            @tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/*.*.$n1 2>/dev/null);
             for (@tl) {s/$WEBOBS{PATH_GRIDS2NODES}\/(.*)\..*$/$1/g;}
             chomp(@tl);
             tree($Nn, \$cluster_has, \@tl, \$cluster_2has, $n1);
         }
 
-# associated PROCS and VIEWS from NODE's configuration lists of PROCS and VIEWS
+# associated GRIDS from NODE's configuration lists of PROCS/VIEWS/FORMS
 # these ones rely on PROC| and VIEW| variables in NODE's conf: might not be defined
 #@tl = grep {s/(.*)/PROC.$1/ && $_ ne "$GRIDType.$GRIDName"} split(/,/,$NODE{PROC});
 #tree($Nn, \$cluster_procs, \@tl) if (scalar(@tl) > 0);
