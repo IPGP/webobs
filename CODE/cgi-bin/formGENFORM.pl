@@ -618,7 +618,7 @@ print qq[</td>
 ];
 
 # Add mandatory site input
-print qq(<B>Site: </B>
+print qq(<B>$__{'Site'}: </B>
       <select name="site" size="1"
         onMouseOut="nd()"onmouseover="overlib('$__{'Select a node for this record'}')">
       <option value=""></option>);
@@ -646,7 +646,7 @@ print qq(<table><tr><td style="border:0"><B>$__{'Operator(s)'}:</B> </td><td sty
             <select name="operators" size="5" multiple="multiple"
                 onMouseOut="nd()" onmouseover="overlib('$__{'Select operator(s)'}')">);
 my @uid = @operators; # $client if 'new', or @operators if 'edit'
-foreach my $op (split(/,/, $FORM{OPERATORS_LIST})) {
+foreach my $op (split(/[, ]/, $FORM{OPERATORS_LIST})) {
     if ($op =~ /^+/) {
         foreach my $u (WebObs::Users::groupListUser("$op")) {
             push(@uid, $u) if (!grep(/^$u$/, @uid));

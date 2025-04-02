@@ -4,7 +4,7 @@
 #
 # Author: François Beauducel
 # Created: 2024-04-21
-# Updated: 2025-03-10
+# Updated: 2025-04-02
 
 
 if [ -z "$1" ]; then
@@ -30,7 +30,7 @@ function cmd {
 # -----------------------------------------------------------------------------
 if [[ $(id -u) != 0 && $DRY_RUN != 1  ]]; then
 	echo 'Need to have root privileges. Bye'
-	exit 64
+	#exit 64
 fi
 
 today=$(date)
@@ -185,7 +185,7 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO; do
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
-                    for (i=5;i<n+5;i++) printf ",\""$i"\""; \
+                    for (i=7;i<n+7;i++) printf ",\""$i"\""; \
                     print ");" }}' >> $TMP 
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -216,7 +216,7 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO; do
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
-                    for (i=5;i<n+5;i++) printf ",\""$i"\""; \
+                    for (i=7;i<n+7;i++) printf ",\""$i"\""; \
                     print ");" }}' >> $TMP 
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -308,6 +308,7 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO; do
                     printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
+                    gsub(/\+/, ",", $5);
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
@@ -345,6 +346,7 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO; do
                     printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
+                    gsub(/\+/, ",", $5);
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
