@@ -434,14 +434,10 @@ for my $row (@$db_rows) {
     $Sdgrps .= <<_EOD_;
 <tr id="$SdgrpsId">
     <td style="width:12px" class="tdlock">
-        <a href="#IDENT" onclick="openPopupGroup('#$SdgrpsId');return false">
-            <img title="edit group" src="/icons/modif.png">
-        </a>
+        <a href="#IDENT" onclick="openPopupGroup('#$SdgrpsId');return false"><img title="edit group" src="/icons/modif.png"></a>
     </td>
     <td style="width:12px" class="tdlock">
-        <a href="#IDENT" onclick="postDeleteUGroup('#$SdgrpsId');return false">
-            <img title="delete group" src="/icons/no.png">
-        </a>
+        <a href="#IDENT" onclick="postDeleteUGroup('#$SdgrpsId');return false"><img title="delete group" src="/icons/no.png"></a>
     </td>
     <td class="group-gid">$Sdgrps_gid</td>
     <td class="group-uids">$Sdgrps_uids</td>
@@ -467,9 +463,7 @@ for my $row (@$db_rows) {
     $dunotf .= <<_EOD_;
 <tr id="$dunotfId">
     <td style="width:12px" class="tdlock">
-        <a href="#POSTBOARD" onclick="postDeleteUNotf('#$dunotfId');return false">
-            <img title="delete group" src="/icons/no.png">
-        </a>
+        <a href="#POSTBOARD" onclick="postDeleteUNotf('#$dunotfId');return false"><img title="delete group" src="/icons/no.png"></a>
     </td>
     <td class="tdlock unotif-event">$event</td>
 </tr>
@@ -495,14 +489,10 @@ for my $row (@$db_rows) {
     $dnotf .= <<_EOD_;
 <tr id="$dnotfId">
     <td style="width:12px" class="tdlock">
-        <a href="#POSTBOARD" onclick="openPopupNotf('#$dnotfId');return false">
-            <img title="edit notification" src="/icons/modif.png">
-        </a>
+        <a href="#POSTBOARD" onclick="openPopupNotf('#$dnotfId');return false"><img title="edit notification" src="/icons/modif.png"></a>
     </td>
     <td style="width:12px" class="tdlock">
-        <a href="#POSTBOARD" onclick="postDeleteNotf('#$dnotfId');return false">
-            <img title="delete notification" src="/icons/no.png">
-        </a>
+        <a href="#POSTBOARD" onclick="postDeleteNotf('#$dnotfId');return false"><img title="delete notification" src="/icons/no.png"></a>
     </td>
     <td class="notif-event">$dnotf_event</td>
     <td class="notif-validity">$dnotf_valid</td>
@@ -754,7 +744,7 @@ PostBoard subscriptions&nbsp;$go2top
                 <table class="dnotf">
                 <thead><tr><th style=\"width:12px\"><a href="#POSTBOARD" onclick="openPopupNotf();return false"><img title="define new notification" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
-                <th>Event<th>V<th>Uid<th>Mail Subject<th>Mail Attachm.<th>Action
+                <th>Notification<th>V<th>Uid<th>Mail Subject<th>Mail Attachm.<th>Action
                 </tr></thead>
                 <tbody>
                 $dnotf
