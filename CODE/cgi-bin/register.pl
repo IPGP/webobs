@@ -216,7 +216,7 @@ if ($action eq "reg") {
         "register.warning|$$|received request from $fullname ($login)");
     if ($rcn != 0 ) {
         send_ajax_content("Your request has been correctly registered and waits for "
-            ."validation by an administrator.")
+            ."validation by an administrator.");
         print STDERR "register.pl: postboard notify error: rc=$rcn\n";
         exit;
     }
