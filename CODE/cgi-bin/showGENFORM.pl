@@ -311,11 +311,7 @@ foreach my $i (sort keys %lists) {
         print "<OPTION value=\"\"></OPTION>\n";
         my $nam;
         foreach (sort @key) {
-            if (ref $lists{$i}{$_}) {
-                $nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$_);
-            } else {
-                $nam = ($lists{$i}{$_} ? $lists{$i}{$_}:$_);
-            }
+            $nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$lists{$i}{$_}{value});
             my $sel = ($QryParm->{$i} eq $_ ? "selected":"");
             print "<OPTION value=\"$_\" $sel>$_: $nam</OPTION>\n";
         }
@@ -486,15 +482,13 @@ for (my $j = 0; $j <= $#rows; $j++) {
             # --- input type = list
             if (defined $lists{$field}) {
                 if (ref $lists{$field}{$fields{$field}}) {
-                    my %v = %{$lists{$field}{$fields{$field}}}; # list is a HoH
-                    $hlp = "<B>$fields{$field}</B>: $v{name}";
-                    if ($v{icon}) {
-                        $val = "<IMG src=\"$v{icon}\">";
-                    }
+                    my %v = %{$lists{$field}{$fields{$field}}}; # list is always a HoH
+                    $hlp = "<B>$fields{$field}</B>: ".($v{name} ? $v{name}:$v{value});
+                    $val = $v{name} if ($v{name});
+                    $val = "<IMG src=\"$v{icon}\">" if ($v{icon});
                 } else {
-                    $hlp = "<B>$fields{$field}</B>: $lists{$field}{$fields{$field}}";
+                    $hlp = "<I>$__{'unknown key list!'}</I>" if ($val ne "");
                 }
-                $hlp = "<I>$__{'unknown key list!'}</I>" if ($val eq "");
                 $opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$hlp')\"";
             }
             # --- input type = formula
@@ -579,11 +573,7 @@ foreach my $i (sort keys %lists) {
     my @kv;
     my $nam;
     foreach (sort @key) {
-        if (ref $lists{$i}{$_}) {
-            $nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$_);
-        } else {
-            $nam = ($lists{$i}{$_} ? $lists{$i}{$_}:$_);
-        }
+        $nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$lists{$i}{$_}{value});
         push(@kv, "<B>$_</B> = $nam");
     }
     $listoflist .= "<LI><I>".$FORM{uc($i)."_NAME"}.":</I> ".join(", ", @kv)."</LI>\n";
