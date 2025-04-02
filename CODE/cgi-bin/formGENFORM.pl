@@ -118,7 +118,8 @@ my $return_url = $cgi->param('return_url');
 my @operators  = $cgi->param('operators');
 my $debug  = $cgi->param('debug');
 
-my ($sdate, $sdate_min) = datetime2maxmin($year[0],$month[0],$day[0],$hr[0],$mn[0]);
+my ($edate, $edate_min) = datetime2maxmin($year[0],$month[0],$day[0],$hr[0],$mn[0]);
+my ($sdate, $sdate_min) = ("","");
 my $stamp = "[$today $user]";
 if (index($val,$stamp) eq -1) { $val = "$stamp $val"; };
 
@@ -158,9 +159,9 @@ my $LL_DEFAULT_HEIGHT = $GRIDS{GENFORM_SHAPE_DEFAULT_HEIGHT} || 300;
 my $starting_date   = isok($FORM{STARTING_DATE});
 
 # ---- if STARTING_DATE eq "yes"
-my $edate = $sdate;
-my $edate_min = $sdate_min;
 if ($starting_date) {
+    $sdate = $edate;
+    $sdate_min = $edate_min;
     ($edate, $edate_min) = datetime2maxmin($year[1],$month[1],$day[1],$hr[1],$mn[1]);
 }
 
@@ -423,8 +424,8 @@ function verif_form()
 
 function submit()
 {
-    \$.post("]. $form_url . qq[", \$("#theform").serialize(), function(data) {
-            alert(data);
+    \$.post("]. $form_url . qq[", \$("#theform").serialize(), function(data) {\n]
+            .(isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL})? "alert(data);":""). qq[
             // Redirect the user to the form display page while keeping the previous filter
             document.location="] . $cgi->param('return_url') . qq[";
         }
@@ -632,11 +633,11 @@ print qq(</select><BR>);
 # Add mandatory date input
 my @sdate = ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1);
 my @edate = ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2);
-datetime_input($form, "", \@sdate, \@edate);
-
 if ($starting_date) {
-   print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
+    datetime_input($form, "", \@sdate, \@edate);
+    print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
 } else {
+    datetime_input($form, "", \@edate);
     print qq(<input type="hidden" name="duration">);
 }
 
@@ -824,8 +825,8 @@ print qq(</TD>
 # --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
     print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-    my $msg = $_[0];
-    print "$msg\n";
+    print "$_[0]\n";
+    exit;
 }
 
 # --- return information when not OK
@@ -849,11 +850,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Lucas Dassin, François Beauducel
+Lucas Dassin, François Beauducel, Jérôme Touvier
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
