@@ -221,20 +221,11 @@ print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <link rel="stylesheet" type="text/css" href="/css/transit.css">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
-<!--
-<script language="JavaScript" src="/js/jquery-svgpan.js" type="text/javascript"></script>
-<script language="JavaScript">
-\$(document).ready(function() {
-    \$('svg').svgPan('graph1');
-});
-</script>
---> 
 </head>
 <body>
 <!-- overLIB (c) Erik Bosrup -->
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <script language="JavaScript" src="/js/overlib/overlib.js" type="text/javascript"></script>
-<!-- script language="JavaScript" src="/js/transit.js" type="text/javascript"></script> -->
 FIN
 if (defined($QryParm->{'iref'})) { print "iref set" }
 
