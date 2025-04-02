@@ -99,6 +99,7 @@ if (scalar(@GID) == 2) {
     ($GRIDType, $GRIDName) = @GID;
     if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
     elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+    elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
     if (%G) {
         %GRID = %{$G{$GRIDName}} ;
         if ( ! WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
@@ -115,20 +116,22 @@ if (scalar(@GID) == 2) {
 my $cluster_node   = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#DDDDDD'};
 my $cluster_trans  = {style=>'filled', fillcolor=>'#8888AA',  color=>'#8888AA'};
 my $cluster_2trans = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#8888AA'};
-my $cluster_isof   = {style=>'filled', fillcolor=>'#88CC88',  color=>'#88CC88'};
+my $cluster_isof   = {style=>'filled', fillcolor=>'#AA8888',  color=>'#AA8888'};
 my $cluster_2isof  = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#88CC88'};
 my $cluster_has    = {style=>'filled', fillcolor=>'#AAAA88',  color=>'#AAAA88'};
 my $cluster_2has   = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#AAAA88'};
-my $cluster_procs  = {style=>'filled', fillcolor=>'#CC8888',  color=>'#CC8888'};
-my $cluster_views  = {style=>'filled', fillcolor=>'#CCBB88',  color=>'#CCBB88'};
+my $cluster_procs  = {style=>'filled', fillcolor=>'#C16E76',  color=>'#C16E76'}; # firebrick 2/3
+my $cluster_views  = {style=>'filled', fillcolor=>'#559855',  color=>'#559855'}; # darkgreen 2/3
+my $cluster_forms  = {style=>'filled', fillcolor=>'#FFB255',  color=>'#FFB255'}; # darkorange 2/3
 
 my $legend  = "<table border=\"0\" style=\"border-collapse: separate; padding: 0 5px\">";
 $legend .= "<tr><td style=\"background-color:$cluster_node->{'color'}\">$GRIDType.$GRIDName nodes</td>";
 $legend .= "<td style=\"background-color:$cluster_trans->{'color'}\">transmission nodes</td>";
 $legend .= "<td style=\"background-color:$cluster_isof->{'color'}\">'is feature of' nodes</td>";
 $legend .= "<td style=\"background-color:$cluster_has->{'color'}\">'has feature' nodes</td>";
-$legend .= "<td style=\"background-color:$cluster_procs->{'color'}\">associated procs</td>";
 $legend .= "<td style=\"background-color:$cluster_views->{'color'}\">associated views</td>";
+$legend .= "<td style=\"background-color:$cluster_procs->{'color'}\">associated procs</td>";
+$legend .= "<td style=\"background-color:$cluster_forms->{'color'}\">associated forms</td>";
 $legend .= "</table>";
 
 # ---- build a directed graph starting from a WebObs' VIEW (aka root-VIEW)
@@ -202,6 +205,9 @@ for my $Nn (@gs) {
         %HoA = listNodeGrids(node=>$Nn,type=>'VIEW');
         @tl = grep { $_ ne "$GRIDType.$GRIDName"} @{$HoA{$Nn}};
         tree($Nn, \$cluster_views, \@tl) if (scalar(@tl) > 0);
+        %HoA = listNodeGrids(node=>$Nn,type=>'FORM');
+        @tl = grep { $_ ne "$GRIDType.$GRIDName"} @{$HoA{$Nn}};
+        tree($Nn, \$cluster_forms, \@tl) if (scalar(@tl) > 0);
     }
 }
 $svg = $gv->as_svg;
@@ -217,7 +223,7 @@ print <<"FIN";
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
-<title>Affichage de VIEW</title>
+<title>GRID diagram</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <link rel="stylesheet" type="text/css" href="/css/transit.css">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>

@@ -210,7 +210,7 @@ msgid "First year of data:"
 msgstr "Première année des données :"
 
 msgid "Form structure:"
-msgstr "Structure du form :"
+msgstr "Structure du Form :"
 
 msgid "inputs"
 msgstr "entrées"
@@ -1291,9 +1291,6 @@ msgid "end of signal"
 msgstr "fin du signal"
 
 
-# formulaireCREATION_STATION.pl
-
-
 # --- formCLB.pl
 
 msgid "help_clb_date"
@@ -1362,21 +1359,8 @@ msgstr "Catégorie du thésaurus THEIA correspondant à la variable du channel (
 msgid "help_clb_theia"
 msgstr "Cliquez sur le lien pour sélectionner et copiez/collez la catégorie Theia"
 
-# --- formulaireHEBDO.pl
 
-msgid "help_hebdo_select_nodate"
-msgstr "Tick to create entry without date"
-
-msgid "help_hebdo_select_type"
-msgstr "Select event TYPE"
-
-msgid "help_hebdo_select_names"
-msgstr "Select the names of those involved (Hold CTRL to select multiple names)"
-
-msgid "help_hebdo_select_external"
-msgstr "Enter names of EXTERNAL people"
-
-# --- gazette
+# --- Gazette
 
 msgid "gzt_fmt_long_date"
 msgstr "%A %-d %B %Y <i>(jour %j, sem %V)</i>"
@@ -1609,7 +1593,7 @@ msgstr "Logs détaillés"
 msgid "Requests results"
 msgstr "Résultats de requêtes"
 
-msgid "Request Forms:"
+msgid "Request forms:"
 msgstr "Formulaires de requêtes :"
 
 msgid "Date & Time"
@@ -2070,8 +2054,8 @@ msgstr "Formules"
 msgid "Download a CSV text file of these data"
 msgstr "Télécharger ces données au format CSV"
 
-msgid "Include associated form data (files, images,...)"
-msgstr "Inclure les données associées au FORM (fichiers, images, ...)"
+msgid "Include associated Form data (files, images,...)"
+msgstr "Inclure les données associées au Form (fichiers, images, ...)"
 
 msgid "Include attached data files"
 msgstr "Inclure les fichiers attachés"
@@ -2122,11 +2106,3 @@ msgstr "Entrer une valeur pour"
 
 msgid "Record timestamp:"
 msgstr "Horodatage de l'enregistrement :"
-
-# ---- fedit.pl
-
-msgid "Delete this form"
-msgstr "Supprimer ce form"
-
-msgid "The FORM will be deleted. Are you sure?"
-msgstr "Le FORM sera supprimé. Etes-vous sur ?"
