@@ -233,7 +233,9 @@ function postIt()
 {
     \$.post(\"/cgi-bin/postREQ.pl\", \$(\"#theform\").serialize(), function(data) {
         alert(data);
-        location.href = \"/cgi-bin/showREQ.pl\";
+        if (!document.form.replay.checked) {
+            location.href = \"/cgi-bin/showREQ.pl\";
+        }
     });
 }
 function preSet()
@@ -457,8 +459,9 @@ print "</TD>\n";                                             # end right column
 
 print "</TR></TABLE>\n";
 print "<P align=center>";
-print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-print "<input type=\"button\" value=\"$__{'Submit'}\" onClick=\"checkForm();\" style=\"font-weight:bold\">";
+print "<INPUT type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">\n";
+print "<INPUT type=\"button\" value=\"$__{'Submit'}\" onClick=\"checkForm();\" style=\"font-weight:bold\">\n";
+print "<INPUT type=\"checkbox\" name=\"replay\">&nbsp;$__{'Continue with this window'} (Replay!)\n";
 print "<input type=\"hidden\" id=\"origin\" name=\"origin\" value=\"\">";
 print "</P>";
 
