@@ -383,7 +383,7 @@ sub eventsShow {
             $EVTedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$relevt&action=upd\"><img src=\"/icons/modif.png\" title=\"$__{'Edit...'}\" border=0 alt=\"$__{'Edit...'}\"></a>";
             $EVTedit .= "<img src=\"/icons/no.png\" onclick=\"delEvent('/cgi-bin/vedit.pl','$objectname','$relevt')\" style=\"cursor:pointer\" title=\"$__{'Remove...'}\" border=0 alt=\"$__{'Remove...'}\"></a>";
             $EVTedit .= "&nbsp;<a href=\"$WEBOBS{CGI_UPLOAD}?object=$objectname&doc=SPATH_INTERVENTIONS&event=$relextevt\"><img src=\"/icons/camera.png\" title=\"$__{'Manage Photos'}\" border=0 alt=\"$__{'Manage Photos'}\"></a>";
-            $EVTedit .= "&nbsp;<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$relextevt&action=new\"><img src=\"/icons/plus.gif\" title=\"$__{'Add a sub event...'}\" border=0 alt=\"$__{'Add a sub event...'}\"></a>";
+            $EVTedit .= "&nbsp;<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$relextevt&action=new\"><img src=\"/icons/new.png\" title=\"$__{'Add a sub event...'}\" border=0 alt=\"$__{'Add a sub event...'}\"></a>";
         }
 
         # indent this event in "events" list

@@ -194,6 +194,18 @@ function selProc(proc) {
     //all inputs of a proc must start as  display:none AND disabled
     \$(obj).toggle();
     \$(obj).find('input').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
+    obj = \"#pokeysdrawer\"+proc;
+    \$(obj).find('input').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
+    \$(obj).toggle(false);
+}
+
+function selOtherKeys(proc) {
+    obj = \"#pokeysdrawer\"+proc;
+    \$(obj).toggle();
+    obj = \"#plus\"+proc;
+    \$(obj).toggle();
+    obj = \"#minus\"+proc;
+    \$(obj).toggle();
 }
 
 function checkForm()
@@ -464,13 +476,20 @@ sub pkeys {
         my $div = "<div id='pkeysdrawer$pn' class='pkeysdrawer' style='display: none'>";
         my @pk;
         push(@pk, uniq map { s/^\s+|\s+$//g; $_ } split(/,/,$PP->{$pn}{REQUEST_KEYLIST})) if (defined($PP->{$pn}{REQUEST_KEYLIST}));
+        push(@pk, "");
         foreach my $k (sort keys %{$PP->{$pn}}) {
             push(@pk,$k) if (! grep(/^$k$/,@pk) && ! grep(/^$k$/,@REQEXCL));
         }
         foreach (@pk) {
             my $v = (defined($PP->{$pn}{$_})?$PP->{$pn}{$_}:"");
-            $div .= "<label for='PROC.$pn.$_'>$_:</label>";
-            $div .= "<input disabled id='PROC.$pn.$_' name='PROC.$pn.$_' maxlength='200' size='40' value='".htmlspecialchars($v)."'><br>";
+            if ($_ eq "") {
+                $div .= "<label><img id='plus$pn' src=\"/icons/plus.gif\" title=\"$__{'show optional keys'}\" onclick=\"selOtherKeys('$pn')\">"
+                     ."<img id='minus$pn' style='display: none' src=\"/icons/minus.gif\" title=\"$__{'hide optional keys'}\" onclick=\"selOtherKeys('$pn')\"></label><br></div>"
+                     ."<div id='pokeysdrawer$pn' class='pkeysdrawer' style='display: none'>";
+            } else {
+                $div .= "<label for='PROC.$pn.$_'>$_:</label>";
+                $div .= "<input disabled id='PROC.$pn' name='PROC.$pn.$_' maxlength='200' size='40' value='".htmlspecialchars($v)."'><br>";
+            }
         }
         $div .= "</div>";
         return $div;
