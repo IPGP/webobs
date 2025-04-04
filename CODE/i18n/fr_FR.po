@@ -1531,6 +1531,12 @@ msgstr "Requête de PROCS"
 msgid "Available PROCS"
 msgstr "PROCS disponibles"
 
+msgid "Show additional keys"
+msgstr "Afficher les paramètres additionnels"
+
+msgid "Hide additional keys"
+msgstr "Masquer les paramètres additionnels"
+
 msgid "Date and time span (UT)"
 msgstr "Intervalle de date et heure (TU)"
 

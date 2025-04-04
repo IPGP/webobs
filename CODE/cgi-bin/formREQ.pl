@@ -483,11 +483,11 @@ sub pkeys {
         foreach (@pk) {
             my $v = (defined($PP->{$pn}{$_})?$PP->{$pn}{$_}:"");
             if ($_ eq "") {
-                $div .= "<label><img id='plus$pn' src=\"/icons/plus.gif\" title=\"$__{'show optional keys'}\" onclick=\"selOtherKeys('$pn')\">"
-                     ."<img id='minus$pn' style='display: none' src=\"/icons/minus.gif\" title=\"$__{'hide optional keys'}\" onclick=\"selOtherKeys('$pn')\"></label><br></div>"
+                $div .= "<label><img id='plus$pn' src=\"/icons/plus.gif\" title=\"$__{'Show additional keys'}\" onclick=\"selOtherKeys('$pn')\">"
+                     ."<img id='minus$pn' style='display: none' src=\"/icons/minus.gif\" title=\"$__{'Hide additional keys'}\" onclick=\"selOtherKeys('$pn')\"></label><br></div>"
                      ."<div id='pokeysdrawer$pn' class='pkeysdrawer' style='display: none'>";
             } else {
-                $div .= "<label for='PROC.$pn.$_'>$_:</label>";
+                $div .= "<label for='PROC.$pn.$_'>$_</label>";
                 $div .= "<input disabled id='PROC.$pn' name='PROC.$pn.$_' maxlength='200' size='40' value='".htmlspecialchars($v)."'><br>";
             }
         }
@@ -507,7 +507,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2024 - Institut de Physique du Globe Paris
+Webobs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
