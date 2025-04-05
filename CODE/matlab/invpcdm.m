@@ -28,7 +28,7 @@ function M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt,PCDM)
 %
 %	Authors: Antoine Villié and François Beauducel
 %	Created: 2018-07-11 in Yogyakarta (Indonesia)
-%	Updated: 2021-08-31
+%	Updated: 2025-04-05
 
 if all(length(PCDM.random_sampling) ~= [1,PCDM.iterations])
 	error('MODELLING_PCDM_RANDOM_SAMPLING must be scalar or vector of MODELLING_PCDM_ITERATIONS length.')
@@ -123,7 +123,7 @@ for m = 1:opt.multi
 	%ws = median(d0(mm>minmax(mm(:),.99)));	% median distance of the 1% best models
 	ws = 2*median(d0(mm >= (1 - opt.msigp)*max(mm(:))));	% distance of the best models (msig)
 
-	M(m).mm = mm/m; % divides mm by m to reduce importance of secondary source
+	M(m).mm = mm;
 	M(m).vv = vv;
 	M(m).m0 = m0;
 	M(m).ux = ux;
@@ -154,7 +154,14 @@ for m = 1:opt.multi
 		d(:,3) = d(:,3) - uz;
 	end
 	if m > 1 && M(m).m0 > M(m-1).m0
+        M(m).mm(:) = 0;
+        M(m).ux(:) = 0;
+        M(m).uy(:) = 0;
+        M(m).uz(:) = 0;
+        M(m).pbest = nan(1,9);
 		fprintf('*** WARNING: Source #%d increases global misfit... solution rejected.\n',m)
+    else
+        M(m).mm = M(m).mm/m; % divides mm by m to reduce importance of secondary source (graphically)
 	end
 end
 
