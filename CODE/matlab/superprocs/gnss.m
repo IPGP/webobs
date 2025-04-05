@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2025-03-31
+%   Updated: 2025-04-05
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -1340,43 +1340,23 @@ for r = 1:numel(P.GTABLE)
 		case 'pcdm'
 			summary = 'MODELLING_pCDM';
 			M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,PCDM);
-			if numel(M) > 1 && M(end).m0 < M(1).m0
-				[mm,imm] = max(cat(4,M.mm),[],4);
-				% volume for maximum probability
-				vv = M(1).vv;
-				for m = 2:numel(M)
-					vv(imm==m)=M(m).vv(imm==m);
-				end
-				m0 = cat(1,M.m0);
-				ux = sum(cat(2,M.ux),2);
-				uy = sum(cat(2,M.uy),2);
-				uz = sum(cat(2,M.uz),2);
-				ex = cat(1,M.ex);
-				ey = cat(1,M.ey);
-				ez = cat(1,M.ez);
-				ws = cat(1,M.ws);
-				ev = cat(1,M.ev)*1e6;
-				pbest = cat(1,M.pbest);
-				vv0 = pbest(:,7)*1e6; % best dV in m3
-			else
-				M = M(1);
-				mm = M.mm;
-				vv = M.vv;
-				m0 = M.m0;
-				ux = M.ux;
-				uy = M.uy;
-				uz = M.uz;
-				ex = M.ex;
-				ey = M.ey;
-				ez = M.ez;
-				ws = M.ws;
-				ev = M.ev*1e6;
-				pbest = M.pbest;
-				vv0 = pbest(7)*1e6; % best dV in m3
-				if isnan(m0)
-					pbest = nan(size(pbest));
-				end
-			end
+            [mm,imm] = max(cat(4,M.mm),[],4);
+            % volume for maximum probability
+            vv = M(1).vv;
+            for m = 2:numel(M)
+                vv(imm==m)=M(m).vv(imm==m);
+            end
+            m0 = cat(1,M.m0);
+            ux = sum(cat(2,M.ux),2);
+            uy = sum(cat(2,M.uy),2);
+            uz = sum(cat(2,M.uz),2);
+            ex = cat(1,M.ex);
+            ey = cat(1,M.ey);
+            ez = cat(1,M.ez);
+            ws = cat(1,M.ws);
+            ev = cat(1,M.ev)*1e6;
+            pbest = cat(1,M.pbest);
+            vv0 = pbest(:,7)*1e6; % best dV in m3
 			if numel(PCDM.random_sampling) == 1
 				nmodels = PCDM.random_sampling*PCDM.iterations;
 			else
@@ -1386,40 +1366,23 @@ for r = 1:numel(P.GTABLE)
 		otherwise
 			summary = 'MODELLING';
 			M = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
-			if numel(M) > 1 && M(end).m0 < M(1).m0
-				[mm,imm] = max(cat(4,M.mm),[],4);
-				% volume for maximum probability
-				vv = M(1).vv;
-				for m = 2:numel(M)
-					vv(imm==m)=M(m).vv(imm==m);
-				end
-				m0 = cat(1,M.m0);
-				ux = sum(cat(2,M.ux),2);
-				uy = sum(cat(2,M.uy),2);
-				uz = sum(cat(2,M.uz),2);
-				ex = cat(1,M.ex);
-				ey = cat(1,M.ey);
-				ez = cat(1,M.ez);
-				ws = cat(1,M.ws);
-				ev = cat(1,M.ev)*1e6;
-				pbest = cat(1,M.pbest);
-				vv0 = pbest(:,4)*1e6; % best dV in m3
-			else
-				M = M(1);
-				mm = M.mm;
-				vv = M.vv;
-				m0 = M.m0;
-				ux = M.ux;
-				uy = M.uy;
-				uz = M.uz;
-				ex = M.ex;
-				ey = M.ey;
-				ez = M.ez;
-				ws = M.ws;
-				ev = M.ev*1e6;
-				pbest = M.pbest;
-				vv0 = pbest(4)*1e6; % best dV in m3
-			end
+            [mm,imm] = max(cat(4,M.mm),[],4);
+            % volume for maximum probability
+            vv = M(1).vv;
+            for m = 2:numel(M)
+                vv(imm==m)=M(m).vv(imm==m);
+            end
+            m0 = cat(1,M.m0);
+            ux = sum(cat(2,M.ux),2);
+            uy = sum(cat(2,M.uy),2);
+            uz = sum(cat(2,M.uz),2);
+            ex = cat(1,M.ex);
+            ey = cat(1,M.ey);
+            ez = cat(1,M.ez);
+            ws = cat(1,M.ws);
+            ev = cat(1,M.ev)*1e6;
+            pbest = cat(1,M.pbest);
+            vv0 = pbest(:,4)*1e6; % best dV in m3
 			[lats,lons] = utm2ll(e0+pbest(:,1),n0+pbest(:,2),z0);
 			nmodels = numel(mm);
 		end
@@ -1726,26 +1689,30 @@ for r = 1:numel(P.GTABLE)
 					'misfit (mm)'};
 				for m = 1:numel(M)
 					bstab{1,m+1} = sprintf('Source #%d',m);
-					bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
-					bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
-					if plotbest
-						bstab{4,m+1} = sprintf('{\\bf%g \\pm %g}', ...
-							roundsd(-pbest(m,3)/1e3,2),roundsd(abs(diff(ez(m,:)))/2e3,1));
-						bstab{5,m+1} = sprintf('{\\bf%+g \\pm %g}', ...
-							roundsd(vv0(m)/vfactor,2),roundsd(abs(diff(ev(m,:)))/2/vfactor,1));
-						bstab{6,m+1} = sprintf('%+g \\pm %g',roundsd(vv0(m)/diff(tlim)/86400,2), ...
-							roundsd(abs(diff(ev(m,:)))/2/diff(tlim)/86400,1));
-					else
-						bstab{4,m+1} = sprintf('{\\bf%g} to {\\bf%g}',roundsd(minmax(-(pbest(m,3)+ez(m,:))/1e3),2));
-						bstab{5,m+1} = sprintf('{\\bf%+g} to {\\bf%+g}',roundsd(minmax(ev(m,:)/vfactor),2));
-						bstab{6,m+1} = sprintf('%+g to %+g',roundsd(minmax(ev(m,:)/diff(tlim)/86400),2));
-					end
-					bstab{7,m+1} = sprintf('{\\bf%1.2f}',pbest(m,8));
-					bstab{8,m+1} = sprintf('{\\bf%1.2f}',pbest(m,9));
-					bstab{9,m+1} = sprintf('{\\bf%s}',pcdmdesc(pbest(m,8),pbest(m,9)));
-					bstab{10,m+1} = sprintf('{\\bf%+2.0f\\circ}',pbest(m,4));
-					bstab{11,m+1} = sprintf('{\\bf%+2.0f\\circ}',pbest(m,5));
-					bstab{12,m+1} = sprintf('{\\bf%+2.0f\\circ}',pbest(m,6));
+                    if ~all(isnan(pbest(m,:)))
+                        bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
+                        bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
+                        if plotbest
+                            bstab{4,m+1} = sprintf('{\\bf%g \\pm %g}', ...
+                                roundsd(-pbest(m,3)/1e3,2),roundsd(abs(diff(ez(m,:)))/2e3,1));
+                            bstab{5,m+1} = sprintf('{\\bf%+g \\pm %g}', ...
+                                roundsd(vv0(m)/vfactor,2),roundsd(abs(diff(ev(m,:)))/2/vfactor,1));
+                            bstab{6,m+1} = sprintf('%+g \\pm %g',roundsd(vv0(m)/diff(tlim)/86400,2), ...
+                                roundsd(abs(diff(ev(m,:)))/2/diff(tlim)/86400,1));
+                        else
+                            bstab{4,m+1} = sprintf('{\\bf%g} to {\\bf%g}',roundsd(minmax(-(pbest(m,3)+ez(m,:))/1e3),2));
+                            bstab{5,m+1} = sprintf('{\\bf%+g} to {\\bf%+g}',roundsd(minmax(ev(m,:)/vfactor),2));
+                            bstab{6,m+1} = sprintf('%+g to %+g',roundsd(minmax(ev(m,:)/diff(tlim)/86400),2));
+                        end
+                        bstab{7,m+1} = sprintf('{\\bf%1.2f}',pbest(m,8));
+                        bstab{8,m+1} = sprintf('{\\bf%1.2f}',pbest(m,9));
+                        bstab{9,m+1} = sprintf('{\\bf%s}',pcdmdesc(pbest(m,8),pbest(m,9)));
+                        bstab{10,m+1} = sprintf('{\\bf%+2.0f\\circ}',pbest(m,4));
+                        bstab{11,m+1} = sprintf('{\\bf%+2.0f\\circ}',pbest(m,5));
+                        bstab{12,m+1} = sprintf('{\\bf%+2.0f\\circ}',pbest(m,6));
+                    else
+                        bstab(2:12,m+1) = {'-'};
+                    end
 					bstab{13,m+1} = sprintf('{\\bf%g}',roundsd(m0(m),2));
 				end
 				rowlim = [.7,.1];
@@ -1759,20 +1726,24 @@ for r = 1:numel(P.GTABLE)
 					'misfit (mm)'};
 				for m = 1:numel(M)
 					bstab{1,m+1} = sprintf('Source #%d',m);
-					bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
-					bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
-					if plotbest
-						bstab{4,m+1} = sprintf('{\\bf%g \\pm %g}', ...
-							roundsd(-pbest(m,3)/1e3,2),roundsd(abs(diff(ez(m,:)))/2e3,1));
-						bstab{5,m+1} = sprintf('{\\bf%+g \\pm %g}', ...
-							roundsd(vv0(m)/vfactor,2),roundsd(abs(diff(ev(m,:)))/2/vfactor,1));
-						bstab{6,m+1} = sprintf('%+g',roundsd(vv0(m)/diff(tlim)/86400,2));
-					else
-						bstab{4,m+1} = sprintf('{\\bf%g} to {\\bf%g}',roundsd(minmax(-(pbest(m,3)+ez(m,:))/1e3),2));
-						bstab{5,m+1} = sprintf('{\\bf%+g} to {\\bf%+g}', ...
-							roundsd(minmax(ev(m,:)/vfactor),2));
-						bstab{6,m+1} = sprintf('%+g to %+g',roundsd(minmax(ev(m,:)/diff(tlim)/86400),2));
-					end
+                    if ~all(isnan(pbest(m,:)))
+                        bstab{2,m+1} = sprintf('{\\bf%g}',lats(m));
+                        bstab{3,m+1} = sprintf('{\\bf%g}',lons(m));
+                        if plotbest
+                            bstab{4,m+1} = sprintf('{\\bf%g \\pm %g}', ...
+                                roundsd(-pbest(m,3)/1e3,2),roundsd(abs(diff(ez(m,:)))/2e3,1));
+                            bstab{5,m+1} = sprintf('{\\bf%+g \\pm %g}', ...
+                                roundsd(vv0(m)/vfactor,2),roundsd(abs(diff(ev(m,:)))/2/vfactor,1));
+                            bstab{6,m+1} = sprintf('%+g',roundsd(vv0(m)/diff(tlim)/86400,2));
+                        else
+                            bstab{4,m+1} = sprintf('{\\bf%g} to {\\bf%g}',roundsd(minmax(-(pbest(m,3)+ez(m,:))/1e3),2));
+                            bstab{5,m+1} = sprintf('{\\bf%+g} to {\\bf%+g}', ...
+                                roundsd(minmax(ev(m,:)/vfactor),2));
+                            bstab{6,m+1} = sprintf('%+g to %+g',roundsd(minmax(ev(m,:)/diff(tlim)/86400),2));
+                        end
+                    else
+                        bstab(2:6,m+1) = {'-'};
+                    end
 					bstab{7,m+1} = sprintf('{\\bf%g}',roundsd(m0(m),2));
 				end
 				rowlim = [.7,.3];
