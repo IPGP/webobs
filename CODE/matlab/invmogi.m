@@ -164,7 +164,7 @@ for m = 1:opt.multi
 	%ws = median(d0(mm>minmax(mm(:),.99)));	% median distance of the 1% best models
 	ws = 2*median(d0(mm >= (1 - opt.msigp)));	% distance of the best models (msig)
 
-	M(m).mm = mm/m; % divides mm by m to reduce importance of secondary source
+	M(m).mm = mm;
 	M(m).vv = vv;
 	M(m).m0 = m0;
 	M(m).ux = uxb;
