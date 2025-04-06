@@ -299,7 +299,7 @@ JOB_MCXVFB|cd ${ROOT_CODE}/matlab;env LANG=${LOCALE}.ISO-8859-1 xvfb-run -a --se
 # Options for the Codemirror javascript editor
 #  To browse available Codemirror themes, see:
 #  https://codemirror.net/demo/theme.html
-JS_EDITOR_EDIT_THEME|default    # codemirror theme when editing
+JS_EDITOR_EDIT_THEME|elegant    # codemirror theme when editing
 JS_EDITOR_BROWSING_THEME|neat   # codemirror theme when browsing
 JS_EDITOR_AUTO_VIM_MODE|no      # automatically enter vim mode or not (any other value):
                                 #  True if value is 'true' or 'yes' (case insensitive),
