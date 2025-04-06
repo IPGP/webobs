@@ -39,7 +39,7 @@ SUMMARY_CHANNELS|
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} hypomap $SELFREF -
-SUBMIT_RESOURCE|hypomap
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,SUMMARYLIST,LATLIM,LONLIM,MAGLIM,DEPLIM,PLOT_BG_ALL,BUBBLE_PLOT

@@ -35,7 +35,7 @@ TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} tremblemaps $SELFREF -
-SUBMIT_RESOURCE|tremblemaps
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|SC3_LISTEVT,EVENTS_OVERWRITING,WATERMARK,FELT_FORCED,REGION

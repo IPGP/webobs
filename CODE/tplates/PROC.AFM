@@ -63,7 +63,7 @@ TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} afm $SELFREF -
-SUBMIT_RESOURCE|afm
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|PLUVIO_THRESHOLD

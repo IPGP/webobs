@@ -42,7 +42,7 @@ TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} naqssoh $SELFREF -
-SUBMIT_RESOURCE|naqssoh
+SUBMIT_RESOURCE|request
 
 # node parameters
 NODE_NAME|node
