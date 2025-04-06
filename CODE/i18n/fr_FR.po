@@ -269,6 +269,9 @@ msgstr "Actives"
 msgid "Coordinates"
 msgstr "Coordonnées"
 
+msgid "Lifetime and Validity"
+msgstr "Durée de vie et validité"
+
 msgid "Export"
 msgstr "Exporter"
 
