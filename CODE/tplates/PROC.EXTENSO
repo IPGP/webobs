@@ -32,7 +32,7 @@ SUMMARYLIST|VECTORS
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|
-SUBMIT_RESOURCE|myproc
+SUBMIT_RESOURCE|request
 
 NODE_NAME|site
 NODE_MARKER|^
