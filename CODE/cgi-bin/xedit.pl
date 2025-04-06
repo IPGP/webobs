@@ -96,7 +96,7 @@ my @lignes;
 # Code mirror configuration from JS_EDITOR_* variables in WEBOBS.rc.
 # (We also retain backward compatibility with WebObs <= v2.1.4c by reading
 # XEDIT_*)
-my $CM_edit_theme = $WEBOBS{JS_EDITOR_EDIT_THEME} // $WEBOBS{XEDIT_ETHEME} // "default";
+my $CM_edit_theme = $WEBOBS{JS_EDITOR_EDIT_THEME} // $WEBOBS{XEDIT_ETHEME} // "elegant";
 my $CM_browsing_theme = $WEBOBS{JS_EDITOR_BROWSING_THEME} // $WEBOBS{XEDIT_BTHEME} // "neat";
 my $CM_auto_vim_mode = $WEBOBS{JS_EDITOR_AUTO_VIM_MODE} // $WEBOBS{XEDIT_VMODE} // "yes";
 
@@ -108,6 +108,7 @@ my $me = $ENV{SCRIPT_NAME};
 my $QryParm   = $cgi->Vars;
 my $fs     = $QryParm->{'fs'}     // "";
 my $action = $QryParm->{'action'} // "edit";
+my $tpl    = $QryParm->{'tpl'}    // "";
 my $txt    = $QryParm->{'txt'}    // "";
 my $TS0    = $QryParm->{'ts0'}    // "";
 my $fbrowse= $QryParm->{'browse'} // 0;
@@ -143,6 +144,14 @@ if ($fs ne "") {
         } else { die "$relfile $__{'not authorized'}" }
     } else { die "$relfile $__{'Not a CONF/ nor DATA/ file'}" }
 } else { die "$__{'No filename specified'}" }
+
+# checks if template is available and file is empty
+if ($tpl ne "") {
+    my $abstpl = "$WEBOBS{ROOT_CODE}/tplates/$tpl";
+    if (-e "$abstpl" && (!-e "$absfile" || -z "$absfile")) {
+        qx(/bin/cp -f $abstpl $absfile);
+    }
+}
 
 # ---- action is 'save'
 #
@@ -278,11 +287,11 @@ sub htmlMsgNotOK {
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2024 - Institut de Physique du Globe Paris
+Webobs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

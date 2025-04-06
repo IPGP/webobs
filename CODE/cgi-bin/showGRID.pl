@@ -329,7 +329,7 @@ if ($isProc) {
 
             # will be editable only if located in DATA/ or CONF/ (xedit policy)
             if ($loc ne "" && $editOK == 1) {
-                $htmlcontents .= " <B><A href=\"/cgi-bin/xedit.pl?fs=$loc/$evtFile\">$loc/$evtFile</A></B>";
+                $htmlcontents .= " <B><A href=\"/cgi-bin/xedit.pl?fs=$loc/$evtFile&tpl=events-template\">$loc/$evtFile</A></B>";
             } else {
                 $htmlcontents .= " <B>$evtFile</B>";
             }
