@@ -1,0 +1,15 @@
+# Configuration file for time referenced events associated with a proc
+# using EVENTS_FILE that will be plotted in the background of graphs, 
+# as shaded color areas with a text comment.
+#
+#       Date1: start date of the event (YYYY-MM-DD hh:mm format, time is optional)
+#       Date2: end date of the event (YYYY-MM-DD hh:mm format) or same as Date1 for "instant" event.
+#   LineWidth: line width (in pt) for "instant" event.
+#         RGB: color (HTML format, e.g., 'Red' or \#FFFFFF)
+#        Name: pop-up window's title
+#     Comment: pop-up window's long text
+#
+# -------------------------------------------------------------
+# Date1|Date2|LineWidth|RGB|Name|Comment
+#
+#2004-11-21 11:40|2004-11-21 12:00|.5|LightGreen|Les Saintes Mw6.3|Earthquake in Guadeloupe, FWI
