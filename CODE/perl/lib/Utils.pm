@@ -46,7 +46,7 @@ sub htmlspecialchars
     my $re = $_[1];
 
     $txt =~ s/"/&quot;/g;
-    $txt =~ s/'/\\'/g;
+    $txt =~ s/'/&#39;/g;
     $txt =~ s/</&lt;/g;
     $txt =~ s/>/&gt;/g;
 
@@ -534,7 +534,7 @@ Alexis Bosson, François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
