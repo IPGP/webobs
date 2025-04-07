@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2023-02-14
+%   Updated: 2025-04-07
 
 
 WO = readcfg;
@@ -58,8 +58,8 @@ plotbgall = field2num(P,'PLOT_BG_ALL',0);
 linewidth = field2num(P,'MARKER_LINEWIDTH',1);
 bubbleplot = isok(P,'BUBBLE_PLOT');
 
-demopt = {};
-if isfield(P,'DEM_OPT')
+demopt = {'Watermark',2};
+if isfield(P,'DEM_OPT') && ~isempty(P.DEM_OPT)
 	try
 		eval(sprintf('demopt={%s};',regexprep(P.DEM_OPT,'''''','''')));
 	catch
