@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2025-03-19
+%   Updated: 2025-04-07
 
 
 WO = readcfg;
@@ -458,9 +458,6 @@ for g = 1:length(grids)
 							fprintf(fid,'<AREA href="%s" title="%s" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						else
 							txt = regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
-							try
-								txt = unicode2native(txt,'UTF-8');
-							end
 							txt = regexprep(char(txt),'''','\\''');
 							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						end
