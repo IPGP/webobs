@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2025-04-05
+%   Updated: 2025-04-07
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -647,10 +647,10 @@ for r = 1:numel(P.GTABLE)
 
 		% builds a structure B containing indexes of each node pairs
 		if isfield(P,'BASELINES_NODEPAIRS') && ~isempty(P.BASELINES_NODEPAIRS)
-			pairgraphs = split(P.BASELINES_NODEPAIRS,';');
+			pairgraphs = strtrim(split(P.BASELINES_NODEPAIRS,';'));
 			np = 0;
 			for nn = 1:numel(pairgraphs)
-				pairs = split(pairgraphs{nn},',');
+				pairs = strtrim(split(pairgraphs{nn},','));
 				if numel(pairs)>1
 					kr = find(ismemberlist({N.FID},pairs(1)));
 					kn = find(ismemberlist({N.FID},pairs(2:end)));
