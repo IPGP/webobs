@@ -1458,11 +1458,11 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% computes the maximum displacement for vector scale
-        vmax = rmax(abs(reshape(d(:,1:3),[],1)))/2;
+        vmax = rmax(abs(reshape(d(:,1:3),[],1)));
 		if modelling_vmax_mm > 0
 			vmax = modelling_vmax_mm;
 		end
-		vsc = modelling_vmax_ratio*min([diff(minmax(xlim)),diff(minmax(ylim)),diff(minmax(zlim))])/vmax;
+		vsc = modelling_vmax_ratio*min([diff(minmax(xlim)),diff(minmax(ylim))])/vmax;
 
 		% for graphical purpose only: set NaN components in data and model to 0
 		if plotnancomp
@@ -1481,7 +1481,7 @@ for r = 1:numel(P.GTABLE)
 		% --- plots the results
 		figure, orient tall
 
-		arrowref = vsc*vmax;
+		arrowref = vsc*vmax/2;
 
 		% X-Y top view
 		subplot(5,3,[1,2,4,5,7,8]);
@@ -1587,11 +1587,12 @@ for r = 1:numel(P.GTABLE)
 		end
 		plot(max(max(zdem,[],3),[],2)',ylim,'-k')
 		hold off
-		set(gca,'XLim',minmax(zlim),'YLim',minmax(ylim),'XDir','reverse','XAxisLocation','top','YAxisLocation','right','YTick',[],'FontSize',6)
+		set(gca,'XLim',minmax(zlim),'YLim',minmax(ylim),'XDir','reverse','XAxisLocation','bottom','YAxisLocation','right','YTick',[],'FontSize',6)
 		tickfactor(distfactor)
+        xlabel('Elevation a.s.l. (km)')
 
 		% X-Z profile
-		axes('position',[0.01,0.11,0.6142,0.3])
+		axes('position',[0.01,0.17,0.6142,0.24])
 		[mmm,imm] = max(mm,[],1);
 		if strcmp(modelling_coloref,'volpdf')
 			imagesc(xlim,zlim,fliplr(rot90(squeeze(mmm.*sign(index3d(vv,imm,1))),-1)))
@@ -1645,7 +1646,7 @@ for r = 1:numel(P.GTABLE)
 
 		% legends
 		% - model parameters
-		axes('position',[0.68,0.11,0.3,0.3])
+		axes('position',[0.68,0.11,0.3,0.29])
 		src_multi = '';
 		if modelopt.multi > 1
 			src_multi = sprintf('\\times %d',modelopt.multi);
@@ -1756,7 +1757,7 @@ for r = 1:numel(P.GTABLE)
 		axis([0,1,0,1]); axis off
 
 		% - probability colorscale
-		axes('position',[0.33,.05,.25,.015])
+		axes('position',[0.28,.08,.25,.015])
 		if strcmp(modelling_coloref,'volpdf')
 			imagesc(linspace(-1,1,256),[0;1],repmat(linspace(0,1,256),2,1))
 			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{'High (Deflate)','Low','High (Inflate)'}, ...
@@ -1768,12 +1769,13 @@ for r = 1:numel(P.GTABLE)
 		title('Model Probability','FontSize',10)
 
 		% - data/model arrows scale
-		axes('position',[0.55,0.05,0.3,0.03])
+		axes('position',[0.5,0.05,0.3,0.03])
 		dxl = diff(xlim([1,end]))*0.3/0.6142;
 		dyl = diff(ylim([1,end]))*0.03/0.3;
 		hold on
 		if ~isnan(arrowref)
-			vlegend = roundsd(2*vmax,1);
+			vlegend = roundsd(vmax,1);
+			text(dxl/2,dyl*2,'{\it Horizontal displacements scale:}','HorizontalAlignment','left','FontSize',8)
 			arrows(dxl/2,dyl,vsc*vlegend,0,datarrowshape,'Cartesian','Ref',arrowref, ...
                 'EdgeColor',datarrcol,'FaceColor',datarrcol,'Clipping',vclip)
 			text(dxl/2 + vsc*vlegend/2,dyl,sprintf('{\\bf%g mm}',vlegend),'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8)
