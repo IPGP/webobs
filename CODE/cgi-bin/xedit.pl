@@ -105,13 +105,13 @@ my $CM_language_mode = "cmwocfg";
 # ---- see what file has to be edited, and corresponding authorization for client
 #
 my $me = $ENV{SCRIPT_NAME};
-my $QryParm   = $cgi->Vars;
-my $fs     = $QryParm->{'fs'}     // "";
-my $action = $QryParm->{'action'} // "edit";
-my $tpl    = $QryParm->{'tpl'}    // "";
-my $txt    = $QryParm->{'txt'}    // "";
-my $TS0    = $QryParm->{'ts0'}    // "";
-my $fbrowse= $QryParm->{'browse'} // 0;
+my $QryParm    = $cgi->Vars;
+my $fs         = $QryParm->{'fs'}     // "";
+my $action     = $QryParm->{'action'} // "edit";
+my $tpl        = $QryParm->{'tpl'}    // "";
+my $txt        = $QryParm->{'txt'}    // "";
+my $TS0        = $QryParm->{'ts0'}    // "";
+my $fbrowse    = $QryParm->{'browse'} // 0;
 
 my $absfile ="";
 my $relfile ="";

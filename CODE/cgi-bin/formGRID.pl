@@ -172,7 +172,7 @@ sub update_grid2domains {
 sub get_inputs {
     my %inputs;
     foreach(@_) {
-        if ($_ =~ /(INPUT[0-9]{2}_NAME)/) {
+        if ($_ =~ /^(INPUT[0-9]{2}_NAME)/) {
             $inputs{$_} = 1;
         }
     }
@@ -379,7 +379,7 @@ if ($action eq 'save') {
         if ($sth->fetchrow_array() == 0) {    # if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
 
             # --- creation of the DB table
-            my @inputs = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
+            my @inputs = grep {/^(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
 
             push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
 
@@ -390,7 +390,7 @@ if ($action eq 'save') {
 
         # now we know if the table exists
         # we want to look at the modification of $text
-        my @inputs  = grep {/(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
+        my @inputs  = grep {/^(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
         my %old_inputs = get_inputs(readCfg($gridConfFile));
         my %new_inputs = map { split(/\|/, $_, 2) } @inputs;
 
@@ -566,9 +566,9 @@ function verif_formulaire()
 <div id="helpbox"></div>
 
 <FORM id="theform" name="formulaire" action="">
-<input type="hidden" name="ts0" value="$gridConfFileMtime">
-<input type="hidden" name="grid" value="$grid">
-<input type="hidden" name="action" value="save">
+<INPUT type="hidden" name="ts0" value="$gridConfFileMtime">
+<INPUT type="hidden" name="grid" value="$grid">
+<INPUT type="hidden" name="action" value="save">
 _EOD_
 
 print "<H2>$title $GRIDType.$GRIDName";
@@ -595,7 +595,7 @@ print "</SELECT></FIELDSET>\n";
 
 # ---- Form lists
 if ($GRIDType eq "FORM") {
-    my @lists  = grep {/_TYPE\|list:/} split(/\n/, $text);
+    my @lists  = grep {/^INPUT[0-9]{2,3}_TYPE\|list:/} split(/\n/, $text);
     @lists = uniq(map {s/^.*\|list:\s*(.*)$/$1/g; $_} @lists);
 
     print "<FIELDSET><LEGEND>$__{'Associated lists'}</LEGEND>\n<UL style=\"margin-top:0; margin-bottom:0\">";
@@ -615,7 +615,7 @@ if ($GRIDType eq "FORM") {
         } elsif (! -e $file) {
 
             # if the file does not exist anywhere, copy the generic FORM_list
-            qx(cp $tdir/FORM_list.conf $file 2>&1);
+            qx(cp $tdir/FORM_DEMO_list.conf $file 2>&1);
         }
         print "<LI><A href=\"/cgi-bin/xedit.pl?fs=CONF/FORMS/$GRIDName/$_\">$_</A></LI>\n";
     }
