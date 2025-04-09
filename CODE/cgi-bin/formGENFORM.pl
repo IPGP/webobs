@@ -188,7 +188,7 @@ if ($action eq 'save') {
     my $row;
     my $db_columns;
     $db_columns = "trash, quality, node, edate, edate_min, sdate, sdate_min, operators";
-    $row = "false, \"$quality\", \"$site\", \"$edate\", \"$edate_min\", \"$sdate\", \"$sdate_min\", \"".join(",", @operators)."\"";
+    $row = "0, \"$quality\", \"$site\", \"$edate\", \"$edate_min\", \"$sdate\", \"$sdate_min\", \"".join(",", @operators)."\"";
     if ($id ne "") {
         $db_columns = "id, ".$db_columns;
         $row = "$id, ".$row;
@@ -251,7 +251,7 @@ if ($action eq 'save') {
     $dbh->disconnect();
     exit;
 } elsif ($action eq "delete" && $id ne "") {
-    my $stmt = qq(UPDATE $tbl SET trash = true WHERE id = $id);
+    my $stmt = qq(UPDATE $tbl SET trash = 1 WHERE id = $id);
     my $sth  = $dbh->prepare( $stmt );
     my $rv   = $sth->execute() or die $DBI::errstr;
     htmlMsgOK("Record #$id has been moved to trash.");
@@ -259,7 +259,7 @@ if ($action eq 'save') {
     $dbh->disconnect();
     exit;
 } elsif ($action eq "restore" && $id ne "") {
-    my $stmt = qq(UPDATE $tbl SET trash = false WHERE id = $id);
+    my $stmt = qq(UPDATE $tbl SET trash = 0 WHERE id = $id);
     my $sth  = $dbh->prepare( $stmt );
     my $rv   = $sth->execute() or die $DBI::errstr;
     htmlMsgOK("Record #$id has been recovered from trash.");
@@ -698,12 +698,12 @@ foreach (@columns) {
                     $hlp = ($help ne "" ? $help:"$__{'Select a value for'} $Field");
 
                     # if list contains an icon column (HoH), displays radio button instead of select list
-                    if (ref($list{$list_keys[0]}{icon})) {
+                    if ($list{$list_keys[0]}{icon}) {
                         print "$txt =";
-                        for (@list_keys) {
-                            my $selected = ($prev_inputs{$field} eq "$_" ? "checked":"");
-                            print qq(&nbsp;<input name="$field" type=radio value="$_" $selected
-                            onMouseOut="nd()" onmouseover="overlib('$list{$_}{name}')"><IMG src="$list{$_}{icon}">);
+                        for my $k (@list_keys) {
+                            my $selected = ($prev_inputs{$field} eq "$k" ? "checked":"");
+                            print qq(&nbsp;<input name="$field" type=radio value="$k" $selected
+                            onMouseOut="nd()" onmouseover="overlib('$list{$k}{name}')"><IMG src="$list{$k}{icon}">);
                         }
                         print "$dlm";
                     } else {
@@ -711,8 +711,8 @@ foreach (@columns) {
                         print qq($txt = <select name="$field"
                             onMouseOut="nd()" onmouseover="overlib('$hlp')" $multi><option value=""></option>);
                         for (@list_keys) {
-                            my $nam = (ref($list{$_}{name}) ? $list{$_}{name}:$list{$_}{value});
-                            my $selected = ( $prev_inputs{$field} =~ /$_/ ? "selected" : "" );
+                            my $nam = ($list{$_}{name} ? $list{$_}{name}:$list{$_}{value});
+                            my $selected = ( $prev_inputs{$field} =~ /^$_$/ ? "selected" : "" );
                             print qq(<option value="$_" $selected>$nam</option>);
                         }
                         print "</select>$dlm";
