@@ -96,7 +96,7 @@ my @lignes;
 # Code mirror configuration from JS_EDITOR_* variables in WEBOBS.rc.
 # (We also retain backward compatibility with WebObs <= v2.1.4c by reading
 # XEDIT_*)
-my $CM_edit_theme = $WEBOBS{JS_EDITOR_EDIT_THEME} // $WEBOBS{XEDIT_ETHEME} // "elegant";
+my $CM_edit_theme = $WEBOBS{JS_EDITOR_EDIT_THEME} // $WEBOBS{XEDIT_ETHEME} // "default";
 my $CM_browsing_theme = $WEBOBS{JS_EDITOR_BROWSING_THEME} // $WEBOBS{XEDIT_BTHEME} // "neat";
 my $CM_auto_vim_mode = $WEBOBS{JS_EDITOR_AUTO_VIM_MODE} // $WEBOBS{XEDIT_VMODE} // "yes";
 
