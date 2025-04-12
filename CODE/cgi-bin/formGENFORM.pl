@@ -220,6 +220,7 @@ if ($action eq 'save') {
 
         if ($input ne "") {
             $db_columns .= ", $_";
+            $input =~ s/"/""/g; # needs to escape quotes for the sqlite command
             $row .= ", \"$input\"";
         }
     }
@@ -719,7 +720,9 @@ foreach (@columns) {
                     }
                 } elsif ($field =~ /^input/ && $type =~ /^text/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a value for'} $Field");
-                    print qq($txt = <input type="text" size=$size name="$field" value="$prev_inputs{$field}"
+                    my $value = $prev_inputs{$field};
+                    $value =~ s/"/&quot;/g;
+                    print qq($txt = <input type="text" size=$size name="$field" value="$value"
                         onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
                 } elsif ($field =~ /^input/ && $type =~ /^checkbox/) {
                     $hlp = ($help ne "" ? $help:"$__{'Click to select'} $Field");
