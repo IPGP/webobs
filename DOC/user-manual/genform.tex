@@ -133,7 +133,7 @@ Valid TYPE for an INPUT field is:
 	\item \wokey{list:~\textit{filename}}: name of a config file containing a \wokey{key|value} list of selectable items. It is also possible to use a \wokey{key|name|icon} 3-column config file, so that small icons will be displayed in table (instead of key), and radio button will replace the selectable list. If not exist, the file will be created after the first form save, from a template, and an edit link will be available;
 	\item \wokey{list(multiple):~\textit{filename}}: same as above but with multiple selections;
 	\item \wokey{users(size): \textit{list of UID and/or +GID}}: a list of users or group of users. Size stands for the menu length (default is 1);
-	\item \wokey{image(size)}: image, with optional height size (in pixel, default is 50 px) for thumbnail display;
+	\item \wokey{image(size):~\textit{delay}}, with optional height size (in pixel, default is 50 px) for thumbnail display, and optional delay (in seconds) for thumbnail animation (default is \wokey{GENFORM\_THUMB\_DEFAULT\_DELAY} in GRIDS.rc);
 	\item \wokey{shapefile(size)}: shape file, with optional height size (in pixel, default is 300 px). Uploaded file can be either a geojson file or a zip containing a shapefile (.shp) with is related metadata (in particular prj and shx files that are necessary to convert the shapefile in geojson);
 	\item \wokey{datetime(format)}: datetime input. Valid format options are: \textit{ymd} (date only, this is the default), \textit{hm} (date and time with minute accuracy) and \textit{hms} (date and time with second accuracy);
 	\item \wokey{checkbox:~\textit{checked}}: boolean value as check box, optional default checked.
