@@ -524,6 +524,7 @@ print <<_EOD_;
     EDIT_PERM: $cm_edit,
     FORM: '#theform',
     POST_URL: '$post_url',
+    POST_RETURN: ''
   };
  </script>
  <script src="/js/cmtextarea.js"></script>
