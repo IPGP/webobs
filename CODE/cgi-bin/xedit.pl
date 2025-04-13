@@ -225,7 +225,8 @@ var CODEMIRROR_CONF = {
     AUTO_VIM_MODE: '$CM_auto_vim_mode',
     EDIT_PERM: ".($editOK || $admOK ? 1 : 0).",
     FORM: '#theform',
-    POST_URL: '$me'
+    POST_URL: '$me',
+    POST_RETURN: 'back'
 };
 </script>
 <script src=\"/js/cmtextarea.js\"></script>
