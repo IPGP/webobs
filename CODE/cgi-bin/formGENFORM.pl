@@ -735,9 +735,9 @@ foreach (@columns) {
                     my $base_url = "formUPLOAD.pl?object=$input_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay";
                     my $upload_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$input_id";
                     if ( -e "$upload_path/$PATH_THUMBNAILS/$THUMB_ANIM" ) {
-                        print qq(<div><img height=$height src=/data/$PATH_FORMDOCS/$input_id/$PATH_THUMBNAILS/$THUMB_ANIM></img>);
+                        print qq(<img height=$height src="/data/$PATH_FORMDOCS/$input_id/$PATH_THUMBNAILS/$THUMB_ANIM" style="margin-bottom:5px" border=1">);
                     }
-                    print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:right;">);
+                    print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:center;">);
                     print qq(<img src="/icons/upload.png" style="vertical-align: middle;">$txt</button>);
                     my $nb = qx(ls $upload_path -p | grep -v / | wc -l);
                     print qq(<input type="hidden" name="$field" value=$nb>\n);
