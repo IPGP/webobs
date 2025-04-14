@@ -872,3 +872,13 @@ td.fof {
 .inTrash {
     text-decoration: line-through 2px gray;
 }
+
+.badQuality {
+    background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    #EEEEEE 4px,
+    #EEEEEE 6px
+  );
+}
