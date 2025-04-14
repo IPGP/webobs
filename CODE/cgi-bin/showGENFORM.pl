@@ -387,7 +387,7 @@ if ($clientAuth > 1) {
     $form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
     $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
 }
-$header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}":"rowspan=2>$__{'Sampling Date'}")."</TH>";
+$header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}":"rowspan=2>$__{'Sampling Date'}")." <I>(GMT".sprintf("%+03d",$FORM{TZ}).")</I></TH>";
 $header .= "<TH rowspan=2>$__{'Site'}</TH><TH rowspan=2>$__{'Oper'}</TH>";
 foreach(@colnam) {
     $header .= "<TH rowspan=2></TH><TH colspan=$colspan{$_}>$_</TH>\n";

@@ -274,15 +274,12 @@ $htmlcontents .= "</div><div id=\"specID\">";
 my $snm = defined($GRID{NODE_NAME}) ? $GRID{NODE_NAME} : "$__{'node'}";
 $htmlcontents .= "<TABLE width=\"100%\"><TR><TD style=\"border:0;vertical-align:top\"><UL>";
 $htmlcontents .= "<LI>$__{'Grid code'}: <B class='code'>$grid</B></LI>\n";
-
 # -----------
 $htmlcontents .= "<LI>$__{'Description'}: <I>$GRID{DESCRIPTION}</I></LI>\n" if ($GRID{DESCRIPTION});
-
 # -----------
 foreach (@domain) {
     $htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$_\"><B>$DOMAINS{$_}{NAME}</B></A></LI>\n";
 }
-
 # -----------
 if ($showOwnr && defined($GRID{OWNCODE})) {
     $htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n"
@@ -290,7 +287,6 @@ if ($showOwnr && defined($GRID{OWNCODE})) {
 if ($showType && $GRID{TYPE} ne "") {
     $htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n";
 }
-
 # -----------
 # only for PROCs
 if ($isProc) {
@@ -366,6 +362,7 @@ if ($isForm) {
     $htmlcontents .= "<LI>$__{'Form structure:'} <B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B> $__{'inputs'},"
       ." <B>".grep(/^OUTPUT.._NAME/,keys(%GRID))."</B> $__{'outputs'}</LI>\n";
     $htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
+    $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>GMT".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'})</LI>\n";
 }
 

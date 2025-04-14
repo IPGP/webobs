@@ -600,8 +600,21 @@ print qq[<form name="form" id="theform" action="">
 ];
 
 if (isok($FORM{QUALITY_CHECK})) {
+    my @uid = ();
+    foreach (split(/[, ]/, $FORM{QUALITY_OPERATORS})) {
+        if (rindex($_,'+',0) == 0) {
+            foreach my $u (WebObs::Users::groupListUser("$_")) {
+                push(@uid, $u) if (!grep(/^$u$/, @uid));
+            }
+        } else {
+            push(@uid, $_);
+        }
+    }
+    my $qualOK = grep(/^$USERS{$CLIENT}{UID}$/,@uid);
     print "<P><input type=\"checkbox\"".($quality ? " checked":"")
+      .(!$qualOK ? " disabled=\"disabled\"":"")
       ." name=\"quality\" value=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_genform_quality'}')\">"
+      .(!$qualOK ? "<input name=\"quality\" type=\"hidden\" value=\"".($quality ? "1":"")."\">":"")
       ."<b>$__{'Validated record'}</b></P><BR>";
 } else {
     print "<input type=\"hidden\" name=\"quality\" value=\"$quality\">";
