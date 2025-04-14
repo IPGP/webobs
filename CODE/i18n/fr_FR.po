@@ -2092,8 +2092,8 @@ msgstr "Enregistrement validé"
 msgid "Where, When, and Who"
 msgstr "Où, quand et qui"
 
-msgid "Date/time in"
-msgstr "Date/heure en"
+msgid "Date/time must be in"
+msgstr "Date/heure doivent être en"
 
 msgid "Date, site, and operators"
 msgstr "Date, site et opérateurs"
