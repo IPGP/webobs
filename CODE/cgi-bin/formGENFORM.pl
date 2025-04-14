@@ -610,7 +610,7 @@ if (isok($FORM{QUALITY_CHECK})) {
             push(@uid, $_);
         }
     }
-    my $qualOK = grep(/^$USERS{$CLIENT}{UID}$/,@uid);
+    my $qualOK = ($clientAuth>2 || grep(/^$USERS{$CLIENT}{UID}$/,@uid));
     print "<P><input type=\"checkbox\"".($quality ? " checked":"")
       .(!$qualOK ? " disabled=\"disabled\"":"")
       ." name=\"quality\" value=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_genform_quality'}')\">"
@@ -647,11 +647,12 @@ print qq(</select><BR>);
 # Add mandatory date input
 my @sdate = ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1);
 my @edate = ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2);
+print "<I>$__{'Date/time in'} ".sprintf("GMT%+03d",$FORM{TZ})."</I><br>";
 if ($starting_date) {
-    datetime_input($form, "", \@sdate, \@edate);
+    datetime_input(\%FORM, "", \@sdate, \@edate);
     print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
 } else {
-    datetime_input($form, "", \@edate);
+    datetime_input(\%FORM, "", \@edate);
     print qq(<input type="hidden" name="duration">);
 }
 
@@ -777,7 +778,7 @@ foreach (@columns) {
                     my $len = %datetime_length{$size ? $size : "ymd"};
                     my @date = split( /[-: ]/, $prev_inputs{$field}, $len );
                     if ( scalar(@date) < $len ) { $date[$len-1] = ""; }
-                    datetime_input($form, $field, \@date);
+                    datetime_input(\%FORM, $field, \@date);
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"

@@ -2018,8 +2018,17 @@ msgstr "Nouvel enregistrement"
 msgid "Searching for data, please wait."
 msgstr "Recherche des données, merci de patienter."
 
+msgid "help_disp_fieldset"
+msgstr "Afficher les colonnes du"
+
 msgid "Trash"
 msgstr "Corbeille"
+
+msgid "help_show_trash"
+msgstr "Afficher les enregistrements dans la corbeille"
+
+msgid "help_search_comment"
+msgstr "Mot ou chaîne de caractères à rechercher dans les commentaires (expression rationnelle)."
 
 msgid "Site map"
 msgstr "Carte des sites"
@@ -2082,6 +2091,9 @@ msgstr "Enregistrement validé"
 
 msgid "Where, When, and Who"
 msgstr "Où, quand et qui"
+
+msgid "Date/time in"
+msgstr "Date/heure en"
 
 msgid "Date, site, and operators"
 msgstr "Date, site et opérateurs"

@@ -193,7 +193,8 @@ sub datetime2maxmin {
 }
 
 sub datetime_input {
-    my ($form, $name, $arg0, $arg1) = @_;
+    my ($formref, $name, $arg0, $arg1) = @_;
+    my %FORM = %{$formref};
     my ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1, $sel_sec1);
     my ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2);
 
@@ -227,8 +228,6 @@ sub datetime_input {
     my @tod = localtime($Ctod);
     my $currentYear = strftime('%Y',@tod);
 
-    my %G = readForm($form);
-    my %FORM = %{$G{$form}};
     my @yearList = ($FORM{BANG}..$currentYear);
     my @monthList  = ("","01".."12");
     my @dayList    = ("","01".."31");
