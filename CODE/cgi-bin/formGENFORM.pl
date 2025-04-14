@@ -634,7 +634,7 @@ print qq[</td>
 # Add mandatory site input
 print qq(<B>$__{'Site'}: </B>
       <select name="site" size="1"
-        onMouseOut="nd()"onmouseover="overlib('$__{'Select a node for this record'}')">
+        onMouseOut="nd()" onMouseOver="overlib('$__{'Select a node for this record'}')">
       <option value=""></option>);
 print @NODESSelList;
 for (@NODESSelList) {
@@ -647,7 +647,6 @@ print qq(</select><BR>);
 # Add mandatory date input
 my @sdate = ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1);
 my @edate = ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2);
-print "<I>$__{'Date/time in'} ".sprintf("GMT%+03d",$FORM{TZ})."</I><br>";
 if ($starting_date) {
     datetime_input(\%FORM, "", \@sdate, \@edate);
     print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
