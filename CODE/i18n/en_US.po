@@ -224,6 +224,15 @@ msgstr "Show/Hide Spectrogram (or S key)<br>Use R/T keys to increase/decrease tr
 
 # ---- showGENFORM.pl
 
+msgid "help_disp_fieldset"
+msgstr "Display columns of the"
+
+msgid "help_show_trash"
+msgstr "Display records in trash"
+
+msgid "help_search_comment"
+msgstr "Word or character string to search in the comments (regular expression)."
+
 msgid "to_num"
 msgstr "to"
 

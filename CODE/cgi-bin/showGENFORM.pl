@@ -321,17 +321,20 @@ foreach my $i (sort keys %lists) {
 foreach (@fieldsets) {
     if (isok($FORM{$_.'_TOGGLE'})) {
         my $fs = lc($_);
-        print " <INPUT type=\"checkbox\" name=\"$fs\" value=\"1\"".($QryParm->{$fs} ? " checked":"").">&nbsp;<B>$FORM{$_.'_NAME'}</B>";
+        print " <INPUT type=\"checkbox\" name=\"$fs\" value=\"1\"".($QryParm->{$fs} ? " checked":"")
+            ."onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_disp_fieldset} $_')\">&nbsp;<B>$FORM{$_.'_NAME'}</B>";
     }
 }
 
 print "</TD><TD style=\"border:0;text-align:center\">";
-print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"15\" value=\"$re\">";
+print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"15\" value=\"$re\""
+    ." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_search_comment}')\">";
 if ($re ne "") {
     print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
 }
 if ($clientAuth > 1) {
-    print "<BR><INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"").">&nbsp;<B>$__{'Trash'}</B>";
+    print "<BR><INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"")
+        ."onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_show_trash}')\">&nbsp;<B>$__{'Trash'}</B>";
 } else {
     print "<INPUT type=\"hidden\" name=\"trash\">";
 }
@@ -466,7 +469,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
     } else {
         $text .= "<TD nowrap>$edate</TD>";
     }
-    $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite',CAPTION,'$site')\">$nodelink&nbsp;</TD>\n";
+    $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite',CAPTION,'node $site')\">$nodelink&nbsp;</TD>\n";
     $text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>\n";
     $csvTxt .= "$id".($starting_date ? ",\"$sdate\"":"").",\"$edate\",\"$aliasSite\",\"$opers\",";
     for (my $f = 0; $f <= $#fieldsets; $f++) {
