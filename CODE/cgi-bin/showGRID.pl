@@ -256,7 +256,7 @@ if (-e $fileDesc) {
 }
 $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#descID');\">&nbsp;&nbsp;";
 $htmlcontents .= "$__{'Purpose'}";
-if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{DESCRIPTION_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
+if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{DESCRIPTION_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 $htmlcontents .= "</div><div id=\"descID\"><BR>";
 if ($#desc >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@desc))."</P>\n" }
 $htmlcontents .= "</div></div>";
@@ -328,7 +328,7 @@ if ($isProc) {
             $loc = "CONF" if ($dir =~ /^$WEBOBS{ROOT_CONF}/);
 
             # will be editable only if located in DATA/ or CONF/ (xedit policy)
-            if ($loc ne "" && $editOK == 1) {
+            if ($loc ne "" && $editOK) {
                 $htmlcontents .= " <B><A href=\"/cgi-bin/xedit.pl?fs=$loc/$evtFile&tpl=events-template\">$loc/$evtFile</A></B>";
             } else {
                 $htmlcontents .= " <B>$evtFile</B>";
@@ -815,7 +815,7 @@ print "<BR>";
 print "<A name=\"INFO\"></A>\n";
 $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#infoID');\">&nbsp;&nbsp;";
 $htmlcontents .= "$__{'Information'}";
-if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{PROTOCOLE_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
+if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{PROTOCOLE_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 $htmlcontents .= "&nbsp;$go2top</div><div id=\"infoID\"><BR>";
 if ($#protocole >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@protocole))."</P>\n" }
 $htmlcontents .= "</div></div>";
@@ -863,7 +863,7 @@ print "<BR>";
 print "<A name=\"REF\"></A>\n";
 $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#bibID');\">&nbsp;&nbsp;";
 $htmlcontents .= "$__{'References'}";
-if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{BIBLIO_SUFFIX}&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
+if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{BIBLIO_SUFFIX}&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 $htmlcontents .= "&nbsp;$go2top</div><div id=\"bibID\"><BR>";
 if ($#bib >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@bib))."</P>\n" }
 $htmlcontents .= "</div></div>";
