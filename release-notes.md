@@ -50,6 +50,7 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
 1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
 
 ### Fixed issues
+1. `!!` Fix an issue giving edit button for any grid (view/proc/form) for users with only Edit level.
 1. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
 1. Add forgotten keys in **tremblemaps** superproc template, and fix an issue when updating procs with setup (new keys not added).
 1. Fix display of non-geolocated nodes as neighbours (as lat=lon=0).

@@ -314,7 +314,7 @@ if (@$domains) {
                         print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-sefran\">SEFRAN</SPAN></TD>" if ($subsetType ne "");
                         $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vs}{DESCRIPTION}."',CAPTION,'SEFRAN.$vs',BGCOLOR, 'purple'$olopt)\"";
                         print "<TD $ovl>";
-                        if (WebObs::Users::clientHasEdit(type=>"authprocs",name=>$G{$vs}{MC3_NAME})) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$vs\" title=\"$__{'Edit Sefran'}\" ><img src='/icons/modif.png'></a>" }
+                        if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$G{$vs}{MC3_NAME})) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$vs\" title=\"$__{'Edit Sefran'}\" ><img src='/icons/modif.png'></a>" }
                         print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/sefran3.pl?s3=$vs&header=1\">$G{$vs}{NAME}</a>";
                         print "</TD>";
                         print "<TD>".(split('\|',$G{$vs}{CHANNELLIST}))." channels</TD>";
@@ -347,7 +347,7 @@ if (@$domains) {
                         $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vp}{DESCRIPTION}."',CAPTION,'PROC.$vp',BGCOLOR, 'firebrick'$olopt)\")\"";
                         print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in Proc'}\" onclick='srchopenPopup(\"+PROC.$vp\");return false'><img class='ic' src='/icons/search.png'></a>";
                         print     "<a href='/cgi-bin/gvTransit.pl?grid=PROC.$vp')><img src=\"/icons/tmap.png\"></a>";
-                        if (WebObs::Users::clientHasEdit(type=>"authprocs",name=>$vp)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=PROC.$vp\" title=\"$__{'Edit Proc'}\" ><img src='/icons/modif.png'></a>" }
+                        if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$vp)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=PROC.$vp\" title=\"$__{'Edit Proc'}\" ><img src='/icons/modif.png'></a>" }
                         print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=PROC.$vp\">$G{$vp}{NAME}</a>";
                         print "</TD>";
                         print "<TD>".scalar(@{$G{$vp}{NODESLIST}})."&nbsp;";
@@ -385,7 +385,7 @@ if (@$domains) {
                         $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vf}{DESCRIPTION}."',CAPTION,'FORM.$vf',BGCOLOR, 'darkorange'$olopt)\")\"";
                         print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in Form'}\" onclick='srchopenPopup(\"+FORM.$vf\");return false'><img class='ic' src='/icons/search.png'></a>";
                         print     "<a href='/cgi-bin/gvTransit.pl?grid=FORM.$vf')><img src=\"/icons/tmap.png\"></a>";
-                        if (WebObs::Users::clientHasEdit(type=>"authforms",name=>$vf)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=FORM.$vf\" title=\"$__{'Edit Form'}\" ><img src='/icons/modif.png'></a>" }
+                        if (WebObs::Users::clientHasAdm(type=>"authforms",name=>$vf)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=FORM.$vf\" title=\"$__{'Edit Form'}\" ><img src='/icons/modif.png'></a>" }
                         print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=FORM.$vf\">$G{$vf}{NAME}</a>";
                         print "</TD>";
                         print "<TD>".scalar(@{$G{$vf}{NODESLIST}})."&nbsp;";
@@ -419,7 +419,7 @@ if (@$domains) {
                         $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vn}{DESCRIPTION}."',CAPTION,'VIEW.$vn',BGCOLOR, 'darkgreen'$olopt)\")\"";
                         print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in View'}\" onclick='srchopenPopup(\"+VIEW.$vn\");return false'><img class='ic' src='/icons/search.png'></a>";
                         print     "<a href='/cgi-bin/gvTransit.pl?grid=VIEW.$vn')><img src=\"/icons/tmap.png\"></a>";
-                        if (WebObs::Users::clientHasEdit(type=>"authviews",name=>$vn)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=VIEW.$vn\" title=\"$__{'Edit View'}\" ><img src='/icons/modif.png'></a>" }
+                        if (WebObs::Users::clientHasAdm(type=>"authviews",name=>$vn)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=VIEW.$vn\" title=\"$__{'Edit View'}\" ><img src='/icons/modif.png'></a>" }
                         print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=VIEW.$vn\">$G{$vn}{NAME}</a>";
                         print "<TD>".scalar(@{$G{$vn}{NODESLIST}})."&nbsp;";
                         if (defined($G{$vn}{NODE_NAME})) { printf ("%s%s","$G{$vn}{NODE_NAME}",scalar(@{$G{$vn}{NODESLIST}})>1?"s":"") }
@@ -487,9 +487,10 @@ sub printdesc {
     if (-e $fileDesc) {
         @desc = readFile($fileDesc);
     }
+
     my $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#$_[1]ID');\">&nbsp;&nbsp;";
     $htmlcontents .= "$__{$title}";
-    if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$suffix\&grid=$type.$name\"><img src=\"/icons/modif.png\"></A>" }
+    if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$suffix\&grid=$type.$name\"><img src=\"/icons/modif.png\"></A>" }
     $htmlcontents .= "$go2top</div><div id=\"$_[1]ID\"><BR>";
     if ($#desc >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@desc))."</P>\n" }
     $htmlcontents .= "</div></div>\n";
