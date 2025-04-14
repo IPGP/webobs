@@ -438,8 +438,7 @@ if ($QryParm->{'ts'} eq 'map') {
                 $dlist[$i] =~ s/^$OUTG\/$WEBOBS{PATH_OUTG_EXPORT}\/(.*)_.*$/$1/;
                 $dlist[$i] =~ s/^$/$GRIDName/;
                 my $gts = $QryParm->{'g'}.'_'.$QryParm->{'ts'};
-                #if ( ($dlist[$i]=~m/$QryParm->{'g'}/i) ) {
-                if ($dlist[$i] eq $QryParm->{'g'}) {
+                if ( ($dlist[$i]=~m/^$QryParm->{'g'}/i) ) {
                     $addlinks .= " <A href=\"$surn\"><IMG title=\"$dlist[$i]\" src=\"/icons/fdata.png\"></A> ";
                 }
             }
