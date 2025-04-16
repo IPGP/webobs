@@ -346,6 +346,7 @@ if ($QryParm->{'ts'} eq 'map') {
         }
 
 # single file: displays .png (or .jpg) and links to other files (.eps,.pdf,.gse,.txt)
+# note: @plist can content 1 file (direct access to the image), or 2 files (directory access = image + symlink)
     } elsif ($#plist >= 0) {
         my $addlinks = "";
         (my $short = $plist[0]) =~ s/\.jpg//g;
