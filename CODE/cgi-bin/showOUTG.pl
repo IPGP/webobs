@@ -307,7 +307,7 @@ if ($QryParm->{'ts'} eq 'map') {
     # lists all files
     @plist = glob "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
 
-    # target directory contains multiple files: displays existing thumbnails
+    # target directory contains multiple files (and symlink pointing to last): displays existing thumbnails
     if ($#plist > 1) {
         my $month0 = "";
         for (@plist) {
@@ -346,7 +346,7 @@ if ($QryParm->{'ts'} eq 'map') {
         }
 
 # single file: displays .png (or .jpg) and links to other files (.eps,.pdf,.gse,.txt)
-    } elsif ($#plist == 1) {
+    } elsif ($#plist >= 0) {
         my $addlinks = "";
         (my $short = $plist[0]) =~ s/\.jpg//g;
         (my $urn = $short) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
@@ -371,6 +371,10 @@ if ($QryParm->{'ts'} eq 'map') {
             $img = "$urn.jpg";
         }
         print "<IMG style=\"margin-bottom: 15px; background-color: beige; padding: 5px\" src=\"$img\"><BR>";
+    }
+    if ($QryParm->{'debug'}) {
+        print "<P><B>plist</B> (length=$#plist) = ".join(", ", @plist)."</P>";
+        print "<P><B>depth</B> = $depth</P>";
     }
 
     # -- case 'Timescales'
@@ -476,7 +480,7 @@ if ($QryParm->{'ts'} eq 'map') {
 print "<BR>$go2top</BR>";
 
 if ($QryParm->{'debug'}) {
-    print "<P><B>plist</B> = @plist</P>";
+    print "<P><B>plist</B> = ".join(", ", @plist)."</P>";
 }
 
 # ---- We're done !
