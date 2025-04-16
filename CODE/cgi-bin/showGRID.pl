@@ -62,6 +62,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use File::Copy qw(copy);
 use File::Find qw(find);
 use List::Util qw(first);
+use List::MoreUtils qw(uniq);
 use Image::Info qw(image_info dim);
 use POSIX qw(strftime);
 
@@ -419,6 +420,15 @@ if ($isProc) {
     }
     $htmlcontents .= "</TABLE></TD>\n";
 }
+
+# -----------
+# only for FORMs: table of input/output types
+if ($isForm) {
+        $htmlcontents .= tableStats('INPUT', \%GRID);
+        $htmlcontents .= tableStats('OUTPUT', \%GRID);
+        $htmlcontents .= "</TABLE></TD>\n";
+}
+
 $htmlcontents .= "</TR></TABLE>\n";
 $htmlcontents .= "</div></div>";
 print $htmlcontents;
@@ -890,6 +900,24 @@ sub checkingNODELIST {
         return "<TD align=center><input type=\"checkbox\" disabled=\"disabled\" id=\"check_$NODE{ALIAS}\[\]\"/></TD>";
     }
 }
+
+# make a HTML table of (IN|OUT)PUT types
+sub tableStats {
+    my %G = %{$_[1]};
+    my @f = grep(/^$_[0].._NAME/i,keys(%G));
+    my @itypes;
+    for (@f) {
+        (my $key = $_) =~ s/_NAME/_TYPE/g;
+        (my $type = $G{$key} ? $G{$key}:'numeric') =~ s/[\(:].*$//g;
+        push(@itypes,$type);
+    }
+    my $txt = "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>Type:</TH>"
+              .join("",map{"<TH>$_</TH>"} uniq(@itypes))."<TH>Total</TH></TR>\n";
+    $txt .= "<TR><TH>$_[0]s</TH>".join("",map { my $t = $_; "<TD align=\"right\">" . grep(/^$t$/,@itypes) . "</TD>" } uniq(@itypes))
+           ."<TD align=\"right\"><B>".@itypes."</B></TD></TR></TABLE></TD>\n";
+    return $txt;
+}
+
 
 __END__
 
