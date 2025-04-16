@@ -306,11 +306,11 @@ print "<BR>\n";
 print " \n";
 foreach my $i (sort keys %lists) {
     if (isok($FORM{uc($i)."_FILT"})) {
-        my @key = keys %{$lists{$i}};
+        my @keys = sort { $lists{$i}{$a}{'_SO_'} <=> $lists{$i}{$b}{'_SO_'} } keys %{$lists{$i}};
         print "<B>".$FORM{uc($i)."_NAME"}.":</B>&nbsp;<SELECT name=\"$i\" size=\"1\">\n";
         print "<OPTION value=\"\"></OPTION>\n";
         my $nam;
-        foreach (sort @key) {
+        foreach (@keys) {
             $nam = ($lists{$i}{$_}{name} ? $lists{$i}{$_}{name}:$lists{$i}{$_}{value});
             my $sel = ($QryParm->{$i} eq $_ ? "selected":"");
             print "<OPTION value=\"$_\" $sel>$_: $nam</OPTION>\n";
