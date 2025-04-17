@@ -299,6 +299,7 @@ for station in $NODES; do
 		# setting paths
 		res="$DEST/$FID/$yyyy/$yyyy-$mm-$dd.$FID"
 		gipsyres="$res.tdp"
+		gipsytree="$res.tree"
 		gipsycov="$res.gdcov"
 		gipsylog="$res.log"
 		gipsyfullog_targz="$res.fullog.7z" # will be used only if $FULLOG is activated
@@ -391,8 +392,10 @@ for station in $NODES; do
 							product="Ultra";;
 							esac
 
-							# calling download_orbit
-							$PROGDIR/download_orbit 0 $ORBITSDIR -o $product -d $ymd $DOWNLOAD_OPTIONS
+							if [ ! -z $DOWNLOAD_ORBIT ]; then
+								# calling download_orbit
+								$PROGDIR/download_orbit 0 $ORBITSDIR -o $product -d $ymd $DOWNLOAD_OPTIONS
+							fi
 
 							if [ -e "$ORBITSDIR/$product/$yyyy/$yyyy-$mm-$dd.eo.gz" ]; then
 								ORBITOK=1
@@ -482,6 +485,11 @@ for station in $NODES; do
 						fi
 					fi
 				done
+
+				if [ -z $ERROR ] && [ ! -z $SAVE_DEBUG_TREE ] && [ -e $tmpdir/debug.tree ]; then
+					cp $tmpdir/debug.tree $gipsytree
+				fi
+
 				if [[ -z $ERROR && -e $LOG ]]; then
 					mv -f $LOG $gipsylog
 					gzip -f $gipsylog
