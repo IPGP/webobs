@@ -169,6 +169,8 @@ PERNODE_COMPONENT_OFFSET_M|0.01
 PERNODE_TIMEZOOM|
 
 # --- SUMMARY graphs
+# selection of nodes (FID) to plot (default is all associated nodes)
+SUMMARY_NODELIST|
 SUMMARY_LINESTYLE|o
 SUMMARY_TITLE|{\fontsize{14}{\bf${NAME} - $velref} ($timescale)}
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)

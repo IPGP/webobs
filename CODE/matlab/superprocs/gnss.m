@@ -131,6 +131,7 @@ pernode_timezoom = field2num(P,'PERNODE_TIMEZOOM',0);
 pernode_cmpoff = field2num(P,'PERNODE_COMPONENT_OFFSET_M',0.01);
 
 % SUMMARY parameters
+summary_nodes = strtrim(split(field2str(P,'SUMMARY_NODELIST'),','));
 summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','o');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name - $itrf} ($timescale)}');
 summary_timezoom = field2num(P,'SUMMARY_TIMEZOOM',0);
@@ -412,6 +413,19 @@ for r = 1:numel(P.GTABLE)
 	% station offset
 	n0 = numel(N) - 1;
 	staoffset = ((0:n0) - n0/2)*summary_staoff;
+    
+    % possible subset of nodes
+    if ~isempty(summary_nodes)
+        ksum = zeros(size(summary_nodes));
+        for n = 1:numel(summary_nodes)
+            k = find(ismemberlist({N.FID},summary_nodes(n)));
+            if ~isempty(k)
+                ksum(n) = k;
+            end
+        end
+    else
+        ksum = 1:numel(N);
+    end
 
 	% to make a synthetic figure we must build a new matrix of processed data first...
 	X = repmat(struct('t',[],'d',[],'w',[]),numel(N),1);
@@ -454,7 +468,13 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 100;
         OPT = structmerge(OPT,P,'^TREND_');
-		smartplot(X,tlim,P.GTABLE(r),OPT);
+        % reassign offset and color for selected nodes
+        for n = 1:numel(ksum)
+            kn = ksum(n);
+            X(kn).d = X(kn).d + repmat(staoffset(n) - staoffset(kn),size(X(kn).d));
+			X(kn).rgb = scolor(n);
+        end
+		smartplot(X(ksum),tlim,P.GTABLE(r),OPT);
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
