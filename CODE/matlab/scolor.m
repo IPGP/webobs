@@ -4,7 +4,7 @@ function c = scolor(i)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 1999
-%	Updated: 2015
+%	Updated: 2025
 
 % Color order
 cc = [ ...
@@ -17,6 +17,7 @@ cc = [ ...
 0.5	0	0.5;
 0       0.3     0.8;
 0       0.8     0.3;
+1.0     0.3     0.3;  
 0.7     0.7       0;
 0.3     0.3     0.3;
 ];
