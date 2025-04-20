@@ -1076,7 +1076,7 @@ print "<a href=$m3g_url_edit target=\"_blank\" id=\"m3g_link\" onClick=\"return 
 print "</TD></TR></TABLE>\n";
 
 # --- show THEIA fields ?
-print "<DIV id=\"theiaChecked\" style=\"display:none;\"><LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT type=\"checkbox\" name=\"saveAuth\" onchange=\"showHideTheia(this)\" value=0></LABEL>&nbsp;<BR><BR></DIV>";
+print "<DIV id=\"theiaChecked\" style=\"display:none;\"><HR><LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT type=\"checkbox\" name=\"saveAuth\" onchange=\"showHideTheia(this)\" value=0></LABEL>&nbsp;<BR><BR></DIV>";
 print "<DIV id=\"showHide\" style=\"display:none;\">";
 
 # --- PRODUCER
@@ -1296,11 +1296,11 @@ print "</FIELDSET>";
 if (uc($GRIDType) eq "PROC") {
     print "<FIELDSET><LEGEND>$__{'Procs Parameters'}</LEGEND>";
     print "<TABLE><TR><TD style=\"border:0;text-align:left\" colspan=2>";
-    print "<LABEL for=\"proc\">Proc name: </LABEL>";
+    print "<LABEL for=\"proc\">$__{'Proc name:'}</LABEL>";
     print "<B>$GRID{NAME}</B> (".(defined($GRID{NODESLIST}) ? scalar(@{$GRID{NODESLIST}}):"0")." nodes)<INPUT hidden id=\"proc\" name=\"proc\" value=\"\" style=\"background-color:transparent;border:none\"><BR><BR>\n";
 
     # --- RAWFORMAT list
-    print "<LABEL for=\"RawFormat\">Raw format: </label> <select onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawformat}')\" name=\"rawformat\" size=\"1\" onChange=\"maj_rawformat()\">";
+    print "<LABEL for=\"RawFormat\">$__{'Raw format:'}</label> <select onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawformat}')\" name=\"rawformat\" size=\"1\" onChange=\"maj_rawformat()\">";
     my %rawfmt;
     my @fmtfid;
     for (keys(%rawFormats)) {
@@ -1316,10 +1316,10 @@ if (uc($GRIDType) eq "PROC") {
     print "</SELECT><BR>\n";
 
     # --- RAWDATA
-    print "<LABEL for=\"rawdata\">$__{'Raw data source'}: </label> <input size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawdata}')\" type=\"text\" id=\"rawdata\" name=\"rawdata\" value=\"$usrRAWDATA\"/><br/>";
+    print "<LABEL for=\"rawdata\">$__{'Raw data source:'}</label> <input size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawdata}')\" type=\"text\" id=\"rawdata\" name=\"rawdata\" value=\"$usrRAWDATA\"/><br/>";
 
     # --- FDSN Network Code
-    print "<LABEL for=\"fdsn\">Network code: </LABEL>";
+    print "<LABEL for=\"fdsn\">$__{'Network code:'}</LABEL>";
     print "<SELECT name=\"fdsn\" id=\"fdsn\" size=\"1\" onMouseOut=\"nd()\" value=\"$usrFDSN\" onMouseOver=\"overlib('$__{help_creationstation_fdsn}')\">";
     for ("",sort(keys(%FDSN))) {
         print "<OPTION".((trim($_) eq trim($usrFDSN)) ? " selected ":"")." value=$_>".($_ ne "" ? "$_: ":"")."$FDSN{$_}</option>\n";
@@ -1328,12 +1328,12 @@ if (uc($GRIDType) eq "PROC") {
     print "</TD>\n<TD style=\"border:0;text-valign:top\">";
 
     # --- DESCRIPTION
-    print "<LABEL for=\"description\">$__{'Description'}: </LABEL>";
+    print "<LABEL for=\"description\">$__{'Description:'}</LABEL>";
     print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\""
           ." cols=\"40\" name=\"description\" id=\"description\">$usrDesc</TEXTAREA><BR><BR>\n";
     
     # --- CHANNEL_LIST
-    print "<LABEL for=\"chanlist\">$__{'Channel list'}: </LABEL>";
+    print "<LABEL for=\"chanlist\">$__{'Channel list:'}</LABEL>";
     my %carCLB = readCfg("$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb");
     if (%carCLB) {
         my @select = split(/,/,$usrCHAN);
@@ -1349,7 +1349,7 @@ if (uc($GRIDType) eq "PROC") {
         }
         print "</SELECT>";
     } else {
-        print "no calibration file.";
+        print "$__{'no calibration file'}.";
     }
     print "</TD></TR>\n";
 
