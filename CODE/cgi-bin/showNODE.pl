@@ -548,9 +548,9 @@ if (uc($GRIDType) eq 'PROC') {
         my @params;
         foreach my $k (sort { $fieldCLB{$a}{'_SO_'} <=> $fieldCLB{$b}{'_SO_'} } keys %fieldCLB) { push(@params, $k); }
 
-        print "<TABLE><TR>";
+        print "<TABLE width='100%'><TR>";
         foreach my $k ( @params ) {
-            print "<TH><SMALL>",$fieldCLB{$k}{"Name"}."</SMALL></TH>";
+            print "<TH align='left'><SMALL>",$fieldCLB{$k}{"Name"}."</SMALL></TH>";
         }
         print "</TR>\n";
         my @select = split(/,/,$chanlist);
@@ -587,7 +587,7 @@ if ($nbemeta) {
     # Row "M3G"
     if ( $NODE{GNSS_9CHAR} ) {
         my $gnss9char = $NODE{GNSS_9CHAR};
-        my $txt = $__{'M3G GNSS'};
+        my $txt = 'M<sup>3</sup>G GNSS';
         my $m3g_url_sitelog = $WEBOBS{'M3G_EXPORTLOG'}.$gnss9char;
         my $m3g_url_gml = $WEBOBS{'M3G_EXPORTXML'}.$gnss9char;
         print "<TD valign=\"top\">".($editOK ? "<A href=\"$cgiConf\">$txt</A>":$txt)."</TD>";
@@ -597,9 +597,9 @@ if ($nbemeta) {
         if ( $NODE{M3G_AVAIABLE} ) {
             my $gmlfile = "$NODES{PATH_NODES}/$NODEName/$gnss9char.xml";
             my @rec;
-            my $txt_rec = "<TR><TH><SMALL>Receiver history feature</SMALL></TH></TR><TR><TD>";
+            my $txt_rec;
             my @ant;
-            my $txt_ant = "<TR><TH><SMALL>Antenna history feature</SMALL></TH></TR><TR><TD>";
+            my $txt_ant;
 
             my $dt_file = "click to import";
             my $icon = "Import";
@@ -615,10 +615,10 @@ if ($nbemeta) {
             }
 
             my $m3g_xml = "<IMG src='/icons/refresh.png' style='vertical-align:middle;cursor:pointer'"
-                         ." onClick=\"window.open('/cgi-bin/get_gml_m3g.pl?node=$GRIDType.$GRIDName.$NODEName\"')"
+                         ." onClick=\"window.open('/cgi-bin/get_gml_m3g.pl?node=$GRIDType.$GRIDName.$NODEName','_self')\""
                          ." title='$icon GNSS metadata from M3G'>";
 
-            print "<P>M3G Metadata: $m3g_xml <I>($dt_file)</I></P>\n";
+            print "<P>M<sup>3</sup>G Metadata: $m3g_xml <I>($dt_file)</I></P>\n";
             print "$txt_rec<BR>\n";
             print "$txt_ant\n";
         }

@@ -56,7 +56,7 @@ msgid "help_creationstation_type"
 msgstr "The TYPE is a short description of the node which complements the full name (e.g., main equipment model)"
 
 msgid "help_creationstation_tz"
-msgstr "Enter the time zone of node (used for lifetime and events date/time), in hours from GMT (ex: +0)"
+msgstr "Enter the time zone of node (used for lifetime and events date/time), in hours from UTC (ex: +0)"
 
 msgid "help_creationstation_fid"
 msgstr "The FID fields correspond to identification code(s) that could be used in data processing, so it is functionnal"
@@ -89,7 +89,7 @@ msgid "help_creationstation_tele_acq"
 msgstr "Enter the station IDs of repeater(s) and acquisition stations, comma or space-delimited, in the order from station to acquisition"
 
 msgid "help_creationstation_proc_tz"
-msgstr "Enter the time zone of data, in hours from GMT (ex: +0)"
+msgstr "Enter the time zone of data, in hours from UTC (ex: +0)"
 
 msgid "help_creationstation_proc_acqrate"
 msgstr "Enter the acquisition period in days, simple arithmetics allowed (ex: 1/86400 for 1 second)"

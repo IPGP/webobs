@@ -308,6 +308,15 @@ msgstr "Dernière donnée"
 msgid "Last status check on"
 msgstr "Dernier état effectué le"
 
+msgid "External Metadata"
+msgstr "Métadonnées externes"
+
+msgid "GNSS 9-char code"
+msgstr "Code GNSS 9 caractères"
+
+msgid "Download"
+msgstr "Télécharger"
+
 msgid "Code/ID"
 msgstr "Code/ID"
 
@@ -892,7 +901,7 @@ msgid "help_creationstation_type"
 msgstr "La champ TYPE est une description courte du node qui complète le nom long (par ex., le modèle d\\'un équipement)"
 
 msgid "help_creationstation_tz"
-msgstr "Entrez le fuseau horaire (utilisé pour les dates d\\'activité et les événements du node), en heures par rapport à GMT (ex: +0)"
+msgstr "Entrez le fuseau horaire (utilisé pour les dates d\\'activité et les événements du node), en heures par rapport à UTC (ex: +0)"
 
 msgid "help_creationstation_lat"
 msgstr "Latitude de la station (WGS84, degrés décimaux OU deg/minOU deg/min/sec- les 3 champs seront pris en compte)"
@@ -925,7 +934,7 @@ msgid "help_creationstation_fdsn"
 msgstr "Code officiel de l\\'International Federation of Digital Seismograph Network (FDSN/IRIS)"
 
 msgid "help_creationstation_proc_tz"
-msgstr "Entrez le fuseau horaire des données, en heures par rapport à GMT (ex: +0)"
+msgstr "Entrez le fuseau horaire des données, en heures par rapport à UTC (ex: +0)"
 
 msgid "help_creationstation_proc_acqrate"
 msgstr "Entrez la période d\\'acquisition en jours, les formules arithmétiques simples sont autorisées (ex: 1/86400 pour 1 seconde)"

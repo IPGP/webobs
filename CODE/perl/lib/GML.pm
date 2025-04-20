@@ -222,9 +222,9 @@ sub gml2htmltable {
 
     ###### Receiver
     if ( $featsection eq "gnssrec" ) {
-        push(@outlines,"<TABLE><TR><TH colspan=\"6\"><SMALL>Receiver History Features</SMALL</TH></TR>");
-        push(@outlines, "<TR><TH><SMALL>"
-                       .join('</SMALL></TH><TH><SMALL>',("Date installed","Date removed","Model","Satellite system","Serial number","Firmware version"))
+        push(@outlines,"<TABLE width='100%'><TR><TH colspan=\"6\"><SMALL>Receiver Features</SMALL</TH></TR>");
+        push(@outlines, "<TR><TH align='left'><SMALL>"
+                       .join("</SMALL></TH><TH align='left'><SMALL>",("Date installed","Date removed","Model","Satellite system","Serial number","Firmware version"))
                        ."</SMALL></TH></TR>\n");
 
         my @RecList = gmlarray2nodearray(\@Gml,"rec","all");
@@ -242,9 +242,9 @@ sub gml2htmltable {
         }
         push(@outlines,"</TABLE>");
     } elsif ( $featsection eq "gnssant" ) {
-        push(@outlines,"<TABLE><TR><TH colspan=\"7\"><SMALL>Antenna History Features</SMALL</TH></TR>");
-        push(@outlines, "<TR><TH><SMALL>"
-                       .join('</SMALL></TH><TH><SMALL>',("Date installed","Date removed","Model","Radome","Serial number","N. Align. (°)","Cable len. (m)"))
+        push(@outlines,"<TABLE width='100%'><TR><TH colspan=\"7\"><SMALL>Antenna Features</SMALL</TH></TR>");
+        push(@outlines, "<TR><TH align='left'><SMALL>"
+                       .join("</SMALL></TH><TH align='left'><SMALL>",("Date installed","Date removed","Model","Radome","Serial number","N. Align. (°)","Cable len. (m)"))
                        ."</SMALL></TH></TR>\n");
 
         my @AntList = gmlarray2nodearray(\@Gml,"ant","all");
