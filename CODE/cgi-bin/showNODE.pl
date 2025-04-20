@@ -235,7 +235,7 @@ if (uc($GRIDType) =~ /^VIEW|PROC|FORM$/) {
       ."<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName\">$GRID{NAME}</A> |";
 }
 print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> "
-  ."| <IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'> ]</P>";
+  ."| <IMG src='/icons/refresh.png' style='vertical-align:middle;cursor:pointer' title='Refresh' onClick='document.location.reload(false)'> ]</P>";
 
 print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_BIN},$WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
 
@@ -269,18 +269,6 @@ if ($editOK) {
 }
 print "</TH><TD colspan=\"2\">$NODE{TYPE}</TD></TR>\n";
 
-# Row "GNSS 9-code" ----------------------------------------------------
-#
-if ($NODE{GNSS_9CHAR}) {
-    print "<TR><TH valign=\"top\">";
-    if ($editOK) {
-        print "<A href=\"$cgiConf\">GNSS 9-code</A>";
-    } else {
-        print "GNSS 9-code";
-    }
-    print "</TH><TD colspan=\"2\">$NODE{GNSS_9CHAR}</TD></TR>\n";
-}
-
 # Row "Lifetime" ----------------------------------------------------
 #
 my $installDate = $NODE{INSTALL_DATE};
@@ -291,6 +279,18 @@ print "<TD colspan=\"2\">"
   ."$__{'Started on'}: ".($installDate ne "NA" ? "<B>$installDate</B>":"?")
   ." / ".($endDate ne "NA" ? "$__{'Ended on'}: <B>$endDate</B>":"Active")
   ."</TD></TR>\n";
+
+# Row "infos"
+#
+printInfo("info.txt","Information",$editOK,"$GRIDType.$GRIDName.$NODEName");
+
+# Row "installation"
+#
+printInfo("installation.txt","Installation",$editOK,"$GRIDType.$GRIDName.$NODEName");
+
+# Row "access"
+#
+printInfo("acces.txt","Access",$editOK,"$GRIDType.$GRIDName.$NODEName");
 
 # Row "coordinates" and localization map --------------------------------------
 #
@@ -579,56 +579,54 @@ if (uc($GRIDType) eq 'PROC') {
     print "</TD></TR>\n";
 }
 
-# Row "installation"
+# Row external metadata ----------------------------------------------------
 #
-printInfo("installation.txt","Installation",$editOK,"$GRIDType.$GRIDName.$NODEName");
+my $nbemeta = ($NODE{GNSS_9CHAR} ne ""); # how many metadata (for now only GNSS9CHAR...)
+if ($nbemeta) {
+    print "<TR><TH valign=\"top\" rowspan=\"$nbemeta\">$__{'External Metadata'}</TH>\n";
+    # Row "M3G"
+    if ( $NODE{GNSS_9CHAR} ) {
+        my $gnss9char = $NODE{GNSS_9CHAR};
+        my $txt = $__{'M3G GNSS'};
+        my $m3g_url_sitelog = $WEBOBS{'M3G_EXPORTLOG'}.$gnss9char;
+        my $m3g_url_gml = $WEBOBS{'M3G_EXPORTXML'}.$gnss9char;
+        print "<TD valign=\"top\">".($editOK ? "<A href=\"$cgiConf\">$txt</A>":$txt)."</TD>";
+        print "<TD><P>$__{'GNSS 9-char code'}: <SPAN class=\"code\">$NODE{GNSS_9CHAR}</SPAN><BR>\n"
+             ."<P>$__{'Download'}: <a href=".$m3g_url_sitelog.">SiteLog</a> (txt) | <a href=".$m3g_url_gml.">GeodesyML</a> (XML)\n"
+             ."</P>\n";
+        if ( $NODE{M3G_AVAIABLE} ) {
+            my $gmlfile = "$NODES{PATH_NODES}/$NODEName/$gnss9char.xml";
+            my @rec;
+            my $txt_rec = "<TR><TH><SMALL>Receiver history feature</SMALL></TH></TR><TR><TD>";
+            my @ant;
+            my $txt_ant = "<TR><TH><SMALL>Antenna history feature</SMALL></TH></TR><TR><TD>";
 
-# Row "M3G"
-#
-if ( $NODE{GNSS_9CHAR} && $NODE{M3G_AVAIABLE} ) {
-    print "<TR><TH valign=\"top\">";
-    my $txt = $__{'M3G GNSS Metadata'};
-    my $gnss9char = $NODE{GNSS_9CHAR};
-    my $gmlfile = "$NODES{PATH_NODES}/$NODEName/$gnss9char.xml";
-    my $m3g_url_sitelog = $WEBOBS{'M3G_EXPORTLOG'}.$gnss9char;
-    my $m3g_url_gml = $WEBOBS{'M3G_EXPORTXML'}.$gnss9char;
-    my @rec;
-    my $txt_rec = "<TR><TH>Receiver history feature</TH></TR><TR><TD>";
-    my @ant;
-    my $txt_ant = "<TR><TH>Antenna history feature</TH></TR><TR><TD>";
+            my $dt_file = "click to import";
+            my $icon = "Import";
+            if (-e $gmlfile) {
+                @rec = gml2htmltable($gmlfile,"gnssrec");
+                chomp(@rec);
+                $txt_rec = join("\n",@rec);
+                @ant  = gml2htmltable($gmlfile,"gnssant");
+                chomp(@ant);
+                $txt_ant = join("\n",@ant);
+                $dt_file = "last update ".localtime((stat($gmlfile))[9]);
+                $icon = "Update";
+            }
 
-    my $m3g_link_sitelog = "<a href=".$m3g_url_sitelog.">Download $gnss9char sitelog on your local disk</a>";
-    my $m3g_link_gml = "<a href=".$m3g_url_gml.">Download $gnss9char GeodesyML on your local disk</a>";
+            my $m3g_xml = "<IMG src='/icons/refresh.png' style='vertical-align:middle;cursor:pointer'"
+                         ." onClick=\"window.open('/cgi-bin/get_gml_m3g.pl?node=$GRIDType.$GRIDName.$NODEName\"')"
+                         ." title='$icon GNSS metadata from M3G'>";
 
-    if (-e $gmlfile) {
-        @rec = gml2mmdtable($gmlfile,"gnssrec");
-        chomp(@rec);
-        $txt_rec = join("\n",@rec);
-        @ant  = gml2mmdtable($gmlfile,"gnssant");
-        chomp(@ant);
-        $txt_ant = join("\n",@ant);
+            print "<P>M3G Metadata: $m3g_xml <I>($dt_file)</I></P>\n";
+            print "$txt_rec<BR>\n";
+            print "$txt_ant\n";
+        }
+    
+        print "</TD></TR>\n";
     }
-
-    #### get geodesyML from M3G
-    my $GetGml = "/cgi-bin/get_gml_m3g.pl";
-    my $m3g_xml = "<a href=\"$GetGml?node=$GRIDType.$GRIDName.$NODEName\">Import GNSS metadata from M3G</a>";
-
-    if ($editOK) {
-        print "<A href=\"$cgiConf\">$txt</A>";
-    } else {
-        print "M3G GNSS Metadata</TH>";
-    }    #print "</TH><TD colspan=\"2\">".join("<br>",$m3g_link_sitelog,$m3g_link_gml,$m3g_xml,$txt_rec,$txt_ant)."</TD></TR>\n";
-    print "</TH><TD>".join("<br>",$m3g_link_sitelog,$m3g_link_gml,$m3g_xml)."<BR>\n";
-    print "<TABLE><TR><TH>Receiver history feature</TH><TH>Antenna history feature</TH></TR><TR><TD>".wiki2html($txt_rec)."</TD><TD>".wiki2html($txt_ant)."</TD></TR></TABLE></TD>";
 }
 
-# Row "infos"
-#
-printInfo("info.txt","Information",$editOK,"$GRIDType.$GRIDName.$NODEName");
-
-# Row "access"
-#
-printInfo("acces.txt","Access",$editOK,"$GRIDType.$GRIDName.$NODEName");
 
 # Rows "Features"
 #

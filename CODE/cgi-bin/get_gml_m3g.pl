@@ -3,9 +3,7 @@
 use strict;
 use warnings;
 use File::Basename;
-use File::Fetch;
 
-#use MIME::Head;
 use HTTP::Tiny;
 
 use CGI;
@@ -34,14 +32,11 @@ my $me = $ENV{SCRIPT_NAME};
 my $QryParm   = $cgi->Vars;
 my $node   = $QryParm->{'node'}       // "";
 
-my @NID = split(/[\.\/]/, trim($QryParm->{'node'}));
+my @NID = split(/[\.\/]/, trim($node));
 
 my $GRIDName = my $GRIDType = my $NODEName = "";
 my %S;
 my %NODE;
-
-my $outfile ="";
-my $outdir ="";
 
 # ---- see what file has to be edited, and corresponding authorization for client
 #
@@ -54,29 +49,22 @@ if (scalar(@NID) == 3) {
 
     my $m3g_url_gml = $WEBOBS{'M3G_EXPORTXML'}.$NODE{GNSS_9CHAR};
 
-    ### attempt to get the final local filename
-# my $m3g_url_log = "https://gnss-metadata.eu/sitelog/exportlog?station=".$NODE{GNSS_9CHAR};
-# my $response = HTTP::Tiny->new->get($m3g_url_gml);
-# print($m3g_url_log);
-# print($response->{'headers'}->{'content-disposition'});
+    ### attempt to get the final sitelog
+    my $outdir = "$NODES{PATH_NODES}/$NODEName";
+    my $outfile = "$outdir/m3gexportxml";
+    my $ff = qx(curl -o $outfile $m3g_url_gml);
 
-    my $ff = File::Fetch->new(uri => $m3g_url_gml);
-    $outdir = "$NODES{PATH_NODES}/$NODEName/";
-    my $outfile = $ff->fetch( to => $outdir );
-
-    if ($ff->error)
-    {
-        print "Something went wrong when downloading \n";
+    if ($ff || -z $outfile) {
+        print "Something went wrong when downloading: $ff.\n";
         print($m3g_url_gml);
         print "<form> <input type='button' value='Go back' onclick='history.back()'> </form>";
     } else {
-        my $outfileok = $outdir . $NODE{GNSS_9CHAR} . '.xml';
+        my $outfileok = "$outdir/$NODE{GNSS_9CHAR}.xml";
         rename($outfile , $outfileok) or die ( "Error in renaming $outfile to $outfileok" );
 
         print "Metadata have been correctly downloaded in $outfileok";
         print($ENV{M3G_EXPORTXML});
-        print " Tip: you must refresh node's page after the very first import";
-        print "<form> <input type='button' value='Go back' onclick='history.back()'> </form>";
+        print "<form> <input type='button' value='OK' onclick=\"window.location.href='/cgi-bin/showNODE.pl?node=$node'\"> </form>";
     }
 
 } else {
