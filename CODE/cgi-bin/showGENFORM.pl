@@ -205,6 +205,7 @@ $sth = $dbh->prepare($stmt);
 $rv = $sth->execute() or die $DBI::errstr;
 my @rownames = split(/\|/,$sth->fetchrow_array());
 $sth->finish();
+my @inputoutputs = @rownames[12..@rownames-1];
 
 # make an hash of hash of input type lists
 my %lists;
@@ -304,6 +305,7 @@ for ("|$__{'All nodes'}",@NODESSelList) {
 print "</select>";
 print "<BR>\n";
 print " \n";
+# filters for inputs/outputs with _FILT option
 foreach my $i (sort keys %lists) {
     if (isok($FORM{uc($i)."_FILT"})) {
         my @keys = sort { $lists{$i}{$a}{'_SO_'} <=> $lists{$i}{$b}{'_SO_'} } keys %{$lists{$i}};
@@ -318,6 +320,7 @@ foreach my $i (sort keys %lists) {
         print "</SELECT>\n";
     }
 }
+# checkboxes for fieldsets with _TOGGLE option
 foreach (@fieldsets) {
     if (isok($FORM{$_.'_TOGGLE'})) {
         my $fs = lc($_);
@@ -557,6 +560,7 @@ if ($QryParm->{'debug'}) {
     <LI>startDate = $startDate, endDate = $endDate, default days = $FORM{DEFAULT_DAYS}</LI>
     <LI>Conf = ".join(',',sort keys %FORM)."</LI>
     <LI>Columns = ".join(',',@rownames)."</LI>
+    <LI>Inputs/outputs = ".join(',',@inputoutputs)."</LI>
     <LI>Formulas = ".join(',',@formulas)."</LI>
     <LI>Fieldsets = ".join(',',@fieldsets)."</LI>
     <LI>Field names = ".join(";", map { join(",", @$_) } @field_names)."</LI>
