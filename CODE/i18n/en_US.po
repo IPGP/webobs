@@ -109,6 +109,15 @@ msgstr "Click to refresh the list of features below"
 msgid "help_creationstation_n2n"
 msgstr "Enter the children node ID for this feature, comma delimited"
 
+msgid "help_formnode_gnss_9char"
+msgstr "Enter the 9-char code for a GNSS station"
+
+msgid "help_formnode_m3g_check"
+msgstr "Check to display links and M3G metadata"
+
+msgid "help_formnode_edit_m3g"
+msgstr "Edit metadata on the M3G site (requires prior login to M3G)"
+
 # formCLB.pl
 
 msgid "help_clb_date"
