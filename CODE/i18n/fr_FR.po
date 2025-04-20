@@ -942,6 +942,21 @@ msgstr "Entrez la période d\\'acquisition en jours, les formules arithmétiques
 msgid "help_creationstation_proc_acqdelay"
 msgstr "Entrez le délai d\\'acquisition en jours, les formules arithmétiques simples sont autorisées (ex: 1/86400 pour 1 seconde)"
 
+msgid "help_formnode_gnss_9char"
+msgstr "Entrer le code à 9 caractères de la station GNSS"
+
+msgid "Show links to M3G"
+msgstr "Afficher les liens vers M3G"
+
+msgid "help_formnode_m3g_check"
+msgstr "Cocher pour afficher les liens et métadonnées M3G"
+
+msgid "help_formnode_edit_m3g"
+msgstr "Éditer les métadonnées sur le site M3G (nécessite un login préalable)"
+
+msgid "Edit sitelog on M3G"
+msgstr "Éditer le sitelog sur M3G"
+
 msgid "Language selection"
 msgstr "Choix de la langue"
 
