@@ -889,13 +889,13 @@ msgid "help_creationstation_network"
 msgstr "Sélectioner le réseau concerné"
 
 msgid "help_creationstation_id"
-msgstr "Codage/ID de la fiche:<ul><li>4 caractères exactement (compléter éventuellement avec des 0)<li>ID unique pour le réseau concerné</ul>"
+msgstr "Code/ID dy node: séquence unique de caractères alphanumériques (ne pourra être modifié)"
 
 msgid "help_creationstation_name"
-msgstr "Entrez le nom long de la fiche (champ libre pour affichage)"
+msgstr "Entrez le nom long du node (champ libre pour affichage)"
 
 msgid "help_creationstation_alias"
-msgstr "Le champ ALIAS est le code/nom court donné à la fiche (préférablement unique au sein du réseau) mais n\\'est pas fonctionnel"
+msgstr "Le champ ALIAS est le code/nom court donné au node (préférablement unique au sein du réseau), mais n\\'est pas fonctionnel"
 
 msgid "help_creationstation_type"
 msgstr "La champ TYPE est une description courte du node qui complète le nom long (par ex., le modèle d\\'un équipement)"
@@ -904,7 +904,7 @@ msgid "help_creationstation_tz"
 msgstr "Entrez le fuseau horaire (utilisé pour les dates d\\'activité et les événements du node), en heures par rapport à UTC (ex: +0)"
 
 msgid "help_creationstation_lat"
-msgstr "Latitude de la station (WGS84, degrés décimaux OU deg/minOU deg/min/sec- les 3 champs seront pris en compte)"
+msgstr "Latitude de la station (WGS84, degrés décimaux OU deg/min OU deg/min/sec- les 3 champs seront pris en compte)"
 
 msgid "help_creationstation_lon"
 msgstr "Longitude de la station (WGS84, degrés décimaux OU deg/min OU deg/min/sec- les 3 champs seront pris en compte)"
@@ -956,6 +956,37 @@ msgstr "Éditer les métadonnées sur le site M3G (nécessite un login préalabl
 
 msgid "Edit sitelog on M3G"
 msgstr "Éditer le sitelog sur M3G"
+
+msgid "Proc name:"
+msgstr "Nom de la PROC :"
+
+msgid help_creationstation_rawformat
+msgstr "Sélectionner le format des données (défaut = rawformat de la PROC)"
+
+msgid help_creationstation_rawdata
+msgstr "Indiquer la source des données (défaut = rawdata de la PROC)"
+
+msgid "Network code:"
+msgstr "Code réseau :"
+
+msgid help_creationstation_fdsn
+msgstr "Sélectionner le code réseau FDSN"
+
+msgid "Description:"
+msgstr "Description :"
+
+msgid help_creationstation_description
+msgstr "Entrer la description détaillée du NODE pour cette PROC"
+
+msgid "Channel list:"
+msgstr "Liste des canaux :"
+
+msgid help_creationstation_chanlist
+msgstr "Sélectionner les canaux à importer dans la PROC (sélection multiple)"
+
+msgid "no calibration file"
+msgstr "pas de fichier de calibration"
+
 
 msgid "Language selection"
 msgstr "Choix de la langue"
