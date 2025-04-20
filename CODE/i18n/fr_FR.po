@@ -960,8 +960,14 @@ msgstr "Éditer le sitelog sur M3G"
 msgid "Proc name:"
 msgstr "Nom de la PROC :"
 
+msgid "Raw format:"
+msgstr "Format des données :"
+
 msgid "help_creationstation_rawformat"
 msgstr "Sélectionner le format des données (défaut = rawformat de la PROC)"
+
+msgid "Raw data source:"
+msgstr "Source des données :"
 
 msgid "help_creationstation_rawdata"
 msgstr "Indiquer la source des données (défaut = rawdata de la PROC)"
@@ -971,6 +977,9 @@ msgstr "Code réseau :"
 
 msgid "Description:"
 msgstr "Description :"
+
+msgid "help_creationstation_description"
+msgstr "Décrit les propriétés observées du jeu de données, telles que la définition, la couverture spatiale ou la méthodologie d\\'acquisition des mesures. Résumé des objectifs scientifiques du NODE pour cette PROC en particulier."
 
 msgid "Channel list:"
 msgstr "Liste des canaux :"
@@ -1894,9 +1903,6 @@ msgid "Request results"
 msgstr "Résultat des requêtes"
 
 # ---- formNODE.pl
-
-msgid "help_creationstation_description"
-msgstr "Décrit les propriétés observées du jeu de données, telles que la définition, la couverture spatiale ou la méthodologie d'acquisition des mesures. Résumé des objectifs scientifiques du NODE pour cette PROC en particulier."
 
 msgid "show/hide THEIA metadata fields"
 msgstr "montrer/cacher les champs de métadonnées THEIA"
