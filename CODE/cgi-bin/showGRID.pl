@@ -363,7 +363,7 @@ if ($isForm) {
     $htmlcontents .= "<LI>$__{'Form structure:'} <B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B> $__{'inputs'},"
       ." <B>".grep(/^OUTPUT.._NAME/,keys(%GRID))."</B> $__{'outputs'}</LI>\n";
     $htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
-    $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>GMT".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
+    $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>UTC".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'})</LI>\n";
 }
 
