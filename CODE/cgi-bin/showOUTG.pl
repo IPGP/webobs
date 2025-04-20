@@ -204,7 +204,7 @@ if (-d "$OUTG/$WEBOBS{PATH_OUTG_EVENTS}") {
 if ($#tslist >= 0 && -d "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}") {
     print "| $__{'Time scales:'} $tsHtml ";
 }
-print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle\" title=\"Refresh\" onclick=\"document.location.reload(false)\"> ]\n";
+print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle;cursor:pointer\" title=\"Refresh\" onclick=\"document.location.reload(false)\"> ]\n";
 
 # build @elist = the list of available .eps graphs for timescale $tslist[$tsSelected]
 my (@elist) = glob "$OUTG/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.eps";

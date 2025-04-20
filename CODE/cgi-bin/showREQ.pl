@@ -86,7 +86,7 @@ print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ $__{'Request Forms:'} "
   ."<a href=\"/cgi-bin/formGRIDMAPS.pl\"><b>Gridmaps</b></a> | "
   ."Users: "
   .($QryParm->{'usr'} eq "all" ? "<a href=\"$myself\"><b>$CLIENT</b></a> | all":"$CLIENT | <a href=\"$myself?usr=all\"><b>all</b></a>")." | "
-  ."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'>"
+  ."<IMG src='/icons/refresh.png' style='vertical-align:middle;cursor:pointer' title='Refresh' onClick='document.location.reload(false)'>"
   ." ]</P>";
 
 $table = "<TABLE><TR><TH>$__{'Date & Time'}</TH><TH>$__{'Host'}</TH><TH>$__{'User'}</TH><TH>$__{'Time Span'}</TH><TH>$__{'Params'}</TH>
