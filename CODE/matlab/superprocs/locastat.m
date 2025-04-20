@@ -18,7 +18,7 @@ function locastat(sta)
 
 %   Author: F. Beauducel/WEBOBS, IPGP
 %   Created: 2007-05-15
-%   Updated: 2021-01-21
+%   Updated: 2025-04-20
 
 % this will force update of all maps older than this date
 forceupdate = datenum(2019,7,23);
@@ -168,7 +168,7 @@ for i = 1:length(k)
 		figure, clf
 		set(gcf,'PaperUnits','Inches','PaperSize',[10,5*(1+pcart)],'PaperPosition',[0,0,10,5*(1+pcart)],'Color',[1,1,1])
 
-		% ----- low-resolution map (frame n�0)
+		% ----- low-resolution map (frame n°0)
 		axes('Position',[0.01+bw/100,pcart/(1+pcart)+2*bw/100+0.01,0.25-bw/100-0.01,1-pcart/(1+pcart)-3*bw/100-0.01]);
 		dem(D.lon,D.lat,D.z,'LatLon','FontSize',8,'BorderWidth',bw,demoptions{:})
 
@@ -179,7 +179,7 @@ for i = 1:length(k)
 		cible(geo(ki,2),geo(ki,1))
 		hold off
 
-		% ---- mid-resolution map (frame n�1)
+		% ---- mid-resolution map (frame n°1)
 		ax1 = axes('Position',[.255,(.5+pcart)/(1+pcart)+.01,.24,.5/(1+pcart)-0.01]);
 		kx = find(D.lon >= xy1(1) & D.lon <= xy1(2));
 		ky = find(D.lat >= xy1(3) & D.lat <= xy1(4));
@@ -199,9 +199,9 @@ for i = 1:length(k)
 				'HorizontalAlignment','center','VerticalAlignment','bottom')
 		hold off
 
-		% ---- trac� de la carte haute-r�solution (encart n�2)
+		% ---- high-resolution map (frame n°2)
 		ax2 = axes('Position',[.255,(.1+pcart)/(1+pcart),.2,.4/(1+pcart)]);
-		% sur-�chantillonnage de la carte
+		% oversampling
 		[xx2,yy2] = meshgrid(xy2(1):(d2/lonkm/r2):xy2(2),xy2(3):(d2/degkm/r2):xy2(4));
 		zz = interp2(D.lon,D.lat,double(D.z),xx2,yy2,'*cubic');
 		[h,I,zz2] = dem(xx2(1,:),yy2(:,1),zz,'latlon','BorderWidth',0,'FontSize',0,demoptions{:});
@@ -211,7 +211,7 @@ for i = 1:length(k)
 		%[c,h] = contour(xx2(1,:),yy2(:,1),zz2,[0,0]);  set(h,'EdgeColor',gris)
 		ax = axis;
 		cible(geo(ki,2),geo(ki,1))
-		% �chelle (convertir le km en degr�)
+		% scale (convert km to degree)
 		xe = ax(2) - (xsc2/2 + dxsc2)/lonkm;
 		ye = ax(3) + dxsc2/degkm;
 		plot(xe + xsc2*.5*[-1,-1,1,1]/lonkm,ye + [dxsc2,0,0,dxsc2]/degkm,'-','Color',noir,'Linewidth',2)
@@ -223,7 +223,7 @@ for i = 1:length(k)
 		mmz = minmax(zz2);
 
 		if ~all(isnan(mmz)) & ~all(mmz==0)
-			% profil EW
+			% EW profile
 			ax21 = axes('Position',[.255,pcart/(1+pcart),.2,.1/(1+pcart)]);
 			xp = xx2(1,:); yp = zz2(round(size(zz2,1)/2),:);
 			yp(find(isnan(yp))) = 0;
@@ -231,7 +231,7 @@ for i = 1:length(k)
 			set(gca,'XLim',xy2(1:2),'YLim',mmz), axis off
 			hold on, plot(repmat(geo(ki,2),[1,2]),mmz,'-','Color',noir,'Linewidth',.1), hold off
 			text(xy2(2),mmz(1),sprintf(' %1.0f m',mmz(1)),'FontSize',9,'VerticalAlignment','bottom');
-			% calcul de l'exag�ration verticale...
+			% compute vertical exageration...
 			dar = daspect(gca);
 			figps = get(gcf,'PaperSize');
 			figpp = get(gcf,'Position');
@@ -241,7 +241,7 @@ for i = 1:length(k)
 			text(xy2(2),mean(mmz),sprintf('  x %1.1f',1000*lonkm*dar(1)/dar(2)/rxy),'FontSize',8');
 			text(xy2(2),mmz(2),sprintf(' %1.0f m',mmz(2)),'FontSize',9','VerticalAlignment','top');
 
-			% profil NS
+			% NS profile
 			ax21 = axes('Position',[.455,(.1+pcart)/(1+pcart),.045,.4/(1+pcart)]);
 			xp = zz2(:,round(size(zz2,2)/2))'; yp = yy2(:,1)';
 			xp(find(isnan(xp))) = 0;
