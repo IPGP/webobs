@@ -280,18 +280,6 @@ print "<TD colspan=\"2\">"
   ." / ".($endDate ne "NA" ? "$__{'Ended on'}: <B>$endDate</B>":"Active")
   ."</TD></TR>\n";
 
-# Row "infos"
-#
-printInfo("info.txt","Information",$editOK,"$GRIDType.$GRIDName.$NODEName");
-
-# Row "installation"
-#
-printInfo("installation.txt","Installation",$editOK,"$GRIDType.$GRIDName.$NODEName");
-
-# Row "access"
-#
-printInfo("acces.txt","Access",$editOK,"$GRIDType.$GRIDName.$NODEName");
-
 # Row "coordinates" and localization map --------------------------------------
 #
 if (!($NODE{LAT_WGS84}=="" && $NODE{LON_WGS84}=="" && $NODE{ALTITUDE}=="")) {
@@ -423,6 +411,14 @@ if ($NODE{TRANSMISSION} ne "NA" && $NODE{TRANSMISSION} ne "") {
     print "</TABLE></TD>\n";
     print "</TD></TR>\n";
 }
+
+# Row "installation"
+#
+printInfo("installation.txt","Installation",$editOK,"$GRIDType.$GRIDName.$NODEName");
+
+# Row "access"
+#
+printInfo("acces.txt","Access",$editOK,"$GRIDType.$GRIDName.$NODEName");
 
 # Row "proc": codes, status, data... -----------------
 #
@@ -840,6 +836,11 @@ if ($#listeDocuments >= 0) {
 if ($editOK || $#listeDocuments >= 0) {
     print "</TD></TR>\n";
 }
+
+# Row "infos"
+#
+printInfo("info.txt","Information",$editOK,"$GRIDType.$GRIDName.$NODEName");
+
 #
 # ---- end of node table ------------------------------------------------------
 print "<TR><TH colspan=\"3\" class=\"th-bottom\"></TH></TR></TABLE>\n";
