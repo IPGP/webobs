@@ -158,7 +158,9 @@ FIELDSET02_C13|OUTPUT02,OUTPUT03,OUTPUT04
 # ############################### WARNING #####################################
 # Export list of inputs/outputs must fit the associated procs channels.
 # ############################### WARNING #####################################
-# list of fields that will be exported to the associated procs (must be numeric)
-PROC_DATA_LIST|OUTPUT02,INPUT02,OUTPUT04
-# optional error list of fields (same as PROC_DATA_LIST size!)
+# list of fields that will be exported to the associated procs as D.d (must be numeric)
+PROC_DATA_LIST|INPUT01,OUTPUT02,OUTPUT04
+# optional error list of fields exported as D.e (same as PROC_DATA_LIST size!)
 PROC_ERROR_LIST|OUTPUT03,,
+# list of fields that will be exported to associated procs as D.c (cells)
+PROC_CELL_LIST|INPUT02

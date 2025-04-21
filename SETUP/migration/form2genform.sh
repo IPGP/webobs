@@ -61,7 +61,7 @@ cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 # =============================================================================
 # make a loop on all known legacy FORMs
 #for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO DISTANCE BOJAP 
-for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO; do
+for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
     
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
