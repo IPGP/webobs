@@ -331,7 +331,7 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 IVAL=47
 
                 # uses French template
-                TEMPLATE="EXTENSO_fr"
+                TEMPLATE="FISSURO"
 
                 # copy template files
                 cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
@@ -360,6 +360,38 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         d = $i + $j;
                         printf ",\""d"\",\""$k"\""; \
                     }
+                    print ");" }}' >> $TMP 
+                ;;
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            "DISTANCE")
+                NBI=27
+                ICOM=32
+                IVAL=33
+
+                # uses French template
+                TEMPLATE="DISTANCE"
+
+                # copy template files
+                cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
+                cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
+
+                # Id|Date|Heure|Site|AEMD|Patm (mmHg)|Tair (C)|H.R. (%)|Nébulosité|Vitre|D0|d01|d02|d03|d04|d05|d06|d07|d08|d09|d10|d11|d12|d13|d14|d15|d16|d17|d18|d19|d20|Remarques|Valide
+                # 1 |2   |3    |4   |5   |6          |7       |8       |9         |10   |11|12 |13 |14 |15 |16 |17 |18 |19 |20 |21 |22 |23 |24 |25 |26 |27 |28 |29 |30 |31 |32       |33
+                for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                echo ");" >> $TMP
+                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                    bin = ($1<0) ? 1:0; \
+                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    for (i=1;i<=n;i++) printf ",input%02d",i; \
+                    printf ") ";\
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
+                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                    for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }}' >> $TMP 
                 ;;
         esac
