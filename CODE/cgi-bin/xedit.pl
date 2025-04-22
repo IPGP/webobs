@@ -117,6 +117,8 @@ my $absfile ="";
 my $relfile ="";
 my $editOK = my $admOK = my $readOK = 0;
 my $fsmsg = "";
+my $type = "";
+my $name = "";
 
 if ($fs ne "") {
     if ($fs =~ /^CONF\//) {
@@ -131,11 +133,20 @@ if ($fs ne "") {
         } else { $absfile = "$WEBOBS{$fs}"; }
     }
     if (($relfile = $absfile) =~ s/^$WEBOBS{ROOT_CONF}\/+|^$WEBOBS{ROOT_DATA}\/+//) {
-        $readOK = clientHasRead(type=>"authmisc",name=>"$relfile");
+        if ($relfile =~ /^FORMS\//) {
+            # for FORM's files, authform + form name
+            $type = "forms";
+            ($name = "$relfile") =~ s/^FORMS\/([^\/]*).*/\1/g; 
+        } else {
+            # default auth
+            $type = "misc";
+            $name = "$relfile";
+        }
+        $readOK = clientHasRead(type=>"auth$type",name=>"$name");
         if ( $readOK ) {
             if ( !$fbrowse ) {
-                $editOK = clientHasEdit(type=>"authmisc",name=>"$relfile");
-                $admOK  = clientHasAdm(type=>"authmisc",name=>"$relfile");
+                $editOK = clientHasEdit(type=>"auth$type",name=>"$name");
+                $admOK  = clientHasAdm(type=>"auth$type",name=>"$name");
                 unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
                 if ( (!-e $absfile) && $admOK ) { qx(/bin/touch $absfile); $fsmsg="New file" }
                 else { $fsmsg="$relfile"; }
@@ -259,7 +270,7 @@ print "<span class=\"js-editor-controls\">\n";
 print "<input type=\"checkbox\" id=\"toggle-vim-mode\" title=\"$__{'Check to enable vim mode in the editor'}\" onClick=\"toggleVim();\"> ";
 print "<label for=\"toggle-vim-mode\" id=\"toggle-vim-mode-label\" title=\"$__{'Check to enable vim mode in the editor'}\">$__{'Use vim mode'}</label>\n";
 print "</span>\n";
-if ($editOK || $admOK) {
+if (($editOK && $type eq "misc") || $admOK) {
     print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\">\n";
     print "<input type=\"button\" class=\"submit-button\" value=\"$__{'Save'}\" onClick=\"postform();\">\n";
 } else {
