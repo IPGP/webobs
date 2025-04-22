@@ -745,7 +745,7 @@ foreach (@columns) {
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
                     my $delay = ( ( $default >= $MIN_DELAY && $default <= $MAX_DELAY ) ? $default : $DEFAULT_DELAY );
-                    my $base_url = "formUPLOAD.pl?object=$input_id&doc=SPATH_GENFORM_IMAGES&height=$height&delay=$delay";
+                    my $base_url = "formUPLOAD.pl?object=$input_id&doc=SPATH_GENFORM_IMAGES&form=$form&height=$height&delay=$delay";
                     my $upload_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$input_id";
                     if ( -e "$upload_path/$PATH_THUMBNAILS/$THUMB_ANIM" ) {
                         print qq(<img height=$height src="/data/$PATH_FORMDOCS/$input_id/$PATH_THUMBNAILS/$THUMB_ANIM" style="margin-bottom:5px" border=1">);
