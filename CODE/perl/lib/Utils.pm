@@ -430,12 +430,15 @@ sub url2target
 
 # -------------------------------------------------------------------------------------------------
 # format a fraction 'a/b' using html table and cell border so it looks like a real fraction
+# works only with a single /
+#
 # Author: F. Beauducel, IPGP
 sub htm2frac
 {
     my $s = shift;
-    if ($s =~ /[^< ]\//) {
-        my ($n, $d) = split(/[^< ]\//,$s);
+    my $c = () = $s =~ /[^<\s]\//g;
+    if ($c == 1) {
+        my ($n, $d) = split(/(?<![\<\s])\//,$s);    # split on the '/' but not '</' or ' /' (Negative Lookbehind regex)
         return "<table align=center><th style=\"border:0;border-bottom-style:solid;border-bottom-width:1px;text-align:center\">$n</th><tr><tr><th style=\"border:0;text-align:center\">$d</th></tr></table>";
     } else {
         return $s;
