@@ -202,6 +202,7 @@ function verif_formulaire()
     // other specifically named inputs
     fd.append("object",\$('input[name="object"],f').val());
     fd.append("doc",\$('input[name="doc"],f').val());
+    fd.append("form",\$('input[name="form"],f').val());
     fd.append("event",\$('input[name="event"],f').val());
     fd.append("nb",\$('input[name="nb"],f').val());
 
@@ -310,6 +311,7 @@ print "</fieldset>";
 
 print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
 print "<input type=\"hidden\" name=\"doc\" value=\"$typeDoc\">";
+print "<input type=\"hidden\" name=\"form\" value=\"$form\">";
 print "<input type=\"hidden\" name=\"event\" value=\"$event\">";
 print "<input type=\"hidden\" name=\"nb\" value=\"$i\">";
 
