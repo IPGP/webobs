@@ -91,7 +91,7 @@ my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
 
 @NID = split(/[\.\/]/, trim($object));
 ($GRIDType, $GRIDName, $NODEName) = @NID;
-if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
+if (defined($form)) {
     my $clientAuth = WebObs::Users::clientMaxAuth(type=>"authforms",name=>"('$form')");
     htmlMsgNotOK("$__{'Not authorized'}") if ($clientAuth < 1);
 } elsif (defined($GRIDType) || defined($GRIDName)) {
