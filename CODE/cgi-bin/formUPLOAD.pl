@@ -84,28 +84,25 @@ my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
 my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
 my $PATH_SLIDES = $GRIDS{SPATH_SLIDES} || "SLIDES";
 
-my $refer = $ENV{HTTP_REFERER};
-if ( $refer =~ /formGENFORM.pl/ ) {
+@NID = split(/[\.\/]/, trim($object));
+($GRIDType, $GRIDName, $NODEName) = @NID;
+if (defined($form)) {
     my $clientAuth = WebObs::Users::clientMaxAuth(type=>"authforms",name=>"('$form')");
     die "$__{'Not authorized'}" if ($clientAuth < 1);
-} else {
-    @NID = split(/[\.\/]/, trim($object));
-    ($GRIDType, $GRIDName, $NODEName) = @NID;
-    if (defined($GRIDType) || defined($GRIDName)) {
-        $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
-        die "$__{'Not authorized'}" if ($editOK == 0);
-    } else { die "$__{'Invalid object'} '$object'" }
+} elsif (defined($GRIDType) || defined($GRIDName)) {
+    $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
+    die "$__{'Not authorized'}" if ($editOK == 0);
+} else { die "$__{'Invalid object'} '$object'" }
 
-    # ---- find out wether object is a grid or a node
-    #
-    if (scalar(@NID) == 3) {
-        $pobj = \%NODES;
-        $pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
-    }
-    if (scalar(@NID) == 2) {
-        $pobj = \%GRIDS;
-        $pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
-    }
+# ---- find out wether object is a grid or a node
+#
+if (scalar(@NID) == 3) {
+    $pobj = \%NODES;
+    $pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
+}
+if (scalar(@NID) == 2) {
+    $pobj = \%GRIDS;
+    $pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
 }
 
 # ---- more checkings on type of document to be uploaded

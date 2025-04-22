@@ -728,7 +728,7 @@ $Fpath   = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_PHOTOS}";
 $Tpath   = "$Fpath/$NODES{SPATH_THUMBNAILS}";
 qx(mkdir -p $Tpath) if (!-d $Tpath);
 
-my @listePhotos   = <$Fpath/*.{jpg,jpeg,JPG,JPEG,HEIC}*> ;
+my @listePhotos   = <$Fpath/*.{jpg,jpeg,JPG,JPEG,HEIC}>;
 
 #DL-was:my $uploadPHOTOS  = "$WEBOBS{CGI_UPLOAD}?node=$GRIDType.$GRIDName.$NODEName&doc=$NODES{SPATH_PHOTOS}";
 my $uploadPHOTOS  = "$WEBOBS{CGI_UPLOAD}?object=$GRIDType.$GRIDName.$NODEName&doc=SPATH_PHOTOS";

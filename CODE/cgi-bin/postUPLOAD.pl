@@ -73,7 +73,7 @@ my $typeDoc = $QryParm->{'doc'}    // "";
 my $object  = $QryParm->{'object'} // "";
 my $event   = $QryParm->{'event'}  // "";
 my $nb      = $QryParm->{'nb'}     // 0;
-my $form    = $QryParm->{'form'};      # name of the form
+my $form    = $QryParm->{'form'}    // "";  # name of the form
 
 # ---- validate target subir (doc=) and http-client authorizations
 #
@@ -89,28 +89,25 @@ my $pobj;
 my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
 my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
 
-my $refer = $ENV{HTTP_REFERER};
-if ( $refer =~ /formUPLOAD.pl/ ) {
+@NID = split(/[\.\/]/, trim($object));
+($GRIDType, $GRIDName, $NODEName) = @NID;
+if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
     my $clientAuth = WebObs::Users::clientMaxAuth(type=>"authforms",name=>"('$form')");
     htmlMsgNotOK("$__{'Not authorized'}") if ($clientAuth < 1);
-} else {
-    @NID = split(/[\.\/]/, trim($object));
-    ($GRIDType, $GRIDName, $NODEName) = @NID;
-    if (defined($GRIDType) || defined($GRIDName)) {
-        $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
-        htmlMsgNotOK("$__{'Not authorized'}") if ($editOK == 0);
-    } else { htmlMsgNotOK("$__{'Invalid object'} '$object'") }
+} elsif (defined($GRIDType) || defined($GRIDName)) {
+    $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
+    htmlMsgNotOK("$__{'Not authorized'}") if ($editOK == 0);
+} else { htmlMsgNotOK("$__{'Invalid object'} '$object'") }
 
-    # ---- find out wether object is a grid or a node
-    #
-    if (scalar(@NID) == 3) {
-        $pobj = \%NODES;
-        $pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
-    }
-    if (scalar(@NID) == 2) {
-        $pobj = \%GRIDS;
-        $pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
-    }
+# ---- find out wether object is a grid or a node
+#
+if (scalar(@NID) == 3) {
+    $pobj = \%NODES;
+    $pathTarget  = "$pobj->{PATH_NODES}/$NODEName";
+}
+if (scalar(@NID) == 2) {
+    $pobj = \%GRIDS;
+    $pathTarget = "$pobj->{PATH_GRIDS}/$GRIDType/$GRIDName";
 }
 
 # ---- more checkings on type of document to be uploaded
