@@ -2182,3 +2182,10 @@ msgstr "Entrer une valeur pour"
 
 msgid "Record timestamp:"
 msgstr "Horodatage de l'enregistrement :"
+
+# --- OSM.pl
+msgid "To import shapefile layer, click here:"
+msgstr "Pour importer une couche shapefile, cliquez ici :"
+
+msgid "To save the area shape of the NODE as GeoJSON format, click here:"
+msgstr "Pour enregistrer la couverture spatiale du NODE au format GeoJSON, cliquez ici :"

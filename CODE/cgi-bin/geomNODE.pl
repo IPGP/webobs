@@ -10,11 +10,14 @@ use WebObs::Utils;
 # ---- extracting data from OSM.pl
 my $cgi = new CGI;
 
-my $geom = $cgi->url_param('geom');
-my @geom = split(/[\;]/, trim($geom));
+my $QryParm    = $cgi->Vars;
+my $grid       = $QryParm->{'grid'};
+my $geom       = $QryParm->{'geom'};
+my ($wktgeom, $geojson) = split(/[\;]/, trim($geom));
 
 # ---- send results back
 print $cgi->header( -type => 'text/plain', -status => '200' );
+print "\n\nWKT = $wktgeom\nJSON = $geojson\nGRID = $grid\n\n";
 
 # ---- extracting some data from the table producer
 my $driver   = "SQLite";
@@ -34,9 +37,9 @@ my $id = $sth->fetchrow_array();
 
 # ---- prefixing the variables
 
-my $wkt = 'wkt:'.$geom[0];
-my $geo = $geom[1];
-my $nod = $id.'_DAT_'.$geom[2];
+my $wkt = 'wkt:'.$wktgeom;
+my $geo = $geojson;
+my $nod = $id.'_DAT_'.$grid;
 
 =pod
 # ---- managing the database

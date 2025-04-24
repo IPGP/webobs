@@ -37,7 +37,7 @@ use WebObs::i18n;
 use Locale::TextDomain('webobs');
 use WebObs::Mapping;
 
-my $titre="";
+my $title="";
 my @nodes;
 
 # ---- what have we been called with ? ---------------
@@ -74,7 +74,7 @@ for (keys(%N)) {
     if ($sta eq $NODEName) {
         $lat = $N{$sta}{LAT_WGS84};
         $lon = $N{$sta}{LON_WGS84};
-        $titre = "$NODE{$sta}{ALIAS}: $NODE{$sta}{NAME}";
+        $title = "$NODE{$sta}{ALIAS}: $NODE{$sta}{NAME}";
     }
     $latsum += $N{$sta}{LAT_WGS84};
     $lonsum += $N{$sta}{LON_WGS84};
@@ -83,7 +83,7 @@ for (keys(%N)) {
 if (scalar(@NID) == 2) {
     $lat = $latsum/$n;
     $lon = $lonsum/$n;
-    $titre = $grid;
+    $title = $grid;
 }
 
 # ---- build the HTML page calling OSM API once loaded ----
@@ -108,7 +108,7 @@ print <<'END';
 END
 
 print <<"END";
-<HTML><HEAD><TITLE>$titre ($today)</TITLE>
+<HTML><HEAD><TITLE>$title ($today)</TITLE>
 <LINK rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 </HEAD>
 <BODY>
@@ -299,7 +299,7 @@ for (keys(%N)) {
         my $text = "<B>$N{$_}{ALIAS}: $N{$_}{NAME}</B><BR>"
           .($N{$_}{TYPE} ne "" ? "<I>($N{$_}{TYPE})</I><br>":"")
           ."&nbspfrom <B>$N{$_}{INSTALL_DATE}</B>".($N{$_}{END_DATE} ne "NA" ? " to <B>$N{$_}{END_DATE}</B>":"")."<br>"
-          ."&nbsp;<B>$N{$_}{LAT_WGS84}&deg;</B>, <B>$N{$_}{LON_WGS84}&deg;</B>, <B>$N{$_}{ALTITUDE} m</B>";
+          ."&nbsp;<B>$N{$_}{LAT_WGS84}&deg;</B>, <B>$N{$_}{LON_WGS84}&  deg;</B>, <B>$N{$_}{ALTITUDE} m</B>";
         $text =~ s/\"//g;  # fix ticket #166
         print "var marker = L.marker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}]).addTo(map);\n";
         print "marker.bindPopup(\"$text\").openPopup();\n";
@@ -317,20 +317,26 @@ if (scalar(@NID) == 2) {
 }
 print "</script>\n";
 
-print "<form action='geomNODE.pl' method='post' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON+';$NODEName';\">"; #;window.close()
-print "<strong>To add a shapefile layer, click here: </strong><input type='file' id='input' onchange='handleFiles()'><br>";
-print "<strong>Pour enregistrer la couverture spatiale du NODE au format GeoJSON, cliquez ici: </strong><input id='geom' type='submit' name='geom' value='Sauvegarder'>";
+print "<form action='geomNODE.pl' method='post' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON\">\n"; #;window.close()
+print "<strong>$__{'To import a shapefile layer, click here:'} </strong><input type='file' id='input' onchange='handleFiles()'><br>\n";
+print "<strong>$__{'To save the area shape of the NODE as GeoJSON format, click here:'} </strong>\n"
+     ."<input type=\"submit\" value=\"$__{'Save'}\">\n"
+     ."<input type=\"hidden\" name=\"grid\" value=\"$grid\">\n"
+     ."<input id=\"geom\" type=\"hidden\" name=\"geom\" value=\"\">\n";
 print "</form>";
 
 # ---- we're done ------------------------------------
 print "\n</BODY>\n</HTML>\n";
 
 __END__
+
 =pod
+
 =head1 AUTHOR(S)
 François Beauducel, Lucas Dassin
+
 =head1 COPYRIGHT
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
