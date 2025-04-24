@@ -600,7 +600,7 @@ function onMapClick(e) {
     if (typeof(marker) != "undefined") {
         map.removeLayer(marker);
     }
-    marker = L.marker([lat, lon]).addTo(map);
+    marker = L.circleMarker([lat, lon], {radius: 10, color: 'red'}).addTo(map);
 
     document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
     document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
@@ -1251,8 +1251,8 @@ print <<FIN;
                     //duration: 1
                 });
 
-                var marker = L.marker([lat, lon]).addTo(map);
-                marker.bindPopup(\"$text\").openPopup();
+                var marker = L.circleMarker([lat, lon], {radius: 10, color: 'red'}).addTo(map);
+                //marker.bindPopup(\"$text\").openPopup();
                 L.control.scale().addTo(map);
             }
             
