@@ -535,7 +535,7 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 	if [[ $(id ${USERID} 2>/dev/null) ]]; then
 		echo "${USERID} already exists"
 	else
-		rcmd="useradd -r -U ${USERID}"
+		rcmd="useradd -r -m -U ${USERID}"
 		if $(confirmy "Confirm create WebObs user (${rcmd}) [Y/n] ? ") ; then
 			${rcmd}
 			errexit "creating user ${USERID}"
