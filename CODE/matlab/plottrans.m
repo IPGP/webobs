@@ -12,8 +12,8 @@ function h=plottrans(WO,N,s,varargin)
 %   Updated: 2025-04-20
 
 
-NODES = readcfg(WO,WO.CONF_NODES); % loads nodes config.
-T = readcfg(WO,NODES.FILE_TELE);
+NODES = readcfg(WO,WO.CONF_NODES,'quiet'); % loads nodes config.
+T = readcfg(WO,NODES.FILE_TELE,'quiet');
 
 if ~isfield(N,'TRANSMISSION') || ~isstruct(N.TRANSMISSION) || ~isfield(N.TRANSMISSION,'NODES') || N.TRANSMISSION.TYPE < 1
 	h = [];

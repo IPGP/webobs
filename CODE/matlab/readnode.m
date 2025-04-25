@@ -38,7 +38,7 @@ function N=readnode(WO,nodefullid,NODES);
 
 
 if ~exist('NODES','var')
-	NODES = readcfg(WO.CONF_NODES);
+	NODES = readcfg(WO.CONF_NODES,'quiet');
 end
 
 nodeparts = split(nodefullid,'.');
@@ -60,7 +60,7 @@ end
 
 
 % reads .cnf main conf file
-N = readcfg(WO,f);
+N = readcfg(WO,f,'quiet');
 
 % replaces PROC's parameters (PROC.name.* if exist)
 if strcmpi(gridtype,'PROC') && isfield(N,'PROC') && isstruct(N.PROC) && isfield(N.PROC,gridname)
@@ -134,7 +134,7 @@ if ~exist(clb,'file')
 	end
 end
 if exist(clb,'file')
-	C = readcfg(WO, clb);
+	C = readcfg(WO, clb,'quiet');
 end
 if exist('C','var') && ~isempty(C)
 	keys = fieldnames(C);
