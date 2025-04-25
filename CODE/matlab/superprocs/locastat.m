@@ -18,7 +18,7 @@ function locastat(sta)
 
 %   Author: F. Beauducel/WEBOBS, IPGP
 %   Created: 2007-05-15
-%   Updated: 2025-04-20
+%   Updated: 2025-04-25
 
 % this will force update of all maps older than this date
 forceupdate = datenum(2019,7,23);
@@ -115,11 +115,13 @@ if isfield(P,'FRAME3_DEM_FILE')
 	end
 end
 
-% gets all VIEWS and GRIDS: looks inside CONF directories... avoiding . .. and non-directory files
+% gets all GRIDS: looks inside CONF directories... avoiding . .. and non-directory files
 GV = dir(sprintf('%s/*',WO.PATH_VIEWS));
 GP = dir(sprintf('%s/*',WO.PATH_PROCS));
+GF = dir(sprintf('%s/*',WO.PATH_FORMS));
 grids = [strcat('VIEW.',{GV(~strncmp({GV.name},{'.'},1) & cat(2,GV.isdir)).name}), ...
-	 strcat('PROC.',{GP(~strncmp({GP.name},{'.'},1) & cat(2,GP.isdir)).name})];
+         strcat('FORM.',{GF(~strncmp({GF.name},{'.'},1) & cat(2,GF.isdir)).name}), ...
+	     strcat('PROC.',{GP(~strncmp({GP.name},{'.'},1) & cat(2,GP.isdir)).name})];
 
 % loads all existing and valid NODES in existing grids
 N = readnodes(WO,grids);
