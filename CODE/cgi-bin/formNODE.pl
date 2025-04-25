@@ -310,10 +310,10 @@ print $cgi->header(
 print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <link rel="stylesheet" href="/css/leaflet.css" crossorigin=""/>
-<script src="/js/leaflet.js" crossorigin=""></script>
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
+<script src="/js/leaflet.js" crossorigin=""></script>
 <script src="/js/shp.min.js" type="text/javascript"></script>
 <script src="/js/leaflet.shpfile.js" type="text/javascript"></script>
 <script src="/js/simplifygeometry-0.0.2.min.js" type="text/javascript"></script>
@@ -842,41 +842,32 @@ function showHideTheia(checkbox){
 
 // creating and parametring the map for the geographic location choice
 
-var    esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+var esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
 var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-        
-//Init Overlays
-var overlays = {};
         
 //Init BaseMaps
 var basemaps = {
     'OpenStreetMaps': L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: osmAttribution,
             minZoom: 2,
             maxZoom: 19,
             id: "osm"
-        }
-    ),
+        }),
     'OpenTopoMap': L.tileLayer(
-        'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-        {
+        'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
             attribution: osmAttribution,
             minZoom: 2,
-            maxZoom: 19,
+            maxZoom: 18,
             id: "otm"
-        }
-    ),
-    'ESRIWorldImagery': L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        {
+        }),
+    'ESRI World Imagery': L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: osmAttribution,
             minZoom: 2,
             maxZoom: 19,
             id: "esri.world"
-        }
-    )
+        })
 };
         
 //Map Options
@@ -1256,7 +1247,7 @@ print <<FIN;
                 L.control.scale().addTo(map);
             }
             
-            var layerControl = L.control.layers(basemaps, overlays).addTo(map);
+            var layerControl = L.control.layers(basemaps).addTo(map);
             
             if (typeof(\"$geojsonFile\") !== 'undefined') {
                 var shpfile = createShp($json); 
