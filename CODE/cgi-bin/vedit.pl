@@ -315,6 +315,7 @@ my $name = my $version = "";
 $date = $time = $titre = $contents = "";
 $contents = "";
 my $parents = WebObs::Events::parents($evbase, $evpath);
+my $featwanted = isok($NODES{EVENTNODE_FEATURE_MANDATORY});
 
 # ---------------------------------------------------------------------------------------
 # ---- action 'new' : show user an empty event form, to create an event file
@@ -438,6 +439,8 @@ if (!$isProject) {
 function postform() {
     var form = \$(\"#theform\")[0];
     var bad = false;
+    var msg = '';
+
     \$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
     if (!form.date.value.match(/^[1-2]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|1\\d|2\\d|3[01])\$/)) {bad=true; form.date.style.background='red';};
     if (form.time.value == '') {
@@ -449,16 +452,34 @@ function postform() {
     if (form.date2.value != '' && !form.date2.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date2.style.background='red';};
     if (form.date2.value == '') {form.date2.value = form.date.value;}
     if (form.time2.value == '') {form.time2.value = form.time.value;}
-    if (!form.time2.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {bad=true; form.time2.style.background='red';};
+    if (!form.time2.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {
+        bad = true;
+        msg = 'Bad datetime format.';
+        form.time2.style.background = '#FF9999';
+    };
     if (form.oper.value == '' && form.roper.value == '') {
-        bad=true;
-        form.oper.style.background='red';
-        form.roper.style.background='red';
+        bad = true;
+        msg = 'Please select at least one operator.';
+        form.oper.style.background = '#FF9999';
+        form.roper.style.background = '#FF9999';
     }
-    if (form.titre.value == '') {bad=true; form.titre.style.background='red';}
-    form.s2g.value = $s2g;
+    if (form.titre.value == '') {
+        bad = true;
+        msg = 'Please enter a title.';
+        form.titre.style.background = '#FF9999';
+    }
+";
+if ($featwanted) {
+    print "     if (form.feature.value == '') {
+        bad = true;
+        msg = 'Please select a feature.';
+        form.feature.style.background = '#FF9999';
+    }\n";
+}
+print "     form.s2g.value = $s2g;
     if (bad) {
         //\$('html,body').animate({ scrollTop: 0 }, 400);
+        alert(msg);
         return false;
     }
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
@@ -488,11 +509,22 @@ function convert2MMD()
 function postform() {
     var form = \$(\"#theform\")[0];
     var bad = false;
+    var msg = '';
+
     \$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
-    if (form.oper.value == '') {bad=true; form.oper.style.background='red';}
-    if (form.titre.value == '') {bad=true; form.titre.style.background='red';}
+    if (form.oper.value == '') {
+        bad = true;
+        msg = 'Please select at least one operator.';
+        form.oper.style.background = '#FF9999';
+    }
+    if (form.titre.value == '') {
+        bad = true;
+        msg = 'Please enter a title.';
+        form.titre.style.background = '#FF9999';
+    }
     if (bad) {
         //\$('html,body').animate({ scrollTop: 0 }, 400);
+        alert(msg);
         return false;
     }
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
@@ -533,35 +565,39 @@ print "<LABEL style=\"width:100px\" for=\"titre\">$__{'Title'}:</LABEL><INPUT ty
 
 # only for node's event
 if ($object =~ /^.*\..*\..*$/) {
-    print "<LABEL style=\"width:100px\" for=\"feature\">$__{Feature}:</LABEL><SELECT id=\"feature\" name=\"feature\" size=\"0\">";
-    my @features = ("",split(/[,\|]/,$NODE{FILES_FEATURES}));
-    push(@features,$feature) if !(@features =~ $feature); # adds current feature if not in the list
-    foreach (@features) {
-        print "<OPTION value=\"$_\" ".($_ eq $feature ? "selected":"").">".ucfirst($_)."</OPTION>\n";
-    }
-    print "</SELECT><BR><BR>\n";
-
-    # only if node associated to a proc and calibration file defined
-    my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
-    if (-s $clbFile != 0) {
-        print "<LABEL style=\"width:80px\" for=\"channel\">$__{'Sensor'}: </LABEL>";
-        my @carCLB   = readCfgFile($clbFile);
-
- # make a list of available channels and label them with last Chan. + Loc. codes
-        my %chan;
-        for (@carCLB) {
-            my (@chpCLB) = split(/\|/,$_);
-            $chan{$chpCLB[2]} = "$chpCLB[2]: $chpCLB[3] ($chpCLB[6] $chpCLB[19])";
-        }
-        print "<SELECT name=\"channel\" size=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_nodeevent_channel}')\" id=\"channel\">";
-        for (("",sort(keys(%chan)))) {
-            print "<option".($_ eq $channel ? " selected":"")." value=\"$_\">".($_ eq "" ? "":$chan{$_})."</option>\n";
+    if (!$isProject) {
+        print "<LABEL style=\"width:100px\" for=\"feature\">$__{Feature}:</LABEL><SELECT id=\"feature\" name=\"feature\" size=\"0\">";
+        my @features = ("",split(/[,\|]/,$NODE{FILES_FEATURES}));
+        push(@features,$feature) if !(@features =~ $feature); # adds current feature if not in the list
+        foreach (@features) {
+            print "<OPTION value=\"$_\" ".($_ eq $feature ? "selected":"").">".ucfirst($_)."</OPTION>\n";
         }
         print "</SELECT><BR><BR>\n";
+
+        # only if node associated to a proc and calibration file defined
+        my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
+        if (-s $clbFile != 0) {
+            print "<LABEL style=\"width:80px\" for=\"channel\">$__{'Sensor'}: </LABEL>";
+            my @carCLB   = readCfgFile($clbFile);
+
+    # make a list of available channels and label them with last Chan. + Loc. codes
+            my %chan;
+            for (@carCLB) {
+                my (@chpCLB) = split(/\|/,$_);
+                $chan{$chpCLB[2]} = "$chpCLB[2]: $chpCLB[3] ($chpCLB[6] $chpCLB[19])";
+            }
+            print "<SELECT name=\"channel\" size=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_nodeevent_channel}')\" id=\"channel\">";
+            for (("",sort(keys(%chan)))) {
+                print "<option".($_ eq $channel ? " selected":"")." value=\"$_\">".($_ eq "" ? "":$chan{$_})."</option>\n";
+            }
+            print "</SELECT><BR><BR>\n";
+        }
     } else {
         print "<INPUT type=\"hidden\" name=\"channel\" value=\"$channel\">\n";
     }
-    print "<B>$__{'Sensor/data outcome'}: </B><INPUT type=\"checkbox\" name=\"outcome\" value=\"1\"".($outcome ? "checked":"").">";
+    if (!$isProject) {
+        print "<B>$__{'Sensor/data outcome'}: </B><INPUT type=\"checkbox\" name=\"outcome\" value=\"1\"".($outcome ? "checked":"").">";
+    }
     if (isok($NODES{EVENTNODE_NOTEBOOK})) {
         print "<B style=\"margin-left:20px\">$__{'Notebook Nb'}: </B><INPUT type=\"text\" size=\"3\" name=\"notebook\" value=\"$notebook\">";
         print "<B style=\"margin-left:20px\">$__{'Forward to notebook'}: </B><INPUT type=\"checkbox\" name=\"notebookfwd\" value=\"1\" ".($notebookfwd ? "checked":"").">";
