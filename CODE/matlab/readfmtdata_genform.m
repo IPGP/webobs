@@ -105,10 +105,18 @@ for i = 1:nx
     un{i} = field2str(FORM,[pdn{i} '_UNIT']);
 end
 
-dte = regexprep(data(:,5),'(....).(..).(..)(.*)','$1-$2-$3$4');
-t = datenum(regexprep(dte,'(.{10} ..).(..)','$1:$2'));
+% fix potential issue in datetime format (must be yyyy-mm-dd HH:MM)
+dte = regexprep(data(:,5:8),'(....).(..).(..)(.*)','$1-$2-$3$4');
+dte = regexprep(dte,'(.{10} ..).(..)','$1:$2');
+t = datenum(regexprep(dte(:,1),'(.{10} ..).(..)','$1:$2'));
+if any(cellfun(@isempty,dte(:,3)))
+    ts = nan(size(t));
+else
+    ts = datenum(regexprep(dte(:,3),'(.{10} ..).(..)','$1:$2'));
+end
 
 D.t = t - N.UTC_DATA;
+D.ts = ts - N.UTC_DATA;
 D.d = d;
 D.e = e;
 D.c = data(:,9:10);
