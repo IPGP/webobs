@@ -847,27 +847,27 @@ var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/cop
         
 //Init BaseMaps
 var basemaps = {
-    'OpenStreetMaps': L.tileLayer(
+    "OpenStreetMaps": L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: osmAttribution,
             minZoom: 2,
             maxZoom: 19,
             id: "osm"
         }),
-    'OpenTopoMap': L.tileLayer(
+    "OpenTopoMap": L.tileLayer(
         'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
             attribution: osmAttribution,
             minZoom: 2,
             maxZoom: 18,
             id: "otm"
         }),
-    'ESRI World Imagery': L.tileLayer(
+    "ESRI World Imagery": L.tileLayer(
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: osmAttribution,
             minZoom: 2,
             maxZoom: 19,
             id: "esri.world"
-        })
+        }),
 };
         
 //Map Options
@@ -1213,50 +1213,51 @@ print "<label for=\"shpfile\">$__{'Shapefile'} (.zip): </label> "
 
 print "</TD>";
 print <<FIN;
-        <script>
-            const checked = document.getElementById("theiaChecked");
-            const auth = $theiaAuth;
-            
-            if (auth == 1) {
-                // console.log(theia);
-                checked.style.display = "block";
-            } else {
-                checked.style.display = "none";
-            }
+<script>
+    const checked = document.getElementById("theiaChecked");
+    const auth = $theiaAuth;
+    
+    if (auth == 1) {
+        // console.log(theia);
+        checked.style.display = "block";
+    } else {
+        checked.style.display = "none";
+    }
+
+    var map = L.map('map', mapOptions);
+    var popup = L.popup();
+    map.on('click', onMapClick);
+    
+    document.getElementById("auto-loc").addEventListener('click', getLocation);
+    // let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
+    
+    if ( document.form.latwgs84.value !== "" || document.form.lonwgs84.value !== "" ) {
+        var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
+        var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
+
+        map.setView([lat, lon]);
+        map.flyTo([lat, lon], 14, {
+            animate: false,
+            //animate: true,
+            //duration: 1
+        });
+
+        var marker = L.circleMarker([lat, lon], {radius: 10, color: 'red'}).addTo(map);
+        //marker.bindPopup(\"$text\").openPopup();
+    }
+    
+    L.control.scale().addTo(map);
+    L.control.layers(basemaps).addTo(map);
+    
+    if (typeof(\"$geojsonFile\") !== 'undefined') {
+        var shpfile = createShp($json); 
+        shpfile.addTo(map);
         
-            var map = L.map('map', mapOptions);
-            var popup = L.popup();
-            map.on('click', onMapClick);
-            
-            document.getElementById("auto-loc").addEventListener('click', getLocation);
-            // let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
-            
-            if ( document.form.latwgs84.value !== "" || document.form.lonwgs84.value !== "" ) {
-                var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
-                var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
+        var geometry = JSON.stringify(getGeometry($json));
+        document.form.outWKT.value = geometry;
+    }
 
-                map.setView([lat, lon]);
-                map.flyTo([lat, lon], 14, {
-                    animate: false,
-                    //animate: true,
-                    //duration: 1
-                });
-
-                var marker = L.circleMarker([lat, lon], {radius: 10, color: 'red'}).addTo(map);
-                //marker.bindPopup(\"$text\").openPopup();
-                L.control.scale().addTo(map);
-            }
-            
-            var layerControl = L.control.layers(basemaps).addTo(map);
-            
-            if (typeof(\"$geojsonFile\") !== 'undefined') {
-                var shpfile = createShp($json); 
-                shpfile.addTo(map);
-                
-                var geometry = JSON.stringify(getGeometry($json));
-                document.form.outWKT.value = geometry;
-            }
-        </script>
+</script>
 FIN
 print "</TR></TABLE>";
 print "</FIELDSET>\n";

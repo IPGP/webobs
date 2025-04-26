@@ -301,7 +301,7 @@ for (keys(%N)) {
           ."&nbspfrom <B>$N{$_}{INSTALL_DATE}</B>".($N{$_}{END_DATE} ne "NA" ? " to <B>$N{$_}{END_DATE}</B>":"")."<br>"
           ."&nbsp;<B>$N{$_}{LAT_WGS84}&deg;</B>, <B>$N{$_}{LON_WGS84}&  deg;</B>, <B>$N{$_}{ALTITUDE} m</B>";
         $text =~ s/\"//g;  # fix ticket #166
-        print "var marker = L.marker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}]).addTo(map);\n";
+        print "var marker = L.marker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 10, color: 'red'}).addTo(map);\n";
         print "marker.bindPopup(\"$text\").openPopup();\n";
         print "markers.push(marker);\n";
     }
