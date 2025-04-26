@@ -77,9 +77,10 @@ end the line with two or more spaces, then line break.
 use strict;
 use warnings;
 use WebObs::Config qw(%WEBOBS readCfg u2l l2u);
+use WebObs::Utils;
 use WebObs::Grids;
 use WebObs::Users;
-if ($WEBOBS{WIKI_MMD} ne 'NO') {
+if (isok($WEBOBS{WIKI_MMD})) {
     require Text::MultiMarkdown;
 }
 
@@ -98,7 +99,7 @@ sub wiki2html {
 sub stripMDmetadata {
     if (defined($_[0]) && $_[0] ne "") {
         (my $txt = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;
-        return ($txt,"") if (defined($WEBOBS{WIKI_MMD}) && $WEBOBS{WIKI_MMD} eq 'NO');
+        return ($txt,"") if (!isok($WEBOBS{WIKI_MMD}));
         return ($txt, "") if ($txt !~ /\n\s*\n/);           # no blank line means no chance for metadata
         (my $head, my $tail) = split /\n\s*\n/ , $txt, 2;   # head up to 1st blank line
         my @head = split /\n(.+):/,"\n$head";               # hashes metadata key:value pairs
@@ -314,7 +315,7 @@ See "https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide" 
 sub wiki2MMD {
 
     my $txt = $_[0];
-    if ($WEBOBS{WIKI_MMD} ne 'NO') {
+    if (isok($WEBOBS{WIKI_MMD})) {
 
         # --- \ ==> forces <br />
         $txt =~ s/\\\n/  \n/g;

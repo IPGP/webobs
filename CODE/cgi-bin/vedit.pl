@@ -141,7 +141,7 @@ my $metain      = $QryParm->{'meta'} // "";     # add MMD
 my $conv        = $cgi->param('conv')  // "0";  # add MMD
 $contents = "$metain$contents";            # add MMD
 my $meta;                                  # add MMD
-my $mmd = $WEBOBS{WIKI_MMD} // 'YES';        # add MMD
+my $mmd = isok($WEBOBS{WIKI_MMD}) // 1;    # add MMD
 my $target = "";
 my $tz = "";
 
@@ -335,7 +335,7 @@ if ($action =~ /new/i ) {
     } else {
         $pagetitle = "$__{'Create Project'}";
     }
-    $meta = "WebObs: created by vedit  \n\n" if ($mmd ne 'NO');         # add MMD
+    $meta = "WebObs: created by vedit  \n\n" if ($mmd);         # add MMD
 }
 
 # ---------------------------------------------------------------------------------------
@@ -659,7 +659,7 @@ if (!($action =~ /new/i) && $object =~ /^.*\..*\..*$/ && !$isProject) {
 }
 print "</P>\n<P style=\"background-color: #ffffee\">";
 print "<input type=\"button\" name=\"lien\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-if (length($meta) == 0 && $mmd ne 'NO') {
+if (length($meta) == 0 && $mmd) {
     print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
 }
 print "<input type=\"button\" style=\"font-weight:bold\" value=\"$__{'Submit'}\" onClick=\"postform();\">";
@@ -741,7 +741,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
