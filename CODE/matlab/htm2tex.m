@@ -30,13 +30,13 @@ if ~isempty(s)
 
 	% ---- html tags
 	% subscript
-	s = regexprep(s,'<sub>(.?)</sub>','_{$1}','ignorecase');
+	s = regexprep(s,'<sub>([^<]*)</sub>','_{$1}','ignorecase');
 	% superscript
-	s = regexprep(s,'<sup>(.?)</sup>','^{$1}','ignorecase');
+	s = regexprep(s,'<sup>([^<]*)</sup>','^{$1}','ignorecase');
 	% bold
-	s = regexprep(s,'<b>(.?)</b>','\bf{$1}','ignorecase');
+	s = regexprep(s,'<b>([^<]*)</b>','\bf{$1}','ignorecase');
 	% italic
-	s = regexprep(s,'<i>(.?)</i>','\it{$1}','ignorecase');
+	s = regexprep(s,'<i>([^<]*)</i>','\it{$1}','ignorecase');
 	% cleans any other html tags
-	s = regexprep(s,'<.?>','');
+	s = regexprep(s,'<[^>]*>','');
 end
