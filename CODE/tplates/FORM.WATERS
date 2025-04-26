@@ -196,3 +196,13 @@ FIELDSET05_TOGGLE|YES
 FIELDSET05_CELLS|1
 FIELDSET05_C01|OUTPUT06,OUTPUT07,OUTPUT08,OUTPUT09,OUTPUT10,OUTPUT11
 
+
+# ############################### WARNING #####################################
+# Export list of inputs/outputs must fit the associated procs channels.
+# ############################### WARNING #####################################
+# list of fields that will be exported to the associated procs as D.d (must be numeric)
+PROC_DATA_LIST|INPUT02,INPUT03,INPUT04,INPUT05,OUTPUT01,INPUT06,INPUT07,INPUT13,INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,INPUT20,INPUT21,INPUT22,INPUT23,OUTPUT06,OUTPUT07,OUTPUT08,OUTPUT09,OUTPUT10,OUTPUT11
+# optional error list of fields exported as D.e (same as PROC_DATA_LIST size!)
+PROC_ERROR_LIST|
+# list of fields that will be exported to associated procs as D.c (cells)
+PROC_CELL_LIST|INPUT01
