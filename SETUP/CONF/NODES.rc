@@ -19,6 +19,9 @@ EVENTNODE_PLOT_COLOR|Silver
 EVENTNODE_PLOT_LINEWIDTH|1
 EVENTNODE_PLOT_OUTCOME_ONLY|YES
 
+# makes node's feature mandatory in events
+EVENTNODE_FEATURE_MANDATORY|NO
+
 # list of categories (grid,alias,name,feature,author,remote,startdate,enddate,title,comment,notebook,outcome)
 EVENT_SEARCH_CATEGORY_LIST|grid,alias,name,feature,author,remote,startdate,title,comment,notebook,outcome
 EVENT_SEARCH_MAXDISPLAY_LIST|15,50,75,100
