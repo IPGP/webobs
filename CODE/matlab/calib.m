@@ -11,7 +11,7 @@ function [dc,C]=calib(t,d,CLB,cco)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2004-09-01
-%	Updated: 2023-09-05
+%	Updated: 2025-04-26
 
 if isempty(t) || (isscalar(t) && isnan(t))
 	t = now;
@@ -41,6 +41,9 @@ end
 
 % main loop on calibration file lines
 for j = 1:length(CLB)
+    % replace html tags by ISO char
+    CLB(j).nm = htm2tex(CLB(j).nm);
+    CLB(j).un = htm2tex(CLB(j).un);
 	% loop on data columns
 	nv = unique(CLB.nv);
 	for i = 1:length(nv)
