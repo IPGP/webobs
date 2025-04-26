@@ -23,8 +23,8 @@ if nx > 0
         fprintf(fid,'# [%s %s]\n',datestr(now),w);
         fprintf(fid,'=key|DATE|TIME|nv|nm|un|ns|cd|of|et|ga|vn|vm|az|la|lo|al|dp|sf|db|lc\n');
         for n = 1:nx
-            fprintf(fid,'%s|00:00|%d|%s|%s|||0|1|1|||0|%g|%g|%g|||||\n', ...
-                datestr(N.INSTALL_DATE,'yyyy-mm-dd'),n,nm{n},un{n},N.LAT_WGS84,N.LON_WGS84,N.ALTITUDE);
+            fprintf(fid,'%d|%s|00:00|%d|%s|%s|||0|1|1|||0|%g|%g|%g|||||\n', ...
+                n,datestr(N.INSTALL_DATE,'yyyy-mm-dd'),n,nm{n},un{n},N.LAT_WGS84,N.LON_WGS84,N.ALTITUDE);
         end
     fclose(fid);
     fprintf('auto-generated calibration file %s written (%d channels).\n',f,nx);
