@@ -11,7 +11,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %	node's CLB: will create autoclb
 %
 %	will return for selected node N:
-%		D.t (time or 2-column [T,Tstart] if STARTING_DATE, datenum)
+%		D.t (time or 2-column [T,Tstart] if STARTING_DATE true, datenum format)
 %		D.d (columns defined in FORM.PROC_DATA_LIST)
 %		D.e (columns defined in FORM.PROC_ERROR_LIST)
 %		D.c (operator,comment + columns defined in FORM.PROC_CELL_LIST)
@@ -84,9 +84,14 @@ for i = 1:length(k)
     v = FORM.(fn{k(i)});
     if ~isempty(regexp(v,'^formula'))
         fml = regexprep(v,'^formula.*:',''); % removes 'formula:' tag
-        % processes functions
+        % replaces variables and functions
+        fml = regexprep(fml,'PI','pi'); % π
+        fml = regexprep(fml,'median\(([^)]*)','rmedian([$1],2'); % median (ignore NaN)
         fml = regexprep(fml,'mean\(([^)]*)','rmean([$1],2'); % mean (ignore NaN)
         fml = regexprep(fml,'std\(([^)]*)','rstd([$1],2'); % std (ignore NaN)
+        if startdate
+            fml = regexprep(fml,'DURATION','diff(t,2)'); % DURATION (in days)
+        end
         % replaces input/output name in string
         fml = regexprep(fml,'INPUT(..)','inp(:,$1)');
         fml = regexprep(fml,'OUTPUT(..)','out(:,$1)');
