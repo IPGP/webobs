@@ -14,7 +14,7 @@ function [dc,C]=calib(t,d,CLB,cco)
 %	Updated: 2025-04-26
 
 if isempty(t) || (isscalar(t) && isnan(t))
-	t = now;
+	t = repmat(now,1,2);
 end
 
 if isempty(d)
@@ -34,9 +34,13 @@ else
 	CLB = [];
 end
 
+if size(t,2) == 2
+    t = min(t,[],2); % takes minimum of [T,Tstart]
+end
+
 % Possibilitiy to transmit a single value for time (example: RAP)
-if length(t) < size(d,1)
-	t = t(1)*ones(size(d,1),1);
+if size(t,1) < size(d,1)
+	t = repmat(t(1),size(d,1),1);
 end
 
 % main loop on calibration file lines
