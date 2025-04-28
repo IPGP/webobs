@@ -321,11 +321,10 @@ foreach my $i (sort keys %lists) {
     }
 }
 # checkboxes for fieldsets with _TOGGLE option
-foreach (@fieldsets) {
-    if (isok($FORM{$_.'_TOGGLE'})) {
-        my $fs = lc($_);
-        print " <INPUT type=\"checkbox\" name=\"$fs\" value=\"1\"".($QryParm->{$fs} ? " checked":"")
-            ."onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_disp_fieldset} $_')\">&nbsp;<B>$FORM{$_.'_NAME'}</B>";
+foreach my $fs (@fieldsets) {
+    if (isok($FORM{$fs.'_TOGGLE'})) {
+        print " <INPUT type=\"checkbox\" name=\"".lc($fs)."\" value=\"1\"".($QryParm->{lc($fs)} ? " checked":"")
+            ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_disp_fieldset} $fs')\">&nbsp;<B>$FORM{$fs.'_NAME'}</B>";
     }
 }
 
@@ -337,7 +336,7 @@ if ($re ne "") {
 }
 if ($clientAuth > 1) {
     print "<BR><INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"")
-        ."onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_show_trash}')\">&nbsp;<B>$__{'Trash'}</B>";
+        ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_show_trash}')\">&nbsp;<B>$__{'Trash'}</B>";
 } else {
     print "<INPUT type=\"hidden\" name=\"trash\">";
 }
