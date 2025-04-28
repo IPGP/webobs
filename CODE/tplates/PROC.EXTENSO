@@ -80,6 +80,14 @@ COPYRIGHT2|
 
 # specific PROC's parameters
 FILTER_MAX_ERROR_MM|10
+
+# --- per node graphs
+PERNODE_LINESTYLE|o-
+
+# --- summary graph: per zone
+# line style: combination of a marker and/or a line type (see user's manual)
+SUMMARY_LINESTYLE|o-
+# defines groups of nodes in zones
 ZONE1_NAME|Zone Nord
 ZONE1_NODELIST|FNW1,DUP1,DUP2,DUP3,FNO1
 ZONE2_NAME|Zone Sud-Est
@@ -87,6 +95,7 @@ ZONE2_NODELIST|NAP1,F8J1,BLK1,LCX1,CSD1
 ZONE3_NAME|Zone Sud
 ZONE3_NODELIST|DOL1,DOL2,PEY1,F302,F303
 
+# --- summary graph: vectors
 VECTORS_EXCLUDED_NODELIST|BAT0,HOU1
 VECTORS_ARROWSHAPE|.15,.1,.1,.04
 VECTORS_VELOCITY_SCALE|0

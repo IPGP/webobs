@@ -11,8 +11,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %	node's CLB: will create autoclb
 %
 %	will return for selected node N:
-%		D.t (time, datenum)
-%       D.ts (optional start time, datenum)
+%		D.t (time or 2-column [T,Tstart] if STARTING_DATE, datenum)
 %		D.d (columns defined in FORM.PROC_DATA_LIST)
 %		D.e (columns defined in FORM.PROC_ERROR_LIST)
 %		D.c (operator,comment + columns defined in FORM.PROC_CELL_LIST)
@@ -22,7 +21,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2024-07-03, in Surabaya (Indonesia)
-%	Updated: 2025-04-26
+%	Updated: 2025-04-28
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -30,6 +29,7 @@ fn = upper(F.raw{1});
 tn = lower(fn);
 FORM = readcfg(WO,sprintf('%s/%s/%s.conf',WO.PATH_FORMS,fn,fn),'quiet');
 tz = field2num(FORM,'TZ',0);
+startdate = isok(FORM,'STARTING_DATE');
 
 % test database table and get the number of fields (must exists!)
 [s,w] = wosystem(sprintf('sqlite3 %s "pragma table_info(%s)"|wc -l',WO.SQL_FORMS,tn));
@@ -59,6 +59,21 @@ end
 fprintf(' %d samples.\n',size(data,1));
 % data: id, trash, quality, site, edate0, edate1, sdate0, sdate1, opers, rem, ts0, user, input01, ...
 
+% --- time
+% fix potential issue in datetime format (must be yyyy-mm-dd HH:MM)
+dte = regexprep(data(:,5:8),'(....).(..).(..)(.*)','$1-$2-$3$4');
+dte = regexprep(dte,'(.{10} ..).(..)','$1:$2');
+t = datenum(regexprep(dte(:,1),'(.{10} ..).(..)','$1:$2'));
+if startdate
+    if any(cellfun(@isempty,dte(:,3)))
+        ts = nan(size(t));
+    else
+        ts = datenum(regexprep(dte(:,3),'(.{10} ..).(..)','$1:$2'));
+    end
+    t = [t,ts];
+end
+
+% --- data
 inp = str2double(data(:,13:end)); % inputXX fields (numerical only)
 
 % computes all outputs of formula type and store results in intermediate structure
@@ -68,9 +83,14 @@ out = nan(size(data,1),length(k)); % initiating output matrix
 for i = 1:length(k)
     v = FORM.(fn{k(i)});
     if ~isempty(regexp(v,'^formula'))
-        fml = regexprep(v,'^formula.*:','');
-        fml = regexprep(fml,'INPUT(..)','inp(:,$1)'); % replaces input name in string
-        fml = regexprep(fml,'OUTPUT(..)','out(:,$1)'); % replaces input name in string
+        fml = regexprep(v,'^formula.*:',''); % removes 'formula:' tag
+        % processes functions
+        fml = regexprep(fml,'mean\(([^)]*)','rmean([$1],2'); % mean (ignore NaN)
+        fml = regexprep(fml,'std\(([^)]*)','rstd([$1],2'); % std (ignore NaN)
+        % replaces input/output name in string
+        fml = regexprep(fml,'INPUT(..)','inp(:,$1)');
+        fml = regexprep(fml,'OUTPUT(..)','out(:,$1)');
+        % specific Matlab syntax
         fml = regexprep(fml,'(\*\*)','.^'); % replaces ** with ^
         fml = regexprep(fml,'(\*|/)','.$1'); % adds point before * and /
         eval(sprintf('out(:,i)=%s;',fml)); % computes the formula
@@ -78,9 +98,9 @@ for i = 1:length(k)
 end
 
 % export data, errors, names and units
-pdn = split(FORM.PROC_DATA_LIST,','); % list of numerical INPUT/OUTPUT to export
-pen = split(FORM.PROC_ERROR_LIST,','); % list of corresponding errors
-pcn = split(FORM.PROC_CELL_LIST,','); % list of text INPUT/OUTPUT to export
+pdn = split(field2str(FORM,'PROC_DATA_LIST',''),','); % list of numerical INPUT/OUTPUT to export
+pen = split(field2str(FORM,'PROC_ERROR_LIST',''),','); % list of corresponding errors
+pcn = split(field2str(FORM,'PROC_CELL_LIST',''),','); % list of text INPUT/OUTPUT to export
 nx = length(pdn);
 d = nan(size(data,1),nx);
 e = d; % error have same size as data
@@ -105,18 +125,7 @@ for i = 1:nx
     un{i} = field2str(FORM,[pdn{i} '_UNIT']);
 end
 
-% fix potential issue in datetime format (must be yyyy-mm-dd HH:MM)
-dte = regexprep(data(:,5:8),'(....).(..).(..)(.*)','$1-$2-$3$4');
-dte = regexprep(dte,'(.{10} ..).(..)','$1:$2');
-t = datenum(regexprep(dte(:,1),'(.{10} ..).(..)','$1:$2'));
-if any(cellfun(@isempty,dte(:,3)))
-    ts = nan(size(t));
-else
-    ts = datenum(regexprep(dte(:,3),'(.{10} ..).(..)','$1:$2'));
-end
-
 D.t = t - N.UTC_DATA;
-D.ts = ts - N.UTC_DATA;
 D.d = d;
 D.e = e;
 D.c = data(:,9:10);
