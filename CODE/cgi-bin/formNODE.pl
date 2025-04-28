@@ -685,13 +685,6 @@ function onInputWrite(e) {
 function createShp(geojson) {
     var shpfile = new L.Shapefile(geojson,{
         onEachFeature: function(feature, layer) {
-            if (feature.properties) {
-                layer.bindPopup(Object.keys(feature.properties).map(function(k) {
-                    return k + ": " + feature.properties[k];
-                }).join("<br />"), {
-                        maxHeight: 200
-                    });
-            }
         }
     }); 
     
@@ -709,24 +702,6 @@ function handleFiles() {
         shp(this.result).then(function(geojson) {
               console.log('loaded geojson:', geojson);
             
-              /*for (var i = 0; i <= geojson.features.length-1; i++) {
-                  // applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
-                  var geometry = geojson.features[i].geometry;
-                  var coordinates = simplifyGeometry(geometry.coordinates[0], 0.000001);
-                  if (coordinates.length < 4) {
-                      geometry.coordinates[0] = [[geometry.bbox[0],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[1]]];
-                  }
-                  else { geometry.coordinates[0] = coordinates; }
-                
-                  var lonLat = [];
-                  for (var j = 0; j <= coordinates.length-1; j++) {
-                      lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]); 
-                  } outWKT.push('((' + lonLat + '))');
-                
-              }*/
-            
-              /* document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]); */
-              
             var shpfile = createShp(geojson);
             shpfile.addTo(map);
             // geojson.features = geojson.features[0];    // test with a Polygon;
@@ -1228,6 +1203,15 @@ print <<FIN;
     var popup = L.popup();
     map.on('click', onMapClick);
     
+    if (typeof(\"$geojsonFile\") !== 'undefined') {
+        var shpfile = createShp($json); 
+
+        shpfile.addTo(map);
+        
+        var geometry = JSON.stringify(getGeometry($json));
+        document.form.outWKT.value = geometry;
+    }
+
     document.getElementById("auto-loc").addEventListener('click', getLocation);
     // let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
     
@@ -1248,14 +1232,6 @@ print <<FIN;
     
     L.control.scale().addTo(map);
     L.control.layers(basemaps).addTo(map);
-    
-    if (typeof(\"$geojsonFile\") !== 'undefined') {
-        var shpfile = createShp($json); 
-        shpfile.addTo(map);
-        
-        var geometry = JSON.stringify(getGeometry($json));
-        document.form.outWKT.value = geometry;
-    }
 
 </script>
 FIN
