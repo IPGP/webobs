@@ -685,6 +685,13 @@ function onInputWrite(e) {
 function createShp(geojson) {
     var shpfile = new L.Shapefile(geojson,{
         onEachFeature: function(feature, layer) {
+            if (feature.properties) {
+                layer.bindPopup(Object.keys(feature.properties).map(function(k) {
+                    return k + ": " + feature.properties[k];
+                }).join("<br />"), {
+                        maxHeight: 200
+                    });
+            }
         }
     }); 
     
@@ -702,6 +709,24 @@ function handleFiles() {
         shp(this.result).then(function(geojson) {
               console.log('loaded geojson:', geojson);
             
+              /*for (var i = 0; i <= geojson.features.length-1; i++) {
+                  // applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
+                  var geometry = geojson.features[i].geometry;
+                  var coordinates = simplifyGeometry(geometry.coordinates[0], 0.000001);
+                  if (coordinates.length < 4) {
+                      geometry.coordinates[0] = [[geometry.bbox[0],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[1]]];
+                  }
+                  else { geometry.coordinates[0] = coordinates; }
+                
+                  var lonLat = [];
+                  for (var j = 0; j <= coordinates.length-1; j++) {
+                      lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]); 
+                  } outWKT.push('((' + lonLat + '))');
+                
+              }*/
+            
+              /* document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]); */
+              
             var shpfile = createShp(geojson);
             shpfile.addTo(map);
             // geojson.features = geojson.features[0];    // test with a Polygon;
@@ -1203,15 +1228,6 @@ print <<FIN;
     var popup = L.popup();
     map.on('click', onMapClick);
     
-    if (typeof(\"$geojsonFile\") !== 'undefined') {
-        var shpfile = createShp($json); 
-
-        shpfile.addTo(map);
-        
-        var geometry = JSON.stringify(getGeometry($json));
-        document.form.outWKT.value = geometry;
-    }
-
     document.getElementById("auto-loc").addEventListener('click', getLocation);
     // let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
     
@@ -1232,7 +1248,102 @@ print <<FIN;
     
     L.control.scale().addTo(map);
     L.control.layers(basemaps).addTo(map);
+    
+    if (typeof(\"$geojsonFile\") !== 'undefined') {
+        var shpfile = createShp($json); 
+        shpfile.addTo(map);
+        
+        var geometry = JSON.stringify(getGeometry($json));
+        document.form.outWKT.value = geometry;
+    }
 
+    var editableLayers = new L.FeatureGroup();
+    map.addLayer(editableLayers);
+
+    var drawControl = new L.Control.Draw({
+        position: 'topright',
+        draw: {
+        polyline: true,
+        polygon: {
+            allowIntersection: false, \/\/ Restricts shapes to simple polygons 
+            drawError: {
+            color: '#e1e100', \/\/ Color the shape will turn when intersects 
+            message: \"<strong>Oh snap!<strong> you can\'t draw that!\" \/\/ Message that will show when intersect 
+            }
+        },
+        circle: true, \/\/ Turns off this drawing tool 
+        rectangle: true,
+        marker: true
+        },
+        edit: {
+        featureGroup: editableLayers, \/\/REQUIRED!! 
+        remove: true
+        }
+    });
+
+    map.addControl(drawControl);
+
+    var outGeoJSON = '';
+    var outWKT = "POINT("+$usrLat+" "+$usrLon+")";
+
+    console.log(outGeoJSON);
+
+    \/\/On Draw Create Event
+    map.on(L.Draw.Event.CREATED, function(e) {
+        var type = e.layerType,
+        layer = e.layer;
+
+        if (type === 'marker') {
+        layer.bindPopup('LatLng: ' + layer.getLatLng().lat + ',' + layer.getLatLng().lng).openPopup();
+        }
+
+        editableLayers.addLayer(layer);
+        layerGeoJSON = editableLayers.toGeoJSON();
+        outGeoJSON = JSON.stringify(layerGeoJSON);
+
+        var wkt_options = {};
+        var geojson_format = new OpenLayers.Format.GeoJSON();
+        var testFeature = geojson_format.read(layerGeoJSON);
+        var wkt = new OpenLayers.Format.WKT(wkt_options);
+        var out = wkt.write(testFeature);
+        
+        outWKT = out;
+    });
+
+    //On Draw Edit Event
+    map.on(L.Draw.Event.EDITED, function(e) {
+        var type = e.layerType,
+        layer = e.layer;
+
+        layerGeoJSON = editableLayers.toGeoJSON();
+        outGeoJSON = JSON.stringify(layerGeoJSON);
+
+        var wkt_options = {};
+        var geojson_format = new OpenLayers.Format.GeoJSON();
+        var testFeature = geojson_format.read(layerGeoJSON);
+        var wkt = new OpenLayers.Format.WKT(wkt_options);
+        var out = wkt.write(testFeature);
+
+        outWKT = out;
+    });
+
+    \/\/On Draw Delete Event
+    map.on(L.Draw.Event.DELETED, function(e) {
+        var type = e.layerType,
+        layer = e.layer;
+
+        layerGeoJSON = editableLayers.toGeoJSON();
+        outGeoJSON = JSON.stringify(layerGeoJSON);
+
+        var wkt_options = {};
+        var geojson_format = new OpenLayers.Format.GeoJSON();
+        var testFeature = geojson_format.read(layerGeoJSON);
+        var wkt = new OpenLayers.Format.WKT(wkt_options);
+        var out = wkt.write(testFeature);
+
+        outWKT = out;
+        
+    });
 </script>
 FIN
 print "</TR></TABLE>";
@@ -1302,14 +1413,19 @@ if (uc($GRIDType) eq "PROC") {
     
     # --- CHANNEL_LIST
     print "<LABEL for=\"chanlist\">$__{'Channel list:'}</LABEL>";
-    my %carCLB = readCfg("$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb");
+    my %carCLB = readCLB("$GRIDType.$GRIDName.$NODEName");
     if (%carCLB) {
         my @select = split(/,/,$usrCHAN);
 
- # make a list of available channels and label them with last Chan. + Loc. codes
+        # make a list of available channels and label them with last Chan. + Loc. codes
         my %chan;
-        foreach my $k (keys %carCLB) {
-            $chan{$k} = "$carCLB{$k}{'nm'} ($carCLB{$k}{'cd'} $carCLB{$k}{'lc'})";
+        my @nv;
+        foreach (keys %carCLB) {
+            push(@nv,$carCLB{$_}{'nv'});
+        }
+        @nv = do { my %seen; grep { !$seen{$_}++ } @nv }; # uniq
+        foreach (@nv) {
+            $chan{$_} = "$carCLB{$_}{'nm'} ($carCLB{$_}{'un'}) - $carCLB{$_}{'cd'} $carCLB{$_}{'lc'}";
         }
         print "<SELECT name=\"chanlist\" multiple size=\"5\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_chanlist}')\" id=\"chanlist\">";
         for (sort{ $a <=> $b } (keys(%chan))) {

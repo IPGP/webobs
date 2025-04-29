@@ -811,7 +811,7 @@ sub codesFDSN {
 
 =pod
 =head2 readCLB
-Reads calibration file of a node (fullid) and return an array
+Reads calibration file of a node (fullid) and return an HoH
 =cut
 
 sub readCLB {
