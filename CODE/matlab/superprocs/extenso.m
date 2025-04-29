@@ -60,12 +60,18 @@ pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','o-');
 
 % SUMMARY parameters
 summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','o-');
+nodes_colormap = field2str(P,'NODES_COLORMAP');
+if exist(nodes_colormap,'file')
+    cmap = eval(sprintf('%s(%d)',nodes_colormap,numel(N)));
+else
+    cmap = [];
+end
 
 % VECTORS parameters
 velscale = field2num(P,'VECTORS_VELOCITY_SCALE',0);
 minkm = field2num(P,'VECTORS_MIN_SIZE_KM',1);
 maxxy = field2num(P,'VECTORS_MAX_XYRATIO',1.5);
-arrowshape = field2num(P,'VECTORS_ARROWSHAPE',[.1,.1,.08,.02]);
+arrowshape = field2num(P,'VECTORS_ARROWSHAPE',[.15,.1,.08,.04]);
 
 % MODELLING parameters
 horizonly = isok(P,'MODELLING_HORIZONTAL_ONLY');
@@ -332,7 +338,7 @@ for r = 1:length(P.GTABLE)
                 if ~isempty(k1)
                     dk = dk - d(k1,1);
                 end
-				plot(tk,dk,summary_linestyle,'Color',scolor(n),'MarkerSize',P.GTABLE(r).MARKERSIZE,'MarkerFaceColor',scolor(n))
+				plot(tk,dk,summary_linestyle,'Color',scolor(n,cmap),'MarkerSize',P.GTABLE(r).MARKERSIZE,'MarkerFaceColor',scolor(n,cmap))
 				aliases = cat(2,aliases,{N(n).ALIAS});
 				ncolors = cat(2,ncolors,n);
 			end
@@ -347,7 +353,7 @@ for r = 1:length(P.GTABLE)
 		ylim = get(gca,'YLim');
 		nl = length(aliases);
 		for n = 1:nl
-			text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
+			text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),aliases(n),'Color',scolor(ncolors(n),cmap), ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 		end
 		set(gca,'YLim',ylim);
@@ -370,7 +376,7 @@ for r = 1:length(P.GTABLE)
 		figure, set(gcf,'PaperPosition',[0,0,get(gcf,'PaperSize')]);
         orient tall
 
-		% latitude extent of network and xy ratio
+		% latitude extent of network and xy ratio to respect azimuth angle
 		ylim = minmax(geo(kn,1));
 		xyr = cosd(mean(ylim));
 
@@ -393,11 +399,11 @@ for r = 1:length(P.GTABLE)
 			n = kn(nn);
 			if ~any(isnan([vsc,vmax])) && ~any(isnan([vx(n),vy(n)]))
 				if tr(n) >= 0
-					h1 = arrows(geo(n,2),geo(n,1),vsc*vx(n)/xyr,vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
-					h2 = arrows(geo(n,2),geo(n,1),-vsc*vx(n)/xyr,-vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
+					h1 = arrows(geo(n,2),geo(n,1),vsc*vx(n)/xyr,vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n,cmap),'LineWidth',1);
+					h2 = arrows(geo(n,2),geo(n,1),-vsc*vx(n)/xyr,-vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n,cmap),'LineWidth',1);
 				else
-					h1 = arrows(geo(n,2)-vsc*vx(n)/xyr,geo(n,1)-vsc*vy(n),vsc*vx(n)/xyr,vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
-					h2 = arrows(geo(n,2)+vsc*vx(n)/xyr,geo(n,1)+vsc*vy(n),-vsc*vx(n)/xyr,-vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
+					h1 = arrows(geo(n,2)-vsc*vx(n)/xyr,geo(n,1)-vsc*vy(n),vsc*vx(n)/xyr,vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n,cmap),'LineWidth',1);
+					h2 = arrows(geo(n,2)+vsc*vx(n)/xyr,geo(n,1)+vsc*vy(n),-vsc*vx(n)/xyr,-vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n,cmap),'LineWidth',1);
 				end
 				ha = cat(1,ha,h1,h2);
 			end
@@ -453,12 +459,12 @@ for r = 1:length(P.GTABLE)
 			if ~isnan(any([vx(n),vy(n)]))
 				if tr(n) >= 0
 					h1 = ellipse(geo(n,2) + vsc*vx(n)/xyr,geo(n,1) + vsc*vy(n),vsc*tre(n)/xyr,vsc*tre(n), ...
-						'EdgeColor',scolor(n),'LineWidth',.2,'Clipping','on');
+						'EdgeColor',scolor(n,cmap),'LineWidth',.2,'Clipping','on');
 					h2 = ellipse(geo(n,2) - vsc*vx(n)/xyr,geo(n,1) - vsc*vy(n),vsc*tre(n)/xyr,vsc*tre(n), ...
-						'EdgeColor',scolor(n),'LineWidth',.2,'Clipping','on');
+						'EdgeColor',scolor(n,cmap),'LineWidth',.2,'Clipping','on');
 					ha = cat(1,ha,h1,h2);
 				else
-					h = ellipse(geo(n,2),geo(n,1),vsc*tre(n)/xyr,vsc*tre(n),'EdgeColor',scolor(n),'LineWidth',.2,'Clipping','on');
+					h = ellipse(geo(n,2),geo(n,1),vsc*tre(n)/xyr,vsc*tre(n),'EdgeColor',scolor(n,cmap),'LineWidth',.2,'Clipping','on');
 					ha = cat(1,ha,h);
 				end
 			end

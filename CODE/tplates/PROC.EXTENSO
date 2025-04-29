@@ -84,10 +84,14 @@ FILTER_MAX_ERROR_MM|10
 # --- per node graphs
 PERNODE_LINESTYLE|o-
 
+# nodes colors: comma-separated list, or colormap name
+NODES_COLORS|
+
 # --- summary graph: per zone
 # line style: combination of a marker and/or a line type (see user's manual)
 SUMMARY_LINESTYLE|o-
-# defines groups of nodes in zones
+
+# defines groups of nodes in zones (comma-separated FID)
 ZONE1_NAME|Zone Nord
 ZONE1_NODELIST|FNW1,DUP1,DUP2,DUP3,FNO1
 ZONE2_NAME|Zone Sud-Est
@@ -97,7 +101,7 @@ ZONE3_NODELIST|DOL1,DOL2,PEY1,F302,F303
 
 # --- summary graph: vectors
 VECTORS_EXCLUDED_NODELIST|BAT0,HOU1
-VECTORS_ARROWSHAPE|.15,.1,.1,.04
+VECTORS_ARROWSHAPE|.15,.1,.08,.04
 VECTORS_VELOCITY_SCALE|0
 VECTORS_MIN_SIZE_KM|.5
 VECTORS_MAX_XYRATIO|2

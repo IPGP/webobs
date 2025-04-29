@@ -1,52 +1,32 @@
-function c = scolor(i)
+function c = scolor(i,cmap)
 %SCOLOR Returns a RGB color
-%       SCOLOR(I) returns a color [R G B] for index I.
+%   SCOLOR(I) returns a color [R G B] for index I, using a default 11-color palette.
+%
+%   SCOLOR(I,CMAP) selects the color I in a CMAP colormap (Nx3 RGB matrix).
+%
+%   If I exceeds the number of colors N, a modulo is applied: MOD(I-1,N)+1.
+%
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 1999
-%	Updated: 2025
+%	Updated: 2025-04-29
 
-% Color order
-cc = [ ...
-0.1     0.3     0.6;
-0.3     0.6     0;
-0.8     0       0;
-0.8     0.5     0;
-0.1     0.7     0.8;
-0.8     0.1     0.7;
-0.5	0	0.5;
-0       0.3     0.8;
-0       0.8     0.3;
-1.0     0.3     0.3;  
-0.7     0.7       0;
-0.3     0.3     0.3;
-];
+if nargin < 2 || size(cmap,2) ~= 3
+    % Default color map
+    cmap = [ ...
+    0.1     0.3     0.6;
+    0.3     0.6     0;
+    0.8     0       0;
+    0.8     0.5     0;
+    0.1     0.7     0.8;
+    0.8     0.1     0.7;
+    0.5	0	0.5;
+    0       0.3     0.8;
+    0       0.8     0.3;
+    1.0     0.3     0.3;  
+    0.7     0.7       0;
+    0.3     0.3     0.3;
+    ];
+end
 
-%cc = [0 0 1;0 .5 0;1 0 0;0 .7 .7;.7 0 .7;.7 .7 0;.3 .3 .3;0 1 .5;0 .5 1;.5 0 1];
-%cc = .9*[1 0 0;0 1 0;0 0 1;1 0 1;0 1 1;1 1 0;.5 0 0;0 .5 0;0 0 .5;.5 0 .5;0 .5 .5;.5 .5 0];
-%
-
-%cc = [ ...
-%0.12 0.47 0.71;
-%0.17 0.63 0.17;
-%0.84 0.15 0.16;
-%1.00 0.50 0.05;
-%0.58 0.40 0.74;
-%0.55 0.34 0.29;
-%0.89 0.47 0.76;
-%0.50 0.50 0.50;
-%0.74 0.74 0.13;
-%0.09 0.75 0.81;
-%0.68 0.78 0.91;
-%0.60 0.87 0.54;
-%1.00 0.60 0.59;
-%1.00 0.73 0.47;
-%0.77 0.69 0.84;
-%0.77 0.61 0.58;
-%0.97 0.71 0.82;
-%0.78 0.78 0.78;
-%0.86 0.86 0.55;
-%0.62 0.85 0.90;
-%];
-
-c = cc(mod(i-1,size(cc,1))+1,:);
+c = cmap(mod(i-1,size(cmap,1))+1,:);
