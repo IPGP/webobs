@@ -437,10 +437,10 @@ if (uc($GRIDType) eq 'PROC') {
 
     #print "ID: <B>$NODEName</B>";
     print "FID: ".($fid ne "" ? "<SPAN class='code'>$fid</SPAN>":"<I>$__{undefined}</I>")."\n";
-    print "<BR>Network: <B>$fdsn</B> ($FDSN{$fdsn})\n" if ($fdsn ne "");
+    print "<BR>$__{'Network:'} <B>$fdsn</B> ($FDSN{$fdsn})\n" if ($fdsn ne "");
     print "<BR>$fids" if ($fids ne "");
-    print "<BR>Raw Format: $rawFormats{$rawformat}{supfmt} / <B>$rawformat</B> ($rawFormats{$rawformat}{name})" if ($rawformat ne "");
-    print "<BR>Raw Data Source: <SPAN class='code'>$rawdata</SPAN>" if ($rawdata ne "");
+    print "<BR>$__{'Raw Format:'} $rawFormats{$rawformat}{supfmt} / <B>$rawformat</B> ($rawFormats{$rawformat}{name})" if ($rawformat ne "");
+    print "<BR>$__{'Raw Data Source:'} <SPAN class='code'>$rawdata</SPAN>" if ($rawdata ne "");
     print "</TD></TR>\n";
 
     # --- description
@@ -482,11 +482,10 @@ if (uc($GRIDType) eq 'PROC') {
     print "<TR><TD valign=\"top\"><B>$__{'Data'}</B></TH><TD>";
     if ($OUTG ne "" && isok($NODE{VALID}) && ($GRID{'URLDATA'} ne "" || $GRID{'FORM'} ne "" || $#glist >= 0 || $#dlist >= 0)) {
         print "<TABLE><TR><TD style=\"border:0\">";
-        if ($GRID{'FORM'} ne "") {
-            %FORM = readCfg("$WEBOBS{PATH_FORMS}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
-            my $txt = $FORM{TITLE} // "$__{'Data bank'}";
-            my $url = "/cgi-bin/$FORM{CGI_SHOW}";
-            print "$__{'Form'}: <A href=\"$url?form=$GRID{'FORM'}&site=$NODEName\"><B>$txt</B></A><BR>";
+        if ($rawformat eq "genform" && $rawdata ne "") {
+            %FORM = readCfg("$WEBOBS{PATH_FORMS}/$rawdata/$rawdata.conf");
+            my $txt = $FORM{NAME} // "$__{'Database'}";
+            print "<P>$__{'Form:'} <A href=\"/cgi-bin/showGENFORM.pl?form=$rawdata&node=$NODEName\">$txt</A></P>";
         }
         if ($GRID{'URLDATA'} ne "") {
             my $rep = "$GRID{'RAWDATA'}";
