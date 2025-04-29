@@ -319,7 +319,7 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     for (i=6;i<10;i++) printf ",\""$i"\""; \
                     for (i=10;i<35;i+=3) {
                         j = i+1; k = i+2;
-                        d = $i + $j;
+                        if ($i == "") { d = ""; } else { d = $i + $j; }
                         printf ",\""d"\",\""$k"\""; \
                     }
                     print ");" }}' >> $TMP 

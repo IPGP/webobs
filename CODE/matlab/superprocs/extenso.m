@@ -368,6 +368,7 @@ for r = 1:length(P.GTABLE)
 			kn = 1:length(N);
 		end
 		figure, set(gcf,'PaperPosition',[0,0,get(gcf,'PaperSize')]);
+        orient tall
 
 		% latitude extent of network and xy ratio
 		ylim = minmax(geo(kn,1));
@@ -385,7 +386,7 @@ for r = 1:length(P.GTABLE)
 		vsc = .25*max(diff(ylim),minkm/degkm)/vmax;
         fprintf('---> Vmax = %g mm/yr, Vscale = %g\n',vscale,vsc);
 
-		ha = plot(geo(kn,2),geo(kn,1),'k.');
+		ha = plot(geo(kn,2),geo(kn,1),'k.'); extaxes(gca,[.04,.08])
 		hold on
 		% plots velocity vectors first
 		for nn = 1:length(kn)
@@ -473,7 +474,7 @@ for r = 1:length(P.GTABLE)
 
 		% plots legend scale
 		xsc = xlim(1);
-		ysc = ylim(1) - .05*diff(ylim);
+		ysc = ylim(1) - .08*diff(ylim);
 		lsc = vscale*vsc;
 		arrows(xsc,ysc,lsc,90,arrowshape*vmax/vscale,'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc+1.1*lsc,ysc,sprintf('%g mm/yr',vscale),'FontWeight','bold')
