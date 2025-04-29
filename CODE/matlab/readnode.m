@@ -17,6 +17,7 @@ function N=readnode(WO,nodefullid,NODES);
 %	          ID: self reference
 %         FULLID: full ID
 %	   TIMESTAMP: timestamp of the .cnf file (local time)
+%        GEOJSON: GeoJSON string containing feature collection of geometries
 %	         CLB: data table from calibration .clb file (if exists)
 %	TRANSMISSION: a structure containing following fields (if defined):
 %	               TYPE: index in FILE_TELE (NODES.rc)
@@ -34,7 +35,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2024-11-30
+%   Updated: 2025-04-29
 
 
 if ~exist('NODES','var')
@@ -119,6 +120,14 @@ end
 
 if isnan(N.LAST_DELAY)
 	N.LAST_DELAY = 0;
+end
+
+% imports .geojson (if exists)
+json = sprintf('%s/%s.geojson',p,id);
+if exist(json,'file')
+    N.GEOJSON = fileread(json);
+else
+    N.GEOJSON = '';
 end
 
 % --- reads .clb calibration file (if exists)
