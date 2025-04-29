@@ -64,14 +64,17 @@ fprintf(' %d samples.\n',size(data,1));
 dte = regexprep(data(:,5:8),'(....).(..).(..)(.*)','$1-$2-$3$4');
 dte = regexprep(dte,'(.{10} ..).(..)','$1:$2');
 t = datenum(regexprep(dte(:,1),'(.{10} ..).(..)','$1:$2'));
+[t,k] = sort(t); % sort the matrix
+data = data(k,:);
 if startdate
     if any(cellfun(@isempty,dte(:,3)))
         ts = nan(size(t));
     else
         ts = datenum(regexprep(dte(:,3),'(.{10} ..).(..)','$1:$2'));
     end
-    t = [t,ts];
+    t = [t,ts(k)];
 end
+
 
 % --- data
 inp = str2double(data(:,13:end)); % inputXX fields (numerical only)
