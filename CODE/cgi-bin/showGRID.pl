@@ -359,12 +359,14 @@ if ($isForm) {
     $sth->finish();
 
     my $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
-    $htmlcontents .= "<LI>$__{'Access to data'}: <B><A href=\"$urnData\">$__{'Database'}</A></B></LI>\n";
     $htmlcontents .= "<LI>$__{'Form structure:'} <B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B> $__{'inputs'},"
       ." <B>".grep(/^OUTPUT.._NAME/,keys(%GRID))."</B> $__{'outputs'}</LI>\n";
+    $htmlcontents .= "<LI>$__{'Form layout:'} <B>".grep(/^COLUMN.._LIST/,keys(%GRID))."</B> $__{'columns'},"
+      ." <B>".grep(/^FIELDSET.._NAME/,keys(%GRID))."</B> $__{'fieldsets'}</LI>\n";
     $htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>UTC".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'})</LI>\n";
+    $htmlcontents .= "<LI>$__{'Access to data'}: <A href=\"$urnData\"><IMG src='/icons/form.png' style='vertical-align:middle'></A></LI>\n";
 }
 
 # -----------
@@ -904,7 +906,7 @@ sub checkingNODELIST {
 # make a HTML table of (IN|OUT)PUT types
 sub tableStats {
     my %G = %{$_[1]};
-    my @f = grep(/^$_[0].._NAME/i,keys(%G));
+    my @f = sort(grep(/^$_[0].._NAME/i,keys(%G)));
     my @itypes;
     for (@f) {
         (my $key = $_) =~ s/_NAME/_TYPE/g;
@@ -913,7 +915,13 @@ sub tableStats {
     }
     my $txt = "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>Type:</TH>"
               .join("",map{"<TH>$_</TH>"} uniq(@itypes))."<TH>Total</TH></TR>\n";
-    $txt .= "<TR><TH>$_[0]s</TH>".join("",map { my $t = $_; "<TD align=\"right\">" . grep(/^$t$/,@itypes) . "</TD>" } uniq(@itypes))
+    for my $i (0..$#f) {
+        (my $key = $f[$i]) =~ s/_NAME//g;
+        my $unit = ( $G{$key."_UNIT"} ne "" ? " (".$G{$key."_UNIT"}.")":"" );
+        (my $type = $G{$key} ? $G{$key}:'numeric') =~ s/[\(:].*$//g;
+        $txt .= "<TR><TH>$key</TH>".join("",map { my $t = $_; "<TD align='center'>" . ($t eq $itypes[$i] ? $G{$key."_NAME"}.$unit:"") . "</TD>" } uniq(@itypes))."<TD></TD>";
+    }
+    $txt .= "<TR><TH>Total</TH>".join("",map { my $t = $_; "<TD align='center'>" . grep(/^$t$/,@itypes) . "</TD>" } uniq(@itypes))
            ."<TD align=\"right\"><B>".@itypes."</B></TD></TR></TABLE></TD>\n";
     return $txt;
 }
