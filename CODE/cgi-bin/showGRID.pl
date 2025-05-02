@@ -917,7 +917,7 @@ sub tableStats {
         push(@itypes,$type);
     }
     my $txt = "<TD style='border:0;text-align:right;vertical-align:top'><TABLE><TR><TH rowspan=2>$__{'Type:'}</TH>"
-              .join("",map{"<TH rowspan=2>$_</TH>"} uniq(@itypes))."<TH colspan=3>Export</TH></TR>\n"
+              .join("",map{"<TH rowspan=2>$_</TH>"} uniq(@itypes))."<TH colspan=3>Export n°</TH></TR>\n"
               ."<TR><TH>Data</TH><TH>Error</TH><TH>Cell</TH><TR>\n";
     for my $i (0..$#f) {
         (my $key = $f[$i]) =~ s/_NAME//g;
@@ -932,23 +932,19 @@ sub tableStats {
                 ."</TR>";
     }
     $txt .= "<TR><TH>Total</TH>".join("",map { my $t = $_; "<TD align='center'>" . grep(/^$t$/,@itypes) . "</TD>" } uniq(@itypes))
-           ."<TD align='center'>".grep(/$_[0]../,split(/,/,$GRID{PROC_DATA_LIST}))."</TD>"
-           ."<TD align='center'>".grep(/$_[0]../,split(/,/,$GRID{PROC_ERROR_LIST}))."</TD>"
-           ."<TD align='center'>".grep(/$_[0]../,split(/,/,$GRID{PROC_CELL_LIST}))."</TD>"
-           ."</TR></TABLE></TD>\n";
+           ."<TD></TD><TD></TD><TD></TD></TR></TABLE></TD>\n";
     return $txt;
 }
 
 # count the rank position of KEY in the comma-separated string STR
 sub keyRank {
     my $key = $_[0];
-    my $str = $_[1];
+    my $str = ",$_[1]";
     my $n = "";
 
     if (grep(/$key/,$str)) {
         $str =~ s/$key.*$//g; # deletes string after $key
         $n = () = $str =~ /,/gi; # counts the number of commas
-        $n += 1;
     }
     return $n;
 }
