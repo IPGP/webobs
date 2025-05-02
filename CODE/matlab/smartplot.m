@@ -139,7 +139,13 @@ for ii = 0:(tzoom+(zoompca<0))
 	datetick2('x',G.DATESTR)
 	% y-labels
 	for i = 1:nx
-		text(tlim(1),cmpoffset(i),[split(chnames{i},' '),' '],'FontSize',fontsize*1.25,'FontWeight','bold', ...
+        yyl = cmpoffset(i)+gmin(i);
+        if i == 1
+            yyl = yyl - gmin(i)/2;
+        else
+            yyl = yyl - (yyl - cmpoffset(i-1) - gmin(i-1))/2;
+        end
+		text(tlim(1),yyl,[split(chnames{i},' '),' '],'FontSize',fontsize*1.25,'FontWeight','bold', ...
 			'HorizontalAlignment','center','VerticalAlignment','bottom','Rotation',90);
 	end
 	% y-scale
