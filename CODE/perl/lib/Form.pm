@@ -353,7 +353,7 @@ sub extract_formula {
     my $type = shift;
     my @x;
     my ($size, $formula) = extract_type($type);
-    while ($formula =~ /((IN|OUT)PUT[0-9]{2}|DURATION)/g) {
+    while ($formula =~ /((IN|OUT)PUT[0-9]{2,3}|DURATION)/g) {
         push(@x,$1);
     }
     return ($formula, $size, @x);
@@ -392,7 +392,7 @@ sub extract_text {
 sub count_inputs {
     my $count = 0;
     foreach(@_) {
-        if ($_ =~ /INPUT([0-9]{2})_NAME/) {
+        if ($_ =~ /INPUT([0-9]{2,3})_NAME/) {
             $count = $1 if ($count < $1);
         }
     }

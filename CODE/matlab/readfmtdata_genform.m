@@ -8,7 +8,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %	DB filename: WO.SQL_FORMS
 %	DB table: lowercase(F.raw{1})
 %	data content format: from structure FORM.formname
-%	node's CLB: will create autoclb
+%	node's CLB: will create autoclb for calling PROC (if not exists)
 %
 %	will return for selected node N:
 %		D.t (time or 2-column [T,Tstart] if STARTING_DATE true, datenum format)
@@ -16,7 +16,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %		D.e (columns defined in FORM.PROC_ERROR_LIST)
 %		D.c (operator,comment + columns defined in FORM.PROC_CELL_LIST)
 %
-%	note: input type list values are converted to numbers in D.d
+%	note: input type list values are converted to numbers in D.d if in PROC_DATA_LIST
 %
 %
 %	Author: François Beauducel, WEBOBS/IPGP
@@ -47,7 +47,7 @@ d2 = datestr(datelim(2),'yyyy-mm-dd HH:MM:SS');
 % filter the node n within the requested date interval and not in trash
 filter = sprintf('node = ''%s'' AND trash = 0 AND ((sdate BETWEEN ''%s'' AND ''%s'') OR (edate BETWEEN ''%s'' AND ''%s''))',N.ID,d1,d2,d1,d2);
 
-% requests for data associated
+% requests for data associated (all inputs) and converts strings to ISO
 [s,w] = wosystem(sprintf('sqlite3 %s "select * from %s where %s"|iconv -f UTF-8 -t ISO_8859-1',WO.SQL_FORMS,tn,filter));
 if ~s && ~isempty(w)
     lines = textscan(w, '%s', 'delimiter','\n');
@@ -75,13 +75,13 @@ if startdate
     t = [t,ts(k)];
 end
 
+fn = fieldnames(FORM);
 
 % --- data
 inp = str2double(data(:,13:end)); % inputXX fields (numerical only)
 
 % computes all outputs of formula type and store results in intermediate structure
-fn = fieldnames(FORM);
-k = find(~cellfun(@isempty,regexp(fn,'^OUTPUT.._TYPE')));
+k = find(~cellfun(@isempty,regexp(fn,'^OUTPUT[0-9]{2,3}_TYPE')));
 out = nan(size(data,1),length(k)); % initiating output matrix
 for i = 1:length(k)
     v = FORM.(fn{k(i)});
@@ -96,8 +96,8 @@ for i = 1:length(k)
             fml = regexprep(fml,'DURATION','diff(t,2)'); % DURATION (in days)
         end
         % replaces input/output name in string
-        fml = regexprep(fml,'INPUT(..)','inp(:,$1)');
-        fml = regexprep(fml,'OUTPUT(..)','out(:,$1)');
+        fml = regexprep(fml,'INPUT([0-9]{2,3})','inp(:,$1)');
+        fml = regexprep(fml,'OUTPUT([0-9]{2,3})','out(:,$1)');
         % specific Matlab syntax
         fml = regexprep(fml,'(\*\*)','.^'); % replaces ** with ^
         fml = regexprep(fml,'(\*|/)','.$1'); % adds point before * and /
@@ -116,15 +116,15 @@ nm = cell(1,nx);
 un = cell(1,nx);
 for i = 1:nx
     dd = pdn{i};
-    dd = regexprep(dd,'INPUT(..)','inp(:,$1)');
-    dd = regexprep(dd,'OUTPUT(..)','out(:,$1)');
+    dd = regexprep(dd,'INPUT([0-9]{2,3})','inp(:,$1)');
+    dd = regexprep(dd,'OUTPUT([0-9]{2,3})','out(:,$1)');
     if ~isempty(dd)
         eval(['d(:,i)=',dd,';']);
     end
     if length(pen) >= i
         dd = pen{i};
-        dd = regexprep(dd,'INPUT(..)','inp(:,$1)');
-        dd = regexprep(dd,'OUTPUT(..)','out(:,$1)');
+        dd = regexprep(dd,'INPUT([0-9]{2,3})','inp(:,$1)');
+        dd = regexprep(dd,'OUTPUT([0-9]{2,3})','out(:,$1)');
         if ~isempty(dd)
             eval(['e(:,i)=',dd,';']);
         end
