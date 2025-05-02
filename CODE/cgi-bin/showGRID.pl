@@ -926,9 +926,9 @@ sub tableStats {
         $txt .= "<TR><TH>$key</TH>".join("",map {
                 my $t = $_; "<TD align='center'>" . ($t eq $itypes[$i] ? $G{$key."_NAME"}.$unit:"") . "</TD>"
             } uniq(@itypes))
-                ."<TD align='center'>".(grep(/$key/,$G{PROC_DATA_LIST}) ? "&check;":"")."</TD>"
-                ."<TD align='center'>".(grep(/$key/,$G{PROC_ERROR_LIST}) ? "&check;":"")."</TD>"
-                ."<TD align='center'>".(grep(/$key/,$G{PROC_CELL_LIST}) ? "&check;":"")."</TD>"
+                ."<TD align='center'><B>".keyRank($key,$G{PROC_DATA_LIST})."</B></TD>"
+                ."<TD align='center'><B>".keyRank($key,$G{PROC_ERROR_LIST})."</B></TD>"
+                ."<TD align='center'><B>".keyRank($key,$G{PROC_CELL_LIST})."</B></TD>"
                 ."</TR>";
     }
     $txt .= "<TR><TH>Total</TH>".join("",map { my $t = $_; "<TD align='center'>" . grep(/^$t$/,@itypes) . "</TD>" } uniq(@itypes))
@@ -939,6 +939,19 @@ sub tableStats {
     return $txt;
 }
 
+# count the rank position of KEY in the comma-separated string STR
+sub keyRank {
+    my $key = $_[0];
+    my $str = $_[1];
+    my $n = "";
+
+    if (grep(/$key/,$str)) {
+        $str =~ s/$key.*$//g; # deletes string after $key
+        $n = () = $str =~ /,/gi; # counts the number of commas
+        $n += 1;
+    }
+    return $n;
+}
 
 __END__
 
