@@ -148,9 +148,9 @@ for m = 1:length(summarylist)
 		ck = c(k(kk),:);
 		styp = {};
 		if ~isempty(ck)
-			T.c = ck(:,4); % takes comment field (if MC)
+			T.c = ck(:,4); % takes comment field (MC event type)
 			kc = cellfun(@isempty,T.c);
-			T.c(kc) = ck(kc,3);
+			T.c(kc) = ck(kc,3); % empty values are replaced by original event type
 			[T.u,T.ia,T.ic] = unique(T.c);
 			for n = 1:length(T.u)
 				styp = [styp{:},{sprintf('{\\bf%s} (%d),',deblank(T.u{n}),length(find(T.ic==n)))}];
