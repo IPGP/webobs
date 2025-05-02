@@ -212,11 +212,23 @@ msgstr "Première année des données :"
 msgid "Form structure:"
 msgstr "Structure du Form :"
 
+msgid "Form layout:"
+msgstr "Mise en page du Form :"
+
 msgid "inputs"
 msgstr "entrées"
 
 msgid "outputs"
 msgstr "sorties"
+
+msgid "proc exports"
+msgstr "exportations"
+
+msgid "columns"
+msgstr "colonnes"
+
+msgid "Time zone for all records:"
+msgstr "Fuseau horaire de toutes les données :"
 
 msgid "Total number of records:"
 msgstr "Nombre total d'enregistrements :"
