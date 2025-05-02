@@ -1,6 +1,6 @@
 =key|value
 # Generic PROC template for superproc extenso
-# This PROC must be associated with the FORM "EXTENSO" which contains 
+# PROC and/or associated NODES must have FORM.EXTENSO rawformat which contains 
 # compatible data and needed complementary configuration files.
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/extenso.m for further information.
 
@@ -28,7 +28,7 @@ REF01_DATE|2000-01-01
 TIMESCALE_TRUEVALUE|Y
 
 # additional summary graphs keywords (comma separated)
-SUMMARYLIST|VECTORS
+SUMMARYLIST|SUMMARY,VECTORS
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|
