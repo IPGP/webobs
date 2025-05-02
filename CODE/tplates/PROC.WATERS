@@ -1,7 +1,7 @@
 =key|value
 # Generic PROC template for superproc waters
-# This PROC must be associated with the FORM "EAUX" which contains compatible
-# data and needed complementary configuration files.
+# PROC and/or associated NODES must have FORM.WATERS rawformat which contains 
+# compatible data and needed complementary configuration files.
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/waters.m for further information.
 
 
@@ -33,7 +33,7 @@ REF01_DATE|2000-01-01
 # year and month timescales use true durations
 TIMESCALE_TRUEVALUE|Y
 
-SUMMARYLIST|
+SUMMARYLIST|SUMMARY
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} waters $SELFREF -
@@ -83,3 +83,20 @@ LOGO2_FILE|
 COPYRIGHT|MyProc
 # secondary copyright
 COPYRIGHT2|
+
+# specific PROC's parameters
+TEMPERATURE_CHANNELS|
+CONDUCTIVITY_CHANNELS|
+
+# line style: combination of a marker and/or a line type (see user's manual)
+SUMMARY_LINESTYLE|-
+# summary plot: channel lists for the 2 ternary plots
+SUMMARY_TERNARY1_CHANNELS|
+SUMMARY_TERNARY2_CHANNELS|
+# summary plot: other channels to plot
+SUMMARY_CHANNELS|
+
+# line style: combination of a marker and/or a line type (see user's manual)
+PERNODE_LINESTYLE|-
+# pernode plot: other channels to plot
+PERNODE_CHANNELS|
