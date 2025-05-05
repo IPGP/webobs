@@ -916,7 +916,7 @@ sub tableStats {
         (my $type = $G{$key} ? $G{$key}:'numeric') =~ s/[\(:].*$//g;
         push(@itypes,$type);
     }
-    my $txt = "<TD style='border:0;text-align:right;vertical-align:top'><TABLE><TR><TH rowspan=2>$__{'Type:'}</TH>"
+    my $txt = "<TD style='border:0;text-align:right;vertical-align:top'><TABLE class='trData'><TR><TH rowspan=2>$__{'Type:'}</TH>"
               .join("",map{"<TH rowspan=2>$_</TH>"} uniq(@itypes))."<TH colspan=3>Export n°</TH></TR>\n"
               ."<TR><TH>Data</TH><TH>Error</TH><TH>Cell</TH><TR>\n";
     for my $i (0..$#f) {
@@ -924,11 +924,11 @@ sub tableStats {
         my $unit = ( $G{$key."_UNIT"} ne "" ? " (".$G{$key."_UNIT"}.")":"" );
         (my $type = $G{$key} ? $G{$key}:'numeric') =~ s/[\(:].*$//g;
         $txt .= "<TR><TH>$key</TH>".join("",map {
-                my $t = $_; "<TD align='center'>" . ($t eq $itypes[$i] ? $G{$key."_NAME"}.$unit:"") . "</TD>"
+                my $t = $_; "<TD align='center'>" . ($t eq $itypes[$i] ? "<B>".$G{$key."_NAME"}."</B>".$unit:"") . "</TD>"
             } uniq(@itypes))
-                ."<TD align='center'><B>".keyRank($key,$G{PROC_DATA_LIST})."</B></TD>"
-                ."<TD align='center'><B>".keyRank($key,$G{PROC_ERROR_LIST})."</B></TD>"
-                ."<TD align='center'><B>".keyRank($key,$G{PROC_CELL_LIST})."</B></TD>"
+                ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_DATA_LIST})."</SPAN></TD>"
+                ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_ERROR_LIST})."</SPAN></TD>"
+                ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_CELL_LIST})."</SPAN></TD>"
                 ."</TR>";
     }
     $txt .= "<TR><TH>Total</TH>".join("",map { my $t = $_; "<TD align='center'>" . grep(/^$t$/,@itypes) . "</TD>" } uniq(@itypes))
