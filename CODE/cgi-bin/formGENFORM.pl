@@ -706,6 +706,8 @@ foreach (@columns) {
                 }
                 my $txt = "<B>$name</B>".($unit ne "" ? " ($unit)":"");
                 my $hlp;
+                
+                # --- INPUT type 'list'
                 if ($field =~ /^input/ && $type =~ /^list/) {
                     my %list = extract_list($type,$form);
                     my @list_keys = sort { $list{$a}{'_SO_'} <=> $list{$b}{'_SO_'} } keys %list;
@@ -731,16 +733,45 @@ foreach (@columns) {
                         }
                         print "</select>$dlm";
                     }
+                
+                # --- INPUT type 'users'
+                } elsif ($field =~ /^input/ && $type =~ /^users/) {
+                    $hlp = ($help ne "" ? $help:"$__{'Select users for '} $Field");
+                    my @seluid = split(/[, ]+/,$prev_inputs{$field});
+                    push(@seluid,$user) if (@seluid =~ /^$user$/); # adds loggued user if necessary
+                    my @uid = @seluid;
+                    foreach my $op (split(/[, ]/, $default)) {
+                        if ($op =~ /^+/) {
+                            foreach my $u (WebObs::Users::groupListUser("$op")) {
+                                push(@uid, $u) if (!grep(/^$u$/, @uid));
+                            }
+                        } else {
+                            push(@uid, $op) if (!grep(/^$op$/, @uid));
+                        }
+                    }
+                    print qq(<table><tr><td style="border:0">$txt: </td><td style="border:0"><select name="$field" size="$size" multiple="multiple"
+                        onMouseOut="nd()" onmouseover="overlib('$hlp')">);
+                    foreach my $u (@uid){
+                        my $sel = (grep(/^$u$/, @seluid) ? "selected":"");
+                        print "<option value=\"$u\" $sel>$u: ".join('',WebObs::Users::userName($u))."</option>\n";
+                    }
+                    print qq(</select></td></tr></table>$dlm);
+                
+                # --- INPUT type 'text'
                 } elsif ($field =~ /^input/ && $type =~ /^text/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a value for'} $Field");
                     my $value = $prev_inputs{$field};
                     $value =~ s/"/&quot;/g;
                     print qq($txt = <input type="text" size=$size name="$field" value="$value"
                         onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+                
+                # --- INPUT type 'checkbox'
                 } elsif ($field =~ /^input/ && $type =~ /^checkbox/) {
                     $hlp = ($help ne "" ? $help:"$__{'Click to select'} $Field");
                     my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+
+                # --- INPUT type 'image'
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
@@ -754,6 +785,8 @@ foreach (@columns) {
                     print qq(<img src="/icons/upload.png" style="vertical-align: middle;">$txt</button>);
                     my $nb = qx(ls $upload_path -p | grep -v / | wc -l);
                     print qq(<input type="hidden" name="$field" value=$nb>\n);
+                
+                # --- INPUT type 'shapefile'
                 } elsif ($field =~ /^input/ && $type =~ /^shapefile/) {
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
                     $height = ( ( $height >= $LL_MIN_HEIGHT && $height <= $LL_MAX_HEIGHT ) ? $height : $LL_DEFAULT_HEIGHT )."px";
@@ -772,16 +805,22 @@ foreach (@columns) {
                     }
                     print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:right;">);
                     print qq(<img src="/icons/upload.png" style="vertical-align: middle;"> $txt</button>);
+
+                # --- INPUT type 'datetime'
                 } elsif ($field =~ /^input/ && $type =~ /^datetime/) {
                     print qq(<span style="margin-right:20px">$txt</span>);
                     my $len = %datetime_length{$size ? $size : "ymd"};
                     my @date = split( /[-: ]/, $prev_inputs{$field}, $len );
                     if ( scalar(@date) < $len ) { $date[$len-1] = ""; }
                     datetime_input(\%FORM, $field, \@date);
+
+                # --- INPUT type 'numeric' (default)
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
                         onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+
+                # --- OUTPUT type 'formula'
                 } elsif ($field =~ /^output/ && $type =~ /^formula/) {
                     my ($formula, $size, @x) = extract_formula($type);
                     if ($size > 0) {
@@ -791,6 +830,8 @@ foreach (@columns) {
                     } else {
                         print qq(<input type="hidden" name="$field">);
                     }
+
+                # --- OUTPUT type 'text'
                 } elsif ($field =~ /^output/ && $type =~ /^text/) {
                     my $text = extract_text($type);
                     print $txt.($text ne "" ? ": $text":"").$dlm;
