@@ -774,7 +774,7 @@ for (@{$GRID{NODESLIST}}) {
                     $stFields ++ if ($_ ne "");
                 }
                 my $stLastData = ($stDelay[0] > $lastdelay && $stDelay[1] > $lastdelay) ? sprintf("%03.0f",100*$stFields/($#row - 11)):"0";
-                my $stAcqRate = sprintf("%03.0f",100*$nbRec*86400*$acqrate/(str2time($now) - str2time("$GRID{BANG}-01-01 00:00:00")));
+                my $stAcqRate = sprintf("%03.0f",100*$nbRec*86400*$acqrate/(str2time($now) - str2time("$NODE{INSTALL_DATE} 00:00:00")));
                 my $bgcolEt = "";
                 my $bgcolA = "";
 
