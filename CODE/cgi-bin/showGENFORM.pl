@@ -481,9 +481,9 @@ for (my $j = 0; $j <= $#rows; $j++) {
         for (my $n = 0; $n < $nb_fields; $n++) {
             my $Field = $field_names[$f][$n];
             my $field = lc($Field);
-            my $opt;
+            my $opt = "";
             my $val = $fields{$field};
-            my $hlp;
+            my $hlp = "";
             # --- input type = list
             if (defined $lists{$field}) {
                 if (ref $lists{$field}{$fields{$field}}) {
@@ -533,6 +533,23 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 my $shape_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$input_id/shape.json";
                 my $status = ( -e "$shape_path" ? "yes" : "no" );
                 $val = qq(<a href="$form_url#$field\_shape">$status</a>);
+            }
+            # --- input type = shapefile
+            if ($FORM{$Field."_TYPE"} =~ /^checkbox/) {
+                if ($val ne "") {
+                    $val = "&check;";
+                    $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('checked')\"";
+                }
+            }
+            # --- input type = users
+            if ($FORM{$Field."_TYPE"} =~ /^users/) {
+                my @uid = split(/[, ]+/,$val);
+                my @uname;
+                foreach (@uid) {
+                    push(@uname, "<B>$_</B>: ".join('',WebObs::Users::userName($_)));
+                }
+                $val = join(', ',@uid);
+                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@uname)."')\"";
             }
             $text .= "<TD align=center $opt>$val</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
             if ($FORM{$Field."_TYPE"} =~ /^numeric|^$/) {
