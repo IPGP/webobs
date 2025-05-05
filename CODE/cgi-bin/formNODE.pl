@@ -1483,6 +1483,19 @@ for (keys(%NODE)) {
     }
 }
 
+# --- Forms parameters
+if (uc($GRIDType) eq "FORM") {
+    print "<FIELDSET><LEGEND>$__{'Forms Parameters'}</LEGEND>";
+    print "<TABLE><TR><TD style=\"border:0;text-align:right\">";
+    print "<LABEL for=\"form\">$__{'Form name:'}</LABEL>";
+    print "<B>$GRID{NAME}</B> (".(defined($GRID{NODESLIST}) ? scalar(@{$GRID{NODESLIST}}):"0")." nodes)<INPUT hidden id=\"form\" name=\"form\" value=\"\" style=\"background-color:transparent;border:none\"/><BR><BR>\n";
+    print "<label for=\"utcd\">$__{'Time zone (h)'}: </label> <input size='5' readonly type='text' id=\"utcd\" name=\"utcd\" value=\"$GRID{TZ}\" style=\"background-color:transparent;border:none\"/><br><br>\n";
+    print "</TD>\n<TD style=\"border:0;text-align:right\">";
+    print "<label for=\"acqr\">$__{'Acq. period (days)'}: </label> <input size='9' onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_acqrate}')\"type=\"text\" id=\"acqr\" name=\"acqr\" value=\"$usrACQ\"/><br>\n";
+    print "<label for=\"ldly\">$__{'Acq. delay (days)'}: </label> <input size='9' onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_acqdelay}')\"type=\"text\" id=\"ldly\" name=\"ldly\" value=\"$usrDLY\"/><br>\n";
+    print "</TD></TR></TABLE></FIELDSET>\n";
+}
+
 ## # --- "Validity"
 ## if ( clientHasAdm(type=>"authmisc",name=>"NODES")) {
 ##     print "<P class=parform><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")

@@ -64,6 +64,7 @@ use File::Find qw(find);
 use List::Util qw(first);
 use List::MoreUtils qw(uniq);
 use Image::Info qw(image_info dim);
+use Date::Parse;
 use POSIX qw(strftime);
 
 use WebObs::Config;
@@ -526,7 +527,7 @@ if ($overallStatus) {
     my @tsp = split(/,/,$GRID{"STATUSLIST"});
     $htmlcontents .= "<TH rowspan=2></TH><TH colspan=3>$__{'Proc Status'} (".$procTS[first { $tsp[$_] eq '1' } reverse(0..$#tsp)].")</TH>";
 }
-$htmlcontents .= "<TH colspan=3>$__{'Form Information'}</TH>" if ($isForm);
+$htmlcontents .= "<TH rowspan=2></TH><TH colspan=5>$__{'Form Information'}</TH>" if ($isForm);
 $htmlcontents .= "</TR>\n<TR>";
 if ($usrCoord eq "utm") {
     $htmlcontents .= "<TH>UTM Eastern (m)</TH><TH>UTM Northern (m)</TH><TH>$__{'Elev.'} (m)</TH>";
@@ -545,10 +546,14 @@ if ($procOUTG eq "events") {
     $htmlcontents .= "<TH>".join("</TH><TH>",@procTS)."</TH>";
 }
 if ($overallStatus) {
-    $htmlcontents .= "<TH>$__{'Last Data'} (TZ $GRID{TZ})</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
+    $htmlcontents .= "<TH>$__{'Last Data'} (TZ&nbsp;$GRID{TZ})</TH>"
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH>"
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
 }
 if ($isForm) {
-    $htmlcontents .= "<TH>$__{'Nb Rec.'}</TH><TH>$__{'Last Record'}</TH><TH>$__{'Raw Data'}</TH>";
+    $htmlcontents .= "<TH>$__{'Raw Data'}</TH><TH>$__{'Nb Rec.'}</TH><TH>$__{'Last Record'} (TZ&nbsp;".sprintf("%+02d",$GRID{TZ}).")</TH>"
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH>"
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
 }
 $htmlcontents .= "</TR>\n";
 
@@ -723,7 +728,7 @@ for (@{$GRID{NODESLIST}}) {
 
                 # $stState->[3..5] (Date, Time and TZ of last measurement)
                 # Display
-                $htmlcontents .= "<TD></TD><TD align=\"center\" nowrap>$stState->[3]</TD>\n"; # Date de l'analyse de l'etat
+                $htmlcontents .= "<TD></TD><TD align=\"center\" nowrap>".substr($stState->[3],0,16)."</TD>\n"; # Datetime of last data (limited to minute)
                 if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
                     $htmlcontents .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stState->[2]</B></TD>"
                       ."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stState->[1]</B></TD>";
@@ -746,18 +751,61 @@ for (@{$GRID{NODESLIST}}) {
             my $nbRec = join('',@row);
             $sth->finish();
 
-            # get the last datetime for this node
-            $stmt = "SELECT edate,edate_min FROM $tbl WHERE trash=0 AND node='$NODEName' ORDER BY edate DESC LIMIT 1";
+            # get the last record for this node
+            $stmt = "SELECT * FROM $tbl WHERE trash=0 AND node='$NODEName' ORDER BY edate DESC LIMIT 1";
             $sth = $dbh->prepare($stmt);
             $rv = $sth->execute() or die $DBI::errstr;
             @row = $sth->fetchrow_array();
-            my ($ly,$lm,$ld,$lhr,$lmn) = datetime2array($row[0], $row[1]);
+            my ($ly,$lm,$ld,$lhr,$lmn) = datetime2array($row[4], $row[5]);
             my $lastRec = "$ly".($lm ? "-$lm":"").($ld ? "-$ld":"").($lhr ? " $lhr":"").($lmn ? ":$lmn":"");
             $sth->finish();
+            my $lastdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"};
+            my $acqrate = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"};
 
+            $htmlcontents .= "<TD></TD><TD align=\"center\"><A href=\"/cgi-bin/showGENFORM.pl?form=$GRIDName&node=$NODEName\" title=\"$__{'Access to form data'}\"><IMG src=\"/icons/form.png\"></A></TD>";
             $htmlcontents .= "<TD align=\"center\">$nbRec</TD>";
             $htmlcontents .= "<TD align=\"center\">$lastRec</TD>";
-            $htmlcontents .= "<TD align=\"center\"><A href=\"/cgi-bin/showGENFORM.pl?form=$GRIDName&node=$NODEName\" title=\"$__{'Access to form data'}\"><IMG src=\"/icons/form.png\"></A></TD>";
+
+            if ($lastdelay ne "" && $acqrate ne "") {
+                my $now = strftime('%Y-%m-%d %H:%M:%S',localtime(time));
+                my @stDelay = date_duration($row[4],$row[5],$now,$now);
+                my $stFields = 0;
+                for (@row[12..$#row]) {
+                    $stFields ++ if ($_ ne "");
+                }
+                my $stLastData = ($stDelay[0] > $lastdelay && $stDelay[1] > $lastdelay) ? sprintf("%03.0f",100*$stFields/($#row - 11)):"0";
+                my $stAcqRate = sprintf("%03.0f",100*$nbRec*86400*$acqrate/(str2time($now) - str2time("$GRID{BANG}-01-01 00:00:00")));
+                my $bgcolEt = "";
+                my $bgcolA = "";
+
+                # Node last data status
+                if ($stLastData == $NODES{STATUS_STANDBY_VALUE}) { $bgcolEt = "status-standby"; $stLastData = "$__{Standby}"; }
+                elsif ($stLastData < $NODES{STATUS_THRESHOLD_CRITICAL}) {
+                    $stLastData .= " %";
+                    $bgcolEt = "status-manual";
+                }
+                elsif ($stLastData >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolEt="status-ok"; $stLastData .= " %"; }
+                else { $bgcolEt = "status-warning"; $stLastData .= " %"; }
+                if (($stLastData eq "%") || ($stLastData eq ""))  { $bgcolEt = ""; $stLastData = " " }
+
+                # Node acquisition status
+                if ($stAcqRate  == $NODES{STATUS_STANDBY_VALUE}) { $bgcolA = "status-standby"; $stAcqRate = "$__{Standby}"; }
+                elsif ($stAcqRate < $NODES{STATUS_THRESHOLD_CRITICAL}) { $bgcolA = "status-critical"; $stAcqRate .= " %"; }
+                elsif ($stAcqRate >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolA = "status-ok"; $stAcqRate .= " %"; }
+                else { $bgcolA = "status-warning"; $stAcqRate .= " %"; }
+                if (($stAcqRate eq " %") || ($stAcqRate eq "")) { $bgcolA = ""; $stAcqRate = " " }
+
+                # Display
+                if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
+                    $htmlcontents .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stAcqRate</B></TD>"
+                      ."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stLastData</B></TD>";
+                } else {
+                    $htmlcontents .= "<TD align=\"center\" colspan=\"2\"><I>$__{'Stopped'}</I></TD>";
+                }
+            } else {
+                $htmlcontents .= "<TD colspan=\"2\"> </TD>";
+            }
+
         }
         $htmlcontents .= "</TR>\n".(!$displayNode ? "-->":"");
     }

@@ -345,10 +345,14 @@ if ($GRIDType eq "PROC") {
     push(@lines,"$GRIDType.$GRIDName.FDSN_NETWORK_CODE|$fdsn\n");
     push(@lines,"$GRIDType.$GRIDName.RAWFORMAT|".u2l($rawformat)."\n");
     push(@lines,"$GRIDType.$GRIDName.RAWDATA|".u2l($rawdata)."\n");
+    push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
     push(@lines,"$GRIDType.$GRIDName.UTC_DATA|$utcd\n");
+}
+
+# ---- forms and procs common parameters
+if ($GRIDType =~ /^PROC|FORM$/) {
     push(@lines,"$GRIDType.$GRIDName.ACQ_RATE|$acqr\n");
     push(@lines,"$GRIDType.$GRIDName.LAST_DELAY|$ldly\n");
-    push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
     push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|".u2l($desc1)."\n");
 }
 

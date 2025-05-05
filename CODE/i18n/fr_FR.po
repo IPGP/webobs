@@ -889,7 +889,7 @@ msgid "help_creationstation_valid"
 msgstr "Cocher pour marquer le node comme valide. Un node invalide ne sera pas utilisé par les procs et sera masqué aux utilisateurs non admin."
 
 msgid "Time zone (h)"
-msgstr "Fuseau horaire"
+msgstr "Fuseau horaire (h)"
 
 msgid "Acquisition period (days)"
 msgstr "Période d\\'acquisition (jours)"
