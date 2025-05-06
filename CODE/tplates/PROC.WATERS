@@ -84,19 +84,17 @@ COPYRIGHT|MyProc
 # secondary copyright
 COPYRIGHT2|
 
-# specific PROC's parameters
-TEMPERATURE_CHANNELS|
-CONDUCTIVITY_CHANNELS|
+# --- specific PROC's parameters
 
 # line style: combination of a marker and/or a line type (see user's manual)
-SUMMARY_LINESTYLE|-
+SUMMARY_LINESTYLE|s-
 # summary plot: channel lists for the 2 ternary plots
-SUMMARY_TERNARY1_CHANNELS|
-SUMMARY_TERNARY2_CHANNELS|
+SUMMARY_TERNARY1_CHANNELS|12,9,11
+SUMMARY_TERNARY2_CHANNELS|17,18,14
 # summary plot: other channels to plot
-SUMMARY_CHANNELS|
+SUMMARY_CHANNELS|2,3,5,24,25
 
 # line style: combination of a marker and/or a line type (see user's manual)
-PERNODE_LINESTYLE|-
-# pernode plot: other channels to plot
-PERNODE_CHANNELS|
+PERNODE_LINESTYLE|s-
+# pernode plot: other channels to plot (comma separated)
+PERNODE_CHANNELS|2 1,,3,,14 18,,24 29,,28,4,5 6,,
