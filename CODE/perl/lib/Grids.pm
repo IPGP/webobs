@@ -821,8 +821,8 @@ sub readCLB {
 
     my $file = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb"; # standard CLB file name
     my $legclb = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
-    $file = $legclb if ( ! -e $file && -e $legclb); # for backwards compatibility
-    (my $autoclb = $file) =~ s/\.clb/_auto.clb/; # auto-generated CLB
+    (my $autoclb = $file) =~ s/\.clb/_auto.clb/g; # auto-generated CLB
+    $file = $legclb if ( ! -e $file && -e $legclb && ! -s $legclb); # for backwards compatibility
     $file = $autoclb if ( -e $autoclb && ! -s $file );
     if ( -s $file ) {
         %data = readCfg($file);

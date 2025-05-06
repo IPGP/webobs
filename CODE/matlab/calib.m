@@ -11,7 +11,7 @@ function [dc,C]=calib(t,d,CLB,cco)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2004-09-01
-%	Updated: 2025-04-26
+%	Updated: 2025-05-06
 
 if isempty(t) || (isscalar(t) && isnan(t))
 	t = repmat(now,1,2);
@@ -43,56 +43,54 @@ if size(t,1) < size(d,1)
 	t = repmat(t(1),size(d,1),1);
 end
 
-% main loop on calibration file lines
-for j = 1:length(CLB)
-    % replace html tags by ISO char
-    CLB(j).nm = htm2tex(CLB(j).nm);
-    CLB(j).un = htm2tex(CLB(j).un);
-	% loop on data columns
-	nv = unique(CLB.nv);
-	for i = 1:length(nv)
-		ki = find(CLB(j).nv == nv(i));
-		if ~isempty(ki)
-			[tt,kii] = sort(CLB(j).dt(ki));
-			ki = ki(kii);
-			tt = [tt,realmax];
-			% loop on each calibration line for channel i
-			for ii = 1:(length(tt)-1)
-				k = find(t >= tt(ii) & t < tt(ii+1));
-				if ~isempty(k)
-					% selects the right column of raw data
-					col = str2double(CLB(j).cd{ki(ii)});
-					if ~cco || col <= 0 || col > size(d,2) || isnan(col)
-						col = i;
-					end
-					x = d(k,col); % the raw data 
-					fprintf('WEBOBS{calib}: channel %d ("%s") calibrated from %s column %d (%d data - min/max = %g/%g).\n', ...
-						i,CLB(j).nm{ki(ii)},datestr(tt(ii)),col,length(k),minmax(x));
-					% filtering of min/max values is computed on the raw data (before calibration)
-					if ~isnan(CLB(j).vn(ki(ii))) || ~isnan(CLB(j).vm(ki(ii)))
-						kk = (x < CLB(j).vn(ki(ii)) | x > CLB(j).vm(ki(ii)));
-						if any(kk)
-							x(kk) = NaN;
-						end
-					end
-					% data calibration is here
-					f = CLB(j).et{ki(ii)};
-					if ~isempty(strfind(f,'x'))
-						dc(k,i) = eval(regexprep(f,'[^\d\.+-\/\*^xE\ \(\)]','')); % removes any invalid characters
-					else
-						dc(k,i) = x*sstr2num(f);
-					end
-					dc(k,i) = dc(k,i)*CLB(j).ga(ki(ii)) + CLB(j).of(ki(ii)); % x gain + offset
-					for f = {'nm','un','ns','cd','of','et','ga','vn','vm','az','la','lo','al','dp','sf','db','lc'}
-						C.(char(f))(i) = CLB(j).(char(f))(ki(ii));
-					end
-				end
-			end
-		else
-			% no channel info in CLB: just copy the raw data in same column
-			dc(:,i) = d(:,i);
-		end
-	end
+% loop on channels
+nv = unique(CLB.nv);
+for i = 1:length(nv)
+    ki = find(CLB.nv == nv(i));
+    if ~isempty(ki)
+        [tt,kii] = sort(CLB.dt(ki));
+        ki = ki(kii);
+        tt = [tt,realmax];
+        % loop on each calibration line for channel i
+        for ii = 1:(length(tt)-1)
+            k = find(t >= tt(ii) & t < tt(ii+1));
+            if ~isempty(k)
+                % selects the right column of raw data
+                col = str2double(CLB.cd{ki(ii)});
+                if ~cco || col <= 0 || col > size(d,2) || isnan(col)
+                    col = i;
+                end
+                x = d(k,col); % the raw data 
+                fprintf('WEBOBS{calib}: channel %d ("%s") calibrated from %s column %d (%d data - min/max = %g/%g).\n', ...
+                    i,CLB.nm{ki(ii)},datestr(tt(ii)),col,length(k),minmax(x));
+                % filtering of min/max values is computed on the raw data (before calibration)
+                if ~isnan(CLB.vn(ki(ii))) || ~isnan(CLB.vm(ki(ii)))
+                    kk = (x < CLB.vn(ki(ii)) | x > CLB.vm(ki(ii)));
+                    if any(kk)
+                        x(kk) = NaN;
+                    end
+                end
+                % data calibration is here
+                f = CLB.et{ki(ii)};
+                if ~isempty(strfind(f,'x'))
+                    dc(k,i) = eval(regexprep(f,'[^\d\.+-\/\*^xE\ \(\)]','')); % removes any invalid characters
+                else
+                    dc(k,i) = x*sstr2num(f);
+                end
+                dc(k,i) = dc(k,i)*CLB.ga(ki(ii)) + CLB.of(ki(ii)); % x gain + offset
+                for f = {'nm','un','ns','cd','of','et','ga','vn','vm','az','la','lo','al','dp','sf','db','lc'}
+                    C.(char(f))(i) = CLB.(char(f))(ki(ii));
+                    % replace html tags by ISO char for name, unit and ns
+                    if ismember(f,{'nm','un','ns'})
+                        C.(char(f)){i} = htm2tex(C.(char(f)){i});
+                    end
+                end
+            end
+        end
+    else
+        % no channel info in CLB: just copy the raw data in same column
+        dc(:,i) = d(:,i);
+    end
 end
 
 if isempty(CLB)
