@@ -7,21 +7,27 @@ function X = graphstr(s)
 %	   X(n).type : vector of graph type string (not functional)
 %	   X(n).subplot : cell of arguments for the subplot function.
 %
+%   Syntax is:
+%       - comma to separate channels in subplots
+%       - multiple commas indicate a size factor for the previous subplot
+%       - space to group channels in the same subplot
+%
 %	Examples:
-%	   '1,2,3' means channels 1,2 and 3 on 3 equal size subplots
-%	   '2,,,1,3,10,11,,' means channels 2, 1, 3, 10 and 11 with channel 2
-%	   three times higher and channel 11 two times higher in size than others.
+%	   '1,2,3' means channels 1,2, and 3 on three equal-size subplots
+%      '1 2,3' means channels 1 and 2 in the same first subplot, channel 3 in the second subplot
+%	   '1,,,2,3,,' means channels 1, 2, and 3 with channel 1 three times higher
+%       and channel 3 two times higher in size than channel 2.
 %
 %	To get the total graph size use sum(cat(1,X.size)).
 %
 %
 %	Authors: F. Beauducel / WEBOBS, IPGP
 %	Created: 2016-08-05, in Paris (France)
-%	Updated: 2020-12-28
+%	Updated: 2025-05-03
 
 
 % splits the graphs (comma separated)
-x = split(regexprep(s,'[^0-9,]',''),',');
+x = split(regexprep(s,'[^0-9, ]',''),',');
 
 if ~isempty(x)
 	k = find(~cellfun(@isempty,x));
