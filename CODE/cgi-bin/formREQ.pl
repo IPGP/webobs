@@ -318,7 +318,7 @@ print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column
 print "<fieldset><legend>$__{'Available PROCS'}</legend>";
 print "<div style=\"overflow-y: scroll;height: 400px\">";
 for my $p (@proclist) {
-    %P = readProc($p,'novsub','escape'); # reads the proc conf without modifying content (no variable substitution, keep escaped char)
+    %P = readProc($p,'novsub','escape','addcomment'); # reads the proc conf without modifying content (no variable substitution, keep escaped char) and additional comments from the template
     my $nn = scalar(@{$P{$p}{NODESLIST}});
     print "<INPUT type=\"checkbox\" name=\"p_$p\" title=\"$p\" onclick=\"selProc('$p')\" value=\"0\"> <B>{$p}:</B> $P{$p}{NAME} (<B>$nn</B> node".($nn>1?"s":"").")<BR>\n";
     print pkeys($p,\%P);
@@ -475,26 +475,30 @@ print "\n</BODY>\n</HTML>\n";
 # (args: procName, \%procConf)
 sub pkeys {
     my ($pn,$PP) = @_;
+    my %PROC = %{$PP->{$pn}};
     if (defined($pn)) {
         my $div = "<div id='pkeysdrawer$pn' class='pkeysdrawer' style='display: none'>";
         my @pk;
         push(@pk, uniq map { s/^\s+|\s+$//g; $_ } split(/,/,$PP->{$pn}{REQUEST_KEYLIST})) if (defined($PP->{$pn}{REQUEST_KEYLIST}));
         push(@pk, "");
-        foreach my $k (sort keys %{$PP->{$pn}}) {
-            push(@pk,$k) if (! grep(/^$k$/,@pk) && ! grep(/^$k$/,@REQEXCL));
+        foreach my $k (sort keys %PROC) {
+            push(@pk,$k) if (! grep(/^$k$/,@pk) && ! grep(/^$k$/,@REQEXCL) && ! grep(/^comment_/,$k));
         }
         foreach (@pk) {
-            my $v = (defined($PP->{$pn}{$_})?$PP->{$pn}{$_}:"");
+            my $v = (defined($PROC{$_})?$PROC{$_}:"");
             if ($_ eq "") {
                 $div .= "<label><img id='plus$pn' src=\"/icons/plus.gif\" title=\"$__{'Show additional keys'}\" onclick=\"selOtherKeys('$pn')\">"
-                     ."<img id='minus$pn' style='display: none' src=\"/icons/minus.gif\" title=\"$__{'Hide additional keys'}\" onclick=\"selOtherKeys('$pn')\"></label><br></div>"
+                     ."<img id='minus$pn' style='display: none' src=\"/icons/minus.gif\" title=\"$__{'Hide additional keys'}\" onclick=\"selOtherKeys('$pn')\"></label><br></div>\n"
                      ."<div id='pokeysdrawer$pn' class='pkeysdrawer' style='display: none'>";
             } else {
-                $div .= "<label for='PROC.$pn.$_'>$_</label>";
-                $div .= "<input disabled id='PROC.$pn' name='PROC.$pn.$_' maxlength='200' size='40' value='".htmlspecialchars($v)."'><br>";
+                my $hlp = $PROC{"comment_$_"};
+                $div .= "<label for='PROC.$pn.$_'>$_</label>\n";
+                $div .= "<input disabled id='PROC.$pn' name='PROC.$pn.$_' maxlength='200' size='40' value='".htmlspecialchars($v)."'";
+                $div .= " onmouseout=\"nd()\" onmouseover=\"overlib('".htmlspecialchars($hlp)."',CAPTION,'help for $_')\"" if ($hlp ne "");
+                $div .= "><br>\n";
             }
         }
-        $div .= "</div>";
+        $div .= "</div>\n\n";
         return $div;
     }
     return "" ; # no request_keylist

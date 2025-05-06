@@ -113,9 +113,32 @@ Internally uses WebObs::listProcNames.
 =cut
 
 sub readProc {
+    my $comment = grep ( /^addcomment$/, @_[1..$#_] );
     my %ret;
     for my $f (listProcNames($_[0])) {
         my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf",@_[1..$#_]);
+        # --- adds comments from the proc's template
+        if ($comment) {
+            (my $superproc = $tmp{SUBMIT_COMMAND}) =~ s/^[^ ]* ([^ ]*).*$/\1/g;
+            my $tpl = "$WEBOBS{ROOT_CODE}/tplates/PROC.".uc($superproc);
+            if (-e $tpl) {
+                my @file = readFile($tpl);
+                foreach my $k (keys %tmp) {
+                    my @com;
+                    foreach my $l (@file) {
+                        chomp($l);
+                        if ($l =~ /^#/) {
+                            push(@com,$l);
+                        } elsif ($l =~ /^$k\|/) {
+                            $tmp{"comment_$k"} = join('<br>',@com);
+                            @com = ();
+                        } else {
+                            @com = ();
+                        }
+                    }
+                }
+            }
+        }
 
         # --- get list of associated NODES
         opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
