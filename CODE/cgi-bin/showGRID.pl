@@ -768,13 +768,14 @@ for (@{$GRID{NODESLIST}}) {
 
             if ($lastdelay ne "" && $acqrate ne "") {
                 my $now = strftime('%Y-%m-%d %H:%M:%S',localtime(time));
+                my $stStart = $NODE{INSTALL_DATE} // $GRID{BANG};
                 my @stDelay = date_duration($row[4],$row[5],$now,$now);
                 my $stFields = 0;
                 for (@row[12..$#row]) {
                     $stFields ++ if ($_ ne "");
                 }
                 my $stLastData = ($stDelay[0] > $lastdelay && $stDelay[1] > $lastdelay) ? sprintf("%03.0f",100*$stFields/($#row - 11)):"0";
-                my $stAcqRate = sprintf("%03.0f",100*$nbRec*86400*$acqrate/(str2time($now) - str2time("$NODE{INSTALL_DATE} 00:00:00")));
+                my $stAcqRate = sprintf("%03.0f",100*$nbRec*86400*$acqrate/(str2time($now) - str2time("$stStart 00:00:00")));
                 my $bgcolEt = "";
                 my $bgcolA = "";
 
@@ -782,7 +783,7 @@ for (@{$GRID{NODESLIST}}) {
                 if ($stLastData == $NODES{STATUS_STANDBY_VALUE}) { $bgcolEt = "status-standby"; $stLastData = "$__{Standby}"; }
                 elsif ($stLastData < $NODES{STATUS_THRESHOLD_CRITICAL}) {
                     $stLastData .= " %";
-                    $bgcolEt = "status-manual";
+                    $bgcolEt = "status-critical";
                 }
                 elsif ($stLastData >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolEt="status-ok"; $stLastData .= " %"; }
                 else { $bgcolEt = "status-warning"; $stLastData .= " %"; }
