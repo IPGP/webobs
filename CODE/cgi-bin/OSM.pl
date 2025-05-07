@@ -116,6 +116,7 @@ print <<"END";
 <DIV id="map" style="height: ${height}px"></DIV>
 <br><strong>Add a shapefile layer: </strong> <input type="file" id="shapefile-input" accept=".geojson, .json, .zip, .shz">
 <button id="save" style="float: right;">Save</button>
+<br><span id="status" style="color: green; float: right;"></span>
 <script type="text/javascript">
     var esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
     var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -184,14 +185,22 @@ print <<"END";
 
     // Save GeoJSON data
     document.getElementById("save").addEventListener("click", function() {
+        
         var drawnItemsJson = drawnItems.toGeoJSON();
         var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("status").innerHTML = JSON.parse(this.responseText)["message"];
+                setTimeout(() => {document.getElementById("status").innerHTML = "";}, 3000);
+           }
+        };
         xhr.open("POST", "postGEOJSON.pl", true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.send(JSON.stringify({
             filename: "$geojsonFile",
             geojson: drawnItemsJson
         }));
+
     });
 
     function loadShapefile(file) {
@@ -228,13 +237,13 @@ END
 for (keys(%N)) {
     if (!($N{$_}{LAT_WGS84} eq "" && $N{$_}{LON_WGS84} eq "")
         && ( ($opt ne "active" || (($N{$_}{END_DATE} ge $today || $N{$_}{END_DATE} eq "NA")
-                    && ($N{$_}{INSTALL_DATE} le $today || $N{$_}{INSTALL_DATE} eq "NA"))))) {
+                    && ($N{$_}{INSTALL_DATE} le $today || $N{$_}{INSTALL_DATE} eq "NA")))) ) {
         my $text = "<B>$N{$_}{ALIAS}: $N{$_}{NAME}</B><BR>"
           .($N{$_}{TYPE} ne "" ? "<I>($N{$_}{TYPE})</I><br>":"")
           ."&nbspfrom <B>$N{$_}{INSTALL_DATE}</B>".($N{$_}{END_DATE} ne "NA" ? " to <B>$N{$_}{END_DATE}</B>":"")."<br>"
           ."&nbsp;<B>$N{$_}{LAT_WGS84}&deg;</B>, <B>$N{$_}{LON_WGS84}&  deg;</B>, <B>$N{$_}{ALTITUDE} m</B>";
         $text =~ s/\"//g;  # fix ticket #166
-        print "var marker = L.marker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 10, color: 'red'}).addTo(map);\n";
+        print "var marker = L.circleMarker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 10, color: 'red'}).addTo(map);\n";
         print "marker.bindPopup(\"$text\").openPopup();\n";
         print "markers.push(marker);\n";
     }
