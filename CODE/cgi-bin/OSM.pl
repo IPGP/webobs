@@ -195,9 +195,19 @@ print <<"END";
         xhr.open("POST", "postGEOJSON.pl", true);
         xhr.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                document.getElementById("status").innerHTML = JSON.parse(this.responseText)["message"];
-                setTimeout(() => {document.getElementById("status").innerHTML = "";}, 3000);
-           }
+                var openerURL = window.opener.location.href;
+                if (openerURL.includes("formNODE.pl")) {
+                    if (window.opener) {
+                        window.opener.location.reload();
+                    }
+                    window.close();
+                } else {
+                    document.getElementById("status").innerHTML = JSON.parse(this.responseText)["message"];
+                    setTimeout(() => {
+                        document.getElementById("status").innerHTML = "";
+                    }, 3000);
+                }
+            }
         };
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.send(JSON.stringify({

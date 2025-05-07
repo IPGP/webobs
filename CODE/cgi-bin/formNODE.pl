@@ -1150,7 +1150,10 @@ print "</TD>\n";                                                                
 print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
 
 # --- 'node' position (latitude, longitude & altitude)
-print "<FIELDSET><LEGEND>$__{'Geographic location'}</LEGEND>";
+my $map =" <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$GRIDType.$GRIDName.$NODEName','$NODEName',"
+  ."'width=".($WEBOBS{OSM_WIDTH_VALUE}+15).",height=".($WEBOBS{OSM_HEIGHT_VALUE}+75). ",toolbar=no,menubar=no,location=no')\">"
+  ."<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
+print "<FIELDSET><LEGEND>$__{'Geographic location'}$map</LEGEND>";
 print "<TABLE><TR>";
 print "<TD style=\"border:0;text-align:left\">";
 print "<DIV id='map' style=\"position: relative ;width: 347px; height: 347px\"></DIV>";
@@ -1208,9 +1211,6 @@ if (-e $geojsonFile) {
 print "<INPUT type=\"hidden\" name=\"filename\" value=\"\"\n>";
 print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
 print "<INPUT type=\"hidden\" name=\"geojson\" value=\"\"\n>";
-print "<label for=\"shpfile\">$__{'Shapefile'} (.zip): </label> "
-  ."<INPUT type='file' id='shpfile' onchange='handleFiles()' value=\"\"  onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_shapefile}')\"><BR>";
-
 print "</TD>";
 print <<FIN;
 <script>
