@@ -88,7 +88,12 @@ if (scalar(@NID) == 2) {
 
 # --- Importation of shpfile
 # --- First we check if a geojson already exists in the NODE dir
-my $geojsonFile = "$WEBOBS{PATH_GRIDS}/$GRIDType.$GRIDName.geojson";
+my $geojsonFile;
+if ($NODEName) {
+    $geojsonFile = "$WEBOBS{PATH_NODES}/$NODEName/$NODEName.geojson";
+} else {
+    $geojsonFile = "$WEBOBS{PATH_GRIDS}/$GRIDType.$GRIDName.geojson";
+}
 my $geojsonData;
 if (-e $geojsonFile) {
     open(FH, '<', $geojsonFile);
@@ -185,22 +190,20 @@ print <<"END";
 
     // Save GeoJSON data
     document.getElementById("save").addEventListener("click", function() {
-        
         var drawnItemsJson = drawnItems.toGeoJSON();
         var xhr = new XMLHttpRequest();
+        xhr.open("POST", "postGEOJSON.pl", true);
         xhr.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 document.getElementById("status").innerHTML = JSON.parse(this.responseText)["message"];
                 setTimeout(() => {document.getElementById("status").innerHTML = "";}, 3000);
            }
         };
-        xhr.open("POST", "postGEOJSON.pl", true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.send(JSON.stringify({
             filename: "$geojsonFile",
             geojson: drawnItemsJson
         }));
-
     });
 
     function loadShapefile(file) {
