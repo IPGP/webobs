@@ -103,24 +103,21 @@ if (-e $geojsonFile) {
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">","\n";
 print <<"END";
-<<<<<<< Updated upstream
 <HTML><HEAD><TITLE>$title ($today)</TITLE>
-<LINK rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
-=======
-<HTML><HEAD><TITLE>$titre ($today)</TITLE>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shpjs/3.6.0/shp.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
->>>>>>> Stashed changes
+
 </HEAD>
 <BODY>
 <DIV id="map" style="height: ${height}px"></DIV>
 <br><strong>Add a shapefile layer: </strong> <input type="file" id="shapefile-input" accept=".geojson, .json, .zip, .shz">
 <button id="save" style="float: right;">Save</button>
 <script type="text/javascript">
+    var esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
     var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
     var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         maxZoom: 17,
@@ -252,17 +249,6 @@ if (scalar(@NID) == 2) {
 }
 print "</script>\n";
 
-<<<<<<< Updated upstream
-print "<form action='geomNODE.pl' method='post' onsubmit=\"document.getElementById('geom').value=outWKT+';'+outGeoJSON\">\n"; #;window.close()
-print "<strong>$__{'To import a shapefile layer, click here:'} </strong><input type='file' id='input' onchange='handleFiles()'><br>\n";
-print "<strong>$__{'To save the area shape of the NODE as GeoJSON format, click here:'} </strong>\n"
-     ."<input type=\"submit\" value=\"$__{'Save'}\">\n"
-     ."<input type=\"hidden\" name=\"grid\" value=\"$grid\">\n"
-     ."<input id=\"geom\" type=\"hidden\" name=\"geom\" value=\"\">\n";
-print "</form>";
-
-=======
->>>>>>> Stashed changes
 # ---- we're done ------------------------------------
 print "\n</BODY>\n</HTML>\n";
 
