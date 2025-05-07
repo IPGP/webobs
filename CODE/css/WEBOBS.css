@@ -882,3 +882,17 @@ td.fof {
     #EEEEEE 6px
   );
 }
+
+.hiddenRow {
+    display:none;
+}
+
+.tableSplit {
+    background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    #EEEEEE 4px,
+    #EEEEEE 8px
+  );
+}
