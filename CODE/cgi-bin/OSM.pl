@@ -141,6 +141,7 @@ print <<"END";
         "ESRI World Imagery": satellite,
     };
     var layerControl = L.control.layers(baseMaps).addTo(map);
+    var markers = [];
 
     // Create a layer group for editable elements
     var drawnItems = new L.FeatureGroup().addTo(map);
@@ -243,7 +244,7 @@ for (keys(%N)) {
 if (scalar(@NID) == 2) {
     print "var group = new L.featureGroup(markers);\n";
     print "map.fitBounds(group.getBounds().pad(0.1));\n";
-    print "map.addLayer(markerClusters);\n";
+#    print "map.addLayer(markerClusters);\n";
 } else {
     print "map.setView([$lat, $lon], $WEBOBS{OSM_ZOOM_VALUE});\n";
 }
