@@ -1373,7 +1373,7 @@ print "</FIELDSET>";
 
 # --- Procs parameters
 if (uc($GRIDType) eq "PROC") {
-    print "<FIELDSET><LEGEND>$__{'Procs Parameters'}</LEGEND>";
+    print "<FIELDSET><LEGEND>$__{'Proc Parameters'}</LEGEND>";
     print "<TABLE><TR><TD style=\"border:0;text-align:left\" colspan=2>";
     print "<LABEL for=\"proc\">$__{'Proc name:'}</LABEL>";
     print "<B>$GRID{NAME}</B> (".(defined($GRID{NODESLIST}) ? scalar(@{$GRID{NODESLIST}}):"0")." nodes)<INPUT hidden id=\"proc\" name=\"proc\" value=\"\" style=\"background-color:transparent;border:none\"><BR><BR>\n";
@@ -1485,7 +1485,7 @@ for (keys(%NODE)) {
 
 # --- Forms parameters
 if (uc($GRIDType) eq "FORM") {
-    print "<FIELDSET><LEGEND>$__{'Forms Parameters'}</LEGEND>";
+    print "<FIELDSET><LEGEND>$__{'Form Parameters'}</LEGEND>";
     print "<TABLE><TR><TD style=\"border:0;text-align:right\">";
     print "<LABEL for=\"form\">$__{'Form name:'}</LABEL>";
     print "<B>$GRID{NAME}</B> (".(defined($GRID{NODESLIST}) ? scalar(@{$GRID{NODESLIST}}):"0")." nodes)<INPUT hidden id=\"form\" name=\"form\" value=\"\" style=\"background-color:transparent;border:none\"/><BR><BR>\n";
