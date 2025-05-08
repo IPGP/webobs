@@ -96,8 +96,8 @@ EVENTS_GAZETTE_DELETE|YES
 EVENTS_ACTIVE_GID|+ADMIN,+DUTY
 EVENTS_NOTIFY_FULL_MESSAGE|YES
 
-# Uncomment this line to disable MultiMarkDown facilities for all 'wiki' contents
-#WIKI_MMD|NO
+# Allows convertion of former 'wiki' contents to MultiMarkDown (recommanded)
+WIKI_MMD|YES
 
 # Set to YES to add logs (in PROC's outputs)
 DEBUG|NO

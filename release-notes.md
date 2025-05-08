@@ -49,6 +49,11 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
 1. New CSS!
 1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
 1. `!!` **HYPOMAP superproc**: MAP_*_DEPLIM now filters the data (was only for marker scale color). *Caution:* comments in proc's .conf files need to be updated to avoid misunderstanding
+1. `!!` in order to use only the MultiMarkDown format in contents, the former 'wiki' format will be progressively abandonned. The following option is recommanded in **WEBOBS.rc**:
+```
+WIKI_MMD|YES
+```
+and admins are encouraged to use the **">MMD"** button in editors.
 
 ### Fixed issues
 1. `!!` Fix an issue giving edit button for any grid (view/proc/form) for users with only Edit level.
