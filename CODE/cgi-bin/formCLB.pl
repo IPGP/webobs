@@ -56,7 +56,6 @@ my %data;
 my $nb = 0;
 my $nouveau = 0;
 my $QryParm = $cgi->Vars;
-my @hiden_params = ("az", "la", "lo", "al", "dp", "sf", "db", "lc");
 
 $QryParm->{'node'}   ||= "";
 
@@ -143,6 +142,10 @@ for (@newChan) {
     $data{$_}{"la"} = $NODE{LAT_WGS84};
     $data{$_}{"lo"} = $NODE{LON_WGS84};
     $data{$_}{"al"} = $NODE{ALTITUDE};
+    # fills other fields with the default value
+    foreach my $k (keys %fieldCLB) {
+        $data{$_}{$k} = $fieldCLB{$k}{'Default'} if ($fieldCLB{$k}{'Default'} ne 'auto');
+    }
 }
 
 $nb = keys %data;  # number of elements in @data
@@ -250,7 +253,7 @@ print "<input type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">",
   "<TABLE class=\"CLBtable\" width=\"100%\" style=\"border:0\" onMouseOver=\"calc()\">",
   "<TR>";
 foreach my $k ( @params ) {
-    if ($k ~~ @hiden_params) { $c = ' class="CLBshowhide"' } else { $c = '' }
+    if ($fieldCLB{$k}{'Hide'}) { $c = ' class="CLBshowhide"' } else { $c = '' }
     print "<TH$c>",$fieldCLB{$k}{'Name'}."</TH>";
 }
 print "</TR>\n";
@@ -305,7 +308,7 @@ foreach my $id (sort_clb(\%data)) {
     }
     my $ki = 2;
     foreach my $k ( @params ) {
-        if ($k ~~ @hiden_params) { $c = ' class="CLBshowhide"' } else { $c = '' }
+        if ($fieldCLB{$k}{'Hide'}) { $c = ' class="CLBshowhide"' } else { $c = '' }
         if (not $k ~~ ["DATE", "TIME", "nv"]) {
             print "<TD$c onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{$k}{'MSGID'}}')\"><input name=\"v".$i."_".$ki++
               ."\" value=\"".($line{$k} // '')."\" size=\"$fieldCLB{$k}{'NbCar'}\"></TD>\n";
@@ -346,7 +349,7 @@ Didier Mallarino, François Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
