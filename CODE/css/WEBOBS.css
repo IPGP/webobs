@@ -93,7 +93,7 @@ li {
     margin-top: 1pt;
 }
 
-table.trData tr:hover td {
+table.trData tr:hover:after td {
     background-color: #eeeeee;
 }
 
