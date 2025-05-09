@@ -138,7 +138,7 @@ sub mc2qmlfdsn {
     if ($evt_SP > 0) {
         my $Stime = strftime('%y-%m-%dT%H:%M:%S', str2time("${date}T${time}") + $evt_SP)
         my $SpickpublicID = 'S' . $nowGMT . $NSLC;
-        my $ParrivalpublicID = 'S' . $nowGMT . '/arrrival1';
+        my $SarrivalpublicID = 'S' . $nowGMT . '/arrrival1';
         $qmlfdsn .= "$evtroot/pick/\@publicID=$SpickpublicID\n";
         $qmlfdsn .= "$evtroot/pick/creationInfo/author=$oper\n";
         $qmlfdsn .= "$evtroot/pick/evaluationMode=manual\n";
