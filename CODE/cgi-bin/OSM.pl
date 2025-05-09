@@ -109,11 +109,11 @@ print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">","\n";
 print <<"END";
 <HTML><HEAD><TITLE>$title ($today)</TITLE>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/shpjs/3.6.0/shp.min.js"></script>
+<link rel="stylesheet" href="/css/leaflet.css" />
+<link rel="stylesheet" href="/css/leaflet.draw.css" />
+<script src="/js/leaflet.js"></script>
+<script src="/js/leaflet.draw.js"></script>
+<script src="/js/shp.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 
 </HEAD>
@@ -123,7 +123,7 @@ print <<"END";
 <button id="save" style="float: right;">Save</button>
 <br><span id="status" style="color: green; float: right;"></span>
 <script type="text/javascript">
-    var esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+    var esriAttribution = 'Tiles &copy; <b>Esri</b>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
     var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
     var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         maxZoom: 17,
@@ -139,14 +139,15 @@ print <<"END";
     var map = L.map('map', {
         center: [$lat, $lon],
         zoom: $WEBOBS{OSM_ZOOM_VALUE},
-        layers: [topo, osm, satellite]
+        layers: [osm, topo, satellite]
     });
     var baseMaps = {
-        "OpenTopoMap": topo,
         "OpenStreetMap": osm,
+        "OpenTopoMap": topo,
         "ESRI World Imagery": satellite,
     };
     var layerControl = L.control.layers(baseMaps).addTo(map);
+    L.control.scale().addTo(map);
     var markers = [];
 
     // Create a layer group for editable elements
@@ -251,13 +252,14 @@ for (keys(%N)) {
     if (!($N{$_}{LAT_WGS84} eq "" && $N{$_}{LON_WGS84} eq "")
         && ( ($opt ne "active" || (($N{$_}{END_DATE} ge $today || $N{$_}{END_DATE} eq "NA")
                     && ($N{$_}{INSTALL_DATE} le $today || $N{$_}{INSTALL_DATE} eq "NA")))) ) {
-        my $text = "<B>$N{$_}{ALIAS}: $N{$_}{NAME}</B><BR>"
-          .($N{$_}{TYPE} ne "" ? "<I>($N{$_}{TYPE})</I><br>":"")
-          ."&nbspfrom <B>$N{$_}{INSTALL_DATE}</B>".($N{$_}{END_DATE} ne "NA" ? " to <B>$N{$_}{END_DATE}</B>":"")."<br>"
-          ."&nbsp;<B>$N{$_}{LAT_WGS84}&deg;</B>, <B>$N{$_}{LON_WGS84}&  deg;</B>, <B>$N{$_}{ALTITUDE} m</B>";
+        my $text = "<B>$N{$_}{ALIAS}: $N{$_}{NAME}</B>"
+          .($N{$_}{TYPE} ne "" ? "<br><I>($N{$_}{TYPE})</I>":"")
+          .($N{$_}{INSTALL_DATE} ne "NA" ? "<br>&nbspfrom <B>$N{$_}{INSTALL_DATE}</B>".($N{$_}{END_DATE} ne "NA" ? " to <B>$N{$_}{END_DATE}</B>":""):"")
+          ."<br>&nbsp;<B>".sprintf("%+02.5f",$N{$_}{LAT_WGS84})."&deg;N</B>, <B>".sprintf("%+03.5f",$N{$_}{LON_WGS84})."&deg;E</B>"
+          .($N{$_}{ALTITUDE} ne "" ? ", <B>$N{$_}{ALTITUDE} m</B>":"");
         $text =~ s/\"//g;  # fix ticket #166
         if (scalar(@NID) != 2 & $NODEName ne $_) {
-            print "var marker = L.circleMarker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 6, color: 'blue'}).addTo(map);\n";
+            print "var marker = L.circleMarker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 6, color: '#4080F7'}).addTo(map);\n";
         } else {
             print "var marker = L.circleMarker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 8, color: 'red'}).addTo(map);\n";
         }
