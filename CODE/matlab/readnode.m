@@ -35,7 +35,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2025-04-29
+%   Updated: 2025-05-08
 
 
 if ~exist('NODES','var')
@@ -125,7 +125,7 @@ end
 % imports .geojson (if exists)
 json = sprintf('%s/%s.geojson',p,id);
 if exist(json,'file')
-    N.GEOJSON = fileread(json);
+    N.GEOJSON = readjson(json);
 else
     N.GEOJSON = '';
 end
