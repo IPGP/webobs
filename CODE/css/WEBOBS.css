@@ -93,7 +93,7 @@ li {
     margin-top: 1pt;
 }
 
-table.trData tr:hover td {
+table.trData tr:hover:after td {
     background-color: #eeeeee;
 }
 
@@ -881,4 +881,21 @@ td.fof {
     #EEEEEE 4px,
     #EEEEEE 6px
   );
+}
+
+.hiddenRow {
+    display:none;
+}
+
+tr.tableSplit {
+    background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    #EEEEEE 4px,
+    #EEEEEE 8px
+  );
+}
+tr.tableSplit td{
+    border: solid 0px
 }

@@ -9,9 +9,14 @@ NAME|My time series
 # description of what the proc does
 DESCRIPTION|Generic time series
 
-# proc TYPE and OWNER
+# proc type (for display in the grids table)
 TYPE|
+# owner code (see OWNERS.conf for OWNCODEs) or text string
 OWNCODE|?
+# main logo for output graphs
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+# proc time zone (in hours)
+TZ|0
 
 # default raw data format (might be overwritten in each node)
 RAWFORMAT|
@@ -20,6 +25,7 @@ RAWDATA|$WEBOBS{ROOT_RAWD}/mydatasource
 # URN link to data
 URNDATA|$WEBOBS{URN_RAWD}/mydatasource
 
+# use high-resolution SRTM (needs registration and login info in WEBOBS.rc)
 DEM_SRTM1|N
 # optional user-defined DEM (Arcinfo format, lat/lon, overwrites SRTM/ETOPO default)
 #DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc

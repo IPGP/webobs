@@ -113,9 +113,32 @@ Internally uses WebObs::listProcNames.
 =cut
 
 sub readProc {
+    my $comment = grep ( /^addcomment$/, @_[1..$#_] );
     my %ret;
     for my $f (listProcNames($_[0])) {
         my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf",@_[1..$#_]);
+        # --- adds comments from the proc's template (any commented lines before a key)
+        if ($comment) {
+            (my $superproc = $tmp{SUBMIT_COMMAND}) =~ s/^[^ ]* ([^ ]*).*$/\1/g;
+            my $tpl = "$WEBOBS{ROOT_CODE}/tplates/PROC.".uc($superproc);
+            if (-e $tpl) {
+                my @file = readFile($tpl); # imports all the template file
+                foreach my $k (keys %tmp) {
+                    my @com;
+                    foreach my $l (@file) {
+                        chomp($l);
+                        if ($l =~ /^#/) {
+                            push(@com,substr($l,1));
+                        } elsif ($l =~ /^$k\|/) {
+                            $tmp{"comment_$k"} = join('<br>',@com);
+                            @com = ();
+                        } else {
+                            @com = ();
+                        }
+                    }
+                }
+            }
+        }
 
         # --- get list of associated NODES
         opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
@@ -821,8 +844,8 @@ sub readCLB {
 
     my $file = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb"; # standard CLB file name
     my $legclb = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
-    $file = $legclb if ( ! -e $file && -e $legclb); # for backwards compatibility
-    (my $autoclb = $file) =~ s/\.clb/_auto.clb/; # auto-generated CLB
+    (my $autoclb = $file) =~ s/\.clb/_auto.clb/g; # auto-generated CLB
+    $file = $legclb if ( ! -e $file && -e $legclb && ! -s $legclb); # for backwards compatibility
     $file = $autoclb if ( -e $autoclb && ! -s $file );
     if ( -s $file ) {
         %data = readCfg($file);

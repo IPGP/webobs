@@ -290,8 +290,8 @@ msgstr "Exporter"
 msgid "Networks Codes"
 msgstr "Codes des réseaux"
 
-msgid "Proc Parameters"
-msgstr "Paramètres Proc"
+msgid "Proc Information"
+msgstr "Informations de la Proc"
 
 msgid "Proc Graphs"
 msgstr "Graphes Proc"
@@ -623,9 +623,6 @@ msgstr "Noms et Codes"
 msgid "Associated Grids"
 msgstr "Grids associées"
 
-msgid "Procs Parameters"
-msgstr "Paramètres de Proc"
-
 msgid "Searching for data, please wait"
 msgstr "Recherche des données, merci de patienter"
 
@@ -888,14 +885,20 @@ msgstr "Choisir le node cible"
 msgid "help_creationstation_valid"
 msgstr "Cocher pour marquer le node comme valide. Un node invalide ne sera pas utilisé par les procs et sera masqué aux utilisateurs non admin."
 
+msgid "Form Parameters"
+msgstr "Paramètres de Form"
+
+msgid "Form name:"
+msgstr "Nom du Form :"
+
 msgid "Time zone (h)"
 msgstr "Fuseau horaire (h)"
 
-msgid "Acquisition period (days)"
-msgstr "Période d\\'acquisition (jours)"
+msgid "Acq. period (days)"
+msgstr "Période d'acq. (jours)"
 
-msgid "Acquisition delay (days)"
-msgstr "Délai d\\'acquisition (jours)"
+msgid "Acq. delay (days)"
+msgstr "Délai d'acq. (jours)"
 
 msgid "help_creationstation_network"
 msgstr "Sélectioner le réseau concerné"
@@ -968,6 +971,9 @@ msgstr "Éditer les métadonnées sur le site M3G (nécessite un login préalabl
 
 msgid "Edit sitelog on M3G"
 msgstr "Éditer le sitelog sur M3G"
+
+msgid "Proc Parameters"
+msgstr "Paramètres de Proc"
 
 msgid "Proc name:"
 msgstr "Nom de la PROC :"
