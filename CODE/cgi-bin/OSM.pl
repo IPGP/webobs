@@ -184,6 +184,9 @@ print <<"END";
                     popupcontent.push(prop + ": " + feature.properties[prop]);
                 }
                 layer.bindPopup(popupcontent.join("<br />"));
+            },
+            style: {
+                color: "#dd0000"
             }
         });
         return shpfile;
@@ -258,13 +261,11 @@ for (keys(%N)) {
           ."<br>&nbsp;<B>".sprintf("%+02.5f",$N{$_}{LAT_WGS84})."&deg;N</B>, <B>".sprintf("%+03.5f",$N{$_}{LON_WGS84})."&deg;E</B>"
           .($N{$_}{ALTITUDE} ne "" ? ", <B>$N{$_}{ALTITUDE} m</B>":"");
         $text =~ s/\"//g;  # fix ticket #166
-        if (scalar(@NID) != 2 & $NODEName ne $_) {
-            print "var marker = L.circleMarker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 6, color: '#4080F7'}).addTo(map);\n";
-        } else {
-            print "var marker = L.circleMarker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 8, color: 'red'}).addTo(map);\n";
-        }
-        print "marker.bindPopup(\"$text\");\n";
-        print "markers.push(marker);\n";
+        print "var marker = L.circleMarker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], "
+            .(scalar(@NID) != 2 & $NODEName ne $_ ? "{radius: 6, color: '#4080F7'}":"{radius: 8, color: 'red'}")
+            .").addTo(map);\n"
+            ."marker.bindPopup(\"$text\");\n"
+            ."markers.push(marker);\n";
     }
 }
 
