@@ -11,6 +11,8 @@
 #--------------------------------------------------------------
 use strict;
 use WebObs::XML2;
+use Date::Parse;
+use POSIX qw(strftime);
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 # qmlvalues: returns origin and magmitude preferred values from XML2 arrayd
@@ -92,6 +94,67 @@ sub qmlfdsn {
     $qml{comment} = findvalue("$root/description/text=",\@xml2);
 
     return %qml;
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+# mc2qmlfdsn: returns QuakeML from MC3 line
+sub mc2qmlfdsn {
+    my ($mc3,$oper,$date,$time,$type,$evt_SP,$NSLC,$mc_id,$comment,$mclon,$mclat) = @_;
+    my ($net,$sta,$loc,$cha) = split(/\./, $NSLC);
+    my ($year,$month) = split(/-/,$date);
+    my $mcID = "$mc3/${year}${month}/${mc_id}";
+    my $nowGMT = strftime('%y%m%d%H%M%S', gmtime);
+    my $PpickpublicID = 'P' . $nowGMT . $NSLC;
+    my $originpublicID = $nowGMT;
+    my $ParrivalpublicID = 'P' . $nowGMT . '/arrrival1';
+    my $evtroot = '/q:quakeml/eventParameters/event';
+
+    my $qmlfdsn = '';
+    $qmlfdsn .= "/q:quakeml/\@xmlns=http://quakeml.org/xmlns/bed/1.2\n";
+    $qmlfdsn .= "/q:quakeml/\@xmlns:q=http://quakeml.org/xmlns/quakeml/1.2\n";
+    $qmlfdsn .= "/q:quakeml/eventParameters/\@publicID=mc2qmlfdsn\n";
+    $qmlfdsn .= "$evtroot/\@publicID=$mcID\n";
+    $qmlfdsn .= "$evtroot/pick/\@publicID=$PpickpublicID\n";
+    $qmlfdsn .= "$evtroot/pick/creationInfo/author=$oper\n";
+    $qmlfdsn .= "$evtroot/pick/evaluationMode=manual\n";
+    $qmlfdsn .= "$evtroot/pick/time/value=${date}T${time}\n";
+    $qmlfdsn .= "$evtroot/pick/waveformID=\@networkCode=$net\n";
+    $qmlfdsn .= "$evtroot/pick/waveformID=\@stationCode=$sta\n";
+    $qmlfdsn .= "$evtroot/pick/waveformID=\@locationCode=$loc\n";
+    $qmlfdsn .= "$evtroot/pick/waveformID=\@channelCode=$cha\n";
+    $qmlfdsn .= "$evtroot/origin/\@publicID=$originpublicID/origin$mc_id\n";
+    $qmlfdsn .= "$evtroot/origin/creationInfo/author=$oper\n";
+    $qmlfdsn .= "$evtroot/origin/time/value=${date}T${time}\n";
+    $qmlfdsn .= "$evtroot/origin/longitude/value=$mclon\n";
+    $qmlfdsn .= "$evtroot/origin/latitude/value=$mclat\n";
+    $qmlfdsn .= "$evtroot/origin/methodID=$mcID\n";
+    $qmlfdsn .= "$evtroot/origin/earthModelID=$type\n";
+    $qmlfdsn .= "$evtroot/origin/evaluationStatus=confirmed\n";
+    $qmlfdsn .= "$evtroot/origin/evaluationMode=manual\n";
+    $qmlfdsn .= "$evtroot/origin/arrival/\@publicID=$ParrivalpublicID\n";
+    $qmlfdsn .= "$evtroot/origin/arrival/pickID=$PpickpublicID\n";
+    $qmlfdsn .= "$evtroot/origin/arrival/phase=P\n";
+    $qmlfdsn .= "$evtroot/preferredOriginID=$originpublicID";
+    if ($evt_SP > 0) {
+        my $Stime = strftime('%y-%m-%dT%H:%M:%S', str2time("${date}T${time}") + $evt_SP)
+        my $SpickpublicID = 'S' . $nowGMT . $NSLC;
+        my $ParrivalpublicID = 'S' . $nowGMT . '/arrrival1';
+        $qmlfdsn .= "$evtroot/pick/\@publicID=$SpickpublicID\n";
+        $qmlfdsn .= "$evtroot/pick/creationInfo/author=$oper\n";
+        $qmlfdsn .= "$evtroot/pick/evaluationMode=manual\n";
+        $qmlfdsn .= "$evtroot/pick/time/value=${Stime}\n";
+        $qmlfdsn .= "$evtroot/pick/waveformID=\@networkCode=$net\n";
+        $qmlfdsn .= "$evtroot/pick/waveformID=\@stationCode=$sta\n";
+        $qmlfdsn .= "$evtroot/pick/waveformID=\@locationCode=$loc\n";
+        $qmlfdsn .= "$evtroot/pick/waveformID=\@channelCode=$cha\n";
+        $qmlfdsn .= "$evtroot/origin/arrival/\@publicID=$SarrivalpublicID\n";
+        $qmlfdsn .= "$evtroot/origin/arrival/pickID=$SpickpublicID\n";
+        $qmlfdsn .= "$evtroot/origin/arrival/phase=S\n";
+        $qmlfdsn .= "$evtroot/preferredOriginID=$originpublicID";
+    }
+    $qmlfdsn .= "$evtroot/origin/comment/text=$comment";
+
+    return qx(echo "$qmlfdsn" | $WEBOBS{TOXML_PRGM});
 }
 
 1;
