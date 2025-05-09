@@ -320,28 +320,35 @@ if (-e $lockFile) {
 
 my $newQML;
 if ($newSC3 > 0) {
-    print "<P>Creating a new SC3 ID...</P>";
+    # print "<P>Creating a new SC3 ID...</P>";
 
-    $newQML = "<?xml version=\"1.0\"?><!DOCTYPE WO2SC3 SYSTEM \"wo2sc3.dtd\">
-    <webObs>
-        <moduleDescription>
-            <id>$MC3{WO2SC3_MOD_ID}</id>
-            <type>$MC3{WO2SC3_MOD_TYPE}</type>
-        </moduleDescription>
-        <eventDescription>
-            <mcid>$mc3/$anneeEvnt$moisEvnt/$id_evt</mcid>
-            <date>$anneeEvnt/$moisEvnt/$jourEvnt</date>
-            <time>$heureEvnt:$minEvnt:$secEvnt</time>
-            <station>$staEvnt</station>
-            <network>$netEvnt</network>
-            <duration>$dureeEvnt</duration>
-            <sminusp>$smoinsp</sminusp>
-            <amplitude>$amplitudeEvnt</amplitude>
-            <operator>$operator</operator>
-            <type>$typeEvnt</type>
-            <comment>$comment</comment>
-        </eventDescription>
-    </webObs>";
+    # $newQML = "<?xml version=\"1.0\"?><!DOCTYPE WO2SC3 SYSTEM \"wo2sc3.dtd\">
+    # <webObs>
+    #     <moduleDescription>
+    #         <id>$MC3{WO2SC3_MOD_ID}</id>
+    #         <type>$MC3{WO2SC3_MOD_TYPE}</type>
+    #     </moduleDescription>
+    #     <eventDescription>
+    #         <mcid>$mc3/$anneeEvnt$moisEvnt/$id_evt</mcid>
+    #         <date>$anneeEvnt/$moisEvnt/$jourEvnt</date>
+    #         <time>$heureEvnt:$minEvnt:$secEvnt</time>
+    #         <station>$staEvnt</station>
+    #         <network>$netEvnt</network>
+    #         <duration>$dureeEvnt</duration>
+    #         <sminusp>$smoinsp</sminusp>
+    #         <amplitude>$amplitudeEvnt</amplitude>
+    #         <operator>$operator</operator>
+    #         <type>$typeEvnt</type>
+    #         <comment>$comment</comment>
+    #     </eventDescription>
+    # </webObs>";
+
+    print "<P>Creating a new SeisComP event ID...</P>";
+
+    my $date = ${anneeEvnt} . '-' . ${moisEvnt} . '-' . ${jourEvnt};
+    my $time = ${heureEvnt} . ':' . ${minEvnt} . ':' . ${secEvnt};
+    $newQML = mc2qmlfdsn($mc3,$operator,$date,$time,$typeEvnt,$smoinsp,$stationEvnt,$id_evt,$comment,$MC3{WO2SC_EVTLON},$MC3{WO2SC_EVTLAT});
+    qx(ssh -i $MC3{WO2SC_SSH_KEY} $MC3{WO2SC_USER}\@$MC3{WO2SC_HOSTNAME} "echo \"$newQML\" | $MC3{WO2SC_DISPATCH_SCRIPT_PATH}");
 }
 
 # Prepare the text for print

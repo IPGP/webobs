@@ -279,6 +279,8 @@ WINSTON_JAVA|${ROOT_CODE}/bin/java/winston-bin.jar
 
 XML2_PRGM|${ROOT_CODE}/bin/linux-64/xml2
 #XML2_PRGM|/usr/bin/xml2
+TOXML_PRGM|${ROOT_CODE}/bin/linux-64/2xml
+#TOXML_PRGM|/usr/bin/2xml
 SLINKTOOL_PRGM|${ROOT_CODE}/bin/linux-64/slinktool
 ARCLINKFETCH_PRGM|env LD_LIBRARY_PATH='' ${ROOT_CODE}/bin/arclinkfetch/bin/arclink_fetch_wrapper --max 180
 #ARCLINKFETCH_PRGM|env LD_LIBRARY_PATH='' ${ROOT_CODE}/bin/arclinkfetch/bin/arclink_fetch
