@@ -256,8 +256,12 @@ for (keys(%N)) {
           ."&nbspfrom <B>$N{$_}{INSTALL_DATE}</B>".($N{$_}{END_DATE} ne "NA" ? " to <B>$N{$_}{END_DATE}</B>":"")."<br>"
           ."&nbsp;<B>$N{$_}{LAT_WGS84}&deg;</B>, <B>$N{$_}{LON_WGS84}&  deg;</B>, <B>$N{$_}{ALTITUDE} m</B>";
         $text =~ s/\"//g;  # fix ticket #166
-        print "var marker = L.circleMarker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 10, color: 'red'}).addTo(map);\n";
-        print "marker.bindPopup(\"$text\").openPopup();\n";
+        if (scalar(@NID) != 2 & $NODEName ne $_) {
+            print "var marker = L.circleMarker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 6, color: 'blue'}).addTo(map);\n";
+        } else {
+            print "var marker = L.circleMarker([$N{$_}{LAT_WGS84}, $N{$_}{LON_WGS84}], {radius: 8, color: 'red'}).addTo(map);\n";
+        }
+        print "marker.bindPopup(\"$text\");\n";
         print "markers.push(marker);\n";
     }
 }
@@ -266,7 +270,6 @@ for (keys(%N)) {
 if (scalar(@NID) == 2) {
     print "var group = new L.featureGroup(markers);\n";
     print "map.fitBounds(group.getBounds().pad(0.1));\n";
-#    print "map.addLayer(markerClusters);\n";
 } else {
     print "map.setView([$lat, $lon], $WEBOBS{OSM_ZOOM_VALUE});\n";
 }
