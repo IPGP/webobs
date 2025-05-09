@@ -360,12 +360,13 @@ my $edit;
 my $delete;
 my $nodelink;
 my $aliasSite;
+my $nameSite;
 
 my @colnam;
 my @colnam2;
 my %colspan;
 
-$csvTxt .= ($starting_date ? "$__{'Start'},$__{'End'}":"$__{'Sampling Date'}")."$__{'Site'},$__{'Oper'}";
+$csvTxt .= (isok($FORM{QUALITY_CHECK}) ? "Quality":"").",".($starting_date ? "Start Date,End Date,":"Sampling Date").",Site Alias,Site Name,Operators";
 
 for (my $i = 0; $i <= $#fs_names; $i++) {
     my $fs = $fieldsets[$i];
@@ -383,7 +384,7 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
         $csvTxt .= ',"'.$name_field.$unit_field.'"';
     }
 }
-$csvTxt .= "\n";
+$csvTxt .= ",Comment\n";
 
 # makes the table header
 $header = "<TR>";
@@ -440,11 +441,12 @@ for (my $j = 0; $j <= $#rows; $j++) {
     }
 
     $aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
+    $nameSite = $Ns{$site}{NAME} ? htmlspecialchars($Ns{$site}{NAME}) : "";
 
     my $edate = simplify_date($edate_max,$edate_min);
     my $sdate = simplify_date($sdate_max,$sdate_min);
 
-    my $nameSite = htmlspecialchars(getNodeString(node=>$site,style=>'html'));
+    my $nameNode = htmlspecialchars(getNodeString(node=>$site,style=>'html'));
     my $normSite = "FORM.$form.$site";
     if ($normSite ne "") {
         $nodelink = "<A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=$normSite\"><B>$aliasSite</B></A>";
@@ -453,8 +455,10 @@ for (my $j = 0; $j <= $#rows; $j++) {
     }
     my @operators = split(/,/,$opers);
     my @nameOper;
+    my @namOper;
     foreach (@operators) {
         push(@nameOper, "<B>$_</B>: ".join('',WebObs::Users::userName($_)));
+        push(@namOper, join('',WebObs::Users::userName($_)));
     }
     my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
     $form_url->query_form('form' => $form, 'id' => $id, 'return_url' => $return_url, 'action' => 'edit');
@@ -471,9 +475,9 @@ for (my $j = 0; $j <= $#rows; $j++) {
     } else {
         $text .= "<TD nowrap>$edate</TD>";
     }
-    $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameSite',CAPTION,'node $site')\">$nodelink&nbsp;</TD>\n";
+    $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameNode',CAPTION,'node $site')\">$nodelink&nbsp;</TD>\n";
     $text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>\n";
-    $csvTxt .= "$id".($starting_date ? ",\"$sdate\"":"").",\"$edate\",\"$aliasSite\",\"$opers\",";
+    $csvTxt .= "$id".(isok($FORM{QUALITY_CHECK}) ? ",".$quality:"").($starting_date ? ",\"$sdate\"":"").",\"$edate\",\"$aliasSite\",\"$nameSite\",\"".join(', ',@namOper)."\",";
     for (my $f = 0; $f <= $#fieldsets; $f++) {
         my $fs = $fieldsets[$f];
         my $nb_fields = $#{$field_names[$f]} + 1;
@@ -491,8 +495,10 @@ for (my $j = 0; $j <= $#rows; $j++) {
                     $hlp = "<B>$fields{$field}</B>: ".($v{name} ? $v{name}:$v{value});
                     $val = $v{name} if ($v{name});
                     $val = "<IMG src=\"$v{icon}\">" if ($v{icon});
+                    $csvTxt .= "\"$v{value}\",";
                 } else {
                     $hlp = "<I>$__{'unknown key list!'}</I>" if ($val ne "");
+                    $csvTxt .= "\"\",";
                 }
                 $opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$hlp')\"";
             }
@@ -526,6 +532,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 }
                 $val .= "</table>";
                 if ($#listeTarget+1 > $MAX_IMAGES) { $val .= "<br><b>... </b><i>gallery limited to ".$MAX_IMAGES." images</i>"; }
+                $csvTxt .= "\"$fields{$field}\",";
             }
             # --- input type = shapefile
             if ($FORM{$Field."_TYPE"} =~ /^shapefile/) {
@@ -533,6 +540,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 my $shape_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$input_id/shape.json";
                 my $status = ( -e "$shape_path" ? "yes" : "no" );
                 $val = qq(<a href="$form_url#$field\_shape">$status</a>);
+                $csvTxt .= "\"$fields{$field}\",";
             }
             # --- input type = shapefile
             if ($FORM{$Field."_TYPE"} =~ /^checkbox/) {
@@ -540,26 +548,31 @@ for (my $j = 0; $j <= $#rows; $j++) {
                     $val = "&check;";
                     $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('checked')\"";
                 }
+                $csvTxt .= "\"$fields{$field}\",";
             }
             # --- input type = users
             if ($FORM{$Field."_TYPE"} =~ /^users/) {
                 my @uid = split(/[, ]+/,$val);
                 my @uname;
+                my @unam;
                 foreach (@uid) {
                     push(@uname, "<B>$_</B>: ".join('',WebObs::Users::userName($_)));
+                    push(@unam, join('',WebObs::Users::userName($_)));
                 }
                 $val = join(', ',@uid);
                 $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@uname)."')\"";
+                $csvTxt .= "\"".join(", ",@unam)."\",";
             }
             $text .= "<TD align=center $opt>$val</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
-            if ($FORM{$Field."_TYPE"} =~ /^numeric|^$/) {
+            if ($FORM{$Field."_TYPE"} =~ /^numeric|^formula|^$/) {
                 $csvTxt .= "$fields{$field},";
-            } else {
+            }
+            if ($FORM{$Field."_TYPE"} =~ /^text/) {
                 $csvTxt .= "\"$fields{$field}\",";
             }
         }
     }
-    $csvTxt .= ",\"".$rem."\"\n";
+    $csvTxt .= "\"".$rem."\"\n";
     my $remTxt = "<TD></TD>";
     if ($rem ne "") {
         $remTxt = "<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('".htmlspecialchars($rem,$re)."',CAPTION,'Observations $aliasSite')\"><IMG src=\"/icons/attention.gif\" border=0></TD>";
