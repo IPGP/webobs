@@ -8,7 +8,7 @@ function X=readjson(f)
 %
 %   Authors: François Glineur, adapted for WebObs by François Beauducel
 %   Created: 2025-05-02, in Le Tampon (Réunion)
-%   Updated: 2025-05-08
+%   Updated: 2025-05-09
 
 
 if exist(f,'file')
@@ -55,7 +55,7 @@ end
 %   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %   POSSIBILITY OF SUCH DAMAGE.
 
-
+X = [];
 pos = 1;
 len = length(json);
 % string delimiters and escape characters are identified beforehand to improve speed

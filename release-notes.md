@@ -22,6 +22,7 @@ If you have any question which is not answered in the user manual, do not hesita
     * `formFORMNAME.pl` => `formGENFORM.pl?form=PROCNAME`
 
     where FORMNAME is the legacy form name, and PROCNAME is the associated PROC which becomes also the new FORM name. Note that previous link `showFORMNAME.pl` without argument, when legacy form was associated to more than one PROC (for instance the `EAUX` database), has no strict equivalent in the new structure; it must be replaced by as many links as there are procs associated to this form.
+1. **GeoJSON**: shapes (polygons, lines, and points) can be associated to a NODE or a GRID using the OSM.pl link (map marker pin icon), using import of a shapefile (.zip archive) or manual drawing. Resulting shapes will be saved to a .geojson file, and displayed on maps (gridmaps and locastat).
 1. **GNSS superproc**: active fault slip/open can be set as a priori correction on displacement data, using the Okada (1985) model, as rectangular fault in elastic medium:
 ```
 FAULT_ACTIVATE|N

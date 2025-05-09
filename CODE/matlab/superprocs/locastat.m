@@ -18,7 +18,7 @@ function locastat(sta)
 
 %   Author: F. Beauducel/WEBOBS, IPGP
 %   Created: 2007-05-15
-%   Updated: 2025-04-25
+%   Updated: 2025-05-09
 
 % this will force update of all maps older than this date
 forceupdate = datenum(2019,7,23);
@@ -41,8 +41,10 @@ P = readcfg(WO,WO.LOCASTAT);
 NODES = readcfg(WO,WO.CONF_NODES);
 
 % loads transmission information
-trans = isok(P,'PLOT_TRANSMISSION');
+trans = isok(P,'PLOT_TRANSMISSION',1);
 
+% plots shape only (if exists)
+shp = isok(P,'PLOT_SHAPEONLY',1);
 
 ptmp = WO.PATH_TMP_WEBOBS;
 wosystem(sprintf('mkdir -p %s',ptmp));
@@ -63,6 +65,7 @@ dpi = field2num(P,'DPI',80);
 lw = field2num(P,'LINEWIDTH',1.5);
 bw = 0.7; % border width in % of height for frame 0
 convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
+
 
 feclair = field2num(P,'COLOR_LIGHTENING',1.2);
 fsat = field2num(P,'COLOR_SATURATION',0.8);
@@ -178,8 +181,9 @@ for i = 1:length(k)
 		if trans, plottrans(WO,N(ki)); end
 		% inset of frame 1
 		plot(xy1([1,2,2,1,1]),xy1([3,3,4,4,3]),'k-','Linewidth',lw)
-		cible(geo(ki,2),geo(ki,1))
+		plotnode(N(ki),8,0,shp)
 		hold off
+        set(gca,'XLim',xlim,'YLim',ylim)
 
 		% ---- mid-resolution map (frame n°1)
 		ax1 = axes('Position',[.255,(.5+pcart)/(1+pcart)+.01,.24,.5/(1+pcart)-0.01]);
@@ -193,13 +197,14 @@ for i = 1:length(k)
 		% inset of frame 2 (on frame 1)
 		ax = axis;
 		plot(xy2([1,2,2,1,1]),xy2([3,3,4,4,3]),'k-','Linewidth',lw)
-		cible(geo(ki,2),geo(ki,1))
+		plotnode(N(ki),8,0,shp)
 		xe = ax(2) - (xsc1/2 + dxsc1)/lonkm;
 		ye = ax(3) + dxsc1/degkm;
 		plot(xe + xsc1*.5*[-1,-1,1,1]/lonkm,ye + [dxsc1,0,0,dxsc1]/degkm,'-','Color',noir,'Linewidth',2)
 		text(xe,ye,sprintf('%g km',xsc1),'Color',noir,'Fontsize',12,'FontWeight','bold', ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom')
 		hold off
+        set(gca,'XLim',minmax(D.lon(kx)),'YLim',minmax(D.lat(ky)))
 
 		% ---- high-resolution map (frame n°2)
 		ax2 = axes('Position',[.255,(.1+pcart)/(1+pcart),.2,.4/(1+pcart)]);
@@ -212,7 +217,7 @@ for i = 1:length(k)
 		if trans, plottrans(WO,N(ki)); end
 		%[c,h] = contour(xx2(1,:),yy2(:,1),zz2,[0,0]);  set(h,'EdgeColor',gris)
 		ax = axis;
-		cible(geo(ki,2),geo(ki,1))
+		plotnode(N(ki),8,0,shp)
 		% scale (convert km to degree)
 		xe = ax(2) - (xsc2/2 + dxsc2)/lonkm;
 		ye = ax(3) + dxsc2/degkm;
@@ -222,6 +227,7 @@ for i = 1:length(k)
 		ax = axis;
 		plot(ax([1,2,2,1,1]),ax([3,3,4,4,3]),'k-','Linewidth',.1)
 		hold off
+        set(gca,'XLim',minmax(xx2(1,:)),'YLim',minmax(yy2(:,1)))
 		mmz = minmax(zz2);
 
 		if ~all(isnan(mmz)) & ~all(mmz==0)
@@ -366,7 +372,7 @@ for i = 1:length(k)
 			hold on
 			ax = axis;
 			plot(ax([1,2,2,1,1]),ax([3,3,4,4,3]),'k-','Linewidth',.1)
-			cible(utm(ki,1),utm(ki,2),15)
+            plotnode(N(ki),15,1,shp)
 			% �chelle
 			xe = ax(2) - xsc3*1e3/2 - dxsc3;
 			ye = ax(3) + dxsc3;
@@ -416,7 +422,7 @@ for i = 1:length(k)
 			if trans, plottrans(WO,N(ki),15,'utm'); end
 			ax = axis;
 			plot(ax([1,2,2,1,1]),ax([3,3,4,4,3]),'k-','Linewidth',.1)
-			cible(utm(ki,1),utm(ki,2),15)
+            plotnode(N(ki),15,1,shp)
 			% �chelle
 			xe = ax(2) - xsc3*1e3/2 - dxsc3;
 			ye = ax(3) + dxsc3;
@@ -426,6 +432,7 @@ for i = 1:length(k)
 			text(xe,ye,sprintf('%g m',xsc3*1e3),'Color',blanc,'Fontsize',14,'FontWeight','bold', ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom')
 			hold off
+            set(gca,'XLim',minmax(x3(kx)),'YLim',minmax(y3(ky)))
 			znode = interp2(x3(kx),y3(ky),z3(ky,kx),utm(ki,1),utm(ki,2));
 		else
 			axis off
@@ -471,14 +478,34 @@ timelog(procmsg,2)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function cible(x,y,s)
-% target function
-
-if nargin < 3
-	s = 7;
+function plotnode(N,s,utm,shp)
+% plots node N with marker size s, utm coordinates and option shp
+if ~shp || isempty(N.GEOJSON)
+    if utm
+        [x,y] = ll2utm(N.LAT_WGS84,N.LON_WGS84);
+    else
+        x = N.LON_WGS84;
+        y = N.LAT_WGS84;
+    end
+	target(x,y,s)
+else
+    G = N.GEOJSON.features{1};
+    for n = 1:length(G)
+        switch G.geometry.type
+        case 'LineString'
+            xy = cat(1,G.geometry.coordinates{:});
+        case 'Polygon'
+            xy = cat(1,G.geometry(n).coordinates{:}{:});
+        end
+        if utm
+            [x,y] = ll2utm(cat(1,xy{:,2}),cat(1,xy{:,1}));
+        else
+            x = cat(1,xy{:,1});
+            y = cat(1,xy{:,2});
+        end
+        plotshape(x,y,'k','EdgeColor','r','LineWidth',2,'FaceColor','none');
+    end
 end
-plot(x,y,'o','MarkerSize',s,'MarkerFaceColor',[1,0,0],'MarkerEdgeColor',[.2,.2,.2],'Linewidth',s/5)
-plot(x,y,'o','MarkerSize',s + 2,'MarkerEdgeColor',.99*[1,1,1])
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
