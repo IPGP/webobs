@@ -225,7 +225,7 @@ $ilinks .= " | <A href=\"/cgi-bin/gvTransit.pl?grid=$GRIDType.$GRIDName\"><IMG s
                title=\"Tmap\" style=\"vertical-align:middle;border:0\"></A>";
 $ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$grid','$GRIDName','width="
   .($WEBOBS{OSM_WIDTH_VALUE}+15).",height="
-  .($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">
+  .($WEBOBS{OSM_HEIGHT_VALUE}+75).",toolbar=no,menubar=no,location=no')\">
         <IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
 if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
     $ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml')\" \
@@ -768,13 +768,14 @@ for (@{$GRID{NODESLIST}}) {
 
             if ($lastdelay ne "" && $acqrate ne "") {
                 my $now = strftime('%Y-%m-%d %H:%M:%S',localtime(time));
+                my $stStart = $NODE{INSTALL_DATE} // $GRID{BANG};
                 my @stDelay = date_duration($row[4],$row[5],$now,$now);
                 my $stFields = 0;
                 for (@row[12..$#row]) {
                     $stFields ++ if ($_ ne "");
                 }
                 my $stLastData = ($stDelay[0] > $lastdelay && $stDelay[1] > $lastdelay) ? sprintf("%03.0f",100*$stFields/($#row - 11)):"0";
-                my $stAcqRate = sprintf("%03.0f",100*$nbRec*86400*$acqrate/(str2time($now) - str2time("$NODE{INSTALL_DATE} 00:00:00")));
+                my $stAcqRate = sprintf("%03.0f",100*$nbRec*86400*$acqrate/(str2time($now) - str2time("$stStart 00:00:00")));
                 my $bgcolEt = "";
                 my $bgcolA = "";
 
@@ -782,7 +783,7 @@ for (@{$GRID{NODESLIST}}) {
                 if ($stLastData == $NODES{STATUS_STANDBY_VALUE}) { $bgcolEt = "status-standby"; $stLastData = "$__{Standby}"; }
                 elsif ($stLastData < $NODES{STATUS_THRESHOLD_CRITICAL}) {
                     $stLastData .= " %";
-                    $bgcolEt = "status-manual";
+                    $bgcolEt = "status-critical";
                 }
                 elsif ($stLastData >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolEt="status-ok"; $stLastData .= " %"; }
                 else { $bgcolEt = "status-warning"; $stLastData .= " %"; }
@@ -959,28 +960,35 @@ sub tableStats {
     my %G = %{$_[1]};
     my @f = sort(grep(/^$_[0].._NAME/i,keys(%G)));
     my @itypes;
+    my $maxrows = 5;
     for (@f) {
         (my $key = $_) =~ s/_NAME/_TYPE/g;
         (my $type = $G{$key} ? $G{$key}:'numeric') =~ s/[\(:].*$//g;
         push(@itypes,$type);
     }
-    my $txt = "<TD style='border:0;text-align:right;vertical-align:top'><TABLE class='trData'><TR><TH rowspan=2>$__{'Type:'}</TH>"
-              .join("",map{"<TH rowspan=2>$_</TH>"} uniq(@itypes))."<TH colspan=3>Export n°</TH></TR>\n"
-              ."<TR><TH>Data</TH><TH>Error</TH><TH>Cell</TH><TR>\n";
+    my $txt = "<TD style='border:0;text-align:right;vertical-align:top'><TABLE class='trData'>"
+              ."<TR><TH rowspan=2></TH><TH colspan=".(uniq(@itypes)).">$__{'Type'}</TH><TH rowspan=2></TH><TH colspan=3>Export n°</TH></TR>\n"
+              ."<TR>".join("",map{"<TH>$_</TH>"} uniq(@itypes))."<TH>Data</TH><TH>Error</TH><TH>Cell</TH><TR>\n";
     for my $i (0..$#f) {
         (my $key = $f[$i]) =~ s/_NAME//g;
         my $unit = ( $G{$key."_UNIT"} ne "" ? " (".$G{$key."_UNIT"}.")":"" );
         (my $type = $G{$key} ? $G{$key}:'numeric') =~ s/[\(:].*$//g;
-        $txt .= "<TR><TH>$key</TH>".join("",map {
+        $txt .= "<TR".($i >= $maxrows ? " class='hiddenRow'":"")."><TH>$key</TH>".join("",map {
                 my $t = $_; "<TD align='center'>" . ($t eq $itypes[$i] ? "<B>".$G{$key."_NAME"}."</B>".$unit:"") . "</TD>"
             } uniq(@itypes))
+                ."<TD></TD>"
                 ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_DATA_LIST})."</SPAN></TD>"
                 ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_ERROR_LIST})."</SPAN></TD>"
                 ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_CELL_LIST})."</SPAN></TD>"
-                ."</TR>";
+                ."</TR>\n";
     }
-    $txt .= "<TR><TH>Total</TH>".join("",map { my $t = $_; "<TD align='center'>" . grep(/^$t$/,@itypes) . "</TD>" } uniq(@itypes))
-           ."<TD></TD><TD></TD><TD></TD></TR></TABLE></TD>\n";
+    if ($#f >= $maxrows) {
+        $txt .= "<TR class='tableSplit'><TD align='center'><A href=\"javascript: void(0);\" onClick=\"\$('.hiddenRow').toggle();\">"
+               ."<IMG class='hiddenRow' style='display:inline' src='/icons/plus.gif'>"
+               ."<IMG class='hiddenRow' src='/icons/minus.gif'></A></TD>"
+               ."<TD colspan=".(uniq(@itypes)+4)."</TD></TR>\n";
+    }
+    $txt .= "<TR><TH>Total</TH>".join("",map { my $t = $_; "<TD align='center'>" . grep(/^$t$/,@itypes) . "</TD>" } uniq(@itypes))."<TD colspan=4></TD></TR></TABLE></TD>\n";
     return $txt;
 }
 

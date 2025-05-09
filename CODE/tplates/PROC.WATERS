@@ -11,10 +11,13 @@ NAME|Waters chemical analysis
 # description of what the PROC does
 DESCRIPTION|Waters chemical analysis
 
-# proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
+# proc type (for display in the grids table)
 TYPE|
+# owner code (see OWNERS.conf for OWNCODEs) or text string
 OWNCODE|?
+# main logo for output graphs
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+# proc time zone (in hours)
 TZ|0
 
 # auto refresh of graphic display
@@ -30,40 +33,43 @@ LINEWIDTHLIST|1,.5,.1
 STATUSLIST|1,0,0
 # defines a reference date to use with 'r01' timescale in TIMESCALELIST
 REF01_DATE|2000-01-01
-# year and month timescales use true durations
+
+# year and month timescales will use true durations
 TIMESCALE_TRUEVALUE|Y
 
+# list of available summary graphs (comma-separated): SUMMARY
 SUMMARYLIST|SUMMARY
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} waters $SELFREF -
 SUBMIT_RESOURCE|request
 
-# list of keys editable in requests
+# list of front keys in requests
 REQUEST_KEYLIST|NAME
 
-# node parameters
+# node parameters: name, size, color, fontsize (0 to not display ALIAS), marker type
 NODE_NAME|spring
 NODE_SIZE|15
 NODE_RGB|0,1,1
 NODE_FONTSIZE|10
 NODE_MARKER|s
 
-# file for background time referenced events 
+# file for background time referenced events (multiple files allowed, comma-separated)
 EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 
 # --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
 DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
-# DEM coordinate system: UTM or LATLON
+# user-defined DEM coordinate system: UTM or LATLON
 DEM_TYPE|LATLON
+# user-defined DEM copyright
 DEM_COPYRIGHT|
 
 # additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
-#MAP1_XYLIM|
-#MAP2_XYLIM|
+MAP1_XYLIM|
+MAP2_XYLIM|
 # additional options for gridmaps background map
 GRIDMAPS_DEM_OPT|
-# show node alias in zoom map(s)
+# display node aliases in zoom map(s)
 NODE_SUBMAP_ALIAS|N
 
 # graphical density for PNG outputs (in pixel per inches)
@@ -72,8 +78,9 @@ PPI|100
 LANDSCAPE|N
 # exports text data files
 EXPORTS|YES
-# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+# outputs SVG vector files (in addition to EPS) for each graph (experimental)
 SVGOUTPUT|NO
+# outputs PDF vector files (in addition to EPS) for each graph.
 PDFOUTPUT|NO
 # main logo file
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
@@ -84,19 +91,18 @@ COPYRIGHT|MyProc
 # secondary copyright
 COPYRIGHT2|
 
-# specific PROC's parameters
-TEMPERATURE_CHANNELS|
-CONDUCTIVITY_CHANNELS|
+# --- specific PROC's parameters
 
 # line style: combination of a marker and/or a line type (see user's manual)
-SUMMARY_LINESTYLE|-
-# summary plot: channel lists for the 2 ternary plots
-SUMMARY_TERNARY1_CHANNELS|
-SUMMARY_TERNARY2_CHANNELS|
-# summary plot: other channels to plot
-SUMMARY_CHANNELS|
+SUMMARY_LINESTYLE|s-
+# summary plot: comma-separated channel list for the first ternary plot
+SUMMARY_TERNARY1_CHANNELS|12,9,11
+# summary plot: comma-separated channel list for the second ternary plot
+SUMMARY_TERNARY2_CHANNELS|17,18,14
+# summary plot: other channels to plot (comma-separated)
+SUMMARY_CHANNELS|2,3,5,24,25
 
 # line style: combination of a marker and/or a line type (see user's manual)
-PERNODE_LINESTYLE|-
-# pernode plot: other channels to plot
-PERNODE_CHANNELS|
+PERNODE_LINESTYLE|s-
+# pernode plot: other channels to plot (comma-separated)
+PERNODE_CHANNELS|2 1,,3,,14 18,,24 29,,28,4,5 6,,

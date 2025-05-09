@@ -16,18 +16,14 @@ function DOUT = waters(varargin)
 %       D(i).t = time vector (for node i)
 %       D(i).d = matrix of processed data (NaN = invalid data)
 %
-%   This superproc is specificaly adapted to data from the FORM.WATERS genform.
-%   But data from other source might be used if the channels contain:
-%       d(:,1) = Distance measurement (in mm)
-%       e(:,1) = Error on the distance (in mm)
-%       d(:,2) = Air temperature (in °C)
-%       d(:,3) = Wind velocity (arbitrary scale from 0 to 3)
+%   This superproc is specificaly adapted to data from the FORM.WATERS genform
+%   when using the PROC.WATERS template, but data from other source might be used.
 %
 %   See CODE/tplates/PROC.WATERS for specific paramaters of this superproc.
 %
 %	Authors: F. Beauducel + G. Hammouya + J.C. Komorowski + C. Dessert + O. Crispi, OVSG-IPGP
 %	Created: 2001-12-21, in Guadeloupe (French West Indies)
-%	Updated: 2025-05-01
+%	Updated: 2025-05-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);

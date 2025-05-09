@@ -65,7 +65,8 @@ INPUT01_NAME|Gas Temperature
 INPUT01_UNIT|&deg;C
 INPUT02_NAME|pH
 INPUT02_UNIT|
-INPUT03_NAME|Flow rate (qualitative)
+INPUT03_NAME|Flow rate
+INPUT03_UNIT|qualitative
 INPUT03_TYPE|list: FORM_VOLCGAS_list_flux.conf
 INPUT03_FILT|YES
 INPUT04_NAME|<sup>222</sup>Rn

@@ -278,6 +278,8 @@ sub readCfgFile
 
     %lines = readCfg("[filepath]/filename");  # for key|value[|value...] files
     %lines = readCfg("[filepath]/filename",'sorted'); # adds $lines{}{_SO_} (sort order)
+    %lines = readCfg("[filepath]/filename",'escape'); # removes escape chars (\)
+    %lines = readCfg("[filepath]/filename",'novsub'); # do not substitute variables
 
     @lines = readCfg("[filepath]/filename");  # other files
 

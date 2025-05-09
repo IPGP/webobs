@@ -120,9 +120,9 @@ BUBBLE_PLOT|1
 MAP_Area1_TITLE|Area1 - Lesser Antilles
 # map limits: lon0,lat0,width (in degree) or former lon1,lon2,lat1,lat2 (in degree)
 MAP_Area1_XYLIM|-61,16,6
-# magnitude limits (for size scale only, not a filter)
+# magnitude limits (not a filter, for marker size scaling only)
 MAP_Area1_MAGLIM|3,7
-# depth limits (for color scale only, not a filter)
+# depth limits
 MAP_Area1_DEPLIM|-2,200
 # 1 or 2 optional profile(s)
 # Profile 1 (bottom): center longitude, center latitude, azimuth (degree North), lateral distance (km), depth (km)

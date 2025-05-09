@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2025-04-07
+%   Updated: 2025-05-06
 
 
 WO = readcfg;
@@ -96,9 +96,9 @@ for m = 1:length(summarylist)
 		M(m).xylim = xyw2lim(M(m).xylim,1/cosd(M(m).xylim(2)));
 	end
 
-	% magnitude limits (for marker size scaling)
+	% magnitude limits (not a filter, for marker size scaling)
 	M(m).mlim = field2num(P,sprintf('MAP_%s_MAGLIM',map),P.MAGLIM);
-	% depth limits (for marker color scaling)
+	% depth limits (filter and marker color scaling)
 	M(m).dlim = field2num(P,sprintf('MAP_%s_DEPLIM',map),P.DEPLIM);
 	% colormap
 	M(m).cmap = field2num(P,sprintf('MAP_%s_COLORMAP',map),cmap,'val');
@@ -141,8 +141,8 @@ for m = 1:length(summarylist)
 			tlim = minmax(t);
 		end
 
-		% selects data (time window + map limits + quality filter)
-		k = find(isinto(t,tlim) & (e > 0 | ~qualityfilter) & isinto(d(:,1),M(m).xylim(3:4)) & isinto(d(:,2),M(m).xylim(1:2)));
+		% selects data (time window + map limits + depth limit + magnitude limits + quality filter)
+		k = find(isinto(t,tlim) & (e > 0 | ~qualityfilter) & isinto(d(:,1),M(m).xylim(3:4)) & isinto(d(:,2),M(m).xylim(1:2)) & isinto(d(:,3),M(m).dlim));
 		[tk,kk] = sort(t(k));
 		dk = d(k(kk),:);
 		ck = c(k(kk),:);

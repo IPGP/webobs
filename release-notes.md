@@ -22,6 +22,7 @@ If you have any question which is not answered in the user manual, do not hesita
     * `formFORMNAME.pl` => `formGENFORM.pl?form=PROCNAME`
 
     where FORMNAME is the legacy form name, and PROCNAME is the associated PROC which becomes also the new FORM name. Note that previous link `showFORMNAME.pl` without argument, when legacy form was associated to more than one PROC (for instance the `EAUX` database), has no strict equivalent in the new structure; it must be replaced by as many links as there are procs associated to this form.
+1. **GeoJSON**: shapes (polygons, lines, and points) can be associated to a NODE or a GRID using the OSM.pl link (map marker pin icon), using import of a shapefile (.zip archive) or manual drawing. Resulting shapes will be saved to a .geojson file, and displayed on maps (gridmaps and locastat).
 1. **GNSS superproc**: active fault slip/open can be set as a priori correction on displacement data, using the Okada (1985) model, as rectangular fault in elastic medium:
 ```
 FAULT_ACTIVATE|N
@@ -48,6 +49,12 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
 ### Enhancements
 1. New CSS!
 1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
+1. `!!` **HYPOMAP superproc**: MAP_*_DEPLIM now filters the data (was only for marker scale color). *Caution:* comments in proc's .conf files need to be updated to avoid misunderstanding
+1. `!!` in order to use only the MultiMarkDown format in contents, the former 'wiki' format will be progressively abandonned. The following option is recommanded in **WEBOBS.rc**:
+```
+WIKI_MMD|YES
+```
+and admins are encouraged to use the **">MMD"** button in editors.
 
 ### Fixed issues
 1. `!!` Fix an issue giving edit button for any grid (view/proc/form) for users with only Edit level.

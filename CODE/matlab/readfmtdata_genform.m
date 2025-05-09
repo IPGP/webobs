@@ -21,7 +21,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2024-07-03, in Surabaya (Indonesia)
-%	Updated: 2025-04-28
+%	Updated: 2025-05-06
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -129,8 +129,8 @@ for i = 1:nx
             eval(['e(:,i)=',dd,';']);
         end
     end
-    nm{i} = field2str(FORM,[pdn{i} '_NAME']);
-    un{i} = field2str(FORM,[pdn{i} '_UNIT']);
+    nm{i} = field2str(FORM,[pdn{i} '_NAME'],'');
+    un{i} = field2str(FORM,[pdn{i} '_UNIT'],'');
 end
 
 D.t = t - N.UTC_DATA;
