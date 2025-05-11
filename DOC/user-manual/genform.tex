@@ -91,7 +91,7 @@ A GENFORM \wo{form} has general parameters:
 	\item a \wokey{BANG}, which is the oldest year of potential record in the \wo{form},
 	\item a \wokey{STARTING\_DATE} flag which is a boolean, allowing GENFORM to define a starting date of each record in addition to end date,
 	\item an \wokey{OPERATORS\_LIST}, list of operators as user UIDs and/or group +GIDs,
-	\item the number of COLUMNS separating the form layout,
+	\item a \wokey{QUALITY\_CHECK} flag, adding a checkbox to validate each single record, if the identified user is part of \wokey{QUALITY\_OPERATORS} list (UIDs and/or GIDs),
 	\item a list of FIELDSETS displayed in each COLUMN, used to group fields (inputs and outputs, see below) into categories.
 \end{itemize}
 
@@ -169,10 +169,6 @@ The 3 validity level colors can be defined in \wokey{VALIDITY\_COLORS} variable,
 
 % -----------------------------------------------------------------
 
-\begin{table}[htp]
-\caption{GENFORM demo template}
-\label{genform_template}
-\lstinputlisting{../../CODE/tplates/FORM.DEFAULT}
-\end{table}
+\lstinputlisting[title=\wofile{GENFORM demo template}]{../../CODE/tplates/FORM.DEFAULT}
 
 
