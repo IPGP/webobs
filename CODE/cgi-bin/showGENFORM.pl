@@ -355,7 +355,7 @@ print " | <A href=\"#download\">$__{'Download data'}</A> ]</DIV>\n<P>";
 #
 my $header;
 my $text;
-my $csvTxt = qq("id",);
+my $csvTxt = qq("id");
 my $edit;
 my $delete;
 my $nodelink;
@@ -366,7 +366,7 @@ my @colnam;
 my @colnam2;
 my %colspan;
 
-$csvTxt .= (isok($FORM{QUALITY_CHECK}) ? "Quality":"").",".($starting_date ? "Start Date,End Date,":"Sampling Date").",Site Alias,Site Name,Operators";
+$csvTxt .= (isok($FORM{QUALITY_CHECK}) ? ",Quality":"").",".($starting_date ? "Start Date,End Date":"Sampling Date").",Site Alias,Site Name,Operators";
 
 for (my $i = 0; $i <= $#fs_names; $i++) {
     my $fs = $fieldsets[$i];
