@@ -30,11 +30,17 @@ use WebObs::i18n;
 # ---- get data from formGENFORM.pl
 my $all = $cgi->param("all") || "";
 my $csv  = $cgi->param("csv");
+my $dlm  = $cgi->param("dlm");
 my $form = $cgi->param("form");
 if ( $form eq "" ) {
     print CGI::header();
     print "No valid form found !\n";
     exit;
+}
+if ($dlm) {
+    $csv =~ s/\|/;/g; # replaces delimiter pipe by semicolon
+} else {
+    $csv =~ s/\|/,/g; # replaces delimiter pipe by comma
 }
 
 my $time     = strftime "%Y%m%d_%H%M%S", localtime time;

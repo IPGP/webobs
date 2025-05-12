@@ -86,15 +86,15 @@ my ($y1,$m1,$d1) = split(/[-T]/,DateTime->today()->subtract(days => $default_day
 
 # ---- get CGI parameters
 my $QryParm = $cgi->Vars;
-$QryParm->{'y1'}       //= $y1;
-$QryParm->{'m1'}       //= $m1;
-$QryParm->{'d1'}       //= $d1;
-$QryParm->{'y2'}       //= $year;
-$QryParm->{'m2'}       //= $month;
-$QryParm->{'d2'}       //= $day;
-$QryParm->{'node'}     //= "";
-$QryParm->{'trash'}    //= "0";
-$QryParm->{'debug'}    //= "";
+$QryParm->{'y1'}        //= $y1;
+$QryParm->{'m1'}        //= $m1;
+$QryParm->{'d1'}        //= $d1;
+$QryParm->{'y2'}        //= $year;
+$QryParm->{'m2'}        //= $month;
+$QryParm->{'d2'}        //= $day;
+$QryParm->{'node'}      //= "";
+$QryParm->{'trash'}     //= "0";
+$QryParm->{'debug'}     //= "";
 
 my $re = $QryParm->{'filter'};
 
@@ -356,6 +356,7 @@ print " | <A href=\"#download\">$__{'Download data'}</A> ]</DIV>\n<P>";
 my $header;
 my $text;
 my $csvTxt = qq("id");
+my $dlm = '|'; # delimiter for CSV file is pipe: will be changed to comma or semicolon in postFormData.pl
 my $edit;
 my $delete;
 my $nodelink;
@@ -366,7 +367,11 @@ my @colnam;
 my @colnam2;
 my %colspan;
 
-$csvTxt .= (isok($FORM{QUALITY_CHECK}) ? ",Quality":"").",".($starting_date ? "Start Date,End Date":"Sampling Date").",Site Alias,Site Name,Operators";
+$csvTxt .= (isok($FORM{QUALITY_CHECK}) ? $dlm.qq("Quality"):"")
+           .$dlm.($starting_date ? qq("Start Date").$dlm.qq("End Date"):qq("Sampling Date"))
+           .$dlm.qq("Site Alias")
+           .$dlm.qq("Site Name")
+           .$dlm.qq("Operators");
 
 for (my $i = 0; $i <= $#fs_names; $i++) {
     my $fs = $fieldsets[$i];
@@ -381,10 +386,10 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
         $unit_field = ($unit_field ne "" ? " ($unit_field)":"");
         push(@colnam2, htm2frac($name_field).$unit_field) if ($showfs);
         $name_field =~ s/<su[bp]>|<\/su[bp]>|\&[^;]*;//g; # removes HTML tags or characters
-        $csvTxt .= ',"'.$name_field.$unit_field.'"';
+        $csvTxt .= $dlm.'"'.$name_field.$unit_field.'"';
     }
 }
-$csvTxt .= ",Comment\n";
+$csvTxt .= $dlm."Comment\n";
 
 # makes the table header
 $header = "<TR>";
@@ -477,7 +482,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
     }
     $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameNode',CAPTION,'node $site')\">$nodelink&nbsp;</TD>\n";
     $text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>\n";
-    $csvTxt .= "$id".(isok($FORM{QUALITY_CHECK}) ? ",".$quality:"").($starting_date ? ",\"$sdate\"":"").",\"$edate\",\"$aliasSite\",\"$nameSite\",\"".join(', ',@namOper)."\",";
+    $csvTxt .= "$id".(isok($FORM{QUALITY_CHECK}) ? $dlm.$quality:"").($starting_date ? $dlm."\"$sdate\"":"").$dlm."\"$edate\"".$dlm."\"$aliasSite\"".$dlm."\"$nameSite\"".$dlm."\"".join(', ',@namOper)."\"".$dlm;
     for (my $f = 0; $f <= $#fieldsets; $f++) {
         my $fs = $fieldsets[$f];
         my $nb_fields = $#{$field_names[$f]} + 1;
@@ -495,10 +500,10 @@ for (my $j = 0; $j <= $#rows; $j++) {
                     $hlp = "<B>$fields{$field}</B>: ".($v{name} ? $v{name}:$v{value});
                     $val = $v{name} if ($v{name});
                     $val = "<IMG src=\"$v{icon}\">" if ($v{icon});
-                    $csvTxt .= "\"$v{value}\",";
+                    $csvTxt .= "\"$v{name}\"".$dlm;
                 } else {
                     $hlp = "<I>$__{'unknown key list!'}</I>" if ($val ne "");
-                    $csvTxt .= "\"\",";
+                    $csvTxt .= "\"\"".$dlm;
                 }
                 $opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$hlp')\"";
             }
@@ -532,7 +537,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 }
                 $val .= "</table>";
                 if ($#listeTarget+1 > $MAX_IMAGES) { $val .= "<br><b>... </b><i>gallery limited to ".$MAX_IMAGES." images</i>"; }
-                $csvTxt .= "\"$fields{$field}\",";
+                $csvTxt .= "\"$fields{$field}\"".$dlm;
             }
             # --- input type = shapefile
             if ($FORM{$Field."_TYPE"} =~ /^shapefile/) {
@@ -540,7 +545,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 my $shape_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$input_id/shape.json";
                 my $status = ( -e "$shape_path" ? "yes" : "no" );
                 $val = qq(<a href="$form_url#$field\_shape">$status</a>);
-                $csvTxt .= "\"$fields{$field}\",";
+                $csvTxt .= "\"$fields{$field}\"".$dlm;
             }
             # --- input type = shapefile
             if ($FORM{$Field."_TYPE"} =~ /^checkbox/) {
@@ -548,7 +553,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                     $val = "&check;";
                     $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('checked')\"";
                 }
-                $csvTxt .= "\"$fields{$field}\",";
+                $csvTxt .= "\"$fields{$field}\"".$dlm;
             }
             # --- input type = users
             if ($FORM{$Field."_TYPE"} =~ /^users/) {
@@ -561,14 +566,14 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 }
                 $val = join(', ',@uid);
                 $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@uname)."')\"";
-                $csvTxt .= "\"".join(", ",@unam)."\",";
+                $csvTxt .= "\"".join(", ",@unam)."\"".$dlm;
             }
             $text .= "<TD align=center $opt>$val</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
             if ($FORM{$Field."_TYPE"} =~ /^numeric|^formula|^$/) {
-                $csvTxt .= "$fields{$field},";
+                $csvTxt .= "$fields{$field}".$dlm;
             }
             if ($FORM{$Field."_TYPE"} =~ /^text/) {
-                $csvTxt .= "\"$fields{$field}\",";
+                $csvTxt .= "\"$fields{$field}\"".$dlm;
             }
         }
     }
@@ -625,7 +630,7 @@ foreach (@formulas) {
     my $name = $FORM{$_."_NAME"};
     my $unit = ($FORM{$_."_UNIT"} ne "" ? " (".$FORM{$_."_UNIT"}.")":"");
     foreach (@x) {
-        my $v = ($_ =~ /(IN|OUT)PUT[0-9]{2}/ ? $FORM{$_."_NAME"}:$_);
+        my $v = ($_ =~ /(IN|OUT)PUT[0-9]{2,3}/ ? $FORM{$_."_NAME"}:$_);
         $formula =~ s/$_/<b>$v<\/b>/g;
     }
     $listofformula .= "<LI><B>$name</B>$unit = $formula</LI>\n";
@@ -638,6 +643,7 @@ push(@csv,$csvTxt);
 push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n":"")."</TABLE>\n$listoflist\n$listofformula");
 push(@html, qq(<hr><a name="download"></a><form action="/cgi-bin/postFormData.pl?form=$form" method="post">
 <input type="submit" value="$__{'Download a CSV text file of these data'}">
+<input type="checkbox" name="dlm" value=";">&nbsp;$__{'Use semicolon as delimiter'}
 <input type="hidden" name="form" value=$form>
 <input type="hidden" name="csv" value='@csv'>
 <span" title="$__{'Include associated form data (files, images,...)'}"><input type="checkbox" name="all">&nbsp;$__{'Include attached data files'}</span>
