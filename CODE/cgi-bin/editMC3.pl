@@ -86,6 +86,7 @@ use WebObs::Utils;
 use WebObs::i18n;
 use WebObs::Mapping;
 use WebObs::Wiki;
+use WebObs::QML;
 use Locale::TextDomain('webobs');
 use IO::Socket;
 
