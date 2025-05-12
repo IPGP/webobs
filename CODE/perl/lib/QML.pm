@@ -136,7 +136,7 @@ sub mc2qmlfdsn {
     $qmlfdsn .= "$evtroot/origin/arrival/phase=P\n";
     $qmlfdsn .= "$evtroot/preferredOriginID=$originpublicID";
     if ($evt_SP > 0) {
-        my $Stime = strftime('%y-%m-%dT%H:%M:%S', str2time("${date}T${time}") + $evt_SP)
+        my $Stime = strftime('%y-%m-%dT%H:%M:%S', str2time("${date}T${time}") + $evt_SP);
         my $SpickpublicID = 'S' . $nowGMT . $NSLC;
         my $SarrivalpublicID = 'S' . $nowGMT . '/arrrival1';
         $qmlfdsn .= "$evtroot/pick/\@publicID=$SpickpublicID\n";
