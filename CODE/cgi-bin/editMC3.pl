@@ -348,7 +348,6 @@ if ($newSC3 > 0) {
     my $date = ${anneeEvnt} . '-' . ${moisEvnt} . '-' . ${jourEvnt};
     my $time = ${heureEvnt} . ':' . ${minEvnt} . ':' . ${secEvnt};
     $newQML = mc2qmlfdsn($mc3,$operator,$date,$time,$typeEvnt,$smoinsp,$stationEvnt,$id_evt,$comment,$MC3{WO2SC_EVTLON},$MC3{WO2SC_EVTLAT});
-    qx(ssh -i $MC3{WO2SC_SSH_KEY} $MC3{WO2SC_USER}\@$MC3{WO2SC_HOSTNAME} "echo \"$newQML\" | $MC3{WO2SC_DISPATCH_SCRIPT_PATH}");
 }
 
 # Prepare the text for print
@@ -456,40 +455,46 @@ print $cgi->end_html();
 
 # --- Send the new event to TCP socket
 
+# print STDERR "** newSC3 = $newSC3 **\n";
+# print STDERR "** PeerHost => $MC3{WO2SC3_HOSTNAME}, PeerPort => $MC3{WO2SC3_PORT} **\n";
 print STDERR "** newSC3 = $newSC3 **\n";
-print STDERR "** PeerHost => $MC3{WO2SC3_HOSTNAME}, PeerPort => $MC3{WO2SC3_PORT} **\n";
+print STDERR "** SeisComPHost => $MC3{WO2SC_HOSTNAME}, SeisComPUser => $MC3{WO2SC_USER} **\n";
 if ($newSC3 > 0) {
 
     # flush after every write
     $| = 1;
 
-    my ($socket,$client_socket);
+    # Dispatch new event in SeisComP through ssh
+    qx(ssh -i $MC3{WO2SC_SSH_KEY} $MC3{WO2SC_USER}\@$MC3{WO2SC_HOSTNAME} "echo \"$newQML\" | $MC3{WO2SC_DISPATCH_SCRIPT_PATH}");
 
-# creating object interface of IO::Socket::INET modules which internally creates
-# socket, binds and connects to the TCP server running on the specific port.
-    $socket = new IO::Socket::INET (
-        PeerHost => $MC3{WO2SC3_HOSTNAME},
-        PeerPort => $MC3{WO2SC3_PORT},
-        Proto => 'tcp',
-      ) or print STDERR "ERROR in Socket Creation : $!\n";
 
-    #print "TCP Connection Success.\n";
+#     my ($socket,$client_socket);
 
-    # read the socket data sent by server.
-    #$data = <$socket>;
-    # we can also read from socket through recv()  in IO::Socket::INET
-    # $socket->recv($data,1024);
-    #print "Received from Server : $data\n";
+# # creating object interface of IO::Socket::INET modules which internally creates
+# # socket, binds and connects to the TCP server running on the specific port.
+#     $socket = new IO::Socket::INET (
+#         PeerHost => $MC3{WO2SC3_HOSTNAME},
+#         PeerPort => $MC3{WO2SC3_PORT},
+#         Proto => 'tcp',
+#       ) or print STDERR "ERROR in Socket Creation : $!\n";
 
-    # write on the socket to server.
-    #print $socket "$newQML\n";
-    # we can also send the data through IO::Socket::INET module,
-    if ($socket) {
-        $socket->send($newQML);
+#     #print "TCP Connection Success.\n";
 
-        #sleep (10);
-        $socket->close();
-    }
+#     # read the socket data sent by server.
+#     #$data = <$socket>;
+#     # we can also read from socket through recv()  in IO::Socket::INET
+#     # $socket->recv($data,1024);
+#     #print "Received from Server : $data\n";
+
+#     # write on the socket to server.
+#     #print $socket "$newQML\n";
+#     # we can also send the data through IO::Socket::INET module,
+#     if ($socket) {
+#         $socket->send($newQML);
+
+#         #sleep (10);
+#         $socket->close();
+#     }
 
 }
 
