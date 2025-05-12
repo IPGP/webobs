@@ -2145,6 +2145,9 @@ msgstr "Formules"
 msgid "Download a CSV text file of these data"
 msgstr "Télécharger ces données au format CSV"
 
+msgid "Use semicolon as delimiter"
+msgstr "Point-virgule comme sépérateur"
+
 msgid "Include associated Form data (files, images,...)"
 msgstr "Inclure les données associées au Form (fichiers, images, ...)"
 
