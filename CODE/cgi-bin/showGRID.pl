@@ -50,6 +50,17 @@ map=
 invalid=
  show/hide invalid nodes. This option is for administrator level only.
 
+=head1 Authorizations (VIEW, PROC, or FORM)
+
+read=
+ can view the grid, associated nodes contents, PROC outputs and FORM data. No modifications authorized.
+
+edit=
+ can edit text content of the grid, edit events of the grid and associated nodes, edit data associated to the FORM.
+
+admin=
+ can edit the grid's configuration, association of domain, association of nodes, any PROC/FORM parameters in the node configuration, can delete data in the FORM.
+
 =cut
 
 use strict;
