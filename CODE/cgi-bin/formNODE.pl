@@ -999,10 +999,6 @@ for (@feat) {
     print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('$__{help_creationstation_n2n}')\"><BR>";
 }
 
-# edition of the node2node file needs an admin level
-#if (WebObs::Users::clientHasAdm(type => "auth".lc($GRIDType)."s", name => "*")) {
-#    print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
-#}
 print "</FIELDSET>";
 
 # --- Grids
@@ -1404,7 +1400,7 @@ if (uc($GRIDType) eq "PROC") {
         print "<OPTION".((trim($_) eq trim($usrFDSN)) ? " selected ":"")." value=$_>".($_ ne "" ? "$_: ":"")."$FDSN{$_}</option>\n";
     }
     print "</SELECT><BR>\n";
-    print "</TD>\n<TD style=\"border:0;text-valign:top\">";
+    print "</TD>\n<TD rowspan=2 style=\"border:0;text-valign:top\">";
 
     # --- DESCRIPTION
     print "<LABEL for=\"description\">$__{'Description:'}</LABEL>";
@@ -1496,14 +1492,6 @@ if (uc($GRIDType) eq "FORM") {
     print "</TD></TR></TABLE></FIELDSET>\n";
 }
 
-## # --- "Validity"
-## if ( clientHasAdm(type=>"authmisc",name=>"NODES")) {
-##     print "<P class=parform><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
-##         ." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Check to mark node as valid'}')\">"
-##         ."<b>$__{'Valid Node'}</b></P>\n";
-## } else {
-##     print "<input type=\"hidden\" name=\"valide\" value=\"NA\">";
-## }
 
 print "</TD></TR>";
 print "<TR><TD style=border:0 colspan=2><HR>";
