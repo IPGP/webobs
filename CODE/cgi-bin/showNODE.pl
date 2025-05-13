@@ -13,9 +13,7 @@ http://..../showNODE.pl?node=NODEID[,sortBy={event|date}]
 Displays data associated to a NODE identified by its fully qualified name (node=gridtype.gridname.nodename)
 
 Although a NODE is an independent entity, a GRID-context (the 2 high level qualifiers of the
-Although a NODE is an independent entity, a GRID-context (the 2 high level qualifiers of the
-fully qualified nodename) is required
-as a validation/authorization/reference information.
+fully qualified nodename) is required as a validation/authorization/reference information (see below).
 
 All known data associated to the NODE are shown, along with links for editing these data, according
 to http-client authorizations for the GRID-context requested.
@@ -34,6 +32,17 @@ function, that calls to showNode other nodes.
  sortby=date
  view the node's events list ordered by date (subevents viewed as independent events).
  Optional, defaults to 'event'.
+
+=head1 Authorizations (grid resource)
+
+read=
+ can view the node and all contents, PROC outputs and FORM data. No modifications authorized.
+
+edit=
+ can add/edit events, add/edit data associated to the FORM.
+
+admin=
+ can edit the PROC/FORM parameters in the node configuration, can delete data in the FORM.
 
 =cut
 

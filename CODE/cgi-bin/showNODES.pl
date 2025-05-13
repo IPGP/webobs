@@ -12,6 +12,10 @@ http://..../showNODES.pl
 
 Displays all known NODES as a matrix: row=node, column=GRID node belongs to
 
+=head1 Authorizations
+
+Authorization concerns the associated grid resource. A minimum read level is needed to see the node in the table.
+
 =cut
 
 use strict;
