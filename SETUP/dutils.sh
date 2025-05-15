@@ -1,6 +1,11 @@
 #!/bin/bash
 
 confirm () {
+	# return false in case of non-interactive setup
+	if [ "$AUTO" = "true" ]; then
+		echo false
+		return
+	fi
 	# call confirm('prompt') or will use default N
 	local reply=''
 	read -r -p "${1:-Are you sure? [y/N]} " reply
@@ -13,6 +18,11 @@ confirm () {
 }
 
 confirmy () {
+	# return true in case of non-interactive setup
+	if [ "$AUTO" = "true" ]; then
+		echo true
+		return
+	fi
 	# call confirm('prompt') or will use default Y
 	local reply=''
 	read -r -p "${1:-Are you sure? [Y/n]} " reply

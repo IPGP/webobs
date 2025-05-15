@@ -48,6 +48,7 @@ usage() {
 	echo ' -f, --force         show but ignore errors'
 	echo ' -x, --expert-mode   ignore detected missing software'
 	echo ' -q, --quiet         be less verbose'
+	echo ' -a, --auto          use default answers for all prompts and run non-interactively'
 	echo ' -h, --help          this help text'
 	echo
 	exit 1
@@ -195,12 +196,13 @@ YEARNOW=$(date "+%Y")
 # default options
 VERBOSE=true
 FORCE=false
+AUTO=false
 DEPMISS=false
 LOCMISS=false
 EXPERT_MODE=${EXPERT_MODE:-0}
 
 # parse requested options
-ARGS=`getopt -o "hqfx" -l "help,quiet,force,expert-mode" -n "$0" -- "$@"`
+ARGS=`getopt -o "hqafx" -l "help,quiet,auto,force,expert-mode" -n "$0" -- "$@"`
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
 while true; do
@@ -216,6 +218,10 @@ while true; do
 
 		-f|--force)
 			FORCE=true
+			shift;;
+
+		-a|--auto)
+			AUTO=true
 			shift;;
 
 		-w|--webobs)
@@ -234,6 +240,7 @@ while true; do
 	esac
 done
 
+export $AUTO
 #
 
 clear
@@ -342,7 +349,7 @@ if [[ ${DOCROOT} == ${OPERROOT} ]]; then
 	echo "and any WebObs running processes before proceeding ... ";
 	echo
 fi
-if ! $(confirm "Confirm setup [y/N] ? ") ; then echo "Aborted." ; exit 64; fi
+if ! $(confirmy "Confirm setup [Y/n] ? ") ; then echo "Aborted." ; exit 64; fi
 
 umask 0002
 
@@ -528,7 +535,9 @@ echo
 # webobs user -----------------------------------------------------------------
 # -----------------------------------------------------------------------------
 if [[ ${SETUPTYPE} == "install" ]]; then
-	USERID=$(readkbn "Enter WebObs userid (default will be wo): ")
+	if ! [ ${AUTO} = "true" ]; then
+		USERID=$(readkbn "Enter WebObs userid (default will be wo): ")
+	fi
 	if [[ -z ${USERID} ]];then
 		USERID="wo"
 	fi
@@ -542,7 +551,9 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 		fi
 	fi
 	USERGID=$(id -n -g ${USERID})
-	USERMAIL=$(readkbn "Enter WebObs user email address (default: ${USERID}@localhost): ")
+	if ! [ ${AUTO} = "true" ]; then
+		USERMAIL=$(readkbn "Enter WebObs user email address (default: ${USERID}@localhost): ")
+	fi
 	USERHOME=$(eval "echo ~$USERID")
 	if [[ -z ${USERMAIL} ]]; then
 		USERMAIL="${USERID}@localhost"
@@ -694,8 +705,10 @@ else
 	errexit "copying ${RELBASE}/SETUP/CONF/* to ${DOCROOT}/CONF"
 
 	verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallDocumentRoot+WebObsIdentification)"
-	WEBOBSID=$(readkbn "Enter your WebObs Identification string (short/alphanumeric only)  ")
-	WEBOBSID=$(echo "$WEBOBSID"|sed -e 's/[^a-zA-Z0-9_\-]/_/g')
+	if ! [ ${AUTO} = "true" ]; then
+		WEBOBSID=$(readkbn "Enter your WebObs Identification string (short/alphanumeric only)  ")
+		WEBOBSID=$(echo "$WEBOBSID"|sed -e 's/[^a-zA-Z0-9_\-]/_/g')
+	fi
 	if [[ -z ${WEBOBSID} ]]; then
 		WEBOBSID="${YEARNOW}"
 	fi
@@ -747,7 +760,7 @@ echo
 
 # webobs htpasswd -------------------------------------------------------------
 # -----------------------------------------------------------------------------
-if [[ ${SETUPTYPE} == "install" ]]; then
+if ! [ "$AUTO" = "true" ] && [ ${SETUPTYPE} == "install" ]; then
 		if $MIGRATION ; then
 			if $(confirm "Do you want to copy your own htpasswd file [y/N] ? ") ; then
 				htu=$(readkbn "Enter its full path/filename ")
@@ -846,7 +859,7 @@ fi
 # set up where to drop our virtual host configuration:
 # RedHat: /etc/httpd/conf.d/  ...  Debian: /etc/apache2/sites-available/
 # -------------------------------------------------------------------------------
-if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine Apache stuff [y/N] ? ") == true ]]; then
+if [[ ${SETUPTYPE} == "install" || $(confirmy "Want to redefine Apache stuff [Y/n] ? ") == true ]]; then
 	echo "Updating Apache setup"
 	if [[ ${#USER_APACHE[@]} == 0 ]]; then
 		echo "**** Could not figure out who is the Apache user. Bye."
@@ -870,7 +883,9 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine Apache stuff [y/N
 			cp -a ${DIRC_APACHE}/$VHOST_CONF ${DOCROOT}/$VHOST_CONF.setup.backup
 			errexit "Backing up existing ${DIRC_APACHE}/$VHOST_CONF"
 		fi
-		VARLOG=$(readkbn "Enter vhost log files prefix (default: /var/log/${N_APACHE}/$LOG_FILENAME): ")
+		if ! [ ${AUTO} = "true" ]; then
+			VARLOG=$(readkbn "Enter vhost log files prefix (default: /var/log/${N_APACHE}/$LOG_FILENAME): ")
+		fi
 		if [[ -z ${VARLOG} ]]; then
 			VARLOG="/var/log/${N_APACHE}/$LOG_FILENAME"
 		fi
@@ -899,7 +914,9 @@ fi
 # (sefran output/data directory is one example of such structure)
 # -----------------------------------------------------------------------------
 if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other than DocumentRoot [y/N] ? ") == true ]]; then
-	SEFRANROOT=$(readkbn "Enter SEFRAN output+data directory (default will be $USERHOME/sefran): ")
+	if ! [ ${AUTO} = "true" ]; then
+		SEFRANROOT=$(readkbn "Enter SEFRAN output+data directory (default will be $USERHOME/sefran): ")
+	fi
 	if [[ "${SEFRANROOT}" == "" && ! -z ${USERID} ]]; then
 		if [[ -d "$USERHOME" ]]; then SEFRANROOT="$USERHOME/sefran"; fi
 	fi
@@ -923,7 +940,9 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other
 	fi
 	echo
 
-	RAWDATA=$(readkbn "Enter RAW DATA directory (default will be $USERHOME/rawdata): ")
+	if ! [ ${AUTO} = "true" ]; then
+		RAWDATA=$(readkbn "Enter RAW DATA directory (default will be $USERHOME/rawdata): ")
+	fi
 	if [[ "${RAWDATA}" == "" && ! -z ${USERID} ]]; then
 		if [[ -d "$USERHOME" ]]; then RAWDATA="$USERHOME/rawdata"; fi
 	fi
@@ -949,7 +968,9 @@ fi
 # -----------------------------------------------------------------------------
 if [[ -n ${MCRZIP} ]]; then
 	if $(confirmy "Do you want to install Matlab Compiler Runtime '${MCRZIP}' [Y/n] ? ") ; then
-		MCRDIR=$(readkbn "Enter MCR directory (defaults to ${DOCROOT}/MCR): ")
+		if ! [ ${AUTO} = "true" ]; then
+			MCRDIR=$(readkbn "Enter MCR directory (defaults to ${DOCROOT}/MCR): ")
+		fi
 		if [[ "${MCRDIR}" == "" ]]; then MCRDIR="${DOCROOT}/MCR"; fi
 		mkdir -p ${MCRDIR}
 		errexit "creating ${MCRDIR}"
@@ -968,14 +989,16 @@ if [[ -n ${MCRZIP} ]]; then
 		sed -i -e "s=^PATH_MCR|.*$=PATH_MCR|${realMCRDIR}=g" ${DOCROOT}/CONF/WEBOBS.rc
 		echo "*** Please verify PATH_MCR in ${DOCROOT}/CONF/WEBOBS.rc"
 		errexit "updating PATH_MCR"
-		if $(confirm "MCR now installed - delete '${MCRZIP}' [y/N] ? ") ; then rm ${MCRZIP}; fi
+		if $(confirmy "MCR now installed - delete '${MCRZIP}' [Y/n] ? ") ; then rm ${MCRZIP}; fi
 	fi
 	echo
 fi
 
 # Systemd services installation/update ----------------------------------------
 # -----------------------------------------------------------------------------
-install_systemd_services $USERID $USERGID
+if ! [ ${AUTO} = "true" ]; then
+	install_systemd_services $USERID $USERGID
+fi
 
 
 # FINALIZE
@@ -996,7 +1019,7 @@ else
 		chmod -R 775 ${MENUS}
 		chmod -R g+s ${MENUS}
 	fi
-	if [[ ${SETUPTYPE} == "install" || $(confirm "Reassess groups, owners and mods [y/N] ? ") == true ]]; then
+	if [[ ${SETUPTYPE} == "install" || $(confirmy "Reassess groups, owners and mods [Y/n] ? ") == true ]]; then
 		owner="chown -R ${USERID}:${USERGID} ${DOCROOT}/CONF ${DOCROOT}/LOGS ${DOCROOT}/DATA ${DOCROOT}/OUTG ${DOCROOT}/OUTR ${SEFRANROOT}"
 		cmode="chmod -R 775 ${DOCROOT}/CONF ${DOCROOT}/LOGS ${DOCROOT}/DATA ${DOCROOT}/OUTG ${DOCROOT}/OUTR ${SEFRANROOT}"
 		emode="chmod ug+s ${DOCROOT}/OUTR"
@@ -1063,7 +1086,9 @@ else
 fi
 
 # 2) show ${DOCROOT}/SETUP.CONF.README
-if [[ -f ${REPORT} ]]; then less ${REPORT}; fi
+if ! [ ${AUTO} = "true" ]; then
+	if [[ -f ${REPORT} ]]; then less ${REPORT}; fi
+fi
 
 # 2-a) optionnaly 'vimdiff' the configuration files updates if any
 #oIFS=${IFS}; IFS=$'\n'
