@@ -11,86 +11,150 @@
 #--------------------------------------------------------------
 use strict;
 use WebObs::XML2;
+use Date::Parse;
+use POSIX qw(strftime);
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 # qmlvalues: returns origin and magmitude preferred values from XML2 arrayd
 sub qmlorigin {
-	my $file = $_[0];
-	my %qml;
+    my $file = $_[0];
+    my %qml;
 
-	if (-e $file) {
-		my @xml2 = qx($WEBOBS{XML2_PRGM} < $file);
+    if (-e $file) {
+        my @xml2 = qx($WEBOBS{XML2_PRGM} < $file);
 
-		my $root = '/seiscomp/EventParameters';
-		my $evt_origID = findvalue("$root/event/preferredOriginID=",\@xml2);
-		my @origin = findnode("$root/origin","/\@publicID=$evt_origID",\@xml2);
-		my $evt_magID = findvalue("$root/event/preferredMagnitudeID=",\@xml2);
-		my @magnitude = findnode('/magnitude',"/\@publicID=$evt_magID",\@origin);
-		$qml{time} = findvalue('/time/value=',\@origin);
-		$qml{rms} = findvalue('/quality/standardError=',\@origin);
-		$qml{latitude} = findvalue('/latitude/value=',\@origin);
-		$qml{latitudeError} = findvalue('/latitude/uncertainty=',\@origin);
-		$qml{longitude} = findvalue('/longitude/value=',\@origin);
-		$qml{longitudeError} = findvalue('/longitude/uncertainty=',\@origin);
-		$qml{depth} = findvalue('/depth/value=',\@origin);
-		$qml{depthError} = findvalue('/depth/uncertainty=',\@origin);
-		$qml{gap} = findvalue('/quality/azimuthalGap=',\@origin);
-		$qml{phases} = findvalue('/quality/usedPhaseCount=',\@origin);
-		$qml{mode} = findvalue('/evaluationMode=',\@origin);
-		$qml{status} = findvalue('/evaluationStatus=',\@origin);
-		$qml{method} = findvalue('/methodID=',\@origin);
-		$qml{model} = findvalue('/earthModelID=',\@origin);
-		$qml{agency} = findvalue('/creationInfo/agencyID=',\@origin);
-		$qml{magnitude} = findvalue('/magnitude/value=',\@magnitude);
-		$qml{magtype} = findvalue('/type=',\@magnitude);
-		$qml{type} = findvalue("$root/event/type=",\@xml2);
-	}
+        my $root = '/seiscomp/EventParameters';
+        my $evt_origID = findvalue("$root/event/preferredOriginID=",\@xml2);
+        my @origin = findnode("$root/origin","/\@publicID=$evt_origID",\@xml2);
+        my $evt_magID = findvalue("$root/event/preferredMagnitudeID=",\@xml2);
+        my @magnitude = findnode('/magnitude',"/\@publicID=$evt_magID",\@origin);
+        $qml{time} = findvalue('/time/value=',\@origin);
+        $qml{rms} = findvalue('/quality/standardError=',\@origin);
+        $qml{latitude} = findvalue('/latitude/value=',\@origin);
+        $qml{latitudeError} = findvalue('/latitude/uncertainty=',\@origin);
+        $qml{longitude} = findvalue('/longitude/value=',\@origin);
+        $qml{longitudeError} = findvalue('/longitude/uncertainty=',\@origin);
+        $qml{depth} = findvalue('/depth/value=',\@origin);
+        $qml{depthError} = findvalue('/depth/uncertainty=',\@origin);
+        $qml{gap} = findvalue('/quality/azimuthalGap=',\@origin);
+        $qml{phases} = findvalue('/quality/usedPhaseCount=',\@origin);
+        $qml{mode} = findvalue('/evaluationMode=',\@origin);
+        $qml{status} = findvalue('/evaluationStatus=',\@origin);
+        $qml{method} = findvalue('/methodID=',\@origin);
+        $qml{model} = findvalue('/earthModelID=',\@origin);
+        $qml{agency} = findvalue('/creationInfo/agencyID=',\@origin);
+        $qml{magnitude} = findvalue('/magnitude/value=',\@magnitude);
+        $qml{magtype} = findvalue('/type=',\@magnitude);
+        $qml{type} = findvalue("$root/event/type=",\@xml2);
+    }
 
-	return %qml;
+    return %qml;
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
 # qmlvalues: returns origin and magnitude preferred values from XML2 arrayd
 sub qmlfdsn {
-	my $url = $_[0];
-	my %qml;
-	my @x;
+    my $url = $_[0];
+    my %qml;
+    my @x;
 
-	my @xml2 = qx(curl -s -S --globoff "$url" | $WEBOBS{XML2_PRGM});
+    my @xml2 = qx(curl -s -S --globoff "$url" | $WEBOBS{XML2_PRGM});
 
-	my $root = '/q:quakeml/eventParameters/event';
-	my $evt_origID = findvalue("$root/preferredOriginID=",\@xml2);
-	my @origin = findnode("$root/origin","/\@publicID=$evt_origID",\@xml2);
-	my $evt_magID = findvalue("$root/preferredMagnitudeID=",\@xml2);
-	my @magnitude = findnode("$root/magnitude","/\@publicID=$evt_magID",\@xml2);
-	$qml{time} = findvalue('/time/value=',\@origin);
-	$qml{rms} = findvalue('/quality/standardError=',\@origin);
-	$qml{latitude} = findvalue('/latitude/value=',\@origin);
-	$qml{latitudeError} = findvalue('/latitude/uncertainty=',\@origin);
-	$qml{longitude} = findvalue('/longitude/value=',\@origin);
-	$qml{longitudeError} = findvalue('/longitude/uncertainty=',\@origin);
-	$qml{depth} = findvalue('/depth/value=',\@origin)/1000;
-	$qml{depthError} = findvalue('/depth/uncertainty=',\@origin)/1000;
-	$qml{gap} = findvalue('/quality/azimuthalGap=',\@origin);
-	$qml{phases} = findvalue('/quality/usedPhaseCount=',\@origin);
-	$qml{mode} = findvalue('/evaluationMode=',\@origin);
-	$qml{status} = findvalue('/evaluationStatus=',\@origin);
+    my $root = '/q:quakeml/eventParameters/event';
+    my $evt_origID = findvalue("$root/preferredOriginID=",\@xml2);
+    my @origin = findnode("$root/origin","/\@publicID=$evt_origID",\@xml2);
+    my $evt_magID = findvalue("$root/preferredMagnitudeID=",\@xml2);
+    my @magnitude = findnode("$root/magnitude","/\@publicID=$evt_magID",\@xml2);
+    $qml{time} = findvalue('/time/value=',\@origin);
+    $qml{rms} = findvalue('/quality/standardError=',\@origin);
+    $qml{latitude} = findvalue('/latitude/value=',\@origin);
+    $qml{latitudeError} = findvalue('/latitude/uncertainty=',\@origin);
+    $qml{longitude} = findvalue('/longitude/value=',\@origin);
+    $qml{longitudeError} = findvalue('/longitude/uncertainty=',\@origin);
+    $qml{depth} = findvalue('/depth/value=',\@origin)/1000;
+    $qml{depthError} = findvalue('/depth/uncertainty=',\@origin)/1000;
+    $qml{gap} = findvalue('/quality/azimuthalGap=',\@origin);
+    $qml{phases} = findvalue('/quality/usedPhaseCount=',\@origin);
+    $qml{mode} = findvalue('/evaluationMode=',\@origin);
+    $qml{status} = findvalue('/evaluationStatus=',\@origin);
 
-	# for methodID and earthModelID takes only the last string to remove prefix
-	#$qml{method} = findvalue('/methodID=',\@origin);
-	@x = split(/\//,findvalue('/methodID=',\@origin));
-	$qml{method} = $x[-1];
-	#$qml{model} = findvalue('/earthModelID=',\@origin);
-	@x = split(/\//,findvalue('/earthModelID=',\@origin));
-	$qml{model} = $x[-1];
+    # for methodID and earthModelID takes only the last string to remove prefix
+    #$qml{method} = findvalue('/methodID=',\@origin);
+    @x = split(/\//,findvalue('/methodID=',\@origin));
+    $qml{method} = $x[-1];
 
-	$qml{agency} = findvalue('/creationInfo/agencyID=',\@origin);
-	$qml{magnitude} = findvalue('/mag/value=',\@magnitude);
-	$qml{magtype} = findvalue('/type=',\@magnitude);
-	$qml{type} = findvalue("$root/type=",\@xml2);
-	$qml{comment} = findvalue("$root/description/text=",\@xml2);
+    #$qml{model} = findvalue('/earthModelID=',\@origin);
+    @x = split(/\//,findvalue('/earthModelID=',\@origin));
+    $qml{model} = $x[-1];
 
-	return %qml;
+    $qml{agency} = findvalue('/creationInfo/agencyID=',\@origin);
+    $qml{magnitude} = findvalue('/mag/value=',\@magnitude);
+    $qml{magtype} = findvalue('/type=',\@magnitude);
+    $qml{type} = findvalue("$root/type=",\@xml2);
+    $qml{comment} = findvalue("$root/description/text=",\@xml2);
+
+    return %qml;
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+# mc2qmlfdsn: returns QuakeML from MC3 line
+sub mc2qmlfdsn {
+    my ($mc3,$oper,$date,$time,$type,$evt_SP,$NSLC,$mc_id,$comment,$mclon,$mclat) = @_;
+    my ($net,$sta,$loc,$cha) = split(/\./, $NSLC);
+    my ($year,$month) = split(/-/,$date);
+    my $mcID = "$mc3/${year}${month}/${mc_id}";
+    my $nowGMT = strftime('%y%m%d%H%M%S', gmtime);
+    my $PpickpublicID = 'P' . $nowGMT . $NSLC;
+    my $originpublicID = $nowGMT;
+    my $ParrivalpublicID = 'P' . $nowGMT . '/arrrival1';
+    my $evtroot = '/q:quakeml/eventParameters/event';
+
+    my $qmlfdsn = '';
+    $qmlfdsn .= "/q:quakeml/\@xmlns=http://quakeml.org/xmlns/bed/1.2\n";
+    $qmlfdsn .= "/q:quakeml/\@xmlns:q=http://quakeml.org/xmlns/quakeml/1.2\n";
+    $qmlfdsn .= "/q:quakeml/eventParameters/\@publicID=mc2qmlfdsn\n";
+    $qmlfdsn .= "$evtroot/\@publicID=$mcID\n";
+    $qmlfdsn .= "$evtroot/pick/\@publicID=$PpickpublicID\n";
+    $qmlfdsn .= "$evtroot/pick/creationInfo/author=$oper\n";
+    $qmlfdsn .= "$evtroot/pick/evaluationMode=manual\n";
+    $qmlfdsn .= "$evtroot/pick/time/value=${date}T${time}\n";
+    $qmlfdsn .= "$evtroot/pick/waveformID=\@networkCode=$net\n";
+    $qmlfdsn .= "$evtroot/pick/waveformID=\@stationCode=$sta\n";
+    $qmlfdsn .= "$evtroot/pick/waveformID=\@locationCode=$loc\n";
+    $qmlfdsn .= "$evtroot/pick/waveformID=\@channelCode=$cha\n";
+    $qmlfdsn .= "$evtroot/origin/\@publicID=$originpublicID/origin$mc_id\n";
+    $qmlfdsn .= "$evtroot/origin/creationInfo/author=$oper\n";
+    $qmlfdsn .= "$evtroot/origin/time/value=${date}T${time}\n";
+    $qmlfdsn .= "$evtroot/origin/longitude/value=$mclon\n";
+    $qmlfdsn .= "$evtroot/origin/latitude/value=$mclat\n";
+    $qmlfdsn .= "$evtroot/origin/methodID=$mcID\n";
+    $qmlfdsn .= "$evtroot/origin/earthModelID=$type\n";
+    $qmlfdsn .= "$evtroot/origin/evaluationStatus=confirmed\n";
+    $qmlfdsn .= "$evtroot/origin/evaluationMode=manual\n";
+    $qmlfdsn .= "$evtroot/origin/arrival/\@publicID=$ParrivalpublicID\n";
+    $qmlfdsn .= "$evtroot/origin/arrival/pickID=$PpickpublicID\n";
+    $qmlfdsn .= "$evtroot/origin/arrival/phase=P\n";
+    $qmlfdsn .= "$evtroot/preferredOriginID=$originpublicID";
+    if ($evt_SP > 0) {
+        my $Stime = strftime('%y-%m-%dT%H:%M:%S', str2time("${date}T${time}") + $evt_SP);
+        my $SpickpublicID = 'S' . $nowGMT . $NSLC;
+        my $SarrivalpublicID = 'S' . $nowGMT . '/arrrival1';
+        $qmlfdsn .= "$evtroot/pick/\@publicID=$SpickpublicID\n";
+        $qmlfdsn .= "$evtroot/pick/creationInfo/author=$oper\n";
+        $qmlfdsn .= "$evtroot/pick/evaluationMode=manual\n";
+        $qmlfdsn .= "$evtroot/pick/time/value=${Stime}\n";
+        $qmlfdsn .= "$evtroot/pick/waveformID=\@networkCode=$net\n";
+        $qmlfdsn .= "$evtroot/pick/waveformID=\@stationCode=$sta\n";
+        $qmlfdsn .= "$evtroot/pick/waveformID=\@locationCode=$loc\n";
+        $qmlfdsn .= "$evtroot/pick/waveformID=\@channelCode=$cha\n";
+        $qmlfdsn .= "$evtroot/origin/arrival/\@publicID=$SarrivalpublicID\n";
+        $qmlfdsn .= "$evtroot/origin/arrival/pickID=$SpickpublicID\n";
+        $qmlfdsn .= "$evtroot/origin/arrival/phase=S\n";
+        $qmlfdsn .= "$evtroot/preferredOriginID=$originpublicID";
+    }
+    $qmlfdsn .= "$evtroot/origin/comment/text=$comment";
+
+    return qx(echo "$qmlfdsn" | $WEBOBS{TOXML_PRGM});
 }
 
 1;

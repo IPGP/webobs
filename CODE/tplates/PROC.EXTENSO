@@ -1,16 +1,20 @@
 =key|value
 # Generic PROC template for superproc extenso
-# This PROC must be associated with the FORM "EXTENSO" which contains 
+# PROC and/or associated NODES must have FORM.EXTENSO rawformat which contains 
 # compatible data and needed complementary configuration files.
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/extenso.m for further information.
 
-NAME|Extensometry time series and vectors
+# name of the proc
+NAME|Extensometry
+# description of what the proc does
+DESCRIPTION|Extensometry time series and vectors
+
 RAWDATA|
 URNDATA|
 TZ|-4
 URL|
 
-# lists of parameters (number of coma-separated rows must be consistent)
+# lists of parameters (number of comma-separated rows must be consistent)
 TIMESCALELIST|10y,all
 DECIMATELIST|
 CUMULATELIST|
@@ -24,11 +28,14 @@ REF01_DATE|2000-01-01
 TIMESCALE_TRUEVALUE|Y
 
 # additional summary graphs keywords (comma separated)
-SUMMARYLIST|VECTORS
+SUMMARYLIST|SUMMARY,VECTORS
 
 # execution command (for runproc shell)
-SUBMIT_COMMAND|
-SUBMIT_RESOURCE|myproc
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} extenso $SELFREF -
+SUBMIT_RESOURCE|request
+
+# list of keys editable in requests
+REQUEST_KEYLIST|NAME,ZONE1_NAME,ZONE1_NODELIST,ZONE2_NAME,ZONE2_NODELIST,ZONE3_NAME,ZONE3_NODELIST
 
 NODE_NAME|site
 NODE_MARKER|^
@@ -76,6 +83,18 @@ COPYRIGHT2|
 
 # specific PROC's parameters
 FILTER_MAX_ERROR_MM|10
+
+# --- per node graphs
+PERNODE_LINESTYLE|o-
+
+# nodes colors: comma-separated list, or colormap name
+NODES_COLORS|
+
+# --- summary graph: per zone
+# line style: combination of a marker and/or a line type (see user's manual)
+SUMMARY_LINESTYLE|o-
+
+# defines groups of nodes in zones (comma-separated FID)
 ZONE1_NAME|Zone Nord
 ZONE1_NODELIST|FNW1,DUP1,DUP2,DUP3,FNO1
 ZONE2_NAME|Zone Sud-Est
@@ -83,8 +102,9 @@ ZONE2_NODELIST|NAP1,F8J1,BLK1,LCX1,CSD1
 ZONE3_NAME|Zone Sud
 ZONE3_NODELIST|DOL1,DOL2,PEY1,F302,F303
 
+# --- summary graph: vectors
 VECTORS_EXCLUDED_NODELIST|BAT0,HOU1
-VECTORS_ARROWSHAPE|.15,.1,.1,.04
+VECTORS_ARROWSHAPE|.15,.1,.08,.04
 VECTORS_VELOCITY_SCALE|0
 VECTORS_MIN_SIZE_KM|.5
 VECTORS_MAX_XYRATIO|2

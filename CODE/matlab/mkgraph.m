@@ -17,7 +17,7 @@ function varargout = mkgraph(WO,f,G,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03 in Gourbeyre, Guadeloupe
-%	Updated: 2023-12-13
+%	Updated: 2025-04-07
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -26,7 +26,7 @@ wofun = sprintf('WEBOBS{%s}',mfilename);
 ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,G.SELFREF,randname(16));
 wosystem(sprintf('mkdir -p %s',ptmp));
 
-convert = field2str(WO,'PRGM_CONVERT','convert');
+convert = field2str(WO,'PRGM_CONVERT','magick');
 convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
 ps2pdf = field2str(WO,'PRGM_PS2PDF','ps2pdf');
 thumbnailheight = field2num(WO,'MKGRAPH_THUMBNAIL_HEIGHT',112);
@@ -112,6 +112,7 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 			pt = et(1) + et(3) + .05;
 		end
 		st = [G.INFOS(i:min([i+nl-1,length(G.INFOS)])),{' '}];
+		st = regexprep(st,'([_^])','\\$1'); % escapes any underscore or exponent
 		ht = text(pt,0,st,'HorizontalAlignment','left','VerticalAlignment','bottom','FontSize',8);
 	end
 	if isfield(G,'INFOS2')
@@ -190,7 +191,7 @@ if isok(G,'PDFOUTPUT')
 end
 
 fprintf(' to JPG (thumbnail) ');
-wosystem(sprintf('%s -scale x%g %s/%s.png %s/%s.jpg',convert,thumbnailheight,ptmp,f,ptmp,f));
+wosystem(sprintf('%s %s/%s.png -scale x%g %s/%s.jpg',convert,ptmp,f,thumbnailheight,ptmp,f));
 wosystem(sprintf('mv -f %s/%s.jpg %s/',ptmp,f,pout));
 fprintf('ok.\n');
 
@@ -275,6 +276,9 @@ pp = get(gcf,'PaperPosition');
 
 if ~isempty(f)
 	ff = split(f,',');
+    if strcmp(pos,'right')
+        ff = fliplr(ff);
+    end
 	pos0 = 0;
 	for i = 1:length(ff)
 		if exist(ff{i},'file')

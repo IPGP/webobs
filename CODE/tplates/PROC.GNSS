@@ -5,8 +5,12 @@
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/gnss.m for further information.
 
 
-# long name of the PROC
-NAME|GNSS time series, vectors and modelling
+# name of the PROC
+NAME|GNSS
+
+# description of what the proc does
+DESCRIPTION|GNSS time series, vectors and modelling
+
 RAWFORMAT|gipsyx
 RAWDATA|$WEBOBS{ROOT_RAWD}/gipsyx
 URNDATA|$WEBOBS{URN_RAWD}/gipsyx
@@ -35,7 +39,7 @@ SUMMARYLIST|SUMMARY,VECTORS,MOTION,BASELINES
 
 # for scheduler requests
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} gnss $SELFREF -
-SUBMIT_RESOURCE|gipsyx
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,SUMMARYLIST,VECTORS_RELATIVE
@@ -95,12 +99,22 @@ ENU_MIN_ERROR_M|0.01,0.01,0.01
 ORBIT_ERROR_RATIO|1,2,2
 
 PICKS_CLEAN_PERCENT|0
+PICKS_CLEAN_STD|0
 
-# trend error mode: 1 = scolv, 2 = STD, 3 = corrcoef
-TREND_ERROR_MODE|2
+# dimensionless factor applied to the trend value initially in m/day
+TREND_FACTOR|365.25*1e3
+# displayed trend unit string (must coherent with trend factor!)
+TREND_UNIT|mm/yr
 # minimum time window (in percent and/or days) needed to compute a trend
 TREND_MIN_PERCENT|50
 TREND_MIN_DAYS|5
+# trend time limits: extreme parts (in percent and/or days) of time window to be used in trend computation (default is to use full time window)
+TREND_TLIM_PERCENT|
+TREND_TLIM_DAYS|
+# trend error mode: 1 = lscov, 2 = std, 3 = corrcoef
+TREND_ERROR_MODE|2
+# apply a factor based on data completion on trend error
+TREND_ERROR_COMPLETION|Y
 
 # ITRF reference (this is a string displayed on graph title, not functional)
 ITRF_REF|ITRF08
@@ -126,6 +140,26 @@ HARMONIC_EAST_SINCOS_MM|
 HARMONIC_NORTH_SINCOS_MM|
 HARMONIC_UP_SINCOS_MM|
 
+# --- Active fault correction (okada85 source forward modelling)
+FAULT_ACTIVATE|N
+# LAT,LON,DEP: fault centroid coordinates as latitude (degree), longitude (degree) and depth (km>0 below sea level)
+FAULT_CENTROID_LATLONDEP|
+# LENGTH,WIDTH: fault length in the STRIKE direction, and width in the DIP direction (coma separated values in km, >0)
+FAULT_LENGTH_WIDTH_KM|
+# STRIKE,DIP,RAKE: fault trace azimuth (0 to 360°), dip angle (0 to 90°), and rake direction of rupture (-180 to 180°)
+FAULT_STRIKE_DIP_RAKE_DEG|
+# SLIP,OPEN: dislocation in RAKE direction, and in tensile component (coma separated values, in m)
+FAULT_SLIP_OPEN_M|0,0
+# t1,t2: dislocation occurs between datetimes t1 and t2, or t: dislocation occurs instantanously at datetime t 
+FAULT_DISLOCATION_TLIM|
+# dislocation time model: linear (default), log, or exp
+FAULT_DISLOCATION_TIME_MODEL|linear
+# dislocation model uses station's elevation to correct topography effect
+FAULT_WITH_TOPOGRAPHY|Y
+# plot the fault on graphs (MOTION, VECTORS, MODELLING, MODELTIME)
+FAULT_PLOT|Y
+FAULT_PLOT_COLOR|lightgray
+
 # --- PERNODE graphs
 PERNODE_LINESTYLE|o
 PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name - $velref} ($timescale)}
@@ -135,6 +169,8 @@ PERNODE_COMPONENT_OFFSET_M|0.01
 PERNODE_TIMEZOOM|
 
 # --- SUMMARY graphs
+# selection of nodes (FID) to plot (default is all associated nodes)
+SUMMARY_NODELIST|
 SUMMARY_LINESTYLE|o
 SUMMARY_TITLE|{\fontsize{14}{\bf${NAME} - $velref} ($timescale)}
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
@@ -185,12 +221,14 @@ VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 # background map parameters (see CODE/matlab/dem.m for available options)
 VECTORS_DEM_OPT|'watermark',1.5,'saturation',0.7,'interp','legend','seacolor',[0.7,0.9,1]
 VECTORS_TITLE|{\fontsize{14}{\bf${NAME} - Velocity vectors} ($timescale)}
+VECTORS_TARGET_INCLUDED|Y
 VECTORS_MIN_SIZE_KM|5
 VECTORS_MAX_XYRATIO|1
+# map XY limits as lon0,lat0,width (in degrees). Will overwrite automatic limits and associated options
+VECTORS_MAP_XYLIM|
 # vectors velocity scale, in mm/yr for 25% of the graph width (default is 0 for automatic)
 VECTORS_VELOCITY_SCALE|0
 VECTORS_ARROWSHAPE|.15,.15,.12,.03
-VECTORS_TARGET_INCLUDED|Y
 # amplitude vs distance plot: used components to compute the amplitude (1,2 = horizontal only)
 VECTORS_AMPLITUDE_COMPONENTS|1,2
 
@@ -201,6 +239,8 @@ MOTION_INCLUDED_NODELIST|
 MOTION_MAFILTER|10
 MOTION_SCALE_MM|0
 MOTION_MIN_SIZE_KM|10
+# map XY limits as lon0,lat0,width (in degrees). Will overwrite automatic limits and associated options
+MOTION_MAP_XYLIM|
 MOTION_COLORMAP|spectral(256)
 MOTION_DEM_OPT|'saturation',0,'watermark',2,'interp'
 MOTION_TITLE|{\fontsize{14}{\bf${NAME} - Motion} ($timescale)}
@@ -234,13 +274,15 @@ MODELLING_HORIZONTAL_ONLY|N
 MODELLING_ENU_ERROR_RATIO|1,1,2
 # recomputes relative velocities before modelling (instead of vectors results)
 MODELLING_FORCE_RELATIVE|N
-# model space depth (upper limit automaticaly adjusted to topography)
-MODELLING_MAX_DEPTH|8000
+# model space XY limits as lon0,lat0,width (in degrees). Will overwrite automatic limits
+MODELLING_MAP_XYLIM|
 # model space additional borders in meter (from stations rectangle boundaries)
 MODELLING_BORDERS|5000
+# model space depth (upper limit automaticaly adjusted to topography)
+MODELLING_MAX_DEPTH|8000
 # model space width (warning: will be cubed, so 100 is already 1 million points!)
 MODELLING_GRID_SIZE|50
-# modelling source: 'isotropic' (formerly 'mogi'), 'pcdm' (point Compound Dislocation Model), or 'okada' (fault slip)
+# modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
 MODELLING_SOURCE_TYPE|isotropic
 # sets 2 to model the residuals with a secondary source (EXPERIMENTAL)
 MODELLING_MULTIPLE_SOURCES|1
@@ -273,6 +315,10 @@ MODELLING_TOPO_RGB|.5,.5,.5
 MODELLING_COLORREF|volpdf
 MODELLING_COLORMAP|ryb(256)
 MODELLING_COLOR_SHADING|0.3
+# arrow parameters (see arrowshape.m) for displacement arrows (data, model, and residual)
+MODELLING_DATA_ARROWSHAPE|.2,.2,.15,.05
+MODELLING_MODEL_ARROWSHAPE|.1,.1,.08,.02
+MODELLING_RESIDUAL_ARROWSHAPE|.1,.1,.08,.02
 # colors for displacement arrows (data, model, and residual) in R,G,B or color name
 MODELLING_DATA_COLOR|0,0,0       # data arrows
 MODELLING_MODEL_COLOR|.7,0,0     # model arrows
@@ -323,46 +369,6 @@ MODELLING_PCDM_NEW_LIMIT_EDGE_RATIO|20
 MODELLING_PCDM_NEW_LIMIT_EXTEND|1
 # option to export supplementary graphs (intermediate results per iteration)
 MODELLING_PCDM_SUPPLEMENTARY_GRAPHS|N
-
-# --- specific Okada parameters for MODELLING (see okada85.m)
-# number of iterations (adjusting the parameter's limits at each step)
-MODELLING_OKADA_ITERATIONS|5
-# number of random samples per iteration: scalar or list for each iteration
-MODELLING_OKADA_RANDOM_SAMPLING|100000
-# elastic parameter (Poisson's ratio) nu
-MODELLING_OKADA_NU|0.25
-# strike parameter limits: fault trace direction (degrees relative to North), defined so that the fault dips to the right side of the trace
-MODELLING_OKADA_STRIKE|0,180
-# dip parameter limits: angle between the fault and a horizontal plane (in degree)
-MODELLING_OKADA_DIP|30,90
-# length parameter limits: fault length in the STRIKE direction (in meter)
-MODELLING_OKADA_LENGTH|10,100000
-# width parameter limits: fault width in the DIP direction (in meter)
-MODELLING_OKADA_WIDTH|1,20000
-# rake parameter limits: direction the hanging wall moves during rupture (in degree)
-MODELLING_OKADA_RAKE|-90,90
-# slip parameter limits: dislocation in RAKE direction (in meter)
-MODELLING_OKADA_SLIP|0,15
-# open parameter limits: dislocation in tensile component (in meter)
-MODELLING_OKADA_OPEN|0,0
-# minimum length/width ratio
-MODELLING_OKADA_MIN_L2W_RATIO|1
-# number of bins for probability vs parameter map (heatmap)
-MODELLING_OKADA_HEATMAP_GRID|50
-# graphical parameter for heatmaps
-MODELLING_OKADA_HEATMAP_SATURATION|0.4
-# number of bins used to smooth the maximum probability curve
-MODELLING_OKADA_HEATMAP_SMOOTH_SPAN|5
-# polynomial degree to smooth the maximum probability curve
-MODELLING_OKADA_HEATMAP_SMOOTH_DEGREE|1
-# minimum number of models to compute maximum probability curve
-MODELLING_OKADA_NEW_THRESHOLD|2
-# tolerance ratio to extend the edge limits
-MODELLING_OKADA_NEW_LIMIT_EDGE_RATIO|20
-# factor of extension (from the previous interval) when reaching an edge
-MODELLING_OKADA_NEW_LIMIT_EXTEND|1
-# option to export supplementary graphs (intermediate results per iteration)
-MODELLING_OKADA_SUPPLEMENTARY_GRAPHS|N
 
 # --- MODELTIME: defines the moving periods, minimum sampling, maximum models
 # [NOTE] MODELTIME uses most of MODELLING parameters

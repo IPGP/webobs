@@ -1,0 +1,100 @@
+#!/bin/bash
+# Makes webobs nodes from string or text file
+#   mkwonodes prefix code [ALIAS NAME TYPE LAT LON ALT START STOP FEATURES]
+#   use standard input to create one node per line.
+#   - prefix is a typically 3 or 4-letter code to make the node ID
+#     joining it to code
+#   - other arguments can be a string used for all nodes, or an integer 
+#     corresponding to the column number of input line, semicolon separated 
+#     value (see examples).
+#   - a line must contain at least the code to create the full node ID,
+#     i.e., prefixcode
+#   - other arguments are (empty string is allowed):
+#     ALIAS = short name of the node (can be same as CODE)
+#     NAME = full name of the node (use quotes if necessary)
+#     TYPE = short description of the node (use quotes if necessary)
+#     LAT = latitude (in degree)
+#     LON = longitude (in degree)
+#     ALT = altitude/elevation (in m)
+#     START = start date (YYYY-MM-DD)
+#     STOP = stop date (YYYY-MM-DD)
+#     FEATURES = comma separated list of features
+#
+#
+# Example 1. Create a single node:
+#
+#   echo "" | mkwonodes NET STA0 STAT "Example Station Zero" "instrument" 16.0 -61.3 300. 2001-01-01 2023-12-31
+#
+# will create NETSTA0/NETSTA0.cnf directory and configuration file.
+#
+#
+# Example 2. Create a list of nodes from the file nodes.csv containing 
+# semicolon separated columns for main fields:
+#       STA01;STAT1;Station One;2.0;48.1;101.;1999-01-01;2024-07-14
+#       STA02;STAT2;Station Two;2.0;48.2;102.;1999-01-01;NA
+#       STA03;STAT3;Station Three;2.0;48.3;103.;NA;2024-07-14
+#
+#   cat nodes.csv | mkwonodes NET 1 2 3 "type" 4 5 6 7 8 "feature1,feature2"
+#
+# will create the 3 nodes NETSTA01, NETSTA02, and NETSTA03 with directories and 
+# associated configuration files. 7 arguments are the column number of the
+# input file, type and feature list are applied to all nodes.
+#
+#
+# Author: François Beauducel <beauducel@ipgp.fr>
+# Created: 2023-12-24 in Saint-Pierre (Martinique, FWI)
+# Updated: 2025-02-14
+
+if [ $# -lt 1 ]; then
+    echo "Syntax: mkwonodes prefix code [ALIAS NAME TYPE LAT LON ALT START STOP FEATURES]"
+    exit
+fi
+prefix=$1
+cCODE=$2
+cALIAS=$3
+cNAME=$4
+cTYPE=$5
+cLAT=$6
+cLON=$7
+cALT=$8
+cSTART=$9
+cSTOP=${10}
+cFEAT=${11}
+
+while read -r line; do
+    for v in CODE ALIAS NAME TYPE LAT LON ALT START STOP FEAT; do
+        eval 'vv=$c'$v
+        if [ -n "$vv" ]; then
+            # if variable is an integer, search for column from stdin, otherwise use the string
+            if [ "$vv" -eq "$vv" ] 2>/dev/null; then
+                declare "$v=$(echo $line | cut -d ';' -f$vv)"
+            else
+                declare "$v=$vv"
+            fi
+        fi
+    done
+    CODE=$(echo $CODE | sed -E 's/[ .-]|°//g')
+    ALIAS=$(echo $ALIAS | iconv -c -f UTF-8 -t ISO-8859-1)
+    NAME=$(echo $NAME | iconv -c -f UTF-8 -t ISO-8859-1)
+    TYPE=$(echo $TYPE | iconv -c -f UTF-8 -t ISO-8859-1)
+    id="$prefix$CODE"
+    if [ -n "$ALIAS" ]; then
+        mkdir -p $id
+        cnf="$id/$id.cnf"
+        echo "=key|value" > $cnf
+        echo "NAME|\"$NAME\"" >> $cnf
+        echo "ALIAS|$ALIAS" >> $cnf
+        echo "TYPE|$TYPE" >> $cnf
+        echo "VALID|1" >> $cnf
+        echo "LAT_WGS84|$LAT" >> $cnf
+        echo "LON_WGS84|$LON" >> $cnf
+        echo "ALTITUDE|$ALT" >> $cnf
+        echo "POS_DATE|" >> $cnf
+        echo "POS_TYPE|" >> $cnf
+        echo "INSTALL_DATE|$START" >> $cnf
+        echo "END_DATE|$STOP" >> $cnf
+        echo "FILES_FEATURES|$FEAT" >> $cnf
+        echo "TRANSMISSION|" >> $cnf
+        echo "---> $cnf created."
+    fi
+done

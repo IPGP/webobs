@@ -36,16 +36,15 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %	    choffset: scalar defining the space between each channel subplots
 %	     zoompca: scalar defining the ratio of zoom if positive or PCA if negative.
 %	      movavr: number of samples to compute and plot a moving average
-%	trendmindays: minimum time interval (in days) of data limits to compute a trend.
-%	trendminperc: minimum time interval (in percent) of data limits to compute a trend.
 %	 yscalevalue: fixes the Y-scale (value in data unit)
 %	  yscaleunit: name of the scale unit (default is 'cm')
 %	  yscalefact: factor of the scale unit (default is 100)
+%	     TREND_*: several parameters passed to treatsignal function to compute trend.
 %
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 203-07-21
+%	Updated: 2025-03-11
 
 linestyle = field2str(OPT,'linestyle','-');
 fontsize = field2num(OPT,'fontsize',8);
@@ -53,8 +52,6 @@ chnames = OPT.chnames;
 choffset = field2num(OPT,'choffset');
 zoompca = field2num(OPT,'zoompca');
 movavr = field2num(OPT,'movavr',1);
-trendmindays = field2num(OPT,'trendmindays');
-trendminperc = field2num(OPT,'trendminperc');
 yscalevalue = field2num(OPT,'yscalevalue');
 yscaleunit = field2str(OPT,'yscaleunit','cm');
 yscalefact = field2num(OPT,'yscalefact',100);
@@ -119,14 +116,11 @@ for ii = 0:(tzoom+(zoompca<0))
 					plotorbit(X(n).t,mavr(d(:,1),10),X(n).w,'-',G.LINEWIDTH,G.MARKERSIZE/2,scolor(2));
 				end
 				kk = find(~isnan(d(:,1)));
-				if ii == 0 && X(n).trd && length(kk) >= 2 && diff(minmax(X(n).t(kk))) >= trendmindays && 100*diff(minmax(X(n).t(kk))) >= trendminperc
-					if size(d,2) > 1 && all(d(kk,2)~=0)
-						lr = wls(X(n).t(kk)-tlim(1),d(kk,1),1./d(kk,2).^2);
-					else
-						lr = wls(X(n).t(kk)-tlim(1),d(kk,1),ones(size(d(kk,1))));
-					end
-					lre(i,:) = [lr(1),std(d(kk,1) - polyval(lr,X(n).t(kk)-tlim(1)))/diff(tlim)]*365.25*1e3;
-					plot(tlim,polyval(lr,tlim - tlim(1)),'--k','LineWidth',.2)
+				if ii == 0 && X(n).trd && length(kk) >= 2
+                    [~,~,lr,lre(i,:),klr] = treatsignal(X(n).t(kk),d(kk,1),d(kk,2),1,OPT);
+					plot(tlim,polyval(lr,tlim - X(n).t(kk(1))),':','Color',.5*[1,1,1],'MarkerSize',1)
+					timeplot(X(n).t(klr),polyval(lr,X(n).t(klr) - X(n).t(kk(1))),[], ...
+                        'LineStyle',':','Color','k','MarkerSize',2) % intervals used for linear trend calculation
 				end
 			end
 		end
@@ -145,7 +139,13 @@ for ii = 0:(tzoom+(zoompca<0))
 	datetick2('x',G.DATESTR)
 	% y-labels
 	for i = 1:nx
-		text(tlim(1),cmpoffset(i),[split(chnames{i},' '),' '],'FontSize',fontsize*1.25,'FontWeight','bold', ...
+        yyl = cmpoffset(i)+gmin(i);
+        if i == 1
+            yyl = yyl - gmin(i)/2;
+        else
+            yyl = yyl - (yyl - cmpoffset(i-1) - gmin(i-1))/2;
+        end
+		text(tlim(1),yyl,[split(chnames{i},' '),' '],'FontSize',fontsize*1.25,'FontWeight','bold', ...
 			'HorizontalAlignment','center','VerticalAlignment','bottom','Rotation',90);
 	end
 	% y-scale
@@ -175,9 +175,9 @@ for ii = 0:(tzoom+(zoompca<0))
 
 	if ii==0
 		% node aliases (not empty elements only)
-		ka = find(~cellfun(@isempty,{X.nam}));
+		ka = find(~cellfun(@isempty,{X.t}));
 		nl = length(ka);
-		fs = fontsize*max(min(50/length(strjoin({X.nam})),1),0.5);
+		fs = fontsize*max(min(50/length(strjoin({X(ka).nam})),1),0.5);
 		for n = 1:nl
 			text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),X(ka(n)).nam,'Color',X(ka(n)).rgb, ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',fs,'FontWeight','bold')

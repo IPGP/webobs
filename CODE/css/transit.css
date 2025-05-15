@@ -1,5 +1,9 @@
-svg {background-color: #DDDDDD;}
+svg {
+    background-color: #dddddd;
+}
 
-svg title, svg text {font-family: sans; font-size: 8 }
-
-
+svg title,
+svg text {
+    font-family: monospace;
+    font-size: 8;
+}

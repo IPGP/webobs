@@ -1,30 +1,29 @@
 function DOUT = waters(varargin)
-%WATERS  WebObs SuperPROC: Updates graphs/exports of 'EAUX' FORM database.
+%WATERS  WebObs SuperPROC: Updates graphs/exports of 'WATERS' FORM database.
 %
-%       WATERS(PROC) makes default outputs of PROC.
+%   WATERS(PROC) makes default outputs of PROC.
 %
-%       WATERS(PROC,TSCALE) updates all or a selection of TIMESCALES graphs:
-%           TSCALE = '%' : all timescales defined by PROC.conf (default)
-%           TSCALE = '01y' or '30d,10y,'all' : only specified timescales
-%           (keywords must be in TIMESCALELIST of PROC.conf)
+%   WATERS(PROC,TSCALE) updates all or a selection of TIMESCALES graphs:
+%       TSCALE = '%' : all timescales defined by PROC.conf (default)
+%       TSCALE = '01y' or '30d,10y,'all' : only specified timescales
+%       (keywords must be in TIMESCALELIST of PROC.conf)
 %
-%       WATERS(PROC,[],REQ) makes graphs/exports for specific request directory REQ.
-%       REQ must contain REQUEST.rc file with dedicated parameters.
+%   WATERS(PROC,[],REQ) makes graphs/exports for specific request directory REQ.
+%   REQ must contain REQUEST.rc file with dedicated parameters.
 %
-%       D = WATERS(PROC,...) returns a structure Dcontaining all the PROC data:
-%           D(i).id = node ID
-%           D(i).t = time vector (for node i)
-%           D(i).d = matrix of processed data (NaN = invalid data)
+%   D = WATERS(PROC,...) returns a structure Dcontaining all the PROC data:
+%       D(i).id = node ID
+%       D(i).t = time vector (for node i)
+%       D(i).d = matrix of processed data (NaN = invalid data)
 %
-%	WATERS ignores any calibration file of associated NODEs. Channels are defined
-%	by the FORM "EAUX" and associated configuration files. See readfmtdata_wodbform.m for
-%	further information.
+%   This superproc is specificaly adapted to data from the FORM.WATERS genform
+%   when using the PROC.WATERS template, but data from other source might be used.
 %
-%	**WARNING** this file must be iso-8859 (unicode) encoded and NOT utf-8
+%   See CODE/tplates/PROC.WATERS for specific paramaters of this superproc.
 %
 %	Authors: F. Beauducel + G. Hammouya + J.C. Komorowski + C. Dessert + O. Crispi, OVSG-IPGP
 %	Created: 2001-12-21, in Guadeloupe (French West Indies)
-%	Updated: 2024-01-04
+%	Updated: 2025-05-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -55,15 +54,15 @@ end
 % --- index of columns in matrix d
 %   1 = type of site
 i_ty = 1;
-%   2 = temperature of air (°C)
+%   2 = temperature of air (ï¿½C)
 i_ta = 2;
-%   3 = temperature of water (°C)
+%   3 = temperature of water (ï¿½C)
 i_ts = 3;
 %   4 = pH
 i_ph = 4;
 %   5 = flux (l/mn)
 i_db = 5;
-%   6 = conductivity (µS)
+%   6 = conductivity (ï¿½S)
 i_cd = 6;
 %   7 = level (m)
 i_nv = 7;
@@ -86,7 +85,7 @@ i_i = 19;
 %   23 = ratio Cl-/SO4-- (computed)
 %   24 = ratio HCO3-/SO4-- (computed)
 %   25 = ratio Mg++/Cl- (computed)
-%   26 = conductivity at 25°C
+%   26 = conductivity at 25ï¿½C
 %   27 = ion budget (NICB)
 i_bi = 27;
 
@@ -113,11 +112,11 @@ for n = 1:length(N)
 
 		if d(ke,i_db) == 0, sdb = 'TARIE'; else sdb = sprintf('%1.1f l/mn',d(ke,i_db)); end
 		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ), ...
-			sprintf('Twater = {\\bf%1.1f °C}',d(ke,i_ts)), ...
-			sprintf('Tair = {\\bf%1.1f °C}',d(ke,i_ta)), ...
+			sprintf('Twater = {\\bf%1.1f ï¿½C}',d(ke,i_ts)), ...
+			sprintf('Tair = {\\bf%1.1f ï¿½C}',d(ke,i_ta)), ...
 			sprintf('pH = {\\bf%1.2f}',d(ke,i_ph)), ...
-			sprintf('Cond. = {\\bf%1.1f µS}',d(ke,i_cd)), ...
-			sprintf('Cond_{25} = {\\bf%1.1f µS}',d(ke,25)), ...
+			sprintf('Cond. = {\\bf%1.1f ï¿½S}',d(ke,i_cd)), ...
+			sprintf('Cond_{25} = {\\bf%1.1f ï¿½S}',d(ke,25)), ...
 			sprintf('Flux = {\\bf%s}',sdb), ...
 			sprintf('Ion analysis ({\\bfmmol/l}) :'), ...
 			sprintf('Na^+ = {\\bf%1.1f}',d(ke,i_na)), ...
@@ -143,7 +142,7 @@ for n = 1:length(N)
 		set(gca,'XLim',tlim,'FontSize',8)
 		legend('Air','Location','SouthWest')
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Temperatures (°C)')
+		ylabel('Temperatures (ï¿½C)')
 
 		% Legend for site types
 		pos = get(gca,'position');
@@ -225,7 +224,7 @@ for n = 1:length(N)
 			legend([h1(1),h2(1)],'Cond.','Cond_{25}','Location','SouthWest')
 		end
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cond. & Cond_{25} (µS)')
+		ylabel('Cond. & Cond_{25} (ï¿½S)')
 
 		tlabel(tlim,P.TZ)
 
@@ -305,7 +304,7 @@ if isfield(P,'SUMMARYLIST')
 		hold off, box on
 		set(gca,'XLim',tlim,'FontSize',8)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Temperatures (°C)'))
+		ylabel(sprintf('Temperatures (ï¿½C)'))
 
 		% Legend for site types
 		pos = get(gca,'position');
@@ -349,7 +348,7 @@ if isfield(P,'SUMMARYLIST')
 		hold off, box on, extylim(ddmm)
 		set(gca,'YScale','linear','XLim',tlim,'FontSize',8)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cond. 25°C (µS)')
+		ylabel('Cond. 25ï¿½C (ï¿½S)')
 
 		% Ratio Cl-/SO4-
 		subplot(13,1,10:11), extaxes

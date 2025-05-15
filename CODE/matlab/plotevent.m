@@ -11,13 +11,13 @@ function varargout=plotevent(tz,evtfile,evt)
 %	
 %	PLOTEVENT(TZ,FILE,EVENTS) plots additionnal events from structure EVENTS.
 %
-%	FILE can be a list of coma separated files, e.g. 'events1.conf,events2.conf', in
+%	FILE can be a list of comma separated files, e.g. 'events1.conf,events2.conf', in
 %	that case all files are loaded and plotted together.
 %
 %
 %   Authors: F. Beauducel + D. Lafon + B. Taisne, WEBOBS/IPGP
 %   Created : 2004-07-21 (from ploterup.m)
-%   Updated : 2023-12-13
+%   Updated : 2024-06-13
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -53,7 +53,7 @@ if nargin > 1 & ~isempty(evtfile)
 				E(n).nam = data{5};
 				E(n).com = data{6};
 				E(n).out = false(size(data{1}));
-				fprintf('WEBOBS{%s}: %s imported...',wofun,f);
+				fprintf('%s: %s imported...',wofun,f);
 			end
 		end
 	end

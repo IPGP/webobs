@@ -1,0 +1,217 @@
+=key|value
+# Generic FORM template for use with {formGRID.pl,showGENFORM,formGENFORM}.pl
+# Model: fissurometer measurements (formerly FISSURO)
+#
+# ############################### WARNING #####################################
+# Once the database form has been created and the first data has been recorded,
+# you MUST BE VERY CAREFUL IN MODIFYING the keys of this file.
+# ############################### WARNING #####################################
+
+#
+# -----------------------------------------------------------------------------
+# --- GRID common parameters
+
+NAME|Fissurom&eacute;trie 3D
+DESCRIPTION|Banque de donn&eacute;es de fissurom&eacute;trie 3D manuelle (FR)
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|MyForm
+
+# --- node parameters (display and maps)
+NODE_NAME|site
+NODE_MARKER|^
+NODE_SIZE|10
+NODE_RGB|0,1,0
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
+BANG|$WEBOBS{BIG_BANG}
+
+# Time zone of the data (in hour from UT)
+TZ|0
+
+# if YES, use start and end date/time for each record
+STARTING_DATE|NO
+
+# may contain any +GID and/or UID list (comma separated)
+OPERATORS_LIST|+DUTY
+
+# if YES, use a quality check for each record
+QUALITY_CHECK|NO
+QUALITY_OPERATORS|+ADMIN
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
+
+# comment input field
+COMMENT_SIZE|80
+COMMENT_HELP|Enter any observations made during the measurements
+
+
+# ############################### WARNING #####################################
+# Once created, you cannot remove or rename any input since it will corrupt
+# the database. You might only add new inputs, increasing the index XX
+# ############################### WARNING #####################################
+# --- Inputs names, units, and types
+# valid types: text(size), numeric(size), list: filename, radio: filename
+INPUT01_NAME|T<sub>Air</sub>
+INPUT01_UNIT|&deg;C
+INPUT02_NAME|Météo
+INPUT02_TYPE|list: FORM_FISSURO_fr_list_meteo.conf
+INPUT02_FILT|YES
+INPUT03_NAME|Instrument
+INPUT03_TYPE|list: FORM_FISSURO_fr_list_type.conf
+INPUT03_FILT|YES
+INPUT04_NAME|Composante
+INPUT04_TYPE|list: FORM_FISSURO_fr_list_component.conf
+INPUT04_FILT|YES
+INPUT05_NAME|P<sub>1</sub>
+INPUT05_UNIT|mm
+INPUT06_NAME|L<sub>1</sub>
+INPUT06_UNIT|mm
+INPUT07_NAME|V<sub>1</sub>
+INPUT07_UNIT|mm
+INPUT08_NAME|P<sub>2</sub>
+INPUT08_UNIT|mm
+INPUT09_NAME|L<sub>2</sub>
+INPUT09_UNIT|mm
+INPUT10_NAME|V<sub>2</sub>
+INPUT10_UNIT|mm
+INPUT11_NAME|P<sub>3</sub>
+INPUT11_UNIT|mm
+INPUT12_NAME|L<sub>3</sub>
+INPUT12_UNIT|mm
+INPUT13_NAME|V<sub>3</sub>
+INPUT13_UNIT|mm
+INPUT14_NAME|P<sub>4</sub>
+INPUT14_UNIT|mm
+INPUT15_NAME|L<sub>4</sub>
+INPUT15_UNIT|mm
+INPUT16_NAME|V<sub>4</sub>
+INPUT16_UNIT|mm
+INPUT17_NAME|P<sub>5</sub>
+INPUT17_UNIT|mm
+INPUT18_NAME|L<sub>5</sub>
+INPUT18_UNIT|mm
+INPUT19_NAME|V<sub>5</sub>
+INPUT19_UNIT|mm
+INPUT20_NAME|P<sub>6</sub>
+INPUT20_UNIT|mm
+INPUT21_NAME|L<sub>6</sub>
+INPUT21_UNIT|mm
+INPUT22_NAME|V<sub>6</sub>
+INPUT22_UNIT|mm
+INPUT23_NAME|P<sub>7</sub>
+INPUT23_UNIT|mm
+INPUT24_NAME|L<sub>7</sub>
+INPUT24_UNIT|mm
+INPUT25_NAME|V<sub>7</sub>
+INPUT25_UNIT|mm
+INPUT26_NAME|P<sub>8</sub>
+INPUT26_UNIT|mm
+INPUT27_NAME|L<sub>8</sub>
+INPUT27_UNIT|mm
+INPUT28_NAME|V<sub>8</sub>
+INPUT28_UNIT|mm
+INPUT29_NAME|P<sub>9</sub>
+INPUT29_UNIT|mm
+INPUT30_NAME|L<sub>9</sub>
+INPUT30_UNIT|mm
+INPUT31_NAME|V<sub>9</sub>
+INPUT31_UNIT|mm
+INPUT32_NAME|P<sub>10</sub>
+INPUT32_UNIT|mm
+INPUT33_NAME|L<sub>10</sub>
+INPUT33_UNIT|mm
+INPUT34_NAME|V<sub>10</sub>
+INPUT34_UNIT|mm
+INPUT35_NAME|P<sub>11</sub>
+INPUT35_UNIT|mm
+INPUT36_NAME|L<sub>11</sub>
+INPUT36_UNIT|mm
+INPUT37_NAME|V<sub>11</sub>
+INPUT37_UNIT|mm
+INPUT38_NAME|P<sub>12</sub>
+INPUT38_UNIT|mm
+INPUT39_NAME|L<sub>12</sub>
+INPUT39_UNIT|mm
+INPUT40_NAME|V<sub>12</sub>
+INPUT40_UNIT|mm
+
+# --- Outputs names, units, and types
+# valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
+OUTPUT01_NAME|Perpendiculaire:
+OUTPUT01_TYPE|text
+OUTPUT02_NAME|Parall&egrave;le:
+OUTPUT02_TYPE|text
+OUTPUT03_NAME|Verticale:
+OUTPUT03_TYPE|text
+OUTPUT04_NAME|P<sub>mean</sub>
+OUTPUT04_UNIT|mm
+OUTPUT04_TYPE|formula(9): mean(INPUT05,INPUT08,INPUT11,INPUT14,INPUT17,INPUT20,INPUT23,INPUT26,INPUT29,INPUT32,INPUT35,INPUT38)
+OUTPUT04_HELP|Moyenne des mesures perpendiculaires
+OUTPUT05_NAME|L<sub>mean</sub>
+OUTPUT05_UNIT|mm
+OUTPUT05_TYPE|formula(9): mean(INPUT06,INPUT09,INPUT12,INPUT15,INPUT18,INPUT21,INPUT24,INPUT27,INPUT30,INPUT33,INPUT36,INPUT39)
+OUTPUT05_HELP|Moyenne des mesures parall&egrave;les
+OUTPUT06_NAME|V<sub>mean</sub>
+OUTPUT06_UNIT|mm
+OUTPUT06_TYPE|formula(9): mean(INPUT07,INPUT10,INPUT13,INPUT16,INPUT19,INPUT22,INPUT25,INPUT28,INPUT31,INPUT34,INPUT37,INPUT40)
+OUTPUT06_HELP|Moyenne des mesures verticales
+OUTPUT06_HELP|2 * standard-deviation
+OUTPUT07_NAME|P<sub>std</sub>
+OUTPUT07_UNIT|mm
+OUTPUT07_TYPE|formula(9): 2*std(INPUT05,INPUT08,INPUT11,INPUT14,INPUT17,INPUT20,INPUT23,INPUT26,INPUT29,INPUT32,INPUT35,INPUT38)
+OUTPUT07_THRESHOLD|1,2
+OUTPUT07_HELP|2 * &eacute;cart-type des mesures perpendiculaires
+OUTPUT08_NAME|L<sub>std</sub>
+OUTPUT08_UNIT|mm
+OUTPUT08_TYPE|formula(9): 2*std(INPUT06,INPUT09,INPUT12,INPUT15,INPUT18,INPUT21,INPUT24,INPUT27,INPUT30,INPUT33,INPUT36,INPUT39)
+OUTPUT08_THRESHOLD|1,2
+OUTPUT08_HELP|2 * &eacute;cart-type des mesures parall&egrave;les
+OUTPUT09_NAME|V<sub>std</sub>
+OUTPUT09_UNIT|mm
+OUTPUT09_TYPE|formula(9): 2*std(INPUT07,INPUT10,INPUT13,INPUT16,INPUT19,INPUT22,INPUT25,INPUT28,INPUT31,INPUT34,INPUT37,INPUT40)
+OUTPUT09_THRESHOLD|1,2
+OUTPUT09_HELP|2 * &eacute;cart-type des mesures verticales
+
+# --- Form layout
+
+# note: first column starts with the mandatory date/site/operator fieldset
+COLUMN01_LIST|FIELDSET01
+COLUMN02_LIST|FIELDSET02
+
+# first fieldset name, number of cells and list of fields for each column
+FIELDSET01_NAME|Mesures sur site
+FIELDSET01_CELLS|1,COLS
+FIELDSET01_C01|INPUT01,INPUT02,INPUT03,INPUT04
+
+# second fieldset with 2 columns
+FIELDSET02_NAME|Mesures 3D
+FIELDSET02_CELLS|3,COLS
+FIELDSET02_C01|OUTPUT01,INPUT05,INPUT08,INPUT11,INPUT14,INPUT17,INPUT20,INPUT23,INPUT26,INPUT29,INPUT32,INPUT35,INPUT38,OUTPUT04,OUTPUT07
+FIELDSET02_C02|OUTPUT02,INPUT06,INPUT09,INPUT12,INPUT15,INPUT18,INPUT21,INPUT24,INPUT27,INPUT30,INPUT33,INPUT36,INPUT39,OUTPUT05,OUTPUT08
+FIELDSET02_C03|OUTPUT03,INPUT07,INPUT10,INPUT13,INPUT16,INPUT19,INPUT22,INPUT25,INPUT28,INPUT31,INPUT34,INPUT37,INPUT40,OUTPUT06,OUTPUT09
+
+# ############################### WARNING #####################################
+# Export list of inputs/outputs must fit the associated procs channels.
+# ############################### WARNING #####################################
+# list of fields that will be exported to the associated procs as D.d (must be numeric)
+PROC_DATA_LIST|INPUT01,OUTPUT04,OUTPUT05,OUTPUT06
+# optional error list of fields exported as D.e (same as PROC_DATA_LIST size!)
+PROC_ERROR_LIST|,OUTPUT07,OUTPUT08,OUTPUT09
+# list of fields that will be exported to associated procs as D.c (cells)
+PROC_CELL_LIST|INPUT02,INPUT03,INPUT04

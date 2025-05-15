@@ -44,12 +44,10 @@ use Locale::TextDomain('webobs');
 set_message(\&webobs_cgi_msg);
 my $cgi = new CGI;
 
-
 ##---- Script functions
 
-
 sub print_head {
-  print <<__EOD__;
+    print <<__EOD__;
 Content-type: text/html
 
 <!DOCTYPE html>
@@ -100,23 +98,22 @@ Content-type: text/html
 __EOD__
 }
 
-
 sub print_foot {
-  print <<__EOD__;
+    print <<__EOD__;
 </BODY>
 </HTML>
 __EOD__
 }
 
-
 sub print_form {
-  my $submit_url = $cgi->url();
-  my $min_length_msg = "";
+    my $submit_url = $cgi->url();
+    my $min_length_msg = "";
     if ($WEBOBS{'HTPASSWORD_MIN_LENGTH'}) {
-    $min_length_msg = sprintf($__{'Note: your password must be at least %s characters long.'},
-      $WEBOBS{'HTPASSWORD_MIN_LENGTH'});
-  }
-  print <<__EOD__;
+        $min_length_msg = sprintf($__{'Note: your password must be at least %s characters long.<br>
+            Accepted special characters are: <b>-!?=_#%@/()_=&*+,.:;^{}~$</b>'},
+            $WEBOBS{'HTPASSWORD_MIN_LENGTH'});
+    }
+    print <<__EOD__;
   <h2>$__{'Change your WebObs password'}</h2>
   <p>
   $__{'Please fill in the form below to update your WebObs password.'}
@@ -170,11 +167,10 @@ sub print_form {
 __EOD__
 }
 
-
 sub print_alert {
     my $alert_class = shift;
-  my $msg = join(" ", @_);
-  print <<__EOD__;
+    my $msg = join(" ", @_);
+    print <<__EOD__;
   <p class="$alert_class">
     $msg
   </p>
@@ -182,90 +178,94 @@ __EOD__
 }
 
 sub print_success {
-  return print_alert("alert-success", @_);
+    return print_alert("alert-success", @_);
 }
 
 sub print_error {
-  return print_alert("alert-error", @_);
+    return print_alert("alert-error", @_);
 }
 
 sub print_secondary {
-  return print_alert("alert-secondary", @_);
+    return print_alert("alert-secondary", @_);
 }
-
 
 ##---- Main script
 # ends here if the client is not valid
 if ( !clientIsValid ) {
-  die "$__{'die_client_not_valid'}";
+    die "$__{'die_client_not_valid'}";
 }
- 
+
 my $current_password = $cgi->param('current_password') // "";
 my $new_password  = $cgi->param('new_password')        // "";
 my $new_password2 = $cgi->param('new_password2')       // "";
 
-
 # If ALLOW_HTPASSWORD_CHANGE is not set to true in WEBOBS.rc,
 # we won't allow users to change their password.
 if (!isok($WEBOBS{'ALLOW_HTPASSWORD_CHANGE'})) {
-  print_head();
-  print("<h2>$__{'Password change disabled'}</h2>\n");
-  print_secondary($__{'Sorry, password change is disabled on this platform. Please contact your administrator.'});
-  print_foot();
-  exit(0);
+    print_head();
+    print("<h2>$__{'Password change disabled'}</h2>\n");
+    print_secondary($__{'Sorry, password change is disabled on this platform. Please contact your administrator.'});
+    print_foot();
+    exit(0);
 }
 
 # Special case for user 'guest' that is forbidden to change its password
 if ($CLIENT eq "guest") {
-  print_head();
-  print("<h2>$__{'Password change forbidden'}</h2>\n");
-  print_secondary($__{"Sorry, the special user 'guest' cannot change his password."});
-  print_foot();
-  exit(0);
+    print_head();
+    print("<h2>$__{'Password change forbidden'}</h2>\n");
+    print_secondary($__{"Sorry, the special user 'guest' cannot change his password."});
+    print_foot();
+    exit(0);
 }
-
 
 # Print first part of the page
 print_head();
 
-if (not ($current_password and $new_password and $new_password2)) {
-  # No argument provided: simply print the form
-  print_form();
+if (not ($new_password and $new_password2)) {
+
+    # No argument provided: simply print the form
+    print_form();
 
 } elsif ($new_password ne $new_password2) {
+
     # The two version of the new password differ
-  print_error($__{'Sorry, your new password does not match the second entry.'},
+    print_error($__{'Sorry, your new password does not match the second entry.'},
         $__{'Please try again below.'});
-  print_form()
+    print_form()
 
 } elsif (length($new_password) < $WEBOBS{'HTPASSWORD_MIN_LENGTH'}) {
-  # Password length too short
-  print_error($__{'Sorry'},
-    sprintf($__{'your password must be at least %s characters long'}.".",
-        $WEBOBS{'HTPASSWORD_MIN_LENGTH'}));
-  print_form()
+
+    # Password length too short
+    print_error($__{'Sorry'},
+        sprintf($__{'your password must be at least %s characters long'}.".",
+            $WEBOBS{'HTPASSWORD_MIN_LENGTH'}));
+    print_form()
 
 } else {
+
     # $current_password, $new_password, and $new_password2 are provided
     # and $new_password equals $new_password2.
 
-  if (htpasswd_verify($CLIENT, $current_password) != 0) {
-    # The current password could not be verified
-    print_error($__{'Sorry, your current password is incorrect.'},
-          $__{'Please try again below.'});
-    print_form()
+    if (htpasswd_verify($CLIENT, $current_password) != 0) {
 
-  } elsif (htpasswd_update($CLIENT, $new_password) != 0) {
-    # The update returned an error
-    print_error($__{'Sorry, an error occured. Your password could not be updated.'});
+        # The current password could not be verified
+        print_error($__{'Sorry, your current password is incorrect.'},
+            $__{'Please try again below.'});
+        print_form()
 
-  } else {
-      # The password was changed
-    print "<h2>$__{'Password updated'}</h2>\n";
-    print_success($__{'Your password has been successfully updated!'});
-    print "<p>".$__{'You will be asked for your new password on'}
-        ." <a href=\"/cgi-bin/Welcome.pl\">".$__{'the next requested page'}."</a>.</p>\n";
-  }
+    } elsif (htpasswd_update($CLIENT, $new_password) != 0) {
+
+        # The update returned an error
+        print_error($__{'Sorry, an error occured. Your password could not be updated.'});
+
+    } else {
+
+        # The password was changed
+        print "<h2>$__{'Password updated'}</h2>\n";
+        print_success($__{'Your password has been successfully updated!'});
+        print "<p>".$__{'You will be asked for your new password on'}
+          ." <a href=\"/cgi-bin/Welcome.pl\">".$__{'the next requested page'}."</a>.</p>\n";
+    }
 }
 
 # Print last part of the page

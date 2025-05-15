@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2023-01-13
+%   Updated: 2025-04-07
 
 
 WO = readcfg;
@@ -62,6 +62,9 @@ if nargin > 1 && exist([outd '/REQUEST.rc'],'file')
 	if isfield(P,'PROC')
 		grids = [grids;strcat('PROC.',fieldnames(P.PROC))];
 	end
+	if isfield(P,'FORM')
+		grids = [grids;strcat('FORM.',fieldnames(P.PROC))];
+	end
 	merge = 1;
 	request = 1;
 else
@@ -74,12 +77,18 @@ end
 % loads transmission information
 trans = isok(P,'PLOT_TRANSMISSION');
 
-% gets all VIEWS and PROCS looks inside the GRIDS directories avoiding . .. and non-directory files
+% gets all VIEWS, PROCS, and FORMS looks inside the GRIDS directories avoiding . .. and non-directory files
 if ~request && (nargin < 1 || isempty(grids))
 	VIEWS = dir(sprintf('%s/*',WO.PATH_VIEWS));
 	PROCS = dir(sprintf('%s/*',WO.PATH_PROCS));
-	grids = [strcat('VIEW.',{VIEWS(~strncmp({VIEWS.name},{'.'},1) & cat(2,VIEWS.isdir)).name}), ...
-		 strcat('PROC.',{PROCS(~strncmp({PROCS.name},{'.'},1) & cat(2,PROCS.isdir)).name})];
+	FORMS = dir(sprintf('%s/*',WO.PATH_FORMS));
+    vl = {VIEWS(~strncmp({VIEWS.name},{'.'},1) & cat(2,VIEWS.isdir)).name};
+    pl = {PROCS(~strncmp({PROCS.name},{'.'},1) & cat(2,PROCS.isdir)).name};
+    fl = {FORMS(~strncmp({FORMS.name},{'.'},1) & cat(2,FORMS.isdir)).name};
+    grids = {};
+    if ~isempty(vl), grids = [grids,strcat('VIEW.',vl)]; end
+    if ~isempty(pl), grids = [grids,strcat('PROC.',pl)]; end
+    if ~isempty(fl), grids = [grids,strcat('FORM.',fl)]; end
 else
 	if ~iscell(grids)
 		grids = cellstr(grids);
@@ -146,7 +155,7 @@ demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz, ...
 for g = 1:length(grids)
 	s = split(grids{g},'/.');
 	if length(s) < 2
-		error('Must use the full grid name PROC.NAME or VIEW.NAME');
+		error('%s: ** WARNING ** Invalid grid "%s": must use the full grid name GridType.GridName',wofun,grids{g});
 	end
 	GRIDS.(s{1}).(s{2}) = readcfg(WO,sprintf('/etc/webobs.d/%sS/%s/%s.conf',s{1},s{2},s{2}));
 	% Loads all existing and valid NODES (declared at least in one VIEW)
@@ -211,21 +220,23 @@ for g = 1:length(grids)
 
 	% looks for supplementary maps (MAP*_XYLIM|LON1,LON2,LAT1,LAT2 keys)
 	if merge
-		maps(1,:) = {'MAP',mmaplim};
+		maps = {'MAP',mmaplim};
 	else
 		fd = fieldnames(G);
 		k = find(~cellfun(@isempty,regexp(fd,'^MAP\d+_XYLIM$')));
-		maps = cell(1 + length(k),2);
-		maps(1,:) = {'MAP',[]};
+		maps = {'MAP',[]};
 		for ii = 1:length(k)
 			x = split(fd{k(ii)},'_');
-			maps{ii+1,1} = x{1};
-			maps{ii+1,2} = sstr2num(G.(fd{k(ii)}));
-			if numel(maps{ii+1,2}) == 3
-				maps{ii+1,2} = xyw2lim(maps{ii+1,2},1/cosd(maps{ii+1,2}(2)));
-			end
-			if numel(maps{ii+1,2}) ~= 4
-				error('%s: %s key must contain 3 or 4 elements: (LON,LAT,WIDTH) or (LON1,LON2,LAT1,LAT2). Abort.',wofun,fd{k});
+			v = G.(fd{k(ii)});
+			if ~isempty(v)
+				maps{ii+1,1} = x{1};
+				maps{ii+1,2} = sstr2num(v);
+				if numel(maps{ii+1,2}) == 3
+					maps{ii+1,2} = xyw2lim(maps{ii+1,2},1/cosd(maps{ii+1,2}(2)));
+				end
+				if numel(maps{ii+1,2}) ~= 4
+					error('%s: %s key must contain 3 or 4 elements: (LON,LAT,WIDTH) or (LON1,LON2,LAT1,LAT2). Abort.',wofun,fd{k});
+				end
 			end
 		end
 	end
@@ -338,17 +349,18 @@ for g = 1:length(grids)
 				end
 			end
 
+			% plots inactive nodes first
+			k0m = [];
+			if ~isempty(k0)
+				k0m = k0(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
+				target(geo(k0m,2),geo(k0m,1),nodesize,nodecolor,nodetype,2)
+			end
+
 			% plots active nodes
 			kam = [];
 			if ~isempty(ka)
 				kam = ka(isinto(geo(ka,2),dlon) & isinto(geo(ka,1),dlat));
 				target(geo(kam,2),geo(kam,1),nodesize,nodecolor,nodetype)
-			end
-			% plots inactive nodes
-			k0m = [];
-			if ~isempty(k0)
-				k0m = k0(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
-				target(geo(k0m,2),geo(k0m,1),nodesize,nodecolor,nodetype,2)
 			end
 
 			% writes node names for current map but excluded other maps
@@ -446,9 +458,6 @@ for g = 1:length(grids)
 							fprintf(fid,'<AREA href="%s" title="%s" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						else
 							txt = regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
-							try
-								txt = unicode2native(txt,'UTF-8');
-							end
 							txt = regexprep(char(txt),'''','\\''');
 							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						end

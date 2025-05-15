@@ -3,8 +3,12 @@
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/meteo.m for data format and further information.
 
 
-# long name of the PROC
-NAME|Meteorological time series
+# name of the PROC
+NAME|Meteorology
+
+# description of what the proc does
+DESCRIPTION|Time series from meteorological station
+
 RAWDATA|$WEBOBS{ROOT_RAWD}/campbell
 RAWFORMAT|cr10xasc
 
@@ -31,7 +35,7 @@ TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} meteo $SELFREF -
-SUBMIT_RESOURCE|mymeteo
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME

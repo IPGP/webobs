@@ -1,7 +1,7 @@
 .\" Manpage for setup.
 .TH WebObs "10 Dec 2013" "1.1" "setup man page"
 .SH NAME
-setup \- setup WebObs. 
+setup \- setup WebObs.
 .SH SYNOPSIS
  # <WebObs-directory>/<WebObs-releasename>/SETUP/setup [OPTIONS] [|tee logfile4support-name]
 .SH OPTIONS
@@ -10,16 +10,16 @@ setup \- setup WebObs.
  -q, --quiet         be less verbose
  -h, --help          this help text
 .SH WEBOBS DIRECTORIES STRUCTURE
-root user must first create <\fBWebObs-directory\fP>, copy the \fBWebObs-releasename.tgz\fP to be installed and run  
+root user must first create <\fBWebObs-directory\fP>, copy the \fBWebObs-releasename.tgz\fP to be installed and run
 a 'tar \fBWebObs-releasename.tgz -xf\fP' command.
 
 Layout of the WebObs directory as created or updated/checked by \fBsetup\fP
 
  webobs-directory/
      WebObs-releasename/
-        CODE/
-        DOC/
-        SETUP/
+         CODE/
+         DOC/
+         SETUP/
      CODE -> WebObs-releasename/CODE
      DOC -> WebObs-releasename/DOC
      CONF/
@@ -36,31 +36,31 @@ You must have root privileges to run the setup script from within the <\fBWebObs
 on how to proceed with further customizations. It is thus intended to build a 'minimal/starter/default' WebObs environment.
 
 \fBsetup\fP will check wether you already have WebObs installed on your system and install or update WebObs accordingly
-(automatic selection of 'install' or 'create' mode). When in 'update' mode, existing Apache VHost configuration, DATA/ and CONF/ contents will 
+(automatic selection of 'install' or 'create' mode). When in 'update' mode, existing Apache VHost configuration, DATA/ and CONF/ contents will
 not be updated (preserving your own customizations since your previous WebObs install), but will be compared
 to what the new WebObs release would deliver in case of new WebObs install.
 
 \fBsetup\fP major steps:
 
-  1) discover your system in terms of architecture, distro and existing WebObs if any 
+  1) discover your system in terms of architecture, distro and existing WebObs if any
   2) check for basic software dependencies and recommend the corresponding installations; also check for
      Perl modules dependencies when possible
   3) determine/query WebObs-user and create it if necessary
-  4) update OR create the WebObs CONF/ directory. When updating, setup checks/reports 
+  4) update OR create the WebObs CONF/ directory. When updating, setup checks/reports
      on changes from previous installed release (reports in SETUP.CONF.README file).
- 	 When creating, use default CONF/ files and create relationnal DBs with user's 
- 	 pre-existing files contents when possible/requested: legacy operators.conf for USERS table,
- 	 legacy DISCIPLINES.conf for DOMAINS table
-  5) when installing, creates the Apache's authorization file (.htusers), importing 
+     When creating, use default CONF/ files and create relationnal DBs with user's
+     pre-existing files contents when possible/requested: legacy operators.conf for USERS table,
+     legacy DISCIPLINES.conf for DOMAINS table
+  5) when installing, creates the Apache's authorization file (.htusers), importing
      an existing one if requested by user.
   6) update or create the WebObs DATA/ directory. When updating, setup only
      checks/reports for WebObs default files present in new release but missing from
- 	 existing WebObs. When creating DATA/ is populated with default WebObs data (matching default CONF/)
+     existing WebObs. When creating DATA/ is populated with default WebObs data (matching default CONF/)
   7) WebObs LOGS/ and WWW/ directories creation if needed
   8) WebObs OUTG/ and OUTR/ directories creation (OUTG/ may contain default data)
-  9) Create (or re-define if user accepts) the Apache default configuration file: 
+  9) Create (or re-define if user accepts) the Apache default configuration file:
      basically a VirtualHost definition (vhost named 'webobs') with WebObs DocRoot, Aliases,
- 	 default logging, authorization checking (see .htusers above).
+     default logging, authorization checking (see .htusers above).
  10) When creating, best effort to create the 'non-DocumenRoot' structures (sefran and rawdata directories)
  11) Linux owners, groups and files attributes definitions (or reassessment if user permits)
 
@@ -72,7 +72,7 @@ You (as a system administrator) may want to review configurations to match your 
 \fBsetup\fP does NOT automatically start WebObs background processes (ie. the WebObs daemons: scheduler, postboard) NOR does it (re)start
 the WebObs Apache Virtual Host. You must run the corresponding commands to bring up a fully operationnal WebObs environment.
 
-The default Apache VirtualHost as defined by \fBsetup\fP (in install mode) has 'ServerName webobs' with no SSL definitions. 
+The default Apache VirtualHost as defined by \fBsetup\fP (in install mode) has 'ServerName webobs' with no SSL definitions.
 
 .SH AUTHOR
 Didier Lafon

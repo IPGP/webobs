@@ -40,17 +40,20 @@ function X=readcfg(varargin);
 %   		...
 %   	NOTE: the key field must be positive integers.
 %
+%   X=READCFG(...,'quiet') does not display log.
+%
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2022-11-26
+%   Updated: 2025-04-26
+
+quiet = any(strcmpi(varargin,'quiet'));
 
 if nargin > 0 && isstruct(varargin{1})
 	WO = varargin{1};
 	conf = varargin{2};
 else
 	% reads default WEBOBS.rc
-	fprintf('WEBOBS{%s}: ',mfilename);
 	WO = rfile;
 	if nargin > 0
 		conf = varargin{1};
@@ -62,7 +65,9 @@ end
 if nargin < 1
 	 X = WO;
 else
-	fprintf('WEBOBS{%s}: ',mfilename);
+    if ~quiet
+        fprintf('WEBOBS{%s}: ',mfilename);
+    end
 	if ~isempty(regexp(conf,'/'))
 		f = conf;
 	else
@@ -75,8 +80,12 @@ else
 		error('config file %s does not exist.',f);
 	end
 
+    if ~quiet
+        fprintf('%s ... ',f);
+    end
+
 	% --- 'keyarray' option: reads specific file and returns a key array
-	if nargin > 1 && any(strcmp(varargin,'keyarray'))
+	if nargin > 1 && any(strcmpi(varargin,'keyarray'))
 		Y = rfile(WO,f,1);
 		for n = fieldnames(Y)'
 			x = round(str2double(regexprep(n,'KEY','')));
@@ -86,12 +95,20 @@ else
 		end
 	% --- returns a key|value structure from file f
 	else
-		if nargin > 1 && any(strcmp(varargin,'novsub'))
-			X = rfile(WO,f,0,'nobsub');
+		if nargin > 1 && any(strcmpi(varargin,'novsub'))
+			X = rfile(WO,f,0,'novsub');
 		else
 			X = rfile(WO,f,0);
 		end
 	end
+
+    if ~quiet
+        if exist('X','var') && isempty(fieldnames(X))
+            fprintf('** WARNING ** file empty!\n');
+        else
+            fprintf('read.\n');
+        end
+    end
 end
 
 
@@ -115,9 +132,6 @@ else
 	novsub = true;
 end
 
-
-fprintf('%s ... ',f);
-
 % reads all the file content in a single string
 sraw = fileread(f);
 if ~isoctave
@@ -125,9 +139,12 @@ if ~isoctave
 	sraw = regexprep(sraw,'\\(\r\n|\n)\s*','');
 end
 
-s = textscan(sraw,'%s','CommentStyle','#','Delimiter','\n');
-
-df = [];
+X = struct;
+s{1} = [];
+df{1} = [];
+if ~isempty(sraw)
+	s = textscan(sraw,'%s','CommentStyle','#','Delimiter','\n');
+end
 
 for i = 1:size(s{:},1)
 	ss = s{1}{i};
@@ -204,7 +221,6 @@ if length(df{1}) <= 2 && mode==0
 	end
 end
 
-fprintf('read.\n');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

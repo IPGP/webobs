@@ -43,41 +43,43 @@ set_message(\&webobs_cgi_msg);
 my $gv;
 
 sub nodeURL {
-	if ( $_[0] ) {
-		if ( $_[0] =~ m/^\w+\.\w+\.\w+$/ ) { return "/cgi-bin/$NODES{CGI_SHOW}?node=$_[0]" }
-		if ( $_[0] =~ m/^\w+\.\w+$/ ) { return "/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$_[0]" }
-		if ( $_[0] =~ m/^\w+$/ ) {
-			my $tmp = normNode(node => "..$_[0]");
-			if ($tmp ne "") { return "/cgi-bin/$NODES{CGI_SHOW}?node=$tmp" }
-		}
-	}
-	return ""
+    if ( $_[0] ) {
+        if ( $_[0] =~ m/^\w+\.\w+\.\w+$/ ) { return "/cgi-bin/$NODES{CGI_SHOW}?node=$_[0]" }
+        if ( $_[0] =~ m/^\w+\.\w+$/ ) { return "/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$_[0]" }
+        if ( $_[0] =~ m/^\w+$/ ) {
+            my $tmp = normNode(node => "..$_[0]");
+            if ($tmp ne "") { return "/cgi-bin/$NODES{CGI_SHOW}?node=$tmp" }
+        }
+    }
+    return ""
 }
 
 # ---- helper: grow a tree (nodes, edges and clusters) from $rootname 
 #
 sub tree {
-	my ($rootname, $cluster, $ar, $clusterthru, $Nthru, $tc);
-	if (scalar(@_) == 3) { ($rootname, $cluster, $ar) = @_;}
-	if (scalar(@_) == 5) { ($rootname, $cluster, $ar, $clusterthru, $Nthru) = @_;}
-	my @array=@$ar;
-	$gv->add_node($rootname, style=>'filled', color=>'white');
-	for my $Nn (@array) {
-		my $tmp = nodeURL($Nn);
-		#$gv->add_node($Nn, style=>'filled', color=>'white', cluster=>$$cluster, URL => "$tmp");
-		$gv->add_node($Nn, cluster=>$$cluster, URL => "$tmp");
-		if (defined($clusterthru)) {
-			$tmp = nodeURL($Nthru);
-			#$gv->add_node($Nthru, style=>'filled', color=>'white', cluster=>$$clusterthru, URL => "$tmp");
-			$gv->add_node($Nthru, cluster=>$$clusterthru, URL => "$tmp");
-			$tc = $$clusterthru->{color};
-			$gv->add_edge("$rootname" => "$Nthru", dir => 'none',  color=>$tc);
-			$gv->add_edge("$Nthru" => "$Nn", dir => 'none', color=>$tc);
-		} else {
-			$tc = $$cluster->{color};
-			$gv->add_edge("$rootname" => "$Nn", dir => 'none', color=>$tc);
-		}
-	}
+    my ($rootname, $cluster, $ar, $clusterthru, $Nthru, $tc);
+    if (scalar(@_) == 3) { ($rootname, $cluster, $ar) = @_;}
+    if (scalar(@_) == 5) { ($rootname, $cluster, $ar, $clusterthru, $Nthru) = @_;}
+    my @array=@$ar;
+    $gv->add_node($rootname, style=>'filled', color=>'white');
+    for my $Nn (@array) {
+        my $tmp = nodeURL($Nn);
+
+#$gv->add_node($Nn, style=>'filled', color=>'white', cluster=>$$cluster, URL => "$tmp");
+        $gv->add_node($Nn, cluster=>$$cluster, URL => "$tmp");
+        if (defined($clusterthru)) {
+            $tmp = nodeURL($Nthru);
+
+#$gv->add_node($Nthru, style=>'filled', color=>'white', cluster=>$$clusterthru, URL => "$tmp");
+            $gv->add_node($Nthru, cluster=>$$clusterthru, URL => "$tmp");
+            $tc = $$clusterthru->{color};
+            $gv->add_edge("$rootname" => "$Nthru", dir => 'none',  color=>$tc);
+            $gv->add_edge("$Nthru" => "$Nn", dir => 'none', color=>$tc);
+        } else {
+            $tc = $$cluster->{color};
+            $gv->add_edge("$rootname" => "$Nn", dir => 'none', color=>$tc);
+        }
+    }
 }
 
 # ---- Main
@@ -92,48 +94,56 @@ my %NODE;
 my @tl; my @tl2;
 
 my $QryParm   = $cgi->Vars;
-my @GID = split(/[\.\/]/, trim($QryParm->{'grid'})); 
+my @GID = split(/[\.\/]/, trim($QryParm->{'grid'}));
 if (scalar(@GID) == 2) {
-	($GRIDType, $GRIDName) = @GID;
-	if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
-	elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
-	if (%G) {
-		%GRID = %{$G{$GRIDName}} ;
-		if ( ! WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
-			die "You cannot display $GRIDType.$GRIDName"
-		}
-	} else { die "Couldn't get $GRIDType.$GRIDName configuration." }
-} else { die "No valid GRID requested (NOT gridtype.gridname)." } 
+    ($GRIDType, $GRIDName) = @GID;
+    if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
+    elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+    elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
+    if (%G) {
+        %GRID = %{$G{$GRIDName}} ;
+        if ( ! WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
+            die "You cannot display $GRIDType.$GRIDName"
+        }
+    } else { die "Couldn't get $GRIDType.$GRIDName configuration." }
+} else { die "No valid GRID requested (NOT gridtype.gridname)." }
 
 # ---- fine, passed all checkings
 #
 
 # ---- clusters draw styles
 #
-my $cluster_node   = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#DDDDDD'};
+my $cluster_node   = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'darkgray'};
 my $cluster_trans  = {style=>'filled', fillcolor=>'#8888AA',  color=>'#8888AA'};
 my $cluster_2trans = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#8888AA'};
-my $cluster_isof   = {style=>'filled', fillcolor=>'#88CC88',  color=>'#88CC88'};
-my $cluster_2isof  = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#88CC88'};
+my $cluster_isof   = {style=>'filled', fillcolor=>'#AA8888',  color=>'#AA8888'};
+my $cluster_2isof  = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#AA8888'};
 my $cluster_has    = {style=>'filled', fillcolor=>'#AAAA88',  color=>'#AAAA88'};
 my $cluster_2has   = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#AAAA88'};
-my $cluster_procs  = {style=>'filled', fillcolor=>'#CC8888',  color=>'#CC8888'};
-my $cluster_views  = {style=>'filled', fillcolor=>'#CCBB88',  color=>'#CCBB88'};
+my $cluster_procs  = {style=>'filled', fillcolor=>'#C16E76',  color=>'firebrick'};
+my $cluster_views  = {style=>'filled', fillcolor=>'#559855',  color=>'darkgreen'};
+my $cluster_forms  = {style=>'filled', fillcolor=>'#FFB255',  color=>'darkorange'};
 
 my $legend  = "<table border=\"0\" style=\"border-collapse: separate; padding: 0 5px\">";
-   $legend .= "<tr><td style=\"background-color:$cluster_node->{'color'}\">$GRIDType.$GRIDName nodes</td>"; 
-   $legend .= "<td style=\"background-color:$cluster_trans->{'color'}\">transmission nodes</td>";
-   $legend .= "<td style=\"background-color:$cluster_isof->{'color'}\">'is feature of' nodes</td>";
-   $legend .= "<td style=\"background-color:$cluster_has->{'color'}\">'has feature' nodes</td>";
-   $legend .= "<td style=\"background-color:$cluster_procs->{'color'}\">associated procs</td>";
-   $legend .= "<td style=\"background-color:$cluster_views->{'color'}\">associated views</td>";
-   $legend .= "</table>";
+$legend .= "<tr><td style=\"background-color:$cluster_node->{'fillcolor'}\">$GRIDType.$GRIDName nodes</td>";
+$legend .= "<td style=\"background-color:$cluster_trans->{'fillcolor'}\">transmission nodes</td>";
+$legend .= "<td style=\"background-color:$cluster_isof->{'fillcolor'}\">'is feature of' nodes</td>";
+$legend .= "<td style=\"background-color:$cluster_has->{'fillcolor'}\">'has feature' nodes</td>";
+$legend .= "<td style=\"background-color:$cluster_views->{'fillcolor'}\">associated views</td>";
+$legend .= "<td style=\"background-color:$cluster_procs->{'fillcolor'}\">associated procs</td>";
+$legend .= "<td style=\"background-color:$cluster_forms->{'fillcolor'}\">associated forms</td>";
+$legend .= "</table>";
 
 # ---- build a directed graph starting from a WebObs' VIEW (aka root-VIEW)
 #
 
 my $rankdir = 'TB';
-$gv = GraphViz->new(layout => 'dot', rankdir => $rankdir, name => "$GRIDType$GRIDName", node => { height=>'.10', width=>'0.3',  fontsize=>'8', color=>'none', shape =>'plaintext'}, stylesheet => "/css/transit.css");
+$gv = GraphViz->new(
+    layout => 'dot',
+    rankdir => $rankdir,
+    name => "$GRIDType$GRIDName",
+    node => { height=>'.10', width=>'0.3',  fontsize=>'8', color=>'none', shape=>'plaintext'},
+    stylesheet => "/css/transit.css");
 
 # first tree = GRIDName -> all of its NODES (valid and active today)
 
@@ -145,64 +155,68 @@ tree("$GRIDType.$GRIDName", \$cluster_node, \@gs);
 # belong themselves to GRIDS. Show this associated GRIDS
 
 for my $Nn (@gs) {
-	my %N = readNode($Nn);
-	if (%N) {
-		my %NODE = %{$N{$Nn}}; 
+    my %N = readNode($Nn);
+    if (%N) {
+        my %NODE = %{$N{$Nn}};
 
-		# associated VIEWS from NODE's list of "transmission nodes"
-		if (defined($NODE{TRANSMISSION})) {
-			$NODE{TRANSMISSION} =~ s/(^[0-9][,]?)?//;
-			for (split(/\|/,$NODE{TRANSMISSION})) {
-					next if ( (!defined($QryParm->{'iref'})) && $_ ~~ $GRID{NODESLIST} );
-				@tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/VIEW.*.$_ 2>/dev/null);
-				for (@tl) {s/$WEBOBS{PATH_GRIDS2NODES}\/(.*)\..*$/$1/g;}
-				chomp(@tl);
-				tree($Nn, \$cluster_trans, \@tl, \$cluster_2trans, $_);
-			}
-		}
+        # associated VIEWS from NODE's list of "transmission nodes"
+        if (defined($NODE{TRANSMISSION})) {
+            $NODE{TRANSMISSION} =~ s/(^[0-9][,]?)?//;
+            for (split(/[\|,]/,$NODE{TRANSMISSION})) {
+                next if ( (!defined($QryParm->{'iref'})) && $_ ~~ $GRID{NODESLIST} );
+                @tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/*.*.$_ 2>/dev/null);
+                for (@tl) {s/$WEBOBS{PATH_GRIDS2NODES}\/(.*)\..*$/$1/g;}
+                chomp(@tl);
+                tree($Nn, \$cluster_trans, \@tl, \$cluster_2trans, $_);
+            }
+        }
 
-		# associated VIEWS from NODE's list from nodes2nodes.rc with NODE as RHS
-		for (qx(grep ".*\|.*\|$Nn" $WEBOBS{ROOT_CONF}/nodes2nodes.rc)) {
-			chomp($_);
-			my($n1,$junk) = split(/\|/,$_);
-				next if ( (!defined($QryParm->{'iref'})) && $n1 ~~ $GRID{NODESLIST} );
-			@tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/VIEW.*.$n1 2>/dev/null);
-			for (@tl) {s/$WEBOBS{PATH_GRIDS2NODES}\/(.*)\..*$/$1/g;}
-			chomp(@tl);
-			tree($Nn, \$cluster_isof, \@tl, \$cluster_2isof, $n1);
-		}
+        # associated VIEWS from NODE's list from nodes2nodes.rc with NODE as RHS
+        for (qx(grep ".*\|.*\|$Nn" $NODES{FILE_NODES2NODES})) {
+            chomp($_);
+            my($n1,$junk) = split(/\|/,$_);
+            next if ( (!defined($QryParm->{'iref'})) && $n1 ~~ $GRID{NODESLIST} );
+            @tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/*.*.$n1 2>/dev/null);
+            for (@tl) {s/$WEBOBS{PATH_GRIDS2NODES}\/(.*)\..*$/$1/g;}
+            chomp(@tl);
+            tree($Nn, \$cluster_isof, \@tl, \$cluster_2isof, $n1);
+        }
 
-		# associated VIEWS from NODE's list from nodes2nodes.rc with NODE as LHS
-		for (qx(grep "$Nn\|.*\|.*" $WEBOBS{ROOT_CONF}/nodes2nodes.rc)) {
-			chomp($_);
-			my($junka,$junkb,$n1) = split(/\|/,$_);
-			$n1 =~ s/^(.*)[\n\t\r]$/$1/g;
-				next if ( (!defined($QryParm->{'iref'})) && $n1 ~~ $GRID{NODESLIST} );
-			@tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/VIEW.*.$n1 2>/dev/null);
-			for (@tl) {s/$WEBOBS{PATH_GRIDS2NODES}\/(.*)\..*$/$1/g;}
-			chomp(@tl);
-			tree($Nn, \$cluster_has, \@tl, \$cluster_2has, $n1);
-		}
+        # associated VIEWS from NODE's list from nodes2nodes.rc with NODE as LHS
+        for (qx(grep "$Nn\|.*\|.*" $NODES{FILE_NODES2NODES})) {
+            chomp($_);
+            my($junka,$junkb,$n1) = split(/\|/,$_);
+            $n1 =~ s/^(.*)[\n\t\r]$/$1/g;
+            next if ( (!defined($QryParm->{'iref'})) && $n1 ~~ $GRID{NODESLIST} );
+            @tl = qx(ls -d $WEBOBS{PATH_GRIDS2NODES}/*.*.$n1 2>/dev/null);
+            for (@tl) {s/$WEBOBS{PATH_GRIDS2NODES}\/(.*)\..*$/$1/g;}
+            chomp(@tl);
+            tree($Nn, \$cluster_has, \@tl, \$cluster_2has, $n1);
+        }
 
-		# associated PROCS and VIEWS from NODE's configuration lists of PROCS and VIEWS
-		# these ones rely on PROC| and VIEW| variables in NODE's conf: might not be defined
-		#@tl = grep {s/(.*)/PROC.$1/ && $_ ne "$GRIDType.$GRIDName"} split(/,/,$NODE{PROC});
-		#tree($Nn, \$cluster_procs, \@tl) if (scalar(@tl) > 0);
-		#@tl = grep {s/(.*)/VIEW.$1/ && $_ ne "$GRIDType.$GRIDName"} split(/,/,$NODE{VIEW});
-		#tree($Nn, \$cluster_views, \@tl) if (scalar(@tl) > 0);
-		
-		# associated PROCS and VIEWS from NODE's configuration lists of PROCS and VIEWS
-		# these ones use listNodeGrids() that costs more but is safer
-		my %HoA;
-		%HoA = listNodeGrids(node=>$Nn,type=>'PROC'); 
-		@tl = grep { $_ ne "$GRIDType.$GRIDName"} @{$HoA{$Nn}};
-		tree($Nn, \$cluster_procs, \@tl) if (scalar(@tl) > 0);
-		%HoA = listNodeGrids(node=>$Nn,type=>'VIEW'); 
-		@tl = grep { $_ ne "$GRIDType.$GRIDName"} @{$HoA{$Nn}};
-		tree($Nn, \$cluster_views, \@tl) if (scalar(@tl) > 0);
-	}
+# associated GRIDS from NODE's configuration lists of PROCS/VIEWS/FORMS
+# these ones rely on PROC| and VIEW| variables in NODE's conf: might not be defined
+#@tl = grep {s/(.*)/PROC.$1/ && $_ ne "$GRIDType.$GRIDName"} split(/,/,$NODE{PROC});
+#tree($Nn, \$cluster_procs, \@tl) if (scalar(@tl) > 0);
+#@tl = grep {s/(.*)/VIEW.$1/ && $_ ne "$GRIDType.$GRIDName"} split(/,/,$NODE{VIEW});
+#tree($Nn, \$cluster_views, \@tl) if (scalar(@tl) > 0);
+
+ # associated PROCS and VIEWS from NODE's configuration lists of PROCS and VIEWS
+ # these ones use listNodeGrids() that costs more but is safer
+        my %HoA;
+        %HoA = listNodeGrids(node=>$Nn,type=>'PROC');
+        @tl = grep { $_ ne "$GRIDType.$GRIDName"} @{$HoA{$Nn}};
+        tree($Nn, \$cluster_procs, \@tl) if (scalar(@tl) > 0);
+        %HoA = listNodeGrids(node=>$Nn,type=>'VIEW');
+        @tl = grep { $_ ne "$GRIDType.$GRIDName"} @{$HoA{$Nn}};
+        tree($Nn, \$cluster_views, \@tl) if (scalar(@tl) > 0);
+        %HoA = listNodeGrids(node=>$Nn,type=>'FORM');
+        @tl = grep { $_ ne "$GRIDType.$GRIDName"} @{$HoA{$Nn}};
+        tree($Nn, \$cluster_forms, \@tl) if (scalar(@tl) > 0);
+    }
 }
 $svg = $gv->as_svg;
+
 # Uncomment for debugging
 #$dbg = $gv->as_debug;
 $svg =~ s/<\?xml.*>[\n]*//;
@@ -214,44 +228,36 @@ print <<"FIN";
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
-<title>Affichage de VIEW</title>
+<title>GRID diagram</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <link rel="stylesheet" type="text/css" href="/css/transit.css">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
-<!--
-<script language="JavaScript" src="/js/jquery-svgpan.js" type="text/javascript"></script>
-<script language="JavaScript">
-\$(document).ready(function() {
-	\$('svg').svgPan('graph1');
-});
-</script>
---> 
 </head>
 <body>
 <!-- overLIB (c) Erik Bosrup -->
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <script language="JavaScript" src="/js/overlib/overlib.js" type="text/javascript"></script>
-<!-- script language="JavaScript" src="/js/transit.js" type="text/javascript"></script> -->
 FIN
-if (defined($QryParm->{'iref'})) { print "iref set" } 
+if (defined($QryParm->{'iref'})) { print "iref set" }
 
 if (defined($svg)) {
-	#djl-TBD: remove all attributes 'style=' so that FF can apply css rules .... 
-	#djl-TBD: fontsize only used here (ie. at svg build time) as it participate in nodes' polygon sizes! 
-	print "<h3>$GRIDType.$GRIDName</h3>\n";
-	print "<DIV class=\"gvTlegend\">";
-		print "$GRIDType.$GRIDName root nodes are those <i>valid</i> and <i>active</i> today<BR>";
-		print "$legend";
-	print "</DIV><BR>\n";
-	print "<DIV style=\"border: 1px solid grey;\">";
-		print $svg;
-	print "</DIV>";
+
+#djl-TBD: remove all attributes 'style=' so that FF can apply css rules .... 
+#djl-TBD: fontsize only used here (ie. at svg build time) as it participate in nodes' polygon sizes! 
+    print "<h3>$GRIDType.$GRIDName</h3>\n";
+    print "<DIV class=\"gvTlegend\">";
+    print "$GRIDType.$GRIDName root nodes are those <i>valid</i> and <i>active</i> today<BR>";
+    print "$legend";
+    print "</DIV><BR>\n";
+    print "<DIV style=\"border: 1px solid grey;\">";
+    print $svg;
+    print "</DIV>";
 } else {die "Unable to create svg for ".$GRIDType.$GRIDName}
 
-if ($dbg) { 
-	open(WRT, ">$WEBOBS{PATH_TMP_APACHE}/gv");
-	print(WRT $dbg);
-	close(WRT);
+if ($dbg) {
+    open(WRT, ">$WEBOBS{PATH_TMP_APACHE}/gv");
+    print(WRT $dbg);
+    close(WRT);
 }
 print "<br>\n</body>\n</html>\n";
 

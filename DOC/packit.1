@@ -1,7 +1,7 @@
 .\" Manpage for packit.
 .TH man 8 "13 May 2013" "1.0" "packit man page"
 .SH NAME
-packit \- creates a WebObs release package file. 
+packit \- creates a WebObs release package file.
 .SH SYNOPSIS
 packit SVN-TAG-REPOSITORY
 .SH DESCRIPTION
@@ -9,14 +9,14 @@ SVN-TAG-REPOSITORY being of the form <svn-repo-path>/webobs/tags/releasename,
 packit will create \fBWebObs-releasename.tgz\fP and its corresponding checksum files.
 
 packit first svn-export the requested releasename from svn repository to a local (current directory)
-WebObs-releasename directory from which it will 1) remove internal code and files not to be 
+WebObs-releasename directory from which it will 1) remove internal code and files not to be
 distributed in final package and 2) creates, if possible, a list of perl required modules
-that could be used during the WebObs installation process. 
+that could be used during the WebObs installation process.
 
 .SH OPTIONS
 No command line option, but the SVN-TAG-REPOSITORY is required.
 .SH SEE ALSO
-fpm, tagit, install 
+fpm, tagit, install
 .SH AUTHOR
 Didier Lafon
 .SH COPYRIGHT

@@ -4,52 +4,52 @@
  */
 
 #statusbar {
-	/* Codemirror's textarea status bar */
-	border: solid 1px grey;
-	background-color: grey;
-	color: white;
-	font-size: 12px;
+    /* Codemirror's textarea status bar */
+    border: solid 1px grey;
+    background-color: grey;
+    color: white;
+    font-size: 12px;
 }
 
 #toggle-vim-mode {
-	/* Checkbox toggling the vim mode in the editor */
-	padding-right: 15px;
-	border: 1px solid black;
-	border-radius: 2px;
+    /* Checkbox toggling the vim mode in the editor */
+    padding-right: 15px;
+    border: 1px solid black;
+    border-radius: 2px;
 }
 
 #theform #toggle-vim-mode-label {
-	/* unset style defined in WEBOBS.css for all #theform label */
-	display: inline;
-	width: auto;
-	float: none;
-	font-weight: normal;
-	margin-right: 0;
-	text-align: left;
-	padding-top: 0;
-	/* add our own style */
-	font-size: 1.2em;
-	color: #555;
+    /* unset style defined in WEBOBS.css for all #theform label */
+    display: inline;
+    width: auto;
+    float: none;
+    font-weight: normal;
+    margin-right: 0;
+    text-align: left;
+    padding-top: 0;
+    /* add our own style */
+    font-size: 1.2em;
+    color: #555;
 }
 
 #theform .submit-button {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .js-editor-controls label {
-	padding-right: 2em;
+    padding-right: 2em;
 }
 
 /* Override a few codemirror classes from codemirror.css */
 
 .CodeMirror {
-	/* Set the width and height. Must also be set in cmtextarea.js. */
-	width: 700px;
-	height: 400px;
+    /* Set the width and height. Must also be set in cmtextarea.js. */
+    width: 700px;
+    height: 400px;
 }
 
 .CodeMirror-hscrollbar {
-	/* Hide the horizontal scrollbar in the editor
-	   as it would appear on top of the status bar. */
-	overflow-x: hidden;
+    /* Hide the horizontal scrollbar in the editor
+       as it would appear on top of the status bar. */
+    overflow-x: hidden;
 }

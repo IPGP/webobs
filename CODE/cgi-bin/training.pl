@@ -35,7 +35,6 @@ use WebObs::Users qw(clientHasAdm);
 my $cgi = CGI->new;
 $cgi->charset('UTF-8');
 
-
 # ---- loads arguments
 my ($date1, $date2, $s3, $conf) = @ARGV;
 
@@ -49,14 +48,13 @@ my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$mc3.conf");
 
 # ---- must have admin auth to run
 if (clientHasAdm(type=>"authprocs",name=>"MC") || clientHasAdm(type=>"authprocs",name=>"$mc3")) {
-  die "Sorry, you must have administrator right on $mc3 to run this script.";
+    die "Sorry, you must have administrator right on $mc3 to run this script.";
 }
 
 # ---- Download csv database from the WebObs main-courante
 # manage auto-login to webobs
 my $netrc = $WEBOBS{NETRC_FILE};
 my $opt = (-e $netrc ? "--netrc-file '$netrc'":"");
-
 
 # split dates
 my $y1 = substr($date1, 0,4);
@@ -91,6 +89,7 @@ qx($filter_catalogue_algo $MC3{PSE_TMP_CATALOGUE} $new_catalogue $events);
 my $verbatim = 3;
 my $stdout = qx($WEBOBS{ROOT_CODE}/python/AAA/USECASE3_REAL_TIME_SPARSE_CLASSIFICATION_TRAINING.py $MC3{PSE_ROOT_CONF} $MC3{PSE_ROOT_DATA} $MC3{PSE_TMP_FILEPATH} $conf $SEFRAN3{DATASOURCE} $WEBOBS{SLINKTOOL_PRGM} $verbatim);
 print $stdout if ($debug);
+
 #print "$MC3{PSE_CONF_FILENAME} \n";
 
 __END__

@@ -68,6 +68,12 @@ msgstr "erreur unlink lockfile"
 msgid "Not authorized"
 msgstr "Pas autorisé"
 
+msgid "Sorry, you must have an edit level to modify"
+msgstr "Désolé, vous devez avoir un niveau éditeur pour modifier"
+
+msgid "Sorry, you must have an admin level to delete"
+msgstr "Désolé, vous devez avoir un niveau administrateur pour supprimer"
+
 msgid "Invalid resource name"
 msgstr "Ressource invalide"
 
@@ -200,6 +206,39 @@ msgstr "Accès aux données brutes"
 msgid "Graphical routine"
 msgstr "Routine graphique"
 
+msgid "First year of data:"
+msgstr "Première année des données :"
+
+msgid "Form structure:"
+msgstr "Structure du Form :"
+
+msgid "Form layout:"
+msgstr "Mise en page du Form :"
+
+msgid "inputs"
+msgstr "entrées"
+
+msgid "outputs"
+msgstr "sorties"
+
+msgid "proc exports"
+msgstr "exportations"
+
+msgid "columns"
+msgstr "colonnes"
+
+msgid "Time zone for all records:"
+msgstr "Fuseau horaire de toutes les données :"
+
+msgid "Total number of records:"
+msgstr "Nombre total d'enregistrements :"
+
+msgid "including"
+msgstr "dont"
+
+msgid "in trash"
+msgstr "dans la corbeille"
+
 msgid "Events File(s)"
 msgstr "Fichier(s) d'événements"
 
@@ -242,14 +281,17 @@ msgstr "Actives"
 msgid "Coordinates"
 msgstr "Coordonnées"
 
+msgid "Lifetime and Validity"
+msgstr "Durée de vie et validité"
+
 msgid "Export"
 msgstr "Exporter"
 
 msgid "Networks Codes"
 msgstr "Codes des réseaux"
 
-msgid "Proc Parameters"
-msgstr "Paramètres Proc"
+msgid "Proc Information"
+msgstr "Informations de la Proc"
 
 msgid "Proc Graphs"
 msgstr "Graphes Proc"
@@ -278,6 +320,15 @@ msgstr "Dernière donnée"
 msgid "Last status check on"
 msgstr "Dernier état effectué le"
 
+msgid "External Metadata"
+msgstr "Métadonnées externes"
+
+msgid "GNSS 9-char code"
+msgstr "Code GNSS 9 caractères"
+
+msgid "Download"
+msgstr "Télécharger"
+
 msgid "Code/ID"
 msgstr "Code/ID"
 
@@ -299,6 +350,9 @@ msgstr "Début / Installation"
 msgid "End / Stop"
 msgstr "Fin / Arrêt"
 
+msgid "Raw Format"
+msgstr "Format"
+
 msgid "Parameters"
 msgstr "Paramètres"
 
@@ -308,8 +362,23 @@ msgstr "Données"
 msgid "Channels"
 msgstr "Canaux"
 
+msgid "Chan."
+msgstr "Canaux"
+
 msgid "Channel"
 msgstr "Canal"
+
+msgid "Form Information"
+msgstr "Informations du Form"
+
+msgid "Nb Rec."
+msgstr "Nb Enr."
+
+msgid "Last Record"
+msgstr "Dernier Enreg."
+
+msgid "Raw Data"
+msgstr "Données"
 
 msgid "See also the following maps"
 msgstr "Voir aussi les cartes suivantes"
@@ -534,7 +603,10 @@ msgid "Notify"
 msgstr "Notifier"
 
 msgid "New node"
-msgstr "Nouveau Node"
+msgstr "Nouveau node"
+
+msgid "duplicated from"
+msgstr "dupliqué depuis"
 
 msgid "New event"
 msgstr "Nouvel événement"
@@ -549,10 +621,7 @@ msgid "Names and Codes"
 msgstr "Noms et Codes"
 
 msgid "Associated Grids"
-msgstr "Grids associés"
-
-msgid "Procs Parameters"
-msgstr "Paramètres de Proc"
+msgstr "Grids associées"
 
 msgid "Searching for data, please wait"
 msgstr "Recherche des données, merci de patienter"
@@ -618,7 +687,7 @@ msgid "Search"
 msgstr "Recherche"
 
 msgid "Search in selected grids below"
-msgstr "Recherche dans les Grids cochés ci-dessous"
+msgstr "Recherche dans les Grids cochées ci-dessous"
 
 msgid "Advanced Search"
 msgstr "Recherche avancée"
@@ -816,35 +885,41 @@ msgstr "Choisir le node cible"
 msgid "help_creationstation_valid"
 msgstr "Cocher pour marquer le node comme valide. Un node invalide ne sera pas utilisé par les procs et sera masqué aux utilisateurs non admin."
 
+msgid "Form Parameters"
+msgstr "Paramètres de Form"
+
+msgid "Form name:"
+msgstr "Nom du Form :"
+
 msgid "Time zone (h)"
-msgstr "Fuseau horaire"
+msgstr "Fuseau horaire (h)"
 
-msgid "Acquisition period (days)"
-msgstr "Période d\\'acquisition (jours)"
+msgid "Acq. period (days)"
+msgstr "Période d'acq. (jours)"
 
-msgid "Acquisition delay (days)"
-msgstr "Délai d\\'acquisition (jours)"
+msgid "Acq. delay (days)"
+msgstr "Délai d'acq. (jours)"
 
 msgid "help_creationstation_network"
 msgstr "Sélectioner le réseau concerné"
 
 msgid "help_creationstation_id"
-msgstr "Codage/ID de la fiche:<ul><li>4 caractères exactement (compléter éventuellement avec des 0)<li>ID unique pour le réseau concerné</ul>"
+msgstr "Code/ID dy node: séquence unique de caractères alphanumériques (ne pourra être modifié)"
 
 msgid "help_creationstation_name"
-msgstr "Entrez le nom long de la fiche (champ libre pour affichage)"
+msgstr "Entrez le nom long du node (champ libre pour affichage)"
 
 msgid "help_creationstation_alias"
-msgstr "Le champ ALIAS est le code/nom court donné à la fiche (préférablement unique au sein du réseau) mais n\\'est pas fonctionnel"
+msgstr "Le champ ALIAS est le code/nom court donné au node (préférablement unique au sein du réseau), mais n\\'est pas fonctionnel"
 
 msgid "help_creationstation_type"
 msgstr "La champ TYPE est une description courte du node qui complète le nom long (par ex., le modèle d\\'un équipement)"
 
 msgid "help_creationstation_tz"
-msgstr "Entrez le fuseau horaire (utilisé pour les dates d\\'activité et les événements du node), en heures par rapport à GMT (ex: +0)"
+msgstr "Entrez le fuseau horaire (utilisé pour les dates d\\'activité et les événements du node), en heures par rapport à UTC (ex: +0)"
 
 msgid "help_creationstation_lat"
-msgstr "Latitude de la station (WGS84, degrés décimaux OU deg/minOU deg/min/sec- les 3 champs seront pris en compte)"
+msgstr "Latitude de la station (WGS84, degrés décimaux OU deg/min OU deg/min/sec- les 3 champs seront pris en compte)"
 
 msgid "help_creationstation_lon"
 msgstr "Longitude de la station (WGS84, degrés décimaux OU deg/min OU deg/min/sec- les 3 champs seront pris en compte)"
@@ -871,16 +946,68 @@ msgid "help_creationstation_fid"
 msgstr "Le champ FID correspond à un code/identifiant utilisé dans le traitement des données (fonctionnel)"
 
 msgid "help_creationstation_fdsn"
-msgstr "Code officiel de l\\'International Federation of Digital Seismograph Network (FDSN/IRIS)"
+msgstr "Sélectionner le code officiel de l\\'International Federation of Digital Seismograph Network (FDSN/IRIS)"
 
 msgid "help_creationstation_proc_tz"
-msgstr "Entrez le fuseau horaire des données, en heures par rapport à GMT (ex: +0)"
+msgstr "Entrez le fuseau horaire des données, en heures par rapport à UTC (ex: +0)"
 
 msgid "help_creationstation_proc_acqrate"
 msgstr "Entrez la période d\\'acquisition en jours, les formules arithmétiques simples sont autorisées (ex: 1/86400 pour 1 seconde)"
 
 msgid "help_creationstation_proc_acqdelay"
 msgstr "Entrez le délai d\\'acquisition en jours, les formules arithmétiques simples sont autorisées (ex: 1/86400 pour 1 seconde)"
+
+msgid "help_formnode_gnss_9char"
+msgstr "Entrer le code à 9 caractères de la station GNSS"
+
+msgid "Show links to M3G"
+msgstr "Afficher les liens vers M3G"
+
+msgid "help_formnode_m3g_check"
+msgstr "Cocher pour afficher les liens et métadonnées M3G"
+
+msgid "help_formnode_edit_m3g"
+msgstr "Éditer les métadonnées sur le site M3G (nécessite un login préalable)"
+
+msgid "Edit sitelog on M3G"
+msgstr "Éditer le sitelog sur M3G"
+
+msgid "Proc Parameters"
+msgstr "Paramètres de Proc"
+
+msgid "Proc name:"
+msgstr "Nom de la PROC :"
+
+msgid "Raw format:"
+msgstr "Format des données :"
+
+msgid "help_creationstation_rawformat"
+msgstr "Sélectionner le format des données (défaut = rawformat de la PROC)"
+
+msgid "Raw data source:"
+msgstr "Source des données :"
+
+msgid "help_creationstation_rawdata"
+msgstr "Indiquer la source des données (défaut = rawdata de la PROC)"
+
+msgid "Network code:"
+msgstr "Code réseau :"
+
+msgid "Description:"
+msgstr "Description :"
+
+msgid "help_creationstation_description"
+msgstr "Décrit les propriétés observées du jeu de données, telles que la définition, la couverture spatiale ou la méthodologie d\\'acquisition des mesures. Résumé des objectifs scientifiques du NODE pour cette PROC en particulier."
+
+msgid "Channel list:"
+msgstr "Liste des canaux :"
+
+msgid "help_creationstation_chanlist"
+msgstr "Sélectionner les canaux à importer dans la PROC (sélection multiple)"
+
+msgid "no calibration file"
+msgstr "pas de fichier de calibration"
+
 
 msgid "Language selection"
 msgstr "Choix de la langue"
@@ -937,7 +1064,7 @@ msgid "calendar"
 msgstr "calendrier"
 
 msgid "week"
-msgstr "sem"
+msgstr "semaine"
 
 msgid "All"
 msgstr "Tout"
@@ -1078,7 +1205,7 @@ msgid "Reference"
 msgstr "Référence"
 
 msgid "Real-time refresh every"
-msgstr "Temps réel, rafraîchissement: "
+msgstr "Temps réel, rafraîchissement"
 
 msgid "Increase speed"
 msgstr "Augmente vitesse"
@@ -1093,7 +1220,7 @@ msgid "Click to see miniseed file"
 msgstr "Cliquer pour voir le fichier miniseed"
 
 msgid "Sorry, there is no more data available for this request:"
-msgstr "Désolé, plus de données disponibles pour cette requête:"
+msgstr "Désolé, plus de données disponibles pour cette requête :"
 
 msgid "Operator"
 msgstr "Opérateur"
@@ -1243,9 +1370,6 @@ msgid "end of signal"
 msgstr "fin du signal"
 
 
-# formulaireCREATION_STATION.pl
-
-
 # --- formCLB.pl
 
 msgid "help_clb_date"
@@ -1311,21 +1435,11 @@ msgstr "Location code (SEED dataless)"
 msgid "help_clb_cat"
 msgstr "Catégorie du thésaurus THEIA correspondant à la variable du channel (chaine de caractère)"
 
-# --- formulaireHEBDO.pl
+msgid "help_clb_theia"
+msgstr "Cliquez sur le lien pour sélectionner et copiez/collez la catégorie Theia"
 
-msgid "help_hebdo_select_nodate"
-msgstr "Tick to create entry without date"
 
-msgid "help_hebdo_select_type"
-msgstr "Select event TYPE"
-
-msgid "help_hebdo_select_names"
-msgstr "Select the names of those involved (Hold CTRL to select multiple names)"
-
-msgid "help_hebdo_select_external"
-msgstr "Enter names of EXTERNAL people"
-
-# --- gazette
+# --- Gazette
 
 msgid "gzt_fmt_long_date"
 msgstr "%A %-d %B %Y <i>(jour %j, sem %V)</i>"
@@ -1496,6 +1610,12 @@ msgstr "Requête de PROCS"
 msgid "Available PROCS"
 msgstr "PROCS disponibles"
 
+msgid "Show additional keys"
+msgstr "Afficher les paramètres additionnels"
+
+msgid "Hide additional keys"
+msgstr "Masquer les paramètres additionnels"
+
 msgid "Date and time span (UT)"
 msgstr "Intervalle de date et heure (TU)"
 
@@ -1533,7 +1653,7 @@ msgid "Line width"
 msgstr "Épaisseur des lignes"
 
 msgid "Grid"
-msgstr "Grille"
+msgstr "Grid"
 
 msgid "PPI"
 msgstr "Résolution PPI"
@@ -1554,6 +1674,12 @@ msgid "Verbose logs"
 msgstr "Logs détaillés"
 
 # ---- showREQ.pl
+
+msgid "Requests results"
+msgstr "Résultats de requêtes"
+
+msgid "Request forms:"
+msgstr "Formulaires de requêtes :"
 
 msgid "Date & Time"
 msgstr "Date & Heure"
@@ -1578,8 +1704,17 @@ msgstr "Archive"
 
 # --- formGRID.pl
 
+msgid "Creating new grid"
+msgstr "Création de nouvelle grid"
+
+msgid "Editing grid"
+msgstr "Modification de la grid"
+
 msgid "Form"
 msgstr "Form"
+
+msgid "Associated lists"
+msgstr "Listes associées"
 
 msgid "Available/Associated nodes"
 msgstr "Nodes disponibles/associés"
@@ -1671,6 +1806,35 @@ msgid "help_vsearch_shown"
 msgstr "Afficher le nom complet du node."
 
 
+# ---- showOUTG.pl
+
+msgid "Map"
+msgstr "Carte"
+
+msgid "Time scales:"
+msgstr "Fenêtres temporelles :"
+
+msgid "Manual"
+msgstr "Manuelle"
+
+msgid "All Data"
+msgstr "Toutes les données"
+
+msgid "second"
+msgstr "seconde"
+
+msgid "hour"
+msgstr "heure"
+
+msgid "day"
+msgstr "jour"
+
+msgid "month"
+msgstr "mois"
+
+msgid "year"
+msgstr "année"
+
 # ---- formRAINWATER.pl
 
 msgid "Edit existing data"
@@ -1751,18 +1915,12 @@ msgstr "Noter toute présence d&rsquo;odeur, gaz, précipité, etc..."
 # ---- showRAINWATER.pl
 
 msgid "Number of records"
-msgstr "Nombre d\\'enregistrements"
-
-msgid "Download a CSV text file of these data"
-msgstr "Télécharger ces données dans un fichier au format CSV"
+msgstr "Nombre d'enregistrements"
 
 msgid "Request results"
 msgstr "Résultat des requêtes"
 
 # ---- formNODE.pl
-
-msgid "help_creationstation_description"
-msgstr "Décrit les propriétés observées du jeu de données, telles que la définition, la couverture spatiale ou la méthodologie d'acquisition des mesures. Résumé des objectifs scientifiques."
 
 msgid "show/hide THEIA metadata fields"
 msgstr "montrer/cacher les champs de métadonnées THEIA"
@@ -1799,6 +1957,16 @@ msgstr "Utilise l'API de géolocalisation HTML pour localiser l'utilisateur. Att
 
 msgid "help_creationstation_shapefile"
 msgstr "Pour ajouter une couche de fichier de forme (.zip uniquement), cliquez ici"
+
+msgid "Features content"
+msgstr "Contenu des caractéristiques"
+
+msgid "Calibration file"
+msgstr "Fichier de calibration"
+
+msgid "Photos & documents"
+msgstr "Photos & documents"
+
 
 # ---- mailB3.pl
 
@@ -1837,6 +2005,9 @@ msgstr "Département"
 
 msgid "Region"
 msgstr "Région (zone)"
+
+msgid "Agency"
+msgstr "Agence"
 
 msgid "Send the B3 report"
 msgstr "Envoyer le rapport B3"
@@ -1881,33 +2052,127 @@ msgstr "node(s) orphelin(s)"
 msgid "Edit/Create a Domain/Producer"
 msgstr "Modifier/Créer un Domaine/Producteur"
 
-msgid "Edit/Create a Grid"
-msgstr "Modifier/Créer une Grid"
+msgid "Create a new Grid"
+msgstr "Créer une nouvelle Grid"
 
 msgid "Edit/Create a Form"
 msgstr "Modifier/Créer un Form"
 
+msgid "select a template"
+msgstr "sélectionner un modèle"
+
 msgid "short name (uppercase)"
 msgstr "nom court (en majuscules)"
+
+msgid "Grid name"
+msgstr "Nom de la Grid"
+
+msgid "Grid type"
+msgstr "Type de Grid"
 
 msgid "Form name"
 msgstr "Nom du Form"
 
-msgid "Form template"
-msgstr "Template de Form"
+msgid "Form type"
+msgstr "Type de Form"
 
 msgid "Reset"
 msgstr "Réinitialiser"
 
+msgid "Create"
+msgstr "Créer"
+
+
+# ---- showGENFORM.pl
+
+msgid "Enter a new record"
+msgstr "Nouvel enregistrement"
+
+msgid "Searching for data, please wait."
+msgstr "Recherche des données, merci de patienter."
+
+msgid "help_disp_fieldset"
+msgstr "Afficher les colonnes du"
+
+msgid "Trash"
+msgstr "Corbeille"
+
+msgid "help_show_trash"
+msgstr "Afficher les enregistrements dans la corbeille"
+
+msgid "help_search_comment"
+msgstr "Mot ou chaîne de caractères à rechercher dans les commentaires (expression rationnelle)."
+
+msgid "Site map"
+msgstr "Carte des sites"
+
+msgid "Download data"
+msgstr "Télécharger"
+
+msgid "Oper"
+msgstr "Opér."
+
+msgid "Sampling Date"
+msgstr "Date d'échantillonnage"
+
+msgid "Sampling Interval"
+msgstr "Période d'échantillonnage"
+
+msgid "Start"
+msgstr "Début"
+
+msgid "End"
+msgstr "Fin"
+
+msgid "to_num"
+msgstr "à"
+
+msgid "unknown key list!"
+msgstr "clef inconnue dans la liste !"
+
+msgid "Genform code"
+msgstr "Code genform"
+
+msgid "Date interval"
+msgstr "Intervalle de dates"
+
+msgid "Lists"
+msgstr "Listes"
+
+msgid "Formulas"
+msgstr "Formules"
+
+msgid "Download a CSV text file of these data"
+msgstr "Télécharger ces données au format CSV"
+
+msgid "Use semicolon as delimiter"
+msgstr "Point-virgule comme sépérateur"
+
+msgid "Include associated Form data (files, images,...)"
+msgstr "Inclure les données associées au Form (fichiers, images, ...)"
+
+msgid "Include attached data files"
+msgstr "Inclure les fichiers attachés"
+
 # ---- formGENFORM.pl
-msgid "Input new data"
-msgstr "Saisie de nouvelles données"
 
-msgid "Edit data n°"
-msgstr "Modification de l'entrée n°"
+msgid "Input new record"
+msgstr "Saisie d'un nouvel enregistrement"
 
-msgid "Date and place of sampling"
-msgstr "Date et lieu du prélèvement"
+msgid "Edit record n°"
+msgstr "Modification de l'enregistrement n°"
+
+msgid "Validated record"
+msgstr "Enregistrement validé"
+
+msgid "Where, When, and Who"
+msgstr "Où, quand et qui"
+
+msgid "Date/time must be in"
+msgstr "Date/heure doivent être en"
+
+msgid "Date, site, and operators"
+msgstr "Date, site et opérateurs"
 
 msgid "ATT: Do you want PERMANENTLY erase this record from"
 msgstr "ATT: Voulez-vous effacer cet enregistrement de manière permanente de"
@@ -1918,11 +2183,30 @@ msgstr "Voulez-vous enlever cet enregistrement de"
 msgid "Do you want to restore this record in"
 msgstr "Voulez-vous restaurer cet enregistrement dans"
 
+msgid "Select a node for this record"
+msgstr "Sélectionner un node pour cet enregistrement"
 
-# ---- fedit.pl
+msgid "Operator(s)"
+msgstr "Opérateur(s)"
 
-msgid "Delete this form"
-msgstr "Supprimer ce form"
+msgid "Select operator(s)"
+msgstr "Sélectionner le (ou les) opérateur(s)"
 
-msgid "The FORM will be deleted. Are you sure?"
-msgstr "Le FORM sera supprimé. Etes-vous sur ?"
+msgid "Select a value for"
+msgstr "Sélectionner une valeur pour"
+
+msgid "Enter a numeric value for"
+msgstr "Entrer une valeur numérique pour"
+
+msgid "Enter a value for"
+msgstr "Entrer une valeur pour"
+
+msgid "Record timestamp:"
+msgstr "Horodatage de l'enregistrement :"
+
+# --- OSM.pl
+msgid "To import shapefile layer, click here:"
+msgstr "Pour importer une couche shapefile, cliquez ici :"
+
+msgid "To save the area shape of the NODE as GeoJSON format, click here:"
+msgstr "Pour enregistrer la couverture spatiale du NODE au format GeoJSON, cliquez ici :"

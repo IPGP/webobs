@@ -15,7 +15,9 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %	Some additional keys are also added:
 %	          ID: self reference
+%         FULLID: full ID
 %	   TIMESTAMP: timestamp of the .cnf file (local time)
+%        GEOJSON: GeoJSON string containing feature collection of geometries
 %	         CLB: data table from calibration .clb file (if exists)
 %	TRANSMISSION: a structure containing following fields (if defined):
 %	               TYPE: index in FILE_TELE (NODES.rc)
@@ -29,15 +31,15 @@ function N=readnode(WO,nodefullid,NODES);
 %	                  lw: default linewidth (from NODES.rc)
 %	                 rgb: default color (from NODES.rc)
 %	                 out: data outcome flag
-%
+%	          WO: copy of the WO structure
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2023-08-28
+%   Updated: 2025-05-08
 
 
 if ~exist('NODES','var')
-	NODES = readcfg(WO.CONF_NODES);
+	NODES = readcfg(WO.CONF_NODES,'quiet');
 end
 
 nodeparts = split(nodefullid,'.');
@@ -59,7 +61,7 @@ end
 
 
 % reads .cnf main conf file
-N = readcfg(WO,f);
+N = readcfg(WO,f,'quiet');
 
 % replaces PROC's parameters (PROC.name.* if exist)
 if strcmpi(gridtype,'PROC') && isfield(N,'PROC') && isstruct(N.PROC) && isfield(N.PROC,gridname)
@@ -72,6 +74,7 @@ end
 
 % adds a self-reference
 N.ID = id;
+N.FULLID = nodefullid;
 
 % adds a timestamp (in the local server time)
 X = dir(f);
@@ -119,48 +122,63 @@ if isnan(N.LAST_DELAY)
 	N.LAST_DELAY = 0;
 end
 
+% imports .geojson (if exists)
+json = sprintf('%s/%s.geojson',p,id);
+if exist(json,'file')
+    N.GEOJSON = readjson(json);
+else
+    N.GEOJSON = '';
+end
+
 % --- reads .clb calibration file (if exists)
 clb = sprintf('%s/%s.clb',p,nodefullid);
+autoclb = sprintf('%s/%s_auto.clb',p,nodefullid); % auto-generated clb
+legclb = sprintf('%s/%s.clb',p,id); % legacy clb name (for backwards compatibility)
 if ~exist(clb,'file')
-	clb = sprintf('%s/%s.clb',p,id); % for backwards compatibility
+	if exist(legclb,'file')
+		clb = legclb;
+	end
+	if exist(autoclb,'file')
+		clb = autoclb;
+	end
 end
 if exist(clb,'file')
-	C = readdatafile(clb,'CommentStyle','#')';
-	nf = size(C,1);
-	if nf < 20
-		C = cat(1,C,repmat({''},20-nf,size(C,2)));
-	end
+	C = readcfg(WO, clb,'quiet');
+end
+if exist('C','var') && ~isempty(C)
+	keys = fieldnames(C);
 	nn = 1;
-	for j = 1:size(C,2)
-		k = strfind(C{3,j},'-');
+	for j = 1:numel(keys)
+		key = sprintf('KEY%d',j);
+		k = strfind(C.(key).nv,'-');
 		if isempty(k)
-			j1 = str2double(C{3,j});
+			j1 = str2double(C.(key).nv);
 			j2 = j1;
 		else
-			j1 = str2double(C{3,j}(1:(k-1)));
-			j2 = str2double(C{3,j}((k+1):end));
+			j1 = str2double(C.(key).nv(1:(k-1)));
+			j2 = str2double(C.(key).nv((k+1):end));
 		end
 		for jj = j1:j2
 			if any(isnan(N.CHANNEL_LIST)) || any(N.CHANNEL_LIST==jj)
-				CC.dt(nn) = isodatenum(strcat(C{1,j},{' '},C{2,j}));
+				CC.dt(nn) = isodatenum(strcat(C.(key).DATE,{' '},C.(key).TIME));
 				CC.nv(nn) = jj;
-				CC.nm{nn} = C{4,j};
-				CC.un{nn} = C{5,j};
-				CC.ns{nn} = C{6,j};
-				CC.cd{nn} = C{7,j};
-				CC.of(nn) = sstr2num(C{8,j});
-				CC.et{nn} = C{9,j};
-				CC.ga(nn) = sstr2num(C{10,j});
-				CC.vn(nn) = sstr2num(C{11,j});
-				CC.vm(nn) = sstr2num(C{12,j});
-				CC.az(nn) = sstr2num(C{13,j});
-				CC.la(nn) = sstr2num(C{14,j});
-				CC.lo(nn) = sstr2num(C{15,j});
-				CC.al(nn) = sstr2num(C{16,j});
-				CC.dp(nn) = sstr2num(C{17,j});
-				CC.sf(nn) = sstr2num(C{18,j});
-				CC.db{nn} = C{19,j};
-				CC.lc{nn} = C{20,j};
+				CC.nm{nn} = C.(key).nm;
+				CC.un{nn} = C.(key).un;
+				CC.ns{nn} = C.(key).ns;
+				CC.cd{nn} = C.(key).cd;
+				CC.of(nn) = sstr2num(C.(key).of);
+				CC.et{nn} = C.(key).et;
+				CC.ga(nn) = sstr2num(C.(key).ga);
+				CC.vn(nn) = sstr2num(C.(key).vn);
+				CC.vm(nn) = sstr2num(C.(key).vm);
+				CC.az(nn) = sstr2num(C.(key).az);
+				CC.la(nn) = sstr2num(C.(key).la);
+				CC.lo(nn) = sstr2num(C.(key).lo);
+				CC.al(nn) = sstr2num(C.(key).al);
+				CC.dp(nn) = sstr2num(C.(key).dp);
+				CC.sf(nn) = sstr2num(C.(key).sf);
+				CC.db{nn} = C.(key).db;
+				CC.lc{nn} = C.(key).lc;
 				nn = nn + 1;
 			end
 		end
@@ -225,3 +243,6 @@ if ~s && ~isempty(w)
 else
 	N.EVENTS = [];
 end
+
+% adds the WO structure
+N.WO = WO;

@@ -1,24 +1,14 @@
-<div style="margin-top: 5px; margin-bottom: 3px">
-  <a href="http://volcano.ipgp.fr/guadeloupe/Cameras/soufriere.jpg">
-    <img src="http://volcano.ipgp.fr/guadeloupe/Cameras/soufriere.jpg" width="160" height="120" border="1" onMouseOut="nd()"
-     onMouseOver="overlib('La Soufrière volcano in real-time',CAPTION,'Every 5 minutes')" alt="Soufrière of Guadeloupe">
-  </a>
-  <a href="http://volcano.ipgp.fr/martinique/Cameras/pelee.jpg">
-    <img src="http://volcano.ipgp.fr/martinique/Cameras/pelee.jpg" width="160" height="120" border="1" onMouseOut="nd()"
-     onMouseOver="overlib('La Montagne Pelée en temps-réel',CAPTION,'Depuis 5 minutes')" alt="Mount Pelée">
-  </a>
-  <br>
-
-  <a href="http://volcano.ipgp.fr/reunion/Camera/CameraBory.jpg">
-    <img src="http://volcano.ipgp.fr/reunion/Camera/CameraBory.jpg" width="160" height="120" border="1" onMouseOut="nd()"
-     onMouseOver="overlib('Le Piton de la Fournaise (Cratère Bory) en temps-réel',CAPTION,'Depuis 5 minutes')"
-     alt="Piton de la Fournaise (Bory Crater)">
-  </a>
-  <a href="http://volcano.ipgp.fr/reunion/Camera/CameraBert.jpg">
-    <img src="http://volcano.ipgp.fr/reunion/Camera/CameraBert.jpg" width="160" height="120" border="1" onMouseOut="nd()"
-     onMouseOver="overlib('Le Piton de la Fournaise (depuis Piton de Bert) en temps-réel',CAPTION,'Depuis 5 minutes')"
-     alt="Piton de la Fournaise (Bert Crater)">
-  </a>
+<div class="emphase-frame" style="text-align: center;">
+  <h3 class="emphase-title">Real-time volcano cameras</h3>
+   <A href="https://www.ipgp.fr/volcanoweb/guadeloupe/Cameras/soufriere.jpg">
+      <IMG src="https://www.ipgp.fr/volcanoweb/guadeloupe/Cameras/soufriere.jpg" height="100" border="1" onMouseOut="nd()" onMouseOver="overlib('La Soufrière volcano (Guadeloupe) in real-time',CAPTION,'Updated every 5 minutes')"></A>
+   <A href="https://www.ipgp.fr/volcanoweb/martinique/Cameras/pelee.jpg">
+      <IMG src="https://www.ipgp.fr/volcanoweb/martinique/Cameras/pelee.jpg" height="100" border="1" onMouseOut="nd()" onMouseOver="overlib('Montagne Pelée volcano (Martinique) in real time',CAPTION,'Updated every 5 minutes')"></A>
+<br>
+   <A href="https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraBory.jpg">
+      <IMG src="https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraBory.jpg" height="90" border="1" onMouseOut="nd()" onMouseOver="overlib('Piton de la Fournaise volcano (from Cratère Bory) in real time',CAPTION,'Updated every 5 minutes')"></A>
+   <A href="https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraBert.jpg">
+      <IMG src="https://www.ipgp.fr/volcanoweb/reunion/Cameras/CameraBert.jpg" height="90" border="1" onMouseOut="nd()" onMouseOver="overlib('Piton de la Fournaise volcano (from Piton de Bert) in real time',CAPTION,'Updated every 5 minutes')"></A>
 </div>
 
 <!-- This is an example of presentation frames -->

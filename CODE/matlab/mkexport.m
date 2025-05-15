@@ -6,12 +6,13 @@ function status = mkexport(WO,f,E,G);
 %	   E.header = headers (cell of strings)
 %	   E.fmt = format printf (cell of strings)
 %	   E.title = title (string)
+%      E.meta = additional keys/values printed in header as KEY: value (structure)
 %	   E.infos = multi-line comments (cell of strings)
 %	in the file F.txt using PROCS parameters defined in structure G.
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2023-12-04
+%	Updated: 2025-03-18
 
 
 ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,G.SELFREF,randname(16));
@@ -47,6 +48,12 @@ if fid > 0
 		fprintf(fid,'# TIMESPAN: all data\n');
 	end
 	fprintf(fid,'#\n');
+    if isfield(E,'meta')
+        for f = fieldnames(E.meta)'
+            fprintf(fid,'# %s: %s\n',f{1},E.meta.(f{1}));
+        end
+        fprintf(fid,'#\n');
+    end
 	if isfield(E,'infos')
 		for i = 1:length(E.infos)
 			fprintf(fid,'#   %s\n',E.infos{i});

@@ -12,9 +12,9 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.6.4.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.6.4/WebObs-2.6.4.tar.gz) (109 Mb) updated December 18, 2023
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.6.4/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.6.4/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.7.3.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.7.3/WebObs-2.7.3.tar.gz) (103 Mb) updated February 5, 2025
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.7.3/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.7.3/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
@@ -38,7 +38,7 @@ To run WebObs you need to install the package which contains a setup script that
 You create/choose your WebObs directory within which you will execute the setup process. We suggest `/opt/webobs` (default). This directory will contain both
 WebObs code and WebObs data, and will be the DocumentRoot of the WebObs Apache's Virtual Host.
 
-setup will prompt you for a Linux WebObs userid (aka WebObs Owner) that it will create. The WebObs userid's group will also be added to Apache's user. See the WebObs user manual if you need to create your own WebObs owner. 	
+setup will prompt you for a Linux WebObs userid (aka WebObs Owner) that it will create. The WebObs userid's group will also be added to Apache's user. See the WebObs user manual if you need to create your own WebObs owner.
 
 The system-wide /etc/webobs.d symbolic link will identify your WebObs 'active' (production) installation.
 
@@ -56,11 +56,14 @@ sudo ./install -mode silent
 A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:
 
 ```sh
-sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq mutt xvfb \
-   curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
+sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq vim mutt xvfb \
+   curl gawk unzip graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
    libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
-   libtext-multimarkdown-perl libswitch-perl libintl-perl libncurses5 \
-   wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
+   libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl \
+   wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl \
+   libsocket6-perl libdigest-perl-md5-perl
+sudo apt install libncurses5 gdal-bin
+sudo apt install python-is-python3
 ```
 
 Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
@@ -80,6 +83,11 @@ Create the target WebObs directory:
 sudo mkdir -p /opt/webobs
 ```
 
+Create the webobs user:
+```sh
+sudo adduser wo
+```
+
 <a name="update"></a>
 ### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
 
@@ -94,14 +102,13 @@ Configuration files will be updaded and displayed/editabled at the end of the up
 
 ### C) Procedure for both A) and B) above
 
-With root privileges, in your target WebObs directory:
-1. execute `cd /opt/webobs`
-2. execute `tar xf WebObs-<version>.tar.gz`
-3. execute `WebObs-<version>/SETUP/setup`
-4. (re)start Apache
-5. launch the scheduler and postboard
-
-For users of systemd-base GNU/Linux distributions, the `setup` proposes an automatic installation for _scheduler_ and the _postboard_ services. If you accepted it, you can launch both systemd services with the following commands:
+In your target WebObs directory with root privileges:
+```sh
+cd /opt/webobs
+sudo tar xf <download_directory>/WebObs-<version>.tar.gz
+sudo WebObs-<version>/SETUP/setup
+```
+Then (re)start Apache (for example `sudo service apache2 restart`) and launch the scheduler and postboard. For users of systemd-base GNU/Linux distributions, the `setup` proposes an automatic installation for _scheduler_ and the _postboard_ services. If you accepted it, you can launch both systemd services with the following commands:
 ```sh
 sudo service woscheduler start
 sudo service wopostboard start
@@ -132,6 +139,19 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 
 <a name="whatsnew"></a>
 ## What's new and release history
+
+### What's new in the 2.7?
+- first effort of generic form for manual database management (under development... wait for v2.8!);
+- better security checking in user authentication and script access;
+- improvement in DSV data format;
+- new button to duplicate a node;
+- content of cross link node features displayed;
+- proc request form shows all variables;
+- new interface for publishing B3 reports;
+- finalization of the interface between WebObs and the Theia\|OZCAR data portal;
+- new format for calibration files;
+- new GNSS raw data formats;
+- some minor to moderate fixes and other minor improvements.
 
 ### What's new in the 2.6?
 - first effort for an interface between WebObs and the Theia\|OZCAR data portal;
@@ -226,12 +246,13 @@ ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 ## Awards
 The WebObs system has been awarded by a **"Community" accessit** during the **First Open Science Award Ceremony**, *Paris Open Science European Conference (OSEC)*, February 4-5, 2022. See related articles (mostly in French):
 - [Ministère de l'Enseignement Supérieur et de la Recherche](https://www.enseignementsup-recherche.gouv.fr/fr/remise-des-prix-science-ouverte-du-logiciel-libre-de-la-recherche-83576)
-- [Institut de Physique du Globe de Paris](https://www.ipgp.fr/fr/logiciel-webobs-recompense-lors-de-premiere-edition-prix-science-ouverte-logiciel-libre-remis-mesri)
+- [Institut de Physique du Globe de Paris](https://www.ipgp.fr/actus-et-agenda/actualites/le-logiciel-webobs-recompense-lors-de-la-premiere-edition-du-prix-science-ouverte-du-logiciel-libre-remis-par-le-mesri/)
 - [Université Paris Cité](https://u-paris.fr/le-logiciel-webobs-laureat-de-la-premiere-edition-du-prix-science-ouverte-du-logiciel-libre-de-la-recherche/)
 - [Resif/EPOS](https://www.resif.fr/blog/2022/02/22/prix-national-de-la-science-ouverte-le-logiciel-webobs-recompense/) [English version](https://www.resif.fr/en/blog/2022/02/22/national-open-science-award-webobs-software-wins-award/)
 
 ## References
 <a name="worefs"></a>
+*[search citing articles in Google Scholar](https://scholar.google.co.uk/scholar?hl=en&as_sdt=2005&cites=7741013752332516082&scipsc=)*
 ### Publications on the WebObs system
 1. Beauducel, F. and C. Anténor-Habazac (2002), **Quelques éléments d'une surveillance opérationnelle...**, *Journées des Observatoires Volcanologiques, Institut de Physique du Globe de Paris, 25 janvier 2002*. [PDF](http://www.ipgp.fr/~beaudu/2002_Beauducel_Antenor-Habazac.pdf) (in French)
 1. Beauducel, F., Anténor-Habazac, C., & Mallarino, D. (2004). **WEBOVS: Integrated monitoring system interface for volcano observatories**. *IAVCEI General Assembly, Pucon, Chile, November 2004*, poster. [PDF](http://web2013prod.ipgp.fr/~beaudu/download/2004_Beauducel_IAVCEI.pdf)
@@ -264,6 +285,10 @@ The WebObs system has been awarded by a **"Community" accessit** during the **Fi
 1.  Trasatti, E. et al. (2021). The Impact of Open Science for Evaluation of Volcanic Hazards. *Frontiers in Earth Science*, [doi:10.3389/feart.2021.659772](https://doi.org/10.3389/feart.2021.659772).
 1. Lowenstern, J. B., Wallace, K., Barsotti, S., Sandri, L., Stovall, W., Bernard, B., ... & Garaebiti, E. (2022). Guidelines for volcano-observatory operations during crises: recommendations from the 2019 volcano observatory best practices meeting. *Journal of Applied Volcanology*, 11(1), 1-24. [doi:10.1186/s13617-021-00112-9](https://doi.org/10.1186/s13617-021-00112-9)
 1. Chevrel, M. O., Harris, A., Peltier, A., Villeneuve, N., Coppola, D., Gouhier, M., & Drenne, S. (2022). Volcanic crisis management supported by near real-time lava flow hazard assessment at Piton de la Fournaise, La Réunion. *Volcanica*, 5(2), 313-334. [doi:10.30909/vol.05.02.313334](https://doi.org/10.30909/vol.05.02.313334)
+1. Barsotti, S., Scollo, S., Macedonio, G., Felpeto, A., Peltier, A., Vougioukalakis, G., ... & Salerno, G. (2024). The European Volcano Observatories and their use of the aviation colour code system. Bulletin of Volcanology, 86(3), 23.
+1. Chevrel, O. (2024). Contribution to the understanding of lava flow emplacement dynamics. Doctoral dissertation, Université Clermont Auvergne (UCA). [](https://hal.science/tel-04797648/document)
+1. Lowenstern, J. B. (2024). A Case for Improved Global Coordination of Volcano Observatories. Annals of Geophysics, 67(4), S436-S436.
+1. Widiwijayanti, C., Thin Zar Win, N., Espinosa-Ortega, T., Costa, F., & Taisne, B. (2024). The global volcano monitoring infrastructure database (GVMID). Frontiers in Earth Science, 12, 1284889.
 
 #### Seismology
 1. Bengoubou-Valérius M. et al. (2008). CDSA: A New Seismological Data Center for the French Lesser Antilles. *Seismol. Res. Lett.*, [doi:10.1785/gssrl.79.1.90](https://doi.org/10.1785/gssrl.79.1.90)
@@ -292,6 +317,11 @@ le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 
 1. Duputel Z. et al. (2021). Seismicity of La Réunion island. *Comptes Rendus Géoscience*, [doi:10.5802/crgeos.77](https://doi.org/10.5802/crgeos.77)
 1. Falcin, A. (2022). Détection et classification des signaux sismo-volcaniques de la Soufrière de Guadeloupe par apprentissage supervisé, *Doctorate Thesis, Université Paris Cité, 14 April 2022*.
 1. Retailleau, L. et al. (2022). Automatic detection for a comprehensive view of Mayotte seismicity, *Comptes Rendus Géoscience*, [doi:10.5802/crgeos.133](https://doi.org/10.5802/crgeos.133)
+1. Bedessem, B., Retailleau, L., Saurel, J. M., & Sadeski, L. (2023). Citizen Science for Disaster Risk Governance: Towards a Participative Seismological Monitoring of the Mayotte Volcanic Crisis. Citizen Science: Theory and Practice, 8(1).
+1. Panebianco, S., Serlenga, V., Satriano, C., Cavalcante, F., & Stabile, T. A. (2023). Semi-automated template matching and machine-learning based analysis of the August 2020 Castelsaraceno microearthquake sequence (southern Italy). Geomatics, Natural Hazards and Risk, 14(1), 2207715.
+1. Firode, L., Duputel, Z., Ferrazzini, V., & Lengliné, O. (2024). Seismicity under a dormant volcano: unveiling active crustal faulting beneath Piton des Neiges, La Réunion. Bulletin of the Seismological Society of America, 114(3), 1626-1638.
+1. Auclair, S., Nachbaur, A., Gehl, P., Legendre, Y., & Vittecoq, B. (2024). Co-defining a user-based desirable future for seismic alert systems with stakeholders: application to Martinique, French West Indies. International Journal of Disaster Risk Reduction, 104932.
+1. Rimpot, J., Hibert, C., Retailleau, L., Saurel, J. M., Malet, J. P., Forestier, G., ... & Pelleau, P. (2025). Self-supervised learning of seismological data reveals new eruptive sequences at the Mayotte submarine volcano. Geophysical Journal International, 240(1), 1-12.
 
 #### Deformation
 1.  Beauducel F. et al. (2014). Real-time source deformation modeling through GNSS permanent stations at Merapi volcano (Indonesia). *In AGU Fall Meeting Abstracts* Vol. 2014, pp. V41B-4800.
@@ -308,6 +338,9 @@ le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 
 1. Journeau, C. (2022). Insights into the magma transport beneath active volcanoes from seismic and geodetic networks. *Doctorate thesis, Université Grenoble Alpes, 23 September 2022*, pp. 230.
 1. Nikkhoo, M., & Rivalta, E. (2022). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. *Geophys. J. Int., 232(1), 643-655. [doi:10.1093/gji/ggac351](https://doi.org/10.1093/gji/ggac351)
 1. Peltier A., S. Saur, V. Ballu, F. Beauducel, P. Briole, J-B. de Chabalier, K. Chanard, D. Dausse, R. Grandin, P. Rouffiac, Y-T. Tranchant, M. Bès de Berc, S. Besançon, P. Boissier, C. Broucke, C. Brunet, K. Canjamalé, E. Carme, P. Catherine, A. Colombain, W. Crawford, R. Daniel, G. Dectot, N. Desfete, C. Doubre, T. Dumouch, C. Griot, M. Grunberg, H. Jund, P. Kowalski, F. Lauret, J. Lebreton, F. Pesqueira, F. Tronel, P. Valty and J. van der Woerd (2022). Ground deformation monitoring of the eruption offshore Mayotte, *Comptes Rendus Géoscience*, in press. [doi:10.5802/crgeos.176](https://doi.org/10.5802/crgeos.176)
+1. Grémion, S., Pinel, V., Shreve, T., Beauducel, F., Putra, R., Solikhin, A., ... & Humaida, H. (2023). Tracking the evolution of the summit lava dome of Merapi volcano between 2018 and 2019 using DEMs derived from TanDEM-X and Pléiades data. Journal of Volcanology and Geothermal Research, 433, 107732.
+1. Basuki, A., Purnamasari, H. D., & Syahbana, D. K. (2023, August). The 2021 Semeru volcano eruption: An insight from visual, seismic, and deformation monitoring data. In IOP Conference Series: Earth and Environmental Science (Vol. 1227, No. 1, p. 012030). IOP Publishing.
+1. Nikkhoo, M., & Rivalta, E. (2023). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. Geophysical Journal International, 232(1), 643-655.
 
 
 #### Critical Zone

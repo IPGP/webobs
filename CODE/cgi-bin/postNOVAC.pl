@@ -151,6 +151,7 @@ my $maxId = 0;
 my $msg = "";
 my $newID;
 my $entete = u2l("Id|Date|Site|Flux1|Flux2|WindSpeed|WindSpeedSource|WindDirection|WindDirectionSource|CompassDirection|ConeAngle|Tilt|PlumeHeight|PlumeHeightSource|Offset|PlumeCenter|PlumeEdge1|PlumeEdge2|PlumeCompleteness|GeomError|SpectrometerError|ScatteringError|WindError|NbValidScans\n");
+
 # ------------------------------------------------------------
 # ---- end of specific NOVAC form data retrieval -------------
 # ------------------------------------------------------------
@@ -158,74 +159,78 @@ my $entete = u2l("Id|Date|Site|Flux1|Flux2|WindSpeed|WindSpeedSource|WindDirecti
 # ---- lock-exclusive the data file during all update process
 #
 if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
-	unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-		warn "postNOVAC waiting for lock on $fileDATA...";
-		flock(FILE, LOCK_EX);
-	}
-	# ---- backup file (To Be Removed: lifecycle too short to be used ) 
-	if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
-	if ( $?  == 0 ) { 
-		seek(FILE, 0, SEEK_SET);
-		while (<FILE>) {
-	   		chomp($_);
-			my ($id) = split(/\|/,$_);
-			if ($id =~ m/^[0-9]+$/) {
-				if ($id > $maxId) { $maxId = $id }	
-				if (($idTraite ne $id)) { 
-					push(@lignes,$_."\n") ;
-				}
-			}
-		}
-		if ($idTraite ne "") {
-			if ($delete > 0) {
-				# effacement: changement de signe de l'ID
-				$newID = -($idTraite);
-				$msg = "Delete/recover existing record #$idTraite (in/from trash).";
-			} else {
-				$newID = $idTraite;
-				$msg = "Record #$idTraite has been updated.";
-			}
-		} else {
-			$newID = ++$maxId;
-			$msg = "new record #$newID has been created.";
-		}
-		# ------------------------------------------------------------
-		# ---- start of specific NOVAC data creation -----------------
-		# ------------------------------------------------------------
-		my $chaine = u2l("$newID|$date|$site|$flux1|$flux2|$windSpeed|$windSpeedSource|$windDirection|$windDirectionSource|$compassDirection|$coneAngle|$tilt|$plumeHeight|$plumeHeightSource|$offset|$plumeCentre|$plumeEdge1|$plumeEdge2|$plumeCompleteness|$geomError|$spectrometerError|$scatteringError|$windError|$nbValidScans\n");
-		# ------------------------------------------------------------
-		# ---- end of specific NOVAC data creation -------------------
-		# ------------------------------------------------------------
-		if ($delete < 2) {
-			push(@lignes, $chaine);
-		} else {
-			$msg = "Record #$idTraite has been definitively deleted !";
-		}
-		@lignes = sort tri_date_avec_id @lignes;
-		truncate(FILE, 0);
-		seek(FILE, 0, SEEK_SET);
-		print FILE $entete;
-		print FILE @lignes ;
-		close(FILE);
-		htmlMsgOK();
-	} else {
-		close(FILE);
-		htmlMsgNotOK("postNOVAC couldn't backup $fileDATA ");
-	}
+    unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+        warn "postNOVAC waiting for lock on $fileDATA...";
+        flock(FILE, LOCK_EX);
+    }
+
+    # ---- backup file (To Be Removed: lifecycle too short to be used ) 
+    if (-e $fileDATA) { qx(cp -a $fileDATA $fileDATA~ 2>&1); }
+    if ( $?  == 0 ) {
+        seek(FILE, 0, SEEK_SET);
+        while (<FILE>) {
+            chomp($_);
+            my ($id) = split(/\|/,$_);
+            if ($id =~ m/^[0-9]+$/) {
+                if ($id > $maxId) { $maxId = $id }
+                if (($idTraite ne $id)) {
+                    push(@lignes,$_."\n") ;
+                }
+            }
+        }
+        if ($idTraite ne "") {
+            if ($delete > 0) {
+
+                # effacement: changement de signe de l'ID
+                $newID = -($idTraite);
+                $msg = "Delete/recover existing record #$idTraite (in/from trash).";
+            } else {
+                $newID = $idTraite;
+                $msg = "Record #$idTraite has been updated.";
+            }
+        } else {
+            $newID = ++$maxId;
+            $msg = "new record #$newID has been created.";
+        }
+
+        # ------------------------------------------------------------
+        # ---- start of specific NOVAC data creation -----------------
+        # ------------------------------------------------------------
+        my $chaine = u2l("$newID|$date|$site|$flux1|$flux2|$windSpeed|$windSpeedSource|$windDirection|$windDirectionSource|$compassDirection|$coneAngle|$tilt|$plumeHeight|$plumeHeightSource|$offset|$plumeCentre|$plumeEdge1|$plumeEdge2|$plumeCompleteness|$geomError|$spectrometerError|$scatteringError|$windError|$nbValidScans\n");
+
+        # ------------------------------------------------------------
+        # ---- end of specific NOVAC data creation -------------------
+        # ------------------------------------------------------------
+        if ($delete < 2) {
+            push(@lignes, $chaine);
+        } else {
+            $msg = "Record #$idTraite has been definitively deleted !";
+        }
+        @lignes = sort tri_date_avec_id @lignes;
+        truncate(FILE, 0);
+        seek(FILE, 0, SEEK_SET);
+        print FILE $entete;
+        print FILE @lignes ;
+        close(FILE);
+        htmlMsgOK();
+    } else {
+        close(FILE);
+        htmlMsgNotOK("postNOVAC couldn't backup $fileDATA ");
+    }
 } else {
-	htmlMsgNotOK("postNOVAC opening - $!");
+    htmlMsgNotOK("postNOVAC opening - $!");
 }
 
 # --- return information when OK 
 sub htmlMsgOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$msg"; 
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "$msg";
 }
 
 # --- return information when not OK
 sub htmlMsgNotOK {
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "Update FAILED !\n $_[0] \n";
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "Update FAILED !\n $_[0] \n";
 }
 
 __END__

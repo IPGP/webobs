@@ -34,6 +34,24 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: extract from SmoothFinal.tdp output file (grep "Station.SSSS.State.pos.[XYZ]" lines)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
+%	format 'gins-ippp'
+%		type: GINS IPPP solutions
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: yyyymmdd hhmmss yyyy.yyyyyyyyy jjjjj.jj X Y Z dX dY dZ E N V dE dN dV
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
+%	format 'gamit-pos'
+%		type: GAMIT/GLOBK POS file
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: yyyymmdd jjjjj.jjjj E N U dE dN dU
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
+%	format 'pbogps-pos'
+%		type: PBO GPS POS file
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: yyyymmdd HHMMSS jjjjj.jjjj X Y Z Sx Sy Sz Rxy Rxz Ryz NLat Elong Height dN dE dU Sn Se Su Rne Rnu Reu Soln
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
 %	format 'usgs-rneu'
 %		type: USGS GPS results ITRF08
 %		filename/url: P.RAWDATA (use $FID to point the right file/url)
@@ -55,10 +73,12 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2021-11-12
+%	Updated: 2025-01-23
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
+% minimum decent error is 0.1 mm (!)
+min_error = 1e-4;
 
 switch F.fmt
 % -----------------------------------------------------------------------------
@@ -117,6 +137,93 @@ case 'globkval'
 	%	end
 	%end
 	%D.ITRF_YEAR = itrf;
+
+
+% -----------------------------------------------------------------------------
+case 'gamit-pos'
+	% format example
+	% yyyymmdd jjjjj.jjjj  E       N        U       dE      dN      dU
+    % 20100101 55197.4993 -0.09875 -0.11953 0.00075 0.00198 0.00161 0.00645
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		cmd0 = sprintf('awk ''/^[^!]/ {print}'' >> %s',fdat); % removes header lines
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = dd(:,2) + 678941.5007; % converts MJD to datenum
+		d = [dd(:,3:5),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		e = dd(:,6:8);
+		e(e<min_error) = min_error;
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
+
+% -----------------------------------------------------------------------------
+case 'pbogps-pos'
+	% format example
+    % yyyymmdd HHMMSS jjjjj.jjjj X Y Z Sx Sy Sz Rxy Rxz Ryz NLat Elong Height dN dE dU Sn Se Su Rne Rnu Reu Soln
+    % 20250212 115945 60718.4998  4618597.03234  2220590.27859  3784545.63876  0.00112  0.00059  0.00095  0.745  0.870  0.711      36.6296744507   25.6779335081   89.43296     0.00000   0.00000   0.00000    0.00037  0.00036  0.00149 -0.045  0.050 -0.118 final
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('curl -s -S "%s" >> %s',fraw,fdat),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat %s >> %s',fraw,fdat),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		X = readpbopos(fdat);
+		t = X.t;
+		d = [X.dE,X.dN,X.dU,zeros(length(t),1)]; % dE,dN,dU,Orbit
+        utm = ll2utm(X.NEUReferencePosition(1:2));
+		d(:,1:3) = d(:,1:3) + repmat([utm,X.NEUReferencePosition(3)],length(t),1); % dE,dN,dU => E_UTM(m),N_UTM(m),U(m)
+        d(~strcmpi(X.Soln,'final'),4) = 1; % non-final orbits
+		e = [X.Se,X.Sn,X.Su];
+		e(e<min_error) = min_error;
+
+		fprintf('%d data imported.\n',size(t,1));
+	else
+		t = [];
+	end
+	if isempty(t)
+		fprintf('no data found!\n')
+		d = [];
+		e = [];
+	end
 
 % -----------------------------------------------------------------------------
 case {'gipsy','gipsy-tdp','gipsyx'}
@@ -183,8 +290,7 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 		% converts cartesian geocentric (X,Y,Z) to UTM, estimating errors
 		[enu,e] = cart2utm(dd(:,[2,6,10])*kmfact,dd(:,[3,7,11])*kmfact);
 		d = [enu,dd(:,4)];
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf(' %d data imported.\n',size(dd,1));
 	else
 		fprintf(' no data found!\n')
@@ -193,6 +299,49 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 		e = [];
 	end
 	%D.ITRF_YEAR = 'ITRF08';
+
+% -----------------------------------------------------------------------------
+case 'spotgins-ippp'
+	% format example
+	% !yyyymmdd hhmmss yyyy.yyyyyyyyy  jjjjj.jj        X_position        Y_position        Z_position            dX            dY            dZ             E             N             V            dE            dN            dV
+    %  20160723  65619 2016.558521561  57592.29    4182067.152057     570976.439258    4765940.539811      0.000611      0.000218      0.000673     -0.006574     -0.008848     -0.014844      0.000205      0.000307      0.000859
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		cmd0 = sprintf('awk ''/^[^!]/ {print}'' >> %s',fdat); % removes header lines
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = datenum(dd(:,3),1,1,0,0,0);
+		d = [dd(:,11:13),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		e = dd(:,14:16);
+		e(e<min_error) = min_error;
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
 
 % -----------------------------------------------------------------------------
 case 'usgs-rneu'
@@ -230,8 +379,7 @@ case 'usgs-rneu'
 		t = datenum(ty,tm,td,12,0,0);	% date is YYYYMMDD and we force time to 12:00:00
 		d = [dd(:,[3,2,4])/1e3,dd(:,5)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
 		e = dd(:,[7,6,8])/1e3;
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -274,8 +422,7 @@ case 'ies-neu'
 		t = datenum(dd(:,1),1,1,0,0,0);	% date is decimal year
 		d = [dd(:,[4,2,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
 		e = dd(:,[5,3,7]);
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -318,8 +465,7 @@ case 'ogc-neu'
 		t = datenum(dd(:,2),dd(:,3),dd(:,4),12,0,0);	% here we force time to noon
 		d = [dd(:,[6,5,7]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
 		e = dd(:,[9,8,10]);
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')
@@ -367,8 +513,7 @@ case 'ingv-gps'
 		t = datenum(dd(:,1),1,1);	% here we force time to January 1st!
 		d = [dd(:,2:4),zeros(size(dd,1),1)];
 		e = dd(:,5:7);
-		% minimum decent error is 1 mm (!)
-		e(e<1e-3) = 1e-3;
+		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
 	else
 		fprintf('no data found!\n')

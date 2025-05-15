@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2023-02-14
+%   Updated: 2025-05-06
 
 
 WO = readcfg;
@@ -58,8 +58,8 @@ plotbgall = field2num(P,'PLOT_BG_ALL',0);
 linewidth = field2num(P,'MARKER_LINEWIDTH',1);
 bubbleplot = isok(P,'BUBBLE_PLOT');
 
-demopt = {};
-if isfield(P,'DEM_OPT')
+demopt = {'Watermark',2};
+if isfield(P,'DEM_OPT') && ~isempty(P.DEM_OPT)
 	try
 		eval(sprintf('demopt={%s};',regexprep(P.DEM_OPT,'''''','''')));
 	catch
@@ -96,9 +96,9 @@ for m = 1:length(summarylist)
 		M(m).xylim = xyw2lim(M(m).xylim,1/cosd(M(m).xylim(2)));
 	end
 
-	% magnitude limits (for marker size scaling)
+	% magnitude limits (not a filter, for marker size scaling)
 	M(m).mlim = field2num(P,sprintf('MAP_%s_MAGLIM',map),P.MAGLIM);
-	% depth limits (for marker color scaling)
+	% depth limits (filter and marker color scaling)
 	M(m).dlim = field2num(P,sprintf('MAP_%s_DEPLIM',map),P.DEPLIM);
 	% colormap
 	M(m).cmap = field2num(P,sprintf('MAP_%s_COLORMAP',map),cmap,'val');
@@ -141,16 +141,16 @@ for m = 1:length(summarylist)
 			tlim = minmax(t);
 		end
 
-		% selects data (time window + map limits + quality filter)
-		k = find(isinto(t,tlim) & (e > 0 | ~qualityfilter) & isinto(d(:,1),M(m).xylim(3:4)) & isinto(d(:,2),M(m).xylim(1:2)));
+		% selects data (time window + map limits + depth limit + magnitude limits + quality filter)
+		k = find(isinto(t,tlim) & (e > 0 | ~qualityfilter) & isinto(d(:,1),M(m).xylim(3:4)) & isinto(d(:,2),M(m).xylim(1:2)) & isinto(d(:,3),M(m).dlim));
 		[tk,kk] = sort(t(k));
 		dk = d(k(kk),:);
 		ck = c(k(kk),:);
 		styp = {};
 		if ~isempty(ck)
-			T.c = ck(:,4); % takes comment field (if MC)
+			T.c = ck(:,4); % takes comment field (MC event type)
 			kc = cellfun(@isempty,T.c);
-			T.c(kc) = ck(kc,3);
+			T.c(kc) = ck(kc,3); % empty values are replaced by original event type
 			[T.u,T.ia,T.ic] = unique(T.c);
 			for n = 1:length(T.u)
 				styp = [styp{:},{sprintf('{\\bf%s} (%d),',deblank(T.u{n}),length(find(T.ic==n)))}];
@@ -499,18 +499,19 @@ end
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [xp,yp]=plotcross(prof,xylim,a,b)
 %PLOTCROSS Plots cross-section
+%   prof = [lon0,lat0,az,dist,dep]
 
 lw = .5;
 
 % if profile azimuth above 45°, plots the cross section lines from X axis limits
 if abs(tand(prof(3))) >= 1
 	xp = xylim(1:2);
-	yp = prof(2) + [xylim(1)-prof(1),xylim(2)-prof(1)]*tand(90-prof(3));
+	yp = prof(2) + [xylim(1)-prof(1),xylim(2)-prof(1)]*tand(90-prof(3))*cosd(prof(2));
 	plot(repmat(xp,2,1)',repmat(yp,2,1)' + [1,-1;1,-1]*prof(4)/degkm(prof(2))/cosd(90-prof(3)),':k','LineWidth',lw)
 % else from Y axis...
 else
 	yp = xylim(3:4);
-	xp = prof(1) + [xylim(3)-prof(2),xylim(4)-prof(2)]*tand(prof(3));
+	xp = prof(1) + [xylim(3)-prof(2),xylim(4)-prof(2)]*tand(prof(3))/cosd(prof(2));
 	plot(repmat(xp,2,1)' + [1,-1;1,-1]*prof(4)/degkm(prof(2))/cosd(prof(3)),repmat(yp,2,1)',':k','LineWidth',lw)
 end
 plot(xp,yp,'-.k','LineWidth',lw)

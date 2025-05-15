@@ -3,7 +3,7 @@
 # directory). Please copy, rename and edit it for each "network".
 #
 # Created: 2019-02-25
-# Updated: 2021-02-09
+# Updated: 2025-01-17
 
 # main temporary directory (/tmp per default, change is recommended)
 TMPDIRMAIN=/tmp
@@ -47,6 +47,7 @@ ORBITSDIR=/home/wo/GNSS/JPL_Local_Orbits
 
 # download_orbit options (see download_orbit)
 DOWNLOAD_OPTIONS="-r 30"
+# "-r 30": orbits older than 30 day are removed
 
 # gd2e.py options
 GIPSYOPTIONS="-runType PPP"
@@ -66,17 +67,43 @@ REALTIME=""
 # data delay for realtime processing
 DATA_DELAY="5 min"
 
+###### Processing details management
+### activate debug mode
+# verbose mode & temporary folders will not be deleted
+DEBUG=0
+
+### Full log record
+# Temporary folders are stored in a 
+# .fullog.7z file (7zip needed)
+FULLOG=0
+
+###### Advanced geodetic modes
+
 ### use fiducial (regular) or non-fiducial (NF) orbits. 
 # NFORB option will add '-prodTypeGNSS nf -gdCov' in the GIPSYOPTIONS
 # and will perform the post-processing re-alignement 
 # leave NFORB=0 if you are not sure of what you are doing
+NFORB=0
 # *** Detailed Note:
 # JPL's Fiducial orbits are directly aligned to ITRF.
 # But the usage of Non-fiducial orbits are recommended by
 # the JPL and the geodetic community
 # Coordinates computed with non Fiducial orbits requiries
 # a re-alignement to the ITRF with external Helmert parameters 
-NFORB=0
+
+### Apply Center-of-Mass > Center-of-Figure transformation 
+# CM2CF option will add '-gdCov' in the GIPSYOPTIONS
+# and will perform a post-processing CM > CF transformation
+# Activate CM2CF is recommended, but stays OFF per default
+CM2CF=0
+# *** Detailled Note:
+# Since August 2024, JPL provides its orbits in 
+# IGS20 (~ITRF2020) w.r.t. Earth's Center of Mass (CM)
+# For volcanological studies, Earth's Center of Figure (CF)
+# is a better origin point (no seasonal signal visible)
+# Thus, a CM > CF transformation is needed
+
+
 
 
 

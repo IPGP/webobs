@@ -6,17 +6,22 @@ function y = decim(x,r,method)
 %	decimated vectors of each column.
 %
 %   DECIM(X,R,METHOD) uses one of the following METHOD for decimation:
-%	    'mean' : mean value (default)
+%	    'mean' : mean value
+%	   'rmean' : mean value excuding NaN (default)
 %	  'median' : median value
+%	 'rmedian' : median value exculding NaN
 %	     'sum' : sum value
+%	    'rsum' : sum value excluding NaN
 %	     'min' : minimum value
 %	     'max' : maximum value
 %
+%   Dependencies: RMEAN, RMEDIAN, RSUM.
+%
 %	Author: François Beauducel, IPGP
 %	Created: 1996
-%	Updated: 2022-03-29
+%	Updated: 2025-04-01
 
-%	Copyright (c) 2021, François Beauducel, covered by BSD License.
+%	Copyright (c) 2025, François Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without
@@ -47,11 +52,12 @@ if nargin < 2
 end
 
 if ~isscalar(r) || r ~= abs(round(r))
-	error('R must be an positive integer scalar!')
+    r = 1;
+	warning('R must be an positive integer scalar!')
 end
 
 if nargin > 2
-	if ~ischar(method) || ~ismember(method,{'mean','median','sum','min','max'})
+	if ~ischar(method) || ~ismember(method,{'mean','rmean','median','rmedian','sum','rsum','min','max'})
 		error('Unknown METHOD argument.')
 	end
 else
@@ -80,15 +86,21 @@ y = nan(mr,n);
 for j = 1:n
 	xx = reshape(x(1:mr*r,j),[],mr);
 	switch lower(method)
+		case 'mean'
+			y(:,j) = mean(xx)';
 		case 'median'
 			y(:,j) = median(xx)';
+		case 'rmedian'
+			y(:,j) = rmedian(xx)';
 		case 'sum'
 			y(:,j) = sum(xx)';
+		case 'rsum'
+			y(:,j) = rsum(xx)';
 		case 'min'
 			y(:,j) = min(xx)';
 		case 'max'
 			y(:,j) = max(xx)';
 		otherwise
-			y(:,j) = mean(xx)';
+			y(:,j) = rmean(xx)';
 	end
 end

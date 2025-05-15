@@ -94,9 +94,15 @@ install_systemd_services() {
 	local postboard_service="/etc/systemd/system/wopostboard.service"
 	local scheduler_service="/etc/systemd/system/woscheduler.service"
 
-	if ! ( command -v systemctl > /dev/null && systemctl is-system-running --quiet ); then
-		echo "You system does not seem to be running systemd. Skipping installation of systemd services."
+	if ! ( command -v systemctl > /dev/null ); then
+		echo "Your system does not seem to be running systemd. Skipping installation of systemd services."
 		return
+	fi
+
+	if ! ( systemctl is-system-running --quiet ); then
+		echo "Warning: Your systemd is not fully functional. Status is:"
+		systemctl is-system-running
+		echo "WebObs systemd services will be installed anyway, but might not working properly."
 	fi
 
 	if ! [[ -r "$postboard_tmpl" && -r "$scheduler_tmpl" ]]; then
@@ -393,7 +399,7 @@ fi
 # could add [ rpm -qa | grep xxx   --or-- dpkg --get-selections | grep xxx ]
 echo    'Gathering main software dependencies info ...'
 echo    'Perl...';        APP_PERL=$(perl -e 'print "$^V"' 2>/dev/null)
-echo -n 'Python...';      APP_PYTHON="$(which python)"
+echo -n 'Python...';      APP_PYTHON="$(which python3)"
 echo -n 'Sqlite...';      APP_SQLITE=$(sqlite3 -version 2>/dev/null)
 echo -n 'ImageMagick...'; APP_IMAGICK=$(convert --version 2>/dev/null)
 echo -n 'pngquant...';    APP_PNGQUANT="$(which pngquant)"
@@ -413,24 +419,27 @@ if [[ -z "${APP_PERL}" ]] ; then DEPMISS=true; echo '**** need Perl install';
 else
 	# some more checkings for PERL modules (not blocking install)
 	verbosecho "Perl ${APP_PERL}"
-	if [[ -f ${RELBASE}/CODE/cgi-bin/out-scandeps ]]; then
+	if [[ -f ${RELBASE}/SETUP/out-scandeps ]]; then
 		echo -n "Scanning installed perl modules vs cgi-bin requirements ... "
 		# test module presence (using perlmod_installed defined above), append to notinst if not loadable
 		notinst=()
 		while read mname; do
 			perlmod_installed ${mname} || notinst[${#notinst[@]}]="${mname}"
-		done< ${RELBASE}/CODE/cgi-bin/out-scandeps
+		done< ${RELBASE}/SETUP/out-scandeps
 		echo "done."
 		# print notinst list
 		if [[ ${#notinst[@]} != 0 ]]; then
 			echo
-			echo "**** Warning: some required perl modules could not be found, please check:"
+			echo "**** Warning: some required perl modules could not be found:"
+			echo
 			for t in "${notinst[@]}"; do
 				# there could be added the linux distro's package containing module !
 				# (eg. yum search module (or yum provides) OR apt-file search module
 				echo "  " ${t}
 			done
 			echo
+			echo "Aborted."
+			exit
 		fi
 	else
 		echo "missing out-scandeps - skipping perl modules checkings"
@@ -473,6 +482,15 @@ if ${DEPMISS}; then
 	fi
 fi
 echo
+
+# Update CLB files if needed
+if [[ -d "${DOCROOT}/DATA/NODES/" ]]; then
+	export DOCROOT
+	export RELBASE
+	export USERID
+	${RELBASE}/SETUP/migration/migration_clb.sh || { exit 1; }
+	echo
+fi
 
 # Webobs perl modules system-wide installation --------------------------------
 # -----------------------------------------------------------------------------
@@ -517,7 +535,7 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 	if [[ $(id ${USERID} 2>/dev/null) ]]; then
 		echo "${USERID} already exists"
 	else
-		rcmd="useradd -r -U ${USERID}"
+		rcmd="useradd -r -m -U ${USERID}"
 		if $(confirmy "Confirm create WebObs user (${rcmd}) [Y/n] ? ") ; then
 			${rcmd}
 			errexit "creating user ${USERID}"

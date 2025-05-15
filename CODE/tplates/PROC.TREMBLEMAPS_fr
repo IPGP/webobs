@@ -4,8 +4,12 @@
 # in associated NODE's RAWFORMAT field
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/tremblemaps.m for further information.
 
-# long name of the PROC
-NAME|Rapports séisme ressenti B3 (FR)
+# name of the PROC
+NAME|Rapports séisme ressenti B3
+
+# description of what the proc does
+DESCRIPTION|Rapports séisme ressenti B3 (FR)
+
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 RAWFORMAT|quakes
 TYPE|
@@ -31,7 +35,7 @@ TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} tremblemaps $SELFREF -
-SUBMIT_RESOURCE|tremblemaps
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|SC3_LISTEVT,EVENTS_OVERWRITING,WATERMARK,FELT_FORCED,REGION
@@ -73,10 +77,10 @@ CITIES|$WEBOBS{ROOT_CONF}/Cities.conf
 # see ${CITIES} file for valid regions
 REGION|Guadeloupe
 #REGION|Martinique
-#REGION|Réunion
-AREA|la Guadeloupe et îles du Nord
+#REGION|Rï¿½union
+AREA|la Guadeloupe et ï¿½les du Nord
 #AREA|la Martinique
-#AREA|la Réunion
+#AREA|la Rï¿½union
 # each city is considered as a circle around its lat/lon center
 CITIES_RADIUS_KM|1
 
@@ -108,19 +112,22 @@ AUTOPRINT|NO
 
 # event must be defined in the postboard
 NOTIFY_EVENT|feltquake.
-NOTIFY_EMAIL_SUBJECT|$quake_strength M=$quake_magnitude - B3=$msk ($msk_max max) ¿ $city
+NOTIFY_EMAIL_SUBJECT|$quake_strength M=$quake_magnitude - B3=$msk ($msk_max max) ï¿½ $city
 REPORT_TEXT_ROOT|$WEBOBS{ROOT_CONF}/TREMBLEMAPS
 REPORT_TEXT_FILE|${REPORT_TEXT_ROOT}_TEXT_fr.txt
 REPORT_FELT_FILE|${REPORT_TEXT_ROOT}_FELT_fr.txt
 REPORT_AUTO_FILE|${REPORT_TEXT_ROOT}_AUTO_fr.txt
 
+# watermark text for AUTO and others
 WATERMARK_AUTO|AUTOMATIQUE
 WATERMARK|
+
+# report text content
 TITLE1|Rapport préliminaire de séisme concernant
 TITLE2|${AREA}
 SUBTITLE1|{\bfObservatoire Volcanologique et Sismologique de Guadeloupe - IPGP}
 SUBTITLE2|Le Houëlmont - 97113 Gourbeyre - Guadeloupe (FWI)
-SUBTITLE3|Tél: +590 (0)590 99 11 33 - Fax: +590 (0)590 99 11 34 - infos@ovsg.univ-ag.fr - www.ipgp.fr
+SUBTITLE3|Tï¿½l: +590 (0)590 99 11 33 - Fax: +590 (0)590 99 11 34 - infos@ovsg.univ-ag.fr - www.ipgp.fr
 REPORT_DATE|Paris, $report_date à $report_time (locale)
 EVENT_TITLE1|Magnitude $quake_magnitude, $quake_latitude, $quake_longitude, profondeur $quake_depth
 EVENT_TITLE2|$long_date $time
@@ -129,24 +136,28 @@ LIST_TITLE2|{\bf(et maximales)}
 LIST_OUTOF|{\bfHors ${AREA}}
 LIST_UNFELT1|non ressenti dans les communes
 LIST_UNFELT2|de ${AREA}
-
 TABLE_HEADERS|Perception Humaine,Dégâts Potentiels,Accélérations (mg),Intensités EMS98
 TABLE_WHITE_MSK|10:12
-FOOTNOTE1|(*) {\bfmg} = "milli g¿" est une unit¿ d'accélération correspondant au millième de la pesanteur terrestre
+FOOTNOTE1|(*) {\bfmg} = "milli gé" est une unité d'accélération correspondant au millième de la pesanteur terrestre
 FOOTNOTE2|La ligne pointillée délimite la zone où le séisme a pu être potentiellement ressenti.
-
 LESS_1KM_TEXT|moins de 1 km
 ADDITIONAL_TEXT|
+
+# GSE file report
 GSE_EXPORT|N
 GSE_TITLE|${REGION}: $quake_strength $quake_type $epicentral $azimuth de $city ($region)
 GSE_AUTO_TITLE|${REGION}: $quake_strength $epicentral $azimuth de $city ($region)
 GSE_COMMENT|$azimuth de $city ($region)
 
+# JSON file
 JSON_EXPORT|Y
 
+# trigger email
 MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
 TRIGGER_EMAIL|
 TRIGGER_SUBJECT|SEISME RESSENTI
+TRIGGER_DEPARTMENT|
+TRIGGER_AGENCY|
 REPORT_EMAIL|
 REPORT_SUBJECT|[OVS-IPGP] Séisme ressenti
 REPORT_FOOTNOTE|Si vous avez ressenti ce séisme, merci de témoigner sur le site du BCSF à l'adresse suivante : www.franceseisme.fr

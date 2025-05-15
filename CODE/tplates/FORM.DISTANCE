@@ -1,0 +1,156 @@
+=key|value
+# Generic FORM template for use with {formGRID.pl,showGENFORM,formGENFORM}.pl
+#
+# ############################### WARNING #####################################
+# Once the database form has been created and the first data has been recorded,
+# you MUST BE VERY CAREFUL IN MODIFYING the keys of this file.
+# ############################### WARNING #####################################
+
+#
+# -----------------------------------------------------------------------------
+# --- GRID common parameters
+
+NAME|Distancem&egrave;tre
+DESCRIPTION|Banque de donn&eacute;es distancem&eacute;trie laser (EDM)
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|OVSG
+
+# --- node parameters (display and maps)
+NODE_NAME|cible
+NODE_MARKER|^
+NODE_SIZE|10
+NODE_RGB|0,1,0
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
+BANG|2000
+
+# Time zone of the data (in hour from UT)
+TZ|0
+
+# if YES, use start and end date/time for each record
+STARTING_DATE|NO
+
+# may contain any +GID and/or UID list (comma separated)
+OPERATORS_LIST|+DUTY
+
+# if YES, use a quality check for each record
+QUALITY_CHECK|NO
+QUALITY_OPERATORS|+ADMIN
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
+
+# comment input field
+COMMENT_SIZE|80
+COMMENT_HELP|Notez vos observations complémentaires
+
+
+# ############################### WARNING #####################################
+# Once created, you cannot remove or rename any input since it will corrupt
+# the database. You might only add new inputs, increasing the index XX
+# ############################### WARNING #####################################
+# --- Inputs names, units, and types
+# valid types: text(size), numeric(size), list: filename, radio: filename
+INPUT01_NAME|Type d'instrument
+INPUT01_TYPE|list: FORM_DISTANCE_fr_list_type.conf
+INPUT02_NAME|P<sub>Atm</sub>
+INPUT02_UNIT|mmHg
+INPUT03_NAME|T<sub>Air</sub>
+INPUT03_UNIT|&deg;C
+INPUT04_NAME|H.R.
+INPUT04_UNIT|%
+INPUT05_NAME|N&eacute;bulosit&eacute;
+INPUT05_TYPE|list: FORM_DISTANCE_fr_list_meteo.conf
+INPUT05_FILT|YES
+INPUT06_NAME|Vitre ouverte
+INPUT06_TYPE|checkbox
+INPUT07_NAME|D<sub>0</sub>
+INPUT07_UNIT|m
+INPUT08_NAME|d<sub>01</sub>
+INPUT09_NAME|d<sub>02</sub>
+INPUT10_NAME|d<sub>03</sub>
+INPUT11_NAME|d<sub>04</sub>
+INPUT12_NAME|d<sub>05</sub>
+INPUT13_NAME|d<sub>06</sub>
+INPUT14_NAME|d<sub>07</sub>
+INPUT15_NAME|d<sub>08</sub>
+INPUT16_NAME|d<sub>09</sub>
+INPUT17_NAME|d<sub>10</sub>
+INPUT18_NAME|d<sub>11</sub>
+INPUT19_NAME|d<sub>12</sub>
+INPUT20_NAME|d<sub>13</sub>
+INPUT21_NAME|d<sub>14</sub>
+INPUT22_NAME|d<sub>15</sub>
+INPUT23_NAME|d<sub>16</sub>
+INPUT24_NAME|d<sub>17</sub>
+INPUT25_NAME|d<sub>18</sub>
+INPUT26_NAME|d<sub>19</sub>
+INPUT27_NAME|d<sub>20</sub>
+
+# --- Outputs names, units, and types
+# valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
+OUTPUT01_NAME|Fractions (mm) =
+OUTPUT01_TYPE|text: 
+OUTPUT02_NAME|d<sub>mean</sub>
+OUTPUT02_UNIT|m
+OUTPUT02_TYPE|formula(9): INPUT07 + mean(INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,INPUT13,INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,INPUT20,INPUT21,INPUT22,INPUT23,INPUT24,INPUT25,INPUT26,INPUT27)/1000
+OUTPUT02_HELP|Moyenne des distances
+OUTPUT03_NAME|2&sigma;
+OUTPUT03_UNIT|m
+OUTPUT03_TYPE|formula: 2*std(INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,INPUT13,INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,INPUT20,INPUT21,INPUT22,INPUT23,INPUT24,INPUT25,INPUT26,INPUT27)/1000
+OUTPUT03_THRESHOLD|1,2
+OUTPUT03_HELP|2 * &Eacute;cart-type
+
+# --- Form layout
+
+# note: first column starts with the mandatory date/site/operator fieldset
+COLUMN01_LIST|FIELDSET01
+COLUMN02_LIST|FIELDSET02
+
+# first fieldset name, number of cells and list of fields for each column
+FIELDSET01_NAME|Informations tourelle
+FIELDSET01_CELLS|2,COLS
+FIELDSET01_C01|INPUT01,INPUT05,INPUT06
+FIELDSET01_C02|INPUT02,INPUT03,INPUT04
+
+# second fieldset with 2 columns
+FIELDSET02_NAME|Mesures de distance: D<sub>0</sub> (m) + d<sub>n</sub> (mm)
+FIELDSET02_CELLS|13,ROWS
+FIELDSET02_C01|INPUT07
+FIELDSET02_C02|OUTPUT01
+FIELDSET02_C03|INPUT08,INPUT09
+FIELDSET02_C04|INPUT10,INPUT11
+FIELDSET02_C05|INPUT12,INPUT13
+FIELDSET02_C06|INPUT14,INPUT15
+FIELDSET02_C07|INPUT16,INPUT17
+FIELDSET02_C08|INPUT18,INPUT19
+FIELDSET02_C09|INPUT20,INPUT21
+FIELDSET02_C10|INPUT22,INPUT23
+FIELDSET02_C11|INPUT24,INPUT25
+FIELDSET02_C12|INPUT26,INPUT27
+FIELDSET02_C13|OUTPUT02,OUTPUT03
+
+# ############################### WARNING #####################################
+# Export list of inputs/outputs must fit the associated procs channels.
+# ############################### WARNING #####################################
+# list of fields that will be exported to the associated procs as D.d (must be numeric)
+PROC_DATA_LIST|INPUT02,INPUT03,INPUT04,INPUT06,OUTPUT02
+# optional error list of fields exported as D.e (same as PROC_DATA_LIST size!)
+PROC_ERROR_LIST|,,,OUTPUT03
+# list of fields that will be exported to associated procs as D.c (cells)
+PROC_CELL_LIST|INPUT01,INPUT05

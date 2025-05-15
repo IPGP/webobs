@@ -44,12 +44,12 @@ Note that WebObs::Wiki uses the special 'WebObs:' metadata (whose value has curr
 - metadata section follow the syntax as described in http://fletcher.github.io/MultiMarkdown-4/metadata.html ,
 with these special considerations:
 
-	- keys are case sensitive
-	- keys are NOT 'compressed', ie. embedded blanks are preserved in keys
-	- must contain one 'WebObs:' key , otherwise input will be considered has NOT having metadata
-	- WO's specific 'TITRE.*|xxx' optional as very first line of $txt is stripped off (ie.
-	  ignored, so that MMD parsing/markup is allowed after a TITRE*| )
-	- non 'key:value' lines preceeding a valid metadata section will be discarded
+    - keys are case sensitive
+    - keys are NOT 'compressed', ie. embedded blanks are preserved in keys
+    - must contain one 'WebObs:' key , otherwise input will be considered has NOT having metadata
+    - WO's specific 'TITRE.*|xxx' optional as very first line of $txt is stripped off (ie.
+      ignored, so that MMD parsing/markup is allowed after a TITRE*| )
+    - non 'key:value' lines preceeding a valid metadata section will be discarded
 
 - WebObs extra line containing the special tags TITRE and TITRE_HTML (always 1st line) are still recognized,
 even for MMD files: WebObs::Wiki ignores it; any associated processing must be handled outside of Wiki processing.
@@ -76,12 +76,12 @@ end the line with two or more spaces, then line break.
 
 use strict;
 use warnings;
-use WebObs::Utils qw(u2l l2u);
-use WebObs::Config qw(%WEBOBS readCfg);
+use WebObs::Config qw(%WEBOBS readCfg u2l l2u);
+use WebObs::Utils;
 use WebObs::Grids;
 use WebObs::Users;
-if ($WEBOBS{WIKI_MMD} ne 'NO') {
-	require Text::MultiMarkdown;
+if (isok($WEBOBS{WIKI_MMD})) {
+    require Text::MultiMarkdown;
 }
 
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
@@ -91,25 +91,25 @@ require Exporter;
 $VERSION    = "1.00";
 
 sub wiki2html {
-	(my $string = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;
-	(my $clean, my $meta) = stripMDmetadata($string);
-	if (length($meta) == 0) { wiki($clean) } else { markdown($string) };
+    (my $string = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;
+    (my $clean, my $meta) = stripMDmetadata($string);
+    if (length($meta) == 0) { wiki($clean) } else { markdown($string) };
 }
 
 sub stripMDmetadata {
-	if (defined($_[0]) && $_[0] ne "") {
-		(my $txt = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;
-		return ($txt,"") if (defined($WEBOBS{WIKI_MMD}) && $WEBOBS{WIKI_MMD} eq 'NO');
-		return ($txt, "") if ($txt !~ /\n\s*\n/);           # no blank line means no chance for metadata
-		(my $head, my $tail) = split /\n\s*\n/ , $txt, 2;   # head up to 1st blank line
-		my @head = split /\n(.+):/,"\n$head";               # hashes metadata key:value pairs
-		shift @head;                                        # ...
-		my %hash = @head;                                   # ...
-		return ($txt,"") if (!keys %hash || !$hash{WebObs}); # no keys or no WebObs key = no metadata
-		return ($tail, "$head\n\n");
-	} else {
-		return ('', '');
-	}
+    if (defined($_[0]) && $_[0] ne "") {
+        (my $txt = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;
+        return ($txt,"") if (!isok($WEBOBS{WIKI_MMD}));
+        return ($txt, "") if ($txt !~ /\n\s*\n/);           # no blank line means no chance for metadata
+        (my $head, my $tail) = split /\n\s*\n/ , $txt, 2;   # head up to 1st blank line
+        my @head = split /\n(.+):/,"\n$head";               # hashes metadata key:value pairs
+        shift @head;                                        # ...
+        my %hash = @head;                                   # ...
+        return ($txt,"") if (!keys %hash || !$hash{WebObs}); # no keys or no WebObs key = no metadata
+        return ($tail, "$head\n\n");
+    } else {
+        return ('', '');
+    }
 }
 
 =head2 WebObs Wiki language specifications:
@@ -160,147 +160,148 @@ sub stripMDmetadata {
 
 sub wiki {
 
- 	my $txt = $_[0];
-	$txt.="\n";
+    my $txt = $_[0];
+    $txt.="\n";
 
-	# --- include wiki files
-	$txt =~ s[\%\%(.*?)\%\%] { wfcheck($1); }egis;
+    # --- include wiki files
+    $txt =~ s[\%\%(.*?)\%\%] { wfcheck($1); }egis;
 
-	# --- remove ending ^M's
-	$txt =~ s/\cM\n/\n/g;
+    # --- remove ending ^M's
+    $txt =~ s/\cM\n/\n/g;
 
-	# --- \ ==> <br>
-	$txt =~ s/\\\n/<br>/g;
+    # --- \ ==> <br>
+    $txt =~ s/\\\n/<br>/g;
 
-	# --- ----  ==> horizontal line <hr>
-	$txt =~ s/----/<HR>/g;
+    # --- ----  ==> horizontal line <hr>
+    $txt =~ s/----/<HR>/g;
 
-	# --- || ==> <table>
-	$txt =~ s/\|\|(.*)\|\|\n/<__row__><TD>$1\n/g;            # all lines ||...||\n are temporary rows
-	$txt =~ s/\|\|/<TD>/g;                                   # then all || are <td>
-	$txt =~ s/<__row__>(.*?)\n(?!<__row__>)/<TABLE><TR>$1<\/TABLE>\n/sg; # now enclose successive rows in table tags
-	$txt =~ s/<__row__>/<TR>/g;                              # take care of leftover temporary rows
+    # --- || ==> <table>
+    $txt =~ s/\|\|(.*)\|\|\n/<__row__><TD>$1\n/g;            # all lines ||...||\n are temporary rows
+    $txt =~ s/\|\|/<TD>/g;                                   # then all || are <td>
+    $txt =~ s/<__row__>(.*?)\n(?!<__row__>)/<TABLE><TR>$1<\/TABLE>\n/sg; # now enclose successive rows in table tags
+    $txt =~ s/<__row__>/<TR>/g;                              # take care of leftover temporary rows
 
-	# --- - ==>  <ul></ul>
-	$txt =~ s/^-/\n-/;	        # to find start of list
-	$txt =~ s/([^\n]$)/$1\n/;	# to find end of list
-	$txt =~ s/\n-((?:.|\n)+?)\n([^-]|$)/\n<UL><LI>$1<\/UL>$2/g;
-	$txt =~ s/\n-/<li>/g;
+    # --- - ==>  <ul></ul>
+    $txt =~ s/^-/\n-/;            # to find start of list
+    $txt =~ s/([^\n]$)/$1\n/;    # to find end of list
+    $txt =~ s/\n-((?:.|\n)+?)\n([^-]|$)/\n<UL><LI>$1<\/UL>$2/g;
+    $txt =~ s/\n-/<li>/g;
 
-	# --- # ==>  <ol></ol>
-	$txt =~ s/^#/\n#/;	        # to find start of list
-	$txt =~ s/([^\n]$)/$1\n/;	# to find end of list
-	$txt =~ s/\n#((?:.|\n)+?)\n([^#]|$)/\n<OL><LI>$1<\/OL>$2/g;
-	$txt =~ s/\n#/<LI>/g;
+    # --- # ==>  <ol></ol>
+    $txt =~ s/^#/\n#/;            # to find start of list
+    $txt =~ s/([^\n]$)/$1\n/;    # to find end of list
+    $txt =~ s/\n#((?:.|\n)+?)\n([^#]|$)/\n<OL><LI>$1<\/OL>$2/g;
+    $txt =~ s/\n#/<LI>/g;
 
-	# --- [linkname]{url} ==> <a href=url>linkname</a>
-	$txt =~ s/\[(.*?)]\{(https?:\/\/.*?)\}/<A HREF="$2" target="_blank">$1<\/A>/g;
-	$txt =~ s/\[(.*?)]\{(.*?)\}/<A HREF="$2">$1<\/A>/g;
+    # --- [linkname]{url} ==> <a href=url>linkname</a>
+    $txt =~ s/\[(.*?)]\{(https?:\/\/.*?)\}/<A HREF="$2" target="_blank">$1<\/A>/g;
+    $txt =~ s/\[(.*?)]\{(.*?)\}/<A HREF="$2">$1<\/A>/g;
 
-	# --- {{{image}}} ==> <img src=image/>
-	$txt =~ s/\{\{\{(.*?)\}\}\}/<IMG SRC=\"$1\"\/>/g;
+    # --- {{{image}}} ==> <img src=image/>
+    $txt =~ s/\{\{\{(.*?)\}\}\}/<IMG SRC=\"$1\"\/>/g;
 
-	# --- {{STATION}} ==> <a href to cgi-displaynode for NODE>
-	$txt =~ s/\{\{(.+?)\}\}/<B><A HREF="\/cgi-bin\/$NODES{CGI_SHOW}\?node=$1">$1<\/A><\/B>/g;
+    # --- {{STATION}} ==> <a href to cgi-displaynode for NODE>
+    $txt =~ s/\{\{(.+?)\}\}/<B><A HREF="\/cgi-bin\/$NODES{CGI_SHOW}\?node=$1">$1<\/A><\/B>/g;
 
-	if (WebObs::Users::clientHasAdm(type=>'authmisc',name=>'CONFIG')) {
-	# --- automatic links to WEBOBS configuration files
-	# --- if not immediately preceeded with a /, some filename-like strings will generate an href
-		$txt =~ s/\b(?<!\/)(\w+\.conf\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
-		$txt =~ s/\b(?<!\/)(\w+\.rc\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
-		$txt =~ s/\b(?<!\/)(\w+\.m)\b/<a HREF="$WEBOBS{ROOT_CODE}\/matlab\/$1">$1<\/A>/g;
-		$txt =~ s/\b(?<!\/)(\w+\.p[l|m]\b)/<A HREF="$WEBOBS{ROOT_CODE}\/cgi-bin\/$1">$1<\/A>/g;
-	}
+    if (WebObs::Users::clientHasAdm(type=>'authmisc',name=>'CONFIG')) {
 
-	# --- + ==> \n+ used as line continuation character (dont want to html break on newline)
-	$txt =~ s/\n\+//g;
+# --- automatic links to WEBOBS configuration files
+# --- if not immediately preceeded with a /, some filename-like strings will generate an href
+        $txt =~ s/\b(?<!\/)(\w+\.conf\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
+        $txt =~ s/\b(?<!\/)(\w+\.rc\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
+        $txt =~ s/\b(?<!\/)(\w+\.m)\b/<a HREF="$WEBOBS{ROOT_CODE}\/matlab\/$1">$1<\/A>/g;
+        $txt =~ s/\b(?<!\/)(\w+\.p[l|m]\b)/<A HREF="$WEBOBS{ROOT_CODE}\/cgi-bin\/$1">$1<\/A>/g;
+    }
 
-	# --- cleanup (to allow html coding...)
-	$txt =~ s/>\s*</></g;
-	$txt =~ s/>\n/>/g;
-	$txt =~ s/<BR>\n/\n/ig;
+# --- + ==> \n+ used as line continuation character (dont want to html break on newline)
+    $txt =~ s/\n\+//g;
 
-	# --- ====small heading====  ==> <h4>small heading</h4>
-	#was: $txt =~ s/\=\=\=\=(.*?)\=\=\=\=\n/<H4>$1<\/H4>/g;
-	$txt =~ s/\=\=\=\=(.*?)\=\=\=\=/<H4>$1<\/H4>/g;
+    # --- cleanup (to allow html coding...)
+    $txt =~ s/>\s*</></g;
+    $txt =~ s/>\n/>/g;
+    $txt =~ s/<BR>\n/\n/ig;
 
-	# --- ===medium heading===  ==> <h3>medium heading</h3>
-	#was: $txt =~ s/\=\=\=(.*?)\=\=\=\n/<H3>$1<\/H3>/g;
-	$txt =~ s/\=\=\=(.*?)\=\=\=/<H3>$1<\/H3>/g;
+    # --- ====small heading====  ==> <h4>small heading</h4>
+    #was: $txt =~ s/\=\=\=\=(.*?)\=\=\=\=\n/<H4>$1<\/H4>/g;
+    $txt =~ s/\=\=\=\=(.*?)\=\=\=\=/<H4>$1<\/H4>/g;
 
-	# --- ==large heading==  ==> <h2>large heading</h2>
-	#was: $txt =~ s/\=\=(.*?)\=\=\n/<\/BLOCKQUOTE><H2>$1<\/H2><BLOCKQUOTE>/g;
-	$txt =~ s/\=\=(.*?)\=\=/<H2>$1<\/H2>/g;
+    # --- ===medium heading===  ==> <h3>medium heading</h3>
+    #was: $txt =~ s/\=\=\=(.*?)\=\=\=\n/<H3>$1<\/H3>/g;
+    $txt =~ s/\=\=\=(.*?)\=\=\=/<H3>$1<\/H3>/g;
 
-	# --- \n ==> <br> (after this substitution, no more \n so syntax applies to multiple lines)
-	$txt =~ s/\n/<BR>/g;
+    # --- ==large heading==  ==> <h2>large heading</h2>
+    #was: $txt =~ s/\=\=(.*?)\=\=\n/<\/BLOCKQUOTE><H2>$1<\/H2><BLOCKQUOTE>/g;
+    $txt =~ s/\=\=(.*?)\=\=/<H2>$1<\/H2>/g;
 
-	# --- **bold text** ==> <b>bold text</b>
-	$txt =~ s/\*\*(.*?)\*\*/<B>$1<\/B>/g;
+# --- \n ==> <br> (after this substitution, no more \n so syntax applies to multiple lines)
+    $txt =~ s/\n/<BR>/g;
 
-	# --- //italic// ==> <i>italic</i>
-	$txt =~ s/(http|https|ftp|file):\/\//$1:_DoubleSlash_/g;	# temporary substitution of URLs //...
-	$txt =~ s/\/\/(.*?)\/\//<I>$1<\/I>/g;
-	$txt =~ s/_DoubleSlash_/\/\//g;					            # backup of // ...
+    # --- **bold text** ==> <b>bold text</b>
+    $txt =~ s/\*\*(.*?)\*\*/<B>$1<\/B>/g;
 
-	# --- __underscore__ ==> <u>underscore</u>
-	$txt =~ s/__(.*?)__/<U>$1<\/U>/g;
+    # --- //italic// ==> <i>italic</i>
+    $txt =~ s/(http|https|ftp|file):\/\//$1:_DoubleSlash_/g;    # temporary substitution of URLs //...
+    $txt =~ s/\/\/(.*?)\/\//<I>$1<\/I>/g;
+    $txt =~ s/_DoubleSlash_/\/\//g;                                # backup of // ...
 
-	# --- ~~title:contents~~ ==> drawer labelled title and its contents
-	$txt =~ s[~~(.*?)\:(.*?)~~] { drawer($1,$2); }egis;
+    # --- __underscore__ ==> <u>underscore</u>
+    $txt =~ s/__(.*?)__/<U>$1<\/U>/g;
 
-	# --- ""citation"" ==> <blockquote>citation</blockquote>
-	$txt =~ s/""(.*?)""/<BLOCKQUOTE class="typewriter">$1<\/BLOCKQUOTE>/g;
+    # --- ~~title:contents~~ ==> drawer labelled title and its contents
+    $txt =~ s[~~(.*?)\:(.*?)~~] { drawer($1,$2); }egis;
 
-	return $txt;
+    # --- ""citation"" ==> <blockquote>citation</blockquote>
+    $txt =~ s/""(.*?)""/<BLOCKQUOTE class="typewriter">$1<\/BLOCKQUOTE>/g;
 
-	# --- variables expansion : $WEBOBS{xx}
-	#$txt =~ s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g;
+    return $txt;
+
+    # --- variables expansion : $WEBOBS{xx}
+    #$txt =~ s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g;
 }
 
 sub wfcheck{
-	my $bfn = $_[0];
-	my $ret = "";
-	if ($bfn ne "") {
-		my $absbfn = "$WEBOBS{PATH_DATA_WEB}/$bfn";
-		if ( -f $absbfn ) {
-			if ( WebObs::Users::clientHasRead(type=>'authwikis',name=>$bfn) ) {
-				if (open(RDR, "<$absbfn")) {
-					$ret .= $_ while(<RDR>);
-					close RDR;
-					return qq[$ret];
-				} else { return qq[ couldn't open $bfn ] }
-			} else { return qq[ ] } # not authorized ==> ignore include
-		} else { return qq[ $bfn not found ] }
-	} else { return qq[ invalid include filename ] }
+    my $bfn = $_[0];
+    my $ret = "";
+    if ($bfn ne "") {
+        my $absbfn = "$WEBOBS{PATH_DATA_WEB}/$bfn";
+        if ( -f $absbfn ) {
+            if ( WebObs::Users::clientHasRead(type=>'authwikis',name=>$bfn) ) {
+                if (open(RDR, "<$absbfn")) {
+                    $ret .= $_ while(<RDR>);
+                    close RDR;
+                    return qq[$ret];
+                } else { return qq[ couldn't open $bfn ] }
+            } else { return qq[ ] } # not authorized ==> ignore include
+        } else { return qq[ $bfn not found ] }
+    } else { return qq[ invalid include filename ] }
 }
 
 sub drawer {
-	my ($title,$contents) = @_;
-	my $ret = "";
-	if (defined($title) && defined($contents)) {
-		my ($dID,$junk) = split(/ /,$title);
-		$ret .= "<div class=\"drawer\"><div class=\"drawerh2\" >";
-		$ret .= "&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#$dID');\">&nbsp;&nbsp;$title";
-		$ret .= "</div><div style=\"padding-left: 5px;\" id=\"$dID\">";
-		$ret .= $contents;
-		$ret .= "</div></div>";
-		return qq[$ret];
-	} else { return qq[ invalid drawer definition ] }
+    my ($title,$contents) = @_;
+    my $ret = "";
+    if (defined($title) && defined($contents)) {
+        my ($dID,$junk) = split(/ /,$title);
+        $ret .= "<div class=\"drawer\"><div class=\"drawerh2\" >";
+        $ret .= "&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#$dID');\">&nbsp;&nbsp;$title";
+        $ret .= "</div><div style=\"padding-left: 5px;\" id=\"$dID\">";
+        $ret .= $contents;
+        $ret .= "</div></div>";
+        return qq[$ret];
+    } else { return qq[ invalid drawer definition ] }
 }
 
 sub markdown {
-	require Text::MultiMarkdown;
-	my $m = Text::MultiMarkdown->new(strip_metadata => 1,);
-	my $html = $m->markdown($_[0]);
+    require Text::MultiMarkdown;
+    my $m = Text::MultiMarkdown->new(strip_metadata => 1,);
+    my $html = $m->markdown($_[0]);
 
-	# WebObs MMD post-processing:
-	# simple replacement of pre-defined WebObs tags with 'operational' strings,
-	# NOT modifying the html structure.
+    # WebObs MMD post-processing:
+    # simple replacement of pre-defined WebObs tags with 'operational' strings,
+    # NOT modifying the html structure.
 
-	$html =~ s/\$WebObsNode/\/cgi-bin\/showNODE.pl?node/g;
+    $html =~ s/\$WebObsNode/\/cgi-bin\/showNODE.pl?node/g;
 
-	return $html;
+    return $html;
 }
 
 =head2 MultiMarkdown specifications:
@@ -313,75 +314,75 @@ See "https://github.com/fletcher/MultiMarkdown/wiki/MultiMarkdown-Syntax-Guide" 
 
 sub wiki2MMD {
 
-	my $txt = $_[0];
-	if ($WEBOBS{WIKI_MMD} ne 'NO') {
+    my $txt = $_[0];
+    if (isok($WEBOBS{WIKI_MMD})) {
 
-		# --- \ ==> forces <br />
-		$txt =~ s/\\\n/  \n/g;
+        # --- \ ==> forces <br />
+        $txt =~ s/\\\n/  \n/g;
 
-		# --- || ==> table, first row will be header row (didn't exist in webobs)
-		$txt =~ s[^(\|\|.*\|\|(?!\n\|\|))] { table($1) }emsg;
+       # --- || ==> table, first row will be header row (didn't exist in webobs)
+        $txt =~ s[^(\|\|.*\|\|(?!\n\|\|))] { table($1) }emsg;
 
-		# --- horizontal rule, first pass: ---- ==> !+!+!+!
-		$txt =~ s/\n----/\n!+!+!+!/g;
+        # --- horizontal rule, first pass: ---- ==> !+!+!+!
+        $txt =~ s/\n----/\n!+!+!+!/g;
 
-		# --- ul, - ==> *
-		$txt =~ s/\n-((?:.|\n)+?)\n([^-]|$)/\n\n* $1  \n$2/g;
-		$txt =~ s/\n-/\n* /g;
+        # --- ul, - ==> *
+        $txt =~ s/\n-((?:.|\n)+?)\n([^-]|$)/\n\n* $1  \n$2/g;
+        $txt =~ s/\n-/\n* /g;
 
-		# --- ol, # ==> 1.
-		$txt =~ s/\n#((?:.|\n)+?)\n([^-]|$)/\n\n1. $1  \n$2/g;
-		$txt =~ s/\n#/\n1. /g;
+        # --- ol, # ==> 1.
+        $txt =~ s/\n#((?:.|\n)+?)\n([^-]|$)/\n\n1. $1  \n$2/g;
+        $txt =~ s/\n#/\n1. /g;
 
-		# --- [linkname]{url} ==> <a href=url>linkname</a>
-		#$txt =~ s/\[(.*?)]\{(https?:\/\/.*?)\}/<A HREF="$2" target="_blank">$1<\/A>/g;
-		$txt =~ s/\[(.*?)]\{(.*?)\}/[$1]($2)/g;
+ # --- [linkname]{url} ==> <a href=url>linkname</a>
+ #$txt =~ s/\[(.*?)]\{(https?:\/\/.*?)\}/<A HREF="$2" target="_blank">$1<\/A>/g;
+        $txt =~ s/\[(.*?)]\{(.*?)\}/[$1]($2)/g;
 
-		# --- {{{image}}} ==> <img src=image/>
-		$txt =~ s/\{\{\{(.*?)\}\}\}/![]($1)/g;
+        # --- {{{image}}} ==> <img src=image/>
+        $txt =~ s/\{\{\{(.*?)\}\}\}/![]($1)/g;
 
-		# --- {{STATION}} ==> <a href to cgi-displaynode for NODE>
-		$txt =~ s/\{\{(.+?)\}\}/[$1](\$WebObsNode=$1)/g;
+        # --- {{STATION}} ==> <a href to cgi-displaynode for NODE>
+        $txt =~ s/\{\{(.+?)\}\}/[$1](\$WebObsNode=$1)/g;
 
-		# --- automatic links to WEBOBS configuration files
-		# --- if not immediately preceeded with a /, some filename-like strings will generate an href
-		#	$txt =~ s/\b(?<!\/)(\w+\.conf\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
-		#	$txt =~ s/\b(?<!\/)(\w+\.rc\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
-		#	$txt =~ s/\b(?<!\/)(\w+\.m)\b/<a HREF="$WEBOBS{ROOT_CODE}\/matlab\/$1">$1<\/A>/g;
-		#	$txt =~ s/\b(?<!\/)(\w+\.p[l|m]\b)/<A HREF="$WEBOBS{ROOT_CODE}\/cgi-bin\/$1">$1<\/A>/g;
+# --- automatic links to WEBOBS configuration files
+# --- if not immediately preceeded with a /, some filename-like strings will generate an href
+#    $txt =~ s/\b(?<!\/)(\w+\.conf\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
+#    $txt =~ s/\b(?<!\/)(\w+\.rc\b)/<A HREF="$WEBOBS{ROOT_CONF}\/$1">$1<\/A>/g;
+#    $txt =~ s/\b(?<!\/)(\w+\.m)\b/<a HREF="$WEBOBS{ROOT_CODE}\/matlab\/$1">$1<\/A>/g;
+#    $txt =~ s/\b(?<!\/)(\w+\.p[l|m]\b)/<A HREF="$WEBOBS{ROOT_CODE}\/cgi-bin\/$1">$1<\/A>/g;
 
-		# --- + ==> not useful anymore
-		$txt =~ s/\n\+/\n/g;
+        # --- + ==> not useful anymore
+        $txt =~ s/\n\+/\n/g;
 
-		# --- headings 2-4 anywhere on line ==> Atx-style alone on line
-		$txt =~ s/\=\=\=\=(.*?)\=\=\=\=/\n#### $1\n/g;
-		$txt =~ s/\=\=\=(.*?)\=\=\=/\n### $1\n/g;
-		$txt =~ s/\=\=(.*?)\=\=/\n## $1\n/g;
+        # --- headings 2-4 anywhere on line ==> Atx-style alone on line
+        $txt =~ s/\=\=\=\=(.*?)\=\=\=\=/\n#### $1\n/g;
+        $txt =~ s/\=\=\=(.*?)\=\=\=/\n### $1\n/g;
+        $txt =~ s/\=\=(.*?)\=\=/\n## $1\n/g;
 
-		# --- \n ==> NOT <br> anymore (MMD has “hard-wrapped” text paragraphs)
+        # --- \n ==> NOT <br> anymore (MMD has “hard-wrapped” text paragraphs)
 
-		# --- MMD supports emphasis+strong with * or _ (and double *, double _)
-		# --- **bold text** ==> compatible, leave as is
-		# --- __underscore__ ==> leave as is, but will now be <strong> (no more underscore)
-		# --- //italic// ==> em (single _)
-		# BUT for all above, remove space(s) right after and before markup (eg. ** x ** becomes **x**)
-		$txt =~ s/\*\*\s*(.*?)\s*\*\*/**$1**/g;
-		$txt =~ s/__\s*(.*?)\s*__/__$1__/g;
-		$txt =~ s/\/\/\s*(.*?)\s*\/\//_$1_/g;
+# --- MMD supports emphasis+strong with * or _ (and double *, double _)
+# --- **bold text** ==> compatible, leave as is
+# --- __underscore__ ==> leave as is, but will now be <strong> (no more underscore)
+# --- //italic// ==> em (single _)
+# BUT for all above, remove space(s) right after and before markup (eg. ** x ** becomes **x**)
+        $txt =~ s/\*\*\s*(.*?)\s*\*\*/**$1**/g;
+        $txt =~ s/__\s*(.*?)\s*__/__$1__/g;
+        $txt =~ s/\/\/\s*(.*?)\s*\/\//_$1_/g;
 
-		# --- include wiki files => file transclusion {{some_other_file.txt}}
-		$txt =~ s/\%\%(.*?)\%\%/{{$1}}/gis;
+        # --- include wiki files => file transclusion {{some_other_file.txt}}
+        $txt =~ s/\%\%(.*?)\%\%/{{$1}}/gis;
 
-		# --- ~~title:contents~~ ==> drawer no more supported, changed to h2+paragraph
-		$txt =~ s[~~(.*?)\:(.*?)~~] {## $1\n$2  }gis;
+  # --- ~~title:contents~~ ==> drawer no more supported, changed to h2+paragraph
+        $txt =~ s[~~(.*?)\:(.*?)~~] {## $1\n$2  }gis;
 
-		# --- ""citation"" ==> >
-		$txt =~ s/""(.*?)""/>$1  \n/g;
+        # --- ""citation"" ==> >
+        $txt =~ s/""(.*?)""/>$1  \n/g;
 
-		# --- horizontal rule, second pass: !+!+!+! ==> ***
-		$txt =~ s/\n!\+!\+!\+!/\n***/g;
-	}
-	return $txt;
+        # --- horizontal rule, second pass: !+!+!+! ==> ***
+        $txt =~ s/\n!\+!\+!\+!/\n***/g;
+    }
+    return $txt;
 
 }
 

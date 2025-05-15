@@ -16,7 +16,9 @@ HTML page with QR code of the referer URL.
 
 no query string parameters needed, but logos will be displayed on the side of
 QR code, using the WEBOBS.rc variables:
-	QRCODE_LOGOS|URI_logo1,URI_logo2,...
+    QRCODE_BIN|qrencode
+    QRCODE_SIZE|2
+    QRCODE_LOGOS|URI_logo1,URI_logo2,...
 
 =cut
 
@@ -37,11 +39,12 @@ use MIME::Base64;
 
 # --- ends here if the client is not valid
 if ( !clientIsValid ) {
-  die "$__{'die_client_not_valid'}";
+    die "$__{'die_client_not_valid'}";
 }
 
 my $title = "$ENV{HTTP_REFERER}";
-my $qr = encode_base64(qx(qrencode -t SVG -o - "$ENV{HTTP_REFERER}"));
+my $qrbin = $WEBOBS{QRCODE_BIN} // 'qrencode';
+my $qr = encode_base64(qx($qrbin -t SVG -o - "$ENV{HTTP_REFERER}"));
 my $img = ($qr eq "" ? "":"<IMG width=400px src=\"data:image/svg+xml;base64,$qr\">");
 my @logos = split(',',$WEBOBS{QRCODE_LOGOS});
 
@@ -51,7 +54,7 @@ print <<"END";
 <HTML><HEAD><TITLE>$title</TITLE></HEAD>
 <STYLE>
 html, body {
-	background-color: white;
+    background-color: white;
     height: 100%;
     margin: 0;
     padding: 0;
@@ -67,7 +70,7 @@ img {
 <TD width="20%" style="border:0;text-align:center">
 END
 for (@logos) {
-	print "<P><IMG width=\"100px\" src=\"$_\"></P>";
+    print "<P><IMG width=\"100px\" src=\"$_\"></P>";
 }
 print "</TD></TR></TABLE>\n</BODY>\n</HTML>\n";
 
@@ -81,7 +84,7 @@ François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -13,36 +13,36 @@ See 'NAMING CONVENTIONS'.
 The generated WebObs package consists of a \fBWebObs-releasename.tgz\fP and its corresponding checksum files (.md5 and .sha1).
 
 \fBbuild\fP fails if not called from a valid SVN WebObs working copy and/or if the
-corresponding (automatically detected) SVN repository is not reachable. It also 
-fails if a \fBWebObs-releasename.tgz\fP has already been committed, ie. you cannot 
-overwrite an existing \fBWebObs-releasename.tgz\fP from \fBbuild\fP alone. 
+corresponding (automatically detected) SVN repository is not reachable. It also
+fails if a \fBWebObs-releasename.tgz\fP has already been committed, ie. you cannot
+overwrite an existing \fBWebObs-releasename.tgz\fP from \fBbuild\fP alone.
 
-If \fBbuild\fP finds that a SVN repository's tags/releasename already exists, it 
-will prompt you to choose wether \fBWebObs-releasename.tgz\fP will be generated 
-from this tag or from the trunk. 
+If \fBbuild\fP finds that a SVN repository's tags/releasename already exists, it
+will prompt you to choose wether \fBWebObs-releasename.tgz\fP will be generated
+from this tag or from the trunk.
 
 When \fBbuild\fP detects that you working-copy trunk is out of sync with repository's trunk,
 it will display differences (actually a svn status output) and will let you choose
-which trunk (local or repository) to use for generating \fBWebObs-releasename.tgz\fP. 
-In this case, you will not be able to commit the package files. This might be 
-useful for locally testing packages before all commits are done. 
+which trunk (local or repository) to use for generating \fBWebObs-releasename.tgz\fP.
+In this case, you will not be able to commit the package files. This might be
+useful for locally testing packages before all commits are done.
 
-If, and only if, trunks are in sync, \fBbuild\fP will let you decide wether to tag 
+If, and only if, trunks are in sync, \fBbuild\fP will let you decide wether to tag
 the package you are generating or not (ie. creates tags/releasename).
 
-During the package generation process, \fBbuild\fP let you edit/customize both the 
-1) list of package's files and 2) the README file that will be included. 
+During the package generation process, \fBbuild\fP let you edit/customize both the
+1) list of package's files and 2) the README file that will be included.
 
 .SH NAMING CONVENTIONS
-\fBreleasenames\fP currently (march 2014) respect the following scheme: 
+\fBreleasenames\fP currently (march 2014) respect the following scheme:
 \fBtype-major.minor.micro\fP  (build automatically prefix tgz names with WebObs-), where type
 may be one of [test, alpha, beta] and major.minor.micro are all numeric.
 
-eg. beta-1.2.10 (package tgz names will be generated as WebObs-beta-1.2.10).   
+eg. beta-1.2.10 (package tgz names will be generated as WebObs-beta-1.2.10).
 .SH OPTIONS
 No command line option, but releasename is required.
 .SH SEE ALSO
-fpm, setup 
+fpm, setup
 .SH AUTHOR
 Didier Lafon
 .SH COPYRIGHT

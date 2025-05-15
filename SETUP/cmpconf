@@ -4,8 +4,8 @@
 # compares templates conf files with current installed version (in /opt/webobs):
 #
 # author: F. Beauducel, IPGP/IRD
-# created: 2018-10-10
-# updated: 2023-12-12
+# created: 2018-10-10 in Yogyakarta (Indonesia)
+# updated: 2025-05-06
 
 mydiff() {
 # Syntax: mydiff TEMPLATEFILE CONFFILE RELEASE [WRITEFLAG]
@@ -114,18 +114,6 @@ C=$(find $CONFDIR/VIEWS -maxdepth 2 -name '*.conf')
 for s in $C; do
 	if [[ ! -z $(grep -aE "^NAME\|" $s) ]]; then
 		mydiff $TPLATEDIR/../CODE/tplates/VIEW.DEFAULT $s $RELREL $WRITE
-	fi
-done
-
-# forms (checks template forms in SETUP/CONF)
-C=$(find $TPLATEDIR/CONF/FORMS/* -type d)
-for s in $C; do
-	F=$(basename $s)
-	if [[ ! -d "$CONFDIR/FORMS/$F" ]]; then
-		>&2 echo "creating new form $CONFDIR/FORMS/$F."
-		cp -a $TPLATEDIR/CONF/FORMS/$F $CONFDIR/FORMS/
-	else
-		mydiff $s/$F.conf $CONFDIR/FORMS/$F/$F.conf $RELREL $WRITE
 	fi
 done
 
