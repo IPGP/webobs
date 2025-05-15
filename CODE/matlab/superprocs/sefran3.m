@@ -20,7 +20,7 @@ function sefran3(name,fdate)
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France
 %	         (based on legacy sefran.m, 2002 and sefran2.m, 2007)
-%	Updated: 2022-07-24
+%	Updated: 2024-07-10
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -360,10 +360,9 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				% plots the signal
 				for n = 1:nchan
 						% clips signal (forces saturation)
-						ds = min(D(n).d,.5);
-						ds = max(ds,-.5);
+						ds = max(min(D(n).d,0.5),-0.5);
 						if ~isempty(D(n).d)
-							plotregsamp(D(n).t - t0,ds - (n - .5)*hsig,'LineWidth',lw,'Color',scol(n,:))
+							timeplot(D(n).t - t0,ds - (n - .5)*hsig,[],'LineWidth',lw,'Color',scol(n,:))
 						end
 				end
 				hold off
@@ -790,8 +789,9 @@ if ~strcmp(dataformat,'winston')
 			k = find(~cellfun('isempty',regexp(channel_list,sprintf('%s.*%s.*%s.*%s',c{1}{1},c{1}{2},c{1}{3},c{1}{4}))));
 			if ~isempty(k)
 				kk = I(k).XBlockIndex;
-				D(n).d = double(cat(1,S(kk).d));
-				D(n).t = cat(1,S(kk).t);
+				[D(n).t,i] = sort(cat(1,S(kk).t)); % sorts the data in time
+				d = double(cat(1,S(kk).d));
+				D(n).d = d(i);
 				D(n).SampleRate = S(kk(1)).SampleRate; % supposes sample rate is constant (looks first block)
 			else
 				fprintf(' no data found in miniseed for channel %s.\n',sfr{n});

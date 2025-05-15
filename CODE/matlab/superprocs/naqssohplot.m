@@ -20,7 +20,7 @@ function DOUT=naqssohplot(varargin)
 %       uses RAWFORMAT and and nodes' calibration file channels definition.
 %       In addition to each single node graph, a summary graph with all nodes can
 %       be set with 'SUMMARYLIST|' parameter. Default is all channels, but selection
-%       can be made with 'SUMMARY_CHANNELS|' followed by a coma-separated channel
+%       can be made with 'SUMMARY_CHANNELS|' followed by a comma-separated channel
 %       number list (example: 1,4,2,3,6). Other specific paramaters are:
 %           PAGE_MAX_NODE|8
 %
@@ -29,7 +29,7 @@ function DOUT=naqssohplot(varargin)
 %
 %   Authors: J.M. Saurel / WEBOBS, IPGP
 %   Created: 2014-07-13
-%   Updated: 2021-01-01
+%   Updated: 2025-03-31
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -118,8 +118,8 @@ for n = 1:length(N)
 				acqui = round(100*length(k)*ACQ_RATE/(t(k(end)) - LAST_DELAY - xlim(1)));
 			end
 			if P.GTABLE(r).DECIMATE > 1
-				tk = rdecim(t(k),P.GTABLE(r).DECIMATE);
-				dk = rdecim(d(k,:),P.GTABLE(r).DECIMATE);
+				tk = decim(t(k),P.GTABLE(r).DECIMATE);
+				dk = decim(d(k,:),P.GTABLE(r).DECIMATE);
 			else
 				tk = t(k);
 				dk = d(k,:);
@@ -288,8 +288,8 @@ if isfield(P,'SUMMARYLIST')
 				k = find(D(n).t>=xlim(1) & D(n).t<=xlim(2));
 				if ~isempty(k)
 					if P.GTABLE(r).DECIMATE > 1
-						tk = rdecim(D(n).t(k),P.GTABLE(r).DECIMATE);
-						dk = rdecim(D(n).d(k,so(i)),P.GTABLE(r).DECIMATE);
+						tk = decim(D(n).t(k),P.GTABLE(r).DECIMATE);
+						dk = decim(D(n).d(k,so(i)),P.GTABLE(r).DECIMATE);
 					else
 						tk = D(n).t(k);
 						dk = D(n).d(k,so(i));

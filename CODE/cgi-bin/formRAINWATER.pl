@@ -56,11 +56,11 @@ my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
 for my $p (keys(%Ps)) {
-	my %N = $FORM->nodes($p);
-	for my $n (keys(%N)) {
-		push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-	}
-	%Ns = (%Ns, %N);
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
 }
 
 my $QryParm   = $cgi->Vars;
@@ -71,9 +71,9 @@ my ($lines, $dataTS) = $FORM->data;
 @$lines = reverse sort tri_date_avec_id @$lines;
 my %lastData;
 for my $id (keys(%Ns)) {
-	my @tmp = grep(/\|$id\|/,@$lines);
-	chomp(@tmp);
-	$lastData{$id} = $tmp[$#tmp];
+    my @tmp = grep(/\|$id\|/,@$lines);
+    chomp(@tmp);
+    $lastData{$id} = $tmp[$#tmp];
 }
 
 # --- DateTime inits -------------------------------------
@@ -137,15 +137,15 @@ print qq[
     var form = document.formulaire;
 
     if (form.site.value != "") {
-	    var array = lastData[form.site.value].split("|");
-	    var date = array[1].split("-");
-	    var time = array[2].split(":");
-	    form.y1.value = date[0];
-	    form.m1.value = date[1];
-	    form.d1.value = date[2];
-	    form.hr1.value = time[0];
-	    form.mn1.value = time[	1];
-	    form.diameter.value = array[7];
+        var array = lastData[form.site.value].split("|");
+        var date = array[1].split("-");
+        var time = array[2].split(":");
+        form.y1.value = date[0];
+        form.m1.value = date[1];
+        form.d1.value = date[2];
+        form.hr1.value = time[0];
+        form.mn1.value = time[    1];
+        form.diameter.value = array[7];
     }
     update_form();
 }
@@ -162,8 +162,8 @@ function update_form()
     var nicb;
     var form = document.formulaire;
     if (form.volume.value != "" && form.diameter.value != "") {
-	    total_rain = 10*form.volume.value/(Math.PI*Math.pow(form.diameter.value/2,2));
-	    form.cumrainfall.value = total_rain.toFixed(0);
+        total_rain = 10*form.volume.value/(Math.PI*Math.pow(form.diameter.value/2,2));
+        form.cumrainfall.value = total_rain.toFixed(0);
     }
 
     var date1 = new Date(form.y1.value,form.m1.value-1,form.d1.value);
@@ -171,8 +171,8 @@ function update_form()
     duration = (date2.getTime() - date1.getTime())/86400000;
     form.duration.value = duration.toFixed(1);
     if (total_rain > 0 && duration > 0) {
-	    average_rain = total_rain/duration;
-	    form.dailyrainfall.value = average_rain.toFixed(1);
+        average_rain = total_rain/duration;
+        form.dailyrainfall.value = average_rain.toFixed(1);
     }
 
     if (form.pH.value != "") {
@@ -246,7 +246,7 @@ function submit()
 </script>
 </head>
 
-<body style="background-color:#E0E0E0">
+<body>
  <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
  <!-- overLIB (c) Erik Bosrup -->
  <script language="javascript" src="/js/overlib/overlib.js"></script>
@@ -273,8 +273,6 @@ function submit()
  </script>
 ];
 
-
-
 # ---- read data file
 #
 my $message = $__{'Enter a new data'};
@@ -284,34 +282,34 @@ my $fts = -1;
 my ($id,$date2,$time2,$site,$date1,$time1,$volume,$diameter,$pH,$cond,$cNa,$cK,$cMg,$cCa,$cHCO3,$cCl,$cSO4,$dD,$d18O,$rem,$val);
 $id=$date2=$time2=$site=$date1=$time1=$volume=$diameter=$pH=$cond=$cNa=$cK=$cMg=$cCa=$cHCO3=$cCl=$cSO4=$dD=$d18O=$rem=$val = "";
 if (defined($QryParm->{id})) {
-	($ptr, $fts) = $FORM->data($QryParm->{id});
-	@line = @$ptr;
-	if (scalar(@line) >= 1) {
-		chomp(@line);
-		($id,$date2,$time2,$site,$date1,$time1,$volume,$diameter,$pH,$cond,$cNa,$cK,$cMg,$cCa,$cHCO3,$cCl,$cSO4,$dD,$d18O,$rem,$val) = split (/\|/,l2u($line[0]));
-		if ($QryParm->{id} eq $id) {
-			($sel_y1,$sel_m1,$sel_d1) = split (/-/,$date1);
-			($sel_hr1,$sel_mn1) = split (/:/,$time1);
-			($sel_y2,$sel_m2,$sel_d2) = split (/-/,$date2);
-			($sel_hr2,$sel_mn2) = split (/:/,$time2);
-			$sel_site = $site;
-			$sel_volume = $volume;
-			$sel_diameter = $diameter;
-			$sel_pH = $pH;
-			$sel_cond = $cond;
-			$sel_cNa = $cNa;
-			$sel_cK = $cK;
-			$sel_cMg = $cMg;
-			$sel_cCa = $cCa;
-			$sel_cHCO3 = $cHCO3;
-			$sel_cCl = $cCl;
-			$sel_cSO4 = $cSO4;
-			$sel_dD = $dD;
-			$sel_d18O = $d18O;
-			$sel_rem = $rem;
-			$message = $__{"Edit existing data n° $QryParm->{id}"};
-		} else { $QryParm->{id} = ""; $val = "" ; }
-	} else { $QryParm->{id} = ""; $val = "" ;}
+    ($ptr, $fts) = $FORM->data($QryParm->{id});
+    @line = @$ptr;
+    if (scalar(@line) >= 1) {
+        chomp(@line);
+        ($id,$date2,$time2,$site,$date1,$time1,$volume,$diameter,$pH,$cond,$cNa,$cK,$cMg,$cCa,$cHCO3,$cCl,$cSO4,$dD,$d18O,$rem,$val) = split (/\|/,l2u($line[0]));
+        if ($QryParm->{id} eq $id) {
+            ($sel_y1,$sel_m1,$sel_d1) = split (/-/,$date1);
+            ($sel_hr1,$sel_mn1) = split (/:/,$time1);
+            ($sel_y2,$sel_m2,$sel_d2) = split (/-/,$date2);
+            ($sel_hr2,$sel_mn2) = split (/:/,$time2);
+            $sel_site = $site;
+            $sel_volume = $volume;
+            $sel_diameter = $diameter;
+            $sel_pH = $pH;
+            $sel_cond = $cond;
+            $sel_cNa = $cNa;
+            $sel_cK = $cK;
+            $sel_cMg = $cMg;
+            $sel_cCa = $cCa;
+            $sel_cHCO3 = $cHCO3;
+            $sel_cCl = $cCl;
+            $sel_cSO4 = $cSO4;
+            $sel_dD = $dD;
+            $sel_d18O = $d18O;
+            $sel_rem = $rem;
+            $message = $__{"Edit existing data n° $QryParm->{id}"};
+        } else { $QryParm->{id} = ""; $val = "" ; }
+    } else { $QryParm->{id} = ""; $val = "" ;}
 }
 
 print qq(<form name="formulaire" id="theform" action="">
@@ -328,17 +326,17 @@ print qq(<form name="formulaire" id="theform" action="">
 );
 
 if ($QryParm->{id} ne "") {
-	print qq(<input type="hidden" name="id" value="$QryParm->{id}">);
-	print qq(<tr><td style="border: 0"><hr>);
-	if ($val ne "") {
-		print qq(<p><b>$__{'Input Information'}:</b> $val
-		<input type="hidden" name="val" value="$val"></p>);
-	}
-	print qq(<input type="button" style="font-weight: bold" value=") . ($id < 0 ? "Reset":"$__{'Remove'}") . qq(" onClick="suppress(1);">);
-	if (clientHasAdm(type=>"authforms",name=>"RAINWATER")) {
-		print qq(<input type="button" style="font-weight: bold" value="$__{'Erase'}" onClick="suppress(2);">);
-	}
-	print qq(<hr></td></tr>);
+    print qq(<input type="hidden" name="id" value="$QryParm->{id}">);
+    print qq(<tr><td style="border: 0"><hr>);
+    if ($val ne "") {
+        print qq(<p><b>$__{'Input Information'}:</b> $val
+        <input type="hidden" name="val" value="$val"></p>);
+    }
+    print qq(<input type="button" style="font-weight: bold" value=") . ($id < 0 ? "Reset":"$__{'Remove'}") . qq(" onClick="suppress(1);">);
+    if (clientHasAdm(type=>"authforms",name=>"RAINWATER")) {
+        print qq(<input type="button" style="font-weight: bold" value="$__{'Erase'}" onClick="suppress(2);">);
+    }
+    print qq(<hr></td></tr>);
 }
 
 print qq(</table>
@@ -348,117 +346,117 @@ print qq(</table>
       <fieldset>
         <legend>$__{'Sampling Location and Time'}</legend>
        <P class="parform" align="right">
-	<B>$__{'Site'}: </B>
-	<select name="site" size="1" onChange="update_site()"
-		onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_site}')">);
-	print qq(<option value=""></option>) if ($QryParm->{id} eq "");
+    <B>$__{'Site'}: </B>
+    <select name="site" size="1" onChange="update_site()"
+        onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_site}')">);
+print qq(<option value=""></option>) if ($QryParm->{id} eq "");
 
-	for (@NODESSelList) {
-		my @cle = split(/\|/,$_);
-		if ($cle[0] eq $sel_site) {
-			print qq(<option selected value="$cle[0]">$cle[1]</option>);
-		} elsif ($QryParm->{id} eq "") {
-			print qq(<option value="$cle[0]">$cle[1]</option>);
-		}
-	}
-	print qq(</select><BR>
+for (@NODESSelList) {
+    my @cle = split(/\|/,$_);
+    if ($cle[0] eq $sel_site) {
+        print qq(<option selected value="$cle[0]">$cle[1]</option>);
+    } elsif ($QryParm->{id} eq "") {
+        print qq(<option value="$cle[0]">$cle[1]</option>);
+    }
+}
+print qq(</select><BR>
           <b>$__{'Start Date'}: </b>
           <select name="y1" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date1}')">
 );
 
-	for (@yearList) {
-		if ($_ == $sel_y1) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select>);
-	print qq(<select name="m1" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date1}')">);
-	for (@monthList) {
-		if ($_ == $sel_m1) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select>);
-	print qq( <select name="d1" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date1}')">);
-	for (@dayList) {
-		if ($_ == $sel_d1) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print "</select>";
+for (@yearList) {
+    if ($_ == $sel_y1) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select>);
+print qq(<select name="m1" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date1}')">);
+for (@monthList) {
+    if ($_ == $sel_m1) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select>);
+print qq( <select name="d1" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date1}')">);
+for (@dayList) {
+    if ($_ == $sel_d1) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print "</select>";
 
-	print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name="hr1" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date1}')">);
-	for (@hourList) {
-		if ($_ eq $sel_hr1) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select>);
-	print qq(<select name="mn1" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date1}')">);
-	for (@minuteList) {
-		if ($_ eq $sel_mn1) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-		   print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select><BR>
+print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name="hr1" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date1}')">);
+for (@hourList) {
+    if ($_ eq $sel_hr1) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select>);
+print qq(<select name="mn1" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date1}')">);
+for (@minuteList) {
+    if ($_ eq $sel_mn1) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select><BR>
           <b>$__{'End Date'}: </b>
           <select name="y2" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date2}')">
 );
 
-	for (@yearList) {
-		if ($_ == $sel_y2) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select>);
-	print qq(<select name="m2" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date2}')">);
-	for (@monthList) {
-		if ($_ == $sel_m2) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select>);
-	print qq( <select name="d2" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date2}')">);
-	for (@dayList) {
-		if ($_ == $sel_d2) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print "</select>";
+for (@yearList) {
+    if ($_ == $sel_y2) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select>);
+print qq(<select name="m2" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date2}')">);
+for (@monthList) {
+    if ($_ == $sel_m2) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select>);
+print qq( <select name="d2" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date2}')">);
+for (@dayList) {
+    if ($_ == $sel_d2) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print "</select>";
 
-	print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name="hr2" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date2}')">);
-	for (@hourList) {
-		if ($_ eq $sel_hr2) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-			print qq(<option value="$_">$_</option>);
-		}
-	}
-	print qq(</select>);
-	print qq(<select name="mn2" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date2}')">);
-	for (@minuteList) {
-		if ($_ eq $sel_mn2) {
-			print qq(<option selected value="$_">$_</option>);
-		} else {
-		   print qq(<option value="$_">$_</option>);
-		}
-	}
+print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name="hr2" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date2}')">);
+for (@hourList) {
+    if ($_ eq $sel_hr2) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
+print qq(</select>);
+print qq(<select name="mn2" size="1" onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_date2}')">);
+for (@minuteList) {
+    if ($_ eq $sel_mn2) {
+        print qq(<option selected value="$_">$_</option>);
+    } else {
+        print qq(<option value="$_">$_</option>);
+    }
+}
 
 print qq(</select>
         </P>
@@ -471,7 +469,7 @@ print qq(</select>
           <B>$__{'Funnel Diameter'}</B> (cm) = <input size=5 class=inputNum name=diameter value="$sel_diameter"
               onMouseOut="nd()" onmouseover="overlib('$__{help_rainwater_diameter}')"><BR>
           <B>$__{'Cumulated Rainfall'}</B> = <input size=3 readOnly name="cumrainfall" class="inputNumNoEdit"> mm
-	       (over <input size=3 readOnly name="duration" class="inputNumNoEdit"> days)<BR>
+           (over <input size=3 readOnly name="duration" class="inputNumNoEdit"> days)<BR>
           <B>$__{'Average Daily Rainfall'}</B> = <input size=3 readOnly name="dailyrainfall" class="inputNumNoEdit"> mm/day<BR>
         </P>
       </fieldset>

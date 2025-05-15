@@ -3,8 +3,12 @@
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/jerk.m for data format and further information.
 
 
-# long name of the PROC
-NAME|Jerk prediction
+# name of the PROC
+NAME|Jerk
+
+# description of what the proc does
+DESCRIPTION|Jerk prediction and alert of eruptions
+
 RAWFORMAT|miniseed
 ARCLINK_SERVER|
 ARCLINK_USER|sysop
@@ -34,7 +38,7 @@ TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} jerk $SELFREF -
-SUBMIT_RESOURCE|myjerk
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,JERK_WINDOW_SECONDS

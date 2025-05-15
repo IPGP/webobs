@@ -14,7 +14,7 @@ function varargout=timeplot(t,d,samp,varargin)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2015-08-25 in Yogyakarta, Indonesia
-%	Updated: 2019-10-23
+%	Updated: 2024-07-10
 
 dt = diff(t);
 
@@ -29,7 +29,7 @@ end
 
 if samp > 0
 
-	k = find(dt > 1.5*samp);
+	k = find(abs(dt) > 1.5*samp);
 
 	tk = cat(2,t(k),t(k+1));
 	t = cat(1,t,mean(tk,2));

@@ -34,6 +34,7 @@ CONF_NODES|${ROOT_CONF}/NODES.rc
 CONF_GRIDS|${ROOT_CONF}/GRIDS.rc
 # also found in NODES.rc !
 PATH_NODES|${ROOT_DATA}/NODES
+PATH_GRIDS|${ROOT_DATA}/GRIDS
 PATH_GRIDS2NODES|${ROOT_CONF}/GRIDS2NODES
 PATH_GRIDS2FORMS|${ROOT_CONF}/GRIDS2FORMS
 
@@ -95,8 +96,8 @@ EVENTS_GAZETTE_DELETE|YES
 EVENTS_ACTIVE_GID|+ADMIN,+DUTY
 EVENTS_NOTIFY_FULL_MESSAGE|YES
 
-# Uncomment this line to disable MultiMarkDown facilities for all 'wiki' contents
-#WIKI_MMD|NO
+# Allows convertion of former 'wiki' contents to MultiMarkDown (recommanded)
+WIKI_MMD|YES
 
 # Set to YES to add logs (in PROC's outputs)
 DEBUG|NO
@@ -131,7 +132,6 @@ URN_OUTR|/OUTR
 # ---- HTML/PAGE ------------------------------
 # ---------------------------------------------
 FILE_HTML_CSS|css/WEBOBS.css
-FILE_HTML_WMCSS|css/wm2.css
 FILE_MENU|${ROOT_CONF}/menu.rc
 
 # ---- USERS DataBase--------------------------
@@ -146,6 +146,7 @@ SQL_TABLE_AUTHMISC|authmisc
 SQL_TABLE_GROUPS|groups
 SQL_DB_USERS_AUTOREGISTER|Y
 REGISTRATION_LOGFILE|${PATH_DATA_DB}/reglog
+REGISTRATION_TITLE|Access to WEBOBS ${WEBOBS_ID}
 
 # ---- Notifications/postboard -----------------
 # ---------------------------------------------
@@ -200,6 +201,8 @@ THEIA_USER_FLAG|0
 # ---- THEIA portal configuration file --------
 # ---------------------------------------------
 CONF_THEIA|${ROOT_CONF}/theia.rc
+ROOT_OUTE|${ROOT_SITE}/OUTE
+PASSWORD_THEIA|XXXXXXXX
 
 # ---- Internalization ------------------------
 # ---------------------------------------------
@@ -277,6 +280,8 @@ WINSTON_JAVA|${ROOT_CODE}/bin/java/winston-bin.jar
 
 XML2_PRGM|${ROOT_CODE}/bin/linux-64/xml2
 #XML2_PRGM|/usr/bin/xml2
+TOXML_PRGM|${ROOT_CODE}/bin/linux-64/2xml
+#TOXML_PRGM|/usr/bin/2xml
 SLINKTOOL_PRGM|${ROOT_CODE}/bin/linux-64/slinktool
 ARCLINKFETCH_PRGM|env LD_LIBRARY_PATH='' ${ROOT_CODE}/bin/arclinkfetch/bin/arclink_fetch_wrapper --max 180
 #ARCLINKFETCH_PRGM|env LD_LIBRARY_PATH='' ${ROOT_CODE}/bin/arclinkfetch/bin/arclink_fetch
@@ -297,7 +302,7 @@ JOB_MCXVFB|cd ${ROOT_CODE}/matlab;env LANG=${LOCALE}.ISO-8859-1 xvfb-run -a --se
 # Options for the Codemirror javascript editor
 #  To browse available Codemirror themes, see:
 #  https://codemirror.net/demo/theme.html
-JS_EDITOR_EDIT_THEME|default    # codemirror theme when editing
+JS_EDITOR_EDIT_THEME|elegant    # codemirror theme when editing
 JS_EDITOR_BROWSING_THEME|neat   # codemirror theme when browsing
 JS_EDITOR_AUTO_VIM_MODE|no      # automatically enter vim mode or not (any other value):
                                 #  True if value is 'true' or 'yes' (case insensitive),
@@ -325,8 +330,9 @@ OSM_HEIGHT_VALUE|600
 OSM_ZOOM_VALUE|17
 
 # QR code module size (in pixels) / empty or zero to not display in grid/node pages
+QRCODE_BIN|qrencode
 QRCODE_SIZE|2
-QRCODE_LOGOS|/icons/ipgp/logo_WebObs_C413.png,/icons/ipgp/logo_IPGP_2022.png
+QRCODE_LOGOS|/icons/ipgp/logo_WebObs_C413.png,/icons/ipgp/logo_IPGP_2022.png,/icons/ipgp/logo_CNRSfilaire-grand.jpg
 
 # Digital Elevation Models --------------------
 # ---------------------------------------------
@@ -364,7 +370,7 @@ MKGRAPH_THUMBNAIL_HEIGHT|112
 LOGO_DEFAULT|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 LOGO_HEIGHT|0.04
 # URN to LOGO_DEFAULT
-URN_LOGO_DEFAULT|/icons/ipgp/logo_WOVS.pngv
+URN_LOGO_DEFAULT|/icons/ipgp/logo_WOVS.png
 
 # M3G (European GNSS metadata database)
 # --------------------------------------------
@@ -373,3 +379,6 @@ M3G_EDIT|${M3G_URL}/modify?station=
 M3G_EXPORTXML|${M3G_URL}/exportxml?station=
 M3G_EXPORTLOG|${M3G_URL}/exportlog?station=
 
+# Maximum upload size in MB ----------------
+# ------------------------------------------
+MAX_UPLOAD_SIZE|20

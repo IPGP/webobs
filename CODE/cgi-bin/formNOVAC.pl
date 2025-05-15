@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 #
+
 =head1 NAME
 
 formNOVAC.pl 
@@ -57,11 +58,11 @@ my %Ns;
 my @NODESSelList;
 my %Ps = $FORM->procs;
 for my $p (keys(%Ps)) {
-  my %N = $FORM->nodes($p);
-  for my $n (keys(%N)) {
-    push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-  }
-  %Ns = (%Ns, %N);
+    my %N = $FORM->nodes($p);
+    for my $n (keys(%N)) {
+        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
+    }
+    %Ns = (%Ns, %N);
 }
 
 my $titrePage = "Edit - ".$FORM->conf('TITLE');
@@ -71,8 +72,8 @@ my $QryParm   = $cgi->Vars;
 # --- DateTime inits -------------------------------------
 
 my $Ctod  = time();  my @tod  = localtime($Ctod);
-my $sel_jour  = strftime('%d',@tod); 
-my $sel_mois  = strftime('%m',@tod); 
+my $sel_jour  = strftime('%d',@tod);
+my $sel_mois  = strftime('%m',@tod);
 my $sel_annee = strftime('%Y',@tod);
 my $anneeActuelle = strftime('%Y',@tod);
 my $today     = strftime('%F',@tod);
@@ -87,6 +88,7 @@ $ENV{LANG} = $WEBOBS{LOCALE};
 
 # loads the source of a value (user defined, calculated, etc.)
 my @sources    = readCfgFile($FORM->path."/".$FORM->conf('SOURCES'));
+
 # loads the pre-selected cone angles (60 degrees, 90 degrees, etc.)
 my @coneangles = readCfgFile($FORM->path."/".$FORM->conf('CONEANGLES'));
 
@@ -132,13 +134,13 @@ print "\n
     <script type=\"text/javascript\">\n
 function check_values()
 {
-	var flux_ton = 0;
-	if(document.formulaire.flux1.value == \"\") { 
-		flux_ton = 0;
-	} else {
-		flux_ton = document.formulaire.flux1.value * 86.4;
-	}
-	document.formulaire.flux2.value = flux_ton.toFixed(2);
+    var flux_ton = 0;
+    if(document.formulaire.flux1.value == \"\") { 
+        flux_ton = 0;
+    } else {
+        flux_ton = document.formulaire.flux1.value * 86.4;
+    }
+    document.formulaire.flux2.value = flux_ton.toFixed(2);
 }
 
 function verif_formulaire() {
@@ -181,7 +183,8 @@ window.onkeydown = check_values();
 
     </script>\n
   </head>\n
-  <body style=\"background-color:#E0E0E0\" onLoad=\"calc()\">\n";
+  <body onLoad=\"calc()\">\n";
+
 # ------------------------------------------------------------
 # ---- end of specific NOVAC javascript form validation ------
 # ------------------------------------------------------------
@@ -208,44 +211,46 @@ my $message = "Add new entry";
 my @ligne;
 my $ptr='';
 my $fts-1;
+
 # ------------------------------------------------------------
 # ---- start of specific NOVAC form code ---------------------
 # ------------------------------------------------------------
 my ($id,$date,$site,$flux1,$flux2,$windSpeed,$windSpeedSource,$windDirection,$windDirectionSource,$compassDirection,$coneAngle,$tilt,$plumeHeight,$plumeHeightSource,$offset,$plumeCentre,$plumeEdge1,$plumeEdge2,$plumeCompleteness,$geomError,$spectrometerError,$scatteringError,$windError,$nbValidScans) = split(/\|/,$_);
 if (defined($QryParm->{id})) {
-  ($ptr, $fts) = $FORM->data($QryParm->{id});
-  @ligne = @$ptr;
-  if (scalar(@ligne) == 1) {
-    chomp(@ligne);
-    ($id,$date,$site,$flux1,$flux2,$windSpeed,$windSpeedSource,$windDirection,$windDirectionSource,$compassDirection,$coneAngle,$tilt,$plumeHeight,$plumeHeightSource,$offset,$plumeCentre,$plumeEdge1,$plumeEdge2,$plumeCompleteness,$geomError,$spectrometerError,$scatteringError,$windError,$nbValidScans) = split (/\|/,l2u($ligne[0]));
-    if ($QryParm->{id} eq $id) { 
-      ($sel_annee,$sel_mois,$sel_jour) = split (/-/,$date);
-      $sel_site = $site;
-      $sel_flux1 = $flux1;
-      $sel_flux2 = $flux2;
-      $sel_windSpeed = $windSpeed;
-      $sel_windSpeedSource = $windSpeedSource;
-      $sel_windDirection = $windDirection;
-      $sel_windDirectionSource = $windDirectionSource;
-      $sel_compassDirection = $compassDirection;
-      $sel_coneAngle = $coneAngle;
-      $sel_tilt = $tilt;
-      $sel_plumeHeight = $plumeHeight;
-      $sel_plumeHeightSource = $plumeHeightSource;
-      $sel_offset = $offset;
-      $sel_plumeCentre = $plumeCentre;
-      $sel_plumeEdge1 = $plumeEdge1;
-      $sel_plumeEdge2 = $plumeEdge2;
-      $sel_plumeCompleteness = $plumeCompleteness;
-      $sel_geomError = $geomError;
-      $sel_spectrometerError = $spectrometerError;
-      $sel_scatteringError = $scatteringError;
-      $sel_windError = $windError;
-      $sel_nbValidScans = $nbValidScans;
-      $message = "Changing entry $QryParm->{id}";
+    ($ptr, $fts) = $FORM->data($QryParm->{id});
+    @ligne = @$ptr;
+    if (scalar(@ligne) == 1) {
+        chomp(@ligne);
+        ($id,$date,$site,$flux1,$flux2,$windSpeed,$windSpeedSource,$windDirection,$windDirectionSource,$compassDirection,$coneAngle,$tilt,$plumeHeight,$plumeHeightSource,$offset,$plumeCentre,$plumeEdge1,$plumeEdge2,$plumeCompleteness,$geomError,$spectrometerError,$scatteringError,$windError,$nbValidScans) = split (/\|/,l2u($ligne[0]));
+        if ($QryParm->{id} eq $id) {
+            ($sel_annee,$sel_mois,$sel_jour) = split (/-/,$date);
+            $sel_site = $site;
+            $sel_flux1 = $flux1;
+            $sel_flux2 = $flux2;
+            $sel_windSpeed = $windSpeed;
+            $sel_windSpeedSource = $windSpeedSource;
+            $sel_windDirection = $windDirection;
+            $sel_windDirectionSource = $windDirectionSource;
+            $sel_compassDirection = $compassDirection;
+            $sel_coneAngle = $coneAngle;
+            $sel_tilt = $tilt;
+            $sel_plumeHeight = $plumeHeight;
+            $sel_plumeHeightSource = $plumeHeightSource;
+            $sel_offset = $offset;
+            $sel_plumeCentre = $plumeCentre;
+            $sel_plumeEdge1 = $plumeEdge1;
+            $sel_plumeEdge2 = $plumeEdge2;
+            $sel_plumeCompleteness = $plumeCompleteness;
+            $sel_geomError = $geomError;
+            $sel_spectrometerError = $spectrometerError;
+            $sel_scatteringError = $scatteringError;
+            $sel_windError = $windError;
+            $sel_nbValidScans = $nbValidScans;
+            $message = "Changing entry $QryParm->{id}";
+        } else { $QryParm->{id} = ""; }
     } else { $QryParm->{id} = ""; }
-  } else { $QryParm->{id} = ""; }
 }
+
 # ------------------------------------------------------------
 # ---- end of specific NOVAC form code -----------------------
 # ------------------------------------------------------------
@@ -261,7 +266,7 @@ print "\n
     </table>\n
     <form name=formulaire id=\"theform\" action=\"\">";
 if ($QryParm->{id} ne "") {
-  print "\n
+    print "\n
       <input type=\"hidden\" name=\"id\" value=\"$QryParm->{id}\"/>";
 }
 print "\n
@@ -269,43 +274,43 @@ print "\n
       <table style=border:0 onMouseOver=\"calc()\">\n
         <tr>\n
           <td style=border:0 valign=top>\n
-	    <fieldset>
+        <fieldset>
               <legend>Main data</legend>\n
-	      <p class=parform>\n
-	        <b>Date: </b>\n
+          <p class=parform>\n
+            <b>Date: </b>\n
                 <select name=annee size=\"1\">";
 for (@anneeListe) {
-  if ($_ == $sel_annee) {
-    print "\n
-                  <option selected value=$_>$_</option>"; 
-  } else {
-    print "\n
-                  <option value=$_>$_</option>"; 
-  }
+    if ($_ == $sel_annee) {
+        print "\n
+                  <option selected value=$_>$_</option>";
+    } else {
+        print "\n
+                  <option value=$_>$_</option>";
+    }
 }
 print "\n
                 </select>\n
                 <select name=mois size=\"1\">";
 for (@moisListe) {
-  if ($_ == $sel_mois) {
-    print "\n
+    if ($_ == $sel_mois) {
+        print "\n
                   <option selected value=$_>$_</option>";
-  } else {
-    print "\n
+    } else {
+        print "\n
                   <option value=$_>$_</option>";
-  }
+    }
 }
 print "\n
                 </select>\n
                 <select name=jour size=\"1\">";
-for (@jourListe) { 
-  if ($_ == $sel_jour) {
-    print "\n
+for (@jourListe) {
+    if ($_ == $sel_jour) {
+        print "\n
                   <option selected value=$_>$_</option>";
-  } else {
-    print "\n
+    } else {
+        print "\n
                   <option value=$_>$_</option>";
-  }
+    }
 }
 print "\n
                 </select><br/>\n
@@ -314,15 +319,16 @@ print "\n
                 <select onMouseOut=\"nd()\" onmouseover=\"overlib('Select site')\" name=\"site\" class=\"required\">\n
                   <option value=\"\"></option>";
 for (@NODESSelList) {
-  my @cle = split(/\|/,$_);
-  if ($cle[0] eq $sel_site) {
-    print "\n
+    my @cle = split(/\|/,$_);
+    if ($cle[0] eq $sel_site) {
+        print "\n
                   <option selected value=$cle[0]>$cle[1]</option>";
-  } else {
-    print "\n
+    } else {
+        print "\n
                   <option value=$cle[0]>$cle[1]</option>";
-  }
+    }
 }
+
 # ------------------------------------------------------------
 # ---- start of specific NOVAC HTML form code ----------------
 # ------------------------------------------------------------
@@ -346,13 +352,13 @@ print "\n
                 <b>Wind speed source: </b>\n
                 <select onMouseOut=\"nd()\" onmouseover=\"overlib('Enter wind speed source')\" name=\"windSpeedSource\" size=\"1\">";
 for (@sources) {
-  my @cle = split(/\|/,$_);
-  print "\n
+    my @cle = split(/\|/,$_);
+    print "\n
                   <option";
-  if ($cle[0] eq $sel_windSpeedSource) {
-    print " selected";
-  }
-  print " value=$cle[0]>$cle[1]</option>";
+    if ($cle[0] eq $sel_windSpeedSource) {
+        print " selected";
+    }
+    print " value=$cle[0]>$cle[1]</option>";
 }
 print "\n
                 </select><br/>\n
@@ -363,13 +369,13 @@ print "\n
                 <b>Wind direction source: </b>\n
                 <select onMouseOut=\"nd()\" onmouseover=\"overlib('Enter wind direction source')\" name=\"windDirectionSource\" size=\"1\">";
 for (@sources) {
-  my @cle = split(/\|/,$_);
-  print "\
+    my @cle = split(/\|/,$_);
+    print "\
                   <option";
-  if ($cle[0] eq $sel_windDirectionSource) {
-    print " selected";
-  }
-  print " value=$cle[0]>$cle[1]</option>";
+    if ($cle[0] eq $sel_windDirectionSource) {
+        print " selected";
+    }
+    print " value=$cle[0]>$cle[1]</option>";
 }
 print "\n
                 </select><br/>\n
@@ -385,13 +391,13 @@ print "\n
                 <b>Cone angle: </b>\n
                 <select onMouseOut=\"nd()\" onmouseover=\"overlib('Enter cone angle value')\" name=\"coneAngle\" size=\"1\">";
 for (@coneangles) {
-  my @cle = split(/\|/,$_);
-  print "\n
+    my @cle = split(/\|/,$_);
+    print "\n
                   <option";
-  if ($cle[0] eq $sel_coneAngle) {
-    print " selected";
-  }
-  print " value=$cle[0]>$cle[1]</option>";
+    if ($cle[0] eq $sel_coneAngle) {
+        print " selected";
+    }
+    print " value=$cle[0]>$cle[1]</option>";
 }
 print "\n
                 </select> deg<br/>\n
@@ -410,13 +416,13 @@ print "\n
                 <b>Plume height source: </b>\n
                 <select onMouseOut=\"nd()\" onmouseover=\"overlib('Enter plume height source')\" name=\"plumeHeightSource\" size=\"1\">";
 for (@sources) {
-  my @cle = split(/\|/,$_);
-  print "\n
+    my @cle = split(/\|/,$_);
+    print "\n
                   <option";
-  if ($cle[0] eq $sel_plumeHeightSource) {
-    print " selected";
-  }
-  print " value=$cle[0]>$cle[1]</option>";
+    if ($cle[0] eq $sel_plumeHeightSource) {
+        print " selected";
+    }
+    print " value=$cle[0]>$cle[1]</option>";
 }
 print "\n
                 </select><br/>\n
@@ -468,6 +474,7 @@ print "\n
     </form>\n
   </body>\n
 </html>\n";
+
 # ------------------------------------------------------------
 # ---- end of specific NOVAC HTML form code ------------------
 # ------------------------------------------------------------

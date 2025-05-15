@@ -29,7 +29,7 @@ Process NODE Update or Create from formNODE submitted info
  ldly=
  LAST_DELAY|  configuration value
 
- data=
+ fid=
  FID|  configuration value - string
 
  rawformat=
@@ -131,7 +131,6 @@ use WebObs::Wiki;
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 
-
 # ---- Above all we need a fully-qualified NODE from an authorized client
 #
 my $delete = $cgi->param('delete') // 0;
@@ -139,18 +138,18 @@ my $GRIDName  = my $GRIDType  = my $NODEName = "";
 my @lines;
 ($GRIDType, $GRIDName, $NODEName) = split(/[\.\/]/, trim($cgi->param('node')));
 if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
-	if ( $delete && !clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
-		htmlMsgNotOK("You cannot delete $GRIDType.$GRIDName.$NODEName");
-	}
-	if ( !clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
-		htmlMsgNotOK("You cannot edit $GRIDType.$GRIDName.$NODEName");
-	}
+    if ( $delete && !clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
+        htmlMsgNotOK("You cannot delete $GRIDType.$GRIDName.$NODEName");
+    }
+    if ( !clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
+        htmlMsgNotOK("You cannot edit $GRIDType.$GRIDName.$NODEName");
+    }
 } else { htmlMsgNotOK ("Invalid NODE (".$cgi->param('node').") posted for create/update/delete")  }
 
 # ---- checking if user is a THEIA user and if he wants to save data in metadatabase
 #
 my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
-my $saveAuth   = $cgi->param('saveAuth')	// '';
+my $saveAuth   = $cgi->param('saveAuth')    // '';
 
 # ---- where are the NODE's directory and NODE's conf file ?
 my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
@@ -160,44 +159,47 @@ my $n2nfile = "$NODES{FILE_NODES2NODES}";
 
 # ---- If deleting NODE, do not wait for further information
 #
-my $producer   = $cgi->param('producer')    // '';	# information needed to delete the NODE's related row in the metadata DB
+my $producer   = $cgi->param('producer')    // '';    # information needed to delete the NODE's related row in the metadata DB
 
 if ($delete) {
-	# NOTE: this removes only the node directory, association to grids and node feature associations
-	qx(/bin/mkdir -p $NODES{PATH_NODE_TRASH});
-	qx(/bin/rm -rf $NODES{PATH_NODE_TRASH}/$NODEName);
-	if (system("/bin/mv $nodepath $NODES{PATH_NODE_TRASH}/") == 0) {
-		unlink glob "$WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName";
-		#system("/bin/rm -f $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName");
-		# reads all but feature children nodes
-		@lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
-		saveN2N(@lines);
-		
-		if ( isok($theiaAuth) and isok($saveAuth) ) {
-			# --- connecting to the database
-			my $driver   = "SQLite";
-			my $database = $WEBOBS{SQL_METADATA};
-			my $dsn 	 = "DBI:$driver:dbname=$database";
-			my $userid 	 = "";
-			my $password = "";
-			my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-		    	or die $DBI::errstr;
-			
-			my $stmt = qq(delete from datasets WHERE datasets.identifier = "$producer\_DAT_$GRIDName.$NODEName");
-			my $sth = $dbh->prepare( $stmt );
-			my $rv = $sth->execute() or die $DBI::errstr;
 
-			if($rv < 0) {
-			   print $DBI::errstr;
-			}
-			
-			$dbh->disconnect();
-		}
-	} else {
-		htmlMsgNotOK("postNODE couldn't move directory $nodepath to trash... [$!]");
-	}
-	htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n deleted");
-	exit;
+# NOTE: this removes only the node directory, association to grids and node feature associations
+    qx(/bin/mkdir -p $NODES{PATH_NODE_TRASH});
+    qx(/bin/rm -rf $NODES{PATH_NODE_TRASH}/$NODEName);
+    if (system("/bin/mv $nodepath $NODES{PATH_NODE_TRASH}/") == 0) {
+        unlink glob "$WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName";
+
+        #system("/bin/rm -f $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName");
+        # reads all but feature children nodes
+        @lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
+        saveN2N(@lines);
+
+        if ( isok($theiaAuth) and isok($saveAuth) ) {
+
+            # --- connecting to the database
+            my $driver   = "SQLite";
+            my $database = $WEBOBS{SQL_METADATA};
+            my $dsn      = "DBI:$driver:dbname=$database";
+            my $userid      = "";
+            my $password = "";
+            my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+              or die $DBI::errstr;
+
+            my $stmt = qq(delete from datasets WHERE datasets.identifier = "$producer\_DAT_$GRIDName.$NODEName");
+            my $sth = $dbh->prepare( $stmt );
+            my $rv = $sth->execute() or die $DBI::errstr;
+
+            if($rv < 0) {
+                print $DBI::errstr;
+            }
+
+            $dbh->disconnect();
+        }
+    } else {
+        htmlMsgNotOK("postNODE couldn't move directory $nodepath to trash... [$!]");
+    }
+    htmlMsgOK("$GRIDType.$GRIDName.$NODEName\n deleted");
+    exit;
 }
 
 # ---- What are we supposed to do ?: find it out in the query string
@@ -219,14 +221,14 @@ my $desc       = $cgi->param('description') // ''; $desc =~ s/\<\<//g;
 my $desc1 = $desc; $desc1 =~ s/\r\n/<br>/g;
 my $creator    = $cgi->param('creators')    // '';
 my $theme      = $cgi->param('theme')       // '';
-my @roles	   = $cgi->param('role');
+my @roles       = $cgi->param('role');
 my @firstNames = $cgi->param('firstName');
 my @lastNames  = $cgi->param('lastName');
-my @emails	   = $cgi->param('email');
+my @emails       = $cgi->param('email');
 my @topics     = $cgi->param('topics');
 my $lineage    = $cgi->param('lineage')     // '';
 my $tz         = $cgi->param('tz')          // '';
-my $data       = $cgi->param('data')        // '';
+my $fid        = $cgi->param('fid')         // '';
 my $rawformat  = $cgi->param('rawformat')   // '';
 my $rawdata    = $cgi->param('rawdata')     // '';
 my @chanlist   = $cgi->param('chanlist');
@@ -255,13 +257,14 @@ my $features   = $cgi->param('features')    // '';
 $features =~ s/\|/,/g;
 my %n2n;
 for (split(',',lc($features))) {
-	$n2n{$_} = $cgi->param($_) if $cgi->param($_) ne '';
+    $n2n{$_} = $cgi->param($_) if $cgi->param($_) ne '';
 }
 my $typeTrans = $cgi->param('typeTrans')   // '';
 $typeTrans =~ s/\|/,/g;
 my $typeTele  = $cgi->param('pathTrans')   // '';
 if ($typeTele ne "") { $typeTrans = "$typeTrans,$typeTele"; }
 my @SELs      = $cgi->param('SELs');
+my $newnode = $cgi->param('newnode')   // '';
 
 # ---- pre-set actions to be run soon under control of
 # ---- lock-exclusive on the configuration file.
@@ -270,26 +273,27 @@ my @SELs      = $cgi->param('SELs');
 # ---- Dates must be ISO: YYYY, YYYY-MM or YYYY-MM-DD, otherwise "NA"
 my $dateInstall = "NA";
 if ($anneeD ne "") {
-	$dateInstall = sprintf ("%s%s%s",$anneeD,($moisD eq "")?"":"-$moisD",($jourD eq "")?"":"-$jourD")
+    $dateInstall = sprintf ("%s%s%s",$anneeD,($moisD eq "")?"":"-$moisD",($jourD eq "")?"":"-$jourD")
 }
 my $dateEnd = "NA";
 if ($anneeE ne "") {
-	$dateEnd = sprintf ("%s%s%s",$anneeE,($moisE eq "")?"":"-$moisE",($jourE eq "")?"":"-$jourE")
+    $dateEnd = sprintf ("%s%s%s",$anneeE,($moisE eq "")?"":"-$moisE",($jourE eq "")?"":"-$jourE")
 }
 my $datePos = "NA";
 if ($anneeP ne "") {
-	$datePos = sprintf ("%s%s%s",$anneeP,($moisP eq "")?"":"-$moisP",($jourP eq "")?"":"-$jourP")
+    $datePos = sprintf ("%s%s%s",$anneeP,($moisP eq "")?"":"-$moisP",($jourP eq "")?"":"-$jourP")
 }
 
 # ---- Position lat/lon: adds minutes and seconds
 if ($lon ne "" && $lat ne "") {
-	$lat = $lat + $latmin/60 + $latsec/3600;
-	if ($latN eq "S") { $lat *= -1; }
-	$lon = $lon + $lonmin/60 + $lonsec/3600;
-	if ($lonE eq "W") { $lon *= -1; }
-	# locale might have replaced decimal point by coma...
-	$lat =~ s/,/./g;
-	$lon =~ s/,/./g;
+    $lat = $lat + $latmin/60 + $latsec/3600;
+    if ($latN eq "S") { $lat *= -1; }
+    $lon = $lon + $lonmin/60 + $lonsec/3600;
+    if ($lonE eq "W") { $lon *= -1; }
+
+    # locale might have replaced decimal point by comma...
+    $lat =~ s/,/./g;
+    $lon =~ s/,/./g;
 }
 
 # ---- parsing dataset contacts
@@ -298,16 +302,20 @@ my @creators = split('\|', $creator);
 # ---- NODE's validity flag
 my $valide = "";
 if ( $validite eq "NA" ) { $valide = 1; } else { $valide = 0; }
+
 # ---- 2nd checkbox: M3G avaiability flag
 my $m3g_avaiable = "";
 if ( $m3g_check eq "NA" ) { $m3g_avaiable = 1; } else { $m3g_avaiable = 0; }
+
 # ---- NODES' Feature Files: "system" always present, and "user" defined
 my @FFsys = ('acces.txt', 'info.txt', 'installation.txt', 'type.txt', "$NODEName.clb");
 my @FFusr = map { "$NODES{SPATH_FEATURES}/".lc($_).'.txt'} split(/\||,/,$features);
 my @FFnew = map { $_ if(! -e "$nodepath/$_") } (@FFsys, @FFusr);
+
 # ---- NODE's documents subdirectories
 my @docs  = ($NODES{SPATH_INTERVENTIONS}, $NODES{SPATH_PHOTOS}, $NODES{SPATH_DOCUMENTS}, $NODES{SPATH_SCHEMES});
 my @Dnew  = map { $_ if(! -e "$nodepath/$_") } (@docs);
+
 # ---- build the NODE's configuration file. There is no 'true update' of this .cnf,
 # ---- each time it is rebuilt from scratch (hum...from query-string parameters)
 #my @Ps; my @Vs;
@@ -332,86 +340,123 @@ push(@lines,"TRANSMISSION|".u2l($typeTrans)."\n");
 
 # ---- procs parameters
 if ($GRIDType eq "PROC") {
-	push(@lines,"$GRIDType.$GRIDName.FID|".u2l($data)."\n");
-	grep { $_ =~ /^FID_/ && (push(@lines,"$GRIDType.$GRIDName.$_|$QryParm->{$_}\n")) } (keys(%$QryParm));
-	push(@lines,"$GRIDType.$GRIDName.FDSN_NETWORK_CODE|$fdsn\n");
-	push(@lines,"$GRIDType.$GRIDName.RAWFORMAT|".u2l($rawformat)."\n");
-	push(@lines,"$GRIDType.$GRIDName.RAWDATA|".u2l($rawdata)."\n");
-	push(@lines,"$GRIDType.$GRIDName.UTC_DATA|$utcd\n");
-	push(@lines,"$GRIDType.$GRIDName.ACQ_RATE|$acqr\n");
-	push(@lines,"$GRIDType.$GRIDName.LAST_DELAY|$ldly\n");
-	push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
-	push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|".u2l($desc1)."\n");
+    push(@lines,"$GRIDType.$GRIDName.FID|".u2l($fid)."\n");
+    grep { $_ =~ /^FID_/ && (push(@lines,"$GRIDType.$GRIDName.$_|$QryParm->{$_}\n")) } (keys(%$QryParm));
+    push(@lines,"$GRIDType.$GRIDName.FDSN_NETWORK_CODE|$fdsn\n");
+    push(@lines,"$GRIDType.$GRIDName.RAWFORMAT|".u2l($rawformat)."\n");
+    push(@lines,"$GRIDType.$GRIDName.RAWDATA|".u2l($rawdata)."\n");
+    push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
+    push(@lines,"$GRIDType.$GRIDName.UTC_DATA|$utcd\n");
+}
+
+# ---- forms and procs common parameters
+if ($GRIDType =~ /^PROC|FORM$/) {
+    push(@lines,"$GRIDType.$GRIDName.ACQ_RATE|$acqr\n");
+    push(@lines,"$GRIDType.$GRIDName.LAST_DELAY|$ldly\n");
+    push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|".u2l($desc1)."\n");
 }
 
 # ---- other grid's parameters (not linked to the active grid) are transfered "as is"
 for (sort grep { $_ =~ /(VIEW|PROC)\..*\./ } keys(%$QryParm)) {
-	push(@lines,"$_|$QryParm->{$_}\n");
+    push(@lines,"$_|$QryParm->{$_}\n");
 }
 
 # ---- for migration >> 1.8.1 : former proc parameters are duplicated to all existing associated procs
 foreach my $g (@{$allNodeGrids{$NODEName}}) {
-	if ($g =~ /^PROC\./ && $g ne "$GRIDType.$GRIDName") {
-		push(@lines,"$g.FDSN_NETWORK_CODE|$QryParm->{FDSN_NETWORK_CODE}\n") if !(defined $QryParm->{"$g.FDSN_NETWORK_CODE"});
-		push(@lines,"$g.RAWFORMAT|$QryParm->{RAWFORMAT}\n") if !(defined $QryParm->{"$g.RAWFORMAT"});
-		push(@lines,"$g.RAWDATA|$QryParm->{RAWDATA}\n") if !(defined $QryParm->{"$g.RAWDATA"});
-		push(@lines,"$g.UTC_DATA|$QryParm->{UTC_DATA}\n") if !(defined $QryParm->{"$g.UTC_DATA"});
-		push(@lines,"$g.ACQ_RATE|$QryParm->{ACQ_RATE}\n") if !(defined $QryParm->{"$g.ACQ_RATE"});
-		push(@lines,"$g.LAST_DELAY|$QryParm->{LAST_DELAY}\n") if !(defined $QryParm->{"$g.LAST_DELAY"});
-		push(@lines,"$g.CHANNEL_LIST|$QryParm->{CHANNEL_LIST}\n") if !(defined $QryParm->{"$g.CHANNEL_LIST"});
-		push(@lines,"$g.FID|$QryParm->{FID}\n") if !(defined $QryParm->{"$g.FID"});
-		grep { $_ =~ /^FID_/ && !(defined $QryParm->{"$g.$_"}) && (push(@lines,"$g.$_|$QryParm->{$_}\n")) } (keys(%$QryParm));
-	}
+    if ($g =~ /^PROC\./ && $g ne "$GRIDType.$GRIDName") {
+        push(@lines,"$g.FDSN_NETWORK_CODE|$QryParm->{FDSN_NETWORK_CODE}\n") if !(defined $QryParm->{"$g.FDSN_NETWORK_CODE"});
+        push(@lines,"$g.RAWFORMAT|$QryParm->{RAWFORMAT}\n") if !(defined $QryParm->{"$g.RAWFORMAT"});
+        push(@lines,"$g.RAWDATA|$QryParm->{RAWDATA}\n") if !(defined $QryParm->{"$g.RAWDATA"});
+        push(@lines,"$g.UTC_DATA|$QryParm->{UTC_DATA}\n") if !(defined $QryParm->{"$g.UTC_DATA"});
+        push(@lines,"$g.ACQ_RATE|$QryParm->{ACQ_RATE}\n") if !(defined $QryParm->{"$g.ACQ_RATE"});
+        push(@lines,"$g.LAST_DELAY|$QryParm->{LAST_DELAY}\n") if !(defined $QryParm->{"$g.LAST_DELAY"});
+        push(@lines,"$g.CHANNEL_LIST|$QryParm->{CHANNEL_LIST}\n") if !(defined $QryParm->{"$g.CHANNEL_LIST"});
+        push(@lines,"$g.FID|$QryParm->{FID}\n") if !(defined $QryParm->{"$g.FID"});
+        grep { $_ =~ /^FID_/ && !(defined $QryParm->{"$g.$_"}) && (push(@lines,"$g.$_|$QryParm->{$_}\n")) } (keys(%$QryParm));
+    }
 }
-
 
 # ---- create NODE's directory if required
 umask 0002;
 if ( ! -e $nodepath) {
-	htmlMsgNotOK("couldn't create ($!) $nodepath") if (! mkdir($nodepath, 0775)) ;
+    htmlMsgNotOK("couldn't create ($!) $nodepath") if (! mkdir($nodepath, 0775)) ;
 }
+
 # ---- lock-exclusive the target file during all update process
 #
 if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
-	unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-		warn "postNODE waiting for lock on $nodefile...";
-		flock(FILE, LOCK_EX);
-	}
-	# ---- backup conf file (To Be Removed: lifecycle too short)
-	if ( -e $nodefile ) {
-		qx(cp -a $nodefile $nodefile~ 2>&1);
-	}
-	# ---- create NODE's features subdirectory if required
-	if ( ! -e "$nodepath/$NODES{SPATH_FEATURES}") {
-		mkdir("$nodepath/$NODES{SPATH_FEATURES}", 0774) ;
-	}
-	# ---- create empty features files that have been found missing
-	for (@FFnew) {
-		qx(/bin/touch "$nodepath/$_");
-	}
-	# ---- create the empty docs subdirectories that have been found missing
-	for (@Dnew) {
-		 if ($_) { mkdir("$nodepath/$_", 0775) ;}
-	}
-	# ---- delete any existing GRIDS to NODE symbolic links
-	qx(rm -f $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName);
+    unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+        warn "postNODE waiting for lock on $nodefile...";
+        flock(FILE, LOCK_EX);
+    }
 
-	# ---- create GRIDS to NODE symbolic link(s) if required
-	for (@SELs) {
-		qx(ln -s $nodepath $WEBOBS{PATH_GRIDS2NODES}/$_.$NODEName);
-	}
-	#djl-was:?: system("/bin/chmod -R a+rwx $racineDir");
-	#djl-was:?:system("/bin/chown -R matlab:users $racineDir");
-	#
-	# ---- actually create the NODE's configuration file and release lock!
-	truncate FILE, 0;
-	print FILE @lines;
-	close(FILE);
+    # ---- backup conf file (To Be Removed: lifecycle too short)
+    if ( -e $nodefile ) {
+        qx(cp -a $nodefile $nodefile~ 2>&1);
+    }
 
-	# ---- legacy: if everything ran OK, erase the old type.txt file
-	if (-e "$nodepath/type.txt") {
-		qx(rm -f $nodepath/type.txt);
-	}
+    # ---- create NODE's features subdirectory if required
+    if ( ! -e "$nodepath/$NODES{SPATH_FEATURES}") {
+        mkdir("$nodepath/$NODES{SPATH_FEATURES}", 0774) ;
+    }
+
+    # ---- create empty features files that have been found missing
+    for (@FFnew) {
+        qx(/bin/touch "$nodepath/$_");
+    }
+
+    # ---- create the empty docs subdirectories that have been found missing
+    for (@Dnew) {
+        if ($_) { mkdir("$nodepath/$_", 0775) ;}
+    }
+
+    # ---- delete any existing GRIDS to NODE symbolic links
+    qx(rm -f $WEBOBS{PATH_GRIDS2NODES}/*.*.$NODEName);
+
+    # ---- create GRIDS to NODE symbolic link(s) if required
+    for (@SELs) {
+        qx(ln -s $nodepath $WEBOBS{PATH_GRIDS2NODES}/$_.$NODEName);
+    }
+
+    #djl-was:?: system("/bin/chmod -R a+rwx $racineDir");
+    #djl-was:?:system("/bin/chown -R matlab:users $racineDir");
+    #
+    # ---- actually create the NODE's configuration file and release lock!
+    truncate FILE, 0;
+    print FILE @lines;
+    close(FILE);
+
+    # ---- if this is a duplication of existing, get the origine fullid node
+    if ($newnode == 2) {
+        my ($ongt, $ongn, $onid) = split(/[\.\/]/, trim($cgi->param('nodeorigin')));
+        my $onodepath = "$NODES{PATH_NODES}/$onid";
+
+        # copy features and other files content
+        if ($cgi->param('copymeta')) {
+            qx(cp -a $onodepath/$NODES{SPATH_FEATURES} $nodepath/ 2>&1);
+            qx(cp -a $onodepath/*.txt $nodepath/ 2>&1);
+        }
+
+        # copy calibration file
+        if ($cgi->param('copyclb')) {
+            my $clb = "$onodepath/$GRIDType.$GRIDName.$onid.clb";
+            if (-e $clb) {
+                qx(cp -a $clb $nodepath/$GRIDType.$GRIDName.$NODEName.clb 2>&1);
+            }
+        }
+
+        # copy photos, images and documents
+        if ($cgi->param('copydoc')) {
+            qx(cp -a $onodepath/$NODES{SPATH_PHOTOS} $nodepath/ 2>&1);
+            qx(cp -a $onodepath/$NODES{SPATH_DOCUMENTS} $nodepath/ 2>&1);
+            qx(cp -a $onodepath/$NODES{SPATH_SCHEMES} $nodepath/ 2>&1);
+        }
+    }
+
+    # ---- legacy: if everything ran OK, erase the old type.txt file
+    if (-e "$nodepath/type.txt") {
+        qx(rm -f $nodepath/type.txt);
+    }
 
 } else { htmlMsgNotOK("$nodefile $!") }
 
@@ -421,128 +466,132 @@ if ( sysopen(FILE, "$nodefile", O_RDWR | O_CREAT) ) {
 my $geojsonfile = "$nodepath/$NODEName.geojson";
 
 if ($geojson ne "") {
-	if ( sysopen(FILE, "$geojsonfile", O_RDWR | O_CREAT) ) {
-		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "postNODE waiting for lock on $geojsonfile...";
-			flock(FILE, LOCK_EX);
-		}
-		
-		truncate FILE, 0;
-		print FILE $geojson;
-		close(FILE);
-		
-	} else { htmlMsgNotOK("$geojsonfile $!") }
+    if ( sysopen(FILE, "$geojsonfile", O_RDWR | O_CREAT) ) {
+        unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+            warn "postNODE waiting for lock on $geojsonfile...";
+            flock(FILE, LOCK_EX);
+        }
+
+        truncate FILE, 0;
+        print FILE $geojson;
+        close(FILE);
+
+    } else { htmlMsgNotOK("$geojsonfile $!") }
 }
 
 if ( isok($theiaAuth) and $saveAuth == 1 ) {
-	# --- connecting to the database
-	my $driver   = "SQLite";
-	my $database = $WEBOBS{SQL_METADATA};
-	my $dsn 	 = "DBI:$driver:dbname=$database";
-	my $userid 	 = "";
-	my $password = "";
-		
-	# --- station informations, coordinates are saved in WKT format
-	my $point;
-	if ($alt ne "") {
-		$point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
-	} else {
-		$point = "wkt:Point(".$lat.",".$lon.")";
-	}
-		
-	# --- dataset informations
-	my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
-	my $topics = 'topicCategories:'.join(',',@topics);
-	my $subject = $topics.'_inspireTheme:'.$theme;
-		
-	my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
-	   or die $DBI::errstr;
-		   
-	# inserting creators into contacts table
-	my @contacts = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
-	my $stmt = qq(select * from contacts where related_id=\"$id\");
-	my $sth = $dbh->prepare( $stmt );
-	my $rv = $sth->execute() or die $DBI::errstr;
 
-	if($rv < 0) {
-	   print $DBI::errstr;
-	}
-	while(my @row = $sth->fetchrow_array()) {
-		my $email = $row[0];
-		if ($email !~ @emails) {
-			my $stmt2 = "delete from contacts where email=\"$email\" AND related_id=\"$id\"";
-			$dbh->do($stmt2);
-		}
-	}
-		
-	my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
-	$dbh->do($q);
-	
-	my $station_name = $GRIDName.'.'.$NODEName;
+    # --- connecting to the database
+    my $driver   = "SQLite";
+    my $database = $WEBOBS{SQL_METADATA};
+    my $dsn      = "DBI:$driver:dbname=$database";
+    my $userid      = "";
+    my $password = "";
 
-	my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
-	$sth->execute($station_name,$alias,$point);
-	
-	if ($spatialcov eq "") {
-		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, LINEAGE) VALUES (?,?,?,?,?);');
-		$sth->execute($id,$name,$desc,$subject,$lineage);
-	} else {
-		$sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, DESCRIPTION, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?,?);');
-		$sth->execute($id,$name,$desc,$subject,$spatialcov,$lineage);
-	}
-		
-	$dbh->disconnect();
+    # --- station informations, coordinates are saved in WKT format
+    my $point;
+    if ($alt ne "") {
+        $point = "wkt:Point(".$lat.",".$lon.",".$alt.")";
+    } else {
+        $point = "wkt:Point(".$lat.",".$lon.")";
+    }
+
+    # --- dataset informations
+    my $id  = $producer.'_DAT_'.$GRIDName.'.'.$NODEName;
+    my $topics = 'topicCategories:'.join(',',@topics);
+    my $subject = $topics.'_inspireTheme:'.$theme;
+
+    my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
+      or die $DBI::errstr;
+
+    # inserting creators into contacts table
+    my @contacts = map { "(\'$emails[$_]\',\'$firstNames[$_]\',\'$lastNames[$_]\',\'$roles[$_]\',\'$id\')" } 0..$#roles;
+    my $stmt = qq(select * from contacts where related_id=\"$id\");
+    my $sth = $dbh->prepare( $stmt );
+    my $rv = $sth->execute() or die $DBI::errstr;
+
+    if($rv < 0) {
+        print $DBI::errstr;
+    }
+    while(my @row = $sth->fetchrow_array()) {
+        my $email = $row[0];
+        if ($email !~ @emails) {
+            my $stmt2 = "delete from contacts where email=\"$email\" AND related_id=\"$id\"";
+            $dbh->do($stmt2);
+        }
+    }
+
+    my $q = "insert or replace into $WEBOBS{SQL_TABLE_CONTACTS} VALUES ".join(',',@contacts);
+    $dbh->do($q);
+
+    my $station_name = $GRIDName.'.'.$NODEName;
+
+    my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
+    $sth->execute($station_name,$alias,$point);
+
+    if ($spatialcov eq "") {
+        $sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, SUBJECT, LINEAGE) VALUES (?,?,?,?);');
+        $sth->execute($id,$name,$subject,$lineage);
+    } else {
+        $sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?);');
+        $sth->execute($id,$name,$subject,$spatialcov,$lineage);
+    }
+
+    $dbh->disconnect();
 }
 
 # ---- node2node update: only if there is something to do!
 #
 if (%n2n) {
-	# reads all but current node
-	@lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
-	for my $key (keys(%n2n)) {
-		for my $n (split(/,/,$n2n{$key})) {
-			push(@lines,"$NODEName|$key|$n\n");
-		}
-	}
-	saveN2N(@lines);
+
+    # reads all but current node
+    @lines = readFile($NODES{FILE_NODES2NODES},qr/^(?!$NODEName\|)/);
+    for my $key (keys(%n2n)) {
+        for my $n (split(/,/,$n2n{$key})) {
+            push(@lines,"$NODEName|$key|$n\n");
+        }
+    }
+    saveN2N(@lines);
 }
 htmlMsgOK("$GRIDType.$GRIDName.$NODEName created/updated");
 
 # ---- saving NODE informations in sampling_features tables
 
-
 # ---- node2node edit: lock-exclusive the file during update process
 sub saveN2N {
-	if ( sysopen(FILE, "$n2nfile", O_RDWR | O_CREAT) ) {
-		unless (flock(FILE, LOCK_EX|LOCK_NB)) {
-			warn "postNODE waiting for lock on $n2nfile...";
-			flock(FILE, LOCK_EX);
-		}
-		# ---- backup the file (To Be Removed: lifecycle too short)
-		if ( -e $n2nfile ) {
-			qx(cp -a $n2nfile $n2nfile~ 2>&1);
-		}
-		# ---- actually create the NODE's configuration file and release lock!
-		truncate FILE, 0;
-		print FILE @_;
-		close(FILE);
+    if ( sysopen(FILE, "$n2nfile", O_RDWR | O_CREAT) ) {
+        unless (flock(FILE, LOCK_EX|LOCK_NB)) {
+            warn "postNODE waiting for lock on $n2nfile...";
+            flock(FILE, LOCK_EX);
+        }
 
-	} else { htmlMsgNotOK("$n2nfile $!") }
+        # ---- backup the file (To Be Removed: lifecycle too short)
+        if ( -e $n2nfile ) {
+            qx(cp -a $n2nfile $n2nfile~ 2>&1);
+        }
+
+        # ---- actually create the NODE's configuration file and release lock!
+        truncate FILE, 0;
+        print FILE @_;
+        close(FILE);
+
+    } else { htmlMsgNotOK("$n2nfile $!") }
 
 }
+
 # --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
-	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-	print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
-	exit;
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "$_[0] successfully !\n" if (isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
+    exit;
 }
 
 # --- return information when not OK
 sub htmlMsgNotOK {
-	close(FILE);
- 	print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
- 	print "(create/)update FAILED !\n $_[0] \n";
-	exit;
+    close(FILE);
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print "(create/)update FAILED !\n $_[0] \n";
+    exit;
 }
 
 __END__

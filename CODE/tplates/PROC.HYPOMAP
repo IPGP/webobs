@@ -4,8 +4,12 @@
 # in associated NODE's RAWFORMAT field
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/hypomap.m for further information.
 
-# long name of the PROC
-NAME|Earthquake hypocenter maps from seismic catalog
+# name of the PROC
+NAME|Seismicity
+
+# description of what the proc does
+DESCRIPTION|Earthquake hypocenter maps from seismic catalog
+
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 RAWFORMAT|quakes
 TYPE|
@@ -35,7 +39,7 @@ SUMMARY_CHANNELS|
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} hypomap $SELFREF -
-SUBMIT_RESOURCE|hypomap
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,SUMMARYLIST,LATLIM,LONLIM,MAGLIM,DEPLIM,PLOT_BG_ALL,BUBBLE_PLOT
@@ -116,12 +120,12 @@ BUBBLE_PLOT|1
 MAP_Area1_TITLE|Area1 - Lesser Antilles
 # map limits: lon0,lat0,width (in degree) or former lon1,lon2,lat1,lat2 (in degree)
 MAP_Area1_XYLIM|-61,16,6
-# magnitude limits (for size scale only, not a filter)
+# magnitude limits (not a filter, for marker size scaling only)
 MAP_Area1_MAGLIM|3,7
-# depth limits (for color scale only, not a filter)
+# depth limits
 MAP_Area1_DEPLIM|-2,200
 # 1 or 2 optional profile(s)
-# Profile 1 (bottom): center latitude, center longitude, azimuth (degree North), lateral distance (km), depth (km)
+# Profile 1 (bottom): center longitude, center latitude, azimuth (degree North), lateral distance (km), depth (km)
 MAP_Area1_PROFILE1|-61.4651,16.5138,55,100,200
 # Profile 2 (right): same parameters as profile1, but drawn on the right side of the map
 # Colormap used: must specify the number of colors

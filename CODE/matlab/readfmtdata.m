@@ -24,7 +24,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2024-07-02
+%	Updated: 2025-04-26
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -32,85 +32,79 @@ wofun = sprintf('WEBOBS{%s}',mfilename);
 F.ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
 wosystem(sprintf('mkdir -p %s',F.ptmp));
 
-if isfield(P,'FORM')
-	% legacy forms (datafile)
-	f = sprintf('%s/%s',WO.PATH_DATA_DB,P.FORM.FILE_NAME);
-	if exist(f,'file')
-		D = readfmtdata_woform(WO,P,N);
-	else
-		D = readfmtdata_genform(WO,P,N);
-	end
-else
+% loop on the nodes (each node can have a difference datasource)
+for n = 1:length(N)
 
-	for n = 1:length(N)
+    F.fmt = lower(field2str(N(n),'RAWFORMAT',P.RAWFORMAT,'notempty'));
+    fraw = field2str(N(n),'RAWDATA',P.RAWDATA,'notempty');
+    fraw = regexprep(fraw,'\$NET',field2str(N(n),'FDSN_NETWORK_CODE',''));
+    F.raw = {fraw};
+    lfid = split(N(n).FID,',');	% possible comma separated list of FID
+    for a = 1:length(lfid)
+        F.raw{a} = regexprep(fraw,'\$FID',lfid{a}); % special variable substitution
+    end
 
-		F.fmt = lower(field2str(N(n),'RAWFORMAT',P.RAWFORMAT,'notempty'));
-		fraw = field2str(N(n),'RAWDATA',P.RAWDATA,'notempty');
-		fraw = regexprep(fraw,'\$NET',field2str(N(n),'FDSN_NETWORK_CODE',''));
-		F.raw = {fraw};
-		lfid = split(N(n).FID,',');	% possible comma separated list of FID
-		for a = 1:length(lfid)
-			F.raw{a} = regexprep(fraw,'\$FID',lfid{a}); % special variable substitution
-		end
+    % datelim is finite dates limits of PROC (or NODE) expressed in the NODE's TZ
+    F.datelim = [max([P.DATELIM(1),N(n).INSTALL_DATE,P.BANG]), min([P.DATELIM(2),N(n).END_DATE,P.NOW])] - P.TZ/24 + N(n).UTC_DATA;
 
-		% datelim is finite dates limits of PROC (or NODE) expressed in the NODE's TZ
-		F.datelim = [max([P.DATELIM(1),N(n).INSTALL_DATE,P.BANG]), min([P.DATELIM(2),N(n).END_DATE,P.NOW])] - P.TZ/24 + N(n).UTC_DATA;
+    fprintf('%s: loading data [%s] for node "%s" {%s} from %s to %s ...', ...
+        wofun,F.fmt,N(n).FID,N(n).ID,datestr(F.datelim(1)),datestr(F.datelim(2)));
 
-		fprintf('%s: loading data [%s] for node "%s" {%s} from %s to %s ...', ...
-			wofun,F.fmt,N(n).FID,N(n).ID,datestr(F.datelim(1)),datestr(F.datelim(2)));
+    % -------------------------------------------------------------
+    switch F.fmt
 
-		% -------------------------------------------------------------
-		switch F.fmt
+    case {'genform'}
+        D(n) = readfmtdata_genform(WO,P,N(n),F);
 
-		case {'mat-file'}
-			D(n) = readfmtdata_matlab(WO,P,N(n),F);
+    case {'mat-file'}
+        D(n) = readfmtdata_matlab(WO,P,N(n),F);
 
-		case {'winston'}
-			D(n) = readfmtdata_earthworm(WO,P,N(n),F);
+    case {'winston'}
+        D(n) = readfmtdata_earthworm(WO,P,N(n),F);
 
-		case {'miniseed','seedlink','arclink','combined','fdsnws-dataselect'}
-			D(n) = readfmtdata_miniseed(WO,P,N(n),F);
+    case {'miniseed','seedlink','arclink','combined','fdsnws-dataselect'}
+        D(n) = readfmtdata_miniseed(WO,P,N(n),F);
 
-		case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii'}
-			D(n) = readfmtdata_gnss(WO,P,N(n),F);
+    case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii','spotgins-ippp','gamit-pos','pbogps-pos'}
+        D(n) = readfmtdata_gnss(WO,P,N(n),F);
 
-		case {'hyp71sum2k','fdsnws-event','scevtlog-xml'}
-			[D(n),P] = readfmtdata_quake(WO,P,N(n),F);
+    case {'hyp71sum2k','fdsnws-event','scevtlog-xml'}
+        [D(n),P] = readfmtdata_quake(WO,P,N(n),F);
 
-		case {'fdsnws-bulletin','scevtlog-xml-bulletin','wo-mc'}
-			[D(n),P] = readfmtdata_bulletins(WO,P,N(n),F);
+    case {'fdsnws-bulletin','scevtlog-xml-bulletin','wo-mc'}
+        [D(n),P] = readfmtdata_bulletins(WO,P,N(n),F);
 
-		case {'afmascii','porkyasc'}
-			D(n) = readfmtdata_porkyasc(WO,P,N(n),F);
+    case {'afmascii','porkyasc'}
+        D(n) = readfmtdata_porkyasc(WO,P,N(n),F);
 
-		case {'bpptkg-sql','sql-table'}
-			D(n) = readfmtdata_sqltable(WO,P,N(n),F);
+    case {'bpptkg-sql','sql-table'}
+        D(n) = readfmtdata_sqltable(WO,P,N(n),F);
 
-		case {'ascii','dsv'}
-			D(n) = readfmtdata_dsv(WO,P,N(n),F);
+    case {'ascii','dsv'}
+        D(n) = readfmtdata_dsv(WO,P,N(n),F);
 
-		case {'cr10xasc','toa5','t0a5','tob1'}
-			D(n) = readfmtdata_campbell(WO,P,N(n),F);
+    case {'cr10xasc','toa5','t0a5','tob1'}
+        D(n) = readfmtdata_campbell(WO,P,N(n),F);
 
-		case 'teqc-qc'
-			D(n) = readfmtdata_rinex(WO,P,N(n),F);
+    case 'teqc-qc'
+        D(n) = readfmtdata_rinex(WO,P,N(n),F);
 
-		case 'naqs-soh'
-			D(n) = readfmtdata_naqs(WO,P,N(n),F);
+    case 'naqs-soh'
+        D(n) = readfmtdata_naqs(WO,P,N(n),F);
 
-		case {'meteofrance'}
-			D(n) = readfmtdata_meteofrance(WO,P,N(n),F);
+    case {'meteofrance'}
+        D(n) = readfmtdata_meteofrance(WO,P,N(n),F);
 
-		case {'mc3'}
-			D(n) = readfmtdata_mc3(WO,P,N(n),F);
+    case {'mc3'}
+        D(n) = readfmtdata_mc3(WO,P,N(n),F);
 
-		otherwise
-			D(n).t = [];
-			[D(n).d,D(n).CLB] = calib([],[],N(n).CLB);
-			fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);
+    otherwise
+        D(n).t = [];
+        [D(n).d,D(n).CLB] = calib([],[],N(n).CLB);
+        D(n).e = ones(size(D(n).d));
+        fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);
 
-		end
-	end
+    end
 end
 
 % =============================================================================

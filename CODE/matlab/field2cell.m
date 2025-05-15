@@ -4,12 +4,12 @@ function s = field2cell(x,f,varargin)
 %	returns the content as cell (must uses correct Matlab syntax).
 %
 %	FIELD2CELL(X,FIELD,DEFAULT,...) returns additional arguments as 
-%	elements of a cell if the convertion fails (default is empty).
+%	elements of a cell if the convertion fails of FIELD is empty.
 %
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2018-04-23 in Mahébourg, Mauritius
-%	Updated: 2018-04-23
+%	Updated: 2024-06-12
 
 if nargin < 2 && ~isstruct(x) & ~ischar(f)
 	error('Arguments X must be a structure and FIELD a string.')
@@ -17,7 +17,7 @@ end
 
 s = varargin;
 
-if isfield(x,f)
+if isfield(x,f) && ~isempty(x.(f))
 	try
 		eval(sprintf('s={%s};',strrep(x.(f),'''''','''')));
 	catch

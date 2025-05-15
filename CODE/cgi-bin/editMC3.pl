@@ -86,6 +86,7 @@ use WebObs::Utils;
 use WebObs::i18n;
 use WebObs::Mapping;
 use WebObs::Wiki;
+use WebObs::QML;
 use Locale::TextDomain('webobs');
 use IO::Socket;
 
@@ -106,8 +107,8 @@ my $operator     = $cgi->param('nomOperateur');
 my $dateEvnt = $cgi->param('dateEvenement');
 my ($anneeEvnt,$moisEvnt,$jourEvnt,$heureEvnt,$minEvnt) = split(/-|:|\ /,$dateEvnt);
 my $secEvnt  = $cgi->param('secondeEvenement');
-   $secEvnt  = sprintf("%05.2f",$secEvnt);
-   $secEvnt  =~ s/,/\./;   # because of potential coma as decimal separator with printf
+$secEvnt  = sprintf("%05.2f",$secEvnt);
+$secEvnt  =~ s/,/\./;   # because of potential comma as decimal separator with printf
 my $typeEvnt = $cgi->param('typeEvenement');
 my $arrivee  = $cgi->param('arriveeUnique');
 my $dureeEvnt = $cgi->param('dureeEvenement');
@@ -150,16 +151,16 @@ if ( $userLevel < 2 ) { die "Sorry, you must have edit level on $mc3 to modify e
 # ------------------------------------------------------------------
 my $lockFile = "/tmp/.$mc3.lock";
 if (-e $lockFile) {
-	my $lockWho = qx(cat $lockFile | xargs echo -n);
-	die "$__{'File is currently being edited'} $__{'by'} $lockWho ...";
+    my $lockWho = qx(cat $lockFile | xargs echo -n);
+    die "$__{'File is currently being edited'} $__{'by'} $lockWho ...";
 } else {
-	my $retLock = qx(echo "$operator" > $lockFile);
+    my $retLock = qx(echo "$operator" > $lockFile);
 }
 
 # ---- starts HTML page display
 # ------------------------------------------------------------------
 print $cgi->header(-type=>"text/html;charset=utf-8"),
-      $cgi->start_html("Editing $MC3{TITLE}");
+  $cgi->start_html("Editing $MC3{TITLE}");
 print "<BODY>";
 print $cgi->h2("Editing $MC3{TITLE}");
 
@@ -169,7 +170,7 @@ my @durations = readCfgFile("$MC3{DURATIONS_CONF}");
 my ($key,$nam,$val) = split(/\|/,join('',grep(/^$uniteEvnt/,@durations)));
 my $nb_images = int(($dureeEvnt*$val + $secEvnt)/60 + 1);
 if ($nb_images > $MC3{IMAGES_MAX_CAT}) {
-	$nb_images = $MC3{IMAGES_MAX_CAT};
+    $nb_images = $MC3{IMAGES_MAX_CAT};
 }
 
 # full path filename MC
@@ -180,6 +181,7 @@ my $mc_filename = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$anne
 # NOTE: overwrite possible $imageSEFRAN value (in case of date/time event modification)
 #
 $imageSEFRAN = sprintf("%4d%02d%02d%02d%02d%02.0f.png",$anneeEvnt,$moisEvnt,$jourEvnt,$heureEvnt,$minEvnt,$secEvnt);
+
 #FB-was: my $imageMC = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_IMAGES}/$anneeEvnt$moisEvnt/$MC3{FILE_PREFIX}$imageSEFRAN";
 my $imageMC = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_IMAGES}/$anneeEvnt$moisEvnt/$imageSEFRAN";
 
@@ -188,35 +190,36 @@ my $imageMC = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_IMAGES}/$anneeEvnt$moisEvnt/$imag
 my @lignes;
 if (-s $mc_filename)  {
 
-	# Read current file
-	print "<P><B>Existing file:</B> $mc_filename ...";
-	open(my $mcfile, "<$mc_filename") || Quit($lockFile,"$__{'Could not open'} $mc_filename\n");
-	while(<$mcfile>) {
-		chomp;
-		push(@lignes, $_) if $_;
-	}
-	close($mcfile);
-	print "imported.</P>";
+    # Read current file
+    print "<P><B>Existing file:</B> $mc_filename ...";
+    open(my $mcfile, "<$mc_filename") || Quit($lockFile,"$__{'Could not open'} $mc_filename\n");
+    while(<$mcfile>) {
+        chomp;
+        push(@lignes, $_) if $_;
+    }
+    close($mcfile);
+    print "imported.</P>";
 
-	# Write to backup file
-	# Note: writing to a file is quickier than loading File::Copy in a CGI mode.
-	my $mc_bak_filename = $mc_filename.".backup";
-	open(my $mcfile_bak, ">$mc_bak_filename") || Quit($lockFile,"$__{'Could not create'} $mc_bak_filename\n");
-	{
-		# Use a block to locally modify $, and $\ in order to re-add a newline
-		# respectively after each line and at the end of the list.
-		$, = $\ = "\n";
-		print $mcfile_bak @lignes;
-	}
-	close($mcfile_bak);
-	print "<P><B>Backup file:</B> $mc_bak_filename</P>\n";
+    # Write to backup file
+    # Note: writing to a file is quickier than loading File::Copy in a CGI mode.
+    my $mc_bak_filename = $mc_filename.".backup";
+    open(my $mcfile_bak, ">$mc_bak_filename") || Quit($lockFile,"$__{'Could not create'} $mc_bak_filename\n");
+    {
+
+        # Use a block to locally modify $, and $\ in order to re-add a newline
+        # respectively after each line and at the end of the list.
+        $, = $\ = "\n";
+        print $mcfile_bak @lignes;
+    }
+    close($mcfile_bak);
+    print "<P><B>Backup file:</B> $mc_bak_filename</P>\n";
 
 } else {
 
-	qx(mkdir -p -m 775 `dirname $mc_filename`);
-	open(my $mcfile, ">$mc_filename") || Quit($lockFile,"$__{'Could not create'} $mc_filename\n");
-	print $mcfile ("");
-	close($mcfile);
+    qx(mkdir -p -m 775 `dirname $mc_filename`);
+    open(my $mcfile, ">$mc_filename") || Quit($lockFile,"$__{'Could not create'} $mc_filename\n");
+    print $mcfile ("");
+    close($mcfile);
 }
 
 my $id_evt;
@@ -224,59 +227,69 @@ my $id_evt;
 # case A) existing event (modification or delete): reads all but concerned ID
 #
 if ($id_evt_modif) {
-	# Get the event from @lignes
-	my @ligne = grep { /^$id_evt_modif\|/ } @lignes;
-	# Remove the event from @lignes
-	@lignes = grep { $_ !~ /^$id_evt_modif\|/ } @lignes;
-	if ($delete > 0) {
-		# move to / remove from trash: change sign of ID value
-		$id_evt = -($id_evt_modif);
-		print "<P><B>Delete/recover existing event (in/from trash):</B> $id_evt</P>";
-	} else {
-		$id_evt = $id_evt_modif;
-		print "<P><B>Modifying existing event:</B> $id_evt</P>";
-		# read existing line
-		my @line_values = split(/\|/,@ligne[0]);
-		@image_list = split(/,/,@line_values[14]);
-		# check if previous image was at the same minute
-		my $idx = first { substr($imageSEFRAN,0,-6) eq substr($image_list[$_],0,-6) } 0..$#image_list;
-		if(defined $idx) {
-			# if found, update image name
-			splice(@image_list,$idx,1,$imageSEFRAN);
-		}
-		else {
-			# otherwise, add to the list
-			my @new_image_list = $imageSEFRAN;
-			push(@new_image_list, @image_list);
-			@image_list = @new_image_list;
-		}
-	}
-# case B) new event: reads all and compute next ID
-#
+
+    # Get the event from @lignes
+    my @ligne = grep { /^$id_evt_modif\|/ } @lignes;
+
+    # Remove the event from @lignes
+    @lignes = grep { $_ !~ /^$id_evt_modif\|/ } @lignes;
+    if ($delete > 0) {
+
+        # move to / remove from trash: change sign of ID value
+        $id_evt = -($id_evt_modif);
+        print "<P><B>Delete/recover existing event (in/from trash):</B> $id_evt</P>";
+    } else {
+        $id_evt = $id_evt_modif;
+        print "<P><B>Modifying existing event:</B> $id_evt</P>";
+
+        # read existing line
+        my @line_values = split(/\|/,@ligne[0]);
+        @image_list = split(/,/,@line_values[14]);
+
+        # check if previous image was at the same minute
+        my $idx = first { substr($imageSEFRAN,0,-6) eq substr($image_list[$_],0,-6) } 0..$#image_list;
+        if(defined $idx) {
+
+            # if found, update image name
+            splice(@image_list,$idx,1,$imageSEFRAN);
+        }
+        else {
+
+            # otherwise, add to the list
+            my @new_image_list = $imageSEFRAN;
+            push(@new_image_list, @image_list);
+            @image_list = @new_image_list;
+        }
+    }
+
+    # case B) new event: reads all and compute next ID
+    #
 } else {
-	my $max = 0;
-	foreach (@lignes) {
-		# Only consider lines starting with a (possibly negative) numeric id
-		if (/^\-?(\d+)\|/) {
-			$max = $1  if ($1 > $max);
-		}
-	}
-	$id_evt = $max + 1;
-	print "<P><B>New event:</B> $id_evt</P>";
-	@image_list = $imageSEFRAN;
+    my $max = 0;
+    foreach (@lignes) {
+
+        # Only consider lines starting with a (possibly negative) numeric id
+        if (/^\-?(\d+)\|/) {
+            $max = $1  if ($1 > $max);
+        }
+    }
+    $id_evt = $max + 1;
+    print "<P><B>New event:</B> $id_evt</P>";
+    @image_list = $imageSEFRAN;
 }
 
 # In case of add/modify/trash: new data line is written, in other case definitive delete
 #
 if ($delete < 2) {
-	my $timestamp = strftime "%Y%m%dT%H%M%S", gmtime;
-	my $chaine = "$id_evt|$anneeEvnt-$moisEvnt-$jourEvnt|$heureEvnt:$minEvnt:$secEvnt"
-		."|$typeEvnt|$amplitudeEvnt|$dureeEvnt|$uniteEvnt|$dureeSatEvnt|$nbrEvnt|$smoinsp|$stationEvnt|$arrivee"
-		."|$fileNameSUDS|$idSC3|".join(',', @image_list)."|$operator/$timestamp|$comment";
-	push(@lignes, u2l($chaine));
+    my $timestamp = strftime "%Y%m%dT%H%M%S", gmtime;
+    my $chaine = "$id_evt|$anneeEvnt-$moisEvnt-$jourEvnt|$heureEvnt:$minEvnt:$secEvnt"
+      ."|$typeEvnt|$amplitudeEvnt|$dureeEvnt|$uniteEvnt|$dureeSatEvnt|$nbrEvnt|$smoinsp|$stationEvnt|$arrivee"
+      ."|$fileNameSUDS|$idSC3|".join(',', @image_list)."|$operator/$timestamp|$comment";
+    push(@lignes, u2l($chaine));
 } else {
-	# --- ends here if the client has no admin level
-	if ( $userLevel < 4 ) { die "Sorry, you must have an admin level on $mc3 to delete an event."; }
+
+    # --- ends here if the client has no admin level
+    if ( $userLevel < 4 ) { die "Sorry, you must have an admin level on $mc3 to delete an event."; }
 }
 
 # Create the new file
@@ -285,10 +298,11 @@ if ($delete < 2) {
 
 open(my $mcfile, ">$mc_filename") || Quit($lockFile,"$mc_filename $__{'not found'}\n");
 {
-	# Use a block to locally modify $, and $\ in order to re-add a newline
-	# respectively after each line and at the end of the list.
-	$, = $\ = "\n";
-	print $mcfile @lignes;
+
+    # Use a block to locally modify $, and $\ in order to re-add a newline
+    # respectively after each line and at the end of the list.
+    $, = $\ = "\n";
+    print $mcfile @lignes;
 }
 close($mcfile);
 
@@ -298,45 +312,50 @@ my $retCHMOD = qx (/bin/chmod 664 $mc_filename);
 # !!!!!!!!!!!!!!  MC3 unlock            !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # ------------------------------------------------------------------
 if (-e $lockFile) {
-	unlink $lockFile;
+    unlink $lockFile;
 } else {
-	print $cgi->b("$__{'unlink lockfile error'} $lockFile !"),"<br>";
+    print $cgi->b("$__{'unlink lockfile error'} $lockFile !"),"<br>";
 }
 
 # prepare new SeisComP event
 
 my $newQML;
 if ($newSC3 > 0) {
-	print "<P>Creating a new SC3 ID...</P>";
+    # print "<P>Creating a new SC3 ID...</P>";
 
-	$newQML = "<?xml version=\"1.0\"?><!DOCTYPE WO2SC3 SYSTEM \"wo2sc3.dtd\">
-	<webObs>
-		<moduleDescription>
-			<id>$MC3{WO2SC3_MOD_ID}</id>
-			<type>$MC3{WO2SC3_MOD_TYPE}</type>
-		</moduleDescription>
-		<eventDescription>
-			<mcid>$mc3/$anneeEvnt$moisEvnt/$id_evt</mcid>
-			<date>$anneeEvnt/$moisEvnt/$jourEvnt</date>
-			<time>$heureEvnt:$minEvnt:$secEvnt</time>
-			<station>$staEvnt</station>
-			<network>$netEvnt</network>
-			<duration>$dureeEvnt</duration>
-			<sminusp>$smoinsp</sminusp>
-			<amplitude>$amplitudeEvnt</amplitude>
-			<operator>$operator</operator>
-			<type>$typeEvnt</type>
-			<comment>$comment</comment>
-		</eventDescription>
-	</webObs>";
+    # $newQML = "<?xml version=\"1.0\"?><!DOCTYPE WO2SC3 SYSTEM \"wo2sc3.dtd\">
+    # <webObs>
+    #     <moduleDescription>
+    #         <id>$MC3{WO2SC3_MOD_ID}</id>
+    #         <type>$MC3{WO2SC3_MOD_TYPE}</type>
+    #     </moduleDescription>
+    #     <eventDescription>
+    #         <mcid>$mc3/$anneeEvnt$moisEvnt/$id_evt</mcid>
+    #         <date>$anneeEvnt/$moisEvnt/$jourEvnt</date>
+    #         <time>$heureEvnt:$minEvnt:$secEvnt</time>
+    #         <station>$staEvnt</station>
+    #         <network>$netEvnt</network>
+    #         <duration>$dureeEvnt</duration>
+    #         <sminusp>$smoinsp</sminusp>
+    #         <amplitude>$amplitudeEvnt</amplitude>
+    #         <operator>$operator</operator>
+    #         <type>$typeEvnt</type>
+    #         <comment>$comment</comment>
+    #     </eventDescription>
+    # </webObs>";
+
+    print "<P>Creating a new SeisComP event ID...</P>";
+
+    my $date = ${anneeEvnt} . '-' . ${moisEvnt} . '-' . ${jourEvnt};
+    my $time = ${heureEvnt} . ':' . ${minEvnt} . ':' . ${secEvnt};
+    $newQML = mc2qmlfdsn($mc3,$operator,$date,$time,$typeEvnt,$smoinsp,$stationEvnt,$id_evt,$comment,$MC3{WO2SC_EVTLON},$MC3{WO2SC_EVTLAT});
 }
-
 
 # Prepare the text for print
 # - - - - - - - - - - - - - - - - - - - - - - - - -
 my $signalSature = $amplitudeEvnt;
 if ($dureeSatEvnt > 0) {
-	$signalSature = "Sature ($dureeSatEvnt s)";
+    $signalSature = "Sature ($dureeSatEvnt s)";
 }
 
 my $err = 0;
@@ -346,137 +365,147 @@ my $textePourImage = "$anneeEvnt-$moisEvnt-$jourEvnt $heureEvnt:$minEvnt:$secEvn
 # - - - - - - - - - - - - - - - - - - - - - - - - -
 
 if ($delete == 2) {
-	print "<p><b>Erase image(s)/b>... ";
-  for (@image_list) {
-    my $imgMC = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_IMAGES}/$anneeEvnt$moisEvnt/$_";
-    qx(rm -f $imgMC);
-  }
-	print "Done.</p>";
+    print "<p><b>Erase image(s)/b>... ";
+    for (@image_list) {
+        my $imgMC = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_IMAGES}/$anneeEvnt$moisEvnt/$_";
+        qx(rm -f $imgMC);
+    }
+    print "Done.</p>";
 } else {
-	print '<p><b>Looking for images to be concatenated</b>...<UL> ';
+    print '<p><b>Looking for images to be concatenated</b>...<UL> ';
 
-	my @imagesPNG;
-	my $voies;
-	my $i;
-	for ($i = 0; $i < $nb_images; $i++) {
-		my ($Y,$m,$d,$H,$M) = split('/',qx(date -d '$dateEvnt $i minute' +"%Y/%m/%d/%H/%M"|xargs echo -n));
-		my $f = sprintf("%s/%4d/%04d%02d%02d/%s/%04d%02d%02d%02d%02d00.png",$SEFRAN3{ROOT},$Y,$Y,$m,$d,$SEFRAN3{PATH_IMAGES_MINUTE},$Y,$m,$d,$H,$M);
-		if (-f $f) {
-			push(@imagesPNG,$f);
-			print "<LI>$f</LI>\n";
-		}
-		if ($i == 0) {
-			$voies = sprintf("%s/%4d/%04d%02d%02d/%s/%04d%02d%02d%02d_voies.png",$SEFRAN3{ROOT},$Y,$Y,$m,$d,$SEFRAN3{PATH_IMAGES_HEADER},$Y,$m,$d,$H);
-		}
-	}
+    my @imagesPNG;
+    my $voies;
+    my $i;
+    for ($i = 0; $i < $nb_images; $i++) {
+        my ($Y,$m,$d,$H,$M) = split('/',qx(date -d '$dateEvnt $i minute' +"%Y/%m/%d/%H/%M"|xargs echo -n));
+        my $f = sprintf("%s/%4d/%04d%02d%02d/%s/%04d%02d%02d%02d%02d00.png",$SEFRAN3{ROOT},$Y,$Y,$m,$d,$SEFRAN3{PATH_IMAGES_MINUTE},$Y,$m,$d,$H,$M);
+        if (-f $f) {
+            push(@imagesPNG,$f);
+            print "<LI>$f</LI>\n";
+        }
+        if ($i == 0) {
+            $voies = sprintf("%s/%4d/%04d%02d%02d/%s/%04d%02d%02d%02d_voies.png",$SEFRAN3{ROOT},$Y,$Y,$m,$d,$SEFRAN3{PATH_IMAGES_HEADER},$Y,$m,$d,$H);
+        }
+    }
 
-	print '</UL>Done.</p>';
+    print '</UL>Done.</p>';
 
-	# Concatenation and tag of images
-	if (scalar(@imagesPNG)) {
-		print '<p><b>Concatenating images</b>... ';
-		qx(mkdir -p `dirname $imageMC`);
-		my $cmd = "$WEBOBS{PRGM_CONVERT} +append $voies ".join(" ",@imagesPNG)." $imageMC";
-		(system($cmd) == 0) or $err=1;
-		# adds meta-data...
-		my $tag = " -set mc3:id '$id_evt'"
-			 ." -set mc3:ymd '$anneeEvnt-$moisEvnt-$jourEvnt'"
-			 ." -set mc3:hms '$heureEvnt:$minEvnt:$secEvnt'"
-			 ." -set mc3:type '$typeEvnt'"
-			 ." -set mc3:amplitude '$amplitudeEvnt'"
-			 ." -set mc3:duration '$dureeEvnt'"
-			 ." -set mc3:unit '$uniteEvnt'"
-			 ." -set mc3:saturation '$dureeSatEvnt'"
-			 ." -set mc3:number '$nbrEvnt'"
-			 ." -set mc3:sminusp '$smoinsp'"
-			 ." -set mc3:station '$stationEvnt'"
-			 ." -set mc3:unique '$arrivee'"
-			 ." -set mc3:source '$fileNameSUDS'"
-			 ." -set mc3:eventid '$idSC3'"
-			 ." -set mc3:image '$imageSEFRAN'"
-			 ." -set mc3:operator '$operator'";
-			 #." -set MC3_comment '$comment'";
-		$cmd = "$WEBOBS{PRGM_CONVERT} $imageMC $tag $imageMC";
-		system($cmd);
-		# processes the comment independently (because of potential problem with content)
-		$comment =~ s/%/%%/g;
-		$comment =~ s/"/\\"/g;
-		$cmd = "$WEBOBS{PRGM_CONVERT} $imageMC -set mc3:comment \"$comment\" $imageMC";
-		system($cmd);
-		print 'Done.</p>';
-		print "<P><B>Image saved as:</B> $imageMC</P>";
+    # Concatenation and tag of images
+    if (scalar(@imagesPNG)) {
+        print '<p><b>Concatenating images</b>... ';
+        qx(mkdir -p `dirname $imageMC`);
+        my $cmd = "$WEBOBS{PRGM_CONVERT} +append $voies ".join(" ",@imagesPNG)." $imageMC";
+        (system($cmd) == 0) or $err=1;
 
+        # adds meta-data...
+        my $tag = " -set mc3:id '$id_evt'"
+          ." -set mc3:ymd '$anneeEvnt-$moisEvnt-$jourEvnt'"
+          ." -set mc3:hms '$heureEvnt:$minEvnt:$secEvnt'"
+          ." -set mc3:type '$typeEvnt'"
+          ." -set mc3:amplitude '$amplitudeEvnt'"
+          ." -set mc3:duration '$dureeEvnt'"
+          ." -set mc3:unit '$uniteEvnt'"
+          ." -set mc3:saturation '$dureeSatEvnt'"
+          ." -set mc3:number '$nbrEvnt'"
+          ." -set mc3:sminusp '$smoinsp'"
+          ." -set mc3:station '$stationEvnt'"
+          ." -set mc3:unique '$arrivee'"
+          ." -set mc3:source '$fileNameSUDS'"
+          ." -set mc3:eventid '$idSC3'"
+          ." -set mc3:image '$imageSEFRAN'"
+          ." -set mc3:operator '$operator'";
 
-		if ($impression) {
-			print '<p><b>Printing</b>... ';
-			print qx($WEBOBS{ROOT_CODE}/shells/impression_image "$MC3{PRINTER}" "$imageMC" "$textePourImage");
-			print 'Done.</p>';
-		}
-	}
+        #." -set MC3_comment '$comment'";
+        $cmd = "$WEBOBS{PRGM_CONVERT} $imageMC $tag $imageMC";
+        system($cmd);
+
+# processes the comment independently (because of potential problem with content)
+        $comment =~ s/%/%%/g;
+        $comment =~ s/"/\\"/g;
+        $cmd = "$WEBOBS{PRGM_CONVERT} $imageMC -set mc3:comment \"$comment\" $imageMC";
+        system($cmd);
+        print 'Done.</p>';
+        print "<P><B>Image saved as:</B> $imageMC</P>";
+
+        if ($impression) {
+            print '<p><b>Printing</b>... ';
+            print qx($WEBOBS{ROOT_CODE}/shells/impression_image "$MC3{PRINTER}" "$imageMC" "$textePourImage");
+            print 'Done.</p>';
+        }
+    }
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - - - -
 if ($err == 0) {
-	print "<script language=\"javascript\">";
-		print "window.opener.location.reload();";
-	if ($replay) {
-		print "window.location='/cgi-bin/$WEBOBS{CGI_SEFRAN3}?date=$date&replay=$id_evt&s3=$s3&mc3=$mc3';";
-	} else {
-		# for Firefox: opens a "false" window to be allowed to close it...
-		print "window.open('','_parent','');window.close();";
-	}
-	print "</script>\n";
+    print "<script language=\"javascript\">";
+    print "window.opener.location.reload();";
+    if ($replay) {
+        print "window.location='/cgi-bin/$WEBOBS{CGI_SEFRAN3}?date=$date&replay=$id_evt&s3=$s3&mc3=$mc3';";
+    } else {
+
+        # for Firefox: opens a "false" window to be allowed to close it...
+        print "window.open('','_parent','');window.close();";
+    }
+    print "</script>\n";
 } else {
-	print $cgi->h3("Error occured !");
+    print $cgi->h3("Error occured !");
 }
 
 print $cgi->end_html();
 
-
 # --- Send the new event to TCP socket
 
+# print STDERR "** newSC3 = $newSC3 **\n";
+# print STDERR "** PeerHost => $MC3{WO2SC3_HOSTNAME}, PeerPort => $MC3{WO2SC3_PORT} **\n";
 print STDERR "** newSC3 = $newSC3 **\n";
-print STDERR "** PeerHost => $MC3{WO2SC3_HOSTNAME}, PeerPort => $MC3{WO2SC3_PORT} **\n";
+print STDERR "** SeisComPHost => $MC3{WO2SC_HOSTNAME}, SeisComPUser => $MC3{WO2SC_USER} **\n";
 if ($newSC3 > 0) {
-	# flush after every write
-	$| = 1;
 
-	my ($socket,$client_socket);
+    # flush after every write
+    $| = 1;
 
-	# creating object interface of IO::Socket::INET modules which internally creates
-	# socket, binds and connects to the TCP server running on the specific port.
-	$socket = new IO::Socket::INET (
-		PeerHost => $MC3{WO2SC3_HOSTNAME},
-		PeerPort => $MC3{WO2SC3_PORT},
-		Proto => 'tcp',
-	) or print STDERR "ERROR in Socket Creation : $!\n";
+    # Dispatch new event in SeisComP through ssh
+    qx(ssh -i $MC3{WO2SC_SSH_KEY} $MC3{WO2SC_USER}\@$MC3{WO2SC_HOSTNAME} "echo \"$newQML\" | $MC3{WO2SC_DISPATCH_SCRIPT_PATH}");
 
-	#print "TCP Connection Success.\n";
 
-	# read the socket data sent by server.
-	#$data = <$socket>;
-	# we can also read from socket through recv()  in IO::Socket::INET
-	# $socket->recv($data,1024);
-	#print "Received from Server : $data\n";
+#     my ($socket,$client_socket);
 
-	# write on the socket to server.
-	#print $socket "$newQML\n";
-	# we can also send the data through IO::Socket::INET module,
-	if ($socket) {
-		$socket->send($newQML);
-		#sleep (10);
-		$socket->close();
-	}
+# # creating object interface of IO::Socket::INET modules which internally creates
+# # socket, binds and connects to the TCP server running on the specific port.
+#     $socket = new IO::Socket::INET (
+#         PeerHost => $MC3{WO2SC3_HOSTNAME},
+#         PeerPort => $MC3{WO2SC3_PORT},
+#         Proto => 'tcp',
+#       ) or print STDERR "ERROR in Socket Creation : $!\n";
+
+#     #print "TCP Connection Success.\n";
+
+#     # read the socket data sent by server.
+#     #$data = <$socket>;
+#     # we can also read from socket through recv()  in IO::Socket::INET
+#     # $socket->recv($data,1024);
+#     #print "Received from Server : $data\n";
+
+#     # write on the socket to server.
+#     #print $socket "$newQML\n";
+#     # we can also send the data through IO::Socket::INET module,
+#     if ($socket) {
+#         $socket->send($newQML);
+
+#         #sleep (10);
+#         $socket->close();
+#     }
 
 }
 
 # ---------------------------------------------------------------------
 sub Quit
 {
-	if (-e $_[0]) {
-		unlink $_[0];
-	}
-	die "WEBOBS: $_[1]";
+    if (-e $_[0]) {
+        unlink $_[0];
+    }
+    die "WEBOBS: $_[1]";
 }
 
 __END__

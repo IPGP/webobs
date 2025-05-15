@@ -172,8 +172,7 @@ fi
 
 # Abort if the current branch is not master
 if [[ $(git rev-parse --abbrev-ref HEAD) != "master" ]]; then
-  log_err "the current branch is not 'master'. Exiting."
-  exit 1
+  echo "WARNING: The current branch is not 'master'."
 fi
 
 # Abort if release-name.tar.gz is already present
@@ -399,7 +398,7 @@ fi
 log "Creating manifest file"
 ( cd $ARCHIVES_SUBDIR && \
   find "$RELEASE_DIR" -type f -o -type l \
-    | sed "\|^$RELEASE_DIR/PACK|d; \|^$RELEASE_DIR/CODE/cgi-bin/porting|d; \|^$RELEASE_DIR/CODE/shells/porting|d; \|^$RELEASE_DIR/DOC/devtips|d" \
+    | sed "\|^$RELEASE_DIR/PACK|d; \|^$RELEASE_DIR/CODE/cgi-bin/porting|d; \|^$RELEASE_DIR/CODE/shells/porting|d; \|^$RELEASE_DIR/DOC/devtips|d; \|^$RELEASE_DIR/index.md|d" \
     | sort \
 ) > "$manifest_filename"
 

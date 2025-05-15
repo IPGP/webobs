@@ -82,9 +82,8 @@ insert into groups values ('+ADMIN','!')    ;
 insert into authprocs values ('!','MC3',4);
 insert into authprocs values ('!','SEFRAN3',4);
 insert into authprocs values ('!','CGPSWI',4);
-insert into authprocs values ('!','SOURCES',4);
+insert into authprocs values ('!','SPRINGS',4);
 insert into authviews values ('!','CGPSWI',4);
-insert into authviews values ('!','SOURCES',4);
 
 insert into authmisc values ('!','NODES',4);
 insert into authmisc values ('!','users',4);

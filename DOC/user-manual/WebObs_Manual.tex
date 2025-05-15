@@ -21,6 +21,7 @@
 
 \usepackage{listings}
 \lstset{
+inputencoding=latin1,
 basicstyle=\scriptsize\ttfamily\color{BrickRed}\bfseries,
 frame=single,
 backgroundcolor=\color{snow},
@@ -42,13 +43,13 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 
 
 % ------ local variables
-\newcommand{\release}{2.6.4}
+\newcommand{\release}{2.8-beta}
 \newcommand{\releasename}{v\release}
 \newcommand{\releasedate}{\mydate\today}
 \newcommand{\webobs}{\textbf{WebObs }}
 \newcommand{\wo}[1]{\MakeTextUppercase{#1}}
 \newcommand{\wofile}[1]{\small{\textbf{#1}}}
-\newcommand{\wokey}[1]{\small{	\texttt{#1}}}
+\newcommand{\wokey}[1]{\fontfamily{lmtt}\fontseries{b}\selectfont\small#1\fontfamily{\sfdefault}\selectfont}
 \newcommand{\wocmd}[1]{\textbf{#1}}
 
 \newcounter{dateone}\newcounter{datetwo}
@@ -91,7 +92,7 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 \huge User and Administration Manual}\\[3cm]
 	\includegraphics[height=3cm]{figures/ipgp_up_verticaux_rvb.png}
 }
-\author{\textit{François Beauducel, Didier Lafon and Lucas Dassin}\\Institut de Physique du Globe de Paris Observatories\\}
+\author{\textit{François Beauducel, Didier Lafon, Lucas Dassin, and Jérôme Touvier}\\Institut de Physique du Globe de Paris Observatories\\}
 \date{Release \releasename, \releasedate}
 
 
@@ -110,10 +111,10 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 \include{chapter1}
 \include{chapter2}
 \include{chapter3}
+\include{genform}
 \include{chapter4}
 \include{chapter5}
 \include{chapter6}
-\include{chapter7}
 
 % ==================================================================
 \backmatter
@@ -126,3 +127,4 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 
 \end{document}
 \end
+	

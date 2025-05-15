@@ -3,11 +3,21 @@
 # It can be used for instance with superproc genplot (generic time series).
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/genplot.m for further information.
 
-# long name of the PROC
-NAME|Generic time series
-# proc TYPE and OWNER
+# name of the PROC
+NAME|My time series
+
+# description of what the proc does
+DESCRIPTION|Generic time series
+
+# proc type (for display in the grids table)
 TYPE|
+# owner code (see OWNERS.conf for OWNCODEs) or text string
 OWNCODE|?
+# main logo for output graphs
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+# proc time zone (in hours)
+TZ|0
+
 # default raw data format (might be overwritten in each node)
 RAWFORMAT|
 # raw data path (might be overwritten in each node configuration)
@@ -15,14 +25,7 @@ RAWDATA|$WEBOBS{ROOT_RAWD}/mydatasource
 # URN link to data
 URNDATA|$WEBOBS{URN_RAWD}/mydatasource
 
-# proc TITLE and DESCRIPTION
-TITLE|
-DESCRIPTION|
-
-# proc THEME and TOPICS
-THEME|
-TOPICS|
-
+# use high-resolution SRTM (needs registration and login info in WEBOBS.rc)
 DEM_SRTM1|N
 # optional user-defined DEM (Arcinfo format, lat/lon, overwrites SRTM/ETOPO default)
 #DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
@@ -52,7 +55,7 @@ TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} genplot $SELFREF -
-SUBMIT_RESOURCE|myproc
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME
@@ -128,7 +131,7 @@ CONTINUOUS_PLOT|NO
 YLOGSCALE|NO
 
 # --- per node graphs
-# coma separated list of channels to plot (default is all channels)
+# comma separated list of channels to plot (default is all channels)
 PERNODE_CHANNELS|${NODE_CHANNELS}
 # graph title
 PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
@@ -143,7 +146,7 @@ PERNODE_PLOT_EVENTS|YES
 # --- summary graph (all nodes together)
 # empty or comment this key to not plot the summary graph
 SUMMARYLIST|SUMMARY
-# coma separated list of channels to plot (default is all channels)
+# comma separated list of channels to plot (default is all channels)
 SUMMARY_CHANNELS|
 # graph title
 SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}

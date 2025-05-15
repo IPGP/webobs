@@ -4,8 +4,11 @@
 # See $WEBOBS{ROOT_CODE}/matlab/superprocs/volcgas.m for further information.
 
 
-# long name of the PROC
+# name of the PROC
 NAME|Volcanic gas analysis
+
+# description of what the proc does
+DESCRIPTION|Volcanic gas analysis
 
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
 TYPE|
@@ -32,7 +35,7 @@ SUMMARYLIST|
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} volcgas $SELFREF -
-SUBMIT_RESOURCE|volcgas
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,MAJORS_TYPE,MAJORS_MAX_N2,NODE_CHANNELS,SUMMARY_CHANNELS

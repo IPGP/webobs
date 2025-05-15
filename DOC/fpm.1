@@ -5,20 +5,20 @@ fpm \- find perl modules required by WebObs cgi-bins
 .SH SYNOPSIS
 fpm CGIDIR
 .SH DESCRIPTION
-fpm will scan CGIDIR directory of WebObs perl scripts, with the help of \fBscandeps.pl\fP, 
-to statically discover the perl modules needed by perl scripts (mainly cgi-bin): ie. 
+fpm will scan CGIDIR directory of WebObs perl scripts, with the help of \fBscandeps.pl\fP,
+to statically discover the perl modules needed by perl scripts (mainly cgi-bin): ie.
 scandeps with option -R (Only show dependencies found in the files listed and do not recurse).
 
-Output from fpm will be located in CGIDIR itself as \fBout-scandeps\fP and \fBout-scandeps-p\fP 
-files. out-scandeps will be used as a reference list by the WebObs installation 
-procedure (install). 
+Output from fpm will be located in CGIDIR itself as \fBout-scandeps\fP and \fBout-scandeps-p\fP
+files. out-scandeps will be used as a reference list by the WebObs installation
+procedure (install).
 
-scandeps.pl has been found available in	perl-Module-ScanDeps (rpm) and 
+scandeps.pl has been found available in perl-Module-ScanDeps (rpm) and
 libmodule-scandeps-perl (deb).
 .SH OPTIONS
 No option, but the CGIDIR full path must be supplied.
 .SH SEE ALSO
-scandeps.pl, install 
+scandeps.pl, install
 .SH AUTHOR
 Francois Beauducel, Didier Lafon
 .SH COPYRIGHT

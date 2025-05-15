@@ -5,7 +5,7 @@ function [P,N,D] = readproc(WO,varargin)
 %	or full path name of the PROC.conf.
 %
 %	P = READPROC(WO,PROC,TSCALE) returns in P.GTABLE a selection timescales TSCALE found
-%	in TIMESCALELIST. TSCALE must be in the form of coma-separated string
+%	in TIMESCALELIST. TSCALE must be in the form of comma-separated string
 %	'ts1,ts2,...,tsn'. Default is '%' to return all the TIMESCALELIST.
 %
 %	P = READPROC(WO,PROC,PARAMS) uses struct PARAMS to replace selected proc's
@@ -23,7 +23,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05
-%	Updated: 2024-08-06
+%	Updated: 2025-03-12
 
 
 proc = varargin{1};
@@ -278,11 +278,7 @@ end
 if nargout > 2
 	D = repmat(struct('t',[],'d',[],'CLB',struct('nx',0,'nm',[])),[length(N),1]);
 	if ~isempty(P.GTABLE)
-		if isfield(P,'RAWFORMAT')
-			[D,P] = readfmtdata(WO,P,N);
-		else
-			fprintf('%s: ** WARNING ** no RAWFORMAT defined for PROC.%s! Cannot import data.\n',wofun,proc);
-		end
+        [D,P] = readfmtdata(WO,P,N);
 	end
 end
 
@@ -292,7 +288,7 @@ end
 % Normalize table list from P.*LIST strings
 function P = tnorm(P,fd,nlist,dv)
 
-P.(fd) = field2num(P,fd,[]);
+P.(fd) = field2num(P,fd,dv,'notempty');
 lf = length(P.(fd));
 
 if numel(dv) < nlist

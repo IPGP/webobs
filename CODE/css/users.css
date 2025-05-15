@@ -1,194 +1,193 @@
-
 #users-field {
-	width: 950px;
+    width: 950px;
 }
 
 .dusers-container {
-	margin: 10px auto 10px auto;
-	padding: 10px 10px 10px 10px;
-	overflow-y: scroll;
-	height: 200px;
-	background-color: transparent;
+    margin: 10px auto 10px auto;
+    padding: 10px 10px 10px 10px;
+    overflow-y: scroll;
+    height: 200px;
+    background-color: transparent;
 }
 .dusers {
-	width: 100%;
-	text-align: center;
+    width: 100%;
+    text-align: center;
 }
 table.dusers {
-	border: 1px solid #FFFFFF;
-	color: #000000;
-	border-collapse: collapse;
-	text-align: left;
-	width: 100%;
+    border: 1px solid #ffffff;
+    color: #000000;
+    border-collapse: collapse;
+    text-align: left;
+    width: 100%;
 }
 table.dusers tr.trlock,
 table.dusers td.tdlock {
-	background: #dddddd;
+    background: #dddddd;
 }
 table.dusers tr.troff,
 table.dusers td.tdoff {
-	color: #777777;
+    color: #777777;
 }
 
 #groups-field {
-	width: 950px;
+    width: 950px;
 }
 
 .dugrps-container {
-	margin: 10px auto 10px 0px;
-	padding: 10px 10px 10px 10px;
-	overflow-y: scroll;
-	height: 130px;
-	background-color: transparent;
+    margin: 10px auto 10px auto;
+    overflow-y: scroll;
+    height: 200px;
+    background-color: transparent;
 }
 .dugrps {
-	width: 100%;
-	text-align: center;
+    width: 100%;
+    text-align: center;
 }
 table.dugrps {
-	border: 1px solid #FFFFFF;
-	color: #000000;
-	border-collapse: collapse;
-	text-align: left;
+    border: 1px solid #ffffff;
+    color: #000000;
+    border-collapse: collapse;
+    text-align: left;
 }
 table.dugrps td {
-	max-width: 720px;
+    max-width: 720px;
 }
 table.dugrps td.tdlock {
-	background: #dddddd;
+    background: #dddddd;
 }
 
 .dunotf-container {
-	margin: 10px auto 10px auto;
-	padding: 10px 10px 10px 10px;
-	overflow-y: scroll;
-	height: 200px;
-	float: left;
+    margin: 10px auto 10px auto;
+    padding: 10px 10px 10px 10px;
+    overflow-y: scroll;
+    height: 200px;
+    float: left;
 }
 .dunotf {
-	width: 250px;
-	text-align: center;
+    width: 250px;
+    text-align: center;
 }
 table.dunotf {
-	border: 1px solid #FFFFFF;
-	color: #000000;
-	border-collapse: collapse;
-	text-align: left;
-	width: 100%;
+    border: 1px solid #ffffff;
+    color: #000000;
+    border-collapse: collapse;
+    text-align: left;
+    width: 100%;
 }
 table.dunotf td.tdlock {
-	background: #dddddd;
+    background: #dddddd;
 }
 
 .dnotf-container {
-	margin: 10px auto 10px auto;
-	padding: 10px 10px 10px 10px;
-	overflow-y: scroll;
-	height: 200px;
-	background-color: transparent;
-	float: left;
+    margin: 10px auto 10px auto;
+    padding: 10px 10px 10px 10px;
+    overflow-y: scroll;
+    height: 200px;
+    background-color: transparent;
+    float: left;
 }
 .dnotf {
-	width: 650px;
-	text-align: center;
+    width: 650px;
+    text-align: center;
 }
 table.dnotf {
-	border: 1px solid #FFFFFF;
-	color: #000000;
-	border-collapse: collapse;
-	text-align: left;
-	width: 100%;
+    border: 1px solid #ffffff;
+    color: #000000;
+    border-collapse: collapse;
+    text-align: left;
+    width: 100%;
 }
 table.dnotf td.tdlock {
-	background: #dddddd;
+    background: #dddddd;
 }
 
 .dauth-container {
-	margin: 10px auto 10px auto;
-	padding: 10px 10px 10px 10px;
-	overflow-y: scroll;
-	height: 130px;
-	background-color: transparent;
-	float: left;
+    margin: 10px auto 10px auto;
+    padding: 10px 10px 10px 10px;
+    overflow-y: scroll;
+    height: 200px;
+    background-color: transparent;
+    float: left;
 }
 .dauth {
-	width: 280px;
-	text-align: center;
+    width: 280px;
+    text-align: center;
 }
 table.dauth {
-	border: 1px solid #FFFFFF;
-	color: #000000;
-	border-collapse: collapse;
-	text-align: left;
-	width: 100%;
+    border: 1px solid #ffffff;
+    color: #000000;
+    border-collapse: collapse;
+    text-align: left;
+    width: 100%;
 }
 table.dauth td.tdlock {
-	background: #dddddd;
+    background: #dddddd;
 }
 
 h3.users {
-	margin-bottom: 0px;
+    margin-bottom: 0px;
 }
 .smanlegend {
-	font-weight: bolder;
+    font-weight: bolder;
 }
 .fieldspacer {
-	margin-top: 10px;
-	margin-bottom: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 #ovly {
-	display: none;
-	position: fixed;
-	top:0px;
-	left:0px;
-	width:100%;
-	height:100%;
-	text-align:center;
-	vertical-align:middle;
-	opacity: 0.4;
-	background-color:#000000;
-	z-index: 10000;
+    display: none;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    vertical-align: middle;
+    opacity: 0.4;
+    background-color: #000000;
+    z-index: 10000;
 }
 
 .overlay_form {
-	position: absolute;
-	border: 3px solid gray;
-	border-radius: 5px;
-	padding: 10px;
-	background: #FFFFEE;
-	width: 440px;
-	height: auto;
-	opacity: 1;
-	z-index: 10001;
+    position: absolute;
+    border: 3px solid gray;
+    border-radius: 5px;
+    padding: 10px;
+    background: #ffffee;
+    width: 440px;
+    height: auto;
+    opacity: 1;
+    z-index: 10001;
 }
-.overlay_form label{
-	display:block;
-	font-weight:bold;
-	text-align:right;
-	width:120px;
-	float:left;
-	clear: left;
+.overlay_form label {
+    display: block;
+    font-weight: bold;
+    text-align: right;
+    width: 120px;
+    float: left;
+    clear: left;
 }
-.overlay_form .small{
-	color: #666666;
-	display:block;
-	font-size: x-small;
-	font-weight: lighter;
-	text-align:right;
-	width:120px;
+.overlay_form .small {
+    color: #666666;
+    display: block;
+    font-size: x-small;
+    font-weight: lighter;
+    text-align: right;
+    width: 120px;
 }
-.overlay_form input[type=text], .overlay_form select{
-	float:left;
-	padding:4px 2px;
-	border:solid 1px #aacfe4;
-	width:300px;
-	margin:2px 0 15px 10px;
+.overlay_form input[type="text"],
+.overlay_form select {
+    float: left;
+    padding: 4px 2px;
+    border: solid 1px #aacfe4;
+    width: 300px;
+    margin: 2px 0 15px 10px;
 }
 .overlay_form p {
-	background: #EAE4CE;
-	width: 100%;
-	height: 20px;
-	padding: 5px 0 5px 2px;
-	float: left;
+    background: #eae4ce;
+    width: 100%;
+    height: 20px;
+    padding: 5px 0 5px 2px;
+    float: left;
 }

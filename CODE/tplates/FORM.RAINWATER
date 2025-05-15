@@ -1,0 +1,167 @@
+=key|value
+# Generic FORM template for use with {formGRID.pl, showGENFORM,formGENFORM}.pl
+# Model: water chemical analysis (formerly RAINWATER)
+#
+# ############################### WARNING #####################################
+# Once the database form has been created and the first data has been recorded,
+# you MAY BE VERY CAREFUL IN MODIFYING the keys of this file.
+# ############################### WARNING #####################################
+
+# -----------------------------------------------------------------------------
+# --- GRID common parameters
+
+NAME|Rain water chemical analysis database
+DESCRIPTION|Rain waters physico-chemical analysis 
+OWNCODE|
+TYPE|
+URL|
+COPYRIGHT|MyForm
+
+# --- node parameters (display and maps)
+NODE_NAME|site
+NODE_MARKER|s
+NODE_SIZE|10
+NODE_RGB|0,1,1
+NODE_FONTSIZE|10
+
+# --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
+DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
+# DEM coordinate system: UTM or LATLON
+DEM_TYPE|LATLON
+DEM_COPYRIGHT|
+
+# -----------------------------------------------------------------------------
+# --- FORM parameters
+# Very first year of the data (for date lists)
+BANG|$WEBOBS{BIG_BANG}
+
+# Time zone of the data (in hour from UT)
+TZ|0
+
+# if YES, use start and end date for each record
+STARTING_DATE|YES
+
+# may contain any +GID and/or UID list (comma separated)
+OPERATORS_LIST|+DUTY
+
+# if YES, use a quality check for each record
+QUALITY_CHECK|YES
+QUALITY_OPERATORS|+ADMIN
+
+# default window time for showGENFORM.pl (in days)
+DEFAULT_DAYS|365
+
+# list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
+VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
+
+# comment input field
+COMMENT_SIZE|120
+COMMENT_HELP|Note any presence of odour, gas or precipitate, etc...
+
+# -----------------------------------------------------------------------------
+# --- Inputs names, units, and types
+# valid types: text(size), numeric(size), list: filename
+#
+# ############################### WARNING #####################################
+# once created, you cannot remove or rename any input since it will corrupt
+# the database. You might only add new inputs, increasing the number
+# ############################### WARNING #####################################
+
+INPUT01_NAME|Volume
+INPUT01_UNIT|ml
+
+INPUT02_NAME|Funnel Diameter
+INPUT02_UNIT|cm
+
+INPUT03_NAME|pH
+
+INPUT04_NAME|Cond.
+INPUT04_UNIT|&mu;S
+
+INPUT05_NAME|Na<sup>+</sup>
+INPUT05_UNIT|ppm
+
+INPUT06_NAME|K<sup>+</sup>
+INPUT06_UNIT|ppm
+
+INPUT07_NAME|Mg<sup>++</sup>
+INPUT07_UNIT|ppm
+
+INPUT08_NAME|Ca<sup>++</sup>
+INPUT08_UNIT|ppm
+
+INPUT09_NAME|HCO<sub>3</sub><sup>-</sup>
+INPUT09_UNIT|ppm
+
+INPUT10_NAME|Cl<sup>-</sup>
+INPUT10_UNIT|ppm
+
+INPUT11_NAME|SO<sub>4</sub><sup>-</sup>
+INPUT11_UNIT|ppm
+
+INPUT12_NAME|&delta;D
+INPUT12_UNIT|&permil;
+
+INPUT13_NAME|&delta;<sup>18</sup>O
+INPUT13_UNIT|&permil;
+
+
+# -----------------------------------------------------------------------------
+# --- Outputs names, units, and types
+# valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
+
+OUTPUT01_NAME|Cumulated Rainfall
+OUTPUT01_UNIT|mm
+OUTPUT01_TYPE|formula: 10*INPUT01 / (PI*(INPUT02/2)**2)
+OUTPUT02_NAME|Average Daily Rainfall
+OUTPUT02_UNIT|mm/day
+OUTPUT02_TYPE|formula: OUTPUT01 / DURATION
+OUTPUT03_NAME|H<sup>+</sup>
+OUTPUT03_UNIT|ppm
+OUTPUT03_TYPE|formula: 1000 * (10**(-INPUT03))
+OUTPUT04_NAME|S.C
+OUTPUT04_TYPE|formula(0): INPUT05/22.990 + INPUT06/39.098 + 2*INPUT07/24.305 + 2*INPUT08/40.078 + OUTPUT03
+OUTPUT05_NAME|S.A
+OUTPUT05_TYPE|formula(0): INPUT09/61.0159 + INPUT10/35.453 + 2*INPUT11/96.062
+OUTPUT06_NAME|NICB
+OUTPUT06_UNIT|%
+OUTPUT06_TYPE|formula(6): 100*(OUTPUT04 - OUTPUT05) / (OUTPUT04 + OUTPUT05)
+OUTPUT06_THRESHOLD|10,20
+OUTPUT06_HELP|Normalized Inorganic Charge Balance
+OUTPUT07_NAME|Cl/Na
+OUTPUT07_TYPE|formula(6): (INPUT10/35.453) / (INPUT05/22.990)
+OUTPUT08_NAME|SO<sub>4</sub>/Na
+OUTPUT08_TYPE|formula(6): (INPUT11/96.062) / (INPUT05/22.990) 
+OUTPUT09_NAME|Mg/Na
+OUTPUT09_TYPE|formula(6): (INPUT07/40.078) / (INPUT05/22.990)
+
+# -----------------------------------------------------------------------------
+# --- Form layout
+
+# note: first column starts with the mandatory date/site/operator fieldset
+COLUMN01_LIST|FIELDSET01,FIELDSET02
+COLUMN02_LIST|FIELDSET03,FIELDSET04,FIELDSET05
+
+# fieldset contains
+FIELDSET01_NAME|Rain Collector
+FIELDSET01_CELLS|1
+FIELDSET01_C01|INPUT01,INPUT02,OUTPUT01,OUTPUT02
+
+FIELDSET02_NAME|Physical Measurements
+FIELDSET02_CELLS|1
+FIELDSET02_C01|INPUT03,INPUT04
+
+FIELDSET03_NAME|Cation and Anion Concentrations
+FIELDSET03_CELLS|2
+FIELDSET03_C01|INPUT05,INPUT06,INPUT07,INPUT08,OUTPUT03
+FIELDSET03_C02|INPUT09,INPUT10,INPUT11,OUTPUT04,OUTPUT05,OUTPUT06
+
+FIELDSET04_NAME|Isotopic Ratios
+FIELDSET04_CELLS|1
+FIELDSET04_C01|INPUT12,INPUT13
+
+FIELDSET05_NAME|Ratios
+FIELDSET05_TOGGLE|YES
+FIELDSET05_CELLS|1
+FIELDSET05_C01|OUTPUT07,OUTPUT08,OUTPUT09
+

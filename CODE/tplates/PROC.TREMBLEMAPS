@@ -1,0 +1,150 @@
+=key|value
+# TREMBLEMAPS PROC template (English version)
+# Superformat is 'quakes': see readfmtdata_quakes.m for compatible RAWFORMAT defined
+# in associated NODE's RAWFORMAT field
+# See $WEBOBS{ROOT_CODE}/matlab/superprocs/tremblemaps.m for further information.
+
+# name of the PROC
+NAME|Earthquake Felt Report
+
+# description of what the proc does
+DESCRIPTION|B3 Earthquake Felt Report
+
+# proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
+RAWFORMAT|quakes
+TYPE|
+# raw data path
+RAWDATA|
+# URN link to data
+URNDATA|
+# time zone for outputs
+TZ|-4
+# additionnal URL
+URL|
+
+# lists of parameters (number of comma-separated rows must be consistent)
+# TIMESCALELIST valid suffix: h (hour), d (day), w (week), m (month), y (year)
+TIMESCALELIST|01y
+# defines a reference date to use with 'r01' timescale in TIMESCALELIST
+REF01_DATE|2000-01-01
+# year and month timescales use true durations
+TIMESCALE_TRUEVALUE|Y
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{JOB_MCC} tremblemaps $SELFREF -
+SUBMIT_RESOURCE|request
+
+# list of keys editable in requests
+REQUEST_KEYLIST|SC3_LISTEVT,EVENTS_OVERWRITING,WATERMARK,FELT_FORCED,REGION
+
+PPI|150
+# exports text data files
+EXPORTS|NO
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
+PDFOUTPUT|YES
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_OVS160_noalpha.png
+LOGO2_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_b3r.jpg
+COPYRIGHT|IPGP
+COPYRIGHT2|
+
+DEM_SRTM1|N
+# optional user-defined DEM (Arcinfo format, lat/lon, overwrites SRTM/ETOPO default)
+#DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
+#DEM_TYPE|LATLON
+#DEM_COPYRIGHT|DEM: myDEM
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|3600
+
+# --- proc specific parameters
+# this locale defines the language for system/earthquake origin date/time, magnitude and intensity terms
+LOCALE|en_EN
+EVENTTYPE_EXCLUDED_LIST|not existing,not locatable,outside of network interest,sonic boom,duplicate,other
+EVENTSTATUS_EXCLUDED_LIST|auto
+# allow to purge tremblemap that are associated with an excluded event (set to 1 to enable)
+PURGE_EXCLUDED_EVENT|0
+
+SC3_LISTEVT|
+EVENTS_OVERWRITING|
+MAGLIM|2,Inf
+# minimum magnitude error
+MAG_ERROR_MIN|0.1
+
+# additional filter applying on event comment which might contains MC3 type (case insensitive regexp)
+EVENTCOMMENT_EXCLUDED_REGEXP|
+
+AREA|Guadeloupe and Northern Islands
+CITIES|$WEBOBS{ROOT_CONF}/Cities.conf
+# see ${CITIES} file for valid regions
+REGION|Guadeloupe
+# each city is considered as a circle around its lat/lon center
+CITIES_RADIUS_KM|1
+
+# see CODE/matlab/gmpe.m and gmice.m for valid laws
+GMPE|beauducel09
+GMICE|gr42
+REFERENCES|B-Cube attenuation law [Beauducel et al., 2011]
+# colormap for intensities
+COLORMAP|jet
+COLORMAP_ALPHA|0,1
+
+# use this to fix map limits (otherwise map is automatic from epicenter and region)
+#MAP_XYLIM|-64,-59.7,14.25,18.4
+# limits lighted relief to land
+MAP_LANDONLY|Y
+MAP_INSET_EPIMAX|0
+#MAP_DEM_OPT|'LandColor',.8*ones(256,3),'SeaColor',white(256),'Contrast',0
+MAP_DEM_OPT|'LandColor',.8*ones(256,3),'SeaColor',white(256),'Contrast',1,'LCut',0.01
+EPICENTER_PLOT_OPT|'p','MarkerSize',12,'MarkerEdgeColor','r','MarkerFaceColor','w','LineWidth',1.5
+FELT_MSK_MIN|1.5
+FELT_FORCED|NO
+FELTOTHERPLACES_OK|YES
+CITIES_DISPLAY_LIST|YES
+PDFOUTPUT|YES
+AUTOPRINT|NO
+# event must be defined in the postboard
+NOTIFY_EVENT|feltquake.
+NOTIFY_EMAIL_SUBJECT|$quake_strength M=$quake_magnitude - B3=$msk ($msk_max max) @ $city
+REPORT_TEXT_ROOT|$WEBOBS{ROOT_CONF}/TREMBLEMAPS
+REPORT_TEXT_FILE|${REPORT_TEXT_ROOT}_TEXT_en.txt
+REPORT_FELT_FILE|${REPORT_TEXT_ROOT}_FELT_en.txt
+REPORT_AUTO_FILE|${REPORT_TEXT_ROOT}_AUTO_en.txt
+WATERMARK_AUTO|AUTOMATIQUE
+WATERMARK|
+TITLE1|Preliminary earthquale report for
+TITLE2|${AREA}
+SUBTITLE1|{\bfInstitut de Physique du Globe de Paris}
+SUBTITLE2|1 rue Jussieu - 75005 Paris - France
+SUBTITLE3|Ph: +33 1 83 95 75 28 - Fax: +33 1 83 95 77 17 - webobs-users@ipgp.fr - www.ipgp.fr
+REPORT_DATE|Paris, $report_date $report_time (local time)
+EVENT_TITLE1|Magnitude $quake_magnitude, $quake_latitude, $quake_longitude, depth $quake_depth
+EVENT_TITLE2|$long_date $time
+LIST_TITLE1|{\bfMean probable intensities}
+LIST_TITLE2|{\bf(and maximum)}
+LIST_OUTOF|{\bfOut of ${AREA}}
+LIST_UNFELT1|not felt in the cities
+LIST_UNFELT2|of ${AREA}
+
+TABLE_HEADERS|Perceived Shaking,Potential Damage,Acceleration (mg),Intensiy
+TABLE_WHITE_MSK|10:12
+FOOTNOTE1|(*) {\bfmg} = "milli G" is a physical unit for acceleration and equals one thousandth of the earth gravity.
+FOOTNOTE2|Dashed line shows potential limit of the felt event zone.
+
+LESS_1KM_TEXT|less than 1 km
+ADDITIONAL_TEXT|
+GSE_EXPORT|N
+GSE_TITLE|${REGION}: $quake_strength $quake_type $epicentral $azimuth of $city ($region)
+GSE_TITLE|${REGION}: $quake_strength $epicentral $azimuth of $city ($region)
+GSE_COMMENT|$azimuth of $city ($region)
+
+JSON_EXPORT|Y
+
+MUTT_OPTIONS|-e "set from='WebObs <webobs>'"
+TRIGGER_EMAIL|
+TRIGGER_SUBJECT|FELT EARTHQUAKE
+TRIGGER_DEPARTMENT|
+TRIGGER_AGENCY|
+REPORT_EMAIL|
+REPORT_SUBJECT|[OVS-IPGP] Felt earquake report
+REPORT_FOOTNOTE|If you felt this earthquake, please fill the form at: www.emsc-csem.org

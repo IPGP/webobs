@@ -1,12 +1,12 @@
 .\" Manpage for tagit.
 .TH man 8 "13 May 2013" "1.0" "tagit man page"
 .SH NAME
-tagit \- creates a WebObs release tag in WebObs svn repository. 
+tagit \- creates a WebObs release tag in WebObs svn repository.
 .SH SYNOPSIS
 tagit SVN-REPOSITORY  RELEASE-NAME
 .SH DESCRIPTION
-SVN-REPOSITORY being of the form <svn-repo-path>/webobs, and RELEASE-NAME the name of 
-the release, tagit will svn-tag the trunk at HEAD (ie. 
+SVN-REPOSITORY being of the form <svn-repo-path>/webobs, and RELEASE-NAME the name of
+the release, tagit will svn-tag the trunk at HEAD (ie.
 svn-create <svn-repo-path>/webobs/tags/release-name).
 This is from such a tag that \fBpackit\fP procedure will create a WebObs package file.
 
@@ -17,7 +17,7 @@ eg:  alpha-1.0.0  ,  beta-1.1.0  ,  rc-1.1.1  (ga-1.1.1) ...
 .SH OPTIONS
 No command line option, but the SVN-REPOSITORY and RELEASE-NAME are required.
 .SH SEE ALSO
-fpm, packit, install 
+fpm, packit, install
 .SH AUTHOR
 Didier Lafon
 .SH COPYRIGHT
