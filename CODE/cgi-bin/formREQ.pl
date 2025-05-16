@@ -163,14 +163,15 @@ my @reqlist;
 my %reqdates;
 map (push(@reqlist,$_), qx(find $WEBOBS{ROOT_OUTR} -type d -mindepth 1 -maxdepth 1 -name "*_$CLIENT"));
 chomp(@reqlist);
-for (@reqlist) {
-    my $date1 = qx(grep "^DATE1|" $_/REQUEST.rc | sed -e "s/DATE1|//");
-    my $date2 = qx(grep "^DATE2|" $_/REQUEST.rc | sed -e "s/DATE2|//");
+my $i = 1;
+for (0..$#reqlist) {
+    my $date1 = qx(grep "^DATE1|" $reqlist[$_]/REQUEST.rc | sed -e "s/DATE1|//");
+    my $date2 = qx(grep "^DATE2|" $reqlist[$_]/REQUEST.rc | sed -e "s/DATE2|//");
     chomp($date1);
     chomp($date2);
     my $date12 = $date1."_".$date2;
     $date12 =~ s/[-: ]//g;
-    $reqdates{$date12} = "$date1 to $date2";
+    $reqdates{sprintf("%02d",$_)."_".$date12} = "$date1 to $date2";
 }
 
 # ---- passed all checkings above ...
@@ -283,17 +284,17 @@ function preSet()
         document.form.endH.value = \"00\";
         document.form.endN.value = \"00\";
     }
-    if (preset.includes(\"_\") && preset.length == 25) {
-        document.form.startY.value = preset.substring(0,4);
-        document.form.startM.value = preset.substring(4,6);
-        document.form.startD.value = preset.substring(6,8);
-        document.form.startH.value = preset.substring(8,10);
-        document.form.startN.value = preset.substring(10,12);
-        document.form.endY.value = preset.substring(13,17);
-        document.form.endM.value = preset.substring(17,19);
-        document.form.endD.value = preset.substring(19,21);
-        document.form.endH.value = preset.substring(21,23);
-        document.form.endN.value = preset.substring(23,25);
+    if (preset.includes(\"_\") && preset.length == 28) {
+        document.form.startY.value = preset.substring(3,7);
+        document.form.startM.value = preset.substring(7,9);
+        document.form.startD.value = preset.substring(9,11);
+        document.form.startH.value = preset.substring(11,13);
+        document.form.startN.value = preset.substring(13,15);
+        document.form.endY.value = preset.substring(16,20);
+        document.form.endM.value = preset.substring(20,22);
+        document.form.endD.value = preset.substring(22,24);
+        document.form.endH.value = preset.substring(24,26);
+        document.form.endN.value = preset.substring(26,28);
     }
 }
 </script>
