@@ -10,14 +10,10 @@ ENV WO_VERSION=2.7.3
 # Directories
 ENV WORK_DIR=/opt
 ENV INSTALL_DIR=/opt/webobs
-# ENV DATA_DIR=/opt/rawdata
 # Set system to non-interactive during build only
 ARG DEBIAN_FRONTEND=noninteractive
 # Simulate a chroot environment
 ENV FAKE_CHROOT=1
-# Setup wo's user and group id
-# ENV USER_ID=1000
-# ENV GROUP_ID=1000
 # Ensures that the OpenGL graphics library will not try to direct access GPU in the container
 ENV LIBGL_ALWAYS_INDIRECT=1
 
@@ -69,23 +65,13 @@ EXPOSE 443
 
 ## Users and groups
 
-# Create wo user and group => DONE IN WEBOBS SETUP
-# RUN groupadd --gid $GROUP_ID -r wo \
-#    && useradd -m -s /bin/bash --uid $USER_ID -r -g wo wo \
-#    # No password for wo
-#    && passwd -d wo
-
+# TODO : use BuildKit secrets
 # Set root password to 'password'
 RUN echo 'root:password' | chpasswd
 
 ## Directories
 
 RUN mkdir -p $INSTALL_DIR
-#    && chown -R wo:wo $INSTALL_DIR \
-#    && chmod g+w $INSTALL_DIR \
-#    && mkdir -p $DATA_DIR \
-#    && chown -R wo:wo $DATA_DIR \
-#    && chmod g+w $DATA_DIR
 
 ## Download WebObs distribution
 
@@ -123,6 +109,8 @@ RUN sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="PS" />\);<!-- 
 
 #RUN cd $INSTALL_DIR \
 #    && WebObs-${WO_VERSION}/SETUP/setup -a
+
+# TODO use BuildKit secrets to create wo user in htpassord file.
 
 ## Switch to wo
 
