@@ -390,7 +390,7 @@ case 'usgs-rneu'
 
 % -----------------------------------------------------------------------------
 case 'ies-neu'
-	% format example
+	% format example:
 	% Time dN eN dE eE dU eU
 	% 2008.65846986 -0.00502209 0.00647 0.193237 0.01492 0.0314239 0.01846
 
@@ -420,7 +420,7 @@ case 'ies-neu'
 	end
 	if ~isempty(dd)
 		t = datenum(dd(:,1),1,1,0,0,0);	% date is decimal year
-		d = [dd(:,[4,2,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
+		d = [dd(:,[4,2,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),O
 		e = dd(:,[5,3,7]);
 		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
