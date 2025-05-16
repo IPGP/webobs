@@ -106,7 +106,18 @@ switch (lc($format)) {
     }
     case 'csv' {
         print $cgi->header(-type=>'text/csv', -attachment=>"$file.csv",-charset=>'utf-8');
-        print "ID;ALIAS;NAME;TYPE;LATITUDE;LONGITUDE;ELEVATION;START_DATE;END_DATE;ACTIVE\r\n";
+        my $c1 = "LATITUDE";
+        my $c2 = "LONGITUDE";
+        my $c3 = "ELEVATION";
+        if ($coord =~ /^utm|local$/) {
+            $c1 = "UTM_EASTERN";
+            $c2 = "UTM_NORTHERN";
+        } elsif ($coord eq "xyz") {
+            $c1 = "X";
+            $c2 = "Y";
+            $c3 = "Z";
+        }
+        print "ID;ALIAS;NAME;TYPE;$c1;$c2;$c3;START_DATE;END_DATE;ACTIVE\r\n";
     }
     else {
         print $cgi->header(-type=>'text/csv', -attachment=>"$file.txt",-charset=>'utf-8');
@@ -168,7 +179,7 @@ for (keys(%N)) {
 </Placemark>\n";
                 }
                 case 'csv' {
-                    print "\"$id\";\"$alias\";\"$name\";\"$type\";$lat;$lon;$alt;\"$start\";\"$end\";$active\r\n";
+                    print "\"$id\";\"$alias\";$name;\"$type\";$lat;$lon;$alt;\"$start\";\"$end\";$active\r\n";
                 }
                 else {
                     print "$id\t$alias\t$name\t$type\t$lat\t$lon\t$alt\t$start\t$end\t$active\r\n";
