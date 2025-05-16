@@ -1,0 +1,10 @@
+services:
+    webobs:
+        container_name: webobs
+        build: webobs
+        platform: linux/amd64 # for M1 users
+        ports:
+            - "2224:22"
+            - "8080:80"
+            - "4443:443"
+        tty: true        
