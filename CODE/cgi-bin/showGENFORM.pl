@@ -643,7 +643,7 @@ push(@csv,$csvTxt);
 push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n":"")."</TABLE>\n$listoflist\n$listofformula");
 push(@html, qq(<hr><a name="download"></a><form action="/cgi-bin/postFormData.pl?form=$form" method="post">
 <input type="submit" value="$__{'Download a CSV text file of these data'}">
-<input type="checkbox" name="dlm" value=";">&nbsp;$__{'Use semicolon as delimiter'}
+<input type="checkbox" name="dlm" value=";" checked>&nbsp;$__{'Use semicolon as delimiter'}
 <input type="hidden" name="form" value=$form>
 <input type="hidden" name="csv" value='@csv'>
 <span" title="$__{'Include associated form data (files, images,...)'}"><input type="checkbox" name="all">&nbsp;$__{'Include attached data files'}</span>
