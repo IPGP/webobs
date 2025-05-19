@@ -155,8 +155,7 @@ print <<"END";
 
     // Load GeoJSON data
     if ("$geojsonFile") {
-        var geojson = createShp($geojsonData);
-        geojson.addTo(drawnItems);
+        createShp($geojsonData);
     }
 
     // Initialize the drawing control with the editing option
@@ -175,6 +174,16 @@ print <<"END";
         drawnItems.addLayer(e.layer);
     });
 
+    // Listen to the edition events
+    map.on('draw:edited', function (e) {
+        saveGeoJSON();
+    });
+
+    // Listen to the deletion events
+    map.on('draw:deleted', function (e) {
+        saveGeoJSON();
+    });
+
     function createShp(geojson) {
         var shpfile = L.geoJson(geojson, {
             onEachFeature: function(feature, layer) {
@@ -183,7 +192,9 @@ print <<"END";
                 for (var prop in feature.properties) {
                     popupcontent.push(prop + ": " + feature.properties[prop]);
                 }
-                layer.bindPopup(popupcontent.join("<br />"));
+                if (popupcontent.length > 0) {
+                    layer.bindPopup(popupcontent.join("<br />"));
+                }
             },
             style: {
                 color: "#dd0000"
@@ -193,7 +204,7 @@ print <<"END";
     }
 
     // Save GeoJSON data
-    document.getElementById("save").addEventListener("click", function() {
+    function saveGeoJSON() {
         var drawnItemsJson = drawnItems.toGeoJSON();
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "postGEOJSON.pl", true);
@@ -218,7 +229,9 @@ print <<"END";
             filename: "$geojsonFile",
             geojson: drawnItemsJson
         }));
-    });
+    }
+
+    document.getElementById("save").addEventListener("click", saveGeoJSON);
 
     function loadShapefile(file) {
         var reader = new FileReader();
