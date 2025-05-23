@@ -284,6 +284,8 @@ MODELLING_MAX_DEPTH|8000
 MODELLING_GRID_SIZE|50
 # modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
 MODELLING_SOURCE_TYPE|isotropic
+# elastic parameter (Poisson's ratio) nu
+MODELLING_NU|0.25
 # sets 2 to model the residuals with a secondary source (EXPERIMENTAL)
 MODELLING_MULTIPLE_SOURCES|1
 # misfit norm calculation: 'L1' (default) or 'L2'

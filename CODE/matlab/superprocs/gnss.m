@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2025-04-07
+%   Updated: 2025-05-23
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -267,6 +267,7 @@ modelopt.apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 modelopt.msig = field2num(P,'MODELLING_SIGMAS',1);
 modelopt.misfitnorm = field2str(P,'MODELLING_MISFITNORM','L1');
 modelopt.multi = field2num(P,'MODELLING_MULTIPLE_SOURCES',1,'notempty');
+modelopt.nu = field2num(P,'MODELLING_NU',0.25);
 
 % MODELLING pCDM parameters (see invpcdm.m and PROC.GNSS template)
 PCDM.iterations = field2num(P,'MODELLING_PCDM_ITERATIONS',5);

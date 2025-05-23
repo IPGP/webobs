@@ -16,6 +16,7 @@ function M=invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt)
 %	                  .apriori_horizontal = a priori horizontal std (km) from target
 %	                  .apriori_depth = a priori depth,std (km)
 %	                  .multi = number of sources to compute recursively on residuals
+%	                  .nu = Poisson's ratio
 %
 %	Output paramaters as structure with fields:
 %	      type: 'isotropic'
@@ -31,7 +32,7 @@ function M=invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt)
 %
 %	Author: François Beauducel
 %	Created: 2010 in Paris (France)
-%	Updated: 2025-04-04
+%	Updated: 2025-05-23
 
 sz = size(xx);
 nn = length(xsta);
@@ -40,7 +41,7 @@ nn = length(xsta);
 [asou,rsou] = cart2pol(repmat(reshape(xsta,1,1,1,nn),[sz,1])-repmat(xx,[1,1,1,nn]), ...
 	repmat(reshape(ysta,1,1,1,nn),[sz,1])-repmat(yy,[1,1,1,nn]));
 
-[ur,uz] = mogi(rsou,repmat(reshape(zsta,1,1,1,nn),[sz,1]) - repmat(zz,[1,1,1,nn]),1e9);
+[ur,uz] = mogi(rsou,repmat(reshape(zsta,1,1,1,nn),[sz,1]) - repmat(zz,[1,1,1,nn]),1e9,opt.nu);
 [ux,uy] = pol2cart(asou,ur);
 
 for m = 1:opt.multi
@@ -134,7 +135,7 @@ for m = 1:opt.multi
 	% recomputes the lowest L2-misfit solution (dV in Mm3, displacements in mm)
 	[abest,rbest] = cart2pol(xsta-xx(k),ysta-yy(k));
 	zbest = zsta - zz(k);
-	[urb,uzb] = mogi(rbest,zbest,1e9*vv(k));
+	[urb,uzb] = mogi(rbest,zbest,1e9*vv(k),opt.nu);
 	[uxb,uyb] = pol2cart(abest,urb);
 	m0 = sum((d(kx,1) - uxb(kx)).^2 + (d(ky,2) - uyb(ky)).^2);
 	if ~opt.horizonly
