@@ -49,7 +49,7 @@ Each data record in a \wo{form} uses this structure:
 \begin{itemize}
 	\item an automatic unique identifier (for the database);
 	\item a trash flag for deleted record;
-	\item a quality number;
+	\item a quality number (presently containing only 0 or 1);
 	\item an associated \wo{node};
 	\item a start date/time and a end date/time: the start date/time is optional and may be automatically filled by the end date/time value if only one date is used in the \wo{form}. To manage date/time uncertainty, each date/time is associated to a companion minimum date/time to define an interval. For example, if the time of a record is unknown, the main date/time will contain yyyy-mm-dd 23:59:59 and the min date/time will contain 00:00:00 so that the full day is covered. This behavior is transparent for the user who have the possibility to set some fields empty (month, day, hour, and minute);
 	\item a list of users/operators associated to the record. Users must be defined in the \wo{users} \webobs database;
