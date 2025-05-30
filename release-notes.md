@@ -46,7 +46,7 @@ TREND_UNIT|mm/yr
 ```
 where `TREND_FACTOR` is a dimensionless factor applied to the trend value initially in m/day, and `TREND_UNIT` is the resulting unit string (for display purposes) for individual node timeseries and VECTORS graph.
 
-### Enhancements
+### Enhancements and modifications
 1. New CSS!
 1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
 1. `!!` **HYPOMAP superproc**: MAP_*_DEPLIM now filters the data (was only for marker scale color). *Caution:* comments in proc's .conf files need to be updated to avoid misunderstanding
@@ -55,6 +55,7 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
 WIKI_MMD|YES
 ```
 and admins are encouraged to use the **">MMD"** button in editors.
+1. `!!` shell scripts for GNSS data processing, formerly in `CODE/shells/gnss/` have been removed and are now available at a new repository [IPGP/gnssposflow](https://github.com/IPGP/gnssposflow).
 
 ### Fixed issues
 1. `!!` Fix an issue giving edit button for any grid (view/proc/form) for users with only Edit level.
