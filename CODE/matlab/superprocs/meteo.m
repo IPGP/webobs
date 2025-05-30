@@ -55,7 +55,7 @@ function DOUT=meteo(varargin)
 %
 %   Authors: F. Beauducel + S. Acounis / WEBOBS, IPGP
 %   Created: 2001-07-04
-%   Updated: 2023-12-07
+%   Updated: 2025-05-30
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -101,9 +101,11 @@ for n = 1:length(N)
 	% fixes colors for each channel
 	col = [1,1,3,2,2,3,1,4];
 
-	% if rain gauge are cumulated data, differentiating first
+	% if rain gauge are cumulated data, differentiating
 	if rain_cum
-		d(:,i_rain) = [0;diff(d(:,i_rain))];
+		drain = diff(d(:,i_rain));
+        k = find(drain>=0); % negative values means a reset = keep the original value
+		d(k+1,i_rain) = drain(k); % replace by diff
 	end
 	if ~isempty(t)
 
