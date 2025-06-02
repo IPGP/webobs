@@ -167,6 +167,8 @@ PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name - $velref} ($timescale)}
 PERNODE_COMPONENT_OFFSET_M|0.01
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 PERNODE_TIMEZOOM|
+# plot also the original/uncorrected data
+PERNODE_PLOT_ORIGINAL|Y
 
 # --- SUMMARY graphs
 # selection of nodes (FID) to plot (default is all associated nodes)

@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2025-05-23
+%   Updated: 2025-06-02
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -129,6 +129,7 @@ pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','o');
 pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $node_name - $velref} ($timescale)}');
 pernode_timezoom = field2num(P,'PERNODE_TIMEZOOM',0);
 pernode_cmpoff = field2num(P,'PERNODE_COMPONENT_OFFSET_M',0.01);
+pernode_plotorig = isok(P,'PERNODE_PLOT_ORIGINAL',1);
 
 % SUMMARY parameters
 summary_nodes = strtrim(split(field2str(P,'SUMMARY_NODELIST'),','));
@@ -574,12 +575,16 @@ for r = 1:numel(P.GTABLE)
 			end
 		end
 		if harmcorr || faultcorr || vrelmode
-			X(1).nam = 'original';
-			X(1).rgb = scolor(1);
-			X(1).trd = 0;
-			X(2).nam = sprintf('corrected (%s)',strjoin({repmat('relative',vrelmode),repmat('harmonic',harmcorr),repmat('fault',faultcorr)},'+'));
-			X(2).rgb = scolor(3);
-			X(2).trd = 1;
+                X(2).nam = sprintf('corrected (%s)',strjoin({repmat('relative',vrelmode),repmat('harmonic',harmcorr),repmat('fault',faultcorr)},'+'));
+                X(2).rgb = scolor(3);
+                X(2).trd = 1;
+            if pernode_plotorig
+                X(1).nam = 'original';
+                X(1).rgb = scolor(1);
+                X(1).trd = 0;
+            else
+                X = X(2); % will plot only corrected data
+            end
 		else
 			X(1).nam = '';
 			X(1).rgb = scolor(1);
