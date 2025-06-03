@@ -387,7 +387,7 @@ while (1) {
 
     if (@$allActions) {
         for my $action (@$allActions) {
-            my $cmd = sprintf("%s %s", $action->[0], $REQ[3]);
+            my $cmd = sprintf("%s", $action->[0]);
             logit("executing action '$cmd'") if ($verbose);
             system($cmd);
             if ($?) { logit("action command [$cmd] failed: $?: $!") }
