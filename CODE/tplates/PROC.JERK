@@ -9,10 +9,8 @@ NAME|Jerk
 # description of what the proc does
 DESCRIPTION|Jerk prediction and alert of eruptions
 
-RAWFORMAT|miniseed
-ARCLINK_SERVER|
-ARCLINK_USER|sysop
-STREAM_CHANNEL_SELECTOR|LM?,LKI
+RAWFORMAT|fdsn-dataselect
+RAWDATA|http://fdsnserver/fdsnws/dataselect/1/query?
 DATALINK_DELAY_SECONDS|300
 
 # proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
@@ -22,7 +20,7 @@ LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 TZ|0
 
 # lists of parameters (number of comma-separated rows must be consistent)
-TIMESCALELIST|01w
+TIMESCALELIST|05d
 DECIMATELIST|1
 CUMULATELIST|1
 DATESTRLIST|-1
@@ -39,7 +37,6 @@ TIMESCALE_TRUEVALUE|Y
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} jerk $SELFREF -
 SUBMIT_RESOURCE|request
-
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,JERK_WINDOW_SECONDS
 
@@ -51,7 +48,7 @@ NODE_FONTSIZE|10
 NODE_MARKER|o
 
 # auto refresh of graphic display
-DISPLAY_AUTOREFRESH_SECONDS|3600
+DISPLAY_AUTOREFRESH_SECONDS|300
 
 # --- optional user-defined DEM, in ArcInfo format (overwrites SRTM/ETOPO default)
 DEM_FILE|$WEBOBS{PATH_DATA_DEM}/exampledem.asc
@@ -89,17 +86,17 @@ COPYRIGHT2|
 
 # --------------------------------------------------------------------
 # specific proc's parameters
-TIDES_PREDICT_MODE|2
+TIDES_PREDICT_MODE|1
 TIDES_XCORR_CLEANPICKS_PERCENT|0.1
 CHANNELS_MOVING_AVERAGE_SAMPLES|60,60,900
-JERK_WINDOW_SECONDS|600
+JERK_WINDOW_SECONDS|900
 JERK_SAMPLING_SECONDS|60
 JERK_TARGET_LATLON|-21.245,55.715
 JERK_TARGET_ANGLE_DEG|30
 JERK_THRESHOLD_MODE|manual
 JERK_THRESHOLD_TIDES_FACTOR|3
 JERK_THRESHOLD_LEVEL1_MS3|1e-10
-JERK_THRESHOLD_LEVEL2_MS3|1.5e-10
+JERK_THRESHOLD_LEVEL2_MS3|2e-10
 JERK_ZOOM_DAYS|1
 JERK_ZOOM_MINYLIM_MS3|2e-10
 LEVEL1_RGB|0.7,1,0.7
