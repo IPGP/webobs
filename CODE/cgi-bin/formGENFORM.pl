@@ -172,8 +172,12 @@ if ($starting_date) {
 my $dbh = connectDbForms();
 my $tbl = lc($form);
 
-# Number of columns in the table without the primary key
-my $ncol = 11;
+# Main columns in the table without the primary key and inputs
+my @db_columns = ("trash", "quality", "node", "edate", "edate_min", "sdate", "sdate_min", "operators");
+my @values = ("0", $quality, $site, $edate, $edate_min, $sdate, $sdate_min, join(",", @operators));
+push(@db_columns, ("comment", "tsupd", "userupd"));
+push(@values, ($comment, $today, $user));
+my $ncol = scalar(@db_columns);
 
 # Array size mapping for Date/Time inputs
 my %datetime_length = ("ymd" => 3, "hm" => 5, "hms" => 6);
@@ -182,22 +186,7 @@ my %datetime_length = ("ymd" => 3, "hm" => 5, "hms" => 6);
 my $temp_dir = ".tmp/".$CLIENT."/".uc($form);
 
 if ($action eq 'save') {
-    my $msg;
-
     # ---- filling the database with the data from the form
-    my $row;
-    my $db_columns;
-    $db_columns = "trash, quality, node, edate, edate_min, sdate, sdate_min, operators";
-    $row = "0, \"$quality\", \"$site\", \"$edate\", \"$edate_min\", \"$sdate\", \"$sdate_min\", \"".join(",", @operators)."\"";
-    if ($id ne "") {
-        $db_columns = "id, ".$db_columns;
-        $row = "$id, ".$row;
-        $msg = "record #$id has been updated.";
-    } else {
-        $msg = "new record has been created.";
-    }
-    $db_columns .= ", comment, tsupd, userupd";
-    $row .= ", \"$comment\", \"$today\", \"$user\"";
     foreach (map { sprintf("input%02d", $_) } (1..$max_inputs)) {
         my $input;
         my @input = $cgi->param($_);
@@ -210,23 +199,35 @@ if ($action eq 'save') {
         }
 
         if ($input ne "") {
-            $db_columns .= ", $_";
+            push(@db_columns, $_);
             $input =~ s/"/""/g; # needs to escape quotes for the sqlite command
-            $row .= ", \"$input\"";
+            push(@values, $input);
         }
     }
 
-    my $stmt = qq(REPLACE INTO $tbl($db_columns) values($row));
-    my $sth  = $dbh->prepare( $stmt );
-    my $rv   = $sth->execute() or die $DBI::errstr;
-    if ($rv < 1){
+    my $msg;
+    my $stmt;
+    if ($id ne "") {
+        $msg = "record #$id has been updated.";
+        @values = ($id, @values);
+        my $update = join(", ", map { "$_ = ?" } ("id", @db_columns));
+        $stmt = qq(UPDATE $tbl SET $update);
+    } else {
+        $msg = "new record has been created.";
+        my $columns_str = join(", ", @db_columns);
+        my $placeholders = join(", ", ("?") x @db_columns);
+        $stmt = qq(INSERT INTO $tbl ($columns_str) VALUES ($placeholders));
+    }
+
+    my $sth  = $dbh->prepare($stmt);
+    my $rv   = $sth->execute(@values) or die $DBI::errstr;
+    if ($rv < 1) {
         $msg = "ERROR: formGENFORM couldn't access the database $form.";
     }
 
-    my $lid = $dbh->last_insert_id(undef, undef, $tbl, undef);
-
     # rename images tmp directory
     if ($id eq "") {
+        my $lid = $dbh->last_insert_id(undef, undef, $tbl, undef);
         my $temp_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".$temp_dir;
         my $final_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$lid);
         make_path($temp_path);
