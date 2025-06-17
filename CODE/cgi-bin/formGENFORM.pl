@@ -204,16 +204,7 @@ if ($action eq 'save') {
         if (scalar(@input) > 1) {
             $input = join(",", @input);
         } elsif ($FORM{uc($_."_TYPE")} =~ /^datetime/) {
-            my $year = $cgi->param($_."_year");
-            my $month = $cgi->param($_."_month");
-            my $day = $cgi->param($_."_day");
-            my $hr = $cgi->param($_."_hr");
-            my $mn = $cgi->param($_."_mn");
-            my $is_sec = defined $cgi->param($_."_sec");
-            my $sec = $cgi->param($_."_sec");
-            my $ymd = join("-", $year, $month, $day);
-            my $hms = $is_sec ? join(":", $hr, $mn, $sec) : join(":", $hr, $mn);
-            $input = $ymd." ".$hms;
+            $input = get_date_input($_);
         } else {
             $input = $cgi->param($_);
         }
@@ -231,16 +222,13 @@ if ($action eq 'save') {
     if ($rv < 1){
         $msg = "ERROR: formGENFORM couldn't access the database $form.";
     }
-    htmlMsgOK($msg);
+
+    my $lid = $dbh->last_insert_id(undef, undef, $tbl, undef);
 
     # rename images tmp directory
     if ($id eq "") {
-        my $stmt = qq(SELECT seq FROM sqlite_sequence WHERE name='$tbl');
-        my $sth = $dbh->prepare( $stmt );
-        my $rv = $sth->execute() or die $DBI::errstr;
-        my $new_id = $sth->fetchrow_array();
         my $temp_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".$temp_dir;
-        my $final_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$new_id);
+        my $final_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$lid);
         make_path($temp_path);
         if ( $CLIENT && $form && scalar <$temp_path/*> ) {
             make_path($final_path);
@@ -250,28 +238,29 @@ if ($action eq 'save') {
     }
 
     $dbh->disconnect();
+    htmlMsgOK($msg);
     exit;
 } elsif ($action eq "delete" && $id ne "") {
     my $stmt = qq(UPDATE $tbl SET trash = 1 WHERE id = $id);
-    my $sth  = $dbh->prepare( $stmt );
+    my $sth  = $dbh->prepare($stmt);
     my $rv   = $sth->execute() or die $DBI::errstr;
-    htmlMsgOK("Record #$id has been moved to trash.");
 
+    htmlMsgOK("Record #$id has been moved to trash.");
     $dbh->disconnect();
     exit;
 } elsif ($action eq "restore" && $id ne "") {
     my $stmt = qq(UPDATE $tbl SET trash = 0 WHERE id = $id);
-    my $sth  = $dbh->prepare( $stmt );
+    my $sth  = $dbh->prepare($stmt);
     my $rv   = $sth->execute() or die $DBI::errstr;
-    htmlMsgOK("Record #$id has been recovered from trash.");
 
+    htmlMsgOK("Record #$id has been recovered from trash.");
     $dbh->disconnect();
     exit;
 } elsif ($action eq "erase" && $id ne "") {
+    $dbh->do("PRAGMA foreign_keys = ON") or die $DBI::errstr;
     my $stmt = qq(DELETE FROM $tbl WHERE id = $id);
-    my $sth  = $dbh->prepare( $stmt );
+    my $sth  = $dbh->prepare($stmt);
     my $rv   = $sth->execute() or die $DBI::errstr;
-    htmlMsgOK("Record #$id has been permanently erased from database $form.");
 
     # delete images directory
     if ($form ne "" && $id ne "") {
@@ -279,6 +268,7 @@ if ($action eq 'save') {
         qx(rm $path -R);
     }
 
+    htmlMsgOK("Record #$id has been permanently erased from database $form.");
     $dbh->disconnect();
     exit;
 }
@@ -706,7 +696,7 @@ foreach (@columns) {
                 }
                 my $txt = "<B>$name</B>".($unit ne "" ? " ($unit)":"");
                 my $hlp;
-                
+
                 # --- INPUT type 'list'
                 if ($field =~ /^input/ && $type =~ /^list/) {
                     my %list = extract_list($type,$form);
@@ -883,7 +873,6 @@ print qq(</TD>
 sub htmlMsgOK {
     print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
     print "$_[0]\n";
-    exit;
 }
 
 # --- return information when not OK
@@ -892,13 +881,19 @@ sub htmlMsgNotOK {
     print "Update FAILED !\n $_[0] \n";
 }
 
-# Open an SQLite connection to the forms database
-sub connectDbForms {
-    return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
-            'AutoCommit' => 1,
-            'PrintError' => 1,
-            'RaiseError' => 1,
-        }) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
+# --- returm a date string from a form input of type datetime
+sub get_date_input {
+    my $in = shift;
+    my $year = $cgi->param($in."_year");
+    my $month = $cgi->param($in."_month");
+    my $day = $cgi->param($in."_day");
+    my $hr = $cgi->param($in."_hr");
+    my $mn = $cgi->param($in."_mn");
+    my $is_sec = defined $cgi->param($in."_sec");
+    my $sec = $cgi->param($in."_sec");
+    my $ymd = join("-", $year, $month, $day);
+    my $hms = $is_sec ? join(":", $hr, $mn, $sec) : join(":", $hr, $mn);
+    return $ymd." ".$hms;
 }
 
 __END__
