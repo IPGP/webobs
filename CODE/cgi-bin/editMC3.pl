@@ -317,40 +317,6 @@ if (-e $lockFile) {
     print $cgi->b("$__{'unlink lockfile error'} $lockFile !"),"<br>";
 }
 
-# prepare new SeisComP event
-
-my $newQML;
-if ($newSC3 > 0) {
-    # print "<P>Creating a new SC3 ID...</P>";
-
-    # $newQML = "<?xml version=\"1.0\"?><!DOCTYPE WO2SC3 SYSTEM \"wo2sc3.dtd\">
-    # <webObs>
-    #     <moduleDescription>
-    #         <id>$MC3{WO2SC3_MOD_ID}</id>
-    #         <type>$MC3{WO2SC3_MOD_TYPE}</type>
-    #     </moduleDescription>
-    #     <eventDescription>
-    #         <mcid>$mc3/$anneeEvnt$moisEvnt/$id_evt</mcid>
-    #         <date>$anneeEvnt/$moisEvnt/$jourEvnt</date>
-    #         <time>$heureEvnt:$minEvnt:$secEvnt</time>
-    #         <station>$staEvnt</station>
-    #         <network>$netEvnt</network>
-    #         <duration>$dureeEvnt</duration>
-    #         <sminusp>$smoinsp</sminusp>
-    #         <amplitude>$amplitudeEvnt</amplitude>
-    #         <operator>$operator</operator>
-    #         <type>$typeEvnt</type>
-    #         <comment>$comment</comment>
-    #     </eventDescription>
-    # </webObs>";
-
-    print "<P>Creating a new SeisComP event ID...</P>";
-
-    my $date = ${anneeEvnt} . '-' . ${moisEvnt} . '-' . ${jourEvnt};
-    my $time = ${heureEvnt} . ':' . ${minEvnt} . ':' . ${secEvnt};
-    $newQML = mc2qmlfdsn($mc3,$operator,$date,$time,$typeEvnt,$smoinsp,$stationEvnt,$id_evt,$comment,$MC3{WO2SC_EVTLON},$MC3{WO2SC_EVTLAT});
-}
-
 # Prepare the text for print
 # - - - - - - - - - - - - - - - - - - - - - - - - -
 my $signalSature = $amplitudeEvnt;
@@ -454,48 +420,28 @@ if ($err == 0) {
 
 print $cgi->end_html();
 
-# --- Send the new event to TCP socket
+# Prepare new SeisComP event and notify postboard that a MC event has to be synced to SeisComP
 
-# print STDERR "** newSC3 = $newSC3 **\n";
-# print STDERR "** PeerHost => $MC3{WO2SC3_HOSTNAME}, PeerPort => $MC3{WO2SC3_PORT} **\n";
-print STDERR "** newSC3 = $newSC3 **\n";
-print STDERR "** SeisComPHost => $MC3{WO2SC_HOSTNAME}, SeisComPUser => $MC3{WO2SC_USER} **\n";
+my $newQML;
+
 if ($newSC3 > 0) {
+    print "<P>Creating a new SeisComP event ID...</P>";
 
-    # flush after every write
-    $| = 1;
+    my $date = sprintf "%s-%s-%s", $anneeEvnt, $moisEvnt, $jourEvnt;
+    my $time = sprintf "%s:%s:%s", $heureEvnt, $minEvnt, $secEvnt;
+    my $newQMLFile = $MC3{WO2SC_QML_TEMP_FILE};
+    $newQML = mc2qmlfdsn($mc3,$operator,$date,$time,$typeEvnt,$smoinsp,$stationEvnt,$id_evt,$comment,$MC3{WO2SC_EVTLON},$MC3{WO2SC_EVTLAT});
+    open my $fhQML, '>', $newQMLFile
+        or die "Error while opening '$newQMLFile' : $!";
+    print $fhQML $newQML;
+    close $fhQML
+        or warn "Error closing $newQMLFile' : $!";
 
-    # Dispatch new event in SeisComP through ssh
-    qx(ssh -i $MC3{WO2SC_SSH_KEY} $MC3{WO2SC_USER}\@$MC3{WO2SC_HOSTNAME} "echo \"$newQML\" | $MC3{WO2SC_DISPATCH_SCRIPT_PATH}");
-
-
-#     my ($socket,$client_socket);
-
-# # creating object interface of IO::Socket::INET modules which internally creates
-# # socket, binds and connects to the TCP server running on the specific port.
-#     $socket = new IO::Socket::INET (
-#         PeerHost => $MC3{WO2SC3_HOSTNAME},
-#         PeerPort => $MC3{WO2SC3_PORT},
-#         Proto => 'tcp',
-#       ) or print STDERR "ERROR in Socket Creation : $!\n";
-
-#     #print "TCP Connection Success.\n";
-
-#     # read the socket data sent by server.
-#     #$data = <$socket>;
-#     # we can also read from socket through recv()  in IO::Socket::INET
-#     # $socket->recv($data,1024);
-#     #print "Received from Server : $data\n";
-
-#     # write on the socket to server.
-#     #print $socket "$newQML\n";
-#     # we can also send the data through IO::Socket::INET module,
-#     if ($socket) {
-#         $socket->send($newQML);
-
-#         #sleep (10);
-#         $socket->close();
-#     }
+    my $mc2scMsg = '';
+    $mc2scMsg .= "New MC event sent to SeisComP : $date $time **\n";
+    $mc2scMsg .=  "** SeisComPHost => $MC3{WO2SC_HOSTNAME}, SeisComPUser => $MC3{WO2SC_USER} **\n\n";
+    $mc2scMsg .=  $newQML;
+    WebObs::Config::notify("$MC3{WO2SC_NOTIFY_EVENT}|$$|$mc2scMsg");
 
 }
 
