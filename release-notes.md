@@ -51,18 +51,45 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
 1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
 1. `!!` **HYPOMAP superproc**: MAP_*_DEPLIM now filters the data (was only for marker scale color). *Caution:* comments in proc's .conf files need to be updated to avoid misunderstanding
 1. `!!` in order to use only the MultiMarkDown format in contents, the former 'wiki' format will be progressively abandonned. The following option is recommanded in **WEBOBS.rc**:
-```
-WIKI_MMD|YES
-```
-and admins are encouraged to use the **">MMD"** button in editors.
+    ```
+    WIKI_MMD|YES
+    ```
+    and admins are encouraged to use the **">MMD"** button in editors.
 1. `!!` shell scripts for GNSS data processing, formerly in `CODE/shells/gnss/` have been removed and are now available at a new repository [IPGP/gnssposflow](https://github.com/IPGP/gnssposflow).
+
+1. `!!` seismic event creation triggering in SeisComP is now compatible with all SeisComP versions and does not rely anymore on SeisComP compiled with ipgp-addons. Now it uses the postboard to trigger the injection script of the event on the SeisComP server.
+   * variables removed from `MC3.conf` :
+   ```
+   WO2SC3_HOSTNAME|localhost
+   WO2SC3_PORT|30003
+   WO2SC3_MOD_ID|1
+   WO2SC3_MOD_TYPE|1
+   ```
+   * variables added to `MC3.conf` :
+   ```
+   # Dispatch new MC entry into SeisComP
+   # SeisComP hostname, user, ssh key and dispatch script
+   WO2SC_HOSTNAME|
+   WO2SC_USER|
+   WO2SC_SSH_KEY|
+   # Dispatch script for SC3 : wo_mc_origin_to_sc.sh -3
+   # Dispatch script for SC4 and above : wo_mc_origin_to_sc.sh
+   WO2SC_DISPATCH_SCRIPT_PATH|
+   # Default event coordinates when creating origin from MainCourante in SeisComP
+   WO2SC_EVTLON|
+   WO2SC_EVTLAT|
+   # Notification ID in postboard
+   WO2SC_NOTIFY_EVENT|wo2sc.
+   # QML temporary file
+   WO2SC_QML_TEMP_FILE|$WEBOBS{SEFRAN_ROOT}/wo2sc.xml
+   ```
 
 ### Fixed issues
 1. `!!` Fix an issue giving edit button for any grid (view/proc/form) for users with only Edit level.
-1. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
-1. Add forgotten keys in **tremblemaps** superproc template, and fix an issue when updating procs with setup (new keys not added).
-1. Fix display of non-geolocated nodes as neighbours (as lat=lon=0).
-1. Fix issue with empty location code for fdsnws-dataselect format.
+2. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
+3. Add forgotten keys in **tremblemaps** superproc template, and fix an issue when updating procs with setup (new keys not added).
+4. Fix display of non-geolocated nodes as neighbours (as lat=lon=0).
+5. Fix issue with empty location code for fdsnws-dataselect format.
 
 ### Code improvement
 1. `!!` remove cedit.pl and fedit.pl. Replace former links with nedit.pl and formGENFORM.pl, respectively.
