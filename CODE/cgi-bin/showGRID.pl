@@ -763,11 +763,11 @@ for (@{$GRID{NODESLIST}}) {
             $sth->finish();
 
             # get the last record for this node
-            $stmt = "SELECT * FROM $tbl WHERE trash=0 AND node='$NODEName' ORDER BY edate DESC LIMIT 1";
+            $stmt = "SELECT t.*, date, date_min FROM $tbl t LEFT JOIN udate ON t.edate = udate.id WHERE trash=0 AND node='$NODEName' ORDER BY udate.date DESC LIMIT 1";
             $sth = $dbh->prepare($stmt);
             $rv = $sth->execute() or die $DBI::errstr;
             @row = $sth->fetchrow_array();
-            my ($ly,$lm,$ld,$lhr,$lmn) = datetime2array($row[4], $row[5]);
+            my ($ly,$lm,$ld,$lhr,$lmn) = datetime2array($row[-2], $row[-1]);
             my $lastRec = "$ly".($lm ? "-$lm":"").($ld ? "-$ld":"").($lhr ? " $lhr":"").($lmn ? ":$lmn":"");
             $sth->finish();
             my $lastdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"};
