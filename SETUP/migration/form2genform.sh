@@ -117,8 +117,12 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         echo "BEGIN TRANSACTION;" > $TMP
         echo "DROP TABLE if exists $DBT;" >> $TMP
         printf "CREATE TABLE $DBT (id integer PRIMARY KEY AUTOINCREMENT, trash boolean DEFAULT FALSE, quality integer, node text NOT NULL" >> $TMP
-        printf ", edate datetime, edate_min datetime, sdate datetime NOT NULL, sdate_min datetime, operators text NOT NULL" >> $TMP
+        printf ", edate INTEGER, sdate INTEGER, operators text NOT NULL" >> $TMP
         printf ", comment text, tsupd text NOT NULL, userupd text NOT NULL" >> $TMP
+        printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
+
+        printf "CREATE TABLE IF NOT EXISTS geoloc (id INTEGER PRIMARY KEY, latitude REAL, northern_error REAL, longitude REAL, eastern_error REAL, elevation REAL, elevation_error REAL)" >> $TMP
+        printf "CREATE TABLE IF NOT EXISTS udate (id INTEGER PRIMARY KEY, date TEXT, date_min TEXT, yce REAL, yce_min REAL)" >> $TMP
 
         case "$form" in
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -144,10 +148,10 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\"\",\"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -155,7 +159,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "RAINWATER")
@@ -175,10 +181,10 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\""$5" "$6"\",\""$5" "$6"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$5" "$6"\",\""$5" "$6"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -186,7 +192,11 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=7;i<n+7;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$5" "$6"\", \""$5" "$6"\");"
+                    printf "UPDATE "t" SET sdate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "SOILSOLUTION")
@@ -206,10 +216,10 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\""$5" "$6"\",\""$5" "$6"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$5" "$6"\",\""$5" "$6"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -217,7 +227,11 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=7;i<n+7;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$5" "$6"\", \""$5" "$6"\");"
+                    printf "UPDATE "t" SET sdate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "RIVERS")
@@ -237,10 +251,10 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\"\",\"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -273,10 +287,10 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\"\",\"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -305,11 +319,11 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     gsub(/\+/, ",", $5);
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\"\",\"\",\""$5"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -343,11 +357,11 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     gsub(/\+/, ",", $5);
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\"\",\"\",\""$5"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -381,10 +395,10 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\"\",\"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \

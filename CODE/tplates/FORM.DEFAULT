@@ -82,7 +82,11 @@ INPUT06_TYPE|image(60)
 INPUT07_NAME|Shapefile input7
 INPUT07_TYPE|shapefile(350)
 INPUT08_NAME|Sample analysis
-INPUT08_TYPE|datetime
+INPUT08_TYPE|datetime(ymd)
+INPUT09_NAME|Geographic coordinates
+INPUT09_TYPE|geoloc
+INPUT10_NAME|Universal date
+INPUT10_TYPE|udate(HMS)
 
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
@@ -100,7 +104,7 @@ OUTPUT02_HELP|this is a formula with MEAN function
 
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
-COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04,FIELDSET05,FIELDSET06
+COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04,FIELDSET05,FIELDSET06,FIELDSET07,FIELDSET08
 
 # first fieldset name, number of cells and list of fields for each column
 FIELDSET01_NAME|Fieldset A
@@ -133,3 +137,13 @@ FIELDSET05_C01|INPUT07
 FIELDSET06_NAME|Fieldset F
 FIELDSET06_CELLS|1,COLS
 FIELDSET06_C01|INPUT08
+
+# Geographic coordinates type Fieldset
+FIELDSET07_NAME|Fieldset G
+FIELDSET07_CELLS|1,COLS
+FIELDSET07_C01|INPUT09
+
+# Universal date type Fieldset
+FIELDSET08_NAME|Fieldset H
+FIELDSET08_CELLS|1,COLS
+FIELDSET08_C01|INPUT10
