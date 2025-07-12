@@ -351,8 +351,8 @@ function update_form()
     var hr1 = document.getElementsByName("sdate_hr");
     var mn1 = document.getElementsByName("sdate_mn");
 
-    var date1 = new Date(yy1[0].value, mm1[0].value, dd1[0].value, hr1[0].value, mn1[0].value);
     if (yy1[0]) {
+        var date1 = new Date(yy1[0].value, mm1[0].value, dd1[0].value, hr1[0].value, mn1[0].value);
         var date2 = new Date(yy2[0].value, mm2[0].value, dd2[0].value, hr2[0].value, mn2[0].value);
         duration = (date2.getTime() - date1.getTime())/86400000;
         form.duration.value = duration.toFixed(1);
