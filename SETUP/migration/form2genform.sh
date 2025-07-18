@@ -265,7 +265,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "GAZ")
@@ -302,7 +304,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "EXTENSO")
@@ -341,7 +345,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         if ($i == "") { d = ""; } else { d = $i + $j; }
                         printf ",\""d"\",\""$k"\""; \
                     }
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "FISSURO")
@@ -380,7 +386,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         d = $i + $j;
                         printf ",\""d"\",\""$k"\""; \
                     }
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "DISTANCE")
@@ -413,7 +421,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
         esac
         
