@@ -405,6 +405,9 @@ for r = 1:numel(P.GTABLE)
 	if any(isnan(tlim))
 		tlim = minmax(cat(1,D.tfirstlast));
 	end
+
+    % for treatsignal function (trend calculation)
+    P.dtlim = diff(tlim);
 	
 	tsinfo = {'{\itTime span}:', ...
 		sprintf('     {\\bf%s} {\\it%+g}',datestr(tlim(1),'yyyy-mm-dd HH:MM'),P.TZ), ...
@@ -1478,10 +1481,10 @@ for r = 1:numel(P.GTABLE)
 			%clim = [0,max(mhor(:))*(ws/500)^.5];
 			%clim = [min(mhor(:)),max(mhor(:))];
 			clim = minmax(mm);
-			if diff(clim)<=0
-				clim = [0,1];
-			end
 		end
+        if diff(clim)<=0
+            clim = [0,1];
+        end
 
 		% computes the maximum displacement for vector scale
         vmax = rmax(abs(reshape(d(:,1:3),[],1)));
