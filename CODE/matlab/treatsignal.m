@@ -24,7 +24,7 @@ function [tc,dc,lr,tr,kk] = treatsignal(varargin)
 %
 %	Author: F. Beauducel / WEBOBS
 % 	Created: 2015-08-24
-% 	Updated: 2025-04-01
+% 	Updated: 2025-07-21
 
 t = varargin{1};
 d = varargin{2};
@@ -74,8 +74,7 @@ end
 lr = nan(1,2);
 tr = nan(1,2);
 k = find(~isnan(dc));
-dtlim = diff(minmax(t));
-if nargout > 3 && ~isempty(k) && dtlim > 0
+if nargout > 3 && ~isempty(k)
     terrmod = field2num(OPT,'TREND_ERROR_MODE',1);
     trendfact = field2num(OPT,'TREND_FACTOR',1);
     trendmindays = field2num(OPT,'TREND_MIN_DAYS',2);
@@ -89,8 +88,9 @@ if nargout > 3 && ~isempty(k) && dtlim > 0
     ek = ec(k);
     tlim = minmax(tk);
     dt = diff(tlim);
+    dtlim = field2num(OPT,'dtlim',dt);
     kk = [];
-    if numel(k) >= 2 && dt >= trendmindays && 100*dt/dtlim >= trendminperc && ~all(isnan(dk))
+    if dtlim > 0 && dt > 0 && numel(k) >= 2 && dt >= trendmindays && 100*dt/dtlim >= trendminperc && ~all(isnan(dk))
         if trendtlimdays > 0
             kk = find((tk-tlim(1)) <= trendtlimdays | (tlim(2)-tk) <= trendtlimdays);
         elseif trendtlimperc > 0
