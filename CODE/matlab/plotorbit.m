@@ -12,13 +12,14 @@ else
 end
 
 % plots data
-timeplot(t,d(:,1),[],lst,'LineWidth',lwd,'Color',c,'MarkerSize',mks,'MarkerFaceColor',c)
+timeplot(t,d(:,1),[],lst,'LineWidth',lwd,'Color',c,'MarkerSize',mks,'MarkerFaceColor',c);
 hold on
 
 % plots error bars
 if size(d,2) > 1
 	set(gca,'Ylim',get(gca,'YLim'))	% freezes Y axis (error bars can overflow)
-	plot(repmat(t,[1,2])',(repmat(d(:,1),[1,2])+d(:,2)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1])
+	h = plot(repmat(t,[1,2])',(repmat(d(:,1),[1,2])+d(:,2)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1]);
+    uistack(h,'bottom')
 end
 
 % overwrites non-final orbits
