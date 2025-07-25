@@ -72,6 +72,10 @@ die "You can't view $form reports." if ($clientAuth < 1);
 
 my %G = readForm($form);
 my %FORM = %{$G{$form}};
+my $table_geoloc = "geoloc";
+my $table_udate = "udate";
+my @columns_geoloc = ("latitude", "northern_error", "longitude", "eastern_error", "elevation", "elevation_error");
+my @columns_udate = ("date", "date_min", "yce", "yce_min");
 
 my $title = ($FORM{NAME} ? $FORM{NAME}:$FORM{DESCRIPTION});
 
@@ -190,6 +194,8 @@ EOF
 my $dbh = connectDbForms();
 
 my $tbl = lc($form);
+my @db_columns = ("trash", "quality", "node", "edate", "sdate", "operators", "comment", "tsupd", "userupd");
+my $ncol = scalar(@db_columns);
 
 # get the total number or records
 my $stmt = "SELECT COUNT(id) FROM $tbl";
@@ -205,7 +211,7 @@ $sth = $dbh->prepare($stmt);
 $rv = $sth->execute() or die $DBI::errstr;
 my @rownames = split(/\|/,$sth->fetchrow_array());
 $sth->finish();
-my @inputoutputs = @rownames[12..@rownames-1];
+my @inputoutputs = @rownames[$ncol+1..@rownames-1];
 
 # make an hash of hash of input type lists
 my %lists;
@@ -218,16 +224,45 @@ foreach my $k (@rownames) {
 }
 
 # get the requested data
-my $filter = "((sdate BETWEEN '$startDate' AND '$endDate') OR (sdate_min BETWEEN '$startDate' AND '$endDate') OR (edate BETWEEN '$startDate' AND '$endDate') OR (edate_min BETWEEN '$startDate' AND '$endDate'))";
-$filter .= " AND trash = 0" if (!$QryParm->{'trash'});
-$filter .= " AND node IN ('".join("','",@formnodes)."')" if ($#formnodes >= 0);
+my @filter = "trash = 0" if (!$QryParm->{'trash'});
+push(@filter, "node IN ('".join("','",@formnodes)."')") if ($#formnodes >= 0);
 foreach (keys %lists) {
     my $sel_list = $QryParm->{$_};
-    $filter .= " AND $_ = \"$sel_list\"" if ($sel_list ne "");
+    push(@filter, "$_ = \"$sel_list\"") if ($sel_list ne "");
 }
-$filter .= " AND comment REGEXP '$re'" if ($re ne "");
-$stmt = qq(SELECT * FROM $tbl WHERE $filter ORDER BY edate DESC;);
-$sth = $dbh->prepare( $stmt );
+push(@filter, "comment REGEXP '$re'") if ($re ne "");
+my $filter;
+
+if ($FORM{BANG}) {
+    push(@filter, qq((end_date.date BETWEEN '$startDate' AND '$endDate'
+    OR end_date.date_min BETWEEN '$startDate' AND '$endDate'
+    OR start_date.date BETWEEN '$startDate' AND '$endDate'
+    OR start_date.date_min BETWEEN '$startDate' AND '$endDate')));
+    $filter = join(" AND ", @filter);
+
+    $stmt = qq(SELECT t.*, end_date.date, end_date.date_min FROM $tbl t
+    LEFT JOIN udate end_date ON t.edate = end_date.id LEFT JOIN udate start_date ON t.sdate = start_date.id
+    WHERE $filter ORDER BY end_date.date ASC;);
+} elsif ($QryParm->{'yce_min'} ne "" && $QryParm->{'yce'} ne "") {
+    $startDate = $QryParm->{'yce_min'};
+    $endDate = $QryParm->{'yce'};
+    push(@filter, qq(((strftime('%Y', end_date.date_min) + IFNULL(end_date.yce_min, 0)) BETWEEN $startDate AND $endDate
+    OR (strftime('%Y', end_date.date) + IFNULL(end_date.yce, 0)) BETWEEN $startDate AND $endDate
+    OR (strftime('%Y', start_date.date_min) + IFNULL(start_date.yce_min, 0)) BETWEEN $startDate AND $endDate
+    OR (strftime('%Y', start_date.date) + IFNULL(start_date.yce, 0)) BETWEEN $startDate AND $endDate)));
+    $filter = join(" AND ", @filter);
+
+    $stmt = qq(SELECT t.*, end_date.*, start_date.* FROM $tbl t
+    LEFT JOIN udate end_date ON t.edate = end_date.id LEFT JOIN udate start_date ON t.sdate = start_date.id
+    WHERE $filter ORDER BY end_date.yce ASC;);
+} else {
+    $filter = @filter ? "WHERE " . join(" AND ", @filter) : "";
+    $stmt = qq(SELECT t.*, end_date.yce FROM $tbl t
+    LEFT JOIN udate end_date ON t.edate = end_date.id
+    $filter ORDER BY end_date.yce ASC;);
+}
+
+$sth = $dbh->prepare($stmt);
 $rv = $sth->execute() or die $DBI::errstr;
 
 my @rows;
@@ -275,27 +310,32 @@ print "<FORM name=\"form\" action=\"/cgi-bin/showGENFORM.pl\" method=\"get\">",
   "<INPUT name=\"form\" type=\"hidden\" value=\"$form\">",
   "<INPUT name=\"debug\" type=\"hidden\" value=\"$QryParm->{'debug'}\">";
 print "<P class=\"boitegrise\" align=\"center\">",
-  "<TABLE width=\"100%\"><TR><TD style=\"border:0;text-align:center\">",
-  "<B>$__{'Start Date'}:</B> ";
-print "<SELECT name=\"y1\" size=\"1\">\n";
-for (@list_years) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-print "</SELECT>\n";
-print "<SELECT name=\"m1\" size=\"1\">\n";
-for (@list_months) { print "<OPTION value=\"$_\"".($QryParm->{'m1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-print "</SELECT>\n";
-print "<SELECT name=\"d1\" size=\"1\">\n";
-for (@list_days) { print "<OPTION value=\"$_\"".($QryParm->{'d1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-print "</SELECT>\n";
-print "&nbsp;&nbsp;<B>$__{'End Date'}:</B> ";
-print "<SELECT name=\"y2\" size=\"1\">\n";
-for (@list_years) { print "<OPTION value=\"$_\"".($QryParm->{'y2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-print "</SELECT>\n";
-print "<SELECT name=\"m2\" size=\"1\">\n";
-for (@list_months) { print "<OPTION value=\"$_\"".($QryParm->{'m2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-print "</SELECT>\n";
-print "<SELECT name=\"d2\" size=\"1\">\n";
-for (@list_days) { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
-print "</SELECT>\n";
+  "<TABLE width=\"100%\"><TR><TD style=\"border:0;text-align:center\">";
+if ($FORM{BANG}) {
+    print "<B>$__{'Start Date'}:</B> ";
+    print "<SELECT name=\"y1\" size=\"1\">\n";
+    for (@list_years) { print "<OPTION value=\"$_\"".($QryParm->{'y1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "<SELECT name=\"m1\" size=\"1\">\n";
+    for (@list_months) { print "<OPTION value=\"$_\"".($QryParm->{'m1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "<SELECT name=\"d1\" size=\"1\">\n";
+    for (@list_days) { print "<OPTION value=\"$_\"".($QryParm->{'d1'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "&nbsp;&nbsp;<B>$__{'End Date'}:</B> ";
+    print "<SELECT name=\"y2\" size=\"1\">\n";
+    for (@list_years) { print "<OPTION value=\"$_\"".($QryParm->{'y2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "<SELECT name=\"m2\" size=\"1\">\n";
+    for (@list_months) { print "<OPTION value=\"$_\"".($QryParm->{'m2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+    print "<SELECT name=\"d2\" size=\"1\">\n";
+    for (@list_days) { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
+    print "</SELECT>\n";
+} else {
+    print qq(<b>Date min</b>:&nbsp;<input size="30" value="$QryParm->{'yce_min'}" name="yce_min" type="number" onmouseout="nd()" onmouseover="overlib('')"> );
+    print qq(<b>Date max</b>:&nbsp;<input size="30" value="$QryParm->{'yce'}" name="yce" type="number" onmouseout="nd()" onmouseover="overlib('')">);
+}
 print "&nbsp;&nbsp;<select name=\"node\" size=\"1\">";
 for ("|$__{'All nodes'}",@NODESSelList) {
     my ($key,$val) = split (/\|/,$_);
@@ -355,7 +395,7 @@ print " | <A href=\"#download\">$__{'Download data'}</A> ]</DIV>\n<P>";
 #
 my $header;
 my $text;
-my $csvTxt = qq("id");
+my $csvTxt = qq(id);
 my $dlm = '|'; # delimiter for CSV file is pipe: will be changed to comma or semicolon in postFormData.pl
 my $edit;
 my $delete;
@@ -367,15 +407,15 @@ my @colnam;
 my @colnam2;
 my %colspan;
 
-$csvTxt .= (isok($FORM{QUALITY_CHECK}) ? $dlm.qq("Quality"):"")
-           .$dlm.($starting_date ? qq("Start Date").$dlm.qq("End Date"):qq("Sampling Date"))
-           .$dlm.qq("Site Alias")
-           .$dlm.qq("Site Name")
-           .$dlm.qq("Operators");
+$csvTxt .= (isok($FORM{QUALITY_CHECK}) ? $dlm.qq(Quality) : "")
+           .$dlm.($starting_date ? qq(Start Date).$dlm.qq(End Date) : qq(Sampling Date))
+           .$dlm.qq(Site Alias)
+           .$dlm.qq(Site Name)
+           .$dlm.qq(Operators);
 
 for (my $i = 0; $i <= $#fs_names; $i++) {
     my $fs = $fieldsets[$i];
-    my $showfs = ((!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)}) ? "1":"0");
+    my $showfs = ((!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)}) ? "1" : "0");
     push(@colnam, $fs_names[$i]) if ($showfs);
     my $nb_fields = $#{$field_names[$i]} + 1;
     $colspan{$fs_names[$i]} = $nb_fields;
@@ -383,10 +423,22 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
         my $field = $field_names[$i][$j];
         my $name_field = $FORM{"$field\_NAME"};
         my $unit_field = $FORM{"$field\_UNIT"};
-        $unit_field = ($unit_field ne "" ? " ($unit_field)":"");
-        push(@colnam2, htm2frac($name_field).$unit_field) if ($showfs);
+        my $type_field = $FORM{"$field\_TYPE"};
+        $unit_field = ($unit_field ne "" ? " ($unit_field)" : "");
         $name_field =~ s/<su[bp]>|<\/su[bp]>|\&[^;]*;//g; # removes HTML tags or characters
-        $csvTxt .= $dlm.'"'.$name_field.$unit_field.'"';
+        push(@colnam2, htm2frac($name_field).$unit_field) if ($showfs);
+        if ($type_field !~ /^(image|shapefile)/) {
+            if ($type_field eq "geoloc") {
+                my @gtitles = ("latitude", "longitude", "elevation", "northern_error", "eastern_error", "elevation_error");
+                my @gunits = ("decimal degrees", "decimal degrees", "decimal degrees", "meters", "meters", "meters", "meters");
+                my $tmp = join($dlm, map { "$name_field / ".$gtitles[$_]." ($gunits[$_])" } (0..$#gtitles));
+                $csvTxt .= $dlm.$tmp;
+            } elsif ($type_field eq "udate" and isok($FORM{UDATE})) {
+                $csvTxt .= $dlm.$name_field." / yce_max".$dlm.$name_field." / yce_min";
+            } else {
+                $csvTxt .= $dlm.$name_field.$unit_field;
+            }
+        }
     }
 }
 $csvTxt .= $dlm."Comment\n";
@@ -398,20 +450,20 @@ if ($clientAuth > 1) {
     $form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
     $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
 }
-$header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}":"rowspan=2>$__{'Sampling Date'}")." <I>(UTC".sprintf("%+03d",$FORM{TZ}).")</I></TH>";
+$header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}" : "rowspan=2>$__{'Sampling Date'}")." <I>(UTC".sprintf("%+03d",$FORM{TZ}).")</I></TH>";
 $header .= "<TH rowspan=2>$__{'Site'}</TH><TH rowspan=2>$__{'Oper'}</TH>";
 foreach(@colnam) {
     $header .= "<TH rowspan=2></TH><TH colspan=$colspan{$_}>$_</TH>\n";
 }
 $header .= "<TH rowspan=2></TH></TR>\n"; # end with comment column
-$header .= ($starting_date ? "<TH>$__{'Start'}</YH><TH>$__{'End'}</TH><TH align=right>$__{'Days'}</TH>":"");
+$header .= ($starting_date ? "<TH>$__{'Start'}</YH><TH>$__{'End'}</TH><TH align=right>$__{'Days'}</TH>" : "");
 foreach(@colnam2) {
     $header .= "<TH>".$_."</TH>\n";
 }
 $header .= "</TR>\n";
 
 for (my $j = 0; $j <= $#rows; $j++) {
-    my ($id, $trash, $quality, $site, $edate_max, $edate_min, $sdate_max, $sdate_min, $opers, $rem, $ts0, $user) = ($rows[$j][0],$rows[$j][1],$rows[$j][2],$rows[$j][3],$rows[$j][4],$rows[$j][5],$rows[$j][6],$rows[$j][7],$rows[$j][8],$rows[$j][9],$rows[$j][10],$rows[$j][11]);
+    my ($id, $trash, $quality, $site, $edate, $sdate, $opers, $rem, $ts0, $user) = @{$rows[$j]}[0..$ncol];
 
     # makes a hash of all fields values (input and output)
     my %fields;
@@ -420,10 +472,28 @@ for (my $j = 0; $j <= $#rows; $j++) {
     for (my $i = 8; $i <= $#{$rows[$j]}; $i++) {
         $fields{$rownames[$i]} = $rows[$j][$i];
     }
+
     # adds duration
-    my @dur = ("0","0");
-    @dur = date_duration($sdate_min, $sdate_max, $edate_min, $edate_max) if ($starting_date);
-    $fields{DURATION} = ($dur[0] + $dur[1])/2; # uses the mean of possible durations
+    my @dur = ("0", "0");
+
+    # get start date and end date
+    my $dbh = connectDbForms();
+    my $colnames = join(', ', @columns_udate);
+    my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $edate);
+    my @edate_vals = $dbh->selectrow_array($stmt);
+    $edate = simplify_date($edate_vals[0], $edate_vals[1]);
+    $edate = $edate_vals[2] ? sprintf "[ %.2e - %.2e ]", $edate_vals[3], $edate_vals[2] : $edate;
+
+    if ($starting_date) {
+        my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $sdate);
+        my @sdate_vals = $dbh->selectrow_array($stmt);
+        $sdate = simplify_date($sdate_vals[0], $sdate_vals[1]);
+        $sdate = $sdate_vals[2] ? sprintf "[ %.2e - %.2e ]", $sdate_vals[3], $sdate_vals[2] : $sdate;
+        @dur = date_duration($sdate_vals[1], $sdate_vals[0], $edate_vals[1], $edate_vals[0])
+    }
+    $dbh->disconnect();
+
+    $fields{DURATION} = ($dur[0] + $dur[1]) / 2; # uses the mean of possible durations
 
     # stores formulas
     foreach (@formulas) {
@@ -448,9 +518,6 @@ for (my $j = 0; $j <= $#rows; $j++) {
     $aliasSite = $Ns{$site}{ALIAS} ? $Ns{$site}{ALIAS} : $site;
     $nameSite = $Ns{$site}{NAME} ? htmlspecialchars($Ns{$site}{NAME}) : "";
 
-    my $edate = simplify_date($edate_max,$edate_min);
-    my $sdate = simplify_date($sdate_max,$sdate_min);
-
     my $nameNode = htmlspecialchars(getNodeString(node=>$site,style=>'html'));
     my $normSite = "FORM.$form.$site";
     if ($normSite ne "") {
@@ -470,19 +537,19 @@ for (my $j = 0; $j <= $#rows; $j++) {
     $edit = qq(<a href="$form_url"><img src="/icons/modif.png" title="Edit..." border=0></a>);
     $delete = qq(<img src="/icons/no.png" title="Delete..." onclick="checkRemove($id)">);
 
-    $text .= "<TR".($trash == 1 ? " class=\"inTrash\"":(isok($FORM{QUALITY_CHECK}) && !$quality ? " class=\"badQuality\"":"")).">";
+    $text .= "<TR".($trash == 1 ? " class=\"inTrash\"":(isok($FORM{QUALITY_CHECK}) && !$quality ? " class=\"badQuality\"" : "")).">";
     if ($clientAuth > 1) {
         $text .= "<TH nowrap>$edit</TH>";
     }
     if ($starting_date) {
-        my $dur_str = ($dur[0] < $dur[1] ? "$dur[0] $__{'to_num'} $dur[1]":$dur[0]);
+        my $dur_str = ($dur[0] < $dur[1] ? "$dur[0] $__{'to_num'} $dur[1]" : $dur[0]);
         $text .= "<TD nowrap>$sdate</TD><TD nowrap>$edate</TD><TD class=\"tdResult\">$dur_str</TD>";
     } else {
         $text .= "<TD nowrap>$edate</TD>";
     }
     $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameNode',CAPTION,'node $site')\">$nodelink&nbsp;</TD>\n";
     $text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>\n";
-    $csvTxt .= "$id".(isok($FORM{QUALITY_CHECK}) ? $dlm.$quality:"").($starting_date ? $dlm."\"$sdate\"":"").$dlm."\"$edate\"".$dlm."\"$aliasSite\"".$dlm."\"$nameSite\"".$dlm."\"".join(', ',@namOper)."\"".$dlm;
+    $csvTxt .= "$id".(isok($FORM{QUALITY_CHECK}) ? $dlm.$quality : "").($starting_date ? $dlm.$sdate : "").$dlm.$edate.$dlm."$aliasSite".$dlm."$nameSite".$dlm.join(', ',@namOper).$dlm;
     for (my $f = 0; $f <= $#fieldsets; $f++) {
         my $fs = $fieldsets[$f];
         my $nb_fields = $#{$field_names[$f]} + 1;
@@ -497,13 +564,13 @@ for (my $j = 0; $j <= $#rows; $j++) {
             if (defined $lists{$field}) {
                 if (ref $lists{$field}{$fields{$field}}) {
                     my %v = %{$lists{$field}{$fields{$field}}}; # list is always a HoH
-                    $hlp = "<B>$fields{$field}</B>: ".($v{name} ? $v{name}:$v{value});
+                    $hlp = "<B>$fields{$field}</B>: ".($v{name} ? $v{name} : $v{value});
                     $val = $v{name} if ($v{name});
                     $val = "<IMG src=\"$v{icon}\">" if ($v{icon});
-                    $csvTxt .= "\"$v{name}\"".$dlm;
+                    $csvTxt .= "$v{name}".$dlm;
                 } else {
                     $hlp = "<I>$__{'unknown key list!'}</I>" if ($val ne "");
-                    $csvTxt .= "\"\"".$dlm;
+                    $csvTxt .= $dlm;
                 }
                 $opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$hlp')\"";
             }
@@ -537,26 +604,60 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 }
                 $val .= "</table>";
                 if ($#listeTarget+1 > $MAX_IMAGES) { $val .= "<br><b>... </b><i>gallery limited to ".$MAX_IMAGES." images</i>"; }
-                $csvTxt .= "\"$fields{$field}\"".$dlm;
             }
             # --- input type = shapefile
-            if ($FORM{$Field."_TYPE"} =~ /^shapefile/) {
+            elsif ($FORM{$Field."_TYPE"} =~ /^shapefile/) {
                 my $input_id = uc($form."/record".$id)."/".$Field;
                 my $shape_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$input_id/shape.json";
                 my $status = ( -e "$shape_path" ? "yes" : "no" );
                 $val = qq(<a href="$form_url#$field\_shape">$status</a>);
-                $csvTxt .= "\"$fields{$field}\"".$dlm;
+                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('Click to edit')\"";
             }
-            # --- input type = shapefile
-            if ($FORM{$Field."_TYPE"} =~ /^checkbox/) {
+            # --- input type = checkbox
+            elsif ($FORM{$Field."_TYPE"} =~ /^checkbox/) {
                 if ($val ne "") {
                     $val = "&check;";
                     $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('checked')\"";
                 }
-                $csvTxt .= "\"$fields{$field}\"".$dlm;
+                $csvTxt .= "$fields{$field}".$dlm;
+            }
+            # --- input type = geoloc
+            elsif ($FORM{$Field."_TYPE"} eq "geoloc") {
+                $val = "";
+                my $dbh = connectDbForms();
+                my @gvals = map { "" } @columns_geoloc;
+                if ($fields{$field}) {
+                    my $colnames = join(', ', @columns_geoloc);
+                    my $stmt = qq(SELECT $colnames FROM $table_geoloc WHERE id = $fields{$field});
+                    @gvals = $dbh->selectrow_array($stmt);
+                }
+                $dbh->disconnect();
+                my @gdisp = map { $gvals[$_] ? sprintf("%.2f", $gvals[$_]) : "" } (0, 2, 4);
+                $val .= join("", @gdisp) ? "(" . join(", ", @gdisp) . ")" : "";
+                my @gdisp = map { $gvals[$_] ? "@columns_geoloc[$_] = $gvals[$_]°". ($gvals[$_+1] ? " &#177; $gvals[$_+1] meters" : "") : "" } (0, 2, 4);
+                $opt = join("<br>", @gdisp);
+                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('$opt')\"";
+                my $tmp = join("$dlm", map { $gvals[$_] } (0, 2, 4, 1, 3, 5));
+                $csvTxt .= $tmp.$dlm;
+            }
+            # --- input type = datetime|udate
+            elsif ($FORM{$Field."_TYPE"} =~ /^(datetime|udate)$/) {
+                my $dbh = connectDbForms();
+                my @uvals = map { "" } @columns_udate;
+                if ($fields{$field}) {
+                    my $colnames = join(', ', @columns_udate);
+                    my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $fields{$field});
+                    @uvals = $dbh->selectrow_array($stmt);
+                }
+                $dbh->disconnect();
+                my $date = simplify_date($uvals[0], $uvals[1]);
+                $val = $uvals[2] ? sprintf "[ %.2e - %.2e ]", $uvals[3], $uvals[2] : $date;
+                $opt = $uvals[2] ? sprintf "[ %e - %e ]", $uvals[3], $uvals[2] : $date;
+                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('$opt')\"";
+                $csvTxt .= $uvals[2] ? $uvals[2].$dlm.$uvals[3].$dlm : $date.$dlm;
             }
             # --- input type = users
-            if ($FORM{$Field."_TYPE"} =~ /^users/) {
+            elsif ($FORM{$Field."_TYPE"} =~ /^users/) {
                 my @uid = split(/[, ]+/,$val);
                 my @uname;
                 my @unam;
@@ -566,18 +667,18 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 }
                 $val = join(', ',@uid);
                 $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@uname)."')\"";
-                $csvTxt .= "\"".join(", ",@unam)."\"".$dlm;
+                $csvTxt .= "".join(", ",@unam)."".$dlm;
             }
             $text .= "<TD align=center $opt>$val</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});
             if ($FORM{$Field."_TYPE"} =~ /^numeric|^formula|^$/) {
                 $csvTxt .= "$fields{$field}".$dlm;
             }
             if ($FORM{$Field."_TYPE"} =~ /^text/) {
-                $csvTxt .= "\"$fields{$field}\"".$dlm;
+                $csvTxt .= "$fields{$field}".$dlm;
             }
         }
     }
-    $csvTxt .= "\"".$rem."\"\n";
+    $csvTxt .= $rem."\n";
     my $remTxt = "<TD></TD>";
     if ($rem ne "") {
         $remTxt = "<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('".htmlspecialchars($rem,$re)."',CAPTION,'Observations $aliasSite')\"><IMG src=\"/icons/attention.gif\" border=0></TD>";
@@ -628,9 +729,9 @@ $listofformula .= "</div><div id=\"formulaID\"><UL>";
 foreach (@formulas) {
     my ($formula, $size, @x) = extract_formula($FORM{$_."_TYPE"});
     my $name = $FORM{$_."_NAME"};
-    my $unit = ($FORM{$_."_UNIT"} ne "" ? " (".$FORM{$_."_UNIT"}.")":"");
+    my $unit = ($FORM{$_."_UNIT"} ne "" ? " (".$FORM{$_."_UNIT"}.")" : "");
     foreach (@x) {
-        my $v = ($_ =~ /(IN|OUT)PUT[0-9]{2,3}/ ? $FORM{$_."_NAME"}:$_);
+        my $v = ($_ =~ /(IN|OUT)PUT[0-9]{2,3}/ ? $FORM{$_."_NAME"} : $_);
         $formula =~ s/$_/<b>$v<\/b>/g;
     }
     $listofformula .= "<LI><B>$name</B>$unit = $formula</LI>\n";
@@ -640,7 +741,7 @@ $listofformula .= "</UL>\n</div></div>";
 $csvTxt =~ s/'/&#39;/g; # escapes any single quote
 push(@csv,$csvTxt);
 
-push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n":"")."</TABLE>\n$listoflist\n$listofformula");
+push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n" : "")."</TABLE>\n$listoflist\n$listofformula");
 push(@html, qq(<hr><a name="download"></a><form action="/cgi-bin/postFormData.pl?form=$form" method="post">
 <input type="submit" value="$__{'Download a CSV text file of these data'}">
 <input type="checkbox" name="dlm" value=";" checked>&nbsp;$__{'Use semicolon as delimiter'}

@@ -85,27 +85,10 @@ my $QryParm = $cgi->Vars;
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();
 my @tod  = localtime($Ctod);
-my $today = strftime('%F',@tod);
-my $currentYear = strftime('%Y',@tod);
-my $sel_d1  = strftime('%d',@tod);
-my $sel_m1  = strftime('%m',@tod);
-my $sel_y1 = strftime('%Y',@tod);
-my $sel_hr1 = "";
-my $sel_mn1 = "";
-my $sel_d2 = $sel_d1;
-my $sel_m2 = $sel_m1;
-my $sel_y2 = $sel_y1;
-my $sel_hr2 = $sel_hr1;
-my $sel_mn2 = $sel_mn1;
+my $today = strftime('%F %T',@tod);
 
 # ---- Get the form data
 # 
-my @year    = $cgi->param('year');
-my @month   = $cgi->param('month');
-my @day     = $cgi->param('day');
-my @hr      = $cgi->param('hr');
-my @mn      = $cgi->param('mn');
-my @sec     = $cgi->param('sec');
 my $quality = $cgi->param('quality') // 0;
 my $site    = $cgi->param('site');
 my $comment = $cgi->param('comment') // "";
@@ -118,8 +101,7 @@ my $return_url = $cgi->param('return_url');
 my @operators  = $cgi->param('operators');
 my $debug  = $cgi->param('debug');
 
-my ($edate, $edate_min) = datetime2maxmin($year[0],$month[0],$day[0],$hr[0],$mn[0]);
-my ($sdate, $sdate_min) = ("","");
+my $starting_date = isok($FORM{STARTING_DATE});
 my $stamp = "[$today $user]";
 if (index($val,$stamp) eq -1) { $val = "$stamp $val"; };
 
@@ -132,7 +114,7 @@ for (@{$FORM{NODESLIST}}) {
     push(@NODESSelList,"$id|$N{$id}{ALIAS}: $N{$id}{NAME}");
 }
 
-my $sel_site = my $sel_comment = "";
+my $sel_comment = "";
 
 # ----
 
@@ -155,32 +137,21 @@ my $LL_MIN_HEIGHT = $GRIDS{GENFORM_SHAPE_MIN_HEIGHT} || 150;
 my $LL_MAX_HEIGHT = $GRIDS{GENFORM_SHAPE_MAX_HEIGHT} || 800;
 my $LL_DEFAULT_HEIGHT = $GRIDS{GENFORM_SHAPE_DEFAULT_HEIGHT} || 300;
 
-# ---- Variables des menus
-my $starting_date   = isok($FORM{STARTING_DATE});
-
-# ---- if STARTING_DATE eq "yes"
-if ($starting_date) {
-    $sdate = $edate;
-    $sdate_min = $edate_min;
-    ($edate, $edate_min) = datetime2maxmin($year[1],$month[1],$day[1],$hr[1],$mn[1]);
-}
-
 # ---- action is 'save'
 #
 # ---- registering data in WEBOBSFORMS.db
 # --- connecting to the database
 my $dbh = connectDbForms();
 my $tbl = lc($form);
+my $table_geoloc = "geoloc";
+my $table_udate = "udate";
+my @columns_geoloc = ("latitude", "northern_error", "longitude", "eastern_error", "elevation", "elevation_error");
+my @columns_udate = ("date", "date_min", "yce", "yce_min");
 
-# Main columns in the table without the primary key and inputs
-my @db_columns = ("trash", "quality", "node", "edate", "edate_min", "sdate", "sdate_min", "operators");
-my @values = ("0", $quality, $site, $edate, $edate_min, $sdate, $sdate_min, join(",", @operators));
-push(@db_columns, ("comment", "tsupd", "userupd"));
-push(@values, ($comment, $today, $user));
-my $ncol = scalar(@db_columns);
-
-# Array size mapping for Date/Time inputs
-my %datetime_length = ("ymd" => 3, "hm" => 5, "hms" => 6);
+# Main columns in the table without the primary key, start date, end date and inputs
+my @db_columns = ("trash", "quality", "node", "operators", "comment", "tsupd", "userupd");
+my @values = ("0", $quality, $site, join(",", @operators), $comment, $today, $user);
+my $ncol = scalar(@db_columns) + 2; # number of columns without the primary key and inputs
 
 # Local temp dir
 my $temp_dir = ".tmp/".$CLIENT."/".uc($form);
@@ -192,8 +163,6 @@ if ($action eq 'save') {
         my @input = $cgi->param($_);
         if (scalar(@input) > 1) {
             $input = join(",", @input);
-        } elsif ($FORM{uc($_."_TYPE")} =~ /^datetime/) {
-            $input = get_date_input($_);
         } else {
             $input = $cgi->param($_);
         }
@@ -205,31 +174,32 @@ if ($action eq 'save') {
         }
     }
 
+    my $rv;
     my $msg;
-    my $stmt;
     if ($id ne "") {
         $msg = "record #$id has been updated.";
-        @values = ($id, @values);
-        my $update = join(", ", map { "$_ = ?" } ("id", @db_columns));
-        $stmt = qq(UPDATE $tbl SET $update);
+        my $update = join(", ", map { "$_ = ?" } @db_columns);
+        my $stmt = qq(UPDATE $tbl SET $update WHERE id = $id);
+        my $sth = $dbh->prepare($stmt);
+        $rv = $sth->execute(@values) or die $DBI::errstr;
     } else {
         $msg = "new record has been created.";
         my $columns_str = join(", ", @db_columns);
         my $placeholders = join(", ", ("?") x @db_columns);
-        $stmt = qq(INSERT INTO $tbl ($columns_str) VALUES ($placeholders));
+        my $stmt = qq(INSERT INTO $tbl ($columns_str) VALUES ($placeholders));
+        my $sth = $dbh->prepare($stmt);
+        $rv = $sth->execute(@values) or die $DBI::errstr;
+        $id = $dbh->last_insert_id(undef, undef, $tbl, undef);
     }
 
-    my $sth  = $dbh->prepare($stmt);
-    my $rv   = $sth->execute(@values) or die $DBI::errstr;
     if ($rv < 1) {
         $msg = "ERROR: formGENFORM couldn't access the database $form.";
     }
 
     # rename images tmp directory
     if ($id eq "") {
-        my $lid = $dbh->last_insert_id(undef, undef, $tbl, undef);
         my $temp_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".$temp_dir;
-        my $final_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$lid);
+        my $final_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$id);
         make_path($temp_path);
         if ( $CLIENT && $form && scalar <$temp_path/*> ) {
             make_path($final_path);
@@ -238,8 +208,54 @@ if ($action eq 'save') {
         }
     }
 
-    $dbh->disconnect();
+    my @fields = ("edate", "sdate");
+    push(@fields, map { sprintf("input%02d", $_) } (1..$max_inputs));
+    foreach (@fields) {
+        my $type = $_ eq "edate" || $_ eq "sdate" ? $_ : $FORM{uc($_."_TYPE")};
+        if ($type =~ /^(geoloc|datetime|udate|edate|sdate)/) {
+            my @values;
+            my @columns;
+            my $table_input;
+            if ($type =~ /^geoloc/) {
+                push(@values, ($cgi->param($_."_latitude"), $cgi->param($_."_northern_error")));
+                push(@values, ($cgi->param($_."_longitude"), $cgi->param($_."_eastern_error")));
+                push(@values, ($cgi->param($_."_elevation"), $cgi->param($_."_elevation_error")));
+                $table_input = $table_geoloc;
+                @columns = @columns_geoloc;
+            } elsif ($type =~ /^(datetime|udate|edate|sdate)/) {
+                push(@values, (datetime2maxmin(get_date_input($_))));
+                my $yce_max = defined $cgi->param($_."_yce") ? $cgi->param($_."_yce") : "";
+                my $yce_min = defined $cgi->param($_."_yce_min") ? $cgi->param($_."_yce_min") : "";
+                $yce_max = $yce_min if ! $yce_max;
+                $yce_min = $yce_max if ! $yce_min;
+                push(@values, $yce_max);
+                push(@values, $yce_min);
+                $table_input = $table_udate;
+                @columns = @columns_udate;
+            }
+
+            map { $_ eq "" and $_ = undef } @values;
+            my $stmt = qq(SELECT $_ FROM $tbl WHERE id = $id);
+            my $iid = $dbh->selectrow_array($stmt);
+            if ($id and defined($iid)) {
+                my $update = join(", ", map { "$_ = ?" } @columns);
+                my $stmt = qq(UPDATE $table_input SET $update WHERE id = $iid);
+                my $sth = $dbh->prepare($stmt);
+                my $rv = $sth->execute(@values) or die $DBI::errstr;
+            } else {
+                my $columns_str = join(", ", @columns);
+                my $placeholders = join(", ", ("?") x @columns);
+                my $stmt = qq(INSERT INTO $table_input ($columns_str) VALUES ($placeholders));
+                my $sth = $dbh->prepare($stmt);
+                my $rv = $sth->execute(@values) or die $DBI::errstr;
+                my $lid = $dbh->last_insert_id(undef, undef, $table_input, undef);
+                $rv = $dbh->do("UPDATE $tbl SET $_ = $lid WHERE id = $id") or die $DBI::errstr;
+            }
+        }
+    }
+
     htmlMsgOK($msg);
+    $dbh->disconnect();
     exit;
 } elsif ($action eq "delete" && $id ne "") {
     my $stmt = qq(UPDATE $tbl SET trash = 1 WHERE id = $id);
@@ -258,10 +274,17 @@ if ($action eq 'save') {
     $dbh->disconnect();
     exit;
 } elsif ($action eq "erase" && $id ne "") {
-    $dbh->do("PRAGMA foreign_keys = ON") or die $DBI::errstr;
-    my $stmt = qq(DELETE FROM $tbl WHERE id = $id);
-    my $sth  = $dbh->prepare($stmt);
-    my $rv   = $sth->execute() or die $DBI::errstr;
+    # Get foreign keys for the form table
+    my $fk_sth = $dbh->prepare("PRAGMA foreign_key_list('$tbl')");
+    $fk_sth->execute();
+
+    # Delete rows in table referenced by foreign keys
+    while (my @row = $fk_sth->fetchrow_array) {
+        $dbh->do("DELETE FROM @row[2] WHERE id IN (SELECT @row[3] FROM $tbl WHERE id = ?)", undef, $id) or die $DBI::errstr;
+    }
+    $fk_sth->finish();
+
+    $dbh->do("DELETE FROM $tbl WHERE id = ?", undef, $id) or die $DBI::errstr;
 
     # delete images directory
     if ($form ne "" && $id ne "") {
@@ -316,14 +339,21 @@ function update_form()
 {
     var form = document.form;
 
-    var yy = document.getElementsByName("year");
-    var mm = document.getElementsByName("month");
-    var dd = document.getElementsByName("day");
-    var hr = document.getElementsByName("hr");
-    var mn = document.getElementsByName("mn");
-    var date1 = new Date(yy[0].value,mm[0].value-1,dd[0].value,hr[0].value,mn[0].value);
-    if (yy.length > 1) {
-        var date2 = new Date(yy[1].value,mm[1].value-1,dd[1].value,hr[1].value,mn[1].value);
+    var yy2 = document.getElementsByName("edate_year");
+    var mm2 = document.getElementsByName("edate_month");
+    var dd2 = document.getElementsByName("edate_day");
+    var hr2 = document.getElementsByName("edate_hr");
+    var mn2 = document.getElementsByName("edate_mn");
+
+    var yy1 = document.getElementsByName("sdate_year");
+    var mm1 = document.getElementsByName("sdate_month");
+    var dd1 = document.getElementsByName("sdate_day");
+    var hr1 = document.getElementsByName("sdate_hr");
+    var mn1 = document.getElementsByName("sdate_mn");
+
+    if (yy1[0]) {
+        var date1 = new Date(yy1[0].value, mm1[0].value, dd1[0].value, hr1[0].value, mn1[0].value);
+        var date2 = new Date(yy2[0].value, mm2[0].value, dd2[0].value, hr2[0].value, mn2[0].value);
         duration = (date2.getTime() - date1.getTime())/86400000;
         form.duration.value = duration.toFixed(1);
     } else {
@@ -410,6 +440,27 @@ function verif_form()
         document.form.site.focus();
         return false;
     }
+
+    var form = document.getElementById("theform");
+    var inputs = form.elements;
+    for (var i = 0; i < inputs.length; i++) {
+        if (inputs[i].type === "text" || inputs[i].type === "email" || inputs[i].type === "textarea") {
+            inputs[i].value = inputs[i].value.trim();
+        }
+    }
+
+    /*var inputs = document.querySelectorAll('input[name\$="_yce_min"]');
+    Array.from(inputs).forEach((yce_min) => {
+        var basename = yce_min.name.split("_yce_min")[0];
+        var yce = document.querySelector('input[name=' + basename + '_yce]');
+        if (yce.value < yce_min.value) {
+            event.preventDefault();
+            yce_min.focus();
+            alert(yce_min.name + " must be inferior to " + yce.name);
+            return false;
+        }
+    });*/
+
     console.log(\$("#theform").serialize());
     submit();
 }
@@ -524,31 +575,43 @@ my $val;
 my %prev_inputs;
 my $trash;
 
-if ($action eq "edit") {
+my @edate_vals;
+my @sdate_vals;
 
-    # --- connecting to the database
-    my $dbh = connectDbForms();
+# --- connecting to the database
+my $dbh = connectDbForms();
+
+if ($action eq "edit") {
     my $tbl = lc($form);
 
     my $stmt = qq(SELECT * FROM $tbl WHERE id = $id); # selecting the row corresponding to the id of the record we want to modify
-    my $sth = $dbh->prepare( $stmt );
+    my $sth = $dbh->prepare($stmt);
     my @colnam = @{ $sth->{NAME_lc} };
     my $rv = $sth->execute() or die $DBI::errstr;
 
-    my ($edate, $edate_min, $sdate, $sdate_min, $opers, $ts0, $user);
+    my ($edate, $sdate, $opers, $ts0, $user);
     while(my @row = $sth->fetchrow_array()) {
-        ($trash, $quality, $site, $edate, $edate_min, $sdate, $sdate_min, $opers, $sel_comment, $ts0, $user) = @row[1..$ncol];
-        ($sel_y1,$sel_m1,$sel_d1,$sel_hr1,$sel_mn1) = datetime2array($sdate, $sdate_min);
-        ($sel_y2,$sel_m2,$sel_d2,$sel_hr2,$sel_mn2) = datetime2array($edate, $edate_min);
+        ($trash, $quality, $site, $edate, $sdate, $opers, $sel_comment, $ts0, $user) = @row[1..$ncol];
         @operators = split(/,/,$opers);
         push(@operators,$user) if (@operators =~ /^$user$/);
         for (my $i = $ncol+1; $i <= $#row; $i++) {
             $prev_inputs{$colnam[$i]} = $row[$i];
         }
     }
+
+    my $colnames = join(', ', @columns_udate);
+    my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $edate);
+    @edate_vals = $dbh->selectrow_array($stmt);
+
+    if ($sdate) {
+        my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $sdate);
+        @sdate_vals = $dbh->selectrow_array($stmt);
+    }
+
     $title2 = "$__{'Edit record n°'} $id";
     $title2 = "<SPAN class=\"inTrash\">$title2</SPAN>" if ($trash);
-    $val = "$ts0 [$user]";
+    $val = $ts0 ? "$ts0" : "";
+    $val .= $user ? " [$user]" : "";
     if ($val ne "") {
         $recinfo = "<P><B>$__{'Record timestamp:'}</B> $val</P>";
     }
@@ -635,14 +698,16 @@ for (@NODESSelList) {
 }
 print qq(</select><BR>);
 
-# Add mandatory date input
-my @sdate = ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1);
-my @edate = ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2);
 if ($starting_date) {
-    datetime_input(\%FORM, "", \@sdate, \@edate);
-    print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>); 
+    datetime_input(\%FORM, "sdate", \@sdate_vals, "Start Date");
+    datetime_input(\%FORM, "edate", \@edate_vals, "End Date");
+    if ($FORM{BANG}) {
+        print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>);
+    } else {
+        print qq(<input type="hidden" name="duration">);
+    }
 } else {
-    datetime_input(\%FORM, "", \@edate);
+    datetime_input(\%FORM, "edate", \@edate_vals);
     print qq(<input type="hidden" name="duration">);
 }
 
@@ -682,7 +747,7 @@ foreach (@columns) {
         my $row = ($fsdir =~ /ROWS/i ? "1":"0"); # true if splitted into rows
         my $dlm = ($row ? "&emsp;&emsp; ":"<BR>");
         foreach my $fs (1..$fscells) {
-            print qq(<td style=\"border:0\" valign=\"top\"><p class=\"parform\" align=\"right\">);
+            print qq(<td style="border:0" valign="top"><p class="parform" align="right">);
             my $fsc = sprintf("$fieldset\_C%02d", $fs);
             foreach my $Field (split(/[, ]/, $FORM{$fsc})) {
                 my $name = $FORM{"$Field\_NAME"};
@@ -724,7 +789,7 @@ foreach (@columns) {
                         }
                         print "</select>$dlm";
                     }
-                
+
                 # --- INPUT type 'users'
                 } elsif ($field =~ /^input/ && $type =~ /^users/) {
                     $hlp = ($help ne "" ? $help:"$__{'Select users for '} $Field");
@@ -747,7 +812,7 @@ foreach (@columns) {
                         print "<option value=\"$u\" $sel>$u: ".join('',WebObs::Users::userName($u))."</option>\n";
                     }
                     print qq(</select></td></tr></table>$dlm);
-                
+
                 # --- INPUT type 'text'
                 } elsif ($field =~ /^input/ && $type =~ /^text/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a value for'} $Field");
@@ -755,7 +820,7 @@ foreach (@columns) {
                     $value =~ s/"/&quot;/g;
                     print qq($txt = <input type="text" size=$size name="$field" value="$value"
                         onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
-                
+
                 # --- INPUT type 'checkbox'
                 } elsif ($field =~ /^input/ && $type =~ /^checkbox/) {
                     $hlp = ($help ne "" ? $help:"$__{'Click to select'} $Field");
@@ -776,7 +841,7 @@ foreach (@columns) {
                     print qq(<img src="/icons/upload.png" style="vertical-align: middle;">$txt</button>);
                     my $nb = qx(ls $upload_path -p | grep -v / | wc -l);
                     print qq(<input type="hidden" name="$field" value=$nb>\n);
-                
+
                 # --- INPUT type 'shapefile'
                 } elsif ($field =~ /^input/ && $type =~ /^shapefile/) {
                     my $height = $size ? $size : $DEFAULT_HEIGHT;
@@ -797,13 +862,36 @@ foreach (@columns) {
                     print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:right;">);
                     print qq(<img src="/icons/upload.png" style="vertical-align: middle;"> $txt</button>);
 
-                # --- INPUT type 'datetime'
-                } elsif ($field =~ /^input/ && $type =~ /^datetime/) {
-                    print qq(<span style="margin-right:20px">$txt</span>);
-                    my $len = %datetime_length{$size ? $size : "ymd"};
-                    my @date = split( /[-: ]/, $prev_inputs{$field}, $len );
-                    if ( scalar(@date) < $len ) { $date[$len-1] = ""; }
-                    datetime_input(\%FORM, $field, \@date);
+                # --- INPUT type 'geoloc'
+                } elsif ($field =~ /^input/ && $type =~ /^geoloc/) {
+                    my @gvals = map { "" } @columns_geoloc;
+                    if ($prev_inputs{$field}) {
+                        my $colnames = join(', ', @columns_geoloc);
+                        my $stmt = qq(SELECT $colnames FROM $table_geoloc WHERE id = $prev_inputs{$field});
+                        @gvals = $dbh->selectrow_array($stmt);
+                    }
+                    my @msgs = ("a latitude", "a northern error", "a longitude", "an eastern error", "an elevation", "an elevation error");
+                    my @units = ("decimal degrees", "meters", "decimal degrees", "meters", "meters", "meters");
+                    print "<table>";
+                    foreach my $j (0 .. scalar(@columns_geoloc) - 1) {
+                        print $j % 2 eq 0 ? "<tr>" : "";
+                        $hlp = ($help ne "" ? $help:"$__{'Enter '.$msgs[$j].' (in '.$units[$j].') for'} $Field");
+                        print qq(<td class="udateRow"><label> $columns_geoloc[$j] =</label><input type="text" pattern="[0-9\\.\\-]*" size="$size" class="inputNum"
+                            name="$field\_$columns_geoloc[$j]" value="$gvals[$j]"
+                            onMouseOut="nd()" onmouseover="overlib('$hlp')"></td>);
+                        print $j % 2 eq 1 ? "</tr>" : "";
+                    }
+                    print "</table>";
+
+                # --- INPUT type 'udate'
+                } elsif ($field =~ /^input/ && $type =~ /^(datetime|udate)/) {
+                    my @uvals;
+                    if ($prev_inputs{$field}) {
+                        my $colnames = join(', ', @columns_udate);
+                        my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $prev_inputs{$field});
+                        @uvals = $dbh->selectrow_array($stmt);
+                    }
+                    datetime_input(\%FORM, $field, \@uvals);
 
                 # --- INPUT type 'numeric' (default)
                 } elsif ($field =~ /^input/) {
@@ -839,6 +927,9 @@ foreach (@columns) {
         print "</TD>";
     }
 }
+
+# Close database connection
+$dbh->disconnect();
 
 my $comsz = ($FORM{COMMENT_SIZE} > 0 ? $FORM{COMMENT_SIZE}:80);
 my $comhlp = htmlspecialchars($FORM{COMMENT_HELP});
@@ -882,19 +973,17 @@ sub htmlMsgNotOK {
     print "Update FAILED !\n $_[0] \n";
 }
 
-# --- returm a date string from a form input of type datetime
+# --- returm a date string from a form input of type datetime|udate
 sub get_date_input {
     my $in = shift;
-    my $year = $cgi->param($in."_year");
-    my $month = $cgi->param($in."_month");
-    my $day = $cgi->param($in."_day");
-    my $hr = $cgi->param($in."_hr");
-    my $mn = $cgi->param($in."_mn");
-    my $is_sec = defined $cgi->param($in."_sec");
-    my $sec = $cgi->param($in."_sec");
-    my $ymd = join("-", $year, $month, $day);
-    my $hms = $is_sec ? join(":", $hr, $mn, $sec) : join(":", $hr, $mn);
-    return $ymd." ".$hms;
+    my @date;
+    push(@date, $cgi->param($in."_year"));
+    push(@date, $cgi->param($in."_month"));
+    push(@date, $cgi->param($in."_day"));
+    push(@date, defined $cgi->param($in."_hr") ? $cgi->param($in."_hr") : "");
+    push(@date, defined $cgi->param($in."_mn") ? $cgi->param($in."_mn") : "");
+    push(@date, defined $cgi->param($in."_sec") ? $cgi->param($in."_sec") : "");
+    return @date;
 }
 
 __END__

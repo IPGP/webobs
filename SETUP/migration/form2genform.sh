@@ -2,9 +2,9 @@
 # Ojective: migration of existing former FORM (.DAT text file based) associated to
 # PROCS, to GENFORM (.db based) associated to NODES (new grid FORM structure).
 #
-# Author: François Beauducel
+# Author: François Beauducel, Jérôme Touvier
 # Created: 2024-04-21
-# Updated: 2025-04-02
+# Updated: 2025-07-03
 
 
 if [ -z "$1" ]; then
@@ -116,8 +116,11 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         # -- start SQL script
         echo "BEGIN TRANSACTION;" > $TMP
         echo "DROP TABLE if exists $DBT;" >> $TMP
+
+        printf "CREATE TABLE IF NOT EXISTS geoloc (id INTEGER PRIMARY KEY, latitude REAL, northern_error REAL, longitude REAL, eastern_error REAL, elevation REAL, elevation_error REAL);\n" >> $TMP
+        printf "CREATE TABLE IF NOT EXISTS udate (id INTEGER PRIMARY KEY, date TEXT, date_min TEXT, yce REAL, yce_min REAL);\n" >> $TMP
         printf "CREATE TABLE $DBT (id integer PRIMARY KEY AUTOINCREMENT, trash boolean DEFAULT FALSE, quality integer, node text NOT NULL" >> $TMP
-        printf ", edate datetime, edate_min datetime, sdate datetime NOT NULL, sdate_min datetime, operators text NOT NULL" >> $TMP
+        printf ", edate INTEGER, sdate INTEGER, operators text NOT NULL" >> $TMP
         printf ", comment text, tsupd text NOT NULL, userupd text NOT NULL" >> $TMP
 
         case "$form" in
@@ -141,13 +144,14 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 # ID|Date|Heure|Site|Type|Tair (°C)|Teau (°C)|pH|Débit (l/min)|Cond. (°C)|Niveau (m)|Li|Na|K |Mg|Ca|F |Cl|Br|NO3|SO4|HCO3|I |SiO2|d13C|d18O|dD|Remarques|Valider
                 # 1 |2   |3    |4   |5   |6        |7        |8 |9            |10        |11        |12|13|14|15|16|17|18|19|20 |21 |22  |23|24  |25  |26  |27|28       |29
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -155,7 +159,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "RAINWATER")
@@ -172,13 +178,14 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 # ID|Date2|Time2|Site|Date1|Time1|Volume (ml)|Diameter (cm)|pH|Cond. (C)|Na (ppm)|K (ppm)|Mg (ppm)|Ca (pmm)|HCO3 (ppm)|Cl (ppm)|SO4 (ppm)|dD (?)|d18O (?)|Comments|Valid
                 # 1 |2    |3    |4   |5    |6    |7          |8            |9 |10       |11      |12     |13      |14      |15        |16      |17       |18    |19      |20      |21
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\""$5" "$6"\",\""$5" "$6"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -186,7 +193,11 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=7;i<n+7;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$5" "$6"\", \""$5" "$6"\");"
+                    printf "UPDATE "t" SET sdate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "SOILSOLUTION")
@@ -203,13 +214,14 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 # ID|Date2|Time2|Site|Date1|Time1|Depth (cm)|Level|pH|Cond. (S)|Na (ppm)|K (ppm)|Mg (ppm)|Ca (pmm)|HCO3 (ppm)|Cl (ppm)|NO3 (ppm)|SO4 (ppm)|SiO2 (ppm)|DOC (ppm)|Comments|Valid
                 # 1 |2    |3    |4   |5    |6    |7         |8    |9 |10       |11      |12     |13      |14      |15        |16      |17       |18       |19        |20       |21      |22
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\""$5" "$6"\",\""$5" "$6"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -217,7 +229,11 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=7;i<n+7;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$5" "$6"\", \""$5" "$6"\");"
+                    printf "UPDATE "t" SET sdate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "RIVERS")
@@ -234,13 +250,14 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 # ID|Date|Hour|Site|Level|Type|Flask|Twater (C)|Suspended Load|pH|Conductivity at 25C|Conductivity|Na|K |Mg|Ca|HCO3|Cl|SO4|SiO2|DOC|POC|Comment|Validate
                 # 1 |2   |3   |4   |5    |6   |7    |8         |9             |10|11                 |12          |13|14|15|16|17  |18|19 |20  |21 |22 |23     |24
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -248,7 +265,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "GAZ")
@@ -270,13 +289,14 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 # Id|Date|Heure|Site|Tfum|pH|Debit|Rn|Amp|H2|He|CO|CH4|N2|H2S|Ar|CO2|SO2|O2|d13C|d18O|Observations|Valider
                 # 1 |2   |3    |4   |5   |6 |7    |8 |9  |10|11|12|13 |14|15 |16|17 |18 |19|20  |21  |22          |23
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -284,7 +304,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "EXTENSO")
@@ -302,14 +324,15 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 # ID|Date|Heure|Site|Opérateurs|Température|Météo|Ruban|Offset|F1|C1|V1|F2|C2|V2|F3|C3|V3|F4|C4|V4|F5|C5|V5|F6|C6|V6|F7|C7|V7|F8|C8|V8|F9|C9|V9|Remarques|Validation
                 # 1 |2   |3    |4   |5         |6          |7    |8    |9     |10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37       |38
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     gsub(/\+/, ",", $5);
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$5"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -322,7 +345,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         if ($i == "") { d = ""; } else { d = $i + $j; }
                         printf ",\""d"\",\""$k"\""; \
                     }
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "FISSURO")
@@ -340,14 +365,15 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 #ID|Date|Heure|Site|Opérateurs|Température|Météo|Instrument|Composante|P1|L1|V1|P2|L2|V2|P3|L3|V3|P4|L4|V4|P5|L5|V5|P6|L6|V6|P7|L7|V7|P8|L8|V8|P9|L9|V9|P10|L10|V10|P11|L11|V11|P12|L12|V12|Remarques|Validation
                 #1 |2   |3    |4   |5         |6          |7    |8         |9         |10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37 |38 |39 |40 |41 |42 |43 |44 |45 |46       |47 
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     gsub(/\+/, ",", $5);
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\",\""$5"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$5"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -360,7 +386,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         d = $i + $j;
                         printf ",\""d"\",\""$k"\""; \
                     }
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "DISTANCE")
@@ -378,13 +406,14 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 # Id|Date|Heure|Site|AEMD|Patm (mmHg)|Tair (C)|H.R. (%)|Nébulosité|Vitre|D0|d01|d02|d03|d04|d05|d06|d07|d08|d09|d10|d11|d12|d13|d14|d15|d16|d17|d18|d19|d20|Remarques|Valide
                 # 1 |2   |3    |4   |5   |6          |7       |8       |9         |10   |11|12 |13 |14 |15 |16 |17 |18 |19 |20 |21 |22 |23 |24 |25 |26 |27 |28 |29 |30 |31 |32       |33
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
                 tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
-                    printf "INSERT INTO "t"(trash,quality,node,edate,edate_min,sdate,sdate_min,operators,comment,tsupd,userupd"; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
-                    printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$2" "$3"\",\""$2" "$3"\",\"\",\"\""; \
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
                     if ($iv ~ /^\[.*\] /) { \
                         nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
@@ -392,7 +421,9 @@ for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                         printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
                     } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }}' >> $TMP 
+                    print ");" }
+                    printf "INSERT INTO udate (date, date_min) VALUES (\""$2" "$3"\", \""$2" "$3"\");\n"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
         esac
         
