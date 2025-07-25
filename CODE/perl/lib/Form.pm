@@ -162,18 +162,20 @@ sub datetime2array {
     my @d  = split(/[-: ]/,$date);
     my @dm = split(/[-: ]/,$date_min);
     if ($date eq $date_min || $date_min eq "") { return @d };
-    @d = ($d[0],   "",   "",   "","") if ($d[1] ne $dm[1]);
-    @d = ($d[0],$d[1],   "",   "","") if ($d[2] ne $dm[2]);
-    @d = ($d[0],$d[1],$d[2],   "","") if ($d[3] ne $dm[3]);
-    @d = ($d[0],$d[1],$d[2],$d[3],"") if ($d[4] ne $dm[4]);
+    @d = ($d[0],   "",   "",   "",   "","") if ($d[1] ne $dm[1]);
+    @d = ($d[0],$d[1],   "",   "",   "","") if ($d[2] ne $dm[2]);
+    @d = ($d[0],$d[1],$d[2],   "",   "","") if ($d[3] ne $dm[3]);
+    @d = ($d[0],$d[1],$d[2],$d[3],   "","") if ($d[4] ne $dm[4]);
+    @d = ($d[0],$d[1],$d[2],$d[3],$d[4],"") if ($d[5] ne $dm[5]);
     return @d;
 }
 
 # from full/partial date string, returns interval array (date_max,date_min)
 sub datetime2maxmin {
-    my ($y,$m,$d,$hr,$mn) = @_;
-    my $date_min = "$y-$m-$d $hr:$mn";
-    my $date_max = "$y-$m-$d $hr:$mn";
+    my ($y,$m,$d,$hr,$mn,$ss) = @_;
+    $y = sprintf("%04d", $y);
+    my $date_min = "$y-$m-$d $hr:$mn:$ss";
+    my $date_max = "$y-$m-$d $hr:$mn:$ss";
     if ($m eq "") {
         $date_min = "$y-01-01";
         $date_max = "$y-12-31";
@@ -188,156 +190,144 @@ sub datetime2maxmin {
     } elsif ($mn eq "") {
         $date_min = "$y-$m-$d $hr:00";
         $date_max = "$y-$m-$d $hr:59";
+    } elsif ($ss eq "") {
+        $date_min = "$y-$m-$d $hr:$mn:00";
+        $date_max = "$y-$m-$d $hr:$mn:59";
     }
-    return ("$date_max","$date_min");
+    return ("$date_max", "$date_min");
 }
 
 sub datetime_input {
-    my ($formref, $name, $arg0, $arg1) = @_;
+    my ($formref, $field, $uvals, $title) = @_;
+    my @uvals = @$uvals;
+    $title = $title ? $title : "Date";
     my %FORM = %{$formref};
-    my ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1, $sel_sec1);
     my ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2);
+    my $type = $field eq "edate" || $field eq "sdate" ? "udate" : $FORM{uc($field."_TYPE")};
+    my %datetime_length = ("ymd" => 3, "hm" => 5, "hms" => 6); # Array size mapping for Date/Time inputs
+    my ($size, $default) = extract_type($type);
+    my $len = exists $datetime_length{lc($size)} ? $datetime_length{lc($size)} : 3;
+    my @datetime = (datetime2array(@uvals[0..1]))[0 .. $len - 1];
+    if (scalar(@datetime) < $len) { $datetime[$len - 1] = ""; } # for a new record
 
-    if ( defined $arg0 && defined $arg1 ) {
-        if ( scalar(@$arg0) == 5 && scalar(@$arg1 == 5) ) {
-            ($sel_y1, $sel_m1, $sel_d1, $sel_hr1, $sel_mn1) = @$arg0;
-            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2) = @$arg1;
-        } else {
-            die("Invalid array dimensions");
-        }
-    } elsif ( defined $arg0 ) {
-        if ( scalar(@$arg0) == 3 ) {
-            ($sel_y2, $sel_m2, $sel_d2) = @$arg0;
-        } elsif ( scalar(@$arg0) == 5 ) {
-            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2) = @$arg0;
-        } elsif ( scalar(@$arg0) == 6 ) {
-            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2) = @$arg0;
+    if (@datetime) {
+        if ( scalar(@datetime) == 3 ) {
+            ($sel_y2, $sel_m2, $sel_d2) = @datetime;
+        } elsif ( scalar(@datetime) == 5 ) {
+            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2) = @datetime;
+        } elsif ( scalar(@datetime) == 6 ) {
+            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2) = @datetime;
         }
     } else {
         die("No array to process");
     }
 
-    my $ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('"."$__{'Date/time must be in'} ".sprintf("GMT%+03d",$FORM{TZ})."')\">";
+    my $ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('"."$__{'Date/time must be in'} ".sprintf("GMT%+03d", $FORM{TZ})."')\">";
 
     my %names = ("year" => "year", "month" => "month", "day" => "day", "hr" => "hr", "mn" => "mn", "sec" => "sec");
-    if ( $name ) {
+    if ( $field ) {
         foreach ( keys %names ) {
-            $names{$_} = $name."_$names{$_}"
+            $names{$_} = $field."_$names{$_}"
         }
     }
 
     my $Ctod = time();
     my @tod = localtime($Ctod);
-    my $currentYear = strftime('%Y',@tod);
-
+    my $currentYear = strftime('%Y', @tod);
     my @yearList = ($FORM{BANG}..$currentYear);
     my @monthList  = ("","01".."12");
     my @dayList    = ("","01".."31");
     my @hourList   = ("","00".."23");
     my @minuteList = ("","00".."59");
     my @secondList = ("","00".."59");
-
-    if ( defined $arg1 ) {
-        print qq(<b>$__{'Start Date'}: </b><select name=$names{year} size="1" $ovl>);
-        for (@yearList) {
-            if   ( $_ == $sel_y1 ) { print qq(<option selected value="$_">$_</option>); }
-            else                   { print qq(<option value="$_">$_</option>); }
-        }
-        print qq(</select>);
-
-        print qq(<select name=$names{month} size="1" $ovl>);
-        for (@monthList) {
-            if   ( $_ == $sel_m1 ) { print qq(<option selected value="$_">$_</option>); }
-            else                   { print qq(<option value="$_">$_</option>); }
-        }
-        print qq(</select>);
-
-        print qq( <select name=$names{day} size="1" $ovl>);
-        for (@dayList) {
-            if   ( $_ == $sel_d1 ) { print qq(<option selected value="$_">$_</option>); }
-            else                   { print qq(<option value="$_">$_</option>); }
-        }
-        print "</select>";
-
-        print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=$names{hr} size="1" $ovl>);
-        for (@hourList) {
-            if   ( $_ eq $sel_hr1 ) { print qq(<option selected value="$_">$_</option>); }
-            else                    { print qq(<option value="$_">$_</option>); }
-        }
-        print qq(</select>);
-
-        print qq(<select name=$names{mn} size="1" $ovl>);
-        for (@minuteList) {
-            if   ( $_ eq $sel_mn1 ) { print qq(<option selected value="$_">$_</option>); }
-            else                    { print qq(<option value="$_">$_</option>); }
-        }
-        print qq(</select>);
-        print qq(<br>);
-        print qq(<b>$__{'End Date'}: </b><select name=$names{year} size="1">);
+    if ($FORM{BANG} && !$sel_y2 && !$sel_m2 && !$sel_d2) {
+        $sel_d2 = strftime('%d', @tod);
+        $sel_m2 = strftime('%m', @tod);
+        $sel_y2 = strftime('%Y', @tod);
     }
-    else {
-        print qq(<b>$__{'Date'}: </b><select name=$names{year} size="1" $ovl>);
-    }
-    for (@yearList) {
-        if   ( $_ == $sel_y2 ) { print qq(<option selected value="$_">$_</option>); }
-        else                   { print qq(<option value="$_">$_</option>); }
-    }
+
+    print qq(<b>$__{$title}: </b><select name=$names{year} size="1" $ovl>);
+    date_time_option(\@yearList, $sel_y2);
     print qq(</select>);
 
     print qq(<select name=$names{month} size="1" $ovl>);
-    for (@monthList) {
-        if   ( $_ == $sel_m2 ) { print qq(<option selected value="$_">$_</option>); }
-        else                   { print qq(<option value="$_">$_</option>); }
-    }
+    date_time_option(\@monthList, $sel_m2);
     print qq(</select>);
 
     print qq( <select name=$names{day} size="1" $ovl>);
-    for (@dayList) {
-        if   ( $_ == $sel_d2 ) { print qq(<option selected value="$_">$_</option>); }
-        else                   { print qq(<option value="$_">$_</option>); }
-    }
+    date_time_option(\@dayList, $sel_d2);
     print "</select>";
 
-    if ( scalar(@$arg0) > 3 ) {
+    if ( scalar(@datetime) > 3 ) {
         print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=$names{hr} size="1" $ovl>);
-        for (@hourList) {
-            if   ( $_ eq $sel_hr2 ) { print qq(<option selected value="$_">$_</option>); }
-            else                    { print qq(<option value="$_">$_</option>); }
-        }
+        date_time_option(\@hourList, $sel_hr2);
         print qq(</select>);
 
         print qq(<select name=$names{mn} size="1" $ovl>);
-        for (@minuteList) {
-            if   ( $_ eq $sel_mn2 ) { print qq(<option selected value="$_">$_</option>); }
-            else                    { print qq(<option value="$_">$_</option>); }
-        }
+        date_time_option(\@minuteList, $sel_mn2);
         print qq(</select>);
+    }
 
-        if ( scalar(@$arg0) == 6 ) {
-            print qq(<select name=$names{sec} size="1" $ovl>);
-            for (@secondList) {
-                if   ( $_ eq $sel_sec2 ) { print qq(<option selected value="$_">$_</option>); }
-                else                     { print qq(<option value="$_">$_</option>); }
-            }
-            print qq(</select>);
-        }
+    if ( scalar(@datetime) == 6 ) {
+        print qq(<select name=$names{sec} size="1" $ovl>);
+        date_time_option(\@secondList, $sel_sec2);
+        print qq(</select>);
     }
     print qq(<br>);
+
+    if ($type eq "udate" and isok($FORM{UDATE})) {
+        yce_input($type, $field, \@uvals);
+    }
 }
 
-# from (date_max,date_min) interval, returns a string of full/partial date "yyyy[-mm[-dd[ HH[:MM]]]]"
+sub date_time_option {
+    my ($fieldList, $value) = @_;
+    for (@$fieldList) {
+        if ( $_ eq $value ) {
+            print qq(<option selected value="$_">$_</option>);
+        } else {
+            print qq(<option value="$_">$_</option>);
+        }
+    }
+}
+
+sub yce_input {
+    my ($type, $field, $uvals) = @_;
+    my @columns_udate = ("date", "date_min", "yce", "yce_min");
+    my @units = ("", "", "maximum year before common era", "minimum year before common era");
+    my $size = extract_type("udate");
+
+    my @uvals;
+    if (defined $uvals) {
+        @uvals = @$uvals;
+    } else {
+        @uvals = map {""} @columns_udate;
+    }
+
+    print "<table><tr>";
+    foreach my $j (scalar(@columns_udate) - 1, 2) {
+        my $hlp = ("$__{'Enter a '.$units[$j].' for '}". uc($field));
+        print qq(<td class="udateRow"><b>$columns_udate[$j] = </b><input type="text" pattern="[0-9\\.\\-]*" size="$size" class="inputNum"
+            name="$field\_$columns_udate[$j]" value="$uvals[$j]"
+            onMouseOut="nd()" onmouseover="overlib('$hlp')"></td>);
+    }
+    print "</tr></table>";
+}
+
+# from (date_max, date_min) interval, returns a string of full/partial date "yyyy[-mm[-dd[ HH[:MM[:SS]]]]]"
 sub simplify_date {
     my $date0 = shift;
     my $date1 = shift;
-    my ($y0,$m0,$d0,$H0,$M0) = split(/[-: ]/,$date0);
-    my ($y1,$m1,$d1,$H1,$M1) = split(/[-: ]/,$date1);
-    my $date = "$y1-$m1-$d1 $H1:$M1";
+    my ($y0,$m0,$d0,$H0,$M0,$S0) = split(/[-: ]/,$date0);
+    my ($y1,$m1,$d1,$H1,$M1,$S1) = split(/[-: ]/,$date1);
+    my $date = "$y1-$m1-$d1 $H1:$M1:$S1";
     if ($date0 eq $date1 || $date1 eq "") { return $date0; }
     if    ($y1 ne $y0) { $date = "$y0-$y1"; }
     elsif ($m1 ne $m0) { $date = "$y1"; }
     elsif ($d1 ne $d0) { $date = "$y1-$m1"; }
     elsif ($H1 ne $H0) { $date = "$y1-$m1-$d1"; }
     elsif ($M1 ne $M0) { $date = "$y1-$m1-$d1 $H1"; }
+    elsif ($S1 ne $S0) { $date = "$y1-$m1-$d1 $H1:$M1"; }
     return $date;
 }
 
@@ -376,6 +366,8 @@ sub extract_type {
         $size =~ s/^[a-z]+\((\d+)\)/$1/;
     } elsif ($size =~ /\(\w+\)$/) {
         $size =~ s/^[a-z]+\((\w+)\)/$1/;
+    } elsif ($size eq "udate") {
+         ($size, $default) = ("hm", 15);
     } else {
         $size = 5;
     }

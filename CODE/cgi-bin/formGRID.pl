@@ -179,6 +179,42 @@ sub get_inputs {
     return %inputs;
 }
 
+# create table geoloc sql string
+sub sql_create_table_geoloc {
+    return q{
+        CREATE TABLE IF NOT EXISTS geoloc (
+            id INTEGER PRIMARY KEY,
+            latitude REAL,
+            northern_error REAL,
+            longitude REAL,
+            eastern_error REAL,
+            elevation REAL,
+            elevation_error REAL
+        )
+    };
+}
+
+# create table udate sql string
+sub sql_create_table_udate {
+    return q{
+        CREATE TABLE IF NOT EXISTS udate (
+            id INTEGER PRIMARY KEY,
+            date TEXT,
+            date_min TEXT,
+            yce REAL,
+            yce_min REAL
+        )
+    };
+}
+
+# Create sql table
+sub create_table {
+    my $create_table_sql = shift;
+    my $dbh = connectDbForms();
+    $dbh->do($create_table_sql) or die "Error creating table: $DBI::errstr";
+    $dbh->disconnect();
+}
+
 # ---- misc inits
 #
 set_message(\&webobs_cgi_msg);
@@ -362,63 +398,106 @@ if ($action eq 'save') {
 
     if ($GRIDType eq 'FORM') {
         my @db_columns = ("id integer PRIMARY KEY AUTOINCREMENT", "trash boolean DEFAULT FALSE", "quality integer", "node text NOT NULL",
-            "edate datetime", "edate_min datetime",
-            "sdate datetime NOT NULL", "sdate_min datetime",
+            "edate INTEGER", "sdate INTEGER",
             "operators text NOT NULL, comment text", "tsupd text NOT NULL", "userupd text NOT NULL");
 
-        # Connecting to the database in order to create a table with the name of the FORM
-        my $dbh = connectDbForms();
+        my @db_columns_names = ("id", "trash", "quality", "node",
+            "edate", "sdate", "operators, comment", "tsupd", "userupd");
+
+        my @inputs = grep {/^(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
+        my @inputs_types = grep {/^(INPUT[0-9]{2,3}_TYPE)/} split(/\n/, $text);
+        my %new_inputs = map { split(/\|/, $_, 2) } @inputs;
+        my %new_inputs_types = map { split(/\|/, $_, 2) } @inputs_types;
+
+        my @db_input_columns;
+        foreach (keys %new_inputs) {
+            my $in = (split '_', $_)[0];
+            if ( $new_inputs_types{$in."_TYPE"} =~ /^(geoloc|udate|datetime)/ ) {
+                push(@db_input_columns, lc($in)." INTEGER");
+            } else {
+                push(@db_input_columns, lc($in)." TEXT");
+            }
+        }
+        push(@db_columns, sort @db_input_columns);
+
+        # Foreign keys must be placed at the end of the SQL request
+        my @db_fk_columns;
+        push(@db_fk_columns, "FOREIGN KEY (edate) REFERENCES udate(id) ON DELETE CASCADE");
+        push(@db_fk_columns, "FOREIGN KEY (sdate) REFERENCES udate(id) ON DELETE CASCADE");
+        foreach (keys %new_inputs) {
+            my $in = (split '_', $_)[0];
+            if ( $new_inputs_types{$in."_TYPE"} =~ /^geoloc/ ) {
+                push(@db_fk_columns, "FOREIGN KEY (".lc($in).") REFERENCES geoloc(id) ON DELETE CASCADE");
+            } elsif ( $new_inputs_types{$in."_TYPE"} =~ /^(udate|datetime)/ ) {
+                push(@db_fk_columns, "FOREIGN KEY (".lc($in).") REFERENCES udate(id) ON DELETE CASCADE");
+            }
+        }
+        push(@db_columns, @db_fk_columns);
 
         # Checking if the table we want to edit exists
         my $tbl = lc($GRIDName);
 
+        # Create secondary tables if not exists
+        create_table(sql_create_table_geoloc());
+        create_table(sql_create_table_udate());
+
+        # Connecting to the database in order to create a table with the name of the FORM
+        my $dbh = connectDbForms();
+
         my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
-        my $sth = $dbh->prepare( $stmt );
+        my $sth = $dbh->prepare($stmt);
         my $rv = $sth->execute() or die $DBI::errstr;
 
-        if ($sth->fetchrow_array() == 0) {    # if $sth->fetchrow_array() == 0, it means $tbl doe snot exists in the DB
-
-            # --- creation of the DB table
-            my @inputs = grep {/^(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
-
-            push(@db_columns, map { lc((split '_', $_)[0])." text" } @inputs);
-
+        # --- creation of the DB table
+        if ($sth->fetchrow_array() == 0) {    # if $sth->fetchrow_array() == 0, it means $tbl does not exist in the DB
             my $stmt = "create table if not exists $tbl (".join(', ', @db_columns).")";
-            my $sth = $dbh->prepare( $stmt );
+            my $sth = $dbh->prepare($stmt);
             my $rv = $sth->execute() or die $DBI::errstr;
-        }
+        } else {
+            # now we know if the table exists
+            # we want to look at the modifications of $text
+            my %old_inputs = get_inputs(readCfg($gridConfFile));
+            foreach (keys %old_inputs) {
+                if (not exists $new_inputs{$_}) {
+                    htmlMsgNotOK("You can't remove an INPUT !");
+                    $dbh->disconnect();
+                    exit;
+                }
+            }
 
-        # now we know if the table exists
-        # we want to look at the modification of $text
-        my @inputs  = grep {/^(INPUT[0-9]{2,3}_NAME)/} split(/\n/, $text);
-        my %old_inputs = get_inputs(readCfg($gridConfFile));
-        my %new_inputs = map { split(/\|/, $_, 2) } @inputs;
+            my @new_columns;
+            my @old_columns_names = @db_columns_names;
+            foreach (keys %new_inputs) {
+                if (not exists $old_inputs{$_}) {
+                    push(@new_columns, lc((split '_', $_)[0])." TEXT");
+                } else {
+                    push(@old_columns_names, lc((split '_', $_)[0]));
+                }
+            }
 
-        foreach (keys %old_inputs) {
-            if (not exists $new_inputs{$_}) {
-                htmlMsgNotOK("You can't remove an INPUT !");
-                exit;
+            my $msg = "Update";
+            if (@new_columns) {
+                $msg = "New INPUT has been added to the FORM !";
+                if (@db_fk_columns) {
+                    $dbh->do("PRAGMA foreign_keys = ON") or die $DBI::errstr;
+                    $dbh->do("DROP TABLE IF EXISTS tmp_".$tbl) or die $DBI::errstr;
+                    $dbh->do("CREATE TABLE tmp_".$tbl." (".join(', ', @db_columns).")") or die $DBI::errstr;
+                    $dbh->do("INSERT INTO tmp_".$tbl." (".join(', ', @old_columns_names).") SELECT ".join(', ', @old_columns_names)." FROM ".$tbl) or die $DBI::errstr;
+                    $dbh->do("DROP TABLE ".$tbl) or die $DBI::errstr;
+                    $dbh->do("ALTER TABLE tmp_".$tbl." RENAME TO ".$tbl) or die $DBI::errstr;
+                    $dbh->disconnect();
+                    $msg = " (Database was recreated successfully.)";
+                } else {
+                    # --- add new INPUT to the DB (cases where there is no foreign keys)
+                    foreach (sort @new_columns) {
+                        my $stmt = "ALTER TABLE $tbl ADD COLUMN $_;";
+                        my $sth = $dbh->prepare($stmt);
+                        my $rv = $sth->execute() or die $DBI::errstr;
+                    }
+                }
             }
         }
-
-        my @new_columns;
-        foreach (keys %new_inputs) {
-            if (not exists $old_inputs{$_}) {
-                push(@new_columns, lc((split '_', $_)[0])." TEXT");
-            }
-        }
-
-        my $msg = "Update";
-        if (@new_columns) {
-            $msg = "New INPUT has been added to the FORM !";
-
-            # --- connecting to the database in order to add new INPUT to the DB
-            foreach (sort @new_columns) {
-                my $stmt = "ALTER TABLE $tbl ADD COLUMN $_;";
-                my $sth = $dbh->prepare( $stmt );
-                my $rv = $sth->execute() or die $DBI::errstr;
-            }
-        }
+        $dbh->disconnect();
     }
 
     # Additional integrity check: abort if file has changed
