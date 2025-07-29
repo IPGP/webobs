@@ -24,7 +24,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2025-04-26
+%	Updated: 2025-07-29
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -134,11 +134,13 @@ for n = 1:length(N)
 			k1 = k(1);
 			ke = k(end);
 			xlim1 = max(tlim(1),N(n).INSTALL_DATE);
-			xlim2 = max(min(tlim(2) - N(n).LAST_DELAY,N(n).END_DATE),xlim1 + 1);
-			samp = round(100*length(find(isinto(D(n).t(k),[xlim1,xlim2])))*N(n).ACQ_RATE/abs(xlim2 - xlim1));
-			if D(n).t(ke) >= xlim2
+			%xlim2 = max(min(tlim(2) - N(n).LAST_DELAY,N(n).END_DATE),xlim1 + 1);
+			xlim2 = min(tlim(2) - N(n).LAST_DELAY,N(n).END_DATE);
+            ked = k(find(D(n).t(k) <= xlim2,1,'last')); % last sample time before LAST_DELAY
+			samp = round(100*sum(isinto(D(n).t(k),[xlim1,xlim2]))*N(n).ACQ_RATE/abs(xlim2 - xlim1));
+			if ~isempty(ked)
 				for i = 1:D(n).CLB.nx
-					if ~isnan(D(n).d(ke,i))
+					if ~isnan(D(n).d(ked,i))
 						last = last + 1;
 						if isfield(D(n).CLB,'un')
 							sd = [sd sprintf(', %g %s', D(n).d(ke,i),D(n).CLB.un{i})];
