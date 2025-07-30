@@ -33,26 +33,27 @@ Source code, comments and issues are available at the project repository [github
 
 To run WebObs you need to install the package which contains a setup script that will set all configuration files. Installing WebObs is not a classical compilation from sources with 'make'. A part of it requires the free Matlab runtime library because package contains some compiled binaries for optimization purpose.
 
-### A) Installing WebObs \<version\> from its WebObs-\<version\>.tgz
+### A) _Installing_ WebObs \<version\> from its `WebObs-<version>.tgz`
 
 You create/choose your WebObs directory within which you will execute the setup process. We suggest `/opt/webobs` (default). This directory will contain both
 WebObs code and WebObs data, and will be the DocumentRoot of the WebObs Apache's Virtual Host.
 
 setup will prompt you for a Linux WebObs userid (aka WebObs Owner) that it will create. The WebObs userid's group will also be added to Apache's user. See the WebObs user manual if you need to create your own WebObs owner.
 
-The system-wide /etc/webobs.d symbolic link will identify your WebObs 'active' (production) installation.
+The system-wide `/etc/webobs.d` symbolic link will identify your WebObs 'active' (production) installation.
 
 WebObs comes with pre-defined configuration files and pre-defined data objects as a starting point and for demonstration purposes.
 
-#### Prerequisities
+#### Prerequisites
 
-Graph processes need Matlab compiler runtime 2011b (available above). Download the installer adapted to your architecture in the WebObs directory, the setup will install it during the C) procedure. Or, place it in any local directory then run:
+##### Install Matlab Compiler Runtime (MCR)
+Graph processes need _Matlab Compiler Runtime_ 2011b (available above). Download the installer adapted to your architecture in the WebObs directory, the setup will install it during the C) procedure. Or, place it in any local directory then run:
 
 ```sh
 unzip MCR_<version>_installer.zip
 sudo ./install -mode silent
 ```
-
+##### Install extra programs 
 A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:
 
 ```sh
@@ -66,30 +67,27 @@ sudo apt install libncurses5 gdal-bin
 sudo apt install python-is-python3
 ```
 
-Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
+##### Set environment configuration
 
+Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
 ```sh
 sudo locale-gen fr_FR en_US
 ```
-
-Also you need to activate CGI module for Apache:
-
+You need to activate CGI module for Apache:
 ```sh
 sudo a2enmod cgid
 ```
-
 Create the target WebObs directory:
 ```sh
 sudo mkdir -p /opt/webobs
 ```
-
 Create the webobs user:
 ```sh
 sudo adduser wo
 ```
 
 <a name="update"></a>
-### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
+### B) _Upgrading_ WebObs \<version\> from its `WebObs-<version>.tgz`
 
 The setup process is also used for upgrading an already installed WebObs.
 
