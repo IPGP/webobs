@@ -34,8 +34,11 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: extract from SmoothFinal.tdp output file (grep "Station.SSSS.State.pos.[XYZ]" lines)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
-%	format 'spotgins-enu'
-%       ***** complete me ******
+%	format 'spotgins-enu-v2'
+%		type: SPOTGINS solutions - version 2 (<2025-08)
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: jjjjj.jj E N V dE dN dV yyyymmddhhmmss yyyy.yyyyyyyyy
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
 %	format 'spotgins-ippp'
 %		type: GINS IPPP solutions
@@ -305,7 +308,7 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 
 
 % -----------------------------------------------------------------------------
-case 'spotgins-enu'
+case 'spotgins-enu-v2'
         % format exemple
         %#jjjjj.jjjjjjjj         _____E         _____N         _____U         ____dE         ____dN         ____dU  yyyymmddHHMMSS  yyyy.yyyyyyy  Const  Dateofexe       GinsVersion
         % 52670.83876160       0.055822       0.051638       0.005578       0.001263       0.001163       0.004899  20030131200749  2003.0844898  G      250404_185253   VALIDE_24_2
