@@ -315,7 +315,6 @@ case 'spotgins-enu'
 	wosystem(sprintf('rm -f %s',fdat),P);
 	for a = 1:length(F.raw)
 		fraw = F.raw{a};
-		#cmd0 = sprintf('awk ''/^[^!]/ {print}'' >> %s',fdat); % removes header lines
                 cmd0 = sprintf('awk ''/^[^#]/ {print}'' >> %s',fdat); % removes header lines
 		if strncmpi('http',fraw,4)
 			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
@@ -333,13 +332,13 @@ case 'spotgins-enu'
         
         % load the file
 	if exist(fdat,'file')
-		dd = load(fdat);
+		dd = dlmread(fdat);
 	else
 		dd = [];
 	end
 	if ~isempty(dd)
                 t = dd(:,1) + 678941.5007; % converts MJD to datenum
-		d = [dd(:,2:4),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		d = [dd(:,2:4),zeros(size(dd,1),1)]; % North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
 		e = dd(:,5:7);
 		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
