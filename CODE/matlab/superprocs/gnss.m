@@ -663,9 +663,8 @@ for r = 1:numel(P.GTABLE)
 				'NODE_ELEVATION',sprintf('%1.2f',N(n).ALTITUDE), ...
 				'PROC_ITRF_REF',sprintf('%s',any2str(field2str(P,'ITRF_REF',''))), ...
 				'PROC_VELOCITY_REF',sprintf('%s',any2str(field2str(P,'VELOCITY_REF',''))) ...
+				'PROC_VECTORS_REF',sprintf('%s',any2str(field2str(P,'VECTORS_REF','')))
 			);
-
-
 
 			if vrelmode
 				E.meta.PROC_VECTORS_VELOCITY_REF = sprintf('%s',any2str(vref));
