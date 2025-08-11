@@ -112,8 +112,58 @@ sudo service woscheduler start
 sudo service wopostboard start
 ```
 
+### D) Extra-procedure for developers
+
+If you intend to develop on WebObs' code, you should link your installed WebObs with the GitHub cloned repository. This setup allows you to work directly on the source code while maintaining a functional WebObs installation.
+
+**Setup procedure:**
+
+1. Navigate to your target WebObs directory:
+   ```sh
+   cd /opt/webobs
+   ```
+
+2. Clone the GitHub repository:
+   ```sh
+   git clone https://github.com/IPGP/webobs.git
+   ```
+
+3. Rename the newly cloned subdirectory to avoid confusion with the parent directory:
+   ```sh
+   mv webobs webobs_gh
+   ```
+   (`gh` stands for _GitHub_)
+
+4. Backup and remove the existing `CODE` directory:
+   ```sh
+   mv CODE CODE.bak  # Create backup (optional but recommended)
+   # or: rm -rf CODE  # Direct removal
+   ```
+
+5. Create a symbolic link to the GitHub repository's `CODE` directory:
+   ```sh
+   ln -s webobs_gh/CODE CODE
+   ```
+
+**Development workflow:**
+
+Your WebObs installation is now linked to the GitHub repository. 
+
+- All development should be done on the `dev` branch (or feature branches based on `dev`):
+  ```sh
+  cd webobs_gh
+  git checkout dev
+  git pull origin dev  # Ensure you have the latest changes
+  ```
+
+- Before pushing your modifications, ensure you have correctly configured your GitHub personal access token. See: [Managing Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+
+- Test your changes thoroughly in your linked WebObs installation before committing.
+
+
+
 <a name="srtm1"></a>
-### D) Improving basemap database (recommanded)
+### E) Improving basemap database (recommanded)
 
 WebObs is distributed with ETOPO5 worldwide topographic data, which is very coarse. For details maps on land, WebObs uses SRTM3 topographic data, automatically downloaded from the internet. To improve offshore parts of maps, you can freely download ETOPO1:
 
