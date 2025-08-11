@@ -662,15 +662,13 @@ for r = 1:numel(P.GTABLE)
 				'NODE_LONGITUDE',sprintf('%1.6f',N(n).LON_WGS84), ...
 				'NODE_ELEVATION',sprintf('%1.2f',N(n).ALTITUDE), ...
 				'PROC_ITRF_REF',sprintf('%s',any2str(field2str(P,'ITRF_REF',''))), ...
-				'PROC_VELOCITY_REF',sprintf('%s',any2str(field2str(P,'VELOCITY_REF',''))), ...
-				'PROC_VECTORS_REF',sprintf('%s',any2str(field2str(P,'VECTORS_REF',''))) ...
 			);
-
 			if vrelmode
 				E.meta.PROC_VECTORS_VELOCITY_REF = sprintf('%s',any2str(vref));
 			end
 
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			E.meta = {}; % meta are erased after the export
 		end
 	end
 
@@ -2345,6 +2343,7 @@ for r = 1:numel(P.GTABLE)
                     E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
                 end
                 mkexport(WO,sprintf('%s_VECTORS_%s_%s',summary,lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+				E.meta = {}; % meta are erased after the export
             end
 
             % modeltime results
