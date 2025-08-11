@@ -405,6 +405,9 @@ for r = 1:numel(P.GTABLE)
 	if any(isnan(tlim))
 		tlim = minmax(cat(1,D.tfirstlast));
 	end
+
+    % for treatsignal function (trend calculation)
+    P.dtlim = diff(tlim);
 	
 	tsinfo = {'{\itTime span}:', ...
 		sprintf('     {\\bf%s} {\\it%+g}',datestr(tlim(1),'yyyy-mm-dd HH:MM'),P.TZ), ...
@@ -513,7 +516,7 @@ for r = 1:numel(P.GTABLE)
 			mode = 'fixed';
 		else
 			[kvref,knref] = ismemberlist(split(vref,','),{N.FID});
-			if ~isempty(vref) && all(kvref);
+			if ~isempty(vref) && all(kvref)
 				mode = vref;
 				if numel(knref) > 1
 					voffset = rsum(tr(knref,:)./tre(knref,:))./rsum(1./tre(knref,:));
@@ -647,7 +650,7 @@ for r = 1:numel(P.GTABLE)
 			   		D(n).d(k,6) - polyval([voffset(2)/P.trendfact,0],E.t - tlim(1)), ...
 			   		D(n).d(k,7) - polyval([voffset(3)/P.trendfact,0],E.t - tlim(1)), ...
 			   	];
-				E.header = {E.header{:},'East_treat(m)','North_treat(m)','Up_treat(m)'};
+				E.header = [E.header,{'East_treat(m)','North_treat(m)','Up_treat(m)'}];
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
@@ -717,7 +720,6 @@ for r = 1:numel(P.GTABLE)
 		%   n = destination node and i = reference node
 		X = repmat(struct('t',[],'d',[],'e',[],'w',[],'nam',[]),numel(N),1);
 		aliases = cell(1,numel(N));
-		ncolors = ones(size(aliases));
 		refnames = cell(1,numel(B));
 		for nn = 1:numel(B)
 			n = B(nn).kr;
@@ -1478,10 +1480,10 @@ for r = 1:numel(P.GTABLE)
 			%clim = [0,max(mhor(:))*(ws/500)^.5];
 			%clim = [min(mhor(:)),max(mhor(:))];
 			clim = minmax(mm);
-			if diff(clim)<=0
-				clim = [0,1];
-			end
 		end
+        if diff(clim)<=0
+            clim = [0,1];
+        end
 
 		% computes the maximum displacement for vector scale
         vmax = rmax(abs(reshape(d(:,1:3),[],1)));
