@@ -19,8 +19,14 @@ hold on
 if size(d,2) > 1
 	set(gca,'Ylim',get(gca,'YLim'))	% freezes Y axis (error bars can overflow)
 	h = plot(repmat(t,[1,2])',(repmat(d(:,1),[1,2])+d(:,2)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1]);
-	if exist('uistack','file') == 2
+	if exist('uistack','file') == 2 % checks if uistack function exists, (only MATLAB, not octave compatible)
 		uistack(h,'bottom')
+	else % Octave equivalent
+		set(h, 'HandleVisibility', 'off');
+		axes_children = get(gca, 'Children');
+		other_children = setdiff(axes_children, h);
+		set(gca, 'Children', [other_children; h]);
+		set(h, 'HandleVisibility', 'on');
 	end
 end
 
