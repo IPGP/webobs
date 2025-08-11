@@ -112,7 +112,29 @@ sudo service woscheduler start
 sudo service wopostboard start
 ```
 
-### D) Extra-procedure for developers
+<a name="srtm1"></a>
+### D) Improving basemap database (recommanded)
+
+WebObs is distributed with ETOPO5 worldwide topographic data, which is very coarse. For details maps on land, WebObs uses SRTM3 topographic data, automatically downloaded from the internet. To improve offshore parts of maps, you can freely download ETOPO1:
+
+```sh
+curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip -o /tmp/etopo.zip
+unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip
+```
+
+If the link is broken you might download a copy [here](http://www.ipgp.fr/~beaudu/webobs/etopo1.tgz) (308 Mb) and untar into the WebObs root directory:
+```sh
+tar xf etopo1.tgz
+```
+
+then update the ETOPO parameters in the `/etc/webobs.d/WEBOBS.rc` file with the lines:
+
+```
+ETOPO_NAME|etopo1_bed_g_i2
+ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
+```
+
+### E) Extra-procedure for developers
 
 If you intend to develop on WebObs' code, you should link your installed WebObs with the GitHub cloned repository. This setup allows you to work directly on the source code while maintaining a functional WebObs installation.
 
@@ -145,9 +167,9 @@ If you intend to develop on WebObs' code, you should link your installed WebObs 
    ln -s webobs_gh/CODE CODE
    ```
 
-**Development workflow:**
-
 Your WebObs installation is now linked to the GitHub repository. 
+
+**Development workflow:**
 
 - All development should be done on the `dev` branch (or feature branches based on `dev`):
   ```sh
@@ -157,32 +179,6 @@ Your WebObs installation is now linked to the GitHub repository.
   ```
 
 - Before pushing your modifications, ensure you have correctly configured your GitHub personal access token. See: [Managing Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
-
-- Test your changes thoroughly in your linked WebObs installation before committing.
-
-
-
-<a name="srtm1"></a>
-### E) Improving basemap database (recommanded)
-
-WebObs is distributed with ETOPO5 worldwide topographic data, which is very coarse. For details maps on land, WebObs uses SRTM3 topographic data, automatically downloaded from the internet. To improve offshore parts of maps, you can freely download ETOPO1:
-
-```sh
-curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip -o /tmp/etopo.zip
-unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip
-```
-
-If the link is broken you might download a copy [here](http://www.ipgp.fr/~beaudu/webobs/etopo1.tgz) (308 Mb) and untar into the WebObs root directory:
-```sh
-tar xf etopo1.tgz
-```
-
-then update the ETOPO parameters in the `/etc/webobs.d/WEBOBS.rc` file with the lines:
-
-```
-ETOPO_NAME|etopo1_bed_g_i2
-ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
-```
 
 
 <a name="whatsnew"></a>
