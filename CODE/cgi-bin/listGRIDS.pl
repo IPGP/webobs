@@ -535,7 +535,7 @@ sub geditpopup {
     $SP .= "  </select>\n";
     $SP .= "<br style=\"clear: left\"><br>";
 
-    $SP .= "<label for=\"geditN\">$__{'Grid mame'}: <span class=\"small\">$__{'short name (uppercase)'}</span></label>";
+    $SP .= "<label for=\"geditN\">$__{'Grid name'}: <span class=\"small\">$__{'short name (uppercase)'}</span></label>";
     $SP .= "  <input size=\"40\" id=\"geditN\" name=\"geditN\" value=\"\">\n";
     $SP .= "<br style=\"clear: left\"><br>";
 
