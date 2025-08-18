@@ -384,7 +384,9 @@ le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 
 1. Peltier A., S. Saur, V. Ballu, F. Beauducel, P. Briole, J-B. de Chabalier, K. Chanard, D. Dausse, R. Grandin, P. Rouffiac, Y-T. Tranchant, M. Bès de Berc, S. Besançon, P. Boissier, C. Broucke, C. Brunet, K. Canjamalé, E. Carme, P. Catherine, A. Colombain, W. Crawford, R. Daniel, G. Dectot, N. Desfete, C. Doubre, T. Dumouch, C. Griot, M. Grunberg, H. Jund, P. Kowalski, F. Lauret, J. Lebreton, F. Pesqueira, F. Tronel, P. Valty and J. van der Woerd (2022). Ground deformation monitoring of the eruption offshore Mayotte, *Comptes Rendus Géoscience*, in press. [doi:10.5802/crgeos.176](https://doi.org/10.5802/crgeos.176)
 1. Grémion, S., Pinel, V., Shreve, T., Beauducel, F., Putra, R., Solikhin, A., ... & Humaida, H. (2023). Tracking the evolution of the summit lava dome of Merapi volcano between 2018 and 2019 using DEMs derived from TanDEM-X and Pléiades data. Journal of Volcanology and Geothermal Research, 433, 107732.
 1. Basuki, A., Purnamasari, H. D., & Syahbana, D. K. (2023, August). The 2021 Semeru volcano eruption: An insight from visual, seismic, and deformation monitoring data. In IOP Conference Series: Earth and Environmental Science (Vol. 1227, No. 1, p. 012030). IOP Publishing.
-1. Nikkhoo, M., & Rivalta, E. (2023). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. Geophysical Journal International, 232(1), 643-655.
+1. Nikkhoo, M., & Rivalta, E. (2023). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. *Geophysical Journal International*, 232(1), 643-655.
+1. Briole P., A. Ganas, A. Serpetsidaki, F. Beauducel, V. Sakkas, V. Tsironi, P. Elias (2025). Volcano-tectonic interaction at Santorini. The crisis of February 2025. Constraints from geodesy. *Geophysical Journal International*, [doi:10.1093/gji/ggaf262](https://doi.org/10.1093/gji/ggaf262).
+
 
 
 #### Critical Zone
