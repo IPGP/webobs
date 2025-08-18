@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-showOUTG.pl
+Show /OUTG contents for a GRID
 
 =head1 SYNOPSIS
 
