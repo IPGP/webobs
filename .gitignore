@@ -2,7 +2,6 @@ Releases
 CODE/bin
 CODE/matlab/bin
 CODE/matlab/*.mex*
-CODE/matlab/superprocs/jerk.m
 CODE/i18n/locales/*/LC_MESSAGES/*.mo
 DOC/user-manual/*
 !DOC/user-manual/*.tex
