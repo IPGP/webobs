@@ -20,7 +20,7 @@ function E = add_export_metadata(E, NP, export_header_keylist, np_type)
         for iexport = 1:length(export_header_keylist)
             fieldname = export_header_keylist{iexport};
             if isfield(NP, fieldname) 
-                E.meta.(['NODE.', fieldname]) = any2str(NP.(fieldname));
+                E.meta.([np_type, '.', fieldname]) = any2str(NP.(fieldname));
             end
         end
     end
