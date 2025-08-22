@@ -658,7 +658,7 @@ for r = 1:numel(P.GTABLE)
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
 
 			E.meta = {};
-			
+
 			if ~isempty(export_header_node_keylist)
 				for iexport = 1:length(export_header_node_keylist)
 					E.meta.(['NODE.', export_header_node_keylist{iexport}]) = any2str(N(n).(export_header_node_keylist{iexport}));
@@ -672,11 +672,9 @@ for r = 1:numel(P.GTABLE)
 			end
 
 			E.meta = {};
-			meta_n = add_export_metadata(N(n),export_header_node_keylist,"NODE");
-			meta_p = add_export_metadata(P,export_header_proc_keylist,"PROC");
-			E.meta = [meta_n, meta_p];
+			E = add_export_metadata(E,N(n),export_header_node_keylist,"NODE");
+			E = add_export_metadata(E,P,export_header_proc_keylist,"PROC");
 
-		
 			%E.meta = struct( ...
 			%	'NODE_FID',N(n).FID, ...
 			%	'NODE_NAME',N(n).NAME, ...
