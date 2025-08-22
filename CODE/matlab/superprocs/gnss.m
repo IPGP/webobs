@@ -81,6 +81,9 @@ enu = {'E','N','U'};
 cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Northern,Relative Vertical'),',');
 disp_yscale = field2num(P,'DISP_YSCALE_M',0);
 
+export_header_proc_keylist = split(field2str(P,'EXPORT_HEADER_PROC_KEYLIST',''),',');
+
+
 % Harmonic correction: period list (day), pairs of sine, cosine (mm) for each component
 harm_refdate = field2num(P,'HARMONIC_ORIGIN_DATE');
 harm_period = field2num(P,'HARMONIC_PERIOD_DAY',0);
@@ -306,7 +309,7 @@ modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',spectral(256));
 modeltime_markersize = pi*(field2num(P,'MODELTIME_MARKERSIZE',10,'notempty')/2)^2; % scatter needs marker size as a surface (πr²)
 
 
-geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
+geo = [cat(1,N.LAT_WGS84),cat(1,N.LAT_WGS84),cat(1,N.ALTITUDE)];
 
 V.name = P.NAME;
 V.velref = itrf;
@@ -654,23 +657,30 @@ for r = 1:numel(P.GTABLE)
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
 
-			E.meta = struct( ...
-				'NODE_FID',N(n).FID, ...
-				'NODE_NAME',N(n).NAME, ...
-				'NODE_GNSS_9CHAR',N(n).GNSS_9CHAR, ...
-				'NODE_LATITUDE',sprintf('%1.6f',N(n).LAT_WGS84), ...
-				'NODE_LONGITUDE',sprintf('%1.6f',N(n).LON_WGS84), ...
-				'NODE_ELEVATION',sprintf('%1.2f',N(n).ALTITUDE), ...
-				% ITRF reference (this is a string displayed on graph title, not functional)
-				'PROC_ITRF_REF',sprintf('%s',any2str(field2str(P,'ITRF_REF',''))), ... 
-				% Relative velocity reference E,N,U (mm/yr) from ITRF = constant trend
-				% substracted to all data before any other processing
-				'PROC_VELOCITY_REF',sprintf('%s',any2str(field2str(P,'VELOCITY_REF',''))) ... 
-				);
-			if vrelmode
-				% substracts a reference vector (can be NODE-dependent)
-				E.meta.PROC_VECTORS_VELOCITY_REF = sprintf('%s',any2str(vref));
+			E.meta = {};
+			if ~isempty(export_header_proc_keylist)
+				for iexport = 1:length(export_header_proc_keylist)
+					E.meta.("NODE." + export_header_proc_keylist{iexport}) = N(n).(export_header_proc_keylist{iexport});
+				end
 			end
+
+			%E.meta = struct( ...
+			%	'NODE_FID',N(n).FID, ...
+			%	'NODE_NAME',N(n).NAME, ...
+			%	'NODE_GNSS_9CHAR',N(n).GNSS_9CHAR, ...
+			%	'NODE_LATITUDE',sprintf('%1.6f',N(n).LAT_WGS84), ...
+			%	'NODE_LONGITUDE',sprintf('%1.6f',N(n).LON_WGS84), ...
+			%	'NODE_ELEVATION',sprintf('%1.2f',N(n).ALTITUDE), ...
+			%	% ITRF reference (this is a string displayed on graph title, not functional)
+			%	'PROC_ITRF_REF',sprintf('%s',any2str(field2str(P,'ITRF_REF',''))), ... 
+			%	% Relative velocity reference E,N,U (mm/yr) from ITRF = constant trend
+			%	% substracted to all data before any other processing
+			%	'PROC_VELOCITY_REF',sprintf('%s',any2str(field2str(P,'VELOCITY_REF',''))) ... 
+			%	);
+			%if vrelmode
+			%	% substracts a reference vector (can be NODE-dependent)
+			%	E.meta.PROC_VECTORS_VELOCITY_REF = sprintf('%s',any2str(vref));
+			%end
 
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 			E.meta = {}; % meta are erased after the export
