@@ -9,6 +9,10 @@ function E = add_export_metadata(E, NP, export_header_keylist, np_type)
 %
 % OUTPUT:
 %   E - Modified export structure with added metadata
+%
+%   Author: Pierre Sakic / WEBOBS, IPGP
+%   Created: 2025-08-22
+%   Updated: 2025-08-22
 
     % Initialize meta field if it doesn't exist
     if ~isfield(E, 'meta')
