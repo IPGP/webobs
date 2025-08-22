@@ -658,9 +658,16 @@ for r = 1:numel(P.GTABLE)
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
 
 			E.meta = {};
+
+			if ~isempty(export_header_node_keylist)
+				for iexport = 1:length(export_header_node_keylist)
+					E.meta.(['NODE_', export_header_node_keylist{iexport}]) = N(n).(export_header_node_keylist{iexport});
+				end
+			end
+
 			if ~isempty(export_header_proc_keylist)
 				for iexport = 1:length(export_header_proc_keylist)
-					E.meta.(['NODE_', export_header_proc_keylist{iexport}]) = N(n).(export_header_proc_keylist{iexport});
+					E.meta.(['PROC_', export_header_proc_keylist{iexport}]) = P(n).(export_header_proc_keylist{iexport});
 				end
 			end
 
