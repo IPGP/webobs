@@ -660,7 +660,7 @@ for r = 1:numel(P.GTABLE)
 			E.meta = {};
 			if ~isempty(export_header_proc_keylist)
 				for iexport = 1:length(export_header_proc_keylist)
-					E.meta.("NODE." + export_header_proc_keylist{iexport}) = N(n).(export_header_proc_keylist{iexport});
+					E.meta.(['NODE_', export_header_proc_keylist{iexport}]) = N(n).(export_header_proc_keylist{iexport});
 				end
 			end
 
