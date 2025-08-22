@@ -82,7 +82,7 @@ cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Nor
 disp_yscale = field2num(P,'DISP_YSCALE_M',0);
 
 export_header_proc_keylist = split(field2str(P,'EXPORT_HEADER_PROC_KEYLIST',''),',');
-
+export_header_node_keylist = split(field2str(P,'EXPORT_HEADER_NODE_KEYLIST',''),',');	
 
 % Harmonic correction: period list (day), pairs of sine, cosine (mm) for each component
 harm_refdate = field2num(P,'HARMONIC_ORIGIN_DATE');
