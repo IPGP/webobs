@@ -24,13 +24,13 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	format 'gipsy'
 %		type: JPL/GIPSY GNSS .tdp results ITRF08
-%		filename: P.RAWDATA/FID/YYYY/FID/YYYY-MM-DD.FID.tdp*
+%		filename: P.RAWDATA/FID/YYYY/YYYY-MM-DD.FID.tdp*
 %		data format: extract from tdp_final output file (grep "STA [XYZ]" lines)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
 %	format 'gipsyx'
 %		type: JPL/GipsyX GNSS .tdp results ITRF08
-%		filename: P.RAWDATA/FID/YYYY/FID/YYYY-MM-DD.FID.tdp*
+%		filename: P.RAWDATA/FID/YYYY/YYYY-MM-DD.FID.tdp*
 %		data format: extract from SmoothFinal.tdp output file (grep "Station.SSSS.State.pos.[XYZ]" lines)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
@@ -73,7 +73,7 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2025-01-23
+%	Updated: 2025-08-28
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
