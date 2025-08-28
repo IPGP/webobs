@@ -80,7 +80,7 @@ print "Content-type: text/html; charset=utf-8
 <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
 <DIV ID=\"helpBox\"></DIV>";
 
-print "<h2>$pagetitle</h2>";
+print "<h1>$pagetitle</h1>";
 print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ $__{'Request Forms:'} "
   ."<a href=\"/cgi-bin/formREQ.pl\"><b>Procs</b></a> | "
   ."<a href=\"/cgi-bin/formGRIDMAPS.pl\"><b>Gridmaps</b></a> | "

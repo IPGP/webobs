@@ -100,9 +100,10 @@ use List::MoreUtils qw(uniq);
 # ---- webobs stuff
 #
 use WebObs::Config;
+use WebObs::Grids;
 use WebObs::Users;
 use WebObs::Utils;
-use WebObs::Grids;
+use WebObs::Wiki;
 use WebObs::i18n;
 
 # ---- misc inits
@@ -115,6 +116,9 @@ my %SCHED = readCfg($WEBOBS{CONF_SCHEDULER});
 my @procavailable;
 my @proclist;
 my %P;
+
+# content edition is allowed only if the user has edit authorization for ALL grids (views, forms and procs)
+my $editOK = ( WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*") ? 1:0 );
 
 # ---- Things to populate select dropdown fields
 my $year = strftime('%Y',@tod);
@@ -301,13 +305,18 @@ function preSet()
 </HEAD>
 <BODY onLoad=\"document.form.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');preSet();document.form.timezone.focus();\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
+<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\" type=\"text/javascript\"></script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
 <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
 <DIV ID=\"helpBox\"></DIV>";
 
-print "<h2>$pagetitle</h2>";
+print "<h1>$pagetitle</h1>";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ <a href=\"/cgi-bin/showREQ.pl\">$__{'Results'}</a> ]</P>";
+
+# ---- Objectives (aka 'Purpose', 'description' of subsetType)
+#
+printdesc('Description','DESCRIPTION','GRIDS','PROCREQUEST','',0,$editOK);
 
 print "<form id=\"theform\" name=\"form\" action=\"\">";
 
@@ -318,10 +327,13 @@ print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column
 # ---- Display list of PROCS that are eligible for requests
 print "<fieldset><legend>$__{'Available PROCS'}</legend>";
 print "<div style=\"overflow-y: scroll;height: 400px\">";
+my $olopt = ",FGCOLOR,'white'";
 for my $p (@proclist) {
     %P = readProc($p,'novsub','escape','addcomment'); # reads the proc conf without modifying content (no variable substitution, keep escaped char) and additional comments from the template
     my $nn = scalar(@{$P{$p}{NODESLIST}});
-    print "<INPUT type=\"checkbox\" name=\"p_$p\" title=\"$p\" onclick=\"selProc('$p')\" value=\"0\"> <B>{$p}:</B> $P{$p}{NAME} (<B>$nn</B> node".($nn>1?"s":"").")<BR>\n";
+    my $nm = ($P{$p}{NODE_NAME} ne "" ? $P{$p}{NODE_NAME}:"node");
+    my $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$P{$p}{DESCRIPTION}."',CAPTION,'PROC.$p',BGCOLOR, 'firebrick'$olopt)\")\"";
+    print "<INPUT type=\"checkbox\" name=\"p_$p\" onclick=\"selProc('$p')\" value=\"0\" $ovl> <B>$P{$p}{NAME}</B> (<B>$nn</B> $nm".($nn>1?"s":"").")<BR>\n";
     print pkeys($p,\%P);
 }
 print "</div>";

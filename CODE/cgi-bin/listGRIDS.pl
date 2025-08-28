@@ -241,7 +241,7 @@ print " ]</P>";
 
 # ---- Objectives (aka 'Purpose', 'description' of subsetType)
 #
-printdesc('Purpose','DESCRIPTION',$descGridType,$descGridName,$descLegacy);
+printdesc('Purpose','DESCRIPTION',$descGridType,$descGridName,$descLegacy,0,$editOK);
 
 # ---- list subsetType grids, grouped by domains
 #
@@ -452,51 +452,14 @@ print "</div>\n";
 
 # ---- Protocole (aka 'Informations' of subsetType)
 #
-printdesc('Information','PROTOCOLE',$descGridType,$descGridName,$descLegacy,1);
+printdesc('Information','PROTOCOLE',$descGridType,$descGridName,$descLegacy,1,$editOK);
 
 # ---- Bibiography (aka 'References' of subsetType)
 #
-printdesc('References','BIBLIO',$descGridType,$descGridName,$descLegacy,1);
+printdesc('References','BIBLIO',$descGridType,$descGridName,$descLegacy,1,$editOK);
 
 # ---- We're done !
 print "</BODY>\n</HTML>\n";
-
-# -----------------------------------------------------------------------------
-# -----------------------------------------------------------------------------
-# printdesc (title,suffix,type,name,legacy,[top])
-sub printdesc {
-    my @desc;
-    my $editCGI = "/cgi-bin/nedit.pl";
-    my $go2top = "";
-
-    my $title = $_[0];
-    my $suffix = $GRIDS{"$_[1]_SUFFIX"};
-    my $type = $_[2];
-    my $name = $_[3];
-    my $fileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$type.$name$suffix";
-    if ($_[4] ne '' &&  ! -e $fileDesc) {
-        my $legacyfileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$_[4]$suffix";
-        if (-e $legacyfileDesc) {
-            copy($legacyfileDesc, $fileDesc);
-        }
-    }
-    if (defined($_[5])) {
-        $go2top = "&nbsp;&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
-    }
-
-    if (-e $fileDesc) {
-        @desc = readFile($fileDesc);
-    }
-
-    my $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#$_[1]ID');\">&nbsp;&nbsp;";
-    $htmlcontents .= "$__{$title}";
-    if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$suffix\&grid=$type.$name\"><img src=\"/icons/modif.png\"></A>" }
-    $htmlcontents .= "$go2top</div><div id=\"$_[1]ID\"><BR>";
-    if ($#desc >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@desc))."</P>\n" }
-    $htmlcontents .= "</div></div>\n";
-
-    print $htmlcontents;
-}
 
 # -----------------------------------------------------------------------------
 # ---- helper edit grid popup
