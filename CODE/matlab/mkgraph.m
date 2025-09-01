@@ -20,6 +20,8 @@ function varargout = mkgraph(WO,f,G,OPT);
 %	Updated: 2025-04-07
 
 
+set(gcf, 'Visible', 'off');
+
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % creates temporary directory
@@ -272,6 +274,7 @@ function h = plotlogo(f,rh,pos)
 
 h = [];
 ha = gca;
+visibility = get(gcf, 'Visible');
 pp = get(gcf,'PaperPosition');
 
 if ~isempty(f)
@@ -307,3 +310,8 @@ if ~isempty(f)
 end
 
 axes(ha);
+
+% make sure visibility is off if it has been turned off
+if strcmp(visibility, 'off')
+    set(gcf, 'Visible', 'off');
+end
