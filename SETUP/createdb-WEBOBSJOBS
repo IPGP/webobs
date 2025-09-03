@@ -43,6 +43,9 @@ INSERT INTO JOBS VALUES('geoscope','N','geoscope','\$WEBOBS{JOB_MCC} genplot','G
 INSERT INTO JOBS VALUES('hypoindo','N','hypoindo','\$WEBOBS{JOB_MCC} hypomap','HYPOINDO','"01y"',3600,0.8,'hypoindo',0);
 INSERT INTO JOBS VALUES('hypoindo_all','N','hypoindo','\$WEBOBS{JOB_MCC} hypomap','HYPOINDO','"10y,all"',86400,0.8,'hypoindo',0);
 INSERT INTO JOBS VALUES('hypowi','N','hypowi','\$WEBOBS{JOB_MCC} hypomap','HYPOWI','',3600,0.8,'hypowi',0);
+INSERT INTO JOBS VALUES('pygeoscope','N','pygeoscope','\$WEBOBS{JOB_PYTHON}/genplot.py','GEOSCOPE','',600,0.8,'pygeoscope',0);
+INSERT INTO JOBS VALUES('pgamap','N','pgamap','\$WEBOBS{PYTHON_PRGM} \$WEBOBS{PYTHON_PATH}/pgamap/pga_map_main.py','PGAMAP','15',3600,0.8,'pgamap',0);
+INSERT INTO JOBS VALUES('downflowgo','N','downflowgo','\$WEBOBS{PYTHON_PRGM} \$WEBOBS{PYTHON_PATH}/downflowgo/downflowgo.py','DOWNFLOWGO','',3600,0.8,'downflowgo',0);
 --INSERT INTO JOBS VALUES('sefran3','N','','\$WEBOBS{JOB_MLXVFB} ','-r "sefran3;exit(0)"','',600,0.7,'sefran3',0);
 --INSERT INTO JOBS VALUES('CGPSWI','N','gamit','\$WEBOBS{JOB_MLNODISPLAY} ','-r "gamit(''CGPSWI'');exit(0)"','',86400,0.7,'gamit',0);
 --INSERT INTO JOBS VALUES('test-10-300','N','','\$WEBOBS{ROOT_CODE}/cgi-bin/jobtester.pl ','10','',300,0.7,'tester',0);

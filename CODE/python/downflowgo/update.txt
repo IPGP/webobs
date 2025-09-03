@@ -1,0 +1,6 @@
+To update this Proc, download the lastest source code of DOWNFLOWGO and PYFLOWGO
+Replace the contents of DOWNFLOWGO-tag directory with those of webobs/CODE/python/downflowgo/src/
+Compile the DOWNFLOW library located in src/downflowgo/DOWNFLOW : g++ -o DOWNFLOW DOWNFLOW.cpp
+Comment the pyflowgo dependency in requirements.txt
+Replace the contents of webobs/CODE/python/downflowgo/src/pyflowgo directory with those of pyflowgo-tag/pyflowgo
+If needed, the corresponding PROC configuration file (CONF/PROCS/DOWNFLOWGO.conf) must be updated to match any changes in config_downflowgo.ini

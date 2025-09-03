@@ -1,0 +1,76 @@
+@page {
+  size: A4;
+  margin: 0;
+}
+
+body {
+  background-color: white;
+}
+
+.main{
+  padding-left: 70px;
+}
+
+h1 {
+  font-family: sans-serif;
+  font-size: 24pt;
+  line-height: 1em;
+}
+h2 {
+  font-family: sans-serif;
+  font-size: 20pt;
+}
+h3 {
+  font-family: sans-serif;
+  font-size: 14pt;
+}
+
+table {
+  font-family: monospace;
+  font-size: 12pt;
+}
+td.left {
+  text-align: right;
+  padding-right: 10px;
+}
+td.right {
+  text-align: left;
+  padding-right: 30px;
+}
+
+.column {
+  float: left;
+  width: 350px;
+  padding-bottom: 20px;
+}
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+img.map{
+  padding-left: 17px;
+  width: 750px;
+}
+img.pga_dist{
+  width: 715px;
+}
+img.logo{
+  padding-right: 20px;
+  width: 80px;
+  vertical-align: middle;
+}
+.footer{
+  padding-top: 30px;
+  padding-left: 70px;
+  height: 60px;
+}
+.footer_text{
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 10pt;
+  vertical-align: middle;
+  padding-left: 10px;
+}

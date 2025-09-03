@@ -1,0 +1,17 @@
+input_DEM ./srtm_25m_utm.asc
+Xorigine 369082.7                        # longitude of the vent
+Yorigine 7647204.29                     # latitude of the vent
+n_path 10000                              # Number of runs
+DH 2                                    # Delta H value
+MaxPathLength 100000000
+n_iter_per_path 800000000
+static_Depos. 0.01
+Lf 30000000
+DEP_FLAG 10
+rand_seed 0                             # change this value (positive integer) to rerun a simulation with different random number
+Algo	0                               # possible values are 0 or 6. With Algo=6 you must specify Lf
+output_L_grid_name sim.asc             # name of the output probability raster file
+#New_h_grid_name  dem_filled_DH0.001_N1000.asc      # can be activated to produce a filled DEM
+#output_N_grid_name     N.asc           # can be activated only together with   output_Lf_grid_name
+#output_Lf_grid_name    Lf.asc          # can be activated only together with   output_N_grid_name
+write_profile 10                        # write the line of steepest descent profile every 10 m

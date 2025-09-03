@@ -551,6 +551,27 @@ fi
 echo "WebObs user: ${USERID} , group: ${USERGID}, email: ${USERMAIL}"
 echo
 
+# Python environment ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+echo 'Python environment installation'
+if $(confirm "Create Python environment [y/N] ?") ; then
+    python3 -m venv ${DOCROOT}/venv/
+    chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
+    source ${DOCROOT}/venv/bin/activate
+    PYTHON_CODE="${DOCROOT}/CODE/python"
+    pip install -r "${PYTHON_CODE}/requirements.txt"
+
+    # Downflowgo install ----------------------------------------------------------
+    # -----------------------------------------------------------------------------
+    echo
+    echo 'Downflowgo installation'
+    if $(confirm "Install Downflowgo [y/N] ?") ; then
+        pip install -r "${PYTHON_CODE}/downflowgo/src/requirements.txt"
+    fi
+    echo
+fi
+echo
+
 # setup (new) CODE and DOC paths, wether install or upgrade
 # symlinks from DOCROOT to RELBASE code and doc
 # -----------------------------------------------------------------------------
@@ -653,7 +674,7 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	fi
 	if [ ! -s ${DOCROOT}/DATA/DB/WEBOBSFORMS.db ]; then
 	 	verbosecho "creating WEBOBSFORMS.db"
-		cd ${DOCROOT}/CONF
+		cd ${DOCROOT}/DATA/DB
 		$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
 		chown ${USER_APACHE[0]}:${USER_APACHE[1]} WEBOBSFORMS.db
 		cd -

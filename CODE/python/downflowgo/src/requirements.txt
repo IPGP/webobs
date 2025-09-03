@@ -1,0 +1,13 @@
+adjustText
+ConfigUpdater
+arrow
+cligj
+proj
+pyproj
+scipy
+types-python-dateutil
+fiona
+rasterio
+pandas
+shapely
+#pyflowgo @ git+https://github.com/pyflowgo/pyflowgo.git
