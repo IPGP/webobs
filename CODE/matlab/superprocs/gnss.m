@@ -653,7 +653,6 @@ for r = 1:numel(P.GTABLE)
 				E.header = [E.header,{'East_treat(m)','North_treat(m)','Up_treat(m)'}];
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
-
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
 		end
 	end
