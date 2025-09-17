@@ -65,7 +65,7 @@ for n = 1:length(N)
     case {'miniseed','seedlink','arclink','combined','fdsnws-dataselect'}
         D(n) = readfmtdata_miniseed(WO,P,N(n),F);
 
-    case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii','spotgins-ippp','gamit-pos','pbogps-pos'}
+    case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii','spotgins-enu-v2','spotgins-ippp','gamit-pos','pbogps-pos'}
         D(n) = readfmtdata_gnss(WO,P,N(n),F);
 
     case {'hyp71sum2k','fdsnws-event','scevtlog-xml'}
@@ -99,7 +99,8 @@ for n = 1:length(N)
         D(n) = readfmtdata_mc3(WO,P,N(n),F);
 
     otherwise
-        D(n).t = [];
+        fprintf('%s: ** WARNING ** unknown format "%s", will try to read it anyway...\n',wofun,F.fmt);
+    	D(n).t = [];
         [D(n).d,D(n).CLB] = calib([],[],N(n).CLB);
         D(n).e = ones(size(D(n).d));
         fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);

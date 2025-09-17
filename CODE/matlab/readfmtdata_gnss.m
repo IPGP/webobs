@@ -34,7 +34,13 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: extract from SmoothFinal.tdp output file (grep "Station.SSSS.State.pos.[XYZ]" lines)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
-%	format 'gins-ippp'
+%	format 'spotgins-enu-v2'
+%		type: SPOTGINS solutions - version 2 (<2025-08)
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: jjjjj.jj E N V dE dN dV yyyymmddhhmmss yyyy.yyyyyyyyy
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
+%	format 'spotgins-ippp'
 %		type: GINS IPPP solutions
 %		filename/url: P.RAWDATA (use $FID to point the right file/url)
 %		data format: yyyymmdd hhmmss yyyy.yyyyyyyyy jjjjj.jj X Y Z dX dY dZ E N V dE dN dV
@@ -300,8 +306,56 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 	end
 	%D.ITRF_YEAR = 'ITRF08';
 
+
+% -----------------------------------------------------------------------------
+case 'spotgins-enu-v2'
+        % format exemple
+        %#jjjjj.jjjjjjjj         _____E         _____N         _____U         ____dE         ____dN         ____dU  yyyymmddHHMMSS  yyyy.yyyyyyy  Const  Dateofexe       GinsVersion
+        % 52670.83876160       0.055822       0.051638       0.005578       0.001263       0.001163       0.004899  20030131200749  2003.0844898  G      250404_185253   VALIDE_24_2
+        % 52671.50195600       0.057207       0.054240      -0.004722       0.000705       0.000619       0.002600  20030201120249  2003.0863067  G      250404_185253   VALIDE_24_2
+        
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+                cmd0 = sprintf('awk ''/^[^#]/ {print}'' >> %s',fdat); % removes header lines
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+        
+        
+        % load the file
+	if exist(fdat,'file')
+		dd = dlmread(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+                t = dd(:,1) + 678941.5007; % converts MJD to datenum
+		d = [dd(:,2:4),zeros(size(dd,1),1)]; % North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		e = dd(:,5:7);
+		e(e<min_error) = min_error;
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
+
+
 % -----------------------------------------------------------------------------
 case 'spotgins-ippp'
+        % From J.S. - ITES Strasbourg
 	% format example
 	% !yyyymmdd hhmmss yyyy.yyyyyyyyy  jjjjj.jj        X_position        Y_position        Z_position            dX            dY            dZ             E             N             V            dE            dN            dV
     %  20160723  65619 2016.558521561  57592.29    4182067.152057     570976.439258    4765940.539811      0.000611      0.000218      0.000673     -0.006574     -0.008848     -0.014844      0.000205      0.000307      0.000859
