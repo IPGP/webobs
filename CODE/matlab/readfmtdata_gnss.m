@@ -421,7 +421,7 @@ case 'spotgins-enu'
 
 % -----------------------------------------------------------------------------
 case 'spotgins-ippp'
-        % From J.S. - ITES Strasbourg
+    % From J.S. - ITES Strasbourg
 	% format example
 	% !yyyymmdd hhmmss yyyy.yyyyyyyyy  jjjjj.jj        X_position        Y_position        Z_position            dX            dY            dZ             E             N             V            dE            dN            dV
     %  20160723  65619 2016.558521561  57592.29    4182067.152057     570976.439258    4765940.539811      0.000611      0.000218      0.000673     -0.006574     -0.008848     -0.014844      0.000205      0.000307      0.000859
