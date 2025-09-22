@@ -81,6 +81,9 @@ enu = {'E','N','U'};
 cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Northern,Relative Vertical'),',');
 disp_yscale = field2num(P,'DISP_YSCALE_M',0);
 
+export_header_proc_keylist = split(field2str(P,'EXPORT_HEADER_PROC_KEYLIST',''),',');
+export_header_node_keylist = split(field2str(P,'EXPORT_HEADER_NODE_KEYLIST',''),',');	
+
 % Harmonic correction: period list (day), pairs of sine, cosine (mm) for each component
 harm_refdate = field2num(P,'HARMONIC_ORIGIN_DATE');
 harm_period = field2num(P,'HARMONIC_PERIOD_DAY',0);
@@ -306,7 +309,7 @@ modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',spectral(256));
 modeltime_markersize = pi*(field2num(P,'MODELTIME_MARKERSIZE',10,'notempty')/2)^2; % scatter needs marker size as a surface (πr²)
 
 
-geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
+geo = [cat(1,N.LAT_WGS84),cat(1,N.LAT_WGS84),cat(1,N.ALTITUDE)];
 
 V.name = P.NAME;
 V.velref = itrf;
@@ -653,7 +656,13 @@ for r = 1:numel(P.GTABLE)
 				E.header = [E.header,{'East_treat(m)','North_treat(m)','Up_treat(m)'}];
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
+
+			E.meta = {};
+			E = add_export_metadata(E,N(n),export_header_node_keylist,"NODE");
+			E = add_export_metadata(E,P,export_header_proc_keylist,"PROC");
+
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			E.meta = {}; % meta are erased after the export
 		end
 	end
 
@@ -2328,6 +2337,7 @@ for r = 1:numel(P.GTABLE)
                     E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
                 end
                 mkexport(WO,sprintf('%s_VECTORS_%s_%s',summary,lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+				E.meta = {}; % meta are erased after the export
             end
 
             % modeltime results
@@ -2363,6 +2373,7 @@ for r = 1:numel(P.GTABLE)
     end
 end
 end
+
 
 if P.REQUEST
     mkendreq(WO,P);
