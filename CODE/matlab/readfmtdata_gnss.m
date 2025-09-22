@@ -40,6 +40,13 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: jjjjj.jj E N V dE dN dV yyyymmddhhmmss yyyy.yyyyyyyyy
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
+%   format 'spotgins-enu'
+%		type: SPOTGINS solutions - supports v2 and v3 formats (auto-detection)
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format v2: jjjjj.jj E N V dE dN dV yyyymmddhhmmss yyyy.yyyyyyyyy
+%		data format v3: MJD DispEast DispNorth DispUp SigmaEast SigmaNorth SigmaUp CorrEN CorrEU CorrNU yyyy-mm-ddTHH:MM:SS DecimalYear Const Flag DateOfExe GinsVersion PrairieVersion
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)READFMTDATA_GNSS subfunction of readfmtdata.m
+%
 %	format 'spotgins-ippp'
 %		type: GINS IPPP solutions
 %		filename/url: P.RAWDATA (use $FID to point the right file/url)
@@ -461,6 +468,80 @@ case 'usgs-rneu'
 	% format example
 	%#yyyymmdd yyyy.yyyy rE  rN    rU    orb eE  eN  eU
 	% 20120501 2012.3322 3.3 -79.2 -19.6 rrr 3.5 5.8 16.0 -0.2535 Agung.20120501.stacov.point-2017/10/02-13:45:58
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		if strncmpi('http',fraw,4)
+			s = wosystem(sprintf('curl -s -S "%s" | awk ''{print $1,$3,$4,$5,$6,$7,$8,$9}'' | sed -e ''s/rrr/0/g;s/ppp/1/g'' >> %s',fraw,fdat),P);
+			if s ~= 0
+				break;
+			end
+		elseif exist(fraw,'file')
+			% extracts necessary data and replaces orbit with 0 (rrr) and 1 (ppp)
+			wosystem(sprintf('awk ''{print $1,$3,$4,$5,$6,$7,$8,$9}'' %s | sed -e ''s/rrr/0/g;s/ppp/1/g'' >> %s',fraw,fdat),P);
+		else
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		ty = floor(dd(:,1)/1e4);
+		tm = floor(dd(:,1)/1e2) - ty*1e2;
+		td = dd(:,1) - ty*1e4 - tm*1e2;
+		t = datenum(ty,tm,td,12,0,0);	% date is YYYYMMDD and we force time to 12:00:00
+		d = [dd(:,[3,2,4])/1e3,dd(:,5)];	% North(mm),East(mm),Up(mm),Orbit => E(m),N(m),U(m),O
+		e = dd(:,[7,6,8])/1e3;
+		e(e<min_error) = min_error;
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
+
+% -----------------------------------------------------------------------------
+case 'ies-neu'
+	% format example:
+	% Time dN eN dE eE dU eU
+	% 2008.65846986 -0.00502209 0.00647 0.193237 0.01492 0.0314239 0.01846
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		cmd0 = sprintf('awk ''{ if (NR!=1) {print}}'' >> %s',fdat);
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		elseif exist(fraw,'file')
+			% extracts necessary data
+			wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+		else
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = datenum(dd(:,1),1,1,0,0,0);	% date is decimal year
+		d = [dd(:,[4,2,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),O
+0501 2012.3322 3.3 -79.2 -19.6 rrr 3.5 5.8 16.0 -0.2535 Agung.20120501.stacov.point-2017/10/02-13:45:58
 
 	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
 	wosystem(sprintf('rm -f %s',fdat),P);
