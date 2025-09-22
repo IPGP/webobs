@@ -541,7 +541,7 @@ case 'ies-neu'
 	if ~isempty(dd)
 		t = datenum(dd(:,1),1,1,0,0,0);	% date is decimal year
 		d = [dd(:,[4,2,6]),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),O
-0501 2012.3322 3.3 -79.2 -19.6 rrr 3.5 5.8 16.0 -0.2535 Agung.20120501.stacov.point-2017/10/02-13:45:58
+        % 0501 2012.3322 3.3 -79.2 -19.6 rrr 3.5 5.8 16.0 -0.2535 Agung.20120501.stacov.point-2017/10/02-13:45:58
 
 	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
 	wosystem(sprintf('rm -f %s',fdat),P);
