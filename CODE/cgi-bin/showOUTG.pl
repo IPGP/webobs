@@ -83,7 +83,7 @@ if (scalar(@GID) == 2) {
     elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
     elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
     if (%G) {
-        %GRID = %{$G{$GRIDName}} ;
+        %GRID = %{$G{$GRIDName}};
         if ( WebObs::Users::clientHasRead(type=>"authprocs",name=>"$GRIDName") || WebObs::Users::clientHasRead(type=>"authviews",name=>"$GRIDName") ) {
             $RESOURCE = "authmisc/$GRIDName";
             if (-d "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName" ) {
@@ -356,7 +356,7 @@ if ($QryParm->{'ts'} eq 'map') {
                   "onMouseOut=\"nd()\" onMouseOver=\"overlib('$msg',CAPTION,'$dte')\"></A>\n";
             }
         }
-        if ($GRIDName eq "DOWNFLOWGO") {
+        if (exists $GRID{'DOWNFLOW_NAME_VENT'}) {
             sub list_files {
                 foreach(@_) {
                     s/$root_dir/$urn_dir/g;
