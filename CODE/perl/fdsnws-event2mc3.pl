@@ -192,7 +192,7 @@ for (@last) {
     print "--- $evt_id ---\n";
 
     my $mc_path = "$MC3{ROOT}/*/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}*.txt";
-    my @lines = qx(grep "${fdsnws_server}:\/\/${evt_id}" $mc_path|xargs echo -n);
+    my @lines = qx(grep -a "${fdsnws_server}:\/\/${evt_id}" $mc_path|xargs echo -n);
     my $mc_file;
 
     if (@lines) {

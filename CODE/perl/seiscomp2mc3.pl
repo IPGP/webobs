@@ -143,7 +143,7 @@ for (@last) {
     print "--- checking $fullname ---\n";
 
     my $mc_path = "$MC3{ROOT}/*/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}*.txt";
-    my @lines = qx(grep "$evt_id" $mc_path|cut -d'|' -f14|xargs echo -n);
+    my @lines = qx(grep -a "$evt_id" $mc_path|cut -d'|' -f14|xargs echo -n);
     my $mc_file;
 
     if (@lines) {
@@ -496,11 +496,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-François Beauducel, Didier Lafon
+François Beauducel, Didier Lafon, Jean-Marie Saurel, Arnaud Andrieu
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
