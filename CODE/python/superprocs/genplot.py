@@ -70,6 +70,7 @@ plt.rcParams["font.size"] = 8
 plt.rcParams["lines.linewidth"] = 0.1
 plt.rcParams["lines.markersize"] = 1
 cmap = matplotlib.colormaps["brg"]
+pc = 0.35  # Blending parameter between the colormap and white.
 
 graph = graph_parameters(proc)
 for timescale in graph.keys():
@@ -84,7 +85,7 @@ for timescale in graph.keys():
         channels = channel_height_ratios(pernode_channels, max(node.CLB))
         nc = len(channels)
         dt = filter_node_data(proc, node, timescale)
-        colors = cmap(np.linspace(0, 1, nc + 1))
+        colors = (1 - pc) * cmap(np.linspace(0, 1, nc)) + pc * np.ones((nc, 4))
         hr = channels.values()
         fig, axs = plt.subplots(nc, 1, sharex=True, height_ratios=hr, figsize=psz)
         plt.subplots_adjust(left=0.1, bottom=0.1, top=0.90, right=0.95)
@@ -112,7 +113,7 @@ for timescale in graph.keys():
                 mdec = round(movingaverage / graph[timescale].get("decimate"))
                 if mdec >= 2:
                     mlw = float(gopts.get("linewidth", 0.1)) * 2
-                    axs[c].plot(dt, smooth(data, mdec), c="grey", lw=mlw)
+                    axs[c].plot(dt, smooth(data, mdec), c="lightgrey", lw=mlw)
                     axs[c].set_title(f"mov. avg {mdec}", c=colors[c], weight="bold")
         axs[-1].xaxis.set_major_formatter(date_form)
         plot_time_axis_label(axs[-1], start_time, end_time)
