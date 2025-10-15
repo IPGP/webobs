@@ -529,13 +529,8 @@ if ( isok($theiaAuth) and $saveAuth == 1 ) {
     my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
     $sth->execute($station_name,$alias,$point);
 
-    if ($spatialcov eq "") {
-        $sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, SUBJECT, LINEAGE) VALUES (?,?,?,?);');
-        $sth->execute($id,$name,$subject,$lineage);
-    } else {
-        $sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?);');
-        $sth->execute($id,$name,$subject,$spatialcov,$lineage);
-    }
+    $sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?);');
+    $sth->execute($id,$name,$subject,$spatialcov,$lineage);
 
     $dbh->disconnect();
 }
