@@ -41,6 +41,7 @@ print(sys.argv[1])
 proc = Proc(sys.argv[1])
 
 if len(sys.argv) >= 4:
+    proc.request = True;
     proc.set_outdir(os.path.join(sys.argv[3], f"PROC.{proc.name}"))
     proc.set_config_file(os.path.join(sys.argv[3], "REQUEST.rc"))
 proc.read_proc()

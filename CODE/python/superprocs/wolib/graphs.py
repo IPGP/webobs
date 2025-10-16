@@ -82,7 +82,10 @@ def plot_title(title, proc, node, fontsize=10):
     fsize = fsize.group(1) if fsize else fontsize
     title = re.sub(r"\\fontsize{\d+}", "", title)
     title = re.sub(r"(\w)\$", r"\1 $", title)
-    title = title.replace(r"$timescale", getattr(proc, "timescale", ""))
+    if proc.request:
+        title = title.replace(r"($timescale)", "")
+    else:
+        title = title.replace(r"$timescale", getattr(proc, "timescale", ""))
     title = title.replace(r"$NAME", getattr(proc, "NAME", ""))
     title = title.replace(r"$node_alias", getattr(node, "ALIAS", ""))
     title = title.replace(r"$node_name", getattr(node, "NAME", ""))

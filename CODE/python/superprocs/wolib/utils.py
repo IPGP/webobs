@@ -177,14 +177,22 @@ def update_db_status(proc, node_id):
 
 
 def graph_parameters(proc):
+    datestrlist = getattr(proc, "DATESTRLIST", "-1").split(",")
+    statuslist = getattr(proc, "STATUSLIST", "1").split(",")
+    if proc.request:
+        timescalelist = [""]
+        decimatelist = getattr(proc, "DECIMATE", "1").split(",")
+        cumulatelist = getattr(proc, "CUMULATE", "1").split(",")
+        markersizelist = getattr(proc, "MARKERSIZE", "1").split(",")
+        linewidthlist = getattr(proc, "LINEWIDTH", "1").split(",")
+    else:
+        timescalelist = getattr(proc, "TIMESCALELIST", "06h").split(",")
+        decimatelist = getattr(proc, "DECIMATELIST", "1").split(",")
+        cumulatelist = getattr(proc, "CUMULATELIST", "1").split(",")
+        markersizelist = getattr(proc, "MARKERSIZELIST", "1").split(",")
+        linewidthlist = getattr(proc, "LINEWIDTHLIST", "1").split(",")
+
     graph = {}
-    timescalelist = getattr(proc, "TIMESCALELIST", "06h,24h,01w").split(",")
-    decimatelist = getattr(proc, "DECIMATELIST", "1,1,1").split(",")
-    cumulatelist = getattr(proc, "CUMULATELIST", "1,1,1").split(",")
-    datestrlist = getattr(proc, "DATESTRLIST", "-1,-1,-1").split(",")
-    markersizelist = getattr(proc, "MARKERSIZELIST", "1,1,1").split(",")
-    linewidthlist = getattr(proc, "LINEWIDTHLIST", "1,1,1").split(",")
-    statuslist = getattr(proc, "STATUSLIST", "1,1,1").split(",")
     for t, ts in enumerate(timescalelist):
         graph[ts] = {}
         try:

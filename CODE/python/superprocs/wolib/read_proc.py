@@ -14,6 +14,7 @@ from wolib.grids import Node
 from wolib.readers import read_dsv
 from wolib.readers import read_miniseed
 from wolib.utils import get_timescale
+from wolib.utils import str_to_date
 from wolib.utils import str_to_float
 from wolib.utils import str_to_timestamp
 from wolib.utils import update_db_status
@@ -148,6 +149,7 @@ class Proc(Grid):
         super().__init__(name, nodes)
         self.start_time = None
         self.end_time = None
+        self.request = False
         self.NOW = pendulum.now()
         self.SELFREF = f"PROC.{name}"
         self.OUTDIR = os.path.join(WEBOBS["ROOT_OUTG"], self.SELFREF)
@@ -184,8 +186,13 @@ class Proc(Grid):
             self.add_node(node)
 
     def read_data(self, timescale):
-        self.start_time, self.end_time, ts = get_timescale(timescale)
-        self.timescale = ts
+        if self.request:
+            self.start_time = str_to_date(self.DATE1)
+            self.end_time = str_to_date(self.DATE2)
+            self.timescale = ""
+        else:
+            self.start_time, self.end_time, ts = get_timescale(timescale)
+            self.timescale = ts
         start = time.time()
         for node in self.nodes:
             rawformat = node.RAWFORMAT
@@ -200,7 +207,8 @@ class Proc(Grid):
             if rawformat in ["ascii", "dsv"]:
                 read_dsv(self, node.fullid, timescale)
         duration = round(time.time() - start, 1)
-        print(f"Fetch data for timescale '{ts}' in:", duration, "seconds")
+        msg = "" if self.request else f" for timescale '{ts}'"
+        print(f"Fetch data{msg} in:", duration, "seconds")
         set_status(self)
 
     def set_outdir(self, outdir):
