@@ -418,7 +418,7 @@ if ($QryParm->{'dump'} eq "") {
     $html .= "</select>\n";
 
     # ----- selection box TYPE EVNT
-    $html .= " &nbsp;&nbsp; Type: <select name=\"type\" size=\"1\">";
+    $html .= " &nbsp;&nbsp; Type: <select class=\"multiple-seismic-event-types\" name=\"type\" size=\"1\" multiple=\"multiple\">";
     for (sort(keys(%typesSO))) {
         my $key = $typesSO{$_};
         if ($_ ne "") {
@@ -667,7 +667,8 @@ if ( (!clientHasAdm(type=>"authprocs",name=>"MC") && !clientHasAdm(type=>"authpr
 # Filter on type
 #
 if (($QryParm->{'type'} ne "") && ($QryParm->{'type'} ne "ALL")) {
-    @lignes = grep(/\|$QryParm->{'type'}\|/, @lignes)
+    my $regex = join '|', map { quotemeta } $cgi->param("type");
+    @lignes = grep { /$regex/ } @lignes;
 }
 
 # Filter on amplitude
@@ -1683,6 +1684,7 @@ if ($QryParm->{'dump'} eq "") {
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <title>$MC3{TITLE}</title>
+<link rel="stylesheet" type="text/css" href="/css/select2/select2.min.css"/>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <link rel="stylesheet" type="text/css" href="/css/$MC3{CSS}">
 </head>
@@ -1694,6 +1696,7 @@ if ($QryParm->{'dump'} eq "") {
 <!-- jQuery & FLOT http://code.google.com/p/flot -->
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/js/flot/excanvas.min.jsn"></script><![endif]-->
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/select2/select2.min.js"></script>
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.min.js"></script>
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.time.min.js"></script>
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.stack.min.js"></script>
@@ -1740,6 +1743,28 @@ function display() {
     document.formulaire.setAttribute("target", "");
     document.formulaire.submit();
 }
+
+\$(document).ready(function() {
+    var \$select = \$('.multiple-seismic-event-types').select2({
+        placeholder: "Select one or more types",
+        allowClear: true
+    });
+
+    \$select.on('change', function() {
+        var selectedCount = \$(this).find('option:selected').length;
+        var \$selection = \$(this).next('.select2').find('.select2-selection__rendered');
+        var \$clearButton = \$selection.find('.select2-selection__clear');
+
+        if (selectedCount > 5) {
+            \$selection.html("Several selected types of seismicity (" + selectedCount + ")");
+            \$selection.append(\$clearButton);
+        }
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedTypes = urlParams.getAll('type')
+    \$('.multiple-seismic-event-types').val(selectedTypes).trigger('change');
+});
 
 //-->
 </script>

@@ -22,3 +22,7 @@ td {
     font-size: 1.5em;
     border: 1px solid gray;
 }
+
+select.multiple-seismic-event-types {
+    min-width: 20rem;
+}
