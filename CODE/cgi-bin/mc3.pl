@@ -668,7 +668,7 @@ if ( (!clientHasAdm(type=>"authprocs",name=>"MC") && !clientHasAdm(type=>"authpr
 #
 if (($QryParm->{'type'} ne "") && ($QryParm->{'type'} ne "ALL")) {
     my $regex = join '|', map { quotemeta } $cgi->param("type");
-    @lignes = grep { /$regex/ } @lignes;
+    @lignes = grep { /\|$regex\|/ } @lignes;
 }
 
 # Filter on amplitude
@@ -1747,7 +1747,14 @@ function display() {
 \$(document).ready(function() {
     var \$select = \$('.multiple-seismic-event-types').select2({
         placeholder: "Select one or more types",
-        allowClear: true
+        allowClear: true,
+    }).on("select2:unselecting", function(e) {
+        \$(this).data('state', 'unselected');
+    }).on("select2:open", function(e) {
+        if (\$(this).data('state') === 'unselected') {
+            \$(this).removeData('state');
+            \$(this).select2('close');
+        }
     });
 
     \$select.on('change', function() {
