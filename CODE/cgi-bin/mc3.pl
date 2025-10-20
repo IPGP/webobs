@@ -422,7 +422,7 @@ if ($QryParm->{'dump'} eq "") {
     for (sort(keys(%typesSO))) {
         my $key = $typesSO{$_};
         if ($_ ne "") {
-            $html .= "<option ".($key eq $QryParm->{'type'} ? "selected":"")." value=\"$key\">$types{$key}{Name}</option>\n";
+            $html .= "<option ".($key eq $QryParm->{'type'} ? "selected":"")." value=\"$key\">$types{$key}{Name} ($key)</option>\n";
         }
     }
     $html .= "</select>\n";
@@ -1748,6 +1748,7 @@ function display() {
     var \$select = \$('.multiple-seismic-event-types').select2({
         placeholder: "Select one or more types",
         allowClear: true,
+        templateSelection: formatSelection,
     }).on("select2:unselecting", function(e) {
         \$(this).data('state', 'unselected');
     }).on("select2:open", function(e) {
@@ -1756,6 +1757,11 @@ function display() {
             \$(this).select2('close');
         }
     });
+
+    function formatSelection(item) {
+        var originalSelection = item.element;
+        return \$(originalSelection).val();
+    }
 
     \$select.on('change', function() {
         var selectedCount = \$(this).find('option:selected').length;
