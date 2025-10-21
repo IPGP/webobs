@@ -176,12 +176,12 @@ print <<"END";
 
     // Listen to the edition events
     map.on('draw:edited', function (e) {
-        saveGeoJSON();
+        saveGeoJSON(false);
     });
 
     // Listen to the deletion events
     map.on('draw:deleted', function (e) {
-        saveGeoJSON();
+        saveGeoJSON(false);
     });
 
     function createShp(geojson) {
@@ -204,7 +204,7 @@ print <<"END";
     }
 
     // Save GeoJSON data
-    function saveGeoJSON() {
+    function saveGeoJSON(close=true) {
         var drawnItemsJson = drawnItems.toGeoJSON();
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "postGEOJSON.pl", true);
@@ -215,7 +215,9 @@ print <<"END";
                     if (window.opener) {
                         window.opener.location.reload();
                     }
-                    window.close();
+                    if (close) {
+                        window.close();
+                    }
                 } else {
                     document.getElementById("status").innerHTML = JSON.parse(this.responseText)["message"];
                     setTimeout(() => {

@@ -405,15 +405,15 @@ function postIt()
         var nb_creators = form.count_creator.value;
         if (nb_creators>1) {
             for (var i=0; i<nb_creators; i++) {
-                if ( form.firstName[i].value == "" ) {
+                if ( form.elements["firstName_" + i].value == "" ) {
                     alert("First name can't be empty (make sure the right role is selected too) !");
                     return false;
                 }
-                if ( form.lastName[i].value == "" ) {
+                if ( form.elements["lastName_" + i].value == "" ) {
                     alert("Last name can't be empty (make sure the right role is selected too) !");
                     return false;
                 }
-                if ( form.email[i].value == "" ) {
+                if ( form.elements["email_" + i].value == "" ) {
                     alert("Email can't be empty (make sure the right role is selected too) !");
                     return false;
                 }
@@ -552,6 +552,15 @@ function fetchKML() {
         .then(response => response.text())
         .then(xmlString => \$.parseXML(xmlString))
         .then(data => console.log(data))
+}
+
+function openOSM() {
+    var winW = $WEBOBS{OSM_WIDTH_VALUE} + 15;
+    var winH = $WEBOBS{OSM_HEIGHT_VALUE} + 75;
+    var windowFeatures = 'width=' + winW + ', height=' + winH + ', toolbar=no, menubar=no, location=no';
+    window.open("/cgi-bin/$WEBOBS{CGI_OSM}?grid=$GRIDType.$GRIDName.$NODEName", "$NODEName", windowFeatures);
+    document.form.locMap.value = 1;
+    document.form.saveAuth.value = 1;
 }
 
 function fc() {
@@ -754,10 +763,12 @@ function getGeometry(geojson) {
         for (var i = 0; i < geojson.features.length-1; i++) {
             coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
         } geometry.coordinates = coordinates; return geometry;
-    } else {
+    } else if (geojson.features.length == 1) {
         geometry.type = "Polygon";
         geometry.coordinates = [getBoundingBox(geojson.features[0].geometry.coordinates)];
         return geometry;
+    } else {
+        return "";
     }
 }
 function getBoundingBox(coordinates) {
@@ -788,7 +799,7 @@ function addCreator() {
      */
     var form = \$('#theform')[0];
     form.locMap.value = 1;
-    form.count_creator.value = parseInt(form.count_creator.value)+1;
+    form.count_creator.value = parseInt(form.count_creator.value);
     var new_div = document.createElement('div');
     new_div.id = 'new_creator'+form.count_creator.value;
     new_div.innerHTML = \$('#creator')[0].innerHTML;
@@ -1086,14 +1097,14 @@ for (@creators) {
     }
 }
 print "</SELECT>&nbsp;&nbsp";
-print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
-print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
-print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR></DIV>";
+print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName_0\">&nbsp;&nbsp;";
+print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName_0\">&nbsp;&nbsp;";
+print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email_0\">&nbsp;&nbsp;<BR></DIV>";
 print "<DIV id='creator_add'>";
 for (my $i = 1; $i <= $#usrRole; $i++) {
     my $cnt = $i+1;
     print "<DIV id=new_creator$cnt>";
-    print "<SCRIPT>var form = \$('#theform')[0];form.count_creator.value = parseInt(form.count_creator.value)+1;</SCRIPT>";
+    print "<SCRIPT>var form = \$('#theform')[0];form.count_creator.value = parseInt(form.count_creator.value);</SCRIPT>";
     print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[$i]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
     for (@creators) {
         if ($_ eq $usrRole[$i]){
@@ -1103,9 +1114,9 @@ for (my $i = 1; $i <= $#usrRole; $i++) {
         }
     }
     print "</SELECT>&nbsp;&nbsp";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR>";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName_$i\">&nbsp;&nbsp;";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName_$i\">&nbsp;&nbsp;";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email_$i\">&nbsp;&nbsp;<BR>";
     print "</DIV>";
 }
 print "</DIV><BR>";
@@ -1146,9 +1157,7 @@ print "</TD>\n";                                                                
 print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
 
 # --- 'node' position (latitude, longitude & altitude)
-my $map =" <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$GRIDType.$GRIDName.$NODEName','$NODEName',"
-  ."'width=".($WEBOBS{OSM_WIDTH_VALUE}+15).",height=".($WEBOBS{OSM_HEIGHT_VALUE}+75). ",toolbar=no,menubar=no,location=no')\">"
-  ."<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
+my $map =" <A href=\"#\" onclick=openOSM()>"."<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
 print "<FIELDSET><LEGEND>$__{'Geographic location'}$map</LEGEND>";
 print "<TABLE><TR>";
 print "<TD style=\"border:0;text-align:left\">";
@@ -1248,9 +1257,10 @@ print <<FIN;
     if (typeof(\"$geojsonFile\") !== 'undefined') {
         var shpfile = createShp($json); 
         shpfile.addTo(map);
-        
-        var geometry = JSON.stringify(getGeometry($json));
-        document.form.outWKT.value = geometry;
+        if ($json.features.length) {
+            var geometry = JSON.stringify(getGeometry($json));
+            document.form.outWKT.value = geometry;
+        }
     }
 
     var editableLayers = new L.FeatureGroup();
