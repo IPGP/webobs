@@ -22,10 +22,9 @@ height=
 use strict;
 use warnings;
 use CGI;
-my $cgi = new CGI;
-use CGI::Carp qw(fatalsToBrowser);
-$CGI::POST_MAX = 1024;
-$CGI::DISABLE_UPLOADS = 1;
+use JSON;
+
+$CGI::POST_MAX = 1024 *1024 * 50;
 
 # ---- webobs stuff
 use WebObs::Config;
@@ -40,8 +39,27 @@ use WebObs::Mapping;
 my $title="";
 my @nodes;
 
-# ---- what have we been called with ? ---------------
-#
+my $cgi = CGI->new;
+
+if ($cgi->request_method() eq 'POST') {
+    # Read the JSON data
+    my $post_data = $cgi->param('POSTDATA');
+
+    # Decode the JSON data
+    my $json = decode_json($post_data);
+    my $filename = $json->{filename};
+    my $geojson = $json->{geojson};
+
+    # Save the GeoJSON data to a file
+    open(my $fh, '>', $filename) or die "Cannot open file: $!";
+    print $fh to_json($geojson);
+    close($fh);
+
+    # Send the response
+    print $cgi->header('application/json');
+    print to_json({ status => 'success', message => "GeoJSON data saved to $filename" });
+}
+
 my $grid   = $cgi->url_param('grid');
 my $opt    = $cgi->url_param('nodes');
 my $width  = $cgi->url_param('width')  // $WEBOBS{OSM_WIDTH_VALUE};
@@ -105,24 +123,27 @@ if (-e $geojsonFile) {
 
 # ---- build the HTML page calling OSM API once loaded ----
 #
-print $cgi->header(-type=>'text/html',-charset=>'utf-8');
-print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">","\n";
-print <<"END";
-<HTML><HEAD><TITLE>$title ($today)</TITLE>
-<link rel="stylesheet" href="/css/leaflet.css" />
-<link rel="stylesheet" href="/css/leaflet.draw.css" />
-<script src="/js/leaflet.js"></script>
-<script src="/js/leaflet.draw.js"></script>
-<script src="/js/shp.min.js"></script>
-<link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 
-</HEAD>
-<BODY>
-<DIV id="map" style="height: ${height}px"></DIV>
-<br><strong>Add a shapefile layer: </strong> <input type="file" id="shapefile-input" accept=".geojson, .json, .zip, .shz">
+print $cgi->header('text/html; charset=UTF-8');
+print <<"END";
+<!DOCTYPE html>
+<html>
+<head>
+    <title>$title ($today)</title>
+    <link rel="stylesheet" href="/css/leaflet.css" />
+    <link rel="stylesheet" href="/css/leaflet.draw.css" />
+    <script src="/js/leaflet.js"></script>
+    <script src="/js/leaflet.draw.js"></script>
+    <script src="/js/shp.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+</head>
+<body>
+<div id="map" style="height: ${height}px"></div>
+<br><strong>Add a shapefile layer: </strong> <input type="file" onchange="loadShape()" accept=".geojson, .json, .zip, .shz">
 <button id="save" style="float: right;">Save</button>
 <br><span id="status" style="color: green; float: right;"></span>
-<script type="text/javascript">
+
+<script>
     var esriAttribution = 'Tiles &copy; <b>Esri</b>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
     var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
     var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
@@ -207,12 +228,14 @@ print <<"END";
     function saveGeoJSON(close=true) {
         var drawnItemsJson = drawnItems.toGeoJSON();
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", "postGEOJSON.pl", true);
+        xhr.open("POST", "$WEBOBS{CGI_OSM}", true);
         xhr.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 var openerURL = window.opener.location.href;
                 if (openerURL.includes("formNODE.pl")) {
                     if (window.opener) {
+                        window.opener.document.form.saveAuth.value = 1;
+                        window.opener.document.form.locMap.value = 1;
                         window.opener.location.reload();
                     }
                     if (close) {
@@ -235,7 +258,7 @@ print <<"END";
 
     document.getElementById("save").addEventListener("click", saveGeoJSON);
 
-    function loadShapefile(file) {
+    function loadZipShape(file) {
         var reader = new FileReader();
         reader.onload = function(event) {
             shp(event.target.result).then(function(geojson) {
@@ -253,17 +276,16 @@ print <<"END";
         reader.readAsText(file);
     }
 
-    // Event listener to file selector button
-    document.getElementById("shapefile-input").addEventListener("change", function(event) {
+    function loadShape(file) {
         var file = event.target.files[0];
         if (file) {
             if (file.name.endsWith("json")) {
                 loadGeoJSON(file);
             } else {
-                loadShapefile(file);
+                loadZipShape(file);
             }
         }
-    })
+    }
 END
 
 for (keys(%N)) {
@@ -291,17 +313,15 @@ if (scalar(@NID) == 2) {
 } else {
     print "map.setView([$lat, $lon], $WEBOBS{OSM_ZOOM_VALUE});\n";
 }
-print "</script>\n";
-
-# ---- we're done ------------------------------------
-print "\n</BODY>\n</HTML>\n";
+print "</script>";
+print $cgi->end_html;
 
 __END__
 
 =pod
 
 =head1 AUTHOR(S)
-François Beauducel, Lucas Dassin
+François Beauducel, Lucas Dassin, Jérôme Touvier
 
 =head1 COPYRIGHT
 WebObs - 2012-2025 - Institut de Physique du Globe Paris
