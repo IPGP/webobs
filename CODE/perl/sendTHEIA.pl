@@ -22,11 +22,12 @@ use JSON;
 use Encode qw(decode encode);
 use File::Path qw(make_path rmtree);
 use IO::Compress::Zip qw(zip $ZipError);
+use Try::Tiny;
 
 # ---- webobs stuff
 use WebObs::Config;
 use WebObs::Grids;
-use WebObs::i18n;
+use WebObs::Utils;
 
 my $today = strftime("%Y-%m-%dT%H:%M:%SZ", localtime);
 my $datedir = strftime("%Y%m%d\_%H%M%S", localtime);
@@ -99,7 +100,6 @@ while( my @row = $sth->fetchrow_array() ) {
         $producer{'measuredVariables'} = decode("utf8", $row[5]);
     }
     if ($row[9] ne "") {
-
         # ---- parsing online resources
         my %resource;
         foreach(split(/_,/, $row[9])) {
@@ -126,7 +126,6 @@ while( my @row = $sth->fetchrow_array() ) {
 
     while( my @row2 = $sth2->fetchrow_array() ) {
         if ($row2[4] eq $producer{'producerId'}) {
-
             # ---- parsing contacts
             my %contact = (
                 firstName => decode("utf8", $row2[1]),
@@ -148,7 +147,6 @@ $rv = $sth->execute() or die $DBI::errstr;
 my @fundings;
 
 while( my @row = $sth->fetchrow_array() ) {
-
     # ---- parsing fundings
     my %funding = (
         type => $row[0],
@@ -168,6 +166,7 @@ $producer{'fundings'} = \@fundings;
 my @observations;
 
 foreach (@channels) {
+    print "$_\n";
     $stmt  = "SELECT * FROM observations ";
     $stmt .= "INNER JOIN sampling_features ON observations.stationname = sampling_features.identifier ";
     $stmt .= "INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
@@ -177,7 +176,6 @@ foreach (@channels) {
     $rv    = $sth->execute() or die $DBI::errstr;
 
     while( my @row = $sth->fetchrow_array() ) {
-
         # print "\n", join(" ", @row[0 .. $#row-6]), "\n";
         # ---- data from observed_properties table
         my %observedProperty = (
@@ -192,7 +190,7 @@ foreach (@channels) {
         }
         $observedProperty{"theiaCategories"} = \@theiaCategories;
 
-        #print $observation{'observedProperty'}{'theiaCategories'}->[0];
+        # print $observation{'observedProperty'}{'theiaCategories'}->[0];
         # ---- data from sampling_features table
         # ---- parsing coordinates
         my $geometry = (split ':', $row[11])[1];
@@ -248,8 +246,10 @@ foreach (@channels) {
         $header .= "dateBeg;dateEnd;latitude;longitude;altitude;value;qualityFlags;\n";
 
         # ---- content
-        my $content = "grep -v '^#' $filepath$dataname | awk 'FS=\" \" {print \";\"\$1\"-\"\$2\"-\"\$3\"T\"\$4\":\"\$5\":\"\$6\"Z\",\"$lat\",\"$lon\",\"$alt\",\$$chan_nb\";\"}' OFS=\";\"";
-        $content = qx($content);
+        my $cmd = qq(grep -v '^#' $filepath$dataname | awk -v lat="$lat" -v lon="$lon" -v alt="$alt" -v chan_nb="$chan_nb" '{
+            printf \";%s-%s-%sT%s:%s:%sZ;%s;%s;%s;%s;\\n\", \$1,\$2,\$3,\$4,\$5,\$6,lat,lon,alt,\$chan_nb
+        }');
+        my $content = qx($cmd);
         $header .= $content;
         open(FILE, '>', $obsfile);
         print FILE $header;
@@ -280,6 +280,7 @@ foreach (@channels) {
 my @datasets;
 
 foreach (@nodes) {
+    print "$_\n";
     chomp($_);
     $stmt = qq(SELECT * FROM datasets WHERE datasets.identifier = '$_';);
     $sth = $dbh->prepare( $stmt );
@@ -296,14 +297,21 @@ foreach (@nodes) {
         my @topicCategories;
         foreach(split('_,', $topicCategories)) {
             my $category = (split(':', $_))[1];
-
-            #$category =~ s/(\r\n)//g;
             push(@topicCategories, $category);
         }
-        my %geometry = (
-            type => JSON->new->utf8->decode($row[3])->{'type'},
-            coordinates => JSON->new->utf8->decode($row[3])->{'coordinates'}
-          );
+
+        my %geometry;
+        if ($row[3]) {
+            try {
+                %geometry = (
+                    type => JSON->new->utf8->decode($row[3])->{'type'},
+                    coordinates => JSON->new->utf8->decode($row[3])->{'coordinates'}
+                );
+            } catch {
+                warn "Encoding error: $_";
+            };
+        }
+
         my %spatialExtent = (
             type => "Feature",
             properties => {},
@@ -324,14 +332,13 @@ foreach (@nodes) {
             spatialExtent => \%spatialExtent,
           );
         $metadata{'inspireTheme'} =~ s/(\r\n)//g;
-        $metadata{'description'} = $desc;
+        $metadata{'description'} = u2l($desc);
 
         my %dataset = (
             datasetId => $row[0],
           );
 
         # ---- extracting contacts data
-
         my $stmt2 = qq(SELECT * FROM contacts;);
         my $sth2 = $dbh->prepare( $stmt2 );
         my $rv2 = $sth2->execute() or die $DBI::errstr;
@@ -339,7 +346,6 @@ foreach (@nodes) {
         my @contacts;
         while( my @row2 = $sth2->fetchrow_array() ) {
             if ($row2[4] eq $dataset{'datasetId'}) {
-
                 # ---- parsing contacts
                 my %contact = (
                     firstName => decode("utf8", $row2[1]),
@@ -364,8 +370,8 @@ foreach (@nodes) {
                     push(@ds_obs, $_);
                     my $filename = decode_json encode_json $_->{'result'}->{'dataFile'}->{'name'};
 
-# ---- adding the title dataset into $filename
-# ---- first we open $filename while creating a new $filename where we will write the line we want to insert
+                    # ---- adding the title dataset into $filename
+                    # ---- first we open $filename while creating a new $filename where we will write the line we want to insert
                     open my $in, '<', "$tmpdir/$filename" or die "Can't read old file: $!";
                     open my $out, '>', "$tmpdir/$filename.new" or die "Can't write new file: $!";
                     my $title = decode("utf8", $row[1]);
@@ -391,10 +397,9 @@ foreach (@nodes) {
             if (@{$dataset{'observations'}}) {
                 push(@datasets, \%dataset);
                 compressTxtFiles("$dataset{'datasetId'}", $tmpdir)
-
-#or die "$dataset{'datasetId'} needs to be associated with at least one observation !\n";
+                # or die "$dataset{'datasetId'} needs to be associated with at least one observation !\n";
             } else {
-                print "$_ was discarded. There are no observations for this dataset!\n";
+                print "$datasetId was discarded. There are no observations for this dataset!\n";
             }
         } else {
             compressTxtFiles("$dataset{'datasetId'}", $tmpdir)
@@ -442,8 +447,7 @@ if ( $output =~ /success/ ) {
     zip [ <$tmpdir/*DAT*.zip>, $filepath ] => "$theiadir/$zipfile",
       FilterName => sub { s[^$tmpdir/][] } or die "zip failed: $ZipError\n";
     rmtree($tmpdir);
-}
-else {
+} else {
     print "The JSON metadata file is not valid :\n".$output;
 };
 
@@ -455,8 +459,7 @@ if ( $output =~ /success/ ) {
     my $response = qx(curl -T "$theiadir/$zipfile" -u $producerId:$password -s -o /dev/null -w "%{http_code}" $url);
     if ( rindex($response,"2", 0) eq 0 ) {
         print "Data upload successful. Data are available at https://in-situ.theia-land.fr/data/OBSE/previous/", "\n";
-    }
-    else {
+    } else {
         print "Data upload failed: ", $response, "\n";
         die;
     }
