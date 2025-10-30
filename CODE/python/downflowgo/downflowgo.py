@@ -22,7 +22,7 @@ print(procname)
 OUTDIR = None
 RANDOM_ID_CHOICE = string.ascii_lowercase + string.digits
 RANDOM_ID_LENGTH = 6
-THUMB_SIZE = 128
+THUMB_SIZE = 256
 TIMEOUT = 600
 
 if len(sys.argv) == 4:
