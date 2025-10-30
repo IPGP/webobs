@@ -8,29 +8,29 @@
 
 
 if [ -z "$1" ]; then
-	echo
-	echo "$0 migrates former FORM to new GENFORM"
-	echo "Usage: $0 WOROOT"
-	echo
-	exit 1
+    echo
+    echo "$0 migrates former FORM to new GENFORM"
+    echo "Usage: $0 WOROOT"
+    echo
+    exit 1
 fi
 
 DRY_RUN=$2
 # -----------------------------------------------------------------------------
 function cmd {
-	if [[ $DRY_RUN != 1 && ! -z "$1" ]]; then
-		echo $1
-		eval $1
-	else
-		echo "(DRY RUN) $1"
-	fi
+    if [[ $DRY_RUN != 1 && ! -z "$1" ]]; then
+        echo $1
+        eval $1
+    else
+        echo "(DRY RUN) $1"
+    fi
 }
 
 
 # -----------------------------------------------------------------------------
 if [[ $(id -u) != 0 && $DRY_RUN != 1  ]]; then
-	echo 'Need to have root privileges. Bye'
-	#exit 64
+    echo 'Need to have root privileges. Bye'
+    #exit 64
 fi
 
 today=$(date)
@@ -41,17 +41,24 @@ TMP=/tmp/webobs_genform_migration
 
 P=`dirname $0`
 if ! [[ -e $P/../dutils.sh ]]; then
-	echo 'Missing dutils.sh. Bye.'
-	exit 64
+    echo 'Missing dutils.sh. Bye.'
+    exit 64
 fi
 . $P/../dutils.sh
 
 if [[ -z ${RELBASE} ]]; then
-	RELBASE="$P/../.."
+    RELBASE="$P/../.."
 fi
 
-wousr=$(stat -f '%Su' $WOROOT/CONF/GRIDS2NODES)
-wogrp=$(stat -f '%Sg' $WOROOT/CONF/GRIDS2NODES)
+if stat --version >/dev/null 2>&1; then
+    # GNU stat
+    wousr=$(stat -c '%U' $WOROOT/CONF/GRIDS2NODES)
+    wogrp=$(stat -c '%G' $WOROOT/CONF/GRIDS2NODES)
+else
+    # BSD stat
+    wousr=$(stat -f '%Su' $WOROOT/CONF/GRIDS2NODES)
+    wogrp=$(stat -f '%Sg' $WOROOT/CONF/GRIDS2NODES)
+fi
 
 FPATH=$WOROOT/CONF/FORMS
 LFPATH=$WOROOT/CONF/LEGACY_FORMS
@@ -60,9 +67,9 @@ cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 
 # =============================================================================
 # make a loop on all known legacy FORMs
-#for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO DISTANCE BOJAP 
+#for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO DISTANCE BOJAP
 for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
-    
+
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
     conf="$WOROOT/CONF/FORMS/$form/$form.conf"
@@ -75,28 +82,41 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         echo "---> No legacy data found in $conf... nothing to do for $form."
         continue
     fi
-        
+
     # move the legacy conf and data first
+    echo "---> Backup legacy conf."
     cmd "mv -f $FPATH/$form $LFPATH/FORMS/"
     conf0="$LFPATH/FORMS/$form/$form.conf"
 
+    if ! ls -d $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form 1>/dev/null 2>&1; then
+        echo "No PROCs associated. $form form migration failed!"
+        continue
+    fi
+
     # make a loop on all PROCs associated to this FORM
     for p in $(ls -d $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form); do
-    
+
         # -----------------------------------------------------------------------------
         # get the names of proc, form and nodes
         proc=$(echo $p | cut -d '.' -f 2)
         nodes=()
-        for n in $(ls -d CONF/GRIDS2NODES/PROC.$proc*); do
-            nodes+=($(echo $n | cut -d '.' -f 3))
-        done
-        RE=$(printf "|%s" ${nodes[@]})
-        RE=${RE:1}
 
-        echo "---> Migrating PROC '$proc' to GENFORM"
-        echo " FORM = $form"
-        echo -n " NODES ="
-        printf " %s" ${nodes[@]}
+        echo "---> Migrating PROC '$proc' to GENFORM (Path: $p)"
+        echo "FORM = $form"
+
+        hasnodes=$(ls -d CONF/GRIDS2NODES/PROC.$proc* 2>/dev/null)
+        if [ -z "$hasnodes" ]; then
+            echo "No NODEs associated to $form form!"
+        else
+            for n in $(ls -d CONF/GRIDS2NODES/PROC.$proc*); do
+                nodes+=($(echo $n | cut -d '.' -f 3))
+            done
+            RE=$(printf "|%s" ${nodes[@]})
+            RE=${RE:1}
+
+            echo -n " NODES ="
+            printf " %s" ${nodes[@]}
+        fi
         echo ""
 
         # -----------------------------------------------------------------------------
@@ -108,10 +128,9 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         # database table (lowercase proc name)
         DBT=$(echo "$proc" | tr '[:upper:]' '[:lower:]')
 
+        cmd "mkdir -p $dconf1"
 
-        cmd "mkdir -p $dconf1" 
-
-        echo  " Creating/populating $DBT table with former $DAT..."
+        echo  "Creating/populating $DBT table with former $DAT..."
 
         # -- start SQL script
         echo "BEGIN TRANSACTION;" > $TMP
@@ -363,7 +382,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
 
                 #ID|Date|Heure|Site|Opérateurs|Température|Météo|Instrument|Composante|P1|L1|V1|P2|L2|V2|P3|L3|V3|P4|L4|V4|P5|L5|V5|P6|L6|V6|P7|L7|V7|P8|L8|V8|P9|L9|V9|P10|L10|V10|P11|L11|V11|P12|L12|V12|Remarques|Validation
-                #1 |2   |3    |4   |5         |6          |7    |8         |9         |10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37 |38 |39 |40 |41 |42 |43 |44 |45 |46       |47 
+                #1 |2   |3    |4   |5         |6          |7    |8         |9         |10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37 |38 |39 |40 |41 |42 |43 |44 |45 |46       |47
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
@@ -426,10 +445,10 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
                 ;;
         esac
-        
+
         # -- end of SQL script
         echo "COMMIT;" >> $TMP
-        cmd "cat $TMP | sqlite3 $DBF && rm -f $TMP" 
+        cmd "cat $TMP | sqlite3 $DBF && rm -f $TMP"
 
         # -----------------------------------------------------------------------------
         # copy some variable values from former FORM and PROC conf
@@ -458,17 +477,19 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         cmd "echo 'RAWDATA|$proc' >> $confp"
         cmd "echo '################################################################################' >> $confp"
 
-        cmd "chown -R $wousr:$wogrp $WOROOT/CONF/FORMS/$proc" 
+        cmd "chown -R $wousr:$wogrp $WOROOT/CONF/FORMS/$proc"
 
         # -----------------------------------------------------------------------------
         # make the new links form2nodes
         for n in ${nodes[@]}; do
-            cmd "ln -sf $WOROOT/DATA/NODES/$n $WOROOT/CONF/GRIDS2NODES/FORM.$proc.$n" 
+            cmd "ln -sf $WOROOT/DATA/NODES/$n $WOROOT/CONF/GRIDS2NODES/FORM.$proc.$n"
         done
-        cmd "chown $wousr:$wogrp $WOROOT/CONF/GRIDS2NODES/FORM.$proc.*" 
-        
+        if [ -n "$hasnodes" ]; then
+            cmd "chown $wousr:$wogrp $WOROOT/CONF/GRIDS2NODES/FORM.$proc.*"
+        fi
+
         # -----------------------------------------------------------------------------
-        # finally moves legacy conf 
+        # finally moves legacy conf
         cmd "mv $WOROOT/CONF/GRIDS2FORMS/PROC.$proc.$form $LFPATH/GRIDS2FORMS/"
         cmd "mv $DAT $LFDB/"
 
