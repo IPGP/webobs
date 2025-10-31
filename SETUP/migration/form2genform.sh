@@ -104,11 +104,11 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         echo "---> Migrating PROC '$proc' to GENFORM (Path: $p)"
         echo "FORM = $form"
 
-        hasnodes=$(ls -d CONF/GRIDS2NODES/PROC.$proc* 2>/dev/null)
+        hasnodes=$(ls -d $WOROOT/CONF/GRIDS2NODES/PROC.$proc* 2>/dev/null)
         if [ -z "$hasnodes" ]; then
             echo "No NODEs associated to $form form!"
         else
-            for n in $(ls -d CONF/GRIDS2NODES/PROC.$proc*); do
+            for n in $(ls -d $WOROOT/CONF/GRIDS2NODES/PROC.$proc*); do
                 nodes+=($(echo $n | cut -d '.' -f 3))
             done
             RE=$(printf "|%s" ${nodes[@]})
