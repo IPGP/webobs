@@ -489,6 +489,14 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         fi
 
         # -----------------------------------------------------------------------------
+        # add form in grids2domains (WEBOBSDOMAINS.db)
+        DB_FILE="$WOROOT/CONF/WEBOBSDOMAINS.db"
+        if [[ -f "$DB_FILE" ]]; then
+            echo "Update database: ${DB_FILE}"
+            sqlite3 "$DB_FILE" "INSERT INTO grids2domains (TYPE, NAME, DCODE) SELECT 'FORM', NAME, DCODE FROM grids2domains WHERE TYPE = 'PROC' AND NAME = '$proc';"
+        fi
+
+        # -----------------------------------------------------------------------------
         # finally moves legacy conf
         cmd "mv $WOROOT/CONF/GRIDS2FORMS/PROC.$proc.$form $LFPATH/GRIDS2FORMS/"
         cmd "mv $DAT $LFDB/"
