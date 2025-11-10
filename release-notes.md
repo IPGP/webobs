@@ -65,7 +65,7 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
    WO2SC3_MOD_ID|1
    WO2SC3_MOD_TYPE|1
    ```
-   * variables added to `MC3.conf` :
+   * variables added to `MC3.conf`:
    ```
    # Dispatch new MC entry into SeisComP
    # SeisComP hostname, user, ssh key and dispatch script
@@ -83,6 +83,12 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
    # QML temporary file
    WO2SC_QML_TEMP_FILE|$WEBOBS{SEFRAN_ROOT}/wo2sc.xml
    ```
+1. **MC3**: size of the statistics graph can be changed. In `MC3.conf`, two new variables to set the width and height in pixels:
+   ```
+   GRAPH_WIDTH_PX|900
+   GRAPH_HEIGHT_PX|250
+   ```
+   These values can be overwritten in `mc3.pl` URL with options `&grw=` and `&grh=`.
 
 ### Fixed issues
 1. `!!` Fix an issue giving edit button for any grid (view/proc/form) for users with only Edit level.
