@@ -501,7 +501,11 @@ for (my $j = 0; $j <= $#rows; $j++) {
         my $nan = 0;
         foreach (@x) {
             my $f = lc($_);
-            $formula =~ s/$_/\$fields{$f}/g;
+            if (eval($fields{$f}) eq "") {
+                $formula =~ s/$_/NaN/g;
+            } else {
+                $formula =~ s/$_/\$fields{$f}/g;
+            }
         }
         my $res = eval($formula);
         if ($res ne "") {
@@ -511,7 +515,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $fields{lc($_)} = $res; # hidden formula
             }
         } else {
-            $fields{lc($_)} = "";
+            $fields{lc($_)} = "NaN";
         }
     }
 
