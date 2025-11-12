@@ -167,11 +167,9 @@ if ($action eq 'save') {
             $input = $cgi->param($_);
         }
 
-        if ($input ne "") {
-            push(@db_columns, $_);
-            $input =~ s/"/""/g; # needs to escape quotes for the sqlite command
-            push(@values, $input);
-        }
+        push(@db_columns, $_);
+        $input =~ s/"/""/g; # needs to escape quotes for the sqlite command
+        push(@values, $input);
     }
 
     my $rv;
