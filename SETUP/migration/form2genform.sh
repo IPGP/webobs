@@ -36,6 +36,7 @@ fi
 today=$(date)
 
 WOROOT=$1
+DBD=$WOROOT/CONF/WEBOBSDOMAINS.db
 DBF=$WOROOT/DATA/DB/WEBOBSFORMS.db
 TMP=/tmp/webobs_genform_migration
 
@@ -100,7 +101,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         # get the names of proc, form and nodes
         proc=$(echo $p | cut -d '.' -f 2)
         nodes=()
-
+        echo
         echo "---> Migrating PROC '$proc' to GENFORM (Path: $p)"
         echo "FORM = $form"
 
@@ -165,7 +166,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -200,7 +201,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -216,10 +217,10 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     print ");" }
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
-                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"
                     val = $5 ($6 == "" ? "" : " " $6)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
-                    printf "UPDATE "t" SET sdate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"}' >> $TMP
+                    printf "UPDATE "t" SET sdate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n\n"}' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "SOILSOLUTION")
@@ -238,7 +239,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -276,7 +277,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -316,7 +317,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -352,7 +353,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -394,7 +395,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -436,7 +437,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | grep -E "$RE" | iconv -f ISO-8859-1 -t UTF-8 | gawk -F'|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -500,10 +501,9 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
 
         # -----------------------------------------------------------------------------
         # add form in grids2domains (WEBOBSDOMAINS.db)
-        DB_FILE="$WOROOT/CONF/WEBOBSDOMAINS.db"
-        if [[ -f "$DB_FILE" ]]; then
-            echo "Update database: ${DB_FILE}"
-            sqlite3 "$DB_FILE" "INSERT INTO grids2domains (TYPE, NAME, DCODE) SELECT 'FORM', NAME, DCODE FROM grids2domains WHERE TYPE = 'PROC' AND NAME = '$proc';"
+        if [[ -f "$DBD" ]]; then
+            echo "Update database: ${DBD}"
+            sqlite3 "$DBD" "INSERT INTO grids2domains (TYPE, NAME, DCODE) SELECT 'FORM', NAME, DCODE FROM grids2domains WHERE TYPE = 'PROC' AND NAME = '$proc';"
         fi
 
         # -----------------------------------------------------------------------------
@@ -516,6 +516,4 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
 done
 
 exit 1
-
-
 
