@@ -108,6 +108,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         hasnodes=$(ls -d $WOROOT/CONF/GRIDS2NODES/PROC.$proc* 2>/dev/null)
         if [ -z "$hasnodes" ]; then
             echo "No NODEs associated to $form form!"
+            continue
         else
             for n in $(ls -d $WOROOT/CONF/GRIDS2NODES/PROC.$proc*); do
                 nodes+=($(echo $n | cut -d '.' -f 3))
@@ -173,11 +174,13 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
+                    gsub(/[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
-                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                        printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
+                    } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }
                     val = $2 ($3 == "" ? "" : " " $3)
@@ -208,11 +211,13 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
+                    gsub(/[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
-                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                        printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
+                    } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=7;i<n+7;i++) printf ",\""$i"\""; \
                     print ");" }
                     val = $2 ($3 == "" ? "" : " " $3)
@@ -246,11 +251,13 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
+                    gsub(/[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
-                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                        printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
+                    } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=7;i<n+7;i++) printf ",\""$i"\""; \
                     print ");" }
                     val = $2 ($3 == "" ? "" : " " $3)
@@ -284,11 +291,13 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
+                    gsub(/[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
-                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                        printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
+                    } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }
                     val = $2 ($3 == "" ? "" : " " $3)
@@ -324,11 +333,13 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
+                    gsub(/[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
-                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                        printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
+                    } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }
                     val = $2 ($3 == "" ? "" : " " $3)
@@ -361,11 +372,13 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     gsub(/\+/, ",", $5);
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$5"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
+                    gsub(/[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
-                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
-                        printf ",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\""$ic" "$iv"\",\"\",\"\"" }; \
+                        printf ",\"%s\",\""v[1]"\",\""v[2]"\"", var \
+                    } else { printf ",\"%s\",\"\",\"\"", var }; \
                     for (i=6;i<10;i++) printf ",\""$i"\""; \
                     for (i=10;i<35;i+=3) {
                         j = i+1; k = i+2;
@@ -403,11 +416,13 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     gsub(/\+/, ",", $5);
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$5"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
+                    gsub(/[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
-                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
-                        printf ",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\""$ic" "$iv"\",\"\",\"\"" }; \
+                        printf ",\"%s\",\""v[1]"\",\""v[2]"\"", var \
+                    } else { printf ",\"%s\",\"\",\"\"", var }; \
                     for (i=6;i<10;i++) printf ",\""$i"\""; \
                     for (i=10;i<35;i+=3) {
                         j = i+1; k = i+2;
@@ -444,11 +459,13 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
                     gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
+                    gsub(/[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
-                        nn = split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
-                        printf ",\""v[2]"\",\""$ic" "$iv"\",\""v[1]"\",\""v[2]"\"" \
-                    } else { printf ",\"!\",\""$ic" "$iv"\",\"\",\"\"" }; \
+                        printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
+                    } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
                     print ");" }
                     val = $2 ($3 == "" ? "" : " " $3)
@@ -495,9 +512,8 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         for n in ${nodes[@]}; do
             cmd "ln -sf $WOROOT/DATA/NODES/$n $WOROOT/CONF/GRIDS2NODES/FORM.$proc.$n"
         done
-        if [ -n "$hasnodes" ]; then
-            cmd "chown $wousr:$wogrp $WOROOT/CONF/GRIDS2NODES/FORM.$proc.*"
-        fi
+
+        cmd "chown $wousr:$wogrp $WOROOT/CONF/GRIDS2NODES/FORM.$proc.*"
 
         # -----------------------------------------------------------------------------
         # add form in grids2domains (WEBOBSDOMAINS.db)
