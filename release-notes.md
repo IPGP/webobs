@@ -83,7 +83,9 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
    # QML temporary file
    WO2SC_QML_TEMP_FILE|$WEBOBS{SEFRAN_ROOT}/wo2sc.xml
    ```
-1. **MC3**: size of the statistics graph can be changed. In `MC3.conf`, two new variables to set the width and height in pixels:
+1. Few improvements in the **MC3** form:
+    * multiple selection of event types is now possible,
+    * size of the statistics graph can be changed. In `MC3.conf`, two new variables to set the width and height in pixels:
    ```
    GRAPH_WIDTH_PX|900
    GRAPH_HEIGHT_PX|250
