@@ -173,9 +173,9 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
-                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    gsub(/"/,"\"\"", $ic); \
                     var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
-                    gsub(/[[:space:]]+$/, "", var); \
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
                         split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
@@ -210,9 +210,9 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
-                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    gsub(/"/,"\"\"", $ic); \
                     var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
-                    gsub(/[[:space:]]+$/, "", var); \
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
                         split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
@@ -250,9 +250,9 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
-                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    gsub(/"/,"\"\"", $ic); \
                     var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
-                    gsub(/[[:space:]]+$/, "", var); \
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
                         split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
@@ -290,9 +290,9 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
-                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    gsub(/"/,"\"\"", $ic); \
                     var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
-                    gsub(/[[:space:]]+$/, "", var); \
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
                         split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
@@ -332,9 +332,9 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
-                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    gsub(/"/,"\"\"", $ic); \
                     var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
-                    gsub(/[[:space:]]+$/, "", var); \
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
                         split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
@@ -371,9 +371,9 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     printf ") ";\
                     gsub(/\+/, ",", $5);
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$5"\""; \
-                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    gsub(/"/,"\"\"", $ic); \
                     var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
-                    gsub(/[[:space:]]+$/, "", var); \
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
                         split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
@@ -415,9 +415,9 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     printf ") ";\
                     gsub(/\+/, ",", $5);
                     printf "VALUES(\""bin"\",\"1\",\""$4"\",\""$5"\""; \
-                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    gsub(/"/,"\"\"", $ic); \
                     var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
-                    gsub(/[[:space:]]+$/, "", var); \
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
                         split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
@@ -458,9 +458,9 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
                     printf ") ";\
                     printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
-                    gsub(/"/,"\"\"", $ic); gsub(/\045/,"\045\045", $ic); \
+                    gsub(/"/,"\"\"", $ic); \
                     var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
-                    gsub(/[[:space:]]+$/, "", var); \
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", var); \
                     if ($iv ~ /^\[.*\] /) { \
                         split($iv,vv,/\] \[/); split(vv[1],v," "); \
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
