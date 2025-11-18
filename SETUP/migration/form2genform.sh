@@ -7,7 +7,7 @@
 # Updated: 2025-07-03
 
 
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
     echo
     echo "$0 migrates former FORM to new GENFORM"
     echo "Usage: $0 WOROOT"
@@ -64,17 +64,23 @@ fi
 FPATH=$WOROOT/CONF/FORMS
 LFPATH=$WOROOT/CONF/LEGACY_FORMS
 LFDB=$WOROOT/DATA/BACKUP_LEGACY_FORMS
+DATS=()
+
+echo "Start legacy form migration..."
 cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 
 # =============================================================================
 # make a loop on all known legacy FORMs
 #for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO DISTANCE BOJAP
-for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
-
+LEGACY_FORMS=("EAUX" "EAUX_OVSM" "RIVERS" "RAINWATER" "SOILSOLUTION" "GAZ" "EXTENSO" "FISSURO" "TOTO")
+for form in "${LEGACY_FORMS[@]}"; do
+    echo
+    echo "--->Process form $form"
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
     conf="$WOROOT/CONF/FORMS/$form/$form.conf"
     if [[ ! -e "$conf" ]]; then
+        echo "---> No form $form"
         continue
     fi
     FDAT=$(grep ^FILE_NAME $conf | cut -d '|' -f 2)
@@ -84,19 +90,21 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         continue
     fi
 
+    DATS+=($DAT)
+
     # move the legacy conf and data first
     echo "---> Backup legacy conf."
     cmd "mv -f $FPATH/$form $LFPATH/FORMS/"
     conf0="$LFPATH/FORMS/$form/$form.conf"
 
-    if ! ls -d $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form 1>/dev/null 2>&1; then
-        echo "No PROCs associated. $form form migration failed!"
+    readarray -t procs2forms < <(find $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form -maxdepth 1 -type l)
+    if [[ ${#procs2forms[@]} -eq 0 ]]; then
+        echo "No PROCs associated with $form"
         continue
     fi
 
     # make a loop on all PROCs associated to this FORM
-    for p in $(ls -d $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form); do
-
+    for p in "${procs2forms[@]}"; do
         # -----------------------------------------------------------------------------
         # get the names of proc, form and nodes
         proc=$(echo $p | cut -d '.' -f 2)
@@ -105,16 +113,13 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         echo "---> Migrating PROC '$proc' to GENFORM (Path: $p)"
         echo "FORM = $form"
 
-        hasnodes=$(ls -d $WOROOT/CONF/GRIDS2NODES/PROC.$proc* 2>/dev/null)
-        if [ -z "$hasnodes" ]; then
+        readarray -t procs2nodes < <(find $WOROOT/CONF/GRIDS2NODES/PROC.$proc* -maxdepth 1 -type l)
+        if [[ ${#procs2nodes[@]} -eq 0 ]]; then
             echo "No NODEs associated to $form form!"
-            continue
         else
-            for n in $(ls -d $WOROOT/CONF/GRIDS2NODES/PROC.$proc*); do
+            for n in "${procs2nodes[@]}"; do
                 nodes+=($(echo $n | cut -d '.' -f 3))
             done
-            RE=$(printf "|%s" ${nodes[@]})
-            RE=${RE:1}
 
             echo -n " NODES ="
             printf " %s" ${nodes[@]}
@@ -167,7 +172,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -204,7 +209,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -244,7 +249,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -284,7 +289,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -326,7 +331,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -364,7 +369,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -408,7 +413,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -452,7 +457,7 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | grep -E "$RE" | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -478,42 +483,48 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         echo "COMMIT;" >> $TMP
         cmd "cat $TMP | sqlite3 $DBF && rm -f $TMP"
 
-        # -----------------------------------------------------------------------------
-        # copy some variable values from former FORM and PROC conf
-        v=$(grep ^TITLE\| $conf0 | sed -e 's/&/\\&/g' | iconv -f UTF-8 -t ISO-8859-1)
-        cmd "LC_ALL=C sed -i -e 's/^NAME|.*$/$v/g;s/^TITLE/NAME/g' $conf"
-        for key in BANG DEFAULT_DAYS; do
-            okey=$(grep ^$key\| $conf0)
-            if [[ ! -z "$okey" ]]; then
-                cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$okey/g' $conf"
-            fi
-        done
+        if [[ -f "$conf" && -f "$conf0" ]]; then
+            # -----------------------------------------------------------------------------
+            # copy some variable values from former FORM and PROC conf
+            v=$(grep ^TITLE\| "$conf0" | sed -e 's/&/\\&/g' | iconv -f UTF-8 -t ISO-8859-1)
+            cmd "LC_ALL=C sed -i -e 's/^NAME|.*$/$v/g;s/^TITLE/NAME/g' $conf"
+            for key in BANG DEFAULT_DAYS; do
+                okey=$(grep ^$key\| "$conf0")
+                if [[ ! -z "$okey" ]]; then
+                    cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$okey/g' $conf"
+                fi
+            done
+        fi
 
-        for key in TZ OWNCODE TYPE URL COPYRIGHT NODE_NAME NODE_SIZE NODE_MARKER NODE_RGB DEM_FILE DEM_TYPE DEM_COPYRIGHT; do
-            v=$(grep '^$key|' $confp)
-            if [ ! -z $v ]; then
-                cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$v/g' $conf"
-            fi
-        done
+        if [[ -f "$conf" && -f "$confp" ]]; then
+            for key in TZ OWNCODE TYPE URL COPYRIGHT NODE_NAME NODE_SIZE NODE_MARKER NODE_RGB DEM_FILE DEM_TYPE DEM_COPYRIGHT; do
+                v=$(grep '^$key|' "$confp")
+                if [[ ! -z $v ]]; then
+                    cmd "LC_ALL=C sed -i -e 's/^$key|.*$/$v/g' $conf"
+                fi
+            done
+        fi
 
-        # -----------------------------------------------------------------------------
-        # add default data format to the PROC conf
-        cmd "LC_ALL=C sed -i -e 's/^RAWDATA|.*//g;s/^RAWFORMAT|.*//g' $confp" # removes any RAWFORMAT/RAWDATA
-        cmd "echo '################################################################################' >> $confp"
-        cmd "echo '# Migrate legacy form $form to new FORM.$proc on $today' >> $confp"
-        cmd "echo 'RAWFORMAT|genform' >> $confp"
-        cmd "echo 'RAWDATA|$proc' >> $confp"
-        cmd "echo '################################################################################' >> $confp"
+        if [[ -f "$confp" ]]; then
+            # -----------------------------------------------------------------------------
+            # add default data format to the PROC conf
+            cmd "LC_ALL=C sed -i -e 's/^RAWDATA|.*//g;s/^RAWFORMAT|.*//g' $confp" # removes any RAWFORMAT/RAWDATA
+            cmd "echo '################################################################################' >> $confp"
+            cmd "echo '# Migrate legacy form $form to new FORM.$proc on $today' >> $confp"
+            cmd "echo 'RAWFORMAT|genform' >> $confp"
+            cmd "echo 'RAWDATA|$proc' >> $confp"
+            cmd "echo '################################################################################' >> $confp"
+        fi
 
-        cmd "chown -R $wousr:$wogrp $WOROOT/CONF/FORMS/$proc"
+        if [[ ${#procs2nodes[@]} -ne 0 ]]; then
+            # -----------------------------------------------------------------------------
+            # make the new links form2nodes
+            for n in ${nodes[@]}; do
+                cmd "ln -sf $WOROOT/DATA/NODES/$n $WOROOT/CONF/GRIDS2NODES/FORM.$proc.$n"
+            done
 
-        # -----------------------------------------------------------------------------
-        # make the new links form2nodes
-        for n in ${nodes[@]}; do
-            cmd "ln -sf $WOROOT/DATA/NODES/$n $WOROOT/CONF/GRIDS2NODES/FORM.$proc.$n"
-        done
-
-        cmd "chown $wousr:$wogrp $WOROOT/CONF/GRIDS2NODES/FORM.$proc.*"
+            cmd "chown $wousr:$wogrp $WOROOT/CONF/GRIDS2NODES/FORM.$proc.*"
+        fi
 
         # -----------------------------------------------------------------------------
         # add form in grids2domains (WEBOBSDOMAINS.db)
@@ -525,10 +536,20 @@ for form in EAUX EAUX_OVSM RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO; do
         # -----------------------------------------------------------------------------
         # finally moves legacy conf
         cmd "mv $WOROOT/CONF/GRIDS2FORMS/PROC.$proc.$form $LFPATH/GRIDS2FORMS/"
-        cmd "mv $DAT $LFDB/"
+
+        cmd "chown -R $wousr:$wogrp $dconf1"
 
         echo "Done."
     done
+done
+
+# Moves data from legacy forms outside the previous loop in case of shared DAT files
+echo
+echo "Backup legacy forms:"
+for i in "${!DATS[@]}"; do
+    if [[ -f "${DATS[i]}" ]]; then
+        cmd "mv ${DATS[i]} $LFDB/"
+    fi
 done
 
 exit 1
