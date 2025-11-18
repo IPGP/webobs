@@ -354,7 +354,7 @@ if ($isForm) {
     # connect to the database
     $dbh = connectDbForms();
 
-    # get the total number or records
+    # get the total number of records
     my $stmt = "SELECT COUNT(id) FROM $tbl";
     my $sth = $dbh->prepare($stmt);
     my $rv = $sth->execute() or die $DBI::errstr;
@@ -362,12 +362,22 @@ if ($isForm) {
     my $nbData = join('',@row);
     $sth->finish();
 
-    # get the total number or records in trash
+    # get the total number of records in trash
     $stmt = "SELECT COUNT(id) FROM $tbl WHERE trash=1";
     $sth = $dbh->prepare($stmt);
     $rv = $sth->execute() or die $DBI::errstr;
     @row = $sth->fetchrow_array();
     my $nbTrash = join('',@row);
+    $sth->finish();
+
+    # get the total number of records in orphan nodes
+    my @allFormNodes;
+    for (@{$GRID{NODESLIST}}) { push(@allFormNodes, $_); }
+    my $stmt = "SELECT COUNT(id) FROM $tbl"." WHERE node NOT IN ('".join("', '",@allFormNodes)."');";
+    my $sth = $dbh->prepare($stmt);
+    my $rv = $sth->execute() or die $DBI::errstr;
+    @row = $sth->fetchrow_array();
+    my $orphanNodes = join('',@row);
     $sth->finish();
 
     my $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
@@ -380,7 +390,7 @@ if ($isForm) {
       ." <B>".grep(/^FIELDSET.._NAME/,keys(%GRID))."</B> $__{'fieldsets'}</LI>\n";
     $htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>UTC".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
-    $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'})</LI>\n";
+    $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'} and <B>$orphanNodes</B> in orphan nodes)</LI>\n";
     $htmlcontents .= "<LI>$__{'Access to data'}: <A href=\"$urnData\"><IMG src='/icons/form.png' style='vertical-align:middle'></A></LI>\n";
 }
 
