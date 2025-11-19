@@ -72,7 +72,7 @@ cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 # =============================================================================
 # make a loop on all known legacy FORMs
 #for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO DISTANCE BOJAP
-LEGACY_FORMS=("EAUX" "EAUX_OVSM" "RIVERS" "RAINWATER" "SOILSOLUTION" "GAZ" "EXTENSO" "FISSURO" "TOTO")
+LEGACY_FORMS=("EAUX" "EAUX_OVSM" "RIVERS" "RAINWATER" "SOILSOLUTION" "GAZ" "EXTENSO" "FISSURO")
 for form in "${LEGACY_FORMS[@]}"; do
     echo
     echo "--->Process form $form"
@@ -97,10 +97,9 @@ for form in "${LEGACY_FORMS[@]}"; do
     cmd "mv -f $FPATH/$form $LFPATH/FORMS/"
     conf0="$LFPATH/FORMS/$form/$form.conf"
 
-    readarray -t procs2forms < <(find $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form -maxdepth 1 -type l)
+    readarray -t procs2forms < <(find $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form -maxdepth 1 -type f)
     if [[ ${#procs2forms[@]} -eq 0 ]]; then
         echo "No PROCs associated with $form"
-        continue
     fi
 
     # make a loop on all PROCs associated to this FORM
@@ -113,7 +112,7 @@ for form in "${LEGACY_FORMS[@]}"; do
         echo "---> Migrating PROC '$proc' to GENFORM (Path: $p)"
         echo "FORM = $form"
 
-        readarray -t procs2nodes < <(find $WOROOT/CONF/GRIDS2NODES/PROC.$proc* -maxdepth 1 -type l)
+        readarray -t procs2nodes < <(find $WOROOT/CONF/GRIDS2NODES/PROC.$proc* -maxdepth 1 -type f)
         if [[ ${#procs2nodes[@]} -eq 0 ]]; then
             echo "No NODEs associated to $form form!"
         else
@@ -187,10 +186,10 @@ for form in "${LEGACY_FORMS[@]}"; do
                         printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
                     } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }
+                    print ");"
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
-                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"} }' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "RAINWATER")
@@ -224,7 +223,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                         printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
                     } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=7;i<n+7;i++) printf ",\""$i"\""; \
-                    print ");" }
+                    print ");"
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
                     printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"
@@ -264,7 +263,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                         printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
                     } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=7;i<n+7;i++) printf ",\""$i"\""; \
-                    print ");" }
+                    print ");"
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
                     printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);"
@@ -304,10 +303,10 @@ for form in "${LEGACY_FORMS[@]}"; do
                         printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
                     } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }
+                    print ");"
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
-                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"} }' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "GAZ")
@@ -346,10 +345,10 @@ for form in "${LEGACY_FORMS[@]}"; do
                         printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
                     } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }
+                    print ");"
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
-                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"} }' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "EXTENSO")
@@ -390,10 +389,10 @@ for form in "${LEGACY_FORMS[@]}"; do
                         if ($i == "") { d = ""; } else { d = $i + $j; }
                         printf ",\""d"\",\""$k"\""; \
                     }
-                    print ");" }
+                    print ");"
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
-                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"} }' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "FISSURO")
@@ -434,10 +433,10 @@ for form in "${LEGACY_FORMS[@]}"; do
                         d = $i + $j;
                         printf ",\""d"\",\""$k"\""; \
                     }
-                    print ");" }
+                    print ");"
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
-                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"} }' >> $TMP
                 ;;
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             "DISTANCE")
@@ -472,10 +471,10 @@ for form in "${LEGACY_FORMS[@]}"; do
                         printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
                     } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
                     for (i=5;i<n+5;i++) printf ",\""$i"\""; \
-                    print ");" }
+                    print ");"
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
-                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"}' >> $TMP
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"} }' >> $TMP
                 ;;
         esac
 
