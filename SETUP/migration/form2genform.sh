@@ -72,7 +72,7 @@ cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 # =============================================================================
 # make a loop on all known legacy FORMs
 #for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO DISTANCE BOJAP
-LEGACY_FORMS=("EAUX" "EAUX_OVSM" "RIVERS" "RAINWATER" "SOILSOLUTION" "GAZ" "EXTENSO" "FISSURO")
+LEGACY_FORMS=("EAUX" "EAUX_OVSM" "RIVERS" "RAINWATER" "SOILSOLUTION" "GAZ" "EXTENSO" "FISSURO" "DISTANCE")
 for form in "${LEGACY_FORMS[@]}"; do
     echo
     echo "--->Process form $form"
@@ -427,12 +427,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                         gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
                         printf ",\"%s\",\""v[1]"\",\""v[2]"\"", var \
                     } else { printf ",\"%s\",\"\",\"\"", var }; \
-                    for (i=6;i<10;i++) printf ",\""$i"\""; \
-                    for (i=10;i<35;i+=3) {
-                        j = i+1; k = i+2;
-                        d = $i + $j;
-                        printf ",\""d"\",\""$k"\""; \
-                    }
+                    for (i=6;i<n+6;i++) printf ",\""$i"\""; \
                     print ");"
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
@@ -486,7 +481,7 @@ for form in "${LEGACY_FORMS[@]}"; do
             # -----------------------------------------------------------------------------
             # copy some variable values from former FORM and PROC conf
             v=$(grep ^TITLE\| "$conf0" | sed -e 's/&/\\&/g' | iconv -f UTF-8 -t ISO-8859-1)
-            cmd "LC_ALL=C sed -i -e 's/^NAME|.*$/$v/g;s/^TITLE/NAME/g' $conf"
+            cmd "LC_ALL=C sed -i -e \"s/^NAME|.*$/$v/g;s/^TITLE/NAME/g\" $conf"
             for key in BANG DEFAULT_DAYS; do
                 okey=$(grep ^$key\| "$conf0")
                 if [[ ! -z "$okey" ]]; then
