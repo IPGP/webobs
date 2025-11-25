@@ -97,7 +97,7 @@ for form in "${LEGACY_FORMS[@]}"; do
     cmd "mv -f $FPATH/$form $LFPATH/FORMS/"
     conf0="$LFPATH/FORMS/$form/$form.conf"
 
-    readarray -t procs2forms < <(find $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form -maxdepth 1 -type f)
+    readarray -t procs2forms < <(find $WOROOT/CONF/GRIDS2FORMS/PROC.*.$form -maxdepth 1 -type f -o -type l)
     if [[ ${#procs2forms[@]} -eq 0 ]]; then
         echo "No PROCs associated with $form"
     fi
@@ -112,7 +112,7 @@ for form in "${LEGACY_FORMS[@]}"; do
         echo "---> Migrating PROC '$proc' to GENFORM (Path: $p)"
         echo "FORM = $form"
 
-        readarray -t procs2nodes < <(find $WOROOT/CONF/GRIDS2NODES/PROC.$proc* -maxdepth 1 -type f)
+        readarray -t procs2nodes < <(find $WOROOT/CONF/GRIDS2NODES/PROC.$proc* -maxdepth 1 -type f -o -type l)
         if [[ ${#procs2nodes[@]} -eq 0 ]]; then
             echo "No NODEs associated to $form form!"
         else
@@ -171,7 +171,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID" && $1 != "Id") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -208,7 +208,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID" && $1 != "Id") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -248,7 +248,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID" && $1 != "Id") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -288,7 +288,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID" && $1 != "Id") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -330,7 +330,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID" && $1 != "Id") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -368,7 +368,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID" && $1 != "Id") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -412,7 +412,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID" && $1 != "Id") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
@@ -451,7 +451,7 @@ for form in "${LEGACY_FORMS[@]}"; do
                 for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
                 printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
                 echo ");" >> $TMP
-                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID") { \
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID" && $1 != "Id") { \
                     bin = ($1<0) ? 1:0; \
                     printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
                     for (i=1;i<=n;i++) printf ",input%02d",i; \
