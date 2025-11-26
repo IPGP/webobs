@@ -133,7 +133,7 @@ INPUT23_NAME|&delta;D
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 
-OUTPUT01_NAME|Cond. @25&deg;C
+OUTPUT01_NAME|Conductivité @25&deg;C
 OUTPUT01_UNIT|&deg;S
 OUTPUT01_TYPE|formula: INPUT06 / (1 + 0.02*(INPUT03 - 25))
 OUTPUT02_NAME|H<sup>+</sup>
