@@ -71,9 +71,9 @@ INPUT01_UNIT|&deg;C
 INPUT02_NAME|Meteo
 INPUT02_TYPE|list: FORM_EXTENSO_list_meteo.conf
 INPUT02_FILT|YES
-INPUT03_NAME|Offset
+INPUT03_NAME|D<sub>Ribbon</sub>
 INPUT03_UNIT|mm
-INPUT04_NAME|D<sub>Ribbon</sub>
+INPUT04_NAME|Offset
 INPUT04_UNIT|mm
 INPUT05_NAME|d<sub>1</sub>
 INPUT06_NAME|d<sub>2</sub>
@@ -159,3 +159,4 @@ PROC_DATA_LIST|OUTPUT02,INPUT01,OUTPUT04
 PROC_ERROR_LIST|OUTPUT03,,
 # list of fields that will be exported to associated procs as D.c (cells)
 PROC_CELL_LIST|INPUT02
+
