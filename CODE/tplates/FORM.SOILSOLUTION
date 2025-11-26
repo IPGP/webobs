@@ -75,7 +75,7 @@ INPUT02_TYPE|checkbox:checked
 
 INPUT03_NAME|pH
 
-INPUT04_NAME|Cond. at 25&deg;C
+INPUT04_NAME|Conductivity at 25&deg;C
 INPUT04_UNIT|&mu;S/cm
 
 INPUT05_NAME|Na<sup>+</sup>

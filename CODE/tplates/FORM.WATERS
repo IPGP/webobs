@@ -82,7 +82,7 @@ INPUT04_NAME|pH
 INPUT05_NAME|Flow Rate
 INPUT05_UNIT|l/min
 
-INPUT06_NAME|Cond.
+INPUT06_NAME|Conductivity
 INPUT06_UNIT|&mu;S
 
 INPUT07_NAME|Level
@@ -137,7 +137,7 @@ INPUT23_NAME|&delta;D
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 
-OUTPUT01_NAME|Cond. @25&deg;C
+OUTPUT01_NAME|Conductivity @25&deg;C
 OUTPUT01_UNIT|&deg;S
 OUTPUT01_TYPE|formula: INPUT06 / (1 + 0.02*(INPUT03 - 25))
 OUTPUT02_NAME|H<sup>+</sup>
@@ -206,3 +206,4 @@ PROC_DATA_LIST|INPUT02,INPUT03,INPUT04,INPUT05,OUTPUT01,INPUT06,INPUT07,INPUT13,
 PROC_ERROR_LIST|
 # list of fields that will be exported to associated procs as D.c (cells)
 PROC_CELL_LIST|INPUT01
+
