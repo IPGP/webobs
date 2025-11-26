@@ -622,7 +622,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
             # --- input type = checkbox
             elsif ($FORM{$Field."_TYPE"} =~ /^checkbox/) {
                 if ($val ne "") {
-                    $val = "&check;";
+                    $val = $fields{$field} ? "&check;" : "";
                     $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('checked')\"";
                 }
                 $csvTxt .= "$fields{$field}".$dlm;

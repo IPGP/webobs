@@ -822,7 +822,7 @@ foreach (@columns) {
                 # --- INPUT type 'checkbox'
                 } elsif ($field =~ /^input/ && $type =~ /^checkbox/) {
                     $hlp = ($help ne "" ? $help:"$__{'Click to select'} $Field");
-                    my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
+                    my $selected = ($prev_inputs{$field} ? "checked" : "");
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
 
                 # --- INPUT type 'image'
