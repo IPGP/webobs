@@ -500,15 +500,11 @@ for (my $j = 0; $j <= $#rows; $j++) {
     # stores formulas
     foreach (@formulas) {
         my ($formula, $size, @x) = extract_formula($FORM{$_."_TYPE"});
-        my $nan = 0;
         foreach (@x) {
             my $f = lc($_);
-            if (eval($fields{$f}) eq "") {
-                $formula =~ s/$_/NaN/g;
-            } else {
-                $formula =~ s/$_/\$fields{$f}/g;
-            }
+            $formula =~ s/$_/\$fields{$f}/g;
         }
+
         my $res = eval($formula);
         if ($res ne "") {
             if ($size > 0) {

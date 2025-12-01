@@ -369,10 +369,15 @@ foreach my $f (@formulas) {
 
     foreach (@x) {
         my $form_input = lc($_);
-        $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : NaN)/g;
+        if ($formula =~ /(mean|std|median)\(.*$_.*\)/) {
+            $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : NaN)/g;
+        } else {
+            $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : 0.0)/g;
+        }
     }
+
     print "try {";
-    print "form.".lc($f).".value = parseFloat($formula).toFixed(2);\n";
+    print "form.".lc($f).".value = parseFloat($formula);\n";
     print "} catch(err) { form.".lc($f).".value = NaN; console.error(err.message); };\n";
 }
 foreach (@thresh) {
