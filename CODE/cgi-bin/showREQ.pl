@@ -136,7 +136,15 @@ for (reverse sort @reqlist) {
                         $table .= "<TD align=center bgcolor=orange>wait...</TD>";
                     }
                 }
-                $table .= "<TD align=center>".(-d "$dir/$_" ? "<A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A>":"")."</TD>";
+
+                my $href = "";
+                if (-d "$WEBOBS{ROOT_OUTR}/$reqdir/$_/$WEBOBS{PATH_OUTG_EVENTS}") {
+                    $href = "/cgi-bin/showOUTG.pl?grid=$_&dir=$reqdir&ts=events";
+                } else {
+                    $href = "/cgi-bin/showOUTR.pl?grid=$_&dir=$reqdir";
+                }
+
+                $table .= "<TD align=center>".(-d "$dir/$_" ? "<A href=$href><IMG src='/icons/visu.png'></A>":"")."</TD>";
                 $table .= "<TD align=center>".(-e "$dir/$_.tgz" ? "<A download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></A>":"")."</TD>";
             } else {
                 $table .= "<TD colspan=4></TD>";
