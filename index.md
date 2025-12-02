@@ -64,7 +64,8 @@ sudo apt install libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-
 sudo apt install wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
 sudo apt install libsocket6-perl libdigest-perl-md5-perl
 sudo apt install libncurses5 gdal-bin
-sudo apt install python-is-python3
+sudo apt install dvipng texlive-latex-extra texlive-fonts-recommended cm-super
+sudo apt install python-is-python3 python3-tk
 ```
 
 ##### Set environment configuration

@@ -551,6 +551,18 @@ fi
 echo "WebObs user: ${USERID} , group: ${USERGID}, email: ${USERMAIL}"
 echo
 
+# Python environment ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+echo 'Python environment installation'
+if $(confirm "Create Python environment [y/N] ?") ; then
+    python3 -m venv ${DOCROOT}/venv/
+    chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
+    source ${DOCROOT}/venv/bin/activate
+    PYTHON_CODE="${DOCROOT}/CODE/python"
+    pip install -r "${PYTHON_CODE}/requirements.txt"
+fi
+echo
+
 # setup (new) CODE and DOC paths, wether install or upgrade
 # symlinks from DOCROOT to RELBASE code and doc
 # -----------------------------------------------------------------------------

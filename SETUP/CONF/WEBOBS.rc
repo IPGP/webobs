@@ -382,3 +382,9 @@ M3G_EXPORTLOG|${M3G_URL}/exportlog?station=
 # Maximum upload size in MB ----------------
 # ------------------------------------------
 MAX_UPLOAD_SIZE|50
+
+# Python environment setup -----------------
+# ------------------------------------------
+PYTHON_PRGM|${ROOT_SITE}/venv/bin/python3
+PYTHON_PATH|${ROOT_CODE}/python
+JOB_PYTHON|${ROOT_SITE}/venv/bin/python3 ${ROOT_CODE}/python/superprocs
