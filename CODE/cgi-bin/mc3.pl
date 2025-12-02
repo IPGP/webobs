@@ -201,6 +201,8 @@ $QryParm->{'locstatus'} //= $MC3{DISPLAY_LOCATION_STATUS_DEFAULT};
 $QryParm->{'hideloc'}   //= !$MC3{DISPLAY_LOCATION_DEFAULT};
 $QryParm->{'obs'}       //= "";
 $QryParm->{'graph'}     //= "movsum";
+$QryParm->{'grw'}       //= $MC3{GRAPH_WIDTH_PX};
+$QryParm->{'grh'}       //= $MC3{GRAPH_HEIGHT_PX};
 $QryParm->{'slt'}       //= $MC3{DEFAULT_SELECT_LOCAL};
 $QryParm->{'newts'}     //= "";
 $QryParm->{'dump'}      //= "";
@@ -422,7 +424,7 @@ if ($QryParm->{'dump'} eq "") {
     for (sort(keys(%typesSO))) {
         my $key = $typesSO{$_};
         if ($_ ne "") {
-            $html .= "<option ".($key eq $QryParm->{'type'} ? "selected":"")." value=\"$key\">$types{$key}{Name}</option>\n";
+            $html .= "<option ".($key eq $QryParm->{'type'} ? "selected":"")." value=\"$key\">$types{$key}{Name} ($key)</option>\n";
         }
     }
     $html .= "</select>\n";
@@ -495,6 +497,8 @@ if ($QryParm->{'dump'} eq "") {
     $html .= "<INPUT type=\"hidden\" name=\"mc\" value=\"$mc3\">\n"
       ."<INPUT type=\"hidden\" name=\"dump\" value=\"\">\n"
       ."<INPUT type=\"hidden\" name=\"newts\" value=\"$QryParm->{'newts'}\">\n"
+      ."<INPUT type=\"hidden\" name=\"grw\" value=\"$QryParm->{'grw'}\">\n"
+      ."<INPUT type=\"hidden\" name=\"grh\" value=\"$QryParm->{'grh'}\">\n"
 
 #."<INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"document.formulaire.reset()\">"
       ."<INPUT type=\"button\" value=\"$__{'Display'}\" onClick=\"display()\">"
@@ -503,13 +507,17 @@ if ($QryParm->{'dump'} eq "") {
 
     $html .= "<TABLE width=\"100%\"><TR><TD width=700>";
     if ($QryParm->{'nograph'} == 0) {
-        $html .= "<DIV id=\"mcgraph\" style=\"width:900px;height:250px;float:left;\"></DIV>\n"
-          ."<DIV id=\"showall\" style=\"width:150px;height:15px;position:relative;float:left;font-size:smaller;\">"
+        my $grshowall = 150;
+        my $grinfo_height = 15;
+        my $grinfo_width = $QryParm->{'grw'} - $grshowall;
+        my $grlegend_width = 200;
+        $html .= "<DIV id=\"mcgraph\" style=\"width:".$QryParm->{'grw'}."px;height:".$QryParm->{'grh'}."px;float:left;\"></DIV>\n"
+          ."<DIV id=\"showall\" style=\"width:".$grshowall."px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;\">"
           ."<A href=\"#\" onClick=\"plotAll()\">plot all</A>"
 
           #."<BR><A href=\"#\" id=\"tlsavelink\">download image</A></DIV>\n"
-          ."<DIV id=\"graphinfo\" style=\"width:750px;height:15px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
-          ."<TD nowrap style=\"text-align:left\"><DIV id=\"graphlegend\" style=\"width:200px;height:250px;position:static;\"></DIV></TD>\n"
+          ."<DIV id=\"graphinfo\" style=\"width:".$grinfo_width."px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
+          ."<TD nowrap style=\"text-align:left\"><DIV id=\"graphlegend\" style=\"width:".$grlegend_width."px;height:".$QryParm->{'grh'}."px;position:static;\"></DIV></TD>\n"
           ."<TD nowrap style=\"text-align:left;vertical-align:top\">";
 
         # ----- selection box graph-type
@@ -668,7 +676,7 @@ if ( (!clientHasAdm(type=>"authprocs",name=>"MC") && !clientHasAdm(type=>"authpr
 #
 if (($QryParm->{'type'} ne "") && ($QryParm->{'type'} ne "ALL")) {
     my $regex = join '|', map { quotemeta } $cgi->param("type");
-    @lignes = grep { /$regex/ } @lignes;
+    @lignes = grep { /\|$regex\|/ } @lignes;
 }
 
 # Filter on amplitude
@@ -1747,8 +1755,21 @@ function display() {
 \$(document).ready(function() {
     var \$select = \$('.multiple-seismic-event-types').select2({
         placeholder: "Select one or more types",
-        allowClear: true
+        allowClear: true,
+        templateSelection: formatSelection,
+    }).on("select2:unselecting", function(e) {
+        \$(this).data('state', 'unselected');
+    }).on("select2:open", function(e) {
+        if (\$(this).data('state') === 'unselected') {
+            \$(this).removeData('state');
+            \$(this).select2('close');
+        }
     });
+
+    function formatSelection(item) {
+        var originalSelection = item.element;
+        return \$(originalSelection).val();
+    }
 
     \$select.on('change', function() {
         var selectedCount = \$(this).find('option:selected').length;

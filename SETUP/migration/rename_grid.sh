@@ -347,7 +347,17 @@ if [[ -f "$CONF_DIR/${GRID}S/${OLD}/${OLD}.conf" ]]; then
     mv "$CONF_DIR/${GRID}S/${OLD}/${OLD}.conf" "$CONF_DIR/${GRID}S/${OLD}/${NEW}.conf"
     echo "Renaming $CONF_DIR/${GRID}S/${OLD}/${OLD}.conf to $CONF_DIR/${GRID}S/${NEW}/${NEW}.conf"
 fi
-mv "$CONF_DIR/${GRID}S/$OLD" "$CONF_DIR/${GRID}S/$NEW"
+
+if [[ -d "$CONF_DIR/${GRID}S/${OLD}" ]]; then
+    mv "$CONF_DIR/${GRID}S/$OLD" "$CONF_DIR/${GRID}S/$NEW"
+    echo "Renaming $CONF_DIR/${GRID}S/${OLD}/ to $CONF_DIR/${GRID}S/${NEW}/"
+fi
+
+# Rename form document directory
+if [[ -d "$DATA_DIR/FORMDOCS/${OLD}" ]]; then
+    mv "$DATA_DIR/FORMDOCS/$OLD" "$DATA_DIR/FORMDOCS/$NEW"
+    echo "Renaming $DATA_DIR/FORMDOCS/$OLD/ to $DATA_DIR/FORMDOCS/$NEW/"
+fi
 
 # Rename symbolic links
 rename_links "$CONF_DIR/GRIDS2NODES" "$PATTERN1" "\${1}${NEW}\${2}"
@@ -436,6 +446,19 @@ if [[ -f "$DB_FILE" ]] && grep -q "$OLD" "$DB_FILE"; then
     WHERE
         NAME = '$OLD' AND TYPE = '$GRID';
     "
+fi
+
+#-------------------- WEBOBSFORMS.db --------------------#
+DB_FILE="$DATA_DIR/DB/WEBOBSFORMS.db"
+
+if [[ -f "$DB_FILE" ]]; then
+    EXISTS=$(sqlite3 "$DB_FILE" "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='${OLD,,}';")
+    if [ "$EXISTS" -gt 0 ]; then
+        echo "Rename table ${OLD,,} to ${NEW,,} in ${DB_FILE} database."
+        sqlite3 "$DB_FILE" "
+        ALTER TABLE '${OLD,,}' RENAME TO '${NEW,,}';
+        "
+    fi
 fi
 
 #-------------------- WEBOBSJOBS.db --------------------#

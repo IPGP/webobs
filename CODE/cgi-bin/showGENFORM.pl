@@ -102,6 +102,7 @@ $QryParm->{'debug'}     //= "";
 
 my $re = $QryParm->{'filter'};
 
+my @allFormNodes;
 my @formnodes;
 my %Ns;
 my @NODESSelList;
@@ -110,7 +111,8 @@ for (@{$FORM{NODESLIST}}) {
     my %N = readNode($id);
     push(@NODESSelList,"$id|$N{$id}{ALIAS}: $N{$id}{NAME}");
     %Ns = (%Ns, %N);
-    push(@formnodes, $id) if ($QryParm->{'node'} =~ /^($id|)$/)
+    push(@formnodes, $id) if ($QryParm->{'node'} =~ /^($id|)$/);
+    push(@allFormNodes, $id);
 }
 
 my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
@@ -198,7 +200,7 @@ my @db_columns = ("trash", "quality", "node", "edate", "sdate", "operators", "co
 my $ncol = scalar(@db_columns);
 
 # get the total number or records
-my $stmt = "SELECT COUNT(id) FROM $tbl";
+my $stmt = "SELECT COUNT(id) FROM $tbl"." WHERE node IN ('".join("', '",@allFormNodes)."');";
 my $sth = $dbh->prepare($stmt);
 my $rv = $sth->execute() or die $DBI::errstr;
 my @row = $sth->fetchrow_array();
@@ -498,11 +500,11 @@ for (my $j = 0; $j <= $#rows; $j++) {
     # stores formulas
     foreach (@formulas) {
         my ($formula, $size, @x) = extract_formula($FORM{$_."_TYPE"});
-        my $nan = 0;
         foreach (@x) {
             my $f = lc($_);
             $formula =~ s/$_/\$fields{$f}/g;
         }
+
         my $res = eval($formula);
         if ($res ne "") {
             if ($size > 0) {
@@ -511,7 +513,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $fields{lc($_)} = $res; # hidden formula
             }
         } else {
-            $fields{lc($_)} = "";
+            $fields{lc($_)} = "NaN";
         }
     }
 
@@ -616,7 +618,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
             # --- input type = checkbox
             elsif ($FORM{$Field."_TYPE"} =~ /^checkbox/) {
                 if ($val ne "") {
-                    $val = "&check;";
+                    $val = $fields{$field} ? "&check;" : "";
                     $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('checked')\"";
                 }
                 $csvTxt .= "$fields{$field}".$dlm;
