@@ -381,4 +381,4 @@ M3G_EXPORTLOG|${M3G_URL}/exportlog?station=
 
 # Maximum upload size in MB ----------------
 # ------------------------------------------
-MAX_UPLOAD_SIZE|20
+MAX_UPLOAD_SIZE|50
