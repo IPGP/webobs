@@ -665,7 +665,7 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	fi
 	if [ ! -s ${DOCROOT}/DATA/DB/WEBOBSFORMS.db ]; then
 	 	verbosecho "creating WEBOBSFORMS.db"
-		cd ${DOCROOT}/CONF
+		cd ${DOCROOT}/DATA/DB
 		$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
 		chown ${USER_APACHE[0]}:${USER_APACHE[1]} WEBOBSFORMS.db
 		cd -
