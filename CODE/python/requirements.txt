@@ -1,0 +1,4 @@
+obspy
+pendulum
+roman
+numexpr
