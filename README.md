@@ -51,6 +51,6 @@ You should have received a copy of the GNU General Public License along with thi
 
 ## Fundings
 
-This program benefits from fundings from IPGP, CNRS and IRD
+This program benefits from fundings from the IPGP, the CNRS and the IRD.
 
-It has been realized with the support of the Ministère de la transition écologique et de la cohésion des territoires
+It has been realized with the support of the Ministère de la transition écologique et de la cohésion des territoires.
