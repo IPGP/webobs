@@ -92,6 +92,7 @@ my $reglette = $cgi->url_param('rg');
 my $date   = $cgi->url_param('date');
 my $high   = $cgi->url_param('high');
 my $sx     = $cgi->url_param('sx') // 0;
+my $sgram_opacity = $cgi->url_param('sgramopacity');
 my $replay = $cgi->url_param('replay');
 my $hpx    = $cgi->url_param('hpx');
 my $limit  = $cgi->url_param('limit');
@@ -214,6 +215,7 @@ $SEFRAN3{REF_NORTC} ||= 0;
 $MC3{NEW_P_CLEAR_S} ||= 0;
 $SEFRAN3{SGRAM_OPACITY} ||= 0.5;
 $SEFRAN3{PATH_IMAGES_SGRAM} ||= "sgram";
+$sgram_opacity = $SEFRAN3{SGRAM_OPACITY} if (!defined $cgi->url_param('sgramopacity'));
 
 # ---- Date and time for now (UTC)...
 my ($Ya,$ma,$da,$Ha,$Ma,$Sa) = split('/',strftime('%Y/%m/%d/%H/%M/%S',gmtime));
@@ -295,7 +297,7 @@ var SCB = {
     WIDTHVOIES : $largeur_voies,
     CHANNELNB : $#streams + 1,
     STREAMS : ["$sefran_streams"],
-    SGRAMOPACITY : $SEFRAN3{SGRAM_OPACITY},
+    SGRAMOPACITY : $sgram_opacity,
     DX : $dx_mctag,
     SX : $sx,
     PROG : '$prog',
@@ -554,7 +556,7 @@ if (!$date) {
                                 $sgramimg = "<IMG class=\"sgram sgramhour\" src=\"$SEFRAN3{PATH_WEB}/${f}s.jpg\" style=\"cursor:pointer$sgramalign\" $imgopt>";
                             }
                         }
-                        print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:".($nb_vign < 2 ? "left":"right")."\"><DIV style=\"position:relative\">";
+                        print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px;text-align:left\"><DIV style=\"position:relative\">";
                         print    "$sgramimg<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" style=\"cursor:pointer\" $imgopt>";
                     } else {
                         print "<TD style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px\" class=\"noImage\"><DIV style=\"position:relative;height:100%\">no image";
