@@ -45,19 +45,26 @@ d1 = datestr(datelim(1),'yyyy-mm-dd HH:MM:SS');
 d2 = datestr(datelim(2),'yyyy-mm-dd HH:MM:SS');
 
 % filter the node n within the requested date interval and not in trash
-filter = sprintf('node = ''%s'' AND trash = 0 AND ((sdate BETWEEN ''%s'' AND ''%s'') OR (edate BETWEEN ''%s'' AND ''%s''))',N.ID,d1,d2,d1,d2);
+filter = sprintf('node = ''%s'' AND trash = 0 AND ((edate.date BETWEEN ''%s'' AND ''%s'') OR (edate.date_min BETWEEN ''%s'' AND ''%s'') OR (sdate.date BETWEEN ''%s'' AND ''%s'') OR (sdate.date_min BETWEEN ''%s'' AND ''%s''))',N.ID,d1,d2,d1,d2,d1,d2,d1,d2);
 
 % requests for data associated (all inputs) and converts strings to ISO
-[s,w] = wosystem(sprintf('sqlite3 %s "select * from %s where %s"|iconv -f UTF-8 -t ISO_8859-1',WO.SQL_FORMS,tn,filter));
+tn2 = sprintf('t.*, edate.date, edate.date_min, sdate.date, sdate.date_min from %s t LEFT JOIN udate edate ON t.edate = edate.id LEFT JOIN udate sdate ON t.sdate = sdate.id',tn);
+[s,w] = wosystem(sprintf('sqlite3 %s "select %s where %s"|iconv -f UTF-8 -t ISO_8859-1',WO.SQL_FORMS,tn2,filter));
+
 if ~s && ~isempty(w)
     lines = textscan(w, '%s', 'delimiter','\n');
     data = regexp(lines{1}, '\|', 'split');
-    data = cat(1,data{:}); 
+    data = cat(1,data{:});
 else
     data = cell(0,nf);
 end
 fprintf(' %d samples.\n',size(data,1));
 % data: id, trash, quality, site, edate0, edate1, sdate0, sdate1, opers, rem, ts0, user, input01, ...
+
+% remove edate and sdate ids from main table
+data(:, [5,6]) = [];
+% move e.date, e.date_min, s.date and s.date_min after id, trash, quality and site columns
+data = [data(:, 1:4), data(:, end-3:end), data(:, 5:end-4)];
 
 % --- time
 % fix potential issue in datetime format (must be yyyy-mm-dd HH:MM)
