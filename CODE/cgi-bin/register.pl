@@ -62,7 +62,7 @@ use POSIX qw/strftime/;
 use WebObs::Config;
 use WebObs::Utils;
 use WebObs::Users qw(%USERS clientHasRead clientHasEdit clientHasAdm
-  htpasswd_update htpasswd_display);
+  htpasswd_update htpasswd_comment htpasswd_display);
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 
@@ -211,6 +211,9 @@ if ($action eq "reg") {
               ." for login $login: $!\n";
             exit;
         }
+        # Comment the new login line!
+        htpasswd_comment($login);
+
     }  # end of "autoregistration"
     my $rcn = WebObs::Config::notify(
         "register.warning|$$|received request from $fullname ($login)");
