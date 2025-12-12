@@ -143,13 +143,14 @@ for n = 1:length(N)
 				xlim = [tfirst(n),tlast(n)];
 			end
 			acqui = round(100*length(k)*N(n).ACQ_RATE/abs(t(k(end)) - N(n).LAST_DELAY - xlim(1)));
-			if P.GTABLE(r).DECIMATE > 1
-				tk = decim(t(k),P.GTABLE(r).DECIMATE);
-				dk = decim(d(k,:),P.GTABLE(r).DECIMATE);
-			else
-				tk = t(k);
-				dk = d(k,:);
-			end
+			[tk,dk] = treatsignal(t(k),d(k,:),P.GTABLE(r).DECIMATE,P);
+            %if P.GTABLE(r).DECIMATE > 1
+			%	tk = decim(t(k),P.GTABLE(r).DECIMATE);
+			%	dk = decim(d(k,:),P.GTABLE(r).DECIMATE);
+			%else
+			%	tk = t(k);
+			%	dk = d(k,:);
+			%end
 		end
 
 		etat = 0;
@@ -160,7 +161,7 @@ for n = 1:length(N)
 		end
 		etat = 100*etat/nx;
 
-		if length(zoomdays) == 1
+		if isscalar(zoomdays)
 			zd = xlim(2) - [zoomdays,0];
 		else
 			zd = xlim(2) - [max(zoomdays(:)),min(zoomdays(:))];
@@ -260,14 +261,14 @@ for n = 1:length(N)
 		N(n).ACQUIS = acqui;
 		P.GTABLE(r).INFOS = {''};
 
-		% loop for each data column
+		% loop for each data component
 		for i = 1:2
 			subplot(9,1,(i-1)*2 + (1:2)); extaxes(gca,[.07,.03])
 			if ~isempty(k)
-				plot(tk,dk(:,i),'-','LineWidth',P.GTABLE(r).MARKERSIZE/10,'Color',scolor(1))
+				plot(tk,dk(:,i),'-','LineWidth',P.GTABLE(r).LINEWIDTH,'Color',scolor(1))
 				hold on
-				plot(tk,dk(:,i+3) + rmean(dk(:,i)),'-','LineWidth',P.GTABLE(r).MARKERSIZE/20,'Color',scolor(2))
-				plot(tk,dk(:,i) - dk(:,i+3),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(3))
+				plot(tk,dk(:,i+3) + rmean(dk(:,i)),'-','LineWidth',P.GTABLE(r).LINEWIDTH/2,'Color',scolor(2))
+				plot(tk,dk(:,i) - dk(:,i+3),'-','LineWidth',P.GTABLE(r).LINEWIDTH,'Color',scolor(3))
 				hold off
 			end
 			set(gca,'XLim',xlim,'FontSize',8)
@@ -276,6 +277,13 @@ for n = 1:length(N)
 			if isempty(d) || all(isnan(d(k,i)))
 				nodata(xlim)
 			end
+            if i==1
+                ylim = get(gca,'ylim');
+                topt = {'HorizontalAlignment','center','FontWeight','bold'};
+                text(xlim(1)+diff(xlim)/4,ylim(2),{'original data',''},'Color',scolor(1),topt{:})
+                text(xlim(1)+diff(xlim)/2,ylim(2),{'tide model',''},'Color',scolor(2),topt{:})
+                text(xlim(1)+diff(xlim)*3/4,ylim(2),{'corrected data',''},'Color',scolor(3),topt{:})
+            end
 		end
 
 		% temperature (LKI)
@@ -302,7 +310,7 @@ for n = 1:length(N)
 		hold off
 		set(gca,'XLim',xlim,'Ylim',ylim,'FontSize',8)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Acceleration rate (nm/s%s)',cb3))
+		ylabel(sprintf('Jerk Aamplitude (nm/s%s)',cb3))
 		tlabel(xlim,P.GTABLE(r).TZ)
 
 		% jerk zoom
@@ -321,7 +329,7 @@ for n = 1:length(N)
 		set(gca,'XLim',zd,'FontSize',8);
 		%datetick2('x','mm/dd HH:MM')
 		datetick2('x',-1)
-		ylabel(sprintf('Acceleration rate (nm/s%s)',cb3))
+		ylabel(sprintf('Jerk Amplitude - Zoom (nm/s%s)',cb3))
 		tlabel(zd,P.GTABLE(r).TZ)
 
 		% plot alerts in background
@@ -349,9 +357,9 @@ for n = 1:length(N)
 		% jerk polar
 		axes('position',[pos(1),pos(2)-.02,.25,pos(4)]);
 		circle = exp(1j*linspace(0,2*pi));
-		plot(circle*threshold_level1,'--','Color',rgb_level1,'LineWidth',.75)
+		plot(circle*threshold_level1,'--','Color',rgb_level1,'LineWidth',1)
 		hold on
-		plot(circle*threshold_level2,'--','Color',rgb_level2,'LineWidth',.75)
+		plot(circle*threshold_level2,'--','Color',rgb_level2,'LineWidth',1)
 		if ~isempty(kz)
 			set(gca,'XLim',[min(min(bx(kz,1)),-threshold_level2),max(max(bx(kz,1)),threshold_level2)], ...
 				'YLim',[min(min(by(kz,1)),-threshold_level2),max(max(by(kz,1)),threshold_level2)], ...
@@ -369,9 +377,9 @@ for n = 1:length(N)
 			plot(azx([1,2]),azy([1,2]),'-','Color',.8*ones(1,3),'LineWidth',1)
 			plot(azx([4,5]),azy([4,5]),'-','Color',.8*ones(1,3),'LineWidth',1)
 			[azx,azy] = pol2cart([az(1)+pi,linspace(az(1),az(2)),linspace(az(2),az(1))+pi],threshold_level2);
-			patch(azx,azy,-ones(size(azx)),'k','FaceColor',rgb_level1,'EdgeColor','none','Clipping','on');
+			patch(azx,azy,-.9*ones(size(azx)),'k','FaceColor',rgb_level1,'EdgeColor','none','Clipping','on');
 			[azx,azy] = pol2cart([az(1)+pi,linspace(az(1),az(2)),linspace(az(2),az(1))+pi],threshold_level1);
-			patch(azx,azy,-ones(size(azx)),'k','FaceColor',.9*ones(1,3),'EdgeColor','none','Clipping','on');
+			patch(azx,azy,-.8*ones(size(azx)),'k','FaceColor',.9*ones(1,3),'EdgeColor','none','Clipping','on');
 		end
 		plot(bx(kz,1),by(kz,1),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
 		hold off
@@ -382,10 +390,10 @@ for n = 1:length(N)
 		end
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {sprintf('Last data: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ)};
+			P.GTABLE(r).INFOS = {sprintf('Last data: {\\bf %s} {\\it %+d}',datestr(t(ke)),P.GTABLE(r).TZ)};
 			if tidemode
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{ ...
-					sprintf('   Tide predict mode: {\\bf%s}',tidemodes{tidemode}), ...
+					sprintf('   Tide predict mode: {\\bf %s}',tidemodes{tidemode}), ...
 					sprintf('   E-W tide: {\\bf\\times %1.4f, \\Delta{t} = %+dh %02.0fm}', ...
 						tidefit(1,2),h2hms(24*tidefit(1,1),1)), ...
 					sprintf('   N-S tide: {\\bf\\times %1.4f, \\Delta{t} = %+dh %02.0fm}', ...
@@ -393,16 +401,16 @@ for n = 1:length(N)
 				}];
 			else
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{ ...
-					sprintf('   Tide predict mode: {\\bfnode}'), ...
-					sprintf('   E-W tide: {\\bfnone}'), ...
-					sprintf('   N-S tide: {\\bfnone}'), ...
+					sprintf('   Tide predict mode: {\\bf none}'), ...
+					sprintf('   E-W tide: {\\bf none}'), ...
+					sprintf('   N-S tide: {\\bf none}'), ...
 				}];
 			end
 			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{ ...
 				'JERK parameters:', ...
-				sprintf('   Sampling: {\\bf%g s}',dt), ...
-				sprintf('   Slope window: {\\bf%g s}',mw), ...
-				sprintf('   Azimuth interval: {\\bfN%g to N%g}',round(mod(azlim+360,360))), ...
+				sprintf('   Sampling: {\\bf %g s}',dt), ...
+				sprintf('   Slope window: {\\bf %g s}',mw), ...
+				sprintf('   Azimuth interval: {\\bfN %g to N%g}',round(mod(azlim+360,360))), ...
 				' ', ...
 				sprintf('Last JERK alert (in zoom window):'), ...
 				sprintf('   Level1: %s',sal1),sprintf('   Level2: %s',sal2), ' ', ...
@@ -441,7 +449,7 @@ for n = 1:length(N)
 			if ~P.REQUEST && isfield(P,'NOTIFY_EVENT') && ~isempty(P.NOTIFY_EVENT)
 				falert = sprintf('%s/alertstatus',P.OUTDIR);
 				if exist(falert,'file')
-					alertlast = load(falert);
+					alertlast = load(falert,'-ascii');
 				else
 					alertlast = [talarm(end),0];
 				end
