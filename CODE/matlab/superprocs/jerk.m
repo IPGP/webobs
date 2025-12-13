@@ -67,6 +67,7 @@ zoomdays = field2num(P,'JERK_ZOOM_DAYS',1);
 targetlatlon = field2num(P,'JERK_TARGET_LATLON');
 targetangle = field2num(P,'JERK_TARGET_ANGLE_DEG',45);
 procazlim = field2num(P,'JERK_AZLIM',[0,180]);
+chan_median_minmax = field2num(P,'MEDIAN_MINMAX_FILTERING');
 chan_smooth = field2num(P,'CHANNELS_MOVING_AVERAGE_SAMPLES',ones(1,4));
 tidemode = field2num(P,'TIDES_PREDICT_MODE',0);
 
@@ -84,6 +85,15 @@ for n = 1:length(N)
 	t = D(n).t;
 	d = D(n).d;
 	for c = 1:size(d,2)
+        if length(chan_median_minmax) == 3
+            mm = minmax(d(:,c),chan_median_minmax(1:2));
+            mm = mm + chan_median_minmax(3)*[-1,1]*diff(mm); % adds extent of minmax to avoid filtering normal maxima
+            k = ~isinto(d(:,c),mm);
+            d(k,c) = NaN;
+            if sum(k)>0
+                fprintf('  --> channel %d median min/max filter: %d samples have been excluded.\n',c,sum(k));
+            end
+        end
 		if length(chan_smooth) >= c && chan_smooth(c) > 1
 			d(:,c) = mavr(d(:,c),chan_smooth(c));
 		end
@@ -221,7 +231,7 @@ for n = 1:length(N)
 				%dk(:,3+c) = interp1(T.t,T.d(:,2)*cosd(tidefit(c,1)) + T.d(:,1)*sind(tidefit(c,1)),tk)*tidefit(c,2);
 
 				%fprintf('WEBOBS{jerk}: adjusted tide component %d = x %g N%+d\n',c,tidefit(c,2),round(tidefit(c,1)));
-				fprintf('%s: adjusted tide component %d = x %g %+dh %02.0fm\n',wofun,c,tidefit(c,2),h2hms(24*tidefit(c,1),1));
+				fprintf('  --> adjusted tide component %d = x %g %+dh %02.0fm\n',c,tidefit(c,2),h2hms(24*tidefit(c,1),1));
 			end
 		else
 			dk(:,4:5) = 0*dk(:,1:2);
