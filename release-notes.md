@@ -49,6 +49,7 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
 ### Enhancements and modifications
 1. New CSS!
 1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
+1. `!!` if the auto-registration mode is enabled (`SQL_DB_USERS_AUTOREGISTER`), when a registration form is sent the new line added to `/opt/webobs.d/htpasswd` apache file is now commented. Administrator must uncomment it to fully activate the user access.
 1. `!!` **HYPOMAP superproc**: MAP_*_DEPLIM now filters the data (was only for marker scale color). *Caution:* comments in proc's .conf files need to be updated to avoid misunderstanding
 1. `!!` in order to use only the MultiMarkDown format in contents, the former 'wiki' format will be progressively abandonned. The following option is recommanded in **WEBOBS.rc**:
     ```
@@ -91,6 +92,10 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
    GRAPH_HEIGHT_PX|250
    ```
    These values can be overwritten in `mc3.pl` URL with options `&grw=` and `&grh=`.
+1. Few improvements in **Jerk** superproc:
+    * automatic filtering to avoid outliers in raw signals,
+    * improves graph rendering and add a legend.
+1. In **showOUTG.pl** the proc outputs of event type (tremblemaps, helicorder, ...) have now navigation buttons to access directly to previous/next image.
 
 ### Fixed issues
 1. `!!` Fix an issue giving edit button for any grid (view/proc/form) for users with only Edit level.
@@ -98,9 +103,11 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
 3. Add forgotten keys in **tremblemaps** superproc template, and fix an issue when updating procs with setup (new keys not added).
 4. Fix display of non-geolocated nodes as neighbours (as lat=lon=0).
 5. Fix issue with empty location code for fdsnws-dataselect format.
+6. Fix an issue with alignment of MC events on the **sefran3** main page (hourly thumbnails).
 
 ### Code improvement
 1. `!!` remove cedit.pl and fedit.pl. Replace former links with nedit.pl and formGENFORM.pl, respectively.
+
 
 ## v2.7.3 (February 2025)
 
