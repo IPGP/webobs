@@ -26,7 +26,7 @@ end
 
 % overwrites non-final orbits
 for o = 1:2
-	kk = find(orb==o);
+	kk = find(orb>=o);
 	if ~isempty(kk)
 		l = o*2;
 		wcol = c/l + 1 - 1/l;
