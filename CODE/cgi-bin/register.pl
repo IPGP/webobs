@@ -136,7 +136,7 @@ if ($action eq "reg") {
     # Write registration request to the reglog
     my $reglog = exists $WEBOBS{REGISTRATION_LOGFILE} ?
       $WEBOBS{REGISTRATION_LOGFILE} : "$WEBOBS{PATH_DATA_DB}/reglog";
-    my $autoregister = (($WEBOBS{SQL_DB_USERS_AUTOREGISTER} =~ /^y/i)
+    my $autoregister = (isok($WEBOBS{SQL_DB_USERS_AUTOREGISTER})
           && !defined($USERS{$login})) ? 1 : 0;
     my $reg_file;
     if (!open($reg_file, ">>$reglog")) {
