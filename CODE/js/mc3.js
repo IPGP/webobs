@@ -98,7 +98,7 @@ function plotFlot(gtype) {
                 fill: fill,
                 barWidth: bw,
                 align: 'center',
-                lineWidth: 1
+                lineWidth: 0
             },
             lines: {
                 show: lines,

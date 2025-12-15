@@ -1102,43 +1102,40 @@ if ($QryParm->{'nograph'} == 0) {
     foreach (sort(keys(%typesSO))) {
         my $key = $typesSO{$_};
         if ($key ne "TOTAL" && $stat{$key}) {
-            $html .= " datad.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            my $content = "{ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\","
+                ." color: \"$types{$key}{Color}\","
+                ." data: [";
+            $html .= " datad.push($content";
             for (my $i=0; $i<=$#stat_t; $i++) {
                 my $d = $stat_d{$key}[$i];
                 $html .= "[ $stat_j[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datah.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datah.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_dh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datav.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datav.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_vh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " dataw.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " dataw.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_wh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datam.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datam.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_mh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datac.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datac.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_ch{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
