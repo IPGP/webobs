@@ -1,8 +1,8 @@
 function gridmaps(grids,outd,varargin)
 %GRIDMAPS Grids location maps of nodes
 %   GRIDMAPS creates or updates NODES location maps for each existing GRIDS
-%   (views or procs). Maps are written in .eps and .png formats, with companion
-%   html file .map for clickable areas, and can be displayed with showGRID.pl.
+%   (view, proc, form, or sefran). Maps are written in .eps and .png formats,
+%   with companion html file .map for clickable areas.
 %
 %   GRIDMAPS(GRIDS) updates only grids listed in GRIDS (string or cell) as
 %   	gridtype.gridname
@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2025-04-07
+%   Updated: 2025-12-15
 
 
 WO = readcfg;
@@ -77,18 +77,21 @@ end
 % loads transmission information
 trans = isok(P,'PLOT_TRANSMISSION');
 
-% gets all VIEWS, PROCS, and FORMS looks inside the GRIDS directories avoiding . .. and non-directory files
+% gets all VIEWS, PROCS, FORMS, and SEFRANS looks inside the GRIDS directories avoiding . .. and non-directory files
 if ~request && (nargin < 1 || isempty(grids))
 	VIEWS = dir(sprintf('%s/*',WO.PATH_VIEWS));
 	PROCS = dir(sprintf('%s/*',WO.PATH_PROCS));
 	FORMS = dir(sprintf('%s/*',WO.PATH_FORMS));
+	SEFRANS = dir(sprintf('%s/*',WO.PATH_SEFRANS));
     vl = {VIEWS(~strncmp({VIEWS.name},{'.'},1) & cat(2,VIEWS.isdir)).name};
     pl = {PROCS(~strncmp({PROCS.name},{'.'},1) & cat(2,PROCS.isdir)).name};
     fl = {FORMS(~strncmp({FORMS.name},{'.'},1) & cat(2,FORMS.isdir)).name};
+    sl = {SEFRANS(~strncmp({SEFRANS.name},{'.'},1) & cat(2,SEFRANS.isdir)).name};
     grids = {};
     if ~isempty(vl), grids = [grids,strcat('VIEW.',vl)]; end
     if ~isempty(pl), grids = [grids,strcat('PROC.',pl)]; end
     if ~isempty(fl), grids = [grids,strcat('FORM.',fl)]; end
+    if ~isempty(sl), grids = [grids,strcat('SEFRAN.',sl)]; end
 else
 	if ~iscell(grids)
 		grids = cellstr(grids);
