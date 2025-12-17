@@ -369,10 +369,10 @@ foreach my $f (@formulas) {
 
     foreach (@x) {
         my $form_input = lc($_);
-        if ($formula =~ /(mean|std|median)\(.*$_.*\)/) {
+        if ($formula =~ /(mean|std|median)\(.*$_.*\)/ || scalar(@x) == 1) {
             $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : NaN)/g;
         } else {
-            $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : 0.0)/g;
+            $formula =~ s/$_/Number(form.$form_input.value && form.$form_input.value != "NaN" ? form.$form_input.value : 0.0)/g;
         }
     }
 
