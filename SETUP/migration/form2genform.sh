@@ -546,5 +546,3 @@ for i in "${!DATS[@]}"; do
     fi
 done
 
-exit 1
-
