@@ -68,7 +68,7 @@ for i = 1:length(grids)
                 % FDSNWS request returns: Network|Station|Latitude|Longitude|Elevation|SiteName|StartTime|EndTime
                 [s,w] = wosystem(sprintf('wget -qO- "https://%s/fdsnws/station/1/query?net=%s&sta=%s&level=station&format=text"', ...
                     fdsnws,cc{1},cc{2}));
-                w = regexprep(regexprep(w,'^[^\n]*\n',''),'\n','')
+                w = regexprep(regexprep(w,'^[^\n]*\n',''),'\n',''); % removes 1st line and last new line char
                 req = strsplit(w,'|');
                 if ~s && length(req)==8
                     if ~isempty(req{7})
