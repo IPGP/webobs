@@ -514,7 +514,7 @@ if ($QryParm->{'dump'} eq "") {
         $html .= "<DIV id=\"mcgraph\" style=\"width:".$QryParm->{'grw'}."px;height:".$QryParm->{'grh'}."px;float:left;\"></DIV>\n"
           ."<DIV id=\"showall\" style=\"width:".$grshowall."px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;\">"
           ."<A href=\"#\" onClick=\"plotAll()\">plot all</A>"
-          ." • <A href=\"#\" onClick=\"toggleLine()\">lines on/off</A>"
+          ." • <A href=\"#\" onClick=\"toggleLine()\">bars line on/off</A>"
 
           #."<BR><A href=\"#\" id=\"tlsavelink\">download image</A></DIV>\n"
           ."<DIV id=\"graphinfo\" style=\"width:".$grinfo_width."px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
