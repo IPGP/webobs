@@ -205,6 +205,13 @@ function plotAll() {
     plot = $.plot($('#mcgraph'), data, options);
 }
 
+function toggleLine() {
+    if (options.series.bars.lineWidth == 0) {
+        options.series.bars.lineWidth = 1;
+    } else { options.series.bars.lineWidth = 0 }
+    plot = $.plot($('#mcgraph'), data, options);
+}
+
 function cop(color) {
     var bgcolor = (typeof color == "undefined") ? "#fff" : color;
     var link = $("#tlsavelink");
