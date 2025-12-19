@@ -434,13 +434,20 @@ for m = 1:length(summarylist)
 			% loop for each parameter
 			for i = 1:nx
 				subplot(nx*3,1,(i-1)*3+(1:3)), extaxes(gca,[.07,.02])
+                unit = '';
+                ydir = 0;
+                mkc = dk(:,3);
 				switch lower(M(m).tplot{i})
 				case 'latitude'
 					td = dk(:,1);
+                    unit = ' (°N)';
 				case 'longitude'
 					td = dk(:,2);
+                    unit = ' (°E)';
 				case 'depth'
 					td = dk(:,3);
+                    unit = ' (km)';
+                    ydir = 1;
 				case 'magnitude'
 					td = dk(:,4);
 				otherwise
@@ -454,14 +461,20 @@ for m = 1:length(summarylist)
 				else
 					scatter(tk,td,mks,mkc,'fill','MarkerEdgeColor','k','LineWidth',linewidth)
 				end
+                clim = zlim;
+                caxis(clim)
 				set(gca,'XLim',tlim,'FontSize',8)
+                if ydir
+                    set(gca,'YDir','reverse');
+                end
 				datetick2('x',P.GTABLE(r).DATESTR)
 				if i < nx
 					set(gca,'XTickLabel',[]);
 				end
-				ylabel(M(m).tplot{i})
+				ylabel([M(m).tplot{i},unit])
 				box on
 			end
+            colormap(M(m).cmap)
 			tlabel(tlim,P.GTABLE(r).TZ)
 
 			P.GTABLE(r).GTITLE = gtitle(M(m).title,P.GTABLE(r).TIMESCALE);
