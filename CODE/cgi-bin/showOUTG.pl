@@ -386,8 +386,8 @@ if ($QryParm->{'ts'} eq 'map') {
             $next = $index < $#png_files  ? $png_files[$index + 1] : undef;
             $prev =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\/|\.png$//g if defined($prev);
             $next =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\/|\.png$//g if defined($next);
-            $addlinks .= (defined $prev ? "<A href=\"$baseurl&ts=events&g=$prev\"><IMG src=\"/icons/l13.png\" title=\"$prev\"></A>":"")
-                    .(defined $next ? "&nbsp;<A href=\"$baseurl&ts=events&g=$next\"><IMG src=\"/icons/r13.png\" title=\"$next\"></A>":"");
+            $addlinks .= (defined $prev ? "<A href=\"$baseurl&ts=events&g=$prev\"><IMG src=\"/icons/l13.png\" title=\"previous: $prev\"></A>":"")
+                    .(defined $next ? "&nbsp;<A href=\"$baseurl&ts=events&g=$next\"><IMG src=\"/icons/r13.png\" title=\"next: $next\"></A>":"");
         }
         foreach ("eps","svg","pdf","gse","txt","kml") {
             if ( -e "$short.$_" ) {
