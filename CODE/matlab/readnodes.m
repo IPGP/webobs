@@ -22,11 +22,13 @@ function N=readnodes(WO,grids,tlim,valid);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-23
-%   Updated: 2025-12-15
+%   Updated: 2025-12-20
 
 if nargin < 2
 	error('No few input arguments')
 end
+
+wofun = sprintf('WEBOBS{%s}',mfilename);
 
 NODES = readcfg(WO.CONF_NODES);
 
@@ -65,6 +67,7 @@ for i = 1:length(grids)
             cc = split(sfr{j},'.'); % NET.STA.LOC.CHA
             NN = struct('ID','','NAME',sfr{j},'ALIAS',sprintf('%s.%s',cc{1},cc{2}));
             if ~isempty(fdsnws)
+                fprintf('%s: get %s:%s station information from FDSNWS server %s... ',wofun,cc{1},cc{2},fdsnws);
                 % FDSNWS request returns: Network|Station|Latitude|Longitude|Elevation|SiteName|StartTime|EndTime
                 [s,w] = wosystem(sprintf('wget -qO- "https://%s/fdsnws/station/1/query?net=%s&sta=%s&level=station&format=text"', ...
                     fdsnws,cc{1},cc{2}));
@@ -90,6 +93,7 @@ for i = 1:length(grids)
                         NN.LON_WGS84 = str2num(req{4});
                         NN.ALTITUDE = str2num(req{5});
                         NN.FDSN_NETWORK_CODE = req{1};
+                        NN.RGB = rgb(C{6}{j});
                         n = n + 1;
                         if isempty(N)
                             N = NN;
@@ -97,6 +101,7 @@ for i = 1:length(grids)
                             N = structcat(N,NN);
                         end
                     end
+                    fprintf('done.\n');
                 end
             end
         end
@@ -123,9 +128,8 @@ for i = 1:length(grids)
         end
 	end
 	if nargin > 0
-		fprintf('WEBOBS{readnodes}: %d/%d nodes imported from grid %s.\n',n,length(k),g);
+		fprintf('%s: %d/%d nodes imported from grid %s.\n',wofun,n,length(k),g);
 	end
 end
 
-
-fprintf('WEBOBS{readnodes}: %d nodes returned.\n',length(N));
+fprintf('%s: %d nodes returned.\n',wofun,length(N));

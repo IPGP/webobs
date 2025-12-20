@@ -176,6 +176,9 @@ for g = 1:length(grids)
 		NN(g).id = cat(1,{N.ID});
 		NN(g).alias = cat(1,{N.ALIAS});
 		NN(g).name = cat(1,{N.NAME});
+        if isfield(N,'RGB')
+            NN(g).rgb = cat(1,N.RGB);
+        end
 	else
 		NN(g).kn = [];
 	end
@@ -196,11 +199,11 @@ for g = 1:length(grids)
 
 	if merge
 		if g == 1
-			fprintf('\n%s: Making map of merged grids ',wofun);
+			fprintf('%s: Making map of merged grids ',wofun);
 		end
 		fprintf('%s... ',grids{g});
 	else
-		fprintf('\n%s: Making map of grid %s...\n',wofun,grids{g});
+		fprintf('%s: Making map of grid %s...\n',wofun,grids{g});
 	end
 	s = split(grids{g},'.');
 	G = GRIDS.(s{1}).(s{2});
@@ -263,6 +266,11 @@ for g = 1:length(grids)
 		geo = NN(g).geo;
 		ka = NN(g).ka;
 		k0 = NN(g).k0;
+        if isfield(NN(g),'rgb')
+            col = NN(g).rgb;
+        else
+            col = repmat(nodecolor,size(NN(g).geo,1),1);
+        end
 
 		for m = 1:size(maps,1)
 			if merge
@@ -356,14 +364,14 @@ for g = 1:length(grids)
 			k0m = [];
 			if ~isempty(k0)
 				k0m = k0(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
-				target(geo(k0m,2),geo(k0m,1),nodesize,nodecolor,nodetype,2)
+				target(geo(k0m,2),geo(k0m,1),nodesize,col(k0m,:),nodetype,2)
 			end
 
 			% plots active nodes
 			kam = [];
 			if ~isempty(ka)
 				kam = ka(isinto(geo(ka,2),dlon) & isinto(geo(ka,1),dlat));
-				target(geo(kam,2),geo(kam,1),nodesize,nodecolor,nodetype)
+				target(geo(kam,2),geo(kam,1),nodesize,col(kam,:),nodetype)
 			end
 
 			% writes node names for current map but excluded other maps
@@ -412,9 +420,14 @@ for g = 1:length(grids)
 				if ~merge
 					xl = [.1,.4,.7];
 					yl = .5;
-					target(xl(2),yl,nodesize,nodecolor,nodetype);
+                    if size(col,1) > 1
+                        lcol = .5*ones(1,3); % gray if nodes have different colors
+                    else
+                        lcol = nodecolor;
+                    end
+					target(xl(2),yl,nodesize,lcol,nodetype);
 					if ~isempty(k0)
-						target(xl(3),yl,nodesize,nodecolor,nodetype,2);
+						target(xl(3),yl,nodesize,lcol,nodetype,2);
 					end
 					nm = length(kam) + length(k0m);
 					text(xl,yl*[1,1,1],{sprintf('{\\bf%s}',nodename), ...
