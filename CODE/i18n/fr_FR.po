@@ -1234,11 +1234,20 @@ msgstr "Saisie"
 msgid "Hide"
 msgstr "Cacher"
 
+msgid "Hide/trash this event"
+msgstr "Mettre cet événement à la corbeille"
+
 msgid "Restore"
 msgstr "Restaurer"
 
+msgid "Restore this event"
+msgstr "Restaurer cet événement"
+
 msgid "Delete"
 msgstr "Supprimer"
+
+msgid "Delete this event (cannot be cancelled)"
+msgstr "Supprimer cet événement (ne pourra être annulé)"
 
 msgid "Remove"
 msgstr "Supprimer"

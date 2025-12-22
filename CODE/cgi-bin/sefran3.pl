@@ -963,9 +963,12 @@ if ($date) {
             print "<HR><TABLE style=\"border:0\"><TR>";
             if ($modif) {
                 print "<TD style=\"border:0\">",
-                  "<INPUT type=\"button\" value=\"".($id < 0 ? "$__{'Restore'}":"$__{'Hide'}")."\" onClick=\"supprime(1);\">";
+                  "<A href=\"#\"><IMG onClick=\"supprime(1);\" onMouseOut=\"nd()\" src=\"/icons/"
+                  .($id < 0 ? "restore.png":"trash.png")."\""
+                  ." onMouseOver=\"overlib('".($id < 0 ? $__{'Restore this event'}:$__{'Hide/trash this event'})."')\"></A>";
                 if ($userLevel == 4) {
-                    print "<INPUT type=\"button\" value=\"$__{'Delete'}\" onClick=\"supprime(2);\">";
+                    print "&nbsp;<A href=\"#\"><IMG onClick=\"supprime(2);\" src=\"/icons/no.png\""
+                    ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Delete this event (cannot be cancelled)'}')\"></A>";
                 }
                 print "</TD>";
             }
