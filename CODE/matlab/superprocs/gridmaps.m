@@ -117,12 +117,8 @@ inactivenode = isok(P,'INACTIVE_NODE');
 minkm = field2num(P,'MIN_SIZE_KM',2);
 maxxy = field2num(P,'MAX_XYRATIO',2);
 border = field2num(P,'BORDER_ADD',.1);
+papersize = field2num(P,'PAPERSIZE_INCHES',10,'notempty');
 
-if isfield(P,'PAPERSIZE_INCHES')
-	psz = repmat(str2double(P.PAPERSIZE_INCHES)*72,[1,2]);
-else
-	psz = [720,720];
-end
 dpi = field2num(P,'DPI',100);
 %lw = field2num(P,'LINEWIDTH',.1);
 lwminor = field2num(P,'CONTOURLINES_MINOR_LINEWIDTH',.1);
@@ -295,6 +291,10 @@ for g = 1:length(grids)
 				y = DEM.lat;
 				z = DEM.z;
 				demcopyright = DEM.COPYRIGHT;
+
+                % computes optimal paper height from basemap aspect ratio
+                rxy = max(1,0.9*diff(minmax(x))*cosd(mean(y))/diff(minmax(y)));
+                psz = 72*papersize*[1,1/rxy];
 
 				figure
 
