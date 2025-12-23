@@ -65,7 +65,7 @@ for i = 1:length(grids)
         k = 1:length(sfr);
         for j = 1:length(k)
             cc = split(sfr{j},'.'); % NET.STA.LOC.CHA
-            NN = struct('ID','','NAME',sfr{j},'ALIAS',sprintf('%s.%s',cc{1},cc{2}));
+            NN = struct('ID',sfr{j},'NAME',sfr{j},'ALIAS',sprintf('%s.%s',cc{1},cc{2}));
             if ~isempty(fdsnws)
                 fprintf('%s: get %s:%s station information from FDSNWS server %s... ',wofun,cc{1},cc{2},fdsnws);
                 % FDSNWS request returns: Network|Station|Latitude|Longitude|Elevation|SiteName|StartTime|EndTime
