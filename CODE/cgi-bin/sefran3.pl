@@ -477,7 +477,9 @@ if (!$date) {
           "<IMG src=\"/icons/mctag.png\" border=1 style=\"vertical-align:middle\"></A> | ";
         print "<A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showsgram_help'}')\">",
           "<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> | " if ($sgramOK);
-        print "<A href=\"#infos\">$__{'Information'}</A>",
+        print "<A href=\"#status\">$__{'Status'}</A> | " if ($status);
+        print  "<A href=\"#maps\">$__{'Maps'}</A>",
+          " | <A href=\"#infos\">$__{'Information'}</A>",
           " | <A href=\"/cgi-bin/$WEBOBS{CGI_MC3}?mc=$mc3\">$MC3{TITLE}</A>",
           " ]</p></TD>";
         if (!$ref || $SEFRAN3{REF_NORTC} == 0) {
@@ -620,8 +622,8 @@ if (!$date) {
     print "</TABLE><BR>";
 
     # table information about channel streams
-    print "<A name=\"infos\"><H2>Informations</H2></A>\n";
     if ($status) {
+        print "<A name=\"status\"><H2>$__{'Status'}</H2></A>\n";
         my $now_seconds = timegm(gmtime);
         my $Q = qx($WEBOBS{PRGM_ALARM} $SEFRAN3{SEEDLINK_SERVER_TIMEOUT_SECONDS} $WEBOBS{SLINKTOOL_PRGM} -Q $SEFRAN3{SEEDLINK_SERVER});
         my @stream_server = split(/\n/,$Q);
@@ -720,7 +722,22 @@ if (!$date) {
         }
         print "</TABLE><BR>\n";
     }
+    # --- maps of stations (NOTE: only the main map is shown here)
+    print "<A name=\"maps\"><H2>$__{'Maps'}</H2></A>\n";
+    my $MAPpath = my $MAPurn = "";
+    my $grid = "SEFRAN.$s3";
+    $MAPpath = "$WEBOBS{ROOT_OUTG}/$grid/$WEBOBS{PATH_OUTG_MAPS}";
+    my $mapfile = $grid."_map";
+    if  ( -e "$MAPpath/$mapfile.png" ) {
+        ( $MAPurn  = $MAPpath ) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
+        print "<P style=\"text-align: left\"><IMG SRC=\"$MAPurn/$mapfile.png\" border=\"0\" usemap=\"#map\"></P>\n";
+        if (-e "$MAPpath/$mapfile.map") {
+            my @htmlarea = readFile("$MAPpath/$mapfile.map");
+            print "<map name=\"map\">@htmlarea</map>\n";
+        }
+    }
 
+    print "<A name=\"infos\"><H2>$__{'Informations'}</H2></A>\n";
     print "<P>Sefran3 configuration file: <B>$s3</B></P>\n";
     print "<P>Channels parameters file: <B>$SEFRAN3{CHANNEL_CONF}</B></P>\n";
     print "<P>Update window: <B>$SEFRAN3{UPDATE_HOURS} h</B></P>\n";
@@ -769,6 +786,7 @@ if ($date) {
     my $date_prec = my $dprec = "";
     my $date_suiv = my $dsuiv = "";
     my $idarg = "";
+    my $sop = "&sgramopacity=$sgram_opacity";
 
     if ($dep) {
         if ($id) {     # read event ID from MC + set number of minute-files containing signal + 1
@@ -795,8 +813,8 @@ if ($date) {
 
     # prev+next hour 'big arrows'
     if (!$dep && defined($SEFRAN3{BIGARROWS})) {
-        print "<div id=\"Larrow\" onClick=\"location.href='$prog&date=$date_prec&sx=1'\" onMouseOut=\"\$('#Larrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Larrow').css('opacity',0.7); overlib('$dprec',WIDTH,150)\">&nbsp;</div>";
-        print "<div id=\"Rarrow\" onClick=\"location.href='$prog&date=$date_suiv'\"      onMouseOut=\"\$('#Rarrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Rarrow').css('opacity',0.7); overlib('$dsuiv',WIDTH,150)\">&nbsp;</div>";
+        print "<div id=\"Larrow\" onClick=\"location.href='$prog&date=$date_prec$sop&sx=1'\" onMouseOut=\"\$('#Larrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Larrow').css('opacity',0.7); overlib('$dprec',WIDTH,150)\">&nbsp;</div>";
+        print "<div id=\"Rarrow\" onClick=\"location.href='$prog&date=$date_suiv$sop'\"      onMouseOut=\"\$('#Rarrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Rarrow').css('opacity',0.7); overlib('$dsuiv',WIDTH,150)\">&nbsp;</div>";
     }
 
     # control-panel fixed box (zoom,mctag toggle,next/prev buttons)
