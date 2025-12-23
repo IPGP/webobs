@@ -990,17 +990,24 @@ sub tableStats {
     my $txt = "<TD style='border:0;text-align:right;vertical-align:top'><TABLE class='trData'>"
               ."<TR><TH rowspan=2></TH><TH colspan=".(uniq(@itypes)).">$__{'Type'}</TH><TH rowspan=2></TH><TH colspan=3>Export n°</TH></TR>\n"
               ."<TR>".join("",map{"<TH>$_</TH>"} uniq(@itypes))."<TH>Data</TH><TH>Error</TH><TH>Cell</TH><TR>\n";
+    # adds operators and comment in front
+    if ($_[0] eq 'INPUT') {
+        $txt .= "<TR><TH>Operators</TH>".join("",map {"<TD></TD>"} uniq(@itypes))."<TD></TD><TD></TD><TD></TD><TD align='center'><SPAN class='code'>1</SPAN></TD></TR>";
+        $txt .= "<TR><TH>Comment</TH>".join("",map {"<TD></TD>"} uniq(@itypes))."<TD></TD><TD></TD><TD></TD><TD align='center'><SPAN class='code'>2</SPAN></TD></TR>";
+    }
     for my $i (0..$#f) {
         (my $key = $f[$i]) =~ s/_NAME//g;
         my $unit = ( $G{$key."_UNIT"} ne "" ? " (".$G{$key."_UNIT"}.")":"" );
         (my $type = $G{$key} ? $G{$key}:'numeric') =~ s/[\(:].*$//g;
+        my $pcl = keyRank($key,$G{PROC_CELL_LIST});
+        $pcl += 2 if ($pcl > 0);
         $txt .= "<TR".($i >= $maxrows ? " class='hiddenRow'":"")."><TH>$key</TH>".join("",map {
                 my $t = $_; "<TD align='center'>" . ($t eq $itypes[$i] ? "<B>".$G{$key."_NAME"}."</B>".$unit:"") . "</TD>"
             } uniq(@itypes))
                 ."<TD></TD>"
                 ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_DATA_LIST})."</SPAN></TD>"
                 ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_ERROR_LIST})."</SPAN></TD>"
-                ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_CELL_LIST})."</SPAN></TD>"
+                ."<TD align='center'><SPAN class='code'>".$pcl."</SPAN></TD>"
                 ."</TR>\n";
     }
     if ($#f >= $maxrows) {

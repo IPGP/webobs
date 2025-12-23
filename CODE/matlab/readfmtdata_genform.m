@@ -21,7 +21,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2024-07-03, in Surabaya (Indonesia)
-%	Updated: 2025-05-06
+%	Updated: 2025-12-23
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -112,7 +112,7 @@ for i = 1:length(k)
     end
 end
 
-% export data, errors, names and units
+% export data, errors, text, names and units
 pdn = split(field2str(FORM,'PROC_DATA_LIST',''),','); % list of numerical INPUT/OUTPUT to export
 pen = split(field2str(FORM,'PROC_ERROR_LIST',''),','); % list of corresponding errors
 pcn = split(field2str(FORM,'PROC_CELL_LIST',''),','); % list of text INPUT/OUTPUT to export
@@ -139,11 +139,22 @@ for i = 1:nx
     nm{i} = field2str(FORM,[pdn{i} '_NAME'],'');
     un{i} = field2str(FORM,[pdn{i} '_UNIT'],'');
 end
+c = data(:,9:10); % initiates with operators and comment
+for i = 1:length(pcn)
+    dd = pcn{i};
+    dd = regexprep(dd,'INPUT([0-9]{2,3})','data(:,$1+12)');
+    if ~isempty(dd)
+        eval(['c(:,i+2)=',dd,';']);
+    end
+    %nm{i} = field2str(FORM,[pcn{i} '_NAME'],'');
+    %un{i} = field2str(FORM,[pcn{i} '_UNIT'],'');
+end
+
 
 D.t = t - N.UTC_DATA;
 D.d = d;
 D.e = e;
-D.c = data(:,9:10);
+D.c = c;
 
 % set default names and units to inexistant/unappropriate calibration files of node
 if N.CLB.nx ~= nx
