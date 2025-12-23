@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2025-12-15
+%   Updated: 2025-12-23
 
 
 WO = readcfg;
@@ -292,7 +292,7 @@ for g = 1:length(grids)
 				z = DEM.z;
 				demcopyright = DEM.COPYRIGHT;
 
-                % computes optimal paper height from basemap aspect ratio
+                % adjusts paper height from the basemap aspect ratio
                 rxy = max(1,0.9*diff(minmax(x))*cosd(mean(y))/diff(minmax(y)));
                 psz = 72*papersize*[1,1/rxy];
 
@@ -468,14 +468,19 @@ for g = 1:length(grids)
 						x = round(ims(1)*((axp(3)*(NN(gg).geo(knn,2) - xylim(1))/diff(xylim(1:2)) + axp(1))));
 						y = round(ims(2) - ims(2)*((axp(4)*(NN(gg).geo(knn,1) - xylim(3))/diff(xylim(3:4)) + axp(2))));
 						r = ceil(nodesize*dpi/72);
-						lnk = sprintf('/cgi-bin/showNODE.pl?node=%s.%s',grids{gg},NN(gg).id{knn});
+                        if isempty(regexp(grids(gg),'^SEFRAN\.'))
+                            lnk = sprintf('/cgi-bin/showNODE.pl?node=%s.%s',grids{gg},NN(gg).id{knn});
+                        else
+                            lnk = '#';
+                        end
 						if html
 							txt = regexprep(sprintf('%s: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
 							fprintf(fid,'<AREA href="%s" title="%s" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						else
+                            cap = NN(gg).id{knn};
 							txt = regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
 							txt = regexprep(char(txt),'''','\\''');
-							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
+							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'',CAPTION,''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,cap,x,y,r);
 						end
 					end
 				end
