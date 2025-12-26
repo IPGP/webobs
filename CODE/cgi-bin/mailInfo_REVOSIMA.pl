@@ -268,6 +268,7 @@ function showCredits() {
     $htmlOutput .= $html;
     $htmlBrowser .= $html;
     $htmlMail .= $html;
+    $htmlMail .= "<p><a href=\"https://www.ipgp.fr/volcanoweb/mayotte/Bulletin_quotidien/bulletin.html\">Retrouvez ce bulletin avec les illustrations et figures sur le site de l'IPGP.</a></p>";
     my $dateBulletin = localtime->strftime('%d-%m-%Y %H:%M:%S');
     $html = "    <p>Bulletin cr&eacute;&eacute; le $dateBulletin TU.</p>";
     $html .= "    <p id=\"warning\">Ce bulletin est issu de l'examen pr&eacute;liminaire quotidien des derni&egrave;res donn&eacute;es par un.e analyste du REVOSIMA. Ces informations n'ont pas toutes &eacute;t&eacute; valid&eacute;es et sont susceptibles d'&eacute;voluer.<br/>Pour une information compl&egrave;te, veuillez vous reporter aux <a href=\"https://www.ipgp.fr/actualites-du-revosima/\">actualit&eacute;s du r&eacute;seau valid&eacute;es</a>.</p>";
