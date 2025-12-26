@@ -98,7 +98,7 @@ function plotFlot(gtype) {
                 fill: fill,
                 barWidth: bw,
                 align: 'center',
-                lineWidth: 0
+                lineWidth: 1
             },
             lines: {
                 show: lines,
@@ -124,6 +124,18 @@ function plotFlot(gtype) {
             mode: 'x'
         },
     };
+    if (options.series && options.series.bars && options.series.bars.show === true) {
+        if (options.series.bars.lineWidth == 0) {
+            $('#barsoff').hide();
+            $('#barson').show();
+        } else {
+            $('#barson').hide();
+            $('#barsoff').show();
+        }
+    } else {
+        $('#barson').hide();
+        $('#barsoff').hide();
+    }
     plot = $.plot($('#mcgraph'), data, options);
 
     $('#mcgraph').bind('plothover', function(event, pos, item) {
@@ -208,7 +220,13 @@ function plotAll() {
 function toggleLine() {
     if (options.series.bars.lineWidth == 0) {
         options.series.bars.lineWidth = 1;
-    } else { options.series.bars.lineWidth = 0 }
+        $('#barsoff').show();
+        $('#barson').hide();
+    } else {
+        options.series.bars.lineWidth = 0;
+        $('#barson').show();
+        $('#barsoff').hide();
+    }
     plot = $.plot($('#mcgraph'), data, options);
 }
 
