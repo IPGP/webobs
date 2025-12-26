@@ -513,12 +513,15 @@ if ($QryParm->{'dump'} eq "") {
         my $grlegend_width = 200;
         $html .= "<DIV id=\"mcgraph\" style=\"width:".$QryParm->{'grw'}."px;height:".$QryParm->{'grh'}."px;float:left;\"></DIV>\n"
           ."<DIV id=\"showall\" style=\"width:25px;height:".$grinfo_height
-            ."px;position:relative;float:left;font-size:smaller;\"><A href=\"#\" onClick=\"plotAll()\" title=\"plot all data\">"
+            ."px;position:relative;float:left;font-size:smaller;\">"
+            ."<A href=\"#\" onClick=\"plotAll()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('plot all data (unzoom)')\">"
             ."<IMG src=\"/icons/hextend.png\"></A></DIV>"
           ."<DIV id=\"barson\" style=\"width=15px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;display:none\">"
-            ."<A href=\"#\" onClick=\"toggleLine()\" title=\"bars line on\"><IMG src=\"/icons/bars.png\"</A></DIV>"
+            ."<A href=\"#\" onClick=\"toggleLine()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('bars line ON')\">"
+            ."<IMG src=\"/icons/bars.png\"</A></DIV>"
           ."<DIV id=\"barsoff\" style=\"width=15px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller\">"
-            ."<A href=\"#\" onClick=\"toggleLine()\" title=\"bars line off\"><IMG src=\"/icons/barsnoc.png\"</A></DIV>"
+            ."<A href=\"#\" onClick=\"toggleLine()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('bars line OFF')\">"
+            ."<IMG src=\"/icons/barsnoc.png\"</A></DIV>"
           
           #."<BR><A href=\"#\" id=\"tlsavelink\">download image</A></DIV>\n"
           ."<DIV id=\"graphinfo\" style=\"width:".$grinfo_width."px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
