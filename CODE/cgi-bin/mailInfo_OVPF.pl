@@ -215,6 +215,7 @@ PART1
     $html .= '    <hr>';
     $html .= '    <div id="content">';
     $html .= "    <h2>$timePeriodHTML</h2>";
+    $htmlMail .= "<p><a href=\"https://www.ipgp.fr/volcanoweb/reunion/Bulletin_quotidien/bulletin.html\">Retrouvez ce bulletin avec les illustrations et figures sur le site de l'IPGP.</a></p>";
     my $dateBulletin = localtime->strftime('%d-%m-%Y %H:%M:%S');
     $html .= "    <p>Bulletin cr&eacute;&eacute; le $dateBulletin TU.</p>";
     $html .= "    <p id=\"warning\">Ce bulletin est issu de l'examen pr&eacute;liminaire quotidien des derni&egrave;res donn&eacute;es. Ces informations n'ont pas toutes &eacute;t&eacute; valid&eacute;es et sont susceptibles d'&eacute;voluer.<br/>Pour une information compl&egrave;te, veuillez vous reporter aux <a href=\"https://www.ipgp.fr/communiques-et-bulletins-de-lobservatoire/?categorie=72&domaine=&date=&observatoire-associe=391&motcle=\">derniers bulletins mensuels valid&eacute;s</a> de l'observatoire.</p>";
