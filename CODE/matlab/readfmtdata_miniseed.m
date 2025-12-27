@@ -50,7 +50,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2025-03-19
+%	Updated: 2025-12-27
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -268,7 +268,7 @@ if ~isempty(FD) && FD(1).bytes > 0
 	end
 
 	% list of channels existing in the imported data
-	chlist = cellstr(cat(1,I.ChannelFullName));
+	chlist = cat(1,{I.ChannelFullName});
 	if any(isnan(P.DATELIM))
 		F.datelim = minmax(cat(1,X.t));
 		P.DATELIM = F.datelim - N.UTC_DATA + P.TZ/24;
