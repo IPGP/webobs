@@ -133,7 +133,7 @@ my $transfert = $cgi->param('transfert');
 
 # ---- loads requested Sefran3 configuration or default one
 $s3 ||= $WEBOBS{SEFRAN3_DEFAULT_NAME};
-my %SEFRAN3 = readCfg("$WEBOBS{ROOT_CONF}/$s3.conf");
+my %SEFRAN3 = readCfg("$WEBOBS{ROOT_CONF}/SEFRANS/$s3/$s3.conf");
 
 # ---- loads requested MC3 configuration file or default one
 $mc3 ||= $WEBOBS{MC3_DEFAULT_NAME};
