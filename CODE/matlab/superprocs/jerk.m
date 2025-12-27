@@ -190,12 +190,12 @@ for n = 1:length(N)
 
 		x = dk(:,1) - dk(:,4);
 		y = dk(:,2) - dk(:,5);
-		ip = mw:dt:length(x);
+		ip = (mw:dt:length(x))';
 		bx = zeros(length(ip),2);
 		by = zeros(length(ip),2);
 
 		ii = 1;
-		for i = ip
+		for i = ip'
 			k = i + 1 + (-mw:-1);
 			kk = k(~isnan(x(k)));
 			bx(ii,:) = polyfit((tk(kk)-tk(1))*86400,x(kk),1);
@@ -230,14 +230,14 @@ for n = 1:length(N)
 				plot(tk,dk(:,i) - dk(:,i+3),'-','LineWidth',P.GTABLE(r).LINEWIDTH,'Color',scolor(3))
 				hold off
 			end
-			set(gca,'XLim',xlim,'FontSize',8)
+            ylim = minmax(dk(:,i));
+			set(gca,'XLim',xlim,'YLim',ylim,'FontSize',8)
 			datetick2('x',P.GTABLE(r).DATESTR)
 			ylabel(sprintf('%s (%s)',C.nm{i},C.un{i}))
 			if isempty(d) || all(isnan(d(k,i)))
 				nodata(xlim)
 			end
             if i==1
-                ylim = get(gca,'ylim');
                 topt = {'HorizontalAlignment','center','FontWeight','bold'};
                 text(xlim(1)+diff(xlim)/4,ylim(2),{'original data',''},'Color',scolor(1),topt{:})
                 text(xlim(1)+diff(xlim)/2,ylim(2),{'tide model',''},'Color',scolor(2),topt{:})
@@ -263,7 +263,9 @@ for n = 1:length(N)
 		plot(xlim,repmat(threshold_level2,1,2),'--','Color',rgb_level2,'LineWidth',1)
 		hold on
 		plot(xlim,repmat(threshold_level1,1,2),'--','Color',rgb_level1,'LineWidth',1)
-		plot(tk(ip),jerk,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
+		plot(tk(ip),jerk,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',.5+scolor(1)/2)
+        ka =(insector(jth,azlim) | insector(jth-180,azlim));
+		timeplot(tk(ip(ka)),jerk(ka),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
 		ylim = get(gca,'YLim');
 		plot(zd,ylim(2)*([1,1]+.03),'-','LineWidth',2,'Color',.7*ones(1,3),'Clipping','off') % zoom interval
 		hold off
