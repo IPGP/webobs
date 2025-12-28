@@ -279,7 +279,12 @@ if ($id_evt_modif) {
     }
     $id_evt = $max + 1;
     print "<P><B>New event:</B> $id_evt</P>";
-    @image_list = $imageSEFRAN;
+    if (isok($SEFRAN3{SGRAM_ACTIVE})) {
+        (my $sgramSEFRAN = $imageSEFRAN) =~ s/\.png$/s.png/g;
+        @image_list = ($imageSEFRAN,$sgramSEFRAN);
+    } else {
+        @image_list = $imageSEFRAN;
+    }
 }
 
 # In case of add/modify/trash: new data line is written, in other case definitive delete
