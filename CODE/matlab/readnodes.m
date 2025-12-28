@@ -71,9 +71,9 @@ for i = 1:length(grids)
                 % FDSNWS request returns: Network|Station|Latitude|Longitude|Elevation|SiteName|StartTime|EndTime
                 [s,w] = wosystem(sprintf('wget -qO- "https://%s/fdsnws/station/1/query?net=%s&sta=%s&level=station&format=text"', ...
                     fdsnws,cc{1},cc{2}));
-                w = regexprep(regexprep(w,'^[^\n]*\n',''),'\n',''); % removes 1st line and last new line char
-                req = textscan(w,'%s%s%s%s%s%s%s%s','delimiter','|','whitespace','');
-                if ~s && length(req)==8
+                if ~s && ~isempty(w)
+                    w = regexprep(regexprep(w,'^[^\n]*\n',''),'\n',''); % removes 1st line and last new line char
+                    req = textscan(w,'%s%s%s%s%s%s%s%s','delimiter','|','whitespace','');
                     if ~isempty(req{7})
                         NN.INSTALL_DATE = datenum(req{7},'yyyy-mm-ddTHH:MM:SS');
                     else
