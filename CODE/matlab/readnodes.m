@@ -102,6 +102,8 @@ for i = 1:length(grids)
                         end
                     end
                     fprintf('done.\n');
+                else
+                    fprintf('failed to get info!\n')
                 end
             end
         end
