@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2025-12-23
+%   Updated: 2025-12-28
 
 
 WO = readcfg;
@@ -262,7 +262,7 @@ for g = 1:length(grids)
 		geo = NN(g).geo;
 		ka = NN(g).ka;
 		k0 = NN(g).k0;
-        if isfield(NN(g),'rgb')
+        if isfield(NN(g),'rgb') && ~isempty(NN(g).rgb)
             col = NN(g).rgb;
         else
             col = repmat(nodecolor,size(NN(g).geo,1),1);
