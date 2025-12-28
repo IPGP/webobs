@@ -22,7 +22,7 @@ function N=readnodes(WO,grids,tlim,valid);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-23
-%   Updated: 2025-12-20
+%   Updated: 2025-12-28
 
 if nargin < 2
 	error('No few input arguments')
@@ -72,7 +72,7 @@ for i = 1:length(grids)
                 [s,w] = wosystem(sprintf('wget -qO- "https://%s/fdsnws/station/1/query?net=%s&sta=%s&level=station&format=text"', ...
                     fdsnws,cc{1},cc{2}));
                 w = regexprep(regexprep(w,'^[^\n]*\n',''),'\n',''); % removes 1st line and last new line char
-                req = strsplit(w,'|');
+                req = textscan(w,'%s%s%s%s%s%s%s%s','delimiter','|','whitespace','');
                 if ~s && length(req)==8
                     if ~isempty(req{7})
                         NN.INSTALL_DATE = datenum(req{7},'yyyy-mm-ddTHH:MM:SS');
@@ -86,13 +86,13 @@ for i = 1:length(grids)
                     end
                     if (isnan(tlim(1)) || isnan(NN.END_DATE) || NN.END_DATE >= tlim(1)) ...
                         && (isnan(tlim(2)) || isnan(NN.INSTALL_DATE) || NN.INSTALL_DATE <= tlim(2))
-                        NN.NAME = req{6};
-                        NN.ALIAS = req{2};
+                        NN.NAME = req{6}{:};
+                        NN.ALIAS = req{2}{:};
                         NN.TZ = 0;
-                        NN.LAT_WGS84 = str2num(req{3});
-                        NN.LON_WGS84 = str2num(req{4});
-                        NN.ALTITUDE = str2num(req{5});
-                        NN.FDSN_NETWORK_CODE = req{1};
+                        NN.LAT_WGS84 = str2num(req{3}{:});
+                        NN.LON_WGS84 = str2num(req{4}{:});
+                        NN.ALTITUDE = str2num(req{5}{:});
+                        NN.FDSN_NETWORK_CODE = req{1}{:};
                         NN.RGB = rgb(C{6}{j});
                         n = n + 1;
                         if isempty(N)
