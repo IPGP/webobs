@@ -36,7 +36,7 @@ function DOUT=jerk(varargin)
 %
 %   Authors: F. Beauducel + G. Roult + V. Ferrazzini, WEBOBS/IPGP
 %   Created: 2014-04-14 at OVPF, La Réunion, Indian Ocean
-%   Updated: 2025-12-13
+%   Updated: 2025-12-27
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -263,9 +263,11 @@ for n = 1:length(N)
 		plot(xlim,repmat(threshold_level2,1,2),'--','Color',rgb_level2,'LineWidth',1)
 		hold on
 		plot(xlim,repmat(threshold_level1,1,2),'--','Color',rgb_level1,'LineWidth',1)
-		plot(tk(ip),jerk,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',.5+scolor(1)/2)
-        ka =(insector(jth,azlim) | insector(jth-180,azlim));
-		timeplot(tk(ip(ka)),jerk(ka),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
+		plot(tk(ip),jerk,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',2/3+scolor(1)/3)
+        ka = (insector(jth,azlim) | insector(jth-180,azlim));
+        tka = tk(ip);
+        tka(~ka) = NaN; % set NaN for points outside valid azimuth
+		plot(tka,jerk,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
 		ylim = get(gca,'YLim');
 		plot(zd,ylim(2)*([1,1]+.03),'-','LineWidth',2,'Color',.7*ones(1,3),'Clipping','off') % zoom interval
 		hold off
@@ -283,7 +285,11 @@ for n = 1:length(N)
 			plot(zd,repmat(threshold_level2,1,2),'--','Color',rgb_level2,'LineWidth',1)
 			hold on
 			plot(zd,repmat(threshold_level1,1,2),'--','Color',rgb_level1,'LineWidth',1)
-			plot(tk(ip(kz)),jerk(kz),'-','LineWidth',P.GTABLE(r).MARKERSIZE/3,'Color',scolor(1))
+			plot(tk(ip(kz)),jerk(kz),'-','LineWidth',P.GTABLE(r).MARKERSIZE/3,'Color',2/3+scolor(1)/3)
+            ka = (insector(jth(kz),azlim) | insector(jth(kz)-180,azlim));
+            tka = tk(ip(kz));
+            tka(~ka) = NaN; % set NaN for points outside valid azimuth
+            plot(tka,jerk(kz),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
 			hold off
 			set(gca,'YLim',[0,max(str2double(P.JERK_ZOOM_MINYLIM_MS3)*1e9,max(jerk(kz)))])
 		end
@@ -342,7 +348,12 @@ for n = 1:length(N)
 			[azx,azy] = pol2cart([az(1)+pi,linspace(az(1),az(2)),linspace(az(2),az(1))+pi],threshold_level1);
 			patch(azx,azy,-.8*ones(size(azx)),'k','FaceColor',.9*ones(1,3),'EdgeColor','none','Clipping','on');
 		end
-		plot(bx(kz,1),by(kz,1),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
+		plot(bx(kz,1),by(kz,1),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',2/3+scolor(1)/3)
+        bxa = bx(kz,1);
+        bya = by(kz,1);
+        bxa(~ka) = NaN; % set NaN for points outside valid azimuth
+        bya(~ka) = NaN;
+		plot(bxa,bya,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
 		hold off
 		ylabel(sprintf('Northern jerk (nm/s%s)',cb3))
 		xlabel(sprintf('Eastern jerk (nm/s%s)',cb3))
