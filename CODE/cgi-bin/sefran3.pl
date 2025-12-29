@@ -291,7 +291,7 @@ var SCB = {
     WIDTHREF : $largeur_image,
     WIDTH : $largeur_image,
     HEIGHT : $SEFRAN3{HEIGHT_INCH},
-   HEIGHTIMG : $hauteur_image,
+    HEIGHTIMG : $hauteur_image,
     LABELTOP : $SEFRAN3{LABEL_TOP_HEIGHT},
     LABELBOTTOM : $SEFRAN3{LABEL_BOTTOM_HEIGHT},
     WIDTHVOIES : $largeur_voies,
@@ -301,6 +301,7 @@ var SCB = {
     DX : $dx_mctag,
     SX : $sx,
     PROG : '$prog',
+    DATE : '$date',
     NOREFRESH: 0
 };
 
