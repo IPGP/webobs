@@ -16,6 +16,33 @@ PATH_WEB|$WEBOBS{SEFRAN_ROOT_ALIAS}/sefran3
 OWNCODE|
 TYPE|
 
+# FDSN web-service server (to get station information using /fdsnws/station/1/query)
+FDSNWS_SERVER|https://ws.ipgp.fr
+# node parameters (for display and maps)
+NODE_NAME|station
+NODE_MARKER|^
+NODE_SIZE|12
+NODE_RGB|
+NODE_FONTSIZE|12
+
+# set to YES to use SRTM1 30m resolution tiles
+DEM_SRTM1|NO
+
+# optional user-defined DEM (Arcinfo format, lat/lon) overwriting SRTM/ETOPO default
+#DEM_FILE|$WEBOBS{PATH_DATA_DEM}/highresdem_latlon.asc
+#DEM_TYPE|LATLON
+#DEM_COPYRIGHT|DEM: myDEM
+
+# additional zoomed map(s) using fixed axis limits: LON1,LON2,LAT1,LAT2
+#MAP1_XYLIM|
+#MAP2_XYLIM|
+
+# additional options for gridmaps background map
+GRIDMAPS_DEM_OPT|
+
+# show node alias in zoom map(s)
+NODE_SUBMAP_ALIAS|N
+
 # sub-directories: not modifiable after a first run!
 PATH_IMAGES_MINUTE|minute
 PATH_IMAGES_HOUR|hour
@@ -24,15 +51,14 @@ PATH_IMAGES_SGRAM|sgram
 
 # --- Data source and format
 # combined format : DATASOURCE|protocole1;protocol2;delay
-DATASOURCE|slink://${SEEDLINK_SERVER};arclink://${ARCLINK_SERVER}?user=${ARCLINK_USER};${ARCLINK_DELAY_HOURS}
+DATASOURCE|slink://${SEEDLINK_SERVER};fdsnws://http://ws.ipgp.fr/fdsnws/dataselect/1/query?;12
 # notes:
 #	 protocole1 is real-time data
 #	 protocole2 is archived data
 #	 delay is time limit (in hour) to switch from protocole1 to protocole2
 # protocoles can be 'winston', 'slink', 'arclink', 'fdsnws' or 'file' (miniseed)
 # examples:
-#DATASOURCE|slink://rtserver.ipgp.fr:18000;arclink://eida.ipgp.fr:18001?user=sefran3;12
-#DATASOURCE|slink://rtserver.ipgp.fr:18000;fdsnws://http://rtpriv-cdd.ipgp.fr/fdsnws/dataselect/1/query?;2
+#DATASOURCE|slink://rtserver.ipgp.fr:18000;fdsnws://http://ws.ipgp.fr/fdsnws/dataselect/1/query?;2
 # latency delay for realtime data
 DATALINK_TIMEOUT|10000
 LATENCY_SECONDS|${SEEDLINK_DELAY_SECONDS}

@@ -22,7 +22,7 @@ function N=readnodes(WO,grids,tlim,valid);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-23
-%   Updated: 2025-12-28
+%   Updated: 2025-12-29
 
 if nargin < 2
 	error('No few input arguments')
@@ -58,6 +58,9 @@ for i = 1:length(grids)
         ss = split(g,'.');
         S3 = readcfg(WO,sprintf('/etc/webobs.d/SEFRANS/%s/%s.conf',ss{2},ss{2}));
         fdsnws = field2str(S3,'FDSNWS_SERVER');
+        if isempty(regexp(fdsnws,'^http'))
+            fdsnws = ['https://',fdsnws];
+        end
         fid = fopen(sprintf('/etc/webobs.d/SEFRANS/%s/channels.conf',ss{2}),'rt');
             C = textscan(fid,'%q%q%q%q%q%q%q','CommentStyle','#');
         fclose(fid);
@@ -69,7 +72,7 @@ for i = 1:length(grids)
             if ~isempty(fdsnws)
                 fprintf('%s: get %s:%s station information from FDSNWS server %s... ',wofun,cc{1},cc{2},fdsnws);
                 % FDSNWS request returns: Network|Station|Latitude|Longitude|Elevation|SiteName|StartTime|EndTime
-                [s,w] = wosystem(sprintf('wget -qO- "https://%s/fdsnws/station/1/query?net=%s&sta=%s&level=station&format=text"', ...
+                [s,w] = wosystem(sprintf('wget -qO- "%s/fdsnws/station/1/query?net=%s&sta=%s&level=station&format=text"', ...
                     fdsnws,cc{1},cc{2}));
                 if ~s && ~isempty(w)
                     w = regexprep(regexprep(w,'^[^\n]*\n',''),'\n',''); % removes 1st line and last new line char
