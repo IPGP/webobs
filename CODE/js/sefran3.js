@@ -65,7 +65,10 @@ $(document).keydown(function(e) {
     }
     // other keys only outside any form
     if (!/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName)) {
-        if (e.key == "e") showmctags();
+        if (e.key == "e") {
+            if (SCB.DATE === "") showmctags();
+            else shrinkmctags();
+        }
         if (e.key == "s") showsgram();
         if (e.key == "S") {
             $('#sgramslider').val(10);
