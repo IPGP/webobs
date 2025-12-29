@@ -11,7 +11,7 @@ function DOUT = waters(varargin)
 %   WATERS(PROC,[],REQ) makes graphs/exports for specific request directory REQ.
 %   REQ must contain REQUEST.rc file with dedicated parameters.
 %
-%   D = WATERS(PROC,...) returns a structure Dcontaining all the PROC data:
+%   D = WATERS(PROC,...) returns a structure D containing all the PROC data:
 %       D(i).id = node ID
 %       D(i).t = time vector (for node i)
 %       D(i).d = matrix of processed data (NaN = invalid data)
@@ -23,7 +23,7 @@ function DOUT = waters(varargin)
 %
 %	Authors: F. Beauducel + G. Hammouya + J.C. Komorowski + C. Dessert + O. Crispi, OVSG-IPGP
 %	Created: 2001-12-21, in Guadeloupe (French West Indies)
-%	Updated: 2025-05-03
+%	Updated: 2025-12-29
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -33,7 +33,6 @@ if nargin < 1
 	error('%s: must define PROC name.',wofun);
 end
 
-proc = varargin{1};
 procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
@@ -41,15 +40,21 @@ timelog(procmsg,1);
 [P,N,D] = readproc(WO,varargin{:});
 G = cat(1,D.G);
 
+V.name = P.NAME;
+pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','-');
+pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}');
+summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
+summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
+
 % types of sampling and associated markers (see PLOTMARK function)
-FT = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_TYPE));
-tcod = fieldnames(FT);
-tmkt = cell(size(tcod));
-tmks = ones(size(tcod));
-for i = 1:length(tcod)
-	tmkt{i} = FT.(tcod{i}).marker;
-	tmks(i) = str2double(FT.(tcod{i}).relsize);
-end
+%FT = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_TYPE));
+%tcod = fieldnames(FT);
+%tmkt = cell(size(tcod));
+%tmks = ones(size(tcod));
+%for i = 1:length(tcod)
+%	tmkt{i} = FT.(tcod{i}).marker;
+%	tmks(i) = str2double(FT.(tcod{i}).relsize);
+%end
 
 % --- index of columns in matrix d
 %   1 = type of site
@@ -90,14 +95,19 @@ i_i = 19;
 i_bi = 27;
 
 
-% ==== graphs per site
+% ==== graphs per node
 for n = 1:length(N)
 	stitre = sprintf('%s: %s',N(n).ALIAS,N(n).NAME);
+	GN = graphstr(field2str(P,'PERNODE_CHANNELS',sprintf('%d,',1:nx),'notempty'));
+	V.node_name = N(n).NAME;
+	V.node_alias = N(n).ALIAS;
+	V.last_data = datestr(D(n).tfirstlast(2));
 
 	t = D(n).t;
 	d = D(n).d;
 
 	for r = 1:length(P.GTABLE)
+		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 
 		% renames main variables for better lisibility...
 		k = D(n).G(r).k;
@@ -105,7 +115,7 @@ for n = 1:length(N)
 		tlim = D(n).G(r).tlim;
 
 		% title and status
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 
 		figure(1), clf, orient tall
@@ -238,12 +248,12 @@ end
 if isfield(P,'SUMMARYLIST')
 	for r = 1:length(P.GTABLE)
 
-		stitre = P.NAME;
+		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 		tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
 		if any(isnan(tlim))
 			tlim = minmax(cat(1,D.tfirstlast));
 		end
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		P.GTABLE(r).GTITLE = varsub(summary_title,V);
 		if P.GTABLE(r).STATUS
 			P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 		end
