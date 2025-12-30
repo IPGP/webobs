@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #---------------------------------------------------------------
 # ------------------- WEBOBS / IPGP ----------------------------
-# mail_info.pl
+# mailInfo_REVOSIMA.pl
 # ------
 # Usage: Prepare an information mail based on the Main Courante
 #    (MC) seismological database
@@ -105,6 +105,7 @@ my @dateStartElements = split(/-/,$dateStart);
 my $dateEnd = $cgi->url_param('dateEnd');
 my @dateEndElements = split(/-/,$dateEnd);
 
+# TODO : fetch from MC3 config file
 my $mc3URL = "https://195.83.188.56/cgi-bin/mc3.pl";
 my $user = 'mc3';
 my $pass = 'MC3-0vpf';
@@ -114,7 +115,7 @@ my $header = HTTP::Request->new(GET => $mc3URL);
 $header->authorization_basic($user, $pass);
 
 # DERNIER SEISME RESSENTI
-my @date1 = ('2020','01','01','00');
+my @date1 = ('2025','06','20','00');
 my @date2 = ($dateEndElements[0],$dateEndElements[1],$dateEndElements[2],'23');
 my $req = new HTTP::Request(GET => "$mc3URL?slt=0&y1=$date1[0]&m1=$date1[1]&d1=$date1[2]&h1=$date1[3]&y2=$date2[0]&m2=$date2[1]&d2=$date2[2]&h2=$date2[3]&type=ALL&duree=ALL&ampoper=eq&amplitude=ALL&obs=ressenti&locstatus=0&located=0&mc=MC3_Mayotte&dump=bul&newts=&graph=movsum", $header);
 my $response = $ua->request($req);
