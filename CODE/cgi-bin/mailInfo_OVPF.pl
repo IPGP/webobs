@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #---------------------------------------------------------------
 # ------------------- WEBOBS / IPGP ----------------------------
-# mail_info.pl
+# mailInfo_OVPF.pl
 # ------
 # Usage: Prepare an information mail based on the Main Courante
 #    (MC) seismological database
@@ -10,24 +10,12 @@
 #    mc= MC conf name (optional)
 #    dateStart= Start date (mandatory)
 #    dateEnd= End date (mandatory)
-#    stat_max_duration= Duration of the biggest VT for the
-#        selected time interval (mandatory)
-#    stat_max_magnitude= Magnitude of the biggest VT for the
-#        selected time interval (mandatory)
-#    stat_max_duration_loc= Duration of the biggest local
-#            for the selected time interval (mandatory)
-#    stat_max_magnitude_loc= Magnitude of the biggest local
-#            for the selected time interval (mandatory)
-#    RFcount = Number of rockfalls (mandatory)
-#    VTcount = number of VT (mandatory)
-#    LOCcount = number of VT (mandatory)
-#
 #
 # Author: Patrice Boissier <boissier@ipgp.fr>
 # Acknowledgments:
 #       mc3.pl [2004-2011] by Didier Mallarino, Francois
 #               Beauducel, Alexis Bosson, Jean-Marie Saurel
-# Created: 2012-07-04
+# Created: 2025-12-30
 #---------------------------------------------------------------
 #
 
@@ -45,6 +33,7 @@ use Email::Sender::Transport::SMTP::TLS;
 use Email::MIME::CreateHTML;
 use HTML::Entities;
 use Encode;
+use LWP::UserAgent;
 use DateTime qw( );
 
 # ---- webobs stuff
@@ -56,6 +45,7 @@ use WebObs::i18n;
 use WebObs::Wiki;
 use WebObs::QML;
 use Locale::TextDomain('webobs');
+use Switch;
 
 set_message(\&webobs_cgi_msg);
 
@@ -111,23 +101,23 @@ if ($valParams =~ /debug/) {
 }
 
 my $dateStart = $cgi->url_param('dateStart');
+my @dateStartElements = split(/-/,$dateStart);
 my $dateEnd = $cgi->url_param('dateEnd');
-my $stat_max_duration = $cgi->url_param('stat_max_duration');
-my $stat_max_magnitude = $cgi->url_param('stat_max_magnitude');
-$stat_max_magnitude =~ s/,/\./;
-$stat_max_magnitude = sprintf '%.2f', $stat_max_magnitude;
-my $comptabilisesRockfall = $cgi->url_param('RFcount');
-my $comptabilisesVT = $cgi->url_param('VTcount');
-my $stat_max_duration_loc = $cgi->url_param('stat_max_duration_loc');
-my $stat_max_magnitude_loc = $cgi->url_param('stat_max_magnitude_loc');
-$stat_max_magnitude_loc =~ s/,/\./;
-$stat_max_magnitude_loc = sprintf '%.2f', $stat_max_magnitude_loc;
-my $comptabilisesLOC = $cgi->url_param('LOCcount');
+my @dateEndElements = split(/-/,$dateEnd);
+my $comptabilisesRockfall_param = $cgi->url_param('RFcount');
+my $comptabilisesVT_summit_param = $cgi->url_param('VTsumcount');
+my $comptabilisesVT_deep_param = $cgi->url_param('VTdeepcount');
+my $stat_max_duration_summit_param = $cgi->url_param('stat_max_duration_summit');
+my $stat_max_magnitude_summit_param = $cgi->url_param('stat_max_magnitude_summit');
+my $stat_max_duration_deep_param = $cgi->url_param('stat_max_duration_deep');
+my $stat_max_magnitude_deep_param = $cgi->url_param('stat_max_magnitude_deep');
+my $stat_max_duration_loc_param = $cgi->url_param('stat_max_duration_loc');
+my $stat_max_magnitude_loc_param = $cgi->url_param('stat_max_magnitude_loc');
+my $comptabilisesLOC_param = $cgi->url_param('LOCcount');
 my $alert = $cgi->url_param('alert');
 my $comment = $cgi->url_param('comment');
 my $send = $cgi->url_param('send');
 my @zones_rockfall = $cgi->url_param('zone_rockfall');
-my @zones_vt = $cgi->url_param('zone_vt');
 my @comments_geodesy = $cgi->url_param('comment_geodesy');
 my $comments_geochemistry = $cgi->url_param('comment_geochemistry');
 if ($comments_geochemistry eq "") {
@@ -135,6 +125,170 @@ if ($comments_geochemistry eq "") {
 }
 my @mail = $cgi->url_param('mail');
 
+# TODO : fetch from MC3 config file
+my $mc3URL = "https://195.83.188.56/cgi-bin/mc3.pl";
+my $user = 'mc3';
+my $pass = 'MC3-0vpf';
+my $ua = LWP::UserAgent->new(ssl_opts => { verify_hostname => 0 });
+$ua->ssl_opts(SSL_verify_mode => 0x00);
+my $header = HTTP::Request->new(GET => $mc3URL);
+$header->authorization_basic($user, $pass);
+
+my $comptabilisesRockfall = 0;
+my $comptabilisesVT_summit = 0;
+my $comptabilisesVT_deep = 0;
+my $stat_max_duration_summit = 0;
+my $stat_max_magnitude_summit = "";
+my $stat_max_duration_deep = 0;
+my $stat_max_magnitude_deep = "";
+my $stat_max_duration_loc = 0;
+my $stat_max_magnitude_loc = "";
+my $comptabilisesLOC = 0;
+
+sub normalize_number {
+    my ($value) = @_;
+    return undef if (!defined($value) || $value eq "");
+    $value =~ s/,/\./g;
+    return $value + 0;
+}
+
+sub fetch_mc3_bul {
+    my ($url) = @_;
+    my $req = HTTP::Request->new(GET => $url, $header);
+    my $response = $ua->request($req);
+    return "" if (!$response->is_success);
+    return $response->decoded_content();
+}
+
+sub compute_Md {
+    my ($duration) = @_;
+    return undef if (!defined($duration));
+    return undef if ($duration eq "");
+    $duration =~ s/,/\./g;
+    return undef if ($duration !~ /^[0-9.]+$/);
+    my $dist=0;
+    # TODO : compute distance from s minus p when available from MC3 data
+    #my $Pvel = 6;
+    #$Pvel = $MC3{P_WAVE_VELOCITY} if (defined $MC3{P_WAVE_VELOCITY});
+    #my $VpVs = 1.75;
+    #$VpVs = $MC3{VP_VS_RATIO} if (defined $MC3{VP_VS_RATIO});
+    #if ($s_moins_p ne "NA" && $s_moins_p ne "") {
+    #    $dist = $Pvel*$s_moins_p/($VpVs-1);
+    #} else {
+    #    $dist = 0;
+    #}
+    my $Md = 2*log($duration)/log(10)+0.0035*$dist-0.87;
+    return sprintf '%.2f', $Md;
+}
+
+if ($dateStart && $dateEnd) {
+    my $mc3CompleteURL = "$mc3URL?slt=0&y1=$dateStartElements[0]&m1=$dateStartElements[1]&d1=$dateStartElements[2]&h1=00&y2=$dateEndElements[0]&m2=$dateEndElements[1]&d2=$dateEndElements[2]&h2=23&type=ALL&duree=ALL&ampoper=eq&amplitude=ALL&obs=VOLCSUMMIT|VOLCDEEP|ROCKFALL|LOCAL&locstatus=0&located=0&mc=$mc3&dump=bul&newts=&graph=movsum";
+    my $all_content = fetch_mc3_bul("$mc3CompleteURL");
+    my @all_lines = split(/\n/, $all_content);
+    for my $line (@all_lines) {
+        my @lineElements = split(/;/, $line);
+        next if (@lineElements < 10);
+        my $obs = $lineElements[9];
+        if ($obs eq "ROCKFALL") {
+            $comptabilisesRockfall++;
+            next;
+        }
+        if ($obs eq "LOCAL") {
+            $comptabilisesLOC++;
+            my $duration = normalize_number($lineElements[2]);
+            next if (!defined($duration));
+            if ($duration > $stat_max_duration_loc) {
+                $stat_max_duration_loc = $duration;
+                # If magnitude is not given, compute Md from duration
+                if (defined($lineElements[4]) && $lineElements[4] ne "") {
+                    $stat_max_magnitude_loc = $lineElements[4];
+                } else {
+                    my $computed_Md = compute_Md($duration);
+                    if (defined($computed_Md)) {
+                        $stat_max_magnitude_loc = $computed_Md;
+                    }
+                }
+            }
+            next;
+        }
+        if ($obs eq "VOLCSUMMIT") {
+            $comptabilisesVT_summit++;
+            my $duration = normalize_number($lineElements[2]);
+            next if (!defined($duration));
+            if ($duration > $stat_max_duration_summit) {
+                $stat_max_duration_summit = $duration;
+                # If magnitude is not given, compute Md from duration
+                if (defined($lineElements[4]) && $lineElements[4] ne "") {
+                    $stat_max_magnitude_summit = $lineElements[4];
+                } else {
+                    my $computed_Md = compute_Md($duration);
+                    if (defined($computed_Md)) {
+                        $stat_max_magnitude_summit = $computed_Md;
+                    }
+                }
+            }
+            next;
+        }
+        if ($obs eq "VOLCDEEP") {
+            $comptabilisesVT_deep++;
+            my $duration = normalize_number($lineElements[2]);
+            next if (!defined($duration));
+            if ($duration > $stat_max_duration_deep) {
+                $stat_max_duration_deep = $duration;
+                # If magnitude is not given, compute Md from duration
+                if (defined($lineElements[4]) && $lineElements[4] ne "") {
+                    $stat_max_magnitude_deep = $lineElements[4];
+                } else {
+                    my $computed_Md = compute_Md($duration);
+                    if (defined($computed_Md)) {
+                        $stat_max_magnitude_deep = $computed_Md;
+                    }
+                }
+            }
+        }
+    }
+}
+
+if ($comptabilisesVT_summit == 0 && defined($comptabilisesVT_summit_param) && $comptabilisesVT_summit_param ne "") {
+    $comptabilisesVT_summit = $comptabilisesVT_summit_param;
+}
+if ($comptabilisesVT_deep == 0 && defined($comptabilisesVT_deep_param) && $comptabilisesVT_deep_param ne "") {
+    $comptabilisesVT_deep = $comptabilisesVT_deep_param;
+}
+if ($comptabilisesRockfall == 0 && defined($comptabilisesRockfall_param) && $comptabilisesRockfall_param ne "") {
+    $comptabilisesRockfall = $comptabilisesRockfall_param;
+}
+if ($comptabilisesLOC == 0 && defined($comptabilisesLOC_param) && $comptabilisesLOC_param ne "") {
+    $comptabilisesLOC = $comptabilisesLOC_param;
+}
+if ($stat_max_duration_summit == 0 && defined($stat_max_duration_summit_param) && $stat_max_duration_summit_param ne "") {
+    $stat_max_duration_summit = $stat_max_duration_summit_param;
+}
+if ($stat_max_duration_deep == 0 && defined($stat_max_duration_deep_param) && $stat_max_duration_deep_param ne "") {
+    $stat_max_duration_deep = $stat_max_duration_deep_param;
+}
+if ($stat_max_duration_loc == 0 && defined($stat_max_duration_loc_param) && $stat_max_duration_loc_param ne "") {
+    $stat_max_duration_loc = $stat_max_duration_loc_param;
+}
+if ($stat_max_magnitude_summit eq "" && defined($stat_max_magnitude_summit_param) && $stat_max_magnitude_summit_param ne "") {
+    $stat_max_magnitude_summit = $stat_max_magnitude_summit_param;
+}
+if ($stat_max_magnitude_deep eq "" && defined($stat_max_magnitude_deep_param) && $stat_max_magnitude_deep_param ne "") {
+    $stat_max_magnitude_deep = $stat_max_magnitude_deep_param;
+}
+if ($stat_max_magnitude_loc eq "" && defined($stat_max_magnitude_loc_param) && $stat_max_magnitude_loc_param ne "") {
+    $stat_max_magnitude_loc = $stat_max_magnitude_loc_param;
+}
+
+$stat_max_magnitude_summit = "0" if (!defined($stat_max_magnitude_summit) || $stat_max_magnitude_summit eq "");
+$stat_max_magnitude_summit =~ s/,/\./;
+$stat_max_magnitude_summit = sprintf '%.2f', $stat_max_magnitude_summit;
+$stat_max_magnitude_deep = "0" if (!defined($stat_max_magnitude_deep) || $stat_max_magnitude_deep eq "");
+$stat_max_magnitude_deep =~ s/,/\./;
+$stat_max_magnitude_deep = sprintf '%.2f', $stat_max_magnitude_deep;
+$stat_max_magnitude_loc = "0" if (!defined($stat_max_magnitude_loc) || $stat_max_magnitude_loc eq "");
+$stat_max_magnitude_loc =~ s/,/\./;
+$stat_max_magnitude_loc = sprintf '%.2f', $stat_max_magnitude_loc;
 my @infoFiltre = readFile("$MC3{FILTER_POPUP}");
 my @signature = readFile("$WEBOBS{FILE_SIGNATURE}");
 
@@ -169,7 +323,6 @@ PART1
 } elsif (defined($send)) {
     my $html;
 
-    #my $outputFilename = '/tmp/bulletin.html';
     my $outputFilename = '/home/sysop/bulletin/bulletin.html';
     my $htmlOutput = "";
     my $htmlBrowser = "";
@@ -197,8 +350,6 @@ PART1
     $htmlMail .= $html;
     $htmlOutput .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">";
     $htmlBrowser .= "    <link rel=\"stylesheet\" type=\"text/css\" href=\"/css/style.css\">";
-
- #$htmlBrowser .= "    <meta http-equiv=\"Refresh\" content=\"5; url=mc3.pl\">";
     $htmlBrowser .= "    <meta http-equiv=\"Refresh\" content=\"5; url=mc3.pl?mc=MC3&routine=day&graph=hday\">";
     $html = '  </head>';
     $html .= '  <body>';
@@ -239,7 +390,7 @@ PART1
     $html .= '    <h3>Sismologie</h3>';
 
     my $subject = "[ovpf_bulletin] $timePeriod";
-    $html .= "<p>- Nombre d'&eacute;boulements du $dateEndFrench : <b>$comptabilisesRockfall</b><br/>";
+    $html .= "<p><b>- Nombre d'&eacute;boulements du $dateEndFrench : $comptabilisesRockfall</b><br/><br/>";
     if($#zones_rockfall >= 0) {
         if($#zones_rockfall == 0) {
             $html .= "Zone concern&eacute;e par les &eacute;boulements :<br/>";
@@ -253,27 +404,20 @@ PART1
         $html .= "</ul>";
         $html .= "</p>";
     }
-    $html .= "<p>- Nombre de s&eacute;ismes volcano-tectoniques (VT) du $dateEndFrench : <b>$comptabilisesVT</b><br/>";
-    if($#zones_vt >= 0) {
-        if($#zones_vt == 0) {
-            $html .= "Zone concern&eacute;e par les VT :<br/>";
-        } else {
-            $html .= "Zones concern&eacute;es par les VT :<br/>";
-        }
-        $html .= "<ul>";
-        for (@zones_vt) {
-            $html .= "<li>$zones{$_}</li>";
-        }
-        $html .= "</ul>";
-        $html .= "</p>";
-    }
-    $html .= "<p>- S&eacute;isme volcano-tectonique de plus grande magnitude du $dateEndFrench :<br/>";
+    $html .= "<p><b>- Nombre de s&eacute;ismes volcano-tectoniques (VT) sommitaux du $dateEndFrench : $comptabilisesVT_summit</b><br/>";
+    $html .= "<p>S&eacute;isme volcano-tectonique sommital de plus grande magnitude du $dateEndFrench :<br/>";
     $html .= "<ul>";
-    $html .= "<li>Dur&eacute;e : $stat_max_duration s</li>";
-    $html .= "<li>Magnitude de dur&eacute;e : $stat_max_magnitude</li>";
+    $html .= "<li>Dur&eacute;e : $stat_max_duration_summit s</li>";
+    $html .= "<li>Magnitude de dur&eacute;e : $stat_max_magnitude_summit</li>";
     $html .= "</ul>";
-    $html .= "<p>- Nombre de s&eacute;ismes locaux (en dehors du massif du Piton de la Fournaise) du $dateEndFrench : <b>$comptabilisesLOC</b><br/></p>";
-    $html .= "<p>- S&eacute;isme local de plus grande magnitude du $dateEndFrench :<br/>";
+    $html .= "<p><b>- Nombre de s&eacute;ismes volcano-tectoniques (VT) profonds du $dateEndFrench : $comptabilisesVT_deep</b><br/>";
+    $html .= "<p>S&eacute;isme volcano-tectonique profond de plus grande magnitude du $dateEndFrench :<br/>";
+    $html .= "<ul>";
+    $html .= "<li>Dur&eacute;e : $stat_max_duration_deep s</li>";
+    $html .= "<li>Magnitude de dur&eacute;e : $stat_max_magnitude_deep</li>";
+    $html .= "</ul>";
+    $html .= "<p><b>- Nombre de s&eacute;ismes locaux (en dehors du massif du Piton de la Fournaise) du $dateEndFrench : $comptabilisesLOC</b><br/></p>";
+    $html .= "<p>S&eacute;isme local de plus grande magnitude du $dateEndFrench :<br/>";
     $html .= "<ul>";
     $html .= "<li>Dur&eacute;e : $stat_max_duration_loc s</li>";
     $html .= "<li>Magnitude de dur&eacute;e : $stat_max_magnitude_loc</li>";
@@ -344,7 +488,6 @@ PART1
 
     print "Debut ECRITURE BULLETIN";
 
-#open(my $fh, '>', $outputFilename) or die "Could not open file '$outputFilename' $!";
     open(my $fh, '>', $outputFilename) or print "Could not open file '$outputFilename' $!";
     print $fh $htmlOutput;
     close $fh;
@@ -450,23 +593,27 @@ PART2
 
     print <<"PART3";
       </p>
-      <h3>Nombre de s&eacute;ismes volcano-tectoniques (VT) : $comptabilisesVT</h3>
-      <h3>Zone(s) concern&eacute;e(s) par les VT :</h3>
+      <h3>Nombre de s&eacute;ismes volcano-tectoniques (VT) sommitaux : $comptabilisesVT_summit</h3>
       <p>
 PART3
-
-    for (@typeZones) {
-        my @liste = split(/\|/,$_);
-        print "<input type=\"checkbox\" name=\"zone_vt\" value=\"$liste[0]\"/>$liste[1]\n";
-    }
-
     print <<"PART4";
-      </p>
-      <h3>VT principal:</h3>
+      <h3>VT sommital principal:</h3>
       <p>
         <ul>
-          <li>Dur&eacute;e : $stat_max_duration s</li>
-          <li>Magnitude de dur&eacute;e : $stat_max_magnitude</li>
+          <li>Dur&eacute;e : $stat_max_duration_summit s</li>
+          <li>Magnitude de dur&eacute;e : $stat_max_magnitude_summit</li>
+        </ul>
+      </p>
+      </p>
+      <h3>Nombre de s&eacute;ismes volcano-tectoniques (VT) profonds : $comptabilisesVT_deep</h3>
+      <p>
+PART4
+    print <<"PART4A";
+      <h3>VT profond principal:</h3>
+      <p>
+        <ul>
+          <li>Dur&eacute;e : $stat_max_duration_deep s</li>
+          <li>Magnitude de dur&eacute;e : $stat_max_magnitude_deep</li>
         </ul>
       </p>
       </p>
@@ -479,7 +626,7 @@ PART3
           <li>Magnitude de dur&eacute;e : $stat_max_magnitude_loc</li>
         </ul>
       </p>
-PART4
+PART4A
     print <<"PART51";
       </p>
       <h3>Commentaire geodesie:</h3>
@@ -528,10 +675,13 @@ PART7
     print <<"PART5";
       <input type="hidden" name="dateStart" value="$dateStart"/>
       <input type="hidden" name="dateEnd" value="$dateEnd"/>
-      <input type="hidden" name="stat_max_duration" value="$stat_max_duration"/>
-      <input type="hidden" name="stat_max_magnitude" value="$stat_max_magnitude"/>
+      <input type="hidden" name="stat_max_duration_summit" value="$stat_max_duration_summit"/>
+      <input type="hidden" name="stat_max_magnitude_summit" value="$stat_max_magnitude_summit"/>
+      <input type="hidden" name="stat_max_duration_deep" value="$stat_max_duration_deep"/>
+      <input type="hidden" name="stat_max_magnitude_deep" value="$stat_max_magnitude_deep"/>
       <input type="hidden" name="RFcount" value="$comptabilisesRockfall"/>
-      <input type="hidden" name="VTcount" value="$comptabilisesVT"/>
+      <input type="hidden" name="VTsumcount" value="$comptabilisesVT_summit"/>
+      <input type="hidden" name="VTdeepcount" value="$comptabilisesVT_deep"/>
       <input type="hidden" name="stat_max_duration_loc" value="$stat_max_duration_loc"/>
       <input type="hidden" name="stat_max_magnitude_loc" value="$stat_max_magnitude_loc"/>
       <input type="hidden" name="LOCcount" value="$comptabilisesLOC"/>
