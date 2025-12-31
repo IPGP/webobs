@@ -21,7 +21,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2024-07-03, in Surabaya (Indonesia)
-%	Updated: 2025-12-23
+%	Updated: 2025-12-30
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -156,8 +156,8 @@ D.d = d;
 D.e = e;
 D.c = c;
 
-% set default names and units to inexistant/unappropriate calibration files of node
-if N.CLB.nx ~= nx
+% set default names and units to inexistant calibration files of node (and rebuilts the autoclb)
+if N.CLB.nx ~= nx || N.CLB.auto
     N.CLB = mkautoclb(N,nm,un);
 end
 % note: calibration files are defined in node's TZ

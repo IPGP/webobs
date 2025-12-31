@@ -46,6 +46,7 @@ pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $nod
 summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
 
+exthax = [.08,.02];
 % types of sampling and associated markers (see PLOTMARK function)
 %FT = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_TYPE));
 %tcod = fieldnames(FT);
@@ -97,7 +98,8 @@ i_bi = 27;
 
 % ==== graphs per node
 for n = 1:length(N)
-	stitre = sprintf('%s: %s',N(n).ALIAS,N(n).NAME);
+	C = D(n).CLB;
+	nx = C.nx;
 	GN = graphstr(field2str(P,'PERNODE_CHANNELS',sprintf('%d,',1:nx),'notempty'));
 	V.node_name = N(n).NAME;
 	V.node_alias = N(n).ALIAS;
@@ -120,121 +122,37 @@ for n = 1:length(N)
 
 		figure(1), clf, orient tall
 
-		if d(ke,i_db) == 0, sdb = 'TARIE'; else sdb = sprintf('%1.1f l/mn',d(ke,i_db)); end
-		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ), ...
-			sprintf('Twater = {\\bf%1.1f �C}',d(ke,i_ts)), ...
-			sprintf('Tair = {\\bf%1.1f �C}',d(ke,i_ta)), ...
-			sprintf('pH = {\\bf%1.2f}',d(ke,i_ph)), ...
-			sprintf('Cond. = {\\bf%1.1f �S}',d(ke,i_cd)), ...
-			sprintf('Cond_{25} = {\\bf%1.1f �S}',d(ke,25)), ...
-			sprintf('Flux = {\\bf%s}',sdb), ...
-			sprintf('Ion analysis ({\\bfmmol/l}) :'), ...
-			sprintf('Na^+ = {\\bf%1.1f}',d(ke,i_na)), ...
-			sprintf('K^+ = {\\bf%1.1f}',d(ke,i_ki)), ...
-			sprintf('Mg^{++} = {\\bf%1.1f}',d(ke,i_mg)), ...
-			sprintf('Ca^{++} = {\\bf%1.1f}',d(ke,i_ca)), ...
-			sprintf('F^- = {\\bf%1.1f}',d(ke,i_fi)), ...
-			sprintf('Cl^- = {\\bf%1.1f}',d(ke,i_cl)), ...
-			sprintf('HCO_3^- = {\\bf%1.1f}',d(ke,i_hco3)), ...
-			sprintf('SO_4^{--} = {\\bf%1.1f}',d(ke,i_so4)), ...
-			sprintf('Cl^- / SO_4^{--} = {\\bf%1.2f}',d(ke,i_cl)), ...
-			sprintf('HCO_3^- / SO_4^{--} = {\\bf%1.2f}',d(ke,i_hco3)), ...
-			sprintf('NICB = {\\bf%+1.2f %%}',d(ke,i_bi)), ...
-		};
+		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),''};
+        allchan = cat(2,GN.chan);
+        for i = 1:length(allchan)
+            P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:}, ...
+			{sprintf('  %s = {\\bf%g %s}',C.nm{allchan(i)},d(ke,allchan(i)),C.un{allchan(i)})}];
+        end
 
-		% Temperatures (water + air)
-		subplot(12,1,1:2), extaxes
-		% --- air
-		plot(t(k),d(k,i_ta),'.-','LineWidth',.1,'Color',.6*[1 1 1]), hold on
-		% --- water marker following site type
-		plotmark(d(k,i_ty),t(k),d(k,i_ts),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(1))
-		hold off
-		set(gca,'XLim',tlim,'FontSize',8)
-		legend('Air','Location','SouthWest')
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Temperatures (�C)')
+		for p = 1:length(GN)
 
-		% Legend for site types
-		pos = get(gca,'position');
-		axes('position',[pos(1),pos(2)+pos(4),pos(3),pos(4)/5])
-		axis([0 1 0 1]), hold on
-		for i = 1:length(tcod)
-			plot((i-1)/length(tcod) + .05,.5,FT.(tcod{i}).marker,'Markersize',P.GTABLE(r).MARKERSIZE*str2double(FT.(tcod{i}).relsize),'MarkerFaceColor','k')
-			text((i-1)/length(tcod) + .05,.5,['   ',FT.(tcod{i}).name],'FontSize',8)
-		end
-		axis off, hold off
-
-		% pH
-		subplot(12,1,3:4), extaxes
-		dd = d(k,i_ph);
-		plotmark(d(k,i_ty),t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(1))
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('pH')
-
-		% Cl- & HCO3-
-		subplot(12,1,5:6), extaxes
-		dd = d(k,[i_cl,i_hco3]);
-		h1 = plotmark(d(k,i_ty),t(k),dd(:,1),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(2));
-		hold on
-		h2 = plotmark(d(k,i_ty),t(k),dd(:,2),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(3));
-		hold off
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		if ~isempty(h1) && ~isempty(h2)
-			legend([h1(1),h2(1)],'Cl^-','HCO_3^-','Location','SouthWest')
-		end
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cl^- & HCO_3^- (mmol/l)')
-
-		% Cl-/SO4-- & HCO3-/SO4--
-		subplot(12,1,7:8), extaxes
-		dd =  d(k,23:24);
-		h1 = plotmark(d(k,i_ty),t(k),dd(:,1),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(4));
-		hold on
-		h2 = plotmark(d(k,i_ty),t(k),dd(:,2),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(5));
-		hold off
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		if ~isempty(h1) && ~isempty(h2)
-			legend([h1(1),h2(1)],'Cl^-/SO_4^{--}','HCO_3^-/SO_4^{--}','Location','SouthWest')
-		end
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cl^-/SO_4^{--} & HCO_3^-/SO_4^{--}')
-
-		% Mg++/Cl-
-		subplot(12,1,9), extaxes
-		dd = d(k,25);
-		plotmark(d(k,i_ty),t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(1))
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Mg^{++}/Cl^-')
-
-		% Flux
-		subplot(12,1,10), extaxes
-		dd = d(k,i_db);
-		plotmark(d(k,i_ty),t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(1))
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Flux (l/mn)')
-
-		% Conductivity
-		subplot(12,1,11:12), extaxes
-		dd = d(k,[i_cd,26]);
-		h1 = plotmark(d(k,i_ty),t(k),dd(:,1),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(6));
-		hold on
-		h2 = plotmark(d(k,i_ty),t(k),dd(:,2),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(7));
-		hold off
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		if ~isempty(h1) && ~isempty(h2)
-			legend([h1(1),h2(1)],'Cond.','Cond_{25}','Location','SouthWest')
-		end
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cond. & Cond_{25} (�S)')
+			subplot(GN(p).subplot{:}), extaxes(gca,exthax)
+			pchan = GN(p).chan;
+			for i = 1:length(pchan)
+				col = scolor(i);
+				plot(D(n).t(k),D(n).d(k,pchan(i)),pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
+					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
+                hold on
+            end
+            hold off
+            if isempty(D(n).d) || all(isnan(D(n).d(k,pchan(i))))
+				nodata(tlim)
+            end
+            if length(pchan) > 1
+                legend(C.nm(pchan),'location','SouthWest')
+            end
+            set(gca,'XLim',tlim,'FontSize',8)
+            ylabel(nameunit(strcommon(C.nm(pchan)),strcommon(C.un(pchan))))
+            datetick2('x',P.GTABLE(r).DATESTR)
+            if (p < length(GN))
+                set(gca,'XTickLabels',[])
+            end
+        end
 
 		tlabel(tlim,P.TZ)
 
@@ -245,7 +163,7 @@ for n = 1:length(N)
 end
 
 % ==== Main summary graph
-if isfield(P,'SUMMARYLIST')
+if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 	for r = 1:length(P.GTABLE)
 
 		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
