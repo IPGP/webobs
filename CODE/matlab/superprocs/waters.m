@@ -45,6 +45,9 @@ pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','-');
 pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}');
 summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
+ternary1 = field2num(P,'SUMMARY_TERNARY1_CHANNELS');
+ternary2 = field2num(P,'SUMMARY_TERNARY2_CHANNELS');
+summary_channels = field2num(P,'SUMMARY_CHANNELS');
 
 exthax = [.08,.02];
 % types of sampling and associated markers (see PLOTMARK function)
@@ -99,8 +102,7 @@ i_bi = 27;
 % ==== graphs per node
 for n = 1:length(N)
 	C = D(n).CLB;
-	nx = C.nx;
-	GN = graphstr(field2str(P,'PERNODE_CHANNELS',sprintf('%d,',1:nx),'notempty'));
+	GN = graphstr(field2str(P,'PERNODE_CHANNELS',sprintf('%d,',1:C.nx),'notempty'));
 	V.node_name = N(n).NAME;
 	V.node_alias = N(n).ALIAS;
 	V.last_data = datestr(D(n).tfirstlast(2));
@@ -129,11 +131,11 @@ for n = 1:length(N)
 			{sprintf('  %s = {\\bf%g %s}',C.nm{allchan(i)},d(ke,allchan(i)),C.un{allchan(i)})}];
         end
 
-		for p = 1:length(GN)
+        for p = 1:length(GN)
 
 			subplot(GN(p).subplot{:}), extaxes(gca,exthax)
 			pchan = GN(p).chan;
-			for i = 1:length(pchan)
+            for i = 1:length(pchan)
 				col = scolor(i);
 				plot(D(n).t(k),D(n).d(k,pchan(i)),pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
 					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
@@ -163,7 +165,7 @@ for n = 1:length(N)
 end
 
 % ==== Main summary graph
-if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
+if any(strcmpi(P.SUMMARYLIST,'SUMMARY')) && ~isempty(summary_channels)
 	for r = 1:length(P.GTABLE)
 
 		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
@@ -180,33 +182,33 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 
 		figure(1), clf, orient tall
 
-		% Ternary diagram Ca/Na/Mg
+		% Ternary diagram 1 (e.g., Ca vs Na vs Mg)
 		subplot(9,2,[1 3])
 		for n = 1:length(N)
 			k = D(n).G(r).k;
-			h = ternplot(D(n).d(k,i_ca),D(n).d(k,i_na),D(n).d(k,i_mg),'.',0);
+			h = ternplot(D(n).d(k,ternary1(1)),D(n).d(k,ternary1(2)),D(n).d(k,ternary1(3)),'.',0);
 			set(h,'Color',scolor(n));
 			set(gca,'FontSize',8)
 			hold on
 		end
 		hold off
-		ternlabel('Ca','Na','Mg',0);
+		ternlabel(C.nm{ternary1(1)},C.nm{ternary1(2)},C.nm{ternary1(3)},0);
 		pos = get(gca,'pos');  set(gca,'pos',[pos(1),pos(2)+.02,pos(3),pos(4)])
 
-		% Ternary diagram SO4/HCO3/Cl
+		% Ternary diagram 2 (e.g., SO4 vs HCO3 vs Cl)
 		subplot(9,2,[2 4])
 		for n = 1:length(N)
 			k = D(n).G(r).k;
-			h = ternplot(D(n).d(k,i_so4),D(n).d(k,i_hco3),D(n).d(k,i_cl),'.',0);
+			h = ternplot(D(n).d(k,ternary2(1)),D(n).d(k,ternary2(2)),D(n).d(k,ternary2(3)),'.',0);
 			set(h,'Color',scolor(n));
 			set(gca,'FontSize',8)
 			hold on
 		end
 		hold off
-		ternlabel('SO_4','HCO_3','Cl',0);
+		ternlabel(C.nm{ternary2(1)},C.nm{ternary2(2)},C.nm{ternary2(3)},0);
 		pos = get(gca,'pos');  set(gca,'pos',[pos(1),pos(2)+.02,pos(3),pos(4)])
 
-		% Legend
+		% Legend for sites
 		axes('position',[0,pos(2),1,pos(4)]);
 		axis([0,1,0,1]);
 		hold on
@@ -220,97 +222,26 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 		hold off
 		axis off
 
-		% Temperatures
-		subplot(13,1,4:5), extaxes
-		hold on
-		for n = 1:length(N)
-			k = D(n).G(r).k;
-			if ~isempty(k)
-				plotmark(D(n).d(k,i_ty),D(n).t(k),D(n).d(k,i_ts),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(n))
-			end
-		end
-		hold off, box on
-		set(gca,'XLim',tlim,'FontSize',8)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Temperatures (�C)'))
-
-		% Legend for site types
-		pos = get(gca,'position');
-		axes('position',[pos(1),pos(2)+pos(4),pos(3),pos(4)/7])
-		axis([0 1 0 1]), hold on
-		for i = 1:length(tcod)
-		    plot((i-1)/length(tcod) + .05,.5,FT.(tcod{i}).marker,'Markersize',P.GTABLE(r).MARKERSIZE*str2double(FT.(tcod{i}).relsize),'MarkerFaceColor','k')
-		    text((i-1)/length(tcod) + .05,.5,['   ',FT.(tcod{i}).name],'FontSize',8)
-		end
-		axis off, hold off
-
-		% pH
-		subplot(13,1,6:7), extaxes
-		ddmm = nan(2,1);
-		hold on
-		for n = 1:length(N)
-			k = D(n).G(r).k;
-			if ~isempty(k)
-				dd = D(n).d(k,i_ph);
-				ddmm = minmax([ddmm;dd])';
-				plotmark(D(n).d(k,i_ty),D(n).t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(n))
-			end
-		end
-		hold off, box on, extylim(ddmm)
-		set(gca,'XLim',tlim,'FontSize',8)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('pH'))
-
-		% Conductivity at 25C
-		subplot(13,1,8:9), extaxes
-		ddmm = nan(2,1);
-		hold on
-		for n = 1:length(N)
-			k = D(n).G(r).k;
-			if ~isempty(k)
-				dd = D(n).d(k,26);
-				ddmm = minmax([ddmm;dd])';
-				plotmark(D(n).d(k,i_ty),D(n).t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(n))
-			end
-		end
-		hold off, box on, extylim(ddmm)
-		set(gca,'YScale','linear','XLim',tlim,'FontSize',8)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cond. 25�C (�S)')
-
-		% Ratio Cl-/SO4-
-		subplot(13,1,10:11), extaxes
-		ddmm = nan(2,1);
-		hold on
-		for n = 1:length(N)
-			k = D(n).G(r).k;
-			if ~isempty(k)
-			    dd = D(n).d(k,23);
-			    ddmm = minmax([ddmm;dd])';
-			    plotmark(D(n).d(k,i_ty),D(n).t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(n))
-			end
-		end
-		hold off, box on, extylim(ddmm)
-		set(gca,'YScale','linear','XLim',tlim,'FontSize',8)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cl^- / SO_4^{--}')
-
-		% Ratio HCO3-/SO4-
-		subplot(13,1,12:13), extaxes
-		ddmm = nan(2,1);
-		hold on
-		for n = 1:length(N)
-			k = D(n).G(r).k;
-			if ~isempty(k)
-			    dd = D(n).d(k,24);
-			    ddmm = minmax([ddmm;dd])';
-			    plotmark(D(n).d(k,i_ty),D(n).t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(n))
-			end
-		end
-		hold off, box on, extylim(ddmm)
-		set(gca,'YScale','linear','XLim',tlim,'FontSize',8)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('HCO_3^- / SO_4^{--}')
+        nx = length(summary_channels);
+        for i = 1:nx
+            subplot(4+nx*2,1,5+(i-1)*2+[0,1]), extaxes
+            hold on
+            for n = 1:length(N)
+                col = scolor(n);
+                k = D(n).G(r).k;
+                if ~isempty(k)
+                    plot(D(n).t(k),D(n).d(k,summary_channels(i)),summary_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
+					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
+                end
+            end
+            hold off, box on
+            set(gca,'XLim',tlim,'FontSize',8)
+            ylabel(nameunit(C.nm{summary_channels(i)},C.un{summary_channels(i)}))
+            datetick2('x',P.GTABLE(r).DATESTR)
+            if (i < nx)
+                set(gca,'XTickLabels',[])
+            end
+        end
 
 		tlabel(tlim,P.TZ)
 
