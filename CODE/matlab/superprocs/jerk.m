@@ -36,7 +36,7 @@ function DOUT=jerk(varargin)
 %
 %   Authors: F. Beauducel + G. Roult + V. Ferrazzini, WEBOBS/IPGP
 %   Created: 2014-04-14 at OVPF, La Réunion, Indian Ocean
-%   Updated: 2025-12-27
+%   Updated: 2025-12-31
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -478,7 +478,8 @@ for n = 1:length(N)
 					fprintf(fid,'Current status\n\t%s: %s\n',datestr(al(1)),alertlevel{al(2)+1});
 					fprintf(fid,'Previous status\n\t%s: %s\n',datestr(alertlast(1)),alertlevel{alertlast(2)+1});
 					fprintf(fid,'\n\n');
-					fprintf(fid,'%s/cgi-bin/showOUTG.pl?grid=%s&g=%s\n',url,P.SELFREF,lower(N(n).ID));
+					fprintf(fid,'Real-time graph: %s/cgi-bin/showOUTG.pl?grid=%s&g=%s\n\n',url,P.SELFREF,lower(N(n).ID));
+                    fprintf(fid,'Screenshot attached:\n\n');
 					fclose(fid);
 
 					notify(WO,P.NOTIFY_EVENT,'!',sprintf('file=%s subject=%s',f,msg));
