@@ -345,9 +345,9 @@ var MECB = {
             'notovr': "$__{'Event not flagged OVERSCALE'}",
             'unkevt': "$__{'Event type is unknown/undetermined. Validate as is ?'}",
             'notval': "$__{'You cannot validate an event of type AUTO'}",
-            'delete': "$__{'ATT: Do you want PERMANENTLY erase this event from'}",
-            'hidevt': "$__{'Do you want to hide this event from'}",
-            'resevt': "$__{'Do you want to restore this event in'}"
+            'delete': "$__{'ATT: Do you want PERMANENTLY erase this event from'} ",
+            'hidevt': "$__{'Do you want to hide this event from'} ",
+            'resevt': "$__{'Do you want to restore this event in'} "
           },
     CROSSHAIR: '<span id=crosshairUp></span><span id=crosshairDown></span>',
     NEWPCLEARS: $MC3{NEW_P_CLEAR_S},
