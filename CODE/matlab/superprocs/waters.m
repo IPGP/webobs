@@ -183,7 +183,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY')) && ~isempty(summary_channels)
 		figure(1), clf, orient tall
 
 		% Ternary diagram 1 (e.g., Ca vs Na vs Mg)
-		subplot(9,2,[1 3])
+        axes('Position',[0.1  0.63  0.33  0.25])
 		for n = 1:length(N)
 			k = D(n).G(r).k;
 			h = ternplot(D(n).d(k,ternary1(1)),D(n).d(k,ternary1(2)),D(n).d(k,ternary1(3)),'.',0);
@@ -196,7 +196,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY')) && ~isempty(summary_channels)
 		pos = get(gca,'pos');  set(gca,'pos',[pos(1),pos(2)+.02,pos(3),pos(4)])
 
 		% Ternary diagram 2 (e.g., SO4 vs HCO3 vs Cl)
-		subplot(9,2,[2 4])
+        axes('Position',[0.57  0.63  0.33  0.25])
 		for n = 1:length(N)
 			k = D(n).G(r).k;
 			h = ternplot(D(n).d(k,ternary2(1)),D(n).d(k,ternary2(2)),D(n).d(k,ternary2(3)),'.',0);
@@ -224,7 +224,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY')) && ~isempty(summary_channels)
 
         nx = length(summary_channels);
         for i = 1:nx
-            subplot(4+nx*2,1,5+(i-1)*2+[0,1]), extaxes
+            subplot(6+nx*2,1,7+(i-1)*2+[0,1]), extaxes
             hold on
             for n = 1:length(N)
                 col = scolor(n);

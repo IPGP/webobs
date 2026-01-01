@@ -94,6 +94,9 @@ COPYRIGHT|MyProc
 # secondary copyright
 COPYRIGHT2|
 
+# let empty to not make the summary graph
+SUMMARYLIST|SUMMARY
+
 # --- specific PROC's parameters
 
 # - SUMMARY graph (all nodes)
