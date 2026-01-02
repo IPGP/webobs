@@ -60,8 +60,7 @@ $(document).keydown(function(e) {
     var target = e.target || e.srcElement;
     // Enter key works everywhere
     if (e.key == 'Enter') {
-        verif_formulaire();
-        MECB.FORM.submit();
+        if (verif_formulaire()) MECB.FORM.submit();
     }
     // other keys only outside any form
     if (!/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName)) {
