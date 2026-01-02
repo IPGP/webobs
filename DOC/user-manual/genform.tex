@@ -151,12 +151,12 @@ Valid TYPE for an OUTPUT field is:
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Formulas}
 
-In formulas, the use of previous outputs is allowed but they must precede the current formula (with lower output numbers). The syntax must remain simple since the same formula is interpreted by Javascript in the form page and by Perl in the table page. Use of plus (+), minus (-), divide (/), multiply (*), exponent (**) operators, numbers and parenthesis is admitted, also some basic functions like \wokey{sqrt()}, \wokey{log()}, etc. An input must be referenced as \wokey{INPUTzz}, an output as \wokey{OUTPUTzz}, uppercase. It is possible to define hidden formula by setting the size to zero (0), but the field still MUST be included in a fieldset cell in order to be computed properly; this can be useful to calculate intermediate results used in other formula and not display it.
+In formulas, the use of previous outputs is allowed but they must precede the current formula (with lower output numbers). The syntax must remain simple since the same formula is interpreted by Javascript in the form page and by Perl in the table page. Use of plus (+), minus (-), divide (/), multiply (*), exponent (**) operators, numbers and parenthesis is admitted, also some basic functions like \wokey{sqrt()}, \wokey{log()}, etc. Some functions accept a list of input/output, comma-separated: \wokey{mean()}, \wokey{std()}, \wokey{median()}. An input must be referenced as \wokey{INPUTzz}, an output as \wokey{OUTPUTzz}, uppercase. It is possible to define hidden formula by setting the size to zero (0), but the field still MUST be included in a fieldset cell in order to be computed properly; this can be useful to calculate intermediate results used in other formula and not display it.
  
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Color background threshold}
 
-The VALID parameters applies to input or output of numeric/formula types. It contains a coma-separated list of 2 threshold values {\it a, b} to display color background associated to a level of validity of the field absolute value. Three levels of validity are defined: normal (green), warning (orange), and error (red). The criteria are, where {\it x} is the field value:
+The THRESHOLD parameters applies to input or output of numeric/formula types. It contains a coma-separated list of 2 threshold values {\it a, b} to display color background associated to a level of validity of the field absolute value. Three levels of validity are defined: normal (green), warning (orange), and error (red). The criteria are, where {\it x} is the field value:
 \begin{itemize}
 	\item normal for abs({\it x}) $<=$ {\it a},
 	\item warning for {\it a} $<$ abs({\it x}) $<=$ {\it b},
