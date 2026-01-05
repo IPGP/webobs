@@ -448,7 +448,7 @@ if ($QryParm->{'ts'} eq 'map') {
                 $elist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
                 $elist[$i] =~ s/^$/$GRIDName/;
                 if ($elist[$i] eq $QryParm->{'g'}) {
-                    $addlinks .= " <A href=\"$surn\"><IMG alt=\"$QryParm->{'g'}.eps\" src=\"/icons/feps.png\"></A> ";
+                    $addlinks .= " <A href=\"$surn\"><IMG title=\"$QryParm->{'g'}.eps\" src=\"/icons/feps.png\"></A> ";
                 }
             }
         }
@@ -458,7 +458,7 @@ if ($QryParm->{'ts'} eq 'map') {
                 $slist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
                 $slist[$i] =~ s/^$/$GRIDName/;
                 if ($slist[$i] eq $QryParm->{'g'}) {
-                    $addlinks .= " <A href=\"$surn\"><IMG alt=\"$QryParm->{'g'}.svg\" src=\"/icons/fsvg.png\"></A> ";
+                    $addlinks .= " <A href=\"$surn\"><IMG title=\"$QryParm->{'g'}.svg\" src=\"/icons/fsvg.png\"></A> ";
                 }
             }
         }
@@ -468,7 +468,7 @@ if ($QryParm->{'ts'} eq 'map') {
                 $plist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
                 $plist[$i] =~ s/^$/$GRIDName/;
                 if ($plist[$i] eq $QryParm->{'g'}) {
-                    $addlinks .= " <A href=\"$surn\"><IMG alt=\"$QryParm->{'g'}.pdf\" src=\"/icons/fpdf.png\"></A> ";
+                    $addlinks .= " <A href=\"$surn\"><IMG title=\"$QryParm->{'g'}.pdf\" src=\"/icons/fpdf.png\"></A> ";
                 }
             }
         }
@@ -484,16 +484,16 @@ if ($QryParm->{'ts'} eq 'map') {
             }
         }
 
-    # if a FORM is associated to the PROC, adds a link to the database interface
-        if ($GRID{FORM} ne '') {
-            my $FORM = new WebObs::Form($GRID{FORM});
-            my $opt = ($QryParm->{'g'} eq $GRIDName ? "{$GRIDName}":uc($QryParm->{'g'}));
-            $addlinks .= "<A href=\"/cgi-bin/".$FORM->conf('CGI_SHOW')."?node=$opt\"><IMG alt=\"\" src=\"/icons/fdata.png\"></A> ";
+        # if the PROC uses a default genform RAWFORMAT, adds a link to the database interface
+        if ($GRID{RAWFORMAT} eq 'genform') {
+            my $ucg = uc($QryParm->{'g'});
+            my $opt = ( (grep { $_ eq $ucg } @{$GRID{NODESLIST}}) ? "&node=$ucg" : "" );
+            $addlinks .= "<A href=\"/cgi-bin/showGENFORM.pl?form=$GRID{RAWDATA}$opt\"><IMG title=\"Access to FORM data\" src=\"/icons/form.png\"></A> ";
         }
 
         if ( $QryParm->{'g'} ne $GRIDName && !(grep( /^$QryParm->{'g'}$/i, @SummaryList)) && $QryParm->{'g'} eq lc($QryParm->{'g'}) ) {
             my $ucg = uc($QryParm->{'g'});
-            $addlinks .= " <A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=PROC.$GRIDName.$ucg\"><IMG alt=\"$QryParm->{'g'}\" src=\"/icons/fnode.png\"></A> ";
+            $addlinks .= " <A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=PROC.$GRIDName.$ucg\"><IMG title=\"PROC.$GRIDName.$ucg\" src=\"/icons/fnode.png\"></A> ";
         }
 
         # finally plots the image !
