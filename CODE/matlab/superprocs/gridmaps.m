@@ -1,8 +1,8 @@
 function gridmaps(grids,outd,varargin)
 %GRIDMAPS Grids location maps of nodes
 %   GRIDMAPS creates or updates NODES location maps for each existing GRIDS
-%   (views or procs). Maps are written in .eps and .png formats, with companion
-%   html file .map for clickable areas, and can be displayed with showGRID.pl.
+%   (view, proc, form, or sefran). Maps are written in .eps and .png formats,
+%   with companion html file .map for clickable areas.
 %
 %   GRIDMAPS(GRIDS) updates only grids listed in GRIDS (string or cell) as
 %   	gridtype.gridname
@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2025-04-07
+%   Updated: 2025-12-28
 
 
 WO = readcfg;
@@ -77,18 +77,21 @@ end
 % loads transmission information
 trans = isok(P,'PLOT_TRANSMISSION');
 
-% gets all VIEWS, PROCS, and FORMS looks inside the GRIDS directories avoiding . .. and non-directory files
+% gets all VIEWS, PROCS, FORMS, and SEFRANS looks inside the GRIDS directories avoiding . .. and non-directory files
 if ~request && (nargin < 1 || isempty(grids))
 	VIEWS = dir(sprintf('%s/*',WO.PATH_VIEWS));
 	PROCS = dir(sprintf('%s/*',WO.PATH_PROCS));
 	FORMS = dir(sprintf('%s/*',WO.PATH_FORMS));
+	SEFRANS = dir(sprintf('%s/*',WO.PATH_SEFRANS));
     vl = {VIEWS(~strncmp({VIEWS.name},{'.'},1) & cat(2,VIEWS.isdir)).name};
     pl = {PROCS(~strncmp({PROCS.name},{'.'},1) & cat(2,PROCS.isdir)).name};
     fl = {FORMS(~strncmp({FORMS.name},{'.'},1) & cat(2,FORMS.isdir)).name};
+    sl = {SEFRANS(~strncmp({SEFRANS.name},{'.'},1) & cat(2,SEFRANS.isdir)).name};
     grids = {};
     if ~isempty(vl), grids = [grids,strcat('VIEW.',vl)]; end
     if ~isempty(pl), grids = [grids,strcat('PROC.',pl)]; end
     if ~isempty(fl), grids = [grids,strcat('FORM.',fl)]; end
+    if ~isempty(sl), grids = [grids,strcat('SEFRAN.',sl)]; end
 else
 	if ~iscell(grids)
 		grids = cellstr(grids);
@@ -114,12 +117,8 @@ inactivenode = isok(P,'INACTIVE_NODE');
 minkm = field2num(P,'MIN_SIZE_KM',2);
 maxxy = field2num(P,'MAX_XYRATIO',2);
 border = field2num(P,'BORDER_ADD',.1);
+papersize = field2num(P,'PAPERSIZE_INCHES',10,'notempty');
 
-if isfield(P,'PAPERSIZE_INCHES')
-	psz = repmat(str2double(P.PAPERSIZE_INCHES)*72,[1,2]);
-else
-	psz = [720,720];
-end
 dpi = field2num(P,'DPI',100);
 %lw = field2num(P,'LINEWIDTH',.1);
 lwminor = field2num(P,'CONTOURLINES_MINOR_LINEWIDTH',.1);
@@ -173,6 +172,9 @@ for g = 1:length(grids)
 		NN(g).id = cat(1,{N.ID});
 		NN(g).alias = cat(1,{N.ALIAS});
 		NN(g).name = cat(1,{N.NAME});
+        if isfield(N,'RGB')
+            NN(g).rgb = cat(1,N.RGB);
+        end
 	else
 		NN(g).kn = [];
 	end
@@ -193,11 +195,11 @@ for g = 1:length(grids)
 
 	if merge
 		if g == 1
-			fprintf('\n%s: Making map of merged grids ',wofun);
+			fprintf('%s: Making map of merged grids ',wofun);
 		end
 		fprintf('%s... ',grids{g});
 	else
-		fprintf('\n%s: Making map of grid %s...\n',wofun,grids{g});
+		fprintf('%s: Making map of grid %s...\n',wofun,grids{g});
 	end
 	s = split(grids{g},'.');
 	G = GRIDS.(s{1}).(s{2});
@@ -260,6 +262,11 @@ for g = 1:length(grids)
 		geo = NN(g).geo;
 		ka = NN(g).ka;
 		k0 = NN(g).k0;
+        if isfield(NN(g),'rgb') && ~isempty(NN(g).rgb)
+            col = NN(g).rgb;
+        else
+            col = repmat(nodecolor,size(NN(g).geo,1),1);
+        end
 
 		for m = 1:size(maps,1)
 			if merge
@@ -284,6 +291,10 @@ for g = 1:length(grids)
 				y = DEM.lat;
 				z = DEM.z;
 				demcopyright = DEM.COPYRIGHT;
+
+                % adjusts paper height from the basemap aspect ratio
+                rxy = max(1,0.9*diff(minmax(x))*cosd(mean(y))/diff(minmax(y)));
+                psz = 72*papersize*[1,1/rxy];
 
 				figure
 
@@ -353,14 +364,14 @@ for g = 1:length(grids)
 			k0m = [];
 			if ~isempty(k0)
 				k0m = k0(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
-				target(geo(k0m,2),geo(k0m,1),nodesize,nodecolor,nodetype,2)
+				target(geo(k0m,2),geo(k0m,1),nodesize,col(k0m,:),nodetype,2)
 			end
 
 			% plots active nodes
 			kam = [];
 			if ~isempty(ka)
 				kam = ka(isinto(geo(ka,2),dlon) & isinto(geo(ka,1),dlat));
-				target(geo(kam,2),geo(kam,1),nodesize,nodecolor,nodetype)
+				target(geo(kam,2),geo(kam,1),nodesize,col(kam,:),nodetype)
 			end
 
 			% writes node names for current map but excluded other maps
@@ -409,9 +420,14 @@ for g = 1:length(grids)
 				if ~merge
 					xl = [.1,.4,.7];
 					yl = .5;
-					target(xl(2),yl,nodesize,nodecolor,nodetype);
+                    if size(col,1) > 1
+                        lcol = .5*ones(1,3); % gray if nodes have different colors
+                    else
+                        lcol = nodecolor;
+                    end
+					target(xl(2),yl,nodesize,lcol,nodetype);
 					if ~isempty(k0)
-						target(xl(3),yl,nodesize,nodecolor,nodetype,2);
+						target(xl(3),yl,nodesize,lcol,nodetype,2);
 					end
 					nm = length(kam) + length(k0m);
 					text(xl,yl*[1,1,1],{sprintf('{\\bf%s}',nodename), ...
@@ -452,14 +468,19 @@ for g = 1:length(grids)
 						x = round(ims(1)*((axp(3)*(NN(gg).geo(knn,2) - xylim(1))/diff(xylim(1:2)) + axp(1))));
 						y = round(ims(2) - ims(2)*((axp(4)*(NN(gg).geo(knn,1) - xylim(3))/diff(xylim(3:4)) + axp(2))));
 						r = ceil(nodesize*dpi/72);
-						lnk = sprintf('/cgi-bin/showNODE.pl?node=%s.%s',grids{gg},NN(gg).id{knn});
+                        if isempty(regexp(grids(gg),'^SEFRAN\.'))
+                            lnk = sprintf('/cgi-bin/showNODE.pl?node=%s.%s',grids{gg},NN(gg).id{knn});
+                        else
+                            lnk = '#';
+                        end
 						if html
 							txt = regexprep(sprintf('%s: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
 							fprintf(fid,'<AREA href="%s" title="%s" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						else
+                            cap = NN(gg).id{knn};
 							txt = regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
 							txt = regexprep(char(txt),'''','\\''');
-							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
+							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'',CAPTION,''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,cap,x,y,r);
 						end
 					end
 				end

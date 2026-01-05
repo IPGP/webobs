@@ -21,8 +21,7 @@ function DOUT=jerk(varargin)
 %       definition. But these nodes must contain 3 channels exactly as follows:
 %           Channel 1 = LME Eastern mass position (nm/s2)
 %           Channel 2 = LMN Norther mass position (nm/s2)
-%           Channel 3 = LKI temperature (optional)
-%           Channel 4 = LDI atmospheric pressure (optional)
+%           Channel 3 = LKI (temperature) or LDI (atmospheric pressure)
 %
 %	Also, Earth tide prediction program GOTIC2 is used, downloadable at:
 %	    http://www.miz.nao.ac.jp/staffs/nao99/index_En.html
@@ -37,7 +36,7 @@ function DOUT=jerk(varargin)
 %
 %   Authors: F. Beauducel + G. Roult + V. Ferrazzini, WEBOBS/IPGP
 %   Created: 2014-04-14 at OVPF, La Réunion, Indian Ocean
-%   Updated: 2025-03-31
+%   Updated: 2025-12-31
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -67,6 +66,7 @@ zoomdays = field2num(P,'JERK_ZOOM_DAYS',1);
 targetlatlon = field2num(P,'JERK_TARGET_LATLON');
 targetangle = field2num(P,'JERK_TARGET_ANGLE_DEG',45);
 procazlim = field2num(P,'JERK_AZLIM',[0,180]);
+chan_median_minmax = field2num(P,'MEDIAN_MINMAX_FILTERING');
 chan_smooth = field2num(P,'CHANNELS_MOVING_AVERAGE_SAMPLES',ones(1,4));
 tidemode = field2num(P,'TIDES_PREDICT_MODE',0);
 
@@ -84,15 +84,21 @@ for n = 1:length(N)
 	t = D(n).t;
 	d = D(n).d;
 	for c = 1:size(d,2)
+        if length(chan_median_minmax) == 3
+            mm = minmax(d(:,c),chan_median_minmax(1:2));
+            mm = mm + chan_median_minmax(3)*[-1,1]*diff(mm); % adds extent of minmax to avoid filtering normal maxima
+            k = ~isinto(d(:,c),mm);
+            d(k,c) = NaN;
+            if sum(k)>0
+                fprintf('  --> channel %d median min/max filter: %d samples have been excluded.\n',c,sum(k));
+            end
+        end
 		if length(chan_smooth) >= c && chan_smooth(c) > 1
 			d(:,c) = mavr(d(:,c),chan_smooth(c));
 		end
 	end
 	C = D(n).CLB;
 	nx = N(n).CLB.nx;
-	%facq = 1;
-	%maxlags = facq*86400/4;
-	%ndif = 12*3600;
 
 
 	if length(targetlatlon) > 1
@@ -143,13 +149,7 @@ for n = 1:length(N)
 				xlim = [tfirst(n),tlast(n)];
 			end
 			acqui = round(100*length(k)*N(n).ACQ_RATE/abs(t(k(end)) - N(n).LAST_DELAY - xlim(1)));
-			if P.GTABLE(r).DECIMATE > 1
-				tk = decim(t(k),P.GTABLE(r).DECIMATE);
-				dk = decim(d(k,:),P.GTABLE(r).DECIMATE);
-			else
-				tk = t(k);
-				dk = d(k,:);
-			end
+			[tk,dk] = treatsignal(t(k),d(k,:),P.GTABLE(r).DECIMATE,P);
 		end
 
 		etat = 0;
@@ -160,47 +160,18 @@ for n = 1:length(N)
 		end
 		etat = 100*etat/nx;
 
-		if length(zoomdays) == 1
+		if isscalar(zoomdays)
 			zd = xlim(2) - [zoomdays,0];
 		else
 			zd = xlim(2) - [max(zoomdays(:)),min(zoomdays(:))];
 		end
-		%[b,a] = butter(2,facq/(12*3600));
-		% bandwidth filter 1h - 18h
 		[b,a] = butter(2,[1/18,1]/3600/.5);
 
 		if tidemode && ~isempty(k)
 			% adjusts phase and amplitude of tides
 			tidefit = zeros(3,2);
 			for c = 1:2
-				%d(:,c) = cleanpicks(d(:,c),.5);
-				%zi = interp1(T.t,T.d(:,c),t);
-				%k = find(~isnan(d(:,c)));
-				%di = interp1(t(k),d(k,c),t);
-				%k = find(~isnan(zi) & ~isnan(di));
-
-				% a) trying with cross-correlation... does not work with noisy data...
-				%y = xcorr(diff(zi(k)),diff(di(k)),maxlags);
-				%y = xcorr(diffn(zi,ndif),diffn(di,ndif),maxlags);
-				%y = xcorr(filter(b,a,zi),filter(b,a,di),maxlags);
-				%[cx,i] = max(abs(cleanpicks(y,cpp)));
-				%tidefit(c,1) = (maxlags-i)/facq/86400;
-
-				% b) computes the phase shift on M2 wave (much more stable)
-				%PW = doodson('M2'); % gets the exact period of M2
-				%[h1,y1] = harmfit(2*pi*t/PW.period,zi); % fits a sinus on tide signal
-				%[h2,y2] = harmfit(2*pi*t/PW.period,di); % fits a sinus on data signal
-				%tidefit(c,1) = PW.period*mod((h1(3)-h2(3))/(2*pi) + 1,1);
-				%keyboard
-
-				%td = interp1(T.t + tidefit(c,1),T.d(:,c),t);
-				%f = @(x) rsum((d(:,c) - rmean(d(:,c)) - td*x).^2);
-				%tidefit(c,2) = fminsearch(f,1);
-				%d(:,3+c) = td*tidefit(c,2);
-
-				% c) inverses both amplitude and time-shift after bandwidth filter (L2 norm)
-				%dd = d(:,c) - rmean(d(:,c));
-				%dd = rdetrend(tk - tk(1),dk(:,c));
+				% method: inverses both amplitude and time-shift after bandwidth filter (L2 norm)
 				kr = find(~isnan(dk(:,c)));
 				if ~isempty(kr)
 					dd = filter(b,a,dk(kr,c) - mean(dk(kr,c)));
@@ -209,18 +180,7 @@ for n = 1:length(N)
 					tidefit(c,:) = fminsearch(f,[0,1],optimset('Display','off','MaxIter',50));
 				end
 				dk(:,3+c) = interp1(T.t + tidefit(c,1),T.d(:,c),tk,'*linear')*tidefit(c,2);
-
-				%fprintf('WEBOBS{jerk}: adjusted tide component %d = x %g %+d s\n',c,tidefit(c,2),round(tidefit(c,1)*86400));
-
-				% d) inverses amplitude and rotation angle (L1 or L2 norm)
-				%dd = rdetrend(tk - tk(1),dk(:,c));
-				%f = @(x) rsum((dd - interp1(T.t,T.d(:,2)*cosd(x(1)) + T.d(:,1)*sind(x(1)),tk,'*linear')*x(2)).^2);
-				%f = @(x) rsum(abs(dd - interp1(T.t,T.d(:,2)*cosd(x(1)) + T.d(:,1)*sind(x(1)),tk,'*linear')*x(2)));
-				%tidefit(c,:) = fminsearch(f,[90*(c==1),1]);
-				%dk(:,3+c) = interp1(T.t,T.d(:,2)*cosd(tidefit(c,1)) + T.d(:,1)*sind(tidefit(c,1)),tk)*tidefit(c,2);
-
-				%fprintf('WEBOBS{jerk}: adjusted tide component %d = x %g N%+d\n',c,tidefit(c,2),round(tidefit(c,1)));
-				fprintf('%s: adjusted tide component %d = x %g %+dh %02.0fm\n',wofun,c,tidefit(c,2),h2hms(24*tidefit(c,1),1));
+				fprintf('  --> adjusted tide component %d = x %g %+dh %02.0fm\n',c,tidefit(c,2),h2hms(24*tidefit(c,1),1));
 			end
 		else
 			dk(:,4:5) = 0*dk(:,1:2);
@@ -230,12 +190,12 @@ for n = 1:length(N)
 
 		x = dk(:,1) - dk(:,4);
 		y = dk(:,2) - dk(:,5);
-		ip = mw:dt:length(x);
+		ip = (mw:dt:length(x))';
 		bx = zeros(length(ip),2);
 		by = zeros(length(ip),2);
 
 		ii = 1;
-		for i = ip
+		for i = ip'
 			k = i + 1 + (-mw:-1);
 			kk = k(~isnan(x(k)));
 			bx(ii,:) = polyfit((tk(kk)-tk(1))*86400,x(kk),1);
@@ -260,25 +220,32 @@ for n = 1:length(N)
 		N(n).ACQUIS = acqui;
 		P.GTABLE(r).INFOS = {''};
 
-		% loop for each data column
+		% loop for each data component
 		for i = 1:2
 			subplot(9,1,(i-1)*2 + (1:2)); extaxes(gca,[.07,.03])
 			if ~isempty(k)
-				plot(tk,dk(:,i),'-','LineWidth',P.GTABLE(r).MARKERSIZE/10,'Color',scolor(1))
+				plot(tk,dk(:,i),'-','LineWidth',P.GTABLE(r).LINEWIDTH,'Color',scolor(1))
 				hold on
-				plot(tk,dk(:,i+3) + rmean(dk(:,i)),'-','LineWidth',P.GTABLE(r).MARKERSIZE/20,'Color',scolor(2))
-				plot(tk,dk(:,i) - dk(:,i+3),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(3))
+				plot(tk,dk(:,i+3) + rmean(dk(:,i)),'-','LineWidth',P.GTABLE(r).LINEWIDTH/2,'Color',scolor(2))
+				plot(tk,dk(:,i) - dk(:,i+3),'-','LineWidth',P.GTABLE(r).LINEWIDTH,'Color',scolor(3))
 				hold off
 			end
-			set(gca,'XLim',xlim,'FontSize',8)
+            ylim = minmax(dk(:,i));
+			set(gca,'XLim',xlim,'YLim',ylim,'FontSize',8)
 			datetick2('x',P.GTABLE(r).DATESTR)
 			ylabel(sprintf('%s (%s)',C.nm{i},C.un{i}))
 			if isempty(d) || all(isnan(d(k,i)))
 				nodata(xlim)
 			end
+            if i==1
+                topt = {'HorizontalAlignment','center','FontWeight','bold'};
+                text(xlim(1)+diff(xlim)/4,ylim(2),{'original data',''},'Color',scolor(1),topt{:})
+                text(xlim(1)+diff(xlim)/2,ylim(2),{'tide model',''},'Color',scolor(2),topt{:})
+                text(xlim(1)+diff(xlim)*3/4,ylim(2),{'corrected data',''},'Color',scolor(3),topt{:})
+            end
 		end
 
-		% temperature (LKI)
+		% additional 3rd channel (LKI, LDI, ...)
 		subplot(9,1,5); extaxes(gca,[.07,.03])
 		plot(tk,mavr(dk(:,3),chan_smooth(c)),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(4))
 		set(gca,'XLim',xlim,'FontSize',8)
@@ -296,13 +263,17 @@ for n = 1:length(N)
 		plot(xlim,repmat(threshold_level2,1,2),'--','Color',rgb_level2,'LineWidth',1)
 		hold on
 		plot(xlim,repmat(threshold_level1,1,2),'--','Color',rgb_level1,'LineWidth',1)
-		plot(tk(ip),jerk,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
+		plot(tk(ip),jerk,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',2/3+scolor(1)/3)
+        ka = (insector(jth,azlim) | insector(jth-180,azlim));
+        tka = tk(ip);
+        tka(~ka) = NaN; % set NaN for points outside valid azimuth
+		plot(tka,jerk,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
 		ylim = get(gca,'YLim');
 		plot(zd,ylim(2)*([1,1]+.03),'-','LineWidth',2,'Color',.7*ones(1,3),'Clipping','off') % zoom interval
 		hold off
 		set(gca,'XLim',xlim,'Ylim',ylim,'FontSize',8)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Acceleration rate (nm/s%s)',cb3))
+		ylabel(sprintf('Jerk Aamplitude (nm/s%s)',cb3))
 		tlabel(xlim,P.GTABLE(r).TZ)
 
 		% jerk zoom
@@ -314,14 +285,18 @@ for n = 1:length(N)
 			plot(zd,repmat(threshold_level2,1,2),'--','Color',rgb_level2,'LineWidth',1)
 			hold on
 			plot(zd,repmat(threshold_level1,1,2),'--','Color',rgb_level1,'LineWidth',1)
-			plot(tk(ip(kz)),jerk(kz),'-','LineWidth',P.GTABLE(r).MARKERSIZE/3,'Color',scolor(1))
+			plot(tk(ip(kz)),jerk(kz),'-','LineWidth',P.GTABLE(r).MARKERSIZE/3,'Color',2/3+scolor(1)/3)
+            ka = (insector(jth(kz),azlim) | insector(jth(kz)-180,azlim));
+            tka = tk(ip(kz));
+            tka(~ka) = NaN; % set NaN for points outside valid azimuth
+            plot(tka,jerk(kz),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
 			hold off
 			set(gca,'YLim',[0,max(str2double(P.JERK_ZOOM_MINYLIM_MS3)*1e9,max(jerk(kz)))])
 		end
 		set(gca,'XLim',zd,'FontSize',8);
 		%datetick2('x','mm/dd HH:MM')
 		datetick2('x',-1)
-		ylabel(sprintf('Acceleration rate (nm/s%s)',cb3))
+		ylabel(sprintf('Jerk Amplitude - Zoom (nm/s%s)',cb3))
 		tlabel(zd,P.GTABLE(r).TZ)
 
 		% plot alerts in background
@@ -349,9 +324,9 @@ for n = 1:length(N)
 		% jerk polar
 		axes('position',[pos(1),pos(2)-.02,.25,pos(4)]);
 		circle = exp(1j*linspace(0,2*pi));
-		plot(circle*threshold_level1,'--','Color',rgb_level1,'LineWidth',.75)
+		plot(circle*threshold_level1,'--','Color',rgb_level1,'LineWidth',1)
 		hold on
-		plot(circle*threshold_level2,'--','Color',rgb_level2,'LineWidth',.75)
+		plot(circle*threshold_level2,'--','Color',rgb_level2,'LineWidth',1)
 		if ~isempty(kz)
 			set(gca,'XLim',[min(min(bx(kz,1)),-threshold_level2),max(max(bx(kz,1)),threshold_level2)], ...
 				'YLim',[min(min(by(kz,1)),-threshold_level2),max(max(by(kz,1)),threshold_level2)], ...
@@ -369,11 +344,16 @@ for n = 1:length(N)
 			plot(azx([1,2]),azy([1,2]),'-','Color',.8*ones(1,3),'LineWidth',1)
 			plot(azx([4,5]),azy([4,5]),'-','Color',.8*ones(1,3),'LineWidth',1)
 			[azx,azy] = pol2cart([az(1)+pi,linspace(az(1),az(2)),linspace(az(2),az(1))+pi],threshold_level2);
-			patch(azx,azy,-ones(size(azx)),'k','FaceColor',rgb_level1,'EdgeColor','none','Clipping','on');
+			patch(azx,azy,-.9*ones(size(azx)),'k','FaceColor',rgb_level1,'EdgeColor','none','Clipping','on');
 			[azx,azy] = pol2cart([az(1)+pi,linspace(az(1),az(2)),linspace(az(2),az(1))+pi],threshold_level1);
-			patch(azx,azy,-ones(size(azx)),'k','FaceColor',.9*ones(1,3),'EdgeColor','none','Clipping','on');
+			patch(azx,azy,-.8*ones(size(azx)),'k','FaceColor',.9*ones(1,3),'EdgeColor','none','Clipping','on');
 		end
-		plot(bx(kz,1),by(kz,1),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
+		plot(bx(kz,1),by(kz,1),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',2/3+scolor(1)/3)
+        bxa = bx(kz,1);
+        bya = by(kz,1);
+        bxa(~ka) = NaN; % set NaN for points outside valid azimuth
+        bya(~ka) = NaN;
+		plot(bxa,bya,'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',scolor(1))
 		hold off
 		ylabel(sprintf('Northern jerk (nm/s%s)',cb3))
 		xlabel(sprintf('Eastern jerk (nm/s%s)',cb3))
@@ -382,10 +362,10 @@ for n = 1:length(N)
 		end
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {sprintf('Last data: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ)};
+			P.GTABLE(r).INFOS = {sprintf('Last data: {\\bf %s} {\\it %+d}',datestr(t(ke)),P.GTABLE(r).TZ)};
 			if tidemode
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{ ...
-					sprintf('   Tide predict mode: {\\bf%s}',tidemodes{tidemode}), ...
+					sprintf('   Tide predict mode: {\\bf %s}',tidemodes{tidemode}), ...
 					sprintf('   E-W tide: {\\bf\\times %1.4f, \\Delta{t} = %+dh %02.0fm}', ...
 						tidefit(1,2),h2hms(24*tidefit(1,1),1)), ...
 					sprintf('   N-S tide: {\\bf\\times %1.4f, \\Delta{t} = %+dh %02.0fm}', ...
@@ -393,16 +373,16 @@ for n = 1:length(N)
 				}];
 			else
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{ ...
-					sprintf('   Tide predict mode: {\\bfnode}'), ...
-					sprintf('   E-W tide: {\\bfnone}'), ...
-					sprintf('   N-S tide: {\\bfnone}'), ...
+					sprintf('   Tide predict mode: {\\bf none}'), ...
+					sprintf('   E-W tide: {\\bf none}'), ...
+					sprintf('   N-S tide: {\\bf none}'), ...
 				}];
 			end
 			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{ ...
 				'JERK parameters:', ...
-				sprintf('   Sampling: {\\bf%g s}',dt), ...
-				sprintf('   Slope window: {\\bf%g s}',mw), ...
-				sprintf('   Azimuth interval: {\\bfN%g to N%g}',round(mod(azlim+360,360))), ...
+				sprintf('   Sampling: {\\bf %g s}',dt), ...
+				sprintf('   Slope window: {\\bf %g s}',mw), ...
+				sprintf('   Azimuth interval: {\\bfN %g to N%g}',round(mod(azlim+360,360))), ...
 				' ', ...
 				sprintf('Last JERK alert (in zoom window):'), ...
 				sprintf('   Level1: %s',sal1),sprintf('   Level2: %s',sal2), ' ', ...
@@ -441,7 +421,7 @@ for n = 1:length(N)
 			if ~P.REQUEST && isfield(P,'NOTIFY_EVENT') && ~isempty(P.NOTIFY_EVENT)
 				falert = sprintf('%s/alertstatus',P.OUTDIR);
 				if exist(falert,'file')
-					alertlast = load(falert);
+					alertlast = load(falert,'-ascii');
 				else
 					alertlast = [talarm(end),0];
 				end
@@ -498,7 +478,8 @@ for n = 1:length(N)
 					fprintf(fid,'Current status\n\t%s: %s\n',datestr(al(1)),alertlevel{al(2)+1});
 					fprintf(fid,'Previous status\n\t%s: %s\n',datestr(alertlast(1)),alertlevel{alertlast(2)+1});
 					fprintf(fid,'\n\n');
-					fprintf(fid,'%s/cgi-bin/showOUTG.pl?grid=%s&g=%s\n',url,P.SELFREF,lower(N(n).ID));
+					fprintf(fid,'Real-time graph: %s/cgi-bin/showOUTG.pl?grid=%s&g=%s\n\n',url,P.SELFREF,lower(N(n).ID));
+                    fprintf(fid,'Screenshot attached:\n\n');
 					fclose(fid);
 
 					notify(WO,P.NOTIFY_EVENT,'!',sprintf('file=%s subject=%s',f,msg));

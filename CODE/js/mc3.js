@@ -124,6 +124,18 @@ function plotFlot(gtype) {
             mode: 'x'
         },
     };
+    if (options.series && options.series.bars && options.series.bars.show === true) {
+        if (options.series.bars.lineWidth == 0) {
+            $('#barsoff').hide();
+            $('#barson').show();
+        } else {
+            $('#barson').hide();
+            $('#barsoff').show();
+        }
+    } else {
+        $('#barson').hide();
+        $('#barsoff').hide();
+    }
     plot = $.plot($('#mcgraph'), data, options);
 
     $('#mcgraph').bind('plothover', function(event, pos, item) {
@@ -202,6 +214,19 @@ function plotAll() {
             to: options.xaxis.max
         }
     }, true);
+    plot = $.plot($('#mcgraph'), data, options);
+}
+
+function toggleLine() {
+    if (options.series.bars.lineWidth == 0) {
+        options.series.bars.lineWidth = 1;
+        $('#barsoff').show();
+        $('#barson').hide();
+    } else {
+        options.series.bars.lineWidth = 0;
+        $('#barson').show();
+        $('#barsoff').hide();
+    }
     plot = $.plot($('#mcgraph'), data, options);
 }
 

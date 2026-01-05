@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #---------------------------------------------------------------
 # ------------------- WEBOBS / IPGP ----------------------------
-# mail_info.pl
+# mailInfo_REVOSIMA.pl
 # ------
 # Usage: Prepare an information mail based on the Main Courante
 #    (MC) seismological database
@@ -105,6 +105,7 @@ my @dateStartElements = split(/-/,$dateStart);
 my $dateEnd = $cgi->url_param('dateEnd');
 my @dateEndElements = split(/-/,$dateEnd);
 
+# TODO : fetch from MC3 config file
 my $mc3URL = "https://195.83.188.56/cgi-bin/mc3.pl";
 my $user = 'mc3';
 my $pass = 'MC3-0vpf';
@@ -114,7 +115,7 @@ my $header = HTTP::Request->new(GET => $mc3URL);
 $header->authorization_basic($user, $pass);
 
 # DERNIER SEISME RESSENTI
-my @date1 = ('2020','01','01','00');
+my @date1 = ('2025','06','20','00');
 my @date2 = ($dateEndElements[0],$dateEndElements[1],$dateEndElements[2],'23');
 my $req = new HTTP::Request(GET => "$mc3URL?slt=0&y1=$date1[0]&m1=$date1[1]&d1=$date1[2]&h1=$date1[3]&y2=$date2[0]&m2=$date2[1]&d2=$date2[2]&h2=$date2[3]&type=ALL&duree=ALL&ampoper=eq&amplitude=ALL&obs=ressenti&locstatus=0&located=0&mc=MC3_Mayotte&dump=bul&newts=&graph=movsum", $header);
 my $response = $ua->request($req);
@@ -268,6 +269,7 @@ function showCredits() {
     $htmlOutput .= $html;
     $htmlBrowser .= $html;
     $htmlMail .= $html;
+    $htmlMail .= "<p><a href=\"https://www.ipgp.fr/volcanoweb/mayotte/Bulletin_quotidien/bulletin.html\">Retrouvez ce bulletin avec les illustrations et figures sur le site de l'IPGP.</a></p>";
     my $dateBulletin = localtime->strftime('%d-%m-%Y %H:%M:%S');
     $html = "    <p>Bulletin cr&eacute;&eacute; le $dateBulletin TU.</p>";
     $html .= "    <p id=\"warning\">Ce bulletin est issu de l'examen pr&eacute;liminaire quotidien des derni&egrave;res donn&eacute;es par un.e analyste du REVOSIMA. Ces informations n'ont pas toutes &eacute;t&eacute; valid&eacute;es et sont susceptibles d'&eacute;voluer.<br/>Pour une information compl&egrave;te, veuillez vous reporter aux <a href=\"https://www.ipgp.fr/actualites-du-revosima/\">actualit&eacute;s du r&eacute;seau valid&eacute;es</a>.</p>";

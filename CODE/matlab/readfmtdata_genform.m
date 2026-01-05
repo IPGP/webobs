@@ -21,7 +21,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2024-07-03, in Surabaya (Indonesia)
-%	Updated: 2025-05-06
+%	Updated: 2025-12-30
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -45,19 +45,26 @@ d1 = datestr(datelim(1),'yyyy-mm-dd HH:MM:SS');
 d2 = datestr(datelim(2),'yyyy-mm-dd HH:MM:SS');
 
 % filter the node n within the requested date interval and not in trash
-filter = sprintf('node = ''%s'' AND trash = 0 AND ((sdate BETWEEN ''%s'' AND ''%s'') OR (edate BETWEEN ''%s'' AND ''%s''))',N.ID,d1,d2,d1,d2);
+filter = sprintf('node = ''%s'' AND trash = 0 AND ((edate.date BETWEEN ''%s'' AND ''%s'') OR (edate.date_min BETWEEN ''%s'' AND ''%s'') OR (sdate.date BETWEEN ''%s'' AND ''%s'') OR (sdate.date_min BETWEEN ''%s'' AND ''%s''))',N.ID,d1,d2,d1,d2,d1,d2,d1,d2);
 
 % requests for data associated (all inputs) and converts strings to ISO
-[s,w] = wosystem(sprintf('sqlite3 %s "select * from %s where %s"|iconv -f UTF-8 -t ISO_8859-1',WO.SQL_FORMS,tn,filter));
+tn2 = sprintf('t.*, edate.date, edate.date_min, sdate.date, sdate.date_min from %s t LEFT JOIN udate edate ON t.edate = edate.id LEFT JOIN udate sdate ON t.sdate = sdate.id',tn);
+[s,w] = wosystem(sprintf('sqlite3 %s "select %s where %s"|iconv -f UTF-8 -t ISO_8859-1',WO.SQL_FORMS,tn2,filter));
+
 if ~s && ~isempty(w)
     lines = textscan(w, '%s', 'delimiter','\n');
     data = regexp(lines{1}, '\|', 'split');
-    data = cat(1,data{:}); 
+    data = cat(1,data{:});
 else
     data = cell(0,nf);
 end
 fprintf(' %d samples.\n',size(data,1));
 % data: id, trash, quality, site, edate0, edate1, sdate0, sdate1, opers, rem, ts0, user, input01, ...
+
+% remove edate and sdate ids from main table
+data(:, [5,6]) = [];
+% move e.date, e.date_min, s.date and s.date_min after id, trash, quality and site columns
+data = [data(:, 1:4), data(:, end-3:end), data(:, 5:end-4)];
 
 % --- time
 % fix potential issue in datetime format (must be yyyy-mm-dd HH:MM)
@@ -105,7 +112,7 @@ for i = 1:length(k)
     end
 end
 
-% export data, errors, names and units
+% export data, errors, text, names and units
 pdn = split(field2str(FORM,'PROC_DATA_LIST',''),','); % list of numerical INPUT/OUTPUT to export
 pen = split(field2str(FORM,'PROC_ERROR_LIST',''),','); % list of corresponding errors
 pcn = split(field2str(FORM,'PROC_CELL_LIST',''),','); % list of text INPUT/OUTPUT to export
@@ -132,14 +139,25 @@ for i = 1:nx
     nm{i} = field2str(FORM,[pdn{i} '_NAME'],'');
     un{i} = field2str(FORM,[pdn{i} '_UNIT'],'');
 end
+c = data(:,9:10); % initiates with operators and comment
+for i = 1:length(pcn)
+    dd = pcn{i};
+    dd = regexprep(dd,'INPUT([0-9]{2,3})','data(:,$1+12)');
+    if ~isempty(dd)
+        eval(['c(:,i+2)=',dd,';']);
+    end
+    %nm{i} = field2str(FORM,[pcn{i} '_NAME'],'');
+    %un{i} = field2str(FORM,[pcn{i} '_UNIT'],'');
+end
+
 
 D.t = t - N.UTC_DATA;
 D.d = d;
 D.e = e;
-D.c = data(:,9:10);
+D.c = c;
 
-% set default names and units to inexistant/unappropriate calibration files of node
-if N.CLB.nx ~= nx
+% set default names and units to inexistant calibration files of node (and rebuilts the autoclb)
+if N.CLB.nx ~= nx || N.CLB.auto
     N.CLB = mkautoclb(N,nm,un);
 end
 % note: calibration files are defined in node's TZ

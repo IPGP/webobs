@@ -11,7 +11,7 @@ function DOUT = waters(varargin)
 %   WATERS(PROC,[],REQ) makes graphs/exports for specific request directory REQ.
 %   REQ must contain REQUEST.rc file with dedicated parameters.
 %
-%   D = WATERS(PROC,...) returns a structure Dcontaining all the PROC data:
+%   D = WATERS(PROC,...) returns a structure D containing all the PROC data:
 %       D(i).id = node ID
 %       D(i).t = time vector (for node i)
 %       D(i).d = matrix of processed data (NaN = invalid data)
@@ -23,7 +23,7 @@ function DOUT = waters(varargin)
 %
 %	Authors: F. Beauducel + G. Hammouya + J.C. Komorowski + C. Dessert + O. Crispi, OVSG-IPGP
 %	Created: 2001-12-21, in Guadeloupe (French West Indies)
-%	Updated: 2025-05-03
+%	Updated: 2025-12-29
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -33,7 +33,6 @@ if nargin < 1
 	error('%s: must define PROC name.',wofun);
 end
 
-proc = varargin{1};
 procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
@@ -41,15 +40,25 @@ timelog(procmsg,1);
 [P,N,D] = readproc(WO,varargin{:});
 G = cat(1,D.G);
 
+V.name = P.NAME;
+pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','-');
+pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}');
+summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
+summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
+ternary1 = field2num(P,'SUMMARY_TERNARY1_CHANNELS');
+ternary2 = field2num(P,'SUMMARY_TERNARY2_CHANNELS');
+summary_channels = field2num(P,'SUMMARY_CHANNELS');
+
+exthax = [.08,.02];
 % types of sampling and associated markers (see PLOTMARK function)
-FT = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_TYPE));
-tcod = fieldnames(FT);
-tmkt = cell(size(tcod));
-tmks = ones(size(tcod));
-for i = 1:length(tcod)
-	tmkt{i} = FT.(tcod{i}).marker;
-	tmks(i) = str2double(FT.(tcod{i}).relsize);
-end
+%FT = readcfg(WO,sprintf('%s/%s',P.FORM.ROOT,P.FORM.FILE_TYPE));
+%tcod = fieldnames(FT);
+%tmkt = cell(size(tcod));
+%tmks = ones(size(tcod));
+%for i = 1:length(tcod)
+%	tmkt{i} = FT.(tcod{i}).marker;
+%	tmks(i) = str2double(FT.(tcod{i}).relsize);
+%end
 
 % --- index of columns in matrix d
 %   1 = type of site
@@ -90,14 +99,19 @@ i_i = 19;
 i_bi = 27;
 
 
-% ==== graphs per site
+% ==== graphs per node
 for n = 1:length(N)
-	stitre = sprintf('%s: %s',N(n).ALIAS,N(n).NAME);
+	C = D(n).CLB;
+	GN = graphstr(field2str(P,'PERNODE_CHANNELS',sprintf('%d,',1:C.nx),'notempty'));
+	V.node_name = N(n).NAME;
+	V.node_alias = N(n).ALIAS;
+	V.last_data = datestr(D(n).tfirstlast(2));
 
 	t = D(n).t;
 	d = D(n).d;
 
 	for r = 1:length(P.GTABLE)
+		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 
 		% renames main variables for better lisibility...
 		k = D(n).G(r).k;
@@ -105,126 +119,42 @@ for n = 1:length(N)
 		tlim = D(n).G(r).tlim;
 
 		% title and status
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 
 		figure(1), clf, orient tall
 
-		if d(ke,i_db) == 0, sdb = 'TARIE'; else sdb = sprintf('%1.1f l/mn',d(ke,i_db)); end
-		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ), ...
-			sprintf('Twater = {\\bf%1.1f �C}',d(ke,i_ts)), ...
-			sprintf('Tair = {\\bf%1.1f �C}',d(ke,i_ta)), ...
-			sprintf('pH = {\\bf%1.2f}',d(ke,i_ph)), ...
-			sprintf('Cond. = {\\bf%1.1f �S}',d(ke,i_cd)), ...
-			sprintf('Cond_{25} = {\\bf%1.1f �S}',d(ke,25)), ...
-			sprintf('Flux = {\\bf%s}',sdb), ...
-			sprintf('Ion analysis ({\\bfmmol/l}) :'), ...
-			sprintf('Na^+ = {\\bf%1.1f}',d(ke,i_na)), ...
-			sprintf('K^+ = {\\bf%1.1f}',d(ke,i_ki)), ...
-			sprintf('Mg^{++} = {\\bf%1.1f}',d(ke,i_mg)), ...
-			sprintf('Ca^{++} = {\\bf%1.1f}',d(ke,i_ca)), ...
-			sprintf('F^- = {\\bf%1.1f}',d(ke,i_fi)), ...
-			sprintf('Cl^- = {\\bf%1.1f}',d(ke,i_cl)), ...
-			sprintf('HCO_3^- = {\\bf%1.1f}',d(ke,i_hco3)), ...
-			sprintf('SO_4^{--} = {\\bf%1.1f}',d(ke,i_so4)), ...
-			sprintf('Cl^- / SO_4^{--} = {\\bf%1.2f}',d(ke,i_cl)), ...
-			sprintf('HCO_3^- / SO_4^{--} = {\\bf%1.2f}',d(ke,i_hco3)), ...
-			sprintf('NICB = {\\bf%+1.2f %%}',d(ke,i_bi)), ...
-		};
+		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),''};
+        allchan = cat(2,GN.chan);
+        for i = 1:length(allchan)
+            P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:}, ...
+			{sprintf('  %s = {\\bf%g %s}',C.nm{allchan(i)},d(ke,allchan(i)),C.un{allchan(i)})}];
+        end
 
-		% Temperatures (water + air)
-		subplot(12,1,1:2), extaxes
-		% --- air
-		plot(t(k),d(k,i_ta),'.-','LineWidth',.1,'Color',.6*[1 1 1]), hold on
-		% --- water marker following site type
-		plotmark(d(k,i_ty),t(k),d(k,i_ts),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(1))
-		hold off
-		set(gca,'XLim',tlim,'FontSize',8)
-		legend('Air','Location','SouthWest')
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Temperatures (�C)')
+        for p = 1:length(GN)
 
-		% Legend for site types
-		pos = get(gca,'position');
-		axes('position',[pos(1),pos(2)+pos(4),pos(3),pos(4)/5])
-		axis([0 1 0 1]), hold on
-		for i = 1:length(tcod)
-			plot((i-1)/length(tcod) + .05,.5,FT.(tcod{i}).marker,'Markersize',P.GTABLE(r).MARKERSIZE*str2double(FT.(tcod{i}).relsize),'MarkerFaceColor','k')
-			text((i-1)/length(tcod) + .05,.5,['   ',FT.(tcod{i}).name],'FontSize',8)
-		end
-		axis off, hold off
-
-		% pH
-		subplot(12,1,3:4), extaxes
-		dd = d(k,i_ph);
-		plotmark(d(k,i_ty),t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(1))
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('pH')
-
-		% Cl- & HCO3-
-		subplot(12,1,5:6), extaxes
-		dd = d(k,[i_cl,i_hco3]);
-		h1 = plotmark(d(k,i_ty),t(k),dd(:,1),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(2));
-		hold on
-		h2 = plotmark(d(k,i_ty),t(k),dd(:,2),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(3));
-		hold off
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		if ~isempty(h1) && ~isempty(h2)
-			legend([h1(1),h2(1)],'Cl^-','HCO_3^-','Location','SouthWest')
-		end
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cl^- & HCO_3^- (mmol/l)')
-
-		% Cl-/SO4-- & HCO3-/SO4--
-		subplot(12,1,7:8), extaxes
-		dd =  d(k,23:24);
-		h1 = plotmark(d(k,i_ty),t(k),dd(:,1),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(4));
-		hold on
-		h2 = plotmark(d(k,i_ty),t(k),dd(:,2),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(5));
-		hold off
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		if ~isempty(h1) && ~isempty(h2)
-			legend([h1(1),h2(1)],'Cl^-/SO_4^{--}','HCO_3^-/SO_4^{--}','Location','SouthWest')
-		end
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cl^-/SO_4^{--} & HCO_3^-/SO_4^{--}')
-
-		% Mg++/Cl-
-		subplot(12,1,9), extaxes
-		dd = d(k,25);
-		plotmark(d(k,i_ty),t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(1))
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Mg^{++}/Cl^-')
-
-		% Flux
-		subplot(12,1,10), extaxes
-		dd = d(k,i_db);
-		plotmark(d(k,i_ty),t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(1))
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Flux (l/mn)')
-
-		% Conductivity
-		subplot(12,1,11:12), extaxes
-		dd = d(k,[i_cd,26]);
-		h1 = plotmark(d(k,i_ty),t(k),dd(:,1),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(6));
-		hold on
-		h2 = plotmark(d(k,i_ty),t(k),dd(:,2),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(7));
-		hold off
-		set(gca,'XLim',tlim,'FontSize',8)
-		extylim(dd);
-		if ~isempty(h1) && ~isempty(h2)
-			legend([h1(1),h2(1)],'Cond.','Cond_{25}','Location','SouthWest')
-		end
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cond. & Cond_{25} (�S)')
+			subplot(GN(p).subplot{:}), extaxes(gca,exthax)
+			pchan = GN(p).chan;
+            for i = 1:length(pchan)
+				col = scolor(i);
+				plot(D(n).t(k),D(n).d(k,pchan(i)),pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
+					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
+                hold on
+            end
+            hold off
+            if isempty(D(n).d) || all(isnan(D(n).d(k,pchan(i))))
+				nodata(tlim)
+            end
+            if length(pchan) > 1
+                legend(C.nm(pchan),'location','SouthWest')
+            end
+            set(gca,'XLim',tlim,'FontSize',8)
+            ylabel(nameunit(strcommon(C.nm(pchan)),strcommon(C.un(pchan))))
+            datetick2('x',P.GTABLE(r).DATESTR)
+            if (p < length(GN))
+                set(gca,'XTickLabels',[])
+            end
+        end
 
 		tlabel(tlim,P.TZ)
 
@@ -235,15 +165,15 @@ for n = 1:length(N)
 end
 
 % ==== Main summary graph
-if isfield(P,'SUMMARYLIST')
+if any(strcmpi(P.SUMMARYLIST,'SUMMARY')) && ~isempty(summary_channels)
 	for r = 1:length(P.GTABLE)
 
-		stitre = P.NAME;
+		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 		tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
 		if any(isnan(tlim))
 			tlim = minmax(cat(1,D.tfirstlast));
 		end
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		P.GTABLE(r).GTITLE = varsub(summary_title,V);
 		if P.GTABLE(r).STATUS
 			P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 		end
@@ -252,33 +182,33 @@ if isfield(P,'SUMMARYLIST')
 
 		figure(1), clf, orient tall
 
-		% Ternary diagram Ca/Na/Mg
-		subplot(9,2,[1 3])
+		% Ternary diagram 1 (e.g., Ca vs Na vs Mg)
+        axes('Position',[0.1  0.63  0.33  0.25])
 		for n = 1:length(N)
 			k = D(n).G(r).k;
-			h = ternplot(D(n).d(k,i_ca),D(n).d(k,i_na),D(n).d(k,i_mg),'.',0);
+			h = ternplot(D(n).d(k,ternary1(1)),D(n).d(k,ternary1(2)),D(n).d(k,ternary1(3)),'.',0);
 			set(h,'Color',scolor(n));
 			set(gca,'FontSize',8)
 			hold on
 		end
 		hold off
-		ternlabel('Ca','Na','Mg',0);
+		ternlabel(C.nm{ternary1(1)},C.nm{ternary1(2)},C.nm{ternary1(3)},0);
 		pos = get(gca,'pos');  set(gca,'pos',[pos(1),pos(2)+.02,pos(3),pos(4)])
 
-		% Ternary diagram SO4/HCO3/Cl
-		subplot(9,2,[2 4])
+		% Ternary diagram 2 (e.g., SO4 vs HCO3 vs Cl)
+        axes('Position',[0.57  0.63  0.33  0.25])
 		for n = 1:length(N)
 			k = D(n).G(r).k;
-			h = ternplot(D(n).d(k,i_so4),D(n).d(k,i_hco3),D(n).d(k,i_cl),'.',0);
+			h = ternplot(D(n).d(k,ternary2(1)),D(n).d(k,ternary2(2)),D(n).d(k,ternary2(3)),'.',0);
 			set(h,'Color',scolor(n));
 			set(gca,'FontSize',8)
 			hold on
 		end
 		hold off
-		ternlabel('SO_4','HCO_3','Cl',0);
+		ternlabel(C.nm{ternary2(1)},C.nm{ternary2(2)},C.nm{ternary2(3)},0);
 		pos = get(gca,'pos');  set(gca,'pos',[pos(1),pos(2)+.02,pos(3),pos(4)])
 
-		% Legend
+		% Legend for sites
 		axes('position',[0,pos(2),1,pos(4)]);
 		axis([0,1,0,1]);
 		hold on
@@ -292,97 +222,26 @@ if isfield(P,'SUMMARYLIST')
 		hold off
 		axis off
 
-		% Temperatures
-		subplot(13,1,4:5), extaxes
-		hold on
-		for n = 1:length(N)
-			k = D(n).G(r).k;
-			if ~isempty(k)
-				plotmark(D(n).d(k,i_ty),D(n).t(k),D(n).d(k,i_ts),tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(n))
-			end
-		end
-		hold off, box on
-		set(gca,'XLim',tlim,'FontSize',8)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Temperatures (�C)'))
-
-		% Legend for site types
-		pos = get(gca,'position');
-		axes('position',[pos(1),pos(2)+pos(4),pos(3),pos(4)/7])
-		axis([0 1 0 1]), hold on
-		for i = 1:length(tcod)
-		    plot((i-1)/length(tcod) + .05,.5,FT.(tcod{i}).marker,'Markersize',P.GTABLE(r).MARKERSIZE*str2double(FT.(tcod{i}).relsize),'MarkerFaceColor','k')
-		    text((i-1)/length(tcod) + .05,.5,['   ',FT.(tcod{i}).name],'FontSize',8)
-		end
-		axis off, hold off
-
-		% pH
-		subplot(13,1,6:7), extaxes
-		ddmm = nan(2,1);
-		hold on
-		for n = 1:length(N)
-			k = D(n).G(r).k;
-			if ~isempty(k)
-				dd = D(n).d(k,i_ph);
-				ddmm = minmax([ddmm;dd])';
-				plotmark(D(n).d(k,i_ty),D(n).t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(n))
-			end
-		end
-		hold off, box on, extylim(ddmm)
-		set(gca,'XLim',tlim,'FontSize',8)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('pH'))
-
-		% Conductivity at 25C
-		subplot(13,1,8:9), extaxes
-		ddmm = nan(2,1);
-		hold on
-		for n = 1:length(N)
-			k = D(n).G(r).k;
-			if ~isempty(k)
-				dd = D(n).d(k,26);
-				ddmm = minmax([ddmm;dd])';
-				plotmark(D(n).d(k,i_ty),D(n).t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(n))
-			end
-		end
-		hold off, box on, extylim(ddmm)
-		set(gca,'YScale','linear','XLim',tlim,'FontSize',8)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cond. 25�C (�S)')
-
-		% Ratio Cl-/SO4-
-		subplot(13,1,10:11), extaxes
-		ddmm = nan(2,1);
-		hold on
-		for n = 1:length(N)
-			k = D(n).G(r).k;
-			if ~isempty(k)
-			    dd = D(n).d(k,23);
-			    ddmm = minmax([ddmm;dd])';
-			    plotmark(D(n).d(k,i_ty),D(n).t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(n))
-			end
-		end
-		hold off, box on, extylim(ddmm)
-		set(gca,'YScale','linear','XLim',tlim,'FontSize',8)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Cl^- / SO_4^{--}')
-
-		% Ratio HCO3-/SO4-
-		subplot(13,1,12:13), extaxes
-		ddmm = nan(2,1);
-		hold on
-		for n = 1:length(N)
-			k = D(n).G(r).k;
-			if ~isempty(k)
-			    dd = D(n).d(k,24);
-			    ddmm = minmax([ddmm;dd])';
-			    plotmark(D(n).d(k,i_ty),D(n).t(k),dd,tmkt,P.GTABLE(r).MARKERSIZE*tmks,scolor(n))
-			end
-		end
-		hold off, box on, extylim(ddmm)
-		set(gca,'YScale','linear','XLim',tlim,'FontSize',8)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('HCO_3^- / SO_4^{--}')
+        nx = length(summary_channels);
+        for i = 1:nx
+            subplot(6+nx*2,1,7+(i-1)*2+[0,1]), extaxes
+            hold on
+            for n = 1:length(N)
+                col = scolor(n);
+                k = D(n).G(r).k;
+                if ~isempty(k)
+                    plot(D(n).t(k),D(n).d(k,summary_channels(i)),summary_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
+					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
+                end
+            end
+            hold off, box on
+            set(gca,'XLim',tlim,'FontSize',8)
+            ylabel(nameunit(C.nm{summary_channels(i)},C.un{summary_channels(i)}))
+            datetick2('x',P.GTABLE(r).DATESTR)
+            if (i < nx)
+                set(gca,'XTickLabels',[])
+            end
+        end
 
 		tlabel(tlim,P.TZ)
 

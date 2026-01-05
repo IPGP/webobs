@@ -760,6 +760,14 @@ else
 	cd -
 
 fi
+
+# migration of existing former FORM (.DAT text file based) to GENFORM
+if [[ -d ${DOCROOT}/CONF/GRIDS2NODES && -f ${DOCROOT}/DATA/DB/WEBOBSFORMS.db ]]; then
+    echo "${RELBASE}/SETUP/migration/form2genform.sh"
+    ${RELBASE}/SETUP/migration/form2genform.sh ${DOCROOT} || { exit 1; }
+    echo
+fi
+
 # update FDSN network codes
 if $(confirm "Do you want to update the FDSN network codes [y/N] ? ") ; then
 	wget http://www.fdsn.org/networks/?type=csv -O ${DOCROOT}/CODE/etc/fdsncodes.csv

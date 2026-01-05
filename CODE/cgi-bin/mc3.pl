@@ -507,14 +507,22 @@ if ($QryParm->{'dump'} eq "") {
 
     $html .= "<TABLE width=\"100%\"><TR><TD width=700>";
     if ($QryParm->{'nograph'} == 0) {
-        my $grshowall = 150;
+        my $grshowall = 45;
         my $grinfo_height = 15;
         my $grinfo_width = $QryParm->{'grw'} - $grshowall;
         my $grlegend_width = 200;
         $html .= "<DIV id=\"mcgraph\" style=\"width:".$QryParm->{'grw'}."px;height:".$QryParm->{'grh'}."px;float:left;\"></DIV>\n"
-          ."<DIV id=\"showall\" style=\"width:".$grshowall."px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;\">"
-          ."<A href=\"#\" onClick=\"plotAll()\">plot all</A>"
-
+          ."<DIV id=\"showall\" style=\"width:25px;height:".$grinfo_height
+            ."px;position:relative;float:left;font-size:smaller;\">"
+            ."<A href=\"#\" onClick=\"plotAll()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('plot all data (unzoom)')\">"
+            ."<IMG src=\"/icons/hextend.png\"></A></DIV>"
+          ."<DIV id=\"barson\" style=\"width=15px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;display:none\">"
+            ."<A href=\"#\" onClick=\"toggleLine()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('bars line ON')\">"
+            ."<IMG src=\"/icons/bars.png\"</A></DIV>"
+          ."<DIV id=\"barsoff\" style=\"width=15px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller\">"
+            ."<A href=\"#\" onClick=\"toggleLine()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('bars line OFF')\">"
+            ."<IMG src=\"/icons/barsnoc.png\"</A></DIV>"
+          
           #."<BR><A href=\"#\" id=\"tlsavelink\">download image</A></DIV>\n"
           ."<DIV id=\"graphinfo\" style=\"width:".$grinfo_width."px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
           ."<TD nowrap style=\"text-align:left\"><DIV id=\"graphlegend\" style=\"width:".$grlegend_width."px;height:".$QryParm->{'grh'}."px;position:static;\"></DIV></TD>\n"
@@ -1102,43 +1110,40 @@ if ($QryParm->{'nograph'} == 0) {
     foreach (sort(keys(%typesSO))) {
         my $key = $typesSO{$_};
         if ($key ne "TOTAL" && $stat{$key}) {
-            $html .= " datad.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            my $content = "{ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\","
+                ." color: \"$types{$key}{Color}\","
+                ." data: [";
+            $html .= " datad.push($content";
             for (my $i=0; $i<=$#stat_t; $i++) {
                 my $d = $stat_d{$key}[$i];
                 $html .= "[ $stat_j[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datah.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datah.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_dh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datav.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datav.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_vh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " dataw.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " dataw.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_wh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datam.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datam.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_mh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datac.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datac.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_ch{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";

@@ -42,6 +42,7 @@ $|=1;
 use Cwd qw(abs_path);
 use Time::Local;
 use File::Basename;
+use File::Find;
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
@@ -392,6 +393,28 @@ if ($QryParm->{'ts'} eq 'map') {
         (my $EVENTid = $short) =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
         (my @evt) = split(/\//,$EVENTid);
         my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
+        # get the full list of images
+        my @png_files = "";
+        my $ydir = "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$evt[0]";
+        find(sub {
+            return if -l $_;
+            return unless /\.png$/i;
+            push(@png_files, $File::Find::name);
+        }, $ydir);
+        @png_files = sort(@png_files);
+        # extract the previous and next
+        my $target = "$short.png";
+        my $prev;
+        my $next;
+        my ($index) = grep { $png_files[$_] eq $target } 0 .. $#png_files;
+        if (defined $index) {
+            $prev = $index > 0            ? $png_files[$index - 1] : undef;
+            $next = $index < $#png_files  ? $png_files[$index + 1] : undef;
+            $prev =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\/|\.png$//g if defined($prev);
+            $next =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\/|\.png$//g if defined($next);
+            $addlinks .= (defined $prev ? "<A href=\"$baseurl&ts=events&g=$prev\"><IMG src=\"/icons/l13.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$prev',CAPTION,'Previous image')\"></A>":"")
+                    .(defined $next ? "&nbsp;<A href=\"$baseurl&ts=events&g=$next\"><IMG src=\"/icons/r13.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$next',CAPTION,'Next image')\"></A>":"");
+        }
         foreach ("eps","svg","pdf","gse","txt","kml") {
             if ( -e "$short.$_" ) {
                 $addlinks .= " <A href=\"$urn.$_\"><IMG alt=\"$urn.$_\" src=\"/icons/f$_.png\"></A> ";

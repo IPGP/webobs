@@ -265,6 +265,7 @@ WEB_RACINE_SIGNAUX|
 
 # --- executables ----------------------------
 # ---------------------------------------------
+PRGM_DATE|date
 PRGM_CONVERT|convert
 CONVERT_COLORSPACE|-colorspace sRGB
 PRGM_IDENTIFY|identify

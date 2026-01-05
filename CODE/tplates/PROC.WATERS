@@ -2,7 +2,10 @@
 # Generic PROC template for superproc waters
 # PROC and/or associated NODES must have FORM.WATERS rawformat which contains 
 # compatible data and needed complementary configuration files.
-# See $WEBOBS{ROOT_CODE}/matlab/superprocs/waters.m for further information.
+#
+# For further information, see:
+#   - $WEBOBS{ROOT_CODE}/matlab/superprocs/waters.m
+#   - $SEBOBS{ROOT_CODE}/tplate/FORM.WATERS
 
 
 # name of the PROC
@@ -91,18 +94,27 @@ COPYRIGHT|MyProc
 # secondary copyright
 COPYRIGHT2|
 
+# let empty to not make the summary graph
+SUMMARYLIST|SUMMARY
+
 # --- specific PROC's parameters
 
+# - SUMMARY graph (all nodes)
+# graph title
+SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
 # line style: combination of a marker and/or a line type (see user's manual)
 SUMMARY_LINESTYLE|s-
 # summary plot: comma-separated channel list for the first ternary plot
 SUMMARY_TERNARY1_CHANNELS|12,9,11
 # summary plot: comma-separated channel list for the second ternary plot
 SUMMARY_TERNARY2_CHANNELS|17,18,14
-# summary plot: other channels to plot (comma-separated)
+# summary plot: other channels to plot (see graphstr.m for syntax)
 SUMMARY_CHANNELS|2,3,5,24,25
 
+# - per node graphs
+# graph title
+PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
 # line style: combination of a marker and/or a line type (see user's manual)
 PERNODE_LINESTYLE|s-
-# pernode plot: other channels to plot (comma-separated)
-PERNODE_CHANNELS|2 1,,3,,14 18,,24 29,,28,4,5 6,,
+# pernode plot: channels to plot (see graphstr.m for syntax)
+PERNODE_CHANNELS|2 1,,3,,14 18,,20 25,,24,4,5 6,,

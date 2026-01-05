@@ -28,7 +28,7 @@ function DOUT=extenso(varargin)
 %
 %   Authors: F. Beauducel + J.C. Komorowski / WEBOBS, IPGP
 %   Created: 2001-10-23
-%   Updated: 2025-04-28
+%   Updated: 2025-12-19
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -162,16 +162,13 @@ for n = 1:length(N)
 			tk = t(k);
             dk = d(k,1);
 			k1 = k(find(~isnan(d(k,1)),1));
-            if ~isempty(k1)
-                dk = dk-d(k1,1);
-            end
 			plot(tk,dk,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',scolor(1),'MarkerFaceColor',scolor(1))
 			set(gca,'Ylim',get(gca,'YLim'))	% freezes Y axis
 			hold on
 			plot(repmat(tk,[1,2])',(repmat(dk,[1,2])+e(k,1)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1])
 			kk = find(~isnan(dk));
 			lre = nan(1,2);
-			if length(kk) > 2
+			if length(kk) > 2 && ~isempty(k1)
 				lr = wls(tk(kk)-t(k1),dk(kk),1./e(k(kk),1).^2);
 				lre = [lr(1),std(dk(kk) - polyval(lr,tk(kk)-t(k1)))/diff(tlim)]*365.25;
 				plot(tlim,polyval(lr,tlim - t(k1)),'--k','LineWidth',.2)
@@ -180,7 +177,7 @@ for n = 1:length(N)
 		end
 		set(gca,'XLim',tlim,'FontSize',fontsize)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Relative %s (%s)',C.nm{1},C.un{1}))
+		ylabel(sprintf('%s (%s)',C.nm{1},C.un{1}))
 		if isempty(d) || all(isnan(d(k,1)))
 			nodata(tlim)
 		end
@@ -210,7 +207,7 @@ for n = 1:length(N)
 		end
 		set(gca,'XLim',tlim,'FontSize',fontsize)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('%s (%s)',C.nm{3},C.un{3}))
+		ylabel(C.nm{3})
 		if isempty(d)
 			nodata(tlim)
 		end
@@ -220,7 +217,7 @@ for n = 1:length(N)
 		if ~isempty(k)
 			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),' (min|moy|max)',' ',' ', ...
 				sprintf('1. %s = {\\bf%+1.3f %s} (%+1.3f | %+1.3f | %+1.3f) - Trend = {\\bf%+1.3f \\pm %1.3f mm/yr}', ...
-					C.nm{1},d(ke,1)-d(k1,1),C.un{1},rmin(d(k,1)-d(k1,1)),rmean(d(k,1)-d(k1,1)),rmax(d(k,1)-d(k1,1)),lre), ...
+					C.nm{1},d(ke,1),C.un{1},rmin(d(k,1)),rmean(d(k,1)),rmax(d(k,1)),lre), ...
 			};
 			for i = 2:3
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f | %+1.1f)', ...

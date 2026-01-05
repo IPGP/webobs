@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 # --- GRID common parameters
 
-NAME|Banque de donn&eacute;es chimie des eaux
+NAME|Banque de données chimie des eaux
 DESCRIPTION|Analyse physico-chimique des eaux (FR) 
 OWNCODE|
 TYPE|
@@ -33,7 +33,7 @@ DEM_COPYRIGHT|
 # -----------------------------------------------------------------------------
 # --- FORM parameters
 # Very first year of the data (for date lists)
-BANG|$WEBOBS{BIG_BANG}
+BANG|1797
 
 # Time zone of the data (in hour from UT)
 TZ|0
@@ -45,13 +45,13 @@ STARTING_DATE|NO
 OPERATORS_LIST|+DUTY
 
 # default window time for showGENFORM.pl (in days)
-DEFAULT_DAYS|365
+DEFAULT_DAYS|3650
 
 # list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
 VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
 COMMENT_SIZE|80
-COMMENT_HELP|Noter toute pr&eacute;sence d'odeur, gaz, pr&eacute;cipit&eacute;, etc...
+COMMENT_HELP|Noter toute présence d'odeur, gaz, précipité, etc...
 
 
 # -----------------------------------------------------------------------------
@@ -63,22 +63,22 @@ COMMENT_HELP|Noter toute pr&eacute;sence d'odeur, gaz, pr&eacute;cipit&eacute;, 
 # the database. You might only add new inputs, increasing the number
 # ############################### WARNING #####################################
 
-INPUT01_NAME|Type d'&eacute;chantillon
+INPUT01_NAME|Type d'échantillon
 INPUT01_TYPE|list: FORM.WATERS_fr.list_type.conf
 INPUT01_FILT|YES
 
 INPUT02_NAME|Temp. ambiante
-INPUT02_UNIT|&deg;C
+INPUT02_UNIT|°C
 
 INPUT03_NAME|Temp. liquide
-INPUT03_UNIT|&deg;C
+INPUT03_UNIT|°C
 
 INPUT04_NAME|pH
 
-INPUT05_NAME|D&eacute;bit
+INPUT05_NAME|Débit
 INPUT05_UNIT|l/min
 
-INPUT06_NAME|Conductivit&eacute;
+INPUT06_NAME|Conductivité
 INPUT06_UNIT|&mu;S
 
 INPUT07_NAME|Niveau
@@ -133,32 +133,90 @@ INPUT23_NAME|&delta;D
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 
-OUTPUT01_NAME|ConductivitÃ© @25&deg;C
-OUTPUT01_UNIT|&deg;S
+OUTPUT01_NAME|Cond. @25°C
+OUTPUT01_UNIT|°S
 OUTPUT01_TYPE|formula: INPUT06 / (1 + 0.02*(INPUT03 - 25))
+
 OUTPUT02_NAME|H<sup>+</sup>
-OUTPUT02_UNIT|ppm
+OUTPUT02_UNIT|mmol/L
 OUTPUT02_TYPE|formula: 1000 * (10**(-INPUT04))
-OUTPUT03_NAME|S.C
-OUTPUT03_TYPE|formula(0): INPUT08/6.941 + INPUT09/22.990 + INPUT10/39.098 + 2*INPUT11/40.078 + 2*INPUT12/24.305 + OUTPUT02
-OUTPUT04_NAME|S.A
-OUTPUT04_TYPE|formula(0): INPUT13/18.998 + INPUT14/35.453 + INPUT15/79.904 + INPUT16/62.004 + 2*INPUT17/96.062 + INPUT18/61.0159 + 1e-3*INPUT19/126.904468
-OUTPUT05_NAME|NICB
-OUTPUT05_UNIT|%
-OUTPUT05_TYPE|formula(6): 100*(OUTPUT03 - OUTPUT04) / (OUTPUT03 + OUTPUT04)
-OUTPUT05_THRESHOLD|10,20
-OUTPUT06_NAME|SO<sub>4</sub>/Cl
-OUTPUT06_TYPE|formula(6): (INPUT17/96.062) / (INPUT14/35.453)
-OUTPUT07_NAME|HCO<sub>3</sub>/Cl
-OUTPUT07_TYPE|formula(6): (INPUT18/61.0159) / (INPUT14/35.453)
-OUTPUT08_NAME|Ca/Cl
-OUTPUT08_TYPE|formula(6): (INPUT12/24.305) / (INPUT14/35.453)
-OUTPUT09_NAME|Na/Cl
-OUTPUT09_TYPE|formula(6): (INPUT09/22.990) / (INPUT14/35.453)
-OUTPUT10_NAME|Mg/Cl
-OUTPUT10_TYPE|formula(6): (INPUT11/40.078) / (INPUT14/35.453)
-OUTPUT11_NAME|HCO<sub>3</sub>/SO<sub>4</sub>
-OUTPUT11_TYPE|formula(6): (INPUT18/61.0159) / (INPUT17/96.062)
+
+OUTPUT03_NAME|Li<sup>+</sup>
+OUTPUT03_UNIT|mmol/L
+OUTPUT03_TYPE|formula: INPUT08/6.941
+
+OUTPUT04_NAME|Na<sup>+</sup>
+OUTPUT04_UNIT|mmol/L
+OUTPUT04_TYPE|formula: INPUT09/22.990
+
+OUTPUT05_NAME|K<sup>++</sup>
+OUTPUT05_UNIT|mmol/L
+OUTPUT05_TYPE|formula: INPUT10/39.098
+
+OUTPUT06_NAME|Mg<sup>++</sup>
+OUTPUT06_UNIT|mmol/L
+OUTPUT06_TYPE|formula: INPUT11/40.078
+
+OUTPUT07_NAME|Ca<sup>++</sup>
+OUTPUT07_UNIT|mmol/L
+OUTPUT07_TYPE|formula: INPUT12/24.305
+
+OUTPUT08_NAME|F<sup>-</sup>
+OUTPUT08_UNIT|mmol/L
+OUTPUT08_TYPE|formula: INPUT13/18.998
+
+OUTPUT09_NAME|Cl<sup>-</sup>
+OUTPUT09_UNIT|mmol/L
+OUTPUT09_TYPE|formula: INPUT14/35.453
+
+OUTPUT10_NAME|Br<sup>-</sup>
+OUTPUT10_UNIT|mmol/L
+OUTPUT10_TYPE|formula: INPUT15/79.904
+
+OUTPUT11_NAME|NO<sub>3</sub><sup>-</sup>
+OUTPUT11_UNIT|mmol/L
+OUTPUT11_TYPE|formula: INPUT16/62.004
+
+OUTPUT12_NAME|SO<sub>4</sub><sup>-</sup>
+OUTPUT12_UNIT|mmol/L
+OUTPUT12_TYPE|formula: INPUT17/96.062
+
+OUTPUT13_NAME|HCO<sub>3</sub><sup>-</sup>
+OUTPUT13_UNIT|mmol/L
+OUTPUT13_TYPE|formula: INPUT18/61.0159
+
+OUTPUT14_NAME|I<sup>-</sup>
+OUTPUT14_UNIT|mmol/L
+OUTPUT14_TYPE|formula: 1e-3*INPUT19/126.904468
+
+OUTPUT15_NAME|S.C
+OUTPUT15_TYPE|formula(0): OUTPUT03 + OUTPUT04 + OUTPUT05 + 2*OUTPUT06 + 2*OUTPUT07 + OUTPUT02
+
+OUTPUT16_NAME|S.A
+OUTPUT16_TYPE|formula(0): OUTPUT08 + OUTPUT09 + OUTPUT10 + OUTPUT11 + 2*OUTPUT12 + OUTPUT13 + OUTPUT14
+
+OUTPUT17_NAME|NICB
+OUTPUT17_UNIT|%
+OUTPUT17_TYPE|formula(6): 100*(OUTPUT15 - OUTPUT16) / (OUTPUT15 + OUTPUT16)
+OUTPUT17_THRESHOLD|10,20
+
+OUTPUT18_NAME|Cl/SO<sub>4</sub>
+OUTPUT18_TYPE|formula(6): OUTPUT09 / OUTPUT12
+
+OUTPUT19_NAME|HCO<sub>3</sub>/Cl
+OUTPUT19_TYPE|formula(6): OUTPUT13 / OUTPUT09
+
+OUTPUT20_NAME|Ca/Cl
+OUTPUT20_TYPE|formula(6): OUTPUT07 / OUTPUT09
+
+OUTPUT21_NAME|Na/Cl
+OUTPUT21_TYPE|formula(6): OUTPUT04 / OUTPUT09
+
+OUTPUT22_NAME|Mg/Cl
+OUTPUT22_TYPE|formula(6): OUTPUT06 / OUTPUT09
+
+OUTPUT23_NAME|HCO<sub>3</sub>/SO<sub>4</sub>
+OUTPUT23_TYPE|formula(6): OUTPUT13 / OUTPUT12
 
 # -----------------------------------------------------------------------------
 # --- Form layout
@@ -166,7 +224,7 @@ OUTPUT11_TYPE|formula(6): (INPUT18/61.0159) / (INPUT17/96.062)
 # note: first column starts with the mandatory date/site/operator fieldset
 COLUMN01_LIST|FIELDSET01
 COLUMN02_LIST|FIELDSET02,FIELDSET03,FIELDSET04
-COLUMN03_LIST|FIELDSET05
+COLUMN03_LIST|FIELDSET05,FIELDSET06
 
 # fieldset contains
 FIELDSET01_NAME|Mesures sur site
@@ -175,19 +233,36 @@ FIELDSET01_C01|INPUT01,INPUT02,INPUT03,INPUT04,INPUT05,OUTPUT01,INPUT06,INPUT07
 
 FIELDSET02_NAME|Concentrations en cations et anions
 FIELDSET02_CELLS|2
-FIELDSET02_C01|INPUT08,INPUT09,INPUT10,INPUT11,INPUT12,OUTPUT02
-FIELDSET02_C02|INPUT13,INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19,OUTPUT03,OUTPUT04,OUTPUT05
+FIELDSET02_C01|INPUT08,INPUT09,INPUT10,INPUT11,INPUT12
+FIELDSET02_C02|INPUT13,INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19
 
-FIELDSET03_NAME|Concentration en autres &eacute;l&eacute;ments
+FIELDSET03_NAME|Concentration en autres éléments
 FIELDSET03_CELLS|1
 FIELDSET03_C01|INPUT20
 
-FIELDSET04_NAME|Concentrations isotopiques 
+FIELDSET04_NAME|Concentrations isotopiques
 FIELDSET04_CELLS|1
 FIELDSET04_C01|INPUT21,INPUT22,INPUT23
 
-FIELDSET05_NAME|Rapports
+FIELDSET05_NAME|Concentrations molaires
 FIELDSET05_TOGGLE|YES
-FIELDSET05_CELLS|1
-FIELDSET05_C01|OUTPUT06,OUTPUT07,OUTPUT08,OUTPUT09,OUTPUT10,OUTPUT11
+FIELDSET05_CELLS|2
+FIELDSET05_C01|OUTPUT03,OUTPUT04,OUTPUT05,OUTPUT06,OUTPUT07,OUTPUT02
+FIELDSET05_C02|OUTPUT08,OUTPUT09,OUTPUT10,OUTPUT11,OUTPUT12,OUTPUT13,OUTPUT14,OUTPUT15,OUTPUT16,OUTPUT17
+
+FIELDSET06_NAME|Rapports
+FIELDSET06_TOGGLE|YES
+FIELDSET06_CELLS|2
+FIELDSET06_C01|OUTPUT18,OUTPUT19,OUTPUT20
+FIELDSET06_C02|OUTPUT21,OUTPUT22,OUTPUT23
+
+# ############################### WARNING #####################################
+# Export list of inputs/outputs must fit the associated procs channels.
+# ############################### WARNING #####################################
+# list of fields that will be exported to the associated procs as D.d (must be numeric)
+PROC_DATA_LIST|INPUT02,INPUT03,INPUT04,INPUT05,OUTPUT01,INPUT06,INPUT07,OUTPUT03,OUTPUT04,OUTPUT05,OUTPUT06,OUTPUT07,OUTPUT08,OUTPUT09,OUTPUT10,OUTPUT11,OUTPUT12,OUTPUT13,OUTPUT14,OUTPUT18,OUTPUT19,OUTPUT20,OUTPUT21,OUTPUT22,OUTPUT23
+# optional error list of fields exported as D.e (same as PROC_DATA_LIST size!)
+PROC_ERROR_LIST|
+# list of fields that will be exported to associated procs as D.c (cells)
+PROC_CELL_LIST|INPUT01
 

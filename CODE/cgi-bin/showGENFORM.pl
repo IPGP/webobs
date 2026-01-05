@@ -427,8 +427,8 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
         my $unit_field = $FORM{"$field\_UNIT"};
         my $type_field = $FORM{"$field\_TYPE"};
         $unit_field = ($unit_field ne "" ? " ($unit_field)" : "");
-        $name_field =~ s/<su[bp]>|<\/su[bp]>|\&[^;]*;//g; # removes HTML tags or characters
         push(@colnam2, htm2frac($name_field).$unit_field) if ($showfs);
+        $name_field =~ s/<su[bp]>|<\/su[bp]>|\&[^;]*;//g; # removes HTML tags or characters
         if ($type_field !~ /^(image|shapefile)/) {
             if ($type_field eq "geoloc") {
                 my @gtitles = ("latitude", "longitude", "elevation", "northern_error", "eastern_error", "elevation_error");

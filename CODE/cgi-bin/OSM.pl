@@ -150,6 +150,9 @@ print <<"END";
         maxZoom: 17,
         attribution: osmAttribution
     });
+    var wtopo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+        attribution: esriAttribution
+    });
     var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: esriAttribution
     });
@@ -160,11 +163,12 @@ print <<"END";
     var map = L.map('map', {
         center: [$lat, $lon],
         zoom: $WEBOBS{OSM_ZOOM_VALUE},
-        layers: [osm, topo, satellite]
+        layers: [osm, topo, wtopo, satellite]
     });
     var baseMaps = {
         "OpenStreetMap": osm,
         "OpenTopoMap": topo,
+        "ESRI World Topo Map": wtopo,
         "ESRI World Imagery": satellite,
     };
     var layerControl = L.control.layers(baseMaps).addTo(map);

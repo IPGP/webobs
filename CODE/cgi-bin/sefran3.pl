@@ -92,6 +92,7 @@ my $reglette = $cgi->url_param('rg');
 my $date   = $cgi->url_param('date');
 my $high   = $cgi->url_param('high');
 my $sx     = $cgi->url_param('sx') // 0;
+my $sgram_opacity = $cgi->url_param('sgramopacity');
 my $replay = $cgi->url_param('replay');
 my $hpx    = $cgi->url_param('hpx');
 my $limit  = $cgi->url_param('limit');
@@ -214,6 +215,7 @@ $SEFRAN3{REF_NORTC} ||= 0;
 $MC3{NEW_P_CLEAR_S} ||= 0;
 $SEFRAN3{SGRAM_OPACITY} ||= 0.5;
 $SEFRAN3{PATH_IMAGES_SGRAM} ||= "sgram";
+$sgram_opacity = $SEFRAN3{SGRAM_OPACITY} if (!defined $cgi->url_param('sgramopacity'));
 
 # ---- Date and time for now (UTC)...
 my ($Ya,$ma,$da,$Ha,$Ma,$Sa) = split('/',strftime('%Y/%m/%d/%H/%M/%S',gmtime));
@@ -289,16 +291,17 @@ var SCB = {
     WIDTHREF : $largeur_image,
     WIDTH : $largeur_image,
     HEIGHT : $SEFRAN3{HEIGHT_INCH},
-   HEIGHTIMG : $hauteur_image,
+    HEIGHTIMG : $hauteur_image,
     LABELTOP : $SEFRAN3{LABEL_TOP_HEIGHT},
     LABELBOTTOM : $SEFRAN3{LABEL_BOTTOM_HEIGHT},
     WIDTHVOIES : $largeur_voies,
     CHANNELNB : $#streams + 1,
     STREAMS : ["$sefran_streams"],
-    SGRAMOPACITY : $SEFRAN3{SGRAM_OPACITY},
+    SGRAMOPACITY : $sgram_opacity,
     DX : $dx_mctag,
     SX : $sx,
     PROG : '$prog',
+    DATE : '$date',
     NOREFRESH: 0
 };
 
@@ -342,9 +345,9 @@ var MECB = {
             'notovr': "$__{'Event not flagged OVERSCALE'}",
             'unkevt': "$__{'Event type is unknown/undetermined. Validate as is ?'}",
             'notval': "$__{'You cannot validate an event of type AUTO'}",
-            'delete': "$__{'ATT: Do you want PERMANENTLY erase this event from'}",
-            'hidevt': "$__{'Do you want to hide this event from'}",
-            'resevt': "$__{'Do you want to restore this event in'}"
+            'delete': "$__{'ATT: Do you want PERMANENTLY erase this event from'} ",
+            'hidevt': "$__{'Do you want to hide this event from'} ",
+            'resevt': "$__{'Do you want to restore this event in'} "
           },
     CROSSHAIR: '<span id=crosshairUp></span><span id=crosshairDown></span>',
     NEWPCLEARS: $MC3{NEW_P_CLEAR_S},
@@ -475,7 +478,9 @@ if (!$date) {
           "<IMG src=\"/icons/mctag.png\" border=1 style=\"vertical-align:middle\"></A> | ";
         print "<A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showsgram_help'}')\">",
           "<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> | " if ($sgramOK);
-        print "<A href=\"#infos\">$__{'Information'}</A>",
+        print "<A href=\"#status\">$__{'Status'}</A> | " if ($status);
+        print  "<A href=\"#maps\">$__{'Maps'}</A>",
+          " | <A href=\"#infos\">$__{'Information'}</A>",
           " | <A href=\"/cgi-bin/$WEBOBS{CGI_MC3}?mc=$mc3\">$MC3{TITLE}</A>",
           " ]</p></TD>";
         if (!$ref || $SEFRAN3{REF_NORTC} == 0) {
@@ -554,7 +559,7 @@ if (!$date) {
                                 $sgramimg = "<IMG class=\"sgram sgramhour\" src=\"$SEFRAN3{PATH_WEB}/${f}s.jpg\" style=\"cursor:pointer$sgramalign\" $imgopt>";
                             }
                         }
-                        print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:".($nb_vign < 2 ? "left":"right")."\"><DIV style=\"position:relative\">";
+                        print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px;text-align:left\"><DIV style=\"position:relative\">";
                         print    "$sgramimg<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" style=\"cursor:pointer\" $imgopt>";
                     } else {
                         print "<TD style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px\" class=\"noImage\"><DIV style=\"position:relative;height:100%\">no image";
@@ -618,8 +623,8 @@ if (!$date) {
     print "</TABLE><BR>";
 
     # table information about channel streams
-    print "<A name=\"infos\"><H2>Informations</H2></A>\n";
     if ($status) {
+        print "<A name=\"status\"><H2>$__{'Status'}</H2></A>\n";
         my $now_seconds = timegm(gmtime);
         my $Q = qx($WEBOBS{PRGM_ALARM} $SEFRAN3{SEEDLINK_SERVER_TIMEOUT_SECONDS} $WEBOBS{SLINKTOOL_PRGM} -Q $SEFRAN3{SEEDLINK_SERVER});
         my @stream_server = split(/\n/,$Q);
@@ -718,7 +723,22 @@ if (!$date) {
         }
         print "</TABLE><BR>\n";
     }
+    # --- maps of stations (NOTE: only the main map is shown here)
+    print "<A name=\"maps\"><H2>$__{'Maps'}</H2></A>\n";
+    my $MAPpath = my $MAPurn = "";
+    my $grid = "SEFRAN.$s3";
+    $MAPpath = "$WEBOBS{ROOT_OUTG}/$grid/$WEBOBS{PATH_OUTG_MAPS}";
+    my $mapfile = $grid."_map";
+    if  ( -e "$MAPpath/$mapfile.png" ) {
+        ( $MAPurn  = $MAPpath ) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
+        print "<P style=\"text-align: left\"><IMG SRC=\"$MAPurn/$mapfile.png\" border=\"0\" usemap=\"#map\"></P>\n";
+        if (-e "$MAPpath/$mapfile.map") {
+            my @htmlarea = readFile("$MAPpath/$mapfile.map");
+            print "<map name=\"map\">@htmlarea</map>\n";
+        }
+    }
 
+    print "<A name=\"infos\"><H2>$__{'Informations'}</H2></A>\n";
     print "<P>Sefran3 configuration file: <B>$s3</B></P>\n";
     print "<P>Channels parameters file: <B>$SEFRAN3{CHANNEL_CONF}</B></P>\n";
     print "<P>Update window: <B>$SEFRAN3{UPDATE_HOURS} h</B></P>\n";
@@ -767,6 +787,7 @@ if ($date) {
     my $date_prec = my $dprec = "";
     my $date_suiv = my $dsuiv = "";
     my $idarg = "";
+    my $sop = "&sgramopacity=$sgram_opacity";
 
     if ($dep) {
         if ($id) {     # read event ID from MC + set number of minute-files containing signal + 1
@@ -793,8 +814,8 @@ if ($date) {
 
     # prev+next hour 'big arrows'
     if (!$dep && defined($SEFRAN3{BIGARROWS})) {
-        print "<div id=\"Larrow\" onClick=\"location.href='$prog&date=$date_prec&sx=1'\" onMouseOut=\"\$('#Larrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Larrow').css('opacity',0.7); overlib('$dprec',WIDTH,150)\">&nbsp;</div>";
-        print "<div id=\"Rarrow\" onClick=\"location.href='$prog&date=$date_suiv'\"      onMouseOut=\"\$('#Rarrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Rarrow').css('opacity',0.7); overlib('$dsuiv',WIDTH,150)\">&nbsp;</div>";
+        print "<div id=\"Larrow\" onClick=\"location.href='$prog&date=$date_prec$sop&sx=1'\" onMouseOut=\"\$('#Larrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Larrow').css('opacity',0.7); overlib('$dprec',WIDTH,150)\">&nbsp;</div>";
+        print "<div id=\"Rarrow\" onClick=\"location.href='$prog&date=$date_suiv$sop'\"      onMouseOut=\"\$('#Rarrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Rarrow').css('opacity',0.7); overlib('$dsuiv',WIDTH,150)\">&nbsp;</div>";
     }
 
     # control-panel fixed box (zoom,mctag toggle,next/prev buttons)
@@ -961,9 +982,12 @@ if ($date) {
             print "<HR><TABLE style=\"border:0\"><TR>";
             if ($modif) {
                 print "<TD style=\"border:0\">",
-                  "<INPUT type=\"button\" value=\"".($id < 0 ? "$__{'Restore'}":"$__{'Hide'}")."\" onClick=\"supprime(1);\">";
+                  "<A href=\"#\"><IMG onClick=\"supprime(1);\" onMouseOut=\"nd()\" src=\"/icons/"
+                  .($id < 0 ? "restore.png":"trash.png")."\""
+                  ." onMouseOver=\"overlib('".($id < 0 ? $__{'Restore this event'}:$__{'Hide/trash this event'})."')\"></A>";
                 if ($userLevel == 4) {
-                    print "<INPUT type=\"button\" value=\"$__{'Delete'}\" onClick=\"supprime(2);\">";
+                    print "&nbsp;<A href=\"#\"><IMG onClick=\"supprime(2);\" src=\"/icons/no.png\""
+                    ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Delete this event (cannot be cancelled)'}')\"></A>";
                 }
                 print "</TD>";
             }

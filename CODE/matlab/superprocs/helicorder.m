@@ -45,7 +45,7 @@ function DOUT=helicorder(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2016-12-30 in Yogyakarta, Indonesia
-%	Updated: 2022-06-12
+%	Updated: 2025-12-04
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -59,7 +59,7 @@ proc = varargin{1};
 procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
-% gets PROC's configuration, associated nodes for any TSCALE and/or REQDIR 
+% gets PROC's configuration, associated nodes for any TSCALE and/or REQDIR (without loading the data)
 [P,N] = readproc(WO,varargin{:});
 
 % event mode: only the first TSCALE is considered
@@ -131,7 +131,7 @@ for n = 1:length(N)
 			V.stream_name = sprintf('%s:%s:%s:%s',N(n).FDSN_NETWORK_CODE,N(n).FID,C.cd{c},C.lc{c});
 
 			% makes graph if image does not exist or image is older than data
-			% do not make any graph in case of empty data
+			% does not make any graph in case of empty data
 			if ~isempty(k) && (~exist(fdat,'file') || (filedate(fdat,P.TZ) < tlim(2) && tlim(1) >= P.DATELIM(1)))
 
 				xlim = [0,hd/ht];
@@ -183,8 +183,9 @@ for n = 1:length(N)
 					P.GTABLE(r).INFOS = {' ','Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ), ...
 					' ',' ', ...
 					sprintf('Time span: {\\bf%s - %s} {\\it%+g}',datestr(tlim(1),0),datestr(tlim(2),0),P.TZ), ...
-					' ',' ',' ',' ', ...
-					sprintf('Median RMS = %g %s',mstd,C.un{c}), ...
+					' ',' ',' ', ...
+                    ['Scale = ' repmat('auto',~(hscaleref>0)) repmat(sprintf('%g %s',hscaleref,C.un{c}),hscaleref>0) sprintf(' (\\times %g)',hscale)], ...
+					sprintf('Median STD = %g %s',mstd,C.un{c}), ...
 					' ',' ', ...
 					};
 				end

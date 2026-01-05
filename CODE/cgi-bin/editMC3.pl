@@ -131,9 +131,11 @@ my $idSC3     = $cgi->param('files');
 my $fileNameSUDS = $cgi->param('fileNameSUDS');
 my $transfert = $cgi->param('transfert');
 
+my $prgm_date = $WEBOBS{PRGM_DATE} // 'date';
+
 # ---- loads requested Sefran3 configuration or default one
 $s3 ||= $WEBOBS{SEFRAN3_DEFAULT_NAME};
-my %SEFRAN3 = readCfg("$WEBOBS{ROOT_CONF}/$s3.conf");
+my %SEFRAN3 = readCfg("$WEBOBS{ROOT_CONF}/SEFRANS/$s3/$s3.conf");
 
 # ---- loads requested MC3 configuration file or default one
 $mc3 ||= $WEBOBS{MC3_DEFAULT_NAME};
@@ -184,6 +186,8 @@ $imageSEFRAN = sprintf("%4d%02d%02d%02d%02d%02.0f.png",$anneeEvnt,$moisEvnt,$jou
 
 #FB-was: my $imageMC = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_IMAGES}/$anneeEvnt$moisEvnt/$MC3{FILE_PREFIX}$imageSEFRAN";
 my $imageMC = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_IMAGES}/$anneeEvnt$moisEvnt/$imageSEFRAN";
+my $sgramMC = $imageMC;
+$sgramMC =~ s/\.png$/s.png/g;
 
 # if MC file exists, back it up
 #
@@ -275,7 +279,12 @@ if ($id_evt_modif) {
     }
     $id_evt = $max + 1;
     print "<P><B>New event:</B> $id_evt</P>";
-    @image_list = $imageSEFRAN;
+    if (isok($SEFRAN3{SGRAM_ACTIVE})) {
+        (my $sgramSEFRAN = $imageSEFRAN) =~ s/\.png$/s.png/g;
+        @image_list = ($imageSEFRAN,$sgramSEFRAN);
+    } else {
+        @image_list = $imageSEFRAN;
+    }
 }
 
 # In case of add/modify/trash: new data line is written, in other case definitive delete
@@ -341,55 +350,67 @@ if ($delete == 2) {
     print '<p><b>Looking for images to be concatenated</b>...<UL> ';
 
     my @imagesPNG;
-    my $voies;
+    my @sgramPNG;
+    my $channels;
     my $i;
     for ($i = 0; $i < $nb_images; $i++) {
-        my ($Y,$m,$d,$H,$M) = split('/',qx(date -d '$dateEvnt $i minute' +"%Y/%m/%d/%H/%M"|xargs echo -n));
+        my ($Y,$m,$d,$H,$M) = split('/',qx($prgm_date -d '$dateEvnt $i minute' +"%Y/%m/%d/%H/%M"|xargs echo -n));
+        if ($i == 0) {
+            $channels = sprintf("%s/%4d/%04d%02d%02d/%s/%04d%02d%02d%02d_voies.png",$SEFRAN3{ROOT},$Y,$Y,$m,$d,$SEFRAN3{PATH_IMAGES_HEADER},$Y,$m,$d,$H);
+        }
         my $f = sprintf("%s/%4d/%04d%02d%02d/%s/%04d%02d%02d%02d%02d00.png",$SEFRAN3{ROOT},$Y,$Y,$m,$d,$SEFRAN3{PATH_IMAGES_MINUTE},$Y,$m,$d,$H,$M);
+        print "<LI>$f... ";
         if (-f $f) {
             push(@imagesPNG,$f);
-            print "<LI>$f</LI>\n";
+            print "found.</LI>\n";
+        } else {
+            print "not found!</LI>\n";
         }
-        if ($i == 0) {
-            $voies = sprintf("%s/%4d/%04d%02d%02d/%s/%04d%02d%02d%02d_voies.png",$SEFRAN3{ROOT},$Y,$Y,$m,$d,$SEFRAN3{PATH_IMAGES_HEADER},$Y,$m,$d,$H);
+        $f = sprintf("%s/%4d/%04d%02d%02d/%s/%04d%02d%02d%02d%02d00s.png",$SEFRAN3{ROOT},$Y,$Y,$m,$d,$SEFRAN3{PATH_IMAGES_SGRAM},$Y,$m,$d,$H,$M);
+        print "<LI>$f... ";
+        if (-f $f) {
+            push(@sgramPNG,$f);
+            print "found.</LI>\n";
+        } else {
+            print "not found!</LI>\n";
         }
     }
 
     print '</UL>Done.</p>';
+    qx(mkdir -p `dirname $imageMC`);
+
+    # prepares meta-data...
+    my $tag = " -set mc3:id '$id_evt'"
+        ." -set mc3:ymd '$anneeEvnt-$moisEvnt-$jourEvnt'"
+        ." -set mc3:hms '$heureEvnt:$minEvnt:$secEvnt'"
+        ." -set mc3:type '$typeEvnt'"
+        ." -set mc3:amplitude '$amplitudeEvnt'"
+        ." -set mc3:duration '$dureeEvnt'"
+        ." -set mc3:unit '$uniteEvnt'"
+        ." -set mc3:saturation '$dureeSatEvnt'"
+        ." -set mc3:number '$nbrEvnt'"
+        ." -set mc3:sminusp '$smoinsp'"
+        ." -set mc3:station '$stationEvnt'"
+        ." -set mc3:unique '$arrivee'"
+        ." -set mc3:source '$fileNameSUDS'"
+        ." -set mc3:eventid '$idSC3'"
+        ." -set mc3:image '$imageSEFRAN'"
+        ." -set mc3:operator '$operator'";
+        
+    $comment =~ s/%/%%/g;
+    $comment =~ s/"/\\"/g;
+    my $tagc = " -set mc3:comment \"$comment\"";
 
     # Concatenation and tag of images
     if (scalar(@imagesPNG)) {
         print '<p><b>Concatenating images</b>... ';
-        qx(mkdir -p `dirname $imageMC`);
-        my $cmd = "$WEBOBS{PRGM_CONVERT} +append $voies ".join(" ",@imagesPNG)." $imageMC";
+        my $cmd = "$WEBOBS{PRGM_CONVERT} +append $channels ".join(" ",@imagesPNG)." $imageMC";
         (system($cmd) == 0) or $err=1;
-
-        # adds meta-data...
-        my $tag = " -set mc3:id '$id_evt'"
-          ." -set mc3:ymd '$anneeEvnt-$moisEvnt-$jourEvnt'"
-          ." -set mc3:hms '$heureEvnt:$minEvnt:$secEvnt'"
-          ." -set mc3:type '$typeEvnt'"
-          ." -set mc3:amplitude '$amplitudeEvnt'"
-          ." -set mc3:duration '$dureeEvnt'"
-          ." -set mc3:unit '$uniteEvnt'"
-          ." -set mc3:saturation '$dureeSatEvnt'"
-          ." -set mc3:number '$nbrEvnt'"
-          ." -set mc3:sminusp '$smoinsp'"
-          ." -set mc3:station '$stationEvnt'"
-          ." -set mc3:unique '$arrivee'"
-          ." -set mc3:source '$fileNameSUDS'"
-          ." -set mc3:eventid '$idSC3'"
-          ." -set mc3:image '$imageSEFRAN'"
-          ." -set mc3:operator '$operator'";
-
-        #." -set MC3_comment '$comment'";
         $cmd = "$WEBOBS{PRGM_CONVERT} $imageMC $tag $imageMC";
         system($cmd);
 
-# processes the comment independently (because of potential problem with content)
-        $comment =~ s/%/%%/g;
-        $comment =~ s/"/\\"/g;
-        $cmd = "$WEBOBS{PRGM_CONVERT} $imageMC -set mc3:comment \"$comment\" $imageMC";
+        # processes the comment independently (because of potential problem with content)
+        $cmd = "$WEBOBS{PRGM_CONVERT} $imageMC $tagc $imageMC";
         system($cmd);
         print 'Done.</p>';
         print "<P><B>Image saved as:</B> $imageMC</P>";
@@ -399,6 +420,21 @@ if ($delete == 2) {
             print qx($WEBOBS{ROOT_CODE}/shells/impression_image "$MC3{PRINTER}" "$imageMC" "$textePourImage");
             print 'Done.</p>';
         }
+    }
+
+    # Concatenation and tag of sgram
+    if (scalar(@sgramPNG)) {
+        print '<p><b>Concatenating SGRAM images</b>... ';
+        my $cmd = "$WEBOBS{PRGM_CONVERT} +append $channels ".join(" ",@sgramPNG)." $sgramMC";
+        (system($cmd) == 0) or $err=1;
+        $cmd = "$WEBOBS{PRGM_CONVERT} $sgramMC $tag $sgramMC";
+        system($cmd);
+
+        # processes the comment independently (because of potential problem with content)
+        $cmd = "$WEBOBS{PRGM_CONVERT} $sgramMC $tagc $sgramMC";
+        system($cmd);
+        print 'Done.</p>';
+        print "<P><B>Image saved as:</B> $sgramMC</P>";
     }
 }
 
@@ -460,19 +496,19 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+François Beauducel, Didier Lafon
 
 Acknowledgments:
 
-traitementMC2.pl [2004-2009] by Didier Mallarinio, Francois Beauducel and Alexis Bosson
+traitementMC2.pl [2004-2009] by Didier Mallarinio, François Beauducel and Alexis Bosson
 
-afficheSEFRAN.pl [2009] by Alexis Bosson and Francois Beauducel
+afficheSEFRAN.pl [2009] by Alexis Bosson and François Beauducel
 
-frameMC2.pl and formulaireMC2.pl [2004-2009] by Didier Mallarino, Francois Beauducel and Alexis Bosson
+frameMC2.pl and formulaireMC2.pl [2004-2009] by Didier Mallarino, François Beauducel and Alexis Bosson
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+Webobs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
