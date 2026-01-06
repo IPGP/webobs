@@ -239,6 +239,9 @@ msgstr "dont"
 msgid "in trash"
 msgstr "dans la corbeille"
 
+msgid "Procs using this form"
+msgstr "Procs utilisant ce Form :"
+
 msgid "Events File(s)"
 msgstr "Fichier(s) d'événements"
 

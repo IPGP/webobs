@@ -309,17 +309,21 @@ if ($isProc) {
     # -----------
     if ($GRID{RAWFORMAT}) {
         $htmlcontents .= "<LI>$__{'Default data format'}: <B class='code'>$GRID{RAWFORMAT}</B></LI>\n";
-        $htmlcontents .= "<LI>$__{'Default data source'}: <B>".($GRID{RAWDATA} // '')."</B></LI>\n";
+        $htmlcontents .= "<LI>$__{'Default data source'}: <B>";
         if ($GRID{RAWFORMAT} eq "genform" && defined($GRID{RAWDATA})) {
             $form = uc($GRID{RAWDATA});
+            $htmlcontents .= "<A href=\"/cgi-bin/showGRID.pl?grid=FORM.$form\" title=\"FORM.$form\">$form</A>";
+        } else {
+            $htmlcontents .= ($GRID{RAWDATA} // '')
         }
+        $htmlcontents .= "</B></LI>\n";
     }
 
     # -----------
     if (defined($GRID{URNDATA}) || $form ne "") {
         $htmlcontents .= "<LI>$__{'Access to rawdata'}: <B>";
         if ($form ne "") {
-            $htmlcontents .= "<A href=\"/cgi-bin/showGENFORM.pl?form=$form\">$form database</A>";
+            $htmlcontents .= "<A href=\"/cgi-bin/showGENFORM.pl?form=$form\"><IMG src='/icons/form.png' style='vertical-align:middle' title=\"FORM.$form database\"></A>";
         } else {
             $htmlcontents .= "<A href=\"$GRID{URNDATA}\">$GRID{URNDATA}</A>";
         }
@@ -392,6 +396,36 @@ if ($isForm) {
     $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>UTC".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'} and <B>$orphanNodes</B> in orphan nodes)</LI>\n";
     $htmlcontents .= "<LI>$__{'Access to data'}: <A href=\"$urnData\"><IMG src='/icons/form.png' style='vertical-align:middle'></A></LI>\n";
+
+    # get associated PROCs
+    my @procgenform;
+    my $procconf = "$WEBOBS{ROOT_CONF}/PROCS";
+    find(
+        sub {
+            return unless -f $_;
+            return unless /\.conf$/;
+
+            open my $fh, '<', $_ or return;
+
+            while (my $line = <$fh>) {
+                if ($line =~ /^\s*RAWDATA\|$GRIDName\s*$/) {
+                    my $fn = $File::Find::name;
+                    $fn =~ s/$procconf\///g;
+                    $fn =~ s/\/.*$//g;
+                    push(@procgenform,$fn);
+                }
+            }
+
+            close $fh;
+        }, $procconf
+    );
+    if (@procgenform) {
+        $htmlcontents .= "<LI>$__{'Procs using this form:'}";
+        foreach (@procgenform) {
+            $htmlcontents .= " <A href=\"/cgi-bin/showGRID.pl?grid=PROC.$_\"><B>PROC.$_</B></A>";
+        }
+        $htmlcontents .= "</LI>\n";
+    }
 }
 
 # -----------
