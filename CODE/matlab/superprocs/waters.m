@@ -60,44 +60,6 @@ exthax = [.08,.02];
 %	tmks(i) = str2double(FT.(tcod{i}).relsize);
 %end
 
-% --- index of columns in matrix d
-%   1 = type of site
-i_ty = 1;
-%   2 = temperature of air (�C)
-i_ta = 2;
-%   3 = temperature of water (�C)
-i_ts = 3;
-%   4 = pH
-i_ph = 4;
-%   5 = flux (l/mn)
-i_db = 5;
-%   6 = conductivity (�S)
-i_cd = 6;
-%   7 = level (m)
-i_nv = 7;
-%   8-18 = concentrations in ppm = mg/l, to be converted in mmol/l
-%   8-12 = anions Li+, Na+, K+, Mg++, Ca++ (mmol/l)
-i_li = 8;
-i_na = 9;
-i_ki = 10;
-i_mg = 11;
-i_ca = 12;
-%   13-18 = cations F-,Cl-,Br-,NO3-,SO4--,HCO3-,I- (mmol/l)
-i_fi = 13;
-i_cl = 14;
-i_br = 15;
-i_no3 = 16;
-i_so4 = 17;
-i_hco3 = 18;
-i_i = 19;
-%   20-22 = isotopes d13C, d18O,dD
-%   23 = ratio Cl-/SO4-- (computed)
-%   24 = ratio HCO3-/SO4-- (computed)
-%   25 = ratio Mg++/Cl- (computed)
-%   26 = conductivity at 25�C
-%   27 = ion budget (NICB)
-i_bi = 27;
-
 
 % ==== graphs per node
 for n = 1:length(N)
