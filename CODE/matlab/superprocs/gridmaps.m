@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2025-12-28
+%   Updated: 2026-01-08
 
 
 WO = readcfg;
@@ -468,7 +468,7 @@ for g = 1:length(grids)
 						x = round(ims(1)*((axp(3)*(NN(gg).geo(knn,2) - xylim(1))/diff(xylim(1:2)) + axp(1))));
 						y = round(ims(2) - ims(2)*((axp(4)*(NN(gg).geo(knn,1) - xylim(3))/diff(xylim(3:4)) + axp(2))));
 						r = ceil(nodesize*dpi/72);
-                        if isempty(regexp(grids(gg),'^SEFRAN\.'))
+                        if isempty(regexp(grids{gg},'^SEFRAN\.'))
                             lnk = sprintf('/cgi-bin/showNODE.pl?node=%s.%s',grids{gg},NN(gg).id{knn});
                         else
                             lnk = '#';
