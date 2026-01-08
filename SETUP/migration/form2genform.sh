@@ -2,9 +2,9 @@
 # Ojective: migration of existing former FORM (.DAT text file based) associated to
 # PROCS, to GENFORM (.db based) associated to NODES (new grid FORM structure).
 #
-# Author: François Beauducel, Jérôme Touvier
+# Authors: François Beauducel, Jérôme Touvier
 # Created: 2024-04-21
-# Updated: 2025-07-03
+# Updated: 2026-01-08
 
 
 if [[ -z "$1" ]]; then
@@ -75,7 +75,7 @@ cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 LEGACY_FORMS=("EAUX" "EAUX_OVSM" "RIVERS" "RAINWATER" "SOILSOLUTION" "GAZ" "EXTENSO" "FISSURO" "DISTANCE")
 for form in "${LEGACY_FORMS[@]}"; do
     echo
-    echo "--->Process form $form"
+    echo "===== Process legacy form $form ====="
     # -----------------------------------------------------------------------------
     # test if a legacy form might exist...
     conf="$WOROOT/CONF/FORMS/$form/$form.conf"
