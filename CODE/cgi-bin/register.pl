@@ -216,7 +216,7 @@ if ($action eq "reg") {
 
     }  # end of "autoregistration"
     my $rcn = WebObs::Config::notify(
-        "register.warning|$$|received request from $fullname ($login) $mailaddr - $ENV{REMOTE_ADDR} - $today");
+        "register.warning|$$|Received registration request on $today from\n\n\tName: $fullname\n\tLogin: $login\n\tEmail: $mailaddr\n\tIP Client: $ENV{REMOTE_ADDR}\n\tNavigator: $ENV{HTTP_USER_AGENT}\n\tReferer: $ENV{HTTP_REFERER}");
     if ($rcn != 0 ) {
         send_ajax_content("Your request has been correctly registered and waits for "
             ."validation by an administrator.");
