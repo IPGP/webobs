@@ -72,7 +72,7 @@ cmd "mkdir -p $LFPATH/FORMS $LFPATH/GRIDS2FORMS $LFDB"
 # =============================================================================
 # make a loop on all known legacy FORMs
 #for form in EAUX RIVERS RAINWATER SOILSOLUTION GAZ EXTENSO FISSURO DISTANCE BOJAP
-LEGACY_FORMS=("EAUX" "EAUX_OVSM" "RIVERS" "RAINWATER" "SOILSOLUTION" "GAZ" "EXTENSO" "FISSURO" "DISTANCE")
+LEGACY_FORMS=("EAUX" "EAUX_OVSM" "RIVERS" "RAINWATER" "SOILSOLUTION" "GAZ" "EXTENSO" "FISSURO" "DISTANCE" "BOJAP")
 for form in "${LEGACY_FORMS[@]}"; do
     echo
     echo "===== Process legacy form $form ====="
@@ -470,6 +470,46 @@ for form in "${LEGACY_FORMS[@]}"; do
                     val = $2 ($3 == "" ? "" : " " $3)
                     printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
                     printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"} }' >> $TMP
+                ;;
+            # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            "BOJAP")
+                NBI=9
+                ICOM=16
+                IVAL=17
+
+                TEMPLATE="BOJAP"
+
+                # copy template files
+                cmd "cp $RELBASE/CODE/tplates/FORM.$TEMPLATE $conf"
+                cmd "cp $RELBASE/CODE/tplates/FORM_$TEMPLATE*.conf $dconf1/"
+
+                # Id|Date1|Heure1|Date2|Heure2|Site|C_Cl|C_C02|C_SO4|M1|M2|M3|M4|H2O|KOH|Remarques|Valider
+                # 1 |2    |3     |4    |5     |6   |7   |8    |9    |10|11|12|13|14 |15 |16       |17
+                for i in $(seq 1 $NBI); do printf ", input%02d text" $i >> $TMP; done
+                printf ", FOREIGN KEY (edate) REFERENCES udate(id), FOREIGN KEY (sdate) REFERENCES udate(id)" >> $TMP
+                echo ");" >> $TMP
+                tac $DAT | iconv -f ISO-8859-1 -t UTF-8 | gawk -F '|' -v t="$DBT" -v n="$NBI" -v ic="$ICOM" -v iv="$IVAL" ' { if ($1 != "ID" && $1 != "Id") { \
+                    bin = ($1<0) ? 1:0; \
+                    printf "INSERT INTO "t"(trash,quality,node,operators,comment,tsupd,userupd"; \
+                    for (i=1;i<=n;i++) printf ",input%02d",i; \
+                    printf ") ";\
+                    printf "VALUES(\""bin"\",\"1\",\""$4"\""; \
+                    gsub(/"/,"\"\"", $ic); \
+                    var = $ic ($ic != "" && $iv != "" ? " " : "") $iv; \
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", var); \
+                    if ($iv ~ /^\[.*\] /) { \
+                        split($iv,vv,/\] \[/); split(vv[1],v," "); \
+                        gsub(/\[/, "", v[1]); gsub(/\]/, "", v[2]); \
+                        printf ",\""v[2]"\",\"%s\",\""v[1]"\",\""v[2]"\"", var \
+                    } else { printf ",\"!\",\"%s\",\"\",\"\"", var }; \
+                    for (i=7;i<n+7;i++) printf ",\""$i"\""; \
+                    print ");"
+                    val = $2 ($3 == "" ? "" : " " $3)
+                    printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
+                    printf "UPDATE "t" SET edate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"
+                    val = $5 ($6 == "" ? "" : " " $6)
+                    printf "INSERT INTO udate (date, date_min) VALUES (\x27%s\x27, \x27%s\x27);\n", val, val
+                    printf "UPDATE "t" SET sdate = last_insert_rowid() WHERE id = (SELECT id FROM "t" ORDER BY id DESC LIMIT 1);\n"} }' >> $TMP
                 ;;
         esac
 
