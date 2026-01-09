@@ -183,11 +183,14 @@ my $mc_filename = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$anne
 # NOTE: overwrite possible $imageSEFRAN value (in case of date/time event modification)
 #
 $imageSEFRAN = sprintf("%4d%02d%02d%02d%02d%02.0f.png",$anneeEvnt,$moisEvnt,$jourEvnt,$heureEvnt,$minEvnt,$secEvnt);
-
-#FB-was: my $imageMC = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_IMAGES}/$anneeEvnt$moisEvnt/$MC3{FILE_PREFIX}$imageSEFRAN";
 my $imageMC = "$MC3{ROOT}/$anneeEvnt/$MC3{PATH_IMAGES}/$anneeEvnt$moisEvnt/$imageSEFRAN";
-my $sgramMC = $imageMC;
-$sgramMC =~ s/\.png$/s.png/g;
+my $sgramSEFRAN;
+my $sgramMC;
+if (isok($SEFRAN3{SGRAM_ACTIVE})) {
+    ($sgramSEFRAN = $imageSEFRAN) =~ s/\.png$/s.png/g;
+    ($sgramMC = $imageMC) =~ s/\.png$/s.png/g;
+}
+
 
 # if MC file exists, back it up
 #
@@ -260,7 +263,7 @@ if ($id_evt_modif) {
         else {
 
             # otherwise, add to the list
-            my @new_image_list = $imageSEFRAN;
+            my @new_image_list = (isok($SEFRAN3{SGRAM_ACTIVE}) ? ($imageSEFRAN,$sgramSEFRAN):$imageSEFRAN);
             push(@new_image_list, @image_list);
             @image_list = @new_image_list;
         }
@@ -279,12 +282,7 @@ if ($id_evt_modif) {
     }
     $id_evt = $max + 1;
     print "<P><B>New event:</B> $id_evt</P>";
-    if (isok($SEFRAN3{SGRAM_ACTIVE})) {
-        (my $sgramSEFRAN = $imageSEFRAN) =~ s/\.png$/s.png/g;
-        @image_list = ($imageSEFRAN,$sgramSEFRAN);
-    } else {
-        @image_list = $imageSEFRAN;
-    }
+    @image_list = (isok($SEFRAN3{SGRAM_ACTIVE}) ? ($imageSEFRAN,$sgramSEFRAN):$imageSEFRAN);
 }
 
 # In case of add/modify/trash: new data line is written, in other case definitive delete
