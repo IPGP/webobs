@@ -822,7 +822,7 @@ for r = 1:numel(P.GTABLE)
 			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},mvv(i),P.trendunit)}];
 		end
 		if vrelmode
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('Velocity ref. vector ({\\bf%s}):',mode)}];
+			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{' ', sprintf('Velocity ref. vector ({\\bf%s}):',mode)}];
 			for i = 1:3
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},voffset(i),P.trendunit)}];
 			end
@@ -834,8 +834,8 @@ for r = 1:numel(P.GTABLE)
 		else
 			vmax = rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]);
 		end
-		vscale = roundsd(vmax,1);
-		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/vmax;
+		vscale = roundsd(vmax,1); % vscale is rounded vmax
+		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/vmax; % graphic scale in degree/(mm/yr)
 
 		ha = plot(geo(knv,2),geo(knv,1),'k.');  extaxes(gca,[.04,.08])
 		hold on
@@ -926,12 +926,18 @@ for r = 1:numel(P.GTABLE)
             end
 		end
 
-		% plots legend scale
+		% plots legend scale (velocity and displacements)
 		xsc = xlim(1);
-		ysc = ylim(2) + .04*diff(ylim);
+		ysc = ylim(1) - .06*diff(ylim);
 		lsc = vscale*vsc;
 		arrows(xsc,ysc,lsc,90,[arrowshape*vmax/vscale,xyr],'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g %s',vscale,P.trendunit),'FontWeight','bold')
+		ysc = ylim(1) - .1*diff(ylim);
+        rdv = 1e3*diff(tlim)/P.trendfact; % ratio displacement/velocity
+        mscale = roundsd(vscale*rdv,1); % displacement scale (rounded)
+		lsc = mscale*vsc/rdv; % vector of displacements plotted at velocity scale...
+		arrows(xsc,ysc,lsc,90,[arrowshape*vmax/vscale,xyr],'FaceColor','none','LineWidth',1,'Clipping','off');
+		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g mm',mscale),'FontWeight','bold')
 
 
 		hold off
