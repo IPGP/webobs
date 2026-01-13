@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2025-05-06
+%   Updated: 2026-01-13
 
 
 WO = readcfg;
@@ -489,7 +489,7 @@ for m = 1:length(summarylist)
 			E.d = dk;
 			E.header = CLB.nm;
 			E.title = sprintf('%s {%s}',M(m).title,proc);
-			mkexport(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
 end

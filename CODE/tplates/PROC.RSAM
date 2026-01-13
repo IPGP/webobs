@@ -92,6 +92,9 @@ LOGO2_FILE|
 COPYRIGHT2|
 # exports text data files
 EXPORTS|YES
+EXPORT_HEADER_NODE_KEYLIST|FID,NAME,GNSS_9CHAR,LAT_WGS84,LON_WGS84,ALTITUDE,URL
+EXPORT_HEADER_PROC_KEYLIST|
+
 
 # --- data processing and plot
 # removes data picks using median filter (% of min/max values)

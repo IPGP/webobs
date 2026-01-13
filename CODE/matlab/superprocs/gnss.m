@@ -309,7 +309,7 @@ modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',spectral(256));
 modeltime_markersize = pi*(field2num(P,'MODELTIME_MARKERSIZE',10,'notempty')/2)^2; % scatter needs marker size as a surface (πr²)
 
 
-geo = [cat(1,N.LAT_WGS84),cat(1,N.LAT_WGS84),cat(1,N.ALTITUDE)];
+geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
 
 V.name = P.NAME;
 V.velref = itrf;
@@ -657,12 +657,7 @@ for r = 1:numel(P.GTABLE)
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
 
-			E.meta = {};
-			E = add_export_metadata(E,N(n),export_header_node_keylist,"NODE");
-			E = add_export_metadata(E,P,export_header_proc_keylist,"PROC");
-
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
-			E.meta = {}; % meta are erased after the export
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 
@@ -788,7 +783,7 @@ for r = 1:numel(P.GTABLE)
 			if isok(P.GTABLE(r),'EXPORTS')
 				E.title = sprintf('%s: ref. %s',P.GTABLE(r).GTITLE,N(n).ALIAS);
 				E.infos = {};
-				mkexport(WO,sprintf('%s_%s_%s',summary,N(n).FID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+				mkexport(WO,sprintf('%s_%s_%s',summary,N(n).FID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 			end
 		end
 
@@ -989,7 +984,7 @@ for r = 1:numel(P.GTABLE)
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,:)];
 			E.header = {'Latitude','Longitude','Altitude','E_velocity(mm/yr)','N_Velocity(mm/yr)','Up_Velocity(mm/yr)','dEv(mm/yr)','dNv(mm/yr)','dUv(mm/yr)'};
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
 
@@ -1468,7 +1463,7 @@ for r = 1:numel(P.GTABLE)
 				end
 			end
 			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 
 		if isok(P,'MODELLING_EXPORT_MAT')
@@ -1924,6 +1919,7 @@ for r = 1:numel(P.GTABLE)
 					wlim = [tlim(1),t2];
 				end
 
+                P.dtlim = diff(wlim);
 				% computes linear trends (mm/yr)
 				tr = nan(numel(kn),3); % trends per station per component
 				tre = nan(numel(kn),3); % trends error per station per component
@@ -1935,7 +1931,7 @@ for r = 1:numel(P.GTABLE)
 						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
 							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
 							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
-							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P);
+							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P,1);
 							tr(j,i) = trd(1);
                             tre(j,i) = trd(2);
 							% sets a lower orbit if there is not enough data
@@ -2329,21 +2325,11 @@ for r = 1:numel(P.GTABLE)
                     E.header(k) = strcat({'dE_(mm)','dN_(mm)','dU_(mm)','s_dE','s_dN','s_dU'},sprintf('_%d',m));
                 end
                 E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s_VECTORS',proc,summary)));
-                E.meta = struct( ...
-                    'NODE_FID',N(kn(s)).FID, ...
-                    'NODE_NAME',N(kn(s)).NAME, ...
-                    'NODE_LATITUDE',sprintf('%1.6f',N(kn(s)).LAT_WGS84), ...
-                    'NODE_LONGITUDE',sprintf('%1.6f',N(kn(s)).LON_WGS84), ...
-                    'NODE_ELEVATION',sprintf('%1.2f',N(kn(s)).ALTITUDE), ...
-                    'NODE_URL',sprintf('/cgi-bin/showNODE.pl?node=%s',N(kn(s)).FULLID), ...
-                    'TIME_PERIODS',regexprep(sprintf('%g,',modeltime_period),',$','') ...
-                );
                 E.infos = {};
                 for m = 1:numel(modeltime_period)
                     E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
                 end
-                mkexport(WO,sprintf('%s_VECTORS_%s_%s',summary,lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
-				E.meta = {}; % meta are erased after the export
+                mkexport(WO,sprintf('%s_VECTORS_%s_%s',summary,lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P,r,N(kn(s)));
             end
 
             % modeltime results
@@ -2367,7 +2353,7 @@ for r = 1:numel(P.GTABLE)
 			for m = 1:numel(modeltime_period)
                 E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
             end
-            mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+            mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
         end
 
         if isok(P,'MODELTIME_EXPORT_MAT')

@@ -55,7 +55,7 @@ function DOUT=meteo(varargin)
 %
 %   Authors: F. Beauducel + S. Acounis / WEBOBS, IPGP
 %   Created: 2001-07-04
-%   Updated: 2025-05-30
+%   Updated: 2026-01-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -285,7 +285,7 @@ for n = 1:length(N)
 			E.d = dk;
 			E.header = strcat(C.nm,{'('},C.un,{')'});
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 end

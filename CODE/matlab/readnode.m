@@ -16,6 +16,7 @@ function N=readnode(WO,nodefullid,NODES);
 %	Some additional keys are also added:
 %	          ID: self reference
 %         FULLID: full ID
+%            URL: link to the node's page
 %	   TIMESTAMP: timestamp of the .cnf file (local time)
 %        GEOJSON: GeoJSON string containing feature collection of geometries
 %	         CLB: data table from calibration .clb file (if exists)
@@ -35,7 +36,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2025-12-30
+%   Updated: 2026-01-13
 
 
 if ~exist('NODES','var')
@@ -75,6 +76,7 @@ end
 % adds a self-reference
 N.ID = id;
 N.FULLID = nodefullid;
+N.URL = sprintf('/cgi-bin/showNODE.pl?node=%s',N.FULLID);
 
 % adds a timestamp (in the local server time)
 X = dir(f);

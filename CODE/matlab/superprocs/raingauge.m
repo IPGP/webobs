@@ -23,7 +23,7 @@ function DOUT=raingauge(varargin)
 %
 %	Authors: Alexis Bosson, WEBOBS/IPGP
 %	Created: 2016-08-05, in Guadeloupe
-%	Updated: 2021-01-01
+%	Updated: 2026-01-13
 
 WO = readcfg;
 % Log prefix : function name
@@ -170,7 +170,7 @@ for n = 1:length(N)
 			% File title : node's alias, name and ID
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
 			% Export data to text file
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 end
