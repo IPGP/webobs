@@ -15,7 +15,8 @@ $(document).ready(function() {
     if ($('#Larrow').length) {
         $('#Larrow').css('height', $(document).height() + 'px');
         $('#Rarrow').css('height', $(document).height() + 'px');
-        $('#Rarrow').css('left', $(window).width() - $('#Rarrow').width());
+        //$('#Rarrow').css('left', $(window).width() - $('#Rarrow').width());
+        $('#Rarrow').css('left', visualViewport.width - $('#Rarrow').width());
     }
     if (typeof MECB === 'undefined') {
         // event handlers
