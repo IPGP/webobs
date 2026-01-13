@@ -28,7 +28,7 @@ function DOUT=extenso(varargin)
 %
 %   Authors: F. Beauducel + J.C. Komorowski / WEBOBS, IPGP
 %   Created: 2001-10-23
-%   Updated: 2025-12-19
+%   Updated: 2026-01-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -236,7 +236,7 @@ for n = 1:length(N)
 			E.d = [d(k,1),e(k,1),d(k,2),d(k,3)];
 			E.header = {'Extension(mm)','Ext_std(mm)','Temp(C)','Wind'};
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 
@@ -498,7 +498,7 @@ for r = 1:length(P.GTABLE)
 			E.d = [geo(kn,:),tr(kn),tre(kn),az(kn)];
 			E.header = {'Latitude','Longitude','Altitude','E_velocity(mm/yr)','dEv(mm/yr)','Azimuth(N)'};
 			E.title = sprintf('%s {%s}',stitre,upper(rcode2));
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
 

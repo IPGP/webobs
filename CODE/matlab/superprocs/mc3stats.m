@@ -51,7 +51,7 @@ function DOUT=mc3stats(varargin)
 %
 %	Authors: J.-M. Saurel and F. Beauducel / WEBOBS, IPGP
 %	Created: 2019-01-31
-%	Updated: 2021-01-01
+%	Updated: 2026-01-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -403,7 +403,7 @@ for r = 1:length(P.GTABLE)
         	E.d = [cumsum(moment_catalogk),cumsum(energy_catalogk)./10^6,cumsum(events_count)];
         end
         E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
-        mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+        mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
     end
 
 %    summary='GUTENBERG-RICHTER';

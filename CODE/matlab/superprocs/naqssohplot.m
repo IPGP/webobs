@@ -29,7 +29,7 @@ function DOUT=naqssohplot(varargin)
 %
 %   Authors: J.M. Saurel / WEBOBS, IPGP
 %   Created: 2014-07-13
-%   Updated: 2025-03-31
+%   Updated: 2026-01-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -239,7 +239,7 @@ for n = 1:length(N)
 			E.d = dk(:,1:nx);
 			E.header = strcat(C.nm,{'('},C.un,{')'});
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 end

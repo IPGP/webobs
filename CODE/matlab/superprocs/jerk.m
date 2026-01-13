@@ -36,7 +36,7 @@ function DOUT=jerk(varargin)
 %
 %   Authors: F. Beauducel + G. Roult + V. Ferrazzini, WEBOBS/IPGP
 %   Created: 2014-04-14 at OVPF, La Réunion, Indian Ocean
-%   Updated: 2025-12-31
+%   Updated: 2026-01-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -414,7 +414,7 @@ for n = 1:length(N)
 					sprintf('Azimuth(%sN)',cba),'Alarm'};
 				E.title = sprintf('%s {%s}',stitle,upper(N(n).ID));
 				E.fmt = [repmat({'%f'},1,7),{'%g'}];
-				mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+				mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 			end
 
 			% email for alerts

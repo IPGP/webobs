@@ -55,7 +55,7 @@ function DOUT=sara(varargin)
 %
 %	Authors: Tan Chiou Ting, Benoit Taisne, Francois Beauducel / EOS / IPGP / WEBOBS
 %	Created: 2017-09-14
-%	Updated: 2021-01-01
+%	Updated: 2026-01-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -198,7 +198,7 @@ for n = 1:length(N)
 			E.d = dk(:,1:nx);
 			E.header = strcat(D(n).CLB.nm,{'('},D(n).CLB.un,{')'});
 			E.title = sprintf('%s {%s}',sprintf('%s: %s',N(n).ALIAS,N(n).NAME),upper(N(n).ID));
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 end

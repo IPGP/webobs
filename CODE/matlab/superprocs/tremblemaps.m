@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2025-02-05
+%	Updated: 2026-01-13
 
 
 WO = readcfg;
@@ -197,7 +197,7 @@ for n = 1:length(t)
 		%	E.d = dk;
 		%	E.header = CLB.nm;
 		%	E.title = sprintf('%s {%s}',M.(map).title,proc);
-		%	mkexport(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+		%	mkexport(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		%end
 
 		% removes all symbolic links

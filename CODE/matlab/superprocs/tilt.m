@@ -37,7 +37,7 @@ function DOUT=tilt(varargin)
 %   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet,
 %            V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
 %   Created: 2015-08-24 in Yogyakarta, Indonesia
-%   Updated: 2022-06-12
+%   Updated: 2026-01-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -274,7 +274,7 @@ for n = 1:length(N)
 			E.d = d(k,ixyt);
 			E.header = {'TiltX(�rad)','TiltY(�rad)','Temperature(�C)'};
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 
@@ -650,7 +650,7 @@ for r = 1:length(P.GTABLE)
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,1:2)];
 			E.header = {'Latitude','Longitude','Altitude','E_tilt(�rad/day)','N_Tilt(�rad/day)','dEt(�rad/day)','dNt(�rad/day)'};
 			E.title = sprintf('%s {%s}',stitre,upper(sprintf('%s_%s',proc,summary)));
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
 
