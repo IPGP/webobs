@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2025-06-02
+%   Updated: 2026-01-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -936,7 +936,7 @@ for r = 1:numel(P.GTABLE)
         rdv = 1e3*diff(tlim)/P.trendfact; % ratio displacement/velocity
         mscale = roundsd(vscale*rdv,1); % displacement scale (rounded)
 		lsc = mscale*vsc/rdv; % vector of displacements plotted at velocity scale...
-		arrows(xsc,ysc,lsc,90,[arrowshape*vmax/vscale,xyr],'FaceColor','none','LineWidth',1,'Clipping','off');
+		arrows(xsc,ysc,lsc,90,[arrowshape*vmax*rdv/mscale,xyr],'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g mm',mscale),'FontWeight','bold')
 
 
