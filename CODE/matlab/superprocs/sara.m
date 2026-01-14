@@ -173,7 +173,7 @@ for n = 1:length(N)
 			end
 		end
 
-		tlabel(tlim,P.GTABLE(r).TZ)
+		tlabel(tlim,P.TZ)
 		plotevent(P.EVENTS_FILE)
 
 		% title, status and additional information
@@ -181,7 +181,7 @@ for n = 1:length(N)
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 		P.GTABLE(r).INFOS = {''};
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),' (min|avr|max)',' '};
+			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),' (min|avr|max)',' '};
 			for i = 1:nx
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
 					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},roundsd([rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i))],5))}];
@@ -266,7 +266,7 @@ if isfield(P,'SUMMARYLIST')
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 		end
 
-		tlabel(xlim,P.GTABLE(r).TZ)
+		tlabel(xlim,P.TZ)
 		plotevent(P.EVENTS_FILE)
 
 		% 1/x time series (Y-axis linear scale forced)
@@ -304,7 +304,7 @@ if isfield(P,'SUMMARYLIST')
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 		end
 
-		tlabel(xlim,P.GTABLE(r).TZ)
+		tlabel(xlim,P.TZ)
 		plotevent(P.EVENTS_FILE)
 
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
@@ -541,7 +541,7 @@ if isfield(P,'SUMMARYLIST')
 			datetick2('x',P.GTABLE(r).DATESTR)
 			ylabel(sprintf('Time windows'))
 
-			tlabel(xlim,P.GTABLE(r).TZ)
+			tlabel(xlim,P.TZ)
 			plotevent(P.EVENTS_FILE)
 			rcode2 = sprintf('%s_%s',proc,summary);
 			mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))

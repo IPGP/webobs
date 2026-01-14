@@ -166,14 +166,14 @@ for n = 1:length(N)
 			end
 		end
 
-		tlabel(tlim,P.GTABLE(r).TZ)
+		tlabel(tlim,P.TZ)
 
 		% title, status and additional information
 		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 		P.GTABLE(r).INFOS = {''};
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),' (min|avr|max)',' '};
+			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),' (min|avr|max)',' '};
 			for i = 1:nx
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
 					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},roundsd([rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i))],5))}];
@@ -265,7 +265,7 @@ if isfield(P,'SUMMARYLIST')
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 		end
 
-		tlabel(xlim,P.GTABLE(r).TZ)
+		tlabel(xlim,P.TZ)
 
 		% 1/x time series (Y-axis linear scale forced)
 		% makes a new data vector with averaged signals
@@ -305,7 +305,7 @@ if isfield(P,'SUMMARYLIST')
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 		end
 
-		tlabel(xlim,P.GTABLE(r).TZ)
+		tlabel(xlim,P.TZ)
 
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close
@@ -375,7 +375,7 @@ if isfield(P,'SUMMARYLIST')
 					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 			end
 
-			tlabel(xlim,P.GTABLE(r).TZ)
+			tlabel(xlim,P.TZ)
 
 			% plots maps time limits
 			tbin = linspace(xlim(1),xlim(2),sourcemap_n^2+1);
@@ -439,8 +439,8 @@ if isfield(P,'SUMMARYLIST')
 					plot(mean(xx(k)),mean(yy(k)),'pk','MarkerSize',5,'LineWidth',2)
 				end
 				hold off
-				xlabel({sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(1)),P.GTABLE(r).TZ), ...
-					sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(2)),P.GTABLE(r).TZ)});
+				xlabel({sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(1)),P.TZ), ...
+					sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(2)),P.TZ)});
 
 			end
 
