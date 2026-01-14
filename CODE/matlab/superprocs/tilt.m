@@ -272,7 +272,7 @@ for n = 1:length(N)
 		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
 			E.t = t(k);
 			E.d = d(k,ixyt);
-			E.header = {'TiltX(�rad)','TiltY(�rad)','Temperature(�C)'};
+			E.header = {'TiltX(µrad)','TiltY(µrad)','Temperature(°C)'};
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
@@ -366,9 +366,9 @@ for r = 1:length(P.GTABLE)
 		datetick2('x',P.GTABLE(r).DATESTR)
 		switch ii
 			case 1
-				ylabel(sprintf('%sTilt X (�rad)',rel))
+				ylabel(sprintf('%sTilt X (µrad)',rel))
 			case 2
-				ylabel(sprintf('%sTilt Y (�rad)',rel))
+				ylabel(sprintf('%sTilt Y (µrad)',rel))
 			case 3
 				ylabel(sprintf('%s%s (%s)',rel,D(n).CLB.nm{i},D(n).CLB.un{i}))
 		end
@@ -486,7 +486,7 @@ for r = 1:length(P.GTABLE)
 		xsc = xlim(1) + [0,vscale*vsc*xyr];
 		ysc = repmat(alim(1)-diff(alim)/20,1,2);
 		plot(xsc,ysc,'-k','Linewidth',2,'Clipping','off')
-		text(mean(xsc),ysc(1),sprintf('%g �rad',vscale),'Clipping','off', ...
+		text(mean(xsc),ysc(1),sprintf('%g µrad',vscale),'Clipping','off', ...
 			'HorizontalAlignment','center','VerticalAlignment','top','FontWeight','bold')
 		hold off
 
@@ -612,7 +612,7 @@ for r = 1:length(P.GTABLE)
 		ysc = ylim(2) + .04*diff(ylim);
 		lsc = vscale*vsc;
 		arrows(xsc,ysc,lsc,90,arrowshape*vmax/vscale,'FaceColor','none','LineWidth',1,'Clipping','off');
-		text(xsc+1.1*lsc,ysc,sprintf('%g �rad/day',vscale),'FontWeight','bold')
+		text(xsc+1.1*lsc,ysc,sprintf('%g µrad/day',vscale),'FontWeight','bold')
 
 
 		hold off
@@ -636,7 +636,7 @@ for r = 1:length(P.GTABLE)
 				set(gca,'YLim',[0,max(sta_amp+sta_err)])
 			end
 			xlabel('Distance from target (km)')
-			ylabel('Tilt amplitude (�rad/day)')
+			ylabel('Tilt amplitude (µrad/day)')
 		end
 
 
@@ -648,7 +648,7 @@ for r = 1:length(P.GTABLE)
 		if isok(P.GTABLE(r),'EXPORTS')
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,1:2)];
-			E.header = {'Latitude','Longitude','Altitude','E_tilt(�rad/day)','N_Tilt(�rad/day)','dEt(�rad/day)','dNt(�rad/day)'};
+			E.header = {'Latitude','Longitude','Altitude','E_tilt(µrad/day)','N_Tilt(µrad/day)','dEt(µrad/day)','dNt(µrad/day)'};
 			E.title = sprintf('%s {%s}',stitre,upper(sprintf('%s_%s',proc,summary)));
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
