@@ -626,7 +626,7 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),'(median)',' ',' '};
+			P.GTABLE(r).INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),'(median)',' ',' '};
 			for i = 1:3
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%1.3f %s} (%1.3f) - Vel. = {\\bf%+1.1f \\pm %1.1f %s}', ...
 					i, enu{i},D(n).d(ke,i+4),D(n).CLB.un{i},rmedian(D(n).d(k,i+4)),lre(i,:),P.trendunit)}];
@@ -2094,7 +2094,7 @@ for r = 1:numel(P.GTABLE)
 		ylabel('Source Elevation (km asl)')
 		pos = get(gca,'Position');
 
-		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',fontsize)
+		tlabel(tlim,P.TZ'FontSize',fontsize)
 
 		% -- 3D map
 		[~,plist] = ismember(modeltime_map_period,modeltime_period);

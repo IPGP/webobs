@@ -293,7 +293,7 @@ for r = 1:length(P.GTABLE)
         end
 
         P.GTABLE(r).INFOS = {sprintf('%s',info),''};
-        P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('Last event: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ)}];
+        P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('Last event: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ)}];
         if thresh > 0
             P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{'dd/mm/yy: N.evts|NRJ MC|NRJ loc|% loc'}];
         end
@@ -378,8 +378,8 @@ for r = 1:length(P.GTABLE)
         legend('MainCourante','catalog');
         legend('boxoff');
         legend('location','southeast');
-        tlabel(tlim,P.GTABLE(r).TZ)
-        tlabel(tlim,P.GTABLE(r).TZ)
+        tlabel(tlim,P.TZ)
+        tlabel(tlim,P.TZ)
 
         mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
         close

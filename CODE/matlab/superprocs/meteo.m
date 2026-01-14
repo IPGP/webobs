@@ -144,7 +144,7 @@ for n = 1:length(N)
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 		P.GTABLE(r).INFOS = {''};
 
-		P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),'(min|moy/cum|max)',' '};
+		P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),'(min|moy/cum|max)',' '};
 		for i = 1:nx
 			if i ~= i_rain
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f | %+1.1f)', ...
@@ -271,7 +271,7 @@ for n = 1:length(N)
 			ylabel(sprintf('%s (%s)',C.nm{g},C.un{g}))
 			if length(find(~isnan(dk(:,g))))==0, nodata(tlim), end
 		end
-		tlabel(tlim,P.GTABLE(r).TZ)
+		tlabel(tlim,P.TZ)
 
 		% makes graph
 		OPT.EVENTS = N(n).EVENTS;

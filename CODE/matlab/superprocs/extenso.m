@@ -212,10 +212,10 @@ for n = 1:length(N)
 			nodata(tlim)
 		end
 
-		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
+		tlabel(tlim,P.TZ'FontSize',8)
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),' (min|moy|max)',' ',' ', ...
+			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),' (min|moy|max)',' ',' ', ...
 				sprintf('1. %s = {\\bf%+1.3f %s} (%+1.3f | %+1.3f | %+1.3f) - Trend = {\\bf%+1.3f \\pm %1.3f mm/yr}', ...
 					C.nm{1},d(ke,1),C.un{1},rmin(d(k,1)),rmean(d(k,1)),rmax(d(k,1)),lre), ...
 			};
@@ -356,7 +356,7 @@ for r = 1:length(P.GTABLE)
 		set(gca,'YLim',ylim);
 	end
 
-	tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
+	tlabel(tlim,P.TZ'FontSize',8)
 
 	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 	close

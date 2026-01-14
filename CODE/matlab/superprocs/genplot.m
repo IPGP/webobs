@@ -155,14 +155,14 @@ for n = 1:length(N)
 
 		end
 
-		tlabel(tlim,P.GTABLE(r).TZ)
+		tlabel(tlim,P.TZ)
 
 		% title, status and additional information
 		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 		P.GTABLE(r).INFOS = {''};
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),' (min|avr|max)',' '};
+			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),' (min|avr|max)',' '};
 			for i = 1:nx
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
 					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},roundsd([rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i))],5))}];
@@ -265,7 +265,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 			set(gca,'YLim',ylim);
 		end
 
-		tlabel(xlim,P.GTABLE(r).TZ)
+		tlabel(xlim,P.TZ)
 
 		if isok(P,'PLOT_GRID')
 			grid on

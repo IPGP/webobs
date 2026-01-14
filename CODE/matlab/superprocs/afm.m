@@ -206,10 +206,10 @@ for n = 1:length(N)
 			end
 		end
 
-		tlabel(xlim,P.GTABLE(r).TZ)
+		tlabel(xlim,P.TZ)
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {sprintf('Last data: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),' (min|moy|max)',' ',' '};
+			P.GTABLE(r).INFOS = {sprintf('Last data: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),' (min|moy|max)',' ',' '};
 			for i = 1:nx
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+g %s} (%+1.2f | %+1.2f | %+1.2f)', ...
 					i, C.nm{i},d(ke,i),C.un{i},rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i)))}];
@@ -296,7 +296,7 @@ if isfield(P,'SUMMARYLIST')
 			set(gca,'YLim',ylim);
 		end
 
-		tlabel(xlim,P.GTABLE(r).TZ)
+		tlabel(xlim,P.TZ)
 
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 		close

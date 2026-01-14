@@ -251,10 +251,10 @@ for n = 1:length(N)
 			end
 			OPT.FIXEDPP = false;
 		end
-		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
+		tlabel(tlim,P.TZ'FontSize',8)
 
 		if ~isempty(k) && ~isempty(k1)
-			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),' (min|moy|max)',' ',' '};
+			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),' (min|moy|max)',' ',' '};
 			for ii = 1:length(ixyt)
 				i = ixyt(ii);
 				drel = d(k1,i)*(ii<3);
@@ -383,7 +383,7 @@ for r = 1:length(P.GTABLE)
 		set(gca,'YLim',ylim);
 	end
 
-	tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
+	tlabel(tlim,P.TZ'FontSize',8)
 
 	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
 	close

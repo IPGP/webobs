@@ -119,7 +119,7 @@ for n = 1:length(N)
 		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 		P.GTABLE(r).INFOS = {''};
 
-		P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),'(min|moy|max)',' '};
+		P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),'(min|moy|max)',' '};
 		for i = 1:nx
 			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f | %+1.1f)', ...
 				i, C.nm{i},d(ke,i),C.un{i},rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i)))}];
@@ -243,7 +243,7 @@ for n = 1:length(N)
 			ylabel(sprintf('%s (%s)',C.nm{tsc(i)},C.un{tsc(i)}))
 		end
 
-		tlabel(tlim,P.GTABLE(r).TZ)
+		tlabel(tlim,P.TZ)
 
 		% makes graph
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))

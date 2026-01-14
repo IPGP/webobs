@@ -58,6 +58,7 @@ if fid > 0
 	else
 		fprintf(fid,'# TIMESPAN: all data\n');
 	end
+	fprintf(fid,'# TZ: %+g\n',P.TZ);
 	fprintf(fid,'#\n');
 
     % Header node keylist

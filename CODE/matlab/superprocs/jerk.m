@@ -110,8 +110,9 @@ for n = 1:length(N)
 
 	% computes theoretical tides (in nm/s2)
 	if tidemode
-		% takes one day before and after the time window of data to allow time shift
-		T = mktides(WO.PRGM_GOTIC2,tidemode,P.DATELIM+[-1,1],N(n).LAT_WGS84,N(n).LON_WGS84,N(n).ALTITUDE);
+		% request in UT + takes one day before and after the time window of data to allow time shift
+		T = mktides(WO.PRGM_GOTIC2,tidemode,P.DATELIM-P.TZ/24+[-1,1],N(n).LAT_WGS84,N(n).LON_WGS84,N(n).ALTITUDE);
+        T.t = T.t + P.TZ/24; % back to PROC's TZ
 	end
 
 
@@ -274,7 +275,7 @@ for n = 1:length(N)
 		set(gca,'XLim',xlim,'Ylim',ylim,'FontSize',8)
 		datetick2('x',P.GTABLE(r).DATESTR)
 		ylabel(sprintf('Jerk Aamplitude (nm/s%s)',cb3))
-		tlabel(xlim,P.GTABLE(r).TZ)
+		tlabel(xlim,P.TZ)
 
 		% jerk zoom
 		subplot(9,1,8:9); extaxes(gca,[.07,.03])
@@ -297,7 +298,7 @@ for n = 1:length(N)
 		%datetick2('x','mm/dd HH:MM')
 		datetick2('x',-1)
 		ylabel(sprintf('Jerk Amplitude - Zoom (nm/s%s)',cb3))
-		tlabel(zd,P.GTABLE(r).TZ)
+		tlabel(zd,P.TZ)
 
 		% plot alerts in background
 		ka2 = ip(jerk<threshold_max & jerk>threshold_level2 & (insector(jth,azlim) | insector(jth-180,azlim)));
@@ -362,7 +363,7 @@ for n = 1:length(N)
 		end
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {sprintf('Last data: {\\bf %s} {\\it %+d}',datestr(t(ke)),P.GTABLE(r).TZ)};
+			P.GTABLE(r).INFOS = {sprintf('Last data: {\\bf %s} {\\it %+d}',datestr(t(ke)),P.TZ)};
 			if tidemode
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{ ...
 					sprintf('   Tide predict mode: {\\bf %s}',tidemodes{tidemode}), ...

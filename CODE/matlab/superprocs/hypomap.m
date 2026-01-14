@@ -475,7 +475,7 @@ for m = 1:length(summarylist)
 				box on
 			end
             colormap(M(m).cmap)
-			tlabel(tlim,P.GTABLE(r).TZ)
+			tlabel(tlim,P.TZ)
 
 			P.GTABLE(r).GTITLE = gtitle(M(m).title,P.GTABLE(r).TIMESCALE);
 

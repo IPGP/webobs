@@ -135,7 +135,7 @@ for n = 1:length(N)
 		% Subtitle with decimation period
 		title(sprintf(rain_subtitle,hcum))
 		% Label of the graph : date/time limits
-		tlabel(tlim,P.GTABLE(r).TZ)
+		tlabel(tlim,P.TZ)
 
 		% Title of the graph : node's name and timescale
 		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
@@ -146,7 +146,7 @@ for n = 1:length(N)
 		% If there are data for this node
 		if ~isempty(k)
 			% Last data date/time and description
-			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),' (min|avr|max)',' '};
+			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),' (min|avr|max)',' '};
 			% Rainfall decimated values
 			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
 			sprintf(rain_infos_label,hcum),dk(end,1),'mm',roundsd([rmin(dk(:,1)),rmean(dk(:,1)),rmax(dk(:,1))],5))}];
@@ -281,7 +281,7 @@ for r = 1:length(P.GTABLE)
 		% Below the last subplot
 		if n == length(N)
 			% Label of the graph : date/time limits
-			tlabel(tlim,P.GTABLE(r).TZ)
+			tlabel(tlim,P.TZ)
 		end
 	end
 	% Export current figure to files with prefix : timescale
