@@ -1,26 +1,27 @@
-function status = mkexport(WO,f,E,P,r,N);
+function mkexport(WO,f,E,P,r,N);
 %MKEXPORT PROC's exporting data as TXT file.
-%	MKEXPORT(WO,F,E,P,R) exports data E:
+%	MKEXPORT(WO,F,E,P,R) exports data in structure E:
 %	   E.t = time vector (DATENUM format)
 %	   E.d = data matrix (numeric)
 %	   E.header = headers (cell of strings)
 %	   E.fmt = format printf (cell of strings)
 %	   E.title = title (string)
 %	   E.infos = multi-line comments (cell of strings)
-%	in the file F.txt using:
-%      - PROC parameters from structure P,
-%      - GTABLE parameters from P.GTABLE(R) where R is the index of TIMESCALES table.
+%	using parameters from:
+%      - PROC structure P,
+%      - P.GTABLE(R) where R is the index of TIMESCALES table.
+%	writing in the file P.GTABLE(r).OUTDIR/[events/]F.txt:
 %
 %   File header is completed by additional infos from P using the variable
 %   P.EXPORT_HEADER_PROC_KEYLIST.
 % 
-%   MKEXPORT(WO,F,E,P,N) adds further infos in the file header using NODE 
+%   MKEXPORT(WO,F,E,P,R,N) adds further infos in the file header using NODE 
 %   structure N and P.EXPORT_HEADER_NODE_KEYLIST variable.
 %
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2026-01-13
+%	Updated: 2026-01-14
 
 
 ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
