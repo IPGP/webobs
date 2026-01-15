@@ -689,6 +689,10 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	cd ..
 	rm -rf $db_temp_dir
 
+    # 6) check user access integrity and solve issues if detected
+    echo "${RELBASE}/SETUP/check-user-access.sh"
+    ${RELBASE}/SETUP/check-user-access.sh clean || { exit 1; }
+    echo
 
 else
 	MIGRATION=$(confirm "Do you want to migrate some old (pre-2012) WebObs stuff [y/N] ?")
@@ -753,7 +757,7 @@ else
 fi
 
 # migration of existing former FORM (.DAT text file based) to GENFORM
-if [[ -d ${DOCROOT}/CONF/GRIDS2NODES && -f ${DOCROOT}/DATA/DB/WEBOBSFORMS.db ]]; then
+if [[ -d ${DOCROOT}/CONF/GRIDS2FORMS && -f ${DOCROOT}/DATA/DB/WEBOBSFORMS.db && $(ls -A ${DOCROOT}/CONF/GRIDS2FORMS) ]]; then
     echo "${RELBASE}/SETUP/migration/form2genform.sh"
     ${RELBASE}/SETUP/migration/form2genform.sh ${DOCROOT} || { exit 1; }
     echo
