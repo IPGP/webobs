@@ -10,7 +10,7 @@
 if [[ $# -eq 0 ]]; then
     echo "Syntax: check-user-access.sh [clean]"
     echo
-    echo "checks consistency between the webobs db users and the htaccess file:"
+    echo "checks consistency between the webobs db users and the htpasswd file:"
     echo "  - logins of invalid users will be commented"
     echo "  - logins of inexisting users will be deleted"
     echo
@@ -78,7 +78,7 @@ if [[ $clean = true ]]; then
     # backup the file
     bkp="$WO__HTTP_PASSWORD_FILE.backup$(date +%Y%m%dT%H%M%S)"
     cp -a $WO__HTTP_PASSWORD_FILE $bkp
-    echo "--> Former htaccess file has been backup as $bkp."
+    echo "--> Former htpasswd file has been backup as $bkp."
 
     # comment some logins
     regex=$(printf '^%s:|' "${tobecommented[@]}")
