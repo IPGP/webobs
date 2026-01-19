@@ -150,9 +150,9 @@ for n = 1:length(N)
 		% title and status
 		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 		stitre = varsub(pernode_title,V);
-		P.GTABLE(r).GTITLE = stitre;
-		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = stitre;
+		OPT.GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
+		OPT.INFOS = {''};
 
 		% loop for X and Y components with error bars (in m)
 		lre = nan(nx,2);
@@ -254,18 +254,19 @@ for n = 1:length(N)
 		tlabel(tlim,P.TZ,'FontSize',8)
 
 		if ~isempty(k) && ~isempty(k1)
-			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),' (min|moy|max)',' ',' '};
+			OPT.INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),' (min|moy|max)',' ',' '};
 			for ii = 1:length(ixyt)
 				i = ixyt(ii);
 				drel = d(k1,i)*(ii<3);
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.2f %s} (%+1.2f | %+1.2f | %+1.2f) - Trend = {\\bf%+1.2f \\pm %1.2f %s/day}', ...
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('%d. %s = {\\bf%+1.2f %s} (%+1.2f | %+1.2f | %+1.2f) - Trend = {\\bf%+1.2f \\pm %1.2f %s/day}', ...
 					ii, C.nm{i},d(ke,i)-drel,C.un{i},rmin(d(k,i)-drel),rmean(d(k,i)-drel),rmax(d(k,i)-drel),lre(i,:),C.un{i})}];
 			end
 		end
 
 		% makes graph
+        OPT.STATUS = P.GTABLE(r).STATUS;
 		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
@@ -385,7 +386,7 @@ for r = 1:length(P.GTABLE)
 
 	tlabel(tlim,P.TZ,'FontSize',8)
 
-	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 	close
 
 	% --- Motion map
@@ -497,7 +498,9 @@ for r = 1:length(P.GTABLE)
 		axis off
 
 		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
+        OPT.FIXEDPP = true;
+        OPT.INFOLINES = 9;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -641,7 +644,9 @@ for r = 1:length(P.GTABLE)
 
 
 		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
+        OPT.FIXEDPP = true;
+        OPT.INFOLINES = 9;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
@@ -908,7 +913,7 @@ for r = 1:length(P.GTABLE)
 		P.GTABLE(r).INFOS = {''};
 		%rcode2 = sprintf('%s_%s',proc,summary);
 		OPT.FIXEDPP = true;
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 	end
