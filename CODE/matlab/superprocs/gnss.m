@@ -466,6 +466,10 @@ for r = 1:numel(P.GTABLE)
 	summary = 'SUMMARY';
 	if any(strcmp(P.SUMMARYLIST,summary))
 		figure, clf, orient tall
+        OPT.tz = P.TZ;
+        OPT.datefmt = P.GTABLE(r).DATESTR;
+        OPT.markersize = P.GTABLE(r).MARKERSIZE;
+        OPT.linewidth = P.GTABLE(r).LINEWIDTH;
 		OPT.linestyle = summary_linestyle;
 		OPT.movavr = 1;
 		OPT.fontsize = fontsize;
@@ -482,14 +486,14 @@ for r = 1:numel(P.GTABLE)
             X(kn).d = X(kn).d + repmat(staoffset(n) - staoffset(kn),size(X(kn).d));
 			X(kn).rgb = scolor(n);
         end
-		smartplot(X(ksum),tlim,P.GTABLE(r),OPT);
+		smartplot(X(ksum),tlim,OPT);
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
-		P.GTABLE(r).GTITLE = varsub(summary_title,V);
-		P.GTABLE(r).INFOS = {sprintf('Referential: {\\bf%s}',itrf), ...
+		OPT.GTITLE = varsub(summary_title,V);
+		OPT.INFOS = {sprintf('Referential: {\\bf%s}',itrf), ...
             sprintf('  E {\\bf%+g} %s\n  N {\\bf%+g} %s\n  U {\\bf%+g} %s',velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit)};
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -554,9 +558,10 @@ for r = 1:numel(P.GTABLE)
 		ke = D(n).G(r).ke;
 
 		% title and status
-		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
-		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = varsub(pernode_title,V);
+        OPT.STATUS = P.GTABLE(r).STATUS;
+		OPT.GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
+		OPT.INFOS = {''};
 
 		% loop for Relative Eastern, Northern, and Up components with error bars (in m)
 		X = repmat(struct('t',[],'d',[],'e',[],'w',[]),1+vrelmode,1);
@@ -603,6 +608,10 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% makes the plot
+        OPT.tz = P.TZ;
+        OPT.datefmt = P.GTABLE(r).DATESTR;
+        OPT.markersize = P.GTABLE(r).MARKERSIZE;
+        OPT.linewidth = P.GTABLE(r).LINEWIDTH;
 		OPT.linestyle = pernode_linestyle;
 		OPT.movavr = 1;
 		OPT.fontsize = fontsize;
@@ -613,7 +622,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 100;
         OPT = structmerge(OPT,P,'^TREND_');
-		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),OPT);
+		[lre,rev] = smartplot(X,tlim,OPT);
 		if ~isempty(rev)
 			axes('Position',[.8,.02,.18,.07])
 			plotcube([0,0,0],eye(3),[0,0,0],{'E','N','U'}), hold on
@@ -626,9 +635,9 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),'(median)',' ',' '};
+			OPT.INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),'(median)',' ',' '};
 			for i = 1:3
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%1.3f %s} (%1.3f) - Vel. = {\\bf%+1.1f \\pm %1.1f %s}', ...
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('%d. %s = {\\bf%1.3f %s} (%1.3f) - Vel. = {\\bf%+1.1f \\pm %1.1f %s}', ...
 					i, enu{i},D(n).d(ke,i+4),D(n).CLB.un{i},rmedian(D(n).d(k,i+4)),lre(i,:),P.trendunit)}];
 			end
 		end
@@ -638,11 +647,11 @@ for r = 1:numel(P.GTABLE)
         if faultcorr
             OPT.EVENTS = cat(1,OPT.EVENTS,P.fault_event);
         end
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = D(n).t(k);
 			E.d = [D(n).d(k,1:3),D(n).e(k,:),D(n).d(k,4)];
 			E.header = {'Eastern(m)','Northern(m)','Up(m)','dE','dN','dU','Orbit'};
@@ -655,7 +664,7 @@ for r = 1:numel(P.GTABLE)
 			   	];
 				E.header = [E.header,{'East_treat(m)','North_treat(m)','Up_treat(m)'}];
 			end
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
+			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(N(n).ID));
 
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
@@ -663,9 +672,10 @@ for r = 1:numel(P.GTABLE)
 
 
 	if P.GTABLE(r).STATUS
-		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
+        OPT.STATUS = 1;
+		OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 	end
-	P.GTABLE(r).INFOS = {''};
+	OPT.INFOS = {''};
 
 
 	% --- Baselines time series
@@ -718,7 +728,7 @@ for r = 1:numel(P.GTABLE)
 			set(gcf,'PaperSize',[p(1),p(2)*numel(kr)/pagestanum])
 		end
 		orient tall
-		P.GTABLE(r).GTITLE = varsub(baselines_title,V);
+		OPT.GTITLE = varsub(baselines_title,V);
 
 		% builds the structure X for smartplot: X(n).d(:,i) where
 		%   n = destination node and i = reference node
@@ -780,14 +790,18 @@ for r = 1:numel(P.GTABLE)
 			refnames{nn} = varsub(baselines_ylabel,V);
 
 			% exports baseline data for reference n
-			if isok(P.GTABLE(r),'EXPORTS')
-				E.title = sprintf('%s: ref. %s',P.GTABLE(r).GTITLE,N(n).ALIAS);
+			if isok(P,'EXPORTS')
+				E.title = sprintf('%s: ref. %s',OPT.GTITLE,N(n).ALIAS);
 				E.infos = {};
 				mkexport(WO,sprintf('%s_%s_%s',summary,N(n).FID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 			end
 		end
 
 		% makes the plot
+        OPT.tz = P.TZ;
+        OPT.datefmt = P.GTABLE(r).DATESTR;
+        OPT.markersize = P.GTABLE(r).MARKERSIZE;
+        OPT.linewidth = P.GTABLE(r).LINEWIDTH;
 		OPT.linestyle = baselines_linestyle;
 		OPT.movavr = baselines_mavr;
 		OPT.fontsize = fontsize;
@@ -798,14 +812,15 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 1/siprefix(OPT.yscaleunit,'m');
         OPT = structmerge(OPT,P,'^TREND_');
-		smartplot(X,tlim,P.GTABLE(r),OPT);
+		smartplot(X,tlim,OPT);
 
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
 
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -815,20 +830,20 @@ for r = 1:numel(P.GTABLE)
 
 		figure, orient tall
 
-		P.GTABLE(r).GTITLE = varsub(vectors_title,V);
-		P.GTABLE(r).INFOS = [ ' ', ' ', tsinfo, ...
+		OPT.GTITLE = varsub(vectors_title,V);
+		OPT.INFOS = [ ' ', ' ', tsinfo, ...
 			sprintf('Referential: {\\bf%s}',itrf),sprintf('   E {\\bf%+g} %s\n   N {\\bf%+g} %s\n   U {\\bf%+g} %s', ...
                 velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit), ...
 			' ', ...
 			sprintf('Mean velocity (%s):',itrf) ...
 		];
 		for i = 1:3
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},mvv(i),P.trendunit)}];
+			OPT.INFOS = [OPT.INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},mvv(i),P.trendunit)}];
 		end
 		if vrelmode
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{' ', sprintf('Velocity ref. vector ({\\bf%s}):',mode)}];
+			OPT.INFOS = [OPT.INFOS{:},{' ', sprintf('Velocity ref. vector ({\\bf%s}):',mode)}];
 			for i = 1:3
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},voffset(i),P.trendunit)}];
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},voffset(i),P.trendunit)}];
 			end
 		end
 
@@ -969,12 +984,15 @@ for r = 1:numel(P.GTABLE)
 		end
 
 
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.FIXEDPP = true;
+        OPT.INFOLINES = 9;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
+		if isok(P,'EXPORTS')
 			E.infos = { ...
 				sprintf('Velocity reference (%s):  E %+g %s, N %+g %s, U %+g %s',datestr(velrefdate), ...
                     velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit), ...
@@ -983,7 +1001,7 @@ for r = 1:numel(P.GTABLE)
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,:)];
 			E.header = {'Latitude','Longitude','Altitude','E_velocity(mm/yr)','N_Velocity(mm/yr)','Up_Velocity(mm/yr)','dEv(mm/yr)','dNv(mm/yr)','dUv(mm/yr)'};
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
+			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
@@ -995,8 +1013,8 @@ for r = 1:numel(P.GTABLE)
 		figure, orient tall
 		ppos = get(gcf,'PaperPosition');
 
-		P.GTABLE(r).GTITLE = varsub(motion_title,V);
-		P.GTABLE(r).INFOS = tsinfo;
+		OPT.GTITLE = varsub(motion_title,V);
+		OPT.INFOS = tsinfo;
 
 		% Selects nodes
 		knv = selectnode(N,tlim,motion_excluded,motion_included,[targetll,motion_excluded_target]);
@@ -1150,8 +1168,11 @@ for r = 1:numel(P.GTABLE)
 		set(gca,'XLim',[0,1],'YLim',[0,1])
 		axis off
 
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.FIXEDPP = true;
+        OPT.INFOLINES = 9;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -1276,15 +1297,18 @@ for r = 1:numel(P.GTABLE)
 
 		colormap(modelnet_cmap)
 
-		P.GTABLE(r).GTITLE = varsub(modelnet_title,V);
-		P.GTABLE(r).INFOS = [ tsinfo, ...
+		OPT.GTITLE = varsub(modelnet_title,V);
+		OPT.INFOS = [ tsinfo, ...
 			sprintf('{\\bf%d}/%d stations',length(kn),numel(N)), ...
 	   		sprintf('minimum displacements at {\\bf%d} stations:',modelnet_minsta), ...
 	   		sprintf('E: {\\bf%g mm}, N: {\\bf%g mm}, U: {\\bf%g mm}',modelnet_mindisp), ...
 			' ', ...
 			];
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('INFOLINES',4))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.FIXEDPP = false;
+        OPT.INFOLINES = 4;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -1426,7 +1450,7 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
+		if isok(P,'EXPORTS')
 			E.t = max(cat(1,D(kn).tfirstlast),[],2);
 			E.d = [geo(kn,:),d,ux,uy,uz];
 			E.header = {'Latitude','Longitude','Altitude','E_obs(mm)','N_obs(mm)','Up_obs(mm)','dE(mm)','dN(mm)','dU(mm)', ...
@@ -1462,14 +1486,14 @@ for r = 1:numel(P.GTABLE)
 					end
 				end
 			end
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
+			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 
 		if isok(P,'MODELLING_EXPORT_MAT')
 			f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
 			fprintf('%s: saving workspace in %s...',wofun,f);
-			save(sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
+			save(sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
 			fprintf(' done.\n');
 		end
 
@@ -1830,13 +1854,15 @@ for r = 1:numel(P.GTABLE)
 		hold off
 		set(gca,'XLim',[0,dxl],'YLim',[0,dyl])
 
-		P.GTABLE(r).GTITLE = varsub(modelling_title,V);
-		P.GTABLE(r).INFOS = {'{\itTime span}:', ...
+		OPT.GTITLE = varsub(modelling_title,V);
+		OPT.INFOS = {'{\itTime span}:', ...
 			sprintf('     {\\bf%s}',datestr(tlim(1),'yyyy-mm-dd HH:MM')), ...
 			sprintf('     {\\bf%s}',datestr(tlim(2),'yyyy-mm-dd HH:MM')), ...
 			' '};
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.FIXEDPP = true;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 		end
 	end
@@ -2303,10 +2329,13 @@ for r = 1:numel(P.GTABLE)
 				text(.99,.01,twarning,'HorizontalAlignment','right','VerticalAlignment','bottom','FontSize',8)
 		end
 
-		P.GTABLE(r).GTITLE = varsub(modeltime_title,V);
-		P.GTABLE(r).GSTATUS = [];
-		P.GTABLE(r).INFOS = {' '};
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('IMAP',IMAP,'FIXEDPP',true))
+		OPT.GTITLE = varsub(modeltime_title,V);
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.INFOS = {' '};
+		OPT.IMAP = IMAP;
+        OPT.FIXEDPP = true;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 		clear IMAP
 
@@ -2324,7 +2353,7 @@ for r = 1:numel(P.GTABLE)
                     E.d(:,k) = squeeze(M(m).v(:,s,:));
                     E.header(k) = strcat({'dE_(mm)','dN_(mm)','dU_(mm)','s_dE','s_dN','s_dU'},sprintf('_%d',m));
                 end
-                E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s_VECTORS',proc,summary)));
+                E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s_VECTORS',proc,summary)));
                 E.infos = {};
                 for m = 1:numel(modeltime_period)
                     E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
@@ -2348,7 +2377,7 @@ for r = 1:numel(P.GTABLE)
 					E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
 				end
 			end
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
+			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			E.infos = {sprintf('Source type: %s',mt)};
 			for m = 1:numel(modeltime_period)
                 E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
@@ -2359,7 +2388,7 @@ for r = 1:numel(P.GTABLE)
         if isok(P,'MODELTIME_EXPORT_MAT')
             f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
             fprintf('%s: saving workspace in %s...',wofun,f);
-            save(sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
+            save(sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
             fprintf(' done.\n');
         end
     end

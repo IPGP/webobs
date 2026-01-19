@@ -1,6 +1,6 @@
-function [lre,V] = smartplot(X,tlim,G,OPT)
+function [lre,V] = smartplot(X,tlim,OPT)
 %SMARTPLOT Enhanced multi-component timeseries plot
-%	SMARTPLOT plots a single graph divided into channel subplots, each
+%	SMARTPLOT(X,tlim,OPT) plots a single graph divided into channel subplots, each
 %	subplot grouping all nodes with different colors. This supposes all
 %	have the same unit. An option is to duplicate this graph with a time
 %	zoomed period.
@@ -26,26 +26,31 @@ function [lre,V] = smartplot(X,tlim,G,OPT)
 %
 %	tlim: 2-element vector to define time period.
 %
-%	G: A structure containing fields from proc's GTABLE to set G.LINEWIDTH,
-%	G.MARKERSIZE, G.DATESTR and G.TZ (timezone).
-%
 %	OPT: A structure containing fields of options:
-%	   linestyle: string compatible with plot function (line/marker type).
-%	    fontsize: scalar that applies for all axes text.
-%	     chnames: cell of strings defining the channel names.
+%             tz: timezone (in hour)
+%        datefmt: date format
+%	  markersize: marker size
+%	   linewidth: line width (in point)
+%	   linestyle: string compatible with plot function (line/marker type)
+%	    fontsize: scalar that applies for all axes text
+%	     chnames: cell of strings defining the channel names
 %	    choffset: scalar defining the space between each channel subplots
-%	     zoompca: scalar defining the ratio of zoom if positive or PCA if negative.
+%	     zoompca: scalar defining the ratio of zoom if positive or PCA if negative
 %	      movavr: number of samples to compute and plot a moving average
 %	 yscalevalue: fixes the Y-scale (value in data unit)
 %	  yscaleunit: name of the scale unit (default is 'cm')
 %	  yscalefact: factor of the scale unit (default is 100)
-%	     TREND_*: several parameters passed to treatsignal function to compute trend.
+%	     TREND_*: several parameters passed to treatsignal function to compute trend
 %
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 2025-03-11
+%	Updated: 2026-01-19
 
+tz = field2num(OPT,'tz',0);
+datefmt = field2num(OPT,'datefmt',-1);
+markersize = field2num(OPT,'markersize',5);
+linewidth = field2num(OPT,'linewidth',1);
 linestyle = field2str(OPT,'linestyle','-');
 fontsize = field2num(OPT,'fontsize',8);
 chnames = OPT.chnames;
@@ -111,9 +116,9 @@ for ii = 0:(tzoom+(zoompca<0))
 				if isfield(X(n),'e') && ~isempty(X(n).e)
 					d = [d,X(n).e(:,i)];
 				end
-				plotorbit(X(n).t,d,X(n).w,linestyle,G.LINEWIDTH,G.MARKERSIZE,X(n).rgb,movavr);
+				plotorbit(X(n).t,d,X(n).w,linestyle,linewidth,markersize,X(n).rgb,movavr);
 				if npca > 0 && ii > 0
-					plotorbit(X(n).t,mavr(d(:,1),10),X(n).w,'-',G.LINEWIDTH,G.MARKERSIZE/2,scolor(2));
+					plotorbit(X(n).t,mavr(d(:,1),10),X(n).w,'-',linewidth,markersize/2,scolor(2));
 				end
 				kk = find(~isnan(d(:,1)));
 				if ii == 0 && X(n).trd && length(kk) >= 2
@@ -136,7 +141,7 @@ for ii = 0:(tzoom+(zoompca<0))
 
 	ylim = get(gca,'YLim');
 	% --- legends
-	datetick2('x',G.DATESTR)
+	datetick2('x',datefmt)
 	% y-labels
 	for i = 1:nx
         yyl = cmpoffset(i)+gmin(i);
@@ -188,5 +193,5 @@ for ii = 0:(tzoom+(zoompca<0))
 	end
 	set(gca,'YLim',ylim);
 
-	tlabel(tlim,G.TZ,'FontSize',fontsize)
+	tlabel(tlim,tz,'FontSize',fontsize)
 end

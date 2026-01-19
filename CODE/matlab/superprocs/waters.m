@@ -23,7 +23,7 @@ function DOUT = waters(varargin)
 %
 %	Authors: F. Beauducel + G. Hammouya + J.C. Komorowski + C. Dessert + O. Crispi, OVSG-IPGP
 %	Created: 2001-12-21, in Guadeloupe (French West Indies)
-%	Updated: 2025-12-29
+%	Updated: 2026-01-19
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -81,15 +81,15 @@ for n = 1:length(N)
 		tlim = D(n).G(r).tlim;
 
 		% title and status
-		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
-		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
+		OPT.GTITLE = varsub(pernode_title,V);
+		OPT.GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 
 		figure(1), clf, orient tall
 
-		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),''};
+		OPT.INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),''};
         allchan = cat(2,GN.chan);
         for i = 1:length(allchan)
-            P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:}, ...
+            OPT.INFOS = [OPT.INFOS{:}, ...
 			{sprintf('  %s = {\\bf%g %s}',C.nm{allchan(i)},d(ke,allchan(i)),C.un{allchan(i)})}];
         end
 
@@ -120,8 +120,9 @@ for n = 1:length(N)
 
 		tlabel(tlim,P.TZ)
 
+        OPT.STATUS = P.GTABLE(r).STATUS;
 		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 	end
 
 end
@@ -135,11 +136,12 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY')) && ~isempty(summary_channels)
 		if any(isnan(tlim))
 			tlim = minmax(cat(1,D.tfirstlast));
 		end
-		P.GTABLE(r).GTITLE = varsub(summary_title,V);
+		OPT.GTITLE = varsub(summary_title,V);
+        OPT.STATUS = P.GTABLE(r).STATUS;
 		if P.GTABLE(r).STATUS
-			P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
+			OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 		end
-		P.GTABLE(r).INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(max(cat(1,D.t))),P.TZ),'',''};
+		OPT.INFOS = {sprintf('Last meas.: {\\bf%s} {\\it%+d}',datestr(max(cat(1,D.t))),P.TZ),'',''};
 
 
 		figure(1), clf, orient tall
@@ -207,7 +209,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY')) && ~isempty(summary_channels)
 
 		tlabel(tlim,P.TZ)
 
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 	end
 end
 close
