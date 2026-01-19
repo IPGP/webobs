@@ -2094,7 +2094,7 @@ for r = 1:numel(P.GTABLE)
 		ylabel('Source Elevation (km asl)')
 		pos = get(gca,'Position');
 
-		tlabel(tlim,P.TZ'FontSize',fontsize)
+		tlabel(tlim,P.TZ,'FontSize',fontsize)
 
 		% -- 3D map
 		[~,plist] = ismember(modeltime_map_period,modeltime_period);
