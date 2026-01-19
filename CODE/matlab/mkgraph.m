@@ -1,31 +1,38 @@
-function varargout = mkgraph(WO,f,G,OPT);
+function varargout = mkgraph(WO,f,P,OPT);
 %MKGRAPH Creates graphics file(s) from current figure.
-%	MKGRAPH(WO,F,G) adds header and footer to current figure and makes a file F using
-%	parameters defined in the graph structure G. Image files are created in:
-%	   G.OUTDIR/[G.SUBDIR/]F.{eps,png,jpg}
+%	MKGRAPH(WO,F,P) adds header and footer to current figure and makes a 
+%   file F using parameters defined in the graph structure P. Image
+%   files are created in:
+%	   P.OUTDIR/[P.SUBDIR/]F.{eps,png,jpg}
 %
-%	MKGRAPH(WO,F,G,OPT) uses structure OPT as optional parameters:
+%	MKGRAPH(WO,F,P,OPT) uses structure OPT as optional parameters:
+%       OPT.GTITLE: graph title (string)
+%       OPT.GSTATUS: status of the proc/node (sub-title)
+%       OPT.INFOS and OPT.INFOS2: lines of information (graph footer)
 %		OPT.IMAP: creates companion html map file for interactive graph
 %	    OPT.EVENTS: addition background events structure
-%		OPT.TYPES: adds a list of symbols on the upper plot
 %		OPT.FIXEDPP: do not change initial paper size
 %		OPT.INFOLINES: specifies the number of lines for INFOS footer (default is 4)
 %
 %	Attention: MKGRAPH needs external program "convert" (from ImageMagick package) to produce
-%	PNG images. Binary location can be defined in PRGM_CONVERT variable in WEBOBS.rc.
+%	PNG images from EPS. Binary location can be defined in PRGM_CONVERT variable in WEBOBS.rc.
 %
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03 in Gourbeyre, Guadeloupe
-%	Updated: 2025-04-07
+%	Updated: 2026-01-19
 
 
 set(gcf, 'Visible', 'off');
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
+if nargin <  4
+    OPT = struct;
+end
+
 % creates temporary directory
-ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,G.SELFREF,randname(16));
+ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
 wosystem(sprintf('mkdir -p %s',ptmp));
 
 convert = field2str(WO,'PRGM_CONVERT','magick');
@@ -35,22 +42,20 @@ thumbnailheight = field2num(WO,'MKGRAPH_THUMBNAIL_HEIGHT',112);
 timestamp = field2num(WO,'MKGRAPH_TIMESTAMP',6);
 
 % if PAPER_SIZE is defined, reformats paper size and figure position
-psz = field2num(G,'PAPER_SIZE');
+psz = field2num(P,'PAPER_SIZE');
 if numel(psz) == 2 && all(psz>0)
 	set(gcf,'PaperUnit','inches','PaperSize',psz);
-	if nargin < 4 || ~isok(OPT,'FIXEDPP')
+	if ~isok(OPT,'FIXEDPP')
 		set(gcf,'PaperPosition',[0,0,psz]);
 	end
-	if nargin > 3 && isok(OPT,'FIXEDPP')
+	if isok(OPT,'FIXEDPP')
 		pp = get(gcf,'PaperPosition');
 		set(gcf,'PaperPosition',[0,0,psz(1),psz(1)*pp(4)/pp(3)]);
 	end
-else
-	psz = get(gcf,'PaperSize');
 end
 
 % grid on
-if isok(G,'PLOT_GRID')
+if isok(P,'PLOT_GRID')
 	% Detects all axes in the current figure
 	for h = findobj(gcf,'Type','axes')'
 		set(h,'XGrid','on','YGrid','on');
@@ -58,16 +63,16 @@ if isok(G,'PLOT_GRID')
 end
 
 % events in background
-if nargin > 3 && isfield(OPT,'EVENTS')
-	I = plotevent(G.TZ,G.EVENTS_FILE,OPT.EVENTS);
+if isfield(OPT,'EVENTS')
+	I = plotevent(P.TZ,P.EVENTS_FILE,OPT.EVENTS);
 else
-	I = plotevent(G.TZ,G.EVENTS_FILE);
+	I = plotevent(P.TZ,P.EVENTS_FILE);
 end
 
 h0 = [];
 h1 = [];
 
-if isfield(G,'GTITLE') && isfield(G,'INFOS')
+if isfield(OPT,'GTITLE') && isfield(OPT,'INFOS')
 
 	% creates an axis for the full page
 	ha = axes('Position',[0,0,1,1],'Visible','off');
@@ -75,50 +80,47 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 	axis off
 
 	% --- header
-	h0 = plotlogo(G.LOGO_FILE,G.LOGO_HEIGHT,'left');
-	h1 = plotlogo(G.LOGO2_FILE,G.LOGO2_HEIGHT,'right');
+	h0 = plotlogo(P.LOGO_FILE,P.LOGO_HEIGHT,'left');
+	h1 = plotlogo(P.LOGO2_FILE,P.LOGO2_HEIGHT,'right');
 
-	if isfield(G,'GSTATUS')
-		if G.STATUS && length(G.GSTATUS) > 2 && all(~isnan(G.GSTATUS(2:3)))
-			G.GTITLE = [G.GTITLE, ...
-			   {sprintf('%s %+02d - Status %03d %% - Sampling %03d %% ',datestr(G.GSTATUS(1)),G.TZ,round(G.GSTATUS(2:3)))}];
+	if isfield(OPT,'GSTATUS')
+		if OPT.STATUS && length(OPT.GSTATUS) > 2 && all(~isnan(OPT.GSTATUS(2:3)))
+			OPT.GTITLE = [OPT.GTITLE, ...
+			   {sprintf('%s %+02d - Status %03d %% - Sampling %03d %% ',datestr(OPT.GSTATUS(1)),P.TZ,round(OPT.GSTATUS(2:3)))}];
 		end
 	end
-	if ~isempty(G.COPYRIGHT2)
-		cpr2 = sprintf(' + \\copyright %s, %s',G.COPYRIGHT2,datestr(now,'yyyy'));
+	if ~isempty(P.COPYRIGHT2)
+		cpr2 = sprintf(' + \\copyright %s, %s',P.COPYRIGHT2,datestr(now,'yyyy'));
 	else
 		cpr2 = '';
 	end
 	% for request, print the user ID
-	if ~isok(G,'ANONYMOUS') && isfield(G,'UID')
-		[s,w] = wosystem(sprintf('sqlite3 %s "select FULLNAME from users where UID = ''%s''"|tr -d "\\n"|iconv -f UTF-8 -t ISO_8859-1',WO.SQL_DB_USERS,G.UID));
-		uid = sprintf('Request by %s [%s] ',w,G.UID);
+	if ~isok(P,'ANONYMOUS') && isfield(P,'UID')
+		[s,w] = wosystem(sprintf('sqlite3 %s "select FULLNAME from users where UID = ''%s''"|tr -d "\\n"|iconv -f UTF-8 -t ISO_8859-1',WO.SQL_DB_USERS,P.UID));
+		uid = sprintf('Request by %s [%s] ',w,P.UID);
 	else
 		uid = '';
 	end
-	ss = [{''},strrep(G.GTITLE,'()',''),{sprintf('%s\\copyright %s, %s%s',uid,G.COPYRIGHT,datestr(now,'yyyy'),cpr2)}];
+	ss = [{''},strrep(OPT.GTITLE,'()',''),{sprintf('%s\\copyright %s, %s%s',uid,P.COPYRIGHT,datestr(now,'yyyy'),cpr2)}];
 	text(.5,1,ss,'HorizontalAlignment','center','VerticalAlignment','top','FontSize',8);
 
 	% --- footer
-	% display text from cell G.INFOS on a 4-row table
+	% display text from cell OPT.INFOS on a 4-row table
 
 	ht = [];
 	pt = .01;
-	nl = 4;
-	if nargin > 3
-		nl = field2num(OPT,'INFOLINES',4);
-	end
-	for i = 1:nl:length(G.INFOS)
+    nl = field2num(OPT,'INFOLINES',4);
+	for i = 1:nl:length(OPT.INFOS)
 		if ~isempty(ht)
 			et = get(ht,'Extent');
 			pt = et(1) + et(3) + .05;
 		end
-		st = [G.INFOS(i:min([i+nl-1,length(G.INFOS)])),{' '}];
+		st = [OPT.INFOS(i:min([i+nl-1,length(OPT.INFOS)])),{' '}];
 		st = regexprep(st,'([_^])','\\$1'); % escapes any underscore or exponent
 		ht = text(pt,0,st,'HorizontalAlignment','left','VerticalAlignment','bottom','FontSize',8);
 	end
-	if isfield(G,'INFOS2')
-		text(.5,0,{strjoin(G.INFOS2,' '),'','','','','',''}, ...
+	if isfield(OPT,'INFOS2')
+		text(.5,0,{strjoin(OPT.INFOS2,' '),'','','','','',''}, ...
 			'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8);
 	end
 
@@ -136,7 +138,7 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 			w2 = regexprep(w2,'.*Updated: ','');
 		end
 		text(1,0,sprintf('%s / %s - %s - %s %+02d - %s (%s) / WebObs %s  ', ...
-			G.SELFREF,f,w1,datestr(G.NOW),G.TZ,superproc,w2,num2roman(str2num(datestr(now,'yyyy')))), ...
+			P.SELFREF,f,w1,datestr(P.NOW),P.TZ,superproc,w2,num2roman(str2num(datestr(now,'yyyy')))), ...
 			'HorizontalAlignment','right','VerticalAlignment','bottom', ...
 			'FontSize',timestamp,'Color',.5*ones(1,3),'FontWeight','bold', ...
 			'Interpreter','none');
@@ -145,32 +147,12 @@ if isfield(G,'GTITLE') && isfield(G,'INFOS')
 end
 
 
-% --- Adds a legend for types (markers)
-if nargin > 3 && isfield(OPT,'TYPES')
-	T = T;
-	tcod = fieldnames(T);
-	tmkt = cell(size(tcod));
-	tmks = ones(size(tcod));
-	hold on
-	for i = 1:length(tcod)
-		ht = text(0,0,'X','FontSize',8);
-		et = get(ht,'Extent');
-		delete(ht);
-		tmkt{i} = T.(tcod{i}).marker;
-		tmks(i) = str2double(T.(tcod{i}).relsize);
-		xx = .5*(i-1)/length(tcod) + .5;
-		plot(xx,et(4),T.(tcod{i}).marker,'Markersize',G.MARKERSIZE*str2double(T.(tcod{i}).relsize),'Color','k','MarkerFaceColor','k')
-		text(xx,et(4),['   ',htm2tex(T.(tcod{i}).name)],'FontSize',8)
-	end
-	hold off
-end
-
 % --- Creates images: EPS + PNG + optional PDF + JPG (thumbnail)
 
-if isfield(G,'EVENTS') && ~isempty(G.EVENTS)
-	pout = sprintf('%s/%s/%s',G.OUTDIR,WO.PATH_OUTG_EVENTS,G.EVENTS);
+if isfield(P,'EVENTS') && ~isempty(P.EVENTS)
+	pout = sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EVENTS,P.EVENTS);
 else
-	pout = sprintf('%s/%s',G.OUTDIR,WO.PATH_OUTG_GRAPHS);
+	pout = sprintf('%s/%s',P.OUTDIR,WO.PATH_OUTG_GRAPHS);
 end
 
 wosystem(sprintf('mkdir -p %s',pout))
@@ -182,11 +164,11 @@ fprintf(' done.\n');
 
 % converts to PNG
 fprintf('%s: converting EPS image to PNG ',wofun);
-wosystem(sprintf('%s %s -density %dx%d %s/%s.eps %s/%s.png',convert,convertopt,G.PPI,G.PPI,ptmp,f,ptmp,f))
+wosystem(sprintf('%s %s -density %dx%d %s/%s.eps %s/%s.png',convert,convertopt,P.PPI,P.PPI,ptmp,f,ptmp,f))
 fprintf('ok,');
 
 % optional converts to PDF
-if isok(G,'PDFOUTPUT')
+if isok(P,'PDFOUTPUT')
 	fprintf(' to PDF ');
 	wosystem(sprintf('%s -sPAPERSIZE=a4 %s/%s.eps %s/%s.pdf',ps2pdf,ptmp,f,ptmp,f))
 	fprintf('ok,');
@@ -197,7 +179,7 @@ wosystem(sprintf('%s %s/%s.png -scale x%g %s/%s.jpg',convert,ptmp,f,thumbnailhei
 wosystem(sprintf('mv -f %s/%s.jpg %s/',ptmp,f,pout));
 fprintf('ok.\n');
 
-if isok(G,'SVGOUTPUT')
+if isok(P,'SVGOUTPUT')
 	fprintf('%s: exporting %s/%s.svg ...',wofun,ptmp,f);
 	%fig2svg(sprintf('%s/%s.svg',ptmp,f))
 	plot2svg(sprintf('%s/%s.svg',ptmp,f))
@@ -208,7 +190,7 @@ end
 
 % --- Creates optional interactive MAP (html map)
 % appends IMAP from proc to events
-if nargin > 3 && isfield(OPT,'IMAP')
+if isfield(OPT,'IMAP')
 	if ~isempty(I)
 		I = cat(2,I,OPT.IMAP);
 	else
@@ -242,7 +224,7 @@ for g = 1:length(I)
 
 		if size(I(g).d,2) < 4
 			% r is given in points
-			r = ceil(I(g).d(n,3)*G.PPI/72);
+			r = ceil(I(g).d(n,3)*P.PPI/72);
 			fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=circle coords="%d,%d,%d">\n',lnk,I(g).s{n},x,y,r);
 		else
 			x2 = round(ims(1)*((axp(3)*(I(g).d(n,3) - xylim(1))/diff(xylim(1:2)) + axp(1))));
