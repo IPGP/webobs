@@ -10,7 +10,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 If you have any question which is not answered in the user manual, do not hesitate to write to developpers through the mailing list [webobs-devs@services.cnrs.fr](mailto:webobs-devs@services.cnrs.fr), or start a public discussion thread at [github.com/IPGP/webobs/discussions](https://github.com/IPGP/webobs/discussions).
 
-## v.2.8 (under development)
+## v.2.8 
 
 ### New features
 1. **New grids FORM**: manual databases (formerly dedicated forms) are now fully integrated as a grid type along with PROCs and VIEWs. A FORM is then associated to a DOMAIN and some NODES, appears in the GRIDs table and has its own page with description, nodes table list, map location, and events. FORM is based on the new GENFORM user-defined manual database tool (introduced in the previous release): a freely configurazble SQLite database managed through a GUI form (for entering new data, editing and deleting), a table data display with options and filters, data export as CSV file or as raw data source for PROCs. Creating a FORM becomes as simple as creating a PROC or VIEW, by selecting a template (a dozen are available), if necessary modifying it partially or completely, associating a DOMAIN, associating or creating NODES, and editing the configuration file to set the database structure (inputs and outputs) and the form layout. GENFORM is able to store numerical values, checkboxes, lists, text strings, images, and mathematical output formulas. It aims to replace spreadsheets files for (potentially) any structured scientific data. See the user manual for more details.
@@ -99,12 +99,13 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
 1. In **showOUTG.pl** the proc outputs of event type (tremblemaps, helicorder, ...) have now navigation buttons to access directly to previous/next image.
 
 ### Fixed issues
+1. `!!` Fix a potential security issue with Apache logins when the corresponding user does not exist in the users' db. The setup will fix any abnormal situation by editing the htpasswd file (deleting unknown users and commenting invalid users). In addition, setting the validity flag through the User Manager GUI will now comment/uncomment the corresponding login line in htpasswd file.
 1. `!!` Fix an issue giving edit button for any grid (view/proc/form) for users with only Edit level.
-2. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
-3. Add forgotten keys in **tremblemaps** superproc template, and fix an issue when updating procs with setup (new keys not added).
-4. Fix display of non-geolocated nodes as neighbours (as lat=lon=0).
-5. Fix issue with empty location code for fdsnws-dataselect format.
-6. Fix an issue with alignment of MC events on the **sefran3** main page (hourly thumbnails).
+1. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
+1. Add forgotten keys in **tremblemaps** superproc template, and fix an issue when updating procs with setup (new keys not added).
+1. Fix display of non-geolocated nodes as neighbours (as lat=lon=0).
+1. Fix issue with empty location code for fdsnws-dataselect format.
+1. Fix an issue with alignment of MC events on the **sefran3** main page (hourly thumbnails).
 
 ### Code improvement
 1. `!!` remove cedit.pl and fedit.pl. Replace former links with nedit.pl and formGENFORM.pl, respectively.
