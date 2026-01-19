@@ -36,7 +36,7 @@ function DOUT=jerk(varargin)
 %
 %   Authors: F. Beauducel + G. Roult + V. Ferrazzini, WEBOBS/IPGP
 %   Created: 2014-04-14 at OVPF, La Réunion, Indian Ocean
-%   Updated: 2026-01-13
+%   Updated: 2026-01-19
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -215,11 +215,12 @@ for n = 1:length(N)
 
 
 		% title and status
-		P.GTABLE(r).GTITLE = gtitle(stitle,P.GTABLE(r).TIMESCALE);
-		P.GTABLE(r).GSTATUS = [P.NOW,etat,acqui];
+		OPT.GTITLE = gtitle(stitle,P.GTABLE(r).TIMESCALE);
+        OPT.STATUS = P.GTABLE(r).STATUS;
+		OPT.GSTATUS = [P.NOW,etat,acqui];
 		N(n).STATUS = etat;
 		N(n).ACQUIS = acqui;
-		P.GTABLE(r).INFOS = {''};
+		OPT.INFOS = {''};
 
 		% loop for each data component
 		for i = 1:2
@@ -363,9 +364,9 @@ for n = 1:length(N)
 		end
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {sprintf('Last data: {\\bf %s} {\\it %+d}',datestr(t(ke)),P.TZ)};
+			OPT.INFOS = {sprintf('Last data: {\\bf %s} {\\it %+d}',datestr(t(ke)),P.TZ)};
 			if tidemode
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{ ...
+				OPT.INFOS = [OPT.INFOS{:},{ ...
 					sprintf('   Tide predict mode: {\\bf %s}',tidemodes{tidemode}), ...
 					sprintf('   E-W tide: {\\bf\\times %1.4f, \\Delta{t} = %+dh %02.0fm}', ...
 						tidefit(1,2),h2hms(24*tidefit(1,1),1)), ...
@@ -373,13 +374,13 @@ for n = 1:length(N)
 						tidefit(2,2),h2hms(24*tidefit(2,1),1)), ...
 				}];
 			else
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{ ...
+				OPT.INFOS = [OPT.INFOS{:},{ ...
 					sprintf('   Tide predict mode: {\\bf none}'), ...
 					sprintf('   E-W tide: {\\bf none}'), ...
 					sprintf('   N-S tide: {\\bf none}'), ...
 				}];
 			end
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{ ...
+			OPT.INFOS = [OPT.INFOS{:},{ ...
 				'JERK parameters:', ...
 				sprintf('   Sampling: {\\bf %g s}',dt), ...
 				sprintf('   Slope window: {\\bf %g s}',mw), ...
@@ -388,11 +389,13 @@ for n = 1:length(N)
 				sprintf('Last JERK alert (in zoom window):'), ...
 				sprintf('   Level1: %s',sal1),sprintf('   Level2: %s',sal2), ' ', ...
 			}];
+        else
+            OPT.INFOS = {''};
 		end
 
 		% makes graph
 		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		if ~isempty(k)
@@ -402,7 +405,7 @@ for n = 1:length(N)
 			alarm(jerk<threshold_max & jerk>threshold_level2 & (insector(jth,azlim) | insector(jth-180,azlim))) = 2;
 
 			% exports data
-			if isok(P.GTABLE(r),'EXPORTS')
+			if isok(P,'EXPORTS')
 				E.t = talarm;
 				E.d = [dk(ip,:),jerk,jth,alarm];
 				E.header = { ...

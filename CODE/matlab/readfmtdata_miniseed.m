@@ -50,7 +50,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2025-12-27
+%	Updated: 2026-01-19
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -260,7 +260,7 @@ if ~isempty(FD) && FD(1).bytes > 0
 
 	% copy the original file to export directory (if needed)
 	if isok(P,'EXPORTS')
-		pexp = sprintf('%s/%s',P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EXPORT);
+		pexp = sprintf('%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT);
 		wosystem(sprintf('mkdir -p %s && cp %s %s/',pexp,fdat,pexp),P);
 		for g = 1:length(P.GTABLE)
 			wosystem(sprintf('ln -sf $(basename %s) %s/%s_%s.msd',fdat,pexp,N.ID,P.GTABLE(g).TIMESCALE),P);

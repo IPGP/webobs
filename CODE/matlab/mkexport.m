@@ -10,7 +10,7 @@ function mkexport(WO,f,E,P,r,N);
 %	using parameters from:
 %      - PROC structure P,
 %      - P.GTABLE(R) where R is the index of TIMESCALES table.
-%	writing in the file P.GTABLE(r).OUTDIR/[events/]F.txt:
+%	writing in the file P.OUTDIR/[events/]F.txt:
 %
 %   File header is completed by additional infos from P using the variable
 %   P.EXPORT_HEADER_PROC_KEYLIST.
@@ -21,16 +21,16 @@ function mkexport(WO,f,E,P,r,N);
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2026-01-14
+%	Updated: 2026-01-19
 
 
 ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
 wosystem(sprintf('mkdir -p %s',ptmp));
 
 if isfield(P.GTABLE(r),'EVENTS')
-	pout = sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EVENTS,P.GTABLE(r).EVENTS);
+	pout = sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EVENTS,P.GTABLE(r).EVENTS);
 else
-	pout = sprintf('%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT);
+	pout = sprintf('%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT);
 end
 
 if ~isfield(E,'fmt')
