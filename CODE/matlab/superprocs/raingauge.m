@@ -23,7 +23,7 @@ function DOUT=raingauge(varargin)
 %
 %	Authors: Alexis Bosson, WEBOBS/IPGP
 %	Created: 2016-08-05, in Guadeloupe
-%	Updated: 2026-01-13
+%	Updated: 2026-02-03
 
 WO = readcfg;
 % Log prefix : function name
@@ -138,30 +138,32 @@ for n = 1:length(N)
 		tlabel(tlim,P.TZ)
 
 		% Title of the graph : node's name and timescale
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
 		% Status line : TODO
-		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
+		OPT.GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
 		% Additional information : empty if no data
-		P.GTABLE(r).INFOS = {''};
+		OPT.INFOS = {''};
 		% If there are data for this node
 		if ~isempty(k)
 			% Last data date/time and description
-			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),' (min|avr|max)',' '};
+			OPT.INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),' (min|avr|max)',' '};
 			% Rainfall decimated values
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
+			OPT.INFOS = [OPT.INFOS{:},{sprintf('%s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
 			sprintf(rain_infos_label,hcum),dk(end,1),'mm',roundsd([rmin(dk(:,1)),rmean(dk(:,1)),rmax(dk(:,1))],5))}];
 			% Cumulated value
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%s = {\\bf%+g %s}', ...
+			OPT.INFOS = [OPT.INFOS{:},{sprintf('%s = {\\bf%+g %s}', ...
 			cumul_label,sum(dk(:,1))/1000,'m')}];
 		end
 
 		% Export current figure to files with prefix : node ID + timescale
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+        OPT.STATUS = P.GTABLE(r).STATUS;
+        OPT.EVENTS = N(n).EVENTS;
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		% End of the current figure
 		close
 
 		% If we need exports and there are data for this node
-		if isok(P.GTABLE(r).EXPORTS) && ~isempty(k)
+		if isok(P.EXPORTS) && ~isempty(k)
 			% Get time and data from current data
 			E.t = tk;
 			E.d = dk(:,1);
@@ -195,11 +197,11 @@ for r = 1:length(P.GTABLE)
 		tlim = minmax(cat(1,D.tfirstlast));
 	end
 	% Title : PROC's name and timescale
-	P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+	OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
 	% Status line : TODO
-	P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
+	OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 	% Additional information : empty before processing data
-	P.GTABLE(r).INFOS = {''};
+	OPT.INFOS = {''};
 	% Initialize the figure
 	figure
 	% If there are more stations than the number allowed on a page
@@ -285,7 +287,7 @@ for r = 1:length(P.GTABLE)
 		end
 	end
 	% Export current figure to files with prefix : timescale
-	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 	% End of the current figure
 	close
 end

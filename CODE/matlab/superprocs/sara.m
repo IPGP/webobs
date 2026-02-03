@@ -55,7 +55,7 @@ function DOUT=sara(varargin)
 %
 %	Authors: Tan Chiou Ting, Benoit Taisne, Francois Beauducel / EOS / IPGP / WEBOBS
 %	Created: 2017-09-14
-%	Updated: 2026-01-13
+%	Updated: 2026-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -177,23 +177,25 @@ for n = 1:length(N)
 		plotevent(P.EVENTS_FILE)
 
 		% title, status and additional information
-		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
-		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = varsub(pernode_title,V);
+		OPT.GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
+		OPT.INFOS = {''};
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),' (min|avr|max)',' '};
+			OPT.INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),' (min|avr|max)',' '};
 			for i = 1:nx
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('%d. %s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
 					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},roundsd([rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i))],5))}];
 			end
 		end
 
 		% makes graph
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+        OPT.STATUS = P.GTABLE(r).STATUS;
+		OPT.EVENTS = N(n).EVENTS;
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = tk;
 			E.d = dk(:,1:nx);
 			E.header = strcat(D(n).CLB.nm,{'('},D(n).CLB.un,{')'});
@@ -220,9 +222,9 @@ if isfield(P,'SUMMARYLIST')
 		if any(isnan(tlim))
 			tlim = minmax(cat(1,D.tfirstlast));
 		end
-		P.GTABLE(r).GTITLE = varsub(summary_title,V);
-		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = varsub(summary_title,V);
+		OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
+		OPT.INFOS = {''};
 
 		figure
 		orient tall
@@ -307,7 +309,7 @@ if isfield(P,'SUMMARYLIST')
 		tlabel(xlim,P.TZ)
 		plotevent(P.EVENTS_FILE)
 
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -544,7 +546,7 @@ if isfield(P,'SUMMARYLIST')
 			tlabel(xlim,P.TZ)
 			plotevent(P.EVENTS_FILE)
 			rcode2 = sprintf('%s_%s',proc,summary);
-			mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+			mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 			close
 		end
 

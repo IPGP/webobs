@@ -45,7 +45,7 @@ function DOUT=helicorder(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2016-12-30 in Yogyakarta, Indonesia
-%	Updated: 2025-12-04
+%	Updated: 2026-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -120,8 +120,8 @@ for n = 1:length(N)
 			ke = k(end);
 		end
 		vtps = datevec(tlim(1));
-		P.GTABLE(r).EVENTS = sprintf('%4d/%02d/%02d/%s',vtps(1:3),N(n).ID);
-		pdat = sprintf('%s/%s/%s',P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EVENTS,P.GTABLE(1).EVENTS);
+		P.EVENTS = sprintf('%4d/%02d/%02d/%s',vtps(1:3),N(n).ID);
+		pdat = sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EVENTS,P.EVENTS);
 
 		% loop for each data channel
 		for c = 1:nx
@@ -176,11 +176,11 @@ for n = 1:length(N)
 					'FontSize',fontsize,'Clipping','off')
 
 				% title, status and additional information
-				P.GTABLE(r).GTITLE = varsub(htitle,V);
-				P.GTABLE(r).GSTATUS = [P.NOW,D(n).G(r).last,D(n).G(r).samp];
-				P.GTABLE(r).INFOS = {''};
+				OPT.GTITLE = varsub(htitle,V);
+				OPT.GSTATUS = [P.NOW,D(n).G(r).last,D(n).G(r).samp];
+				OPT.INFOS = {''};
 				if ~isempty(k)
-					P.GTABLE(r).INFOS = {' ','Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ), ...
+					OPT.INFOS = {' ','Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ), ...
 					' ',' ', ...
 					sprintf('Time span: {\\bf%s - %s} {\\it%+g}',datestr(tlim(1),0),datestr(tlim(2),0),P.TZ), ...
 					' ',' ',' ', ...
@@ -191,7 +191,8 @@ for n = 1:length(N)
 				end
 
 				% makes graph
-				mkgraph(WO,fnam,P.GTABLE(r))
+                OPT.STATUS = P.GTABLE(r).STATUS;
+				mkgraph(WO,fnam,P,OPT)
 				close
 
 				% creates symbolic links to preferred (last) files
@@ -206,9 +207,9 @@ for n = 1:length(N)
 
 	% creates symbolic links to today and yesterday date directory
 	dte = datestr(floor(P.GTABLE(r).DATE2),'YYYY/mm/dd');
-	wosystem(sprintf('ln -sfn %s/%s %s/%s/today_%s',dte,N(n).ID,P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EVENTS,N(n).ID),P);
+	wosystem(sprintf('ln -sfn %s/%s %s/%s/today_%s',dte,N(n).ID,P.OUTDIR,WO.PATH_OUTG_EVENTS,N(n).ID),P);
 	dte = datestr(floor(P.GTABLE(r).DATE2)-1,'YYYY/mm/dd');
-	wosystem(sprintf('ln -sfn %s/%s %s/%s/yesterday_%s',dte,N(n).ID,P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EVENTS,N(n).ID),P);
+	wosystem(sprintf('ln -sfn %s/%s %s/%s/yesterday_%s',dte,N(n).ID,P.OUTDIR,WO.PATH_OUTG_EVENTS,N(n).ID),P);
 end
 
 

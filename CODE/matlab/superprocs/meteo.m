@@ -55,7 +55,7 @@ function DOUT=meteo(varargin)
 %
 %   Authors: F. Beauducel + S. Acounis / WEBOBS, IPGP
 %   Created: 2001-07-04
-%   Updated: 2026-01-13
+%   Updated: 2026-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -140,17 +140,17 @@ for n = 1:length(N)
 		end
 
 		% title and status
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
-		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		OPT.GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
+		OPT.INFOS = {''};
 
-		P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),'(min|moy/cum|max)',' '};
+		OPT.INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),'(min|moy/cum|max)',' '};
 		for i = 1:nx
 			if i ~= i_rain
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f | %+1.1f)', ...
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f | %+1.1f)', ...
 					i, C.nm{i},d(ke,i),C.un{i},rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i)))}];
 			else
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f / %+1.1f | %+1.1f)', ...
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f / %+1.1f | %+1.1f)', ...
 					i, C.nm{i},d(ke,i),C.un{i},rmin(dk(:,i)),rmean(dk(:,i)),rsum(dk(:,i)),rmax(dk(:,i)))}];
 			end
 		end
@@ -274,12 +274,13 @@ for n = 1:length(N)
 		tlabel(tlim,P.TZ)
 
 		% makes graph
+        OPT.STATUS = P.GTABLE(r).STATUS;
 		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = tk;
 			%E.d = dk(:,1:nx);
 			E.d = dk;

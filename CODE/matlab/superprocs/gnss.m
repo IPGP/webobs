@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-01-13
+%   Updated: 2026-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -2340,7 +2340,7 @@ for r = 1:numel(P.GTABLE)
 		clear IMAP
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
+		if isok(P,'EXPORTS')
 			E.t = M(1).t;
 
             % vectortime (1 file per station)

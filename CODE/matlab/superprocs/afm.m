@@ -27,7 +27,7 @@ function DOUT=afm(varargin)
 %
 %	Authors: F. Beauducel + V. Clouard + J.M. Saurel / WEBOBS, IPGP
 %	Created: 2014-01-03
-%	Updated: 2026-01-13
+%	Updated: 2026-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -165,11 +165,11 @@ for n = 1:length(N)
 
 
 		% title and status
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
-		P.GTABLE(r).GSTATUS = [xlim(2),etat,acqui];
+		OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		OPT.GSTATUS = [xlim(2),etat,acqui];
 		N(n).STATUS = etat;
 		N(n).ACQUIS = acqui;
-		P.GTABLE(r).INFOS = {''};
+		OPT.INFOS = {''};
 
 		% loop for each data column
 		for i = 1:nx
@@ -217,12 +217,13 @@ for n = 1:length(N)
 		end
 
 		% makes graph
+        OPT.STATUS = P.GTABLE(r).STATUS;
 		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = tk;
 			E.d = dk(:,1:nx);
 			E.header = strcat(C.nm,{'('},C.un,{')'});
@@ -247,9 +248,9 @@ if isfield(P,'SUMMARYLIST')
 		if any(isnan(xlim))
 			xlim = [tfirstall,P.NOW];
 		end
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
-		P.GTABLE(r).GSTATUS = [xlim(2),etats,acquis];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		OPT.GSTATUS = [xlim(2),etats,acquis];
+		OPT.INFOS = {''};
 
 		% --- Time series graph
 		figure, clf, orient tall
@@ -298,7 +299,7 @@ if isfield(P,'SUMMARYLIST')
 
 		tlabel(xlim,P.TZ)
 
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 end
