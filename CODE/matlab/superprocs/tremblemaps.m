@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2026-01-13
+%	Updated: 2026-02-03
 
 
 WO = readcfg;
@@ -145,8 +145,8 @@ for n = 1:length(t)
 	if isempty(id)
 		id = 'id';
 	end
-	P.GTABLE(1).EVENTS = sprintf('%4d/%02d/%02d/%s',vtps(1:3),id);
-	pdat = sprintf('%s/%s/%s',P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EVENTS,P.GTABLE(1).EVENTS);
+	P.EVENTS = sprintf('%4d/%02d/%02d/%s',vtps(1:3),id);
+	pdat = sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EVENTS,P.EVENTS);
 	fdat = sprintf('%s/%s.txt',pdat,fnam);
 
 	if all(~isnan(d(n,1:4))) && ~exist(fdat,'file') && e(n) >= 0
@@ -192,7 +192,7 @@ for n = 1:length(t)
 		fprintf(' done.\n');
 
 		% exports data
-		%if isok(P.GTABLE(r),'EXPORTS')
+		%if isok(P,'EXPORTS')
 		%	E.t = tk;
 		%	E.d = dk;
 		%	E.header = CLB.nm;
@@ -576,8 +576,9 @@ for n = 1:length(t)
 			hold off
 			set(gca,'XLim',[0,1],'YLim',[0,1]), axis off
 
-			mkgraph(WO,fnam,P.GTABLE(1))
-			lastb3 = P.GTABLE(1).EVENTS;
+            OPT.STATUS = P.GTABLE(r).STATUS;
+			mkgraph(WO,fnam,P,OPT)
+			lastb3 = P.EVENTS;
 			close
 
 			% ===========================================================
@@ -659,7 +660,7 @@ for n = 1:length(t)
 				else
 					url = 'http://webobs';
 				end
-				fprintf(fid,'%s/cgi-bin/showOUTG.pl?grid=%s&ts=events&g=%s/%s\n',url,P.SELFREF,P.GTABLE(1).EVENTS,fnam);
+				fprintf(fid,'%s/cgi-bin/showOUTG.pl?grid=%s&ts=events&g=%s/%s\n',url,P.SELFREF,P.EVENTS,fnam);
 			end
 			fclose(fid);
 
@@ -694,7 +695,7 @@ if P.REQUEST
 	mkendreq(WO,P);
 else
 	if ~isempty(lastb3)
-		lnk = sprintf('%s/%s/lastevent',P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EVENTS);
+		lnk = sprintf('%s/%s/lastevent',P.OUTDIR,WO.PATH_OUTG_EVENTS);
 		wosystem(sprintf('rm -f %s',lnk),P);
 		wosystem(sprintf('ln -s %s %s',lastb3,lnk),P);
 	end

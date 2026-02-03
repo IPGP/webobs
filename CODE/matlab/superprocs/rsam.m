@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2026-01-13
+%	Updated: 2026-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -169,24 +169,25 @@ for n = 1:length(N)
 		tlabel(tlim,P.TZ)
 
 		% title, status and additional information
-		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
-		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = varsub(pernode_title,V);
+		OPT.GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
+		OPT.INFOS = {''};
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),' (min|avr|max)',' '};
+			OPT.INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),' (min|avr|max)',' '};
 			for i = 1:nx
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('%d. %s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
 					i, D(n).CLB.nm{i},D(n).d(ke,i),D(n).CLB.un{i},roundsd([rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i))],5))}];
 			end
 		end
 
 		% makes graph
+        OPT.STATUS = P.GTABLE(r).STATUS;
 		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = tk;
 			E.d = dk(:,1:nx);
 			E.header = strcat(D(n).CLB.nm,{'('},D(n).CLB.un,{')'});
@@ -213,9 +214,9 @@ if isfield(P,'SUMMARYLIST')
 		if any(isnan(tlim))
 			tlim = minmax(cat(1,D.tfirstlast));
 		end
-		P.GTABLE(r).GTITLE = varsub(summary_title,V);
-		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = varsub(summary_title,V);
+		OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
+		OPT.INFOS = {''};
 
 		figure
 		orient tall
@@ -323,9 +324,9 @@ if isfield(P,'SUMMARYLIST')
 			if any(isnan(tlim))
 				tlim = minmax(cat(1,D.tfirstlast));
 			end
-			P.GTABLE(r).GTITLE = varsub(sourcemap_title,V);
-			P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
-			P.GTABLE(r).INFOS = {''};
+			OPT.GTITLE = varsub(sourcemap_title,V);
+			OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
+			OPT.INFOS = {''};
 
 			% --- Time series graph
 			figure
@@ -468,7 +469,7 @@ if isfield(P,'SUMMARYLIST')
 			axis off
 
 			rcode2 = sprintf('%s_%s',proc,summary);
-			mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+			mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 			close
 		end
 

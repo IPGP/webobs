@@ -37,7 +37,7 @@ function DOUT=tilt(varargin)
 %   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet,
 %            V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
 %   Created: 2015-08-24 in Yogyakarta, Indonesia
-%   Updated: 2026-01-13
+%   Updated: 2026-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -270,7 +270,7 @@ for n = 1:length(N)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = t(k);
 			E.d = d(k,ixyt);
 			E.header = {'TiltX(µrad)','TiltY(µrad)','Temperature(°C)'};
@@ -650,7 +650,7 @@ for r = 1:length(P.GTABLE)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
+		if isok(P,'EXPORTS')
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,1:2)];
 			E.header = {'Latitude','Longitude','Altitude','E_tilt(µrad/day)','N_Tilt(µrad/day)','dEt(µrad/day)','dNt(µrad/day)'};
