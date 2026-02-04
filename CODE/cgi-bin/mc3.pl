@@ -515,7 +515,7 @@ if ($QryParm->{'dump'} eq "") {
         my $grlegend_width = 200;
         $html .= "<DIV id=\"mcgraphall\" style=\"display: flex; gap: 20px;\">\n"
            ."<DIV id=\"mcgraph\" style=\"width:".$QryParm->{'grw'}."px;height:".$QryParm->{'grh'}."px;\"></DIV>\n"
-           ."<DIV id=\"graphlegend\" style=\"width:".$grlegend_width."px;height:".$QryParm->{'grh'}."px;\"></DIV>"
+           ."<DIV id=\"graphlegend\" style=\"width:".$grlegend_width."px;height:".$QryParm->{'grh'}."px;margin-top:5px;\"></DIV>"
            ."</DIV>\n"
            ."<DIV id=\"savelink\" style=\"position:relative;float:left\"><A href=\"#\" id=\"mcsavelink\" onMouseOut=\"nd()\" onMouseOver=\"overlib('save the graph to disk')\">"
            ."<IMG src=\"/icons/save.png\"></A></DIV>"
@@ -531,7 +531,7 @@ if ($QryParm->{'dump'} eq "") {
           
           ."<DIV id=\"graphinfo\" style=\"width:".$grinfo_width."px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
           ."<TD></TD>\n"
-          ."<TD nowrap style=\"text-align:left;vertical-align:top\">";
+          ."<TD nowrap style=\"text-align:left;vertical-align:top;padding-top:10px\">";
 
         # ----- selection box graph-type
         $html .= "<P><B>Graph:</B>&nbsp;<SELECT name=\"graph\" size=\"1\" onChange=\"plotFlot(document.formulaire.graph.value)\">";
@@ -1117,7 +1117,7 @@ if ($QryParm->{'nograph'} == 0) {
      };\n";
     foreach (sort(keys(%typesSO))) {
         my $key = $typesSO{$_};
-        if ($key ne "TOTAL" && $stat{$key}) {
+        if (!isok($types{$key}{NoGraph}) && $key ne "TOTAL" && $stat{$key}) {
             my $content = "{ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\","
                 ." color: \"$types{$key}{Color}\","
                 ." data: [";

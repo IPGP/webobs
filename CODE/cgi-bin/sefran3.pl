@@ -106,7 +106,7 @@ $dep = 1 if ($date && length($date) > 10) ;
 my $s3root = "$WEBOBS{PATH_SEFRANS}/$s3";
 my $s3conf = "$s3root/$s3.conf";
 my %SEFRAN3 = readCfg("$s3conf") if (-f "$s3conf");
-$SEFRAN3{CHANNEL_CONF} //= "channels.conf";
+$SEFRAN3{CHANNEL_CONF} //= "$s3root/channels.conf";
 
 my $hideloc = $cgi->url_param('hideloc')
   // not $SEFRAN3{MC3_EVENT_DISPLAY_LOC} =~ m/^(Y|YES|1)$/i;
@@ -906,7 +906,7 @@ if ($date) {
         my %MC = mcinfo($_,1);
 
 #DL-was: if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1 && $MC{id} != $id && ($MC{minute} - $Mc) <= $date_nbm) {
-        if (($MC{id} > 0 || ($userLevel == 4 && $trash == 1)) && $userLevel >= 1 && (defined $MC{minite} && ($MC{minute} - $Mc) <= $date_nbm)) {
+        if (($MC{id} > 0 || ($userLevel == 4 && $trash == 1)) && $userLevel >= 1 && (defined $MC{minute} && ($MC{minute} - $Mc) <= $date_nbm)) {
             my $deb_evt;
             if ($dep) {
                 $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} - $Mc + $MC{second}/60));
