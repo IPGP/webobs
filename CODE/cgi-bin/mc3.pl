@@ -171,7 +171,7 @@ $QryParm->{'mc'}        //= $WEBOBS{MC3_DEFAULT_NAME};
 
 # ---- read in configuration + info files -------------------------------------
 #
-my $mc3        = $QryParm->{'mc'};
+my $mc3        = $QryParm->{'mc'} // $WEBOBS{MC3_DEFAULT_NAME};
 my %MC3        = readCfg("$WEBOBS{ROOT_CONF}/$mc3.conf");
 
 # ---- check client's authorization(s) ----------------------------------------
@@ -506,15 +506,20 @@ if ($QryParm->{'dump'} eq "") {
       ."</TH></TR></TABLE>\n"
       ."<DIV id=\"attente\">Searching for data... please wait.</DIV>";
 
-    $html .= "<TABLE width=\"100%\"><TR><TD width=700>";
+    my $grall_width = $QryParm->{'grw'} + 200;
+    $html .= "<TABLE width=\"100%\"><TR><TD width=$grall_width>";
     if ($QryParm->{'nograph'} == 0) {
         my $grshowall = 45;
         my $grinfo_height = 15;
         my $grinfo_width = $QryParm->{'grw'} - $grshowall;
         my $grlegend_width = 200;
-        $html .= "<DIV id=\"mcgraph\" style=\"width:".$QryParm->{'grw'}."px;height:".$QryParm->{'grh'}."px;float:left;\"></DIV>\n"
-          ."<DIV id=\"showall\" style=\"width:25px;height:".$grinfo_height
-            ."px;position:relative;float:left;font-size:smaller;\">"
+        $html .= "<DIV id=\"mcgraphall\" style=\"display: flex; gap: 20px;\">\n"
+           ."<DIV id=\"mcgraph\" style=\"width:".$QryParm->{'grw'}."px;height:".$QryParm->{'grh'}."px;\"></DIV>\n"
+           ."<DIV id=\"graphlegend\" style=\"width:".$grlegend_width."px;height:".$QryParm->{'grh'}."px;\"></DIV>"
+           ."</DIV>\n"
+           ."<DIV id=\"savelink\" style=\"position:relative;float:left\"><A href=\"#\" id=\"mcsavelink\" onMouseOut=\"nd()\" onMouseOver=\"overlib('save the graph to disk')\">"
+           ."<IMG src=\"/icons/save.png\"></A></DIV>"
+           ."<DIV id=\"showall\" style=\"width:25px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;\">"
             ."<A href=\"#\" onClick=\"plotAll()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('plot all data (unzoom)')\">"
             ."<IMG src=\"/icons/hextend.png\"></A></DIV>"
           ."<DIV id=\"barson\" style=\"width=15px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;display:none\">"
@@ -524,9 +529,8 @@ if ($QryParm->{'dump'} eq "") {
             ."<A href=\"#\" onClick=\"toggleLine()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('bars line OFF')\">"
             ."<IMG src=\"/icons/barsnoc.png\"</A></DIV>"
           
-          #."<BR><A href=\"#\" id=\"tlsavelink\">download image</A></DIV>\n"
           ."<DIV id=\"graphinfo\" style=\"width:".$grinfo_width."px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
-          ."<TD nowrap style=\"text-align:left\"><DIV id=\"graphlegend\" style=\"width:".$grlegend_width."px;height:".$QryParm->{'grh'}."px;position:static;\"></DIV></TD>\n"
+          ."<TD></TD>\n"
           ."<TD nowrap style=\"text-align:left;vertical-align:top\">";
 
         # ----- selection box graph-type
@@ -1107,7 +1111,10 @@ $html .= "</TD></TR></TABLE>"
 #
 if ($QryParm->{'nograph'} == 0) {
     my @stat_v;
-    $html .= "<script type=\"text/javascript\">";
+    $html .= "<script type=\"text/javascript\">
+     var MC3 = {
+        NAME : \"$mc3\"
+     };\n";
     foreach (sort(keys(%typesSO))) {
         my $key = $typesSO{$_};
         if ($key ne "TOTAL" && $stat{$key}) {
