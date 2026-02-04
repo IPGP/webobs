@@ -121,7 +121,7 @@ sub readProc {
         my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf",@_[1..$#_]);
         # --- adds comments from the proc's template (any commented lines before a key)
         if ($comment) {
-            (my $superproc = $tmp{SUBMIT_COMMAND}) =~ s/^[^ ]* ([^ ]*).*$/\1/g;
+            (my $superproc = $tmp{SUBMIT_COMMAND}) =~ s/^[^ ]* ([^ ]*).*$/$1/g;
             my $tpl = "$WEBOBS{ROOT_CODE}/tplates/PROC.".uc($superproc);
             if (-e $tpl) {
                 my @file = readFile($tpl); # imports all the template file

@@ -201,12 +201,13 @@ $QryParm->{'locstatus'} //= $MC3{DISPLAY_LOCATION_STATUS_DEFAULT};
 $QryParm->{'hideloc'}   //= !$MC3{DISPLAY_LOCATION_DEFAULT};
 $QryParm->{'obs'}       //= "";
 $QryParm->{'graph'}     //= "movsum";
+$QryParm->{'nograph'}   //= 0;
 $QryParm->{'grw'}       //= $MC3{GRAPH_WIDTH_PX};
 $QryParm->{'grh'}       //= $MC3{GRAPH_HEIGHT_PX};
 $QryParm->{'slt'}       //= $MC3{DEFAULT_SELECT_LOCAL};
 $QryParm->{'newts'}     //= "";
 $QryParm->{'dump'}      //= "";
-$QryParm->{'trash'}     //= "";
+$QryParm->{'trash'}     //= 0;
 
 # ---- DateTime inits ---------------------------------------------------------
 #
@@ -714,7 +715,7 @@ foreach my $line (@lignes) {
         $nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$event_img,$signature,
         $comment) = split(/\|/,$line);
     my ($operator,$timestamp) = split("/",$signature);
-    my $origin;
+    my $origin = "";
     my $duree_s = ($duree ? $duree*$duration_s{$unite}:"");
     my @evt_date_elem = split(/-/,$date);
     my @evt_hour_elem = split(/:/,$heure);
@@ -731,8 +732,8 @@ foreach my $line (@lignes) {
 #XB-was: if (($date le $dateEnd && $date ge $dateStart)
 #XB-was: && ($QryParm->{'duree'} eq "" || $QryParm->{'duree'} eq "NA" || $QryParm->{'duree'} eq "ALL" || $duree_s >= $QryParm->{'duree'})
     if ($evt_date ge $start_datetime && $evt_date le $end_datetime
-        && ($QryParm->{'duree'} ~~ ["", "NA", "ALL"] || $duree_s >= $QryParm->{'duree'} || length($qml) > 2)
-        && ($QryParm->{'amplitude'} ~~ ["", "ALL"] || $QryParm->{'ampoper'} eq 'eq'
+        && ((grep { $_ eq $QryParm->{'duree'}} ("", "NA", "ALL")) || $duree_s >= $QryParm->{'duree'} || length($qml) > 2)
+        && ((grep { $_ eq $QryParm->{'amplitude'}} ("", "ALL")) || $QryParm->{'ampoper'} eq 'eq'
             || ($QryParm->{'ampoper'} eq 'le' && $evt_amp <= $valAmp{$QryParm->{'amplitude'}})
             || ($QryParm->{'ampoper'} eq 'ge' && $evt_amp >= $valAmp{$QryParm->{'amplitude'}}))
         && ($QryParm->{'newts'} eq "" || $timestamp ge $QryParm->{'newts'})
@@ -835,7 +836,7 @@ foreach my $line (@lignes) {
 
         ($cod,$dat,$lat,$lon,$dep,$pha,$mod,$sta,$mag,$mty,$mth,$mdl,$typ) = split(';',$origin);
         my $noloc = 0;
-        $noloc = 1 if (grep(/^$typ$/,@nolocation_types));
+        $noloc = 1 if (defined($typ) && grep(/^$typ$/,@nolocation_types));
 
         if ($QryParm->{'located'} == 0 && $QryParm->{'locstatus'} == 0
             || ($QryParm->{'located'} == 0 && $noloc == 0 && $pha >= $MC3{LOCATION_MIN_PHASES} && $QryParm->{'locstatus'} == 1 && $mod eq 'manual')
@@ -1162,7 +1163,7 @@ if ($QryParm->{'nograph'} == 0) {
               .sprintf("%.3f", $stat_energy{$key}[-1] / 10**6)
               ." (MJ)\", color: \"$types{$key}{Color}\", data: [";
             for (my $i = 0; $i <= $#stat_j; $i++) {
-                $html .= sprintf("[%s, %s],", $stat_j[$i], ($stat_energy{$key}[$i] / 10**6 || "0"));
+                $html .= sprintf("[%s, %s],", $stat_j[$i], ($stat_energy{$key}[$i] // "0") / 10**6);
             }
             $html .= "]});\n";
         }
@@ -1415,7 +1416,7 @@ for (@finalLignes) {
         if ($types{$type}{Md} == 0) {
             $dist = 0;
         }
-        if ($s_moins_p && !($s_moins_p ~~ ["","NA"," "]) && $types{$type}{Md} != -1) {
+        if ($s_moins_p && (!grep { $_ eq $s_moins_p } ("", "NA", " ")) && $types{$type}{Md} != -1) {
             $dist = 8*$s_moins_p;
         }
         if ($duree_s > 0 && $dist >= 0) {

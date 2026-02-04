@@ -76,25 +76,24 @@ $|=1;
 $ENV{LANG} = $WEBOBS{LOCALE};
 
 # ---- get query-string  parameters
-my $s3     = $cgi->url_param('s3');
+my $s3     = $cgi->url_param('s3') // $WEBOBS{SEFRAN3_DEFAULT_NAME} // "SEFRAN3";
 my $mc3    = $cgi->url_param('mc');
-my $id     = $cgi->url_param('id');
-my $header = $cgi->url_param('header');
-my $status = $cgi->url_param('status');
-my $evtloc = $cgi->url_param('evtloc');
+my $id     = $cgi->url_param('id') // "";
+my $header = $cgi->url_param('header') // 1;
+my $status = $cgi->url_param('status') // 0;
+my $evtloc = $cgi->url_param('evtloc') // 0;
 my $trash  = $cgi->url_param('trash') // 0;
-my $ref    = $cgi->url_param('ref');
-my $yref   = $cgi->url_param('yref');
-my $mref   = $cgi->url_param('mref');
-my $dref   = $cgi->url_param('dref');
+my $ref    = $cgi->url_param('ref') // "";
+my $yref   = $cgi->url_param('yref') // "";
+my $mref   = $cgi->url_param('mref') // "";
+my $dref   = $cgi->url_param('dref') // "";
 my $voies_classiques = $cgi->url_param('va');
-my $reglette = $cgi->url_param('rg');
-my $date   = $cgi->url_param('date');
-my $high   = $cgi->url_param('high');
+my $date   = $cgi->url_param('date') // "";
+my $high   = $cgi->url_param('high') // 0;
 my $sx     = $cgi->url_param('sx') // 0;
 my $sgram_opacity = $cgi->url_param('sgramopacity');
-my $replay = $cgi->url_param('replay');
-my $hpx    = $cgi->url_param('hpx');
+my $replay = $cgi->url_param('replay') // 0;
+my $hpx    = $cgi->url_param('hpx') // 0;
 my $limit  = $cgi->url_param('limit');
 
 # $hideloc is read below
@@ -103,17 +102,17 @@ my $limit  = $cgi->url_param('limit');
 my $dep = 0 ;
 $dep = 1 if ($date && length($date) > 10) ;
 
-# ---- loads requested Sefran3 configuration or default one
-$s3 ||= $WEBOBS{SEFRAN3_DEFAULT_NAME};
+# ---- loads requested Sefran3 configuration
 my $s3root = "$WEBOBS{PATH_SEFRANS}/$s3";
 my $s3conf = "$s3root/$s3.conf";
 my %SEFRAN3 = readCfg("$s3conf") if (-f "$s3conf");
+$SEFRAN3{CHANNEL_CONF} //= "channels.conf";
 
 my $hideloc = $cgi->url_param('hideloc')
   // not $SEFRAN3{MC3_EVENT_DISPLAY_LOC} =~ m/^(Y|YES|1)$/i;
 
-# ---- loads MC3 configuration: requested or Sefran's or default
-$mc3 ||= $SEFRAN3{MC3_NAME} ||= $WEBOBS{MC3_DEFAULT_NAME};
+# ---- loads MC3 configuration
+$mc3 //= $SEFRAN3{MC3_NAME} // $WEBOBS{MC3_DEFAULT_NAME};
 my $mc3conf = "$WEBOBS{ROOT_CONF}/$mc3.conf";
 my %MC3 = readCfg("$mc3conf") if (-f "$mc3conf");
 
@@ -136,7 +135,7 @@ $userLevel = 1 if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"MC") ||
 $userLevel = 2 if (WebObs::Users::clientHasEdit(type=>"authprocs",name=>"MC") || WebObs::Users::clientHasEdit(type=>"authprocs",name=>"$mc3"));
 $userLevel = 4 if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"MC") || WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$mc3"));
 
-if (!defined($limit)) { $limit = $SEFRAN3{TIME_INTERVALS_DEFAULT_VALUE}; }
+$limit //= $SEFRAN3{TIME_INTERVALS_DEFAULT_VALUE};
 
 # for "last events" mode ($limit = 0), forces real-time ($ref = 0)
 if ($limit == 0) { $ref = 0; }
@@ -211,10 +210,10 @@ my $refreshms = ($SEFRAN3{DISPLAY_REFRESH_SECONDS}*1000);
 my @menu = readFile("$SEFRAN3{MENU_FILE}");
 my $prog ="/cgi-bin/$WEBOBS{CGI_SEFRAN3}?s3=$s3&mc=$mc3";
 
-$SEFRAN3{REF_NORTC} ||= 0;
-$MC3{NEW_P_CLEAR_S} ||= 0;
-$SEFRAN3{SGRAM_OPACITY} ||= 0.5;
-$SEFRAN3{PATH_IMAGES_SGRAM} ||= "sgram";
+$SEFRAN3{REF_NORTC} //= 0;
+$MC3{NEW_P_CLEAR_S} //= 0;
+$SEFRAN3{SGRAM_OPACITY} //= 0.5;
+$SEFRAN3{PATH_IMAGES_SGRAM} //= "sgram";
 $sgram_opacity = $SEFRAN3{SGRAM_OPACITY} if (!defined $cgi->url_param('sgramopacity'));
 
 # ---- Date and time for now (UTC)...
@@ -226,11 +225,10 @@ my $yesterday = "$Yy-$my-$dy";
 my $href = 23;
 
 # ----
-my $titrePage = $SEFRAN3{NAME} ||= $SEFRAN3{TITRE};
+my $titrePage = $SEFRAN3{NAME} //= $SEFRAN3{TITRE};
 my @html;
 
 my $s;
-my $i;
 
 if (!$ref) {
     $yref = $Ya;
@@ -249,7 +247,6 @@ if (!$ref) {
 
 # ---- some display setups
 #
-my $largeur_vignette = $SEFRAN3{HOURLY_WIDTH}+1;
 my $largeur_voies = $SEFRAN3{VALUE_PPI}+1;
 my $speed = $SEFRAN3{VALUE_SPEED};
 if (($high || $dep) && $SEFRAN3{VALUE_SPEED_HIGH} > 0) {
@@ -257,7 +254,7 @@ if (($high || $dep) && $SEFRAN3{VALUE_SPEED_HIGH} > 0) {
     $speed = $SEFRAN3{VALUE_SPEED_HIGH};
 }
 my $largeur_image = $speed*$SEFRAN3{VALUE_PPI};
-my $hauteur_image = ($hpx ne "" ? $hpx:$SEFRAN3{HEIGHT_INCH}*$SEFRAN3{VALUE_PPI}) + 1;
+my $hauteur_image = ($hpx > 0 ? $hpx:$SEFRAN3{HEIGHT_INCH}*$SEFRAN3{VALUE_PPI}) + 1;
 my $hauteur_label_haut = $SEFRAN3{LABEL_TOP_HEIGHT};
 my $hauteur_label_bas = $SEFRAN3{LABEL_BOTTOM_HEIGHT};
 my $largeur_fleche = 50;
@@ -652,6 +649,7 @@ if (!$date) {
           "<TR><TH colspan=2>Offset<br>(&mu;m/s)</TH><TH>Asym.</TH><TH>RMS&Delta;<br>(&mu;m/s)</TH><TH>Acq.<br>(%)</TH><TH>Samp.<br>(Hz)</TH>",
           ($sgramOK ? "<TH>Freq<br>(Hz)</TH>":""),
           "<TH>Oldest data</TH><TH>Last data</TH><TH>Buffer</TH><TH>&Delta;T</TH></TR>\n";
+        $i = 0;
         for (@channels) {
             $i++;
             my ($alias,$codes,$calib,$offset,$pp,$color) = split(/\s+/,$_);
@@ -908,7 +906,7 @@ if ($date) {
         my %MC = mcinfo($_,1);
 
 #DL-was: if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1 && $MC{id} != $id && ($MC{minute} - $Mc) <= $date_nbm) {
-        if (($MC{id} > 0 || ($userLevel == 4 && $trash == 1)) && $userLevel >= 1 && ($MC{minute} - $Mc) <= $date_nbm) {
+        if (($MC{id} > 0 || ($userLevel == 4 && $trash == 1)) && $userLevel >= 1 && (defined $MC{minite} && ($MC{minute} - $Mc) <= $date_nbm)) {
             my $deb_evt;
             if ($dep) {
                 $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} - $Mc + $MC{second}/60));
@@ -1062,10 +1060,11 @@ if ($date) {
 
         # amplitude and saturation
         print "<P>$__{'Max amplitude'}: <SELECT name=\"amplitudeEvenement\" size=\"1\">";
-        for ("",sort keys(%amplitudes)) {
+        print "<OPTION value=''></OPTION>\n";
+        for (sort keys(%amplitudes)) {
             (my $key = $_) =~ s/^.._//g; # removes the xx_prefix
             print "<OPTION value=\"$key\"".($amplitude_evt eq $key ? " selected":"").">$amplitudes{$_}{Name} "
-              .($amplitudes{$_}{KBcode} ne "" ? "[$amplitudes{$_}{KBcode}]":"")."</OPTION>\n";
+              .(defined($amplitudes{$_}{KBcode}) ? "[$amplitudes{$_}{KBcode}]":"")."</OPTION>\n";
         }
         print "</SELECT></P>\n";
         print "<P>$__{'Overscale duration'} (<I>$__{'Seconds'}</I>): ",
@@ -1083,16 +1082,15 @@ if ($date) {
         print "</SELECT>\n";
 
         # Prediction seismic-event
-        if ($MC3{PREDICT_EVENT_TYPE} ne "" && $MC3{PREDICT_EVENT_TYPE} ne "NO") {
+        if (isok($MC3{PREDICT_EVENT_TYPE})) {
             print "<INPUT type=\"hidden\" id=\"pseresults\" >\n";
             print "<INPUT type=\"button\" style=\"display : none \" id=\"pseCompute\" value=\"$__{'COMPUTE'}\" onClick=\"predict_seismic_event_onclick()\"><BR>\n";
             print "<P id=\"wait\" style=\"display : none; text-align:center\" > $__{'PLEASE WAIT'}</P>\n";
         }
 
-        # link to USGS
-        my $ocl = "<A href=\"$MC3{USGS_URL}\" target=\"_blank\"><B>USGS</B></A>";
-        $ocl = $MC3{VISIT_LINK} if (defined($MC3{VISIT_LINK}));
-        print "&nbsp;<I>&rarr; $__{'Visit'} $ocl</I></P>\n";
+        # link to external catalog
+        my $ocl = $MC3{VISIT_LINK} // "";
+        print "&nbsp;<I>&rarr; $__{'Visit'} $ocl</I></P>\n" if ($ocl ne "");
 
         # comment
         print "<P>$__{'Comment'}: <INPUT size=\"52\" id=\"comment\" name=\"commentEvenement\" value=\"$comment_evt\"></P>\n";
@@ -1149,7 +1147,7 @@ sub mcinfo
 
     ($MC{operator},$MC{timestamp}) = split('/',$MC{signature});
     $MC{firstarrival} = "$MC{date} $MC{time} UT";
-    $MC{duration} ||= 10;
+    $MC{duration} //= 10;
 
     my $comment = htmlspecialchars(l2u($MC{comment}));
     $comment =~ s/'/\\'/g; # this is needed by overlib()
@@ -1168,7 +1166,7 @@ sub mcinfo
       ."<I>Comment:</I> <B>$comment</B>"
       ."</SPAN>";
 
-    if ($_[1] ne "" && length($MC{qml}) > 2) {
+    if (defined $_[1] && length($MC{qml}) > 2) {
         $MC{info} .= "<HR><I>SC3 ID: $MC{qml}</I>";
         if (not $hideloc) {
             my %QML;
