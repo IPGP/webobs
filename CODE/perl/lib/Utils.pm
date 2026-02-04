@@ -42,8 +42,8 @@ converts $textin B<" \< \>> to resp. html entities B<&quot; &lt; &gt;> :
 
 sub htmlspecialchars
 {
-    my $txt = $_[0];
-    my $re = $_[1];
+    my $txt = $_[0] // "";
+    my $re = $_[1] // "";
 
     $txt =~ s/"/&quot;/g;
     $txt =~ s/'/&#39;/g;
@@ -271,7 +271,7 @@ sub timescale_name {
 # Returns true for some known strings
 sub isok ($)
 {
-    my $ok = shift;
+    my $ok = shift // "";
     return ($ok =~ /^(Y|YES|OK|ON|1|TRUE)/i ? 1:0);
 }
 
