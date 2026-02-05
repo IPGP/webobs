@@ -92,7 +92,9 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
    GRAPH_HEIGHT_PX|250
    ```
    These values can be overwritten in `mc3.pl` URL with options `&grw=` and `&grh=`.
-   * new button (lower left of graph) to show/hide lines around bar graphs.
+   * new button (lower left of graph) to save graph and legend as a .png image on disk (screenshot),
+   * new button (lower left of graph) to show/hide lines around bar graphs,
+   * new column **NoGraph* for event types (MC3_Codes.conf) to ignore it in the graph, e.g., for a comment type.
 1. Few improvements in **Jerk** superproc:
     * automatic filtering to avoid outliers in raw signals,
     * improves graph rendering and add a legend.

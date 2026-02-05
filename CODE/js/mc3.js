@@ -241,10 +241,12 @@ function cop(color) {
 
         var oldOverflow = wrapper.style.overflow;
         wrapper.style.overflow = "visible";
+        if (!wrapper) return;
 
         html2canvas(wrapper, {
             backgroundColor: bgcolor,
-            scale: window.devicePixelRatio,
+            //scale: window.devicePixelRatio,
+            scale: 2,
             useCORS: true
         }).then(function(canvas) {
 
