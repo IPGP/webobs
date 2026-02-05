@@ -338,11 +338,15 @@ sub readNode {
         ($tmp{LON_WGS84} //= "") =~ s/,/./g;
 
         #FB-legacy: removes escape characters in feature's list
-        $tmp{FILES_FEATURES} =~ s/\\,/,/g;
+        ($tmp{FILES_FEATURES} //= "") =~ s/\\,/,/g;
         $tmp{FILES_FEATURES} =~ s/\\\|/,/g;
 
         # removes trailing blanks in each features
         $tmp{FILES_FEATURES} = join(",",map {trim($_)} split(/[,\|]/,$tmp{FILES_FEATURES}));
+        
+        # fix possible undefined parameters
+        $tmp{ALTITUDE} //= "";
+        $tmp{GNSS_9CHAR} //= "";
 
         $ret{$f}=\%tmp;
     }

@@ -164,7 +164,7 @@ my $dbh;
 my $titrePage = "";
 my $editCGI = "/cgi-bin/nedit.pl";
 
-$GRID{UTM_LOCAL} ||= '';
+$GRID{UTM_LOCAL} //= '';
 my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
 my $localCS = $UTM{GEODETIC_DATUM_LOCAL_NAME};
 
@@ -284,7 +284,7 @@ $htmlcontents .= "$__{'Specifications'}&nbsp;$go2top";
 $htmlcontents .= "</div><div id=\"specID\">";
 
 # should 'nodes' be called differently (than 'nodes'!) ?
-my $snm = defined($GRID{NODE_NAME}) ? $GRID{NODE_NAME} : "$__{'node'}";
+my $snm = $GRID{NODE_NAME} ne "" ? $GRID{NODE_NAME} : "$__{'node'}";
 $htmlcontents .= "<TABLE width=\"100%\"><TR><TD style=\"border:0;vertical-align:top\"><UL>";
 $htmlcontents .= "<LI>$__{'Grid code'}: <B class='code'>$grid</B></LI>\n";
 # -----------
