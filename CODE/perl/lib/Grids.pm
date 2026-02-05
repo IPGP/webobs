@@ -334,8 +334,8 @@ sub readNode {
         $tmp{PROJECT} = 1 if (-s "$NODES{PATH_NODES}/$f/$NODES{SPATH_INTERVENTIONS}/${f}_Projet.txt");
 
         #substitutes possible decimal comma to point for numerics
-        $tmp{LAT_WGS84} =~ s/,/./g;
-        $tmp{LON_WGS84} =~ s/,/./g;
+        ($tmp{LAT_WGS84} //= "") =~ s/,/./g;
+        ($tmp{LON_WGS84} //= "") =~ s/,/./g;
 
         #FB-legacy: removes escape characters in feature's list
         $tmp{FILES_FEATURES} =~ s/\\,/,/g;

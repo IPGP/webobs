@@ -297,17 +297,21 @@ foreach (@domain) {
 if ($showOwnr && defined($GRID{OWNCODE})) {
     $htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n"
 }
-if ($showType && $GRID{TYPE} ne "") {
+if ($showType && defined $GRID{TYPE} && $GRID{TYPE} ne "") {
     $htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n";
 }
+    
+$GRID{RAWFORMAT} //= "";
+$GRID{URNDATA}   //= "";
+    
 # -----------
 # only for PROCs
 if ($isProc) {
 
-    my $form;
+    my $form = "";
 
     # -----------
-    if ($GRID{RAWFORMAT}) {
+    if ($GRID{RAWFORMAT} ne "") {
         $htmlcontents .= "<LI>$__{'Default data format'}: <B class='code'>$GRID{RAWFORMAT}</B></LI>\n";
         $htmlcontents .= "<LI>$__{'Default data source'}: <B>";
         if ($GRID{RAWFORMAT} eq "genform" && defined($GRID{RAWDATA})) {
@@ -320,7 +324,7 @@ if ($isProc) {
     }
 
     # -----------
-    if (defined($GRID{URNDATA}) || $form ne "") {
+    if ($GRID{URNDATA} ne "" || $form ne "") {
         $htmlcontents .= "<LI>$__{'Access to rawdata'}: <B>";
         if ($form ne "") {
             $htmlcontents .= "<A href=\"/cgi-bin/showGENFORM.pl?form=$form\"><IMG src='/icons/form.png' style='vertical-align:middle' title=\"FORM.$form database\"></A>";
@@ -377,9 +381,9 @@ if ($isForm) {
     # get the total number of records in orphan nodes
     my @allFormNodes;
     for (@{$GRID{NODESLIST}}) { push(@allFormNodes, $_); }
-    my $stmt = "SELECT COUNT(id) FROM $tbl"." WHERE node NOT IN ('".join("', '",@allFormNodes)."');";
-    my $sth = $dbh->prepare($stmt);
-    my $rv = $sth->execute() or die $DBI::errstr;
+    $stmt = "SELECT COUNT(id) FROM $tbl"." WHERE node NOT IN ('".join("', '",@allFormNodes)."');";
+    $sth = $dbh->prepare($stmt);
+    $rv = $sth->execute() or die $DBI::errstr;
     @row = $sth->fetchrow_array();
     my $orphanNodes = join('',@row);
     $sth->finish();
@@ -469,7 +473,7 @@ if ($isProc) {
     }
     $htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Param.'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
     foreach ("Decimate","Cumulate","DateStr","MarkerSize","LineWidth","Status") {
-        my @tsp = split(/,/,$GRID{uc($_)."LIST"});
+        my @tsp = split(/,/,($GRID{uc($_)."LIST"} // ""));
         my $cells;
         if ($#tsp < 0) {
             $cells = "<TD align=\"center\" colspan=\"".($#procTS+1)."\"><I><SMALL>$__{'undefined'}</SMALL></I>";
@@ -657,7 +661,10 @@ for (@{$GRID{NODESLIST}}) {
         $htmlcontents .= "<TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
 
         # Node's localization
-        if ($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0) {
+        $NODE{LAT_WGS84} //= "";
+        $NODE{LON_WGS84} //= "";
+        $NODE{ALTITUDE}  //= "";
+        if ($NODE{LAT_WGS84} eq "" && $NODE{LON_WGS84} eq "" && $NODE{ALTITUDE} eq "") {
             $htmlcontents .= "<TD colspan=3> </TD>";
         } else {
             my $lat = sprintf("%.5f",$NODE{LAT_WGS84});
@@ -735,14 +742,15 @@ for (@{$GRID{NODESLIST}}) {
         }
 
         # Node's proc parameters
+        $NODE{RAWFORMAT} //= "";
         if ($usrProcparam eq 'on') {
-            $htmlcontents .= "<TD align=\"center\"><SPAN class=\"code\">".($NODE{"$grid.FID"} ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>"
-              ."<TD align=\"center\">".($NODE{"$grid.RAWFORMAT"} ? $NODE{"$grid.RAWFORMAT"}
-                : ($NODE{RAWFORMAT} ? $NODE{RAWFORMAT} : ($GRID{RAWFORMAT} // '')))."</TD>"
+            $htmlcontents .= "<TD align=\"center\"><SPAN class=\"code\">".(($NODE{"$grid.FID"} // "") ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>"
+              ."<TD align=\"center\">".(($NODE{"$grid.RAWFORMAT"} // "") ? $NODE{"$grid.RAWFORMAT"}
+                : ($NODE{RAWFORMAT} ne "" ? $NODE{RAWFORMAT} : $GRID{RAWFORMAT}))."</TD>"
               ."<TD align=\"center\">";
             my %carCLB = readCLB("$grid.$NODEName");
-            my $maxchid = ( sort { $carCLB{$a}{"nv"} <=> $carCLB{$b}{"nv"} } keys %carCLB )[-1];
-            $htmlcontents .= "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">".$carCLB{$maxchid}{"nv"}."</A>";
+            my $maxchid = ( sort { $carCLB{$a}{"nv"} <=> $carCLB{$b}{"nv"} } keys %carCLB )[-1] // "";
+            $htmlcontents .= "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">".($carCLB{$maxchid}{"nv"} // "")."</A>";
             $htmlcontents .= "</TD>";
         }
         if ($procOUTG) {
@@ -995,7 +1003,7 @@ print " readers = <B>".join(", ", @{$authUsers{1}})."</B></P>\n";
 print "</BODY>\n</HTML>\n";
 
 sub checkingTS {
-    if ( $_[0] eq $_[1] ) {
+    if (defined $_[1] && $_[0] eq $_[1] ) {
         return "<TD><input type=\"checkbox\" checked=true disabled=\"disabled\" id=\"check_$_[0]\[\]\"/></TD>";
     } else {
         return "<TD><input type=\"checkbox\" disabled=\"disabled\" id=\"check_$_[0]\[\]\"/></TD>";
