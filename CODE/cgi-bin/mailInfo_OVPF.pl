@@ -451,7 +451,7 @@ PART1
     $html = "</p>";
     $htmlMail .= $html;
     $html .= "<p id=legend>";
-    $html .= "Illustration de la d&eacute;formation sur 1 an. Sont ici repr&eacute;sent&eacute;es des lignes de base (variation de distance entre deux r&eacute;cepteurs GPS) traversant l'&eacute;difice du Piton de la Fournaise, au sommet (en haut), &agrave; la base du c&ocirc;ne terminal (au milieu) et en champ lointain (en bas) (cf. localisation sur les cartes associ&eacute;es). Une hausse est synonyme d'élongation et donc de gonflement du volcan ; inversement une diminution est synonyme de contraction et donc de d&eacute;gonflement du volcan. Les &eacute;ventuelles p&eacute;riodes colori&eacute;es en rose clair correspondent aux &eacute;ruptions.";
+    $html .= "Illustration de la d&eacute;formation sur 1 an. Sont ici repr&eacute;sent&eacute;es des lignes de base (variation de distance entre deux r&eacute;cepteurs GNSS) traversant l'&eacute;difice du Piton de la Fournaise, au sommet (en haut), &agrave; la base du c&ocirc;ne terminal (au milieu) et en champ lointain (en bas) (cf. localisation sur les cartes associ&eacute;es). Une hausse est synonyme d'élongation et donc de gonflement du volcan ; inversement une diminution est synonyme de contraction et donc de d&eacute;gonflement du volcan. Les &eacute;ventuelles p&eacute;riodes colori&eacute;es en rose clair correspondent aux &eacute;ruptions.";
     $html .= "</p>";
     $html .= '    <hr>';
     $htmlOutput .= $html;
@@ -473,9 +473,10 @@ PART1
               - S&eacute;isme volcano-tectonique sommital : s&eacute;isme localis&eacute; au dessus du niveau de la mer &agrave; l'aplomb du sommet du volcan.<br/>
                   - S&eacute;isme volcano-tectonique profond : s&eacute;isme localis&eacute; sous le niveau de la mer &agrave; l'aplomb du volcan.<br/>
                   - S&eacute;isme local : s&eacute;isme localis&eacute; dans un rayon de 200km de l'&icirc;le.<br/>
-                  - Signaux GPS sommitaux: t&eacute;moin de l'influence de sources de pression superficielles &agrave; l'aplomb du volcan.<br/>
-                  - Signaux GPS lointains: t&eacute;moin de l'influence de sources de pression profondes &agrave; l'aplomb du volcan.
-              </p>";
+                  - Signaux GNSS sommitaux: t&eacute;moin de l'influence de sources de pression superficielles &agrave; l'aplomb du volcan.<br/>
+                  - Signaux GNSS lointains: t&eacute;moin de l'influence de sources de pression profondes &agrave; l'aplomb du volcan.<br/>
+        	  - GNSS : Global Navigation Satellite System, syst&egrave;me global de positionnement par satelite.
+	 </p>";
     $html .= "    </div>";
     $html .= "  </div>";
     $html .= "  </body>";
