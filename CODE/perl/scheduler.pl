@@ -597,9 +597,16 @@ while (1) {
         }
         for my $rid (keys(%CANDIDATES)) {
 
+            # Make sure values are not UNDEF
+            $CANDIDATES{$rid}{XEQ1} //= '';
+            $CANDIDATES{$rid}{XEQ2} //= '';
+            $CANDIDATES{$rid}{XEQ3} //= '';
+            $CANDIDATES{$rid}{MAXSYSLOAD} //= 0.7;
+            $CANDIDATES{$rid}{JID} //= '';
+
             # build the actual command to be executed from components XEQx
 
-# no leading/trailing blanks in EACH components THEN derefrence $WEBOBS{} variables
+            # no leading/trailing blanks in EACH components THEN derefrence $WEBOBS{} variables
             $CANDIDATES{$rid}{XEQ1} =~ s/^\s+|\s+$//g;
             $CANDIDATES{$rid}{XEQ2} =~ s/^\s+|\s+$//g;
             $CANDIDATES{$rid}{XEQ3} =~ s/^\s+|\s+$//g;
@@ -901,7 +908,7 @@ sub CANDIDATES {
                 delete $LMISS{$CANDIDATES{$key}};
             }
         }
-        if (defined($EMISS{$CANDIDATES{$key}{JID}})) {
+        if (defined($CANDIDATES{$key}{JID}) && defined($EMISS{$CANDIDATES{$key}{JID}})) {
             if ($EMISS{$CANDIDATES{$key}{JID}} + $SCHED{EMISS_BIAS} >= time) {
                 delete $CANDIDATES{$key};
             } else {
