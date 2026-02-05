@@ -312,7 +312,8 @@ if (@$domains) {
                     if (%G) {
                         print "<TR>" if ($vs ne $sefrans[0]);
                         print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-sefran\">SEFRAN</SPAN></TD>" if ($subsetType ne "");
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vs}{DESCRIPTION}."',CAPTION,'SEFRAN.$vs',BGCOLOR, 'purple'$olopt)\"";
+                        my $desc = $G{$vs}{DESCRIPTION} // "";
+                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'SEFRAN.$vs',BGCOLOR, 'purple'$olopt)\"";
                         print "<TD $ovl>";
                         if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$G{$vs}{MC3_NAME})) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$vs\" title=\"$__{'Edit Sefran'}\" ><img src='/icons/modif.png'></a>" }
                         print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/sefran3.pl?s3=$vs&header=1\">$G{$vs}{NAME}</a>";
@@ -344,7 +345,8 @@ if (@$domains) {
                     if (%G) {
                         print "<TR>" if ($vp ne $procs[0]);
                         print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-proc\">PROC</SPAN></TD>" if ($subsetType ne "");
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vp}{DESCRIPTION}."',CAPTION,'PROC.$vp',BGCOLOR, 'firebrick'$olopt)\")\"";
+                        my $desc = $G{$vp}{DESCRIPTION} // "";
+                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'PROC.$vp',BGCOLOR, 'firebrick'$olopt)\")\"";
                         print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in Proc'}\" onclick='srchopenPopup(\"+PROC.$vp\");return false'><img class='ic' src='/icons/search.png'></a>";
                         print     "<a href='/cgi-bin/gvTransit.pl?grid=PROC.$vp')><img src=\"/icons/tmap.png\"></a>";
                         if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$vp)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=PROC.$vp\" title=\"$__{'Edit Proc'}\" ><img src='/icons/modif.png'></a>" }
@@ -382,7 +384,8 @@ if (@$domains) {
                     if (%G) {
                         print "<TR>" if ($vf ne $forms[0]);
                         print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-form\">FORM</SPAN></TD>" if ($subsetType ne "");
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vf}{DESCRIPTION}."',CAPTION,'FORM.$vf',BGCOLOR, 'darkorange'$olopt)\")\"";
+                        my $desc = $G{$vf}{DESCRIPTION} // "";
+                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'FORM.$vf',BGCOLOR, 'darkorange'$olopt)\")\"";
                         print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in Form'}\" onclick='srchopenPopup(\"+FORM.$vf\");return false'><img class='ic' src='/icons/search.png'></a>";
                         print     "<a href='/cgi-bin/gvTransit.pl?grid=FORM.$vf')><img src=\"/icons/tmap.png\"></a>";
                         if (WebObs::Users::clientHasAdm(type=>"authforms",name=>$vf)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=FORM.$vf\" title=\"$__{'Edit Form'}\" ><img src='/icons/modif.png'></a>" }
@@ -416,7 +419,8 @@ if (@$domains) {
                     if (%G) {
                         print "<TR>" if ($np > 0 || $vn ne $views[0]);
                         print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-view\">VIEW</SPAN></TD>";
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$vn}{DESCRIPTION}."',CAPTION,'VIEW.$vn',BGCOLOR, 'darkgreen'$olopt)\")\"";
+                        my $desc = $G{$vn}{DESCRIPTION} // "";
+                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'VIEW.$vn',BGCOLOR, 'darkgreen'$olopt)\")\"";
                         print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in View'}\" onclick='srchopenPopup(\"+VIEW.$vn\");return false'><img class='ic' src='/icons/search.png'></a>";
                         print     "<a href='/cgi-bin/gvTransit.pl?grid=VIEW.$vn')><img src=\"/icons/tmap.png\"></a>";
                         if (WebObs::Users::clientHasAdm(type=>"authviews",name=>$vn)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=VIEW.$vn\" title=\"$__{'Edit View'}\" ><img src='/icons/modif.png'></a>" }
@@ -528,7 +532,7 @@ sub feditpopup {
         if ($f =~ /FORM\./) {
             my %cfg = readCfg("$tdir/$f");
             my $sel = ($f eq "FORM.GENFORM" ? "selected":"");
-            $SP .= "<option value=\"$f\" $sel>$f: $cfg{TITLE}</option>";
+            $SP .= "<option value=\"$f\" $sel>$f: $cfg{NAME}</option>";
         }
     }
     $SP .= "</select>";
