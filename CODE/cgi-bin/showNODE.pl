@@ -636,7 +636,7 @@ if ($nbemeta) {
 
 # Rows "Features"
 #
-my @listeFinaleCarFiles = ("");
+my @listeFinaleCarFiles = ();
 my %lienNode;
 my $lien_car = "";
 
@@ -658,7 +658,7 @@ for my $key_link (keys %node2node) {
 push(@listeFinaleCarFiles,keys(%lienNode)) ;
 
 # now add features defined in the $NODEName cnf file
-my @listeCarFiles=split(/\||,/,$NODE{FILES_FEATURES});
+my @listeCarFiles = split(/\||,/,$NODE{FILES_FEATURES});
 for (@listeCarFiles) {
     my $carFileName = $_;
     my $carFile = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_FEATURES}/$carFileName.txt";
@@ -685,11 +685,11 @@ for (@listeCarFiles) {
 }
 
 # 2) build output from 'final' list of features
-my $lignes = $#listeFinaleCarFiles;
+my $featlines = scalar(@listeFinaleCarFiles);
 my @carNode;
 my $carFile = "";
-if ($lignes > 0) {
-    print "<TR><TH valign=\"top\" rowspan=\"$lignes\">";
+if ($featlines > 0) {
+    print "<TR><TH valign=\"top\" rowspan=\"$featlines\">";
     if ($editOK) {
         print "<A href=\"$cgiConf\">$__{Features}</A>";
     } else {
@@ -697,12 +697,12 @@ if ($lignes > 0) {
     }
     print "</TH>";
     @listeFinaleCarFiles = grep(!/^$/, @listeFinaleCarFiles);
-    for (@listeFinaleCarFiles) {
-        my $carFileName = $_;
-        if ( /^ISOF:/ ) {
-            @carNode = $lienNode{$_};
-            s/^ISOF://g;
-            $carFileName = $_." of";
+    for my $i (0..$#listeFinaleCarFiles) {
+        my $carFileName = $listeFinaleCarFiles[$i];
+        if ( $carFileName =~ /^ISOF:/ ) {
+            @carNode = $lienNode{$listeFinaleCarFiles[$i]};
+            $carFileName =~ s/^ISOF://g;
+            $carFileName .= " of";
         } else {
             $carFile = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_FEATURES}/$carFileName.txt";
             @carNode = readFile($carFile);
@@ -711,7 +711,7 @@ if ($lignes > 0) {
             }
             @carNode = (wiki2html(join("",@carNode)));
         }
-        print "<TR>" if ($carFileName ne $listeFinaleCarFiles[0]);
+        print "<TR>" if ($i > 0);
         if ($editOK && !($carFileName =~ / of$/)) {
             print "<TD valign=\"top\" width=\"10%\"><a href=\"$cgiEtxt?file=$NODES{SPATH_FEATURES}/$carFileName.txt&node=$GRIDType.$GRIDName.$NODEName\"><B>$carFileName</B></a></TD>\n";
         } else {
