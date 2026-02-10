@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-02-03
+%   Updated: 2026-02-10
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -493,6 +493,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.GTITLE = varsub(summary_title,V);
 		OPT.INFOS = {sprintf('Referential: {\\bf%s}',itrf), ...
             sprintf('  E {\\bf%+g} %s\n  N {\\bf%+g} %s\n  U {\\bf%+g} %s',velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit)};
+        OPT.IMAP = [];
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
@@ -647,6 +648,7 @@ for r = 1:numel(P.GTABLE)
         if faultcorr
             OPT.EVENTS = cat(1,OPT.EVENTS,P.fault_event);
         end
+        OPT.IMAP = [];
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
@@ -820,6 +822,7 @@ for r = 1:numel(P.GTABLE)
 
         OPT.STATUS = 0;
 		OPT.GSTATUS = [];
+        OPT.IMAP = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
@@ -988,6 +991,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.GSTATUS = [];
 		OPT.FIXEDPP = true;
         OPT.INFOLINES = 9;
+        OPT.IMAP = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
@@ -1172,6 +1176,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.GSTATUS = [];
 		OPT.FIXEDPP = true;
         OPT.INFOLINES = 9;
+        OPT.IMAP = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
@@ -1308,6 +1313,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.GSTATUS = [];
 		OPT.FIXEDPP = false;
         OPT.INFOLINES = 4;
+        OPT.IMAP = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
@@ -1862,6 +1868,7 @@ for r = 1:numel(P.GTABLE)
         OPT.STATUS = 0;
 		OPT.GSTATUS = [];
 		OPT.FIXEDPP = true;
+        OPT.IMAP = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 		end

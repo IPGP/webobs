@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2026-01-13
+%   Updated: 2026-02-10
 
 
 WO = readcfg;
@@ -422,7 +422,7 @@ for m = 1:length(summarylist)
 		P.GTABLE(r).GTITLE = gtitle(M(m).title,P.GTABLE(r).TIMESCALE);
 		OPT.IMAP = IMAP;
 		OPT.FIXEDPP = true;
-		mkgraph(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% --- timeplot (new figure)
@@ -479,7 +479,8 @@ for m = 1:length(summarylist)
 
 			P.GTABLE(r).GTITLE = gtitle(M(m).title,P.GTABLE(r).TIMESCALE);
 
-			mkgraph(WO,sprintf('%s_time_%s',map,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+            OPT.IMAP = [];
+			mkgraph(WO,sprintf('%s_time_%s',map,P.GTABLE(r).TIMESCALE),P,OPT)
 			close
 		end
 
