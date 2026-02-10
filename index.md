@@ -65,7 +65,7 @@ sudo apt install wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-l
 sudo apt install libsocket6-perl libdigest-perl-md5-perl
 sudo apt install libncurses5 gdal-bin
 sudo apt install dvipng texlive-latex-extra texlive-fonts-recommended cm-super
-sudo apt install python-is-python3 python3-tk
+sudo apt install python-is-python3 python3-tk python3-venv
 ```
 
 ##### Set environment configuration
