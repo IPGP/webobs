@@ -691,7 +691,8 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 
     # 6) check user access integrity and solve issues if detected
     echo "${RELBASE}/SETUP/check-user-access.sh"
-    ${RELBASE}/SETUP/check-user-access.sh clean || { exit 1; }
+    set -o pipefail
+    (${RELBASE}/SETUP/check-user-access.sh clean | tee -a $REPORT) || { exit 1; }
     echo
 
 else
@@ -757,9 +758,10 @@ else
 fi
 
 # migration of existing former FORM (.DAT text file based) to GENFORM
-if [[ -d ${DOCROOT}/CONF/GRIDS2FORMS && -f ${DOCROOT}/DATA/DB/WEBOBSFORMS.db && $(ls -A ${DOCROOT}/CONF/GRIDS2FORMS) ]]; then
+if [[ -d ${DOCROOT}/CONF/GRIDS2FORMS && $(ls -A ${DOCROOT}/CONF/GRIDS2FORMS) ]]; then
     echo "${RELBASE}/SETUP/migration/form2genform.sh"
-    ${RELBASE}/SETUP/migration/form2genform.sh ${DOCROOT} || { exit 1; }
+    set -o pipefail
+    (${RELBASE}/SETUP/migration/form2genform.sh ${DOCROOT} | tee -a $REPORT) || { exit 1; }
     echo
 fi
 
