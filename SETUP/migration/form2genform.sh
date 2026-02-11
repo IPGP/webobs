@@ -515,6 +515,7 @@ for form in "${LEGACY_FORMS[@]}"; do
 
         # -- end of SQL script
         echo "COMMIT;" >> $TMP
+        cp $TMP "$TMP.$proc"
         cmd "cat $TMP | sqlite3 $DBF && rm -f $TMP"
 
         if [[ -f "$conf" && -f "$conf0" ]]; then
