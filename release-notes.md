@@ -112,6 +112,11 @@ where `TREND_FACTOR` is a dimensionless factor applied to the trend value initia
 ### Code improvement
 1. `!!` remove cedit.pl and fedit.pl. Replace former links with nedit.pl and formGENFORM.pl, respectively.
 
+### Under development
+1. **Python library for WebObs PROC development**: This is the first beta release of our new Python library, designed to ease the development of custom procedures for WebObs.
+    * Write procs directly in Python, benefiting from the language’s readability and powerful ecosystem.
+    * This release includes a ready-to-use example that replicates the GENPLOT functionality. You can use it as a template for your own projects.
+
 
 ## v2.7.3 (February 2025)
 
