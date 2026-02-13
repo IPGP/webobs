@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-02-10
+%   Updated: 2026-02-13
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -854,7 +854,7 @@ for r = 1:numel(P.GTABLE)
 		if velscale == 0 || isempty(velscale)
 			velscale = roundsd(rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]),1);
 		end
-		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/velscale; % graphic scale in degree/(mm/yr)
+		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/velscale; % graphic scale in degree lat per mm/yr
 
 		ha = plot(geo(knv,2),geo(knv,1),'k.');  extaxes(gca,[.04,.08])
 		hold on
@@ -949,13 +949,13 @@ for r = 1:numel(P.GTABLE)
 		xsc = xlim(1);
 		ysc = ylim(1) - .06*diff(ylim);
 		lsc = velscale*vsc;
-		arrows(xsc,ysc,lsc,90,[arrowshape,xyr],'Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
+		arrows(xsc,ysc,lsc*xyr,90,[arrowshape,xyr],'Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g %s',velscale,P.trendunit),'FontWeight','bold')
 		ysc = ylim(1) - .1*diff(ylim);
         rdv = 1e3*diff(tlim)/P.trendfact; % ratio displacement/velocity
         mscale = roundsd(velscale*rdv,1); % displacement scale (rounded)
 		lsc = mscale*vsc/rdv; % vector of displacements plotted at velocity scale...
-		arrows(xsc,ysc,lsc,90,[arrowshape,xyr],'Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
+		arrows(xsc,ysc,lsc*xyr,90,[arrowshape,xyr],'Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g mm',mscale),'FontWeight','bold')
 
 
