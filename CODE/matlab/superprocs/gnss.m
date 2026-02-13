@@ -850,14 +850,11 @@ for r = 1:numel(P.GTABLE)
 			end
 		end
 
-		% scale is adjusted to maximum horizontal vector or error amplitude (in mm/yr)
-		if velscale > 0
-			vmax = velscale;
-		else
-			vmax = rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]);
+		% scale is adjusted to maximum horizontal vector module or 1/2 error amplitude (in mm/yr)
+		if velscale == 0 || isempty(velscale)
+			velscale = roundsd(rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]),1);
 		end
-		vscale = roundsd(vmax,1); % vscale is rounded vmax
-		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/vmax; % graphic scale in degree/(mm/yr)
+		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/velscale; % graphic scale in degree/(mm/yr)
 
 		ha = plot(geo(knv,2),geo(knv,1),'k.');  extaxes(gca,[.04,.08])
 		hold on
@@ -869,8 +866,8 @@ for r = 1:numel(P.GTABLE)
 		% plots velocity vectors first
 		for nn = 1:numel(knv)
 			n = knv(nn);
-			if ~any(isnan([vsc,vmax])) && ~any(isnan(tr(n,1:2)))
-				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1),vsc*tr(n,2),[arrowshape,xyr],'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
+			if ~isnan(vsc) && ~any(isnan(tr(n,1:2)))
+				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1),vsc*tr(n,2),[arrowshape,xyr],'Cartesian','Ref',vsc*velscale,'FaceColor',scolor(n),'LineWidth',1);
 				ha = cat(1,ha,h);
 			end
 		end
@@ -951,14 +948,14 @@ for r = 1:numel(P.GTABLE)
 		% plots legend scale (velocity and displacements)
 		xsc = xlim(1);
 		ysc = ylim(1) - .06*diff(ylim);
-		lsc = vscale*vsc;
-		arrows(xsc,ysc,lsc,90,[arrowshape*vmax/vscale,xyr],'FaceColor','none','LineWidth',1,'Clipping','off');
-		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g %s',vscale,P.trendunit),'FontWeight','bold')
+		lsc = velscale*vsc;
+		arrows(xsc,ysc,lsc,90,[arrowshape,xyr],'Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
+		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g %s',velscale,P.trendunit),'FontWeight','bold')
 		ysc = ylim(1) - .1*diff(ylim);
         rdv = 1e3*diff(tlim)/P.trendfact; % ratio displacement/velocity
-        mscale = roundsd(vscale*rdv,1); % displacement scale (rounded)
+        mscale = roundsd(velscale*rdv,1); % displacement scale (rounded)
 		lsc = mscale*vsc/rdv; % vector of displacements plotted at velocity scale...
-		arrows(xsc,ysc,lsc,90,[arrowshape*vmax*rdv/mscale,xyr],'FaceColor','none','LineWidth',1,'Clipping','off');
+		arrows(xsc,ysc,lsc,90,[arrowshape,xyr],'Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g mm',mscale),'FontWeight','bold')
 
 
