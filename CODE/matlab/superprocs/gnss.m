@@ -949,13 +949,13 @@ for r = 1:numel(P.GTABLE)
 		xsc = xlim(1);
 		ysc = ylim(1) - .06*diff(ylim);
 		lsc = velscale*vsc;
-		arrows(xsc,ysc,lsc*xyr,90,[arrowshape,xyr],'Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
+		arrows(xsc,ysc,lsc,90,[arrowshape,xyr],'Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g %s',velscale,P.trendunit),'FontWeight','bold')
 		ysc = ylim(1) - .1*diff(ylim);
         rdv = 1e3*diff(tlim)/P.trendfact; % ratio displacement/velocity
         mscale = roundsd(velscale*rdv,1); % displacement scale (rounded)
 		lsc = mscale*vsc/rdv; % vector of displacements plotted at velocity scale...
-		arrows(xsc,ysc,lsc*xyr,90,[arrowshape,xyr],'Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
+		arrows(xsc,ysc,lsc,90,[arrowshape,xyr],'Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g mm',mscale),'FontWeight','bold')
 
 
