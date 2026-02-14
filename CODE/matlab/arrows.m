@@ -52,9 +52,9 @@ function h=arrows(x,y,l,az,varargin)
 %
 %	Author: Francois Beauducel <beauducel@ipgp.fr>
 %	Created: 1995-02-03
-%	Updated: 2019-12-24
+%	Updated: 2026-02-14
 
-%	Copyright (c) 2019, François Beauducel, covered by BSD License.
+%	Copyright (c) 2026, FranÃ§ois Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without 
@@ -149,7 +149,7 @@ fx = [s(:,4)*[.5 -.5 -.5] s(:,1)*[-.5 0 .5] s(:,4)*[.5 .5]]';
 fy = [v0 v0 (1 - s(:,3)) (1 - s(:,2)) v1 (1 - s(:,2)) (1 - s(:,3)) v0]';
 
 % the beauty of this script: a single patch command to draw all the arrows !
-hh = patch((-fx.*l.*cos(az) + fy.*l.*sin(az))/shape(5) + x,fx.*l.*sin(az) + fy.*l.*cos(az) + y,'k',varargin{:});
+hh = patch(-fx.*l.*cos(az) + fy.*l.*sin(az) + x,shape(5)*(fx.*l.*sin(az) + fy.*l.*cos(az)) + y,'k',varargin{:});
 
 	
 if nargout > 0
