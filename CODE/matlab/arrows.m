@@ -1,4 +1,4 @@
-function h=arrows(x,y,l,az,varargin)
+function varargout=arrows(x,y,l,az,varargin)
 %ARROWS  Generalised 2-D arrows plot
 %
 %	ARROWS(X,Y,L,AZ) draws an arrow on current axis from position X,Y with 
@@ -149,11 +149,11 @@ fx = [s(:,4)*[.5 -.5 -.5] s(:,1)*[-.5 0 .5] s(:,4)*[.5 .5]]';
 fy = [v0 v0 (1 - s(:,3)) (1 - s(:,2)) v1 (1 - s(:,2)) (1 - s(:,3)) v0]';
 
 % the beauty of this script: a single patch command to draw all the arrows !
-hh = patch(-fx.*l.*cos(az) + fy.*l.*sin(az) + x,shape(5)*(fx.*l.*sin(az) + fy.*l.*cos(az)) + y,'k',varargin{:});
+h = patch(-fx.*l.*cos(az) + fy.*l.*sin(az) + x,shape(5)*(fx.*l.*sin(az) + fy.*l.*cos(az)) + y,'k',varargin{:});
 
 	
 if nargout > 0
-	h = hh;
+	varargout{1} = h;
 end
 
 
