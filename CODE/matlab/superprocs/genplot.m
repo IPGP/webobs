@@ -34,7 +34,7 @@ function DOUT=genplot(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2014-07-13
-%	Updated: 2026-01-19
+%	Updated: 2026-02-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -97,7 +97,7 @@ for n = 1:length(N)
 		tk = [];
 		dk = nan(0,nx);
 		if ~isempty(k)
-			[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,:),P.GTABLE(r).DECIMATE,P);
+			[tk,dk] = treatsignal(D(n).t(k,end),D(n).d(k,:),P.GTABLE(r).DECIMATE,P);
 			if isok(P,'PERNODE_RELATIVE')
 				dk = rf(dk);
 			end
@@ -227,7 +227,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 			for n = 1:length(N)
 				k = D(n).G(r).k;
 				if ~isempty(k)
-					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,c),P.GTABLE(r).DECIMATE,P);
+					[tk,dk] = treatsignal(D(n).t(k,end),D(n).d(k,c),P.GTABLE(r).DECIMATE,P);
 					if isok(P,'SUMMARY_RELATIVE')
 						dk = rf(dk);
 					end
