@@ -102,7 +102,7 @@ for i = 1:length(k)
         fml = regexprep(fml,'mean\(([^)]*)','rmean([$1],2'); % mean (ignore NaN)
         fml = regexprep(fml,'std\(([^)]*)','rstd([$1],2'); % std (ignore NaN)
         if startdate
-            fml = regexprep(fml,'DURATION','diff(t,2)'); % DURATION (in days)
+            fml = regexprep(fml,'DURATION','diff(t,[],2)'); % DURATION (in days)
         else
             fml = regexprep(fml,'DURATION','[0;diff(t)]'); % without startdate DURATION is differential time
         end
