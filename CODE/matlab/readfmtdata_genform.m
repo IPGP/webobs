@@ -36,7 +36,7 @@ FORM.DURATION_UNIT = 'day';
 % test database table and get the number of fields (must exists!)
 [s,w] = wosystem(sprintf('sqlite3 %s "pragma table_info(%s)"|wc -l',WO.SQL_FORMS,tn));
 if ~s && ~isempty(w)
-	nf = str2double(w);
+	nf = str2double(w) + 2;
 else
 	error('%s: table "%s" does not exist in %s...',tn,WO.SQL_FORMS);
 end
