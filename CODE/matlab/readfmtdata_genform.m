@@ -130,7 +130,7 @@ for i = 1:nx
     dd = regexprep(dd,'INPUT([0-9]{2,3})','inp(:,$1)');
     dd = regexprep(dd,'OUTPUT([0-9]{2,3})','out(:,$1)');
     if startdate
-        dd = regexprep(dd,'DURATION','diff(t,2)'); % DURATION (in days)
+        dd = regexprep(dd,'DURATION','diff(t,[],2)'); % DURATION (in days)
     else
         dd = regexprep(dd,'DURATION','[0;diff(t)]'); % without startdate DURATION is differential time
     end
