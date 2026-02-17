@@ -21,7 +21,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2024-07-03, in Surabaya (Indonesia)
-%	Updated: 2025-12-30
+%	Updated: 2026-02-17
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -30,6 +30,8 @@ tn = lower(fn);
 FORM = readcfg(WO,sprintf('%s/%s/%s.conf',WO.PATH_FORMS,fn,fn),'quiet');
 tz = field2num(FORM,'TZ',0);
 startdate = isok(FORM,'STARTING_DATE');
+FORM.DURATION_NAME = 'Duration';
+FORM.DURATION_UNIT = 'day';
 
 % test database table and get the number of fields (must exists!)
 [s,w] = wosystem(sprintf('sqlite3 %s "pragma table_info(%s)"|wc -l',WO.SQL_FORMS,tn));
@@ -101,6 +103,8 @@ for i = 1:length(k)
         fml = regexprep(fml,'std\(([^)]*)','rstd([$1],2'); % std (ignore NaN)
         if startdate
             fml = regexprep(fml,'DURATION','diff(t,2)'); % DURATION (in days)
+        else
+            fml = regexprep(fml,'DURATION','[0;diff(t)]'); % without startdate DURATION is differential time
         end
         % replaces input/output name in string
         fml = regexprep(fml,'INPUT([0-9]{2,3})','inp(:,$1)');
@@ -125,6 +129,11 @@ for i = 1:nx
     dd = pdn{i};
     dd = regexprep(dd,'INPUT([0-9]{2,3})','inp(:,$1)');
     dd = regexprep(dd,'OUTPUT([0-9]{2,3})','out(:,$1)');
+    if startdate
+        dd = regexprep(dd,'DURATION','diff(t,2)'); % DURATION (in days)
+    else
+        dd = regexprep(dd,'DURATION','[0;diff(t)]'); % without startdate DURATION is differential time
+    end
     if ~isempty(dd)
         eval(['d(:,i)=',dd,';']);
     end
