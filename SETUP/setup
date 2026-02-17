@@ -551,18 +551,6 @@ fi
 echo "WebObs user: ${USERID} , group: ${USERGID}, email: ${USERMAIL}"
 echo
 
-# Python environment ----------------------------------------------------------
-# -----------------------------------------------------------------------------
-echo 'Python environment installation'
-if $(confirm "Create Python environment [y/N] ?") ; then
-    python3 -m venv ${DOCROOT}/venv/
-    chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
-    source ${DOCROOT}/venv/bin/activate
-    PYTHON_CODE="${DOCROOT}/CODE/python"
-    pip install -r "${PYTHON_CODE}/requirements.txt"
-fi
-echo
-
 # setup (new) CODE and DOC paths, wether install or upgrade
 # symlinks from DOCROOT to RELBASE code and doc
 # -----------------------------------------------------------------------------
@@ -764,6 +752,18 @@ if [[ -d ${DOCROOT}/CONF/GRIDS2FORMS && $(ls -A ${DOCROOT}/CONF/GRIDS2FORMS) ]];
     (${RELBASE}/SETUP/migration/form2genform.sh ${DOCROOT} | tee -a $REPORT) || { exit 1; }
     echo
 fi
+
+# Python environment ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+echo 'Python environment installation'
+if $(confirm "Create Python environment [y/N] ?") ; then
+    python3 -m venv ${DOCROOT}/venv/
+    chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
+    source ${DOCROOT}/venv/bin/activate
+    pip install -r "${DOCROOT}/CODE/python/requirements.txt"
+    deactivate
+fi
+echo
 
 # update FDSN network codes
 if $(confirm "Do you want to update the FDSN network codes [y/N] ? ") ; then
