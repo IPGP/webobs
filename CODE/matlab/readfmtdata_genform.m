@@ -128,7 +128,7 @@ un = cell(1,nx);
 for i = 1:nx
     dd = pdn{i};
     dd = regexprep(dd,'INPUT([0-9]{2,3})','inp(:,$1)');
-    dd = regexprep(dd,'OUTPUT([0-9]{2,3})','out(:,$1)');
+    dd = regexprep(dd,'OUTPUT([0-9]{2,3})','out(:,$1)');ex
     if startdate
         dd = regexprep(dd,'DURATION','diff(t,2)'); % DURATION (in days)
     else
