@@ -24,7 +24,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2026-02-17
+%	Updated: 2026-02-19
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -121,7 +121,11 @@ for n = 1:length(N)
 		D(n).tfirstlast = P.NOW - [1,0];
 	end
 	for r = 1:length(P.GTABLE)
-		k = find((D(n).t(:,end) >= P.GTABLE(r).DATE1 | isnan(P.GTABLE(r).DATE1)) & (D(n).t(:,1) <= P.GTABLE(r).DATE2 | isnan(P.GTABLE(r).DATE2)));
+        if ~isempty(D(n).t)
+            k = find((D(n).t(:,end) >= P.GTABLE(r).DATE1 | isnan(P.GTABLE(r).DATE1)) & (D(n).t(:,1) <= P.GTABLE(r).DATE2 | isnan(P.GTABLE(r).DATE2)));
+        else
+            k = [];
+        end
 		tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
 		if any(isnan(tlim))
 			tlim = D(n).tfirstlast;

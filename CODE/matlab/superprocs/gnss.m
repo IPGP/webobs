@@ -158,7 +158,7 @@ if vrelmode
 	end
 end
 vrelhorizonly = isok(P,'VECTORS_RELATIVE_HORIZONTAL_ONLY',1);
-velscale = field2num(P,'VECTORS_VELOCITY_SCALE',0);
+velscale = field2num(P,'VECTORS_VELOCITY_SCALE',0,'notempty');
 vectors_minkm = field2num(P,'VECTORS_MIN_SIZE_KM',10);
 vectors_maxxy = field2num(P,'VECTORS_MAX_XYRATIO',1);
 vectors_xylim = field2num(P,'VECTORS_MAP_XYLIM');
@@ -851,7 +851,7 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% scale is adjusted to maximum horizontal vector module or 1/2 error amplitude (in mm/yr)
-		if velscale == 0 || isempty(velscale)
+		if velscale == 0
 			velscale = roundsd(rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]),1);
 		end
 		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/velscale; % graphic scale in degree lat per mm/yr
