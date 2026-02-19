@@ -22,7 +22,7 @@ function N=readnodes(WO,grids,tlim,valid);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-23
-%   Updated: 2025-12-29
+%   Updated: 2026-02-19
 
 if nargin < 2
 	error('No few input arguments')
@@ -61,7 +61,8 @@ for i = 1:length(grids)
         if isempty(regexp(fdsnws,'^http'))
             fdsnws = ['https://',fdsnws];
         end
-        fid = fopen(sprintf('/etc/webobs.d/SEFRANS/%s/channels.conf',ss{2}),'rt');
+        f = field2str(S3,'CHANNEL_CONF',sprintf('/etc/webobs.d/SEFRANS/%s/channels.conf',ss{2}));
+        fid = fopen(f,'rt');
             C = textscan(fid,'%q%q%q%q%q%q%q','CommentStyle','#');
         fclose(fid);
         sfr = C{2};
