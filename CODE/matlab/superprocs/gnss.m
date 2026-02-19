@@ -852,7 +852,7 @@ for r = 1:numel(P.GTABLE)
 
 		% scale is adjusted to maximum horizontal vector module or 1/2 error amplitude (in mm/yr)
 		fprintf('---> Velocity scale');
-		if vector_velscale > 0
+		if vectors_velscale > 0
             velscale = vector_velscale;
         else
             fprintf(' (auto)');
