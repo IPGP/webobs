@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-02-13
+%   Updated: 2026-02-19
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -851,9 +851,12 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% scale is adjusted to maximum horizontal vector module or 1/2 error amplitude (in mm/yr)
+		fprintf('---> Velocity scale');
 		if velscale == 0
+            fprintf(' (auto)');
 			velscale = roundsd(rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]),1);
 		end
+		fprintf(': %g %s\n',velscale,P.trendunit);
 		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/velscale; % graphic scale in degree lat per mm/yr
 
 		ha = plot(geo(knv,2),geo(knv,1),'k.');  extaxes(gca,[.04,.08])
