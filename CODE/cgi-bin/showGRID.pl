@@ -316,7 +316,7 @@ if ($isProc) {
         $htmlcontents .= "<LI>$__{'Default data source'}: <B>";
         if ($GRID{RAWFORMAT} eq "genform" && defined($GRID{RAWDATA})) {
             $form = uc($GRID{RAWDATA});
-            $htmlcontents .= "<A href=\"/cgi-bin/showGRID.pl?grid=FORM.$form\" title=\"FORM.$form\">$form</A>";
+            $htmlcontents .= "<A href=\"/cgi-bin/showGRID.pl?grid=FORM.$form\" title=\"FORM.$form\">FORM.$form</A>";
         } else {
             $htmlcontents .= ($GRID{RAWDATA} // '')
         }
