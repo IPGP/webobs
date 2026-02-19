@@ -2,7 +2,7 @@
 
 
 
-![image alt <](CODE/icons/ipgp/logo_IPGP-UPC_2022_C110.png)&emsp;&emsp;&emsp;&emsp;![image alt <](CODE/icons/ipgp/logo_WebObs_C110.png)
+![image alt <](CODE/icons/ipgp/logo_WebObs_C110.png)&emsp;&emsp;&emsp;&emsp;![image alt <](CODE/icons/ipgp/logo_IPGP-UPC_2022_C110.png)&emsp;![image alt <](CODE/icons/ipgp/logo_CNRS_C110.jpg)
 
 This is the official repository for WebObs project source code development. For install/update packages, see the [WebObs page](https://ipgp.github.io/webobs).
 
