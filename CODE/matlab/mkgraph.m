@@ -84,7 +84,7 @@ if isfield(OPT,'GTITLE') && isfield(OPT,'INFOS')
 	h1 = plotlogo(P.LOGO2_FILE,P.LOGO2_HEIGHT,'right');
 
 	if isfield(OPT,'GSTATUS')
-		if OPT.STATUS && length(OPT.GSTATUS) > 2 && all(~isnan(OPT.GSTATUS(2:3)))
+		if length(OPT.GSTATUS) > 2 && all(~isnan(OPT.GSTATUS(2:3)))
 			OPT.GTITLE = [OPT.GTITLE, ...
 			   {sprintf('%s %+02d - Status %03d %% - Sampling %03d %% ',datestr(OPT.GSTATUS(1)),P.TZ,round(OPT.GSTATUS(2:3)))}];
 		end

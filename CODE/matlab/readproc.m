@@ -25,7 +25,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05 in Paris (France)
-%	Updated: 2026-01-17
+%	Updated: 2026-02-20
 
 
 proc = varargin{1};
@@ -212,7 +212,7 @@ else
 	P.GTABLE.DATE1 = isodatenum(REQ.DATE1);
 	P.GTABLE.DATE2 = isodatenum(REQ.DATE2);
 	P.GTABLE.TIMESCALE = '';
-	for key = {'MARKERSIZE','LINEWIDTH','CUMULATE','DECIMATE','STATUS'}
+	for key = {'DATESTR','MARKERSIZE','LINEWIDTH','CUMULATE','DECIMATE','STATUS'}
 		P.GTABLE.(key{1}) = field2num(REQ,key{1});
 	end
 
