@@ -190,6 +190,16 @@ baselines_staoff = field2num(P,'BASELINES_STATION_OFFSET_M',0.01);
 baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 baselines_trend = isok(P,'BASELINES_PLOT_TREND');
 
+% BASELINES_MAP parameters
+baselines_map_title = field2str(P,'BASELINES_MAP_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
+baselines_map_horizonly = isok(P,'BASELINES_MAP_HORIZONTAL_ONLY');
+baselines_map_linestyle = field2str(P,'BASELINES_MAP_LINESTYLE','.');
+baselines_map_mavr = field2num(P,'BASELINES_MAP_MOVING_AVERAGE',30);
+baslines_map_demopt = field2cell(P,'BASELINES_MAP_DEM_OPT','watermark',1.5,'saturation',0,'interp','legend','seacolor',[0.7,0.9,1]);
+baselines_map_staoff = field2num(P,'BASELINES_MAP_STATION_OFFSET_M',0.01);
+baselines_map_win = field2num(P,'BASELINES_MAP_WINDOW_DAYS');
+
+
 % MOTION parameters
 motion_excluded = field2str(P,'MOTION_EXCLUDED_NODELIST');
 motion_included = field2str(P,'MOTION_INCLUDED_NODELIST');
@@ -684,11 +694,8 @@ for r = 1:numel(P.GTABLE)
 	summary = 'BASELINES';
 	if any(strcmp(P.SUMMARYLIST,summary))
 
-		if baselines_horizonly
-			ib = 5:6;
-		else
-			ib = 5:7;
-		end
+        % component indexes (5:6 for horizontal only, 5:7 for 3-components)
+		ib = 5:(6 + ~baselines_horizonly);
 
 		% builds a structure B containing indexes of each node pairs
 		if isfield(P,'BASELINES_NODEPAIRS') && ~isempty(P.BASELINES_NODEPAIRS)
@@ -827,6 +834,56 @@ for r = 1:numel(P.GTABLE)
 		close
 	end
 
+	% --- Baselines time series
+	summary = 'BASELINES_MAP';
+	if any(strcmp(P.SUMMARYLIST,summary))
+
+        % component indexes (5:6 for horizontal only, 5:7 for 3-components)
+		ib = 5:(6 + ~baselines_map_horizonly);
+
+		% builds a structure B containing indexes of each node pairs a-b
+		if isfield(P,'BASELINES_MAP_NODEPAIRS') && ~isempty(P.BASELINES_MAP_NODEPAIRS)
+			pairref = strtrim(split(P.BASELINES_MAP_NODEPAIRS,';'));
+			np = 0;
+			for nn = 1:numel(pairref)
+				pairs = strtrim(split(pairref{nn},','));
+				if numel(pairs)>1
+					kr = find(ismemberlist({N.FID},pairs(1)));
+					kn = find(ismemberlist({N.FID},pairs(2:end)));
+				end
+				if ~isempty(kr) && ~isempty(kn)
+                    for i = 1:length(kn)
+                        B(np).a = kr;
+                        B(np).b = kn(i);
+                        np = np + 1;
+                    end
+				else
+					fprintf('%s: ** WARNING ** invalid node pairs for %s!\n',wofun,pairref{nn});
+				end
+			end
+		end
+		% B structure not created = no valid node pairs
+		% will build automatic node pairs from Delaunay's triangles
+		if ~exist('B','var')
+            %...
+		end
+
+		figure
+		orient tall
+		OPT.GTITLE = varsub(baselines_map_title,V);
+
+
+		if isok(P,'PLOT_GRID')
+			grid on
+		end
+
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+        OPT.IMAP = [];
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
+		close
+	end
+
 	% --- Vectors map
 	summary = 'VECTORS';
 	if any(strcmp(P.SUMMARYLIST,summary))
@@ -853,7 +910,7 @@ for r = 1:numel(P.GTABLE)
 		% scale is adjusted to maximum horizontal vector module or 1/2 error amplitude (in mm/yr)
 		fprintf('---> Velocity scale');
 		if vectors_velscale > 0
-            velscale = vector_velscale;
+            velscale = vectors_velscale;
         else
             fprintf(' (auto)');
 			velscale = roundsd(rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]),1);

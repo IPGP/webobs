@@ -200,7 +200,7 @@ BASELINES_EXCLUDED_NODELIST|
 BASELINES_EXCLUDED_FROM_TARGET_KM|
 BASELINES_INCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
-# - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
+# - fixed pairs (overwrites BASELINES_(EX,IN)CLUDED_* and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
 BASELINES_NODEPAIRS|
 # plots a moving average filter (raw data in background with lighter color)
 BASELINES_MOVING_AVERAGE|1
@@ -212,6 +212,17 @@ BASELINES_REF_OFFSET_M|0.01
 BASELINES_STATION_OFFSET_M|0.01
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 BASELINES_TIMEZOOM|
+
+# --- BASELINES_MAP: secondary baselines graph with map
+BASELINES_MAP_TITLE|{\fontsize{14}{\bf$name - Baselines} ($timescale)}
+BASELINES_MAP_HORIZONTAL_ONLY|YES
+# - node pairs: REF1,STA1;REF2,STA1,STA2,STA5 (default is Delaunay triangles)
+BASELINES_MAP_NODEPAIRS|
+BASELINES_MAP_LINESTYLE|.
+BASELINES_MAP_MOVING_AVERAGE|30
+BASELINES_MAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','legend','seacolor',[0.7,0.9,1]
+BASELINES_MAP_STATION_OFFSET_M|0.01
+BASELINES_MAP_WINDOW_DAYS|
 
 # --- VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|
