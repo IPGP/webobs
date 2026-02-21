@@ -41,7 +41,7 @@ print(sys.argv[1])
 proc = Proc(sys.argv[1])
 
 if len(sys.argv) >= 4:
-    proc.request = True;
+    proc.request = True
     proc.set_outdir(os.path.join(sys.argv[3], f"PROC.{proc.name}"))
     proc.set_config_file(os.path.join(sys.argv[3], "REQUEST.rc"))
 proc.read_proc()
@@ -76,7 +76,6 @@ pc = 0.35  # Blending parameter between the colormap and white.
 graph = graph_parameters(proc)
 for timescale in graph.keys():
     print(timescale)
-    times = []  # to preserve node.time when the timescale changes
     gopts = {k: graph[timescale][k] for k in ("linewidth", "markersize")}
     gopts["linestyle"] = pernode_linestyle
     date_form = get_date_formatter(timescale)
@@ -135,16 +134,14 @@ for timescale in graph.keys():
         save_plot(filename, proc)
         if csv:
             export_csv(filename, csv_header_title, proc, node.fullid)
-    times.append(dt)
 
-if proc.SUMMARYLIST:
-    alias = ", ".join(node.ALIAS for node in proc.nodes if ~np.isnan(node.data).all())
-    for tn, dt in enumerate(times):
+    if proc.SUMMARYLIST:
+        alias = ", ".join(n.ALIAS for n in proc.nodes if ~np.isnan(n.data).all())
         gopts["linestyle"] = summary_linestyle
         channels = channel_height_ratios(proc.SUMMARY_CHANNELS, max_channels)
         nc = len(channels)
         cmap = matplotlib.colormaps["viridis"]
-        colors = cmap(np.linspace(0, 1, len(times) + 1))
+        colors = cmap(np.linspace(0, 1, len(graph.keys()) * node.data.shape[-1] + 1))
         hr = channels.values()
         fig, axs = plt.subplots(nc, 1, sharex=True, height_ratios=hr, figsize=psz)
         plt.subplots_adjust(left=0.1, bottom=0.1, top=0.90, right=0.95)
@@ -160,8 +157,8 @@ if proc.SUMMARYLIST:
                     data = node.data[:, c]
                     axs[c].set_xlim(start_time.timestamp(), end_time.timestamp())
                     axs[c].set_label("waveform" + str(c))
-                    axs[c].plot(dt, data, c=colors[tn], **gopts)
-                    axs[c].set_title(alias, c=colors[tn], weight="bold")
+                    axs[c].plot(dt, data, c=colors[c], **gopts)
+                    axs[c].set_title(alias, c=colors[c], weight="bold")
                     cal = node.CLB[c + 1]
                     channel, unit = cal["nm"], cal["un"]
                     axs[c].set_ylabel(f"{channel} ({unit})")
