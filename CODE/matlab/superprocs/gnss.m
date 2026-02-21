@@ -195,7 +195,7 @@ baselines_map_title = field2str(P,'BASELINES_MAP_TITLE','{\fontsize{14}{\bf$name
 baselines_map_horizonly = isok(P,'BASELINES_MAP_HORIZONTAL_ONLY');
 baselines_map_linestyle = field2str(P,'BASELINES_MAP_LINESTYLE','.');
 baselines_map_mavr = field2num(P,'BASELINES_MAP_MOVING_AVERAGE',30);
-baslines_map_demopt = field2cell(P,'BASELINES_MAP_DEM_OPT','watermark',1.5,'saturation',0,'interp','legend','seacolor',[0.7,0.9,1]);
+baselines_map_demopt = field2cell(P,'BASELINES_MAP_DEM_OPT','watermark',1.5,'saturation',0,'interp','legend','seacolor',[0.7,0.9,1]);
 baselines_map_staoff = field2num(P,'BASELINES_MAP_STATION_OFFSET_M',0.01);
 baselines_map_win = field2num(P,'BASELINES_MAP_WINDOW_DAYS');
 
@@ -320,6 +320,7 @@ modeltime_markersize = pi*(field2num(P,'MODELTIME_MARKERSIZE',10,'notempty')/2)^
 
 
 geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
+aliases = cat(1,{N.ALIAS});
 
 V.name = P.NAME;
 V.velref = itrf;
@@ -663,9 +664,13 @@ for r = 1:numel(P.GTABLE)
 		close
 
 		% exports data
-		if isok(P,'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS')
 			E.t = D(n).t(k);
-			E.d = [D(n).d(k,1:3),D(n).e(k,:),D(n).d(k,4)];
+            if ~isempty(k)
+                E.d = [D(n).d(k,1:3),D(n).e(k,:),D(n).d(k,4)];
+            else
+                E.d = nan(0,7);
+            end
 			E.header = {'Eastern(m)','Northern(m)','Up(m)','dE','dN','dU','Orbit'};
 			E.infos = {};
 			if harmcorr || faultcorr || vrelmode
@@ -742,7 +747,6 @@ for r = 1:numel(P.GTABLE)
 		% builds the structure X for smartplot: X(n).d(:,i) where
 		%   n = destination node and i = reference node
 		X = repmat(struct('t',[],'d',[],'e',[],'w',[],'nam',[]),numel(N),1);
-		aliases = cell(1,numel(N));
 		refnames = cell(1,numel(B));
 		for nn = 1:numel(B)
 			n = B(nn).kr;
@@ -842,9 +846,10 @@ for r = 1:numel(P.GTABLE)
 		ib = 5:(6 + ~baselines_map_horizonly);
 
 		% builds a structure B containing indexes of each node pairs a-b
+        B = [];
 		if isfield(P,'BASELINES_MAP_NODEPAIRS') && ~isempty(P.BASELINES_MAP_NODEPAIRS)
 			pairref = strtrim(split(P.BASELINES_MAP_NODEPAIRS,';'));
-			np = 0;
+			np = 1;
 			for nn = 1:numel(pairref)
 				pairs = strtrim(split(pairref{nn},','));
 				if numel(pairs)>1
@@ -864,13 +869,101 @@ for r = 1:numel(P.GTABLE)
 		end
 		% B structure not created = no valid node pairs
 		% will build automatic node pairs from Delaunay's triangles
-		if ~exist('B','var')
+		if isempty(B)
             %...
 		end
+
+        % now we have all node pairs: computing baselines
+        % time window for computations
+        tvel = tlim;
+        if all(baselines_map_win > 0)
+            if isscalar(baselines_map_win)
+                tvel = tlim(2) - [baselines_map_win,0];
+            elseif numel(baselines_map_win) == 2
+                tvel = tlim(2) - baselines_map_win;
+            end
+        end
+
+        fprintf('---> Baselines summary from %s to %s:\n',datestr(tvel(1)),datestr(tvel(2)));
+        for n = 1:length(B)
+            a = B(n).a;
+            b = B(n).b;
+            B(n).length = greatcircle(geo(a,1),geo(a,2),geo(b,1),geo(b,2));
+            B(n).line = sprintf('%s-%s',N(a).ALIAS,N(b).ALIAS);
+            B(n).name = sprintf('%s (%g km)',B(n).line,roundsd(B(n).length,2));
+            % reduces data to tlim window
+            k = isinto(D(a).t,tlim);
+            tka = D(a).t(k);
+            dka = D(a).d(k,:);
+            k = isinto(D(b).t,tlim);
+            tkb = D(b).t(k);
+            dkb = D(b).d(k,:);
+            d = nan(size(dka,1),1);
+            [tc,ka,kb] = intersect(tka,tkb);
+            if ~isempty(ka)
+                d(ka) = sqrt(sum((dkb(kb,ib) - dka(ka,ib)).^2,2));
+            end
+            B(n).d = d;
+            B(n).t = tka;
+            kvel = (isinto(B(n).t,tvel) & ~isnan(B(n).d));
+            if sum(kvel)
+                B(n).rlin = polyfit(B(n).t(kvel),B(n).d(kvel),1);
+            else
+                B(n).rlin = NaN;
+            end
+            vel = B(n).rlin(1)*1e3*365;
+            dis = vel*diff(tvel)/365;
+            def = dis*1e-6/B(n).length;
+            fprintf('   velocity %s = %+g mm/an, total displacement = %+g mm, total deformation = %+1.1e\n',B(n).name,roundsd([vel,dis,def],2));
+        end
 
 		figure
 		orient tall
 		OPT.GTITLE = varsub(baselines_map_title,V);
+        axes('Position',[.05,.5,.8,.43])
+        for n = 1:length(B)
+            dd = B(n).d - rmedian(B(n).d) - baselines_map_staoff*n;
+            da = mavr(dd,baselines_map_mavr);
+            plot(B(n).t,dd,baselines_map_linestyle,'Color',scolor(n)/2+1/2, ...
+                'MarkerSize',P.GTABLE(r).MARKERSIZE/2,'LineWidth',P.GTABLE(r).LINEWIDTH/2)
+            hold on
+            B(n).h = plot(B(n).t,da,baselines_map_linestyle,'Color',scolor(n), ...
+                'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH);
+            if ~all(isnan(da))
+                lda = find(~isnan(da),1,'last');
+                text(tlim(2),da(lda),['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
+                    'HorizontalAlignment','left','VerticalAlignment','middle')
+            end
+        end
+        ylim = get(gca,'YLim');
+
+        % ruler legend
+        x0 = tlim(1) - .01*diff(tlim);
+        y0 = ylim(2);
+        dy0 = .05;
+        plot(x0 + [0,0],y0 + [0,dy0],'-k','LineWidth',2)
+        text(x0,y0 + dy0/2,sprintf('%g cm',dy0*100),'FontSize',10,'FontWeight','bold', ...
+            'Rotation',90,'HorizontalAlignment','center','VerticalAlignment','bottom')
+        hold off
+        set(gca,'XLim',tlim,'YTick',[],'FontSize',fontsize);
+		datetick2('x',P.GTABLE(r).DATESTR)
+		tlabel(tlim,P.TZ,'FontSize',fontsize)
+
+        % map of baselines
+        axes('Position',[0.05,.05,.45,.4])
+        kn = unique(cat(1,B.a,B.b));
+        xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .003*[-1,1,-2,2];
+        DEM = loaddem(WO,xylim);
+        dem(DEM.lon,DEM.lat,DEM.z,'latlon','landcolor',.8*ones(1,3),'azimuth',-45)
+        hold on
+        for n = 1:length(B)
+            a = B(n).a;
+            b = B(n).b;
+            plot(geo([a,b],2),geo([a,b],1),'-','Color',scolor(n),'LineWidth',4)
+        end
+        hold off
+        target(geo(kn,2),geo(kn,1),8,.5*ones(1,3))
+        smarttext(geo(kn,1),geo(kn,2),aliases(kn),'latlon','noframe','FontSize',10,'FontWeight','bold')
 
 
 		if isok(P,'PLOT_GRID')
