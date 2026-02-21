@@ -202,7 +202,8 @@ def graph_parameters(proc):
             graph[ts]["markersize"] = markersizelist[t]
             graph[ts]["linewidth"] = linewidthlist[t]
             graph[ts]["status"] = statuslist[t]
-        except IndexError:
+        except IndexError as iex:
+            print(iex)
             pass
     return graph
 

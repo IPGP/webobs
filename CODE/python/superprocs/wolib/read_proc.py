@@ -159,16 +159,6 @@ class Proc(Grid):
     def read_proc(self):
         name = self.name
         conf = read_config(self.config_file)
-        for key, val in conf.items():
-            key = key.replace(f"PROC.{self.name}.", "")  # For request mode
-            setattr(self, key, val)
-        root_dir = os.path.join(WEBOBS["PATH_GRIDS2NODES"], "**")
-        nodes = []
-        for path in glob.glob(root_dir, recursive=False):
-            fullname = os.path.normpath(path).split(os.sep)[-1]
-            if os.path.isdir(path) and re.match(f"PROC.{name}", fullname):
-                nodes.append(fullname.split(".")[-1])
-
         tz = conf.get("TZ", "UTC")
         if bool(re.fullmatch(r"[+-]?0", tz)):
             tz = "UTC"
@@ -179,6 +169,17 @@ class Proc(Grid):
                 f"Can't read {name} Proc. Please select a valid timezone such as 'UTC' or 'Europe/Paris'."
             )
             exit()
+
+        for key, val in conf.items():
+            key = key.replace(f"PROC.{self.name}.", "")  # For request mode
+            setattr(self, key, val)
+
+        nodes = []
+        root_dir = os.path.join(WEBOBS["PATH_GRIDS2NODES"], "**")
+        for path in glob.glob(root_dir, recursive=False):
+            fullname = os.path.normpath(path).split(os.sep)[-1]
+            if os.path.isdir(path) and re.match(f"PROC.{name}", fullname):
+                nodes.append(fullname.split(".")[-1])
 
         for node_id in nodes:
             fullid = f"{self.SELFREF}.{node_id}"
