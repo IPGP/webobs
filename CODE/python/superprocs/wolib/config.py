@@ -50,7 +50,8 @@ def set_clb_timestamp(clb, timezone=None):
         dt = "T".join([clb[k].pop("DATE"), clb[k].pop("TIME")])
         try:
             clb[k]["dt"] = pendulum.parse(dt, tz=timezone).timestamp()
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as tvex:
+            print(tvex)
             pass
     return clb
 

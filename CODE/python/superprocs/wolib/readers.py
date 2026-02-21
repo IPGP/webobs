@@ -56,8 +56,9 @@ def read_miniseed(proc, node_id, timescale):
             elif rawformat == "fdsnws-dataselect":
                 client = Client_FDSN(rawdata)
                 st = client.get_waveforms(net, sta, loc, cha, start, end)
-        except (FDSNNoDataException, OSError):
+        except (FDSNNoDataException, OSError) as ex:
             st = Stream(Trace(data=np.full(shape=2, fill_value=np.nan)))
+            print(net, sta, loc, cha, start, end, ex)
             pass
         st_node_dic[cha] += st
 
