@@ -916,7 +916,7 @@ for r = 1:numel(P.GTABLE)
             B(n).vel = B(n).rlin(1)*1e3*365;
             B(n).dis = B(n).vel*diff(tvel)/365;
             B(n).def = B(n).dis*1e-6/B(n).length;
-            fprintf('   velocity %s = %+g mm/an, total displacement = %+g mm, total deformation = %+1.1e\n', ...
+            fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+1.1e\n', ...
                 B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],2));
         end
 
@@ -924,6 +924,7 @@ for r = 1:numel(P.GTABLE)
 		orient tall
 		OPT.GTITLE = varsub(baselines_map_title,V);
         axes('Position',[.05,.5,.8,.43])
+        ylim = baselines_map_staoff*[-(length(B)+.5),.5];
         for n = 1:length(B)
             dd = B(n).d - rmedian(B(n).d) - baselines_map_staoff*n;
             da = mavr(dd,baselines_map_mavr);
@@ -939,9 +940,9 @@ for r = 1:numel(P.GTABLE)
                 end
                 text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
                     'HorizontalAlignment','left','VerticalAlignment','middle')
+                ylim = minmax([ylim,lda+baselines_map_staoff*[-.5,.5]]);
             end
         end
-        ylim = get(gca,'YLim');
 
         % ruler legend
         dy0 = roundsd(diff(ylim)/5,1,'ceil'); % a quarter of Y-interval
@@ -951,7 +952,7 @@ for r = 1:numel(P.GTABLE)
         text(x0,y0,{sprintf('%g cm',dy0*100),'',''},'FontSize',10,'FontWeight','bold', ...
             'Rotation',90,'HorizontalAlignment','center')
         hold off
-        set(gca,'XLim',tlim,'YTick',[],'FontSize',fontsize,'TickDir','out');
+        set(gca,'XLim',tlim,'YLim',ylim,'YTick',[],'FontSize',fontsize,'TickDir','out');
 		datetick2('x',P.GTABLE(r).DATESTR)
 		tlabel(tlim,P.TZ,'FontSize',fontsize)
 
@@ -974,17 +975,19 @@ for r = 1:numel(P.GTABLE)
 
         % information
         axes('Position',[0.5,.05,.5,.4])
-        [~,ix] = sort(abs(cat(1,B.def)),'descend');
-        txt = {'{\bfLength, velocity, displacement, deformation:}',''};
+        [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
+        txt = {'{\bfBaselines linear estimations}', ...
+            sprintf('from %s to %s',datestr(tvel(1)),datestr(tvel(2))), ...
+            '(length, velocity, displacement, deformation)',''};
         for i = 1:length(B)
             n = ix(i);
-            dat = sprintf('%+g mm/an, %+g mm, %+1.1e',roundsd([B(n).vel,B(n).dis,B(n).def],2));
+            dat = sprintf('%+g mm/yr, %+g mm, %+1.1e',roundsd([B(n).vel,B(n).dis,B(n).def],2));
             if isnan(B(n).def)
-                dat = 'no data';
+                dat = '{\itno data}';
             end
             txt = [txt,{sprintf('   %s: %s\n',B(n).name,dat)}];
         end
-        text(0,1,txt,'VerticalAlignment','top','FontSize',8)
+        text(0,1,txt,'VerticalAlignment','top','FontSize',9)
         set(gca,'YLim',[0,1])
         axis off
 
