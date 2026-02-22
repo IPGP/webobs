@@ -8,9 +8,9 @@ function y = mavr(x,n,p)
 %	MAVR(x,n,-1) eliminates phase distortion (non-causal). Uses FILTFILT 
 %	funtion (Signal Processing Toolbox).
 %
-%	Author: F. Beauducel, IPGP
+%	Author: F. Beauducel, IPGP/WebObs
 %	Created: 1996
-%	Updated: 2023-07-18
+%	Updated: 2026-02-22
 
 if nargin < 2
 	error('MAVR requires at least 2 input arguments.')
@@ -31,21 +31,23 @@ end
 b = zeros(1,n + pp);
 b((pp+1):(n+pp)) = ones(1,n)/n;
 
-% must remove first data point to avoid border effects
-x0 = zeros(1,size(x,2));
+y = x;
+
 for i = 1:size(x,2)
-	k = find(~isnan(x(:,i)),1,'first');
-	if ~isempty(k)
-		x0(i) = x(k,i);
+    % must substract first data point to avoid border effects
+	k1 = find(~isnan(x(:,i)),1,'first');
+    x0 = 0;
+	if ~isempty(k1)
+		x0 = x(k1,i);
 	end
-end
-if p >= 0
-	y = filter(b,1,x - x0);
-    if length(y) > 0
-        y(1:min(length(y),n-1)) = NaN;
+    k = ~isnan(x(:,i));
+    if p >= 0
+        y(k,i) = filter(b,1,x(k,i) - x0);
+        y(k(1:min(sum(k),n-1)),i) = NaN;
+    else
+        y(k,i) = filtfilt(b,1,x(k,i) - x0);
     end
-else
-	y = filtfilt(b,1,x - x0);
+    % add first data point back
+    y(:,i) = y(:,i) + x0;
 end
-y = y + x0;
 
