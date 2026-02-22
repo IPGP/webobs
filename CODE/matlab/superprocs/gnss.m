@@ -882,6 +882,8 @@ for r = 1:numel(P.GTABLE)
             elseif numel(baselines_map_win) == 2
                 tvel = tlim(2) - baselines_map_win;
             end
+            tvel(1) = max(tvel(1),tlim(1));
+            tvel(2) = min(tvel(2),tlim(2));
         end
 
         fprintf('---> Baselines summary from %s to %s:\n',datestr(tvel(1)),datestr(tvel(2)));
@@ -911,10 +913,11 @@ for r = 1:numel(P.GTABLE)
             else
                 B(n).rlin = NaN;
             end
-            vel = B(n).rlin(1)*1e3*365;
-            dis = vel*diff(tvel)/365;
-            def = dis*1e-6/B(n).length;
-            fprintf('   velocity %s = %+g mm/an, total displacement = %+g mm, total deformation = %+1.1e\n',B(n).name,roundsd([vel,dis,def],2));
+            B(n).vel = B(n).rlin(1)*1e3*365;
+            B(n).dis = B(n).vel*diff(tvel)/365;
+            B(n).def = B(n).dis*1e-6/B(n).length;
+            fprintf('   velocity %s = %+g mm/an, total displacement = %+g mm, total deformation = %+1.1e\n', ...
+                B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],2));
         end
 
 		figure
@@ -929,23 +932,26 @@ for r = 1:numel(P.GTABLE)
             hold on
             B(n).h = plot(B(n).t,da,baselines_map_linestyle,'Color',scolor(n), ...
                 'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH);
-            if ~all(isnan(da))
-                lda = find(~isnan(da),1,'last');
-                text(tlim(2),da(lda),['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
+            if ~all(isnan(dd))
+                lda = da(find(~isnan(da),1,'last'));
+                if isempty(lda) || isnan(lda)
+                    lda = rmean(dd);
+                end
+                text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
                     'HorizontalAlignment','left','VerticalAlignment','middle')
             end
         end
         ylim = get(gca,'YLim');
 
         % ruler legend
-        x0 = tlim(1) - .01*diff(tlim);
-        y0 = ylim(2);
-        dy0 = .05;
-        plot(x0 + [0,0],y0 + [0,dy0],'-k','LineWidth',2)
-        text(x0,y0 + dy0/2,sprintf('%g cm',dy0*100),'FontSize',10,'FontWeight','bold', ...
-            'Rotation',90,'HorizontalAlignment','center','VerticalAlignment','bottom')
+        dy0 = roundsd(diff(ylim)/5,1,'ceil'); % a quarter of Y-interval
+        x0 = tlim(1) - .02*diff(tlim);
+        y0 = ylim(2) - 1.5*dy0;
+        plot(x0 + [0,0],y0 - .5*dy0*[-1,1],'-k','LineWidth',2,'Clipping','off')
+        text(x0,y0,{sprintf('%g cm',dy0*100),'',''},'FontSize',10,'FontWeight','bold', ...
+            'Rotation',90,'HorizontalAlignment','center')
         hold off
-        set(gca,'XLim',tlim,'YTick',[],'FontSize',fontsize);
+        set(gca,'XLim',tlim,'YTick',[],'FontSize',fontsize,'TickDir','out');
 		datetick2('x',P.GTABLE(r).DATESTR)
 		tlabel(tlim,P.TZ,'FontSize',fontsize)
 
@@ -953,7 +959,7 @@ for r = 1:numel(P.GTABLE)
         axes('Position',[0.05,.05,.45,.4])
         kn = unique(cat(1,B.a,B.b));
         xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .003*[-1,1,-2,2];
-        DEM = loaddem(WO,xylim);
+        DEM = loaddem(WO,xylim,P);
         dem(DEM.lon,DEM.lat,DEM.z,'latlon','landcolor',.8*ones(1,3),'azimuth',-45)
         hold on
         for n = 1:length(B)
@@ -963,7 +969,24 @@ for r = 1:numel(P.GTABLE)
         end
         hold off
         target(geo(kn,2),geo(kn,1),8,.5*ones(1,3))
-        smarttext(geo(kn,1),geo(kn,2),aliases(kn),'latlon','noframe','FontSize',10,'FontWeight','bold')
+        smarttext(geo(kn,1),geo(kn,2),aliases(kn),'latlon','noframe', ...
+            'FontSize',10,'FontWeight','bold')
+
+        % information
+        axes('Position',[0.5,.05,.5,.4])
+        [~,ix] = sort(abs(cat(1,B.def)),'descend');
+        txt = {'{\bfLength, velocity, displacement, deformation:}',''};
+        for i = 1:length(B)
+            n = ix(i);
+            dat = sprintf('%+g mm/an, %+g mm, %+1.1e',roundsd([B(n).vel,B(n).dis,B(n).def],2));
+            if isnan(B(n).def)
+                dat = 'no data';
+            end
+            txt = [txt,{sprintf('   %s: %s\n',B(n).name,dat)}];
+        end
+        text(0,1,txt,'VerticalAlignment','top','FontSize',8)
+        set(gca,'YLim',[0,1])
+        axis off
 
 
 		if isok(P,'PLOT_GRID')

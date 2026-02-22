@@ -15,6 +15,7 @@ function varargout=smarttext(x,y,s,varargin)
 %	documentation for further information.
 %
 %	Some options also available:
+%       'shadow': adds a shadow
 %	   'noframe': allows labels outside the axis limits
 %	   'verbose': displays triples and azimuth values
 %
@@ -24,7 +25,7 @@ function varargout=smarttext(x,y,s,varargin)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-05-27, in Yogyakarta, Indonesia
-%	Updated: 2020-08-12
+%	Updated: 2026-02-21
 
 hh = [];
 
@@ -46,6 +47,14 @@ if any(k)
 	tmp = x;
 	x = y;
 	y = tmp;
+end
+
+k = strcmpi(varargin,'shadow');
+if any(k)
+	shadow = false;
+	varargin(k) = [];
+else
+	shadow = true;
 end
 
 k = strcmpi(varargin,'noframe');
@@ -129,7 +138,7 @@ for n = 1:m
 		ss = {[s{n},' '],'',''};
 	case 90 % east
 		opt = {'VerticalAlignment','middle','HorizontalAlignment','left'};
-		ss = ['   ',s{n}];
+		ss = {['   ',s{n}]};
 	case 135 % southeast
 		opt = {'VerticalAlignment','middle','HorizontalAlignment','left'};
 		ss = {'','',[' ',s{n}]};
@@ -141,17 +150,23 @@ for n = 1:m
 		ss = {'','',[' ',s{n}]};
 	case 270 % west
 		opt = {'VerticalAlignment','middle','HorizontalAlignment','right'};
-		ss = [s{n},'   '];
+		ss = {[s{n},'   ']};
 	case 315 % northwest
 		opt = {'VerticalAlignment','middle','HorizontalAlignment','right'};
 		ss = {[s{n},' '],'',''};
 	otherwise
 		opt = {};
-		ss = s{n};
+		ss = {s{n}};
 	end
 
 	h = text(x(n),y(n),ss,opt{:},varargin{:});
 	hh = cat(1,hh,h);
+    if shadow
+        et = get(h,'Extent');
+        dt = .025*et(4)/length(ss);
+        hs = text(x(n)+dt,y(n)-dt,ss,opt{:},varargin{:},'Color',.99*ones(1,3));
+        uistack(hs,'down')
+    end
 	
 	if verbose
 		fprintf('"%s": (%s / %s) az=%g - %s - %s\n',s{n},s{k2(1)},s{k2(2)},az,opt{2},opt{4});
