@@ -199,7 +199,6 @@ baselines_map_demopt = field2cell(P,'BASELINES_MAP_DEM_OPT','watermark',1.5,'sat
 baselines_map_staoff = field2num(P,'BASELINES_MAP_STATION_OFFSET_M',0.01);
 baselines_map_win = field2num(P,'BASELINES_MAP_WINDOW_DAYS');
 
-
 % MOTION parameters
 motion_excluded = field2str(P,'MOTION_EXCLUDED_NODELIST');
 motion_included = field2str(P,'MOTION_INCLUDED_NODELIST');
@@ -699,6 +698,7 @@ for r = 1:numel(P.GTABLE)
 	summary = 'BASELINES';
 	if any(strcmp(P.SUMMARYLIST,summary))
 
+        B = [];
         % component indexes (5:6 for horizontal only, 5:7 for 3-components)
 		ib = 5:(6 + ~baselines_horizonly);
 
@@ -844,6 +844,7 @@ for r = 1:numel(P.GTABLE)
 
         % component indexes (5:6 for horizontal only, 5:7 for 3-components)
 		ib = 5:(6 + ~baselines_map_horizonly);
+        sorting = false;
 
 		% builds a structure B containing indexes of each node pairs a-b
         B = [];
@@ -870,7 +871,24 @@ for r = 1:numel(P.GTABLE)
 		% B structure not created = no valid node pairs
 		% will build automatic node pairs from Delaunay's triangles
 		if isempty(B)
-            %...
+            fprintf('%s: no pairs defined for summary BASELINES_MAP, set automatic Delaunay triangles.\n',wofun)
+            DT = delaunay(geo(:,2),geo(:,1));
+            % 1) constructs a 2-column array of all pairs (sorted)
+            ab = zeros(size(DT,1),2);
+            np = 1;
+            for i = 1:size(DT,1)
+                ab(np,:) = minmax(DT(i,1:2));
+                ab(np+1,:) = minmax(DT(i,2:3));
+                ab(np+2,:) = minmax(DT(i,[1,3]));
+                np = np + 3;
+            end
+            % 2) removes duplicates
+            [C,ia] = unique(ab,'rows');
+            for n = 1:length(C)
+                B(n).a = ab(ia(n),1);
+                B(n).b = ab(ia(n),2);
+            end
+            sorting = true;
 		end
 
         % now we have all node pairs: computing baselines
@@ -915,9 +933,20 @@ for r = 1:numel(P.GTABLE)
             end
             B(n).vel = B(n).rlin(1)*1e3*365;
             B(n).dis = B(n).vel*diff(tvel)/365;
-            B(n).def = B(n).dis*1e-6/B(n).length;
-            fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+1.1e\n', ...
-                B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],2));
+            B(n).def = B(n).dis/B(n).length;
+            k = ~isnan(B(n).d);
+            if sum(k)
+                lin = polyfit(B(n).t(k),B(n).d(k)-mean(B(n).d(k)),1); % global linear regression (for display purpose)
+            else
+                lin = NaN;
+            end
+            B(n).lin = lin(1);
+            fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+g µstrain\n', ...
+                B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],4));
+        end
+        if sorting
+            [~,k] = sort(-cat(1,B.lin));
+            B = B(k);
         end
 
 		figure
@@ -973,7 +1002,7 @@ for r = 1:numel(P.GTABLE)
         smarttext(geo(kn,1),geo(kn,2),aliases(kn),'latlon','noframe', ...
             'FontSize',10,'FontWeight','bold')
 
-        % information
+        % information (max values in bold)
         axes('Position',[0.5,.05,.5,.4])
         [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
         txt = {'{\bfBaselines linear estimations}', ...
@@ -981,7 +1010,10 @@ for r = 1:numel(P.GTABLE)
             '(length, velocity, displacement, deformation)',''};
         for i = 1:length(B)
             n = ix(i);
-            dat = sprintf('%+g mm/yr, %+g mm, %+1.1e',roundsd([B(n).vel,B(n).dis,B(n).def],2));
+            b1 = repmat('\bf',B(n).vel==max(cat(1,B.vel)));
+            b2 = repmat('\bf',B(n).dis==max(cat(1,B.dis)));
+            b3 = repmat('\bf',B(n).def==max(cat(1,B.def)));
+            dat = sprintf('{%s%+g mm/yr}, {%s%+g mm}, {%s%+g µstrain}',b1,roundsd(B(n).vel,1),b2,roundsd(B(n).dis,1),b3,roundsd(B(n).def,2));
             if isnan(B(n).def)
                 dat = '{\itno data}';
             end
