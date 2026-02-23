@@ -881,9 +881,9 @@ for r = 1:numel(P.GTABLE)
             ab = zeros(size(DT,1),2);
             np = 1;
             for i = 1:size(DT,1)
-                ab(np,:) = minmax(DT(i,1:2));
-                ab(np+1,:) = minmax(DT(i,2:3));
-                ab(np+2,:) = minmax(DT(i,[1,3]));
+                ab(np,:) = kn(minmax(DT(i,1:2)));
+                ab(np+1,:) = kn(minmax(DT(i,2:3)));
+                ab(np+2,:) = kn(minmax(DT(i,[1,3])));
                 np = np + 3;
             end
             % 2) removes duplicates
@@ -1014,14 +1014,14 @@ for r = 1:numel(P.GTABLE)
             '(length, velocity, displacement, deformation)',''};
         for i = 1:length(B)
             n = ix(i);
-            b1 = repmat('\bf',B(n).vel==max(cat(1,B.vel)));
-            b2 = repmat('\bf',B(n).dis==max(cat(1,B.dis)));
-            b3 = repmat('\bf',B(n).def==max(cat(1,B.def)));
-            dat = sprintf('{%s%+g mm/yr}, {%s%+g mm}, {%s%+g µstrain}',b1,roundsd(B(n).vel,1),b2,roundsd(B(n).dis,1),b3,roundsd(B(n).def,2));
+            b1 = repmat('\bf',abs(B(n).vel)==max(abs(cat(1,B.vel))));
+            b2 = repmat('\bf',abs(B(n).dis)==max(abs(cat(1,B.dis))));
+            b3 = repmat('\bf',abs(B(n).def)==max(abs(cat(1,B.def))));
+            dat = sprintf('{%s%+g mm/yr}, {%s%+g mm}, {%s%+g \\mustrain}',b1,roundsd(B(n).vel,1),b2,roundsd(B(n).dis,1),b3,roundsd(B(n).def,2));
             if isnan(B(n).def)
                 dat = '{\itno data}';
             end
-            txt = [txt,{sprintf('   %s: %s\n',B(n).name,dat)}];
+            txt = [txt,{sprintf('   %s: %s',B(n).name,dat)}];
         end
         text(0,1,txt,'VerticalAlignment','top','FontSize',9)
         set(gca,'YLim',[0,1])
