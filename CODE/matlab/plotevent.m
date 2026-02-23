@@ -17,7 +17,7 @@ function varargout=plotevent(tz,evtfile,evt)
 %
 %   Authors: F. Beauducel + D. Lafon + B. Taisne, WEBOBS/IPGP
 %   Created : 2004-07-21 (from ploterup.m)
-%   Updated : 2024-06-13
+%   Updated : 2026-02-23
 
 
 wofun = sprintf('WEBOBS{%s}',mfilename);

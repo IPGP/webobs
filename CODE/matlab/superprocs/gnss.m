@@ -192,6 +192,9 @@ baselines_trend = isok(P,'BASELINES_PLOT_TREND');
 
 % BASELINES_MAP parameters
 baselines_map_title = field2str(P,'BASELINES_MAP_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
+baselines_map_excluded = field2str(P,'BASELINES_MAP_EXCLUDED_NODELIST');
+baselines_map_included = field2str(P,'BASELINES_MAP_INCLUDED_NODELIST');
+baselines_map_excluded_target = field2num(P,'BASELINES_MAP_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 baselines_map_horizonly = isok(P,'BASELINES_MAP_HORIZONTAL_ONLY');
 baselines_map_linestyle = field2str(P,'BASELINES_MAP_LINESTYLE','.');
 baselines_map_mavr = field2num(P,'BASELINES_MAP_MOVING_AVERAGE',30);
@@ -674,9 +677,9 @@ for r = 1:numel(P.GTABLE)
 			E.infos = {};
 			if harmcorr || faultcorr || vrelmode
 				E.d = [E.d,	...
-			   		D(n).d(k,5) - polyval([voffset(1)/P.trendfact,0],E.t - tlim(1)), ...
-			   		D(n).d(k,6) - polyval([voffset(2)/P.trendfact,0],E.t - tlim(1)), ...
-			   		D(n).d(k,7) - polyval([voffset(3)/P.trendfact,0],E.t - tlim(1)), ...
+			   		E.d(:,5) - polyval([voffset(1)/P.trendfact,0],E.t - tlim(1)), ...
+			   		E.d(:,6) - polyval([voffset(2)/P.trendfact,0],E.t - tlim(1)), ...
+			   		E.d(:,7) - polyval([voffset(3)/P.trendfact,0],E.t - tlim(1)), ...
 			   	];
 				E.header = [E.header,{'East_treat(m)','North_treat(m)','Up_treat(m)'}];
 			end
@@ -871,8 +874,9 @@ for r = 1:numel(P.GTABLE)
 		% B structure not created = no valid node pairs
 		% will build automatic node pairs from Delaunay's triangles
 		if isempty(B)
-            fprintf('%s: no pairs defined for summary BASELINES_MAP, set automatic Delaunay triangles.\n',wofun)
-            DT = delaunay(geo(:,2),geo(:,1));
+			kn = selectnode(N,tlim,baselines_map_excluded,baselines_map_included,[targetll,baselines_map_excluded_target]);
+            fprintf('%s: no pairs defined for summary BASELINES_MAP. Set automatic Delaunay triangles from %g nodes.\n',wofun,length(kn));
+            DT = delaunay(geo(kn,2),geo(kn,1));
             % 1) constructs a 2-column array of all pairs (sorted)
             ab = zeros(size(DT,1),2);
             np = 1;
