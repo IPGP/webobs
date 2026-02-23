@@ -176,11 +176,12 @@ for n = 1:length(N)
 					rxy = corrcoef(detrend(dk(kreal)),detrend(dkt(kreal)));
 					tsign = sign(rxy(2));
 					[ax,h1,h2] = plotyy(tk,dk,tkt,dkt*tsign,'timeplot');
+                    hold on
 					set(h1,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',scolor(i));
 					set(h2,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',pernode_temperature_col);
-					set(ax(1),'Ylim',get(ax(1),'YLim'),'YColor',scolor(i))	% freezes Y axis
+					set(ax(1),'Ylim',get(ax(1),'YLim'),'YColor',scolor(i),'UserData',[])	% freezes Y axis
 					box on
-					set(ax(2),'Ylim',get(ax(2),'YLim'),'YColor','k')	% freezes Y axis
+					set(ax(2),'Ylim',get(ax(2),'YLim'),'YColor',pernode_temperature_col,'UserData',[1])	% freezes Y axis and add a flag for background events
 					ytick = get(ax(2),'YTick');
 					set(ax(2),'YTickLabel',num2str(tsign*ytick(:)));
 					box on
@@ -189,10 +190,9 @@ for n = 1:length(N)
 					if length(kk) > 2 && ~isempty(k1)
 						lr = polyfit(tk(kk)-t(k1),dk(kk),1);
 						lre(i,:) = [lr(1),std(dk(kk) - polyval(lr,tk(kk)-t(k1)))/diff(tlim)];
-						hold on
 						plot(tlim,polyval(lr,tlim - t(k1)),'--k','LineWidth',.2)
-						hold off
 					end
+					hold off
 					set(ax,'XLim',tlim,'FontSize',fontsize)
 					axes(ax(1))
 					datetick2('x',P.GTABLE(r).DATESTR)
