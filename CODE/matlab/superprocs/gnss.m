@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-02-19
+%   Updated: 2026-02-23
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -667,23 +667,23 @@ for r = 1:numel(P.GTABLE)
 
 		% exports data
 		if isok(P,'EXPORTS')
+			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(N(n).ID));
+			E.header = {'Eastern(m)','Northern(m)','Up(m)','dE','dN','dU','Orbit'};
+			E.infos = {};
 			E.t = D(n).t(k);
             if ~isempty(k)
                 E.d = [D(n).d(k,1:3),D(n).e(k,:),D(n).d(k,4)];
+                if harmcorr || faultcorr || vrelmode
+                    E.d = [E.d,	...
+                        D(n).d(k,5) - polyval([voffset(1)/P.trendfact,0],E.t - tlim(1)), ...
+                        D(n).d(k,6) - polyval([voffset(2)/P.trendfact,0],E.t - tlim(1)), ...
+                        D(n).d(k,7) - polyval([voffset(3)/P.trendfact,0],E.t - tlim(1)), ...
+                    ];
+                    E.header = [E.header,{'East_treat(m)','North_treat(m)','Up_treat(m)'}];
+                end
             else
                 E.d = nan(0,7);
-            end
-			E.header = {'Eastern(m)','Northern(m)','Up(m)','dE','dN','dU','Orbit'};
-			E.infos = {};
-			if harmcorr || faultcorr || vrelmode
-				E.d = [E.d,	...
-			   		E.d(:,5) - polyval([voffset(1)/P.trendfact,0],E.t - tlim(1)), ...
-			   		E.d(:,6) - polyval([voffset(2)/P.trendfact,0],E.t - tlim(1)), ...
-			   		E.d(:,7) - polyval([voffset(3)/P.trendfact,0],E.t - tlim(1)), ...
-			   	];
-				E.header = [E.header,{'East_treat(m)','North_treat(m)','Up_treat(m)'}];
 			end
-			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(N(n).ID));
 
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
