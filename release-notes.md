@@ -23,6 +23,18 @@ If you have any question which is not answered in the user manual, do not hesita
 
     where FORMNAME is the legacy form name, and PROCNAME is the associated PROC which becomes also the new FORM name. Note that previous link `showFORMNAME.pl` without argument, when legacy form was associated to more than one PROC (for instance the `EAUX` database), has no strict equivalent in the new structure; it must be replaced by as many links as there are procs associated to this form.
 1. **GeoJSON**: shapes (polygons, lines, and points) can be associated to a NODE or a GRID using the OSM.pl link (map marker pin icon), using import of a shapefile (.zip archive) or manual drawing. Resulting shapes will be saved to a .geojson file, and displayed on maps (gridmaps and locastat).
+1. **GNSS superproc**: new summary plot BASELINES_MAP to plot baseline pairs and associated map. To activate it, add `BASELINES_MAP` in the `SUMMARY_LIST`. Parameters are:
+```
+BASELINES_MAP_TITLE|{\fontsize{14}{\bf$name - Baselines} ($timescale)}
+BASELINES_MAP_HORIZONTAL_ONLY|YES
+BASELINES_MAP_NODEPAIRS|
+BASELINES_MAP_LINESTYLE|.
+BASELINES_MAP_MOVING_AVERAGE|30
+BASELINES_MAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','legend','seacolor',[0.7,0.9,1]
+BASELINES_MAP_STATION_OFFSET_M|0.01
+BASELINES_MAP_WINDOW_DAYS|
+```
+
 1. **GNSS superproc**: active fault slip/open can be set as a priori correction on displacement data, using the Okada (1985) model, as rectangular fault in elastic medium:
 ```
 FAULT_ACTIVATE|N
