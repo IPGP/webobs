@@ -226,6 +226,7 @@ BASELINES_MAP_LINESTYLE|.
 BASELINES_MAP_MOVING_AVERAGE|30
 BASELINES_MAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','legend','seacolor',[0.7,0.9,1]
 BASELINES_MAP_STATION_OFFSET_M|0.01
+# window for linear trend parameters: all window (empty), number of days before the end (scalar), or days interval [min,max] (2 values)  
 BASELINES_MAP_WINDOW_DAYS|
 
 # --- VECTORS: excluding NODES from graphs and calculations
