@@ -83,11 +83,14 @@ for n = 1:numel(E)
 
 	for i = 1:length(ha)
 		if ~isempty(get(ha(i),'UserData'))
-			break
+			continue
 		end
+        set(ha(i),'Color','none')
 		xlim = get(ha(i),'XLim');
 		ylim = get(ha(i),'YLim');
 		zlim = get(ha(i),'ZLim');
+        % creates a specific axes for background events
+        ax_bg = axes('Position',get(ha(i),'Position'),'XLim',xlim,'YLim',ylim);
 		k = find(E(n).dt1 <= xlim(2) & E(n).dt2 >= xlim(1));
 		if ~isempty(k)
 			tk = [E(n).dt1(k),E(n).dt2(k)];
@@ -102,21 +105,14 @@ for n = 1:numel(E)
 				y1 = ylim(1) + ddy;
 				y2 = ylim(2) - ddy;
 				cc = E(n).rgb(k(ii),:);
-				axes(ha(i));
-				hold on
 				if x1 == x2
-					h = plot([x1,x2],[y1,y2],'-','LineWidth',E(n).lw(k(ii)),'Color',cc,'Clipping','on');
+					h = plot([x1,x2],[y1,y2],'-','LineWidth',E(n).lw(k(ii)),'Color',cc,'Clipping','on','Parent',ax_bg);
 				else
 					%h = fill3([x1,x1,x2,x2],[y1,y2,y2,y1],-ones([1,4]),cc);
-					h = patch([x1,x1,x2,x2],[y1,y2,y2,y1],cc);
+					h = patch([x1,x1,x2,x2],[y1,y2,y2,y1],cc,'Parent',ax_bg);
 					set(h,'EdgeColor','none','Clipping','on');
 				end
-				hold off
-				% puts in the background
-				hc = get(ha(i),'Children');
-				set(ha(i),'Children',hc([2:end,1]));
-				%set(ha(i),'Children',flipud(hc));
-
+                hold on
 			end
 			I(imap).d = [tk(:,1),repmat(ylim(2),length(k),1),tk(:,2),repmat(ylim(1),length(k),1)];
 			I(imap).gca = gca;
@@ -139,6 +135,9 @@ for n = 1:numel(E)
 			imap = imap + 1;
 			set(ha(i),'YLim',ylim,'ZLim',zlim)
 		end
+        hold off
+        uistack(ax_bg,'bottom');
+        set(ax_bg,'Visible','off','XLim',xlim,'YLim',ylim)
 	end
 	fprintf(' events added to all time series axes in current figure.\n');
 end
