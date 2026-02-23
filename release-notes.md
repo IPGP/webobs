@@ -28,13 +28,16 @@ If you have any question which is not answered in the user manual, do not hesita
 BASELINES_MAP_TITLE|{\fontsize{14}{\bf$name - Baselines} ($timescale)}
 BASELINES_MAP_HORIZONTAL_ONLY|YES
 BASELINES_MAP_NODEPAIRS|
+BASELINES_MAP_EXCLUDE_NODELIST|
+BASELINES_MAP_EXCLUDED_FROM_TARGET_KM|
+BASELINES_MAP_INLUDED_NODELIST|
 BASELINES_MAP_LINESTYLE|.
 BASELINES_MAP_MOVING_AVERAGE|30
 BASELINES_MAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','legend','seacolor',[0.7,0.9,1]
 BASELINES_MAP_STATION_OFFSET_M|0.01
 BASELINES_MAP_WINDOW_DAYS|
 ```
-
+If node pairs are not defined, it computes pairs using Delaunay triangle from all nodes of the network, or selected using exclude/include options (`BASELINES_MAP_EXCLUDED_FROM_TARGET_KM`, `BASELINES_MAP_EXCLUDE_NODELIST`, `BASELINES_MAP_INLUDED_NODELIST`). The summary plot computes some linear trend paramters: velocity (mm/yr), total displacement (mm), and total deformation (µstrain) from the entire window or a sub-window defined by `BASELINES_MAP_WINDOW_DAYS`. Other options are similar to the BASELINES summary plot.
 1. **GNSS superproc**: active fault slip/open can be set as a priori correction on displacement data, using the Okada (1985) model, as rectangular fault in elastic medium:
 ```
 FAULT_ACTIVATE|N
