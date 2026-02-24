@@ -124,9 +124,9 @@ function varargout=dem(x,y,z,varargin)
 %
 %	--- Basemap and scale options ---
 %
-%	'Legend'
-%		Adds legends to the right of graph: elevation scale (colorbar)
-%		and a distance scale (in km).
+%	'Legend', 'HLegend', 'ZLegend'
+%		Adds legends to the right of graph: 'ZLegend' for elevation scale 
+%       (colorbar), 'HLegend' for distance scale (in km), 'Legend' for both.
 %
 %	'Cartesian'
 %		Plots classic basemap-style axis, considering coordinates X and Y
@@ -205,9 +205,11 @@ function varargout=dem(x,y,z,varargin)
 %	Acknowledgments: Éric Gayer
 %
 %	Created: 2007-05-17 in Guadeloupe, French West Indies
-%	Updated: 2022-11-26
+%	Updated: 2026-02-24
 
 %	History:
+%	[2026-02-24] v3.3
+%       - add 'hlegend' and 'zlegend' options ('legend' = 'hlegend'+'zlegend')
 %	[2022-11-26] v3.2
 %		- fix an issue with 'grayscale' option
 %		- allows duplicate arguments (takes the last one)
@@ -575,6 +577,8 @@ km = any(strcmpi(varargin,'km'));
 dec = any(strcmpi(varargin,'cartesian') | strcmpi(varargin,'dec'));
 dms = any(strcmpi(varargin,'latlon') | strcmpi(varargin,'dms'));
 kmscale = any(strcmpi(varargin,'kmscale'));
+hlegend = any(strcmpi(varargin,'hlegend'));
+zlegend = any(strcmpi(varargin,'zlegend'));
 scale = any(strcmpi(varargin,'legend') | strcmpi(varargin,'scale'));
 inter = any(strcmpi(varargin,'interp'));
 lake = any(strcmpi(varargin,'lake')) || lake;
@@ -585,7 +589,7 @@ gscale = any(strcmpi(varargin,'grayscale'));
 
 
 % for backward compatibility (former syntax)...
-nargs = nargs + dec + dms + scale + kmscale + inter + lake + km + fbold + noplot + clines + gscale;
+nargs = nargs + dec + dms + scale + hlegend + zlegend + kmscale + inter + lake + km + fbold + noplot + clines + gscale;
 
 if (nargin - nargs) > 3 && ~isempty(varargin{1})
 	opt = varargin{1};
@@ -988,7 +992,7 @@ end
 wsc = bw0;
 xsc = xlim(2) + wsc*2 + bwx;
 
-if scale
+if scale || zlegend
 
 	% -- elevation scale (colorbar)
 	zscale = linspace(zmin,zmax,length(cmap))';
@@ -1016,7 +1020,7 @@ if scale
 
 end
 
-if scale || kmscale
+if scale || hlegend || kmscale
 	% -- distance scale (in km)
 	if dms
 		fsc = degkm;

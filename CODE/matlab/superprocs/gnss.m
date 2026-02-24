@@ -199,9 +199,12 @@ baselines_map_horizonly = isok(P,'BASELINES_MAP_HORIZONTAL_ONLY');
 baselines_map_tol_days = field2num(P,'BASELINES_MAP_TOL_DAYS',1);
 baselines_map_linestyle = field2str(P,'BASELINES_MAP_LINESTYLE','.');
 baselines_map_mavr = field2num(P,'BASELINES_MAP_MOVING_AVERAGE',30,'notempty');
-baselines_map_demopt = field2cell(P,'BASELINES_MAP_DEM_OPT','watermark',1.5,'saturation',0,'interp','legend','seacolor',[0.7,0.9,1]);
 baselines_map_staoff = field2num(P,'BASELINES_MAP_STATION_OFFSET_M',0.01);
 baselines_map_win = field2num(P,'BASELINES_MAP_WINDOW_DAYS');
+baselines_map_demopt = field2cell(P,'BASELINES_MAP_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
+baselines_map_linewidth = field2num(P,'BASELINES_MAP_LINEWIDTH',3);
+baselines_map_fontsize = field2num(P,'BASELINES_MAP_FONTSIZE',10);
+
 
 % MOTION parameters
 motion_excluded = field2str(P,'MOTION_EXCLUDED_NODELIST');
@@ -1004,24 +1007,26 @@ for r = 1:numel(P.GTABLE)
         kn = unique(cat(1,B.a,B.b));
         xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .1*diff(minmax(geo(kn,1)))*[cosd(mean(geo(kn,1)))*[-2,2],-1,1];
         DEM = loaddem(WO,xylim,P);
-        dem(DEM.lon,DEM.lat,DEM.z,'latlon','landcolor',.8*ones(1,3),'azimuth',-45)
+        dem(DEM.lon,DEM.lat,DEM.z,'latlon',baselines_map_demopt{:})
         hold on
         for n = 1:length(B)
             a = B(n).a;
             b = B(n).b;
-            plot(geo([a,b],2),geo([a,b],1),'-','Color',scolor(n),'LineWidth',4)
+            plot(geo([a,b],2),geo([a,b],1),'-','Color',scolor(n),'LineWidth',baselines_map_linewidth)
         end
         hold off
         target(geo(kn,2),geo(kn,1),8,.5*ones(1,3))
-        smarttext(geo(kn,1),geo(kn,2),aliases(kn),'latlon','noframe', ...
-            'FontSize',10,'FontWeight','bold')
+        if baselines_map_fontsize > 0
+            smarttext(geo(kn,1),geo(kn,2),aliases(kn),'latlon','noframe', ...
+                'FontSize',baselines_map_fontsize,'FontWeight','bold')
+        end
 
         % information (max values in bold)
         axes('Position',[0.52,.05,.48,.4])
         [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
-        txt = {'{\bfBaselines linear estimations}', ...
+        txt = {'{\bfBaseline Kinematic Linear Parameters}', ...
             sprintf('from %s to %s',datestr(tvel(1)),datestr(tvel(2))), ...
-            '(length, velocity, displacement, deformation)',''};
+            '(distance, velocity, displacement, deformation)',''};
         for i = 1:length(B)
             n = ix(i);
             b1 = repmat('\bf',abs(B(n).vel)==max(abs(cat(1,B.vel))));
