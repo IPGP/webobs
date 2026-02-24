@@ -1006,7 +1006,7 @@ for r = 1:numel(P.GTABLE)
 		tlabel(tlim,P.TZ,'FontSize',fontsize)
 
         % map of baselines
-        axes('Position',[0.05,.05,.45,.4])
+        axes('Position',[0.03,.05,.45,.4])
         kn = unique(cat(1,B.a,B.b));
         xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .1*diff(minmax(geo(kn,1)))*[cosd(mean(geo(kn,1)))*[-2,2],-1,1];
         DEM = loaddem(WO,xylim,P);
