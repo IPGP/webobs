@@ -511,6 +511,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.INFOS = {sprintf('Referential: {\\bf%s}',itrf), ...
             sprintf('  E {\\bf%+g} %s\n  N {\\bf%+g} %s\n  U {\\bf%+g} %s',velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit)};
         OPT.IMAP = [];
+		OPT.FIXEDPP = false;
 		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
@@ -666,6 +667,7 @@ for r = 1:numel(P.GTABLE)
             OPT.EVENTS = cat(1,OPT.EVENTS,P.fault_event);
         end
         OPT.IMAP = [];
+		OPT.FIXEDPP = false;
 		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
@@ -841,6 +843,7 @@ for r = 1:numel(P.GTABLE)
         OPT.STATUS = 0;
 		OPT.GSTATUS = [];
         OPT.IMAP = [];
+		OPT.FIXEDPP = false;
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
@@ -1049,6 +1052,7 @@ for r = 1:numel(P.GTABLE)
 
         OPT.STATUS = 0;
 		OPT.GSTATUS = [];
+		OPT.FIXEDPP = true;
         OPT.IMAP = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
