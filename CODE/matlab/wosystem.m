@@ -17,6 +17,7 @@ function varargout = wosystem(cmd,varargin)
 %	   'warning' : forces the error mode.
 %	     'print' : returns result string as first output argument.
 %	     'chomp' : removes last '\n' from result string.
+%	      'trim' : removes leading/trailing whitespace from result string.
 %	     'debug' : displays more log information.
 %
 %	WOSYSTEM('command',P,options) passes the structure P (e.g. from a
@@ -25,7 +26,7 @@ function varargout = wosystem(cmd,varargin)
 %
 %	Author: F. Beauducel, WEBOBS
 %	Created: 2017-02-02 in Yogyakarta, Indonesia
-%	Updated: 2022-07-22
+%	Updated: 2026-02-24
 
 if nargin < 1
 	error('Not enough input argument.');
@@ -60,6 +61,11 @@ end
 % 'chomp' option: removes any \n from result string
 if any(strcmpi(varargin,'chomp'))
 	w = regexprep(w,'\n*$','');
+end
+
+% 'trim' option: removes leading and trailing whitespaces from result string
+if any(strcmpi(varargin,'trim'))
+	w = strtrim(w);
 end
 
 % 'print' option: returns result as first argument
