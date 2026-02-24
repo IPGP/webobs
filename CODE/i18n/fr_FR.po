@@ -242,6 +242,12 @@ msgstr "dans la corbeille"
 msgid "Procs using this form"
 msgstr "Procs utilisant ce Form :"
 
+msgid "DEM"
+msgstr "MNT"
+
+msgid "check file!"
+msgstr "vérifier le fichier !"
+
 msgid "Events File(s)"
 msgstr "Fichier(s) d'événements"
 
