@@ -196,8 +196,9 @@ baselines_map_excluded = field2str(P,'BASELINES_MAP_EXCLUDED_NODELIST');
 baselines_map_included = field2str(P,'BASELINES_MAP_INCLUDED_NODELIST');
 baselines_map_excluded_target = field2num(P,'BASELINES_MAP_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 baselines_map_horizonly = isok(P,'BASELINES_MAP_HORIZONTAL_ONLY');
+baselines_map_tol_days = field2num(P,'BASELINES_MAP_TOL_DAYS',1);
 baselines_map_linestyle = field2str(P,'BASELINES_MAP_LINESTYLE','.');
-baselines_map_mavr = field2num(P,'BASELINES_MAP_MOVING_AVERAGE',30);
+baselines_map_mavr = field2num(P,'BASELINES_MAP_MOVING_AVERAGE',30,'notempty');
 baselines_map_demopt = field2cell(P,'BASELINES_MAP_DEM_OPT','watermark',1.5,'saturation',0,'interp','legend','seacolor',[0.7,0.9,1]);
 baselines_map_staoff = field2num(P,'BASELINES_MAP_STATION_OFFSET_M',0.01);
 baselines_map_win = field2num(P,'BASELINES_MAP_WINDOW_DAYS');
@@ -881,9 +882,9 @@ for r = 1:numel(P.GTABLE)
             ab = zeros(size(DT,1),2);
             np = 1;
             for i = 1:size(DT,1)
-                ab(np,:) = kn(minmax(DT(i,1:2)));
-                ab(np+1,:) = kn(minmax(DT(i,2:3)));
-                ab(np+2,:) = kn(minmax(DT(i,[1,3])));
+                ab(np,:) = kn(sort(DT(i,1:2)));
+                ab(np+1,:) = kn(sort(DT(i,2:3)));
+                ab(np+2,:) = kn(sort(DT(i,[1,3])));
                 np = np + 3;
             end
             % 2) removes duplicates
@@ -922,6 +923,11 @@ for r = 1:numel(P.GTABLE)
             k = isinto(D(b).t,tlim);
             tkb = D(b).t(k);
             dkb = D(b).d(k,:);
+            % rounds time using tolerance
+            if baselines_map_tol_days > 0
+                tka = floor(tka*baselines_map_tol_days);
+                tkb = floor(tkb*baselines_map_tol_days);
+            end
             d = nan(size(dka,1),1);
             [tc,ka,kb] = intersect(tka,tkb);
             if ~isempty(ka)
@@ -960,7 +966,11 @@ for r = 1:numel(P.GTABLE)
         ylim = baselines_map_staoff*[-(length(B)+.5),.5];
         for n = 1:length(B)
             dd = B(n).d - rmedian(B(n).d) - baselines_map_staoff*n;
-            da = mavr(dd,baselines_map_mavr);
+            if baselines_map_mavr > 1
+                da = mavr(dd,baselines_map_mavr);
+            else
+                da = dd;
+            end
             plot(B(n).t,dd,baselines_map_linestyle,'Color',scolor(n)/2+1/2, ...
                 'MarkerSize',P.GTABLE(r).MARKERSIZE/2,'LineWidth',P.GTABLE(r).LINEWIDTH/2)
             hold on
@@ -992,7 +1002,7 @@ for r = 1:numel(P.GTABLE)
         % map of baselines
         axes('Position',[0.05,.05,.45,.4])
         kn = unique(cat(1,B.a,B.b));
-        xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .003*[-1,1,-2,2];
+        xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .1*diff(minmax(geo(kn,1)))*[cosd(mean(geo(kn,1)))*[-2,2],-1,1];
         DEM = loaddem(WO,xylim,P);
         dem(DEM.lon,DEM.lat,DEM.z,'latlon','landcolor',.8*ones(1,3),'azimuth',-45)
         hold on
@@ -1007,7 +1017,7 @@ for r = 1:numel(P.GTABLE)
             'FontSize',10,'FontWeight','bold')
 
         % information (max values in bold)
-        axes('Position',[0.5,.05,.5,.4])
+        axes('Position',[0.52,.05,.48,.4])
         [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
         txt = {'{\bfBaselines linear estimations}', ...
             sprintf('from %s to %s',datestr(tvel(1)),datestr(tvel(2))), ...
@@ -1017,11 +1027,11 @@ for r = 1:numel(P.GTABLE)
             b1 = repmat('\bf',abs(B(n).vel)==max(abs(cat(1,B.vel))));
             b2 = repmat('\bf',abs(B(n).dis)==max(abs(cat(1,B.dis))));
             b3 = repmat('\bf',abs(B(n).def)==max(abs(cat(1,B.def))));
-            dat = sprintf('{%s%+g mm/yr}, {%s%+g mm}, {%s%+g \\mustrain}',b1,roundsd(B(n).vel,1),b2,roundsd(B(n).dis,1),b3,roundsd(B(n).def,2));
+            dat = sprintf('{%s%+g mm/yr}, {%s%+g mm}, {%s%+g %cstrain}',b1,roundsd(B(n).vel,2),b2,roundsd(B(n).dis,2),b3,roundsd(B(n).def,2),char(181));
             if isnan(B(n).def)
                 dat = '{\itno data}';
             end
-            txt = [txt,{sprintf('   %s: %s',B(n).name,dat)}];
+            txt = [txt,{sprintf('   %s: %g km, %s',B(n).line,roundsd(B(n).length,2),dat)}];
         end
         text(0,1,txt,'VerticalAlignment','top','FontSize',9)
         set(gca,'YLim',[0,1])
