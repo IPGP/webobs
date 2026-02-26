@@ -199,10 +199,13 @@ baselines_map_horizonly = isok(P,'BASELINES_MAP_HORIZONTAL_ONLY');
 baselines_map_tol_days = field2num(P,'BASELINES_MAP_TOL_DAYS',1);
 baselines_map_linestyle = field2str(P,'BASELINES_MAP_LINESTYLE','.');
 baselines_map_mavr = field2num(P,'BASELINES_MAP_MOVING_AVERAGE',30,'notempty');
-baselines_map_staoff = field2num(P,'BASELINES_MAP_STATION_OFFSET_M',0.01);
+baselines_map_offset = field2num(P,'BASELINES_MAP_PAIRS_OFFSET_M',0.01);
+baselines_map_sorting = isok(P,'BASELINES_MAP_PAIRS_SORT',1);
 baselines_map_win = field2num(P,'BASELINES_MAP_WINDOW_DAYS');
 baselines_map_demopt = field2cell(P,'BASELINES_MAP_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
 baselines_map_linewidth = field2num(P,'BASELINES_MAP_LINEWIDTH',3);
+baselines_map_colorref = field2str(P,'BASELINES_MAP_COLORREF');
+baselines_map_cmap = field2num(P,'BASELINES_MAP_COLORMAP',ryb(256),'notempty');
 baselines_map_fontsize = field2num(P,'BASELINES_MAP_FONTSIZE',10);
 
 
@@ -853,7 +856,13 @@ for r = 1:numel(P.GTABLE)
 	if any(strcmp(P.SUMMARYLIST,summary))
 
         % component indexes (5:6 for horizontal only, 5:7 for 3-components)
-		ib = 5:(6 + ~baselines_map_horizonly);
+		if baselines_map_horizonly
+            ndim = '2-D';
+            ib = 5:6;
+        else
+            ndim = '3-D';
+            ib = 5:7;
+        end
         sorting = false;
 
 		% builds a structure B containing indexes of each node pairs a-b
@@ -920,6 +929,9 @@ for r = 1:numel(P.GTABLE)
             a = B(n).a;
             b = B(n).b;
             B(n).length = greatcircle(geo(a,1),geo(a,2),geo(b,1),geo(b,2));
+            if ~baselines_map_horizonly
+                B(n).length = sqrt(B(n).length^2 + (diff(geo([a,b],3))/1e3)^2);
+            end
             B(n).line = sprintf('%s-%s',N(a).ALIAS,N(b).ALIAS);
             B(n).name = sprintf('%s (%g km)',B(n).line,roundsd(B(n).length,2));
             % reduces data to tlim window
@@ -960,18 +972,19 @@ for r = 1:numel(P.GTABLE)
             fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+g µstrain\n', ...
                 B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],4));
         end
-        if sorting
+        if baselines_map_sorting
             [~,k] = sort(-cat(1,B.lin));
             B = B(k);
         end
+        absdef = abs(cat(1,B.def));
 
 		figure
 		orient tall
 		OPT.GTITLE = varsub(baselines_map_title,V);
         axes('Position',[.05,.5,.8,.43])
-        ylim = baselines_map_staoff*[-(length(B)+.5),.5];
+        ylim = baselines_map_offset*[-(length(B)+.5),.5];
         for n = 1:length(B)
-            dd = B(n).d - rmedian(B(n).d) - baselines_map_staoff*n;
+            dd = B(n).d - rmedian(B(n).d) - baselines_map_offset*n;
             if baselines_map_mavr > 1
                 da = mavr(dd,baselines_map_mavr);
             else
@@ -989,11 +1002,11 @@ for r = 1:numel(P.GTABLE)
                 end
                 text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
                     'HorizontalAlignment','left','VerticalAlignment','middle')
-                ylim = minmax([ylim,lda+baselines_map_staoff*[-.5,.5]]);
+                ylim = minmax([ylim,lda+baselines_map_offset*[-.5,.5]]);
             end
         end
 
-        % ruler legend
+        % - ruler legend
         dy0 = roundsd(diff(ylim)/5,1,'ceil'); % a quarter of Y-interval
         x0 = tlim(1) - .02*diff(tlim);
         y0 = ylim(2) - 1.5*dy0;
@@ -1005,17 +1018,35 @@ for r = 1:numel(P.GTABLE)
 		datetick2('x',P.GTABLE(r).DATESTR)
 		tlabel(tlim,P.TZ,'FontSize',fontsize)
 
-        % map of baselines
-        axes('Position',[0.03,.05,.45,.4])
+        % - map of baselines
+        axes('Position',[0.05,.05,.45,.38])
+        clim = [-1,1]*max(absdef);
+        cmap = polarmap(baselines_map_cmap,0.3);
         kn = unique(cat(1,B.a,B.b));
         xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .1*diff(minmax(geo(kn,1)))*[cosd(mean(geo(kn,1)))*[-2,2],-1,1];
         DEM = loaddem(WO,xylim,P);
-        dem(DEM.lon,DEM.lat,DEM.z,'latlon',baselines_map_demopt{:})
+        dem(DEM.lon,DEM.lat,DEM.z,'latlon','position','northwest',baselines_map_demopt{:})
         hold on
         for n = 1:length(B)
             a = B(n).a;
             b = B(n).b;
-            plot(geo([a,b],2),geo([a,b],1),'-','Color',scolor(n),'LineWidth',baselines_map_linewidth)
+            if isscalar(baselines_map_linewidth) || isnan(B(n).def)
+                lw = baselines_map_linewidth(1);
+            else
+                lw = (abs(B(n).def)-min(absdef))*diff(baselines_map_linewidth)/diff(minmax(absdef)) + baselines_map_linewidth(1);
+            end
+            if strcmpi(baselines_map_colorref,'strain')
+                ncol = size(cmap,1)-1;
+                if ~isnan(B(n).def)
+                    col = cmap(floor(ncol*(B(n).def-clim(1))/diff(clim))+1,:);
+                else
+                    col = cmap(round(ncol/2),:);
+                    lw = .1;
+                end
+            else
+                col = scolor(n);
+            end
+            plot(geo([a,b],2),geo([a,b],1),'-','Color',col,'LineWidth',lw)
         end
         hold off
         target(geo(kn,2),geo(kn,1),8,.5*ones(1,3))
@@ -1023,11 +1054,21 @@ for r = 1:numel(P.GTABLE)
             smarttext(geo(kn,1),geo(kn,2),aliases(kn),'latlon','noframe', ...
                 'FontSize',baselines_map_fontsize,'FontWeight','bold')
         end
+		% strain colorscale
+        if strcmpi(baselines_map_colorref,'strain')
+            axes('position',[0.04,.03,.4,.015])
+			imagesc(linspace(-1,1,256),[0;1],repmat(linspace(0,1,256),2,1))
+			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{'Compression','0','Extension'}, ...
+                'TickDir','out','FontSize',8)
+            colormap(cmap)
+            caxis([0,1])
+            title(sprintf('Linear deformation (%cstrain)',char(181)),'FontSize',10)
+		end
 
         % information (max values in bold)
         axes('Position',[0.52,.05,.48,.4])
         [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
-        txt = {'{\bfBaseline Kinematic Linear Parameters}', ...
+        txt = {sprintf('{\\bfBaseline Kinematic %s Linear Parameters}',ndim), ...
             sprintf('from %s to %s',datestr(tvel(1)),datestr(tvel(2))), ...
             '(distance, velocity, displacement, deformation)',''};
         for i = 1:length(B)

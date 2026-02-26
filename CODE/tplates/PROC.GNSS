@@ -218,18 +218,23 @@ BASELINES_MAP_TITLE|{\fontsize{14}{\bf$name - Baselines} ($timescale)}
 # - node pairs: REF1,STA1;REF2,STA1,STA2,STA5 (default is Delaunay triangles)
 BASELINES_MAP_NODEPAIRS|
 # - if no pairs defined, Delaunay triangles from all nodes with possible exclusion/inclusion from node reference list and distance from target
-BASELINES_MAP_EXCLUDED_NODELIST|
 BASELINES_MAP_EXCLUDED_FROM_TARGET_KM|
+BASELINES_MAP_EXCLUDED_NODELIST|
 BASELINES_MAP_INCLUDED_NODELIST|
 BASELINES_MAP_TOL_DAYS|1
 BASELINES_MAP_HORIZONTAL_ONLY|YES
 BASELINES_MAP_LINESTYLE|.
 BASELINES_MAP_MOVING_AVERAGE|30
-BASELINES_MAP_STATION_OFFSET_M|0.01
+BASELINES_MAP_PAIRS_OFFSET_M|0.01
+BASELINES_MAP_PAIRS_SORT|YES
 # window for linear trend parameters: all window (empty), number of days before the end (scalar), or days interval [min,max] (2 values)  
 BASELINES_MAP_WINDOW_DAYS|
 BASELINES_MAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend'
-BASELINES_MAP_LINEWIDTH|4
+# map baseline pairs linewidth (in pt): constant or min,max to adjust linearily to absolute strain values
+BASELINES_MAP_LINEWIDTH|.5,4
+# map baseline pairs color reference: strain for signed colormap, or timeseries (default)
+BASELINES_MAP_COLORREF|strain
+BASELINES_MAP_COLORMAP|ryb(256)
 BASELINES_MAP_FONTSIZE|10
 
 # --- VECTORS: excluding NODES from graphs and calculations
