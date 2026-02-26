@@ -445,7 +445,7 @@ if (defined($GRID{URL})) {
 # -----------
 my $txt = "<B>SRTM/ETOPO</B> (default)";
 if (defined $GRID{DEM_FILE} && $GRID{DEM_FILE} ne "") {
-    $txt = "<B>$GRID{DEM_FILE}</B> <I>(".(-e "$GRID{DEM_FILE}" ? "ok":"$__{'check file!'}").")</I>";
+    $txt = "<B>$GRID{DEM_FILE}</B>".(-e "$GRID{DEM_FILE}" ? "":" <I>($__{'check file!'})</I>");
 }
 $htmlcontents .= "<LI>$__{'DEM'}: $txt</LI>\n";
 
