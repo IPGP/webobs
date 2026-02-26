@@ -1019,7 +1019,7 @@ for r = 1:numel(P.GTABLE)
 		tlabel(tlim,P.TZ,'FontSize',fontsize)
 
         % - map of baselines
-        axes('Position',[0.05,.05,.45,.38])
+        axes('Position',[0.05,.05,.45,.4])
         clim = [-1,1]*max(absdef);
         cmap = polarmap(baselines_map_cmap,0.3);
         kn = unique(cat(1,B.a,B.b));
@@ -1056,17 +1056,28 @@ for r = 1:numel(P.GTABLE)
         end
 		% strain colorscale
         if strcmpi(baselines_map_colorref,'strain')
-            axes('position',[0.04,.03,.4,.015])
-			imagesc(linspace(-1,1,256),[0;1],repmat(linspace(0,1,256),2,1))
-			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{'Compression','0','Extension'}, ...
+            axes('position',[0.05,.03,.45,.015])
+            xx = linspace(-1,1,256);
+			imagesc(xx,[0;1],repmat(linspace(0,1,256),2,1))
+            if numel(baselines_map_linewidth) == 2
+                hold on
+                for i = 1:length(xx)-1
+                    plot(xx(i:i+1),-2*[1,1],'-k', ...
+                        'LineWidth',2*(abs(i - length(xx)/2)/length(xx))*diff(baselines_map_linewidth)+baselines_map_linewidth(1), ...
+                        'Clipping','off')
+                end
+                hold off
+            end
+            mdef = sprintf('%g %cstrain',roundsd(max(absdef),2),char(181));
+			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{['-',mdef],'0',['+',mdef]}, ...
                 'TickDir','out','FontSize',8)
             colormap(cmap)
             caxis([0,1])
-            title(sprintf('Linear deformation (%cstrain)',char(181)),'FontSize',10)
+            %title(sprintf('Linear deformation (%cstrain)',char(181)),'FontSize',10)
 		end
 
         % information (max values in bold)
-        axes('Position',[0.52,.05,.48,.4])
+        axes('Position',[0.55,.05,.45,.4])
         [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
         txt = {sprintf('{\\bfBaseline Kinematic %s Linear Parameters}',ndim), ...
             sprintf('from %s to %s',datestr(tvel(1)),datestr(tvel(2))), ...
