@@ -104,6 +104,7 @@ geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
 for n = 1:length(N)
 
 	% adds 2 more columns to matrix d: north and east components (for the moment, takes only the last azimuth values)
+    % converts North azimuth to trigonometric angle (degree)
 	azr = 90 - D(n).CLB.az(ixyt(1));
 	azt = 90 - D(n).CLB.az(ixyt(2));
 	% radial-tangential unitary vectors
