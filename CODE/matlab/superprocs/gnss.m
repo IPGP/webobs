@@ -1068,7 +1068,7 @@ for r = 1:numel(P.GTABLE)
                 end
                 hold off
             end
-            mdef = sprintf('%g %cstrain',roundsd(max(absdef),2),char(181));
+            mdef = sprintf('%g %cstr',roundsd(max(absdef),2),char(181));
 			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{['-',mdef],'0',['+',mdef]}, ...
                 'TickDir','out','FontSize',8)
             colormap(cmap)
@@ -1080,20 +1080,27 @@ for r = 1:numel(P.GTABLE)
         axes('Position',[0.55,.05,.45,.4])
         [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
         txt = {sprintf('{\\bfBaseline Kinematic %s Linear Parameters}',ndim), ...
-            sprintf('from %s to %s',datestr(tvel(1)),datestr(tvel(2))), ...
-            '(distance, velocity, displacement, deformation)',''};
+            sprintf('from %s to %s',datestr(tvel(1)),datestr(tvel(2)))};
+        text(0,1,txt,'VerticalAlignment','top','FontSize',9)
+        
+        bstab = {'','{\bfDist. (km)}','{\bfVel. (mm/yr)}','{\bfDisp. (mm)}',sprintf('{\\bfDef. (%cstr)}',char(181))};
+
         for i = 1:length(B)
             n = ix(i);
             b1 = repmat('\bf',abs(B(n).vel)==max(abs(cat(1,B.vel))));
             b2 = repmat('\bf',abs(B(n).dis)==max(abs(cat(1,B.dis))));
             b3 = repmat('\bf',abs(B(n).def)==max(abs(cat(1,B.def))));
-            dat = sprintf('{%s%+g mm/yr}, {%s%+g mm}, {%s%+g %cstrain}',b1,roundsd(B(n).vel,2),b2,roundsd(B(n).dis,2),b3,roundsd(B(n).def,2),char(181));
+            bstab(i+1,1:2) = {B(n).line, sprintf('%g',roundsd(B(n).length,2))};
             if isnan(B(n).def)
-                dat = '{\itno data}';
+                bstab(i+1,3:5) = {'---','---','---'};
+            else
+                bstab(i+1,3:5) = {sprintf('{%s%+g}',b1,roundsd(B(n).vel,2)), ...
+                    sprintf('{%s%+g}',b2,roundsd(B(n).dis,2)), ...
+                    sprintf('{%s%+g}',b3,roundsd(B(n).def,2)), ...
+                };
             end
-            txt = [txt,{sprintf('   %s: %g km, %s',B(n).line,roundsd(B(n).length,2),dat)}];
         end
-        text(0,1,txt,'VerticalAlignment','top','FontSize',9)
+        plottable(bstab,[.1,.3,.5,.7,.9],[.9,.05],'ccccc','FontSize',8)
         set(gca,'YLim',[0,1])
         axis off
 
