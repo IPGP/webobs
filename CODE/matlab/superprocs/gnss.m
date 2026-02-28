@@ -2324,7 +2324,7 @@ for r = 1:numel(P.GTABLE)
 				M(m).type{w} = MM(1).type;
 
 				if isok(P,'DEBUG')
-					fprintf('\n%s,%s: %+g 10e6 m3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM.pbest(4),MM.pbest(3)/1e3],3));
+                    fprintf('\n%s,%s: %+g 10e6 m3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM(1).pbest(4),MM(1).pbest(3)/1e3],3));
 					if modrelforced
 						fprintf(' / relative mode forced by (%g,%g)',mvv(1:2));
 					end
