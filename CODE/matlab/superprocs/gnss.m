@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-02-23
+%   Updated: 2026-02-28
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -966,11 +966,20 @@ for r = 1:numel(P.GTABLE)
             if sum(k)
                 lin = polyfit(B(n).t(k),B(n).d(k)-mean(B(n).d(k)),1); % global linear regression (for display purpose)
             else
-                lin = NaN;
+                lin = [NaN,0];
             end
             B(n).lin = lin(1);
+            B(n).std = rstd(B(n).d(k) - polyval(lin,B(n).t(k)));
             fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+g µstrain\n', ...
                 B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],4));
+        end
+        fprintf('---> Baselines timeseries offset = ')
+        if baselines_map_offset > 0
+            boffset = baselines_map_offset;
+            fprintf('%g cm (fixed).\n',100*boffset);
+        else
+            boffset = 2*rmean(cat(1,B.std));
+            fprintf('%g cm (auto).\n',100*boffset)
         end
         if baselines_map_sorting
             [~,k] = sort(-cat(1,B.lin));
@@ -982,9 +991,10 @@ for r = 1:numel(P.GTABLE)
 		orient tall
 		OPT.GTITLE = varsub(baselines_map_title,V);
         axes('Position',[.05,.5,.8,.43])
-        ylim = baselines_map_offset*[-(length(B)+.5),.5];
+        %ylim = boffset*[-(length(B)+.5),.5];
+        ylim = [0,-boffset];
         for n = 1:length(B)
-            dd = B(n).d - rmedian(B(n).d) - baselines_map_offset*n;
+            dd = B(n).d - rmedian(B(n).d) - boffset*n;
             if baselines_map_mavr > 1
                 da = mavr(dd,baselines_map_mavr);
             else
@@ -1002,7 +1012,7 @@ for r = 1:numel(P.GTABLE)
                 end
                 text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
                     'HorizontalAlignment','left','VerticalAlignment','middle')
-                ylim = minmax([ylim,lda+baselines_map_offset*[-.5,.5]]);
+                ylim = minmax([ylim,lda+boffset*[-.5,.5]]);
             end
         end
 
@@ -1013,8 +1023,9 @@ for r = 1:numel(P.GTABLE)
         plot(x0 + [0,0],y0 - .5*dy0*[-1,1],'-k','LineWidth',2,'Clipping','off')
         text(x0,y0,{sprintf('%g cm',dy0*100),'',''},'FontSize',10,'FontWeight','bold', ...
             'Rotation',90,'HorizontalAlignment','center')
+		plot(tvel,ylim(2)+0.01*diff(ylim)*[1,1],'-','LineWidth',2,'Color',.7*ones(1,3),'Clipping','off') % window for parameters
         hold off
-        set(gca,'XLim',tlim,'YLim',ylim,'YTick',[],'FontSize',fontsize,'TickDir','out');
+        set(gca,'XLim',tlim,'YLim',ylim,'YTick',[],'FontSize',fontsize);
 		datetick2('x',P.GTABLE(r).DATESTR)
 		tlabel(tlim,P.TZ,'FontSize',fontsize)
 
