@@ -25,7 +25,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05 in Paris (France)
-%	Updated: 2026-02-20
+%	Updated: 2026-03-01
 
 
 proc = varargin{1};
@@ -199,6 +199,11 @@ else
 		error('%s: cannot find request file %s.',wofun,freq);
 	end
 	REQ = readcfg(WO,freq,'novsub');
+
+	% overwrites all fields of the proc defined in struct REQ.PROC.(proc)
+	if isfield(REQ,'PROC') && isfield(REQ.PROC,proc) && isstruct(REQ.PROC.(proc))
+		P = structmerge(P,REQ.PROC.(proc));
+	end
 
 	% overwrites some fields of the proc (common options from the request)
 	for key = {'TZ','PPI','PLOTGRID','PDFOUTPUT','SVGOUTPUT','EXPORTS','ANONYMOUS','DEBUG'}
