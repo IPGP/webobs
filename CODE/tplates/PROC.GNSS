@@ -236,7 +236,7 @@ BASELINES_MAP_PAIRS_SORT|YES
 # window for linear trend parameters: all window (empty), number of days before the end (scalar), or days interval [min,max] from end (2 values)  
 BASELINES_MAP_WINDOW_DAYS|
 # DEM options for background basemap (see dem.m)
-BASELINES_MAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend'
+BASELINES_MAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend','cartesian'
 # map baseline pairs linewidth (in pt): constant or min,max to adjust linearily to absolute strain values
 BASELINES_MAP_LINEWIDTH|.5,4
 # map baseline pairs color reference: strain for signed colormap, or timeseries (default)
