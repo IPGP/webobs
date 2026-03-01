@@ -362,17 +362,25 @@ for n = 1:numel(N)
 
 	% --- filters the data at once and adjust errors
 	if ~isempty(D(n).d)
-		if ~isnan(maxerror)
-			D(n).d(any(D(n).e>maxerror,2),:) = NaN;
-		end
 		for c = 1:3
-			D(n).e(isnan(D(n).e(:,c)) | D(n).e(:,c)<minerror(c),c) = minerror(c);
+			k = (isnan(D(n).e(:,c)) | D(n).e(:,c)<minerror(c));
+			D(n).e(k,c) = minerror(c);
+            if sum(k)
+                fprintf('---> %s: error for %d sample(s) of component %d adjusted to min error (%g m).\n',aliases{n},sum(k),minerror);
+            end
 		end
 		for i = 1:numel(orbiterr)
 			k = find(D(n).d(:,4)>=i-1);
 			if ~isempty(k) && ~isempty(D(n).e) && orbiterr(i)>0
 				D(n).e(k,:) = D(n).e(k,:)*orbiterr(i);
 			end
+		end
+		if ~isnan(maxerror)
+			k = any(D(n).e>maxerror,2);
+			D(n).d(k,:) = NaN;
+            if sum(k)
+                fprintf('---> %s: %d/%d sample(s) excluded due to max error filter (%g m).\n',aliases{n},sum(k),length(k),maxerror);
+            end
 		end
 	end
 
