@@ -137,6 +137,8 @@ function varargout=dem(x,y,z,varargin)
 %		coordinates X as longitude and Y as latitude. Axis aspect ratio
 %		will be adjusted to approximatively preserve distances (this is
 %		not a real projection!). This overwrites ZRatio option.
+%		Tick labels will be in degree/minute/second. Add 'Cartesian' option
+%		to get decimal degree labels.
 %
 %	'AxisEqual', 'auto' (default) | 'manual' | 'off'
 %		When 'Cartesian' or 'LatLon' option is used, automatic axes scaling
@@ -210,6 +212,7 @@ function varargout=dem(x,y,z,varargin)
 %	History:
 %	[2026-02-24] v3.3
 %       - add 'hlegend' and 'zlegend' options ('legend' = 'hlegend'+'zlegend')
+%		- 'LatLon' + 'Cartesian' options for decimal degree labels
 %	[2022-11-26] v3.2
 %		- fix an issue with 'grayscale' option
 %		- allows duplicate arguments (takes the last one)
@@ -903,14 +906,14 @@ if dec || dms
 	end
 
 	if ddx == 0
-		ddx = dtick(diff(xlim),dms);
+		ddx = dtick(diff(xlim),xor(dms,dec));
 		ddxn = 0;
 	else
 		ddxn = double(ddx<0);
 		ddx = abs(ddx);
 	end
 	if ddy == 0
-		ddy = dtick(diff(ylim),dms);
+		ddy = dtick(diff(ylim),xor(dms,dec));
 		ddyn = 0;
 	else
 		ddyn = double(ddy<0);
