@@ -1034,7 +1034,8 @@ for r = 1:numel(P.GTABLE)
         clim = [-1,1]*max(absdef);
         cmap = polarmap(baselines_map_cmap,0.3);
         kn = unique(cat(1,B.a,B.b));
-        xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .1*diff(minmax(geo(kn,1)))*[cosd(mean(geo(kn,1)))*[-2,2],-1,1];
+        xylim = ll2lim(minmax(geo(kn,1)),minmax(geo(kn,2)),1,1,.1);
+        %xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .1*diff(minmax(geo(kn,1)))*[cosd(mean(geo(kn,1)))*[-2,2],-1,1];
         DEM = loaddem(WO,xylim,P);
         dem(DEM.lon,DEM.lat,DEM.z,'latlon','position','northwest',baselines_map_demopt{:})
         hold on
