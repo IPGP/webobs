@@ -1031,7 +1031,7 @@ for r = 1:numel(P.GTABLE)
         end
 
         % - ruler legend
-        dy0 = roundsd(diff(ylim)/5,1,'ceil'); % a quarter of Y-interval
+        dy0 = roundsd(diff(ylim)/4,[1,2,5]); % a quarter of Y-interval rounded to 1/2/5
         x0 = tlim(1) - .02*diff(tlim);
         y0 = ylim(2) - 1.5*dy0;
         plot(x0 + [0,0],y0 - .5*dy0*[-1,1],'-k','LineWidth',2,'Clipping','off')
@@ -1043,13 +1043,12 @@ for r = 1:numel(P.GTABLE)
 		datetick2('x',P.GTABLE(r).DATESTR)
 		tlabel(tlim,P.TZ,'FontSize',fontsize)
 
-        % - map of baselines
-        axes('Position',[0.05,.05,.45,.4])
+        % - map of baselines and strain
+        axes('Position',[0.05,.035,.5,.45])
         clim = [-1,1]*max(absdef);
         cmap = polarmap(strainmap_cmap,0.3);
         kn = unique(cat(1,B.a,B.b));
         xylim = ll2lim(minmax(geo(kn,1)),minmax(geo(kn,2)),1,1,.1);
-        %xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .1*diff(minmax(geo(kn,1)))*[cosd(mean(geo(kn,1)))*[-2,2],-1,1];
         DEM = loaddem(WO,xylim,P);
         dem(DEM.lon,DEM.lat,DEM.z,'latlon','position','northwest',strainmap_demopt{:})
         hold on
@@ -1082,7 +1081,7 @@ for r = 1:numel(P.GTABLE)
         end
 		% strain colorscale
         if strcmpi(strainmap_colorref,'strain')
-            axes('position',[0.05,.03,.45,.015])
+            axes('position',[0.05,.03,.5,.015])
             xx = linspace(-1,1,256);
 			imagesc(xx,[0;1],repmat(linspace(0,1,256),2,1))
             if numel(strainmap_linewidth) == 2
@@ -1102,31 +1101,36 @@ for r = 1:numel(P.GTABLE)
             %title(sprintf('Linear deformation (%cstrain)',char(181)),'FontSize',10)
 		end
 
-        % information (max values in bold)
-        axes('Position',[0.55,.05,.45,.4])
+        % numeric information (max values in bold)
+        axes('Position',[0.6,.05,.4,.4])
         [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
         txt = {sprintf('{\\bfBaseline Kinematic %s Linear Parameters}',ndim), ...
             sprintf('from %s to %s',datestr(tvel(1)),datestr(tvel(2)))};
         text(0,1,txt,'VerticalAlignment','top','FontSize',9)
         
-        bstab = {'','{\bfDist. (km)}','{\bfVel. (mm/yr)}','{\bfDisp. (mm)}',sprintf('{\\bfDef. (%cstr)}',char(181))};
+        bstab = {'',{'{\bfDist.}','(km)',''},{'{\bfVel.}','(mm/yr)',''},{'{\bfDisp.}','(mm)',''},{'{\bfDef.}',sprintf('(%cstr)',char(181)),''}};
 
         for i = 1:length(B)
             n = ix(i);
             b1 = repmat('\bf',abs(B(n).vel)==max(abs(cat(1,B.vel))));
             b2 = repmat('\bf',abs(B(n).dis)==max(abs(cat(1,B.dis))));
             b3 = repmat('\bf',abs(B(n).def)==max(abs(cat(1,B.def))));
-            bstab(i+1,1:2) = {B(n).line, sprintf('%g',roundsd(B(n).length,2))};
+            b0 = repmat('\bf',any(~cellfun(@isempty,{b1,b2,b3})));
+            bstab(i+1,1:2) = { ...
+                sprintf('{%s%s}',b0,B(n).line), ...
+                sprintf('%g',roundsd(B(n).length,2)), ...
+            };
             if isnan(B(n).def)
-                bstab(i+1,3:5) = {'---','---','---'};
+                bstab(i+1,3:5) = {'--','--','--'};
             else
-                bstab(i+1,3:5) = {sprintf('{%s%+g}',b1,roundsd(B(n).vel,2)), ...
+                bstab(i+1,3:5) = { ...
+                    sprintf('{%s%+g}',b1,roundsd(B(n).vel,2)), ...
                     sprintf('{%s%+g}',b2,roundsd(B(n).dis,2)), ...
                     sprintf('{%s%+g}',b3,roundsd(B(n).def,2)), ...
                 };
             end
         end
-        plottable(bstab,[.1,.3,.5,.7,.9],[.9,.05],'ccccc','FontSize',8)
+        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc','FontSize',8)
         set(gca,'YLim',[0,1])
         axis off
 
