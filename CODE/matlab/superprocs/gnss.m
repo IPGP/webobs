@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-02-28
+%   Updated: 2026-03-02
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -1023,6 +1023,9 @@ for r = 1:numel(P.GTABLE)
                 ylim = minmax([ylim,lda+boffset*[-.5,.5]]);
             end
         end
+        if any(isnan(ylim))
+            ylim = [0,1];
+        end
 
         % - ruler legend
         dy0 = roundsd(diff(ylim)/5,1,'ceil'); % a quarter of Y-interval
@@ -1261,18 +1264,19 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% plots legend scale (velocity and displacements)
-		xsc = xlim(1);
-		ysc = ylim(1) - .06*diff(ylim);
-		lsc = velscale*vsc;
-		arrows(xsc,ysc,lsc,0,[arrowshape,xyr],'Cartesian','Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
-		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g %s',velscale,P.trendunit),'FontWeight','bold')
-		ysc = ylim(1) - .1*diff(ylim);
-        rdv = 1e3*diff(tlim)/P.trendfact; % ratio displacement/velocity
-        dispscale = roundsd(velscale*rdv,1); % displacement scale (rounded)
-		lsc = dispscale*vsc/rdv; % vector of displacements plotted at velocity scale...
-		arrows(xsc,ysc,lsc,0,[arrowshape,xyr],'Cartesian','Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
-		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g mm',dispscale),'FontWeight','bold')
-
+        if ~isnan(vsc)
+            xsc = xlim(1);
+            ysc = ylim(1) - .06*diff(ylim);
+            lsc = velscale*vsc;
+            arrows(xsc,ysc,lsc,0,[arrowshape,xyr],'Cartesian','Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
+            text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g %s',velscale,P.trendunit),'FontWeight','bold')
+            ysc = ylim(1) - .1*diff(ylim);
+            rdv = 1e3*diff(tlim)/P.trendfact; % ratio displacement/velocity
+            dispscale = roundsd(velscale*rdv,1); % displacement scale (rounded)
+            lsc = dispscale*vsc/rdv; % vector of displacements plotted at velocity scale...
+            arrows(xsc,ysc,lsc,0,[arrowshape,xyr],'Cartesian','Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
+            text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g mm',dispscale),'FontWeight','bold')
+        end
 
 		hold off
 
