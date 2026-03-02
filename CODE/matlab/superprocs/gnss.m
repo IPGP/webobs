@@ -190,23 +190,23 @@ baselines_staoff = field2num(P,'BASELINES_STATION_OFFSET_M',0.01);
 baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 baselines_trend = isok(P,'BASELINES_PLOT_TREND');
 
-% BASELINES_MAP parameters
-baselines_map_title = field2str(P,'BASELINES_MAP_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
-baselines_map_excluded = field2str(P,'BASELINES_MAP_EXCLUDED_NODELIST');
-baselines_map_included = field2str(P,'BASELINES_MAP_INCLUDED_NODELIST');
-baselines_map_excluded_target = field2num(P,'BASELINES_MAP_EXCLUDED_FROM_TARGET_KM',0,'notempty');
-baselines_map_horizonly = isok(P,'BASELINES_MAP_HORIZONTAL_ONLY');
-baselines_map_tol_days = field2num(P,'BASELINES_MAP_TOL_DAYS',1);
-baselines_map_linestyle = field2str(P,'BASELINES_MAP_LINESTYLE','.');
-baselines_map_mavr = field2num(P,'BASELINES_MAP_MOVING_AVERAGE',30,'notempty');
-baselines_map_offset = field2num(P,'BASELINES_MAP_PAIRS_OFFSET_M',0.01);
-baselines_map_sorting = isok(P,'BASELINES_MAP_PAIRS_SORT',1);
-baselines_map_win = field2num(P,'BASELINES_MAP_WINDOW_DAYS');
-baselines_map_demopt = field2cell(P,'BASELINES_MAP_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
-baselines_map_linewidth = field2num(P,'BASELINES_MAP_LINEWIDTH',3);
-baselines_map_colorref = field2str(P,'BASELINES_MAP_COLORREF');
-baselines_map_cmap = field2num(P,'BASELINES_MAP_COLORMAP',ryb(256),'notempty');
-baselines_map_fontsize = field2num(P,'BASELINES_MAP_FONTSIZE',10);
+% STRAINMAP parameters
+strainmap_title = field2str(P,'STRAINMAP_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
+strainmap_excluded = field2str(P,'STRAINMAP_EXCLUDED_NODELIST');
+strainmap_included = field2str(P,'STRAINMAP_INCLUDED_NODELIST');
+strainmap_excluded_target = field2num(P,'STRAINMAP_EXCLUDED_FROM_TARGET_KM',0,'notempty');
+strainmap_horizonly = isok(P,'STRAINMAP_HORIZONTAL_ONLY');
+strainmap_tol_days = field2num(P,'STRAINMAP_TOL_DAYS',1);
+strainmap_linestyle = field2str(P,'STRAINMAP_LINESTYLE','.');
+strainmap_mavr = field2num(P,'STRAINMAP_MOVING_AVERAGE',30,'notempty');
+strainmap_offset = field2num(P,'STRAINMAP_PAIRS_OFFSET_M',0.01);
+strainmap_sorting = isok(P,'STRAINMAP_PAIRS_SORT',1);
+strainmap_win = field2num(P,'STRAINMAP_WINDOW_DAYS');
+strainmap_demopt = field2cell(P,'STRAINMAP_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
+strainmap_linewidth = field2num(P,'STRAINMAP_LINEWIDTH',3);
+strainmap_colorref = field2str(P,'STRAINMAP_COLORREF');
+strainmap_cmap = field2num(P,'STRAINMAP_COLORMAP',ryb(256),'notempty');
+strainmap_fontsize = field2num(P,'STRAINMAP_FONTSIZE',10);
 
 
 % MOTION parameters
@@ -860,11 +860,11 @@ for r = 1:numel(P.GTABLE)
 	end
 
 	% --- Baselines time series
-	summary = 'BASELINES_MAP';
+	summary = 'STRAINMAP';
 	if any(strcmp(P.SUMMARYLIST,summary))
 
         % component indexes (5:6 for horizontal only, 5:7 for 3-components)
-		if baselines_map_horizonly
+		if strainmap_horizonly
             ndim = '2-D';
             ib = 5:6;
         else
@@ -875,8 +875,8 @@ for r = 1:numel(P.GTABLE)
 
 		% builds a structure B containing indexes of each node pairs a-b
         B = [];
-		if isfield(P,'BASELINES_MAP_NODEPAIRS') && ~isempty(P.BASELINES_MAP_NODEPAIRS)
-			pairref = strtrim(split(P.BASELINES_MAP_NODEPAIRS,';'));
+		if isfield(P,'STRAINMAP_NODEPAIRS') && ~isempty(P.STRAINMAP_NODEPAIRS)
+			pairref = strtrim(split(P.STRAINMAP_NODEPAIRS,';'));
 			np = 1;
 			for nn = 1:numel(pairref)
 				pairs = strtrim(split(pairref{nn},','));
@@ -898,8 +898,8 @@ for r = 1:numel(P.GTABLE)
 		% B structure not created = no valid node pairs
 		% will build automatic node pairs from Delaunay's triangles
 		if isempty(B)
-			kn = selectnode(N,tlim,baselines_map_excluded,baselines_map_included,[targetll,baselines_map_excluded_target]);
-            fprintf('%s: no pairs defined for summary BASELINES_MAP. Set automatic Delaunay triangles from %g nodes.\n',wofun,length(kn));
+			kn = selectnode(N,tlim,strainmap_excluded,strainmap_included,[targetll,strainmap_excluded_target]);
+            fprintf('%s: no pairs defined for summary STRAINMAP. Set automatic Delaunay triangles from %g nodes.\n',wofun,length(kn));
             DT = delaunay(geo(kn,2),geo(kn,1));
             % 1) constructs a 2-column array of all pairs (sorted)
             ab = zeros(size(DT,1),2);
@@ -922,11 +922,11 @@ for r = 1:numel(P.GTABLE)
         % now we have all node pairs: computing baselines
         % time window for computations
         tvel = tlim;
-        if all(baselines_map_win > 0)
-            if isscalar(baselines_map_win)
-                tvel = tlim(2) - [baselines_map_win,0];
-            elseif numel(baselines_map_win) == 2
-                tvel = tlim(2) - baselines_map_win;
+        if all(strainmap_win > 0)
+            if isscalar(strainmap_win)
+                tvel = tlim(2) - [strainmap_win,0];
+            elseif numel(strainmap_win) == 2
+                tvel = tlim(2) - strainmap_win;
             end
             tvel(1) = max(tvel(1),tlim(1));
             tvel(2) = min(tvel(2),tlim(2));
@@ -937,7 +937,7 @@ for r = 1:numel(P.GTABLE)
             a = B(n).a;
             b = B(n).b;
             B(n).length = greatcircle(geo(a,1),geo(a,2),geo(b,1),geo(b,2));
-            if ~baselines_map_horizonly
+            if ~strainmap_horizonly
                 B(n).length = sqrt(B(n).length^2 + (diff(geo([a,b],3))/1e3)^2);
             end
             B(n).line = sprintf('%s-%s',N(a).ALIAS,N(b).ALIAS);
@@ -950,9 +950,9 @@ for r = 1:numel(P.GTABLE)
             tkb = D(b).t(k);
             dkb = D(b).d(k,:);
             % rounds time using tolerance
-            if baselines_map_tol_days > 0
-                tka = floor(tka*baselines_map_tol_days);
-                tkb = floor(tkb*baselines_map_tol_days);
+            if strainmap_tol_days > 0
+                tka = floor(tka*strainmap_tol_days);
+                tkb = floor(tkb*strainmap_tol_days);
             end
             d = nan(size(dka,1),1);
             o = zeros(size(dka,1),1);
@@ -985,14 +985,14 @@ for r = 1:numel(P.GTABLE)
                 B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],4));
         end
         fprintf('---> Baselines timeseries offset = ')
-        if baselines_map_offset > 0
-            boffset = baselines_map_offset;
+        if strainmap_offset > 0
+            boffset = strainmap_offset;
             fprintf('%g cm (fixed).\n',100*boffset);
         else
             boffset = 2*rmean(cat(1,B.std));
             fprintf('%g cm (auto).\n',100*boffset)
         end
-        if baselines_map_sorting
+        if strainmap_sorting
             [~,k] = sort(-cat(1,B.lin));
             B = B(k);
         end
@@ -1000,22 +1000,22 @@ for r = 1:numel(P.GTABLE)
 
 		figure
 		orient tall
-		OPT.GTITLE = varsub(baselines_map_title,V);
+		OPT.GTITLE = varsub(strainmap_title,V);
         axes('Position',[.05,.5,.8,.43])
         %ylim = boffset*[-(length(B)+.5),.5];
         ylim = [0,-boffset];
         for n = 1:length(B)
             dd = B(n).d - rmedian(B(n).d) - boffset*n;
-            if baselines_map_mavr > 1
-                da = mavr(dd,baselines_map_mavr);
+            if strainmap_mavr > 1
+                da = mavr(dd,strainmap_mavr);
             else
                 da = dd;
             end
-            plotorbit(B(n).t,dd,B(n).o,baselines_map_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE/2,scolor(n)/2+1/2)
+            plotorbit(B(n).t,dd,B(n).o,strainmap_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE/2,scolor(n)/2+1/2)
             hold on
-            %B(n).h = plot(B(n).t,da,baselines_map_linestyle,'Color',scolor(n), ...
+            %B(n).h = plot(B(n).t,da,strainmap_linestyle,'Color',scolor(n), ...
             %    'MarkerSize',,'LineWidth',P.GTABLE(r).LINEWIDTH);
-            plotorbit(B(n).t,da,B(n).o,baselines_map_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(n))
+            plotorbit(B(n).t,da,B(n).o,strainmap_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(n))
             if ~all(isnan(dd))
                 lda = da(find(~isnan(da),1,'last'));
                 if isempty(lda) || isnan(lda)
@@ -1046,22 +1046,22 @@ for r = 1:numel(P.GTABLE)
         % - map of baselines
         axes('Position',[0.05,.05,.45,.4])
         clim = [-1,1]*max(absdef);
-        cmap = polarmap(baselines_map_cmap,0.3);
+        cmap = polarmap(strainmap_cmap,0.3);
         kn = unique(cat(1,B.a,B.b));
         xylim = ll2lim(minmax(geo(kn,1)),minmax(geo(kn,2)),1,1,.1);
         %xylim = [minmax(geo(kn,2)) minmax(geo(kn,1))] + .1*diff(minmax(geo(kn,1)))*[cosd(mean(geo(kn,1)))*[-2,2],-1,1];
         DEM = loaddem(WO,xylim,P);
-        dem(DEM.lon,DEM.lat,DEM.z,'latlon','position','northwest',baselines_map_demopt{:})
+        dem(DEM.lon,DEM.lat,DEM.z,'latlon','position','northwest',strainmap_demopt{:})
         hold on
         for n = 1:length(B)
             a = B(n).a;
             b = B(n).b;
-            if isscalar(baselines_map_linewidth) || isnan(B(n).def)
-                lw = baselines_map_linewidth(1);
+            if isscalar(strainmap_linewidth) || isnan(B(n).def)
+                lw = strainmap_linewidth(1);
             else
-                lw = (abs(B(n).def)-min(absdef))*diff(baselines_map_linewidth)/diff(minmax(absdef)) + baselines_map_linewidth(1);
+                lw = (abs(B(n).def)-min(absdef))*diff(strainmap_linewidth)/diff(minmax(absdef)) + strainmap_linewidth(1);
             end
-            if strcmpi(baselines_map_colorref,'strain')
+            if strcmpi(strainmap_colorref,'strain')
                 ncol = size(cmap,1)-1;
                 if ~isnan(B(n).def)
                     col = cmap(floor(ncol*(B(n).def-clim(1))/diff(clim))+1,:);
@@ -1076,20 +1076,20 @@ for r = 1:numel(P.GTABLE)
         end
         hold off
         target(geo(kn,2),geo(kn,1),8,.5*ones(1,3))
-        if baselines_map_fontsize > 0
+        if strainmap_fontsize > 0
             smarttext(geo(kn,1),geo(kn,2),aliases(kn),'latlon','noframe', ...
-                'FontSize',baselines_map_fontsize,'FontWeight','bold')
+                'FontSize',strainmap_fontsize,'FontWeight','bold')
         end
 		% strain colorscale
-        if strcmpi(baselines_map_colorref,'strain')
+        if strcmpi(strainmap_colorref,'strain')
             axes('position',[0.05,.03,.45,.015])
             xx = linspace(-1,1,256);
 			imagesc(xx,[0;1],repmat(linspace(0,1,256),2,1))
-            if numel(baselines_map_linewidth) == 2
+            if numel(strainmap_linewidth) == 2
                 hold on
                 for i = 1:length(xx)-1
                     plot(xx(i:i+1),-2*[1,1],'-k', ...
-                        'LineWidth',2*(abs(i - length(xx)/2)/length(xx))*diff(baselines_map_linewidth)+baselines_map_linewidth(1), ...
+                        'LineWidth',2*(abs(i - length(xx)/2)/length(xx))*diff(strainmap_linewidth)+strainmap_linewidth(1), ...
                         'Clipping','off')
                 end
                 hold off
