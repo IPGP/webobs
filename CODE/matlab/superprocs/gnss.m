@@ -366,7 +366,7 @@ for n = 1:numel(N)
 			k = (isnan(D(n).e(:,c)) | D(n).e(:,c)<minerror(c));
 			D(n).e(k,c) = minerror(c);
             if sum(k)
-                fprintf('---> %s: error for %d sample(s) of component %d adjusted to min error (%g m).\n',aliases{n},sum(k),c,minerror);
+                fprintf('---> %s: error for %d sample(s) of component %s adjusted to min value (%g m).\n',aliases{n},sum(k),enu{c},minerror(c));
             end
 		end
 		for i = 1:numel(orbiterr)
