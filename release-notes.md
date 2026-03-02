@@ -23,25 +23,28 @@ If you have any question which is not answered in the user manual, do not hesita
 
     where FORMNAME is the legacy form name, and PROCNAME is the associated PROC which becomes also the new FORM name. Note that previous link `showFORMNAME.pl` without argument, when legacy form was associated to more than one PROC (for instance the `EAUX` database), has no strict equivalent in the new structure; it must be replaced by as many links as there are procs associated to this form.
 1. **GeoJSON**: shapes (polygons, lines, and points) can be associated to a NODE or a GRID using the OSM.pl link (map marker pin icon), using import of a shapefile (.zip archive) or manual drawing. Resulting shapes will be saved to a .geojson file, and displayed on maps (gridmaps and locastat).
-1. **GNSS superproc**: new summary plot BASELINES_MAP to plot baseline pairs and associated map. To activate it, add `BASELINES_MAP` in the `SUMMARY_LIST`. Parameters are:
+1. **GNSS superproc**: new summary plot STRAINMAP to plot baseline pairs and associated strain map. To activate it, add `STRAINMAP` in the `SUMMARYLIST` list. Parameters are:
 ```
-BASELINES_MAP_TITLE|{\fontsize{14}{\bf$name - Baselines} ($timescale)}
-BASELINES_MAP_NODEPAIRS|
-BASELINES_MAP_EXCLUDED_FROM_TARGET_KM|
-BASELINES_MAP_EXCLUDED_NODELIST|
-BASELINES_MAP_INCLUDED_NODELIST|
-BASELINES_MAP_TOL_DAYS|1
-BASELINES_MAP_HORIZONTAL_ONLY|NO
-BASELINES_MAP_LINESTYLE|.
-BASELINES_MAP_MOVING_AVERAGE|30
-BASELINES_MAP_PAIRS_OFFSET_M|
-BASELINES_MAP_PAIRS_SORT|YES
-BASELINES_MAP_WINDOW_DAYS|
-BASELINES_MAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend'
-BASELINES_MAP_LINEWIDTH|.5,4
-BASELINES_MAP_FONTSIZE|10
+STRAINMAP_TITLE|{\fontsize{14}{\bf$name - Baselines} ($timescale)}
+STRAINMAP_NODEPAIRS|
+STRAINMAP_EXCLUDED_FROM_TARGET_KM|
+STRAINMAP_EXCLUDED_NODELIST|
+STRAINMAP_INCLUDED_NODELIST|
+STRAINMAP_TOL_DAYS|1
+STRAINMAP_HORIZONTAL_ONLY|NO
+STRAINMAP_LINESTYLE|.
+STRAINMAP_MOVING_AVERAGE|30
+STRAINMAP_PAIRS_OFFSET_M|
+STRAINMAP_PAIRS_SORT|YES
+STRAINMAP_WINDOW_DAYS|
+STRAINMAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend','cartesian'
+STRAINMAP_LINEWIDTH|.5,4
+# map baseline pairs color reference: strain for signed colormap, or timeseries (default)
+STRAINMAP_COLORREF|strain
+STRAINMAP_COLORMAP|ryb(256)
+STRAINMAP_FONTSIZE|10
 ```
-If node pairs are not defined, it computes pairs using Delaunay triangle from all nodes of the network, or selected using exclude/include options (`BASELINES_MAP_EXCLUDED_FROM_TARGET_KM`, `BASELINES_MAP_EXCLUDE_NODELIST`, `BASELINES_MAP_INLUDED_NODELIST`). The summary plot computes some linear trend paramters: velocity (mm/yr), total displacement (mm), and total deformation (µstrain) from the entire window or a sub-window defined by `BASELINES_MAP_WINDOW_DAYS`. Other options are similar to the BASELINES summary plot.
+If node pairs are not defined, it computes pairs using Delaunay triangle from all nodes of the network, or selected using exclude/include options (`STRAINMAP_EXCLUDED_FROM_TARGET_KM`, `STRAINMAP_EXCLUDE_NODELIST`, `STRAINMAP_INLUDED_NODELIST`). An additional option `STRAINMAP_PAIRS_SORT` allows automatic sorting of pairs for the timeseries graph (using velocity). The summary plot computes some linear trend paramters: velocity (mm/yr), total displacement (mm), and total deformation (µstrain) from the entire window or a sub-window defined by `STRAINMAP_WINDOW_DAYS`. Baselines are computed when the time reference is the same for the two timeseries of station pair, considering a tolerance of `STRAINMAP_TOL_DAYS`. Other options are similar to the BASELINES summary plot. A map of stations is also plotted with a basemap using proc's DEM ans options `STRAINMAP_DEM_OPT` (see dem.m function). Baselines are plotted with constant linewidth of proportional to absolute strain (`STRAINMAP_LINEWIDTH` with 1 or 2 values, respectively) and color identical to timeseries (one per station) or using strain colormap (`STRAINMAP_COLORREF` and `STRAINMAP_COLORMAP`).
 1. **GNSS superproc**: active fault slip/open can be set as a priori correction on displacement data, using the Okada (1985) model, as rectangular fault in elastic medium:
 ```
 FAULT_ACTIVATE|N
