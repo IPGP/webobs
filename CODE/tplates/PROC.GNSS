@@ -34,8 +34,8 @@ REF01_DATE|2000-01-01
 # year and month timescales use true durations
 TIMESCALE_TRUEVALUE|Y
 
-# summary graphs available: SUMMARY,VECTORS,MOTION,BASELINES,MODELLING,MODELTIME
-SUMMARYLIST|SUMMARY,VECTORS,MOTION,BASELINES
+# summary graphs available: SUMMARY,VECTORS,MOTION,BASELINES,STRAINMAP,MODELLING,MODELTIME
+SUMMARYLIST|SUMMARY,VECTORS,MOTION,SRTAINMAP
 
 # for scheduler requests
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} gnss $SELFREF -
@@ -213,36 +213,36 @@ BASELINES_STATION_OFFSET_M|0.01
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 BASELINES_TIMEZOOM|
 
-# --- BASELINES_MAP: secondary baselines graph with map
-BASELINES_MAP_TITLE|{\fontsize{14}{\bf$name - Baselines} ($timescale)}
+# --- STRAINMAP: baselines graph with map of strain
+STRAINMAP_TITLE|{\fontsize{14}{\bf$name - Baselines strain} ($timescale)}
 # - node pairs: REF1,STA1;REF2,STA1,STA2,STA5 (default is Delaunay triangles)
-BASELINES_MAP_NODEPAIRS|
+STRAINMAP_NODEPAIRS|
 # - if no pairs defined, Delaunay triangles from all nodes with possible exclusion/inclusion from node reference list and distance from target
-BASELINES_MAP_EXCLUDED_FROM_TARGET_KM|
-BASELINES_MAP_EXCLUDED_NODELIST|
-BASELINES_MAP_INCLUDED_NODELIST|
+STRAINMAP_EXCLUDED_FROM_TARGET_KM|
+STRAINMAP_EXCLUDED_NODELIST|
+STRAINMAP_INCLUDED_NODELIST|
 # time tolerance (in days) to compute baseline from data pairs
-BASELINES_MAP_TOL_DAYS|1
+STRAINMAP_TOL_DAYS|1
 # YES = 2-D baseline, NO = 3-D baselines
-BASELINES_MAP_HORIZONTAL_ONLY|NO
+STRAINMAP_HORIZONTAL_ONLY|NO
 # baseline timeseries linestyle
-BASELINES_MAP_LINESTYLE|.
+STRAINMAP_LINESTYLE|.
 # adds moving average lines (in data sampling)
-BASELINES_MAP_MOVING_AVERAGE|30
+STRAINMAP_MOVING_AVERAGE|30
 # baseline offset between pairs (in m), empty for automatic (computed from data STD)
-BASELINES_MAP_PAIRS_OFFSET_M|
+STRAINMAP_PAIRS_OFFSET_M|
 # sort baseline pairs from linear trend
-BASELINES_MAP_PAIRS_SORT|YES
+STRAINMAP_PAIRS_SORT|YES
 # window for linear trend parameters: all window (empty), number of days before the end (scalar), or days interval [min,max] from end (2 values)  
-BASELINES_MAP_WINDOW_DAYS|
+STRAINMAP_WINDOW_DAYS|
 # DEM options for background basemap (see dem.m)
-BASELINES_MAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend','cartesian'
+STRAINMAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend','cartesian'
 # map baseline pairs linewidth (in pt): constant or min,max to adjust linearily to absolute strain values
-BASELINES_MAP_LINEWIDTH|.5,4
+STRAINMAP_LINEWIDTH|.5,4
 # map baseline pairs color reference: strain for signed colormap, or timeseries (default)
-BASELINES_MAP_COLORREF|strain
-BASELINES_MAP_COLORMAP|ryb(256)
-BASELINES_MAP_FONTSIZE|10
+STRAINMAP_COLORREF|strain
+STRAINMAP_COLORMAP|ryb(256)
+STRAINMAP_FONTSIZE|10
 
 # --- VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|
