@@ -20,7 +20,7 @@ function varargout = mkgraph(WO,f,P,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03 in Gourbeyre, Guadeloupe
-%	Updated: 2026-01-19
+%	Updated: 2026-03-02
 
 
 set(gcf, 'Visible', 'off');
@@ -40,6 +40,10 @@ convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
 ps2pdf = field2str(WO,'PRGM_PS2PDF','ps2pdf');
 thumbnailheight = field2num(WO,'MKGRAPH_THUMBNAIL_HEIGHT',112);
 timestamp = field2num(WO,'MKGRAPH_TIMESTAMP',6);
+flogo1 = field2str(P,'LOGO_FILE');
+hlogo1 = field2num(P,'LOGO_HEIGHT',.04);
+flogo2 = field2str(P,'LOGO2_FILE');
+hlogo2 = field2num(P,'LOGO2_HEIGHT',.04);
 
 % if PAPER_SIZE is defined, reformats paper size and figure position
 psz = field2num(P,'PAPER_SIZE');
@@ -80,8 +84,8 @@ if isfield(OPT,'GTITLE') && isfield(OPT,'INFOS')
 	axis off
 
 	% --- header
-	h0 = plotlogo(P.LOGO_FILE,P.LOGO_HEIGHT,'left');
-	h1 = plotlogo(P.LOGO2_FILE,P.LOGO2_HEIGHT,'right');
+	h0 = plotlogo(flogo1,hlogo1,'left');
+	h1 = plotlogo(flogo2,hlogo2,'right');
 
 	if isfield(OPT,'GSTATUS')
 		if length(OPT.GSTATUS) > 2 && all(~isnan(OPT.GSTATUS(2:3)))
@@ -266,7 +270,7 @@ if ~isempty(f)
     end
 	pos0 = 0;
 	for i = 1:length(ff)
-		if exist(ff{i},'file')
+		if exist(ff{i},'file') && rh > 0
 			%try
 				[A,map,alpha] = imread(ff{i});
 				% applies transparency channel manually (for Octave compatibility)

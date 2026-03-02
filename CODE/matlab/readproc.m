@@ -25,7 +25,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05 in Paris (France)
-%	Updated: 2026-03-01
+%	Updated: 2026-03-02
 
 
 proc = varargin{1};
@@ -77,13 +77,7 @@ P.PLOT_GRID = field2str(P,'PLOT_GRID','NO');
 P.PDFOUTPUT = field2str(P,'PDFOUTPUT','NO');
 P.SVGOUTPUT = field2str(P,'SVGOUTPUT','NO');
 P.COPYRIGHT = field2str(P,'COPYRIGHT',WO.COPYRIGHT);
-% main logo (upper left) height as a fraction of graph width
-P.LOGO_FILE = field2str(P,'LOGO_FILE','');
-P.LOGO_HEIGHT = field2num(P,'LOGO_HEIGHT',.04);
 P.COPYRIGHT2 = field2str(P,'COPYRIGHT2','');
-% secondary logo (upper right)
-P.LOGO2_FILE = field2str(P,'LOGO2_FILE','');
-P.LOGO2_HEIGHT = field2num(P,'LOGO2_HEIGHT',.04);
 P.EXPORTS = field2str(P,'EXPORTS','YES');
 P.EVENTS_FILE = field2str(P,'EVENTS_FILE','');
 
@@ -158,30 +152,6 @@ if ~request
             for key = {'DATESTR','MARKERSIZE','LINEWIDTH','CUMULATE','DECIMATE','STATUS'}
                 P.GTABLE(n).(key{1}) = P.([key{1},'LIST'])(r);
             end
-			%P.GTABLE(n).DATESTR = P.DATESTRLIST(r);
-			%P.GTABLE(n).MARKERSIZE = P.MARKERSIZELIST(r);
-			%P.GTABLE(n).LINEWIDTH = P.LINEWIDTHLIST(r);
-			%P.GTABLE(n).CUMULATE = P.CUMULATELIST(r);
-			%P.GTABLE(n).DECIMATE = P.DECIMATELIST(r);
-			%P.GTABLE(n).STATUS = P.STATUSLIST(r);
-			%P.GTABLE(n).NOW = P.NOW;
-			%P.GTABLE(n).TZ = P.TZ;
-			%P.GTABLE(n).PPI = P.PPI;
-			%P.GTABLE(n).PAPER_SIZE = P.PAPER_SIZE;
-			%P.GTABLE(n).PLOT_GRID = P.PLOT_GRID;
-			%P.GTABLE(n).EVENTS_FILE = P.EVENTS_FILE;
-			%P.GTABLE(n).PDFOUTPUT = P.PDFOUTPUT;
-			%P.GTABLE(n).SVGOUTPUT = P.SVGOUTPUT;
-			%P.GTABLE(n).EXPORTS = P.EXPORTS;
-			%P.GTABLE(n).COPYRIGHT = P.COPYRIGHT;
-			%P.GTABLE(n).COPYRIGHT2 = P.COPYRIGHT2;
-			%P.GTABLE(n).LOGO_FILE = P.LOGO_FILE;
-			%P.GTABLE(n).LOGO2_FILE = P.LOGO2_FILE;
-			%P.GTABLE(n).LOGO_HEIGHT = P.LOGO_HEIGHT;
-			%P.GTABLE(n).LOGO2_HEIGHT = P.LOGO2_HEIGHT;
-			%P.GTABLE(n).SELFREF = P.SELFREF;
-			%P.GTABLE(n).NAME = P.NAME;
-			%P.GTABLE(n).OUTDIR = P.OUTDIR;
 			n = n + 1;
 		end
 	end
@@ -220,28 +190,6 @@ else
 	for key = {'DATESTR','MARKERSIZE','LINEWIDTH','CUMULATE','DECIMATE','STATUS'}
 		P.GTABLE.(key{1}) = field2num(REQ,key{1});
 	end
-
-	% converts dates in DATENUM format
-	%P.GTABLE.SELFREF = P.SELFREF;
-	%P.GTABLE.NAME = '';
-
-	% converts to numeric some fields
-	%keys = fieldnames(REQ);
-	%keys = keys(ismember(keys,{'TZ','DATESTR','PPI','MARKERSIZE','LINEWIDTH','CUMULATE','DECIMATE'}));
-	%for n = 1:length(keys)
-	%	P.GTABLE.(keys{n}) = sstr2num(P.GTABLE.(keys{n})); %NOTE: sstr2num() allows some syntax interpretation like '5/1440' (5 mn expressed in days)
-	%end
-
-	% completes some fields from proc
-	%P.GTABLE.NOW = P.NOW;
-	%P.GTABLE.PAPER_SIZE = P.PAPER_SIZE;
-	%P.GTABLE.EVENTS_FILE = P.EVENTS_FILE;
-	%P.GTABLE.COPYRIGHT = P.COPYRIGHT;
-	%P.GTABLE.COPYRIGHT2 = P.COPYRIGHT2;
-	%P.GTABLE.LOGO_FILE = P.LOGO_FILE;
-	%P.GTABLE.LOGO2_FILE = P.LOGO2_FILE;
-	%P.GTABLE.LOGO_HEIGHT = P.LOGO_HEIGHT;
-	%P.GTABLE.LOGO2_HEIGHT = P.LOGO2_HEIGHT;
 
 	% makes internal KEY variable substitution
 	P = vsub(P,'[\$][\{](.*?)[\}]');
