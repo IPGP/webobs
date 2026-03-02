@@ -955,11 +955,14 @@ for r = 1:numel(P.GTABLE)
                 tkb = floor(tkb*baselines_map_tol_days);
             end
             d = nan(size(dka,1),1);
+            o = zeros(size(dka,1),1);
             [tc,ka,kb] = intersect(tka,tkb);
             if ~isempty(ka)
                 d(ka) = sqrt(sum((dkb(kb,ib) - dka(ka,ib)).^2,2));
+                o(ka) = max(dkb(kb,4),dka(ka,4));
             end
             B(n).d = d;
+            B(n).o = o;
             B(n).t = tka;
             kvel = (isinto(B(n).t,tvel) & ~isnan(B(n).d));
             if sum(kvel)
@@ -1008,11 +1011,11 @@ for r = 1:numel(P.GTABLE)
             else
                 da = dd;
             end
-            plot(B(n).t,dd,baselines_map_linestyle,'Color',scolor(n)/2+1/2, ...
-                'MarkerSize',P.GTABLE(r).MARKERSIZE/2,'LineWidth',P.GTABLE(r).LINEWIDTH/2)
+            plotorbit(B(n).t,dd,B(n).o,baselines_map_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE/2,scolor(n)/2+1/2)
             hold on
-            B(n).h = plot(B(n).t,da,baselines_map_linestyle,'Color',scolor(n), ...
-                'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH);
+            %B(n).h = plot(B(n).t,da,baselines_map_linestyle,'Color',scolor(n), ...
+            %    'MarkerSize',,'LineWidth',P.GTABLE(r).LINEWIDTH);
+            plotorbit(B(n).t,da,B(n).o,baselines_map_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(n))
             if ~all(isnan(dd))
                 lda = da(find(~isnan(da),1,'last'));
                 if isempty(lda) || isnan(lda)
