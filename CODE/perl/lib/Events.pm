@@ -119,7 +119,8 @@ sub struct {
 
 =head2 eventnameSplit
 
-eventnameSplit(eventname) decodes event name string and returns an array of elements:
+eventnameSplit(eventname) decodes event name string 'OBJECT_yyyy-mm-dd_HH-MM.txt' and 
+returns an array of elements:
 
     [0] = object (node ID or grid name)
     [1] = date (yyyy-mm-dd)
@@ -132,13 +133,15 @@ sub eventnameSplit {
 
     # grid name might contain '_' so reads date and time by splitting '-' first
     my @pn = split(/-/,$_[0]); # object_year month day_hour minute_version
-    my @p1 = split(/_/,$pn[0]);
-    my @p2 = split(/_/,$pn[2]);
-    my @p3 = split(/_/,$pn[3]);
+    my @p1 = split(/_/,$pn[0]); # object year
+    my @p2 = split(/_/,$pn[2]); # day hour/NA
+    my @p3 = split(/_/,$pn[3]); # (minute) version
     my $obj = join('_',$p1[0 .. $#p1-1]);
     my $date = "$p1[$#p1]-$pn[1]-$p2[0]";
     my $time = "$p2[1]:$p3[0]";
-    $time =~ s/NA//;
+    if ($p2[1] eq "NA") {
+        $time = "NA";
+    }
     my $ver = ($#p3 > 0 ? $p3[1]:"");
 
     return ($obj,$date,$time,$ver);
