@@ -37,7 +37,7 @@ function DOUT=tilt(varargin)
 %   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet,
 %            V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
 %   Created: 2015-08-24 in Yogyakarta, Indonesia
-%   Updated: 2026-02-03
+%   Updated: 2026-03-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -274,7 +274,7 @@ for n = 1:length(N)
 		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = t(k);
 			E.d = d(k,ixyt);
-			E.header = {'TiltX(µrad)','TiltY(µrad)','Temperature(°C)'};
+			E.header = {sprintf('TiltX(%crad)',char(181)),sprintf('TiltY(%crad)',char(181)),sprintf('Temperature(%cC)',char(176))};
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
@@ -298,7 +298,7 @@ for r = 1:length(P.GTABLE)
 
 	V.name = P.NAME;
 	V.timescale = timescales(P.GTABLE(r).TIMESCALE);
-	P.GTABLE(r).GTITLE = varsub(summary_title,V);
+	OPT.GTITLE = varsub(summary_title,V);
 	if P.GTABLE(r).STATUS
 		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 	end
@@ -368,9 +368,9 @@ for r = 1:length(P.GTABLE)
 		datetick2('x',P.GTABLE(r).DATESTR)
 		switch ii
 			case 1
-				ylabel(sprintf('%sTilt X (µrad)',rel))
+				ylabel(sprintf('%sTilt X (%crad)',rel,char(181)))
 			case 2
-				ylabel(sprintf('%sTilt Y (µrad)',rel))
+				ylabel(sprintf('%sTilt Y (%crad)',rel,char(181)))
 			case 3
 				ylabel(sprintf('%s%s (%s)',rel,D(n).CLB.nm{i},D(n).CLB.un{i}))
 		end
@@ -488,7 +488,7 @@ for r = 1:length(P.GTABLE)
 		xsc = xlim(1) + [0,vscale*vsc*xyr];
 		ysc = repmat(alim(1)-diff(alim)/20,1,2);
 		plot(xsc,ysc,'-k','Linewidth',2,'Clipping','off')
-		text(mean(xsc),ysc(1),sprintf('%g µrad',vscale),'Clipping','off', ...
+		text(mean(xsc),ysc(1),sprintf('%g %crad',vscale,char(181)),'Clipping','off', ...
 			'HorizontalAlignment','center','VerticalAlignment','top','FontWeight','bold')
 		hold off
 
@@ -616,7 +616,7 @@ for r = 1:length(P.GTABLE)
 		ysc = ylim(2) + .04*diff(ylim);
 		lsc = vscale*vsc;
 		arrows(xsc,ysc,lsc,90,arrowshape*vmax/vscale,'FaceColor','none','LineWidth',1,'Clipping','off');
-		text(xsc+1.1*lsc,ysc,sprintf('%g µrad/day',vscale),'FontWeight','bold')
+		text(xsc+1.1*lsc,ysc,sprintf('%g %crad/day',vscale,char(181)),'FontWeight','bold')
 
 
 		hold off
@@ -640,7 +640,7 @@ for r = 1:length(P.GTABLE)
 				set(gca,'YLim',[0,max(sta_amp+sta_err)])
 			end
 			xlabel('Distance from target (km)')
-			ylabel('Tilt amplitude (µrad/day)')
+			ylabel(sprintf('Tilt amplitude (%crad/day)',char(181)))
 		end
 
 
@@ -654,7 +654,7 @@ for r = 1:length(P.GTABLE)
 		if isok(P,'EXPORTS')
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,1:2)];
-			E.header = {'Latitude','Longitude','Altitude','E_tilt(µrad/day)','N_Tilt(µrad/day)','dEt(µrad/day)','dNt(µrad/day)'};
+			E.header = {'Latitude','Longitude','Altitude',sprintf('E_tilt(%crad/day)',char(181)),sprintf('N_Tilt(%crad/day)',char(181)),sprintf('dEt(%crad/day)',char(181)),'dNt(%crad/day)'};
 			E.title = sprintf('%s {%s}',stitre,upper(sprintf('%s_%s',proc,summary)));
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
