@@ -1002,7 +1002,6 @@ for r = 1:numel(P.GTABLE)
 		orient tall
 		OPT.GTITLE = varsub(strainmap_title,V);
         axes('Position',[.05,.5,.8,.43])
-        %ylim = boffset*[-(length(B)+.5),.5];
         ylim = [0,-boffset];
         for n = 1:length(B)
             dd = B(n).d - rmedian(B(n).d) - boffset*n;
@@ -1013,8 +1012,6 @@ for r = 1:numel(P.GTABLE)
             end
             plotorbit(B(n).t,dd,B(n).o,strainmap_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE/2,scolor(n)/2+1/2)
             hold on
-            %B(n).h = plot(B(n).t,da,strainmap_linestyle,'Color',scolor(n), ...
-            %    'MarkerSize',,'LineWidth',P.GTABLE(r).LINEWIDTH);
             plotorbit(B(n).t,da,B(n).o,strainmap_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(n))
             if ~all(isnan(dd))
                 lda = da(find(~isnan(da),1,'last'));
