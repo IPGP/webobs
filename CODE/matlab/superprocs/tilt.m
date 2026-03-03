@@ -178,8 +178,8 @@ for n = 1:length(N)
 					tsign = sign(rxy(2));
 					[ax,h1,h2] = plotyy(tk,dk,tkt,dkt*tsign,'timeplot');
                     hold on
-					set(h1,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',scolor(i));
-					set(h2,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',pernode_temperature_col);
+					set(h1,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',scolor(i));
+					set(h2,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',pernode_temperature_col);
 					set(ax(1),'Ylim',get(ax(1),'YLim'),'YColor',scolor(i),'UserData',[])	% freezes Y axis
 					box on
 					set(ax(2),'Ylim',get(ax(2),'YLim'),'YColor',pernode_temperature_col,'UserData',[1])	% freezes Y axis and add a flag for background events
@@ -338,7 +338,7 @@ for r = 1:length(P.GTABLE)
 					%samp = D(n).CLB.sf(i);
 					samp = N(n).ACQ_RATE;
 				end
-				timeplot(tk,dk,samp,summary_linestyle,'Color',scolor(n),'MarkerSize',P.GTABLE(r).MARKERSIZE/10)
+				timeplot(tk,dk,samp,summary_linestyle,'Color',scolor(n),'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE)
 				% computes daily trends (in �rad/day)
 				kk = find(~isnan(dk));
 				if ii < 3 && length(kk) > 2
