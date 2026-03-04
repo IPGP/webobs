@@ -453,7 +453,7 @@ for g = 1:length(grids)
 
 				% makes the HTML mapping
 				fprintf('%s: updating %s/%s.%s ... ',wofun,pimg,fimg,fext);
-				fid = fopen(sprintf('%s.%s',ftmp,fext),'wt');
+				fid = fopen(sprintf('%s.%s',ftmp,fext),'w','n','UTF-8');
 				if html
 					fprintf(fid,'<HTML><HEAD><TITLE></TITLE></HEAD><BODY>\n<IMG src="%s.png" usemap="#map">\n<MAP name="map">\n',fimg);
 				end
@@ -468,13 +468,8 @@ for g = 1:length(grids)
 						x = round(ims(1)*((axp(3)*(NN(gg).geo(knn,2) - xylim(1))/diff(xylim(1:2)) + axp(1))));
 						y = round(ims(2) - ims(2)*((axp(4)*(NN(gg).geo(knn,1) - xylim(3))/diff(xylim(3:4)) + axp(2))));
 						r = ceil(nodesize*dpi/72);
-                        % [notUTFyet] must convert strings to ISO
-                        [s,w] = wosystem(sprintf('echo "%s"|iconv -t UTF-8 -f ISO_8859-1',NN(gg).name{knn}));
-                        if ~s && ~isempty(w)
-                            name = w;
-                        else
-                            name = NN(gg).name{knn};
-                        end
+                        % [notUTFyet] must convert name string to UTF-8
+                        name = native2unicode(uint8(NN(gg).name{knn}),'ISO-8859-1');
                         if isempty(regexp(grids{gg},'^SEFRAN\.','once'))
                             lnk = sprintf('/cgi-bin/showNODE.pl?node=%s.%s',grids{gg},NN(gg).id{knn});
                         else
