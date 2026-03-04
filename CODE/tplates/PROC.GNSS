@@ -93,16 +93,16 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 # --------------------------------------------------------------------
 # specific proc's parameters
 
-
-# maximum error on position (in m) before excluding the data from graphs and calculations
-FILTER_MAX_ERROR_M|0.05
 # minimum error for each component East, North, and Up (in m)
-ENU_MIN_ERROR_M|0.01,0.01,0.01
-
+ENU_MIN_ERROR_M|0.005,0.005,0.005
 # vector of ratios applied to data errors for each orbit (Final,Rapid,Ultra)
 ORBIT_ERROR_RATIO|1,2,2
+# maximum error on position (in m) before excluding the data from graphs and calculations
+FILTER_MAX_ERROR_M|0.05
 
+# timeseries filtering: exclude min/max median values (in percent)
 PICKS_CLEAN_PERCENT|0
+# timeseries filtering: exclude values above x STD
 PICKS_CLEAN_STD|0
 
 # dimensionless factor applied to the trend value initially in m/day
