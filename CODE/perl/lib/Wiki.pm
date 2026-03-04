@@ -96,17 +96,18 @@ sub wiki2html {
     if (length($meta) == 0) { wiki($clean) } else { markdown($string) };
 }
 
+#    ($contents, $meta) = stripMDmetadata($contents);
 sub stripMDmetadata {
     if (defined($_[0]) && $_[0] ne "") {
-        (my $txt = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;
-        return ($txt,"") if (!isok($WEBOBS{WIKI_MMD}));
+        (my $txt = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;      # removes title+metadata line
+        return ($txt, "") if (!isok($WEBOBS{WIKI_MMD}));    # no MMD for all WebObs
         return ($txt, "") if ($txt !~ /\n\s*\n/);           # no blank line means no chance for metadata
         (my $head, my $tail) = split /\n\s*\n/ , $txt, 2;   # head up to 1st blank line
         my @head = split /\n(.+):/,"\n$head";               # hashes metadata key:value pairs
         shift @head;                                        # ...
         my %hash = @head;                                   # ...
         return ($txt,"") if (!keys %hash || !$hash{WebObs}); # no keys or no WebObs key = no metadata
-        return ($tail, "$head\n\n");
+        return ($tail, "$head\n\n\n");
     } else {
         return ('', '');
     }

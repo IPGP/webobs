@@ -140,7 +140,7 @@ my $notebookfwd = $QryParm->{'notebookfwd'} // "0";
 my $metain      = $QryParm->{'meta'} // "";     # add MMD
 my $conv        = $cgi->param('conv')  // "0";  # add MMD
 $contents = "$metain$contents";            # add MMD
-my $meta;                                  # add MMD
+my $meta = "";                                  # add MMD
 my $mmd = isok($WEBOBS{WIKI_MMD}) // 1;    # add MMD
 my $target = "";
 my $tz = "";
@@ -338,7 +338,7 @@ if ($action =~ /new/i ) {
     } else {
         $pagetitle = "$__{'Create Project'}";
     }
-    $meta = "WebObs: created by vedit  \n\n" if ($mmd);         # add MMD
+    $meta = "WebObs: created by vedit\n\n";         # add MMD
 }
 
 # ---------------------------------------------------------------------------------------
@@ -365,7 +365,7 @@ if ($action =~ /upd/i ) {
     @oper = @$authors;
     @roper = @$remotes;
     shift(@lines);
-    $contents = join("\n",@lines);
+    $contents = join("\n",@lines)."\n";
     ($contents, $meta) = WebObs::Wiki::stripMDmetadata($contents);
 }
 
