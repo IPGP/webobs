@@ -468,21 +468,20 @@ for g = 1:length(grids)
 						x = round(ims(1)*((axp(3)*(NN(gg).geo(knn,2) - xylim(1))/diff(xylim(1:2)) + axp(1))));
 						y = round(ims(2) - ims(2)*((axp(4)*(NN(gg).geo(knn,1) - xylim(3))/diff(xylim(3:4)) + axp(2))));
 						r = ceil(nodesize*dpi/72);
-                        % [notUTFyet] must convert name string to UTF-8
-                        name = native2unicode(uint8(NN(gg).name{knn}),'ISO-8859-1');
-                        if isempty(regexp(grids{gg},'^SEFRAN\.','once'))
-                            lnk = sprintf('/cgi-bin/showNODE.pl?node=%s.%s',grids{gg},NN(gg).id{knn});
-                        else
-                            lnk = '#';
-                        end
+						if isempty(regexp(grids{gg},'^SEFRAN\.','once'))
+						    lnk = sprintf('/cgi-bin/showNODE.pl?node=%s.%s',grids{gg},NN(gg).id{knn});
+						else
+						    lnk = '#';
+						end
 						if html
-							txt = regexprep(sprintf('%s: %s',NN(gg).alias{knn},name),'"','');
+							txt = regexprep(sprintf('%s: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
 							fprintf(fid,'<AREA href="%s" title="%s" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 						else
-                            cap = NN(gg).id{knn};
-							txt = regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},name),'"','');
+							cap = NN(gg).id{knn};
+							txt = regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
 							txt = regexprep(char(txt),'''','\\''');
-							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'',CAPTION,''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,cap,x,y,r);
+							txt = sprintf('<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'',CAPTION,''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,cap,x,y,r);
+							fwrite(fid,txt,'char');
 						end
 					end
 				end
