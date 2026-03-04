@@ -495,7 +495,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
     }
     $dbh->disconnect();
 
-    $fields{DURATION} = ($dur[0] + $dur[1]) / 2; # uses the mean of possible durations
+    #$fields{DURATION} = ($dur[0] + $dur[1]) / 2; # uses the mean of possible durations
+    $fields{duration} = $dur[0];
 
     # stores formulas
     foreach (@formulas) {
