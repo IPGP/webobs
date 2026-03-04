@@ -725,7 +725,7 @@ supporting \wo{\$WEBOBS} parameters substitution.
 The \wokey{SUBMIT\_RESOURCE} is the optional routine execution mutex name (process lock) of as defined in SCHEDULER if the PROC is one of the routine jobs. This is to avoid possible conflicts of simultaneous runs.
 
 Optionally, the \wokey{REQUEST\_KEYLIST} parameter is used to specify a list of comma-separated keys of existing parameters, that will be
-presented to the user so that (s)he will have a chance to overwrite corresponding values for request execution.
+presented to the user in front of the full list of parameters accessible by the '+' icon. Parameters are filled by the proc's values and can be modified for request execution. There is no check of content validity, so any mistake might lead to request execution error.
 
 The user defined output parameters \textbf{Date format}, \textbf{Cumulate}, \textbf{Decimate}, \textbf{Marker size} and \textbf{Line width} correspond to table values \wokey{DATESTRLIST}, \wokey{CUMULATELIST}, \wokey{DECIMATELIST}, \wokey{MARKERSIZELIST} and \wokey{LINEWIDTHLIST}, respectively.
 

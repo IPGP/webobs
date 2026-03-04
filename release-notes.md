@@ -130,6 +130,7 @@ TREND_UNIT|mm/yr
 1. Fix display of non-geolocated nodes as neighbours (as lat=lon=0).
 1. Fix issue with empty location code for fdsnws-dataselect format.
 1. Fix an issue with alignment of MC events on the **sefran3** main page (hourly thumbnails).
+1. `!!` Fix an issue with error filtering strategy in **gnss** superproc. To avoid NaNs, check that `ENU_MIN_ERROR_M` combined with `ORBIT_ERROR_RATIO` has lower values than `FILTER_MAX_ERROR_M`.
 
 ### Code improvement
 1. `!!` remove cedit.pl and fedit.pl. Replace former links with nedit.pl and formGENFORM.pl, respectively.
