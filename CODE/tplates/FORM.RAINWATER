@@ -112,7 +112,7 @@ INPUT13_UNIT|&permil;
 
 OUTPUT01_NAME|Cumulated Rainfall
 OUTPUT01_UNIT|mm
-OUTPUT01_TYPE|formula: 10*INPUT01 / (PI*(INPUT02/2)**2)
+OUTPUT01_TYPE|formula: 10*INPUT01 / (pi*(INPUT02/2)**2)
 
 OUTPUT02_NAME|Average Daily Rainfall
 OUTPUT02_UNIT|mm/day
