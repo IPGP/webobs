@@ -51,7 +51,7 @@ function DOUT=mc3stats(varargin)
 %
 %	Authors: J.-M. Saurel and F. Beauducel / WEBOBS, IPGP
 %	Created: 2019-01-31
-%	Updated: 2026-01-13
+%	Updated: 2026-03-05
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -276,10 +276,14 @@ for r = 1:length(P.GTABLE)
     t_ratek=t_rate(kk);
     ratek=rate(kk);
 
+	if P.GTABLE(r).STATUS
+        OPT.STATUS = 1;
+		OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
+	end
     summary='SWARM';
     if any(strcmp(P.SUMMARYLIST,summary))
         stitre = sprintf('%s - Seismic rate and swarms',P.NAME);
-        P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+        OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
 
         switch rate_type
             % Calculate classic events/day seismic rate
@@ -292,10 +296,10 @@ for r = 1:length(P.GTABLE)
                 info = sprintf('Instantaneous seismic rate (%.1f/day samples) calculated on a moving, 24h fixed-size, time window',1/samp_int);
         end
 
-        P.GTABLE(r).INFOS = {sprintf('%s',info),''};
-        P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('Last event: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ)}];
+        OPT.INFOS = {sprintf('%s',info),''};
+        OPT.INFOS = [OPT.INFOS{:},{sprintf('Last event: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ)}];
         if thresh > 0
-            P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{'dd/mm/yy: N.evts|NRJ MC|NRJ loc|% loc'}];
+            OPT.INFOS = [OPT.INFOS{:},{'dd/mm/yy: N.evts|NRJ MC|NRJ loc|% loc'}];
         end
         if ~isempty(swarms_datelim)
             kk=find(swarms_datelim(:,2)>tlim(1));
@@ -303,7 +307,7 @@ for r = 1:length(P.GTABLE)
             sw_stats = swarms_statistics(kk,:);
             if size(sw_dt,1)>0
                 for i = 1:size(sw_dt,1)
-                    P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('{\\bf%s}: %d | %.1f | %.1f | %.1f',datestr(sw_dt(i,1),20),sw_stats(i,1),sw_stats(i,5),sw_stats(i,6),sw_stats(i,7))}];
+                    OPT.INFOS = [OPT.INFOS{:},{sprintf('{\\bf%s}: %d | %.1f | %.1f | %.1f',datestr(sw_dt(i,1),20),sw_stats(i,1),sw_stats(i,5),sw_stats(i,6),sw_stats(i,7))}];
                 end
             end
         end
@@ -381,7 +385,9 @@ for r = 1:length(P.GTABLE)
         tlabel(tlim,P.TZ)
         tlabel(tlim,P.TZ)
 
-        mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+        mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
         close
 
         % If swarm detection activated, output swarm characteristics
