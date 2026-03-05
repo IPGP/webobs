@@ -44,7 +44,10 @@ cmd = strcat('export LD_LIBRARY_PATH=;', cmd);
 msg = sprintf('\n%s%s\n',wofun,cmd);
 
 if debug
-    system('echo $SHELL');
+    [s,w] = system('echo $SHELL');
+    if ~s && ~isempty(w)
+        fprintf('\nWEBOBS{wosystem}: $SHELL = %s',w);
+    end
 end
 
 [s,w] = system(cmd);
