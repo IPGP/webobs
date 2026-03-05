@@ -874,12 +874,14 @@ foreach (@columns) {
                         @gvals = $dbh->selectrow_array($stmt);
                     }
                     my @msgs = ("a latitude", "a northern error", "a longitude", "an eastern error", "an elevation", "an elevation error");
-                    my @units = ("decimal degrees", "meters", "decimal degrees", "meters", "meters", "meters");
+                    my @msgu = ("decimal degrees", "meters", "decimal degrees", "meters", "meters", "meters");
+                    my @units = ("°N", "m", "°E", "m", "m", "m");
                     print "<table>";
                     foreach my $j (0 .. scalar(@columns_geoloc) - 1) {
                         print $j % 2 eq 0 ? "<tr>" : "";
-                        $hlp = ($help ne "" ? $help:"$__{'Enter '.$msgs[$j].' (in '.$units[$j].') for'} $Field");
-                        print qq(<td class="udateRow"><label> $columns_geoloc[$j] =</label><input type="text" pattern="[0-9\\.\\-]*" size="$size" class="inputNum"
+                        $hlp = ($help ne "" ? $help:"$__{'Enter '.$msgs[$j].' (in '.$msgu[$j].') for'} $Field");
+                        (my $label = ucfirst($columns_geoloc[$j])." ($units[$j])") =~ s/_/ /g;
+                        print qq(<td class="udateRow"><label> $label =</label><input type="text" pattern="[0-9\\.\\-]*" size="$size" class="inputNum"
                             name="$field\_$columns_geoloc[$j]" value="$gvals[$j]"
                             onMouseOut="nd()" onmouseover="overlib('$hlp')"></td>);
                         print $j % 2 eq 1 ? "</tr>" : "";

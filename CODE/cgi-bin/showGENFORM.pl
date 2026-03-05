@@ -629,6 +629,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $val = "";
                 my $dbh = connectDbForms();
                 my @gvals = map { "" } @columns_geoloc;
+                my @gunits = ("°N", "m", "°E", "m", "m", "m");
                 if ($fields{$field}) {
                     my $colnames = join(', ', @columns_geoloc);
                     my $stmt = qq(SELECT $colnames FROM $table_geoloc WHERE id = $fields{$field});
@@ -637,7 +638,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $dbh->disconnect();
                 my @gdisp = map { $gvals[$_] ? sprintf("%.2f", $gvals[$_]) : "" } (0, 2, 4);
                 $val .= join("", @gdisp) ? "(" . join(", ", @gdisp) . ")" : "";
-                my @gdisp = map { $gvals[$_] ? "@columns_geoloc[$_] = $gvals[$_]°". ($gvals[$_+1] ? " &#177; $gvals[$_+1] meters" : "") : "" } (0, 2, 4);
+                my @gdisp = map { $gvals[$_] ? ucfirst(@columns_geoloc[$_])." = $gvals[$_] $gunits[$_]". ($gvals[$_+1] ? " &#177; $gvals[$_+1] $gunits[$_+1]" : "") : "" } (0, 2, 4);
                 $opt = join("<br>", @gdisp);
                 $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('$opt')\"";
                 my $tmp = join("$dlm", map { $gvals[$_] } (0, 2, 4, 1, 3, 5));
