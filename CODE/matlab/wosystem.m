@@ -26,7 +26,7 @@ function varargout = wosystem(cmd,varargin)
 %
 %	Author: F. Beauducel, WEBOBS
 %	Created: 2017-02-02 in Yogyakarta, Indonesia
-%	Updated: 2026-02-24
+%	Updated: 2026-03-05
 
 if nargin < 1
 	error('Not enough input argument.');
@@ -39,12 +39,17 @@ else
 	wofun = sprintf('\nWEBOBS{%s}: ',ST(2).name);
 end
 
+debug = (nargin > 1 && isok(varargin{1},'DEBUG'));
 cmd = strcat('export LD_LIBRARY_PATH=;', cmd);
 msg = sprintf('\n%s%s\n',wofun,cmd);
 
+if debug
+    system('echo $SHELL');
+end
+
 [s,w] = system(cmd);
 
-if s || any(strcmpi(varargin,'debug')) || (nargin > 1 && (isok(varargin{1},'DEBUG')))
+if s || any(strcmpi(varargin,'debug')) || debug
 	display(regexprep(msg,'\\','\\\'));
 end
 

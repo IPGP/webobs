@@ -175,7 +175,9 @@ for n = 1:length(N)
 		D(n).G(r).tlim = tlim;
 	end
 end
-P.tfirstall = rmin(cat(1,D.tfirstlast));
+if length(N) > 0
+    P.tfirstall = rmin(cat(1,D.tfirstlast));
+end
 
 
 % removes the temporary directory
