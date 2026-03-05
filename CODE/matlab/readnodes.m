@@ -39,10 +39,7 @@ end
 if nargin < 3 || isempty(tlim)
 	tlim = NaN;
 end
-
-if isscalar(tlim)
-	tlim = repmat(tlim,[1,2]);
-end
+tlim = repmat(tlim,[1,1+isscalar(tlim)]);
 
 if nargin < 4
 	valid = 1;
@@ -134,8 +131,8 @@ for i = 1:length(grids)
         end
 	end
 	if nargin > 0
-		fprintf('%s: %d/%d nodes imported from grid %s.\n',wofun,n,length(k),g);
+		fprintf('%s: %d/%d node(s) imported from grid %s.\n',wofun,n,length(k),g);
 	end
 end
 
-fprintf('%s: %d nodes returned.\n',wofun,length(N));
+fprintf('%s: %d node(s) returned from %s.\n',wofun,length(N),tlim2str(tlim));
