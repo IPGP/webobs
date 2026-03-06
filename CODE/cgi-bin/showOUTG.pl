@@ -132,6 +132,9 @@ my %DefinedNodes = listGridNodes(grid=>"$GRIDType.$GRIDName");
 my @SummaryList  = split(/,/,$GRID{SUMMARYLIST});
 outgHouseKeeping();
 
+my %monthnames;
+@monthnames{ map sprintf("%02d",$_), 1..12 } = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
+
 # ---- Start HTML page
 #
 print "Content-type: text/html\n\n";
@@ -190,9 +193,7 @@ if ($QryParm->{'ts'} eq 'map' ) {
 } elsif (-d "$OUTD/$WEBOBS{PATH_OUTG_MAPS}") {
     print "| <B><A href=\"$baseurl&ts=map\">$__{'Map'}</A></B> ";
 }
-if ($QryParm->{'ts'} eq 'events' ) {
-    print "| <B>$__{'Events'}</B> ";
-} elsif (-d "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}") {
+if (-d "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}") {
     print "| <B><A href=\"$baseurl&ts=events\">$__{'Events'}</A></B> ";
 }
 if (-d "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}") {
@@ -205,7 +206,7 @@ if (-d "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}") {
     foreach (sort(keys(%DefinedNodes))) {
         if (grep(/$_/i,@ilist)) {
             push(@nlist,$_);
-            if ($QryParm->{'g'} =~ /$_/) {
+            if ($QryParm->{'g'} =~ /$_$/) {
                 print "| <B>$DefinedNodes{$_}{ALIAS}</B> ";
             } else {
                 print "| <A href=\"$baseurl&ts=events&g=*/*/*/$_\"><B>$DefinedNodes{$_}{ALIAS}</B></A> ";
@@ -217,6 +218,10 @@ if ($#tslist >= 0 && -d "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}") {
     print "| $__{'Time scales:'} $tsHtml ";
 }
 print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle;cursor:pointer\" title=\"Refresh\" onclick=\"document.location.reload(false)\"> ]\n";
+
+# count the number of "/" in the g= argument
+(my $depth = $QryParm->{'g'}) =~ s/[^\/]//g;
+$depth = length($depth);
 
 # build @elist = the list of available .eps graphs for timescale $tslist[$tsSelected]
 my (@elist) = glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.eps";
@@ -243,14 +248,43 @@ if ($QryParm->{'ts'} eq 'events' ) {
         $QryParm->{'g'} = $ylist[$#ylist];
         $QryParm->{'g'} =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
     }
+    my $year = "";
     foreach (@ylist) {
-        my $year = $_;
-        $year =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
-        if ($QryParm->{'g'} eq $year) {
-            $glistHtml .= " $year |";
+        $_ =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
+        my $garg = $QryParm->{'g'};
+        if ($garg =~ /^$_/) {
+            $glistHtml .= " $_ |";
+            $year = $_;
         } else {
-            $glistHtml .= " <A href=\"$baseurl&ts=events&g=$year\"> $year</A> |";
+            if ($depth > 1) {
+                $garg =~ s|^[^/]*/|$_/|;
+                $garg =~ s|/[^/]*?/|/*/| if ($depth > 2); # replace the month
+            } else {
+                $garg = $_;
+            }
+            $glistHtml .= " <A href=\"$baseurl&ts=events&g=$garg\"> $_</A> |";
         }
+    }
+    # links to available months in the year
+    #if ($depth == 0 || $QryParm->{'g'} =~ m|^(?:.*?/\*){1}.*?(/\*)|) {
+    if ($year ne "") {
+        my @amonths = map { basename($_) } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$year/*";
+        foreach (@amonths) {
+            my $garg = $QryParm->{'g'};
+            if ($garg =~ m|^$year/$_|) {
+                $glistHtml .= " $monthnames{$_}";
+            } else {
+                if ($depth > 1) {
+                    $garg =~ s|/[^/]*?/|/$_/|; # replace the month
+                    $garg =~ s|^((?:[^/]*/){2}).*|$1*| if ($depth > 4); # remove event id
+                    $garg =~ s|^((?:[^/]*/){2})[^/]*(/)|$1*$2| if ($depth > 2);
+                } else {
+                    $garg = "$year/$_";
+                }
+                $glistHtml .= " <A href=\"$baseurl&ts=events&g=$garg\">$monthnames{$_}</A>";
+            }
+        }
+        $glistHtml .= " |";
     }
 } else {
     my $lnk = "$baseurl&ts=$tslist[$tsSelected]&g=";
@@ -280,9 +314,9 @@ if ($QryParm->{'ts'} eq 'events' ) {
         }
     }
 }
-chop($glistHtml);
+chop($glistHtml); # removes last character (a pipe...)
 if ($QryParm->{'ts'} ne 'map' ) {
-    print "<BR><B>[ ".$glistHtml." ]</B>\n";
+    print "<BR>[ ".$glistHtml." ]\n";
 }
 print "</DIV>";
 print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_BIN},$WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
@@ -313,8 +347,6 @@ if ($QryParm->{'ts'} eq 'map') {
 } elsif ($QryParm->{'ts'} eq 'events') {
 
 # this lists files using complementary wildcards from g= YYYY[/MM[/DD[/EVENTID[/EVENTNAME]]]]
-    (my $depth = $QryParm->{'g'}) =~ s/[^\/]//g;
-    $depth = length($depth); # $depth is number of "/" in the g= argument
 
     # lists all files
     @plist = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
@@ -322,6 +354,7 @@ if ($QryParm->{'ts'} eq 'map') {
     # target directory contains multiple files (and symlink pointing to last): displays existing thumbnails
     if ($#plist > 1) {
         my $month0 = "";
+        my $dte0 = "";
         for (@plist) {
             if ( ($depth < 3 && -l $_) || ($depth == 3 && ! -l $_)) {
                 (my $JPGurn = $_) =~ s/$root_dir/$urn_dir/g;
@@ -336,11 +369,12 @@ if ($QryParm->{'ts'} eq 'map') {
                 my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $month = l2u(strftime("%B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $msg = "ID: $evt[3]<BR>$evt[4]";
-                if ($depth == 3 && $QryParm->{'g'} !~ m/\*/ && $month ne $month0) {
+                if (($depth == 3 && $QryParm->{'g'} !~ m/\*/ && $month ne $month0) || ($depth == 2 && $QryParm->{'g'} !~ m/\*/) && $dte ne $dte0) {
                     print "<H2>$dte: <I>$evt[3]</I></H2>\n";
                     $month0 = $month;
+                    $dte0 = $dte;
                 } elsif ($month ne $month0) {
-                    print "<H2>$month</H2>\n";
+                    print "<H2>$month".($depth > 2 ? ": <I>$evt[3]</I>":"")."</H2>\n";
                     $month0 = $month;
                 }
                 my $thumb = "";
