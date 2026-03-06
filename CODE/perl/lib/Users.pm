@@ -666,16 +666,6 @@ sub htpasswd_uncomment {
     return 0;
 }
 
-    # Adds or update a login/password in the htpasswd file.
-    # Returns 0 if success, non-zero otherwise.
-    my $login = shift;  # the login to create
-    my $pass = shift;  # the new password to set
-    my $htpw_opt = _get_htpasswd_encryption_opt();  # options for htpasswd
-    my $output;  # a reference for the output
-
-    # Call htpasswd with the selected option
-    return htpasswd($htpw_opt, $WEBOBS{'HTTP_PASSWORD_FILE'}, $login, $pass, \$output);
-}
 
 =head2 htpasswd_verify
 
