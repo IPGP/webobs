@@ -163,6 +163,11 @@ if ($QryParm->{'action'} eq 'update') {
         $q .= " ENDDATE=\'$QryParm->{'enddate'}\', COMMENT=\'$QryParm->{'comment'}\'";
         $q .= " WHERE UID=\'$QryParm->{'OLDuid'}\'";
         $refMsg = \$userMsg; $refMsgColor = \$userMsgColor;
+        if ($QryParm->{'valid'} eq "Y") {
+            WebObs::Users::htpasswd_uncomment($QryParm->{'login'});
+        } else {
+            WebObs::Users::htpasswd_comment($QryParm->{'login'});
+        }
     }
     elsif ($QryParm->{'tbl'} eq "group") {
         $q = "update $WEBOBS{SQL_TABLE_GROUPS} set GID=\'$QryParm->{'gid'}\', UID=\'$QryParm->{'uid'}\'";
@@ -434,14 +439,10 @@ for my $row (@$db_rows) {
     $Sdgrps .= <<_EOD_;
 <tr id="$SdgrpsId">
     <td style="width:12px" class="tdlock">
-        <a href="#IDENT" onclick="openPopupGroup('#$SdgrpsId');return false">
-            <img title="edit grp" src="/icons/modif.png">
-        </a>
+        <a href="#IDENT" onclick="openPopupGroup('#$SdgrpsId');return false"><img title="edit group" src="/icons/modif.png"></a>
     </td>
     <td style="width:12px" class="tdlock">
-        <a href="#IDENT" onclick="postDeleteUGroup('#$SdgrpsId');return false">
-            <img title="delete group" src="/icons/no.png">
-        </a>
+        <a href="#IDENT" onclick="postDeleteUGroup('#$SdgrpsId');return false"><img title="delete group" src="/icons/no.png"></a>
     </td>
     <td class="group-gid">$Sdgrps_gid</td>
     <td class="group-uids">$Sdgrps_uids</td>
@@ -467,9 +468,7 @@ for my $row (@$db_rows) {
     $dunotf .= <<_EOD_;
 <tr id="$dunotfId">
     <td style="width:12px" class="tdlock">
-        <a href="#POSTBOARD" onclick="postDeleteUNotf('#$dunotfId');return false">
-            <img title="delete group" src="/icons/no.png">
-        </a>
+        <a href="#POSTBOARD" onclick="postDeleteUNotf('#$dunotfId');return false"><img title="delete group" src="/icons/no.png"></a>
     </td>
     <td class="tdlock unotif-event">$event</td>
 </tr>
@@ -495,14 +494,10 @@ for my $row (@$db_rows) {
     $dnotf .= <<_EOD_;
 <tr id="$dnotfId">
     <td style="width:12px" class="tdlock">
-        <a href="#POSTBOARD" onclick="openPopupNotf('#$dnotfId');return false">
-            <img title="edit grp" src="/icons/modif.png">
-        </a>
+        <a href="#POSTBOARD" onclick="openPopupNotf('#$dnotfId');return false"><img title="edit notification" src="/icons/modif.png"></a>
     </td>
     <td style="width:12px" class="tdlock">
-        <a href="#POSTBOARD" onclick="postDeleteNotf('#$dnotfId');return false">
-            <img title="delete notification" src="/icons/no.png">
-        </a>
+        <a href="#POSTBOARD" onclick="postDeleteNotf('#$dnotfId');return false"><img title="delete notification" src="/icons/no.png"></a>
     </td>
     <td class="notif-event">$dnotf_event</td>
     <td class="notif-validity">$dnotf_valid</td>
@@ -551,9 +546,9 @@ for my $an (qw(proc view form wiki misc)) {
         my $dauthId="adef$an".$TA{$an}{dauthCount};
         if ($dauth_uid ne '!' || $isWO) {
             $td_modif_auth = "<a href=\"#AUTH\" onclick=\"openPopupAuth('$an', '#$dauthId');return false\">"
-              ."<img title=\"edit grp\" src=\"/icons/modif.png\"></a>";
+              ."<img title=\"edit authorization\" src=\"/icons/modif.png\"></a>";
             $td_delete_auth = "<a href=\"#AUTH\" onclick=\"postDeleteAuth('$an', '#$dauthId');return false\">"
-              ."<img title=\"delete autorisation\" src=\"/icons/no.png\"></a>";
+              ."<img title=\"delete authorization\" src=\"/icons/no.png\"></a>";
         }
         $TA{$an}{dauth} .= <<_EOD_;
 <tr id="$dauthId">
@@ -647,7 +642,7 @@ Identifications&nbsp;$go2top
                 <thead>
                 <tr>
                     <th style=\"width:12px\"><a href="#IDENT" onclick="openPopupUser(); return false">
-                        <img title="define a new user" src="/icons/modif.png"></a></th>
+                        <img title="define a new user" src="/icons/new.png"></a></th>
                     <th style=\"width:12px\" class="tdlock">&nbsp;</th>
                     <th>Uid</th>
                     <th>Name</th>
@@ -673,7 +668,7 @@ Identifications&nbsp;$go2top
         <div class="dugrps-container">
             <div class="dugrps">
                 <table class="dugrps">
-                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupGroup();return false"><img title="define new group/user" src="/icons/modif.png"></a>
+                <thead><tr><th style=\"width:12px\"><a href="#IDENT" onclick="openPopupGroup();return false"><img title="define new group" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
                 <th>Gid<th>Uids
                 </tr></thead>
@@ -752,9 +747,9 @@ PostBoard subscriptions&nbsp;$go2top
         <div class="dnotf-container">
             <div class="dnotf">
                 <table class="dnotf">
-                <thead><tr><th style=\"width:12px\"><a href="#POSTBOARD" onclick="openPopupNotf();return false"><img title="define new notification" src="/icons/modif.png"></a>
+                <thead><tr><th style=\"width:12px\"><a href="#POSTBOARD" onclick="openPopupNotf();return false"><img title="define new notification" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
-                <th>Event<th>V<th>Uid<th>Mail<br>Subject<th>Mail<br>Attachm.<th>Action
+                <th>Notification<th>V<th>Uid<th>Mail Subject<th>Mail Attachm.<th>Action
                 </tr></thead>
                 <tbody>
                 $dnotf
@@ -803,7 +798,7 @@ for my $i (qw(view proc form)) {
         <div class="dauth-container" style="float: left">
             <div class="dauth">
                 <table class="dauth">
-                <thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/modif.png"></a>
+                <thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
                 <th>Uid<th>Rname<th>Auth
                 </tr></thead>
@@ -826,7 +821,7 @@ for my $i (qw(wiki misc)) {
         <div class="dauth-container" style="float: left">
             <div class="dauth">
                 <table class="dauth">
-                <thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/modif.png"></a>
+                <thead><tr><th style=\"width:12px\"><a href="#AUTH" onclick="openPopupAuth('$i');return false"><img title="define new authorization" src="/icons/new.png"></a>
                 <th style=\"width:12px\" class="tdlock">&nbsp;
                 <th>Uid<th>Rname<th>Auth
                 </tr></thead>
@@ -996,7 +991,7 @@ Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

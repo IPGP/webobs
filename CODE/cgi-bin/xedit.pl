@@ -105,17 +105,20 @@ my $CM_language_mode = "cmwocfg";
 # ---- see what file has to be edited, and corresponding authorization for client
 #
 my $me = $ENV{SCRIPT_NAME};
-my $QryParm   = $cgi->Vars;
-my $fs     = $QryParm->{'fs'}     // "";
-my $action = $QryParm->{'action'} // "edit";
-my $txt    = $QryParm->{'txt'}    // "";
-my $TS0    = $QryParm->{'ts0'}    // "";
-my $fbrowse= $QryParm->{'browse'} // 0;
+my $QryParm    = $cgi->Vars;
+my $fs         = $QryParm->{'fs'}     // "";
+my $action     = $QryParm->{'action'} // "edit";
+my $tpl        = $QryParm->{'tpl'}    // "";
+my $txt        = $QryParm->{'txt'}    // "";
+my $TS0        = $QryParm->{'ts0'}    // "";
+my $fbrowse    = $QryParm->{'browse'} // 0;
 
 my $absfile ="";
 my $relfile ="";
 my $editOK = my $admOK = my $readOK = 0;
 my $fsmsg = "";
+my $type = "";
+my $name = "";
 
 if ($fs ne "") {
     if ($fs =~ /^CONF\//) {
@@ -130,11 +133,20 @@ if ($fs ne "") {
         } else { $absfile = "$WEBOBS{$fs}"; }
     }
     if (($relfile = $absfile) =~ s/^$WEBOBS{ROOT_CONF}\/+|^$WEBOBS{ROOT_DATA}\/+//) {
-        $readOK = clientHasRead(type=>"authmisc",name=>"$relfile");
+        if ($relfile =~ /^FORMS\//) {
+            # for FORM's files, authform + form name
+            $type = "forms";
+            ($name = "$relfile") =~ s/^FORMS\/([^\/]*).*/\1/g; 
+        } else {
+            # default auth
+            $type = "misc";
+            $name = "$relfile";
+        }
+        $readOK = clientHasRead(type=>"auth$type",name=>"$name");
         if ( $readOK ) {
             if ( !$fbrowse ) {
-                $editOK = clientHasEdit(type=>"authmisc",name=>"$relfile");
-                $admOK  = clientHasAdm(type=>"authmisc",name=>"$relfile");
+                $editOK = clientHasEdit(type=>"auth$type",name=>"$name");
+                $admOK  = clientHasAdm(type=>"auth$type",name=>"$name");
                 unless (-e dirname($absfile) || !$admOK) { mkdir dirname($absfile) }
                 if ( (!-e $absfile) && $admOK ) { qx(/bin/touch $absfile); $fsmsg="New file" }
                 else { $fsmsg="$relfile"; }
@@ -143,6 +155,14 @@ if ($fs ne "") {
         } else { die "$relfile $__{'not authorized'}" }
     } else { die "$relfile $__{'Not a CONF/ nor DATA/ file'}" }
 } else { die "$__{'No filename specified'}" }
+
+# checks if template is available and file is empty
+if ($tpl ne "") {
+    my $abstpl = "$WEBOBS{ROOT_CODE}/tplates/$tpl";
+    if (-e "$abstpl" && (!-e "$absfile" || -z "$absfile")) {
+        qx(/bin/cp -f $abstpl $absfile);
+    }
+}
 
 # ---- action is 'save'
 #
@@ -216,7 +236,8 @@ var CODEMIRROR_CONF = {
     AUTO_VIM_MODE: '$CM_auto_vim_mode',
     EDIT_PERM: ".($editOK || $admOK ? 1 : 0).",
     FORM: '#theform',
-    POST_URL: '$me'
+    POST_URL: '$me',
+    POST_RETURN: 'back'
 };
 </script>
 <script src=\"/js/cmtextarea.js\"></script>
@@ -224,7 +245,7 @@ var CODEMIRROR_CONF = {
 print "</HEAD>\n";
 
 # - page, body
-print "<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.form.txt.focus()\">";
+print "<BODY onLoad=\"document.form.txt.focus()\">";
 print <<html;
 <script type=\"text/javascript\" >
 </script>
@@ -249,7 +270,7 @@ print "<span class=\"js-editor-controls\">\n";
 print "<input type=\"checkbox\" id=\"toggle-vim-mode\" title=\"$__{'Check to enable vim mode in the editor'}\" onClick=\"toggleVim();\"> ";
 print "<label for=\"toggle-vim-mode\" id=\"toggle-vim-mode-label\" title=\"$__{'Check to enable vim mode in the editor'}\">$__{'Use vim mode'}</label>\n";
 print "</span>\n";
-if ($editOK || $admOK) {
+if (($editOK && $type eq "misc") || $admOK) {
     print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\">\n";
     print "<input type=\"button\" class=\"submit-button\" value=\"$__{'Save'}\" onClick=\"postform();\">\n";
 } else {
@@ -278,11 +299,11 @@ sub htmlMsgNotOK {
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2024 - Institut de Physique du Globe Paris
+Webobs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

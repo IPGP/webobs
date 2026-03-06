@@ -39,7 +39,7 @@ function [D,P] = readfmtdata_quake(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2024-12-09
+%	Updated: 2025-01-29
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -434,7 +434,7 @@ e = double( (isnan(d(:,5)) | isinto(d(:,5),P.GAPLIM)) ...
 );
 
 % filters or purge invalid event types or status
-if ~isempty(t) && (~isempty(extypes) || ~isempty(exstatus))
+if ~isempty(t) && (~any(cellfun(@isempty,extypes)) || ~any(cellfun(@isempty,exstatus)))
 	if isok(P,'PURGE_EXCLUDED_EVENT')
 		k = find(ismemberlist(c(:,3),extypes) | ismemberlist(c(:,5),exstatus));
 		if ~isempty(k)

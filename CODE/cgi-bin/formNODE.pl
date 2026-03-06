@@ -70,6 +70,7 @@ if ( $GRIDType ne "" && $GRIDName ne "" ) {
             if (%NODE) {
                 if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
                 elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+                elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
                 if (%G) {
                     %GRID = %{$G{$GRIDName}} ;
                     if ( !clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
@@ -86,7 +87,7 @@ if ( $GRIDType ne "" && $GRIDName ne "" ) {
             $newnode = 1;
         } else { die "$__{'Not authorized'} $__{'to create a node in'} $GRIDType.$GRIDName" }
     }
-} else { die ("$__{'You cannot edit a NODE outside of GRID context'}")  }
+} else { die ("$__{'You cannot edit a NODE outside of GRID context'}") }
 
 # ---- went thru all above checks ... setup edit form
 #
@@ -296,7 +297,7 @@ $text =~ s/\"//g;  # fix ticket #166
 
 # ---- Preparing geojson related variables
 my $geojsonFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.geojson";
-my $json;
+my $json = "";
 
 # ---- ready for HTML output now
 #
@@ -309,92 +310,90 @@ print $cgi->header(
 print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <link rel="stylesheet" href="/css/leaflet.css" crossorigin=""/>
-<script src="/js/leaflet.js" crossorigin=""></script>
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
 <script language="javascript" type="text/javascript" src="/js/htmlFormsUtils.js"></script>
+<script src="/js/leaflet.js" crossorigin=""></script>
 <script src="/js/shp.min.js" type="text/javascript"></script>
 <script src="/js/leaflet.shpfile.js" type="text/javascript"></script>
-<script src="/js/simplifygeometry-0.0.2.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 
-function postIt()
-{
- var form = \$('#theform')[0];
- var sdate = form.syear.value + form.smonth.value + form.sday.value;
- var edate = form.eyear.value + form.emonth.value + form.eday.value;
+function postIt() {
+    var form = \$('#theform')[0];
+    var sdate = form.syear.value + form.smonth.value + form.sday.value;
+    var edate = form.eyear.value + form.emonth.value + form.eday.value;
 
- if(form.newnode.value > 0 && form.message.value != "ok") {
-   alert("NODE ID: Please enter a valid and new ID!");
-   form.nodename.focus();
-   return false;
- }
- if((/^[\\s]*\$/).test(form.fullName.value)) {
-   alert("NAME: Please enter a full name (non-blank string)");
-   form.fullName.focus();
-   return false;
- }
- if(form.alias.value == "") {
-   alert("ALIAS: Please enter a short name (non-blank string)");
-   form.alias.focus();
-   return false;
- }
- if(sdate != "" && edate != "" && sdate > edate) {
-   alert("Lifetime: Please enter an End date posterior to the Start date or leave it blank");
-   form.eyear.focus();
-   return false;
- }
- if(form.latwgs84.value != "" && (isNaN(form.latwgs84.value) || form.latwgs84.value < -90 || form.latwgs84.value > 90)) {
-   alert("LATITUDE: Please enter a latitude value between -90 and +90, or leave blank");
-   form.latwgs84.focus();
-   return false;
- }
- if(form.latwgs84.value < 0 && form.latwgs84.value >= -90) {
-   form.latwgs84.value = Math.abs(form.latwgs84.value);
-   if (form.latwgs84n.value == "N") form.latwgs84n.value = "S";
-   else form.latwgs84n.value = "N";
- }
- if(form.latwgs84.value == "" && (form.latwgs84min.value != "" || form.latwgs84sec.value != "")) {
-   alert("LATITUDE: Please enter a value for degree or leave all fields blank");
-   form.latwgs84.focus();
-   return false;
- }
- if(form.lonwgs84.value != "" && (isNaN(form.lonwgs84.value) || form.lonwgs84.value < -180 || form.lonwgs84.value > 180)) {
-   alert("LONGITUDE: Please enter a longitude value between -180 and +180, or leave blank");
-   form.lonwgs84.focus();
-   return false;
- }
- if(form.lonwgs84.value < 0 && form.lonwgs84.value >= -180) {
-   form.lonwgs84.value = Math.abs(form.lonwgs84.value);
-   if (form.lonwgs84e.value == "E") form.lonwgs84e.value = "W";
-   else form.lonwgs84e.value = "E";
- }
- if(form.lonwgs84.value == "" && (form.lonwgs84min.value != "" || form.lonwgs84sec.value != "")) {
-   alert("LONGITUDE: Please enter a value for degree or leave all fields blank");
-   form.lonwgs84.focus();
-   return false;
- }
- if(form.altitude.value != "" && isNaN(form.altitude.value)) {
-   alert("ELEVATION: Please enter a number or leave blank");
-   form.altitude.focus();
-   return false;
- }
-  if (form.SELs.options.length < 1) {
-    alert(\"node MUST belong to at least 1 grid\");
-    form.SELs.focus();
-    return false;
-  }
+    if(form.newnode.value > 0 && form.message.value != "ok") {
+        alert("NODE ID: Please enter a valid and new ID!");
+        form.nodename.focus();
+        return false;
+    }
+    if((/^[\\s]*\$/).test(form.fullName.value)) {
+        alert("NAME: Please enter a full name (non-blank string)");
+        form.fullName.focus();
+        return false;
+    }
+    if(form.alias.value == "") {
+        alert("ALIAS: Please enter a short name (non-blank string)");
+        form.alias.focus();
+        return false;
+    }
+    if(sdate != "" && edate != "" && sdate > edate) {
+        alert("Lifetime: Please enter an End date posterior to the Start date or leave it blank");
+        form.eyear.focus();
+        return false;
+    }
+    if(form.latwgs84.value != "" && (isNaN(form.latwgs84.value) || form.latwgs84.value < -90 || form.latwgs84.value > 90)) {
+        alert("LATITUDE: Please enter a latitude value between -90 and +90, or leave blank");
+        form.latwgs84.focus();
+        return false;
+    }
+    if(form.latwgs84.value < 0 && form.latwgs84.value >= -90) {
+        form.latwgs84.value = Math.abs(form.latwgs84.value);
+        if (form.latwgs84n.value == "N") form.latwgs84n.value = "S";
+        else form.latwgs84n.value = "N";
+    }
+    if(form.latwgs84.value == "" && (form.latwgs84min.value != "" || form.latwgs84sec.value != "")) {
+        alert("LATITUDE: Please enter a value for degree or leave all fields blank");
+        form.latwgs84.focus();
+        return false;
+    }
+    if(form.lonwgs84.value != "" && (isNaN(form.lonwgs84.value) || form.lonwgs84.value < -180 || form.lonwgs84.value > 180)) {
+        alert("LONGITUDE: Please enter a longitude value between -180 and +180, or leave blank");
+        form.lonwgs84.focus();
+        return false;
+    }
+    if(form.lonwgs84.value < 0 && form.lonwgs84.value >= -180) {
+        form.lonwgs84.value = Math.abs(form.lonwgs84.value);
+        if (form.lonwgs84e.value == "E") form.lonwgs84e.value = "W";
+        else form.lonwgs84e.value = "E";
+    }
+    if(form.lonwgs84.value == "" && (form.lonwgs84min.value != "" || form.lonwgs84sec.value != "")) {
+        alert("LONGITUDE: Please enter a value for degree or leave all fields blank");
+        form.lonwgs84.focus();
+        return false;
+    }
+    if(form.altitude.value != "" && isNaN(form.altitude.value)) {
+        alert("ELEVATION: Please enter a number or leave blank");
+        form.altitude.focus();
+        return false;
+    }
+    if (form.SELs.options.length < 1) {
+        alert(\"node MUST belong to at least 1 grid\");
+        form.SELs.focus();
+        return false;
+    }
 
-  for (var i=0; i<form.elements['allNodes'].length; i++) {
-      form.elements['allNodes'][i].disabled = true;
-  }
-  for (var i=0; i<form.SELs.length; i++) {
-      form.SELs[i].selected = true;
-  }
-    
+    for (var i=0; i<form.elements['allNodes'].length; i++) {
+        form.elements['allNodes'][i].disabled = true;
+    }
+    for (var i=0; i<form.SELs.length; i++) {
+        form.SELs[i].selected = true;
+    }
+
     console.log(\$(\"#theform\").serialize());
     console.log(form.outWKT.value)
-    
+
     if (form.saveAuth.value == 1) {
         console.log(form.count_creator);
         if ( form.producer.value == "" ) {
@@ -404,15 +403,15 @@ function postIt()
         var nb_creators = form.count_creator.value;
         if (nb_creators>1) {
             for (var i=0; i<nb_creators; i++) {
-                if ( form.firstName[i].value == "" ) {
+                if ( form.elements["firstName_" + i].value == "" ) {
                     alert("First name can't be empty (make sure the right role is selected too) !");
                     return false;
                 }
-                if ( form.lastName[i].value == "" ) {
+                if ( form.elements["lastName_" + i].value == "" ) {
                     alert("Last name can't be empty (make sure the right role is selected too) !");
                     return false;
                 }
-                if ( form.email[i].value == "" ) {
+                if ( form.elements["email_" + i].value == "" ) {
                     alert("Email can't be empty (make sure the right role is selected too) !");
                     return false;
                 }
@@ -427,7 +426,7 @@ function postIt()
             return false;
         }
     }
-    
+
     if (\$(\"#theform\").hasChanged() || form.delete.value == 1 || form.locMap.value == 1) {
         form.node.value = form.grid.value + form.nodename.value.toUpperCase();
         if (document.form.newnode.value == 2) {
@@ -553,18 +552,74 @@ function fetchKML() {
         .then(data => console.log(data))
 }
 
+function openOSM() {
+    var winW = $WEBOBS{OSM_WIDTH_VALUE} + 15;
+    var winH = $WEBOBS{OSM_HEIGHT_VALUE} + 75;
+    var windowFeatures = 'width=' + winW + ', height=' + winH + ', toolbar=no, menubar=no, location=no';
+    window.open("/cgi-bin/$WEBOBS{CGI_OSM}?grid=$GRIDType.$GRIDName.$NODEName", "$NODEName", windowFeatures);
+}
+
+function selectShape() {
+    loadShape();
+    document.form.locMap.value = 1;
+    document.form.saveAuth.value = 1;
+}
+
+function addGeoJSONToMap(geojson, map) {
+    try {
+        map.eachLayer((layer) => {
+            if (layer instanceof L.Shapefile) {
+                layer.remove();
+            }
+        });
+        createShp(geojson).addTo(map);
+        document.form.outWKT.value = JSON.stringify(getGeometry(geojson));
+        document.form.geojson.value = JSON.stringify(geojson);
+        console.log('Layer successfully loaded.');
+    } catch (error) {
+        console.error('Error loading shapefile :', error);
+    }
+}
+
+function loadZipShape(file) {
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        shp(event.target.result).then(function(geojson) {
+            addGeoJSONToMap(geojson, map);
+        });
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function loadGeoJSON(file) {
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        addGeoJSONToMap(JSON.parse(event.target.result), map);
+    };
+    reader.readAsText(file);
+}
+
+function loadShape(file) {
+    var file = event.target.files[0];
+    if (file) {
+        if (file.name.endsWith("json")) {
+            loadGeoJSON(file);
+        } else {
+            loadZipShape(file);
+        }
+    }
+}
+
 function fc() {
     \$(\"#theform\").formChanges();
 }
 
-function refresh_form()
-{
+function refresh_form() {
     document.form.refresh.value = 1;
     postIt();
 }
 
-function delete_node()
-{
+function delete_node() {
     if ( confirm(\"The NODE will be deleted (and all its configuration, features, events, images and documents). You might consider unchecking the Valid checkbox as an alternative.\\n\\n Are you sure you want to move this NODE to trash ?\") ) {
         document.form.delete.value = 1;
         document.form.referer.value = '/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName';
@@ -586,20 +641,20 @@ function onMapClick(e) {
 
     /* need to rework this function !
     var p = document.createElement('p');
-    
+
     p.innerHTML = "<B>$NODE{ALIAS}: "+$NODE{NAME}+"</B><BR><I>($NODE{TYPE})</I><BR>&nbspfrom <B>$NODE{INSTALL_DATE}</B> to <B>$NODE{END_DATE}</B><BR>&nbsp;<B>"+lat+"&deg;</B>, <B>"+lon+"&deg;</B>, <B>$NODE{ALTITUDE} m</B>";
     var txt = p.innerHTML;
     if (typeof(marker) != "undefined") {
         map.removeLayer(marker);
     }
-    
+
     marker.bindPopup(txt).openPopup();
     */
-    
+
     if (typeof(marker) != "undefined") {
         map.removeLayer(marker);
     }
-    marker = L.marker([lat, lon]).addTo(map);
+    marker = L.circleMarker([lat, lon], {radius: 10, color: 'red'}).addTo(map);
 
     document.form.latwgs84.value = lat*(1-2*(document.form.latwgs84n.value == 'S'));
     document.form.lonwgs84.value = lon*(1-2*(document.form.lonwgs84e.value == 'W'));
@@ -658,16 +713,16 @@ function onInputWrite(e) {
     if (lon.toString().includes('.')){
             var lonZoom = lon.toString().split(".")[1].length;
     }
-    
+
     if (Math.min(latZoom, lonZoom) == 0) {
         map.flyTo([lat, lon], 4);
-    } 
+    }
     if (Math.min(latZoom, lonZoom) == 1) {
         map.flyTo([lat, lon], 9);
     }
     if (Math.min(latZoom, lonZoom) == 2) {
         map.flyTo([lat, lon], 10);
-    } 
+    }
     if (Math.min(latZoom, lonZoom) == 3) {
         map.flyTo([lat, lon], 12);
     }
@@ -682,80 +737,37 @@ function onInputWrite(e) {
     }
 }
 function createShp(geojson) {
-    var shpfile = new L.Shapefile(geojson,{
-        onEachFeature: function(feature, layer) {
-            if (feature.properties) {
-                layer.bindPopup(Object.keys(feature.properties).map(function(k) {
-                    return k + ": " + feature.properties[k];
-                }).join("<br />"), {
+    if (geojson) {
+        var shpfile = new L.Shapefile(geojson, {
+            onEachFeature: function(feature, layer) {
+                if (feature.properties) {
+                    layer.bindPopup(Object.keys(feature.properties).map(function(k) {
+                        return k + ": " + feature.properties[k];
+                    }).join("<br />"), {
                         maxHeight: 200
                     });
+                }
             }
-        }
-    }); 
-    
-    return shpfile;
+        });
+        return shpfile;
+    }
 }
-function handleFiles() {    
-    /**
-     * Read .zip shpfiles and calculate the bounding box coordinates of the spatial coverage of the shapefile
-     */
-    var fichierSelectionne = document.getElementById('shpfile').files[0];
-    form.filename.value = fichierSelectionne.name;
 
-    var fr = new FileReader();
-    fr.onload = function () {
-        shp(this.result).then(function(geojson) {
-              console.log('loaded geojson:', geojson);
-            
-              /*for (var i = 0; i <= geojson.features.length-1; i++) {
-                  // applying a simplifcation algorithm (Douglas-Peucker) to reduce te number of coordinates in order to ease the exportation of the geometry
-                  var geometry = geojson.features[i].geometry;
-                  var coordinates = simplifyGeometry(geometry.coordinates[0], 0.000001);
-                  if (coordinates.length < 4) {
-                      geometry.coordinates[0] = [[geometry.bbox[0],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[3]],[geometry.bbox[2],geometry.bbox[1]],[geometry.bbox[0],geometry.bbox[1]]];
-                  }
-                  else { geometry.coordinates[0] = coordinates; }
-                
-                  var lonLat = [];
-                  for (var j = 0; j <= coordinates.length-1; j++) {
-                      lonLat.push(coordinates[j][0] + ' ' + coordinates[j][1]); 
-                  } outWKT.push('((' + lonLat + '))');
-                
-              }*/
-            
-              /* document.form.outWKT.value = 'wkt:MultiPolygon('+outWKT+')'; console.log(outWKT[0]); */
-              
-            var shpfile = createShp(geojson);
-            shpfile.addTo(map);
-            // geojson.features = geojson.features[0];    // test with a Polygon;
-            var geometry = JSON.stringify(getGeometry(geojson));
-            // console.log(geometry);
-            document.form.outWKT.value = geometry;
-            document.form.geojson.value = JSON.stringify(geojson);
-            return geojson;
-      })
-    };
-    fr.readAsArrayBuffer(fichierSelectionne);
-}
 function getGeometry(geojson) {
     /**
      * Create a geoJSON object
      * \@param  {GeoJSON} geojson  GeoJSON object with a given number of points
      * \@return {GeoJSON} geometry GeoJSON object which has its coordinates corresponding to the bounding box of the geometry of the input
      */
-    var geometry = {"type":"", "coordinates":""};
 
-    if (geojson.features.length > 1) {
-        geometry.type = "MultiPolygon";
+    if (geojson && geojson.features && geojson.features.length > 0) {
+        var geometry = {"type":"", "coordinates":""};
         var coordinates = [];
-        
-        for (var i = 0; i < geojson.features.length-1; i++) {
-            coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);
-        } geometry.coordinates = coordinates; return geometry;
-    } else {
-        geometry.type = "Polygon";
-        geometry.coordinates = [getBoundingBox(geojson.features[0].geometry.coordinates)];
+        for (var i = 0; i < geojson.features.length; i++) {
+            coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);;
+        }
+        geometry.coordinates = coordinates;
+        geometry.type = geojson.features.length > 1 ? "MultiPolygon" : "Polygon";
         return geometry;
     }
 }
@@ -787,7 +799,7 @@ function addCreator() {
      */
     var form = \$('#theform')[0];
     form.locMap.value = 1;
-    form.count_creator.value = parseInt(form.count_creator.value)+1;
+    form.count_creator.value = parseInt(form.count_creator.value);
     var new_div = document.createElement('div');
     new_div.id = 'new_creator'+form.count_creator.value;
     new_div.innerHTML = \$('#creator')[0].innerHTML;
@@ -809,10 +821,6 @@ function removeCreator() {
         \$(id)[0].remove();
         form.count_creator.value -= 1;
     }
-}
-
-function go_back_node() {
-    location.href  = document.form.referer.value;
 }
 
 function check_9char_code() {
@@ -841,43 +849,34 @@ function showHideTheia(checkbox){
 
 // creating and parametring the map for the geographic location choice
 
-var    esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
+var esriAttribution = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
 var osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-        
-//Init Overlays
-var overlays = {};
-        
+
 //Init BaseMaps
 var basemaps = {
-    'OpenStreetMaps': L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
+    "OpenStreetMaps": L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: osmAttribution,
             minZoom: 2,
             maxZoom: 19,
             id: "osm"
-        }
-    ),
-    'OpenTopoMap': L.tileLayer(
-        'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-        {
+        }),
+    "OpenTopoMap": L.tileLayer(
+        'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
             attribution: osmAttribution,
             minZoom: 2,
-            maxZoom: 19,
+            maxZoom: 18,
             id: "otm"
-        }
-    ),
-    'ESRIWorldImagery': L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        {
+        }),
+    "ESRI World Imagery": L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: osmAttribution,
             minZoom: 2,
             maxZoom: 19,
             id: "esri.world"
-        }
-    )
+        }),
 };
-        
+
 //Map Options
 var mapOptions = {
     zoomControl: true,
@@ -890,7 +889,7 @@ var mapOptions = {
 
 </head>
 
-<body style="background-color:#E0E0E0" onLoad="maj_transmission();latlonChange();fc();checkNode();" id="formNode">
+<body onLoad="maj_transmission();latlonChange();fc();checkNode();" id="formNode">
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <script language="javascript" src="/js/overlib/overlib.js"></script>
 <!-- overLIB (c) Erik Bosrup -->
@@ -931,7 +930,7 @@ print "<FIELDSET><LEGEND>$__{'Name and Description'}</LEGEND>";
 print "<LABEL style=\"width:80px\" for=\"nodename\">$__{'Code/ID'}:</label>$GRIDType.$GRIDName.";
 if ($newnode) {
     print "<INPUT id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\" onKeyUp=\"checkNode()\">";
-    print "<INPUT size=\"15\" id=\"message\" name=\"message\" readOnly style=\"background-color:#E0E0E0;border:0\">";
+    print "<INPUT size=\"15\" id=\"message\" name=\"message\" readOnly;>";
     print "<INPUT type=\"hidden\" name=\"newnode\" value=\"$newnode\"\n>";
 } else {
     print "<INPUT readonly=\"readonly\" style=\"font-family:monospace;font-weight:bold;font-size:120%;background-color:transparent;border:none\" id=\"nodename\" name=\"nodename\" size=\"20\" value=\"$NODEName\"><BR>";
@@ -970,7 +969,7 @@ print " <SELECT name=\"smonth\" size=\"1\">";
 for (@monthList) { print "<OPTION".(($_ eq $usrMonthC)?" selected":"")." value=$_>$_</option>\n"; }
 print "</SELECT>";
 print " <SELECT name=\"sday\" size=\"1\">";
-for (@dayList) {     print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
+for (@dayList) { print "<OPTION".(($_ eq $usrDayC)?" selected":"")." value=$_>$_</option>\n"; }
 print "</SELECT><BR>";
 print "<b>$__{'End date'}:</b> <SELECT name=\"eyear\" size=\"1\">";
 for ($usrYearE,@yearListE) { print "<OPTION".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
@@ -997,7 +996,7 @@ print "</FIELDSET>";
 # --- Features
 print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
 print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',@feat)."\">"
-  ."&nbsp;<IMG src=\"/icons/refresh.png\" align=\"top\" onClick=\"refresh_form();\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_featrefresh'}')\"><BR><BR>";
+  ."&nbsp;<IMG src=\"/icons/refresh.png\" style='vertical-align:middle;cursor:pointer' onClick=\"refresh_form();\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_featrefresh'}')\"><BR><BR>";
 for (@feat) {
     print "<LABEL style=\"width:120px\" for=\"feature_$_\">$_:</LABEL>";
     my $pat = qr/^$NODEName\|$_\|/;
@@ -1007,10 +1006,6 @@ for (@feat) {
     print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('$__{help_creationstation_n2n}')\"><BR>";
 }
 
-# edition of the node2node file needs an admin level
-#if (WebObs::Users::clientHasAdm(type => "auth".lc($GRIDType)."s", name => "*")) {
-#    print "<P><A href=\"/cgi-bin/cedit.pl?fs=CONF_NODES(FILE_NODES2NODES)\"><img src=\"/icons/modif.png\" border=\"0\">  $__{'Edit the node-features-nodes associations list'}</A></P>";
-#}
 print "</FIELDSET>";
 
 # --- Grids
@@ -1057,15 +1052,25 @@ print "</TR>";
 print "</TABLE>";
 print "</FIELDSET>";
 
-# --- Procs metadata
-print "<FIELDSET><LEGEND>$__{'Procs Metadata'}</LEGEND>";
+# --- External metadata
+print "<FIELDSET><LEGEND>$__{'External Metadata'}</LEGEND>";
 
-# --- DESCRIPTION
-print "<LABEL style=\"width:80px\" for=\"description\">$__{'Description'}:</LABEL>";
-print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\" cols=\"40\" name=\"description\" id=\"description\">$usrDesc</TEXTAREA>&nbsp;&nbsp;<BR>";
+# --- GNSS 9CHAR
+my $m3g_url_edit = $WEBOBS{'M3G_URL'}."/".$usrGnss9char;
+print "<TABLE width='100%'><TR><TD style='border:0'>";
+print "<label for=\"gnss_9char\">$__{'GNSS 9-char code'}:</label>";
+print "<input size=\"10\" value=\"$usrGnss9char\" onChange=\"console.log($m3g_url_edit)\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_formnode_gnss_9char}')\" id=\"gnss_9char\" name=\"gnss_9char\">";
+print "<BR>\n";
+print "<label for=\"m3g_check\">$__{'Show links to M3G'}:</label>";
+print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\""
+    ." onmouseover=\"overlib('$__{help_formnode_m3g_check}')\"".($m3g_check ? " checked>":"").">";
+print "</TD><TD style='border:0'>";
+# --- Edit GeodesyML on M3G
+print "<a href=$m3g_url_edit target=\"_blank\" id=\"m3g_link\" onClick=\"return check_9char_code()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_formnode_edit_m3g}')\">$__{'Edit sitelog on M3G'}</a>";
+print "</TD></TR></TABLE>\n";
 
 # --- show THEIA fields ?
-print "<DIV id=\"theiaChecked\" style=\"display:none;\"><LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT type=\"checkbox\" name=\"saveAuth\" onchange=\"showHideTheia(this)\" value=0></LABEL>&nbsp;<BR><BR></DIV>";
+print "<DIV id=\"theiaChecked\" style=\"display:none;\"><HR><LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT type=\"checkbox\" onchange=\"showHideTheia(this)\" value=0></LABEL>&nbsp;<BR><BR></DIV>";
 print "<DIV id=\"showHide\" style=\"display:none;\">";
 
 # --- PRODUCER
@@ -1088,14 +1093,14 @@ for (@creators) {
     }
 }
 print "</SELECT>&nbsp;&nbsp";
-print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
-print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
-print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR></DIV>";
+print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName_0\">&nbsp;&nbsp;";
+print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName_0\">&nbsp;&nbsp;";
+print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email_0\">&nbsp;&nbsp;<BR></DIV>";
 print "<DIV id='creator_add'>";
 for (my $i = 1; $i <= $#usrRole; $i++) {
     my $cnt = $i+1;
     print "<DIV id=new_creator$cnt>";
-    print "<SCRIPT>var form = \$('#theform')[0];form.count_creator.value = parseInt(form.count_creator.value)+1;</SCRIPT>";
+    print "<SCRIPT>var form = \$('#theform')[0];form.count_creator.value = parseInt(form.count_creator.value);</SCRIPT>";
     print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[$i]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
     for (@creators) {
         if ($_ eq $usrRole[$i]){
@@ -1105,9 +1110,9 @@ for (my $i = 1; $i <= $#usrRole; $i++) {
         }
     }
     print "</SELECT>&nbsp;&nbsp";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName\">&nbsp;&nbsp;";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName\">&nbsp;&nbsp;";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email\">&nbsp;&nbsp;<BR>";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName_$i\">&nbsp;&nbsp;";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName_$i\">&nbsp;&nbsp;";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email_$i\">&nbsp;&nbsp;<BR>";
     print "</DIV>";
 }
 print "</DIV><BR>";
@@ -1144,16 +1149,17 @@ print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=
 print "</DIV>";
 print "</FIELDSET>";
 
-print "</TD>\n";                                                                 # end left column
+print "</TD>\n";                                                               # end left column
 print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
 
 # --- 'node' position (latitude, longitude & altitude)
-print "<FIELDSET><LEGEND>$__{'Geographic location'}</LEGEND>";
+my $map =" <A href=\"#\" onclick=openOSM()>"."<IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
+print "<FIELDSET><LEGEND>$__{'Geographic location'}$map</LEGEND>";
 print "<TABLE><TR>";
-print "<TD style=\"border:1;text-align:left\">";
+print "<TD style=\"border:0;text-align:left\">";
 print "<DIV id='map' style=\"position: relative ;width: 347px; height: 347px\"></DIV>";
 print "</TD>";
-print "<TD style=\"border:1;text-align:left;rows:6;\">";
+print "<TD style=\"border:0;text-align:left;rows:6;\">";
 print "<label>$__{'Auto-location'} :</label><button id=\"auto-loc\" style=\"position:relative;\" onmouseover=\"overlib('$__{beware_approximate_position}')\">$__{'Locate me'} !</button>&nbsp;<BR>";
 print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
 print "<input size=\"8\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
@@ -1174,7 +1180,7 @@ print "<input size=\"8\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChang
 
 # --- positioning date
 print "<label for=\"datePos\">Date:</label> <select name=\"pyear\" size=\"1\">";
-for ($usrYearP,@yearListP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n";    }
+for ($usrYearP,@yearListP) { print "<option".(($_ eq $usrYearP)?" selected":"")." value=$_>$_</option>\n"; }
 print "</select>";
 print " <select name=\"pmonth\" size=\"1\">";
 for (@monthList) { print "<option".(($_ eq $usrMonthP)?" selected":"")." value=$_>$_</option>\n"; }
@@ -1186,7 +1192,7 @@ print "</select><BR>";
 # --- Positioning type (unknown, map, GPS or auto)
 print "<label for=\"typePos\">Type: </label> "
   ."<select name=\"typePos\" size=\"1\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_pos_type}')\">";
-for (sort(keys(%typePos))) { print  "<option".(($_ eq $usrTypePos) ? " selected ":"")." value=$_>$typePos{$_}</option>\n"; }
+for (sort(keys(%typePos))) { print "<option".(($_ eq $usrTypePos) ? " selected ":"")." value=$_>$typePos{$_}</option>\n"; }
 print "</select><BR>";
 print "<DIV id=\"rawKML\" style=\"display:none\"><LABEL for=\"rawKML\">Raw KML: </LABEL>"
   ." <INPUT name=\"rawKML\" size=\"40\" value=\"$usrRAWKML\">"
@@ -1206,89 +1212,57 @@ if (-e $geojsonFile) {
 print "<INPUT type=\"hidden\" name=\"filename\" value=\"\"\n>";
 print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
 print "<INPUT type=\"hidden\" name=\"geojson\" value=\"\"\n>";
+print "<INPUT type=\"hidden\" name=\"saveAuth\" value=\"0\">";
 print "<label for=\"shpfile\">$__{'Shapefile'} (.zip): </label> "
-  ."<INPUT type='file' id='shpfile' onchange='handleFiles()' value=\"\"  onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_shapefile}')\"><BR>";
-
+  ."<INPUT type='file' id='shpfile' onchange='selectShape();form.saveAuth.value=1' value=\"\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_shapefile}')\"><BR>";
 print "</TD>";
 print <<FIN;
-        <script>
-            const checked = document.getElementById("theiaChecked");
-            const auth = $theiaAuth;
-            
-            if (auth == 1) {
-                // console.log(theia);
-                checked.style.display = "block";
-            } else {
-                checked.style.display = "none";
-            }
-        
-            var map = L.map('map', mapOptions);
-            var popup = L.popup();
-            map.on('click', onMapClick);
-            
-            document.getElementById("auto-loc").addEventListener('click', getLocation);
-            // let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
-            
-            if ( document.form.latwgs84.value !== "" || document.form.lonwgs84.value !== "" ) {
-                var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
-                var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
+<script>
+    const checked = document.getElementById("theiaChecked");
+    const auth = $theiaAuth;
 
-                map.setView([lat, lon]);
-                map.flyTo([lat, lon], 14, {
-                    animate: false,
-                    //animate: true,
-                    //duration: 1
-                });
+    if (auth == 1) {
+        // console.log(theia);
+        checked.style.display = "block";
+    } else {
+        checked.style.display = "none";
+    }
 
-                var marker = L.marker([lat, lon]).addTo(map);
-                marker.bindPopup(\"$text\").openPopup();
-                L.control.scale().addTo(map);
-            }
-            
-            var layerControl = L.control.layers(basemaps, overlays).addTo(map);
-            
-            if (typeof(\"$geojsonFile\") !== 'undefined') {
-                var shpfile = createShp($json); 
-                shpfile.addTo(map);
-                
-                var geometry = JSON.stringify(getGeometry($json));
-                document.form.outWKT.value = geometry;
-            }
-        </script>
+    var map = L.map('map', mapOptions);
+    var popup = L.popup();
+    map.on('click', onMapClick);
+
+    document.getElementById("auto-loc").addEventListener('click', getLocation);
+    //let suivi = navigator.geolocation.getCurrentPosition(getCurrent, error);
+
+    if ( document.form.latwgs84.value !== "" || document.form.lonwgs84.value !== "" ) {
+        var lat = document.form.latwgs84.value*(1-2*(document.form.latwgs84n.value == 'S'));
+        var lon = document.form.lonwgs84.value*(1-2*(document.form.lonwgs84e.value == 'W'));
+
+        map.setView([lat, lon]);
+        map.flyTo([lat, lon], 14, {
+            animate: false,
+        });
+
+        var marker = L.circleMarker([lat, lon], {radius: 10, color: 'red'}).addTo(map);
+    }
+
+    L.control.scale().addTo(map);
+    L.control.layers(basemaps).addTo(map);
+
+    if (typeof(\"$geojsonFile\") !== 'undefined') {
+        var shpfile = createShp($json);
+        if (shpfile) {
+            shpfile.addTo(map);
+            var geometry = JSON.stringify(getGeometry($json));
+            document.form.outWKT.value = geometry ? geometry : "";
+        }
+    }
+
+</script>
 FIN
 print "</TR></TABLE>";
 print "</FIELDSET>\n";
-
-# --- GNSS-specific information
-
-my $m3g_url_edit = $WEBOBS{'M3G_URL'}."/".$usrGnss9char;
-print "<FIELDSET><legend>$__{'GNSS-specific information'}</LEGEND>";
-print "<TABLE><TR>";
-print "<TD style=\"border:0;text-align:left\">";
-print "<label for=\"gnss_9char\">$__{'GNSS 9 char. code'} :</label>";
-print "<input size=\"10\" value=\"$usrGnss9char\" onChange=\"console.log($m3g_url_edit)\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_gnss_9char}')\" id=\"gnss_9char\" name=\"gnss_9char\">";
-print "<i for=\"gnss_9char_nb\">";#  NB: use save button to store this code the first time, before updating metadata </i>";
-print "<BR>\n";
-print "<BR>\n";
-###### get and edit features 
-#### Edit GeodesyML on M3G
-print "<a href=$m3g_url_edit target=\"_blank\" id=\"m3g_link\" onClick=\"return check_9char_code()\">Edit sitelog on M3G (requires prior M3G login)</a>";
-print "<BR>\n";
-#### get geodesyML from M3G
-#print "<BR>\n";
-print "<BR>\n";
-
-print "<label for=\"m3g_check\">$__{'Show links to M3G'} :</label>";
-if ( $m3g_check ) {
-    print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\" checked>";
-} else {
-    print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\"  onmouseover=\"overlib('$__{help_creationstation_m3g_check}')\">";
-}
-print "<BR>\n";
-
-print "</TD>";
-print "</TR></TABLE>";
-print "</FIELDSET>";
 
 # --- Transmission
 print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
@@ -1314,13 +1288,13 @@ print "</FIELDSET>";
 
 # --- Procs parameters
 if (uc($GRIDType) eq "PROC") {
-    print "<FIELDSET><LEGEND>$__{'Procs Parameters'}</LEGEND>";
+    print "<FIELDSET><LEGEND>$__{'Proc Parameters'}</LEGEND>";
     print "<TABLE><TR><TD style=\"border:0;text-align:left\" colspan=2>";
-    print "<LABEL for=\"proc\">Proc name: </LABEL>";
+    print "<LABEL for=\"proc\">$__{'Proc name:'}</LABEL>";
     print "<B>$GRID{NAME}</B> (".(defined($GRID{NODESLIST}) ? scalar(@{$GRID{NODESLIST}}):"0")." nodes)<INPUT hidden id=\"proc\" name=\"proc\" value=\"\" style=\"background-color:transparent;border:none\"><BR><BR>\n";
 
     # --- RAWFORMAT list
-    print "<LABEL for=\"RawFormat\">Raw format: </label> <select onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawformat}')\" name=\"rawformat\" size=\"1\" onChange=\"maj_rawformat()\">";
+    print "<LABEL for=\"RawFormat\">$__{'Raw format:'}</label> <select onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawformat}')\" name=\"rawformat\" size=\"1\" onChange=\"maj_rawformat()\">";
     my %rawfmt;
     my @fmtfid;
     for (keys(%rawFormats)) {
@@ -1331,33 +1305,42 @@ if (uc($GRIDType) eq "PROC") {
     }
     for (sort(keys(%rawfmt))) {
         my $key = $rawfmt{$_};
-        print  "<OPTION".($key eq $usrRAWFORMAT ? " selected ":"")." value=$key>".($key ? "$rawFormats{$key}{supfmt} {$key} ":"")."$rawFormats{$key}{name}</option>\n";
+        print "<OPTION".($key eq $usrRAWFORMAT ? " selected ":"")." value=$key>".($key ? "$rawFormats{$key}{supfmt} {$key} ":"")."$rawFormats{$key}{name}</option>\n";
     }
     print "</SELECT><BR>\n";
 
     # --- RAWDATA
-    print "<LABEL for=\"rawdata\">$__{'Raw data source'}: </label> <input size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawdata}')\" type=\"text\" id=\"rawdata\" name=\"rawdata\" value=\"$usrRAWDATA\"/><br/>";
+    print "<LABEL for=\"rawdata\">$__{'Raw data source:'}</label> <input size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawdata}')\" type=\"text\" id=\"rawdata\" name=\"rawdata\" value=\"$usrRAWDATA\"/><br/>";
 
     # --- FDSN Network Code
-    print "<LABEL for=\"fdsn\">Network code: </LABEL>";
+    print "<LABEL for=\"fdsn\">$__{'Network code:'}</LABEL>";
     print "<SELECT name=\"fdsn\" id=\"fdsn\" size=\"1\" onMouseOut=\"nd()\" value=\"$usrFDSN\" onMouseOver=\"overlib('$__{help_creationstation_fdsn}')\">";
     for ("",sort(keys(%FDSN))) {
         print "<OPTION".((trim($_) eq trim($usrFDSN)) ? " selected ":"")." value=$_>".($_ ne "" ? "$_: ":"")."$FDSN{$_}</option>\n";
     }
     print "</SELECT><BR>\n";
-    print "</TD>\n";
+    print "</TD>\n<TD rowspan=2 style=\"border:0;text-valign:top\">";
+
+    # --- DESCRIPTION
+    print "<LABEL for=\"description\">$__{'Description:'}</LABEL>";
+    print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\""
+          ." cols=\"40\" name=\"description\" id=\"description\">$usrDesc</TEXTAREA><BR><BR>\n";
 
     # --- CHANNEL_LIST
-    print "<TD rowspan=2 style=\"border:0;text-valign:top\">";
-    print "<LABEL for=\"chanlist\">$__{'Channel list'}: </LABEL>";
-    my %carCLB = readCfg("$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb");
+    print "<LABEL for=\"chanlist\">$__{'Channel list:'}</LABEL>";
+    my %carCLB = readCLB("$GRIDType.$GRIDName.$NODEName");
     if (%carCLB) {
         my @select = split(/,/,$usrCHAN);
 
- # make a list of available channels and label them with last Chan. + Loc. codes
+        # make a list of available channels and label them with last Chan. + Loc. codes
         my %chan;
-        foreach my $k (keys %carCLB) {
-            $chan{$k} = "$carCLB{$k}{'nm'} ($carCLB{$k}{'cd'} $carCLB{$k}{'lc'})";
+        my @nv;
+        foreach (keys %carCLB) {
+            push(@nv,$carCLB{$_}{'nv'});
+        }
+        @nv = do { my %seen; grep { !$seen{$_}++ } @nv }; # uniq
+        foreach (@nv) {
+            $chan{$_} = "$carCLB{$_}{'nm'} ($carCLB{$_}{'un'}) - $carCLB{$_}{'cd'} $carCLB{$_}{'lc'}";
         }
         print "<SELECT name=\"chanlist\" multiple size=\"5\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_chanlist}')\" id=\"chanlist\">";
         for (sort{ $a <=> $b } (keys(%chan))) {
@@ -1365,7 +1348,7 @@ if (uc($GRIDType) eq "PROC") {
         }
         print "</SELECT>";
     } else {
-        print "no calibration file.";
+        print "$__{'no calibration file'}.";
     }
     print "</TD></TR>\n";
 
@@ -1415,14 +1398,19 @@ for (keys(%NODE)) {
     }
 }
 
-## # --- "Validity"
-## if ( clientHasAdm(type=>"authmisc",name=>"NODES")) {
-##     print "<P class=parform><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
-##         ." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Check to mark node as valid'}')\">"
-##         ."<b>$__{'Valid Node'}</b></P>\n";
-## } else {
-##     print "<input type=\"hidden\" name=\"valide\" value=\"NA\">";
-## }
+# --- Forms parameters
+if (uc($GRIDType) eq "FORM") {
+    print "<FIELDSET><LEGEND>$__{'Form Parameters'}</LEGEND>";
+    print "<TABLE><TR><TD style=\"border:0;text-align:right\">";
+    print "<LABEL for=\"form\">$__{'Form name:'}</LABEL>";
+    print "<B>$GRID{NAME}</B> (".(defined($GRID{NODESLIST}) ? scalar(@{$GRID{NODESLIST}}):"0")." nodes)<INPUT hidden id=\"form\" name=\"form\" value=\"\" style=\"background-color:transparent;border:none\"/><BR><BR>\n";
+    print "<label for=\"utcd\">$__{'Time zone (h)'}: </label> <input size='5' readonly type='text' id=\"utcd\" name=\"utcd\" value=\"$GRID{TZ}\" style=\"background-color:transparent;border:none\"/><br><br>\n";
+    print "</TD>\n<TD style=\"border:0;text-align:right\">";
+    print "<label for=\"acqr\">$__{'Acq. period (days)'}: </label> <input size='9' onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_acqrate}')\"type=\"text\" id=\"acqr\" name=\"acqr\" value=\"$usrACQ\"/><br>\n";
+    print "<label for=\"ldly\">$__{'Acq. delay (days)'}: </label> <input size='9' onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_acqdelay}')\"type=\"text\" id=\"ldly\" name=\"ldly\" value=\"$usrDLY\"/><br>\n";
+    print "</TD></TR></TABLE></FIELDSET>\n";
+}
+
 
 print "</TD></TR>";
 print "<TR><TD style=border:0 colspan=2><HR>";
@@ -1461,11 +1449,11 @@ the Free Software Foundation, either version 3 of the License, or
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 =cut
 

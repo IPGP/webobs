@@ -348,13 +348,13 @@
             ME.settings.onpicked.call();
         }
 
-        // private method to extend Date Object 
+        // private method to extend Date Object
         function extendDate() {
             if (!Date.prototype.hasOwnProperty('getWeek')) { // ISO week# , 1st and Last days
                 Date.prototype.getWeek = function() {
-                    var d = new Date(this.toDateString()); // clone date at 00:00:00 
-                    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7); // Thursday this week 
-                    var w1 = new Date(d.getFullYear(), 0, 4); // ISO says Jan 4 always in week #1  
+                    var d = new Date(this.toDateString()); // clone date at 00:00:00
+                    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7); // Thursday this week
+                    var w1 = new Date(d.getFullYear(), 0, 4); // ISO says Jan 4 always in week #1
                     return {
                         woy: 1 + Math.round(((d.getTime() - w1.getTime()) / 86400000 - 3 + (w1.getDay() + 6) % 7) / 7),
                         wstart: d.setDate(d.getDate() - (d.getDay() + 6) % 7),
@@ -377,7 +377,7 @@
                     d += this.getDate();
                     return d;
                 }
-                Date.prototype.isInRange = function(range) { // is within Dates range.from and range.to 
+                Date.prototype.isInRange = function(range) { // is within Dates range.from and range.to
                     if (isNaN(range.from) || isNaN(range.to)) return true; // invalid range = can't tell = in range
                     range.from.setHours(0, 0, 0, 0);
                     range.to.setHours(0, 0, 0, 0);
@@ -387,7 +387,7 @@
             }
         }
 
-        // private method to left-pad numeric with 0 
+        // private method to left-pad numeric with 0
         function lz(n) {
             return (n < 10) ? "0" + n : n;
         }

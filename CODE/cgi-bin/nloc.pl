@@ -64,7 +64,7 @@ my $file = "WEBOBS-$WEBOBS{WEBOBS_ID}.$grid";
 my $GRIDName  = my $GRIDType  = my $NODEName = my $msk = "";
 my @NID = split(/[\.\/]/, trim($grid));
 ($GRIDType, $GRIDName, $NODEName) = @NID;
-if ( scalar(@NID) < 2 || !($GRIDType =~ /^PROC|VIEW/i) ) {
+if ( scalar(@NID) < 2 || !($GRIDType =~ /^PROC|VIEW|FORM/i) ) {
     die "No valid grid requested (NOT= gridtype.gridname[.node])." ;
 }
 
@@ -79,6 +79,7 @@ my %G;
 my %GRID;
 if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
 elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
 if (%G) {
     %GRID = %{$G{$GRIDName}} ;
 } else {
@@ -105,7 +106,18 @@ switch (lc($format)) {
     }
     case 'csv' {
         print $cgi->header(-type=>'text/csv', -attachment=>"$file.csv",-charset=>'utf-8');
-        print "ALIAS;NAME;LATITUDE;LONGITUDE;ELEVATION;START_DATE;END_DATE;ACTIVE\r\n";
+        my $c1 = "LATITUDE";
+        my $c2 = "LONGITUDE";
+        my $c3 = "ELEVATION";
+        if ($coord =~ /^utm|local$/) {
+            $c1 = "UTM_EASTERN";
+            $c2 = "UTM_NORTHERN";
+        } elsif ($coord eq "xyz") {
+            $c1 = "X";
+            $c2 = "Y";
+            $c3 = "Z";
+        }
+        print "ID;ALIAS;NAME;TYPE;$c1;$c2;$c3;START_DATE;END_DATE;ACTIVE\r\n";
     }
     else {
         print $cgi->header(-type=>'text/csv', -attachment=>"$file.txt",-charset=>'utf-8');
@@ -113,20 +125,20 @@ switch (lc($format)) {
 }
 
 for (keys(%N)) {
-    my $sta = $_;
-    if ( scalar(@NID)==2 || $sta eq $NODEName ) {
-        my %NODE = readNode($sta);
-        my $active = (($NODE{$sta}{END_DATE} ge $today || $NODE{$sta}{END_DATE} eq "NA")
-              && ($NODE{$sta}{INSTALL_DATE} le $today || $NODE{$sta}{INSTALL_DATE} eq "NA"));
-        if (!($NODE{$sta}{LAT_WGS84} eq "" && $NODE{$sta}{LON_WGS84} eq "" && $NODE{$sta}{ALTITUDE} eq "") && (($nodes ne "active" || $active))) {
-            my $alias = $NODE{$sta}{ALIAS};
-            my $name = $NODE{$sta}{NAME};
-            my $type = $NODE{$sta}{TYPE};
-            my $start = $NODE{$sta}{INSTALL_DATE};
-            my $end = $NODE{$sta}{END_DATE};
-            my $lat = $NODE{$sta}{LAT_WGS84};
-            my $lon = $NODE{$sta}{LON_WGS84};
-            my $alt = $NODE{$sta}{ALTITUDE};
+    my $id = $_;
+    if ( scalar(@NID)==2 || $id eq $NODEName ) {
+        my %NODE = readNode($id);
+        my $active = (($NODE{$id}{END_DATE} ge $today || $NODE{$id}{END_DATE} eq "NA")
+              && ($NODE{$id}{INSTALL_DATE} le $today || $NODE{$id}{INSTALL_DATE} eq "NA"));
+        if (!($NODE{$id}{LAT_WGS84} eq "" && $NODE{$id}{LON_WGS84} eq "" && $NODE{$id}{ALTITUDE} eq "") && (($nodes ne "active" || $active))) {
+            my $alias = $NODE{$id}{ALIAS};
+            my $name = $NODE{$id}{NAME};
+            my $type = $NODE{$id}{TYPE};
+            my $start = $NODE{$id}{INSTALL_DATE};
+            my $end = $NODE{$id}{END_DATE};
+            my $lat = $NODE{$id}{LAT_WGS84};
+            my $lon = $NODE{$id}{LON_WGS84};
+            my $alt = $NODE{$id}{ALTITUDE};
             if ($coord eq "utm") {
                 ($lat,$lon) = geo2utm($lat,$lon);
                 $lat = sprintf("%.0f",$lat);
@@ -144,7 +156,7 @@ for (keys(%N)) {
 
             switch (lc($format)) {
                 case 'kml' {
-                    print "<Placemark id=\"$sta\">
+                    print "<Placemark id=\"$id\">
     <name>$alias : $name</name>
     <ExtendedData>
         <Data name=\"active\">
@@ -158,19 +170,19 @@ for (keys(%N)) {
         </Data>
     </ExtendedData>
     <description>
-        <![CDATA[<i>$type</i><br>$DOMAINS{$GRID{DOMAIN}}{NAME} / $GRID{NAME}<br><small>($GRIDType.$GRIDName.$sta)</small>]]>
+        <![CDATA[<i>$type</i><br>$DOMAINS{$GRID{DOMAIN}}{NAME} / $GRID{NAME}<br><small>($GRIDType.$GRIDName.$id)</small>]]>
     </description>
     <open>1</open>\n<styleUrl>#webobs</styleUrl>
     <Point>
-        <coordinates>$NODE{$sta}{LON_WGS84},$NODE{$sta}{LAT_WGS84},$NODE{$sta}{ALTITUDE}</coordinates>
+        <coordinates>$NODE{$id}{LON_WGS84},$NODE{$id}{LAT_WGS84},$NODE{$id}{ALTITUDE}</coordinates>
     </Point>
 </Placemark>\n";
                 }
                 case 'csv' {
-                    print "\"$alias\";$name;$lat;$lon;$alt;$start;$end;$active\r\n";
+                    print "\"$id\";\"$alias\";$name;\"$type\";$lat;$lon;$alt;\"$start\";\"$end\";$active\r\n";
                 }
                 else {
-                    print "$alias\t$name\t$lat\t$lon\t$alt\t$start\t$end\t$active\r\n";
+                    print "$id\t$alias\t$name\t$type\t$lat\t$lon\t$alt\t$start\t$end\t$active\r\n";
                 }
             }
         }
@@ -196,7 +208,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

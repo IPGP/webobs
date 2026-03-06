@@ -44,19 +44,6 @@ use Locale::TextDomain('webobs');
 set_message(\&webobs_cgi_msg);
 $ENV{LANG} = $WEBOBS{LOCALE};
 
-# --- subroutine
-
-sub sort_clb_lines {
-    my %data = shift(@_);
-
-    # Sort the list of lines of the calibration file by date, time,
-    # and channel number, using a numerical sort for the latter.
-    $data{$a}{'DATE'} cmp $data{$b}{'DATE'} or
-      $data{$a}{'TIME'} cmp $data{$b}{'TIME'} or
-      $data{$a}{'nv'} <=> $data{$b}{'nv'} or
-      $a cmp $b; # final comparison to make sure the ordering is always well defined
-}
-
 # ---- inits and checkings
 my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my %NODE;
@@ -69,7 +56,6 @@ my %data;
 my $nb = 0;
 my $nouveau = 0;
 my $QryParm = $cgi->Vars;
-my @hiden_params = ("az", "la", "lo", "al", "dp", "sf", "db", "lc");
 
 $QryParm->{'node'}   ||= "";
 
@@ -86,6 +72,10 @@ if ( $GRIDType eq "PROC" && $GRIDName ne "" ) {
             @clbNote  = wiki2html(join("",readFile($CLBS{NOTES})));
             %fieldCLB = readCfg($CLBS{FIELDS_FILE}, "sorted");
             %data = readCLB("$GRIDType.$GRIDName.$NODEName");
+            if (!%data) {
+                $nouveau = 1; @newChan = (1..$QryParm->{'nbc'});
+            }
+
         } else {
             die "$__{'Could not read'} $QryParm->{'node'} $__{'node configuration'}";
         }
@@ -130,11 +120,33 @@ print "Content-type: text/html\n\n
 <!-- overLIB (c) Erik Bosrup -->
 </HEAD>";
 my $jvs = ($QryParm->{'submit'}) ? 'onLoad="calc()"' : "";
-print "<BODY style=\"background-color:#E0E0E0\" $jvs>\n";
+print "<BODY $jvs>\n";
 print "<H1>$titlePage</H1>\n<H2>$titre2</H2>\n";
 
 # ---- take care of new "lines" if any
 #
+for (@newChan) {
+    my $s = $today;
+    if ($NODE{INSTALL_DATE} =~ /^\d{4}/) {
+        if ($NODE{INSTALL_DATE} =~ /^\d{4}-\d{2}-\d{2}$/) {
+            $s = $NODE{INSTALL_DATE}
+        } elsif ($NODE{INSTALL_DATE} =~ /^\d{4}-\d{2}$/) {
+            $s = $NODE{INSTALL_DATE}."-01";
+        } elsif ($NODE{INSTALL_DATE} =~ /^\d{4}$/) {
+            $s = $NODE{INSTALL_DATE}."-01-01";
+        }
+    }
+
+    $data{$_}{"DATE"} = $s;
+    $data{$_}{"nv"} = $_;
+    $data{$_}{"la"} = $NODE{LAT_WGS84};
+    $data{$_}{"lo"} = $NODE{LON_WGS84};
+    $data{$_}{"al"} = $NODE{ALTITUDE};
+    # fills other fields with the default value
+    foreach my $k (keys %fieldCLB) {
+        $data{$_}{$k} = $fieldCLB{$k}{'Default'} if ($fieldCLB{$k}{'Default'} ne 'auto');
+    }
+}
 
 $nb = keys %data;  # number of elements in @data
 
@@ -241,7 +253,7 @@ print "<input type=\"hidden\" name=\"node\" value=\"$QryParm->{'node'}\">",
   "<TABLE class=\"CLBtable\" width=\"100%\" style=\"border:0\" onMouseOver=\"calc()\">",
   "<TR>";
 foreach my $k ( @params ) {
-    if ($k ~~ @hiden_params) { $c = ' class="CLBshowhide"' } else { $c = '' }
+    if ($fieldCLB{$k}{'Hide'}) { $c = ' class="CLBshowhide"' } else { $c = '' }
     print "<TH$c>",$fieldCLB{$k}{'Name'}."</TH>";
 }
 print "</TR>\n";
@@ -250,7 +262,7 @@ my $i    = 0;
 my $nbc  = 0;
 
 my $line;
-foreach my $id (sort sort_clb_lines keys %data) {
+foreach my $id (sort_clb(\%data)) {
     $i++;
     my %line = %{$data{$id}};
     print "<TR>";
@@ -290,13 +302,13 @@ foreach my $id (sort sort_clb_lines keys %data) {
     }
     print "</select></TD>\n";
     print "<TD nowrap><input type=checkbox name=\"s$i\" onChange=\"calc()\">
-        <input name=\"v"."$i"."_1\" readonly value=\"$line{'nv'}\" size=\"$fieldCLB{'nv'}{'NbCar'}\" style=\"font-weight:bold;background-color:#E0E0E0;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'nv'}{'MSGID'}}')\">";
+        <input name=\"v"."$i"."_1\" readonly value=\"$line{'nv'}\" size=\"$fieldCLB{'nv'}{'NbCar'}\" style=\"font-weight:bold;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'nv'}{'MSGID'}}')\">";
     if ($line{'nv'} > $nbc) {
         $nbc = $line{'nv'};
     }
     my $ki = 2;
     foreach my $k ( @params ) {
-        if ($k ~~ @hiden_params) { $c = ' class="CLBshowhide"' } else { $c = '' }
+        if ($fieldCLB{$k}{'Hide'}) { $c = ' class="CLBshowhide"' } else { $c = '' }
         if (not $k ~~ ["DATE", "TIME", "nv"]) {
             print "<TD$c onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{$k}{'MSGID'}}')\"><input name=\"v".$i."_".$ki++
               ."\" value=\"".($line{$k} // '')."\" size=\"$fieldCLB{$k}{'NbCar'}\"></TD>\n";
@@ -337,7 +349,7 @@ Didier Mallarino, François Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -109,7 +109,8 @@ sub print_form {
     my $submit_url = $cgi->url();
     my $min_length_msg = "";
     if ($WEBOBS{'HTPASSWORD_MIN_LENGTH'}) {
-        $min_length_msg = sprintf($__{'Note: your password must be at least %s characters long.'},
+        $min_length_msg = sprintf($__{'Note: your password must be at least %s characters long.<br>
+            Accepted special characters are: <b>-!?=_#%@/()_=&*+,.:;^{}~$</b>'},
             $WEBOBS{'HTPASSWORD_MIN_LENGTH'});
     }
     print <<__EOD__;
@@ -220,7 +221,7 @@ if ($CLIENT eq "guest") {
 # Print first part of the page
 print_head();
 
-if (not ($current_password and $new_password and $new_password2)) {
+if (not ($new_password and $new_password2)) {
 
     # No argument provided: simply print the form
     print_form();

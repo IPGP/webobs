@@ -10,7 +10,6 @@ use warnings;
 use POSIX qw(strftime);
 use WebObs::Config;
 use WebObs::Grids;
-use WebObs::Utils qw(u2l l2u);
 use File::Basename;
 
 our $dry = 1;    # default is dry-run
@@ -279,10 +278,10 @@ sub IMPORT0 {
                             $dislist .= substr($c,0,1)." ";
 
   #foreach my $k (keys %F) {
-  #	if ($o.$c eq $k) { 
-  #		$formslist .= $F{$k}." "; 
-  #		qx(ln -s $WEBOBS{PATH_FORMS}/$F{$k} $WEBOBS{PATH_GP2FORMS}/VIEW.$g.$F{$k});
-  #	}
+  #    if ($o.$c eq $k) { 
+  #        $formslist .= $F{$k}." "; 
+  #        qx(ln -s $WEBOBS{PATH_FORMS}/$F{$k} $WEBOBS{PATH_GP2FORMS}/VIEW.$g.$F{$k});
+  #    }
   #}
                             migID3Stations('VIEW', $g, $o.$c, 'ACQ_RATE|'.$G{$g}{acq}, 'LAST_DELAY|'.$G{$g}{lst});
                         }
@@ -603,4 +602,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-				
+

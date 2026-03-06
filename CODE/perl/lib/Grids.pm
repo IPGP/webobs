@@ -27,16 +27,18 @@ Package WebObs : Common perl-cgi variables and functions
 use strict;
 use warnings;
 use File::Basename;
-use WebObs::Utils qw(u2l l2u trim isok);
-use WebObs::Config qw(%WEBOBS readCfg readCfgFile readFile);
+use WebObs::Utils qw(trim isok);
+use WebObs::Config qw(%WEBOBS readCfg readCfgFile readFile u2l l2u);
 use WebObs::Users qw(clientHasRead);
+use WebObs::i18n;
+use Locale::TextDomain('webobs');
 use POSIX qw(strftime);
 
 #our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %DISCP, %GRIDS, %NODES);
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %GRIDS, %NODES, %node2node);
 require Exporter;
 @ISA        = qw(Exporter);
-@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS %node2node readDomain readGrid readSefran readProc readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode readCLB);
+@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS %node2node readDomain readGrid readSefran readProc readForm readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode readCLB printdesc);
 $VERSION    = "1.00";
 
 %DOMAINS = readDomain();
@@ -113,9 +115,32 @@ Internally uses WebObs::listProcNames.
 =cut
 
 sub readProc {
+    my $comment = grep ( /^addcomment$/, @_[1..$#_] );
     my %ret;
     for my $f (listProcNames($_[0])) {
         my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf",@_[1..$#_]);
+        # --- adds comments from the proc's template (any commented lines before a key)
+        if ($comment) {
+            (my $superproc = $tmp{SUBMIT_COMMAND}) =~ s/^[^ ]* ([^ ]*).*$/$1/g;
+            my $tpl = "$WEBOBS{ROOT_CODE}/tplates/PROC.".uc($superproc);
+            if (-e $tpl) {
+                my @file = readFile($tpl); # imports all the template file
+                foreach my $k (keys %tmp) {
+                    my @com;
+                    foreach my $l (@file) {
+                        chomp($l);
+                        if ($l =~ /^#/) {
+                            push(@com,substr($l,1));
+                        } elsif ($l =~ /^$k\|/) {
+                            $tmp{"comment_$k"} = join('<br>',@com);
+                            @com = ();
+                        } else {
+                            @com = ();
+                        }
+                    }
+                }
+            }
+        }
 
         # --- get list of associated NODES
         opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
@@ -140,6 +165,47 @@ sub readProc {
     }
     return %ret;
 }
+
+=pod
+
+=head2 readForm
+
+Reads one or more 'forms' configurations into a HoH.
+Adds uppercase NODESLIST hash key to point to the list of linked-to NODES for a FORM.
+Adds DOMAIN code from grids2domains db
+
+    %N = readForm("^S");           # all FORMS whose names start in S
+    $x = $N{SOURCES}{NAME}        # value of 'NAME' field of SOURCES form
+    $d = $N{SOURCES}{DOMAIN}      # value of 'DOMAIN' field of SISMOHYP form
+    @s = $N{EXTENSO}{NODESLIST}     # list of linked-to nodes for EXTENSO form
+
+Internally uses WebObs::listFormNames.
+
+=cut
+
+sub readForm {
+    my %ret;
+    for my $f (listFormNames($_[0])) {
+        my %tmp = readCfg("$WEBOBS{PATH_FORMS}/$f/$f.conf",@_[1..$#_]);
+
+        # --- get list of associated NODES
+        opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
+        my @lSn = grep {/^FORM\.($f)\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
+        foreach (@lSn) {s/^FORM\.($f)\.//g};
+        @lSn =  sort {$a cmp $b} @lSn ;
+        $tmp{'NODESLIST'} = \@lSn;
+        closedir(DIR);
+
+        # --- get DOMAIN
+        my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = 'FORM' and NAME = '$f'");
+        chomp(@qx);
+        $tmp{'DOMAIN'} = join('|',@qx);
+        $ret{$f}=\%tmp;
+    }
+    return %ret;
+}
+
+=pod
 
 =head2 readSefran
 
@@ -268,15 +334,19 @@ sub readNode {
         $tmp{PROJECT} = 1 if (-s "$NODES{PATH_NODES}/$f/$NODES{SPATH_INTERVENTIONS}/${f}_Projet.txt");
 
         #substitutes possible decimal comma to point for numerics
-        $tmp{LAT_WGS84} =~ s/,/./g;
-        $tmp{LON_WGS84} =~ s/,/./g;
+        ($tmp{LAT_WGS84} //= "") =~ s/,/./g;
+        ($tmp{LON_WGS84} //= "") =~ s/,/./g;
 
         #FB-legacy: removes escape characters in feature's list
-        $tmp{FILES_FEATURES} =~ s/\\,/,/g;
+        ($tmp{FILES_FEATURES} //= "") =~ s/\\,/,/g;
         $tmp{FILES_FEATURES} =~ s/\\\|/,/g;
 
         # removes trailing blanks in each features
         $tmp{FILES_FEATURES} = join(",",map {trim($_)} split(/[,\|]/,$tmp{FILES_FEATURES}));
+        
+        # fix possible undefined parameters
+        $tmp{ALTITUDE} //= "";
+        $tmp{GNSS_9CHAR} //= "";
 
         $ret{$f}=\%tmp;
     }
@@ -339,6 +409,33 @@ sub listProcNames {
 
 =pod
 
+=head2 listFormNames
+
+Returns a list of names of 'FORMS' defined in $WEBOBS{PATH_FORMS}.
+
+Input is optional, as it defaults to 'all forms'. If it is specified,
+it will be used as a regexp to select form names.
+
+  @L = listFormNames("^WATERS");  # all forms named WATERS*
+
+=cut
+
+sub listFormNames {
+
+    #$_[0] will be used as a regexp
+    my $filter = defined($_[0]) ? $_[0] : "^[^\.]";
+    opendir(DIR, $WEBOBS{PATH_FORMS}) or die "can't opendir $WEBOBS{PATH_FORMS}: $!";
+    my @list = grep {/($filter)/ && -d $WEBOBS{PATH_FORMS}."/".$_} readdir(DIR);
+    closedir(DIR);
+    my @finallist;
+    for (@list) {
+        push(@finallist, $_) if (WebObs::Users::clientHasRead(name=>$_,type=>'authforms'));
+    }
+    return @finallist;
+}
+
+=pod
+
 =head2 listSefranNames
 
 Returns a list of names of 'SEFRAN3' found in $WEBOBS{ROOT_CONF}.
@@ -394,7 +491,7 @@ sub listNodeNames {
 
 =head2 listNodeGrids
 
- %HoA = listNodeGrids(node=>'nodename' [, type=>{'VIEW'|'PROC'}]
+ %HoA = listNodeGrids(node=>'nodename' [, type=>{'VIEW'|'PROC|FORM'}]
 
 Returns a hash of list of grids (of type type) a node belongs to.
 
@@ -414,9 +511,7 @@ type, if not specified, will default to ALL grid types (ie. VIEW and PROC).
 
 sub listNodeGrids {
     my %KWARGS = @_;
-    my $filterT = $KWARGS{type} && $KWARGS{type} =~ /^VIEW$|^PROC$/ ? $KWARGS{type} : '';
-
-    #my $filterS = $KWARGS{node} ? $KWARGS{node} : '';
+    my $filterT = $KWARGS{type} && $KWARGS{type} =~ /^VIEW|PROC|FORM$/ ? $KWARGS{type} : '';
     my $filterS = $KWARGS{node} ? $KWARGS{node} : undef;
 
     my @s = listNodeNames($filterS);
@@ -620,9 +715,9 @@ sub getNodeString
             if ($style eq 'alias')    { $text = $N{ALIAS} }
             if ($style eq 'short')    { $text = "$N{ALIAS}: $N{NAME}" }
             if ($style eq 'html')     { $text = "<b>$N{ALIAS}</b>: $N{NAME}".($N{TYPE} ne "" && $N{TYPE} ne "-" ? " <i>($N{TYPE})</i>":"") }
-            if ($link eq 'node')      { $text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A>"; }
+            if ($link eq 'node')      { $text = ($nnode ne "" ? "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A>":"<SPAN title=\"orphan node $node\">$text</SPAN>"); }
             if ($link eq 'features') {
-                $text = "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A> ";
+                $text = ($nnode ne "" ? "<A href=\"$NODES{CGI_SHOW}?node=$nnode\">$text</A> ":"<SPAN title=\"orphan node $node\">$text</SPAN>");
                 if ($N{FILES_FEATURES} ne "") {
                     $text = "<img src=\"/icons/drawersmall.png\" onClick=\"toggledrawer('\#ID_$node')\">&nbsp;".$text."\n"
                       ."<div id=\"ID_$node\"><table class=\"fof\">";
@@ -745,7 +840,7 @@ sub codesFDSN {
 
 =pod
 =head2 readCLB
-Reads calibration file of a node (fullid) and return an array
+Reads calibration file of a node (fullid) and return an HoH
 =cut
 
 sub readCLB {
@@ -755,13 +850,53 @@ sub readCLB {
 
     my $file = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb"; # standard CLB file name
     my $legclb = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
-    $file = $legclb if ( ! -e $file && -e $legclb); # for backwards compatibility
-    (my $autoclb = $file) =~ s/\.clb/_auto.clb/; # auto-generated CLB
+    (my $autoclb = $file) =~ s/\.clb/_auto.clb/g; # auto-generated CLB
+    $file = $legclb if ( ! -e $file && -e $legclb && -s $legclb); # for backwards compatibility
     $file = $autoclb if ( -e $autoclb && ! -s $file );
     if ( -s $file ) {
         %data = readCfg($file);
     }
+    #$data{debug} = "file = $file<br>legclb = $legclb<br>autoclb = $autoclb<br>";
     return %data;
+}
+
+
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# printdesc (title,suffix,type,name,legacy,top,edit)
+sub printdesc {
+    my @desc;
+    my $editCGI = "/cgi-bin/nedit.pl";
+    my $go2top = "";
+
+    my $title = $_[0];
+    my $suffix = $GRIDS{"$_[1]_SUFFIX"};
+    my $type = $_[2];
+    my $name = $_[3];
+    my $fileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$type.$name$suffix";
+    if ($_[4] ne '' &&  ! -e $fileDesc) {
+        my $legacyfileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$_[4]$suffix";
+        if (-e $legacyfileDesc) {
+            copy($legacyfileDesc, $fileDesc);
+        }
+    }
+    if ($_[5] > 0) {
+        $go2top = "&nbsp;&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
+    }
+    my $editOK = $_[6]; 
+
+    if (-e $fileDesc) {
+        @desc = readFile($fileDesc);
+    }
+
+    my $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#$_[1]ID');\">&nbsp;&nbsp;";
+    $htmlcontents .= "$__{$title}";
+    if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$suffix\&grid=$type.$name\"><img src=\"/icons/modif.png\"></A>" }
+    $htmlcontents .= "$go2top</div><div id=\"$_[1]ID\"><BR>";
+    if ($#desc >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@desc))."</P>\n" }
+    $htmlcontents .= "</div></div>\n";
+
+    print $htmlcontents;
 }
 
 1;
@@ -776,7 +911,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

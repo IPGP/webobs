@@ -12,6 +12,9 @@ $(document).ready(function() {
 
     //all links will load to wmtarget iframe (except for index.pl AND http[s]:)
     $("a").on("click", function(event) {
+        if ($(this).attr("href").match(/^#$/gi)) {
+            return true;
+        }
         if ($(this).attr("href").match(/^http.*:/gi) ||
             $(this).hasClass("externe")) {
             $(this).attr('target', '_blank');
@@ -59,8 +62,8 @@ $(document).ready(function() {
                 //save current iframe contents url and its Y scroll
                 wmHurl = $('#wmtarget')[0].contentDocument.URL;
                 wmHy = $('body').scrollTop();
-                //splash on links from within wmtarget, 
-                //except when targetting can be a browser popup (not an .html* or .pl), 
+                //splash on links from within wmtarget,
+                //except when targetting can be a browser popup (not an .html* or .pl),
                 //except when targetting another window/tab,
                 //except in markItUp or lighbox2 contexts ...
                 var theaddr = /[^?]*/.exec(this.attributes['href'].value)[0]; //href up to a '?'
@@ -106,7 +109,7 @@ $(document).ready(function() {
 
 });
 
-// pseudo-logout for session-less webobs 
+// pseudo-logout for session-less webobs
 function logout(user, lo) {
     if (confirm("You are about to log out current user '" + user + "'.\nClick OK then Cancel at the next login prompt and close the window/tab.")) {
         open(lo, '_top').close();

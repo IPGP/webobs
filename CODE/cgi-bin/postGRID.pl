@@ -221,7 +221,7 @@ if (! -e $gridConfFile) {
 # Additional integrity check: abort if file has changed
 # (well actually, if its last-modified timestamp has changed!)
 # since the client opened it to enter his(her) modification(s)
-if ($TS0 != (stat("$gridConfFile"))[9]) {
+if ($TS0 && $TS0 != (stat("$gridConfFile"))[9]) {
     htmlMsgNotOK("$gridConfFile has been modified while you were editing ! Please retry later...");
     exit;
 }

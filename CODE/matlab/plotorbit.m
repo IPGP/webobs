@@ -12,18 +12,21 @@ else
 end
 
 % plots data
-timeplot(t,d(:,1),[],lst,'LineWidth',lwd,'Color',c,'MarkerSize',mks,'MarkerFaceColor',c)
+timeplot(t,d(:,1),[],lst,'LineWidth',lwd,'Color',c,'MarkerSize',mks,'MarkerFaceColor',c);
 hold on
 
 % plots error bars
 if size(d,2) > 1
 	set(gca,'Ylim',get(gca,'YLim'))	% freezes Y axis (error bars can overflow)
-	plot(repmat(t,[1,2])',(repmat(d(:,1),[1,2])+d(:,2)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1])
+	h = plot(repmat(t,[1,2])',(repmat(d(:,1),[1,2])+d(:,2)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1]);
+	if exist('uistack','file') == 2 % checks if uistack function exists, (only MATLAB, not octave compatible)
+		uistack(h,'bottom')
+	end
 end
 
 % overwrites non-final orbits
 for o = 1:2
-	kk = find(orb==o);
+	kk = find(orb>=o);
 	if ~isempty(kk)
 		l = o*2;
 		wcol = c/l + 1 - 1/l;

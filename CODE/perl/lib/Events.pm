@@ -119,7 +119,8 @@ sub struct {
 
 =head2 eventnameSplit
 
-eventnameSplit(eventname) decodes event name string and returns an array of elements:
+eventnameSplit(eventname) decodes event name string 'OBJECT_yyyy-mm-dd_HH-MM.txt' and 
+returns an array of elements:
 
     [0] = object (node ID or grid name)
     [1] = date (yyyy-mm-dd)
@@ -132,13 +133,15 @@ sub eventnameSplit {
 
     # grid name might contain '_' so reads date and time by splitting '-' first
     my @pn = split(/-/,$_[0]); # object_year month day_hour minute_version
-    my @p1 = split(/_/,$pn[0]);
-    my @p2 = split(/_/,$pn[2]);
-    my @p3 = split(/_/,$pn[3]);
+    my @p1 = split(/_/,$pn[0]); # object year
+    my @p2 = split(/_/,$pn[2]); # day hour/NA
+    my @p3 = split(/_/,$pn[3]); # (minute) version
     my $obj = join('_',$p1[0 .. $#p1-1]);
     my $date = "$p1[$#p1]-$pn[1]-$p2[0]";
     my $time = "$p2[1]:$p3[0]";
-    $time =~ s/NA//;
+    if ($p2[1] eq "NA") {
+        $time = "NA";
+    }
     my $ver = ($#p3 > 0 ? $p3[1]:"");
 
     return ($obj,$date,$time,$ver);
@@ -383,7 +386,7 @@ sub eventsShow {
             $EVTedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$relevt&action=upd\"><img src=\"/icons/modif.png\" title=\"$__{'Edit...'}\" border=0 alt=\"$__{'Edit...'}\"></a>";
             $EVTedit .= "<img src=\"/icons/no.png\" onclick=\"delEvent('/cgi-bin/vedit.pl','$objectname','$relevt')\" style=\"cursor:pointer\" title=\"$__{'Remove...'}\" border=0 alt=\"$__{'Remove...'}\"></a>";
             $EVTedit .= "&nbsp;<a href=\"$WEBOBS{CGI_UPLOAD}?object=$objectname&doc=SPATH_INTERVENTIONS&event=$relextevt\"><img src=\"/icons/camera.png\" title=\"$__{'Manage Photos'}\" border=0 alt=\"$__{'Manage Photos'}\"></a>";
-            $EVTedit .= "&nbsp;<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$relextevt&action=new\"><img src=\"/icons/plus.gif\" title=\"$__{'Add a sub event...'}\" border=0 alt=\"$__{'Add a sub event...'}\"></a>";
+            $EVTedit .= "&nbsp;<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$relextevt&action=new\"><img src=\"/icons/new.png\" title=\"$__{'Add a sub event...'}\" border=0 alt=\"$__{'Add a sub event...'}\"></a>";
         }
 
         # indent this event in "events" list

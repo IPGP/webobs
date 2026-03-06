@@ -185,7 +185,7 @@ print <<"FIN";
 FIN
 
 if ($scanlist) {
-    print "<div style=\"background-color: LemonChiffon\">$request</div>";
+    print "<div style=\"background-color: #d0deea\">$request</div>";
 }
 
 my $FHits = 0;
@@ -412,7 +412,7 @@ for my $aNode (keys(%nodes)) {
 } #end for nodes
 
 if ($FHits  == 0) {
-    print "<H2 style=\"background-color: LemonChiffon; color: #DD5555\">No hit!</H2>\n";
+    print "<H2 style=\"background-color: #f3f3f3; color: #DD5555\">No hit!</H2>\n";
 }
 
 __END__

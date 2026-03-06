@@ -34,12 +34,12 @@ REF01_DATE|2000-01-01
 # year and month timescales use true durations
 TIMESCALE_TRUEVALUE|Y
 
-# summary graphs available: SUMMARY,VECTORS,MOTION,BASELINES,MODELLING,MODELTIME
-SUMMARYLIST|SUMMARY,VECTORS,MOTION,BASELINES
+# summary graphs available: SUMMARY,VECTORS,MOTION,BASELINES,STRAINMAP,MODELLING,MODELTIME
+SUMMARYLIST|SUMMARY,VECTORS,MOTION,SRTAINMAP
 
 # for scheduler requests
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} gnss $SELFREF -
-SUBMIT_RESOURCE|gipsyx
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,SUMMARYLIST,VECTORS_RELATIVE
@@ -65,9 +65,13 @@ PAPER_SIZE|8,11
 PPI|100
 LANDSCAPE|N
 PLOT_GRID|N
-
 FONTSIZE|8
+
+# exports text data files
 EXPORTS|YES
+EXPORT_HEADER_NODE_KEYLIST|FID,NAME,GNSS_9CHAR,LAT_WGS84,LON_WGS84,ALTITUDE,URL
+EXPORT_HEADER_PROC_KEYLIST|ITRF_REF,VELOCITY_REF,VECTORS_VELOCITY_REF,MODELTIME_PERIOD_DAY
+
 # outputs further vector files (in addition to EPS) for each graph. SVG is experimental
 SVGOUTPUT|NO
 PDFOUTPUT|NO
@@ -89,23 +93,32 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 # --------------------------------------------------------------------
 # specific proc's parameters
 
-
-# maximum error on position (in m) before excluding the data from graphs and calculations
-FILTER_MAX_ERROR_M|0.05
 # minimum error for each component East, North, and Up (in m)
-ENU_MIN_ERROR_M|0.01,0.01,0.01
-
+ENU_MIN_ERROR_M|0.005,0.005,0.005
 # vector of ratios applied to data errors for each orbit (Final,Rapid,Ultra)
 ORBIT_ERROR_RATIO|1,2,2
+# maximum error on position (in m) before excluding the data from graphs and calculations
+FILTER_MAX_ERROR_M|0.05
 
+# timeseries filtering: exclude min/max median values (in percent)
 PICKS_CLEAN_PERCENT|0
+# timeseries filtering: exclude values above x STD
 PICKS_CLEAN_STD|0
 
+# dimensionless factor applied to the trend value initially in m/day
+TREND_FACTOR|365.25*1e3
+# displayed trend unit string (must coherent with trend factor!)
+TREND_UNIT|mm/yr
 # minimum time window (in percent and/or days) needed to compute a trend
 TREND_MIN_PERCENT|50
 TREND_MIN_DAYS|5
+# trend time limits: extreme parts (in percent and/or days) of time window to be used in trend computation (default is to use full time window)
+TREND_TLIM_PERCENT|
+TREND_TLIM_DAYS|
 # trend error mode: 1 = lscov, 2 = std, 3 = corrcoef
 TREND_ERROR_MODE|2
+# apply a factor based on data completion on trend error
+TREND_ERROR_COMPLETION|Y
 
 # ITRF reference (this is a string displayed on graph title, not functional)
 ITRF_REF|ITRF08
@@ -131,6 +144,26 @@ HARMONIC_EAST_SINCOS_MM|
 HARMONIC_NORTH_SINCOS_MM|
 HARMONIC_UP_SINCOS_MM|
 
+# --- Active fault correction (okada85 source forward modelling)
+FAULT_ACTIVATE|N
+# LAT,LON,DEP: fault centroid coordinates as latitude (degree), longitude (degree) and depth (km>0 below sea level)
+FAULT_CENTROID_LATLONDEP|
+# LENGTH,WIDTH: fault length in the STRIKE direction, and width in the DIP direction (coma separated values in km, >0)
+FAULT_LENGTH_WIDTH_KM|
+# STRIKE,DIP,RAKE: fault trace azimuth (0 to 360°), dip angle (0 to 90°), and rake direction of rupture (-180 to 180°)
+FAULT_STRIKE_DIP_RAKE_DEG|
+# SLIP,OPEN: dislocation in RAKE direction, and in tensile component (coma separated values, in m)
+FAULT_SLIP_OPEN_M|0,0
+# t1,t2: dislocation occurs between datetimes t1 and t2, or t: dislocation occurs instantanously at datetime t 
+FAULT_DISLOCATION_TLIM|
+# dislocation time model: linear (default), log, or exp
+FAULT_DISLOCATION_TIME_MODEL|linear
+# dislocation model uses station's elevation to correct topography effect
+FAULT_WITH_TOPOGRAPHY|Y
+# plot the fault on graphs (MOTION, VECTORS, MODELLING, MODELTIME)
+FAULT_PLOT|Y
+FAULT_PLOT_COLOR|lightgray
+
 # --- PERNODE graphs
 PERNODE_LINESTYLE|o
 PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name - $velref} ($timescale)}
@@ -138,8 +171,12 @@ PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name - $velref} ($timescale)}
 PERNODE_COMPONENT_OFFSET_M|0.01
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 PERNODE_TIMEZOOM|
+# plot also the original/uncorrected data
+PERNODE_PLOT_ORIGINAL|Y
 
 # --- SUMMARY graphs
+# selection of nodes (FID) to plot (default is all associated nodes)
+SUMMARY_NODELIST|
 SUMMARY_LINESTYLE|o
 SUMMARY_TITLE|{\fontsize{14}{\bf${NAME} - $velref} ($timescale)}
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
@@ -163,7 +200,7 @@ BASELINES_EXCLUDED_NODELIST|
 BASELINES_EXCLUDED_FROM_TARGET_KM|
 BASELINES_INCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
-# - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
+# - fixed pairs (overwrites BASELINES_(EX,IN)CLUDED_* and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
 BASELINES_NODEPAIRS|
 # plots a moving average filter (raw data in background with lighter color)
 BASELINES_MOVING_AVERAGE|1
@@ -175,6 +212,37 @@ BASELINES_REF_OFFSET_M|0.01
 BASELINES_STATION_OFFSET_M|0.01
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 BASELINES_TIMEZOOM|
+
+# --- STRAINMAP: baselines graph with map of strain
+STRAINMAP_TITLE|{\fontsize{14}{\bf$name - Baselines strain} ($timescale)}
+# - node pairs: REF1,STA1;REF2,STA1,STA2,STA5 (default is Delaunay triangles)
+STRAINMAP_NODEPAIRS|
+# - if no pairs defined, Delaunay triangles from all nodes with possible exclusion/inclusion from node reference list and distance from target
+STRAINMAP_EXCLUDED_FROM_TARGET_KM|
+STRAINMAP_EXCLUDED_NODELIST|
+STRAINMAP_INCLUDED_NODELIST|
+# time tolerance (in days) to compute baseline from data pairs
+STRAINMAP_TOL_DAYS|1
+# YES = 2-D baseline, NO = 3-D baselines
+STRAINMAP_HORIZONTAL_ONLY|NO
+# baseline timeseries linestyle
+STRAINMAP_LINESTYLE|.
+# adds moving average lines (in data sampling)
+STRAINMAP_MOVING_AVERAGE|30
+# baseline offset between pairs (in m), empty for automatic (computed from data STD)
+STRAINMAP_PAIRS_OFFSET_M|
+# sort baseline pairs from linear trend
+STRAINMAP_PAIRS_SORT|YES
+# window for linear trend parameters: all window (empty), number of days before the end (scalar), or days interval [min,max] from end (2 values)  
+STRAINMAP_WINDOW_DAYS|
+# DEM options for background basemap (see dem.m)
+STRAINMAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend','cartesian'
+# map baseline pairs linewidth (in pt): constant or min,max to adjust linearily to absolute strain values
+STRAINMAP_LINEWIDTH|.5,4
+# map baseline pairs color reference: strain for signed colormap, or timeseries (default)
+STRAINMAP_COLORREF|strain
+STRAINMAP_COLORMAP|ryb(256)
+STRAINMAP_FONTSIZE|10
 
 # --- VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|
@@ -190,12 +258,14 @@ VECTORS_RELATIVE_HORIZONTAL_ONLY|Y
 # background map parameters (see CODE/matlab/dem.m for available options)
 VECTORS_DEM_OPT|'watermark',1.5,'saturation',0.7,'interp','legend','seacolor',[0.7,0.9,1]
 VECTORS_TITLE|{\fontsize{14}{\bf${NAME} - Velocity vectors} ($timescale)}
+VECTORS_TARGET_INCLUDED|Y
 VECTORS_MIN_SIZE_KM|5
 VECTORS_MAX_XYRATIO|1
+# map XY limits as lon0,lat0,width (in degrees). Will overwrite automatic limits and associated options
+VECTORS_MAP_XYLIM|
 # vectors velocity scale, in mm/yr for 25% of the graph width (default is 0 for automatic)
 VECTORS_VELOCITY_SCALE|0
 VECTORS_ARROWSHAPE|.15,.15,.12,.03
-VECTORS_TARGET_INCLUDED|Y
 # amplitude vs distance plot: used components to compute the amplitude (1,2 = horizontal only)
 VECTORS_AMPLITUDE_COMPONENTS|1,2
 
@@ -206,6 +276,8 @@ MOTION_INCLUDED_NODELIST|
 MOTION_MAFILTER|10
 MOTION_SCALE_MM|0
 MOTION_MIN_SIZE_KM|10
+# map XY limits as lon0,lat0,width (in degrees). Will overwrite automatic limits and associated options
+MOTION_MAP_XYLIM|
 MOTION_COLORMAP|spectral(256)
 MOTION_DEM_OPT|'saturation',0,'watermark',2,'interp'
 MOTION_TITLE|{\fontsize{14}{\bf${NAME} - Motion} ($timescale)}
@@ -239,14 +311,18 @@ MODELLING_HORIZONTAL_ONLY|N
 MODELLING_ENU_ERROR_RATIO|1,1,2
 # recomputes relative velocities before modelling (instead of vectors results)
 MODELLING_FORCE_RELATIVE|N
-# model space depth (upper limit automaticaly adjusted to topography)
-MODELLING_MAX_DEPTH|8000
+# model space XY limits as lon0,lat0,width (in degrees). Will overwrite automatic limits
+MODELLING_MAP_XYLIM|
 # model space additional borders in meter (from stations rectangle boundaries)
 MODELLING_BORDERS|5000
+# model space depth (upper limit automaticaly adjusted to topography)
+MODELLING_MAX_DEPTH|8000
 # model space width (warning: will be cubed, so 100 is already 1 million points!)
 MODELLING_GRID_SIZE|50
 # modelling source: 'isotropic' (formerly 'mogi') or 'pcdm' (point Compound Dislocation Model)
 MODELLING_SOURCE_TYPE|isotropic
+# elastic parameter (Poisson's ratio) nu
+MODELLING_NU|0.25
 # sets 2 to model the residuals with a secondary source (EXPERIMENTAL)
 MODELLING_MULTIPLE_SOURCES|1
 # misfit norm calculation: 'L1' (default) or 'L2'
@@ -278,6 +354,10 @@ MODELLING_TOPO_RGB|.5,.5,.5
 MODELLING_COLORREF|volpdf
 MODELLING_COLORMAP|ryb(256)
 MODELLING_COLOR_SHADING|0.3
+# arrow parameters (see arrowshape.m) for displacement arrows (data, model, and residual)
+MODELLING_DATA_ARROWSHAPE|.2,.2,.15,.05
+MODELLING_MODEL_ARROWSHAPE|.1,.1,.08,.02
+MODELLING_RESIDUAL_ARROWSHAPE|.1,.1,.08,.02
 # colors for displacement arrows (data, model, and residual) in R,G,B or color name
 MODELLING_DATA_COLOR|0,0,0       # data arrows
 MODELLING_MODEL_COLOR|.7,0,0     # model arrows

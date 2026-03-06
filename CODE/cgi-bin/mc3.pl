@@ -171,7 +171,7 @@ $QryParm->{'mc'}        //= $WEBOBS{MC3_DEFAULT_NAME};
 
 # ---- read in configuration + info files -------------------------------------
 #
-my $mc3        = $QryParm->{'mc'};
+my $mc3        = $QryParm->{'mc'} // $WEBOBS{MC3_DEFAULT_NAME};
 my %MC3        = readCfg("$WEBOBS{ROOT_CONF}/$mc3.conf");
 
 # ---- check client's authorization(s) ----------------------------------------
@@ -201,10 +201,13 @@ $QryParm->{'locstatus'} //= $MC3{DISPLAY_LOCATION_STATUS_DEFAULT};
 $QryParm->{'hideloc'}   //= !$MC3{DISPLAY_LOCATION_DEFAULT};
 $QryParm->{'obs'}       //= "";
 $QryParm->{'graph'}     //= "movsum";
+$QryParm->{'nograph'}   //= 0;
+$QryParm->{'grw'}       //= $MC3{GRAPH_WIDTH_PX};
+$QryParm->{'grh'}       //= $MC3{GRAPH_HEIGHT_PX};
 $QryParm->{'slt'}       //= $MC3{DEFAULT_SELECT_LOCAL};
 $QryParm->{'newts'}     //= "";
 $QryParm->{'dump'}      //= "";
-$QryParm->{'trash'}     //= "";
+$QryParm->{'trash'}     //= 0;
 
 # ---- DateTime inits ---------------------------------------------------------
 #
@@ -418,11 +421,11 @@ if ($QryParm->{'dump'} eq "") {
     $html .= "</select>\n";
 
     # ----- selection box TYPE EVNT
-    $html .= " &nbsp;&nbsp; Type: <select name=\"type\" size=\"1\">";
+    $html .= " &nbsp;&nbsp; Type: <select class=\"multiple-seismic-event-types\" name=\"type\" size=\"1\" multiple=\"multiple\">";
     for (sort(keys(%typesSO))) {
         my $key = $typesSO{$_};
         if ($_ ne "") {
-            $html .= "<option ".($key eq $QryParm->{'type'} ? "selected":"")." value=\"$key\">$types{$key}{Name}</option>\n";
+            $html .= "<option ".($key eq $QryParm->{'type'} ? "selected":"")." value=\"$key\">$types{$key}{Name} ($key)</option>\n";
         }
     }
     $html .= "</select>\n";
@@ -495,22 +498,40 @@ if ($QryParm->{'dump'} eq "") {
     $html .= "<INPUT type=\"hidden\" name=\"mc\" value=\"$mc3\">\n"
       ."<INPUT type=\"hidden\" name=\"dump\" value=\"\">\n"
       ."<INPUT type=\"hidden\" name=\"newts\" value=\"$QryParm->{'newts'}\">\n"
+      ."<INPUT type=\"hidden\" name=\"grw\" value=\"$QryParm->{'grw'}\">\n"
+      ."<INPUT type=\"hidden\" name=\"grh\" value=\"$QryParm->{'grh'}\">\n"
 
 #."<INPUT type=\"button\" value=\"$__{'Reset'}\" onClick=\"document.formulaire.reset()\">"
       ."<INPUT type=\"button\" value=\"$__{'Display'}\" onClick=\"display()\">"
       ."</TH></TR></TABLE>\n"
       ."<DIV id=\"attente\">Searching for data... please wait.</DIV>";
 
-    $html .= "<TABLE width=\"100%\"><TR><TD width=700>";
+    my $grall_width = $QryParm->{'grw'} + 200;
+    $html .= "<TABLE width=\"100%\"><TR><TD width=$grall_width>";
     if ($QryParm->{'nograph'} == 0) {
-        $html .= "<DIV id=\"mcgraph\" style=\"width:900px;height:250px;float:left;\"></DIV>\n"
-          ."<DIV id=\"showall\" style=\"width:150px;height:15px;position:relative;float:left;font-size:smaller;\">"
-          ."<A href=\"#\" onClick=\"plotAll()\">plot all</A>"
-
-          #."<BR><A href=\"#\" id=\"tlsavelink\">download image</A></DIV>\n"
-          ."<DIV id=\"graphinfo\" style=\"width:750px;height:15px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
-          ."<TD nowrap style=\"text-align:left\"><DIV id=\"graphlegend\" style=\"width:200px;height:250px;position:static;\"></DIV></TD>\n"
-          ."<TD nowrap style=\"text-align:left;vertical-align:top\">";
+        my $grshowall = 45;
+        my $grinfo_height = 15;
+        my $grinfo_width = $QryParm->{'grw'} - $grshowall;
+        my $grlegend_width = 200;
+        $html .= "<DIV id=\"mcgraphall\" style=\"display: flex; gap: 20px;\">\n"
+           ."<DIV id=\"mcgraph\" style=\"width:".$QryParm->{'grw'}."px;height:".$QryParm->{'grh'}."px;\"></DIV>\n"
+           ."<DIV id=\"graphlegend\" style=\"width:".$grlegend_width."px;height:".$QryParm->{'grh'}."px;margin-top:5px;\"></DIV>"
+           ."</DIV>\n"
+           ."<DIV id=\"savelink\" style=\"position:relative;float:left\"><A href=\"#\" id=\"mcsavelink\" onMouseOut=\"nd()\" onMouseOver=\"overlib('save the graph to disk')\">"
+           ."<IMG src=\"/icons/save.png\"></A></DIV>"
+           ."<DIV id=\"showall\" style=\"width:25px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;\">"
+            ."<A href=\"#\" onClick=\"plotAll()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('plot all data (unzoom)')\">"
+            ."<IMG src=\"/icons/hextend.png\"></A></DIV>"
+          ."<DIV id=\"barson\" style=\"width=15px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;display:none\">"
+            ."<A href=\"#\" onClick=\"toggleLine()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('bars line ON')\">"
+            ."<IMG src=\"/icons/bars.png\"</A></DIV>"
+          ."<DIV id=\"barsoff\" style=\"width=15px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller\">"
+            ."<A href=\"#\" onClick=\"toggleLine()\" onMouseOut=\"nd()\" onMouseOver=\"overlib('bars line OFF')\">"
+            ."<IMG src=\"/icons/barsnoc.png\"</A></DIV>"
+          
+          ."<DIV id=\"graphinfo\" style=\"width:".$grinfo_width."px;height:".$grinfo_height."px;position:relative;float:left;font-size:smaller;color:#545454;\"></DIV></TD>\n"
+          ."<TD></TD>\n"
+          ."<TD nowrap style=\"text-align:left;vertical-align:top;padding-top:10px\">";
 
         # ----- selection box graph-type
         $html .= "<P><B>Graph:</B>&nbsp;<SELECT name=\"graph\" size=\"1\" onChange=\"plotFlot(document.formulaire.graph.value)\">";
@@ -667,7 +688,8 @@ if ( (!clientHasAdm(type=>"authprocs",name=>"MC") && !clientHasAdm(type=>"authpr
 # Filter on type
 #
 if (($QryParm->{'type'} ne "") && ($QryParm->{'type'} ne "ALL")) {
-    @lignes = grep(/\|$QryParm->{'type'}\|/, @lignes)
+    my $regex = join '|', map { quotemeta } $cgi->param("type");
+    @lignes = grep { /\|$regex\|/ } @lignes;
 }
 
 # Filter on amplitude
@@ -697,7 +719,7 @@ foreach my $line (@lignes) {
         $nombre,$s_moins_p,$station,$arrivee,$suds,$qml,$event_img,$signature,
         $comment) = split(/\|/,$line);
     my ($operator,$timestamp) = split("/",$signature);
-    my $origin;
+    my $origin = "";
     my $duree_s = ($duree ? $duree*$duration_s{$unite}:"");
     my @evt_date_elem = split(/-/,$date);
     my @evt_hour_elem = split(/:/,$heure);
@@ -714,8 +736,8 @@ foreach my $line (@lignes) {
 #XB-was: if (($date le $dateEnd && $date ge $dateStart)
 #XB-was: && ($QryParm->{'duree'} eq "" || $QryParm->{'duree'} eq "NA" || $QryParm->{'duree'} eq "ALL" || $duree_s >= $QryParm->{'duree'})
     if ($evt_date ge $start_datetime && $evt_date le $end_datetime
-        && ($QryParm->{'duree'} ~~ ["", "NA", "ALL"] || $duree_s >= $QryParm->{'duree'} || length($qml) > 2)
-        && ($QryParm->{'amplitude'} ~~ ["", "ALL"] || $QryParm->{'ampoper'} eq 'eq'
+        && ((grep { $_ eq $QryParm->{'duree'}} ("", "NA", "ALL")) || $duree_s >= $QryParm->{'duree'} || length($qml) > 2)
+        && ((grep { $_ eq $QryParm->{'amplitude'}} ("", "ALL")) || $QryParm->{'ampoper'} eq 'eq'
             || ($QryParm->{'ampoper'} eq 'le' && $evt_amp <= $valAmp{$QryParm->{'amplitude'}})
             || ($QryParm->{'ampoper'} eq 'ge' && $evt_amp >= $valAmp{$QryParm->{'amplitude'}}))
         && ($QryParm->{'newts'} eq "" || $timestamp ge $QryParm->{'newts'})
@@ -818,7 +840,7 @@ foreach my $line (@lignes) {
 
         ($cod,$dat,$lat,$lon,$dep,$pha,$mod,$sta,$mag,$mty,$mth,$mdl,$typ) = split(';',$origin);
         my $noloc = 0;
-        $noloc = 1 if (grep(/^$typ$/,@nolocation_types));
+        $noloc = 1 if (defined($typ) && grep(/^$typ$/,@nolocation_types));
 
         if ($QryParm->{'located'} == 0 && $QryParm->{'locstatus'} == 0
             || ($QryParm->{'located'} == 0 && $noloc == 0 && $pha >= $MC3{LOCATION_MIN_PHASES} && $QryParm->{'locstatus'} == 1 && $mod eq 'manual')
@@ -1089,47 +1111,47 @@ $html .= "</TD></TR></TABLE>"
 #
 if ($QryParm->{'nograph'} == 0) {
     my @stat_v;
-    $html .= "<script type=\"text/javascript\">";
+    $html .= "<script type=\"text/javascript\">
+     var MC3 = {
+        NAME : \"$mc3\"
+     };\n";
     foreach (sort(keys(%typesSO))) {
         my $key = $typesSO{$_};
-        if ($key ne "TOTAL" && $stat{$key}) {
-            $html .= " datad.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+        if (!isok($types{$key}{NoGraph}) && $key ne "TOTAL" && $stat{$key}) {
+            my $content = "{ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\","
+                ." color: \"$types{$key}{Color}\","
+                ." data: [";
+            $html .= " datad.push($content";
             for (my $i=0; $i<=$#stat_t; $i++) {
                 my $d = $stat_d{$key}[$i];
                 $html .= "[ $stat_j[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datah.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datah.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_dh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datav.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datav.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_vh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " dataw.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " dataw.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_wh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datam.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datam.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_mh{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
             }
             $html .= "]});\n";
-            $html .= " datac.push({ label: \"$types{$key}{Name} = $stat{$key} / $stat{$key}\", color: \"$types{$key}{Color}\","
-              ." data: [";
+            $html .= " datac.push($content";
             for (my $i=0; $i<=$#stat_th; $i++) {
                 my $d = $stat_ch{$key}[$i];
                 $html .= "[ $stat_jh[$i],".($d ? $d:"0")." ],";
@@ -1148,7 +1170,7 @@ if ($QryParm->{'nograph'} == 0) {
               .sprintf("%.3f", $stat_energy{$key}[-1] / 10**6)
               ." (MJ)\", color: \"$types{$key}{Color}\", data: [";
             for (my $i = 0; $i <= $#stat_j; $i++) {
-                $html .= sprintf("[%s, %s],", $stat_j[$i], ($stat_energy{$key}[$i] / 10**6 || "0"));
+                $html .= sprintf("[%s, %s],", $stat_j[$i], ($stat_energy{$key}[$i] // "0") / 10**6);
             }
             $html .= "]});\n";
         }
@@ -1401,7 +1423,7 @@ for (@finalLignes) {
         if ($types{$type}{Md} == 0) {
             $dist = 0;
         }
-        if ($s_moins_p && !($s_moins_p ~~ ["","NA"," "]) && $types{$type}{Md} != -1) {
+        if ($s_moins_p && (!grep { $_ eq $s_moins_p } ("", "NA", " ")) && $types{$type}{Md} != -1) {
             $dist = 8*$s_moins_p;
         }
         if ($duree_s > 0 && $dist >= 0) {
@@ -1683,6 +1705,7 @@ if ($QryParm->{'dump'} eq "") {
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <title>$MC3{TITLE}</title>
+<link rel="stylesheet" type="text/css" href="/css/select2/select2.min.css"/>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
 <link rel="stylesheet" type="text/css" href="/css/$MC3{CSS}">
 </head>
@@ -1694,6 +1717,7 @@ if ($QryParm->{'dump'} eq "") {
 <!-- jQuery & FLOT http://code.google.com/p/flot -->
 <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="/js/flot/excanvas.min.jsn"></script><![endif]-->
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/select2/select2.min.js"></script>
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.min.js"></script>
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.time.min.js"></script>
 <script language="javascript" type="text/javascript" src="/js/flot/jquery.flot.stack.min.js"></script>
@@ -1740,6 +1764,41 @@ function display() {
     document.formulaire.setAttribute("target", "");
     document.formulaire.submit();
 }
+
+\$(document).ready(function() {
+    var \$select = \$('.multiple-seismic-event-types').select2({
+        placeholder: "Select one or more types",
+        allowClear: true,
+        templateSelection: formatSelection,
+    }).on("select2:unselecting", function(e) {
+        \$(this).data('state', 'unselected');
+    }).on("select2:open", function(e) {
+        if (\$(this).data('state') === 'unselected') {
+            \$(this).removeData('state');
+            \$(this).select2('close');
+        }
+    });
+
+    function formatSelection(item) {
+        var originalSelection = item.element;
+        return \$(originalSelection).val();
+    }
+
+    \$select.on('change', function() {
+        var selectedCount = \$(this).find('option:selected').length;
+        var \$selection = \$(this).next('.select2').find('.select2-selection__rendered');
+        var \$clearButton = \$selection.find('.select2-selection__clear');
+
+        if (selectedCount > 5) {
+            \$selection.html("Several selected types of seismicity (" + selectedCount + ")");
+            \$selection.append(\$clearButton);
+        }
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedTypes = urlParams.getAll('type')
+    \$('.multiple-seismic-event-types').val(selectedTypes).trigger('change');
+});
 
 //-->
 </script>

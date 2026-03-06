@@ -105,6 +105,7 @@ my @dateStartElements = split(/-/,$dateStart);
 my $dateEnd = $cgi->url_param('dateEnd');
 my @dateEndElements = split(/-/,$dateEnd);
 
+# TODO : fetch from MC3 config file
 my $mc3URL = "https://195.83.188.56/cgi-bin/mc3.pl";
 my $user = 'mc3';
 my $pass = 'MC3-0vpf';
@@ -114,7 +115,7 @@ my $header = HTTP::Request->new(GET => $mc3URL);
 $header->authorization_basic($user, $pass);
 
 # DERNIER SEISME RESSENTI
-my @date1 = ('2020','01','01','00');
+my @date1 = ('2025','06','20','00');
 my @date2 = ($dateEndElements[0],$dateEndElements[1],$dateEndElements[2],'23');
 my $req = new HTTP::Request(GET => "$mc3URL?slt=0&y1=$date1[0]&m1=$date1[1]&d1=$date1[2]&h1=$date1[3]&y2=$date2[0]&m2=$date2[1]&d2=$date2[2]&h2=$date2[3]&type=ALL&duree=ALL&ampoper=eq&amplitude=ALL&obs=ressenti&locstatus=0&located=0&mc=MC3_Mayotte&dump=bul&newts=&graph=movsum", $header);
 my $response = $ua->request($req);
@@ -268,6 +269,7 @@ function showCredits() {
     $htmlOutput .= $html;
     $htmlBrowser .= $html;
     $htmlMail .= $html;
+    $htmlMail .= "<p><a href=\"https://www.ipgp.fr/volcanoweb/mayotte/Bulletin_quotidien/bulletin.html\">Retrouvez ce bulletin avec les illustrations et figures sur le site de l'IPGP.</a></p>";
     my $dateBulletin = localtime->strftime('%d-%m-%Y %H:%M:%S');
     $html = "    <p>Bulletin cr&eacute;&eacute; le $dateBulletin TU.</p>";
     $html .= "    <p id=\"warning\">Ce bulletin est issu de l'examen pr&eacute;liminaire quotidien des derni&egrave;res donn&eacute;es par un.e analyste du REVOSIMA. Ces informations n'ont pas toutes &eacute;t&eacute; valid&eacute;es et sont susceptibles d'&eacute;voluer.<br/>Pour une information compl&egrave;te, veuillez vous reporter aux <a href=\"https://www.ipgp.fr/actualites-du-revosima/\">actualit&eacute;s du r&eacute;seau valid&eacute;es</a>.</p>";
@@ -342,7 +344,7 @@ function showCredits() {
     $html = "</p>";
     $htmlMail .= $html;
     $html .= "<p id=legend>";
-    $html .= "D&eacute;placements (en cm) enregistr&eacute;s sur 9 stations GPS localis&eacute;s &agrave; Mayotte (BDRL, GAMO, KAWE, KNKL, MAYG, MTSA, MTSB, PMZI, PORO), 1 station &agrave; Grande Glorieuse (GLOR) et 1 station au nord de Madagascar &agrave; Diego Suarez (DSUA) sur les composantes est (en haut), nord (au milieu) et vertical (en bas) depuis le 22 d&eacute;cembre 2013 pour visualiser une longue s&eacute;rie temporelle ant&eacute;-crise. Post-traitement de ces donn&eacute;es r&eacute;alis&eacute; par l'IPGP. &copy;OVPF-IPGP / REVOSIMA.";
+    $html .= "D&eacute;placements (en cm) enregistr&eacute;s sur 9 stations GNSS (Global Navigation Satellite System, système global de positionnement par satellite) localis&eacute;s &agrave; Mayotte (BDRL, GAMO, KAWE, KNKL, MAYG, MTSA, MTSB, PMZI, PORO), 1 station &agrave; Grande Glorieuse (GLOR) et 1 station au nord de Madagascar &agrave; Diego Suarez (DSUA) sur les composantes est (en haut), nord (au milieu) et vertical (en bas) depuis le 22 d&eacute;cembre 2013 pour visualiser une longue s&eacute;rie temporelle ant&eacute;-crise. Post-traitement de ces donn&eacute;es r&eacute;alis&eacute; par l'IPGP. &copy;OVPF-IPGP / REVOSIMA.";
     $html .= "</p>";
     $html .= '    <hr>';
     $htmlOutput .= $html;
@@ -378,9 +380,10 @@ function showCredits() {
                   <h3>Cr&eacute;dits</h3>
                   <div id='revocredits'>
                     <p id=legend>
-Ce r&eacute;seau est op&eacute;r&eacute; par l'IPGP avec l'appui du BRGM Mayotte. Le REVOSIMA b&eacute;n&eacute;ficie du soutien de l'Observatoire Volcanologique du Piton de la Fournaise (OVPF-IPGP), de l'IFREMER, du CNRS-INSU et du BRGM. Les donn&eacute;es de ce r&eacute;seau sont produites par un large consortium de partenaires scientifiques financ&eacute;s par l'Etat.<br/>
-Le consortium du REVOSIMA : IPGP et Universit&eacute; Paris Cit&eacute;, BRGM, IFREMER, CNRS, BCSF-R&eacute;NaSS, ITES et Universit&eacute; de Strasbourg, IGN, ENS, SHOM, TAAF, M&eacute;t&eacute;o France, CNES, Universit&eacute; Grenoble Alpes et ISTerre, Universit&eacute; Clermont Auvergne, LMV et OPGC, Universit&eacute; de La R&eacute;union, Universit&eacute; Paul Sabatier, Toulouse et GET-OMP, Universit&eacute; de la Rochelle, Universit&eacute; de Bretagne Occidentale, IRD et collaborateurs. Les astreintes de surveillance renforc&eacute;e du processus sismo-volcanique par le REVOSIMA ont &eacute;t&eacute; assur&eacute;es pendant une phase provisoire depuis le 25 juillet sur la base de la mobilisation exceptionnelle de personnels scientifiques permanents disponibles, qui proviennent de laboratoires de l'INSU-CNRS et de leurs universit&eacute;s associ&eacute;es (BCSF-RENASS, CNRS, ITES et Universit&eacute; de Strasbourg, Universit&eacute; Grenoble Alpes et ISTerre, Universit&eacute; Paul Sabatier, Toulouse et GET-OMP, Universit&eacute; Clermont Auvergne, LMV et OPGC, BRGM, IPGP et Universit&eacute; Paris Cit&eacute;, Universit&eacute; de la R&eacute;union), sous le pilotage de l'IPGP, de l'OVPF-IPGP, et du BRGM Mayotte, et sur la base d'un protocole et d'outils mis en place par l'IPGP, le BCSF-RENASS, l'OVPF-IPGP, et l'IFREMER.<br/><br/>
-Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans ce bulletin sont &agrave; usage d'information, de p&eacute;dagogie et de surveillance. Elles ne peuvent pas &ecirc;tre utilis&eacute;es &agrave; des fins de publications de recherche sans y faire r&eacute;f&eacute;rence explicitement et sans autorisation du comit&eacute; du REVOSIMA. Les donn&eacute;es sismiques sont distribu&eacute;es par l'IPGP (Centre de donn&eacute;es : <a href=http://datacenter.ipgp.fr/>http://datacenter.ipgp.fr</a> et <a href=http://volobsis.ipgp.fr/data.php>http://volobsis.ipgp.fr/data.php</a>) et par les Services Nationaux d'Observations du CNRS-INSU (<a href=http://seismology.resif.fr/>http://seismology.resif.fr/</a>). Les donn&eacute;es GPS sont distribu&eacute;es par l'Institut National de l'Information G&eacute;ographique et Foresti&egrave;re (IGN : <a href=http://mayotte.gnss.fr/donnees>http://mayotte.gnss.fr/donnees</a>). Les donn&eacute;es acquises lors des campagnes oc&eacute;anographiques seront distribu&eacute;es par l'IFREMER, les autres donn&eacute;es g&eacute;ologiques et g&eacute;ochimiques seront diffus&eacute;es par le REVOSIMA et ses partenaires.
+Le r&eacute;seau de surveillance volcanologique et sismologique de Mayotte (REVOSIMA) est op&eacute;r&eacute; par l'IPGP avec le soutien du BRGM et est sous la responsabilit&eacute; de l'observatoire volcanologique du Piton de la Fournaise (OVPF-IPGP) et de la direction r&eacute;gionale du BRGM &agrave; Mayotte.<br/>
+Ce r&eacute;seau de surveillance, financ&eacute; par l'&Eacute;tat (Minist&egrave;re de l'enseignement sup&eacute;rieur et de la recherche, Minist&egrave;re de la transition &eacute;cologique, Minist&egrave;re de l'int&eacute;rieur, Minist&egrave;re des Outre-mer), b&eacute;n&eacute;ficie de l'appui d'un large consortium de partenaires scientifiques français: IPGP et Universit&eacute; Paris Cit&eacute;, BRGM, IFREMER, CNRS, BCSF-R&eacute;NaSS, ITES et Universit&eacute; de Strasbourg, IGN, ENS, SHOM, TAAF, CNES, Universit&eacute; Grenoble Alpes et ISTerre, Universit&eacute; Clermont Auvergne, LMV et OPGC, Universit&eacute; de La R&eacute;union, Universit&eacute; Paul Sabatier, Toulouse et GET-OMP, Universit&eacute; de la Rochelle, Universit&eacute; de Bretagne Occidentale, IRD et collaborateurs.<br/><br/>
+
+Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans ce bulletin sont &agrave; usage d'information, de p&eacute;dagogie et de surveillance. Elles ne peuvent pas &ecirc;tre utilis&eacute;es &agrave; des fins de publications de recherche sans y faire r&eacute;f&eacute;rence explicitement et sans autorisation du comit&eacute; du REVOSIMA. Les donn&eacute;es sismiques sont distribu&eacute;es par l'IPGP (Centre de donn&eacute;es : <a href=http://datacenter.ipgp.fr/>http://datacenter.ipgp.fr</a> et <a href=http://volobsis.ipgp.fr/data.php>http://volobsis.ipgp.fr/data.php</a>) et par les Services Nationaux d'Observations du CNRS-INSU (<a href=http://seismology.resif.fr/>http://seismology.resif.fr/</a>). Les donn&eacute;es des stations GNSS sont distribu&eacute;es par l'Institut National de l'Information G&eacute;ographique et Foresti&egrave;re (IGN : <a href=http://mayotte.gnss.fr/donnees>http://mayotte.gnss.fr/donnees</a>). Les donn&eacute;es acquises lors des campagnes oc&eacute;anographiques seront distribu&eacute;es par l'IFREMER, les autres donn&eacute;es g&eacute;ologiques et g&eacute;ochimiques seront diffus&eacute;es par le REVOSIMA et ses partenaires.
                     </p>
                   </div>
                   ";

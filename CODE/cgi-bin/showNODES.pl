@@ -12,6 +12,10 @@ http://..../showNODES.pl
 
 Displays all known NODES as a matrix: row=node, column=GRID node belongs to
 
+=head1 Authorizations
+
+Authorization concerns the associated grid resource. A minimum read level is needed to see the node in the table.
+
 =cut
 
 use strict;
@@ -40,6 +44,9 @@ for (sort(WebObs::Grids::listViewNames())) {
 for (sort(WebObs::Grids::listProcNames())) {
     push(@T, "PROC.$_") if (clientHasRead(type=>"authprocs",name=>"$_"));
 };
+for (sort(WebObs::Grids::listFormNames())) {
+    push(@T, "FORM.$_") if (clientHasRead(type=>"authforms",name=>"$_"));
+};
 
 # get all NODE IDs with grid association
 my %N = WebObs::Grids::listNodeGrids();
@@ -54,7 +61,7 @@ print <<"FIN";
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <title>Nodes Map</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
-<link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_WMCSS}">
+<link rel="stylesheet" type="text/css" href="/css/shownodes.css">
 <script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
 <script language="JavaScript">
 \$(document).ready(function() {
@@ -72,10 +79,12 @@ print <<"FIN";
 <body>
 FIN
 
+# ---- title and global stats
 print "<TABLE width=\"100%\"><TR><TD style=\"border:0;vert-align:top\"><H1>$WEBOBS{WEBOBS_ID}: $__{'All nodes'}</H1></TD>\n";
-print "<TD style=\"border:0;text-align:right\"><TABLE>";
+print "<TD style=\"border:0;text-align:right\"><TABLE width=\"100%\">";
 print "<TR><TD style=\"border:0;text-align:right\"><B>".(grep { $_ =~ /^VIEW/ } @T)."</B></TD><TD style=\"border:0\">views</TD></TR>\n";
 print "<TR><TD style=\"border:0;text-align:right\"><B>".(grep { $_ =~ /^PROC/ } @T)."</B></TD><TD style=\"border:0\">procs</TD></TR>\n";
+print "<TR><TD style=\"border:0;text-align:right\"><B>".(grep { $_ =~ /^FORM/ } @T)."</B></TD><TD style=\"border:0\">forms</TD></TR>\n";
 print "<TR><TD style=\"border:0;text-align:right\"><B>".(keys %N)."</B></TD><TD style=\"border:0\">$__{'nodes'}</TD></TR>\n";
 print "<TR><TD style=\"border:0;text-align:right\"><B>".(grep(/^1$/,map { @{$_} == 0 } values %N))."</B></TD><TD style=\"border:0\">$__{'orphan nodes'}</TD></TR>\n";
 print "</TABLE></TD></TR></TABLE>\n";
@@ -84,10 +93,11 @@ print "</TABLE></TD></TR></TABLE>\n";
 print "<DIV class=\"nodetbl\">";
 print "<TABLE cellspacing=0>\n";
 print "<THEAD>";
-my $oddeven = "even"; my $what = 'view';
+my $what;
+my $oddeven = "even";
 $row = "<TR><TH></TH>";
 for (@T) {
-    $what = ($_ =~ m/^VIEW./) ? 'view' : 'proc';
+    $what = ($_ =~ m/^PROC./ ? 'proc':($_ =~ m/^FORM./ ? 'form':'view'));
     $row .= "<TH class=\"skew $what $oddeven\"><div><span>$_</span></div></TH>";
     $oddeven = $oddeven eq "even" ? "odd" : "even";
 }
@@ -100,7 +110,7 @@ for my $node (sort keys(%N)) {
     $row = "<TR><TD class=\"nodeid\">$node</TD>";
     if (@{$N{$node}}) {
         for (@T) {
-            $what = ($_ =~ m/^VIEW./) ? 'view' : 'proc';
+            $what = ($_ =~ m/^PROC./ ? 'proc':($_ =~ m/^FORM./ ? 'form':'view'));
             if ($_ ~~ @{$N{$node}}) {
                 my $link = "\"$NODES{CGI_SHOW}?node=$_.$node\"";
                 $row .= "<TD class=\"otimes $what $oddeven\"><a href=$link>&cir;</a></TD>"
@@ -132,7 +142,7 @@ Didier Lafon, François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

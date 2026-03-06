@@ -73,20 +73,20 @@ print "Content-type: text/html; charset=utf-8
   <script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
   <meta http-equiv=\"refresh\" content=\"60\">
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\">
+<BODY>
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
 <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
 <DIV ID=\"helpBox\"></DIV>";
 
-print "<h2>$pagetitle</h2>";
-print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ Forms: "
+print "<h1>$pagetitle</h1>";
+print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ $__{'Request Forms:'} "
   ."<a href=\"/cgi-bin/formREQ.pl\"><b>Procs</b></a> | "
   ."<a href=\"/cgi-bin/formGRIDMAPS.pl\"><b>Gridmaps</b></a> | "
   ."Users: "
   .($QryParm->{'usr'} eq "all" ? "<a href=\"$myself\"><b>$CLIENT</b></a> | all":"$CLIENT | <a href=\"$myself?usr=all\"><b>all</b></a>")." | "
-  ."<IMG src='/icons/refresh.png' style='vertical-align:middle' title='Refresh' onClick='document.location.reload(false)'>"
+  ."<IMG src='/icons/refresh.png' style='vertical-align:middle;cursor:pointer' title='Refresh' onClick='document.location.reload(false)'>"
   ." ]</P>";
 
 $table = "<TABLE><TR><TH>$__{'Date & Time'}</TH><TH>$__{'Host'}</TH><TH>$__{'User'}</TH><TH>$__{'Time Span'}</TH><TH>$__{'Params'}</TH>
@@ -136,7 +136,15 @@ for (reverse sort @reqlist) {
                         $table .= "<TD align=center bgcolor=orange>wait...</TD>";
                     }
                 }
-                $table .= "<TD align=center>".(-d "$dir/$_" ? "<A href='/cgi-bin/showOUTR.pl?dir=$reqdir&grid=$_'><IMG src='/icons/visu.png'</A>":"")."</TD>";
+
+                my $href = "";
+                if (-d "$WEBOBS{ROOT_OUTR}/$reqdir/$_/$WEBOBS{PATH_OUTG_EVENTS}") {
+                    $href = "/cgi-bin/showOUTG.pl?grid=$_&dir=$reqdir&ts=events";
+                } else {
+                    $href = "/cgi-bin/showOUTR.pl?grid=$_&dir=$reqdir";
+                }
+
+                $table .= "<TD align=center>".(-d "$dir/$_" ? "<A href=$href><IMG src='/icons/visu.png'></A>":"")."</TD>";
                 $table .= "<TD align=center>".(-e "$dir/$_.tgz" ? "<A download='$_' href='$WEBOBS{URN_OUTR}/$reqdir/$_.tgz'><img src='/icons/dwld.png'></A>":"")."</TD>";
             } else {
                 $table .= "<TD colspan=4></TD>";

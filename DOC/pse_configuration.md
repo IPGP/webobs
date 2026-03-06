@@ -71,7 +71,7 @@ Move into the perl code folder and run `./training.pl date1 date2 s3 conf`:
 - `s3` is the sefran3 name (will define the datasource and associated MC3),
 - `conf` is the file path of the general setting file.
 
-The execution of the training command may take a while so please be patient. When it is done we advise you to take time to analyse the outputs. In order to help you in tuning the model, a python notebook is under development.  
+The execution of the training command may take a while so please be patient. When it is done we advise you to take time to analyse the outputs. In order to help you in tuning the model, a python notebook is under development.
 
 
 ## Analyze phase

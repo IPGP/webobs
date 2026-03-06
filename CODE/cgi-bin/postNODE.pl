@@ -345,10 +345,14 @@ if ($GRIDType eq "PROC") {
     push(@lines,"$GRIDType.$GRIDName.FDSN_NETWORK_CODE|$fdsn\n");
     push(@lines,"$GRIDType.$GRIDName.RAWFORMAT|".u2l($rawformat)."\n");
     push(@lines,"$GRIDType.$GRIDName.RAWDATA|".u2l($rawdata)."\n");
+    push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
     push(@lines,"$GRIDType.$GRIDName.UTC_DATA|$utcd\n");
+}
+
+# ---- forms and procs common parameters
+if ($GRIDType =~ /^PROC|FORM$/) {
     push(@lines,"$GRIDType.$GRIDName.ACQ_RATE|$acqr\n");
     push(@lines,"$GRIDType.$GRIDName.LAST_DELAY|$ldly\n");
-    push(@lines,"$GRIDType.$GRIDName.CHANNEL_LIST|".join(',',@chanlist)."\n");
     push(@lines,"$GRIDType.$GRIDName.DESCRIPTION|".u2l($desc1)."\n");
 }
 
@@ -525,13 +529,8 @@ if ( isok($theiaAuth) and $saveAuth == 1 ) {
     my $sth = $dbh->prepare('INSERT OR REPLACE INTO sampling_features (IDENTIFIER, NAME, GEOMETRY) VALUES (?,?,?);');
     $sth->execute($station_name,$alias,$point);
 
-    if ($spatialcov eq "") {
-        $sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, SUBJECT, LINEAGE) VALUES (?,?,?,?);');
-        $sth->execute($id,$name,$subject,$lineage);
-    } else {
-        $sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?);');
-        $sth->execute($id,$name,$subject,$spatialcov,$lineage);
-    }
+    $sth = $dbh->prepare('INSERT OR REPLACE INTO datasets (IDENTIFIER, TITLE, SUBJECT, SPATIALCOVERAGE, LINEAGE) VALUES (?,?,?,?,?);');
+    $sth->execute($id,$name,$subject,$spatialcov,$lineage);
 
     $dbh->disconnect();
 }

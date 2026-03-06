@@ -18,9 +18,9 @@ if [ $# -eq 2 ]; then
 	else 
 		L=true
 		oIFS=${IFS}; IFS=$'\n'
-		LEXP=($(perl ../CODE/cgi-bin/exposerc.pl '=' 'WO__'))
+		LEXP=($(perl ../CODE/perl/exposerc.pl '=' 'WO__'))
 		for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
-		LEXP=($(perl ../CODE/cgi-bin/exposerc.pl '=' 'HEBDO__' 'HEBDO_CONF'))
+		LEXP=($(perl ../CODE/perl/exposerc.pl '=' 'HEBDO__' 'HEBDO_CONF'))
 		for i in $(seq 0 1 $(( ${#LEXP[@]}-1 )) ); do export ${LEXP[$i]}; done
 		#hebdo=$HEBDO__FILE_NAME
 		hebdo=$2
