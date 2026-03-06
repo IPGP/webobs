@@ -50,70 +50,70 @@ M2G assumes you're initially starting from a 'typical' Webobs base setup:
 
 M2G.0  : the initial migration procedure
 
-	- from reseaux to GRIDS (PROCS, VIEWS, FORMS)
-	- from STATIONS to NODES
+    - from reseaux to GRIDS (PROCS, VIEWS, FORMS)
+    - from STATIONS to NODES
 
 =head2 MIGRATE_1_FORMSCONF
 
 M2G.1F : (1=follow M2G.0) further adapt FORMS parameters
 
-	- changes in each /etc/webobs/FORMS/FORMNAME/FORMNAME.conf
-	- remove name of form that prefix each variables defined in this *.conf
-	- eg. for FORMS/EAUX, EAUX.conf has variables "EAUX_something" : change to "something"
-	- & standardize CGIs variables names (ie. CGI_AFFICHAGE_* ==> CGI_SHOW)
+    - changes in each /etc/webobs/FORMS/FORMNAME/FORMNAME.conf
+    - remove name of form that prefix each variables defined in this *.conf
+    - eg. for FORMS/EAUX, EAUX.conf has variables "EAUX_something" : change to "something"
+    - & standardize CGIs variables names (ie. CGI_AFFICHAGE_* ==> CGI_SHOW)
 
 =head2 MIGRATE_1_NODESXLATE
 
 M2G.1NX: (1=follow M2G.0) 
 
-	- some translations to english + 
-	- force escape | (\|) (i.e except first |)  
+    - some translations to english + 
+    - force escape | (\|) (i.e except first |)  
 
 =head2 MIGRATE_2_NODESFEATURES
 
 M2G.2NF: (2=follow M2G.1--) 
 
-	- move all NODE's non-system *.txt to new FEATURES subdirectory of NODE
+    - move all NODE's non-system *.txt to new FEATURES subdirectory of NODE
 
 =head2 MIGRATE_3_FORMSNET2GRIDS
 
 M2G.3FN: (3=follow M2G.2--) 
 
-	- scan newly created FORMS directories for files with filename like 'reseauxFORMNAME.conf'
-	- these are supposed to contain pointers to 'old reseaux' names (ID3, one per line) that 
-	- will be changed to corresponding VIEW.VIEWNAME. Such corresponding viewnames are found
-	- by scanning the new VIEWS directory for matching 'id3' in their *.conf file. 
+    - scan newly created FORMS directories for files with filename like 'reseauxFORMNAME.conf'
+    - these are supposed to contain pointers to 'old reseaux' names (ID3, one per line) that 
+    - will be changed to corresponding VIEW.VIEWNAME. Such corresponding viewnames are found
+    - by scanning the new VIEWS directory for matching 'id3' in their *.conf file. 
 
 =head2 MIGRATE_3_NORMNODES
 
 M2G.3NN: (2=follow M2G.2N-)  NOT IMPLEMENTED YET
 
-	- normalize (ie. change to 'gridtype.gridname.nodename') all nodenames
-	- in NODES2NODES.rc and node's .cnf (TRANSMISSION values)
-	- IMPORTANT: once this migration is done, you'll want to
-	- check/fix all cgis that are using WebObs::Grids::normNode(): they 
-	- could be appending now useless (and error prone) '.' to nodenames
-	- when calling WebObs::Grids::normNode(); 
+    - normalize (ie. change to 'gridtype.gridname.nodename') all nodenames
+    - in NODES2NODES.rc and node's .cnf (TRANSMISSION values)
+    - IMPORTANT: once this migration is done, you'll want to
+    - check/fix all cgis that are using WebObs::Grids::normNode(): they 
+    - could be appending now useless (and error prone) '.' to nodenames
+    - when calling WebObs::Grids::normNode(); 
 
 =head2 MIGRATE_4_ALIASDASH
 
 M2G.4AD: (4=follow M2G.3--)
 
-	- remove NODEs from PROC when either of their ALIAS or DATA_FILE field is 
-	- set up as '-' (dash). PROC field in NODEs' cnf is removed and 
-	- any GRIDS2NODES/PROC.*.NODE symbolic link is also deleted
+    - remove NODEs from PROC when either of their ALIAS or DATA_FILE field is 
+    - set up as '-' (dash). PROC field in NODEs' cnf is removed and 
+    - any GRIDS2NODES/PROC.*.NODE symbolic link is also deleted
 
 =head2 MIGRATE_5_FID
 
 M2G.5FD: (5=follow M2G.4--)
 
-	- change 'DATA_FILE' key to 'FID' in all NODEs' cnf
+    - change 'DATA_FILE' key to 'FID' in all NODEs' cnf
 
 =head2 MIGRATE_6_PROCKEYS and MIGRATE_6_VIEWKEYS
 
 M2G.6GK: (6=follow M2G.5--)
 
-	- change resp. rename keys in PROCS and VIEWS *.conf
+    - change resp. rename keys in PROCS and VIEWS *.conf
 
 =head1 OVERVIEW OF CHANGES TO WEBOBS
 
@@ -123,11 +123,11 @@ M2G.6GK: (6=follow M2G.5--)
   - $WEBOBS{FILE_DISCIPLINES} from 'DISCIPLINE' definitions
   - one or two (1 or 2) conf files for each so-called 'network' as its definitions
     require: a 'network' now is a GRID, either 'VIEW' or 'PROC'  
-	- /VIEWS hold conf files for 'views' grids ie. 'networks' with 'net' > 0
-	- /PROCS hold conf files for 'procedures' grids ie. 'networks' with 'ext' defined
+    - /VIEWS hold conf files for 'views' grids ie. 'networks' with 'net' > 0
+    - /PROCS hold conf files for 'procedures' grids ie. 'networks' with 'ext' defined
   - new attributes are defined for VIEWS and PROCS: 'own', 'req' and 'frm'
     (cgi-bin-driven "user's input procedures" will now be known as FORMS ('frm') 
-	
+    
 - STATIONS are now NODES, with corresponding conf files 'revisited' as implied by grids changes:
   - these new conf files are created with a '.cnf' extension to allow 
     coexistence with older version (.conf) during the migration phase
@@ -170,7 +170,7 @@ M2G.6GK: (6=follow M2G.5--)
 use strict;
 use warnings;
 use POSIX qw(strftime);
-use WebObs::Utils qw(u2l l2u);
+use WebObs::Config qw(u2l l2u);
 use File::Basename;
 ## use WebObs::Config qw(%WEBOBS readCfg);
 
@@ -498,10 +498,10 @@ sub MIGRATE0 {
                         $dislist .= substr($c,0,1)." ";
 
   #foreach my $k (keys %F) {
-  #	if ($o.$c eq $k) { 
-  #		$formslist .= $F{$k}." "; 
-  #		qx(ln -s $WEBOBS{PATH_FORMS}/$F{$k} $WEBOBS{PATH_GP2FORMS}/VIEW.$g.$F{$k});
-  #	}
+  #    if ($o.$c eq $k) { 
+  #        $formslist .= $F{$k}." "; 
+  #        qx(ln -s $WEBOBS{PATH_FORMS}/$F{$k} $WEBOBS{PATH_GP2FORMS}/VIEW.$g.$F{$k});
+  #    }
   #}
                         migID3Stations('VIEW', $g, $o.$c, 'ACQ_RATE|'.$G{$g}{acq}, 'LAST_DELAY|'.$G{$g}{lst});
                     }
@@ -903,4 +903,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
-				
+

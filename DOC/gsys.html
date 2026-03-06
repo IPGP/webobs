@@ -5,42 +5,42 @@
 <style>.withPOD {color: green; cursor: pointer} caption {padding-bottom: 5px}</style>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript">
-	$(document).ready(function() {
-		$("td.withPOD").click(function(index) {
-			var u = $(this)[0].textContent.replace(/[\r\n]/gm,"");
-			window.open('/cgi-bin/viewPOD.pl?pod='+u);	
-		});
-		$("tr").hover( 
-			function () {
-				$(this).css('backgroundColor','#dddddd');
-			}, 
-			function () {
-				$(this).css('backgroundColor','#ffffff');
-			}
-		);
-	});
+    $(document).ready(function() {
+        $("td.withPOD").click(function(index) {
+            var u = $(this)[0].textContent.replace(/[\r\n]/gm,"");
+            window.open('/cgi-bin/viewPOD.pl?pod='+u);
+        });
+        $("tr").hover(
+            function () {
+                $(this).css('backgroundColor','#dddddd');
+            },
+            function () {
+                $(this).css('backgroundColor','#ffffff');
+            }
+        );
+    });
 </script>
 <title>Didier-Grids-System</title>
 <meta http-equiv=Content-Type content="text/html; charset=utf-8">
 <META HTTP-EQUIV="EXPIRES" CONTENT="0">
 <style>
-	h1               {color: #6060ff}
-	h2               {text-decoration: underline; color: #6060ff}
-	p                {font-size: 10px; font-weight: normal; color: black;}
+    h1               {color: #6060ff}
+    h2               {text-decoration: underline; color: #6060ff}
+    p                {font-size: 10px; font-weight: normal; color: black;}
     caption          {font-size: 10px; font-weight: bold; color: black; text-align: left; }
-	.new		     {background-color: #40EE40;}
-	.rep		     {background-color: #70CC70;}
-	.del		     {background-color: #FF5030;}
-	.mov		     {background-color: #EEEE90;}
-	.mod		     {background-color: #80EE80;}
-	.sam		     {background-color: #D0D0D0;}
-	.ptr		     {background-color: #E0F4E0; font-weight: bold;}
-	.pts		     {background-color: #E0F4E0;}
-	.wip		     {background-color: #8080EE;}
-	.pgm             {background-color: tan;}
-	ul, li           {font-size: 10px; font-weight: normal; color: black;}
-	th               {background-color: gray; color: black}
-	td, tr           {vertical-align: top}
+    .new             {background-color: #40EE40;}
+    .rep             {background-color: #70CC70;}
+    .del             {background-color: #FF5030;}
+    .mov             {background-color: #EEEE90;}
+    .mod             {background-color: #80EE80;}
+    .sam             {background-color: #D0D0D0;}
+    .ptr             {background-color: #E0F4E0; font-weight: bold;}
+    .pts             {background-color: #E0F4E0;}
+    .wip             {background-color: #8080EE;}
+    .pgm             {background-color: tan;}
+    ul, li           {font-size: 10px; font-weight: normal; color: black;}
+    th               {background-color: gray; color: black}
+    td, tr           {vertical-align: top}
 </style>
 </head>
 <BODY>
@@ -55,30 +55,30 @@
 <table border="0">
 <caption style="color: grey">PROC</caption>
 <tr><th>Legacy<th>newname<th>Comments
-<tr><td class="mov">cum &nbsp;&nbsp;&nbsp;<td>CUMULATELIST<td>List of (days count) intervals for summarizations 
-<tr><td class="del">ddb &nbsp;&nbsp;&nbsp;<td><td>%WEBOBS variable pointing to cgi for data display 
-<tr><td class="mov">dec &nbsp;&nbsp;&nbsp;<td>DECIMATELIST<td>List of decimation 
+<tr><td class="mov">cum &nbsp;&nbsp;&nbsp;<td>CUMULATELIST<td>List of (days count) intervals for summarizations
+<tr><td class="del">ddb &nbsp;&nbsp;&nbsp;<td><td>%WEBOBS variable pointing to cgi for data display
+<tr><td class="mov">dec &nbsp;&nbsp;&nbsp;<td>DECIMATELIST<td>List of decimation
 <tr><td class="new">    &nbsp;&nbsp;&nbsp;<td>DEM<td> filename of specific DEM
-<tr><td class="mov">dis &nbsp;&nbsp;&nbsp;<td>DOMAIN<td> ex discipline 
-<tr><td class="new">&nbsp;&nbsp;&nbsp;    <td>FID<td>associated data file(s) identifier 
-<tr><td class="new">&nbsp;&nbsp;&nbsp;    <td>FID_<td>associated data file(s) identifier 
+<tr><td class="mov">dis &nbsp;&nbsp;&nbsp;<td>DOMAIN<td> ex discipline
+<tr><td class="new">&nbsp;&nbsp;&nbsp;    <td>FID<td>associated data file(s) identifier
+<tr><td class="new">&nbsp;&nbsp;&nbsp;    <td>FID_<td>associated data file(s) identifier
 <tr><td class="new">    &nbsp;&nbsp;&nbsp;<td>EVENTS<td> filename of event tags
-<tr><td class="mov">ext &nbsp;&nbsp;&nbsp;<td>TIMESCALELIST<td>List of graphical extensions (time intervals) 
-<tr><td class="mov">fmt &nbsp;&nbsp;&nbsp;<td>DATESTRLIST<td>Dates format (see DATESTR) 
-<tr><td class="new">frm &nbsp;&nbsp;&nbsp;<td>FORM<td>FORM name 
-<tr><td class="mov">ftp &nbsp;&nbsp;&nbsp;<td>RAWDATA<td>FTP Data subdirectory  
-<tr><td class="mov">ico &nbsp;&nbsp;&nbsp;<td>THUMBNAIL<td>=1 to create graphs' icons 
+<tr><td class="mov">ext &nbsp;&nbsp;&nbsp;<td>TIMESCALELIST<td>List of graphical extensions (time intervals)
+<tr><td class="mov">fmt &nbsp;&nbsp;&nbsp;<td>DATESTRLIST<td>Dates format (see DATESTR)
+<tr><td class="new">frm &nbsp;&nbsp;&nbsp;<td>FORM<td>FORM name
+<tr><td class="mov">ftp &nbsp;&nbsp;&nbsp;<td>RAWDATA<td>FTP Data subdirectory
+<tr><td class="mov">ico &nbsp;&nbsp;&nbsp;<td>THUMBNAIL<td>=1 to create graphs' icons
 <tr><td class="new">id3 &nbsp;&nbsp;&nbsp;<td><td>legacy 3-digits identification (obs+res)
 <tr><td class="mov">lnk &nbsp;&nbsp;&nbsp;<td>URL<td>
 <tr><td class="new">    &nbsp;&nbsp;&nbsp;<td>UTM_LOCAL<td> filename of a .conf
-<tr><td class="mov">mks &nbsp;&nbsp;&nbsp;<td>MARKERSIZELIST<td>List of sizes for graphs markers 
+<tr><td class="mov">mks &nbsp;&nbsp;&nbsp;<td>MARKERSIZELIST<td>List of sizes for graphs markers
 <tr><td class="new">    &nbsp;&nbsp;&nbsp;<td>SUMMARYLIST<td>List of summary graphs shortnames
 <tr><td class="new">    &nbsp;&nbsp;&nbsp;<td>SUMMARYNAMELIST<td>List of summary graphs names
 <tr><td class="del">net &nbsp;&nbsp;&nbsp;<td><td>
-<tr><td class="mov">nom &nbsp;&nbsp;&nbsp;<td>NAME<td>Full name 
-<tr><td class="mov">req &nbsp;&nbsp;&nbsp;<td>REQUEST<td>=1 to appear in request form 
+<tr><td class="mov">nom &nbsp;&nbsp;&nbsp;<td>NAME<td>Full name
+<tr><td class="mov">req &nbsp;&nbsp;&nbsp;<td>REQUEST<td>=1 to appear in request form
 <tr><td class="mov">utc &nbsp;&nbsp;&nbsp;<td>TZ<td>Timezone (hour, eg. -4 for Guadeloupe)
-<tr class="pgm"><td class="new">STA &nbsp;&nbsp;&nbsp;<td>NODESLIST<td>cgi+matlab: List of NODES 
+<tr class="pgm"><td class="new">STA &nbsp;&nbsp;&nbsp;<td>NODESLIST<td>cgi+matlab: List of NODES
 <tr class="pgm"><td class="new">    &nbsp;&nbsp;&nbsp;<td>NOW<td>matlab: now in TZ
 </table>
 <br>
@@ -118,7 +118,7 @@
 <tr><td class="new">LAST_DELAY         <td><td>
 <tr><td class="sam">LAT_WGS84          <td><td>
 <tr><td class="sam">LON_WGS84          <td><td>
-<tr><td class="sam">NOM                <td>NAME<td> 
+<tr><td class="sam">NOM                <td>NAME<td>
 <tr><td class="sam">POS_DATE           <td><td>
 <tr><td class="sam">POS_TYPE           <td><td>
 <tr><td class="new">PROC               <td><td>
@@ -141,7 +141,7 @@
 <tr><td>GRID           <td>has a qualified name  <td>type.name                        <td>eg. PROC.SISMOVBB
 <tr><td>GRID           <td>has features          <td>elements defined in its structure<td>see VIEW and PROC structures
 <tr><td>GRID           <td>has component(s)      <td>NODES (dynamically associated)   <td>- STA element of VIEW and/or PROC structures<br>
-                                                                                          - GRIDS2NODES symbolic links  
+                                                                                          - GRIDS2NODES symbolic links
 <tr><td>GRID           <td>has objectives        <td>wiki file                        <td>$WEBOBS{PATH_GRIDS_DOCS}/*.$GRIDS{DESCRIPTION_SUFFIX}
 <tr><td>GRID           <td>has maps (localisations) <td>                              <td>
 <tr><td>GRID           <td>has information       <td>wiki file                        <td>$WEBOBS{PATH_GRIDS_DOCS}/*.$GRIDS{PROTOCOLE_SUFFIX}

@@ -45,6 +45,7 @@ use warnings;
 use Time::Local;
 use POSIX qw/strftime/;
 use File::Basename;
+use File::Path qw/make_path/;
 use CGI;
 my $cgi = new CGI;
 $CGI::POST_MAX = 1024;
@@ -73,7 +74,8 @@ my $form = $cgi->param('form');      # name of the form
 my $clientAuth = clientMaxAuth(type=>"authforms",name=>"('$form')");
 die "You can't edit records of the form $form. Please contact an administrator." if ($clientAuth < 2);
 
-my $F = new WebObs::Form($form);
+my %G = readForm($form);
+my %FORM = %{$G{$form}};
 
 my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
 my $client = $USERS{$CLIENT}{UID};
@@ -83,75 +85,57 @@ my $QryParm = $cgi->Vars;
 # --- DateTime inits -------------------------------------
 my $Ctod  = time();
 my @tod  = localtime($Ctod);
-my $today = strftime('%F',@tod);
-my $currentYear = strftime('%Y',@tod);
-my $sel_d1  = strftime('%d',@tod);
-my $sel_m1  = strftime('%m',@tod);
-my $sel_y1 = strftime('%Y',@tod);
-my $sel_hr1 = "";
-my $sel_mn1 = "";
-my $sel_d2 = $sel_d1;
-my $sel_m2 = $sel_m1;
-my $sel_y2 = $sel_y1;
-my $sel_hr2 = $sel_hr1;
-my $sel_mn2 = $sel_mn1;
+my $today = strftime('%F %T',@tod);
 
 # ---- Get the form data
 # 
-my @year    = $cgi->param('year');
-my @month   = $cgi->param('month');
-my @day     = $cgi->param('day');
-my @hr      = $cgi->param('hr');
-my @mn      = $cgi->param('mn');
+my $quality = $cgi->param('quality') // 0;
 my $site    = $cgi->param('site');
 my $comment = $cgi->param('comment') // "";
 
 my $val     = $cgi->param('val');
 my $user    = $cgi->param('user');
 my $id      = $cgi->param('id') // "";
-my $action   = checkParam($cgi->param('action'), qr/(new|edit|save|delete|restore|erase)/, 'action')  // "edit";
+my $action   = checkParam($cgi->param('action'), qr/(new|edit|save|delete|restore|erase)/, 'action') // "edit";
 my $return_url = $cgi->param('return_url');
 my @operators  = $cgi->param('operators');
 my $debug  = $cgi->param('debug');
 
-my ($sdate, $sdate_min) = datetime2maxmin($year[0],$month[0],$day[0],$hr[0],$mn[0]);
+my $starting_date = isok($FORM{STARTING_DATE});
 my $stamp = "[$today $user]";
 if (index($val,$stamp) eq -1) { $val = "$stamp $val"; };
 
 # ---- specific FORM inits -----------------------------------
-my %FORM = $F->conf;
 
 my @NODESSelList;
-my %Ps = $F->procs;
-for my $p (keys(%Ps)) {
-    my %N = $F->nodes($p);
-    for my $n (keys(%N)) {
-        push(@NODESSelList,"$n|$N{$n}{ALIAS}: $N{$n}{NAME}");
-    }
+for (@{$FORM{NODESLIST}}) {
+    my $id = $_;
+    my %N = readNode($id);
+    push(@NODESSelList,"$id|$N{$id}{ALIAS}: $N{$id}{NAME}");
 }
 
-my $sel_site = my $sel_comment = "";
+my $sel_comment = "";
 
 # ----
 
-my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$FORM{COLUMNS_NUMBER});
+my $max_columns = count_columns(keys %FORM);
+my @columns   = map { sprintf("COLUMN%02d_LIST", $_) } (1..$max_columns);
 my $max_inputs = count_inputs(keys %FORM);
 my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
 
-# ---- Variables des menus
-my $starting_date   = isok($FORM{STARTING_DATE});
-my @yearList = ($FORM{BANG}..$currentYear);
-my @monthList = ("","01".."12");
-my @dayList   = ("","01".."31");
-my @hourList  = ("","00".."23");
-my @minuteList= ("","00".."59");
+my $MIN_HEIGHT = $GRIDS{GENFORM_THUMB_MIN_HEIGHT} || 10;
+my $MAX_HEIGHT = $GRIDS{GENFORM_THUMB_MAX_HEIGHT} || 640;
+my $DEFAULT_HEIGHT = $GRIDS{GENFORM_THUMB_DEFAULT_HEIGHT} || 50;
+my $MIN_DELAY = $GRIDS{GENFORM_THUMB_MIN_DELAY} || 1;
+my $MAX_DELAY = $GRIDS{GENFORM_THUMB_MAX_DELAY} || 5;
+my $DEFAULT_DELAY = $GRIDS{GENFORM_THUMB_DEFAULT_DELAY} || 2;
+my $THUMB_ANIM = $GRIDS{GENFORM_THUMB_ANIM} || "_anim.gif";
+my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
+my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
 
-# ---- if STARTING_DATE eq "yes"
-my $edate = $sdate;
-my $edate_min = $sdate_min;
-if ($starting_date) {
-    ($edate, $edate_min) = datetime2maxmin($year[1],$month[1],$day[1],$hr[1],$mn[1]);
-}
+my $LL_MIN_HEIGHT = $GRIDS{GENFORM_SHAPE_MIN_HEIGHT} || 150;
+my $LL_MAX_HEIGHT = $GRIDS{GENFORM_SHAPE_MAX_HEIGHT} || 800;
+my $LL_DEFAULT_HEIGHT = $GRIDS{GENFORM_SHAPE_DEFAULT_HEIGHT} || 300;
 
 # ---- action is 'save'
 #
@@ -159,64 +143,154 @@ if ($starting_date) {
 # --- connecting to the database
 my $dbh = connectDbForms();
 my $tbl = lc($form);
+my $table_geoloc = "geoloc";
+my $table_udate = "udate";
+my @columns_geoloc = ("latitude", "northern_error", "longitude", "eastern_error", "elevation", "elevation_error");
+my @columns_udate = ("date", "date_min", "yce", "yce_min");
+
+# Main columns in the table without the primary key, start date, end date and inputs
+my @db_columns = ("trash", "quality", "node", "operators", "comment", "tsupd", "userupd");
+my @values = ("0", $quality, $site, join(",", @operators), $comment, $today, $user);
+my $ncol = scalar(@db_columns) + 2; # number of columns without the primary key and inputs
+
+# Local temp dir
+my $temp_dir = ".tmp/".$CLIENT."/".uc($form);
 
 if ($action eq 'save') {
-    my $msg;
-
     # ---- filling the database with the data from the form
-    my $row;
-    my $db_columns;
-    $db_columns = "trash, node, edate, edate_min, sdate, sdate_min, operators";
-    $row = "false, \"$site\", \"$edate\", \"$edate_min\", \"$sdate\", \"$sdate_min\", \"".join(",", @operators)."\"";
+    foreach (map { sprintf("input%02d", $_) } (1..$max_inputs)) {
+        my $input;
+        my @input = $cgi->param($_);
+        if (scalar(@input) > 1) {
+            $input = join(",", @input);
+        } else {
+            $input = $cgi->param($_);
+        }
+
+        push(@db_columns, $_);
+        $input =~ s/"/""/g; # needs to escape quotes for the sqlite command
+        push(@values, $input);
+    }
+
+    my $rv;
+    my $msg;
     if ($id ne "") {
-        $db_columns = "id, ".$db_columns;
-        $row = "$id, ".$row;
         $msg = "record #$id has been updated.";
+        my $update = join(", ", map { "$_ = ?" } @db_columns);
+        my $stmt = qq(UPDATE $tbl SET $update WHERE id = $id);
+        my $sth = $dbh->prepare($stmt);
+        $rv = $sth->execute(@values) or die $DBI::errstr;
     } else {
         $msg = "new record has been created.";
+        my $columns_str = join(", ", @db_columns);
+        my $placeholders = join(", ", ("?") x @db_columns);
+        my $stmt = qq(INSERT INTO $tbl ($columns_str) VALUES ($placeholders));
+        my $sth = $dbh->prepare($stmt);
+        $rv = $sth->execute(@values) or die $DBI::errstr;
+        $id = $dbh->last_insert_id(undef, undef, $tbl, undef);
     }
-    foreach (map { sprintf("input%02d", $_) } (1..$max_inputs)) {
-        my $input = $cgi->param($_);
-        if ($input ne "") {
-            $db_columns .= ", $_";
-            $row .= ", \"$input\"";
-        }
-    }
-    $db_columns .= ", comment, tsupd, userupd";
-    $row .= ", \"$comment\", \"$today\", \"$user\"";
 
-    my $stmt = qq(REPLACE INTO $tbl($db_columns) values($row));
-    my $sth  = $dbh->prepare( $stmt );
-    my $rv   = $sth->execute() or die $DBI::errstr;
-    if ($rv < 1){
+    if ($rv < 1) {
         $msg = "ERROR: formGENFORM couldn't access the database $form.";
     }
-    htmlMsgOK($msg);
 
+    # rename images tmp directory
+    if ($id eq "") {
+        my $temp_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".$temp_dir;
+        my $final_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$id);
+        make_path($temp_path);
+        if ( $CLIENT && $form && scalar <$temp_path/*> ) {
+            make_path($final_path);
+            qx(mv -T $temp_path $final_path);
+            if ($?) { htmlMsgNotOK("Couldn't move $temp_path to $final_path; $!"); }
+        }
+    }
+
+    my @fields = ("edate", "sdate");
+    push(@fields, map { sprintf("input%02d", $_) } (1..$max_inputs));
+    foreach (@fields) {
+        my $type = $_ eq "edate" || $_ eq "sdate" ? $_ : $FORM{uc($_."_TYPE")};
+        if ($type =~ /^(geoloc|datetime|udate|edate|sdate)/) {
+            my @values;
+            my @columns;
+            my $table_input;
+            if ($type =~ /^geoloc/) {
+                push(@values, ($cgi->param($_."_latitude"), $cgi->param($_."_northern_error")));
+                push(@values, ($cgi->param($_."_longitude"), $cgi->param($_."_eastern_error")));
+                push(@values, ($cgi->param($_."_elevation"), $cgi->param($_."_elevation_error")));
+                $table_input = $table_geoloc;
+                @columns = @columns_geoloc;
+            } elsif ($type =~ /^(datetime|udate|edate|sdate)/) {
+                push(@values, (datetime2maxmin(get_date_input($_))));
+                my $yce_max = defined $cgi->param($_."_yce") ? $cgi->param($_."_yce") : "";
+                my $yce_min = defined $cgi->param($_."_yce_min") ? $cgi->param($_."_yce_min") : "";
+                $yce_max = $yce_min if ! $yce_max;
+                $yce_min = $yce_max if ! $yce_min;
+                push(@values, $yce_max);
+                push(@values, $yce_min);
+                $table_input = $table_udate;
+                @columns = @columns_udate;
+            }
+
+            map { $_ eq "" and $_ = undef } @values;
+            my $stmt = qq(SELECT $_ FROM $tbl WHERE id = $id);
+            my $iid = $dbh->selectrow_array($stmt);
+            if ($id and defined($iid)) {
+                my $update = join(", ", map { "$_ = ?" } @columns);
+                my $stmt = qq(UPDATE $table_input SET $update WHERE id = $iid);
+                my $sth = $dbh->prepare($stmt);
+                my $rv = $sth->execute(@values) or die $DBI::errstr;
+            } else {
+                my $columns_str = join(", ", @columns);
+                my $placeholders = join(", ", ("?") x @columns);
+                my $stmt = qq(INSERT INTO $table_input ($columns_str) VALUES ($placeholders));
+                my $sth = $dbh->prepare($stmt);
+                my $rv = $sth->execute(@values) or die $DBI::errstr;
+                my $lid = $dbh->last_insert_id(undef, undef, $table_input, undef);
+                $rv = $dbh->do("UPDATE $tbl SET $_ = $lid WHERE id = $id") or die $DBI::errstr;
+            }
+        }
+    }
+
+    htmlMsgOK($msg);
     $dbh->disconnect();
     exit;
 } elsif ($action eq "delete" && $id ne "") {
-    my $stmt = qq(UPDATE $tbl SET trash = true WHERE id = $id);
-    my $sth  = $dbh->prepare( $stmt );
+    my $stmt = qq(UPDATE $tbl SET trash = 1 WHERE id = $id);
+    my $sth  = $dbh->prepare($stmt);
     my $rv   = $sth->execute() or die $DBI::errstr;
-    htmlMsgOK("Record #$id has been moved to trash.");
 
+    htmlMsgOK("Record #$id has been moved to trash.");
     $dbh->disconnect();
     exit;
 } elsif ($action eq "restore" && $id ne "") {
-    my $stmt = qq(UPDATE $tbl SET trash = false WHERE id = $id);
-    my $sth  = $dbh->prepare( $stmt );
+    my $stmt = qq(UPDATE $tbl SET trash = 0 WHERE id = $id);
+    my $sth  = $dbh->prepare($stmt);
     my $rv   = $sth->execute() or die $DBI::errstr;
-    htmlMsgOK("Record #$id has been recoverd from trash.");
 
+    htmlMsgOK("Record #$id has been recovered from trash.");
     $dbh->disconnect();
     exit;
 } elsif ($action eq "erase" && $id ne "") {
-    my $stmt = qq(DELETE FROM $tbl WHERE id = $id);
-    my $sth  = $dbh->prepare( $stmt );
-    my $rv   = $sth->execute() or die $DBI::errstr;
-    htmlMsgOK("Record #$id has been permanently erased from database $form.");
+    # Get foreign keys for the form table
+    my $fk_sth = $dbh->prepare("PRAGMA foreign_key_list('$tbl')");
+    $fk_sth->execute();
 
+    # Delete rows in table referenced by foreign keys
+    while (my @row = $fk_sth->fetchrow_array) {
+        $dbh->do("DELETE FROM @row[2] WHERE id IN (SELECT @row[3] FROM $tbl WHERE id = ?)", undef, $id) or die $DBI::errstr;
+    }
+    $fk_sth->finish();
+
+    $dbh->do("DELETE FROM $tbl WHERE id = ?", undef, $id) or die $DBI::errstr;
+
+    # delete images directory
+    if ($form ne "" && $id ne "") {
+        my $path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/".uc($form."/record".$id);
+        qx(rm $path -R);
+    }
+
+    htmlMsgOK("Record #$id has been permanently erased from database $form.");
     $dbh->disconnect();
     exit;
 }
@@ -249,25 +323,62 @@ print qq[Content-type: text/html
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<title>] . $FORM{TITLE} . qq[</title>
+<title>] . $FORM{NAME} . qq[</title>
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+<link rel="stylesheet" href="/css/leaflet.css" crossorigin=""/>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <script language="javascript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/js/comma2point.js"></script>
+<script language="javascript" type="text/javascript" src="/js/math.js"></script>
+<script src="/js/leaflet.js" crossorigin=""></script>
 <script type="text/javascript">
 <!--
 function update_form()
 {
     var form = document.form;
+
+    var yy2 = document.getElementsByName("edate_year");
+    var mm2 = document.getElementsByName("edate_month");
+    var dd2 = document.getElementsByName("edate_day");
+    var hr2 = document.getElementsByName("edate_hr");
+    var mn2 = document.getElementsByName("edate_mn");
+
+    var yy1 = document.getElementsByName("sdate_year");
+    var mm1 = document.getElementsByName("sdate_month");
+    var dd1 = document.getElementsByName("sdate_day");
+    var hr1 = document.getElementsByName("sdate_hr");
+    var mn1 = document.getElementsByName("sdate_mn");
+
+    if (yy1[0]) {
+        var date1 = new Date(yy1[0].value, mm1[0].value-1, dd1[0].value, hr1[0].value, mn1[0].value);
+        var date2 = new Date(yy2[0].value, mm2[0].value-1, dd2[0].value, hr2[0].value, mn2[0].value);
+        duration = (date2.getTime() - date1.getTime())/86400000;
+        form.duration.value = duration.toFixed(1);
+    } else {
+        form.duration.value = "0";
+    }
 ];
 foreach my $f (@formulas) {
     my ($formula, $size, @x) = extract_formula($FORM{$f."_TYPE"});
-    $formula =~ s/(\w+\()/Math.$1/g;
+    # any word followed by an open parenthesis is supposed to be a math function (see math.js)...
+    $formula =~ s/\b(pi)\b/Math.PI/ig;
+    $formula =~ s/(\w+\()/math.$1/g;
+    foreach ("mean", "std", "median") {
+        $formula =~ s/math.$_\((.*)\)/math.$_([$1].filter(x => !Number.isNaN(x)))/g;
+    }
+
     foreach (@x) {
         my $form_input = lc($_);
-        $formula =~ s/$_/Number(form.$form_input.value)/g;
+        if ($formula =~ /(mean|std|median)\(.*$_.*\)/ || scalar(@x) == 1) {
+            $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : NaN)/g;
+        } else {
+            $formula =~ s/$_/Number(form.$form_input.value && form.$form_input.value != "NaN" ? form.$form_input.value : 0.0)/g;
+        }
     }
-    print "    form.".lc($f).".value = parseFloat($formula).toFixed(2);\n";
+
+    print "try {";
+    print "form.".lc($f).".value = parseFloat($formula);\n";
+    print "} catch(err) { form.".lc($f).".value = NaN; console.error(err.message); };\n";
 }
 foreach (@thresh) {
     my $f = lc($_);
@@ -290,7 +401,7 @@ print qq[
 
 function suppress(level)
 {
-    var str = "$FORM{TITLE} ?";
+    var str = "$FORM{NAME} ?";
     if (level > 1) {
         if (!confirm("$__{'ATT: Do you want PERMANENTLY erase this record from '}" + str)) {
             return false;
@@ -320,88 +431,205 @@ function verif_re(element)
 
 function verif_form()
 {
+    var cboxs = document.querySelectorAll("input[type=checkbox]");
+    Array.from(cboxs).forEach((cbox) => {
+        if (cbox.checked) {
+            cbox.value = "checked";
+        } else { cbox.value = ""; }
+    });
     console.log(\$("#theform"));
     if(document.form.site.value == "") {
         alert("$__{'You must select a node associated to this record!'}");
         document.form.site.focus();
         return false;
     }
+
+    var form = document.getElementById("theform");
+    var inputs = form.elements;
+    for (var i = 0; i < inputs.length; i++) {
+        if (inputs[i].type === "text" || inputs[i].type === "email" || inputs[i].type === "textarea") {
+            inputs[i].value = inputs[i].value.trim();
+        }
+    }
+
+    /*var inputs = document.querySelectorAll('input[name\$="_yce_min"]');
+    Array.from(inputs).forEach((yce_min) => {
+        var basename = yce_min.name.split("_yce_min")[0];
+        var yce = document.querySelector('input[name=' + basename + '_yce]');
+        if (yce.value < yce_min.value) {
+            event.preventDefault();
+            yce_min.focus();
+            alert(yce_min.name + " must be inferior to " + yce.name);
+            return false;
+        }
+    });*/
+
     console.log(\$("#theform").serialize());
     submit();
 }
 
 function submit()
 {
-    \$.post("]. $form_url . qq[", \$("#theform").serialize(), function(data) {
-            alert(data);
+    \$.post("]. $form_url . qq[", \$("#theform").serialize(), function(data) {\n]
+            .(isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL})? "alert(data);":""). qq[
             // Redirect the user to the form display page while keeping the previous filter
             document.location="] . $cgi->param('return_url') . qq[";
         }
     );
 }
+
+function updateMap(map_id, geojson, lat, lon, zoom=10) {
+    var map = L.map(map_id).setView([lat, lon], zoom);
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+    L.control.scale( { metric: true, imperial: false } ).addTo(map);
+    if (geojson == "not_found") {
+        console.error("No valid shape file found.")
+    } else {
+        fetch(geojson)
+            .then((response) => {
+                return response.json()
+            })
+            .then((data) => {
+                var geojsonLayer = L.geoJson(data, {
+                    pointToLayer: function(feature, latlng){
+                        return L.circleMarker(latlng, {color: '#3d85c6', radius: 4});
+                    },
+                    onEachFeature: function (feature, layer) {
+                        var popupcontent = [];
+                        for (var prop in feature.properties) {
+                            popupcontent.push(prop + ": " + feature.properties[prop]);
+                        }
+                        layer.bindPopup(popupcontent.join("<br />"));
+                    }
+                }).addTo(map);
+                map.fitBounds(geojsonLayer.getBounds());
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    }
+}
 //-->
 </script>
 </head>
 
-<body style="background-color:#E0E0E0">
- <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
- <!-- overLIB (c) Erik Bosrup -->
- <script language="javascript" src="/js/overlib/overlib.js"></script>
- <div id="helpBox"></div>
- <script type="text/javascript">
-   // Prevent the Return key from submitting the form
-   function stopRKey(evt) {
-     var evt = (evt) ? evt : ((event) ? event : null);
-     var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
-     if ((evt.keyCode == 13) && (node.type=="text"))  {return false;}
-   }
-   document.onkeypress = stopRKey;
+<body>
+    <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+    <!-- overLIB (c) Erik Bosrup -->
+    <script language="javascript" src="/js/overlib/overlib.js"></script>
+    <div id="helpBox"></div>
+    <script type="text/javascript">
 
-   // Once the document is loaded
-   \$(document).ready(function(){
-     // Update the form immediately
-     update_form();
-     // Also update the form when any of its element is changed
-     \$('#theform').on("change", update_form);
-     // Also update when a key is pressed in the form
-     // but wait 0.5s for the previous handler execution to finish
-     \$('#theform').on("keydown", function() { setTimeout(update_form, 500); });
+    // Prevent the Return key from submitting the form
+    function stopRKey(evt) {
+        var evt = (evt) ? evt : ((event) ? event : null);
+        var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+        if ((evt.keyCode == 13) && (node.type=="text")) {return false;}
+    }
+    document.onkeypress = stopRKey;
+
+    // Once the document is loaded
+    \$(document).ready(function() {
+        // Update the form immediately
+        update_form();
+        // Also update the form when any of its element is changed
+        \$('#theform').on("change", update_form);
+        // Also update when a key is pressed in the form
+        // but wait 0.5s for the previous handler execution to finish
+        \$('#theform').on("keydown", function() { setTimeout(update_form, 500); });
+
+        document.querySelectorAll("div[id*='_shape']").forEach((item) => {
+            var geojson = item.getAttribute("geojson");
+            var lat = item.getAttribute("lat");
+            var lon = item.getAttribute("lon");
+            updateMap(item, geojson, lat, lon);
+        });
+
+        const dateInputs = document.querySelectorAll("select[name*='_month'], select[name*='_day']").forEach(item => {
+            item.addEventListener("change", function() {
+                if (item.value == "") {
+                    const name = item.name.split("_")[0];
+                    const day = document.querySelector("select[name=" + name + "_day]");
+                    const hr = document.querySelector("select[name=" + name + "_hr]");
+                    const mn = document.querySelector("select[name=" + name + "_mn]");
+                    const sec = document.querySelector("select[name=" + name + "_sec]");
+                    if (hr) { hr.value = ""; }
+                    if (mn) { mn.value = ""; }
+                    if (sec) { sec.value = ""; }
+                    if (day && item.name.match(/month/)) { day.value = ""; }
+                }
+            });
+        });
    });
- </script>
+
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            setTimeout(() => { window.location.reload(); }, "500");
+        }
+    });
+    </script>
 ];
 
 # ---- read data file
 #
-my $message;
+my $title2;
+my $recinfo;
 my $val;
 my %prev_inputs;
 my $trash;
 
-if ($action eq "edit") {
+my @edate_vals;
+my @sdate_vals;
 
-    # --- connecting to the database
-    my $dbh = connectDbForms();
+# --- connecting to the database
+my $dbh = connectDbForms();
+
+if ($action eq "edit") {
     my $tbl = lc($form);
 
     my $stmt = qq(SELECT * FROM $tbl WHERE id = $id); # selecting the row corresponding to the id of the record we want to modify
-    my $sth = $dbh->prepare( $stmt );
+    my $sth = $dbh->prepare($stmt);
     my @colnam = @{ $sth->{NAME_lc} };
     my $rv = $sth->execute() or die $DBI::errstr;
 
-    my ($edate, $edate_min, $sdate, $sdate_min, $opers, $ts0, $user);
+    my ($edate, $sdate, $opers, $ts0, $user);
     while(my @row = $sth->fetchrow_array()) {
-        ($trash, $site, $edate, $edate_min, $sdate, $sdate_min, $opers, $sel_comment, $ts0, $user) = ($row[1], $row[2], $row[3], $row[4], $row[5], $row[6], $row[7], $row[-3], $row[-2], $row[-1]);
-        ($sel_y1,$sel_m1,$sel_d1,$sel_hr1,$sel_mn1) = datetime2array($sdate, $sdate_min);
-        ($sel_y2,$sel_m2,$sel_d2,$sel_hr2,$sel_mn2) = datetime2array($edate, $edate_min);
+        ($trash, $quality, $site, $edate, $sdate, $opers, $sel_comment, $ts0, $user) = @row[1..$ncol];
         @operators = split(/,/,$opers);
-        for (my $i = 7; $i <= $#row-3; $i++) {
+        push(@operators,$user) if (@operators =~ /^$user$/);
+        for (my $i = $ncol+1; $i <= $#row; $i++) {
             $prev_inputs{$colnam[$i]} = $row[$i];
         }
     }
-    $message = "$__{'Edit data n°'} $id";
-    $val = "[$ts0 $user]";
+
+    my $colnames = join(', ', @columns_udate);
+    my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $edate);
+    @edate_vals = $dbh->selectrow_array($stmt);
+
+    if ($sdate) {
+        my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $sdate);
+        @sdate_vals = $dbh->selectrow_array($stmt);
+    }
+
+    $title2 = "$__{'Edit record n°'} $id";
+    $title2 = "<SPAN class=\"inTrash\">$title2</SPAN>" if ($trash);
+    $val = $ts0 ? "$ts0" : "";
+    $val .= $user ? " [$user]" : "";
+    if ($val ne "") {
+        $recinfo = "<P><B>$__{'Record timestamp:'}</B> $val</P>";
+    }
+    if ($action eq "edit" && $id ne "") {
+        if ($trash eq "1") {
+            $title2 .= qq(&nbsp;<A href="#"><IMG src="/icons/restore.png" onClick="suppress(-1);" title="$__{'Restore'}"></A>);
+        } else {
+            $title2 .= qq(&nbsp;<A href="#"><IMG src="/icons/trash.png" onClick="suppress(1);" title="$__{'Remove'}"></A>);
+        }
+        if ($clientAuth > 2) {
+            $title2 .= qq(&nbsp;<A href="#"><IMG src="/icons/no.png" onClick="suppress(2);" title="$__{'Erase'}"></A>);
+        }
+    }
 } else {
-    $message = "$__{'Input new data'}";
+    $title2 = "$__{'Input new record'}";
     @operators = ("$client");
 }
 
@@ -412,25 +640,8 @@ if ($debug) {
     print "<P>max_inputs = $max_inputs</P>\n";
 }
 
-print qq(<input type="hidden" name="id" value="$id">);
-print qq(<tr><td style="border: 0"><hr>);
-if ($val ne "") {
-    print qq(<p><b>Record timestamp:</b> $val
-    <input type="hidden" name="val" value="$val"></p>);
-}
-if ($action eq "edit" && $id ne "") {
-    if ($trash eq "1") {
-        print qq(<input type="button" value="$__{'Restore'}" onClick="suppress(-1);">);
-    } else {
-        print qq(<input type="button" value="$__{'Remove'}" onClick="suppress(1);">);
-    }
-    if ($clientAuth > 2) {
-        print qq(<input type="button" value="$__{'Erase'}" onClick="suppress(2);">);
-    }
-}
-print qq(<hr></td></tr>);
-
 print qq[<form name="form" id="theform" action="">
+<input type="hidden" name="val" value="$val">
 <input type="hidden" name="id" value="$id">
 <input type="hidden" name="user" value="$client">
 <input type="hidden" name="trash" value="$trash">
@@ -441,100 +652,46 @@ print qq[<form name="form" id="theform" action="">
 <table width="100%">
   <tr>
     <td style="border: 0">
-     <h1>$FORM{TITLE}</h1>
-     <h2>$message</h2>
-    </td>
-  </tr>
+     <h1>$FORM{NAME}</h1>
+     <h2>$title2</h2>
+];
 
+if (isok($FORM{QUALITY_CHECK})) {
+    my @uid = ();
+    foreach (split(/[, ]/, $FORM{QUALITY_OPERATORS})) {
+        if (rindex($_,'+',0) == 0) {
+            foreach my $u (WebObs::Users::groupListUser("$_")) {
+                push(@uid, $u) if (!grep(/^$u$/, @uid));
+            }
+        } else {
+            push(@uid, $_);
+        }
+    }
+    my $qualOK = ($clientAuth>2 || grep(/^$USERS{$CLIENT}{UID}$/,@uid));
+    print "<P><input type=\"checkbox\"".($quality ? " checked":"")
+      .(!$qualOK ? " disabled=\"disabled\"":"")
+      ." name=\"quality\" value=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_genform_quality'}')\">"
+      .(!$qualOK ? "<input name=\"quality\" type=\"hidden\" value=\"".($quality ? "1":"")."\">":"")
+      ."<b>$__{'Validated record'}</b></P><BR>";
+} else {
+    print "<input type=\"hidden\" name=\"quality\" value=\"$quality\">";
+}
+
+print qq[</td>
+  </tr>
 </table>
 <table style="border: 0" >
   <tr>
     <td style="border: 0" valign="top">
-      <fieldset>
-        <legend>$__{'Date and place of sampling'}</legend>
+        <fieldset>
+        <legend>$__{'Where, When, and Who'}</legend>
         <p class="parform" align=\"right\">
 ];
 
-if ($starting_date) {
-    print qq(
-                <b>$__{'Start Date'}: </b>
-                    <select name="year" size="1">
-        );
-    for (@yearList) {if ($_ == $sel_y1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select>);
-    print qq(<select name="month" size="1">);
-    for (@monthList) {if ($_ == $sel_m1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select>);
-    print qq( <select name=day size="1">);
-    for (@dayList) {if ($_ == $sel_d1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print "</select>";
-
-    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
-    for (@hourList) {if ($_ eq $sel_hr1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-
-    print qq(</select>);
-    print qq(<select name=mn size="1">);
-    for (@minuteList) {if ($_ eq $sel_mn1) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select><BR>);
-
-    print qq(
-                <b>$__{'End Date'}: </b>
-                    <select name="year" size="1">
-        );
-    for (@yearList) {if ($_ == $sel_y2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select>);
-    print qq(<select name="month" size="1">);
-    for (@monthList) {if ($_ == $sel_m2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select>);
-    print qq( <select name=day size="1">);
-    for (@dayList) {if ($_ == $sel_d2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print "</select>";
-
-    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
-    for (@hourList) {if ($_ eq $sel_hr2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-    print qq(</select>);
-    print qq(<select name=mn size="1">);
-    for (@minuteList) {if ($_ eq $sel_mn2) {print qq(<option selected value="$_">$_</option>);} else {print qq(<option value="$_">$_</option>);}}
-
-} else {
-    print qq(
-            <b>$__{'Date'}: </b>
-                <select name="year" size="1">
-        );
-    for (@yearList) {
-        my $sel = ($_ eq $sel_y2 ? "selected":"");
-        print qq(<option $sel value="$_">$_</option>);
-    }
-    print qq(</select>);
-    print qq(<select name="month" size="1">);
-    for (@monthList) {
-        my $sel = ($_ eq $sel_m2 ? "selected":"");
-        print qq(<option $sel value="$_">$_</option>);
-    }
-    print qq(</select>);
-    print qq( <select name=day size="1">);
-    for (@dayList) {
-        my $sel = ($_ eq $sel_d2 ? "selected":"");
-        print qq(<option $sel value="$_">$_</option>);
-    }
-    print "</select>";
-
-    print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=hr size="1">);
-    for (@hourList) {
-        my $sel = ($_ eq $sel_hr2 ? "selected":"");
-        print qq(<option $sel value="$_">$_</option>);
-    }
-    print qq(</select>);
-    print qq(<select name=mn size="1">);
-    for (@minuteList) {
-        my $sel = ($_ eq $sel_mn2 ? "selected":"");
-        print qq(<option $sel value="$_">$_</option>);
-    }
-}
-print qq(</select><BR>
-    <B>Site: </B>
+# Add mandatory site input
+print qq(<B>$__{'Site'}: </B>
       <select name="site" size="1"
-        onMouseOut="nd()"onmouseover="overlib('$__{'Select a node for this record'}')">
+        onMouseOut="nd()" onMouseOver="overlib('$__{'Select a node for this record'}')">
       <option value=""></option>);
 print @NODESSelList;
 for (@NODESSelList) {
@@ -542,13 +699,27 @@ for (@NODESSelList) {
     my $sel = ($cle[0] eq $site ? "selected":($action eq "edit" ? "disabled":""));
     print qq(<option $sel value="$cle[0]">$cle[1]</option>);
 }
+print qq(</select><BR>);
 
-print qq(</select><BR>
-    <table><tr><td style="border:0"><B>$__{'Operator(s)'}:</B> </td><td style="border:0">
+if ($starting_date) {
+    datetime_input(\%FORM, "sdate", \@sdate_vals, "Start Date");
+    datetime_input(\%FORM, "edate", \@edate_vals, "End Date");
+    if ($FORM{BANG}) {
+        print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>);
+    } else {
+        print qq(<input type="hidden" name="duration">);
+    }
+} else {
+    datetime_input(\%FORM, "edate", \@edate_vals);
+    print qq(<input type="hidden" name="duration">);
+}
+
+# Add mandatory operator input
+print qq(<table><tr><td style="border:0"><B>$__{'Operator(s)'}:</B> </td><td style="border:0">
             <select name="operators" size="5" multiple="multiple"
                 onMouseOut="nd()" onmouseover="overlib('$__{'Select operator(s)'}')">);
 my @uid = @operators; # $client if 'new', or @operators if 'edit'
-foreach my $op (split(/,/, $FORM{OPERATORS_LIST})) {
+foreach my $op (split(/[, ]/, $FORM{OPERATORS_LIST})) {
     if ($op =~ /^+/) {
         foreach my $u (WebObs::Users::groupListUser("$op")) {
             push(@uid, $u) if (!grep(/^$u$/, @uid));
@@ -564,9 +735,11 @@ foreach my $u (@uid){
 print qq(</select>
     </td></tr></table>
     </P>
-      </fieldset>);
+    </fieldset>);
 
+# Add user defined inputs
 foreach (@columns) {
+    my $col = $_ =~ s/_LIST//r;
     unless ($_ =~ "01") {
         print "</TD>\n<TD style=\"border:0\" valign=\"top\">";
     }
@@ -577,52 +750,161 @@ foreach (@columns) {
         my $row = ($fsdir =~ /ROWS/i ? "1":"0"); # true if splitted into rows
         my $dlm = ($row ? "&emsp;&emsp; ":"<BR>");
         foreach my $fs (1..$fscells) {
-            print qq(<td style=\"border:0\" valign=\"top\"><p class=\"parform\" align=\"right\">);
+            print qq(<td style="border:0" valign="top"><p class="parform" align="right">);
             my $fsc = sprintf("$fieldset\_C%02d", $fs);
             foreach my $Field (split(/[, ]/, $FORM{$fsc})) {
                 my $name = $FORM{"$Field\_NAME"};
                 my $unit = $FORM{"$Field\_UNIT"};
                 my $type = $FORM{"$Field\_TYPE"};
-                my $help = $FORM{"$Field\_HELP"};
+                my $help = htmlspecialchars($FORM{"$Field\_HELP"});
                 my $field = lc($Field);
+                my $input_id = ( $action eq "new" ? $temp_dir : uc($form."/record".$id) )."/".$Field;
                 my ($size, $default) = extract_type($type);
                 if ($action ne 'edit' && $default ne "") {
                     $prev_inputs{$field} = $default;
                 }
                 my $txt = "<B>$name</B>".($unit ne "" ? " ($unit)":"");
                 my $hlp;
-                if ($field =~ /^input/ && $type =~ /^list:/) {
+
+                # --- INPUT type 'list'
+                if ($field =~ /^input/ && $type =~ /^list/) {
                     my %list = extract_list($type,$form);
-                    my @list_keys = sort keys %list;
+                    my @list_keys = sort { $list{$a}{'_SO_'} <=> $list{$b}{'_SO_'} } keys %list;
                     $hlp = ($help ne "" ? $help:"$__{'Select a value for'} $Field");
 
-# if list contains an icon column (HoH), displays radio button instead of select list
-                    if (ref($list{$list_keys[0]})) {
+                    # if list contains an icon column (HoH), displays radio button instead of select list
+                    if ($list{$list_keys[0]}{icon}) {
                         print "$txt =";
-                        for (@list_keys) {
-                            my $selected = ($prev_inputs{$field} eq "$_" ? "checked":"");
-                            print qq(&nbsp;<input name="$field" type=radio value="$_" $selected
-                            onMouseOut="nd()" onmouseover="overlib('$list{$_}{name}')"><IMG src="$list{$_}{icon}">);
+                        for my $k (@list_keys) {
+                            my $selected = ($prev_inputs{$field} eq "$k" ? "checked":"");
+                            print qq(&nbsp;<input name="$field" type=radio value="$k" $selected
+                            onMouseOut="nd()" onmouseover="overlib('$list{$k}{name}')"><IMG src="$list{$k}{icon}">);
                         }
                         print "$dlm";
                     } else {
-                        print qq($txt = <select name="$field" size=1
-                            onMouseOut="nd()" onmouseover="overlib('$hlp')"><option value=""></option>);
+                        my $multi = ( $size eq "multiple" ? "multiple" : "" );
+                        print qq($txt = <select name="$field"
+                            onMouseOut="nd()" onmouseover="overlib('$hlp')" $multi><option value=""></option>);
                         for (@list_keys) {
-                            my $nam = (ref($list{$_}) ? $list{$_}{name}:$list{$_});
-                            my $selected = ($prev_inputs{$field} eq "$_" ? "selected":"");
-                            print qq(<option value="$_" $selected>$_: $nam</option>);
+                            my $nam = ($list{$_}{name} ? $list{$_}{name}:$list{$_}{value});
+                            my $selected = ( $prev_inputs{$field} =~ /^$_$/ ? "selected" : "" );
+                            print qq(<option value="$_" $selected>$nam</option>);
                         }
                         print "</select>$dlm";
                     }
+
+                # --- INPUT type 'users'
+                } elsif ($field =~ /^input/ && $type =~ /^users/) {
+                    $hlp = ($help ne "" ? $help:"$__{'Select users for '} $Field");
+                    my @seluid = split(/[, ]+/,$prev_inputs{$field});
+                    push(@seluid,$user) if (@seluid =~ /^$user$/); # adds loggued user if necessary
+                    my @uid = @seluid;
+                    foreach my $op (split(/[, ]/, $default)) {
+                        if ($op =~ /^+/) {
+                            foreach my $u (WebObs::Users::groupListUser("$op")) {
+                                push(@uid, $u) if (!grep(/^$u$/, @uid));
+                            }
+                        } else {
+                            push(@uid, $op) if (!grep(/^$op$/, @uid));
+                        }
+                    }
+                    print qq(<table><tr><td style="border:0">$txt: </td><td style="border:0"><select name="$field" size="$size" multiple="multiple"
+                        onMouseOut="nd()" onmouseover="overlib('$hlp')">);
+                    foreach my $u (@uid){
+                        my $sel = (grep(/^$u$/, @seluid) ? "selected":"");
+                        print "<option value=\"$u\" $sel>$u: ".join('',WebObs::Users::userName($u))."</option>\n";
+                    }
+                    print qq(</select></td></tr></table>$dlm);
+
+                # --- INPUT type 'text'
                 } elsif ($field =~ /^input/ && $type =~ /^text/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a value for'} $Field");
-                    print qq($txt = <input type="text" size=$size name="$field" value="$prev_inputs{$field}"
+                    my $value = $prev_inputs{$field};
+                    $value =~ s/"/&quot;/g;
+                    print qq($txt = <input type="text" size=$size name="$field" value="$value"
                         onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+
+                # --- INPUT type 'checkbox'
+                } elsif ($field =~ /^input/ && $type =~ /^checkbox/) {
+                    $hlp = ($help ne "" ? $help:"$__{'Click to select'} $Field");
+                    my $selected = ($prev_inputs{$field} ? "checked" : "");
+                    print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+
+                # --- INPUT type 'image'
+                } elsif ($field =~ /^input/ && $type =~ /^image/) {
+                    my $height = $size ? $size : $DEFAULT_HEIGHT;
+                    $height = ( ( $height >= $MIN_HEIGHT && $height <= $MAX_HEIGHT ) ? $height : $DEFAULT_HEIGHT );
+                    my $delay = ( ( $default >= $MIN_DELAY && $default <= $MAX_DELAY ) ? $default : $DEFAULT_DELAY );
+                    my $base_url = "formUPLOAD.pl?object=$input_id&doc=SPATH_GENFORM_IMAGES&form=$form&height=$height&delay=$delay";
+                    my $upload_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$input_id";
+                    if ( -e "$upload_path/$PATH_THUMBNAILS/$THUMB_ANIM" ) {
+                        print qq(<img height=$height src="/data/$PATH_FORMDOCS/$input_id/$PATH_THUMBNAILS/$THUMB_ANIM" style="margin-bottom:5px" border=1">);
+                    }
+                    print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:center;">);
+                    print qq(<img src="/icons/upload.png" style="vertical-align: middle;">$txt</button>);
+                    my $nb = qx(ls $upload_path -p | grep -v / | wc -l);
+                    print qq(<input type="hidden" name="$field" value=$nb>\n);
+
+                # --- INPUT type 'shapefile'
+                } elsif ($field =~ /^input/ && $type =~ /^shapefile/) {
+                    my $height = $size ? $size : $DEFAULT_HEIGHT;
+                    $height = ( ( $height >= $LL_MIN_HEIGHT && $height <= $LL_MAX_HEIGHT ) ? $height : $LL_DEFAULT_HEIGHT )."px";
+                    my $base_url = "formUPLOAD.pl?object=$input_id&doc=SHAPEFILE";
+                    if ($site) {
+                        my %S = readNode($site, "novsub");
+                        if (%S) {
+                            my %node = %{$S{$site}};
+                            if (%node) {
+                                my ( $lat, $lon ) = ( $node{LAT_WGS84}, $node{LON_WGS84} );
+                                my $geojson = "$PATH_FORMDOCS/$input_id/shape.json";
+                                $geojson = ( ( -f "$WEBOBS{ROOT_DATA}/$geojson" ) ? "/data/$geojson" : "not_found" );
+                                print qq(<div id=$field\_shape geojson=$geojson lat=$lat lon=$lon style="height: $height;"></div>);
+                            }
+                        }
+                    }
+                    print qq(<br><button onclick="location.href='$base_url'" type="button" style="float:right;">);
+                    print qq(<img src="/icons/upload.png" style="vertical-align: middle;"> $txt</button>);
+
+                # --- INPUT type 'geoloc'
+                } elsif ($field =~ /^input/ && $type =~ /^geoloc/) {
+                    my @gvals = map { "" } @columns_geoloc;
+                    if ($prev_inputs{$field}) {
+                        my $colnames = join(', ', @columns_geoloc);
+                        my $stmt = qq(SELECT $colnames FROM $table_geoloc WHERE id = $prev_inputs{$field});
+                        @gvals = $dbh->selectrow_array($stmt);
+                    }
+                    my @msgs = ("a latitude", "a northern error", "a longitude", "an eastern error", "an elevation", "an elevation error");
+                    my @msgu = ("decimal degrees", "meters", "decimal degrees", "meters", "meters", "meters");
+                    my @units = ("°N", "m", "°E", "m", "m", "m");
+                    print "<table>";
+                    foreach my $j (0 .. scalar(@columns_geoloc) - 1) {
+                        print $j % 2 eq 0 ? "<tr>" : "";
+                        $hlp = ($help ne "" ? $help:"$__{'Enter '.$msgs[$j].' (in '.$msgu[$j].') for'} $Field");
+                        (my $label = ucfirst($columns_geoloc[$j])." ($units[$j])") =~ s/_/ /g;
+                        print qq(<td class="udateRow"><label> $label =</label><input type="text" pattern="[0-9\\.\\-]*" size="$size" class="inputNum"
+                            name="$field\_$columns_geoloc[$j]" value="$gvals[$j]"
+                            onMouseOut="nd()" onmouseover="overlib('$hlp')"></td>);
+                        print $j % 2 eq 1 ? "</tr>" : "";
+                    }
+                    print "</table>";
+
+                # --- INPUT type 'udate'
+                } elsif ($field =~ /^input/ && $type =~ /^(datetime|udate)/) {
+                    my @uvals;
+                    if ($prev_inputs{$field}) {
+                        my $colnames = join(', ', @columns_udate);
+                        my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $prev_inputs{$field});
+                        @uvals = $dbh->selectrow_array($stmt);
+                    }
+                    datetime_input(\%FORM, $field, \@uvals);
+
+                # --- INPUT type 'numeric' (default)
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
                     print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
                         onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+
+                # --- OUTPUT type 'formula'
                 } elsif ($field =~ /^output/ && $type =~ /^formula/) {
                     my ($formula, $size, @x) = extract_formula($type);
                     if ($size > 0) {
@@ -632,6 +914,8 @@ foreach (@columns) {
                     } else {
                         print qq(<input type="hidden" name="$field">);
                     }
+
+                # --- OUTPUT type 'text'
                 } elsif ($field =~ /^output/ && $type =~ /^text/) {
                     my $text = extract_text($type);
                     print $txt.($text ne "" ? ": $text":"").$dlm;
@@ -649,20 +933,26 @@ foreach (@columns) {
     }
 }
 
+# Close database connection
+$dbh->disconnect();
+
+my $comsz = ($FORM{COMMENT_SIZE} > 0 ? $FORM{COMMENT_SIZE}:80);
 my $comhlp = htmlspecialchars($FORM{COMMENT_HELP});
 print qq(</TD>
   <tr>
-    <td style="border: 0" colspan="2">
-      <B>$__{'Observations'}</B>:&nbsp;<input size=80 name="comment" value="$sel_comment"
-      onMouseOut="nd()" onmouseover="overlib('$comhlp')"><BR>
+    <td style="border:0" colspan="2">
+      <P><B>$__{'Observations'}</B>:&nbsp;<input size=$comsz name="comment" value="$sel_comment"
+      onMouseOut="nd()" onmouseover="overlib('$comhlp')"><P>
+      $recinfo
     </td>
   </tr>
   <tr>
-    <td style="border: 0" colspan="2">
+    <td style="border:0" colspan="$max_columns">
+      <HR>
       <P style="margin-top: 20px; text-align: center">
         <input type="button" name=lien value="$__{'Cancel'}"
          onClick="document.location=') . $cgi->param('return_url') . qq('" style="font-weight: normal">
-        <input type="button" value="$__{'Submit'}" onClick="verif_form();" style="font-weight: bold">
+        <input type="button" value="$__{'Save'}" onClick="verif_form();" style="font-weight: bold">
       </P>
     </td>
   </tr>
@@ -679,8 +969,7 @@ print qq(</TD>
 # --- return information when OK and registering metadata in the metadata database
 sub htmlMsgOK {
     print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-    my $msg = $_[0];
-    print "$msg\n";
+    print "$_[0]\n";
 }
 
 # --- return information when not OK
@@ -689,13 +978,17 @@ sub htmlMsgNotOK {
     print "Update FAILED !\n $_[0] \n";
 }
 
-# Open an SQLite connection to the forms database
-sub connectDbForms {
-    return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
-            'AutoCommit' => 1,
-            'PrintError' => 1,
-            'RaiseError' => 1,
-        }) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
+# --- returm a date string from a form input of type datetime|udate
+sub get_date_input {
+    my $in = shift;
+    my @date;
+    push(@date, $cgi->param($in."_year"));
+    push(@date, $cgi->param($in."_month"));
+    push(@date, $cgi->param($in."_day"));
+    push(@date, defined $cgi->param($in."_hr") ? $cgi->param($in."_hr") : "");
+    push(@date, defined $cgi->param($in."_mn") ? $cgi->param($in."_mn") : "");
+    push(@date, defined $cgi->param($in."_sec") ? $cgi->param($in."_sec") : "");
+    return @date;
 }
 
 __END__
@@ -704,11 +997,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Lucas Dassin, François Beauducel
+Lucas Dassin, François Beauducel, Jérôme Touvier
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

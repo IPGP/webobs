@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<div class="main">
+  <h1>%TITLE</h1>
+  <h2>%SUBTITLE</h2>
+
+  <div class="row">
+    <div class="column">
+      <h3>Event information</h3>
+      <table>
+        <tr>
+          <td class="left">evid:</td>
+          <td class="right">%EVID</td>
+        </tr>
+        <tr>
+          <td class="left">date:</td>
+          <td class="right">%DATE</td>
+        </tr>
+        <tr>
+          <td class="left">lat:</td>
+          <td class="right">%LAT</td>
+        </tr>
+        <tr>
+          <td class="left">lon:</td>
+          <td class="right">%LON</td>
+        </tr>
+        <tr>
+          <td class="left">depth:</td>
+          <td class="right">%DEPTH</td>
+        </tr>
+        <tr>
+          <td class="left">mag:</td>
+          <td class="right">%MAG</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="column">
+      <h3>%PGA_TITLE</h3>
+      <table>%ROWS
+      </table>
+    </div>
+  </div> <!--row-->
+</div> <!--main-->
+
+<img class="map" src="%MAP"></img>
+<br>
+<img class="pga_dist" src="%PGA_DIST"></img>
+<br>
+<div class="footer">
+<img class="logo" src="logo_file.png"></img>
+<img class="logo" src="logo2_file.png"></img>
+<span class="footer_text">
+%FOOTER_TEXT
+</span>
+<div>
+
+</body>
+</html>

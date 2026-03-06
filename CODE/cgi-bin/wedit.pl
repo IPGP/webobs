@@ -207,10 +207,11 @@ function convert2MMD()
 }
 </script>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.formulaire.txt.focus()\">
+<BODY onLoad=\"document.formulaire.txt.focus()\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- markitup -->
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>
+<script src=\"/js/jquery-migrate-1.2.1.js\"></script>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/skins/markitup/style.css\" />
 ";
 if (length($meta) > 0) {

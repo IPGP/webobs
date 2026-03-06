@@ -2,9 +2,9 @@
 
 
 
-![image alt <](CODE/icons/ipgp/logo_IPGP-UPC_2022_C110.png)&emsp;&emsp;&emsp;&emsp;![image alt <](CODE/icons/ipgp/logo_WebObs_C110.png)
+![image alt <](CODE/icons/ipgp/logo_WebObs_C110.png)&emsp;&emsp;&emsp;&emsp;![image alt <](CODE/icons/ipgp/logo_IPGP-UPC_2022_C110.png)&emsp;![image alt <](CODE/icons/ipgp/logo_CNRS_C110.jpg)
 
-This is the official repository for WebObs project source code development. For install/update packages, see the [WebObs page](https://ipgp.github.io/webobs).
+This is the official repository for WebObs community source code development, labelled by INSU-CNRS. For install/update packages, see the [WebObs page](https://ipgp.github.io/webobs).
 
 ## Authors
 
@@ -41,7 +41,7 @@ If you use are using WebObs or any outputs from WebObs, please kindly cite the f
 
 ## Copyright
 
-WebObs - 2000-2023 - Institut de Physique du Globe Paris / Université Paris Cité
+WebObs - 2000-2026 - Institut de Physique du Globe Paris / Université Paris Cité
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

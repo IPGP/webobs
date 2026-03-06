@@ -41,7 +41,7 @@ SUMMARY_CHANNELS|1,2,3
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} tilt $SELFREF -
-SUBMIT_RESOURCE|myproc
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,VECTORS_EXCLUDED_NODELIST,MODELLING_EXCLUDED_NODELIST
@@ -82,6 +82,9 @@ COPYRIGHT2|
 PPI|100
 # exports text data files
 EXPORTS|NO
+EXPORT_HEADER_NODE_KEYLIST|FID,NAME,LAT_WGS84,LON_WGS84,ALTITUDE,URL
+EXPORT_HEADER_PROC_KEYLIST|
+
 # outputs further vector files (in addition to EPS) for each graph. SVG is experimental
 SVGOUTPUT|NO
 PDFOUTPUT|NO

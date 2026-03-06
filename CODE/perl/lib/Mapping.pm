@@ -307,7 +307,7 @@ sub ign0021 {
 =cut
 
 sub ign0025 {
-    my $e = shift;
+    my $e = shift // 0;
 
     # Jeux d'essai
     #$e = 0.08199188998;
@@ -340,8 +340,8 @@ sub ign0025 {
 =cut
 
 sub ign0026 {
-    my $p = shift;
-    my @c = shift;
+    my $p = shift // 0;
+    my @c = @_;
 
     my $b = $c[0]*$p + $c[1]*sin(2*$p) + $c[2]*sin(4*$p) + $c[3]*sin(6*$p) + $c[4]*sin(8*$p);
 
@@ -365,7 +365,7 @@ sub ign0026 {
 =cut
 
 sub ign0028 {
-    my $e = shift;
+    my $e = shift // 0;
 
     # Jeux d'essai
     #$e = 0.08199188998;
@@ -406,13 +406,13 @@ sub ign0028 {
 =cut
 
 sub ign0030 {
-    my $lc = shift;
-    my $n = shift;
-    my $xs = shift;
-    my $ys = shift;
-    my $e = shift;
-    my $l = shift;
-    my $p = shift;
+    my $lc = shift // 0;
+    my $n = shift // 0;
+    my $xs = shift // 0;
+    my $ys = shift // 0;
+    my $e = shift // 0;
+    my $l = shift // 0;
+    my $p = shift // 0;
 
 # Jeux d'essai
 #$lc = -0.05235987756; $n = 6375697.8456; $xs = 500000; $ys = 0; $e = 0.08248340004; $l = -0.0959931089; $p = 0.6065019151;
@@ -437,7 +437,7 @@ sub ign0030 {
 
 =head2 ign0052
 
-#IGN0052 Détermination des paramètres de calcul pour la projection Mecator Transverse.
+#IGN0052 Détermination des paramètres de calcul pour la projection Mercator Transverse.
 #       [LC,N,XS,YS]=IGN0052(A,E,K0,L0,P0,X0,Y0) renvoie la longitude origine LC, le
 #       rayon de la sphère intermédiaire N et les constances XS et YS à partir des paramètres:
 #           A = demi-grand axe de l'ellipsoide
@@ -459,13 +459,13 @@ sub ign0030 {
 =cut
 
 sub ign0052 {
-    my $a = shift;
-    my $e = shift;
-    my $k0 = shift;
-    my $l0 = shift;
-    my $p0 = shift;
-    my $x0 = shift;
-    my $y0 = shift;
+    my $a = shift // 0;
+    my $e = shift // 0;
+    my $k0 = shift // 0;
+    my $l0 = shift // 0;
+    my $p0 = shift // 0;
+    my $x0 = shift // 0;
+    my $y0 = shift // 0;
 
 # Jeux d'essai
 #$a = 6377563.3963; $e = 0.08167337382; $k0 = 0.9996012; $l0 = -0.03490658504; $p0 = 0.85521133347; $x0 = 400000; $y0 = -100000;
@@ -501,8 +501,8 @@ sub ign0052 {
 =cut
 
 sub geo2utm {
-    my $p1 = shift;
-    my $l1 = shift;
+    my $p1 = shift // 0;
+    my $l1 = shift // 0;
     my $D0 = 180/pi;
     my ($F0,$K0,$P0,$L0,$X0,$Y0) = utmwgs($p1,$l1);
 

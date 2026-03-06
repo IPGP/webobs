@@ -212,7 +212,7 @@ if git show-ref --quiet --tags $RELEASE_TAG; then
 
     if [[ -n "$(git rev-list $ORIGIN..HEAD)" ]]; then
       echo "Your local repository branch is behind $ORIGIN"
-      if ! ask "Do you want to continue anyway [y/N]?" "n"; then
+      if ! ask "Do you want to continue anyway [y/N]?" n; then
         # Remote as unknown commits: offer to quit here to deal with the
         # situation.
         echo "Ok, exiting here. You should run 'git pull'."
@@ -230,7 +230,7 @@ else
 
   # Ask if user wants us to create the tag (only if we can also commit)
   if [[ "$ALLOW_COMMIT" == "Y" ]] \
-    && ask "Will you want to create tag $RELEASE_TAG after archive creation [Y/n]?"
+    && ! ask "Will you want to create tag $RELEASE_TAG after archive creation [y/N]?" n
   then
     # We'll create the tag after changes confirmation
     CREATE_GIT_TAG="Y"
@@ -267,7 +267,7 @@ cat <<__EOD__
 
 __EOD__
 
-if ! ask "Do you agree to execute the above actions? [y/N]" n; then
+if ! ask "Do you agree to execute the above actions? [Y/n]"; then
   # User chose not to confirm action
   echo "Ok, actions cancelled. Exiting."
   exit 0
@@ -387,7 +387,7 @@ separation_line=$(printf "%-100s\n" | tr " " "-")
 ) >> $archive_dir/README
 
 # Propose manual edition of the release notes
-if ask "Edit the release notes file? [Y/n]"; then
+if ask "Edit the release notes file? [y/N]" n; then
   $EDITOR $archive_dir/README
   echo "[you've exited $EDITOR; continuing execution of '$SCRIPT_NAME $@']"
 fi
@@ -398,11 +398,11 @@ fi
 log "Creating manifest file"
 ( cd $ARCHIVES_SUBDIR && \
   find "$RELEASE_DIR" -type f -o -type l \
-    | sed "\|^$RELEASE_DIR/PACK|d; \|^$RELEASE_DIR/CODE/cgi-bin/porting|d; \|^$RELEASE_DIR/CODE/shells/porting|d; \|^$RELEASE_DIR/DOC/devtips|d" \
+    | sed "\|^$RELEASE_DIR/PACK|d; \|^$RELEASE_DIR/CODE/cgi-bin/porting|d; \|^$RELEASE_DIR/CODE/shells/porting|d; \|^$RELEASE_DIR/DOC/devtips|d; \|^$RELEASE_DIR/index.md|d" \
     | sort \
 ) > "$manifest_filename"
 
-if ask "Edit the manifest file to check/add/remove files to be packaged? [Y/n]"
+if ask "Edit the manifest file to check/add/remove files to be packaged? [y/N]" n
 then
   $EDITOR "$manifest_filename"
   echo "[you've exited $EDITOR; continuing execution of '$SCRIPT_NAME $@']"

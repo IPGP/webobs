@@ -23,7 +23,8 @@ INSERT INTO "domains" VALUES('A',9,'Observatory','p');
 
 drop table if exists grids2domains;
 create table grids2domains (TYPE text NOT NULL, NAME text NOT NULL, DCODE text NOT NULL, FOREIGN KEY(DCODE) REFERENCES domains(CODE));
-INSERT INTO "grids2domains" VALUES('PROC','SOURCES','C');
+INSERT INTO "grids2domains" VALUES('PROC','SPRINGS','C');
+INSERT INTO "grids2domains" VALUES('FORM','SPRINGS','C');
 INSERT INTO "grids2domains" VALUES('VIEW','CGPSWI','D');
 INSERT INTO "grids2domains" VALUES('PROC','CGPSWI','D');
 INSERT INTO "grids2domains" VALUES('PROC','GEOSCOPE','S');

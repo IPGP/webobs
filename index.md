@@ -33,62 +33,62 @@ Source code, comments and issues are available at the project repository [github
 
 To run WebObs you need to install the package which contains a setup script that will set all configuration files. Installing WebObs is not a classical compilation from sources with 'make'. A part of it requires the free Matlab runtime library because package contains some compiled binaries for optimization purpose.
 
-### A) Installing WebObs \<version\> from its WebObs-\<version\>.tgz
+### A) _Installing_ WebObs \<version\> from its `WebObs-<version>.tgz`
 
 You create/choose your WebObs directory within which you will execute the setup process. We suggest `/opt/webobs` (default). This directory will contain both
 WebObs code and WebObs data, and will be the DocumentRoot of the WebObs Apache's Virtual Host.
 
-setup will prompt you for a Linux WebObs userid (aka WebObs Owner) that it will create. The WebObs userid's group will also be added to Apache's user. See the WebObs user manual if you need to create your own WebObs owner. 	
+setup will prompt you for a Linux WebObs userid (aka WebObs Owner) that it will create. The WebObs userid's group will also be added to Apache's user. See the WebObs user manual if you need to create your own WebObs owner.
 
-The system-wide /etc/webobs.d symbolic link will identify your WebObs 'active' (production) installation.
+The system-wide `/etc/webobs.d` symbolic link will identify your WebObs 'active' (production) installation.
 
 WebObs comes with pre-defined configuration files and pre-defined data objects as a starting point and for demonstration purposes.
 
-#### Prerequisities
+#### Prerequisites
 
-Graph processes need Matlab compiler runtime 2011b (available above). Download the installer adapted to your architecture in the WebObs directory, the setup will install it during the C) procedure. Or, place it in any local directory then run:
+##### Install Matlab Compiler Runtime (MCR)
+Graph processes need _Matlab Compiler Runtime_ 2011b (available above). Download the installer adapted to your architecture in the WebObs directory, the setup will install it during the C) procedure. Or, place it in any local directory then run:
 
 ```sh
 unzip MCR_<version>_installer.zip
 sudo ./install -mode silent
 ```
-
+##### Install extra programs 
 A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:
 
 ```sh
-sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq vim mutt xvfb \
-   curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
-   libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
-   libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl \
-   wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
-sudo apt install libncurses5
-sudo apt install python-is-python3
+sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq vim mutt xvfb
+sudo apt install curl gawk unzip graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl
+sudo apt install libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl
+sudo apt install libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl
+sudo apt install wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
+sudo apt install libsocket6-perl libdigest-perl-md5-perl
+sudo apt install libncurses5 gdal-bin
+sudo apt install dvipng texlive-latex-extra texlive-fonts-recommended cm-super
+sudo apt install python-is-python3 python3-tk python3-venv python3-pip-whl
 ```
 
-Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
+##### Set environment configuration
 
+Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
 ```sh
 sudo locale-gen fr_FR en_US
 ```
-
-Also you need to activate CGI module for Apache:
-
+You need to activate CGI module for Apache:
 ```sh
 sudo a2enmod cgid
 ```
-
 Create the target WebObs directory:
 ```sh
 sudo mkdir -p /opt/webobs
 ```
-
 Create the webobs user:
 ```sh
 sudo adduser wo
 ```
 
 <a name="update"></a>
-### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
+### B) _Upgrading_ WebObs \<version\> from its `WebObs-<version>.tgz`
 
 The setup process is also used for upgrading an already installed WebObs.
 
@@ -134,6 +134,52 @@ then update the ETOPO parameters in the `/etc/webobs.d/WEBOBS.rc` file with the 
 ETOPO_NAME|etopo1_bed_g_i2
 ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 ```
+
+### E) Extra-procedure for developers
+
+If you intend to develop on WebObs' code, you should link your installed WebObs with the GitHub cloned repository. This setup allows you to work directly on the source code while maintaining a functional WebObs installation.
+
+**Setup procedure:**
+
+1. Navigate to your target WebObs directory:
+   ```sh
+   cd /opt/webobs
+   ```
+
+2. Clone the GitHub repository:
+   ```sh
+   git clone https://github.com/IPGP/webobs.git
+   ```
+
+3. Rename the newly cloned subdirectory to avoid confusion with the parent directory:
+   ```sh
+   mv webobs webobs_gh
+   ```
+   (`gh` stands for _GitHub_)
+
+4. Backup and remove the existing `CODE` directory:
+   ```sh
+   mv CODE CODE.bak  # Create backup (optional but recommended)
+   # or: rm -rf CODE  # Direct removal
+   ```
+
+5. Create a symbolic link to the GitHub repository's `CODE` directory:
+   ```sh
+   ln -s webobs_gh/CODE CODE
+   ```
+
+Your WebObs installation is now linked to the GitHub repository. 
+
+**Development workflow:**
+
+- All development should be done on the `dev` branch (or feature branches based on `dev`):
+  ```sh
+  cd webobs_gh
+  git checkout dev
+  git pull origin dev  # Ensure you have the latest changes
+  ```
+
+- Before pushing your modifications, ensure you have correctly configured your GitHub personal access token. See: [Managing Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 
 
 <a name="whatsnew"></a>
@@ -339,7 +385,9 @@ le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 
 1. Peltier A., S. Saur, V. Ballu, F. Beauducel, P. Briole, J-B. de Chabalier, K. Chanard, D. Dausse, R. Grandin, P. Rouffiac, Y-T. Tranchant, M. Bès de Berc, S. Besançon, P. Boissier, C. Broucke, C. Brunet, K. Canjamalé, E. Carme, P. Catherine, A. Colombain, W. Crawford, R. Daniel, G. Dectot, N. Desfete, C. Doubre, T. Dumouch, C. Griot, M. Grunberg, H. Jund, P. Kowalski, F. Lauret, J. Lebreton, F. Pesqueira, F. Tronel, P. Valty and J. van der Woerd (2022). Ground deformation monitoring of the eruption offshore Mayotte, *Comptes Rendus Géoscience*, in press. [doi:10.5802/crgeos.176](https://doi.org/10.5802/crgeos.176)
 1. Grémion, S., Pinel, V., Shreve, T., Beauducel, F., Putra, R., Solikhin, A., ... & Humaida, H. (2023). Tracking the evolution of the summit lava dome of Merapi volcano between 2018 and 2019 using DEMs derived from TanDEM-X and Pléiades data. Journal of Volcanology and Geothermal Research, 433, 107732.
 1. Basuki, A., Purnamasari, H. D., & Syahbana, D. K. (2023, August). The 2021 Semeru volcano eruption: An insight from visual, seismic, and deformation monitoring data. In IOP Conference Series: Earth and Environmental Science (Vol. 1227, No. 1, p. 012030). IOP Publishing.
-1. Nikkhoo, M., & Rivalta, E. (2023). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. Geophysical Journal International, 232(1), 643-655.
+1. Nikkhoo, M., & Rivalta, E. (2023). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. *Geophysical Journal International*, 232(1), 643-655.
+1. Briole P., A. Ganas, A. Serpetsidaki, F. Beauducel, V. Sakkas, V. Tsironi, P. Elias (2025). Volcano-tectonic interaction at Santorini. The crisis of February 2025. Constraints from geodesy. *Geophysical Journal International*, [doi:10.1093/gji/ggaf262](https://doi.org/10.1093/gji/ggaf262).
+
 
 
 #### Critical Zone

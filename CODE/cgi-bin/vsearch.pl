@@ -219,10 +219,11 @@ print "Content-type: text/html; charset=utf-8
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/css/vsearch.css\">
 <TITLE>$pagetitle</TITLE>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.theform.str.focus()\">
+<BODY onLoad=\"document.theform.str.focus()\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- markitup -->
 <script type=\"text/javascript\" src=\"/js/markitup/jquery.markitup.js\"></script>
+<script src=\"/js/jquery-migrate-1.2.1.js\"></script>
 <script type=\"text/javascript\" src=\"/js/markitup/sets/wiki/set.js\"></script>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/js/markitup/skins/markitup/style.css\" />
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/css/wodp.css\">

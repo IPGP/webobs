@@ -16,6 +16,8 @@ HTML page with QR code of the referer URL.
 
 no query string parameters needed, but logos will be displayed on the side of
 QR code, using the WEBOBS.rc variables:
+    QRCODE_BIN|qrencode
+    QRCODE_SIZE|2
     QRCODE_LOGOS|URI_logo1,URI_logo2,...
 
 =cut
@@ -41,7 +43,8 @@ if ( !clientIsValid ) {
 }
 
 my $title = "$ENV{HTTP_REFERER}";
-my $qr = encode_base64(qx(qrencode -t SVG -o - "$ENV{HTTP_REFERER}"));
+my $qrbin = $WEBOBS{QRCODE_BIN} // 'qrencode';
+my $qr = encode_base64(qx($qrbin -t SVG -o - "$ENV{HTTP_REFERER}"));
 my $img = ($qr eq "" ? "":"<IMG width=400px src=\"data:image/svg+xml;base64,$qr\">");
 my @logos = split(',',$WEBOBS{QRCODE_LOGOS});
 
@@ -81,7 +84,7 @@ François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

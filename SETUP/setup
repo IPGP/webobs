@@ -76,14 +76,14 @@ activateWO() {
 }
 
 perlmod_installed() {
-   perl -le 'exit not eval "require $ARGV[0];"' $1;
+    perl -le 'exit not eval "require $ARGV[0];"' $1;
 }
 
 woperlmod_system_install () {
-  # install webobs modules in the system
-  local installsitelib="$1"
-  mkdir -p $installsitelib
-  ln -vsf $DOCROOT/CODE/perl/lib $installsitelib/WebObs
+    # install webobs modules in the system
+    local installsitelib="$1"
+    mkdir -p $installsitelib
+    ln -vsf $DOCROOT/CODE/perl/lib $installsitelib/WebObs
 }
 
 install_systemd_services() {
@@ -399,7 +399,7 @@ fi
 # could add [ rpm -qa | grep xxx   --or-- dpkg --get-selections | grep xxx ]
 echo    'Gathering main software dependencies info ...'
 echo    'Perl...';        APP_PERL=$(perl -e 'print "$^V"' 2>/dev/null)
-echo -n 'Python...';      APP_PYTHON="$(which python)"
+echo -n 'Python...';      APP_PYTHON="$(which python3)"
 echo -n 'Sqlite...';      APP_SQLITE=$(sqlite3 -version 2>/dev/null)
 echo -n 'ImageMagick...'; APP_IMAGICK=$(convert --version 2>/dev/null)
 echo -n 'pngquant...';    APP_PNGQUANT="$(which pngquant)"
@@ -419,24 +419,27 @@ if [[ -z "${APP_PERL}" ]] ; then DEPMISS=true; echo '**** need Perl install';
 else
 	# some more checkings for PERL modules (not blocking install)
 	verbosecho "Perl ${APP_PERL}"
-	if [[ -f ${RELBASE}/CODE/cgi-bin/out-scandeps ]]; then
+	if [[ -f ${RELBASE}/SETUP/out-scandeps ]]; then
 		echo -n "Scanning installed perl modules vs cgi-bin requirements ... "
 		# test module presence (using perlmod_installed defined above), append to notinst if not loadable
 		notinst=()
 		while read mname; do
 			perlmod_installed ${mname} || notinst[${#notinst[@]}]="${mname}"
-		done< ${RELBASE}/CODE/cgi-bin/out-scandeps
+		done< ${RELBASE}/SETUP/out-scandeps
 		echo "done."
 		# print notinst list
 		if [[ ${#notinst[@]} != 0 ]]; then
 			echo
-			echo "**** Warning: some required perl modules could not be found, please check:"
+			echo "**** Warning: some required perl modules could not be found:"
+			echo
 			for t in "${notinst[@]}"; do
 				# there could be added the linux distro's package containing module !
 				# (eg. yum search module (or yum provides) OR apt-file search module
 				echo "  " ${t}
 			done
 			echo
+			echo "Aborted."
+			exit
 		fi
 	else
 		echo "missing out-scandeps - skipping perl modules checkings"
@@ -532,7 +535,7 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 	if [[ $(id ${USERID} 2>/dev/null) ]]; then
 		echo "${USERID} already exists"
 	else
-		rcmd="useradd -r -U ${USERID}"
+		rcmd="useradd -r -m -U ${USERID}"
 		if $(confirmy "Confirm create WebObs user (${rcmd}) [Y/n] ? ") ; then
 			${rcmd}
 			errexit "creating user ${USERID}"
@@ -567,6 +570,7 @@ echo
 REPORT=${DOCROOT}/SETUP.CONF.README
 cp ${RELBASE}/README ${REPORT}
 cp ${RELBASE}/release-notes.md ${DOCROOT}
+mkdir -p ${DOCROOT}/DATA/DB/ # To make sure that the DB directory is there.
 if [[ -d ${DOCROOT}/CONF ]]; then
 	# when there already exists a ${DOCROOT}/CONF, show delta with new release:
 	echo "checking for changes to the existing ${DOCROOT}/CONF"
@@ -642,15 +646,16 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 		sqlite3 ${DOCROOT}/CONF/WEBOBSUSERS.db  < ${RELBASE}/SETUP/change-WEBOBSUSERS-enddate+comment.sql
 	fi
 	if [ ! -s ${DOCROOT}/CONF/WEBOBSMETA.db ]; then
-	 	verbosecho "creating WEBOBSMETA.db"
+		verbosecho "creating WEBOBSMETA.db"
 		cd ${DOCROOT}/CONF
 		$RELBASE/SETUP/createdb-WEBOBSMETA >/dev/null
 		chown ${USER_APACHE[0]}:${USER_APACHE[1]} WEBOBSMETA.db
 		cd -
 	fi
+
 	if [ ! -s ${DOCROOT}/DATA/DB/WEBOBSFORMS.db ]; then
-	 	verbosecho "creating WEBOBSFORMS.db"
-		cd ${DOCROOT}/CONF
+		verbosecho "creating WEBOBSFORMS.db"
+		cd ${DOCROOT}/DATA/DB
 		$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
 		chown ${USER_APACHE[0]}:${USER_APACHE[1]} WEBOBSFORMS.db
 		cd -
@@ -669,11 +674,16 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSDOMAINS.db WEBOBSDOMAINS.db >>$REPORT
 	$RELBASE/SETUP/createdb-WEBOBSMETA >/dev/null
 	$RELBASE/SETUP/cmpsql $DOCROOT/CONF/WEBOBSMETA.db WEBOBSMETA.db >>$REPORT
-		$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
+	$RELBASE/SETUP/createdb-WEBOBSFORMS >/dev/null
 	$RELBASE/SETUP/cmpsql $DOCROOT/DATA/DB/WEBOBSFORMS.db WEBOBSFORMS.db >>$REPORT
 	cd ..
 	rm -rf $db_temp_dir
 
+    # 6) check user access integrity and solve issues if detected
+    echo "${RELBASE}/SETUP/check-user-access.sh"
+    set -o pipefail
+    (${RELBASE}/SETUP/check-user-access.sh clean | tee -a $REPORT) || { exit 1; }
+    echo
 
 else
 	MIGRATION=$(confirm "Do you want to migrate some old (pre-2012) WebObs stuff [y/N] ?")
@@ -736,6 +746,27 @@ else
 	cd -
 
 fi
+
+# migration of existing former FORM (.DAT text file based) to GENFORM
+if [[ -d ${DOCROOT}/CONF/GRIDS2FORMS && $(ls -A ${DOCROOT}/CONF/GRIDS2FORMS) ]]; then
+    echo "${RELBASE}/SETUP/migration/form2genform.sh"
+    set -o pipefail
+    (${RELBASE}/SETUP/migration/form2genform.sh ${DOCROOT} | tee -a $REPORT) || { exit 1; }
+    echo
+fi
+
+# Python environment ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+echo 'Python environment installation'
+if $(confirm "Create Python environment [y/N] ?") ; then
+    python3 -m venv ${DOCROOT}/venv/
+    chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
+    source ${DOCROOT}/venv/bin/activate
+    pip install -r "${DOCROOT}/CODE/python/requirements.txt"
+    deactivate
+fi
+echo
+
 # update FDSN network codes
 if $(confirm "Do you want to update the FDSN network codes [y/N] ? ") ; then
 	wget http://www.fdsn.org/networks/?type=csv -O ${DOCROOT}/CODE/etc/fdsncodes.csv

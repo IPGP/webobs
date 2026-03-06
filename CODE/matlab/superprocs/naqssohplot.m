@@ -29,7 +29,7 @@ function DOUT=naqssohplot(varargin)
 %
 %   Authors: J.M. Saurel / WEBOBS, IPGP
 %   Created: 2014-07-13
-%   Updated: 2021-01-01
+%   Updated: 2026-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -118,8 +118,8 @@ for n = 1:length(N)
 				acqui = round(100*length(k)*ACQ_RATE/(t(k(end)) - LAST_DELAY - xlim(1)));
 			end
 			if P.GTABLE(r).DECIMATE > 1
-				tk = rdecim(t(k),P.GTABLE(r).DECIMATE);
-				dk = rdecim(d(k,:),P.GTABLE(r).DECIMATE);
+				tk = decim(t(k),P.GTABLE(r).DECIMATE);
+				dk = decim(d(k,:),P.GTABLE(r).DECIMATE);
 			else
 				tk = t(k);
 				dk = d(k,:);
@@ -219,10 +219,10 @@ for n = 1:length(N)
 			end
 		end
 
-		tlabel(xlim,P.GTABLE(r).TZ)
+		tlabel(xlim,P.TZ)
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),' (min|avr|max)',' '};
+			P.GTABLE(r).INFOS = {'Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),' (min|avr|max)',' '};
 			for i = 1:nx
 				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+g %s} (%+g | %+g | %+g)', ...
 					i, C.nm{i},d(ke,i),C.un{i},roundsd([rmin(dk(:,i)),rmean(dk(:,i)),rmax(dk(:,i))],5))}];
@@ -230,16 +230,18 @@ for n = 1:length(N)
 		end
 
 		% makes graph
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+        OPT.STATUS = P.GTABLE(r).STATUS;
+		OPT.EVENTS = N(n).EVENTS;
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = tk;
 			E.d = dk(:,1:nx);
 			E.header = strcat(C.nm,{'('},C.un,{')'});
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 end
@@ -266,9 +268,9 @@ if isfield(P,'SUMMARYLIST')
 		if any(isnan(xlim))
 			xlim = [tfirstall,P.NOW];
 		end
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
-		P.GTABLE(r).GSTATUS = [xlim(2),etats,acquis];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		OPT.GSTATUS = [xlim(2),etats,acquis];
+		OPT.INFOS = {''};
 
 		% --- Time series graph
 		figure
@@ -288,8 +290,8 @@ if isfield(P,'SUMMARYLIST')
 				k = find(D(n).t>=xlim(1) & D(n).t<=xlim(2));
 				if ~isempty(k)
 					if P.GTABLE(r).DECIMATE > 1
-						tk = rdecim(D(n).t(k),P.GTABLE(r).DECIMATE);
-						dk = rdecim(D(n).d(k,so(i)),P.GTABLE(r).DECIMATE);
+						tk = decim(D(n).t(k),P.GTABLE(r).DECIMATE);
+						dk = decim(D(n).d(k,so(i)),P.GTABLE(r).DECIMATE);
 					else
 						tk = D(n).t(k);
 						dk = D(n).d(k,so(i));
@@ -319,9 +321,9 @@ if isfield(P,'SUMMARYLIST')
 			set(gca,'YLim',ylim);
 		end
 
-		tlabel(xlim,P.GTABLE(r).TZ)
+		tlabel(xlim,P.TZ)
 
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 end

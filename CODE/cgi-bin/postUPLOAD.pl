@@ -49,6 +49,7 @@ use strict;
 use warnings;
 use File::Basename;
 use File::Path qw/make_path/;
+use File::Temp qw/tempdir/;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard /;
 my $cgi = new CGI;
@@ -72,6 +73,7 @@ my $typeDoc = $QryParm->{'doc'}    // "";
 my $object  = $QryParm->{'object'} // "";
 my $event   = $QryParm->{'event'}  // "";
 my $nb      = $QryParm->{'nb'}     // 0;
+my $form    = $QryParm->{'form'}    // "";  # name of the form
 
 # ---- validate target subir (doc=) and http-client authorizations
 #
@@ -84,9 +86,15 @@ my $GRIDName  = my $GRIDType  = my $NODEName = my $RESOURCE = "";
 my @NID;
 my $pobj;
 
+my $PATH_FORMDOCS = $GRIDS{SPATH_FORMDOCS} || "FORMDOCS";
+my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
+
 @NID = split(/[\.\/]/, trim($object));
 ($GRIDType, $GRIDName, $NODEName) = @NID;
-if (defined($GRIDType) || defined($GRIDName)) {
+if (defined($form)) {
+    my $clientAuth = WebObs::Users::clientMaxAuth(type=>"authforms",name=>"('$form')");
+    htmlMsgNotOK("$__{'Not authorized'}") if ($clientAuth < 1);
+} elsif (defined($GRIDType) || defined($GRIDName)) {
     $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName"));
     htmlMsgNotOK("$__{'Not authorized'}") if ($editOK == 0);
 } else { htmlMsgNotOK("$__{'Invalid object'} '$object'") }
@@ -104,10 +112,14 @@ if (scalar(@NID) == 2) {
 
 # ---- more checkings on type of document to be uploaded
 #
-my @allowed = ("SPATH_PHOTOS","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS");
+my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS","SHAPEFILE");
 htmlMsgNotOK("$__{'Cannot upload to'} $typeDoc") if ( "@allowed" !~ /\b$typeDoc\b/ );
 
-if ($typeDoc ne "SPATH_INTERVENTIONS") {
+if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
+    $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
+} elsif ($typeDoc eq "SHAPEFILE") {
+    $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
+} elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
     $pathTarget  .= "/$pobj->{$typeDoc}";
 } else {
     htmlMsgNotOK("$__{'intervention event not specified'}") if ($event eq "");
@@ -117,8 +129,11 @@ if ($typeDoc ne "SPATH_INTERVENTIONS") {
 # ---- at that point $pathTarget is where uploaded documents will be sent to
 #
 htmlMsgNotOK("$__{'Do not know where to upload'}") if ( $pathTarget eq "" );
-$thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}";
-make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down to PHOTOS/THUMBNAILS exist
+make_path($pathTarget);
+if ($typeDoc ne "SHAPEFILE") {
+    $thumbnailsPath = "$pobj->{SPATH_THUMBNAILS}" || ($typeDoc eq "SPATH_GENFORM_IMAGES" ? $PATH_THUMBNAILS : $NODES{SPATH_THUMBNAILS});
+    make_path("$pathTarget/$thumbnailsPath");  # make sure pathTarget down to PHOTOS/THUMBNAILS exist
+}
 (my $urnTarget  = $pathTarget) =~ s/$WEBOBS{ROOT_SITE}/../g;
 
 # ---- take care of files upload if requested --------
@@ -145,6 +160,16 @@ while($filename = $QryParm->{"uploadFile$fx"}) {
             htmlMsgNotOK("Couldn't open upload stream; $!");
         }
         qx(mv -f "$upload_tmp/$filename" $pathTarget);
+        if ($typeDoc eq "SHAPEFILE") {
+            if ($filename =~ m/.zip/ or $filename =~ m/.shz/) {
+                my $tempdir = tempdir(CLEANUP => 1);
+                qx(unzip -u "$pathTarget/$filename" -d $tempdir);
+                my @shapefile = glob "$tempdir/*.shp";
+                qx(ogr2ogr -f "GEOJSON" -t_srs EPSG:4326 "$pathTarget/shape.json" $shapefile[0]);
+            } elsif ($filename =~ m/.json/ or $filename =~ m/.geojson/) {
+                qx(mv -f "$pathTarget/$filename" "$pathTarget/shape.json");
+            }
+        }
         if ($?) {
             htmlMsgNotOK("Couldn't move uploaded file to $pathTarget; $!");
         }
@@ -163,8 +188,16 @@ while ($ix <= $nb) {
         if ($?) { htmlMsgNotOK("Couldn't delete $filename; $!") }
         $progress .= "$filename has been deleted\n";
         if (-e "$pathTarget/$thumbnailsPath/$filename.$NODES{THUMBNAILS_EXT}") {
-            qx(rm "$pathTarget/$thumbnailsPath/$filename.jpg");
+            qx(rm "$pathTarget/$thumbnailsPath/$filename.$NODES{THUMBNAILS_EXT}");
             if ($?) { htmlMsgNotOK("Couldn't delete $filename.$NODES{THUMBNAILS_EXT} thumbnail; $!") }
+        }
+        if (-e "$pathTarget/$thumbnailsPath/$GRIDS{GENFORM_THUMB_ANIM}") {
+            qx(rm "$pathTarget/$thumbnailsPath/$GRIDS{GENFORM_THUMB_ANIM}");
+            if ($?) { htmlMsgNotOK("Couldn't delete $GRIDS{GENFORM_THUMB_ANIM}; $!") }
+        }
+        if (-e "$pathTarget/$NODES{SPATH_SLIDES}/$filename.$NODES{THUMBNAILS_EXT}") {
+            qx(rm "$pathTarget/$NODES{SPATH_SLIDES}/$filename.$NODES{THUMBNAILS_EXT}");
+            if ($?) { htmlMsgNotOK("Couldn't delete $filename.$NODES{THUMBNAILS_EXT}; $!") }
         }
     }
     $ix++;

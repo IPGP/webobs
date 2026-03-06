@@ -88,14 +88,56 @@ use strict;
 use warnings;
 use Fcntl qw(:flock SEEK_SET SEEK_END O_NONBLOCK O_WRONLY O_RDWR);
 use File::Basename;
-use WebObs::Utils qw(u2l l2u);
 use CGI::Carp qw(fatalsToBrowser);
+use Locale::Recode;
 
 our(@ISA, @EXPORT, $VERSION, %WEBOBS, $WEBOBS_LFN);
 require Exporter;
 @ISA     = qw(Exporter);
-@EXPORT  = qw(%WEBOBS readFile xreadFile readCfgFile readCfg webobs_cgi_msg);
+@EXPORT  = qw(%WEBOBS readFile xreadFile readCfgFile readCfg webobs_cgi_msg u2l l2u);
 $VERSION = "2.00";
+
+#------------------------------------------------------------------------------
+# [FB-comment 2025-01-22]: these 2 functions will disapear in the future since
+#  we plan to use UTF-8 only in all conf files (needs a migration process)
+=pod
+
+=head2 u2l, l2u
+
+ $latin = u2l("utf8-text");
+ $utf = l2u("latin-text");
+
+ uses legacy routines from i18n.pl for compatible behavior
+
+=cut
+
+my $u2l = Locale::Recode->new (from => 'UTF-8', to => 'ISO-8859-15');
+my $l2u = Locale::Recode->new (from => 'ISO-8859-15', to => 'UTF-8');
+die $u2l->getError if $u2l->getError;
+die $l2u->getError if $l2u->getError;
+
+# -------------------------------------------------------------------------------------------------
+sub u2l ($) {
+    my $text = shift;
+    # converts some characters in HTML since they don't exist in latin
+    $text =~ s/μ/&mu;/g;
+    $text =~ s/σ/&sigma;/g;
+    $text =~ s/δ/&delta;/g;
+    $text =~ s/‰/&permil;/g;
+    $u2l->recode($text) or die $u2l->getError;
+    return $text;
+}
+
+# -------------------------------------------------------------------------------------------------
+sub l2u ($) {
+    my $text = shift;
+    $l2u->recode($text) or die $l2u->getError;
+    return $text;
+}
+
+binmode STDOUT, ':raw'; # Needed to make it work in UTF-8 locales in Perl-5.8.
+
+# -------------------------------------------------------------------------------------------------
 
 my $confF1 = "/etc/webobs.d/WEBOBS.rc";
 if (-e $confF1) {
@@ -236,6 +278,8 @@ sub readCfgFile
 
     %lines = readCfg("[filepath]/filename");  # for key|value[|value...] files
     %lines = readCfg("[filepath]/filename",'sorted'); # adds $lines{}{_SO_} (sort order)
+    %lines = readCfg("[filepath]/filename",'escape'); # removes escape chars (\)
+    %lines = readCfg("[filepath]/filename",'novsub'); # do not substitute variables
 
     @lines = readCfg("[filepath]/filename");  # other files
 
@@ -251,7 +295,7 @@ sub readCfg
     my $escape = grep ( /^escape$/, @_[1..$#_] );
     my $novsub = grep ( /^novsub$/, @_[1..$#_] );
     my $id = 0;
-    my (@df, @wrk, $i, $l, %H, @A);
+    my (@df, @wrk, $i, $l, %H, @A, @key);
     my @fraw = readFile($fn);
     chomp(@fraw);
     for (@fraw) {
@@ -265,16 +309,17 @@ sub readCfg
         }
         $l = l2u($_);                # force utf8 !
         @wrk = split(/(?<!\\)\|/,$l);  # parse with unescaped-| as delim
+        push(@key, $wrk[0]);
         if (!$escape) { s/\\//g for(@wrk) };          # remove escape chars (\)
-        if (@df == 2) {             # key|value ? build Hash
-            $H{$wrk[0]} = $wrk[1];
-            next;
-        }
-        if (@df > 2) {              # key|val1|...|valN ? build an HoH
+        if (@df > 2 || $sort) {              # key|val1|...|valN ? build an HoH
             for ($i = 1; $i < @df; $i++) {
                 $H{$wrk[0]}{$df[$i]} = $wrk[$i];
             }
             $H{$wrk[0]}{_SO_} = sprintf("%03d",++$id) if ($sort);
+            next;
+        }
+        if (@df == 2) {             # key|value ? build Hash
+            $H{$wrk[0]} = $wrk[1];
             next;
         }
         push(@A, [@wrk]);           # otherwise build an AoA

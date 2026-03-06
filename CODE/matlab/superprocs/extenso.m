@@ -1,42 +1,34 @@
 function DOUT=extenso(varargin)
 %EXTENSO WebObs SuperPROC: Updates graphs/exports of Extensometry results.
 %
-%       EXTENSO(PROC) makes default outputs of PROC.
+%   EXTENSO(PROC) makes default outputs of PROC.
 %
-%       EXTENSO(PROC,TSCALE) updates all or a selection of TIMESCALES graphs:
-%           TSCALE = '%' : all timescales defined by PROC.conf (default)
-%	    TSCALE = '01y' or '30d,10y,'all' : only specified timescales
-%	    (keywords must be in TIMESCALELIST of PROC.conf)
+%   EXTENSO(PROC,TSCALE) updates all or a selection of TIMESCALES graphs:
+%      TSCALE = '%' : all timescales defined by PROC.conf (default)
+%       TSCALE = '01y' or '30d,10y,'all' : only specified timescales
+%       (keywords must be in TIMESCALELIST of PROC.conf)
 %
-%	EXTENSO(PROC,[],REQDIR) makes graphs/exports for specific request directory REQDIR.
+%   EXTENSO(PROC,[],REQDIR) makes graphs/exports for specific request directory REQDIR.
 %	REQDIR must contain a REQUEST.rc file with dedicated parameters.
 %
-%       D = EXTENSO(PROC,...) returns a structure D containing all the PROC data:
-%           D(i).id = node ID
-%           D(i).t = time vector (for node i)
-%           D(i).d = matrix of processed data (NaN = invalid data)
+%   D = EXTENSO(PROC,...) returns a structure D containing all the PROC data:
+%       D(i).id = node ID
+%       D(i).t = time vector (for node i)
+%       D(i).d = matrix of processed data (NaN = invalid data)
 %
-%       EXTENSO will use PROC's parameters from .conf file. Specific paramaters are:
-%	    FILTER_MAX_ERROR_M|
-%	    TREND_ERROR_MODE|1
-%	    BASELINES_EXCLUDED_NODELIST|
-%	    BASELINES_REF_NODELIST|
-%	    VECTORS_EXCLUDED_NODELIST|
-%	    VECTORS_MIN_SIZE_KM|10
-%	    VECTORS_MAX_XYRATIO|1.5
-%	    VECTORS_ARROWSHAPE|.1,.1,.08,.02
-%	    MODELLING_EXCLUDED_NODELIST|
-%	    MODELLING_HORIZONTAL_ONLY|0
-%	    MODELLING_MAX_DEPTH|8000
-%	    MODELLING_BORDERS|5000
-%	    MODELLING_GRID_SIZE|100
-%	    MODELLING_SIGMAS|1
-%	    MODELLING_PLOT_BEST|N
+%   This superproc is specificaly adapted to data from the FORM.EXTENSO genform.
+%   But data from other source might be used if the channels contain:
+%       d(:,1) = Distance measurement (in mm)
+%       e(:,1) = Error on the distance (in mm)
+%       d(:,2) = Air temperature (in °C)
+%       d(:,3) = Wind velocity (arbitrary scale from 0 to 3)
+%
+%   See CODE/tplates/PROC.EXTENSO for specific paramaters of this superproc.
 %
 %
 %   Authors: F. Beauducel + J.C. Komorowski / WEBOBS, IPGP
 %   Created: 2001-10-23
-%   Updated: 2023-12-13
+%   Updated: 2026-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -63,11 +55,23 @@ maxerror = field2num(P,'FILTER_MAX_ERROR_MM',NaN);	% error in mm
 
 terrmod = field2num(P,'TREND_ERROR_MODE',1);
 
+% per node parameters
+pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','o-');
+
+% SUMMARY parameters
+summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','o-');
+nodes_colormap = field2str(P,'NODES_COLORMAP');
+if exist(nodes_colormap,'file')
+    cmap = eval(sprintf('%s(%d)',nodes_colormap,numel(N)));
+else
+    cmap = [];
+end
+
 % VECTORS parameters
 velscale = field2num(P,'VECTORS_VELOCITY_SCALE',0);
 minkm = field2num(P,'VECTORS_MIN_SIZE_KM',1);
 maxxy = field2num(P,'VECTORS_MAX_XYRATIO',1.5);
-arrowshape = field2num(P,'VECTORS_ARROWSHAPE',[.1,.1,.08,.02]);
+arrowshape = field2num(P,'VECTORS_ARROWSHAPE',[.15,.1,.08,.04]);
 
 % MODELLING parameters
 horizonly = isok(P,'MODELLING_HORIZONTAL_ONLY');
@@ -146,25 +150,25 @@ for n = 1:length(N)
 		end
 
 		% title and status
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
-		P.GTABLE(r).GSTATUS = [P.NOW,etat,acqui];
+		OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		OPT.GSTATUS = [P.NOW,etat,acqui];
 		N(n).STATUS = etat;
 		N(n).ACQUIS = acqui;
-		P.GTABLE(r).INFOS = {''};
+		OPT.INFOS = {''};
 
 		% relative extension with error bars (in mm)
 		subplot(6,1,1:4), extaxes(gca,[.07,0])
 		if ~isempty(k)
 			tk = t(k);
+            dk = d(k,1);
 			k1 = k(find(~isnan(d(k,1)),1));
-			dk = d(k,1)-d(k1,1);
-			plot(tk,dk,'.','MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',scolor(1))
+			plot(tk,dk,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',scolor(1),'MarkerFaceColor',scolor(1))
 			set(gca,'Ylim',get(gca,'YLim'))	% freezes Y axis
 			hold on
 			plot(repmat(tk,[1,2])',(repmat(dk,[1,2])+e(k,1)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1])
 			kk = find(~isnan(dk));
 			lre = nan(1,2);
-			if length(kk) > 2
+			if length(kk) > 2 && ~isempty(k1)
 				lr = wls(tk(kk)-t(k1),dk(kk),1./e(k(kk),1).^2);
 				lre = [lr(1),std(dk(kk) - polyval(lr,tk(kk)-t(k1)))/diff(tlim)]*365.25;
 				plot(tlim,polyval(lr,tlim - t(k1)),'--k','LineWidth',.2)
@@ -173,7 +177,7 @@ for n = 1:length(N)
 		end
 		set(gca,'XLim',tlim,'FontSize',fontsize)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Relative %s (%s)',C.nm{1},C.un{1}))
+		ylabel(sprintf('%s (%s)',C.nm{1},C.un{1}))
 		if isempty(d) || all(isnan(d(k,1)))
 			nodata(tlim)
 		end
@@ -183,7 +187,7 @@ for n = 1:length(N)
 		if ~isempty(k)
 			tk = t(k);
 			dk = d(k,2);
-			plot(tk,dk,'.-','LineWidth',.5,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',scolor(2))
+			plot(tk,dk,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',scolor(2),'MarkerFaceColor',scolor(2))
 			set(gca,'Ylim',get(gca,'YLim'))	% freezes Y axis
 		end
 		set(gca,'XLim',tlim,'FontSize',fontsize)
@@ -198,41 +202,42 @@ for n = 1:length(N)
 		if ~isempty(k)
 			tk = t(k);
 			dk = d(k,3);
-			plot(tk,dk,'.-','LineWidth',.5,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',scolor(3))
+			plot(tk,dk,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',scolor(3),'MarkerFaceColor',scolor(3))
 			set(gca,'Ylim',get(gca,'YLim'))	% freezes Y axis
 		end
 		set(gca,'XLim',tlim,'FontSize',fontsize)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('%s (%s)',C.nm{3},C.un{3}))
+		ylabel(C.nm{3})
 		if isempty(d)
 			nodata(tlim)
 		end
 
-		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
+		tlabel(tlim,P.TZ,'FontSize',8)
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),' (min|moy|max)',' ',' ', ...
+			OPT.INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),' (min|moy|max)',' ',' ', ...
 				sprintf('1. %s = {\\bf%+1.3f %s} (%+1.3f | %+1.3f | %+1.3f) - Trend = {\\bf%+1.3f \\pm %1.3f mm/yr}', ...
-					C.nm{1},d(ke,1)-d(k1,1),C.un{1},rmin(d(k,1)-d(k1,1)),rmean(d(k,1)-d(k1,1)),rmax(d(k,1)-d(k1,1)),lre), ...
+					C.nm{1},d(ke,1),C.un{1},rmin(d(k,1)),rmean(d(k,1)),rmax(d(k,1)),lre), ...
 			};
 			for i = 2:3
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f | %+1.1f)', ...
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f | %+1.1f)', ...
 					i, C.nm{i},d(ke,i),C.un{i},rmin(d(k,i)),rmean(d(k,i)),rmax(d(k,i)))}];
 			end
 		end
 
 		% makes graph
+        OPT.STATUS = P.GTABLE(r).STATUS;
 		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = t(k);
 			E.d = [d(k,1),e(k,1),d(k,2),d(k,3)];
 			E.header = {'Extension(mm)','Ext_std(mm)','Temp(C)','Wind'};
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 
@@ -253,11 +258,11 @@ for r = 1:length(P.GTABLE)
 	if any(isnan(tlim))
 		tlim = [tfirstall,P.NOW];
 	end
-	P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+	OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
 	if P.GTABLE(r).STATUS
-		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,N.STATUS)),rmean(cat(1,N.ACQUIS))];
+		OPT.GSTATUS = [tlim(2),rmean(cat(1,N.STATUS)),rmean(cat(1,N.ACQUIS))];
 	end
-	P.GTABLE(r).INFOS = {''};
+	OPT.INFOS = {''};
 	tr = nan(length(N),1); % trends per station per component (mm/yr)
 	tre = nan(length(N),1); % trends error (mm/yr)
 	az = nan(length(N),1);
@@ -271,9 +276,12 @@ for r = 1:length(P.GTABLE)
 		e = D(n).e;
 		k = find(t>=tlim(1) & t<=tlim(2));
 		if ~isempty(k)
-			k1 = k(find(~isnan(d(k,1)),1));
-			dk = d(k,1) - d(k1,1);
 			tk = t(k);
+			dk = d(k,1);
+			k1 = k(find(~isnan(d(k,1)),1));
+            if ~isempty(k1)
+                dk = dk - d(k1,1);
+            end
 			% computes yearly trends (in mm/yr)
 			kk = find(~isnan(dk));
 			if length(kk) > 2
@@ -306,8 +314,10 @@ for r = 1:length(P.GTABLE)
 	% --- Time series graph
 	figure, clf, orient tall
 
-	for i = 1:3
-		subplot(6,1,(i-1)*2+(1:2)), extaxes(gca,[.07,0])
+    zones = length(find(~cellfun(@isempty,regexp(fieldnames(P),'ZONE._NAME'))));
+	for i = 1:zones
+        nlist = split(P.(sprintf('ZONE%d_NODELIST',i)),',');
+		subplot(2*zones,1,(i-1)*(zones-1)+(1:2)), extaxes(gca,[.07,0])
 		hold on
 		aliases = [];
 		ncolors = [];
@@ -317,14 +327,16 @@ for r = 1:length(P.GTABLE)
 			d = D(n).d;
 			%e = D(n).e;
 			C = D(n).CLB;
-			nlist = split(P.(sprintf('ZONE%d_NODELIST',i)),',');
 
 			k = find(t>=tlim(1) & t<=tlim(2));
-			if ~any(strcmp(N(n).FID,nlist)) && ~isempty(k)
-				k1 = k(find(~isnan(d(k,1)),1));
-				dk = d(k,1) - d(k1,1);
+			if any(strcmp(N(n).FID,nlist)) && ~isempty(k)
 				tk = t(k);
-				plot(tk,dk,'.-','Color',scolor(n),'MarkerSize',P.GTABLE(r).MARKERSIZE)
+                dk = d(k,1);
+				k1 = k(find(~isnan(d(k,1)),1));
+                if ~isempty(k1)
+                    dk = dk - d(k1,1);
+                end
+				plot(tk,dk,summary_linestyle,'Color',scolor(n,cmap),'MarkerSize',P.GTABLE(r).MARKERSIZE,'MarkerFaceColor',scolor(n,cmap))
 				aliases = cat(2,aliases,{N(n).ALIAS});
 				ncolors = cat(2,ncolors,n);
 			end
@@ -333,21 +345,21 @@ for r = 1:length(P.GTABLE)
 		set(gca,'XLim',tlim,'FontSize',fontsize)
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('%s: %s (%s)',P.(sprintf('ZONE%d_NAME',i)),C.nm{1},C.un{1}))
+		ylabel({sprintf('{\\bf%s}',P.(sprintf('ZONE%d_NAME',i))),sprintf('%s (%s)',C.nm{1},C.un{1})})
 
 		% legend: station aliases
 		ylim = get(gca,'YLim');
 		nl = length(aliases);
 		for n = 1:nl
-			text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
+			text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),aliases(n),'Color',scolor(ncolors(n),cmap), ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 		end
 		set(gca,'YLim',ylim);
 	end
 
-	tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
+	tlabel(tlim,P.TZ,'FontSize',8)
 
-	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 	close
 
 
@@ -360,12 +372,13 @@ for r = 1:length(P.GTABLE)
 			kn = 1:length(N);
 		end
 		figure, set(gcf,'PaperPosition',[0,0,get(gcf,'PaperSize')]);
+        orient tall
 
-		% latitude extent of network and xy ratio
+		% latitude extent of network and xy ratio to respect azimuth angle
 		ylim = minmax(geo(kn,1));
 		xyr = cosd(mean(ylim));
 
-		P.GTABLE(r).GTITLE = gtitle(P.NAME,P.GTABLE(r).TIMESCALE);
+		OPT.GTITLE = gtitle(P.NAME,P.GTABLE(r).TIMESCALE);
 
 		% scale is adjusted to maximum horizontal vector or error amplitude (in mm/yr)
 		if velscale > 0
@@ -375,19 +388,20 @@ for r = 1:length(P.GTABLE)
 		end
 		vscale = roundsd(vmax,1);
 		vsc = .25*max(diff(ylim),minkm/degkm)/vmax;
+        fprintf('---> Vmax = %g mm/yr, Vscale = %g\n',vscale,vsc);
 
-		ha = plot(geo(kn,2),geo(kn,1),'k.');
+		ha = plot(geo(kn,2),geo(kn,1),'k.'); extaxes(gca,[.04,.08])
 		hold on
 		% plots velocity vectors first
 		for nn = 1:length(kn)
 			n = kn(nn);
 			if ~any(isnan([vsc,vmax])) && ~any(isnan([vx(n),vy(n)]))
 				if tr(n) >= 0
-					h1 = arrows(geo(n,2),geo(n,1),vsc*vx(n)/xyr,vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
-					h2 = arrows(geo(n,2),geo(n,1),-vsc*vx(n)/xyr,-vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
+					h1 = arrows(geo(n,2),geo(n,1),vsc*vx(n)/xyr,vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n,cmap),'LineWidth',1);
+					h2 = arrows(geo(n,2),geo(n,1),-vsc*vx(n)/xyr,-vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n,cmap),'LineWidth',1);
 				else
-					h1 = arrows(geo(n,2)-vsc*vx(n)/xyr,geo(n,1)-vsc*vy(n),vsc*vx(n)/xyr,vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
-					h2 = arrows(geo(n,2)+vsc*vx(n)/xyr,geo(n,1)+vsc*vy(n),-vsc*vx(n)/xyr,-vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
+					h1 = arrows(geo(n,2)-vsc*vx(n)/xyr,geo(n,1)-vsc*vy(n),vsc*vx(n)/xyr,vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n,cmap),'LineWidth',1);
+					h2 = arrows(geo(n,2)+vsc*vx(n)/xyr,geo(n,1)+vsc*vy(n),-vsc*vx(n)/xyr,-vsc*vy(n),arrowshape,'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n,cmap),'LineWidth',1);
 				end
 				ha = cat(1,ha,h1,h2);
 			end
@@ -432,8 +446,10 @@ for r = 1:length(P.GTABLE)
 
 		% puts arrows on top
 		h = get(gca,'Children');
-		ko = find(h == ha(1));
-		set(gca,'Children',[ha;h(1:ko)])
+		ko = find(ismember(h,ha),1);
+		if ~isempty(ko)
+			set(gca,'Children',[ha;h(1:ko-1)])
+		end
 
 		% plots error ellipse and station name
 		for nn = 1:length(kn)
@@ -441,12 +457,12 @@ for r = 1:length(P.GTABLE)
 			if ~isnan(any([vx(n),vy(n)]))
 				if tr(n) >= 0
 					h1 = ellipse(geo(n,2) + vsc*vx(n)/xyr,geo(n,1) + vsc*vy(n),vsc*tre(n)/xyr,vsc*tre(n), ...
-						'EdgeColor',scolor(n),'LineWidth',.2,'Clipping','on');
+						'EdgeColor',scolor(n,cmap),'LineWidth',.2,'Clipping','on');
 					h2 = ellipse(geo(n,2) - vsc*vx(n)/xyr,geo(n,1) - vsc*vy(n),vsc*tre(n)/xyr,vsc*tre(n), ...
-						'EdgeColor',scolor(n),'LineWidth',.2,'Clipping','on');
+						'EdgeColor',scolor(n,cmap),'LineWidth',.2,'Clipping','on');
 					ha = cat(1,ha,h1,h2);
 				else
-					h = ellipse(geo(n,2),geo(n,1),vsc*tre(n)/xyr,vsc*tre(n),'EdgeColor',scolor(n),'LineWidth',.2,'Clipping','on');
+					h = ellipse(geo(n,2),geo(n,1),vsc*tre(n)/xyr,vsc*tre(n),'EdgeColor',scolor(n,cmap),'LineWidth',.2,'Clipping','on');
 					ha = cat(1,ha,h);
 				end
 			end
@@ -462,7 +478,7 @@ for r = 1:length(P.GTABLE)
 
 		% plots legend scale
 		xsc = xlim(1);
-		ysc = ylim(1) - .05*diff(ylim);
+		ysc = ylim(1) - .08*diff(ylim);
 		lsc = vscale*vsc;
 		arrows(xsc,ysc,lsc,90,arrowshape*vmax/vscale,'FaceColor','none','LineWidth',1,'Clipping','off');
 		text(xsc+1.1*lsc,ysc,sprintf('%g mm/yr',vscale),'FontWeight','bold')
@@ -471,16 +487,19 @@ for r = 1:length(P.GTABLE)
 		hold off
 
 		rcode2 = sprintf('%s_%s',proc,summary);
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
+		if isok(P,'EXPORTS')
+			E.infos = { ...
+				sprintf('Stations'' aliases: %s',strjoin(cat(1,{N(kn).ALIAS}),',')), ...
+				};
 			E.t = tlast(kn);
 			E.d = [geo(kn,:),tr(kn),tre(kn),az(kn)];
 			E.header = {'Latitude','Longitude','Altitude','E_velocity(mm/yr)','dEv(mm/yr)','Azimuth(N)'};
 			E.title = sprintf('%s {%s}',stitre,upper(rcode2));
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
 
@@ -493,7 +512,7 @@ for r = 1:length(P.GTABLE)
 		else
 			kn = 1:length(N);
 		end
-		P.GTABLE(r).GTITLE = gtitle(sprintf('%s - Source modelling',P.NAME),P.GTABLE(r).TIMESCALE);
+		OPT.GTITLE = gtitle(sprintf('%s - Source modelling',P.NAME),P.GTABLE(r).TIMESCALE);
 
 		nn = length(kn);
 
@@ -712,9 +731,9 @@ for r = 1:length(P.GTABLE)
 		hold off
 		set(gca,'XLim',[0,dxl],'YLim',[0,dyl])
 
-		P.GTABLE(r).INFOS = {''};
+		OPT.INFOS = {''};
 		%rcode2 = sprintf('%s_%s',proc,summary);
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		%keyboard

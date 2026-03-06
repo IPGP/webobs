@@ -13,10 +13,10 @@ function tz = gettz
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2017-01-17 in Yogyakarta, Indonesia
-%	Update: 2017-02-03
+%	Update: 2026-02-24
 %
 
-[rc,w] = wosystem('/bin/date +%z','chomp'); % returns string ±HHMM
+[rc,w] = wosystem('/bin/date +%z','chomp','trim'); % returns string ±HHMM
 if rc == 0 && length(w) == 5
 	tz = str2double(w(1:3)) + str2double(w([1,4:5]))/60;
 else

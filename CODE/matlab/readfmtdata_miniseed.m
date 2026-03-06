@@ -50,7 +50,7 @@ function D = readfmtdata_miniseed(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2023-08-30
+%	Updated: 2026-01-19
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -222,8 +222,15 @@ case 'fdsnws-dataselect'
 				else
 					t2 = min(dt(kc(ii+1)),F.datelim(2));
 				end
-				fprintf(fid,'%s %s %s %s %04d-%02d-%02dT%02d:%02d:%02.0f %04d-%02d-%02dT%02d:%02d:%02.0f\n', ...
-					N.FDSN_NETWORK_CODE,N.FID,N.CLB.lc{kc(ii)},N.CLB.cd{kc(ii)},datevec(t1),datevec(t2));
+                cha = N.CLB.cd{kc(ii)};
+                loc = N.CLB.lc{kc(ii)};
+                if isempty(loc)
+                    loc = '--';
+                end
+                if ~isempty(cha)
+                    fprintf(fid,'%s %s %s %s %04d-%02d-%02dT%02d:%02d:%02.0f %04d-%02d-%02dT%02d:%02d:%02.0f\n', ...
+                        N.FDSN_NETWORK_CODE,N.FID,loc,cha,datevec(t1),datevec(t2));
+                end
 			end
 		end
 	end
@@ -245,14 +252,15 @@ end
 
 % =============================================================================
 % loads the miniseed file
-if exist(fdat,'file')
+FD = dir(fdat);
+if ~isempty(FD) && FD(1).bytes > 0 
 	fprintf('%s: data file %s ...',wofun,fdat);
 	[X,I] = rdmseedfast(fdat,mseed2sac);
 	fprintf(' loaded.\n');
 
 	% copy the original file to export directory (if needed)
 	if isok(P,'EXPORTS')
-		pexp = sprintf('%s/%s',P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EXPORT);
+		pexp = sprintf('%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT);
 		wosystem(sprintf('mkdir -p %s && cp %s %s/',pexp,fdat,pexp),P);
 		for g = 1:length(P.GTABLE)
 			wosystem(sprintf('ln -sf $(basename %s) %s/%s_%s.msd',fdat,pexp,N.ID,P.GTABLE(g).TIMESCALE),P);
@@ -260,7 +268,7 @@ if exist(fdat,'file')
 	end
 
 	% list of channels existing in the imported data
-	chlist = cellstr(cat(1,I.ChannelFullName));
+	chlist = cat(1,{I.ChannelFullName});
 	if any(isnan(P.DATELIM))
 		F.datelim = minmax(cat(1,X.t));
 		P.DATELIM = F.datelim - N.UTC_DATA + P.TZ/24;

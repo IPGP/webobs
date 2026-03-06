@@ -26,7 +26,7 @@ function openPopupDomain(ux) {
     } // noop if no ux
     var form = $('#overlay_form_domain')[0];
     if (ux != -1) { // editing an existing domain: populate popup from its table row TDs
-        // ATT:  $("td",domain.ux)[n] = n (0-based) must match domains <td> order in def-row  
+        // ATT:  $("td",domain.ux)[n] = n (0-based) must match domains <td> order in def-row
         form.code.value = $("td", ux)[2].textContent;
         form.OLDcode.value = $("td", ux)[2].textContent;
         form.code.style.backgroundColor = "#EEEEEE";
@@ -103,7 +103,7 @@ function openPopupProducer(ux) {
     } // noop if no ux
     var form = $('#overlay_form_producer')[0];
     if (ux != -1) { // editing an existing producer: populate popup from its table row TDs
-        // ATT:  $("td",producer.ux)[n] = n (0-based) must match producers <td> order in def-row  
+        // ATT:  $("td",producer.ux)[n] = n (0-based) must match producers <td> order in def-row
         form.id.value = $("td", ux)[2].textContent;
         form.OLDid.value = $("td", ux)[2].textContent;
         form.id.style.backgroundColor = "#EEEEEE";
@@ -336,7 +336,7 @@ function closePopup() {
     $("#ovly").fadeOut(500);
 }
 
-//---   $("form").serialize() 
-//$("td",job.jid).each(function() { 
+//---   $("form").serialize()
+//$("td",job.jid).each(function() {
 //    console.log(this.textContent) ;
 //});
