@@ -13,14 +13,19 @@ http://..../showOUTG.pl?grid=gridname[,ts=][,g=][,refresh=]
 Displays contents of OUTG directory for the GRID gridname (ie. gridType.gridName).
 Optionaly specify the graph to display:
 
-ts=    can be any key defined in the GRID configuration TIMESCALELIST or 'map' or 'events'
-g=    any key defined in SUMMARYLIST, or one of the NODE ID
+ts= can be any key defined in the GRID configuration TIMESCALELIST or 'map' or 'events'
+g=  any key defined in SUMMARYLIST, or one of the NODE ID
     void (default) means an overview of all thumbnails for the first available timescale
     for a PROC, and map for a VIEW or FORM
     g=col shows all graphs in one column at full scale
 
-    if ts=events, YYYY or YYYY/MM or YYYY/MM/DD to display available events
-    void (default) is last available year
+    if ts=events, g=yyyy, g=yyyy/mm, g=yyyy/mm/dd, or g=yyyy/mm/dd/eventid to display 
+    available events.
+    g=*/*/*/eventid, g=yyyy/*/*/eventid, and g=yyyy/mm/*/eventid are authorized
+    to address a specific event id.
+    g=today, g=tomonth, g=toyear display today's, current month or current year available events
+    void (default) is all event for the last available year
+
 
 refresh=
     defines the number of seconds for automatic reloading of the page. This
@@ -127,6 +132,17 @@ if ($QryParm->{'g'} =~ s!^lastevent(\b|$)!!) {
     $QryParm->{'g'} = $lastevent_dir.$QryParm->{'g'};
 }
 
+local $ENV{TZ} = "Etc/GMT".sprintf("%+d",-1*($GRID{TZ}));
+my $now = strftime("%Y/%m/%d %H:%M:%S", localtime(time));
+my $today = substr($now,0,10);
+my $tomonth = substr($now,0,7);
+my $toyear = substr($now,0,4);
+
+$QryParm->{'g'} = $today if ($QryParm->{'g'} eq "today");
+$QryParm->{'g'} = $tomonth if ($QryParm->{'g'} eq "tomonth");
+$QryParm->{'g'} = $toyear if ($QryParm->{'g'} eq "toyear");
+
+
 # ---- get the list of nodes currently belonging to grid
 # ---- and the list of possible summary grid's summary filenames
 my %DefinedNodes = listGridNodes(grid=>"$GRIDType.$GRIDName");
@@ -220,6 +236,7 @@ if ($QryParm->{'ts'} eq 'events' ) {
     }
     my $year = "";
     my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
+    # links to available years
     foreach (@ylist) {
         $_ =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
         my $garg = $QryParm->{'g'};
@@ -227,10 +244,8 @@ if ($QryParm->{'ts'} eq 'events' ) {
         if ($garg =~ /^$_/ && $depth < 1) {
             $teHtml .= " $_ |";
         } else {
-            if ($depth > 0) {
-                $garg =~ s|^[^/]*/|$_/|;
-                $garg =~ s|/[^/]*$|| if ($depth > 2 && !grep(/$id/,@nlist)); # remove event id if not node
-                $garg =~ s|/[^/]*?/|/*/| if ($depth > 2); # replace the month
+            if ($depth > 2 && grep(/$id/,@nlist)) { # event id is a node: keep it
+                $garg = "$_/*/*/$id";
             } else {
                 $garg = $_;
             }
@@ -240,7 +255,7 @@ if ($QryParm->{'ts'} eq 'events' ) {
     # links to available months in the year
     if ($year ne "") {
         my @amonths = map { basename($_) } grep {-d} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$year/*";
-        $teHtml .= " Months $year:";
+        $teHtml .= " $__{'Months of'} $year:";
         my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
         foreach (@amonths) {
             my $garg = $QryParm->{'g'};
@@ -259,7 +274,7 @@ if ($QryParm->{'ts'} eq 'events' ) {
     if ($depth > 0 && $QryParm->{'g'} !~ /$year\/\*/) {
         my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
         my @mdays = map { basename($_) } grep {-d} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$y/$m/*";
-        $teHtml .= " | Days $monthnames{$m} $y:";
+        $teHtml .= " | $__{'Days of'} $monthnames{$m} $y:";
         foreach (@mdays) {
             my $garg = $QryParm->{'g'};
             $garg =~ s|/[^/]*$|| if ($depth > 3); # remove image name
@@ -373,11 +388,30 @@ if ($QryParm->{'ts'} eq 'map') {
 
     # lists all files
     @plist = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
+    
+    # build an hash of latest file in each event ID directory
+    my %latest;
+    if ($depth < 3) {
+        for my $f (@ilist) {
+            my @evt = grep { !-l && /\/$f\/[^\/]+\.jpg/} @plist;
+            if ($#evt > 0) {
+                $latest{$f} = sort { (stat($b))[9] <=> (stat($a))[9] } @evt;
+            } else {
+                $latest{$f} = $evt[0];
+            }
+        }
+    }
+
+
 
     # target directory contains multiple files (and symlink pointing to last): displays existing thumbnails
     if ($#plist > 1) {
         my $month0 = "";
         my $dte0 = "";
+        # target directory is not and event ID: will display only the most recent image for each event ID
+        if ($depth < 3) {
+
+        }
         for (@plist) {
             if ( ($depth < 3 && -l $_) || ($depth == 3 && ! -l $_)) {
                 (my $JPGurn = $_) =~ s/$root_dir/$urn_dir/g;
@@ -385,15 +419,15 @@ if ($QryParm->{'ts'} eq 'map') {
                 if (-l $_) {
                     my $lnk = basename($_);
                     my $tgt = readlink($_);
-                    $EVENTid =~ s/$lnk/$tgt/g;
+                    $EVENTid =~ s/\Q$lnk\E/$tgt/g;
                 }
-                $EVENTid =~ s/\.jpg//g;
+                $EVENTid =~ s/\.jpg$//g;
                 (my @evt) = split(/\//,$EVENTid);
                 my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $month = l2u(strftime("%B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $msg = "ID: $evt[3]<BR>$evt[4]";
                 if (($depth == 3 && $QryParm->{'g'} !~ m/\*/ && $month ne $month0) || ($depth == 2 && $QryParm->{'g'} !~ m/\*/) && $dte ne $dte0) {
-                    print "<H2>$dte".($depth == 3 ? ": <I>$evt[3]</I>":"")."</H2>\n";
+                    print "<H2>$dte".($depth == 3 ? ": <I>$evt[3]</I>":"")."</H2>\n"; # date only if id not selected
                     $month0 = $month;
                     $dte0 = $dte;
                 } elsif ($month ne $month0) {
@@ -466,9 +500,10 @@ if ($QryParm->{'ts'} eq 'map') {
         print "<IMG style=\"margin-bottom: 15px; background-color: beige; padding: 5px\" src=\"$img\"><BR>";
     }
     if ($QryParm->{'debug'}) {
-        print "<P><B>nlist</B> (length=$#nlist) = ".join(", ", @nlist)."</P>";
-        print "<P><B>ilist</B> (length=$#ilist) = ".join(", ", @ilist)."</P>";
-        print "<P><B>plist</B> (length=$#plist) = ".join(", ", @plist)."</P>";
+        print "<P><B>now</B> $now, <B>ENV{TZ}</B> = $ENV{TZ}</P>\n";
+        print "<P><B>nlist</B> (length=$#nlist) = ".join(", ", @nlist)."</P>\n";
+        print "<P><B>ilist</B> (length=$#ilist) = ".join(", ", @ilist)."</P>\n";
+        print "<P><B>plist</B> (length=$#plist) = ".join(", ", @plist)."</P>\n";
         print "<P><B>depth</B> = $depth</P>";
     }
 
