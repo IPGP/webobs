@@ -395,7 +395,7 @@ if ($QryParm->{'ts'} eq 'map') {
         for my $f (@ilist) {
             my @evt = grep { /\/$f\/[^\/]+\.jpg/} @plist;
             if ($#evt > 0) {
-                $latest{$f} = sort { (stat($b))[9] <=> (stat($a))[9] } @evt;
+                ($latest{$f}) = sort { (stat($b))[9] <=> (stat($a))[9] } @evt;
             } else {
                 $latest{$f} = $evt[0];
             }
@@ -405,24 +405,15 @@ if ($QryParm->{'ts'} eq 'map') {
 
 
     # target directory contains multiple files (and symlink pointing to last): displays existing thumbnails
-    if ($#plist > 1) {
+    if ($#plist > 0) {
         my $month0 = "";
         my $dte0 = "";
-        # target directory is not and event ID: will display only the most recent image for each event ID
-        if ($depth < 3) {
-
-        }
         for (@plist) {
-            if ( $depth < 4 ) {
-                (my $JPGurn = $_) =~ s/$root_dir/$urn_dir/g;
-                (my $EVENTid = $_) =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
-                if (-l $_) {
-                    my $lnk = basename($_);
-                    my $tgt = readlink($_);
-                    $EVENTid =~ s/\Q$lnk\E/$tgt/g;
-                }
-                $EVENTid =~ s/\.jpg$//g;
-                (my @evt) = split(/\//,$EVENTid);
+            (my $JPGurn = $_) =~ s/$root_dir/$urn_dir/g;
+            (my $EVENTid = $_) =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
+            $EVENTid =~ s/\.jpg$//g;
+            (my @evt) = split(/\//,$EVENTid);
+            if ( ($depth < 3 && $latest{$evt[3]} eq $_) || $depth == 3 ) {
                 my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $month = l2u(strftime("%B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $msg = "ID: $evt[3]<BR>$evt[4]";
@@ -503,6 +494,7 @@ if ($QryParm->{'ts'} eq 'map') {
         print "<P><B>now</B> $now, <B>ENV{TZ}</B> = $ENV{TZ}</P>\n";
         print "<P><B>nlist</B> (length=$#nlist) = ".join(", ", @nlist)."</P>\n";
         print "<P><B>ilist</B> (length=$#ilist) = ".join(", ", @ilist)."</P>\n";
+        print "<P><B>latest</B> = ".join(", ", map { "{$_}=$latest{$_}" } keys %latest)."</P>\n";
         print "<P><B>plist</B> (length=$#plist) = ".join(", ", @plist)."</P>\n";
         print "<P><B>depth</B> = $depth</P>";
     }
