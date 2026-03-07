@@ -387,13 +387,13 @@ if ($QryParm->{'ts'} eq 'map') {
 # this lists files using complementary wildcards from g= YYYY[/MM[/DD[/EVENTID[/EVENTNAME]]]]
 
     # lists all files
-    @plist = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
+    @plist = grep { !-l} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
     
     # build an hash of latest file in each event ID directory
     my %latest;
     if ($depth < 3) {
         for my $f (@ilist) {
-            my @evt = grep { !-l && /\/$f\/[^\/]+\.jpg/} @plist;
+            my @evt = grep { /\/$f\/[^\/]+\.jpg/} @plist;
             if ($#evt > 0) {
                 $latest{$f} = sort { (stat($b))[9] <=> (stat($a))[9] } @evt;
             } else {
@@ -413,7 +413,7 @@ if ($QryParm->{'ts'} eq 'map') {
 
         }
         for (@plist) {
-            if ( ($depth < 3 && -l $_) || ($depth == 3 && ! -l $_)) {
+            if ( $depth < 4 ) {
                 (my $JPGurn = $_) =~ s/$root_dir/$urn_dir/g;
                 (my $EVENTid = $_) =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
                 if (-l $_) {
