@@ -207,7 +207,10 @@ my (@plist) = glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.pdf"
 my (@dlist) = glob "$OUTD/$WEBOBS{PATH_OUTG_EXPORT}/*_$tslist[$tsSelected]*.*";
 
 # build @ylist = the list of available events/* years
-my (@ylist) = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/????";
+my (@ylist) = grep {-d} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/????";
+
+# build @ilist = the list of unique IDs in events/*/*/*/* subdirectories
+my (@ilist) = uniq map { basename($_) } grep { -d } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/*/*/*/*";
 
 my $teHtml = "";
 if ($QryParm->{'ts'} eq 'events' ) {
@@ -216,6 +219,7 @@ if ($QryParm->{'ts'} eq 'events' ) {
         $QryParm->{'g'} =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
     }
     my $year = "";
+    my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
     foreach (@ylist) {
         $_ =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
         my $garg = $QryParm->{'g'};
@@ -223,8 +227,9 @@ if ($QryParm->{'ts'} eq 'events' ) {
         if ($garg =~ /^$_/ && $depth < 1) {
             $teHtml .= " $_ |";
         } else {
-            if ($depth > 1) {
+            if ($depth > 0) {
                 $garg =~ s|^[^/]*/|$_/|;
+                $garg =~ s|/[^/]*$|| if ($depth > 2 && !grep(/$id/,@nlist)); # remove event id if not node
                 $garg =~ s|/[^/]*?/|/*/| if ($depth > 2); # replace the month
             } else {
                 $garg = $_;
@@ -234,7 +239,7 @@ if ($QryParm->{'ts'} eq 'events' ) {
     }
     # links to available months in the year
     if ($year ne "") {
-        my @amonths = map { basename($_) } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$year/*";
+        my @amonths = map { basename($_) } grep {-d} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$year/*";
         $teHtml .= " Months $year:";
         my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
         foreach (@amonths) {
@@ -243,7 +248,7 @@ if ($QryParm->{'ts'} eq 'events' ) {
                 $garg =~ s|/[^/]*?/|/$_/|; # replace the month
                 $garg =~ s|/[^/]*$|| if ($depth > 3); # remove image name
                 $garg =~ s|/[^/]*$|| if ($depth > 2 && !grep(/$id/,@nlist)); # remove event id if not node
-                $garg =~ s|^((?:[^/]*/){2})[^/]*(/)|$1*$2| if ($depth > 1); # replace day by '*'
+                $garg =~ s|^((?:[^/]*/){2})[^/]*(.*)|$1*$2| if ($depth > 1); # replace day by '*'
             } else {
                 $garg = "$year/$_";
             }
@@ -251,15 +256,16 @@ if ($QryParm->{'ts'} eq 'events' ) {
         }
     }
     # links to available days in the month
-    if ($QryParm->{'g'} !~ /$year\/\*/) {
+    if ($depth > 0 && $QryParm->{'g'} !~ /$year\/\*/) {
         my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
-        my @mdays = map { basename($_) } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$y/$m/*";
+        my @mdays = map { basename($_) } grep {-d} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$y/$m/*";
         $teHtml .= " | Days $monthnames{$m} $y:";
         foreach (@mdays) {
             my $garg = $QryParm->{'g'};
             $garg =~ s|/[^/]*$|| if ($depth > 3); # remove image name
             $garg =~ s|/[^/]*$|| if ($depth > 2 && !grep(/$id/,@nlist)); # remove event id if not node
-            $garg =~ s|^((?:[^/]*/){2})[^/]*(/)|$1$_$2| if ($depth > 1); # replace day
+            $garg =~ s|^((?:[^/]*/){2})[^/]*(.*)|$1$_$2| if ($depth > 1); # replace day
+            $garg .= "/$_" if ($depth == 1); # add day
             $teHtml .= " <A href=\"$baseurl&ts=events&g=$garg\">$_</A>";
         }
     }
@@ -287,20 +293,18 @@ print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle;cursor:p
 my (@glist) = sort glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.png";
 my $glistHtml = "";
 if ($QryParm->{'ts'} eq 'events' ) {
-    # @ilist = the list of unique IDs in events/*/*/*/* subdirectories
-    my (@ilist) = uniq map { basename($_) } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/*/*/*/*";
     # build @nlist = the list of available nodes (only if exist in event ID)
-    foreach (@nlist) {
-        if (grep(/^$_$/i,@ilist)) {
-            my $txt = $DefinedNodes{$_}{ALIAS};
-            if ($QryParm->{'g'} =~ /$_$/) {
+    for my $n (@nlist) {
+        if (grep( /$n/i, @ilist)) {
+            my $txt = $DefinedNodes{$n}{ALIAS};
+            if ($QryParm->{'g'} =~ /$n$/) {
                 $glistHtml .= " $txt |";
             } else {
                 my $garg = $QryParm->{'g'};
-                $garg = "$garg/*/*/$_" if ($depth < 1); # g=yyyy
-                $garg = "$garg/*/$_" if ($depth == 1); # g=yyyy/mm
-                $garg = "$garg/$_" if ($depth == 2); # g=yyyy/mm/dd
-                $garg =~ s|^((?:[^/]*/){3}).*|$1$_| if ($depth > 2); # replace event ID 
+                $garg = "$garg/*/*/$n" if ($depth < 1); # g=yyyy
+                $garg = "$garg/*/$n" if ($depth == 1); # g=yyyy/mm
+                $garg = "$garg/$n" if ($depth == 2); # g=yyyy/mm/dd
+                $garg =~ s|^((?:[^/]*/){3}).*|$1$n| if ($depth > 2); # replace event ID 
                 $glistHtml .= " <A href=\"$baseurl&ts=events&g=$garg\"><B>$txt</B></A> |";
             }
         }
@@ -335,7 +339,7 @@ if ($QryParm->{'ts'} eq 'events' ) {
 }
 chop($glistHtml); # removes last character (a pipe...)
 if ($QryParm->{'ts'} ne 'map' ) {
-    print "<BR>[ ".$glistHtml." ]\n";
+    print "<BR>[ ".$glistHtml." ]\n" if ($glistHtml ne "");
 }
 print "</DIV>";
 print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_BIN},$WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
@@ -389,7 +393,7 @@ if ($QryParm->{'ts'} eq 'map') {
                 my $month = l2u(strftime("%B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $msg = "ID: $evt[3]<BR>$evt[4]";
                 if (($depth == 3 && $QryParm->{'g'} !~ m/\*/ && $month ne $month0) || ($depth == 2 && $QryParm->{'g'} !~ m/\*/) && $dte ne $dte0) {
-                    print "<H2>$dte: <I>$evt[3]</I></H2>\n";
+                    print "<H2>$dte".($depth == 3 ? ": <I>$evt[3]</I>":"")."</H2>\n";
                     $month0 = $month;
                     $dte0 = $dte;
                 } elsif ($month ne $month0) {
@@ -462,6 +466,8 @@ if ($QryParm->{'ts'} eq 'map') {
         print "<IMG style=\"margin-bottom: 15px; background-color: beige; padding: 5px\" src=\"$img\"><BR>";
     }
     if ($QryParm->{'debug'}) {
+        print "<P><B>nlist</B> (length=$#nlist) = ".join(", ", @nlist)."</P>";
+        print "<P><B>ilist</B> (length=$#ilist) = ".join(", ", @ilist)."</P>";
         print "<P><B>plist</B> (length=$#plist) = ".join(", ", @plist)."</P>";
         print "<P><B>depth</B> = $depth</P>";
     }
@@ -568,10 +574,6 @@ if ($QryParm->{'ts'} eq 'map') {
 }
 print "<BR>$go2top</BR>";
 
-if ($QryParm->{'debug'}) {
-    print "<P><B>plist</B> = ".join(", ", @plist)."</P>";
-}
-
 # ---- We're done !
 print "</BODY>\n</HTML>\n";
 
@@ -601,7 +603,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
