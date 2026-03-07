@@ -194,6 +194,7 @@ Your WebObs installation is now linked to the GitHub repository.
 - new summary plot STRAINMAP an other improvements for gnss procs;
 - configurable headers fo proc data exports;
 - improvements and new features in MC3/SEFRAN3;
+- improvements in events type proc outputs display;
 - some minor to moderate fixes and other minor improvements.
 
 ### What's new in the 2.7?
