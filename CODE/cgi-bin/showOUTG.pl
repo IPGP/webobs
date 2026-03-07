@@ -233,26 +233,34 @@ if ($QryParm->{'ts'} eq 'events' ) {
         }
     }
     # links to available months in the year
-    #if ($depth == 0 || $QryParm->{'g'} =~ m|^(?:.*?/\*){1}.*?(/\*)|) {
     if ($year ne "") {
         my @amonths = map { basename($_) } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$year/*";
         $teHtml .= " Months $year:";
         my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
         foreach (@amonths) {
             my $garg = $QryParm->{'g'};
-            if ($garg =~ m|^$year/$_|) {
-                $teHtml .= " $monthnames{$_}";
+            if ($depth > 1) {
+                $garg =~ s|/[^/]*?/|/$_/|; # replace the month
+                $garg =~ s|/[^/]*$|| if ($depth > 3); # remove image name
+                $garg =~ s|/[^/]*$|| if ($depth > 2 && !grep(/$id/,@nlist)); # remove event id if not node
+                $garg =~ s|^((?:[^/]*/){2})[^/]*(/)|$1*$2| if ($depth > 1); # replace day by '*'
             } else {
-                if ($depth > 1) {
-                    $garg =~ s|/[^/]*?/|/$_/|; # replace the month
-                    $garg =~ s|/[^/]*$|| if ($depth > 3); # remove image name
-                    $garg =~ s|/[^/]*$|| if ($depth > 2 && !grep(/$id/,@nlist)); # remove event id if not node
-                    $garg =~ s|^((?:[^/]*/){2})[^/]*(/)|$1*$2| if ($depth > 1); # replace day by '*'
-                } else {
-                    $garg = "$year/$_";
-                }
-                $teHtml .= " <A href=\"$baseurl&ts=events&g=$garg\">$monthnames{$_}</A>";
+                $garg = "$year/$_";
             }
+            $teHtml .= " <A href=\"$baseurl&ts=events&g=$garg\">$monthnames{$_}</A>";
+        }
+    }
+    # links to available days in the month
+    if ($QryParm->{'g'} !~ /$year\/\*/) {
+        my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
+        my @mdays = map { basename($_) } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$y/$m/*";
+        $teHtml .= " | Days $monthnames{$m} $y:";
+        foreach (@mdays) {
+            my $garg = $QryParm->{'g'};
+            $garg =~ s|/[^/]*$|| if ($depth > 3); # remove image name
+            $garg =~ s|/[^/]*$|| if ($depth > 2 && !grep(/$id/,@nlist)); # remove event id if not node
+            $garg =~ s|^((?:[^/]*/){2})[^/]*(/)|$1$_$2| if ($depth > 1); # replace day
+            $teHtml .= " <A href=\"$baseurl&ts=events&g=$garg\">$_</A>";
         }
     }
 }
