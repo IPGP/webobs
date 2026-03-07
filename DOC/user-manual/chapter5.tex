@@ -65,14 +65,18 @@ NAME|My PROC title
 
 for the page title.
 
-Events must be referenced to a date (year, month, day) and will be presented sorted by month in one page per year, showing the image thumbnails. One event can contain multiple images that will be shown together as thumbnails when clicking on it. The last display level is the full scale image itself. There is no rule for eventID and images filenames (excepted the file extensions):
+Events must be referenced to a date (year, month, day) and will be presented sorted by month in one page per year, per month or per day, showing the image thumbnails. One event can contain multiple images that will be shown together as thumbnails when clicking on it. The last display level is the full scale image itself. There is no rule for eventID and images filenames, excepted the file extensions:
 
 \hspace{15pt}\wofile{/opt/webobs/OUTG/PROC.MYPROC/events/YYYY/MM/DD/eventID1/*.\{png,jpg,eps,pdf,txt\}}
 
-But it is better to use self-explanatory filenames since it will be displayed as popup windows on mouse over the thumbnails. Optional extensions \wofile{.eps}, \wofile{.pdf} and \wofile{.txt} will give access to supplementary files through links. You must also define at least one preferred image to be display as thumbnail on the main page, by creating a symbolic link to the \wofile{.jpg} file. The link basename has no importance but the extension.
+An image must have at least the .jpg (thumbnail) and .png (full scale image) files with the same basename. Other extensions are optional.
+It is better to use self-explanatory filenames since it will be displayed as popup windows on mouse over the thumbnails. Optional extensions \wofile{.eps}, \wofile{.pdf} and \wofile{.txt} will give access to supplementary files through links.
 
-\hspace{15pt}\wofile{/opt/webobs/OUTG/PROC.MYPROC/events/YYYY/MM/DD/eventID1/link.jpg $\to$ maineventimage.jpg}
+In the script that produces images, it is recommended to use \webobs variables (you might look into \wofile{/etc/webobs.d/WEBOBS.rc}) to define the paths:
 
+\hspace{15pt}\wofile{\$WEBOBS\{\wokey{ROOT\_OUTG}\}/PROC.MYPROC/\$WEBOBS\{\wokey{PATH\_OUTG\_EVENTS}\}}
+
+If eventID are proc's node ID, sub-menu allows to select one node to show associated images for a year, a month, or a day.
 
 % ==================================================================
 \section{SUPERPROCS: Templates for applications development}
