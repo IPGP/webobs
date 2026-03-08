@@ -72,6 +72,19 @@ Events must be referenced to a date (year, month, day) and will be presented sor
 An image must have at least the .jpg (thumbnail) and .png (full scale image) files with the same basename. Other extensions are optional.
 It is better to use self-explanatory filenames since it will be displayed as popup windows on mouse over the thumbnails. Optional extensions \wofile{.eps}, \wofile{.pdf} and \wofile{.txt} will give access to supplementary files through links.
 
+You might create symbolic links located in the root directory \wofile{/opt/webobs/OUTG/PROC.MYPROC/events/} pointing to specific image or event id using relative path. For example:
+\begin{itemize}
+\item \wokey{lastevent -> 2026/03/01/eventxyz}
+\item \wokey{yesterday\_NODE1 -> 2026/02/28/NODE1}
+\end{itemize}
+
+These links will be accessible only by explicit addressing as:
+\begin{itemize}
+\item \wofile{/cgi-bin/showOUTG.pl?grid=PROC.MYPROC\&ts=events\&g=lastevent}
+\item \wofile{/cgi-bin/showOUTG.pl?grid=PROC.MYPROC\&ts=events\&g=yesterday\_NODE1}
+\end{itemize}
+\noindent respectively.
+
 In the script that produces images, it is recommended to use \webobs variables (you might look into \wofile{/etc/webobs.d/WEBOBS.rc}) to define the paths:
 
 \hspace{15pt}\wofile{\$WEBOBS\{\wokey{ROOT\_OUTG}\}/PROC.MYPROC/\$WEBOBS\{\wokey{PATH\_OUTG\_EVENTS}\}}

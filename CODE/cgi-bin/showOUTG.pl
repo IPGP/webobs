@@ -185,6 +185,16 @@ my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 # base url (string that is passed through all links)
 my $baseurl = "/cgi-bin/showOUTG.pl?grid=$GRIDType.$GRIDName&refresh=$QryParm->{'refresh'}&header=$QryParm->{'header'}";
 
+# if g= contents a symbolik link, replaces it by target
+if ($QryParm->{'ts'} eq 'events') {
+    my $g = "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}";
+    if (-l $g) {
+        my $lnk = basename($g);
+        my $tgt = readlink($g);
+        $QryParm->{'g'} =~ s/$lnk/$tgt/g;
+    }
+}
+
 # count the number of "/" in the g= argument
 (my $depth = $QryParm->{'g'}) =~ s/[^\/]//g;
 $depth = length($depth);
@@ -297,7 +307,7 @@ if (-d "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}") {
          ."| $teHtml ";
 
 }
-if ($#tslist >= 0 && -d "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}") {
+if ($QryParm->{'ts'} ne 'events' && $#tslist >= 0 && -d "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}") {
     print "| $__{'Time scales:'} $tsHtml ";
 }
 print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle;cursor:pointer\" title=\"Refresh\" onclick=\"document.location.reload(false)\"> ]\n";
