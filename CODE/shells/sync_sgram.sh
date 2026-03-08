@@ -4,6 +4,8 @@
 # source directory for a given date window, organize them into a YYYY/MM/DD/ID 
 # tree in the destination, convert GIFs to PNG, generate JPG thumbnails, and 
 # create a link.jpg symlink for legacy WebObs instances.
+#
+# Author: Patrice Boissier/OVPF-IPGP
 
 set -euo pipefail
 
@@ -220,17 +222,5 @@ for YEAR in $YEARS; do
       fi
     fi
   done <<< "$LIST"
-done
-
-# Create "link.jpg" symbolic link (needed by showOUTG) => soon to be deprecated
-sort -u "$DAYDIRS_FILE" | while IFS= read -r d; do
-  [[ -z "$d" ]] && continue
-  cd "$d" 2>/dev/null || continue
-  if [[ ! -e link.jpg ]]; then
-    first="$(ls -1tr *.jpg 2>/dev/null | grep -v '^link\.jpg$' | head -n 1 || true)"
-    if [[ -n "$first" ]]; then
-      ln -s "$first" link.jpg
-    fi
-  fi
 done
 
