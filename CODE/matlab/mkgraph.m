@@ -287,7 +287,7 @@ if ~isempty(f)
 				h = axes('Position',[posx,1-lgh,lgw,lgh],'Visible','off');
 				hh = image(I);
                 set(hh,'Interpolation','bilinear');
-				axis image off
+				axis image tight off
 				pos0 = pos0 + (lgw + 0.005)*(1 - 2*strcmp(pos,'right'));
 			%catch
 			%	fprintf('WEBOBS{mkgraph:plotlogo}: ** WARNING ** Cannot read image file "%s".\n',ff{i});
