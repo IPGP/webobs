@@ -191,7 +191,7 @@ if ($QryParm->{'ts'} eq 'events') {
     if (-l $g) {
         my $lnk = basename($g);
         my $tgt = readlink($g);
-        $QryParm->{'g'} =~ s/$lnk/$tgt/g;
+        $QryParm->{'g'} = $tgt;
     }
 }
 
