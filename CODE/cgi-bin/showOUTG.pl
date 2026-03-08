@@ -13,14 +13,19 @@ http://..../showOUTG.pl?grid=gridname[,ts=][,g=][,refresh=]
 Displays contents of OUTG directory for the GRID gridname (ie. gridType.gridName).
 Optionaly specify the graph to display:
 
-ts=    can be any key defined in the GRID configuration TIMESCALELIST or 'map' or 'events'
-g=    any key defined in SUMMARYLIST, or one of the NODE ID
+ts= can be any key defined in the GRID configuration TIMESCALELIST or 'map' or 'events'
+g=  any key defined in SUMMARYLIST, or one of the NODE ID
     void (default) means an overview of all thumbnails for the first available timescale
     for a PROC, and map for a VIEW or FORM
     g=col shows all graphs in one column at full scale
 
-    if ts=events, YYYY or YYYY/MM or YYYY/MM/DD to display available events
-    void (default) is last available year
+    if ts=events, g=yyyy, g=yyyy/mm, g=yyyy/mm/dd, or g=yyyy/mm/dd/eventid to display 
+    available events.
+    g=*/*/*/eventid, g=yyyy/*/*/eventid, and g=yyyy/mm/*/eventid are authorized
+    to address a specific event id.
+    g=today, g=tomonth, g=toyear display today's, current month or current year available events
+    void (default) is all event for the last available year
+
 
 refresh=
     defines the number of seconds for automatic reloading of the page. This
@@ -43,6 +48,7 @@ use Cwd qw(abs_path);
 use Time::Local;
 use File::Basename;
 use File::Find;
+use List::Util qw(uniq);
 use CGI;
 my $cgi = new CGI;
 use CGI::Carp qw(fatalsToBrowser set_message);
@@ -126,11 +132,26 @@ if ($QryParm->{'g'} =~ s!^lastevent(\b|$)!!) {
     $QryParm->{'g'} = $lastevent_dir.$QryParm->{'g'};
 }
 
+local $ENV{TZ} = "Etc/GMT".sprintf("%+d",-1*($GRID{TZ}));
+my $now = strftime("%Y/%m/%d %H:%M:%S", localtime(time));
+my $today = substr($now,0,10);
+my $tomonth = substr($now,0,7);
+my $toyear = substr($now,0,4);
+
+$QryParm->{'g'} = $today if ($QryParm->{'g'} eq "today");
+$QryParm->{'g'} = $tomonth if ($QryParm->{'g'} eq "tomonth");
+$QryParm->{'g'} = $toyear if ($QryParm->{'g'} eq "toyear");
+
+
 # ---- get the list of nodes currently belonging to grid
 # ---- and the list of possible summary grid's summary filenames
 my %DefinedNodes = listGridNodes(grid=>"$GRIDType.$GRIDName");
+my @nlist = sort keys %DefinedNodes;
 my @SummaryList  = split(/,/,$GRID{SUMMARYLIST});
 outgHouseKeeping();
+
+my %monthnames;
+@monthnames{ map sprintf("%02d",$_), 1..12 } = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
 
 # ---- Start HTML page
 #
@@ -164,6 +185,20 @@ my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 # base url (string that is passed through all links)
 my $baseurl = "/cgi-bin/showOUTG.pl?grid=$GRIDType.$GRIDName&refresh=$QryParm->{'refresh'}&header=$QryParm->{'header'}";
 
+# if g= contents a symbolik link, replaces it by target
+if ($QryParm->{'ts'} eq 'events') {
+    my $g = "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}";
+    if (-l $g) {
+        my $lnk = basename($g);
+        my $tgt = readlink($g);
+        $QryParm->{'g'} = $tgt;
+    }
+}
+
+# count the number of "/" in the g= argument
+(my $depth = $QryParm->{'g'}) =~ s/[^\/]//g;
+$depth = length($depth);
+
 print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-bottom:10px;"
   .($QryParm->{'header'} eq 'no' ? " display:none":"")."'>";
 
@@ -184,39 +219,6 @@ for my $i (0..$#tslist) {
     }
 }
 chop($tsHtml);
-print "<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=$GRIDType.$GRIDName\"><B>".ucfirst(lc($GRIDType))."</B></A> ";
-if ($QryParm->{'ts'} eq 'map' ) {
-    print "| <B>$__{'Map'}</B> ";
-} elsif (-d "$OUTD/$WEBOBS{PATH_OUTG_MAPS}") {
-    print "| <B><A href=\"$baseurl&ts=map\">$__{'Map'}</A></B> ";
-}
-if ($QryParm->{'ts'} eq 'events' ) {
-    print "| <B>$__{'Events'}</B> ";
-} elsif (-d "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}") {
-    print "| <B><A href=\"$baseurl&ts=events\">$__{'Events'}</A></B> ";
-}
-if (-d "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}") {
-    (my $EVTurn = $OUTD) =~ s/$root_dir/$urn_dir/g;
-    print "| <B><A href=\"$EVTurn/$WEBOBS{PATH_OUTG_EVENTS}\">All files</A></B> ";
-
-    # build @nlist = the list of available nodes in events/*/*/*/ subdirectories
-    my (@ilist) = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/????/*/*/*";
-    my @nlist;
-    foreach (sort(keys(%DefinedNodes))) {
-        if (grep(/$_/i,@ilist)) {
-            push(@nlist,$_);
-            if ($QryParm->{'g'} =~ /$_/) {
-                print "| <B>$DefinedNodes{$_}{ALIAS}</B> ";
-            } else {
-                print "| <A href=\"$baseurl&ts=events&g=*/*/*/$_\"><B>$DefinedNodes{$_}{ALIAS}</B></A> ";
-            }
-        }
-    }
-}
-if ($#tslist >= 0 && -d "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}") {
-    print "| $__{'Time scales:'} $tsHtml ";
-}
-print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle;cursor:pointer\" title=\"Refresh\" onclick=\"document.location.reload(false)\"> ]\n";
 
 # build @elist = the list of available .eps graphs for timescale $tslist[$tsSelected]
 my (@elist) = glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.eps";
@@ -231,7 +233,84 @@ my (@plist) = glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.pdf"
 my (@dlist) = glob "$OUTD/$WEBOBS{PATH_OUTG_EXPORT}/*_$tslist[$tsSelected]*.*";
 
 # build @ylist = the list of available events/* years
-my (@ylist) = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/????";
+my (@ylist) = grep {-d} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/????";
+
+# build @ilist = the list of unique IDs in events/*/*/*/* subdirectories
+my (@ilist) = uniq map { basename($_) } grep { -d } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/*/*/*/*";
+
+my $teHtml = "";
+if ($QryParm->{'ts'} eq 'events' ) {
+    if ($QryParm->{'g'} eq "") {
+        $QryParm->{'g'} = $ylist[$#ylist];
+        $QryParm->{'g'} =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
+    }
+    my $year = "";
+    my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
+    # links to available years
+    foreach (@ylist) {
+        $_ =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
+        my $garg = $QryParm->{'g'};
+        $year = $_ if ($garg =~ /^$_/);
+        if ($garg =~ /^$_/ && $depth < 1) {
+            $teHtml .= " $_ |";
+        } else {
+            if ($depth > 2 && grep(/$id/,@nlist)) { # event id is a node: keep it
+                $garg = "$_/*/*/$id";
+            } else {
+                $garg = $_;
+            }
+            $teHtml .= " <A href=\"$baseurl&ts=events&g=$garg\"> $_</A> |";
+        }
+    }
+    # links to available months in the year
+    if ($year ne "") {
+        my @amonths = map { basename($_) } grep {-d} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$year/*";
+        $teHtml .= " $__{'Months of'} $year:";
+        my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
+        foreach (@amonths) {
+            my $garg = $QryParm->{'g'};
+            if ($depth > 1) {
+                $garg =~ s|/[^/]*?/|/$_/|; # replace the month
+                $garg =~ s|/[^/]*$|| if ($depth > 3); # remove image name
+                $garg =~ s|/[^/]*$|| if ($depth > 2 && !grep(/$id/,@nlist)); # remove event id if not node
+                $garg =~ s|^((?:[^/]*/){2})[^/]*(.*)|$1*$2| if ($depth > 1); # replace day by '*'
+            } else {
+                $garg = "$year/$_";
+            }
+            $teHtml .= " <A href=\"$baseurl&ts=events&g=$garg\">$monthnames{$_}</A>";
+        }
+    }
+    # links to available days in the month
+    if ($depth > 0 && $QryParm->{'g'} !~ /$year\/\*/) {
+        my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'});
+        my @mdays = map { basename($_) } grep {-d} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$y/$m/*";
+        $teHtml .= " | $__{'Days of'} $monthnames{$m} $y:";
+        foreach (@mdays) {
+            my $garg = $QryParm->{'g'};
+            $garg =~ s|/[^/]*$|| if ($depth > 3); # remove image name
+            $garg =~ s|/[^/]*$|| if ($depth > 2 && !grep(/$id/,@nlist)); # remove event id if not node
+            $garg =~ s|^((?:[^/]*/){2})[^/]*(.*)|$1$_$2| if ($depth > 1); # replace day
+            $garg .= "/$_" if ($depth == 1); # add day
+            $teHtml .= " <A href=\"$baseurl&ts=events&g=$garg\">$_</A>";
+        }
+    }
+}
+
+print "<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=$GRIDType.$GRIDName\"><B>".ucfirst(lc($GRIDType))."</B></A> ";
+if ($QryParm->{'ts'} eq 'map' ) {
+    print "| <B>$__{'Map'}</B> ";
+} elsif (-d "$OUTD/$WEBOBS{PATH_OUTG_MAPS}") {
+    print "| <B><A href=\"$baseurl&ts=map\">$__{'Map'}</A></B> ";
+}
+if (-d "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}") {
+    print "| <B><A href=\"$baseurl&ts=events\">$__{'All Events'}</A></B> "
+         ."| $teHtml ";
+
+}
+if ($QryParm->{'ts'} ne 'events' && $#tslist >= 0 && -d "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}") {
+    print "| $__{'Time scales:'} $tsHtml ";
+}
+print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle;cursor:pointer\" title=\"Refresh\" onclick=\"document.location.reload(false)\"> ]\n";
 
 # build @glist = the list of available .png graphs for timescale $tslist[$tsSelected]
 # $glistHtml is the corresponding string of html hrefs to these graphs
@@ -239,17 +318,20 @@ my (@ylist) = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/????";
 my (@glist) = sort glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.png";
 my $glistHtml = "";
 if ($QryParm->{'ts'} eq 'events' ) {
-    if ($QryParm->{'g'} eq "") {
-        $QryParm->{'g'} = $ylist[$#ylist];
-        $QryParm->{'g'} =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
-    }
-    foreach (@ylist) {
-        my $year = $_;
-        $year =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
-        if ($QryParm->{'g'} eq $year) {
-            $glistHtml .= " $year |";
-        } else {
-            $glistHtml .= " <A href=\"$baseurl&ts=events&g=$year\"> $year</A> |";
+    # build @nlist = the list of available nodes (only if exist in event ID)
+    for my $n (@nlist) {
+        if (grep( /$n/i, @ilist)) {
+            my $txt = $DefinedNodes{$n}{ALIAS};
+            if ($QryParm->{'g'} =~ /$n$/) {
+                $glistHtml .= " $txt |";
+            } else {
+                my $garg = $QryParm->{'g'};
+                $garg = "$garg/*/*/$n" if ($depth < 1); # g=yyyy
+                $garg = "$garg/*/$n" if ($depth == 1); # g=yyyy/mm
+                $garg = "$garg/$n" if ($depth == 2); # g=yyyy/mm/dd
+                $garg =~ s|^((?:[^/]*/){3}).*|$1$n| if ($depth > 2); # replace event ID 
+                $glistHtml .= " <A href=\"$baseurl&ts=events&g=$garg\"><B>$txt</B></A> |";
+            }
         }
     }
 } else {
@@ -280,9 +362,9 @@ if ($QryParm->{'ts'} eq 'events' ) {
         }
     }
 }
-chop($glistHtml);
+chop($glistHtml); # removes last character (a pipe...)
 if ($QryParm->{'ts'} ne 'map' ) {
-    print "<BR><B>[ ".$glistHtml." ]</B>\n";
+    print "<BR>[ ".$glistHtml." ]\n" if ($glistHtml ne "");
 }
 print "</DIV>";
 print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_BIN},$WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
@@ -313,34 +395,44 @@ if ($QryParm->{'ts'} eq 'map') {
 } elsif ($QryParm->{'ts'} eq 'events') {
 
 # this lists files using complementary wildcards from g= YYYY[/MM[/DD[/EVENTID[/EVENTNAME]]]]
-    (my $depth = $QryParm->{'g'}) =~ s/[^\/]//g;
-    $depth = length($depth); # $depth is number of "/" in the g= argument
 
     # lists all files
-    @plist = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
+    @plist = grep { !-l} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
+    
+    # build an hash of latest file in each event ID directory
+    my %latest;
+    if ($depth < 3) {
+        for my $f (@ilist) {
+            my @evt = grep { /\/$f\/[^\/]+\.jpg/} @plist;
+            if ($#evt > 0) {
+                ($latest{$f}) = sort { (stat($b))[9] <=> (stat($a))[9] } @evt;
+            } else {
+                $latest{$f} = $evt[0];
+            }
+        }
+    }
+
+
 
     # target directory contains multiple files (and symlink pointing to last): displays existing thumbnails
-    if ($#plist > 1) {
+    if ($#plist > 0) {
         my $month0 = "";
+        my $dte0 = "";
         for (@plist) {
-            if ( ($depth < 3 && -l $_) || ($depth == 3 && ! -l $_)) {
-                (my $JPGurn = $_) =~ s/$root_dir/$urn_dir/g;
-                (my $EVENTid = $_) =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
-                if (-l $_) {
-                    my $lnk = basename($_);
-                    my $tgt = readlink($_);
-                    $EVENTid =~ s/$lnk/$tgt/g;
-                }
-                $EVENTid =~ s/\.jpg//g;
-                (my @evt) = split(/\//,$EVENTid);
+            (my $JPGurn = $_) =~ s/$root_dir/$urn_dir/g;
+            (my $EVENTid = $_) =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
+            $EVENTid =~ s/\.jpg$//g;
+            (my @evt) = split(/\//,$EVENTid);
+            if ( ($depth < 3 && $latest{$evt[3]} eq $_) || $depth == 3 ) {
                 my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $month = l2u(strftime("%B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $msg = "ID: $evt[3]<BR>$evt[4]";
-                if ($depth == 3 && $QryParm->{'g'} !~ m/\*/ && $month ne $month0) {
-                    print "<H2>$dte: <I>$evt[3]</I></H2>\n";
+                if (($depth == 3 && $QryParm->{'g'} !~ m/\*/ && $month ne $month0) || ($depth == 2 && $QryParm->{'g'} !~ m/\*/) && $dte ne $dte0) {
+                    print "<H2>$dte".($depth == 3 ? ": <I>$evt[3]</I>":"")."</H2>\n"; # date only if id not selected
                     $month0 = $month;
+                    $dte0 = $dte;
                 } elsif ($month ne $month0) {
-                    print "<H2>$month</H2>\n";
+                    print "<H2>$month".($depth > 2 ? ": <I>$evt[3]</I>":"")."</H2>\n";
                     $month0 = $month;
                 }
                 my $thumb = "";
@@ -409,7 +501,11 @@ if ($QryParm->{'ts'} eq 'map') {
         print "<IMG style=\"margin-bottom: 15px; background-color: beige; padding: 5px\" src=\"$img\"><BR>";
     }
     if ($QryParm->{'debug'}) {
-        print "<P><B>plist</B> (length=$#plist) = ".join(", ", @plist)."</P>";
+        print "<P><B>now</B> $now, <B>ENV{TZ}</B> = $ENV{TZ}</P>\n";
+        print "<P><B>nlist</B> (length=$#nlist) = ".join(", ", @nlist)."</P>\n";
+        print "<P><B>ilist</B> (length=$#ilist) = ".join(", ", @ilist)."</P>\n";
+        print "<P><B>latest</B> = ".join(", ", map { "{$_}=$latest{$_}" } keys %latest)."</P>\n";
+        print "<P><B>plist</B> (length=$#plist) = ".join(", ", @plist)."</P>\n";
         print "<P><B>depth</B> = $depth</P>";
     }
 
@@ -515,10 +611,6 @@ if ($QryParm->{'ts'} eq 'map') {
 }
 print "<BR>$go2top</BR>";
 
-if ($QryParm->{'debug'}) {
-    print "<P><B>plist</B> = ".join(", ", @plist)."</P>";
-}
-
 # ---- We're done !
 print "</BODY>\n</HTML>\n";
 
@@ -548,7 +640,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
