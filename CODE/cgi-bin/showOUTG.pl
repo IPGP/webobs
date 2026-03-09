@@ -140,7 +140,7 @@ my $toyear = substr($now,0,4);
 
 $QryParm->{'g'} = $today if ($QryParm->{'g'} eq "today");
 $QryParm->{'g'} = $tomonth if ($QryParm->{'g'} eq "tomonth");
-$QryParm->{'g'} = $toyear if ($QryParm->{'g'} eq "toyear");
+$QryParm->{'g'} = $toyear if ($QryParm->{'g'} eq "toyear" || ($QryParm->{'g'} eq "" && $QryParm->{'ts'} eq "events"));
 
 
 # ---- get the list of nodes currently belonging to grid
