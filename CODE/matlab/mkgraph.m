@@ -20,7 +20,7 @@ function varargout = mkgraph(WO,f,P,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03 in Gourbeyre, Guadeloupe
-%	Updated: 2026-03-08
+%	Updated: 2026-03-09
 
 
 set(gcf, 'Visible', 'off');
@@ -285,9 +285,8 @@ if ~isempty(f)
 				lgw = lgh*isz(2)*pp(4)/isz(1)/pp(3);
 				posx = pos0 + strcmp(pos,'right')*(1-lgw);
 				h = axes('Position',[posx,1-lgh,lgw,lgh],'Visible','off');
-				hh = image(I);
-                set(hh,'Interpolation','bilinear');
-				axis image off
+				image(I);
+				axis image tight off
 				pos0 = pos0 + (lgw + 0.005)*(1 - 2*strcmp(pos,'right'));
 			%catch
 			%	fprintf('WEBOBS{mkgraph:plotlogo}: ** WARNING ** Cannot read image file "%s".\n',ff{i});
