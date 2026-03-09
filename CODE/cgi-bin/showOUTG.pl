@@ -412,7 +412,7 @@ if ($QryParm->{'ts'} eq 'map') {
     
     # build an hash of latest file in each event ID directory
     my %latest;
-    if ($depth < 3) {
+    if ($depth < 3 || ($depth==3 && $QryParm->{'g'} =~ /\*/ )) {
         for my $f (@vlist) {
             my @evt = grep { /\/$f\/[^\/]+\.jpg/} @plist;
             if ($#evt > 0) {
