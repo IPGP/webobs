@@ -140,7 +140,7 @@ my $toyear = substr($now,0,4);
 
 $QryParm->{'g'} = $today if ($QryParm->{'g'} eq "today");
 $QryParm->{'g'} = $tomonth if ($QryParm->{'g'} eq "tomonth");
-$QryParm->{'g'} = $toyear if ($QryParm->{'g'} eq "toyear");
+$QryParm->{'g'} = $toyear if ($QryParm->{'g'} eq "toyear" || ($QryParm->{'g'} eq "" && $QryParm->{'ts'} eq "events"));
 
 
 # ---- get the list of nodes currently belonging to grid
@@ -220,26 +220,34 @@ for my $i (0..$#tslist) {
 }
 chop($tsHtml);
 
-# build @elist = the list of available .eps graphs for timescale $tslist[$tsSelected]
-my (@elist) = glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.eps";
+# build @epslist = the list of available .eps graphs for timescale $tslist[$tsSelected]
+my (@epslist) = glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.eps";
 
-# build @slist = the list of available .svg graphs for timescale $tslist[$tsSelected]
-my (@slist) = glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.svg";
+# build @svglist = the list of available .svg graphs for timescale $tslist[$tsSelected]
+my (@svglist) = glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.svg";
 
-# build @plist = the list of available .pdf graphs for timescale $tslist[$tsSelected]
-my (@plist) = glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.pdf";
+# build @pdflist = the list of available .pdf graphs for timescale $tslist[$tsSelected]
+my (@pdflist) = glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.pdf";
 
-# build @dlist = the list of available data/**.* for timescale $tslist[$tsSelected]
-my (@dlist) = glob "$OUTD/$WEBOBS{PATH_OUTG_EXPORT}/*_$tslist[$tsSelected]*.*";
+# build @datlist = the list of available data/**.* for timescale $tslist[$tsSelected]
+my (@datlist) = glob "$OUTD/$WEBOBS{PATH_OUTG_EXPORT}/*_$tslist[$tsSelected]*.*";
 
 # build @ylist = the list of available events/* years
 my (@ylist) = grep {-d} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/????";
 
-# build @ilist = the list of unique IDs in events/*/*/*/* subdirectories
-my (@ilist) = uniq map { basename($_) } grep { -d } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/*/*/*/*";
+my @plist;
+my @vlist;
+my @ilist;
 
 my $teHtml = "";
 if ($QryParm->{'ts'} eq 'events' ) {
+    # lists all files
+    @plist = grep { !-l } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
+    # extracts all date/events ID
+    @vlist = map { m{^$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/(.*)/[^/]+$};$1 } @plist;
+    # build @ilist = the list of unique IDs in events/*/*/*/* subdirectories
+    (@ilist) = uniq map { basename($_) } grep { -d } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/*/*/*/*";
+
     if ($QryParm->{'g'} eq "") {
         $QryParm->{'g'} = $ylist[$#ylist];
         $QryParm->{'g'} =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///;
@@ -334,6 +342,12 @@ if ($QryParm->{'ts'} eq 'events' ) {
             }
         }
     }
+    # if at least one node available, adds a link to all nodes in front of the menu
+    if ($glistHtml ne "") {
+        my $garg = substr($QryParm->{'g'},0,10);
+        $garg =~ s|/\*.*$||g;
+        $glistHtml = " <A href=\"$baseurl&ts=events&g=$garg\"><B>$__{'All nodes'}</B></A> |".$glistHtml;
+    }
 } else {
     my $lnk = "$baseurl&ts=$tslist[$tsSelected]&g=";
     $glistHtml .= " <A href=\"$lnk\"> Overview</A> | ";
@@ -395,14 +409,11 @@ if ($QryParm->{'ts'} eq 'map') {
 } elsif ($QryParm->{'ts'} eq 'events') {
 
 # this lists files using complementary wildcards from g= YYYY[/MM[/DD[/EVENTID[/EVENTNAME]]]]
-
-    # lists all files
-    @plist = grep { !-l} glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
     
     # build an hash of latest file in each event ID directory
     my %latest;
-    if ($depth < 3) {
-        for my $f (@ilist) {
+    if ($depth < 3 || ($depth==3 && $QryParm->{'g'} =~ /\*/ )) {
+        for my $f (@vlist) {
             my @evt = grep { /\/$f\/[^\/]+\.jpg/} @plist;
             if ($#evt > 0) {
                 ($latest{$f}) = sort { (stat($b))[9] <=> (stat($a))[9] } @evt;
@@ -423,7 +434,7 @@ if ($QryParm->{'ts'} eq 'map') {
             (my $EVENTid = $_) =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
             $EVENTid =~ s/\.jpg$//g;
             (my @evt) = split(/\//,$EVENTid);
-            if ( ($depth < 3 && $latest{$evt[3]} eq $_) || $depth == 3 ) {
+            if ( ($depth < 3 && $latest{"$evt[0]/$evt[1]/$evt[2]/$evt[3]"} eq $_) || $depth == 3 ) {
                 my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $month = l2u(strftime("%B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
                 my $msg = "ID: $evt[3]<BR>$evt[4]";
@@ -503,10 +514,13 @@ if ($QryParm->{'ts'} eq 'map') {
     if ($QryParm->{'debug'}) {
         print "<P><B>now</B> $now, <B>ENV{TZ}</B> = $ENV{TZ}</P>\n";
         print "<P><B>nlist</B> (length=$#nlist) = ".join(", ", @nlist)."</P>\n";
-        print "<P><B>ilist</B> (length=$#ilist) = ".join(", ", @ilist)."</P>\n";
-        print "<P><B>latest</B> = ".join(", ", map { "{$_}=$latest{$_}" } keys %latest)."</P>\n";
-        print "<P><B>plist</B> (length=$#plist) = ".join(", ", @plist)."</P>\n";
-        print "<P><B>depth</B> = $depth</P>";
+        if ($QryParm->{'ts'} eq 'events') {
+            print "<P><B>depth</B> = $depth</P>";
+            print "<P><B>plist</B> (length=$#plist) = ".join(", ", @plist)."</P>\n";
+            print "<P><B>vlist</B> (length=$#vlist) = ".join(", ", @vlist)."</P>\n";
+            print "<P><B>ilist</B> (length=$#ilist) = ".join(", ", @ilist)."</P>\n";
+            print "<P><B>latest</B> = ".join(", ", map { "{$_}=$latest{$_}" } keys %latest)."</P>\n";
+        }
     }
 
     # -- case 'Timescales'
@@ -538,44 +552,44 @@ if ($QryParm->{'ts'} eq 'map') {
 
         # prepare additional links to eps, svg, pdf and data
         my $addlinks = "";
-        for my $i (0..$#elist) {
-            if (-f $elist[$i]) {
-                (my $surn = $elist[$i]) =~ s/$root_dir/$urn_dir/g;
-                $elist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
-                $elist[$i] =~ s/^$/$GRIDName/;
-                if ($elist[$i] eq $QryParm->{'g'}) {
+        for my $i (0..$#epslist) {
+            if (-f $epslist[$i]) {
+                (my $surn = $epslist[$i]) =~ s/$root_dir/$urn_dir/g;
+                $epslist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+                $epslist[$i] =~ s/^$/$GRIDName/;
+                if ($epslist[$i] eq $QryParm->{'g'}) {
                     $addlinks .= " <A href=\"$surn\"><IMG title=\"$QryParm->{'g'}.eps\" src=\"/icons/feps.png\"></A> ";
                 }
             }
         }
-        for my $i (0..$#slist) {
-            if (-f $slist[$i]) {
-                (my $surn = $slist[$i]) =~ s/$root_dir/$urn_dir/g;
-                $slist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
-                $slist[$i] =~ s/^$/$GRIDName/;
-                if ($slist[$i] eq $QryParm->{'g'}) {
+        for my $i (0..$#svglist) {
+            if (-f $svglist[$i]) {
+                (my $surn = $svglist[$i]) =~ s/$root_dir/$urn_dir/g;
+                $svglist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+                $svglist[$i] =~ s/^$/$GRIDName/;
+                if ($svglist[$i] eq $QryParm->{'g'}) {
                     $addlinks .= " <A href=\"$surn\"><IMG title=\"$QryParm->{'g'}.svg\" src=\"/icons/fsvg.png\"></A> ";
                 }
             }
         }
-        for my $i (0..$#plist) {
-            if (-f $plist[$i]) {
-                (my $surn = $plist[$i]) =~ s/$root_dir/$urn_dir/g;
-                $plist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
-                $plist[$i] =~ s/^$/$GRIDName/;
-                if ($plist[$i] eq $QryParm->{'g'}) {
+        for my $i (0..$#pdflist) {
+            if (-f $pdflist[$i]) {
+                (my $surn = $pdflist[$i]) =~ s/$root_dir/$urn_dir/g;
+                $pdflist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+                $pdflist[$i] =~ s/^$/$GRIDName/;
+                if ($pdflist[$i] eq $QryParm->{'g'}) {
                     $addlinks .= " <A href=\"$surn\"><IMG title=\"$QryParm->{'g'}.pdf\" src=\"/icons/fpdf.png\"></A> ";
                 }
             }
         }
-        for my $i (0..$#dlist) {
-            if (-f $dlist[$i]) {
-                (my $surn = $dlist[$i]) =~ s/$root_dir/$urn_dir/g;
-                $dlist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EXPORT}\/(.*)_.*$/$1/;
-                $dlist[$i] =~ s/^$/$GRIDName/;
+        for my $i (0..$#datlist) {
+            if (-f $datlist[$i]) {
+                (my $surn = $datlist[$i]) =~ s/$root_dir/$urn_dir/g;
+                $datlist[$i] =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_EXPORT}\/(.*)_.*$/$1/;
+                $datlist[$i] =~ s/^$/$GRIDName/;
                 my $gts = $QryParm->{'g'}.'_'.$QryParm->{'ts'};
-                if ( ($dlist[$i]=~m/^$QryParm->{'g'}/i) ) {
-                    $addlinks .= " <A href=\"$surn\"><IMG title=\"$dlist[$i]\" src=\"/icons/fdata.png\"></A> ";
+                if ( ($datlist[$i]=~m/^$QryParm->{'g'}/i) ) {
+                    $addlinks .= " <A href=\"$surn\"><IMG title=\"$datlist[$i]\" src=\"/icons/fdata.png\"></A> ";
                 }
             }
         }

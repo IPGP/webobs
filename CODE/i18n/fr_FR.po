@@ -1853,6 +1853,15 @@ msgstr "mois"
 msgid "year"
 msgstr "année"
 
+msgid "Months of"
+msgstr "Mois de"
+
+msgid "Days of"
+msgstr "Jours de"
+
+msgid "All Events"
+msgstr "Tous les événements"
+
 # ---- formRAINWATER.pl
 
 msgid "Edit existing data"
