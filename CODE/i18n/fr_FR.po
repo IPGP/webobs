@@ -1862,9 +1862,6 @@ msgstr "Jours de"
 msgid "All Events"
 msgstr "Tous les événements"
 
-msgid "All nodes"
-msgstr "Tous les nodes"
-
 # ---- formRAINWATER.pl
 
 msgid "Edit existing data"
