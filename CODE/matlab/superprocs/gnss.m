@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-03-02
+%   Updated: 2026-03-10
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -549,9 +549,11 @@ for r = 1:numel(P.GTABLE)
     voffset = zeros(1,3);
 	if vrelmode
 		if numel(sstr2num(vref)) == 3
+            % fixed mode: E,N,U
 			voffset = sstr2num(vref)*P.trendfact/365250;
 			mode = 'fixed';
 		else
+            % network mode: reference station list
 			[kvref,knref] = ismemberlist(split(vref,','),{N.FID});
 			if ~isempty(vref) && all(kvref)
 				mode = vref;
@@ -565,13 +567,15 @@ for r = 1:numel(P.GTABLE)
 					mode = sprintf('invalid reference "%s"',vref);
 				end
 			else
-				% auto relative mode: horizontal only (or not)
+				% auto mode: all network mean
 				mode = 'auto';
-				voffset = [mvv(1:2),(~vrelhorizonly)*mvv(3)];
+				voffset = mvv;
 			end
+            % horizontal only (or not)
+            voffset(3) = voffset(3)*(~vrelhorizonly);
 		end
 		tr = tr - repmat(voffset,numel(N),1);
-		fprintf('---> Relative mode "%s" - velocity reference = %1.2f, %1.2f, %1.2f %s\n',mode,voffset,P.trendunit);
+		fprintf('---> Relative mode "%s"%s - velocity reference = %1.2f, %1.2f, %1.2f %s\n',mode,repmat(' (horiz. only)',vrelhorizonly),voffset,P.trendunit);
 	end
 
 	% --- per node plots
