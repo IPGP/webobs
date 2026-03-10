@@ -45,7 +45,7 @@ function DOUT=helicorder(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2016-12-30 in Yogyakarta, Indonesia
-%	Updated: 2026-02-03
+%	Updated: 2026-03-10
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -194,11 +194,6 @@ for n = 1:length(N)
                 OPT.STATUS = P.GTABLE(r).STATUS;
 				mkgraph(WO,fnam,P,OPT)
 				close
-
-				% creates symbolic links to preferred (last) files
-				for ext = {'jpg','png'}
-					wosystem(sprintf('ln -sf %s.%s %s/heli.%s',fnam,ext{:},pdat,ext{:}),P);
-				end
 
 			end
 
