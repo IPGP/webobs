@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2026-02-03
+%	Updated: 2026-03-10
 
 
 WO = readcfg;
@@ -86,6 +86,9 @@ e = cat(1,D.e);
 
 % PROC's TZ must be in local time: set back data to UT
 t = t - P.TZ/24;
+
+% event mode: only the first TSCALE is considered
+r = 1;
 
 demopt = field2cell(P,'MAP_DEM_OPT');
 if isok(P,'MAP_LANDONLY',1)
@@ -190,18 +193,6 @@ for n = 1:length(t)
 		fprintf(fid,'%s\n',repmat('#',1,80));
 		fclose(fid);
 		fprintf(' done.\n');
-
-		% exports data
-		%if isok(P,'EXPORTS')
-		%	E.t = tk;
-		%	E.d = dk;
-		%	E.header = CLB.nm;
-		%	E.title = sprintf('%s {%s}',M.(map).title,proc);
-		%	mkexport(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
-		%end
-
-		% removes all symbolic links
-		wosystem(sprintf('rm -f %s/b3*',pdat),P,'warning');
 
 		% determines if a report is needed (felt event)
 		if forced > 0 || ( msk(k1,2) >= mskmin && (str2double(P.FELTOTHERPLACES_OK) > 0 || strcmp(CITIES.region(k1),region)) )
@@ -638,14 +629,6 @@ for n = 1:length(t)
 			fprintf(' done.\n');
 
 			% ===========================================================
-			% creates symbolic links to preferred (last) files
-			for ext = {'txt','gse','pdf','jpg','png','msg'}
-				if exist(sprintf('%s/%s.%s',pdat,fnam,ext{:}),'file')
-					wosystem(sprintf('ln -fs %s.%s %s/b3.%s',fnam,ext{:},pdat,ext{:}),P);
-				end
-			end
-
-			% ===========================================================
 			% make email message
 			f = sprintf('%s/mail.txt',pdat);
 			fid = fopen(f,'wt');
@@ -682,9 +665,8 @@ for n = 1:length(t)
 		end % of report
 	end
 
-	% purge event (remove symbolic link)
-	if e(n) < 0 && exist(sprintf('%s/b3.jpg',pdat),'file')
-		wosystem(sprintf('rm -f %s/b3*',pdat),P,'warning');
+	% purge event
+	if e(n) < 0
 		wosystem(sprintf('mv -f %s/%s.txt{,.purged}',pdat,fnam),P,'warning');
 		fprintf('%s: ** WARNING ** event %s has been purged.\n',wofun,pdat);
 	end
