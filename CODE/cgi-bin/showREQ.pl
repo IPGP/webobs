@@ -48,7 +48,6 @@ use WebObs::i18n;
 #
 set_message(\&webobs_cgi_msg);
 
-my @reqlist;
 my @reqs;
 my $table;
 
@@ -56,8 +55,7 @@ my $myself = "/cgi-bin/".basename($0);
 my %SCHED = readCfg($WEBOBS{CONF_SCHEDULER});
 my $QryParm = $cgi->Vars;
 
-map (push(@reqlist,$_), qx(find $WEBOBS{ROOT_OUTR} -type d -mindepth 1 -maxdepth 1));
-chomp(@reqlist);
+my @reqlist = map { s{/REQUEST\.rc$}{}r } glob "$WEBOBS{ROOT_OUTR}/*/REQUEST.rc";
 
 # ---- build/process the form HTML page
 #
