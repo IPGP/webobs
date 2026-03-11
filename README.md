@@ -10,15 +10,19 @@ This is the official repository for WebObs community source code development, la
 
 ### Project coordination
 * **François Beauducel** - *Project designer and supervisor* - [beaudu](https://github.com/beaudu) - beauducel@ipgp.fr
+* **Jean-Marie Saurel** - *Project Steering Committee member* - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel)
+* **Patrice Boissier** - *Project Steering Committee member* - [PBoissier](https://github.com/PBoissier)
 
-### Contributors
+### Project main developper
+* **Jérôme Touvier** - [jtouvier](https://github.com/jtouvier)
 
+### Other contributors (past and present)
+
+* **Pierre Sakic** - [PierreS-alpha](https://github.com/PierreS-alpha)
 * **Didier Lafon**
 * **Alexis Bosson**
 * **Didier Mallarino**
 * **Xavier Béguin** - [XavierBeguin](https://github.com/XavierBeguin)
-* **Patrice Boissier** - [PBoissier](https://github.com/PBoissier)
-* **Jean-Marie Saurel** - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel)
 * **Lucas Dassin** - [ldassin](https://github.com/ldassin)
 * **Lucie Van Nieuwenhuyze** - [lucievnhyz](https://github.com/lucievnhyz)
 * **Baptiste Camus** - [cmbapt](https://github.com/cmbapt)
@@ -28,8 +32,6 @@ This is the official repository for WebObs community source code development, la
 * **Valérie Ferrazzini** - [ferrazzini](https://github.com/ferrazzini)
 * **Christophe Brunet** - [BrunetChristophe](https://github.com/BrunetChristophe/webobs)
 * **Philippe Catherine** - [CPS97410](https://github.com/CPS97410)
-* **Pierre Sakic** - [PierreS-alpha](https://github.com/PierreS-alpha)
-* **Jérôme Touvier** - [jtouvier](https://github.com/jtouvier)
 
 See also the list of active [contributors](https://github.com/IPGP/webobs/contributors).
 
