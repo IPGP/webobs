@@ -10,7 +10,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 If you have any question which is not answered in the user manual, do not hesitate to write to developpers through the mailing list [webobs-devs@services.cnrs.fr](mailto:webobs-devs@services.cnrs.fr), or start a public discussion thread at [github.com/IPGP/webobs/discussions](https://github.com/IPGP/webobs/discussions).
 
-## v.2.8 
+## v.2.8  (March 2026)
 
 ### New features
 1. **New grids FORM**: manual databases (formerly dedicated forms) are now fully integrated as a grid type along with PROCs and VIEWs. A FORM is then associated to a DOMAIN and some NODES, appears in the GRIDs table and has its own page with description, nodes table list, map location, and events. FORM is based on the new GENFORM user-defined manual database tool (introduced in the previous release): a freely configurazble SQLite database managed through a GUI form (for entering new data, editing and deleting), a table data display with options and filters, data export as CSV file or as raw data source for PROCs. Creating a FORM becomes as simple as creating a PROC or VIEW, by selecting a template (a dozen are available), if necessary modifying it partially or completely, associating a DOMAIN, associating or creating NODES, and editing the configuration file to set the database structure (inputs and outputs) and the form layout. GENFORM is able to store numerical values, checkboxes, lists, text strings, images, and mathematical output formulas. It aims to replace spreadsheets files for (potentially) any structured scientific data. See the user manual for more details.
@@ -131,6 +131,7 @@ TREND_UNIT|mm/yr
 1. Fix issue with empty location code for fdsnws-dataselect format.
 1. Fix an issue with alignment of MC events on the **sefran3** main page (hourly thumbnails).
 1. `!!` Fix an issue with error filtering strategy in **gnss** superproc. To avoid NaNs, check that `ENU_MIN_ERROR_M` combined with `ORBIT_ERROR_RATIO` has lower values than `FILTER_MAX_ERROR_M`.
+1. `!!` Fix an issue with relative mode in **gnss** superproc: the `VECTORS_RELATIVE_HORIZONTAL_ONLY` was not applied when `VECTORS_VELOCITY_REF` contains a station or list of stations.
 
 ### Code improvement
 1. `!!` remove cedit.pl and fedit.pl. Replace former links with nedit.pl and formGENFORM.pl, respectively.
