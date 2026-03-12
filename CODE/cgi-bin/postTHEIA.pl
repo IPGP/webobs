@@ -93,6 +93,14 @@ my $password = "";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
   or die "Couldn't connect to database: " . DBI->errstr;
 
+
+my $filename = '/home/touvierj/Bureau/debug.log';
+truncate $filename, 0;
+open(my $fh, '>>', $filename) or die "Could not open file '$filename' $!";
+print $fh @allChannels;
+
+
+
 foreach (@allChannels) {
     my ($ch, $level, $theia) = split(/\|/, $_);
     my $stmt  = "UPDATE observations SET processinglevel = '$level' WHERE identifier = '$ch'";
@@ -106,7 +114,7 @@ foreach (@allChannels) {
     my $sth   = $dbh->prepare( $stmt );
     my $rv    = $sth->execute() or die DBI->errstr;
 }
-
+close($fh);
 $dbh->disconnect();
 
 __END__

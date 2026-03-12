@@ -13,90 +13,91 @@ BEGIN TRANSACTION;
 
 drop table if exists producer;
 create table producer (
-    IDENTIFIER text NOT NULL, 
-    NAME text NOT NULL, 
-    TITLE text NOT NULL, 
-    DESCRIPTION text NOT NULL, 
-    OBJECTIVE text NOT NULL, 
-    MEASUREDVARIABLES text NOT NULL, 
-    EMAIL text NOT NULL, 
-    CONTACTS text NOT NULL, 
-    FUNDERS text NOT NULL, 
-    ONLINERESOURCE text NOT NULL, 
+    IDENTIFIER text NOT NULL,
+    NAME text NOT NULL,
+    TITLE text NOT NULL,
+    DESCRIPTION text NOT NULL,
+    OBJECTIVE text NOT NULL,
+    MEASUREDVARIABLES text NOT NULL,
+    EMAIL text NOT NULL,
+    CONTACTS text NOT NULL,
+    FUNDERS text NOT NULL,
+    ONLINERESOURCE text NOT NULL,
     PRIMARY KEY (IDENTIFIER)
     );
     
 drop table if exists contacts;
-create table contacts ( 
-    EMAIL text NOT NULL, 
+create table contacts (
+    EMAIL text NOT NULL,
     FIRSTNAME text NOT NULL,
     LASTNAME text NOT NULL,
     ROLE text NOT NULL,
-    RELATED_ID text NOT NULL, 
+    RELATED_ID text NOT NULL,
     PRIMARY KEY(RELATED_ID, EMAIL)
     );
     
 drop table if exists organisations;
 create table organisations (
-    TYPE text NOT NULL, 
-    ISO3166 text DEFAULT 'fr', 
-    ACRONYM text NOT NULL, 
-    NAME text NOT NULL, 
-    IDENTIFIER text NOT NULL, 
-    RELATED_ID text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER), 
+    TYPE text NOT NULL,
+    ISO3166 text DEFAULT 'fr',
+    ACRONYM text NOT NULL,
+    NAME text NOT NULL,
+    IDENTIFIER text NOT NULL,
+    RELATED_ID text NOT NULL,
+    PRIMARY KEY(IDENTIFIER),
     FOREIGN KEY (RELATED_ID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     
 drop table if exists datasets;
 create table datasets (
     IDENTIFIER text NOT NULL,
-    TITLE text NOT NULL, 
-    SUBJECT text NOT NULL, 
-    SPATIALCOVERAGE text NOT NULL, 
-    LINEAGE text NOT NULL, 
+    TITLE text NOT NULL,
+    SUBJECT text NOT NULL,
+    SPATIALCOVERAGE text NOT NULL,
+    LINEAGE text NOT NULL,
     PRIMARY KEY(IDENTIFIER)
     );
     
 drop table if exists observations;
 create table observations (
-    IDENTIFIER text NOT NULL,
+    IDENTIFIER INTEGER PRIMARY KEY AUTOINCREMENT,
     PROCESSINGLEVEL text DEFAULT 'Raw data',
     DATATYPE text DEFAULT 'Numeric',
     TEMPORALEXTENT text,
     TIMESERIES text DEFAULT 'TRUE',
-    OBSERVEDPROPERTY text, 
-    STATIONNAME text NOT NULL, 
-    DATASET text NOT NULL, 
-    DATAFILENAME text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER), 
-    FOREIGN KEY (OBSERVEDPROPERTY) REFERENCES observed_properties(IDENTIFIER) ON DELETE CASCADE,
+    OBSERVEDPROPERTY text,
+    STATIONNAME text NOT NULL,
+    DATASET text NOT NULL,
+    DATAFILENAME text NOT NULL,
+    PROPERTIES_ID INTEGER,
+    PRIMARY KEY(IDENTIFIER),
+    FOREIGN KEY (PROPERTIES_ID) REFERENCES observed_properties(id) ON DELETE CASCADE,
     FOREIGN KEY (DATASET) REFERENCES datasets(IDENTIFIER) ON DELETE CASCADE
     );
     
 drop table if exists observed_properties;
 create table observed_properties (
-    IDENTIFIER text NOT NULL, 
-    NAME text NOT NULL, 
-    UNIT text NOT NULL, 
-    THEIACATEGORIES text NOT NULL, 
+    IDENTIFIER INTEGER PRIMARY KEY AUTOINCREMENT,
+    NAME text NOT NULL,
+    UNIT text NOT NULL,
+    THEIACATEGORIES text NOT NULL,
     CHANNEL_NB text NOT NULL,
     PRIMARY KEY(IDENTIFIER)
     );
     
 drop table if exists sampling_features;
 create table sampling_features (
-    IDENTIFIER text NOT NULL, 
-    NAME text NOT NULL, 
-    GEOMETRY text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER) 
+    IDENTIFIER text NOT NULL,
+    NAME text NOT NULL,
+    GEOMETRY text NOT NULL,
+    PRIMARY KEY(IDENTIFIER)
     );
     
 drop table if exists grids2producers;
 create table grids2producers (
-    TYPE text NOT NULL, 
-    NAME text NOT NULL, 
-    PID text NOT NULL, 
+    TYPE text NOT NULL,
+    NAME text NOT NULL,
+    PID text NOT NULL,
     FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
     

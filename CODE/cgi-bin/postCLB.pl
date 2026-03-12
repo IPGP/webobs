@@ -186,19 +186,17 @@ if ( isok($theiaAuth) ) {
 
         # observed_properties table
         my @obs   = split(/[\|]/, $_);
-        my $id    = $obs[3];
         my $name  = $obs[3];
         my $unit  = $obs[4];
         my $chan  = $obs[2];
         my $theia = "";
 
-        my $stmt2  = "SELECT theiacategories FROM observed_properties WHERE name='$name'";
-        my $sth2   = $dbh->prepare( qq($stmt2) );
-        my $rv2  = $sth2->execute();
-        while(my @row = $sth2->fetchrow_array()) { $theia = $row[0]; }
+#        my $stmt2  = "SELECT theiacategories FROM observed_properties WHERE name='$name'";
+#        my $sth2   = $dbh->prepare( qq($stmt2) );
+#        my $rv2  = $sth2->execute();
+#        while(my @row = $sth2->fetchrow_array()) { $theia = $row[0]; }
 
         # observations table
-        my $obsid        = "$producerId\_OBS_$GRIDName.$NODEName\_$id";
         my @first_date   = split(/ /,$obs[0]);
         my $first_year   = $first_date[0];
         my $first_hour   = $first_date[3] || "00";
@@ -234,11 +232,20 @@ if ( isok($theiaAuth) ) {
             my $obs_date = "$first_obs_date/$last_obs_date";
 
             # --- completing observed_properties table
-            my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES,CHANNEL_NB) VALUES (?,?,?,?,?);');
-            $sth->execute($id, $name, $unit, $theia, $chan);
+            my $id = $dbh->last_insert_id(undef, undef, "observed_properties", undef);
+            $sth->finish;
+            # my $obsid = "$producerId\_OBS_$GRIDName.$NODEName\_$id";
 
-            $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
-            $sth->execute($obsid, $obs_date, $station, $id, $dataset, $dataname);
+            my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES, CHANNEL_NB) VALUES (?,?,?,?,?);');
+            $sth->execute($id, $name, $unit, $theia, $chan);
+            $sth->finish;
+
+            my $oid = $dbh->last_insert_id(undef, undef, "observations", undef);
+            $sth->finish;
+
+            $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME, PROPERTIES_ID) VALUES (?,?,?,?,?,?,?);');
+            $sth->execute($oid, $obs_date, $station, $name, $dataset, $dataname, $id);
+            $sth->finish;
         } else {
 
             #htmlMsgFileNotOK("$filepath does not exists (yet) !");

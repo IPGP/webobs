@@ -246,7 +246,7 @@ print "<BR><BR>\n";
 
 # ---- extracting observations data
 $stmt = "SELECT observations.*, observed_properties.theiacategories ";
-$stmt .= "FROM observations INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
+$stmt .= "FROM observations INNER JOIN observed_properties ON observations.identifier = observed_properties.identifier";
 $sth = $dbh->prepare( $stmt );
 $rv = $sth->execute() or die $DBI::errstr;
 
@@ -267,10 +267,10 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
   ."<TH><SMALL>Temporal extent</SMALL></TH>"
   ."<TH><SMALL>Time series</SMALL></TH>"
   ."<TH><SMALL>Observed property</SMALL></TH>"
+  ."<TH><SMALL><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">THEIA category</SMALL></TH>"
   ."<TH><SMALL>Station name</SMALL></TH>"
   ."<TH><SMALL>Dataset</SMALL></TH>"
-  ."<TH><SMALL>Data file name</SMALL></TH>"
-  ."<TH><SMALL><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">THEIA category</SMALL></TH></TR>";
+  ."<TH><SMALL>Data file name</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
     my $datasetId = $row[7];
@@ -289,10 +289,10 @@ while(my @row = $sth->fetchrow_array()){
           ."<TD align=center><SMALL>$row[3]</SMALL></TD>"
           ."<TD align=center><SMALL>$row[4]</SMALL></TD>"
           ."<TD align=center><SMALL>$row[5]</SMALL></TD>"
+          ."<TD align=center><SMALL><input name=theia size=35 value=$row[10]></SMALL></TD>"
           ."<TD align=center><SMALL>$row[6]</SMALL></TD>"
           ."<TD align=center><SMALL>$row[7]</SMALL></TD>"
-          ."<TD align=center><SMALL>$row[8]</SMALL></TD>"
-          ."<TD align=center><SMALL><input name=theia size=35 value=$row[9]></SMALL></TD></TR>";
+          ."<TD align=center><SMALL>$row[8]</SMALL></TD></TR>";
     } else {
         print "<TR class=\"node\" id=$row[0]>"
           ."<TD colspan='12'>No access to $GRIDName.$NODEName\_$channelId !</TD>"
