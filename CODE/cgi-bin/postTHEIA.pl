@@ -93,28 +93,23 @@ my $password = "";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
   or die "Couldn't connect to database: " . DBI->errstr;
 
-
-my $filename = '/home/touvierj/Bureau/debug.log';
-truncate $filename, 0;
-open(my $fh, '>>', $filename) or die "Could not open file '$filename' $!";
-print $fh @allChannels;
-
-
-
 foreach (@allChannels) {
-    my ($ch, $level, $theia) = split(/\|/, $_);
-    my $stmt  = "UPDATE observations SET processinglevel = '$level' WHERE identifier = '$ch'";
+    my ($id, $level, $theia) = split(/\|/, $_);
+
+    my $stmt  = "UPDATE observed_properties SET theiacategories = '$theia' WHERE id = $id";
     $stmt  = qq($stmt);
-    my $sth   = $dbh->prepare( $stmt );
+    my $sth   = $dbh->prepare($stmt);
     my $rv    = $sth->execute() or die DBI->errstr;
 
-    my $name = (split /_/, $ch)[-1];
-    my $stmt  = "UPDATE observed_properties SET theiacategories = '$theia' WHERE identifier = '$name'";
+    #my $fid = $dbh->last_insert_id(undef, undef, "observed_properties", undef);
+    #SELECT seq FROM sqlite_sequence WHERE name='ma_table';
+
+    my $stmt  = "UPDATE observations SET processinglevel = '$level' WHERE id = 1";
     $stmt  = qq($stmt);
-    my $sth   = $dbh->prepare( $stmt );
+    my $sth   = $dbh->prepare($stmt);
     my $rv    = $sth->execute() or die DBI->errstr;
 }
-close($fh);
+
 $dbh->disconnect();
 
 __END__

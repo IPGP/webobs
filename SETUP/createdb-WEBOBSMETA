@@ -25,7 +25,7 @@ create table producer (
     ONLINERESOURCE text NOT NULL,
     PRIMARY KEY (IDENTIFIER)
     );
-    
+
 drop table if exists contacts;
 create table contacts (
     EMAIL text NOT NULL,
@@ -35,7 +35,7 @@ create table contacts (
     RELATED_ID text NOT NULL,
     PRIMARY KEY(RELATED_ID, EMAIL)
     );
-    
+
 drop table if exists organisations;
 create table organisations (
     TYPE text NOT NULL,
@@ -47,7 +47,7 @@ create table organisations (
     PRIMARY KEY(IDENTIFIER),
     FOREIGN KEY (RELATED_ID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
-    
+
 drop table if exists datasets;
 create table datasets (
     IDENTIFIER text NOT NULL,
@@ -57,10 +57,10 @@ create table datasets (
     LINEAGE text NOT NULL,
     PRIMARY KEY(IDENTIFIER)
     );
-    
+
 drop table if exists observations;
 create table observations (
-    IDENTIFIER INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     PROCESSINGLEVEL text DEFAULT 'Raw data',
     DATATYPE text DEFAULT 'Numeric',
     TEMPORALEXTENT text,
@@ -70,21 +70,19 @@ create table observations (
     DATASET text NOT NULL,
     DATAFILENAME text NOT NULL,
     PROPERTIES_ID INTEGER,
-    PRIMARY KEY(IDENTIFIER),
     FOREIGN KEY (PROPERTIES_ID) REFERENCES observed_properties(id) ON DELETE CASCADE,
     FOREIGN KEY (DATASET) REFERENCES datasets(IDENTIFIER) ON DELETE CASCADE
     );
-    
+
 drop table if exists observed_properties;
 create table observed_properties (
-    IDENTIFIER INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     NAME text NOT NULL,
     UNIT text NOT NULL,
     THEIACATEGORIES text NOT NULL,
-    CHANNEL_NB text NOT NULL,
-    PRIMARY KEY(IDENTIFIER)
+    CHANNEL_NB text NOT NULL
     );
-    
+
 drop table if exists sampling_features;
 create table sampling_features (
     IDENTIFIER text NOT NULL,
@@ -100,7 +98,7 @@ create table grids2producers (
     PID text NOT NULL,
     FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
     );
-    
+
 drop table if exists EnumContactPersonRoles;
 create table EnumContactPersonRoles (ROLE text NOT NULL);
 

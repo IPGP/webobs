@@ -204,53 +204,50 @@ if ( isok($theiaAuth) ) {
         my $first_second = $first_date[5] || "00";
 
         # read data file to know end date of observations
-        $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$extension";
-        if ( -e $filepath) {
-            my $first_date = "grep -v '^#' $filepath | head -n1";
-            my @first_date = split(/ /, qx($first_date));
-            my $last_date  = "grep -v '^#' $filepath | tail -n1";
-            my @last_date  = split(/ /, qx($last_date));
+#        $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$extension";
+#        if ( -e $filepath) {
+#            my $first_date = "grep -v '^#' $filepath | head -n1";
+#            my @first_date = split(/ /, qx($first_date));
+#            my $last_date  = "grep -v '^#' $filepath | tail -n1";
+#            my @last_date  = split(/ /, qx($last_date));
 
-            my $first_year   = $first_date[0];
-            my $first_month  = $first_date[1];
-            my $first_day    = $first_date[2];
-            my $first_hour   = $first_date[3] || "00";
-            my $first_minute = $first_date[4] || "00";
-            my $first_second = $first_date[5];
-            if ($first_second =~ /./) { $first_second = "00" };
+#            my $first_year   = $first_date[0];
+#            my $first_month  = $first_date[1];
+#            my $first_day    = $first_date[2];
+#            my $first_hour   = $first_date[3] || "00";
+#            my $first_minute = $first_date[4] || "00";
+#            my $first_second = $first_date[5];
+#            if ($first_second =~ /./) { $first_second = "00" };
 
-            my $last_year   = $last_date[0];
-            my $last_month  = $last_date[1];
-            my $last_day    = $last_date[2];
-            my $last_hour   = $last_date[3] || "00";
-            my $last_minute = $last_date[4] || "00";
-            my $last_second = $last_date[5];
-            if ($last_second =~ /./) { $last_second = "00" };
+#            my $last_year   = $last_date[0];
+#            my $last_month  = $last_date[1];
+#            my $last_day    = $last_date[2];
+#            my $last_hour   = $last_date[3] || "00";
+#            my $last_minute = $last_date[4] || "00";
+#            my $last_second = $last_date[5];
+#            if ($last_second =~ /./) { $last_second = "00" };
 
-            my $first_obs_date = "$first_year-$first_month-$first_day\T$first_hour:$first_minute:$first_second\Z";
-            my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
-            my $obs_date = "$first_obs_date/$last_obs_date";
+#            my $first_obs_date = "$first_year-$first_month-$first_day\T$first_hour:$first_minute:$first_second\Z";
+#            my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
+#            my $obs_date = "$first_obs_date/$last_obs_date";
+            my $obs_date = "";
 
             # --- completing observed_properties table
+            my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (NAME, UNIT, THEIACATEGORIES, CHANNEL_NB) VALUES (?,?,?,?);');
+            $sth->execute($name, $unit, $theia, $chan);
+            $sth->finish;
+
             my $id = $dbh->last_insert_id(undef, undef, "observed_properties", undef);
             $sth->finish;
-            # my $obsid = "$producerId\_OBS_$GRIDName.$NODEName\_$id";
 
-            my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES, CHANNEL_NB) VALUES (?,?,?,?,?);');
-            $sth->execute($id, $name, $unit, $theia, $chan);
+            $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME, PROPERTIES_ID) VALUES (?,?,?,?,?,?);');
+            $sth->execute($obs_date, $station, $name, $dataset, $dataname, $id);
             $sth->finish;
+#        } else {
 
-            my $oid = $dbh->last_insert_id(undef, undef, "observations", undef);
-            $sth->finish;
-
-            $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME, PROPERTIES_ID) VALUES (?,?,?,?,?,?,?);');
-            $sth->execute($oid, $obs_date, $station, $name, $dataset, $dataname, $id);
-            $sth->finish;
-        } else {
-
-            #htmlMsgFileNotOK("$filepath does not exists (yet) !");
-            #exit 1;
-        }
+#            #htmlMsgFileNotOK("$filepath does not exists (yet) !");
+#            #exit 1;
+#        }
     }
     $dbh->disconnect();
 }
