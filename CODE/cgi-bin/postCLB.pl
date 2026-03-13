@@ -234,14 +234,14 @@ if ( isok($theiaAuth) ) {
 
             # --- completing observed_properties table
             my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (NAME, UNIT, THEIACATEGORIES, CHANNEL_NB) VALUES (?,?,?,?);');
-            $sth->execute($name, $unit, $theia, $chan);
+            $sth->execute($name, $unit, $theia, $chan) or die $DBI::errstr;
             $sth->finish;
 
             my $id = $dbh->last_insert_id(undef, undef, "observed_properties", undef);
             $sth->finish;
 
             $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME, PROPERTIES_ID) VALUES (?,?,?,?,?,?);');
-            $sth->execute($obs_date, $station, $name, $dataset, $dataname, $id);
+            $sth->execute($obs_date, $station, $name, $dataset, $dataname, $id) or die $DBI::errstr;
             $sth->finish;
 #        } else {
 

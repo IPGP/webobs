@@ -101,10 +101,10 @@ foreach (@allChannels) {
     my $sth   = $dbh->prepare($stmt);
     my $rv    = $sth->execute() or die DBI->errstr;
 
-    #my $fid = $dbh->last_insert_id(undef, undef, "observed_properties", undef);
     #SELECT seq FROM sqlite_sequence WHERE name='ma_table';
 
-    my $stmt  = "UPDATE observations SET processinglevel = '$level' WHERE id = 1";
+    DBI->trace(2, "/home/jerome/Bureau/trace.log");
+    my $stmt  = "UPDATE observations SET processinglevel = '$level' WHERE id = $id";
     $stmt  = qq($stmt);
     my $sth   = $dbh->prepare($stmt);
     my $rv    = $sth->execute() or die DBI->errstr;
