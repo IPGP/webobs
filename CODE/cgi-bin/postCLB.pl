@@ -149,105 +149,6 @@ if ($nbc > $maxc) {
 my $stamp  = "[$today $USERS{$CLIENT}{UID}]";
 my $entete = "# WebObs - $WEBOBS{WEBOBS_ID} : calibration file $QryParm->{'node'}\n# $stamp\n=key|$params_str\n";
 
-# ---- looking after THEIA user flag
-my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
-
-if ( isok($theiaAuth) ) {
-
-    # --- connecting to the database
-    my $driver   = "SQLite";
-    my $database = $WEBOBS{SQL_METADATA};
-    my $dsn = "DBI:$driver:dbname=$database";
-    my $userid = "";
-    my $password = "";
-    my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
-
-    # reading the NODEName dataset row to get the producer id
-    my $stmt = qq(SELECT identifier FROM datasets WHERE identifier LIKE "\%$GRIDName.$NODEName");
-    my $sth = $dbh->prepare( $stmt );
-    my $rv = $sth->execute() or die $DBI::errstr;
-
-    if($rv < 0) {
-        print $DBI::errstr;
-    }
-
-    my $producerId;
-    while( my @row = $sth->fetchrow_array() ) {
-        $producerId = (split /_/, $row[0])[0];
-    }
-
-    my $station   = $GRIDName.'.'.$NODEName;
-    my $dataset   = "$producerId\_DAT_$GRIDName.$NODEName";
-    my $dataname  = "$producerId\_OBS_$GRIDName.$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
-    my $extension = "$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
-    my $filepath;
-
-    foreach (@donnees) {
-
-        # observed_properties table
-        my @obs   = split(/[\|]/, $_);
-        my $id    = $obs[3];
-        my $name  = $obs[3];
-        my $unit  = $obs[4];
-        my $chan  = $obs[2];
-        my $theia = "";
-
-        my $stmt2  = "SELECT theiacategories FROM observed_properties WHERE name='$name'";
-        my $sth2   = $dbh->prepare( qq($stmt2) );
-        my $rv2  = $sth2->execute();
-        while(my @row = $sth2->fetchrow_array()) { $theia = $row[0]; }
-
-        # observations table
-        my $obsid        = "$producerId\_OBS_$GRIDName.$NODEName\_$id";
-        my @first_date   = split(/ /,$obs[0]);
-        my $first_year   = $first_date[0];
-        my $first_hour   = $first_date[3] || "00";
-        my $first_minute = $first_date[4] || "00";
-        my $first_second = $first_date[5] || "00";
-
-        # read data file to know end date of observations
-        $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$extension";
-        if ( -e $filepath) {
-            my $first_date = "grep -v '^#' $filepath | head -n1";
-            my @first_date = split(/ /, qx($first_date));
-            my $last_date  = "grep -v '^#' $filepath | tail -n1";
-            my @last_date  = split(/ /, qx($last_date));
-
-            my $first_year   = $first_date[0];
-            my $first_month  = $first_date[1];
-            my $first_day    = $first_date[2];
-            my $first_hour   = $first_date[3] || "00";
-            my $first_minute = $first_date[4] || "00";
-            my $first_second = $first_date[5];
-            if ($first_second =~ /./) { $first_second = "00" };
-
-            my $last_year   = $last_date[0];
-            my $last_month  = $last_date[1];
-            my $last_day    = $last_date[2];
-            my $last_hour   = $last_date[3] || "00";
-            my $last_minute = $last_date[4] || "00";
-            my $last_second = $last_date[5];
-            if ($last_second =~ /./) { $last_second = "00" };
-
-            my $first_obs_date = "$first_year-$first_month-$first_day\T$first_hour:$first_minute:$first_second\Z";
-            my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
-            my $obs_date = "$first_obs_date/$last_obs_date";
-
-            # --- completing observed_properties table
-            my $sth = $dbh->prepare('INSERT OR REPLACE INTO observed_properties (IDENTIFIER, NAME, UNIT, THEIACATEGORIES,CHANNEL_NB) VALUES (?,?,?,?,?);');
-            $sth->execute($id, $name, $unit, $theia, $chan);
-
-            $sth = $dbh->prepare('INSERT OR REPLACE INTO observations (IDENTIFIER, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME) VALUES (?,?,?,?,?,?);');
-            $sth->execute($obsid, $obs_date, $station, $id, $dataset, $dataname);
-        } else {
-
-            #htmlMsgFileNotOK("$filepath does not exists (yet) !");
-            #exit 1;
-        }
-    }
-    $dbh->disconnect();
-}
-
 # ---- lock-exclusive the data file during all update process
 #
 if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
@@ -280,6 +181,106 @@ if ( sysopen(FILE, "$fileDATA", O_RDWR | O_CREAT) ) {
 } else {
     htmlMsgNotOK("postCLB opening r/w - $!");
     exit 1;
+}
+
+# ---- looking after THEIA user flag
+my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
+
+if ( isok($theiaAuth) ) {
+
+    # --- connecting to the database
+    my $driver   = "SQLite";
+    my $database = $WEBOBS{SQL_METADATA};
+    my $dsn = "DBI:$driver:dbname=$database";
+    my $userid = "";
+    my $password = "";
+    my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+
+    # reading the NODEName dataset row to get the producer id
+    my $stmt = qq(SELECT identifier FROM datasets WHERE identifier LIKE "\%$GRIDName.$NODEName");
+    my $sth = $dbh->prepare( $stmt );
+    my $rv = $sth->execute() or die $DBI::errstr;
+
+    if($rv < 0) {
+        print $DBI::errstr;
+    }
+
+    my $producerId;
+    while( my @row = $sth->fetchrow_array() ) {
+        $producerId = (split /_/, $row[0])[0];
+    }
+
+    my $station   = $GRIDName.'.'.$NODEName;
+    my $dataset   = "$producerId\_DAT_$GRIDName.$NODEName";
+    my $dataname  = "$producerId\_OBS_$GRIDName.$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
+    my $extension = "$NODEName\_$GRID{THEIA_SELECTED_TS}.txt";
+    my $filepath;
+    my $root_id = "$producerId\_OBS_$GRIDName.$NODEName\_";
+    my $id = 0;
+
+    my $obs_date = "";
+    $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$extension";
+    if ( -e $filepath ) {
+        # read data file to know end date of observations
+        my $first_date = "grep -v '^#' $filepath | head -n1";
+        my @first_date = split(/ /, qx($first_date));
+        my $last_date  = "grep -v '^#' $filepath | tail -n1";
+        my @last_date  = split(/ /, qx($last_date));
+
+        my $first_year   = $first_date[0];
+        my $first_month  = $first_date[1];
+        my $first_day    = $first_date[2];
+        my $first_hour   = $first_date[3] || "00";
+        my $first_minute = $first_date[4] || "00";
+        my $first_second = $first_date[5];
+        if ($first_second =~ /./) { $first_second = "00" };
+
+        my $last_year   = $last_date[0];
+        my $last_month  = $last_date[1];
+        my $last_day    = $last_date[2];
+        my $last_hour   = $last_date[3] || "00";
+        my $last_minute = $last_date[4] || "00";
+        my $last_second = $last_date[5];
+        if ($last_second =~ /./) { $last_second = "00" };
+
+        my $first_obs_date = "$first_year-$first_month-$first_day\T$first_hour:$first_minute:$first_second\Z";
+        my $last_obs_date = "$last_year-$last_month-$last_day\T$last_hour:$last_minute:$last_second\Z";
+        $obs_date = "$first_obs_date/$last_obs_date";
+
+        foreach (@donnees) {
+            # observed_properties table
+            my @obs   = split(/[\|]/, $_);
+            my $name  = $obs[3];
+            my $unit  = $obs[4];
+            my $chan  = $obs[2];
+            my $obsid = $root_id . ++$id;
+            my $theia = "";
+            my $level = "";
+
+            # save THEIACATEGORIES and PROCESSINGLEVEL
+            my ($theia) = $dbh->selectrow_array("SELECT THEIACATEGORIES FROM observed_properties WHERE identifier = ?", undef, $obsid);
+            my ($level) = $dbh->selectrow_array("SELECT PROCESSINGLEVEL FROM observations WHERE identifier = ?", undef, $obsid);
+
+            # --- completing observed_properties table
+            my $colnames = "IDENTIFIER, NAME, UNIT, THEIACATEGORIES, CHANNEL_NB";
+            my $sth = $dbh->prepare("INSERT OR REPLACE INTO observed_properties ($colnames) VALUES (?,?,?,?,?);");
+            $sth->execute($obsid, $name, $unit, $theia, $chan) or die $DBI::errstr;
+
+            # --- completing observations table
+            my $colnames = "IDENTIFIER, PROCESSINGLEVEL, TEMPORALEXTENT, STATIONNAME, OBSERVEDPROPERTY, DATASET, DATAFILENAME";
+            $sth = $dbh->prepare("INSERT OR REPLACE INTO observations ($colnames) VALUES (?,?,?,?,?,?,?);");
+            $sth->execute($obsid, $level, $obs_date, $station, $name, $dataset, $dataname) or die $DBI::errstr;
+        }
+
+        # cleanup
+        if ($modify) {
+            my $pos = length($root_id) + 1;
+            $dbh->do("DELETE FROM observed_properties WHERE CAST(SUBSTR(IDENTIFIER, $pos) AS INTEGER) > ?", undef, $id);
+            $dbh->do("DELETE FROM observations WHERE CAST(SUBSTR(IDENTIFIER, $pos) AS INTEGER) > ?", undef, $id);
+        }
+    }
+
+    $dbh->disconnect();
 }
 
 # --- return information when OK and registering metadata in the metadata database

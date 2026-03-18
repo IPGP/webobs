@@ -94,14 +94,13 @@ my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 })
   or die "Couldn't connect to database: " . DBI->errstr;
 
 foreach (@allChannels) {
-    my ($ch, $level, $theia) = split(/\|/, $_);
-    my $stmt  = "UPDATE observations SET processinglevel = '$level' WHERE identifier = '$ch'";
+    my ($id, $level, $theia) = split(/\|/, $_);
+    my $stmt  = "UPDATE observations SET processinglevel = '$level' WHERE identifier = '$id'";
     $stmt  = qq($stmt);
     my $sth   = $dbh->prepare( $stmt );
     my $rv    = $sth->execute() or die DBI->errstr;
 
-    my $name = (split /_/, $ch)[-1];
-    my $stmt  = "UPDATE observed_properties SET theiacategories = '$theia' WHERE identifier = '$name'";
+    my $stmt  = "UPDATE observed_properties SET theiacategories = '$theia' WHERE identifier = '$id'";
     $stmt  = qq($stmt);
     my $sth   = $dbh->prepare( $stmt );
     my $rv    = $sth->execute() or die DBI->errstr;

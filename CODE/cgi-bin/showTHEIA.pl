@@ -246,7 +246,7 @@ print "<BR><BR>\n";
 
 # ---- extracting observations data
 $stmt = "SELECT observations.*, observed_properties.theiacategories ";
-$stmt .= "FROM observations INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
+$stmt .= "FROM observations INNER JOIN observed_properties ON observations.identifier = observed_properties.identifier";
 $sth = $dbh->prepare( $stmt );
 $rv = $sth->execute() or die $DBI::errstr;
 
