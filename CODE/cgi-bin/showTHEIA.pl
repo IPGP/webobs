@@ -186,7 +186,7 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
   ."<TH></TH>"
   ."<TH><SMALL>Identifier</SMALL></TH>"
   ."<TH valign=\"top\"><SMALL>Title</SMALL></TH>"
-  ."<TH><SMALL>Description</SMALL></TH>"
+#  ."<TH><SMALL>Description</SMALL></TH>"
   ."<TH><SMALL>Subject</SMALL></TH>"
   ."<TH><SMALL>Creator(s)</SMALL></TH>"
   ."<TH><SMALL>Spatial coverage</SMALL></TH>"
@@ -220,7 +220,7 @@ while(my @row = $sth->fetchrow_array()){
           ."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
           ."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
           ."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
-          ."<TD width=14% align=center><SMALL>$desc</SMALL></TD>"
+#          ."<TD width=14% align=center><SMALL>$desc</SMALL></TD>"
           ."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
           ."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
           ."<TD width=14% align=center><SMALL>$row[3]</SMALL></TD>"
@@ -263,14 +263,14 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
   ."<TH></TH>"
   ."<TH><SMALL>Identifier</SMALL></TH>"
   ."<TH><SMALL>Processing level</SMALL></TH>"
-  ."<TH><SMALL>Data type</SMALL></TH>"
-  ."<TH><SMALL>Temporal extent</SMALL></TH>"
-  ."<TH><SMALL>Time series</SMALL></TH>"
   ."<TH><SMALL>Observed property</SMALL></TH>"
+  ."<TH><SMALL><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">THEIA category</SMALL></TH>"
+#  ."<TH><SMALL>Data type</SMALL></TH>"
+  ."<TH><SMALL>Temporal extent</SMALL></TH>"
+#  ."<TH><SMALL>Time series</SMALL></TH>"
   ."<TH><SMALL>Station name</SMALL></TH>"
-  ."<TH><SMALL>Dataset</SMALL></TH>"
-  ."<TH><SMALL>Data file name</SMALL></TH>"
-  ."<TH><SMALL><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">THEIA category</SMALL></TH></TR>";
+#  ."<TH><SMALL>Dataset</SMALL></TH>"
+  ."<TH><SMALL>Data file name</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
     my $datasetId = $row[7];
@@ -285,14 +285,15 @@ while(my @row = $sth->fetchrow_array()){
           ."<TD width=6%  align=center><select>";
         foreach my $k (keys %processing_level) { print "<option value=$processing_level{$k}".(($k eq $row[1]) ? " selected" : "").">$k</option>\n"; }
         print "</select></TD>"
-          ."<TD align=center><SMALL>$row[2]</SMALL></TD>"
-          ."<TD align=center><SMALL>$row[3]</SMALL></TD>"
-          ."<TD align=center><SMALL>$row[4]</SMALL></TD>"
           ."<TD align=center><SMALL>$row[5]</SMALL></TD>"
+          ."<TD align=center><SMALL><input name=theia size=35 value=$row[9]></SMALL></TD>"
+#          ."<TD align=center><SMALL>$row[2]</SMALL></TD>"
+          ."<TD align=center><SMALL>$row[3]</SMALL></TD>"
+#          ."<TD align=center><SMALL>$row[4]</SMALL></TD>"
           ."<TD align=center><SMALL>$row[6]</SMALL></TD>"
-          ."<TD align=center><SMALL>$row[7]</SMALL></TD>"
-          ."<TD align=center><SMALL>$row[8]</SMALL></TD>"
-          ."<TD align=center><SMALL><input name=theia size=35 value=$row[9]></SMALL></TD></TR>";
+#          ."<TD align=center><SMALL>$row[7]</SMALL></TD>"
+          ."<TD align=center><SMALL>$row[8]</SMALL></TD></TR>";
+
     } else {
         print "<TR class=\"node\" id=$row[0]>"
           ."<TD colspan='12'>No access to $GRIDName.$NODEName\_$channelId !</TD>"
