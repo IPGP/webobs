@@ -760,16 +760,21 @@ function getGeometry(geojson) {
      * \@return {GeoJSON} geometry GeoJSON object which has its coordinates corresponding to the bounding box of the geometry of the input
      */
 
-    if (geojson && geojson.features && geojson.features.length > 0) {
-        var geometry = {"type":"", "coordinates":""};
-        var coordinates = [];
-        for (var i = 0; i < geojson.features.length; i++) {
-            coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);;
+    var geometry = {"type": "", "coordinates": ""};
+    var coordinates = [];
+    if (geojson) {
+        if (geojson.features && geojson.features.length > 0) {
+            data = geojson.features;
+        } else {
+            data = geojson;
         }
-        geometry.coordinates = coordinates;
-        geometry.type = geojson.features.length > 1 ? "MultiPolygon" : "Polygon";
-        return geometry;
+        for (var i = 0; i < data.length; i++) {
+            coordinates.push(getBoundingBox(data[i].geometry.coordinates));
+        }
+        geometry.type = data.length > 1 ? "MultiPolygon" : "Polygon";
     }
+    geometry.coordinates = coordinates;
+    return geometry;
 }
 function getBoundingBox(coordinates) {
     /**

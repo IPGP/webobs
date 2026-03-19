@@ -169,7 +169,7 @@ foreach (@channels) {
     print "$_\n";
     $stmt  = "SELECT * FROM observations ";
     $stmt .= "INNER JOIN sampling_features ON observations.stationname = sampling_features.identifier ";
-    $stmt .= "INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
+    $stmt .= "INNER JOIN observed_properties ON observations.identifier = observed_properties.identifier";
     $stmt .= " WHERE observations.identifier = '$_'";
     $stmt  = qq($stmt);
     $sth   = $dbh->prepare( $stmt );
@@ -179,7 +179,7 @@ foreach (@channels) {
         # print "\n", join(" ", @row[0 .. $#row-6]), "\n";
         # ---- data from observed_properties table
         my %observedProperty = (
-            name => decode("utf8", $row[13]),
+            name => decode("utf8", $row[12]),
             unit => decode("utf8", $row[14])
           );
 
@@ -225,7 +225,7 @@ foreach (@channels) {
         my $timescale = (split /\_/, $row[8])[-1];
         $timescale = (split /\./, $timescale)[0];
         my %datafile = (
-            name => $producer{'producerId'}."_OBS_$GRIDName.$NODEName\_$observedProperty{'name'}.txt",
+            name => "$observedProperty{'name'}.txt",
           );
         my %result = (
             dataFile => \%datafile,
@@ -239,9 +239,14 @@ foreach (@channels) {
 
         # ---- generating .txt files for the observed properties
         # ---- header
+        my $identifier = $observedProperty{'name'};
+        my $dsid = ($identifier =~ /OBSE_OBS_(.*)_\d+$/) ? $1 : undef;
+        my ($title) = $dbh->selectrow_array("SELECT TITLE FROM datasets WHERE IDENTIFIER = ?", undef, "OBSE_DAT_$dsid");
+        $title = "" unless defined $title;
+
         my $header = "#Date_of_extraction;$today;\n";
         $header .= "#Observation_ID;$row[0];\n";
-        $header .= "#Dataset_title;;\n";
+        $header .= "#Dataset_title;$title;\n";
         $header .= "#Variable_name;".$row[5].";\n";
         $header .= "dateBeg;dateEnd;latitude;longitude;altitude;value;qualityFlags;\n";
 
@@ -368,20 +373,6 @@ foreach (@nodes) {
                 my $datId = (split /\./, $row[0])[1];
                 if ($obsId eq $datId) {
                     push(@ds_obs, $_);
-                    my $filename = decode_json encode_json $_->{'result'}->{'dataFile'}->{'name'};
-
-                    # ---- adding the title dataset into $filename
-                    # ---- first we open $filename while creating a new $filename where we will write the line we want to insert
-                    open my $in, '<', "$tmpdir/$filename" or die "Can't read old file: $!";
-                    open my $out, '>', "$tmpdir/$filename.new" or die "Can't write new file: $!";
-                    my $title = decode("utf8", $row[1]);
-                    while( <$in> ) {
-                        s/Dataset_title;/Dataset_title;$title/; # ---- writing the dataset title in the right row
-                        print $out $_;
-                    }
-                    close $in;
-                    close $out;
-                    rename "$tmpdir/$filename.new", "$tmpdir/$filename";
                 }
             }
         }
