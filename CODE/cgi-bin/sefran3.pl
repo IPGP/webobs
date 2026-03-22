@@ -460,7 +460,7 @@ if (!$date) {
 
     # what's the last minute-image ? searches for it and computes realtime delta
     my $dt = 0;
-    my $last_mn = find_latest_minute($SEFRAN3{ROOT});
+    my $last_mn = latest_sefran_img($SEFRAN3{ROOT});
     my $lmn = "";
     if (defined $last_mn) {
         $lmn = basename($last_mn);
@@ -965,14 +965,6 @@ if ($date) {
         my $operateur = $MC{operator};
         my $comment_evt = ($id ? htmlspecialchars(l2u($MC{comment})) : "");
 
-        # case : 'replay mode' ('replay' and 'editing id' must be exclusive)
-        if ($replay && !$id) {
-            my @mcreplay = qx(awk -F'|' '\$1 == $replay {printf "\%s",\$0}' $MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$fileMC);
-            my %MCreplay = mcinfo($mcreplay[0]);
-            $type_evt = $MCreplay{type};
-            $amplitude_evt = $MCreplay{amplitude};
-        }
-
         my $modif = 0;
 
         if ((isok($MC3{LEVEL2_MODIFY_ALL_EVENTS}) && $userLevel ==2) || ($userLevel == 2 && ($operateur eq "" || $operateur eq $USERS{$CLIENT}{UID} || $type_evt eq "AUTO")) || $userLevel == 4 ) {
@@ -1129,8 +1121,7 @@ if ($date) {
                 print "<P><INPUT type=\"checkbox\" name=\"impression\" value=\"1\">$__{'Print signal'}</P>\n";
             } else {
                 print "<INPUT type=\"hidden\" name=\"impression\" value=\"$MC3{AUTOPRINT}\">\n";
-                print "<INPUT type=\"checkbox\" name=\"replay\" id=\"replay\"";
-                print $replay ? " checked >" : ">";  # coming in with replay ==> keep replay as a default
+                print "<INPUT type=\"checkbox\" name=\"replay\" id=\"replay\"".($replay ? " checked":"").">";  # coming in with replay ==> keep replay as a default
                 print "<LABEL for=\"replay\">$__{'Continue with this window'} (Replay!)</LABEL></P>\n";
             }
             print "</TD><TD style=\"border:0;text-align:right\"><INPUT type=\"button\" value=\"Reset\" onClick=\"reset();maj_formulaire()\">",
@@ -1167,10 +1158,12 @@ sub sorted_entries_desc {
     return sort { $b cmp $a } @e;
 }
 
-sub find_latest_minute {
+sub latest_sefran_img {
     my ($root) = @_;
 
-    # finds the latest minute file *.png by scanning the directory structure yyyy/yyyymmdd recursively
+    # finds the latest minute file *.png by scanning the directory structure
+    # 'yyyy/yyyymmdd' recursively in descending order, stops after the first
+    # existing directory of file 
     for my $y (sorted_entries_desc($root)) {
         my $py = "$root/$y";
         next unless -d $py;
