@@ -49,6 +49,7 @@ types of HTML pages:
 use strict;
 use warnings;
 use Time::Local;
+use Time::Piece;
 use DateTime;
 use File::Basename;
 use List::Util qw(first);
@@ -769,13 +770,22 @@ if (!$date) {
 # -----------------------------------------------------------------------------
 if ($date) {
     my ($Yc,$mc,$dc,$Hc,$Mc) = unpack("a4 a2 a2 a2 a2",$date);
+    my $t = Time::Piece->strptime($date, "%Y%m%d%H");
+    my ($Yc0,$mc0,$dc0,$Hc0,$Mc0) = unpack("a4 a2 a2 a2 a2",($t - 3600)->strftime("%Y%m%d%H"));
+    my ($Yc1,$mc1,$dc1,$Hc1,$Mc1) = unpack("a4 a2 a2 a2 a2",($t + 3600)->strftime("%Y%m%d%H"));
 
-    # read existing events from MC for current hour
+    # read existing events from MC for current hour (and previous/next hour minute)
     my @mc_hlist;
     my $f = "$MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$Yc$mc.txt";
-    if (-e $f) {
-        @mc_hlist = split(/\n/,qx(grep "|$Yc-$mc-$dc|$Hc:" $f));
+    if (-e $f && open my $fh, '<', $f) {
+        while (my $line = <$fh>) {
+            push @mc_hlist, $line if $line =~ /\|$Yc-$mc-$dc\|$Hc:/;
+            push @mc_hlist, $line if $line =~ /\|$Yc0-$mc0-$dc0\|$Hc0:59/;
+            push @mc_hlist, $line if $line =~ /\|$Yc1-$mc1-$dc1\|$Hc1:00/;
+        }
+        close $fh;
     }
+    chomp(@mc_hlist);
 
     print "<DIV id=\"sefran\">";
     my %MC;
@@ -905,13 +915,15 @@ if ($date) {
     for (reverse @mc_hlist) {
         my %MC = mcinfo($_,1);
 
-#DL-was: if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1 && $MC{id} != $id && ($MC{minute} - $Mc) <= $date_nbm) {
         if (($MC{id} > 0 || ($userLevel == 4 && $trash == 1)) && $userLevel >= 1 && (defined $MC{minute} && ($MC{minute} - $Mc) <= $date_nbm)) {
             my $deb_evt;
             if ($dep) {
                 $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} - $Mc + $MC{second}/60));
             } else {
-                $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} + 1 + $MC{second}/60));
+                my $dm = 0;
+                $dm = -60 if ($MC{hour} == $Hc - 1);
+                $dm = 60 if ($MC{hour} == $Hc + 1);
+                $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} + 1 + $dm + $MC{second}/60));
             }
             my $dur_evt = 1 + int(0.5 + $largeur_image*$MC{duration}*$duration_s{$MC{unit}}/60);
             if ($MC{id} != $id) {
