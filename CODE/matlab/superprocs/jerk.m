@@ -36,7 +36,7 @@ function DOUT=jerk(varargin)
 %
 %   Authors: F. Beauducel + G. Roult + V. Ferrazzini, WEBOBS/IPGP
 %   Created: 2014-04-14 at OVPF, La Réunion, Indian Ocean
-%   Updated: 2026-01-19
+%   Updated: 2026-03-24
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -55,6 +55,8 @@ timelog(procmsg,1);
 tidemodes = {'Solid+Ocean','Solid','Ocean','none'};
 
 % gets PROC's specific parameters
+
+rooturl = field2str(WO,'ROOT_URL','http://webobs','notempty');
 mw = field2num(P,'JERK_WINDOW_SECONDS');
 dt = field2num(P,'JERK_SAMPLING_SECONDS');
 threshold_level1 = 1e9*field2num(P,'JERK_THRESHOLD_LEVEL1_MS3',2e-10);	% threshold in nm/s3
@@ -69,6 +71,13 @@ procazlim = field2num(P,'JERK_AZLIM',[0,180]);
 chan_median_minmax = field2num(P,'MEDIAN_MINMAX_FILTERING');
 chan_smooth = field2num(P,'CHANNELS_MOVING_AVERAGE_SAMPLES',ones(1,4));
 tidemode = field2num(P,'TIDES_PREDICT_MODE',0);
+notify_event = { ...
+    field2str(P,'NOTIFY_EVENT_WARNING'), ...
+    field2str(P,'NOTIFY_EVENT_CRITICAL'), ...
+};
+jmax_eruption = field2num(P,'JMAX_ERUPTION_NMS3');
+jmax_intrusion = field2num(P,'JMAX_INTRUSION_NMS3');
+nevt = length(jmax_eruption) + length(jmax_intrusion);
 
 cb2 = char(178); % superscript 2 (latin)
 cb3 = char(179); % superscript 3 (latin)
@@ -322,6 +331,8 @@ for n = 1:length(N)
 		else
 			sal1 = 'none';
 		end
+        % max jerk amplitude in zoom window
+		jmax = max(jerk(jerk<threshold_max & (insector(jth,azlim) | insector(jth-180,azlim)) & isinto(tk(ip),zd)));
 
 		% jerk polar
 		axes('position',[pos(1),pos(2)-.02,.25,pos(4)]);
@@ -368,26 +379,31 @@ for n = 1:length(N)
 			if tidemode
 				OPT.INFOS = [OPT.INFOS{:},{ ...
 					sprintf('   Tide predict mode: {\\bf %s}',tidemodes{tidemode}), ...
-					sprintf('   E-W tide: {\\bf\\times %1.4f, \\Delta{t} = %+dh %02.0fm}', ...
-						tidefit(1,2),h2hms(24*tidefit(1,1),1)), ...
-					sprintf('   N-S tide: {\\bf\\times %1.4f, \\Delta{t} = %+dh %02.0fm}', ...
-						tidefit(2,2),h2hms(24*tidefit(2,1),1)), ...
+					%sprintf('   E-W tide: {\\bf\\times %1.4f, \\Delta{t} = %+dh %02.0fm}', ...
+					%	tidefit(1,2),h2hms(24*tidefit(1,1),1)), ...
+					%sprintf('   N-S tide: {\\bf\\times %1.4f, \\Delta{t} = %+dh %02.0fm}', ...
+					%	tidefit(2,2),h2hms(24*tidefit(2,1),1)), ...
 				}];
 			else
 				OPT.INFOS = [OPT.INFOS{:},{ ...
 					sprintf('   Tide predict mode: {\\bf none}'), ...
-					sprintf('   E-W tide: {\\bf none}'), ...
-					sprintf('   N-S tide: {\\bf none}'), ...
+					%sprintf('   E-W tide: {\\bf none}'), ...
+					%sprintf('   N-S tide: {\\bf none}'), ...
 				}];
 			end
+            % prediction based on past events stats
+            probe = 100*sum(jmax>=jmax_eruption)/nevt;
+            probi = 100*sum(jmax>=jmax_intrusion)/nevt;
 			OPT.INFOS = [OPT.INFOS{:},{ ...
-				'JERK parameters:', ...
-				sprintf('   Sampling: {\\bf %g s}',dt), ...
-				sprintf('   Slope window: {\\bf %g s}',mw), ...
+				sprintf('   Slope window: {\\bf %g s @%g s}',mw,dt), ...
 				sprintf('   Azimuth interval: {\\bfN %g to N%g}',round(mod(azlim+360,360))), ...
-				' ', ...
 				sprintf('Last JERK alert (in zoom window):'), ...
-				sprintf('   Level1: %s',sal1),sprintf('   Level2: %s',sal2), ' ', ...
+				sprintf('   Max.: {\\bf %g nm/s%s}',roundsd(jmax,2),cb3), ...
+				sprintf('   Level1: %s',sal1),sprintf('   Level2: %s',sal2), ...
+				sprintf('JERK prediction probability:'), ...
+                sprintf('   Based on {\\bf %g} past events',nevt), ...
+                sprintf('   {\\bf %1.1f%%} Intrusion',probi), ...
+                sprintf('   {\\bf %1.1f%%} Eruption',probe), ...
 			}];
         else
             OPT.INFOS = {''};
@@ -422,55 +438,52 @@ for n = 1:length(N)
 			end
 
 			% email for alerts
-			if ~P.REQUEST && isfield(P,'NOTIFY_EVENT') && ~isempty(P.NOTIFY_EVENT)
+			if ~P.REQUEST && all(~cellfun(@isempty,notify_event))
 				falert = sprintf('%s/alertstatus',P.OUTDIR);
 				if exist(falert,'file')
 					alertlast = load(falert,'-ascii');
 				else
 					alertlast = [talarm(end),0];
 				end
+                % al(1) is last time, al(2) is last alarm level
 				al = [talarm(end),alarm(end)];
-				alert = 0;
+				% alert = 0 (no alert), = 1 (notify warning), = 2 (notify critical)
+                alert = 0;
 				alertlevel = { ...
 					'NORMAL', ...
 					'WARNING', ...
-					'ALERT', ...
+					'CRITICAL', ...
 					};
 				alertstatus = '';
 				switch al(2)
 				case 0
 					switch alertlast(2)
-					case 1
+					case 1 % from level 1 to level 0
 						alertstatus = 'end of warning';
 						alert = 1;
-					case 2
-						alertstatus = 'end of alert';
+					case 2 % from level 2 to level 0 
+						alertstatus = 'end of critical';
 						alert = 1;
 					end
 				case 1
 					switch alertlast(2)
-					case 0
+					case 0 % from level 0 to level 1
 						alertstatus = 'start';
 						alert = 1;
-					case 2
-						alertstatus = 'end of alert';
+					case 2 % from level 2 to level 1 
+						alertstatus = 'end of critical';
 						alert = 1;
 					end
 				case 2
 					switch alertlast(2)
-					case {0,1}
+					case {0,1} % from level 0/1 to level 2
 						alertstatus = 'start';
-						alert = 1;
+						alert = 2;
 					end
 				end
 				save(falert,'al','-ascii','-double');
-				if alert
-					% root URL
-					if isfield(WO,'ROOT_URL')
-						url = WO.ROOT_URL;
-					else
-						url = 'http://webobs';
-					end
+				if alert > 0
+                    fprintf('%s: status %s (%s) on %s.\n',wofun,alertlevel{al(2)+1},alertstatus,datestr(al(1)));
 
 					% makes a comprehensive text message for email notification
 					msg = sprintf('JERK %s: status %s (%s)',N(n).ALIAS,alertlevel{al(2)+1},alertstatus);
@@ -482,11 +495,15 @@ for n = 1:length(N)
 					fprintf(fid,'Current status\n\t%s: %s\n',datestr(al(1)),alertlevel{al(2)+1});
 					fprintf(fid,'Previous status\n\t%s: %s\n',datestr(alertlast(1)),alertlevel{alertlast(2)+1});
 					fprintf(fid,'\n\n');
-					fprintf(fid,'Real-time graph: %s/cgi-bin/showOUTG.pl?grid=%s&g=%s\n\n',url,P.SELFREF,lower(N(n).ID));
+					fprintf(fid,'Real-time graph: %s/cgi-bin/showOUTG.pl?grid=%s&g=%s\n\n',rooturl,P.SELFREF,lower(N(n).ID));
                     fprintf(fid,'Screenshot attached:\n\n');
 					fclose(fid);
-
-					notify(WO,P.NOTIFY_EVENT,'!',sprintf('file=%s subject=%s',f,msg));
+                    
+                    if ~isempty(notify_event{alert})
+                        notify(WO,notify_event{alert},'!',sprintf('file=%s subject=%s',f,msg));
+                    end
+                else
+                    fprintf('%s: no alert on %s.\n',wofun,datestr(al(1)));
 				end
 			end
 		end
