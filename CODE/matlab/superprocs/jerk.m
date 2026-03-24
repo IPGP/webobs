@@ -77,7 +77,8 @@ notify_event = { ...
 };
 jmax_eruption = field2num(P,'JMAX_ERUPTION_NMS3');
 jmax_intrusion = field2num(P,'JMAX_INTRUSION_NMS3');
-nevt = length(jmax_eruption) + length(jmax_intrusion);
+jmax_all = cat(2,jmax_eruption,jmax_intrusion);
+nevt = length(jmax_all);
 
 cb2 = char(178); % superscript 2 (latin)
 cb3 = char(179); % superscript 3 (latin)
@@ -392,8 +393,15 @@ for n = 1:length(N)
 				}];
 			end
             % prediction based on past events stats
-            probe = 100*sum(jmax>=jmax_eruption)/nevt;
-            probi = 100*sum(jmax>=jmax_intrusion)/nevt;
+            probe = 0;
+            probi = 0;
+            if jmax > threshold_level1
+                nall = sum(jmax<=jmax_all); % past E+I >= jmax
+                if nall > 0
+                    probe = 100*sum(jmax<=jmax_eruption)/nall; % probability for an eruption
+                    probi = 100*sum(jmax<=jmax_intrusion)/nall; % probability for an intrusion
+                end
+            end
 			OPT.INFOS = [OPT.INFOS{:},{ ...
 				sprintf('   Slope window: {\\bf %g s @%g s}',mw,dt), ...
 				sprintf('   Azimuth interval: {\\bfN %g to N%g}',round(mod(azlim+360,360))), ...
@@ -401,7 +409,7 @@ for n = 1:length(N)
 				sprintf('   Max.: {\\bf %g nm/s%s}',roundsd(jmax,2),cb3), ...
 				sprintf('   Level1: %s',sal1),sprintf('   Level2: %s',sal2), ...
 				sprintf('JERK prediction probability:'), ...
-                sprintf('   Based on {\\bf %g} past events',nevt), ...
+                sprintf('(based on {\\bf %g} past events',nevt), ...
                 sprintf('   {\\bf %1.1f%%} Intrusion',probi), ...
                 sprintf('   {\\bf %1.1f%%} Eruption',probe), ...
 			}];
@@ -495,6 +503,12 @@ for n = 1:length(N)
 					fprintf(fid,'Current status\n\t%s: %s\n',datestr(al(1)),alertlevel{al(2)+1});
 					fprintf(fid,'Previous status\n\t%s: %s\n',datestr(alertlast(1)),alertlevel{alertlast(2)+1});
 					fprintf(fid,'\n\n');
+                    fprintf(fid,'Maximum jerk amplitude = %g nm/%s\n\n',roundsd(jmax,2),cb3);
+                    if nevt > 0
+                        fprintf(fid,'Jerk prediction (base %g past events):\n',nevt);
+                        fprintf(fid,'  %1.1f%% intrusion\n',probi);
+                        fprintf(fid,'  %1.1f%% eruption\n',probe);
+                    end
 					fprintf(fid,'Real-time graph: %s/cgi-bin/showOUTG.pl?grid=%s&g=%s\n\n',rooturl,P.SELFREF,lower(N(n).ID));
                     fprintf(fid,'Screenshot attached:\n\n');
 					fclose(fid);
