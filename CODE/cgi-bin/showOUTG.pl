@@ -245,8 +245,9 @@ if ($QryParm->{'ts'} eq 'events' ) {
     @plist = grep { !-l } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
     # extracts all date/events ID
     @vlist = map { m{^$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/(.*)/[^/]+$};$1 } @plist;
-    # build @ilist = the list of unique IDs in events/*/*/*/* subdirectories
-    (@ilist) = uniq map { basename($_) } grep { -d } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/*/*/*/*";
+    # build @ilist = the list of unique IDs in events g= subdirectories
+    my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'}.("/*" x (3 - $depth)));
+    (@ilist) = uniq map { basename($_) } grep { -d } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$y/$m/$d/*";
 
     if ($QryParm->{'g'} eq "") {
         $QryParm->{'g'} = $ylist[$#ylist];
@@ -468,11 +469,11 @@ if ($QryParm->{'ts'} eq 'map') {
         (my $short = $plist[0]) =~ s/\.jpg//g;
         (my $urn = $short) =~ s/$root_dir/$urn_dir/g;
         (my $EVENTid = $short) =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
-        (my @evt) = split(/\//,$EVENTid);
-        my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
+        my ($y,$m,$d,$id,$im) = split(/\//,$EVENTid);
+        my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$d,$m - 1,$y - 1900));
         # get the full list of images
         my @png_files = "";
-        my $ydir = "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$evt[0]";
+        my $ydir = "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$y/$m/$d";
         find(sub {
             return if -l $_;
             return unless /\.png$/i;
@@ -481,16 +482,16 @@ if ($QryParm->{'ts'} eq 'map') {
         @png_files = sort(@png_files);
         # extract the previous and next
         my $target = "$short.png";
-        my $prev;
-        my $next;
+        my $prev = "";
+        my $next = "";
         my ($index) = grep { $png_files[$_] eq $target } 0 .. $#png_files;
         if (defined $index) {
             $prev = $index > 0            ? $png_files[$index - 1] : undef;
             $next = $index < $#png_files  ? $png_files[$index + 1] : undef;
             $prev =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\/|\.png$//g if defined($prev);
             $next =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\/|\.png$//g if defined($next);
-            $addlinks .= (defined $prev ? "<A href=\"$baseurl&ts=events&g=$prev\"><IMG src=\"/icons/l13.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$prev',CAPTION,'Previous image')\"></A>":"")
-                    .(defined $next ? "&nbsp;<A href=\"$baseurl&ts=events&g=$next\"><IMG src=\"/icons/r13.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$next',CAPTION,'Next image')\"></A>":"");
+            $addlinks .= ($prev ne "" ? "<A href=\"$baseurl&ts=events&g=$prev\"><IMG src=\"/icons/l13.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$prev',CAPTION,'Previous image')\"></A>":"")
+                    .($next ne "" ? "&nbsp;<A href=\"$baseurl&ts=events&g=$next\"><IMG src=\"/icons/r13.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$next',CAPTION,'Next image')\"></A>":"");
         }
         foreach ("eps","svg","pdf","gse","txt","kml") {
             if ( -e "$short.$_" ) {
@@ -503,7 +504,7 @@ if ($QryParm->{'ts'} eq 'map') {
             $addlinks .= " <A href=\"/cgi-bin/mailB3.pl?grid=$QryParm->{'grid'}&ts=events&g=$EVENTid\">"
               ."<IMG alt=\"$urn.msg\" src=\"/icons/fmail.png\"></A> ";
         }
-        print "<H2>$dte: <I>$evt[3]&nbsp;/&nbsp;$evt[4]</I></H2>\n";
+        print "<H2>$dte: <I>$id&nbsp;/&nbsp;$im</I></H2>\n";
         print "$addlinks<BR>" if ($QryParm->{'header'} ne 'no');
         my $img = "$urn.png";
         if ( ! -f "$short.png" ) {
