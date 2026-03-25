@@ -36,7 +36,7 @@ function DOUT=jerk(varargin)
 %
 %   Authors: F. Beauducel + G. Roult + V. Ferrazzini, WEBOBS/IPGP
 %   Created: 2014-04-14 at OVPF, La Réunion, Indian Ocean
-%   Updated: 2026-03-24
+%   Updated: 2026-03-25
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -77,8 +77,6 @@ notify_event = { ...
 };
 jmax_eruption = field2num(P,'JMAX_ERUPTION_NMS3');
 jmax_intrusion = field2num(P,'JMAX_INTRUSION_NMS3');
-jmax_all = cat(2,jmax_eruption,jmax_intrusion);
-nevt = length(jmax_all);
 
 cb2 = char(178); % superscript 2 (latin)
 cb3 = char(179); % superscript 3 (latin)
@@ -396,11 +394,8 @@ for n = 1:length(N)
             probe = 0;
             probi = 0;
             if jmax > threshold_level1
-                nall = sum(jmax<=jmax_all); % past E+I >= jmax
-                if nall > 0
-                    probe = 100*sum(jmax<=jmax_eruption)/nall; % probability for an eruption
-                    probi = 100*sum(jmax<=jmax_intrusion)/nall; % probability for an intrusion
-                end
+                probe = 100*sum(jmax>=jmax_eruption)/length(jmax_eruption); % probability for an eruption
+                probi = 100*sum(jmax>=jmax_intrusion)/length(jmax_intrusion); % probability for an intrusion
             end
 			OPT.INFOS = [OPT.INFOS{:},{ ...
 				sprintf('   Slope window: {\\bf %g s @%g s}',mw,dt), ...
@@ -409,7 +404,7 @@ for n = 1:length(N)
 				sprintf('   Max.: {\\bf %g nm/s%s}',roundsd(jmax,2),cb3), ...
 				sprintf('   Level1: %s',sal1),sprintf('   Level2: %s',sal2), ...
 				sprintf('JERK prediction probability:'), ...
-                sprintf('(based on {\\bf %g} past events',nevt), ...
+                sprintf('(based on {\\bf %g} past events)',nevt), ...
                 sprintf('   {\\bf %1.1f%%} Intrusion',probi), ...
                 sprintf('   {\\bf %1.1f%%} Eruption',probe), ...
 			}];
