@@ -461,6 +461,32 @@ if ($QryParm->{'ts'} eq 'map') {
                   "onMouseOut=\"nd()\" onMouseOver=\"overlib('$msg',CAPTION,'$dte')\"></A>\n";
             }
         }
+        if (exists $GRID{'DOWNFLOW_NAME_VENT'}) {
+            sub list_files {
+                foreach(@_) {
+                    s/$root_dir/$urn_dir/g;
+                    print "<a href=$_>", basename($_), "<br></a>"
+                }
+            }
+
+            my @csvlist = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*").".csv";
+            if (@csvlist) {
+                print "<br><br># RESULT FILES:<br>";
+                list_files(@csvlist)
+            }
+
+            my @jsonlist = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*").".json";
+            if (@jsonlist) {
+                print "<br><br># PARAMETER FILES:<br>";
+                list_files(@jsonlist)
+            }
+
+            my @shapefiles = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*").".zip";
+            if (@shapefiles) {
+                print "<br><br># SHAPE FILES:<br>";
+                list_files(@shapefiles)
+            }
+        }
 
 # single file: displays .png (or .jpg) and links to other files (.eps,.pdf,.gse,.txt)
 # note: @plist can content 1 file (direct access to the image), or 2 files (directory access = image + symlink)
