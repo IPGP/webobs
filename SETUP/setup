@@ -787,10 +787,11 @@ if $(confirm "Create Python environment [y/N] ?") ; then
         SSMT+="'\$WEBOBS{PYTHON_PRGM} \$WEBOBS{PYTHON_PATH}/downflowgo/downflowgo.py',"
         SSMT+="'',3600,0.8,'downflowgo',0) ON CONFLICT(JID) DO NOTHING;"
         echo "$SSMT" | sqlite3 "${DOCROOT}/CONF/WEBOBSJOBS.db"
-        # installation instructions
-        echo "You need to create a PROC with the template 'PROC: DOWFLOWGO'."
-        echo "Check and modify parameters such as 'PATHS_DEM' (model selection)."
-        echo "Don't forget to select a 'Domain' before saving."
+        # Create DOWNFLOWGO Proc
+        SSMT="INSERT INTO grids2domains SELECT 'PROC','DOWNFLOWGO','O' WHERE NOT EXISTS (SELECT 1 FROM grids2domains WHERE TYPE = 'PROC' AND NAME = 'DOWNFLOWGO');"
+        SSMT+="INSERT INTO domains VALUES('O',5,'Observatory','s') ON CONFLICT(CODE) DO NOTHING;"
+        echo "$SSMT" | sqlite3 "${DOCROOT}/CONF/WEBOBSDOMAINS.db"
+        echo "DOWNFLOWGO Proc was created. Check carefully the Proc parameters especially the model used (PATHS_DEM parameter)."
     fi
 
     deactivate
