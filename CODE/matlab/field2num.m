@@ -6,7 +6,9 @@ function y = field2num(x,f,y0,varargin)
 %	FIELD2NUM(X,FIELD,Y0) returns Y0 value if the conversion fails (default
 %	is empty).
 %
-%	FIELD2NUM(X,FIELD,Y0,'notempty') returns also Y0 if X.(FIELD) is empty.
+%	FIELD2NUM(X,FIELD,Y0,OPTION) adds an option:
+%       'notempty' returns also Y0 if X.(FIELD) is empty,
+%       'positive' returns also Y0 if X.(FIELD) is not strictly positive.
 %
 %	There is some specific FIELD names with suffix:
 %
@@ -30,12 +32,13 @@ function y = field2num(x,f,y0,varargin)
 %
 %	 Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2015-09-07 at Pos Dukono, Halmahera Utara (Indonesia)
-%	Updated: 2025-02-17
+%	Updated: 2026-03-27
 
 D = struct('s',1/86400,'n',1/1440,'h',1/24,'d',1,'w',7,'m',30,'y',365.25);
 
 trueval = any(strcmpi(varargin,'val')); % for debugging only (undocumented)
 notempty = any(strcmpi(varargin,'notempty'));
+positive = any(strcmpi(varargin,'positive'));
 
 if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 	val = x.(f);
@@ -95,11 +98,14 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 		else
 			y = sstr2num(val);
 		end
+        if positive && ~(y > 0)
+            y = y0;
+        end
 	else
 		y = val;
 	end
 else
-	if nargin > 2 || (isfield(x,f) && isempty(x.(f)) && notempty)
+	if nargin > 2 || (isfield(x,f) && isempty(x.(f)) && notempty) || (positive && ~(y > 0))
 		y = y0;
 	else
 		y = [];

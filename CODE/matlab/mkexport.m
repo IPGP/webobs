@@ -13,7 +13,8 @@ function mkexport(WO,f,E,P,r,N);
 %	writing in the file P.OUTDIR/[events/]F.txt:
 %
 %   File header is completed by additional infos from P using the variable
-%   P.EXPORT_HEADER_PROC_KEYLIST.
+%   P.EXPORT_HEADER_PROC_KEYLIST. Syntax SUMMARY:KEY exports the KEY only
+%   if SUMMARYLIST contains SUMMARY name.
 % 
 %   MKEXPORT(WO,F,E,P,R,N) adds further infos in the file header using NODE 
 %   structure N and P.EXPORT_HEADER_NODE_KEYLIST variable.
@@ -21,7 +22,7 @@ function mkexport(WO,f,E,P,r,N);
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2026-01-19
+%	Updated: 2026-03-27
 
 
 ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
@@ -70,7 +71,12 @@ if fid > 0
 
     % Header proc keylist
     for f = 1:length(proc_keylist)
-        fprintf(fid,'# PROC.%s: %s\n',proc_keylist{f},field2str(P,proc_keylist{f}));
+        ss = split(proc_keylist{f},':');
+        if numel(ss) > 1 && ismember(ss(1),P.SUMMARYLIST)
+            fprintf(fid,'# PROC.%s: %s\n',ss{2},field2str(P,ss{2}));
+        else
+            fprintf(fid,'# PROC.%s: %s\n',proc_keylist{f},field2str(P,proc_keylist{f}));
+        end
     end
     fprintf(fid,'#\n');
 
