@@ -74,12 +74,15 @@ INPUT02_NAME|Funnel Diameter
 INPUT02_UNIT|cm
 
 INPUT03_NAME|pH
+INPUT03_HELP|Enter the pH value
 
 INPUT04_NAME|Conductivity
 INPUT04_UNIT|&mu;S/cm
+INPUT04_HELP|Enter the conductivity value
 
 INPUT05_NAME|Na<sup>+</sup>
 INPUT05_UNIT|ppm
+INPUT05_HELP|Enter the Sodium concentration value
 
 INPUT06_NAME|K<sup>+</sup>
 INPUT06_UNIT|ppm
