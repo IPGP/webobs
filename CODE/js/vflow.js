@@ -62,7 +62,7 @@ let CustomScale = null; // Custom scale value
  * Initializes the map view and updates vectors.
  */
 function loadGNSSData() {
-    fetch("process.pl") // Calls the server-side script to get GNSS data
+    fetch("/cgi-bin/callVFLOW.pl") // Calls the server-side script to get GNSS data
         .then(response => response.json()) // Parses the JSON response
         .then(data => {
             let proc = data.proc; // Process name
