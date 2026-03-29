@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2026-02-03
+%	Updated: 2026-03-29
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -55,6 +55,7 @@ summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
 alarm_threshold_level = field2num(P,'ALARM_THRESHOLD_LEVEL',0);
 alarm_color = field2num(P,'ALARM_COLOR',[1,0,0]);
+sourcemap_method = field2str(P,'SOURCEMAP_METHOD','mean');
 sourcemap_n = field2num(P,'SOURCEMAP_N',2);
 sourcemap_title = field2str(P,'SOURCEMAP_TITLE','{\fontsize{14}{\bf$name - Source Map} ($timescale)}');
 sourcemap_colormap = field2num(P,'SOURCEMAP_COLORMAP',spectral(256));
@@ -326,7 +327,7 @@ if isfield(P,'SUMMARYLIST')
 			end
 			OPT.GTITLE = varsub(sourcemap_title,V);
 			OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
-			OPT.INFOS = {''};
+			OPT.INFOS = {sprintf('Average method: {\\bf %s}',sourcemap_method)};
 
 			% --- Time series graph
 			figure
@@ -414,7 +415,12 @@ if isfield(P,'SUMMARYLIST')
 				for n = 1:length(N)
 					k = D(n).G(r).k;
 					if ~isempty(k)
-						dz(n) = rmean(D(n).d(isinto(D(n).t,tlim)));
+                        switch sourcemap_method
+                            case 'median'
+                                dz(n) = rmedian(D(n).d(isinto(D(n).t,tlim)));
+                            otherwise
+                                dz(n) = rmean(D(n).d(isinto(D(n).t,tlim)));
+                        end
 					end
 				end
 				k = find(~isnan(dz));

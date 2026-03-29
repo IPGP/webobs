@@ -133,6 +133,8 @@ SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
 SUMMARY_LINESTYLE|-
 
 # --- source mapping
+# computation method for signal average: mean (default) or median
+SOURCEMAP_METHOD|mean
 # number of maps will be N*N (allowed values are 1,2,3 or 4)
 SOURCEMAP_N|3
 SOURCEMAP_COLORMAP|spectral(256)
