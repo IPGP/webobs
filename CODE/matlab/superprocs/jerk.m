@@ -36,7 +36,7 @@ function DOUT=jerk(varargin)
 %
 %   Authors: F. Beauducel + G. Roult + V. Ferrazzini, WEBOBS/IPGP
 %   Created: 2014-04-14 at OVPF, La Réunion, Indian Ocean
-%   Updated: 2026-03-26
+%   Updated: 2026-03-29
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -500,10 +500,10 @@ for n = 1:length(N)
 					fprintf(fid,'Previous status\n\t%s: %s\n',datestr(alertlast(1)),alertlevel{alertlast(2)+1});
 					fprintf(fid,'\n\n');
                     fprintf(fid,'Maximum jerk amplitude = %g nm/%s\n\n',roundsd(jmax,2),cb3);
-                    if nevt > 0
-                        fprintf(fid,'Jerk statistics (base %g past events):\n',nevt);
-                        fprintf(fid,'  %1.1f%% intrusion\n',probi);
-                        fprintf(fid,'  %1.1f%% eruption\n',probe);
+                    if sum(nevt) > 0
+                        fprintf(fid,'Jerk statistics (based on %g past events):\n',sum(nevt));
+                        fprintf(fid,'\t%1.1f%% intrusion\n',probi);
+                        fprintf(fid,'\t%1.1f%% eruption\n\n',probe);
                     end
 					fprintf(fid,'Real-time graph: %s/cgi-bin/showOUTG.pl?grid=%s&g=%s\n\n',rooturl,P.SELFREF,lower(N(n).ID));
                     fprintf(fid,'Screenshot attached:\n\n');
