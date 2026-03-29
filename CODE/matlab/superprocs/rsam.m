@@ -309,7 +309,7 @@ if isfield(P,'SUMMARYLIST')
 
 		tlabel(xlim,P.TZ)
 
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
