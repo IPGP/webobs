@@ -7,10 +7,10 @@ use CGI;
 print "Content-Type: application/json\n\n";
 
 # Path to the GNSS files
-my $folder_path = "../files_stations/";
+my $folder_path = "/Users/beaudu/WEBOBS/wo/OUTG/PROC.GNSSSOUF/exports";
 
 # List the files in the folder
-my @files = glob("$folder_path/*.txt");
+my @files = glob("$folder_path/VFLOW_*_01y.txt");
 
 # Storage variables
 my %results;           # To store the results data
@@ -50,9 +50,9 @@ foreach my $file (@files) {
             $node_elevation = $line =~ /NODE\.LON_WGS84:/ ? 0 + extract_value($line) : undef;  # Extract elevation
         } elsif ($line =~ /NODE\.URL:/) {
             $node_url = extract_value($line);  # Extract URL
-        } elsif ($line =~ /PROC\.MODELTIME_PERIOD_DAY:/) {
+        } elsif ($line =~ /PROC\.VFLOW_PERIOD_DAY:/) {
             @periods = map { int($_) } split(',', extract_value($line));  # Extract time periods
-        } elsif ($line =~ /yyyy mm dd/) {
+        } elsif ($line =~ /^#yyyy mm dd/) {
             @column_names = split(/\s+/, $line);  # Extract column names (date format)
             last;  # Exit the loop once we have the column names
         }

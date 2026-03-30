@@ -132,7 +132,7 @@ function updateScaleFromVector(vectorStart, vectorEnd, vectorEndReal) {
     if (vectorLengthMeters === 0) return;
 
     let scaleInMM = (100 / vectorLengthPixels) * vectorLengthMeters; // Scale calculation in millimeters
-    selectedScale.textContent = `Vectors: ${scaleInMM.toFixed(1)} mm`;
+    selectedScale.textContent = `Scale: ${scaleInMM.toFixed(1)} mm`;
 
     // Remove existing scale control if present
     if (CustomScaleControl) map.removeControl(CustomScaleControl);
@@ -141,7 +141,7 @@ function updateScaleFromVector(vectorStart, vectorEnd, vectorEndReal) {
     CustomScaleControl = new (L.Control.extend({
         onAdd: () => {
             let div = L.DomUtil.create('div', 'custom-scale');
-            div.innerHTML = `<strong>Vectors: <span id="scaleValue">${scaleInMM.toFixed(1)}</span> mm</strong>`;
+            div.innerHTML = `<strong>Scale: <span id="scaleValue">${scaleInMM.toFixed(1)}</span> mm</strong>`;
             let scaleLine = L.DomUtil.create('div', 'scale-line');
             scaleLine.style.width = '100px';
             div.appendChild(scaleLine);
@@ -205,7 +205,7 @@ function updateVectors(dateIndex, periodIndex) {
     startDate.setDate(endDate.getDate() - Number(selectedPeriod)); // Calculate the start date based on the period
 
     // Display the date range and period
-    dateLabel.textContent = `Start Date: ${startDate.toISOString().split('T')[0]} - End Date: ${selectedDate}`;
+    dateLabel.textContent = `From: ${startDate.toISOString().split('T')[0]} to: ${selectedDate}`;
     selectedPeriodLabel.textContent = `${selectedPeriod} Days`;
 
     // Get GNSS data for the selected date
@@ -293,11 +293,11 @@ toggleHorizontalButton.addEventListener("click", function(){
     if (map.hasLayer(vectorLayer)) { 
         map.removeLayer(vectorLayer);
         map.removeLayer(errorLayer);  
-        toggleHorizontalButton.textContent = "Show horizontal vectors";
+        toggleHorizontalButton.textContent = "Show vectors";
     } else {                       
         map.addLayer(vectorLayer);
         map.addLayer(errorLayer);     
-        toggleHorizontalButton.textContent = "Hide horizontal vectors";
+        toggleHorizontalButton.textContent = "Hide vectors";
     }
 });
 
@@ -306,11 +306,11 @@ toggleVerticalButton.addEventListener("click", function(){
     if (map.hasLayer(verticalVectorLayer)) { 
         map.removeLayer(verticalVectorLayer);
         map.removeLayer(verticalErrorLayer); 
-        toggleVerticalButton.textContent = "Show vertical vectors";
+        toggleVerticalButton.textContent = "Show vectors";
     } else {                                
         map.addLayer(verticalVectorLayer);
         map.addLayer(verticalErrorLayer); 
-        toggleVerticalButton.textContent = "Hide vertical vectors";
+        toggleVerticalButton.textContent = "Hide vectors";
     }
 });
 
@@ -318,11 +318,11 @@ toggleVerticalButton.addEventListener("click", function(){
 toggleHorizontalErrorButton.addEventListener("click", function(){
     if (map.hasLayer(errorLayer)) { 
         map.removeLayer(errorLayer);   
-        toggleHorizontalErrorButton.textContent = "Show horizontal error vectors";
+        toggleHorizontalErrorButton.textContent = "Show errors";
     } else {                        
         map.addLayer(errorLayer);
         map.addLayer(errorLayer);     
-        toggleHorizontalErrorButton.textContent = "Hide horizontal error vectors";
+        toggleHorizontalErrorButton.textContent = "Hide errors";
     }
 });
 
