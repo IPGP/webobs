@@ -1436,12 +1436,12 @@ for r = 1:numel(P.GTABLE)
                     E.d(:,k) = squeeze(W(m).v(:,s,:));
                     E.header(k) = strcat({'dE_(mm)','dN_(mm)','dU_(mm)','s_dE','s_dN','s_dU'},sprintf('_%d',m));
                 end
-                E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_VFLOW',proc)));
+                E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
                 E.infos = {};
                 for m = 1:numel(vflow_period)
                     E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,vflow_period(m),vtlabel{m}));
                 end
-                mkexport(WO,sprintf('VFLOW_%s_%s',lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P,r,N(kn(s)));
+                mkexport(WO,sprintf('%s_%s_%s',summary,lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P,r,N(kn(s)));
             end
         end
 
