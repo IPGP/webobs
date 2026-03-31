@@ -1,16 +1,76 @@
 #!/usr/bin/perl
+
+=head1 NAME
+
+Read VFLOW data from a GNSS proc exports and return a JSON structure
+
+=head1 SYNOPSIS
+
+http://..../get_jsonVFLOW.pl?grid=gridname,ts=
+
+=head1 DESCRIPTION
+
+This script is called from showOUTG.pl to read GNSS proc export for summary graph VFLOW, and return a JSON structure
+for JavaScript graph.
+
+grid= the full GRID code, i.e. PROC.gridName
+
+ts= one of the keys defined in the PROC configuration TIMESCALELIST
+
+=head1 NOTES
+The proc must have the VFLOW summary graph in the SUMMARYLIST.
+
+This program is based on the project https://github.com/Nicolas-zt/PDI_17
+
+=cut
+
 use strict;
 use warnings;
 use JSON;
 use File::Basename;
 use CGI;
+my $cgi = new CGI;
+use CGI::Carp qw(fatalsToBrowser set_message);
+
+use WebObs::Config;
+use WebObs::Grids;
+use WebObs::Users;
+use WebObs::i18n;
+use Locale::TextDomain('webobs');
+
+use POSIX qw/setlocale LC_ALL strftime/;
+
+# ---- see what we've been called for and what the client is allowed to do
+# ---- init general-use variables on the way and quit if something's wrong
+#
+set_message(\&webobs_cgi_msg);
+my %GRID;
+my %G; my %P;
+my $GRIDType = my $GRIDName = "";
+my $OUTG;
+
+my $QryParm   = $cgi->Vars;
+my @GID = split(/[\.\/]/, trim($QryParm->{'grid'}));
+
+# ---- what grid do we have to process ? any showstoppers ?
+if (scalar(@GID) == 2) {
+    ($GRIDType, $GRIDName) = @GID;
+    if (uc($GRIDType) eq 'PROC') {
+        %G = readProc($GRIDName);
+        if (%G{$GRIDName}) {
+            %GRID = %{$G{$GRIDName}};
+            if ( WebObs::Users::clientHasRead(type=>"authprocs",name=>"$GRIDName") ) {
+                $OUTG = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/$WEBOBS{PATH_OUTG_EXPORT}";
+                if (! -d "$OUTG" ) { die "$__{'No outputs for'} $GRIDType.$GRIDName" };
+            } else { die "$__{'Not authorized'} $GRIDType.$GRIDName (read)"}
+        } else { die "$__{'Could not read'} $GRIDType.$GRIDName configuration" }
+    } else { die "$__{'Not a valid PROC'}" }
+} else { die "$__{'Not a valid GRID requested (NOT gridtype.gridname)'}" }
+
 print "Content-Type: application/json\n\n";
 
-# Path to the GNSS files
-my $folder_path = "/Users/beaudu/WEBOBS/wo/OUTG/PROC.GNSSSOUF/exports";
-
-# List the files in the folder
-my @files = glob("$folder_path/VFLOW_*_01y.txt");
+# List the GNSS files in the folder
+my @files = glob("$OUTG/VFLOW_*_".$QryParm->{'ts'}.".txt");
 
 # Storage variables
 my %results;           # To store the results data
@@ -34,7 +94,7 @@ foreach my $file (@files) {
     # Read the header section of the file
     foreach my $line (@file_content) {
         $line = trim($line);  # Trim whitespace from the line
-        if ($line =~ /PROC:/) {
+        if ($line =~ /TITLE:/) {
             $proc = extract_value($line);  # Extract process information
             $proc =~ s/[{}]//g;  # Remove curly braces
         } elsif ($line =~ /NODE\.FID:/) {
@@ -137,3 +197,28 @@ sub extract_value {
     my ($line) = @_;
     return trim((split(":", $line, 2))[1]);  # Extract and trim the value part
 }
+
+=pod
+
+=head1 AUTHOR(S)
+
+Nicolas Zito, Clément Monat, Bastien Doré, François Beauducel
+
+=head1 COPYRIGHT
+
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=cut

@@ -271,9 +271,14 @@ VECTORS_AMPLITUDE_COMPONENTS|1,2
 
 # --- VFLOW summary graph
 # list of periods (in days) to compute time windows [t-p,t]
-VFLOW_TITLE|Velocity vector flows ($timescale)
+VFLOW_TITLE|Displacement vector flows ($timescale)
 VFLOW_PERIOD_DAY|30,15
 VFLOW_SAMPLING_DAY|1
+VFLOW_SCALE_FACTOR|10000
+VFLOW_HORIZONTAL_COLOR|red
+VFLOW_VERTICAL_COLOR|green
+VFLOW_TILES|https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+VFLOW_TILES_SOURCES|OpenStreetMap contributors
 
 # --- MOTION summary graph
 MOTION_EXCLUDED_NODELIST|

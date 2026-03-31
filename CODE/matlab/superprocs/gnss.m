@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-03-27
+%   Updated: 2026-03-31
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -1414,7 +1414,8 @@ for r = 1:numel(P.GTABLE)
 
 				% makes (or not) the relative data array
 				d = [tr,tre];
-
+				% computes absolute displacement in mm (from velocity in mm/yr or TREND_FACTOR)
+				d = d*diff(wlim)*1e3/P.trendfact;
                 % stores vector data for export
                 W(m).v(w,:,:) = d;
             end
@@ -1424,7 +1425,6 @@ for r = 1:numel(P.GTABLE)
 
 		% exports data (1 file per station)
 		if isok(P,'EXPORTS')
-            OPT.GTITLE = varsub(vflow_title,V);
 			E.t = W(1).t;
 
             n = 6;
@@ -1436,7 +1436,7 @@ for r = 1:numel(P.GTABLE)
                     E.d(:,k) = squeeze(W(m).v(:,s,:));
                     E.header(k) = strcat({'dE_(mm)','dN_(mm)','dU_(mm)','s_dE','s_dN','s_dU'},sprintf('_%d',m));
                 end
-                E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
+                E.title = sprintf('%s {%s}',varsub(vflow_title,V),upper(sprintf('%s_%s',proc,summary)));
                 E.infos = {};
                 for m = 1:numel(vflow_period)
                     E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,vflow_period(m),vtlabel{m}));
@@ -2449,9 +2449,6 @@ for r = 1:numel(P.GTABLE)
 				end
 				% computes absolute displacement in mm (from velocity in mm/yr or TREND_FACTOR)
 				d = d*diff(wlim)*1e3/P.trendfact;
-
-                % stores vector data for export
-                W(m).v(w,:,:) = d;
 
 				% --- computes the model (and stores only the source #1) !
 				switch mt

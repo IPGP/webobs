@@ -1,12 +1,12 @@
 // Map initialization
 let map = L.map('map');
 
-// Display variables (modifiable)
-let scale_factor = 10000; // Scaling factor for vectors
-let horizontal_color = 'red'; // Color for horizontal vectors
-let vertical_color = 'green'; // Color for vertical vectors
-let tiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'; // Tile layer URL
-let tiles_sources = '&copy; OpenStreetMap contributors'; // Attribution for tile sources
+// Variables from proc control block (PCB)
+let scale_factor = PCB.SCALE_FACTOR; // Scaling factor for vectors
+let horizontal_color = PCB.HORIZONTAL_COLOR; // Color for horizontal vectors
+let vertical_color = PCB.VERTICAL_COLOR; // Color for vertical vectors
+let tiles = PCB.TILES; // Tile layer URL
+let tiles_sources = '&copy; ' + PCB.TILES_SOURCES; // Attribution for tile sources
 
 
 // Setting up map tiles as the background layer
@@ -62,11 +62,10 @@ let CustomScale = null; // Custom scale value
  * Initializes the map view and updates vectors.
  */
 function loadGNSSData() {
-    fetch("/cgi-bin/callVFLOW.pl") // Calls the server-side script to get GNSS data
+    fetch("/cgi-bin/get_jsonVFLOW.pl?grid=PROC." + PCB.PROC + "&ts=" + PCB.TS) // Calls the server-side script to get GNSS data
         .then(response => response.json()) // Parses the JSON response
         .then(data => {
             let proc = data.proc; // Process name
-            document.getElementById("PageTitle").textContent = proc; // Update page title
             document.getElementById("procTitle").textContent = proc; // Update process title
             gnssData = data.data; // Assign GNSS data
             stationsInfo = data.stations; // Assign station data
