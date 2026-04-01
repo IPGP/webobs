@@ -24,7 +24,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2025-01-23
+%	Updated: 2026-03-05
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -32,86 +32,80 @@ wofun = sprintf('WEBOBS{%s}',mfilename);
 F.ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
 wosystem(sprintf('mkdir -p %s',F.ptmp));
 
-% FORMs will read data from all associated nodes
-if isfield(P,'FORM')
-	f = sprintf('%s/%s',WO.PATH_DATA_DB,P.FORM.FILE_NAME);
-	if exist(f,'file')
-		% legacy forms (datafile)
-		D = readfmtdata_woform(WO,P,N);
-	else
-		D = readfmtdata_genform(WO,P,N);
-	end
-else
-% for all other formats: loop on the nodes
-	for n = 1:length(N)
+% loop on the nodes (each node can have a difference datasource)
+for n = 1:length(N)
 
-		F.fmt = lower(field2str(N(n),'RAWFORMAT',P.RAWFORMAT,'notempty'));
-		fraw = field2str(N(n),'RAWDATA',P.RAWDATA,'notempty');
-		fraw = regexprep(fraw,'\$NET',field2str(N(n),'FDSN_NETWORK_CODE',''));
-		F.raw = {fraw};
-		lfid = split(N(n).FID,',');	% possible comma separated list of FID
-		for a = 1:length(lfid)
-			F.raw{a} = regexprep(fraw,'\$FID',lfid{a}); % special variable substitution
-		end
+    F.fmt = lower(field2str(N(n),'RAWFORMAT',P.RAWFORMAT,'notempty'));
+    fraw = field2str(N(n),'RAWDATA',P.RAWDATA,'notempty');
+    fraw = regexprep(fraw,'\$NET',field2str(N(n),'FDSN_NETWORK_CODE',''));
+    F.raw = {fraw};
+    lfid = split(N(n).FID,',');	% possible comma separated list of FID
+    for a = 1:length(lfid)
+        F.raw{a} = regexprep(fraw,'\$FID',lfid{a}); % special variable substitution
+    end
 
-		% datelim is finite dates limits of PROC (or NODE) expressed in the NODE's TZ
-		F.datelim = [max([P.DATELIM(1),N(n).INSTALL_DATE,P.BANG]), min([P.DATELIM(2),N(n).END_DATE,P.NOW])] - P.TZ/24 + N(n).UTC_DATA;
+    % datelim is finite dates limits of PROC (or NODE) expressed in the NODE's TZ
+    F.datelim = [max([P.DATELIM(1),N(n).INSTALL_DATE - N(n).UTC_DATA + P.TZ/24,P.BANG]), min([P.DATELIM(2),N(n).END_DATE - N(n).UTC_DATA + P.TZ/24,P.NOW + P.TZ/24])] - P.TZ/24 + N(n).UTC_DATA;
 
-		fprintf('%s: loading data [%s] for node "%s" {%s} from %s to %s ...', ...
-			wofun,F.fmt,N(n).FID,N(n).ID,datestr(F.datelim(1)),datestr(F.datelim(2)));
+    fprintf('%s: loading data [%s] for node "%s" {%s} from %s to %s ...', ...
+        wofun,F.fmt,N(n).FID,N(n).ID,datestr(F.datelim(1)),datestr(F.datelim(2)));
 
-		% -------------------------------------------------------------
-		switch F.fmt
+    % -------------------------------------------------------------
+    switch F.fmt
 
-		case {'mat-file'}
-			D(n) = readfmtdata_matlab(WO,P,N(n),F);
+    case {'genform'}
+        D(n) = readfmtdata_genform(WO,P,N(n),F);
 
-		case {'winston'}
-			D(n) = readfmtdata_earthworm(WO,P,N(n),F);
+    case {'mat-file'}
+        D(n) = readfmtdata_matlab(WO,P,N(n),F);
 
-		case {'miniseed','seedlink','arclink','combined','fdsnws-dataselect'}
-			D(n) = readfmtdata_miniseed(WO,P,N(n),F);
+    case {'winston'}
+        D(n) = readfmtdata_earthworm(WO,P,N(n),F);
 
-		case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii','spotgins-ippp','gamit-pos'}
-			D(n) = readfmtdata_gnss(WO,P,N(n),F);
+    case {'miniseed','seedlink','arclink','combined','fdsnws-dataselect'}
+        D(n) = readfmtdata_miniseed(WO,P,N(n),F);
 
-		case {'hyp71sum2k','fdsnws-event','scevtlog-xml'}
-			[D(n),P] = readfmtdata_quake(WO,P,N(n),F);
+    case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii','spotgins-enu-v2','spotgins-ippp','gamit-pos','pbogps-pos'}
+        D(n) = readfmtdata_gnss(WO,P,N(n),F);
 
-		case {'fdsnws-bulletin','scevtlog-xml-bulletin','wo-mc'}
-			[D(n),P] = readfmtdata_bulletins(WO,P,N(n),F);
+    case {'hyp71sum2k','fdsnws-event','scevtlog-xml'}
+        [D(n),P] = readfmtdata_quake(WO,P,N(n),F);
 
-		case {'afmascii','porkyasc'}
-			D(n) = readfmtdata_porkyasc(WO,P,N(n),F);
+    case {'fdsnws-bulletin','scevtlog-xml-bulletin','wo-mc'}
+        [D(n),P] = readfmtdata_bulletins(WO,P,N(n),F);
 
-		case {'bpptkg-sql','sql-table'}
-			D(n) = readfmtdata_sqltable(WO,P,N(n),F);
+    case {'afmascii','porkyasc'}
+        D(n) = readfmtdata_porkyasc(WO,P,N(n),F);
 
-		case {'ascii','dsv'}
-			D(n) = readfmtdata_dsv(WO,P,N(n),F);
+    case {'bpptkg-sql','sql-table'}
+        D(n) = readfmtdata_sqltable(WO,P,N(n),F);
 
-		case {'cr10xasc','toa5','t0a5','tob1'}
-			D(n) = readfmtdata_campbell(WO,P,N(n),F);
+    case {'ascii','dsv'}
+        D(n) = readfmtdata_dsv(WO,P,N(n),F);
 
-		case 'teqc-qc'
-			D(n) = readfmtdata_rinex(WO,P,N(n),F);
+    case {'cr10xasc','toa5','t0a5','tob1'}
+        D(n) = readfmtdata_campbell(WO,P,N(n),F);
 
-		case 'naqs-soh'
-			D(n) = readfmtdata_naqs(WO,P,N(n),F);
+    case 'teqc-qc'
+        D(n) = readfmtdata_rinex(WO,P,N(n),F);
 
-		case {'meteofrance'}
-			D(n) = readfmtdata_meteofrance(WO,P,N(n),F);
+    case 'naqs-soh'
+        D(n) = readfmtdata_naqs(WO,P,N(n),F);
 
-		case {'mc3'}
-			D(n) = readfmtdata_mc3(WO,P,N(n),F);
+    case {'meteofrance'}
+        D(n) = readfmtdata_meteofrance(WO,P,N(n),F);
 
-		otherwise
-			D(n).t = [];
-			[D(n).d,D(n).CLB] = calib([],[],N(n).CLB);
-			fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);
+    case {'mc3'}
+        D(n) = readfmtdata_mc3(WO,P,N(n),F);
 
-		end
-	end
+    otherwise
+        fprintf('%s: ** WARNING ** unknown format "%s", will try to read it anyway...\n',wofun,F.fmt);
+    	D(n).t = [];
+        [D(n).d,D(n).CLB] = calib([],[],N(n).CLB);
+        D(n).e = ones(size(D(n).d));
+        fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);
+
+    end
 end
 
 % =============================================================================
@@ -127,7 +121,11 @@ for n = 1:length(N)
 		D(n).tfirstlast = P.NOW - [1,0];
 	end
 	for r = 1:length(P.GTABLE)
-		k = find((D(n).t >= P.GTABLE(r).DATE1 | isnan(P.GTABLE(r).DATE1)) & (D(n).t <= P.GTABLE(r).DATE2 | isnan(P.GTABLE(r).DATE2)));
+        if ~isempty(D(n).t)
+            k = find((D(n).t(:,end) >= P.GTABLE(r).DATE1 | isnan(P.GTABLE(r).DATE1)) & (D(n).t(:,1) <= P.GTABLE(r).DATE2 | isnan(P.GTABLE(r).DATE2)));
+        else
+            k = [];
+        end
 		tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
 		if any(isnan(tlim))
 			tlim = D(n).tfirstlast;
@@ -141,11 +139,13 @@ for n = 1:length(N)
 			k1 = k(1);
 			ke = k(end);
 			xlim1 = max(tlim(1),N(n).INSTALL_DATE);
-			xlim2 = max(min(tlim(2) - N(n).LAST_DELAY,N(n).END_DATE),xlim1 + 1);
-			samp = round(100*length(find(isinto(D(n).t(k),[xlim1,xlim2])))*N(n).ACQ_RATE/abs(xlim2 - xlim1));
-			if D(n).t(ke) >= xlim2
+			%xlim2 = max(min(tlim(2) - N(n).LAST_DELAY,N(n).END_DATE),xlim1 + 1);
+			xlim2 = min(tlim(2) - N(n).LAST_DELAY,N(n).END_DATE);
+            ked = k(find(D(n).t(k,end) <= xlim2,1,'last')); % last sample time before LAST_DELAY
+			samp = round(100*sum(isinto(mean(D(n).t(k,:),2),[xlim1,xlim2]))*N(n).ACQ_RATE/abs(xlim2 - xlim1));
+			if ~isempty(ked)
 				for i = 1:D(n).CLB.nx
-					if ~isnan(D(n).d(ke,i))
+					if ~isnan(D(n).d(ked,i))
 						last = last + 1;
 						if isfield(D(n).CLB,'un')
 							sd = [sd sprintf(', %g %s', D(n).d(ke,i),D(n).CLB.un{i})];
@@ -175,7 +175,9 @@ for n = 1:length(N)
 		D(n).G(r).tlim = tlim;
 	end
 end
-P.tfirstall = rmin(cat(1,D.tfirstlast));
+if length(N) > 0
+    P.tfirstall = rmin(cat(1,D.tfirstlast));
+end
 
 
 % removes the temporary directory

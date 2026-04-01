@@ -49,17 +49,21 @@ FORM object. See SYNOPSIS examples above.
 
 use strict;
 use warnings;
+use Date::Parse;
 use WebObs::Config;
 use WebObs::Grids;
 use WebObs::Utils;
+use Locale::TextDomain('webobs');
 use CGI::Carp qw(fatalsToBrowser set_message);
+use POSIX qw/strftime/;
 set_message(\&webobs_cgi_msg);
 
 require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
-@EXPORT = qw(datetime2array datetime2maxmin
-  extract_formula extract_list extract_type extract_text count_inputs);
+@EXPORT = qw(datetime2array datetime2maxmin simplify_date date_duration
+  extract_formula extract_list extract_type extract_text count_inputs count_columns datetime_input
+  connectDbForms);
 
 # FORM constructor
 sub new {
@@ -151,23 +155,27 @@ sub dump {
 
 # ---- GENFORM sub
 
+# from (date_max,date_min) interval, returns an array of (year,month,day,hour,minute)
 sub datetime2array {
     my $date = shift;
     my $date_min = shift;
     my @d  = split(/[-: ]/,$date);
     my @dm = split(/[-: ]/,$date_min);
     if ($date eq $date_min || $date_min eq "") { return @d };
-    @d = ($d[0],   "",   "",   "","") if ($d[1] ne $dm[1]);
-    @d = ($d[0],$d[1],   "",   "","") if ($d[2] ne $dm[2]);
-    @d = ($d[0],$d[1],$d[2],   "","") if ($d[3] ne $dm[3]);
-    @d = ($d[0],$d[1],$d[2],$d[3],"") if ($d[4] ne $dm[4]);
+    @d = ($d[0],   "",   "",   "",   "","") if ($d[1] ne $dm[1]);
+    @d = ($d[0],$d[1],   "",   "",   "","") if ($d[2] ne $dm[2]);
+    @d = ($d[0],$d[1],$d[2],   "",   "","") if ($d[3] ne $dm[3]);
+    @d = ($d[0],$d[1],$d[2],$d[3],   "","") if ($d[4] ne $dm[4]);
+    @d = ($d[0],$d[1],$d[2],$d[3],$d[4],"") if ($d[5] ne $dm[5]);
     return @d;
 }
 
+# from full/partial date string, returns interval array (date_max,date_min)
 sub datetime2maxmin {
-    my ($y,$m,$d,$hr,$mn) = @_;
-    my $date_min = "$y-$m-$d $hr:$mn";
-    my $date_max = "$y-$m-$d $hr:$mn";
+    my ($y,$m,$d,$hr,$mn,$ss) = @_;
+    $y = sprintf("%04d", $y);
+    my $date_min = "$y-$m-$d $hr:$mn:$ss";
+    my $date_max = "$y-$m-$d $hr:$mn:$ss";
     if ($m eq "") {
         $date_min = "$y-01-01";
         $date_max = "$y-12-31";
@@ -182,8 +190,152 @@ sub datetime2maxmin {
     } elsif ($mn eq "") {
         $date_min = "$y-$m-$d $hr:00";
         $date_max = "$y-$m-$d $hr:59";
+    } elsif ($ss eq "") {
+        $date_min = "$y-$m-$d $hr:$mn:00";
+        $date_max = "$y-$m-$d $hr:$mn:59";
     }
-    return ("$date_max","$date_min");
+    return ("$date_max", "$date_min");
+}
+
+sub datetime_input {
+    my ($formref, $field, $uvals, $title) = @_;
+    my @uvals = @$uvals;
+    $title = $title ? $title : "Date";
+    my %FORM = %{$formref};
+    my ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2);
+    my $type = $field eq "edate" || $field eq "sdate" ? "udate" : $FORM{uc($field."_TYPE")};
+    my %datetime_length = ("ymd" => 3, "hm" => 5, "hms" => 6); # Array size mapping for Date/Time inputs
+    my ($size, $default) = extract_type($type);
+    my $len = exists $datetime_length{lc($size)} ? $datetime_length{lc($size)} : 3;
+    my @datetime = (datetime2array(@uvals[0..1]))[0 .. $len - 1];
+    if (scalar(@datetime) < $len) { $datetime[$len - 1] = ""; } # for a new record
+
+    if (@datetime) {
+        if ( scalar(@datetime) == 3 ) {
+            ($sel_y2, $sel_m2, $sel_d2) = @datetime;
+        } elsif ( scalar(@datetime) == 5 ) {
+            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2) = @datetime;
+        } elsif ( scalar(@datetime) == 6 ) {
+            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2) = @datetime;
+        }
+    } else {
+        die("No array to process");
+    }
+
+    my $ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('"."$__{'Date/time must be in'} ".sprintf("GMT%+03d", $FORM{TZ})."')\">";
+
+    my %names = ("year" => "year", "month" => "month", "day" => "day", "hr" => "hr", "mn" => "mn", "sec" => "sec");
+    if ( $field ) {
+        foreach ( keys %names ) {
+            $names{$_} = $field."_$names{$_}"
+        }
+    }
+
+    my $Ctod = time();
+    my @tod = localtime($Ctod);
+    my $currentYear = strftime('%Y', @tod);
+    my @yearList = ($FORM{BANG}..$currentYear);
+    my @monthList  = ("","01".."12");
+    my @dayList    = ("","01".."31");
+    my @hourList   = ("","00".."23");
+    my @minuteList = ("","00".."59");
+    my @secondList = ("","00".."59");
+    if ($FORM{BANG} && !$sel_y2 && !$sel_m2 && !$sel_d2) {
+        $sel_d2 = strftime('%d', @tod);
+        $sel_m2 = strftime('%m', @tod);
+        $sel_y2 = strftime('%Y', @tod);
+    }
+
+    print qq(<b>$__{$title}: </b><select name=$names{year} size="1" $ovl>);
+    date_time_option(\@yearList, $sel_y2);
+    print qq(</select>);
+
+    print qq(<select name=$names{month} size="1" $ovl>);
+    date_time_option(\@monthList, $sel_m2);
+    print qq(</select>);
+
+    print qq( <select name=$names{day} size="1" $ovl>);
+    date_time_option(\@dayList, $sel_d2);
+    print "</select>";
+
+    if ( scalar(@datetime) > 3 ) {
+        print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=$names{hr} size="1" $ovl>);
+        date_time_option(\@hourList, $sel_hr2);
+        print qq(</select>);
+
+        print qq(<select name=$names{mn} size="1" $ovl>);
+        date_time_option(\@minuteList, $sel_mn2);
+        print qq(</select>);
+    }
+
+    if ( scalar(@datetime) == 6 ) {
+        print qq(<select name=$names{sec} size="1" $ovl>);
+        date_time_option(\@secondList, $sel_sec2);
+        print qq(</select>);
+    }
+    print qq(<br>);
+
+    if ($type eq "udate" and isok($FORM{UDATE})) {
+        yce_input($type, $field, \@uvals);
+    }
+}
+
+sub date_time_option {
+    my ($fieldList, $value) = @_;
+    for (@$fieldList) {
+        if ( $_ eq $value ) {
+            print qq(<option selected value="$_">$_</option>);
+        } else {
+            print qq(<option value="$_">$_</option>);
+        }
+    }
+}
+
+sub yce_input {
+    my ($type, $field, $uvals) = @_;
+    my @columns_udate = ("date", "date_min", "yce", "yce_min");
+    my @units = ("", "", "maximum year before common era", "minimum year before common era");
+    my $size = extract_type("udate");
+
+    my @uvals;
+    if (defined $uvals) {
+        @uvals = @$uvals;
+    } else {
+        @uvals = map {""} @columns_udate;
+    }
+
+    print "<table><tr>";
+    foreach my $j (scalar(@columns_udate) - 1, 2) {
+        my $hlp = ("$__{'Enter a '.$units[$j].' for '}". uc($field));
+        print qq(<td class="udateRow"><b>$columns_udate[$j] = </b><input type="text" pattern="[0-9\\.\\-]*" size="$size" class="inputNum"
+            name="$field\_$columns_udate[$j]" value="$uvals[$j]"
+            onMouseOut="nd()" onmouseover="overlib('$hlp')"></td>);
+    }
+    print "</tr></table>";
+}
+
+# from (date_max, date_min) interval, returns a string of full/partial date "yyyy[-mm[-dd[ HH[:MM[:SS]]]]]"
+sub simplify_date {
+    my $date0 = shift;
+    my $date1 = shift;
+    my ($y0,$m0,$d0,$H0,$M0,$S0) = split(/[-: ]/,$date0);
+    my ($y1,$m1,$d1,$H1,$M1,$S1) = split(/[-: ]/,$date1);
+    my $date = "$y1-$m1-$d1 $H1:$M1:$S1";
+    if ($date0 eq $date1 || $date1 eq "") { return $date0; }
+    if    ($y1 ne $y0) { $date = "$y0-$y1"; }
+    elsif ($m1 ne $m0) { $date = "$y1"; }
+    elsif ($d1 ne $d0) { $date = "$y1-$m1"; }
+    elsif ($H1 ne $H0) { $date = "$y1-$m1-$d1"; }
+    elsif ($M1 ne $M0) { $date = "$y1-$m1-$d1 $H1"; }
+    elsif ($S1 ne $S0) { $date = "$y1-$m1-$d1 $H1:$M1"; }
+    return $date;
+}
+
+# from 2 date intervals ($sdate_min, $sdate_max, $edate_min, $edate_max), returns an array of min/max duration in days
+sub date_duration {
+    my $dur_min = sprintf("%+.1f",(str2time($_[2]) - str2time($_[1]))/86400);
+    my $dur_max = sprintf("%+.1f",(str2time($_[3]) - str2time($_[0]))/86400);
+    return ($dur_min, $dur_max);
 }
 
 # extract_formula ($type) returns $formula and @x an array of used fields (input or output)
@@ -191,17 +343,18 @@ sub extract_formula {
     my $type = shift;
     my @x;
     my ($size, $formula) = extract_type($type);
-    while ($formula =~ /((IN|OUT)PUT[0-9]{2})/g) {
+    while ($formula =~ /((IN|OUT)PUT[0-9]{2,3}|DURATION)/g) {
         push(@x,$1);
     }
     return ($formula, $size, @x);
 }
 
+# extract_list ($type,$form) returns %list (HoH) with $list{}{_SO_} additional key for sorting
 sub extract_list {
-    my $list = shift;
+    my $type = shift;
     my $form = shift;
-    my $filename = (split /\: /, $list)[1];
-    my %list = readCfg("$WEBOBS{PATH_FORMS}/$form/$filename");
+    my $filename = (split /\: /, $type)[1];
+    my %list = readCfg("$WEBOBS{PATH_FORMS}/$form/$filename",'sorted');
 
     return %list;
 }
@@ -211,6 +364,10 @@ sub extract_type {
     my ($size, $default) = (split /:/, $type);
     if ($size =~ /\(\d+\)$/) {
         $size =~ s/^[a-z]+\((\d+)\)/$1/;
+    } elsif ($size =~ /\(\w+\)$/) {
+        $size =~ s/^[a-z]+\((\w+)\)/$1/;
+    } elsif ($size eq "udate") {
+         ($size, $default) = ("hm", 15);
     } else {
         $size = 5;
     }
@@ -227,11 +384,31 @@ sub extract_text {
 sub count_inputs {
     my $count = 0;
     foreach(@_) {
-        if ($_ =~ /INPUT([0-9]{2})_NAME/) {
+        if ($_ =~ /INPUT([0-9]{2,3})_NAME/) {
             $count = $1 if ($count < $1);
         }
     }
     return $count;
+}
+
+# count_columns (@keys) returns max index of COLUMNnn fields in array @keys
+sub count_columns {
+    my $count = 0;
+    foreach(@_) {
+        if ($_ =~ /COLUMN([0-9]{2})_LIST/) {
+            $count = $1 if ($count < $1);
+        }
+    }
+    return $count;
+}
+
+# Open an SQLite connection to the forms database
+sub connectDbForms {
+    return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
+            'AutoCommit' => 1,
+            'PrintError' => 1,
+            'RaiseError' => 1,
+        }) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
 }
 
 __END__
@@ -244,7 +421,7 @@ Didier Lafon, François Beauducel, Lucas Dassin
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

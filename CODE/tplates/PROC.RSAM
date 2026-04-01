@@ -38,7 +38,7 @@ TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} rsam $SELFREF -
-SUBMIT_RESOURCE|rsam
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,REF_DATE
@@ -90,10 +90,11 @@ COPYRIGHT|Processing by Taisne et al./IPGP/EOS
 LOGO2_FILE|
 # optional secondary copyright
 COPYRIGHT2|
-# events file to plot in the background of each graph
-#EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 # exports text data files
-#EXPORTS|YES
+EXPORTS|YES
+EXPORT_HEADER_NODE_KEYLIST|FID,NAME,LAT_WGS84,LON_WGS84,ALTITUDE,URL
+EXPORT_HEADER_PROC_KEYLIST|
+
 
 # --- data processing and plot
 # removes data picks using median filter (% of min/max values)

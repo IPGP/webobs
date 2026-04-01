@@ -24,9 +24,13 @@ OVERSAMPLING|500
 MIN_SIZE_KM|2
 
 # maximum X/Y ratio in case of automatic sizing around NODES
-MAX_XYRATIO|2
+MAX_XYRATIO|1.5
+# add border as fraction of map width
 BORDER_ADD|.1
+# downloads SRTM1 (needs login configuration in WEBOBS.rc)
 DEM_SRTM1|N
+# merges bathymetry from ETOPO (better to set ETOPO1 first, see documentation)
+ETOPO_SRTM_MERGE|N
 
 # --- contour lines
 CONTOURLINES|Y

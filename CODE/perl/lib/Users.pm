@@ -77,9 +77,9 @@ use strict;
 use warnings;
 use DBI;
 use File::Basename;
+use File::Copy qw(copy);
 use POSIX qw/strftime/;
-use WebObs::Utils qw(u2l l2u);
-use WebObs::Config qw( %WEBOBS );
+use WebObs::Config qw( %WEBOBS u2l l2u );
 
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %USERS, %USERIDS, $USERS_LFN, $CLIENT);
 use constant READAUTH => 1;
@@ -89,7 +89,8 @@ use constant ADMAUTH  => 4;
 require Exporter;
 @ISA        = qw(Exporter);
 @EXPORT     = qw(%USERS %USERIDS $CLIENT READAUTH EDITAUTH ADMAUTH);
-@EXPORT_OK  = qw(userIsValid refreshUsers allUsers clientMaxAuth clientHasRead clientHasEdit clientHasAdm clientIsValid listRNames userListGroup htpasswd_update htpasswd_verify htpasswd_display);
+@EXPORT_OK  = qw(userIsValid refreshUsers allUsers clientMaxAuth clientHasRead clientHasEdit clientHasAdm clientIsValid
+    listRNames userListGroup htpasswd_update htpasswd_comment htpasswd_uncomment htpasswd_verify htpasswd_display);
 $VERSION    = "1.00";
 
 refreshUsers();
@@ -619,6 +620,53 @@ sub htpasswd_update {
     return htpasswd($htpw_opt, $WEBOBS{'HTTP_PASSWORD_FILE'}, $login, $pass, \$output);
 }
 
+sub htpasswd_comment {
+    my $login = shift;
+    my $file = $WEBOBS{'HTTP_PASSWORD_FILE'}; 
+
+    # Security backup
+    copy($file, "$file.bak") or die "Fail to backup: $!";
+
+    open my $in,  "<", $file        or die "Impossible to open $file: $!";
+    my @lines = <$in>;
+    close $in;
+
+    # Add an # if the line starts exactly by "login:" (spaces allowed)
+    for (@lines) {
+        s/^(\s*)($login:)/$1#$2/;
+    }
+
+    open my $out, ">", $file        or die "Impossible to write in $file: $!";
+    print $out @lines;
+    close $out;
+
+    return 0;
+}
+
+sub htpasswd_uncomment {
+    my $login = shift;
+    my $file = $WEBOBS{'HTTP_PASSWORD_FILE'}; 
+
+    # Security backup
+    copy($file, "$file.bak") or die "Fail to backup: $!";
+
+    open my $in,  "<", $file        or die "Impossible to open $file: $!";
+    my @lines = <$in>;
+    close $in;
+
+    # Removes the # if the line starts exactly by "login:" (spaces allowed)
+    for (@lines) {
+        s/^(\s*)#(\s*)($login:)/$1$3/;
+    }
+
+    open my $out, ">", $file        or die "Impossible to write in $file: $!";
+    print $out @lines;
+    close $out;
+
+    return 0;
+}
+
+
 =head2 htpasswd_verify
 
 Verifies the password of a user in the $WEBOBS{'HTTP_PASSWORD_FILE'} file.
@@ -674,7 +722,7 @@ Francois Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

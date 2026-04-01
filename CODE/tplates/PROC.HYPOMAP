@@ -39,7 +39,7 @@ SUMMARY_CHANNELS|
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} hypomap $SELFREF -
-SUBMIT_RESOURCE|hypomap
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,SUMMARYLIST,LATLIM,LONLIM,MAGLIM,DEPLIM,PLOT_BG_ALL,BUBBLE_PLOT
@@ -72,6 +72,8 @@ NODE_SUBMAP_ALIAS|N
 PPI|100
 # exports text data files
 EXPORTS|YES
+EXPORT_HEADER_NODE_KEYLIST|FID,NAME,LAT_WGS84,LON_WGS84,ALTITUDE,URL
+EXPORT_HEADER_PROC_KEYLIST|
 # outputs further vector files (in addition to EPS) for each graph. SVG is experimental
 SVGOUTPUT|NO
 PDFOUTPUT|NO
@@ -120,9 +122,9 @@ BUBBLE_PLOT|1
 MAP_Area1_TITLE|Area1 - Lesser Antilles
 # map limits: lon0,lat0,width (in degree) or former lon1,lon2,lat1,lat2 (in degree)
 MAP_Area1_XYLIM|-61,16,6
-# magnitude limits (for size scale only, not a filter)
+# magnitude limits (not a filter, for marker size scaling only)
 MAP_Area1_MAGLIM|3,7
-# depth limits (for color scale only, not a filter)
+# depth limits
 MAP_Area1_DEPLIM|-2,200
 # 1 or 2 optional profile(s)
 # Profile 1 (bottom): center longitude, center latitude, azimuth (degree North), lateral distance (km), depth (km)

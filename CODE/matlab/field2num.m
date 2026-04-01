@@ -8,13 +8,13 @@ function y = field2num(x,f,y0,varargin)
 %
 %	FIELD2NUM(X,FIELD,Y0,'notempty') returns also Y0 if X.(FIELD) is empty.
 %
-%	There is some specific FIELD names:
+%	There is some specific FIELD names with suffix:
 %
-%	        *_RGB : a vector of 3 values R,G,B between 0 and 1 to set a color,
-%	   or *_COLOR : allows HTML color name (see rgb.m for available colors)
-%	       *_DATE : converts the value to datenum
-%	   *_COLORMAP : colormap name or .cpt filename
-%	      *_ALPHA : scalar or 2-element vector between 0 and 1
+%	 _RGB or _COLOR : a vector of 3 values R,G,B between 0 and 1 to set a color,
+%	                  allows HTML color name (see rgb.m for available colors)
+%	 _DATE or _TLIM : converts the value to datenum (scalar or vector)
+%	      _COLORMAP : colormap name or .cpt filename
+%	         _ALPHA : scalar or 2-element vector between 0 and 1
 %
 %	The field value is usually a string of numerical value but it can content
 %	simple arithmetics (multiplication, division, addition, substraction).
@@ -30,7 +30,7 @@ function y = field2num(x,f,y0,varargin)
 %
 %	 Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2015-09-07 at Pos Dukono, Halmahera Utara (Indonesia)
-%	Updated: 2023-12-13
+%	Updated: 2025-02-17
 
 D = struct('s',1/86400,'n',1/1440,'h',1/24,'d',1,'w',7,'m',30,'y',365.25);
 
@@ -45,12 +45,12 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 			y = rgb(val);
 
 		% any datenum compatible date
-		elseif ~isempty(regexp(f,'_DATE$')) && ~isempty(val)
+		elseif ~isempty(regexp(f,'_(DATE|TLIM)$')) && ~isempty(val)
 			try
-				y = isodatenum(val);
+				y = isodatenum(split(val,','));
 			catch
 				try
-					y = datenum(val);
+					y = datenum(split(val,','));
 				catch
 					fprintf('WEBOBS{field2num}: ** WARNING ** cannot convert %s key value (%s) to datenum...\n',f,val);
 					y = sstr2num(val);

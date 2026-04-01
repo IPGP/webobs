@@ -124,6 +124,18 @@ function plotFlot(gtype) {
             mode: 'x'
         },
     };
+    if (options.series && options.series.bars && options.series.bars.show === true) {
+        if (options.series.bars.lineWidth == 0) {
+            $('#barsoff').hide();
+            $('#barson').show();
+        } else {
+            $('#barson').hide();
+            $('#barsoff').show();
+        }
+    } else {
+        $('#barson').hide();
+        $('#barsoff').hide();
+    }
     plot = $.plot($('#mcgraph'), data, options);
 
     $('#mcgraph').bind('plothover', function(event, pos, item) {
@@ -203,23 +215,50 @@ function plotAll() {
         }
     }, true);
     plot = $.plot($('#mcgraph'), data, options);
+    cop();
+}
+
+function toggleLine() {
+    if (options.series.bars.lineWidth == 0) {
+        options.series.bars.lineWidth = 1;
+        $('#barsoff').show();
+        $('#barson').hide();
+    } else {
+        options.series.bars.lineWidth = 0;
+        $('#barson').show();
+        $('#barsoff').hide();
+    }
+    plot = $.plot($('#mcgraph'), data, options);
 }
 
 function cop(color) {
-    var bgcolor = (typeof color == "undefined") ? "#fff" : color;
-    var link = $("#tlsavelink");
-    link.hidden;
+    var bgcolor = (typeof color === "undefined") ? "#fff" : color;
+    var link = $("#mcsavelink");
+
+    link.hide();
     try {
-        var canvas = plot.getCanvas();
-        var context = canvas.getContext("2d");
-        context.globalCompositeOperation = "destination-over";
-        //context.fillStyle = "#fff";
-        //context.fillRect(0,0,canvas.width,canvas.height);
-        var canvasimg = canvas.toDataURL();
-        link.attr('href', canvasimg);
-        link.attr('download', 'WebObsMCgraph.png');
-        link.show;
+        var wrapper = document.getElementById("mcgraphall");
+
+        var oldOverflow = wrapper.style.overflow;
+        wrapper.style.overflow = "visible";
+        if (!wrapper) return;
+
+        html2canvas(wrapper, {
+            backgroundColor: bgcolor,
+            //scale: window.devicePixelRatio,
+            scale: 2,
+            useCORS: true
+        }).then(function(canvas) {
+
+            var img = canvas.toDataURL("image/png");
+            link.attr("href", img);
+            link.attr("download", "WO_"+MC3.NAME+"_graph.png");
+            link.show();
+
+            wrapper.style.overflow = oldOverflow;
+        });
+
     } catch (e) {
-        console.log("canvas op failed: " + e);
+        console.log("html2canvas failed: " + e);
     }
 }

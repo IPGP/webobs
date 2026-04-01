@@ -45,7 +45,7 @@ function DOUT=helicorder(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2016-12-30 in Yogyakarta, Indonesia
-%	Updated: 2022-06-12
+%	Updated: 2026-03-10
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -59,8 +59,8 @@ proc = varargin{1};
 procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
 
-% gets PROC's configuration, associated nodes for any TSCALE and/or REQDIR and the data
-[P,N,D] = readproc(WO,varargin{:});
+% gets PROC's configuration, associated nodes for any TSCALE and/or REQDIR (without loading the data)
+[P,N] = readproc(WO,varargin{:});
 
 % event mode: only the first TSCALE is considered
 r = 1;
@@ -68,8 +68,9 @@ r = 1;
 hd = field2num(P,'HELICORDER_DURATION_DAYS',1);
 ht = field2num(P,'HELICORDER_TURNS',24*4);
 hscale = field2num(P,'HELICORDER_SCALE',100);
+hscaleref = field2num(P,'HELICORDER_SCALE_REF');
 hpaper = field2num(P,'HELICORDER_PAPER_COLOR',rgb('white'));
-hcolors = rgb(split(field2str(P,'HELICORDER_TRACE_COLOR'),','));
+hcolors = rgb(regexprep(split(field2str(P,'HELICORDER_TRACE_COLOR'),','),' ',''));
 hytick = field2num(P,'HELICORDER_YTICK_HOURS',1);
 hradius = field2num(P,'HELICORDER_RADIUS',1);
 htrend = isok(P,'HELICORDER_TREND');
@@ -80,29 +81,36 @@ fontsize = field2num(P,'FONTSIZE',8);
 
 for n = 1:length(N)
 
-	C = D(n).CLB;
-	nx = C.nx;
 	V.node_name = N(n).NAME;
 	V.node_alias = N(n).ALIAS;
-
-	% compute the scales over whole period TSCALE
-	scale = 1e10*ones(1,nx);
-	for c = 1:nx
-		dd = diff(D(n).d(:,c));
-		dd(isnan(dd)) = [];
-		mstd = median(abs(dd - median(dd)));
-		if ~isnan(mstd) && mstd ~= 0
-			scale(c) = hscale*ht*mstd;
-		else
-			scale(c) = 1e10;
-		end
-	end
 
 	% ===================== loops on TSCALE period with DURATION_DAYS steps
 
 	for t0 = floor(P.GTABLE(r).DATE1/hd)*hd:hd:floor(P.GTABLE(r).DATE2/hd)*hd
 
 		tlim = t0 + [0,hd];
+
+        P.DATELIM = tlim;
+        % reads the data for time period only
+        [D,P] = readfmtdata(WO,P,N);
+
+        C = D(n).CLB;
+        nx = C.nx;
+        % compute the scales over whole period TSCALE
+        scale = 1e10*ones(1,nx);
+        for c = 1:nx
+            dd = diff(D(n).d(:,c));
+            dd(isnan(dd)) = [];
+            mstd = median(abs(dd - median(dd)));
+            scale(c) = 1e10;
+            if hscaleref > 0
+                scale(c) = hscale*ht*hscaleref;
+            else
+                if ~isnan(mstd) && mstd ~= 0
+                    scale(c) = hscale*ht*mstd;
+                end
+            end
+        end
 		k = find(isinto(D(n).t,tlim));
 		tk = [];
 		dk = nan(0,nx);
@@ -112,8 +120,8 @@ for n = 1:length(N)
 			ke = k(end);
 		end
 		vtps = datevec(tlim(1));
-		P.GTABLE(r).EVENTS = sprintf('%4d/%02d/%02d/%s',vtps(1:3),N(n).ID);
-		pdat = sprintf('%s/%s/%s',P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EVENTS,P.GTABLE(1).EVENTS);
+		P.EVENTS = sprintf('%4d/%02d/%02d/%s',vtps(1:3),N(n).ID);
+		pdat = sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EVENTS,P.EVENTS);
 
 		% loop for each data channel
 		for c = 1:nx
@@ -123,7 +131,7 @@ for n = 1:length(N)
 			V.stream_name = sprintf('%s:%s:%s:%s',N(n).FDSN_NETWORK_CODE,N(n).FID,C.cd{c},C.lc{c});
 
 			% makes graph if image does not exist or image is older than data
-			% do not make any graph in case of empty data
+			% does not make any graph in case of empty data
 			if ~isempty(k) && (~exist(fdat,'file') || (filedate(fdat,P.TZ) < tlim(2) && tlim(1) >= P.DATELIM(1)))
 
 				xlim = [0,hd/ht];
@@ -168,27 +176,24 @@ for n = 1:length(N)
 					'FontSize',fontsize,'Clipping','off')
 
 				% title, status and additional information
-				P.GTABLE(r).GTITLE = varsub(htitle,V);
-				P.GTABLE(r).GSTATUS = [P.NOW,D(n).G(r).last,D(n).G(r).samp];
-				P.GTABLE(r).INFOS = {''};
+				OPT.GTITLE = varsub(htitle,V);
+				OPT.GSTATUS = [P.NOW,D(n).G(r).last,D(n).G(r).samp];
+				OPT.INFOS = {''};
 				if ~isempty(k)
-					P.GTABLE(r).INFOS = {' ','Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ), ...
+					OPT.INFOS = {' ','Last data:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ), ...
 					' ',' ', ...
 					sprintf('Time span: {\\bf%s - %s} {\\it%+g}',datestr(tlim(1),0),datestr(tlim(2),0),P.TZ), ...
-					' ',' ',' ',' ', ...
-					sprintf('Median RMS = %g %s',mstd,C.un{c}), ...
+					' ',' ',' ', ...
+                    ['Scale = ' repmat('auto',~(hscaleref>0)) repmat(sprintf('%g %s',hscaleref,C.un{c}),hscaleref>0) sprintf(' (\\times %g)',hscale)], ...
+					sprintf('Median STD = %g %s',mstd,C.un{c}), ...
 					' ',' ', ...
 					};
 				end
 
 				% makes graph
-				mkgraph(WO,fnam,P.GTABLE(r))
+                OPT.STATUS = P.GTABLE(r).STATUS;
+				mkgraph(WO,fnam,P,OPT)
 				close
-
-				% creates symbolic links to preferred (last) files
-				for ext = {'jpg','png'}
-					wosystem(sprintf('ln -sf %s.%s %s/heli.%s',fnam,ext{:},pdat,ext{:}),P);
-				end
 
 			end
 
@@ -197,9 +202,9 @@ for n = 1:length(N)
 
 	% creates symbolic links to today and yesterday date directory
 	dte = datestr(floor(P.GTABLE(r).DATE2),'YYYY/mm/dd');
-	wosystem(sprintf('ln -sfn %s/%s %s/%s/today_%s',dte,N(n).ID,P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EVENTS,N(n).ID),P);
+	wosystem(sprintf('ln -sfn %s/%s %s/%s/today_%s',dte,N(n).ID,P.OUTDIR,WO.PATH_OUTG_EVENTS,N(n).ID),P);
 	dte = datestr(floor(P.GTABLE(r).DATE2)-1,'YYYY/mm/dd');
-	wosystem(sprintf('ln -sfn %s/%s %s/%s/yesterday_%s',dte,N(n).ID,P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EVENTS,N(n).ID),P);
+	wosystem(sprintf('ln -sfn %s/%s %s/%s/yesterday_%s',dte,N(n).ID,P.OUTDIR,WO.PATH_OUTG_EVENTS,N(n).ID),P);
 end
 
 

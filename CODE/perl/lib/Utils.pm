@@ -17,51 +17,18 @@ use warnings;
 use POSIX;
 use Encode;
 use File::Basename;
+use WebObs::Config qw(%WEBOBS);
+use WebObs::i18n;
+use Locale::TextDomain('webobs');
+use POSIX qw/setlocale/;
 
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 require Exporter;
 @ISA     = qw(Exporter);
-@EXPORT  = qw(u2l l2u htmlspecialchars getImageInfo makeThumbnail trim ltrim
-  rtrim tri_date_avec_id datediffdays isok romanx pga2msk attenuation num2roman txt2htm tex2utf
-  roundsd htm2frac qrcode url2target checkParam);
+@EXPORT  = qw(htmlspecialchars getImageInfo makeThumbnail trim ltrim
+  rtrim tri_date_avec_id datediffdays timescale_name isok romanx pga2msk attenuation num2roman txt2htm tex2utf
+  roundsd htm2frac qrcode url2target checkParam sort_clb mean median std);
 $VERSION = "1.00";
-
-#--------------------------------------------------------------------------------------------------------------------------------------
-
-=pod
-
-=head2 u2l, l2u
-
- $latin = u2l("utf8-text");
- $utf = l2u("latin-text");
-
- uses legacy routines from i18n.pl for compatible behavior
-
-=cut
-
-use Locale::Recode;
-my $u2l = Locale::Recode->new (from => 'UTF-8', to => 'ISO-8859-15');
-my $l2u = Locale::Recode->new (from => 'ISO-8859-15', to => 'UTF-8');
-die $u2l->getError if $u2l->getError;
-die $l2u->getError if $l2u->getError;
-
-# -------------------------------------------------------------------------------------------------
-sub u2l ($) {
-    my $texte = shift;
-    $u2l->recode($texte) or die $u2l->getError;
-    return $texte;
-}
-
-# -------------------------------------------------------------------------------------------------
-sub l2u ($) {
-    my $texte = shift;
-    $l2u->recode($texte) or die $l2u->getError;
-    return $texte;
-}
-
-binmode STDOUT, ':raw'; # Needed to make it work in UTF-8 locales in Perl-5.8.
-
-# -------------------------------------------------------------------------------------------------
 
 =pod
 
@@ -75,11 +42,11 @@ converts $textin B<" \< \>> to resp. html entities B<&quot; &lt; &gt;> :
 
 sub htmlspecialchars
 {
-    my $txt = $_[0];
-    my $re = $_[1];
+    my $txt = $_[0] // "";
+    my $re = $_[1] // "";
 
     $txt =~ s/"/&quot;/g;
-    $txt =~ s/'/&apos;/g;
+    $txt =~ s/'/&#39;/g;
     $txt =~ s/</&lt;/g;
     $txt =~ s/>/&gt;/g;
 
@@ -154,7 +121,7 @@ sub makeThumbnail
         #DL-was:if ($ext ~~ @needsel) { $img .= '[0]' }
         if (grep /\Q$ext/i , @needsel) { $img .= '[0]' }
         if ( !-e $thumb ) {
-            qx(/usr/bin/convert "$path$img" -thumbnail $_[1] -background white -alpha remove "$thumb" 2>/dev/null);
+            qx($WEBOBS{PRGM_CONVERT} "$path$img" -thumbnail $_[1] -background white -alpha remove "$thumb" 2>/dev/null);
             if ( $? == 0 ) {
                 $ret = $thumb;
             }
@@ -169,7 +136,7 @@ sub getImageInfo
     my $ret = "",
       my $img = $_[0];
     if (-e $img) {
-        $ret = qx(/usr/bin/identify -format "%[EXIF:DateTimeOriginal]|%G" "$img");
+        $ret = qx($WEBOBS{PRGM_IDENTIFY} -format "%[EXIF:DateTimeOriginal]|%G" "$img");
         chomp($ret);
     }
     return $ret;
@@ -219,6 +186,21 @@ sub tri_date_avec_id ($$) {
     return $d cmp $c;
 }
 
+# -------------------------------------------------------------------------------------------------
+# Sort the calibration data by date, time and channel number.
+sub sort_clb {
+    my $data_ref = shift;
+    if ( ref $data_ref ne "HASH" ) {
+        die("You need to pass data in a hash reference \n");
+    }
+    my %data = %{$data_ref};
+    return sort { $data{$a}{'DATE'} cmp $data{$b}{'DATE'} or
+        $data{$a}{'TIME'} cmp $data{$b}{'TIME'} or
+        $data{$a}{'nv'} <=> $data{$b}{'nv'} or
+        $a <=> $b; # final comparison to make sure the ordering is always well defined
+    } keys %data;
+}
+
 #--------------------------------------------------------------------------------------------------------------------------------------
 #
 sub datediffdays {
@@ -252,10 +234,44 @@ sub datediffdays {
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
+#
+sub timescale_name {
+    my $ts = shift;
+    my $tsName = $ts;
+
+    my %TIMESCALES = (
+        xxx => $__{'Manual'},
+        r => $__{'Reference'},
+        all => $__{'All Data'},
+        s => $__{'second'},
+        h => $__{'hour'},
+        d => $__{'day'},
+        w => $__{'week'},
+        m => $__{'month'},
+        y => $__{'year'},
+    );
+    
+    # for backward compatibility (replaces some of old "timescales.conf" definitions)
+    $ts =~ s/a$|an$|yr$/y/;
+    $ts =~ s/j$/d/;
+    my $n = 1*substr($ts,0,-1);
+    if ($n > 0) {
+        my $u = $TIMESCALES{substr($ts,-1)};
+        $tsName = "$n $u".($n > 1 && substr($u,-1,1) ne "s" ? "s":"");
+    } elsif (substr($ts,0,1) eq "r") {
+        my $r = 1*substr($ts,1);
+        $tsName = "$TIMESCALES{r}".($r > 0 ? " $r":"");
+    } elsif (defined($TIMESCALES{$ts})) {
+        $tsName = $TIMESCALES{$ts};
+    }
+    return $tsName;
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
 # Returns true for some known strings
 sub isok ($)
 {
-    my $ok = shift;
+    my $ok = shift // "";
     return ($ok =~ /^(Y|YES|OK|ON|1|TRUE)/i ? 1:0);
 }
 
@@ -347,13 +363,53 @@ sub roundsd
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
-sub qrcode ($)
+sub mean {
+    my (@array) = @_;
+    @array = grep { ( $_ =~ /^(([0-9]*)|(([0-9]*)\.([0-9]*)))$/ ) && ( $_ ne "" ) } @array;
+    my $sum;
+    foreach (@array) {
+        $sum += $_;
+    }
+    return ( @array ? $sum / @array : "NaN" );
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub median {
+    my (@array) = sort { $a <=> $b } @_;
+    @array = grep { ( $_ =~ /^(([0-9]*)|(([0-9]*)\.([0-9]*)))$/ ) && ( $_ ne "" ) } @array;
+    my $center = @array / 2;
+    if ( scalar(@array) % 2 ) {
+        return ( $array[$center] );
+    } else {
+        return ( mean( $array[ $center - 1 ], $array[$center] ) );
+    }
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub std {
+    my (@array) = @_;
+    @array = grep { ( $_ =~ /^(([0-9]*)|(([0-9]*)\.([0-9]*)))$/ ) && ( $_ ne "" ) } @array;
+    my ( $sum2, $avg ) = ( 0, 0 );
+    $avg = mean(@array);
+    foreach my $elem (@array) {
+        $sum2 += ( $avg - $elem )**2;
+    }
+    if ( scalar(@array) == 0 ) {
+        return "NaN";
+    } elsif ( scalar(@array) == 1 ) {
+        return 0;
+    } else {
+        return sqrt( $sum2 / ( @array - 1 ) );
+    }
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub qrcode
 {
     use MIME::Base64;
-    my $s = shift;
-    return "" if ($s eq "");
+    return "" if ($_[1] eq "");
     my $url = "http://$ENV{HTTP_HOST}$ENV{REQUEST_URI}";
-    my $qr = encode_base64(qx(qrencode -s $s -o - "$url"));
+    my $qr = encode_base64(qx($_[0] -s $_[1] -o - "$url"));
     my $img = ($qr eq "" ? "":"<A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/showQRcode.pl','$url',"
           ."'width=600,height=450,toolbar=no,menubar=no,status=no,location=no')\"><IMG src=\"data:image/png;base64,$qr\"></A>");
     return $img;
@@ -374,12 +430,15 @@ sub url2target
 
 # -------------------------------------------------------------------------------------------------
 # format a fraction 'a/b' using html table and cell border so it looks like a real fraction
+# works only with a single /
+#
 # Author: F. Beauducel, IPGP
 sub htm2frac
 {
     my $s = shift;
-    if ($s =~ /[^< ]\//) {
-        my ($n, $d) = split(/[^< ]\//,$s);
+    my $c = () = $s =~ /[^<\s]\//g;
+    if ($c == 1) {
+        my ($n, $d) = split(/(?<![\<\s])\//,$s);    # split on the '/' but not '</' or ' /' (Negative Lookbehind regex)
         return "<table align=center><th style=\"border:0;border-bottom-style:solid;border-bottom-width:1px;text-align:center\">$n</th><tr><tr><th style=\"border:0;text-align:center\">$d</th></tr></table>";
     } else {
         return $s;
@@ -478,7 +537,7 @@ Alexis Bosson, François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

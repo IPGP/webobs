@@ -35,7 +35,7 @@ SUMMARYLIST|
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} volcgas $SELFREF -
-SUBMIT_RESOURCE|volcgas
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME,MAJORS_TYPE,MAJORS_MAX_N2,NODE_CHANNELS,SUMMARY_CHANNELS
@@ -70,6 +70,10 @@ PPI|100
 LANDSCAPE|N
 # exports text data files
 EXPORTS|YES
+EXPORTS|Y
+EXPORT_HEADER_NODE_KEYLIST|FID,NAME,LAT_WGS84,LON_WGS84,ALTITUDE,URL
+EXPORT_HEADER_PROC_KEYLIST|
+
 # outputs further vector files (in addition to EPS) for each graph. SVG is experimental
 SVGOUTPUT|NO
 PDFOUTPUT|NO

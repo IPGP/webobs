@@ -7,7 +7,7 @@ $(document).ready(function() {
     $("#Qry").on("keypress", function(event) {
         $me = $(this);
         var theKey = event.keyCode || event.which;
-        if (theKey == 13) { //enter 
+        if (theKey == 13) { //enter
             event.preventDefault();
             var cmd = $(this).val();
             var uri = "/cgi-bin/cgiwoc.pl?cmd=" + cmd;

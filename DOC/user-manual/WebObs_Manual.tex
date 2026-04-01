@@ -29,6 +29,8 @@ moredelim=[l][\color{black}]{|},
 moredelim=[l][\color{black}]{:},
 moredelim=[l][\color{Aquamarine}]{=key|},
 moredelim=[l][\itshape\color{NavyBlue}]{\#},
+breaklines=true,
+breakindent=0pt,
 }
 
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
@@ -43,7 +45,7 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 
 
 % ------ local variables
-\newcommand{\release}{2.7.1}
+\newcommand{\release}{2.8.0}
 \newcommand{\releasename}{v\release}
 \newcommand{\releasedate}{\mydate\today}
 \newcommand{\webobs}{\textbf{WebObs }}
@@ -111,10 +113,10 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 \include{chapter1}
 \include{chapter2}
 \include{chapter3}
+\include{genform}
 \include{chapter4}
 \include{chapter5}
 \include{chapter6}
-\include{chapter7}
 
 % ==================================================================
 \backmatter
@@ -127,3 +129,4 @@ moredelim=[l][\itshape\color{NavyBlue}]{\#},
 
 \end{document}
 \end
+	

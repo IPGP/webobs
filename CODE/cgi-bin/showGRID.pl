@@ -50,6 +50,17 @@ map=
 invalid=
  show/hide invalid nodes. This option is for administrator level only.
 
+=head1 Authorizations (VIEW, PROC, or FORM)
+
+read=
+ can view the grid, associated nodes contents, PROC outputs and FORM data. No modifications authorized.
+
+edit=
+ can edit text content of the grid, edit events of the grid and associated nodes, edit data associated to the FORM.
+
+admin=
+ can edit the grid's configuration, association of domain, association of nodes, any PROC/FORM parameters in the node configuration, can delete data in the FORM.
+
 =cut
 
 use strict;
@@ -62,11 +73,14 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use File::Copy qw(copy);
 use File::Find qw(find);
 use List::Util qw(first);
+use List::MoreUtils qw(uniq);
 use Image::Info qw(image_info dim);
+use Date::Parse;
 use POSIX qw(strftime);
 
 use WebObs::Config;
 use WebObs::Grids;
+use WebObs::Form;
 use WebObs::Events;
 use WebObs::Users;
 use WebObs::Utils;
@@ -109,6 +123,7 @@ if (scalar(@GID) == 2) {
     my %G;
     if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
     elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+    elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
     if (%G) {
         %GRID = %{$G{$GRIDName}} ;
         if ( WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
@@ -126,6 +141,7 @@ if (scalar(@GID) == 2) {
 #
 my $grid = "$GRIDType.$GRIDName";
 my $isProc = ($GRIDType eq "PROC" ? '1':'0');
+my $isForm = ($GRIDType eq "FORM" ? '1':'0');
 my @procTS = ();
 my $procOUTG;
 my %authUsers;
@@ -142,11 +158,13 @@ my @domain = split(/\|/,$GRID{DOMAIN});
 
 my $myself = "/cgi-bin/".basename($0)."?grid=$grid";
 my $nbNodes = scalar(@{$GRID{NODESLIST}});
+my $tbl = lc($GRIDName); # form table name
+my $dbh;
 
 my $titrePage = "";
-my $editCGI = "/cgi-bin/gedit.pl";
+my $editCGI = "/cgi-bin/nedit.pl";
 
-$GRID{UTM_LOCAL} ||= '';
+$GRID{UTM_LOCAL} //= '';
 my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
 my $localCS = $UTM{GEODETIC_DATUM_LOCAL_NAME};
 
@@ -170,7 +188,7 @@ my $overallStatus = 1;
 my $statusDB = $NODES{SQL_DB_STATUS} || "$WEBOBS{PATH_DATA_DB}/NODESSTATUS.db";
 my $statusNODES;
 if (-e $statusDB) {
-    my $dbh = DBI->connect("dbi:SQLite:$statusDB", "", "", {
+    $dbh = DBI->connect("dbi:SQLite:$statusDB", "", "", {
             'AutoCommit' => 1,
             'PrintError' => 1,
             'RaiseError' => 1,
@@ -211,14 +229,14 @@ print "<H1 style=\"margin-bottom:6pt\"> $domain_title / $GRID{NAME}".($admOK ? "
 print WebObs::Search::searchpopup();
 
 my $ilinks = "[ ";
-$ilinks .= "<A href=\"/cgi-bin/listGRIDS.pl?type=$GRIDType\">".ucfirst(lc($GRIDType))."s</A>";
+$ilinks .= "<A href=\"/cgi-bin/listGRIDS.pl?type=".lc($GRIDType)."\">".ucfirst(lc($GRIDType))."s</A>";
 $ilinks .= " | <A href='#MYTOP' title=\"$__{'Find text in Grid'}\" onclick='srchopenPopup(\"+$GRIDType.$GRIDName\");return false'>\
                <img class='ic' src='/icons/search.png'></A>";
 $ilinks .= " | <A href=\"/cgi-bin/gvTransit.pl?grid=$GRIDType.$GRIDName\"><IMG src=\"/icons/tmap.png\" \
                title=\"Tmap\" style=\"vertical-align:middle;border:0\"></A>";
 $ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/$WEBOBS{CGI_OSM}?grid=$grid','$GRIDName','width="
   .($WEBOBS{OSM_WIDTH_VALUE}+15).",height="
-  .($WEBOBS{OSM_HEIGHT_VALUE}+15).",toolbar=no,menubar=no,location=no')\">
+  .($WEBOBS{OSM_HEIGHT_VALUE}+75).",toolbar=no,menubar=no,location=no')\">
         <IMG src=\"$WEBOBS{OSM_NODE_ICON}\" title=\"$WEBOBS{OSM_INFO}\" style=\"vertical-align:middle;border:0\"></A>";
 if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
     $ilinks .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml')\" \
@@ -236,7 +254,7 @@ $ilinks .= " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle\" t
                onclick=\"document.location.reload(false)\">";
 $ilinks .= " ]";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> $ilinks</P>";
-print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
+print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_BIN},$WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
 
 # ---- Objectives
 #
@@ -251,7 +269,7 @@ if (-e $fileDesc) {
 }
 $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#descID');\">&nbsp;&nbsp;";
 $htmlcontents .= "$__{'Purpose'}";
-if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{DESCRIPTION_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
+if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{DESCRIPTION_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 $htmlcontents .= "</div><div id=\"descID\"><BR>";
 if ($#desc >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@desc))."</P>\n" }
 $htmlcontents .= "</div></div>";
@@ -266,51 +284,54 @@ $htmlcontents .= "$__{'Specifications'}&nbsp;$go2top";
 $htmlcontents .= "</div><div id=\"specID\">";
 
 # should 'nodes' be called differently (than 'nodes'!) ?
-my $snm = defined($GRID{NODE_NAME}) ? $GRID{NODE_NAME} : "$__{'node'}";
-$htmlcontents .= "<TABLE width=\"100%\"><TR><TD style=\"border:0\"><UL>";
-
+my $snm = $GRID{NODE_NAME} ne "" ? $GRID{NODE_NAME} : "$__{'node'}";
+$htmlcontents .= "<TABLE width=\"100%\"><TR><TD style=\"border:0;vertical-align:top\"><UL>";
+$htmlcontents .= "<LI>$__{'Grid code'}: <B class='code'>$grid</B></LI>\n";
+# -----------
+$htmlcontents .= "<LI>$__{'Description'}: <I>$GRID{DESCRIPTION}</I></LI>\n" if ($GRID{DESCRIPTION});
 # -----------
 foreach (@domain) {
     $htmlcontents .= "<LI>$__{'Domain'}: <A href=\"/cgi-bin/listGRIDS.pl?domain=$_\"><B>$DOMAINS{$_}{NAME}</B></A></LI>\n";
 }
-
-# -----------
-$htmlcontents .= "<LI>$__{'Description'}: <I>$GRID{DESCRIPTION}</I></LI>\n" if ($GRID{DESCRIPTION});
-
-# -----------
-$htmlcontents .= "<LI>$__{'Grid code'}: <B>$grid</B></LI>\n";
-
 # -----------
 if ($showOwnr && defined($GRID{OWNCODE})) {
     $htmlcontents   .= "<LI>$__{'Owner'}: <B>".(defined($OWNRS{$GRID{OWNCODE}}) ? $OWNRS{$GRID{OWNCODE}}:$GRID{OWNCODE})."</B></LI>\n"
 }
-if ($showType && $GRID{TYPE} ne "") {
+if ($showType && defined $GRID{TYPE} && $GRID{TYPE} ne "") {
     $htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n";
 }
-
+    
+$GRID{RAWFORMAT} //= "";
+$GRID{URNDATA}   //= "";
+    
 # -----------
 # only for PROCs
 if ($isProc) {
 
-    # 'old' ddb-key superseeded: use FORM (FORMS) definitions instead!
-    if (defined($GRID{'FORM'})) {
-        my %FORM = readCfg("$WEBOBS{'PATH_FORMS'}/$GRID{'FORM'}/$GRID{'FORM'}.conf");
-        if (%FORM) {
-            my $urnData = "/cgi-bin/".($FORM{'CGI_SHOW'} !~ /GENFORM/ ? "$FORM{'CGI_SHOW'}?form=$GRID{'FORM'}&node={$GRIDName}" : "showGENFORM.pl?form=$GRID{'FORM'}&node=PROC.$GRIDName");
-            my $txtData = (defined($FORM{'TITLE'})) ? $FORM{'TITLE'} : "";
-            $htmlcontents .= "<LI>$__{'Access to data'}: <B><A href=\"$urnData\">$txtData</A></B></LI>\n";
-        }
-    } else {
+    my $form = "";
 
-        # -----------
-        $htmlcontents .= "<LI>$__{'Default data format'}: <B>"
-          .($GRID{RAWFORMAT} // '')."</B></LI>\n";
-        $htmlcontents .= "<LI>$__{'Default data source'}: <B>"
-          .($GRID{RAWDATA} // '')."</B></LI>\n";
-        if (defined($GRID{URNDATA})) {
-            my $urnData = "$GRID{URNDATA}";
-            $htmlcontents .= "<LI>$__{'Access to rawdata'}: <B><A href=\"$urnData\">$urnData</A></B></LI>\n";
+    # -----------
+    if ($GRID{RAWFORMAT} ne "") {
+        $htmlcontents .= "<LI>$__{'Default data format'}: <B class='code'>$GRID{RAWFORMAT}</B></LI>\n";
+        $htmlcontents .= "<LI>$__{'Default data source'}: <B>";
+        if ($GRID{RAWFORMAT} eq "genform" && defined($GRID{RAWDATA})) {
+            $form = uc($GRID{RAWDATA});
+            $htmlcontents .= "<A href=\"/cgi-bin/showGRID.pl?grid=FORM.$form\" title=\"FORM.$form\">FORM.$form</A>";
+        } else {
+            $htmlcontents .= ($GRID{RAWDATA} // '')
         }
+        $htmlcontents .= "</B></LI>\n";
+    }
+
+    # -----------
+    if ($GRID{URNDATA} ne "" || $form ne "") {
+        $htmlcontents .= "<LI>$__{'Access to rawdata'}: <B>";
+        if ($form ne "") {
+            $htmlcontents .= "<A href=\"/cgi-bin/showGENFORM.pl?form=$form\"><IMG src='/icons/form.png' style='vertical-align:middle' title=\"FORM.$form database\"></A>";
+        } else {
+            $htmlcontents .= "<A href=\"$GRID{URNDATA}\">$GRID{URNDATA}</A>";
+        }
+        $htmlcontents .= "</B></LI>\n";
     }
 
     # -----------
@@ -324,11 +345,88 @@ if ($isProc) {
             $loc = "CONF" if ($dir =~ /^$WEBOBS{ROOT_CONF}/);
 
             # will be editable only if located in DATA/ or CONF/ (xedit policy)
-            if ($loc ne "" && $editOK == 1) {
-                $htmlcontents .= " <B><A href=\"/cgi-bin/xedit.pl?fs=$loc/$evtFile\">$loc/$evtFile</A></B>";
+            if ($loc ne "" && $editOK) {
+                $htmlcontents .= " <B><A href=\"/cgi-bin/xedit.pl?fs=$loc/$evtFile&tpl=events-template\">$loc/$evtFile</A></B>";
             } else {
                 $htmlcontents .= " <B>$evtFile</B>";
             }
+        }
+        $htmlcontents .= "</LI>\n";
+    }
+}
+
+# -----------
+# only for FORMs
+if ($isForm) {
+
+    # connect to the database
+    $dbh = connectDbForms();
+
+    # get the total number of records
+    my $stmt = "SELECT COUNT(id) FROM $tbl";
+    my $sth = $dbh->prepare($stmt);
+    my $rv = $sth->execute() or die $DBI::errstr;
+    my @row = $sth->fetchrow_array();
+    my $nbData = join('',@row);
+    $sth->finish();
+
+    # get the total number of records in trash
+    $stmt = "SELECT COUNT(id) FROM $tbl WHERE trash=1";
+    $sth = $dbh->prepare($stmt);
+    $rv = $sth->execute() or die $DBI::errstr;
+    @row = $sth->fetchrow_array();
+    my $nbTrash = join('',@row);
+    $sth->finish();
+
+    # get the total number of records in orphan nodes
+    my @allFormNodes;
+    for (@{$GRID{NODESLIST}}) { push(@allFormNodes, $_); }
+    $stmt = "SELECT COUNT(id) FROM $tbl"." WHERE node NOT IN ('".join("', '",@allFormNodes)."');";
+    $sth = $dbh->prepare($stmt);
+    $rv = $sth->execute() or die $DBI::errstr;
+    @row = $sth->fetchrow_array();
+    my $orphanNodes = join('',@row);
+    $sth->finish();
+
+    my $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
+    $htmlcontents .= "<LI>$__{'Form structure:'} "
+                    ."<B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B> $__{'inputs'}, "
+                    ."<B>".grep(/^OUTPUT.._NAME/,keys(%GRID))."</B> $__{'outputs'}, "
+                    ."<B>".grep(/(IN|OUT)PUT../,split(/,/,join(',',($GRID{PROC_DATA_LIST},$GRID{PROC_ERROR_LIST},$GRID{PROC_CELL_LIST}))))."</B> $__{'proc exports'}"
+                    ."</LI>\n";
+    $htmlcontents .= "<LI>$__{'Form layout:'} <B>".grep(/^COLUMN.._LIST/,keys(%GRID))."</B> $__{'columns'},"
+      ." <B>".grep(/^FIELDSET.._NAME/,keys(%GRID))."</B> $__{'fieldsets'}</LI>\n";
+    $htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
+    $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>UTC".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
+    $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'} and <B>$orphanNodes</B> in orphan nodes)</LI>\n";
+    $htmlcontents .= "<LI>$__{'Access to data'}: <A href=\"$urnData\"><IMG src='/icons/form.png' style='vertical-align:middle'></A></LI>\n";
+
+    # get associated PROCs
+    my @procgenform;
+    my $procconf = "$WEBOBS{ROOT_CONF}/PROCS";
+    find(
+        sub {
+            return unless -f $_;
+            return unless /\.conf$/;
+
+            open my $fh, '<', $_ or return;
+
+            while (my $line = <$fh>) {
+                if ($line =~ /^\s*RAWDATA\|$GRIDName\s*$/) {
+                    my $fn = $File::Find::name;
+                    $fn =~ s/$procconf\///g;
+                    $fn =~ s/\/.*$//g;
+                    push(@procgenform,$fn);
+                }
+            }
+
+            close $fh;
+        }, $procconf
+    );
+    if (@procgenform) {
+        $htmlcontents .= "<LI>$__{'Procs using this form:'}";
+        foreach (@procgenform) {
+            $htmlcontents .= " <A href=\"/cgi-bin/showGRID.pl?grid=PROC.$_\"><B>PROC.$_</B></A>";
         }
         $htmlcontents .= "</LI>\n";
     }
@@ -343,6 +441,14 @@ if (defined($GRID{URL})) {
         $htmlcontents .= "<LI>$__{'External link'}: <B><A href=\"$txt[1]\" target=\"_blank\">$txt[0]<\/A></B></LI>\n";
     }
 }
+
+# -----------
+my $txt = "<B>SRTM/ETOPO</B> (default)";
+if (defined $GRID{DEM_FILE} && $GRID{DEM_FILE} ne "") {
+    $txt = "<B>$GRID{DEM_FILE}</B>".(-e "$GRID{DEM_FILE}" ? "":" <I>($__{'check file!'})</I>");
+}
+$htmlcontents .= "<LI>$__{'DEM'}: $txt</LI>\n";
+
 $htmlcontents .= "</UL></TD>\n";
 
 # -----------
@@ -375,7 +481,7 @@ if ($isProc) {
     }
     $htmlcontents .= "<TD style=\"border:0;text-align:right;vertical-align:top\"><TABLE><TR><TH>$__{'Proc Param.'}</TH><TH>".join("</TH><TH>",@procTS)."</TH></TR>\n";
     foreach ("Decimate","Cumulate","DateStr","MarkerSize","LineWidth","Status") {
-        my @tsp = split(/,/,$GRID{uc($_)."LIST"});
+        my @tsp = split(/,/,($GRID{uc($_)."LIST"} // ""));
         my $cells;
         if ($#tsp < 0) {
             $cells = "<TD align=\"center\" colspan=\"".($#procTS+1)."\"><I><SMALL>$__{'undefined'}</SMALL></I>";
@@ -387,6 +493,15 @@ if ($isProc) {
     }
     $htmlcontents .= "</TABLE></TD>\n";
 }
+
+# -----------
+# only for FORMs: table of input/output types
+if ($isForm) {
+        $htmlcontents .= tableStats('INPUT', \%GRID);
+        $htmlcontents .= tableStats('OUTPUT', \%GRID);
+        $htmlcontents .= "</TABLE></TD>\n";
+}
+
 $htmlcontents .= "</TR></TABLE>\n";
 $htmlcontents .= "</div></div>";
 print $htmlcontents;
@@ -397,7 +512,7 @@ print $htmlcontents;
 print "<BR>";
 $htmlcontents = "<A name=\"NODES\"></A>";
 $htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#nodesID');\">&nbsp;&nbsp;";
-$htmlcontents .= "$nbNodes $snm(s)&nbsp;$go2top";
+$htmlcontents .= "$nbNodes $snm".($nbNodes > 1 ? "s":"")."&nbsp;$go2top";
 $htmlcontents .= "</div><div id=\"nodesID\">";
 
 $htmlcontents .= "<P class=\"subTitleMenu\" style=\"margin-left: 5px\">";
@@ -458,27 +573,28 @@ my $nbValides = 0;
 my $nbNonValides = 0;
 my $tcolor;
 my %NODE;
-my $newNODE = "<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\"><IMG title=\"$__{'Create a new node'}\" src=\"/icons/modif.png\"></A>";
+my $newNODE = "<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\"><IMG title=\"$__{'Create a new node'}\" src=\"/icons/new.png\"></A>";
 
 #$htmlcontents .= "<TABLE width=\"100%\" style=\"margin-left: 5px\">";
-$htmlcontents .= "<TABLE width=\"100%\">";
+$htmlcontents .= "<TABLE width=\"100%\" class=\"trData\"";
 $htmlcontents .= "<TR>";
 $htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
   ."<TH rowspan=2>$__{'Alias'}</TH>"
-  ."<TH rowspan=2>$__{'Name'}</TH>"
-  ."<TH colspan=3>$__{'Coordinates'}</TH>"
-  ."<TH colspan=2>$__{'Lifetime and Validity'}"
+  ."<TH rowspan=2 style=\"text-align: left\">$__{'Name'}</TH>"
+  ."<TH colspan=3>$__{'Coordinates'}</TH><TH rowspan=2></TH>"
+  ."<TH colspan=2>$__{'Lifetime and Validity'}</TH>"
   ."<TH rowspan=2>$__{'Type'}</TH>";
 if ($CLIENT ne 'guest') {
     $htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
     $htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>" if ($usrProject eq "on");
 }
 $htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
-$htmlcontents .= "<TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
+$htmlcontents .= "<TH rowspan=2></TH><TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
 if ($overallStatus) {
     my @tsp = split(/,/,$GRID{"STATUSLIST"});
-    $htmlcontents .= "<TH colspan=3>$__{'Proc Status'} (".$procTS[first { $tsp[$_] eq '1' } reverse(0..$#tsp)].")</TH>";
+    $htmlcontents .= "<TH rowspan=2></TH><TH colspan=3>$__{'Proc Status'} (".$procTS[first { $tsp[$_] eq '1' } reverse(0..$#tsp)].")</TH>";
 }
+$htmlcontents .= "<TH rowspan=2></TH><TH colspan=5>$__{'Form Information'}</TH>" if ($isForm);
 $htmlcontents .= "</TR>\n<TR>";
 if ($usrCoord eq "utm") {
     $htmlcontents .= "<TH>UTM Eastern (m)</TH><TH>UTM Northern (m)</TH><TH>$__{'Elev.'} (m)</TH>";
@@ -497,7 +613,14 @@ if ($procOUTG eq "events") {
     $htmlcontents .= "<TH>".join("</TH><TH>",@procTS)."</TH>";
 }
 if ($overallStatus) {
-    $htmlcontents .= "<TH>$__{'Last Data'} (TZ $GRID{TZ})</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH><TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
+    $htmlcontents .= "<TH>$__{'Last Data'} (TZ&nbsp;$GRID{TZ})</TH>"
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH>"
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
+}
+if ($isForm) {
+    $htmlcontents .= "<TH>$__{'Raw Data'}</TH><TH>$__{'Nb Rec.'}</TH><TH>$__{'Last Record'} (TZ&nbsp;".sprintf("%+02d",$GRID{TZ}).")</TH>"
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH>"
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
 }
 $htmlcontents .= "</TR>\n";
 
@@ -546,7 +669,10 @@ for (@{$GRID{NODESLIST}}) {
         $htmlcontents .= "<TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
 
         # Node's localization
-        if ($NODE{LAT_WGS84}==0 && $NODE{LON_WGS84}==0 && $NODE{ALTITUDE}==0) {
+        $NODE{LAT_WGS84} //= "";
+        $NODE{LON_WGS84} //= "";
+        $NODE{ALTITUDE}  //= "";
+        if ($NODE{LAT_WGS84} eq "" && $NODE{LON_WGS84} eq "" && $NODE{ALTITUDE} eq "") {
             $htmlcontents .= "<TD colspan=3> </TD>";
         } else {
             my $lat = sprintf("%.5f",$NODE{LAT_WGS84});
@@ -570,6 +696,7 @@ for (@{$GRID{NODESLIST}}) {
         }
 
         # Node's dates
+        $htmlcontents .= "<TD></TD>";
         if ($NODE{INSTALL_DATE} eq "NA") {
             $htmlcontents .= "<TD> </TD>";
         } else {
@@ -623,20 +750,22 @@ for (@{$GRID{NODESLIST}}) {
         }
 
         # Node's proc parameters
+        $NODE{RAWFORMAT} //= "";
         if ($usrProcparam eq 'on') {
-            $htmlcontents .= "<TD align=\"center\"><SPAN class=\"code\">".($NODE{"$grid.FID"} ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>"
-              ."<TD align=\"center\">".($NODE{"$grid.RAWFORMAT"} ? $NODE{"$grid.RAWFORMAT"}
-                : ($NODE{RAWFORMAT} ? $NODE{RAWFORMAT} : ($GRID{RAWFORMAT} // '')))."</TD>"
+            $htmlcontents .= "<TD align=\"center\"><SPAN class=\"code\">".(($NODE{"$grid.FID"} // "") ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>"
+              ."<TD align=\"center\">".(($NODE{"$grid.RAWFORMAT"} // "") ? $NODE{"$grid.RAWFORMAT"}
+                : ($NODE{RAWFORMAT} ne "" ? $NODE{RAWFORMAT} : $GRID{RAWFORMAT}))."</TD>"
               ."<TD align=\"center\">";
             my %carCLB = readCLB("$grid.$NODEName");
-            my $maxchid = ( sort { $carCLB{$a}{"nv"} <=> $carCLB{$b}{"nv"} } keys %carCLB )[-1];
-            $htmlcontents .= "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">".$carCLB{$maxchid}{"nv"}."</A>";
+            my $maxchid = ( sort { $carCLB{$a}{"nv"} <=> $carCLB{$b}{"nv"} } keys %carCLB )[-1] // "";
+            $htmlcontents .= "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">".($carCLB{$maxchid}{"nv"} // "")."</A>";
             $htmlcontents .= "</TD>";
         }
         if ($procOUTG) {
             my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
+            $htmlcontents .= "<TD></TD>";
             if ($procOUTG eq "events") {
-                $htmlcontents .= "<TD align=\"center\"><A href=\"$urn&amp;ts=events&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>\n";
+                $htmlcontents .= "<TD align=\"center\"><A href=\"$urn&amp;ts=events&amp;g=*/*/*/$NODEName\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>\n";
             } else {
                 $htmlcontents .= join('',map {$_ = "<TD align=\"center\">".( -e "$WEBOBS{ROOT_OUTG}/$grid/$WEBOBS{PATH_OUTG_GRAPHS}/".lc($NODEName)."_$_.png" ? "<A href=\"$urn&amp;ts=$_&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A>":"" )."</TD>"} split(/,/,$GRID{TIMESCALELIST}))."\n";
             }
@@ -670,7 +799,7 @@ for (@{$GRID{NODESLIST}}) {
 
                 # $stState->[3..5] (Date, Time and TZ of last measurement)
                 # Display
-                $htmlcontents .= "<TD align=\"center\" nowrap>$stState->[3]</TD>\n"; # Date de l'analyse de l'etat
+                $htmlcontents .= "<TD></TD><TD align=\"center\" nowrap>".substr($stState->[3],0,16)."</TD>\n"; # Datetime of last data (limited to minute)
                 if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
                     $htmlcontents .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stState->[2]</B></TD>"
                       ."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stState->[1]</B></TD>";
@@ -678,15 +807,87 @@ for (@{$GRID{NODESLIST}}) {
                     $htmlcontents .= "<TD align=\"center\" colspan=\"2\"><I>$__{'Stopped'}</I></TD>";
                 }
             } else {
-                $htmlcontents .= "<TD colspan=\"3\"> </TD>";
+                $htmlcontents .= "<TD colspan=\"4\"> </TD>";
             }
+        }
+
+        # Form information
+        if ($isForm) {
+
+            # get the total number or records for this node
+            my $stmt = "SELECT COUNT(id) FROM $tbl WHERE trash=0 AND node='$NODEName'";
+            my $sth = $dbh->prepare($stmt);
+            my $rv = $sth->execute() or die $DBI::errstr;
+            my @row = $sth->fetchrow_array();
+            my $nbRec = join('',@row);
+            $sth->finish();
+
+            # get the last record for this node
+            $stmt = "SELECT t.*, date, date_min FROM $tbl t LEFT JOIN udate ON t.edate = udate.id WHERE trash=0 AND node='$NODEName' ORDER BY udate.date DESC LIMIT 1";
+            $sth = $dbh->prepare($stmt);
+            $rv = $sth->execute() or die $DBI::errstr;
+            @row = $sth->fetchrow_array();
+            my ($ly,$lm,$ld,$lhr,$lmn) = datetime2array($row[-2], $row[-1]);
+            my $lastRec = "$ly".($lm ? "-$lm":"").($ld ? "-$ld":"").($lhr ? " $lhr":"").($lmn ? ":$lmn":"");
+            $sth->finish();
+            my $lastdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"};
+            my $acqrate = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"};
+
+            $htmlcontents .= "<TD></TD><TD align=\"center\"><A href=\"/cgi-bin/showGENFORM.pl?form=$GRIDName&node=$NODEName\" title=\"$__{'Access to form data'}\"><IMG src=\"/icons/form.png\"></A></TD>";
+            $htmlcontents .= "<TD align=\"center\">$nbRec</TD>";
+            $htmlcontents .= "<TD align=\"center\">$lastRec</TD>";
+
+            if ($lastdelay ne "" && $acqrate ne "") {
+                my $now = strftime('%Y-%m-%d %H:%M:%S',localtime(time));
+                my $stStart = $NODE{INSTALL_DATE} // $GRID{BANG};
+                my @stDelay = date_duration($row[4],$row[5],$now,$now);
+                my $stFields = 0;
+                for (@row[12..$#row]) {
+                    $stFields ++ if ($_ ne "");
+                }
+                my $stLastData = ($stDelay[0] > $lastdelay && $stDelay[1] > $lastdelay) ? sprintf("%03.0f",100*$stFields/($#row - 11)):"0";
+                my $stAcqRate = sprintf("%03.0f",100*$nbRec*86400*$acqrate/(str2time($now) - str2time("$stStart 00:00:00")));
+                my $bgcolEt = "";
+                my $bgcolA = "";
+
+                # Node last data status
+                if ($stLastData == $NODES{STATUS_STANDBY_VALUE}) { $bgcolEt = "status-standby"; $stLastData = "$__{Standby}"; }
+                elsif ($stLastData < $NODES{STATUS_THRESHOLD_CRITICAL}) {
+                    $stLastData .= " %";
+                    $bgcolEt = "status-critical";
+                }
+                elsif ($stLastData >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolEt="status-ok"; $stLastData .= " %"; }
+                else { $bgcolEt = "status-warning"; $stLastData .= " %"; }
+                if (($stLastData eq "%") || ($stLastData eq ""))  { $bgcolEt = ""; $stLastData = " " }
+
+                # Node acquisition status
+                if ($stAcqRate  == $NODES{STATUS_STANDBY_VALUE}) { $bgcolA = "status-standby"; $stAcqRate = "$__{Standby}"; }
+                elsif ($stAcqRate < $NODES{STATUS_THRESHOLD_CRITICAL}) { $bgcolA = "status-critical"; $stAcqRate .= " %"; }
+                elsif ($stAcqRate >= $NODES{STATUS_THRESHOLD_WARNING}) { $bgcolA = "status-ok"; $stAcqRate .= " %"; }
+                else { $bgcolA = "status-warning"; $stAcqRate .= " %"; }
+                if (($stAcqRate eq " %") || ($stAcqRate eq "")) { $bgcolA = ""; $stAcqRate = " " }
+
+                # Display
+                if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
+                    $htmlcontents .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stAcqRate</B></TD>"
+                      ."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stLastData</B></TD>";
+                } else {
+                    $htmlcontents .= "<TD align=\"center\" colspan=\"2\"><I>$__{'Stopped'}</I></TD>";
+                }
+            } else {
+                $htmlcontents .= "<TD colspan=\"2\"> </TD>";
+            }
+
         }
         $htmlcontents .= "</TR>\n".(!$displayNode ? "-->":"");
     }
 }
-$htmlcontents .= "</TABLE>";
+$htmlcontents .= "<TR><TH colspan=\"24\" class=\"th-bottom\"></TH></TR></TABLE>";
 $htmlcontents .= "</div></div>";
 print $htmlcontents;
+
+# disconnect the DB
+$dbh->disconnect() if ($isForm);
 
 # ---- now the grid's MAPs
 # only 1 map : *.png and its corresponding *.map
@@ -746,7 +947,7 @@ print "<BR>";
 print "<A name=\"INFO\"></A>\n";
 $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#infoID');\">&nbsp;&nbsp;";
 $htmlcontents .= "$__{'Information'}";
-if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{PROTOCOLE_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
+if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{PROTOCOLE_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 $htmlcontents .= "&nbsp;$go2top</div><div id=\"infoID\"><BR>";
 if ($#protocole >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@protocole))."</P>\n" }
 $htmlcontents .= "</div></div>";
@@ -771,7 +972,7 @@ $myself  =~ s/\bsortby(\=[^&]*)?(&|$)//g ;    # same but sortby= and _= removed
 print "<BR><A name=\"EVENTS\"></A>\n";
 print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#eventID');\">&nbsp;&nbsp;";
 print "$__{'Events'}";
-if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&object=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
+if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&object=$GRIDType.$GRIDName\"><img src=\"/icons/new.png\"></A>" }
 print "&nbsp;$go2top</div><div id=\"eventID\"><BR>";
 print "&nbsp;$__{'Sort by'} [ ".($usrSortby ne "event" ? "<A href=\"$myself&amp;sortby=event#EVENTS\">$__{'Event'}</A>":"<B>$__{'Event'}</B>")." | "
   .($usrSortby ne "date" ? "<A href=\"$myself&amp;sortby=date#EVENTS\">$__{'Date'}</A>":"<B>$__{'Date'}</B>")." ]<BR>\n";
@@ -794,7 +995,7 @@ print "<BR>";
 print "<A name=\"REF\"></A>\n";
 $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#bibID');\">&nbsp;&nbsp;";
 $htmlcontents .= "$__{'References'}";
-if ($editOK == 1) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{BIBLIO_SUFFIX}&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
+if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{BIBLIO_SUFFIX}&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
 $htmlcontents .= "&nbsp;$go2top</div><div id=\"bibID\"><BR>";
 if ($#bib >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@bib))."</P>\n" }
 $htmlcontents .= "</div></div>";
@@ -810,7 +1011,7 @@ print " readers = <B>".join(", ", @{$authUsers{1}})."</B></P>\n";
 print "</BODY>\n</HTML>\n";
 
 sub checkingTS {
-    if ( $_[0] eq $_[1] ) {
+    if (defined $_[1] && $_[0] eq $_[1] ) {
         return "<TD><input type=\"checkbox\" checked=true disabled=\"disabled\" id=\"check_$_[0]\[\]\"/></TD>";
     } else {
         return "<TD><input type=\"checkbox\" disabled=\"disabled\" id=\"check_$_[0]\[\]\"/></TD>";
@@ -825,6 +1026,63 @@ sub checkingNODELIST {
     }
 }
 
+# make a HTML table of (IN|OUT)PUT types
+sub tableStats {
+    my %G = %{$_[1]};
+    my @f = sort(grep(/^$_[0].._NAME/i,keys(%G)));
+    my @itypes;
+    my $maxrows = 5;
+    for (@f) {
+        (my $key = $_) =~ s/_NAME/_TYPE/g;
+        (my $type = $G{$key} ? $G{$key}:'numeric') =~ s/[\(:].*$//g;
+        push(@itypes,$type);
+    }
+    my $txt = "<TD style='border:0;text-align:right;vertical-align:top'><TABLE class='trData'>"
+              ."<TR><TH rowspan=2></TH><TH colspan=".(uniq(@itypes)).">$__{'Type'}</TH><TH rowspan=2></TH><TH colspan=3>Export n°</TH></TR>\n"
+              ."<TR>".join("",map{"<TH>$_</TH>"} uniq(@itypes))."<TH>Data</TH><TH>Error</TH><TH>Cell</TH><TR>\n";
+    # adds operators and comment in front
+    if ($_[0] eq 'INPUT') {
+        $txt .= "<TR><TH>Operators</TH>".join("",map {"<TD></TD>"} uniq(@itypes))."<TD></TD><TD></TD><TD></TD><TD align='center'><SPAN class='code'>1</SPAN></TD></TR>";
+        $txt .= "<TR><TH>Comment</TH>".join("",map {"<TD></TD>"} uniq(@itypes))."<TD></TD><TD></TD><TD></TD><TD align='center'><SPAN class='code'>2</SPAN></TD></TR>";
+    }
+    for my $i (0..$#f) {
+        (my $key = $f[$i]) =~ s/_NAME//g;
+        my $unit = ( $G{$key."_UNIT"} ne "" ? " (".$G{$key."_UNIT"}.")":"" );
+        (my $type = $G{$key} ? $G{$key}:'numeric') =~ s/[\(:].*$//g;
+        my $pcl = keyRank($key,$G{PROC_CELL_LIST});
+        $pcl += 2 if ($pcl > 0);
+        $txt .= "<TR".($i >= $maxrows ? " class='hiddenRow'":"")."><TH>$key</TH>".join("",map {
+                my $t = $_; "<TD align='center'>" . ($t eq $itypes[$i] ? "<B>".$G{$key."_NAME"}."</B>".$unit:"") . "</TD>"
+            } uniq(@itypes))
+                ."<TD></TD>"
+                ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_DATA_LIST})."</SPAN></TD>"
+                ."<TD align='center'><SPAN class='code'>".keyRank($key,$G{PROC_ERROR_LIST})."</SPAN></TD>"
+                ."<TD align='center'><SPAN class='code'>".$pcl."</SPAN></TD>"
+                ."</TR>\n";
+    }
+    if ($#f >= $maxrows) {
+        $txt .= "<TR class='tableSplit'><TD align='center'><A href=\"javascript: void(0);\" onClick=\"\$('.hiddenRow').toggle();\">"
+               ."<IMG class='hiddenRow' style='display:inline' src='/icons/plus.gif'>"
+               ."<IMG class='hiddenRow' src='/icons/minus.gif'></A></TD>"
+               ."<TD colspan=".(uniq(@itypes)+4)."</TD></TR>\n";
+    }
+    $txt .= "<TR><TH>Total</TH>".join("",map { my $t = $_; "<TD align='center'>" . grep(/^$t$/,@itypes) . "</TD>" } uniq(@itypes))."<TD colspan=4></TD></TR></TABLE></TD>\n";
+    return $txt;
+}
+
+# count the rank position of KEY in the comma-separated string STR
+sub keyRank {
+    my $key = $_[0];
+    my $str = ",$_[1]";
+    my $n = "";
+
+    if (grep(/$key/,$str)) {
+        $str =~ s/$key.*$//g; # deletes string after $key
+        $n = () = $str =~ /,/gi; # counts the number of commas
+    }
+    return $n;
+}
+
 __END__
 
 =pod
@@ -835,7 +1093,7 @@ Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Lucas Dassin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2023 - Institut de Physique du Globe Paris
+WebObs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

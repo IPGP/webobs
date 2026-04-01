@@ -100,9 +100,10 @@ use List::MoreUtils qw(uniq);
 # ---- webobs stuff
 #
 use WebObs::Config;
+use WebObs::Grids;
 use WebObs::Users;
 use WebObs::Utils;
-use WebObs::Grids;
+use WebObs::Wiki;
 use WebObs::i18n;
 
 # ---- misc inits
@@ -115,6 +116,9 @@ my %SCHED = readCfg($WEBOBS{CONF_SCHEDULER});
 my @procavailable;
 my @proclist;
 my %P;
+
+# content edition is allowed only if the user has edit authorization for ALL grids (views, forms and procs)
+my $editOK = ( WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*") ? 1:0 );
 
 # ---- Things to populate select dropdown fields
 my $year = strftime('%Y',@tod);
@@ -163,14 +167,15 @@ my @reqlist;
 my %reqdates;
 map (push(@reqlist,$_), qx(find $WEBOBS{ROOT_OUTR} -type d -mindepth 1 -maxdepth 1 -name "*_$CLIENT"));
 chomp(@reqlist);
-for (@reqlist) {
-    my $date1 = qx(grep "^DATE1|" $_/REQUEST.rc | sed -e "s/DATE1|//");
-    my $date2 = qx(grep "^DATE2|" $_/REQUEST.rc | sed -e "s/DATE2|//");
+my $i = 1;
+for (0..$#reqlist) {
+    my $date1 = qx(grep "^DATE1|" $reqlist[$_]/REQUEST.rc | sed -e "s/DATE1|//");
+    my $date2 = qx(grep "^DATE2|" $reqlist[$_]/REQUEST.rc | sed -e "s/DATE2|//");
     chomp($date1);
     chomp($date2);
     my $date12 = $date1."_".$date2;
     $date12 =~ s/[-: ]//g;
-    $reqdates{$date12} = "$date1 to $date2";
+    $reqdates{sprintf("%02d",$_)."_".$date12} = "$date1 to $date2";
 }
 
 # ---- passed all checkings above ...
@@ -194,6 +199,18 @@ function selProc(proc) {
     //all inputs of a proc must start as  display:none AND disabled
     \$(obj).toggle();
     \$(obj).find('input').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
+    obj = \"#pokeysdrawer\"+proc;
+    \$(obj).find('input').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
+    \$(obj).toggle(false);
+}
+
+function selOtherKeys(proc) {
+    obj = \"#pokeysdrawer\"+proc;
+    \$(obj).toggle();
+    obj = \"#plus\"+proc;
+    \$(obj).toggle();
+    obj = \"#minus\"+proc;
+    \$(obj).toggle();
 }
 
 function checkForm()
@@ -221,7 +238,9 @@ function postIt()
 {
     \$.post(\"/cgi-bin/postREQ.pl\", \$(\"#theform\").serialize(), function(data) {
         alert(data);
-        location.href = \"/cgi-bin/showREQ.pl\";
+        if (!document.form.replay.checked) {
+            location.href = \"/cgi-bin/showREQ.pl\";
+        }
     });
 }
 function preSet()
@@ -269,30 +288,35 @@ function preSet()
         document.form.endH.value = \"00\";
         document.form.endN.value = \"00\";
     }
-    if (preset.includes(\"_\") && preset.length == 25) {
-        document.form.startY.value = preset.substring(0,4);
-        document.form.startM.value = preset.substring(4,6);
-        document.form.startD.value = preset.substring(6,8);
-        document.form.startH.value = preset.substring(8,10);
-        document.form.startN.value = preset.substring(10,12);
-        document.form.endY.value = preset.substring(13,17);
-        document.form.endM.value = preset.substring(17,19);
-        document.form.endD.value = preset.substring(19,21);
-        document.form.endH.value = preset.substring(21,23);
-        document.form.endN.value = preset.substring(23,25);
+    if (preset.includes(\"_\") && preset.length == 28) {
+        document.form.startY.value = preset.substring(3,7);
+        document.form.startM.value = preset.substring(7,9);
+        document.form.startD.value = preset.substring(9,11);
+        document.form.startH.value = preset.substring(11,13);
+        document.form.startN.value = preset.substring(13,15);
+        document.form.endY.value = preset.substring(16,20);
+        document.form.endM.value = preset.substring(20,22);
+        document.form.endD.value = preset.substring(22,24);
+        document.form.endH.value = preset.substring(24,26);
+        document.form.endN.value = preset.substring(26,28);
     }
 }
 </script>
 </HEAD>
-<BODY style=\"background-color:#E0E0E0\" onLoad=\"document.form.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');preSet();document.form.timezone.focus();\">
+<BODY onLoad=\"document.form.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');preSet();document.form.timezone.focus();\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
+<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\" type=\"text/javascript\"></script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
 <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
 <DIV ID=\"helpBox\"></DIV>";
 
-print "<h2>$pagetitle</h2>";
+print "<h1>$pagetitle</h1>";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ <a href=\"/cgi-bin/showREQ.pl\">$__{'Results'}</a> ]</P>";
+
+# ---- Objectives (aka 'Purpose', 'description' of subsetType)
+#
+printdesc('Description','DESCRIPTION','GRIDS','PROCREQUEST','',0,$editOK);
 
 print "<form id=\"theform\" name=\"form\" action=\"\">";
 
@@ -303,10 +327,13 @@ print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column
 # ---- Display list of PROCS that are eligible for requests
 print "<fieldset><legend>$__{'Available PROCS'}</legend>";
 print "<div style=\"overflow-y: scroll;height: 400px\">";
+my $olopt = ",FGCOLOR,'white'";
 for my $p (@proclist) {
-    %P = readProc($p,'novsub','escape'); # reads the proc conf without modifying content (no variable substitution, keep escaped char)
+    %P = readProc($p,'novsub','escape','addcomment'); # reads the proc conf without modifying content (no variable substitution, keep escaped char) and additional comments from the template
     my $nn = scalar(@{$P{$p}{NODESLIST}});
-    print "<INPUT type=\"checkbox\" name=\"p_$p\" title=\"$p\" onclick=\"selProc('$p')\" value=\"0\"> <B>{$p}:</B> $P{$p}{NAME} (<B>$nn</B> node".($nn>1?"s":"").")<BR>\n";
+    my $nm = ($P{$p}{NODE_NAME} ne "" ? $P{$p}{NODE_NAME}:"node");
+    my $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$P{$p}{DESCRIPTION}."',CAPTION,'PROC.$p',BGCOLOR, 'firebrick'$olopt)\")\"";
+    print "<INPUT type=\"checkbox\" name=\"p_$p\" onclick=\"selProc('$p')\" value=\"0\" $ovl> <B>$P{$p}{NAME}</B> (<B>$nn</B> $nm".($nn>1?"s":"").")<BR>\n";
     print pkeys($p,\%P);
 }
 print "</div>";
@@ -445,8 +472,9 @@ print "</TD>\n";                                             # end right column
 
 print "</TR></TABLE>\n";
 print "<P align=center>";
-print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
-print "<input type=\"button\" value=\"$__{'Submit'}\" onClick=\"checkForm();\" style=\"font-weight:bold\">";
+print "<INPUT type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">\n";
+print "<INPUT type=\"button\" value=\"$__{'Submit'}\" onClick=\"checkForm();\" style=\"font-weight:bold\">\n";
+print "<INPUT type=\"checkbox\" name=\"replay\">&nbsp;$__{'Continue with this window'} (Replay!)\n";
 print "<input type=\"hidden\" id=\"origin\" name=\"origin\" value=\"\">";
 print "</P>";
 
@@ -460,19 +488,30 @@ print "\n</BODY>\n</HTML>\n";
 # (args: procName, \%procConf)
 sub pkeys {
     my ($pn,$PP) = @_;
+    my %PROC = %{$PP->{$pn}};
     if (defined($pn)) {
         my $div = "<div id='pkeysdrawer$pn' class='pkeysdrawer' style='display: none'>";
         my @pk;
         push(@pk, uniq map { s/^\s+|\s+$//g; $_ } split(/,/,$PP->{$pn}{REQUEST_KEYLIST})) if (defined($PP->{$pn}{REQUEST_KEYLIST}));
-        foreach my $k (sort keys %{$PP->{$pn}}) {
-            push(@pk,$k) if (! grep(/^$k$/,@pk) && ! grep(/^$k$/,@REQEXCL));
+        push(@pk, "");
+        foreach my $k (sort keys %PROC) {
+            push(@pk,$k) if (! grep(/^$k$/,@pk) && ! grep(/^$k$/,@REQEXCL) && ! grep(/^comment_/,$k));
         }
         foreach (@pk) {
-            my $v = (defined($PP->{$pn}{$_})?$PP->{$pn}{$_}:"");
-            $div .= "<label for='PROC.$pn.$_'>$_:</label>";
-            $div .= "<input disabled id='PROC.$pn.$_' name='PROC.$pn.$_' maxlength='200' size='40' value='".htmlspecialchars($v)."'><br>";
+            my $v = (defined($PROC{$_})?$PROC{$_}:"");
+            if ($_ eq "") {
+                $div .= "<label><img id='plus$pn' src=\"/icons/plus.gif\" title=\"$__{'Show additional keys'}\" onclick=\"selOtherKeys('$pn')\">"
+                     ."<img id='minus$pn' style='display: none' src=\"/icons/minus.gif\" title=\"$__{'Hide additional keys'}\" onclick=\"selOtherKeys('$pn')\"></label><br></div>\n"
+                     ."<div id='pokeysdrawer$pn' class='pkeysdrawer' style='display: none'>";
+            } else {
+                my $hlp = $PROC{"comment_$_"};
+                $div .= "<label for='PROC.$pn.$_'>$_</label>\n";
+                $div .= "<input disabled id='PROC.$pn' name='PROC.$pn.$_' maxlength='200' size='40' value='".htmlspecialchars($v)."'";
+                $div .= " onmouseout=\"nd()\" onmouseover=\"overlib('".htmlspecialchars($hlp)."',CAPTION,'help for $_')\"" if ($hlp ne "");
+                $div .= "><br>\n";
+            }
         }
-        $div .= "</div>";
+        $div .= "</div>\n\n";
         return $div;
     }
     return "" ; # no request_keylist
@@ -488,7 +527,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2024 - Institut de Physique du Globe Paris
+Webobs - 2012-2025 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -5,8 +5,8 @@
   <title>WebObs DatePicker</title>
   <meta content="wodp" name="author">
   <style>
-  	pre.codehtml { background-color: #444444; color: white; }
-  	pre.codejs   { background-color: #666666; color: white; }
+      pre.codehtml { background-color: #444444; color: white; }
+      pre.codejs   { background-color: #666666; color: white; }
   </style>
   <link rel="StyleSheet" href="/css/wodp.css"/>
   <script src="/js/jquery.js" type="text/javascript"></script>
@@ -16,49 +16,49 @@
 <body>
 <script>
 $( document ).ready(function() {
-	$('input#d0').css('display','none').wodp({ 
-			popup: false, 
-			holidays: [],
-			range: {from: "2014-11-05", to:"2016-04"},
-			onpicked: function() { 
-				$("#d0view").text($("#d0").val()).css('color','#0000FF');
-				$("#d0viewdesc").text($("#d0").data('wodpdesc'));
-			},
-	});
-	$('input#d1').wodp();
-	$('input#d2').css({padding:0, width:1, border:'none',visibility:'hidden'}).wodp({
-				icon: true, offX:10, offY:10, 
-				onpicked: function() { 
-					$("#d2view").text($("#d2").val()).css('color','#FF0000');
-					$("#d2viewdesc").text('('+$("#d2").data('wodpdesc')+')');
-				},
-	});
-	$('input#d22').wodp({ icon: true ,
-			range: { from: "2013", to:"2038" },
-			oninvalid: function(d) { alert('invalid date entered '+$('input#d22').val()) }
-	});
+    $('input#d0').css('display','none').wodp({
+            popup: false,
+            holidays: [],
+            range: {from: "2014-11-05", to:"2016-04"},
+            onpicked: function() {
+                $("#d0view").text($("#d0").val()).css('color','#0000FF');
+                $("#d0viewdesc").text($("#d0").data('wodpdesc'));
+            },
+    });
+    $('input#d1').wodp();
+    $('input#d2').css({padding:0, width:1, border:'none',visibility:'hidden'}).wodp({
+                icon: true, offX:10, offY:10,
+                onpicked: function() {
+                    $("#d2view").text($("#d2").val()).css('color','#FF0000');
+                    $("#d2viewdesc").text('('+$("#d2").data('wodpdesc')+')');
+                },
+    });
+    $('input#d22').wodp({ icon: true ,
+            range: { from: "2013", to:"2038" },
+            oninvalid: function(d) { alert('invalid date entered '+$('input#d22').val()) }
+    });
 
-	months = ["janvier","f&eacute;vrier","mars","avril","mai","juin","juillet","ao&ucirc;t","septembre","octobre","novembre","d&eacute;cembre"];
-	days = ["Lu","Ma","Me","Je","Ve","Sa","Di"];
-	h = [
-		{d: "$Y-01-01" , t: "Jour de l'An"},
-		{d: "$PQ 1", t: "Lundi de P&acirc;ques"},
-		{d: "$Y-05-01", t: "F&ecirc;te du Travail"},
-		{d: "$PQ 39", t: "Ascension"},
-		{d: "$PQ 50", t: "Lundi de Pentec&ocirc;te"},
-		{d: "$Y-05-08", t: "Armistice 1945"},
-		{d: "$Y-07-14", t: "F&ecirc;te Nationale"},
-		{d: "$Y-08-15", t: "Assomption"},
-		{d: "$Y-11-01", t: "Toussaint"},
-		{d: "$Y-11-11", t: "Armistice 1918"},
-		{d: "$Y-12-25", t: "No&euml;l"}
-	];
-	$('input#d3').css('display','none').wodp({ 
-			popup: false, 
-			holidays: h,
-			months: months,
-			days: days
-	});
+    months = ["janvier","f&eacute;vrier","mars","avril","mai","juin","juillet","ao&ucirc;t","septembre","octobre","novembre","d&eacute;cembre"];
+    days = ["Lu","Ma","Me","Je","Ve","Sa","Di"];
+    h = [
+        {d: "$Y-01-01" , t: "Jour de l'An"},
+        {d: "$PQ 1", t: "Lundi de P&acirc;ques"},
+        {d: "$Y-05-01", t: "F&ecirc;te du Travail"},
+        {d: "$PQ 39", t: "Ascension"},
+        {d: "$PQ 50", t: "Lundi de Pentec&ocirc;te"},
+        {d: "$Y-05-08", t: "Armistice 1945"},
+        {d: "$Y-07-14", t: "F&ecirc;te Nationale"},
+        {d: "$Y-08-15", t: "Assomption"},
+        {d: "$Y-11-01", t: "Toussaint"},
+        {d: "$Y-11-11", t: "Armistice 1918"},
+        {d: "$Y-12-25", t: "No&euml;l"}
+    ];
+    $('input#d3').css('display','none').wodp({
+            popup: false,
+            holidays: h,
+            months: months,
+            days: days
+    });
 
 });
 </script>
@@ -68,130 +68,130 @@ $( document ).ready(function() {
 
 <ol>
 <li><p>Load the wodp plugin:
-	<pre class="codehtml">
-		&lt;link rel="stylesheet" href="wodp.css"/&gt;
-		&lt;script src="jquery.js" type="text/javascript"&gt;&lt;/script&gt;
-		&lt;script src="wodp.js" type="text/javascript"&gt;&lt;/script&gt;
-	</pre>
+    <pre class="codehtml">
+        &lt;link rel="stylesheet" href="wodp.css"/&gt;
+        &lt;script src="jquery.js" type="text/javascript"&gt;&lt;/script&gt;
+        &lt;script src="wodp.js" type="text/javascript"&gt;&lt;/script&gt;
+    </pre>
 </p>
 
-<li><p>A DatePicker is always attached to an &lt;input&gt; DOM element that will contain 
-the selected date (YYYY-MM-DD) or the selected range (YYYY-MM-DD,YYYY-MM-DD). It will 
+<li><p>A DatePicker is always attached to an &lt;input&gt; DOM element that will contain
+the selected date (YYYY-MM-DD) or the selected range (YYYY-MM-DD,YYYY-MM-DD). It will
 display a month calendar for the user to select the date. This calendar can be made
-'permanent' (ie. always displayed) or can be shown only when user clicks on the 
-&lt;input&gt; element itself or its optionally associated calendar icon. 
+'permanent' (ie. always displayed) or can be shown only when user clicks on the
+&lt;input&gt; element itself or its optionally associated calendar icon.
 </p>
 <li><p>Selecting dates:
-	<ul compact>
-	<li>One Day: click on day number
-	<li>Range: Ctrl-click on starting day, then Ctrl-click on ending day. Mouse pointer
-	changes appearance on first Ctrl-click. You can navigate thru months or years while
-	defining a range. 
-	<li>'quick' week range: click on week number
-	<li>'quick' month range: click on month in header
-	<li>'quick' year range: click on year in header
-	</ul>
+    <ul compact>
+    <li>One Day: click on day number
+    <li>Range: Ctrl-click on starting day, then Ctrl-click on ending day. Mouse pointer
+    changes appearance on first Ctrl-click. You can navigate thru months or years while
+    defining a range.
+    <li>'quick' week range: click on week number
+    <li>'quick' month range: click on month in header
+    <li>'quick' year range: click on year in header
+    </ul>
 </p>
-<p>Accepting user's typed-in date into the attached &lt;input&gt; DOM element is left 
+<p>Accepting user's typed-in date into the attached &lt;input&gt; DOM element is left
 to the developper: eg. 1) by using change event on the attached &lt;input&gt; DOM element and 2)
 optionaly checking that the typed-in date (or range) is within wodp defined range by using
 the public wodp method 'inrange()'
 </p>
 <p>Wodp attaches two elements to the &lt;input&gt; DOM element (using element's .data): 1) a wodp object self-pointer
-to access wodp settings (to, from,...) or public methods (inrange,...) : inputel.data('wodp'); 
+to access wodp settings (to, from,...) or public methods (inrange,...) : inputel.data('wodp');
 2) a description of the value selected by the user, inputel.data('wodpdesc') = 'range', 'ranging', 'day', 'week', 'month' or 'year'.
 <hr>
 
 <li><p><b>Example: a calendar</b>, with its non-visible &lt;input&gt; element, a limited range of selectable dates,
-using the default days/months names and no holidays 
-and triggering your own javascript code (ie. the 'onpicked' callback) that shows 
-the selected date (and its description) here: 
+using the default days/months names and no holidays
+and triggering your own javascript code (ie. the 'onpicked' callback) that shows
+the selected date (and its description) here:
 <span id="d0view"></span> (<span id="d0viewdesc"></span>)
-	<pre class="codehtml">
-	&lt;input id="d0" class="wodp" type="text"/&gt;
-	</pre>
-	<pre class="codejs">
-	$('input#d0').css('display','none').wodp({ 
-			popup: false,
-			holidays: [],
-			range: {from: "2014-11-05", to:"2016-04-30"},
-			onpicked: function() { 
-				$("#d0view").text($("#d0").val());
-				$("#d0viewdesc").text($("#d0").data('wodpdesc'));
-			},
-	});
-	</pre>
+    <pre class="codehtml">
+    &lt;input id="d0" class="wodp" type="text"/&gt;
+    </pre>
+    <pre class="codejs">
+    $('input#d0').css('display','none').wodp({
+            popup: false,
+            holidays: [],
+            range: {from: "2014-11-05", to:"2016-04-30"},
+            onpicked: function() {
+                $("#d0view").text($("#d0").val());
+                $("#d0viewdesc").text($("#d0").data('wodpdesc'));
+            },
+    });
+    </pre>
 </p>
 <input id="d0" class="wodp" type="text"/>
 <br>
 <hr>
 
 <li><p><b>Example: a popup calendar</b> when user clicks on the &lt;input&gt; element
-	<pre class="codehtml">
-	&lt;input id="d1" class="wodp" type="text" width="50"/&gt;
-	</pre>
-	<pre class="codejs">
-	$('input#d1').wodp();
-	</pre>
+    <pre class="codehtml">
+    &lt;input id="d1" class="wodp" type="text" width="50"/&gt;
+    </pre>
+    <pre class="codejs">
+    $('input#d1').wodp();
+    </pre>
 </p>
 date1: <input id="d1" class="wodp" type="text" width="50"/>
 <br>
 <hr>
 
 <li><p><b>Example: a popup calendar</b> with hidden input and associated calendar icon
-	<pre class="codehtml">
-	&lt;input id="d2" class="wodp" type="text" width="50"/&gt;
-	</pre>
-	<pre class="codejs">
-	$('input#d2').wodp({"icon": true, offX:10, offY:10 });
-	</pre>
+    <pre class="codehtml">
+    &lt;input id="d2" class="wodp" type="text" width="50"/&gt;
+    </pre>
+    <pre class="codejs">
+    $('input#d2').wodp({"icon": true, offX:10, offY:10 });
+    </pre>
 </p>
 date2 <input id= "d2" class="wodp" type="text" size="1" width="1"/><span id="d2view"></span>
 <br>
 <hr>
 
 <li><p><b>Example: a popup calendar</b> when user clicks on associated calendar icon, and alert on invalid date entered
-	<pre class="codehtml">
-	&lt;input id="d22" class="wodp" type="text" size="22"/&gt;
-	</pre>
-	<pre class="codejs">
-	$('input#d22').wodp({ 
-			icon: true ,
-			oninvalid: function() { alert('invalid date entered '+$('input#d22').val()) }
-	});
-	</pre>
+    <pre class="codehtml">
+    &lt;input id="d22" class="wodp" type="text" size="22"/&gt;
+    </pre>
+    <pre class="codejs">
+    $('input#d22').wodp({
+            icon: true ,
+            oninvalid: function() { alert('invalid date entered '+$('input#d22').val()) }
+    });
+    </pre>
 </p>
 <input id= "d22" class="wodp" type="text" size="22" />
 <br>
 <hr>
 
 <li><p><b>Example: a calendar</b>, localized
-	<pre class="codehtml">
-	&lt;input id="d3" class="wodp" type="text"/&gt;
-	</pre>
-	<pre class="codejs">
-	months = ["janvier","f&eacute;vrier","mars","avril","mai","juin","juillet","ao&ucirc;t","septembre","octobre","novembre","d&eacute;cembre"];
-	days = ["Lu","Ma","Me","Je","Ve","Sa","Di"];
-	h = [
-		{d: "$Y-01-01" , t: "Jour de l'An"},
-		{d: "$PQ 1", t: "Lundi de P&acirc;ques"},
-		{d: "$Y-05-01", t: "F&ecirc;te du Travail"},
-		{d: "$PQ 39", t: "Ascension"},
-		{d: "$PQ 50", t: "Lundi de Pentec&ocirc;te"},
-		{d: "$Y-05-08", t: "Armistice 1945"},
-		{d: "$Y-07-14", t: "F&ecirc;te Nationale"},
-		{d: "$Y-08-15", t: "Assomption"},
-		{d: "$Y-11-01", t: "Toussaint"},
-		{d: "$Y-11-11", t: "Armistice 1918"},
-		{d: "$Y-12-25", t: "No&euml;l"}
-	];
-	$('input#d3').css('display','none').wodp({ 
-			popup: false, 
-			holidays: h,
-			months: months,
-			days: days
-	});	
-	</pre>
+    <pre class="codehtml">
+    &lt;input id="d3" class="wodp" type="text"/&gt;
+    </pre>
+    <pre class="codejs">
+    months = ["janvier","f&eacute;vrier","mars","avril","mai","juin","juillet","ao&ucirc;t","septembre","octobre","novembre","d&eacute;cembre"];
+    days = ["Lu","Ma","Me","Je","Ve","Sa","Di"];
+    h = [
+        {d: "$Y-01-01" , t: "Jour de l'An"},
+        {d: "$PQ 1", t: "Lundi de P&acirc;ques"},
+        {d: "$Y-05-01", t: "F&ecirc;te du Travail"},
+        {d: "$PQ 39", t: "Ascension"},
+        {d: "$PQ 50", t: "Lundi de Pentec&ocirc;te"},
+        {d: "$Y-05-08", t: "Armistice 1945"},
+        {d: "$Y-07-14", t: "F&ecirc;te Nationale"},
+        {d: "$Y-08-15", t: "Assomption"},
+        {d: "$Y-11-01", t: "Toussaint"},
+        {d: "$Y-11-11", t: "Armistice 1918"},
+        {d: "$Y-12-25", t: "No&euml;l"}
+    ];
+    $('input#d3').css('display','none').wodp({
+            popup: false,
+            holidays: h,
+            months: months,
+            days: days
+    });
+    </pre>
 </p>
 <input id= "d3" class="wodp" type="text" />
 <br>
@@ -207,13 +207,13 @@ date2 <input id= "d2" class="wodp" type="text" size="1" width="1"/><span id="d2v
 <li>offX: 0,
 <li>offY: 0,
 <li>holidays: [
-<br>	{ d: "$Y-01-01",  t: "New Year" },
-<br>	{ d: "$PQ 1",     t: "Easter Monday" },
-<br>	{ d: "$PQ 39",    t: "Ascension" },
-<br>	{ d: "$PQ 50",    t: "Pentecost" },
-<br>	{ d: "$Y-08-15",  t: "Assumption" },
-<br>	{ d: "$Y-11-01",  t: "All Saints' Day" },
-<br>	{ d: "$Y-12-25",  t: "Christmas" },
+<br>    { d: "$Y-01-01",  t: "New Year" },
+<br>    { d: "$PQ 1",     t: "Easter Monday" },
+<br>    { d: "$PQ 39",    t: "Ascension" },
+<br>    { d: "$PQ 50",    t: "Pentecost" },
+<br>    { d: "$Y-08-15",  t: "Assumption" },
+<br>    { d: "$Y-11-01",  t: "All Saints' Day" },
+<br>    { d: "$Y-12-25",  t: "Christmas" },
 <br>]
 <li>onpicked: function() {}
 </ul>

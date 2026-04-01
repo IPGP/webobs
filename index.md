@@ -12,9 +12,9 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.7.3.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.7.3/WebObs-2.7.3.tar.gz) (103 Mb) updated February 5, 2025
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.7.3/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.7.3/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.8.0.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.0/WebObs-2.8.0.tar.gz) (103 Mb) updated March 11, 2026
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.8.0/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.0/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
@@ -33,62 +33,62 @@ Source code, comments and issues are available at the project repository [github
 
 To run WebObs you need to install the package which contains a setup script that will set all configuration files. Installing WebObs is not a classical compilation from sources with 'make'. A part of it requires the free Matlab runtime library because package contains some compiled binaries for optimization purpose.
 
-### A) Installing WebObs \<version\> from its WebObs-\<version\>.tgz
+### A) _Installing_ WebObs \<version\> from its `WebObs-<version>.tgz`
 
 You create/choose your WebObs directory within which you will execute the setup process. We suggest `/opt/webobs` (default). This directory will contain both
 WebObs code and WebObs data, and will be the DocumentRoot of the WebObs Apache's Virtual Host.
 
-setup will prompt you for a Linux WebObs userid (aka WebObs Owner) that it will create. The WebObs userid's group will also be added to Apache's user. See the WebObs user manual if you need to create your own WebObs owner. 	
+setup will prompt you for a Linux WebObs userid (aka WebObs Owner) that it will create. The WebObs userid's group will also be added to Apache's user. See the WebObs user manual if you need to create your own WebObs owner.
 
-The system-wide /etc/webobs.d symbolic link will identify your WebObs 'active' (production) installation.
+The system-wide `/etc/webobs.d` symbolic link will identify your WebObs 'active' (production) installation.
 
 WebObs comes with pre-defined configuration files and pre-defined data objects as a starting point and for demonstration purposes.
 
-#### Prerequisities
+#### Prerequisites
 
-Graph processes need Matlab compiler runtime 2011b (available above). Download the installer adapted to your architecture in the WebObs directory, the setup will install it during the C) procedure. Or, place it in any local directory then run:
+##### Install Matlab Compiler Runtime (MCR)
+Graph processes need _Matlab Compiler Runtime_ 2011b (available above). Download the installer adapted to your architecture in the WebObs directory, the setup will install it during the C) procedure. Or, place it in any local directory then run:
 
 ```sh
 unzip MCR_<version>_installer.zip
 sudo ./install -mode silent
 ```
-
+##### Install extra programs 
 A number of programs and Perl modules are needed to run webobs. During the C) installation procedure, setup will list the missing dependencies that must be installed. Under Debian/Ubuntu, you might install them using the following packages:
 
 ```sh
-sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq vim mutt xvfb \
-   curl gawk graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
-   libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl \
-   libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl \
-   wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
-sudo apt install libncurses5
-sudo apt install python-is-python3
+sudo apt install apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq vim mutt xvfb
+sudo apt install curl gawk unzip graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl
+sudo apt install libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl
+sudo apt install libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl
+sudo apt install wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
+sudo apt install libsocket6-perl libdigest-perl-md5-perl
+sudo apt install libncurses5 gdal-bin
+sudo apt install dvipng texlive-latex-extra texlive-fonts-recommended cm-super
+sudo apt install python-is-python3 python3-tk python3-venv python3-pip-whl
 ```
 
-Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
+##### Set environment configuration
 
+Compiled binaries are using some ISO-8859-1 encoding characters... to get correct display you might install some additional locale. Uncomment `fr_FR ISO-8859-1` and `en_US ISO-8859-1` lines in `/etc/locale.gen`, then:
 ```sh
 sudo locale-gen fr_FR en_US
 ```
-
-Also you need to activate CGI module for Apache:
-
+You need to activate CGI module for Apache:
 ```sh
 sudo a2enmod cgid
 ```
-
 Create the target WebObs directory:
 ```sh
 sudo mkdir -p /opt/webobs
 ```
-
 Create the webobs user:
 ```sh
 sudo adduser wo
 ```
 
 <a name="update"></a>
-### B) Upgrading WebObs \<version\> from its WebObs-\<version\>.tgz
+### B) _Upgrading_ WebObs \<version\> from its `WebObs-<version>.tgz`
 
 The setup process is also used for upgrading an already installed WebObs.
 
@@ -135,9 +135,67 @@ ETOPO_NAME|etopo1_bed_g_i2
 ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA
 ```
 
+### E) Extra-procedure for developers
+
+If you intend to develop on WebObs' code, you should link your installed WebObs with the GitHub cloned repository. This setup allows you to work directly on the source code while maintaining a functional WebObs installation.
+
+**Setup procedure:**
+
+1. Navigate to your target WebObs directory:
+   ```sh
+   cd /opt/webobs
+   ```
+
+2. Clone the GitHub repository:
+   ```sh
+   git clone https://github.com/IPGP/webobs.git
+   ```
+
+3. Rename the newly cloned subdirectory to avoid confusion with the parent directory:
+   ```sh
+   mv webobs webobs_gh
+   ```
+   (`gh` stands for _GitHub_)
+
+4. Backup and remove the existing `CODE` directory:
+   ```sh
+   mv CODE CODE.bak  # Create backup (optional but recommended)
+   # or: rm -rf CODE  # Direct removal
+   ```
+
+5. Create a symbolic link to the GitHub repository's `CODE` directory:
+   ```sh
+   ln -s webobs_gh/CODE CODE
+   ```
+
+Your WebObs installation is now linked to the GitHub repository. 
+
+**Development workflow:**
+
+- All development should be done on the `dev` branch (or feature branches based on `dev`):
+  ```sh
+  cd webobs_gh
+  git checkout dev
+  git pull origin dev  # Ensure you have the latest changes
+  ```
+
+- Before pushing your modifications, ensure you have correctly configured your GitHub personal access token. See: [Managing Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+
 
 <a name="whatsnew"></a>
 ## What's new and release history
+
+### What's new in the 2.8?
+- new look (style sheet)!
+- check the consistency of registered WebObs users and Apache logins during update (imrpoves access security);
+- generic form for manual database management is now operational with automatic migration of former forms;
+- first version of Python library with demonstration proc (genplot);
+- geojson shapefiles can be associated to nodes and grids;
+- new summary plot STRAINMAP an other improvements for gnss procs;
+- configurable headers fo proc data exports;
+- improvements and new features in MC3/SEFRAN3;
+- improvements in events type proc outputs display;
+- some minor to moderate fixes and other minor improvements.
 
 ### What's new in the 2.7?
 - first effort of generic form for manual database management (under development... wait for v2.8!);
@@ -288,6 +346,11 @@ The WebObs system has been awarded by a **"Community" accessit** during the **Fi
 1. Chevrel, O. (2024). Contribution to the understanding of lava flow emplacement dynamics. Doctoral dissertation, Université Clermont Auvergne (UCA). [](https://hal.science/tel-04797648/document)
 1. Lowenstern, J. B. (2024). A Case for Improved Global Coordination of Volcano Observatories. Annals of Geophysics, 67(4), S436-S436.
 1. Widiwijayanti, C., Thin Zar Win, N., Espinosa-Ortega, T., Costa, F., & Taisne, B. (2024). The global volcano monitoring infrastructure database (GVMID). Frontiers in Earth Science, 12, 1284889.
+1. Fontaine, F. R., Komorowski, J. C., Corbeau, J., Burtin, A., De Chabalier, J. B., Grandin, R., ... & Satriano, C. (2025). Ongoing multiparameter unrest at the Montagne Pelée volcano on Martinique from 2019 to 2024. Scientific Reports, 15(1), 23189. [](https://www.nature.com/articles/s41598-025-05641-6)
+1. Nang, T. Z. W., Widiwijayanti, C., Espinosa-Ortega, T., De Groote, J., & Taisne, B. (2025). WOVOdat web service data retrieval system for comprehensive volcano monitoring. Bulletin of Volcanology, 87(3), 21. [10.1007/s00445-025-01801-8](https://doi.org/10.1007/s00445-025-01801-8)
+1. Cacciola, L., Corsaro, R.A., Federico, C. et al. GeoChem: a volcanic data model for solid and gas samples. Bull Volcanol 87, 102 (2025). [10.1007/s00445-025-01893-2](https://doi.org/10.1007/s00445-025-01893-2)
+
+
 
 #### Seismology
 1. Bengoubou-Valérius M. et al. (2008). CDSA: A New Seismological Data Center for the French Lesser Antilles. *Seismol. Res. Lett.*, [doi:10.1785/gssrl.79.1.90](https://doi.org/10.1785/gssrl.79.1.90)
@@ -339,7 +402,13 @@ le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 
 1. Peltier A., S. Saur, V. Ballu, F. Beauducel, P. Briole, J-B. de Chabalier, K. Chanard, D. Dausse, R. Grandin, P. Rouffiac, Y-T. Tranchant, M. Bès de Berc, S. Besançon, P. Boissier, C. Broucke, C. Brunet, K. Canjamalé, E. Carme, P. Catherine, A. Colombain, W. Crawford, R. Daniel, G. Dectot, N. Desfete, C. Doubre, T. Dumouch, C. Griot, M. Grunberg, H. Jund, P. Kowalski, F. Lauret, J. Lebreton, F. Pesqueira, F. Tronel, P. Valty and J. van der Woerd (2022). Ground deformation monitoring of the eruption offshore Mayotte, *Comptes Rendus Géoscience*, in press. [doi:10.5802/crgeos.176](https://doi.org/10.5802/crgeos.176)
 1. Grémion, S., Pinel, V., Shreve, T., Beauducel, F., Putra, R., Solikhin, A., ... & Humaida, H. (2023). Tracking the evolution of the summit lava dome of Merapi volcano between 2018 and 2019 using DEMs derived from TanDEM-X and Pléiades data. Journal of Volcanology and Geothermal Research, 433, 107732.
 1. Basuki, A., Purnamasari, H. D., & Syahbana, D. K. (2023, August). The 2021 Semeru volcano eruption: An insight from visual, seismic, and deformation monitoring data. In IOP Conference Series: Earth and Environmental Science (Vol. 1227, No. 1, p. 012030). IOP Publishing.
-1. Nikkhoo, M., & Rivalta, E. (2023). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. Geophysical Journal International, 232(1), 643-655.
+1. Nikkhoo, M., & Rivalta, E. (2023). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. *Geophysical Journal International*, 232(1), 643-655.
+1. Briole P., A. Ganas, A. Serpetsidaki, F. Beauducel, V. Sakkas, V. Tsironi, P. Elias (2025). Volcano-tectonic interaction at Santorini. The crisis of February 2025. Constraints from geodesy. *Geophysical Journal International*, [doi:10.1093/gji/ggaf262](https://doi.org/10.1093/gji/ggaf262).
+1. Grandin, R., Collilieux, X., Pasquier, I., & Jamet, O. (2025). Volcano‐tectonic crisis of Mayotte (2018–2022): A deformation model for geodetic applications. Journal of Geophysical Research: Solid Earth, 130(10), e2025JB031473. [10.1029/2025JB031473](https://doi.org/10.1029/2025JB031473)
+1. Pinel, V., & Albino, F. (2025). Monitoring Volcanoes Deformation Based on Synthetic Aperture Radar (SAR) Data. In Modern Volcano Monitoring (pp. 33-59). Cham: Springer Nature Switzerland.
+1. Sakic, P., Boissier, P., Saurel, J. M., Deroussi, S., Andrieu, A., Griot, C., ... & de Chabalier, J. B. (2025). Modernizing GNSS Data Acquisition, Pre-Processing, and Distribution at Volcanological Observatories. EGUsphere, 2025, 1-34.
+1. Tsironi, V., Goutsos, G., & Mintourakis, I. (2025). Geodetic monitoring of the 2024-2025 Santorini volcanic unrest using GNSS and InSAR data: preliminary results. Bulletin of the Geological Society of Greece.
+
 
 
 #### Critical Zone

@@ -128,9 +128,9 @@ function openPopup(jix) {
     if (arguments.length <= 0) {
         return;
     } // noop if no jix
-    //if (!$("#overlay_form").is(':visible')) { return; } 
+    //if (!$("#overlay_form").is(':visible')) { return; }
     if (jix != -1) { // editing an existing job: populate popup from its table row TDs
-        // ATT:  $("td",job.jix)[n] = n (0-based) must match jobsdefs <td> order in def-row  
+        // ATT:  $("td",job.jix)[n] = n (0-based) must match jobsdefs <td> order in def-row
         $('[name=validity]').prop("checked", $("td", jix)[4].textContent.match(/^Y/g) ? "checked" : "");
         $('[name=res]').val($("td", jix)[5].textContent);
         $('[name=xeq1]').val($("td", jix)[6].textContent);
@@ -224,7 +224,7 @@ function postKill(jix) {
     }
 }
 
-//---   $("form").serialize() 
-//$("td",job.jid).each(function() { 
+//---   $("form").serialize()
+//$("td",job.jid).each(function() {
 //    console.log(this.textContent) ;
 //});

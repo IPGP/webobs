@@ -13,11 +13,11 @@ function active(menuid, pageid) {
     pass = 0;
     // Changement des couleurs de la barre de menu pour mettre en évidence le menu sélectionné
     while (pass < zlien[menuid].length) {
-        // window.alert(document.getElementById('menu'+menuid+'_'+pass).className);
+        //window.alert(document.getElementById('menu'+menuid+'_'+pass).className);
         if (pass == pageid) {
             document.getElementById('menu' + menuid + '_' + pass).className = document.getElementById('menu' + menuid + '_' + pass).className.indexOf('externe') > 0 ? 'menu bas externe actif' : 'menu bas actif';
         } else {
-            // window.alert("pass="+pass+"menuid="+menuid+"pageid="+pageid);
+            //         window.alert("pass="+pass+"menuid="+menuid+"pageid="+pageid);
             document.getElementById('menu' + menuid + '_' + pass).className = document.getElementById('menu' + menuid + '_' + pass).className.indexOf('externe') > 0 ? 'menu bas externe inactif' : 'menu bas inactif';
         }
         pass += 3;

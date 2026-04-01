@@ -18,7 +18,7 @@ function locastat(sta)
 
 %   Author: F. Beauducel/WEBOBS, IPGP
 %   Created: 2007-05-15
-%   Updated: 2021-01-21
+%   Updated: 2025-05-09
 
 % this will force update of all maps older than this date
 forceupdate = datenum(2019,7,23);
@@ -41,8 +41,10 @@ P = readcfg(WO,WO.LOCASTAT);
 NODES = readcfg(WO,WO.CONF_NODES);
 
 % loads transmission information
-trans = isok(P,'PLOT_TRANSMISSION');
+trans = isok(P,'PLOT_TRANSMISSION',1);
 
+% plots shape only (if exists)
+shp = isok(P,'PLOT_SHAPEONLY',1);
 
 ptmp = WO.PATH_TMP_WEBOBS;
 wosystem(sprintf('mkdir -p %s',ptmp));
@@ -63,6 +65,7 @@ dpi = field2num(P,'DPI',80);
 lw = field2num(P,'LINEWIDTH',1.5);
 bw = 0.7; % border width in % of height for frame 0
 convertopt = field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB');
+
 
 feclair = field2num(P,'COLOR_LIGHTENING',1.2);
 fsat = field2num(P,'COLOR_SATURATION',0.8);
@@ -115,11 +118,13 @@ if isfield(P,'FRAME3_DEM_FILE')
 	end
 end
 
-% gets all VIEWS and GRIDS: looks inside CONF directories... avoiding . .. and non-directory files
+% gets all GRIDS: looks inside CONF directories... avoiding . .. and non-directory files
 GV = dir(sprintf('%s/*',WO.PATH_VIEWS));
 GP = dir(sprintf('%s/*',WO.PATH_PROCS));
+GF = dir(sprintf('%s/*',WO.PATH_FORMS));
 grids = [strcat('VIEW.',{GV(~strncmp({GV.name},{'.'},1) & cat(2,GV.isdir)).name}), ...
-	 strcat('PROC.',{GP(~strncmp({GP.name},{'.'},1) & cat(2,GP.isdir)).name})];
+         strcat('FORM.',{GF(~strncmp({GF.name},{'.'},1) & cat(2,GF.isdir)).name}), ...
+	     strcat('PROC.',{GP(~strncmp({GP.name},{'.'},1) & cat(2,GP.isdir)).name})];
 
 % loads all existing and valid NODES in existing grids
 N = readnodes(WO,grids);
@@ -168,7 +173,7 @@ for i = 1:length(k)
 		figure, clf
 		set(gcf,'PaperUnits','Inches','PaperSize',[10,5*(1+pcart)],'PaperPosition',[0,0,10,5*(1+pcart)],'Color',[1,1,1])
 
-		% ----- low-resolution map (frame n�0)
+		% ----- low-resolution map (frame n°0)
 		axes('Position',[0.01+bw/100,pcart/(1+pcart)+2*bw/100+0.01,0.25-bw/100-0.01,1-pcart/(1+pcart)-3*bw/100-0.01]);
 		dem(D.lon,D.lat,D.z,'LatLon','FontSize',8,'BorderWidth',bw,demoptions{:})
 
@@ -176,10 +181,11 @@ for i = 1:length(k)
 		if trans, plottrans(WO,N(ki)); end
 		% inset of frame 1
 		plot(xy1([1,2,2,1,1]),xy1([3,3,4,4,3]),'k-','Linewidth',lw)
-		cible(geo(ki,2),geo(ki,1))
+		plotnode(N(ki),8,0,shp)
 		hold off
+        set(gca,'XLim',xlim,'YLim',ylim)
 
-		% ---- mid-resolution map (frame n�1)
+		% ---- mid-resolution map (frame n°1)
 		ax1 = axes('Position',[.255,(.5+pcart)/(1+pcart)+.01,.24,.5/(1+pcart)-0.01]);
 		kx = find(D.lon >= xy1(1) & D.lon <= xy1(2));
 		ky = find(D.lat >= xy1(3) & D.lat <= xy1(4));
@@ -191,17 +197,18 @@ for i = 1:length(k)
 		% inset of frame 2 (on frame 1)
 		ax = axis;
 		plot(xy2([1,2,2,1,1]),xy2([3,3,4,4,3]),'k-','Linewidth',lw)
-		cible(geo(ki,2),geo(ki,1))
+		plotnode(N(ki),8,0,shp)
 		xe = ax(2) - (xsc1/2 + dxsc1)/lonkm;
 		ye = ax(3) + dxsc1/degkm;
 		plot(xe + xsc1*.5*[-1,-1,1,1]/lonkm,ye + [dxsc1,0,0,dxsc1]/degkm,'-','Color',noir,'Linewidth',2)
 		text(xe,ye,sprintf('%g km',xsc1),'Color',noir,'Fontsize',12,'FontWeight','bold', ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom')
 		hold off
+        set(gca,'XLim',minmax(D.lon(kx)),'YLim',minmax(D.lat(ky)))
 
-		% ---- trac� de la carte haute-r�solution (encart n�2)
+		% ---- high-resolution map (frame n°2)
 		ax2 = axes('Position',[.255,(.1+pcart)/(1+pcart),.2,.4/(1+pcart)]);
-		% sur-�chantillonnage de la carte
+		% oversampling
 		[xx2,yy2] = meshgrid(xy2(1):(d2/lonkm/r2):xy2(2),xy2(3):(d2/degkm/r2):xy2(4));
 		zz = interp2(D.lon,D.lat,double(D.z),xx2,yy2,'*cubic');
 		[h,I,zz2] = dem(xx2(1,:),yy2(:,1),zz,'latlon','BorderWidth',0,'FontSize',0,demoptions{:});
@@ -210,8 +217,8 @@ for i = 1:length(k)
 		if trans, plottrans(WO,N(ki)); end
 		%[c,h] = contour(xx2(1,:),yy2(:,1),zz2,[0,0]);  set(h,'EdgeColor',gris)
 		ax = axis;
-		cible(geo(ki,2),geo(ki,1))
-		% �chelle (convertir le km en degr�)
+		plotnode(N(ki),8,0,shp)
+		% scale (convert km to degree)
 		xe = ax(2) - (xsc2/2 + dxsc2)/lonkm;
 		ye = ax(3) + dxsc2/degkm;
 		plot(xe + xsc2*.5*[-1,-1,1,1]/lonkm,ye + [dxsc2,0,0,dxsc2]/degkm,'-','Color',noir,'Linewidth',2)
@@ -220,10 +227,11 @@ for i = 1:length(k)
 		ax = axis;
 		plot(ax([1,2,2,1,1]),ax([3,3,4,4,3]),'k-','Linewidth',.1)
 		hold off
+        set(gca,'XLim',minmax(xx2(1,:)),'YLim',minmax(yy2(:,1)))
 		mmz = minmax(zz2);
 
 		if ~all(isnan(mmz)) & ~all(mmz==0)
-			% profil EW
+			% EW profile
 			ax21 = axes('Position',[.255,pcart/(1+pcart),.2,.1/(1+pcart)]);
 			xp = xx2(1,:); yp = zz2(round(size(zz2,1)/2),:);
 			yp(find(isnan(yp))) = 0;
@@ -231,7 +239,7 @@ for i = 1:length(k)
 			set(gca,'XLim',xy2(1:2),'YLim',mmz), axis off
 			hold on, plot(repmat(geo(ki,2),[1,2]),mmz,'-','Color',noir,'Linewidth',.1), hold off
 			text(xy2(2),mmz(1),sprintf(' %1.0f m',mmz(1)),'FontSize',9,'VerticalAlignment','bottom');
-			% calcul de l'exag�ration verticale...
+			% compute vertical exageration...
 			dar = daspect(gca);
 			figps = get(gcf,'PaperSize');
 			figpp = get(gcf,'Position');
@@ -241,7 +249,7 @@ for i = 1:length(k)
 			text(xy2(2),mean(mmz),sprintf('  x %1.1f',1000*lonkm*dar(1)/dar(2)/rxy),'FontSize',8');
 			text(xy2(2),mmz(2),sprintf(' %1.0f m',mmz(2)),'FontSize',9','VerticalAlignment','top');
 
-			% profil NS
+			% NS profile
 			ax21 = axes('Position',[.455,(.1+pcart)/(1+pcart),.045,.4/(1+pcart)]);
 			xp = zz2(:,round(size(zz2,2)/2))'; yp = yy2(:,1)';
 			xp(find(isnan(xp))) = 0;
@@ -364,7 +372,7 @@ for i = 1:length(k)
 			hold on
 			ax = axis;
 			plot(ax([1,2,2,1,1]),ax([3,3,4,4,3]),'k-','Linewidth',.1)
-			cible(utm(ki,1),utm(ki,2),15)
+            plotnode(N(ki),15,1,shp)
 			% �chelle
 			xe = ax(2) - xsc3*1e3/2 - dxsc3;
 			ye = ax(3) + dxsc3;
@@ -414,7 +422,7 @@ for i = 1:length(k)
 			if trans, plottrans(WO,N(ki),15,'utm'); end
 			ax = axis;
 			plot(ax([1,2,2,1,1]),ax([3,3,4,4,3]),'k-','Linewidth',.1)
-			cible(utm(ki,1),utm(ki,2),15)
+            plotnode(N(ki),15,1,shp)
 			% �chelle
 			xe = ax(2) - xsc3*1e3/2 - dxsc3;
 			ye = ax(3) + dxsc3;
@@ -424,6 +432,7 @@ for i = 1:length(k)
 			text(xe,ye,sprintf('%g m',xsc3*1e3),'Color',blanc,'Fontsize',14,'FontWeight','bold', ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom')
 			hold off
+            set(gca,'XLim',minmax(x3(kx)),'YLim',minmax(y3(ky)))
 			znode = interp2(x3(kx),y3(ky),z3(ky,kx),utm(ki,1),utm(ki,2));
 		else
 			axis off
@@ -469,14 +478,34 @@ timelog(procmsg,2)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function cible(x,y,s)
-% target function
-
-if nargin < 3
-	s = 7;
+function plotnode(N,s,utm,shp)
+% plots node N with marker size s, utm coordinates and option shp
+if ~shp || isempty(N.GEOJSON)
+    if utm
+        [x,y] = ll2utm(N.LAT_WGS84,N.LON_WGS84);
+    else
+        x = N.LON_WGS84;
+        y = N.LAT_WGS84;
+    end
+	target(x,y,s)
+else
+    G = N.GEOJSON.features{1};
+    for n = 1:length(G)
+        switch G.geometry.type
+        case 'LineString'
+            xy = cat(1,G.geometry.coordinates{:});
+        case 'Polygon'
+            xy = cat(1,G.geometry(n).coordinates{:}{:});
+        end
+        if utm
+            [x,y] = ll2utm(cat(1,xy{:,2}),cat(1,xy{:,1}));
+        else
+            x = cat(1,xy{:,1});
+            y = cat(1,xy{:,2});
+        end
+        plotshape(x,y,'k','EdgeColor','r','LineWidth',2,'FaceColor','none');
+    end
 end
-plot(x,y,'o','MarkerSize',s,'MarkerFaceColor',[1,0,0],'MarkerEdgeColor',[.2,.2,.2],'Linewidth',s/5)
-plot(x,y,'o','MarkerSize',s + 2,'MarkerEdgeColor',.99*[1,1,1])
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

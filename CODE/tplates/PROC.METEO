@@ -35,7 +35,7 @@ TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} meteo $SELFREF -
-SUBMIT_RESOURCE|mymeteo
+SUBMIT_RESOURCE|request
 
 # list of keys editable in requests
 REQUEST_KEYLIST|NAME
@@ -73,6 +73,9 @@ PPI|100
 LANDSCAPE|N
 # export text data files
 EXPORTS|YES
+EXPORT_HEADER_NODE_KEYLIST|FID,NAME,LAT_WGS84,LON_WGS84,ALTITUDE,URL
+EXPORT_HEADER_PROC_KEYLIST|
+
 # outputs further vector files (in addition to EPS) for each graph. SVG is experimental
 SVGOUTPUT|NO
 PDFOUTPUT|NO
@@ -88,20 +91,35 @@ COPYRIGHT2|
 # --------------------------------------------------------------------
 # specific proc's parameters
 
+# rain channel number
 RAIN_CHANNEL|6
+# set to YES if the rain data are cumulated
 RAIN_CUMSUM_DATA|NO
+# rain channel color
 RAIN_COLOR|sea
+# wind speed channel number
 WIND_SPEED_CHANNEL|5
+# wind azimuth channel number
 WIND_AZIMUTH_CHANNEL|4
+# wind rose angle step (degree)
 WIND_ROSE_STEP|10
 
+# channel numbers for X/Y plot
 XY_CHANNELS|3,8
+# channel numbers for per node time series plots
 NODE_CHANNELS|1,2,7,4,5,3,8
+# flat to plot events in background
 PERNODE_PLOT_EVENTS|YES
+# grid
 PLOT_GRID|YES
 
+# rain alert threshold (mm)
 RAIN_ALERT_THRESHOLD|50
+# rain alert interval (days)
 RAIN_ALERT_INTERVAL|1
+# rain post-alert delay (days)
 RAIN_ALERT_DELAY|3
+# rain alert color
 RAIN_ALERT_RGB|1,.3,.3
+# rain post-alert color
 RAIN_ALERT_DELAY_RGB|1,.6,.6

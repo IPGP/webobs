@@ -42,7 +42,7 @@ TIMESCALE_TRUEVALUE|Y
 
 # execution command (for runproc shell)
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} naqssoh $SELFREF -
-SUBMIT_RESOURCE|naqssoh
+SUBMIT_RESOURCE|request
 
 # node parameters
 NODE_NAME|node
@@ -75,6 +75,9 @@ EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
 PPI|100
 # exports text data files
 EXPORTS|NO
+EXPORT_HEADER_NODE_KEYLIST|FID,NAME,LAT_WGS84,LON_WGS84,ALTITUDE,URL
+EXPORT_HEADER_PROC_KEYLIST|
+
 # outputs further vector files (in addition to EPS) for each graph. SVG is experimental
 SVGOUTPUT|NO
 PDFOUTPUT|NO

@@ -1,5 +1,20 @@
 CHECKLIST for new release x.y.z
 
+== regression testing
+
+- sefran, MC3
+- all proc outputs: gridmaps, locastat, genplot, ...
+- proc requests and results display
+- conf editors (grid, node)
+- navigation into menu, grids, nodes, feature links
+- text content edit+display (grids, nodes, wiki page)
+- events edit+display (grids and nodes)
+- upload/delete image and automatic thumbnails (grid event, node photo/scheme/doc, node event and sub-event, a genform image input)
+- gazette (display, events)
+- admin manager (scheduler, postpoard, users)
+
+
+== make the package
 
 - git pull (master branch)
 - update mods.html (if new scripts)

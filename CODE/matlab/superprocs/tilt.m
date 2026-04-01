@@ -37,7 +37,7 @@ function DOUT=tilt(varargin)
 %   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet,
 %            V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
 %   Created: 2015-08-24 in Yogyakarta, Indonesia
-%   Updated: 2022-06-12
+%   Updated: 2026-03-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -104,6 +104,7 @@ geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
 for n = 1:length(N)
 
 	% adds 2 more columns to matrix d: north and east components (for the moment, takes only the last azimuth values)
+    % converts North azimuth to trigonometric angle (degree)
 	azr = 90 - D(n).CLB.az(ixyt(1));
 	azt = 90 - D(n).CLB.az(ixyt(2));
 	% radial-tangential unitary vectors
@@ -150,9 +151,9 @@ for n = 1:length(N)
 		% title and status
 		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
 		stitre = varsub(pernode_title,V);
-		P.GTABLE(r).GTITLE = stitre;
-		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = stitre;
+		OPT.GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
+		OPT.INFOS = {''};
 
 		% loop for X and Y components with error bars (in m)
 		lre = nan(nx,2);
@@ -176,11 +177,12 @@ for n = 1:length(N)
 					rxy = corrcoef(detrend(dk(kreal)),detrend(dkt(kreal)));
 					tsign = sign(rxy(2));
 					[ax,h1,h2] = plotyy(tk,dk,tkt,dkt*tsign,'timeplot');
-					set(h1,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',scolor(i));
-					set(h2,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',pernode_temperature_col);
-					set(ax(1),'Ylim',get(ax(1),'YLim'),'YColor',scolor(i))	% freezes Y axis
+                    hold on
+					set(h1,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',scolor(i));
+					set(h2,'LineStyle',pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',pernode_temperature_col);
+					set(ax(1),'Ylim',get(ax(1),'YLim'),'YColor',scolor(i),'UserData',[])	% freezes Y axis
 					box on
-					set(ax(2),'Ylim',get(ax(2),'YLim'),'YColor','k')	% freezes Y axis
+					set(ax(2),'Ylim',get(ax(2),'YLim'),'YColor',pernode_temperature_col,'UserData',[1])	% freezes Y axis and add a flag for background events
 					ytick = get(ax(2),'YTick');
 					set(ax(2),'YTickLabel',num2str(tsign*ytick(:)));
 					box on
@@ -189,10 +191,9 @@ for n = 1:length(N)
 					if length(kk) > 2 && ~isempty(k1)
 						lr = polyfit(tk(kk)-t(k1),dk(kk),1);
 						lre(i,:) = [lr(1),std(dk(kk) - polyval(lr,tk(kk)-t(k1)))/diff(tlim)];
-						hold on
 						plot(tlim,polyval(lr,tlim - t(k1)),'--k','LineWidth',.2)
-						hold off
 					end
+					hold off
 					set(ax,'XLim',tlim,'FontSize',fontsize)
 					axes(ax(1))
 					datetick2('x',P.GTABLE(r).DATESTR)
@@ -251,30 +252,31 @@ for n = 1:length(N)
 			end
 			OPT.FIXEDPP = false;
 		end
-		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
+		tlabel(tlim,P.TZ,'FontSize',8)
 
 		if ~isempty(k) && ~isempty(k1)
-			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),' (min|moy|max)',' ',' '};
+			OPT.INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),' (min|moy|max)',' ',' '};
 			for ii = 1:length(ixyt)
 				i = ixyt(ii);
 				drel = d(k1,i)*(ii<3);
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.2f %s} (%+1.2f | %+1.2f | %+1.2f) - Trend = {\\bf%+1.2f \\pm %1.2f %s/day}', ...
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('%d. %s = {\\bf%+1.2f %s} (%+1.2f | %+1.2f | %+1.2f) - Trend = {\\bf%+1.2f \\pm %1.2f %s/day}', ...
 					ii, C.nm{i},d(ke,i)-drel,C.un{i},rmin(d(k,i)-drel),rmean(d(k,i)-drel),rmax(d(k,i)-drel),lre(i,:),C.un{i})}];
 			end
 		end
 
 		% makes graph
+        OPT.STATUS = P.GTABLE(r).STATUS;
 		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = t(k);
 			E.d = d(k,ixyt);
-			E.header = {'TiltX(�rad)','TiltY(�rad)','Temperature(�C)'};
+			E.header = {sprintf('TiltX(%crad)',char(181)),sprintf('TiltY(%crad)',char(181)),sprintf('Temperature(%cC)',char(176))};
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 
@@ -296,7 +298,7 @@ for r = 1:length(P.GTABLE)
 
 	V.name = P.NAME;
 	V.timescale = timescales(P.GTABLE(r).TIMESCALE);
-	P.GTABLE(r).GTITLE = varsub(summary_title,V);
+	OPT.GTITLE = varsub(summary_title,V);
 	if P.GTABLE(r).STATUS
 		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 	end
@@ -336,7 +338,7 @@ for r = 1:length(P.GTABLE)
 					%samp = D(n).CLB.sf(i);
 					samp = N(n).ACQ_RATE;
 				end
-				timeplot(tk,dk,samp,summary_linestyle,'Color',scolor(n),'MarkerSize',P.GTABLE(r).MARKERSIZE/10)
+				timeplot(tk,dk,samp,summary_linestyle,'Color',scolor(n),'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE)
 				% computes daily trends (in �rad/day)
 				kk = find(~isnan(dk));
 				if ii < 3 && length(kk) > 2
@@ -366,9 +368,9 @@ for r = 1:length(P.GTABLE)
 		datetick2('x',P.GTABLE(r).DATESTR)
 		switch ii
 			case 1
-				ylabel(sprintf('%sTilt X (�rad)',rel))
+				ylabel(sprintf('%sTilt X (%crad)',rel,char(181)))
 			case 2
-				ylabel(sprintf('%sTilt Y (�rad)',rel))
+				ylabel(sprintf('%sTilt Y (%crad)',rel,char(181)))
 			case 3
 				ylabel(sprintf('%s%s (%s)',rel,D(n).CLB.nm{i},D(n).CLB.un{i}))
 		end
@@ -383,9 +385,9 @@ for r = 1:length(P.GTABLE)
 		set(gca,'YLim',ylim);
 	end
 
-	tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
+	tlabel(tlim,P.TZ,'FontSize',8)
 
-	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 	close
 
 	% --- Motion map
@@ -486,7 +488,7 @@ for r = 1:length(P.GTABLE)
 		xsc = xlim(1) + [0,vscale*vsc*xyr];
 		ysc = repmat(alim(1)-diff(alim)/20,1,2);
 		plot(xsc,ysc,'-k','Linewidth',2,'Clipping','off')
-		text(mean(xsc),ysc(1),sprintf('%g �rad',vscale),'Clipping','off', ...
+		text(mean(xsc),ysc(1),sprintf('%g %crad',vscale,char(181)),'Clipping','off', ...
 			'HorizontalAlignment','center','VerticalAlignment','top','FontWeight','bold')
 		hold off
 
@@ -497,7 +499,9 @@ for r = 1:length(P.GTABLE)
 		axis off
 
 		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
+        OPT.FIXEDPP = true;
+        OPT.INFOLINES = 9;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -612,7 +616,7 @@ for r = 1:length(P.GTABLE)
 		ysc = ylim(2) + .04*diff(ylim);
 		lsc = vscale*vsc;
 		arrows(xsc,ysc,lsc,90,arrowshape*vmax/vscale,'FaceColor','none','LineWidth',1,'Clipping','off');
-		text(xsc+1.1*lsc,ysc,sprintf('%g �rad/day',vscale),'FontWeight','bold')
+		text(xsc+1.1*lsc,ysc,sprintf('%g %crad/day',vscale,char(181)),'FontWeight','bold')
 
 
 		hold off
@@ -636,21 +640,23 @@ for r = 1:length(P.GTABLE)
 				set(gca,'YLim',[0,max(sta_amp+sta_err)])
 			end
 			xlabel('Distance from target (km)')
-			ylabel('Tilt amplitude (�rad/day)')
+			ylabel(sprintf('Tilt amplitude (%crad/day)',char(181)))
 		end
 
 
 		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
+        OPT.FIXEDPP = true;
+        OPT.INFOLINES = 9;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
+		if isok(P,'EXPORTS')
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,1:2)];
-			E.header = {'Latitude','Longitude','Altitude','E_tilt(�rad/day)','N_Tilt(�rad/day)','dEt(�rad/day)','dNt(�rad/day)'};
+			E.header = {'Latitude','Longitude','Altitude',sprintf('E_tilt(%crad/day)',char(181)),sprintf('N_Tilt(%crad/day)',char(181)),sprintf('dEt(%crad/day)',char(181)),'dNt(%crad/day)'};
 			E.title = sprintf('%s {%s}',stitre,upper(sprintf('%s_%s',proc,summary)));
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
 
@@ -908,7 +914,7 @@ for r = 1:length(P.GTABLE)
 		P.GTABLE(r).INFOS = {''};
 		%rcode2 = sprintf('%s_%s',proc,summary);
 		OPT.FIXEDPP = true;
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 	end
