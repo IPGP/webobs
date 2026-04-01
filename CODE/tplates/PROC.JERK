@@ -119,6 +119,11 @@ LEVEL2_RGB|1,0.5,0.5
 JERK_THRESHOLD_MAX_MS3|1e-8
 JERK_ZOOM_DAYS|1
 JERK_ZOOM_MINYLIM_MS3|2e-10
-# postboard event name
-NOTIFY_EVENT|jerkalert.
+# postboard event name for warning alert (enter level 1 or back to level 0)
+NOTIFY_EVENT_WARNING|jerkalert.warning
+# postboard event name for critical alert (enter level 2)
+NOTIFY_EVENT_CRITICAL|jerkalert.critical
 
+# list of maximum jerk amplitude for past events (from Beauducel et al. (2025) + OVPF-IPGP (2026))
+JMAX_ERUPTION_NMS3|1.4, 0.05, 0.8, 0.5, 0.4, 1.0, 0.7, 0.6, 1.5, 0.2, 0.9, 2.0, 0.2, 0.05, 0.5, 2.5, 0.1, 0.1, 0.05, 0.2, 0.4, 0.2, 0.3, 0.3, 0.5, 0.3, 1.0, 1.7, 1.1, 0.5, 1.7, 1.0, 0.9, 0.3, 1.4, 0.2, 0.4, 0.8, 0.6, 0.3, 0.4, 0.9, 0.8, 0.9, 2.8, 1.0, 0.4, 1.5, 1.6, 0.8
+JMAX_INTRUSION_NMS3|0.3, 0.05, 0.05, 0.05, 0.05, 1.2, 0.05, 0.9, 0.05, 0.05, 0.1, 0.1
