@@ -140,7 +140,7 @@ my $notebookfwd = $QryParm->{'notebookfwd'} // "0";
 my $metain      = $QryParm->{'meta'} // "";     # add MMD
 my $conv        = $cgi->param('conv')  // "0";  # add MMD
 $contents = "$metain$contents";            # add MMD
-my $meta;                                  # add MMD
+my $meta = "";                                  # add MMD
 my $mmd = isok($WEBOBS{WIKI_MMD}) // 1;    # add MMD
 my $target = "";
 my $tz = "";
@@ -316,6 +316,7 @@ $date = $time = $titre = $contents = "";
 $contents = "";
 my $parents = WebObs::Events::parents($evbase, $evpath);
 my $featwanted = isok($NODES{EVENTNODE_FEATURE_MANDATORY});
+my $nofeatconfirm = isok($NODES{EVENTNODE_NOFEATURE_CONFIRM});
 
 # ---------------------------------------------------------------------------------------
 # ---- action 'new' : show user an empty event form, to create an event file
@@ -323,8 +324,10 @@ my $featwanted = isok($NODES{EVENTNODE_FEATURE_MANDATORY});
 #
 if ($action =~ /new/i ) {
     if (!$isProject) {
-        $date = $today->strftime('%Y-%m-%d');
-        $time = $today->strftime('%H:%M');
+        if (isok($NODES{EVENTNODE_DATE_AUTO})) {
+            $date = $today->strftime('%Y-%m-%d');
+            $time = $today->strftime('%H:%M');
+        }
         $date2 = $date;
         $time2 = $time;
         $pagetitle = "$__{'Create Event'}";
@@ -335,7 +338,7 @@ if ($action =~ /new/i ) {
     } else {
         $pagetitle = "$__{'Create Project'}";
     }
-    $meta = "WebObs: created by vedit  \n\n" if ($mmd);         # add MMD
+    $meta = "WebObs: created by vedit\n\n";         # add MMD
 }
 
 # ---------------------------------------------------------------------------------------
@@ -346,8 +349,6 @@ if ($action =~ /upd/i ) {
     if (!$isProject) {
         my ($fname,$ft) = split(/\./,basename($evpath));
         ($name,$date,$time,$version) = WebObs::Events::eventnameSplit(basename($fname));
-        $time =~ s/-/:/;
-        $time =~ s/NA//;
         $pagetitle = "$__{'Edit Event'} [$date $time".($tz ne "" ? " <I>($tz)</I>":"")." $version]";
         $s2g = ( $GazetteWhat eq "ALL" ) ? 1 : 0;
     } else {
@@ -364,7 +365,7 @@ if ($action =~ /upd/i ) {
     @oper = @$authors;
     @roper = @$remotes;
     shift(@lines);
-    $contents = join("\n",@lines);
+    $contents = join("\n",@lines)."\n";
     ($contents, $meta) = WebObs::Wiki::stripMDmetadata($contents);
 }
 
@@ -442,19 +443,27 @@ function postform() {
     var msg = '';
 
     \$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
-    if (!form.date.value.match(/^[1-2]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|1\\d|2\\d|3[01])\$/)) {bad=true; form.date.style.background='red';};
-    if (form.time.value == '') {
+    if (!form.date.value.match(/^[1-2]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|1\\d|2\\d|3[01])\$/)) {
+        bad = true;
+        form.date.style.background='red';
+        msg = 'Please enter a correct date (yyyy-mm-dd) for this event';
+    };
+    if (form.time.value == '' || form.time.value == 'NA') {
         form.time.value = 'NA';
         } else {
-            if (!form.time.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {bad=true; form.time.style.background='red';};
+            if (!form.time.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {
+                bad = true;
+                form.time.style.background='red';
+                msg = 'Please enter a correct time (HH:MM) or NA';
+            };
         }
     console.log(\"0 - time=\" + form.time.value);
     if (form.date2.value != '' && !form.date2.value.match(/^\\d{4}-[0-1]\\d-[0-3]\\d\$/)) {bad=true; form.date2.style.background='red';};
     if (form.date2.value == '') {form.date2.value = form.date.value;}
     if (form.time2.value == '') {form.time2.value = form.time.value;}
-    if (!form.time2.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {
+    if (form.time2.value != '' && form.time2.value != 'NA' && !form.time2.value.match(/^([0-1]\\d|2[0-3]):[0-5]\\d\$/)) {
         bad = true;
-        msg = 'Bad datetime format.';
+        msg = 'Please enter a correct time (HH:MM).';
         form.time2.style.background = '#FF9999';
     };
     if (form.oper.value == '' && form.roper.value == '') {
@@ -474,6 +483,12 @@ if ($featwanted) {
         bad = true;
         msg = 'Please select a feature.';
         form.feature.style.background = '#FF9999';
+    }\n";
+} elsif ($nofeatconfirm) {
+    print "     if (form.feature.value == '') {
+        if (!confirm(\"No feature has been selected. Are you sure?\")) {
+            return false;
+        }
     }\n";
 }
 print "     form.s2g.value = $s2g;
@@ -741,7 +756,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

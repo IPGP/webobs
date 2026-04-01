@@ -49,6 +49,7 @@ types of HTML pages:
 use strict;
 use warnings;
 use Time::Local;
+use Time::Piece;
 use DateTime;
 use File::Basename;
 use List::Util qw(first);
@@ -76,24 +77,24 @@ $|=1;
 $ENV{LANG} = $WEBOBS{LOCALE};
 
 # ---- get query-string  parameters
-my $s3     = $cgi->url_param('s3');
+my $s3     = $cgi->url_param('s3') // $WEBOBS{SEFRAN3_DEFAULT_NAME} // "SEFRAN3";
 my $mc3    = $cgi->url_param('mc');
-my $id     = $cgi->url_param('id');
-my $header = $cgi->url_param('header');
-my $status = $cgi->url_param('status');
-my $evtloc = $cgi->url_param('evtloc');
-my $trash  = $cgi->url_param('trash');
-my $ref    = $cgi->url_param('ref');
-my $yref   = $cgi->url_param('yref');
-my $mref   = $cgi->url_param('mref');
-my $dref   = $cgi->url_param('dref');
+my $id     = $cgi->url_param('id') // "";
+my $header = $cgi->url_param('header') // 1;
+my $status = $cgi->url_param('status') // 0;
+my $evtloc = $cgi->url_param('evtloc') // 0;
+my $trash  = $cgi->url_param('trash') // 0;
+my $ref    = $cgi->url_param('ref') // "";
+my $yref   = $cgi->url_param('yref') // "";
+my $mref   = $cgi->url_param('mref') // "";
+my $dref   = $cgi->url_param('dref') // "";
 my $voies_classiques = $cgi->url_param('va');
-my $reglette = $cgi->url_param('rg');
-my $date   = $cgi->url_param('date');
-my $high   = $cgi->url_param('high');
+my $date   = $cgi->url_param('date') // "";
+my $high   = $cgi->url_param('high') // 0;
 my $sx     = $cgi->url_param('sx') // 0;
-my $replay = $cgi->url_param('replay');
-my $hpx    = $cgi->url_param('hpx');
+my $sgram_opacity = $cgi->url_param('sgramopacity');
+my $replay = $cgi->url_param('replay') // 0;
+my $hpx    = $cgi->url_param('hpx') // 0;
 my $limit  = $cgi->url_param('limit');
 
 # $hideloc is read below
@@ -102,17 +103,17 @@ my $limit  = $cgi->url_param('limit');
 my $dep = 0 ;
 $dep = 1 if ($date && length($date) > 10) ;
 
-# ---- loads requested Sefran3 configuration or default one
-$s3 ||= $WEBOBS{SEFRAN3_DEFAULT_NAME};
+# ---- loads requested Sefran3 configuration
 my $s3root = "$WEBOBS{PATH_SEFRANS}/$s3";
 my $s3conf = "$s3root/$s3.conf";
 my %SEFRAN3 = readCfg("$s3conf") if (-f "$s3conf");
+$SEFRAN3{CHANNEL_CONF} //= "$s3root/channels.conf";
 
 my $hideloc = $cgi->url_param('hideloc')
   // not $SEFRAN3{MC3_EVENT_DISPLAY_LOC} =~ m/^(Y|YES|1)$/i;
 
-# ---- loads MC3 configuration: requested or Sefran's or default
-$mc3 ||= $SEFRAN3{MC3_NAME} ||= $WEBOBS{MC3_DEFAULT_NAME};
+# ---- loads MC3 configuration
+$mc3 //= $SEFRAN3{MC3_NAME} // $WEBOBS{MC3_DEFAULT_NAME};
 my $mc3conf = "$WEBOBS{ROOT_CONF}/$mc3.conf";
 my %MC3 = readCfg("$mc3conf") if (-f "$mc3conf");
 
@@ -135,7 +136,7 @@ $userLevel = 1 if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"MC") ||
 $userLevel = 2 if (WebObs::Users::clientHasEdit(type=>"authprocs",name=>"MC") || WebObs::Users::clientHasEdit(type=>"authprocs",name=>"$mc3"));
 $userLevel = 4 if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"MC") || WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$mc3"));
 
-if (!defined($limit)) { $limit = $SEFRAN3{TIME_INTERVALS_DEFAULT_VALUE}; }
+$limit //= $SEFRAN3{TIME_INTERVALS_DEFAULT_VALUE};
 
 # for "last events" mode ($limit = 0), forces real-time ($ref = 0)
 if ($limit == 0) { $ref = 0; }
@@ -210,10 +211,11 @@ my $refreshms = ($SEFRAN3{DISPLAY_REFRESH_SECONDS}*1000);
 my @menu = readFile("$SEFRAN3{MENU_FILE}");
 my $prog ="/cgi-bin/$WEBOBS{CGI_SEFRAN3}?s3=$s3&mc=$mc3";
 
-$SEFRAN3{REF_NORTC} ||= 0;
-$MC3{NEW_P_CLEAR_S} ||= 0;
-$SEFRAN3{SGRAM_OPACITY} ||= 0.5;
-$SEFRAN3{PATH_IMAGES_SGRAM} ||= "sgram";
+$SEFRAN3{REF_NORTC} //= 0;
+$MC3{NEW_P_CLEAR_S} //= 0;
+$SEFRAN3{SGRAM_OPACITY} //= 0.5;
+$SEFRAN3{PATH_IMAGES_SGRAM} //= "sgram";
+$sgram_opacity = $SEFRAN3{SGRAM_OPACITY} if (!defined $cgi->url_param('sgramopacity'));
 
 # ---- Date and time for now (UTC)...
 my ($Ya,$ma,$da,$Ha,$Ma,$Sa) = split('/',strftime('%Y/%m/%d/%H/%M/%S',gmtime));
@@ -224,11 +226,10 @@ my $yesterday = "$Yy-$my-$dy";
 my $href = 23;
 
 # ----
-my $titrePage = $SEFRAN3{NAME} ||= $SEFRAN3{TITRE};
+my $titrePage = $SEFRAN3{NAME} //= $SEFRAN3{TITRE};
 my @html;
 
 my $s;
-my $i;
 
 if (!$ref) {
     $yref = $Ya;
@@ -247,7 +248,6 @@ if (!$ref) {
 
 # ---- some display setups
 #
-my $largeur_vignette = $SEFRAN3{HOURLY_WIDTH}+1;
 my $largeur_voies = $SEFRAN3{VALUE_PPI}+1;
 my $speed = $SEFRAN3{VALUE_SPEED};
 if (($high || $dep) && $SEFRAN3{VALUE_SPEED_HIGH} > 0) {
@@ -255,7 +255,7 @@ if (($high || $dep) && $SEFRAN3{VALUE_SPEED_HIGH} > 0) {
     $speed = $SEFRAN3{VALUE_SPEED_HIGH};
 }
 my $largeur_image = $speed*$SEFRAN3{VALUE_PPI};
-my $hauteur_image = ($hpx ne "" ? $hpx:$SEFRAN3{HEIGHT_INCH}*$SEFRAN3{VALUE_PPI}) + 1;
+my $hauteur_image = ($hpx > 0 ? $hpx:$SEFRAN3{HEIGHT_INCH}*$SEFRAN3{VALUE_PPI}) + 1;
 my $hauteur_label_haut = $SEFRAN3{LABEL_TOP_HEIGHT};
 my $hauteur_label_bas = $SEFRAN3{LABEL_BOTTOM_HEIGHT};
 my $largeur_fleche = 50;
@@ -289,16 +289,17 @@ var SCB = {
     WIDTHREF : $largeur_image,
     WIDTH : $largeur_image,
     HEIGHT : $SEFRAN3{HEIGHT_INCH},
-   HEIGHTIMG : $hauteur_image,
+    HEIGHTIMG : $hauteur_image,
     LABELTOP : $SEFRAN3{LABEL_TOP_HEIGHT},
     LABELBOTTOM : $SEFRAN3{LABEL_BOTTOM_HEIGHT},
     WIDTHVOIES : $largeur_voies,
     CHANNELNB : $#streams + 1,
     STREAMS : ["$sefran_streams"],
-    SGRAMOPACITY : $SEFRAN3{SGRAM_OPACITY},
+    SGRAMOPACITY : $sgram_opacity,
     DX : $dx_mctag,
     SX : $sx,
     PROG : '$prog',
+    DATE : '$date',
     NOREFRESH: 0
 };
 
@@ -342,9 +343,9 @@ var MECB = {
             'notovr': "$__{'Event not flagged OVERSCALE'}",
             'unkevt': "$__{'Event type is unknown/undetermined. Validate as is ?'}",
             'notval': "$__{'You cannot validate an event of type AUTO'}",
-            'delete': "$__{'ATT: Do you want PERMANENTLY erase this event from'}",
-            'hidevt': "$__{'Do you want to hide this event from'}",
-            'resevt': "$__{'Do you want to restore this event in'}"
+            'delete': "$__{'ATT: Do you want PERMANENTLY erase this event from'} ",
+            'hidevt': "$__{'Do you want to hide this event from'} ",
+            'resevt': "$__{'Do you want to restore this event in'} "
           },
     CROSSHAIR: '<span id=crosshairUp></span><span id=crosshairDown></span>',
     NEWPCLEARS: $MC3{NEW_P_CLEAR_S},
@@ -440,30 +441,31 @@ if (!$date) {
     my @dates;
     my @mclist;
     for (0 .. ($limit>0?$limit:$limit_lastmc)) {
-        my $ymdh = strftime('%Y-%m-%d|%H',gmtime(timegm(0,0,$href,$dref,$mref-1,$yref-1900) - $_*3600));
+        my $ymdh = strftime('%Y-%m-%d\|%H',gmtime(timegm(0,0,$href,$dref,$mref-1,$yref-1900) - $_*3600));
         my $ymd = substr($ymdh,0,10);
         push(@dates,$ymd) if (!grep(/^$ymd$/,@dates) && $_ < 24*$SEFRAN3{DISPLAY_DAYS});
         my $f = "$MC3{ROOT}/".substr($ymd,0,4)."/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}".substr($ymd,0,4).substr($ymd,5,2).".txt";
         if (-f $f) {
-            my @mchour = split(/\n/,qx(grep "|$ymdh:" $f));
+            my @mchour;
+            open my $fh, '<', $f or die $!;
+            while (my $line = <$fh>) {
+                push(@mchour, $line) if $line =~ /\|$ymdh:/;
+            }
+            close $fh;
+            chomp(@mchour);
             push(@mclist,@mchour);
         }
     }
     my @listeHeures = reverse('00'..'23');
 
-    my $dt = 0;
-    my $last_mn;
-    my $lmn;
-
     # what's the last minute-image ? searches for it and computes realtime delta
-    my $last_d = qx(y=\$(find $SEFRAN3{ROOT} -maxdepth 1 -name "????" | sort | tail -n1);find \$y -maxdepth 1| sort | tail -n1 | xargs echo -n);
-    if ($last_d) {
-        $last_mn = qx/find $last_d -name "??????????????.png"|sort|tail -n1/;
-        if ($last_mn) {
-            $lmn = basename($last_mn);
-            my @lm = (substr($lmn,10,2),substr($lmn,8,2),substr($lmn,6,2),substr($lmn,4,2),substr($lmn,0,4));
-            $dt = (timegm(gmtime) - timegm(0,$lm[0],$lm[1],$lm[2],$lm[3]-1,$lm[4]-1900) - 60);
-        }
+    my $dt = 0;
+    my $last_mn = latest_sefran_img($SEFRAN3{ROOT});
+    my $lmn = "";
+    if (defined $last_mn) {
+        $lmn = basename($last_mn);
+        my @lm = (substr($lmn,10,2),substr($lmn,8,2),substr($lmn,6,2),substr($lmn,4,2),substr($lmn,0,4));
+        $dt = (timegm(gmtime) - timegm(0,$lm[0],$lm[1],$lm[2],$lm[3]-1,$lm[4]-1900) - 60);
     }
 
     # title and current data/time
@@ -475,7 +477,9 @@ if (!$date) {
           "<IMG src=\"/icons/mctag.png\" border=1 style=\"vertical-align:middle\"></A> | ";
         print "<A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showsgram_help'}')\">",
           "<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> | " if ($sgramOK);
-        print "<A href=\"#infos\">$__{'Information'}</A>",
+        print "<A href=\"#status\">$__{'Status'}</A> | " if ($status);
+        print  "<A href=\"#maps\">$__{'Maps'}</A>",
+          " | <A href=\"#infos\">$__{'Information'}</A>",
           " | <A href=\"/cgi-bin/$WEBOBS{CGI_MC3}?mc=$mc3\">$MC3{TITLE}</A>",
           " ]</p></TD>";
         if (!$ref || $SEFRAN3{REF_NORTC} == 0) {
@@ -554,7 +558,7 @@ if (!$date) {
                                 $sgramimg = "<IMG class=\"sgram sgramhour\" src=\"$SEFRAN3{PATH_WEB}/${f}s.jpg\" style=\"cursor:pointer$sgramalign\" $imgopt>";
                             }
                         }
-                        print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH};height:$SEFRAN3{HOURLY_HEIGHT};text-align:".($nb_vign < 2 ? "left":"right")."\"><DIV style=\"position:relative\">";
+                        print "<TD class=\"sefran\" style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px;text-align:left\"><DIV style=\"position:relative\">";
                         print    "$sgramimg<IMG src=\"$SEFRAN3{PATH_WEB}/$f.jpg\" style=\"cursor:pointer\" $imgopt>";
                     } else {
                         print "<TD style=\"width:$SEFRAN3{HOURLY_WIDTH}px;height:$SEFRAN3{HOURLY_HEIGHT}px\" class=\"noImage\"><DIV style=\"position:relative;height:100%\">no image";
@@ -618,8 +622,8 @@ if (!$date) {
     print "</TABLE><BR>";
 
     # table information about channel streams
-    print "<A name=\"infos\"><H2>Informations</H2></A>\n";
     if ($status) {
+        print "<A name=\"status\"><H2>$__{'Status'}</H2></A>\n";
         my $now_seconds = timegm(gmtime);
         my $Q = qx($WEBOBS{PRGM_ALARM} $SEFRAN3{SEEDLINK_SERVER_TIMEOUT_SECONDS} $WEBOBS{SLINKTOOL_PRGM} -Q $SEFRAN3{SEEDLINK_SERVER});
         my @stream_server = split(/\n/,$Q);
@@ -647,6 +651,7 @@ if (!$date) {
           "<TR><TH colspan=2>Offset<br>(&mu;m/s)</TH><TH>Asym.</TH><TH>RMS&Delta;<br>(&mu;m/s)</TH><TH>Acq.<br>(%)</TH><TH>Samp.<br>(Hz)</TH>",
           ($sgramOK ? "<TH>Freq<br>(Hz)</TH>":""),
           "<TH>Oldest data</TH><TH>Last data</TH><TH>Buffer</TH><TH>&Delta;T</TH></TR>\n";
+        $i = 0;
         for (@channels) {
             $i++;
             my ($alias,$codes,$calib,$offset,$pp,$color) = split(/\s+/,$_);
@@ -718,7 +723,22 @@ if (!$date) {
         }
         print "</TABLE><BR>\n";
     }
+    # --- maps of stations (NOTE: only the main map is shown here)
+    print "<A name=\"maps\"><H2>$__{'Maps'}</H2></A>\n";
+    my $MAPpath = my $MAPurn = "";
+    my $grid = "SEFRAN.$s3";
+    $MAPpath = "$WEBOBS{ROOT_OUTG}/$grid/$WEBOBS{PATH_OUTG_MAPS}";
+    my $mapfile = $grid."_map";
+    if  ( -e "$MAPpath/$mapfile.png" ) {
+        ( $MAPurn  = $MAPpath ) =~ s/$WEBOBS{ROOT_OUTG}/$WEBOBS{URN_OUTG}/g;
+        print "<P style=\"text-align: left\"><IMG SRC=\"$MAPurn/$mapfile.png\" border=\"0\" usemap=\"#map\"></P>\n";
+        if (-e "$MAPpath/$mapfile.map") {
+            my @htmlarea = readFile("$MAPpath/$mapfile.map");
+            print "<map name=\"map\">@htmlarea</map>\n";
+        }
+    }
 
+    print "<A name=\"infos\"><H2>$__{'Informations'}</H2></A>\n";
     print "<P>Sefran3 configuration file: <B>$s3</B></P>\n";
     print "<P>Channels parameters file: <B>$SEFRAN3{CHANNEL_CONF}</B></P>\n";
     print "<P>Update window: <B>$SEFRAN3{UPDATE_HOURS} h</B></P>\n";
@@ -751,13 +771,22 @@ if (!$date) {
 # -----------------------------------------------------------------------------
 if ($date) {
     my ($Yc,$mc,$dc,$Hc,$Mc) = unpack("a4 a2 a2 a2 a2",$date);
+    my $t = Time::Piece->strptime($date, "%Y%m%d%H");
+    my ($Yc0,$mc0,$dc0,$Hc0,$Mc0) = unpack("a4 a2 a2 a2 a2",($t - 3600)->strftime("%Y%m%d%H"));
+    my ($Yc1,$mc1,$dc1,$Hc1,$Mc1) = unpack("a4 a2 a2 a2 a2",($t + 3600)->strftime("%Y%m%d%H"));
 
-    # read existing events from MC for current hour
+    # read existing events from MC for current hour (and previous/next hour minute)
     my @mc_hlist;
     my $f = "$MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$Yc$mc.txt";
-    if (-e $f) {
-        @mc_hlist = split(/\n/,qx(grep "|$Yc-$mc-$dc|$Hc:" $f));
+    if (-e $f && open my $fh, '<', $f) {
+        while (my $line = <$fh>) {
+            push @mc_hlist, $line if $line =~ /\|$Yc-$mc-$dc\|$Hc:/;
+            push @mc_hlist, $line if $line =~ /\|$Yc0-$mc0-$dc0\|$Hc0:59/;
+            push @mc_hlist, $line if $line =~ /\|$Yc1-$mc1-$dc1\|$Hc1:00/;
+        }
+        close $fh;
     }
+    chomp(@mc_hlist);
 
     print "<DIV id=\"sefran\">";
     my %MC;
@@ -767,10 +796,17 @@ if ($date) {
     my $date_prec = my $dprec = "";
     my $date_suiv = my $dsuiv = "";
     my $idarg = "";
+    my $sop = "&sgramopacity=$sgram_opacity";
 
     if ($dep) {
         if ($id) {     # read event ID from MC + set number of minute-files containing signal + 1
-            my @mc_evt = qx(grep "^$id|" $MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$fileMC);
+            open my $fh, '<', "$MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$fileMC" or die $!;
+            my @mc_evt;
+            while (my $line = <$fh>) {
+                push(@mc_evt, $line) if $line =~ /^$id\|/;
+            }
+            close $fh;
+            chomp @mc_evt;
             %MC = mcinfo($mc_evt[0],1);
             $date_nbm = 1 + int(1 + ($MC{duration}*$duration_s{$MC{unit}} + $MC{second})/60);
         } else {
@@ -793,8 +829,8 @@ if ($date) {
 
     # prev+next hour 'big arrows'
     if (!$dep && defined($SEFRAN3{BIGARROWS})) {
-        print "<div id=\"Larrow\" onClick=\"location.href='$prog&date=$date_prec&sx=1'\" onMouseOut=\"\$('#Larrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Larrow').css('opacity',0.7); overlib('$dprec',WIDTH,150)\">&nbsp;</div>";
-        print "<div id=\"Rarrow\" onClick=\"location.href='$prog&date=$date_suiv'\"      onMouseOut=\"\$('#Rarrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Rarrow').css('opacity',0.7); overlib('$dsuiv',WIDTH,150)\">&nbsp;</div>";
+        print "<div id=\"Larrow\" onClick=\"location.href='$prog&date=$date_prec$sop&sx=1'\" onMouseOut=\"\$('#Larrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Larrow').css('opacity',0.7); overlib('$dprec',WIDTH,150)\">&nbsp;</div>";
+        print "<div id=\"Rarrow\" onClick=\"location.href='$prog&date=$date_suiv$sop'\"      onMouseOut=\"\$('#Rarrow').css('opacity',0); nd()\" onMouseOver=\"\$('#Rarrow').css('opacity',0.7); overlib('$dsuiv',WIDTH,150)\">&nbsp;</div>";
     }
 
     # control-panel fixed box (zoom,mctag toggle,next/prev buttons)
@@ -838,7 +874,7 @@ if ($date) {
     print "<TABLE class=\"sefran\"><tr>\n";
     print "<td class=\"signals\"><div style=\"white-space: nowrap;\">";
     for (@liste_png) {
-        my $png = qx(basename $_); chomp $png;
+        my $png = basename($_); chomp($png);
         my ($Y,$m,$d,$H,$M,$S) = unpack("a4 a2 a2 a2 a2 a2",$png);
         my $timestamp = "$Y-$m-$d $H:$M UT";
         my $png_file = "$_".($high ? "_high":"").".png";
@@ -886,13 +922,15 @@ if ($date) {
     for (reverse @mc_hlist) {
         my %MC = mcinfo($_,1);
 
-#DL-was: if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1 && $MC{id} != $id && ($MC{minute} - $Mc) <= $date_nbm) {
-        if (($MC{id} > 0 || ($userLevel == 4 && $trash == 1)) && $userLevel >= 1 && ($MC{minute} - $Mc) <= $date_nbm) {
+        if (($MC{id} > 0 || ($userLevel == 4 && $trash == 1)) && $userLevel >= 1 && (defined $MC{minute} && ($MC{minute} - $Mc) <= $date_nbm)) {
             my $deb_evt;
             if ($dep) {
                 $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} - $Mc + $MC{second}/60));
             } else {
-                $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} + 1 + $MC{second}/60));
+                my $dm = 0;
+                $dm = -60 if ($MC{hour} == $Hc - 1);
+                $dm = 60 if ($MC{hour} == $Hc + 1);
+                $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} + 1 + $dm + $MC{second}/60));
             }
             my $dur_evt = 1 + int(0.5 + $largeur_image*$MC{duration}*$duration_s{$MC{unit}}/60);
             if ($MC{id} != $id) {
@@ -920,19 +958,12 @@ if ($date) {
         my $unite_evt = ($id ? $MC{unit} : "s");
         my $duree_sat_evt = ($id ? $MC{overscale} : 0);
         my $nb_evt = ($id ? $MC{amount} : 1);
-        my $s_moins_p_evt = ($id ? $MC{s_minus_p} : "");$s_moins_p_evt =~ s/^NA$//;
+        my $s_moins_p_evt = ($id ? $MC{s_minus_p} : "");
+        $s_moins_p_evt =~ s/^NA$//;
         my $station = $MC{station};
         my $unique_evt = ($id ? $MC{unique} : 0);
         my $operateur = $MC{operator};
         my $comment_evt = ($id ? htmlspecialchars(l2u($MC{comment})) : "");
-
-        # case : 'replay mode' ('replay' and 'editing id' must be exclusive)
-        if ($replay && !$id) {
-            my @mcreplay = qx(awk -F'|' '\$1 == $replay {printf "\%s",\$0}' $MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$fileMC);
-            my %MCreplay = mcinfo($mcreplay[0]);
-            $type_evt = $MCreplay{type};
-            $amplitude_evt = $MCreplay{amplitude};
-        }
 
         my $modif = 0;
 
@@ -961,9 +992,12 @@ if ($date) {
             print "<HR><TABLE style=\"border:0\"><TR>";
             if ($modif) {
                 print "<TD style=\"border:0\">",
-                  "<INPUT type=\"button\" value=\"".($id < 0 ? "$__{'Restore'}":"$__{'Hide'}")."\" onClick=\"supprime(1);\">";
+                  "<A href=\"#\"><IMG onClick=\"supprime(1);\" onMouseOut=\"nd()\" src=\"/icons/"
+                  .($id < 0 ? "restore.png":"trash.png")."\""
+                  ." onMouseOver=\"overlib('".($id < 0 ? $__{'Restore this event'}:$__{'Hide/trash this event'})."')\"></A>";
                 if ($userLevel == 4) {
-                    print "<INPUT type=\"button\" value=\"$__{'Delete'}\" onClick=\"supprime(2);\">";
+                    print "&nbsp;<A href=\"#\"><IMG onClick=\"supprime(2);\" src=\"/icons/no.png\""
+                    ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Delete this event (cannot be cancelled)'}')\"></A>";
                 }
                 print "</TD>";
             }
@@ -1038,10 +1072,11 @@ if ($date) {
 
         # amplitude and saturation
         print "<P>$__{'Max amplitude'}: <SELECT name=\"amplitudeEvenement\" size=\"1\">";
-        for ("",sort keys(%amplitudes)) {
+        print "<OPTION value=''></OPTION>\n";
+        for (sort keys(%amplitudes)) {
             (my $key = $_) =~ s/^.._//g; # removes the xx_prefix
             print "<OPTION value=\"$key\"".($amplitude_evt eq $key ? " selected":"").">$amplitudes{$_}{Name} "
-              .($amplitudes{$_}{KBcode} ne "" ? "[$amplitudes{$_}{KBcode}]":"")."</OPTION>\n";
+              .(defined($amplitudes{$_}{KBcode}) ? "[$amplitudes{$_}{KBcode}]":"")."</OPTION>\n";
         }
         print "</SELECT></P>\n";
         print "<P>$__{'Overscale duration'} (<I>$__{'Seconds'}</I>): ",
@@ -1059,16 +1094,15 @@ if ($date) {
         print "</SELECT>\n";
 
         # Prediction seismic-event
-        if ($MC3{PREDICT_EVENT_TYPE} ne "" && $MC3{PREDICT_EVENT_TYPE} ne "NO") {
+        if (isok($MC3{PREDICT_EVENT_TYPE})) {
             print "<INPUT type=\"hidden\" id=\"pseresults\" >\n";
             print "<INPUT type=\"button\" style=\"display : none \" id=\"pseCompute\" value=\"$__{'COMPUTE'}\" onClick=\"predict_seismic_event_onclick()\"><BR>\n";
             print "<P id=\"wait\" style=\"display : none; text-align:center\" > $__{'PLEASE WAIT'}</P>\n";
         }
 
-        # link to USGS
-        my $ocl = "<A href=\"$MC3{USGS_URL}\" target=\"_blank\"><B>USGS</B></A>";
-        $ocl = $MC3{VISIT_LINK} if (defined($MC3{VISIT_LINK}));
-        print "&nbsp;<I>&rarr; $__{'Visit'} $ocl</I></P>\n";
+        # link to external catalog
+        my $ocl = $MC3{VISIT_LINK} // "";
+        print "&nbsp;<I>&rarr; $__{'Visit'} $ocl</I></P>\n" if ($ocl ne "");
 
         # comment
         print "<P>$__{'Comment'}: <INPUT size=\"52\" id=\"comment\" name=\"commentEvenement\" value=\"$comment_evt\"></P>\n";
@@ -1087,8 +1121,7 @@ if ($date) {
                 print "<P><INPUT type=\"checkbox\" name=\"impression\" value=\"1\">$__{'Print signal'}</P>\n";
             } else {
                 print "<INPUT type=\"hidden\" name=\"impression\" value=\"$MC3{AUTOPRINT}\">\n";
-                print "<INPUT type=\"checkbox\" name=\"replay\" id=\"replay\"";
-                print $replay ? " checked >" : ">";  # coming in with replay ==> keep replay as a default
+                print "<INPUT type=\"checkbox\" name=\"replay\" id=\"replay\"".($replay ? " checked":"").">";  # coming in with replay ==> keep replay as a default
                 print "<LABEL for=\"replay\">$__{'Continue with this window'} (Replay!)</LABEL></P>\n";
             }
             print "</TD><TD style=\"border:0;text-align:right\"><INPUT type=\"button\" value=\"Reset\" onClick=\"reset();maj_formulaire()\">",
@@ -1117,6 +1150,36 @@ if ($date) {
 
 # ---- helpers
 # ----------------------------------------------------------------------------
+sub sorted_entries_desc {
+    my ($path) = @_;
+    opendir(my $dh, $path) or return ();
+    my @e = grep { !/^\./ } readdir($dh);
+    closedir($dh);
+    return sort { $b cmp $a } @e;
+}
+
+sub latest_sefran_img {
+    my ($root) = @_;
+
+    # finds the latest minute file *.png by scanning the directory structure
+    # 'yyyy/yyyymmdd' recursively in descending order, stops after the first
+    # existing directory of file 
+    for my $y (sorted_entries_desc($root)) {
+        my $py = "$root/$y";
+        next unless -d $py;
+        for my $ymd (sorted_entries_desc($py)) {
+            my $pd = "$py/$ymd";
+            next unless -d $pd;
+            my $pm = "$pd/minute";
+            for my $f (sorted_entries_desc($pm)) {
+                return "$pm/$f" if $f =~ /\d{14}\.png$/;
+            }
+        }
+    }
+
+    return undef;
+}
+
 sub mcinfo
 {
     my %MC;
@@ -1125,7 +1188,7 @@ sub mcinfo
 
     ($MC{operator},$MC{timestamp}) = split('/',$MC{signature});
     $MC{firstarrival} = "$MC{date} $MC{time} UT";
-    $MC{duration} ||= 10;
+    $MC{duration} //= 10;
 
     my $comment = htmlspecialchars(l2u($MC{comment}));
     $comment =~ s/'/\\'/g; # this is needed by overlib()
@@ -1144,7 +1207,7 @@ sub mcinfo
       ."<I>Comment:</I> <B>$comment</B>"
       ."</SPAN>";
 
-    if ($_[1] ne "" && length($MC{qml}) > 2) {
+    if (defined $_[1] && length($MC{qml}) > 2) {
         $MC{info} .= "<HR><I>SC3 ID: $MC{qml}</I>";
         if (not $hideloc) {
             my %QML;
@@ -1193,7 +1256,7 @@ Acknowledgments:
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

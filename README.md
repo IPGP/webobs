@@ -2,23 +2,27 @@
 
 
 
-![image alt <](CODE/icons/ipgp/logo_IPGP-UPC_2022_C110.png)&emsp;&emsp;&emsp;&emsp;![image alt <](CODE/icons/ipgp/logo_WebObs_C110.png)
+![image alt <](CODE/icons/ipgp/logo_WebObs_C110.png)&emsp;&emsp;&emsp;&emsp;![image alt <](CODE/icons/ipgp/logo_IPGP-UPC_2022_C110.png)&emsp;![image alt <](CODE/icons/ipgp/logo_CNRS_C110.jpg)
 
-This is the official repository for WebObs project source code development. For install/update packages, see the [WebObs page](https://ipgp.github.io/webobs).
+This is the official repository for WebObs community source code development, labelled by INSU-CNRS. For install/update packages, see the [WebObs page](https://ipgp.github.io/webobs).
 
 ## Authors
 
 ### Project coordination
 * **François Beauducel** - *Project designer and supervisor* - [beaudu](https://github.com/beaudu) - beauducel@ipgp.fr
+* **Jean-Marie Saurel** - *Project Steering Committee member* - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel)
+* **Patrice Boissier** - *Project Steering Committee member* - [PBoissier](https://github.com/PBoissier)
 
-### Contributors
+### Project main developper
+* **Jérôme Touvier** - [jtouvier](https://github.com/jtouvier)
 
+### Other contributors (past and present)
+
+* **Pierre Sakic** - [PierreS-alpha](https://github.com/PierreS-alpha)
 * **Didier Lafon**
 * **Alexis Bosson**
 * **Didier Mallarino**
 * **Xavier Béguin** - [XavierBeguin](https://github.com/XavierBeguin)
-* **Patrice Boissier** - [PBoissier](https://github.com/PBoissier)
-* **Jean-Marie Saurel** - [ovsm-dev](https://github.com/ovsm-dev) - [jmsaurel](https://github.com/jmsaurel)
 * **Lucas Dassin** - [ldassin](https://github.com/ldassin)
 * **Lucie Van Nieuwenhuyze** - [lucievnhyz](https://github.com/lucievnhyz)
 * **Baptiste Camus** - [cmbapt](https://github.com/cmbapt)
@@ -28,8 +32,6 @@ This is the official repository for WebObs project source code development. For 
 * **Valérie Ferrazzini** - [ferrazzini](https://github.com/ferrazzini)
 * **Christophe Brunet** - [BrunetChristophe](https://github.com/BrunetChristophe/webobs)
 * **Philippe Catherine** - [CPS97410](https://github.com/CPS97410)
-* **Pierre Sakic** - [PierreS-alpha](https://github.com/PierreS-alpha)
-* **Jérôme Touvier** - [jtouvier](https://github.com/jtouvier)
 
 See also the list of active [contributors](https://github.com/IPGP/webobs/contributors).
 
@@ -41,10 +43,16 @@ If you use are using WebObs or any outputs from WebObs, please kindly cite the f
 
 ## Copyright
 
-WebObs - 2000-2023 - Institut de Physique du Globe Paris / Université Paris Cité
+WebObs - 2000-2026 - Institut de Physique du Globe Paris / Université Paris Cité
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+## Fundings
+
+This program benefits from fundings from the IPGP, the CNRS and the IRD.
+
+It has been realized with the support of the Ministère de la transition écologique et de la cohésion des territoires.

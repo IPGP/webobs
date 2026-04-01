@@ -167,11 +167,9 @@ if ($action eq 'save') {
             $input = $cgi->param($_);
         }
 
-        if ($input ne "") {
-            push(@db_columns, $_);
-            $input =~ s/"/""/g; # needs to escape quotes for the sqlite command
-            push(@values, $input);
-        }
+        push(@db_columns, $_);
+        $input =~ s/"/""/g; # needs to escape quotes for the sqlite command
+        push(@values, $input);
     }
 
     my $rv;
@@ -352,8 +350,8 @@ function update_form()
     var mn1 = document.getElementsByName("sdate_mn");
 
     if (yy1[0]) {
-        var date1 = new Date(yy1[0].value, mm1[0].value, dd1[0].value, hr1[0].value, mn1[0].value);
-        var date2 = new Date(yy2[0].value, mm2[0].value, dd2[0].value, hr2[0].value, mn2[0].value);
+        var date1 = new Date(yy1[0].value, mm1[0].value-1, dd1[0].value, hr1[0].value, mn1[0].value);
+        var date2 = new Date(yy2[0].value, mm2[0].value-1, dd2[0].value, hr2[0].value, mn2[0].value);
         duration = (date2.getTime() - date1.getTime())/86400000;
         form.duration.value = duration.toFixed(1);
     } else {
@@ -371,10 +369,15 @@ foreach my $f (@formulas) {
 
     foreach (@x) {
         my $form_input = lc($_);
-        $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : NaN)/g;
+        if ($formula =~ /(mean|std|median)\(.*$_.*\)/ || scalar(@x) == 1) {
+            $formula =~ s/$_/Number(form.$form_input.value ? form.$form_input.value : NaN)/g;
+        } else {
+            $formula =~ s/$_/Number(form.$form_input.value && form.$form_input.value != "NaN" ? form.$form_input.value : 0.0)/g;
+        }
     }
+
     print "try {";
-    print "form.".lc($f).".value = parseFloat($formula).toFixed(2);\n";
+    print "form.".lc($f).".value = parseFloat($formula);\n";
     print "} catch(err) { form.".lc($f).".value = NaN; console.error(err.message); };\n";
 }
 foreach (@thresh) {
@@ -824,7 +827,7 @@ foreach (@columns) {
                 # --- INPUT type 'checkbox'
                 } elsif ($field =~ /^input/ && $type =~ /^checkbox/) {
                     $hlp = ($help ne "" ? $help:"$__{'Click to select'} $Field");
-                    my $selected = ($prev_inputs{$field} eq "checked" ? "checked" : "");
+                    my $selected = ($prev_inputs{$field} ? "checked" : "");
                     print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
 
                 # --- INPUT type 'image'
@@ -871,12 +874,14 @@ foreach (@columns) {
                         @gvals = $dbh->selectrow_array($stmt);
                     }
                     my @msgs = ("a latitude", "a northern error", "a longitude", "an eastern error", "an elevation", "an elevation error");
-                    my @units = ("decimal degrees", "meters", "decimal degrees", "meters", "meters", "meters");
+                    my @msgu = ("decimal degrees", "meters", "decimal degrees", "meters", "meters", "meters");
+                    my @units = ("°N", "m", "°E", "m", "m", "m");
                     print "<table>";
                     foreach my $j (0 .. scalar(@columns_geoloc) - 1) {
                         print $j % 2 eq 0 ? "<tr>" : "";
-                        $hlp = ($help ne "" ? $help:"$__{'Enter '.$msgs[$j].' (in '.$units[$j].') for'} $Field");
-                        print qq(<td class="udateRow"><label> $columns_geoloc[$j] =</label><input type="text" pattern="[0-9\\.\\-]*" size="$size" class="inputNum"
+                        $hlp = ($help ne "" ? $help:"$__{'Enter '.$msgs[$j].' (in '.$msgu[$j].') for'} $Field");
+                        (my $label = ucfirst($columns_geoloc[$j])." ($units[$j])") =~ s/_/ /g;
+                        print qq(<td class="udateRow"><label> $label =</label><input type="text" pattern="[0-9\\.\\-]*" size="$size" class="inputNum"
                             name="$field\_$columns_geoloc[$j]" value="$gvals[$j]"
                             onMouseOut="nd()" onmouseover="overlib('$hlp')"></td>);
                         print $j % 2 eq 1 ? "</tr>" : "";

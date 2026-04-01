@@ -28,7 +28,7 @@ function DOUT=extenso(varargin)
 %
 %   Authors: F. Beauducel + J.C. Komorowski / WEBOBS, IPGP
 %   Created: 2001-10-23
-%   Updated: 2025-04-28
+%   Updated: 2026-02-03
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -150,11 +150,11 @@ for n = 1:length(N)
 		end
 
 		% title and status
-		P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
-		P.GTABLE(r).GSTATUS = [P.NOW,etat,acqui];
+		OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+		OPT.GSTATUS = [P.NOW,etat,acqui];
 		N(n).STATUS = etat;
 		N(n).ACQUIS = acqui;
-		P.GTABLE(r).INFOS = {''};
+		OPT.INFOS = {''};
 
 		% relative extension with error bars (in mm)
 		subplot(6,1,1:4), extaxes(gca,[.07,0])
@@ -162,16 +162,13 @@ for n = 1:length(N)
 			tk = t(k);
             dk = d(k,1);
 			k1 = k(find(~isnan(d(k,1)),1));
-            if ~isempty(k1)
-                dk = dk-d(k1,1);
-            end
 			plot(tk,dk,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',scolor(1),'MarkerFaceColor',scolor(1))
 			set(gca,'Ylim',get(gca,'YLim'))	% freezes Y axis
 			hold on
 			plot(repmat(tk,[1,2])',(repmat(dk,[1,2])+e(k,1)*[-1,1])','-','LineWidth',.1,'Color',.6*[1,1,1])
 			kk = find(~isnan(dk));
 			lre = nan(1,2);
-			if length(kk) > 2
+			if length(kk) > 2 && ~isempty(k1)
 				lr = wls(tk(kk)-t(k1),dk(kk),1./e(k(kk),1).^2);
 				lre = [lr(1),std(dk(kk) - polyval(lr,tk(kk)-t(k1)))/diff(tlim)]*365.25;
 				plot(tlim,polyval(lr,tlim - t(k1)),'--k','LineWidth',.2)
@@ -180,7 +177,7 @@ for n = 1:length(N)
 		end
 		set(gca,'XLim',tlim,'FontSize',fontsize)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('Relative %s (%s)',C.nm{1},C.un{1}))
+		ylabel(sprintf('%s (%s)',C.nm{1},C.un{1}))
 		if isempty(d) || all(isnan(d(k,1)))
 			nodata(tlim)
 		end
@@ -210,36 +207,37 @@ for n = 1:length(N)
 		end
 		set(gca,'XLim',tlim,'FontSize',fontsize)
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('%s (%s)',C.nm{3},C.un{3}))
+		ylabel(C.nm{3})
 		if isempty(d)
 			nodata(tlim)
 		end
 
-		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
+		tlabel(tlim,P.TZ,'FontSize',8)
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.GTABLE(r).TZ),' (min|moy|max)',' ',' ', ...
+			OPT.INFOS = {sprintf('Last measurement: {\\bf%s} {\\it%+d}',datestr(t(ke)),P.TZ),' (min|moy|max)',' ',' ', ...
 				sprintf('1. %s = {\\bf%+1.3f %s} (%+1.3f | %+1.3f | %+1.3f) - Trend = {\\bf%+1.3f \\pm %1.3f mm/yr}', ...
-					C.nm{1},d(ke,1)-d(k1,1),C.un{1},rmin(d(k,1)-d(k1,1)),rmean(d(k,1)-d(k1,1)),rmax(d(k,1)-d(k1,1)),lre), ...
+					C.nm{1},d(ke,1),C.un{1},rmin(d(k,1)),rmean(d(k,1)),rmax(d(k,1)),lre), ...
 			};
 			for i = 2:3
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f | %+1.1f)', ...
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('%d. %s = {\\bf%+1.1f %s} (%+1.1f | %+1.1f | %+1.1f)', ...
 					i, C.nm{i},d(ke,i),C.un{i},rmin(d(k,i)),rmean(d(k,i)),rmax(d(k,i)))}];
 			end
 		end
 
 		% makes graph
+        OPT.STATUS = P.GTABLE(r).STATUS;
 		OPT.EVENTS = N(n).EVENTS;
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
+		if isok(P,'EXPORTS') && ~isempty(k)
 			E.t = t(k);
 			E.d = [d(k,1),e(k,1),d(k,2),d(k,3)];
 			E.header = {'Extension(mm)','Ext_std(mm)','Temp(C)','Wind'};
 			E.title = sprintf('%s {%s}',stitre,upper(N(n).ID));
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 
@@ -260,11 +258,11 @@ for r = 1:length(P.GTABLE)
 	if any(isnan(tlim))
 		tlim = [tfirstall,P.NOW];
 	end
-	P.GTABLE(r).GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+	OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
 	if P.GTABLE(r).STATUS
-		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,N.STATUS)),rmean(cat(1,N.ACQUIS))];
+		OPT.GSTATUS = [tlim(2),rmean(cat(1,N.STATUS)),rmean(cat(1,N.ACQUIS))];
 	end
-	P.GTABLE(r).INFOS = {''};
+	OPT.INFOS = {''};
 	tr = nan(length(N),1); % trends per station per component (mm/yr)
 	tre = nan(length(N),1); % trends error (mm/yr)
 	az = nan(length(N),1);
@@ -359,9 +357,9 @@ for r = 1:length(P.GTABLE)
 		set(gca,'YLim',ylim);
 	end
 
-	tlabel(tlim,P.GTABLE(r).TZ,'FontSize',8)
+	tlabel(tlim,P.TZ,'FontSize',8)
 
-	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 	close
 
 
@@ -380,7 +378,7 @@ for r = 1:length(P.GTABLE)
 		ylim = minmax(geo(kn,1));
 		xyr = cosd(mean(ylim));
 
-		P.GTABLE(r).GTITLE = gtitle(P.NAME,P.GTABLE(r).TIMESCALE);
+		OPT.GTITLE = gtitle(P.NAME,P.GTABLE(r).TIMESCALE);
 
 		% scale is adjusted to maximum horizontal vector or error amplitude (in mm/yr)
 		if velscale > 0
@@ -489,11 +487,11 @@ for r = 1:length(P.GTABLE)
 		hold off
 
 		rcode2 = sprintf('%s_%s',proc,summary);
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
+		if isok(P,'EXPORTS')
 			E.infos = { ...
 				sprintf('Stations'' aliases: %s',strjoin(cat(1,{N(kn).ALIAS}),',')), ...
 				};
@@ -501,7 +499,7 @@ for r = 1:length(P.GTABLE)
 			E.d = [geo(kn,:),tr(kn),tre(kn),az(kn)];
 			E.header = {'Latitude','Longitude','Altitude','E_velocity(mm/yr)','dEv(mm/yr)','Azimuth(N)'};
 			E.title = sprintf('%s {%s}',stitre,upper(rcode2));
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
 
@@ -514,7 +512,7 @@ for r = 1:length(P.GTABLE)
 		else
 			kn = 1:length(N);
 		end
-		P.GTABLE(r).GTITLE = gtitle(sprintf('%s - Source modelling',P.NAME),P.GTABLE(r).TIMESCALE);
+		OPT.GTITLE = gtitle(sprintf('%s - Source modelling',P.NAME),P.GTABLE(r).TIMESCALE);
 
 		nn = length(kn);
 
@@ -733,9 +731,9 @@ for r = 1:length(P.GTABLE)
 		hold off
 		set(gca,'XLim',[0,dxl],'YLim',[0,dyl])
 
-		P.GTABLE(r).INFOS = {''};
+		OPT.INFOS = {''};
 		%rcode2 = sprintf('%s_%s',proc,summary);
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		%keyboard

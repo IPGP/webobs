@@ -102,6 +102,7 @@ $QryParm->{'debug'}     //= "";
 
 my $re = $QryParm->{'filter'};
 
+my @allFormNodes;
 my @formnodes;
 my %Ns;
 my @NODESSelList;
@@ -110,7 +111,8 @@ for (@{$FORM{NODESLIST}}) {
     my %N = readNode($id);
     push(@NODESSelList,"$id|$N{$id}{ALIAS}: $N{$id}{NAME}");
     %Ns = (%Ns, %N);
-    push(@formnodes, $id) if ($QryParm->{'node'} =~ /^($id|)$/)
+    push(@formnodes, $id) if ($QryParm->{'node'} =~ /^($id|)$/);
+    push(@allFormNodes, $id);
 }
 
 my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
@@ -198,7 +200,7 @@ my @db_columns = ("trash", "quality", "node", "edate", "sdate", "operators", "co
 my $ncol = scalar(@db_columns);
 
 # get the total number or records
-my $stmt = "SELECT COUNT(id) FROM $tbl";
+my $stmt = "SELECT COUNT(id) FROM $tbl"." WHERE node IN ('".join("', '",@allFormNodes)."');";
 my $sth = $dbh->prepare($stmt);
 my $rv = $sth->execute() or die $DBI::errstr;
 my @row = $sth->fetchrow_array();
@@ -425,8 +427,8 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
         my $unit_field = $FORM{"$field\_UNIT"};
         my $type_field = $FORM{"$field\_TYPE"};
         $unit_field = ($unit_field ne "" ? " ($unit_field)" : "");
-        $name_field =~ s/<su[bp]>|<\/su[bp]>|\&[^;]*;//g; # removes HTML tags or characters
         push(@colnam2, htm2frac($name_field).$unit_field) if ($showfs);
+        $name_field =~ s/<su[bp]>|<\/su[bp]>|\&[^;]*;//g; # removes HTML tags or characters
         if ($type_field !~ /^(image|shapefile)/) {
             if ($type_field eq "geoloc") {
                 my @gtitles = ("latitude", "longitude", "elevation", "northern_error", "eastern_error", "elevation_error");
@@ -493,16 +495,17 @@ for (my $j = 0; $j <= $#rows; $j++) {
     }
     $dbh->disconnect();
 
-    $fields{DURATION} = ($dur[0] + $dur[1]) / 2; # uses the mean of possible durations
+    #$fields{DURATION} = ($dur[0] + $dur[1]) / 2; # uses the mean of possible durations
+    $fields{duration} = $dur[0];
 
     # stores formulas
     foreach (@formulas) {
         my ($formula, $size, @x) = extract_formula($FORM{$_."_TYPE"});
-        my $nan = 0;
         foreach (@x) {
             my $f = lc($_);
             $formula =~ s/$_/\$fields{$f}/g;
         }
+
         my $res = eval($formula);
         if ($res ne "") {
             if ($size > 0) {
@@ -511,7 +514,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $fields{lc($_)} = $res; # hidden formula
             }
         } else {
-            $fields{lc($_)} = "";
+            $fields{lc($_)} = "NaN";
         }
     }
 
@@ -616,7 +619,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
             # --- input type = checkbox
             elsif ($FORM{$Field."_TYPE"} =~ /^checkbox/) {
                 if ($val ne "") {
-                    $val = "&check;";
+                    $val = $fields{$field} ? "&check;" : "";
                     $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('checked')\"";
                 }
                 $csvTxt .= "$fields{$field}".$dlm;
@@ -626,6 +629,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $val = "";
                 my $dbh = connectDbForms();
                 my @gvals = map { "" } @columns_geoloc;
+                my @gunits = ("°N", "m", "°E", "m", "m", "m");
                 if ($fields{$field}) {
                     my $colnames = join(', ', @columns_geoloc);
                     my $stmt = qq(SELECT $colnames FROM $table_geoloc WHERE id = $fields{$field});
@@ -634,7 +638,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $dbh->disconnect();
                 my @gdisp = map { $gvals[$_] ? sprintf("%.2f", $gvals[$_]) : "" } (0, 2, 4);
                 $val .= join("", @gdisp) ? "(" . join(", ", @gdisp) . ")" : "";
-                my @gdisp = map { $gvals[$_] ? "@columns_geoloc[$_] = $gvals[$_]°". ($gvals[$_+1] ? " &#177; $gvals[$_+1] meters" : "") : "" } (0, 2, 4);
+                my @gdisp = map { $gvals[$_] ? ucfirst(@columns_geoloc[$_])." = $gvals[$_] $gunits[$_]". ($gvals[$_+1] ? " &#177; $gvals[$_+1] $gunits[$_+1]" : "") : "" } (0, 2, 4);
                 $opt = join("<br>", @gdisp);
                 $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('$opt')\"";
                 my $tmp = join("$dlm", map { $gvals[$_] } (0, 2, 4, 1, 3, 5));

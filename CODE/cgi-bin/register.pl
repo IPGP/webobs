@@ -62,7 +62,7 @@ use POSIX qw/strftime/;
 use WebObs::Config;
 use WebObs::Utils;
 use WebObs::Users qw(%USERS clientHasRead clientHasEdit clientHasAdm
-  htpasswd_update htpasswd_display);
+  htpasswd_update htpasswd_comment htpasswd_display);
 use WebObs::i18n;
 use Locale::TextDomain('webobs');
 
@@ -136,7 +136,7 @@ if ($action eq "reg") {
     # Write registration request to the reglog
     my $reglog = exists $WEBOBS{REGISTRATION_LOGFILE} ?
       $WEBOBS{REGISTRATION_LOGFILE} : "$WEBOBS{PATH_DATA_DB}/reglog";
-    my $autoregister = (($WEBOBS{SQL_DB_USERS_AUTOREGISTER} =~ /^y/i)
+    my $autoregister = (isok($WEBOBS{SQL_DB_USERS_AUTOREGISTER})
           && !defined($USERS{$login})) ? 1 : 0;
     my $reg_file;
     if (!open($reg_file, ">>$reglog")) {
@@ -193,7 +193,7 @@ if ($action eq "reg") {
 
 # Insert the new user in the database (will raise an exception on database error)
 # Use a bound query to let DBI do the escaping (to avoid security problems)
-        my $q = "insert into $WEBOBS{SQL_TABLE_USERS} values(?, ?, ?, ?, 'N', '', 'registered $today')";
+        my $q = "insert into $WEBOBS{SQL_TABLE_USERS} values(?, ?, ?, ?, 'N', '', 'registered from $ENV{REMOTE_ADDR} on $today')";
         my $sth = $dbh->prepare($q);
 
         # Note: there is a (very) slight chance of race condition if someone
@@ -211,9 +211,12 @@ if ($action eq "reg") {
               ." for login $login: $!\n";
             exit;
         }
+        # Comment the new login line!
+        htpasswd_comment($login);
+
     }  # end of "autoregistration"
     my $rcn = WebObs::Config::notify(
-        "register.warning|$$|received request from $fullname ($login)");
+        "register.warning|$$|Received registration request on $today from\n\n\tName: $fullname\n\tLogin: $login\n\tEmail: $mailaddr\n\tIP Client: $ENV{REMOTE_ADDR}\n\tNavigator: $ENV{HTTP_USER_AGENT}\n\tReferer: $ENV{HTTP_REFERER}");
     if ($rcn != 0 ) {
         send_ajax_content("Your request has been correctly registered and waits for "
             ."validation by an administrator.");
@@ -396,7 +399,7 @@ Didier Lafon, François Beauducel, Xavier Béguin
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2025 - Institut de Physique du Globe Paris
+Webobs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

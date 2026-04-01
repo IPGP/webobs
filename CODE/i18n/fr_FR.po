@@ -239,6 +239,15 @@ msgstr "dont"
 msgid "in trash"
 msgstr "dans la corbeille"
 
+msgid "Procs using this form"
+msgstr "Procs utilisant ce Form :"
+
+msgid "DEM"
+msgstr "MNT"
+
+msgid "check file!"
+msgstr "vérifier le fichier !"
+
 msgid "Events File(s)"
 msgstr "Fichier(s) d'événements"
 
@@ -1234,11 +1243,20 @@ msgstr "Saisie"
 msgid "Hide"
 msgstr "Cacher"
 
+msgid "Hide/trash this event"
+msgstr "Mettre cet événement à la corbeille"
+
 msgid "Restore"
 msgstr "Restaurer"
 
+msgid "Restore this event"
+msgstr "Restaurer cet événement"
+
 msgid "Delete"
 msgstr "Supprimer"
+
+msgid "Delete this event (cannot be cancelled)"
+msgstr "Supprimer cet événement (ne pourra être annulé)"
 
 msgid "Remove"
 msgstr "Supprimer"
@@ -1834,6 +1852,15 @@ msgstr "mois"
 
 msgid "year"
 msgstr "année"
+
+msgid "Months of"
+msgstr "Mois de"
+
+msgid "Days of"
+msgstr "Jours de"
+
+msgid "All Events"
+msgstr "Tous les événements"
 
 # ---- formRAINWATER.pl
 

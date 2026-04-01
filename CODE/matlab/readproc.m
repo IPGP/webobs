@@ -1,29 +1,31 @@
 function [P,N,D] = readproc(WO,varargin)
 %READPROC Read PROC configuration
-%	P = READPROC(WO,PROC) returns a structure variable P containing every field key and
-%	corresponding value from the PROC configuration files. PROC can be the proc's name
-%	or full path name of the PROC.conf.
+%	P = READPROC(WO,PROC) returns a structure variable P containing every field
+%   key and corresponding value from the PROC configuration files. PROC can be 
+%   the proc's name or full path name of the PROC.conf.
 %
-%	P = READPROC(WO,PROC,TSCALE) returns in P.GTABLE a selection timescales TSCALE found
-%	in TIMESCALELIST. TSCALE must be in the form of comma-separated string
-%	'ts1,ts2,...,tsn'. Default is '%' to return all the TIMESCALELIST.
+%	P = READPROC(WO,PROC,TSCALE) returns in P.GTABLE(r) a selection timescales 
+%   TSCALE found in TIMESCALELIST and some associated parameters defined in the 
+%   tables *LIST. TSCALE must be in the form of comma-separated string 
+%   'ts1,ts2,...,tsn'. Default is '%' to return all the TIMESCALELIST.
 %
 %	P = READPROC(WO,PROC,PARAMS) uses struct PARAMS to replace selected proc's
 %	parameters. PARAMS must be in the form struct('parameter',value).
 %
-%	P = READPROC(WO,PROC,TSCALE,REQDIR) ignores TSCALE and returns in P.GTABLE the
-%	parameters of request in REQDIR/REQUEST.rc.
+%	P = READPROC(WO,PROC,[],REQDIR) overwrites all parameters in P using the  
+%   parameters of manual request in REQDIR/REQUEST.rc, and returns a single 
+%   P.GTABLE structure with request time interval and options.
 %
-%	[P,N] = READPROC(...) returns also a structure N containing all associated nodes
-%	configuration.
+%	[P,N] = READPROC(...) returns also a structure N containing all associated 
+%	nodes configuration.
 %
-%	[P,N,D] = READPROC(...) returns also a structure D containing the data. RAWFORMAT
-%	parameter must be set (see also READFMTDATA function).
+%	[P,N,D] = READPROC(...) returns also a structure D containing the data. 
+%	RAWFORMAT parameter must be set (see also READFMTDATA function).
 %
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
-%	Created: 2013-04-05
-%	Updated: 2025-03-12
+%	Created: 2013-04-05 in Paris (France)
+%	Updated: 2026-03-02
 
 
 proc = varargin{1};
@@ -75,13 +77,7 @@ P.PLOT_GRID = field2str(P,'PLOT_GRID','NO');
 P.PDFOUTPUT = field2str(P,'PDFOUTPUT','NO');
 P.SVGOUTPUT = field2str(P,'SVGOUTPUT','NO');
 P.COPYRIGHT = field2str(P,'COPYRIGHT',WO.COPYRIGHT);
-% main logo (upper left) height as a fraction of graph width
-P.LOGO_FILE = field2str(P,'LOGO_FILE','');
-P.LOGO_HEIGHT = field2num(P,'LOGO_HEIGHT',.04);
 P.COPYRIGHT2 = field2str(P,'COPYRIGHT2','');
-% secondary logo (upper right)
-P.LOGO2_FILE = field2str(P,'LOGO2_FILE','');
-P.LOGO2_HEIGHT = field2num(P,'LOGO2_HEIGHT',.04);
 P.EXPORTS = field2str(P,'EXPORTS','YES');
 P.EVENTS_FILE = field2str(P,'EVENTS_FILE','');
 
@@ -95,18 +91,6 @@ P.NODESLIST = {};
 for j = 1:length(X(k))
 	nj = split(X(k(j)).name,'.');
 	P.NODESLIST{end+1} = nj{3};
-end
-% appends the associated FORM (if exists) by listing directory WO.PATH_GRIDS2FORMS
-X = dir(WO.PATH_GRIDS2FORMS);
-k = find(strncmp(['PROC.' proc],{X.name},length(proc)+5));
-if ~isempty(k)
-	form = split(X(k).name,'.');
-	formname = form{3};
-	formroot = sprintf('%s/%s',WO.PATH_FORMS,formname);
-	P.FORM = readcfg(WO,sprintf('%s/%s.conf',formroot,formname));
-	P.FORM.SELFREF = formname;
-	P.FORM.ROOT = formroot;
-	P.RAWFORMAT = 'woform';
 end
 
 % TIMESCALELIST : computes the date limits for each timescale and sets P.TIMESCALELIST and P.DATELIST (see timescales.m help)
@@ -164,30 +148,10 @@ if ~request
 				P.GTABLE(n).DATE1 = P.DATELIST{r}(1);
 				P.GTABLE(n).DATE2 = P.DATELIST{r}(2);
 			end
-			P.GTABLE(n).DATESTR = P.DATESTRLIST(r);
-			P.GTABLE(n).MARKERSIZE = P.MARKERSIZELIST(r);
-			P.GTABLE(n).LINEWIDTH = P.LINEWIDTHLIST(r);
-			P.GTABLE(n).CUMULATE = P.CUMULATELIST(r);
-			P.GTABLE(n).DECIMATE = P.DECIMATELIST(r);
-			P.GTABLE(n).STATUS = P.STATUSLIST(r);
-			P.GTABLE(n).NOW = P.NOW;
-			P.GTABLE(n).TZ = P.TZ;
-			P.GTABLE(n).PPI = P.PPI;
-			P.GTABLE(n).PAPER_SIZE = P.PAPER_SIZE;
-			P.GTABLE(n).PLOT_GRID = P.PLOT_GRID;
-			P.GTABLE(n).EVENTS_FILE = P.EVENTS_FILE;
-			P.GTABLE(n).PDFOUTPUT = P.PDFOUTPUT;
-			P.GTABLE(n).SVGOUTPUT = P.SVGOUTPUT;
-			P.GTABLE(n).EXPORTS = P.EXPORTS;
-			P.GTABLE(n).COPYRIGHT = P.COPYRIGHT;
-			P.GTABLE(n).COPYRIGHT2 = P.COPYRIGHT2;
-			P.GTABLE(n).LOGO_FILE = P.LOGO_FILE;
-			P.GTABLE(n).LOGO2_FILE = P.LOGO2_FILE;
-			P.GTABLE(n).LOGO_HEIGHT = P.LOGO_HEIGHT;
-			P.GTABLE(n).LOGO2_HEIGHT = P.LOGO2_HEIGHT;
-			P.GTABLE(n).SELFREF = P.SELFREF;
-			P.GTABLE(n).NAME = P.NAME;
-			P.GTABLE(n).OUTDIR = P.OUTDIR;
+            % element R of each timescale lists in GTABLE(r)
+            for key = {'DATESTR','MARKERSIZE','LINEWIDTH','CUMULATE','DECIMATE','STATUS'}
+                P.GTABLE(n).(key{1}) = P.([key{1},'LIST'])(r);
+            end
 			n = n + 1;
 		end
 	end
@@ -196,46 +160,35 @@ if ~request
 % case B: request
 else
 	req = varargin{3};
+ 
+	P.OUTDIR = sprintf('%s/PROC.%s',req,proc);
 
 	% reads the req/REQUEST.rc file (from postREQ.pl)
 	freq = [req,'/REQUEST.rc'];
 	if ~exist(freq,'file')
 		error('%s: cannot find request file %s.',wofun,freq);
 	end
+	REQ = readcfg(WO,freq,'novsub');
 
-	P.GTABLE = readcfg(WO,freq,'novsub');
-
-	% converts dates in DATENUM format
-	P.GTABLE.DATE1 = isodatenum(P.GTABLE.DATE1);
-	P.GTABLE.DATE2 = isodatenum(P.GTABLE.DATE2);
-
-	P.GTABLE.TIMESCALE = '';
-	P.GTABLE.OUTDIR = sprintf('%s/PROC.%s',req,proc);
-	P.GTABLE.SELFREF = P.SELFREF;
-	P.GTABLE.NAME = '';
-	P.GTABLE.STATUS = 0;
-
-	% converts to numeric some fields
-	keys = fieldnames(P.GTABLE);
-	keys = keys(ismember(keys,{'TZ','DATESTR','PPI','MARKERSIZE','LINEWIDTH','CUMULATE','DECIMATE'}));
-	for n = 1:length(keys)
-		P.GTABLE.(keys{n}) = sstr2num(P.GTABLE.(keys{n})); %NOTE: sstr2num() allows some syntax interpretation like '5/1440' (5 mn expressed in days)
+	% overwrites all fields of the proc defined in struct REQ.PROC.(proc)
+	if isfield(REQ,'PROC') && isfield(REQ.PROC,proc) && isstruct(REQ.PROC.(proc))
+		P = structmerge(P,REQ.PROC.(proc));
 	end
 
-	% completes some fields from proc
-	P.GTABLE.NOW = P.NOW;
-	P.GTABLE.PAPER_SIZE = P.PAPER_SIZE;
-	P.GTABLE.EVENTS_FILE = P.EVENTS_FILE;
-	P.GTABLE.COPYRIGHT = P.COPYRIGHT;
-	P.GTABLE.COPYRIGHT2 = P.COPYRIGHT2;
-	P.GTABLE.LOGO_FILE = P.LOGO_FILE;
-	P.GTABLE.LOGO2_FILE = P.LOGO2_FILE;
-	P.GTABLE.LOGO_HEIGHT = P.LOGO_HEIGHT;
-	P.GTABLE.LOGO2_HEIGHT = P.LOGO2_HEIGHT;
+	% overwrites some fields of the proc (common options from the request)
+	for key = {'TZ','PPI','PLOTGRID','PDFOUTPUT','SVGOUTPUT','EXPORTS','ANONYMOUS','DEBUG'}
+		P.(key{1}) = field2num(REQ,key{1});
+	end
+	for key = {'ORIGIN','UID'}
+		P.(key{1}) = field2str(REQ,key{1});
+	end
 
-	% overwrites some fields of the proc (REQUEST_KEYLIST defined in struct P.GTABLE.PROC.(proc))
-	if isfield(P.GTABLE,'PROC') && isfield(P.GTABLE.PROC,proc) && isstruct(P.GTABLE.PROC.(proc))
-		P = structmerge(P,P.GTABLE.PROC.(proc));
+	% defines GTABLE fields
+	P.GTABLE.DATE1 = isodatenum(REQ.DATE1);
+	P.GTABLE.DATE2 = isodatenum(REQ.DATE2);
+	P.GTABLE.TIMESCALE = '';
+	for key = {'DATESTR','MARKERSIZE','LINEWIDTH','CUMULATE','DECIMATE','STATUS'}
+		P.GTABLE.(key{1}) = field2num(REQ,key{1});
 	end
 
 	% makes internal KEY variable substitution

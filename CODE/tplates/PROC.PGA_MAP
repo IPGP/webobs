@@ -1,6 +1,7 @@
 =key|value
 
-NAME|Strong Motion mapping
+NAME|PGAMAP
+DESCRIPTION|Strong Motion mapping
 TYPE|
 OWNCODE|I
 RAWDATA|$WEBOBS{ROOT_RAWD}/Sismologie/PgaPgv
@@ -38,9 +39,13 @@ DEM_COPYRIGHT|
 
 PPI|100
 POSTSCRIPT|1
-EXPORTS|1
+
+EXPORTS|Y
+EXPORT_HEADER_NODE_KEYLIST|FID,NAME,LAT_WGS84,LON_WGS84,ALTITUDE,URL
+EXPORT_HEADER_PROC_KEYLIST|
+
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
-LOGO2_FILE|
+LOGO2_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_IPGP.png
 COPYRIGHT|OVSM
 COPYRIGHT2|IPGP
 
@@ -67,3 +72,6 @@ MAP_XYLIM|-61.3,-60.75,14.35,14.92
 #  UL: upper-left
 #  UR: upper-right
 MAP_LEGEND_LOC|LL
+
+# Create an API key on https://stadiamaps.com
+STADIA_MAPS_API_KEY|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

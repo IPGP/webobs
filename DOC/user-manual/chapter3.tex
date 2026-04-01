@@ -694,17 +694,20 @@ Also some output parameters can be defined:
 \item \textbf{Decimate:} number of sample for decimation of the raw data (time series).
 \item \textbf{Marker size:} maker size in points (if the PROC uses markers).
 \item \textbf{Line width:} line width in points (if the PROC uses lines).
+\item \textbf{Grid:} turns on/off grid lines on graphs.
 \item \textbf{PPI:} resolution for PNG output images, in pixel per inch.
-\item \textbf{Postscript:} outputs the EPS vector graphic images (default is cheched).
-\item \textbf{PDF:} outputs a PDF version of images.
-\item \textbf{Exports:} outputs data (text files or others depending on the PROC).
+\item \textbf{PDF:} outputs a PDF version of graphs (vectorial).
+\item \textbf{SVG:} outputs a SVG version of graphs (experimental).
+\item \textbf{Data exports:} outputs data (text files or others depending on the PROC).
+\item \textbf{Anonymous:} checks to remove nominative subtitle (user's name).
+\item \textbf{Verbose logs:} adds more information in logs (debug mode).
 \end{itemize}
 
-After submit the request, each of the PROC will be submitted to SCHEDULER as specific jobs. The name of the job is made from date and time of the request, hostname and user login name.
+After submit the request, each of the PROC will be submitted to SCHEDULER as specific jobs. The name of the job is made from date and time of the request, hostname and user login name. Besides the Submit button, a check box \textit{Continue with this window (Replay!)} will stay on the form in order to keep parameters for another request. Without this box checked, the navigator will move automatically to the Results page.
 
-The run of each PROC can be followed on the scheduler runs page. If a job ends with success, a notification email is sent to the user through the POSTBOARD. The email provides two links: a first to access the request results (graphs and exports) through a web interface similar to the routine PROC graphs. The second link allows to download a .tgz archive containing all images and files of the request.
+If a job ends with success, a notification email is sent to the user through the POSTBOARD. The email provides two links: a first to access the request results (graphs and exports) through a web interface similar to the routine PROC graphs. The second link allows to download a .tgz archive containing all images and files of the request.
 
-A dedicated page is also available to access request results: \wocmd{/cgi-bin/showREQ.pl}. The page will show the user's requests and results (if the request job has ended successfully), or all the existing requests for ADMIN users.
+A dedicated page is also available to access request results: \wocmd{/cgi-bin/showREQ.pl}. The page will show the user's requests and results (if the request job has ended successfully), or all the existing requests for ADMIN users. The run of each PROC can be also followed on on the scheduler runs page. 
 
 
 % -----------------------------------------------------------------
@@ -722,7 +725,7 @@ supporting \wo{\$WEBOBS} parameters substitution.
 The \wokey{SUBMIT\_RESOURCE} is the optional routine execution mutex name (process lock) of as defined in SCHEDULER if the PROC is one of the routine jobs. This is to avoid possible conflicts of simultaneous runs.
 
 Optionally, the \wokey{REQUEST\_KEYLIST} parameter is used to specify a list of comma-separated keys of existing parameters, that will be
-presented to the user so that (s)he will have a chance to overwrite corresponding values for request execution.
+presented to the user in front of the full list of parameters accessible by the '+' icon. Parameters are filled by the proc's values and can be modified for request execution. There is no check of content validity, so any mistake might lead to request execution error.
 
 The user defined output parameters \textbf{Date format}, \textbf{Cumulate}, \textbf{Decimate}, \textbf{Marker size} and \textbf{Line width} correspond to table values \wokey{DATESTRLIST}, \wokey{CUMULATELIST}, \wokey{DECIMATELIST}, \wokey{MARKERSIZELIST} and \wokey{LINEWIDTHLIST}, respectively.
 
