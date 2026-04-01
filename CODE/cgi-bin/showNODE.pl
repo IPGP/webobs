@@ -633,7 +633,6 @@ if ($nbemeta) {
     }
 }
 
-
 # Rows "Features"
 #
 my @listeFinaleCarFiles = ();
