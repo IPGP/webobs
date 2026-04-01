@@ -638,10 +638,11 @@ if ($QryParm->{'ts'} eq 'map') {
 
         # specific case for VFLOW
         if ($QryParm->{'g'} eq "VFLOW") {
-            print "$addlinks<BR>" if ($QryParm->{'header'} ne 'no');
+            $addlinks .= " <A href=\"/cgi-bin/get_jsonVFLOW.pl?grid=PROC.$GRIDName&ts=$QryParm->{ts}\"><IMG title=\"JSON data\" src=\"/icons/fjson.png\"></A> ";
+            print "$addlinks<BR>\n" if ($QryParm->{'header'} ne 'no');
             print qq(
             <div class="container">
-                <h2 id="procTitle"></h2>
+                <h2 id="procTitle" style="color:black"></h2>
 
                 <!-- Date Slider -->
                 <label for="dateSlider" id="dateLabel">Date</label>
