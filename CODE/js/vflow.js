@@ -1,3 +1,5 @@
+const MS_PER_DAY = 86400000;
+
 // Map initialization
 let map = L.map('map');
 
@@ -61,8 +63,8 @@ let CustomScale = null; // Custom scale value
  * Adjusts sliders for date and period selection based on retrieved data.
  * Initializes the map view and updates vectors.
  */
-function loadGNSSData() {
-    fetch("/cgi-bin/get_jsonVFLOW.pl?grid=PROC." + PCB.PROC + "&ts=" + PCB.TS) // Calls the server-side script to get GNSS data
+async function loadGNSSData() {
+    await fetch("/cgi-bin/get_jsonVFLOW.pl?grid=PROC." + PCB.PROC + "&ts=" + PCB.TS) // Calls the server-side script to get GNSS data
         .then(response => response.json()) // Parses the JSON response
         .then(data => {
             let proc = data.proc; // Process name
@@ -376,5 +378,141 @@ function createLegend() {
 //  Call the function to add the legend
 createLegend();
 
-//  Load data on startup
-loadGNSSData();
+function isoToDate(iso) {
+    return new Date(iso + "T00:00:00");
+}
+
+function dateToISO(date) {
+    return date.toISOString().slice(0, 10);
+}
+
+function addDays(date, days) {
+    return new Date(date.getTime() + days * MS_PER_DAY);
+}
+
+function snapDuration(d) {
+    let snapped = availablePeriods.reduce((prev, curr) =>
+        Math.abs(curr - d) < Math.abs(prev - d) ? curr : prev
+    );
+    return availablePeriods.findIndex(d => d == snapped);
+}
+
+async function initSlider() {
+    await loadGNSSData();
+    const endDates = availableDates.map(isoToDate);
+
+    // tri sécurité
+    endDates.sort((a, b) => a - b);
+
+    const maxDuration = Math.max(...availablePeriods);
+
+
+    // minimum date = oldest date - max(period)
+    const minDate = addDays(endDates[0], -maxDuration);
+    const maxDate = endDates[endDates.length - 1];
+
+    let currentDuration = availablePeriods[0];
+
+    let endIndex = 0;
+
+    // startIndex
+    function computeStartDate(endDate, duration) {
+        return addDays(endDate, -duration);
+    }
+
+    const slider = document.getElementById('slider');
+
+    noUiSlider.create(slider, {
+        start: [0, currentDuration], // initial set (will be corrected)
+        connect: true,
+        range: {
+            min: 0,
+            max: endDates.length - 1
+        },
+        step: 1
+    });
+
+    slider.noUiSlider.on('update', function(values, handle) {
+        let idxStart = Math.round(values[0]);
+        let idxEnd = Math.round(values[1]);
+
+        let endDate = endDates[idxEnd];
+
+        let startDateApprox = endDates[idxStart];
+        let duration = Math.round((endDate - startDateApprox) / MS_PER_DAY);
+
+        let idxPeriod = snapDuration(duration);
+
+        if (availablePeriods[idxPeriod] !== currentDuration) {
+            currentDuration = availablePeriods[idxPeriod];
+
+            let newStartDate = computeStartDate(endDate, currentDuration);
+
+            // find the closest index
+            let newStartIndex = endDates.findIndex(d => d >= newStartDate);
+
+            if (newStartIndex === -1) newStartIndex = 0;
+
+            slider.noUiSlider.set([newStartIndex, idxEnd]);
+            return;
+        }
+
+        // compute start date
+        let startDate = computeStartDate(endDate, currentDuration);
+
+        document.getElementById("output").innerText =
+            dateToISO(startDate) + " → " + dateToISO(endDate) +
+            " (" + currentDuration + " jours)";
+        
+        updateVectors(idxEnd, idxPeriod);
+    });
+
+    let isDragging = false;
+    let startX = 0;
+    let initialIdxStart, initialIdxEnd;
+
+    const connect = slider.querySelector('.noUi-connect');
+
+    connect.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+
+        let values = slider.noUiSlider.get().map(v => Math.round(v));
+        initialIdxStart = values[0];
+        initialIdxEnd = values[1];
+
+        document.body.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        let dx = e.clientX - startX;
+        let sliderWidth = slider.offsetWidth;
+
+        let delta = Math.round((dx / sliderWidth) * endDates.length);
+
+        let newStart = initialIdxStart + delta;
+        let newEnd = initialIdxEnd + delta;
+
+        // clamp
+        if (newStart < 0) {
+            newEnd -= newStart;
+            newStart = 0;
+        }
+        if (newEnd > endDates.length - 1) {
+            newStart -= (newEnd - (endDates.length - 1));
+            newEnd = endDates.length - 1;
+        }
+
+        slider.noUiSlider.set([newStart, newEnd]);
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        document.body.style.cursor = 'default';
+    });
+}
+
+initSlider();
+
