@@ -60,7 +60,7 @@ function DOUT=tremblemaps(varargin)
 %
 %	Authors: F. Beauducel and J.M. Saurel / WEBOBS, IPGP
 %	Created: 2005-01-12, Guadeloupe, French West Indies
-%	Updated: 2025-02-05
+%	Updated: 2026-03-10
 
 
 WO = readcfg;
@@ -86,6 +86,9 @@ e = cat(1,D.e);
 
 % PROC's TZ must be in local time: set back data to UT
 t = t - P.TZ/24;
+
+% event mode: only the first TSCALE is considered
+r = 1;
 
 demopt = field2cell(P,'MAP_DEM_OPT');
 if isok(P,'MAP_LANDONLY',1)
@@ -145,8 +148,8 @@ for n = 1:length(t)
 	if isempty(id)
 		id = 'id';
 	end
-	P.GTABLE(1).EVENTS = sprintf('%4d/%02d/%02d/%s',vtps(1:3),id);
-	pdat = sprintf('%s/%s/%s',P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EVENTS,P.GTABLE(1).EVENTS);
+	P.EVENTS = sprintf('%4d/%02d/%02d/%s',vtps(1:3),id);
+	pdat = sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EVENTS,P.EVENTS);
 	fdat = sprintf('%s/%s.txt',pdat,fnam);
 
 	if all(~isnan(d(n,1:4))) && ~exist(fdat,'file') && e(n) >= 0
@@ -190,18 +193,6 @@ for n = 1:length(t)
 		fprintf(fid,'%s\n',repmat('#',1,80));
 		fclose(fid);
 		fprintf(' done.\n');
-
-		% exports data
-		%if isok(P.GTABLE(r),'EXPORTS')
-		%	E.t = tk;
-		%	E.d = dk;
-		%	E.header = CLB.nm;
-		%	E.title = sprintf('%s {%s}',M.(map).title,proc);
-		%	mkexport(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
-		%end
-
-		% removes all symbolic links
-		wosystem(sprintf('rm -f %s/b3*',pdat),P,'warning');
 
 		% determines if a report is needed (felt event)
 		if forced > 0 || ( msk(k1,2) >= mskmin && (str2double(P.FELTOTHERPLACES_OK) > 0 || strcmp(CITIES.region(k1),region)) )
@@ -576,8 +567,9 @@ for n = 1:length(t)
 			hold off
 			set(gca,'XLim',[0,1],'YLim',[0,1]), axis off
 
-			mkgraph(WO,fnam,P.GTABLE(1))
-			lastb3 = P.GTABLE(1).EVENTS;
+            OPT.STATUS = P.GTABLE(r).STATUS;
+			mkgraph(WO,fnam,P,OPT)
+			lastb3 = P.EVENTS;
 			close
 
 			% ===========================================================
@@ -637,14 +629,6 @@ for n = 1:length(t)
 			fprintf(' done.\n');
 
 			% ===========================================================
-			% creates symbolic links to preferred (last) files
-			for ext = {'txt','gse','pdf','jpg','png','msg'}
-				if exist(sprintf('%s/%s.%s',pdat,fnam,ext{:}),'file')
-					wosystem(sprintf('ln -fs %s.%s %s/b3.%s',fnam,ext{:},pdat,ext{:}),P);
-				end
-			end
-
-			% ===========================================================
 			% make email message
 			f = sprintf('%s/mail.txt',pdat);
 			fid = fopen(f,'wt');
@@ -659,7 +643,7 @@ for n = 1:length(t)
 				else
 					url = 'http://webobs';
 				end
-				fprintf(fid,'%s/cgi-bin/showOUTG.pl?grid=%s&ts=events&g=%s/%s\n',url,P.SELFREF,P.GTABLE(1).EVENTS,fnam);
+				fprintf(fid,'%s/cgi-bin/showOUTG.pl?grid=%s&ts=events&g=%s/%s\n',url,P.SELFREF,P.EVENTS,fnam);
 			end
 			fclose(fid);
 
@@ -681,9 +665,8 @@ for n = 1:length(t)
 		end % of report
 	end
 
-	% purge event (remove symbolic link)
-	if e(n) < 0 && exist(sprintf('%s/b3.jpg',pdat),'file')
-		wosystem(sprintf('rm -f %s/b3*',pdat),P,'warning');
+	% purge event
+	if e(n) < 0
 		wosystem(sprintf('mv -f %s/%s.txt{,.purged}',pdat,fnam),P,'warning');
 		fprintf('%s: ** WARNING ** event %s has been purged.\n',wofun,pdat);
 	end
@@ -694,7 +677,7 @@ if P.REQUEST
 	mkendreq(WO,P);
 else
 	if ~isempty(lastb3)
-		lnk = sprintf('%s/%s/lastevent',P.GTABLE(1).OUTDIR,WO.PATH_OUTG_EVENTS);
+		lnk = sprintf('%s/%s/lastevent',P.OUTDIR,WO.PATH_OUTG_EVENTS);
 		wosystem(sprintf('rm -f %s',lnk),P);
 		wosystem(sprintf('ln -s %s %s',lastb3,lnk),P);
 	end

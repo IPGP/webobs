@@ -139,7 +139,7 @@ function varargout = readhgt(varargin)
 %	  http://gdex.cr.usgs.gov/gdex/ (free registration required)
 %
 %
-%	Author: François Beauducel <beauducel@ipgp.fr>
+%	Author: Franï¿½ois Beauducel <beauducel@ipgp.fr>
 %		Institut de Physique du Globe de Paris
 %
 %	References:
@@ -150,7 +150,7 @@ function varargout = readhgt(varargin)
 %	Created: 2012-04-22 in Paris, France
 %	Updated: 2021-08-11
 
-%	Copyright (c) 2021, François Beauducel, covered by BSD License.
+%	Copyright (c) 2021, Franï¿½ois Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without 
@@ -527,7 +527,7 @@ if ~tiles
 			klat = firstlast(any(Y.z ~= 0 & Y.z ~= novalue,2));
 			klon = firstlast(any(Y.z ~= 0 & Y.z ~= novalue,1));
 		else
-			crop = [minmax(crop(1:2)),normlon(minmax(crop(3:4)))];
+			crop = [minmax(crop(1:2)) + pixel*[-2,2],normlon(minmax(crop(3:4)) + pixel*[-2,2])];
 			klat = find(Y.lat >= crop(1) & Y.lat <= crop(2));
 			klon = find(Y.lon >= crop(3) & Y.lon <= crop(4));
 		end			

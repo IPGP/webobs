@@ -58,7 +58,7 @@ sub qmlfdsn {
     my %qml;
     my @x;
 
-    my @xml2 = qx(curl -s -S --globoff "$url" | $WEBOBS{XML2_PRGM});
+    my @xml2 = qx($WEBOBS{PRGM_ALARM} 1 curl -s -S --globoff "$url" | $WEBOBS{XML2_PRGM});
 
     my $root = '/q:quakeml/eventParameters/event';
     my $evt_origID = findvalue("$root/preferredOriginID=",\@xml2);

@@ -162,6 +162,7 @@ input[type="submit"]:hover {
     font-weight: bold;
     background: transparent;
     border: none;
+    width: 6ch;
 }
 .tdResult {
     text-align: right;

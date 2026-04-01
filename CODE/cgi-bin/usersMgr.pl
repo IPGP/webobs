@@ -163,6 +163,11 @@ if ($QryParm->{'action'} eq 'update') {
         $q .= " ENDDATE=\'$QryParm->{'enddate'}\', COMMENT=\'$QryParm->{'comment'}\'";
         $q .= " WHERE UID=\'$QryParm->{'OLDuid'}\'";
         $refMsg = \$userMsg; $refMsgColor = \$userMsgColor;
+        if ($QryParm->{'valid'} eq "Y") {
+            WebObs::Users::htpasswd_uncomment($QryParm->{'login'});
+        } else {
+            WebObs::Users::htpasswd_comment($QryParm->{'login'});
+        }
     }
     elsif ($QryParm->{'tbl'} eq "group") {
         $q = "update $WEBOBS{SQL_TABLE_GROUPS} set GID=\'$QryParm->{'gid'}\', UID=\'$QryParm->{'uid'}\'";

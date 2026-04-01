@@ -15,7 +15,8 @@ $(document).ready(function() {
     if ($('#Larrow').length) {
         $('#Larrow').css('height', $(document).height() + 'px');
         $('#Rarrow').css('height', $(document).height() + 'px');
-        $('#Rarrow').css('left', $(window).width() - $('#Rarrow').width());
+        //$('#Rarrow').css('left', $(window).width() - $('#Rarrow').width());
+        $('#Rarrow').css('left', visualViewport.width - $('#Rarrow').width());
     }
     if (typeof MECB === 'undefined') {
         // event handlers
@@ -60,12 +61,14 @@ $(document).keydown(function(e) {
     var target = e.target || e.srcElement;
     // Enter key works everywhere
     if (e.key == 'Enter') {
-        verif_formulaire();
-        MECB.FORM.submit();
+        if (verif_formulaire()) MECB.FORM.submit();
     }
     // other keys only outside any form
     if (!/INPUT|TEXTAREA|SELECT|BUTTON/.test(target.nodeName)) {
-        if (e.key == "e") showmctags();
+        if (e.key == "e") {
+            if (SCB.DATE === "") showmctags();
+            else shrinkmctags();
+        }
         if (e.key == "s") showsgram();
         if (e.key == "S") {
             $('#sgramslider').val(10);

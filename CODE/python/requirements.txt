@@ -1,0 +1,5 @@
+setuptools<82.0.0
+obspy
+pendulum
+roman
+numexpr

@@ -34,8 +34,8 @@ REF01_DATE|2000-01-01
 # year and month timescales use true durations
 TIMESCALE_TRUEVALUE|Y
 
-# summary graphs available: SUMMARY,VECTORS,MOTION,BASELINES,MODELLING,MODELTIME
-SUMMARYLIST|SUMMARY,VECTORS,MOTION,BASELINES
+# summary graphs available: SUMMARY,VECTORS,MOTION,BASELINES,STRAINMAP,MODELLING,MODELTIME
+SUMMARYLIST|SUMMARY,VECTORS,MOTION,SRTAINMAP
 
 # for scheduler requests
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} gnss $SELFREF -
@@ -65,9 +65,13 @@ PAPER_SIZE|8,11
 PPI|100
 LANDSCAPE|N
 PLOT_GRID|N
-
 FONTSIZE|8
+
+# exports text data files
 EXPORTS|YES
+EXPORT_HEADER_NODE_KEYLIST|FID,NAME,GNSS_9CHAR,LAT_WGS84,LON_WGS84,ALTITUDE,URL
+EXPORT_HEADER_PROC_KEYLIST|ITRF_REF,VELOCITY_REF,VECTORS_VELOCITY_REF,MODELTIME_PERIOD_DAY
+
 # outputs further vector files (in addition to EPS) for each graph. SVG is experimental
 SVGOUTPUT|NO
 PDFOUTPUT|NO
@@ -89,16 +93,16 @@ DISPLAY_AUTOREFRESH_SECONDS|3600
 # --------------------------------------------------------------------
 # specific proc's parameters
 
-
-# maximum error on position (in m) before excluding the data from graphs and calculations
-FILTER_MAX_ERROR_M|0.05
 # minimum error for each component East, North, and Up (in m)
-ENU_MIN_ERROR_M|0.01,0.01,0.01
-
+ENU_MIN_ERROR_M|0.005,0.005,0.005
 # vector of ratios applied to data errors for each orbit (Final,Rapid,Ultra)
 ORBIT_ERROR_RATIO|1,2,2
+# maximum error on position (in m) before excluding the data from graphs and calculations
+FILTER_MAX_ERROR_M|0.05
 
+# timeseries filtering: exclude min/max median values (in percent)
 PICKS_CLEAN_PERCENT|0
+# timeseries filtering: exclude values above x STD
 PICKS_CLEAN_STD|0
 
 # dimensionless factor applied to the trend value initially in m/day
@@ -196,7 +200,7 @@ BASELINES_EXCLUDED_NODELIST|
 BASELINES_EXCLUDED_FROM_TARGET_KM|
 BASELINES_INCLUDED_NODELIST|
 BASELINES_REF_NODELIST|
-# - fixed pairs (overwrites BASELINES_EXCLUDED_NODELIST and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
+# - fixed pairs (overwrites BASELINES_(EX,IN)CLUDED_* and BASELINES_REF_NODELIST): REF1,STA1;REF2,STA1,STA2,STA5
 BASELINES_NODEPAIRS|
 # plots a moving average filter (raw data in background with lighter color)
 BASELINES_MOVING_AVERAGE|1
@@ -208,6 +212,37 @@ BASELINES_REF_OFFSET_M|0.01
 BASELINES_STATION_OFFSET_M|0.01
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 BASELINES_TIMEZOOM|
+
+# --- STRAINMAP: baselines graph with map of strain
+STRAINMAP_TITLE|{\fontsize{14}{\bf$name - Baselines strain} ($timescale)}
+# - node pairs: REF1,STA1;REF2,STA1,STA2,STA5 (default is Delaunay triangles)
+STRAINMAP_NODEPAIRS|
+# - if no pairs defined, Delaunay triangles from all nodes with possible exclusion/inclusion from node reference list and distance from target
+STRAINMAP_EXCLUDED_FROM_TARGET_KM|
+STRAINMAP_EXCLUDED_NODELIST|
+STRAINMAP_INCLUDED_NODELIST|
+# time tolerance (in days) to compute baseline from data pairs
+STRAINMAP_TOL_DAYS|1
+# YES = 2-D baseline, NO = 3-D baselines
+STRAINMAP_HORIZONTAL_ONLY|NO
+# baseline timeseries linestyle
+STRAINMAP_LINESTYLE|.
+# adds moving average lines (in data sampling)
+STRAINMAP_MOVING_AVERAGE|30
+# baseline offset between pairs (in m), empty for automatic (computed from data STD)
+STRAINMAP_PAIRS_OFFSET_M|
+# sort baseline pairs from linear trend
+STRAINMAP_PAIRS_SORT|YES
+# window for linear trend parameters: all window (empty), number of days before the end (scalar), or days interval [min,max] from end (2 values)  
+STRAINMAP_WINDOW_DAYS|
+# DEM options for background basemap (see dem.m)
+STRAINMAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend','cartesian'
+# map baseline pairs linewidth (in pt): constant or min,max to adjust linearily to absolute strain values
+STRAINMAP_LINEWIDTH|.5,4
+# map baseline pairs color reference: strain for signed colormap, or timeseries (default)
+STRAINMAP_COLORREF|strain
+STRAINMAP_COLORMAP|ryb(256)
+STRAINMAP_FONTSIZE|10
 
 # --- VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|

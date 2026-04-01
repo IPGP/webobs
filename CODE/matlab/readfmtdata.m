@@ -24,7 +24,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2025-07-29
+%	Updated: 2026-03-05
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -45,7 +45,7 @@ for n = 1:length(N)
     end
 
     % datelim is finite dates limits of PROC (or NODE) expressed in the NODE's TZ
-    F.datelim = [max([P.DATELIM(1),N(n).INSTALL_DATE,P.BANG]), min([P.DATELIM(2),N(n).END_DATE,P.NOW])] - P.TZ/24 + N(n).UTC_DATA;
+    F.datelim = [max([P.DATELIM(1),N(n).INSTALL_DATE - N(n).UTC_DATA + P.TZ/24,P.BANG]), min([P.DATELIM(2),N(n).END_DATE - N(n).UTC_DATA + P.TZ/24,P.NOW + P.TZ/24])] - P.TZ/24 + N(n).UTC_DATA;
 
     fprintf('%s: loading data [%s] for node "%s" {%s} from %s to %s ...', ...
         wofun,F.fmt,N(n).FID,N(n).ID,datestr(F.datelim(1)),datestr(F.datelim(2)));
@@ -121,7 +121,11 @@ for n = 1:length(N)
 		D(n).tfirstlast = P.NOW - [1,0];
 	end
 	for r = 1:length(P.GTABLE)
-		k = find((D(n).t >= P.GTABLE(r).DATE1 | isnan(P.GTABLE(r).DATE1)) & (D(n).t <= P.GTABLE(r).DATE2 | isnan(P.GTABLE(r).DATE2)));
+        if ~isempty(D(n).t)
+            k = find((D(n).t(:,end) >= P.GTABLE(r).DATE1 | isnan(P.GTABLE(r).DATE1)) & (D(n).t(:,1) <= P.GTABLE(r).DATE2 | isnan(P.GTABLE(r).DATE2)));
+        else
+            k = [];
+        end
 		tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
 		if any(isnan(tlim))
 			tlim = D(n).tfirstlast;
@@ -137,8 +141,8 @@ for n = 1:length(N)
 			xlim1 = max(tlim(1),N(n).INSTALL_DATE);
 			%xlim2 = max(min(tlim(2) - N(n).LAST_DELAY,N(n).END_DATE),xlim1 + 1);
 			xlim2 = min(tlim(2) - N(n).LAST_DELAY,N(n).END_DATE);
-            ked = k(find(D(n).t(k) <= xlim2,1,'last')); % last sample time before LAST_DELAY
-			samp = round(100*sum(isinto(D(n).t(k),[xlim1,xlim2]))*N(n).ACQ_RATE/abs(xlim2 - xlim1));
+            ked = k(find(D(n).t(k,end) <= xlim2,1,'last')); % last sample time before LAST_DELAY
+			samp = round(100*sum(isinto(mean(D(n).t(k,:),2),[xlim1,xlim2]))*N(n).ACQ_RATE/abs(xlim2 - xlim1));
 			if ~isempty(ked)
 				for i = 1:D(n).CLB.nx
 					if ~isnan(D(n).d(ked,i))
@@ -171,7 +175,9 @@ for n = 1:length(N)
 		D(n).G(r).tlim = tlim;
 	end
 end
-P.tfirstall = rmin(cat(1,D.tfirstlast));
+if length(N) > 0
+    P.tfirstall = rmin(cat(1,D.tfirstlast));
+end
 
 
 % removes the temporary directory

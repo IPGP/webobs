@@ -11,7 +11,7 @@ function y = cleanpicks(x,F)
 %
 %	Author: F. Beauducel <beauducel@ipgp.fr> / WEBOBS
 %	Created: 2013-03-07
-%	Updated: 2019-07-25
+%	Updated: 2025-12-08
 
 filter1 = 'PICKS_CLEAN_PERCENT';
 filter2 = 'PICKS_CLEAN_STD';
@@ -50,7 +50,12 @@ if n < 0
 	error('N must be a positive for %s filter.',filter2);
 end
 if n > 0
-	y(abs(x) > n*rstd(x)) = NaN;
+    for i = 1:size(x,2)
+        a = rstd(x(:,i));
+        k = (abs(x(:,i)) > n*a);
+        y(k,i) = NaN;
+        fprintf('  --> cleanpicks (STD filter = %g x %g): %d samples has been removed from d(:,%d).\n',n,a,sum(k),i);
+    end
 end
 
 

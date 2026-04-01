@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2025-05-06
+%   Updated: 2026-02-10
 
 
 WO = readcfg;
@@ -422,7 +422,7 @@ for m = 1:length(summarylist)
 		P.GTABLE(r).GTITLE = gtitle(M(m).title,P.GTABLE(r).TIMESCALE);
 		OPT.IMAP = IMAP;
 		OPT.FIXEDPP = true;
-		mkgraph(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+		mkgraph(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% --- timeplot (new figure)
@@ -434,13 +434,20 @@ for m = 1:length(summarylist)
 			% loop for each parameter
 			for i = 1:nx
 				subplot(nx*3,1,(i-1)*3+(1:3)), extaxes(gca,[.07,.02])
+                unit = '';
+                ydir = 0;
+                mkc = dk(:,3);
 				switch lower(M(m).tplot{i})
 				case 'latitude'
 					td = dk(:,1);
+                    unit = ' (°N)';
 				case 'longitude'
 					td = dk(:,2);
+                    unit = ' (°E)';
 				case 'depth'
 					td = dk(:,3);
+                    unit = ' (km)';
+                    ydir = 1;
 				case 'magnitude'
 					td = dk(:,4);
 				otherwise
@@ -454,19 +461,26 @@ for m = 1:length(summarylist)
 				else
 					scatter(tk,td,mks,mkc,'fill','MarkerEdgeColor','k','LineWidth',linewidth)
 				end
+                clim = zlim;
+                caxis(clim)
 				set(gca,'XLim',tlim,'FontSize',8)
+                if ydir
+                    set(gca,'YDir','reverse');
+                end
 				datetick2('x',P.GTABLE(r).DATESTR)
 				if i < nx
 					set(gca,'XTickLabel',[]);
 				end
-				ylabel(M(m).tplot{i})
+				ylabel([M(m).tplot{i},unit])
 				box on
 			end
-			tlabel(tlim,P.GTABLE(r).TZ)
+            colormap(M(m).cmap)
+			tlabel(tlim,P.TZ)
 
 			P.GTABLE(r).GTITLE = gtitle(M(m).title,P.GTABLE(r).TIMESCALE);
 
-			mkgraph(WO,sprintf('%s_time_%s',map,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+            OPT.IMAP = [];
+			mkgraph(WO,sprintf('%s_time_%s',map,P.GTABLE(r).TIMESCALE),P,OPT)
 			close
 		end
 
@@ -476,7 +490,7 @@ for m = 1:length(summarylist)
 			E.d = dk;
 			E.header = CLB.nm;
 			E.title = sprintf('%s {%s}',M(m).title,proc);
-			mkexport(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			mkexport(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
 end
