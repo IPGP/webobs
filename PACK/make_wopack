@@ -11,7 +11,7 @@
 #
 # Author: Francois Beauducel <beauducel@ipgp.fr>
 # Created: 2024-03-14
-# Updated: 2024-12-04
+# Updated: 2026-03-04
 
 SCRIPT_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 PWD=$(pwd)
@@ -35,6 +35,8 @@ function ask() {
 
 if ask "--> Compile the Matlab procs '$MCC_OPT' [y/N]" "n"
 then
+	export LANG=fr_FR.iso88591
+	export LC_ALL=fr_FR.iso88591
 	cd "$SCRIPT_DIR/../CODE/matlab"
 	make arch=64 $MCC_OPT
 	make arch=32 $MCC_OPT

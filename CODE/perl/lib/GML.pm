@@ -62,7 +62,7 @@ sub gmlarray2nodearray {
         ## Case 2: we want a specific node (idx € int)    
     } else {
         ## find id of the node we want
-        my $id = @Ids[$idx];
+        my $id = $Ids[$idx];
         $id =~ s/^\s+|\s+$//g ; # very important, id must be trimmed
         ## Get the Node we want
         my @Node = findnodes($root,"/\@gml:id=",$id,\@GmlArray);
@@ -125,7 +125,6 @@ sub gmlread_feature {
     my %hashrec;
     my %hashant;
     my %hashmisc;
-    my @Gml;
 
     if ( not -f $file)
     {

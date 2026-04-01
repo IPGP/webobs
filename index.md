@@ -12,9 +12,9 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.7.3.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.7.3/WebObs-2.7.3.tar.gz) (103 Mb) updated February 5, 2025
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.7.3/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.7.3/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.8.0.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.0/WebObs-2.8.0.tar.gz) (103 Mb) updated March 11, 2026
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.8.0/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.0/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
@@ -64,7 +64,8 @@ sudo apt install libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-
 sudo apt install wkhtmltopdf poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
 sudo apt install libsocket6-perl libdigest-perl-md5-perl
 sudo apt install libncurses5 gdal-bin
-sudo apt install python-is-python3
+sudo apt install dvipng texlive-latex-extra texlive-fonts-recommended cm-super
+sudo apt install python-is-python3 python3-tk python3-venv python3-pip-whl
 ```
 
 ##### Set environment configuration
@@ -183,6 +184,18 @@ Your WebObs installation is now linked to the GitHub repository.
 
 <a name="whatsnew"></a>
 ## What's new and release history
+
+### What's new in the 2.8?
+- new look (style sheet)!
+- check the consistency of registered WebObs users and Apache logins during update (imrpoves access security);
+- generic form for manual database management is now operational with automatic migration of former forms;
+- first version of Python library with demonstration proc (genplot);
+- geojson shapefiles can be associated to nodes and grids;
+- new summary plot STRAINMAP an other improvements for gnss procs;
+- configurable headers fo proc data exports;
+- improvements and new features in MC3/SEFRAN3;
+- improvements in events type proc outputs display;
+- some minor to moderate fixes and other minor improvements.
 
 ### What's new in the 2.7?
 - first effort of generic form for manual database management (under development... wait for v2.8!);
@@ -333,6 +346,11 @@ The WebObs system has been awarded by a **"Community" accessit** during the **Fi
 1. Chevrel, O. (2024). Contribution to the understanding of lava flow emplacement dynamics. Doctoral dissertation, Université Clermont Auvergne (UCA). [](https://hal.science/tel-04797648/document)
 1. Lowenstern, J. B. (2024). A Case for Improved Global Coordination of Volcano Observatories. Annals of Geophysics, 67(4), S436-S436.
 1. Widiwijayanti, C., Thin Zar Win, N., Espinosa-Ortega, T., Costa, F., & Taisne, B. (2024). The global volcano monitoring infrastructure database (GVMID). Frontiers in Earth Science, 12, 1284889.
+1. Fontaine, F. R., Komorowski, J. C., Corbeau, J., Burtin, A., De Chabalier, J. B., Grandin, R., ... & Satriano, C. (2025). Ongoing multiparameter unrest at the Montagne Pelée volcano on Martinique from 2019 to 2024. Scientific Reports, 15(1), 23189. [](https://www.nature.com/articles/s41598-025-05641-6)
+1. Nang, T. Z. W., Widiwijayanti, C., Espinosa-Ortega, T., De Groote, J., & Taisne, B. (2025). WOVOdat web service data retrieval system for comprehensive volcano monitoring. Bulletin of Volcanology, 87(3), 21. [10.1007/s00445-025-01801-8](https://doi.org/10.1007/s00445-025-01801-8)
+1. Cacciola, L., Corsaro, R.A., Federico, C. et al. GeoChem: a volcanic data model for solid and gas samples. Bull Volcanol 87, 102 (2025). [10.1007/s00445-025-01893-2](https://doi.org/10.1007/s00445-025-01893-2)
+
+
 
 #### Seismology
 1. Bengoubou-Valérius M. et al. (2008). CDSA: A New Seismological Data Center for the French Lesser Antilles. *Seismol. Res. Lett.*, [doi:10.1785/gssrl.79.1.90](https://doi.org/10.1785/gssrl.79.1.90)
@@ -386,6 +404,10 @@ le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 
 1. Basuki, A., Purnamasari, H. D., & Syahbana, D. K. (2023, August). The 2021 Semeru volcano eruption: An insight from visual, seismic, and deformation monitoring data. In IOP Conference Series: Earth and Environmental Science (Vol. 1227, No. 1, p. 012030). IOP Publishing.
 1. Nikkhoo, M., & Rivalta, E. (2023). Surface deformations and gravity changes caused by pressurized finite ellipsoidal cavities. *Geophysical Journal International*, 232(1), 643-655.
 1. Briole P., A. Ganas, A. Serpetsidaki, F. Beauducel, V. Sakkas, V. Tsironi, P. Elias (2025). Volcano-tectonic interaction at Santorini. The crisis of February 2025. Constraints from geodesy. *Geophysical Journal International*, [doi:10.1093/gji/ggaf262](https://doi.org/10.1093/gji/ggaf262).
+1. Grandin, R., Collilieux, X., Pasquier, I., & Jamet, O. (2025). Volcano‐tectonic crisis of Mayotte (2018–2022): A deformation model for geodetic applications. Journal of Geophysical Research: Solid Earth, 130(10), e2025JB031473. [10.1029/2025JB031473](https://doi.org/10.1029/2025JB031473)
+1. Pinel, V., & Albino, F. (2025). Monitoring Volcanoes Deformation Based on Synthetic Aperture Radar (SAR) Data. In Modern Volcano Monitoring (pp. 33-59). Cham: Springer Nature Switzerland.
+1. Sakic, P., Boissier, P., Saurel, J. M., Deroussi, S., Andrieu, A., Griot, C., ... & de Chabalier, J. B. (2025). Modernizing GNSS Data Acquisition, Pre-Processing, and Distribution at Volcanological Observatories. EGUsphere, 2025, 1-34.
+1. Tsironi, V., Goutsos, G., & Mintourakis, I. (2025). Geodetic monitoring of the 2024-2025 Santorini volcanic unrest using GNSS and InSAR data: preliminary results. Bulletin of the Geological Society of Greece.
 
 
 

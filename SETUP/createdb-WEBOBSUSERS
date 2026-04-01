@@ -73,7 +73,6 @@ insert into users values ('!','WebObs Owner','${US}','${US}@localhost','Y','','s
 -- default groups : make webobs owner belong to all of these groups,
 -- just to make sure groups table gets initialized ;-)
 insert into groups values ('+VISITOR','!')  ;
-insert into groups values ('+VISITOR','?')  ;
 insert into groups values ('+OBSERVER','!') ;
 insert into groups values ('+DUTY','!')     ;
 insert into groups values ('+ADMIN','!')    ;
@@ -88,10 +87,6 @@ insert into authviews values ('!','CGPSWI',4);
 insert into authmisc values ('!','NODES',4);
 insert into authmisc values ('!','users',4);
 insert into authmisc values ('!','scheduler',4);
-
-insert into authviews values ('+VISITOR','*',1);
-insert into authwikis values ('+VISITOR','*',1);
-insert into authmisc  values ('+VISITOR','*',1);
 
 insert into authprocs values ('+OBSERVER','*',1);
 insert into authviews values ('+OBSERVER','*',2);

@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2025-06-02
+%   Updated: 2026-03-10
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -158,7 +158,7 @@ if vrelmode
 	end
 end
 vrelhorizonly = isok(P,'VECTORS_RELATIVE_HORIZONTAL_ONLY',1);
-velscale = field2num(P,'VECTORS_VELOCITY_SCALE',0);
+vectors_velscale = field2num(P,'VECTORS_VELOCITY_SCALE',0,'notempty');
 vectors_minkm = field2num(P,'VECTORS_MIN_SIZE_KM',10);
 vectors_maxxy = field2num(P,'VECTORS_MAX_XYRATIO',1);
 vectors_xylim = field2num(P,'VECTORS_MAP_XYLIM');
@@ -189,6 +189,25 @@ baselines_refoff = field2num(P,'BASELINES_REF_OFFSET_M',0.01);
 baselines_staoff = field2num(P,'BASELINES_STATION_OFFSET_M',0.01);
 baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 baselines_trend = isok(P,'BASELINES_PLOT_TREND');
+
+% STRAINMAP parameters
+strainmap_title = field2str(P,'STRAINMAP_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
+strainmap_excluded = field2str(P,'STRAINMAP_EXCLUDED_NODELIST');
+strainmap_included = field2str(P,'STRAINMAP_INCLUDED_NODELIST');
+strainmap_excluded_target = field2num(P,'STRAINMAP_EXCLUDED_FROM_TARGET_KM',0,'notempty');
+strainmap_horizonly = isok(P,'STRAINMAP_HORIZONTAL_ONLY');
+strainmap_tol_days = field2num(P,'STRAINMAP_TOL_DAYS',1);
+strainmap_linestyle = field2str(P,'STRAINMAP_LINESTYLE','.');
+strainmap_mavr = field2num(P,'STRAINMAP_MOVING_AVERAGE',30,'notempty');
+strainmap_offset = field2num(P,'STRAINMAP_PAIRS_OFFSET_M',0.01);
+strainmap_sorting = isok(P,'STRAINMAP_PAIRS_SORT',1);
+strainmap_win = field2num(P,'STRAINMAP_WINDOW_DAYS');
+strainmap_demopt = field2cell(P,'STRAINMAP_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
+strainmap_linewidth = field2num(P,'STRAINMAP_LINEWIDTH',3);
+strainmap_colorref = field2str(P,'STRAINMAP_COLORREF');
+strainmap_cmap = field2num(P,'STRAINMAP_COLORMAP',ryb(256),'notempty');
+strainmap_fontsize = field2num(P,'STRAINMAP_FONTSIZE',10);
+
 
 % MOTION parameters
 motion_excluded = field2str(P,'MOTION_EXCLUDED_NODELIST');
@@ -309,7 +328,8 @@ modeltime_cmap = field2num(P,'MODELTIME_COLORMAP',spectral(256));
 modeltime_markersize = pi*(field2num(P,'MODELTIME_MARKERSIZE',10,'notempty')/2)^2; % scatter needs marker size as a surface (πr²)
 
 
-geo = [cat(1,N.LAT_WGS84),cat(1,N.LAT_WGS84),cat(1,N.ALTITUDE)];
+geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
+aliases = cat(1,{N.ALIAS});
 
 V.name = P.NAME;
 V.velref = itrf;
@@ -342,17 +362,25 @@ for n = 1:numel(N)
 
 	% --- filters the data at once and adjust errors
 	if ~isempty(D(n).d)
-		if ~isnan(maxerror)
-			D(n).d(any(D(n).e>maxerror,2),:) = NaN;
-		end
 		for c = 1:3
-			D(n).e(isnan(D(n).e(:,c)) | D(n).e(:,c)<minerror(c),c) = minerror(c);
+			k = (isnan(D(n).e(:,c)) | D(n).e(:,c)<minerror(c));
+			D(n).e(k,c) = minerror(c);
+            if sum(k)
+                fprintf('---> %s: error for %d sample(s) of component %s adjusted to min value (%g m).\n',aliases{n},sum(k),enu{c},minerror(c));
+            end
 		end
 		for i = 1:numel(orbiterr)
 			k = find(D(n).d(:,4)>=i-1);
 			if ~isempty(k) && ~isempty(D(n).e) && orbiterr(i)>0
 				D(n).e(k,:) = D(n).e(k,:)*orbiterr(i);
 			end
+		end
+		if ~isnan(maxerror)
+			k = any(D(n).e>maxerror,2);
+			D(n).d(k,:) = NaN;
+            if sum(k)
+                fprintf('---> %s: %d/%d sample(s) excluded due to max error filter (%g m).\n',aliases{n},sum(k),length(k),maxerror);
+            end
 		end
 	end
 
@@ -466,6 +494,10 @@ for r = 1:numel(P.GTABLE)
 	summary = 'SUMMARY';
 	if any(strcmp(P.SUMMARYLIST,summary))
 		figure, clf, orient tall
+        OPT.tz = P.TZ;
+        OPT.datefmt = P.GTABLE(r).DATESTR;
+        OPT.markersize = P.GTABLE(r).MARKERSIZE;
+        OPT.linewidth = P.GTABLE(r).LINEWIDTH;
 		OPT.linestyle = summary_linestyle;
 		OPT.movavr = 1;
 		OPT.fontsize = fontsize;
@@ -482,14 +514,16 @@ for r = 1:numel(P.GTABLE)
             X(kn).d = X(kn).d + repmat(staoffset(n) - staoffset(kn),size(X(kn).d));
 			X(kn).rgb = scolor(n);
         end
-		smartplot(X(ksum),tlim,P.GTABLE(r),OPT);
+		smartplot(X(ksum),tlim,OPT);
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
-		P.GTABLE(r).GTITLE = varsub(summary_title,V);
-		P.GTABLE(r).INFOS = {sprintf('Referential: {\\bf%s}',itrf), ...
+		OPT.GTITLE = varsub(summary_title,V);
+		OPT.INFOS = {sprintf('Referential: {\\bf%s}',itrf), ...
             sprintf('  E {\\bf%+g} %s\n  N {\\bf%+g} %s\n  U {\\bf%+g} %s',velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit)};
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+        OPT.IMAP = [];
+		OPT.FIXEDPP = false;
+		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -515,9 +549,11 @@ for r = 1:numel(P.GTABLE)
     voffset = zeros(1,3);
 	if vrelmode
 		if numel(sstr2num(vref)) == 3
+            % fixed mode: E,N,U
 			voffset = sstr2num(vref)*P.trendfact/365250;
 			mode = 'fixed';
 		else
+            % network mode: reference station list
 			[kvref,knref] = ismemberlist(split(vref,','),{N.FID});
 			if ~isempty(vref) && all(kvref)
 				mode = vref;
@@ -531,13 +567,15 @@ for r = 1:numel(P.GTABLE)
 					mode = sprintf('invalid reference "%s"',vref);
 				end
 			else
-				% auto relative mode: horizontal only (or not)
+				% auto mode: all network mean
 				mode = 'auto';
-				voffset = [mvv(1:2),(~vrelhorizonly)*mvv(3)];
+				voffset = mvv;
 			end
+            % horizontal only (or not)
+            voffset(3) = voffset(3)*(~vrelhorizonly);
 		end
 		tr = tr - repmat(voffset,numel(N),1);
-		fprintf('---> Relative mode "%s" - velocity reference = %1.2f, %1.2f, %1.2f %s\n',mode,voffset,P.trendunit);
+		fprintf('---> Relative mode "%s"%s - velocity reference = %1.2f, %1.2f, %1.2f %s\n',mode,repmat(' (horiz. only)',vrelhorizonly),voffset,P.trendunit);
 	end
 
 	% --- per node plots
@@ -554,9 +592,10 @@ for r = 1:numel(P.GTABLE)
 		ke = D(n).G(r).ke;
 
 		% title and status
-		P.GTABLE(r).GTITLE = varsub(pernode_title,V);
-		P.GTABLE(r).GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
-		P.GTABLE(r).INFOS = {''};
+		OPT.GTITLE = varsub(pernode_title,V);
+        OPT.STATUS = P.GTABLE(r).STATUS;
+		OPT.GSTATUS = [tlim(2),D(n).G(r).last,D(n).G(r).samp];
+		OPT.INFOS = {''};
 
 		% loop for Relative Eastern, Northern, and Up components with error bars (in m)
 		X = repmat(struct('t',[],'d',[],'e',[],'w',[]),1+vrelmode,1);
@@ -603,6 +642,10 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% makes the plot
+        OPT.tz = P.TZ;
+        OPT.datefmt = P.GTABLE(r).DATESTR;
+        OPT.markersize = P.GTABLE(r).MARKERSIZE;
+        OPT.linewidth = P.GTABLE(r).LINEWIDTH;
 		OPT.linestyle = pernode_linestyle;
 		OPT.movavr = 1;
 		OPT.fontsize = fontsize;
@@ -613,7 +656,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 100;
         OPT = structmerge(OPT,P,'^TREND_');
-		[lre,rev] = smartplot(X,tlim,P.GTABLE(r),OPT);
+		[lre,rev] = smartplot(X,tlim,OPT);
 		if ~isempty(rev)
 			axes('Position',[.8,.02,.18,.07])
 			plotcube([0,0,0],eye(3),[0,0,0],{'E','N','U'}), hold on
@@ -626,9 +669,9 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		if ~isempty(k)
-			P.GTABLE(r).INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.GTABLE(r).TZ),'(median)',' ',' '};
+			OPT.INFOS = {'Last measurement:',sprintf('{\\bf%s} {\\it%+d}',datestr(D(n).t(ke)),P.TZ),'(median)',' ',' '};
 			for i = 1:3
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%d. %s = {\\bf%1.3f %s} (%1.3f) - Vel. = {\\bf%+1.1f \\pm %1.1f %s}', ...
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('%d. %s = {\\bf%1.3f %s} (%1.3f) - Vel. = {\\bf%+1.1f \\pm %1.1f %s}', ...
 					i, enu{i},D(n).d(ke,i+4),D(n).CLB.un{i},rmedian(D(n).d(k,i+4)),lre(i,:),P.trendunit)}];
 			end
 		end
@@ -638,50 +681,50 @@ for r = 1:numel(P.GTABLE)
         if faultcorr
             OPT.EVENTS = cat(1,OPT.EVENTS,P.fault_event);
         end
-		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P.GTABLE(r),OPT)
+        OPT.IMAP = [];
+		OPT.FIXEDPP = false;
+		mkgraph(WO,sprintf('%s_%s',lower(N(n).ID),P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS') && ~isempty(k)
-			E.t = D(n).t(k);
-			E.d = [D(n).d(k,1:3),D(n).e(k,:),D(n).d(k,4)];
+		if isok(P,'EXPORTS')
+			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(N(n).ID));
 			E.header = {'Eastern(m)','Northern(m)','Up(m)','dE','dN','dU','Orbit'};
 			E.infos = {};
-			if harmcorr || faultcorr || vrelmode
-				E.d = [E.d,	...
-			   		D(n).d(k,5) - polyval([voffset(1)/P.trendfact,0],E.t - tlim(1)), ...
-			   		D(n).d(k,6) - polyval([voffset(2)/P.trendfact,0],E.t - tlim(1)), ...
-			   		D(n).d(k,7) - polyval([voffset(3)/P.trendfact,0],E.t - tlim(1)), ...
-			   	];
-				E.header = [E.header,{'East_treat(m)','North_treat(m)','Up_treat(m)'}];
+			E.t = D(n).t(k);
+            if ~isempty(k)
+                E.d = [D(n).d(k,1:3),D(n).e(k,:),D(n).d(k,4)];
+                if harmcorr || faultcorr || vrelmode
+                    E.d = [E.d,	...
+                        D(n).d(k,5) - polyval([voffset(1)/P.trendfact,0],E.t - tlim(1)), ...
+                        D(n).d(k,6) - polyval([voffset(2)/P.trendfact,0],E.t - tlim(1)), ...
+                        D(n).d(k,7) - polyval([voffset(3)/P.trendfact,0],E.t - tlim(1)), ...
+                    ];
+                    E.header = [E.header,{'East_treat(m)','North_treat(m)','Up_treat(m)'}];
+                end
+            else
+                E.d = nan(0,7);
 			end
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(N(n).ID));
 
-			E.meta = {};
-			E = add_export_metadata(E,N(n),export_header_node_keylist,"NODE");
-			E = add_export_metadata(E,P,export_header_proc_keylist,"PROC");
-
-			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
-			E.meta = {}; % meta are erased after the export
+			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
 	end
 
 
 	if P.GTABLE(r).STATUS
-		P.GTABLE(r).GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
+        OPT.STATUS = 1;
+		OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 	end
-	P.GTABLE(r).INFOS = {''};
+	OPT.INFOS = {''};
 
 
 	% --- Baselines time series
 	summary = 'BASELINES';
 	if any(strcmp(P.SUMMARYLIST,summary))
 
-		if baselines_horizonly
-			ib = 5:6;
-		else
-			ib = 5:7;
-		end
+        B = [];
+        % component indexes (5:6 for horizontal only, 5:7 for 3-components)
+		ib = 5:(6 + ~baselines_horizonly);
 
 		% builds a structure B containing indexes of each node pairs
 		if isfield(P,'BASELINES_NODEPAIRS') && ~isempty(P.BASELINES_NODEPAIRS)
@@ -723,12 +766,11 @@ for r = 1:numel(P.GTABLE)
 			set(gcf,'PaperSize',[p(1),p(2)*numel(kr)/pagestanum])
 		end
 		orient tall
-		P.GTABLE(r).GTITLE = varsub(baselines_title,V);
+		OPT.GTITLE = varsub(baselines_title,V);
 
 		% builds the structure X for smartplot: X(n).d(:,i) where
 		%   n = destination node and i = reference node
 		X = repmat(struct('t',[],'d',[],'e',[],'w',[],'nam',[]),numel(N),1);
-		aliases = cell(1,numel(N));
 		refnames = cell(1,numel(B));
 		for nn = 1:numel(B)
 			n = B(nn).kr;
@@ -785,14 +827,18 @@ for r = 1:numel(P.GTABLE)
 			refnames{nn} = varsub(baselines_ylabel,V);
 
 			% exports baseline data for reference n
-			if isok(P.GTABLE(r),'EXPORTS')
-				E.title = sprintf('%s: ref. %s',P.GTABLE(r).GTITLE,N(n).ALIAS);
+			if isok(P,'EXPORTS')
+				E.title = sprintf('%s: ref. %s',OPT.GTITLE,N(n).ALIAS);
 				E.infos = {};
-				mkexport(WO,sprintf('%s_%s_%s',summary,N(n).FID,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+				mkexport(WO,sprintf('%s_%s_%s',summary,N(n).FID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 			end
 		end
 
 		% makes the plot
+        OPT.tz = P.TZ;
+        OPT.datefmt = P.GTABLE(r).DATESTR;
+        OPT.markersize = P.GTABLE(r).MARKERSIZE;
+        OPT.linewidth = P.GTABLE(r).LINEWIDTH;
 		OPT.linestyle = baselines_linestyle;
 		OPT.movavr = baselines_mavr;
 		OPT.fontsize = fontsize;
@@ -803,14 +849,302 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscaleunit = 'cm';
 		OPT.yscalefact = 1/siprefix(OPT.yscaleunit,'m');
         OPT = structmerge(OPT,P,'^TREND_');
-		smartplot(X,tlim,P.GTABLE(r),OPT);
+		smartplot(X,tlim,OPT);
 
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
 
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+        OPT.IMAP = [];
+		OPT.FIXEDPP = false;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
+		close
+	end
+
+	% --- Baselines time series
+	summary = 'STRAINMAP';
+	if any(strcmp(P.SUMMARYLIST,summary))
+
+        % component indexes (5:6 for horizontal only, 5:7 for 3-components)
+		if strainmap_horizonly
+            ndim = '2-D';
+            ib = 5:6;
+        else
+            ndim = '3-D';
+            ib = 5:7;
+        end
+        sorting = false;
+
+		% builds a structure B containing indexes of each node pairs a-b
+        B = [];
+		if isfield(P,'STRAINMAP_NODEPAIRS') && ~isempty(P.STRAINMAP_NODEPAIRS)
+			pairref = strtrim(split(P.STRAINMAP_NODEPAIRS,';'));
+			np = 1;
+			for nn = 1:numel(pairref)
+				pairs = strtrim(split(pairref{nn},','));
+				if numel(pairs)>1
+					kr = find(ismemberlist({N.FID},pairs(1)));
+					kn = find(ismemberlist({N.FID},pairs(2:end)));
+				end
+				if ~isempty(kr) && ~isempty(kn)
+                    for i = 1:length(kn)
+                        B(np).a = kr;
+                        B(np).b = kn(i);
+                        np = np + 1;
+                    end
+				else
+					fprintf('%s: ** WARNING ** invalid node pairs for %s!\n',wofun,pairref{nn});
+				end
+			end
+		end
+		% B structure not created = no valid node pairs
+		% will build automatic node pairs from Delaunay's triangles
+		if isempty(B)
+			kn = selectnode(N,tlim,strainmap_excluded,strainmap_included,[targetll,strainmap_excluded_target]);
+            fprintf('%s: no pairs defined for summary STRAINMAP. Set automatic Delaunay triangles from %g nodes.\n',wofun,length(kn));
+            DT = delaunay(geo(kn,2),geo(kn,1));
+            % 1) constructs a 2-column array of all pairs (sorted)
+            ab = zeros(size(DT,1),2);
+            np = 1;
+            for i = 1:size(DT,1)
+                ab(np,:) = kn(sort(DT(i,1:2)));
+                ab(np+1,:) = kn(sort(DT(i,2:3)));
+                ab(np+2,:) = kn(sort(DT(i,[1,3])));
+                np = np + 3;
+            end
+            % 2) removes duplicates
+            [C,ia] = unique(ab,'rows');
+            for n = 1:length(C)
+                B(n).a = ab(ia(n),1);
+                B(n).b = ab(ia(n),2);
+            end
+            sorting = true;
+		end
+
+        % now we have all node pairs: computing baselines
+        % time window for computations
+        tvel = tlim;
+        if all(strainmap_win > 0)
+            if isscalar(strainmap_win)
+                tvel = tlim(2) - [strainmap_win,0];
+            elseif numel(strainmap_win) == 2
+                tvel = tlim(2) - strainmap_win;
+            end
+            tvel(1) = max(tvel(1),tlim(1));
+            tvel(2) = min(tvel(2),tlim(2));
+        end
+
+        fprintf('---> Baselines summary from %s to %s:\n',datestr(tvel(1)),datestr(tvel(2)));
+        for n = 1:length(B)
+            a = B(n).a;
+            b = B(n).b;
+            B(n).length = greatcircle(geo(a,1),geo(a,2),geo(b,1),geo(b,2));
+            if ~strainmap_horizonly
+                B(n).length = sqrt(B(n).length^2 + (diff(geo([a,b],3))/1e3)^2);
+            end
+            B(n).line = sprintf('%s-%s',N(a).ALIAS,N(b).ALIAS);
+            B(n).name = sprintf('%s (%g km)',B(n).line,roundsd(B(n).length,2));
+            % reduces data to tlim window
+            k = isinto(D(a).t,tlim);
+            tka = D(a).t(k);
+            dka = D(a).d(k,:);
+            k = isinto(D(b).t,tlim);
+            tkb = D(b).t(k);
+            dkb = D(b).d(k,:);
+            % rounds time using tolerance
+            if strainmap_tol_days > 0
+                tka = floor(tka*strainmap_tol_days);
+                tkb = floor(tkb*strainmap_tol_days);
+            end
+            d = nan(size(dka,1),1);
+            o = zeros(size(dka,1),1);
+            [tc,ka,kb] = intersect(tka,tkb);
+            if ~isempty(ka)
+                d(ka) = sqrt(sum((dkb(kb,ib) - dka(ka,ib)).^2,2));
+                o(ka) = max(dkb(kb,4),dka(ka,4));
+            end
+            B(n).d = d;
+            B(n).o = o;
+            B(n).t = tka;
+            kvel = (isinto(B(n).t,tvel) & ~isnan(B(n).d));
+            if sum(kvel)
+                B(n).rlin = polyfit(B(n).t(kvel),B(n).d(kvel),1);
+            else
+                B(n).rlin = NaN;
+            end
+            B(n).vel = B(n).rlin(1)*1e3*365;
+            B(n).dis = B(n).vel*diff(tvel)/365;
+            B(n).def = B(n).dis/B(n).length;
+            k = ~isnan(B(n).d);
+            if sum(k)
+                lin = polyfit(B(n).t(k),B(n).d(k)-mean(B(n).d(k)),1); % global linear regression (for display purpose)
+            else
+                lin = [NaN,0];
+            end
+            B(n).lin = lin(1);
+            B(n).std = rstd(B(n).d(k) - polyval(lin,B(n).t(k)));
+            fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+g µstrain\n', ...
+                B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],4));
+        end
+        fprintf('---> Baselines timeseries offset = ')
+        if strainmap_offset > 0
+            boffset = strainmap_offset;
+            fprintf('%g cm (fixed).\n',100*boffset);
+        else
+            boffset = 2*rmean(cat(1,B.std));
+            fprintf('%g cm (auto).\n',100*boffset)
+        end
+        if strainmap_sorting
+            [~,k] = sort(-cat(1,B.lin));
+            B = B(k);
+        end
+        absdef = abs(cat(1,B.def));
+
+		figure
+		orient tall
+		OPT.GTITLE = varsub(strainmap_title,V);
+        axes('Position',[.05,.5,.8,.43])
+        ylim = [0,-boffset];
+        for n = 1:length(B)
+            dd = B(n).d - rmedian(B(n).d) - boffset*n;
+            if strainmap_mavr > 1
+                da = mavr(dd,strainmap_mavr);
+            else
+                da = dd;
+            end
+            plotorbit(B(n).t,dd,B(n).o,strainmap_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE/2,scolor(n)/2+1/2)
+            hold on
+            plotorbit(B(n).t,da,B(n).o,strainmap_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(n))
+            if ~all(isnan(dd))
+                lda = da(find(~isnan(da),1,'last'));
+                if isempty(lda) || isnan(lda)
+                    lda = rmean(dd);
+                end
+                text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
+                    'HorizontalAlignment','left','VerticalAlignment','middle')
+                ylim = minmax([ylim,lda+boffset*[-.5,.5]]);
+            end
+        end
+        if any(isnan(ylim))
+            ylim = [0,1];
+        end
+
+        % - ruler legend
+        dy0 = roundsd(diff(ylim)/4,[1,2,5]); % a quarter of Y-interval rounded to 1/2/5
+        x0 = tlim(1) - .02*diff(tlim);
+        y0 = ylim(2) - 1.5*dy0;
+        plot(x0 + [0,0],y0 - .5*dy0*[-1,1],'-k','LineWidth',2,'Clipping','off')
+        text(x0,y0,{sprintf('%g cm',dy0*100),'',''},'FontSize',10,'FontWeight','bold', ...
+            'Rotation',90,'HorizontalAlignment','center')
+		plot(tvel,ylim(2)+0.01*diff(ylim)*[1,1],'-','LineWidth',2,'Color',.7*ones(1,3),'Clipping','off') % window for parameters
+        hold off
+        set(gca,'XLim',tlim,'YLim',ylim,'YTick',[],'FontSize',fontsize);
+		datetick2('x',P.GTABLE(r).DATESTR)
+		tlabel(tlim,P.TZ,'FontSize',fontsize)
+
+        % - map of baselines and strain
+        axes('Position',[0.05,.035,.5,.45])
+        clim = [-1,1]*max(absdef);
+        cmap = polarmap(strainmap_cmap,0.3);
+        kn = unique(cat(1,B.a,B.b));
+        xylim = ll2lim(minmax(geo(kn,1)),minmax(geo(kn,2)),1,1,.1);
+        DEM = loaddem(WO,xylim,P);
+        dem(DEM.lon,DEM.lat,DEM.z,'latlon','position','northwest',strainmap_demopt{:})
+        hold on
+        for n = 1:length(B)
+            a = B(n).a;
+            b = B(n).b;
+            if isscalar(strainmap_linewidth) || isnan(B(n).def)
+                lw = strainmap_linewidth(1);
+            else
+                lw = (abs(B(n).def)-min(absdef))*diff(strainmap_linewidth)/diff(minmax(absdef)) + strainmap_linewidth(1);
+            end
+            if strcmpi(strainmap_colorref,'strain')
+                ncol = size(cmap,1)-1;
+                if ~isnan(B(n).def)
+                    col = cmap(floor(ncol*(B(n).def-clim(1))/diff(clim))+1,:);
+                else
+                    col = cmap(round(ncol/2),:);
+                    lw = .1;
+                end
+            else
+                col = scolor(n);
+            end
+            plot(geo([a,b],2),geo([a,b],1),'-','Color',col,'LineWidth',lw)
+        end
+        hold off
+        target(geo(kn,2),geo(kn,1),8,.5*ones(1,3))
+        if strainmap_fontsize > 0
+            smarttext(geo(kn,1),geo(kn,2),aliases(kn),'latlon','noframe', ...
+                'FontSize',strainmap_fontsize,'FontWeight','bold')
+        end
+		% strain colorscale
+        if strcmpi(strainmap_colorref,'strain')
+            axes('position',[0.05,.03,.5,.015])
+            xx = linspace(-1,1,256);
+			imagesc(xx,[0;1],repmat(linspace(0,1,256),2,1))
+            if numel(strainmap_linewidth) == 2
+                hold on
+                for i = 1:length(xx)-1
+                    plot(xx(i:i+1),-2*[1,1],'-k', ...
+                        'LineWidth',2*(abs(i - length(xx)/2)/length(xx))*diff(strainmap_linewidth)+strainmap_linewidth(1), ...
+                        'Clipping','off')
+                end
+                hold off
+            end
+            mdef = sprintf('%g %cstr',roundsd(max(absdef),2),char(181));
+			set(gca,'XTick',[-1,0,1],'YTick',[],'XTickLabel',{['-',mdef],'0',['+',mdef]}, ...
+                'TickDir','out','FontSize',8)
+            colormap(cmap)
+            caxis([0,1])
+            %title(sprintf('Linear deformation (%cstrain)',char(181)),'FontSize',10)
+		end
+
+        % numeric information (max values in bold)
+        axes('Position',[0.6,.05,.4,.4])
+        [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
+        txt = {sprintf('{\\bfBaseline Kinematic %s Linear Parameters}',ndim), ...
+            sprintf('from %s to %s',datestr(tvel(1)),datestr(tvel(2)))};
+        text(0,1,txt,'VerticalAlignment','top','FontSize',9)
+        
+        bstab = {'',{'{\bfDist.}','(km)',''},{'{\bfVel.}','(mm/yr)',''},{'{\bfDisp.}','(mm)',''},{'{\bfDef.}',sprintf('(%cstr)',char(181)),''}};
+
+        for i = 1:length(B)
+            n = ix(i);
+            b1 = repmat('\bf',abs(B(n).vel)==max(abs(cat(1,B.vel))));
+            b2 = repmat('\bf',abs(B(n).dis)==max(abs(cat(1,B.dis))));
+            b3 = repmat('\bf',abs(B(n).def)==max(abs(cat(1,B.def))));
+            b0 = repmat('\bf',any(~cellfun(@isempty,{b1,b2,b3})));
+            bstab(i+1,1:2) = { ...
+                sprintf('{%s%s}',b0,B(n).line), ...
+                sprintf('%g',roundsd(B(n).length,2)), ...
+            };
+            if isnan(B(n).def)
+                bstab(i+1,3:5) = {'--','--','--'};
+            else
+                bstab(i+1,3:5) = { ...
+                    sprintf('{%s%+g}',b1,roundsd(B(n).vel,2)), ...
+                    sprintf('{%s%+g}',b2,roundsd(B(n).dis,2)), ...
+                    sprintf('{%s%+g}',b3,roundsd(B(n).def,2)), ...
+                };
+            end
+        end
+        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc','FontSize',8)
+        set(gca,'YLim',[0,1])
+        axis off
+
+
+		if isok(P,'PLOT_GRID')
+			grid on
+		end
+
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.FIXEDPP = true;
+        OPT.IMAP = [];
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -820,31 +1154,33 @@ for r = 1:numel(P.GTABLE)
 
 		figure, orient tall
 
-		P.GTABLE(r).GTITLE = varsub(vectors_title,V);
-		P.GTABLE(r).INFOS = [ ' ', ' ', tsinfo, ...
+		OPT.GTITLE = varsub(vectors_title,V);
+		OPT.INFOS = [ ' ', ' ', tsinfo, ...
 			sprintf('Referential: {\\bf%s}',itrf),sprintf('   E {\\bf%+g} %s\n   N {\\bf%+g} %s\n   U {\\bf%+g} %s', ...
                 velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit), ...
 			' ', ...
 			sprintf('Mean velocity (%s):',itrf) ...
 		];
 		for i = 1:3
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},mvv(i),P.trendunit)}];
+			OPT.INFOS = [OPT.INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},mvv(i),P.trendunit)}];
 		end
 		if vrelmode
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('Velocity ref. vector ({\\bf%s}):',mode)}];
+			OPT.INFOS = [OPT.INFOS{:},{' ', sprintf('Velocity ref. vector ({\\bf%s}):',mode)}];
 			for i = 1:3
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},voffset(i),P.trendunit)}];
+				OPT.INFOS = [OPT.INFOS{:},{sprintf('    %s = {\\bf%+1.2f %s}',enu{i},voffset(i),P.trendunit)}];
 			end
 		end
 
-		% scale is adjusted to maximum horizontal vector or error amplitude (in mm/yr)
-		if velscale > 0
-			vmax = velscale;
-		else
-			vmax = rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]);
+		% scale is adjusted to maximum horizontal vector module or 1/2 error amplitude (in mm/yr)
+		fprintf('---> Velocity scale');
+		if vectors_velscale > 0
+            velscale = vectors_velscale;
+        else
+            fprintf(' (auto)');
+			velscale = roundsd(rmax([abs(complex(tr(knv,1),tr(knv,2)));abs(complex(tre(knv,1),tre(knv,2)))/2]),1);
 		end
-		vscale = roundsd(vmax,1);
-		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/vmax;
+		fprintf(': %g %s\n',velscale,P.trendunit);
+		vsc = .25*max([diff(latlim),diff(lonlim)*xyr,vectors_minkm/degkm])/velscale; % graphic scale in degree lat per mm/yr
 
 		ha = plot(geo(knv,2),geo(knv,1),'k.');  extaxes(gca,[.04,.08])
 		hold on
@@ -856,8 +1192,8 @@ for r = 1:numel(P.GTABLE)
 		% plots velocity vectors first
 		for nn = 1:numel(knv)
 			n = knv(nn);
-			if ~any(isnan([vsc,vmax])) && ~any(isnan(tr(n,1:2)))
-				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1),vsc*tr(n,2),[arrowshape,xyr],'Cartesian','Ref',vsc*vmax,'FaceColor',scolor(n),'LineWidth',1);
+			if ~isnan(vsc) && ~any(isnan(tr(n,1:2)))
+				h = arrows(geo(n,2),geo(n,1),vsc*tr(n,1),vsc*tr(n,2),[arrowshape,xyr],'Cartesian','Ref',vsc*velscale,'FaceColor',scolor(n),'LineWidth',1);
 				ha = cat(1,ha,h);
 			end
 		end
@@ -935,13 +1271,20 @@ for r = 1:numel(P.GTABLE)
             end
 		end
 
-		% plots legend scale
-		xsc = xlim(1);
-		ysc = ylim(2) + .04*diff(ylim);
-		lsc = vscale*vsc;
-		arrows(xsc,ysc,lsc,90,[arrowshape*vmax/vscale,xyr],'FaceColor','none','LineWidth',1,'Clipping','off');
-		text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g %s',vscale,P.trendunit),'FontWeight','bold')
-
+		% plots legend scale (velocity and displacements)
+        if ~isnan(vsc)
+            xsc = xlim(1);
+            ysc = ylim(1) - .06*diff(ylim);
+            lsc = velscale*vsc;
+            arrows(xsc,ysc,lsc,0,[arrowshape,xyr],'Cartesian','Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
+            text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g %s',velscale,P.trendunit),'FontWeight','bold')
+            ysc = ylim(1) - .1*diff(ylim);
+            rdv = 1e3*diff(tlim)/P.trendfact; % ratio displacement/velocity
+            dispscale = roundsd(velscale*rdv,1); % displacement scale (rounded)
+            lsc = dispscale*vsc/rdv; % vector of displacements plotted at velocity scale...
+            arrows(xsc,ysc,lsc,0,[arrowshape,xyr],'Cartesian','Ref',vsc*velscale,'FaceColor','none','LineWidth',1,'Clipping','off');
+            text(xsc + 1.1*lsc/xyr,ysc,sprintf('%g mm',dispscale),'FontWeight','bold')
+        end
 
 		hold off
 
@@ -968,12 +1311,16 @@ for r = 1:numel(P.GTABLE)
 		end
 
 
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.FIXEDPP = true;
+        OPT.INFOLINES = 9;
+        OPT.IMAP = [];
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
+		if isok(P,'EXPORTS')
 			E.infos = { ...
 				sprintf('Velocity reference (%s):  E %+g %s, N %+g %s, U %+g %s',datestr(velrefdate), ...
                     velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit), ...
@@ -982,8 +1329,8 @@ for r = 1:numel(P.GTABLE)
 			E.t = max(cat(1,D(knv).tfirstlast),[],2);
 			E.d = [geo(knv,:),tr(knv,:),tre(knv,:)];
 			E.header = {'Latitude','Longitude','Altitude','E_velocity(mm/yr)','N_Velocity(mm/yr)','Up_Velocity(mm/yr)','dEv(mm/yr)','dNv(mm/yr)','dUv(mm/yr)'};
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
+			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
 
@@ -994,8 +1341,8 @@ for r = 1:numel(P.GTABLE)
 		figure, orient tall
 		ppos = get(gcf,'PaperPosition');
 
-		P.GTABLE(r).GTITLE = varsub(motion_title,V);
-		P.GTABLE(r).INFOS = tsinfo;
+		OPT.GTITLE = varsub(motion_title,V);
+		OPT.INFOS = tsinfo;
 
 		% Selects nodes
 		knv = selectnode(N,tlim,motion_excluded,motion_included,[targetll,motion_excluded_target]);
@@ -1149,8 +1496,12 @@ for r = 1:numel(P.GTABLE)
 		set(gca,'XLim',[0,1],'YLim',[0,1])
 		axis off
 
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true,'INFOLINES',9))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.FIXEDPP = true;
+        OPT.INFOLINES = 9;
+        OPT.IMAP = [];
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -1275,15 +1626,19 @@ for r = 1:numel(P.GTABLE)
 
 		colormap(modelnet_cmap)
 
-		P.GTABLE(r).GTITLE = varsub(modelnet_title,V);
-		P.GTABLE(r).INFOS = [ tsinfo, ...
+		OPT.GTITLE = varsub(modelnet_title,V);
+		OPT.INFOS = [ tsinfo, ...
 			sprintf('{\\bf%d}/%d stations',length(kn),numel(N)), ...
 	   		sprintf('minimum displacements at {\\bf%d} stations:',modelnet_minsta), ...
 	   		sprintf('E: {\\bf%g mm}, N: {\\bf%g mm}, U: {\\bf%g mm}',modelnet_mindisp), ...
 			' ', ...
 			];
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('INFOLINES',4))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.FIXEDPP = false;
+        OPT.INFOLINES = 4;
+        OPT.IMAP = [];
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 
@@ -1425,7 +1780,7 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
+		if isok(P,'EXPORTS')
 			E.t = max(cat(1,D(kn).tfirstlast),[],2);
 			E.d = [geo(kn,:),d,ux,uy,uz];
 			E.header = {'Latitude','Longitude','Altitude','E_obs(mm)','N_obs(mm)','Up_obs(mm)','dE(mm)','dN(mm)','dU(mm)', ...
@@ -1461,14 +1816,14 @@ for r = 1:numel(P.GTABLE)
 					end
 				end
 			end
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
-			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
+			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 
 		if isok(P,'MODELLING_EXPORT_MAT')
 			f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
 			fprintf('%s: saving workspace in %s...',wofun,f);
-			save(sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
+			save(sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
 			fprintf(' done.\n');
 		end
 
@@ -1829,13 +2184,16 @@ for r = 1:numel(P.GTABLE)
 		hold off
 		set(gca,'XLim',[0,dxl],'YLim',[0,dyl])
 
-		P.GTABLE(r).GTITLE = varsub(modelling_title,V);
-		P.GTABLE(r).INFOS = {'{\itTime span}:', ...
+		OPT.GTITLE = varsub(modelling_title,V);
+		OPT.INFOS = {'{\itTime span}:', ...
 			sprintf('     {\\bf%s}',datestr(tlim(1),'yyyy-mm-dd HH:MM')), ...
 			sprintf('     {\\bf%s}',datestr(tlim(2),'yyyy-mm-dd HH:MM')), ...
 			' '};
-		P.GTABLE(r).GSTATUS = [];
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('FIXEDPP',true))
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.FIXEDPP = true;
+        OPT.IMAP = [];
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 		end
 	end
@@ -1918,6 +2276,7 @@ for r = 1:numel(P.GTABLE)
 					wlim = [tlim(1),t2];
 				end
 
+                P.dtlim = diff(wlim);
 				% computes linear trends (mm/yr)
 				tr = nan(numel(kn),3); % trends per station per component
 				tre = nan(numel(kn),3); % trends error per station per component
@@ -1929,7 +2288,7 @@ for r = 1:numel(P.GTABLE)
 						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
 							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
 							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
-							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P);
+							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P,1);
 							tr(j,i) = trd(1);
                             tre(j,i) = trd(2);
 							% sets a lower orbit if there is not enough data
@@ -1997,7 +2356,7 @@ for r = 1:numel(P.GTABLE)
 				M(m).type{w} = MM(1).type;
 
 				if isok(P,'DEBUG')
-					fprintf('\n%s,%s: %+g 10e6 m3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM.pbest(4),MM.pbest(3)/1e3],3));
+                    fprintf('\n%s,%s: %+g 10e6 m3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM(1).pbest(4),MM(1).pbest(3)/1e3],3));
 					if modrelforced
 						fprintf(' / relative mode forced by (%g,%g)',mvv(1:2));
 					end
@@ -2092,7 +2451,7 @@ for r = 1:numel(P.GTABLE)
 		ylabel('Source Elevation (km asl)')
 		pos = get(gca,'Position');
 
-		tlabel(tlim,P.GTABLE(r).TZ,'FontSize',fontsize)
+		tlabel(tlim,P.TZ,'FontSize',fontsize)
 
 		% -- 3D map
 		[~,plist] = ismember(modeltime_map_period,modeltime_period);
@@ -2301,15 +2660,18 @@ for r = 1:numel(P.GTABLE)
 				text(.99,.01,twarning,'HorizontalAlignment','right','VerticalAlignment','bottom','FontSize',8)
 		end
 
-		P.GTABLE(r).GTITLE = varsub(modeltime_title,V);
-		P.GTABLE(r).GSTATUS = [];
-		P.GTABLE(r).INFOS = {' '};
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('IMAP',IMAP,'FIXEDPP',true))
+		OPT.GTITLE = varsub(modeltime_title,V);
+        OPT.STATUS = 0;
+		OPT.GSTATUS = [];
+		OPT.INFOS = {' '};
+		OPT.IMAP = IMAP;
+        OPT.FIXEDPP = true;
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 		clear IMAP
 
 		% exports data
-		if isok(P.GTABLE(r),'EXPORTS')
+		if isok(P,'EXPORTS')
 			E.t = M(1).t;
 
             % vectortime (1 file per station)
@@ -2322,22 +2684,12 @@ for r = 1:numel(P.GTABLE)
                     E.d(:,k) = squeeze(M(m).v(:,s,:));
                     E.header(k) = strcat({'dE_(mm)','dN_(mm)','dU_(mm)','s_dE','s_dN','s_dU'},sprintf('_%d',m));
                 end
-                E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s_VECTORS',proc,summary)));
-                E.meta = struct( ...
-                    'NODE_FID',N(kn(s)).FID, ...
-                    'NODE_NAME',N(kn(s)).NAME, ...
-                    'NODE_LATITUDE',sprintf('%1.6f',N(kn(s)).LAT_WGS84), ...
-                    'NODE_LONGITUDE',sprintf('%1.6f',N(kn(s)).LON_WGS84), ...
-                    'NODE_ELEVATION',sprintf('%1.2f',N(kn(s)).ALTITUDE), ...
-                    'NODE_URL',sprintf('/cgi-bin/showNODE.pl?node=%s',N(kn(s)).FULLID), ...
-                    'TIME_PERIODS',regexprep(sprintf('%g,',modeltime_period),',$','') ...
-                );
+                E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s_VECTORS',proc,summary)));
                 E.infos = {};
                 for m = 1:numel(modeltime_period)
                     E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
                 end
-                mkexport(WO,sprintf('%s_VECTORS_%s_%s',summary,lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
-				E.meta = {}; % meta are erased after the export
+                mkexport(WO,sprintf('%s_VECTORS_%s_%s',summary,lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P,r,N(kn(s)));
             end
 
             % modeltime results
@@ -2356,18 +2708,18 @@ for r = 1:numel(P.GTABLE)
 					E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
 				end
 			end
-			E.title = sprintf('%s {%s}',P.GTABLE(r).GTITLE,upper(sprintf('%s_%s',proc,summary)));
+			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			E.infos = {sprintf('Source type: %s',mt)};
 			for m = 1:numel(modeltime_period)
                 E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
             end
-            mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P.GTABLE(r));
+            mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
         end
 
         if isok(P,'MODELTIME_EXPORT_MAT')
             f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
             fprintf('%s: saving workspace in %s...',wofun,f);
-            save(sprintf('%s/%s/%s',P.GTABLE(r).OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
+            save(sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
             fprintf(' done.\n');
         end
     end

@@ -19,7 +19,7 @@ function [D,P] = readfmtdata_mc3(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2019-01-21, in Paris (France)
-%	Updated: 2024-01-06
+%	Updated: 2026-03-05
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -74,9 +74,18 @@ VpVs = field2num(MC3,'VP_VS_RATIO',1.75);
 % =============================================================================
 % reads MC3 for the corresponding years
 fdat = sprintf('%s/mc3.dat',F.ptmp);
+if exist(fdat,'file')
+    delete(fdat)
+end
 tv = datevec(F.datelim);
-s = wosystem(sprintf('sed ''/^$/d'' %s/{%d..%d}/files/%s??????.txt > %s',MC3.ROOT,tv(:,1),MC3.FILE_PREFIX,fdat),P);
-if s==0
+for y = tv(1,1):tv(2,1)
+    s = wosystem(sprintf('sed ''/^$/d'' %s/%d/files/%s*.txt >> %s',MC3.ROOT,y,MC3.FILE_PREFIX,fdat),P,'warning');
+    if ~s
+        fprintf('.');
+    end
+end
+X = dir(fdat);
+if ~isempty(X) && X.bytes > 0
     mc3 = readdatafile(fdat,17,'CommentStyle',''); % reads all events (trash included)
     k = find(cellfun(@str2num,mc3(:,1))>=0); % remove trash entries
     fprintf(' found %d valid mc3 entries, removed %d trash events.\n',size(k,1),size(mc3,1)-size(k,1));
@@ -136,6 +145,8 @@ if s==0
 		end
     end
     c(:,1) = mc3(:,4);
+else
+    fprintf('%s: *WARNING* No data found.\n',wofun);
 end
 
 % =============================================================================

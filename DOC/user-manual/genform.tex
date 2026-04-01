@@ -16,7 +16,7 @@ A GENFORM is defined by its configuration file (based on the \wokey{key|value} m
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Data structure}
 
-Each \wo{form} is then associated to a table in a database called \wofile{WEBOBSFORMS.db}. Each table of the database use the scheme shown in table \ref{table:genform_db}.
+Each \wo{form} is then associated to a table in a database called \wofile{WEBOBSFORMS.db}. Each table of the database use the scheme shown in table \ref{table:genform_dbtable}.
 
 \begin{table}[h]
 	\centering
@@ -28,11 +28,9 @@ Each \wo{form} is then associated to a table in a database called \wofile{WEBOBS
 		{\tt trash}      & boolean  & True = bin	\\
 		{\tt quality}    & integer  & 0 = raw, 1 = validated \\
 		{\tt node}       & text     & WebObs ID of the associated \wo{node} \\
-		{\tt edate}      & datetime & date and time end of measurement/collect/sampling \\
-		{\tt edate\_min} & datetime & uncertainty date and time end of measurement \\
-		{\tt sdate}      & datetime & date and time of optional start of measurement \\
-		{\tt sdate\_min} & datetime & uncertainty date and time start of measurement \\
-		{\tt users}      & text     & WebObs UID or GID of the operators (authorized list) \\
+		{\tt edate}      & udate    & universal date and time end of measurement/collect/sampling \\
+		{\tt sdate}      & udate    & universal date and time of optional start of measurement \\
+		{\tt operators}  & text     & WebObs UID or GID of the operators (authorized list) \\
 		{\tt comment}    & text     & \\
 		{\tt tsupd}      & timestamp & last edit timestamp \\
 		{\tt userupd}    & text     & last edit user UID \\
@@ -42,8 +40,46 @@ Each \wo{form} is then associated to a table in a database called \wofile{WEBOBS
 		\hline
 	\end{tabular}
 	\caption{Scheme of the GENFORM database (each table).}
-	\label{table:genform_db}
+	\label{table:genform_dbtable}
 \end{table}
+
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{c c l}
+		\hline
+		\textit{Name} & \textit{Type} & \textit{Comment} \\
+		\hline
+		{\tt id}         & integer  & primary key autoincrement\\
+		{\tt date}       & text     & date and time (yyyy-mm-dd HH:MM:SS) \\
+		{\tt date\_min}   & text     & uncertainty date and time (minimum value) \\
+		{\tt yce}        & real     & years CE \\
+		{\tt yce\_min}    & real     & uncertainty on years CE (minimum value) \\
+		\hline
+	\end{tabular}
+	\caption{Scheme of the GENFORM database universal date (udate) table.}
+	\label{table:genform_dbudate}
+\end{table}
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{c c l}
+		\hline
+		\textit{Name} & \textit{Type} & \textit{Comment} \\
+		\hline
+		{\tt id}              & integer  & primary key autoincrement\\
+		{\tt latitude}        & real     & decimal latitude (positive to North) \\
+		{\tt northern\_error}  & real     & northern error on latitude (m) \\
+		{\tt longitude}       & real     & decimal longitude (positive to East) \\
+		{\tt eastern\_error}   & real     & northern error on longitude (m) \\
+		{\tt elevation}       & real     & elevation above sea level (m) \\
+		{\tt elevation\_error} & real     & error on elevation (m) \\
+		\hline
+	\end{tabular}
+	\caption{Scheme of the GENFORM database geographic location (geoloc) table.}
+	\label{table:genform_dbgeoloc}
+\end{table}
+
 
 Each data record in a \wo{form} uses this structure:
 \begin{itemize}
@@ -62,19 +98,24 @@ Each data record in a \wo{form} uses this structure:
 % -----------------------------------------------------------------
 \subsection{Creation of a FORM} \label{genform_creation}
 
-To create a new \wo{form} using GENFORM, you have to go in the \wo{grid} menu list and click on the pencil next to \textbf{Raw Data}. Then, you have to choose a name for the FORM and select a template that will be used to help you through the creation process. Currently, 3 templates exist:
+To create a new \wo{form} using GENFORM, you have to go in the \wo{grid} menu list and click on the pencil next to \textbf{Raw Data}. Then, you have to choose a name for the FORM and select a template that will be used to help you through the creation process. Currently, several templates exist:
 
 \begin{itemize}
-	\item GENFORM: the most basic template that shows you all the different types of inputs that you can use in GENFORM
-	\item WATERS: a template based on the former EAUX \wo{form} used for the water chemistry analysis
-	\item VOLCGAS: a template based on the former GAZ \wo{form} used for the gas chemistry analysis
-	\item EXTENSO: a template based on the former EXTENSO \wo{form} used for the extensometer measurements
+	\item GENFORM: the most basic template that shows you all the different types of inputs that you can use in GENFORM (demo)
+	\item WATERS: a template for water physico-chemical analysis,
+	\item VOLCGAS: a template for gas chemical analysis (exists also in French),
+	\item BOJAP: a template for gas ’Japanese box’ (KOH solution) analysis,
+	\item EXTENSO: a template for extensometer measurements (exists also in French),
+	\item FISSURO: a template for fissurometer measurements,
+	\item RAINWATER: a template for rain water physico-chemical analysis,
+	\item RIVERS: a template for river water physico-chemical analysis,
+	\item SOILSOLUTION: a template for soil physico-chemical analysis,
 \end{itemize}
 
 \begin{figure}[!h]
 	\centering
 	\includegraphics[width=\textwidth]{figures/GENFORM_creation.png}
-	\caption{To create a form, click on the edit pencil, choose a template in the list and enter a short name.}
+	\caption{To create a form, click on the plus icon, choose a FORM template in the list and enter a short name.}
 	\label{GENFORM_creation}
 \end{figure}
 
@@ -151,12 +192,12 @@ Valid TYPE for an OUTPUT field is:
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Formulas}
 
-In formulas, the use of previous outputs is allowed but they must precede the current formula (with lower output numbers). The syntax must remain simple since the same formula is interpreted by Javascript in the form page and by Perl in the table page. Use of plus (+), minus (-), divide (/), multiply (*), exponent (**) operators, numbers and parenthesis is admitted, also some basic functions like \wokey{sqrt()}, \wokey{log()}, etc. An input must be referenced as \wokey{INPUTzz}, an output as \wokey{OUTPUTzz}, uppercase. It is possible to define hidden formula by setting the size to zero (0), but the field still MUST be included in a fieldset cell in order to be computed properly; this can be useful to calculate intermediate results used in other formula and not display it.
+In formulas, the use of previous outputs is allowed but they must precede the current formula (with lower output numbers). The syntax must remain simple since the same formula is interpreted by Javascript in the form page and by Perl in the table page. Use of plus (+), minus (-), divide (/), multiply (*), exponent (**) operators, numbers and parenthesis is admitted, also some basic functions like \wokey{sqrt()}, \wokey{log()}, etc. Some functions accept a list of input/output, comma-separated: \wokey{mean()}, \wokey{std()}, \wokey{median()}. An input must be referenced as \wokey{INPUTzz}, an output as \wokey{OUTPUTzz}, uppercase. It is possible to define hidden formula by setting the size to zero (0), but the field still MUST be included in a fieldset cell in order to be computed properly; this can be useful to calculate intermediate results used in other formula and not display it.
  
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsubsection{Color background threshold}
 
-The VALID parameters applies to input or output of numeric/formula types. It contains a coma-separated list of 2 threshold values {\it a, b} to display color background associated to a level of validity of the field absolute value. Three levels of validity are defined: normal (green), warning (orange), and error (red). The criteria are, where {\it x} is the field value:
+The THRESHOLD parameters applies to input or output of numeric/formula types. It contains a coma-separated list of 2 threshold values {\it a, b} to display color background associated to a level of validity of the field absolute value. Three levels of validity are defined: normal (green), warning (orange), and error (red). The criteria are, where {\it x} is the field value:
 \begin{itemize}
 	\item normal for abs({\it x}) $<=$ {\it a},
 	\item warning for {\it a} $<$ abs({\it x}) $<=$ {\it b},

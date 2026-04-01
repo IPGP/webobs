@@ -16,6 +16,7 @@ function N=readnode(WO,nodefullid,NODES);
 %	Some additional keys are also added:
 %	          ID: self reference
 %         FULLID: full ID
+%            URL: link to the node's page
 %	   TIMESTAMP: timestamp of the .cnf file (local time)
 %        GEOJSON: GeoJSON string containing feature collection of geometries
 %	         CLB: data table from calibration .clb file (if exists)
@@ -35,7 +36,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2025-05-08
+%   Updated: 2026-01-13
 
 
 if ~exist('NODES','var')
@@ -75,6 +76,7 @@ end
 % adds a self-reference
 N.ID = id;
 N.FULLID = nodefullid;
+N.URL = sprintf('/cgi-bin/showNODE.pl?node=%s',N.FULLID);
 
 % adds a timestamp (in the local server time)
 X = dir(f);
@@ -132,6 +134,7 @@ end
 
 % --- reads .clb calibration file (if exists)
 clb = sprintf('%s/%s.clb',p,nodefullid);
+auto = false;
 autoclb = sprintf('%s/%s_auto.clb',p,nodefullid); % auto-generated clb
 legclb = sprintf('%s/%s.clb',p,id); % legacy clb name (for backwards compatibility)
 if ~exist(clb,'file')
@@ -140,6 +143,7 @@ if ~exist(clb,'file')
 	end
 	if exist(autoclb,'file')
 		clb = autoclb;
+        auto = true;
 	end
 end
 if exist(clb,'file')
@@ -194,6 +198,7 @@ end
 if ~exist('CC','var') || isempty(CC)
 	N.CLB = struct('nx',0,'dt',0,'nv',0,'nm','','un','','ns','','cd','','of',0,'et','','ga',0,'vn',0,'vm',0,'az',0,'la',0,'lo',0,'al',0,'dp',0,'sf',NaN,'db','','lc','');
 end
+N.CLB.auto = auto;
 
 % --- transmission type and nodes' list
 tr = split(N.TRANSMISSION,'|, ');

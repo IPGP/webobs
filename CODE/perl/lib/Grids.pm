@@ -121,7 +121,7 @@ sub readProc {
         my %tmp = readCfg("$WEBOBS{PATH_PROCS}/$f/$f.conf",@_[1..$#_]);
         # --- adds comments from the proc's template (any commented lines before a key)
         if ($comment) {
-            (my $superproc = $tmp{SUBMIT_COMMAND}) =~ s/^[^ ]* ([^ ]*).*$/\1/g;
+            (my $superproc = $tmp{SUBMIT_COMMAND}) =~ s/^[^ ]* ([^ ]*).*$/$1/g;
             my $tpl = "$WEBOBS{ROOT_CODE}/tplates/PROC.".uc($superproc);
             if (-e $tpl) {
                 my @file = readFile($tpl); # imports all the template file
@@ -334,15 +334,19 @@ sub readNode {
         $tmp{PROJECT} = 1 if (-s "$NODES{PATH_NODES}/$f/$NODES{SPATH_INTERVENTIONS}/${f}_Projet.txt");
 
         #substitutes possible decimal comma to point for numerics
-        $tmp{LAT_WGS84} =~ s/,/./g;
-        $tmp{LON_WGS84} =~ s/,/./g;
+        ($tmp{LAT_WGS84} //= "") =~ s/,/./g;
+        ($tmp{LON_WGS84} //= "") =~ s/,/./g;
 
         #FB-legacy: removes escape characters in feature's list
-        $tmp{FILES_FEATURES} =~ s/\\,/,/g;
+        ($tmp{FILES_FEATURES} //= "") =~ s/\\,/,/g;
         $tmp{FILES_FEATURES} =~ s/\\\|/,/g;
 
         # removes trailing blanks in each features
         $tmp{FILES_FEATURES} = join(",",map {trim($_)} split(/[,\|]/,$tmp{FILES_FEATURES}));
+        
+        # fix possible undefined parameters
+        $tmp{ALTITUDE} //= "";
+        $tmp{GNSS_9CHAR} //= "";
 
         $ret{$f}=\%tmp;
     }
@@ -847,11 +851,12 @@ sub readCLB {
     my $file = "$NODES{PATH_NODES}/$NODEName/$GRIDType.$GRIDName.$NODEName.clb"; # standard CLB file name
     my $legclb = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
     (my $autoclb = $file) =~ s/\.clb/_auto.clb/g; # auto-generated CLB
-    $file = $legclb if ( ! -e $file && -e $legclb && ! -s $legclb); # for backwards compatibility
+    $file = $legclb if ( ! -e $file && -e $legclb && -s $legclb); # for backwards compatibility
     $file = $autoclb if ( -e $autoclb && ! -s $file );
     if ( -s $file ) {
         %data = readCfg($file);
     }
+    #$data{debug} = "file = $file<br>legclb = $legclb<br>autoclb = $autoclb<br>";
     return %data;
 }
 
