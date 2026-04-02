@@ -3,151 +3,151 @@ P=`dirname $0`
 . $P/dutils.sh
 
 # can be run for fresh installation or within a legacy Webobs migration
-# current directory (pwd) MUST be the target webob's CONF/ directory
+# current directory (pwd) must be the target webob's CONF/ directory
 
-# RELATED_ID refers to the identifier of a producer or a dataset in order to bound producer/dataset with a member of the contact table
+# related_id refers to the identifier of a producer or a dataset in order to bound producer/dataset with a member of the contact table
 
 echo "Creating/populating metadata tables ..."
 sqlite3 WEBOBSMETA.db <<EOF
 BEGIN TRANSACTION;
 
-drop table if exists producer;
-create table producer (
-    IDENTIFIER text NOT NULL, 
-    NAME text NOT NULL, 
-    TITLE text NOT NULL, 
-    DESCRIPTION text NOT NULL, 
-    OBJECTIVE text NOT NULL, 
-    MEASUREDVARIABLES text NOT NULL, 
-    EMAIL text NOT NULL, 
-    CONTACTS text NOT NULL, 
-    FUNDERS text NOT NULL, 
-    ONLINERESOURCE text NOT NULL, 
-    PRIMARY KEY (IDENTIFIER)
+DROP TABLE IF EXISTS producer;
+CREATE TABLE producer (
+    identifier TEXT NOT NULL,
+    name TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    objective TEXT NOT NULL,
+    measuredvariables TEXT NOT NULL,
+    email TEXT NOT NULL,
+    contacts TEXT NOT NULL,
+    funders TEXT NOT NULL,
+    onlineresource TEXT NOT NULL,
+    PRIMARY KEY (identifier)
     );
-    
-drop table if exists contacts;
-create table contacts ( 
-    EMAIL text NOT NULL, 
-    FIRSTNAME text NOT NULL,
-    LASTNAME text NOT NULL,
-    ROLE text NOT NULL,
-    RELATED_ID text NOT NULL, 
-    PRIMARY KEY(RELATED_ID, EMAIL)
-    );
-    
-drop table if exists organisations;
-create table organisations (
-    TYPE text NOT NULL, 
-    ISO3166 text DEFAULT 'fr', 
-    ACRONYM text NOT NULL, 
-    NAME text NOT NULL, 
-    IDENTIFIER text NOT NULL, 
-    RELATED_ID text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER), 
-    FOREIGN KEY (RELATED_ID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
-    );
-    
-drop table if exists datasets;
-create table datasets (
-    IDENTIFIER text NOT NULL,
-    TITLE text NOT NULL, 
-    SUBJECT text NOT NULL, 
-    SPATIALCOVERAGE text NOT NULL, 
-    LINEAGE text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER)
-    );
-    
-drop table if exists observations;
-create table observations (
-    IDENTIFIER text NOT NULL,
-    PROCESSINGLEVEL text DEFAULT 'Raw data',
-    DATATYPE text DEFAULT 'Numeric',
-    TEMPORALEXTENT text,
-    TIMESERIES text DEFAULT 'TRUE',
-    OBSERVEDPROPERTY text, 
-    STATIONNAME text NOT NULL, 
-    DATASET text NOT NULL, 
-    DATAFILENAME text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER), 
-    FOREIGN KEY (OBSERVEDPROPERTY) REFERENCES observed_properties(IDENTIFIER) ON DELETE CASCADE,
-    FOREIGN KEY (DATASET) REFERENCES datasets(IDENTIFIER) ON DELETE CASCADE
-    );
-    
-drop table if exists observed_properties;
-create table observed_properties (
-    IDENTIFIER text NOT NULL, 
-    NAME text NOT NULL, 
-    UNIT text NOT NULL, 
-    THEIACATEGORIES text NOT NULL, 
-    CHANNEL_NB text NOT NULL,
-    PRIMARY KEY(IDENTIFIER)
-    );
-    
-drop table if exists sampling_features;
-create table sampling_features (
-    IDENTIFIER text NOT NULL, 
-    NAME text NOT NULL, 
-    GEOMETRY text NOT NULL, 
-    PRIMARY KEY(IDENTIFIER) 
-    );
-    
-drop table if exists grids2producers;
-create table grids2producers (
-    TYPE text NOT NULL, 
-    NAME text NOT NULL, 
-    PID text NOT NULL, 
-    FOREIGN KEY (PID) REFERENCES producer(IDENTIFIER) ON DELETE CASCADE
-    );
-    
-drop table if exists EnumContactPersonRoles;
-create table EnumContactPersonRoles (ROLE text NOT NULL);
 
-drop table if exists EnumFundingTypes;
-create table EnumFundingTypes (TYPE text NOT NULL);
+DROP TABLE IF EXISTS contacts;
+CREATE TABLE contacts (
+    email TEXT NOT NULL,
+    firstname TEXT NOT NULL,
+    lastname TEXT NOT NULL,
+    role TEXT NOT NULL,
+    related_id TEXT NOT NULL,
+    PRIMARY KEY (related_id, email)
+    );
 
-drop table if exists typeResource;
-create table typeResource (TYPE text NOT NULL, NAME text NOT NULL);
+DROP TABLE IF EXISTS organisations;
+CREATE TABLE organisations (
+    type TEXT NOT NULL,
+    iso3166 TEXT DEFAULT 'fr',
+    acronym TEXT NOT NULL,
+    name TEXT NOT NULL,
+    identifier TEXT NOT NULL,
+    related_id TEXT NOT NULL,
+    PRIMARY KEY (identifier),
+    FOREIGN KEY (related_id) REFERENCES producer(identifier) ON DELETE CASCADE
+    );
+
+DROP TABLE IF EXISTS datasets;
+CREATE TABLE datasets (
+    identifier TEXT NOT NULL,
+    title TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    spatialcoverage TEXT NOT NULL,
+    lineage TEXT NOT NULL,
+    PRIMARY KEY (identifier)
+    );
+
+DROP TABLE IF EXISTS observations;
+CREATE TABLE observations (
+    identifier TEXT NOT NULL,
+    processinglevel TEXT DEFAULT 'Raw data',
+    datatype TEXT DEFAULT 'Numeric',
+    temporalextent TEXT,
+    timeseries TEXT DEFAULT 'TRUE',
+    observedproperty TEXT,
+    stationname TEXT NOT NULL,
+    dataset TEXT NOT NULL,
+    datafilename TEXT NOT NULL,
+    PRIMARY KEY (identifier),
+    FOREIGN KEY (observedproperty) REFERENCES observed_properties(identifier) ON DELETE CASCADE,
+    FOREIGN KEY (dataset) REFERENCES datasets(identifier) ON DELETE CASCADE
+    );
+
+DROP TABLE IF EXISTS observed_properties;
+CREATE TABLE observed_properties (
+    identifier TEXT NOT NULL,
+    name TEXT NOT NULL,
+    unit TEXT,
+    theiacategories TEXT,
+    channel_nb TEXT,
+    PRIMARY KEY (identifier)
+    );
+
+DROP TABLE IF EXISTS sampling_features;
+CREATE TABLE sampling_features (
+    identifier TEXT NOT NULL,
+    name TEXT NOT NULL,
+    geometry TEXT NOT NULL,
+    PRIMARY KEY (identifier)
+    );
+
+DROP TABLE IF EXISTS grids2producers;
+CREATE TABLE grids2producers (
+    type TEXT NOT NULL,
+    name TEXT NOT NULL,
+    pid TEXT NOT NULL,
+    FOREIGN KEY (pid) REFERENCES producer(identifier) ON DELETE CASCADE
+    );
+
+DROP TABLE IF EXISTS EnumContactPersonRoles;
+CREATE TABLE EnumContactPersonRoles (role TEXT NOT NULL);
+
+DROP TABLE IF EXISTS EnumFundingTypes;
+CREATE TABLE EnumFundingTypes (type TEXT NOT NULL);
+
+DROP TABLE IF EXISTS typeResource;
+CREATE TABLE typeResource (type TEXT NOT NULL, name TEXT NOT NULL);
 INSERT INTO "typeResource" VALUES('http:info@', 'Info');
 INSERT INTO "typeResource" VALUES('http:download@', 'Download');
 INSERT INTO "typeResource" VALUES('http:doi@', 'DOI');
 INSERT INTO "typeResource" VALUES('http:webservice@', 'Webservice');
 
-drop table if exists inspireTheme;
-create table inspireTheme (THEME text NOT NULL);
+DROP TABLE IF EXISTS inspireTheme;
+CREATE TABLE inspireTheme (theme TEXT NOT NULL);
 
-drop table if exists topicCategories;
-create table topicCategories (TOPIC text NOT NULL);
+DROP TABLE IF EXISTS topicCategories;
+CREATE TABLE topicCategories (topic TEXT NOT NULL);
 
 COMMIT;
 EOF
 
-# creating organisation types table 
+# creating organisation types table
 cat $P/CONF/THEIA/EnumContactPersonRoles.conf | while read line
 do
-    sqlite3 WEBOBSMETA.db "INSERT INTO EnumContactPersonRoles (ROLE) VALUES ('$line');"
+    sqlite3 WEBOBSMETA.db "INSERT INTO EnumContactPersonRoles (role) VALUES ('$line');"
 done
 
-# creating organisation types table 
+# creating organisation types table
 cat $P/CONF/THEIA/EnumFundingTypes.conf | while read line
 do
-    sqlite3 WEBOBSMETA.db "INSERT INTO EnumFundingTypes (TYPE) VALUES ('$line');"
+    sqlite3 WEBOBSMETA.db "INSERT INTO EnumFundingTypes (type) VALUES ('$line');"
 done
 
-# creating INSPIRE themes and topic categories tables 
+# creating inspire themes and topic categories tables
 cat $P/CONF/THEIA/EnumInspireTheme.conf | while read line
 do
-    sqlite3 WEBOBSMETA.db "INSERT INTO inspireTheme (THEME) VALUES ('$line');"
+    sqlite3 WEBOBSMETA.db "INSERT INTO inspireTheme (theme) VALUES ('$line');"
 done
 
 cat $P/CONF/THEIA/EnumTopicCategories.conf | while read line
 do
-    sqlite3 WEBOBSMETA.db "INSERT INTO topicCategories (TOPIC) VALUES ('$line');"
+    sqlite3 WEBOBSMETA.db "INSERT INTO topicCategories (topic) VALUES ('$line');"
 done
 
 echo "Done."
 exit 0
 
-# sql commands to add : FOREIGN KEY (CREATOR) REFERENCES contacts(IDENTIFIER) ON DELETE CASCADE
-# 
-# FOREIGN KEY (NAME) REFERENCES observations(OBSERVEDPROPERTY) ON DELETE CASCADE
+# sql commands to add : FOREIGN KEY (creator) REFERENCES contacts(identifier) ON DELETE CASCADE
+#
+# FOREIGN KEY (name) REFERENCES observations(observedproperty) ON DELETE CASCADE
