@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-03-10
+%   Updated: 2026-03-31
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -173,6 +173,11 @@ if numel(vectors_ampcmp)>3 || ~all(ismember(vectors_ampcmp,1:3))
 end
 vectors_ampstr = strjoin(enu(vectors_ampcmp),'+');
 
+% VFLOW parameters (some parameters from VECTORS are also used)
+vflow_title = field2num(P,'VFLOW_TITLE','Vector flows ($timescale)');
+vflow_period = field2num(P,'VFLOW_PERIOD_DAY');
+vflow_sampling = field2num(P,'VFLOW_SAMPLING_DAY',1,'positive');
+
 % BASELINES parameters
 baselines_excluded = field2str(P,'BASELINES_EXCLUDED_NODELIST');
 baselines_included = field2str(P,'BASELINES_INCLUDED_NODELIST');
@@ -237,7 +242,7 @@ modelnet_cmap = field2num(P,'MODELNET_COLORMAP',roma(256));
 modelnet_mks = field2cell(P,'MODELNET_MARKER','^k','MarkerSize',8,'MarkerFaceColor',.99*ones(1,3));
 modelnet_title = field2str(P,'MODELNET_TITLE','{\fontsize{14}{\bf$name - Network sensitivity}}');
 
-% MODELLING parameters
+% MODELLING parameters (some parameters of VECTORS are also used)
 modelling_excluded = field2str(P,'MODELLING_EXCLUDED_NODELIST');
 modelling_included = field2str(P,'MODELLING_INCLUDED_NODELIST');
 modelling_excluded_target = field2num(P,'MODELLING_EXCLUDED_FROM_TARGET_KM',0,'notempty');
@@ -490,7 +495,7 @@ for r = 1:numel(P.GTABLE)
 		end
 	end
 
-	% --- Summary plot: time series
+	% === SUMMARY: Summary plot time series
 	summary = 'SUMMARY';
 	if any(strcmp(P.SUMMARYLIST,summary))
 		figure, clf, orient tall
@@ -718,7 +723,7 @@ for r = 1:numel(P.GTABLE)
 	OPT.INFOS = {''};
 
 
-	% --- Baselines time series
+	% === BASELINES: Baselines time series
 	summary = 'BASELINES';
 	if any(strcmp(P.SUMMARYLIST,summary))
 
@@ -863,7 +868,7 @@ for r = 1:numel(P.GTABLE)
 		close
 	end
 
-	% --- Baselines time series
+	% === STRAINMAP: Baselines time series and strain map
 	summary = 'STRAINMAP';
 	if any(strcmp(P.SUMMARYLIST,summary))
 
@@ -1148,7 +1153,7 @@ for r = 1:numel(P.GTABLE)
 		close
 	end
 
-	% --- Vectors map
+	% === VECTORS: Velocity vectors map
 	summary = 'VECTORS';
 	if any(strcmp(P.SUMMARYLIST,summary))
 
@@ -1333,6 +1338,114 @@ for r = 1:numel(P.GTABLE)
 			mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
 		end
 	end
+
+    % === VFLOW: vectors in time (dynamic interface)
+	summary = 'VFLOW';
+	if any(strcmp(P.SUMMARYLIST,summary))
+		vtlabel = cell(1,numel(vflow_period));
+		for m = 1:numel(vflow_period)
+			vtp = vflow_period(m);
+			if vtp > 0
+				vtlabel{m} = days2h(vtp,'round');
+			else
+				vtlabel{m} = 't_0 ref.';
+			end
+			W(m).vtp = vtp;
+			W(m).t = (fliplr(tlim(2):-vflow_sampling:tlim(1)))';
+			% last time must contain data
+			tlast = max(max(cat(1,D.tfirstlast)));
+			W(m).t(W(m).t > tlast) = [];
+			fprintf('%s: computing %d vector flows (%s @ %s) ',wofun,numel(W(m).t),vtlabel{m},days2h(vflow_sampling,'round'));
+
+            % initiates the vectors matrix
+            W(m).v = nan(numel(W(m).t),numel(kn),6); % time x station x components
+
+			for w = 1:numel(W(m).t)
+				t2 = W(m).t(w);
+				if vflow_period(m) > 0
+					wlim = t2 - [vflow_period(m),0];
+				else
+					wlim = [tlim(1),t2];
+				end
+
+                P.dtlim = diff(wlim);
+				% computes linear trends (mm/yr)
+				tr = nan(numel(kn),3); % trends per station per component
+				tre = nan(numel(kn),3); % trends error per station per component
+				tro = zeros(numel(kn),1); % inits to best orbit per station
+				for j = 1:numel(kn)
+					n = kn(j);
+					k = find(isinto(D(n).t,wlim));
+					for i = 1:3
+						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
+							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
+							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
+							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P,1);
+							tr(j,i) = trd(1);
+                            tre(j,i) = trd(2);
+							% sets a lower orbit if there is not enough data
+							%if D(n).t(D(n).G(r).ke) >= M(m).t(w)
+							if (D(n).t(ke) + 1) < W(m).t(w)
+								tro(j) = 2;
+							end
+						end
+					end
+				end
+
+				% computes reference (auto, fixed or station)
+				if numel(kn) > 1
+					mvv = rsum(tr./tre)./rsum(1./tre);
+				else
+					mvv = tr;
+				end
+				if vrelmode
+					voffset = [mvv(1:2),0];
+					if ~isempty(vref) && ismember(vref,{N.FID})
+						voffset = tr(strcmp(vref,{N.FID}),:);
+						if any(isnan(voffset))
+							voffset = [0,0,0];
+						end
+					end
+					if numel(sstr2num(vref)) == 3
+						voffset = sstr2num(vref)*P.trendfact/365250;
+					end
+					tr = tr - repmat(voffset,numel(kn),1);
+				end
+
+				% makes (or not) the relative data array
+				d = [tr,tre];
+				% computes absolute displacement in mm (from velocity in mm/yr or TREND_FACTOR)
+				d = d*diff(wlim)*1e3/P.trendfact;
+                % stores vector data for export
+                W(m).v(w,:,:) = d;
+            end
+
+			fprintf(' done!\n');
+		end
+
+		% exports data (1 file per station)
+		if isok(P,'EXPORTS')
+			E.t = W(1).t;
+
+            n = 6;
+            for s = 1:numel(kn)
+                E.d = nan(size(W(1).v,1),numel(W)*n);
+                E.header = cell(1,numel(W)*n);
+                for m = 1:numel(W)
+                    k = (m-1)*n + (1:n);
+                    E.d(:,k) = squeeze(W(m).v(:,s,:));
+                    E.header(k) = strcat({'dE_(mm)','dN_(mm)','dU_(mm)','s_dE','s_dN','s_dU'},sprintf('_%d',m));
+                end
+                E.title = sprintf('%s {%s}',varsub(vflow_title,V),upper(sprintf('%s_%s',proc,summary)));
+                E.infos = {};
+                for m = 1:numel(vflow_period)
+                    E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,vflow_period(m),vtlabel{m}));
+                end
+                mkexport(WO,sprintf('%s_%s_%s',summary,lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P,r,N(kn(s)));
+            end
+        end
+
+    end
 
 	% --- Motion map
 	summary = 'MOTION';
@@ -1749,7 +1862,7 @@ for r = 1:numel(P.GTABLE)
             ev = cat(1,M.ev)*1e6;
             pbest = cat(1,M.pbest);
             vv0 = pbest(:,7)*1e6; % best dV in m3
-			if numel(PCDM.random_sampling) == 1
+			if isscalar(PCDM.random_sampling)
 				nmodels = PCDM.random_sampling*PCDM.iterations;
 			else
 				nmodels = sum(PCDM.random_sampling);
@@ -2336,10 +2449,6 @@ for r = 1:numel(P.GTABLE)
 				end
 				% computes absolute displacement in mm (from velocity in mm/yr or TREND_FACTOR)
 				d = d*diff(wlim)*1e3/P.trendfact;
-				d(:,4:6) = adjerrors(d,modelopt);
-
-                % stores vector data for export
-                M(m).v(w,:,:) = d;
 
 				% --- computes the model (and stores only the source #1) !
 				switch mt
@@ -2673,24 +2782,6 @@ for r = 1:numel(P.GTABLE)
 		% exports data
 		if isok(P,'EXPORTS')
 			E.t = M(1).t;
-
-            % vectortime (1 file per station)
-            n = 6;
-            for s = 1:numel(kn)
-                E.d = nan(size(M(1).v,1),numel(M)*n);
-                E.header = cell(1,numel(M)*n);
-                for m = 1:numel(M)
-                    k = (m-1)*n + (1:n);
-                    E.d(:,k) = squeeze(M(m).v(:,s,:));
-                    E.header(k) = strcat({'dE_(mm)','dN_(mm)','dU_(mm)','s_dE','s_dN','s_dU'},sprintf('_%d',m));
-                end
-                E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s_VECTORS',proc,summary)));
-                E.infos = {};
-                for m = 1:numel(modeltime_period)
-                    E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
-                end
-                mkexport(WO,sprintf('%s_VECTORS_%s_%s',summary,lower(N(kn(s)).ID),P.GTABLE(r).TIMESCALE),E,P,r,N(kn(s)));
-            end
 
             % modeltime results
 			n = size(M(1).d,2) + size(M(1).e,2);
