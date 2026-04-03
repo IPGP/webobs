@@ -644,11 +644,13 @@ if ($QryParm->{'ts'} eq 'map') {
             <div class="container">
                 <h2 id="procTitle" style="color:black"></h2>
 
+                <!-- under development: single slider integrating date+period
                 <label for="slider" id="output">Date</label>
                 <div id="slider"></div>
 
                 <script src="https://cdn.jsdelivr.net/npm/nouislider/dist/nouislider.min.js"></script>
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider/dist/nouislider.min.css">
+                -->
 
                 <!-- Date Slider -->
                 <label for="dateSlider" id="dateLabel">Date</label>

@@ -426,7 +426,7 @@ async function initSlider() {
         start: [0, currentDuration], // initial set (will be corrected)
         connect: true,
         range: {
-            min: 0,
+            min: -maxDuration,
             max: endDates.length - 1
         },
         step: 1
@@ -514,5 +514,6 @@ async function initSlider() {
     });
 }
 
-initSlider();
+//initSlider();
+loadGNSSData();
 
