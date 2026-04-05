@@ -52,19 +52,24 @@ V.name = P.NAME;
 eps_min = field2num(P,'EPS_IS_NAN',eps);
 pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','-');
 pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}');
+
 summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
+
 alarm_xml = field2str(P,'ALARM_XML');
 alarm_threshold_level = field2num(P,'ALARM_THRESHOLD_LEVEL',0);
 alarm_color = field2num(P,'ALARM_COLOR',[1,0,0]);
 alarm_linestyle = field2str(P,'ALARM_LINESTYLE','--');
 alarm_linewidth = field2num(P,'ALARM_LINEWIDTH',2);
+
 sourcemap_method = field2str(P,'SOURCEMAP_METHOD','mean');
 sourcemap_n = field2num(P,'SOURCEMAP_N',2);
 sourcemap_title = field2str(P,'SOURCEMAP_TITLE','{\fontsize{14}{\bf$name - Source Map} ($timescale)}');
 sourcemap_colormap = field2num(P,'SOURCEMAP_COLORMAP',spectral(256));
 sourcemap_alpha = field2num(P,'SOURCEMAP_COLORMAP_ALPHA');
 sourcemap_caxis = field2num(P,'SOURCEMAP_CAXIS',[0,2e-5]);
+sourcemap_dem_opt = field2cell(P,'SOURCEMAP_DEM_OPT','colormap',white);
+
 ylogscale = isok(P,'YLOGSCALE');
 pagemaxsubplot = field2num(P,'PAGE_MAX_SUBPLOT',8);
 movingaverage = field2num(P,'MOVING_AVERAGE_SAMPLES',1);
@@ -232,7 +237,6 @@ end
 
 if isfield(P,'SUMMARYLIST')
 	G = cat(1,D.G);
-	C = cat(1,D.CLB);
 
 	% -------------------------------------------------------------------------------------
 	% --- Summary timeseries graph
@@ -423,9 +427,10 @@ if isfield(P,'SUMMARYLIST')
 			lon0 = mean(geo(:,2));
 			xylim = xyw2lim([lon0,lat0,.01+max(diff(minmax(geo(:,1))),diff(minmax(geo(:,2))/cosd(lat0)))],1/cosd(lat0));
 			DEM = loaddem(WO,xylim,P);
-			I = dem(DEM.lon,DEM.lat,DEM.z,'latlon','noplot','colormap',white);
+			I = dem(DEM.lon,DEM.lat,DEM.z,'latlon','noplot',sourcemap_dem_opt{:});
 			[xx,yy] = meshgrid(I.x,I.y);
 
+            clear IMAP
 			for m = 1:(sourcemap_n^2)
 				tlim  = tbin(m+(0:1));
 				% suplots are made to fill the 3/4 lower part of the page
@@ -447,7 +452,7 @@ if isfield(P,'SUMMARYLIST')
 				% computes the mean value for each node
 				dx = [geo(:,2);xylim([1,2,1,2])'];
 				dy = [geo(:,1);xylim([3,3,4,4])'];
-				dz = nan(1,length(N)+4); % init with NaN
+				dz = nan(length(N)+4,1); % init with NaN
 				dz(end-3:end) = 0; % 4 last to fix map corners to 0
 				for n = 1:length(N)
 					k = D(n).G(r).k;
@@ -486,6 +491,17 @@ if isfield(P,'SUMMARYLIST')
 				xlabel({sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(1)),P.TZ), ...
 					sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(2)),P.TZ)});
 
+                % interactive map with max value per station
+                IMAP(m).d = [dx(1:length(N)),dy(1:length(N)),repmat(4,length(N),1)];
+                IMAP(m).gca = gca;
+                IMAP(m).s = cell(length(N),1);
+                IMAP(m).l = cell(length(N),1);
+                for n = 1:numel(IMAP(m).s)
+                    IMAP(m).s{n} = sprintf('''<i>start:</i> %s<br><i>end:</i> %s<br>average = %g %s'',CAPTION,''%s: %s''', ...
+                        datestr(tlim(1),'dd-mmm-yyyy HH:MM'),datestr(tlim(2),'dd-mmm-yyyy HH:MM'), ...
+                        roundsd(dz(n),3),un,N(n).ALIAS,regexprep(N(n).NAME,'"',''));
+                end
+
 			end
 
 			% legend (colorscale)
@@ -517,8 +533,7 @@ if isfield(P,'SUMMARYLIST')
             set(gca,'XLim',[0,1],'YLim',[0,1])
             axis off
 
-
-			rcode2 = sprintf('%s_%s',proc,summary);
+            OPT.IMAP = IMAP;
 			mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 			close
 		end
