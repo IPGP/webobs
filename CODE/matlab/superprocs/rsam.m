@@ -423,9 +423,9 @@ if isfield(P,'SUMMARYLIST')
 
 			% --- maps of source location
 			% computes map limits: a square that includes all nodes
-			lat0 = mean(geo(:,1));
-			lon0 = mean(geo(:,2));
-			xylim = xyw2lim([lon0,lat0,.01+max(diff(minmax(geo(:,1))),diff(minmax(geo(:,2))/cosd(lat0)))],1/cosd(lat0));
+			lat0 = mean(minmax(geo(:,1)));
+			lon0 = mean(minmax(geo(:,2)));
+			xylim = xyw2lim([lon0,lat0,1.1*max(diff(minmax(geo(:,1))),diff(minmax(geo(:,2)))/cosd(lat0))],1/cosd(lat0));
 			DEM = loaddem(WO,xylim,P);
 			I = dem(DEM.lon,DEM.lat,DEM.z,'latlon','noplot',sourcemap_dem_opt{:});
 			[xx,yy] = meshgrid(I.x,I.y);
@@ -433,18 +433,33 @@ if isfield(P,'SUMMARYLIST')
             clear IMAP
 			for m = 1:(sourcemap_n^2)
 				tlim  = tbin(m+(0:1));
-				% suplots are made to fill the 3/4 lower part of the page
+                x0 = 0.18;
+                dx = 0.75;
+                y0 = 0.1;
+                dy = 0.62;
+                ddy = 0.03; % margin Y
 				switch sourcemap_n
-				case 1
-					subplot(4,1,2:4);
-				case 2
-					subplot(8,2,m + 4*floor((m-1)/2) + 4 + (0:2:4));
-				case 3
-					subplot(4,3,m + 3);
-				case 4
-					subplot(16,4,m + 8*floor((m-1)/4) + 16 + (0:4:8));
-				end
-				extaxes(gca,[0.1,0.1,0,0.1])
+                    case 2
+                        ddx = 0.08; % margin X
+                        width  = (dx-ddx)/2;
+                        height = (dy-ddy)/2;
+                        left   = x0 + mod(m-1,2)*(width + ddx);
+                        bottom = y0 + (2-ceil(m/2))*(height + ddy);
+                    case 3
+                        ddx = 0.05; % margin X
+                        width  = (dx-2*ddx)/3;
+                        height = (dy-2*ddy)/3;
+                        left   = x0 + mod(m-1,3)*(width + ddx);
+                        bottom = y0 + (3-ceil(m/3))*(height + ddy);
+                    otherwise
+                        left   = x0;
+                        width  = dx;
+                        bottom = y0;
+                        height = dy;
+                end
+                axes('Position',[left bottom width height]);
+                % extaxes tries to fit dataaspect ratio
+				extaxes(gca,[repmat(1-cosd(lat0),1,2),0,0])
                 if m == 1
                     pos1 = get(gca,'Position');
                 end
@@ -478,7 +493,8 @@ if isfield(P,'SUMMARYLIST')
 				imagesc(xx(1,:),yy(:,1),I.tot);
 				axis xy
 
-				set(gca,'XTick',[],'YTick',[],'DataAspectRatio',[1,cosd(lat0),1],'FontSize',8)
+				%set(gca,'XTick',[],'YTick',[],'DataAspectRatio',[1,cosd(lat0),1],'FontSize',8)
+				set(gca,'XTick',[],'YTick',[],'FontSize',8)
 				hold on
 				% plot stations
 				plot(geo(:,2),geo(:,1),'^k','MarkerSize',4)
@@ -492,7 +508,7 @@ if isfield(P,'SUMMARYLIST')
 					sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(2)),P.TZ)});
 
                 % interactive map with max value per station
-                IMAP(m).d = [dx(1:length(N)),dy(1:length(N)),repmat(4,length(N),1)];
+                IMAP(m).d = [dx(1:length(N)),dy(1:length(N)),repmat(5,length(N),1)];
                 IMAP(m).gca = gca;
                 IMAP(m).s = cell(length(N),1);
                 IMAP(m).l = cell(length(N),1);
@@ -528,11 +544,12 @@ if isfield(P,'SUMMARYLIST')
 			axis off
 
             % print reference
-            axes('Position',[0,pos1(2)+pos1(4),1,.1])
-            text(.5,0,refstring,'FontSize',8,'FontAngle','italic','HorizontalAlignment','center','VerticalAlignment','bottom')
+            axes('Position',[.18,pos1(2)+pos1(4),.75,.1])
+            text(.5,0,{refstring,''},'FontSize',8,'FontAngle','italic','HorizontalAlignment','center','VerticalAlignment','bottom')
             set(gca,'XLim',[0,1],'YLim',[0,1])
             axis off
 
+            OPT.FIXEDPP = true;
             OPT.IMAP = IMAP;
 			mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 			close
