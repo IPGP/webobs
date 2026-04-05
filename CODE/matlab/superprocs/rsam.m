@@ -349,6 +349,7 @@ if isfield(P,'SUMMARYLIST')
 	% --- Source mapping from amplitude
 	summary = 'SOURCEMAP';
 	if any(strcmp(P.SUMMARYLIST,summary))
+		refstring = 'Processing by Taisne et al., IPGP/EOS';
 		geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
 		for r = 1:length(P.GTABLE)
 
@@ -439,6 +440,9 @@ if isfield(P,'SUMMARYLIST')
 					subplot(16,4,m + 8*floor((m-1)/4) + 16 + (0:4:8));
 				end
 				extaxes(gca,[0.1,0.1,0,0.1])
+                if m == 1
+                    pos1 = get(gca,'Position');
+                end
 
 				% computes the mean value for each node
 				dx = [geo(:,2);xylim([1,2,1,2])'];
@@ -506,6 +510,13 @@ if isfield(P,'SUMMARYLIST')
 			hold off
 			set(gca,'XLim',[0,1],'YLim',[0,1]);
 			axis off
+
+            % print reference
+            axes('Position',[0,pos1(2)+pos1(4),1,.1])
+            text(.5,0,refstring,'FontSize',8,'FontAngle','italic','HorizontalAlignment','center','VerticalAlignment','bottom')
+            set(gca,'XLim',[0,1],'YLim',[0,1])
+            axis off
+
 
 			rcode2 = sprintf('%s_%s',proc,summary);
 			mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
