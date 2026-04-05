@@ -111,7 +111,10 @@ CONTINUOUS_PLOT|NO
 YLOGSCALE|YES
 
 # --- alarm
+# default threshold for all channels (overwritten by FID_THRESHOLD)
 ALARM_THRESHOLD_LEVEL|1e-5
+# XML filename (or URL) with rsam_threshold node value per station, overwriting FID_THRESHOLD
+ALARM_XML|
 ALARM_COLOR|IndianRed
 NOTIFY_EVENT|rsamalert.
 

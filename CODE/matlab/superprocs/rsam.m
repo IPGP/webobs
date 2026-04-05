@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2026-03-29
+%	Updated: 2026-04-04
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -53,6 +53,7 @@ pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','-');
 pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}');
 summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
 summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescale)}');
+alarm_xml = field2str(P,'ALARM_XML');
 alarm_threshold_level = field2num(P,'ALARM_THRESHOLD_LEVEL',0);
 alarm_color = field2num(P,'ALARM_COLOR',[1,0,0]);
 sourcemap_method = field2str(P,'SOURCEMAP_METHOD','mean');
@@ -65,6 +66,27 @@ ylogscale = isok(P,'YLOGSCALE');
 pagemaxsubplot = field2num(P,'PAGE_MAX_SUBPLOT',8);
 movingaverage = field2num(P,'MOVING_AVERAGE_SAMPLES',1);
 
+% XML file to overwrite FID_THRESHOLD values
+if ~isempty(alarm_xml) && exist(alarm_xml,'file')
+    alm = xmlread(alarm_xml);
+    stations = alm.getElementsByTagName('station');
+    for i = 1:stations.getLength
+        station = stations.item(i-1);
+        nam = string(station.getAttribute('name'));
+        k = find(strcmp(nam,cat(1,{N.FID})));
+        if ~isempty(k)
+            rsam_nodes = station.getElementsByTagName('rsam_threshold');
+            if rsam_nodes.getLength > 0
+                N(k).THRESHOLD = str2double(rsam_nodes.item(0).getTextContent);
+            end
+        end
+    end
+end
+
+% common unit for all channels
+clb = cat(1,D.CLB);
+un = strcommon(cat(1,clb.un));
+
 for n = 1:length(N)
 
 	C = D(n).CLB;
@@ -73,6 +95,7 @@ for n = 1:length(N)
 	V.node_alias = N(n).ALIAS;
 	V.last_data = datestr(D(n).tfirstlast(2));
 
+    threshold = field2num(N(n),'THRESHOLD',alarm_threshold_level);
 
 	% ===================== makes the proc's job
 
@@ -107,8 +130,8 @@ for n = 1:length(N)
 
 			% linear time series
 			subplot(nx*4,1,4*(i-1) + (1:2)), extaxes(gca,[.07,.01])
-			if alarm_threshold_level > 0
-				plot(tlim,repmat(alarm_threshold_level,1,2),'--','Color',alarm_color,'LineWidth',1)
+			if threshold > 0
+				plot(tlim,repmat(threshold,1,2),'--','Color',alarm_color,'LineWidth',2)
 			end
 			hold on
 			if ~isempty(k)
@@ -126,8 +149,8 @@ for n = 1:length(N)
 					hold off
 				end
 			end
-			hold off
-			set(gca,'XLim',tlim,'YLim',[0,Inf],'FontSize',8)
+			hold off; box on
+			set(gca,'XLim',tlim,'YLim',[0,Inf],'FontSize',8,'TickDir','out')
 			if ylogscale
 				set(gca,'YScale','log')
 			end
@@ -139,8 +162,8 @@ for n = 1:length(N)
 
 			% 1/x time series (Y-axis linear scale forced)
 			subplot(nx*4,1,4*(i-1) + (3:4)), extaxes(gca,[.07,.01])
-			if alarm_threshold_level > 0
-				plot(tlim,1./repmat(alarm_threshold_level,1,2),'--','Color',alarm_color,'LineWidth',1)
+			if threshold > 0
+				plot(tlim,1./repmat(threshold,1,2),'--','Color',alarm_color,'LineWidth',2)
 			end
 			hold on
 			if ~isempty(k)
@@ -158,8 +181,8 @@ for n = 1:length(N)
 					hold off
 				end
 			end
-			hold off
-			set(gca,'XLim',tlim,'Ylim',[0,Inf],'FontSize',8)
+			hold off; box on
+			set(gca,'XLim',tlim,'Ylim',[0,Inf],'FontSize',8,'TickDir','out')
 			datetick2('x',P.GTABLE(r).DATESTR)
 			ylabel(sprintf('%s %s',D(n).CLB.nm{i},regexprep(D(n).CLB.un{i},'(.+)','(1/($1))')))
 			if isempty(D(n).d) || all(isnan(D(n).d(k,i)))
@@ -248,22 +271,23 @@ if isfield(P,'SUMMARYLIST')
 				ncolors = cat(2,ncolors,n);
 			end
 		end
-		hold off
+		hold off; box on
 		ylim = get(gca,'YLim');
-		set(gca,'XLim',tlim,'YLim',[0,ylim(2)],'FontSize',8)
+		set(gca,'XLim',tlim,'YLim',[0,ylim(2)],'FontSize',8,'TickDir','out')
 		if ylogscale
 			set(gca,'YScale','log')
 		end
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('All channels %s',regexprep(D(1).CLB.un{1},'(.+)','($1)')))
+		ylabel(sprintf('All channels %s',regexprep(un,'(.+)','($1)')))
 
 		% legend: station aliases
 		xlim = get(gca,'XLim');
 		ylim = get(gca,'YLim');
 		nn = length(aliases);
 		for n = 1:nn
-			text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
+			text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n), ...
+                'Color',scolor(ncolors(n)),'BackgroundColor','w', ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 		end
 
@@ -292,18 +316,19 @@ if isfield(P,'SUMMARYLIST')
 					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
 			end
 		end
-		hold off
+		hold off; box on
 		ylim = get(gca,'YLim');
-		set(gca,'XLim',tlim,'Ylim',[0,ylim(2)],'FontSize',8)
+		set(gca,'XLim',tlim,'Ylim',[0,ylim(2)],'FontSize',8,'TickDir','out')
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('1/x %s',regexprep(D(1).CLB.un{1},'(.+)','($1)')))
+		ylabel(sprintf('1/x %s',regexprep(un,'(.+)','1/($1)')))
 
 		% legend: station aliases
 		xlim = get(gca,'XLim');
 		ylim = get(gca,'YLim');
 		for n = 1:nn
-			text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
+			text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n), ...
+                'Color',scolor(ncolors(n)),'BackgroundColor','w', ...
 				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 		end
 
@@ -360,20 +385,21 @@ if isfield(P,'SUMMARYLIST')
 				end
 			end
 			hold off
-			set(gca,'XLim',tlim,'FontSize',8)
+			set(gca,'XLim',tlim,'FontSize',8,'TickDir','out')
 			if ylogscale
 				set(gca,'YScale','log')
 			end
 			box on
 			datetick2('x',P.GTABLE(r).DATESTR)
-			ylabel(sprintf('All channels (m/s)'))
+			ylabel(sprintf('All channels (%s)',un))
 
 			% legend: station aliases
 			xlim = get(gca,'XLim');
 			ylim = get(gca,'YLim');
 			nn = length(aliases);
 			for n = 1:nn
-				text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
+				text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n), ...
+                    'Color',scolor(ncolors(n)),'BackgroundColor','w', ...
 					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
 			end
 
@@ -454,7 +480,7 @@ if isfield(P,'SUMMARYLIST')
 			% legend (colorscale)
 			axes('position',[0.05,0.3,0.02,0.2]);
 			clin = linspace(sourcemap_caxis(1),sourcemap_caxis(2));
-			imagesc([0,1],clin*1e6,repmat(clin',[1,2]));
+			imagesc([0,1],clin,repmat(clin',[1,2]));
 			ylim = get(gca,'Ylim');
 			patch([0,.5,1,0],ylim(2) + diff(ylim)*[0,.05,0,0],'k','FaceColor','k','Clipping','off')
 			patch([0,.5,1,0],ylim(1) - diff(ylim)*[0,.05,0,0],'k','FaceColor','w','Clipping','off')
@@ -462,7 +488,7 @@ if isfield(P,'SUMMARYLIST')
 			set(gca,'XLim',[0,1],'XTick',[],'FontSize',8)
 			colormap(shademap(sourcemap_colormap,sourcemap_alpha))
 			caxis(sourcemap_caxis);
-			title({'{\mu}m/s',''},'FontWeight','bold')
+			title({un,''},'FontWeight','bold')
 
 			axes('position',[0.05,0.1,0.02,0.6]);
 			hold on
