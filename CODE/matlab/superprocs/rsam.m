@@ -91,6 +91,9 @@ if ~isempty(alarm_xml) && exist(alarm_xml,'file')
     end
 end
 
+% text options for station legend
+topt = {'BackgroundColor','w','Margin',.1,'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold'};
+
 % common unit for all channels
 clb = cat(1,D.CLB);
 un = strcommon(cat(1,clb.un));
@@ -296,8 +299,7 @@ if isfield(P,'SUMMARYLIST')
 		nn = length(aliases);
 		for n = 1:nn
 			text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n), ...
-                'Color',scolor(ncolors(n)),'BackgroundColor','w', ...
-				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
+                'Color',scolor(ncolors(n)),topt{:})
 		end
 
 		tlabel(xlim,P.TZ)
@@ -339,8 +341,7 @@ if isfield(P,'SUMMARYLIST')
 		ylim = get(gca,'YLim');
 		for n = 1:nn
 			text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n), ...
-                'Color',scolor(ncolors(n)),'BackgroundColor','w', ...
-				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
+                'Color',scolor(ncolors(n)),topt{:})
 		end
 
 		tlabel(xlim,P.TZ)
@@ -364,7 +365,10 @@ if isfield(P,'SUMMARYLIST')
 			end
 			OPT.GTITLE = varsub(sourcemap_title,V);
 			OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
-			OPT.INFOS = {sprintf('Average method: {\\bf %s}',sourcemap_method)};
+			OPT.INFOS = { ...
+                sprintf('Average method: {\\bf %s}',sourcemap_method), ...
+                sprintf('Reference: {\\bf %s}',refstring), ...
+                };
 
 			% --- Time series graph
 			figure
@@ -411,8 +415,7 @@ if isfield(P,'SUMMARYLIST')
 			nn = length(aliases);
 			for n = 1:nn
 				text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n), ...
-                    'Color',scolor(ncolors(n)),'BackgroundColor','w', ...
-					'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
+                    'Color',scolor(ncolors(n)),topt{:});
 			end
 
 			tlabel(xlim,P.TZ)
@@ -460,9 +463,6 @@ if isfield(P,'SUMMARYLIST')
                 axes('Position',[left bottom width height]);
                 % extaxes tries to fit dataaspect ratio
 				extaxes(gca,[repmat(1-cosd(lat0),1,2),0,0])
-                if m == 1
-                    pos1 = get(gca,'Position');
-                end
 
 				% computes the mean value for each node
 				dx = [geo(:,2);xylim([1,2,1,2])'];
@@ -542,12 +542,6 @@ if isfield(P,'SUMMARYLIST')
 			hold off
 			set(gca,'XLim',[0,1],'YLim',[0,1]);
 			axis off
-
-            % print reference
-            axes('Position',[.18,pos1(2)+pos1(4),.75,.1])
-            text(.5,0,{refstring,''},'FontSize',8,'FontAngle','italic','HorizontalAlignment','center','VerticalAlignment','bottom')
-            set(gca,'XLim',[0,1],'YLim',[0,1])
-            axis off
 
             OPT.FIXEDPP = true;
             OPT.IMAP = IMAP;
