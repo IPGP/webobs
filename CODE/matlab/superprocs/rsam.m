@@ -49,6 +49,7 @@ timelog(procmsg,1);
 [P,N,D] = readproc(WO,varargin{:});
 
 V.name = P.NAME;
+eps_min = field2num(P,'EPS_IS_NAN',eps);
 pernode_linestyle = field2str(P,'PERNODE_LINESTYLE','-');
 pernode_title = field2str(P,'PERNODE_TITLE','{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}');
 summary_linestyle = field2str(P,'SUMMARY_LINESTYLE','-');
@@ -172,11 +173,13 @@ for n = 1:length(N)
 				else
 					samp = D(n).CLB.sf(i);
 				end
-				timeplot(tk,1./dk(:,i),samp,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
+                invdk = 1./dk(:,i);
+                invdk(dk(:,i)<eps_min) = NaN;
+				timeplot(tk,invdk,samp,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
 					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
 				if movingaverage > 1
 					hold on
-					timeplot(tk,mavr(1./dk(:,i),movingaverage),samp,'-', ...
+					timeplot(tk,mavr(invdk,movingaverage),samp,'-', ...
 						'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',col2,'MarkerFaceColor',col2)
 					hold off
 				end
@@ -311,8 +314,10 @@ if isfield(P,'SUMMARYLIST')
 				end
 				% computes the mean of all channels
 				[tk,dk] = treatsignal(D(n).t(k),rmean(D(n).d(k,:),2),P.GTABLE(r).DECIMATE,P);
+                invdk = 1./dk;
+                invdk(dk<eps_min) = NaN;
 				col = scolor(n);
-				timeplot(tk,1./dk,samp,summary_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
+				timeplot(tk,invdk,samp,summary_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
 					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
 			end
 		end

@@ -97,6 +97,8 @@ EXPORT_HEADER_PROC_KEYLIST|
 
 
 # --- data processing and plot
+# low value near zero (epsilon) is NaN
+EPS_IS_NAN|1e-10
 # removes data picks using median filter (% of min/max values)
 PICKS_CLEAN_PERCENT|0
 # replaces flat signal (two consecutive identical values) by NaN
@@ -108,7 +110,7 @@ MOVING_AVERAGE_SAMPLES|12*60
 # set to YES to plot continuous line ignoring gaps
 CONTINUOUS_PLOT|NO
 # set Y-axis with a log scale
-YLOGSCALE|YES
+YLOGSCALE|NO
 
 # --- alarm
 # default threshold for all channels (overwritten by FID_THRESHOLD)
