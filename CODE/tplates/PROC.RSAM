@@ -118,6 +118,8 @@ ALARM_THRESHOLD_LEVEL|1e-5
 # XML filename (or URL) with rsam_threshold node value per station, overwriting FID_THRESHOLD
 ALARM_XML|
 ALARM_COLOR|IndianRed
+ALARM_LINESTYLE|--
+ALARM_LINEWIDTH|2
 NOTIFY_EVENT|rsamalert.
 
 # --- per node graphs

@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2026-04-04
+%	Updated: 2026-04-05
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -57,6 +57,8 @@ summary_title = field2str(P,'SUMMARY_TITLE','{\fontsize{14}{\bf$name} ($timescal
 alarm_xml = field2str(P,'ALARM_XML');
 alarm_threshold_level = field2num(P,'ALARM_THRESHOLD_LEVEL',0);
 alarm_color = field2num(P,'ALARM_COLOR',[1,0,0]);
+alarm_linestyle = field2str(P,'ALARM_LINESTYLE','--');
+alarm_linewidth = field2num(P,'ALARM_LINEWIDTH',2);
 sourcemap_method = field2str(P,'SOURCEMAP_METHOD','mean');
 sourcemap_n = field2num(P,'SOURCEMAP_N',2);
 sourcemap_title = field2str(P,'SOURCEMAP_TITLE','{\fontsize{14}{\bf$name - Source Map} ($timescale)}');
@@ -132,7 +134,7 @@ for n = 1:length(N)
 			% linear time series
 			subplot(nx*4,1,4*(i-1) + (1:2)), extaxes(gca,[.07,.01])
 			if threshold > 0
-				plot(tlim,repmat(threshold,1,2),'--','Color',alarm_color,'LineWidth',2)
+				plot(tlim,repmat(threshold,1,2),alarm_linestyle,'Color',alarm_color,'LineWidth',alarm_linewidth)
 			end
 			hold on
 			if ~isempty(k)
@@ -164,7 +166,7 @@ for n = 1:length(N)
 			% 1/x time series (Y-axis linear scale forced)
 			subplot(nx*4,1,4*(i-1) + (3:4)), extaxes(gca,[.07,.01])
 			if threshold > 0
-				plot(tlim,1./repmat(threshold,1,2),'--','Color',alarm_color,'LineWidth',2)
+				plot(tlim,1./repmat(threshold,1,2),alarm_linestyle,'Color',alarm_color,'LineWidth',alarm_linewidth)
 			end
 			hold on
 			if ~isempty(k)
