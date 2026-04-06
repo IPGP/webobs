@@ -165,6 +165,9 @@ for n = 1:length(N)
             if numel(ymax) == 2
                 ylim(2) = minmax(dk(:,i),ymax(1));
                 ylim(2) = ylim(2)*(1+ymax(2));
+                if isnan(ylim(2))
+                    ylim(2) = Inf;
+                end
             end
 			set(gca,'XLim',tlim,'YLim',ylim,'FontSize',8,'TickDir','out')
 			if ylogscale
@@ -204,6 +207,9 @@ for n = 1:length(N)
             if numel(ymax) == 2
                 ylim(2) = minmax(invdk,ymax(1));
                 ylim(2) = ylim(2)*(1+ymax(2));
+                if isnan(ylim(2))
+                    ylim(2) = Inf;
+                end
             end
 			set(gca,'XLim',tlim,'Ylim',ylim,'FontSize',8,'TickDir','out')
 			datetick2('x',P.GTABLE(r).DATESTR)
@@ -301,6 +307,9 @@ if any(strcmp(P.SUMMARYLIST,summary))
         ylim = [0,Inf];
         if numel(ymax) == 2
             ylim(2) = dmax*(1+ymax(2));
+            if isnan(ylim(2))
+                ylim(2) = Inf;
+            end
         end
 		set(gca,'XLim',tlim,'YLim',ylim,'FontSize',8,'TickDir','out')
 		if ylogscale
@@ -352,6 +361,9 @@ if any(strcmp(P.SUMMARYLIST,summary))
         ylim = [0,Inf];
         if numel(ymax) == 2
             ylim(2) = dmax*(1+ymax(2));
+            if isnan(ylim(2))
+                ylim(2) = Inf;
+            end
         end
 		set(gca,'XLim',tlim,'Ylim',ylim,'FontSize',8,'TickDir','out')
 		box on
@@ -431,6 +443,9 @@ if any(strcmp(P.SUMMARYLIST,summary))
         ylim = [0,Inf];
         if numel(ymax) == 2
             ylim(2) = dmax*(1+ymax(2));
+            if isnan(ylim(2))
+                ylim(2) = Inf;
+            end
         end
         set(gca,'XLim',tlim,'YLim',ylim,'FontSize',8,'TickDir','out')
         if ylogscale
