@@ -111,6 +111,9 @@ MOVING_AVERAGE_SAMPLES|12*60
 CONTINUOUS_PLOT|NO
 # set Y-axis with a log scale
 YLOGSCALE|NO
+# Y-axis max limit: median max fraction,extent (empty for auto)
+YMAX_MEDIAN|0.99,0.1
+
 
 # --- alarm
 # default threshold for all channels (overwritten by FID_THRESHOLD)
