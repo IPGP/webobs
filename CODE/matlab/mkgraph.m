@@ -20,7 +20,7 @@ function varargout = mkgraph(WO,f,P,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03 in Gourbeyre, Guadeloupe
-%	Updated: 2026-03-09
+%	Updated: 2026-04-06
 
 
 set(gcf, 'Visible', 'off');
@@ -87,7 +87,7 @@ if isfield(OPT,'GTITLE') && isfield(OPT,'INFOS')
 	h0 = plotlogo(flogo1,hlogo1,'left');
 	h1 = plotlogo(flogo2,hlogo2,'right');
 
-	if isfield(OPT,'GSTATUS')
+	if isok(OPT,'STATUS') && isfield(OPT,'GSTATUS')
 		if length(OPT.GSTATUS) > 2 && all(~isnan(OPT.GSTATUS(2:3)))
 			OPT.GTITLE = [OPT.GTITLE, ...
 			   {sprintf('%s %+02d - Status %03d %% - Sampling %03d %% ',datestr(OPT.GSTATUS(1)),P.TZ,round(OPT.GSTATUS(2:3)))}];
@@ -204,7 +204,7 @@ end
 
 IM = imfinfo(sprintf('%s/%s.png',ptmp,f));
 ims = [IM.Width IM.Height];
-fid = fopen(sprintf('%s/%s.map',ptmp,f),'wt');
+fid = fopen(sprintf('%s/%s.map',ptmp,f),'w','n','UTF-8');
 % note: empty events will create an empty file
 for g = 1:length(I)
 	set(I(g).gca,'Units','normalized');
