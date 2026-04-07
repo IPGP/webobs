@@ -574,7 +574,7 @@ if (uc($GRIDType) eq 'PROC') {
                 print $sepCLB;
             }
             $dateCLB = $chpCLB[0];
-            my $active = "style=\"".(grep { $_ eq $chpCLB[2]} @select || $chanlist == "" ? "font-weight:bold":"color:gray")."\"";
+            my $active = "style=\"".((grep { $_ eq $carCLB{$k}{'nv'}} @select) || $chanlist eq "" ? "font-weight:bold":"color:gray")."\"";
             print "<TR><TD $active><SMALL>".join("</SMALL></TD><TD $active><SMALL>",@chpCLB)."</SMALL></TD></TR>";
         }
         print "$sepCLB</TABLE>\n";
