@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2026-04-06
+%	Updated: 2026-04-07
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -61,6 +61,14 @@ alarm_color = field2num(P,'ALARM_COLOR',[1,0,0]);
 alarm_linestyle = field2str(P,'ALARM_LINESTYLE','--');
 alarm_linewidth = field2num(P,'ALARM_LINEWIDTH',2);
 
+targetll = field2num(P,'TARGET_LATLON');
+if numel(targetll)~=2 || any(isnan(targetll))
+	targetll = [];
+end
+
+sourcemap_excluded = field2str(P,'SOURCEMAP_EXCLUDED_NODELIST');
+sourcemap_included = field2str(P,'SOURCEMAP_INCLUDED_NODELIST');
+sourcemap_excluded_target = field2num(P,'SOURCEMAP_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 sourcemap_method = field2str(P,'SOURCEMAP_METHOD','mean');
 sourcemap_n = field2num(P,'SOURCEMAP_N',2);
 sourcemap_title = field2str(P,'SOURCEMAP_TITLE','{\fontsize{14}{\bf$name - Source Map} ($timescale)}');
@@ -141,7 +149,7 @@ for n = 1:length(N)
 
 			% linear time series
 			subplot(nx*4,1,4*(i-1) + (1:2)), extaxes(gca,[.07,.01])
-			if threshold > 0
+			if threshold > 0 && alarm_linewidth > 0
 				plot(tlim,repmat(threshold,1,2),alarm_linestyle,'Color',alarm_color,'LineWidth',alarm_linewidth)
 			end
 			hold on
@@ -181,7 +189,7 @@ for n = 1:length(N)
 
 			% 1/x time series (Y-axis linear scale forced)
 			subplot(nx*4,1,4*(i-1) + (3:4)), extaxes(gca,[.07,.01])
-			if threshold > 0
+			if threshold > 0 && alarm_linewidth > 0
 				plot(tlim,1./repmat(threshold,1,2),alarm_linestyle,'Color',alarm_color,'LineWidth',alarm_linewidth)
 			end
 			hold on
@@ -392,6 +400,10 @@ if any(strcmp(P.SUMMARYLIST,summary))
 	G = cat(1,D.G);
     refstring = 'Processing by Taisne et al., IPGP/EOS';
     geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
+
+    % selects stations
+    kn = selectnode(N,tlim,sourcemap_excluded,sourcemap_included,[targetll,sourcemap_excluded_target]);
+
     for r = 1:length(P.GTABLE)
 
         V.timescale = timescales(P.GTABLE(r).TIMESCALE);
@@ -421,7 +433,8 @@ if any(strcmp(P.SUMMARYLIST,summary))
         end
         hold on
         dmax = NaN;
-        for n = 1:length(N)
+        for i = 1:length(kn)
+            n = kn(i);
             k = D(n).G(r).k;
             if ~isempty(k)
                 if isok(P,'CONTINUOUS_PLOT')
@@ -477,6 +490,12 @@ if any(strcmp(P.SUMMARYLIST,summary))
         DEM = loaddem(WO,xylim,P);
         I = dem(DEM.lon,DEM.lat,DEM.z,'latlon','noplot','decim',sourcemap_n,sourcemap_dem_opt{:});
         [xx,yy] = meshgrid(I.x,I.y);
+  
+		% adds distance from target
+		if numel(targetll) == 2
+			[xdt,ydt] = meshgrid(DEM.lon,DEM.lat);
+			DEM.dist = greatcircle(targetll(1),targetll(2),ydt,xdt);
+		end
 
         clear IMAP
         for m = 1:(sourcemap_n^2)
@@ -510,11 +529,12 @@ if any(strcmp(P.SUMMARYLIST,summary))
             extaxes(gca,[repmat(1-cosd(lat0),1,2),0,0])
 
             % computes the mean value for each node
-            dx = [geo(:,2);xylim([1,2,1,2])'];
-            dy = [geo(:,1);xylim([3,3,4,4])'];
-            dz = nan(length(N)+4,1); % init with NaN
+            dx = [geo(kn,2);xylim([1,2,1,2])'];
+            dy = [geo(kn,1);xylim([3,3,4,4])'];
+            dz = nan(length(kn)+4,1); % init with NaN
             dz(end-3:end) = 0; % 4 last to fix map corners to 0
-            for n = 1:length(N)
+            for i = 1:length(kn)
+                n = kn(i);
                 k = D(n).G(r).k;
                 if ~isempty(k)
                     switch sourcemap_method
@@ -546,8 +566,14 @@ if any(strcmp(P.SUMMARYLIST,summary))
             %set(gca,'XTick',[],'YTick',[],'DataAspectRatio',[1,cosd(lat0),1],'FontSize',8)
             set(gca,'XTick',[],'YTick',[],'FontSize',8)
             hold on
+            % adds distance from target
+            if numel(targetll) == 2
+                [c,h] = contour(DEM.lon,DEM.lat,DEM.dist,'k');
+                set(h,'LineColor',.5*ones(1,3),'LineWidth',.1);
+                clabel(c,h,'FontSize',8,'Color',.5*ones(1,3));
+            end
             % plot stations
-            plot(geo(:,2),geo(:,1),'^k','MarkerSize',4)
+            plot(geo(kn,2),geo(kn,1),'^k','MarkerSize',4)
             % plot max value
             if isok(P,'SOURCEMAP_PLOT_MAX')
                 k = find(zz == max(zz(:)));
@@ -558,10 +584,10 @@ if any(strcmp(P.SUMMARYLIST,summary))
                 sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(2)),P.TZ)});
 
             % interactive map with max value per station
-            IMAP(m).d = [dx(1:length(N)),dy(1:length(N)),repmat(5,length(N),1)];
+            IMAP(m).d = [dx(1:length(kn)),dy(1:length(kn)),repmat(5,length(kn),1)];
             IMAP(m).gca = gca;
-            IMAP(m).s = cell(length(N),1);
-            IMAP(m).l = cell(length(N),1);
+            IMAP(m).s = cell(length(kn),1);
+            IMAP(m).l = cell(length(kn),1);
             for n = 1:numel(IMAP(m).s)
                 IMAP(m).s{n} = sprintf('''<i>start:</i> %s<br><i>end:</i> %s<br>average = %g %s'',CAPTION,''%s: %s''', ...
                     datestr(tlim(1),'dd-mmm-yyyy HH:MM'),datestr(tlim(2),'dd-mmm-yyyy HH:MM'), ...

@@ -114,10 +114,12 @@ YLOGSCALE|NO
 # Y-axis max limit: median max fraction,extent (empty for auto)
 YMAX_MEDIAN|0.99,0.1
 
+# defines a main target (latitude,longitude coordinates)
+TARGET_LATLON|
 
 # --- alarm
 # default threshold for all channels (overwritten by FID_THRESHOLD)
-ALARM_THRESHOLD_LEVEL|1e-5
+ALARM_THRESHOLD_LEVEL|
 # XML filename (or URL) with rsam_threshold node value per station, overwriting FID_THRESHOLD
 ALARM_XML|
 ALARM_COLOR|IndianRed
@@ -143,6 +145,9 @@ SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
 SUMMARY_LINESTYLE|-
 
 # --- source mapping
+SOURCEMAP_EXCLUDED_NODELIST|
+SOURCEMAP_EXCLUDED_FROM_TARGET_KM|
+SOURCEMAP_INCLUDED_NODELIST|
 # computation method for signal average: mean (default) or median
 SOURCEMAP_METHOD|mean
 # number of maps will be N*N (allowed values are 1,2, or 3)
