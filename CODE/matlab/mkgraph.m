@@ -229,12 +229,21 @@ for g = 1:length(I)
         % escapes double quotes
         txt = regexprep(I(g).s{n},'"','\\"');
 		if size(I(g).d,2) < 4
-			% r is given in points
-			r = ceil(I(g).d(n,3)*P.PPI/72);
+			% r is given in points, minimum of 3px
+			r = max(3,ceil(I(g).d(n,3)*P.PPI/72));
 			fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 		else
+            % minimum of 3px
 			x2 = round(ims(1)*((axp(3)*(I(g).d(n,3) - xylim(1))/diff(xylim(1:2)) + axp(1))));
 			y2 = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,4) - xylim(3))/diff(xylim(3:4)) + axp(2))));
+            if x == x2
+                x = x - 1;
+                x2 = x2 + 1;
+            end
+            if y == y2
+                y = y - 1;
+                y2 = y2 + 1;
+            end
 			fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=rect coords="%d,%d,%d,%d">\n',lnk,txt,x,y,x2,y2);
 		end
 	end
