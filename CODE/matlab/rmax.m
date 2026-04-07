@@ -8,11 +8,11 @@ function y = rmax(x)
 %
 %   Author: F. Beauducel / OVSG / WEBOBS
 %   Created: 2002
-%   Updated: 2019-02-16
+%   Updated: 2026-04-07
 
 for i = 1:size(x,2)
-    k = find(~isnan(x(:,i)));
-    if length(k) == 0
+    k = (~isnan(x(:,i)) & isfinite(x(:,i)));
+    if sum(k) == 0
         y(i) = NaN;
     else
         y(i) = max(x(k,i));
